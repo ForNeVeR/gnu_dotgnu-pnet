@@ -163,6 +163,33 @@ typedef arm_inst_ptr	md_inst_ptr;
 			arm_mov_reg_imm((inst), (reg), (value))
 
 /*
+ * Load a 32-bit floating-point constant into a register.  The constant
+ * is at a particular memory location.  If the system does not use
+ * floating-point registers, then load onto the top of the stack.
+ */
+#define	md_load_const_float_32(inst,reg,mem)	do { ; } while (0)
+
+/*
+ * Load a 64-bit floating-point constant into a register.  The constant
+ * is at a particular memory location.  If the system does not use
+ * floating-point registers, then load onto the top of the stack.
+ */
+#define	md_load_const_float_64(inst,reg,mem)	do { ; } while (0)
+
+/*
+ * Load the 32-bit constant zero into a register.  This will zero-extend
+ * if the native word size is larger.
+ */
+#define	md_load_zero_32(inst,reg)	\
+			arm_mov_reg_imm((inst), (reg), 0)
+
+/*
+ * Load the native constant zero into a register.
+ */
+#define	md_load_zero_native(inst,reg)	\
+			arm_mov_reg_imm((inst), (reg), 0)
+
+/*
  * Load a 32-bit word register from an offset from a pointer register.
  * This will sign-extend if the native word size is larger.
  */
@@ -331,6 +358,8 @@ typedef arm_inst_ptr	md_inst_ptr;
 			do { ; } while (0)
 #define	md_reg_to_word_native(inst,reg)	\
 			do { ; } while (0)
+#define	md_reg_to_word_native_un(inst,reg)	\
+			do { ; } while (0)
 
 /*
  * Truncate floating point values to 32-bit or 64-bit.
@@ -352,7 +381,35 @@ typedef arm_inst_ptr	md_inst_ptr;
  */
 #define	md_jump_to_cvm(inst,pc,label)	\
 			do { \
-				/* TODO */ \
+				int offset; \
+				if(!(label)) \
+				{ \
+					/* Jump to the contents of the specified PC */ \
+					arm_load_membase((inst), MD_REG_PC, ARM_PC, 0); \
+					arm_load_membase((inst), ARM_PC, MD_REG_PC, 0); \
+					*((inst)++) = (unsigned int)(pc); \
+				} \
+				else \
+				{ \
+					/* Load "pc" back into the CVM interpreter's frame */ \
+					/* and then jump directly to instruction handler at */ \
+					/* "label".  This avoids the need for an indirect */ \
+					/* jump instruction */ \
+					arm_load_membase(unroll->out, MD_REG_PC, ARM_PC, 0); \
+					offset = (int)(((unsigned char *)(label)) - \
+				       			  (((unsigned char *)(inst)) + 8)); \
+					if(offset >= -0x04000000 && offset < 0x04000000) \
+					{ \
+						arm_jump_imm((inst), offset); \
+						*((inst)++) = (unsigned int)(pc); \
+					} \
+					else \
+					{ \
+						arm_load_membase(unroll->out, ARM_PC, ARM_PC, 0); \
+						*((inst)++) = (unsigned int)(pc); \
+						*((inst)++) = (unsigned int)(label); \
+					} \
+				} \
 			} while (0)
 
 /*
@@ -430,6 +487,129 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
 				arm_alu_reg_cond((inst), ARM_MVN, reg1, reg1, \
 								 ARM_CC_LT_UN); \
 			} while (0)
+
+/*
+ * Test the contents of a register against NULL and set the
+ * condition codes based on the result.
+ */
+#define	md_reg_is_null(inst,reg)	\
+			arm_test_reg_imm8((inst), ARM_CMP, (reg), 0)
+
+/*
+ * Output a branch to a location based on a condition.  The actual
+ * jump offset will be filled in by a later "md_patch" call.
+ */
+#define	md_branch_eq(inst)	\
+			arm_branch_imm((inst), ARM_CC_EQ, 0)
+#define	md_branch_ne(inst)	\
+			arm_branch_imm((inst), ARM_CC_NE, 0)
+#define	md_branch_lt(inst)	\
+			arm_branch_imm((inst), ARM_CC_LT, 0)
+#define	md_branch_le(inst)	\
+			arm_branch_imm((inst), ARM_CC_LE, 0)
+#define	md_branch_gt(inst)	\
+			arm_branch_imm((inst), ARM_CC_GT, 0)
+#define	md_branch_ge(inst)	\
+			arm_branch_imm((inst), ARM_CC_GE, 0)
+#define	md_branch_lt_un(inst)	\
+			arm_branch_imm((inst), ARM_CC_LT_UN, 0)
+#define	md_branch_le_un(inst)	\
+			arm_branch_imm((inst), ARM_CC_LE_UN, 0)
+#define	md_branch_gt_un(inst)	\
+			arm_branch_imm((inst), ARM_CC_GT_UN, 0)
+#define	md_branch_ge_un(inst)	\
+			arm_branch_imm((inst), ARM_CC_GE_UN, 0)
+
+/*
+ * Back-patch a branch instruction at "patch" to branch to "inst".
+ */
+#define	md_patch(patch,inst)	\
+			arm_patch((patch), (inst))
+
+/*
+ * Check an array bounds value.  "reg1" points to the array,
+ * and "reg2" is the array index to check.  This will advance
+ * the pointer in "reg1" past the array bounds value.
+ */
+#define	md_bounds_check(inst,reg1,reg2)	\
+			do { \
+				arm_load_advance((inst), ARM_WORK, (reg1)); \
+				arm_test_reg_reg((inst), ARM_CMP, (reg2), ARM_WORK); \
+			} while (0)
+
+/*
+ * Load a 32-bit word value from an indexed array.  "disp" is the offset
+ * to use to skip over the array bounds value.  Some platforms may ignore
+ * "disp" if they advance the base pointer in "md_bounds_check".
+ */
+#define	md_load_memindex_word_32(inst,reg,basereg,indexreg,disp)	\
+			arm_load_memindex((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Load a native word value from an indexed array.
+ */
+#define	md_load_memindex_word_native(inst,reg,basereg,indexreg,disp)	\
+			arm_load_memindex((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Load a byte value from an indexed array.
+ */
+#define	md_load_memindex_byte(inst,reg,basereg,indexreg,disp)	\
+			arm_load_memindex_byte((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Load a signed byte value from an indexed array.
+ */
+#define	md_load_memindex_sbyte(inst,reg,basereg,indexreg,disp)	\
+			arm_load_memindex_sbyte((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Load a short value from an indexed array.
+ */
+#define	md_load_memindex_short(inst,reg,basereg,indexreg,disp)	\
+			arm_load_memindex_short((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Load an unsigned short value from an indexed array.
+ */
+#define	md_load_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
+			arm_load_memindex_ushort((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Store a 32-bit word value into an indexed array.
+ */
+#define	md_store_memindex_word_32(inst,reg,basereg,indexreg,disp)	\
+			arm_store_memindex((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Store a native word value into an indexed array.
+ */
+#define	md_store_memindex_word_native(inst,reg,basereg,indexreg,disp)	\
+			arm_store_memindex((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Store a byte value into an indexed array.
+ */
+#define	md_store_memindex_byte(inst,reg,basereg,indexreg,disp)	\
+			arm_store_memindex_byte((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Store a signed byte value into an indexed array.
+ */
+#define	md_store_memindex_sbyte(inst,reg,basereg,indexreg,disp)	\
+			arm_store_memindex_sbyte((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Store a short value into an indexed array.
+ */
+#define	md_store_memindex_short(inst,reg,basereg,indexreg,disp)	\
+			arm_store_memindex_short((inst), (reg), (basereg), (indexreg))
+
+/*
+ * Store an unsigned short value into an indexed array.
+ */
+#define	md_store_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
+			arm_store_memindex_ushort((inst), (reg), (basereg), (indexreg))
 
 #ifdef	__cplusplus
 };

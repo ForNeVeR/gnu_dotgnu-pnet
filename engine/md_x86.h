@@ -167,6 +167,35 @@ typedef unsigned char *md_inst_ptr;
 			x86_mov_reg_imm((inst), (reg), (value))
 
 /*
+ * Load a 32-bit floating-point constant into a register.  The constant
+ * is at a particular memory location.  If the system does not use
+ * floating-point registers, then load onto the top of the stack.
+ */
+#define	md_load_const_float_32(inst,reg,mem)	\
+			x86_fld((inst), (int)(mem), 0)
+
+/*
+ * Load a 64-bit floating-point constant into a register.  The constant
+ * is at a particular memory location.  If the system does not use
+ * floating-point registers, then load onto the top of the stack.
+ */
+#define	md_load_const_float_64(inst,reg,mem)	\
+			x86_fld((inst), (int)(mem), 1)
+
+/*
+ * Load the 32-bit constant zero into a register.  This will zero-extend
+ * if the native word size is larger.
+ */
+#define	md_load_zero_32(inst,reg)	\
+			x86_clear_reg((inst), (reg))
+
+/*
+ * Load the native constant zero into a register.
+ */
+#define	md_load_zero_native(inst,reg)	\
+			x86_clear_reg((inst), (reg))
+
+/*
  * Load a 32-bit word register from an offset from a pointer register.
  * This will sign-extend if the native word size is larger.
  */
@@ -361,6 +390,8 @@ extern md_inst_ptr _md_x86_rem_float
 			do { ; } while (0)
 #define	md_reg_to_word_native(inst,reg)	\
 			do { ; } while (0)
+#define	md_reg_to_word_native_un(inst,reg)	\
+			do { ; } while (0)
 
 /*
  * Truncate floating point values to 32-bit or 64-bit.
@@ -462,6 +493,164 @@ extern md_inst_ptr _md_x86_compare
 #define	md_ucmp_reg_reg_word_32(inst,reg1,reg2)	\
 			do { (inst) = _md_x86_compare \
 					((inst), (reg1), (reg2), 0); } while (0)
+
+/*
+ * Test the contents of a register against NULL and set the
+ * condition codes based on the result.
+ */
+#define	md_reg_is_null(inst,reg)	\
+			x86_alu_reg_reg((inst), X86_OR, (reg), (reg))
+
+/*
+ * Output a branch to a location based on a condition.  The actual
+ * jump offset will be filled in by a later "md_patch" call.
+ */
+#define	md_branch_eq(inst)	\
+			x86_branch32((inst), X86_CC_EQ, 0, 0)
+#define	md_branch_ne(inst)	\
+			x86_branch32((inst), X86_CC_NE, 0, 0)
+#define	md_branch_lt(inst)	\
+			x86_branch32((inst), X86_CC_LT, 0, 1)
+#define	md_branch_le(inst)	\
+			x86_branch32((inst), X86_CC_LE, 0, 1)
+#define	md_branch_gt(inst)	\
+			x86_branch32((inst), X86_CC_GT, 0, 1)
+#define	md_branch_ge(inst)	\
+			x86_branch32((inst), X86_CC_GE, 0, 1)
+#define	md_branch_lt_un(inst)	\
+			x86_branch32((inst), X86_CC_LT, 0, 0)
+#define	md_branch_le_un(inst)	\
+			x86_branch32((inst), X86_CC_LE, 0, 0)
+#define	md_branch_gt_un(inst)	\
+			x86_branch32((inst), X86_CC_GT, 0, 0)
+#define	md_branch_ge_un(inst)	\
+			x86_branch32((inst), X86_CC_GE, 0, 0)
+
+/*
+ * Back-patch a branch instruction at "patch" to branch to "inst".
+ */
+#define	md_patch(patch,inst)	\
+			x86_patch((patch), (inst))
+
+/*
+ * Check an array bounds value.  "reg1" points to the array,
+ * and "reg2" is the array index to check.
+ */
+#define	md_bounds_check(inst,reg1,reg2)	\
+			x86_alu_reg_membase((inst), X86_CMP, (reg2), (reg1), 0)
+
+/*
+ * Load a 32-bit word value from an indexed array.  "disp" is the offset
+ * to use to skip over the array bounds value.  Some platforms may ignore
+ * "disp" if they advance the base pointer in "md_bounds_check".
+ */
+#define	md_load_memindex_word_32(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_mov_reg_memindex((inst), (reg), (basereg), \
+									 (disp), (indexreg), 2, 4); \
+			} while (0)
+
+/*
+ * Load a native word value from an indexed array.
+ */
+#define	md_load_memindex_word_native(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_mov_reg_memindex((inst), (reg), (basereg), \
+									 (disp), (indexreg), 2, 4); \
+			} while (0)
+
+/*
+ * Load a byte value from an indexed array.
+ */
+#define	md_load_memindex_byte(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_widen_memindex((inst), (reg), (basereg), \
+								   (disp), (indexreg), 0, 1, 0); \
+			} while (0)
+
+/*
+ * Load a signed byte value from an indexed array.
+ */
+#define	md_load_memindex_sbyte(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_widen_memindex((inst), (reg), (basereg), \
+								   (disp), (indexreg), 0, 0, 0); \
+			} while (0)
+
+/*
+ * Load a short value from an indexed array.
+ */
+#define	md_load_memindex_short(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_widen_memindex((inst), (reg), (basereg), \
+								   (disp), (indexreg), 1, 1, 1); \
+			} while (0)
+
+/*
+ * Load an unsigned short value from an indexed array.
+ */
+#define	md_load_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_widen_memindex((inst), (reg), (basereg), \
+								   (disp), (indexreg), 1, 0, 1); \
+			} while (0)
+
+/*
+ * Store a 32-bit word value into an indexed array.
+ */
+#define	md_store_memindex_word_32(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
+									 2, (reg), 4); \
+			} while (0)
+
+/*
+ * Store a native word value into an indexed array.
+ */
+#define	md_store_memindex_word_native(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
+									 2, (reg), 4); \
+			} while (0)
+
+/*
+ * Store a byte value into an indexed array.
+ */
+extern md_inst_ptr _md_x86_mov_memindex_reg_byte
+			(md_inst_ptr inst, int basereg,
+			 unsigned offset, int indexreg, int srcreg);
+#define	md_store_memindex_byte(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				(inst) = _md_x86_mov_memindex_reg_byte \
+					((inst), (basereg), (disp), (indexreg), (reg)); \
+			} while (0)
+
+/*
+ * Store a signed byte value into an indexed array.
+ */
+#define	md_store_memindex_sbyte(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				(inst) = _md_x86_mov_memindex_reg_byte \
+					((inst), (basereg), (disp), (indexreg), (reg)); \
+			} while (0)
+
+/*
+ * Store a short value into an indexed array.
+ */
+#define	md_store_memindex_short(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
+									 1, (reg), 2); \
+			} while (0)
+
+/*
+ * Store an unsigned short value into an indexed array.
+ */
+#define	md_store_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
+			do { \
+				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
+									 1, (reg), 2); \
+			} while (0)
 
 #ifdef	__cplusplus
 };

@@ -74,6 +74,40 @@ md_inst_ptr _md_x86_mov_membase_reg_byte
 	return inst;
 }
 
+md_inst_ptr _md_x86_mov_memindex_reg_byte(md_inst_ptr inst, int basereg,
+							   			  unsigned offset, int indexreg,
+							   			  int srcreg)
+{
+	if(srcreg == X86_EAX || srcreg == X86_EBX ||
+	   srcreg == X86_ECX || srcreg == X86_EDX)
+	{
+		x86_mov_memindex_reg(inst, basereg, offset, indexreg,
+							 0, srcreg, 1);
+	}
+	else
+	{
+		int tempreg;
+		if(basereg != X86_EAX && indexreg != X86_EAX)
+		{
+			tempreg = X86_EAX;
+		}
+		else if(basereg != X86_ECX && indexreg != X86_ECX)
+		{
+			tempreg = X86_ECX;
+		}
+		else
+		{
+			tempreg = X86_EDX;
+		}
+		x86_push_reg(inst, tempreg);
+		x86_mov_reg_reg(inst, tempreg, srcreg, 4);
+		x86_mov_memindex_reg(inst, basereg, offset, indexreg,
+							 0, tempreg, 1);
+		x86_pop_reg(inst, tempreg);
+	}
+	return inst;
+}
+
 md_inst_ptr _md_x86_rem_float
 		(md_inst_ptr inst, int reg1, int reg2, int used)
 {

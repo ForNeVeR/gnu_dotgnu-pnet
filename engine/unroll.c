@@ -24,6 +24,7 @@
 #include "cvm_config.h"
 #include "cvm_format.h"
 #include "il_dumpasm.h"
+#include "lib_defs.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -468,6 +469,45 @@ static int GetCachedWordRegister(MDUnroll *unroll, long local, int flags)
 #ifdef MD_HAS_FP
 
 /*
+ * Check to see if the floating-point register array/stack is full.
+ * If it is, then flush the entire register stack.
+ */
+static void CheckFPFull(MDUnroll *unroll)
+{
+#if MD_FP_STACK_SIZE != 0
+	/* Clear the cached local information */
+	unroll->cachedLocal = -1;
+	unroll->cachedReg = -1;
+
+	/* If the FPU stack is full, then flush and restart */
+	if(unroll->fpStackSize >= MD_FP_STACK_SIZE)
+	{
+		FlushRegisterStack(unroll);
+	}
+#else
+	int index, reg, regmask;
+
+	/* Clear the cached local information */
+	unroll->cachedLocal = -1;
+	unroll->cachedReg = -1;
+
+	/* Search for an unused floating-point register */
+	for(index = 0; index < 16 && regAllocFPOrder[index] != -1; ++index)
+	{
+		reg = regAllocFPOrder[index];
+		regmask = (1 << reg);
+		if((unroll->regsUsed & regmask) == 0)
+		{
+			return;
+		}
+	}
+
+	/* Flush the entire register stack */
+	FlushRegisterStack(unroll);
+#endif
+}
+
+/*
  * Get a register that can be used to store floating-point values.
  */
 static int GetFPRegister(MDUnroll *unroll)
@@ -518,6 +558,21 @@ static int GetFPRegister(MDUnroll *unroll)
 }
 
 #endif /* MD_HAS_FP */
+
+/*
+ * Change the type of the top-most register on the stack.
+ */
+static void ChangeRegisterType(MDUnroll *unroll, int type)
+{
+	if((type & MD_REGN_NATIVE) != 0)
+	{
+		unroll->pseudoStack[unroll->pseudoStackSize - 1] |= MD_NATIVE_REG_MASK;
+	}
+	else
+	{
+		unroll->pseudoStack[unroll->pseudoStackSize - 1] &= ~MD_NATIVE_REG_MASK;
+	}
+}
 
 /*
  * Get the top-most word value on the stack into a register.
@@ -908,103 +963,123 @@ static void GetTopTwoFPRegisters(MDUnroll *unroll, int *reg1,
 #endif /* MD_FP_STACK_SIZE == 0 */
 }
 
-#if 0
-
 /*
  * Get the two top-most stack values in a word and an FP register.
- * Returns the identifier for the word register.  The FP register is ST(0).
  */
-static int GetWordAndFPRegisters(X86Unroll *unroll)
+static void GetWordAndFPRegisters(MDUnroll *unroll, int *reg1, int *reg2)
 {
 	/* Clear the cached local information */
 	unroll->cachedLocal = -1;
 	unroll->cachedReg = -1;
 
 	/* Check for the expected information on the stack */
-	if(unroll->pseudoStackSize > 1 &&
-	   unroll->pseudoStack[unroll->pseudoStackSize - 2] != REG_FPU &&
-	   unroll->pseudoStack[unroll->pseudoStackSize - 1] == REG_FPU)
+	if(unroll->pseudoStackSize > 1)
 	{
-		return unroll->pseudoStack[unroll->pseudoStackSize - 2];
+		*reg1 = unroll->pseudoStack[unroll->pseudoStackSize - 2];
+		*reg2 = unroll->pseudoStack[unroll->pseudoStackSize - 1];
+		if(!MD_IS_FREG(*reg1) && MD_IS_FREG(*reg2))
+		{
+			*reg1 &= ~MD_NATIVE_REG_MASK;
+			return;
+		}
 	}
 
-	/* If we have 1 FP value on the stack, then load the word into EAX */
-	if(unroll->pseudoStackSize == 1 &&
-	   unroll->pseudoStack[unroll->pseudoStackSize - 1] == REG_FPU)
+	/* If we have 1 FP value on the stack, then load the word into MD_REG_0 */
+	if(unroll->pseudoStackSize == 1 && MD_IS_FREG(unroll->pseudoStack[0]))
 	{
-		unroll->pseudoStack[0] = X86_EAX;
-		unroll->pseudoStack[1] = REG_FPU;
+		*reg1 = MD_REG_0;
+		*reg2 = unroll->pseudoStack[0];
+		unroll->pseudoStack[0] = *reg1 | MD_NATIVE_REG_MASK;
+		unroll->pseudoStack[1] = *reg2;
 		unroll->pseudoStackSize = 2;
-		unroll->stackHeight -= 4;
-		x86_mov_reg_membase(unroll->out, X86_EAX, REG_STACK,
-						    unroll->stackHeight, 4);
-		unroll->regsUsed |= REG_EAX_MASK;
-		return X86_EAX;
+		unroll->stackHeight -= sizeof(CVMWord);
+		md_load_membase_word_native(unroll->out, MD_REG_0, MD_REG_STACK,
+						            unroll->stackHeight);
+		unroll->regsUsed |= (1 << MD_REG_0);
+		return;
 	}
 
-	/* Flush the register stack and then reload into EAX and ST(0) */
+	/* Flush the register stack and then reload into MD_REG_0 and MD_FREG_0 */
 	FlushRegisterStack(unroll);
-	unroll->pseudoStack[0] = X86_EAX;
-	unroll->pseudoStack[1] = REG_FPU;
+	*reg1 = MD_REG_0;
+	*reg2 = MD_FREG_0;
+	unroll->pseudoStack[0] = MD_REG_0 | MD_NATIVE_REG_MASK;
+	unroll->pseudoStack[1] = MD_FREG_0;
 	unroll->pseudoStackSize = 2;
-	unroll->stackHeight -= 16;
-	x86_mov_reg_membase(unroll->out, X86_EAX, REG_STACK,
-					    unroll->stackHeight, 4);
-	x86_fld80_membase(unroll->out, REG_STACK, unroll->stackHeight + 4);
-	unroll->regsUsed |= REG_EAX_MASK;
+	unroll->stackHeight -= (CVM_WORDS_PER_NATIVE_FLOAT + 1) * sizeof(CVMWord);
+	md_load_membase_word_native(unroll->out, MD_REG_0, MD_REG_STACK,
+					    		unroll->stackHeight);
+	md_load_membase_float_native(unroll->out, MD_FREG_0, MD_REG_STACK,
+								 unroll->stackHeight + sizeof(CVMWord));
+	unroll->regsUsed |= (1 << MD_REG_0);
+#if MD_FP_STACK_SIZE != 0
 	++(unroll->fpStackSize);
-	return X86_EAX;
+#else
+	unroll->regsUsed |= (1 << MD_FREG_0);
+#endif
 }
 
 /*
  * Get the two top-most stack values in an FP and a word register.
- * Returns the identifier for the word register.  The FP register is ST(0).
  */
-static int GetFPAndWordRegisters(MDUnroll *unroll)
+static void GetFPAndWordRegisters(MDUnroll *unroll, int *reg1, int *reg2)
 {
-	int reg;
-
 	/* Clear the cached local information */
 	unroll->cachedLocal = -1;
 	unroll->cachedReg = -1;
 
 	/* Check for the expected information on the stack */
-	if(unroll->pseudoStackSize > 1 &&
-	   unroll->pseudoStack[unroll->pseudoStackSize - 2] == REG_FPU &&
-	   unroll->pseudoStack[unroll->pseudoStackSize - 1] != REG_FPU)
+	if(unroll->pseudoStackSize > 1)
 	{
-		return unroll->pseudoStack[unroll->pseudoStackSize - 1];
+		*reg1 = unroll->pseudoStack[unroll->pseudoStackSize - 2];
+		*reg2 = unroll->pseudoStack[unroll->pseudoStackSize - 1];
+		if(MD_IS_FREG(*reg1) && !MD_IS_FREG(*reg2))
+		{
+			*reg2 &= ~MD_NATIVE_REG_MASK;
+			return;
+		}
 	}
 
-	/* If we have 1 word value on the stack, then load the FP into ST(0) */
-	if(unroll->pseudoStackSize == 1 &&
-	   unroll->pseudoStack[unroll->pseudoStackSize - 1] != REG_FPU)
+	/* If we have 1 word value on the stack, then load the FP into MD_FREG_0 */
+	if(unroll->pseudoStackSize == 1 && !MD_IS_FREG(unroll->pseudoStack[0]))
 	{
-		reg = unroll->pseudoStack[0];
-		unroll->pseudoStack[0] = REG_FPU;
-		unroll->pseudoStack[1] = reg;
+		*reg1 = unroll->pseudoStack[0];
+		*reg2 = MD_FREG_0;
+		unroll->pseudoStack[0] = *reg1;
+		unroll->pseudoStack[1] = *reg2 | MD_NATIVE_REG_MASK;
 		unroll->pseudoStackSize = 2;
-		unroll->stackHeight -= 12;
-		x86_fld80_membase(unroll->out, REG_STACK, unroll->stackHeight);
+		unroll->stackHeight -= CVM_WORDS_PER_NATIVE_FLOAT * sizeof(CVMWord);
+		md_load_membase_float_native(unroll->out, MD_FREG_0, MD_REG_STACK,
+						             unroll->stackHeight);
+	#if MD_FP_STACK_SIZE != 0
 		++(unroll->fpStackSize);
-		return reg;
+	#else
+		unroll->regsUsed |= (1 << MD_FREG_0);
+	#endif
+		return;
 	}
 
-	/* Flush the register stack and then reload into ST(0) and EAX */
+	/* Flush the register stack and then reload into MD_FREG_0 and MD_REG_0 */
 	FlushRegisterStack(unroll);
-	unroll->pseudoStack[0] = REG_FPU;
-	unroll->pseudoStack[1] = X86_EAX;
+	*reg1 = MD_FREG_0;
+	*reg2 = MD_REG_0;
+	unroll->pseudoStack[0] = MD_FREG_0;
+	unroll->pseudoStack[1] = MD_REG_0 | MD_NATIVE_REG_MASK;
 	unroll->pseudoStackSize = 2;
-	unroll->stackHeight -= 16;
-	x86_fld80_membase(unroll->out, REG_STACK, unroll->stackHeight);
-	x86_mov_reg_membase(unroll->out, X86_EAX, REG_STACK,
-					    unroll->stackHeight + 12, 4);
-	unroll->regsUsed |= REG_EAX_MASK;
+	unroll->stackHeight -= (CVM_WORDS_PER_NATIVE_FLOAT + 1) * sizeof(CVMWord);
+	md_load_membase_float_native(unroll->out, MD_FREG_0, MD_REG_STACK,
+								 unroll->stackHeight);
+	md_load_membase_word_native(unroll->out, MD_REG_0, MD_REG_STACK,
+					    		unroll->stackHeight +
+									CVM_WORDS_PER_NATIVE_FLOAT *
+									sizeof(CVMWord));
+	unroll->regsUsed |= (1 << MD_REG_0);
+#if MD_FP_STACK_SIZE != 0
 	++(unroll->fpStackSize);
-	return X86_EAX;
-}
-
+#else
+	unroll->regsUsed |= (1 << MD_FREG_0);
 #endif
+}
 
 #endif /* MD_HAS_FP */
 
@@ -1279,9 +1354,9 @@ static void DumpCode(ILMethod *method, unsigned char *start, int len)
 #define	IL_UNROLL_GLOBAL
 #include "unroll_arith.c"
 //#include "unroll_branch.c"
-//#include "unroll_const.c"
+#include "unroll_const.c"
 //#include "unroll_conv.c"
-//#include "unroll_ptr.c"
+#include "unroll_ptr.c"
 #include "unroll_var.c"
 #undef	IL_UNROLL_GLOBAL
 
@@ -1361,9 +1436,9 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 			#define	IL_UNROLL_CASES
 			#include "unroll_arith.c"
 			//#include "unroll_branch.c"
-			//#include "unroll_const.c"
+			#include "unroll_const.c"
 			//#include "unroll_conv.c"
-			//#include "unroll_ptr.c"
+			#include "unroll_ptr.c"
 			#include "unroll_var.c"
 			#undef	IL_UNROLL_CASES
 

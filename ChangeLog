@@ -1,4 +1,12 @@
 
+2002-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/InteropServices/ComMemberType.cs,
+	runtime/System/Runtime/InteropServices/Marshal.cs,
+	runtime/System/Runtime/InteropServices/UCOMITypeInfo.cs,
+	runtime/System/Runtime/InteropServices/UCOMITypeLib.cs:
+	implement the "Marshal" class and supporting types.
+
 2002-06-27  Charlie Carnow   <carnow@gmx.net>
 
 	* System.Xml/XmlReader.cs: Implemented IsName and IsNameToken 

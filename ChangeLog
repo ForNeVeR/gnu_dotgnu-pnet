@@ -1,5 +1,8 @@
 
 2004-09-26  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/Label.cs: Fixes background transparency
+	exception. (bug #10412, ptha).
 	
 	* System.Windows.Forms/Control.cs: Implements posters "quick hack" 
 	for bug resolution. (bug #10392, ptha).

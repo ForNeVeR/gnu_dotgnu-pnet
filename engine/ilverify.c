@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include "engine.h"
 #include "il_utils.h"
+#include "il_dumpasm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -166,18 +167,13 @@ extern ILCoder _ILNullCoder;
 /*
  * Print a verification error.
  */
-static void printError(ILMethod *method, const char *msg)
+static void printError(ILImage *image, ILMethod *method, const char *msg)
 {
-	ILClass *classInfo = ILMethod_Owner(method);
-	const char *namespace = ILClass_Namespace(classInfo);
-	if(namespace)
-	{
-		fputs(namespace, stdout);
-		putc('.', stdout);
-	}
-	fputs(ILClass_Name(classInfo), stdout);
-	fputs("::", stdout);
-	fputs(ILMethod_Name(method), stdout);
+	ILDumpMethodType(stdout, image,
+					 ILMethod_Signature(method), 0,
+					 ILMethod_Owner(method),
+					 ILMethod_Name(method),
+					 method);
 	fputs(" - ", stdout);
 	fputs(msg, stdout);
 	putc('\n', stdout);
@@ -215,7 +211,7 @@ static int verify(const char *filename, ILContext *context, int allowUnsafe)
 		/* Get the IL bytecode for the method */
 		if(!ILMethodGetCode(method, &code))
 		{
-			printError(method, "malformed code");
+			printError(image, method, "malformed code");
 			continue;
 		}
 
@@ -223,7 +219,7 @@ static int verify(const char *filename, ILContext *context, int allowUnsafe)
 		result = _ILVerify(&_ILNullCoder, &start, method, &code, allowUnsafe);
 		if(!result)
 		{
-			printError(method, "could not verify code");
+			printError(image, method, "could not verify code");
 		}
 	}
 

@@ -72,11 +72,6 @@ static sem_t startupAck;
  *
  * The "SIG_SUSPEND" signal is used by the garbage collector to stop
  * the world for garbage collection, and so we must not block it.
- *
- * It would be nice if we could use the thread-aware "sigwait"
- * function instead of the process-aware "sigsuspend", but
- * "sigwait" does not deliver signals to handlers, and we need
- * the GC suspend signal to be delivered properly.
  */
 static void SuspendUntilResumed(ILThread *self)
 {
@@ -93,7 +88,7 @@ static void SuspendUntilResumed(ILThread *self)
 	sigdelset(&mask, SIGTERM);
 	sigdelset(&mask, SIGABRT);
 
-	/* Suspend until we receive IL_SIG_RESUME from ourselves */
+	/* Suspend until we receive IL_SIG_RESUME from something in this process */
 	do
 	{
 		sigsuspend(&mask);
@@ -315,8 +310,10 @@ int ILThreadStart(ILThread *thread)
 	{
 		/* Resume the thread, which is suspended in "ThreadStart" */
 		thread->state &= ~IL_TS_UNSTARTED;
+		thread->resumeRequested = 1;
 		pthread_kill(thread->threadId, IL_SIG_RESUME);
 		sem_wait(&resumeAck);
+		thread->resumeRequested = 0;
 		result = 1;
 	}
 	else
@@ -374,6 +371,7 @@ int ILThreadSuspend(ILThread *thread)
 	{
 		/* Mark the thread as suspended */
 		thread->state |= IL_TS_SUSPENDED;
+		thread->resumeRequested = 0;
 		
 		/* Unlock the thread object prior to suspending */
 		pthread_mutex_unlock(&(thread->lock));
@@ -419,6 +417,7 @@ void ILThreadResume(ILThread *thread)
 		pthread_kill(thread->threadId, IL_SIG_RESUME);
 		sem_wait(&resumeAck);
 		thread->state &= ~IL_TS_SUSPENDED;
+		thread->resumeRequested = 0;
 	}
 	else if((state & IL_TS_SUSPEND_REQUESTED) != 0)
 	{

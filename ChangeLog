@@ -1,6 +1,10 @@
 
 2002-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
+	* support/pt_thread.c: fix problems with "resumeRequested" flag.
+
+2002-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
 	* include/il_thread.h, support/Makefile.am, support/no_thread.c,
 	support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,
 	support/pt_wait.c: continue implementing threading primitives.

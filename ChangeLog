@@ -1,4 +1,11 @@
 
+2003-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/EndPoint.cs, System/Net/IPAddress.cs,
+	System/Net/IPEndPoint.cs, System/Net/SocketAddress.cs,
+	resources/en_US/System/Arg.txt: implement socket address serialization
+	properly; add IPv6 support to IPEndPoint and IPAddress.
+
 2003-05-27  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/ComponentModel/PropertyDescriptor.cs: Stub out a bit more

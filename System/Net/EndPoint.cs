@@ -1,7 +1,7 @@
 /*
  * EndPoint.cs - Implementation of the "System.Net.EndPoint" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,18 +26,22 @@ using System.Net.Sockets;
 
 public abstract class EndPoint
 {
+	// Constructor.
 	protected EndPoint() {}
 	
+	// Create a new end point with a particular socket address.
 	public virtual EndPoint Create(SocketAddress socketAddress) 
 			{
 				throw new NotSupportedException();
 			}
 	
+	// Serialize this end point into a socket address array.
 	public virtual SocketAddress Serialize()
 			{
 				throw new NotSupportedException();
 			}
 
+	// Get the address family of this end point.
 	public virtual AddressFamily AddressFamily 
 			{ 
 				get
@@ -46,10 +50,6 @@ public abstract class EndPoint
 				}	
 			}
 	
-}; //class EndPoint
+}; // class EndPoint
 
-}; //namespace System.Net
-
-
-
-
+}; // namespace System.Net

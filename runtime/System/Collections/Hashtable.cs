@@ -658,7 +658,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				int count = capacity;
 				while(count > 0)
 				{
-					if(table[hash].key == null)
+					if(table[hash].key == null || table[hash].key == removed)
 					{
 						break;
 					}
@@ -703,7 +703,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					int count = capacity;
 					while(count > 0)
 					{
-						if(table[hash].key == null)
+						if(table[hash].key == null || table[hash].key == removed)
 						{
 							break;
 						}
@@ -801,7 +801,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				int count = capacity;
 				while(count > 0)
 				{
-					if(table[hash].key == null)
+					if(table[hash].key == null || table[hash].key == removed)
 					{
 						break;
 					}

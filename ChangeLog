@@ -1,8 +1,12 @@
+
+2004-09-14  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Collections/Hashtable.cs: Fix a few cases where 
+	the "removed" object should be checked for.
+
 2004-09-11  Thong Nguyen  <tum@veridicus.com>
 
-	* Never forget.
-	
-	* runtume/System/Threading/Thread.cs: Updated private
+	* runtime/System/Threading/Thread.cs: Updated private
 	constructor to include thread privateData.
 	
 2004-09-09  Richard Baumann  <biochem333@nyc.rr.com>

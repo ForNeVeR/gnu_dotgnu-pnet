@@ -1,3 +1,12 @@
+
+2002-10-01  Gopal.V  <gopalv82@symonds.net>
+	
+	* tests/System/TestIPAddress.cs ,tests/System/Net/TestIPAddress.cs : 
+	Moved test to tests/System/Net/ to reflect changes in directory,
+	
+	* tests/System/Net/TestIPAddress.cs  : Fix the incorrect function names
+	for HostToNetworkOrder and NetworkToHostOrder tests.
+
 2002-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/Emit/TypeBuilder.cs: apply patch

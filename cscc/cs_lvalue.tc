@@ -47,8 +47,85 @@ ILNode_SemAnalysis(ILNode_NewScope)
 ILNode_SemAnalysis(ILNode_Identifier)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	ILScopeData *data;
+	ILClass *classInfo;
+
+	/* Look up the identifier in the current scope */
+	data = ILScopeLookup(info->currentScope, node->name, 1);
+	if(!data)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`%s' is not declared in the current scope");
+		return CSSemValueDefault;
+	}
+
+	/* If there are other values with this name, and it isn't
+	   a method, then the reference is ambiguous */
+	if(ILScopeNextItem(data))
+	{
+		if(ILScopeDataGetKind(data) != IL_SCOPE_METHOD)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`%s' is ambiguous in the current scope");
+			return CSSemValueDefault;
+		}
+	}
+
+	/* Determine what kind of item we have */
+	switch(ILScopeDataGetKind(data))
+	{
+		case IL_SCOPE_SUBSCOPE:
+		case IL_SCOPE_LINKED_SCOPE:
+		{
+			/* Some kind of namespace scope */
+			value.kind = CS_SEMKIND_SCOPE;
+			value.type = (ILType *)(ILScopeDataGetSubScope(data));
+		}
+		break;
+
+		case IL_SCOPE_IMPORTED_TYPE:
+		case IL_SCOPE_DECLARED_TYPE:
+		{
+			/* A type that has been imported from a library,
+			   or that has been declared in this program */
+			classInfo = ILScopeDataGetClass(data);
+			if(classInfo)
+			{
+				value.kind = CS_SEMKIND_TYPE;
+				value.type = ILClassToType(classInfo);
+			}
+			else
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "type is not fully defined");
+				value = CSSemValueDefault;
+			}
+		}
+		break;
+
+		case IL_SCOPE_METHOD:
+		case IL_SCOPE_FIELD:
+		case IL_SCOPE_PROPERTY:
+		case IL_SCOPE_EVENT:
+		{
+			/* Reference to a class member.  Note: if the member
+			   is a method, then the first method in the scope with
+			   that name is returned.  Higher layers are responsible
+			   for resolving the specific method */
+			value.kind = CS_SEMKIND_MEMBER;
+			value.type = (ILType *)(ILScopeDataGetMember(data));
+		}
+		break;
+
+		default:
+		{
+			/* Don't know what to do with this (shouldn't happen) */
+			value = CSSemValueDefault;
+		}
+		break;
+	}
+
+	/* Return the final value to the caller */
 	return value;
 }
 

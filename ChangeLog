@@ -3,6 +3,9 @@
 
 	* System.Xml/Xml.build : disable Schema for ECMA_COMPAT builds.
 
+	* runtime/System/IO/BufferedStream.cs: Add this class for compatibilty
+	with external libraries.
+
 2003-01-26  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/Schema, System.Xml/Schema/ValidationEventArgs.cs,

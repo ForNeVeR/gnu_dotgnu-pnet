@@ -736,13 +736,6 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 			}
 		}
 
-		/* The body must end in some kind of return or jump statement */
-		if(!ILNodeEndsInFlowChange(((ILNode_SwitchSection *)section)->stmt
-									,info))
-		{
-			CCErrorOnLine(yygetfilename(section), yygetlinenum(section),
-						  "`switch' section falls through");
-		}
 	}
 	/* split into 2 passes to facilitate goto case 
 	 * So SemAnalysis is performed after all the CaseLabels are
@@ -757,6 +750,13 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 		ILNode_SemAnalysis(((ILNode_SwitchSection *)section)->stmt, info,
 						   &(((ILNode_SwitchSection *)section)->stmt));
 		((ILNode_SwitchSection*)section)->visited=ILVisitMode_Done;
+		/* The body must end in some kind of return or jump statement */
+		if(!ILNodeEndsInFlowChange(((ILNode_SwitchSection *)section)->stmt
+									,info))
+		{
+			CCErrorOnLine(yygetfilename(section), yygetlinenum(section),
+						  "`switch' section falls through");
+		}
 	}
 
 

@@ -47,7 +47,7 @@ public class Control : IWin32Window
 	private int numChildren;
 	private BindingContext bindingContext;
 	private bool enabled;
-	private bool visible;
+	internal bool visible;
 	private bool allowDrop;
 	private bool causesValidation;
 	private Color backColor;
@@ -71,6 +71,7 @@ public class Control : IWin32Window
 			{
 				this.name = String.Empty;
 				this.enabled = true;
+				this.visible = true;
 				this.anchorStyles =
 					(byte)(AnchorStyles.Top | AnchorStyles.Left);
 				this.causesValidation = true;

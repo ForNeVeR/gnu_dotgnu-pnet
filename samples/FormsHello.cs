@@ -38,7 +38,6 @@ public class FormsHello : Form
 		button.Text = "Click Me!";
 		button.Location = new Point(30, 130);
 		Controls.Add(button);
-		button.Show();
 
 		// Hook up interesting events.
 		Paint += new PaintEventHandler(HandlePaint);

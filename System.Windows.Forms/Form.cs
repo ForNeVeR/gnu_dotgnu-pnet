@@ -59,6 +59,7 @@ public class Form : ContainerControl
 	// Constructor.
 	public Form()
 			{
+				visible = false;
 				autoScale = true;
 				topLevel = true;
 				borderStyle = FormBorderStyle.Sizable;

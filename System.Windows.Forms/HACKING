@@ -107,7 +107,7 @@ handlers to force an immediate redraw.
         private void Redraw()
                 {
                     // Bail out if the control is not visible.
-                    if(!Visible)
+                    if(!Visible || !IsHandleCreated)
                     {
                         return;
                     }

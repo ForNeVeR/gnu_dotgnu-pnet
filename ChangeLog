@@ -48,6 +48,11 @@
 	* System.Windows.Forms/HACKING: add the "HACKING" file for the
 	Forms implementation.
 
+	* System.Windows.Forms/ButtonBase.cs, System.Windows.Forms/Control.cs,
+	System.Windows.Forms/Form.cs, System.Windows.Forms/HACKING,
+	samples/FormsHello.cs: child controls like "Button" are visible
+	by default, while "Form" controls are hidden by default.
+
 2003-06-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/Control.cs: Fix minor bug with Bounds 

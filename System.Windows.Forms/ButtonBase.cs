@@ -379,7 +379,7 @@ public abstract class ButtonBase : Control
 	private void Redraw()
 			{
 				// Bail out if the button is not currently visible.
-				if(!Visible)
+				if(!Visible || !IsHandleCreated)
 				{
 					return;
 				}

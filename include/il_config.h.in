@@ -39,6 +39,13 @@
 
 #undef HAVE_LIBREADLINE
 #undef HAVE_LIBHISTORY
+#undef FREEBSD_THREADS
+#undef GC_HPUX_THREADS
+#undef GC_IRIX_THREADS
+#undef GC_LINUX_THREADS
+#undef GC_SOLARIS_PTHREADS
+#undef GC_SOLARIS_THREADS
+#undef _REENTRANT
 
 /* The number of bytes in a double.  */
 #undef SIZEOF_DOUBLE

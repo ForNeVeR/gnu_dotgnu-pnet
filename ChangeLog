@@ -1,4 +1,10 @@
 
+2001-12-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* acconfig.h, configure.in, include/il_config.h.in: update the autoconf
+scripts to detect the thread model that will be used by "libgc" so that
+other parts of the system can adapt to the same thread model.
+
 2001-12-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_valil.c: validate custom attributes.

@@ -30,16 +30,134 @@ using System.Security.Permissions;
 
 public class ObjectManager
 {
-	// Information that is stored for a member fixup.
-	private sealed class ObjectFixup
+	// Common information that is stored for a member fixup.
+	private abstract class ObjectFixup
 	{
-		public ObjectInfo obj;
-		public MemberInfo member;
-		public String memberName;
-		public int[] arrayIndex;
+		public ObjectInfo value;
 		public ObjectFixup nextFixup;
 
+		// Constructor.
+		protected ObjectFixup(ObjectInfo value, ObjectFixup nextFixup)
+				{
+					this.value = value;
+					this.nextFixup = nextFixup;
+				}
+
+		// Apply this fixup to an object.
+		public virtual void Apply(Object obj)
+				{
+					throw new SerializationException
+						(_("Serialize_BadFixup"));
+				}
+
 	}; // class ObjectFixup
+
+	// Fixup that uses a MemberInfo.
+	private class MemberInfoFixup : ObjectFixup
+	{
+		private MemberInfo member;
+
+		// Constructor.
+		public MemberInfoFixup(ObjectInfo value, MemberInfo member,
+							   ObjectFixup nextFixup)
+				: base(value, nextFixup)
+				{
+					this.member = member;
+				}
+
+		// Apply this fixup to an object.
+		public override void Apply(Object obj)
+				{
+					if(member is FieldInfo)
+					{
+						((FieldInfo)member).SetValue(obj, value.obj);
+					}
+					else
+					{
+						throw new SerializationException
+							(_("Serialize_BadFixup"));
+					}
+				}
+
+	}; // class MemberInfoFixup
+
+	// Fixup that uses a member name.
+	private class MemberNameFixup : ObjectFixup
+	{
+		private String memberName;
+
+		// Constructor.
+		public MemberNameFixup(ObjectInfo value, String memberName,
+							   ObjectFixup nextFixup)
+				: base(value, nextFixup)
+				{
+					this.memberName = memberName;
+				}
+
+		// Apply this fixup to an object.
+		public override void Apply(Object obj)
+				{
+					MemberInfo[] member = obj.GetType().GetMember
+						(memberName);
+					if(member == null || member.Length != 1)
+					{
+						throw new SerializationException
+							(_("Serialize_BadFixup"));
+					}
+					if(member[0] is FieldInfo)
+					{
+						((FieldInfo)(member[0])).SetValue(obj, value.obj);
+					}
+					else
+					{
+						throw new SerializationException
+							(_("Serialize_BadFixup"));
+					}
+				}
+
+	}; // class MemberNameFixup
+
+	// Fixup that uses an array index.
+	private class ArrayIndexFixup : ObjectFixup
+	{
+		private int[] indices;
+
+		// Constructor.
+		public ArrayIndexFixup(ObjectInfo value, int[] indices,
+							   ObjectFixup nextFixup)
+				: base(value, nextFixup)
+				{
+					this.indices = indices;
+				}
+
+		// Apply this fixup to an object.
+		public override void Apply(Object obj)
+				{
+					((Array)obj).SetValue(value.obj, indices);
+				}
+
+	}; // class ArrayIndexFixup
+
+	// Fixup that uses an index into a single-dimensional array.
+	private class SingleArrayIndexFixup : ObjectFixup
+	{
+		private int index;
+
+		// Constructor.
+		public SingleArrayIndexFixup(ObjectInfo value, int index,
+							   		 ObjectFixup nextFixup)
+				: base(value, nextFixup)
+				{
+					this.index = index;
+				}
+
+		// Apply this fixup to an object.
+		public override void Apply(Object obj)
+				{
+					((Array)obj).SetValue(value.obj, index);
+				}
+
+	}; // class SingleArrayIndexFixup
 
 	// Information that is stored for an object identifier.
 	private sealed class ObjectInfo
@@ -76,59 +194,6 @@ public class ObjectManager
 				this.context = context;
 				this.objects = new Hashtable();
 				this.callbackList = new ArrayList();
-			}
-
-	// Apply a fixup.
-	private static void ApplyFixup(ObjectInfo oinfo, ObjectFixup fixup)
-			{
-				if(fixup.obj.obj == null)
-				{
-					throw new SerializationException
-						(_("Serialize_MissingFixup"));
-				}
-				if(fixup.member != null)
-				{
-					if(fixup.member is FieldInfo)
-					{
-						((FieldInfo)(fixup.member)).SetValue
-							(oinfo.obj, fixup.obj.obj);
-					}
-					else
-					{
-						throw new SerializationException
-							(_("Serialize_BadFixup"));
-					}
-				}
-				else if(fixup.memberName != null)
-				{
-					MemberInfo[] member = oinfo.obj.GetType().GetMember
-						(fixup.memberName);
-					if(member == null || member.Length != 1)
-					{
-						throw new SerializationException
-							(_("Serialize_BadFixup"));
-					}
-					if(member[0] is FieldInfo)
-					{
-						((FieldInfo)(member[0])).SetValue
-							(oinfo.obj, fixup.obj.obj);
-					}
-					else
-					{
-						throw new SerializationException
-							(_("Serialize_BadFixup"));
-					}
-				}
-				else if(fixup.arrayIndex != null)
-				{
-					((Array)(oinfo.obj)).SetValue
-						(fixup.obj.obj, fixup.arrayIndex);
-				}
-				else
-				{
-					throw new SerializationException
-						(_("Serialize_BadFixup"));
-				}
 			}
 
 	// Apply a contained member fixup.
@@ -181,7 +246,12 @@ public class ObjectManager
 						fixup = contain.fixups;
 						while(fixup != null)
 						{
-							ApplyFixup(contain, fixup);
+							if(fixup.value.obj == null)
+							{
+								throw new SerializationException
+									(_("Serialize_MissingFixup"));
+							}
+							fixup.Apply(contain.obj);
 							fixup = fixup.nextFixup;
 						}
 						ApplyContained(oinfo, contain);
@@ -220,7 +290,12 @@ public class ObjectManager
 					fixup = oinfo.fixups;
 					while(fixup != null)
 					{
-						ApplyFixup(oinfo, fixup);
+						if(fixup.value.obj == null)
+						{
+							throw new SerializationException
+								(_("Serialize_MissingFixup"));
+						}
+						fixup.Apply(oinfo.obj);
 						fixup = fixup.nextFixup;
 					}
 				}
@@ -245,7 +320,7 @@ public class ObjectManager
 				}
 			}
 
-	// Raise a deserialization event on all register objects that want it.
+	// Raise a deserialization event on all registered objects that want it.
 	public virtual void RaiseDeserializationEvent()
 			{
 				IEnumerator e = callbackList.GetEnumerator();
@@ -260,115 +335,73 @@ public class ObjectManager
 				}
 			}
 
-	// Record a fixup.
-	private void RecordFixup(long objectToBeFixed, long objectRequired,
-							 MemberInfo member, String memberName,
-							 int[] arrayIndex)
+	// Get the object information for an object, or add a new one.
+	private ObjectInfo GetObjectInfo(long objectID)
 			{
-				// Find or create the containing object's information block.
-				ObjectInfo oinfo = (ObjectInfo)(objects[objectToBeFixed]);
-				if(oinfo == null)
+				if(objectID <= 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("objectID", _("Serialize_BadObjectID"));
+				}
+				ObjectInfo oinfo = (ObjectInfo)(objects[objectID]);
+				if(oinfo != null)
+				{
+					return oinfo;
+				}
+				else
 				{
 					oinfo = new ObjectInfo();
-					objects[objectToBeFixed] = oinfo;
+					objects[objectID] = oinfo;
+					return oinfo;
 				}
-
-				// Find or create the required object's information block.
-				ObjectInfo oinfo2 = (ObjectInfo)(objects[objectRequired]);
-				if(oinfo2 == null)
-				{
-					oinfo2 = new ObjectInfo();
-					objects[objectRequired] = oinfo2;
-				}
-
-				// Add a fixup to the containing object.
-				ObjectFixup fixup = new ObjectFixup();
-				fixup.obj = oinfo2;
-				fixup.member = member;
-				fixup.memberName = memberName;
-				fixup.arrayIndex = arrayIndex;
-				fixup.nextFixup = oinfo.fixups;
-				oinfo.fixups = fixup;
 			}
 
 	// Record an array element fixup to be performed later.
 	public virtual void RecordArrayElementFixup
 				(long arrayToBeFixed, int index, long objectRequired)
 			{
-				if(arrayToBeFixed <= 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("arrayToBeFixed", _("Serialize_BadObjectID"));
-				}
-				if(objectRequired <= 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("objectRequired", _("Serialize_BadObjectID"));
-				}
-				RecordFixup(arrayToBeFixed, objectRequired,
-							null, null, new int[] {index});
+				ObjectInfo oinfo1 = GetObjectInfo(arrayToBeFixed);
+				ObjectInfo oinfo2 = GetObjectInfo(objectRequired);
+				oinfo1.fixups = new SingleArrayIndexFixup
+					(oinfo2, index, oinfo1.fixups);
 			}
 	public virtual void RecordArrayElementFixup
 				(long arrayToBeFixed, int[] indices, long objectRequired)
 			{
-				if(arrayToBeFixed <= 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("arrayToBeFixed", _("Serialize_BadObjectID"));
-				}
-				if(objectRequired <= 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("objectRequired", _("Serialize_BadObjectID"));
-				}
+				ObjectInfo oinfo1 = GetObjectInfo(arrayToBeFixed);
+				ObjectInfo oinfo2 = GetObjectInfo(objectRequired);
 				if(indices == null)
 				{
 					throw new ArgumentNullException("indices");
 				}
-				RecordFixup(arrayToBeFixed, objectRequired,
-							null, null, indices);
+				oinfo1.fixups = new ArrayIndexFixup
+					(oinfo2, indices, oinfo1.fixups);
 			}
 
 	// Record an object member fixup to be performed later.
 	public virtual void RecordDelayedFixup
 				(long objectToBeFixed, String memberName, long objectRequired)
 			{
-				if(objectToBeFixed <= 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("objectToBeFixed", _("Serialize_BadObjectID"));
-				}
-				if(objectRequired <= 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("objectRequired", _("Serialize_BadObjectID"));
-				}
+				ObjectInfo oinfo1 = GetObjectInfo(objectToBeFixed);
+				ObjectInfo oinfo2 = GetObjectInfo(objectRequired);
 				if(memberName == null)
 				{
 					throw new ArgumentNullException("memberName");
 				}
-				RecordFixup(objectToBeFixed, objectRequired,
-							null, memberName, null);
+				oinfo1.fixups = new MemberNameFixup
+					(oinfo2, memberName, oinfo1.fixups);
 			}
 	public virtual void RecordFixup
 				(long objectToBeFixed, MemberInfo member, long objectRequired)
 			{
-				if(objectToBeFixed <= 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("objectToBeFixed", _("Serialize_BadObjectID"));
-				}
-				if(objectRequired <= 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("objectRequired", _("Serialize_BadObjectID"));
-				}
+				ObjectInfo oinfo1 = GetObjectInfo(objectToBeFixed);
+				ObjectInfo oinfo2 = GetObjectInfo(objectRequired);
 				if(member == null)
 				{
 					throw new ArgumentNullException("member");
 				}
-				RecordFixup(objectToBeFixed, objectRequired,
-							member, null, null);
+				oinfo1.fixups = new MemberInfoFixup
+					(oinfo2, member, oinfo1.fixups);
 			}
 
 	// Register an object with the object manager.

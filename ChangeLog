@@ -1,4 +1,17 @@
 
+2003-06-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/Serialization/ObjectManager.cs,
+	tests/runtime/Testruntime.cs,
+	tests/runtime/System/Runtime/Serialization/Makefile,
+	tests/runtime/System/Runtime/Serialization/SuiteSerialization.cs,
+	tests/runtime/System/Runtime/Serialization/TestObjectIDGenerator.cs,
+	tests/runtime/System/Runtime/Serialization/TestObjectManager.cs,
+	tests/runtime/System/Runtime/Serialization/TestSerializationException.cs,
+	tests/runtime/System/Runtime/Serialization/code-review.txt:
+	make fixups more efficient in "ObjectManager"; add some test cases
+	for "System.Runtime.Serialization".
+
 2003-06-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

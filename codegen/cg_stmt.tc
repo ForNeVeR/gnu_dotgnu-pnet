@@ -314,8 +314,12 @@ static int EndsInReturn(ILNode *stmt)
 	}
 	else if(yykind(stmt) == yykindof(ILNode_Return) ||
 			yykind(stmt) == yykindof(ILNode_ReturnExpr) ||
+			yykind(stmt) == yykindof(ILNode_Break) ||
+			yykind(stmt) == yykindof(ILNode_Continue) ||
 			yykind(stmt) == yykindof(ILNode_Throw) ||
-			yykind(stmt) == yykindof(ILNode_Goto))
+			yykind(stmt) == yykindof(ILNode_Goto) ||
+			yykind(stmt) == yykindof(ILNode_GotoCase) ||
+			yykind(stmt) == yykindof(ILNode_GotoDefault))
 	{
 		return 1;
 	}
@@ -1190,12 +1194,288 @@ ILNode_GenDiscard(ILNode_NewScope)
 	TrimGotoList(info, 0);
 }
 
+%{
+
+/*
+ * Compare the top of stack with a switch case value and jump
+ * to a label if the specified condition is true.
+ */
+static void CompareSwitchValue(ILGenInfo *info, ILEvalValue *value,
+							   int opcode, int uopcode, ILLabel *label)
+{
+	switch(value->valueType)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		{
+			ILGenInt32(info, value->un.i4Value);
+			ILGenAdjust(info, 1);
+			ILGenJump(info, opcode, label);
+			ILGenAdjust(info, -2);
+		}
+		break;
+
+		case ILMachineType_UInt32:
+		{
+			ILGenInt32(info, value->un.i4Value);
+			ILGenAdjust(info, 1);
+			ILGenJump(info, uopcode, label);
+			ILGenAdjust(info, -2);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			ILGenInt64(info, value->un.i8Value);
+			ILGenAdjust(info, 1);
+			ILGenJump(info, opcode, label);
+			ILGenAdjust(info, -2);
+		}
+		break;
+
+		case ILMachineType_UInt64:
+		{
+			ILGenInt64(info, value->un.i8Value);
+			ILGenAdjust(info, 1);
+			ILGenJump(info, uopcode, label);
+			ILGenAdjust(info, -2);
+		}
+		break;
+
+		case ILMachineType_String:
+		{
+			if(opcode == IL_OP_BEQ)
+			{
+				if(value->un.strValue.str == 0)
+				{
+					/* Compare for equality against "null" */
+					ILGenJump(info, IL_OP_BRFALSE, label);
+					ILGenAdjust(info, -1);
+				}
+				else
+				{
+					/* Compare for equality against a literal string */
+					ILGenLoadString(info, value->un.strValue.str,
+									value->un.strValue.len);
+					ILGenAdjust(info, 1);
+					ILGenCallByName(info,
+						"bool [.library]System.String::op_Equality"
+							"(class [.library]System.String, "
+							 "class [.library]System.String)");
+					ILGenJump(info, IL_OP_BRTRUE, label);
+					ILGenAdjust(info, -2);
+				}
+			}
+			else
+			{
+				/* Compare against a string for some other condition */
+				if(value->un.strValue.str == 0)
+				{
+					ILGenSimple(info, IL_OP_LDNULL);
+				}
+				else
+				{
+					ILGenLoadString(info, value->un.strValue.str,
+									value->un.strValue.len);
+				}
+				ILGenAdjust(info, 1);
+				ILGenCallByName(info,
+					"int32 [.library]System.String::CompareOrdinal"
+						"(class [.library]System.String, "
+						 "class [.library]System.String)");
+				ILGenSimple(info, IL_OP_LDC_I4_0);
+				ILGenJump(info, opcode, label);
+				ILGenAdjust(info, -2);
+			}
+		}
+		break;
+
+		default: break;
+	}
+}
+
+/*
+ * Generate a binary tree of "if" statements for a "switch".
+ */
+static void GenerateBinarySwitch(ILGenInfo *info,
+								 ILSwitchValue *values,
+								 unsigned long numValues,
+								 ILLabel *defaultLabel)
+{
+	ILNode_SwitchSection *section;
+	ILLabel chopLabel;
+	unsigned long chopPosn;
+
+	if(numValues <= 4)
+	{
+		/* This section of the table is small enough that it
+		   is faster to do it with direct "if" statements */
+		while(numValues > 0)
+		{
+			if(numValues > 1)
+			{
+				ILGenSimple(info, IL_OP_DUP);
+				ILGenAdjust(info, 1);
+			}
+			section = (ILNode_SwitchSection *)(values->section);
+			CompareSwitchValue(info, &(values->value),
+							   IL_OP_BEQ, IL_OP_BEQ,
+							   &(section->label));
+			++values;
+			--numValues;
+		}
+		ILGenJump(info, IL_OP_BR, defaultLabel);
+
+		/* Fake out the caller into thinking that we still have
+		   a value on the stack, for the next group of cases */
+		ILGenAdjust(info, 1);
+	}
+	else
+	{
+		/* Chop the table into two halves, and process each half */
+		chopLabel = ILLabel_Undefined;
+		chopPosn = numValues / 2;
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		CompareSwitchValue(info, &(values[chopPosn].value),
+						   IL_OP_BGE, IL_OP_BGE_UN, &chopLabel);
+		GenerateBinarySwitch(info, values, chopPosn, defaultLabel);
+		ILGenLabel(info, &chopLabel);
+		GenerateBinarySwitch(info, values + chopPosn,
+							 numValues - chopPosn, defaultLabel);
+	}
+}
+
+%}
+
 /*
  * Generate discard code for the "switch" statement.
  */
 ILNode_GenDiscard(ILNode_Switch)
 {
-	/* TODO */
+	ILLabel breakLabel = ILLabel_Undefined;
+	ILLabel *defaultLabel;
+	ILNode_ListIter iter;
+	ILNode_SwitchSection *section;
+	ILSwitchValue *values;
+	unsigned long numValues;
+	ILInt32 temp;
+
+	/* Compute the switch expression's value */
+	ILNode_GenValue(node->expr, info);
+
+	/* Determine the location of the default label */
+	if(node->defaultSection)
+	{
+		defaultLabel =
+			&(((ILNode_SwitchSection *)(node->defaultSection))->label);
+	}
+	else
+	{
+		defaultLabel = &breakLabel;
+	}
+
+	/* Push the switch context information for "break" statements */
+	PushLoop(info, (ILLabel *)0, &breakLabel);
+
+	/* Get the value table */
+	values = node->switchValues;
+	numValues = node->numSwitchValues;
+
+	/* Determine how to generate the switch table */
+	if(numValues != 0)
+	{
+		switch(node->tableType)
+		{
+			case ILSwitchTableType_If:
+			{
+				/* Use a simple set of "if" statements */
+				while(numValues > 0)
+				{
+					if(numValues > 1)
+					{
+						ILGenSimple(info, IL_OP_DUP);
+						ILGenAdjust(info, 1);
+					}
+					section = (ILNode_SwitchSection *)(values->section);
+					CompareSwitchValue(info, &(values->value),
+									   IL_OP_BEQ, IL_OP_BEQ,
+									   &(section->label));
+					++values;
+					--numValues;
+				}
+				ILGenJump(info, IL_OP_BR, defaultLabel);
+			}
+			break;
+	
+			case ILSwitchTableType_Indexed:
+			{
+				/* Use an indexed lookup on an "int" value */
+				if(values[0].value.un.i4Value != 0)
+				{
+					/* Subtract the base value from the expression */
+					ILGenInt32(info, values[0].value.un.i4Value);
+					ILGenSimple(info, IL_OP_SUB);
+					ILGenExtend(info, 1);
+				}
+				ILGenSwitchStart(info);
+				while(numValues > 1)
+				{
+					section = (ILNode_SwitchSection *)(values->section);
+					ILGenSwitchRef(info, &(section->label), 1);
+					temp = values->value.un.i4Value + 1;
+					while(temp != values[1].value.un.i4Value)
+					{
+						ILGenSwitchRef(info, defaultLabel, 1);
+						++temp;
+					}
+					++values;
+					--numValues;
+				}
+				section = (ILNode_SwitchSection *)(values->section);
+				ILGenSwitchRef(info, &(section->label), 0);
+				ILGenSwitchEnd(info);
+				ILGenJump(info, IL_OP_BR, defaultLabel);
+				ILGenAdjust(info, -1);
+			}
+			break;
+	
+			case ILSwitchTableType_BinaryIf:
+			case ILSwitchTableType_Lookup:
+			{
+				/* Use a binary tree of "if" statements */
+				GenerateBinarySwitch(info, values, numValues, defaultLabel);
+				ILGenAdjust(info, -1);
+			}
+			break;
+		}
+	}
+	else
+	{
+		/* There are no cases, except the default, so pop
+		   the switch value and fall through to the default */
+		ILGenSimple(info, IL_OP_POP);
+		ILGenAdjust(info, -1);
+	}
+
+	/* Generate code for the switch sections */
+	ILNode_ListIter_Init(&iter, node->sections);
+	while((section = (ILNode_SwitchSection *)ILNode_ListIter_Next(&iter)) != 0)
+	{
+		/* Output the section label */
+		ILGenLabel(info, &(section->label));
+
+		/* Output the code for the section */
+		ILNode_GenDiscard(section->stmt, info);
+	}
+
+	/* Pop from the switch context and set the break label */
+	PopLoop(info);
+	ILGenLabel(info, &breakLabel);
 }
 
 /*

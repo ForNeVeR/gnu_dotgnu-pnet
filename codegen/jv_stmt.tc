@@ -816,12 +816,400 @@ JavaGenDiscard(ILNode_NewScope)
 	TrimGotoList(info, 0);
 }
 
+%{
+
+/*
+ * Compare the top of stack with a switch case value and jump
+ * to a label if the specified condition is true.
+ */
+static void JavaCompareSwitchValue(ILGenInfo *info, ILEvalValue *value,
+							       int opcode, int sopcode, ILLabel *label)
+{
+	switch(value->valueType)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		{
+			JavaGenInt32(info, value->un.i4Value);
+			JavaGenAdjust(info, 1);
+			JavaGenJump(info, opcode, label);
+			JavaGenAdjust(info, -2);
+		}
+		break;
+
+		case ILMachineType_UInt32:
+		{
+			if(opcode == JAVA_OP_IF_ICMPEQ)
+			{
+				/* We can compare using signed integer operations */
+				JavaGenInt32(info, value->un.i4Value);
+				JavaGenAdjust(info, 1);
+				JavaGenJump(info, opcode, label);
+				JavaGenAdjust(info, -2);
+			}
+			else
+			{
+				/* We need to do the unsigned compare the hard way */
+				JavaGenInt32(info, value->un.i4Value);
+				JavaGenAdjust(info, 1);
+				JavaGenCallIntrinsic(info, "iucmp", "(II)I");
+				JavaGenJump(info, sopcode, label);
+				JavaGenAdjust(info, -2);
+			}
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			JavaGenInt64(info, value->un.i8Value);
+			JavaGenAdjust(info, 2);
+			JavaGenSimple(info, JAVA_OP_LCMP);
+			JavaGenJump(info, sopcode, label);
+			JavaGenAdjust(info, -4);
+		}
+		break;
+
+		case ILMachineType_UInt64:
+		{
+			if(opcode == JAVA_OP_IF_ICMPEQ)
+			{
+				/* We can compare using signed integer operations */
+				JavaGenInt64(info, value->un.i8Value);
+				JavaGenAdjust(info, 2);
+				JavaGenSimple(info, JAVA_OP_LCMP);
+				JavaGenJump(info, sopcode, label);
+				JavaGenAdjust(info, -4);
+			}
+			else
+			{
+				/* We need to do the unsigned compare the hard way */
+				JavaGenInt64(info, value->un.i8Value);
+				JavaGenAdjust(info, 2);
+				JavaGenCallIntrinsic(info, "lucmp", "(JJ)I");
+				JavaGenJump(info, sopcode, label);
+				JavaGenAdjust(info, -4);
+			}
+		}
+		break;
+
+		case ILMachineType_String:
+		{
+			if(opcode == JAVA_OP_IF_ICMPEQ)
+			{
+				if(value->un.strValue.str == 0)
+				{
+					/* Compare for equality against "null" */
+					JavaGenJump(info, JAVA_OP_IFNULL, label);
+					JavaGenAdjust(info, -1);
+				}
+				else if(info->useJavaLib)
+				{
+					/* Use Java string compare operations */
+					JavaGenStringConst(info, value->un.strValue.str,
+									   value->un.strValue.len);
+					JavaGenAdjust(info, 1);
+					JavaGenCallVirtual(info, "java/lang/String", "equals",
+						   "(Ljava/lang/Object;)Z");
+					JavaGenJump(info, JAVA_OP_IFNE, label);
+					JavaGenAdjust(info, -2);
+				}
+				else
+				{
+					/* Use CLI string compare operations */
+					JavaGenStringConst(info, value->un.strValue.str,
+									   value->un.strValue.len);
+					JavaGenCallByName(info, "System/String", "__FromJavaString",
+						  "(Ljava/lang/String;)LSystem/String;");
+					JavaGenAdjust(info, 1);
+					JavaGenCallByName(info, "System/String", "op_Equality",
+						  "(LSystem/String;LSystem/String;)Z");
+					JavaGenJump(info, JAVA_OP_IFNE, label);
+					JavaGenAdjust(info, -2);
+				}
+			}
+			else
+			{
+				/* Compare against a string for greater than or equal to */
+				if(value->un.strValue.str == 0)
+				{
+					/* All strings are greater than or equal to "null" */
+					JavaGenSimple(info, JAVA_OP_POP);
+					JavaGenAdjust(info, -1);
+					JavaGenJump(info, JAVA_OP_GOTO, label);
+				}
+				else if(info->useJavaLib)
+				{
+					/* Use Java string compare operations */
+					JavaGenStringConst(info, value->un.strValue.str,
+									   value->un.strValue.len);
+					JavaGenAdjust(info, 1);
+					JavaGenCallVirtual(info, "java/lang/String", "compareTo",
+						   "(Ljava/lang/String;)I");
+					JavaGenJump(info, sopcode, label);
+					JavaGenAdjust(info, -2);
+				}
+				else
+				{
+					/* Use CLI string compare operations */
+					JavaGenStringConst(info, value->un.strValue.str,
+									   value->un.strValue.len);
+					JavaGenCallByName(info, "System/String", "__FromJavaString",
+						  "(Ljava/lang/String;)LSystem/String;");
+					JavaGenAdjust(info, 1);
+					JavaGenCallByName(info, "System/String", "CompareOrdinal",
+						  "(LSystem/String;LSystem/String;)I");
+					JavaGenJump(info, sopcode, label);
+					JavaGenAdjust(info, -2);
+				}
+			}
+		}
+		break;
+
+		default: break;
+	}
+}
+
+/*
+ * Generate a binary tree of "if" statements for a "switch".
+ */
+static void JavaGenerateBinarySwitch(ILGenInfo *info,
+								     ILSwitchValue *values,
+								     unsigned long numValues,
+								     ILLabel *defaultLabel,
+									 ILMachineType type)
+{
+	ILNode_SwitchSection *section;
+	ILLabel chopLabel;
+	unsigned long chopPosn;
+
+	if(numValues <= 4)
+	{
+		/* This section of the table is small enough that it
+		   is faster to do it with direct "if" statements */
+		while(numValues > 0)
+		{
+			if(numValues > 1)
+			{
+				JavaGenDup(info, type);
+			}
+			section = (ILNode_SwitchSection *)(values->section);
+			JavaCompareSwitchValue(info, &(values->value),
+							       JAVA_OP_IF_ICMPEQ, JAVA_OP_IFEQ,
+							   	   &(section->label));
+			++values;
+			--numValues;
+		}
+		JavaGenJump(info, JAVA_OP_GOTO, defaultLabel);
+
+		/* Fake out the caller into thinking that we still have
+		   a value on the stack, for the next group of cases */
+		JavaGenAdjust(info, JavaGenTypeSize(type));
+	}
+	else
+	{
+		/* Chop the table into two halves, and process each half */
+		chopLabel = ILLabel_Undefined;
+		chopPosn = numValues / 2;
+		JavaGenDup(info, type);
+		JavaCompareSwitchValue(info, &(values[chopPosn].value),
+						       JAVA_OP_IF_ICMPGE, JAVA_OP_IFGE, &chopLabel);
+		JavaGenerateBinarySwitch(info, values, chopPosn, defaultLabel, type);
+		JavaGenLabel(info, &chopLabel);
+		JavaGenerateBinarySwitch(info, values + chopPosn,
+							     numValues - chopPosn, defaultLabel, type);
+	}
+}
+
+%}
+
 /*
  * Generate discard code for the "switch" statement.
  */
 JavaGenDiscard(ILNode_Switch)
 {
-	/* TODO */
+	ILLabel breakLabel = ILLabel_Undefined;
+	ILLabel *defaultLabel;
+	ILNode_ListIter iter;
+	ILNode_SwitchSection *section;
+	ILSwitchValue *values;
+	unsigned long numValues;
+	unsigned long posn;
+	ILInt32 temp;
+	ILMachineType type;
+	int size;
+
+	/* Compute the switch expression's value */
+	type = JavaGenValue(node->expr, info);
+	size = JavaGenTypeSize(type);
+
+	/* Determine the location of the default label */
+	if(node->defaultSection)
+	{
+		defaultLabel =
+			&(((ILNode_SwitchSection *)(node->defaultSection))->label);
+	}
+	else
+	{
+		defaultLabel = &breakLabel;
+	}
+
+	/* Push the switch context information for "break" statements */
+	PushLoop(info, (ILLabel *)0, &breakLabel);
+
+	/* Get the value table */
+	values = node->switchValues;
+	numValues = node->numSwitchValues;
+
+	/* If the type is "string", and we are using the Java library,
+	   then we need to handle the "null" case specially.  This is
+	   because the Java library will throw exceptions for "null"
+	   that we do not desire */
+	if(type == ILMachineType_String && info->useJavaLib)
+	{
+		/* Search for the "null" case, if present */
+		for(posn = 0; posn < numValues; ++posn)
+		{
+			if(values[posn].value.un.strValue.str == 0)
+			{
+				break;
+			}
+		}
+		if(posn < numValues)
+		{
+			section = (ILNode_SwitchSection *)(values[posn].section);
+			JavaGenSimple(info, JAVA_OP_DUP);
+			JavaGenJump(info, JAVA_OP_IFNULL, &(section->label));
+			JavaGenExtend(info, 1);
+		}
+		else
+		{
+			JavaGenSimple(info, JAVA_OP_DUP);
+			JavaGenJump(info, JAVA_OP_IFNULL, defaultLabel);
+			JavaGenExtend(info, 1);
+		}
+	}
+
+	/* Determine how to generate the switch table */
+	if(numValues != 0)
+	{
+		switch(node->tableType)
+		{
+			case ILSwitchTableType_If:
+			{
+				/* Use a simple set of "if" statements */
+				while(numValues > 0)
+				{
+					if(numValues > 1)
+					{
+						JavaGenDup(info, type);
+					}
+					section = (ILNode_SwitchSection *)(values->section);
+					JavaCompareSwitchValue(info, &(values->value),
+									       JAVA_OP_IF_ICMPEQ, JAVA_OP_IFEQ,
+									   	   &(section->label));
+					++values;
+					--numValues;
+				}
+				JavaGenJump(info, JAVA_OP_GOTO, defaultLabel);
+			}
+			break;
+	
+			case ILSwitchTableType_Indexed:
+			{
+				/* Use an indexed lookup on an "int" value */
+				if(values[0].value.un.i4Value != 0)
+				{
+					/* Subtract the base value from the expression */
+					JavaGenInt32(info, values[0].value.un.i4Value);
+					JavaGenSimple(info, JAVA_OP_ISUB);
+					JavaGenExtend(info, 1);
+				}
+				JavaGenSwitchStart(info, JAVA_OP_TABLESWITCH);
+				while(numValues > 1)
+				{
+					section = (ILNode_SwitchSection *)(values->section);
+					JavaGenSwitchRef(info, &(section->label), 1);
+					temp = values->value.un.i4Value + 1;
+					while(temp != values[1].value.un.i4Value)
+					{
+						JavaGenSwitchRef(info, defaultLabel, 1);
+						++temp;
+					}
+					++values;
+					--numValues;
+				}
+				section = (ILNode_SwitchSection *)(values->section);
+				JavaGenSwitchRef(info, &(section->label), 0);
+				JavaGenSwitchEnd(info);
+				JavaGenJump(info, JAVA_OP_GOTO, defaultLabel);
+				JavaGenAdjust(info, -size);
+			}
+			break;
+	
+			case ILSwitchTableType_Lookup:
+			{
+				/* Use a tagged lookup on an "int" value */
+				JavaGenSwitchStart(info, JAVA_OP_LOOKUPSWITCH);
+				while(numValues > 1)
+				{
+					section = (ILNode_SwitchSection *)(values->section);
+					JavaGenSwitchLookupRef
+						(info, values->value.un.i4Value, &(section->label), 1);
+					++values;
+					--numValues;
+				}
+				section = (ILNode_SwitchSection *)(values->section);
+				JavaGenSwitchLookupRef
+					(info, values->value.un.i4Value, &(section->label), 0);
+				JavaGenSwitchEnd(info);
+				JavaGenJump(info, JAVA_OP_GOTO, defaultLabel);
+				JavaGenAdjust(info, -size);
+			}
+			break;
+
+			case ILSwitchTableType_BinaryIf:
+			{
+				/* Use a binary tree of "if" statements */
+				JavaGenerateBinarySwitch(info, values, numValues,
+										 defaultLabel, type);
+				JavaGenAdjust(info, -size);
+			}
+			break;
+		}
+	}
+	else
+	{
+		/* There are no cases, except the default, so pop
+		   the switch value and fall through to the default */
+		if(size == 1)
+		{
+			JavaGenSimple(info, JAVA_OP_POP);
+		}
+		else if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_POP2);
+		}
+		JavaGenAdjust(info, -size);
+	}
+
+	/* Generate code for the switch sections */
+	ILNode_ListIter_Init(&iter, node->sections);
+	while((section = (ILNode_SwitchSection *)ILNode_ListIter_Next(&iter)) != 0)
+	{
+		/* Output the section label */
+		JavaGenLabel(info, &(section->label));
+
+		/* Output the code for the section */
+		JavaGenDiscard(section->stmt, info);
+	}
+
+	/* Pop from the switch context and set the break label */
+	PopLoop(info);
+	JavaGenLabel(info, &breakLabel);
 }
 
 /*

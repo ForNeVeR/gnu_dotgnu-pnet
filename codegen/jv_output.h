@@ -301,6 +301,27 @@ char *JavaGetClassName(ILGenInfo *info, ILClass *classInfo);
  */
 char *JavaStrAppend(ILGenInfo *info, char *str1, const char *str2);
 
+/*
+ * Generate the start of a "switch" instruction.
+ */
+void JavaGenSwitchStart(ILGenInfo *info, int opcode);
+
+/*
+ * Generate a label reference for a "tableswitch" instruction.
+ */
+void JavaGenSwitchRef(ILGenInfo *info, ILLabel *label, int comma);
+
+/*
+ * Generate a label reference for a "lookupswitch" instruction.
+ */
+void JavaGenSwitchLookupRef(ILGenInfo *info, ILInt32 value,
+						    ILLabel *label, int comma);
+
+/*
+ * Generate the end of a "switch" instruction.
+ */
+void JavaGenSwitchEnd(ILGenInfo *info);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -260,78 +260,508 @@ ILNode_SemAnalysis(ILNode_ForeachCollection)
 	return value;
 }
 
+%{
+
+/*
+ * Count the number of case labels in the body of a "switch" statement,
+ * and find the default case.
+ */
+static unsigned long CountLabelsAndFindDefault(ILNode *sections,
+											   ILNode **defCase)
+{
+	ILNode_ListIter iter1;
+	ILNode_ListIter iter2;
+	ILNode *section;
+	ILNode *caseNode;
+	unsigned long count;
+	ILNode *prevDefLabel;
+
+	/* Initialize the return information */
+	count = 0;
+	*defCase = 0;
+	prevDefLabel = 0;
+
+	/* Iterate through the sections */
+	ILNode_ListIter_Init(&iter1, sections);
+	while((section = ILNode_ListIter_Next(&iter1)) != 0)
+	{
+		/* Iterate through the case list for each section */
+		ILNode_ListIter_Init
+			(&iter2, ((ILNode_SwitchSection *)section)->caseList);
+		while((caseNode = ILNode_ListIter_Next(&iter2)) != 0)
+		{
+			if(yyisa(caseNode, ILNode_DefaultLabel))
+			{
+				/* This is the switch's default label */
+				if(prevDefLabel)
+				{
+					CSErrorOnLine(yygetfilename(caseNode),
+						  yygetlinenum(caseNode),
+						  "multiple `default' labels in `switch' statement");
+					CSErrorOnLine(yygetfilename(prevDefLabel),
+						  yygetlinenum(prevDefLabel),
+						  "previous `default' label here");
+				}
+				else
+				{
+					*defCase = section;
+					prevDefLabel = caseNode;
+				}
+			}
+			else
+			{
+				/* This is a particular case label */
+				++count;
+			}
+		}
+	}
+
+	/* Return the count to the caller */
+	return count;
+}
+
+/*
+ * Compare two case label values within "ILSwitchValue" objects.
+ */
+static int CompareCaseLabels(const void *e1, const void *e2)
+{
+	const ILEvalValue *value1 = &(((const ILSwitchValue *)e1)->value);
+	const ILEvalValue *value2 = &(((const ILSwitchValue *)e2)->value);
+
+	switch(value1->valueType)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		{
+			if(value1->un.i4Value < value2->un.i4Value)
+			{
+				return -1;
+			}
+			else if(value1->un.i4Value > value2->un.i4Value)
+			{
+				return 1;
+			}
+		}
+		break;
+
+		case ILMachineType_UInt32:
+		{
+			if(((ILUInt32)(value1->un.i4Value)) <
+					((ILUInt32)(value2->un.i4Value)))
+			{
+				return -1;
+			}
+			else if(((ILUInt32)(value1->un.i4Value)) >
+					((ILUInt32)(value2->un.i4Value)))
+			{
+				return 1;
+			}
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			if(value1->un.i8Value < value2->un.i8Value)
+			{
+				return -1;
+			}
+			else if(value1->un.i8Value > value2->un.i8Value)
+			{
+				return 1;
+			}
+		}
+		break;
+
+		case ILMachineType_UInt64:
+		{
+			if(((ILUInt64)(value1->un.i8Value)) <
+					((ILUInt64)(value2->un.i8Value)))
+			{
+				return -1;
+			}
+			else if(((ILUInt64)(value1->un.i8Value)) >
+					((ILUInt64)(value2->un.i8Value)))
+			{
+				return 1;
+			}
+		}
+		break;
+
+		case ILMachineType_String:
+		{
+			const char *str1 = value1->un.strValue.str;
+			const char *str2 = value2->un.strValue.str;
+			int len1 = value1->un.strValue.len;
+			int len2 = value1->un.strValue.len;
+			unsigned char ch1;
+			unsigned char ch2;
+			if(!str1)
+			{
+				/* The first value is "null" */
+				return (str2 ? -1 : 0);
+			}
+			else if(!str2)
+			{
+				/* The second value is "null" */
+				return 1;
+			}
+			while(len1 > 0 && len2 > 0)
+			{
+				ch1 = (unsigned char)(*str1++);
+				ch2 = (unsigned char)(*str2++);
+				if(ch1 < ch2)
+				{
+					return -1;
+				}
+				else if(ch1 > ch2)
+				{
+					return 1;
+				}
+				--len1;
+				--len2;
+			}
+			if(len1 > 0)
+			{
+				return 1;
+			}
+			else if(len2 > 0)
+			{
+				return -1;
+			}
+		}
+		break;
+
+		default: break;
+	}
+	return 0;
+}
+
+/*
+ * Collect up all of the case labels for a "switch" statement,
+ * and sort them into ascending order.  This also performs
+ * semantic analysis on each of the sections.  Returns the new
+ * size of the case label list, after errors have been removed.
+ */
+static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
+							  		   ILType *switchType,
+									   ILSwitchValue *values)
+{
+	ILNode_ListIter iter1;
+	ILNode_ListIter iter2;
+	ILNode *section;
+	ILNode *caseNode;
+	ILNode_CaseLabel *caseLabel;
+	unsigned long size;
+	unsigned long posn;
+	CSSemValue value;
+	ILEvalValue evalValue;
+	ILMachineType switchMachineType;
+
+	/* Initialize */
+	size = 0;
+	switchMachineType = ILTypeToMachineType(switchType);
+
+	/* Iterate through the sections */
+	ILNode_ListIter_Init(&iter1, sections);
+	while((section = ILNode_ListIter_Next(&iter1)) != 0)
+	{
+		/* Iterate through the case list for each section */
+		ILNode_ListIter_Init
+			(&iter2, ((ILNode_SwitchSection *)section)->caseList);
+		while((caseNode = ILNode_ListIter_Next(&iter2)) != 0)
+		{
+			if(yyisa(caseNode, ILNode_CaseLabel))
+			{
+				/* Perform semantic analysis on the case expression */
+				caseLabel = (ILNode_CaseLabel *)caseNode;
+				if(!CSSemExpectValue(caseLabel->expr, info,
+									 &(caseLabel->expr), &value))
+				{
+					CSErrorOnLine(yygetfilename(caseLabel->expr),
+								  yygetlinenum(caseLabel->expr),
+								  "invalid case label expression");
+					continue;
+				}
+
+				/* Coerce the case expression to the governing type */
+				if(!ILCoerce(info, caseLabel->expr, &(caseLabel->expr),
+							 value.type, switchType))
+				{
+					CSErrorOnLine(yygetfilename(caseLabel->expr),
+								  yygetlinenum(caseLabel->expr),
+								  "no conversion from `%s' to `%s'",
+								  CSTypeToName(value.type),
+								  CSTypeToName(switchType));
+					continue;
+				}
+
+				/* Evaluate the constant value for the case expression */
+				if(!ILNode_EvalConst(caseLabel->expr, info, &evalValue) ||
+				   !ILGenCastConst(info, &evalValue, evalValue.valueType,
+				   				   switchMachineType))
+				{
+					CSErrorOnLine(yygetfilename(caseLabel->expr),
+								  yygetlinenum(caseLabel->expr),
+								  "case expression is not constant");
+					continue;
+				}
+
+				/* Record the case node information for later */
+				values[size].value = evalValue;
+				values[size].caseLabel = caseNode;
+				values[size].section = section;
+				++size;
+			}
+		}
+
+		/* Perform semantic analysis on the section's body */
+		ILNode_SemAnalysis(((ILNode_SwitchSection *)section)->stmt, info,
+						   &(((ILNode_SwitchSection *)section)->stmt));
+
+		/* The body must end in some kind of return or jump statement */
+		if(!ILNodeEndsInReturn(((ILNode_SwitchSection *)section)->stmt))
+		{
+			CSErrorOnLine(yygetfilename(section), yygetlinenum(section),
+						  "`switch' section falls through");
+		}
+	}
+
+	/* Sort the case label list into ascending order */
+	if(size > 1)
+	{
+	#ifdef HAVE_QSORT
+		qsort(values, (size_t)size, sizeof(ILSwitchValue), CompareCaseLabels);
+	#else
+		unsigned long i;
+		unsigned long j;
+		ILSwitchValue temp;
+		for(i = 0; i < size - 1; ++i)
+		{
+			for(j = i + 1; j < size; ++j)
+			{
+				if(CompareCaseLabels(&(values[i]), &(values[j])) > 0)
+				{
+					temp = values[i];
+					values[i] = values[j];
+					values[j] = temp;
+				}
+			}
+		}
+	#endif
+	}
+
+	/* Check for duplicates in the case label list */
+	if(size > 1)
+	{
+		for(posn = 0; posn < size - 1; ++posn)
+		{
+			if(CompareCaseLabels(&(values[posn]), &(values[posn + 1])) == 0)
+			{
+				CSErrorOnLine(yygetfilename(values[posn + 1].caseLabel),
+				              yygetlinenum(values[posn + 1].caseLabel),
+							  "duplicate case expression");
+				CSErrorOnLine(yygetfilename(values[posn].caseLabel),
+				              yygetlinenum(values[posn].caseLabel),
+							  "previous definition here");
+			}
+		}
+	}
+
+	/* Return the final table size to the caller */
+	return size;
+}
+
+/*
+ * Determine the type of table to be used for a set of switch cases.
+ */
+static ILSwitchTableType SwitchTableType(ILType *switchType,
+										 ILSwitchValue *values,
+										 unsigned long numValues)
+{
+	ILMachineType type;
+	unsigned long range;
+
+	/* Use simple "if" statements for 4 or less cases */
+	if(numValues <= 4)
+	{
+		return ILSwitchTableType_If;
+	}
+
+	/* If the switch type can fit in a 32-bit integer, and the
+	   cases fill up at least 80% of the range, then use an
+	   indexed table for the switch */
+	type = ILTypeToMachineType(switchType);
+	switch(type)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		{
+			range = (unsigned long)(values[numValues - 1].value.un.i4Value -
+									values[0].value.un.i4Value);
+			if(((range * 80) / 100) <= numValues)
+			{
+				return ILSwitchTableType_Indexed;
+			}
+			else
+			{
+				return ILSwitchTableType_Lookup;
+			}
+		}
+		/* Not reached */
+
+		case ILMachineType_UInt32:
+		{
+			range = (unsigned long)
+				(((ILUInt32)(values[numValues - 1].value.un.i4Value)) -
+				 ((ILUInt32)(values[0].value.un.i4Value)));
+			if(((range * 80) / 100) <= numValues)
+			{
+				return ILSwitchTableType_Indexed;
+			}
+			else
+			{
+				return ILSwitchTableType_Lookup;
+			}
+		}
+		/* Not reached */
+
+		default: break;
+	}
+
+	/* If we get here, then we need to use a binary tree of if statements */
+	return ILSwitchTableType_BinaryIf;
+}
+
+%}
+
 /*
  * Perform semantic analysis for the "switch" statement.
  */
 ILNode_SemAnalysis(ILNode_Switch)
 {
-	/* TODO */
+	static ILType * const governingTypes[] = {
+		ILType_Int8, ILType_UInt8, ILType_Int16, ILType_UInt16,
+		ILType_Int32, ILType_UInt32, ILType_Int64, ILType_UInt64, ILType_Char
+	};
+	#define numGoverningTypes	(sizeof(governingTypes) / sizeof(ILType *))
 	CSSemValue value;
+	ILType *actualType;
+	ILType *switchType;
+	ILType *stringType;
+	int posn;
+	unsigned long size;
+
+	/* Perform semantic analysis on the expression */
+	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
+	{
+		CSErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
+					  "invalid expression for `switch' statement");
+		actualType = ILType_Int32;
+	}
+	else
+	{
+		actualType = value.type;
+	}
+
+	/* Determine the governing type for the switch */
+	if(ILTypeIsEnum(actualType))
+	{
+		switchType = actualType;
+	}
+	else
+	{
+		switchType = actualType;
+		for(posn = 0; posn < numGoverningTypes; ++posn)
+		{
+			if(ILCanCoerceKind(info, actualType, governingTypes[posn],
+			   				   IL_CONVERT_USER_DEFINED))
+			{
+				switchType = governingTypes[posn];
+				break;
+			}
+		}
+		if(posn >= numGoverningTypes)
+		{
+			stringType = ILFindSystemType(info, "String");
+			if(ILCanCoerceKind(info, actualType, stringType,
+							   IL_CONVERT_USER_DEFINED))
+			{
+				switchType = stringType;
+			}
+			else
+			{
+				CSErrorOnLine(yygetfilename(node->expr),
+					  yygetlinenum(node->expr),
+					  "`%s' is invalid as the governing type for a `switch'",
+					  CSTypeToName(actualType));
+				return CSSemValueDefault;
+			}
+		}
+	}
+
+	/* Cast the switch expression to the governing type */
+	ILCast(info, node->expr, &(node->expr), actualType, switchType);
+
+	/* Enter the switch context */
 	PushStmtContext(info, CS_STMT_SWITCH);
+
+	/* Count the number of case labels and find the default case */
+	node->numSwitchValues = CountLabelsAndFindDefault
+			(node->sections, &(node->defaultSection));
+
+	/* Allocate space for the switch value table */
+	size = node->numSwitchValues * sizeof(ILSwitchValue);
+	if(size > 1024)
+	{
+		/* Warning!  This will leak memory! */
+		node->switchValues = (ILSwitchValue *)ILMalloc(size);
+	}
+	else
+	{
+		/* Allocate from the node pool, which will be cleaned up for us */
+		node->switchValues = (ILSwitchValue *)yynodealloc((unsigned int)size);
+	}
+	if(!(node->switchValues))
+	{
+		CSOutOfMemory();
+	}
+
+	/* Perform semantic analysis on the switch body and compute the values */
+	node->numSwitchValues = CollectCaseLabels(info, node->sections,
+											  switchType, node->switchValues);
+
+	/* Determine the type of switch table to generate */
+	node->tableType = SwitchTableType(switchType, node->switchValues,
+									  node->numSwitchValues);
+
+	/* Leave the switch context */
 	PopStmtContext(info);
+
+	/* Done */
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
 }
 
 /*
- * Perform semantic analysis for the "switch section list" statement.
+ * Perform semantic analysis for the switch helper nodes.
  */
-ILNode_SemAnalysis(ILNode_SwitchSectList)
-{
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
-}
-
-/*
- * Perform semantic analysis for the "switch section" statement.
- */
-ILNode_SemAnalysis(ILNode_SwitchSection)
-{
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
-}
-
-/*
- * Perform semantic analysis for the "switch case list" statement.
- */
-ILNode_SemAnalysis(ILNode_CaseList)
-{
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
-}
-
-/*
- * Perform semantic analysis for the "case label" statement.
- */
-ILNode_SemAnalysis(ILNode_CaseLabel)
-{
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
-}
-
-/*
- * Perform semantic analysis for the "default label" statement.
- */
+ILNode_SemAnalysis(ILNode_SwitchSectList),
+ILNode_SemAnalysis(ILNode_SwitchSection),
+ILNode_SemAnalysis(ILNode_CaseList),
+ILNode_SemAnalysis(ILNode_CaseLabel),
 ILNode_SemAnalysis(ILNode_DefaultLabel)
 {
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	/* Nothing to do here: the real work is done in "ILNode_Switch" */
+	return CSSemValueDefault;
 }
 
 /*

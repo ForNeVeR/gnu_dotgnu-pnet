@@ -33,10 +33,11 @@
 extern	"C" {
 #endif
 
-typedef struct _tagILGenInfo  	ILGenInfo;
-typedef struct _tagILScope  	ILScope;
-typedef unsigned long		  	ILLabel;
-#define	ILLabel_Undefined		((ILLabel)0)
+typedef struct _tagILGenInfo  		ILGenInfo;
+typedef struct _tagILScope  		ILScope;
+typedef struct _tagILSwitchValue  	ILSwitchValue;
+typedef unsigned long		  		ILLabel;
+#define	ILLabel_Undefined			((ILLabel)0)
 
 #ifdef	__cplusplus
 };

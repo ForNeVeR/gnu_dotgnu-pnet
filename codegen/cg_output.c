@@ -525,6 +525,35 @@ void ILGenModulesAndAssemblies(ILGenInfo *info)
 	}
 }
 
+void ILGenSwitchStart(ILGenInfo *info)
+{
+	if(info->asmOutput)
+	{
+		fputs("\tswitch (\n", info->asmOutput);
+	}
+}
+
+void ILGenSwitchRef(ILGenInfo *info, ILLabel *label, int comma)
+{
+	if(*label == ILLabel_Undefined)
+	{
+		*label = (info->nextLabel)++;
+	}
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "\t\t?L%lu%s\n", *label,
+				(comma ? "," : ""));
+	}
+}
+
+void ILGenSwitchEnd(ILGenInfo *info)
+{
+	if(info->asmOutput)
+	{
+		fputs("\t)\n", info->asmOutput);
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -1121,6 +1121,49 @@ char *JavaStrAppend(ILGenInfo *info, char *str1, const char *str2)
 	}
 }
 
+void JavaGenSwitchStart(ILGenInfo *info, int opcode)
+{
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "\t%s (\n", ILJavaOpcodeTable[opcode].name);
+	}
+}
+
+void JavaGenSwitchRef(ILGenInfo *info, ILLabel *label, int comma)
+{
+	if(*label == ILLabel_Undefined)
+	{
+		*label = (info->nextLabel)++;
+	}
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "\t\t?L%lu%s\n", *label,
+				(comma ? "," : ""));
+	}
+}
+
+void JavaGenSwitchLookupRef(ILGenInfo *info, ILInt32 value,
+						    ILLabel *label, int comma)
+{
+	if(*label == ILLabel_Undefined)
+	{
+		*label = (info->nextLabel)++;
+	}
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "\t\t%ld : ?L%lu%s\n",
+				(long)value, *label, (comma ? "," : ""));
+	}
+}
+
+void JavaGenSwitchEnd(ILGenInfo *info)
+{
+	if(info->asmOutput)
+	{
+		fputs("\t)\n", info->asmOutput);
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

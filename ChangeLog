@@ -1,4 +1,12 @@
 
+2001-01-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_defs.h, codegen/cg_nodes.tc, codegen/cg_output.c,
+	codegen/cg_output.h, codegen/cg_stmt.tc, codegen/jv_output.c,
+	codegen/jv_output.h, codegen/jv_stmt.tc, cscc/cs_stmt.tc:
+	implement semantic analysis and code generation for "switch"
+	statements.
+
 2001-01-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_grammar.y: implement default constructors for classes.

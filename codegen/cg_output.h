@@ -160,6 +160,21 @@ void ILGenFlush(ILGenInfo *info);
  */
 void ILGenModulesAndAssemblies(ILGenInfo *info);
 
+/*
+ * Generate the start of a "switch" instruction.
+ */
+void ILGenSwitchStart(ILGenInfo *info);
+
+/*
+ * Generate a label reference for a "switch" instruction.
+ */
+void ILGenSwitchRef(ILGenInfo *info, ILLabel *label, int comma);
+
+/*
+ * Generate the end of a "switch" instruction.
+ */
+void ILGenSwitchEnd(ILGenInfo *info);
+
 #ifdef	__cplusplus
 };
 #endif

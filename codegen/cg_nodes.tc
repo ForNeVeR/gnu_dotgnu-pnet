@@ -93,6 +93,17 @@ typedef struct _tagILEvalValue ILEvalValue;
 }
 
 /*
+ * Switch table types.
+ */
+%enum ILSwitchTableType =
+{
+	ILSwitchTableType_Indexed,			/* Indexed by "int" */
+	ILSwitchTableType_Lookup,			/* Lookup by "int" */
+	ILSwitchTableType_If,				/* Small switch: compile to "if" */
+	ILSwitchTableType_BinaryIf			/* Compile to binary "if" tree */
+}
+
+/*
  * Definition of "ILEvalValue".
  */
 %decls %end %{
@@ -114,6 +125,21 @@ struct _tagILEvalValue
 			int			len;
 		}				strValue;
 	} un;
+
+};
+
+%}
+
+/*
+ * Definition of "ILSwitchValue".
+ */
+%decls %end %{
+
+struct _tagILSwitchValue
+{
+	ILEvalValue			value;
+	ILNode             *caseLabel;
+	ILNode             *section;
 
 };
 
@@ -545,12 +571,17 @@ struct _tagILEvalValue
 {
 	ILNode *expr;
 	ILNode *sections;
+	%nocreate ILNode *defaultSection = {0};
+	%nocreate ILSwitchValue *switchValues = {0};
+	%nocreate unsigned long numSwitchValues = {0};
+	%nocreate ILSwitchTableType tableType = {ILSwitchTableType_Indexed};
 }
 %node ILNode_SwitchSectList ILNode_List
 %node ILNode_SwitchSection ILNode_Statement =
 {
 	ILNode *caseList;
 	ILNode *stmt;
+	%nocreate ILLabel label = {ILLabel_Undefined};
 }
 %node ILNode_CaseList ILNode_List
 %node ILNode_CaseLabel ILNode_Statement =

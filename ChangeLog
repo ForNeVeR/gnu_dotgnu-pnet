@@ -2,7 +2,11 @@
 2005-02-02  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/IO/BufferedStream.cs: Improve buffer stream
-	by using internal Array.InternalCopy() (patch #3695, Gopal)
+	by using internal Array.InternalCopy(). (patch #3695, Gopal)
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/
+	BinaryValueReader.cs: Reduce new object creation and improve
+	single dimensional array reading. (patch #3696, Gopal)
 
 2005-01-31  Gopal V  <gopalv82@yahoo.com>
 

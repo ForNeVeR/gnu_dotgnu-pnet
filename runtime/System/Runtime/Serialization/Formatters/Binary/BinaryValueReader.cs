@@ -29,6 +29,7 @@ using System.IO;
 using System.Reflection;
 using System.Collections;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 /*
 *  unsupported features:
@@ -440,6 +441,28 @@ abstract class BinaryValueReader
 	private static BinaryValueReader sArrayFiller32bReader = new ArrayFiller32bReader();
 	private static BinaryValueReader sBoxedPrimitiveTypeValue = new BoxedPrimitiveTypeValue();
 
+	private static TypeSpecification sBooleanSpec = new TypeSpecification(BinaryPrimitiveTypeCode.Boolean);
+	private static TypeSpecification sByteSpec = new TypeSpecification(BinaryPrimitiveTypeCode.Byte);
+	private static TypeSpecification sCharSpec = new TypeSpecification(BinaryPrimitiveTypeCode.Char);
+	private static TypeSpecification sDecimalSpec = new TypeSpecification(BinaryPrimitiveTypeCode.Decimal);
+	private static TypeSpecification sDoubleSpec = new TypeSpecification(BinaryPrimitiveTypeCode.Double);
+	private static TypeSpecification sInt16Spec = new TypeSpecification(BinaryPrimitiveTypeCode.Int16);
+	private static TypeSpecification sInt32Spec = new TypeSpecification(BinaryPrimitiveTypeCode.Int32);
+	private static TypeSpecification sInt64Spec = new TypeSpecification(BinaryPrimitiveTypeCode.Int64);
+	private static TypeSpecification sSByteSpec = new TypeSpecification(BinaryPrimitiveTypeCode.SByte);
+	private static TypeSpecification sSingleSpec = new TypeSpecification(BinaryPrimitiveTypeCode.Single);
+	private static TypeSpecification sTimeSpanSpec = new TypeSpecification(BinaryPrimitiveTypeCode.TimeSpan);
+	private static TypeSpecification sDateTimeSpec = new TypeSpecification(BinaryPrimitiveTypeCode.DateTime);
+	private static TypeSpecification sUInt16Spec = new TypeSpecification(BinaryPrimitiveTypeCode.UInt16);
+	private static TypeSpecification sUInt32Spec = new TypeSpecification(BinaryPrimitiveTypeCode.UInt32);
+	private static TypeSpecification sUInt64Spec = new TypeSpecification(BinaryPrimitiveTypeCode.UInt64);
+	private static TypeSpecification sStringSpec = new TypeSpecification(BinaryPrimitiveTypeCode.String);
+
+	private static TypeSpecification sStringSpecObject = new TypeSpecification("System.String");
+	private static TypeSpecification sObjectSpec = new TypeSpecification("System.Object");
+	private static TypeSpecification sStringArraySpec = new TypeSpecification("System.String[]");
+	private static TypeSpecification sObjectArraySpec = new TypeSpecification("System.Object[]");
+
 	public static BinaryValueReader GetReader(BinaryElementType type) 
 	{
 		switch(type) 
@@ -528,7 +551,130 @@ abstract class BinaryValueReader
 		}
 	}
 		
-	public static Type GetPrimitiveType(BinaryPrimitiveTypeCode typeCode) 
+	public static void ReadPrimitiveTypeArray(DeserializationContext context, BinaryPrimitiveTypeCode typeCode, Array array) 
+	{
+		int count = array.GetLength(0);
+		switch(typeCode) 
+		{
+			case BinaryPrimitiveTypeCode.Boolean:
+				bool[] boolArray = (bool[]) array;
+				for(int i = 0; i < count; i++) {
+					boolArray[i] = context.Reader.ReadBoolean();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.Byte:
+				byte[] byteArray = (byte[]) array;
+				for(int i = 0; i < count; i++) {
+					byteArray[i] = context.Reader.ReadByte();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.Char:
+				char[] charArray = (char[]) array;
+				for(int i = 0; i < count; i++) {
+					charArray[i] = context.Reader.ReadChar();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.Decimal:
+				decimal[] decimalArray = (decimal[]) array;
+				for(int i = 0; i < count; i++) {
+					decimalArray[i] = Decimal.Parse(context.Reader.ReadString());
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.Double:
+				double[] doubleArray = (double[]) array;
+				for(int i = 0; i < count; i++) {
+					doubleArray[i] = context.Reader.ReadDouble();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.Int16:
+				short[] shortArray = (short[]) array;
+				for(int i = 0; i < count; i++) {
+					shortArray[i] = context.Reader.ReadInt16();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.Int32:
+				int[] intArray = (int[]) array;
+				for(int i = 0; i < count; i++) {
+					intArray[i] = context.Reader.ReadInt32();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.Int64:
+				long[] longArray = (long[]) array;
+				for(int i = 0; i < count; i++) {
+					longArray[i] = context.Reader.ReadInt64();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.SByte:
+				sbyte[] sbyteArray = (sbyte[]) array;
+				for(int i = 0; i < count; i++) {
+					sbyteArray[i] = context.Reader.ReadSByte();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.Single:
+				float[] singleArray = (float[]) array;
+				for(int i = 0; i < count; i++) {
+					singleArray[i] = context.Reader.ReadChar();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.TimeSpan:
+				TimeSpan[] tsArray = (TimeSpan[]) array;
+				for(int i = 0; i < count; i++) {
+					tsArray[i] = new TimeSpan(context.Reader.ReadInt64());
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.DateTime:
+				DateTime[] dtArray = (DateTime[]) array;
+				for(int i = 0; i < count; i++) {
+					dtArray[i] = new DateTime(context.Reader.ReadInt64());
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.UInt16:
+				ushort[] ushortArray = (ushort[]) array;
+				for(int i = 0; i < count; i++) {
+					ushortArray[i] = context.Reader.ReadUInt16();
+
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.UInt32:
+				uint[] uintArray = (uint[]) array;
+				for(int i = 0; i < count; i++) {
+					uintArray[i] = context.Reader.ReadUInt32();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.UInt64:
+				ulong[] ulongArray = (ulong[]) array;
+				for(int i = 0; i < count; i++) {
+					ulongArray[i] = context.Reader.ReadUInt64();
+				}
+				break;
+
+			case BinaryPrimitiveTypeCode.String:
+				string[] stringArray = (string[]) array;
+				for(int i = 0; i < count; i++) {
+					stringArray[i] = context.Reader.ReadString();
+				}
+				break;
+
+			default:
+				throw new SerializationException("unknown primitive type code:"+typeCode);
+		}
+	}
+
+	public static Type GetPrimitiveType(BinaryPrimitiveTypeCode typeCode)
 	{
 		switch(typeCode) 
 		{
@@ -602,7 +748,46 @@ abstract class BinaryValueReader
 		{
 			case BinaryTypeTag.PrimitiveType:
 			case BinaryTypeTag.ArrayOfPrimitiveType:
-				return new TypeSpecification((BinaryPrimitiveTypeCode) context.Reader.ReadByte());
+				BinaryPrimitiveTypeCode typeCode = (BinaryPrimitiveTypeCode) context.Reader.ReadByte();
+				switch(typeCode) 
+				{
+					case BinaryPrimitiveTypeCode.Boolean:
+						return sBooleanSpec;
+					case BinaryPrimitiveTypeCode.Byte:
+						return sByteSpec;
+					case BinaryPrimitiveTypeCode.Char:
+						return sCharSpec;
+					case BinaryPrimitiveTypeCode.Decimal:
+						return sDecimalSpec;
+					case BinaryPrimitiveTypeCode.Double:
+						return sDoubleSpec;
+					case BinaryPrimitiveTypeCode.Int16:
+						return sInt16Spec;
+					case BinaryPrimitiveTypeCode.Int32:
+						return sInt32Spec;
+					case BinaryPrimitiveTypeCode.Int64:
+						return sInt64Spec;
+					case BinaryPrimitiveTypeCode.SByte:
+						return sSByteSpec;
+					case BinaryPrimitiveTypeCode.Single:
+						return sSingleSpec;
+					case BinaryPrimitiveTypeCode.TimeSpan:
+						return sTimeSpanSpec;
+					case BinaryPrimitiveTypeCode.DateTime:
+						return sDateTimeSpec;
+					case BinaryPrimitiveTypeCode.UInt16:
+						return sUInt16Spec;
+					case BinaryPrimitiveTypeCode.UInt32:
+						return sUInt32Spec;
+					case BinaryPrimitiveTypeCode.UInt64:
+						return sUInt64Spec;
+					case BinaryPrimitiveTypeCode.String:
+						return sStringArraySpec;
+		
+					default:
+						throw new SerializationException("unknown primitive type code:"+typeCode);
+				}
+				throw new SerializationException("unknown primitive type code:"+typeCode);
 
 			case BinaryTypeTag.RuntimeType:
 				return new TypeSpecification(context.Reader.ReadString());
@@ -613,16 +798,16 @@ abstract class BinaryValueReader
 				return new TypeSpecification(typeName, assId);
 
             case BinaryTypeTag.String:
-                return new TypeSpecification("System.String");
+                return sStringSpecObject;
 
             case BinaryTypeTag.ObjectType:
-                return new TypeSpecification("System.Object");
+                return sObjectSpec;
 
             case BinaryTypeTag.ArrayOfString:
-                return new TypeSpecification("System.String[]");
+                return sStringArraySpec;
 
             case BinaryTypeTag.ArrayOfObject:
-                return new TypeSpecification("System.Object[]");
+                return sObjectArraySpec;
 
 			default:
 				return null;
@@ -708,12 +893,7 @@ abstract class ArrayReader : BinaryValueReader
 			// this is a primitive array
 			convertedType = GetPrimitiveType((BinaryPrimitiveTypeCode) type);
 			array = Array.CreateInstance(convertedType, (int) count);
-			for(uint i = 0; i < count; i++) 
-			{
-				Object val;
-				val = ReadPrimitiveType(context, (BinaryPrimitiveTypeCode) type);
-				array.SetValue(val, i);
-			}
+			ReadPrimitiveTypeArray(context, (BinaryPrimitiveTypeCode) type, array);
 		}
 		else if(type is Type)
 		{

@@ -14,6 +14,10 @@ add the "StringConstant" coder API.
 * engine/engine.h, engine/strapi.c: "_ILStringInternFromImage" and
 "_ILStringToBuffer".
 
+* engine/lookup.c: length bug in "MatchTypeName" that caused it to be
+off by one when matching byref, ptr, and array types; reversed test
+in "MatchClassNameInner"; bad length determination in "MatchClassNameInner".
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

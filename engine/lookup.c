@@ -191,7 +191,7 @@ static int MatchClassNameInner(ILClass *classInfo, const char *name)
 		}
 		++complen;
 	}
-	if(complen >= len)
+	if(complen <= len)
 	{
 		/* Empty components are not valid class names */
 		return 0;
@@ -204,14 +204,14 @@ static int MatchClassNameInner(ILClass *classInfo, const char *name)
 		{
 			/* Match both name and namespace */
 			temp = ILClass_Namespace(classInfo);
-			if(strlen(temp) != (dot - complen) ||
-			   strncmp(temp, name + dot, dot - complen) != 0)
+			if(strlen(temp) != (dot - len) ||
+			   strncmp(temp, name + len, dot - len) != 0)
 			{
 				return 0;
 			}
 			temp = ILClass_Name(classInfo);
-			if(strlen(temp) != (len - dot - 1) ||
-			   strncmp(temp, name + dot + 1, len - dot - 1) != 0)
+			if(strlen(temp) != (complen - dot - 1) ||
+			   strncmp(temp, name + dot + 1, complen - dot - 1) != 0)
 			{
 				return 0;
 			}
@@ -224,8 +224,8 @@ static int MatchClassNameInner(ILClass *classInfo, const char *name)
 				return 0;
 			}
 			temp = ILClass_Name(classInfo);
-			if(strlen(temp) != (len - complen) ||
-			   strncmp(temp, name + complen, len - complen) != 0)
+			if(strlen(temp) != (complen - len) ||
+			   strncmp(temp, name + len, complen - len) != 0)
 			{
 				return 0;
 			}
@@ -235,15 +235,15 @@ static int MatchClassNameInner(ILClass *classInfo, const char *name)
 	{
 		/* Nested classes only match the name */
 		temp = ILClass_Name(classInfo);
-		if(strlen(temp) != (len - complen) ||
-		   strncmp(temp, name + complen, len - complen) != 0)
+		if(strlen(temp) != (complen - len) ||
+		   strncmp(temp, name + len, complen - len) != 0)
 		{
 			return 0;
 		}
 	}
 
 	/* The whole name has been matched */
-	return len;
+	return complen;
 }
 
 /*
@@ -366,7 +366,15 @@ static int MatchTypeName(ILType *type, const char *name)
 			{
 				return 0;
 			}
-			return MatchTypeName(type->un.refType, name + 1);
+			len = MatchTypeName(type->un.refType, name + 1);
+			if(len != 0)
+			{
+				return len + 1;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		else if(type->kind == IL_TYPE_COMPLEX_PTR)
 		{
@@ -375,7 +383,15 @@ static int MatchTypeName(ILType *type, const char *name)
 			{
 				return 0;
 			}
-			return MatchTypeName(type->un.refType, name + 1);
+			len = MatchTypeName(type->un.refType, name + 1);
+			if(len != 0)
+			{
+				return len + 1;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		else if(type->kind == IL_TYPE_COMPLEX_ARRAY)
 		{
@@ -389,7 +405,15 @@ static int MatchTypeName(ILType *type, const char *name)
 			{
 				return 0;
 			}
-			return MatchTypeName(type->un.array.elemType, name + 1);
+			len = MatchTypeName(type->un.array.elemType, name + 1);
+			if(len != 0)
+			{
+				return len + 1;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		else if(type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{

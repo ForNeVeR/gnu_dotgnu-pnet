@@ -66,6 +66,7 @@ extern System_String * _IL_String_ctor_ci(ILExecThread * _thread, ILUInt16 _p1, 
 extern System_String * _IL_String_ctor_ac(ILExecThread * _thread, System_Array * _p1);
 extern ILBool _IL_String_Equals(ILExecThread * _thread, System_String * _p1, System_String * _p2);
 extern ILUInt16 _IL_String_GetChar(ILExecThread * _thread, System_String * _this, ILInt32 _p1);
+extern ILInt32 _IL_String_IndexOf(ILExecThread * _thread, System_String * _this, ILUInt16 _p1, ILInt32 _p2, ILInt32 _p3);
 extern System_String * _IL_String_NewString(ILExecThread * _thread, ILInt32 _p1);
 extern void _IL_String_Copy_StringiStringii(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, System_String * _p3, ILInt32 _p4, ILInt32 _p5);
 extern ILInt32 _IL_String_InternalCompare(ILExecThread * _thread, System_String * _p1, ILInt32 _p2, ILInt32 _p3, System_String * _p4, ILInt32 _p5, ILInt32 _p6, ILBool _p7, ILObject * _p8);
@@ -85,7 +86,6 @@ extern void _IL_String_RemoveSpace(ILExecThread * _thread, System_String * _p1, 
 extern System_String * _IL_String_Concat_StringStringString(ILExecThread * _thread, System_String * _p1, System_String * _p2, System_String * _p3);
 extern void _IL_String_CopyToChecked(ILExecThread * _thread, System_String * _this, ILInt32 _p1, System_Array * _p2, ILInt32 _p3, ILInt32 _p4);
 extern ILInt32 _IL_String_IndexOfAny(ILExecThread * _thread, System_String * _this, System_Array * _p1, ILInt32 _p2, ILInt32 _p3);
-extern ILInt32 _IL_String_IndexOf(ILExecThread * _thread, System_String * _this, ILUInt16 _p1, ILInt32 _p2, ILInt32 _p3);
 extern ILInt32 _IL_String_GetHashCode(ILExecThread * _thread, System_String * _this);
 extern ILInt32 _IL_String_FindInRange(ILExecThread * _thread, System_String * _this, ILInt32 _p1, ILInt32 _p2, ILInt32 _p3, System_String * _p4);
 extern System_String * _IL_String_Intern(ILExecThread * _thread, System_String * _p1);
@@ -366,6 +366,7 @@ extern ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread * _thread, ILNati
 extern ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2);
 extern ILUInt8 * _IL_ClrResourceStream_ResourceGetAddress(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2);
 
+extern ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread * _thread, ILString * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, ILInt32 _p6, ILNativeInt * writer);
 extern void _IL_AssemblyBuilder_ClrSetEntryPoint(ILExecThread * _thread, ILObject * _this, ILNativeInt _p1, ILInt32 _p2);
 
 extern ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2);

@@ -1,7 +1,7 @@
 /*
  * lib_emit.c - Internalcall methods for the "Reflection.Emit" classes.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,22 @@ extern	"C" {
 #endif
 
 /*
+ * private static IntPtr ClrAssemblyCreate(String name, int v1, int v2,
+ *										   int v3, int v4,
+ *                                         AssemblyBuilderAccess access,
+ *										   out IntPtr writer);
+ */
+ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate
+		(ILExecThread *_thread, ILString *name, ILInt32 v1,
+		 ILInt32 v2, ILInt32 v3, ILInt32 v4, ILInt32 access,
+		 ILNativeInt *writer)
+{
+	/* TODO */
+	*writer = 0;
+	return 0;
+}
+
+/*
  * private void ClrSetEntryPoint(IntPtr nativeMethod, PEFileKinds fileKind);
  */
 void _IL_AssemblyBuilder_ClrSetEntryPoint(ILExecThread *thread,
@@ -43,18 +59,12 @@ ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
 											  ILNativeInt assembly,
 											  ILString *name)
 {
-  ILImage *image = ILProgramItem_Image(assembly);
-  ILToken token = ILProgramItem_Token(assembly);
-  const char *str = (const char *)ILStringToAnsi(_thread, name);
-  return (ILNativeInt)ILModuleCreate(image, token, str, NULL);
+	ILImage *image = ILProgramItem_Image(assembly);
+	ILToken token = ILProgramItem_Token(assembly);
+	const char *str = (const char *)ILStringToAnsi(_thread, name);
+	return (ILNativeInt)ILModuleCreate(image, token, str, NULL);
 }
 
 #ifdef	__cplusplus
 };
 #endif
-
-
-
-
-
-

@@ -1,4 +1,9 @@
 
+2003-03-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_emit.c:
+	add internalcalls for System.Reflection.Emit.AssemblyBuilder.
+
 2003-03-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_misc.tc:

@@ -1,3 +1,11 @@
+2004-07-16  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* ilgac/ilgac.1: fix a typo.
+
+	* configure.in, libffi/configure.in, libgc/os_dep.c,
+	libgc/include/private/gcconfig.h, support/thr_choose.h,
+	support/thread.c: apply patch #3164 for OpenBSD support.
+
 2004-07-12  Klaus Treichel  <ktreichel@web.de>
 
 	* HACKING: updated broken links, instructions to get current cvs version

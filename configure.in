@@ -188,7 +188,12 @@ case "$THREADS" in
 	AC_DEFINE(GC_FREEBSD_THREADS, 1, [Define to use libgc freebsd thread support])
 	INCLUDES="$INCLUDES -pthread"
 	THREADLIBS=-pthread
-      	;;
+	;;
+     *-*-openbsd*)
+	AC_DEFINE(GC_OPENBSD_THREADS, 1, [Define to use libgc openbsd thread support])
+	INCLUDES="$INCLUDES -pthread"
+	THREADLIBS=-pthread
+	;;
      *-*-solaris*)
 	AC_DEFINE(GC_SOLARIS_THREADS, 1, [Define to use libgc solaris thread support])
 	AC_DEFINE(GC_SOLARIS_PTHREADS, 1, [Define to use libgc solaris pthread support])

@@ -358,7 +358,11 @@ int ILThreadStart(ILThread *thread)
 			thread->state |= IL_TS_RUNNING;
 
 			_ILThreadAdjustCount(1, (thread->state & IL_TS_BACKGROUND) ? 1 : 0);
-			
+
+		#if defined(GC_OPENBSD_THREADS)
+			pthread_yield();
+		#endif
+
 			/* Let the thread start running */
 			_ILThreadResumeSelf(thread);
 

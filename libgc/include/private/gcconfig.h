@@ -1180,6 +1180,7 @@
 #   endif
 #   ifdef OPENBSD
 #	define OS_TYPE "OPENBSD"
+#	define OPENBSD_STACKBOTTOM
 #   endif
 #   ifdef FREEBSD
 #	define OS_TYPE "FREEBSD"
@@ -1208,7 +1209,11 @@
 #   ifdef BSDI
 #	define OS_TYPE "BSDI"
 #   endif
-#   if defined(OPENBSD) || defined(NETBSD) \
+#   if defined(OPENBSD)
+	extern char etext[];
+#	define DATASTART ((ptr_t)(etext))
+#   endif
+#   if defined(NETBSD) \
         || defined(THREE86BSD) || defined(BSDI)
 #	define HEURISTIC2
 	extern char etext[];

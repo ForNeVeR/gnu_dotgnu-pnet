@@ -995,13 +995,30 @@ ptr_t GC_get_stack_base()
 
 #endif /* FREEBSD_STACKBOTTOM */
 
+#ifdef OPENBSD_STACKBOTTOM
+
+/* We want machine/vmparam.h which is a softlink to the machine specific 
+   header file -- the other .h's  are just here to keep cpp happy */
+#include <uvm/uvm.h>
+#include <machine/param.h>
+#include <machine/pmap.h>
+#include <machine/vmparam.h>
+
+  ptr_t GC_openbsd_stack_base(void)
+  {
+    return USRSTACK;
+  }
+
+#endif /* OPENBSD_STACKBOTTOM */
+
 #if !defined(BEOS) && !defined(AMIGA) && !defined(MSWIN32) \
     && !defined(MSWINCE) && !defined(OS2) && !defined(NOSYS) && !defined(ECOS)
 
 ptr_t GC_get_stack_base()
 {
 #   if defined(HEURISTIC1) || defined(HEURISTIC2) || \
-       defined(LINUX_STACKBOTTOM) || defined(FREEBSD_STACKBOTTOM)
+       defined(LINUX_STACKBOTTOM) || defined(FREEBSD_STACKBOTTOM) || \
+       defined(OPENBSD_STACKBOTTOM)
     word dummy;
     ptr_t result;
 #   endif
@@ -1026,6 +1043,9 @@ ptr_t GC_get_stack_base()
 #	endif
 #	ifdef FREEBSD_STACKBOTTOM
 	   result = GC_freebsd_stack_base();
+#	endif
+#	ifdef OPENBSD_STACKBOTTOM
+	   result = GC_openbsd_stack_base();
 #	endif
 #	ifdef HEURISTIC2
 #	    ifdef STACK_GROWS_DOWN

@@ -252,16 +252,6 @@ int _ILCVMInterpreter(ILExecThread *thread);
 int _ILLayoutClass(ILClass *info);
 
 /*
- * Security check types.
- */
-#define	IL_SECURITY_LAYOUT			1
-
-/*
- * Perform a security check on a program item.
- */
-int _ILSecurityCheck(ILProgramItem *info, int type);
-
-/*
  * Verify the contents of a method.
  */
 int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,

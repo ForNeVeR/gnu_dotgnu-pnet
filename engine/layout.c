@@ -45,14 +45,6 @@ typedef struct
 } LayoutInfo;
 
 /*
- * Perform a security check (TODO: replace this with something better).
- */
-int _ILSecurityCheck(ILProgramItem *info, int type)
-{
-	return 0;
-}
-
-/*
  * Forward declaration.
  */
 static int LayoutClass(ILClass *info, LayoutInfo *layout);
@@ -513,8 +505,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	packingSize = 0;
 	explicitSize = 0;
 	allowFieldLayout = 0;
-	allowRVALayout = _ILSecurityCheck((ILProgramItem *)info,
-									  IL_SECURITY_LAYOUT);
+	allowRVALayout = ILImageIsSecure(ILProgramItem_Image(info));
 	if((info->attributes & IL_META_TYPEDEF_LAYOUT_MASK) ==
 			IL_META_TYPEDEF_EXPLICIT_LAYOUT)
 	{

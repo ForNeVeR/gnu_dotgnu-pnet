@@ -1045,7 +1045,7 @@ int ILTypeIsObjectClass(ILType *type)
 	ILImage *systemImage;
 	if(ILType_IsClass(type))
 	{
-		/* Check the name against "System.String" */
+		/* Check the name against "System.Object" */
 		info = ILClassResolve(ILType_ToClass(type));
 		if(!strcmp(info->className->name, "Object") &&
 		   info->className->namespace &&
@@ -1053,7 +1053,33 @@ int ILTypeIsObjectClass(ILType *type)
 		{
 			/* Check that it is within the system image, to prevent
 			   applications from fooling us into believing that their
-			   own class is the system's string class */
+			   own class is the system's object class */
+			info = ILClassResolve(info);
+			systemImage = info->programItem.image->context->systemImage;
+			if(!systemImage || systemImage == info->programItem.image)
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+int ILTypeIsSystemClass(ILType *type, const char *namespace, const char *name)
+{
+	ILClass *info;
+	ILImage *systemImage;
+	if(ILType_IsClass(type))
+	{
+		/* Check the name against "System.Object" */
+		info = ILClassResolve(ILType_ToClass(type));
+		if(!strcmp(info->className->name, name) &&
+		   info->className->namespace &&
+		   !strcmp(info->className->namespace, namespace))
+		{
+			/* Check that it is within the system image, to prevent
+			   applications from fooling us into believing that their
+			   own class is the system's object class */
 			info = ILClassResolve(info);
 			systemImage = info->programItem.image->context->systemImage;
 			if(!systemImage || systemImage == info->programItem.image)
@@ -1277,22 +1303,84 @@ void *ILTypeGetDelegateBeginInvokeMethod(ILType *type)
 {
 	if(ILType_IsClass(type))
 	{
+		ILType *invokeMethod = ILTypeGetDelegateMethod(type);
 		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
 		ILClass *parent = ILClass_Parent(classInfo);
+
+		if (invokeMethod == 0)
+		{
+			return 0;
+		}
+
 		if(parent)
 		{
 			const char *namespace = ILClass_Namespace(parent);
 			if(namespace && !strcmp(namespace, "System") &&
 				!strcmp(ILClass_Name(parent), "MulticastDelegate"))
 			{
+				int i = 0, numInvokeParams;
 				ILMethod *method = 0;
+				ILType *paramType, *methodSignature;
+				ILType *invokeMethodSignature;				
+
+				invokeMethodSignature = ILMethod_Signature(invokeMethod);
+
 				while((method = (ILMethod *)ILClassNextMemberByKind
 					(classInfo, (ILMember *)method,
 					IL_META_MEMBERKIND_METHOD)) != 0)
 				{
-					/* TODO: Verify arguments */
 					if(!strcmp(ILMethod_Name(method), "BeginInvoke"))
 					{
+						methodSignature = ILMethod_Signature(method);
+
+						numInvokeParams = ILTypeNumParams(invokeMethodSignature);
+
+						/* Make sure the number of params is correct */
+
+						if (ILTypeNumParams(methodSignature) != numInvokeParams + 2)
+						{
+							continue;
+						}
+
+						/* Make sure all the params in the BeginInvoke method match the params in the Invoke method */
+
+						for (i = 1; i <= numInvokeParams; i++)
+						{
+							if (!ILTypeIdentical
+								(
+									ILTypeGetParam(methodSignature, i), 
+									ILTypeGetParam(invokeMethodSignature, i)
+								))
+							{
+								break;
+							}
+						}
+
+						/* Find next BeginInvoke method if params don't match Invoke params */
+
+						if (i < numInvokeParams + 1)
+						{
+							continue;
+						}
+
+						paramType = (ILTypeGetParam(methodSignature, numInvokeParams + 1));
+
+						/* Find next BeginInvoke method if IAsyncResult param isn't correct */
+
+						if (!ILTypeIsSystemClass(paramType, "System", "AsyncCallback"))
+						{
+							continue;
+						}
+						
+						paramType = (ILTypeGetParam(methodSignature, numInvokeParams + 2));
+
+						/* Find next BeginInvoke method if AsyncState param isn't correct */
+
+						if (!ILTypeIsObjectClass(paramType))
+						{
+							continue;
+						}
+
 						return method;
 					}
 				}
@@ -1306,22 +1394,83 @@ void *ILTypeGetDelegateEndInvokeMethod(ILType *type)
 {
 	if(ILType_IsClass(type))
 	{
+		ILType *invokeMethod = ILTypeGetDelegateMethod(type);
 		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
 		ILClass *parent = ILClass_Parent(classInfo);
+
+		if (invokeMethod == 0)
+		{
+			return 0;
+		}
+
 		if(parent)
 		{
 			const char *namespace = ILClass_Namespace(parent);
 			if(namespace && !strcmp(namespace, "System") &&
 				!strcmp(ILClass_Name(parent), "MulticastDelegate"))
 			{
+				int i = 0, j, ok, numInvokeParams;
 				ILMethod *method = 0;
+				ILType *paramType, *methodSignature;
+				ILType *invokeMethodSignature;				
+
+				invokeMethodSignature = ILMethod_Signature(invokeMethod);
+
 				while((method = (ILMethod *)ILClassNextMemberByKind
 					(classInfo, (ILMember *)method,
 					IL_META_MEMBERKIND_METHOD)) != 0)
 				{
-					/* TODO: Verify arguments */
 					if(!strcmp(ILMethod_Name(method), "EndInvoke"))
 					{
+						methodSignature = ILMethod_Signature(method);
+
+						numInvokeParams = ILTypeNumParams(invokeMethodSignature);
+
+						/* Make sure all the params in the EndInvoke method match the byref params in the Invoke method */
+
+						for (ok = 1, j = 1, i = 1; i <= numInvokeParams; i++)
+						{
+							paramType = ILTypeGetParam(invokeMethodSignature, i);
+
+							if (ILType_IsComplex(paramType) 
+								&& ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF)
+							{
+								if (j > ILTypeNumParams(methodSignature))
+								{
+									ok = 0;
+
+									break;
+								}
+
+								if (!ILTypeIdentical
+									(
+										paramType,
+										ILTypeGetParam(methodSignature, j++)
+									))
+								{
+									ok = 0;
+
+									break;
+								}
+							}
+						}
+
+						/* Find next EndInvoke method if params don't match Invoke params */
+
+						if (!ok)
+						{
+							continue;
+						}
+
+						paramType = (ILTypeGetParam(methodSignature, j));
+
+						/* Find next EndInvoke method if IAsyncResult param isn't correct */
+
+						if (!ILTypeIsSystemClass(paramType, "System", "IAsyncResult"))
+						{
+							continue;
+						}
+
 						return method;
 					}
 				}

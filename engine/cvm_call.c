@@ -222,120 +222,248 @@ ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	for(param = 0; param < numArgs; ++param)
 	{
 		paramType = ILTypeGetParam(callSiteSig, firstParam + param);
-		if(ILType_IsPrimitive(paramType))
+
+		if (ILType_IsComplex(paramType)
+			&& ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF)
 		{
-			/* Box a primitive value after aligning it properly */
-			switch(ILType_ToElement(paramType))
+			ILType *targetParamType = ILType_Ref(paramType);
+
+			if(ILType_IsPrimitive(targetParamType))
 			{
-				case IL_META_ELEMTYPE_I1:
-				case IL_META_ELEMTYPE_U1:
-				case IL_META_ELEMTYPE_BOOLEAN:
+				/* Box a primitive value after aligning it properly */
+				switch(ILType_ToElement(targetParamType))
 				{
-					boxByte = (ILInt8)(stacktop->intValue);
-					ptr = &boxByte;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I2:
-				case IL_META_ELEMTYPE_U2:
-				case IL_META_ELEMTYPE_CHAR:
-				{
-					boxShort = (ILInt16)(stacktop->intValue);
-					ptr = &boxShort;
-				}
-				break;
-
-			#ifdef IL_CONFIG_FP_SUPPORTED
-				case IL_META_ELEMTYPE_R4:
-				{
-					boxFloat = (ILFloat)(ReadFloat(stacktop));
-					ptr = &boxFloat;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R8:
-				case IL_META_ELEMTYPE_R:
-				{
-					boxDouble = (ILDouble)(ReadDouble(stacktop));
-					ptr = &boxDouble;
-				}
-				break;
-			#else
-				case IL_META_ELEMTYPE_R4:
-				case IL_META_ELEMTYPE_R8:
-				case IL_META_ELEMTYPE_R:
-				{
-					/* No FP support, so pass a "null" instead */
-					boxPtr = 0;
-					ptr = &boxPtr;
-				}
-				break;
-			#endif
-
-				default:
-				{
-					ptr = stacktop;
-				}
-				break;
-			}
-			*posn = ILExecThreadBox(thread, paramType, ptr);
-			if(!(*posn))
-			{
-				return 0;
-			}
-		}
-		else if(ILType_IsValueType(paramType))
-		{
-			/* Box value types after aligning small enumerated types */
-			ptr = stacktop;
-			if(ILTypeIsEnum(paramType))
-			{
-				enumType = ILTypeGetEnumType(paramType);
-				if(ILType_IsPrimitive(enumType))
-				{
-					switch(ILType_ToElement(enumType))
+					case IL_META_ELEMTYPE_I1:
+					case IL_META_ELEMTYPE_U1:
+					case IL_META_ELEMTYPE_BOOLEAN:
 					{
-						case IL_META_ELEMTYPE_I1:
-						case IL_META_ELEMTYPE_U1:
-						case IL_META_ELEMTYPE_BOOLEAN:
-						{
-							boxByte = (ILInt8)(stacktop->intValue);
-							ptr = &boxByte;
-						}
-						break;
+						boxByte = (ILInt8)(*(ILInt32 *)(stacktop->ptrValue));
+						ptr = &boxByte;
+					}
+					break;
 
-						case IL_META_ELEMTYPE_I2:
-						case IL_META_ELEMTYPE_U2:
-						case IL_META_ELEMTYPE_CHAR:
+					case IL_META_ELEMTYPE_I2:
+					case IL_META_ELEMTYPE_U2:
+					case IL_META_ELEMTYPE_CHAR:
+					{
+						boxShort = (ILInt16)(*(ILInt32 *)(stacktop->ptrValue));
+						ptr = &boxShort;
+					}
+					break;
+
+				#ifdef IL_CONFIG_FP_SUPPORTED
+					case IL_META_ELEMTYPE_R4:
+					{
+						boxFloat = (ILFloat)(ReadFloat(stacktop->ptrValue));
+						ptr = &boxFloat;
+					}
+					break;
+
+					case IL_META_ELEMTYPE_R8:
+					case IL_META_ELEMTYPE_R:
+					{
+						boxDouble = (ILDouble)(ReadDouble(stacktop->ptrValue));
+						ptr = &boxDouble;
+					}
+					break;
+				#else
+					case IL_META_ELEMTYPE_R4:
+					case IL_META_ELEMTYPE_R8:
+					case IL_META_ELEMTYPE_R:
+					{
+						/* No FP support, so pass a "null" instead */
+						boxPtr = 0;
+						ptr = &boxPtr;
+					}
+					break;
+				#endif
+
+					default:
+					{
+						ptr = stacktop->ptrValue;
+					}
+					break;
+				}
+				*posn = ILExecThreadBox(thread, targetParamType, ptr);
+				if(!(*posn))
+				{
+					return 0;
+				}
+			}
+			else if(ILType_IsValueType(targetParamType))
+			{
+				/* Box value types after aligning small enumerated types */
+				ptr = stacktop->ptrValue;
+				if(ILTypeIsEnum(targetParamType))
+				{
+					enumType = ILTypeGetEnumType(targetParamType);
+					if(ILType_IsPrimitive(enumType))
+					{
+						switch(ILType_ToElement(enumType))
 						{
-							boxShort = (ILInt16)(stacktop->intValue);
-							ptr = &boxShort;
+							case IL_META_ELEMTYPE_I1:
+							case IL_META_ELEMTYPE_U1:
+							case IL_META_ELEMTYPE_BOOLEAN:
+							{
+								boxByte = (ILInt8)(*(ILInt32 *)(stacktop->ptrValue));
+								ptr = &boxByte;
+							}
+							break;
+
+							case IL_META_ELEMTYPE_I2:
+							case IL_META_ELEMTYPE_U2:
+							case IL_META_ELEMTYPE_CHAR:
+							{
+								boxShort = (ILInt16)(*(ILInt32 *)(stacktop->ptrValue));
+								ptr = &boxShort;
+							}
+							break;
 						}
-						break;
 					}
 				}
+				*posn = ILExecThreadBox(thread, targetParamType, ptr);
+				if(!(*posn))
+				{
+					return 0;
+				}
 			}
-			*posn = ILExecThreadBox(thread, paramType, ptr);
-			if(!(*posn))
+			else if(ILTypeIsReference(targetParamType))
 			{
-				return 0;
+				/* Ref to an object reference type: pass the object reference */
+				*posn = *((ILObject **)(stacktop->ptrValue));
 			}
-		}
-		else if(ILTypeIsReference(paramType))
-		{
-			/* Object reference type: pass it directly */
-			*posn = (ILObject *)(stacktop->ptrValue);
+			else
+			{
+				/* Assume that everything else is a pointer, and wrap
+				it up within a "System.IntPtr" object */
+				*posn = ILExecThreadBox(thread, ILType_Int, stacktop->ptrValue);
+				if(!(*posn))
+				{
+					return 0;
+				}
+			}
 		}
 		else
 		{
-			/* Assume that everything else is a pointer, and wrap
-			   it up within a "System.IntPtr" object */
-			*posn = ILExecThreadBox(thread, ILType_Int, stacktop);
-			if(!(*posn))
+			if(ILType_IsPrimitive(paramType))
 			{
-				return 0;
+				int x;
+
+				x = ILType_ToElement(paramType);
+				/* Box a primitive value after aligning it properly */
+				switch(ILType_ToElement(paramType))
+				{
+					case IL_META_ELEMTYPE_I1:
+					case IL_META_ELEMTYPE_U1:
+					case IL_META_ELEMTYPE_BOOLEAN:
+					{
+						boxByte = (ILInt8)(stacktop->intValue);
+						ptr = &boxByte;
+					}
+					break;
+
+					case IL_META_ELEMTYPE_I2:
+					case IL_META_ELEMTYPE_U2:
+					case IL_META_ELEMTYPE_CHAR:
+					{
+						boxShort = (ILInt16)(stacktop->intValue);
+						ptr = &boxShort;
+					}
+					break;
+
+				#ifdef IL_CONFIG_FP_SUPPORTED
+					case IL_META_ELEMTYPE_R4:
+					{
+						boxFloat = (ILFloat)(ReadFloat(stacktop));
+						ptr = &boxFloat;
+					}
+					break;
+
+					case IL_META_ELEMTYPE_R8:
+					case IL_META_ELEMTYPE_R:
+					{
+						boxDouble = (ILDouble)(ReadDouble(stacktop));
+						ptr = &boxDouble;
+					}
+					break;
+				#else
+					case IL_META_ELEMTYPE_R4:
+					case IL_META_ELEMTYPE_R8:
+					case IL_META_ELEMTYPE_R:
+					{
+						/* No FP support, so pass a "null" instead */
+						boxPtr = 0;
+						ptr = &boxPtr;
+					}
+					break;
+				#endif
+
+					default:
+					{
+						ptr = stacktop;
+					}
+					break;
+				}
+				*posn = ILExecThreadBox(thread, paramType, ptr);
+				if(!(*posn))
+				{
+					return 0;
+				}
+			}
+			else if(ILType_IsValueType(paramType))
+			{
+				/* Box value types after aligning small enumerated types */
+				ptr = stacktop;
+				if(ILTypeIsEnum(paramType))
+				{
+					enumType = ILTypeGetEnumType(paramType);
+					if(ILType_IsPrimitive(enumType))
+					{
+						switch(ILType_ToElement(enumType))
+						{
+							case IL_META_ELEMTYPE_I1:
+							case IL_META_ELEMTYPE_U1:
+							case IL_META_ELEMTYPE_BOOLEAN:
+							{
+								boxByte = (ILInt8)(stacktop->intValue);
+								ptr = &boxByte;
+							}
+							break;
+
+							case IL_META_ELEMTYPE_I2:
+							case IL_META_ELEMTYPE_U2:
+							case IL_META_ELEMTYPE_CHAR:
+							{
+								boxShort = (ILInt16)(stacktop->intValue);
+								ptr = &boxShort;
+							}
+							break;
+						}
+					}
+				}
+				*posn = ILExecThreadBox(thread, paramType, ptr);
+				if(!(*posn))
+				{
+					return 0;
+				}
+			}
+			else if(ILTypeIsReference(paramType))
+			{
+				/* Object reference type: pass it directly */
+				*posn = (ILObject *)(stacktop->ptrValue);
+			}
+			else
+			{
+				/* Assume that everything else is a pointer, and wrap
+				it up within a "System.IntPtr" object */
+				*posn = ILExecThreadBox(thread, ILType_Int, stacktop);
+				if(!(*posn))
+				{
+					return 0;
+				}
 			}
 		}
+
 		stacktop += _ILStackWordsForType(thread, paramType);
 		++posn;
 	}

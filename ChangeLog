@@ -1,4 +1,27 @@
+2004-05-18  Thong Nguyen  <tum@veridicus.com>
 
+	* include/il_engine.h: Added prototype for ILExecThreadBoxNoValue.
+	
+	* engine/box.c: Added implementation of ILExecThreadBoxNoValue.
+	
+	* engine/lib_reflect.c: Added support for dynamically invoking
+	methods with out/ref params (allowing null params to be passed
+	to functions with out/ref value types) (InvokeMethod).
+	
+	* image/meta_types.c: Added ILTypeIsSystemClass function.
+	Modified ILTypeGetDelegateBeginInvokeMethod and
+	ILTypeGetDelegateEndInvokeMethod to verify the parameters
+	against the delegate Invoke method.
+	
+	* include/il_types.h: Added prototype for ILTypeIsSystemClass.
+	
+	* engine/lib_delegate.c: Implemented SetOutParams internal
+	call.  Added support for returning out/ref parameters in
+	Delegate_EndInvoke.
+	
+	* engine/cvm_call.c: Modified _ILPackVarArgs to recognise and 
+	properly pack byref arguments.
+	
 2004-05-17  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* pnet.spec.in: try and kludge my way around "rpm" hanging

@@ -538,6 +538,11 @@ int ILTypeIsStringClass(ILType *type);
 int ILTypeIsObjectClass(ILType *type);
 
 /*
+ * Determine if a type is a "system/corlib" class.
+ */
+int ILTypeIsSystemClass(ILType *type, const char *namespace, const char *name);
+
+/*
  * Determine if two types are assignment-compatible within
  * the context of a particular image when assigning a value
  * of type "src" to a location of type "dest".  If "src" is

@@ -107,7 +107,42 @@ ILObject *_IL_Delegate_CreateBlankDelegate(ILExecThread *_thread,
 void _IL_AsyncResult_SetOutParams(ILExecThread *_thread, ILObject *del,
 								  System_Array *args, System_Array *outParams)
 {
-	/* TODO */
+	int i, j, paramcount;
+	ILObject **argsArray, **outArray;
+	ILType *invokeSignature, *paramType;
+
+	invokeSignature = ILMethod_Signature(((System_Delegate *)del)->methodInfo);
+
+	paramcount = ILTypeNumParams(invokeSignature);
+
+	if (args->length < paramcount || outParams->length < paramcount)
+	{
+		return;
+	}
+
+	j = 0;
+
+	argsArray = ((ILObject **)ArrayToBuffer(args));
+	outArray = ((ILObject **)ArrayToBuffer(outParams));
+
+	for (i = 1; i <= paramcount; i++)
+	{
+		paramType = ILTypeGetParam(invokeSignature, i);
+
+		if (ILType_IsComplex(paramType) 
+			&& ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF)
+		{
+			paramType = ILType_Ref(paramType);
+
+			if (j >= outParams->length)
+			{
+				break;
+			}
+
+			outArray[j++] = argsArray[i - 1];
+		}
+	}
+
 }
 
 /*
@@ -335,18 +370,14 @@ static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
 	/* Get the signature for the BeginInvoke method */
 	beginInvokeMethodSignature = ILMethod_Signature(beginInvokeMethodInfo);
 
-
-	/*  the number of paramters for the BeginInvoke method */
+	/* The number of paramters for the BeginInvoke method */
 	paramCount = ILTypeNumParams(beginInvokeMethodSignature);
 
-	/* Get the number of CVM words the delegate method requires 
-	   (we use the delegate method and not the BeginInvoke method
-	      cause we only want the delegate parameters and not the
-		  AsyncCallback or state parameters) */
+	/* Get the number of CVM words the delegate method requires  */
 	paramWords = _ILGetMethodParamCount
 		(
 			thread,
-			ILTypeGetDelegateMethod(ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)),
+			beginInvokeMethodInfo,
 			0
 		);
 
@@ -354,8 +385,8 @@ static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
 	_ILPackVarArgs
 		(
 			thread,
-			 /* stackTop is the part "just above" the delegate parameters */
-			thread->frame + paramWords,
+			 /* stackTop is the part "just below" the IAsyncResult parameter */
+			thread->frame + paramWords - 2,
 			/* 0 is return param */
 			1,
 			/* Number of parameters in BeginInvoke not including the AsyncResult & state */
@@ -367,6 +398,7 @@ static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
 
 	obj = _ILEngineAllocObject(thread, classInfo);
 
+	/* Call AsyncResult constructor */
 	ILExecThreadCall
 		(
 			thread,
@@ -375,8 +407,8 @@ static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
 			obj,
 			(System_Delegate *)_this,
 			array /* Delegate method arguments */,
-			(thread->frame + paramWords)->ptrValue /* AsyncCallback */,
-			(thread->frame + paramWords + 1)->ptrValue /* AsyncState */
+			(thread->frame + paramWords - 2)->ptrValue /* AsyncCallback */,
+			(thread->frame + paramWords - 1)->ptrValue /* AsyncState */
 		);
 
 	thread->stackTop = stackTop;
@@ -390,13 +422,15 @@ static void Delegate_EndInvoke(ILExecThread *thread,
 {	
 	ILObject *retValue;
 	ILObject *array;
+	ILObject **arrayBuffer;
 	ILClass *classInfo;
 	ILType *retType;	
 	ILMethod *endInvokeMethodInfo;
 	ILType *endInvokeMethodSignature;
 	ILMethod *asyncEndInvokeMethodInfo;	
 	CVMWord *stackTop = thread->stackTop;
-	int paramWords, paramCount;
+	int i, paramWords, paramCount;
+	CVMWord *frame;
 
 	classInfo = GetObjectClass(_this);
 
@@ -425,7 +459,7 @@ static void Delegate_EndInvoke(ILExecThread *thread,
 	paramWords = _ILGetMethodParamCount
 		(
 			thread,
-			ILTypeGetDelegateEndInvokeMethod(ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)),
+			endInvokeMethodInfo,
 			0
 		);
 
@@ -449,6 +483,8 @@ static void Delegate_EndInvoke(ILExecThread *thread,
 	array = ILExecThreadNew(thread, "[oSystem.Object;", "(Ti)V",
 		(ILVaUInt)paramCount - 1 /* Number of out-params is (number of params) - (1 for AsyncResult) */);
 
+	arrayBuffer = ((ILObject **)ArrayToBuffer(array));
+
 	if (array == 0)
 	{
 		ILExecThreadThrowOutOfMemory(thread);
@@ -456,24 +492,53 @@ static void Delegate_EndInvoke(ILExecThread *thread,
 		return;
 	}
 
+	/* Call AsyncResult.EndInvoke. */
 	ILExecThreadCall
 		(
 			thread,
 			asyncEndInvokeMethodInfo,
 			&retValue,
-			/* Async Result */
+			/* IAsyncResult */
 			(thread->frame + paramWords - 1)->ptrValue,
 			/* Array for out-params */
 			array			
 		);
 
 	/*
-	 * TODO: Unpack the "out" values into the argument pointers
-	 * currently on the stack.
+	 * Pack "out" values back onto the stack.
 	 */
-	
-	/* I suspect there may be type alignment issues ? :-\ */
 
+	/* Skip the "this" pointer */
+	frame = thread->frame + 1;
+
+	for (i = 1; i <= paramCount - 1 /* -1 to skip IAsyncResult */; i++)
+	{
+		ILUInt32 paramSize;
+		ILType *paramType;
+
+		paramType = ILTypeGetParam(endInvokeMethodSignature, i);
+		paramSize = _ILStackWordsForType(thread, paramType);
+		paramType = ILType_Ref(paramType);
+
+		if (ILType_IsPrimitive(paramType) || ILType_IsValueType(paramType))
+		{
+			/* If the param is a value type then unbox directly into the argument */
+			ILExecThreadUnbox(thread, paramType, arrayBuffer[i - 1], frame->ptrValue);
+		}
+		else if (ILType_IsClass(paramType))
+		{
+			/* If the param is a class reference then set the new class reference */
+			*(ILObject **)frame->ptrValue = arrayBuffer[i - 1];
+		}
+		else
+		{
+			/* Don't know how to return this type of out param */
+		}
+
+		frame += paramSize;
+	}
+	
+	/* Set the return value */
 	if (ILTypeIsValue(retType))
 	{
 		ILExecThreadUnbox(thread, retType, retValue, result);

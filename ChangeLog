@@ -8,6 +8,9 @@
 
 	* cscc/c/c_oper.tc: implement pointer arithmetic for "+" and "-".
 
+	* engine/lib_string.c: reset "finalLen" before performing the
+	replace phase in "String.Replace", by <nick@chemlab.org>.
+
 2002-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c: implement "ProcessWithAssembler" in the compiler

@@ -1300,6 +1300,7 @@ System_String *_IL_String_Replace_StringString(ILExecThread *thread,
 
 	/* Scan the input string again and perform the replacement */
 	buf = StringToBuffer(str);
+	finalLen = 0;
 	posn = 0;
 	while((posn + oldLen) <= _this->length)
 	{

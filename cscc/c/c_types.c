@@ -973,21 +973,21 @@ static ILUInt32 BitFieldLeftOver(ILGenInfo *info, ILClass *classInfo,
  * Add an attribute that defines a bit field name.
  */
 static void BitFieldAdd(ILGenInfo *info, ILClass *classInfo,
-						const char *fieldName, const char *storageName,
+						const char *fieldName,
+						unsigned long fieldLen,
+						const char *storageName,
+						unsigned long storageLen,
 						ILUInt32 posn, ILUInt32 numBits)
 {
 	unsigned char fieldHeader[IL_META_COMPRESS_MAX_SIZE];
 	unsigned char storageHeader[IL_META_COMPRESS_MAX_SIZE];
-	unsigned long fieldLen, storageLen;
 	int fieldHeaderLen, storageHeaderLen;
 	unsigned long totalLen;
 	unsigned char *buf;
 	ILAttribute *attr;
 
 	/* Determine the total length of the attribute value */
-	fieldLen = strlen(fieldName);
 	fieldHeaderLen = ILMetaCompressData(fieldHeader, fieldLen);
-	storageLen = strlen(storageName);
 	storageHeaderLen = ILMetaCompressData(storageHeader, storageLen);
 	totalLen = 12 + fieldHeaderLen + fieldLen + storageHeaderLen + storageLen;
 
@@ -1098,8 +1098,9 @@ int CTypeDefineBitField(ILGenInfo *info, ILType *structType,
 		{
 			posn -= numBits;
 		}
-		BitFieldAdd(info, classInfo, fieldName,
-					ILField_Name(field), posn, numBits);
+		BitFieldAdd(info, classInfo, fieldName, strlen(fieldName),
+					ILField_Name(field), strlen(ILField_Name(field)),
+					posn, numBits);
 	}
 
 	/* Done */
@@ -1353,6 +1354,19 @@ static void CloneStruct(ILGenInfo *info, ILClass *dest, ILClass *src)
 	ILField *newField;
 	ILFieldLayout *flayout;
 	ILClassLayout *clayout;
+	ILMethod *ctor;
+	ILAttribute *attr;
+	const void *blob;
+	unsigned long blobLen;
+	ILSerializeReader *reader;
+	const char *str;
+	int slen;
+	const char *fieldName;
+	unsigned long fieldLen;
+	const char *storageName;
+	unsigned long storageLen;
+	ILUInt32 bitFieldStart;
+	ILUInt32 bitFieldSize;
 
 	/* Clone the fields */
 	field = 0;
@@ -1379,7 +1393,71 @@ static void CloneStruct(ILGenInfo *info, ILClass *dest, ILClass *src)
 	}
 
 	/* Clone the bit field declarations */
-	/* TODO */
+	ctor = BitFieldCtor(info);
+	attr = 0;
+	while((attr = ILProgramItemNextAttribute(ILToProgramItem(src), attr)) != 0)
+	{
+		/* Skip this attribute if it is not "BitFieldAttribute" */
+		if(ILAttributeTypeAsItem(attr) != ILToProgramItem(ctor))
+		{
+			continue;
+		}
+
+		/* Extract the bit field definition's parameters */
+		blob = ILAttributeGetValue(attr, &blobLen);
+		if(!blob)
+		{
+			continue;
+		}
+		reader = ILSerializeReaderInit(ctor, blob, blobLen);
+		if(!reader)
+		{
+			continue;
+		}
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_STRING)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if((slen = ILSerializeReaderGetString(reader, &str)) < 0)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		fieldName = str;
+		fieldLen = (unsigned long)(long)slen;
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_STRING)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if((slen = ILSerializeReaderGetString(reader, &str)) < 0)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		storageName = str;
+		storageLen = (unsigned long)(long)slen;
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_I4)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		bitFieldStart = (ILUInt32)(ILSerializeReaderGetInt32
+			(reader, IL_META_SERIALTYPE_I4));
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_I4)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		bitFieldSize = (ILUInt32)(ILSerializeReaderGetInt32
+			(reader, IL_META_SERIALTYPE_I4));
+		ILSerializeReaderDestroy(reader);
+
+		/* Create a new bit field declaration on the cloned copy */
+		BitFieldAdd(info, dest, fieldName, fieldLen,
+					storageName, storageLen, bitFieldStart, bitFieldSize);
+	}
 
 	/* Clone the class layout information */
 	clayout = ILClassLayoutGetFromOwner(src);

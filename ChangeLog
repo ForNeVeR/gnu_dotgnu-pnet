@@ -6,6 +6,9 @@
 
 	* engine/lib_task.c: fix Win32-specific compilation issues.
 
+	* engine/lib_task.c: create Win32 pipes using the file descriptor
+	functions, to be consistent with the routines in "file.c".
+
 2003-07-20  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_relop.tc: Special handling for float types to correctly

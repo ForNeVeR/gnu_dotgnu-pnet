@@ -25,6 +25,11 @@
 #include "il_thread.h"
 #ifdef IL_WIN32_PLATFORM
 	#include <windows.h>
+	#include <io.h>
+	#include <fcntl.h>
+	#ifdef IL_WIN32_CYGWIN
+		#include <unistd.h>
+	#endif
 #else
 	#ifdef HAVE_SYS_TYPES_H
 		#include <sys/types.h>
@@ -432,16 +437,24 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 {
 #ifdef IL_WIN32_PLATFORM
 
+#ifdef IL_WIN32_CYGWIN
+	#define	GET_OSF(fd)		((HANDLE)(get_osfhandle((fd))))
+	#define	MAKE_PIPE(fds)	(pipe((fds)))
+#else
+	#define	GET_OSF(fd)		((HANDLE)(_get_osfhandle((fd))))
+	#define	MAKE_PIPE(fds)	(_pipe((fds), 0, _O_BINARY))
+#endif
+
 	const char *fname;
 	char *args;
 	STARTUPINFO startupInfo;
 	PROCESS_INFORMATION processInfo;
 	char *env = 0;
 	ILBool result;
-	HANDLE readSide, writeSide;
-	HANDLE cleanups[8];
+	int pipefds[2];
+	int cleanups[8];
 	int numCleanups = 0;
-	HANDLE closeAfterFork[8];
+	int closeAfterFork[8];
 	int numCloseAfterFork = 0;
 	int index;
 
@@ -472,48 +485,48 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 		startupInfo.dwFlags |= STARTF_USESTDHANDLES;
 		if((flags & ProcessStart_RedirectStdin) != 0)
 		{
-			CreatePipe(&readSide, &writeSide, NULL, 0);
-			*stdinHandle = (ILNativeInt)writeSide;
-			SetHandleInformation(readSide, HANDLE_FLAG_INHERIT,
-								 HANDLE_FLAG_INHERIT);
-			startupInfo.hStdInput = readSide;
-			cleanups[numCleanups++] = readSide;
-			cleanups[numCleanups++] = writeSide;
-			closeAfterFork[numCloseAfterFork++] = readSide;
+			MAKE_PIPE(pipefds);
+			*stdinHandle = (ILNativeInt)(pipefds[1]);
+			SetHandleInformation(GET_OSF(pipefds[1]),
+								 HANDLE_FLAG_INHERIT, 0);
+			startupInfo.hStdInput = GET_OSF(pipefds[0]);
+			cleanups[numCleanups++] = pipefds[0];
+			cleanups[numCleanups++] = pipefds[1];
+			closeAfterFork[numCloseAfterFork++] = pipefds[0];
 		}
 		else
 		{
-			startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+			startupInfo.hStdInput = GET_OSF(0);
 		}
 		if((flags & ProcessStart_RedirectStdout) != 0)
 		{
-			CreatePipe(&readSide, &writeSide, NULL, 0);
-			*stdoutHandle = (ILNativeInt)readSide;
-			SetHandleInformation(writeSide, HANDLE_FLAG_INHERIT,
-								 HANDLE_FLAG_INHERIT);
-			startupInfo.hStdOutput = writeSide;
-			cleanups[numCleanups++] = readSide;
-			cleanups[numCleanups++] = writeSide;
-			closeAfterFork[numCloseAfterFork++] = writeSide;
+			MAKE_PIPE(pipefds);
+			*stdoutHandle = (ILNativeInt)(pipefds[0]);
+			SetHandleInformation(GET_OSF(pipefds[0]),
+								 HANDLE_FLAG_INHERIT, 0);
+			startupInfo.hStdOutput = GET_OSF(pipefds[1]);
+			cleanups[numCleanups++] = pipefds[0];
+			cleanups[numCleanups++] = pipefds[1];
+			closeAfterFork[numCloseAfterFork++] = pipefds[1];
 		}
 		else
 		{
-			startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+			startupInfo.hStdOutput = GET_OSF(1);
 		}
 		if((flags & ProcessStart_RedirectStderr) != 0)
 		{
-			CreatePipe(&readSide, &writeSide, NULL, 0);
-			*stderrHandle = (ILNativeInt)readSide;
-			SetHandleInformation(writeSide, HANDLE_FLAG_INHERIT,
-								 HANDLE_FLAG_INHERIT);
-			startupInfo.hStdError = writeSide;
-			cleanups[numCleanups++] = readSide;
-			cleanups[numCleanups++] = writeSide;
-			closeAfterFork[numCloseAfterFork++] = writeSide;
+			MAKE_PIPE(pipefds);
+			*stderrHandle = (ILNativeInt)(pipefds[0]);
+			SetHandleInformation(GET_OSF(pipefds[0]),
+								 HANDLE_FLAG_INHERIT, 0);
+			startupInfo.hStdError = GET_OSF(pipefds[1]);
+			cleanups[numCleanups++] = pipefds[0];
+			cleanups[numCleanups++] = pipefds[1];
+			closeAfterFork[numCloseAfterFork++] = pipefds[1];
 		}
 		else
 		{
-			startupInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+			startupInfo.hStdError = GET_OSF(2);
 		}
 	}
 
@@ -540,14 +553,14 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	{
 		for(index = 0; index < numCloseAfterFork; ++index)
 		{
-			CloseHandle(closeAfterFork[index]);
+			close(closeAfterFork[index]);
 		}
 	}
 	else
 	{
 		for(index = 0; index < numCleanups; ++index)
 		{
-			CloseHandle(cleanups[index]);
+			close(cleanups[index]);
 		}
 	}
 	return result;

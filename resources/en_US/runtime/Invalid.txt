@@ -20,3 +20,4 @@
 Invalid_CollectionModified=The collection has been modified
 Invalid_BadEnumeratorPosition=The enumerator is not positioned on an element
 Invalid_UnderlyingModified=The underlying collection has been modified
+Invalid_WriteOnce=The value can only be set once

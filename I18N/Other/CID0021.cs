@@ -84,8 +84,6 @@ public class CID0021 : RootCulture
 		{
 			NumberFormatInfo nfi = base.NumberFormat;
 			nfi.CurrencyDecimalSeparator = ",";
-			nfi.CurrencySymbol = "Rp";
-			nfi.CurrencyDecimalDigits = 2;
 			nfi.CurrencyGroupSeparator = ".";
 			nfi.NumberGroupSeparator = ".";
 			nfi.PercentGroupSeparator = ".";

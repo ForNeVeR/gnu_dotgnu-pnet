@@ -1120,26 +1120,13 @@ static int getCurrencyDigits(const char *name)
  */
 static void printNumberFormat(void)
 {
-	Node *currency;
 	Node *numElems;
 
 	/* Load the format information */
-	if(identifier)
-	{
-		currency = getNode("Currencies");
-		if(currency)
-		{
-			currency = currency->children;
-		}
-	}
-	else
-	{
-		currency = 0;
-	}
 	numElems = getNode("NumberElements");
 
 	/* Do we need to override the number format information? */
-	if(!currency && !numElems)
+	if(identifier != 0 && !numElems)
 	{
 		return;
 	}
@@ -1175,12 +1162,10 @@ static void printNumberFormat(void)
 		printf("\t\t\tnfi.CurrencyDecimalSeparator = \"%s\";\n",
 			   getNodeByIndex(numElems, NFI_MONETARY_SEPARATOR));
 	}
-	if(currency)
+	if(!identifier)
 	{
-		printf("\t\t\tnfi.CurrencySymbol = \"%s\";\n",
-			   getNodeByIndex(currency, 0));
-		printf("\t\t\tnfi.CurrencyDecimalDigits = %d;\n",
-			   getCurrencyDigits(currency->name));
+		/* Fetch the currency information from the region name table */
+		printf("\t\t\tRegionNameTable.AddCurrencyInfo(nfi, this);\n");
 	}
 	if(hasNodeByIndex(numElems, NFI_GROUPING_SEPARATOR))
 	{

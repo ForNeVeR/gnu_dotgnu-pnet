@@ -103,21 +103,6 @@ public class CID440a : CID000a
 		}
 	}
 
-	public override NumberFormatInfo NumberFormat
-	{
-		get
-		{
-			NumberFormatInfo nfi = base.NumberFormat;
-			nfi.CurrencySymbol = "\u20A1";
-			nfi.CurrencyDecimalDigits = 2;
-			return nfi;
-		}
-		set
-		{
-			base.NumberFormat = value; // not used
-		}
-	}
-
 }; // class CID440a
 
 public class CNes_sv : CID440a

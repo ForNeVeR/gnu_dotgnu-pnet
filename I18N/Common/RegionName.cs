@@ -21,8 +21,6 @@
 namespace I18N.Common
 {
 
-#if !ECMA_COMPAT
-
 using System;
 
 internal sealed class RegionName
@@ -36,13 +34,14 @@ internal sealed class RegionName
 	public bool   isMetric;
 	public String currencySymbol;
 	public String isoCurrencySymbol;
+	public int    currencyDigits;
 
 	// Construct a "RegionName" instance.
 	public RegionName(int regionID,
 					  String twoLetterISOName, String threeLetterISOName,
 					  String threeLetterWindowsName,
 					  bool isMetric, String currencySymbol,
-					  String isoCurrencySymbol)
+					  String isoCurrencySymbol, int currencyDigits)
 			{
 				this.regionID               = regionID;
 				this.twoLetterISOName       = twoLetterISOName;
@@ -51,10 +50,9 @@ internal sealed class RegionName
 				this.isMetric				= isMetric;
 				this.currencySymbol			= currencySymbol;
 				this.isoCurrencySymbol		= isoCurrencySymbol;
+				this.currencyDigits			= currencyDigits;
 			}
 
 }; // class RegionName
-
-#endif // !ECMA_COMPAT
 
 }; // namespace I18N.Common

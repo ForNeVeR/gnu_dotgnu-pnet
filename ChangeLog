@@ -21,6 +21,11 @@
 	I18N/Common/RegionName.cs, I18N/Common/RegionNameTable.cs:
 	remove redundant information from RegionNameTable.
 
+	* I18N/*, I18N/Common/RegionName.cs, I18N/Common/RegionNameTable.cs,
+	I18N/Common/RootCulture.cs, I18N/tools/loc2cul.c: fetch currency
+	symbol and digit information from the region name table because
+	the ICU locale information is unreliable.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Uri.cs: Remove multiple static constructors in the code.

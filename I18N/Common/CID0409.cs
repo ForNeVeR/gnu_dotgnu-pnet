@@ -45,21 +45,6 @@ public class CID0409 : CID0009
 		}
 	}
 
-	public override NumberFormatInfo NumberFormat
-	{
-		get
-		{
-			NumberFormatInfo nfi = base.NumberFormat;
-			nfi.CurrencySymbol = "$";
-			nfi.CurrencyDecimalDigits = 2;
-			return nfi;
-		}
-		set
-		{
-			base.NumberFormat = value; // not used
-		}
-	}
-
 }; // class CID0409
 
 public class CNen_us : CID0409

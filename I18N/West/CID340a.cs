@@ -109,8 +109,6 @@ public class CID340a : CID000a
 		{
 			NumberFormatInfo nfi = base.NumberFormat;
 			nfi.CurrencyDecimalSeparator = ",";
-			nfi.CurrencySymbol = "$";
-			nfi.CurrencyDecimalDigits = 0;
 			nfi.CurrencyGroupSeparator = ".";
 			nfi.NumberGroupSeparator = ".";
 			nfi.PercentGroupSeparator = ".";

@@ -80,21 +80,6 @@ public class CID0036 : RootCulture
 		}
 	}
 
-	public override NumberFormatInfo NumberFormat
-	{
-		get
-		{
-			NumberFormatInfo nfi = base.NumberFormat;
-			nfi.CurrencySymbol = "R";
-			nfi.CurrencyDecimalDigits = 2;
-			return nfi;
-		}
-		set
-		{
-			base.NumberFormat = value; // not used
-		}
-	}
-
 }; // class CID0036
 
 public class CNaf : CID0036

@@ -121,8 +121,6 @@ public class CID002a : RootCulture
 		{
 			NumberFormatInfo nfi = base.NumberFormat;
 			nfi.CurrencyDecimalSeparator = ",";
-			nfi.CurrencySymbol = "\u20AB";
-			nfi.CurrencyDecimalDigits = 2;
 			nfi.CurrencyGroupSeparator = ".";
 			nfi.NumberGroupSeparator = ".";
 			nfi.PercentGroupSeparator = ".";

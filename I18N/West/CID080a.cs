@@ -103,21 +103,6 @@ public class CID080a : CID000a
 		}
 	}
 
-	public override NumberFormatInfo NumberFormat
-	{
-		get
-		{
-			NumberFormatInfo nfi = base.NumberFormat;
-			nfi.CurrencySymbol = "$";
-			nfi.CurrencyDecimalDigits = 2;
-			return nfi;
-		}
-		set
-		{
-			base.NumberFormat = value; // not used
-		}
-	}
-
 }; // class CID080a
 
 public class CNes_mx : CID080a

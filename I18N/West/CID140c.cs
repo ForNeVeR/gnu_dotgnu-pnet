@@ -59,8 +59,6 @@ public class CID140c : CID000c
 		{
 			NumberFormatInfo nfi = base.NumberFormat;
 			nfi.CurrencyDecimalSeparator = ",";
-			nfi.CurrencySymbol = "F";
-			nfi.CurrencyDecimalDigits = 2;
 			nfi.CurrencyGroupSeparator = ".";
 			nfi.NumberGroupSeparator = ".";
 			nfi.PercentGroupSeparator = ".";

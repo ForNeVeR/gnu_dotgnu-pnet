@@ -102,21 +102,6 @@ public class CID0c09 : CID0009
 		}
 	}
 
-	public override NumberFormatInfo NumberFormat
-	{
-		get
-		{
-			NumberFormatInfo nfi = base.NumberFormat;
-			nfi.CurrencySymbol = "$";
-			nfi.CurrencyDecimalDigits = 2;
-			return nfi;
-		}
-		set
-		{
-			base.NumberFormat = value; // not used
-		}
-	}
-
 }; // class CID0c09
 
 public class CNen_au : CID0c09

@@ -86,8 +86,6 @@ public class CID0047 : RootCulture
 		{
 			NumberFormatInfo nfi = base.NumberFormat;
 			nfi.CurrencyDecimalSeparator = ".";
-			nfi.CurrencySymbol = "\u0AB0\u0AC1";
-			nfi.CurrencyDecimalDigits = 2;
 			nfi.CurrencyGroupSeparator = ",";
 			nfi.NumberGroupSeparator = ",";
 			nfi.PercentGroupSeparator = ",";

@@ -121,6 +121,7 @@ public abstract class RootCulture : CultureInfo
 		{
 			NumberFormatInfo nfi = new NumberFormatInfo();
 			nfi.CurrencyDecimalSeparator = ".";
+			RegionNameTable.AddCurrencyInfo(nfi, this);
 			nfi.CurrencyGroupSeparator = ",";
 			nfi.NumberGroupSeparator = ",";
 			nfi.PercentGroupSeparator = ",";

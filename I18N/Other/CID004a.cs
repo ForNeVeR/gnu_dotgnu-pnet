@@ -78,21 +78,6 @@ public class CID004a : RootCulture
 		}
 	}
 
-	public override NumberFormatInfo NumberFormat
-	{
-		get
-		{
-			NumberFormatInfo nfi = base.NumberFormat;
-			nfi.CurrencySymbol = "\u0C30\u0C42.";
-			nfi.CurrencyDecimalDigits = 2;
-			return nfi;
-		}
-		set
-		{
-			base.NumberFormat = value; // not used
-		}
-	}
-
 	public override String ResolveLanguage(String name)
 	{
 		switch(name)

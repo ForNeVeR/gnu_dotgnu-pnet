@@ -84,6 +84,7 @@ static void _ILThreadInit(void)
 	_ILSemaphoreCreate(&(mainThread.suspendAck));
 	mainThread.startFunc        = 0;
 	mainThread.objectArg        = 0;
+	mainThread.destroyOnExit	= 0;
 	_ILWakeupCreate(&(mainThread.wakeup));
 	_ILWakeupQueueCreate(&(mainThread.joinQueue));
 
@@ -190,6 +191,11 @@ void _ILThreadRun(ILThread *thread)
 		_ILWakeupQueueWakeAll(&(thread->joinQueue));
 	}
 	_ILMutexUnlock(&(thread->lock));
+
+	if (thread->destroyOnExit)
+	{
+		ILThreadDestroy(thread);
+	}
 }
 
 ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
@@ -222,6 +228,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	_ILWakeupCreate(&(thread->wakeup));
 	_ILWakeupQueueCreate(&(thread->joinQueue));
 	thread->handle = 0;
+	thread->destroyOnExit = 0;
 
 	/* Lock out the thread system */
 	_ILMutexLock(&threadLockAll);
@@ -289,10 +296,16 @@ void ILThreadDestroy(ILThread *thread)
 		/* Only terminate the system thread if one was created */
 		if((thread->state & IL_TS_UNSTARTED) == 0)
 		{
-			_ILThreadTerminate(thread);
+			/* Terminating the thread is unsafe so just don't
+			   destroy now and tell the thread to destroy itself
+			   on exit */
 
-			/* Adjust the thread count */
-			_ILThreadAdjustCount(-1, (thread->state & IL_TS_BACKGROUND) ? -1 : 0);
+			thread->destroyOnExit = 1;
+			ILThreadAbort(thread);
+
+			_ILMutexUnlock(&thread->lock);
+
+			return;
 		}
 
 		_ILMutexUnlock(&thread->lock);
@@ -1056,6 +1069,31 @@ void _ILThreadSuspendRequest(ILThread *thread)
 
 	/* Suspend the current thread until we receive a resume signal */
 	_ILThreadSuspendSelf(thread);
+}
+
+/*
+ * Clear stack space.
+ */
+void ILThreadClearStack(int length)
+{
+	char *ptr;
+
+#ifdef HAVE_ALLOCA
+#ifdef _MSC_VER
+	ptr = _alloca(length);
+#else
+	ptr = alloca(length);
+#endif
+#else
+	char stackBuffer[4096];
+	length = 4096;
+	ptr = &stackBuffer[0];
+#endif
+
+	if (ptr)
+	{
+		ILMemZero(ptr, length);
+	}
 }
 
 #ifdef	__cplusplus

@@ -1,3 +1,4 @@
+
 /*
  * thr_defs.h - Common thread definitions.
  *
@@ -114,6 +115,7 @@ struct _tagILThread
 	_ILWakeupQueue					joinQueue;
 	ILThreadCleanupEntry		*firstCleanupEntry;
 	ILThreadCleanupEntry		*lastCleanupEntry;
+	int							destroyOnExit;
 };
 
 /*

@@ -22,6 +22,7 @@
 namespace System
 {
 
+[AttributeUsage(AttributeTargets.Field, Inherited=true)]
 #if ECMA_COMPAT
 internal
 #else

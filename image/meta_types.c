@@ -292,7 +292,8 @@ int ILTypeAddSentinel(ILContext *context, ILType *method)
 
 unsigned long ILTypeNumParams(ILType *method)
 {
-	if(ILType_IsMethod(method) || ILType_IsProperty(method))
+	if(ILType_IsMethod(method) || ILType_IsProperty(method) ||
+	   ILType_IsWith(method))
 	{
 		return method->num__;
 	}
@@ -309,7 +310,8 @@ ILType *ILTypeGetParam(ILType *method, unsigned long index)
 
 ILType *ILTypeGetParamWithPrefixes(ILType *method, unsigned long index)
 {
-	if(!ILType_IsMethod(method) && !ILType_IsProperty(method))
+	if(!ILType_IsMethod(method) && !ILType_IsProperty(method) &&
+	   !ILType_IsWith(method))
 	{
 		return 0;
 	}
@@ -356,7 +358,7 @@ void ILTypeSetReturn(ILType *type, ILType *retType)
 
 ILType *ILTypeGetReturn(ILType *type)
 {
-	if(ILType_IsMethod(type) || ILType_IsProperty(type))
+	if(ILType_IsMethod(type) || ILType_IsProperty(type) || ILType_IsWith(type))
 	{
 		return ILTypeStripPrefixes(type->un.method__.retType__);
 	}
@@ -368,7 +370,7 @@ ILType *ILTypeGetReturn(ILType *type)
 
 ILType *ILTypeGetReturnWithPrefixes(ILType *type)
 {
-	if(ILType_IsMethod(type) || ILType_IsProperty(type))
+	if(ILType_IsMethod(type) || ILType_IsProperty(type) || ILType_IsWith(type))
 	{
 		return type->un.method__.retType__;
 	}

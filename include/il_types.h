@@ -219,6 +219,13 @@ struct _tagILType
 				 ((type)->kind__ & 0xFF) == IL_TYPE_COMPLEX_PROPERTY)
 
 /*
+ * Determine if a type is a "with" instantiation.
+ */
+#define	ILType_IsWith(type)	\
+				((type) != 0 && ILType_IsComplex((type)) && \
+				 ((type)->kind__ & 0xFF) == IL_TYPE_COMPLEX_WITH)
+
+/*
  * Determine if a type is a sentinel.
  */
 #define	ILType_IsSentinel(type)	\

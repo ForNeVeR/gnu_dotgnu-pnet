@@ -10,6 +10,9 @@ SUBDIRS = Custommarshalers \
 		  Mono.Data.PostgreSqlClient \
 		  Mono.Data.MySql \
 		  Mono.Data.DB2Client \
+		  Mono.Data.SqliteClient \
+		  Mono.Data.SybaseClient \
+		  Mono.Data.TdsClient \
 		  System.Data.OracleClient \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \

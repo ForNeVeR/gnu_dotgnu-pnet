@@ -7,6 +7,19 @@
 	class/System.DirectoryServices/System.DirectoryServices.build:
 	add build scripts for "System.DirectoryServices".
 
+	* configure.in, copy-mcs.sh, class/Makefile.am,
+	class/Mono.Data.SqliteClient/.cvsignore,
+	class/Mono.Data.SqliteClient/Makefile.am,
+	class/Mono.Data.SqliteClient/Mono.Data.SqliteClient.build,
+	class/Mono.Data.SybaseClient/.cvsignore,
+	class/Mono.Data.SybaseClient/Makefile.am,
+	class/Mono.Data.SybaseClient/Mono.Data.SybaseClient.build,
+	class/Mono.Data.TdsClient/.cvsignore,
+	class/Mono.Data.TdsClient/Makefile.am,
+	class/Mono.Data.TdsClient/Mono.Data.TdsClient.build
+	add build scripts for "Mono.Data.SqliteClient",
+	"Mono.Data.SybaseClient", and "Mono.Data.TdsClient".
+
 2003-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, class/Makefile.am: temporarily disable

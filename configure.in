@@ -264,6 +264,9 @@ class/Mono.Data.Tds/Makefile
 class/System.Data/Makefile
 class/Mono.Data.PostgreSqlClient/Makefile
 class/Mono.Data.MySql/Makefile
+class/Mono.Data.SqliteClient/Makefile
+class/Mono.Data.SybaseClient/Makefile
+class/Mono.Data.TdsClient/Makefile
 class/System.Data.OracleClient/Makefile
 class/Mono.Data.DB2Client/Makefile
 class/Mono.Directory.LDAP/Makefile

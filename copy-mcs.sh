@@ -56,6 +56,9 @@ for dir in Custommarshalers \
 		  System.Data \
 		  Mono.Data.PostgreSqlClient \
 		  Mono.Data.MySql \
+		  Mono.Data.SqliteClient \
+		  Mono.Data.SybaseClient \
+		  Mono.Data.TdsClient \
 		  ByteFX.Data \
 		  Npgsql \
 		  Mono.Data.DB2Client \

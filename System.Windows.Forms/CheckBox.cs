@@ -526,11 +526,18 @@ public class CheckBox : ButtonBase
 	// Raises the MouseUp event.
 	protected override void OnMouseUp(MouseEventArgs mevent)
 			{
-				bool clicked = (entered && pressed);
-				base.OnMouseUp(mevent);
-				if(clicked)
+				if(button == mevent.Button)
 				{
-					OnClick(EventArgs.Empty);
+					bool clicked = (entered && pressed);
+					base.OnMouseUp(mevent);
+					if(clicked)
+					{
+						OnClick(EventArgs.Empty);
+					}
+				}
+				else
+				{
+					base.OnMouseUp(mevent);
 				}
 			}
 

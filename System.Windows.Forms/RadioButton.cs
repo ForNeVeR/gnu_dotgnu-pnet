@@ -44,7 +44,7 @@ public class RadioButton : ButtonBase
 	private int checkX;
 	private int checkY;
 
-	private static readonly int checkSize = 13;
+	private const int checkSize = 13;
 
 	// Constructor.
 	public RadioButton() : base()
@@ -58,10 +58,6 @@ public class RadioButton : ButtonBase
 				isChecked = false;
 				needsLayout = true;
 			}
-
-
-
-
 
 #if !CONFIG_COMPACT_FORMS
 	// Get or set the appearance of this radio button control.
@@ -130,18 +126,75 @@ public class RadioButton : ButtonBase
 			}
 #endif
 
+	// Disable other radio buttons in the same group as this one.
+	private void DisableOthersInGroup()
+			{
+				// Nothing to do if we aren't an "auto check" button.
+				if(!autoCheck)
+				{
+					return;
+				}
+
+				// Remove tab stop indications from all other buttons.
+				if(Parent != null)
+				{
+					foreach(Control child1 in Parent.Controls)
+					{
+						RadioButton rb1 = (child1 as RadioButton);
+						if(rb1 != null && rb1 != this)
+						{
+							if(rb1.autoCheck)
+							{
+								rb1.TabStop = false;
+							}
+						}
+					}
+				}
+
+				// Set the tab stop indication on this button.
+				TabStop = isChecked;
+
+				// Reset all other buttons in the group.
+				if(isChecked && Parent != null)
+				{
+					foreach(Control child2 in Parent.Controls)
+					{
+						RadioButton rb2 = (child2 as RadioButton);
+						if(rb2 != null && rb2 != this)
+						{
+							if(rb2.autoCheck)
+							{
+								rb2.Checked = false;
+							}
+						}
+					}
+				}
+			}
+
 	// Get or set the checked state as a simple boolean value.
 	public bool Checked
 			{
-				get { return isChecked; }
+				get
+				{
+					return isChecked;
+				}
 				set
 				{
-					if (isChecked != value)
+					// Bail out if the value doesn't change.
+					if(isChecked == value)
 					{
-						isChecked = value;
-						Redraw();
-						OnCheckedChanged(EventArgs.Empty);
+						return;
 					}
+
+					// Record the value and redraw this radio button.
+					isChecked = value;
+					Redraw();
+
+					// Disable the other radio buttons in the group.
+					DisableOthersInGroup();
+
+					// Notify event listeners of the change.
+					OnCheckedChanged(EventArgs.Empty);
 				}
 			}
 
@@ -162,7 +215,23 @@ public class RadioButton : ButtonBase
 #endif
 	override Size DefaultSize
 			{
-				get { return new Size(104, 24); }
+				get
+				{
+					return new Size(104, 24);
+				}
+			}
+
+	// Get or set the tab stop indication.
+	public new bool TabStop
+			{
+				get
+				{
+					return base.TabStop;
+				}
+				set
+				{
+					base.TabStop = value;
+				}
 			}
 
 #if !CONFIG_COMPACT_FORMS
@@ -176,9 +245,6 @@ public class RadioButton : ButtonBase
 				get { return base.TextAlign; }
 				set { base.TextAlign = value; }
 			}
-
-
-
 
 	// Calculate the current state of the button for its visual appearance.
 	internal override ButtonState CalculateState()
@@ -406,22 +472,21 @@ public class RadioButton : ButtonBase
 	// Raises the Click event.
 	protected override void OnClick(EventArgs e)
 			{
-				if (!isChecked && autoCheck && Enabled)
+				if(autoCheck)
 				{
-					if (Parent != null)
-					{
-						foreach (Control c in Parent.Controls)
-						{
-							RadioButton rb = c as RadioButton;
-							if ((rb != null) && (rb != this))
-							{
-								rb.Checked = false;
-							}
-						}
-					}
 					Checked = true;
 				}
 				base.OnClick(e);
+			}
+
+	// Process a focus enter event.
+	protected override void OnEnter(EventArgs e)
+			{
+				if(MouseButtons == MouseButtons.None)
+				{
+					OnClick(e);
+				}
+				base.OnEnter(e);
 			}
 
 	// Raises the HandleCreated event.
@@ -430,37 +495,17 @@ public class RadioButton : ButtonBase
 				base.OnHandleCreated(e);
 			}
 
-	protected override void OnMouseDown(MouseEventArgs e)
-			{
-				pressed = true;
-				Redraw();
-				base.OnMouseDown(e);
-			}
-
-	// Override MouseEnter event from ButtonBase
-	protected override void OnMouseEnter(EventArgs e)
-			{
-				entered = true;
-				Redraw();
-				base.OnMouseEnter(e);
-			}
-
-	// Override MouseLeave event from ButtonBase
-	protected override void OnMouseLeave(EventArgs e)
-			{
-				entered = false;
-				Redraw();
-				base.OnMouseLeave(e);
-			}
-
 	// Raises the MouseUp event.
 	protected override void OnMouseUp(MouseEventArgs e)
 			{
-				bool clicked = (entered && pressed);
-				pressed = false;
-				if(clicked)
+				if(button == e.Button)
 				{
-					OnClick(EventArgs.Empty);
+					bool clicked = (entered && pressed);
+					pressed = false;
+					if(clicked)
+					{
+						OnClick(EventArgs.Empty);
+					}
 				}
 				base.OnMouseUp(e);
 			}
@@ -474,9 +519,24 @@ public class RadioButton : ButtonBase
 	// Processes a mnemonic character.
 	protected override bool ProcessMnemonic(char charCode)
 			{
+				if(IsMnemonic(charCode, Text))
+				{
+					if(CanSelect)
+					{
+						if(Focused)
+						{
+							OnClick(EventArgs.Empty);
+							return true;
+						}
+						else
+						{
+							// Bring the focus here, which will activate us.
+							Focus();
+						}
+					}
+				}
 				return false;
 			}
-
 
 	// Convert this object into a string.
 	public override string ToString()

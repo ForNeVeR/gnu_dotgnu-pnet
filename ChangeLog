@@ -1,3 +1,10 @@
+
+2003-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/Button.cs, System.Windows.Forms/CheckBox.cs,
+	System.Windows.Forms/RadioButton.cs: fix some logic errors in
+	the button classes.
+
 2003-11-20  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingGraphics.cs,

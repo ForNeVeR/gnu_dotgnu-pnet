@@ -20,8 +20,6 @@
 
 // Generated from "ibm-1026.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -890,5 +888,3 @@ internal class ENCibm1026 : CP1026
 }; // class ENCibm1026
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

@@ -20,8 +20,6 @@
 
 // Generated from "ibm-866.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -684,5 +682,3 @@ internal class ENCibm866 : CP866
 }; // class ENCibm866
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

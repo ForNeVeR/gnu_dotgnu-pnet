@@ -20,8 +20,6 @@
 
 // Generated from "ibm-852.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -674,5 +672,3 @@ internal class ENCibm852 : CP852
 }; // class ENCibm852
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

@@ -20,8 +20,6 @@
 
 // Generated from "ibm-864.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -856,5 +854,3 @@ internal class ENCibm864 : CP864
 }; // class ENCibm864
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

@@ -20,8 +20,6 @@
 
 // Generated from "ibm-424.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -824,5 +822,3 @@ internal class ENCibm424 : CP20424
 }; // class ENCibm424
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

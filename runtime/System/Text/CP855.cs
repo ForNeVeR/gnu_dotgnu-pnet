@@ -20,8 +20,6 @@
 
 // Generated from "ibm-855.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -674,5 +672,3 @@ internal class ENCibm855 : CP855
 }; // class ENCibm855
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

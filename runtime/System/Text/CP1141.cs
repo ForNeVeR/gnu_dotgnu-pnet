@@ -20,8 +20,6 @@
 
 // Generated from "ibm-1141.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -890,5 +888,3 @@ internal class ENCibm01141 : CP1141
 }; // class ENCibm01141
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

@@ -20,8 +20,6 @@
 
 // Generated from "ibm-858.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -674,5 +672,3 @@ internal class ENCibm00858 : CP858
 }; // class ENCibm00858
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

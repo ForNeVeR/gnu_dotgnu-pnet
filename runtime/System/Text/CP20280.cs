@@ -20,8 +20,6 @@
 
 // Generated from "ibm-280.ucm".
 
-#if RARE_CODE_PAGES
-
 namespace System.Text
 {
 
@@ -892,5 +890,3 @@ internal class ENCibm280 : CP20280
 }; // class ENCibm280
 
 }; // namespace System.Text
-
-#endif // RARE_CODE_PAGES

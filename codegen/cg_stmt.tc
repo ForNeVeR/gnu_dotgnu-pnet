@@ -1495,6 +1495,9 @@ ILNode_GenDiscard(ILNode_GotoLabel)
  */
 ILNode_GenDiscard(ILNode_GotoCase)
 {
+	ILLoopStack *stack;
+	int inTryBlock = 0;
+
 	if(info->needSwitchPop)
 	{
 		/* Note: Because node->expr has the same type as 
@@ -1503,7 +1506,41 @@ ILNode_GenDiscard(ILNode_GotoCase)
 		/* Compute the switch expression's value */
 		ILNode_GenValue(node->expr, info);
 	}
-	ILGenJump(info, IL_OP_BR, &(node->switchSection->label));
+
+	/* See if the goto case breaks out of a try block.  If so we
+	   must use a leave, otherwise a br will do. */
+
+	for (stack = info->loopStack + info->loopStackSize - 1; ; stack -= 1)
+	{
+		/* Foreach with its own try block */
+		if(stack->isForeachCollection)
+		{
+			inTryBlock = 1;
+			break;
+		}
+
+		/* A try block */
+		if (stack->continueLabel == 0 && stack->breakLabel == 0)
+		{
+			inTryBlock = 1;
+			break;
+		}
+
+		/* The switch block */
+		if (stack->continueLabel == 0 && stack->breakLabel != 0)
+		{
+			break;
+		}
+	}
+
+	if (inTryBlock)
+	{
+		ILGenJump(info, IL_OP_LEAVE, &(node->switchSection->label));
+	}
+	else
+	{
+		ILGenJump(info, IL_OP_BR, &(node->switchSection->label));
+	}
 }
 
 /*
@@ -1511,7 +1548,10 @@ ILNode_GenDiscard(ILNode_GotoCase)
  */
 ILNode_GenDiscard(ILNode_GotoDefault)
 {
+	ILLoopStack *stack;
 	ILNode_Switch * switchNode=(ILNode_Switch*)(info->currentSwitch);
+	int inTryBlock = 0;
+
 	if(info->needSwitchPop)
 	{
 		/* Compute the switch expression's value */
@@ -1520,8 +1560,43 @@ ILNode_GenDiscard(ILNode_GotoDefault)
 		   switch expression. Or maybe I could pick case[1]
 		   and generate it ?. But that could cause problems*/
 	}
-	ILGenJump(info, IL_OP_BR, &(((ILNode_SwitchSection*)
-					(switchNode->defaultSection))->label));
+
+	/* See if the goto case breaks out of a try block.  If so we
+	   must use a leave, otherwise a br will do. */
+
+	for (stack = info->loopStack + info->loopStackSize - 1; ; stack -= 1)
+	{
+		/* Foreach with its own try block */
+		if(stack->isForeachCollection)
+		{
+			inTryBlock = 1;
+			break;
+		}
+
+		/* A try block */
+		if (stack->continueLabel == 0 && stack->breakLabel == 0)
+		{
+			inTryBlock = 1;
+			break;
+		}
+
+		/* The switch block - there must be one */
+		if (stack->continueLabel == 0 && stack->breakLabel != 0)
+		{
+			break;
+		}
+	}
+
+	if (inTryBlock)
+	{
+		ILGenJump(info, IL_OP_LEAVE, &(((ILNode_SwitchSection*)
+						(switchNode->defaultSection))->label));
+	}
+	else
+	{
+		ILGenJump(info, IL_OP_BR, &(((ILNode_SwitchSection*)
+						(switchNode->defaultSection))->label));
+	}
 }
 
 %{

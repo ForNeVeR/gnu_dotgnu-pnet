@@ -28,6 +28,9 @@
 	* codegen/cg_resolve.c (ResolveMethod): bug fix - the wrong element
 	from the "args" array was being indexed during signature checking.
 
+	* codegen/cg_library.c: add the "DecimalConstantAttribute" class
+	to the builtin library.
+
 2001-01-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for "0.2.8" release.

@@ -81,6 +81,57 @@ static int AddDefaultConstructor(ILClass *classInfo)
 }
 
 /*
+ * Add the constructor to the "DecimalConstantAttribute" class.
+ *
+ * public DecimalConstantAttribute(byte scale, byte sign,
+ *                                 uint hi, uint mid, uint low);
+ */
+static int AddDecimalConstructor(ILClass *classInfo)
+{
+	ILMethod *method;
+	ILContext *context;
+	ILType *signature;
+	method = ILMethodCreate(classInfo, 0, ".ctor",
+					  	    IL_META_METHODDEF_PUBLIC |
+					  	    IL_META_METHODDEF_HIDE_BY_SIG |
+							IL_META_METHODDEF_SPECIAL_NAME |
+							IL_META_METHODDEF_RT_SPECIAL_NAME);
+	if(!method)
+	{
+		return 0;
+	}
+	context = ILClassToContext(classInfo);
+	signature = ILTypeCreateMethod(context, ILType_Void);
+	if(!signature)
+	{
+		return 0;
+	}
+	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	if(!ILTypeAddParam(context, signature, ILType_UInt8))
+	{
+		return 0;
+	}
+	if(!ILTypeAddParam(context, signature, ILType_UInt8))
+	{
+		return 0;
+	}
+	if(!ILTypeAddParam(context, signature, ILType_UInt32))
+	{
+		return 0;
+	}
+	if(!ILTypeAddParam(context, signature, ILType_UInt32))
+	{
+		return 0;
+	}
+	if(!ILTypeAddParam(context, signature, ILType_UInt32))
+	{
+		return 0;
+	}
+	ILMemberSetSignature((ILMember *)method, signature);
+	return 1;
+}
+
+/*
  * Add an abstract virtual method constructor to a class.
  */
 static ILMethod *AddAbstractMethod(ILClass *classInfo, const char *name,
@@ -130,6 +181,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *typedRefClass;
 	ILClass *attributeClass;
 	ILClass *paramAttributeClass;
+	ILClass *decimalConstantClass;
 	ILClass *exceptionClass;
 	ILClass *disposableInterface;
 	ILClass *collectionInterface;
@@ -258,6 +310,18 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
 	ABORT_IF(constructorOK, AddDefaultConstructor(paramAttributeClass));
+
+	/* Create "System.Runtime.CompilerServices.DecimalConstantAttribute" */
+	ABORT_IF(decimalConstantClass,
+			 ILClassCreate(scope, 0, "DecimalConstantAttribute",
+			 			   "System.Runtime.CompilerServices",
+			 			   attributeClass));
+	ILClassSetAttrs(decimalConstantClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_SEALED);
+	ABORT_IF(constructorOK, AddDecimalConstructor(decimalConstantClass));
 
 	/* Create the "System.Exception" class */
 	ABORT_IF(exceptionClass,

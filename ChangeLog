@@ -6,6 +6,8 @@
 
 	* NEWS, configure.in: update version for the "0.4.2" release.
 
+	* configure.in: update working version to "0.4.3".
+
 2002-07-27  Andrew Mitchell  <ajmitch@dunedin.lug.net.nz>
 
 	* debian/*: Update Deabin packaging scripte to reflect that the pnet

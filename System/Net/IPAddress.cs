@@ -30,9 +30,9 @@ using System.Runtime.CompilerServices;
 public class IPAddress
 {
 
-	// The IP address is stored in the low 4 bytes of "value__"
+	// The IP address is stored in the low 4 bytes of "value_"
 	// in network byte order.
-	private long value__;
+	private long value_;
 
 	public IPAddress(long newAddress)
 			{
@@ -41,14 +41,14 @@ public class IPAddress
 					throw new ArgumentOutOfRangeException
 						("newAddress", S._("Arg_OutOfRange"));
 				}
-				this.value__ = newAddress;
+				this.value_ = newAddress;
 			}
 
 	public override bool Equals(Object comparand)
 			{
 				if(comparand is IPAddress)
 				{
-					return (value__ == ((IPAddress)comparand).value__);
+					return (value_ == ((IPAddress)comparand).value_);
 				}
 				else
 				{
@@ -58,7 +58,7 @@ public class IPAddress
 
 	public override int GetHashCode() 
 			{
-				return unchecked(((int)(value__ ^ (value__ >> 32)))
+				return unchecked(((int)(value_ ^ (value_ >> 32)))
 										& (int)0x7FFFFFFF);
 			}
 
@@ -76,7 +76,7 @@ public class IPAddress
 	public static bool IsLoopback(IPAddress address)
 			{
 				long mask = (long)(uint)HostToNetworkOrder(0x7F000000);
-				return ((address.value__ & mask) == mask);
+				return ((address.value_ & mask) == mask);
 			}
 
 	// Convert from network to host order.
@@ -134,7 +134,7 @@ public class IPAddress
 			}	
 	public override string ToString()
 			{
-				int host = NetworkToHostOrder((int)value__);
+				int host = NetworkToHostOrder((int)value_);
 				return ((host >> 24) & 0xFF).ToString() + "." +
 					   ((host >> 16) & 0xFF).ToString() + "." +
 					   ((host >> 8) & 0xFF).ToString() + "." +
@@ -153,7 +153,7 @@ public class IPAddress
 			{
 				get
 				{
-					return value__;
+					return value_;
 				}
 				set
 				{
@@ -162,7 +162,7 @@ public class IPAddress
 						throw new ArgumentOutOfRangeException
 							("newAddress", S._("Arg_OutOfRange"));
 					}
-					value__ = value;
+					value_ = value;
 				}
 			}
 			

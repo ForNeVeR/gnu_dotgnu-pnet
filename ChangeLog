@@ -21,8 +21,9 @@
 	runtime/System/TimeSpan.cs, runtime/System/UInt16.cs,
 	runtime/System/UInt32.cs, runtime/System/UInt64.cs,
 	runtime/System/UIntPtr.cs,
-	runtime/System/Collections/DictionaryEntry.cs: rename "value__"
-	to "value_" so that MS'es "peverify" doesn't get confused.
+	runtime/System/Collections/DictionaryEntry.cs,
+	System/Net/IPAddress.cs: rename "value__" to "value_" so that
+	MS'es "peverify" doesn't get confused.
 
 2002-11-24  Gopal.V  <gopalv82@symonds.net>
 

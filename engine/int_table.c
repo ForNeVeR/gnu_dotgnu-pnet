@@ -2816,6 +2816,14 @@ IL_METHOD_END
 
 #endif
 
+#ifndef _IL_CodeTable_suppressed
+
+IL_METHOD_BEGIN(CodeTable_Methods)
+	IL_METHOD("GetAddress", "(oSystem.IO.Stream;l)*B", _IL_CodeTable_GetAddress, marshal_pppl)
+IL_METHOD_END
+
+#endif
+
 typedef struct
 {
 	const char *name;
@@ -2871,6 +2879,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_ClrType_suppressed
 	{"ClrType", "System.Reflection", ClrType_Methods},
+#endif
+#ifndef _IL_CodeTable_suppressed
+	{"CodeTable", "I18N.CJK", CodeTable_Methods},
 #endif
 #ifndef _IL_CryptoMethods_suppressed
 	{"CryptoMethods", "Platform", CryptoMethods_Methods},

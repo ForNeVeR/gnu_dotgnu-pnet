@@ -629,3 +629,5 @@ extern ILInt16 _IL_IPAddress_NetworkToHostOrder_s(ILExecThread * _thread, ILInt1
 extern ILBool _IL_Dns_InternalGetHostByName(ILExecThread * _thread, ILString * _p1, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
 extern ILBool _IL_Dns_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 _p1, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
 
+extern ILUInt8 * _IL_CodeTable_GetAddress(ILExecThread * _thread, ILObject * _p1, ILInt64 _p2);
+

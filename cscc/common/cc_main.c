@@ -800,6 +800,11 @@ static void ParseFile(const char *filename, int is_stdin)
 			CCStringListAdd(&argv, &argc, "-I");
 			CCStringListAdd(&argv, &argc, sys_include_dirs[posn]);
 		}
+		for(posn = 0; posn < num_imacros_files; ++posn)
+		{
+			CCStringListAdd(&argv, &argc, "-imacros");
+			CCStringListAdd(&argv, &argc, imacros_files[posn]);
+		}
 		for(posn = 0; posn < ILCppNumUndefines; ++posn)
 		{
 			/* Turn off a system cpp macro if we don't have it ourselves */

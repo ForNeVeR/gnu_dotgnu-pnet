@@ -17,6 +17,10 @@
 	* cscc/cscc.c, cscc/c/c_crt0.c: slight modifications to the
 	compiler to make integration with automake/autoconf easier.
 
+	* cscc/cscc.c, cscc/common/cc_main.c, cscc/common/cc_options.c,
+	cscc/common/cc_options.h: add the "-imacros" option to the
+	compiler command-line.
+
 2002-08-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify.c (AssignCompatible): resolve classes before

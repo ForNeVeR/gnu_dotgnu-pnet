@@ -92,6 +92,8 @@ int verbose_mode = VERBOSE_NONE;
 char **files_to_link = 0;
 int *files_to_link_temp = 0;
 int num_files_to_link = 0;
+char **imacros_files = 0;
+int num_imacros_files = 0;
 
 /*
  * Add a string to a list of strings.
@@ -221,6 +223,14 @@ static void UOption(char *arg)
 static void IOption(char *arg)
 {
 	AddString(&include_dirs, &num_include_dirs, arg);
+}
+
+/*
+ * Process a -imacros option.
+ */
+static void IMacrosOption(char *arg)
+{
+	AddString(&imacros_files, &num_imacros_files, arg);
 }
 
 /*
@@ -399,6 +409,8 @@ static CmdLineOpt const options[] = {
 	{"-I-",			0,	0,						0,	0,	0},
 	{"-I",			2,	0,						0,	IOption,
 			N_("-I<dir>"), N_("Add <dir> to the library include path")},
+	{"-imacros",	8,	0,						0,	IMacrosOption,
+			N_("-imacros <file>"), N_("Preprocess <file> before sources")},
 	{"-L",			2,	0,						0,	LOption,
 			N_("-L<dir>"), N_("Add <dir> to the library link path")},
 	{"-l",			2,	0,						0,	lOption,

@@ -1214,6 +1214,11 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		AddArgument(&cmdline, &cmdline_size, "-K");
 		AddArgument(&cmdline, &cmdline_size, sys_cpp_include_dirs[posn]);
 	}
+	for(posn = 0; posn < num_imacros_files; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-imacros");
+		AddArgument(&cmdline, &cmdline_size, imacros_files[posn]);
+	}
 	if(nostdlib_flag)
 	{
 		AddArgument(&cmdline, &cmdline_size, "-nostdlib");

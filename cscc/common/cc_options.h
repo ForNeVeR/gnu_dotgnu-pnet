@@ -107,6 +107,8 @@ extern int verbose_mode;
 extern char **files_to_link;
 extern int *files_to_link_temp;
 extern int num_files_to_link;
+extern char **imacros_files;
+extern int num_imacros_files;
 
 /*
  * Add a path to a list of strings.

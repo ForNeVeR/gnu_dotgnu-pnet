@@ -13,6 +13,8 @@
 	* samples/mscorlib.dll, samples/I18N.dll: updated version with
 	the latest culture support.
 
+	* samples/mscorlib.dll: fix for "String.Equals(String)".
+
 2002-11-13  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: generate a warning when a no-body

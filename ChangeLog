@@ -11,6 +11,9 @@ add the "StringConstant" coder API.
 
 * engine/verify_const.c: verify the string token properly.
 
+* engine/engine.h, engine/strapi.c: "_ILStringInternFromImage" and
+"_ILStringToBuffer".
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

@@ -18,7 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "engine.h"
+#include "engine_private.h"
+#include "lib_defs.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -157,6 +158,84 @@ ILString *ILStringIntern(ILExecThread *thread, ILString *str)
 						  "(oSystem.String;)oSystem.String;",
 						  &result, str);
 	return result;
+}
+
+ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
+								   ILToken token)
+{
+	const char *str;
+	unsigned long len;
+	str = ILImageGetUserString(image, token & ~IL_META_TOKEN_MASK, &len);
+	if(!str)
+	{
+		/* Shouldn't happen, but intern an empty string anyway */
+		len = 0;
+	}
+
+	/* TODO: look up the intern'ed hash table and make library-portable */
+
+#if defined(__i386) || defined(__i386__)
+	/* We can take a short-cut on x86 platforms which can
+	   access little-endian values on any boundary */
+	return ILStringWCreateLen(thread, (const ILUInt16 *)str, len);
+#else
+	/* TODO */
+	return 0;
+#endif
+}
+
+ILInt32 _ILStringToBuffer(ILExecThread *thread, ILString *str, ILUInt16 **buf)
+{
+	ILClass *classInfo;
+	ILField *field;
+	ILType *type;
+	System_Array *array;
+
+	/* Bail out if "str" is NULL */
+	if(!str)
+	{
+		*buf = 0;
+		return 0;
+	}
+
+	/* Try to discover which C# library we are using by looking
+	   for either a "char[]" or a "char" field within the string */
+	classInfo = GetObjectClass(str);
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		type = ILField_Type(field);
+		if(type == ILType_Char)
+		{
+			/* This looks like "pnetlib", which stores the characters
+			   within the main object itself */
+			*buf = StringToBuffer(str);
+			return ((System_String *)str)->length;
+		}
+		else if(ILType_IsComplex(type) &&
+				type->kind == IL_TYPE_COMPLEX_ARRAY &&
+				type->un.array.elemType == ILType_Char)
+		{
+			/* This looks like "Mono" or "OCL", which stores the
+			   characters in a separate array */
+			array = *(System_Array **)(((unsigned char *)str) + field->offset);
+			if(array)
+			{
+				*buf = (ILUInt16 *)(ArrayToBuffer(array));
+				return ((System_Array *)array)->length;
+			}
+			else
+			{
+				*buf = 0;
+				return 0;
+			}
+		}
+	}
+
+	/* If we get here, then we don't know what library we are using */
+	*buf = 0;
+	return 0;
 }
 
 #ifdef	__cplusplus

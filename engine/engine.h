@@ -250,6 +250,20 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc);
  */
 int _ILLookupTypeMatch(ILType *type, const char *signature);
 
+/*
+ * Intern a string from a constant within an image.
+ * Returns NULL if an exception was thrown.
+ */
+ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
+								   ILToken token);
+
+/*
+ * Convert a string into a buffer of characters for direct access.
+ * This is faster than calling "ToCharArray()", but should only
+ * be used inside the engine.  Returns the length.
+ */
+ILInt32 _ILStringToBuffer(ILExecThread *thread, ILString *str, ILUInt16 **buf);
+
 #ifdef	__cplusplus
 };
 #endif

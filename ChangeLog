@@ -1,3 +1,9 @@
+
+2003-07-23  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Reflection/Emit/ILGenerator.cs: Fix minor array size
+	bug in EmitWriteLine()
+	
 2003-07-23  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs,

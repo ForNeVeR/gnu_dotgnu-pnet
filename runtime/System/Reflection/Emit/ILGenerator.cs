@@ -1188,7 +1188,7 @@ public class ILGenerator : IDetachItem
 				MethodInfo method;
 
 				// Locate the "Console.WriteLine(String)" method.
-				paramList = new Type [0];
+				paramList = new Type [1];
 				paramList[0] = typeof(String);
 				method = typeof(Console).GetMethod("WriteLine", paramList);
 

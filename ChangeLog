@@ -1,3 +1,12 @@
+
+2004-04-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing.Xsharp/DrawingMdiClient.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs: set a widget's background
+	to "ParentRelative" if the alpha component is small.
+
 2004-04-26  Thong Nguyen <tum@veridicus.com>
 
 	* tests/runtime/System/Threading/TestMonitor.cs: Added new tests

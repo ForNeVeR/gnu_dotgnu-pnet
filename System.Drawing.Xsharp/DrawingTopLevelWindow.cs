@@ -186,7 +186,14 @@ internal sealed class DrawingTopLevelWindow
 	// Set the background of the window to a solid color.
 	void IToolkitWindow.SetBackground(System.Drawing.Color color)
 			{
-				Background = DrawingToolkit.DrawingToXColor(color);
+				if(color.A < 128)
+				{
+					BackgroundPixmap = null;
+				}
+				else
+				{
+					Background = DrawingToolkit.DrawingToXColor(color);
+				}
 			}
 
 	// Move this window to above one of its siblings.

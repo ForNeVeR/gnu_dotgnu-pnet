@@ -561,11 +561,27 @@ ILClass *ILClassLookup(ILProgramItem *scope,
 					   const char *name, const char *namespace);
 
 /*
+ * Look up a class using its name within a specified scope,
+ * using length-delimited names.
+ */
+ILClass *ILClassLookupLen(ILProgramItem *scope,
+					      const char *name, int nameLen,
+						  const char *namespace, int namespaceLen);
+
+/*
  * Look up a global class within any image in a context.
  * Returns NULL if not found.
  */
 ILClass *ILClassLookupGlobal(ILContext *context,
 							 const char *name, const char *namespace);
+
+/*
+ * Look up a global class within any image in a context,
+ * using length-delimited names.
+ */
+ILClass *ILClassLookupGlobalLen(ILContext *context,
+							    const char *name, int nameLen,
+								const char *namespace, int namespaceLen);
 
 /*
  * Add an implements clause to a class.  Returns NULL if out of memory.
@@ -991,13 +1007,14 @@ void ILMethodFreeExceptions(ILException *exceptions);
  * Set the user data for a method.  This can be used by
  * runtime engines to store engine-specific data.
  */
-void ILMethodSetUserData(ILMethod *method, void *userData);
+void ILMethodSetUserData(ILMethod *method, void *userData1, void *userData2);
 
 /*
  * Get the user data for a method from its information block.
  * Returns NULL if the user data value has not yet been set.
  */
-void *ILMethodGetUserData(ILMethod *method);
+void *ILMethodGetUserData1(ILMethod *method);
+void *ILMethodGetUserData2(ILMethod *method);
 
 /*
  * Helper macros for querying information about a method.
@@ -1012,7 +1029,8 @@ void *ILMethodGetUserData(ILMethod *method);
 #define	ILMethod_ImplAttrs(method)		(ILMethodGetImplAttrs((method)))
 #define	ILMethod_CallConv(method)		(ILMethodGetCallConv((method)))
 #define	ILMethod_RVA(method)			(ILMethodGetRVA((method)))
-#define	ILMethod_UserData(method)		(ILMethodGetUserData((method)))
+#define	ILMethod_UserData1(method)		(ILMethodGetUserData1((method)))
+#define	ILMethod_UserData2(method)		(ILMethodGetUserData2((method)))
 #define	ILMethod_IsCompilerControlled(method)	\
 	((ILMemberGetAttrs((ILMember *)(method)) & \
 				IL_META_METHODDEF_MEMBER_ACCESS_MASK) \

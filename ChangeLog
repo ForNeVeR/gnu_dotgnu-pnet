@@ -14,6 +14,9 @@ implement "ILClassLookupLen" and "ILClassLookupGlobalLen".
 * image/program.h: remove "nextHash" from "ILClass" which is no longer
 required; allocate two user data fields in "ILMethod" instead of one.
 
+* include/il_program: declare "ILClassLookupLen", "ILClassLookupGlobalLen";
+modify user data get and set functions for methods.
+
 2001-10-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/Makefile.am: remove "interpreter.c" from the engine build;

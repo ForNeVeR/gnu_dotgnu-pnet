@@ -81,6 +81,47 @@ ILObject *ILExecThreadCurrentClrThread()
 	return thread->clrThread;
 }
 
+
+#if defined(IL_USE_INTERRUPT_BASED_X)
+
+static void _ILInterruptHandler(ILInterruptContext *context)
+{
+	ILExecThread *execThread;
+
+	execThread = ILExecThreadCurrent();
+	
+	if (execThread == 0)
+	{
+		return;
+	}
+
+	if (execThread->runningManagedCode)
+	{
+		switch (context->type)
+		{
+		#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
+			case IL_INTERRUPT_TYPE_ILLEGAL_MEMORY_ACCESS:
+				execThread->interruptContext = *context;
+				IL_LONGJMP(execThread->exceptionJumpBuffer, _IL_INTERRUPT_NULL_POINTER);
+		#endif
+
+		#if defined(IL_INTERRUPT_SUPPORTS_INT_DIVIDE_BY_ZERO)
+			case IL_INTERRUPT_TYPE_INT_DIVIDE_BY_ZERO:
+				execThread->interruptContext = *context;
+				IL_LONGJMP(execThread->exceptionJumpBuffer, _IL_INTERRUPT_INT_DIVIDE_BY_ZERO);
+		#endif
+
+		#if defined(IL_USE_INTERRUPT_BASED_INT_OVERFLOW_CHECKS)
+			case IL_INTERRUPT_TYPE_INT_OVERFLOW:
+				execThread->interruptContext = *context;
+				IL_LONGJMP(execThread->exceptionJumpBuffer, _IL_INTERRUPT_INT_OVERFLOW);
+		#endif
+		}
+	}
+}
+
+#endif
+
 void _ILThreadSetExecContext(ILThread *thread, ILThreadExecContext *context, ILThreadExecContext *saveContext)
 {
 	if (saveContext)
@@ -89,6 +130,13 @@ void _ILThreadSetExecContext(ILThread *thread, ILThreadExecContext *context, ILT
 	}
 
 	ILThreadSetObject(thread, context->execThread);
+
+	#if defined(IL_USE_INTERRUPT_BASED_X)
+		if (context->execThread)
+		{
+			ILThreadRegisterInterruptHandler(thread, _ILInterruptHandler);
+		}
+	#endif
 
 	context->execThread->supportThread = thread;
 }
@@ -105,6 +153,16 @@ void _ILThreadRestoreExecContext(ILThread *thread, ILThreadExecContext *context)
 	if (context->execThread)
 	{
 		context->execThread->supportThread = thread;
+	
+		#if defined(IL_USE_INTERRUPT_BASED_X)
+			ILThreadRegisterInterruptHandler(thread, _ILInterruptHandler);
+		#endif
+	}
+	else
+	{
+		#if defined(IL_USE_INTERRUPT_BASED_X)
+			ILThreadUnregisterInterruptHandler(thread, _ILInterruptHandler);
+		#endif
 	}
 }
 
@@ -119,8 +177,11 @@ void _ILThreadClearExecContext(ILThread *thread)
 		prev->supportThread = 0;
 	}
 
-	ILThreadSetObject(thread, 0);
-}
+	#if defined(IL_USE_INTERRUPT_BASED_X)
+		ILThreadUnregisterInterruptHandler(thread, _ILInterruptHandler);
+	#endif
+
+	ILThreadSetObject(thread, 0);}
 
 /*
  *	Cleanup handler for threads that have been registered for managed execution.
@@ -129,28 +190,6 @@ static void ILExecThreadCleanup(ILThread *thread)
 {
 	ILThreadUnregisterForManagedExecution(thread);
 }
-
-#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
-
-static void _ILIllegalMemoryAccessHandler(ILInterruptContext *context)
-{
-	ILExecThread *execThread;
-
-	execThread = ILExecThreadCurrent();
-
-	if (execThread == 0)
-	{
-		return;
-	}
-
-	if (execThread->runningManagedCode)
-	{
-		execThread->interruptContext = *context;
-		IL_LONGJMP(execThread->exceptionJumpBuffer, _IL_INTERRUPT_NULL_POINTER);
-	}
-}
-
-#endif
 
 /*
  * Registers a thread for managed execution
@@ -176,10 +215,6 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 	{
 		return 0;
 	}
-
-#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
-	ILThreadRegisterIllegalMemoryAccessHandler(thread, _ILIllegalMemoryAccessHandler);
-#endif
 
 	/* TODO: Notify the GC that we possibly have a new thread to be scanned */
 
@@ -209,11 +244,6 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread)
 		/* Already unregistered */
 		return;
 	}
-
-#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
-	/* Unregister the illegal memory access handler */
-	ILThreadUnregisterIllegalMemoryAccessHandler(thread, _ILIllegalMemoryAccessHandler);
-#endif
 
 	/* Unregister the cleanup handler */
 	ILThreadUnregisterCleanup(thread, ILExecThreadCleanup);

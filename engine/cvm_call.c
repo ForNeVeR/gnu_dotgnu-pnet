@@ -95,10 +95,44 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 #endif
 }
 
+
+#define CHECK_MANAGED_BARRIER()	\
+	if (thread->managedSafePointFlags)	\
+	{	\
+		if  ((thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_ABORT) && ILThreadIsAbortRequested()) \
+		{ \
+			if (_ILExecThreadSelfAborting(thread) == 0) \
+			{ \
+				ILThreadAtomicStart(); \
+				thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT; \
+				ILThreadAtomicEnd(); \
+				stacktop[0].ptrValue = thread->thrownException; \
+				thread->thrownException = 0; \
+				stacktop += 1; \
+				goto throwException; \
+			} \
+		} \
+		else if (thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND) \
+		{ \
+			ILThreadAtomicStart(); \
+			thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND; \
+			ILThreadAtomicEnd(); \
+			_ILExecThreadSuspendThread(thread, thread->supportThread); \
+		} \
+	}
+
+#define BEGIN_NATIVE_CALL()	\
+	thread->runningManagedCode = 0;
+
+#define END_NATIVE_CALL() \
+	CHECK_MANAGED_BARRIER(); \
+	thread->runningManagedCode = 1;
+
 #ifdef IL_DUMP_CVM
 #define	DUMP_STACK()	\
 			do { \
 				int posn; \
+				BEGIN_NATIVE_CALL(); \
 				fprintf(IL_DUMP_CVM_STREAM, "Stack:"); \
 				for(posn = 1; posn <= 16; ++posn) \
 				{ \
@@ -110,14 +144,17 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				} \
 				putc('\n', IL_DUMP_CVM_STREAM); \
 				fflush(IL_DUMP_CVM_STREAM); \
+				END_NATIVE_CALL(); \
 			} while (0)
 #define	REPORT_METHOD_CALL()	\
 			do { \
+				BEGIN_NATIVE_CALL(); \
 				fprintf(IL_DUMP_CVM_STREAM, "Entering %s::%s (%ld)\n", \
 					    methodToCall->member.owner->className->name, \
 					    methodToCall->member.name, \
 					    (long)(stacktop - thread->stackBase)); \
 				DUMP_STACK(); \
+				END_NATIVE_CALL(); \
 			} while (0)
 #else
 #define	REPORT_METHOD_CALL()
@@ -131,7 +168,9 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				} \
 				else \
 				{ \
+					BEGIN_NATIVE_CALL(); \
 					callFrame = _ILAllocCallFrame(thread); \
+					END_NATIVE_CALL(); \
 					if(!callFrame) \
 					{ \
 						STACK_OVERFLOW_EXCEPTION(); \
@@ -157,37 +196,6 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 					goto throwException; \
 				} \
 			} while (0)
-
-#define CHECK_MANAGED_BARRIER()	\
-	if (thread->managedSafePointFlags)	\
-	{	\
-		if  ((thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_ABORT) && ILThreadIsAbortRequested()) \
-		{ \
-			if (_ILExecThreadSelfAborting(thread) == 0) \
-			{ \
-				ILThreadAtomicStart(); \
-				thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT; \
-				ILThreadAtomicEnd(); \
-				stacktop[0].ptrValue = thread->thrownException; \
-				stacktop += 1; \
-				goto throwException; \
-			} \
-		} \
-		else if (thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND) \
-		{ \
-			ILThreadAtomicStart(); \
-			thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND; \
-			ILThreadAtomicEnd(); \
-			_ILExecThreadSuspendThread(thread, thread->supportThread); \
-		} \
-	}
-
-#define BEGIN_NATIVE_CALL()	\
-	thread->runningManagedCode = 0;
-
-#define END_NATIVE_CALL() \
-	CHECK_MANAGED_BARRIER(); \
-	thread->runningManagedCode = 1;
 
 /*
  * Determine the number of stack words that are occupied
@@ -609,20 +617,24 @@ VMCASE(COP_CALL):
 		pc = (unsigned char *)(methodToCall->userData);
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
-
-		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
 	else
 	{
 		/* Copy the state back into the thread object */
 		COPY_STATE_TO_THREAD();
 
+		BEGIN_NATIVE_CALL();
+
 		/* Convert the method */
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
+			END_NATIVE_CALL();
+
 			CONVERT_FAILED_EXCEPTION();
 		}
+
+		END_NATIVE_CALL();
 
 		/* Allocate a new call frame */
 		ALLOC_CALL_FRAME();
@@ -639,8 +651,6 @@ VMCASE(COP_CALL):
 		pc = (unsigned char *)tempptr;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
-
-		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
 }
 VMBREAK(COP_CALL);
@@ -697,8 +707,6 @@ VMCASE(COP_CALL_CTOR):
 		pc = ((unsigned char *)(methodToCall->userData)) - CVM_CTOR_OFFSET;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
-
-		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
 	else
 	{
@@ -706,11 +714,16 @@ VMCASE(COP_CALL_CTOR):
 		COPY_STATE_TO_THREAD();
 
 		/* Convert the method */
+		BEGIN_NATIVE_CALL();
+
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
+			END_NATIVE_CALL();
 			CONVERT_FAILED_EXCEPTION();
 		}
+
+		END_NATIVE_CALL();
 
 		/* Allocate a new call frame */
 		ALLOC_CALL_FRAME();
@@ -727,8 +740,6 @@ VMCASE(COP_CALL_CTOR):
 		pc = ((unsigned char *)tempptr) - CVM_CTOR_OFFSET;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
-
-		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
 }
 VMBREAK(COP_CALL_CTOR);
@@ -940,8 +951,6 @@ VMCASE(COP_CALL_VIRTUAL):
 			pc = (unsigned char *)(methodToCall->userData);
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
-
-			EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 		}
 		else
 		{
@@ -949,11 +958,17 @@ VMCASE(COP_CALL_VIRTUAL):
 			COPY_STATE_TO_THREAD();
 
 			/* Convert the method */
+			BEGIN_NATIVE_CALL();
+
 			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 			if(!tempptr)
 			{
+				END_NATIVE_CALL();
+
 				CONVERT_FAILED_EXCEPTION();
 			}
+
+			END_NATIVE_CALL();
 
 			/* Allocate a new call frame */
 			ALLOC_CALL_FRAME();
@@ -970,8 +985,6 @@ VMCASE(COP_CALL_VIRTUAL):
 			pc = (unsigned char *)tempptr;
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
-
-			EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 		}
 	}
 	END_NULL_CHECK();
@@ -1058,8 +1071,6 @@ VMCASE(COP_CALL_INTERFACE):
 			pc = (unsigned char *)(methodToCall->userData);
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
-
-			EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 		}
 		else
 		{
@@ -1067,11 +1078,17 @@ VMCASE(COP_CALL_INTERFACE):
 			COPY_STATE_TO_THREAD();
 	
 			/* Convert the method */
+			BEGIN_NATIVE_CALL();
+
 			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 			if(!tempptr)
 			{
+				END_NATIVE_CALL();
+
 				CONVERT_FAILED_EXCEPTION();
 			}
+			
+			END_NATIVE_CALL();
 
 			/* Allocate a new call frame */
 			ALLOC_CALL_FRAME();
@@ -1088,8 +1105,6 @@ VMCASE(COP_CALL_INTERFACE):
 			pc = (unsigned char *)tempptr;
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
-
-			EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 		}
 	}
 	END_NULL_CHECK();
@@ -1171,8 +1186,6 @@ popFrame:
 	thread->exceptHeight = callFrame->exceptHeight;
 	frame = callFrame->frame;
 	method = methodToCall;
-
-	EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 
 	/* Should we return to an external method? */
 	if(pc == IL_INVALID_PC)
@@ -1478,11 +1491,17 @@ VMCASE(COP_CALLI):
 		COPY_STATE_TO_THREAD();
 
 		/* Convert the method */
+		BEGIN_NATIVE_CALL();
+
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
+			END_NATIVE_CALL();
+
 			CONVERT_FAILED_EXCEPTION();
 		}
+		
+		END_NATIVE_CALL();
 
 		/* Allocate a new call frame */
 		ALLOC_CALL_FRAME();
@@ -1531,11 +1550,17 @@ case COP_CALL_VIRTUAL:
 		COPY_STATE_TO_THREAD();
 
 		/* Convert the method */
+		BEGIN_NATIVE_CALL();
+
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
+			END_NATIVE_CALL();
+
 			CONVERT_FAILED_EXCEPTION();
 		}
+		
+		END_NATIVE_CALL();
 
 		/* Allocate a new call frame */
 		ALLOC_CALL_FRAME();
@@ -1592,11 +1617,17 @@ case COP_CALL_INTERFACE:
 		COPY_STATE_TO_THREAD();
 
 		/* Convert the method */
+		BEGIN_NATIVE_CALL();
+
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
+			END_NATIVE_CALL();
+
 			CONVERT_FAILED_EXCEPTION();
 		}
+		
+		END_NATIVE_CALL();
 
 		/* Allocate a new call frame */
 		ALLOC_CALL_FRAME();
@@ -1613,8 +1644,6 @@ case COP_CALL_INTERFACE:
 		pc = (unsigned char *)tempptr;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
-
-		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
 	END_NULL_CHECK();
 }
@@ -1669,11 +1698,18 @@ performTailCall:
 	else
 	{
 		COPY_STATE_TO_THREAD();
+		BEGIN_NATIVE_CALL();
+
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if (!tempptr)
 		{
+			END_NATIVE_CALL();
+
 			CONVERT_FAILED_EXCEPTION();
 		}
+		
+		END_NATIVE_CALL();
+
 		RESTORE_STATE_FROM_THREAD();
 	}
 
@@ -1689,8 +1725,6 @@ performTailCall:
 	REPORT_METHOD_CALL();
 	pc = (unsigned char *)tempptr;
 	method = methodToCall;
-
-	EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 }
 VMBREAK(COP_PREFIX_TAIL_CALL);
 
@@ -1741,16 +1775,13 @@ VMCASE(COP_PREFIX_TAIL_CALLVIRT):
 {
 	/* Call a virtual method */
 	tempptr = stacktop[-((ILInt32)CVMP_ARG_WORD)].ptrValue;
-	if(tempptr)
+	BEGIN_NULL_CHECK(tempptr)
 	{
 		/* Locate the method to be called */
 		methodToCall = (GetObjectClassPrivate(tempptr))->vtable[CVMP_ARG_WORD2];
 		goto performTailCall;
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PREFIX_TAIL_CALLVIRT);
 
@@ -1936,11 +1967,13 @@ VMBREAK(COP_PREFIX_LDINTERFFTN);
 VMCASE(COP_PREFIX_PACK_VARARGS):
 {
 	/* Pack a set of arguments for a vararg method call */
-#ifdef IL_CONFIG_VARARGS
+#ifdef IL_CONFIG_VARARGS	
+
 	COPY_STATE_TO_THREAD();
 	tempNum = _ILPackVarArgs(thread, stacktop, CVMP_ARG_WORD, CVMP_ARG_WORD2,
 						  CVMP_ARG_WORD2_PTR(ILType *), &tempptr);
 	RESTORE_STATE_FROM_THREAD();
+
 	stacktop -= tempNum;
 	stacktop[0].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(CVMP_LEN_WORD2_PTR, 1);
@@ -2018,6 +2051,8 @@ VMBREAK(COP_PREFIX_WADDR_NATIVE_N);
 VMCASE(COP_PREFIX_TRACE_IN):
 {
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	BEGIN_NATIVE_CALL();
+
 	ILMutexLock(globalTraceMutex);
 #ifdef INDENT_TRACE
 	int depth = thread->numFrames;
@@ -2034,6 +2069,8 @@ VMCASE(COP_PREFIX_TRACE_IN):
 	putc('\n',stdout);
 	fflush(stdout);
 	ILMutexUnlock(globalTraceMutex);
+
+	END_NATIVE_CALL();
 #endif
 	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, 0);
 }
@@ -2062,7 +2099,11 @@ VMCASE(COP_PREFIX_TRACE_OUT):
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	// NOTE: at some point of time use the Reason parameter to
 	// carry more information about this 
-	ILMethod * methodToReturn = ILExecThreadStackMethod(thread, 1);
+	ILMethod * methodToReturn;
+
+	BEGIN_NATIVE_CALL();	
+
+	methodToReturn = ILExecThreadStackMethod(thread, 1);
 	ILMutexLock(globalTraceMutex);
 #ifdef INDENT_TRACE
 	int depth = thread->numFrames;
@@ -2086,6 +2127,8 @@ VMCASE(COP_PREFIX_TRACE_OUT):
 	putc('\n',stdout);
 	fflush(stdout);
 	ILMutexUnlock(globalTraceMutex);
+
+	END_NATIVE_CALL();
 #endif
 	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, 0);
 }

@@ -35,20 +35,39 @@
 extern	"C" {
 #endif
 
-/* IL_SETJMP return value for null pointer interrupts */
-#define _IL_INTERRUPT_NULL_POINTER	(-1)
+/* State of an ILExecProcess/AppDomain */
+#define _IL_PROCESS_STATE_UNLOADING (1)
+#define _IL_PROCESS_STATE_UNLOADED  (2)
 
 /* Flags that represents various tasks that need to be performed
    at safe points */
 #define _IL_MANAGED_SAFEPOINT_THREAD_ABORT		(1)
 #define _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND	(2)
 
-/* State of an ILExecProcess/AppDomain */
-#define _IL_PROCESS_STATE_UNLOADING (1)
-#define _IL_PROCESS_STATE_UNLOADED  (2)
+/* IL_SETJMP return value for null pointer interrupts */
+#define _IL_INTERRUPT_NULL_POINTER	(-1)
+#define _IL_INTERRUPT_INT_DIVIDE_BY_ZERO (-2)
+#define _IL_INTERRUPT_INT_OVERFLOW (-3)
 
-#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
-#define IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS (1)
+/* Determine the interrupts we should catch */
+
+#if defined(IL_INTERRUPT_HAVE_X86_CONTEXT) || !defined(__GNUC__) || defined(IL_NO_ASM)
+
+#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)	
+	#define IL_USE_INTERRUPT_BASED_X (1)
+	#define IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS (1)
+#endif
+
+#if defined(IL_INTERRUPT_SUPPORTS_INT_DIVIDE_BY_ZERO)	
+	#define IL_USE_INTERRUPT_BASED_X (1)
+	#define IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS (1)
+#endif
+
+#if defined(IL_INTERRUPT_SUPPORTS_INT_OVERFLOW)
+	#define IL_USE_INTERRUPT_BASED_X (1)
+	#define IL_USE_INTERRUPT_BASED_INT_OVERFLOW_CHECKS (1)
+#endif
+
 #endif
 
 /*
@@ -56,6 +75,8 @@ extern	"C" {
  */
 #ifdef __GNUC__
 	#define	IL_INLINE	__inline__
+#elif defined(_MSC_VER)
+	#define IL_INLINE __forceinline
 #else
 	#define	IL_INLINE
 #endif

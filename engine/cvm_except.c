@@ -108,9 +108,33 @@ void _ILSetExceptionStackTrace(ILExecThread *thread, ILObject *object)
 
 #endif /* !(IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES) */
 
-void *_ILSystemException(ILExecThread *thread, const char *className)
+void *_ILSystemExceptionWithClass(ILExecThread *thread, ILClass *classInfo)
 {
 	ILObject *object;
+	
+	object = _ILEngineAllocObject(thread, classInfo);
+	if(object)
+	{
+#if defined(IL_CONFIG_REFLECTION) && defined(IL_CONFIG_DEBUG_LINES)
+		if(!FindAndSetStackTrace(thread, object))
+		{
+			/* We ran out of memory: pick up the "OutOfMemoryException" */
+			object = thread->thrownException;
+			thread->thrownException = 0;
+		}
+#endif /* IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES */
+	}
+	else
+	{
+		/* The system ran out of memory, so copy the "OutOfMemoryException" */
+		object = thread->thrownException;
+		thread->thrownException = 0;
+	}
+	return object;
+}
+
+void *_ILSystemException(ILExecThread *thread, const char *className)
+{
 	ILClass *classInfo = ILExecThreadLookupClass(thread, className);
 	if(!classInfo)
 	{
@@ -121,25 +145,7 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
 		exit(1);
 	#endif
 	}
-	object = _ILEngineAllocObject(thread, classInfo);
-	if(object)
-	{
-	#if defined(IL_CONFIG_REFLECTION) && defined(IL_CONFIG_DEBUG_LINES)
-		if(!FindAndSetStackTrace(thread, object))
-		{
-			/* We ran out of memory: pick up the "OutOfMemoryException" */
-			object = thread->thrownException;
-			thread->thrownException = 0;
-		}
-	#endif /* IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES */
-	}
-	else
-	{
-		/* The system ran out of memory, so copy the "OutOfMemoryException" */
-		object = thread->thrownException;
-		thread->thrownException = 0;
-	}
-	return object;
+	return _ILSystemExceptionWithClass(thread, classInfo);
 }
 
 #elif defined(IL_CVM_LOCALS)
@@ -231,8 +237,6 @@ VMCASE(COP_PREFIX_ENTER_TRY):
 {
 	/* Enter a try context for this method */
 	thread->exceptHeight = stacktop;
-	
-	EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
@@ -297,8 +301,6 @@ searchForHandler:
 		pc += CVM_ARG_TRY_LENGTH;
 	}
 	pc += CVM_LEN_TRY;
-
-	EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 }
 VMBREAK(COP_PREFIX_THROW);
 
@@ -356,9 +358,11 @@ throwCaller:
 #ifdef IL_DUMP_CVM
 		if(methodToCall)
 		{
+			BEGIN_NATIVE_CALL();
 			fprintf(IL_DUMP_CVM_STREAM, "Throwing Back To %s::%s\n",
 				    methodToCall->member.owner->className->name,
 				    methodToCall->member.name);
+			END_NATIVE_CALL();
 		}
 #endif
 
@@ -414,7 +418,9 @@ VMCASE(COP_PREFIX_SET_STACK_TRACE):
 	/* Set the stack trace within an exception object */
 #if defined(IL_CONFIG_REFLECTION) && defined(IL_CONFIG_DEBUG_LINES)
 	COPY_STATE_TO_THREAD();
+	BEGIN_NATIVE_CALL();
 	_ILSetExceptionStackTrace(thread, stacktop[-1].ptrValue);
+	END_NATIVE_CALL();
 	RESTORE_STATE_FROM_THREAD();
 #endif
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);

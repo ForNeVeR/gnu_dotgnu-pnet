@@ -111,6 +111,7 @@ extern	"C" {
 	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
 	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 #else
+	#define IL_NO_REGISTERS_USED 1
     #define REGISTER_ASM_PC(x)              x
     #define REGISTER_ASM_STACK(x)           x
     #define REGISTER_ASM_FRAME(x)           x
@@ -121,22 +122,16 @@ extern	"C" {
 	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 #endif
 
-#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
-
-	/* Don't do explicit null checks and rely on interrupts */
-	#define BEGIN_NULL_CHECK(x)	
-	#define BEGIN_NULL_CHECK_STMT(x) x;
-	#define END_NULL_CHECK()
-
+#if defined(IL_USE_INTERRUPT_BASED_X)
 	#if defined(IL_INTERRUPT_HAVE_X86_CONTEXT) && defined(REGISTER_ASM_X86)
 		/* If the interrupt subsystem can provide us the x86 registers at the
 		   time of interrupt then we don't need to save anything */
-		#define EXCEPT_BACKUP_FRAME()
-		#define EXCEPT_BACKUP_PC_STACKTOP_METHOD()
+		#define INTERRUPT_BACKUP_FRAME()
+		#define INTERRUPT_BACKUP_PC_STACKTOP_FRAME()
 
 		/* We can restore locals directly from the register state
 		   at the time of interrupt */
-		#define EXCEPT_RESTORE_FROM_THREAD() \
+		#define INTERRUPT_RESTORE_FROM_THREAD() \
 			do \
 			{ \
 				volatile int tempreg; \
@@ -152,25 +147,15 @@ extern	"C" {
 			} \
 			while (0);
 	#else
-		/* Have to backup register based locals to the thread object */
-		#define EXCEPT_BACKUP_FRAME() \
-			thread->frame = frame;
-
-		#define EXCEPT_BACKUP_PC_STACKTOP_METHOD() \
-			thread->pc = pc; \
-			thread->stackTop = stacktop; \
-			thread->method = method;
-
-		#define EXCEPT_RESTORE_FROM_THREAD() \
-			pc = thread->pc; \
-			stacktop = thread->stackTop; \
-			frame = thread->frame;
+		#define INTERRUPT_RESTORE_FROM_THREAD()
 	#endif
+#endif
 
-#else /* defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS) */
-
-	/* Use traditional manual null checks */
-
+#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
+	#define BEGIN_NULL_CHECK(x)
+	#define BEGIN_NULL_CHECK_STMT(x) x;
+	#define END_NULL_CHECK()
+#else
 	#define BEGIN_NULL_CHECK(x) \
 		if ((x) != 0) \
 		{
@@ -183,13 +168,43 @@ extern	"C" {
 		{ \
 			NULL_POINTER_EXCEPTION(); \
 		}
-
-	#define EXCEPT_BACKUP_FRAME()
-	#define EXCEPT_BACKUP_PC_STACKTOP_METHOD()
-	#define EXCEPT_RESTORE_FROM_THREAD()
 #endif
 
-	
+#if defined(IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS)
+	#define BEGIN_INT_ZERO_DIV_CHECK(x)
+	#define END_INT_ZERO_DIV_CHECK()
+#else
+	#define BEGIN_INT_ZERO_DIV_CHECK(x) \
+		if ((x) != 0) \
+		{
+
+	#define END_INT_ZERO_DIV_CHECK() \
+		} \
+		else \
+		{ \
+			ARITHMETIC_EXCEPTION(); \
+		}
+#endif
+
+/*
+ * int overflow checks
+ */
+#if defined(IL_USE_INTERRUPT_BASED_INT_OVERFLOW_CHECKS)
+	#define BEGIN_INT_OVERFLOW_CHECK(x)
+	#define END_INT_OVERFLOW_CHECK()
+#else
+	#define BEGIN_INT_OVERFLOW_CHECK(x) \
+		if (x) \
+		{
+
+	#define END_INT_OVERFLOW_CHECK() \
+		} \
+		else \
+		{ \
+			ARITHMETIC_EXCEPTION(); \
+		}
+#endif
+
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 /* Global lock for trace outputs */
 ILMutex *globalTraceMutex;

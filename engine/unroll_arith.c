@@ -28,7 +28,15 @@
 static void X86Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
 				      unsigned char *pc, unsigned char *label)
 {
-	unsigned char *patch1, *patch2, *patch3;
+#if !defined(IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS)
+	#define IL_NEED_DIVIDE_REEXECUTE 1
+	unsigned char *patch1;
+#endif
+
+#if !defined(IL_USE_INTERRUPT_BASED_INT_OVERFLOW_CHECKS)
+	#define IL_NEED_DIVIDE_REEXECUTE 1
+	unsigned char  *patch2, *patch3;
+#endif
 
 	/* Get the arguments into EAX and ECX so we know where they are */
 	if(unroll->pseudoStackSize != 2 ||
@@ -48,23 +56,37 @@ static void X86Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
 	}
 
 	/* Check for conditions that may cause an exception */
+#if !defined(IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS)
 	x86_alu_reg_imm(unroll->out, X86_CMP, X86_ECX, 0);
 	patch1 = unroll->out;
 	x86_branch8(unroll->out, X86_CC_EQ, 0, 0);
+#endif
+
+#if !defined(IL_USE_INTERRUPT_BASED_INT_OVERFLOW_CHECKS)
 	x86_alu_reg_imm(unroll->out, X86_CMP, X86_ECX, -1);
 	patch2 = unroll->out;
 	x86_branch32(unroll->out, X86_CC_NE, 0, 0);
+
 	x86_alu_reg_imm(unroll->out, X86_CMP, X86_EAX, (int)0x80000000);
 	patch3 = unroll->out;
 	x86_branch32(unroll->out, X86_CC_NE, 0, 0);
-	x86_patch(patch1, unroll->out);
+#endif
 
+#if !defined(IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS)
+	x86_patch(patch1, unroll->out);
+#endif
+
+#if defined(IL_NEED_DIVIDE_REEXECUTE)
 	/* Re-execute the division instruction to throw the exception */
 	ReExecute(unroll, pc, label);
+#endif
 
-	/* Perform the division */
+#if !defined(IL_USE_INTERRUPT_BASED_INT_OVERFLOW_CHECKS)
 	x86_patch(patch2, unroll->out);
 	x86_patch(patch3, unroll->out);
+#endif
+
+	/* Perform the division */
 	if(isSigned)
 	{
 		x86_cdq(unroll->out);

@@ -1,3 +1,57 @@
+2004-06-18  Thong Nguyen  <tum@veridicus.com>
+
+	* include/il_thread.h: Changed Interrupt handling functions to
+	be more generic.  Added 2 more interrupt types (divide by zero
+	and overflow).
+
+	* engine/cvm.c: Added macros to support overflow & divide by
+	zero interrupts.  Removed interrupt handling support on systems
+	where interrupt contexts aren't available (i.e. removed
+	support for saving exception state to the thread object).
+	
+	* engine/cvm_arith.c: Replaced overflow & divide by zero
+	with appropriate replacement macros from cvm.c.
+	
+	* engine/cvm_call.c: Cleared thread->thrownException after call
+	to ILThreadSelfAborting().  Added many more "managed barrier"
+	gauards by inserting BEGIN/END_NATIVE_CALL calls around
+	CVM private native calls.
+	
+	* engine/cvm_except.c: Added _ILSystemExceptionWithClass call.
+	
+	* engine/cvm_except.c, engine/cvm_stack.c:
+	Removed EXCEPT_BACKUP calls since they are no longer supported.
+	
+	* engine/cvm_interrupt.c: Added support for overflow & divide
+	by zero interrupts.
+	
+	* engine/engine.h: Added checks for overflow & divide by zero
+	support.
+	
+	* engine/lib_reflect.c: Set objectType to 0 to remove erroneous
+	"local used without being initialized" warning.
+	
+	* engine/thread.c: Added support for overflow & divide by zero
+	interrupts.  Moved interrupt registration code to
+	ILThreadSetExecContext & friends so that threads never registered
+	for managed execution can still get interrupts.
+	
+	* engine/unroll_arith.c: Added integer overflow & divide by zero
+	check elimination code.
+		
+	* support/interlocked_any.h, support/interlocked_x86.h: Added 
+	ILInterlockedMemoryBarrier implementation.
+	
+	* support/interrupt.c: Modified interrupt registration functions
+	to use new generic arguments.
+	
+	* support/interupt.h, support/interrupt_posix.c,
+	support/interrupt_win32.c: Added checks * support for divide by
+	zero and overflow interrupts.
+	
+	* support/thr_defs.h, support/thread.c: Made sure interrupt handler
+	field of threads is included onl if interrupts are supported.	
+
 2004-06-17  Thong Nguyen  <tum@veridicus.com>
 
 	* libgc/win32_threads.c, libgc/include/gc.h: Removed

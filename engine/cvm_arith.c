@@ -286,6 +286,7 @@ static IL_INLINE int LRem(CVMWord *a, CVMWord *b)
 {
 	ILInt64 tempa = ReadLong(a);
 	ILInt64 tempb = ReadLong(b);
+
 	if(!tempb)
 	{
 		return 0;
@@ -740,23 +741,17 @@ VMBREAK(COP_IMUL_OVF_UN);
 VMCASE(COP_IDIV):
 {
 	/* Integer divide */
-	if(stacktop[-1].intValue != 0)
+	BEGIN_INT_ZERO_DIV_CHECK(stacktop[-1].intValue)
 	{
-		if(stacktop[-1].intValue != -1 ||
+		BEGIN_INT_OVERFLOW_CHECK(stacktop[-1].intValue != -1 || \
 		   stacktop[-2].intValue != IL_MIN_INT32)
 		{
 			stacktop[-2].intValue /= stacktop[-1].intValue;
 			MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 		}
-		else
-		{
-			ARITHMETIC_EXCEPTION();
-		}
+		END_INT_OVERFLOW_CHECK();
 	}
-	else
-	{
-		ZERO_DIV_EXCEPTION();
-	}
+	END_INT_ZERO_DIV_CHECK();
 }
 VMBREAK(COP_IDIV);
 
@@ -786,15 +781,12 @@ VMBREAK(COP_IDIV);
 VMCASE(COP_IDIV_UN):
 {
 	/* Unsigned integer divide */
-	if(stacktop[-1].uintValue != 0)
+	BEGIN_INT_ZERO_DIV_CHECK(stacktop[-1].uintValue)
 	{
 		stacktop[-2].uintValue /= stacktop[-1].uintValue;
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
-	else
-	{
-		ZERO_DIV_EXCEPTION();
-	}
+	END_INT_ZERO_DIV_CHECK();
 }
 VMBREAK(COP_IDIV_UN);
 
@@ -826,23 +818,17 @@ VMBREAK(COP_IDIV_UN);
 VMCASE(COP_IREM):
 {
 	/* Integer remainder */
-	if(stacktop[-1].intValue != 0)
+	BEGIN_INT_ZERO_DIV_CHECK(stacktop[-1].intValue)
 	{
-		if(stacktop[-1].intValue != -1 ||
+		BEGIN_INT_OVERFLOW_CHECK(stacktop[-1].intValue != -1 || \
 		   stacktop[-2].intValue != IL_MIN_INT32)
 		{
 			stacktop[-2].intValue %= stacktop[-1].intValue;
 			MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 		}
-		else
-		{
-			ARITHMETIC_EXCEPTION();
-		}
+		END_INT_OVERFLOW_CHECK();
 	}
-	else
-	{
-		ZERO_DIV_EXCEPTION();
-	}
+	END_INT_ZERO_DIV_CHECK();
 }
 VMBREAK(COP_IREM);
 
@@ -872,15 +858,12 @@ VMBREAK(COP_IREM);
 VMCASE(COP_IREM_UN):
 {
 	/* Unsigned integer remainder */
-	if(stacktop[-1].uintValue != 0)
+	BEGIN_INT_ZERO_DIV_CHECK(stacktop[-1].uintValue)
 	{
 		stacktop[-2].uintValue %= stacktop[-1].uintValue;
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
-	else
-	{
-		ZERO_DIV_EXCEPTION();
-	}
+	END_INT_ZERO_DIV_CHECK();
 }
 VMBREAK(COP_IREM_UN);
 
@@ -1552,7 +1535,8 @@ COP_FLOAT_OP(FADD, +);
  *   <after>..., result</after>
  *
  *   <description>Both <i>value1</i> and <i>value2</i>
- *   are popped from the stack as type <code>native float</code>.  The
+ *   are popped fr
+ om the stack as type <code>native float</code>.  The
  *   <code>native float</code> <i>result</i> is <i>value1 - value2</i>.
  *   The <i>result</i> is pushed onto the stack.</description>
  * </opcode>

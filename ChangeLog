@@ -34,6 +34,10 @@
 	* System.Xml/XmlException.cs: implement the missing line number
 	and line position handling.
 
+	* System.Xml/XmlNamespaceManager.cs,
+	resources/en_US/System.Xml/Xml.txt: re-implement the
+	XmlNamespaceManager class with the correct scope data structure.
+
 2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.2.6" release.

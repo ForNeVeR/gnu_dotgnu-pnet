@@ -507,10 +507,10 @@ static ILObject *System_Type_GetType(ILExecThread *thread,
 }
 
 /*
- * public static RuntimeTypeHandle GetTypeHandleFromObject(Object o);
+ * public static RuntimeTypeHandle GetTypeHandle(Object o);
  */
-static void System_Type_GetTypeHandleFromObject
-				(ILExecThread *thread, void *handle, ILObject *obj)
+static void System_Type_GetTypeHandle(ILExecThread *thread,
+									  void *handle, ILObject *obj)
 {
 	if(obj)
 	{
@@ -546,9 +546,9 @@ IL_METHOD_BEGIN(_ILSystemTypeMethods)
 	IL_METHOD("GetType",
 					"(oSystem.String;ZZ)oSystem.Type;",
 					System_Type_GetType)
-	IL_METHOD("GetTypeHandleFromObject",
+	IL_METHOD("GetTypeHandle",
 					"(oSystem.Object;)vSystem.RuntimeTypeHandle;",
-					System_Type_GetTypeHandleFromObject)
+					System_Type_GetTypeHandle)
 	IL_METHOD("GetTypeFromHandle",
 					"(vSystem.RuntimeTypeHandle;)oSystem.Type;",
 					System_Type_GetTypeFromHandle)

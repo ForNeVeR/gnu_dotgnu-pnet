@@ -202,16 +202,6 @@ static ILNativeInt ClrHelpers_GetDeclaringType(ILExecThread *thread,
 }
 
 /*
- * public static IntPtr GetReflectingType(IntPtr itemPrivate);
- */
-static ILNativeInt ClrHelpers_GetReflectedType(ILExecThread *thread,
-											   ILNativeInt itemPrivate)
-{
-	/* Not sure what the different between "declaring" and "reflected" is */
-	return ClrHelpers_GetDeclaringType(thread, itemPrivate);
-}
-
-/*
  * public static String GetName(IntPtr itemPrivate)
  */
 static ILString *ClrHelpers_GetName(ILExecThread *thread,
@@ -281,8 +271,6 @@ IL_METHOD_BEGIN(_ILReflectionClrHelpersMethods)
 					ClrHelpers_IsDefined)
 	IL_METHOD("GetDeclaringType",		"(j)j",
 					ClrHelpers_GetDeclaringType)
-	IL_METHOD("GetReflectedType",		"(j)j",
-					ClrHelpers_GetReflectedType)
 	IL_METHOD("GetName",				"(j)oSystem.String;",
 					ClrHelpers_GetName)
 IL_METHOD_END

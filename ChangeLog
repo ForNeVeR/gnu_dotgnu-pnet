@@ -6,6 +6,9 @@ names of internalcall methods to match the latest pnetlib requirements.
 
 * samples/mscorlib.dll: new version with all of the latest pnetlib changes.
 
+* lib_decimal.c, lib_object.c, lib_reflect.c, lib_thread.c, lib_type.c:
+more internalcall updates to match the latest pnetlib requirements.
+
 2001-12-03  Bradley M. Kuhn  <bkuhn@ebb.org>
 
 * README, pnet.spec (Summary): Minor terminology changes.

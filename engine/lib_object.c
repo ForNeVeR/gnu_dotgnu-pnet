@@ -70,6 +70,8 @@ static ILObject *System_Object_MemberwiseClone(ILExecThread *thread,
 {
 	ILObject *obj;
 
+	/* TODO: array cloning */
+
 	/* Allocate a new object of the same class */
 	obj = _ILEngineAllocObject(thread, GetObjectClass(_this));
 	if(!obj)

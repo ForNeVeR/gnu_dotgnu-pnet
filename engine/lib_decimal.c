@@ -253,8 +253,6 @@ IL_METHOD_BEGIN(_ILSystemDecimalMethods)
 					System_Decimal_Floor)
 	IL_METHOD("Remainder", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
 					System_Decimal_Remainder)
-	IL_METHOD("Mod", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Remainder)	/* Obsolete name */
 	IL_METHOD("Multiply", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
 					System_Decimal_Multiply)
 	IL_METHOD("Negate", "(vSystem.Decimal;)vSystem.Decimal;",

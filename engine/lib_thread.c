@@ -291,10 +291,10 @@ static ILInt64 System_Threading_Interlocked_Increment_2(ILExecThread *thread,
 }
 
 /*
- * private void InternalFinalize();
+ * private void FinalizeThread();
  */
-static void System_Threading_Thread_InternalFinalize(ILExecThread *thread,
-													 System_Thread *_this)
+static void System_Threading_Thread_FinalizeThread(ILExecThread *thread,
+												   System_Thread *_this)
 {
 	/* TODO */
 }
@@ -309,16 +309,7 @@ static void System_Threading_Thread_Abort(ILExecThread *thread,
 }
 
 /*
- * public void Join();
- */
-static void System_Threading_Thread_Join(ILExecThread *thread,
-										 System_Thread *_this)
-{
-	/* TODO */
-}
-
-/*
- * public bool InternalJoin(int timeout);
+ * private bool InternalJoin(int timeout);
  */
 static ILBool System_Threading_Thread_InternalJoin(ILExecThread *thread,
 										 		   System_Thread *_this,
@@ -779,12 +770,10 @@ IL_METHOD_END
  * Method table for the "System.Threading.Thread" class.
  */
 IL_METHOD_BEGIN(_ILSystemThreadingThreadMethods)
-	IL_METHOD("InternalFinalize", "(T)V",
-			  System_Threading_Thread_InternalFinalize)
+	IL_METHOD("FinalizeThread", "(T)V",
+			  System_Threading_Thread_FinalizeThread)
 	IL_METHOD("Abort", "(T)V",
 			  System_Threading_Thread_Abort)
-	IL_METHOD("Join", "(T)V",
-			  System_Threading_Thread_Join)
 	IL_METHOD("InternalJoin", "(Ti)Z",
 			  System_Threading_Thread_InternalJoin)
 	IL_METHOD("MemoryBarrier", "()V",

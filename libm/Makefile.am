@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = no-dependencies
 
-all-local: libm$(LIBRARY_SUFFIX).dll
+all-local: libm.dll
 
 noinst_LIBRARIES = libMath.a
 
@@ -13,18 +13,16 @@ libMath_a_SOURCES = fmax.c \
 AM_CFLAGS = -I$(top_srcdir)/include \
 			-imacros $(top_srcdir)/include/libc-symbols.h
 
-libm$(LIBRARY_SUFFIX).dll: libMath.a
-	$(LINK) libMath.a -L../libc -llibc$(LIBRARY_SUFFIX)
+libm.dll: libMath.a
+	$(LINK) libMath.a -L../libc -llibc
 
-CLEANFILES = libm$(LIBRARY_SUFFIX).dll
+CLEANFILES = libm.dll
 
 install-data-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(CYG_CACHE)
-	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
-			-i libm$(LIBRARY_SUFFIX).dll
+	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d -i libm.dll
 
 uninstall-local:
 	@$(NORMAL_UNINSTALL)
-	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
-			-u libm$(LIBRARY_SUFFIX) $(MSCORLIB_VERSION)
+	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d -u libm $(MSCORLIB_VERSION)

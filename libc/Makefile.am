@@ -14,7 +14,7 @@ SUBDIRS = ctype \
 		  time \
 		  unistd
 
-all-local: libc$(LIBRARY_SUFFIX).dll
+all-local: libc.dll
 
 LIBC_COMPONENTS = ctype/libCType.a \
 				  dirent/libCDirent.a \
@@ -29,10 +29,10 @@ LIBC_COMPONENTS = ctype/libCType.a \
 				  time/libCTime.a \
 				  unistd/libCUnistd.a
 
-libc$(LIBRARY_SUFFIX).dll: $(LIBC_COMPONENTS)
+libc.dll: $(LIBC_COMPONENTS)
 	$(LINK) $(LIBC_COMPONENTS)
 
-CLEANFILES = libc$(LIBRARY_SUFFIX).dll
+CLEANFILES = libc.dll
 
 ## Build a dummy library, which causes automake to output the
 ## correct definition for the "LINK" variable into "Makefile".
@@ -42,10 +42,8 @@ libCDummy_a_SOURCES = dummy.c
 install-data-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(CYG_CACHE)
-	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
-			-i libc$(LIBRARY_SUFFIX).dll
+	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d -i libc.dll
 
 uninstall-local:
 	@$(NORMAL_UNINSTALL)
-	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
-			-u libc$(LIBRARY_SUFFIX) $(MSCORLIB_VERSION)
+	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d -u libc $(MSCORLIB_VERSION)

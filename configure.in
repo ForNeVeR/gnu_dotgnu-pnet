@@ -80,19 +80,6 @@ AC_ARG_WITH(pnetlib,
 	PNETLIB_CHECK_PATH="../pnetlib"
 ])
 
-dnl The --with-32bit option can be used to force a 32-bit only build.
-AC_SUBST(LIBRARY_SUFFIX)
-AC_ARG_WITH(32bit,
-[  --with-32bit            specify a 32-bit only build],
-[
-	EXTRA_CFLAGS="-m32bit-only"
-	LIBRARY_SUFFIX="32"
-],
-[
-	EXTRA_CFLAGS=""
-	LIBRARY_SUFFIX="64"
-])
-
 dnl Find the location of the "cscc" compiler.
 AC_PATH_PROG(CSCC, cscc,, ${PNET_CHECK_PATH}/cscc:${prefix}/bin:$PATH)
 if test -z "$CSCC" ; then

@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = no-dependencies
 
-all-local: libpthread$(LIBRARY_SUFFIX).dll
+all-local: libpthread.dll
 
 SUFFIXES = .cs
 
@@ -23,21 +23,20 @@ AM_CFLAGS = -I$(top_srcdir)/include \
 			-imacros $(top_srcdir)/include/libc-symbols.h \
 			-lOpenSystem.C
 
-libpthread$(LIBRARY_SUFFIX).dll: libPthread.a
-	$(LINK) libPthread.a -L../libc -llibc$(LIBRARY_SUFFIX)
+libpthread.dll: libPthread.a
+	$(LINK) libPthread.a -L../libc -llibc
 
-CLEANFILES = libpthread$(LIBRARY_SUFFIX).dll
+CLEANFILES = libpthread.dll
 
 install-data-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(CYG_CACHE)
-	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
-			-i libpthread$(LIBRARY_SUFFIX).dll
+	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d -i libpthread.dll
 
 uninstall-local:
 	@$(NORMAL_UNINSTALL)
 	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
-			-u libpthread$(LIBRARY_SUFFIX) $(MSCORLIB_VERSION)
+			-u libpthread $(MSCORLIB_VERSION)
 
 .cs.o:
 	$(COMPILE) -funsafe -x cs -o $@ -c $<

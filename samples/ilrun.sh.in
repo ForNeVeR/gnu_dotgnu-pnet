@@ -17,8 +17,8 @@ if test -f "$PNETLIB_PATH/runtime/mscorlib.dll" ; then
 	ILRUN_FLAGS="$ILRUN_FLAGS -L$PNETLIB_PATH/runtime"
 fi
 
-if ! test -f "../libc/libc@LIBRARY_SUFFIX@.dll" ; then
-	echo "$0: could not find libc@LIBRARY_SUFFIX@.dll" 1>&2
+if ! test -f "../libc/libc.dll" ; then
+	echo "$0: could not find libc.dll" 1>&2
 	exit 1
 fi
 

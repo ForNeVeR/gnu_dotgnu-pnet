@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include "il_system.h"
 #include "il_utils.h"
+#include "il_sysio.h"
 #include "cc_options.h"
 #include "cc_intl.h"
 
@@ -163,12 +164,116 @@ static void outOption(char *arg)
 	output_filename = arg;
 }
 
+
+/* 
+ * recurse and add all files which match the current pattern 
+ */
+static void recurseAndAddFiles(char *pathname, char * pattern)
+{
+	/* TODO: use regexp for processing */
+	ILDir *dir = NULL;
+	ILDirEnt *entry = NULL;
+	dir = ILOpenDir(pathname);
+	
+	if(dir == NULL)
+	{
+		fprintf(stderr, "%s: directory does not exist `%s'\n", progname, pathname);
+		return ;
+	}
+
+	while((entry = ILReadDir(dir)) != NULL)
+	{
+		const char * filename = ILDirEntName(entry);
+		char * fullpath = NULL;
+		
+		if(!strcmp(filename,"..") || !strcmp(filename,"."))
+		{
+			continue;
+		}
+		
+		fullpath = (char *)ILMalloc(strlen(pathname) +
+						    (filename ? strlen(filename) + 1 : 0) + 1);
+		if(!fullpath)
+		{
+			// Out of memory
+		}
+		strcpy(fullpath, pathname);
+		if(filename)
+		{
+			if(fullpath[strlen(fullpath)-1]!='/')
+			{
+				strcat(fullpath,"/");
+			}
+			strcat(fullpath, filename);
+		}
+
+		if(ILDirEntType(entry)== ILFileType_DIR)
+		{
+			// goes recursive
+			recurseAndAddFiles(fullpath, pattern);
+		}
+		else
+		{
+			// pattern matching - should use regex 
+			// this works for *.cs anyway could be faster 
+			// and less memory.... the point is , it's easy :)
+			int len1 = strlen(pattern);
+			int len2 = strlen(filename);
+			while((len1) && (len2))
+			{
+				len1--;
+				len2--;
+				if(pattern[len1] == '*')
+				{
+					// matches pattern of *.cs :)
+					AddNString(&input_files, &num_input_files, fullpath, strlen(fullpath));
+					break;
+				}
+				else if(pattern[len1] != filename[len2])
+				{
+					break;
+				}
+			}
+		}
+
+		ILFree(fullpath);
+	}
+	ILCloseDir(dir);
+}
+
 /*
  * Process a "/recurse" option.
  */
 static void recurseOption(char *arg)
 {
-	/* TODO */
+	char * dirPrefix = NULL;
+	int i=0;
+	if((arg==NULL) || (arg[0])=='\0')
+	{
+		return;
+	}
+
+	dirPrefix = ILCalloc(strlen(arg)+1,sizeof(char));
+
+	while(((*arg)!='\0') && ((*arg)!='*'))
+	{
+		dirPrefix[i++]=*arg;
+		arg++;
+	}
+
+	if(*dirPrefix == '\0')
+	{
+		// /recurse:*.cs starts from current dir
+		dirPrefix[0]='.';
+	}
+
+	recurseAndAddFiles(dirPrefix,arg);
+
+//cleanup:
+	if(dirPrefix)
+	{
+		ILFree(dirPrefix);
+	}
 }
 
 /*

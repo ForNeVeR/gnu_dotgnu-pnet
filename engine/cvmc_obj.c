@@ -122,8 +122,11 @@ static void CVMLoadValueField(ILCoder *coder, ILUInt32 offset,
 	}
 	if(offset < 256)
 	{
-		CVM_BYTE(COP_PADD_OFFSET);
-		CVM_BYTE(offset);
+		if(offset != 0)
+		{
+			CVM_BYTE(COP_PADD_OFFSET);
+			CVM_BYTE(offset);
+		}
 	}
 	else
 	{

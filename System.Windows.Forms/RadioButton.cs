@@ -337,17 +337,24 @@ public class RadioButton : ButtonBase
 					}
 					rect = new Rectangle(x, y, width, height);
 				}
-
+				RectangleF layout = rect;
+				Font font = Font;
+				if((TextAlign & (ContentAlignment.MiddleLeft |
+								 ContentAlignment.MiddleCenter |
+								 ContentAlignment.MiddleRight)) != 0)
+				{
+					layout.Offset(0.0f, GetDescent(graphics, font) / 2.0f);
+				}
 				if (Enabled)
 				{
 					using (Brush brush = new SolidBrush(ForeColor))
 					{
-						graphics.DrawString(Text, Font, brush, rect, format);
+						graphics.DrawString(Text, font, brush, layout, format);
 					}
 				}
 				else
 				{
-					ControlPaint.DrawStringDisabled(graphics, Text, Font, ForeColor, rect, format);
+					ControlPaint.DrawStringDisabled(graphics, Text, font, ForeColor, layout, format);
 				}
 			}
 

@@ -342,6 +342,15 @@ public abstract class ButtonBase : Control
 				return state;
 			}
 
+	// Get the descent in pixels for a font.
+	internal static float GetDescent(Graphics graphics, Font font)
+			{
+				FontFamily family = font.FontFamily;
+				int ascent = family.GetCellAscent(font.Style);
+				int descent = family.GetCellDescent(font.Style);
+				return font.GetHeight(graphics) * descent / (ascent + descent);
+			}
+
 	// Draw the button in its current state on a Graphics surface.
 	internal virtual void Draw(Graphics graphics)
 			{
@@ -376,9 +385,19 @@ public abstract class ButtonBase : Control
 					layout.Offset(1.0f, 1.0f);
 				}
 
+				// If we are using "middle" alignment, then shift the
+				// text down to account for the descent.  This makes
+				// the button "look better".
+				Font font = Font;
+				if((TextAlign & (ContentAlignment.MiddleLeft |
+								 ContentAlignment.MiddleCenter |
+								 ContentAlignment.MiddleRight)) != 0)
+				{
+					layout.Offset(0.0f, GetDescent(graphics, font) / 2.0f);
+				}
+
 				// Draw the text on the button.
 				String text = Text;
-				Font font = Font;
 				if(text != null && text != String.Empty)
 				{
 					if(Enabled)

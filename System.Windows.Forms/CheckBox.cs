@@ -250,9 +250,15 @@ public class CheckBox : ButtonBase
 						format.LineAlignment = StringAlignment.Near;
 						break;
 				}
-				Rectangle rect = new Rectangle(x, y, width, height);
+				RectangleF rect = new RectangleF(x, y, width, height);
 				String text = Text;
 				Font font = Font;
+				if((TextAlign & (ContentAlignment.MiddleLeft |
+								 ContentAlignment.MiddleCenter |
+								 ContentAlignment.MiddleRight)) != 0)
+				{
+					rect.Offset(0.0f, GetDescent(graphics, font) / 2.0f);
+				}
 				if(text != null && text != String.Empty)
 				{
 					if(Enabled)

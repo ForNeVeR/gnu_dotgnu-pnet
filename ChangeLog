@@ -12,6 +12,12 @@
 	* Xsharp/Display.cs: remove the "inMainLoop" check because it was
 	preventing the main loop from re-entering itself on the same thread.
 
+	* System.Windows.Forms/ButtonBase.cs, System.Windows.Forms/CheckBox.cs,
+	System.Windows.Forms/RadioButton.cs: make some slight adjustments to
+	the text on push buttons, check boxes, and radio buttons so that
+	middle-aligned text looks better (the text descent is factored out
+	of the centering calculation).
+
 2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Font.cs: remove a public constructor that is no longer

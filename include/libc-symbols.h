@@ -2,7 +2,7 @@
  * libc-symbols.h - Macros that help with compiling imported glibc code.
  *
  * This file is part of the Portable.NET C library.
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,5 +38,10 @@
 
 #define internal_function
 #define	__builtin_expect(expr, val)	(expr)
+
+#define	__set_errno(e)	(errno = (e))
+
+#define	link_warning(a,b)
+#define	__libc_fatal(a)
 
 #endif /* _LIBC_SYMBOLS_H */

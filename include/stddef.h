@@ -59,6 +59,7 @@ typedef __WINT_TYPE__           wint_t;
 #define wint_t                  wint_t
 #endif
 #undef __need_wint_t
+#define _WINT_T
 #endif
 
 #if !defined(__need_something_stddef) || defined(__need_size_t)

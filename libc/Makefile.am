@@ -1,11 +1,13 @@
 
 AUTOMAKE_OPTIONS = no-dependencies
 
-SUBDIRS = malloc \
+SUBDIRS = ctype \
+		  malloc \
 		  misc \
 		  pthread \
 		  pwd \
 		  stdio \
+		  stdlib \
 		  string \
 		  time \
 		  unistd
@@ -13,11 +15,13 @@ SUBDIRS = malloc \
 libcdir = $(libdir)/cscc/lib
 libc_DATA = libc$(LIBRARY_SUFFIX).dll
 
-LIBC_COMPONENTS = malloc/libCMalloc.a \
+LIBC_COMPONENTS = ctype/libCType.a \
+				  malloc/libCMalloc.a \
 				  misc/libCMisc.a \
 				  pthread/libCPthread.a \
 				  pwd/libCPwd.a \
 				  stdio/libCStdio.a \
+				  stdlib/libCStdlib.a \
 				  string/libCString.a \
 				  time/libCTime.a \
 				  unistd/libCUnistd.a

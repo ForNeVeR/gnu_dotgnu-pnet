@@ -118,14 +118,17 @@ AC_OBJEXT
 AC_OUTPUT([
 Makefile
 include/Makefile
+include/bits/Makefile
 include/gnu/Makefile
 include/sys/Makefile
 libc/Makefile
+libc/ctype/Makefile
 libc/malloc/Makefile
 libc/misc/Makefile
 libc/pthread/Makefile
 libc/pwd/Makefile
 libc/stdio/Makefile
+libc/stdlib/Makefile
 libc/string/Makefile
 libc/time/Makefile
 libc/unistd/Makefile

@@ -59,6 +59,7 @@ typedef uint64_t            __fsfilcnt64_t, fsfilcnt64_t;
 typedef uint32_t            __gid_t, gid_t;
 typedef uint32_t            __id_t, id_t;
 typedef uint32_t            __ino_t, ino_t;
+typedef uint64_t            __ino64_t, ino64_t;
 typedef uint16_t            __ipc_pid_t;
 typedef long                __key_t, key_t;
 typedef uint16_t            __mode_t, mode_t;

@@ -34,8 +34,8 @@ __BEGIN_DECLS
 
 #define	__need___va_list
 #include <stdarg.h>
-#ifndef	__GNUC_VA_LIST
-#define	__gnuc_va_list	__ptr_t
+#ifndef	__gnuc_va_list
+#define	__gnuc_va_list	va_list
 #endif
 
 #include <sys/types.h>
@@ -219,10 +219,7 @@ struct __stdio_file
    STREAM must be a modifiable lvalue (wow, I got to use that term).
    See stdio/glue.c for what the confusing bit is about.  */
 #define	__validfp(stream)						      \
-  (stream != NULL &&							      \
-   ({ if (stream->__magic == _GLUEMAGIC)				      \
-	stream = *((struct { int __magic; FILE **__p; } *) stream)->__p;      \
-      stream->__magic == _IOMAGIC; }))
+  (stream != NULL && stream->__magic == _IOMAGIC)
 
 /* Clear the error and EOF indicators of STREAM.  */
 #define	__clearerr(stream)	((stream)->__error = (stream)->__eof = 0)
@@ -273,26 +270,7 @@ extern int __stdio_check_offset (FILE *__stream) __THROW;
    L_cuserid	How long an array to pass to `cuserid'.
    FOPEN_MAX	Minimum number of files that can be open at once.
    FILENAME_MAX	Maximum length of a filename.  */
-/*#include <bits/stdio_lim.h>*/
-#ifdef _STDIO_H
-# define L_tmpnam 20
-# define TMP_MAX 238328
-# define FILENAME_MAX 4095
-
-# ifdef __USE_POSIX
-#  define L_ctermid 9
-#  define L_cuserid 9
-# endif
-#endif
-
-#if defined __need_FOPEN_MAX || defined _STDIO_H
-# undef  FOPEN_MAX
-# define FOPEN_MAX 16
-#endif
-
-#if defined __need_IOV_MAX && !defined IOV_MAX
-# define IOV_MAX 1024
-#endif
+#include <bits/stdio_lim.h>
 
 
 /* All the known streams are in a linked list

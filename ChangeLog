@@ -1,4 +1,9 @@
 
+2004-12-09  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XPath/Private/.cvsignore: Add generated files to 
+	cvsignore.
+
 2004-12-08 Shylaja Kokoori  <skokoori@cox.net>
 
 	* System.Windows.Forms/Listbox.cs: Added functionality for FindString, 

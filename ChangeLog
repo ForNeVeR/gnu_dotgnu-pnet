@@ -18,6 +18,9 @@
 	* libgc/mark.c, libgc/win32_threads.c: work around problems
 	with "__try" under mingw32 compilers.
 
+	* configure.in: suppress "-lm" when compiling under mingw32, so
+	that we get the math routines in "msvcrt.dll", not "cygwin1.dll".
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

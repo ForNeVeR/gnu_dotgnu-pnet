@@ -202,9 +202,16 @@ ILClass *ILGetExplicitConv(ILGenInfo *info, ILType *fromType,
  */
 int ILBetterConversion(ILGenInfo *info, ILType *sType,
 					   ILType *t1Type, ILType *t2Type);
+
+int ILBetterConversionFrom(ILGenInfo *info, ILType *s1Type,
+					   ILType *s2Type, ILType *tType);
+
 #define	IL_BETTER_NEITHER		0
 #define	IL_BETTER_T1			1
 #define	IL_BETTER_T2			2
+
+#define	IL_BETTER_S1			IL_BETTER_T1
+#define	IL_BETTER_S2			IL_BETTER_T2
 
 /*
  * Builtin operator tables.

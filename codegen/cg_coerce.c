@@ -551,6 +551,76 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 							 IL_META_METHODDEF_SPECIAL_NAME | \
 							 IL_META_METHODDEF_RT_SPECIAL_NAME)
 
+static int ILBetterIndirectConversion(ILGenInfo *info, ILType *from ,
+						ILType *to ,
+						ILType *conversion1,
+						ILType *conversion2)
+{
+	switch(ILBetterConversion(info,from, ILTypeGetParam(conversion1,1), 
+							  ILTypeGetParam(conversion2,1)))
+	{
+		case IL_BETTER_S1:
+		{
+			switch(ILBetterConversionFrom(info, ILTypeGetReturn(conversion1), 
+										ILTypeGetReturn(conversion2),to))
+			{
+				case IL_BETTER_S1:
+				case IL_BETTER_NEITHER:
+				{
+					return IL_BETTER_S1;
+				}
+				break;
+				
+				case IL_BETTER_S2:
+				{
+					return IL_BETTER_NEITHER;
+				}
+				break;
+			}
+		}
+		break;
+		
+		case IL_BETTER_S2:
+		{
+			switch(ILBetterConversionFrom(info, ILTypeGetReturn(conversion1), 
+										ILTypeGetReturn(conversion2),to))
+			{
+				case IL_BETTER_S1:
+				{
+					return IL_BETTER_NEITHER;
+				}
+				break;
+				case IL_BETTER_S2:
+				case IL_BETTER_NEITHER:
+				{
+					return IL_BETTER_S2;
+				}
+				break;
+			}
+		}
+		break;
+		
+		case IL_BETTER_NEITHER:
+		{
+			switch(ILBetterConversionFrom(info, ILTypeGetReturn(conversion1), 
+										ILTypeGetReturn(conversion2),to))
+			{
+				case IL_BETTER_S1:
+				{
+					return IL_BETTER_S1;
+				}
+				case IL_BETTER_S2:
+				{
+					return IL_BETTER_S2;
+				}
+			}
+		}
+		break;
+		
+	}
+	return IL_BETTER_NEITHER;
+}
+
 /*
  * multiple convert rules are checked here . I have implemented only
  * a 2 step conversion fromType->itype1->itype2->toType , more levels
@@ -565,6 +635,7 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 {
 	ILMethod *method;
 	ILMember *member;
+	ILMember *bestMember = 0;
 	ILType *signature;
 	ILClass *arg1Class = ILTypeToClass(info, fromType);
 	ILClass *arg2Class = ILTypeToClass(info, toType);	
@@ -609,11 +680,11 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 				|| ((explicit && ILCanCastKind(info,returnType,toType,
 				kinds,0) && ILCanCastKind(info,fromType,argType,kinds,0))))
 			{
-				if(itype1)(*itype1)=argType;
-				if(itype2)(*itype2)=returnType;
-				GetConvertRules(info,fromType,argType,0,kinds,rules1);
-				GetConvertRules(info,returnType,toType,0,kinds,rules2);
-				return 1;
+				if(bestMember == NULL || (ILBetterIndirectConversion(info,
+					fromType, toType, ILMethod_Signature(member),									ILMethod_Signature(bestMember)) == IL_BETTER_S1))
+				{
+					bestMember = member;
+				}
 			}
 		}
 		arg1Class = ILClass_Parent(arg1Class);
@@ -652,14 +723,26 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 				|| ((explicit && ILCanCastKind(info,returnType,toType,
 				kinds,0) && ILCanCastKind(info,fromType,argType,kinds,0))))
 			{
-				if(itype1)(*itype1)=argType;
-				if(itype2)(*itype2)=returnType;
-				GetConvertRules(info,fromType,argType,0,kinds,rules1);
-				GetConvertRules(info,returnType,toType,0,kinds,rules2);
-				return 1;
+				if(bestMember == NULL || (ILBetterIndirectConversion(info,
+					fromType, toType, ILMethod_Signature(member),									ILMethod_Signature(bestMember)) == IL_BETTER_S1))
+				{
+					bestMember = member;
+				}
 			}
 		}
 		arg2Class = ILClass_Parent(arg2Class);
+	}
+	
+	if(bestMember)
+	{
+		signature = ILMethod_Signature(bestMember);
+		argType = ILTypeGetParam(signature, 1);
+		returnType = ILTypeGetReturn(signature);
+		if(itype1)(*itype1)=argType;
+		if(itype2)(*itype2)=returnType;
+		GetConvertRules(info,fromType,argType,0,kinds,rules1);
+		GetConvertRules(info,returnType,toType,0,kinds,rules2);
+		return 1;
 	}
 
 	if(!explicit)return 0;
@@ -701,11 +784,11 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 			if(ILCanCastKind(info,returnType,toType,kinds,0) && 
 				ILCanCastKind(info,fromType,argType,kinds,0))
 			{
-				if(itype1)(*itype1)=argType;
-				if(itype2)(*itype2)=returnType;
-				GetConvertRules(info,fromType,argType,1,kinds,rules1);
-				GetConvertRules(info,returnType,toType,1,kinds,rules2);
-				return 1;
+				if(bestMember == NULL || (ILBetterIndirectConversion(info,
+					fromType, toType, ILMethod_Signature(member),									ILMethod_Signature(bestMember)) == IL_BETTER_S1))
+				{
+					bestMember = member;
+				}
 			}
 		}
 		arg1Class = ILClass_Parent(arg1Class);
@@ -742,15 +825,28 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 			if(ILCanCastKind(info,returnType,toType,kinds,0) && 
 				ILCanCastKind(info,fromType,argType,kinds,0))
 			{
-				if(itype1)(*itype1)=argType;
-				if(itype2)(*itype2)=returnType;
-				GetConvertRules(info,fromType,argType,0,kinds,rules1);
-				GetConvertRules(info,returnType,toType,1,kinds,rules2);
-				return 1;
+				if(bestMember == NULL || (ILBetterIndirectConversion(info,
+					fromType, toType, ILMethod_Signature(member),									ILMethod_Signature(bestMember)) == IL_BETTER_S1))
+				{
+					bestMember = member;
+				}
 			}
 		}
 		arg2Class = ILClass_Parent(arg2Class);
 	}
+
+	if(bestMember)
+	{
+		signature = ILMethod_Signature(bestMember);
+		argType = ILTypeGetParam(signature, 1);
+		returnType = ILTypeGetReturn(signature);
+		if(itype1)(*itype1)=argType;
+		if(itype2)(*itype2)=returnType;
+		GetConvertRules(info,fromType,argType,0,kinds,rules1);
+		GetConvertRules(info,returnType,toType,0,kinds,rules2);
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -1248,6 +1344,92 @@ int ILBetterConversion(ILGenInfo *info, ILType *sType,
 	else if(t2Type == ILType_Int64 && t1Type == ILType_UInt64)
 	{
 		return IL_BETTER_T2;
+	}
+	else
+	{
+		return IL_BETTER_NEITHER;
+	}
+}
+
+
+/* TODO : Figure out the actual conversion rules before using
+ * 		  this in the rest of the code . But it's a reasonably
+ * 		  good approximation of what I understand about the spec */
+
+int ILBetterConversionFrom(ILGenInfo *info, ILType *s1Type,
+					   ILType *s2Type, ILType *tType)
+{
+	if(ILTypeIdentical(s1Type, s2Type))
+	{
+		return IL_BETTER_NEITHER;
+	}
+	else if(ILTypeIdentical(s1Type, tType))
+	{
+		return IL_BETTER_S1;
+	}
+	else if(ILTypeIdentical(s2Type, tType))
+	{
+		return IL_BETTER_S2;
+	}
+	else if(ILCanCoerce(info, s1Type, s2Type,0) &&
+	        !ILCanCoerce(info, s2Type, s1Type,0))
+	{
+		return IL_BETTER_S2;
+	}
+	else if(ILCanCoerce(info, s2Type, s1Type,0) &&
+	        !ILCanCoerce(info, s1Type, s2Type,0))
+	{
+		return IL_BETTER_S1;
+	}
+	else if(s1Type == ILType_Int8 &&
+	        (s2Type == ILType_UInt8 ||
+			 s2Type == ILType_UInt16 ||
+			 s2Type == ILType_UInt32 ||
+			 s2Type == ILType_UInt64))
+	{
+		return IL_BETTER_S1;
+	}
+	else if(s2Type == ILType_Int8 &&
+	        (s1Type == ILType_UInt8 ||
+			 s1Type == ILType_UInt16 ||
+			 s1Type == ILType_UInt32 ||
+			 s1Type == ILType_UInt64))
+	{
+		return IL_BETTER_S2;
+	}
+	else if(s1Type == ILType_Int16 &&
+			(s2Type == ILType_UInt16 ||
+			 s2Type == ILType_UInt32 ||
+			 s2Type == ILType_UInt64))
+	{
+		return IL_BETTER_S1;
+	}
+	else if(s2Type == ILType_Int16 &&
+			(s1Type == ILType_UInt16 ||
+			 s1Type == ILType_UInt32 ||
+			 s1Type == ILType_UInt64))
+	{
+		return IL_BETTER_S2;
+	}
+	else if(s1Type == ILType_Int32 &&
+			(s2Type == ILType_UInt32 ||
+			 s2Type == ILType_UInt16))
+	{
+		return IL_BETTER_S1;
+	}
+	else if(s2Type == ILType_Int32 &&
+			(s1Type == ILType_UInt32 ||
+			 s1Type == ILType_UInt16))
+	{
+		return IL_BETTER_S2;
+	}
+	else if(s1Type == ILType_Int64 && s2Type == ILType_UInt64)
+	{
+		return IL_BETTER_S1;
+	}
+	else if(s2Type == ILType_Int64 && s1Type == ILType_UInt64)
+	{
+		return IL_BETTER_S2;
 	}
 	else
 	{

@@ -28,16 +28,6 @@ failed()
 	if test -z "$QUIET"; then
 		echo '*** Build failed at '"$DATEVAL"' ***'
 	fi
-	if test -n "$PNET_EMAIL_USER" ; then
-		cat << EOF | $PNET_EMAIL_SEND $PNET_EMAIL_USER
-To: $PNET_EMAIL_USER
-Subject: Portable.NET build failed
-
-Portable.NET build failed at ${DATEVAL}.  Build log is in:
-
-    $PNET_BUILD_LOG
-EOF
-	fi
 	exit 1
 }
 
@@ -134,6 +124,16 @@ fi
 # Start the build log.
 DATEVAL=`date`
 echo '*** Build started at '"$DATEVAL"' ***' >"$PNET_BUILD_LOG"
+echo '*** System: '`uname -a` >>"$PNET_BUILD_LOG"
+echo '*** User: '"$USER" >>"$PNET_BUILD_LOG"
+echo '*** Tool version information:' >>"$PNET_BUILD_LOG"
+autoconf --version >>"$PNET_BUILD_LOG" 2>&1
+automake --version >>"$PNET_BUILD_LOG" 2>&1
+gcc -v >>"$PNET_BUILD_LOG" 2>&1
+$PNET_MAKE -v >>"$PNET_BUILD_LOG" 2>&1
+bison --version >>"$PNET_BUILD_LOG" 2>&1
+flex --version >>"$PNET_BUILD_LOG" 2>&1
+echo '*** End of tool version information' >>"$PNET_BUILD_LOG"
 if test -z "$QUIET"; then
 	echo '*** Build started at '"$DATEVAL"' ***'
 fi
@@ -161,6 +161,13 @@ if test -d pnetlib ; then
 else
 	run $PNET_CVS co pnetlib
 fi
+if test -d pnetC ; then
+	run cd pnetC
+	run $PNET_CVS update -d
+	run cd ..
+else
+	run $PNET_CVS co pnetC
+fi
 if test -d cscctest ; then
 	run cd cscctest
 	run $PNET_CVS update -d
@@ -173,55 +180,68 @@ fi
 run rm -rf "$PNET_BUILD_ACTUAL/treecc"
 run rm -rf "$PNET_BUILD_ACTUAL/pnet"
 run rm -rf "$PNET_BUILD_ACTUAL/pnetlib"
+run rm -rf "$PNET_BUILD_ACTUAL/pnetC"
 run rm -rf "$PNET_BUILD_ACTUAL/cscctest"
 
 # Copy the pristine trees to the actual trees.
 run cp -pr "$PNET_BUILD_PRISTINE/treecc" "$PNET_BUILD_ACTUAL/treecc"
 run cp -pr "$PNET_BUILD_PRISTINE/pnet" "$PNET_BUILD_ACTUAL/pnet"
 run cp -pr "$PNET_BUILD_PRISTINE/pnetlib" "$PNET_BUILD_ACTUAL/pnetlib"
+run cp -pr "$PNET_BUILD_PRISTINE/pnetC" "$PNET_BUILD_ACTUAL/pnetC"
 run cp -pr "$PNET_BUILD_PRISTINE/cscctest" "$PNET_BUILD_ACTUAL/cscctest"
 
 # Build treecc.
 run cd "$PNET_BUILD_ACTUAL/treecc"
 run ./auto_gen.sh
-run ./configure
-run make
-run make check
+run ./configure $PNET_CONFIGURE_TREECC
+run $PNET_MAKE
+run $PNET_MAKE check
 
 # Build pnet.
 run cd "$PNET_BUILD_ACTUAL/pnet"
 run ./auto_gen.sh
-TREECC="$PNET_BUILD_ACTUAL/treecc/treecc"
+TREECC="$PNET_BUILD_ACTUAL/treecc/treecc -s $PNET_BUILD_ACTUAL/etc"
 export TREECC
 run ./configure $PNET_CONFIGURE_OPTIONS
-run make
+run $PNET_MAKE
 
-# Run the pnet samples and tests (basically checking for
-# segfaults, failures, and the like).
-run cd samples
-runsample ../engine/ilrun hello.exe
-runsample ../engine/ilrun fib.exe
-runsample ../engine/ilrun evenodd.exe
-runsample ../engine/ilrun except.exe
-runsample ../engine/ilrun codepage.exe
-runsample ../engine/ilrun codepage.exe 932
-runsample ../engine/ilrun getenv.exe
-runsample ../engine/ilrun getenv.exe PATH
-run cd ../tests
+# Run the pnet tests in "show failures only" mode.
+run cd tests
 run ./test_verify -f
 run ./test_thread -f
+run ./test_crypt -f
 
 # Build pnetlib.
 run cd "$PNET_BUILD_ACTUAL/pnetlib"
 run ./auto_gen.sh
-run ./configure --with-pnet="$PNET_BUILD_ACTUAL/pnet"
-run make
+run ./configure --with-pnet="$PNET_BUILD_ACTUAL/pnet" $PNET_CONFIGURE_PNETLIB
+run $PNET_MAKE
+run $PNET_MAKE check
+
+# Build pnetC.
+run cd "$PNET_BUILD_ACTUAL/pnetC"
+run ./auto_gen.sh
+run ./configure --with-pnet="$PNET_BUILD_ACTUAL/pnet" --with-pnetlib="$PNET_BUILD_ACTUAL/pnetlib" $PNET_CONFIGURE_PNETC
+run $PNET_MAKE
+run $PNET_MAKE check
+
+# Run the pnetlib samples (basically checking for segfaults,
+# simple exception failures, and the like).
+run cd samples
+runsample ./ilrun.sh hello.exe
+runsample ./ilrun.sh fib.exe
+runsample ./ilrun.sh evenodd.exe
+runsample ./ilrun.sh except.exe
+runsample ./ilrun.sh codepage.exe
+runsample ./ilrun.sh codepage.exe 932
+runsample ./ilrun.sh getenv.exe
+runsample ./ilrun.sh getenv.exe PATH
 
 # Configure and run cscctest.
 run cd "$PNET_BUILD_ACTUAL/cscctest"
 run ./auto_gen.sh
-run ./configure --with-pnet="$PNET_BUILD_ACTUAL/pnet"
-run make check
+run ./configure --with-pnet="$PNET_BUILD_ACTUAL/pnet" $PNET_CONFIGURE_CSCCTEST
+run $PNET_MAKE check
 
 # Done.
 DATEVAL=`date`

@@ -3,6 +3,10 @@
 
 	* cscc/csharp/cs_stmt.tc: remove a warning.
 
+	* tools/pnet_build.README, tools/pnet_build.cfg, tools/pnet_build.sh:
+	update the "pnet_build.sh" script to match the current repository
+	layout and to dump information about the system and tool versions.
+
 2002-12-10  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_defs.tc, cscc/csharp/cs_grammar.y,

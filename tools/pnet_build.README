@@ -67,15 +67,6 @@ If the build fails, the current state of the system will be left in
 the actual directory, but as soon as the next build begins, the entire
 actual directory will be removed and the process restarts.
 
-The script can e-mail you if a failure occurs.  Set the PNET_EMAIL_USER
-variable in the configuration file to your e-mail address, and make sure
-that sendmail has been configured properly for your system.
-
-Do not set it to the e-mail address of the Portable.NET developers or
-the discussion mailing lists.  You should always inspect build failures
-yourself before reporting a problem to the developers.  It may be a
-problem on your system.
-
 The "pnet" tree can be configured and built in a number of different
 profiles and configurations.  These are typically selected by supplying
 options to pnet's "configure" script.  You can alter this by setting

@@ -1829,9 +1829,9 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_jpjppip(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_jpjjppip(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, void *, void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])));
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, ILNativeUInt, void *, void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((void * *)(avalue[6])));
 }
 
 #endif
@@ -1857,12 +1857,13 @@ static void marshal_ipjj(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_TypeBuilder_suppressed
 
 IL_METHOD_BEGIN(TypeBuilder_Methods)
-	IL_METHOD("ClrTypeCreate", "(joSystem.String;oSystem.String;vSystem.Reflection.TypeAttributes;vSystem.Reflection.Emit.TypeToken;)j", _IL_TypeBuilder_ClrTypeCreate, marshal_jpjppip)
+	IL_METHOD("ClrTypeCreate", "(jjoSystem.String;oSystem.String;vSystem.Reflection.TypeAttributes;vSystem.Reflection.Emit.TypeToken;)j", _IL_TypeBuilder_ClrTypeCreate, marshal_jpjjppip)
 	IL_METHOD("ClrTypeSetPackingSize", "(ji)V", _IL_TypeBuilder_ClrTypeSetPackingSize, marshal_vpji)
 	IL_METHOD("ClrTypeSetClassSize", "(ji)V", _IL_TypeBuilder_ClrTypeSetClassSize, marshal_vpji)
 	IL_METHOD("ClrTypeAddInterface", "(jvSystem.Reflection.Emit.TypeToken;)V", _IL_TypeBuilder_ClrTypeAddInterface, marshal_vpjp)
 	IL_METHOD("ClrTypeGetPackingSize", "(j)i", _IL_TypeBuilder_ClrTypeGetPackingSize, marshal_ipj)
 	IL_METHOD("ClrTypeGetClassSize", "(j)i", _IL_TypeBuilder_ClrTypeGetClassSize, marshal_ipj)
+	IL_METHOD("ClrTypeAddOverride", "(jii)V", _IL_TypeBuilder_ClrTypeAddOverride, marshal_vpjii)
 	IL_METHOD("ClrTypeSetParent", "(jvSystem.Reflection.Emit.TypeToken;)V", _IL_TypeBuilder_ClrTypeSetParent, marshal_vpjp)
 	IL_METHOD("ClrTypeImport", "(jj)i", _IL_TypeBuilder_ClrTypeImport, marshal_ipjj)
 	IL_METHOD("ClrTypeImportMember", "(jj)i", _IL_TypeBuilder_ClrTypeImportMember, marshal_ipjj)
@@ -1930,10 +1931,20 @@ IL_METHOD_END
 
 IL_METHOD_BEGIN(FieldBuilder_Methods)
 	IL_METHOD("ClrFieldCreate", "(joSystem.String;jvSystem.Reflection.FieldAttributes;)j", _IL_FieldBuilder_ClrFieldCreate, marshal_jpjpji)
+	IL_METHOD("ClrFieldSetRVA", "(ji)V", _IL_FieldBuilder_ClrFieldSetRVA, marshal_vpji)
 	IL_METHOD("ClrFieldSetConstant", "(joSystem.Object;)V", _IL_FieldBuilder_ClrFieldSetConstant, marshal_vpjp)
 	IL_METHOD("ClrFieldSetMarshal", "(j[B)V", _IL_FieldBuilder_ClrFieldSetMarshal, marshal_vpjp)
 	IL_METHOD("ClrFieldSetOffset", "(ji)V", _IL_FieldBuilder_ClrFieldSetOffset, marshal_vpji)
 IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpjipp(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+}
 
 #endif
 
@@ -1958,19 +1969,12 @@ static void marshal_ipjij(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_MethodBuilder_suppressed
 
 IL_METHOD_BEGIN(MethodBuilder_Methods)
+	IL_METHOD("ClrMethodAddPInvoke", "(jioSystem.String;oSystem.String;)V", _IL_MethodBuilder_ClrMethodAddPInvoke, marshal_vpjipp)
+	IL_METHOD("ClrMethodSetRVA", "(ji)V", _IL_MethodBuilder_ClrMethodSetRVA, marshal_vpji)
 	IL_METHOD("ClrMethodCreate", "(joSystem.String;vSystem.Reflection.MethodAttributes;j)j", _IL_MethodBuilder_ClrMethodCreate, marshal_jpjpij)
 	IL_METHOD("ClrMethodSetImplAttrs", "(jvSystem.Reflection.MethodImplAttributes;)V", _IL_MethodBuilder_ClrMethodSetImplAttrs, marshal_vpji)
 	IL_METHOD("ClrMethodCreateVarArgRef", "(jij)i", _IL_MethodBuilder_ClrMethodCreateVarArgRef, marshal_ipjij)
 IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_jpjp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
-}
 
 #endif
 
@@ -1983,9 +1987,20 @@ static void marshal_ipjp(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_jpjp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
+}
+
+#endif
+
 #ifndef _IL_ModuleBuilder_suppressed
 
 IL_METHOD_BEGIN(ModuleBuilder_Methods)
+	IL_METHOD("ClrModuleWriteData", "(j[B)i", _IL_ModuleBuilder_ClrModuleWriteData, marshal_ipjp)
+	IL_METHOD("ClrModuleWriteGap", "(ji)i", _IL_ModuleBuilder_ClrModuleWriteGap, marshal_ipji)
 	IL_METHOD("ClrModuleCreate", "(joSystem.String;)j", _IL_ModuleBuilder_ClrModuleCreate, marshal_jpjp)
 	IL_METHOD("ClrModuleCreateString", "(joSystem.String;)i", _IL_ModuleBuilder_ClrModuleCreateString, marshal_ipjp)
 IL_METHOD_END
@@ -1997,7 +2012,6 @@ IL_METHOD_END
 IL_METHOD_BEGIN(PropertyBuilder_Methods)
 	IL_METHOD("ClrPropertyCreate", "(joSystem.String;vSystem.Reflection.PropertyAttributes;j)j", _IL_PropertyBuilder_ClrPropertyCreate, marshal_jpjpij)
 	IL_METHOD("ClrPropertyAddSemantics", "(jvSystem.Reflection.MethodSemanticsAttributes;vSystem.Reflection.Emit.MethodToken;)V", _IL_PropertyBuilder_ClrPropertyAddSemantics, marshal_vpjip)
-	IL_METHOD("ClrPropertySetConstant", "(joSystem.Object;)V", _IL_PropertyBuilder_ClrPropertySetConstant, marshal_vpjp)
 IL_METHOD_END
 
 #endif
@@ -2067,6 +2081,26 @@ IL_METHOD_BEGIN(SignatureHelper_Methods)
 	IL_METHOD("ClrSigIdentical", "(jj)Z", _IL_SignatureHelper_ClrSigIdentical, marshal_bpjj)
 	IL_METHOD("ClrSigGetHashCode", "(j)i", _IL_SignatureHelper_ClrSigGetHashCode, marshal_ipj)
 	IL_METHOD("ClrSigGetBytes", "(jj)[B", _IL_SignatureHelper_ClrSigGetBytes, marshal_ppjj)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_jpjiip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#ifndef _IL_ParameterBuilder_suppressed
+
+IL_METHOD_BEGIN(ParameterBuilder_Methods)
+	IL_METHOD("ClrParameterCreate", "(jivSystem.Reflection.ParameterAttributes;oSystem.String;)j", _IL_ParameterBuilder_ClrParameterCreate, marshal_jpjiip)
+	IL_METHOD("ClrParameterGetPosition", "(j)i", _IL_ParameterBuilder_ClrParameterGetPosition, marshal_ipj)
+	IL_METHOD("ClrParameterGetAttrs", "(j)i", _IL_ParameterBuilder_ClrParameterGetAttrs, marshal_ipj)
+	IL_METHOD("ClrParameterGetName", "(j)oSystem.String;", _IL_ParameterBuilder_ClrParameterGetName, marshal_ppj)
 IL_METHOD_END
 
 #endif
@@ -2760,6 +2794,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_Object_suppressed
 	{"Object", "System", Object_Methods},
+#endif
+#ifndef _IL_ParameterBuilder_suppressed
+	{"ParameterBuilder", "System.Reflection.Emit", ParameterBuilder_Methods},
 #endif
 #ifndef _IL_PropertyBuilder_suppressed
 	{"PropertyBuilder", "System.Reflection.Emit", PropertyBuilder_Methods},

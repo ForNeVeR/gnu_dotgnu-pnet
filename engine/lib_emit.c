@@ -159,6 +159,15 @@ void _IL_FieldBuilder_ClrFieldSetOffset(ILExecThread *_thread,
 }
 
 /*
+ * private static void ClrFieldSetRVA(IntPtr item, int rva);
+ */
+void _IL_FieldBuilder_ClrFieldSetRVA(ILExecThread *_thread,
+									 ILNativeInt item, ILInt32 rva)
+{
+	/* TODO */
+}
+
+/*
  * private static IntPtr ClrModuleCreate(IntPtr assembly, String name);
  */
 ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
@@ -177,6 +186,27 @@ ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
 ILInt32 _IL_ModuleBuilder_ClrModuleCreateString(ILExecThread *_thread,
 											    ILNativeInt module,
 												ILString *str)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * internal static int ClrModuleWriteData(IntPtr module, byte[] data);
+ */
+ILInt32 _IL_ModuleBuilder_ClrModuleWriteData(ILExecThread *_thread,
+											 ILNativeInt module,
+											 System_Array *data)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * internal static int ClrModuleWriteGap(IntPtr module, int size);
+ */
+ILInt32 _IL_ModuleBuilder_ClrModuleWriteGap(ILExecThread *_thread,
+											ILNativeInt module, ILInt32 size)
 {
 	/* TODO */
 	return 0;
@@ -227,6 +257,7 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
  */
 ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 										  ILNativeInt module,
+										  ILNativeInt nestedParent,
 										  ILString *name,
 										  ILString *nspace,
 										  ILInt32 attr,
@@ -319,6 +350,18 @@ ILInt32 _IL_TypeBuilder_ClrTypeImportMember(ILExecThread *_thread,
 }
 
 /*
+ * private static void ClrTypeAddOverride(IntPtr module, int bodyToken,
+ *										  int declToken);
+ */
+void _IL_TypeBuilder_ClrTypeAddOverride(ILExecThread *_thread,
+										ILNativeInt module,
+										ILInt32 bodyToken,
+										ILInt32 declToken)
+{
+	/* TODO */
+}
+
+/*
  * internal static IntPtr ClrMethodCreate(IntPtr classInfo, String name,
  *										  MethodAttributes attributes,
  *										  IntPtr signature);
@@ -360,6 +403,31 @@ ILInt32 _IL_MethodBuilder_ClrMethodCreateVarArgRef(ILExecThread *_thread,
 {
 	/* TODO */
 	return 0;
+}
+
+/*
+ * internal static void ClrMethodSetRVA(IntPtr method, int rva);
+ */
+void _IL_MethodBuilder_ClrMethodSetRVA(ILExecThread *_thread,
+									   ILNativeInt method, ILInt32 rva)
+{
+	if(method)
+	{
+		ILMethodSetRVA((ILMethod *)method, (ILUInt32)rva);
+	}
+}
+
+/*
+ * internal static void ClrMethodAddPInvoke(IntPtr method, int pinvAttrs,
+ *											String dllName, String entryName);
+ */
+void _IL_MethodBuilder_ClrMethodAddPInvoke(ILExecThread *_thread,
+										   ILNativeInt method,
+										   ILInt32 pinvAttrs,
+										   ILString *dllName,
+										   ILString *entryName)
+{
+	/* TODO */
 }
 
 /*
@@ -570,6 +638,71 @@ System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
 {
 	/* TODO */
 	return 0;
+}
+
+/*
+ * internal static IntPtr ClrParameterCreate(IntPtr method, int position,
+ *											 ParameterAttributes attributes,
+ *											 String name);
+ */
+ILNativeInt _IL_ParameterBuilder_ClrParameterCreate(ILExecThread *_thread,
+													ILNativeInt method,
+													ILInt32 position,
+													ILInt32 attributes,
+													ILString *name)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * internal static int ClrParameterGetPosition(IntPtr parameter);
+ */
+ILInt32 _IL_ParameterBuilder_ClrParameterGetPosition(ILExecThread *_thread,
+													 ILNativeInt parameter)
+{
+	if(parameter)
+	{
+		return ILParameter_Num((ILParameter *)parameter);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * internal static ParameterAttributes ClrParameterGetPosition
+ *						(IntPtr parameter);
+ */
+ILInt32 _IL_ParameterBuilder_ClrParameterGetAttrs(ILExecThread *_thread,
+												  ILNativeInt parameter)
+{
+	if(parameter)
+	{
+		return ILParameter_Attrs((ILParameter *)parameter);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * internal static String ClrParameterGetName(IntPtr parameter);
+ */
+ILString *_IL_ParameterBuilder_ClrParameterGetName(ILExecThread *_thread,
+												   ILNativeInt parameter)
+{
+	if(parameter)
+	{
+		return ILStringCreate
+			(_thread, ILParameter_Name((ILParameter *)parameter));
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 #endif /* IL_CONFIG_REFLECTION */

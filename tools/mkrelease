@@ -76,6 +76,8 @@ fi
 echo '$' cd pnet >>$LOGFILE
 echo cd pnet
 cd pnet
+call aclocal
+call autoheader
 call automake
 call autoconf
 
@@ -122,6 +124,8 @@ call cp -pr "$3" pnet
 echo '$' cd pnet >>$LOGFILE
 echo cd pnet
 cd pnet
+call aclocal
+call autoheader
 call automake
 call autoconf
 echo '$' cd .. >>$LOGFILE

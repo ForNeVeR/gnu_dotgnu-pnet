@@ -3,6 +3,11 @@
 
 	* pnet.spec: remove from the CVS server, as it is auto-generated.
 
+	* .cvsignore, aclocal.m4, auto_gen.sh, include/.cvsignore,
+	include/il_config.h.in, tools/mkrelease: remove files from
+	the CVS server that cause problems with different versions
+	of automake/autoconf.
+
 2002-12-01  Stephen Compall  <rushing@sigecom.net>
 
 	* pnet.spec.in: Fixed man page filespecs to support multiple

@@ -6,3 +6,4 @@ config.log
 config.cache
 config.status
 pnet.spec
+aclocal.m4

@@ -21,8 +21,8 @@
 #ifndef	_CSCC_CS_INTERNAL_H
 #define	_CSCC_CS_INTERNAL_H
 
-#include "cs_defs.h"
-#include "../common/cc_main.h"
+#include <cscc/csharp/cs_defs.h>
+#include <cscc/common/cc_main.h>
 
 #ifdef	__cplusplus
 extern	"C" {

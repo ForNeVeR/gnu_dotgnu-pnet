@@ -33,12 +33,12 @@
  */
 %decls %{
 
-#include "../../codegen/cg_nodes.h"
-#include "../../codegen/cg_coerce.h"
-#include "../../codegen/cg_resolve.h"
-#include "../../codegen/cg_scope.h"
-#include "../common/cc_preproc.h"
-#include "../common/cc_options.h"
+#include <codegen/cg_nodes.h>
+#include <codegen/cg_coerce.h>
+#include <codegen/cg_resolve.h>
+#include <codegen/cg_scope.h>
+#include <cscc/common/cc_preproc.h>
+#include <cscc/common/cc_options.h>
 
 /*
  * Define the semantic analysis return type.
@@ -79,7 +79,7 @@ extern CSSemValue CSSemValueDefault;
 %output "cs_nodes.c"
 
 %{
-#include "cs_internal.h"
+#include <cscc/csharp/cs_internal.h>
 %}
 
 /*

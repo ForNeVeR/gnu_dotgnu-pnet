@@ -20,12 +20,12 @@ csdoc_LDADD   = csharp/libILCSharp.a common/libILCCommon.a \
 				../image/libILImage.a ../support/libILSupport.a
 
 if USINGGCC
-INCLUDES = -Wall -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\" \
-				 -DCSCC_BIN_PREFIX=\"$(bindir)\"
-else
-INCLUDES = -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\" \
-		   -DCSCC_BIN_PREFIX=\"$(bindir)\"
+INCLUDES = -Wall
 endif
+
+AM_CFLAGS = -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\" \
+		    -DCSCC_BIN_PREFIX=\"$(bindir)\" \
+			-I$(top_srcdir) -I$(top_builddir)
 
 install-exec-local:
 	@$(NORMALL_INSTALL)

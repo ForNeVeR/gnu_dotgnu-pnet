@@ -21,12 +21,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "cg_nodes.h"
+#include <codegen/cg_nodes.h>
 %}
 
 %decls %end %{
 #include "il_jopcodes.h"
-#include "jv_output.h"
+#include <codegen/jv_output.h>
 %}
 
 /*

@@ -31,6 +31,8 @@ if USINGGCC
 INCLUDES = -Wall
 endif
 
+AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir)
+
 STAMP = stamp-treecc
 
 BUILT_SOURCES = $(STAMP)

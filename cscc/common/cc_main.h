@@ -21,8 +21,8 @@
 #ifndef	_CSCC_CC_MAIN_H
 #define	_CSCC_CC_MAIN_H
 
-#include "cc_errors.h"
-#include "cc_options.h"
+#include <cscc/common/cc_errors.h>
+#include <cscc/common/cc_options.h>
 
 #ifdef	__cplusplus
 extern	"C" {

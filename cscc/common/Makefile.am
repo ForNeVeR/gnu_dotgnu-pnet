@@ -9,3 +9,5 @@ libILCCommon_a_SOURCES = cc_errors.c \
 if USINGGCC
 INCLUDES = -Wall
 endif
+
+AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir)

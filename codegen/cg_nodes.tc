@@ -25,26 +25,31 @@
 
 %decls %{
 
-#include "cg_defs.h"
+#include <codegen/cg_defs.h>
 
 typedef struct _tagILEvalValue ILEvalValue;
 
 %}
 
 %decls %end %{
-#include "cg_gen.h"
-#include "cg_output.h"
-#include "cg_utils.h"
+#include <codegen/cg_gen.h>
+#include <codegen/cg_output.h>
+#include <codegen/cg_utils.h>
 %}
 
 %{
-#include "cg_nodes.h"
+#include <codegen/cg_nodes.h>
 %}
 
 /*
  * Put the common treecc housekeeping code here.
  */
 %common
+
+/*
+ * Strip filenames in "#line" directives down to their base name.
+ */
+%option strip_filenames
 
 /*
  * The root of the node hierarchy.

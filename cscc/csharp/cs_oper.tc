@@ -1392,6 +1392,8 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 			{
 				*parent = ILNode_IsNonNull_create(node->expr1);
 			}
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
 			value1.kind = CS_SEMKIND_RVALUE;
 			value1.type = ILType_Boolean;
 			return value1;
@@ -1407,6 +1409,8 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		{
 			*parent = ILNode_IsNonNull_create(node->expr2);
 		}
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
 		value1.kind = CS_SEMKIND_RVALUE;
 		value1.type = ILType_Boolean;
 		return value1;
@@ -1441,6 +1445,8 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 			{
 				*parent = ILNode_IsNonNull_create(node->expr1);
 			}
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
 			value1.kind = CS_SEMKIND_RVALUE;
 			value1.type = ILType_Boolean;
 			return value1;
@@ -1466,6 +1472,8 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		{
 			*parent = ILNode_IsNonNull_create(node->expr2);
 		}
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
 		value1.kind = CS_SEMKIND_RVALUE;
 		value1.type = ILType_Boolean;
 		return value1;

@@ -569,6 +569,8 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 							(ILNode_This_create(), field);
 				}
 			}
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
 		}
 		break;
 
@@ -605,6 +607,8 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 					*parent = ILNode_This_create();
 				}
 			}
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
 		}
 		break;
 
@@ -684,6 +688,8 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 							(ILNode_This_create(), thisType), property);
 				}
 			}
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
 		}
 		break;
 
@@ -733,6 +739,11 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 				{
 					*parent = ILNode_This_create();
 				}
+			}
+			if(*parent)
+			{
+				yysetfilename(*parent, yygetfilename(node));
+				yysetlinenum(*parent, yygetlinenum(node));
 			}
 		}
 		break;

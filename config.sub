@@ -880,6 +880,10 @@ case $basic_machine in
 		basic_machine=c4x-none
 		os=-coff
 		;;
+	cli)
+		basic_machine=cli-unknown
+		os=-none
+		;;
 	*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
 		exit 1

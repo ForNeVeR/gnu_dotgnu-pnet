@@ -1,6 +1,29 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(include/stdarg.h)
 
+dnl Force the configure script to think that the target is "cli".
+dnl The full name is "cli-unknown-none": "unknown-none" means that the
+dnl resulting binaries will work for all vendors and operating systems
+dnl that have cli's, which is what we want to happen.
+if test "x$as_expr" = "x" ; then
+	dnl Old-style autoconf where --host == --build
+	target=cli-unknown
+	target_alias=cli-unknown
+	cross_compiling=yes
+	ac_cv_prog_cc_cross=yes
+else
+	dnl New-style autoconf where --host == --target
+	host=cli-unknown-none
+	host_alias=cli-unknown
+	target=cli-unknown-none
+	target_alias=cli-unknown
+	ac_tool_prefix=cli-unknown-
+	ac_cv_host=$host
+	ac_cv_target=$target
+	cross_compiling=yes
+	ac_cv_prog_cc_cross=yes
+fi
+
 dnl Determine the build, host, and target system types.
 AC_CANONICAL_SYSTEM
 
@@ -17,15 +40,19 @@ AC_ARG_WITH(pnet,
 [
 	if test -n "$withval"; then
 		case "$withval" in
-		  ../*) PNET_PATH="`pwd`/$withval" ;;
-		     *) PNET_PATH="$withval" ;;
+		  ../*) PNET_PATH="`pwd`/$withval"
+		        PNET_CHECK_PATH="$withval" ;;
+		     *) PNET_PATH="$withval"
+			    PNET_CHECK_PATH="$withval" ;;
 		esac
 	else
 		PNET_PATH="`pwd`/../pnet"
+		PNET_CHECK_PATH="../pnet"
 	fi
 ],
 [
 	PNET_PATH="`pwd`/../pnet"
+	PNET_CHECK_PATH="../pnet"
 ])
 
 dnl The --with-pnetlib option can be used to specify the location of
@@ -38,15 +65,19 @@ AC_ARG_WITH(pnetlib,
 [
 	if test -n "$withval"; then
 		case "$withval" in
-		  ../*) PNETLIB_PATH="`pwd`/$withval" ;;
-		     *) PNETLIB_PATH="$withval" ;;
+		  ../*) PNETLIB_PATH="`pwd`/$withval"
+		        PNETLIB_CHECK_PATH="$withval" ;;
+		     *) PNETLIB_PATH="$withval"
+			    PNETLIB_CHECK_PATH="$withval" ;;
 		esac
 	else
 		PNETLIB_PATH="`pwd`/../pnetlib"
+		PNETLIB_CHECK_PATH="../pnetlib"
 	fi
 ],
 [
 	PNETLIB_PATH="`pwd`/../pnetlib"
+	PNETLIB_CHECK_PATH="../pnetlib"
 ])
 
 dnl The --with-32bit option can be used to force a 32-bit only build.
@@ -63,27 +94,33 @@ AC_ARG_WITH(32bit,
 ])
 
 dnl Find the location of the "cscc" compiler.
-AC_PATH_PROG(CSCC, cscc,, ${PNET_PATH}/cscc:${prefix}/bin:$PATH)
+AC_PATH_PROG(CSCC, cscc,, ${PNET_CHECK_PATH}/cscc:${prefix}/bin:$PATH)
 if test -z "$CSCC" ; then
 	AC_MSG_ERROR([Portable.NET's C compiler, cscc, is required to build.])
 fi
+case "$CSCC" in
+	../*) CSCC_REAL="${PNET_PATH}/cscc/cscc" ;;
+	   *) CSCC_REAL="$CSCC" ;;
+esac
 
 dnl Find the location of the "ilrun" runtime engine.
 AC_PATH_PROG(ILRUN, ilrun,, ${PNET_PATH}/engine:${prefix}/bin:$PATH)
 
 dnl Determine additional flags that we need to force "cscc" to act sane.
+dnl We use slightly different paths than the final to prevent strange
+dnl problems with spaces in pathnames under Cygwin.
 CFLAGS="-x c $EXTRA_CFLAGS"
-if test -x "$PNET_PATH/cscc/cscc-c-s" ; then
-	CFLAGS="$CFLAGS -fplugin-c-path=$PNET_PATH/cscc/cscc-c-s"
+if test -x "$PNET_CHECK_PATH/cscc/cscc-c-s" ; then
+	CFLAGS="$CFLAGS -fplugin-c-path=$PNET_CHECK_PATH/cscc/cscc-c-s"
 fi
-if test -x "$PNET_PATH/cscc/cscc-cs" ; then
-	CFLAGS="$CFLAGS -fplugin-cs-path=$PNET_PATH/cscc/cscc-cs"
+if test -x "$PNET_CHECK_PATH/cscc/cscc-cs" ; then
+	CFLAGS="$CFLAGS -fplugin-cs-path=$PNET_CHECK_PATH/cscc/cscc-cs"
 fi
-if test -f "$PNETLIB_PATH/csupport/OpenSystem.C.dll" ; then
-	CFLAGS="$CFLAGS -L$PNETLIB_PATH/csupport"
+if test -f "$PNETLIB_CHECK_PATH/csupport/OpenSystem.C.dll" ; then
+	CFLAGS="$CFLAGS -L$PNETLIB_CHECK_PATH/csupport"
 fi
-if test -f "$PNETLIB_PATH/runtime/mscorlib.dll" ; then
-	CFLAGS="$CFLAGS -L$PNETLIB_PATH/runtime"
+if test -f "$PNETLIB_CHECK_PATH/runtime/mscorlib.dll" ; then
+	CFLAGS="$CFLAGS -L$PNETLIB_CHECK_PATH/runtime"
 fi
 
 dnl Modify the environment to force autoconf/automake to use "cscc"
@@ -114,6 +151,23 @@ LDFLAGS="-nostdlib"
 dnl Check for file extensions.
 AC_EXEEXT
 AC_OBJEXT
+
+dnl Set up the final CC, CSCC, and CFLAGS values for the Makefile's.
+CC="\"$CSCC_REAL\""
+CSCC="\"$CSCC_REAL\""
+CFLAGS="-x c $EXTRA_CFLAGS"
+if test -x "$PNET_PATH/cscc/cscc-c-s" ; then
+	CFLAGS="$CFLAGS \"-fplugin-c-path=$PNET_PATH/cscc/cscc-c-s\""
+fi
+if test -x "$PNET_PATH/cscc/cscc-cs" ; then
+	CFLAGS="$CFLAGS \"-fplugin-cs-path=$PNET_PATH/cscc/cscc-cs\""
+fi
+if test -f "$PNETLIB_PATH/csupport/OpenSystem.C.dll" ; then
+	CFLAGS="$CFLAGS \"-L$PNETLIB_PATH/csupport\""
+fi
+if test -f "$PNETLIB_PATH/runtime/mscorlib.dll" ; then
+	CFLAGS="$CFLAGS \"-L$PNETLIB_PATH/runtime\""
+fi
 
 AC_OUTPUT([
 Makefile

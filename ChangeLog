@@ -1,4 +1,10 @@
 
+2003-07-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, config.sub: modify the autoconf system so that
+	cscc is properly detected as a cross-compiler by pre-loading the
+	host and target values; work around spaces in pathnames under Cygwin.
+
 2003-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libc/ctype/ctype.c, libc/malloc/calloc.c, libc/malloc/free.c,

@@ -352,7 +352,7 @@ internal sealed class DateTimeFormatter
 							while(count > 0)
 							{
 								divisor /= 10;
-								value = (int)(frac / divisor);
+								value = (int)((frac / divisor) % 10);
 								builder.Append((char)('0' + value));
 								frac %= divisor;
 								--count;

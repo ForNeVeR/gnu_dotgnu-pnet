@@ -1388,6 +1388,7 @@ public class Control : IWin32Window
 	// Create a graphics drawing object for the control.
 	public Graphics CreateGraphics()
 			{
+				CreateControl();
 				if(toolkitWindow != null)
 				{
 					return ToolkitManager.CreateGraphics

@@ -212,8 +212,7 @@ public abstract class ButtonBase : Control
 	// Set the correct string format, based on text alignment and RTL info.
 	private void SetStringFormat()
 			{
-				ContentAlignment align = RtlTranslateAlignment(textAlign);
-				switch(textAlign)
+				switch(RtlTranslateAlignment(TextAlign))
 				{
 					case ContentAlignment.TopLeft:
 					{

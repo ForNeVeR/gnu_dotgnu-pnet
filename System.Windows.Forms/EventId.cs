@@ -90,6 +90,10 @@ internal enum EventId
 	// "CheckBox" events.
 	CheckStateChanged,
 
+	// "Label" events.
+	AutoSizeChanged,
+	TextAlignChanged,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

@@ -54,7 +54,7 @@ public class DictionarySectionHandler : IConfigurationSectionHandler
 
 	// Create a configuration object for a section.
 	[TODO]
-	Object Create(Object parent, Object configContext, XmlNode section)
+	public Object Create(Object parent, Object configContext, XmlNode section)
 			{
 				// TODO
 				return null;

@@ -35,7 +35,7 @@ public class IgnoreSectionHandler : IConfigurationSectionHandler
 #if SECOND_PASS
 
 	// Create a configuration object for a section.
-	Object Create(Object parent, Object configContext, XmlNode section)
+	public Object Create(Object parent, Object configContext, XmlNode section)
 			{
 				// Nothing to do here - we are ignoring the section.
 				return null;

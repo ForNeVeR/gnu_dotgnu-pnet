@@ -4,6 +4,13 @@
 	* runtime/System/IO/MemoryStream.cs: Fix a minor bug in SetLength
 	exception cases.
 	
+	* System/Configuration/DictionarySectionHandler.cs,
+	System/Configuration/IgnoreSectionHandler.cs,
+	System/Configuration/NameValueFileSectionHandler.cs,
+	System/Configuration/NameValueSectionHandler.cs,
+	System/Configuration/SingleTagSectionHandler.cs	: Add a missing
+	"public" modifier to the 'Create' method. 
+	
 2003-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/*, System.Xml/Xsl/XsltCompileException.cs,

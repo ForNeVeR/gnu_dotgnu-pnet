@@ -34,49 +34,61 @@ extern	"C" {
 			"/usr/local/lib:/usr/X11R6/lib:/usr/lib"
 
 /*
- * The cached system path, loaded from the environment.
+ * The cached system path, loaded from the environment.  The "important"
+ * system path is searched before looking in the same directory as the
+ * assembly, to prevent conflicts with foreign CLI's for core libraries.
  */
 static char **systemPath = 0;
 static int systemPathSize = 0;
-
-/*
- * The explicit list of pnetlib assemblies which must override
- * any others with these names that we may encounter (e.g. Mono's).
- * We detect the pnetlib versions by looking for "pnetlib.here".
- */
-static const char * const systemAssemblies[] = {
-	"mscorlib",
-	"System",
-	"System.Xml",
-};
-#define	systemAssembliesSize	\
-			(sizeof(systemAssemblies) / sizeof(systemAssemblies[0]))
+static char **importantSystemPath = 0;
+static int importantSystemPathSize = 0;
 
 /*
  * Add a pathname to "systemPaths".
  */
-static void AddSystemPath(const char *path, int len)
+static void AddSystemPath(const char *path, int len, int importantPath)
 {
 	char **newPathList;
-	newPathList = (char **)ILRealloc
-		(systemPath, (systemPathSize + 1) * sizeof(char *));
-	if(!newPathList)
+	if(importantPath)
 	{
-		return;
+		newPathList = (char **)ILRealloc
+			(importantSystemPath,
+			 (importantSystemPathSize + 1) * sizeof(char *));
+		if(!newPathList)
+		{
+			return;
+		}
+		importantSystemPath = newPathList;
+		importantSystemPath[importantSystemPathSize] = ILDupNString(path, len);
+		if(!(importantSystemPath[importantSystemPathSize]))
+		{
+			return;
+		}
+		++importantSystemPathSize;
 	}
-	systemPath = newPathList;
-	systemPath[systemPathSize] = ILDupNString(path, len);
-	if(!(systemPath[systemPathSize]))
+	else
 	{
-		return;
+		newPathList = (char **)ILRealloc
+			(systemPath, (systemPathSize + 1) * sizeof(char *));
+		if(!newPathList)
+		{
+			return;
+		}
+		systemPath = newPathList;
+		systemPath[systemPathSize] = ILDupNString(path, len);
+		if(!(systemPath[systemPathSize]))
+		{
+			return;
+		}
+		++systemPathSize;
 	}
-	++systemPathSize;
 }
 
 /*
  * Split a pathname list and add it to the global list of system paths.
  */
-static void SplitPathString(char *list, char *stdpath, char *defaultPath)
+static void SplitPathString(char *list, char *stdpath, char *defaultPath,
+							int importantPath)
 {
 	int len;
 	int separator;
@@ -87,7 +99,7 @@ static void SplitPathString(char *list, char *stdpath, char *defaultPath)
 		/* If we have a standard path, then add that */
 		if(stdpath)
 		{
-			AddSystemPath(stdpath, strlen(stdpath));
+			AddSystemPath(stdpath, strlen(stdpath), importantPath);
 			ILFree(stdpath);
 			stdpath = 0;
 		}
@@ -162,7 +174,7 @@ static void SplitPathString(char *list, char *stdpath, char *defaultPath)
 		}
 
 		/* Add the path to the global list */
-		AddSystemPath(list, len);
+		AddSystemPath(list, len, importantPath);
 
 		/* Advance to the next path */
 		list += len;
@@ -175,16 +187,18 @@ static void SplitPathString(char *list, char *stdpath, char *defaultPath)
 static void LoadSystemPath(void)
 {
 #if !defined(__palmos__)
-	if(!systemPath)
+	if(!systemPath && !importantSystemPath)
 	{
 		SplitPathString(getenv("CSCC_LIB_PATH"),
 						ILGetStandardLibraryPath("cscc/lib"),
-						CSCC_LIB_PATH_DEFAULT);
-		SplitPathString(getenv("MONO_PATH"), ILGetStandardLibraryPath(0), 0);
-		SplitPathString(getenv("LD_LIBRARY_PATH"), 0, LD_LIBRARY_PATH_DEFAULT);
+						CSCC_LIB_PATH_DEFAULT, 1);
+		SplitPathString(getenv("MONO_PATH"),
+						ILGetStandardLibraryPath(0), 0, 0);
+		SplitPathString(getenv("LD_LIBRARY_PATH"), 0,
+						LD_LIBRARY_PATH_DEFAULT, 0);
 	#ifdef IL_WIN32_PLATFORM
 		/* Win32: try looking in PATH also, since Win32 puts dll's there */
-		SplitPathString(getenv("PATH"), 0, 0);
+		SplitPathString(getenv("PATH"), 0, 0, 0);
 	#endif
 	}
 #endif
@@ -412,7 +426,6 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 						int suppressStandardPaths, int *sameDir)
 {
 	int namelen;
-	unsigned long posn;
 	char *path;
 	char *firstPath;
 	int len;
@@ -442,19 +455,36 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 	}
 
 	/* Is this a system assembly that we must handle specially? */
+	/* Note: system check is no longer necessary - remove eventually */
 	isSystem = 0;
-	for(posn = 0; posn < systemAssembliesSize; ++posn)
+
+	/* Initialize flag variables for the search */
+	if(sameDir)
 	{
-		if(namelen == strlen(systemAssemblies[posn]) &&
-		   !strncmp(systemAssemblies[posn], name, namelen))
+		*sameDir = 0;
+	}
+	firstPath = 0;
+
+	/* Search the before path list */
+	if(FindAssemblyInPaths(beforePaths, numBeforePaths, name, namelen,
+						   isSystem, &path, &firstPath))
+	{
+		return path;
+	}
+
+	/* Search the "important" standard system paths */
+	if(!suppressStandardPaths)
+	{
+		LoadSystemPath();
+		if(FindAssemblyInPaths((const char **)importantSystemPath,
+							   (unsigned long)importantSystemPathSize,
+							   name, namelen, isSystem, &path, &firstPath))
 		{
-			isSystem = 1;
-			break;
+			return path;
 		}
 	}
 
 	/* Look in the same directory as the parent assembly */
-	firstPath = 0;
 	if(sameDir)
 	{
 		*sameDir = 1;
@@ -485,13 +515,6 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 	if(sameDir)
 	{
 		*sameDir = 0;
-	}
-
-	/* Search the before path list */
-	if(FindAssemblyInPaths(beforePaths, numBeforePaths, name, namelen,
-						   isSystem, &path, &firstPath))
-	{
-		return path;
 	}
 
 	/* Search the standard system paths */
@@ -1082,6 +1105,18 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 
 	/* Look on the standard system search path */
 	LoadSystemPath();
+	for(posn = 0; posn < importantSystemPathSize; ++posn)
+	{
+		fullName = TestPathForNativeLib(importantSystemPath[posn],
+									    strlen(importantSystemPath[posn]),
+									    baseName, strlen(baseName),
+										optPrefix, suffix);
+		if(fullName)
+		{
+			ILFree(baseName);
+			return fullName;
+		}
+	}
 	for(posn = 0; posn < systemPathSize; ++posn)
 	{
 		fullName = TestPathForNativeLib(systemPath[posn],

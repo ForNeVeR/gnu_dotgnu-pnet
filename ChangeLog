@@ -12,6 +12,11 @@
 	console routines for systems that lack termcap, or a termcap
 	that interfaces to terminfo.
 
+	* image/link.c: rearrange the assembly resolution order so that
+	CSCC_LIB_PATH always comes before libraries in the same directory
+	as the parent, to avoid conflicts with third-party CLI's, and
+	without needing hacks like "pnetlib.here".
+
 2003-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, support/console.c: use a better detection mechanism

@@ -2,9 +2,12 @@
  * Uri.cs - Implementation of "System.Uri".
  *
  * Copyright (C) 2002  Free Software Foundation, Inc.
+ * Copyright (C) 2002  Gerard Toonstra.
+ * Copyright (C) 2002  Rich Baumann.
  *
  * Contributed by Stephen Compall <rushing@sigecom.net>
  * Contributions by Gerard Toonstra <toonstra@ntlworld.com>
+ * Contributions by Rich Baumann <biochem333@nyc.rr.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -557,46 +560,54 @@ public class Uri : MarshalByRefObject
 		return IsReserved(character);
 	}
 
-	// needs debugging. Also, figure out exactly how it works.
-	// I have emailed chiraz on this, awaiting reply now...
+	// TODO: test
+	// this should return a string of the argument uri's address, relative to this uri's address
+	// (Rich Baumann - biochem333@nyc.rr.com)
 	[TODO]
 	public String MakeRelative(Uri toUri)
 	{
-		if (String.Equals(toUri.host, this.host))
+		if (this.host.Equals(toUri.host))
 		{
-			String[] thisUri = this.path.Split('/');
-			String[] otherUri = toUri.path.Split('/');
-			int currentItem = 0;
-			StringBuilder myStringBuilder = new StringBuilder();
+			if (this.path.Equals(toUri.path)) { return ""; } // return empty string... URIs are identical
+			
+			String[] thisUri = this.path.Split('/');  // split the path up at the / chars
+			String[] otherUri = toUri.path.Split('/'); // now make tokens for the other uri
+			
+			int currentItem = 0; // loop var
+			StringBuilder myStringBuilder = new StringBuilder(toUri.path.Length); // temp var (return)
 
-			while ((thisUri.Length >= currentItem) &&
-				 (otherUri.Length >= currentItem))
+			while ((currentItem < thisUri.Length) && (currentItem < otherUri.Length))
 			{
-				if (String.Equals(thisUri[currentItem], otherUri[currentItem]))
+				if (!(thisUri[currentItem].Equals(otherUri[currentItem]))) // check for uri deviations
 				{
-					myStringBuilder.Append(otherUri[currentItem]);
-					myStringBuilder.Append('/');
+					break; // if not equal, we've found deviation
 				}
 				++currentItem;
 			}
 
-			if (currentItem == otherUri.Length)
-			{
-				myStringBuilder.Remove(myStringBuilder.Length - 1, 1);
-			}
-			else
-			{
-				for (int i = currentItem; i < otherUri.Length; i++)
-				{
-					myStringBuilder.Append(otherUri[i]);
-				}
-			}
+			// this part assumes that blah/blah/ is never given as blah/blah and vice-versa
+			// if this assumption is in error, I don't see how to figure out how many ../ are needed
+			boolean thisFile = !(this.path.EndsWith('/')); // ends with a file...
+			boolean otherFile = !(toUri.path.EndsWith('/')); // ...or a path segment
 
-			return myStringBuilder.ToString();
+			int tmp = thisUri.Length - currentItem - (thisFile ? 2 : 1); // calculate # of ../ needed
+			int tmp2 = otherUri.Length - currentItem - 1; // calculate # of tokens left in otherUri
+
+			for (int i = 0; i < tmp; i++) { myStringBuilder.Append("../"); } // add needed ../
+
+			for (int i = 0; i < tmp2; i++, currentItem++) // go through all remaining otherUri tokens
+			{
+				myStringBuilder.Append(otherUri[currentItem]); // add next part of path
+				myStringBuilder.Append('/'); // add path separator
+			}
+			
+			if (otherFile) { myStringBuilder.Remove(myStringBuilder.Length - 1, 1); } // ends with a file... strip last /
+
+			return myStringBuilder.ToString(); // return relative
 		}
 		else
 		{
-			return toUri.AbsoluteUri;
+			return toUri.AbsoluteUri; // return absolute... URIs are on on different hosts
 		}
 	}
 

@@ -1025,10 +1025,77 @@ static char *AppendString(char *str1, const char *str2)
 }
 
 /*
+ * Attribute usage flags.
+ */
+#define	AttrUsage_Assembly		0x0001
+#define	AttrUsage_Module		0x0002
+#define	AttrUsage_Class			0x0004
+#define	AttrUsage_Struct		0x0008
+#define	AttrUsage_Enum			0x0010
+#define	AttrUsage_Constructor	0x0020
+#define	AttrUsage_Method		0x0040
+#define	AttrUsage_Property		0x0080
+#define	AttrUsage_Field			0x0100
+#define	AttrUsage_Event			0x0200
+#define	AttrUsage_Interface		0x0400
+#define	AttrUsage_Parameter		0x0800
+#define	AttrUsage_Delegate		0x1000
+#define	AttrUsage_ReturnValue	0x2000
+#define	AttrUsage_All			0x3FFF
+#define	AttrUsage_ClassMembers	0x17FC
+
+/*
+ * Append an attribute usage target value to a string.
+ */
+static char *AppendAttrUsage(char *name, ILInt32 targets)
+{
+	int needOr = 0;
+
+	/* Handle the easy case first */
+	if(targets == AttrUsage_All)
+	{
+		return AppendString(name, "AttributeTargets.All");
+	}
+
+	/* Add the active flag names */
+#define	AttrUsage(flag,flagName)	\
+		do { \
+			if((targets & (flag)) != 0) \
+			{ \
+				if(needOr) \
+				{ \
+					name = AppendString(name, " | "); \
+				} \
+				else \
+				{ \
+					needOr = 1; \
+				} \
+				name = AppendString(name, "AttributeTargets." flagName); \
+			} \
+		} while (0)
+	AttrUsage(AttrUsage_Assembly, "Assembly");
+	AttrUsage(AttrUsage_Module, "Module");
+	AttrUsage(AttrUsage_Class, "Class");
+	AttrUsage(AttrUsage_Struct, "Struct");
+	AttrUsage(AttrUsage_Enum, "Enum");
+	AttrUsage(AttrUsage_Constructor, "Constructor");
+	AttrUsage(AttrUsage_Method, "Method");
+	AttrUsage(AttrUsage_Property, "Property");
+	AttrUsage(AttrUsage_Field, "Field");
+	AttrUsage(AttrUsage_Event, "Event");
+	AttrUsage(AttrUsage_Interface, "Interface");
+	AttrUsage(AttrUsage_Parameter, "Parameter");
+	AttrUsage(AttrUsage_Delegate, "Delegate");
+	AttrUsage(AttrUsage_ReturnValue, "ReturnValue");
+	return name;
+}
+
+/*
  * Append an attribute value to a name.  Returns NULL
  * if the value is invalid.
  */
-static char *AppendAttrValue(char *name, ILSerializeReader *reader, int type)
+static char *AppendAttrValue(char *name, ILSerializeReader *reader,
+							 int type, int isUsage)
 {
 	ILInt32 intValue;
 	ILUInt32 uintValue;
@@ -1064,7 +1131,14 @@ static char *AppendAttrValue(char *name, ILSerializeReader *reader, int type)
 		case IL_META_SERIALTYPE_I4:
 		{
 			intValue = ILSerializeReaderGetInt32(reader, type);
-			sprintf(buffer, "%ld", (long)intValue);
+			if(!isUsage)
+			{
+				sprintf(buffer, "%ld", (long)intValue);
+			}
+			else
+			{
+				return AppendAttrUsage(name, intValue);
+			}
 		}
 		break;
 
@@ -1161,7 +1235,8 @@ static char *AppendAttrValue(char *name, ILSerializeReader *reader, int type)
 				while(intValue > 0)
 				{
 					name = AppendAttrValue(name, reader,
-									       type & ~IL_META_SERIALTYPE_ARRAYOF);
+									       type & ~IL_META_SERIALTYPE_ARRAYOF,
+										   0);
 					if(!name)
 					{
 						return 0;
@@ -1205,6 +1280,7 @@ static char *AttributeToName(ILAttribute *attr)
 	ILMember *member;
 	const char *memberName;
 	int memberNameLen;
+	int isUsage;
 
 	/* Get the attribute constructor and validate it */
 	method = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
@@ -1227,6 +1303,10 @@ static char *AttributeToName(ILAttribute *attr)
 		ILFree(name);
 		return 0;
 	}
+
+	/* We need special handling for the first parameter of
+	   the "AttributeUsage" attribute */
+	isUsage = (!strcmp(name, "AttributeUsageAttribute"));
 
 	/* Get the attribute value and prepare to parse it */
 	value = ILAttributeGetValue(attr, &len);
@@ -1260,7 +1340,7 @@ static char *AttributeToName(ILAttribute *attr)
 			ILFree(name);
 			return 0;
 		}
-		name = AppendAttrValue(name, reader, type);
+		name = AppendAttrValue(name, reader, type, isUsage);
 		if(!name)
 		{
 			return 0;
@@ -1296,7 +1376,7 @@ static char *AttributeToName(ILAttribute *attr)
 		posn = strlen(name);
 		ILMemCpy(name + posn, memberName, memberNameLen);
 		strcpy(name + posn + memberNameLen, "=");
-		name = AppendAttrValue(name, reader, type);
+		name = AppendAttrValue(name, reader, type, 0);
 		if(!name)
 		{
 			return 0;

@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <errno.h>
 
-typedef __csharp__(System.Runtime.InteropServices.Marshal) Marshal;
+__using__ System::Runtime::InteropServices::Marshal;
 
 void *
 __realloc(void *ptr, size_t size)

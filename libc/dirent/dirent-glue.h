@@ -30,8 +30,8 @@ struct __dirstream
     struct dirent current; /* storage for readdir() calls */
   };
 
-typedef __csharp__ (System.String) String;
-typedef __csharp__(System.Runtime.InteropServices.Marshal) Marshal;
+__using__ System::String;
+__using__ System::Runtime::InteropServices::Marshal;
 
 extern void __syscall_closedir (void *gc_handle, void *err);
 extern void *__syscall_opendir (String name, void *err);

@@ -2,9 +2,9 @@
 
 /* This is a temporary hack until we can get a glibc's stdio working */
 
-typedef __csharp__(System.Console) Console;
-typedef __csharp__(System.IntPtr) IntPtr;
-typedef __csharp__(System.Runtime.InteropServices.Marshal) Marshal;
+__using__ System::Console;
+__using__ System::IntPtr;
+__using__ System::Runtime::InteropServices::Marshal;
 
 int printf(const char *format, ...)
 {

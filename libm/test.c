@@ -25,8 +25,8 @@
 #undef isinf
 #undef isnan
 
-typedef __csharp__(System.Single) Single;
-typedef __csharp__(System.Double) Double;
+__using__ System::Single;
+__using__ System::Double;
 
 #define	LD_POS_INF	((long double)(1.0 / 0.0))
 #define	LD_NEG_INF	((long double)(-1.0 / 0.0))

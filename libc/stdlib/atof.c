@@ -23,9 +23,9 @@
 #include <ctype.h>
 #include <errno.h>
 
-typedef __csharp__ (System.Single) Single;
-typedef __csharp__ (System.Double) Double;
-typedef __csharp__ (System.Runtime.InteropServices.Marshal) Marshal;
+__using__ System::Single;
+__using__ System::Double;
+__using__ System::Runtime::InteropServices::Marshal;
 
 static double
 strtod_internal (const char *nptr, char **endptr, int report_errors)

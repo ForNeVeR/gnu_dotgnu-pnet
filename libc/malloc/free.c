@@ -21,7 +21,7 @@
 
 #include <malloc.h>
 
-typedef __csharp__(System.Runtime.InteropServices.Marshal) Marshal;
+__using__ System::Runtime::InteropServices::Marshal;
 
 void
 __free(void *ptr)

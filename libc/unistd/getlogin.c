@@ -23,9 +23,9 @@
 #include <string.h>
 #include <pthread-support.h>
 
-typedef __csharp__(System.String) String;
-typedef __csharp__(System.Runtime.InteropServices.Marshal) Marshal;
-typedef __csharp__(System.Environment) Environment;
+__using__ System::String;
+__using__ System::Runtime::InteropServices::Marshal;
+__using__ System::Environment;
 
 static __libc_monitor_t loginMutex = __LIBC_MONITOR_INITIALIZER;
 static char *loginName;

@@ -22,7 +22,7 @@
 #include <ctype.h>
 
 /* Use the C# class library to do character type testing */
-typedef __csharp__(System.Char) Char;
+__using__ System::Char;
 
 /* This definition must match "System.Globalization.UnicodeCategory" */
 typedef enum

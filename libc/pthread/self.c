@@ -31,8 +31,7 @@ __pthread_self (void)
       /* Register the thread object for a foreign thread that
          was created by something other than "pthread_create".
          e.g. the main thread */
-      self = __libc_thread_register_foreign
-                (System_Thread::get_CurrentThread ());
+      self = __libc_thread_register_foreign (Thread::get_CurrentThread ());
     }
   return self;
 }

@@ -21,7 +21,7 @@
 
 #include <unistd.h>
 
-typedef __csharp__(System.Environment) Environment;
+__using__ System::Environment;
 
 void
 _exit (int status)

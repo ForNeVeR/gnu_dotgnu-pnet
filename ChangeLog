@@ -1,4 +1,15 @@
 
+2004-02-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/pthread-support.h, libc/ctype/ctype.c,
+	libc/dirent/dirent-glue.h, libc/malloc/calloc.c,
+	libc/malloc/free.c, libc/malloc/malloc.c, libc/malloc/realloc.c,
+	libc/pthread/self.c, libc/pwd/pwent.c, libc/stdio/printf.c,
+	libc/stdlib/_exit.c, libc/stdlib/atof.c, libc/unistd/close.c,
+	libc/unistd/dup.c, libc/unistd/dup2.c, libc/unistd/getlogin.c,
+	libm/redirect.c, libm/test.c: replace references to "__csharp__"
+	with "__using__" clauses, which is more correct.
+
 2004-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/pthread.h, include/semaphore.h, include/wchar.h:

@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-typedef __csharp__ (OpenSystem.C.FileTable) FileTable;
+__using__ OpenSystem::C::FileTable;
 
 int
 __dup (int fd)

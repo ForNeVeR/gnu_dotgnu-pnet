@@ -21,7 +21,7 @@
 
 #include <math.h>
 
-typedef __csharp__(System.Math) Math;
+__using__ System::Math;
 
 /* Helper macros for redirecting C functions to the C# library */
 #define	__MATHREDIR1(name,csname) \

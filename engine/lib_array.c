@@ -926,10 +926,128 @@ static int IsMArrayClass(ILClass *classInfo)
 	return (name != 0 && !strcmp(name, "$Synthetic"));
 }
 
+#if !defined(HAVE_LIBFFI)
+
+/*
+ * Marshal a single-dimensional array constructor for non-libffi systems.
+ */
+static void System_SArray_ctor_marshal
+	(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((System_Array **)rvalue) =
+		System_SArray_ctor(*((ILExecThread **)(avalue[0])),
+		                   *((ILUInt32 *)(avalue[1])));
+}
+
+/*
+ * Marshal a type 1 multi-dimensional array constructor for non-libffi systems.
+ */
+static void System_MArray_ctor_1_marshal
+	(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((System_MArray **)rvalue) =
+		System_MArray_ctor_1(*((ILExecThread **)(avalue[0])));
+}
+
+/*
+ * Marshal a type 2 multi-dimensional array constructor for non-libffi systems.
+ */
+static void System_MArray_ctor_2_marshal
+	(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((System_MArray **)rvalue) =
+		System_MArray_ctor_2(*((ILExecThread **)(avalue[0])));
+}
+
+/*
+ * Marshal a multi-dimensional "Get" method for non-libffi systems.
+ */
+#define	MarshalGet(type,name)	\
+static void System_MArray_Get_##name##_marshal	\
+	(void (*fn)(), void *rvalue, void **avalue)	\
+{	\
+	*((type *)rvalue) =		\
+		(*((type (*)(ILExecThread *, System_MArray *))fn))	\
+				(*((ILExecThread **)(avalue[0])),	\
+				 *((System_MArray **)(avalue[1])));	\
+}
+MarshalGet(ILInt8, sbyte)
+MarshalGet(ILUInt8, byte)
+MarshalGet(ILInt16, short)
+MarshalGet(ILUInt16, ushort)
+MarshalGet(ILInt32, int)
+MarshalGet(ILUInt32, uint)
+MarshalGet(ILInt64, long)
+MarshalGet(ILUInt64, ulong)
+MarshalGet(ILNativeInt, nativeInt)
+MarshalGet(ILNativeUInt, nativeUInt)
+MarshalGet(ILFloat, float)
+MarshalGet(ILDouble, double)
+MarshalGet(ILNativeFloat, nativeFloat)
+MarshalGet(void *, ref)
+static void System_MArray_Get_managedValue_marshal
+	(void (*fn)(), void *rvalue, void **avalue)
+{
+	System_MArray_Get_managedValue
+		(*((ILExecThread **)(avalue[0])),
+		 *((void **)(avalue[1])),
+		 *((System_MArray **)(avalue[2])));
+}
+
+/*
+ * Marshal a multi-dimensional "Set" method for non-libffi systems.
+ */
+static void System_MArray_Set_marshal
+	(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*((void (*)(ILExecThread *, System_MArray *))fn))
+		(*((ILExecThread **)(avalue[0])),
+		 *((System_MArray **)(avalue[1])));
+}
+
+/*
+ * Marshal a multi-dimensional "Address" method for non-libffi systems.
+ */
+static void System_MArray_Address_marshal
+	(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void **)rvalue) = System_MArray_Address
+		(*((ILExecThread **)(avalue[0])),
+		 *((System_MArray **)(avalue[1])));
+}
+
+#else	/* HAVE_LIBFFI */
+
+/*
+ * We don't need marshalling functions if we have libffi.
+ */
+#define	System_SArray_ctor_marshal					0
+#define	System_MArray_ctor_1_marshal				0
+#define	System_MArray_ctor_2_marshal				0
+#define	System_MArray_Get_sbyte_marshal				0
+#define	System_MArray_Get_byte_marshal				0
+#define	System_MArray_Get_short_marshal				0
+#define	System_MArray_Get_ushort_marshal			0
+#define	System_MArray_Get_int_marshal				0
+#define	System_MArray_Get_uint_marshal				0
+#define	System_MArray_Get_long_marshal				0
+#define	System_MArray_Get_ulong_marshal				0
+#define	System_MArray_Get_nativeInt_marshal			0
+#define	System_MArray_Get_nativeUInt_marshal		0
+#define	System_MArray_Get_float_marshal				0
+#define	System_MArray_Get_double_marshal			0
+#define	System_MArray_Get_nativeFloat_marshal		0
+#define	System_MArray_Get_managedValue_marshal		0
+#define	System_MArray_Get_ref_marshal				0
+#define	System_MArray_Set_marshal					0
+#define	System_MArray_Address_marshal				0
+
+#endif	/* HAVE_LIBFFI */
+
 /*
  * Get the internal version of a synthetic "SArray" or "MArray" method.
  */
-void *_ILGetInternalArray(ILMethod *method, int *isCtor)
+int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 {
 	ILClass *classInfo;
 	const char *name;
@@ -951,7 +1069,9 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 		if(!strcmp(name, ".ctor"))
 		{
 			*isCtor = 1;
-			return (void *)System_SArray_ctor;
+			info->func = (void *)System_SArray_ctor;
+			info->marshal = (void *)System_SArray_ctor_marshal;
+			return 1;
 		}
 		else
 		{
@@ -968,12 +1088,16 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 				== (ILMember *)method)
 		{
 			/* This is the first constructor */
-			return (void *)System_MArray_ctor_1;
+			info->func = (void *)System_MArray_ctor_1;
+			info->marshal = (void *)System_MArray_ctor_1_marshal;
+			return 1;
 		}
 		else
 		{
 			/* This is the second constructor */
-			return (void *)System_MArray_ctor_2;
+			info->func = (void *)System_MArray_ctor_2;
+			info->marshal = (void *)System_MArray_ctor_2_marshal;
+			return 1;
 		}
 	}
 	*isCtor = 0;
@@ -988,98 +1112,135 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 				case IL_META_ELEMTYPE_BOOLEAN:
 				case IL_META_ELEMTYPE_I1:
 				{
-					return (void *)System_MArray_Get_sbyte;
+					info->func = (void *)System_MArray_Get_sbyte;
+					info->marshal = (void *)System_MArray_Get_sbyte_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_U1:
 				{
-					return (void *)System_MArray_Get_byte;
+					info->func = (void *)System_MArray_Get_byte;
+					info->marshal = (void *)System_MArray_Get_byte_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I2:
 				{
-					return (void *)System_MArray_Get_short;
+					info->func = (void *)System_MArray_Get_short;
+					info->marshal = (void *)System_MArray_Get_short_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_U2:
 				case IL_META_ELEMTYPE_CHAR:
 				{
-					return (void *)System_MArray_Get_ushort;
+					info->func = (void *)System_MArray_Get_ushort;
+					info->marshal = (void *)System_MArray_Get_ushort_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I4:
 				{
-					return (void *)System_MArray_Get_int;
+					info->func = (void *)System_MArray_Get_int;
+					info->marshal = (void *)System_MArray_Get_int_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_U4:
 				{
-					return (void *)System_MArray_Get_uint;
+					info->func = (void *)System_MArray_Get_uint;
+					info->marshal = (void *)System_MArray_Get_uint_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I:
 				{
-					return (void *)System_MArray_Get_nativeInt;
+					info->func = (void *)System_MArray_Get_nativeInt;
+					info->marshal = (void *)System_MArray_Get_nativeInt_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_U:
 				{
-					return (void *)System_MArray_Get_nativeUInt;
+					info->func = (void *)System_MArray_Get_nativeUInt;
+					info->marshal =
+						(void *)System_MArray_Get_nativeUInt_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I8:
 				{
-					return (void *)System_MArray_Get_long;
+					info->func = (void *)System_MArray_Get_long;
+					info->marshal = (void *)System_MArray_Get_long_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_U8:
 				{
-					return (void *)System_MArray_Get_ulong;
+					info->func = (void *)System_MArray_Get_ulong;
+					info->marshal = (void *)System_MArray_Get_ulong_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R4:
 				{
-					return (void *)System_MArray_Get_float;
+					info->func = (void *)System_MArray_Get_float;
+					info->marshal = (void *)System_MArray_Get_float_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R8:
 				{
-					return (void *)System_MArray_Get_double;
+					info->func = (void *)System_MArray_Get_double;
+					info->marshal = (void *)System_MArray_Get_double_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R:
 				{
-					return (void *)System_MArray_Get_nativeFloat;
+					info->func = (void *)System_MArray_Get_nativeFloat;
+					info->marshal =
+						(void *)System_MArray_Get_nativeFloat_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_TYPEDBYREF:
 				{
-					return (void *)System_MArray_Get_managedValue;
+					info->func = (void *)System_MArray_Get_managedValue;
+					info->marshal =
+						(void *)System_MArray_Get_managedValue_marshal;
+					return 1;
 				}
 				/* Not reached */
 			}
-			return (void *)System_MArray_Get_int;
+			info->func = (void *)System_MArray_Get_int;
+			info->marshal = (void *)System_MArray_Get_int_marshal;
+			return 1;
 		}
 		else if(ILType_IsValueType(type))
 		{
-			return (void *)System_MArray_Get_managedValue;
+			info->func = (void *)System_MArray_Get_managedValue;
+			info->marshal = (void *)System_MArray_Get_managedValue_marshal;
+			return 1;
 		}
 		else
 		{
-			return (void *)System_MArray_Get_ref;
+			info->func = (void *)System_MArray_Get_ref;
+			info->marshal = (void *)System_MArray_Get_ref_marshal;
+			return 1;
 		}
 	}
 	else if(!strcmp(name, "Set"))
@@ -1094,7 +1255,9 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 				case IL_META_ELEMTYPE_I1:
 				case IL_META_ELEMTYPE_U1:
 				{
-					return (void *)System_MArray_Set_byte;
+					info->func = (void *)System_MArray_Set_byte;
+					info->marshal = (void *)System_MArray_Set_marshal;
+					return 1;
 				}
 				/* Not reached */
 
@@ -1102,69 +1265,93 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 				case IL_META_ELEMTYPE_U2:
 				case IL_META_ELEMTYPE_CHAR:
 				{
-					return (void *)System_MArray_Set_short;
+					info->func = (void *)System_MArray_Set_short;
+					info->marshal = (void *)System_MArray_Set_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I4:
 				case IL_META_ELEMTYPE_U4:
 				{
-					return (void *)System_MArray_Set_int;
+					info->func = (void *)System_MArray_Set_int;
+					info->marshal = (void *)System_MArray_Set_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I:
 				case IL_META_ELEMTYPE_U:
 				{
-					return (void *)System_MArray_Set_nativeInt;
+					info->func = (void *)System_MArray_Set_nativeInt;
+					info->marshal = (void *)System_MArray_Set_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_I8:
 				case IL_META_ELEMTYPE_U8:
 				{
-					return (void *)System_MArray_Set_long;
+					info->func = (void *)System_MArray_Set_long;
+					info->marshal = (void *)System_MArray_Set_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R4:
 				{
-					return (void *)System_MArray_Set_float;
+					info->func = (void *)System_MArray_Set_float;
+					info->marshal = (void *)System_MArray_Set_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R8:
 				{
-					return (void *)System_MArray_Set_double;
+					info->func = (void *)System_MArray_Set_double;
+					info->marshal = (void *)System_MArray_Set_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_R:
 				{
-					return (void *)System_MArray_Set_nativeFloat;
+					info->func = (void *)System_MArray_Set_nativeFloat;
+					info->marshal = (void *)System_MArray_Set_marshal;
+					return 1;
 				}
 				/* Not reached */
 
 				case IL_META_ELEMTYPE_TYPEDBYREF:
 				{
-					return (void *)System_MArray_Set_managedValue;
+					info->func = (void *)System_MArray_Set_managedValue;
+					info->marshal = (void *)System_MArray_Set_marshal;
+					return 1;
 				}
 				/* Not reached */
 			}
-			return (void *)System_MArray_Set_int;
+			info->func = (void *)System_MArray_Set_int;
+			info->marshal = (void *)System_MArray_Set_marshal;
+			return 1;
 		}
 		else if(ILType_IsValueType(type))
 		{
-			return (void *)System_MArray_Set_managedValue;
+			info->func = (void *)System_MArray_Set_managedValue;
+			info->marshal = (void *)System_MArray_Set_marshal;
+			return 1;
 		}
 		else
 		{
-			return (void *)System_MArray_Set_ref;
+			info->func = (void *)System_MArray_Set_ref;
+			info->marshal = (void *)System_MArray_Set_marshal;
+			return 1;
 		}
 	}
 	else if(!strcmp(name, "Address"))
 	{
-		return (void *)System_MArray_Address;
+		info->func = (void *)System_MArray_Address;
+		info->marshal = (void *)System_MArray_Address_marshal;
+		return 1;
 	}
 	else
 	{

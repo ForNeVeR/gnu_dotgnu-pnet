@@ -372,8 +372,8 @@ VMCASE(COP_CALL_NATIVE):
 {
 	/* Call a native method */
 	COPY_STATE_TO_THREAD();
-	ffi_call((ffi_cif *)(ReadPointer(pc + 1 + sizeof(void *))),
-	         (void (*)())(ReadPointer(pc + 1)), stacktop[-1].ptrValue,
+	FFI_CALL(ReadPointer(pc + 1 + sizeof(void *)),
+	         ReadPointer(pc + 1), stacktop[-1].ptrValue,
 			 nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
 	pc = thread->pc;
@@ -398,8 +398,8 @@ VMCASE(COP_CALL_NATIVE_VOID):
 {
 	/* Call a native method that has no return value */
 	COPY_STATE_TO_THREAD();
-	ffi_call((ffi_cif *)(ReadPointer(pc + 1 + sizeof(void *))),
-	         (void (*)())(ReadPointer(pc + 1)), 0, nativeArgs);
+	FFI_CALL(ReadPointer(pc + 1 + sizeof(void *)),
+	         ReadPointer(pc + 1), 0, nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, 0);

@@ -21,6 +21,11 @@
 
 	* Makefile.am: don't build libffi unless "USING_LIBFFI" is defined.
 
+	* engine/convert.c, engine/cvm.c, engine/cvm_call.c, engine/engine.h,
+	engine/internal.c, engine/layout.c, engine/lib_array.c,
+	engine/pinvoke.c, ilnative/ilcheck.c: modify the engine to handle
+	both libffi and non-libffi internalcall marshalling.
+
 2002-05-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/src/powerpc/ffi_darwin.c: rearrange declarations

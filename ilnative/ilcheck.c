@@ -251,6 +251,7 @@ static int printNatives(const char *filename, ILContext *context,
 	unsigned long numMethods;
 	unsigned long token;
 	ILMethod *method;
+	ILInternalInfo info;
 	
 	ILDict *klass,*mthd;
 	
@@ -275,7 +276,7 @@ static int printNatives(const char *filename, ILContext *context,
 			if(ILMethod_IsInternalCall(method) ||
 			        ILMethod_IsNative(method))
 			{								
-				if(!_ILFindInternalCall(method,0))
+				if(!_ILFindInternalCall(method,0,&info))
 				{
 					addmethodinfo(image,method,"MISSING");
 				}

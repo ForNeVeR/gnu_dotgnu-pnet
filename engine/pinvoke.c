@@ -19,6 +19,9 @@
  */
 
 #include "engine.h"
+
+#if defined(HAVE_LIBFFI)
+
 #include "ffi.h"
 
 /*
@@ -105,7 +108,7 @@ static ffi_type *TypeToFFI(ILType *type)
 	}
 }
 
-void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal)
+void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILType *returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
@@ -136,8 +139,8 @@ void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal)
 		++numArgs;
 	}
 
-	/* Allocate space for the cif within the coder's memory space */
-	cif = ILCoderAlloc(coder, sizeof(ffi_cif) +
+	/* Allocate space for the cif */
+	cif = (ffi_cif *)ILMalloc(sizeof(ffi_cif) +
 							  sizeof(ffi_type *) * numArgs);
 	if(!cif)
 	{
@@ -179,8 +182,7 @@ void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal)
 	return (void *)cif;
 }
 
-void *_ILMakeCifForConstructor(ILCoder *coder, ILMethod *method,
-							   int isInternal)
+void *_ILMakeCifForConstructor(ILMethod *method, int isInternal)
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILUInt32 numArgs;
@@ -200,8 +202,8 @@ void *_ILMakeCifForConstructor(ILCoder *coder, ILMethod *method,
 		++numArgs;
 	}
 
-	/* Allocate space for the cif within the coder's memory space */
-	cif = ILCoderAlloc(coder, sizeof(ffi_cif) +
+	/* Allocate space for the cif */
+	cif = (ffi_cif *)ILMalloc(sizeof(ffi_cif) +
 							  sizeof(ffi_type *) * numArgs);
 	if(!cif)
 	{
@@ -236,3 +238,5 @@ void *_ILMakeCifForConstructor(ILCoder *coder, ILMethod *method,
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* HAVE_LIBFFI */

@@ -20,7 +20,11 @@
 
 #include "engine_private.h"
 #include "il_opcodes.h"
-#include "../libffi/include/ffi.h"
+#if defined(HAVE_LIBFFI)
+#include "ffi.h"
+#else
+#include "il_align.h"
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -84,7 +88,10 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 
 			case IL_META_ELEMTYPE_I4:
 			case IL_META_ELEMTYPE_U4:
-			case IL_META_ELEMTYPE_R4:
+		#ifdef IL_NATIVE_INT32
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
 			{
 				layout->size = 4;
 				layout->alignment = 4;
@@ -93,40 +100,58 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 
 			case IL_META_ELEMTYPE_I8:
 			case IL_META_ELEMTYPE_U8:
+		#ifdef IL_NATIVE_INT64
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
 			{
+			#if defined(HAVE_LIBFFI)
 				layout->size = ffi_type_uint64.size;
 				layout->alignment = ffi_type_uint64.alignment;
+			#else
+				layout->size = sizeof(ILInt64);
+				layout->alignment = _IL_ALIGN_FOR_TYPE(long);
+			#endif
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R4:
+			{
+			#if defined(HAVE_LIBFFI)
+				layout->size = ffi_type_float.size;
+				layout->alignment = ffi_type_float.alignment;
+			#else
+				layout->size = sizeof(ILFloat);
+				layout->alignment = _IL_ALIGN_FOR_TYPE(float);
+			#endif
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R8:
 			{
+			#if defined(HAVE_LIBFFI)
 				layout->size = ffi_type_double.size;
 				layout->alignment = ffi_type_double.alignment;
-			}
-			break;
-
-			case IL_META_ELEMTYPE_I:
-			case IL_META_ELEMTYPE_U:
-			{
-			#ifdef IL_NATIVE_INT64
-				layout->size = ffi_type_uint64.size;
-				layout->alignment = ffi_type_uint64.alignment;
 			#else
-				layout->size = 4;
-				layout->alignment = 4;
+				layout->size = sizeof(ILDouble);
+				layout->alignment = _IL_ALIGN_FOR_TYPE(double);
 			#endif
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R:
 			{
-			#ifdef IL_NATIVE_FLOAT
-				layout->size = ffi_type_longdouble.size;
-				layout->alignment = ffi_type_longdouble.alignment;
+			#if defined(HAVE_LIBFFI)
+				#ifdef IL_NATIVE_FLOAT
+					layout->size = ffi_type_longdouble.size;
+					layout->alignment = ffi_type_longdouble.alignment;
+				#else
+					layout->size = ffi_type_double.size;
+					layout->alignment = ffi_type_double.alignment;
+				#endif
 			#else
-				layout->size = ffi_type_double.size;
-				layout->alignment = ffi_type_double.alignment;
+				layout->size = sizeof(ILNativeFloat);
+				layout->alignment = _IL_ALIGN_FOR_TYPE(long_double);
 			#endif
 			}
 			break;
@@ -148,8 +173,13 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 	else
 	{
 		/* Everything else is laid out as a pointer */
+	#if defined(HAVE_LIBFFI)
 		layout->size = ffi_type_pointer.size;
 		layout->alignment = ffi_type_pointer.alignment;
+	#else
+		layout->size = sizeof(void *);
+		layout->alignment = _IL_ALIGN_FOR_TYPE(void_p);
+	#endif
 		layout->vtableSize = 0;
 		layout->vtable = 0;
 		layout->staticSize = 0;

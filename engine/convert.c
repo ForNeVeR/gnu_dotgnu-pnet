@@ -78,8 +78,6 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	ILPInvoke *pinv;
 	ILCoder *coder = thread->process->coder;
 	unsigned char *start;
-	void *fn;
-	void *ctorfn;
 	void *cif;
 	void *ctorcif;
 	int isConstructor;
@@ -87,6 +85,8 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	const char *name;
 	void *moduleHandle;
 	int result;
+	ILInternalInfo fnInfo;
+	ILInternalInfo ctorfnInfo;
 
 	/* Is the method already converted? */
 	if(method->userData != 0)
@@ -105,8 +105,8 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	if(code.code)
 	{
 		/* Use the bytecode verifier and coder to convert the method */
-		if(!_ILVerify(coder, &start, method,
-					  &code, 1 /* TODO: safe vs unsafe */))
+		if(!_ILVerify(coder, &start, method, &code,
+					  ILImageIsSecure(ILProgramItem_Image(method))))
 		{
 			return 0;
 		}
@@ -115,8 +115,10 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	{
 		/* This is a "PInvoke", "internalcall", or "runtime" method */
 		pinv = ILPInvokeFind(method);
-		fn = 0;
-		ctorfn = 0;
+		fnInfo.func = 0;
+		fnInfo.marshal = 0;
+		ctorfnInfo.func = 0;
+		ctorfnInfo.marshal = 0;
 		isConstructor = ILMethod_IsConstructor(method);
 		switch(method->implementAttrs &
 					(IL_META_METHODIMPL_CODE_TYPE_MASK |
@@ -159,11 +161,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				}
 
 				/* Look up the method within the module */
-				fn = ILDynLibraryGetSymbol(moduleHandle, name);
-				if(!fn)
-				{
-					return 0;
-				}
+				fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
 			}
 			break;
 
@@ -176,10 +174,25 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					return 0;
 				}
-				fn = _ILFindInternalCall(method, 0);
-				if(isConstructor)
+
+				/* Look up the internalcall function details */
+				if(!_ILFindInternalCall(method, 0, &fnInfo))
 				{
-					ctorfn = _ILFindInternalCall(method, 1);
+					if(isConstructor)
+					{
+						if(!_ILFindInternalCall(method, 1, &ctorfnInfo))
+						{
+							return 0;
+						}
+					}
+					else
+					{
+						return 0;
+					}
+				}
+				else if(isConstructor)
+				{
+					_ILFindInternalCall(method, 1, &ctorfnInfo);
 				}
 			}
 			break;
@@ -193,28 +206,19 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		}
 
 		/* Bail out if we did not find the underlying native method */
-		if(!fn && !ctorfn)
+		if(!(fnInfo.func) && !(ctorfnInfo.func))
 		{
 			return 0;
 		}
 
+	#if defined(HAVE_LIBFFI)
 		/* Generate a "cif" structure to handle the native call details */
-		if(fn)
+		if(fnInfo.func)
 		{
 			/* Make the "cif" structure for the normal method entry */
-			cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
+			cif = _ILMakeCifForMethod(method, (pinv == 0));
 			if(!cif)
 			{
-			#if 0
-				/* TODO */
-				/* The coder ran out of memory, so flush it and retry */
-				ILCoderFlush(coder);
-				cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
-				if(!cif)
-				{
-					return 0;
-				}
-			#endif
 				return 0;
 			}
 		}
@@ -222,26 +226,12 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		{
 			cif = 0;
 		}
-		if(ctorfn)
+		if(ctorfnInfo.func)
 		{
 			/* Make the "cif" structure for the allocating constructor */
-			ctorcif = _ILMakeCifForConstructor(coder, method, (pinv == 0));
+			ctorcif = _ILMakeCifForConstructor(method, (pinv == 0));
 			if(!ctorcif)
 			{
-			#if 0
-				/* TODO */
-				/* The coder ran out of memory, so flush it and retry */
-				ILCoderFlush(coder);
-				if(fn)
-				{
-					cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
-				}
-				ctorcif = _ILMakeCifForConstructor(coder, method, (pinv == 0));
-				if(!cif || !ctorcif)
-				{
-					return 0;
-				}
-			#endif
 				return 0;
 			}
 		}
@@ -249,13 +239,18 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		{
 			ctorcif = 0;
 		}
+	#else
+		/* Use the marshalling function pointer as the cif if no libffi */
+		cif = fnInfo.marshal;
+		ctorcif = ctorfnInfo.marshal;
+	#endif
 
 		/* Generate the coder stub for marshalling the call */
 		if(!isConstructor)
 		{
 			/* We only need the method entry point */
 			if(!ILCoderSetupExtern(coder, &start, method,
-								   fn, cif, (pinv == 0)))
+								   fnInfo.func, cif, (pinv == 0)))
 			{
 				return 0;
 			}
@@ -266,9 +261,8 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					return 0;
 				}
-				cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
 				if(!ILCoderSetupExtern(coder, &start, method,
-									   fn, cif, (pinv == 0)))
+									   fnInfo.func, cif, (pinv == 0)))
 				{
 					return 0;
 				}
@@ -278,7 +272,8 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		{
 			/* We need both the method and constructor entry points */
 			if(!ILCoderSetupExternCtor(coder, &start, method,
-								       fn, cif, ctorfn, ctorcif,
+								       fnInfo.func, cif,
+									   ctorfnInfo.func, ctorcif,
 									   (pinv == 0)))
 			{
 				return 0;
@@ -290,17 +285,9 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					return 0;
 				}
-				if(fn)
-				{
-					cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
-				}
-				if(ctorfn)
-				{
-					ctorcif = _ILMakeCifForConstructor
-									(coder, method, (pinv == 0));
-				}
 				if(!ILCoderSetupExternCtor(coder, &start, method,
-									       fn, cif, ctorfn, ctorcif,
+									       fnInfo.func, cif,
+										   ctorfnInfo.func, ctorcif,
 										   (pinv == 0)))
 				{
 					return 0;

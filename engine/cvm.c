@@ -21,7 +21,9 @@
 #include "engine_private.h"
 #include "lib_defs.h"
 #include "cvm.h"
+#if defined(HAVE_LIBFFI)
 #include "ffi.h"
+#endif
 #ifdef HAVE_MATH_H
 #include <math.h>
 #endif

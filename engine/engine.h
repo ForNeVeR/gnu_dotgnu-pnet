@@ -235,6 +235,21 @@ typedef struct
 #endif
 
 /*
+ * Call a function via the FFI interface.  If we have "libffi",
+ * then use the "ffi_call" function.  Otherwise, we assume that
+ * "cif" is the marshalling stub that we need to use.
+ */
+#if defined(HAVE_LIBFFI)
+#define	FFI_CALL(cif,fn,rvalue,avalue)	\
+			ffi_call((ffi_cif *)(cif), (void (*)())(fn), \
+			         (void *)(rvalue), (void **)(avalue))
+#else
+#define	FFI_CALL(cif,fn,rvalue,avalue)	\
+			(*((void (*)(void (*)(), void *, void **))(cif)))	\
+				((void (*)())(fn), (void *)(rvalue), (void **)(avalue))
+#endif
+
+/*
  * Class information for the CVM coder.
  */
 extern ILCoderClass const _ILCVMCoderClass;
@@ -272,7 +287,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
  * call a PInvoke or "internalcall" method.  Returns NULL
  * if insufficient memory for the structure.
  */
-void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal);
+void *_ILMakeCifForMethod(ILMethod *method, int isInternal);
 
 /*
  * Construct the "ffi_cif" structure that is needed to
@@ -280,8 +295,7 @@ void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal);
  * allocation mode.  Returns NULL if insufficient memory
  * for the structure.
  */
-void *_ILMakeCifForConstructor(ILCoder *coder, ILMethod *method,
-							   int isInternal);
+void *_ILMakeCifForConstructor(ILMethod *method, int isInternal);
 
 /*
  * Convert a method into executable code.  Returns a pointer
@@ -310,9 +324,26 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo);
 
 /*
- * Find the function for an "internalcall" method.
+ * Information that is returned for an internalcall method.
+ * The "marshal" value is ignored for libffi-capable systems.
  */
-void *_ILFindInternalCall(ILMethod *method, int ctorAlloc);
+typedef struct
+{
+	void *func;
+	void *marshal;
+
+} ILInternalInfo;
+
+/*
+ * Find the function for an "internalcall" method.
+ * Returns zero if there is no function information.
+ */
+int _ILFindInternalCall(ILMethod *method, int ctorAlloc, ILInternalInfo *info);
+
+/*
+ * Find internalcall information for an array method.
+ */
+int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info);
 
 /*
  * Look up an interface method.  Returns NULL if not found.

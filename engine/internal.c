@@ -30,10 +30,7 @@ extern	"C" {
  */
 #include "int_table.c"
 
-/* Import from "lib_array.c" */
-void *_ILGetInternalArray(ILMethod *method, int *isCtor);
-
-void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
+int _ILFindInternalCall(ILMethod *method, int ctorAlloc, ILInternalInfo *info)
 {
 	ILImage *image;
 	ILClass *owner;
@@ -42,7 +39,6 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 	int left, right, middle;
 	const ILMethodTableEntry *entry;
 	ILType *signature;
-	void *func;
 	int isCtor;
 	int cmp;
 
@@ -55,8 +51,7 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 		goto arraysOnly;
 	}
 
-	/* Find the method's owner and bail out if no namespace
-	   (all of the internalcall methods are under "System") */
+	/* Find the method's owner and bail out if no namespace */
 	owner = ILMethod_Owner(method);
 	namespace = ILClass_Namespace(owner);
 	if(!namespace)
@@ -89,12 +84,23 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 						if(ctorAlloc && entry[1].methodName &&
 						   !(entry[1].signature))
 						{
-							return entry[1].func;
+							info->func = entry[1].func;
+						#if defined(HAVE_LIBFFI)
+							info->marshal = 0;
+						#else
+							info->marshal = entry[1].marshal;
+						#endif
 						}
 						else
 						{
-							return entry->func;
+							info->func = entry->func;
+						#if defined(HAVE_LIBFFI)
+							info->marshal = 0;
+						#else
+							info->marshal = entry->marshal;
+						#endif
 						}
+						return 1;
 					}
 					++entry;
 				}
@@ -113,15 +119,14 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 
 	/* Perhaps this is a "runtime" method for an array? */
 arraysOnly:
-	func = _ILGetInternalArray(method, &isCtor);
-	if(func)
+	if(_ILGetInternalArray(method, &isCtor, info))
 	{
 		if(isCtor)
 		{
 			/* Arrays only have allocation constructors */
 			if(ctorAlloc)
 			{
-				return func;
+				return 1;
 			}
 			else
 			{
@@ -131,7 +136,7 @@ arraysOnly:
 		else
 		{
 			/* This is a regular method */
-			return func;
+			return 1;
 		}
 	}
 

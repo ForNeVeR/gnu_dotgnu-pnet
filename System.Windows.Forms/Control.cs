@@ -109,12 +109,13 @@ public class Control : IWin32Window, IDisposable
 		AllowDrop           = 0x0004,
 		CausesValidation    = 0x0008,
 		Disposed            = 0x0010,
-		LayoutInitSuspended = 0x0020,
-		PerformingLayout    = 0x0040,
-		NotifyClick         = 0x0080,
-		NotifyDoubleClick   = 0x0100,
-		ValidationCancelled = 0x0200,
-		NeedReparent        = 0x0400,
+		Disposing           = 0x0020,
+		LayoutInitSuspended = 0x0040,
+		PerformingLayout    = 0x0080,
+		NotifyClick         = 0x0100,
+		NotifyDoubleClick   = 0x0200,
+		ValidationCancelled = 0x0400,
+		NeedReparent        = 0x0800,
 		Default             = (Enabled | CausesValidation | TabStop)
 
 	}; // enum ControlFlags
@@ -1025,7 +1026,6 @@ public class Control : IWin32Window, IDisposable
 					return ClientRectangle;
 				}
 			}
-	[TODO]
 #if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
 #endif
@@ -1037,8 +1037,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					// TODO
-					return false;
+					return GetControlFlag(ControlFlags.Disposing);
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -2197,13 +2196,33 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void Dispose(bool disposing)
 #endif
 			{
-				if(buffer != null)
+				try
 				{
-					buffer.Dispose();
-					buffer = null;
+					SetControlFlag(ControlFlags.Disposing, true);
+					try
+					{
+						if(buffer != null)
+						{
+							buffer.Dispose();
+							buffer = null;
+						}
+					}
+					finally
+					{
+						try
+						{
+							DestroyHandle();
+						}
+						finally
+						{
+							SetControlFlag(ControlFlags.Disposed, true);
+						}
+					}
 				}
-				DestroyHandle();
-				SetControlFlag(ControlFlags.Disposed, true);
+				finally
+				{
+					SetControlFlag(ControlFlags.Disposing, false);
+				}
 			}
 
 	// Find the form that this control is a member of.

@@ -660,7 +660,7 @@ public class Form : ContainerControl
 				{
 					return base.CreateToolkitWindow(parent);
 				}
-				
+
 				CreateParams cp = CreateParams;
 
 				// Create the window and set its initial caption.
@@ -1602,7 +1602,7 @@ public class Form : ContainerControl
 				if(!(args.Cancel))
 				{
 					OnClosed(EventArgs.Empty);
-					DestroyHandle();
+					Dispose();
 				}
 			}
 

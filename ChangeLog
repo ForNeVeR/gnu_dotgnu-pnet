@@ -1,5 +1,10 @@
 2004-12-30  Richard Baumann  <biochem333@nyc.rr.com>
 
+	* System.Windows.Forms/Control.cs: implement the Disposing property.
+
+	* System.Windows.Forms/Form.cs: call Dispose instead of DestroyHandle
+	from Close method, for compatibility.
+
 	* System.Windows.Forms/Control.cs: fix a control z-ordering bug, fix
 	a bug in control parenting, and reduce control memory usage.
 

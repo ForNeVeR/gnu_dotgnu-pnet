@@ -64,7 +64,7 @@ public class TcpClient
 		// TODO: Implement dispose function.
 	}
 
-	protected virtual void Finalize()
+	protected override void Finalize()
 	{
 		// TODO: Implement finalize function.
 	}

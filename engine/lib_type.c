@@ -1171,6 +1171,11 @@ static ILInt32 NameOutputTypeSuffixes(ILUInt16 *buf, ILType *type)
 				++len;
 			}
 		}
+		else if(kind == IL_TYPE_COMPLEX_CMOD_REQD ||
+		        kind == IL_TYPE_COMPLEX_CMOD_OPT)
+		{
+			len += NameOutputTypeSuffixes(buf, type->un.modifier__.type__);
+		}
 	}
 	return len;
 }
@@ -1187,6 +1192,7 @@ static ILString *GetTypeName(ILExecThread *thread, ILObject *_this,
 	ILString *str;
 	ILUInt16 *buf;
 	ILType *synType;
+	ILType *inner;
 	int kind;
 
 	/* Get the ILClass structure for the runtime type */
@@ -1200,28 +1206,34 @@ static ILString *GetTypeName(ILExecThread *thread, ILObject *_this,
 	/* Find the innermost element type if this is a complex type */
 	elemInfo = classInfo;
 	synType = ILClassGetSynType(classInfo);
-	while(synType != 0 && ILType_IsComplex(synType))
+	inner = synType;
+	while(inner != 0 && ILType_IsComplex(inner))
 	{
-		kind = ILType_Kind(synType);
+		kind = ILType_Kind(inner);
 		if(kind == IL_TYPE_COMPLEX_ARRAY ||
 		   kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
-			synType = ILType_ElemType(synType);
+			inner = ILType_ElemType(inner);
 		}
 		else if(kind == IL_TYPE_COMPLEX_BYREF ||
 		        kind == IL_TYPE_COMPLEX_PTR)
 		{
-			synType = ILType_Ref(synType);
+			inner = ILType_Ref(inner);
+		}
+		else if(kind == IL_TYPE_COMPLEX_CMOD_REQD ||
+		        kind == IL_TYPE_COMPLEX_CMOD_OPT)
+		{
+			inner = inner->un.modifier__.type__;
 		}
 		else
 		{
 			break;
 		}
 	}
-	if(synType != 0)
+	if(inner != 0)
 	{
 		elemInfo = ILClassFromType(ILProgramItem_Image(thread->method),
-								   0, synType, 0);
+								   0, inner, 0);
 		if(!elemInfo)
 		{
 			ILExecThreadThrowOutOfMemory(thread);

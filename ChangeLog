@@ -18,6 +18,9 @@
 	non-array types such as pointer and byref types into synthetic
 	classes, so that they can be encapsulated during reflection.
 
+	* engine/lib_type.c (GetTypeName): build the correct name
+	for pointer, reference, and custom-modified types.
+
 2002-11-05  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: Fix the indexername returned , using

@@ -61,7 +61,7 @@ static ILCmdLineOption const options[] = {
 		"--ignore-case  or -i",
 		"Ignore case when matching."},
 	{"-i", 'i', 0, 0, 0},
-	{"--public-only", 'i', 0,
+	{"--public-only", 'p', 0,
 		"--public-only  or -p",
 		"Search only the classes that are publicly accessible."},
 	{"-p", 'p', 0, 0, 0},

@@ -24,6 +24,8 @@
 	* doc/pnettools.texi, ilfind/ilfind.1, ilfind/ilfind.c:
 	add the "--public-only" option to "ilfind".
 
+	* ilfind/ilfind.c: bug in previous commit - option codes were wrong.
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with UTF-7 encoding and

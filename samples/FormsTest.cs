@@ -3362,23 +3362,23 @@ namespace FormsTest
 
 		private void messageBox1_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Hello");
+			MessageBox.Show(this, "Hello");
 		}
 
 		private void messageBox2_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Hello","Caption", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, MessageBoxOptions.RightAlign);
+			MessageBox.Show(this, "Hello","Caption", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, MessageBoxOptions.RightAlign);
 
 		}
 
 		private void messageBox3_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Hello loooooooooooooooooooooooooooooooooooooooooong","Caption", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Error, MessageBoxDefaultButton.Button2);
+			MessageBox.Show(this, "Hello loooooooooooooooooooooooooooooooooooooooooong","Caption", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Error, MessageBoxDefaultButton.Button2);
 		}
 
 		private void messageBox4_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Hello","Caption looooooooooooooooooooooooooooooooooooong", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			MessageBox.Show(this, "Hello","Caption looooooooooooooooooooooooooooooooooooong", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
 		private void AddResXTest(Control c)

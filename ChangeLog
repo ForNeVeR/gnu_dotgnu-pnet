@@ -24,6 +24,9 @@
 	implement the window hints for dialog owners, modality, minimum
 	size, and maximum size.
 
+	* samples/FormsTest.cs: make the message boxes modal with respect
+	to the main FormsTest widget.
+
 2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Font.cs: remove a public constructor that is no longer

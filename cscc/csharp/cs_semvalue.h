@@ -149,7 +149,7 @@ extern CSSemValue CSSemValueError;
  */
 #define	CSSemSetNamespace(value,ns)	\
 			do { \
-				(value).kind__ = CS_SEMKIND_TYPE; \
+				(value).kind__ = CS_SEMKIND_NAMESPACE; \
 				(value).type__ = ILType_Void; \
 				(value).extra__ = (void *)(ns); \
 			} while (0)

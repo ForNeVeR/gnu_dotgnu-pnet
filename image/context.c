@@ -138,29 +138,97 @@ static int ClassHash_Match(const ILClass *classInfo, const ILClassKeyInfo *key)
 	return 1;
 }
 
+/*
+ * Compute the hash value for a namespace.
+ */
+static unsigned long NamespaceHash_Compute(const ILClass *classInfo)
+{
+	if(classInfo->namespace)
+	{
+		return HashIgnoreCase(0, classInfo->namespace,
+							  strlen(classInfo->namespace));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Compute the hash value for a namespace key.
+ */
+static unsigned long NamespaceHash_KeyCompute(const char *key)
+{
+	if(key)
+	{
+		return HashIgnoreCase(0, key, strlen(key));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Match a hash table element against a supplied namespace key.
+ */
+static int NamespaceHash_Match(const ILClass *classInfo, const char *key)
+{
+	int len;
+	if(classInfo->namespace)
+	{
+		if(!key)
+		{
+			return 0;
+		}
+		len = strlen(key);
+		if(strncmp(classInfo->namespace, key, len) != 0 ||
+		   classInfo->namespace[len] != '\0')
+		{
+			return 0;
+		}
+		return 1;
+	}
+	else
+	{
+		return (key == 0);
+	}
+}
+
 /* Defined in "synthetic.c" */
 int _ILContextSyntheticInit(ILContext *context);
 
 ILContext *ILContextCreate(void)
 {
 	ILContext *context = (ILContext *)ILCalloc(1, sizeof(ILContext));
-	if(context)
+	if(!context)
 	{
-		if((context->classHash = ILHashCreate
-					(IL_CONTEXT_HASH_SIZE,
-				     (ILHashComputeFunc)ClassHash_Compute,
-					 (ILHashKeyComputeFunc)ClassHash_KeyCompute,
-					 (ILHashMatchFunc)ClassHash_Match,
-					 (ILHashFreeFunc)0)) == 0)
-		{
-			ILFree(context);
-			return 0;
-		}
-		ILMemPoolInitType(&(context->typePool), ILType, 0);
+		return 0;
 	}
+	if((context->classHash = ILHashCreate
+				(IL_CONTEXT_HASH_SIZE,
+			     (ILHashComputeFunc)ClassHash_Compute,
+				 (ILHashKeyComputeFunc)ClassHash_KeyCompute,
+				 (ILHashMatchFunc)ClassHash_Match,
+				 (ILHashFreeFunc)0)) == 0)
+	{
+		ILFree(context);
+		return 0;
+	}
+	ILMemPoolInitType(&(context->typePool), ILType, 0);
 	if(!_ILContextSyntheticInit(context))
 	{
 		ILContextDestroy(context);
+		return 0;
+	}
+	if((context->namespaceHash = ILHashCreate
+				(IL_CONTEXT_NS_HASH_SIZE,
+			     (ILHashComputeFunc)NamespaceHash_Compute,
+				 (ILHashKeyComputeFunc)NamespaceHash_KeyCompute,
+				 (ILHashMatchFunc)NamespaceHash_Match,
+				 (ILHashFreeFunc)0)) == 0)
+	{
+		ILFree(context);
 		return 0;
 	}
 	return context;
@@ -176,6 +244,9 @@ void ILContextDestroy(ILContext *context)
 
 	/* Destroy the class hash */
 	ILHashDestroy(context->classHash);
+
+	/* Destroy the namespace hash */
+	ILHashDestroy(context->namespaceHash);
 
 	/* Destroy the synthetic types hash */
 	ILHashDestroy(context->syntheticHash);

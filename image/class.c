@@ -176,6 +176,18 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 		return 0;
 	}
 
+	/* Add the namespace to the context's namespace table if not present */
+	if(namespace)
+	{
+		if(ILHashFind(image->context->namespaceHash, namespace) == 0)
+		{
+			if(!ILHashAdd(image->context->namespaceHash, info))
+			{
+				return 0;
+			}
+		}
+	}
+
 	/* Done */
 	return info;
 }
@@ -1693,6 +1705,19 @@ void ILClassAttachMember(ILClass *info, ILMember *member)
 	}
 	member->nextMember = 0;
 	info->lastMember = member;
+}
+
+int ILClassNamespaceIsValid(ILContext *context, const char *nspace)
+{
+	if(nspace)
+	{
+		return (ILHashFind(context->namespaceHash, nspace) != 0);
+	}
+	else
+	{
+		/* The empty namespace name is always valid */
+		return 1;
+	}
 }
 
 #ifdef	__cplusplus

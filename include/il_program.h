@@ -798,6 +798,12 @@ ILClass *ILClassInstantiate(ILImage *image, ILType *classType,
 							ILType *classParams);
 
 /*
+ * Determine if a namespace is valid for a context.  A namespace
+ * is valid if there is at least one class with that namespace.
+ */
+int ILClassNamespaceIsValid(ILContext *context, const char *nspace);
+
+/*
  * Helper macros for querying information about a class.
  */
 #define	ILClass_FromToken(image,token)	\

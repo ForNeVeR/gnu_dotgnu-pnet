@@ -1365,15 +1365,40 @@ CSSemValue CSResolveNamespaceMemberName(ILGenInfo *genInfo,
 {
 	CSMemberLookupInfo results;
 	int result;
+	ILIntString nspace;
 
 	InitMembers(&results);
+
+	/* Look for a type first */
 	result = FindTypeInNamespace(genInfo, name,
-			CSSemGetNamespace(value), 
-			ILClassResolve(CSGetAccessScope(genInfo, 1)),
-			&results);
-			
-	return result == CS_SEMKIND_VOID ?
-		CSSemValueDefault : LookupToSem(node, name, &results, result);
+								 CSSemGetNamespace(value), 
+								 ILClassResolve(CSGetAccessScope(genInfo, 1)),
+								 &results);
+
+	/* See if the namespace is valid, according to the loaded libraries */
+	if(result == CS_SEMKIND_VOID)
+	{
+		nspace = ILInternAppendedString
+			(ILInternString(CSSemGetNamespace(value), -1),
+			 ILInternString(".", 1));
+		nspace = ILInternAppendedString
+			(nspace, ILInternString((char *)name, -1));
+		if(ILClassNamespaceIsValid(genInfo->context, nspace.string))
+		{
+			CSSemSetNamespace(value, nspace.string);
+			return value;
+		}
+	}
+
+	/* Return the result to the caller */
+	if(result == CS_SEMKIND_VOID)
+	{
+		return CSSemValueDefault;
+	}
+	else
+	{
+		return LookupToSem(node, name, &results, result);
+	}
 }
 
 /*

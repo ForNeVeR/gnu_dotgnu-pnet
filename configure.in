@@ -102,6 +102,15 @@ AC_PATH_PROG(ILDD, ildd,, ${PNET_PATH}/ildd:${prefix}/bin:$PATH)
 dnl Find the location of the "cygpath" program.
 AC_PATH_PROG(CYGPATH, cygpath)
 
+dnl Find the location of the "ilranlib" program.
+AC_PATH_PROG(ILRANLIB, ilranlib,, ${PNET_PATH}/ilranlib:${prefix}/bin:$PATH)
+if test "x$CYGPATH" != "x" ; then
+	RANLIB=`"$CYGPATH" -ws "${ILRANLIB}"`
+else
+	RANLIB="$ILRANLIB"
+fi
+ac_cv_prog_RANLIB="$RANLIB"
+
 dnl Determine additional flags that we need to force "cscc" to act sane.
 dnl We use slightly different paths than the final to prevent strange
 dnl problems with spaces in pathnames under Cygwin.

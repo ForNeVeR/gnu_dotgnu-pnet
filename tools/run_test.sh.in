@@ -43,7 +43,8 @@ STATUS=0
 # Process all test .dll's in the current directory.
 for i in *.dll; do
 	TESTNAME=`basename $i .dll`
-	if "$ILRUN" -L "$TOPDIR/csunit" -L "$TOPDIR/runtime/System" "$TOPDIR/csunit.exe" "$i" "$TESTNAME" ; then
+	echo "$ILRUN" -L "$TOPDIR/csunit" -L "$TOPDIR/runtime/System" "$TOPDIR/csunit/csunit.exe" "$i" "$TESTNAME"
+	if "$ILRUN" -L "$TOPDIR/csunit" -L "$TOPDIR/runtime/System" "$TOPDIR/csunit/csunit.exe" "$i" "$TESTNAME" ; then
 		# The test run succeeded.
 		:
 	else

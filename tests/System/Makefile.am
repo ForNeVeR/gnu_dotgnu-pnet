@@ -12,3 +12,6 @@ TestSystem.dll: $(CSSRC)
 	$(CSCC_COMPILE) -o $@ $(CSSRC)
 
 CLEANFILES = TestSystem.dll
+
+TESTS = $(top_srcdir)/tools/run_test.sh
+TESTS_ENVIRONMENT = $(SHELL)

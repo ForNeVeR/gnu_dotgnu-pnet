@@ -56,6 +56,9 @@ int main(int argc, char *argv[])
 	ILMethod *method;
 	int error;
 	ILInt32 retval;
+	ILExecThread *thread;
+	ILObject *args;
+	ILString *argString;
 
 	/* Parse the command-line arguments */
 	state = 0;
@@ -132,10 +135,38 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	/* Convert the arguments into an array of strings */
+	thread = ILExecProcessGetMain(process);
+	args = ILExecThreadNew(thread, "[oSystem.String;",
+						   "(Ti)V", (ILVaInt)(argc - 2));
+	if(args)
+	{
+		for(opt = 0; opt < (argc - 2); ++opt)
+		{
+			argString = ILStringCreate(thread, argv[opt + 2]);
+			if(!argString)
+			{
+				break;
+			}
+			ILExecThreadSetElem(thread, args, (ILInt32)opt, argString);
+		}
+	}
+
 	/* Call the entry point */
-	retval = 0;
-	ILExecThreadCall(ILExecProcessGetMain(process), method,
-					 &retval, (void *)0);
+	if(!ILExecThreadHasException(thread))
+	{
+		retval = 0;
+		if(ILExecThreadCall(thread, method, &retval, args))
+		{
+			/* An exception was thrown while executing the program */
+			retval = 1;
+		}
+	}
+	else
+	{
+		/* An exception was thrown while building the argument array */
+		retval = 1;
+	}
 
 	/* Clean up the process and exit */
 	error = ILExecProcessGetStatus(process);

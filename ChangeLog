@@ -14,6 +14,9 @@ references for the same label properly.
 "ILExecThreadLookupType" to "ILExecThreadLookupClass", and then implement
 a new "ILExecThreadLookupType" that returns "ILType" instead of "ILClass".
 
+* engine/ilrun.c: construct an array with the command-line parameters,
+and pass it to the program's entry point.
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

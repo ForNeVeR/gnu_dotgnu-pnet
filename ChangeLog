@@ -35,6 +35,9 @@ it use the same library resolution code as "cscc-cs".
 Fibonacci example program so that it is compiled all the way to an
 executable file.
 
+* image/member.c: bail out from "ILMethodGetCode" if the method has an
+RVA, but the code is native rather than IL.
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

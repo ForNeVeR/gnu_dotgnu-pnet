@@ -419,7 +419,11 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 	ILToken localVars;
 
 	/* Bail out if the method does not have any IL code */
-	if(!(method->rva))
+	if(!(method->rva) ||
+	   ((method->implementAttrs & IL_META_METHODIMPL_CODE_TYPE_MASK)
+	   		!= IL_META_METHODIMPL_IL &&
+	    (method->implementAttrs & IL_META_METHODIMPL_CODE_TYPE_MASK)
+	   		!= IL_META_METHODIMPL_OPTIL))
 	{
 		return 0;
 	}

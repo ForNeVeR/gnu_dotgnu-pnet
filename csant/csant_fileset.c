@@ -468,12 +468,26 @@ void CSAntFileSetDestroy(CSAntFileSet *fileset)
 
 unsigned long CSAntFileSetSize(CSAntFileSet *fileset)
 {
-	return fileset->numFiles;
+	if(fileset)
+	{
+		return fileset->numFiles;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 char *CSAntFileSetFile(CSAntFileSet *fileset, unsigned long num)
 {
-	return fileset->files[num];
+	if(fileset && num < fileset->numFiles)
+	{
+		return fileset->files[num];
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 int CSAntFileSetNewer(CSAntFileSet *fileset, const char *filename)
@@ -482,6 +496,12 @@ int CSAntFileSetNewer(CSAntFileSet *fileset, const char *filename)
 	struct stat st1;
 	struct stat st2;
 	unsigned long posn;
+
+	/* Assume that the file is not newer if the fileset is non-existent */
+	if(!fileset)
+	{
+		return 0;
+	}
 
 	/* If the file doesn't exist at all, then assume
 	   that the fileset is newer */

@@ -62,6 +62,9 @@
 <!-- Use the small version of System.Console -->
 <define name="CONFIG_SMALL_CONSOLE" value="true"/>
 
+<!-- Use the extended version of System.Console -->
+<define name="CONFIG_EXTENDED_CONSOLE" value="false"/>
+
 <!-- Use SSL Support using DotGNU.SSL -->
 <define name="CONFIG_SSL" value="false"/>
 

@@ -5,6 +5,12 @@
 	runtime/System/ConsoleKey.cs: modifications to the C# library
 	to match internalcall changes for the extended console.
 
+	* profiles/compact, profiles/compact-fp, profiles/ecma,
+	profiles/full, profiles/kernel, profiles/kernel-fp,
+	profiles/mscompact, profiles/tiny, profiles/tiny-fp:
+	modify the profiles to include config information about the
+	extended console.
+
 2003-11-02  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpReader.cs, DotGNU.Images/BmpReformatter.cs,

@@ -903,50 +903,6 @@ static int ParseUnaryExpression(CSPreProc *preproc, char **line,
 }
 
 /*
- * Parse an AND expression.
- */
-static int ParseAndExpression(CSPreProc *preproc, char **line,
-							  CSPreProcToken *token)
-{
-	int result;
-
-	/* Parse the first sub-expression */
-	result = ParseUnaryExpression(preproc, line, token);
-
-	/* Process trailing '&&' operators */
-	while(token->type == CSPP_TOKEN_AND)
-	{
-		NextToken(line, token);
-		result = (result && ParseUnaryExpression(preproc, line, token));
-	}
-
-	/* Return the result to the caller */
-	return result;
-}
-
-/*
- * Parse an OR expression.
- */
-static int ParseOrExpression(CSPreProc *preproc, char **line,
-							 CSPreProcToken *token)
-{
-	int result;
-
-	/* Parse the first sub-expression */
-	result = ParseAndExpression(preproc, line, token);
-
-	/* Process trailing '||' operators */
-	while(token->type == CSPP_TOKEN_OR)
-	{
-		NextToken(line, token);
-		result = (result || ParseAndExpression(preproc, line, token));
-	}
-
-	/* Return the result to the caller */
-	return result;
-}
-
-/*
  * Parse an equality expression.
  */
 static int ParseEqualityExpression(CSPreProc *preproc, char **line,
@@ -955,7 +911,7 @@ static int ParseEqualityExpression(CSPreProc *preproc, char **line,
 	int result1, result2, iseq;
 
 	/* Parse the first sub-expression */
-	result1 = ParseOrExpression(preproc, line, token);
+	result1 = ParseUnaryExpression(preproc, line, token);
 
 	/* Process trailing '==' or '!=' operators */
 	while(token->type == CSPP_TOKEN_EQ ||
@@ -963,7 +919,7 @@ static int ParseEqualityExpression(CSPreProc *preproc, char **line,
 	{
 		iseq = (token->type == CSPP_TOKEN_EQ);
 		NextToken(line, token);
-		result2 = ParseOrExpression(preproc, line, token);
+		result2 = ParseUnaryExpression(preproc, line, token);
 		if(iseq)
 		{
 			result1 = (result1 == result2);
@@ -972,6 +928,52 @@ static int ParseEqualityExpression(CSPreProc *preproc, char **line,
 		{
 			result1 = (result1 != result2);
 		}
+	}
+
+	/* Return the result to the caller */
+	return result1;
+}
+
+/*
+ * Parse an AND expression.
+ */
+static int ParseAndExpression(CSPreProc *preproc, char **line,
+							  CSPreProcToken *token)
+{
+	int result1, result2;
+
+	/* Parse the first sub-expression */
+	result1 = ParseEqualityExpression(preproc, line, token);
+
+	/* Process trailing '&&' operators */
+	while(token->type == CSPP_TOKEN_AND)
+	{
+		NextToken(line, token);
+		result2 = ParseEqualityExpression(preproc, line, token);
+		result1 = (result1 && result2);
+	}
+
+	/* Return the result to the caller */
+	return result1;
+}
+
+/*
+ * Parse an OR expression.
+ */
+static int ParseOrExpression(CSPreProc *preproc, char **line,
+							 CSPreProcToken *token)
+{
+	int result1, result2;
+
+	/* Parse the first sub-expression */
+	result1 = ParseAndExpression(preproc, line, token);
+
+	/* Process trailing '||' operators */
+	while(token->type == CSPP_TOKEN_OR)
+	{
+		NextToken(line, token);
+		result2 = ParseAndExpression(preproc, line, token);
+		result1 = (result1 || result2);
 	}
 
 	/* Return the result to the caller */
@@ -990,7 +992,7 @@ static int ParseExpression(CSPreProc *preproc, CSPreProcLine *info, char **line)
 	NextToken(line, &token);
 
 	/* Perform the parse */
-	result = ParseEqualityExpression(preproc, line, &token);
+	result = ParseOrExpression(preproc, line, &token);
 
 	/* If the token is not "END", or there is data left on the line,
 	   then the expression is invalid */

@@ -26,6 +26,10 @@
 	* cscc/cs_scanner.l (ParseLitString): don't use "ParseEncodedChar"
 	if the code point is less than 0x80.
 
+	* cscc/cs_preproc.c: rearrange the pre-processing condition
+	grammar to match the latest C# specification; don't do short-cut
+	evaluation for "&&" and "||" because it leads to parse errors.
+
 2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,

@@ -9,6 +9,9 @@
 	add the link directory to the debug symbol table so that
 	the full pathname of a source file can be recovered later.
 
+	* doc/pnettools.texi: document how the link directory is stored
+	in the debug symbol table.
+
 2003-09-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant.1, doc/pnettools.texi: update the documentation

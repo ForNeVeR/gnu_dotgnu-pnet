@@ -3841,8 +3841,7 @@ that won't conflict with regular tokens.
 As an additional requirement, standard pseudo-tokens will use
 upper case characters in their names.  e.g. @code{ABCD}.
 Private pseudo-tokens will use lower case characters.
-e.g. @code{abcd}.  There are no standard pseudo-tokens
-at present.
+e.g. @code{abcd}.
 
 @subsection String table
 
@@ -3977,6 +3976,13 @@ to refer to different indices at different points within the code.
 Multiple local variable blocks for a method do not need to be ordered in
 any particular way.  Debug tools may need to sort the blocks so that names
 in inner scopes override those in outer scopes.
+
+@subsection Standard pseudo-tokens
+
+The @code{LDIR} pseudo-token is used to record the link directory,
+so that relative source filenames can be properly resolved to absolute
+source filenames.  The attached data block should have type 0, and
+contain a string index for the link directory.
 
 @c -----------------------------------------------------------------------
 

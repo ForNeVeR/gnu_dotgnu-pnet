@@ -521,7 +521,7 @@ static void CreatePseudoSource(ILDbSourceFile *file,
 		if(!skipParent)
 		{
 			parent = ILClass_Parent(classInfo);
-			if(parent)
+			if(parent && !ILTypeIsObjectClass(ILType_FromClass(parent)))
 			{
 				ILDbSourcePrint(file, " : ");
 				haveColon = 1;
@@ -588,6 +588,67 @@ static void CreatePseudoSource(ILDbSourceFile *file,
 }
 
 /*
+ * Get the name of a class as an ILMalloc'ed string.
+ */
+static int GetClassNameInner(ILDb *db, ILClass *classInfo, char *buf)
+{
+	ILClass *nestedParent;
+	const char *temp;
+	int len;
+
+	classInfo = ILClassResolve(classInfo);
+	nestedParent = ILClass_NestedParent(classInfo);
+	if(nestedParent)
+	{
+		len = GetClassNameInner(db, nestedParent, buf);
+		temp = ILClass_Name(classInfo);
+		if(buf)
+		{
+			buf[len] = '.';
+			strcpy(buf + len + 1, temp);
+		}
+		len += strlen(temp) + 1;
+	}
+	else
+	{
+		len = 0;
+		temp = ILClass_Namespace(classInfo);
+		if(temp)
+		{
+			if(buf)
+			{
+				strcpy(buf + len, temp);
+			}
+			len += strlen(temp);
+			if(buf)
+			{
+				buf[len] = '.';
+			}
+			++len;
+		}
+		temp = ILClass_Name(classInfo);
+		if(buf)
+		{
+			strcpy(buf + len, temp);
+		}
+		len += strlen(temp);
+	}
+	return len;
+}
+static char *GetClassName(ILDb *db, ILClass *classInfo)
+{
+	int len = GetClassNameInner(db, classInfo, 0);
+	char *buf = (char *)ILMalloc(len + 1);
+	if(!buf)
+	{
+		ILDbOutOfMemory(db);
+	}
+	GetClassNameInner(db, classInfo, buf);
+	buf[len] = '\0';
+	return buf;
+}
+
+/*
  * Create a new empty source file, or retrieve an existing one.
  * Returns non-zero if an existing file has been retrieved.
  */
@@ -639,10 +700,16 @@ static int SourceCreate(ILDb *db, const char *filename,
 	{
 		file->filename = 0;
 	}
+	file->className = (classInfo ? GetClassName(db, classInfo) : 0);
 	file->classInfo = classInfo;
 	file->text = 0;
 	file->textLen = 0;
 	file->textMax = 0;
+	file->lines = 0;
+	file->numLines = 0;
+	file->maxLines = 0;
+	file->prevIsEOL = 1;
+	file->fileIsTemp = 0;
 	*fileReturn = file;
 	return 0;
 }
@@ -691,6 +758,56 @@ ILDbSourceFile *ILDbSourceCreatePseudo(ILDb *db, ILClass *classInfo)
 	}
 }
 
+/*
+ * Add line information from a buffer that was just added to a file.
+ */
+static void AddLines(ILDbSourceFile *file, const char *buf, unsigned long len)
+{
+	unsigned long offset = file->textLen - len;
+	const char *temp;
+	unsigned long *newLines;
+	while(len > 0)
+	{
+		if(file->prevIsEOL)
+		{
+			/* Expand the line buffer and add the new line */
+			if(file->numLines >= file->maxLines)
+			{
+				newLines = (unsigned long *)
+					(ILRealloc(file->lines, sizeof(unsigned long) *
+											(file->maxLines + 256)));
+				if(!newLines)
+				{
+					ILDbOutOfMemory(file->owner);
+				}
+				file->lines = newLines;
+				file->maxLines += 256;
+			}
+			file->lines[(file->numLines)++] = offset;
+		}
+		temp = (const char *)(ILMemChr(buf, '\n', len));
+		if(!temp)
+		{
+			/* Check for '\r' just in case we have a Mac-format text file */
+			temp = (const char *)(ILMemChr(buf, '\r', len));
+		}
+		if(temp)
+		{
+			/* Advance to the next line */
+			++temp;
+			offset += (unsigned long)(temp - buf);
+			len -= (unsigned long)(temp - buf);
+			file->prevIsEOL = 1;
+		}
+		else
+		{
+			/* Last line in the buffer does not end in LF or CR */
+			len = 0;
+			file->prevIsEOL = 0;
+		}
+	}
+}
+
 ILDbSourceFile *ILDbSourceCreate(ILDb *db, const char *filename)
 {
 	/* TODO */
@@ -699,13 +816,96 @@ ILDbSourceFile *ILDbSourceCreate(ILDb *db, const char *filename)
 
 const char *ILDbSourceDiskFile(ILDbSourceFile *file)
 {
-	/* TODO */
-	return 0;
+	char *name;
+	FILE *stream;
+
+	/* If we already have a filename, then return it */
+	if(file->filename)
+	{
+		return file->filename;
+	}
+
+	/* Create a temporary file to hold the pseudo class details */
+	name = (char *)ILMalloc(strlen(file->className) + 7);
+	if(!name)
+	{
+		ILDbOutOfMemory(file->owner);
+	}
+	strcpy(name, ".ildb-");
+	strcat(name, file->className);
+	file->filename = ILExpandFilename(name, (char *)0);
+	if(!(file->filename))
+	{
+		ILDbOutOfMemory(file->owner);
+	}
+	ILFree(name);
+
+	/* Copy the pseudo class into the temporary file */
+	if((stream = fopen(file->filename, "w")) == NULL)
+	{
+		ILFree(file->filename);
+		file->filename = 0;
+		return 0;
+	}
+	file->fileIsTemp = 1;
+	if(file->textLen > 0)
+	{
+		fwrite(file->text, 1, file->textLen, stream);
+	}
+	fclose(stream);
+
+	/* Return the filename to the caller */
+	return file->filename;
+}
+
+const char *ILDbSourceDisplayName(ILDbSourceFile *file)
+{
+	if(file->filename)
+	{
+		/* Use the base part of the filename as the display name */
+		const char *filename = file->filename;
+		int len = strlen(filename);
+		while(len > 0 && filename[len - 1] != '/' && filename[len - 1] != '\\')
+		{
+			--len;
+		}
+		return filename + len;
+	}
+	else
+	{
+		/* Use the name of the class as the display name */
+		return file->className;
+	}
 }
 
 void ILDbSourcePrint(ILDbSourceFile *file, const char *str)
 {
-	/* TODO */
+	/* Bail out if the string is empty */
+	unsigned long len = (unsigned long)(strlen(str));
+	if(!len)
+	{
+		return;
+	}
+
+	/* Expand the text buffer and add the new string */
+	if((file->textLen + len) > file->textMax)
+	{
+		char *newText;
+		unsigned long newLen = file->textLen + len;
+		newLen = (newLen + 1023) & ~1023;
+		newText = (char *)ILRealloc(file->text, newLen);
+		if(!newText)
+		{
+			ILDbOutOfMemory(file->owner);
+		}
+		file->text = newText;
+		file->textMax = newLen;
+	}
+	ILMemCpy(file->text + file->textLen, str, len);
+	file->textLen += len;
+
+	/* Add the lines within the string to the lines array */
+	AddLines(file, str, len);
 }
 
 void ILDbSourcePrintIndent(ILDbSourceFile *file, int indent, const char *str)
@@ -836,9 +1036,17 @@ void ILDbSourceDestroy(ILDbSourceFile *list)
 	while(list != 0)
 	{
 		next = list->next;
+		if(list->fileIsTemp)
+		{
+			ILDeleteFile(list->filename);
+		}
 		if(list->filename)
 		{
 			ILFree(list->filename);
+		}
+		if(list->className)
+		{
+			ILFree(list->className);
 		}
 		if(list->text)
 		{
@@ -846,6 +1054,30 @@ void ILDbSourceDestroy(ILDbSourceFile *list)
 		}
 		list = next;
 	}
+}
+
+long ILDbSourceGetLine(ILDbSourceFile *file, long num, char **line)
+{
+	long len;
+	--num;
+	if(num < 0 || num >= (long)(file->numLines))
+	{
+		return -1;
+	}
+	if(num == (long)(file->numLines - 1))
+	{
+		len = (long)(file->textLen - file->lines[num]);
+	}
+	else
+	{
+		len = (long)(file->lines[num + 1] - file->lines[num]);
+	}
+	*line = file->text + file->lines[num];
+	while(len > 0 && ((*line)[len - 1] == '\n' || (*line)[len - 1] == '\r'))
+	{
+		--len;
+	}
+	return len;
 }
 
 #ifdef	__cplusplus

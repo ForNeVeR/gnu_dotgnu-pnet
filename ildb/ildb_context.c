@@ -55,6 +55,8 @@ ILDb *ILDbCreate(int argc, char **argv)
 	db->running = 0;
 	db->printFullNames = 0;
 	db->sourceFiles = 0;
+	db->currFile = 0;
+	db->currLine = 1;
 
 	/* Set the initial source directory search path */
 	db->dirSearch = 0;

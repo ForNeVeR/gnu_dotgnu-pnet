@@ -1,4 +1,11 @@
 
+2002-06-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ildb/ildb_context.c, ildb/ildb_context.h, ildb/ildb_list.c,
+	ildb/ildb_run.c, ildb/ildb_show.c, ildb/ildb_source.c,
+	ildb/ildb_source.h: implement "list ,main", "info line", and
+	"info source", to assist with integration with xxgdb.
+
 2002-06-26  Gopal.V  <gopalv82@symonds.net>
 
 	* ilnative/ilcheck.c : repurpose it for checking for PInvoke 

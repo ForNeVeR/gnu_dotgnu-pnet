@@ -34,10 +34,16 @@ struct _tagILDbSourceFile
 	ILDb		   *owner;
 	ILDbSourceFile *next;
 	char		   *filename;
+	char		   *className;
 	ILClass		   *classInfo;
 	char		   *text;
 	unsigned long	textLen;
 	unsigned long	textMax;
+	unsigned long  *lines;
+	unsigned long	numLines;
+	unsigned long	maxLines;
+	int				prevIsEOL;
+	int				fileIsTemp;
 
 };
 
@@ -61,6 +67,11 @@ ILDbSourceFile *ILDbSourceCreate(ILDb *db, const char *filename);
 const char *ILDbSourceDiskFile(ILDbSourceFile *file);
 
 /*
+ * Get the "display name" for a source file.
+ */
+const char *ILDbSourceDisplayName(ILDbSourceFile *file);
+
+/*
  * Print a string to an in-memory source file.
  */
 void ILDbSourcePrint(ILDbSourceFile *file, const char *str);
@@ -82,6 +93,12 @@ ILDbSourceFile *ILDbSourceGet(ILDb *db, ILClass *classInfo, ILMember *member);
  * Destroy a list of cached source files.
  */
 void ILDbSourceDestroy(ILDbSourceFile *list);
+
+/*
+ * Get a particular line from a source file.  Returns the length
+ * of the line, or -1 if the line number is out of range.
+ */
+long ILDbSourceGetLine(ILDbSourceFile *file, long num, char **line);
 
 #ifdef	__cplusplus
 };

@@ -22,6 +22,7 @@
 #include "ildb_utils.h"
 #include "ildb_cmd.h"
 #include "ildb_search.h"
+#include "ildb_source.h"
 #include "il_system.h"
 
 #ifdef	__cplusplus
@@ -57,8 +58,66 @@ static void Show_ListSize(ILDb *db, char *argv[])
  */
 static void Info_Line(ILDb *db, char *argv[])
 {
-	ILDbInfo(db, "No line number information available.");
+	if(db->currFile)
+	{
+		ILDbInfo(db, "Line %ld of \"%s\".",
+				 db->currLine, ILDbSourceDisplayName(db->currFile));
+	}
+	else
+	{
+		ILDbInfo(db, "No line number information available.");
+	}
 }
+
+/*
+ * Print information about the current file in the program.
+ */
+static void Info_Source(ILDb *db, char *argv[])
+{
+	if(db->currFile)
+	{
+		const char *filename = ILDbSourceDiskFile(db->currFile);
+		int len;
+		if(filename)
+		{
+			len = strlen(filename);
+			while(len > 0 && filename[len - 1] != '/' &&
+				  filename[len - 1] != '\\')
+			{
+				--len;
+			}
+			ILDbInfo(db, "Current source file is %s", filename + len);
+			ILDbInfo(db, "Located in %s", filename);
+			ILDbInfo(db, "Contains %lu lines.", db->currFile->numLines);
+			len = strlen(filename);
+			while(len > 0 && filename[len - 1] != '.')
+			{
+				--len;
+			}
+			if(db->currFile->classInfo || !ILStrICmp(filename + len, "cs"))
+			{
+				ILDbInfo(db, "Source language is C#.");
+			}
+		}
+		else
+		{
+			ILDbInfo(db, "No current source file.");
+		}
+	}
+	else
+	{
+		ILDbInfo(db, "No current source file.");
+	}
+}
+
+/*
+Current source file is ildb_main.c
+Compilation directory is /home/rweather/work/pnet/ildb/
+Located in /home/rweather/work/pnet/ildb/ildb_main.c
+Contains 314 lines.
+Source language is c.
+Compiled with stabs debugging format.
+*/
 
 /*
  * Table of "show" and "info" commands.
@@ -75,7 +134,10 @@ ILDbCmdInfo ILDbShowCommands[] = {
 		0},
 
 	{"info", 3, "line", 2, Info_Line, 0,
-		"show information on a particular source line",
+		"show information on the current source line",
+		0},
+	{"info", 3, "source", 6, Info_Source, 0,
+		"show information on the particular source file",
 		0},
 	{"info", 3, 0, 0, 0, 0,
 		"show information about the program",

@@ -60,6 +60,8 @@ int ILDbCreateProcess(ILDb *db)
 	/* Destroy the cached source files prior to loading the application */
 	ILDbSourceDestroy(db->sourceFiles);
 	db->sourceFiles = 0;
+	db->currFile = 0;
+	db->currLine = 1;
 
 	/* Create the execution process and install the debug hook */
 	db->process = ILExecProcessCreate(0);

@@ -57,6 +57,8 @@ typedef struct
 	jmp_buf			jumpBack;			/* Jump point to abort the program */
 	int				printFullNames;		/* Print full names when stopped */
 	struct _tagILDbSourceFile *sourceFiles; /* Cached source files */
+	struct _tagILDbSourceFile *currFile; /* Current source file */
+	long			currLine;			/* Current source line */
 
 } ILDb;
 

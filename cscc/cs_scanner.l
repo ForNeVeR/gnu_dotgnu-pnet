@@ -903,9 +903,14 @@ static ILIntString ParseLitString(char *text)
 			text += 2;
 			ch = (ILUInt32)'"';
 		}
-		else
+		else if((*text & 0x80) == 0)
 		{
 			/* Regular character */
+			ch = (ILUInt32)(*text++);
+		}
+		else
+		{
+			/* Character in the local character set encoding */
 			text += ParseEncodedChar(text, &ch);
 		}
 

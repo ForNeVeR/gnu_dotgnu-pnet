@@ -631,8 +631,12 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
  */
 #define	md_bounds_check(inst,reg1,reg2)	\
 			do { \
-				ppc_load_advance((inst), PPC_WORK, (reg1)); \
-				ppc_test_reg_reg((inst), PPC_CMP, (reg2), PPC_WORK); \
+				/* faking load_advance is easier for memindex code  \
+				   ppc_work = *(reg)++; (so to speak) \
+				*/ \
+				ppc_load_membase((inst), PPC_WORK, (reg1), 0);\
+				ppc_add_reg_imm((inst), (reg1), (reg1), sizeof(System_Array));\
+				ppc_cmp_reg_reg((inst), PPC_CMPL, (reg2), PPC_WORK); \
 			} while (0)
 
 /*

@@ -560,6 +560,61 @@ typedef unsigned int *ppc_inst_ptr;
 			ppc_membase_common((inst), (reg), (basereg), (offset), 44)
 
 /*
+ * Load various sized values from a memory location defined by a base
+ * register and an index register.
+ */
+#define	ppc_memindex_common(inst,reg,basereg,indexreg, shift, opc)	\
+			do { \
+				if((shift))\
+				{ \
+					/* slwi PPC_WORK, indexreg, shift \
+					(ie multiply by pointer index increment) */\
+					ppc_alu_rlwinm(inst, PPC_WORK, (indexreg), shift, 0, 31-shift);\
+					*(inst)++ = ((31 << 26) \
+								| (((unsigned int)(reg)) << 21) \
+								| (((unsigned int)(basereg)) << 16) \
+								| (((unsigned int)(PPC_WORK)) << 11)\
+								| (((unsigned int)(opc)) << 1));\
+				} \
+				else \
+				{ \
+					*(inst)++ = ((31 << 26) \
+								| (((unsigned int)(reg)) << 21) \
+								| (((unsigned int)(basereg)) << 16) \
+								| (((unsigned int)(indexreg)) << 11)\
+								| (((unsigned int)(opc)) << 1));\
+				} \
+			} while (0)
+
+#define	ppc_load_memindex(inst,reg,basereg,indexreg)	/* lwzx */ \
+			ppc_memindex_common((inst), (reg), (basereg), (indexreg), 2, 23) 
+#define	ppc_load_memindex_byte(inst,reg,basereg,indexreg)	/* lbzx */ \
+			ppc_memindex_common((inst), (reg), (basereg), (indexreg), 0, 87)
+#define	ppc_load_memindex_sbyte(inst,reg,basereg,indexreg)	\
+			do { \
+				ppc_memindex_common((inst), (reg), (basereg), (indexreg), 0, 87); \
+				ppc_alu_reg_sd((inst), PPC_EXTSB, (reg), (reg)); \
+			} while (0)
+#define	ppc_load_memindex_short(inst,reg,basereg,indexreg)	/* lhax */\
+			ppc_memindex_common((inst), (reg), (basereg), (indexreg), 1, 343)
+#define	ppc_load_memindex_ushort(inst,reg,basereg,indexreg)	/* lhzx */\
+			ppc_memindex_common((inst), (reg), (basereg), (indexreg), 1, 279)
+
+/*
+ * Store values of various sizes to a memory location defined by a
+ * base register plus an index register.
+ */
+#define	ppc_store_memindex(inst,reg,basereg,indexreg)	/* stwx */\
+			ppc_memindex_common((inst), (reg), (basereg), (indexreg), 2, 151)
+#define	ppc_store_memindex_byte(inst,reg,basereg,indexreg)	/*  stbx */\
+			ppc_memindex_common((inst), (reg), (basereg), (indexreg), 0, 215)
+#define	ppc_store_memindex_sbyte(inst,reg,basereg,indexreg)	\
+			ppc_memindex_common((inst), (reg), (basereg), (indexreg), 0, 215)
+#define	ppc_store_memindex_short(inst,reg,basereg,indexreg) /* sthx */	\
+			ppc_memindex_common((inst), (reg), (basereg), (indexreg), 1, 407)
+#define	ppc_store_memindex_ushort(inst,reg,basereg,indexreg) /* sthx */	\
+			ppc_memindex_common((inst), (reg), (basereg), (indexreg), 1, 407)
+/*
  * Push the contents of a word register onto the stack.
  */
 #define	ppc_push_reg(inst,reg)	\

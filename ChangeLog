@@ -4,6 +4,9 @@
 	* engine/md_ppc.h, engine/ppc_codegen.h, engine/unroll_arith.c:
 	Implement integer division for PPC.
 
+	* engine/md_ppc.h, engine/ppc_codegen.h: Implement array load/store
+	unrolling for PPC.
+
 2004-12-20  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/md_ppc.c, engine/md_ppc.h, engine/ppc_codegen.h: 

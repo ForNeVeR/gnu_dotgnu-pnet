@@ -94,28 +94,8 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Fill a polygon using the current brush.
 	public override void FillPolygon( System.Drawing.Point[] points, FillMode fillMode )
 			{
-				//TODO: This is a hack. should use regions rather because Poly doesnt use the brush for the border
-				ExpandFilledObject(ref points);
 				Win32.Api.SetPolyFillMode(hdc, (int)fillMode);
 				Polygon( points, selectedBrush.hBrush, Win32.Api.GetStockObject(Win32.Api.StockObjectType.NULL_PEN) );
-			}
-
-	// Expand the outside away from the first point of a filled object by 1
-	private void ExpandFilledObject( ref System.Drawing.Point[] points)
-			{
-				Point first = points[0];
-				for(int posn = 0; posn < points.Length; posn++)
-				{
-					int x = points[posn].X;
-					int y = points[posn].Y;
-					//Move the points 1 away from the first point
-					if (x!=first.X)
-						x += x > first.X ? 1 : -1;
-					if (y!=first.Y)
-						y += y > first.Y ? 1 : -1;
-
-					points[posn] = new Point(x, y);
-				}
 			}
 
 	private void Polygon( System.Drawing.Point[] points, IntPtr hBrush, IntPtr hPen )

@@ -36,7 +36,6 @@ namespace System.Xml.XPath.Private
 			XPathTokenizer tokenizer = new XPathTokenizer(path);
 			return (XPathExpression) yyparse(tokenizer);
 		}
-		// Console.WriteLine((char)27 + "[31m" + $1 + (char)27 + "[39m");
 %}
 
 %token ERROR
@@ -259,7 +258,13 @@ VariableReference
 /* [16] */
 FunctionCall
 	: FUNCTIONNAME '(' ')'
+	{
+		$$ = new FunctionCallExpression((String)$1);
+	}
 	| FUNCTIONNAME '(' ArgumentList ')'
+	{
+		$$ = new FunctionCallExpression((String)$1);
+	}
 	;
 
 /* avoid left recursion */
@@ -315,6 +320,9 @@ OrExpr
 AndExpr
 	: EqualityExpr
 	| AndExpr OP_AND EqualityExpr
+	{
+		$$ = new AndExpression((Expression)$1, (Expression)$3);
+	}
 	;
 
 /* [23] */
@@ -325,6 +333,9 @@ EqualityExpr
 		$$ = new EqualityExpression((Expression)$1, (Expression)$3, false); 
 	}
 	| EqualityExpr OP_NE RelationalExpr
+	{
+		$$ = new EqualityExpression((Expression)$1, (Expression)$3, true);
+	}
 	;
 
 /* [24] */

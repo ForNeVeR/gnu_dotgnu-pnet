@@ -370,6 +370,10 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				{
 					return String.Empty;
 				}
+				set
+				{
+					throw new NotSupportedException("Prefix");
+				}
 			}
 
 	// Get the previous sibling of this node.
@@ -1003,18 +1007,14 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Select a list of nodes matching a particular XPath expression.
-	[TODO]
 	public XmlNodeList SelectNodes(String xpath)
 			{
-				// TODO
 				return SelectNodes(xpath, null);
 			}
 
 	// Select a list of nodes matching a particular XPath expression.
-	[TODO]
 	public XmlNodeList SelectNodes(String xpath, XmlNamespaceManager nsmgr)
 			{
-				// TODO
 				XPathNavigator nav = CreateNavigator();
 				XPathExpression expr = nav.Compile(xpath);
 				if(nsmgr != null)
@@ -1025,18 +1025,14 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Select a single node matching a particular XPath expression.
-	[TODO]
 	public XmlNode SelectSingleNode(String xpath)
 			{
-				// TODO
 				return SelectSingleNode(xpath, null);
 			}
 
 	// Select a single node matching a particular XPath expression.
-	[TODO]
 	public XmlNode SelectSingleNode(String xpath, XmlNamespaceManager nsmgr)
 			{
-				// TODO
 				XPathNavigator nav = CreateNavigator();
 				XPathExpression expr = nav.Compile(xpath);
 				if(nsmgr != null)

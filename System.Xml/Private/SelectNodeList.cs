@@ -41,9 +41,16 @@ internal sealed class SelectNodeList : XmlNodeList
 	// Create a new node list.
 	public SelectNodeList(XPathNodeIterator iterator)
 			{
-				this.iterator = iterator.Clone();
-				this.current = iterator.Clone();
-				finished = false;
+				if(iterator != null)
+				{
+					this.iterator = iterator.Clone();
+					this.current = iterator.Clone();
+					finished = false;
+				}
+				else
+				{
+					finished = true;
+				}
 				cached = new ArrayList();
 			}
 

@@ -49,6 +49,28 @@ namespace System.Xml.XPath.Private
 			inOperator = false;
 		}
 
+		/* <Prefix>-<Suffix> format detection */
+		private static bool IsSpecialTokenPrefix(String text)
+		{
+			return 
+				/* Axes */
+				(text == "processing" || 
+				 text == "preceding"  ||
+				 text == "following"  ||
+				 text == "descendant" ||
+				 text == "ancestor")  
+				 
+				 || 
+				
+				/* Functions */
+				 (text == "local"     ||
+				  text == "namespace" ||
+				  text == "normalize" ||
+				  text == "starts"    ||
+				  text == "string"    ||
+				  text == "substring");
+		}
+		
 		private int StringToToken(String text)
 		{
 			switch(text)
@@ -179,6 +201,42 @@ namespace System.Xml.XPath.Private
 					return Token.NODETYPE;
 				}
 				break;
+
+				/* function names */
+
+				case "count":
+				case "id":
+				case "last":
+				case "local-name":
+				case "name":
+				case "namespace-uri":
+				case "position":
+				case "concat":
+				case "contains":
+				case "normalize-space":
+				case "starts-with":
+				case "string":
+				case "string-length":
+				case "substring":
+				case "substring-before":
+				case "substring-after":
+				case "translate":
+				case "ceiling":
+				case "floor":
+				case "number":
+				case "round":
+				case "sum":
+				case "boolean":
+				case "lang":
+				case "true":
+				case "false":
+				case "not":
+				{
+					Value = text;
+					return Token.FUNCTIONNAME;
+				}
+				break;
+
 			}
 
 			return -1;
@@ -430,7 +488,8 @@ namespace System.Xml.XPath.Private
 			int ch = Peek();
 			int token = -1;
 			while(Char.IsLetter((Char)ch) || Char.IsDigit((Char)ch) 
-					|| ch == '_')
+					|| ch == '_' || 
+					(ch == '-' && IsSpecialTokenPrefix(sb.ToString())))
 			{
 				Debug.Assert(Read() == ch);
 				sb.Append((char)ch);

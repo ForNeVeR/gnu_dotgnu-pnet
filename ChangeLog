@@ -1,4 +1,15 @@
 
+2004-10-14  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/Private/SelectNodeList.cs,
+	System.Xml/XmlNode.cs,
+	System.Xml/XPath/Private/XPathNodes.tc,
+	System.Xml/XPath/Private/XPathParser.cs,
+	System.Xml/XPath/Private/XPathParser.jay,
+	System.Xml/XPath/Private/XPathTokenizer.cs: Implement basic function
+	call parsing, tokenize xpath builtins with "-" properly , allow 
+	empty SelectNodeLists .
+	
 2004-10-13  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/Private/SelectNodeList.cs,

@@ -15,6 +15,9 @@
 	* engine/lib_enum.c (_IL_Enum_GetEnumName): wrong pointer used
 	to fetch the field name.
 
+	* engine/mkint.sh, engine/HACKING: add the "mkint.sh" script
+	to the CVS repository.
+
 2002-05-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_misc.tc, codegen/cg_nodes.tc,

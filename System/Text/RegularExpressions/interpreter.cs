@@ -855,7 +855,7 @@ namespace System.Text.RegularExpressions {
 		}
 
 		private void Backtrack (int cp) {
-			Debug.Assert (cp > mark_start, "Regex", "Attempt to backtrack forwards");
+			Debug.Assert (cp >= mark_start, "Regex", "Attempt to backtrack forwards");
 
 			for (int i = 0; i < groups.Length; ++ i) {
 				int m = groups [i];

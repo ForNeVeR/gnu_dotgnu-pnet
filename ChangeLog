@@ -1,3 +1,7 @@
+2004-06-15  Thong Nguyen  <tum@veridicus.com>
+
+	* System/Text/RegularExpressions/interpreter.cs: Fix
+	assertion test in Backtrack.
 
 2004-06-12  Gopal V  <gopalv82@yahoo.com>
 	

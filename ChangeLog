@@ -23,6 +23,8 @@ use "ILType_HasThis" where appropriate.
 engine/lib_decimal.c, engine/lib_defs.h: implement parts of the
 internal system library.
 
+* engine/internal.c: lookup code for "internalcall" methods.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

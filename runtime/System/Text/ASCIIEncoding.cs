@@ -304,7 +304,7 @@ public class ASCIIEncoding : Encoding
 #if !ECMA_COMPAT
 
 	// Get the mail body name for this encoding.
-	public override String BodyName
+	internal override String InternalBodyName
 			{
 				get
 				{
@@ -313,7 +313,7 @@ public class ASCIIEncoding : Encoding
 			}
 
 	// Get the human-readable name for this encoding.
-	public override String EncodingName
+	internal override String InternalEncodingName
 			{
 				get
 				{
@@ -322,7 +322,7 @@ public class ASCIIEncoding : Encoding
 			}
 
 	// Get the mail agent header name for this encoding.
-	public override String HeaderName
+	internal override String InternalHeaderName
 			{
 				get
 				{
@@ -331,7 +331,7 @@ public class ASCIIEncoding : Encoding
 			}
 
 	// Determine if this encoding can be displayed in a mail/news agent.
-	public override bool IsMailNewsDisplay
+	internal override bool InternalIsMailNewsDisplay
 			{
 				get
 				{
@@ -340,7 +340,7 @@ public class ASCIIEncoding : Encoding
 			}
 
 	// Determine if this encoding can be saved from a mail/news agent.
-	public override bool IsMailNewsSave
+	internal override bool InternalIsMailNewsSave
 			{
 				get
 				{
@@ -349,7 +349,7 @@ public class ASCIIEncoding : Encoding
 			}
 
 	// Get the IANA-preferred Web name for this encoding.
-	public override String WebName
+	internal override String InternalWebName
 			{
 				get
 				{

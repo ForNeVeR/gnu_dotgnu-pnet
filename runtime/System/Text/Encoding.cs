@@ -542,7 +542,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					return null;
+					return InternalBodyName;
 				}
 			}
 
@@ -551,7 +551,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					return codePage;
+					return InternalCodePage;
 				}
 			}
 
@@ -560,7 +560,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					return null;
+					return InternalEncodingName;
 				}
 			}
 
@@ -569,7 +569,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					return null;
+					return InternalHeaderName;
 				}
 			}
 
@@ -578,7 +578,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					return false;
+					return InternalIsBrowserDisplay;
 				}
 			}
 
@@ -587,7 +587,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					return false;
+					return InternalIsBrowserSave;
 				}
 			}
 
@@ -596,7 +596,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					return false;
+					return InternalIsMailNewsDisplay;
 				}
 			}
 
@@ -605,7 +605,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					return false;
+					return InternalIsMailNewsSave;
 				}
 			}
 
@@ -614,12 +614,102 @@ public abstract class Encoding
 			{
 				get
 				{
-					return null;
+					return InternalWebName;
 				}
 			}
 
 	// Get the Windows code page represented by this object.
 	public virtual int WindowsCodePage
+			{
+				get
+				{
+					return InternalWindowsCodePage;
+				}
+			}
+
+	// Get the mail body name for this encoding.
+	internal virtual String InternalBodyName
+			{
+				get
+				{
+					return null;
+				}
+			}
+
+	// Get the code page represented by this object.
+	internal virtual int InternalCodePage
+			{
+				get
+				{
+					return codePage;
+				}
+			}
+
+	// Get the human-readable name for this encoding.
+	internal virtual String InternalEncodingName
+			{
+				get
+				{
+					return null;
+				}
+			}
+
+	// Get the mail agent header name for this encoding.
+	internal virtual String InternalHeaderName
+			{
+				get
+				{
+					return null;
+				}
+			}
+
+	// Determine if this encoding can be displayed in a Web browser.
+	internal virtual bool InternalIsBrowserDisplay
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Determine if this encoding can be saved from a Web browser.
+	internal virtual bool InternalIsBrowserSave
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Determine if this encoding can be displayed in a mail/news agent.
+	internal virtual bool InternalIsMailNewsDisplay
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Determine if this encoding can be saved from a mail/news agent.
+	internal virtual bool InternalIsMailNewsSave
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Get the IANA-preferred Web name for this encoding.
+	internal virtual String InternalWebName
+			{
+				get
+				{
+					return null;
+				}
+			}
+
+	// Get the Windows code page represented by this object.
+	internal virtual int InternalWindowsCodePage
 			{
 				get
 				{

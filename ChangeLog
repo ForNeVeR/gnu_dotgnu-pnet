@@ -1,4 +1,15 @@
 
+2003-08-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/ASCIIEncoding.cs,
+	runtime/System/Text/ByteEncoding.cs,
+	runtime/System/Text/DefaultEncoding.cs,
+	runtime/System/Text/Encoding.cs,
+	runtime/System/Text/UTF7Encoding.cs,
+	runtime/System/Text/UTF8Encoding.cs,
+	runtime/System/Text/UnicodeEncoding.cs: hide some Encoding properties
+	that are needed, but shouldn't be part of the public API.
+
 2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, System.Configuration.Install/.cvsignore,

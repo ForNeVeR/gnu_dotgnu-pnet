@@ -396,7 +396,7 @@ public class UnicodeEncoding : Encoding
 #if !ECMA_COMPAT
 
 	// Get the mail body name for this encoding.
-	public override String BodyName
+	internal override String InternalBodyName
 			{
 				get
 				{
@@ -412,7 +412,7 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get the human-readable name for this encoding.
-	public override String EncodingName
+	internal override String InternalEncodingName
 			{
 				get
 				{
@@ -428,7 +428,7 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get the mail agent header name for this encoding.
-	public override String HeaderName
+	internal override String InternalHeaderName
 			{
 				get
 				{
@@ -444,7 +444,7 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Determine if this encoding can be saved from a Web browser.
-	public override bool IsBrowserSave
+	internal override bool InternalIsBrowserSave
 			{
 				get
 				{
@@ -453,7 +453,7 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get the IANA-preferred Web name for this encoding.
-	public override String WebName
+	internal override String InternalWebName
 			{
 				get
 				{
@@ -469,7 +469,7 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get the Windows code page represented by this object.
-	public override int WindowsCodePage
+	internal override int InternalWindowsCodePage
 			{
 				get
 				{

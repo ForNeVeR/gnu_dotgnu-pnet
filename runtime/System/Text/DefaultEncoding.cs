@@ -296,7 +296,7 @@ internal sealed class DefaultEncoding : Encoding
 
 	// Get the default code page number.  Zero if unknown.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static int InternalCodePage();
+	extern new internal static int InternalCodePage();
 
 }; // class DefaultEncoding
 

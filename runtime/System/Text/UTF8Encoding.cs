@@ -859,7 +859,7 @@ public class UTF8Encoding : Encoding
 #if !ECMA_COMPAT
 
 	// Get the mail body name for this encoding.
-	public override String BodyName
+	internal override String InternalBodyName
 			{
 				get
 				{
@@ -868,7 +868,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the human-readable name for this encoding.
-	public override String EncodingName
+	internal override String InternalEncodingName
 			{
 				get
 				{
@@ -877,7 +877,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the mail agent header name for this encoding.
-	public override String HeaderName
+	internal override String InternalHeaderName
 			{
 				get
 				{
@@ -886,7 +886,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Determine if this encoding can be displayed in a Web browser.
-	public override bool IsBrowserDisplay
+	internal override bool InternalIsBrowserDisplay
 			{
 				get
 				{
@@ -895,7 +895,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Determine if this encoding can be saved from a Web browser.
-	public override bool IsBrowserSave
+	internal override bool InternalIsBrowserSave
 			{
 				get
 				{
@@ -904,7 +904,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Determine if this encoding can be displayed in a mail/news agent.
-	public override bool IsMailNewsDisplay
+	internal override bool InternalIsMailNewsDisplay
 			{
 				get
 				{
@@ -913,7 +913,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Determine if this encoding can be saved from a mail/news agent.
-	public override bool IsMailNewsSave
+	internal override bool InternalIsMailNewsSave
 			{
 				get
 				{
@@ -922,7 +922,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the IANA-preferred Web name for this encoding.
-	public override String WebName
+	internal override String InternalWebName
 			{
 				get
 				{
@@ -931,7 +931,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the Windows code page represented by this object.
-	public override int WindowsCodePage
+	internal override int InternalWindowsCodePage
 			{
 				get
 				{

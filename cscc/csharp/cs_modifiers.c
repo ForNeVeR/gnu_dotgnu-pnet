@@ -533,7 +533,8 @@ ILUInt32 CSModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers)
 /*
  * Validate calling conventions for a method-like construct.
  */
-static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
+static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers,
+								ILUInt32 access)
 {
 	ILUInt32 attrs = 0;
 
@@ -626,6 +627,17 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 		}
 	}
 
+	/* Virtual methods cannot be private */
+	if((modifiers & (CS_MODIFIER_ABSTRACT | CS_MODIFIER_VIRTUAL |
+					 CS_MODIFIER_OVERRIDE)) != 0)
+	{
+		if(access == IL_META_FIELDDEF_PRIVATE)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "cannot declare virtual or abstract methods to be private");
+		}
+	}
+
 	/* Methods always need "hide by sig" */
 	attrs |= IL_META_METHODDEF_HIDE_BY_SIG;
 
@@ -641,7 +653,7 @@ ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
 	attrs = ValidateAccess(node, modifiers);
 
 	/* Process the calling convention attributes */
-	attrs |= ValidateCalling(node, modifiers);
+	attrs |= ValidateCalling(node, modifiers, attrs);
 
 	/* Process the other method modifiers */
 	if((modifiers & CS_MODIFIER_NEW) != 0)
@@ -672,7 +684,7 @@ ILUInt32 CSModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers)
 	attrs = ValidateAccess(node, modifiers);
 
 	/* Process the calling convention attributes */
-	attrs |= ValidateCalling(node, modifiers);
+	attrs |= ValidateCalling(node, modifiers, attrs);
 
 	/* Process the other property modifiers */
 	if((modifiers & CS_MODIFIER_NEW) != 0)
@@ -702,7 +714,7 @@ ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 	attrs = ValidateAccess(node, modifiers);
 
 	/* Process the calling convention attributes */
-	attrs |= ValidateCalling(node, modifiers);
+	attrs |= ValidateCalling(node, modifiers, attrs);
 
 	/* Process the other property modifiers */
 	if((modifiers & CS_MODIFIER_NEW) != 0)

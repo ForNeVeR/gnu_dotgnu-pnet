@@ -4,6 +4,9 @@
 	* codegen/cg_stmt.tc (ILNode_Try): make sure that the finally
 	block's try range covers the catch clauses.
 
+	* cscc/csharp/cs_modifiers.c (ValidateCalling): report an error
+	if a virtual or abstract method is declared private.
+
 2002-11-05  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: Fix the indexername returned , using

@@ -54,21 +54,13 @@ internal class HexadecimalFormatter : Formatter
 
 	private string Format (long value)
 	{
-		if (value >= 0) return Format((ulong) value);
+		StringBuilder s = new StringBuilder(Format(unchecked((ulong) value)));
 
-		//  This is a bona-fide negative number, but we're going
-		//  to work it in two's complement.
-		ulong uvalue;
-		StringBuilder buf = new StringBuilder();
+		if (value >= 0) return s.ToString();
 
-		for (uvalue = unchecked((ulong)value);	
-			uvalue < System.UInt64.MaxValue;
-			uvalue = unchecked((ulong) ((long)uvalue) >> 4))  // Signed shift
-		{
-			buf.Insert(0, digits[uvalue % 16]);
-		}
+		while (s[0] == digits[15]) s.Remove(0,1);
 
-		return buf.ToString().PadLeft(precision, '0');
+		return s.ToString().PadLeft(precision, digits[15]);
 	}
 
 	private string Format(ulong value)

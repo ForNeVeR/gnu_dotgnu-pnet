@@ -1021,59 +1021,73 @@ internal sealed class NumberParser
 	public static Decimal ParseDecimal(String s, NumberStyles style,
 								       NumberFormatInfo nfi)
 	{
-		//  Double does not parse floating point numbers
+		//  Decimal does not parse floating point numbers
 		if ((style & NumberStyles.AllowHexSpecifier) != 0)
 			throw new FormatException(_("Format_HexNotSupported"));
 
 		StringBuilder sb = new StringBuilder(RawString(s, style, nfi));
-
 		bool negative = StripSign(sb, nfi);
+		decimal work = 0.0m;
 
 		//  Parse up to the decimal
-		decimal work = (decimal)EatDigits(sb);
+		while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
+		{
+			work *= 10;
+			work += (uint)(sb[0] - '0');
+			sb.Remove(0, 1);
+		}
 
 		//  Parse after the decimal
 		if (sb.Length > 0 
 				&& sb.ToString().StartsWith(nfi.NumberDecimalSeparator))
 		{
-			uint fracDigits;
 			sb.Remove(0, nfi.NumberDecimalSeparator.Length);
-			fracDigits = EatDigits(sb);
-			if (fracDigits != 0) 
+
+			decimal temp;
+			int i, j;
+			for (i = -1; 
+					sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9' ; 
+					i--)
 			{
-				int i;
-				int exp = (int)(-Math.Log10(fracDigits))-1;
-				if (exp < 0) for (i=0; i<-exp; i++) work /= 10;
-				if (exp > 0) for (i=0; i<exp; i++) work *= 10;
+				temp = (decimal)((uint)(sb[0] - '0'));
+				for (j = 0; j > i; j--) temp *= 0.1m;
+				work += temp;
+				sb.Remove(0, 1);
 			}	
 		}
 
 		//  Parse after the exponent
 		if (sb.Length > 0 && (sb[0] == 'e' || sb[0] == 'E') ) 
 		{
-			uint exp;
-			bool negExponent;
+			uint exp = 0;
+			bool negExponent = false;
+			decimal mult;
+
 			sb.Remove(0, 1);
+
 			if (sb.ToString().StartsWith(nfi.PositiveSign)) 
 			{
+				mult = 10.0m;
 				sb.Remove(0, nfi.PositiveSign.Length);
 			} 
 			else if (sb.ToString().StartsWith(nfi.NegativeSign)) 
 			{
+				mult = 0.1m;
 				sb.Remove(0, nfi.NegativeSign.Length);
 			} 
-			else 
+			else
 			{
-				//  Darn it, we're supposed to have a sign.
-				throw new FormatException(_("Format_ExponentRequiresSign"));
+				mult = 10.0m;
 			}
-			exp= EatDigits(sb);
-			if (exp!= 0) 
+
+		    while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
 			{
-				int i;
-				if (exp< 0) for (i=0; i<-exp; i++) work /= 10;
-				if (exp> 0) for (i=0; i>exp; i++) work *= 10;
+				exp *= 10;
+				exp += (uint)(sb[0] - '0');
+				sb.Remove(0, 1);
 			}
+
+			for (int i=0; i<exp; i++) work *= mult;
 		}
 
 		if (sb.Length > 0)
@@ -1097,7 +1111,7 @@ internal sealed class NumberParser
 	public static double ParseDouble(String s, NumberStyles style,
 								     NumberFormatInfo nfi)
 	{
-		//  Double does not parse floating point numbers
+		//  Double does not parse hex numbers
 		if ((style & NumberStyles.AllowHexSpecifier) != 0)
 			throw new FormatException(_("Format_HexNotSupported"));
 
@@ -1106,7 +1120,7 @@ internal sealed class NumberParser
 		bool negative = StripSign(sb, nfi);
 
 		//  Parse up to the decimal
-		double work;
+		double work = 0.0d;
 		while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
 		{
 			work *= 10;
@@ -1118,7 +1132,6 @@ internal sealed class NumberParser
 		if (sb.Length > 0 
 				&& sb.ToString().StartsWith(nfi.NumberDecimalSeparator))
 		{
-			uint fracDigits;
 			sb.Remove(0, nfi.NumberDecimalSeparator.Length);
 			for (int i = -1; 
 					sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9' ; 
@@ -1144,11 +1157,13 @@ internal sealed class NumberParser
 				negExponent = true;
 				sb.Remove(0, nfi.NegativeSign.Length);
 			} 
+			/*  --- Removed in response to bug #2222
 			else 
 			{
 				//  Darn it, we're supposed to have a sign.
 				throw new FormatException(_("Format_ExponentRequiresSign"));
 			}
+			*/
 
 		    while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
 			{

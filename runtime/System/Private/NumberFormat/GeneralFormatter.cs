@@ -96,7 +96,7 @@ internal class GeneralFormatter : Formatter
 		}
 		else
 		{
-			exponent = (int) Math.Floor(Math.Log10(OToDouble(o)));
+			exponent = (int) Math.Floor(Math.Log10(Math.Abs(OToDouble(o))));
 		}
 
 		if (IsSignedInt(o) || IsUnsignedInt(o))

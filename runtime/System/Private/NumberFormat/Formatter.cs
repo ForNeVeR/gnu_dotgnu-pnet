@@ -289,14 +289,15 @@ internal abstract class Formatter
 		else if (IsDecimal(o))
 		{
 			// Rounding code
-			int i;
 			decimal r;
+			int i;
 
-			for (i=0, r=5; i<= precision; i++) 
+			for (i=0, r=0.5m; i < precision; i++) 
 			{
-				r /= 10;
+				r *= 0.1m;
 			}
 
+			//  Pick the call based on the inputs negativity.
 			if ((decimal)o < 0)
 			{
 				ret = "-" + Formatter.FormatDecimal(-((decimal)o)+r);
@@ -305,7 +306,11 @@ internal abstract class Formatter
 			{
 				ret = Formatter.FormatDecimal((decimal)o+r);
 			}
-			ret = ret.Substring(0, ret.IndexOf('.')+precision+1);
+
+			if (ret.Length - ret.IndexOf('.') > precision + 1) 
+			{
+				ret = ret.Substring(0, ret.IndexOf('.')+precision+1);
+			}
 		}
 		else if (IsFloat(o))
 		{
@@ -352,22 +357,34 @@ internal abstract class Formatter
 
 	static protected string FormatDecimal(decimal value)
 	{
-		if (value == 0) return ".";
+		//  Guard clause(s)
+		if (value == 0.0m) return ".";
 
+		//  Variable declarations
 		int [] bits = Decimal.GetBits(value);
 	    int scale = (bits[3] >> 16) & 0xff;
-		decimal work = value * scale;
+		uint lowOrderBits;			// temporary storage for low-order bits
+		decimal work = value;
 		StringBuilder ret = new StringBuilder();
-	    
-		while (work >= 0) {
-			ret.Insert(0, decimalDigits, (int)(work % 10), 1);
-			work = Decimal.Truncate(work/10);
+
+		//  Scale the decimal
+		for (int i = 0; i<scale; i++) work *= 10.0m;
+	   
+		//  Pick off one digit at a time
+		while (work > 0.0m) 
+		{
+			ret.Insert(0, decimalDigits[
+					(int)(work - Decimal.Truncate(work*0.1m)*10.0m)]);
+			work = Decimal.Truncate(work * 0.1m);
 		}
 
-		if (ret.Length < scale) {
+		//  Pad out significant digits
+		if (ret.Length < scale) 
+		{
 			ret.Insert(0, "0", ret.Length - scale);
 		}
 
+		//  Insert a decimal point
 		ret.Insert(ret.Length - scale, '.');
 
 		return ret.ToString();

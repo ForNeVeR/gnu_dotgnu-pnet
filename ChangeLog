@@ -1,4 +1,18 @@
 
+2003-02-01  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* runtime/System/Private/NumberParser.cs,
+	runtime/System/Private/NumberFormat/Formatter.cs,
+	runtime/System/Private/NumberFormat/GeneralFormatter.cs,
+	runtime/System/Private/NumberFormat/HexadecimalFormatter.cs:
+	Bug fixes to floating point.  First "real" implementation of
+	decimal parsing and formatting (to be honest).
+
+	* tests/runtime/System/SuiteSystem.cs,
+	tests/runtime/System/TestDecimal.cs,
+	tests/runtime/System/TestDouble.cs:
+	Tests for the above fixes and for decimal parsing/formatting.
+
 2003-02-02  Michael Moore <mtmoore@uga.edu>
 	
 	* runtime/System/Private/DateTimeFormatter.cs: move this

@@ -100,15 +100,8 @@ public class TestDouble : TestCase
 				100d, Double.Parse("1e+2"), 0.00000001d);
 		AssertEquals("Double.Parse(\"1e-2\")",
 				0.01d, Double.Parse("1e-2"), 0.00000001d);
-		try 
-		{
-			Double.Parse("1e2");
-			Fail("Double.Parse(\"1e2\") did not throw exception");
-		}
-		catch (FormatException e)
-		{
-			// OK
-		}
+		AssertEquals("Double.Parse(\"1e2\")",
+				100d, Double.Parse("1e2"), 0.00000001d);
 	}
 
 	public void TestDoubleToString()

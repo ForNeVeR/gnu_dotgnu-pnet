@@ -9,6 +9,9 @@
 	* samples/FormsTest.cs, test.ico, test 1bpp.bmp, test 4bpp.bmp,
 	test 8bpp.bmp : draw icon in image test, images for testing.
 
+	* System.Drawing.Win32/DrawingWindow.cs : work around pointer handling
+	so moving a window works correctly.
+
 2003-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Activator.cs: add the "CreateValueTypeInstance"

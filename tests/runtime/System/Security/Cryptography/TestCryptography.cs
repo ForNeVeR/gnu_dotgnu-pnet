@@ -27,6 +27,7 @@ public class TestCryptography
 	public static TestSuite Suite()
 			{
 				TestSuite suite = new TestSuite("Cryptography Tests");
+			#if !ECMA_COMPAT
 				suite.AddTests(typeof(TestAES));
 				suite.AddTests(typeof(TestDES));
 				suite.AddTests(typeof(TestRC2));
@@ -37,6 +38,7 @@ public class TestCryptography
 				suite.AddTests(typeof(TestSHA384));
 				suite.AddTests(typeof(TestSHA512));
 				suite.AddTests(typeof(TestRNG));
+			#endif
 				return suite;
 			}
 

@@ -26,15 +26,19 @@ public class Testruntime
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("Basic Runtime Tests");
+				TestSuite fullSuite = new TestSuite("Runtime Tests");
+				TestSuite suite = new TestSuite("Core Class Tests");
 				suite.AddTests(typeof(TestBoolean));
-				suite.AddTests(typeof(TestGuid));
 				suite.AddTests(typeof(TestSByte));
 				suite.AddTests(typeof(TestString));
 				suite.AddTests(typeof(TestStringBuilder));
 				suite.AddTests(typeof(TestArrayList));
-				suite.AddTest(TestCryptography.Suite());
-				return suite;
+			#if !ECMA_COMPAT
+				suite.AddTests(typeof(TestGuid));
+			#endif
+				fullSuite.AddTest(suite);
+				fullSuite.AddTest(TestCryptography.Suite());
+				return fullSuite;
 			}
 
 }; // class Testruntime

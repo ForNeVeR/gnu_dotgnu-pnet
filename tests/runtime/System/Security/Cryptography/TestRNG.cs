@@ -22,6 +22,8 @@ using CSUnit;
 using System;
 using System.Security.Cryptography;
 
+#if !ECMA_COMPAT
+
 public class TestRNG : TestCase
 {
 
@@ -303,3 +305,5 @@ public class TestRNG : TestCase
 			}
 
 }; // TestRNG
+
+#endif // !ECMA_COMPAT

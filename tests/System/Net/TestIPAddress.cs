@@ -45,6 +45,20 @@ public class TestIPAddress : TestCase
 		// Nothing to do here.
 	}
 
+	// Determine if the platform is little-endian.
+	private static bool IsLittleEndian
+	{
+		get
+		{
+		#if ECMA_COMPAT
+			// We cannot use "BitConverter", so use a different approach.
+			return (IPAddress.HostToNetworkOrder(0x01020304) != 0x01020304);
+		#else
+			return BitConverter.IsLittleEndian;
+		#endif
+		}
+	}
+
 	public void TestIPAddressConstructor()
 	{
 		IPAddress ip=null;
@@ -72,7 +86,7 @@ public class TestIPAddress : TestCase
 			IPAddress.Broadcast.Address, 
 			(long) 0xFFFFFFFF);
 		long loopback = IPAddress.HostToNetworkOrder (
-			BitConverter.IsLittleEndian ? 0x7f000001 : 0x0100007f);
+			IsLittleEndian ? 0x7f000001 : 0x0100007f);
 		AssertEquals ("IPAddress.Loopback.Address == loopback", 
 			IPAddress.Loopback.Address, loopback);
 	}
@@ -93,8 +107,7 @@ public class TestIPAddress : TestCase
 		long [] littleEndian = new long [] {0, 256, 16777216, 
 									72057594037927936 };
 
-		long [] test = BitConverter.IsLittleEndian 
-								? littleEndian : bigEndian;
+		long [] test = IsLittleEndian ? littleEndian : bigEndian;
 
 		short s1=IPAddress.HostToNetworkOrder((short)test[0]);
 		AssertEquals("HostToNetworkOrder((short)0)",(short)bigEndian[0],s1);
@@ -132,8 +145,7 @@ public class TestIPAddress : TestCase
 		long [] littleEndian = new long [] {0, 256, 16777216, 
 									72057594037927936 };
 
-		long [] result = BitConverter.IsLittleEndian 
-								? littleEndian : bigEndian;
+		long [] result = IsLittleEndian ? littleEndian : bigEndian;
 
 		short s1=IPAddress.NetworkToHostOrder((short)bigEndian[0]);
 		AssertEquals("NetworkToHostOrder((short)0)",(short)result[0],s1);

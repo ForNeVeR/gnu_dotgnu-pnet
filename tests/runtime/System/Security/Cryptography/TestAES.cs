@@ -22,6 +22,8 @@ using CSUnit;
 using System;
 using System.Security.Cryptography;
 
+#if !ECMA_COMPAT
+
 public class TestAES : CryptoTestCase
 {
 
@@ -140,3 +142,5 @@ public class TestAES : CryptoTestCase
 			}
 
 }; // TestAES
+
+#endif // !ECMA_COMPAT

@@ -21,6 +21,8 @@
 using CSUnit;
 using System;
 
+#if !ECMA_COMPAT
+
 public class TestGuid : TestCase
 {
 	// Constructor.
@@ -173,3 +175,5 @@ public class TestGuid : TestCase
 			}
 
 }; // class TestGuid
+
+#endif // !ECMA_COMPAT

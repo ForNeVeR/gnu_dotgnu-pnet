@@ -22,6 +22,8 @@ using CSUnit;
 using System;
 using System.Security.Cryptography;
 
+#if !ECMA_COMPAT
+
 public class TestSHA512 : CryptoTestCase
 {
 
@@ -106,3 +108,5 @@ public class TestSHA512 : CryptoTestCase
 			}
 
 }; // TestSHA512
+
+#endif // !ECMA_COMPAT

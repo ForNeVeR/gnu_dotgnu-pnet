@@ -28,7 +28,21 @@
 	runtime/System/Globalization/CompareInfo.cs,
 	runtime/System/Globalization/DateTimeFormatInfo.cs,
 	runtime/System/Reflection/Assembly.cs,
-	runtime/System/Runtime/Serialization/IDeserializationCallback.cs:
+	runtime/System/Runtime/Serialization/IDeserializationCallback.cs,
+	tests/System/Net/TestIPAddress.cs,
+	tests/runtime/Testruntime.cs, tests/runtime/System/TestGuid.cs,
+	tests/runtime/System/Security/Cryptography/CryptoTestCase.cs,
+	tests/runtime/System/Security/Cryptography/TestAES.cs,
+	tests/runtime/System/Security/Cryptography/TestCryptography.cs,
+	tests/runtime/System/Security/Cryptography/TestDES.cs,
+	tests/runtime/System/Security/Cryptography/TestMD5.cs,
+	tests/runtime/System/Security/Cryptography/TestRC2.cs,
+	tests/runtime/System/Security/Cryptography/TestRNG.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA1.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA256.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA384.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA512.cs,
+	tests/runtime/System/Security/Cryptography/TestTripleDES.cs:
 	modifications to support the ECMA-compatible compilation mode.
 
 2002-11-28  Michael Moore  <mtmoore@uga.edu>

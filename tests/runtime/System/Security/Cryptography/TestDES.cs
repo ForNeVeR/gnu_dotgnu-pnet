@@ -22,6 +22,8 @@ using CSUnit;
 using System;
 using System.Security.Cryptography;
 
+#if !ECMA_COMPAT
+
 public class TestDES : CryptoTestCase
 {
 
@@ -348,3 +350,5 @@ public class TestDES : CryptoTestCase
 			}
 
 }; // TestDES
+
+#endif // !ECMA_COMPAT

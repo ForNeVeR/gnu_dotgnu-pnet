@@ -9,6 +9,9 @@ import methods when applying the coercion rules.
 
 * include/il_program.h, image/member.c: new function "ILMemberImport".
 
+* codegen/cg_resolve.h, codegen/cg_resolve.c: clean up the member
+resolution API.
+
 2001-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, Makefile.am, ildiff/AUTHORS, ildiff/README, ildiff/TODO,

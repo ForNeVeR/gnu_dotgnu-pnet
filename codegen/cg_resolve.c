@@ -50,6 +50,7 @@ static ILMethod *ResolveMethod(ILClass *info, ILClass *callScope,
 
 	while(info != 0)
 	{
+		info = ILClassResolve(info);
 		member = 0;
 		while((member = ILClassNextMemberByKind
 							(info, member, IL_META_MEMBERKIND_METHOD)) != 0)
@@ -108,7 +109,7 @@ static ILMethod *ResolveMethod(ILClass *info, ILClass *callScope,
 			/* Check the method's access level against the call scope */
 			if(!ILMemberAccessible(member, callScope))
 			{
-				return IL_METHOD_ACCESS_DENIED;
+				return 0;
 			}
 
 			/* We've found a candidate method */
@@ -129,14 +130,7 @@ static ILMethod *ResolveMethod(ILClass *info, ILClass *callScope,
 	}
 
 	/* Return the closest match if we didn't find an exact match */
-	if(closestMatch)
-	{
-		return closestMatch;
-	}
-	else
-	{
-		return IL_METHOD_NOT_FOUND;
-	}
+	return closestMatch;
 }
 
 ILMethod *ILResolveStaticMethod(ILClass *info, ILClass *callScope,
@@ -155,13 +149,14 @@ ILMethod *ILResolveInstanceMethod(ILClass *info, ILClass *callScope,
 ILMethod *ILResolveConstructor(ILClass *info, ILClass *callScope,
 							   ILType **args, int numArgs)
 {
-	return ResolveMethod(info, callScope, ".ctor", args, numArgs, ILType_Void,
+	return ResolveMethod(info, callScope, ".ctor",
+						 args, numArgs, ILType_Void,
 					     IL_META_METHODDEF_SPECIAL_NAME |
 					     IL_META_METHODDEF_RT_SPECIAL_NAME, 0, 1);
 }
 
 ILMethod *ILResolveUnaryOperator(ILClass *info, const char *name,
-						 	     ILType *argType)
+								 ILType *argType)
 {
 	ILType *args[1];
 	args[0] = argType;
@@ -182,7 +177,7 @@ ILMethod *ILResolveBinaryOperator(ILClass *info, const char *name,
 }
 
 ILMethod *ILResolveConversionOperator(ILClass *info, const char *name,
-						 	          ILType *fromType, ILType *toType)
+									  ILType *fromType, ILType *toType)
 {
 	ILType *args[1];
 	args[0] = fromType;

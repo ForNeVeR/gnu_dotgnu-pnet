@@ -26,12 +26,6 @@ extern	"C" {
 #endif
 
 /*
- * Special return values for resolution functions.
- */
-#define	IL_METHOD_NOT_FOUND			((ILMethod *)0)
-#define	IL_METHOD_ACCESS_DENIED		((ILMethod *)1)
-
-/*
  * Resolve a call to a static method.
  */
 ILMethod *ILResolveStaticMethod(ILClass *info, ILClass *callScope,
@@ -53,19 +47,19 @@ ILMethod *ILResolveConstructor(ILClass *info, ILClass *callScope,
  * Resolve a call to a unary operator.
  */
 ILMethod *ILResolveUnaryOperator(ILClass *info, const char *name,
-						 	     ILType *argType);
+								 ILType *argType);
 
 /*
  * Resolve a call to a binary operator.
  */
 ILMethod *ILResolveBinaryOperator(ILClass *info, const char *name,
-						 	      ILType *arg1Type, ILType *arg2Type);
+								  ILType *arg1Type, ILType *arg2Type);
 
 /*
  * Resolve a call to a conversion operator.
  */
 ILMethod *ILResolveConversionOperator(ILClass *info, const char *name,
-						 	          ILType *fromType, ILType *toType);
+									  ILType *fromType, ILType *toType);
 
 #ifdef	__cplusplus
 };

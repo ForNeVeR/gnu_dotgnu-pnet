@@ -27,6 +27,7 @@ TREECC_INPUTS = cg_ainit.tc \
 				jv_nodes.tc \
 				jv_relop.tc \
 				jv_stmt.tc
+##				pm_nodes.tc
 
 TREECC_SRCOUT = cg_ainit.c \
 				cg_arith.c \
@@ -45,6 +46,8 @@ TREECC_SRCOUT = cg_ainit.c \
 				jv_assign.c \
 				jv_cast.c \
 				jv_nodes.c
+##				pm_arith.c
+##				pm_nodes.c
 
 TREECC_OUTPUT = $(TREECC_SRCOUT) cg_nodes.h
 

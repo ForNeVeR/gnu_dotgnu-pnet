@@ -49,3 +49,9 @@
 %include "jv_relop.tc"
 %include "jv_ainit.tc"
 %include "jv_stmt.tc"
+
+/* Include the Parrot version of the code generator */
+/*
+%include "pm_nodes.tc"
+%include "pm_arith.tc"
+*/

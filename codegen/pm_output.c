@@ -532,7 +532,7 @@ void PMGenLabel(ILGenInfo *info, ILLabel *label)
 }
 
 void PMGenBranch(ILGenInfo *info, PMOperation oper, PMRegister src1,
-				 PMRegister src2)
+				 PMRegister src2, ILLabel *label)
 {
 	PMGenInfo *pminfo = info->pminfo;
 
@@ -556,7 +556,7 @@ void PMGenBranch(ILGenInfo *info, PMOperation oper, PMRegister src1,
 	}
 }
 
-void PMGenBranchTrue(ILGenInfo *info, PMOperation oper, PMRegister src)
+void PMGenBranchTrue(ILGenInfo *info, PMRegister src, ILLabel *label)
 {
 	PMGenInfo *pminfo = info->pminfo;
 
@@ -578,7 +578,7 @@ void PMGenBranchTrue(ILGenInfo *info, PMOperation oper, PMRegister src)
 	}
 }
 
-void PMGenBranchFalse(ILGenInfo *info, PMOperation oper, PMRegister src)
+void PMGenBranchFalse(ILGenInfo *info, PMRegister src, ILLabel *label)
 {
 	PMGenInfo *pminfo = info->pminfo;
 

@@ -174,13 +174,13 @@ void PMGenLabel(ILGenInfo *info, ILLabel *label);
  * Branch to a label on a condition.
  */
 void PMGenBranch(ILGenInfo *info, PMOperation oper, PMRegister src1,
-				 PMRegister src2);
+				 PMRegister src2, ILLabel *label);
 
 /*
  * Branch to a label if a value is true or false.
  */
-void PMGenBranchTrue(ILGenInfo *info, PMOperation oper, PMRegister src);
-void PMGenBranchFalse(ILGenInfo *info, PMOperation oper, PMRegister src);
+void PMGenBranchTrue(ILGenInfo *info, PMRegister src, ILLabel *label);
+void PMGenBranchFalse(ILGenInfo *info, PMRegister src, ILLabel *label);
 
 /*
  * Jump unconditionally to a label.

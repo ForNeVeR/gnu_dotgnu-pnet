@@ -118,6 +118,15 @@ int main(int argc, char *argv[])
 	int errors;
 	ILContext *context;
 
+	/* Skip a "/compile" or "-compile" option, if present, for backwards
+	   compatibility with tools from other CLI vendors */
+	if(argc >= 2 &&
+	   (!ILStrICmp(argv[1], "/compile") || !ILStrICmp(argv[1], "-compile")))
+	{
+		++argv;
+		--argc;
+	}
+
 	/* Parse the command-line arguments */
 	state = 0;
 	while((opt = ILCmdLineNextOption(&argc, &argv, &state,

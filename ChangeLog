@@ -4,6 +4,9 @@
 	* engine/lib_stdio.c (StdRead): increment number of bytes
 	read for current return value (Stephen Compall).
 
+	* resgen/resgen.c: skip the "/compile" and "-compile" options
+	to resgen, for backwards-compatibility with other vendors' tools.
+
 2003-10-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll.c: fix the VMA when dumping unrolled code

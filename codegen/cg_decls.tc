@@ -24,6 +24,49 @@
 #include "cg_nodes.h"
 #include "il_dumpasm.h"
 
+/*
+ * Output the attributes that are attached to a program item.
+ */
+static void OutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
+{
+	ILAttribute *attr;
+	ILMethod *ctor;
+	const void *value;
+	unsigned long valueLen;
+	unsigned long posn;
+
+	attr = 0;
+	while((attr = ILProgramItemNextAttribute(item, attr)) != 0)
+	{
+		fputs(".custom ", stream);
+		ctor = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
+		if(ctor)
+		{
+			ILDumpMethodType(stream, info->image,
+							 ILMethod_Signature(ctor),
+							 IL_DUMP_QUOTE_NAMES,
+							 ILMethod_Owner(ctor),
+							 ILMethod_Name(ctor),
+							 ctor);
+		}
+		if((value = ILAttributeGetValue(attr, &valueLen)) != 0)
+		{
+			fputs(" = (", stream);
+			for(posn = 0; posn < valueLen; ++posn)
+			{
+				if(posn != 0)
+				{
+					putc(' ', stream);
+				}
+				fprintf(stream, "%02X",
+						(int)(((const unsigned char *)value)[posn]));
+			}
+			putc(')', stream);
+		}
+		putc('\n', stream);
+	}
+}
+
 %}
 
 /*
@@ -92,6 +135,9 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 
 		/* Done with the header */
 		fputs("\n{\n", info->asmOutput);
+
+		/* Output the attributes that are attached to the class */
+		OutputAttributes(info, info->asmOutput, (ILProgramItem *)classInfo);
 	}
 
 	/* Output the class members */
@@ -163,6 +209,10 @@ ILNode_GenDiscard(ILNode_FieldDeclaration)
 
 				/* Terminate the field definition */
 				putc('\n', info->asmOutput);
+
+				/* Output the attributes that are attached to the field */
+				OutputAttributes(info, info->asmOutput,
+								 (ILProgramItem *)field);
 			}
 		}
 	}
@@ -326,6 +376,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	ILPInvoke *pinvoke;
 	ILGotoEntry *gotoEntry, *nextGoto;
 	int outputLabel;
+	ILParameter *param;
 
 	/* Does the method have PInvoke information associated with it? */
 	if(ILMethod_HasPInvokeImpl(method))
@@ -380,6 +431,21 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 		fputs("java ", outstream);
 	}
 	fputs("\n{\n", outstream);
+
+	/* Output the attributes that are attached to the field */
+	OutputAttributes(info, outstream, (ILProgramItem *)method);
+
+	/* Output the attributes that are attached to the parameters */
+	param = 0;
+	while((param = ILMethodNextParam(method, param)) != 0)
+	{
+		if(ILProgramItemNextAttribute((ILProgramItem *)param, 0) != 0)
+		{
+			fprintf(outstream, ".param[%lu]\n",
+					(unsigned long)(ILParameter_Num(param)));
+			OutputAttributes(info, outstream, (ILProgramItem *)param);
+		}
+	}
 
 	/* Set up the return type so that "return" statements
 	   know what to cast the return value to upon exit */
@@ -568,6 +634,8 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 					     IL_DUMP_QUOTE_NAMES, 0,
 						 ILProperty_Name(node->propertyInfo), 0);
 		fputs("\n{\n", outstream);
+		OutputAttributes(info, outstream,
+						 (ILProgramItem *)(node->propertyInfo));
 		if(node->getAccessor)
 		{
 			methodInfo = ((ILNode_MethodDeclaration *)(node->getAccessor))

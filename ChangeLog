@@ -23,6 +23,8 @@ signatures.
 
 * codegen/cg_library.c: add the classes "Attribute" and "ParamArrayAttribute".
 
+* codegen/cg_decls.tc: dump the attributes attached to program items.
+
 2001-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, Makefile.am, ildiff/AUTHORS, ildiff/README, ildiff/TODO,

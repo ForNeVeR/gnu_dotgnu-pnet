@@ -5,6 +5,10 @@
 	csharp/class/method10.err, csharp/class/method10.jerr:
 	test "extern" constructor declarations.
 
+	* csharp/class/Makefile.am, csharp/class/interface5.cs,
+	csharp/class/interface5.il, csharp/class/interface5.jl:
+	test recursive interface definitions.
+
 2002-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/interface3.cs,

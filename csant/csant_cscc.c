@@ -509,6 +509,18 @@ static char **BuildCsccCommandLine(CSAntCompileArgs *args)
 	/* Add the program name */
 	AddArg(&argv, &argc, FindPNetPath());
 
+	/* Add the explicitly-specified locations of "cscc-cs" and "cscc-c" */
+	temp = (char *)CSAntGetProperty("cscc.plugins.cs", -1);
+	if(temp)
+	{
+		AddValueArg(&argv, &argc, "-fplugin-cs-path=", temp);
+	}
+	temp = (char *)CSAntGetProperty("cscc.plugins.c", -1);
+	if(temp)
+	{
+		AddValueArg(&argv, &argc, "-fplugin-c-path=", temp);
+	}
+
 	/* Set the output file */
 	AddArg(&argv, &argc, "-o");
 	AddArg(&argv, &argc, (char *)(args->output));

@@ -25,6 +25,9 @@
 
 	* support/dir.c (ILOpenDir): append "*.*" to directories under Win32.
 
+	* csant/csant_cscc.c: add properties to specify the locations of
+	"cscc-cs" and "cscc-c-s" for the cscc compiler.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

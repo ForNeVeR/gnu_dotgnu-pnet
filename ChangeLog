@@ -1,4 +1,9 @@
 
+2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_values.h: fix an ANSI C oddity in "IL_READ_INT64"
+	and "IL_READ_UINT64" (thanks to Miroslaw Dobrzanski-Neumann).
+
 2003-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvmc_setup.c: truncate or sign-extend 8-bit and 16-bit values

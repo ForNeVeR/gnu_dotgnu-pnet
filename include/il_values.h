@@ -215,10 +215,10 @@ typedef ILInt8 						ILBool;
 									    _IL_READ_BYTE_SHIFT((buf), 3, 24)))
 #define	IL_READ_INT64(buf)	\
 			(((ILInt64)(IL_READ_UINT32((buf)))) | \
-			 (((ILInt64)(IL_READ_INT32((buf) + 4))) << 32))
+			 (((ILInt64)(IL_READ_INT32(((ILUInt8 *)(buf)) + 4))) << 32))
 #define	IL_READ_UINT64(buf)	\
 			(((ILUInt64)(IL_READ_UINT32((buf)))) | \
-			 (((ILUInt64)(IL_READ_UINT32((buf) + 4))) << 32))
+			 (((ILUInt64)(IL_READ_UINT32(((ILUInt8 *)(buf)) + 4))) << 32))
 #endif
 ILNativeFloat _ILReadFloat(const unsigned char *buf);
 #define	IL_READ_FLOAT(buf)	(_ILReadFloat((buf)))

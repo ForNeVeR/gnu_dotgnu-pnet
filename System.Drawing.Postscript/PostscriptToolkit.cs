@@ -74,7 +74,7 @@ internal sealed class PostscriptToolkit : NullToolkit
 			}
 
 	// Create a toolkit font from the properties in the specified object.
-	public override IToolkitFont CreateFont(Font font)
+	public override IToolkitFont CreateFont(Font font, float dpi)
 			{
 				return null;
 			}

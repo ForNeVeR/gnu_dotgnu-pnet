@@ -37,6 +37,9 @@
 	rearrange the outgoing side of binary formatting, to make it more
 	flexible to handle special types.
 
+	* System.Drawing.Postscript/PostscriptToolkit.cs: small compile bug,
+	due to recent changes in IToolkit.
+
 2003-08-03  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ButtonBase.cs: some improvements for inheritors,

@@ -461,15 +461,12 @@ ILNode_SemAnalysis(ILNode_Assign)
 
 	/* Perform semantic analysis on the lvalue */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
-	if(value1.kind != CS_SEMKIND_LVALUE)
+	if(value1.kind != CS_SEMKIND_LVALUE &&
+	   value1.kind != CS_SEMKIND_SVALUE)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid lvalue in assignment");
-		if(value1.kind == CS_SEMKIND_LVALUE)
-		{
-			value1.kind = CS_SEMKIND_RVALUE;
-		}
-		else
+		if(value1.kind != CS_SEMKIND_RVALUE)
 		{
 			value1.kind = CS_SEMKIND_RVALUE;
 			value1.type = ILType_Int32;
@@ -520,11 +517,7 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid lvalue in assignment");
-		if(value1.kind == CS_SEMKIND_LVALUE)
-		{
-			value1.kind = CS_SEMKIND_RVALUE;
-		}
-		else
+		if(value1.kind != CS_SEMKIND_RVALUE)
 		{
 			value1.kind = CS_SEMKIND_RVALUE;
 			value1.type = ILType_Int32;
@@ -1229,6 +1222,24 @@ error:
 ILNode_SemAnalysis(ILNode_AsIs)
 {
 	return ILNode_SemAnalysis(node->expr, info, &(node->expr));
+}
+
+/*
+ * Perform semantic analysis for a global namespace adjustment.
+ */
+ILNode_SemAnalysis(ILNode_GlobalNamespace)
+{
+	ILNode *savedNamespace = info->currentNamespace;
+	ILNode_Namespace *ns = (ILNode_Namespace *)savedNamespace;
+	CSSemValue value;
+	while(ns != 0 && ns->enclosing != 0)
+	{
+		ns = ns->enclosing;
+	}
+	info->currentNamespace = (ILNode *)ns;
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+	info->currentNamespace = savedNamespace;
+	return value;
 }
 
 /*

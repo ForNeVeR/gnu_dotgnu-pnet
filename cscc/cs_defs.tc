@@ -57,14 +57,15 @@ extern CSSemValue CSSemValueDefault;
 #define	CS_SEMKIND_VOID				0
 #define	CS_SEMKIND_RVALUE			1
 #define	CS_SEMKIND_LVALUE			2
-#define	CS_SEMKIND_TYPE				3
-#define	CS_SEMKIND_FIELD			4
-#define	CS_SEMKIND_METHOD_GROUP		5
-#define	CS_SEMKIND_PROPERTY			6
-#define	CS_SEMKIND_EVENT			7
-#define	CS_SEMKIND_NAMESPACE		8
-#define	CS_SEMKIND_TYPE_NODE		9
-#define	CS_SEMKIND_AMBIGUOUS		10
+#define	CS_SEMKIND_SVALUE			3
+#define	CS_SEMKIND_TYPE				4
+#define	CS_SEMKIND_FIELD			5
+#define	CS_SEMKIND_METHOD_GROUP		6
+#define	CS_SEMKIND_PROPERTY			7
+#define	CS_SEMKIND_EVENT			8
+#define	CS_SEMKIND_NAMESPACE		9
+#define	CS_SEMKIND_TYPE_NODE		10
+#define	CS_SEMKIND_AMBIGUOUS		11
 
 /*
  * Determine if a semantic analysis kind is usable as a value.
@@ -201,6 +202,7 @@ extern CSSemValue CSSemValueDefault;
 	char *name;
 	%nocreate ILNode_UsingNamespace *next = {0};
 }
+%node ILNode_GlobalNamespace ILNode_AsIs
 
 /*
  * Include C#-specific definitions.

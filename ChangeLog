@@ -1,7 +1,8 @@
 
 2001-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* cscc/cs_defs.tc: ILNode_GlobalNamespace, new semantic kind for s-values.
+* cscc/cs_defs.tc, cscc/cs_oper.tc: ILNode_GlobalNamespace, new semantic
+kind for s-values.
 
 2001-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 

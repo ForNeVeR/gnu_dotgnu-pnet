@@ -2406,7 +2406,7 @@ Attribute
 	;
 
 AttributeArguments
-	: '(' ')' {	/* empty */ }
+	: '(' ')' {	$$=0; /* empty */ }
 	| '(' PositionalArgumentList ')'			{
 				MakeBinary(AttrArgs, $2, 0);
 			}

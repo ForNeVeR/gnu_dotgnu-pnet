@@ -5,6 +5,9 @@
 	cscc/csharp/cs_misc.tc: Filter out base destructor calls
 	when compiling System.Object.
 
+	* cscc/csharp/cs_grammar.y: fix no-args attribute support and
+	allow () to be specified.
+
 2002-12-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/lib_attrs.c (MarshalAsAttribute): fix the "LPArray"

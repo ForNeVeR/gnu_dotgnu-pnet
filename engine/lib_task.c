@@ -205,7 +205,7 @@ ILInt32 _IL_Process_GetHandleCount(ILExecThread *_thread,
  */
 typedef struct
 {
-	DWORD	processId;
+	DWORD	processID;
 	HWND	found;
 
 } EnumCallbackData;
@@ -213,7 +213,7 @@ typedef struct
 /*
  * Callback for "EnumWindows".
  */
-static BOOL EnumCallback(HWND hWnd, LPARAM lParam)
+static BOOL CALLBACK EnumCallback(HWND hWnd, LPARAM lParam)
 {
 	EnumCallbackData *data = (EnumCallbackData *)lParam;
 	DWORD processID = 0;
@@ -238,7 +238,7 @@ ILNativeInt _IL_Process_GetMainWindowHandle(ILExecThread *_thread,
 {
 #ifdef IL_WIN32_PLATFORM
 	EnumCallbackData data;
-	data.process = (DWORD)processID;
+	data.processID = (DWORD)processID;
 	data.found = NULL;
 	EnumWindows(EnumCallback, (LPARAM)&data);
 	return (ILNativeInt)(data.found);
@@ -255,7 +255,7 @@ ILString *_IL_Process_GetMainWindowTitle(ILExecThread * _thread,
 										 ILNativeInt windowHandle)
 {
 #ifdef IL_WIN32_PLATFORM
-	int len = GetWindowTextLength((HWnd)windowHandle);
+	int len = GetWindowTextLength((HWND)windowHandle);
 	char *buf;
 	ILString *str;
 	if(len <= 0)
@@ -433,7 +433,7 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 #ifdef IL_WIN32_PLATFORM
 
 	const char *fname;
-	const char *args;
+	char *args;
 	STARTUPINFO startupInfo;
 	PROCESS_INFORMATION processInfo;
 	char *env = 0;
@@ -462,15 +462,15 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	startupInfo.wShowWindow = (WORD)windowStyle;
 
 	/* Redirect stdin, stdout, and stderr if necessary */
-	*stdinHandle = (ILNativeInt)(IL_SysIOHandle_Invalid);
-	*stdoutHandle = (ILNativeInt)(IL_SysIOHandle_Invalid);
-	*stderrHandle = (ILNativeInt)(IL_SysIOHandle_Invalid);
+	*stdinHandle = (ILNativeInt)(ILSysIOHandle_Invalid);
+	*stdoutHandle = (ILNativeInt)(ILSysIOHandle_Invalid);
+	*stderrHandle = (ILNativeInt)(ILSysIOHandle_Invalid);
 	if((flags & (ProcessStart_RedirectStdin |
 				 ProcessStart_RedirectStdout |
 				 ProcessStart_RedirectStderr)) != 0)
 	{
 		startupInfo.dwFlags |= STARTF_USESTDHANDLES;
-		if((flags & ProcesStart_RedirectStdin) != 0)
+		if((flags & ProcessStart_RedirectStdin) != 0)
 		{
 			CreatePipe(&readSide, &writeSide, NULL, 0);
 			*stdinHandle = (ILNativeInt)writeSide;
@@ -485,7 +485,7 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 		{
 			startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
 		}
-		if((flags & ProcesStart_RedirectStdout) != 0)
+		if((flags & ProcessStart_RedirectStdout) != 0)
 		{
 			CreatePipe(&readSide, &writeSide, NULL, 0);
 			*stdoutHandle = (ILNativeInt)readSide;
@@ -500,7 +500,7 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 		{
 			startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 		}
-		if((flags & ProcesStart_RedirectStderr) != 0)
+		if((flags & ProcessStart_RedirectStderr) != 0)
 		{
 			CreatePipe(&readSide, &writeSide, NULL, 0);
 			*stderrHandle = (ILNativeInt)readSide;

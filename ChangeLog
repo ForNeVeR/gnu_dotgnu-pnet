@@ -4,6 +4,8 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_task.c:
 	implement the internalcalls for "System.Diagnostics.Process".
 
+	* engine/lib_task.c: fix Win32-specific compilation issues.
+
 2003-07-20  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_relop.tc: Special handling for float types to correctly

@@ -19,6 +19,8 @@
 						  name="../resources/en_US/runtime/runtime.resources"/>
 			</resources>
 
+			<arg compiler="cscc" value="-fassembly-version=1.0.5000.0"/>
+			<arg compiler="cscc" value="-fassembly-key=neutral"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
 			<arg compiler="cscc" value="-fminimize-parameters"/>
 			<arg compiler="csc" value="/nowarn:626"/>

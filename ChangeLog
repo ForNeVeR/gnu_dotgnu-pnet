@@ -4,6 +4,12 @@
 	* samples/FormsHello.cs: use the client rectangle to paint,
 	not the form bounds.
 
+	* Basic/Basic.build, JScript/JScript.build, System/System.build,
+	System.Drawing/System.Drawing.build, System.Windows.Forms/Forms.build,
+	System.Xml/Xml.build, compat/compat.build, runtime/runtime.build:
+	add assembly version and public key information so that Microsoft's
+	runtime engine doesn't complain about version mismatches.
+
 2003-06-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* samples/samples.build: Add Accessibility.dll to the forms apps

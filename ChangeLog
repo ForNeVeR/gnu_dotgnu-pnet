@@ -12,6 +12,9 @@
 	properties and events, to prevent the assembler defaulting to
 	the global module type for unqualified references.
 
+	* cscc/csharp/cs_grammar.y: don't use the class attributes on
+	the default constructor for the class.
+
 2002-07-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c, ilalink/link_field.c, ilalink/link_image.c,

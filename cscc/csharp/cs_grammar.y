@@ -2404,7 +2404,7 @@ ClassDeclaration
 								 ILNode_InvocationExpression_create
 									(ILNode_BaseInit_create(), 0)));
 					ILNode *ctor = ILNode_MethodDeclaration_create
-						  ($1, CSModifiersToConstructorAttrs(cname, ctorMods),
+						  (0, CSModifiersToConstructorAttrs(cname, ctorMods),
 						   0 /* "void" */, cname,
 						   ILNode_Empty_create(), body);
 					if(!classBody)

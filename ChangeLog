@@ -1,4 +1,8 @@
 
+2003-05-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/aes.c: make the AES code 16-bit friendly.
+
 2003-05-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csdoc.c: avoid semantic analysis of method bodies with

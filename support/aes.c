@@ -251,13 +251,13 @@ void ILAESInit(ILAESContext *aes, unsigned char *key, int keyBits)
 		if((i % nk) == 0)
 		{
 			/* Perform "temp = SubWord(RotWord(temp))" in one step */
-			temp = (s[(temp >> 16) & 0xFF] << 24) |
-				   (s[(temp >>  8) & 0xFF] << 16) |
-				   (s[temp & 0xFF] << 8) |
-				   (s[(temp >> 24) & 0xFF]);
+			temp = (((ILInt32)(s[(temp >> 16) & 0xFF])) << 24) |
+				   (((ILInt32)(s[(temp >>  8) & 0xFF])) << 16) |
+				   (((ILInt32)(s[temp & 0xFF])) << 8) |
+				   (((ILInt32)(s[(temp >> 24) & 0xFF])));
 
 			/* Perform "temp = temp ^ Rcon[i / nk]" */
-			temp ^= (bit << 24);
+			temp ^= (((ILInt32)bit) << 24);
 			bit <<= 1;
 			if(bit >= 0x100)
 			{
@@ -267,10 +267,10 @@ void ILAESInit(ILAESContext *aes, unsigned char *key, int keyBits)
 		else if(nk == 8 && (i % nk) == 4)
 		{
 			/* Special case for 256-bit keys: perform "SubWord(temp)" only */
-			temp = (s[(temp >> 24) & 0xFF] << 24) |
-				   (s[(temp >> 16) & 0xFF] << 16) |
-				   (s[(temp >>  8) & 0xFF] << 8) |
-				   (s[temp & 0xFF]);
+			temp = (((ILInt32)(s[(temp >> 24) & 0xFF])) << 24) |
+				   (((ILInt32)(s[(temp >> 16) & 0xFF])) << 16) |
+				   (((ILInt32)(s[(temp >>  8) & 0xFF])) << 8) |
+				   (((ILInt32)(s[temp & 0xFF])));
 		}
 		aes->keySchedule[i] = aes->keySchedule[i - nk] ^ temp;
 	}
@@ -306,22 +306,22 @@ void ILAESEncrypt(ILAESContext *aes, unsigned char *input,
 	for(round = nr - 1; round > 0; --round)
 	{
 		/* Perform SubBytes() and ShiftRows() in one step */
-		ncol0 = (s[(col0 >> 24) & 0xFF] << 24) |
-				(s[(col1 >> 16) & 0xFF] << 16) |
-				(s[(col2 >>  8) & 0xFF] << 8) |
-				(s[col3 & 0xFF]);
-		ncol1 = (s[(col1 >> 24) & 0xFF] << 24) |
-				(s[(col2 >> 16) & 0xFF] << 16) |
-				(s[(col3 >>  8) & 0xFF] << 8) |
-				(s[col0 & 0xFF]);
-		ncol2 = (s[(col2 >> 24) & 0xFF] << 24) |
-				(s[(col3 >> 16) & 0xFF] << 16) |
-				(s[(col0 >>  8) & 0xFF] << 8) |
-				(s[col1 & 0xFF]);
-		ncol3 = (s[(col3 >> 24) & 0xFF] << 24) |
-				(s[(col0 >> 16) & 0xFF] << 16) |
-				(s[(col1 >>  8) & 0xFF] << 8) |
-				(s[col2 & 0xFF]);
+		ncol0 = (((ILInt32)(s[(col0 >> 24) & 0xFF])) << 24) |
+				(((ILInt32)(s[(col1 >> 16) & 0xFF])) << 16) |
+				(((ILInt32)(s[(col2 >>  8) & 0xFF])) << 8) |
+				(((ILInt32)(s[col3 & 0xFF])));
+		ncol1 = (((ILInt32)(s[(col1 >> 24) & 0xFF])) << 24) |
+				(((ILInt32)(s[(col2 >> 16) & 0xFF])) << 16) |
+				(((ILInt32)(s[(col3 >>  8) & 0xFF])) << 8) |
+				(((ILInt32)(s[col0 & 0xFF])));
+		ncol2 = (((ILInt32)(s[(col2 >> 24) & 0xFF])) << 24) |
+				(((ILInt32)(s[(col3 >> 16) & 0xFF])) << 16) |
+				(((ILInt32)(s[(col0 >>  8) & 0xFF])) << 8) |
+				(((ILInt32)(s[col1 & 0xFF])));
+		ncol3 = (((ILInt32)(s[(col3 >> 24) & 0xFF])) << 24) |
+				(((ILInt32)(s[(col0 >> 16) & 0xFF])) << 16) |
+				(((ILInt32)(s[(col1 >>  8) & 0xFF])) << 8) |
+				(((ILInt32)(s[col2 & 0xFF])));
 
 		/* Perform MixColumns() */
 		col0 = mix(ncol0);
@@ -337,22 +337,22 @@ void ILAESEncrypt(ILAESContext *aes, unsigned char *input,
 	}
 
 	/* Perform the last round, which omits MixColumns() */
-	ncol0 = (s[(col0 >> 24) & 0xFF] << 24) |
-			(s[(col1 >> 16) & 0xFF] << 16) |
-			(s[(col2 >>  8) & 0xFF] << 8) |
-			(s[col3 & 0xFF]);
-	ncol1 = (s[(col1 >> 24) & 0xFF] << 24) |
-			(s[(col2 >> 16) & 0xFF] << 16) |
-			(s[(col3 >>  8) & 0xFF] << 8) |
-			(s[col0 & 0xFF]);
-	ncol2 = (s[(col2 >> 24) & 0xFF] << 24) |
-			(s[(col3 >> 16) & 0xFF] << 16) |
-			(s[(col0 >>  8) & 0xFF] << 8) |
-			(s[col1 & 0xFF]);
-	ncol3 = (s[(col3 >> 24) & 0xFF] << 24) |
-			(s[(col0 >> 16) & 0xFF] << 16) |
-			(s[(col1 >>  8) & 0xFF] << 8) |
-			(s[col2 & 0xFF]);
+	ncol0 = (((ILInt32)(s[(col0 >> 24) & 0xFF])) << 24) |
+			(((ILInt32)(s[(col1 >> 16) & 0xFF])) << 16) |
+			(((ILInt32)(s[(col2 >>  8) & 0xFF])) << 8) |
+			(((ILInt32)(s[col3 & 0xFF])));
+	ncol1 = (((ILInt32)(s[(col1 >> 24) & 0xFF])) << 24) |
+			(((ILInt32)(s[(col2 >> 16) & 0xFF])) << 16) |
+			(((ILInt32)(s[(col3 >>  8) & 0xFF])) << 8) |
+			(((ILInt32)(s[col0 & 0xFF])));
+	ncol2 = (((ILInt32)(s[(col2 >> 24) & 0xFF])) << 24) |
+			(((ILInt32)(s[(col3 >> 16) & 0xFF])) << 16) |
+			(((ILInt32)(s[(col0 >>  8) & 0xFF])) << 8) |
+			(((ILInt32)(s[col1 & 0xFF])));
+	ncol3 = (((ILInt32)(s[(col3 >> 24) & 0xFF])) << 24) |
+			(((ILInt32)(s[(col0 >> 16) & 0xFF])) << 16) |
+			(((ILInt32)(s[(col1 >>  8) & 0xFF])) << 8) |
+			(((ILInt32)(s[col2 & 0xFF])));
 	ncol0 ^= ks[keyIndex++];
 	ncol1 ^= ks[keyIndex++];
 	ncol2 ^= ks[keyIndex++];
@@ -396,22 +396,22 @@ void ILAESDecrypt(ILAESContext *aes, unsigned char *input,
 	for(round = nr - 1; round > 0; --round)
 	{
 		/* Perform InvShiftRows() and InvSubBytes() in one step */
-		ncol0 = (s[(col0 >> 24) & 0xFF] << 24) |
-				(s[(col3 >> 16) & 0xFF] << 16) |
-				(s[(col2 >>  8) & 0xFF] << 8) |
-				(s[col1 & 0xFF]);
-		ncol1 = (s[(col1 >> 24) & 0xFF] << 24) |
-				(s[(col0 >> 16) & 0xFF] << 16) |
-				(s[(col3 >>  8) & 0xFF] << 8) |
-				(s[col2 & 0xFF]);
-		ncol2 = (s[(col2 >> 24) & 0xFF] << 24) |
-				(s[(col1 >> 16) & 0xFF] << 16) |
-				(s[(col0 >>  8) & 0xFF] << 8) |
-				(s[col3 & 0xFF]);
-		ncol3 = (s[(col3 >> 24) & 0xFF] << 24) |
-				(s[(col2 >> 16) & 0xFF] << 16) |
-				(s[(col1 >>  8) & 0xFF] << 8) |
-				(s[col0 & 0xFF]);
+		ncol0 = (((ILInt32)(s[(col0 >> 24) & 0xFF])) << 24) |
+				(((ILInt32)(s[(col3 >> 16) & 0xFF])) << 16) |
+				(((ILInt32)(s[(col2 >>  8) & 0xFF])) << 8) |
+				(((ILInt32)(s[col1 & 0xFF])));
+		ncol1 = (((ILInt32)(s[(col1 >> 24) & 0xFF])) << 24) |
+				(((ILInt32)(s[(col0 >> 16) & 0xFF])) << 16) |
+				(((ILInt32)(s[(col3 >>  8) & 0xFF])) << 8) |
+				(((ILInt32)(s[col2 & 0xFF])));
+		ncol2 = (((ILInt32)(s[(col2 >> 24) & 0xFF])) << 24) |
+				(((ILInt32)(s[(col1 >> 16) & 0xFF])) << 16) |
+				(((ILInt32)(s[(col0 >>  8) & 0xFF])) << 8) |
+				(((ILInt32)(s[col3 & 0xFF])));
+		ncol3 = (((ILInt32)(s[(col3 >> 24) & 0xFF])) << 24) |
+				(((ILInt32)(s[(col2 >> 16) & 0xFF])) << 16) |
+				(((ILInt32)(s[(col1 >>  8) & 0xFF])) << 8) |
+				(((ILInt32)(s[col0 & 0xFF])));
 
 		/* Add the previous round key to the state */
 		ncol3 ^= ks[--keyIndex];
@@ -427,22 +427,22 @@ void ILAESDecrypt(ILAESContext *aes, unsigned char *input,
 	}
 
 	/* Perform the last round, which omits InvMixColumns() */
-	ncol0 = (s[(col0 >> 24) & 0xFF] << 24) |
-			(s[(col3 >> 16) & 0xFF] << 16) |
-			(s[(col2 >>  8) & 0xFF] << 8) |
-			(s[col1 & 0xFF]);
-	ncol1 = (s[(col1 >> 24) & 0xFF] << 24) |
-			(s[(col0 >> 16) & 0xFF] << 16) |
-			(s[(col3 >>  8) & 0xFF] << 8) |
-			(s[col2 & 0xFF]);
-	ncol2 = (s[(col2 >> 24) & 0xFF] << 24) |
-			(s[(col1 >> 16) & 0xFF] << 16) |
-			(s[(col0 >>  8) & 0xFF] << 8) |
-			(s[col3 & 0xFF]);
-	ncol3 = (s[(col3 >> 24) & 0xFF] << 24) |
-			(s[(col2 >> 16) & 0xFF] << 16) |
-			(s[(col1 >>  8) & 0xFF] << 8) |
-			(s[col0 & 0xFF]);
+	ncol0 = (((ILInt32)(s[(col0 >> 24) & 0xFF])) << 24) |
+			(((ILInt32)(s[(col3 >> 16) & 0xFF])) << 16) |
+			(((ILInt32)(s[(col2 >>  8) & 0xFF])) << 8) |
+			(((ILInt32)(s[col1 & 0xFF])));
+	ncol1 = (((ILInt32)(s[(col1 >> 24) & 0xFF])) << 24) |
+			(((ILInt32)(s[(col0 >> 16) & 0xFF])) << 16) |
+			(((ILInt32)(s[(col3 >>  8) & 0xFF])) << 8) |
+			(((ILInt32)(s[col2 & 0xFF])));
+	ncol2 = (((ILInt32)(s[(col2 >> 24) & 0xFF])) << 24) |
+			(((ILInt32)(s[(col1 >> 16) & 0xFF])) << 16) |
+			(((ILInt32)(s[(col0 >>  8) & 0xFF])) << 8) |
+			(((ILInt32)(s[col3 & 0xFF])));
+	ncol3 = (((ILInt32)(s[(col3 >> 24) & 0xFF])) << 24) |
+			(((ILInt32)(s[(col2 >> 16) & 0xFF])) << 16) |
+			(((ILInt32)(s[(col1 >>  8) & 0xFF])) << 8) |
+			(((ILInt32)(s[col0 & 0xFF])));
 	ncol3 ^= ks[--keyIndex];
 	ncol2 ^= ks[--keyIndex];
 	ncol1 ^= ks[--keyIndex];

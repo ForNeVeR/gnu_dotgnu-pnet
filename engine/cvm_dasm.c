@@ -412,6 +412,10 @@ static CVMOpcode const opcodes[256] = {
 	{"prefix",			CVM_OPER_PREFIX},
 };
 static CVMOpcode const prefixOpcodes[64] = {
+	/*
+	 * Reserved opcodes.
+	 */
+	{"preserved_00",	CVM_OPER_NONE},
 
 	/*
 	 * Prefixed comparison opcodes.

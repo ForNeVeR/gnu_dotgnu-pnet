@@ -1,4 +1,9 @@
 
+2003-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* samples/FormsHello.cs: use the client rectangle to paint,
+	not the form bounds.
+
 2003-06-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* samples/samples.build: Add Accessibility.dll to the forms apps

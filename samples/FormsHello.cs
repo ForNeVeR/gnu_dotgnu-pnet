@@ -54,13 +54,15 @@ public class FormsHello : Form
 	{
 		Graphics graphics = e.Graphics;
 		Form form = (sender as Form);
+		Rectangle bounds = form.ClientRectangle;
 
 		Pen pen = new Pen(Color.Black, 1.0f);
-		graphics.DrawLine(pen, 0, 0, form.Width, form.Height);
+		graphics.DrawLine(pen, 0, 0, bounds.Width, bounds.Height);
 		pen.Dispose();
 
 		pen = new Pen(Color.Red, 2.0f);
-		graphics.DrawRectangle(pen, 10, 10, form.Width - 20, form.Height - 20);
+		graphics.DrawRectangle
+			(pen, 10, 10, bounds.Width - 20, bounds.Height - 20);
 		pen.Dispose();
 
 		Brush brush = new SolidBrush(Color.Yellow);

@@ -1,7 +1,7 @@
 /*
  * cs_stmt.tc - Semantic analysis for C# statement node types.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -236,6 +236,7 @@ ILNode_SemAnalysis(ILNode_For)
  */
 ILNode_SemAnalysis(ILNode_Foreach)
 {
+	/* TODO */
 	CSSemValue value;
 	if(CSHasUnsafeType(node->type))
 	{
@@ -264,6 +265,7 @@ ILNode_SemAnalysis(ILNode_ForeachCollection)
  */
 ILNode_SemAnalysis(ILNode_Switch)
 {
+	/* TODO */
 	CSSemValue value;
 	PushStmtContext(info, CS_STMT_SWITCH);
 	PopStmtContext(info);
@@ -277,6 +279,7 @@ ILNode_SemAnalysis(ILNode_Switch)
  */
 ILNode_SemAnalysis(ILNode_SwitchSectList)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -288,6 +291,7 @@ ILNode_SemAnalysis(ILNode_SwitchSectList)
  */
 ILNode_SemAnalysis(ILNode_SwitchSection)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -299,6 +303,7 @@ ILNode_SemAnalysis(ILNode_SwitchSection)
  */
 ILNode_SemAnalysis(ILNode_CaseList)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -310,6 +315,7 @@ ILNode_SemAnalysis(ILNode_CaseList)
  */
 ILNode_SemAnalysis(ILNode_CaseLabel)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -321,6 +327,7 @@ ILNode_SemAnalysis(ILNode_CaseLabel)
  */
 ILNode_SemAnalysis(ILNode_DefaultLabel)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -332,6 +339,7 @@ ILNode_SemAnalysis(ILNode_DefaultLabel)
  */
 ILNode_SemAnalysis(ILNode_Goto)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -343,6 +351,7 @@ ILNode_SemAnalysis(ILNode_Goto)
  */
 ILNode_SemAnalysis(ILNode_GotoLabel)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -354,6 +363,7 @@ ILNode_SemAnalysis(ILNode_GotoLabel)
  */
 ILNode_SemAnalysis(ILNode_GotoCase)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -365,6 +375,7 @@ ILNode_SemAnalysis(ILNode_GotoCase)
  */
 ILNode_SemAnalysis(ILNode_GotoDefault)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -711,6 +722,7 @@ ILNode_SemAnalysis(ILNode_Lock)
  */
 ILNode_SemAnalysis(ILNode_Using)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -768,6 +780,7 @@ JavaGenDiscard(ILNode_Unsafe)
  */
 ILNode_SemAnalysis(ILNode_Fixed)
 {
+	/* TODO */
 	CSSemValue value;
 	CSUnsafeMessage(info, (ILNode *)node, "unsafe `fixed' statement");
 	if(info->outputIsJava)
@@ -801,6 +814,7 @@ JavaGenDiscard(ILNode_Fixed)
  */
 ILNode_SemAnalysis(ILNode_FixedDeclList)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -812,6 +826,7 @@ ILNode_SemAnalysis(ILNode_FixedDeclList)
  */
 ILNode_SemAnalysis(ILNode_FixAddress)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -823,6 +838,7 @@ ILNode_SemAnalysis(ILNode_FixAddress)
  */
 ILNode_SemAnalysis(ILNode_FixExpr)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;

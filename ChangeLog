@@ -1,4 +1,10 @@
 
+2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,
+	cscc/cs_stmt.tc: add "TODO" to items that are outstanding,
+	to make it easier to re-find them later.
+
 2001-01-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for "0.2.8" release.

@@ -1,7 +1,7 @@
 /*
  * cs_oper.tc - Semantic analysis for C# operators.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -696,6 +696,7 @@ ILNode_SemAnalysis(ILNode_AssignUShr)
  */
 ILNode_SemAnalysis(ILNode_PreInc)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
@@ -707,6 +708,7 @@ ILNode_SemAnalysis(ILNode_PreInc)
  */
 ILNode_SemAnalysis(ILNode_PreDec)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
@@ -718,6 +720,7 @@ ILNode_SemAnalysis(ILNode_PreDec)
  */
 ILNode_SemAnalysis(ILNode_PostInc)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
@@ -729,6 +732,7 @@ ILNode_SemAnalysis(ILNode_PostInc)
  */
 ILNode_SemAnalysis(ILNode_PostDec)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
@@ -1233,6 +1237,7 @@ ILNode_SemAnalysis(ILNode_Deref)
  */
 ILNode_SemAnalysis(ILNode_AddressOf)
 {
+	/* TODO */
 	CSSemValue value;
 	CSUnsafeMessage(info, (ILNode *)node, "unsafe address operator");
 	value.kind = CS_SEMKIND_RVALUE;
@@ -1342,6 +1347,7 @@ ILNode_SemAnalysis(ILNode_Comma)
  */
 ILNode_SemAnalysis(ILNode_As)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
@@ -1353,6 +1359,7 @@ ILNode_SemAnalysis(ILNode_As)
  */
 ILNode_SemAnalysis(ILNode_AsUntyped)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
@@ -1364,6 +1371,7 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
  */
 ILNode_SemAnalysis(ILNode_Is)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
@@ -1375,6 +1383,7 @@ ILNode_SemAnalysis(ILNode_Is)
  */
 ILNode_SemAnalysis(ILNode_IsUntyped)
 {
+	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;

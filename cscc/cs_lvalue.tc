@@ -403,20 +403,21 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 		case CS_SEMKIND_FIELD:
 		{
 			/* Reference to a class field */
+			field = (ILField *)(value.type);
 			if(!(info->currentMethod))
 			{
 				/* We are performing semantic analysis of declarations,
-				   which does not permit fields to be used as types */
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				   where only literals and types are allowed */
+				if(!ILField_IsStatic(field) || !ILField_IsLiteral(field))
+				{
+					CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`%s' is not declared as a type in the current scope",
 					  name);
-				value.kind = CS_SEMKIND_TYPE;
-				value.type = ILType_Int32;
-				return value;
+					value.kind = CS_SEMKIND_TYPE;
+					value.type = ILType_Int32;
+					return value;
+				}
 			}
-
-			/* Find the field descriptor */
-			field = (ILField *)(value.type);
 
 			/* Create the final semantic type */
 			value.kind = CS_SEMKIND_LVALUE;

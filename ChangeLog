@@ -7,6 +7,9 @@
 	implement semantic analysis and code generation for "switch"
 	statements.
 
+	* cscc/cs_lvalue.tc: permit the use of literal constant fields
+	during type gathering.
+
 2001-01-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_grammar.y: implement default constructors for classes.

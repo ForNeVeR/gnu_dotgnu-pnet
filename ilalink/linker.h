@@ -138,6 +138,18 @@ void _ILLinkerPrintClass(ILLibraryFind *find, const char *name,
  */
 ILClass *_ILLinkerMakeTypeRef(ILLibraryFind *find, ILImage *image);
 
+/*
+ * Convert a class reference in a foreign image into a
+ * reference in the output image.
+ */
+ILClass *_ILLinkerConvertClassRef(ILLinker *linker, ILClass *classInfo);
+
+/*
+ * Convert a type in a foreign image into a type in
+ * the output image.
+ */
+ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type);
+
 #ifdef	__cplusplus
 };
 #endif

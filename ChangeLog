@@ -27,6 +27,9 @@ name hash table so that it uses the routines in "il_utils.h".
 * ilalink/link_library.c (MakeTypeRef): look for a pre-existing TypeRef
 before creating a new one.
 
+* ilalink/link_type.c, ilalink/Makefile.am, ialink/linker.h: implement
+the helper functions "_ILLinkerConvertClassRef" and "_ILLinkerConverType".
+
 2001-10-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/lib_array.c: bug fix - set the array length in a newly-allocated

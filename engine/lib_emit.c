@@ -43,10 +43,18 @@ ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
 											  ILNativeInt assembly,
 											  ILString *name)
 {
-	/* TODO */
-	return 0;
+  ILImage *image = ILProgramItem_Image(assembly);
+  ILToken token = ILProgramItem_Token(assembly);
+  const char *str = (const char *)ILStringToAnsi(_thread, name);
+  return (ILNativeInt)ILModuleCreate(image, token, str, NULL);
 }
 
 #ifdef	__cplusplus
 };
 #endif
+
+
+
+
+
+

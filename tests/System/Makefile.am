@@ -1,20 +1,9 @@
 
-noinst_DATA = TestSystem.dll
-
-CSSRC = TestBoolean.cs \
-		TestUri.cs \
-		TestString.cs \
-		TestIPAddress.cs \
-		TestSystem.cs
-
-CSCC_WARNINGS = -Wno-silly-warnings
-
-CSCC_FLAGS = $(CSCC_WARNINGS) -funsafe -L$(top_srcdir)/csunit -lcstest
-
-TestSystem.dll: $(CSSRC)
-	$(CSCC_COMPILE) -o $@ $(CSSRC)
+all-local:
+	"$(CSANT)" $(CSANT_FLAGS) -Dpnet.cstest.library="$(CSTEST_LIBRARY)" \
+			-f TestSystem.build all
 
 CLEANFILES = TestSystem.dll
 
-TESTS = $(top_srcdir)/tools/run_test.sh
-TESTS_ENVIRONMENT = $(SHELL)
+TESTS = TestSystem.dll
+TESTS_ENVIRONMENT = $(SHELL) $(top_builddir)/tools/run_test.sh

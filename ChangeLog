@@ -4,6 +4,10 @@
 	* System.Xml/NodeList.cs, System.Xml/XmlNodeList.cs: temporary
 	hack to stop compile error, until attributes can be fixed in cscc.
 
+	* Makefile.am, configure.in, tests/System/Makefile.am,
+	tests/System/TestSystem.build, tools/csccwrap.sh.in,
+	tools/run_test.sh.in: add the support code to build the test suite.
+
 2002-09-17  Gopal.V  <gopalv82@symonds.net>
 
 	* tests/System/TestString.cs: fix wrong asserts in TestStringCompare 

@@ -67,8 +67,20 @@ else
 	fi
 fi
 
+# Determine if metadata-only compiles have been suppressed.
+META=yes
+for i in $* ; do
+	if test "x$i" = "x-fno-metadata-only" ; then
+		META=no
+	fi
+done
+
 # Add other flags to the command-line.
-OTHER_FLAGS="-fmetadata-only"
+if test "x$META" = "xyes" ; then
+	OTHER_FLAGS="-fmetadata-only"
+else
+	OTHER_FLAGS=""
+fi
 
 # Execute the command line.
 exec "$CSCC" "$ILASM_FLAG" "$CSCC_CS_FLAG" "$ILALINK_FLAG" $OTHER_FLAGS $*

@@ -2,7 +2,7 @@
 #
 # run_test.sh - Run a C# test using "ilrun".
 #
-# Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+# Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,40 +18,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# Get the location of "ilrun" from the configuration process.
+# Get the incoming configuration variables.
 ILRUN="@ILRUN@"
+ILRUN_FLAGS="@ILRUN_FLAGS@"
+CSUNIT="@CSUNIT@"
 
-# Find the top-most directory of the build tree.
-if test -f "../csunit/csunit.exe" ; then
-	TOPDIR=".."
-else
-	if test -f "../../csunit/csunit.exe" ; then
-		TOPDIR="../.."
-	else
-		if test -f "../../../csunit/csunit.exe" ; then
-			TOPDIR="../../.."
-		else
-			echo "$0: cannot locate the top of the build tree"
-			exit 1
-		fi
-	fi
-fi
-
-# Set the initial status.
-STATUS=0
-
-# Process all test .dll's in the current directory.
-for i in *.dll; do
-	TESTNAME=`basename $i .dll`
-	echo "$ILRUN" -L "$TOPDIR/csunit" -L "$TOPDIR/runtime/System" "$TOPDIR/csunit/csunit.exe" "$i" "$TESTNAME"
-	if "$ILRUN" -L "$TOPDIR/csunit" -L "$TOPDIR/runtime/System" "$TOPDIR/csunit/csunit.exe" "$i" "$TESTNAME" ; then
-		# The test run succeeded.
-		:
-	else
-		# The test run failed.
-		STATUS=1
-	fi
-done
-
-# Return the final status to the caller.
-exit $STATUS
+# Run the test.
+exec "$ILRUN" $ILRUN_FLAGS "$CSUNIT" $*

@@ -12,7 +12,10 @@ AC_SUBST(CSCC_EXE_LIBS)
 AC_SUBST(RESGEN)
 AC_SUBST(RESGEN_FLAGS)
 AC_SUBST(ILRUN)
+AC_SUBST(ILRUN_FLAGS)
 AC_SUBST(ILFIND)
+AC_SUBST(CSUNIT)
+AC_SUBST(CSTEST_LIBRARY)
 AC_SUBST(PNET_PATH)
 
 dnl Checks for programs.
@@ -145,6 +148,14 @@ if test "$ILRUN" = "" ; then
 	echo '**************************************************************'
 	exit 1
 fi
+if test -f "$PNET_PATH/samples/mscorlib.dll" ; then
+	ILRUN_FLAGS="-L$PNET_PATH/samples"
+else
+	ILRUN_FLAGS=""
+fi
+if test -f "$PNET_PATH/csunit/csunit.dll" ; then
+	ILRUN_FLAGS="$ILRUN_FLAGS -L$PNET_PATH/csunit"
+fi
 
 dnl Find the Portable.NET ilfind program.
 AC_PATH_PROG(ILFIND, ilfind,, $PNET_PATH/ilfind:$PATH)
@@ -156,6 +167,38 @@ if test "$ILFIND" = "" ; then
 	exit 1
 fi
 
+dnl Find the Portable.NET csunit program.
+AC_PATH_PROG(CSUNIT, csunit.exe,, $PNET_PATH/csunit:$PATH)
+if test "$CSUNIT" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET's csunit is required to test the system."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
+
+dnl Find the cstest.dll file, for linking test suites.
+AC_MSG_CHECKING(for cstest.dll)
+if test -f "$PNET_PATH/csunit/cstest.dll" ; then
+	CSTEST_LIBRARY="$PNET_PATH/csunit/cstest.dll"
+else
+	CSTEST_LIBRARY=""
+	for dir in "${prefix}" /usr/local /opt/local /usr ; do
+		if test -f "${dir}/lib/cscc/lib/cstest.dll" ; then
+			CSTEST_LIBRARY="${dir}/lib/cscc/lib/cstest.dll"
+			break
+		fi
+	done
+	if test -z "$CSTEST_LIBRARY" ; then
+		echo '**************************************************************'
+		echo "Portable.NET's cstest.dll is required to run the test suite."
+		echo "Use the --with-pnet option to specify Portable.NET's location."
+		echo '**************************************************************'
+		exit 1
+	fi
+fi
+AC_MSG_RESULT($CSTEST_LIBRARY)
+
 AC_OUTPUT([
 Makefile
 tools/Makefile
@@ -163,6 +206,8 @@ runtime/Makefile
 I18N/Makefile
 System/Makefile
 System.Xml/Makefile
+tests/Makefile
+tests/System/Makefile
 resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile
@@ -173,8 +218,3 @@ tools/run_test.sh
 tools/csccwrap.sh])
 
 chmod +x "${srcdir}/tools/csccwrap.sh"
-
-dnl csunit/Makefile
-dnl csunit/TestVersion.cs
-dnl tests/Makefile
-dnl tests/System/Makefile

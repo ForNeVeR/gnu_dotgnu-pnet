@@ -21,6 +21,8 @@ parameters.
 * cscc/cs_gather.c: process parameter modifiers when building method
 signatures.
 
+* codegen/cg_library.c: add the classes "Attribute" and "ParamArrayAttribute".
+
 2001-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, Makefile.am, ildiff/AUTHORS, ildiff/README, ildiff/TODO,

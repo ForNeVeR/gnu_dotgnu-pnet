@@ -92,6 +92,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *intPtrClass;
 	ILClass *uintPtrClass;
 	ILClass *typedRefClass;
+	ILClass *attributeClass;
+	ILClass *paramAttributeClass;
 	int constructorOK;
 
 	/* Create the "System.Object" class */
@@ -182,6 +184,27 @@ void ILGenMakeLibrary(ILGenInfo *info)
 				    IL_META_TYPEDEF_SERIALIZABLE |
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
+
+	/* Create the "System.Attribute" class */
+	ABORT_IF(attributeClass,
+			 ILClassCreate(scope, 0, "Attribute", "System",
+			 			   objectClass));
+	ILClassSetAttrs(attributeClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_ABSTRACT);
+
+	/* Create the "System.ParamArrayAttribute" class */
+	ABORT_IF(paramAttributeClass,
+			 ILClassCreate(scope, 0, "ParamArrayAttribute", "System",
+			 			   attributeClass));
+	ILClassSetAttrs(paramAttributeClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_SEALED);
+	ABORT_IF(constructorOK, AddDefaultConstructor(paramAttributeClass));
 }
 
 #ifdef	__cplusplus

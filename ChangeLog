@@ -1,4 +1,9 @@
 
+2003-01-26  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csdoc.c : Fix output for enums in csdoc. Disable the "sealed"
+	and base type for the C# signature .
+
 2003-01-25  Gopal.V  <gopalv82@symonds.net>
 	
 	* csdoc/doc_stub.c: Fix a silly segfault on sprintf, which smashed

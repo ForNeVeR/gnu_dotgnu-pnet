@@ -489,7 +489,6 @@ static void GenerateDocsForEnum(FILE *stream,
 	fputs(ILField_Name(field), stream);
 	if(ILField_IsLiteral(field))
 	{
-		/* TODO: dump the constant value */
 	}
 	fputs("\"/>\n", stream);
 
@@ -1039,6 +1038,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	ILNode_ListIter iterator;
 	ILNode *body;
 	ILNode *member;
+	int isEnum=0;
 
 	/* Bail out if this is a bad class definition */
 	if(!classInfo)
@@ -1092,15 +1092,31 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	}
 	fputs("\"/>\n", stream);
 
-	/* Output the type signature, in C# form */
-	Indent(stream, indent);
-	fputs("<TypeSignature Language=\"C#\" Value=\"", stream);
-	ILDumpFlags(stream, defn->modifiers, CSharpTypeFlags, 0);
 	if(ILClassIsValueType(classInfo))
 	{
 		if(parent && !strcmp(ILClass_Name(parent), "Enum") &&
 		   ILClass_Namespace(parent) != 0 &&
 		   !strcmp(ILClass_Namespace(parent), "System"))
+		{
+			isEnum=1;
+		}
+	}
+
+	/* Output the type signature, in C# form */
+	Indent(stream, indent);
+	fputs("<TypeSignature Language=\"C#\" Value=\"", stream);
+	if(isEnum)
+	{
+		ILDumpFlags(stream,defn->modifiers & ~(IL_META_TYPEDEF_SEALED), 
+							CSharpTypeFlags,0);
+	}
+	else
+	{
+		ILDumpFlags(stream, defn->modifiers, CSharpTypeFlags, 0);
+	}
+	if(ILClassIsValueType(classInfo))
+	{
+		if(isEnum)
 		{
 			fputs("enum ", stream);
 		}
@@ -1118,7 +1134,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 		fputs("class ", stream);
 	}
 	fputs(ILClass_Name(classInfo), stream);
-	if(parent && !ILTypeIsObjectClass(ILClassToType(parent)))
+	if(!isEnum && parent && !ILTypeIsObjectClass(ILClassToType(parent)))
 	{
 		fputs(": ", stream);
 		DumpClassNameOther(stream, parent, classInfo);
@@ -1128,7 +1144,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 			fputs(", ", stream);
 		}
 	}
-	else
+	else if(!isEnum)
 	{
 		impl = ILClassNextImplements(classInfo, 0);
 		if(impl)
@@ -1136,7 +1152,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 			fputs(": ", stream);
 		}
 	}
-	if(impl)
+	if(!isEnum && impl)
 	{
 		DumpClassNameOther(stream, ILImplementsGetInterface(impl), classInfo);
 		while((impl = ILClassNextImplements(classInfo, impl)) != 0)

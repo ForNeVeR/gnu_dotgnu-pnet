@@ -5,6 +5,9 @@
 	runtime/System/Text/UnicodeEncoding.cs: add the "GetBytes(String)"
 	method to UTF8Encoding and UnicodeEncoding, for ECMA-compatibility.
 
+	* runtime/System/Globalization/DateTimeFormatInfo.cs: handle
+	era name values; return the full date/time format list.
+
 2003-03-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/AppDomain.cs,

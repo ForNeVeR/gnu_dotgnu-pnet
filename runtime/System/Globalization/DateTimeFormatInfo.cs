@@ -36,6 +36,8 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 	private String[] dayNames;
 	private String[] abbreviatedMonthNames;
 	private String[] monthNames;
+	private String[] eraNames;
+	private String[] abbrevEraNames;
 	private String dateSeparator;
 	private String timeSeparator;
 	private String fullDateTimePattern;
@@ -45,10 +47,11 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 	private String shortDatePattern;
 	private String shortTimePattern;
 	private String yearMonthPattern;
-#if !ECMA_COMPAT
 	private Calendar calendar;
+#if !ECMA_COMPAT
 	private CalendarWeekRule calendarWeekRule;
 	private DayOfWeek firstDayOfWeek;
+	private String[] dateTimePatterns;
 #endif // !ECMA_COMPAT
 
 	// Invariant abbreviated day names.
@@ -71,6 +74,39 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 		 "July", "August", "September", "October", "November",
 		 "December", ""};
 
+	// Invariant era names.
+	private static readonly String[] invEraNames = {"A.D."};
+	private static readonly String[] invAbbrevEraNames = {"AD"};
+
+	// Invariant date time pattern list.
+	private static readonly String[] invDateTimePatterns =
+			{"MM/dd/yyyy",
+			 "dddd, dd MMMM yyyy",
+			 "dddd, dd MMMM yyyy HH:mm",
+			 "dddd, dd MMMM yyyy hh:mm tt",
+			 "dddd, dd MMMM yyyy H:mm",
+			 "dddd, dd MMMM yyyy h:mm tt",
+			 "dddd, dd MMMM yyyy HH:mm:ss",
+			 "MM/dd/yyyy HH:mm",
+			 "MM/dd/yyyy hh:mm tt",
+			 "MM/dd/yyyy H:mm",
+			 "MM/dd/yyyy h:mm tt",
+			 "MM/dd/yyyy HH:mm:ss",
+			 "MMMM dd",
+			 "MMMM dd",
+			 "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
+			 "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
+			 "yyyy'-'MM'-'dd'T'HH':'mm':'ss",
+			 "HH:mm",
+			 "hh:mm tt",
+			 "H:mm",
+			 "h:mm tt",
+			 "HH:mm:ss",
+			 "yyyy'-'MM'-'dd HH':'mm':'ss'Z'",
+			 "dddd, dd MMMM yyyy HH:mm:ss",
+			 "yyyy MMMM",
+			 "yyyy MMMM"};
+
 	// Constructor.
 	public DateTimeFormatInfo()
 			{
@@ -81,6 +117,8 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				dayNames = invDayNames;
 				abbreviatedMonthNames = invAbbrevMonthNames;
 				monthNames = invMonthNames;
+				eraNames = invEraNames;
+				abbrevEraNames = invAbbrevEraNames;
 				dateSeparator = "/";
 				timeSeparator = ":";
 				fullDateTimePattern = "dddd, dd MMMM yyyy HH:mm:ss";
@@ -90,10 +128,11 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				shortDatePattern = "MM/dd/yyyy";
 				shortTimePattern = "HH:mm";
 				yearMonthPattern = "yyyy MMMM";
-			#if !ECMA_COMPAT
 				calendar = new GregorianCalendar();
+			#if !ECMA_COMPAT
 				calendarWeekRule = CalendarWeekRule.FirstDay;
 				firstDayOfWeek = DayOfWeek.Sunday;
+				dateTimePatterns = invDateTimePatterns;
 			#endif // !ECMA_COMPAT
 			}
 
@@ -143,20 +182,64 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				}
 			}
 
-	// Get a value that represents an era name.
-	[TODO]
-	public int GetEra(String eraName)
+	// Search for an era name within an array.
+	private static int SearchForEra(String[] names, String name)
 			{
-				// TODO
+				int posn;
+				if(names == null)
+				{
+					return -1;
+				}
+				for(posn = 0; posn < names.Length; ++posn)
+				{
+					if(String.Compare(names[posn], name, true) == 0)
+					{
+						return posn + 1;
+					}
+				}
 				return -1;
 			}
 
+	// Get a value that represents an era name.
+	public int GetEra(String eraName)
+			{
+				int era;
+				if(eraName == null)
+				{
+					throw new ArgumentNullException("eraName");
+				}
+				era = SearchForEra(eraNames, eraName);
+				if(era == -1)
+				{
+					era = SearchForEra(abbrevEraNames, eraName);
+				}
+				if(era == -1)
+				{
+					era = SearchForEra(invEraNames, eraName);
+				}
+				if(era == -1)
+				{
+					era = SearchForEra(invAbbrevEraNames, eraName);
+				}
+				return era;
+			}
+
 	// Get the name of a particular era.
-	[TODO]
 	public String GetEraName(int era)
 			{
-				// TODO: support other Calendars as well
-				return "AD";
+				if(era == System.Globalization.Calendar.CurrentEra)
+				{
+					era = Calendar.GetEra(DateTime.Now);
+				}
+				if(era >= 1 && era <= eraNames.Length)
+				{
+					return eraNames[era - 1];
+				}
+				else
+				{
+					throw new ArgumentOutOfRangeException
+						("era", _("Arg_InvalidEra"));
+				}
 			}
 
 	// Implement the IFormatProvider interface.
@@ -258,21 +341,32 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 #if !ECMA_COMPAT
 
 	// Get the abbreviated name of an era.
-	[TODO]
 	public String GetAbbreviatedEraName(int era)
 			{
-				// TODO
-				return null;
+				if(abbrevEraNames == null)
+				{
+					// Use the full name if there are no abbreviated names.
+					return GetEraName(era);
+				}
+				if(era == System.Globalization.Calendar.CurrentEra)
+				{
+					era = Calendar.GetEra(DateTime.Now);
+				}
+				if(era >= 1 && era <= abbrevEraNames.Length)
+				{
+					return abbrevEraNames[era - 1];
+				}
+				else
+				{
+					throw new ArgumentOutOfRangeException
+						("era", _("Arg_InvalidEra"));
+				}
 			}
 
 	// Get all date time patterns.
-	[TODO]
 	public String[] GetAllDateTimePatterns()
 			{
-				// TODO
-				String[] array = new String [1];
-				array[0] = FullDateTimePattern;
-				return array;
+				return (String[])(dateTimePatterns.Clone());
 			}
 	[TODO]
 	public String[] GetAllDateTimePatterns(char format)
@@ -612,10 +706,13 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				}
 			}
 
-#if !ECMA_COMPAT
-
-	// Non-ECMA properties.
-	public Calendar Calendar
+	// Get or set the calendar in use by this date/time formatting object.
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	Calendar Calendar
 			{
 				get
 				{
@@ -668,6 +765,10 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 					throw new ArgumentException(_("Arg_InvalidCalendar"));
 				}
 			}
+
+#if !ECMA_COMPAT
+
+	// Non-ECMA properties.
 	public CalendarWeekRule CalendarWeekRule
 			{
 				get
@@ -748,6 +849,24 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 							("value[" + index.ToString() + "]");
 					}
 				}
+			}
+
+	// Set the era name lists - this should not be used by applications.
+	// It exists to support I18N plugins, which have no other way to
+	// set this information through the published API's.
+	public void I18NSetEraNames(String[] names, String[] abbrevNames)
+			{
+				if(names == null)
+				{
+					throw new ArgumentNullException("names");
+				}
+				CheckForNulls(names);
+				if(abbrevNames != null)
+				{
+					CheckForNulls(abbrevNames);
+				}
+				eraNames = names;
+				abbrevEraNames = abbrevNames;
 			}
 
 }; // class DateTimeFormatInfo

@@ -20,6 +20,7 @@
 
 #include "engine_private.h"
 #include "cvm.h"
+#include "ffi.h"
 #ifdef HAVE_MATH_H
 #include <math.h>
 #endif
@@ -152,6 +153,18 @@ extern	"C" {
 			do { \
 				stacktop[0].ptrValue = \
 					SystemException(thread, "StackOverflowException", \
+									(ILInt32)(pc - pcstart)); \
+				stacktop += 1; \
+				goto throwException; \
+			} while (0)
+
+/*
+ * Throw a missing method exception.
+ */
+#define	MISSING_METHOD_EXCEPTION()	\
+			do { \
+				stacktop[0].ptrValue = \
+					SystemException(thread, "MissingMethodException", \
 									(ILInt32)(pc - pcstart)); \
 				stacktop += 1; \
 				goto throwException; \

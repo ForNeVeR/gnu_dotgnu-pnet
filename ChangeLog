@@ -14,6 +14,9 @@
 	samples/System.Xml.dll, samples/System.dll, samples/mscorlib.dll:
 	update all assemblies from pnetlib.
 
+	* engine/int_proto.h, engine/int_table.c: update the internalcall
+	tables from the latest mscorlib.dll.
+
 2002-11-03  Richard Baumann <biochem333@nyc.rr.com>
 	
 	* support/numformat.c, support/Makefile.am, include/il_utils.h: Add an

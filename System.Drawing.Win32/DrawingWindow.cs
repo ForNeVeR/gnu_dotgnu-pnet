@@ -534,7 +534,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 				Paint();
 				break;
 			case Win32.Api.WindowsMessages.WM_ERASEBKGND:
-				EraseBackground( (IntPtr)wParam );
+				EraseBackground( new IntPtr(wParam) );
 				retval=1;
 				break;
 

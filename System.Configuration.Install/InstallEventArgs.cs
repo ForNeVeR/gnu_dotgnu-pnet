@@ -22,6 +22,8 @@
 namespace System.Configuration.Install
 {
 
+#if !ECMA_COMPAT
+
 using System.Collections;
 
 public class InstallEventArgs : EventArgs
@@ -46,5 +48,7 @@ public class InstallEventArgs : EventArgs
 			}
 
 }; // class InstallEventArgs
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Configuration.Install

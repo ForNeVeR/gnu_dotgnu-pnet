@@ -22,6 +22,10 @@
 namespace System.Configuration.Install
 {
 
+#if !ECMA_COMPAT
+
 public delegate void InstallEventHandler(Object sender, InstallEventArgs e);
+
+#endif
 
 }; // namespace System.Configuration.Install

@@ -23,6 +23,8 @@ using System.Threading;
 using System.Reflection;
 using System.Reflection.Emit;
 
+#if CONFIG_REFLECTION_EMIT
+
 public class XYZ
 {
 	// Generates the following class dynamically and outputs to <name>.exe:
@@ -204,3 +206,14 @@ public class XYZ
 		XYZ.xyz("MyEmitTest");
 	}
 }
+
+#else
+
+public class XYZ
+{
+	public static void Main()
+	{
+	}
+}
+
+#endif

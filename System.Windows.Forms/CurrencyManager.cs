@@ -89,11 +89,14 @@ public class CurrencyManager: BindingManagerBase
 	{
 	}
 	
+#if CONFIG_COMPONENT_MODEL
 	[TODO]	
 	public override PropertyDescriptorCollection GetItemProperties()
 	{
 		return null;
 	}
+#endif
+
 	[TODO]	
 
 	public void Refresh()

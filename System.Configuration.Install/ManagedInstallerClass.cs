@@ -22,6 +22,8 @@
 namespace System.Configuration.Install
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -372,5 +374,7 @@ public class ManagedInstallerClass : IManagedInstaller
 			}
 
 }; // class ManagedInstallerClass
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Configuration.Install

@@ -25,7 +25,10 @@ namespace System.Windows.Forms
 using System.ComponentModel;
 
 [TODO]
-public abstract class CommonDialog : Component
+public abstract class CommonDialog
+#if CONFIG_COMPONENT_MODEL
+	: Component
+#endif
 {
 	[TODO]
 	public CommonDialog()

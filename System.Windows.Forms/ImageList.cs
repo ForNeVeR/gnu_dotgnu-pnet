@@ -29,13 +29,18 @@ using System.Drawing;
 
 
 [TODO]
-public sealed class ImageList : Component
+public sealed class ImageList
+#if CONFIG_COMPONENT_MODEL
+	: Component
+#endif
 {
 	// Variables
 	private ColorDepth colorDepth = ColorDepth.Depth8Bit;
 	private ImageCollection images;
 	private Size imageSize = new Size(16,16);
+#if CONFIG_SERIALIZATION
 	private ImageListStreamer imageStream = null;
+#endif
 	private Color transparentColor = Color.Transparent;
 	private Delegate rhHandler = null;
 
@@ -44,7 +49,7 @@ public sealed class ImageList : Component
 	{
 		images = new ImageCollection(this);
 	}
-#if !CONFIG_COMPACT_FORMS
+#if !CONFIG_COMPACT_FORMS && CONFIG_COMPONENT_MODEL
 	public ImageList(IContainer container) : base() { container.Add(this); }
 #endif
 
@@ -78,6 +83,7 @@ public sealed class ImageList : Component
 		}
 	}
 #if !CONFIG_COMPACT_FORMS
+#if CONFIG_SERIALIZATION
 	[TODO]
 	public ImageListStreamer ImageStream
 	{
@@ -88,6 +94,7 @@ public sealed class ImageList : Component
 			OnRecreateHandle();
 		}
 	}
+#endif
 	public Color TransparentColor
 	{
 		get { return transparentColor; }
@@ -96,7 +103,15 @@ public sealed class ImageList : Component
 #endif
 
 	// Methods
-	protected override void Dispose(bool disposing) { /* TODO */ }
+	[TODO]
+#if CONFIG_COMPONENT_MODEL
+	protected override void Dispose(bool disposing)
+#else
+	protected virtual void Dispose(bool disposing)
+#endif
+	{
+		/* TODO */
+	}
 #if !CONFIG_COMPACT_FORMS
 	public void Draw(Graphics g, Point pt, int index)
 	{

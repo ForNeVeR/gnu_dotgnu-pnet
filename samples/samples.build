@@ -346,7 +346,7 @@
 				 debug="true">
 
 			<sources>
-				<includes if="${CONFIG_REFLECTION_EMIT}" name="Emit.cs"/>
+				<file name="Emit.cs"/>
 			</sources>
 
 			<references>

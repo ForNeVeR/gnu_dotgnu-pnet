@@ -22,11 +22,15 @@
 namespace System.Configuration.Install
 {
 
+#if !ECMA_COMPAT
+
 public enum UninstallAction
 {
 	Remove		= 0,
 	NoAction	= 1
 
 }; // enum UninstallAction
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Configuration.Install

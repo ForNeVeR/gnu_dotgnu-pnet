@@ -26,7 +26,10 @@ using System.Collections;
 using System.Runtime.Serialization;
 
 [TODO]
-public class WebProxy : IWebProxy, ISerializable
+public class WebProxy : IWebProxy
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 	[TODO]
 	public WebProxy()
@@ -46,11 +49,13 @@ public class WebProxy : IWebProxy, ISerializable
 		throw new NotImplementedException(".ctor");
 	}
 
+#if CONFIG_SERIALIZATION
 	[TODO]
 	protected WebProxy(SerializationInfo serializationInfo, StreamingContext streamingContext)
 	{
 		throw new NotImplementedException(".ctor");
 	}
+#endif
 
 	[TODO]
 	public WebProxy(string Address, bool BypassOnLocal)
@@ -173,11 +178,13 @@ public class WebProxy : IWebProxy, ISerializable
 		throw new NotImplementedException("IsBypassed");
 	}
 
+#if CONFIG_SERIALIZATION
 	[TODO]
 	void ISerializable.GetObjectData(SerializationInfo serializationInfo, StreamingContext streamingContext)
 	{
 		throw new NotImplementedException("ISerializable.GetObjectData");
 	}
+#endif
 
 }; // class WebProxy
 

@@ -65,6 +65,7 @@ public abstract class BindingManagerBase
 	public abstract void AddNew();
 	public abstract void CancelCurrentEdit();
 	public abstract void EndCurrentEdit();
+#if CONFIG_COMPONENT_MODEL
 	public abstract PropertyDescriptorCollection GetItemProperties();
 
 	[TODO]
@@ -84,6 +85,7 @@ public abstract class BindingManagerBase
 	{
 		return null;
 	}
+#endif // CONFIG_COMPONENT_MODEL
 	
 	public abstract void RemoveAt( int index );
 	

@@ -22,6 +22,8 @@
 namespace System.Configuration.Install
 {
 
+#if !ECMA_COMPAT
+
 using System.Runtime.Serialization;
 
 public class InstallException : SystemException
@@ -40,5 +42,7 @@ public class InstallException : SystemException
 #endif
 
 }; // class InstallException
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Configuration.Install

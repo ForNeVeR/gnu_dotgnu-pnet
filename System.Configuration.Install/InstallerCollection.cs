@@ -22,6 +22,8 @@
 namespace System.Configuration.Install
 {
 
+#if !ECMA_COMPAT
+
 using System.Collections;
 
 public class InstallerCollection : CollectionBase
@@ -157,5 +159,7 @@ public class InstallerCollection : CollectionBase
 			}
 
 }; // class InstallerCollection
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Configuration.Install

@@ -51,7 +51,9 @@ public class BindingsCollection : BaseCollection
 		}
 	}
 
+#if CONFIG_COMPONENT_MODEL
 	public event CollectionChangeEventHandler CollectionChanged;
+#endif
 
 	[TODO]
 	protected override ArrayList List
@@ -72,10 +74,12 @@ public class BindingsCollection : BaseCollection
 	{
 	}
 
+#if CONFIG_COMPONENT_MODEL
 	[TODO]
 	protected virtual void OnCollectionChanged( CollectionChangeEventArgs ev )
 	{
 	}
+#endif
 
 	[TODO]
 	protected internal void Remove( Binding b )

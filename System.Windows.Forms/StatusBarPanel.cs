@@ -28,7 +28,10 @@ using System.ComponentModel;
 
 namespace System.Windows.Forms
 {
-	public class StatusBarPanel : Component, ISupportInitialize
+	public class StatusBarPanel
+	#if CONFIG_COMPONENT_MODEL
+		: Component, ISupportInitialize
+	#endif
 	{
 		private HorizontalAlignment alignment;
 		private StatusBarPanelAutoSize autosize;
@@ -53,6 +56,7 @@ namespace System.Windows.Forms
 			width = 100;
 		}
 
+	#if CONFIG_COMPONENT_MODEL
 		~StatusBarPanel()
 		{
 			Dispose(false);
@@ -66,6 +70,7 @@ namespace System.Windows.Forms
 			}
 			base.Dispose( disposing );
 		}
+	#endif
 
 		public void BeginInit()
 		{

@@ -81,6 +81,7 @@ public class SystemInformation
 					return 19;
 				}
 			}
+#if !ECMA_COMPAT
 	public static String ComputerName
 			{
 				get
@@ -88,6 +89,7 @@ public class SystemInformation
 					return Environment.MachineName;
 				}
 			}
+#endif
 	public static Size CursorSize
 			{
 				get
@@ -382,6 +384,7 @@ public class SystemInformation
 					return 16;
 				}
 			}
+#if !ECMA_COMPAT
 	public static String UserDomainName
 			{
 				get
@@ -403,6 +406,7 @@ public class SystemInformation
 					return Environment.UserName;
 				}
 			}
+#endif
 	public static int VerticalScrollBarArrowHeight
 			{
 				get

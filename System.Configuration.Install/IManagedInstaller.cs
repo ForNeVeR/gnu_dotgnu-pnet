@@ -22,6 +22,8 @@
 namespace System.Configuration.Install
 {
 
+#if !ECMA_COMPAT
+
 using System.Runtime.InteropServices;
 
 #if CONFIG_COM_INTEROP
@@ -35,5 +37,7 @@ public interface IManagedInstaller
 	int ManagedInstall(String commandLine, int hInstall);
 
 }; // interface IManagedInstaller
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Configuration.Install

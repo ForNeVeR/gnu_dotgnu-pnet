@@ -26,8 +26,10 @@ namespace System.ComponentModel
 {
 #if !CONFIG_COMPONENT_MODEL
 
-	[Serializable]
-	public delegate void CancelEventHandler(Object sender, CancelEventArgs e);
+#if !ECMA_COMPAT
+[Serializable]
+#endif
+public delegate void CancelEventHandler(Object sender, CancelEventArgs e);
 
 #endif
 }//namespace

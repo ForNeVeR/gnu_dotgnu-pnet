@@ -22,6 +22,8 @@
 namespace System.Configuration.Install
 {
 
+#if !ECMA_COMPAT
+
 using System.Collections;
 using System.ComponentModel;
 
@@ -479,5 +481,7 @@ public class Installer
 			}
 
 }; // class Installer
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Configuration.Install

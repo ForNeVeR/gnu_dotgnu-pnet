@@ -48,6 +48,7 @@ public sealed class Instanceof : BinaryOp
 				{
 					// Try to coerce to the destination type.
 					Type type = (Type)v2;
+				#if !ECMA_COMPAT
 					if(v1 is IConvertible)
 					{
 						try
@@ -59,6 +60,7 @@ public sealed class Instanceof : BinaryOp
 							return false;
 						}
 					}
+				#endif
 					return type.IsAssignableFrom(v1.GetType());
 				}
 				else

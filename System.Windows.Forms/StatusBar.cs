@@ -194,7 +194,9 @@ namespace System.Windows.Forms
 			set { base.Font = value; }
 		}
 
+	#if CONFIG_COMPONENT_MODEL
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+	#endif
 		public StatusBarPanelCollection Panels 
 		{
 			get { return panels; }

@@ -24,8 +24,6 @@ using CSUnit;
 using System;
 using System.Threading;
 
-#if !ECMA_COMPAT
-
 public class TestThread
 	: TestCase
 {
@@ -194,5 +192,3 @@ public class TestThread
 		
 	}
 }
-
-#endif

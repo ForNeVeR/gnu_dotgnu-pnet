@@ -23,6 +23,8 @@
 namespace System.Windows.Forms
 {
 
+#if CONFIG_SERIALIZATION
+
 using System.Runtime.Serialization;
 
 [Serializable]
@@ -36,5 +38,7 @@ public class ImageListStreamer : ISerializable
 	}
 
 }; // class ImageListStreamer
+
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Windows.Forms

@@ -40,11 +40,13 @@ public sealed class Clipboard
 	[TODO]
 	public static IDataObject GetDataObject()
 	{
+	#if !ECMA_COMPAT
 		Thread ct = Thread.CurrentThread;
 		if (ct.ApartmentState != ApartmentState.STA)
 		{
 			throw new ThreadStateException(/* TODO */);
 		}
+	#endif
 		return obj;
 	}
 

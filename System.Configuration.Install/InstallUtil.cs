@@ -31,6 +31,7 @@ public class InstallUtil
 	// Main entry point for the program.
 	public static int Main(String[] args)
 			{
+			#if !ECMA_COMPAT
 				int exitCode = 0;
 				try
 				{
@@ -42,6 +43,10 @@ public class InstallUtil
 					exitCode = 1;
 				}
 				return exitCode;
+			#else
+				Console.WriteLine("This program is not available in ECMA mode");
+				return 1;
+			#endif
 			}
 
 }; // class InstallUtil

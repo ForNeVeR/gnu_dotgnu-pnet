@@ -88,9 +88,14 @@ public struct BindingMemberInfo
 					String current = BindingMember;
 					String other;
 					other = ((BindingMemberInfo)otherObject).BindingMember;
+				#if !ECMA_COMPAT
 					return (String.Compare
 								(current, other, true,
 								 CultureInfo.InvariantCulture) == 0);
+				#else
+					return (String.Compare
+								(current, other, true) == 0);
+				#endif
 				}
 				else
 				{

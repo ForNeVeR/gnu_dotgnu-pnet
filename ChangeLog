@@ -6,6 +6,8 @@
 
 	* NEWS, configure.in: update version for the "0.5.10" release.
 
+	* configure.in: update working version to "0.5.11".
+
 2003-07-19  Gopal.V  <gopalv82@symonds.net>
 	
 	* configure.in: look for build/library.make as well

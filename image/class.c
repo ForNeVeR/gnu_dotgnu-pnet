@@ -25,25 +25,6 @@ extern	"C" {
 #endif
 
 /*
- * Hash a class name.
- */
-static int HashClassName(const char *name, const char *namespace)
-{
-	unsigned long hash;
-	if(namespace)
-	{
-		hash = ILHashString(0, namespace, strlen(namespace));
-		hash = ILHashString(hash, ".", 1);
-	}
-	else
-	{
-		hash = 0;
-	}
-	hash = ILHashString(hash, name, strlen(name));
-	return (int)(hash & (IL_CONTEXT_HASH_SIZE - 1));
-}
-
-/*
  * Add a nesting relationship between two classes.
  */
 static int AddNested(ILClass *parent, ILClass *child)
@@ -151,7 +132,6 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 							ILProgramItem *scope)
 {
 	ILClass *info;
-	int hash;
 
 	/* Allocate space for the class information block */
 	info = ILMemStackAlloc(&(image->memStack), ILClass);
@@ -190,9 +170,10 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 	}
 
 	/* Add the class to the context's hash table */
-	hash = HashClassName(info->name, info->namespace);
-	info->nextHash = image->context->classHash[hash];
-	image->context->classHash[hash] = info;
+	if(!ILHashAdd(image->context->classHash, info))
+	{
+		return 0;
+	}
 
 	/* Done */
 	return info;
@@ -334,7 +315,7 @@ ILClass *ILClassImport(ILImage *image, ILClass *info)
 {
 	ILClass *newInfo;
 	ILProgramItem *scope;
-	int hash;
+	ILClassKeyInfo key;
 
 	/* Nothing to do if the class is already in the same image */
 	if(info->programItem.image == image)
@@ -365,29 +346,26 @@ ILClass *ILClassImport(ILImage *image, ILClass *info)
 	}
 
 	/* See if we already have a reference to this class */
-	hash = HashClassName(info->name, info->namespace);
-	newInfo = image->context->classHash[hash];
-	while(newInfo != 0)
+	key.name = info->name;
+	key.nameLen = strlen(info->name);
+	key.namespace = info->namespace;
+	key.namespaceLen = (info->namespace ? strlen(info->namespace) : 0);
+	key.scope = scope;
+	key.image = image;
+	key.wantGlobal = 0;
+	newInfo = ILHashFindType(image->context->classHash, &key, ILClass);
+	if(newInfo != 0)
 	{
-		if(!strcmp(info->name, newInfo->name) &&
-		   ((info->namespace && newInfo->namespace &&
-		     !strcmp(info->namespace, newInfo->namespace)) ||
-		    (!(info->namespace) && !(newInfo->namespace))) &&
-		   newInfo->programItem.image == image &&
-		   newInfo->scope == scope)
+		/* Link "newInfo" to "info" */
+		if(!_ILProgramItemLinkedTo(&(newInfo->programItem)))
 		{
-			/* Link "newInfo" to "info" */
-			if(!_ILProgramItemLinkedTo(&(newInfo->programItem)))
+			if(!_ILProgramItemLink(&(newInfo->programItem),
+								   &(info->programItem)))
 			{
-				if(!_ILProgramItemLink(&(newInfo->programItem),
-									   &(info->programItem)))
-				{
-					return 0;
-				}
+				return 0;
 			}
-			return newInfo;
 		}
-		newInfo = newInfo->nextHash;
+		return newInfo;
 	}
 
 	/* Create a new reference */
@@ -478,39 +456,18 @@ ILContext *ILClassToContext(ILClass *info)
 	return info->programItem.image->context;
 }
 
+/*
+ * Matching function that is used by "_ILClassRemoveAllFromHash".
+ */
+static int ClassRemove_Match(const ILClass *classInfo, ILImage *key)
+{
+	return (classInfo->programItem.image == key);
+}
+
 void _ILClassRemoveAllFromHash(ILImage *image)
 {
-	int hash;
-	ILClass *info, *prevInfo, *nextInfo;
-	ILContext *context = image->context;
-
-	/* Destroy all classes that belong to the image */
-	for(hash = 0; hash < IL_CONTEXT_HASH_SIZE; ++hash)
-	{
-		info = context->classHash[hash];
-		prevInfo = 0;
-		while(info != 0)
-		{
-			if(info->programItem.image == image)
-			{
-				nextInfo = info->nextHash;
-				if(prevInfo)
-				{
-					prevInfo->nextHash = nextInfo;
-				}
-				else
-				{
-					context->classHash[hash] = nextInfo;
-				}
-				info = nextInfo;
-			}
-			else
-			{
-				prevInfo = info;
-				info = info->nextHash;
-			}
-		}
-	}
+	ILHashRemoveSubset(image->context->classHash,
+					   (ILHashMatchFunc)ClassRemove_Match, image, 0);
 }
 
 int ILClassIsValid(ILClass *info)
@@ -544,70 +501,59 @@ int ILClassIsValid(ILClass *info)
 ILClass *ILClassLookup(ILProgramItem *scope,
 					   const char *name, const char *namespace)
 {
-	ILContext *context = scope->image->context;
-	int hash = HashClassName(name, namespace);
-	ILClass *info = context->classHash[hash];
-	while(info != 0)
-	{
-		if(namespace)
-		{
-			if(info->namespace)
-			{
-				if(!strcmp(info->name, name) &&
-				   !strcmp(info->namespace, namespace))
-				{
-					if(info->scope == scope)
-					{
-						return info;
-					}
-				}
-			}
-		}
-		else if(!strcmp(info->name, name) && !(info->namespace))
-		{
-			if(info->scope == scope)
-			{
-				return info;
-			}
-		}
-		info = info->nextHash;
-	}
-	return 0;
+	ILClassKeyInfo key;
+	key.name = name;
+	key.nameLen = strlen(name);
+	key.namespace = namespace;
+	key.namespaceLen = (namespace ? strlen(namespace) : 0);
+	key.scope = scope;
+	key.image = 0;
+	key.wantGlobal = 0;
+	return ILHashFindType(scope->image->context->classHash, &key, ILClass);
+}
+
+ILClass *ILClassLookupLen(ILProgramItem *scope,
+					      const char *name, int nameLen,
+						  const char *namespace, int namespaceLen)
+{
+	ILClassKeyInfo key;
+	key.name = name;
+	key.nameLen = nameLen;
+	key.namespace = namespace;
+	key.namespaceLen = namespaceLen;
+	key.scope = scope;
+	key.image = 0;
+	key.wantGlobal = 0;
+	return ILHashFindType(scope->image->context->classHash, &key, ILClass);
 }
 
 ILClass *ILClassLookupGlobal(ILContext *context,
 					   		 const char *name, const char *namespace)
 {
-	int hash = HashClassName(name, namespace);
-	ILClass *info = context->classHash[hash];
-	while(info != 0)
-	{
-		if(namespace)
-		{
-			if(info->namespace)
-			{
-				if(!strcmp(info->name, name) &&
-				   !strcmp(info->namespace, namespace))
-				{
-					if((info->scope->token & IL_META_TOKEN_MASK)
-								== IL_META_TOKEN_MODULE)
-					{
-						return info;
-					}
-				}
-			}
-		}
-		else if(!strcmp(info->name, name) && !(info->namespace))
-		{
-			if((info->scope->token & IL_META_TOKEN_MASK)
-						== IL_META_TOKEN_MODULE)
-			{
-				return info;
-			}
-		}
-		info = info->nextHash;
-	}
-	return 0;
+	ILClassKeyInfo key;
+	key.name = name;
+	key.nameLen = strlen(name);
+	key.namespace = namespace;
+	key.namespaceLen = (namespace ? strlen(namespace) : 0);
+	key.scope = 0;
+	key.image = 0;
+	key.wantGlobal = 1;
+	return ILHashFindType(context->classHash, &key, ILClass);
+}
+
+ILClass *ILClassLookupGlobalLen(ILContext *context,
+							    const char *name, int nameLen,
+								const char *namespace, int namespaceLen)
+{
+	ILClassKeyInfo key;
+	key.name = name;
+	key.nameLen = nameLen;
+	key.namespace = namespace;
+	key.namespaceLen = namespaceLen;
+	key.scope = 0;
+	key.image = 0;
+	key.wantGlobal = 1;
+	return ILHashFindType(context->classHash, &key, ILClass);
 }
 
 ILImplements *ILClassAddImplements(ILClass *info, ILClass *interface,
@@ -1387,6 +1333,15 @@ ILClass *ILClassResolveSystem(ILImage *image, void *data, const char *name,
 {
 	ILProgramItem *scope;
 	ILClass *classInfo;
+
+	/* If we have a system image, then always use that.
+	   This will prevent applications from replacing the
+	   system types with their own definitions */
+	if(image->context->systemImage)
+	{
+		return ILClassLookup(ILClassGlobalScope(image->context->systemImage),
+							 name, namespace);
+	}
 
 	/* Try looking in the image itself */
 	scope = ILClassGlobalScope(image);

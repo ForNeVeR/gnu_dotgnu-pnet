@@ -7,6 +7,10 @@ implement a new helper library for hash tables.
 * include/il_image.h, image/context.c, image/image.h: new functions
 "ILContextGetSynthetic", "ILContextGetSystem", and "ILContextSetSystem".
 
+* image/class.c: use the new hash table library for looking up classes
+by name; use "systemImage" for "ILClassResolveSystem" if it is set;
+implement "ILClassLookupLen" and "ILClassLookupGlobalLen".
+
 2001-10-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/Makefile.am: remove "interpreter.c" from the engine build;

@@ -65,6 +65,8 @@ internal class Api
 			WM_KEYDOWN = 0x0100,
 			WM_KEYUP = 0x0101,
 			WM_CHAR = 0x0102,
+			WM_SYSKEYDOWN = 0x0104,
+			WM_SYSKEYUP = 0x0105,
 			WM_SYSCOMMAND = 0x112,
 			WM_TIMER = 0x0113,
 			WM_MOUSEMOVE = 0x0200,
@@ -399,7 +401,10 @@ internal class Api
 	{
 		public IntPtr hdc;
 		public bool fErase;
-		public RECT rcPaint;
+		public int rcPaintLeft;
+		public int rcPaintTop;
+		public int rcPaintRight;
+		public int rcPaintBottom;
 		public bool fRestore;
 		public bool fIncUpdate;
 		public int reserved1;
@@ -647,7 +652,7 @@ internal class Api
 	public static extern bool TextOutA(IntPtr hdc, int x, int y, string textstring, int charCount);
 
 	[DllImport("user32")]
-	public static extern IntPtr BeginPaint(IntPtr hwnd, out PAINTSTRUCT ps);
+	public static extern IntPtr BeginPaint(IntPtr hwnd, ref PAINTSTRUCT ps);
 
 	[DllImport("user32")]
 	public static extern bool EndPaint (IntPtr hwnd, ref PAINTSTRUCT ps);
@@ -773,6 +778,9 @@ internal class Api
 
 	[DllImport("user32")]
 	public static extern IntPtr GetForegroundWindow();
+
+	[DllImport("user32")]
+	public static extern IntPtr GetFocus();
 
 	[DllImport("user32")]
 	public static extern bool CloseWindow(IntPtr hWnd);

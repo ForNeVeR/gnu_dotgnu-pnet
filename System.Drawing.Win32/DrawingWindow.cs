@@ -141,13 +141,15 @@ internal abstract class DrawingWindow : IToolkitWindow
 	{
 		get
 		{
-			return Win32.Api.GetForegroundWindow() == hwnd;
+			return Win32.Api.GetFocus() == hwnd;
+			
 		}
 	}
 
 	//Set the focus to this window
 	void IToolkitWindow.Focus()
 	{
+		d.WriteLine("DrawingWindow.Focus:"+ hwnd);
 		Win32.Api.SetFocus(hwnd);
 	}
 
@@ -393,13 +395,13 @@ internal abstract class DrawingWindow : IToolkitWindow
 	//WM_PAINT
 	protected void Paint()
 	{
-		Win32.Api.PAINTSTRUCT myPS;
-		hdc = Win32.Api.BeginPaint( hwnd, out myPS );
+		Win32.Api.PAINTSTRUCT myPS = new System.Drawing.Win32.Api.PAINTSTRUCT();
+		hdc = Win32.Api.BeginPaint( hwnd, ref myPS );
 		if( sink != null )
 		{
 			DrawingGraphics g = new DrawingGraphics( toolkit, hdc );
 			System.Drawing.Graphics gr = ToolkitManager.CreateGraphics( g );
-			gr.SetClip(new Rectangle( myPS.rcPaint.left, myPS.rcPaint.top, myPS.rcPaint.right - myPS.rcPaint.left, myPS.rcPaint.bottom - myPS.rcPaint.top ));
+			gr.SetClip(new Rectangle( myPS.rcPaintLeft, myPS.rcPaintTop, myPS.rcPaintRight - myPS.rcPaintLeft, myPS.rcPaintBottom - myPS.rcPaintTop ));
 			sink.ToolkitExpose( gr );
 			gr.Dispose();
 		}
@@ -575,12 +577,14 @@ internal abstract class DrawingWindow : IToolkitWindow
 				break;
 
 			case Win32.Api.WindowsMessages.WM_KEYDOWN:
+			case Win32.Api.WindowsMessages.WM_SYSKEYDOWN:
 				KeyDown( wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_CHAR:
 				Char( wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_KEYUP:
+			case Win32.Api.WindowsMessages.WM_SYSKEYUP:
 				KeyUp( wParam, lParam );
 				break;
 

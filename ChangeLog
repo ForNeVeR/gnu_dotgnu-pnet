@@ -14,6 +14,11 @@
 
 	* csharp/expr/as1.jl: updated version with "JavaGenClassRef" fix.
 
+	* csharp/expr/Makefile.am, csharp/expr/is1.cs, csharp/expr/is1.err,
+	csharp/expr/is1.il, csharp/expr/is1.jerr, csharp/expr/is1.jl,
+	csharp/expr/is2.cs, csharp/expr/is2.err, csharp/expr/is2.jerr:
+	add tests for the "is" operator.
+
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/cast4.cs,

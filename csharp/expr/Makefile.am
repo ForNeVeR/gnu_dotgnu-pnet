@@ -15,6 +15,8 @@ TESTS = as1.cs \
 		const1.cs \
 		incdec1.cs \
 		incdec2.cs \
+		is1.cs \
+		is2.cs \
 		relop1.cs \
 		relop2.cs \
 		shift1.cs \

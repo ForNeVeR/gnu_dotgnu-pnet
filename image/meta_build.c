@@ -3186,9 +3186,12 @@ static int Load_ExportedType(ILImage *image, ILUInt32 *values,
 	}
 
 	/* Add the exported type to the "redo" list */
-	if(!AddToRedoList(image->context, &(type->classItem.programItem)))
+	if((image->loadFlags & IL_LOADFLAG_NO_RESOLVE) == 0)
 	{
-		return IL_LOADERR_MEMORY;
+		if(!AddToRedoList(image->context, &(type->classItem.programItem)))
+		{
+			return IL_LOADERR_MEMORY;
+		}
 	}
 
 	/* Done */

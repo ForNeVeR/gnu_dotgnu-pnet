@@ -13,6 +13,9 @@
 
 	* codegen/jv_output.c (JavaGenNewArray): implement missing function.
 
+	* codegen/cg_cast.tc, codegen/jv_cast.tc: implement the "String"
+	to "Object" cast as a NOP.
+
 2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_decls.tc (AddConstantValue): decimal attribute values

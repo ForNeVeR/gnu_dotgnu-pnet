@@ -1641,6 +1641,7 @@ ILGenCast(ILMachineType_Void, ILMachineType_ManagedValue)
 	ILGenAdjust(info, 1);
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_ObjectRef),
+ILGenCast(ILMachineType_String, ILMachineType_ObjectRef),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UnmanagedPtr),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_ManagedPtr),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_TransientPtr),

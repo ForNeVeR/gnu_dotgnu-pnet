@@ -2053,6 +2053,7 @@ JavaGenCast(ILMachineType_Void, ILMachineType_ManagedValue)
 	JavaGenAdjust(info, 1);
 }
 JavaGenCast(ILMachineType_ObjectRef, ILMachineType_ObjectRef),
+JavaGenCast(ILMachineType_String, ILMachineType_ObjectRef),
 JavaGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UnmanagedPtr),
 JavaGenCast(ILMachineType_ManagedPtr, ILMachineType_ManagedPtr),
 JavaGenCast(ILMachineType_TransientPtr, ILMachineType_TransientPtr),

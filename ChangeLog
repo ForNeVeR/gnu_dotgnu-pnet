@@ -1,4 +1,8 @@
 
+2003-05-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cscc.c: add java and bf recognizers to the cscc front-end.
+
 2003-05-17  Gopal.V  <gopalv82@symonds.net>
 
 	* configure.in, cscc/Makefile.am, cscc/java_main.c, cscc/java/java_cast.tc

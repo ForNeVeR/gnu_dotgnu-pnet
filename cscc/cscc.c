@@ -201,6 +201,19 @@ int main(int argc, char *argv[])
 					language = "vb";
 					extension = "vb";
 				}
+				else if(CompareExtensions(filename + len, "java"))
+				{
+					/* This is a Java source file */
+					language = "java";
+					extension = "java";
+				}
+				else if(CompareExtensions(filename + len, "bf") ||
+						CompareExtensions(filename + len, "b"))
+				{
+					/* This is a bf source file */
+					language = "bf";
+					extension = filename + len;
+				}
 				else
 				{
 					/* Use the extension as the language name */
@@ -526,6 +539,14 @@ static void ParseCommandLine(int argc, char *argv[])
 		else if(prog_language == PROG_LANG_VB)
 		{
 			prog_language_name = "vb";
+		}
+		else if(prog_language == PROG_LANG_JAVA)
+		{
+			prog_language_name = "java";
+		}
+		else if(prog_language == PROG_LANG_BF)
+		{
+			prog_language_name = "bf";
 		}
 		else
 		{

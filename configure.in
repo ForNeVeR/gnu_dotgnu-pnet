@@ -5,7 +5,7 @@ dnl Determine the build, host, and target system types.
 AC_CANONICAL_SYSTEM
 
 dnl Initialize automake.
-AM_INIT_AUTOMAKE(pnet, 0.4.8)
+AM_INIT_AUTOMAKE(pnet, 0.4.9)
 AM_CONFIG_HEADER(include/il_config.h)
 AM_MAINTAINER_MODE
 

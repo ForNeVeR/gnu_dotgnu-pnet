@@ -1,4 +1,64 @@
 
+0.6.10 (30 October 2004)
+
+	Runtime engine:
+
+	* Null parameter names when emitting parameters (Gopal V).
+	* Various fixes to System.Reflection internalcalls (Gopal V).
+	* Thread suspend/resume (Thong Nguyen).
+	* Internalcalls for CustomAttributeBuilder (Rhys Weatherley).
+	* Use "fprem", not "fprem1" for x86 IL remainder (Rhys Weatherley).
+	* Handle vararg methods and delegates more centrally (Gopal V).
+	* System.Decimal division bug (Klaus Treichel).
+
+	C# Compiler:
+
+	* Work around some PPC64-related optimization problesm (Gopal V).
+	* Nested class "famorassem" handling (Gopal V).
+	* Fixes to enum initializers (Gopal V).
+
+	BF Compiler:
+
+	* Fix the behavior of BFOptimize() which currently destroys the
+	  parse tree (Gopal V).
+
+	Loader and Metadata:
+
+	* Prevent double loading of assemblies by using the full path (Gopal V).
+	* Use ILNativeUInt instead of "unsigned long" in il_types.h, which
+	  fixes some problems with 64-bit platforms (Rhys Weatherley).
+	* Properly import types before writing them out with SR.Emit (Gopal V).
+	* Add a flag to enable ignoring load errors (Rhys Weatherley).
+
+	Assembler:
+
+	* Forward references for data labels (Gopal V).
+
+	Platform Support:
+
+	* Get user name via uid, rather than getlogin (Carl-Adam Brengesjo).
+	* Enable threading for Solaris (Robin Kay).
+	* Fix boot time calculation at the nanosecond level (Gopal V).
+	* Bug in socket selection for infinite selects (Gopal V).
+	* Alter gen_errno.sh to handle errno codes that are split across
+	  multiple header files (Rhys Weatherley).
+	* Response file support in cpp for systems with limited command
+	  line lengths (Maciek Plewa).
+	* Socket flags for Solaris (Adam J. Tybor).
+	* Port socket code to hpux by including <sys/modem.h> (Gopal V).
+	* Fix daylight savings for Win32 (Carl-Adam Brengesjo).
+	* Libffi bug in x86-64, causing incorrect stack alignment (Gopal V).
+	* Serial I/O routines for Win32 (Gopal V).
+	* Timeouts in Unix version of serial reads (Adam Gibson).
+	* Various profile fixes (Gopal V).
+	* BeOS port (Tomas Wilhelmsson).
+	* Cris port (Simon Posnjak).
+	* Man page formatting problems (Peter Lund).
+
+	Other:
+
+	* Clean up Debian packaging (Russell Stuart).
+
 0.6.8 (8 August 2004)
 
 	Runtime engine:

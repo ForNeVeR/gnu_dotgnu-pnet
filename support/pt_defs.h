@@ -72,7 +72,7 @@ extern	"C" {
 /*
  * Determine if we have read-write lock support in pthreads.
  */
-#ifdef PTHREAD_RWLOCK_INITIALIZER
+#if defined(PTHREAD_RWLOCK_INITIALIZER) && defined(__USE_UNIX98)
 	#define	IL_HAVE_RWLOCKS
 #endif
 

@@ -8,6 +8,10 @@
 	configure scripts, just in case they are not set to executable
 	(bug #7406).
 
+	* support/pt_defs.h: check for __USE_UNIX98 before allowing
+	read-write locks to be used, as there are some systems that
+	define PTHREAD_RWLOCK_INITIALIZER without defining pthread_rwlock_t.
+
 2004-03-12  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/pinvoke.c (PackDelegateParams): process pointer values

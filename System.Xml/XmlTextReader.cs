@@ -47,9 +47,16 @@ public class XmlTextReader : XmlReader
 	private TextReader reader;
 	private String baseURI;
 	private Encoding encoding;
-	private XmlNode currentNode;
-	private XmlNode contextNode;
 	private int ungetch;
+	private XmlNodeType nodeType;
+	private String prefix;
+	private String localName;
+	private String namespaceURI;
+	private String value;
+	private XmlAttributeCollection attributes;
+	private int attributeIndex;
+	private int depth;
+	private bool isEmpty;
 
 	// Constructors.
 	protected XmlTextReader()
@@ -75,12 +82,19 @@ public class XmlTextReader : XmlReader
 				xmlSpace = XmlSpace.None;
 				xmlResolver = new XmlUrlResolver();
 				lineNumber = 1;
-				linePosition = 1;
+				linePosition = 0;
 				baseURI = String.Empty;
 				encoding = null;
-				currentNode = null;
-				contextNode = document;
 				ungetch = -1;
+				nodeType = XmlNodeType.None;
+				prefix = String.Empty;
+				localName = String.Empty;
+				namespaceURI = String.Empty;
+				value = String.Empty;
+				attributes = null;
+				attributeIndex = -1;
+				depth = 1;
+				isEmpty = false;
 			}
 	public XmlTextReader(Stream input)
 			: this(String.Empty, input, new NameTable())
@@ -219,15 +233,6 @@ public class XmlTextReader : XmlReader
 	// Returns the value of an attribute with a specific index.
 	public override String GetAttribute(int i)
 			{
-				XmlAttributeCollection attributes;
-				if(currentNode == null)
-				{
-					attributes = null;
-				}
-				else
-				{
-					attributes = currentNode.AttributesInternal;
-				}
 				if(attributes != null)
 				{
 					if(i >= 0 && i < attributes.Count)
@@ -242,13 +247,7 @@ public class XmlTextReader : XmlReader
 	// Returns the value of an attribute with a specific name.
 	public override String GetAttribute(String name, String namespaceURI)
 			{
-				XmlAttributeCollection attributes;
 				XmlAttribute attribute;
-				if(currentNode == null)
-				{
-					return null;
-				}
-				attributes = currentNode.AttributesInternal;
 				if(attributes != null)
 				{
 					attribute = attributes[name, namespaceURI];
@@ -263,13 +262,7 @@ public class XmlTextReader : XmlReader
 	// Returns the value of an attribute with a specific qualified name.
 	public override String GetAttribute(String name)
 			{
-				XmlAttributeCollection attributes;
 				XmlAttribute attribute;
-				if(currentNode == null)
-				{
-					return null;
-				}
-				attributes = currentNode.AttributesInternal;
 				if(attributes != null)
 				{
 					attribute = attributes[name];
@@ -295,34 +288,14 @@ public class XmlTextReader : XmlReader
 				return namespaceManager.LookupNamespace(prefix);
 			}
 
-	// Synchronize on an element if the current is an attribute.
-	private void SyncOnElement()
-			{
-				XmlAttribute attr = (currentNode as XmlAttribute);
-				if(attr != null)
-				{
-					currentNode = attr.parent;
-				}
-			}
-
 	// Move the current position to a particular attribute.
 	public override void MoveToAttribute(int i)
 			{
-				XmlAttributeCollection attributes;
-				SyncOnElement();
-				if(currentNode == null)
-				{
-					attributes = null;
-				}
-				else
-				{
-					attributes = currentNode.AttributesInternal;
-				}
 				if(attributes != null)
 				{
 					if(i >= 0 && i < attributes.Count)
 					{
-						currentNode = attributes[i];
+						attributeIndex = i;
 						return;
 					}
 				}
@@ -333,20 +306,13 @@ public class XmlTextReader : XmlReader
 	// Move the current position to an attribute with a particular name.
 	public override bool MoveToAttribute(String name, String ns)
 			{
-				XmlAttributeCollection attributes;
 				XmlAttribute attribute;
-				if(currentNode == null)
-				{
-					return false;
-				}
-				SyncOnElement();
-				attributes = currentNode.AttributesInternal;
 				if(attributes != null)
 				{
 					attribute = attributes[name, ns];
 					if(attribute != null)
 					{
-						currentNode = attribute;
+						attributeIndex = attributes.IndexOf(attribute);
 						return true;
 					}
 				}
@@ -356,20 +322,13 @@ public class XmlTextReader : XmlReader
 	// Move the current position to an attribute with a qualified name.
 	public override bool MoveToAttribute(String name)
 			{
-				XmlAttributeCollection attributes;
 				XmlAttribute attribute;
-				if(currentNode == null)
-				{
-					return false;
-				}
-				SyncOnElement();
-				attributes = currentNode.AttributesInternal;
 				if(attributes != null)
 				{
 					attribute = attributes[name];
 					if(attribute != null)
 					{
-						currentNode = attribute;
+						attributeIndex = attributes.IndexOf(attribute);
 						return true;
 					}
 				}
@@ -379,10 +338,9 @@ public class XmlTextReader : XmlReader
 	// Move to the element that owns the current attribute.
 	public override bool MoveToElement()
 			{
-				XmlAttribute attr = (currentNode as XmlAttribute);
-				if(attr != null)
+				if(attributeIndex != -1)
 				{
-					currentNode = attr.parent;
+					attributeIndex = -1;
 					return true;
 				}
 				else
@@ -394,16 +352,10 @@ public class XmlTextReader : XmlReader
 	// Move to the first attribute owned by the current element.
 	public override bool MoveToFirstAttribute()
 			{
-				XmlAttributeCollection attributes;
-				if(currentNode != null)
+				if(attributes != null && attributes.Count > 0)
 				{
-					SyncOnElement();
-					attributes = currentNode.AttributesInternal;
-					if(attributes != null && attributes.Count > 0)
-					{
-						currentNode = attributes[0];
-						return true;
-					}
+					attributeIndex = 0;
+					return true;
 				}
 				return false;
 			}
@@ -411,22 +363,19 @@ public class XmlTextReader : XmlReader
 	// Move to the next attribute owned by the current element.
 	public override bool MoveToNextAttribute()
 			{
-				XmlAttribute attr = (currentNode as XmlAttribute);
-				XmlAttributeCollection attributes;
 				int index;
-				if(attr != null)
+				if(attributeIndex != -1)
 				{
-					attributes = currentNode.ParentNode.AttributesInternal;
 					if(attributes != null)
 					{
-						index = attributes.IndexOf(attr) + 1;
+						index = attributeIndex + 1;
 						if(index <= 0 || index >= attributes.Count)
 						{
 							return false;
 						}
 						else
 						{
-							currentNode = attributes[index];
+							attributeIndex = index;
 							return true;
 						}
 					}
@@ -444,6 +393,7 @@ public class XmlTextReader : XmlReader
 	// Read the next character.
 	private int ReadChar()
 			{
+				++linePosition;
 				if(ungetch != -1)
 				{
 					int ch = ungetch;
@@ -456,10 +406,78 @@ public class XmlTextReader : XmlReader
 				}
 			}
 
-	// Unget the last character to be read again next time.
-	private void UngetChar(int ch)
+	// Clear the node information.
+	private void ClearNodeInfo()
 			{
-				ungetch = ch;
+				nodeType = XmlNodeType.None;
+				prefix = String.Empty;
+				localName = String.Empty;
+				namespaceURI = String.Empty;
+				value = String.Empty;
+				attributes = null;
+				attributeIndex = -1;
+				isEmpty = false;
+			}
+
+	// Unget the last character and throw a read error.
+	private void UngetAndThrow(int ch)
+			{
+				--linePosition;
+				if(ch != -1)
+				{
+					ungetch = ch;
+				}
+				readState = ReadState.Error;
+				ClearNodeInfo();
+				throw new XmlException(S._("Xml_ReaderError"));
+			}
+
+	// Read an identifier from the input stream.
+	private String ReadIdentifier()
+			{
+				// TODO
+				return null;
+			}
+
+	// Set the name information from an identifier.
+	private void SetName(String identifier)
+			{
+				int index = identifier.LastIndexOf(':');
+				if(index >= 0)
+				{
+					prefix = nameTable.Add(identifier.Substring(0, index));
+					localName = nameTable.Add(identifier.Substring(index + 1));
+				}
+				else
+				{
+					prefix = String.Empty;
+					localName = nameTable.Add(identifier);
+				}
+				namespaceURI = String.Empty;
+			}
+
+	// Skip white space characters.
+	private void SkipWhite()
+			{
+				int ch;
+				while((ch = ReadChar()) != -1)
+				{
+					if(!Char.IsWhiteSpace((char)ch))
+					{
+						ungetch = ch;
+						break;
+					}
+				}
+			}
+
+	// Expect the next character to be a certain value.
+	private void Expect(char expected)
+			{
+				int ch = ReadChar();
+				if(ch != expected)
+				{
+					UngetAndThrow(ch);
+				}
 			}
 
 	// Read the next node in the input stream.
@@ -468,6 +486,7 @@ public class XmlTextReader : XmlReader
 			{
 				int ch;
 				StringBuilder builder;
+				String name;
 				int count;
 
 				// Validate the current state of the stream.
@@ -486,7 +505,6 @@ public class XmlTextReader : XmlReader
 
 				// Skip white space in the input stream.  TODO: collect
 				// up significant white space.
-				++linePosition;
 				while((ch = ReadChar()) != -1)
 				{
 					if(!Char.IsWhiteSpace((char)ch))
@@ -496,21 +514,19 @@ public class XmlTextReader : XmlReader
 					if(ch == '\n')
 					{
 						++lineNumber;
-						linePosition = 1;
-					}
-					else
-					{
-						++linePosition;
+						linePosition = 0;
 					}
 				}
 				if(ch == -1)
 				{
 					// We've reached the end of the stream.  Throw
 					// an error if we haven't closed all elements.
-					// TODO: error handling
-					--linePosition;
+					if(linePosition > 1)
+					{
+						--linePosition;
+					}
 					readState = ReadState.EndOfFile;
-					currentNode = null;
+					ClearNodeInfo();
 					return false;
 				}
 
@@ -518,31 +534,36 @@ public class XmlTextReader : XmlReader
 				if(ch == '<')
 				{
 					// Some kind of tag.
-					++linePosition;
 					ch = ReadChar();
 					if(ch == '/')
 					{
 						// End element tag.
-						// TODO
+						name = ReadIdentifier();
+						SkipWhite();
+						Expect('>');
+						nodeType = XmlNodeType.Element;
+						SetName(name);
+						value = String.Empty;
+						attributes = null;
+						attributeIndex = -1;
+						isEmpty = false;
+						--depth;
 					}
 					else if(ch == '!')
 					{
 						// Comment, CDATA, or document type information.
-						++linePosition;
 						ch = ReadChar();
 						if(ch == '-')
 						{
 							// Parse the "<!--" comment start sequence.
-							++linePosition;
 							ch = ReadChar();
 							if(ch != '-')
 							{
-								goto error;
+								UngetAndThrow(ch);
 							}
 
 							// Search for the "-->" comment end sequence.
 							builder = new StringBuilder();
-							++linePosition;
 							count = 0;
 							while((ch = ReadChar()) != -1)
 							{
@@ -567,31 +588,18 @@ public class XmlTextReader : XmlReader
 								if(ch == '\n')
 								{
 									++lineNumber;
-									linePosition = 1;
-								}
-								else
-								{
-									++linePosition;
+									linePosition = 0;
 								}
 							}
 							if(ch != '>')
 							{
-								goto error;
+								UngetAndThrow(ch);
 							}
 
 							// Create a comment node and return.
-							currentNode = document.CreateComment
-								(builder.ToString());
-							try
-							{
-								contextNode.AppendChild(currentNode);
-							}
-							catch(InvalidOperationException)
-							{
-								readState = ReadState.Error;
-								currentNode = null;
-								throw new XmlException(S._("Xml_ReaderError"));
-							}
+							ClearNodeInfo();
+							nodeType = XmlNodeType.Comment;
+							value = builder.ToString();
 							return true;
 						}
 						else if(ch == '[')
@@ -604,7 +612,7 @@ public class XmlTextReader : XmlReader
 						}
 						else
 						{
-							goto error;
+							UngetAndThrow(ch);
 						}
 					}
 					else if(ch == '?')
@@ -619,7 +627,7 @@ public class XmlTextReader : XmlReader
 					}
 					else
 					{
-						goto error;
+						UngetAndThrow(ch);
 					}
 				}
 				else
@@ -629,18 +637,6 @@ public class XmlTextReader : XmlReader
 				}
 
 				return false;
-
-				// We jump to here if some kind of parse error occurred
-				// on the last character that we read.
-			error:
-				--linePosition;
-				if(ch != -1)
-				{
-					UngetChar(ch);
-				}
-				readState = ReadState.Error;
-				currentNode = null;
-				throw new XmlException(S._("Xml_ReaderError"));
 			}
 
 	// Read the next attribute value in the input stream.
@@ -718,20 +714,6 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					XmlAttributeCollection attributes;
-					XmlAttribute attr = (currentNode as XmlAttribute);
-					if(attr != null)
-					{
-						attributes = attr.ParentNode.AttributesInternal;
-					}
-					else if(currentNode != null)
-					{
-						attributes = currentNode.AttributesInternal;
-					}
-					else
-					{
-						return 0;
-					}
 					if(attributes != null)
 					{
 						return attributes.Count;
@@ -757,15 +739,14 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					XmlNode node = currentNode;
-					int depth = 0;
-					while(node != null && !(node is XmlDocument) &&
-					      !(node is XmlDocumentFragment))
+					if(attributeIndex == -1)
 					{
-						++depth;
-						node = node.parent;
+						return depth;
 					}
-					return depth;
+					else
+					{
+						return depth + 1;
+					}
 				}
 			}
 
@@ -817,20 +798,30 @@ public class XmlTextReader : XmlReader
 				}
 			}
 
+	// Get the current node as an attribute, if appropriate.
+	private XmlAttribute GetAsAttribute()
+			{
+				if(attributes != null && attributeIndex != -1)
+				{
+					return attributes[attributeIndex];
+				}
+				else
+				{
+					return null;
+				}
+			}
+
 	// Determine if the current node's value was generated from a DTD default.
 	public override bool IsDefault
 			{
 				get
 				{
-					XmlAttribute attr = (currentNode as XmlAttribute);
+					XmlAttribute attr = GetAsAttribute();
 					if(attr != null)
 					{
 						return !(attr.Specified);
 					}
-					else
-					{
-						return false;
-					}
+					return false;
 				}
 			}
 
@@ -839,10 +830,9 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					XmlElement element = (currentNode as XmlElement);
-					if(element != null)
+					if(nodeType == XmlNodeType.Element)
 					{
-						return element.IsEmpty;
+						return isEmpty;
 					}
 					else
 					{
@@ -900,7 +890,14 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					return linePosition;
+					if(linePosition > 0)
+					{
+						return linePosition;
+					}
+					else
+					{
+						return 0;
+					}
 				}
 			}
 
@@ -909,13 +906,14 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					if(currentNode != null)
+					XmlAttribute attr = GetAsAttribute();
+					if(attr != null)
 					{
-						return currentNode.LocalName;
+						return attr.LocalName;
 					}
 					else
 					{
-						return String.Empty;
+						return localName;
 					}
 				}
 			}
@@ -925,13 +923,18 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					if(currentNode != null)
+					XmlAttribute attr = GetAsAttribute();
+					if(attr != null)
 					{
-						return currentNode.Name;
+						return attr.Name;
+					}
+					else if(prefix != String.Empty)
+					{
+						return nameTable.Add(prefix + ":" + localName);
 					}
 					else
 					{
-						return String.Empty;
+						return localName;
 					}
 				}
 			}
@@ -950,13 +953,14 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					if(currentNode != null)
+					XmlAttribute attr = GetAsAttribute();
+					if(attr != null)
 					{
-						return currentNode.NamespaceURI;
+						return attr.NamespaceURI;
 					}
 					else
 					{
-						return String.Empty;
+						return namespaceURI;
 					}
 				}
 			}
@@ -1002,13 +1006,13 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					if(currentNode != null)
+					if(attributeIndex != -1)
 					{
-						return currentNode.NodeType;
+						return XmlNodeType.Attribute;
 					}
 					else
 					{
-						return XmlNodeType.None;
+						return nodeType;
 					}
 				}
 			}
@@ -1018,13 +1022,14 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					if(currentNode != null)
+					XmlAttribute attr = GetAsAttribute();
+					if(attr != null)
 					{
-						return currentNode.Prefix;
+						return attr.Prefix;
 					}
 					else
 					{
-						return String.Empty;
+						return prefix;
 					}
 				}
 			}
@@ -1052,13 +1057,14 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					if(currentNode != null)
+					XmlAttribute attr = GetAsAttribute();
+					if(attr != null)
 					{
-						return currentNode.Value;
+						return attr.Value;
 					}
 					else
 					{
-						return String.Empty;
+						return value;
 					}
 				}
 			}

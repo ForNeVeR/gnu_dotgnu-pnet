@@ -1,4 +1,10 @@
 
+2002-12-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/XmlTextReader.cs: rearrange the XML reading code so
+	that it won't be necessary to create explicit XmlNode objects during
+	parsing, reducing memory requirements.
+
 2002-12-22  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Reflection/Emit/ILGenerator.cs, 

@@ -1228,7 +1228,16 @@ public class TestString : TestCase
 		AssertEquals("foo.Replace(\"Fu\",\"Foo\")",foo,foo.Replace("Fu","Foo"));
 		AssertEquals("foo.Replace(\"Foo Bar\",\"\")","",foo.Replace("Foo Bar",""));
 		AssertEquals("foo.Replace(\"Foo Bar\",null)","",foo.Replace("Foo Bar",null));
-		AssertEquals("foo.Replace(null,\"Foo Bar\")",foo,foo.Replace(null,"Foo Bar")); // I'm beginning to hate the ECMA -- Rich
+		// Behavior changed by MS in 2.0 (Rich: they want to keep us busy)
+		try
+		{
+			foo.Replace(null,"Foo Bar");
+			Fail("foo.Replace(null,\"Foo Bar\") should have thrown an ArgumentNullException");
+		}
+		catch(ArgumentNullException)
+		{
+			// SUCCESS
+		}
 	}
 
 	public void TestStringSubstring()

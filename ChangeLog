@@ -1,4 +1,9 @@
 
+2005-03-10  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/runtime/System/TestString.cs: Changed test for replace with
+	oldValue = null (throws ArgumentNullException in 2.0).
+ 
 2005-03-10  Marc Haisenko <marc@darkdust.net>
 
 	* Xsharp/DoubleBuffer.cs: clear the background either when we don't

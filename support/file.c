@@ -407,14 +407,44 @@ int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn)
 
 int ILSysIOLock(ILSysIOHandle handle, ILInt64 position, ILInt64 length)
 {
-	/* Locking is not yet supported - TODO */
+#if defined(HAVE_FCNTL) && defined(HAVE_F_SETLKW)
+	struct flock cntl_data;
+	/* set fields individually...who knows what extras are there? */
+	cntl_data.l_type = F_WRLCK;
+	cntl_data.l_whence = SEEK_SET;
+	/* actually, off_t changes in LFS on 32bit, so be careful */
+	cntl_data.l_start = (off_t)(ILNativeInt) position;
+	cntl_data.l_len = (off_t)(ILNativeInt) length;
+	/* -1 is error, anything else is OK */
+	if (fcntl ((int)(ILNativeInt) handle, F_SETLKW, &cntl_data) != -1)
+		return 1;
+	else
+		return 0;
+#else /* !defined(HAVE_FCNTL) || !defined(HAVE_F_SETLKW) */
+	/* Locking is not supported w/o fcntl - TODO */
 	return 1;
+#endif /* !defined(HAVE_FCNTL) || !defined(HAVE_F_SETLKW) */
 }
 
 int ILSysIOUnlock(ILSysIOHandle handle, ILInt64 position, ILInt64 length)
 {
-	/* Locking is not yet supported - TODO */
+#if defined(HAVE_FCNTL) && defined(HAVE_F_SETLKW)
+	struct flock cntl_data;
+	/* set fields individually...who knows what extras are there? */
+	cntl_data.l_type = F_UNLCK;
+	cntl_data.l_whence = SEEK_SET;
+	/* actually, off_t changes in LFS on 32bit, so be careful */
+	cntl_data.l_start = (off_t)(ILNativeInt) position;
+	cntl_data.l_len = (off_t)(ILNativeInt) length;
+	/* -1 is error, anything else is OK */
+	if (fcntl ((int)(ILNativeInt) handle, F_SETLKW, &cntl_data) != -1)
+		return 1;
+	else
+		return 0;
+#else /* !defined(HAVE_FCNTL) || !defined(HAVE_F_SETLKW) */
+	/* Unlocking is not supported w/o fcntl - TODO */
 	return 1;
+#endif /* !defined(HAVE_FCNTL) || !defined(HAVE_F_SETLKW) */
 }
 
 int ILSysIOHasAsync(void)

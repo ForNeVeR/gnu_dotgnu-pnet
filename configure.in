@@ -396,6 +396,26 @@ AC_CHECK_FUNCS(mkdir ioctl setsockopt getsockopt uname)
 AC_CHECK_FUNCS(tcgetattr)
 AC_FUNC_ALLOCA
 
+dnl check for F_SETLKW fcntl function.
+AC_CACHE_CHECK(for F_SETLKW fcntl function, ac_cv_f_setlkw,
+               [AC_TRY_COMPILE(
+[#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif],
+							   [int myvar = F_SETLKW;],
+							   ac_cv_f_setlkw=yes,
+							   ac_cv_f_setlkw=no)])
+dnl This is the version that uses AC_CHECK_DECL, which isn't
+dnl available in autoconf-2.13.  Unlock if/when we change.
+dnl               [AC_CHECK_DECL(F_SETLKW, ac_cv_f_setlkw=yes,
+dnl                                        ac_cv_f_setlkw=no,
+dnl[#ifdef HAVE_FCNTL_H
+dnl#include <fcntl.h>
+dnl#endif])])
+if test x"${ac_cv_f_setlkw}" = xyes; then
+    AC_DEFINE(HAVE_F_SETLKW, 1, [Defined if we have the F_SETLKW function argument to fcntl])
+fi
+
 dnl Add the thread libraries to the end of the link line.
 LIBS="$LIBS $THREADLIBS"
 

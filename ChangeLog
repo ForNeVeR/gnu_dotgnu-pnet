@@ -1,4 +1,11 @@
 
+2003-11-10  Stephen Compall  <s11@member.fsf.org>
+
+	* support/file.c (ILSysIOLock, ILSysIOUnlock): Exclusive file
+	locking support, only when fcntl and F_SETLKW are present.
+
+	* configure.in: Check for F_SETLKW in fcntl.h.
+
 2003-11-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant_cscc.c, csant/csant_defs.h, csant/csant_parse.c:

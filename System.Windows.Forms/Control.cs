@@ -2481,6 +2481,10 @@ public class Control : IWin32Window, IDisposable
 					b.Intersect(parentInvalidateBounds);
 					if (!b.IsEmpty)
 					{
+						if(toolkitWindow == null)
+						{
+							CreateHandle();
+						}
 						toolkitWindow.Invalidate(b.X, b.Y, b.Width, b.Height);
 					}
 				}

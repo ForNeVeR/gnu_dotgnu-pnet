@@ -953,7 +953,15 @@ JavaGenDiscard(ILNode_GotoLabel)
  */
 JavaGenDiscard(ILNode_GotoCase)
 {
-	/* TODO */
+	if(info->needSwitchPop)
+	{
+		/* Note: Because node->expr has the same type as 
+		   switch->expr , this works . And what's more
+		   this is a constant */
+		/* Compute the switch expression's value */
+		JavaGenValue(node->expr, info);
+	}
+	JavaGenJump(info,JAVA_OP_GOTO,&(node->switchSection->label));
 }
 
 /*
@@ -961,7 +969,16 @@ JavaGenDiscard(ILNode_GotoCase)
  */
 JavaGenDiscard(ILNode_GotoDefault)
 {
-	/* TODO */
+	ILNode_Switch * switchNode=(ILNode_Switch*)(info->currentSwitch);
+	if(info->needSwitchPop)
+	{
+		/* Compute the switch expression's value */
+		JavaGenValue(switchNode->expr,info);
+		/* here we have no choice , but to generate the
+		   switch expression, again.*/
+	}
+	JavaGenJump(info, JAVA_OP_GOTO, &(((ILNode_SwitchSection*)
+					(switchNode->defaultSection))->label));
 }
 
 /*
@@ -1202,6 +1219,8 @@ JavaGenDiscard(ILNode_Switch)
 	ILMachineType type;
 	int size;
 	int needPop = 0;
+	int savePop;
+	ILNode *saveSwitch;
 
 	/* Compute the switch expression's value */
 	type = JavaGenValue(node->expr, info);
@@ -1350,6 +1369,12 @@ JavaGenDiscard(ILNode_Switch)
 	}
 
 	/* Generate code for the switch sections */
+	savePop = info->needSwitchPop;
+	info->needSwitchPop = needPop;
+	saveSwitch=info->currentSwitch;
+	info->currentSwitch=(ILNode*)node;
+
+	/* Generate code for the switch sections */
 	ILNode_ListIter_Init(&iter, node->sections);
 	while((section = (ILNode_SwitchSection *)ILNode_ListIter_Next(&iter)) != 0)
 	{
@@ -1372,6 +1397,10 @@ JavaGenDiscard(ILNode_Switch)
 		/* Output the code for the section */
 		JavaGenDiscard(section->stmt, info);
 	}
+
+	/* leave currentSwitch and restores saveSwitch */
+	info->needSwitchPop = savePop;
+	info->currentSwitch = saveSwitch;
 
 	/* Pop from the switch context and set the default and break labels */
 	PopLoop(info);

@@ -687,6 +687,7 @@ struct _tagILSwitchValue
 %node ILNode_GotoCase ILNode_Statement =
 {
 	ILNode *expr;
+	%nocreate ILNode_SwitchSection *switchSection={0};
 }
 %node ILNode_GotoDefault ILNode_Statement
 %node ILNode_NewScope ILNode_Statement =
@@ -702,6 +703,7 @@ struct _tagILSwitchValue
 	%nocreate ILNode *defaultSection = {0};
 	%nocreate ILSwitchValue *switchValues = {0};
 	%nocreate unsigned long numSwitchValues = {0};
+	%nocreate ILType* switchType={0};
 	%nocreate ILSwitchTableType tableType = {ILSwitchTableType_Indexed};
 }
 %node ILNode_SwitchSectList ILNode_List
@@ -710,6 +712,7 @@ struct _tagILSwitchValue
 	ILNode *caseList;
 	ILNode *stmt;
 	%nocreate ILLabel label = {ILLabel_Undefined};
+	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 }
 %node ILNode_CaseList ILNode_List
 %node ILNode_CaseLabel ILNode_Statement =

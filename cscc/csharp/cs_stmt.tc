@@ -715,10 +715,6 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 			}
 		}
 
-		/* Perform semantic analysis on the section's body */
-		ILNode_SemAnalysis(((ILNode_SwitchSection *)section)->stmt, info,
-						   &(((ILNode_SwitchSection *)section)->stmt));
-
 		/* The body must end in some kind of return or jump statement */
 		if(!ILNodeEndsInFlowChange(((ILNode_SwitchSection *)section)->stmt))
 		{
@@ -726,6 +722,21 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 						  "`switch' section falls through");
 		}
 	}
+	/* split into 2 passes to facilitate goto case 
+	 * So SemAnalysis is performed after all the CaseLabels are
+	 * collected.
+	 */
+	/* Iterate through the sections again */
+	ILNode_ListIter_Init(&iter1, sections);
+	while((section = ILNode_ListIter_Next(&iter1)) != 0)
+	{
+		((ILNode_SwitchSection*)section)->visited=ILVisitMode_Processing;
+		/* Perform semantic analysis on the section's body */
+		ILNode_SemAnalysis(((ILNode_SwitchSection *)section)->stmt, info,
+						   &(((ILNode_SwitchSection *)section)->stmt));
+		((ILNode_SwitchSection*)section)->visited=ILVisitMode_Done;
+	}
+
 
 	/* Sort the case label list into ascending order */
 	if(size > 1)
@@ -855,6 +866,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 	ILType *stringType;
 	int posn;
 	unsigned long size;
+	ILNode *savedSwitch;
 
 	/* Perform semantic analysis on the expression */
 	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
@@ -907,8 +919,12 @@ ILNode_SemAnalysis(ILNode_Switch)
 	/* Cast the switch expression to the governing type */
 	ILCast(info, node->expr, &(node->expr), actualType, switchType);
 
+	node->switchType=switchType;
+
 	/* Enter the switch context */
 	PushStmtContext(info, CS_STMT_SWITCH);
+	savedSwitch=info->currentSwitch;
+	info->currentSwitch=(ILNode*)node;
 
 	/* Count the number of case labels and find the default case */
 	node->numSwitchValues = CountLabelsAndFindDefault
@@ -939,6 +955,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 	node->tableType = SwitchTableType(switchType, node->switchValues,
 									  node->numSwitchValues);
 
+	info->currentSwitch=savedSwitch;
 	/* Leave the switch context */
 	PopStmtContext(info);
 
@@ -982,7 +999,88 @@ ILNode_SemAnalysis(ILNode_GotoLabel)
  */
 ILNode_SemAnalysis(ILNode_GotoCase)
 {
-	/* TODO */
+	CSSemValue value;
+	ILEvalValue evalValue;
+	ILNode_Switch *switchExpr;
+	ILMachineType switchMachineType;
+	ILSwitchValue switchValue;
+	unsigned long posn;
+
+	if(!StmtContextOK(info, CS_STMT_SWITCH, CS_STMT_FINALLY))
+	{
+		if(StmtContextOK(info, CS_STMT_FINALLY, 0))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`goto' used inside `finally' clause");
+			return CSSemValueDefault;
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`goto' used outside switch");
+			return CSSemValueDefault;
+		}
+	}
+
+	/* if node->currentSwitch is NULL, then somebody messed up the 
+	   PushStmtContext . It is a "bug detection" bug */
+	/* Initialize */
+
+	switchExpr=(ILNode_Switch*)(info->currentSwitch);
+	switchMachineType = ILTypeToMachineType(switchExpr->switchType);
+
+
+	if(!CSSemExpectValue(node->expr, info,
+							 &(node->expr), &value))
+	{
+		CCErrorOnLine(yygetfilename(node->expr),
+					  yygetlinenum(node->expr),
+					  "invalid case label expression");
+		return CSSemValueDefault;
+	}
+	/* Coerce the case expression to the governing type */
+	if(!ILCoerce(info, node->expr, &(node->expr),
+					 CSSemGetType(value), switchExpr->switchType))
+	{
+		CCErrorOnLine(yygetfilename(node->expr),
+						  yygetlinenum(node->expr),
+						  "no conversion from `%s' to `%s'",
+						  CSTypeToName(CSSemGetType(value)),
+						  CSTypeToName(switchExpr->switchType));
+		return CSSemValueDefault;
+	}
+	
+	/* Evaluate the constant value for the case expression */
+	if(!ILNode_EvalConst(node->expr, info, &evalValue) ||
+		   !ILGenCastConst(info, &evalValue, evalValue.valueType,
+				   				   switchMachineType))
+	{
+		CCErrorOnLine(yygetfilename(node->expr),
+						  yygetlinenum(node->expr),
+						  "case expression is not constant");
+		return CSSemValueDefault;
+	}
+
+	switchValue.value=evalValue;
+	for(posn = 0; posn < switchExpr->numSwitchValues ; ++posn)
+	{
+		if(CompareCaseLabels(&(switchExpr->switchValues[posn]), 
+			&(switchValue)) == 0)
+		{
+			node->switchSection=(ILNode_SwitchSection*)
+					(switchExpr->switchValues[posn].section);
+			if(node->switchSection->visited==ILVisitMode_Processing)
+			{
+				CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+				  "circularity in 'goto' detected");
+			}
+			return CSSemValueDefault;
+		}
+	}
+	/* if we get here , the case entry was not locatable */
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "could not find a matching case for 'goto'");
+	
 	return CSSemValueDefault;
 }
 
@@ -991,7 +1089,34 @@ ILNode_SemAnalysis(ILNode_GotoCase)
  */
 ILNode_SemAnalysis(ILNode_GotoDefault)
 {
-	/* TODO */
+	ILNode_SwitchSection *defaultSection;
+	if(!StmtContextOK(info, CS_STMT_SWITCH, CS_STMT_FINALLY))
+	{
+		if(StmtContextOK(info, CS_STMT_FINALLY, 0))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`goto' used inside `finally' clause");
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`goto' used outside switch");
+		}
+		return CSSemValueDefault;
+	}
+	defaultSection=(ILNode_SwitchSection*)
+		(((ILNode_Switch*)info->currentSwitch)->defaultSection);
+	if(!defaultSection)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "no `default' case for switch");
+		return CSSemValueDefault;
+	}
+	if(defaultSection->visited == ILVisitMode_Processing)
+	{
+		CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+		  "circularity in 'goto' detected");
+	}
 	return CSSemValueDefault;
 }
 

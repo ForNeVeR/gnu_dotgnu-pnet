@@ -1422,7 +1422,15 @@ ILNode_GenDiscard(ILNode_GotoLabel)
  */
 ILNode_GenDiscard(ILNode_GotoCase)
 {
-	/* TODO */
+	if(info->needSwitchPop)
+	{
+		/* Note: Because node->expr has the same type as 
+		   switch->expr , this works . And what's more
+		   this is a constant */
+		/* Compute the switch expression's value */
+		ILNode_GenValue(node->expr, info);
+	}
+	ILGenJump(info, IL_OP_BR, &(node->switchSection->label));
 }
 
 /*
@@ -1430,7 +1438,17 @@ ILNode_GenDiscard(ILNode_GotoCase)
  */
 ILNode_GenDiscard(ILNode_GotoDefault)
 {
-	/* TODO */
+	ILNode_Switch * switchNode=(ILNode_Switch*)(info->currentSwitch);
+	if(info->needSwitchPop)
+	{
+		/* Compute the switch expression's value */
+		ILNode_GenValue(switchNode->expr,info);
+		/* here we have no choice , but to generate the
+		   switch expression. Or maybe I could pick case[1]
+		   and generate it ?. But that could cause problems*/
+	}
+	ILGenJump(info, IL_OP_BR, &(((ILNode_SwitchSection*)
+					(switchNode->defaultSection))->label));
 }
 
 %{
@@ -1687,6 +1705,7 @@ ILNode_GenDiscard(ILNode_Switch)
 	ILInt32 temp;
 	int needPop = 0;
 	int savePop;
+	ILNode *saveSwitch;
 
 	/* Compute the switch expression's value */
 	ILNode_GenValue(node->expr, info);
@@ -1788,6 +1807,9 @@ ILNode_GenDiscard(ILNode_Switch)
 	/* Generate code for the switch sections */
 	savePop = info->needSwitchPop;
 	info->needSwitchPop = needPop;
+	saveSwitch=info->currentSwitch;
+	info->currentSwitch=(ILNode*)node;
+
 	if(node->body)
 	{
 		/* C-style switch: output the code for the entire body */
@@ -1814,6 +1836,7 @@ ILNode_GenDiscard(ILNode_Switch)
 		}
 	}
 	info->needSwitchPop = savePop;
+	info->currentSwitch = saveSwitch;
 
 	/* Pop from the switch context and set the default and break labels */
 	PopLoop(info);

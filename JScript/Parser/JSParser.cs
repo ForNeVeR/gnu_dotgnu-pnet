@@ -175,7 +175,6 @@ public class JSParser
 	// Parse a numeric value from the scanner.
 	private Object NumericValue(String text)
 			{
-				// TODO: handle hex literals.
 				if(text.Length > 2 && text[1] == 'x' && text[0] == '0')
 				{
 					long longValue = Int64.Parse(text.Substring(2), 
@@ -197,6 +196,11 @@ public class JSParser
 					   Math.Round(value) == value)
 					{
 						return (int)value;
+					}
+					else if(value >= (double)(Int64.MinValue) &&
+							value <= (double)(Int64.MaxValue))
+					{
+						return (long)value;
 					}
 					else
 					{

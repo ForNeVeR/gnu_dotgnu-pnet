@@ -6,6 +6,9 @@
 
 	* JScript/Builtins/StringObject.cs, JScript/Builtins/StringProtoype.cs:
 	Implement charAt , charCodeAt and connect "length" property .
+	
+	* JScript/Parser/JSParser.cs: Use longs if the integer literals overflow
+	Int32.
 
 2004-08-16  Gopal V  <gopalv82@yahoo.com>
 

@@ -29,9 +29,9 @@
 #define ILFileMode_Truncate		5
 #define ILFileMode_Append		6
 
-#define ILFileAccess_Read		0x01
-#define ILFileAccess_Write		0x02
-#define ILFileAccess_ReadWrite 	(ILFileAccess_Read | ILFileAccess_Write)
+#define ILFileAccess_Read 0x01
+#define ILFileAccess_Write 0x02
+#define ILFileAccess_ReadWrite (ILFileAccess_Read | ILFileAccess_Write)
 
 static ILNativeInt Platform_FileMethods_GetInvalidHandle(ILExecThread *thread)
 {
@@ -226,8 +226,8 @@ static ILBool Platform_FileMethods_CanSeek(ILExecThread *thread,
 static ILBool Platform_FileMethods_CheckHandleAccess(ILExecThread *thread,
 				ILNativeInt handle,ILUInt32 access)
 {
-	/* TODO */	
-	return 1;
+  ILFileHandle fh = (ILFileHandle)handle;
+  return ILFileCheckHandleAccess(fh, access);
 }
 static ILInt64 Platform_FileMethods_Seek(ILExecThread *thread, 
 				ILNativeInt handle,ILInt64 offset,ILUInt32 origin)
@@ -272,6 +272,7 @@ IL_METHOD_BEGIN(_ILPlatformFileMethods)
 					 Platform_FileMethods_Open)
 	 IL_METHOD("CanSeek","(j)Z",
 					 Platform_FileMethods_CanSeek)
+     IL_METHOD("CheckHandleAccess", "(ji)Z", Platform_FileMethods_CheckHandleAccess)
 	 IL_METHOD("Seek","(jli)l",
 					 Platform_FileMethods_Seek)
 	 IL_METHOD("Write","(j[Bii)Z",

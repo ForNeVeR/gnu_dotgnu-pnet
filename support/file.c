@@ -29,10 +29,17 @@
 #ifdef HAVE_UNISTD_H
 	#include <unistd.h>
 #endif
+#ifdef HAVE_FCNTL_H
+        #include <fcntl.h>
+#endif
 #ifdef _WIN32
 	#include <windows.h>
 	#include <io.h>
 #endif
+
+#define ILFileAccess_Read 0x01
+#define ILFileAccess_Write 0x02
+#define ILFileAccess_ReadWrite (ILFileAccess_Read | ILFileAccess_Write) 
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -144,6 +151,46 @@ int ILFileWrite(void *buf,int size,int num,ILFileHandle handle)
 	FILE *fp=(FILE*)handle;
 	return(fread(buf,size,num,fp));
 }
+ILBool ILFileCheckHandleAccess(ILFileHandle handle, ILUInt32 access)
+{
+#ifdef HAVE_FCNTL
+  int fd = ( *(int *) handle);
+  int flags = fcntl(fd, F_GETFL, 0);
+  if (flags != -1)
+    {
+      switch(access)
+	{
+	case ILFileAccess_Read:
+	  if (flags & O_RDONLY)
+	    {
+	      return 1;
+	    }
+	  break;
+        case ILFileAccess_Write:
+	  if (flags & O_WRONLY) 
+	    {
+	      return 1;
+	    }
+	  break;
+        case ILFileAccess_ReadWrite:
+	  if (flags & O_RDWR) 
+	    {
+	      return 1;
+	    } 
+	  break;
+	default:
+	  return 0;
+	  
+	}
+    }
+      /* The access is not on the handle */
+      return 0;
+#else
+      /* TODO */
+      return 0;
+#endif
+}     
+
 int ILFileSeek(ILFileHandle handle, long offset,int from)
 {
 	FILE *fp=(FILE*)handle;

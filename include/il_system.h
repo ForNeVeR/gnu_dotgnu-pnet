@@ -160,6 +160,7 @@ ILBool ILFileClose(ILFileHandle handle);
 ILBool ILFileCreate(const char * path);
 int ILFileRead(void *buf,int size,int num,ILFileHandle handle);
 int ILFileWrite(void *buf,int size,int num,ILFileHandle handle);
+ILBool ILFileCheckHandleAccess(ILFileHandle handle, ILUInt32 access);
 int ILFileSeek(ILFileHandle handle, long offset,int from);
 long ILFileTell (ILFileHandle handle);
 int ILFileFlush(ILFileHandle handle);
@@ -170,3 +171,6 @@ int ILFileHasAsync(ILFileHandle handle);
 #endif
 
 #endif	/* _IL_SYSTEM_H */
+
+
+

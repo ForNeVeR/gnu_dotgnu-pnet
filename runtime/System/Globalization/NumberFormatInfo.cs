@@ -24,16 +24,15 @@ namespace System.Globalization
 
 using System;
 
-public sealed class NumberFormatInfo : Object, ICloneable, IFormatProvider
+public sealed class NumberFormatInfo : ICloneable, IFormatProvider
 {
 	// Internal state.
 	private static NumberFormatInfo invariantInfo;
-	private NumberFormatInfo wrappedAround;
 	private int currencyDecimalDigits;
 	private String currencyDecimalSeparator;
-	private int[] currencyGroupSize;
-	private int[] numberGroupSize;
-	private int[] percentGroupSize;
+	private int[] currencyGroupSizes;
+	private int[] numberGroupSizes;
+	private int[] percentGroupSizes;
 	private String currencyGroupSeparator;
 	private String currencySymbol;
 	private String nanSymbol;
@@ -54,779 +53,663 @@ public sealed class NumberFormatInfo : Object, ICloneable, IFormatProvider
 	private String percentGroupSeparator;
 	private String percentSymbol;
 	private String perMilleSymbol;
+	private bool readOnly;
 
 	// Properties.
 	public static NumberFormatInfo InvariantInfo
-	{
-		get
-		{
-			if(invariantInfo == null)
 			{
-				invariantInfo = new NumberFormatInfo(new NumberFormatInfo());
+				get
+				{
+					lock(typeof(NumberFormatInfo))
+					{
+						if(invariantInfo == null)
+						{
+							invariantInfo = new NumberFormatInfo();
+							invariantInfo.readOnly = true;
+						}
+						return invariantInfo;
+					}
+				}
 			}
-			return invariantInfo;
-		}
-	}
 	public static NumberFormatInfo CurrentInfo
-	{
-		get
-		{
-			// TO DO: get the culture-dependent object for the current
-			// thread from System.Globalization.CultureInfo.
-			return InvariantInfo;
-		}
-	}
+			{
+				get
+				{
+					return CultureInfo.CurrentCulture.NumberFormat;
+				}
+			}
 	public int CurrencyDecimalDigits
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.CurrencyDecimalDigits;
+				get
+				{
+					return currencyDecimalDigits;
+				}
+				set
+				{
+					if(value < 0 || value > 99)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", _("Arg_Value0To99"));
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					currencyDecimalDigits = value;
+				}
 			}
-			else
-			{
-				return currencyDecimalDigits;
-			}
-		}
-		set
-		{
-			if(value < 0 || value > 99)
-			{
-				throw new ArgumentOutOfRangeException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			currencyDecimalDigits = value;
-		}
-	}
 	public String CurrencyDecimalSeparator
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.CurrencyDecimalSeparator;
+				get
+				{
+					return currencyDecimalSeparator;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					currencyDecimalSeparator = value;
+				}
 			}
-			else
-			{
-				return currencyDecimalSeparator;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			currencyDecimalSeparator = value;
-		}
-	}
 	public bool IsReadOnly
-	{
-		get
-		{
-			return (wrappedAround != null);
-		}
-	}
-	public int[] CurrencyGroupSize
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.CurrencyGroupSize;
+				get
+				{
+					return readOnly;
+				}
 			}
-			else
+	public int[] CurrencyGroupSizes
 			{
-				return currencyGroupSize;
+				get
+				{
+					return currencyGroupSizes;
+				}
+				set
+				{
+					ValidateGroupSizes(value);
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					currencyGroupSizes = value;
+				}
 			}
-		}
-		set
-		{
-			validateGroupSize(value);
-			if(wrappedAround != null)
+	public int[] NumberGroupSizes
 			{
-				throw new InvalidOperationException();
+				get
+				{
+					return numberGroupSizes;
+				}
+				set
+				{
+					ValidateGroupSizes(value);
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					numberGroupSizes = value;
+				}
 			}
-			currencyGroupSize = value;
-		}
-	}
-	public int[] NumberGroupSize
-	{
-		get
-		{
-			if(wrappedAround != null)
+	public int[] PercentGroupSizes
 			{
-				return wrappedAround.NumberGroupSize;
+				get
+				{
+					return percentGroupSizes;
+				}
+				set
+				{
+					ValidateGroupSizes(value);
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					percentGroupSizes = value;
+				}
 			}
-			else
-			{
-				return numberGroupSize;
-			}
-		}
-		set
-		{
-			validateGroupSize(value);
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			numberGroupSize = value;
-		}
-	}
-	public int[] PercentGroupSize
-	{
-		get
-		{
-			if(wrappedAround != null)
-			{
-				return wrappedAround.PercentGroupSize;
-			}
-			else
-			{
-				return percentGroupSize;
-			}
-		}
-		set
-		{
-			validateGroupSize(value);
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			percentGroupSize = value;
-		}
-	}
 	public String CurrencyGroupSeparator
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.CurrencyGroupSeparator;
+				get
+				{
+					return currencyGroupSeparator;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					currencyGroupSeparator = value;
+				}
 			}
-			else
-			{
-				return currencyGroupSeparator;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			currencyGroupSeparator = value;
-		}
-	}
 	public String CurrencySymbol
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.CurrencySymbol;
+				get
+				{
+					return currencySymbol;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					currencySymbol = value;
+				}
 			}
-			else
-			{
-				return currencySymbol;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			currencySymbol = value;
-		}
-	}
 	public String NaNSymbol
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.NaNSymbol;
+				get
+				{
+					return nanSymbol;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					nanSymbol = value;
+				}
 			}
-			else
-			{
-				return nanSymbol;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			nanSymbol = value;
-		}
-	}
 	public int CurrencyPositivePattern
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.CurrencyPositivePattern;
+				get
+				{
+					return currencyPositivePattern;
+				}
+				set
+				{
+					if(value < 0 || value > 3)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", _("Arg_Value0To3"));
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					currencyPositivePattern = value;
+				}
 			}
-			else
-			{
-				return currencyPositivePattern;
-			}
-		}
-		set
-		{
-			if(value < 0 || value > 3)
-			{
-				throw new ArgumentOutOfRangeException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			currencyPositivePattern = value;
-		}
-	}
 	public int CurrencyNegativePattern
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.CurrencyNegativePattern;
+				get
+				{
+					return currencyNegativePattern;
+				}
+				set
+				{
+					if(value < 0 || value > 15)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", _("Arg_Value0To15"));
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException();
+					}
+					currencyNegativePattern = value;
+				}
 			}
-			else
-			{
-				return currencyNegativePattern;
-			}
-		}
-		set
-		{
-			if(value < 0 || value > 15)
-			{
-				throw new ArgumentOutOfRangeException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			currencyNegativePattern = value;
-		}
-	}
 	public int NumberNegativePattern
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.NumberNegativePattern;
+				get
+				{
+					return numberNegativePattern;
+				}
+				set
+				{
+					if(value < 0 || value > 4)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", _("Arg_Value0To4"));
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					numberNegativePattern = value;
+				}
 			}
-			else
-			{
-				return numberNegativePattern;
-			}
-		}
-		set
-		{
-			if(value < 0 || value > 4)
-			{
-				throw new ArgumentOutOfRangeException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			numberNegativePattern = value;
-		}
-	}
 	public int PercentPositivePattern
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.PercentPositivePattern;
+				get
+				{
+					return percentPositivePattern;
+				}
+				set
+				{
+					if(value < 0 || value > 2)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", _("Arg_Value0To2"));
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					percentPositivePattern = value;
+				}
 			}
-			else
-			{
-				return percentPositivePattern;
-			}
-		}
-		set
-		{
-			if(value < 0 || value > 2)
-			{
-				throw new ArgumentOutOfRangeException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			percentPositivePattern = value;
-		}
-	}
 	public int PercentNegativePattern
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.PercentNegativePattern;
+				get
+				{
+					return percentNegativePattern;
+				}
+				set
+				{
+					if(value < 0 || value > 2)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", _("Arg_Value0To2"));
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					percentNegativePattern = value;
+				}
 			}
-			else
-			{
-				return percentNegativePattern;
-			}
-		}
-		set
-		{
-			if(value < 0 || value > 2)
-			{
-				throw new ArgumentOutOfRangeException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			percentNegativePattern = value;
-		}
-	}
 	public String PositiveInfinitySymbol
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.PositiveInfinitySymbol;
+				get
+				{
+					return positiveInfinitySymbol;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					positiveInfinitySymbol = value;
+				}
 			}
-			else
-			{
-				return positiveInfinitySymbol;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			positiveInfinitySymbol = value;
-		}
-	}
 	public String NegativeInfinitySymbol
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.NegativeInfinitySymbol;
+				get
+				{
+					return negativeInfinitySymbol;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					negativeInfinitySymbol = value;
+				}
 			}
-			else
-			{
-				return negativeInfinitySymbol;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			negativeInfinitySymbol = value;
-		}
-	}
 	public String PositiveSign
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.PositiveSign;
+				get
+				{
+					return positiveSign;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					positiveSign = value;
+				}
 			}
-			else
-			{
-				return positiveSign;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			positiveSign = value;
-		}
-	}
 	public String NegativeSign
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.NegativeSign;
+				get
+				{
+					return negativeSign;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					negativeSign = value;
+				}
 			}
-			else
-			{
-				return negativeSign;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			negativeSign = value;
-		}
-	}
 	public int NumberDecimalDigits
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.NumberDecimalDigits;
+				get
+				{
+					return numberDecimalDigits;
+				}
+				set
+				{
+					if(value < 0 || value > 99)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", _("Arg_Value0To99"));
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					numberDecimalDigits = value;
+				}
 			}
-			else
-			{
-				return numberDecimalDigits;
-			}
-		}
-		set
-		{
-			if(value < 0 || value > 99)
-			{
-				throw new ArgumentOutOfRangeException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			numberDecimalDigits = value;
-		}
-	}
 	public String NumberDecimalSeparator
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.NumberDecimalSeparator;
+				get
+				{
+					return numberDecimalSeparator;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					numberDecimalSeparator = value;
+				}
 			}
-			else
-			{
-				return numberDecimalSeparator;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			numberDecimalSeparator = value;
-		}
-	}
 	public String NumberGroupSeparator
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.NumberGroupSeparator;
+				get
+				{
+					return numberGroupSeparator;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					numberGroupSeparator = value;
+				}
 			}
-			else
-			{
-				return numberGroupSeparator;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			numberGroupSeparator = value;
-		}
-	}
 	public int PercentDecimalDigits
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.PercentDecimalDigits;
+				get
+				{
+					return percentDecimalDigits;
+				}
+				set
+				{
+					if(value < 0 || value > 99)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", _("Arg_Value0To99"));
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					percentDecimalDigits = value;
+				}
 			}
-			else
-			{
-				return percentDecimalDigits;
-			}
-		}
-		set
-		{
-			if(value < 0 || value > 99)
-			{
-				throw new ArgumentOutOfRangeException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			percentDecimalDigits = value;
-		}
-	}
 	public String PercentDecimalSeparator
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.PercentDecimalSeparator;
+				get
+				{
+					return percentDecimalSeparator;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					percentDecimalSeparator = value;
+				}
 			}
-			else
-			{
-				return percentDecimalSeparator;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			percentDecimalSeparator = value;
-		}
-	}
 	public String PercentGroupSeparator
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.PercentGroupSeparator;
+				get
+				{
+					return percentGroupSeparator;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					percentGroupSeparator = value;
+				}
 			}
-			else
-			{
-				return percentGroupSeparator;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			percentGroupSeparator = value;
-		}
-	}
 	public String PercentSymbol
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.PercentSymbol;
+				get
+				{
+					return percentSymbol;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					percentSymbol = value;
+				}
 			}
-			else
-			{
-				return percentSymbol;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			percentSymbol = value;
-		}
-	}
 	public String PerMilleSymbol
-	{
-		get
-		{
-			if(wrappedAround != null)
 			{
-				return wrappedAround.PerMilleSymbol;
+				get
+				{
+					return perMilleSymbol;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(readOnly)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ReadOnly"));
+					}
+					perMilleSymbol = value;
+				}
 			}
-			else
-			{
-				return perMilleSymbol;
-			}
-		}
-		set
-		{
-			if(value == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(wrappedAround != null)
-			{
-				throw new InvalidOperationException();
-			}
-			perMilleSymbol = value;
-		}
-	}
 
 	// Construct the object with default invariant properties.
 	public NumberFormatInfo()
-	{
-		wrappedAround = null;
-		currencyDecimalDigits = 2;
-		currencyDecimalSeparator = ".";
-		currencyGroupSize = new int[1];
-		currencyGroupSize[0] = 3;
-		numberGroupSize = new int[1];
-		numberGroupSize[0] = 3;
-		percentGroupSize = new int[1];
-		percentGroupSize[0] = 3;
-		currencyGroupSeparator = ",";
-		currencySymbol = "$";
-		nanSymbol = "NaN";
-		currencyPositivePattern = 0;
-		currencyNegativePattern = 0;
-		numberNegativePattern = 0;
-		percentPositivePattern = 0;
-		percentNegativePattern = 0;
-		positiveInfinitySymbol = "Infinity";
-		negativeInfinitySymbol = "-Infinity";
-		positiveSign = "+";
-		negativeSign = "-";
-		numberDecimalDigits = 2;
-		numberDecimalSeparator = ".";
-		numberGroupSeparator = ",";
-		percentDecimalDigits = 2;
-		percentDecimalSeparator = ".";
-		percentGroupSeparator = ",";
-		percentSymbol = "%";
-		perMilleSymbol = "\u2030";
-	}
+			{
+				currencyDecimalDigits = 2;
+				currencyDecimalSeparator = ".";
+				currencyGroupSizes = new int[1];
+				currencyGroupSizes[0] = 3;
+				numberGroupSizes = new int[1];
+				numberGroupSizes[0] = 3;
+				percentGroupSizes = new int[1];
+				percentGroupSizes[0] = 3;
+				currencyGroupSeparator = ",";
+				currencySymbol = "$";
+				nanSymbol = "NaN";
+				currencyPositivePattern = 0;
+				currencyNegativePattern = 0;
+				numberNegativePattern = 0;
+				percentPositivePattern = 0;
+				percentNegativePattern = 0;
+				positiveInfinitySymbol = "Infinity";
+				negativeInfinitySymbol = "-Infinity";
+				positiveSign = "+";
+				negativeSign = "-";
+				numberDecimalDigits = 2;
+				numberDecimalSeparator = ".";
+				numberGroupSeparator = ",";
+				percentDecimalDigits = 2;
+				percentDecimalSeparator = ".";
+				percentGroupSeparator = ",";
+				percentSymbol = "%";
+				perMilleSymbol = "\u2030";
+				readOnly = false;
+			}
 
-	// Construct a read-only wrapper for another number format info object.
-	private NumberFormatInfo(NumberFormatInfo nfi)
-	{
-		wrappedAround = nfi;
-	}
+	// Internal constructor that is used to load the contents
+	// of a culture-specific set of number formatting rules.
+	internal NumberFormatInfo(CultureInfo culture)
+			: this()
+			{
+				// We currently have the invariant defaults loaded.
+				// Call the runtime engine to get culture-specific data.
+				// TODO
+			}
 
 	// Implementation of the ICloneable interface.
-	public Object Clone() { return MemberwiseClone(); }
+	public Object Clone()
+			{
+				return MemberwiseClone();
+			}
 
 	// Implementation of the IFormatProvider interface.
 	public Object GetFormat(Type formatType)
-	{
-		if(formatType == typeof(System.Globalization.NumberFormatInfo))
-		{
-			return this;
-		}
-		else
-		{
-			return null;
-		}
-	}
+			{
+				if(formatType == typeof(NumberFormatInfo))
+				{
+					return this;
+				}
+				else
+				{
+					return CurrentInfo;
+				}
+			}
 
 	// Get the number format information associated with "provider".
-	public static NumberFormatInfo GetInstance(IFormatProvider provider)
-	{
-		if(provider != null)
-		{
-			Object obj = provider.GetFormat
-					(typeof(System.Globalization.NumberFormatInfo));
-			if(obj != null)
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	static NumberFormatInfo GetInstance(IFormatProvider provider)
 			{
-				return (NumberFormatInfo)obj;
+				if(provider != null)
+				{
+					Object obj = provider.GetFormat(typeof(NumberFormatInfo));
+					if(obj != null)
+					{
+						return (NumberFormatInfo)obj;
+					}
+				}
+				return CurrentInfo;
 			}
-		}
-		return CurrentInfo;
-	}
 
 	// Convert a number format info object into a read-only version.
 	public static NumberFormatInfo ReadOnly(NumberFormatInfo nfi)
-	{
-		if(nfi == null)
-		{
-			throw new ArgumentNullException();
-		}
-		return new NumberFormatInfo(nfi);
-	}
+			{
+				if(nfi == null)
+				{
+					throw new ArgumentNullException("nfi");
+				}
+				else if(nfi.IsReadOnly)
+				{
+					return nfi;
+				}
+				else
+				{
+					NumberFormatInfo newNfi = (NumberFormatInfo)(nfi.Clone());
+					newNfi.readOnly = true;
+					return newNfi;
+				}
+			}
 
 	// Validate a number group size array.
-	private void validateGroupSize(int[] value)
-	{
-		if(value == null)
-		{
-			throw new ArgumentException();
-		}
-		int posn;
-		for(posn = 0; posn < (value.Length - 1); ++posn)
-		{
-			if(value[posn] < 1 || value[posn] > 9)
+	private void ValidateGroupSizes(int[] value)
 			{
-				throw new ArgumentException();
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				int posn;
+				for(posn = 0; posn < (value.Length - 1); ++posn)
+				{
+					if(value[posn] < 1 || value[posn] > 9)
+					{
+						throw new ArgumentOutOfRangeException
+							("value[" + posn.ToString() + "]",
+							 _("Arg_Value1To9"));
+					}
+				}
+				if(value.Length < 1 || value[value.Length - 1] < 0 ||
+				   value[value.Length - 1] > 9)
+				{
+					throw new ArgumentOutOfRangeException
+						("value[" + (value.Length - 1).ToString() + "]",
+						 _("Arg_Value0To9"));
+				}
 			}
-		}
-		if(value.Length < 1 || value[value.Length - 1] < 0 ||
-		   value[value.Length - 1] > 9)
-		{
-			throw new ArgumentException();
-		}
-	}
 
 }; // class NumberFormatInfo
 

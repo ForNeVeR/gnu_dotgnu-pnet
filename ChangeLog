@@ -1,4 +1,13 @@
 
+2001-12-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* resources/en_US/runtime/Arg.txt,
+runtime/System/Globalization/CultureInfo.cs,
+runtime/System/Globalization/DateTimeFormatInfo.cs,
+runtime/System/Globalization/NumberFormatInfo.cs,
+runtime/System/Private/NumberFormatter.cs: update "NumberFormatInfo" and
+"DateTimeFormatInfo".
+
 2001-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Makefile.am, runtime/System/Collections/ArrayList.cs:

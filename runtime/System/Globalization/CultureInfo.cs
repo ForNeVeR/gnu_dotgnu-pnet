@@ -32,6 +32,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 	private CultureName cultureName;
 	private bool		readOnly;
 	private Calendar	calendar;
+	private NumberFormatInfo numberFormat;
+	private DateTimeFormatInfo dateTimeFormat;
 
 	// Culture identifier for "es-ES" with traditional sort rules.
 	private const int TraditionalSpanish = 0x040A;
@@ -236,8 +238,20 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(dateTimeFormat == null)
+					{
+						if(cultureID == 0x007F && readOnly)
+						{
+							// This is the invariant culture, so always
+							// return the invariant date time format info.
+							return DateTimeFormatInfo.InvariantInfo;
+						}
+						else
+						{
+							dateTimeFormat = new DateTimeFormatInfo(this);
+						}
+					}
+					return dateTimeFormat;
 				}
 				set
 				{
@@ -250,7 +264,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					{
 						throw new ArgumentNullException("value");
 					}
-					// TODO
+					dateTimeFormat = value;
 				}
 			}
 
@@ -324,8 +338,20 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(numberFormat == null)
+					{
+						if(cultureID == 0x007F && readOnly)
+						{
+							// This is the invariant culture, so always
+							// return the invariant number format info.
+							return NumberFormatInfo.InvariantInfo;
+						}
+						else
+						{
+							numberFormat = new NumberFormatInfo(this);
+						}
+					}
+					return numberFormat;
 				}
 				set
 				{
@@ -338,7 +364,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					{
 						throw new ArgumentNullException("value");
 					}
-					// TODO
+					numberFormat = value;
 				}
 			}
 

@@ -207,7 +207,7 @@ internal sealed class NumberFormatter
 			// Use the currency information.
 			decimalDigits = nfi.CurrencyDecimalDigits;
 			decimalSeparator = nfi.CurrencyDecimalSeparator;
-			groupSize = nfi.CurrencyGroupSize;
+			groupSize = nfi.CurrencyGroupSizes;
 			groupSeparator = nfi.CurrencyGroupSeparator;
 		}
 		else if(format.Equals("P"))
@@ -215,7 +215,7 @@ internal sealed class NumberFormatter
 			// Use the percentage information.
 			decimalDigits = nfi.PercentDecimalDigits;
 			decimalSeparator = nfi.PercentDecimalSeparator;
-			groupSize = nfi.PercentGroupSize;
+			groupSize = nfi.PercentGroupSizes;
 			groupSeparator = nfi.PercentGroupSeparator;
 		}
 		else
@@ -223,7 +223,7 @@ internal sealed class NumberFormatter
 			// Use the number information.
 			decimalDigits = nfi.NumberDecimalDigits;
 			decimalSeparator = nfi.NumberDecimalSeparator;
-			groupSize = nfi.NumberGroupSize;
+			groupSize = nfi.NumberGroupSizes;
 			groupSeparator = nfi.NumberGroupSeparator;
 		}
 

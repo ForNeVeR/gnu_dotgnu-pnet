@@ -264,6 +264,13 @@ ILUInt32 CTypeSizeAndAlign(ILType *type, ILUInt32 *align);
 char *CTypeToName(ILGenInfo *info, ILType *type);
 
 /*
+ * Resolve a qualified identifier that describes a C# type
+ * name into a C type reference.  Returns NULL if it isn't
+ * possible to resolve the identifier.
+ */
+ILType *CTypeFromCSharp(ILGenInfo *info, ILNode *node);
+
+/*
  * Mark a type as needing to be output at code generation time.
  */
 void CTypeMarkForOutput(ILGenInfo *info, ILType *type);

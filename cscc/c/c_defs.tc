@@ -301,6 +301,12 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 	char *name;
 	ILType *signature;
 }
+%node ILNode_CSharpInvocation ILNode_Dummy =
+{
+	ILType *type;
+	char *name;
+	ILNode *args;
+}
 
 %output "c_semantics.c"
 

@@ -1497,6 +1497,49 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 	return name;
 }
 
+ILType *CTypeFromCSharp(ILGenInfo *info, ILNode *node)
+{
+	char *name;
+	char *namespace;
+
+	/* Break the identifier into name and namespace */
+	if(yyisa(node, ILNode_Identifier))
+	{
+		name = ILQualIdentName(node, 0);
+		namespace = 0;
+
+		/* Recognise C# builtin types that aren't C keywords */
+		if(!strcmp(name, "byte"))
+		{
+			return ILType_UInt8;
+		}
+		else if(!strcmp(name, "sbyte"))
+		{
+			return ILType_Int8;
+		}
+		else if(!strcmp(name, "ushort"))
+		{
+			return ILType_UInt16;
+		}
+		else if(!strcmp(name, "uint"))
+		{
+			return ILType_UInt32;
+		}
+		else if(!strcmp(name, "ulong"))
+		{
+			return ILType_UInt64;
+		}
+	}
+	else
+	{
+		name = ILQualIdentName(((ILNode_QualIdent *)node)->right, 0);
+		namespace = ILQualIdentName(((ILNode_QualIdent *)node)->left, 0);
+	}
+
+	/* Look up the type (returns NULL if not found) */
+	return ILFindNonSystemType(info, name, namespace);
+}
+
 #ifdef	__cplusplus
 };
 #endif

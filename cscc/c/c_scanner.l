@@ -161,6 +161,8 @@ WHITE			[ \t\v\r\f]
 "__true__"				{ return K_TRUE; }
 "__false__"				{ return K_FALSE; }
 "__native__"			{ return K_NATIVE; }
+"__csharp__"			{ return K_CSHARP; }
+"__invoke__"			{ return K_INVOKE; }
 
 "__FUNCTION__"			{ return K_FUNCTION; }
 "__PRETTY_FUNCTION__"	{ return K_FUNCTION; }

@@ -60,7 +60,19 @@ JavaGenValue(ILNode_FunctionRef)
 	return ILMachineType_UnmanagedPtr;
 }
 
+/*
+ * Perform semantic analysis for function invocation expressions.
+ */
 ILNode_CSemAnalysis(ILNode_InvocationExpression)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for C# invocation expressions.
+ */
+ILNode_CSemAnalysis(ILNode_CSharpInvocation)
 {
 	/* TODO */
 	return CSemValueError;

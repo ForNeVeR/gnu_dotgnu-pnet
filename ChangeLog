@@ -1,4 +1,12 @@
 
+2002-08-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_defs.tc, cscc/c/c_grammar.y, cscc/c/c_invoke.tc,
+	cscc/c/c_scanner.l, cscc/c/c_types.c, cscc/c/c_types.h:
+	add some extension syntax to the grammar to allow C# types to
+	be used as type specifiers, and to allow static methods in
+	C# classes to be invoked.
+
 2002-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_grammar.y,

@@ -1,3 +1,7 @@
+2003-08-22  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* csupport/Directory.cs: add and implement the underlying C# object for
+	representing a pnetC directory stream.
 
 2003-08-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

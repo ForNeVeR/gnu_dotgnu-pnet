@@ -19,6 +19,8 @@
 	include/il_config.h.in: hook the marshalling stub generator into
 	the system; add the "--without-libffi" option to configure.in.
 
+	* Makefile.am: don't build libffi unless "USING_LIBFFI" is defined.
+
 2002-05-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/src/powerpc/ffi_darwin.c: rearrange declarations

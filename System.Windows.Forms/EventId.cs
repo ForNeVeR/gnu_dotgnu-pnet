@@ -131,6 +131,21 @@ internal enum EventId
 	// "PictureBox" event.
 	SizeModeChanged,
 
+	// "ComboBox" events.
+	DrawItem,
+	DropDown,
+	DropDownStyleChanged,
+	MeasureItem,
+	SelectedIndexChanged,
+	SelectionChangeCommitted,
+
+	// "ListControl" events.
+	DataSourceChanged,
+	DisplayMemberChanged,
+	SelectedItemChanged,
+	SelectedValueChanged,
+	ValueMemberChanged,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

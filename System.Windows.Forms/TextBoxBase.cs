@@ -439,8 +439,20 @@ public abstract class TextBoxBase : Control
 						(S._("SWF_NonNegative"), "length");
 				}
 				SelectInternal( start, length);
+				CaretSetEndSelection();
 				ScrollToCaret();
 			}
+
+	// Sets the caret position to the end of the selection
+	internal void CaretSetEndSelection()
+	{
+		// Even if we select backwards, the Caret will be at the end
+		CaretSetPosition(GetSelectionStart()+ GetSelectionLength());
+	}
+
+	// Set the caret bounds from a character position
+	// Set update region
+	internal abstract void CaretSetPosition( int position);
 
 	// Select all text in the control.
 	public void SelectAll()

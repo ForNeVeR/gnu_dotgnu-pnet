@@ -1421,7 +1421,7 @@ public class TextBox : TextBoxBase
 
 	// Set the caret bounds from a character position
 	// Set update region
-	private void CaretSetPosition( int position)
+	internal override void CaretSetPosition( int position)
 	{
 		if (!IsHandleCreated)
 			return;
@@ -1550,13 +1550,6 @@ public class TextBox : TextBoxBase
 		{
 			return new Rectangle(caretBounds.Left - XViewOffset, caretBounds.Top - YViewOffset, caretBounds.Width, caretBounds.Height);
 		}
-	}
-
-	// Sets the caret position to the end of the selection
-	private void CaretSetEndSelection()
-	{
-		// Even if we select backwards, the Caret will be at the end
-		CaretSetPosition(GetSelectionStart()+ GetSelectionLength());
 	}
 
 	// Change the selection and move the caret. Also make sure its visible

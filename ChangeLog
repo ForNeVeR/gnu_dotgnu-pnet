@@ -1,4 +1,17 @@
+2003-11-03  Neil Cawse  <neilcawse@geotab.com>
 
+	* System.Drawing.Win32/DrawingWindow.cs: missed invalidate fix.
+
+	* System.Windows.Forms/ComboBox.cs
+	System.Windows.Forms/DrawItemEventArgs.cs
+	System.Windows.Forms/EventId.cs
+	System.Windows.Forms/ListControl.cs
+	System.Windows.Forms/TextBox.cs
+	System.Windows.Forms/TextBoxBase.cs: implement ComboBox and other small
+	fixes. Still needs some work.
+
+	* samples/FormsTest.cs: improved comboBox tests.
+	
 2003-11-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Collections/IKeyedCollection.cs,

@@ -114,9 +114,13 @@ public class DrawItemEventArgs : EventArgs
 	// Draw the background of the item, using BackColor.
 	public virtual void DrawBackground()
 			{
-				SolidBrush brush = new SolidBrush(backColor);
-				graphics.FillRectangle(brush, rect);
-				brush.Dispose();
+				if ((state & DrawItemState.Selected) > 0)
+					graphics.FillRectangle(SystemBrushes.Highlight, rect);	
+				else
+				{
+					using (SolidBrush brush = new SolidBrush(backColor))
+						graphics.FillRectangle(brush, rect);
+				}
 			}
 
 	// Draw the focus rectangle for the item.

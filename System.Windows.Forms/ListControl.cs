@@ -25,6 +25,7 @@
 using System;
 using System.Reflection;
 using System.Collections;
+using System.Globalization;
 
 namespace System.Windows.Forms
 {
@@ -221,6 +222,32 @@ public abstract class ListControl : Control
 	{
 		throw new NotImplementedException("SetItemsCore");
 	}
+
+	internal int FindStringInternal(string s, IList items, int start, bool exact)
+	{
+		if (s == null || items == null || start < -1 || start > items.Count - 2)
+			return -1; 
+		int pos = start;
+		do
+		{
+			pos++;
+			if (exact)
+			{
+				if (string.Compare(s, this.GetItemText(items[pos]), true) == 0)
+					return pos;
+			}
+			else
+			{
+				if (string.Compare(s, 0, this.GetItemText(items[pos]), 0, s.Length, true) == 0)
+					return pos;
+			}
+			if (pos == items.Count-1)
+				pos = -1;
+		}
+		while (pos != start);
+		return -1; 
+	} 
+
 
 }; // class ListControl
 	

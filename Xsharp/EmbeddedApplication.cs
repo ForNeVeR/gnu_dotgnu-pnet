@@ -435,6 +435,8 @@ public class EmbeddedApplication : InputOutputWidget
 			{
 				IntPtr dpy;
 				Xlib.Xint major, minor;
+				String client;
+				int index;
 				displayName = null;
 				try
 				{
@@ -475,10 +477,26 @@ public class EmbeddedApplication : InputOutputWidget
 					// If we are in an ssh shell account, then we cannot
 					// connect via ssh's X11 forwarding mechanism as it
 					// does not know how to proxy appgroup security tokens.
-					if(Environment.GetEnvironmentVariable("SSH_ASKPASS")
-							!= null ||
-					   Environment.GetEnvironmentVariable("SSH_TTY") != null)
+					// Try to discover where the ssh client lives.
+					client = Environment.GetEnvironmentVariable("SSH_CLIENT");
+					if(client != null && client.Length > 0)
 					{
+						// Synthesize a display name from the ssh client name.
+						index = client.IndexOf(' ');
+						if(index == -1)
+						{
+							index = client.Length;
+						}
+						displayName = client.Substring(0, index) + ":0.0";
+						goto probeDisplay;
+					}
+					else if(Environment.GetEnvironmentVariable("SSH_ASKPASS")
+								!= null ||
+					   	    Environment.GetEnvironmentVariable("SSH_TTY")
+								!= null)
+					{
+						// Older versions of bash do not export SSH_CLIENT
+						// within an ssh login session.
 						displayName = Environment.GetEnvironmentVariable
 							("XREALDISPLAY");
 						if(displayName == null || displayName.Length == 0)
@@ -486,18 +504,23 @@ public class EmbeddedApplication : InputOutputWidget
 							if(reportErrors && !errorReported)
 							{
 								Console.Error.WriteLine
-									("You must set the XREALDISPLAY " +
-									 "environment variable when using");
+									("The `SSH_CLIENT' environment variable " +
+									 "is not exported from the shell.");
 								Console.Error.WriteLine
-									("an ssh account and X11 forwarding.");
+									("Either export `SSH_CLIENT' or set the " +
+									 "`XREALDISPLAY' environment");
+								Console.Error.WriteLine
+									("variable to the name of the real " +
+									 "X display.");
 								errorReported = true;
 							}
 							displayName = null;
 							return false;
 						}
+					probeDisplay:
 						if(!displayProbed)
 						{
-							// Probe the XREALDISPLAY to see if it can be used.
+							// Probe the new display to see if it can be used.
 							displayProbed = true;
 							IntPtr probe = Xlib.XOpenDisplay(displayName);
 							if(probe == IntPtr.Zero)
@@ -506,9 +529,10 @@ public class EmbeddedApplication : InputOutputWidget
 								{
 									Console.Error.WriteLine
 										("The X server at `{0}' is not " +
-										 "accessible.  You may need to use " +
-										 "`xhost +' to permit access.",
+										 "accessible.  You may need",
 										 displayName);
+									Console.Error.WriteLine
+										("to use `xhost +' to permit access.");
 									errorReported = true;
 								}
 								displayName = null;

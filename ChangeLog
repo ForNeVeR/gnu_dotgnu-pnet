@@ -1,4 +1,10 @@
 
+2003-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/EmbeddedApplication.cs, samples/ilrun.sh.in: detect ssh
+	accounts in a better way; make sure that SSH_CLIENT is properly
+	exported with older versions of bash.
+
 2003-10-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Display.cs, Xsharp/EmbeddedApplication.cs,

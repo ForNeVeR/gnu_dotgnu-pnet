@@ -21,5 +21,11 @@
 # Get the incoming configuration variables.
 ILRUN="@ILRUN@"
 
+# Make sure that SSH_CLIENT is exported, because older versions of
+# bash do not properly export it.
+if test -n "$SSH_CLIENT" ; then
+	export SSH_CLIENT
+fi
+
 # Run the engine, with the assembly paths set correctly.
 exec "$ILRUN" -L../runtime -L../I18N -L../DotGNU.SSL -L../DotGNU.Images -L../System -L../System.Xml -L../Xsharp -L../Xsharp/.libs -L../System.Drawing -L../System.Drawing.Xsharp -L../System.Drawing.Postscript -L../System.Windows.Forms -L../JScript -L../Basic -L../compat -L../System.Net.IrDA -L../SharpZipLib $*

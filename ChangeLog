@@ -1,3 +1,25 @@
+2003-07-28  Neil Cawse   <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs: Fixes and lineAlignment to
+	MeasureCharacterRanges
+	* System.Drawing.Win32/Win32.cs, System.Drawing.Win32/DrawingWindow:
+	Fix Focused() and clipping for onpaint
+	* System.Drawing.Win32/DrawingGraphics.cs: MeasureString out by 1 on y
+	implement toolkit SetClipRects
+	* System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow: improvements to clipping and implement
+	Update code
+	* System.Windows.Forms/TextBox.cs: resize correctly for non multiline,
+	select all when not setting focus by mouse, autosize implemented, hide caret
+	and selection depending on focus. support BorderStyle = none, fixed all bugs
+	found in laying out text and caret, word wrapping, space swallowing
+	* System.Windows.Forms/Control.cs: small fixes to CreateParams, CanFocus()
+	and implement UpdateStyles(). Filter out delete in ToolkitKeyChar to be
+	MS compliant
+	* samples/TextBoxTest.cs : more cases for TextBox test.
+
 2003-07-28  Simon Guindon  <simon@nureality.ca>
 
 	* System.Windows.Forms/StatusBar.cs: fixed StatusBarPanelCollection,

@@ -5,6 +5,16 @@
 	from "Control.OnMouseDown", because it should not be there
 	as it interferes with "ButtonBase".
 
+	* Makefile.am, configure.in, ISymWrapper/.cvsignore,
+	ISymWrapper/ISymUnmanaged.cs, ISymWrapper/ISymWrapper.build,
+	ISymWrapper/Makefile.am, ISymWrapper/SymBinder.cs,
+	ISymWrapper/SymDocument.cs, ISymWrapper/SymDocumentWriter.cs,
+	ISymWrapper/SymInfoEnumerator.cs, ISymWrapper/SymMethod.cs,
+	ISymWrapper/SymReader.cs, ISymWrapper/SymScope.cs,
+	ISymWrapper/SymVariable.cs, ISymWrapper/SymWriter.cs,
+	ISymWrapper/Utils.cs: add the "ISymWrapper" assembly, which
+	provides API's for reading debug symbol tables.
+
 2003-09-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/InfoMethods.cs, runtime/System/OperatingSystem.cs:

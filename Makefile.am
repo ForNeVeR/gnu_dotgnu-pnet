@@ -1,6 +1,6 @@
 if HAS_REFLECTION
 SUBDIRS = tools resources runtime I18N DotGNU.SSL System System.Xml . \
-		  System.Net.IrDA csunit csupport compat \
+		  System.Net.IrDA csunit csupport compat ISymWrapper \
 		  System.Configuration.Install JScript Basic \
 		  DotGNU.Images Xsharp System.Drawing System.Drawing.Xsharp \
 		  System.Drawing.Win32 System.Drawing.Postscript \

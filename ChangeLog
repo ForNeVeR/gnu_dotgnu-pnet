@@ -9,6 +9,11 @@
 	re-execute code - "index1" wasn't restored after a failed check
 	on "index2".
 
+	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,
+	engine/cvm_lengths.c, engine/cvmc_setup.c, image/marshal.c,
+	include/il_meta.h: add "String[]" to the set of types that
+	are specially marshalled in PInvoke operations (Bug #3387).
+
 2003-04-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/rc2.c: use 32-bit arithmetic for RC2 under ARM because

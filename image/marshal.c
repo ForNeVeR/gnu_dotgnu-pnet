@@ -169,8 +169,23 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 	}
 	else if(ILType_IsSimpleArray(type))
 	{
-		/* Array type, passed in by pointer to the first element */
-		return IL_META_MARSHAL_ARRAY;
+		if(ILTypeIsStringClass(ILTypeGetElemType(type)))
+		{
+			/* Array of strings, passed as "char **" */
+			if(StringCharSet(pinvoke, method) == IL_META_MARSHAL_ANSI_STRING)
+			{
+				return IL_META_MARSHAL_ANSI_ARRAY;
+			}
+			else
+			{
+				return IL_META_MARSHAL_UTF8_ARRAY;
+			}
+		}
+		else
+		{
+			/* Array type, passed in by pointer to the first element */
+			return IL_META_MARSHAL_ARRAY;
+		}
 	}
 	else if(type != 0 && ILType_IsComplex(type) &&
 			ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF)

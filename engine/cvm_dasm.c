@@ -526,6 +526,8 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"refarray2utf8",	CVM_OPER_NONE},
 	{"tocustom",		CVM_OPER_CUSTOM},
 	{"fromcustom",		CVM_OPER_CUSTOM},
+	{"array2ansi",		CVM_OPER_NONE},
+	{"array2utf8",		CVM_OPER_NONE},
 
 	/*
 	 * Inline method replacements.
@@ -571,8 +573,6 @@ static CVMOpcode const prefixOpcodes[96] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_59",	CVM_OPER_NONE},
-	{"preserved_5A",	CVM_OPER_NONE},
 	{"preserved_5B",	CVM_OPER_NONE},
 	{"preserved_5C",	CVM_OPER_NONE},
 	{"preserved_5D",	CVM_OPER_NONE},

@@ -470,47 +470,49 @@ extern	"C" {
 #define	COP_PREFIX_REFARRAY2UTF8	0x45
 #define	COP_PREFIX_TOCUSTOM			0x46
 #define	COP_PREFIX_FROMCUSTOM		0x47
+#define	COP_PREFIX_ARRAY2ANSI		0x48
+#define	COP_PREFIX_ARRAY2UTF8		0x49
 
 /*
  * Inline method replacements.
  */
-#define	COP_PREFIX_STRING_CONCAT_2	0x48
-#define	COP_PREFIX_STRING_CONCAT_3	0x49
-#define	COP_PREFIX_STRING_CONCAT_4	0x4A
-#define	COP_PREFIX_STRING_EQ		0x4B
-#define	COP_PREFIX_STRING_NE		0x4C
-#define	COP_PREFIX_STRING_GET_CHAR	0x4D
-#define	COP_PREFIX_TYPE_FROM_HANDLE	0x4E
-#define	COP_PREFIX_MONITOR_ENTER	0x4F
-#define	COP_PREFIX_MONITOR_EXIT		0x50
-#define	COP_PREFIX_APPEND_CHAR		0x51
-#define	COP_PREFIX_IS_WHITE_SPACE	0x52
+#define	COP_PREFIX_STRING_CONCAT_2	0x4A
+#define	COP_PREFIX_STRING_CONCAT_3	0x4B
+#define	COP_PREFIX_STRING_CONCAT_4	0x4C
+#define	COP_PREFIX_STRING_EQ		0x4D
+#define	COP_PREFIX_STRING_NE		0x4E
+#define	COP_PREFIX_STRING_GET_CHAR	0x4F
+#define	COP_PREFIX_TYPE_FROM_HANDLE	0x50
+#define	COP_PREFIX_MONITOR_ENTER	0x51
+#define	COP_PREFIX_MONITOR_EXIT		0x52
+#define	COP_PREFIX_APPEND_CHAR		0x53
+#define	COP_PREFIX_IS_WHITE_SPACE	0x54
 
 /*
  * Binary value fixups.
  */
-#define	COP_PREFIX_FIX_I4_I			0x53
-#define	COP_PREFIX_FIX_I4_U			0x54
+#define	COP_PREFIX_FIX_I4_I			0x55
+#define	COP_PREFIX_FIX_I4_U			0x56
 
 /*
  * Trigger method unrolling.
  */
-#define	COP_PREFIX_UNROLL_METHOD	0x55
+#define	COP_PREFIX_UNROLL_METHOD	0x57
 
 /*
  * Allocate local stack space.
  */
-#define	COP_PREFIX_LOCAL_ALLOC		0x56
+#define	COP_PREFIX_LOCAL_ALLOC		0x58
 
 /*
  * Method profiling.
  */
-#define COP_PREFIX_PROFILE_COUNT	0x57
+#define COP_PREFIX_PROFILE_COUNT	0x59
 
 /*
  * Thread static handling.
  */
-#define	COP_PREFIX_THREAD_STATIC	0x58
+#define	COP_PREFIX_THREAD_STATIC	0x5A
 
 /*
  * Definition of a CVM stack word which can hold

@@ -650,6 +650,18 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 									    (void *)customCookie);
 				}
 				break;
+
+				case IL_META_MARSHAL_ANSI_ARRAY:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_ARRAY2ANSI);
+				}
+				break;
+
+				case IL_META_MARSHAL_UTF8_ARRAY:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_ARRAY2UTF8);
+				}
+				break;
 			}
 			if(offset < 4)
 			{

@@ -127,12 +127,98 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
  * private static bool ClrSave(IntPtr assembly, IntPtr writer, String path,
  *                             IntPtr entryMethod, PEFileKinds fileKind);
  */
-ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt assembly,
-                                   ILNativeInt writer, ILString *path,
-                                   ILNativeInt entryMethod, ILInt32 fileKind)
+ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
+                                   ILNativeInt _writer, ILString *_path,
+                                   ILNativeInt _entryMethod, ILInt32 fileKind)
 {
 	/* TODO */
-	return (ILBool)0;
+	ILProgramItem *item;
+	ILImage *image;
+	ILWriter *writer;
+	ILMethod *entryMethod;
+	const char *path;
+	FILE *stream;
+	int tmp;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	item = (ILProgramItem *)_assembly;
+	image = ILProgramItem_Image(item);
+	writer = (ILWriter *)_writer;
+	entryMethod = (ILMethod *)_entryMethod;
+	if (!(path = (const char *)ILStringToPathname(_thread, _path)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (!(stream = fopen(path, "w")))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		return 0;
+	}
+	ILWriterSetStream(writer, stream, 1);
+	/* this has to be kept in sync with PEFileKinds */
+	switch (fileKind)
+	{
+		case 0: /* PEFileKinds.Dll */
+		{
+			ILWriterResetTypeAndFlags(writer,
+			                          IL_IMAGETYPE_DLL,
+			                          IL_WRITEFLAG_SUBSYS_CUI);
+		}
+		break;
+
+		case 1: /* PEFileKinds.ConsoleApplication */
+		{
+			ILWriterResetTypeAndFlags(writer,
+			                          IL_IMAGETYPE_EXE,
+			                          IL_WRITEFLAG_SUBSYS_CUI);
+		}
+		break;
+
+		case 2: /* PEFileKinds.WindowsApplication */
+		{
+			ILWriterResetTypeAndFlags(writer,
+			                          IL_IMAGETYPE_EXE,
+			                          IL_WRITEFLAG_SUBSYS_GUI);
+		}
+		break;
+	}
+	if (entryMethod)
+	{
+		ILWriterSetEntryPoint(writer, entryMethod);
+	}
+	ILWriterOutputMetadata(writer, image);
+	if (!(tmp = ILWriterDestroy(writer)))
+	{
+		if ((fclose(stream)))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			return 0;
+		}
+		IL_METADATA_UNLOCK(_thread);
+		return 0;
+	}
+	else if (tmp == -1)
+	{
+		if ((fclose(stream)))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			return 0;
+		}
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if ((fclose(stream)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		return 0;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILBool)1;
 }
 
 /*
@@ -1427,16 +1513,6 @@ ILNativeInt _IL_SignatureHelper_ClrSigCreateClass(ILExecThread *_thread,
 }
 
 /*
- * private static IntPtr ClrSigCreateField(IntPtr context);
- */
-ILNativeInt _IL_SignatureHelper_ClrSigCreateField(ILExecThread *_thread,
-                                                  ILNativeInt context)
-{
-	/* TODO */
-	return 0;
-}
-
-/*
  * private static IntPtr ClrSigCreateLocal(IntPtr context);
  */
 ILNativeInt _IL_SignatureHelper_ClrSigCreateLocal(ILExecThread *_thread,
@@ -1603,33 +1679,30 @@ ILInt32 _IL_SignatureHelper_ClrSigGetHashCode(ILExecThread *_thread,
 }
 
 /*
- * private static byte[] ClrSigGetBytes(IntPtr module, IntPtr sig);
+ * private static long ClrSigFinalize(IntPtr module, IntPtr sig, bool field);
  */
-System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
-                                                 ILNativeInt module,
-                                                 ILNativeInt sig)
+ILInt64 _IL_SignatureHelper_ClrSigFinalize(ILExecThread *_thread,
+                                           ILNativeInt module,
+                                           ILNativeInt sig,
+                                           ILBool field)
 {
 	ILProgramItem *item;
 	ILImage *image;
 	ILType *type;
-	ILUInt8 *buf;
-	System_Array *bytes;
 	unsigned long offset;
-	unsigned long length;
-	unsigned char *blob;
 
 	IL_METADATA_WRLOCK(_thread);
 
 	item = (ILProgramItem *)module;
 	image = ILProgramItem_Image(item);
 	type = (ILType *)sig;
-	if (ILType_IsMethod(type))
-	{
-		offset = ILTypeToMethodSig(image, type);
-	}
-	else if (ILType_IsField(type))
+	if (field)
 	{
 		offset = ILTypeToFieldSig(image, type);
+	}
+	else if (ILType_IsMethod(type))
+	{
+		offset = ILTypeToMethodSig(image, type);
 	}
 	else
 	{
@@ -1639,9 +1712,34 @@ System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
 	{
 		IL_METADATA_UNLOCK(_thread);
 		ILExecThreadThrowOutOfMemory(_thread);
-		return 0;
+		return (ILInt64)-1;
 	}
-	blob = (unsigned char *)ILImageGetBlob(image, offset, &length);
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILInt64)offset;
+}
+
+/*
+ * private static byte[] ClrSigGetBytes(IntPtr module, long offset);
+ */
+System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
+                                                 ILNativeInt module,
+                                                 ILInt64 offset)
+{
+	ILProgramItem *item;
+	ILImage *image;
+	ILUInt8 *buf;
+	System_Array *bytes;
+	unsigned long blobOffset;
+	unsigned long length;
+	unsigned char *blob;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	item = (ILProgramItem *)module;
+	image = ILProgramItem_Image(item);
+	blobOffset = (unsigned long)offset;
+	blob = (unsigned char *)ILImageGetBlob(image, blobOffset, &length);
 	bytes = (System_Array *)ILExecThreadNew(_thread, "[B", "(Ti)V", (ILVaInt)length);
 	if (!bytes)
 	{

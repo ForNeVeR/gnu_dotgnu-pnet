@@ -241,14 +241,6 @@ struct _tagILType
 				 ILType_Kind((type)) == IL_TYPE_COMPLEX_PTR)
 
 /*
- * Determine if a type is a field.
- */
-#define ILType_IsField(type)	\
-				((type) != 0 && \
-				 (ILType_CallConv((type)) & IL_META_CALLCONV_FIELD) == \
-				  IL_META_CALLCONV_FIELD)
-
-/*
  * Get the kind that is associated with a complex type.
  */
 #define	ILType_Kind(type)		((type)->kind__ & 0xFF)

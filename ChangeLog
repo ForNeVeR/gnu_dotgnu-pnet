@@ -1,3 +1,13 @@
+2003-07-22  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* engine/int_proto.h, engine/int_table.c: add and modify some
+	SignatureHelper internal calls.
+
+	* engine/lib_emit.c: implement the AssemblyBuilder.ClrSave,
+	SignatureHelper.ClrSigFinalize, and SignatureHelper.ClrSigGetBytes
+	internal calls.
+
+	* include/il_types.h: remove my ILType_IsField macro.
 
 2003-07-22  Gopal.V  <gopalv82@symonds.net>
 

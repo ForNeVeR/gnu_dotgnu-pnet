@@ -39,6 +39,64 @@ public sealed class ControlPaint
 				}
 			}
 
+	// Convert HSB values into an RGB value.  Algorithm based on:
+	// http://www.cs.rit.edu/~ncs/color/t_convert.html
+	private static Color FromHSB(float hue, float saturation, float brightness)
+			{
+				float f, p, q, t, r, g, b;
+				int temp;
+				if(saturation == 0.0f)
+				{
+					temp = (int)(brightness * 255.0f);
+					return Color.FromArgb(temp, temp, temp);
+				}
+				else
+				{
+					hue /= 60.0f;
+					temp = (int)hue;
+					f = hue - (float)temp;
+					p = brightness * (1.0f - saturation);
+					q = brightness * (1.0f - saturation * f);
+					t = brightness * (1.0f - saturation * (1.0f - f));
+					switch(temp)
+					{
+						case 0:
+							r = brightness;
+							g = t;
+							b = p;
+							break;
+						case 1:
+							r = q;
+							g = brightness;
+							b = p;
+							break;
+						case 2:
+							r = p;
+							g = brightness;
+							b = t;
+							break;
+						case 3:
+							r = p;
+							g = q;
+							b = brightness;
+							break;
+						case 4:
+							r = t;
+							g = p;
+							b = brightness;
+							break;
+						default:
+							r = brightness;
+							g = p;
+							b = q;
+							break;
+					}
+					return Color.FromArgb
+						((int)(r / 255.0f), (int)(g / 255.0f),
+						 (int)(b / 255.0f));
+				}
+			}
+
 	// Get the "dark" version of a color.
 	public static Color Dark(Color baseColor)
 			{
@@ -48,22 +106,40 @@ public sealed class ControlPaint
 			{
 				return Dark(baseColor, 1.0f);
 			}
-	[TODO]
 	public static Color Dark(Color baseColor, float percOfDarkDark)
 			{
 				if(baseColor.ToKnownColor() == KnownColor.Control)
 				{
-					if(percOfDarkDark <= 0.5f)
+					if(percOfDarkDark <= 0.0f)
 					{
 						return SystemColors.ControlDark;
 					}
-					else
+					else if(percOfDarkDark >= 1.0f)
 					{
 						return SystemColors.ControlDarkDark;
 					}
+					else
+					{
+						Color dark = SystemColors.ControlDark;
+						Color darkdark = SystemColors.ControlDarkDark;
+						int redDiff = darkdark.R - dark.R;
+						int greenDiff = darkdark.G - dark.G;
+						int blueDiff = darkdark.B - dark.B;
+						return Color.FromArgb
+							(dark.R + (int)(redDiff * percOfDarkDark),
+							 dark.G + (int)(greenDiff * percOfDarkDark),
+							 dark.B + (int)(blueDiff * percOfDarkDark));
+					}
 				}
-				// TODO
-				return baseColor;
+				float hue = baseColor.GetHue();
+				float saturation = baseColor.GetSaturation();
+				float brightness = baseColor.GetBrightness();
+				brightness -= percOfDarkDark * 0.666f;
+				if(brightness < 0.0f)
+				{
+					brightness = 0.0f;
+				}
+				return FromHSB(hue, saturation, brightness);
 			}
 
 	// Get the "light" version of a color.
@@ -75,22 +151,40 @@ public sealed class ControlPaint
 			{
 				return Light(baseColor, 1.0f);
 			}
-	[TODO]
 	public static Color Light(Color baseColor, float percOfLightLight)
 			{
 				if(baseColor.ToKnownColor() == KnownColor.Control)
 				{
-					if(percOfLightLight <= 0.5f)
+					if(percOfLightLight <= 0.0f)
 					{
 						return SystemColors.ControlLight;
 					}
-					else
+					else if(percOfLightLight >= 1.0f)
 					{
 						return SystemColors.ControlLightLight;
 					}
+					else
+					{
+						Color light = SystemColors.ControlLight;
+						Color lightlight = SystemColors.ControlLightLight;
+						int redDiff = lightlight.R - light.R;
+						int greenDiff = lightlight.G - light.G;
+						int blueDiff = lightlight.B - light.B;
+						return Color.FromArgb
+							(light.R + (int)(redDiff * percOfLightLight),
+							 light.G + (int)(greenDiff * percOfLightLight),
+							 light.B + (int)(blueDiff * percOfLightLight));
+					}
 				}
-				// TODO
-				return baseColor;
+				float hue = baseColor.GetHue();
+				float saturation = baseColor.GetSaturation();
+				float brightness = baseColor.GetBrightness();
+				brightness += percOfLightLight * 0.666f;
+				if(brightness > 1.0f)
+				{
+					brightness = 1.0f;
+				}
+				return FromHSB(hue, saturation, brightness);
 			}
 
 	// Draw a simple button border.
@@ -132,7 +226,7 @@ public sealed class ControlPaint
 
 					case ButtonBorderStyle.Inset:
 					{
-						pen = new Pen(Dark(color), 1.0f);
+						pen = new Pen(DarkDark(color), 1.0f);
 						pen.EndCap = LineCap.Square;
 						graphics.DrawLine(pen, bounds.X,
 										  bounds.Y + bounds.Height - 1,
@@ -140,7 +234,7 @@ public sealed class ControlPaint
 						graphics.DrawLine(pen, bounds.X + 1, bounds.Y,
 										  bounds.X + bounds.Width - 1,
 										  bounds.Y);
-						pen.Color = Light(color);
+						pen.Color = LightLight(color);
 						graphics.DrawLine(pen, bounds.X + 1,
 										  bounds.Y + bounds.Height - 1,
 										  bounds.X + bounds.Width - 1,
@@ -149,28 +243,63 @@ public sealed class ControlPaint
 										  bounds.Y + bounds.Height - 2,
 										  bounds.X + bounds.Width - 1,
 										  bounds.Y + 1);
+						pen.Color = Light(color);
+						graphics.DrawLine(pen, bounds.X + 1,
+										  bounds.Y + bounds.Height - 2,
+										  bounds.X + 1, bounds.Y + 1);
+						graphics.DrawLine(pen, bounds.X + 2, bounds.Y + 1,
+										  bounds.X + bounds.Width - 2,
+										  bounds.Y + 1);
+						if(color.ToKnownColor() == KnownColor.Control)
+						{
+							pen.Color = SystemColors.ControlLight;
+							graphics.DrawLine(pen, bounds.X + 1,
+											  bounds.Y + bounds.Height - 2,
+											  bounds.X + bounds.Width - 2,
+											  bounds.Y + bounds.Height - 2);
+							graphics.DrawLine(pen, bounds.X + bounds.Width - 2,
+											  bounds.Y + bounds.Height - 3,
+											  bounds.X + bounds.Width - 2,
+											  bounds.Y + 1);
+						}
 						pen.Dispose();
 					}
 					break;
 
 					case ButtonBorderStyle.Outset:
 					{
-						pen = new Pen(Light(color), 1.0f);
+						pen = new Pen(LightLight(color), 1.0f);
 						pen.EndCap = LineCap.Square;
 						graphics.DrawLine(pen, bounds.X,
-										  bounds.Y + bounds.Height - 1,
+										  bounds.Y + bounds.Height - 2,
 										  bounds.X, bounds.Y);
 						graphics.DrawLine(pen, bounds.X + 1, bounds.Y,
-										  bounds.X + bounds.Width - 1,
+										  bounds.X + bounds.Width - 2,
 										  bounds.Y);
-						pen.Color = Dark(color);
-						graphics.DrawLine(pen, bounds.X + 1,
+						pen.Color = DarkDark(color);
+						graphics.DrawLine(pen, bounds.X,
 										  bounds.Y + bounds.Height - 1,
 										  bounds.X + bounds.Width - 1,
 										  bounds.Y + bounds.Height - 1);
 						graphics.DrawLine(pen, bounds.X + bounds.Width - 1,
 										  bounds.Y + bounds.Height - 2,
 										  bounds.X + bounds.Width - 1,
+										  bounds.Y);
+						pen.Color = Light(color);
+						graphics.DrawLine(pen, bounds.X + 1,
+										  bounds.Y + bounds.Height - 3,
+										  bounds.X + 1, bounds.Y + 1);
+						graphics.DrawLine(pen, bounds.X + 1, bounds.Y + 1,
+										  bounds.X + bounds.Width - 3,
+										  bounds.Y + 1);
+						pen.Color = Dark(color);
+						graphics.DrawLine(pen, bounds.X + 1,
+										  bounds.Y + bounds.Height - 2,
+										  bounds.X + bounds.Width - 2,
+										  bounds.Y + bounds.Height - 2);
+						graphics.DrawLine(pen, bounds.X + bounds.Width - 2,
+										  bounds.Y + bounds.Height - 3,
+										  bounds.X + bounds.Width - 2,
 										  bounds.Y + 1);
 						pen.Dispose();
 					}
@@ -234,18 +363,17 @@ public sealed class ControlPaint
 									Border3DSide sides)
 			{
 				DrawBorder3D(graphics, x, y, width, height, 
-								SystemColors.InactiveBorder,
-								SystemColors.Control,
-								style,sides);
+							 SystemColors.InactiveBorder,
+							 SystemColors.Control,
+							 style, sides);
 
 			}
-			
-	public static void DrawBorder3D(Graphics graphics, int x, int y,
-									int width, int height,
-									Color foreColor,
-									Color backColor,
-									Border3DStyle style,
-									Border3DSide sides)
+	internal static void DrawBorder3D(Graphics graphics, int x, int y,
+									  int width, int height,
+									  Color foreColor,
+									  Color backColor,
+									  Border3DStyle style,
+									  Border3DSide sides)
 			{
 				Color light, lightlight, dark, darkdark;
 				Pen pen;

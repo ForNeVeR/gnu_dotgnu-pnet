@@ -1,3 +1,7 @@
+2003-09-23  Adam Ballai  <Adam@thefrontentworks.net>
+	
+	* System.Windows.Forms/HACKING: add a note.
+
 2003-09-22  Adam Ballai  <Adam@thefrontnetworks.net>
 	
 	* System.Windows.Forms/TextBoxBase.cs,

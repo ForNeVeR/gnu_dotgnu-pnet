@@ -200,3 +200,8 @@ You should never need to hook "WndProc" yourself: all events of interest
 are available via the "OnXXX" methods, and dispatched by "Control".
 If an event is missing from the toolkit layer, then contact Rhys and
 he'll add support for it.
+
+Note to Developers:
+When implementing classes don't hesitate to compare the stub's class, me
+thod, and member declarations to the MSDN documentation before beginning
+the implementation.

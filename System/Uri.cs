@@ -697,7 +697,7 @@ public class Uri : MarshalByRefObject
 			if (nextpos == -1) // no path nor query
 				path = absoluteUri.Substring(curpos);
 			else
-				path = absoluteUri.Substring(curpos, nextpos);
+				path = absoluteUri.Substring(curpos, nextpos - curpos);
 		}
 
 		if (!userEscaped)

@@ -7,6 +7,9 @@
 	reenabled Thread.Abort tests.  (they needs an up to date
 	version of PNET to work).
 	
+	* System.Windows.Forms/TabControl.cs: Made TabControl
+	double buffered.
+	
 2004-05-25  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Drawing/Image.cs: implement DeSerialization of Images.

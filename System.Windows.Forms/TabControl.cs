@@ -98,6 +98,7 @@ namespace System.Windows.Forms
 			moveButtonLeftState = ButtonState.Normal;
 			moveButtonRightState = ButtonState.Normal;
 			hotTrackIndex = -1;
+			SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 		}
 
 		public Control GetControl(int index)

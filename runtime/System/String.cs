@@ -1199,7 +1199,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				len = Length;
 				start = 0;
 				posn = 0;
-				while(posn < len)
+				while(posn < len && arrayPosn < (count-1))
 				{
 					posn = IndexOfAny(separator, start, len - start);
 					if(posn == -1)

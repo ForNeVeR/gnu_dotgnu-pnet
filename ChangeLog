@@ -4,6 +4,9 @@
 	* tests/System/TestUri.cs , tests/System/TestString.cs : fix minor 
 	syntax errors in testcases
 
+	* runtime/System/String.cs (Split) : fix ArrayIndexOutOfRangeException
+	in Split(char,int32)
+
 2002-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Uri.cs, System/Net/Sockets/TcpClient.cs: fix minor semantic

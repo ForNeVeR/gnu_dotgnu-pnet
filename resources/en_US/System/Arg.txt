@@ -49,3 +49,5 @@ Arg_IPv6Scope=Invalid IPv6 scope
 ArgRange_NonNegative=Value must not be negative
 ArgRange_Port=Port number is out of range
 ArgRange_Switch={0} is out of range for the switch "{1}"
+Arg_InvalidHeader=The specified header is Invalid
+Arg_RestrictedHeader=The specified header is Restricted

@@ -60,7 +60,7 @@ public class WebHeaderCollection : NameValueCollection
 	
 	public void Add(string header) 
 	{
-		if(header==null)
+		if(header==null || header==String.Empty)
 		{
 			throw new ArgumentNullException("header");
 		}
@@ -80,7 +80,7 @@ public class WebHeaderCollection : NameValueCollection
 		}
 		if(strict && IsRestricted(name))
 		{
-			throw new ArgumentException("restricted header");/* TODO: I18n */
+			throw new ArgumentException(S._("Arg_RestrictedHeader"));
 		}
 		AddWithoutValidate(name,value);
 	}
@@ -91,7 +91,7 @@ public class WebHeaderCollection : NameValueCollection
 		headerName=headerName.Trim();
 		if(!IsValidHeaderName(headerName))
 		{
-			throw new ArgumentException("invalid header name");/*TODO: I18n*/
+			throw new ArgumentException(S._("Arg_InvalidHeader"));
 		}
 		if(headerValue==null)headerValue="";
 		else headerValue=headerValue.Trim(); /* remove excess LWS */
@@ -126,11 +126,11 @@ public class WebHeaderCollection : NameValueCollection
 		}
 		if(!IsValidHeaderName(name))
 		{
-			throw new ArgumentException("invalid header"); /* TODO: I18n */
+			throw new ArgumentException(S._("Arg_InvalidHeader"));
 		}
 		if(strict && IsRestricted(name))
 		{
-			throw new ArgumentException("restricted header");/* TODO:I18N */
+			throw new ArgumentException(S._("Arg_RestrictedHeader"));
 		}
 		RemoveInternal(name);
 	}	
@@ -148,11 +148,11 @@ public class WebHeaderCollection : NameValueCollection
 		}
 		if(!IsValidHeaderName(name))
 		{
-			throw new ArgumentException("invalid header name");/*TODO: I18n*/
+			throw new ArgumentException(S._("Arg_InvalidHeader"));
 		}
 		if(strict && IsRestricted(name))
 		{
-			throw new ArgumentException("restricted header");/* TODO: I18n */
+			throw new ArgumentException(S._("Arg_RestrictedHeader"));
 		}
 		SetInternal(name,value);
 	}

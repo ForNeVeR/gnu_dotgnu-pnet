@@ -1,4 +1,9 @@
 
+2003-07-09  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Net/WebHeaderCollection.cs, resources/en_US/System/Arg.txt:
+	Internationalize the exceptions in WebHeaderCollection.
+
 2003-07-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/ButtonBase.cs: make "Draw" "internal virtual"

@@ -322,11 +322,11 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	}
 
 	/* Don't bother with return logic or stack sizes if abstract or extern */
-	if(!ILMethod_IsAbstract(method) && ILMethod_IsIL(method))
+	if(!ILMethod_IsAbstract(method) && ILMethod_IsIL(method) && node->body)
 	{
 		/* Add an explicit return instruction if the body didn't */
 		outputLabel = 0;
-		if(!(node->body) || !ILNodeEndsInReturn(node->body))
+		if(!ILNodeEndsInReturn(node->body))
 		{
 			if(info->returnLabel != ILLabel_Undefined &&
 			   info->returnType == ILMachineType_Void)

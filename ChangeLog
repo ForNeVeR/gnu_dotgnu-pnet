@@ -1,4 +1,9 @@
 
+2003-05-07  David Corking  <dcorking@yahoo.fr>
+	
+	* runtime/System/Private/NumberFormat/Formatter.cs: One liner
+	to fix part of bug #3847 . (Gopal)
+
 2003-05-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/DllImportAttribute.cs:

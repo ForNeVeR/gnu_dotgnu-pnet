@@ -418,7 +418,7 @@ internal abstract class Formatter
 		//  Pad out significant digits
 		if (ret.Length < scale) 
 		{
-			ret.Insert(0, "0", ret.Length - scale);
+			ret.Insert(0, "0", scale - ret.Length);
 		}
 
 		//  Insert a decimal point

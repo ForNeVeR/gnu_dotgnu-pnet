@@ -1008,9 +1008,83 @@ public abstract class Type
 
 #if !ECMA_COMPAT
 
+	// NOTE: this is only a quick fix , more investigation needed
+	// to see if we need to handle this in a better (faster) way
 	public static TypeCode GetTypeCode(Type type)
 			{
-				throw new NotImplementedException("GetTypeCode");
+				if(type == null)
+				{
+					return TypeCode.Empty;
+				}
+				if(type == typeof(Boolean))
+				{
+					return TypeCode.Boolean;
+				}
+				if(type == typeof(Byte))
+				{
+					return TypeCode.Byte;	
+				}
+				if(type == typeof(SByte))
+				{
+					return TypeCode.SByte;	
+				}
+				if(type == typeof(Int16))
+				{
+					return TypeCode.Int16;	
+				}
+				if(type == typeof(UInt16))
+				{
+					return TypeCode.UInt16;
+				}
+				if(type == typeof(Char))
+				{
+					return TypeCode.Char;
+				}
+				if(type == typeof(Int32))
+				{
+					return TypeCode.Int32;
+				}
+				if(type == typeof(UInt32))
+				{
+					return TypeCode.UInt32;
+				}
+				if(type == typeof(Int64))
+				{
+					return TypeCode.Int64;	
+				}
+				if(type == typeof(UInt64))
+				{
+					return TypeCode.UInt64;
+				}
+				if(type == typeof(Single))
+				{
+					return TypeCode.Single;	
+				}
+				if(type == typeof(Double))
+				{
+					return TypeCode.Double;
+				}
+				if(type == typeof(String))
+				{
+					return TypeCode.String;
+				}
+				if(type == typeof(Decimal))
+				{
+					return TypeCode.Decimal;
+				}
+				if(type.IsEnum)
+				{
+					return GetTypeCode(type.UnderlyingSystemType);	
+				}
+				if(type == typeof(DateTime))
+				{
+					return TypeCode.DateTime;
+				}
+				if(type == typeof(DBNull))
+				{
+					return TypeCode.DBNull;
+				}
+				return TypeCode.Object;
 			}
 	// Get a type from a class identifier.
 	//

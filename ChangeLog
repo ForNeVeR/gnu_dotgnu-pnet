@@ -29,6 +29,11 @@
 	* System/Net/IPAddress.cs , System/Uri.cs: Implement IPv6 Parse and
 	ToString for IPAddress classes.
 
+	* runtime/System/Type.cs : Implement GetTypeCode()
+	
+	* runtime/System/Collections/ArrayList.cs: Remove error when IndexOf()
+	is called with an empty list.
+
 2003-05-26  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebClient.cs: Implement MIME based file uploads using

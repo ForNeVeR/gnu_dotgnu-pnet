@@ -164,6 +164,8 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			}
 	public virtual int IndexOf(Object value)
 			{
+				if(Count <= 0) return -1;
+
 				return IndexOf(value, 0, Count);
 			}
 	public virtual void Insert(int index, Object value)

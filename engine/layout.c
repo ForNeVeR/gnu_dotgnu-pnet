@@ -143,7 +143,7 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 	{
 		/* Lay out a value type by getting the full size and alignment
 		   of the class that underlies the value type */
-		return LayoutClass(ILType_ToValueType(type), layout);
+		return LayoutClass(ILClassResolve(ILType_ToValueType(type)), layout);
 	}
 	else
 	{

@@ -881,8 +881,9 @@ public class XmlTextReader : XmlReader
 			}
 		}
 
-#if false
+#if __CSCC__
 		// TODO - csc says that this code is unreachable - Rhys.
+		// I need to implement a better reachability test.
 
 		//Finished
 		readstate = ReadState.Interactive;

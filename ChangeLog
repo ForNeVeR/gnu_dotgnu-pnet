@@ -1,4 +1,9 @@
 
+2002-06-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/XmlTextReader.cs: hack around a reachability bug
+	in cscc for the time being.
+
 2002-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/Remoting/Messaging/AsyncResult.cs,

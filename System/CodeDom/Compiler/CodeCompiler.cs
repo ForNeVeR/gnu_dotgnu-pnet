@@ -190,6 +190,183 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 				return "@\"" + responseFile + "\"";
 			}
 
+	// Internal version of "ProcessCompilerOutputLine".
+	// The line may have one of the following forms:
+	//
+	//		FILENAME(LINE,COLUMN): error CODE: message
+	//		FILENAME(LINE,COLUMN): fatal error CODE: message
+	//		FILENAME(LINE,COLUMN): warning CODE: message
+	//		FILENAME:LINE: message
+	//		FILENAME:LINE:COLUMN: message
+	//		FILENAME:LINE: warning: message
+	//		FILENAME:LINE:COLUMN: warning: message
+	//
+	internal static CompilerError ProcessCompilerOutputLine(String line)
+			{
+				CompilerError error;
+				int posn, start;
+
+				// Bail out if the line is empty.
+				if(line == null || line.Length == 0)
+				{
+					return null;
+				}
+
+				// Create the error block.
+				error = new CompilerError();
+
+				// Parse out the filename.
+				posn = 0;
+				if(line.Length >= 3 && Char.IsLetter(line[0]) &&
+				   line[1] == ':' && (line[2] == '/' || line[2] == '\\'))
+				{
+					// Filename starting with a Windows drive specification.
+					posn += 3;
+				}
+				while(posn < line.Length && line[posn] != ':' &&
+					  line[posn] != '(')
+				{
+					++posn;
+				}
+				if(posn >= line.Length)
+				{
+					return null;
+				}
+				error.FileName = line.Substring(0, posn);
+
+				// Parse out the line and column numbers.
+				if(line[posn] == '(')
+				{
+					// (LINE,COLUMN) format.
+					++posn;
+					start = posn;
+					while(posn < line.Length && line[posn] != ')' &&
+					      line[posn] != ',')
+					{
+						++posn;
+					}
+					error.Line = Int32.Parse
+						(line.Substring(start, posn - start));
+					if(posn < line.Length && line[posn] == ',')
+					{
+						++posn;
+						start = posn;
+						while(posn < line.Length && line[posn] != ')' &&
+						      line[posn] != ',')
+						{
+							++posn;
+						}
+						error.Column = Int32.Parse
+							(line.Substring(start, posn - start));
+					}
+					while(posn < line.Length && line[posn] != ')')
+					{
+						++posn;
+					}
+					if(posn < line.Length)
+					{
+						++posn;
+					}
+					if(posn < line.Length && line[posn] == ':')
+					{
+						++posn;
+					}
+				}
+				else
+				{
+					// LINE:COLUMN format.
+					++posn;
+					start = posn;
+					while(posn < line.Length && line[posn] != ':')
+					{
+						++posn;
+					}
+					error.Line = Int32.Parse
+						(line.Substring(start, posn - start));
+					if(posn < line.Length && line[posn + 1] != ' ')
+					{
+						++posn;
+						start = posn;
+						while(posn < line.Length && line[posn] != ':')
+						{
+							++posn;
+						}
+						error.Column = Int32.Parse
+							(line.Substring(start, posn - start));
+					}
+					if(posn < line.Length)
+					{
+						++posn;
+					}
+				}
+
+				// Skip white space.
+				while(posn < line.Length && line[posn] == ' ')
+				{
+					++posn;
+				}
+
+				// Parse the error type.
+				bool needCode = true;
+				if((line.Length - posn) >= 6 &&
+				   String.CompareOrdinal("error ", 0, line, posn, 6) == 0)
+				{
+					posn += 6;
+				}
+				else if((line.Length - posn) >= 12 &&
+				        String.CompareOrdinal
+							("fatal error ", 0, line, posn, 12) == 0)
+				{
+					posn += 12;
+				}
+				else if((line.Length - posn) >= 8 &&
+				        String.CompareOrdinal
+							("warning ", 0, line, posn, 8) == 0)
+				{
+					error.IsWarning = true;
+					posn += 8;
+				}
+				else if((line.Length - posn) >= 8 &&
+				        String.CompareOrdinal
+							("warning:", 0, line, posn, 8) == 0)
+				{
+					error.IsWarning = true;
+					posn += 8;
+					needCode = false;
+				}
+				else
+				{
+					needCode = false;
+				}
+
+				// Parse the error code.
+				if(needCode)
+				{
+					start = posn;
+					while(posn < line.Length && line[posn] != ':')
+					{
+						++posn;
+					}
+					error.ErrorNumber = line.Substring(posn, posn - start);
+					if(posn < line.Length)
+					{
+						++posn;
+					}
+				}
+
+				// Skip white space.
+				while(posn < line.Length && line[posn] == ' ')
+				{
+					++posn;
+				}
+
+				// Extract the error text.
+				error.ErrorText = line.Substring(posn);
+
+				// Return the error block to the caller.
+				return error;
+			}
+
 	// Process an output line from the compiler.
 	protected abstract void ProcessCompilerOutputLine
 				(CompilerResults results, String line);

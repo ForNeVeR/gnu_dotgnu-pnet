@@ -24,12 +24,15 @@ namespace System.CodeDom.Compiler
 
 #if CONFIG_CODEDOM
 
+using System.IO;
 using System.Collections;
+using System.Security.Cryptography;
 
 public class TempFileCollection : ICollection, IEnumerable, IDisposable
 {
 	// Internal state.
 	private String tempDir;
+	private String basePath;
 	private bool keepFiles;
 	private Hashtable files;
 
@@ -39,6 +42,7 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 	public TempFileCollection(String tempDir, bool keepFiles)
 			{
 				this.tempDir = tempDir;
+				this.basePath = null;
 				this.keepFiles = keepFiles;
 				this.files = new Hashtable();
 			}
@@ -56,13 +60,33 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 			}
 
 	// Properties.
-	[TODO]
 	public String BasePath
 			{
 				get
 				{
-					// TODO
-					return null;
+					// Bail out early if we already have a base path.
+					if(basePath != null)
+					{
+						return basePath;
+					}
+
+					// Get the temporary directory to be used.
+					if(tempDir == null || tempDir.Length == 0)
+					{
+						tempDir = Path.GetTempPath();
+					}
+
+					// Create a random name in the temporary directory.
+					RandomNumberGenerator rng = RandomNumberGenerator.Create();
+					byte[] data = new byte [6];
+					rng.GetBytes(data);
+					String name = Convert.ToBase64String(data);
+					name = name.Replace('/', '-');
+					name = "tmp" + name.Replace('+', '_');
+
+					// Construct the full temporary file base name.
+					basePath = Path.Combine(tempDir, name);
+					return basePath;
 				}
 			}
 	public int Count
@@ -135,6 +159,7 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 	void IDisposable.Dispose()
 			{
 				Dispose(true);
+				GC.SuppressFinalize(this);
 			}
 
 	// Add an extension to a temporary file.
@@ -142,18 +167,32 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 			{
 				return AddExtension(fileExtension, keepFiles);
 			}
-	[TODO]
 	public String AddExtension(String fileExtension, bool keepFile)
 			{
-				// TODO
-				return null;
+				if(fileExtension == null || fileExtension.Length == 0)
+				{
+					throw new ArgumentException
+						(S._("ArgRange_StringNonEmpty"), "fileExtension");
+				}
+				String filename = BasePath + "." + fileExtension;
+				AddFile(filename, keepFile);
+				return filename;
 			}
 
 	// Add a file to this temporary file collection.
-	[TODO]
 	public void AddFile(String fileName, bool keepFile)
 			{
-				// TODO
+				if(fileName == null || fileName.Length == 0)
+				{
+					throw new ArgumentException
+						(S._("ArgRange_StringNonEmpty"), "fileName");
+				}
+				if(files.Contains(fileName))
+				{
+					throw new ArgumentException
+						(S._("Arg_DuplicateTempFilename"), "fileName");
+				}
+				files.Add(fileName, keepFile);
 			}
 
 	// Copy the contents of this collection to an array.
@@ -163,10 +202,24 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 			}
 
 	// Delete the temporary files in this collection.
-	[TODO]
 	public void Delete()
 			{
-				// TODO
+				IDictionaryEnumerator e = files.GetEnumerator();
+				while(e.MoveNext())
+				{
+					if(!((bool)(e.Value)))
+					{
+						try
+						{
+							File.Delete((String)(e.Key));
+						}
+						catch
+						{
+							// Ignore exceptions when deleting files.
+						}
+					}
+				}
+				files.Clear();
 			}
 
 	// Dispose this collection.

@@ -52,3 +52,4 @@ ArgRange_Switch={0} is out of range for the switch "{1}"
 Arg_InvalidHeader=The specified header is Invalid
 Arg_RestrictedHeader=The specified header is Restricted
 Arg_DuplicateCredentials=Duplicate credentials added to credential cache
+Arg_DuplicateTempFilename=Duplicate filename in temporary file collection

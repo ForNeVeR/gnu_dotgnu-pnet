@@ -257,7 +257,11 @@ internal class CSharpCodeCompiler : CodeCompiler
 	protected override void ProcessCompilerOutputLine
 				(CompilerResults results, String line)
 			{
-				// TODO
+				CompilerError error = ProcessCompilerOutputLine(line);
+				if(error != null)
+				{
+					results.Errors.Add(error);
+				}
 			}
 
 	// Get the token for "null".
@@ -728,31 +732,252 @@ internal class CSharpCodeCompiler : CodeCompiler
 	protected override void GenerateConstructor
 				(CodeConstructor e, CodeTypeDeclaration c)
 			{
-				// TODO
+				// Bail out if not a class or struct.
+				if(!IsCurrentClass && !IsCurrentStruct)
+				{
+					return;
+				}
+
+				// Output the attributes and constructor signature.
+				OutputAttributeDeclarations(e.CustomAttributes);
+				OutputMemberAccessModifier(e.Attributes);
+				OutputIdentifier(CurrentTypeName);
+				Output.Write("(");
+				OutputParameters(e.Parameters);
+				Output.Write(")");
+
+				// Output the ": base" or ": this" expressions.
+				if(e.BaseConstructorArgs.Count > 0)
+				{
+					Output.WriteLine(" : ");
+					Indent += 2;
+					Output.Write("base(");
+					OutputExpressionList(e.BaseConstructorArgs);
+					Output.Write(")");
+					Indent -= 2;
+				}
+				if(e.ChainedConstructorArgs.Count > 0)
+				{
+					Output.WriteLine(" : ");
+					Indent += 2;
+					Output.Write("base(");
+					OutputExpressionList(e.ChainedConstructorArgs);
+					Output.Write(")");
+					Indent -= 2;
+				}
+
+				// Output the body of the constructor.
+				StartBlock();
+				GenerateStatements(e.Statements);
+				EndBlock();
 			}
 	protected override void GenerateEntryPointMethod
 				(CodeEntryPointMethod e, CodeTypeDeclaration c)
 			{
-				// TODO
+				Output.Write("public static void Main()");
+				StartBlock();
+				GenerateStatements(e.Statements);
+				EndBlock();
 			}
 	protected override void GenerateEvent
 				(CodeMemberEvent e, CodeTypeDeclaration c)
 			{
-				// TODO
+				// Bail out if not a class, struct, or interface.
+				if(!IsCurrentClass && !IsCurrentStruct && !IsCurrentInterface)
+				{
+					return;
+				}
+
+				// Output the event definition.
+				OutputAttributeDeclarations(e.CustomAttributes);
+				if(e.PrivateImplementationType == null)
+				{
+					OutputMemberAccessModifier(e.Attributes);
+					OutputMemberScopeModifier(e.Attributes);
+					Output.Write("event ");
+					OutputTypeNamePair(e.Type, e.Name);
+				}
+				else
+				{
+					Output.Write("event ");
+					OutputTypeNamePair
+						(e.Type, e.PrivateImplementationType + "." + e.Name);
+				}
+				Output.WriteLine(";");
 			}
 	protected override void GenerateField(CodeMemberField e)
 			{
-				// TODO
+				// Bail out if not a class, struct, or enum.
+				if(!IsCurrentClass && !IsCurrentStruct && !IsCurrentEnum)
+				{
+					return;
+				}
+
+				// Generate information about the field.
+				if(!IsCurrentEnum)
+				{
+					OutputAttributeDeclarations(e.CustomAttributes);
+					OutputMemberAccessModifier(e.Attributes);
+					OutputMemberScopeModifier(e.Attributes);
+					OutputTypeNamePair(e.Type, e.Name);
+					if(e.InitExpression != null)
+					{
+						Output.Write(" = ");
+						GenerateExpression(e.InitExpression);
+					}
+					Output.WriteLine(";");
+				}
+				else
+				{
+					OutputAttributeDeclarations(e.CustomAttributes);
+					OutputIdentifier(e.Name);
+					if(e.InitExpression != null)
+					{
+						Output.Write(" = ");
+						GenerateExpression(e.InitExpression);
+					}
+					Output.WriteLine(",");
+				}
 			}
 	protected override void GenerateMethod
 				(CodeMemberMethod e, CodeTypeDeclaration c)
 			{
-				// TODO
+				// Bail out if not a class, struct, or interface.
+				if(!IsCurrentClass && !IsCurrentStruct && !IsCurrentInterface)
+				{
+					return;
+				}
+
+				// Output the attributes and method signature.
+				OutputAttributeDeclarations(e.CustomAttributes);
+				if(e.ReturnTypeCustomAttributes.Count > 0)
+				{
+					OutputAttributeDeclarations
+						("return: ", e.ReturnTypeCustomAttributes);
+				}
+				if(!IsCurrentInterface)
+				{
+					if(e.PrivateImplementationType == null)
+					{
+						OutputMemberAccessModifier(e.Attributes);
+						OutputMemberScopeModifier(e.Attributes);
+					}
+				}
+				else if((e.Attributes & MemberAttributes.VTableMask)
+							== MemberAttributes.New)
+				{
+					Output.Write("new ");
+				}
+				if(e.ReturnType != null)
+				{
+					OutputType(e.ReturnType);
+				}
+				else
+				{
+					Output.Write("void");
+				}
+				Output.Write(" ");
+				if(e.PrivateImplementationType != null && !IsCurrentInterface)
+				{
+					Output.Write(e.PrivateImplementationType.BaseType);
+					Output.Write(".");
+				}
+				OutputIdentifier(e.Name);
+				Output.Write("(");
+				OutputParameters(e.Parameters);
+				Output.Write(")");
+
+				// Output the body of the method.
+				if(IsCurrentInterface ||
+				   (e.Attributes & MemberAttributes.ScopeMask) ==
+				   		MemberAttributes.Abstract)
+				{
+					Output.WriteLine(";");
+				}
+				else
+				{
+					StartBlock();
+					GenerateStatements(e.Statements);
+					EndBlock();
+				}
 			}
 	protected override void GenerateProperty
 				(CodeMemberProperty e, CodeTypeDeclaration c)
 			{
-				// TODO
+				// Bail out if not a class, struct, or interface.
+				if(!IsCurrentClass && !IsCurrentStruct && !IsCurrentInterface)
+				{
+					return;
+				}
+
+				// Output the attributes and property signature.
+				OutputAttributeDeclarations(e.CustomAttributes);
+				if(!IsCurrentInterface)
+				{
+					if(e.PrivateImplementationType == null)
+					{
+						OutputMemberAccessModifier(e.Attributes);
+						OutputMemberScopeModifier(e.Attributes);
+					}
+				}
+				else if((e.Attributes & MemberAttributes.VTableMask)
+							== MemberAttributes.New)
+				{
+					Output.Write("new ");
+				}
+				OutputType(e.Type);
+				Output.Write(" ");
+				if(e.PrivateImplementationType != null && !IsCurrentInterface)
+				{
+					Output.Write(e.PrivateImplementationType.BaseType);
+					Output.Write(".");
+				}
+				if(e.Parameters.Count == 0)
+				{
+					OutputIdentifier(e.Name);
+				}
+				else
+				{
+					Output.Write("this[");
+					OutputParameters(e.Parameters);
+					Output.Write(")");
+				}
+
+				// Output the body of the property.
+				StartBlock();
+				if(e.HasGet)
+				{
+					if(IsCurrentInterface ||
+					   (e.Attributes & MemberAttributes.ScopeMask)
+							== MemberAttributes.Abstract)
+					{
+						Output.WriteLine("get;");
+					}
+					else
+					{
+						Output.Write("get");
+						StartBlock();
+						GenerateStatements(e.GetStatements);
+						EndBlock();
+					}
+				}
+				if(e.HasSet)
+				{
+					if(IsCurrentInterface ||
+					   (e.Attributes & MemberAttributes.ScopeMask)
+							== MemberAttributes.Abstract)
+					{
+						Output.WriteLine("set;");
+					}
+					else
+					{
+						Output.Write("set");
+						StartBlock();
+						GenerateStatements(e.SetStatements);
+						EndBlock();
+					}
+				}
+				EndBlock();
 			}
 	protected override void GenerateNamespaceStart(CodeNamespace e)
 			{
@@ -774,28 +999,74 @@ internal class CSharpCodeCompiler : CodeCompiler
 			}
 	protected override void GenerateNamespaceImport(CodeNamespaceImport e)
 			{
-				// TODO
+				Output.Write("using ");
+				OutputIdentifier(e.Namespace);
+				Output.WriteLine(";");
 			}
 	protected override void GenerateSnippetMember
 				(CodeSnippetTypeMember e)
 			{
-				// TODO
+				Output.Write(e.Text);
 			}
 	protected override void GenerateTypeConstructor
 				(CodeTypeConstructor e)
 			{
-				// TODO
+				Output.Write("static ");
+				OutputIdentifier(CurrentTypeName);
+				Output.Write("()");
+				StartBlock();
+				GenerateStatements(e.Statements);
+				EndBlock();
 			}
 	protected override void GenerateTypeStart(CodeTypeDeclaration e)
 			{
-				// TODO
+				OutputAttributeDeclarations(e.CustomAttributes);
+				if(!IsCurrentDelegate)
+				{
+					OutputTypeAttributes
+						(e.TypeAttributes, IsCurrentStruct, IsCurrentEnum);
+					OutputIdentifier(e.Name);
+					String sep = " : ";
+					foreach(CodeTypeReference type in e.BaseTypes)
+					{
+						Output.Write(sep);
+						OutputType(type);
+						sep = ",";
+					}
+					StartBlock();
+				}
+				else
+				{
+					switch(e.TypeAttributes & TypeAttributes.VisibilityMask)
+					{
+						case TypeAttributes.NestedPrivate:
+							Output.Write("private "); break;
+						case TypeAttributes.Public:
+						case TypeAttributes.NestedPublic:
+							Output.Write("public "); break;
+					}
+					Output.Write("delegate ");
+					CodeTypeDelegate d = (CodeTypeDelegate)e;
+					if(d.ReturnType != null)
+					{
+						OutputType(d.ReturnType);
+					}
+					else
+					{
+						Output.Write("void");
+					}
+					Output.Write(" ");
+					OutputIdentifier(d.Name);
+					Output.Write("(");
+					OutputParameters(d.Parameters);
+					Output.WriteLine(");");
+				}
 			}
 	protected override void GenerateTypeEnd(CodeTypeDeclaration e)
 			{
 				if(!IsCurrentDelegate)
 				{
-					--Indent;
-					Output.WriteLine("}");
+					EndBlock();
 				}
 			}
 

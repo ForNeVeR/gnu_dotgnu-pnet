@@ -777,6 +777,10 @@ public abstract class CodeGenerator : ICodeGenerator
 	// Generate code for a statement collection.
 	protected void GenerateStatements(CodeStatementCollection e)
 			{
+				if(e == null)
+				{
+					return;
+				}
 				foreach(CodeStatement stmt in e)
 				{
 					((ICodeGenerator)this).GenerateCodeFromStatement
@@ -972,6 +976,11 @@ public abstract class CodeGenerator : ICodeGenerator
 	protected virtual void OutputAttributeDeclarations
 				(CodeAttributeDeclarationCollection attributes)
 			{
+				OutputAttributeDeclarations(null, attributes);
+			}
+	internal void OutputAttributeDeclarations
+				(String prefix, CodeAttributeDeclarationCollection attributes)
+			{
 				if(attributes.Count == 0)
 				{
 					return;
@@ -989,6 +998,10 @@ public abstract class CodeGenerator : ICodeGenerator
 					else
 					{
 						first = false;
+					}
+					if(prefix != null)
+					{
+						Output.Write(prefix);
 					}
 					Output.Write(attr.Name);
 					args = attr.Arguments;

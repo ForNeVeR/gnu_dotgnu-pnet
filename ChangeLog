@@ -5,6 +5,13 @@
 	runtime/System/Resources/ResourceWriter.cs: finish the implementation
 	of "ResourceWriter".
 
+	* System/CodeDom/Compiler/CSharpCodeCompiler.cs,
+	System/CodeDom/Compiler/CodeCompiler.cs,
+	System/CodeDom/Compiler/CodeGenerator.cs,
+	System/CodeDom/Compiler/TempFileCollection.cs,
+	System/CodeDom/Compiler/VBCodeCompiler.cs:
+	continue the implementation of "System.CodeDom.Compiler".
+
 2003-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/Serialization/FormatterServices.cs:

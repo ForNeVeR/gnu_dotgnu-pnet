@@ -98,7 +98,11 @@ internal class VBCodeCompiler : CodeCompiler
 	protected override void ProcessCompilerOutputLine
 				(CompilerResults results, String line)
 			{
-				// TODO
+				CompilerError error = ProcessCompilerOutputLine(line);
+				if(error != null)
+				{
+					results.Errors.Add(error);
+				}
 			}
 
 	// Get the token for "null".

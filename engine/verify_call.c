@@ -816,6 +816,53 @@ static int Is2DArrayClass(ILClass *classInfo)
 }
 
 /*
+ * Table of inline methods.
+ */
+typedef struct
+{
+	const char *name;
+	const char *namespace;
+	const char *methodName;
+	const char *signature;
+	int         inlineType;
+
+} InlineMethodInfo;
+static InlineMethodInfo const InlineMethods[] = {
+	{"String", "System", "get_Length", "(T)i", IL_INLINEMETHOD_STRING_LENGTH},
+	{"String", "System", "Concat",
+	 "(oSystem.String;oSystem.String;)oSystem.String;",
+	 IL_INLINEMETHOD_STRING_CONCAT_2},
+	{"String", "System", "Concat",
+	 "(oSystem.String;oSystem.String;oSystem.String;)oSystem.String;",
+	 IL_INLINEMETHOD_STRING_CONCAT_3},
+	{"String", "System", "Concat",
+	 "(oSystem.String;oSystem.String;oSystem.String;oSystem.String;)"
+	 		"oSystem.String;",
+	 IL_INLINEMETHOD_STRING_CONCAT_4},
+	{"String", "System", "op_Equality", "(oSystem.String;oSystem.String;)Z",
+	 IL_INLINEMETHOD_STRING_EQUALS},
+	{"String", "System", "Equals", "(oSystem.String;oSystem.String;)Z",
+	 IL_INLINEMETHOD_STRING_EQUALS},
+	{"String", "System", "op_Inequality", "(oSystem.String;oSystem.String;)Z",
+	 IL_INLINEMETHOD_STRING_NOT_EQUALS},
+	{"String", "System", "get_Chars", "(Ti)c",
+	 IL_INLINEMETHOD_STRING_GET_CHAR},
+
+	{"Monitor", "System.Threading", "Enter", "(oSystem.Object;)V",
+	 IL_INLINEMETHOD_MONITOR_ENTER},
+	{"Monitor", "System.Threading", "Exit", "(oSystem.Object;)V",
+	 IL_INLINEMETHOD_MONITOR_EXIT},
+
+	{"Type", "System", "GetTypeFromHandle",
+	 "(vSystem.RuntimeTypeHandle;)oSystem.Type;",
+	 IL_INLINEMETHOD_TYPE_FROM_HANDLE},
+
+	{"StringBuilder", "System.Text", "Append",
+	 "(Tc)oSystem.Text.StringBuilder;", IL_INLINEMETHOD_BUILDER_APPEND_CHAR},
+};
+#define	NumInlineMethods	(sizeof(InlineMethods) / sizeof(InlineMethodInfo))
+
+/*
  * Determine if a method is inlineable, and return its inline type.
  * Returns -1 if the method is not inlineable.
  */
@@ -823,161 +870,45 @@ static int GetInlineMethodType(ILMethod *method)
 {
 	ILClass *owner;
 	const char *name;
+	const char *namespace;
+	const char *methodName;
+	int posn;
 	ILImage *image;
 	ILImage *systemImage;
 	ILType *signature;
 
+	/* Extract the information that we require to find the inline */
 	owner = ILMethod_Owner(method);
 	name = ILClass_Name(owner);
-	if(!strcmp(name, "String"))
-	{
-		/* Make sure that this is really "System.String" */
-		name = ILClass_Namespace(owner);
-		if(!name || strcmp(name, "System") != 0)
-		{
-			return -1;
-		}
-		image = ILClassToImage(owner);
-		systemImage = ILContextGetSystem(ILImageToContext(image));
-		if(systemImage && systemImage != image)
-		{
-			return -1;
-		}
+	namespace = ILClass_Namespace(owner);
+	methodName = ILMethod_Name(method);
+	signature = ILMethod_Signature(method);
 
-		/* Check for known inlineable methods */
-		name = ILMethod_Name(method);
-		signature = ILMethod_Signature(method);
-		if(!strcmp(name, "get_Length") &&
-		   _ILLookupTypeMatch(signature, "(T)i"))
+	/* Check for types in the runtime library */
+	if(namespace)
+	{
+		for(posn = 0; posn < NumInlineMethods; ++posn)
 		{
-			return IL_INLINEMETHOD_STRING_LENGTH;
-		}
-		else if(!strcmp(name, "Concat"))
-		{
-			if(_ILLookupTypeMatch(signature,
-				"(oSystem.String;oSystem.String;)oSystem.String;"))
+			if(!strcmp(name, InlineMethods[posn].name) &&
+			   !strcmp(namespace, InlineMethods[posn].namespace) &&
+			   !strcmp(methodName, InlineMethods[posn].methodName) &&
+			   _ILLookupTypeMatch(signature, InlineMethods[posn].signature))
 			{
-				return IL_INLINEMETHOD_STRING_CONCAT_2;
-			}
-			else if(_ILLookupTypeMatch(signature,
-						"(oSystem.String;oSystem.String;"
-						"oSystem.String;)oSystem.String;"))
-			{
-				return IL_INLINEMETHOD_STRING_CONCAT_3;
-			}
-			else if(_ILLookupTypeMatch(signature,
-						"(oSystem.String;oSystem.String;oSystem.String;"
-						"oSystem.String;)oSystem.String;"))
-			{
-				return IL_INLINEMETHOD_STRING_CONCAT_4;
+				image = ILClassToImage(owner);
+				systemImage = ILContextGetSystem(ILImageToContext(image));
+				if(!systemImage || systemImage == image)
+				{
+					return InlineMethods[posn].inlineType;
+				}
 			}
 		}
-		else if((!strcmp(name, "Equals") || !strcmp(name, "op_Equality")) &&
-				_ILLookupTypeMatch(signature,
-					"(oSystem.String;oSystem.String;)Z"))
-		{
-			return IL_INLINEMETHOD_STRING_EQUALS;
-		}
-		else if(!strcmp(name, "op_Inequality") &&
-				_ILLookupTypeMatch(signature,
-					"(oSystem.String;oSystem.String;)Z"))
-		{
-			return IL_INLINEMETHOD_STRING_NOT_EQUALS;
-		}
-		else if(!strcmp(name, "get_Chars") &&
-				_ILLookupTypeMatch(signature, "(Ti)c"))
-		{
-			return IL_INLINEMETHOD_STRING_GET_CHAR;
-		}
-		return -1;
 	}
-	else if(!strcmp(name, "Monitor"))
-	{
-		/* Make sure that this is really "System.Threading.Monitor" */
-		name = ILClass_Namespace(owner);
-		if(!name || strcmp(name, "System.Threading") != 0)
-		{
-			return -1;
-		}
-		image = ILClassToImage(owner);
-		systemImage = ILContextGetSystem(ILImageToContext(image));
-		if(systemImage && systemImage != image)
-		{
-			return -1;
-		}
 
-		/* Check for known inlineable methods */
-		name = ILMethod_Name(method);
-		signature = ILMethod_Signature(method);
-		if(!strcmp(name, "Enter") &&
-		   _ILLookupTypeMatch(signature, "(oSystem.Object;)V"))
-		{
-			return IL_INLINEMETHOD_MONITOR_ENTER;
-		}
-		else if(!strcmp(name, "Exit") &&
-		        _ILLookupTypeMatch(signature, "(oSystem.Object;)V"))
-		{
-			return IL_INLINEMETHOD_MONITOR_EXIT;
-		}
-		return -1;
-	}
-	else if(!strcmp(name, "Type"))
-	{
-		/* Make sure that this is really "System.Type" */
-		name = ILClass_Namespace(owner);
-		if(!name || strcmp(name, "System") != 0)
-		{
-			return -1;
-		}
-		image = ILClassToImage(owner);
-		systemImage = ILContextGetSystem(ILImageToContext(image));
-		if(systemImage && systemImage != image)
-		{
-			return -1;
-		}
-
-		/* Check for known inlineable methods */
-		name = ILMethod_Name(method);
-		signature = ILMethod_Signature(method);
-		if(!strcmp(name, "GetTypeFromHandle") &&
-		   _ILLookupTypeMatch(signature,
-		   					  "(vSystem.RuntimeTypeHandle;)oSystem.Type;"))
-		{
-			return IL_INLINEMETHOD_TYPE_FROM_HANDLE;
-		}
-		return -1;
-	}
-	else if(!strcmp(name, "StringBuilder"))
-	{
-		/* Make sure that this is really "System.Text.StringBuilder" */
-		name = ILClass_Namespace(owner);
-		if(!name || strcmp(name, "System.Text") != 0)
-		{
-			return -1;
-		}
-		image = ILClassToImage(owner);
-		systemImage = ILContextGetSystem(ILImageToContext(image));
-		if(systemImage && systemImage != image)
-		{
-			return -1;
-		}
-
-		/* Check for known inlineable methods */
-		name = ILMethod_Name(method);
-		signature = ILMethod_Signature(method);
-		if(!strcmp(name, "Append") &&
-		   _ILLookupTypeMatch(signature, "(Tc)oSystem.Text.StringBuilder;"))
-		{
-			return IL_INLINEMETHOD_BUILDER_APPEND_CHAR;
-		}
-		return -1;
-	}
-	else if(Is2DArrayClass(owner))
+	/* Check for 2D array types */
+	if(Is2DArrayClass(owner))
 	{
 		/* Two-dimensional array operation */
-		name = ILMethod_Name(method);
-		signature = ILMethod_Signature(method);
-		if(!strcmp(name, "Get"))
+		if(!strcmp(methodName, "Get"))
 		{
 			signature = ILTypeGetReturn(signature);
 			if(signature == ILType_Int32)
@@ -993,7 +924,7 @@ static int GetInlineMethodType(ILMethod *method)
 				return IL_INLINEMETHOD_GET2D_OBJECT;
 			}
 		}
-		else if(!strcmp(name, "Set") && ILTypeNumParams(signature) > 0)
+		else if(!strcmp(methodName, "Set") && ILTypeNumParams(signature) > 0)
 		{
 			signature = ILTypeGetParam(signature, ILTypeNumParams(signature));
 			if(signature == ILType_Int32)
@@ -1011,11 +942,9 @@ static int GetInlineMethodType(ILMethod *method)
 		}
 		return -1;
 	}
-	else
-	{
-		/* This class does not have inlineable methods */
-		return -1;
-	}
+
+	/* This is not an inlineable method */
+	return -1;
 }
 
 #elif defined(IL_VERIFY_LOCALS)

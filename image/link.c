@@ -173,7 +173,7 @@ static char *LocateAssembly(const char *name, ILUInt16 *version,
 	}
 	if(pathlen > 0)
 	{
-		path = TestAssemblyPath(parentAssemblyPath - 1, pathlen, name, namelen);
+		path = TestAssemblyPath(parentAssemblyPath, pathlen - 1, name, namelen);
 		if(path)
 		{
 			return path;

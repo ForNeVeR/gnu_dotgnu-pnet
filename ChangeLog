@@ -28,6 +28,8 @@
 	support/Makefile.am, support/locale.c: implement the support
 	functions "ILInitLocale" and "ILGetCodePage".
 
+	* engine/ilrun.c (main): initialize the locale on entry to ilrun.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

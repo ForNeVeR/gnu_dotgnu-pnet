@@ -87,6 +87,9 @@ int main(int argc, char *argv[])
 	int sawException;
 	int registerMode = 0;
 
+	/* Initialize the locale routines */
+	ILInitLocale();
+
 	/* Allocate space for the library list */
 	libraryDirs = (char **)ILMalloc(sizeof(char *) * argc);
 	numLibraryDirs = 0;

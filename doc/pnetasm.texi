@@ -142,7 +142,7 @@ The following is a list of assembler directives:
 @strong{.addon .algorithm .assembly .backing .blob .capability .cctor
 .class .comtype .config .corflags .ctor .custom .data .emitbyte
 .entrypoint .event .exeloc .export .field .file .fire .get .hash
-.imagebase .implicitcom .line #line .locale .locals .manifestres
+.imagebase .implicitcom .library .line #line .locale .locals .manifestres
 .maxstack .method .mime .module .mresource .namespace .originator .os
 .other .override .pack .param .permission .permissionset .processor
 .property .publickey .publickeytoken .removeon .set .size .subsystem
@@ -194,6 +194,12 @@ In this section we define a number of non-terminals that will be used
 later in the BNF grammar.  They do not necessarily correspond to
 useful program constructs on their own.
 
+@cindex Identifier
+@cindex Integer32
+@cindex Integer64
+@cindex Float64
+@cindex ComposedString
+@cindex QualifiedName
 @example
 Identifier     => IDENT | SQSTRING
 Integer32      => INT      /* 32-bit integer */
@@ -233,6 +239,7 @@ appending a sequence of shorter strings.
 The top-most level of the assembly input stream consists of zero or
 more declarations:
 
+@cindex TopLevel
 @example
 TopLevel => @{ Declaration @}
 @end example
@@ -241,6 +248,7 @@ Declarations at the top-most level cover program items such as
 classes, namespaces, global methods, assembly information, manifest
 resources, etc:
 
+@cindex Declaration
 @example
 Declaration => NamespaceDeclaration
              | ClassDeclaration
@@ -258,9 +266,16 @@ Declaration => NamespaceDeclaration
              | ModuleDeclaration
              | SecurityDeclaration
              | CustomAttributeDeclaration
-             | SubsystemDeclaration
-             | CorFlagsDeclaration
 @end example
+
+The assembler does support some additional kinds of declarations
+beyond those described in this document.  They are supported for
+compatibility with older versions of the assembly syntax, and for
+compatibility with tools from other vendors.
+
+The syntax described here is the official syntax, and deviating
+from it is not recommended.  Support for other syntax may be
+removed in a future version of the assembler.
 
 @c -----------------------------------------------------------------------
 
@@ -268,17 +283,51 @@ Declaration => NamespaceDeclaration
 @section Namespace Declarations
 @cindex Namespace Declarations
 
+Zero or more classes may be grouped together into a namespace, which
+prefixes the class name with a particular identifier.
+
+@cindex NamespaceDeclaration
 @example
 NamespaceDeclaration => @strong{.namespace} QualifiedName
                         '@{' @{ Declaration @} '@}'
 @end example
 
+In the following example, classes with names @code{C1} and @code{C2}
+will be created within the namespace @code{N}:
+
+@example
+.namespace N
+@{
+    .class C1 @{ ... @}
+    .class C2 @{ ... @}
+@}
+@end example
+
+Note: the following is not the same as above:
+
+@example
+.class N.C1 @{ ... @}
+.class N.C2 @{ ... @}
+@end example
+
+This declares two classes called @code{N.C1} and @code{N.C2}, within
+the global namespace.
+
 @c -----------------------------------------------------------------------
 
-@node Class Declarations, Method Declarations, Namespace Declarations, Assembler
+@node Class Declarations, Class References, Namespace Declarations, Assembler
 @section Class Declarations
 @cindex Class Declarations
+@cindex Type Declarations
 
+Strictly speaking, IL programs do not support classes at all.  Everything is
+a type.  However, for historical reasons, types are declared by means of
+a @strong{.class} declaration.
+
+@cindex .class directive
+@cindex ClassDeclaration
+@cindex ClassAttribute
+@cindex Class attributes
 @example
 ClassDeclaration => @strong{.class} @{ ClassAttribute @} Identifier
           [ @strong{extends} ClassName ]
@@ -288,7 +337,6 @@ ClassAttribute => @strong{public}
                 | @strong{private}
                 | @strong{value}
                 | @strong{unmanaged}
-                | @strong{not_in_gc_heap}
                 | @strong{interface}
                 | @strong{sealed}
                 | @strong{abstract}
@@ -306,14 +354,161 @@ ClassAttribute => @strong{public}
                 | @strong{nested assembly}
                 | @strong{nested famandassem}
                 | @strong{nested famorassem}
-                | @strong{lateinit}
+                | @strong{beforefieldinit}
                 | @strong{specialname}
                 | @strong{rtspecialname}
-ClassName      => [ '[' (QualifiedName |
-                         @strong{.module} QualifiedName) ']' ]
-                  QualifiedName @{ '/' QualifiedName @}
 @end example
 
+@table @strong
+@cindex public attribute (types)
+@item public
+Specify that the type is exported from the assembly that declares
+it, and is accessible to any other type.  This should not be used on
+nested types.  This corresponds to the C# @code{public} access level
+on non-nested types.
+
+@cindex private attribute (types)
+@item private
+Specify that the type is private to the assembly that declares it,
+and is accessible only to other types in the same assembly.  This
+should not be used on nested types.  This corresponds to the C#
+@code{internal} access level on non-nested types.
+
+@cindex nested public attribute (types)
+@item nested public
+Specify that the type is publicly accessible within the scope of
+its nesting parent's accessibility.  The type is accessible to
+any other type that can access the nesting parent.  This should
+only be used on nested types.  This corresponds to the C# @code{public}
+access level on nested types.
+
+@cindex nested private attribute (types)
+@item nested private
+Specify that the type is private to its nesting parent and cannot
+be accessed by any other type.  This should only be used on nested types.
+This corresponds to the C# @code{private} access level on nested types.
+
+@cindex nested family attribute (types)
+@item nested family
+Specify that the type is accessible to its nesting parent and to
+any type derived from the nesting parent.  This should only be used
+on nested types.  This corresponds to the C# @code{protected}
+access level on nested types.
+
+@cindex nested assembly attribute (types)
+@item nested assembly
+Specify that the type is accessible to any other type in the
+assembly that declares it.  This should only be used on nested types.
+This corresponds to the C# @code{internal} access level on nested types.
+
+@cindex nested famandassem attribute (types)
+@item nested famandassem
+Specify that the type is accessible only to types that inherit from
+the nesting parent and are also declared in the same assembly as
+this type.  This should only be used on nested types.  There is no
+C# equivalent to this access level.
+
+@cindex nested famorassem attribute (types)
+@item nested famorassem
+Specify that the type is accessible only to types that inherit from
+the nesting parent or that are declared in the same assembly as this type.
+This should only be used on nested types.  This corresponds to the C#
+@code{protected internal} access level on nested types.
+
+@cindex value attribute (types)
+@item value
+Specify that the type is normally used as a value type (C# @code{struct})
+instead of as an object reference.
+
+@cindex unmanaged attribute (types)
+@item unmanaged
+Specify that the type declares an unmanaged value type.
+
+@cindex interface attribute (types)
+@item interface
+Specify that the type is an interface rather than a regular class or
+value type.  Interfaces should also have the @strong{abstract} attribute.
+
+@cindex sealed attribute (types)
+@item sealed
+Specify that the type cannot be inherited.
+
+@cindex abstract attribute (types)
+@item abstract
+Specify that the type cannot be instantiated.  This attribute should be
+present on interfaces and on any class that has @strong{abstract} methods.
+
+@cindex auto attribute (types)
+@item auto
+Specify that the fields of the type should be laid out in the most
+efficient manner possible, with no user-supplied constraints.  Normally
+this will be the same as @strong{sequential}, but it does not have to
+be the same.
+
+@cindex sequential attribute (types)
+@item sequential
+Specify that the fields of the type should be laid out in a manner which
+is consistent with the underlying operating system.  Most types will
+have this attribute set.
+
+@cindex explicit attribute (types)
+@item explicit
+Specify that the fields of the type should be laid out using user-supplied
+explicit layout rules.  These rules are specified with the @strong{.size}
+and @strong{.pack} directives, and with explicit offset information on
+each of the fields.
+
+@cindex ansi attribute (types)
+@item ansi
+Specify that any strings that are marshalled to unmanaged code by this
+type should be interpreted using the system's prevailing locale.  If the
+type does not marshal strings to unmanaged code, then @strong{ansi} is
+the default value.
+
+@cindex unicode attribute (types)
+@item unicode
+Specify that any strings that are marshalled to unmanaged code by this
+type should be interpreted as Unicode.  This attribute only makes sense
+on Windows machines.
+
+@cindex autochar attribute (types)
+@item autochar
+Specify that any strings that are marshalled to unmanaged code by this
+type should be interpreted as either Unicode or strings in the prevailing
+locale, depending upon the capabilities of the underlying operating system.
+This attribute only makes sense on Windows machines.
+
+@cindex import attribute (types)
+@item import
+Specify that the type was imported from some other module within the
+assembly.  This attribute is very rare and can be ignored by most compilers.
+
+@cindex serializable attribute (types)
+@item serializable
+Specify that the fields of the type can be automatically serialized by
+the runtime engine's builtin serialization routines.  Any fields that have
+the @strong{not_serialized} attribute will be omitted from the builtin
+serialization.
+
+@cindex beforefieldinit attribute (types)
+@item beforefieldinit
+Specify that the type does not need to be initialized until the first
+time that a static method within the type is called.
+
+@cindex specialname attribute (types)
+@item specialname
+Specify that the type may have special significance to tools other than
+the runtime engine.  This is rarely needed on types.
+
+@cindex rtspecialname attribute (types)
+@item rtspecialname
+Specify that the type may have special significance to the runtime engine.
+This is rarely needed on types.
+@end table
+
+The type may contain any of the following members:
+
+@cindex ClassMember
 @example
 ClassMember => MethodDeclaration
              | ClassDeclaration
@@ -331,9 +526,244 @@ ClassMember => MethodDeclaration
              | OverrideDeclaration
 @end example
 
+Most of these will be described in later sections.  The exceptions are
+@strong{.size} and @strong{.pack}:
+
+@table @strong
+@cindex .size directive
+@item .size
+Specify the size of the type, in bytes.  This should only be used
+with @strong{explicit} layout.  If this declaration is not present,
+or specifies the value zero, then the runtime engine will choose the
+size of the type.
+
+@cindex .pack directive
+@item .pack
+Specify the packing size to be used for fields of the type.  This must be
+one of the values 0, 1, 2, 4, 8, 16, 32, 64, or 128, and should only be
+used with @strong{explicit} layout.  A packing size of zero, or a missing
+packing size, indicates that the default size for the underlying operating
+system should be used.
+@end table
+
 @c -----------------------------------------------------------------------
 
-@node Method Declarations, Other Declarations, Class Declarations, Assembler
+@node Class References, Type Specifications, Class Declarations, Assembler
+@section Class References
+@cindex Class References
+
+In many places within the assembly source stream, it is necessary to
+refer to other classes within the same source, or in other assemblies.
+This section describes the syntax of class references.
+
+In IL, there is a distinction defined, primitive, and composed types.
+Defined types are used to define the classes and value types that are
+used in the program.  Primitive types are types such as @strong{int32},
+@strong{bool}, @strong{float64}, etc.  Composed types are arrays, pointers,
+etc, that are built up from defined and primitive types.
+
+In this section, we will treat a "class name" as a reference to a defined
+type, even if the type happens to correspond to a value type.  Primitive
+and composed types cannot be referred to using class names.
+
+@cindex ClassName
+@cindex ImportScope
+@cindex Class names
+@example
+ClassName   => [ '[' ImportScope ']' ]
+                  QualifiedName @{ '/' QualifiedName @}
+ImportScope => QualifiedName |
+             | @strong{.module} QualifiedName
+             | @strong{.library}
+@end example
+
+Class names begin with an import scope, which specifies where the
+defined type is being imported from.  If the import scope is not present,
+the type is assumed to be declared in the same assembly stream, or
+that the type will be resolved by the linker.
+
+If the import scope is a @code{QualifiedName}, then it indicates that
+the defined type is being imported from an assembly.  The assembler
+searches for an assembly reference definition with the same name.
+If there is no such assembly reference, then it will search for an
+assembly definition with the same name.  If an assembly definition is
+found, then the interpretation is the same as if the scope was not
+supplied at all.  An error occurs if there is no assembly reference
+or definition for the name.
+
+If the import scope is prefixed with @strong{.module}, then it indicates
+that the defined type is being imported from a module.  This form of
+import is deprecated in favour of assembly imports.
+
+If the import scope is @strong{.library}, then it indicates that the
+defined type is being imported from the CLI standard library.  This
+library is normally in an assembly called @code{mscorlib}, but it is
+possible to specify a different name using the @code{--stdlib-name} option
+to @code{ilasm}.
+
+Following the import scope, the name consists of one of more components,
+separated by slashes.  A name with no slashes indicates a type that
+is declared at the global level of the import scope.  A name with
+slashes indicates a nested type.  For example, the following refers
+to the type @code{HashEntry} which is nested within the standard
+@code{System.Enum} type:
+
+@example
+[.library]System.Enum/HashEntry
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Type Specifications, Method Declarations, Class References, Assembler
+@section Type Specifications
+@cindex Type Specifications
+
+Thoughout the assembly source stream, it is necessary to refer to
+defined, primitive, and composed types.  This is done using type
+specifications, which may either be class names or composed types.
+
+@cindex TypeSpecification
+@example
+TypeSpecification => ClassName | Type
+@end example
+
+Types may be composed from class names, primitive types, and other
+composed types as follows:
+
+@cindex Type
+@example
+Type => @strong{class} ClassName
+      | @strong{valuetype} ClassName
+      | Type '[' Bounds @{ ',' Bounds @} ']'
+      | Type '&'        /* reference */
+      | Type '*'        /* pointer */
+      | Type @strong{pinned}
+      | Type @strong{modreq} '(' ClassName ')'
+      | Type @strong{modopt} '(' ClassName ')'
+      | @strong{method} [ CallingConventions ] Type '*'
+                          '(' [ SignatureArguments ] ')'
+      | PrimitiveType
+@end example
+
+Every defined type in the program has two forms: class and value type.
+The particular form to be used may be specified using the @strong{class}
+and @strong{valuetype} prefixes.  If the prefix is not present, then
+the assembler will guess the correct form from the type definition.
+
+The assembler supports the following primitive type keywords:
+
+@cindex PrimitiveType
+@example
+PrimitiveType => @strong{void}
+               | @strong{bool}
+               | @strong{char}
+               | @strong{int8}
+               | @strong{unsigned} @strong{int8}
+               | @strong{int16}
+               | @strong{unsigned} @strong{int16}
+               | @strong{int32}
+               | @strong{unsigned} @strong{int32}
+               | @strong{int64}
+               | @strong{unsigned} @strong{int64}
+               | @strong{native} @strong{int}
+               | @strong{native} @strong{unsigned} @strong{int}
+               | @strong{float32}
+               | @strong{float64}
+               | @strong{native} @strong{float}
+               | @strong{string}
+               | @strong{object}
+               | @strong{typedref}
+@end example
+
+The @strong{string} keyword is replaced with a @strong{class} reference
+to the library class @code{System.String}.  The @strong{object} keyword
+is replaced with a @strong{class} reference to the library class
+@code{System.Object}.
+
+Array bounds are specified as follows:
+
+@cindex Bounds
+@example
+Bounds => /* empty */
+        | @strong{...}
+        | Integer32
+        | Integer32 @strong{...}
+        | Integer32 @strong{...} Integer32
+@end example
+
+The first two forms indicate an array dimension with no lower or upper bound.
+The third form indicates an array dimension with lower bound 0, and the upper
+bound as one less than the specified value.  The fourth form indicates
+an array dimension with a specified lower bound, but no upper bound.  The
+last form indicates an array dimension with both lower and upper bounds
+specified.
+
+In certain contexts, types may have marshalling information associated
+with them.  This marshalling information provides directions to the
+runtime engine when it invokes external methods using the PInvoke
+mechanism.
+
+@cindex MarshalledType
+@cindex NativeType
+@example
+MarshalledType => Type [ @strong{marshal} '(' NativeType ')' ]
+NativeType     => /* empty */
+                | @strong{custom} '(' ComposedString ',' ComposedString ','
+                               ComposedString ',' ComposedString ')'
+                | @strong{fixed} @strong{sysstring} '[' Integer32 ']'
+                | @strong{fixed} @strong{array} '[' Integer32 ']'
+                | NativeType '*'
+                | NativeType '[' ']'
+                | NativeType '[' Integer32 ']'
+                | NativeType '[' '+' Integer32 ']'
+                | NativeType '[' Integer32 '+' Integer32 ']'
+                | @strong{variant}
+                | @strong{currency}
+                | @strong{syschar}
+                | @strong{void}
+                | @strong{bool}
+                | @strong{int8}
+                | @strong{unsigned} @strong{int8}
+                | @strong{int16}
+                | @strong{unsigned} @strong{int16}
+                | @strong{int32}
+                | @strong{unsigned} @strong{int32}
+                | @strong{int64}
+                | @strong{unsigned} @strong{int64}
+                | @strong{int}
+                | @strong{unsigned }@strong{int}
+                | @strong{float32}
+                | @strong{float64}
+                | @strong{float}
+                | @strong{error}
+                | @strong{decimal}
+                | @strong{date}
+                | @strong{bstr}
+                | @strong{lpstr}
+                | @strong{lpwstr}
+                | @strong{lptstr}
+                | @strong{objectref}
+                | @strong{iunknown}
+                | @strong{idispatch}
+                | @strong{struct}
+                | @strong{interface}
+                | @strong{nested} @strong{struct}
+                | @strong{byvalstr}
+                | @strong{ansi} @strong{bstr}
+                | @strong{tbstr}
+                | @strong{variant} @strong{bool}
+                | @strong{method}
+                | @strong{lpvoid}
+                | @strong{as} @strong{any}
+                | @strong{lpstruct}
+@end example
+
+Note: native types are highly system-dependent.  Many of the types above
+only make sense on Windows systems.
+
+@c -----------------------------------------------------------------------
+
+@node Method Declarations, Other Declarations, Type Specifications, Assembler
 @section Method Declarations
 @cindex Method Declarations
 
@@ -387,7 +817,6 @@ CallingConventions => @strong{instance} CallingConventions
                     | @strong{unmanaged stdcall}
                     | @strong{unmanaged thiscall}
                     | @strong{unmanaged fastcall}
-MarshalledType => Type [ @strong{marshal} '(' NativeType ')' ]
 ImplementationAttributes => @strong{native}
                           | @strong{il}
                           | @strong{optil}

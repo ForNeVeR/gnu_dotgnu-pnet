@@ -289,7 +289,7 @@ takes precedence.
 @item -fchecked
 @itemx -funchecked
 Compile arithmetic expressions so that overflow exceptions will
-or will not be thrown, respectively.  The default is @code{-fchecked}.
+or will not be thrown, respectively.  The default is @code{-funchecked}.
 The @code{checked} and @code{unchecked} keywords can be used in
 source files to override this setting.
 
@@ -1061,6 +1061,8 @@ then you may need to invoke this program.
 * Top-Level Declarations::  Top-level assembler declarations
 * Namespace Declarations::  Namespace declarations
 * Class Declarations::      Class declarations
+* Class References::        Referring to local and imported classes
+* Type Specifications::     Specifying types in field and method signatures
 * Method Declarations::     Method declarations
 * Other Declarations::      Other declarations
 @end menu
@@ -2201,6 +2203,8 @@ In addition, any of the usual filesystem-related errors may be
 produced.  For example, @samp{filename: No such file or directory}.
 
 @c -----------------------------------------------------------------------
+
+@page
 
 @node Index, , Load Errors, Top
 @unnumbered Index

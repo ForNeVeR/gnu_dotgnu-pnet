@@ -32,6 +32,9 @@ default "checked" state to "off".
 
 * cscc/cscc.1: document that the default "checked" state is now "off".
 
+* doc/pnettools.texi, doc/pnetasm.texi: continue documentation of the
+assembler syntax.
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions

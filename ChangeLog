@@ -1,4 +1,13 @@
 
+2005-02-06  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_stringbuilder.c: Added internalcalls for StringBuilder class. 
+
+	* engine/Makefile.am: Add lib_stringbuilder.c
+
+	* engine/int_proto.c, engine/int_table.c: Add internal functions for
+	StringBuilder.
+
 2004-01-25  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/cvm_config.h, engine/unroll_const.c: Enable PPC

@@ -41,6 +41,7 @@ libILEngine_a_SOURCES = cvm.c \
 						lib_socket.c \
 						lib_stdio.c \
 						lib_string.c \
+						lib_stringbuilder.c \
 						lib_task.c \
 						lib_thread.c \
 						lib_time.c \

@@ -408,6 +408,11 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 	ILNode *expr1;
 	ILNode *expr2;
 }
+%node ILNode_CAssignStruct ILNode_Statement =
+{
+	ILNode *expr1;
+	ILNode *expr2;
+}
 %node ILNode_CToCSharpString ILNode_UnaryExpression
 %node ILNode_CArrayInit ILNode_UnaryExpression
 

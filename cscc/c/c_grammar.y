@@ -291,29 +291,50 @@ static void ProcessBitField(CDeclSpec spec, CDeclarator decl, ILUInt32 size)
 }
 
 /*
+ * Build an appropriate assignment statement for initializing a variable.
+ */
+static ILNode *BuildAssignInit(ILNode *var, ILNode *init, ILType *type)
+{
+	ILNode *stmt;
+
+	if(yyisa(init, ILNode_CArrayInit))
+	{
+		if(CTypeIsArray(type))
+		{
+			stmt = ILNode_CAssignArray_create(var, init);
+		}
+		else if(CTypeIsStruct(type))
+		{
+			stmt = ILNode_CAssignStruct_create(var, init);
+		}
+		else
+		{
+			stmt = ILNode_Assign_create(var, init);
+		}
+	}
+	else if(CTypeIsArray(type) && yyisa(init, ILNode_CString))
+	{
+		stmt = ILNode_CAssignArray_create(var, init);
+	}
+	else
+	{
+		stmt = ILNode_Assign_create(var, init);
+	}
+
+	return stmt;
+}
+
+/*
  * Add a global initializer statement to the pending list.
  */
 static void AddInitializer(char *name, ILNode *node, ILType *type, ILNode *init)
 {
 	ILNode *stmt;
 
-	/* TODO: this is a hack for missing array assignment - fix later */
-	if(yyisa(init, ILNode_CArrayInit))
-	{
-		return;
-	}
-
 	/* Build the initialization statement */
 	stmt = ILNode_CGlobalVar_create(name, type, CTypeDecay(&CCCodeGen, type));
 	CGenCloneLine(stmt, node);
-	if(CTypeIsArray(type))
-	{
-		stmt = ILNode_CAssignArray_create(stmt, init);
-	}
-	else
-	{
-		stmt = ILNode_Assign_create(stmt, init);
-	}
+	stmt = BuildAssignInit(stmt, init, type);
 	CGenCloneLine(stmt, init);
 
 	/* Add the statement to the pending list */
@@ -776,14 +797,7 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 					(index, ILTypeToMachineType(type), type,
 					 CTypeDecay(&CCCodeGen, type));
 				CGenCloneLine(assign, decl.node);
-				if(CTypeIsArray(type))
-				{
-					assign = ILNode_CAssignArray_create(assign, init);
-				}
-				else
-				{
-					assign = ILNode_Assign_create(assign, init);
-				}
+				assign = BuildAssignInit(assign, init, type);
 				CGenCloneLine(assign, init);
 				ILNode_List_Add(*list, assign);
 			}

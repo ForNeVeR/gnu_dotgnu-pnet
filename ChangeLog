@@ -12,6 +12,10 @@
 	* cscc/c/c_ainit.tc (CArrayInitializerSize): further improvements
 	to array size computation - handle nested structs within structs, etc.
 
+	* cscc/c/c_ainit.tc, cscc/c/c_defs.tc, cscc/c/c_grammar.y,
+	cscc/c/c_oper.tc: rearrange the array initialization code so that
+	all code generation and semantic analysis is in "c_ainit.tc".
+
 2003-06-27  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fix recursive entry/leave bug in

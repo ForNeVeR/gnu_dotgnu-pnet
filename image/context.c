@@ -399,6 +399,10 @@ ILImage *ILContextGetFile(ILContext *context, const char *name)
 		if(filename)
 		{
 			len = strlen(filename);
+			if(!ILStrICmp(filename, name))
+			{
+				return image;
+			}
 			while(len > 0 && filename[len - 1] != '/' &&
 				  filename[len - 1] != '\\')
 			{

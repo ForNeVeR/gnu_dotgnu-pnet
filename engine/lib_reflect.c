@@ -1474,6 +1474,16 @@ ILObject *_IL_Assembly_LoadFromFile(ILExecThread *thread,
 
 	/* TODO: check security permissions */
 
+	/* Load from context if it exists already */
+
+	image = ILContextGetFile(thread->process->context, filename);
+
+	if(image != NULL)
+	{
+		*error = LoadError_OK;
+		return ImageToAssembly(thread, image);
+	}
+
 	/* Attempt to load the file */
 	loadError = ILImageLoadFromFile(filename, thread->process->context,
 									&image, IL_LOADFLAG_FORCE_32BIT, 0);

@@ -396,11 +396,14 @@ ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
 			type = SOCK_RAW; 
 		}
 		break;
+/* BeOS has incomplete socket support */
+#ifdef SOCK_SEQPACKET
 		case IL_SOCK_SEQPACKET:	
 		{
 			type = SOCK_SEQPACKET; 
 		}
 		break;
+#endif
 		default:
 		{
 			type = -1; /* Unknown */

@@ -1,4 +1,9 @@
 
+2004-10-27  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* support/socket.c: BeOS has incomplete socket support (thanks to Tomas
+	Wilhelmsson <wilhelmsson_tomas@hotmail.com>).
+
 2004-10-27  Gopal V  <gopalv82@yahoo.com>
 
 	* configure.in, support/ansi.c, support/dir.c: Fix compile errors on

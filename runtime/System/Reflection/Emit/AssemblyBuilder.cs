@@ -241,7 +241,8 @@ public sealed class AssemblyBuilder : Assembly
 	[TODO]
 	public void DefineVersionInfoResource()
 			{
-		 		throw new NotImplementedException("DefineVersionInfoResource");
+				// We already added a 0.0.0.0 version info resource
+		 		//throw new NotImplementedException("DefineVersionInfoResource");
 			}
 
 	[TODO]

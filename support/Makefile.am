@@ -5,6 +5,7 @@ libILSupport_a_SOURCES = alloc.c \
 						 cmdline.c \
 						 convert.c \
 						 decimal.c \
+						 dynlib.c \
 						 file.c \
 						 filemap.c \
 						 guid.c \

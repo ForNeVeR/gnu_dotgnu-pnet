@@ -53,6 +53,18 @@ extern	"C" {
 #endif
 
 /*
+ * Structure that keeps track of a loaded external module.
+ */
+typedef struct _tagILLoadedModule ILLoadedModule;
+struct _tagILLoadedModule
+{
+	ILLoadedModule *next;
+	void		   *handle;
+	char			name[1];
+
+};
+
+/*
  * Execution control context for a process.
  */
 struct _tagILExecProcess
@@ -90,6 +102,9 @@ struct _tagILExecProcess
 
 	/* Hash table that contains all intern'ed strings within the system */
 	void		   *internHash;
+
+	/* List of loaded modules for PInvoke methods */
+	ILLoadedModule *loadedModules;
 
 };
 

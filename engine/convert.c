@@ -24,6 +24,43 @@
 extern	"C" {
 #endif
 
+/*
+ * Locate or load an external module that is being referenced via "PInvoke".
+ * Returns the system module pointer, or NULL if it could not be loaded.
+ */
+static void *LocateExternalModule(ILExecProcess *process, const char *name)
+{
+	ILLoadedModule *loaded;
+
+	/* Search for an already-loaded module with the same name */
+	loaded = process->loadedModules;
+	while(loaded != 0)
+	{
+		if(!ILStrICmp(loaded->name, name))
+		{
+			return loaded->handle;
+		}
+		loaded = loaded->next;
+	}
+
+	/* Create a new module structure */
+	loaded = (ILLoadedModule *)ILMalloc(sizeof(ILLoadedModule) + strlen(name));
+	if(!loaded)
+	{
+		return 0;
+	}
+	loaded->next = process->loadedModules;
+	loaded->handle = 0;
+	strcpy(loaded->name, name);
+	process->loadedModules = loaded;
+
+	/* Attempt to open the module.  If we cannot, then leave the
+	   loaded module structure on the list so that any future requests
+	   for the module will be rejected without re-trying the open */
+	loaded->handle = ILDynLibraryOpen(loaded->name);
+	return loaded->handle;
+}
+
 unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 {
 	ILMethodCode code;
@@ -35,6 +72,9 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	void *cif;
 	void *ctorcif;
 	int isConstructor;
+	ILModule *module;
+	const char *name;
+	void *moduleHandle;
 
 	/* Is the method already converted and in the current generation? */
 	if(method->userData1 != 0 &&
@@ -79,6 +119,33 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				/* If we don't have a PInvoke record, then we don't
 				   know what to map this method call to */
 				if(!pinv)
+				{
+					return 0;
+				}
+
+				/* Find the module for the PInvoke record */
+				module = ILPInvoke_Module(pinv);
+				if(!module)
+				{
+					return 0;
+				}
+				moduleHandle = LocateExternalModule(thread->process,
+													ILModule_Name(module));
+				if(!moduleHandle)
+				{
+					return 0;
+				}
+
+				/* Get the name of the function within the module */
+				name = ILPInvoke_Alias(pinv);
+				if(!name || *name == '\0')
+				{
+					name = ILMethod_Name(method);
+				}
+
+				/* Look up the method within the module */
+				fn = ILDynLibraryGetSymbol(moduleHandle, name);
+				if(!fn)
 				{
 					return 0;
 				}

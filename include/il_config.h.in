@@ -91,6 +91,9 @@
 /* Define if you have the cosh function.  */
 #undef HAVE_COSH
 
+/* Define if you have the dlopen function.  */
+#undef HAVE_DLOPEN
+
 /* Define if you have the execv function.  */
 #undef HAVE_EXECV
 
@@ -217,6 +220,9 @@
 /* Define if you have the waitpid function.  */
 #undef HAVE_WAITPID
 
+/* Define if you have the <dlfcn.h> header file.  */
+#undef HAVE_DLFCN_H
+
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
@@ -264,6 +270,9 @@
 
 /* Define if you have the <varargs.h> header file.  */
 #undef HAVE_VARARGS_H
+
+/* Define if you have the dl library (-ldl).  */
+#undef HAVE_LIBDL
 
 /* Define if you have the m library (-lm).  */
 #undef HAVE_LIBM

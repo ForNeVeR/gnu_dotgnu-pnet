@@ -145,6 +145,11 @@ void ILGetPathInfo(ILPathInfo *info);
 /* Get the platform-specific newline sequence */
 const char *ILGetNewLine(void);
 
+/* Dynamic library support */
+void *ILDynLibraryOpen(const char *name);
+void  ILDynLibraryClose(void *handle);
+void *ILDynLibraryGetSymbol(void *handle, const char *symbol);
+
 #ifdef	__cplusplus
 };
 #endif

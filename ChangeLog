@@ -7,6 +7,10 @@ that arguments are pushed onto a "native argument stack" instead of
 the normal stack.  This is a little faster, and also avoids alignment
 problems on platforms with 32-bit pointers, but 64-bit alignment.
 
+* configure.in, include/il_system.h, include/il_config.h.in, support/dynlib.c,
+support/Makefile.am, engine/convert.c, engine/engine.h, engine/process.c:
+add support code to load dynamic libraries for PInvoke calls.
+
 2001-11-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for "0.2.4" release.

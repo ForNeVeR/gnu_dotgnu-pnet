@@ -56,6 +56,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->outOfMemoryObject = 0;
 	ILGetCurrTime(&(process->startTime));
 	process->internHash = 0;
+	process->loadedModules = 0;
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
@@ -86,6 +87,8 @@ ILExecProcess *ILExecProcessCreate(void)
 
 void ILExecProcessDestroy(ILExecProcess *process)
 {
+	ILLoadedModule *loaded, *nextLoaded;
+
 	/* Destroy the threads associated with the process */
 	while(process->firstThread != 0)
 	{
@@ -104,6 +107,19 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	/* Destroy the main part of the intern'ed hash table.
 	   The rest will be cleaned up by the garbage collector */
 	ILGCFreePersistent(process->internHash);
+
+	/* Destroy the loaded module list */
+	loaded = process->loadedModules;
+	while(loaded != 0)
+	{
+		if(loaded->handle != 0)
+		{
+			ILDynLibraryClose(loaded->handle);
+		}
+		nextLoaded = loaded->next;
+		ILFree(loaded);
+		loaded = nextLoaded;
+	}
 
 	/* Free the process block itself */
 	ILGCFreePersistent(process);

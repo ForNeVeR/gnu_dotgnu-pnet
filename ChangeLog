@@ -4,6 +4,9 @@
 	* engine/engine.h, engine/lib_crypt.c, engine/process.c: implement the
 	internalcall for cryptographically secure random number generation.
 
+	* engine/lib_crypt.c: make the cryptographic routines a little
+	more robust in the face of NULL algorithm handles.
+
 2002-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_crypt.c (_IL_CryptoMethods_SameKey): ignore the DES

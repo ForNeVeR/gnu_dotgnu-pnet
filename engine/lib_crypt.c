@@ -299,7 +299,10 @@ ILNativeInt _IL_CryptoMethods_HashNew(ILExecThread *_thread, ILInt32 algorithm)
  */
 void _IL_CryptoMethods_HashReset(ILExecThread *_thread, ILNativeInt state)
 {
-	(*(((HashContext *)state)->reset))(&(((MD5HashContext *)state)->md5));
+	if(state)
+	{
+		(*(((HashContext *)state)->reset))(&(((MD5HashContext *)state)->md5));
+	}
 }
 
 /*
@@ -310,10 +313,13 @@ void _IL_CryptoMethods_HashUpdate(ILExecThread *_thread, ILNativeInt state,
 								  System_Array *buffer, ILInt32 offset,
 								  ILInt32 count)
 {
-	(*(((HashContext *)state)->update))
+	if(state)
+	{
+		(*(((HashContext *)state)->update))
 			(&(((MD5HashContext *)state)->md5),
 			 ((unsigned char *)(ArrayToBuffer(buffer))) + offset,
 			 (unsigned long)count);
+	}
 }
 
 /*
@@ -322,8 +328,12 @@ void _IL_CryptoMethods_HashUpdate(ILExecThread *_thread, ILNativeInt state,
 void _IL_CryptoMethods_HashFinal(ILExecThread *_thread, ILNativeInt state,
 								 System_Array *hash)
 {
-	(*(((HashContext *)state)->final))(&(((MD5HashContext *)state)->md5),
-									   (unsigned char *)(ArrayToBuffer(hash)));
+	if(state)
+	{
+		(*(((HashContext *)state)->final))
+				(&(((MD5HashContext *)state)->md5),
+				 (unsigned char *)(ArrayToBuffer(hash)));
+	}
 }
 
 /*
@@ -331,8 +341,11 @@ void _IL_CryptoMethods_HashFinal(ILExecThread *_thread, ILNativeInt state,
  */
 void _IL_CryptoMethods_HashFree(ILExecThread *_thread, ILNativeInt state)
 {
-	(*(((HashContext *)state)->reset))(&(((MD5HashContext *)state)->md5));
-	ILFree((void *)state);
+	if(state)
+	{
+		(*(((HashContext *)state)->reset))(&(((MD5HashContext *)state)->md5));
+		ILFree((void *)state);
+	}
 }
 
 /*
@@ -650,10 +663,13 @@ void _IL_CryptoMethods_Encrypt(ILExecThread *_thread,
 							   ILInt32 inOffset, System_Array *outBuffer,
 							   ILInt32 outOffset)
 {
-	(*(((SymContext *)state)->encrypt))
+	if(state)
+	{
+		(*(((SymContext *)state)->encrypt))
 			(&(((RC2Context *)state)->rc2),
 			 ((unsigned char *)(ArrayToBuffer(inBuffer))) + inOffset,
 			 ((unsigned char *)(ArrayToBuffer(outBuffer))) + outOffset);
+	}
 }
 
 /*
@@ -665,10 +681,13 @@ void _IL_CryptoMethods_Decrypt(ILExecThread *_thread,
 							   ILInt32 inOffset, System_Array *outBuffer,
 							   ILInt32 outOffset)
 {
-	(*(((SymContext *)state)->decrypt))
+	if(state)
+	{
+		(*(((SymContext *)state)->decrypt))
 			(&(((RC2Context *)state)->rc2),
 			 ((unsigned char *)(ArrayToBuffer(inBuffer))) + inOffset,
 			 ((unsigned char *)(ArrayToBuffer(outBuffer))) + outOffset);
+	}
 }
 
 /*
@@ -676,8 +695,11 @@ void _IL_CryptoMethods_Decrypt(ILExecThread *_thread,
  */
 void _IL_CryptoMethods_SymmetricFree(ILExecThread *_thread, ILNativeInt state)
 {
-	(*(((SymContext *)state)->reset))(&(((RC2Context *)state)->rc2));
-	ILFree((void *)state);
+	if(state)
+	{
+		(*(((SymContext *)state)->reset))(&(((RC2Context *)state)->rc2));
+		ILFree((void *)state);
+	}
 }
 
 /*

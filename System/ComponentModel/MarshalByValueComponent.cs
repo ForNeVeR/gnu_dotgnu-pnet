@@ -47,7 +47,7 @@ namespace System.ComponentModel
 		}
 
 		[TODO]
-		protected override void Finalize()
+		~MarshalByValueComponent()
 		{
 			throw new NotImplementedException("Finalize");
 		}

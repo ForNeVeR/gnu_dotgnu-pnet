@@ -1,4 +1,10 @@
 
+2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/ComponentModel/MarshalByValueComponent.cs,
+	System.Xml/Xsl/XslTransform.cs: fix a couple of incorrect
+	"Finalize" declarations.
+
 2003-06-26  Thong Nguyen  <tum@veridicus.com>
 	
 	* runtime/System/Threading/Thread.cs: Internal calls and Support for 

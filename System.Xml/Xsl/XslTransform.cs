@@ -37,7 +37,7 @@ namespace System.Xml.Xsl
 		}
 
 		[TODO]
-		protected override void Finalize()
+		~XslTransform()
 		{
 			throw new NotImplementedException("Finalize");
 		}

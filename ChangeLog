@@ -1,4 +1,15 @@
 
+2003-05-17  Gopal.V  <gopalv82@symonds.net>
+	* configure.in, cscc/Makefile.am, cscc/java_main.c, cscc/java/java_cast.tc
+	cscc/java/java_const.tc, cscc/java/java_decls.tc, cscc/java/java_defs.tc
+	cscc/java/java_gather.c, cscc/java/java_grammar.y, cscc/java/java_invoke.tc
+	cscc/java/java_internal.h, cscc/java/java_lookup.c, cscc/java/java_misc.tc
+	cscc/java/java_lvalue.tc, cscc/java/java_modifiers.c, cscc/java/java_oper.tc
+	cscc/java/java_rename.h, cscc/java/java_scanner.l, cscc/java/java_stmt.tc
+	cscc/java/java_semantics.tc, cscc/java/java_semvalue.c, 
+	cscc/java/java_semvalue.h, cscc/java/java_types.tc, cscc/java/Makefile.am:
+	Initial checkin of the Java compiler frontend.
+
 2003-05-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, cscc/Makefile.am, cscc/cscc.c, cscc/vb_main.c,

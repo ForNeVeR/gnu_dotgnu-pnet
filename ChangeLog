@@ -8,6 +8,10 @@
 	(DOUBLE-BUFFER) extension to Xsharp, with fallbacks to pixmap
 	based buffering.
 
+	* runtime/System/Text/StringBuilder.cs: fix bug #7404 - sometimes
+	"capacity" exceeded "maxCapacity", causing the inline form of
+	"Append(char)" to overflow the maximum capacity.
+
 2004-01-23  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListViewItemConverter.cs,

@@ -87,6 +87,10 @@ public sealed class StringBuilder
 				}
 				buildString = String.NewBuilder(null, capacity);
 				this.maxCapacity = maxCapacity;
+				if(buildString.capacity > maxCapacity)
+				{
+					buildString.capacity = maxCapacity;
+				}
 				needsCopy = false;
 			}
 	public StringBuilder(String value, int capacity)
@@ -165,6 +169,17 @@ public sealed class StringBuilder
 			}
 #endif // !ECMA_COMPAT
 
+	// Create a new builder and clamp the maximum capacity.
+	private String NewBuilder(String value, int capacity)
+			{
+				String builder = String.NewBuilder(value, capacity);
+				if(builder.capacity > maxCapacity)
+				{
+					builder.capacity = maxCapacity;
+				}
+				return builder;
+			}
+
 	// Append space to a string builder.  Returns the actual
 	// number of characters that can be appended.
 	private int AppendSpace(int length)
@@ -209,7 +224,7 @@ public sealed class StringBuilder
 					{
 						capacity = maxCapacity;
 					}
-					buildString = String.NewBuilder(buildString, capacity);
+					buildString = NewBuilder(buildString, capacity);
 					needsCopy = false;
 				}
 				else if(newLength > buildString.capacity)
@@ -219,7 +234,7 @@ public sealed class StringBuilder
 					{
 						newLength = maxCapacity;
 					}
-					buildString = String.NewBuilder(buildString, newLength);
+					buildString = NewBuilder(buildString, newLength);
 				}
 
 				// Return the actual length to the caller.
@@ -447,7 +462,7 @@ public sealed class StringBuilder
 				{
 					capacity = maxCapacity;
 				}
-				buildString = String.NewBuilder(buildString, capacity);
+				buildString = NewBuilder(buildString, capacity);
 				needsCopy = false;
 				return buildString.capacity;
 			}
@@ -500,7 +515,7 @@ public sealed class StringBuilder
 					{
 						capacity = maxCapacity;
 					}
-					buildString = String.NewBuilder(buildString, capacity);
+					buildString = NewBuilder(buildString, capacity);
 					needsCopy = false;
 				}
 				else if(newLength > buildString.capacity)
@@ -510,7 +525,7 @@ public sealed class StringBuilder
 					{
 						newLength = maxCapacity;
 					}
-					buildString = String.NewBuilder(buildString, newLength);
+					buildString = NewBuilder(buildString, newLength);
 				}
 
 				// Move the characters after the index up.
@@ -683,7 +698,7 @@ public sealed class StringBuilder
 				}
 				else if(needsCopy)
 				{
-					buildString = String.NewBuilder
+					buildString = NewBuilder
 						(buildString, buildString.capacity);
 					needsCopy = false;
 				}
@@ -730,8 +745,7 @@ public sealed class StringBuilder
 				if(count > 0)
 				{
 					String temp = buildString;
-					buildString = String.NewBuilder
-						(null, buildString.capacity);
+					buildString = NewBuilder(null, buildString.capacity);
 					needsCopy = false;
 					if(startIndex > 0)
 					{
@@ -767,8 +781,7 @@ public sealed class StringBuilder
 				if(count > 0)
 				{
 					String temp = buildString;
-					buildString = String.NewBuilder
-						(null, buildString.capacity);
+					buildString = NewBuilder(null, buildString.capacity);
 					needsCopy = false;
 					if(startIndex > 0)
 					{

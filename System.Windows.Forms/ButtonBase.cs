@@ -413,7 +413,7 @@ public abstract class ButtonBase : Control
 
 				// Draw the button image.
 				Image image = this.image;
-				if(image == null && imageList != null)
+				if(image == null && imageList != null && imageIndex != -1)
 				{
 					image = imageList.Images[imageIndex];
 				}

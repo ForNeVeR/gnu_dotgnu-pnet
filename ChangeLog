@@ -1,3 +1,9 @@
+
+2004-06-12  Gopal V  <gopalv82@yahoo.com>
+	
+	* System.Windows.Forms/ButtonBase.cs: Do not load images for 
+	imageIndex -1 .
+
 2004-06-11  Simon Guindon  <simon@nureality.ca>
 
 	* Xsharp/Graphics.cs: add methods to allow access to X display and

@@ -24,7 +24,12 @@ namespace System.Runtime.InteropServices
 
 #if CONFIG_RUNTIME_INFRA
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
+// The ECMA spec says that "DllImportAttribute" can only be used on
+// methods.  However, the underlying metadata allows fields also, and
+// it is useful to be able to import global variables from shared objects.
+
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Field,
+				AllowMultiple=false, Inherited=false)]
 public sealed class DllImportAttribute : Attribute
 {
 	// Internal state.

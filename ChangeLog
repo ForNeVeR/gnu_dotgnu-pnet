@@ -1,4 +1,10 @@
 
+2003-05-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/InteropServices/DllImportAttribute.cs:
+	allow "DllImportAttribute" to also be used on fields, to support
+	PInvoke importing of global variables from shared objects.
+
 2003-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update version and news for the 0.5.4 release.

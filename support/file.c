@@ -48,6 +48,7 @@
 	#include <utime.h>
 #endif
 #endif
+#include <errno.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -62,11 +63,17 @@ extern	"C" {
 int ILDeleteFile(const char *filename)
 {
 #ifdef HAVE_UNLINK
-	return unlink(filename);
+	if(unlink(filename) == 0)
+		return IL_ERRNO_Success;
+	else
+		return ILSysIOConvertErrno(errno);
+#elif defined(HAVE_REMOVE)
+	if(remove(filename) == 0)
+		return IL_ERRNO_Success;
+	else
+		return ILSysIOConvertErrno(errno);
 #else
-#ifdef HAVE_REMOVE
-	return remove(filename);
-#endif
+	return IL_ERRNO_ENOSYS;
 #endif
 }
 

@@ -1,4 +1,11 @@
 
+2003-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, ilgac/.cvsignore, ilgac/Makefile.am,
+	ilgac/ilgac.c, support/dir.c, support/file.c, support/gen_errno.sh:
+	add the "ilgac" program; fix some error-handling bugs in the
+	file and directory support routines.
+
 2003-11-10  Stephen Compall  <s11@member.fsf.org>
 
 	* support/file.c (ILSysIOLock, ILSysIOUnlock): Exclusive file

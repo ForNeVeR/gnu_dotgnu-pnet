@@ -58,24 +58,29 @@ extern	"C" {
 
 #ifndef IL_NO_DIR_ROUTINES
 
+/*
+ * Note: this may be called to delete either a directory or a file.
+ */
 ILInt32 ILDeleteDir(const char *path)
 {
-	int retval;
-	if (path == NULL)
+	if(!path)
 	{
 		return IL_ERRNO_ENOENT;
 	}
-
-#ifdef HAVE_REMOVE
-	retval=remove(path);
-	if(retval)
-	{
-		return ILSysIOConvertErrno(retval);
-	}
-	else
-	{
+#ifdef HAVE_RMDIR
+	if(rmdir(path) == 0)
 		return IL_ERRNO_Success;
-	}
+#endif
+#ifdef HAVE_UNLINK
+	if(unlink(path) == 0)
+		return IL_ERRNO_Success;
+	else
+		return ILSysIOConvertErrno(errno);
+#elif defined(HAVE_REMOVE)
+	if(remove(path) == 0)
+		return IL_ERRNO_Success;
+	else
+		return ILSysIOConvertErrno(errno);
 #else
     return IL_ERRNO_ENOSYS;
 #endif
@@ -84,16 +89,13 @@ ILInt32 ILDeleteDir(const char *path)
 
 ILInt32 ILRenameDir(const char *old_name, const char *new_name)
 {
-	int retVal;
-
-	if (old_name == NULL || new_name == NULL)
+	if(!old_name || !new_name)
 	{
 	    return IL_ERRNO_ENOENT;
 	}
 
 #ifdef HAVE_RENAME
-	retVal = rename(old_name, new_name);
-	if(retVal == 0)
+	if(rename(old_name, new_name) == 0)
 		return IL_ERRNO_Success;
 	else
         return ILSysIOConvertErrno(errno);
@@ -105,12 +107,15 @@ ILInt32 ILRenameDir(const char *old_name, const char *new_name)
 
 ILInt32 ILChangeDir(const char *path)
 {
-	if(path==NULL)
+	if(!path)
 	{
 		return IL_ERRNO_ENOENT;
 	}
 #ifdef HAVE_CHDIR
-	return ILSysIOConvertErrno(chdir(path));	
+	if(chdir(path) == 0)
+		return IL_ERRNO_Success;
+	else
+		return ILSysIOConvertErrno(errno);
 #else
 	return IL_ERRNO_ENOSYS;
 #endif
@@ -119,15 +124,21 @@ ILInt32 ILChangeDir(const char *path)
 
 ILInt32 ILCreateDir(const char *path)
 {
-	if(path==NULL)
+	if(!path)
 	{
 		return IL_ERRNO_ENOENT;
 	}
 #ifdef HAVE_MKDIR
 	#ifdef IL_WIN32_NATIVE
-		return ILSysIOConvertErrno(mkdir(path));
+		if(mkdir(path) == 0)
+			return IL_ERRNO_Success;
+		else
+			return ILSysIOConvertErrno(errno);
 	#else
-		return ILSysIOConvertErrno(mkdir(path, 0777));
+		if(mkdir(path, 0777) == 0)
+			return IL_ERRNO_Success;
+		else
+			return ILSysIOConvertErrno(errno);
 	#endif
 #else
 	return IL_ERRNO_ENOSYS;

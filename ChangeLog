@@ -1,4 +1,9 @@
 
+2003-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_object.c:
+	add the "Activator.CreateValueTypeInstance" internalcall.
+
 2003-10-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,

@@ -89,6 +89,14 @@ IL_METHOD_END
 
 #endif
 
+#ifndef _IL_Activator_suppressed
+
+IL_METHOD_BEGIN(Activator_Methods)
+	IL_METHOD("CreateValueTypeInstance", "(oSystem.Type;)oSystem.Object;", _IL_Activator_CreateValueTypeInstance, marshal_ppp)
+IL_METHOD_END
+
+#endif
+
 #ifndef _IL_AppDomain_suppressed
 
 IL_METHOD_BEGIN(AppDomain_Methods)
@@ -2874,6 +2882,9 @@ typedef struct
 
 } InternalClassInfo;
 static InternalClassInfo const internalClassTable[] = {
+#ifndef _IL_Activator_suppressed
+	{"Activator", "System", Activator_Methods},
+#endif
 #ifndef _IL_AppDomain_suppressed
 	{"AppDomain", "System", AppDomain_Methods},
 #endif

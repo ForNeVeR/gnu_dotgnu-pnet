@@ -206,6 +206,20 @@ ILObject *_IL_FormatterServices_InternalGetUninitializedObject
 	return 0;
 }
 
+ILObject *_IL_Activator_CreateValueTypeInstance
+			(ILExecThread *_thread, ILObject *type)
+{
+	ILClass *classInfo = _ILGetClrClass(_thread, type);
+	if(classInfo)
+	{
+		return _ILEngineAllocObject(_thread, classInfo);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

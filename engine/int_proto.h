@@ -14,6 +14,8 @@ extern ILBool _IL_Enum_IsEnumValue(ILExecThread * _thread, ILObject * enumType, 
 extern ILObject * _IL_Enum_EnumValueOr(ILExecThread * _thread, ILObject * value1, ILObject * value2);
 extern ILObject * _IL_Enum_EnumLongToObject(ILExecThread * _thread, ILObject * enumType, ILInt64 value);
 
+extern ILObject * _IL_Activator_CreateValueTypeInstance(ILExecThread * _thread, ILObject * type);
+
 extern System_Array * _IL_AppDomain_GetAssemblies(ILExecThread * _thread, ILObject * _this);
 
 extern void _IL_ArgIterator_ctor_RuntimeArgumentHandle(ILExecThread * _thread, void * _this, void * argList);

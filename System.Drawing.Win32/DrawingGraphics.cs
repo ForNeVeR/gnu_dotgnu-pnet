@@ -271,7 +271,17 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Set the clipping region to a list of rectangles.
 	public override void SetClipRects(System.Drawing.Rectangle[] rects)
 			{
-				// TODO
+				IntPtr region = Win32.Api.CreateRectRgn(0,0,0,0);
+				for (int i = 0; i < rects.Length; i++)
+				{
+					Rectangle rect = rects[i];
+					IntPtr region1 = Win32.Api.CreateRectRgn(rect.Left, rect.Top, rect.Right, rect.Bottom);
+					Win32.Api.CombineRgn( region, region, region1, Win32.Api.RegionCombineMode.RGN_OR);
+					// Is this efficient? should we maybe use SetRectRgn(0,0,0,0)?
+					Win32.Api.DeleteObject( region1);
+				}
+				Win32.Api.SelectClipRgn( hdc, region);
+				Win32.Api.DeleteObject( region);
 			}
 
 	// Set the clipping region to a complex mask.

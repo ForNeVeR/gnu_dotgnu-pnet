@@ -324,6 +324,17 @@ internal class Api
 
 	}
 
+	public enum RegionCombineMode
+	{
+		RGN_AND = 1,
+		RGN_OR = 2,
+		RGN_XOR = 3,
+		RGN_DIFF = 4,
+		RGN_COPY = 5,
+		RGN_MIN = RGN_AND,
+		RGN_MAX = RGN_COPY
+	}
+
 	[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi)]
 	public struct WNDCLASS 
 	{
@@ -807,6 +818,9 @@ internal class Api
 
 	[DllImport("gdi32")]
 	public static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
+
+	[DllImport("gdi32")]
+	public static extern int CombineRgn( IntPtr hrgnDest, IntPtr hrgnSrc1, IntPtr hrgnSrc2, RegionCombineMode fnCombineMode);
 		
 	[DllImport("gdi32")]
 	public static extern int SelectClipRgn(IntPtr hdc, IntPtr hrgn);
@@ -834,6 +848,7 @@ internal class Api
 
 	[DllImport("user32")]
 	public static extern IntPtr SetFocus( IntPtr hWnd );
+
 
 }//Api
 

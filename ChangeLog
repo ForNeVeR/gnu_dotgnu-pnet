@@ -1,4 +1,12 @@
-
+2003-07-01  Thong Nguyen  <tum@veridicus.com>
+	
+	* engine/heap.c:  Make ILExecAllocAtomic registers finalizers.
+	
+	* support/time.c:  Map timezone to _timezone on windows builds.
+	
+	* support/hb_gc.c:  Prevent the finalizer thread from
+	recursively calling finalizers.
+	
 2003-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_grammar.y, cscc/c/c_scanner.l: add "type::name" syntax

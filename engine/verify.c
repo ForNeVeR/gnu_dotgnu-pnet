@@ -639,7 +639,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	ILType *localVars;
 	int lastWasJump;
 	ILException *exceptions;
-	ILException *exception;
+	ILException *exception, *currentException;
 	int hasRethrow;
 	int tailCall = 0;
 #ifdef IL_CONFIG_DEBUG_LINES

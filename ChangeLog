@@ -8,6 +8,10 @@
 	* support/time.c: Implemented ILGetSinceRebootTime for windows
 	systems.
 	
+	* engine/verify.c, engine/verify_except.c: Add currentException
+	declaration to top of verify method.  Verify that a IL_OP_ENDFINALLY
+	occurs without a finally clause.
+	
 2004-05-28  Thong Nguyen <tum@veridicus.com>
 
 	* include/engine.h: Changed ILExecInit to return an error code

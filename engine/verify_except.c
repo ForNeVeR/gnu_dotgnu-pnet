@@ -256,11 +256,11 @@ break;
 
 case IL_OP_ENDFINALLY:
 {
-	ILException *currentException = 0;
-
 	/* End the current "finally" or "fault" clause */
 	if(stackSize == 0)
 	{
+		currentException = 0;
+		
 		exception = exceptions;
 
 		while(exception != 0)
@@ -268,7 +268,7 @@ case IL_OP_ENDFINALLY:
 			if (offset >= exception->handlerOffset 
 				&& offset <= (exception->handlerOffset + exception->handlerLength))
 			{
-				if (exception->flags == IL_META_EXCEPTION_FINALLY)
+				if (exception->flags & IL_META_EXCEPTION_FINALLY)
 				{
 					/* This is a current exception clause that's leaving. */
 					currentException = exception;
@@ -280,6 +280,11 @@ case IL_OP_ENDFINALLY:
 			exception = exception->next;
 		}
 
+		if (currentException == 0)
+		{
+			VERIFY_BRANCH_ERROR();
+		}
+		
 		ILCoderEndCatchFinally(coder, currentException);
 		ILCoderRetFromJsr(coder);
 		lastWasJump = 1;
@@ -301,8 +306,6 @@ break;
 
 case IL_OP_LEAVE_S:
 {
-	ILException *currentException;
-	
 	/* Unconditional short branch out of an exception block */
 	dest = GET_SHORT_DEST();
 processLeave:

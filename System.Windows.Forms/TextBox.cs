@@ -280,22 +280,25 @@ public class TextBox : TextBoxBase
 		if (vScrollBar != null)
 		{
 			vScrollBar.Bounds = new Rectangle(ClientRectangle.Width - vScrollBar.Width, 0, vScrollBar.Width, height);
-			int maxTextDimensions = MaxTextDimensions.Height;
-			if (vScrollBar.Maximum < maxTextDimensions)
-				vScrollBar.Maximum = maxTextDimensions;
-			if (vScrollBar.Maximum < TextDrawArea.Height)
-				vScrollBar.Maximum = TextDrawArea.Height;
+			
+			int remainder = TextDrawArea.Height % Font.Height;
+			int maximum = MaxTextDimensions.Height + remainder;
+			
+			if (maximum < TextDrawArea.Height)
+				maximum = TextDrawArea.Height;
+			vScrollBar.Enabled = (maximum != TextDrawArea.Height);
+			vScrollBar.Maximum = maximum;
 			vScrollBar.SmallChange = Font.Height;
-			vScrollBar.LargeChange = TextDrawArea.Height + 1;			
+			vScrollBar.LargeChange = TextDrawArea.Height + 1;
 		}
 		if (hScrollBar != null)
 		{
 			hScrollBar.Bounds = new Rectangle(0, ClientRectangle.Height - hScrollBar.Height, width, hScrollBar.Height);
-			int maxTextDimensions = MaxTextDimensions.Width;
-			if (hScrollBar.Maximum < maxTextDimensions)
-				hScrollBar.Maximum = maxTextDimensions;
-			if (hScrollBar.Maximum < TextDrawArea.Width)
-				hScrollBar.Maximum = TextDrawArea.Width;
+			int maximum = MaxTextDimensions.Width;
+			if (maximum < TextDrawArea.Width)
+				maximum = TextDrawArea.Width;
+			hScrollBar.Enabled = (maximum != TextDrawArea.Width);
+			hScrollBar.Maximum = maximum;
 			hScrollBar.SmallChange = 5;
 			hScrollBar.LargeChange = TextDrawArea.Width + 1;
 		}
@@ -319,14 +322,14 @@ public class TextBox : TextBoxBase
 
 	private void vScrollBar_ValueChanged(object sender, EventArgs e)
 	{
-		yViewOffset = vScrollBar.Value;
+		YViewOffset = vScrollBar.Value;
 		SetClipAllText();
 		Redraw(ControlGraphics);
 	}
 
 	private void hScrollBar_ValueChanged(object sender, EventArgs e)
 	{
-		xViewOffset = hScrollBar.Value;
+		XViewOffset = hScrollBar.Value;
 		SetClipAllText();
 		Redraw(ControlGraphics);
 	}
@@ -543,7 +546,7 @@ public class TextBox : TextBoxBase
 				Rectangle b = layout.Items[i].bounds;
 				update.Union(new Region(new Rectangle(b.Left,b.Top,b.Width,b.Height + 1)));
 			}
-		update.Translate(- xViewOffset, - yViewOffset);
+		update.Translate(- XViewOffset, - YViewOffset);
 		AddUpdate(update);
 		caretHiding = true;
 		Redraw(ControlGraphics);
@@ -589,7 +592,7 @@ public class TextBox : TextBoxBase
 
 		if (MaxLength>0 && Text.Length >= MaxLength)
 			return;
-			
+		
 		if (GetInsertMode()==InsertMode.Overwrite && GetSelectionLength()==0)
 		{
 			int startPos = GetSelectionStart();
@@ -641,6 +644,14 @@ public class TextBox : TextBoxBase
 	// Redraw a specific portion of the textbox
 	private void Redraw(Graphics g)
 	{
+		// Draw scrollbar corner if both are visible
+		if (vScrollBar != null && hScrollBar != null)
+			g.FillRectangle(SystemBrushes.Control, hScrollBar.Right, vScrollBar.Bottom, vScrollBar.Width, hScrollBar.Height);
+		// Only allow updates in the TextDrawArea
+		Region clip = g.Clip;
+		clip.Intersect(new Region(TextDrawArea));
+		g.SetClip(clip, Drawing.Drawing2D.CombineMode.Replace);
+
 		bool focused = Focused;
 		if (!Enabled || ReadOnly)
 			g.FillRegion(DisabledBackBrush, g.Clip);
@@ -650,7 +661,7 @@ public class TextBox : TextBoxBase
 		if (focused && selectedRegion != null)
 		{
 			Region r = selectedRegion.Clone();
-			r.Translate(- xViewOffset, - yViewOffset);
+			r.Translate(- XViewOffset, - YViewOffset);
 			g.FillRegion(SelectedBackBrush, r);
 		}
 		DrawText(g, focused);
@@ -853,41 +864,41 @@ public class TextBox : TextBoxBase
 	// Called to recalculate the offsets if make sure bounds is visible.
 	private void ScrollToCaretNoRedraw()
 	{
-		if (caretBounds.Top - yViewOffset < TextDrawArea.Top)
+		if (caretBounds.Top - YViewOffset < TextDrawArea.Top)
 		{
 			SetClipAllText();
-			yViewOffset = caretBounds.Top;
+			YViewOffset = caretBounds.Top;
 		}
-		else if (caretBounds.Bottom - yViewOffset > TextDrawArea.Bottom)
+		else if (caretBounds.Bottom - YViewOffset > TextDrawArea.Bottom)
 		{
 			SetClipAllText();
-			yViewOffset = caretBounds.Bottom - TextDrawArea.Bottom + 1;
+			YViewOffset = caretBounds.Bottom - TextDrawArea.Bottom + 1;
 		}
-		if (caretBounds.Left- xViewOffset < TextDrawArea.Left)
+		if (caretBounds.Left- XViewOffset < TextDrawArea.Left)
 		{
 			SetClipAllText();
-			xViewOffset = caretBounds.Left;
+			XViewOffset = caretBounds.Left;
 		}
-		else if (caretBounds.Right - xViewOffset > TextDrawArea.Right)
+		else if (caretBounds.Right - XViewOffset > TextDrawArea.Right)
 		{
 			SetClipAllText();
-			xViewOffset = caretBounds.Right - TextDrawArea.Right;
+			XViewOffset = caretBounds.Right - TextDrawArea.Right;
 		}
 	}
 
 	// When changing text, bounds or alignment, we make sure the view includes the position of the first character.
 	private void ResetView()
 	{
-		xViewOffset = 0;
-		yViewOffset = 0;
+		XViewOffset = 0;
+		YViewOffset = 0;
 		//Set caret to the beginning
 		CaretSetPosition(0);
 		if (!Multiline)
 		{
 			if (textAlign == HorizontalAlignment.Center)
-				xViewOffset = maxXY / 2 - TextDrawArea.Width / 2;
+				XViewOffset = maxXY / 2 - TextDrawArea.Width / 2;
 			else if (textAlign == HorizontalAlignment.Right)
-				xViewOffset = maxXY - TextDrawArea.Width + 2;
+				XViewOffset = maxXY - TextDrawArea.Width + 2;
 		}
 		else
 			ScrollToCaretNoRedraw();
@@ -941,7 +952,7 @@ public class TextBox : TextBoxBase
 		{
 			Region redrawRegion = newRegion.Clone();
 			redrawRegion.Xor(selectedRegion);
-			redrawRegion.Translate(-xViewOffset, -yViewOffset);
+			redrawRegion.Translate(-XViewOffset, -YViewOffset);
 			// Only allow updates in the TextDrawArea
 			redrawRegion.Intersect(new Region(TextDrawArea));
 			AddUpdate(redrawRegion);
@@ -987,7 +998,7 @@ public class TextBox : TextBoxBase
 				}
 			}
 			// Get the offset of the TextDrawArea
-			update.Translate( - xViewOffset, - yViewOffset);
+			update.Translate( - XViewOffset, - YViewOffset);
 			AddUpdate(update);
 		}
 	}
@@ -1129,16 +1140,16 @@ public class TextBox : TextBoxBase
 				// In the case of non multiline, we recover any character space that is now there after deleting
 				if (!Multiline && layout.Items.Length > 0)
 				{
-					if (textAlign == HorizontalAlignment.Center && xViewOffset > maxXY/2 - TextDrawArea.Width/2)
+					if (textAlign == HorizontalAlignment.Center && XViewOffset > maxXY/2 - TextDrawArea.Width/2)
 					{
-						xViewOffset -= widthText - layout.Items[layout.Items.Length - 1].bounds.Right;
-						xViewOffset = Math_Max(xViewOffset, maxXY/2 - TextDrawArea.Width/2);
+						XViewOffset -= widthText - layout.Items[layout.Items.Length - 1].bounds.Right;
+						XViewOffset = Math_Max(XViewOffset, maxXY/2 - TextDrawArea.Width/2);
 						SetClipAllText();
 					}
-					else if (textAlign == HorizontalAlignment.Left && xViewOffset > 0)
+					else if (textAlign == HorizontalAlignment.Left && XViewOffset > 0)
 					{
-						xViewOffset -= widthText - layout.Items[layout.Items.Length - 1].bounds.Right;
-						xViewOffset = Math_Max(xViewOffset, 0);
+						XViewOffset -= widthText - layout.Items[layout.Items.Length - 1].bounds.Right;
+						XViewOffset = Math_Max(XViewOffset, 0);
 						SetClipAllText();
 					}
 				}
@@ -1148,9 +1159,10 @@ public class TextBox : TextBoxBase
 					CaretSetEndSelection();
 					if (bottomCaret != caretBounds.Bottom)
 					{
-						yViewOffset -= bottomCaret - caretBounds.Bottom + 1;
+						int yViewOffset = YViewOffset - bottomCaret + caretBounds.Bottom - 1;
 						if (yViewOffset < 0)
 							yViewOffset = 0;
+						YViewOffset = yViewOffset;
 						SetClipAllText();
 					}
 				}
@@ -1230,7 +1242,7 @@ public class TextBox : TextBoxBase
 		{
 			LayoutInfo.Item item = layout.Items[i];
 			Rectangle bounds = item.bounds;
-			bounds.Offset(-xViewOffset, -yViewOffset);
+			bounds.Offset(-XViewOffset, -YViewOffset);
 			if (item.type == LayoutInfo.Item.CharType.VisibleChar)
 			{
 				Brush fore;
@@ -1281,9 +1293,9 @@ public class TextBox : TextBoxBase
 			if (mouseDown)
 			{
 				if (e.Button == MouseButtons.Left)
-				{
+				{		
 					Point pt = new Point(e.X,e.Y);
-					pt.Offset(xViewOffset, yViewOffset);
+					pt.Offset(XViewOffset, YViewOffset);
 					
 					int closest = CaretGetPosition(pt);
 					if (closest >= 0)
@@ -1302,7 +1314,7 @@ public class TextBox : TextBoxBase
 				{
 					// We are clicking to move the caret
 					Point pt = new Point(e.X,e.Y);
-					pt.Offset(xViewOffset, yViewOffset);
+					pt.Offset(XViewOffset, YViewOffset);
 					int closest = CaretGetPosition(pt);
 					if (closest >= 0)
 					{
@@ -1386,7 +1398,7 @@ public class TextBox : TextBoxBase
 		int height = Font.Height;
 		if (Text.Length == 0)
 		{
-			newBounds = new Rectangle(CaretXFromAlign, 0, 1, height - 1);
+			newBounds = new Rectangle(CaretXFromAlign, 1, 1, height - 1);
 		}
 		else
 		{
@@ -1418,7 +1430,7 @@ public class TextBox : TextBoxBase
 		Region region = new Region(newBounds);
 		if (!caretHiding)
 			region.Xor(caretBounds);
-		region.Translate(- xViewOffset, - yViewOffset);
+		region.Translate(- XViewOffset, - YViewOffset);
 		AddUpdate(region);
 		caretBounds = newBounds;
 		if (Focused)
@@ -1501,7 +1513,7 @@ public class TextBox : TextBoxBase
 	{
 		get
 		{
-			return new Rectangle(caretBounds.Left - xViewOffset, caretBounds.Top - yViewOffset, caretBounds.Width, caretBounds.Height);
+			return new Rectangle(caretBounds.Left - XViewOffset, caretBounds.Top - YViewOffset, caretBounds.Width, caretBounds.Height);
 		}
 	}
 
@@ -1678,6 +1690,34 @@ public class TextBox : TextBoxBase
 			if (hScrollBar != null)
 				rect.Height -= hScrollBar.Height;
 			return rect;
+		}
+	}
+
+	private int XViewOffset
+	{
+		get
+		{
+			return xViewOffset;
+		}
+		set
+		{
+			xViewOffset = value;
+			if (hScrollBar != null)
+				hScrollBar.Value = xViewOffset;
+		}
+	}
+
+	private int YViewOffset
+	{
+		get
+		{
+			return yViewOffset;
+		}
+		set
+		{
+			yViewOffset = value;
+			if (vScrollBar != null)
+				vScrollBar.Value = yViewOffset;
 		}
 	}
 	

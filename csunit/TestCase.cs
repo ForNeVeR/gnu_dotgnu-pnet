@@ -91,7 +91,9 @@ public abstract class TestCase : Test
 				// test case.  Because this uses reflection, it is a good
 				// idea to test the reflection system without relying
 				// upon this method to work correctly.
-				MethodInfo method = GetType().GetMethod(name, Type.EmptyTypes);
+				MethodInfo method = GetType().GetMethod
+					(name, BindingFlags.Public | BindingFlags.Instance,
+					 null, Type.EmptyTypes, null);
 				if(method == null)
 				{
 					throw new TestAssertFailed
@@ -99,7 +101,7 @@ public abstract class TestCase : Test
 						 " does not have a zero-parameter method called " +
 						 name);
 				}
-				method.Invoke(null, null);
+				method.Invoke(this, null);
 			}
 
 	// Clean up after running the test case.

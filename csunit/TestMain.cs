@@ -108,7 +108,9 @@ public sealed class TestMain
 
 				// Call the "type.Suite()" method to construct the
 				// top-level test object, which is normally a suite.
-				method = type.GetMethod("Suite", Type.EmptyTypes);
+				method = type.GetMethod("Suite", BindingFlags.Public |
+												 BindingFlags.Static,
+									    null, Type.EmptyTypes, null);
 				if(method == null)
 				{
 					// Try again, in case the user prefers lower case names.

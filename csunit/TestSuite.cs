@@ -78,7 +78,8 @@ public class TestSuite : Test
 				// Scan the type for all public zero-parameter methods
 				// that begin with the word "Test" or "test".  Create a
 				// new test case object for each one.
-				MethodInfo[] methods = type.GetMethods();
+				MethodInfo[] methods = type.GetMethods(BindingFlags.Public |
+													   BindingFlags.Instance);
 				String name;
 				String[] parameters = new String [1];
 				foreach(MethodInfo method in methods)

@@ -1,12 +1,17 @@
 
+2001-12-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* csunit/TestCase.cs, csunit/TestSuite.cs, csunit/TestMain.cs: use
+the correct binding flags when searching for methods using reflection.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* resources/en_US/runtime/Invalid.txt
-runtime/System/Makefile.am
-runtime/System/Globalization/CompareInfo.cs
-runtime/System/Globalization/CultureInfo.cs
-runtime/System/Globalization/CultureName.cs
-runtime/System/Globalization/CultureNameTable.cs
+* resources/en_US/runtime/Invalid.txt,
+runtime/System/Makefile.am,
+runtime/System/Globalization/CompareInfo.cs,
+runtime/System/Globalization/CultureInfo.cs,
+runtime/System/Globalization/CultureName.cs,
+runtime/System/Globalization/CultureNameTable.cs,
 runtime/System/Globalization/DateTimeFormatInfo.cs: more culture-related
 classes.
 

@@ -295,7 +295,7 @@ static void ILDiff_dumpFieldInfo(FILE *fp,ILImage *img,ILField *field,int isin)
 	ILDumpFlags(fp,ILField_Attrs(field),ILFieldDefinitionFlags,0);
 	ILColorBold();
 	ILColorRed();
-	fprintf(fp," %s ",ILTypeToName(ILField_Type(field)));
+	ILDumpType(fp,img,ILField_Type(field),0);
 	ILColorGreen();
 	fprintf(fp,"%s",ILField_Name(field));
 	ILColorClear();

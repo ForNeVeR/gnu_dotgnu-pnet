@@ -1,3 +1,16 @@
+2003-07-03  Neil Cawse  <neilc@geotab.ca>
+
+	* System.Windows.Forms/AccessibleObject.cs, LinkLabel.cs :
+	Changes to allow compiling with csc.
+	System.Windows.Forms/Control.cs :
+	CreateControl only creates the toolkit window if it doesnt exist.
+	System.Drawing/Rectangle.cs : fixed Contains.
+	System.Drawing.Win32/DrawingWindow.cs, DrawingTopLevelWindow.cs,
+	DrawingToolkit.cs, DrawingTextureBrush.cs, DrawingSolidBrush.cs,
+	DrawingPen.cs, DrawingHatchBrush, DrawingGraphics.cs, DrawingFont.cs,
+	DrawingControlWindow.cs, DrawingBrush.cs, Win32.cs :
+	More error checking, changed reparent to be consistent with
+	Drawing.Xsharp.
 
 2003-07-03  Gopal.V  <gopalv82@symonds.net>
 	

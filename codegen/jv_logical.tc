@@ -33,7 +33,7 @@ JavaGenValue(ILNode_LogicalNot)
 {
 	ILLabel label1 = ILLabel_Undefined;
 	ILLabel label2 = ILLabel_Undefined;
-	JavaGenElse(node->expr, info, &label1);
+	JavaGenThen(node->expr, info, &label1);
 	JavaGenSimple(info, JAVA_OP_ICONST_1);
 	JavaGenJump(info, JAVA_OP_GOTO, &label2);
 	JavaGenLabel(info, &label1);

@@ -4,6 +4,10 @@
 * engine/verify_branch.c: verification for "switch" instructions; process
 branch labels.
 
+* engine/verify_call.c: stack positioning bug; verification for "ret";
+allow "callvirt" to be used to call non-virtual instance methods; handle
+"this" parameters for value type instance methods properly.
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

@@ -112,11 +112,13 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						      ILUInt32 stackSize, ILType *signature,
 						      ILMethod *method, int unsafeAllowed)
 {
+	ILClass *owner = (method ? ILMethod_Owner(method) : 0);
 	ILUInt32 numParams = signature->num;
 	ILUInt32 param;
 	ILType *paramType;
 	ILEngineStackItem *item;
 	int hasThis;
+	int isValueThis;
 
 	/* Determine if the signature needs an extra "this" parameter */
 	hasThis = ((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
@@ -129,6 +131,21 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 			/* Call site signatures need "explicit this" */
 			return -1;
 		}
+		if(ILClassIsValueType(owner) && !ILMethod_IsVirtual(method))
+		{
+			/* The "this" parameter is a value type, which must be
+			   passed as either a managed or transient pointer */
+			isValueThis = 1;
+		}
+		else
+		{
+			/* The "this" parameter is an object reference */
+			isValueThis = 0;
+		}
+	}
+	else
+	{
+		isValueThis = 0;
 	}
 
 	/* Validate the stack size */
@@ -139,17 +156,50 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	}
 
 	/* Find the base of the parameters */
-	stack -= numParams;
+	stack += (stackSize - numParams);
 
 	/* Match the argument signature */
 	for(param = 1; param <= numParams; ++param)
 	{
+		/* Get the stack item corresponding to the parameter */
+		item = &(stack[param - 1]);
+
 		/* Get the parameter type and expand out enumerations */
 		if(hasThis)
 		{
 			if(param == 1)
 			{
-				paramType = ILType_FromClass(ILMethod_Owner(method));
+				/* The "this" parameter needs to be handled specially */
+				if(isValueThis)
+				{
+					/* The "this" parameter must be a pointer */
+					paramType = ILType_FromValueType(owner);
+					if(item->engineType == ILEngineType_T ||
+					   item->engineType == ILEngineType_M)
+					{
+						if(!ILTypeIdentical(item->typeInfo, paramType))
+						{
+							return -1;
+						}
+					}
+					else if(!unsafeAllowed ||
+							item->engineType != ILEngineType_I)
+					{
+						return -1;
+					}
+				}
+				else
+				{
+					/* The "this" parameter must be an object reference */
+					paramType = ILType_FromClass(owner);
+					if(item->engineType != ILEngineType_O ||
+					   (item->typeInfo != 0 &&
+					    !AssignCompatible(item, paramType)))
+					{
+						return -1;
+					}
+				}
+				continue;
 			}
 			else
 			{
@@ -163,7 +213,6 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 		paramType = ILTypeGetEnumType(paramType);
 
 		/* Determine what to do based on the supplied stack item */
-		item = &(stack[param - 1]);
 		switch(item->engineType)
 		{
 			case ILEngineType_I4:
@@ -404,8 +453,8 @@ static void InsertCtorArgs(ILEngineStackItem *stack, ILUInt32 stackSize,
 {
 	while(stackSize > insertPosn)
 	{
-		stack[stackSize + 2] = stack[stackSize];
 		--stackSize;
+		stack[stackSize + 2] = stack[stackSize];
 	}
 	stack[insertPosn].engineType = engineType;
 	stack[insertPosn].typeInfo = typeInfo;
@@ -517,7 +566,34 @@ break;
 
 case IL_OP_RET:
 {
-	/* TODO */
+	/* Return from the current method */
+	if(signature->un.method.retType != ILType_Void)
+	{
+		/* Make sure that we have one item on the stack */
+		if(stackSize < 1)
+		{
+			VERIFY_STACK_ERROR();
+		}
+
+		/* Validate the type of the return value */
+		if(!AssignCompatible(&(stack[stackSize - 1]),
+							 signature->un.method.retType))
+		{
+			VERIFY_TYPE_ERROR();
+		}
+
+		/* Notify the coder of the return instruction */
+		ILCoderReturnInsn(coder, stack[stackSize - 1].engineType,
+					      signature->un.method.retType);
+
+		/* Pop the item from the stack */
+		--stackSize;
+	}
+	else
+	{
+		/* Notify the coder of a non-value return instruction */
+		ILCoderReturnInsn(coder, ILEngineType_Invalid, ILType_Void);
+	}
 	lastWasJump = 1;
 }
 break;
@@ -526,7 +602,7 @@ case IL_OP_CALLVIRT:
 {
 	/* Call a virtual or interface method */
 	methodInfo = GetMethodToken(method, pc);
-	if(methodInfo && ILMethod_IsVirtual(methodInfo))
+	if(methodInfo)
 	{
 		classInfo = ILMethod_Owner(method);
 		if(ILMemberAccessible((ILMember *)methodInfo, classInfo))
@@ -537,7 +613,15 @@ case IL_OP_CALLVIRT:
 									   unsafeAllowed);
 			if(numParams >= 0)
 			{
-				if(ILClass_IsInterface(classInfo))
+				if(!ILMethod_IsVirtual(methodInfo))
+				{
+					/* It is possible to use "callvirt" to call a
+					   non-virtual instance method, even though
+					   "call" is probably a better way to do it */
+					ILCoderCallMethod(coder, stack + stackSize - numParams,
+									  (ILUInt32)numParams, methodInfo);
+				}
+				else if(ILClass_IsInterface(classInfo))
 				{
 					ILCoderCallInterface(coder, stack + stackSize - numParams,
 									     (ILUInt32)numParams, methodInfo);
@@ -634,8 +718,7 @@ case IL_OP_NEWOBJ:
 
 		/* If the owner is a value type, then we need to
 		   unbox the constructed value onto the stack */
-		if(ILClass_IsValueType(classInfo) ||
-		   ILClass_IsUnmanagedValueType(classInfo))
+		if(ILClassIsValueType(classInfo))
 		{
 			ILCoderUnbox(coder, classInfo);
 			ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, classInfo);

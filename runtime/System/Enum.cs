@@ -274,14 +274,10 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 						return fields[posn].FieldType;
 					}
 				}
-
-				// We have no idea what the type is.  Perhaps
-				// the enumerated type is malformed in some way.
-				throw new ArgumentException(_("Arg_MustBeEnum"));
-#else
-				// TODO: use an internalcall to get this information
-				throw new ArgumentException(_("Arg_MustBeEnum"));
 #endif
+
+				// Use a non-reflection trick to get the type.
+				return (ToObject(enumType, 0)).GetType();
 			}
 
 #if CONFIG_REFLECTION

@@ -8,6 +8,9 @@
 	* runtime/System/Environment.cs: clean up the implementation
 	of "Environment.GetFolderPath".
 
+	* runtime/System/Enum.cs: implement Enum.GetUnderlyingType for
+	profiles that don't have reflection.
+
 2003-08-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/System/IO/MemoryStream.cs:

@@ -1,4 +1,10 @@
+
+2003-07-24  Gopal.V  <gopalv82@symonds.net>
+	
+	* System.Xml/XmlTextWriter.cs: Fix indentation problem with textwriter
+
 2003-07-24  Neil Cawse   <neilcawse@geotab.com>
+
 	* Graphics/Bitmap.cs: small change allowing compiling using MS csc
 
 	* Graphics/Graphics.cs: DrawRectangle & FillRectangle being transformed
@@ -24,21 +30,26 @@
 
 	* System.Drawing.Xsharp/DrawingGraphics.cs: FillPolygon now filling up
 	to edge. MeasureString 1 too big on y.
-	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	
+	* System.Drawing.Xsharp/DrawingPopupWindow.cs,
 	System.Drawing.Xsharp/DrawingTopLevelWindow.cs : implemented Focus &
 	invalidating a rectangle.
-	System.Drawing.Xsharp/DrawingWindow.cs : also Focus and invalidation,
+
+	* System.Drawing.Xsharp/DrawingWindow.cs : also Focus and invalidation,
 	changed OnPointerMotion to return the current state of the mouse button.
 
 	* System.Windows.Forms/Control.cs:  implemented Focus, Invalidate(Region)
 	and Update()
-	System.Windows.Forms/TextBox.cs, System.Windows.Forms.TextBoxBase:
+	
+	* System.Windows.Forms/TextBox.cs, System.Windows.Forms.TextBoxBase:
 	initial implementation of TextBox.
-	System.Windows.Forms/Themes/DefaultThemePainter.cs: DrawBorder3D
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: DrawBorder3D
 	eliminated outer background edge to match MS. CSC compile changes
 
 	* samples/samples.build: added in RegionTest.exe and TextBoxTest.exe
-	samples/RegionTest.cs, samples/TextBoxTest.cs: new samples
+
+	* samples/RegionTest.cs, samples/TextBoxTest.cs: new samples
 
 	* System.Drawing/Toolkit/IToolkitWindow.cs: new Focus() method
 

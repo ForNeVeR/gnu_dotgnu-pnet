@@ -1,4 +1,12 @@
 
+2002-10-30  Gopal.V <gopalv82@symonds.net>
+
+	* csharp/class/enum4.cs, csharp/class/enum4.il, csharp/class/enum4.jl:
+	Add test cases of forward reference from a method.
+
+	* csharp/expr/enum2.jerr, csharp/expr/enum2.err: Update
+	error messages according to the new coercion support.
+
 2002-10-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/stmt/foreach1.il, csharp/stmt/foreach3.il: minor

@@ -23,6 +23,10 @@ class UseColor
 	// "Blue" should be 2, but may be 0 if there are ordering
 	// problems with the evaluation of default constant values.
 	public static readonly Color c = Color.Blue;
+	public void Foo()
+	{
+		Color lancelot=Color.Blue;
+	}
 }
 
 enum Color

@@ -10,6 +10,14 @@
 .class private auto ansi beforefieldinit 'UseColor' extends ['.library']'System'.'Object'
 {
 .field public static initonly valuetype 'Color' 'c'
+.method public hidebysig instance void 'Foo'() cil managed java 
+{
+	iconst_2
+	istore_1
+	return
+	.locals 2
+	.maxstack 1
+} // method Foo
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {
 	aload_0

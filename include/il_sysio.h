@@ -172,6 +172,11 @@ int ILSysIOSetCreationTime(const char *path, ILInt64 time);
 ILInt32 ILCopyFile(const char * src, const char * dest);
 
 /*
+ * Creates a directory
+ */
+ILInt32 ILCreateDir(const char * path);
+
+/*
  * IPv4 Address placeholder for socket related functions.
  */
 typedef struct _ILSysIOSockAddr

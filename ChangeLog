@@ -1,4 +1,10 @@
 
+2003-02-17 Aditya P. Bansod <abansod@fullenergy.com>
+
+	* configure.in, engine/int_proto.h, engine/int_table.c
+	engine/lib_dir.c, include/il_sysio.h, support/dir.c: Implement
+	DirMethods.CreateDirectory internal call.
+
 2003-02-17  Jonathan Springer  <jonathan.springer@verizon.net>
 
 	* configure.in, libgc/configure.in: MacOS X Darwin adjustments.

@@ -1691,6 +1691,49 @@ IL_METHOD_END
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppppiipipp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt32, ILInt32, void *, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((void * *)(avalue[7])), *((void * *)(avalue[8])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_pppiipp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((void * *)(avalue[5])));
+}
+
+#endif
+
+#ifndef _IL_ClrType_suppressed
+
+IL_METHOD_BEGIN(ClrType_Methods)
+	IL_METHOD("GetClrArrayRank", "(T)i", _IL_ClrType_GetClrArrayRank, marshal_ipp)
+	IL_METHOD("GetAttributeFlagsImpl", "(T)vSystem.Reflection.TypeAttributes;", _IL_ClrType_GetAttributeFlagsImpl, marshal_ipp)
+	IL_METHOD("GetElementType", "(T)oSystem.Type;", _IL_ClrType_GetElementType, marshal_ppp)
+	IL_METHOD("GetInterface", "(ToSystem.String;Z)oSystem.Type;", _IL_ClrType_GetInterface, marshal_ppppb)
+	IL_METHOD("GetInterfaces", "(T)[oSystem.Type;", _IL_ClrType_GetInterfaces, marshal_ppp)
+	IL_METHOD("GetMemberImpl", "(ToSystem.String;vSystem.Reflection.MemberTypes;vSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;vSystem.Reflection.CallingConventions;[oSystem.Type;[vSystem.Reflection.ParameterModifier;)oSystem.Reflection.MemberInfo;", _IL_ClrType_GetMemberImpl, marshal_ppppiipipp)
+	IL_METHOD("GetMembersImpl", "(TvSystem.Reflection.MemberTypes;vSystem.Reflection.BindingFlags;oSystem.Type;oSystem.String;)oSystem.Object;", _IL_ClrType_GetMembersImpl, marshal_pppiipp)
+	IL_METHOD("GetClrTypeCategory", "(T)vSystem.Reflection.ClrTypeCategory;", _IL_ClrType_GetClrTypeCategory, marshal_ipp)
+	IL_METHOD("IsSubclassOf", "(ToSystem.Type;)Z", _IL_ClrType_IsSubclassOf, marshal_bppp)
+	IL_METHOD("IsClrNestedType", "(T)Z", _IL_ClrType_IsClrNestedType, marshal_bpp)
+	IL_METHOD("GetClrFullName", "(T)oSystem.String;", _IL_ClrType_GetClrFullName, marshal_ppp)
+	IL_METHOD("GetClrAssembly", "(T)oSystem.Reflection.Assembly;", _IL_ClrType_GetClrAssembly, marshal_ppp)
+	IL_METHOD("GetClrBaseType", "(T)oSystem.Type;", _IL_ClrType_GetClrBaseType, marshal_ppp)
+	IL_METHOD("GetClrGUID", "(T)vSystem.Guid;", _IL_ClrType_GetClrGUID, marshal_vppp)
+	IL_METHOD("GetClrModule", "(T)oSystem.Reflection.Module;", _IL_ClrType_GetClrModule, marshal_ppp)
+	IL_METHOD("GetClrNestedDeclaringType", "(T)oSystem.Type;", _IL_ClrType_GetClrNestedDeclaringType, marshal_ppp)
+	IL_METHOD("GetClrName", "(T)oSystem.String;", _IL_ClrType_GetClrName, marshal_ppp)
+	IL_METHOD("GetClrNamespace", "(T)oSystem.String;", _IL_ClrType_GetClrNamespace, marshal_ppp)
+IL_METHOD_END
+
+#endif
+
 #ifndef _IL_ClrParameter_suppressed
 
 IL_METHOD_BEGIN(ClrParameter_Methods)
@@ -1742,49 +1785,6 @@ IL_METHOD_BEGIN(ClrResourceStream_Methods)
 	IL_METHOD("ResourceRead", "(jl[Bii)i", _IL_ClrResourceStream_ResourceRead, marshal_ipjlpii)
 	IL_METHOD("ResourceReadByte", "(jl)i", _IL_ClrResourceStream_ResourceReadByte, marshal_ipjl)
 	IL_METHOD("ResourceGetAddress", "(jl)*B", _IL_ClrResourceStream_ResourceGetAddress, marshal_ppjl)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ppppiipipp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt32, ILInt32, void *, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((void * *)(avalue[7])), *((void * *)(avalue[8])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_pppiipp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((void * *)(avalue[5])));
-}
-
-#endif
-
-#ifndef _IL_ClrType_suppressed
-
-IL_METHOD_BEGIN(ClrType_Methods)
-	IL_METHOD("GetClrArrayRank", "(T)i", _IL_ClrType_GetClrArrayRank, marshal_ipp)
-	IL_METHOD("GetAttributeFlagsImpl", "(T)vSystem.Reflection.TypeAttributes;", _IL_ClrType_GetAttributeFlagsImpl, marshal_ipp)
-	IL_METHOD("GetElementType", "(T)oSystem.Type;", _IL_ClrType_GetElementType, marshal_ppp)
-	IL_METHOD("GetInterface", "(ToSystem.String;Z)oSystem.Type;", _IL_ClrType_GetInterface, marshal_ppppb)
-	IL_METHOD("GetInterfaces", "(T)[oSystem.Type;", _IL_ClrType_GetInterfaces, marshal_ppp)
-	IL_METHOD("GetMemberImpl", "(ToSystem.String;vSystem.Reflection.MemberTypes;vSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;vSystem.Reflection.CallingConventions;[oSystem.Type;[vSystem.Reflection.ParameterModifier;)oSystem.Reflection.MemberInfo;", _IL_ClrType_GetMemberImpl, marshal_ppppiipipp)
-	IL_METHOD("GetMembersImpl", "(TvSystem.Reflection.MemberTypes;vSystem.Reflection.BindingFlags;oSystem.Type;oSystem.String;)oSystem.Object;", _IL_ClrType_GetMembersImpl, marshal_pppiipp)
-	IL_METHOD("GetClrTypeCategory", "(T)vSystem.Reflection.ClrTypeCategory;", _IL_ClrType_GetClrTypeCategory, marshal_ipp)
-	IL_METHOD("IsSubclassOf", "(ToSystem.Type;)Z", _IL_ClrType_IsSubclassOf, marshal_bppp)
-	IL_METHOD("IsClrNestedType", "(T)Z", _IL_ClrType_IsClrNestedType, marshal_bpp)
-	IL_METHOD("GetClrFullName", "(T)oSystem.String;", _IL_ClrType_GetClrFullName, marshal_ppp)
-	IL_METHOD("GetClrAssembly", "(T)oSystem.Reflection.Assembly;", _IL_ClrType_GetClrAssembly, marshal_ppp)
-	IL_METHOD("GetClrBaseType", "(T)oSystem.Type;", _IL_ClrType_GetClrBaseType, marshal_ppp)
-	IL_METHOD("GetClrGUID", "(T)vSystem.Guid;", _IL_ClrType_GetClrGUID, marshal_vppp)
-	IL_METHOD("GetClrModule", "(T)oSystem.Reflection.Module;", _IL_ClrType_GetClrModule, marshal_ppp)
-	IL_METHOD("GetClrNestedDeclaringType", "(T)oSystem.Type;", _IL_ClrType_GetClrNestedDeclaringType, marshal_ppp)
-	IL_METHOD("GetClrName", "(T)oSystem.String;", _IL_ClrType_GetClrName, marshal_ppp)
-	IL_METHOD("GetClrNamespace", "(T)oSystem.String;", _IL_ClrType_GetClrNamespace, marshal_ppp)
 IL_METHOD_END
 
 #endif
@@ -1964,6 +1964,7 @@ IL_METHOD_BEGIN(DirMethods_Methods)
 	IL_METHOD("GetPathInfo", "()vPlatform.PathInfo;", _IL_DirMethods_GetPathInfo, marshal_vpp)
 	IL_METHOD("GetCurrentDirectory", "()oSystem.String;", _IL_DirMethods_GetCurrentDirectory, marshal_pp)
 	IL_METHOD("ChangeDirectory", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_ChangeDirectory, marshal_ipp)
+	IL_METHOD("CreateDirectory", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_CreateDirectory, marshal_ipp)
 	IL_METHOD("Delete", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Delete, marshal_ipp)
 	IL_METHOD("GetLastAccess", "(oSystem.String;&l)vPlatform.Errno;", _IL_DirMethods_GetLastAccess, marshal_ippp)
 	IL_METHOD("GetFilesInDirectory", "(oSystem.String;&[vPlatform.InternalFileInfo;)vPlatform.Errno;", _IL_DirMethods_GetFilesInDirectory, marshal_ippp)

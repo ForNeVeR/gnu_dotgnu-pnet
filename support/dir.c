@@ -111,6 +111,19 @@ ILInt32 ILChangeDir(const char *path)
 
 }
 
+ILInt32 ILCreateDir(const char *path)
+{
+	if(path==NULL)
+	{
+		return IL_ERRNO_ENOENT;
+	}
+#ifdef HAVE_MKDIR
+	return ILSysIOConvertErrno(mkdir(path, 0777));
+#else
+	return IL_ERRNO_ENOSYS;
+#endif
+}
+
 #ifndef USE_WIN32_FIND
 
 #ifdef HAVE_DIRENT_H

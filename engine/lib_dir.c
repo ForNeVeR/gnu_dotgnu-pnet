@@ -152,6 +152,14 @@ ILInt32 _IL_DirMethods_Copy(ILExecThread *_thread,
 }
 
 /*
+ * public static Errno CreateDirectory(String path);
+ */
+ILInt32 _IL_DirMethods_CreateDirectory(ILExecThread *_thread, ILString *path)
+{
+	return ILCreateDir(ILStringToAnsi(_thread, path));
+}
+
+/*
  * public static Errno Delete(String path);
  */
 ILInt32 _IL_DirMethods_Delete(ILExecThread *_thread, ILString *path)

@@ -39,7 +39,12 @@ public sealed class TypeDescriptor
 	// Element that is stored within the type table.
 	private sealed class TypeElement
 	{
+		public AttributeCollection attributes;
 		public TypeConverter converter;
+		public EventDescriptor defaultEvent;
+		public PropertyDescriptor defaultProperty;
+		public EventDescriptorCollection events;
+		public PropertyDescriptorCollection properties;
 
 	}; // class TypeElement
 
@@ -102,39 +107,35 @@ public sealed class TypeDescriptor
 			}
 
 	// Create a new event descriptor.
-	[TODO]
 	public static EventDescriptor CreateEvent
 				(Type componentType, EventDescriptor oldEventDescriptor,
 				 params Attribute[] attributes)
 			{
-				// TODO
-				return null;
+				return new BuiltinEventDescriptor
+					(componentType, oldEventDescriptor, attributes);
 			}
-	[TODO]
 	public static EventDescriptor CreateEvent
 				(Type componentType, String name, Type type,
 				 params Attribute[] attributes)
 			{
-				// TODO
-				return null;
+				return new BuiltinEventDescriptor
+					(componentType, name, type, attributes);
 			}
 
 	// Create a new property descriptor.
-	[TODO]
 	public static PropertyDescriptor CreateProperty
 				(Type componentType, PropertyDescriptor oldPropertyDescriptor,
 				 params Attribute[] attributes)
 			{
-				// TODO
-				return null;
+				return new BuiltinPropertyDescriptor
+					(componentType, oldPropertyDescriptor, attributes);
 			}
-	[TODO]
 	public static PropertyDescriptor CreateProperty
 				(Type componentType, String name, Type type,
 				 params Attribute[] attributes)
 			{
-				// TODO
-				return null;
+				return new BuiltinPropertyDescriptor
+					(componentType, name, type, attributes);
 			}
 
 	// Get the attributes associated with a particular component.
@@ -159,12 +160,36 @@ public sealed class TypeDescriptor
 				}
 			}
 
+	// Read the raw attributes from a MemberInfo object.
+	private static Attribute[] ReadAttributes(MemberInfo member)
+			{
+				Object[] attrs = member.GetCustomAttributes(true);
+				if(attrs == null)
+				{
+					return new Attribute [0];
+				}
+				else if(attrs is Attribute[])
+				{
+					return (Attribute[])attrs;
+				}
+				Attribute[] newAttrs = new Attribute [attrs.Length];
+				Array.Copy(attrs, 0, newAttrs, 0, attrs.Length);
+				return newAttrs;
+			}
+
 	// Get the attributes associated with a particular type of component.
-	[TODO]
 	public static AttributeCollection GetAttributes(Type componentType)
 			{
-				// TODO
-				return null;
+				lock(typeof(TypeDescriptor))
+				{
+					TypeElement element = GetOrCreateElement(componentType);
+					if(element.attributes == null)
+					{
+						element.attributes = new AttributeCollection
+							(ReadAttributes(componentType));
+					}
+					return element.attributes;
+				}
 			}
 
 	// Get the name of a component's class.
@@ -411,11 +436,29 @@ public sealed class TypeDescriptor
 			}
 
 	// Get the default event for a specified component type.
-	[TODO]
 	public static EventDescriptor GetDefaultEvent(Type componentType)
 			{
-				// TODO
-				return null;
+				lock(typeof(TypeDescriptor))
+				{
+					TypeElement element = GetOrCreateElement(componentType);
+					if(element.defaultEvent != null)
+					{
+						return element.defaultEvent;
+					}
+					DefaultEventAttribute attr = (DefaultEventAttribute)
+						GetAttributeForType(componentType,
+											typeof(DefaultEventAttribute));
+					if(attr != null)
+					{
+						element.defaultEvent =
+							CreateEvent(componentType, attr.Name, null, null);
+						return element.defaultEvent;
+					}
+					else
+					{
+						return null;
+					}
+				}
 			}
 
 	// Get the default property for a specified component.
@@ -442,11 +485,30 @@ public sealed class TypeDescriptor
 			}
 
 	// Get the default property for a specified component type.
-	[TODO]
 	public static PropertyDescriptor GetDefaultProperty(Type componentType)
 			{
-				// TODO
-				return null;
+				lock(typeof(TypeDescriptor))
+				{
+					TypeElement element = GetOrCreateElement(componentType);
+					if(element.defaultProperty != null)
+					{
+						return element.defaultProperty;
+					}
+					DefaultPropertyAttribute attr = (DefaultPropertyAttribute)
+						GetAttributeForType(componentType,
+											typeof(DefaultPropertyAttribute));
+					if(attr != null)
+					{
+						element.defaultProperty =
+							CreateProperty
+								(componentType, attr.Name, null, null);
+						return element.defaultProperty;
+					}
+					else
+					{
+						return null;
+					}
+				}
 			}
 
 	// Get an editor for a specified component.
@@ -473,10 +535,28 @@ public sealed class TypeDescriptor
 			}
 
 	// Get an editor for a specified component type.
-	[TODO]
 	public static Object GetEditor(Type type, Type editorBaseType)
 			{
-				// TODO
+				// Look for an editor declaration within the attributes.
+				AttributeCollection attributes = GetAttributes(type);
+				foreach(Attribute attr in attributes)
+				{
+					if(attr is EditorAttribute)
+					{
+						if(Type.GetType(((EditorAttribute)attr)
+											.EditorBaseTypeName)
+								== editorBaseType)
+						{
+							Type type = Type.GetType
+								(((EditorAttribute)attr).EditorTypeName);
+							if(type != null)
+							{
+								return Activator.CreateInstance
+									(type, new Object [] {type});
+							}
+						}
+					}
+				}
 				return null;
 			}
 
@@ -523,12 +603,26 @@ public sealed class TypeDescriptor
 			{
 				return GetEvents(componentType, null);
 			}
-	[TODO]
 	public static EventDescriptorCollection GetEvents
 				(Type componentType, Attribute[] attributes)
 			{
-				// TODO
-				return null;
+				lock(typeof(TypeDescriptor))
+				{
+					TypeElement element = GetOrCreateElement(componentType);
+					if(element.events != null)
+					{
+						return element.events;
+					}
+					EventDescriptorCollection coll;
+					coll = new EventDescriptorCollection(null);
+					foreach(EventInfo eventInfo in componentType.GetEvents())
+					{
+						coll.Add(new BuiltinEventDescriptor
+									(eventInfo, attributes));
+					}
+					element.events = coll;
+					return coll;
+				}
 			}
 
 	// Get all properties for a specified component.
@@ -575,34 +669,86 @@ public sealed class TypeDescriptor
 			{
 				return GetProperties(componentType, null);
 			}
-	[TODO]
 	public static PropertyDescriptorCollection GetProperties
 				(Type componentType, Attribute[] attributes)
 			{
-				// TODO
-				return null;
+				lock(typeof(TypeDescriptor))
+				{
+					TypeElement element = GetOrCreateElement(componentType);
+					if(element.properties != null)
+					{
+						return element.properties;
+					}
+					PropertyDescriptorCollection coll;
+					coll = new PropertyDescriptorCollection(null);
+					foreach(PropertyInfo property in
+								componentType.GetProperties())
+					{
+						coll.Add(new BuiltinPropertyDescriptor
+									(property, attributes));
+					}
+					element.properties = coll;
+					return coll;
+				}
 			}
 
 	// Clear properties and events from the cache.
-	[TODO]
 	public static void Refresh(Assembly assembly)
 			{
-				// TODO
+				if(assembly != null)
+				{
+					foreach(Type type in assembly.GetTypes())
+					{
+						Refresh(null, type);
+					}
+				}
 			}
-	[TODO]
 	public static void Refresh(Module module)
 			{
-				// TODO
+				if(module != null)
+				{
+					foreach(Type type in module.GetTypes())
+					{
+						Refresh(null, type);
+					}
+				}
 			}
-	[TODO]
 	public static void Refresh(Object component)
 			{
-				// TODO
+				if(component != null)
+				{
+					Refresh(component, component.GetType());
+				}
 			}
-	[TODO]
 	public static void Refresh(Type type)
 			{
-				// TODO
+				if(type != null)
+				{
+					Refresh(null, type);
+				}
+			}
+	private static void Refresh(Object component, Type type)
+			{
+				RefreshEventArgs args = null;
+				lock(typeof(TypeDescriptor))
+				{
+					if(typeTable.Contains(type))
+					{
+						typeTable.Remove(type);
+						if(component != null)
+						{
+							args = new RefreshEventArgs(component);
+						}
+						else
+						{
+							args = new RefreshEventArgs(type);
+						}
+					}
+				}
+				if(args != null)
+				{
+					Refreshed(args);
+				}
 			}
 
 	// Private class for comparing descriptors by name.
@@ -639,6 +785,212 @@ public sealed class TypeDescriptor
 					handler = value;
 				}
 			}
+
+	// Builtin event descriptor class, using reflection.
+	private sealed class BuiltinEventDescriptor : EventDescriptor
+	{
+		// Internal state.
+		private EventInfo eventInfo;
+		private Type type;
+
+		// Constructors.
+		public BuiltinEventDescriptor
+					(Type componentType, EventDescriptor descr,
+					 Attribute[] attrs)
+				: base(descr, attrs)
+				{
+					this.eventInfo = componentType.GetEvent(descr.Name);
+					this.type = descr.EventType;
+					if(AttributeArray == null)
+					{
+						AttributeArray = ReadAttributes(eventInfo);
+					}
+				}
+		public BuiltinEventDescriptor
+					(Type componentType, String name,
+					 Type type, Attribute[] attrs)
+				: base(name, attrs)
+				{
+					this.eventInfo = componentType.GetEvent(name);
+					if(type != null)
+					{
+						this.type = type;
+					}
+					else
+					{
+						this.type = eventInfo.EventHandlerType;
+					}
+					if(AttributeArray == null)
+					{
+						AttributeArray = ReadAttributes(eventInfo);
+					}
+				}
+		public BuiltinEventDescriptor
+					(EventInfo eventInfo, Attribute[] attributes)
+				: base(eventInfo.Name,
+					   MemberDescriptor.MergeAttributes
+					   		(attributes, ReadAttributes(eventInfo)))
+				{
+					this.eventInfo = eventInfo;
+					this.type = eventInfo.EventHandlerType;
+				}
+
+		// Get the type of component that this event is bound to.
+		public override Type ComponentType
+				{
+					get
+					{
+						return eventInfo.DeclaringType;
+					}
+				}
+
+		// Get the delegate type associated with the event.
+		public override Type EventType
+				{
+					get
+					{
+						return type;
+					}
+				}
+
+		// Determine if the event delegate is multicast.
+		public override bool IsMulticast
+				{
+					get
+					{
+						return eventInfo.IsMulticast;
+					}
+				}
+
+		// Add an event handler to a component.
+		public override void AddEventHandler(Object component, Delegate value)
+				{
+					eventInfo.AddEventHandler(component, value);
+				}
+
+		// Remove an event handler from a component.
+		public override void RemoveEventHandler
+					(Object component, Delegate value)
+				{
+					eventInfo.RemoveEventHandler(component, value);
+				}
+
+	}; // class BuiltinEventDescriptor
+
+	// Builtin property descriptor class, using reflection.
+	private sealed class BuiltinPropertyDescriptor : PropertyDescriptor
+	{
+		// Internal state.
+		private PropertyInfo property;
+		private Type type;
+	
+		// Constructors.
+		public BuiltinPropertyDescriptor
+					(Type componentType, PropertyDescriptor descr,
+					 Attribute[] attrs)
+				: base(descr, attrs)
+				{
+					this.property = componentType.GetProperty(descr.Name);
+					this.type = descr.PropertyType;
+					if(AttributeArray == null)
+					{
+						AttributeArray = ReadAttributes(property);
+					}
+				}
+		public BuiltinPropertyDescriptor
+					(Type componentType, String name,
+					 Type type, Attribute[] attrs)
+				: base(name, attrs)
+				{
+					this.property = componentType.GetProperty(name);
+					if(type != null)
+					{
+						this.type = type;
+					}
+					else
+					{
+						this.type = property.PropertyType;
+					}
+					if(AttributeArray == null)
+					{
+						AttributeArray = ReadAttributes(property);
+					}
+				}
+		public BuiltinPropertyDescriptor
+					(PropertyInfo property, Attribute[] attributes)
+				: base(property.Name,
+					   MemberDescriptor.MergeAttributes
+					   		(attributes, ReadAttributes(property)))
+				{
+					this.property = property;
+					this.type = property.PropertyType;
+				}
+	
+		// Get the component type that owns this property.
+		public override Type ComponentType
+				{
+					get
+					{
+						return property.DeclaringType;
+					}
+				}
+	
+		// Determine if this property is read-only.
+		public override bool IsReadOnly
+				{
+					get
+					{
+						return property.CanRead && !property.CanWrite;
+					}
+				}
+	
+		// Get the type of this property.
+		public override Type PropertyType
+				{
+					get
+					{
+						return type;
+					}
+				}
+	
+		// Determine if resetting a component's property will change its value.
+		public override bool CanResetValue(Object component)
+				{
+					return (Attributes[typeof(DefaultValueAttribute)] != null);
+				}
+	
+		// Get the property value associated with a component.
+		public override Object GetValue(Object component)
+				{
+					return property.GetValue(component, null);
+				}
+	
+		// Reset the property value associated with a component.
+		public override void ResetValue(Object component)
+				{
+					DefaultValueAttribute attr;
+					attr = (DefaultValueAttribute)
+						(Attributes[typeof(DefaultValueAttribute)]);
+					if(attr != null)
+					{
+						property.SetValue(component, attr.Value, null);
+					}
+				}
+	
+		// Set the property value associated with a component.
+		public override void SetValue(Object component, Object value)
+				{
+					property.SetValue(component, value, null);
+				}
+	
+		// Determine if a property value needs to be serialized.
+		public override bool ShouldSerializeValue(Object component)
+				{
+					return Attributes.Contains
+						(DesignerSerializationVisibilityAttribute.Content);
+				}
+	
+	}; // class BuiltinPropertyDescriptor
 
 }; // class TypeDescriptor
 

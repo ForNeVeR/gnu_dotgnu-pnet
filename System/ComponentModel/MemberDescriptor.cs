@@ -70,7 +70,7 @@ public abstract class MemberDescriptor
 			}
 
 	// Merge two attribute lists.
-	private static Attribute[] MergeAttributes
+	internal static Attribute[] MergeAttributes
 				(Attribute[] list1, Attribute[] list2)
 			{
 				if(list1 == null)

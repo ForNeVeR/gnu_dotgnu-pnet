@@ -10,6 +10,10 @@
 	resources/en_US/System/Invalid.txt: finish off the implementation
 	of component license management.
 
+	* System/ComponentModel/MemberDescriptor.cs,
+	System/ComponentModel/TypeDescriptor.cs: implement the remainder
+	of the "TypeDescriptor" class.
+
 2003-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/ArrayConverter.cs,

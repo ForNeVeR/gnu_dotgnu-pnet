@@ -492,8 +492,13 @@ ILParameter *ILMethodNextParam(ILMethod *method, ILParameter *last)
 	{
 		return last->next;
 	}
+	else if(method->parameters)
+	{
+		return method->parameters;
+	}
 	else
 	{
+		_ILMethodLoadParams(method);
 		return method->parameters;
 	}
 }

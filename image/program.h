@@ -356,6 +356,11 @@ struct _tagILMethod
 };
 
 /*
+ * Load the parameter definitions for a method token on demand.
+ */
+void _ILMethodLoadParams(ILMethod *method);
+
+/*
  * Information about a parameter.
  */
 struct _tagILParameter

@@ -1698,6 +1698,60 @@ static int SizeOfRange(ILImage *image, unsigned long tokenKind,
 }
 
 /*
+ * Load the parameter definitions for a method token on demand.
+ */
+void _ILMethodLoadParams(ILMethod *method)
+{
+	ILImage *image = method->member.programItem.image;
+	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
+	ILUInt32 valuesNext[IL_IMAGE_TOKEN_COLUMNS];
+	ILUInt32 *valuesNextPtr;
+	ILUInt32 num;
+
+	/* Bail out if we are building the image or this isn't a MethodDef */
+	if(image->type == IL_IMAGETYPE_BUILDING)
+	{
+		return;
+	}
+	if((method->member.programItem.token & IL_META_TOKEN_MASK)
+			!= IL_META_TOKEN_METHOD_DEF)
+	{
+		return;
+	}
+
+	/* Fetch the MethodDef details for this method and the next one */
+	if(!_ILImageRawTokenData(image, method->member.programItem.token, values))
+	{
+		return;
+	}
+	if((method->member.programItem.token & ~IL_META_TOKEN_MASK) <
+			image->tokenCount[IL_META_TOKEN_METHOD_DEF >> 24])
+	{
+		if(!_ILImageRawTokenData(image, method->member.programItem.token + 1,
+								 valuesNext))
+		{
+			return;
+		}
+		valuesNextPtr = valuesNext;
+	}
+	else
+	{
+		valuesNextPtr = 0;
+	}
+
+	/* Parse the parameter definitions */
+	if(!SizeOfRange(image, IL_META_TOKEN_PARAM_DEF,
+					values, valuesNextPtr,
+					IL_OFFSET_METHODDEF_FIRST_PARAM, &num))
+	{
+		return;
+	}
+	LoadTokenRange(image, IL_META_TOKEN_PARAM_DEF,
+				   values[IL_OFFSET_METHODDEF_FIRST_PARAM], num,
+				   Load_ParamDef, method);
+}
+
+/*
  * Load a method definition token.
  */
 static int Load_MethodDef(ILImage *image, ILUInt32 *values,
@@ -1705,8 +1759,6 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 						  void *userData)
 {
 	ILMethod *method;
-	ILUInt32 num;
-	int error;
 	ILType *signature;
 
 	/* Create the method and attach it to the class */
@@ -1746,17 +1798,6 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 			  IL_META_METHODIMPL_JAVA)));
 	ILMethodSetCallConv(method, ILType_CallConv(signature));
 	ILMethodSetRVA(method, values[IL_OFFSET_METHODDEF_RVA]);
-
-	/* Parse the parameter definitions */
-	if(!SizeOfRange(image, IL_META_TOKEN_PARAM_DEF,
-					values, valuesNext, IL_OFFSET_METHODDEF_FIRST_PARAM, &num))
-	{
-		META_VAL_ERROR("invalid parameter count");
-		return IL_LOADERR_BAD_META;
-	}
-	EXIT_IF_ERROR(LoadTokenRange(image, IL_META_TOKEN_PARAM_DEF,
-								 values[IL_OFFSET_METHODDEF_FIRST_PARAM], num,
-								 Load_ParamDef, method));
 
 	/* Fetch the PInvoke information if necessary */
 	if(ILMethod_HasPInvokeImpl(method))

@@ -89,6 +89,10 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 	int nativeTypeCode;
 
 	/* Find the parameter information block */
+	if(!(method->parameters))
+	{
+		_ILMethodLoadParams(method);
+	}
 	parameter = method->parameters;
 	while(parameter != 0 && parameter->paramNum != param)
 	{

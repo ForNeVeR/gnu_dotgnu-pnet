@@ -1,4 +1,10 @@
 
+2003-07-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/marshal.c, image/member.c, image/meta_build.c,
+	image/program.h: load ParamDef records on demand so that we can
+	eventually deprecate the "-fminimize-parameters" option in cscc.
+
 2003-07-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_main.c, cscc/csharp/cs_grammar.y, cscc/csharp/cs_scanner.l:

@@ -88,8 +88,12 @@ class EndpointPermission
 					{
 						return false;
 					}
+				#if !ECMA_COMPAT
 					return (String.Compare(hostName, info.hostName, true,
 										   CultureInfo.InvariantCulture) == 0);
+				#else
+					return (String.Compare(hostName, info.hostName, true) == 0);
+				#endif
 				}
 				else
 				{

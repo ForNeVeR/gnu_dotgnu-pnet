@@ -33,137 +33,143 @@ using System.Runtime.Serialization;
 using System.ComponentModel;
 #endif
 
-		public sealed class Icon : MarshalByRefObject, ISerializable, ICloneable
+public sealed class Icon : MarshalByRefObject, ICloneable
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
+{
+	private byte[] data;
+	private Size size;
+
+	public IntPtr Handle
+	{
+		get
 		{
-			private byte[] data;
-			private Size size;
+			// Not used in this implementation
+			return IntPtr.Zero;
+		}
+	}
 
-			public IntPtr Handle
-			{
-				get
-				{
-					// Not used in this implementation
-					return IntPtr.Zero;
-				}
-			}
+	public int Height
+	{
+		get
+		{
+			return size.Height;
+		}
+	}
 
-			public int Height
-			{
-				get
-				{
-					return size.Height;
-				}
-			}
+	public Size Size
+	{
+		get
+		{
+			return size;
+		}
+	}
 
-			public Size Size
-			{
-				get
-				{
-					return size;
-				}
-			}
+	public int Width
+	{
+		get
+		{
+			return size.Width;
+		}
+	}
 
-			public int Width
-			{
-				get
-				{
-					return size.Width;
-				}
-			}
+	public Icon(string fileName)
+	{
+		using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+		{
+			data = new byte[fileStream.Length];
+			fileStream.Read(data, 0, data.Length);
+		}
+		SetSizeFromData();
+	}
 
-			public Icon(string fileName)
-			{
-				using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-				{
-					data = new byte[fileStream.Length];
-					fileStream.Read(data, 0, data.Length);
-				}
-				SetSizeFromData();
-			}
+	public Icon(Icon original, Size size) : this(original, size.Width, size.Height)
+	{}
 
-			public Icon(Icon original, Size size) : this(original, size.Width, size.Height)
-			{}
+	public Icon(Icon original, int width, int height)
+	{
+		data = original.data;
+		if (data == null)
+			size = original.Size;
+		else
+			size = new Size(width, height);
+	}
 
-			public Icon(Icon original, int width, int height)
-			{
-				data = original.data;
-				if (data == null)
-					size = original.Size;
-				else
-					size = new Size(width, height);
-			}
+#if !ECMA_COMPAT
+	public Icon(Type type, string resource)
+	{
+		using(Stream stream = type.Module.Assembly.GetManifestResourceStream(type, resource))
+		{
+			data = new byte[stream.Length];
+			stream.Read(data, 0, data.Length);
+		}
+		SetSizeFromData();
+	}
+#endif
 
-			public Icon(Type type, string resource)
-			{
-				using(Stream stream = type.Module.Assembly.GetManifestResourceStream(type, resource))
-				{
-					data = new byte[stream.Length];
-					stream.Read(data, 0, data.Length);
-				}
-				SetSizeFromData();
-			}
+	public Icon(Stream stream)
+	{
+		data = new byte[stream.Length];
+		stream.Read(data, 0, data.Length);
+	}
 
-			public Icon(Stream stream)
-			{
-				data = new byte[stream.Length];
-				stream.Read(data, 0, data.Length);
-			}
+	public Icon(Stream stream, int width, int height)
+	{
+		data = new byte[stream.Length];
+		stream.Read(data, 0, data.Length);
+		size = new Size(width, height);
+	}
 
-			public Icon(Stream stream, int width, int height)
-			{
-				data = new byte[stream.Length];
-				stream.Read(data, 0, data.Length);
-				size = new Size(width, height);
-			}
+	[TODO]
+	private void SetSizeFromData()
+	{
+	}
 
-			[TODO]
-			private void SetSizeFromData()
-			{
-			}
+	object ICloneable.Clone()
+	{
+		return new System.Drawing.Icon(this, Width, Height);
+	}
 
-			object ICloneable.Clone()
-			{
-				return new System.Drawing.Icon(this, Width, Height);
-			}
+	public static Icon FromHandle(IntPtr handle)
+	{
+		// Not implemented
+		return null;
+	}
 
-			public static Icon FromHandle(IntPtr handle)
-			{
-				// Not implemented
-				return null;
-			}
+	public void Save(Stream outputStream)
+	{
+		outputStream.Write(data, 0, data.Length);
+	}
 
-			public void Save(Stream outputStream)
-			{
-				outputStream.Write(data, 0, data.Length);
-			}
+	public Bitmap ToBitmap()
+	{
+		Bitmap bitmap = new Bitmap(Size.Width, Size.Height);
+		using(Graphics graphics = Graphics.FromImage(bitmap))
+			graphics.DrawIcon(this, new Rectangle(0, 0, Size.Width, Size.Height));
+		bitmap.MakeTransparent(Color.FromArgb(13, 11, 12));
+		return bitmap;
+	}
 
-			public Bitmap ToBitmap()
-			{
-				Bitmap bitmap = new Bitmap(Size.Width, Size.Height);
-				using(Graphics graphics = Graphics.FromImage(bitmap))
-					graphics.DrawIcon(this, new Rectangle(0, 0, Size.Width, Size.Height));
-				bitmap.MakeTransparent(Color.FromArgb(13, 11, 12));
-				return bitmap;
-			}
-
-			public override string ToString()
-			{
-				return "Icon: " + Width + ", " + Height;
-			}
+	public override string ToString()
+	{
+		return "Icon: " + Width + ", " + Height;
+	}
 
 #if CONFIG_SERIALIZATION
-			void ISerializable.GetObjectData(SerializationInfo si, StreamingContext context)
-			{
-				if (data != null)
-					si.AddValue("IconData", data, typeof(byte[]));
-				else
-				{
-					MemoryStream memoryStream = new MemoryStream();
-					Save(memoryStream);
-					si.AddValue("IconData", memoryStream.ToArray(), typeof(byte[]));
-				}
-				si.AddValue("IconSize", size, typeof(Size));
-			}
-#endif
+	void ISerializable.GetObjectData(SerializationInfo si, StreamingContext context)
+	{
+		if (data != null)
+			si.AddValue("IconData", data, typeof(byte[]));
+		else
+		{
+			MemoryStream memoryStream = new MemoryStream();
+			Save(memoryStream);
+			si.AddValue("IconData", memoryStream.ToArray(), typeof(byte[]));
 		}
+		si.AddValue("IconSize", size, typeof(Size));
+	}
+#endif
+}
+
 }; // namespace System.Drawing

@@ -1809,7 +1809,7 @@ public class ListBox : ListControl
 	// select: true to select the range, false to unselect the range
 	private void ShiftHighlight(int dataInd, int lastInd, bool clear, bool select)
 	{
-		Debug.Assert(this.selectionMode == SelectionMode.MultiExtended);
+		//Debug.Assert(this.selectionMode == SelectionMode.MultiExtended);
 	
 		// When holding down shift, highlight everything between the last 
 		// selection  that wasn't with the Shift key and this one.  To do 
@@ -1955,7 +1955,7 @@ public class ListBox : ListControl
 	// This function only applies for single selection mode.
 	private void MoveSelection(int newInd)
 	{
-		Debug.Assert(this.selectionMode == SelectionMode.One);
+		//Debug.Assert(this.selectionMode == SelectionMode.One);
 	
 		if(this.selectedIndices.Count > 0)
 			this.selectedIndices.Remove(this.selectedIndices[0]);

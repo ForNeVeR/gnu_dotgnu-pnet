@@ -22,6 +22,8 @@
 namespace System.Windows.Forms
 {
 
+#if CONFIG_COMPONENT_MODEL_DESIGN
+
 using System.Runtime.InteropServices;
 using System.Windows.Forms.Design;
 
@@ -58,5 +60,7 @@ public class PropertyTabChangedEventArgs : EventArgs
 			}
 
 }; // class PropertyTabChangedEventArgs
+
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.Windows.Forms

@@ -87,7 +87,9 @@ public abstract class Image
 				verticalResolution = Graphics.DefaultScreenDpi;
 				pixelFormat = (System.Drawing.Imaging.PixelFormat)
 					(dgImage.PixelFormat);
+#if !ECMA_COMPAT
 				frameDimensionsList = new Guid[0];
+#endif
 			}
 #if CONFIG_SERIALIZATION
 	[TODO]

@@ -8,6 +8,17 @@
 	System.Windows.Forms/CancelEventHandler.cs: add back, because
 	they are needed to compile in ECMA-compatibility mode.
 
+	* System/Net/EndpointPermission.cs, System/Net/ServicePointManager.cs,
+	System/Net/WebPermission.cs, System.Drawing/Icon.cs,
+	System.Drawing/Image.cs, System.Drawing.Win32/Win32.cs,
+	System.EnterpriseServices/ApplicationIDAttribute.cs,
+	System.EnterpriseServices/ContextUtil.cs,
+	System.Windows.Forms/ColumnHeader.cs,
+	System.Windows.Forms/ListBox.cs, System.Windows.Forms/ListViewItem.cs,
+	System.Windows.Forms/PropertyTabChangedEventArgs.cs,
+	System.Windows.Forms/PropertyTabChangedEventHandler.cs,
+	System.Windows.Forms/ToolTip.cs, compat/Vsa.cs: ECMA fixes.
+
 2003-09-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/ScrollBar.cs, System.Windows.Forms/ListBox.cs

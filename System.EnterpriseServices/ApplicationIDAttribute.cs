@@ -38,7 +38,9 @@ public sealed class ApplicationIDAttribute : Attribute
 	// Constructors.
 	public ApplicationIDAttribute(String guid)
 			{
+#if !ECMA_COMPAT
 				this.guid = new Guid(guid);
+#endif
 			}
 
 #if !ECMA_COMPAT

@@ -27,7 +27,10 @@ using System;
 using System.ComponentModel;
 
 
-public sealed class ToolTip : Component, IExtenderProvider
+public sealed class ToolTip
+#if CONFIG_COMPONENT_MODEL
+	: Component, IExtenderProvider
+#endif
 {
 	//[TODO]
 	public ToolTip()
@@ -36,11 +39,13 @@ public sealed class ToolTip : Component, IExtenderProvider
 		
 			}
 
+#if CONFIG_COMPONENT_MODEL
 	//[TODO]
 	public ToolTip(IContainer cont)
 			{
 
 			}
+#endif
 
 //	[TODO]
 	public bool Active
@@ -121,7 +126,11 @@ public sealed class ToolTip : Component, IExtenderProvider
 			}
 
 //	[TODO]
+#if CONFIG_COMPONENT_MODEL
 	protected override void Dispose(bool disposing)
+#else
+	protected virtual void Dispose(bool disposing)
+#endif
 			{
 				// TODO
 			}

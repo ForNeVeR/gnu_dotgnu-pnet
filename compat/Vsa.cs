@@ -357,8 +357,10 @@ public enum VsaError
 // Exceptions that are thrown by Vsa classes.
 #if !ECMA_COMPAT
 [Serializable]
-#endif
 public class VsaException : ExternalException
+#else
+public class VsaException : SystemException
+#endif
 {
 	// Internal state.
 	private VsaError error;
@@ -409,7 +411,11 @@ public class VsaException : ExternalException
 #endif
 
 	// Get the error code.
+#if !ECMA_COMPAT
 	public new VsaError ErrorCode
+#else
+	public VsaError ErrorCode
+#endif
 			{
 				get
 				{

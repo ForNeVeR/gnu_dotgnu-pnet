@@ -96,7 +96,7 @@ internal class Api
 		WA_CLICKACTIVE =2
 	}
 
-	public static IntPtr HWND_BROADCAST = (IntPtr)0xffff;
+	public static IntPtr HWND_BROADCAST = new IntPtr(0xffff);
 
 	public enum MouseKeyState : ushort
 	{

@@ -22,7 +22,11 @@
 namespace System.Windows.Forms
 {
 
+#if CONFIG_COMPONENT_MODEL_DESIGN
+
 public delegate void PropertyTabChangedEventHandler
 		(Object sender, PropertyTabChangedEventArgs e);
+
+#endif
 
 }; // namespace System.Windows.Forms

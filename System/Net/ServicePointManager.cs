@@ -29,7 +29,9 @@ public class ServicePointManager
 	public const int DefaultPersistentConnectionLimit	 = 2;
 
 	// Internal state.
+#if CONFIG_X509_CERTIFICATES
 	private static ICertificatePolicy certificatePolicy;
+#endif
 	private static bool checkCertificateRevocationList;
 	private static int defaultConnectionLimit =
 				DefaultPersistentConnectionLimit;

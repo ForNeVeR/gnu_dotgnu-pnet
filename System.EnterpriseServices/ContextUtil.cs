@@ -127,7 +127,11 @@ public sealed class ContextUtil
 			{
 				get
 				{
+				#if !ECMA_COMPAT
 					throw new PlatformNotSupportedException();
+				#else
+					throw new NotSupportedException();
+				#endif
 				}
 			}
 
@@ -146,7 +150,11 @@ public sealed class ContextUtil
 	// Get a named property from the context.
 	public static Object GetNamedProperty(String name)
 			{
+			#if !ECMA_COMPAT
 				throw new PlatformNotSupportedException();
+			#else
+				throw new NotSupportedException();
+			#endif
 			}
 
 	// Determine if the caller is within a specified role.

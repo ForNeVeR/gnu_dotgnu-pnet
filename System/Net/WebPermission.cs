@@ -273,7 +273,7 @@ public sealed class WebPermission : CodeAccessPermission
 				{
 					throw new ArgumentException(S._("Arg_PermissionMismatch"));
 				}
-				else if(((SocketPermission)target).IsUnrestricted())
+				else if(((WebPermission)target).IsUnrestricted())
 				{
 					return true;
 				}
@@ -312,7 +312,7 @@ public sealed class WebPermission : CodeAccessPermission
 					throw new ArgumentException(S._("Arg_PermissionMismatch"));
 				}
 				else if(IsUnrestricted() ||
-				        ((SocketPermission)target).IsUnrestricted())
+				        ((WebPermission)target).IsUnrestricted())
 				{
 					return new WebPermission
 						(PermissionState.Unrestricted);

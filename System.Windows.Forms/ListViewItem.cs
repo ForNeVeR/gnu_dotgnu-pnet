@@ -28,9 +28,9 @@ using System.Drawing;
 using System.Runtime.Serialization;
 #endif
 
-	public class ListViewItem: ICloneable,
+	public class ListViewItem: ICloneable
 #if CONFIG_SERIALIZATION
-		ISerializable
+		, ISerializable
 #endif
 	{
 		private int imageIndex;

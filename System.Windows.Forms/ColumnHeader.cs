@@ -21,12 +21,16 @@
 
 namespace System.Windows.Forms
 {
-#if CONFIG_COMPONENT_MODEL
 
 using System;
+using System.Reflection;
 using System.ComponentModel;
 
+#if CONFIG_COMPONENT_MODEL
 	public class ColumnHeader : Component
+#else
+	public class ColumnHeader
+#endif
 	{
 		private ListView listView;
 		internal int width;
@@ -116,8 +120,17 @@ using System.ComponentModel;
 			Type type = base.GetType();
 			if (type == typeof(ColumnHeader))
 				columnHeader = new ColumnHeader();
+		#if !ECMA_COMPAT
 			else
 				columnHeader = Activator.CreateInstance(type) as ColumnHeader;
+		#else
+			else
+				columnHeader = type.InvokeMember
+					(String.Empty, BindingFlags.CreateInstance |
+								   BindingFlags.Public |
+								   BindingFlags.Instance,
+					 null, null, null, null, null, null) as ColumnHeader;
+		#endif
 			columnHeader.textAlign = TextAlign;
 			columnHeader.text = text;
 			columnHeader.Width = width;
@@ -152,5 +165,4 @@ using System.ComponentModel;
 			return "ColumnHeader: Text: " + Text;
 		}
 	}
-#endif
 }

@@ -23,7 +23,12 @@ namespace System.Windows.Forms
 {
 
 using System.IO;
+using System.ComponentModel;
 
+#if CONFIG_COMPONENT_MODEL
+[DesignerAttribute(
+	"System.Windows.Forms.Design.OpenFileDialogDesigner, System.Design")]
+#endif
 public sealed class OpenFileDialog : FileDialog
 {
 	// Internal state.
@@ -35,6 +40,10 @@ public sealed class OpenFileDialog : FileDialog
 	public OpenFileDialog() {}
 
 	// Get or set this object's properties.
+
+	#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(true)]
+	#endif
 	public override bool CheckFileExists
 			{
 				get
@@ -46,6 +55,9 @@ public sealed class OpenFileDialog : FileDialog
 					base.CheckFileExists = value;
 				}
 			}
+	#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+	#endif
 	public bool Multiselect
 			{
 				get
@@ -57,6 +69,9 @@ public sealed class OpenFileDialog : FileDialog
 					multiselect = value;
 				}
 			}
+	#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+	#endif
 	public bool ReadOnlyChecked
 			{
 				get
@@ -75,6 +90,9 @@ public sealed class OpenFileDialog : FileDialog
 					}
 				}
 			}
+	#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+	#endif
 	public bool ShowReadOnly
 			{
 				get

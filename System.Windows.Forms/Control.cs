@@ -37,7 +37,7 @@ using System.Runtime.InteropServices;
 using System.ComponentModel.Design.Serialization;
 
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
-[Designer("System.Windows.Forms.Design.ContolDesigner, System.Design")]
+[Designer("System.Windows.Forms.Design.ControlDesigner, System.Design")]
 [DefaultProperty("Text")]
 [DefaultEvent("Click")]
 #endif

@@ -566,8 +566,10 @@ struct _tagILEvalValue
 	ILUInt32	modifiers;
 	ILNode	   *type;
 	ILNode	   *name;
+	ILNode	   *params;
 	ILNode	   *getAccessor;
 	ILNode	   *setAccessor;
+	ILUInt32	getsetFlags; /* 1 = get, 2 = set */
 }
 
 /*
@@ -577,75 +579,6 @@ struct _tagILEvalValue
 {
 	ILNode	   *attributes;
 	ILNode	   *body;
-}
-
-/*
- * Indexer declaration
- */
-%node ILNode_IndexerDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	ILUInt32	modifiers;
-	ILNode	   *indexerDeclarator;
-	ILNode	   *getAccessor;
-	ILNode	   *setAccessor;
-}
-
-/*
- * indexer declarator
- */
-%node ILNode_IndexerDeclarator ILNode_Declaration =
-{
-	ILNode	   *type;
-	ILNode	   *interfaceType;
-	ILNode	   *params; /* list */
-}
-
-/*
- * Interface declaration
- */
-%node ILNode_InterfaceDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	ILUInt32	modifiers;
-	ILNode	   *name;
-	ILNode	   *base;
-	ILNode	   *body;
-}
-
-%node ILNode_InterfaceMethodDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	int			isNew;
-	ILNode	   *type;
-	ILNode	   *name;
-	ILNode	   *params; /* list */
-}
-
-%node ILNode_InterfacePropertyDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	int			isNew;
-	ILNode	   *type;
-	ILNode	   *name;
-	ILUInt32	getsetFlags; /* 1 = get, 2 = set */
-}
-
-%node ILNode_InterfaceEventDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	int			isNew;
-	ILNode	   *type;
-	ILNode	   *name;
-}
-
-%node ILNode_InterfaceIndexerDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	int			isNew;
-	ILNode	   *type;
-	ILNode	   *name;
-	ILUInt32	getsetFlags; /* 1 = get, 2 = set */
 }
 
 %node ILNode_EnumDeclaration ILNode_Declaration =

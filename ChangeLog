@@ -3,9 +3,13 @@
 
 * codegen/cg_gen.h, codegen/cg_gen.c: add "unsafeLevel" to "ILGenInfo".
 
-* cs_decls.tc, cs_errors.c, cs_grammar.y, cs_internal.h, cs_lvalue.tc,
-cs_misc.tc, cs_oper.tc, cs_stmt.tc: move unsafe testing code out of
-the grammar and into the semantic analysis routines.
+* cscc/cs_decls.tc, cscc/cs_errors.c, cscc/cs_grammar.y, cscc/cs_internal.h,
+cscc/cs_lvalue.tc, cscc/cs_misc.tc, cscc/cs_oper.tc, cscc/cs_stmt.tc:
+move unsafe testing code out of the grammar and into the semantic
+analysis routines.
+
+* codegen/cg_nodes.tc, codegen/cg_decls.tc, codegen/jv_decls.tc: remove
+unnecessary node types.
 
 2001-08-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

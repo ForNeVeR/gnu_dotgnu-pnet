@@ -374,41 +374,6 @@ ILNode_GenDiscard(ILNode_AccessorDeclaration)
 	/* TODO */
 }
 
-ILNode_GenDiscard(ILNode_IndexerDeclaration)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_IndexerDeclarator)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_InterfaceDeclaration)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_InterfaceMethodDeclaration)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_InterfacePropertyDeclaration)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_InterfaceEventDeclaration)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_InterfaceIndexerDeclaration)
-{
-	/* TODO */
-}
-
 ILNode_GenDiscard(ILNode_EnumDeclaration)
 {
 	/* TODO */

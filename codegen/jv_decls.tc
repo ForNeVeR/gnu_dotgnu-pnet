@@ -123,41 +123,6 @@ JavaGenDiscard(ILNode_AccessorDeclaration)
 	/* TODO */
 }
 
-JavaGenDiscard(ILNode_IndexerDeclaration)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_IndexerDeclarator)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_InterfaceDeclaration)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_InterfacePropertyDeclaration)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_InterfaceMethodDeclaration)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_InterfaceEventDeclaration)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_InterfaceIndexerDeclaration)
-{
-	/* TODO */
-}
-
 JavaGenDiscard(ILNode_EnumDeclaration)
 {
 	/* TODO */

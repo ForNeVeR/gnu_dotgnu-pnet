@@ -291,6 +291,8 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	return height;
 }
 
+#ifndef IL_CVM_DIRECT
+
 /*
  * Get the number of parameter words for a tail call method.
  */
@@ -324,6 +326,8 @@ static ILUInt32 GetTailParamCount(ILMethod *method, int suppressThis)
 	/* Return the word count to the caller */
 	return num;
 }
+
+#endif /* !IL_CVM_DIRECT */
 
 #elif defined(IL_CVM_LOCALS)
 

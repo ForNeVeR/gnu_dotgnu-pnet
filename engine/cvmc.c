@@ -152,6 +152,12 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	coder->labelOutOfMemory = 0;
 	coder->switchStart = 0;
 	coder->currentMethod = 0;
+
+	/* Call the interpreter to export the label tables for
+	   use in code generation for direct threading */
+	_ILCVMInterpreter(0);
+
+	/* Ready to go */
 	return &(coder->coder);
 }
 

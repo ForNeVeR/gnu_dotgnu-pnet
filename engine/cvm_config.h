@@ -88,10 +88,80 @@ extern int _ILCVMInsnCount[];
  * based on bytecode", and "direct threaded based on address".
  */
 #ifdef HAVE_COMPUTED_GOTO
-	#define	IL_CVM_TOKEN
+	#ifdef IL_CVM_DIRECT_ALLOWED
+		#define	IL_CVM_DIRECT
+		#if defined(PIC) && defined(HAVE_PIC_COMPUTED_GOTO)
+			#define	IL_CVM_PIC_DIRECT
+		#endif
+	#else
+		#define	IL_CVM_TOKEN
+		#if defined(PIC) && defined(HAVE_PIC_COMPUTED_GOTO)
+			#define	IL_CVM_PIC_TOKEN
+		#endif
+	#endif
 #else /* !HAVE_COMPUTED_GOTO */
 	#define	IL_CVM_SWITCH
 #endif /* !HAVE_COMPUTED_GOTO */
+
+/*
+ * Declare the code necessary to export the direct threading
+ * tables from "_ILCVMInterpreter", and to extract addresses
+ * for specific opcodes in the CVM coder.
+ */
+#ifdef IL_CVM_DIRECT
+	#ifdef IL_CVM_PIC_DIRECT
+
+		/* We are building a direct interpreter with PIC labels */
+		extern const int *_ILCVMMainLabelTable;
+		extern const int *_ILCVMPrefixLabelTable;
+		extern void *_ILCVMBaseLabel;
+
+		#define CVM_DEFINE_TABLES()	\
+					const int *_ILCVMMainLabelTable; \
+					const int *_ILCVMPrefixLabelTable; \
+					void *_ILCVMBaseLabel
+
+		#define	CVM_EXPORT_TABLES()	\
+					do { \
+						_ILCVMMainLabelTable = main_label_table; \
+						_ILCVMPrefixLabelTable = prefix_label_table; \
+						_ILCVMBaseLabel = &&COP_NOP_label; \
+					} while (0)
+
+		#define	CVM_LABEL_FOR_OPCODE(opcode)	\
+					(_ILCVMBaseLabel + _ILCVMMainLabelTable[(opcode)])
+		#define	CVMP_LABEL_FOR_OPCODE(opcode)	\
+					(_ILCVMBaseLabel + _ILCVMPrefixLabelTable[(opcode)])
+
+	#else /* !IL_CVM_PIC_DIRECT */
+
+		/* We are building a direct interpreter from non-PIC labels */
+		extern void **_ILCVMMainLabelTable;
+		extern void **_ILCVMPrefixLabelTable;
+
+		#define CVM_DEFINE_TABLES()	\
+					void **_ILCVMMainLabelTable; \
+					void **_ILCVMPrefixLabelTable
+
+		#define	CVM_EXPORT_TABLES()	\
+					do { \
+						_ILCVMMainLabelTable = main_label_table; \
+						_ILCVMPrefixLabelTable = prefix_label_table; \
+					} while (0)
+
+		#define	CVM_LABEL_FOR_OPCODE(opcode)	\
+					(_ILCVMMainLabelTable[(opcode)])
+		#define	CVMP_LABEL_FOR_OPCODE(opcode)	\
+					(_ILCVMPrefixLabelTable[(opcode)])
+
+	#endif /* !IL_CVM_PIC_DIRECT */
+#else /* !IL_CVM_DIRECT */
+
+	/* We are building a non-direct interpreter */
+	#define	CVM_DEFINE_TABLES()
+	#define	CVM_EXPORT_TABLES()
+
+#endif /* !IL_CVM_DIRECT */
 
 #ifdef	__cplusplus
 };

@@ -7,6 +7,11 @@
 	so that all configuration parameters are centralised into
 	"cvm_config.h".
 
+	* configure.in, engine/Makefile.am, engine/cvm.c, engine/cvm_call.c,
+	engine/cvm_config.h, engine/cvm_format.h, engine/cvmc.c,
+	engine/cvmc_gen.h, engine/mklabel.sh: turn on direct threading
+	support in the CVM interpreter.
+
 2002-05-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/locale.c: #ifdef for CODESET because it isn't defined

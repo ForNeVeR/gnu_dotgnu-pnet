@@ -52,7 +52,9 @@ ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			     ../image/libILImage.a ../support/libILSupport.a \
 			  	 $(PACKAGE_LIBS)
 
-AM_CFLAGS = -I../libffi/include
+## We need "-fno-gcse" to stop gcc being overeager when it compiles
+## the interpreter core in direct threading mode.
+AM_CFLAGS = -I../libffi/include $(NO_GCSE)
 
 cvm.o: cvm_labels.h
 

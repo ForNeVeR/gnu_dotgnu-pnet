@@ -222,6 +222,23 @@ if test $ac_cv_prog_cc_precomp = yes ; then
 	CFLAGS="$CFLAGS -no-cpp-precomp"
 fi
 
+dnl Check to see whether cc accepts "-fno-gcse" or not.
+AC_SUBST(NO_GCSE)
+AC_CACHE_CHECK(whether ${CC-cc} accepts -fno-gcse, ac_cv_prog_cc_no_gcse,
+[echo 'void f(){}' > conftest.c
+if test -z "`${CC-cc} -fno-gcse -c conftest.c 2>&1`"; then
+  ac_cv_prog_cc_no_gcse=yes
+else
+  ac_cv_prog_cc_no_gcse=no
+fi
+rm -f conftest*
+])
+if test $ac_cv_prog_cc_no_gcse = yes ; then
+	NO_GCSE="-fno-gcse"
+else
+	NO_GCSE=""
+fi
+
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(memset memcmp memchr memcpy memmove bcopy bzero bcmp)

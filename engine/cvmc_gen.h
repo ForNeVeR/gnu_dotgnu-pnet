@@ -513,12 +513,6 @@ extern	"C" {
  */
 
 /*
- * Tables that define the interpreter labels for each instruction.
- */
-extern void **_ILCVMMainLabelTable;
-extern void **_ILCVMPrefixLabelTable;
-
-/*
  * Get the current method position.
  */
 #define	CVM_POSN()		(ILCacheGetPosn(&(((ILCVMCoder *)coder)->codePosn)))
@@ -565,7 +559,7 @@ extern void **_ILCVMPrefixLabelTable;
 #define	_CVM_COPY(arg,n)	\
 			do { \
 				if(ILCacheCheckForN(&(((ILCVMCoder *)coder)->codePosn), \
-									_CVM_COPY_ROUND((n))))
+									_CVM_COPY_ROUND((n)))) \
 				{ \
 					ILMemCpy(((ILCVMCoder *)coder)->codePosn.ptr, \
 							 (arg), (n)); \
@@ -584,7 +578,7 @@ extern void **_ILCVMPrefixLabelTable;
  */
 #define	_CVM_OPCODE(value)	\
 			do { \
-				_CVM_PTR(_ILCVMMainLabelTable[(value)]); \
+				_CVM_PTR(CVM_LABEL_FOR_OPCODE((value))); \
 			} while (0)
 
 /*
@@ -592,7 +586,7 @@ extern void **_ILCVMPrefixLabelTable;
  */
 #define	_CVMP_OPCODE(value)	\
 			do { \
-				_CVM_PTR(_ILCVMPrefixLabelTable[(value)]); \
+				_CVM_PTR(CVMP_LABEL_FOR_OPCODE((value))); \
 			} while (0)
 
 /*
@@ -785,7 +779,7 @@ extern void **_ILCVMPrefixLabelTable;
  */
 #define	CVM_OUT_BRANCH(opcode,offset)	\
 			do { \
-				unsigned char *_posn = CVM_POSN();
+				unsigned char *_posn = CVM_POSN(); \
 				_CVM_OPCODE((opcode)); \
 				_CVM_PTR(_posn + (ILNativeInt)(offset)); \
 			} while (0)
@@ -835,7 +829,7 @@ extern void **_ILCVMPrefixLabelTable;
  */
 #define	CVM_OUT_SWHEAD(numEntries,defCase)	\
 			do { \
-				unsigned char *_posn = CVM_POSN();
+				unsigned char *_posn = CVM_POSN(); \
 				_CVM_OPCODE(COP_SWITCH); \
 				_CVM_WORD((numEntries)); \
 				_CVM_PTR(_posn + (ILNativeInt)(defCase)); \
@@ -931,7 +925,7 @@ extern void **_ILCVMPrefixLabelTable;
 					if((value) <= 8) \
 					{ \
 						*((void **)(ckpc)) = \
-							_ILCVMMainLabelTable[COP_CKHEIGHT]; \
+							CVM_LABEL_FOR_OPCODE(COP_CKHEIGHT); \
 					} \
 					else \
 					{ \
@@ -949,7 +943,7 @@ extern void **_ILCVMPrefixLabelTable;
 				if(_CVM_VALID((pc), 2)) \
 				{ \
 					((void **)(pc))[0] = \
-						_ILCVMMainLabelTable[COP_BR]; \
+						CVM_LABEL_FOR_OPCODE(COP_BR); \
 					((void **)(pc))[1] = (void *) \
 						((pc) + (ILNativeInt)(ILInt32)(relative)); \
 				} \

@@ -154,7 +154,7 @@ extern	"C" {
  * Extract particular arguments from CVM instructions.
  */
 #define	_CVM_ARG(n)				(((void **)(pc))[(n)])
-#define	_CVM_ARG_WORD(n)		((ILUInt32)(ILNativeUInt)(_CVM_ARG_WORD((n))))
+#define	_CVM_ARG_WORD(n)		((ILUInt32)(ILNativeUInt)(_CVM_ARG((n))))
 #define	_CVM_OFFSET(n)			((n) * sizeof(void *))
 #define	CVM_ARG_BYTE			((ILUInt32)(ILUInt8)(_CVM_ARG_WORD(1)))
 #define	CVM_ARG_SBYTE			((ILInt32)(ILInt8)(_CVM_ARG_WORD(1)))
@@ -195,7 +195,7 @@ extern	"C" {
 #define	CVMP_ARG_SBYTE			CVM_ARG_SBYTE
 #define	CVMP_ARG_WORD			CVM_ARG_WORD
 #define	CVMP_ARG_WORD2			CVM_ARG_WORD2
-#define	CVMP_ARG_PTR(type)		CVM_ARG_PTR
+#define	CVMP_ARG_PTR(type)		CVM_ARG_PTR(type)
 #define	CVMP_ARG_WORD_PTR(type)			((type)(_CVM_ARG(2)))
 #define	CVMP_ARG_WORD2_PTR(type)		((type)(_CVM_ARG(3)))
 

@@ -385,14 +385,19 @@ static IL_INLINE void *ReadPointer(unsigned char *pc)
 #include "cvm_inline.c"
 #undef IL_CVM_GLOBALS
 
+/*
+ * Define instruction label tables, if necessary.
+ */
+CVM_DEFINE_TABLES();
+
 int _ILCVMInterpreter(ILExecThread *thread)
 {
-	REGISTER_ASM_PC(unsigned char *pc) = thread->pc;
-	REGISTER_ASM_STACK(CVMWord *stacktop) = thread->stackTop;
-	REGISTER_ASM_FRAME(CVMWord *frame) = thread->frame;
+	REGISTER_ASM_PC(unsigned char *pc);
+	REGISTER_ASM_STACK(CVMWord *stacktop);
+	REGISTER_ASM_FRAME(CVMWord *frame);
 	int divResult;
-	CVMWord *stackmax = thread->stackLimit;
-	ILMethod *method = thread->method;
+	CVMWord *stackmax;
+	ILMethod *method;
 	void *nativeArgs[CVM_MAX_NATIVE_ARGS + 1];
 
 	/* Define local variables that are used by the instruction categories */
@@ -414,6 +419,21 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	   that handle computed goto labels if necessary */
 	#include "cvm_labels.h"
 
+	/* Export the goto label tables from the interpreter if necessary */
+	if(!thread)
+	{
+		CVM_EXPORT_TABLES();
+		return 0;
+	}
+
+	/* Cache the engine state in local variables */
+	pc = thread->pc;
+	stacktop = thread->stackTop;
+	frame = thread->frame;
+	stackmax = thread->stackLimit;
+	method = thread->method;
+
+	/* Enter the main instruction loop */
 	for(;;)
 	{
 		CVM_DUMP();
@@ -531,7 +551,14 @@ int _ILCVMInterpreter(ILExecThread *thread)
 				{
 #else
 				/* We don't need "prefix" in direct mode, so just stub it out */
-				MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
+				switch(1)
+				{
+					VMPREFIXDEFAULT:
+					{
+						MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
+					}
+					break;
+				}
 			}
 			VMBREAK(COP_PREFIX);
 #endif

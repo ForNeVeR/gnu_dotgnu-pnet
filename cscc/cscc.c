@@ -604,6 +604,7 @@ static void ParseCommandLine(int argc, char *argv[])
 		ILMemCpy(temp + 21, outname, len);
 		temp[len + 21] = '\0';
 		CCStringListAdd(&extension_flags, &num_extension_flags, temp);
+#if 0
 		if(nostdlib_flag)
 		{
 			temp = (char *)ILMalloc(len + 13);
@@ -616,6 +617,7 @@ static void ParseCommandLine(int argc, char *argv[])
 			temp[len + 12] = '\0';
 			CCStringListAdd(&extension_flags, &num_extension_flags, temp);
 		}
+#endif
 	}
 
 }

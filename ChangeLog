@@ -17,6 +17,12 @@
 	the string pool, so that we don't have the overhead of adding
 	a string pool offset every time a string is referenced.
 
+	* cscc/c_main.c, cscc/cs_main.c, cscc/cscc.c, cscc/csdoc.c,
+	cscc/common/cc_main.c, cscc/common/cc_main.h, ilalink/link_library.c,
+	ilalink/link_main.c, include/il_linker.h: make sure that "mscorlib"
+	and "OpenSystem.C" are linked into C applications, even if "-nostdlib"
+	is supplied to the compiler.
+
 2002-08-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_coerce.c, cscc/c/c_declspec.c, cscc/c/c_library.c,

@@ -74,6 +74,12 @@ void ILLinkerAddSystemDirs(ILLinker *linker);
 char *ILLinkerResolveLibrary(ILLinker *linker, const char *name);
 
 /*
+ * Resolve a library name, and use standard directories, even
+ * if they were disabled with "--nostdlib".
+ */
+char *ILLinkerResolveLibraryStd(ILLinker *linker, const char *name);
+
+/*
  * Add an image to a linker context as a library.
  * Returns zero on error.
  */

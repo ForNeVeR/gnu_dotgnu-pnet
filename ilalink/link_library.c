@@ -101,7 +101,7 @@ void ILLinkerAddSystemDirs(ILLinker *linker)
 	linker->useStdDirs = 1;
 }
 
-char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
+static char *ResolveLibrary(ILLinker *linker, const char *name, int useStd)
 {
 	int len;
 	char *newName;
@@ -132,7 +132,17 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 	return ILImageSearchPath
 		(name, 0, 0,
 		 (const char **)(linker->libraryDirs), linker->numLibraryDirs,
-		 0, 0, !(linker->useStdDirs), 0);
+		 0, 0, !useStd, 0);
+}
+
+char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
+{
+	return ResolveLibrary(linker, name, linker->useStdDirs);
+}
+
+char *ILLinkerResolveLibraryStd(ILLinker *linker, const char *name)
+{
+	return ResolveLibrary(linker, name, 1);
 }
 
 /*

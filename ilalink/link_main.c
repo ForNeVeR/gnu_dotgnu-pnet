@@ -129,11 +129,11 @@ static void usage(const char *progname);
 static void version(void);
 static void outOfMemory(void);
 static int parseVersion(ILUInt16 *version, const char *str);
-static int addLibrary(ILLinker *linker, const char *filename);
+static int addLibrary(ILLinker *linker, const char *filename, int needStd);
 static int addResource(ILLinker *linker, const char *filename,
 					   FILE *stream, int privateResources, int isStdin);
 static int processFile(ILLinker *linker, const char *filename,
-					   FILE *stream, int isStdin,
+					   FILE *stream, int isStdin, const char *stdLibrary,
 					   const char *stdCLibrary, int useStdlib,
 					   int firstFile);
 
@@ -590,11 +590,11 @@ int ILLinkerMain(int argc, char *argv[])
 	/* Add the libraries to the linker context */
 	for(temp = 0; temp < numLibraries; ++temp)
 	{
-		errors |= addLibrary(linker, libraries[temp]);
+		errors |= addLibrary(linker, libraries[temp], 0);
 	}
 	if(useStdlib)
 	{
-		errors |= addLibrary(linker, stdLibrary);
+		errors |= addLibrary(linker, stdLibrary, 0);
 	}
 
 	/* Process the input files that aren't libraries */
@@ -614,7 +614,7 @@ int ILLinkerMain(int argc, char *argv[])
 				}
 				else
 				{
-					errors |= processFile(linker, "stdin", stdin, 1,
+					errors |= processFile(linker, "stdin", stdin, 1, stdLibrary,
 										  stdCLibrary, useStdlib, firstFile);
 				}
 				sawStdin = 1;
@@ -642,7 +642,7 @@ int ILLinkerMain(int argc, char *argv[])
 			}
 			else
 			{
-				errors |= processFile(linker, argv[1], infile, 0,
+				errors |= processFile(linker, argv[1], infile, 0, stdLibrary,
 									  stdCLibrary, useStdlib, firstFile);
 			}
 		}
@@ -809,7 +809,7 @@ static int parseVersion(ILUInt16 *version, const char *str)
 /*
  * Add a library to a linker context.  Returns non-zero on error.
  */
-static int addLibrary(ILLinker *linker, const char *filename)
+static int addLibrary(ILLinker *linker, const char *filename, int needStd)
 {
 	FILE *file;
 	ILContext *context;
@@ -819,7 +819,14 @@ static int addLibrary(ILLinker *linker, const char *filename)
 	char *newFilename;
 
 	/* Resolve the library name */
-	newFilename = ILLinkerResolveLibrary(linker, filename);
+	if(needStd)
+	{
+		newFilename = ILLinkerResolveLibraryStd(linker, filename);
+	}
+	else
+	{
+		newFilename = ILLinkerResolveLibrary(linker, filename);
+	}
 	if(!newFilename)
 	{
 		fprintf(stderr, "%s: library not found\n", filename);
@@ -907,7 +914,8 @@ static int addResource(ILLinker *linker, const char *filename,
  * Returns non-zero on error.
  */
 static int processImage(ILLinker *linker, const char *filename,
-						ILImage *image, const char *stdCLibrary,
+						ILImage *image, const char *stdLibrary,
+						const char *stdCLibrary,
 						int useStdlib, int isFirstFile)
 {
 	int errors = 0;
@@ -921,11 +929,18 @@ static int processImage(ILLinker *linker, const char *filename,
 		/* Load the standard C libraries that we need for linking */
 		if(isFirstFile)
 		{
+			/* We must have the C# base class library, even if
+			   the user specified "--nostdlib" */
+			if(!ILLinkerHasLibrary(linker, stdLibrary))
+			{
+				errors |= addLibrary(linker, stdLibrary, 1);
+			}
+
 			/* Make sure that we have the "OpenSystem.C" assembly */
 			if(!ILLinkerHasLibrary(linker, "OpenSystem.C"))
 			{
 				/* Load "OpenSystem.C" */
-				errors |= addLibrary(linker, "OpenSystem.C");
+				errors |= addLibrary(linker, "OpenSystem.C", 1);
 			}
 
 			/* Make sure that we have the "libc" library */
@@ -938,7 +953,7 @@ static int processImage(ILLinker *linker, const char *filename,
 				}
 				if(!ILLinkerHasLibrary(linker, stdCLibrary))
 				{
-					errors |= addLibrary(linker, stdCLibrary);
+					errors |= addLibrary(linker, stdCLibrary, 0);
 				}
 			}
 		}
@@ -979,7 +994,7 @@ struct ar_hdr
  * Returns non-zero on error.
  */
 static int processFile(ILLinker *linker, const char *filename,
-					   FILE *stream, int isStdin,
+					   FILE *stream, int isStdin, const char *stdLibrary,
 					   const char *stdCLibrary, int useStdlib,
 					   int isFirstFile)
 {
@@ -1039,6 +1054,11 @@ static int processFile(ILLinker *linker, const char *filename,
 					--temp;
 				}
 				arhdr.ar_name[temp] = '\0';
+				if(temp == 0)
+				{
+					/* Probably a directory entry, which is not important */
+					goto skip;
+				}
 
 				/* Attempt to load a PE/COFF image from this
 				   position in the "ar" archive file */
@@ -1056,7 +1076,7 @@ static int processFile(ILLinker *linker, const char *filename,
 				{
 					/* Process the loaded image */
 					errors |= processImage(linker, arhdr.ar_name,
-										   image, stdCLibrary,
+										   image, stdLibrary, stdCLibrary,
 							   			   useStdlib, isFirstFile);
 
 					/* Destroy the context and re-create for the next file */
@@ -1069,6 +1089,7 @@ static int processFile(ILLinker *linker, const char *filename,
 				}
 
 				/* Skip to the next file in the "ar" archive */
+			skip:
 				if(fseek(stream, posn + size, 0) < 0)
 				{
 					perror(filename);
@@ -1086,8 +1107,8 @@ static int processFile(ILLinker *linker, const char *filename,
 	else
 	{
 		/* Add the image to the linker context */
-		errors |= processImage(linker, filename, image, stdCLibrary,
-							   useStdlib, isFirstFile);
+		errors |= processImage(linker, filename, image, stdLibrary,
+							   stdCLibrary, useStdlib, isFirstFile);
 	}
 	if(!isStdin)
 	{

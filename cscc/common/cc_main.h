@@ -71,6 +71,11 @@ extern int const CCPluginSkipCodeGen;
 extern int const CCPluginGenModulesEarly;
 
 /*
+ * Set to non-zero if "mscorlib" should be loaded even if "-nostdlib".
+ */
+extern int const CCPluginForceStdlib;
+
+/*
  * Initialize the plugin after the command-line options have
  * been processed, but before the input files are parsed.
  * Returns zero if the program should abort.

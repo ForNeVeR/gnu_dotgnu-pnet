@@ -368,7 +368,7 @@ static int LoadLibraryFromPath(const char *path, int freePath)
  * Load the contents of a library into the code generator's context.
  * Returns zero if the library load failed.
  */
-static int LoadLibrary(const char *name)
+static int LoadLibrary(const char *name, int nostdlib_flag)
 {
 	int len;
 	int index;
@@ -522,7 +522,7 @@ static int InitCodeGen(void)
 	}
 
 	/* Load the "mscorlib" library, to get the standard library */
-	if(!nostdlib_flag)
+	if(!nostdlib_flag || CCPluginForceStdlib)
 	{
 		char *name = CCStringListGetValue(extension_flags, num_extension_flags,
 										  "stdlib-name");
@@ -530,7 +530,7 @@ static int InitCodeGen(void)
 		{
 			name = "mscorlib";
 		}
-		if(!LoadLibrary(name))
+		if(!LoadLibrary(name, 0))
 		{
 			return 1;
 		}
@@ -546,7 +546,7 @@ static int InitCodeGen(void)
 	/* Load all of the other libraries, in reverse order */
 	for(library = num_libraries - 1; library >= 0; --library)
 	{
-		if(!LoadLibrary(libraries[library]))
+		if(!LoadLibrary(libraries[library], nostdlib_flag))
 		{
 			return 1;
 		}

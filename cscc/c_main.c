@@ -40,6 +40,7 @@ int const CCPluginUsesPreproc = CC_PREPROC_C;
 int const CCPluginJVMSupported = 0;
 int const CCPluginSkipCodeGen = 0;
 int const CCPluginGenModulesEarly = 1;
+int const CCPluginForceStdlib = 1;
 
 int CCPluginInit(void)
 {

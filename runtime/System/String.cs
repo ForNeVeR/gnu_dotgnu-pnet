@@ -585,12 +585,43 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				return Format((IFormatProvider)null, format, args);
 			}
 
+	// Extract an integer value from a format string.
+	public static int GetFormatInteger(String format, int len, ref int posn)
+			{
+				int temp = posn;
+				uint value = 0;
+				char ch = format[temp++];
+				if(ch < '0' || ch > '9')
+				{
+					return -1;
+				}
+				value = ((int)ch) - ((int)'0');
+				while(temp < len)
+				{
+					ch = format[temp];
+					if(ch < '0' || ch > '9')
+					{
+						posn = temp;
+						return (int)value;
+					}
+					else
+					{
+						value = value * ((uint)10) + ((uint)ch) - ((uint)'0');
+						if(value >= (uint)0x80000000)
+						{
+							return -1;
+						}
+					}
+				}
+				return -1;
+			}
+
 	// Format a string that contains a number of argument substitutions,
 	// and using a particular format provider.
-	[TODO]
 	public static String Format(IFormatProvider provider, String format,
 								params Object[] args)
 			{
+				// Validate the parameters.
 				if(format == null)
 				{
 					throw new ArgumentNullException("format");
@@ -599,41 +630,160 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				{
 					throw new ArgumentNullException("args");
 				}
-				System.Text.StringBuilder sb= new System.Text.StringBuilder();
-				for( int i=0 ; i< format.Length ; i++)
+
+				// Construct a new string builder.
+				StringBuilder sb = new StringBuilder();
+
+				// Search for format specifiers and replace them.
+				int len = format.Length;
+				int posn = 0;
+				int next, argNum, width;
+				Object arg;
+				String specifier;
+				String formatted;
+				while((next = format.IndexOf('{', posn, len - posn)) != -1)
 				{
-					char nextChar = format[i];
-					if(nextChar == '{')
+					// Append everything up to this point to the builder.
+					sb.Append(format, posn, next - posn);
+					posn = next + 1;
+
+					// Extract the specifier.
+					if(posn >= len)
 					{
-						if(String.Equals( format.Substring(i+1,1),"{"))
-						{
-							sb.Append('{');
-							i++;
-							continue;
-						}
-						else
-						{
-						//TODO : get the args number and format it.
-						}
+						throw new FormatException(_("Format_FormatString"));
 					}
-					else if(nextChar == '}')
+					if(format[posn] != '{')
 					{
-						if((i+1) < format.Length && format[i+1] == '}')
+						// Get the argument number.
+						argNum = GetFormatInteger(format, len, ref posn);
+						if(argNum == -1)
 						{
-							sb.Append('}');
-							i++;
-							continue;
+							throw new FormatException
+									(_("Format_FormatString"));
+						}
+						if(format[posn] == ',')
+						{
+							++posn;
+							if(posn >= len)
+							{
+								throw new FormatException
+										(_("Format_FormatString"));
+							}
+							if(format[posn] == '-')
+							{
+								++posn;
+								width = GetFormatInteger(format, len, ref posn);
+								if(width == -1)
+								{
+									throw new FormatException
+											(_("Format_FormatString"));
+								}
+								width = -width;
+							}
+							else
+							{
+								width = GetFormatInteger(format, len, ref posn);
+								if(width == -1)
+								{
+									throw new FormatException
+											(_("Format_FormatString"));
+								}
+							}
 						}
 						else
 						{
-						//TODO : get the args number and format it.
+							width = 0;
+						}
+						if(format[posn] == ':')
+						{
+							++posn;
+							if(posn >= len)
+							{
+								throw new FormatException
+										(_("Format_FormatString"));
+							}
+							next = format.IndexOf('}', posn, len - posn);
+							if(next == -1)
+							{
+								throw new FormatException
+										(_("Format_FormatString"));
+							}
+							specifier = format.Substring(posn, next - posn);
+							posn = next;
+						}
+						else
+						{
+							specifier = null;
+						}
+						if(format[posn] != '}')
+						{
+							throw new FormatException
+									(_("Format_FormatString"));
+						}
+						++posn;
+					}
+					else
+					{
+						// This is a literal '{' character.
+						sb.Append('{');
+						++posn;
+						continue;
+					}
+
+					// Get the formatted string version of the argument.
+					if(argNum >= args.Length)
+					{
+						throw new FormatException
+								(_("Format_FormatArgNumber"));
+					}
+					arg = args[argNum];
+					if(arg != null)
+					{
+						if(arg is IFormattable)
+						{
+							formatted = ((IFormattable)arg).ToString
+									(specifier, provider);
+						}
+						else
+						{
+							formatted = arg.ToString();
+						}
+						if(formatted == null)
+						{
+							formatted = String.Empty;
 						}
 					}
 					else
 					{
-						sb.Append(nextChar);
+						formatted = String.Empty;
+					}
+
+					// Format the string into place.
+					if(width >= 0)
+					{
+						// Right-justify the string.
+						if(width > formatted.Length)
+						{
+							sb.Append(' ', width - formatted.Length);
+						}
+						sb.Append(formatted);
+					}
+					else
+					{
+						// Left-justify the string.
+						sb.Append(formatted);
+						width = -width;
+						if(width > formatted.Length)
+						{
+							sb.Append(' ', width - formatted.Length);
+						}
 					}
 				}
+
+				// Append the last non-specifier part to the builder.
+				sb.Append(format, posn, len - posn);
+
+				// Convert the builder into a string and return it.
 				return sb.ToString();
 			}
 
@@ -1146,26 +1296,40 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Convert a string into lower case.
 	public String ToLower()
 			{
-				return ToLower(CultureInfo.CurrentCulture);
+				return CultureInfo.CurrentCulture.TextInfo.ToLower(this);
 			}
-	[TODO]
+#if !ECMA_COMPAT
 	public String ToLower(CultureInfo culture)
 			{
-				// TODO
-				return this;
+				if(culture == null)
+				{
+					return CultureInfo.CurrentCulture.TextInfo.ToLower(this);
+				}
+				else
+				{
+					return culture.TextInfo.ToLower(this);
+				}
 			}
+#endif
 
 	// Convert a string into upper case.
 	public String ToUpper()
 			{
-				return ToUpper(CultureInfo.CurrentCulture);
+				return CultureInfo.CurrentCulture.TextInfo.ToUpper(this);
 			}
-	[TODO]
+#if !ECMA_COMPAT
 	public String ToUpper(CultureInfo culture)
 			{
-				// TODO
-				return this;
+				if(culture == null)
+				{
+					return CultureInfo.CurrentCulture.TextInfo.ToUpper(this);
+				}
+				else
+				{
+					return culture.TextInfo.ToUpper(this);
+				}
 			}
+#endif
 
 	// Override the inherited ToString method.
 	public override String ToString()

@@ -177,12 +177,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 			}
 	public virtual void Write(Object value)
 			{
-				IFormattable f = (value as IFormattable);
-				if(f != null)
-				{
-					Write(f.ToString(null, FormatProvider));
-				}
-				else
+				if(value != null)
 				{
 					Write(value.ToString());
 				}

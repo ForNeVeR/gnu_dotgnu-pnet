@@ -1,7 +1,7 @@
 #
 # Format.txt - Resources for formatting errors.
 #
-# Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+# Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,3 +24,5 @@ Format_Guid=Bad format for Guid value: should be "B", "D", "N", or "P"
 Format_Enum=Bad format for enumerated value
 Format_Version=Bad format for Version value
 Format_IP=Bad format for IP address
+Format_FormatString=Invalid format specification
+Format_FormatArgNumber=Invalid argument number in format specification

@@ -36,37 +36,31 @@ public sealed class Console
 	// Open the standard input stream.
 	public static Stream OpenStandardInput()
 			{
-				return OpenStandardInput(256);
+				return new StdStream(0);
 			}
-	[TODO]
 	public static Stream OpenStandardInput(int bufferSize)
 			{
-				// TODO
-				return null;
+				return new StdStream(0);
 			}
 
 	// Open the standard output stream.
 	public static Stream OpenStandardOutput()
 			{
-				return OpenStandardOutput(256);
+				return new StdStream(1);
 			}
-	[TODO]
 	public static Stream OpenStandardOutput(int bufferSize)
 			{
-				// TODO
-				return null;
+				return new StdStream(1);
 			}
 
 	// Open the standard error stream.
 	public static Stream OpenStandardError()
 			{
-				return OpenStandardError(256);
+				return new StdStream(2);
 			}
-	[TODO]
 	public static Stream OpenStandardError(int bufferSize)
 			{
-				// TODO.
-				return null;
+				return new StdStream(2);
 			}
 
 	// Get the standard input stream.
@@ -160,35 +154,15 @@ public sealed class Console
 			}
 
 	// Read a character from the standard input stream.
-	[TODO]
 	public static int Read()
 			{
-				try
-				{
-					return In.Read();
-				}
-				catch(IOException io)
-				{
-					// TODO: recognise invalid streams, and
-					// set "In" to the null stream.
-					throw;
-				}
+				return In.Read();
 			}
 
 	// Read a line from the standard input stream.
-	[TODO]
 	public static String ReadLine()
 			{
-				try
-				{
-					return In.ReadLine();
-				}
-				catch(IOException io)
-				{
-					// TODO: recognise invalid streams, and
-					// set "In" to the null stream.
-					throw;
-				}
+				return In.ReadLine();
 			}
 
 	// Write a formatted string to standard output.

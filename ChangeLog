@@ -1,3 +1,19 @@
+
+2002-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* doc/native.html: wrong method name in documentation file.
+
+	* resources/en_US/runtime/Format.txt, runtime/System/String.cs:
+	implement "String.Format", "String.ToUpper", "String.ToLower".
+
+	* runtime/Platform/Stdio.cs, runtime/System/Private/StdStream.cs,
+	runtime/System/Console.cs: implement binary access to stdio streams.
+
+	* runtime/System/IO/TextWriter.cs: bug fix to "Write(Object)".
+
+	* runtime/System/RuntimeMethodHandle.cs: "GetFunctionPointer"
+	is not ECMA-compatible.
+
 2002-03-30  Peter Minten  <silvernerd@users.sf.net>
 	* System/Net/Sockets/Socket.cs, System/Net/Sockets/NetworkStream.cs,
 	System/Net/Sockets/SocketException.cs: Fixed bugs

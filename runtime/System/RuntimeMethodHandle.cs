@@ -35,9 +35,11 @@ public struct RuntimeMethodHandle
 				value__ = value;
 			}
 
+#if !ECMA_COMPAT
 	// Get the function pointer associated with this method.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public IntPtr GetFunctionPointer();
+#endif
 
 	// Properties.
 	public IntPtr Value

@@ -43,6 +43,10 @@ internal class Stdio
 									   int index, int count);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void StdWrite(int fd, byte[] value,
+									   int index, int count);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void StdWrite(int fd, String value);
 
 	// Read from a standard file descriptor.
@@ -51,6 +55,10 @@ internal class Stdio
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int StdRead(int fd, char[] value,
+								     int index, int count);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int StdRead(int fd, byte[] value,
 								     int index, int count);
 
 	// Peek from a standard file descriptor.

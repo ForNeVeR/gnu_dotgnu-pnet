@@ -86,6 +86,7 @@ public abstract class MulticastDelegate : Delegate
 					clone = (MulticastDelegate)(current.MemberwiseClone());
 					clone.prev = null;
 					list[posn--] = clone;
+					current = current.prev;
 				}
 				return list;
 			}

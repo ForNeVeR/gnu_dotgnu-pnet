@@ -7,6 +7,8 @@ the "ildiff" code to the tree.  Contributed by Gopal V <gopalv82@yahoo.com>.
 
 * ildiff/ildiff.1, ildiff/Makefile.am: man page for "ildiff".
 
+* ildiff/TODO: remove "to do" item for the man page.
+
 2001-09-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h, csdoc/doc_load.c: add the types to a hash table as

@@ -5,6 +5,9 @@
 
 	* ildasm/ildasm_java.c: dump Java exception blocks in the disassembler.
 
+	* ilasm/ilasm_grammar.y: add exception blocks to the syntax for
+	Java methods in the assembler.
+
 2001-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilasm/ilasm_grammar.y: adjustments to the syntax of "switch"

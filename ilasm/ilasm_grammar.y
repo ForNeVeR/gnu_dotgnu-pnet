@@ -862,7 +862,9 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %type <fieldInit>	FieldInitialization InitOption
 %type <customType>	CustomType
 %type <scope>		ScopeBlock TryBlock FilterClause HandlerBlock
+%type <scope>		JavaScopeBlock JavaTryBlock JavaHandlerBlock
 %type <exception>	ExceptionClause ExceptionClauses
+%type <exception>	JavaExceptionClause JavaExceptionClauses
 %type <token>		MethodReference
 
 %expect 8
@@ -1991,6 +1993,8 @@ JavaMethodDeclaration
 	: D_MAXSTACK Integer32
 	| D_LOCALS Integer32
 	| JavaInstruction
+	| JavaExceptionBlock
+	| JavaScopeBlock				{ /* nothing to do here */ }
 	| Identifier ':'				{}
 	| Integer32 ':'					{}
 	| SecurityDeclaration
@@ -2085,6 +2089,70 @@ HandlerBlock
 				$$.start = ILAsmOutIntToName($2);
 				$$.end = ILAsmOutIntToName($4);
 			}
+	;
+
+JavaScopeBlock
+	: '{' 	{
+				/* Record the start of the block */
+				$<scope>$.start = ILAsmOutUniqueLabel();
+			}
+	  JavaScopeDeclarations '}'	{
+	  			/* Record the end of the block */
+				$$.start = $<scope>2.start;
+				$$.end = ILAsmOutUniqueLabel();
+	  		}
+	;
+
+JavaScopeDeclarations
+	: /* empty */
+	| JavaMethodDeclarationList
+	;
+
+JavaExceptionBlock
+	: JavaTryBlock JavaExceptionClauses	{
+				/*ILAsmOutAddTryBlock($1.start, $1.end, $2);*/
+			}
+	;
+
+JavaExceptionClauses
+	: JavaExceptionClause JavaExceptionClauses	{
+				$$ = $1;
+				$1->next = $2;
+			}
+	| JavaExceptionClause	{ $$ = $1; }
+	;
+
+JavaTryBlock
+	: D_TRY JavaScopeBlock					{ $$ = $2; }
+	| D_TRY Identifier K_TO Identifier	{ $$.start = $2.string;
+										  $$.end = $4.string; }
+	| D_TRY Integer32 K_TO Integer32	{
+				$$.start = ILAsmOutIntToName($2);
+				$$.end = ILAsmOutIntToName($4);
+			}
+	;
+
+JavaExceptionClause
+	: CatchClause JavaHandlerBlock		{
+			/*
+				$$ = ILAsmOutMakeException(IL_META_EXCEPTION_CATCH, $1, 0,
+										   $2.start, $2.end);
+			*/
+			}
+	| FinallyClause JavaHandlerBlock	{
+			/*
+				$$ = ILAsmOutMakeException(IL_META_EXCEPTION_FINALLY, 0, 0,
+										   $2.start, $2.end);
+			*/
+			}
+	;
+
+JavaHandlerBlock
+	: JavaScopeBlock				{ $$ = $1; }
+	| K_HANDLER Identifier 			{ $$.start = $2.string;
+									  $$.end = 0; }
+	| K_HANDLER Integer32 			{ $$.start = ILAsmOutIntToName($2);
+									  $$.end = 0; }
 	;
 
 /*

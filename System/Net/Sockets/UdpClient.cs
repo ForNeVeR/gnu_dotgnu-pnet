@@ -35,7 +35,11 @@ public class UdpClient : IDisposable
 	// Constructors.
 	public UdpClient()
 			{
-				Initialize(null, null);
+				Initialize(null, null, AddressFamily.InterNetwork);
+			}
+	public UdpClient(AddressFamily family)
+			{
+				Initialize(null, null, family);
 			}
 	public UdpClient(IPEndPoint localEP)
 			{
@@ -43,7 +47,7 @@ public class UdpClient : IDisposable
 				{
 					throw new ArgumentNullException("localEP");
 				}
-				Initialize(localEP, null);
+				Initialize(localEP, null, localEP.AddressFamily);
 			}
 	public UdpClient(int port)
 			{
@@ -52,27 +56,41 @@ public class UdpClient : IDisposable
 					throw new ArgumentOutOfRangeException
 						("port", S._("ArgRange_Port"));
 				}
-				Initialize(new IPEndPoint(IPAddress.Any, port), null);
+				Initialize(new IPEndPoint(IPAddress.Any, port),
+						   null, AddressFamily.InterNetwork);
+			}
+	public UdpClient(int port, AddressFamily family)
+			{
+				if(port < IPEndPoint.MinPort || port > IPEndPoint.MaxPort)
+				{
+					throw new ArgumentOutOfRangeException
+						("port", S._("ArgRange_Port"));
+				}
+				if(family == AddressFamily.InterNetworkV6)
+				{
+					Initialize(new IPEndPoint(IPAddress.IPv6Any, port),
+							   null, AddressFamily.InterNetworkV6);
+				}
+				else
+				{
+					Initialize(new IPEndPoint(IPAddress.Any, port),
+							   null, AddressFamily.InterNetwork);
+				}
 			}
 	public UdpClient(String hostname, int port)
 			{
-				Initialize(null, TcpClient.Lookup(hostname, port));
-			}
-
-	// Destructor.
-	~UdpClient()
-			{
-				Dispose(false);
+				IPEndPoint remoteEP = TcpClient.Lookup(hostname, port);
+				Initialize(null, remoteEP, remoteEP.AddressFamily);
 			}
 
 	// Initialize this object with a new UDP socket, optionally bind
 	// to a local end-point, and optionally connect to a remote
 	// end-point.  If anything fails, the object will be left in a
 	// clean state, with the socket handle closed.
-	private void Initialize(IPEndPoint localEP, IPEndPoint remoteEP)
+	private void Initialize(IPEndPoint localEP, IPEndPoint remoteEP,
+							AddressFamily family)
 			{
-				client = new Socket(AddressFamily.InterNetwork,
-									SocketType.Dgram, ProtocolType.Udp);
+				client = new Socket(family, SocketType.Dgram, ProtocolType.Udp);
 				active = false;
 				try
 				{
@@ -135,7 +153,7 @@ public class UdpClient : IDisposable
 			}
 
 	// Dispose of this object.
-	protected virtual void Dispose(bool disposing)
+	private void Dispose(bool disposing)
 			{
 				if(client != null)
 				{
@@ -162,6 +180,18 @@ public class UdpClient : IDisposable
 				// Ignore the TTL because changing it isn't secure.
 				JoinMulticastGroup(multicastAddr);
 			}
+	public void JoinMulticastGroup(int ifindex, IPAddress multicastAddr)
+			{
+				if(client == null)
+				{
+					throw new ObjectDisposedException
+						(S._("Exception_Disposed"));
+				}
+				client.SetSocketOption(SocketOptionLevel.IPv6,
+									   SocketOptionName.AddMembership,
+									   new IPv6MulticastOption
+									   		(multicastAddr, ifindex));
+			}
 
 	// Drop a multicast group.
 	public void DropMulticastGroup(IPAddress multicastAddr)
@@ -174,6 +204,18 @@ public class UdpClient : IDisposable
 				client.SetSocketOption(SocketOptionLevel.IP,
 									   SocketOptionName.DropMembership,
 									   new MulticastOption(multicastAddr));
+			}
+	public void DropMulticastGroup(IPAddress multicastAddr, int ifindex)
+			{
+				if(client == null)
+				{
+					throw new ObjectDisposedException
+						(S._("Exception_Disposed"));
+				}
+				client.SetSocketOption(SocketOptionLevel.IPv6,
+									   SocketOptionName.DropMembership,
+									   new IPv6MulticastOption
+									   		(multicastAddr, ifindex));
 			}
 
 	// Receive the next datagram using this client.

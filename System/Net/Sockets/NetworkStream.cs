@@ -219,6 +219,59 @@ public class NetworkStream : Stream
 				}
 			}
 
+#if !ECMA_COMPAT
+
+	// Get or set the readable state for this stream.
+	protected bool Readable
+			{
+				get
+				{
+					return ((access & FileAccess.Read) != 0);
+				}
+				set
+				{
+					if(value)
+					{
+						access |= FileAccess.Read;
+					}
+					else
+					{
+						access &= ~(FileAccess.Read);
+					}
+				}
+			}
+
+	// Get or set the writable state for this stream.
+	protected bool Writeable
+			{
+				get
+				{
+					return ((access & FileAccess.Write) != 0);
+				}
+				set
+				{
+					if(value)
+					{
+						access |= FileAccess.Write;
+					}
+					else
+					{
+						access &= ~(FileAccess.Write);
+					}
+				}
+			}
+
+	// Get the underlying socket.
+	protected Socket Socket
+			{
+				get
+				{
+					return socket;
+				}
+			}
+
+#endif // !ECMA_COMPAT
+
 	// Determine if the underlying socket has data available.
 	public virtual bool DataAvailable
 			{

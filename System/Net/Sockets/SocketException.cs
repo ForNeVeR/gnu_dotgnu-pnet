@@ -62,6 +62,13 @@ public class SocketException :
 		{
 			errno = Errno.EREMOTEIO;
 		}
+#if !ECMA_COMPAT
+	public SocketException(int errorCode)
+		: base(errorCode)
+		{
+			errno = Errno.EREMOTEIO;
+		}
+#endif
 
 	// Internal constructors that are used to set correct error codes.
 	internal SocketException(Errno errno)
@@ -123,6 +130,19 @@ public class SocketException :
 					}
 				}
 			}
+
+#if !ECMA_COMPAT
+
+	// Get the error code.
+	public override int ErrorCode
+			{
+				get
+				{
+					return NativeErrorCode;
+				}
+			}
+
+#endif
 
 }; // class SocketException
 

@@ -11,6 +11,15 @@
 	fixes in "System.Drawing.Printing", plus a missing class in
 	"System.ComponentModel".
 
+	* System/Net/Sockets/IPv6MulticastOption.cs,
+	System/Net/Sockets/NetworkStream.cs,
+	System/Net/Sockets/ProtocolType.cs, System/Net/Sockets/Socket.cs,
+	System/Net/Sockets/SocketException.cs,
+	System/Net/Sockets/SocketOptionLevel.cs,
+	System/Net/Sockets/TcpClient.cs, System/Net/Sockets/TcpListener.cs,
+	System/Net/Sockets/UdpClient.cs, resources/en_US/System/Arg.txt:
+	signature-compatibility fixes for "System.Net.Sockets".
+
 2003-09-04  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,

@@ -47,6 +47,7 @@ public class TcpListener
 			{
 				// Nothing to do here.
 			}
+	[Obsolete("Use TcpListener(IPAddress localaddr, int port).")]
 	public TcpListener(int port)
 			: this(new IPEndPoint(IPAddress.Any, port))
 			{

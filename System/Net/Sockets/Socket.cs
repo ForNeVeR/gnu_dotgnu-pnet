@@ -1634,16 +1634,23 @@ public class Socket : IDisposable
 				}
 			}
 		
-#if !ECMA_COMPAT
+	// Determine if IPv4 or IPv6 is supported.
+	public static bool SupportsIPv4
+			{
+				get
+				{
+					return SocketMethods.AddressFamilySupported
+						((int)AddressFamily.InterNetwork);
+				}
+			}
 	public static bool SupportsIPv6
 			{
 				get
 				{
-					return SocketMethods.AddressFamilySupported(
-								(int)AddressFamily.InterNetworkV6);
+					return SocketMethods.AddressFamilySupported
+						((int)AddressFamily.InterNetworkV6);
 				}
 			}
-#endif
 
 	// Get the address family for this socket.
 	public AddressFamily AddressFamily

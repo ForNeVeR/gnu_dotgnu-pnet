@@ -34,6 +34,7 @@ public enum ProtocolType
 	Pup				= 12,
 	Udp				= 17,
 	Idp				= 22,
+	IPv6			= 41,
 	ND				= 77,
 	Raw				= 255,
 	Ipx				= 1000,

@@ -37,7 +37,11 @@ public class TcpClient : IDisposable
 	// Constructors.
 	public TcpClient()
 			{
-				Initialize(null, null);
+				Initialize(null, null, AddressFamily.InterNetwork);
+			}
+	public TcpClient(AddressFamily family)
+			{
+				Initialize(null, null, family);
 			}
 	public TcpClient(IPEndPoint localEP)
 			{
@@ -45,11 +49,12 @@ public class TcpClient : IDisposable
 				{
 					throw new ArgumentNullException("localEP");
 				}
-				Initialize(localEP, null);
+				Initialize(localEP, null, localEP.AddressFamily);
 			}
 	public TcpClient(String hostname, int port)
 			{
-				Initialize(null, Lookup(hostname, port));
+				IPEndPoint remoteEP = Lookup(hostname, port);
+				Initialize(null, remoteEP, remoteEP.AddressFamily);
 			}
 	internal TcpClient(Socket client)
 			{
@@ -68,10 +73,11 @@ public class TcpClient : IDisposable
 	// to a local end-point, and optionally connect to a remote
 	// end-point.  If anything fails, the object will be left in a
 	// clean state, with the socket handle closed.
-	private void Initialize(IPEndPoint localEP, IPEndPoint remoteEP)
+	private void Initialize(IPEndPoint localEP, IPEndPoint remoteEP,
+							AddressFamily family)
 			{
-				client = new Socket(AddressFamily.InterNetwork,
-									SocketType.Stream, ProtocolType.Tcp);
+				client = new Socket
+					(family, SocketType.Stream, ProtocolType.Tcp);
 				stream = null;
 				active = false;
 				try

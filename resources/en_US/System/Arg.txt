@@ -53,3 +53,4 @@ Arg_InvalidHeader=The specified header is Invalid
 Arg_RestrictedHeader=The specified header is Restricted
 Arg_DuplicateCredentials=Duplicate credentials added to credential cache
 Arg_DuplicateTempFilename=Duplicate filename in temporary file collection
+ArgRange_InterfaceIndex=IPv6 interface index out of range

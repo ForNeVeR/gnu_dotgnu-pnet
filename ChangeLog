@@ -30,6 +30,8 @@
 	* runtime/runtime.build: remove "jis.table" from the assembly
 	manifest for "mscorlib.dll"; it is now in "I18N.CJK.dll".
 
+	* I18N/Common/Manager.cs: bugs in the handler-location code.
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

@@ -202,7 +202,7 @@ public class Manager
 					}
 
 					// Look for the class within the region-specific assembly.
-					type = assembly.GetType(name);
+					type = assembly.GetType(region + "." + name);
 					if(type == null)
 					{
 						return null;
@@ -281,7 +281,7 @@ public class Manager
 
 					// Split the line into namespace and name.  We assume
 					// that the line has the form "I18N.<Region>.<Name>".
-					posn = line.LastIndexOf(line, '.');
+					posn = line.LastIndexOf('.');
 					if(posn != -1)
 					{
 						// Add the namespace to the "handlers" hash,

@@ -145,22 +145,41 @@ const char *CSTypeToName(ILType *type)
 					(ILInternString((char *)CSTypeToName(type->un.refType), -1),
 					 ILInternString((char *)" *", 2)).string;
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+		else if(type->kind == IL_TYPE_COMPLEX_ARRAY ||
+			    type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
 			ILType *elemType = type->un.array.elemType;
 			ILIntString str;
-			ILIntString bounds;
+			ILIntString open;
+			ILIntString close;
+			ILIntString comma;
 			while(ILType_IsComplex(elemType) && elemType != ILType_Invalid &&
-			      elemType->kind == IL_TYPE_COMPLEX_ARRAY)
+			      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
+				   elemType->kind == IL_TYPE_COMPLEX_ARRAY))
 			{
 				elemType = elemType->un.array.elemType;
 			}
 			str = ILInternString((char *)CSTypeToName(elemType), -1);
-			bounds = ILInternString((char *)"[]", 2);
+			open = ILInternString((char *)"[", 1);
+			close = ILInternString((char *)"]", 1);
+			comma = ILInternString((char *)",", 1);
+			str = ILInternAppendedString(str, open);
 			while(type != elemType)
 			{
-				str = ILInternAppendedString(str, bounds);
-				type = type->un.array.elemType;
+				if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+				{
+					str = ILInternAppendedString(str, close);
+					type = type->un.array.elemType;
+					if(type != elemType)
+					{
+						str = ILInternAppendedString(str, open);
+					}
+				}
+				else
+				{
+					str = ILInternAppendedString(str, comma);
+					type = type->un.array.elemType;
+				}
 			}
 			return str.string;
 		}

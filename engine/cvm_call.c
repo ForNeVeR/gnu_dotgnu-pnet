@@ -32,24 +32,24 @@ static ILCallFrame *AllocCallFrame(ILExecThread *thread)
 #define	DUMP_STACK()	\
 			do { \
 				int posn; \
-				printf("Stack:"); \
+				fprintf(IL_DUMP_CVM_STREAM, "Stack:"); \
 				for(posn = 1; posn <= 16; ++posn) \
 				{ \
 					if(posn <= (int)(stacktop - stackbottom)) \
 					{ \
-						printf(" 0x%lX", \
-							   (unsigned long)(stacktop[-posn].uintValue)); \
+						fprintf(IL_DUMP_CVM_STREAM, " 0x%lX", \
+							    (unsigned long)(stacktop[-posn].uintValue)); \
 					} \
 				} \
-				putc('\n', stdout); \
-				fflush(stdout); \
+				putc('\n', IL_DUMP_CVM_STREAM); \
+				fflush(IL_DUMP_CVM_STREAM); \
 			} while (0)
 #define	REPORT_METHOD_CALL()	\
 			do { \
-				printf("Entering %s::%s (%ld)\n", \
-					   methodToCall->member.owner->name, \
-					   methodToCall->member.name, \
-					   (long)(stacktop - stackbottom)); \
+				fprintf(IL_DUMP_CVM_STREAM, "Entering %s::%s (%ld)\n", \
+					    methodToCall->member.owner->name, \
+					    methodToCall->member.name, \
+					    (long)(stacktop - stackbottom)); \
 				DUMP_STACK(); \
 			} while (0)
 #else
@@ -350,8 +350,9 @@ popFrame:
 
 #ifdef IL_DUMP_CVM
 	/* Dump the name of the method we are returning to */
-	printf("Returning to %s::%s (%ld)\n", method->member.owner->name,
-		   method->member.name, (long)(stacktop - stackbottom));
+	fprintf(IL_DUMP_CVM_STREAM, "Returning to %s::%s (%ld)\n",
+			method->member.owner->name,
+		    method->member.name, (long)(stacktop - stackbottom));
 	DUMP_STACK();
 #endif
 }

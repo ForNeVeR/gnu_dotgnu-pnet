@@ -919,7 +919,7 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 
 	/* Terminate the line and return the size */
 	putc('\n', stream);
-	fflush(stdout);
+	fflush(stream);
 	return size;
 }
 

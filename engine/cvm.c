@@ -39,6 +39,7 @@ extern	"C" {
  * Enable or disable dumping of CVM instructions during execution.
  */
 /*#define	IL_DUMP_CVM*/
+#define	IL_DUMP_CVM_STREAM	stdout
 
 /*
  * Determine what CPU we are compiling for, and any
@@ -395,7 +396,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	for(;;)
 	{
 	#ifdef IL_DUMP_CVM
-		_ILDumpCVMInsn(stdout, method, pc);
+		_ILDumpCVMInsn(IL_DUMP_CVM_STREAM, method, pc);
 	#endif
 		switch(pc[0])
 		{

@@ -106,7 +106,7 @@ internal sealed class BmpReader
 				// Set the basic image properties.
 				image.Width = width;
 				image.Height = height;
-				image.SetBitCount(bitCount);
+				image.PixelFormat = Utils.BitCountToFormat(bitCount);
 				image.LoadFormat = Image.Bmp;
 
 				// Read the palette into memory and set it.

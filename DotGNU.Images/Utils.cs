@@ -188,7 +188,33 @@ internal sealed class Utils
 					case PixelFormat.Format64bppPArgb:
 					case PixelFormat.Format64bppArgb:		return 64;
 
-					default:								return 1;
+					default:								return 32;
+				}
+			}
+
+	// Convert a bit count into a pixel format.
+	public static PixelFormat BitCountToFormat(int bitCount)
+			{
+				switch(bitCount)
+				{
+					case 1:
+						return PixelFormat.Format1bppIndexed;
+					case 4:
+						return PixelFormat.Format4bppIndexed;
+					case 8:
+						return PixelFormat.Format8bppIndexed;
+					case 15:
+						return PixelFormat.Format16bppRgb555;
+					case 16:
+						return PixelFormat.Format16bppRgb565;
+					case 24:
+						return PixelFormat.Format24bppRgb;
+					case 32: default:
+						return PixelFormat.Format32bppRgb;
+					case 48:
+						return PixelFormat.Format48bppRgb;
+					case 64:
+						return PixelFormat.Format64bppArgb;
 				}
 			}
 

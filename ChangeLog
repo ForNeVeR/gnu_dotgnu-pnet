@@ -8,6 +8,10 @@
 	DotGNU.Images/PixelFormat.cs, DotGNU.Images/RotateFlipType.cs,
 	DotGNU.Images/Utils.cs: add the DotGNU.Images support library.
 
+	* DotGNU.Images/BmpReader.cs, DotGNU.Images/Image.cs,
+	DotGNU.Images/Utils.cs: move the "bit count to pixel format"
+	conversion into "Utils" so that other format loaders can share it.
+
 2003-07-06  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListControl.cs: Stub some missing methods.

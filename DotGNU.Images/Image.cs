@@ -341,26 +341,6 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				// TODO: other image formats
 			}
 
-	// Set the pixel format based on a bit count value.
-	public void SetBitCount(int bitCount)
-			{
-				switch(bitCount)
-				{
-					case 1:
-						PixelFormat = PixelFormat.Format1bppIndexed; break;
-					case 4:
-						PixelFormat = PixelFormat.Format4bppIndexed; break;
-					case 8:
-						PixelFormat = PixelFormat.Format8bppIndexed; break;
-					case 15:
-						PixelFormat = PixelFormat.Format16bppRgb555; break;
-					case 16:
-						PixelFormat = PixelFormat.Format16bppRgb565; break;
-					case 24:
-						PixelFormat = PixelFormat.Format24bppRgb; break;
-				}
-			}
-
 }; // class Image
 
 }; // namespace DotGNU.Images

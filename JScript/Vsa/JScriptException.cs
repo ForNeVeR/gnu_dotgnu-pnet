@@ -25,7 +25,9 @@ using System;
 using System.Runtime.Serialization;
 using Microsoft.Vsa;
 
+#if !ECMA_COMPAT
 [Serializable]
+#endif
 public class JScriptException : ApplicationException, IVsaError
 {
 	// Internal state.

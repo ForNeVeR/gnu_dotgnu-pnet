@@ -46,7 +46,10 @@ internal sealed class GlobalField : JSVariableField
 								  BindingFlags invokeAttr, Binder binder,
 								  CultureInfo culture)
 			{
-				if((IsLiteral || IsInitOnly) && !(this.value is Missing))
+				bool isLiteral = ((Attributes & FieldAttributes.Literal) != 0);
+				bool isInitOnly =
+					((Attributes & FieldAttributes.InitOnly) != 0);
+				if((isLiteral || isInitOnly) && !(this.value is Missing))
 				{
 					throw new JScriptException
 						(JSError.AssignmentToReadOnly);

@@ -725,6 +725,7 @@ public abstract class BaseVsaEngine : IVsaEngine
 				}
 			}
 
+#if !ECMA_COMPAT
 	// Other properties (not used by JScript).
 	public _AppDomain AppDomain
 			{
@@ -739,6 +740,7 @@ public abstract class BaseVsaEngine : IVsaEngine
 					throw new VsaException(VsaError.AppDomainCannotBeSet);
 				}
 			}
+#endif
 	public String ApplicationBase
 			{
 				get

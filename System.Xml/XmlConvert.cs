@@ -688,6 +688,66 @@ public class XmlConvert
 				return InnerVerify(name, false);
 			}
 
+	// Characters to use to encode 6-bit values in base64.
+	internal const String base64Chars =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+	// Convert a byte buffer into a base64 string.
+	internal static String ToBase64String
+				(byte[] inArray, int offset, int length)
+			{
+				// Validate the parameters.
+				if(inArray == null)
+				{
+					throw new ArgumentNullException("inArray");
+				}
+				if(offset < 0 || offset > inArray.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("offset", S._("ArgRange_Array"));
+				}
+				if(length < 0 || length > (inArray.Length - offset))
+				{
+					throw new ArgumentOutOfRangeException
+						("length", S._("ArgRange_Array"));
+				}
+
+				// Convert the bytes.
+				StringBuilder builder =
+					new StringBuilder
+						((int)(((((long)length) + 2L) * 4L) / 3L));
+				int bits = 0;
+				int numBits = 0;
+				String base64 = base64Chars;
+				int size = length;
+				while(size > 0)
+				{
+					bits = (bits << 8) + inArray[offset++];
+					numBits += 8;
+					--size;
+					while(numBits >= 6)
+					{
+						numBits -= 6;
+						builder.Append(base64[bits >> numBits]);
+						bits &= ((1 << numBits) - 1);
+					}
+				}
+				length %= 3;
+				if(length == 1)
+				{
+					builder.Append(base64[bits << (6 - numBits)]);
+					builder.Append('=');
+					builder.Append('=');
+				}
+				else if(length == 2)
+				{
+					builder.Append(base64[bits << (6 - numBits)]);
+					builder.Append('=');
+				}
+
+				// Finished.
+				return builder.ToString();
+			}
 }; // class XmlConvert
 
 }; // namespace System.Xml

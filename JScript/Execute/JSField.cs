@@ -45,6 +45,7 @@ public abstract class JSField : FieldInfo
 				}
 			}
 
+#if !ECMA_COMPAT
 	// Get the handle for the underlying "real" field.
 	public override RuntimeFieldHandle FieldHandle
 			{
@@ -53,6 +54,7 @@ public abstract class JSField : FieldInfo
 					return GetRealField().FieldHandle;
 				}
 			}
+#endif
 
 	// Get the type of this field's value.
 	public override Type FieldType

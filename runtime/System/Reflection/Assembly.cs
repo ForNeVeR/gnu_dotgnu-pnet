@@ -345,7 +345,6 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 			{
 				return LoadFrom(partialName);
 			}
-#endif
 
 	[TODO]
 	public virtual AssemblyName GetName()
@@ -355,6 +354,7 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 		name.Version=new Version(0,0,0,0);
 		return name;
 	}
+#endif
 
 	// Convert this assembly into a string.
 	public override String ToString()

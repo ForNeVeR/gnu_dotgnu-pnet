@@ -362,7 +362,9 @@ public class GlobalObject
 	[JSFunction(0, JSBuiltin.Global_CollectGarbage)]
 	public static void CollectGarbage()
 			{
+			#if !ECMA_COMPAT
 				GC.Collect();
+			#endif
 			}
 
 	// Decode a URI.

@@ -361,7 +361,7 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidWriteState"));
 				}
 		
-				WriteRaw(Convert.ToBase64String(buffer));
+				WriteRaw(XmlConvert.ToBase64String(buffer, index, count));
 			}
 	
 	// Encode an array as BinHex and write it out as text.

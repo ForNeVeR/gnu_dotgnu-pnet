@@ -192,8 +192,10 @@ public class VsaEngine : BaseVsaEngine, IRedirectOutput
 					}
 				}
 
+#if !ECMA_COMPAT
 				// Force a garbage collection to clean everything up.
 				GC.Collect();
+#endif
 			}
 
 	// Internal implementation of "Compile".

@@ -3,6 +3,7 @@ AUTOMAKE_OPTIONS = no-dependencies
 
 SUBDIRS = ctype \
 		  dirent \
+		  locale \
 		  malloc \
 		  misc \
 		  pthread \
@@ -18,6 +19,7 @@ all-local: libc.dll
 
 LIBC_COMPONENTS = ctype/libCType.a \
 				  dirent/libCDirent.a \
+				  locale/libCLocale.a \
 				  malloc/libCMalloc.a \
 				  misc/libCMisc.a \
 				  pthread/libCPthread.a \

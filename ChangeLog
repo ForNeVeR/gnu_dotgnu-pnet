@@ -1,4 +1,11 @@
 
+2004-03-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, libc/Makefile.am, libc/locale/.cvsignore,
+	libc/locale/Makefile.am, libc/locale/localeconv.c,
+	libc/locale/localeinfo.h, libc/locale/nl_langinfo.c,
+	libc/locale/setlocale.c: begin adding locale routines to libc.
+
 2004-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/ieee754.h, libc/dirent/readdir.c, libc/dirent/readdir_r.c,

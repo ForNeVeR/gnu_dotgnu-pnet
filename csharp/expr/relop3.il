@@ -22,7 +22,7 @@
 	stloc.3
 	ldloc.0
 	ldloc.1
-	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
+	call	bool ['.library']'System'.'String'::'op_Equality'(class ['.library']'System'.'String', class ['.library']'System'.'String')
 	stloc.s	4
 	ldloc.0
 	ldnull
@@ -46,7 +46,7 @@
 	stloc.s	4
 	ldloc.0
 	ldloc.1
-	call	bool [.library]System.String::op_Inequality(class [.library]System.String, class [.library]System.String)
+	call	bool ['.library']'System'.'String'::'op_Inequality'(class ['.library']'System'.'String', class ['.library']'System'.'String')
 	stloc.s	4
 	ldloc.0
 	ldnull
@@ -80,7 +80,7 @@
 	stloc.s	4
 	ldloc.0
 	ldloc.1
-	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
+	call	bool ['.library']'System'.'String'::'op_Equality'(class ['.library']'System'.'String', class ['.library']'System'.'String')
 	brfalse	?L1
 	ldc.i4.1
 	stloc.s	4
@@ -137,7 +137,7 @@
 ?L12:
 	ldloc.0
 	ldloc.1
-	call	bool [.library]System.String::op_Inequality(class [.library]System.String, class [.library]System.String)
+	call	bool ['.library']'System'.'String'::'op_Inequality'(class ['.library']'System'.'String', class ['.library']'System'.'String')
 	brfalse	?L13
 	ldc.i4.1
 	stloc.s	4

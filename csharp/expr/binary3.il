@@ -73,7 +73,7 @@
 	call	valuetype 'Y' 'Y'::'op_Subtraction'(valuetype 'Y', valuetype 'X')
 	stloc.3
 	ret
-	.maxstack 3
+	.maxstack 2
 } // method m1
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {

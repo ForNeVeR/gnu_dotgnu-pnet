@@ -23,7 +23,7 @@
 	astore	4
 	aload_1
 	aload_2
-	invokestatic	"System/String" "op_Equality" "(LSystem/String;LSystem/String;)Z"
+	invokestatic	bool ['.library']'System'.'String'::'op_Equality'(class ['.library']'System'.'String', class ['.library']'System'.'String')
 	istore	5
 	aload_1
 	ifnull	?L1
@@ -68,7 +68,7 @@
 	istore	5
 	aload_1
 	aload_2
-	invokestatic	"System/String" "op_Inequality" "(LSystem/String;LSystem/String;)Z"
+	invokestatic	bool ['.library']'System'.'String'::'op_Inequality'(class ['.library']'System'.'String', class ['.library']'System'.'String')
 	istore	5
 	aload_1
 	ifnonnull	?L11
@@ -113,7 +113,7 @@
 	istore	5
 	aload_1
 	aload_2
-	invokestatic	"System/String" "op_Equality" "(LSystem/String;LSystem/String;)Z"
+	invokestatic	bool ['.library']'System'.'String'::'op_Equality'(class ['.library']'System'.'String', class ['.library']'System'.'String')
 	ifeq	?L21
 	iconst_1
 	istore	5
@@ -170,7 +170,7 @@
 ?L32:
 	aload_1
 	aload_2
-	invokestatic	"System/String" "op_Inequality" "(LSystem/String;LSystem/String;)Z"
+	invokestatic	bool ['.library']'System'.'String'::'op_Inequality'(class ['.library']'System'.'String', class ['.library']'System'.'String')
 	ifeq	?L33
 	iconst_1
 	istore	5

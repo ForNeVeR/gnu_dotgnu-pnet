@@ -405,51 +405,19 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 {
 #ifdef IL_CONFIG_REFLECTION
 	ILInt32 num;
-	ILInt32 skipFrames;
-	int sawNormal;
 	ILCallFrame *frame;
 	ILObject *array;
 	PackedStackFrame *data;
-	ILMethod *method;
 	unsigned char *start;
 	ILClass *classInfo;
 
 	/* Get the number of frames on the stack, and also determine
 	   where the exception constructors stop and real code starts */
 	num = 0;
-	skipFrames = 0;
-	sawNormal = 0;
 	frame = _ILGetCallFrame(thread, 0);
 	while(frame != 0)
 	{
-		if(!sawNormal)
-		{
-			method = frame->method;
-			if(frame->method)
-			{
-				if(ILMethod_IsConstructor(frame->method) &&
-				   thread->process->exceptionClass &&
-				   ILClassInheritsFrom(ILMethod_Owner(frame->method),
-				   					   thread->process->exceptionClass))
-				{
-					++skipFrames;
-				}
-				else
-				{
-					sawNormal = 1;
-					++num;
-				}
-			}
-			else
-			{
-				sawNormal = 1;
-				++num;
-			}
-		}
-		else
-		{
-			++num;
-		}
+		++num;
 		frame = _ILGetNextCallFrame(thread, frame);
 	}
 
@@ -482,7 +450,7 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 
 	/* Fill the array with the packed stack data */
 	data = (PackedStackFrame *)ArrayToBuffer(array);
-	frame = _ILGetCallFrame(thread, skipFrames);
+	frame = _ILGetCallFrame(thread, 0);
 	while(frame != 0 && num > 0)
 	{
 		data->method = frame->method;

@@ -1,4 +1,9 @@
 
+2003-05-26  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/lib_diag.c: Remove the skipFrames hack and start from 
+	the current stackframe itself.
+
 2003-05-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_stmt.tc: do not allocate local variables for

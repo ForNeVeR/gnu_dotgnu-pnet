@@ -80,6 +80,7 @@ static void ThreadInit(void)
 	mainThread.startFunc        = 0;
 	mainThread.objectArg        = 0;
 	_ILWakeupCreate(&(mainThread.wakeup));
+	_ILWakeupQueueCreate(&(mainThread.joinQueue));
 
 	/* Set the thread object for the "main" thread */
 	_ILThreadSetSelf(&mainThread);
@@ -112,10 +113,11 @@ void _ILThreadRun(ILThread *thread)
 		(*(thread->startFunc))(thread->objectArg);
 	}
 
-	/* Mark the thread as stopped */
+	/* Mark the thread as stopped, and wakeup everyone waiting to join */
 	_ILMutexLock(&(thread->lock));
 	thread->state |= IL_TS_STOPPED;
 	isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
+	_ILWakeupQueueWakeAll(&(thread->joinQueue));
 	_ILMutexUnlock(&(thread->lock));
 
 	/* Update the thread counts */
@@ -154,6 +156,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	thread->startFunc = startFunc;
 	thread->objectArg = objectArg;
 	_ILWakeupCreate(&(thread->wakeup));
+	_ILWakeupQueueCreate(&(thread->joinQueue));
 
 	/* Lock out the thread system */
 	_ILMutexLock(&threadLockAll);
@@ -162,6 +165,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	if(!_ILThreadCreateSystem(thread))
 	{
 		_ILMutexUnlock(&threadLockAll);
+		_ILWakeupQueueDestroy(&(thread->joinQueue));
 		_ILWakeupDestroy(&(thread->wakeup));
 		_ILSemaphoreDestroy(&(thread->suspendAck));
 		_ILSemaphoreDestroy(&(thread->resumeAck));
@@ -239,6 +243,7 @@ void ILThreadDestroy(ILThread *thread)
 	_ILSemaphoreDestroy(&(thread->suspendAck));
 	_ILSemaphoreDestroy(&(thread->resumeAck));
 	_ILWakeupDestroy(&(thread->wakeup));
+	_ILWakeupQueueDestroy(&(thread->joinQueue));
 	ILFree(thread);
 
 	/* Adjust the thread counts */
@@ -407,6 +412,76 @@ void ILThreadInterrupt(ILThread *thread)
 		/* Unlock the thread object */
 		_ILMutexUnlock(&(thread->lock));
 	}
+}
+
+int ILThreadJoin(ILThread *thread, ILUInt32 ms)
+{
+	ILThread *self = _ILThreadGetSelf();
+	int result;
+
+	/* Bail out if we are trying to join with ourselves */
+	if(self == thread)
+	{
+		return IL_JOIN_SELF;
+	}
+
+	/* Lock down the thread object */
+	_ILMutexLock(&(thread->lock));
+
+	/* Determine what to do based on the thread's state */
+	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
+	{
+		/* The thread is already stopped or aborted, so return immediately */
+		result = IL_JOIN_OK;
+	}
+	else
+	{
+		/* Add ourselves to the foreign thread's join queue */
+		if(!_ILWakeupQueueAdd(&(thread->joinQueue), &(self->wakeup), self))
+		{
+			result = IL_JOIN_MEMORY;
+		}
+		else
+		{
+			/* Unlock the foreign thread */
+			_ILMutexUnlock(&(thread->lock));
+
+			/* Put ourselves into the "wait/sleep/join" state */
+			_ILMutexLock(&(self->lock));
+			self->state |= IL_TS_WAIT_SLEEP_JOIN;
+			_ILMutexUnlock(&(self->lock));
+
+			/* Wait until we are woken or a timeout occurs */
+			result = _ILWakeupWait(&(self->wakeup), ms, 1, (void **)0);
+			if(result < 0)
+			{
+				result = IL_JOIN_INTERRUPTED;
+			}
+			else if(result > 0)
+			{
+				result = IL_JOIN_OK;
+			}
+			else
+			{
+				result = IL_JOIN_TIMEOUT;
+			}
+
+			/* Remove ourselves from the "wait/sleep/join" state */
+			_ILMutexLock(&(self->lock));
+			self->state &= ~IL_TS_WAIT_SLEEP_JOIN;
+			_ILMutexUnlock(&(self->lock));
+
+			/* Lock down the foreign thread again */
+			_ILMutexLock(&(thread->lock));
+
+			/* Remove ourselves from the foreign thread's join queue */
+			_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
+		}
+	}
+
+	/* Unlock the thread object and return */
+	_ILMutexUnlock(&(thread->lock));
+	return result;
 }
 
 int ILThreadGetBackground(ILThread *thread)

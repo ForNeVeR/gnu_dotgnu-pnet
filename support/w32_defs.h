@@ -85,14 +85,6 @@ typedef CRITICAL_SECTION	_ILRWLock;
 			} while (0)
 
 /*
- * Interrupt a thread that is in the "wait/join/sleep" state.
- */
-#define	_ILThreadInterrupt(thread)	\
-			do { \
-				/* TODO */ \
-			} while (0)
-
-/*
  * Primitive mutex operations.  Note: the "Lock" and "Unlock"
  * operations are not "suspend-safe".
  */

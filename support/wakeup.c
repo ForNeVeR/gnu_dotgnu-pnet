@@ -1,5 +1,5 @@
 /*
- * wakeup.c - Implementation of "thread wakeup" objects.
+ * wakeup.c - Implementation of "thread wakeup" objects and queues.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -21,8 +21,7 @@
 /*
 
 Wakeup objects are similar to condition variables, except that they
-also support "signal at N" and "interrupt" semantics.  The full set
-of semantics are as follows:
+also support "signal at N" and "interrupt" semantics.
 
 */
 
@@ -167,6 +166,149 @@ void _ILWakeupInterrupt(_ILWakeup *wakeup)
 
 	/* Unlock the wakeup object */
 	_ILCondMutexUnlock(&(wakeup->lock));
+}
+
+void _ILWakeupQueueCreate(_ILWakeupQueue *queue)
+{
+	queue->first = 0;
+	queue->last = 0;
+	queue->spaceUsed = 0;
+}
+
+void _ILWakeupQueueDestroy(_ILWakeupQueue *queue)
+{
+	_ILWakeupItem *item, *next;
+	item = queue->first;
+	while(item != 0)
+	{
+		next = item->next;
+		if(item != &(queue->space))
+		{
+			ILFree(item);
+		}
+		item = next;
+	}
+	queue->first = 0;
+	queue->last = 0;
+	queue->spaceUsed = 0;
+}
+
+int _ILWakeupQueueAdd(_ILWakeupQueue *queue, _ILWakeup *wakeup, void *object)
+{
+	_ILWakeupItem *item;
+
+	/* Allocate space for the item */
+	if(!(queue->spaceUsed))
+	{
+		/* Reuse the pre-allocated "space" item */
+		item = &(queue->space);
+		queue->spaceUsed = 1;
+	}
+	else if((item = (_ILWakeupItem *)ILMalloc(sizeof(_ILWakeupItem))) == 0)
+	{
+		/* Out of memory */
+		return 0;
+	}
+
+	/* Populate the item and add it to the queue */
+	item->next = 0;
+	item->wakeup = wakeup;
+	item->object = object;
+	if(queue->first)
+	{
+		queue->last->next = item;
+	}
+	else
+	{
+		queue->first = item;
+	}
+	queue->last = item;
+	return 1;
+}
+
+void _ILWakeupQueueRemove(_ILWakeupQueue *queue, _ILWakeup *wakeup)
+{
+	_ILWakeupItem *item, *prev;
+	item = queue->first;
+	prev = 0;
+	while(item != 0)
+	{
+		if(item->wakeup == wakeup)
+		{
+			if(prev)
+			{
+				prev->next = item->next;
+			}
+			else
+			{
+				queue->first = item->next;
+			}
+			if(!(item->next))
+			{
+				queue->last = prev;
+			}
+			if(item != &(queue->space))
+			{
+				ILFree(item);
+			}
+			else
+			{
+				queue->spaceUsed = 0;
+			}
+			break;
+		}
+		prev = item;
+		item = item->next;
+	}
+}
+
+int _ILWakeupQueueWake(_ILWakeupQueue *queue)
+{
+	_ILWakeupItem *item, *next;
+	int woken = 0;
+	item = queue->first;
+	while(item != 0 && !woken)
+	{
+		next = item->next;
+		if(_ILWakeupSignal(item->wakeup, item->object))
+		{
+			woken = 1;
+		}
+		if(item != &(queue->space))
+		{
+			ILFree(item);
+		}
+		else
+		{
+			queue->spaceUsed = 0;
+		}
+		item = next;
+	}
+	queue->first = item;
+	if(!item)
+	{
+		queue->last = 0;
+	}
+	return woken;
+}
+
+void _ILWakeupQueueWakeAll(_ILWakeupQueue *queue)
+{
+	_ILWakeupItem *item, *next;
+	item = queue->first;
+	while(item != 0)
+	{
+		next = item->next;
+		_ILWakeupSignal(item->wakeup, item->object);
+		if(item != &(queue->space))
+		{
+			ILFree(item);
+		}
+		item = next;
+	}
+	queue->first = 0;
+	queue->last = 0;
+	queue->spaceUsed = 0;
 }
 
 #ifdef	__cplusplus

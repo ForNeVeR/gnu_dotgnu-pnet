@@ -109,9 +109,9 @@ static void ResumeSignal(int sig)
 }
 
 /*
- * Signal handler for IL_SIG_INTERRUPT.
+ * Signal handler for IL_SIG_ABORT.
  */
-static void InterruptSignal(int sig)
+static void AbortSignal(int sig)
 {
 	/* There is nothing to do here - this signal exists purely
 	   to force system calls to exit with EINTR */
@@ -134,8 +134,8 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	sigaction(IL_SIG_SUSPEND, &action, (struct sigaction *)0);
 	action.sa_handler = ResumeSignal;
 	sigaction(IL_SIG_RESUME, &action, (struct sigaction *)0);
-	action.sa_handler = InterruptSignal;
-	sigaction(IL_SIG_INTERRUPT, &action, (struct sigaction *)0);
+	action.sa_handler = AbortSignal;
+	sigaction(IL_SIG_ABORT, &action, (struct sigaction *)0);
 
 	/* We need a thread-specific key for storing thread objects */
 	pthread_key_create(&_ILThreadObjectKey, (void (*)(void *))0);
@@ -146,10 +146,10 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	sigaddset(&set, IL_SIG_RESUME);
 	pthread_sigmask(SIG_BLOCK, &set, (sigset_t *)0);
 
-	/* Unblock the IL_SIG_SUSPEND and IL_SIG_INTERRUPT signals */
+	/* Unblock the IL_SIG_SUSPEND and IL_SIG_ABORT signals */
 	sigemptyset(&set);
 	sigaddset(&set, IL_SIG_SUSPEND);
-	sigaddset(&set, IL_SIG_INTERRUPT);
+	sigaddset(&set, IL_SIG_ABORT);
 	pthread_sigmask(SIG_UNBLOCK, &set, (sigset_t *)0);
 
 	/* Set the thread handle and identifier for the main thread */
@@ -186,10 +186,10 @@ static void *ThreadStart(void *arg)
 	sigaddset(&set, IL_SIG_RESUME);
 	pthread_sigmask(SIG_BLOCK, &set, (sigset_t *)0);
 
-	/* Unblock the IL_SIG_SUSPEND and IL_SIG_INTERRUPT signals */
+	/* Unblock the IL_SIG_SUSPEND and IL_SIG_ABORT signals */
 	sigemptyset(&set);
 	sigaddset(&set, IL_SIG_SUSPEND);
-	sigaddset(&set, IL_SIG_INTERRUPT);
+	sigaddset(&set, IL_SIG_ABORT);
 	pthread_sigmask(SIG_UNBLOCK, &set, (sigset_t *)0);
 
 	/* Run the thread */

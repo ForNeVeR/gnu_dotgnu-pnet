@@ -124,6 +124,20 @@ void ILThreadResume(ILThread *thread);
 void ILThreadInterrupt(ILThread *thread);
 
 /*
+ * Join result codes.
+ */
+#define	IL_JOIN_TIMEOUT		0	/* Join timed out */
+#define	IL_JOIN_OK			1	/* Join was successful */
+#define	IL_JOIN_INTERRUPTED	2	/* Join was interrupted */
+#define	IL_JOIN_SELF		3	/* Tried to join with ourselves */
+#define	IL_JOIN_MEMORY		4	/* Out of memory */
+
+/*
+ * Join with another thread to wait for exit.
+ */
+int ILThreadJoin(ILThread *thread, ILUInt32 ms);
+
+/*
  * Get the background state of a thread.
  */
 int ILThreadGetBackground(ILThread *thread);

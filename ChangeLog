@@ -1,4 +1,10 @@
 
+2002-04-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_thread.h, support/no_defs.h, support/pt_defs.c,
+	support/pt_defs.h, support/thr_defs.h, support/thread.c,
+	support/w32_defs.h, support/wakeup.c: implement thread joins.
+
 2002-04-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/ilrun.c, engine/process.c, include/il_engine.h:

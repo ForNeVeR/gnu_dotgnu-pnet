@@ -66,11 +66,6 @@ typedef int	_ILRWLock;
 #define	_ILThreadDestroy(thread)		do { ; } while (0)
 
 /*
- * Interrupt a thread that is in the "wait/join/sleep" state.
- */
-#define	_ILThreadInterrupt(thread)		do { ; } while (0)
-
-/*
  * Primitive mutex operations.
  */
 #define	_ILMutexCreate(mutex)			do { *(mutex) = 0; } while (0)

@@ -60,6 +60,30 @@ typedef struct _tagILWakeup
 } _ILWakeup;
 
 /*
+ * Internal structure of a wakeup queue item.
+ */
+typedef struct _tagILWakeupItem _ILWakeupItem;
+struct _tagILWakeupItem
+{
+	_ILWakeupItem * volatile next;
+	_ILWakeup     * volatile wakeup;
+	void          * volatile object;
+
+};
+
+/*
+ * Internal structure of a wakeup queue.
+ */
+typedef struct _tagILWakeupQueue
+{
+	_ILWakeupItem * volatile first;
+	_ILWakeupItem * volatile last;
+	_ILWakeupItem   		 space;
+	int			    volatile spaceUsed;
+
+} _ILWakeupQueue;
+
+/*
  * Internal structure of a thread descriptor.
  */
 struct _tagILThread
@@ -76,6 +100,7 @@ struct _tagILThread
 	ILThreadStartFunc 	volatile	startFunc;
 	void *            	volatile	objectArg;
 	_ILWakeup						wakeup;
+	_ILWakeupQueue					joinQueue;
 
 };
 
@@ -213,6 +238,43 @@ int _ILWakeupSignal(_ILWakeup *wakeup, void *object);
  * Interrupt a thread wakeup object.
  */
 void _ILWakeupInterrupt(_ILWakeup *wakeup);
+
+/*
+ * Create a wakeup queue.
+ */
+void _ILWakeupQueueCreate(_ILWakeupQueue *queue);
+
+/*
+ * Destroy a wakeup queue.
+ */
+void _ILWakeupQueueDestroy(_ILWakeupQueue *queue);
+
+/*
+ * Add a wakeup object to the end of a wakeup queue.
+ * Returns zero if out of memory.
+ */
+int _ILWakeupQueueAdd(_ILWakeupQueue *queue, _ILWakeup *wakeup, void *object);
+
+/*
+ * Remove a wakeup object from a wakeup queue.
+ */
+void _ILWakeupQueueRemove(_ILWakeupQueue *queue, _ILWakeup *wakeup);
+
+/*
+ * Determine if a wakeup queue is empty.
+ */
+#define	_ILWakeupQueueIsEmpty(queue)	((queue)->first == 0)
+
+/*
+ * Wake the first non-interrupted wakeup object on a queue.
+ * Returns zero if none of the objects can be woken.
+ */
+int _ILWakeupQueueWake(_ILWakeupQueue *queue);
+
+/*
+ * Wake all non-interrupted wakeup objects on a queue.
+ */
+void _ILWakeupQueueWakeAll(_ILWakeupQueue *queue);
 
 #ifdef	__cplusplus
 };

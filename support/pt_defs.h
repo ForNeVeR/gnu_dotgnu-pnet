@@ -48,11 +48,11 @@ extern	"C" {
 #if !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 14)
 #define	IL_SIG_SUSPEND		SIGALRM
 #define	IL_SIG_RESUME		SIGVTALRM
-#define	IL_SIG_INTERRUPT	SIGFPE
+#define	IL_SIG_ABORT		SIGFPE
 #else
 #define	IL_SIG_SUSPEND		(__SIGRTMIN+10)
 #define	IL_SIG_RESUME		(__SIGRTMIN+11)
-#define	IL_SIG_INTERRUPT	(__SIGRTMIN+12)
+#define	IL_SIG_ABORT		(__SIGRTMIN+12)
 #endif
 
 /*
@@ -140,14 +140,6 @@ void _ILThreadSuspendUntilResumed(ILThread *thread);
  * Destroy a thread handle that is no longer required.
  */
 #define	_ILThreadDestroy(thread)	do { ; } while (0)
-
-/*
- * Interrupt a thread that is in the "wait/join/sleep" state.
- */
-#define	_ILThreadInterrupt(thread)	\
-			do { \
-				pthread_kill((thread)->handle, IL_SIG_INTERRUPT); \
-			} while (0)
 
 /*
  * Primitive mutex operations.  Note: the "Lock" and "Unlock"

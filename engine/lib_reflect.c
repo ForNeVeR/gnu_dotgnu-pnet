@@ -2634,6 +2634,102 @@ ILNativeInt _IL_RuntimeMethodHandle_GetFunctionPointer
 	}
 }
 
+#define UNBOX_AND_ASSIGN(result, value) \
+					if(ILExecThreadUnbox(thread, \
+										 objectType, \
+										 paramObject, \
+										 (void*)&(value)))\
+					{\
+						(result) = (ILNativeFloat)(value);\
+					}\
+					else \
+					{ \
+						return NULL;\
+					}
+					
+
+/* If promotions are possible to floating point , do it (even at the loss of
+ * significant digits).
+ */
+static ILObject* PromoteToFloat(ILExecThread *thread, ILType *paramType,
+								ILType *objectType, ILObject* paramObject)
+{
+	ILNativeFloat nativeValue;
+	ILInt32 intValue;
+	ILUInt32 uintValue;
+	ILInt64 longValue;
+	ILUInt64 ulongValue;
+	ILFloat floatValue;
+	switch(ILType_ToElement(paramType))
+	{
+		case IL_META_ELEMTYPE_R8: // float -> double coercion
+		{
+			if(ILType_ToElement(objectType) == IL_META_ELEMTYPE_R4)
+			{
+				if(ILExecThreadUnboxFloat(thread, 
+									 objectType, 
+									 paramObject, 
+									 (void*)&(floatValue)))
+				{
+					(nativeValue) = (ILNativeFloat)(floatValue);
+				}
+				else 
+				{ 
+					return NULL;
+				}
+			}
+		}
+		/* fall through */
+		case IL_META_ELEMTYPE_R4:
+		{
+			switch(ILType_ToElement(objectType))
+			{
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_I4:
+				{
+					UNBOX_AND_ASSIGN(nativeValue, intValue);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_U1:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_U4:
+				{
+					UNBOX_AND_ASSIGN(nativeValue, uintValue);
+				}
+				break;
+				
+				case IL_META_ELEMTYPE_I8:
+				{
+					UNBOX_AND_ASSIGN(nativeValue, longValue);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_U8:
+				{
+					UNBOX_AND_ASSIGN(nativeValue, ulongValue);
+				}
+				break;
+
+				default:
+				{
+					return NULL;
+				}
+				break;
+			}
+		}
+		break;
+		default:
+		{
+			return NULL;
+		}
+		break;
+	}
+
+	return ILExecThreadBoxFloat(thread, paramType, &nativeValue);
+}
+
 /*
  * Invoke a method via reflection.
  */
@@ -2718,7 +2814,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 				   with byref's target type */
 
 				objectType = ILClassToType(GetObjectClass(paramObject));
-				
+
 				if(!ILTypeAssignCompatible(image, objectType, ILType_Ref(paramType)))
 				{
 					ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
@@ -2761,6 +2857,16 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 				/* If there's an argument then make sure it's the right type */
 
 				objectType = ILClassToType(GetObjectClass(paramObject));
+				
+				if(ILType_IsPrimitive(paramType) && ILType_IsPrimitive(objectType))
+				{
+					ILObject *promotedObject = PromoteToFloat(thread, paramType, objectType, paramObject);
+					if(promotedObject != NULL)
+					{
+						paramObject = promotedObject;
+						objectType = paramType;
+					}
+				}
 				
 				/* Make sure the type passed matches the param type */
 				if(!ILTypeAssignCompatible(image, objectType, paramType))

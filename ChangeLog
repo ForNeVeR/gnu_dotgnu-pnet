@@ -1,4 +1,9 @@
 
+2004-08-17  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/lib_reflect.c: Perform promotions for integer types to floats
+	and doubles for invoke via reflection.
+
 2004-08-11  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/lib_reflect.c: Fix array creations to use System.Type[] 

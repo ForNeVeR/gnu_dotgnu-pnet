@@ -354,10 +354,8 @@ public class TestXmlConvert : TestCase
 							 0.0, XmlConvert.ToDouble("0"), 0.0001);
 				AssertEquals("ToDouble (2)",
 							 0.0, XmlConvert.ToDouble(" -0.0\t"), 0.0001);
-#if false	// TODO - problems with Double parsing
 				AssertEquals("ToDouble (3)",
 							 123.4, XmlConvert.ToDouble("123.4"), 0.0001);
-#endif
 				Assert("ToDouble (4)", Double.IsPositiveInfinity
 							(XmlConvert.ToDouble(" INF")));
 				Assert("ToDouble (5)", Double.IsNegativeInfinity
@@ -716,10 +714,8 @@ public class TestXmlConvert : TestCase
 							 0.0, XmlConvert.ToSingle("0"), 0.0001);
 				AssertEquals("ToSingle (2)",
 							 0.0, XmlConvert.ToSingle(" -0.0\t"), 0.0001);
-#if false	// TODO - problems with Single parsing
 				AssertEquals("ToSingle (3)",
 							 123.4, XmlConvert.ToSingle("123.4"), 0.0001);
-#endif
 				Assert("ToSingle (4)", Single.IsPositiveInfinity
 							(XmlConvert.ToSingle(" INF")));
 				Assert("ToSingle (5)", Single.IsNegativeInfinity

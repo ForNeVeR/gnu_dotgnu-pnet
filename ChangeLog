@@ -1,4 +1,12 @@
 
+2003-01-04  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* runtime/System/Private/NumberParser.cs:  Fix a bug in thousands parsing
+	that was causing XmlConvert tests to break.
+
+	* tests/System.Xml/TestXmlConvert.cs:  Uncomment additional floating point
+	conversion testing.
+
 2003-01-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/StreamReader.cs: fix a bug in "Read" that

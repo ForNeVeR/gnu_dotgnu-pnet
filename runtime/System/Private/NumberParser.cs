@@ -892,6 +892,8 @@ internal sealed class NumberParser
 		idx -= sep.Length;
 		idx -= sizes[i];
 
+		if (idx < 0) return false;
+
 		while (idx > 0)
 		{
 			if (sb.ToString(idx, sep.Length) != sep) return false;

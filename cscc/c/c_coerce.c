@@ -282,10 +282,13 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 	else if(ILType_IsValueType(fromType))
 	{
 		/* Coercing a struct, union, or array type: must be identical */
-		if(ILClassResolve(ILType_ToValueType(fromType)) ==
-		   ILClassResolve(ILType_ToValueType(toType)))
+		if(ILType_IsValueType(toType))
 		{
-			return C_COERCE_OK;
+			if(ILClassResolve(ILType_ToValueType(fromType)) ==
+			   ILClassResolve(ILType_ToValueType(toType)))
+			{
+				return C_COERCE_OK;
+			}
 		}
 	}
 	else if(CTypeIsPointer(fromType) || CTypeIsFunctionPtr(fromType))

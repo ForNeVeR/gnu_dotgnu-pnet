@@ -34,6 +34,15 @@ extern	"C" {
 #define	C_STKIND_UNION_NATIVE	3
 
 /*
+ * Special bits for marking references to "struct", "union", and "enum"
+ * types before we encounter the main body of the type.
+ */
+#define	IL_META_TYPEDEF_IS_STRUCT		0x04000000
+#define	IL_META_TYPEDEF_IS_UNION		0x02000000
+#define	IL_META_TYPEDEF_IS_ENUM			0x01000000
+#define	IL_META_TYPEDEF_TYPE_BITS		0x07000000
+
+/*
  * Create a struct or union type with a specific name.  If the
  * type already exists, then return it as-is.
  */
@@ -279,21 +288,14 @@ int CTypeIsPointer(ILType *type);
 int CTypeIsByRef(ILType *type);
 
 /*
- * Determine if a C type is a function pointer type.
- */
-int CTypeIsFunctionPtr(ILType *type);
-
-/*
  * Determine if a C type is a function type.
  */
 int CTypeIsFunction(ILType *type);
 
 /*
- * Determine if a C type is not a C type at all, but is
- * actually a managed type imported from some other language
- * such as C#.
+ * Determine if a C type is a function pointer type.
  */
-int CTypeIsForeign(ILType *type);
+int CTypeIsFunctionPtr(ILType *type);
 
 /*
  * Convert a C type into an element type.

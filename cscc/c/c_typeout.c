@@ -47,10 +47,28 @@ static int PendingHash_Match(const void *elem, const void *key)
 	return (elem == key);
 }
 
+/*
+ * Determine if a value type corresponds to a C type that must be output.
+ */
+static int IsCValueType(ILClass *classInfo)
+{
+	if((ILClass_Attrs(classInfo) & IL_META_TYPEDEF_TYPE_BITS) != 0)
+	{
+		return 1;
+	}
+	else if(!strncmp(ILClass_Name(classInfo), "array ", 6))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 void CTypeMarkForOutput(ILGenInfo *info, ILType *type)
 {
 	ILClass *classInfo;
-	const char *name;
 	unsigned long param;
 	unsigned long numParams;
 
@@ -58,11 +76,7 @@ void CTypeMarkForOutput(ILGenInfo *info, ILType *type)
 	if(ILType_IsValueType(type))
 	{
 		classInfo = ILType_ToValueType(type);
-		name = ILClass_Name(classInfo);
-		if(!strncmp(name, "struct_", 7) ||
-		   !strncmp(name, "union_", 6) ||
-		   !strncmp(name, "enum_", 5) ||
-		   !strncmp(name, "array_", 6))
+		if(IsCValueType(classInfo))
 		{
 			/* Scan up to find the outermost nesting level */
 			while(ILClass_NestedParent(classInfo) != 0)

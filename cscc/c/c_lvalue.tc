@@ -429,14 +429,15 @@ static CSemValue ResolveMember(ILGenInfo *info, ILType *type,
 ILNode_CSemAnalysis(ILNode_CStaticField)
 {
 	CSemValue value;
+	CSemValue typeValue;
 	ILType *type;
 	ILProperty *property;
 
 	/* Perform semantic analysis on the primary expression */
-	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
-	if(!CSemIsType(value))
+	typeValue = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsType(typeValue))
 	{
-		if(!CSemIsError(value))
+		if(!CSemIsError(typeValue))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  _("type expected on left side of `::'"));
@@ -445,12 +446,12 @@ ILNode_CSemAnalysis(ILNode_CStaticField)
 	}
 
 	/* Resolve the static member */
-	value = ResolveMember(info, CSemGetType(value), node->name, 1);
+	value = ResolveMember(info, CSemGetType(typeValue), node->name, 1);
 	if(CSemIsError(value))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  _("`%s' has no static member named `%s'"),
-					  CTypeToName(info, CSemGetType(value)), node->name);
+					  CTypeToName(info, CSemGetType(typeValue)), node->name);
 		return value;
 	}
 

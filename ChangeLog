@@ -9,6 +9,11 @@
 	add the "__new__", "__delete__", "__gc", and "__nogc" keywords
 	to the C compiler.
 
+	* cscc/c/c_coerce.c, cscc/c/c_lvalue.tc, cscc/c/c_typeout.c,
+	cscc/c/c_types.c, cscc/c/c_types.h: modify the ABI so that
+	struct types appear as "name" rather than "struct_name";
+	do the same for union and enum types also.
+
 2004-03-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_lexutils.c, cscc/c/c_lexutils.h, cscc/c/c_scanner.l:

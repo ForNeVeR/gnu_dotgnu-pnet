@@ -47,6 +47,22 @@
 	runtime/System/Security/Cryptography/SHA512Managed.cs:
 	more classes in the "System.Security.Cryptography" namespace.
 
+	* resources/en_US/runtime/Crypto.txt,
+	runtime/Platform/CryptoMethods.cs,
+	runtime/System/Security/Cryptography/BigNum.cs,
+	runtime/System/Security/Cryptography/CryptoAPITransform.cs,
+	runtime/System/Security/Cryptography/CryptoConfig.cs,
+	runtime/System/Security/Cryptography/DES.cs,
+	runtime/System/Security/Cryptography/DESCryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/RC2.cs,
+	runtime/System/Security/Cryptography/RC2CryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/Rijndael.cs,
+	runtime/System/Security/Cryptography/RijndaelManaged.cs,
+	runtime/System/Security/Cryptography/SymmetricAlgorithm.cs,
+	runtime/System/Security/Cryptography/TripleDES.cs,
+	runtime/System/Security/Cryptography/TripleDESCryptoServiceProvider.cs:
+	implement the symmetric encryption support classes.
+
 2002-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Delegate.cs, runtime/System/MulticastDelegate.cs:

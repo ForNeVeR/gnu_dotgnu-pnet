@@ -25,25 +25,53 @@ namespace System.Security.Cryptography
 #if !ECMA_COMPAT
 
 using System;
+using Platform;
 
-// We don't use native cryptographic service providers in this
-// implementation, so we just wrap some other transform object.
+// This is a helper class that is used by the DES, TripleDES, RC2,
+// and Rijndael symmetric algorithm classes to create encryptor and
+// decryptor objects that call through to the engine to do the work.
 
 public sealed class CryptoAPITransform : ICryptoTransform
 {
 	// Internal state.
-	private ICryptoTransform transform;
+	private IntPtr state;
+	private byte[] iv;
+	private int blockSize;
+	private int feedbackBlockSize;
+	private CipherMode mode;
+	private PaddingMode padding;
+	private bool encrypt;
 
 	// Constructor.
-	internal CryptoAPITransform(ICryptoTransform transform)
+	internal CryptoAPITransform(int algorithm, byte[] iv, byte[] key,
+								int blockSize, int feedbackBlockSize,
+								CipherMode mode, PaddingMode padding,
+								bool encrypt)
 			{
-				this.transform = transform;
+				if(encrypt)
+				{
+					state = CryptoMethods.EncryptCreate(algorithm, key);
+				}
+				else
+				{
+					state = CryptoMethods.DecryptCreate(algorithm, key);
+				}
+				this.iv = (byte[])(iv.Clone());
+				this.blockSize = blockSize;
+				this.feedbackBlockSize = feedbackBlockSize;
+				this.mode = mode;
+				this.padding = padding;
+				this.encrypt = encrypt;
 			}
 
 	// Destructor.
 	~CryptoAPITransform()
 			{
-				// Nothing to do here.
+				if(state != IntPtr.Zero)
+				{
+					CryptoMethods.SymmetricFree(state);
+					state = IntPtr.Zero;
+				}
 			}
 
 	// Determine if multiple blocks can be transformed.
@@ -51,7 +79,7 @@ public sealed class CryptoAPITransform : ICryptoTransform
 			{
 				get
 				{
-					return transform.CanTransformMultipleBlocks;
+					return true;
 				}
 			}
 
@@ -60,7 +88,7 @@ public sealed class CryptoAPITransform : ICryptoTransform
 			{
 				get
 				{
-					return transform.InputBlockSize;
+					return blockSize;
 				}
 			}
 
@@ -69,7 +97,7 @@ public sealed class CryptoAPITransform : ICryptoTransform
 			{
 				get
 				{
-					return transform.OutputBlockSize;
+					return blockSize;
 				}
 			}
 
@@ -88,18 +116,17 @@ public sealed class CryptoAPITransform : ICryptoTransform
 							  int inputCount, byte[] outputBuffer,
 							  int outputOffset)
 			{
-				return transform.TransformBlock(inputBuffer, inputOffset,
-												inputCount, outputBuffer,
-												outputOffset);
+				// TODO
+				return 0;
 			}
 
-	// Transform the final input block into a hash value.
+	// Transform the final input block.
 	public byte[] TransformFinalBlock(byte[] inputBuffer,
 									  int inputOffset,
 									  int inputCount)
 			{
-				return transform.TransformFinalBlock(inputBuffer, inputOffset,
-													 inputCount);
+				// TODO
+				return null;
 			}
 
 }; // class CryptoAPITransform

@@ -29,11 +29,19 @@ using System.Runtime.CompilerServices;
 internal sealed class CryptoMethods
 {
 	// Identifiers for the algorithms.
-	public const int MD5    = 0;
-	public const int SHA1   = 1;
-	public const int SHA256 = 2;
-	public const int SHA384 = 3;
-	public const int SHA512 = 4;
+	public const int MD5       = 0;
+	public const int SHA1      = 1;
+	public const int SHA256    = 2;
+	public const int SHA384    = 3;
+	public const int SHA512    = 4;
+	public const int DES       = 5;
+	public const int TripleDES = 6;
+	public const int RC2       = 7;
+	public const int Rijndael  = 8;
+
+	// Determine if a particular algorithm is supported.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool AlgorithmSupported(int algorithm);
 
 	// Create a new hash algorithm context.  Throws "NotImplementedException"
 	// if the algorithm is not supported.
@@ -56,6 +64,48 @@ internal sealed class CryptoMethods
 	// Free a hash context that is no longer required.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void HashFree(IntPtr state);
+
+	// Determine if a DES key value is "semi-weak".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool IsSemiWeakKey(byte[] key, int offset);
+
+	// Determine if a DES key value is "weak".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool IsWeakKey(byte[] key, int offset);
+
+	// Determine if two DES keys are the same.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool SameKey(byte[] key1, int offset1,
+									  byte[] key2, int offset2);
+
+	// Generate a number of bytes of random material.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void GenerateRandom
+				(byte[] buf, int offset, int count);
+
+	// Create a symmetric block encryption context.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static IntPtr EncryptCreate(int algorithm, byte[] key);
+
+	// Create a symmetric block decryption context.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static IntPtr DecryptCreate(int algorithm, byte[] key);
+
+	// Encrypt a single block.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void Encrypt(IntPtr state, byte[] inBuffer,
+									  int inOffset, byte[] outBuffer,
+									  int outOffset);
+
+	// Decrypt a single block.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void Decrypt(IntPtr state, byte[] inBuffer,
+									  int inOffset, byte[] outBuffer,
+									  int outOffset);
+
+	// Free a symmetric block context.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void SymmetricFree(IntPtr state);
 
 }; // class CryptoMethods
 

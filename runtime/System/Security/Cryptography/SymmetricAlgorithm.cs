@@ -163,7 +163,8 @@ public abstract class SymmetricAlgorithm
 					else if(value.Length != KeySizeValue)
 					{
 						throw new CryptographicException
-							(_("Crypto_InvalidKeySize"));
+							(_("Crypto_InvalidKeySize"),
+							 value.Length.ToString());
 					}
 					KeyValue = value;
 				}
@@ -266,6 +267,27 @@ public abstract class SymmetricAlgorithm
 	public bool ValidKeySize(int bitLength)
 			{
 				return KeySizes.Validate(LegalKeySizesValue, bitLength);
+			}
+
+	// Validate "rgbKey" and "rgbIV" values for a call on
+	// "CreateDecryptor" or "CreateEncryptor".
+	internal void ValidateCreate(byte[] rgbKey, byte[] rgbIV)
+			{
+				if(rgbKey == null)
+				{
+					throw new ArgumentNullException("rgbKey");
+				}
+				if(rgbIV == null)
+				{
+					throw new ArgumentNullException("rgbIV");
+				}
+				KeySizes.Validate(LegalKeySizesValue, rgbKey.Length,
+								  "Crypto_InvalidKeySize");
+				if(rgbIV.Length != BlockSizeValue)
+				{
+					throw new CryptographicException
+						(_("Crypto_InvalidIVSize"), rgbIV.Length.ToString());
+				}
 			}
 
 }; // class SymmetricAlgorithm

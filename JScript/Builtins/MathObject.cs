@@ -56,7 +56,64 @@ public class MathObject : JSObject
 		: base(parent)
 	{
 		EngineInstance inst = EngineInstance.GetEngineInstance(engine);
-		AddBuiltin(inst,"sqrt");
+		
+		Put("E", E,
+			PropertyAttributes.DontEnum|
+			PropertyAttributes.DontDelete|
+			PropertyAttributes.ReadOnly);
+		
+		Put("LN10", LN10,
+			PropertyAttributes.DontEnum|
+			PropertyAttributes.DontDelete|
+			PropertyAttributes.ReadOnly);
+		
+		Put("LN2", LN2,
+			PropertyAttributes.DontEnum|
+			PropertyAttributes.DontDelete|
+			PropertyAttributes.ReadOnly);
+		
+		Put("LOG2E", LOG2E,
+			PropertyAttributes.DontEnum|
+			PropertyAttributes.DontDelete|
+			PropertyAttributes.ReadOnly);
+		
+		Put("LOG10E", LOG10E,
+			PropertyAttributes.DontEnum|
+			PropertyAttributes.DontDelete|
+			PropertyAttributes.ReadOnly);
+		
+		Put("PI", PI,
+			PropertyAttributes.DontEnum|
+			PropertyAttributes.DontDelete|
+			PropertyAttributes.ReadOnly);
+			
+		Put("SQRT1_2", SQRT1_2,
+			PropertyAttributes.DontEnum|
+			PropertyAttributes.DontDelete|
+			PropertyAttributes.ReadOnly);
+			
+		Put("SQRT2", SQRT2,
+			PropertyAttributes.DontEnum|
+			PropertyAttributes.DontDelete|
+			PropertyAttributes.ReadOnly);
+		
+		AddBuiltin(inst, "abs");
+		AddBuiltin(inst, "acos");
+		AddBuiltin(inst, "asin");
+		AddBuiltin(inst, "atan");
+		AddBuiltin(inst, "atan2");
+		AddBuiltin(inst, "ceil");
+		AddBuiltin(inst, "exp");
+		AddBuiltin(inst, "floor");
+		AddBuiltin(inst, "log");
+		AddBuiltin(inst, "max");
+		AddBuiltin(inst, "min");
+		AddBuiltin(inst, "pow");
+		AddBuiltin(inst, "random");
+		AddBuiltin(inst, "round");
+		AddBuiltin(inst, "sin");
+		AddBuiltin(inst, "sqrt");
+		AddBuiltin(inst, "tan");
 	}
 	
 	// compute the absolute value of an integer
@@ -256,27 +313,8 @@ public class MathObject : JSObject
 		
 }; // class MathObject
 
-
 public sealed class LenientMathObject : MathObject
 {
-
-	// e, the base of natural algorithms
-	public new const double E		= 2.7182818284590452354;
-	// the natural logarithm of 10
-	public new const double LN10	= 2.302585092994046;
-	// the natural logarithm of 2
-	public new const double LN2		= 0.6931471805599453;
-	// the base-2 logarithm of e
-	public new const double LOG2E	= 1.4426950408889634;
-	// the base-10 logarithm of e
-	public new const double LOG10E	= 0.4342944819032518;
-	// pi - the ratio of the circumference of a circle to its diameter
-	public new const double PI		= 3.14159265358979323846;
-	// the square root of 1/2
-	public new const double SQRT1_2	= 0.7071067811865476;
-	// the square root of 2
-	public new const double SQRT2	= 1.4142135623730951;
-
 	public new System.Object abs;
 	public new System.Object acos;
 	public new System.Object asin;
@@ -300,10 +338,27 @@ public sealed class LenientMathObject : MathObject
 		: base(parent)
 	{
 		EngineInstance inst = EngineInstance.GetEngineInstance(engine);
+		
+		abs = Get("abs");
+		acos = Get("acos");
+		asin = Get("asin");
+		atan = Get("atan");
+		atan2 = Get("atan2");
+		ceil = Get("ceil");
+		cos = Get("cos");
+		exp = Get("exp");
+		floor = Get("floor");
+		log = Get("log");
+		max = Get("max");
+		min = Get("min");
+		pow = Get("pow");
+		random = Get("random");
+		round = Get("round");
+		sin = Get("sin");
 		sqrt = Get("sqrt");
+		tan = Get("tan");
 	}
 
-}
-
+}; // class LenientMathObject
 
 }; // namespace Microsoft.JScript

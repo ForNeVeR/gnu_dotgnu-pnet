@@ -1,4 +1,9 @@
 
+2004-09-18  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* JScript/Builtins/MathObject.cs: Hooked-up the rest of the constants
+	and methods in MathObject. (patch #3368, Gopal)
+
 2004-09-18  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Runtime/Remoting/Messaging/CallContext.cs: return 

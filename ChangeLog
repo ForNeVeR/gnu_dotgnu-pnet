@@ -1,4 +1,9 @@
 
+2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/pecoff_loader.c (MemoryRead): reversed test, causing segv
+	(found by Chris Smith - bug #4807).
+
 2003-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c_main.c, cscc/c/c_grammar.y, cscc/c/c_scanner.l:

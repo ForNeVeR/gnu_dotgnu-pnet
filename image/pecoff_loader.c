@@ -59,7 +59,7 @@ static int StdioRead(ILInputContext *ctx, void *buf, unsigned len)
  */
 static int MemoryRead(ILInputContext *ctx, void *buf, unsigned len)
 {
-	if(len < ctx->bufLen)
+	if(ctx->bufLen < len)
 	{
 		len = (unsigned)(ctx->bufLen);
 	}

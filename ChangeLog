@@ -8,6 +8,10 @@
 	* engine/heap.c, support/hb_gc.c: enable finalizers in single-threaded
 	environments (multi-threaded finalization is TBD).
 
+	* libffi/ChangeLog, libffi/src/powerpc/ffi_darwin.c,
+	libffi/src/s390/sysv.S, libffi/src/x86/ffi.c: update libffi sources
+	from the gcc CVS repository.
+
 2002-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_config_win.h, include/il_values.h: remove the out

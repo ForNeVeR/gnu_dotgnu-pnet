@@ -20,6 +20,9 @@ statement list ends in a return statement.
 cscc/cs_gather.c, cscc/cs_grammar.y: semantic analysis and code
 generation routines for method and field signatures.
 
+* codegen/cg_nodes.tc (ILNode_PropertyDeclaration): add ILMethod* fields
+for the declarations of property get and set methods.
+
 2001-08-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.h, codegen/cg_gen.c: add "unsafeLevel" to "ILGenInfo".

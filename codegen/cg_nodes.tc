@@ -572,6 +572,8 @@ struct _tagILEvalValue
 	ILNode	   *setAccessor;
 	ILUInt32	getsetFlags; /* 1 = get, 2 = set */
 	%nocreate ILProperty *propertyInfo = {0};
+	%nocreate ILMethod *getMethodInfo = {0};
+	%nocreate ILMethod *setMethodInfo = {0};
 }
 
 /*

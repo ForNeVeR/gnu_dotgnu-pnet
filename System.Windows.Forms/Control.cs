@@ -74,6 +74,7 @@ public class Control : IWin32Window
 #endif
 	private static Keys currentModifiers;
 	private BorderStyle borderStyle;
+	private static Point mousePosition;
 
 	// Constructors.
 	public Control()
@@ -1224,13 +1225,12 @@ public class Control : IWin32Window
 			}
 
 	// Get the current screen position of the mouse.
-	[TODO]
+	// TODO: This only works when the mouse is within the bounds of a form
 	public static Point MousePosition
 			{
 				get
 				{
-					// TODO
-					return new Point(0, 0);
+					return mousePosition;
 				}
 			}
 
@@ -4044,7 +4044,7 @@ protected virtual void Dispose(bool disposing)
 
 	// Collection of child controls.
 	public class ControlCollection
-		: IList, ICollection, IEnumerable
+		: IList
 #if !CONFIG_COMPACT_FORMS
 		, ICloneable
 #endif
@@ -4604,6 +4604,7 @@ protected virtual void Dispose(bool disposing)
 				// Convert to client coordinates
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
+				mousePosition = PointToScreen(new Point(x, y));
 				currentModifiers = (Keys)modifiers;
 				OnMouseMove(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
@@ -4789,6 +4790,121 @@ protected virtual void Dispose(bool disposing)
 					borderStyle = value;
 				}
 			}
+	[TODO]
+	public class ControlAccessibleObject : AccessibleObject
+	{
+		private Control ownerControl;
+
+		public override string DefaultAction
+				{
+					get
+					{
+						return base.DefaultAction;
+					}
+				}
+
+		public override string Description
+				{
+					get
+					{
+						return base.Description;
+					}
+				}
+
+		public IntPtr Handle
+				{
+					get
+					{
+						return IntPtr.Zero;
+					}
+
+					set
+					{
+					}
+				}
+
+		public override string Help
+				{
+					get
+					{
+						return base.Help;
+					}
+				}
+
+		public override string KeyboardShortcut
+				{
+					get
+					{
+						return base.KeyboardShortcut;
+					}
+				}
+
+		public override string Name
+				{
+					get
+					{
+						return base.Name;
+					}
+
+					set
+					{
+						ownerControl.AccessibleName = value;
+					}
+				}
+
+		public Control Owner
+				{
+					get
+					{
+						return ownerControl;
+					}
+				}
+
+		private Label PreviousLabel
+				{
+					get
+					{
+						return null;
+					}
+				}
+
+		public override AccessibleRole Role
+				{
+					get
+					{
+						return base.Role;
+					}
+				}
+
+		public ControlAccessibleObject(Control ownerControl)
+				{
+					this.ownerControl = ownerControl;
+				}
+
+		public override int GetHelpTopic(out string fileName)
+				{
+					fileName = "";
+					return 0;
+				}
+
+		public void NotifyClients(AccessibleEvents accEvent)
+				{
+				}
+
+		public void NotifyClients(AccessibleEvents accEvent, int childID)
+				{
+				}
+
+		public override string ToString()
+				{
+					return "ControlAccessibleObject: Owner = " + Owner == null ? "null" : Owner.ToString();
+				}
+
+		static ControlAccessibleObject()
+				{
+				}
+	}
+
 
 #endif // !CONFIG_COMPACT_FORMS
 

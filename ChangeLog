@@ -15,6 +15,10 @@ for "System.Diagnostics".
 code in "asmfix" that caused it to output the same assembly code twice;
 recognise another form of loop top that gcc sometimes uses.
 
+* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_ptr.c, engine/cvmc_obj.c:
+modify the handling of "ILTypedRef" structures so that they are aligned
+and used properly on 64-bit platforms.
+
 2001-11-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_invoke.tc, cscc/cs_internal.h, cscc/cs_lookup.c: add code to

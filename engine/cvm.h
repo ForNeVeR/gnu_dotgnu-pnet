@@ -393,40 +393,41 @@ extern	"C" {
  */
 #define	COP_PREFIX_MKREFANY			0x1F
 #define	COP_PREFIX_REFANYVAL		0x20
+#define	COP_PREFIX_REFANYTYPE		0x21
 
 /*
  * Prefixed conversion opcodes.
  */
-#define	COP_PREFIX_I2B_OVF			0x21
-#define	COP_PREFIX_I2UB_OVF			0x22
-#define	COP_PREFIX_IU2B_OVF			0x23
-#define	COP_PREFIX_IU2UB_OVF		0x24
-#define	COP_PREFIX_I2S_OVF			0x25
-#define	COP_PREFIX_I2US_OVF			0x26
-#define	COP_PREFIX_IU2S_OVF			0x27
-#define	COP_PREFIX_IU2US_OVF		0x28
-#define	COP_PREFIX_I2IU_OVF			0x29
-#define	COP_PREFIX_IU2I_OVF			0x2A
-#define	COP_PREFIX_I2UL_OVF			0x2B
-#define	COP_PREFIX_L2I_OVF			0x2C
-#define	COP_PREFIX_L2UI_OVF			0x2D
-#define	COP_PREFIX_LU2I_OVF			0x2E
-#define	COP_PREFIX_LU2IU_OVF		0x2F
-#define	COP_PREFIX_L2UL_OVF			0x30
-#define	COP_PREFIX_LU2L_OVF			0x31
-#define	COP_PREFIX_F2I_OVF			0x32
-#define	COP_PREFIX_F2IU_OVF			0x33
-#define	COP_PREFIX_F2L_OVF			0x34
-#define	COP_PREFIX_F2LU_OVF			0x35
-#define	COP_PREFIX_I2B_ALIGNED		0x36
-#define	COP_PREFIX_I2S_ALIGNED		0x37
-#define	COP_PREFIX_F2F_ALIGNED		0x38
-#define	COP_PREFIX_F2D_ALIGNED		0x39
+#define	COP_PREFIX_I2B_OVF			0x22
+#define	COP_PREFIX_I2UB_OVF			0x23
+#define	COP_PREFIX_IU2B_OVF			0x24
+#define	COP_PREFIX_IU2UB_OVF		0x25
+#define	COP_PREFIX_I2S_OVF			0x26
+#define	COP_PREFIX_I2US_OVF			0x27
+#define	COP_PREFIX_IU2S_OVF			0x28
+#define	COP_PREFIX_IU2US_OVF		0x29
+#define	COP_PREFIX_I2IU_OVF			0x2A
+#define	COP_PREFIX_IU2I_OVF			0x2B
+#define	COP_PREFIX_I2UL_OVF			0x2C
+#define	COP_PREFIX_L2I_OVF			0x2D
+#define	COP_PREFIX_L2UI_OVF			0x2E
+#define	COP_PREFIX_LU2I_OVF			0x2F
+#define	COP_PREFIX_LU2IU_OVF		0x30
+#define	COP_PREFIX_L2UL_OVF			0x31
+#define	COP_PREFIX_LU2L_OVF			0x32
+#define	COP_PREFIX_F2I_OVF			0x33
+#define	COP_PREFIX_F2IU_OVF			0x34
+#define	COP_PREFIX_F2L_OVF			0x35
+#define	COP_PREFIX_F2LU_OVF			0x36
+#define	COP_PREFIX_I2B_ALIGNED		0x37
+#define	COP_PREFIX_I2S_ALIGNED		0x38
+#define	COP_PREFIX_F2F_ALIGNED		0x39
+#define	COP_PREFIX_F2D_ALIGNED		0x3A
 
 /*
  * Prefixed arithmetic opcodes.
  */
-#define	COP_PREFIX_CKFINITE			0x3A
+#define	COP_PREFIX_CKFINITE			0x3B
 
 /*
  * Definition of a CVM stack word which can hold
@@ -466,7 +467,8 @@ typedef union
 #else
 #define	CVM_WORDS_PER_NATIVE_INT	1
 #endif
-#define	CVM_WORDS_PER_TYPED_REF		2
+#define	CVM_WORDS_PER_TYPED_REF	\
+			((sizeof(ILTypedRef) + sizeof(CVMWord) - 1) / sizeof(CVMWord))
 
 #ifdef	__cplusplus
 };

@@ -476,6 +476,7 @@ static CVMOpcode const prefixOpcodes[64] = {
 	 */
 	{"mkrefany",		CVM_OPER_CLASS},
 	{"refanyval",		CVM_OPER_CLASS},
+	{"refanytype",		CVM_OPER_NONE},
 
 	/*
 	 * Prefixed conversion opcodes.
@@ -514,7 +515,6 @@ static CVMOpcode const prefixOpcodes[64] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_3b",	CVM_OPER_NONE},
 	{"preserved_3c",	CVM_OPER_NONE},
 	{"preserved_3d",	CVM_OPER_NONE},
 	{"preserved_3e",	CVM_OPER_NONE},

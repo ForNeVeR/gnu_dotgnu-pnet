@@ -863,7 +863,7 @@ static void CVMCoder_Box(ILCoder *coder, ILClass *boxClass,
 		CVM_BYTE(COP_PREFIX);
 		CVM_BYTE(COP_PREFIX_REFANYVAL);
 		CVM_PTR(boxClass);
-		CVM_ADJUST(-1);
+		CVM_ADJUST(-(CVM_WORDS_PER_TYPED_REF - 1));
 		CVM_WIDE(COP_BOX_PTR, size);
 		CVM_PTR(boxClass);
 	}
@@ -924,7 +924,7 @@ static void CVMCoder_MakeTypedRef(ILCoder *coder, ILClass *classInfo)
 	CVM_BYTE(COP_PREFIX);
 	CVM_BYTE(COP_PREFIX_MKREFANY);
 	CVM_PTR(classInfo);
-	CVM_ADJUST(1);
+	CVM_ADJUST(CVM_WORDS_PER_TYPED_REF - 1);
 }
 
 static void CVMCoder_RefAnyVal(ILCoder *coder, ILClass *classInfo)
@@ -932,17 +932,14 @@ static void CVMCoder_RefAnyVal(ILCoder *coder, ILClass *classInfo)
 	CVM_BYTE(COP_PREFIX);
 	CVM_BYTE(COP_PREFIX_REFANYVAL);
 	CVM_PTR(classInfo);
-	CVM_ADJUST(-1);
+	CVM_ADJUST(-(CVM_WORDS_PER_TYPED_REF - 1));
 }
 
 static void CVMCoder_RefAnyType(ILCoder *coder)
 {
-	/* Typed references are stored as two pointers on the
-	   stack.  The type is pushed and then the data pointer.
-	   So, if we pop the data pointer, we will get the type
-	   token that we require */
-	CVM_BYTE(COP_POP);
-	CVM_ADJUST(-1);
+	CVM_BYTE(COP_PREFIX);
+	CVM_BYTE(COP_PREFIX_REFANYTYPE);
+	CVM_ADJUST(-(CVM_WORDS_PER_TYPED_REF - 1));
 }
 
 static void CVMCoder_PushToken(ILCoder *coder, ILProgramItem *item)

@@ -1187,24 +1187,36 @@ LARGE_WRITE_ELEM(COP_PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 case COP_PREFIX_MKREFANY:
 {
 	/* Make a typedref from an address and class information block */
-	stacktop[0].ptrValue = stacktop[-1].ptrValue;
-	stacktop[-1].ptrValue = ReadPointer(pc + 2);
-	MODIFY_PC_AND_STACK(2 + sizeof(void *), 1);
+	((ILTypedRef *)(stacktop - 1))->value = stacktop[-1].ptrValue;
+	((ILTypedRef *)(stacktop - 1))->type = ReadPointer(pc + 2);
+	MODIFY_PC_AND_STACK(2 + sizeof(void *), CVM_WORDS_PER_TYPED_REF - 1);
 }
 break;
 
 case COP_PREFIX_REFANYVAL:
 {
 	/* Extract the value part of a typedref */
-	if(stacktop[-2].ptrValue == ReadPointer(pc + 2))
+	if(((ILTypedRef *)(stacktop - CVM_WORDS_PER_TYPED_REF))->type ==
+			ReadPointer(pc + 2))
 	{
-		stacktop[-2].ptrValue = stacktop[-1].ptrValue;
-		MODIFY_PC_AND_STACK(2 + sizeof(void *), -1);
+		stacktop[-CVM_WORDS_PER_TYPED_REF].ptrValue =
+			((ILTypedRef *)(stacktop - CVM_WORDS_PER_TYPED_REF))->value;
+		MODIFY_PC_AND_STACK(2 + sizeof(void *),
+							-(CVM_WORDS_PER_TYPED_REF - 1));
 	}
 	else
 	{
 		INVALID_CAST_EXCEPTION();
 	}
+}
+break;
+
+case COP_PREFIX_REFANYTYPE:
+{
+	/* Extract the type part of a typedref */
+	stacktop[-CVM_WORDS_PER_TYPED_REF].ptrValue =
+		((ILTypedRef *)(stacktop - CVM_WORDS_PER_TYPED_REF))->type;
+	MODIFY_PC_AND_STACK(2 + sizeof(void *), -(CVM_WORDS_PER_TYPED_REF - 1));
 }
 break;
 

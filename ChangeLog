@@ -24,6 +24,9 @@ have been incremented *after* fetching the argument.
 * engine/cvm_call.c: add some extra debug code to dump the top 16 items
 on the stack on entry and exit to every method.
 
+* engine/engine.h: increase the stack size so that we can run more
+involved examples.
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_var.c, engine/verify_call.c: handle value type "this"

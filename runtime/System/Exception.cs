@@ -79,15 +79,6 @@ public class Exception
 		{
 			message = msg;
 			innerException = inner;
-			try
-			{
-				stackTrace = StackFrame.GetExceptionStackTrace();
-			}
-			catch(NotImplementedException)
-			{
-				// The runtime engine does not have "GetExceptionStackTrace".
-				stackTrace = null;
-			}
 		}
 #if !ECMA_COMPAT
 	protected Exception(SerializationInfo info, StreamingContext context)

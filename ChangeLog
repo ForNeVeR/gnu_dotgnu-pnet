@@ -1,4 +1,10 @@
 
+2003-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Exception.cs: don't load the stack trace in
+	the "Exception" constructor, because the runtime engine now
+	sets the stack trace when the exception object is thrown.
+
 2003-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Convert.cs,

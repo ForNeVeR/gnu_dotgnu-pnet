@@ -1,4 +1,13 @@
 
+2004-08-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/NotSupp.txt,
+	runtime/System/Security/AccessControl/CommonAcl.cs,
+	runtime/System/Security/AccessControl/DiscretionaryAcl.cs,
+	runtime/System/Security/AccessControl/RawAcl.cs,
+	runtime/System/Security/AccessControl/SystemAcl.cs:
+	add ACL classes to "System.Security.AccessControl".
+
 2004-08-17  Gopal V  <gopalv82@yahoo.com>
 
 	* JScript/Parser/JSParser.cs: Fix LogicalAnd operation and 

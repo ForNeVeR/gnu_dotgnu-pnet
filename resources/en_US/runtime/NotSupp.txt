@@ -38,3 +38,4 @@ NotSupp_SerializePointer=Cannot serialize pointer values
 NotSupp_SubClass=Implementation must be provided by subclasses
 NotSupp_DelAsyncProcMsg=Cannot use AsyncProcessMessage with asynchronous delegates
 NotSupp_MaxWaitHandles=Maximum number of wait handles has been exceeded
+NotSupp_SetAce=Cannot set access control elements in this list

@@ -581,6 +581,28 @@ static void InvokeOption(const CmdLineOpt *opt, char *arg)
 }
 
 /*
+ * Determine if a string starting with '/' looks like an absolute
+ * Unix-style pathname.
+ */
+static int LooksLikeAbsolutePath(const char *str)
+{
+	++str;
+	while(*str != '\0')
+	{
+		if(*str == '/')
+		{
+			return 1;
+		}
+		else if(*str == ':' || *str == '=')
+		{
+			break;
+		}
+		++str;
+	}
+	return 0;
+}
+
+/*
  * Parse the command-line options with the compatibility parser.
  */
 void CCParseWithCompatParser(int argc, char *argv[])
@@ -594,6 +616,11 @@ void CCParseWithCompatParser(int argc, char *argv[])
 		/* If the argument doesn't begin with '-' or '/', then it
 		   is a source input file */
 		if(argv[posn][0] != '-' && argv[posn][0] != '/')
+		{
+			CCStringListAdd(&input_files, &num_input_files, argv[posn]);
+			continue;
+		}
+		if(argv[posn][0] == '/' && LooksLikeAbsolutePath(argv[posn]))
 		{
 			CCStringListAdd(&input_files, &num_input_files, argv[posn]);
 			continue;

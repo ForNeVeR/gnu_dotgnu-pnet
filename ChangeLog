@@ -1,4 +1,9 @@
 
+2004-04-18  Ilyak Kasnacheev <ilyak@online.ru>
+
+	* Xsharp/Application.cs: Use the "DISPLAY" environment variable
+	if the displayName is null. (Gopal, patch #2944)
+
 2004-04-18  Gopal V <gopalv82@yahoo.com>
 
 	* runtime/System/Type.cs: Allow all interfaces to be assignable to

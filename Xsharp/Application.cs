@@ -248,6 +248,12 @@ public sealed class Application : IDisposable
 				cmdLineArgs = (String[])(newArgs.ToArray(typeof(String)));
 
 				// Connect to the display.
+				if(displayName == null)
+				{
+					// Xlib will figure it by itself, but classes using displayName can get broken is it's null
+					displayName = Environment.GetEnvironmentVariable("DISPLAY");
+				}
+
 				display = Xsharp.Display.Open(displayName, this, synchronous);
 
 				// Create the default font.

@@ -292,9 +292,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	threwException = _ILCVMInterpreter(thread);
 	if(threwException)
 	{
-		/* Pop the exception from the stack */
-		thread->thrownException = thread->stackTop[-1].ptrValue;
-		--(thread->stackTop);
+		/* An exception occurred, which is already stored in the thread */
 	}
 	else if(isCtor)
 	{
@@ -627,9 +625,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	threwException = _ILCVMInterpreter(thread);
 	if(threwException)
 	{
-		/* Pop the exception from the stack */
-		thread->thrownException = thread->stackTop[-1].ptrValue;
-		--(thread->stackTop);
+		/* An exception occurred, which is already stored in the thread */
 	}
 	else if(isCtor)
 	{

@@ -26,6 +26,11 @@
 	* cscc/csharp/cs_attrs.c (ProcessAttr): add a hack to recognise
 	"System.Serializable" as "System.SerializableAttribute".
 
+	* cscc/csharp/cs_lookup.c, cscc/csharp/cs_lvalue.tc: remove the
+	trial lookup for properties and replace with a filter in
+	CSResolveSimpleName to remove non-static members during quiet
+	lookups in static methods.
+
 2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (Load_MemberRef): report "unresolved external

@@ -1040,32 +1040,11 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 	char *name;
 	ILEvalValue evalue;
 	ILNode *save1;
-	ILProperty *property;
-	ILType *type;
 
 	/*  PART I  - Try it in the usual fashion  */
 
 	/*  Stow the original node contents for later  */
 	save1 = node->expr1;
-
-	/* Hack: check for properties with enumerated types in the left
-	   part of the member reference.  If we find one, then this is
-	   an enumerated constant value, not a property */
-	if(yyisa(node->expr1, ILNode_Identifier))
-	{
-		value = CSResolveSimpleNameQuiet
-			(info, node->expr1, ((ILNode_Identifier *)(node->expr1))->name, 0);
-		if(CSSemIsProperty(value))
-		{
-			property = CSSemGetProperty(value);
-			type = ILTypeGetReturn(ILProperty_Signature(property));
-			if(ILTypeIsEnum(type))
-			{
-				CSSemSetType(value, type);
-				goto skipLeft;
-			}
-		}
-	}
 
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -1087,7 +1066,6 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 		}
 	}
 
-skipLeft:
 	/* Convert the second subexpression into a name */
 	name = ILQualIdentName(node->expr2, 0);
 

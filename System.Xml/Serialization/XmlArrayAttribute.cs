@@ -31,7 +31,8 @@ using System.Xml.Schema;
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
-                AttributeTargets.ReturnValue)]
+                AttributeTargets.ReturnValue,
+                AllowMultiple=false)]
 public class XmlArrayAttribute : Attribute
 {
 	// Internal state.

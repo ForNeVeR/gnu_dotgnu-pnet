@@ -30,7 +30,8 @@ using System.Xml;
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
-                AttributeTargets.ReturnValue)]
+                AttributeTargets.ReturnValue,
+                AllowMultiple=true)]
 public class XmlAnyElementAttribute : Attribute
 {
 	// Internal state.

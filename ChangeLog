@@ -1,3 +1,37 @@
+2004-05-06  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* .cvsignore, DotGNU.XmlRpc/.cvsignore, System.Design/.cvsignore:
+	ignore autom4te.cache and some relatively new build directories.
+
+	* System.Xml/Serialization/TypeMember.cs: add TypeMember for
+	type+member hashtable lookups in *Overrides classes.
+
+	* System.Xml/XmlAttribute.cs, System.Xml/XmlNode.cs: fix the
+	copyright notices (forget to update again).
+
+	* System.Xml/Serialization/SoapIncludeAttribute.cs,
+	System.Xml/Serialization/XmlAnyAttributeAttribute.cs,
+	System.Xml/Serialization/XmlAnyElementAttribute.cs,
+	System.Xml/Serialization/XmlArrayAttribute.cs,
+	System.Xml/Serialization/XmlArrayItemAttribute.cs,
+	System.Xml/Serialization/XmlChoiceIdentifierAttribute.cs,
+	System.Xml/Serialization/XmlElementAttribute.cs,
+	System.Xml/Serialization/XmlIncludeAttribute.cs,
+	System.Xml/Serialization/XmlNamespaceDeclarationsAttribute.cs: fix
+	mistakes in the attribute usage attributes.
+
+	* System.Xml/Serialization/SoapAttributeOverrides.cs,
+	System.Xml/Serialization/SoapAttributes.cs,
+	System.Xml/Serialization/SoapSchemaMember.cs,
+	System.Xml/Serialization/XmlAnyElementAttributes.cs,
+	System.Xml/Serialization/XmlArrayItemAttributes.cs,
+	System.Xml/Serialization/XmlAttributeOverrides.cs,
+	System.Xml/Serialization/XmlAttributes.cs,
+	System.Xml/Serialization/XmlElementAttributes.cs,
+	System.Xml/Serialization/XmlMemberMapping.cs,
+	System.Xml/Serialization/XmlSchemas.cs,
+	System.Xml/Serialization/XmlSerializerNamespaces.cs,
+	System.Xml/Serialization/XmlTypeMapping.cs: implement them all.
 
 2004-05-06  Gopal V  <gopalv82@yahoo.com>
 

@@ -31,7 +31,8 @@ using System.Xml.Schema;
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
-                AttributeTargets.ReturnValue)]
+                AttributeTargets.ReturnValue,
+                AllowMultiple=true)]
 public class XmlElementAttribute : Attribute
 {
 	// Internal state.

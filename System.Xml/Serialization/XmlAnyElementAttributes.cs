@@ -2,7 +2,7 @@
  * XmlAnyElementAttributes.cs - Implementation of the
  *			"System.Xml.Serialization.XmlAnyElementAttributes" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,72 +28,58 @@ using System;
 using System.Xml;
 using System.Collections;
 
-[TODO]
 public class XmlAnyElementAttributes : CollectionBase
 {
-	[TODO]
+	// Constructor.
 	public XmlAnyElementAttributes()
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				// nothing to do here
 			}
 
-	[TODO]
+
+	// Get or set the attribute at given index.
 	public XmlAnyElementAttribute this[int index]
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Item");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Item");
-				}
+				get { return (XmlAnyElementAttribute)List[index]; }
+				set { List[index] = value; }
 			}
 
-	[TODO]
+
+	// Add an attribute to this collection.
 	public int Add(XmlAnyElementAttribute attribute)
 			{
-				// TODO
-				throw new NotImplementedException("Add");
+				return List.Add(attribute);
 			}
 
-	[TODO]
+	// Determine if this collection contains the given attribute.
 	public bool Contains(XmlAnyElementAttribute attribute)
 			{
-				// TODO
-				throw new NotImplementedException("Contains");
+				return List.Contains(attribute);
 			}
 
-	[TODO]
+	// Copy the attributes in this collection to the given array.
 	public void CopyTo(XmlAnyElementAttribute[] array, int index)
 			{
-				// TODO
-				throw new NotImplementedException("CopyTo");
+				List.CopyTo(array, index);
 			}
 
-	[TODO]
+	// Get the index of the given attribute.
 	public int IndexOf(XmlAnyElementAttribute attribute)
 			{
-				// TODO
-				throw new NotImplementedException("IndexOf");
+				return List.IndexOf(attribute);
 			}
 
-	[TODO]
+	// Insert an attribute at the given index.
 	public void Insert(int index, XmlAnyElementAttribute attribute)
 			{
-				// TODO
-				throw new NotImplementedException("Insert");
+				List.Insert(index, attribute);
 			}
 
-	[TODO]
+	// Remove the given attribute from this collection.
 	public void Remove(XmlAnyElementAttribute attribute)
 			{
-				// TODO
-				throw new NotImplementedException("Remove");
+				List.Remove(attribute);
 			}
 
 }; // class XmlAnyElementAttributes

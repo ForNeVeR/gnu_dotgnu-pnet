@@ -2,7 +2,7 @@
  * XmlSchemas.cs - Implementation of the
  *			"System.Xml.Serialization.XmlSchemas" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,70 +29,79 @@ using System.Xml;
 using System.Collections;
 using System.Xml.Schema;
 
-[TODO]
 public class XmlSchemas : CollectionBase
 {
-	[TODO]
+	// Internal state.
+	private Hashtable table;
+
+	// Constructor.
 	public XmlSchemas()
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				table = new Hashtable();
 			}
 
-	[TODO]
+
+	// Get or set the schema at the given index.
 	public XmlSchema this[int index]
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Item");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Item");
-				}
+				get { return (XmlSchema)List[index]; }
+				set { List[index] = value; }
 			}
 
-	[TODO]
+	// Get the schema with the given namespace.
 	public XmlSchema this[String ns]
 			{
 				get
 				{
-					// TODO
-					throw new NotImplementedException("Item");
+					int i = IndexOf(ns);
+					return (i == -1 ? null : ((XmlSchema)List[i]));
 				}
 			}
 
-	[TODO]
+	// Add a schema to this collection, returning the index of insertion.
 	public int Add(XmlSchema schema)
 			{
-				// TODO
-				throw new NotImplementedException("Add");
+				return List.Add(schema);
 			}
 
-	[TODO]
+	// Add the schemas to this collection.
 	public void Add(XmlSchemas schemas)
 			{
-				// TODO
-				throw new NotImplementedException("Add");
+				foreach(XmlSchema schema in schemas) { Add(schema); }
 			}
 
-	[TODO]
+	// Add a schema to the lookup table.
+	private void AddLookup(XmlSchema schema, int index)
+			{
+				// get the namespace of the schema
+				String ns = schema.TargetNamespace;
+				if(ns == null) { ns = String.Empty; }
+
+				// give an error on duplicate namespaces
+				if(table[ns] != null)
+				{
+					throw new InvalidOperationException
+						("Xml_DuplicateSchemaNamespace");
+				}
+
+				// add the namespace to the lookup table
+				table.Add(ns, index);
+			}
+
+	// Determine if this collection contains the given schema.
 	public bool Contains(XmlSchema schema)
 			{
-				// TODO
-				throw new NotImplementedException("Contains");
+				return table.Contains(schema.TargetNamespace);
 			}
 
-	[TODO]
+	// Copy the schemas in this collection to the given array.
 	public void CopyTo(XmlSchema[] array, int index)
 			{
-				// TODO
-				throw new NotImplementedException("CopyTo");
+				List.CopyTo(array, index);
 			}
 
+	// Find the schema with the given qualified name and type.???
 	[TODO]
 	public Object Find(XmlQualifiedName name, Type type)
 			{
@@ -100,18 +109,24 @@ public class XmlSchemas : CollectionBase
 				throw new NotImplementedException("Find");
 			}
 
-	[TODO]
+	// Get the index of the given schema.
 	public int IndexOf(XmlSchema schema)
 			{
-				// TODO
-				throw new NotImplementedException("IndexOf");
+				Object o = table[schema.TargetNamespace];
+				return ((o == null) ? -1 : (int)o);
 			}
 
-	[TODO]
+	// Get the index of the schema for the given namespace.
+	private int IndexOf(String ns)
+			{
+				Object o = table[(ns == null ? String.Empty : ns)];
+				return ((o == null) ? -1 : (int)o);
+			}
+
+	// Insert a schema at the given index.
 	public void Insert(int index, XmlSchema schema)
 			{
-				// TODO
-				throw new NotImplementedException("Insert");
+				List.Insert(index, schema);
 			}
 
 	[TODO]
@@ -121,39 +136,46 @@ public class XmlSchemas : CollectionBase
 				throw new NotImplementedException("IsDataSet");
 			}
 
-	[TODO]
+	// Complete clearing this collection.
 	protected override void OnClear()
 			{
-				// TODO
-				throw new NotImplementedException("OnClear");
+				table.Clear();
 			}
 
-	[TODO]
+	// Complete inserting an item into this collection.
 	protected override void OnInsert(int index, Object value)
 			{
-				// TODO
-				throw new NotImplementedException("OnInsert");
+				AddLookup((XmlSchema)value, index);
 			}
 
-	[TODO]
+	// Complete removing an item from this collection.
 	protected override void OnRemove(int index, Object value)
 			{
-				// TODO
-				throw new NotImplementedException("OnRemove");
+				RemoveLookup((XmlSchema)value);
 			}
 
-	[TODO]
+	// Complete setting an item in this collection.
 	protected override void OnSet(int index, Object oldValue, Object newValue)
 			{
-				// TODO
-				throw new NotImplementedException("OnSet");
+				RemoveLookup((XmlSchema)oldValue);
+				AddLookup((XmlSchema)newValue, index);
 			}
 
-	[TODO]
+	// Remove the given schema from this collection.
 	public void Remove(XmlSchema schema)
 			{
-				// TODO
-				throw new NotImplementedException("Remove");
+				List.RemoveAt(IndexOf(schema));
+			}
+
+	// Remove a schema from the lookup table.
+	private void RemoveLookup(XmlSchema schema)
+			{
+				// get the namespace of the schema
+				String ns = schema.TargetNamespace;
+				if(ns == null) { ns = String.Empty; }
+
+				// remove the namespace from the lookup table
+				table.Remove(ns);
 			}
 
 }; // class XmlSchemas

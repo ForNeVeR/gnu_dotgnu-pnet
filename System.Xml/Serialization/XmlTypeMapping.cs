@@ -2,7 +2,7 @@
  * XmlTypeMapping.cs - Implementation of the
  *			"System.Xml.Serialization.XmlTypeMapping" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,55 +27,49 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 public class XmlTypeMapping : XmlMapping
 {
-	[TODO]
-	internal XmlTypeMapping(/* TODO */)
+	// Internal state.
+	private String elementName;
+	private String ns;
+	private String typeFullName;
+	private String typeName;
+
+	// Constructor.
+	internal XmlTypeMapping
+				(String elementName, String ns, String typeFullName,
+				 String typeName)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.elementName = elementName;
+				this.ns = ns;
+				this.typeFullName = typeFullName;
+				this.typeName = typeName;
 			}
 
-	[TODO]
+
+	// Get the element name.
 	public String ElementName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("ElementName");
-				}
+				get { return elementName; }
 			}
 
-	[TODO]
+	// Get the namespace.
 	public String Namespace
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
+				get { return ns; }
 			}
 
-	[TODO]
+	// Get the full type name.
 	public String TypeFullName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("TypeFullName");
-				}
+				get { return typeFullName; }
 			}
 
-	[TODO]
+	// Get the type name.
 	public String TypeName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("TypeName");
-				}
+				get { return typeName; }
 			}
 
 }; // class XmlTypeMapping

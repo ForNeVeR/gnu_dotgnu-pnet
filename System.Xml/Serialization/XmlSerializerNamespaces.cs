@@ -2,7 +2,7 @@
  * XmlSerializerNamespaces.cs - Implementation of the
  *			"System.Xml.Serialization.XmlSerializerNamespaces" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,56 +26,54 @@ namespace System.Xml.Serialization
 
 using System;
 using System.Xml;
+using System.Collections;
 
-[TODO]
 public class XmlSerializerNamespaces
 {
-	[TODO]
+	// Internal state.
+	private Hashtable table;
+
+	// Constructors.
 	public XmlSerializerNamespaces()
-			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				table = new Hashtable();
 			}
-
-	[TODO]
 	public XmlSerializerNamespaces(XmlQualifiedName[] namespaces)
-			: base()
+			: this()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
-			}
-
-	[TODO]
-	public XmlSerializerNamespaces(XmlSerializerNamespaces namespaces)
-			: base()
-			{
-				// TODO
-				throw new NotImplementedException(".ctor");
-			}
-
-	[TODO]
-	public int Count
-			{
-				get
+				for(int i = 0, len = namespaces.Length; i < len; ++i)
 				{
-					// TODO
-					throw new NotImplementedException("Count");
+					XmlQualifiedName qname = namespaces[i];
+					table[qname.Name] = qname;
 				}
 			}
-
-	[TODO]
-	public void Add(String prefix, String ns)
+	public XmlSerializerNamespaces(XmlSerializerNamespaces namespaces)
+			: this(namespaces.ToArray())
 			{
-				// TODO
-				throw new NotImplementedException("Add");
+				// nothing to do here
 			}
 
-	[TODO]
+
+	// Get a count of the prefix/namespace pairs.
+	public int Count
+			{
+				get { return table.Count; }
+			}
+
+
+	// Add a new prefix/namespace pair.
+	public void Add(String prefix, String ns)
+			{
+				XmlQualifiedName qname = new XmlQualifiedName(prefix, ns);
+				table[qname.Name] = qname;
+			}
+
+	// Create an array that contains the prefix/namespace pairs.
 	public XmlQualifiedName[] ToArray()
 			{
-				// TODO
-				throw new NotImplementedException("ToArray");
+				XmlQualifiedName[] retval = new XmlQualifiedName[table.Count];
+				table.Values.CopyTo(retval, 0);
+				return retval;
 			}
 
 }; // class XmlSerializerNamespaces

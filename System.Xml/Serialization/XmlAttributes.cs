@@ -2,7 +2,7 @@
  * XmlAttributes.cs - Implementation of the
  *			"System.Xml.Serialization.XmlAttributes" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,214 +27,217 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 using System.Reflection;
+using System.ComponentModel;
 
-[TODO]
 public class XmlAttributes
 {
-	[TODO]
+	// Internal state.
+	private bool                         xmlIgnore;
+	private bool                         xmlns;
+	private Object                       xmlDefaultValue;
+	private XmlAnyAttributeAttribute     xmlAnyAttribute;
+	private XmlAnyElementAttributes      xmlAnyElements;
+	private XmlArrayAttribute            xmlArray;
+	private XmlArrayItemAttributes       xmlArrayItems;
+	private XmlAttributeAttribute        xmlAttribute;
+	private XmlChoiceIdentifierAttribute xmlChoiceIdentifier;
+	private XmlElementAttributes         xmlElements;
+	private XmlEnumAttribute             xmlEnum;
+	private XmlRootAttribute             xmlRoot;
+	private XmlTextAttribute             xmlText;
+	private XmlTypeAttribute             xmlType;
+
+
+	// Constructors.
 	public XmlAttributes()
-			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				xmlIgnore           = false;
+				xmlns               = false;
+				xmlDefaultValue     = DBNull.Value;
+				xmlAnyAttribute     = null;
+				xmlAnyElements      = new XmlAnyElementAttributes();
+				xmlArray            = null;
+				xmlArrayItems       = new XmlArrayItemAttributes();
+				xmlAttribute        = null;
+				xmlChoiceIdentifier = null;
+				xmlElements         = new XmlElementAttributes();
+				xmlEnum             = null;
+				xmlRoot             = null;
+				xmlText             = null;
+				xmlType             = null;
 			}
-
-	[TODO]
 	public XmlAttributes(ICustomAttributeProvider provider)
-			: base()
+			: this()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				Object[] atts;
+
+				// first check if we've got an ignore attribute
+				atts = provider.GetCustomAttributes
+					(typeof(XmlIgnoreAttribute), false);
+				if(atts.Length > 0)
+				{
+					// update ignore flag
+					xmlIgnore = true;
+
+					// bail out now, since the rest aren't going to be used
+					return;
+				}
+
+				// no ignore, so grab the rest of the attributes
+				atts = provider.GetCustomAttributes(false);
+				for(int i = 0, len = atts.Length; i < len; ++i)
+				{
+					Object o = atts[i];
+					if(o is XmlNamespaceDeclarationsAttribute)
+					{
+						xmlns = true;
+					}
+				#if CONFIG_COMPONENT_MODEL
+					else if(o is DefaultValueAttribute)
+					{
+						xmlDefaultValue = ((DefaultValueAttribute)o).Value;
+					}
+				#endif
+					else if(o is XmlAnyAttributeAttribute)
+					{
+						xmlAnyAttribute = (XmlAnyAttributeAttribute)o;
+					}
+					else if(o is XmlAnyElementAttribute)
+					{
+						xmlAnyElements.Add((XmlAnyElementAttribute)o);
+					}
+					else if(o is XmlArrayAttribute)
+					{
+						xmlArray = (XmlArrayAttribute)o;
+					}
+					else if(o is XmlArrayItemAttribute)
+					{
+						xmlArrayItems.Add((XmlArrayItemAttribute)o);
+					}
+					else if(o is XmlAttributeAttribute)
+					{
+						xmlAttribute = (XmlAttributeAttribute)o;
+					}
+					else if(o is XmlChoiceIdentifierAttribute)
+					{
+						xmlChoiceIdentifier = (XmlChoiceIdentifierAttribute)o;
+					}
+					else if(o is XmlElementAttribute)
+					{
+						xmlElements.Add((XmlElementAttribute)o);
+					}
+					else if(o is XmlEnumAttribute)
+					{
+						xmlEnum = (XmlEnumAttribute)o;
+					}
+					else if(o is XmlRootAttribute)
+					{
+						xmlRoot = (XmlRootAttribute)o;
+					}
+					else if(o is XmlTextAttribute)
+					{
+						xmlText = (XmlTextAttribute)o;
+					}
+					else if(o is XmlTypeAttribute)
+					{
+						xmlType = (XmlTypeAttribute)o;
+					}
+				}
 			}
 
-	[TODO]
+
+	// Get or set the xml any attribute.
 	public XmlAnyAttributeAttribute XmlAnyAttribute
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlAnyAttribute");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("XmlAnyAttribute");
-				}
+				get { return xmlAnyAttribute; }
+				set { xmlAnyAttribute = value; }
 			}
 
-	[TODO]
+	// Get the xml any elements.
 	public XmlAnyElementAttributes XmlAnyElements
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlAnyElements");
-				}
+				get { return xmlAnyElements; }
 			}
 
-	[TODO]
+	// Get or set the xml array.
 	public XmlArrayAttribute XmlArray
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlArray");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("XmlArray");
-				}
+				get { return xmlArray; }
+				set { xmlArray = value; }
 			}
 
-	[TODO]
+	// Get the xml array items.
 	public XmlArrayItemAttributes XmlArrayItems
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlArrayItems");
-				}
+				get { return xmlArrayItems; }
 			}
 
-	[TODO]
+	// Get or set the xml attribute.
 	public XmlAttributeAttribute XmlAttribute
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlAttribute");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("XmlAttribute");
-				}
+				get { return xmlAttribute; }
+				set { xmlAttribute = value; }
 			}
 
-	[TODO]
+	// Get the xml choice identifier.
 	public XmlChoiceIdentifierAttribute XmlChoiceIdentifier
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlChoiceIdentifier");
-				}
+				get { return xmlChoiceIdentifier; }
 			}
 
-	[TODO]
+	// Get or set the xml default value.
 	public Object XmlDefaultValue
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlDefaultValue");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("XmlDefaultValue");
-				}
+				get { return xmlDefaultValue; }
+				set { xmlDefaultValue = value; }
 			}
 
-	[TODO]
+	// Get the xml elements.
 	public XmlElementAttributes XmlElements
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlElements");
-				}
+				get { return xmlElements; }
 			}
 
-	[TODO]
+	// Get or set the xml enum.
 	public XmlEnumAttribute XmlEnum
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlEnum");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("XmlEnum");
-				}
+				get { return xmlEnum; }
+				set { xmlEnum = value; }
 			}
 
-	[TODO]
+	// Get or set the xml ignore flag.
 	public bool XmlIgnore
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlIgnore");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("XmlIgnore");
-				}
+				get { return xmlIgnore; }
+				set { xmlIgnore = value; }
 			}
 
-	[TODO]
+	// Get or set the xml namespace flag.
 	public bool Xmlns
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Xmlns");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Xmlns");
-				}
+				get { return xmlns; }
+				set { xmlns = value; }
 			}
 
-	[TODO]
+	// Get or set the xml root.
 	public XmlRootAttribute XmlRoot
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlRoot");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("XmlRoot");
-				}
+				get { return xmlRoot; }
+				set { xmlRoot = value; }
 			}
 
-	[TODO]
+	// Get or set the xml text.
 	public XmlTextAttribute XmlText
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlText");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("XmlText");
-				}
+				get { return xmlText; }
+				set { xmlText = value; }
 			}
 
-	[TODO]
+	// Get or set the xml type.
 	public XmlTypeAttribute XmlType
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("XmlType");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("XmlType");
-				}
+				get { return xmlType; }
+				set { xmlType = value; }
 			}
 
 }; // class XmlAttributes

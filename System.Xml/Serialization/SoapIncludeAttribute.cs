@@ -29,7 +29,8 @@ using System.Xml;
 
 [AttributeUsage(AttributeTargets.Class |
                 AttributeTargets.Struct |
-                AttributeTargets.Method)]
+                AttributeTargets.Method,
+                AllowMultiple=true)]
 public class SoapIncludeAttribute : Attribute
 {
 	// Internal state.

@@ -2,7 +2,7 @@
  * SoapSchemaMember.cs - Implementation of the
  *			"System.Xml.Serialization.SoapSchemaMember" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,44 +27,40 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 public class SoapSchemaMember
 {
-	[TODO]
+	// Internal state.
+	private String memberName;
+	private XmlQualifiedName memberType;
+
+
+	// Constructor.
 	public SoapSchemaMember()
-			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				memberName = String.Empty;
+				memberType = XmlQualifiedName.Empty;
 			}
 
-	[TODO]
+
+	// Get the name of this member.
 	public String MemberName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("MemberName");
-				}
+				get { return memberName; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("MemberName");
+					if(value == null) { value = String.Empty; }
+					memberName = value;
 				}
 			}
 
-	[TODO]
+	// Get the type of this member.
 	public XmlQualifiedName MemberType
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("MemberType");
-				}
+				get { return memberType; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("MemberType");
+					if(value == null) { value = XmlQualifiedName.Empty; }
+					memberType = value;
 				}
 			}
 

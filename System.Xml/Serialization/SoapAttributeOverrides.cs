@@ -2,7 +2,7 @@
  * SoapAttributeOverrides.cs - Implementation of the
  *			"System.Xml.Serialization.SoapAttributeOverrides" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,50 +26,61 @@ namespace System.Xml.Serialization
 
 using System;
 using System.Xml;
+using System.Collections;
 
-[TODO]
 public class SoapAttributeOverrides
 {
-	[TODO]
+	// Internal state.
+	private Hashtable table;
+	private XmlNameTable nt;
+
+
+	// Constructor.
 	public SoapAttributeOverrides()
-			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				table = new Hashtable();
+				nt = new NameTable();
 			}
 
-	[TODO]
+
+	// Get the attributes for the given type.
 	public SoapAttributes this[Type type]
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Item");
-				}
+				get { return this[type, String.Empty]; }
 			}
 
-	[TODO]
+	// Get the attributes for the given type's member.
 	public SoapAttributes this[Type type, String member]
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Item");
-				}
+				get { return (SoapAttributes)table[GetKey(type, member)]; }
 			}
 
-	[TODO]
+	// Add the given attributes for the given type.
 	public void Add(Type type, SoapAttributes attributes)
 			{
-				// TODO
-				throw new NotImplementedException("Add");
+				Add(type, String.Empty, attributes);
 			}
 
-	[TODO]
+	// Add the given attributes for the given type and member.
 	public void Add(Type type, String member, SoapAttributes attributes)
 			{
-				// TODO
-				throw new NotImplementedException("Add");
+				TypeMember key = GetKey(type, member);
+				if(table[key] != null)
+				{
+					throw new InvalidOperationException
+						(String.Format(S._("Xml_MultipleOverrides"), key));
+				}
+				table.Add(key, attributes);
+			}
+
+	// Get a key for the given type and member.
+	private TypeMember GetKey(Type type, String member)
+			{
+				if(member == null)
+				{
+					throw new ArgumentNullException("member");
+				}
+				return new TypeMember(type, nt.Add(member));
 			}
 
 }; // class SoapAttributeOverrides

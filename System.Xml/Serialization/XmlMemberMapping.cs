@@ -2,7 +2,7 @@
  * XmlMemberMapping.cs - Implementation of the
  *			"System.Xml.Serialization.XmlMemberMapping" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,95 +27,81 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 public class XmlMemberMapping
 {
-	[TODO]
-	internal XmlMemberMapping(/* TODO */)
+	// Internal state.
+	private bool any;
+	private bool checkSpecified;
+	private String elementName;
+	private String memberName;
+	private String ns;
+	private String typeFullName;
+	private String typeName;
+	private String typeNamespace;
+
+	// Constructor.
+	internal XmlMemberMapping
+				(bool any, bool checkSpecified, String elementName,
+				 String memberName, String ns, String typeFullName,
+				 String typeName, String typeNamespace)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.any = any;
+				this.checkSpecified = checkSpecified;
+				this.elementName = elementName;
+				this.memberName = memberName;
+				this.ns = ns;
+				this.typeFullName = typeFullName;
+				this.typeName = typeName;
+				this.typeNamespace = typeNamespace;
 			}
 
-	[TODO]
+	// Determine if any (??).
 	public bool Any
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Any");
-				}
+				get { return any; }
 			}
 
-	[TODO]
+	// Determine if (??) was specified.
 	public bool CheckSpecified
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("CheckSpecified");
-				}
+				get { return checkSpecified; }
 			}
 
-	[TODO]
+	// Get the element name.
 	public String ElementName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("ElementName");
-				}
+				get { return elementName; }
 			}
 
-	[TODO]
+	// Get the member name.
 	public String MemberName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("MemberName");
-				}
+				get { return memberName; }
 			}
 
-	[TODO]
+	// Get the namespace.
 	public String Namespace
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
+				get { return ns; }
 			}
 
-	[TODO]
+	// Get the full type name.
 	public String TypeFullName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("TypeFullName");
-				}
+				get { return typeFullName; }
 			}
 
-	[TODO]
+	// Get the type name.
 	public String TypeName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("TypeName");
-				}
+				get { return typeName; }
 			}
 
-	[TODO]
+	// Get the type namespace.
 	public String TypeNamespace
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("TypeNamespace");
-				}
+				get { return typeNamespace; }
 			}
 
 }; // class XmlMemberMapping

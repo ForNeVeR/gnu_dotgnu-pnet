@@ -2,7 +2,7 @@
  * SoapAttributes.cs - Implementation of the
  *			"System.Xml.Serialization.SoapAttributes" class.
  *
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,114 +27,118 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 using System.Reflection;
+using System.ComponentModel;
 
-[TODO]
 public class SoapAttributes
 {
-	[TODO]
+	// Internal state.
+	private bool                   soapIgnore;
+	private Object                 soapDefaultValue;
+	private SoapAttributeAttribute soapAttribute;
+	private SoapElementAttribute   soapElement;
+	private SoapEnumAttribute      soapEnum;
+	private SoapTypeAttribute      soapType;
+
+
+	// Constructors.
 	public SoapAttributes()
-			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				soapIgnore       = false;
+				soapDefaultValue = DBNull.Value;
+				soapAttribute    = null;
+				soapElement      = null;
+				soapEnum         = null;
+				soapType         = null;
 			}
-
-	[TODO]
 	public SoapAttributes(ICustomAttributeProvider provider)
-			: base()
+			: this()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				Object[] atts;
+
+				// first check if we've got an ignore attribute
+				atts = provider.GetCustomAttributes
+					(typeof(SoapIgnoreAttribute), false);
+				if(atts.Length > 0)
+				{
+					// update ignore flag
+					soapIgnore = true;
+
+					// bail out now, since the rest aren't going to be used
+					return;
+				}
+
+				// no ignore, so grab the rest of the attributes
+				atts = provider.GetCustomAttributes(false);
+				for(int i = 0, len = atts.Length; i < len; ++i)
+				{
+					Object o = atts[i];
+				#if CONFIG_COMPONENT_MODEL
+					if(o is DefaultValueAttribute)
+					{
+						soapDefaultValue = ((DefaultValueAttribute)o).Value;
+					}
+					else
+				#endif
+					if(o is SoapAttributeAttribute)
+					{
+						soapAttribute = (SoapAttributeAttribute)o;
+					}
+					else if(o is SoapElementAttribute)
+					{
+						soapElement = (SoapElementAttribute)o;
+					}
+					else if(o is SoapEnumAttribute)
+					{
+						soapEnum = (SoapEnumAttribute)o;
+					}
+					else if(o is SoapTypeAttribute)
+					{
+						soapType = (SoapTypeAttribute)o;
+					}
+				}
 			}
 
-	[TODO]
+
+	// Get or set the soap attribute.
 	public SoapAttributeAttribute SoapAttribute
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("SoapAttribute");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("SoapAttribute");
-				}
+				get { return soapAttribute; }
+				set { soapAttribute = value; }
 			}
 
-	[TODO]
+	// Get or set the soap default value.
 	public Object SoapDefaultValue
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("SoapDefaultValue");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("SoapDefaultValue");
-				}
+				get { return soapDefaultValue; }
+				set { soapDefaultValue = value; }
 			}
 
-	[TODO]
+	// Get or set the soap element.
 	public SoapElementAttribute SoapElement
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("SoapElement");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("SoapElement");
-				}
+				get { return soapElement; }
+				set { soapElement = value; }
 			}
 
-	[TODO]
+	// Get or set the soap enum.
 	public SoapEnumAttribute SoapEnum
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("SoapEnum");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("SoapEnum");
-				}
+				get { return soapEnum; }
+				set { soapEnum = value; }
 			}
 
-	[TODO]
+	// Get or set the soap ignore flag.
 	public bool SoapIgnore
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("SoapIgnore");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("SoapIgnore");
-				}
+				get { return soapIgnore; }
+				set { soapIgnore = value; }
 			}
 
-	[TODO]
+	// Get or set the soap type.
 	public SoapTypeAttribute SoapType
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("SoapType");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("SoapType");
-				}
+				get { return soapType; }
+				set { soapType = value; }
 			}
 
 }; // class SoapAttributes

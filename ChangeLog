@@ -17,6 +17,9 @@
 	* csant/csant_parse.c: implement property substitution in csant
 	task parameters.
 
+	* csant/csant_fileset.c (CSAntFileSetLoad): off by 1 bug when
+	checking the "excludes" list.
+
 2002-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_lvalue.tc, codegen/cg_utils.c:

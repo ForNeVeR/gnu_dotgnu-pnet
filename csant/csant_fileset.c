@@ -475,7 +475,7 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name,
 	outposn = 0;
 	for(posn = 0; posn < fileset->numFiles; ++posn)
 	{
-		if(!MatchInclude(fileset->files[posn] + strlen(baseDir), &state))
+		if(!MatchInclude(fileset->files[posn] + strlen(baseDir) + 1, &state))
 		{
 			fileset->files[outposn++] = fileset->files[posn];
 		}

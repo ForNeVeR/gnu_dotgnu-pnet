@@ -1,4 +1,8 @@
 
+0.6.10 (30 October 2004)
+
+	* Update debian packaging information (Russell Stuart).
+
 0.6.8 (8 August 2004)
 
 	* Fix spinlocks to use CompareExchange, not Exchange (Thong Nguyen).

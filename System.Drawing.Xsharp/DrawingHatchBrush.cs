@@ -27,7 +27,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
 using Xsharp;
 
-internal sealed class DrawingHatchBrush : IToolkitBrush
+internal sealed class DrawingHatchBrush : ToolkitBrushBase
 {
 	// Internal state.
 	private HatchStyle style;
@@ -38,7 +38,7 @@ internal sealed class DrawingHatchBrush : IToolkitBrush
 	// Constructor.
 	public DrawingHatchBrush(HatchStyle style,
 							 System.Drawing.Color foreColor,
-							 System.Drawing.Color backColor)
+							 System.Drawing.Color backColor) : base (foreColor)
 			{
 				this.style = style;
 				this.foreColor = foreColor;
@@ -46,7 +46,7 @@ internal sealed class DrawingHatchBrush : IToolkitBrush
 			}
 
 	// Select this brush into a graphics object.
-	public void Select(IToolkitGraphics _graphics)
+	public override void Select(IToolkitGraphics _graphics)
 			{
 				DrawingGraphics graphics = (_graphics as DrawingGraphics);
 				if(graphics != null)
@@ -74,11 +74,12 @@ internal sealed class DrawingHatchBrush : IToolkitBrush
 							DrawingToolkit.DrawingToXColor(foreColor);
 						g.SetFillSolid();
 					}
+					graphics.Brush = this;
 				}
 			}
 
 	// Dispose of this brush.
-	public void Dispose()
+	public override void Dispose()
 			{
 				// Nothing to do here in this implementation.
 			}

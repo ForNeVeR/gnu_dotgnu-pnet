@@ -215,6 +215,12 @@ public sealed class DrawingToolkit : IToolkit
 				return null;
 			}
 
+	// Create an IToolkitGraphics object from an image.
+	public IToolkitGraphics CreateFromImage(IToolkitImage image)
+			{
+				return new DrawingGraphicsImage(this, image);
+			}
+
 	// Create an IToolkitGraphics object from a HWND.
 	public IToolkitGraphics CreateFromHwnd(IntPtr hwnd)
 			{
@@ -316,6 +322,27 @@ public sealed class DrawingToolkit : IToolkit
 				if(y < -32767)
 				{
 					y = -32767;
+				}
+				else if(y > 32767)
+				{
+					y = 32767;
+				}
+			}
+
+	// Quirk in X, XClearArea, doesnt support a negative position.
+	internal static void ValidateWindowPositionPaint(ref int x, ref int y)
+			{
+				if(x < -32767)
+				{
+					x = 0;
+				}
+				else if(x > 32767)
+				{
+					x = 32767;
+				}
+				if(y < -32767)
+				{
+					y = 0;
 				}
 				else if(y > 32767)
 				{

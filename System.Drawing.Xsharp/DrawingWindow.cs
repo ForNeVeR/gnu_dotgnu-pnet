@@ -220,7 +220,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	// Invalidate a rectangle within this window.
 	void IToolkitWindow.Invalidate(int x, int y, int width, int height)
 			{
-				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
+				DrawingToolkit.ValidateWindowPositionPaint(ref x, ref y);
 				DrawingToolkit.ValidateWindowSize(ref width, ref height);
 				Repaint(x, y, width, height);
 			}

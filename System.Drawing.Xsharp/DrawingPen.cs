@@ -27,13 +27,14 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
 using Xsharp;
 
-internal sealed class DrawingPen : IToolkitPen
+internal sealed class DrawingPen : ToolkitPenBase
 {
 	// Internal state.
 	private Pen properties;
 
 	// Constructor.
-	public DrawingPen(Pen properties)
+	public DrawingPen(Pen properties) :
+		base(properties.Color, (int)properties.Width)
 			{
 				this.properties = properties;
 			}
@@ -93,7 +94,7 @@ internal sealed class DrawingPen : IToolkitPen
 	private static readonly byte[] dashdotdot = {3, 1, 1, 1, 1, 1};
 
 	// Select this pen into a graphics object.
-	public void Select(IToolkitGraphics _graphics)
+	public override void Select(IToolkitGraphics _graphics)
 			{
 				DrawingGraphics graphics = (_graphics as DrawingGraphics);
 				if(graphics != null)
@@ -141,11 +142,12 @@ internal sealed class DrawingPen : IToolkitPen
 					g.Foreground = DrawingToolkit.DrawingToXColor
 						(properties.Color);
 					g.SetFillSolid();
+					graphics.Pen = this;
 				}
 			}
 
 	// Select a brush-based pen into a graphics object.
-	public void Select(IToolkitGraphics graphics, IToolkitBrush brush)
+	public override void Select(IToolkitGraphics graphics, IToolkitBrush brush)
 			{
 				// Set the basic line information first.
 				Select(graphics);
@@ -155,7 +157,7 @@ internal sealed class DrawingPen : IToolkitPen
 			}
 
 	// Dispose of this pen.
-	public void Dispose()
+	public override void Dispose()
 			{
 				// Nothing to do here in this implementation.
 			}

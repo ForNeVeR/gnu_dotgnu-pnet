@@ -27,31 +27,29 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
 using Xsharp;
 
-internal sealed class DrawingSolidBrush : IToolkitBrush
+internal sealed class DrawingSolidBrush : ToolkitBrushBase
 {
-	// Internal state.
-	private System.Drawing.Color color;
 
 	// Constructor.
-	public DrawingSolidBrush(System.Drawing.Color color)
+	public DrawingSolidBrush(System.Drawing.Color color) : base(color)
 			{
-				this.color = color;
 			}
 
 	// Select this brush into a graphics object.
-	public void Select(IToolkitGraphics _graphics)
+	public override void Select(IToolkitGraphics _graphics)
 			{
 				DrawingGraphics graphics = (_graphics as DrawingGraphics);
 				if(graphics != null)
 				{
 					Xsharp.Graphics g = graphics.graphics;
 					g.SetFillSolid();
-					g.Foreground = DrawingToolkit.DrawingToXColor(color);
+					g.Foreground = DrawingToolkit.DrawingToXColor(Color);
 				}
+				graphics.Brush = this;
 			}
 
 	// Dispose of this brush.
-	public void Dispose()
+	public override void Dispose()
 			{
 				// Nothing to do here in this implementation.
 			}

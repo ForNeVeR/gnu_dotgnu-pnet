@@ -25,31 +25,44 @@ using System;
 using Xsharp;
 using DotGNU.Images;
 
-public class DrawingImage : IToolkitImage
+public class DrawingImage : ToolkitImageBase
 {
 	// Internal state.
-	private Xsharp.Image image;
+	private Xsharp.Image xImage;
+	private Screen screen;
 
 	// Constructor.
 	public DrawingImage(Screen screen, DotGNU.Images.Image image, int frame)
+		: base(image, frame)
 			{
-				this.image = new Xsharp.Image(screen, image.GetFrame(frame));
+				this.screen = screen;
+				base.frame = frame;
+				base.image = image;
+				ImageChanged();
 			}
 
-	// Dispose of this image.
-	public void Dispose()
+	public override void ImageChanged()
 			{
-				if(image != null)
+				if (xImage != null)
+					xImage.Dispose();
+				xImage = new Xsharp.Image(screen, base.image.GetFrame(base.frame));
+			}
+
+
+	// Dispose of this image.
+	public override void Dispose()
+			{
+				if(xImage != null)
 				{
-					image.Destroy();
-					image = null;
+					xImage.Destroy();
+					xImage = null;
 				}
 			}
 
 	// Get the native Xsharp image structure, for drawing purposes.
 	public Xsharp.Image GetNativeImage()
 			{
-				return image;
+				return xImage;
 			}
 
 }; // class DrawingImage

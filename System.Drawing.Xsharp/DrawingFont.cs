@@ -32,7 +32,7 @@ internal sealed class DrawingFont : IToolkitFont
 	// Internal state.
 	private System.Drawing.Font properties;
 	private float dpi;
-	private Xsharp.Font xfont;
+	internal Xsharp.Font xfont;
 
 	// Constructor.
 	public DrawingFont(System.Drawing.Font properties, float dpi)
@@ -57,7 +57,7 @@ internal sealed class DrawingFont : IToolkitFont
 								 (int)(properties.SizeInPoints * 10.0f * dpi / 72f),
 								 (Xsharp.FontStyle)(properties.Style));
 						}
-						graphics.font = xfont;
+						graphics.Font = this;
 					}
 				}
 			}

@@ -291,6 +291,14 @@ ILNativeFloat _ILReadDouble(const unsigned char *buf);
 #define	IL_READ_DOUBLE(buf)	(_ILReadDouble((buf)))
 
 /*
+ * Write little-endian values of various sizes to memory buffers.
+ */
+void _ILWriteFloat(unsigned char *buf, ILFloat value);
+#define	IL_WRITE_FLOAT(buf,value)	(_ILWriteFloat((buf), (value)))
+void _ILWriteDouble(unsigned char *buf, ILDouble value);
+#define	IL_WRITE_DOUBLE(buf,value)	(_ILWriteDouble((buf), (value)))
+
+/*
  * Result codes for operations on ILValue structures.
  */
 #define	ILVALUE_RESULT_OK			0

@@ -24,6 +24,10 @@ local constant declaration operations.
 * cscc/cs_decls.tc: remove constant-specific node types; evaluate the
 constant values of fields.
 
+* include/il_values.h, support/write_float.c, support/Makefile.am:
+implement IL_WRITE_FLOAT and IL_WRITE_DOUBLE, which write little-endian
+representations of floating point values to a buffer.
+
 2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);

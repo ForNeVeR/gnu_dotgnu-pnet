@@ -1,7 +1,7 @@
 /*
  * StreamReader.cs - Implementation of the "System.IO.StreamReader" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ public class StreamReader : TextReader
 	// Internal state.
 	private Stream 		stream;
 	private Encoding	encoding;
+	private Decoder		decoder;
 	private int    		bufferSize;
 	private byte[] 		inBuffer;
 	private int    		inBufferPosn;
@@ -106,6 +107,9 @@ public class StreamReader : TextReader
 				{
 					DetectByteOrder();
 				}
+
+				// Get a decoder for the encoding.
+				decoder = encoding.GetDecoder();
 			}
 
 	// Constructors that are based on a filename.
@@ -166,6 +170,9 @@ public class StreamReader : TextReader
 				{
 					DetectByteOrder();
 				}
+
+				// Get a decoder for the encoding.
+				decoder = encoding.GetDecoder();
 			}
 
 	// Destructor.
@@ -222,11 +229,17 @@ public class StreamReader : TextReader
 	// Discard any data that was buffered by this stream reader.
 	public void DiscardBufferedData()
 			{
+				// Empty the buffers.
 				inBufferPosn = 0;
 				inBufferLen = 0;
 				outBufferPosn = 0;
 				outBufferLen = 0;
 				sawEOF = false;
+
+				// Create a new decoder.  We cannot reuse the
+				// old one because we have no way to reset the
+				// state to the default.
+				decoder = encoding.GetDecoder();
 			}
 
 	// Dispose this stream reader.
@@ -248,26 +261,109 @@ public class StreamReader : TextReader
 				base.Dispose(disposing);
 			}
 
+	// Read byte data from the stream and convert it into characters.
+	private void ReadChars()
+			{
+				int len, outLen;
+
+				while(outBufferPosn >= outBufferLen && !sawEOF)
+				{
+					// Move the previous left-over buffer contents down.
+					if(inBufferPosn < inBufferLen)
+					{
+						Array.Copy(inBuffer, inBufferPosn,
+								   inBuffer, 0, inBufferLen - inBufferPosn);
+						inBufferLen -= inBufferPosn;
+					}
+					else
+					{
+						inBufferLen = 0;
+					}
+					inBufferPosn = 0;
+
+					// Read new bytes into the buffer.
+					if(stream == null)
+					{
+						throw new IOException(_("IO_StreamClosed"));
+					}
+					len = stream.Read(inBuffer, inBufferPosn,
+									  bufferSize - inBufferPosn);
+					if(len <= 0)
+					{
+						sawEOF = true;
+					}
+					else
+					{
+						inBufferLen += len;
+					}
+
+					// Determine the maximum number of bytes that
+					// we can afford to convert into characters.
+					len = encoding.GetMaxByteCount(bufferSize);
+					if(len > inBufferLen)
+					{
+						len = inBufferLen;
+					}
+
+					// Convert the bytes into characters.
+					outLen = decoder.GetChars(inBuffer, 0, len,
+											  outBuffer, 0);
+					outBufferPosn = 0;
+					outBufferLen = outLen;
+					inBufferPosn += len;
+				}
+			}
+
 	// Peek at the next character from this stream reader.
-	[TODO]
 	public override int Peek()
 			{
-				// TODO
-				return -1;
+				if(outBufferPosn < outBufferLen)
+				{
+					// We already have a character available.
+					return (int)(outBuffer[outBufferPosn]);
+				}
+				else
+				{
+					// Read another buffer of characters.
+					ReadChars();
+					if(outBufferPosn < outBufferLen)
+					{
+						return (int)(outBuffer[outBufferPosn]);
+					}
+					else
+					{
+						return -1;
+					}
+				}
 			}
 
 	// Read a single character from this stream reader.
-	[TODO]
 	public override int Read()
 			{
-				// TODO
-				return -1;
+				if(outBufferPosn < outBufferLen)
+				{
+					// We already have a character available.
+					return (int)(outBuffer[outBufferPosn++]);
+				}
+				else
+				{
+					// Read another buffer of characters.
+					ReadChars();
+					if(outBufferPosn < outBufferLen)
+					{
+						return (int)(outBuffer[outBufferPosn++]);
+					}
+					else
+					{
+						return -1;
+					}
+				}
 			}
 
 	// Read a buffer of characters from this stream reader.
-	[TODO]
 	public override int Read(char[] buffer, int index, int count)
 			{
+				// Validate the parameters.
 				if(buffer == null)
 				{
 					throw new ArgumentNullException("buffer");
@@ -287,24 +383,123 @@ public class StreamReader : TextReader
 					throw new ArgumentException
 						(_("Arg_InvalidArrayRange"));
 				}
-				// TODO
-				return 0;
+
+				// Read data from the input stream into the buffer.
+				int len = 0;
+				int templen;
+				while(count > 0)
+				{
+					// Re-fill the character buffer if necessary.
+					if(outBufferPosn >= outBufferLen)
+					{
+						ReadChars();
+						if(outBufferPosn >= outBufferLen)
+						{
+							break;
+						}
+					}
+
+					// Copy data to the result buffer.
+					templen = outBufferLen - outBufferPosn;
+					if(templen > count)
+					{
+						templen = count;
+					}
+					Array.Copy(outBuffer, outBufferPosn,
+							   buffer, index, templen);
+					outBufferLen += templen;
+					index += templen;
+					count -= templen;
+				}
+				return len;
 			}
 
 	// Read a line of characters from this stream reader.
-	[TODO]
 	public override String ReadLine()
 			{
-				// TODO
-				return base.ReadLine();
+				StringBuilder builder = new StringBuilder();
+				int ch;
+				for(;;)
+				{
+					// Re-fill the character buffer if necessary.
+					if(outBufferPosn >= outBufferLen)
+					{
+						ReadChars();
+						if(outBufferPosn >= outBufferLen)
+						{
+							break;
+						}
+					}
+
+					// Process characters until we reach a line terminator.
+					while(outBufferPosn < outBufferLen)
+					{
+						ch = outBuffer[outBufferPosn++];
+						if(ch == 13)
+						{
+							// Peek at the next character to determine
+							// if this is a CRLF or CR line terminator.
+							if(outBufferPosn >= outBufferLen)
+							{
+								ReadChars();
+							}
+							if(outBufferPosn < outBufferLen &&
+							   outBuffer[outBufferPosn] == '\u000A')
+							{
+								++outBufferPosn;
+							}
+							return builder.ToString();
+						}
+						else if(ch == 10)
+						{
+							// This is an LF line terminator.
+							return builder.ToString();
+						}
+						else
+						{
+							builder.Append((char)ch);
+						}
+					}
+				}
+				if(builder.Length != 0)
+				{
+					return builder.ToString();
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Read the entire contents of this stream reader until EOF.
-	[TODO]
 	public override String ReadToEnd()
 			{
-				// TODO
-				return base.ReadToEnd();
+				StringBuilder builder = new StringBuilder();
+				for(;;)
+				{
+					// Re-fill the character buffer if necessary.
+					if(outBufferPosn >= outBufferLen)
+					{
+						ReadChars();
+						if(outBufferPosn >= outBufferLen)
+						{
+							break;
+						}
+					}
+
+					// Append the character buffer to the builder.
+					builder.Append(outBuffer, outBufferPosn,
+								   outBufferLen - outBufferPosn);
+					outBufferPosn = outBufferLen;
+				}
+				if(builder.Length != 0)
+				{
+					return builder.ToString();
+				}
+				else
+				{
+					return String.Empty;
+				}
 			}
 
 	// Get the base stream underlying this stream reader.

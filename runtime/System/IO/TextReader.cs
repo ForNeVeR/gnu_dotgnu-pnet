@@ -124,38 +124,10 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 				return readLen;
 			}
 
-	// Append a buffer to a string to create a new string.
-	private static String AppendString(String str, char[] buf, int posn)
-			{
-				if(str != null)
-				{
-					if(posn != 0)
-					{
-						return (str + new String(buf, 0, posn));
-					}
-					else
-					{
-						return str;
-					}
-				}
-				else if(posn != 0)
-				{
-					return new String(buf, 0, posn);
-				}
-				else
-				{
-					return String.Empty;
-				}
-			}
-
 	// Read the next line from this reader.
-	[TODO]
 	public virtual String ReadLine()
 			{
-				// TODO: replace this with a StringBuilder later.
-				char[] buf = new char [128];
-				String str = null;
-				int posn = 0;
+				StringBuilder builder = new StringBuilder();
 				int ch;
 				while((ch = Read()) != -1)
 				{
@@ -165,25 +137,20 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 						{
 							Read();
 						}
-						return AppendString(str, buf, posn);
+						return builder.ToString();
 					}
 					else if(ch == 10)
 					{
-						return AppendString(str, buf, posn);
+						return builder.ToString();
 					}
 					else
 					{
-						buf[posn++] = (char)ch;
-						if(posn >= 128)
-						{
-							str = AppendString(str, buf, posn);
-							posn = 0;
-						}
+						builder.Append((char)ch);
 					}
 				}
-				if(posn != 0 || str != null)
+				if(builder.Length != 0)
 				{
-					return AppendString(str, buf, posn);
+					return builder.ToString();
 				}
 				else
 				{
@@ -192,20 +159,18 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 			}
 
 	// Read until the end of the stream.
-	[TODO]
 	public virtual String ReadToEnd()
 			{
-				// TODO: replace this with a StringBuilder later.
+				StringBuilder builder = new StringBuilder();
 				char[] buf = new char [128];
-				String str = null;
 				int readLen;
-				while((readLen = Read(buf, 0, 128)) != 0)
+				while((readLen = Read(buf, 0, 128)) > 0)
 				{
-					str = AppendString(str, buf, readLen);
+					builder.Append(buf, 0, readLen);
 				}
-				if(str != null)
+				if(builder.Length != 0)
 				{
-					return str;
+					return builder.ToString();
 				}
 				else
 				{

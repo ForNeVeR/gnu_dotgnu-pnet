@@ -192,17 +192,18 @@ checkLDLoc:
 	}
 	stack[stackSize].typeInfo =
 			ILTypeGetLocal(localVars, argNum);
-	stack[stackSize].engineType =
-			TypeToEngineType(stack[stackSize].typeInfo);
-	if(!IsUnsafeType(stack[stackSize].typeInfo) || unsafeAllowed)
+	if((stack[stackSize].engineType =
+			TypeToEngineType(stack[stackSize].typeInfo)) == ILEngineType_M)
 	{
-		ILCoderLoadLocal(coder, argNum, stack[stackSize].typeInfo);
-		++stackSize;
+		/* Convert the type of a "BYREF" local */
+		stack[stackSize].typeInfo = stack[stackSize].typeInfo->un.refType;
 	}
-	else
+	else if(IsUnsafeType(stack[stackSize].typeInfo) && !unsafeAllowed)
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	ILCoderLoadLocal(coder, argNum, stack[stackSize].typeInfo);
+	++stackSize;
 }
 break;
 

@@ -4,6 +4,8 @@
 * engine/verify.c, engine/verify_var.c: detect unsafe pointer types
 in arguments and locals and bail out of the verifier if found.
 
+* engine/verify_var.c: handle "byref" local variables correctly in "ldloc".
+
 2001-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_image, image/pecoff_loader.c (ILImageLoadFromFile): new function.

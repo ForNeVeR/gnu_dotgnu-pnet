@@ -80,7 +80,17 @@ ILNode_GenValue(ILNode_TypeOf)
  */
 JavaGenValue(ILNode_TypeOf)
 {
-	/* TODO */
+	const char *name;
+
+	/* Use the "System.Type.GetType" method to resolve the type,
+	   because the JVM does not have an equivalent to "ldtoken" */
+	name = CSTypeToName(node->type);
+	JavaGenStringConst(info, name, strlen(name));
+	JavaGenAdjust(info, 1);
+	JavaGenCallByName(info, "System/Type", "GetType",
+					  "(LSystem/String;)LSystem/Type;");
+
+	/* The type of the whole expression is "object reference" */
 	return ILMachineType_ObjectRef;
 }
 

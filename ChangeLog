@@ -4,6 +4,10 @@
 	* Xsharp/InputOutputWidget.cs: put "FlushInvalidates" back the
 	way that it was.
 
+	* System.Drawing/Graphics.cs: remove the DrawIcon "fix";
+	ToolkitDrawIcon is already adjusting by the base co-ordinates;
+	doing it again is an error.
+
 2004-01-25  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpResizer.cs, DotGNU.Images/Frame.cs,

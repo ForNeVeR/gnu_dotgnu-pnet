@@ -817,8 +817,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				   targetRect.Height == icon.Height)
 				{
 					// This is the easy case.
-					ToolkitDrawIcon(icon, targetRect.X + baseWindow.X,
-						targetRect.Y + baseWindow.Y);
+					ToolkitDrawIcon(icon, targetRect.X, targetRect.Y);
 				}
 				else
 				{

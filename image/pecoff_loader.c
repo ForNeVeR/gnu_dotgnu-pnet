@@ -524,6 +524,55 @@ int ILImageLoad(FILE *file, const char *filename,
 	return 0;
 }
 
+int ILImageLoadFromFile(const char *filename, ILContext *context,
+						ILImage **image, int flags, int printErrors)
+{
+	FILE *file;
+	int closeStream;
+	int loadError;
+
+	/* Open the specified file */
+	if(!strcmp(filename, "-"))
+	{
+		file = stdin;
+		closeStream = 0;
+	}
+	else if((file = fopen(filename, "rb")) == NULL)
+	{
+		/* Try again, in case libc does not understand "rb" */
+		if((file = fopen(filename, "r")) == NULL)
+		{
+			if(printErrors)
+			{
+				perror(filename);
+			}
+			return -1;
+		}
+		closeStream = 1;
+	}
+	else
+	{
+		closeStream = 1;
+	}
+
+	/* Load the file as an image */
+	loadError = ILImageLoad(file, filename, context, image, flags);
+	if(closeStream)
+	{
+		fclose(file);
+	}
+
+	/* Report errors to stderr, if necessary */
+	if(loadError != 0 && printErrors)
+	{
+		fprintf(stderr, "%s: %s\n", (closeStream ? filename : "stdin"),
+				ILImageLoadError(loadError));
+	}
+
+	/* Done */
+	return loadError;
+}
+
 void *ILImageMapAddress(ILImage *image, unsigned long address)
 {
 	unsigned long realAddr = ConvertVirtAddrToReal(image->map, address);

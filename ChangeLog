@@ -1,4 +1,8 @@
 
+2001-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* include/il_image, image/pecoff_loader.c (ILImageFromFile): new function.
+
 2001-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * tests/Makefile.am, tests/ilunit.c, tests/test_varith.c,

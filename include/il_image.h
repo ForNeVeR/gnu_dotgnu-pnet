@@ -171,6 +171,17 @@ int ILImageLoad(FILE *file, const char *filename, ILContext *context,
 				ILImage **image, int flags);
 
 /*
+ * Load an IL image from a file.  Returns -1 if the file
+ * could not be opened (reason in "errno"), or a load
+ * error otherwise.  If the filename is "-", then the
+ * input stream is read from stdin.  If "printErrors" is
+ * non-zero, then this function will report load errors
+ * to stderr, so that the caller doesn't have to.
+ */
+int ILImageLoadFromFile(const char *filename, ILContext *context,
+						ILImage **image, int flags, int printErrors);
+
+/*
  * Destroy an IL image and all memory associated with it.
  */
 void ILImageDestroy(ILImage *image);

@@ -1,3 +1,13 @@
+
+2004-06-19  Simon Guindon  <simon@nureality.ca>
+
+	* System.Windows.Forms/Themes/IThemePainter.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/ThemeManager.cs: Make the IThemePainter
+	and DefaultThemePainter public and include --theme detection code
+	in ThemeManager to pick up the ThemePainters from other assemblies.
+	(Gopal)
+
 2004-06-19  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/String.cs: fix error in ToCharArray startIndex was not

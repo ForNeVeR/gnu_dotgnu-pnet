@@ -19,54 +19,155 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+using System;
+using System.Reflection;
+
 namespace System.Windows.Forms.Themes
 {
+	internal sealed class ThemeManager
+	{
+		// Internal state.
+		private static IThemePainter mainPainter;
+		private static IThemePainter systemPainter;
 
-internal sealed class ThemeManager
-{
-	// Internal state.
-	private static IThemePainter mainPainter;
-	private static IThemePainter systemPainter;
+		// Initialize the theme painters.
+		static ThemeManager()
+		{
+			mainPainter = CreateDefaultThemePainter();
+			systemPainter = mainPainter;
+		}
 
-	// Initialize the theme painters.
-	static ThemeManager()
+		// Get the main .NET theme painter.
+		public static IThemePainter MainPainter
+		{
+			get
 			{
-				mainPainter = new DefaultThemePainter();
-				systemPainter = mainPainter;
+				return mainPainter;
 			}
+		}
 
-	// Get the main .NET theme painter.
-	public static IThemePainter MainPainter
+		// Get the system theme painter, which will usually be the same
+		// as the main painter, but may differ in some themes.
+		public static IThemePainter SystemPainter
+		{
+			get
 			{
-				get
+				return systemPainter;
+			}
+		}
+
+		// Get the painter for a particular flat style.
+		public static IThemePainter PainterForStyle(FlatStyle style)
+		{
+			if(style == FlatStyle.System)
+			{
+				return SystemPainter;
+			}
+			else
+			{
+				return MainPainter;
+			}
+		}
+
+		// Determine if this platform appears to be Unix-ish.
+		private static bool IsUnix()
+		{
+			#if !ECMA_COMPAT
+			if(Environment.OSVersion.Platform != (PlatformID)128) /* Unix */
+				#else
+					if(Path.DirectorySeparatorChar == '\\' ||
+					Path.AltDirectorySeparatorChar == '\\')
+				#endif
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		// Get the override ThemePainter name.
+		private static String GetThemeOverride()
+		{
+			String name = null;
+
+			// Search for "--theme" in the command-line options.		
+			String[] args = Environment.GetCommandLineArgs();
+			int index;
+			name = null;
+			for(index = 1; index < args.Length; ++index)
+			{			
+				if(args[index].StartsWith("--theme="))
 				{
-					return mainPainter;
+					name = args[index].Substring(8);
 				}
 			}
-
-	// Get the system theme painter, which will usually be the same
-	// as the main painter, but may differ in some themes.
-	public static IThemePainter SystemPainter
+		
+			// Check the environment next.
+			if(name == null)
 			{
-				get
-				{
-					return systemPainter;
-				}
+				name = Environment.GetEnvironmentVariable(
+									"PNET_WINFORMS_THEME");
 			}
 
-	// Get the painter for a particular flat style.
-	public static IThemePainter PainterForStyle(FlatStyle style)
+			// Bail out if no ThemePainter name specified.
+			if(name == null || name == String.Empty)
 			{
-				if(style == FlatStyle.System)
+				return null;
+			}
+
+			// Prepend "System.Windows.Forms.Themes." if necessary.
+			if(name.IndexOf('.') == -1)
+			{
+				name = "System.Windows.Forms.Themes." + name;
+			}
+			return name;
+		}
+
+		private static IThemePainter CreateThemePainter(string name)
+		{
+			try
+			{
+				// Load the ThemePainter's assembly.
+				Assembly assembly = Assembly.Load(name);
+
+				Type type = assembly.GetType("System.Windows.Forms.Themes.ThemePainter");
+				if(type == null)
 				{
-					return SystemPainter;
+					throw new NotSupportedException();
+				}
+				// Instantiate ThemePainter and return it.
+				ConstructorInfo ctor = type.GetConstructor(new Type [0]);
+				return (IThemePainter)(ctor.Invoke(new Object [0]));
+			}
+			catch (Exception e)
+			{
+				// some how the new ThemePainter failed
+				return new DefaultThemePainter();
+			}
+		}
+
+		// Create the default ThemePainter.
+		private static IThemePainter CreateDefaultThemePainter()
+		{
+			#if CONFIG_REFLECTION
+				// Determine the name of the theme we wish to use.
+				String name = GetThemeOverride();
+				if(name == null)
+				{
+					return new DefaultThemePainter();
 				}
 				else
 				{
-					return MainPainter;
+					// Load the DLL with the provided assembly name and use it to theme.
+					return CreateThemePainter(name);
 				}
-			}
-
-}; // class ThemeManager
+			#else
+				// We can't tell what platform were on so use DefaultThemePainter
+				return new DefaultThemePainter();
+			#endif
+		}
+	}; // class ThemeManager
 
 }; // namespace System.Windows.Forms.Themes

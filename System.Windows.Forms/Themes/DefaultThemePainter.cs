@@ -33,7 +33,7 @@ using System.Windows.Forms;
 // this to provide new themes, while deferring most things to the
 // base class to be handled.
 
-internal class DefaultThemePainter : IThemePainter
+public class DefaultThemePainter : IThemePainter
 {
 
 	// Cached values

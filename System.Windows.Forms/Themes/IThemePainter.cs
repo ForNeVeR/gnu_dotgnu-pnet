@@ -25,7 +25,7 @@ namespace System.Windows.Forms.Themes
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-internal interface IThemePainter
+public interface IThemePainter
 {
 	// Get the width of the specified border type
 	int GetBorderWidth(BorderStyle border);

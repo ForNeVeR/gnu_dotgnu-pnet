@@ -1318,7 +1318,7 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	}
 
 	/* We should have 0, 1, or many types at this point */
-	if(results.num > 1)
+	if(results.num > 1 && reportErrors)
 	{
 		/* The result is ambiguous */
 		AmbiguousError(node, name, &results);

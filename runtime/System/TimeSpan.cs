@@ -327,16 +327,19 @@ public struct TimeSpan : IComparable
 	// Parse a string into a TimeSpan value.
 	public static TimeSpan Parse (String s)
 			{
-				long numberofticks;
-				int days, hours, minutes, seconds, fractions;
+				long numberofticks = 0;
+				int days = 0, hours, minutes, seconds, fractions;
 				double fractionsinseconds;
-				int fractionslength;
-				String fractionss;
+				int fractionslength = 0;
+				String fractionss = String.Empty;
 				String[] tempstringarray;
 				bool minus = false;
 	
 				//Precheck for null reference
-				if (s == 0) throw new ArgumentNullException("s", _("Arg_NotNull"));
+				if (s == null)
+				{
+					throw new ArgumentNullException("s", _("Arg_NotNull"));
+				}
 	
 				try
 				{
@@ -361,7 +364,7 @@ public struct TimeSpan : IComparable
 					}
 	
 					//Parse the hh:mm:ss string
-					tempstringarray = s.Split(":");
+					tempstringarray = s.Split(':');
 					hours = Int32.Parse(tempstringarray[0]);
 					minutes = Int32.Parse(tempstringarray[1]);
 					seconds = Int32.Parse(tempstringarray[2]);
@@ -371,7 +374,7 @@ public struct TimeSpan : IComparable
 	
 				catch (Exception e)
 				{
-					throw new FormatException("s", _(Exception_Format));
+					throw new FormatException(_("Exception_Format"));
 				}
 
 				//Check for overflows
@@ -380,12 +383,12 @@ public struct TimeSpan : IComparable
 					((seconds > 59) || (seconds < 0)) ||
 					((fractionslength > 7) || (fractionslength < 1)) )
 				{
-					throw new OverflowException("s", _(Arg_DateTimeRange));
+					throw new OverflowException(_("Arg_DateTimeRange"));
 				}
 
 				//Calculate the fractions expressed in a second
 				fractions = Int32.Parse(fractionss);
-				fractionsinsecond = fractions / (Math.Pow(10,fractionslength));
+				fractionsinseconds = fractions / (Math.Pow(10,fractionslength));
 
 				//Calculate the numberofticks
 				numberofticks += (days * TicksPerDay);
@@ -400,7 +403,7 @@ public struct TimeSpan : IComparable
 				//Last check
 				if ((numberofticks < MinValue.Ticks) || (numberofticks > MaxValue.Ticks))
 				{
-					throw new OverflowException("s", _(Arg_DateTimeRange));
+					throw new OverflowException(_("Arg_DateTimeRange"));
 				}
 
 				//Return

@@ -524,7 +524,7 @@ internal class XmlStreamReader : TextReader
 						ReadChars();
 						if(outBufferPosn >= outBufferLen)
 						{
-							break;
+							return 0;
 						}
 					}
 

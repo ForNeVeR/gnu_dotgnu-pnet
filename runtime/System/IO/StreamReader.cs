@@ -450,7 +450,7 @@ public class StreamReader : TextReader
 						ReadChars();
 						if(outBufferPosn >= outBufferLen)
 						{
-							break;
+							return 0;
 						}
 					}
 

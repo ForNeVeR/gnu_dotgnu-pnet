@@ -716,9 +716,8 @@ class XmlDocument : XmlNode
 	// Read a node into this document.
 	public virtual XmlNode ReadNode(XmlReader reader)
 			{
-				XmlNode currentNode = null,
-				newNode = null,
-				resultNode = null;
+				XmlNode currentNode = null;
+				XmlNode resultNode = null;
 				bool isEmptyElement = false;
 				
 				int startDepth = reader.Depth;

@@ -1,3 +1,8 @@
+2004-01-19  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs,
+	System.Xml/XmlDocument.cs: fix some csc compile issues.
+
 2004-01-19  Adam Ballai <adam@thefrontnetworks.net>
 	
 	* System.Xml/XPath/XPathNavigator.cs,

@@ -59,7 +59,7 @@ public class HttpWebRequest : WebRequest
 	private IWebProxy proxy;
 	private Uri requestUri;
 	private bool sendChunked=false;
-//	private ServicePoint servicePoint=null;
+	private ServicePoint servicePoint=null;
 	private int timeout;
 	private string mediaType=null;
 	private bool isSecured=false;
@@ -591,7 +591,7 @@ public class HttpWebRequest : WebRequest
 			this.sendChunked=value;
 		}
 	}
-/*
+
 	public ServicePoint ServicePoint 
 	{
 		get
@@ -599,7 +599,7 @@ public class HttpWebRequest : WebRequest
 			return this.servicePoint;
 		} 
 	}
-*/
+
 
 	public override int Timeout 
 	{

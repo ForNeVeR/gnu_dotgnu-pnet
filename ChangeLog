@@ -1,3 +1,6 @@
+2004-07-15  klaus Treichel  <ktreichel@web.de>
+
+	* System/Net/HttpWebRequest.cs: uncomment ServicePoint property.	
 
 2004-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 

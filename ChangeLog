@@ -1,4 +1,12 @@
 
+2002-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Collections/Specialized/Makefile,
+	System/Collections/Specialized/StringCollection.cs,
+	System/Collections/Specialized/StringDictionary.cs,
+	System/Collections/Specialized/StringEnumerator.cs: implement some
+	missing classes from "System.Collections.Specialized".
+
 2002-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Common/ByteEncoding.cs: missing "++" when converting strings

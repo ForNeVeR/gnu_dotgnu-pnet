@@ -40,6 +40,8 @@ TESTS = arglist1.cs \
 		newarray2.cs \
 		newarray3.cs \
 		newarray4.cs \
+		pointer1.cs \
+		pointer2.cs \
 		ref1.cs \
 		ref2.cs \
 		relop1.cs \

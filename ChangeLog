@@ -9,6 +9,12 @@
 	* csharp/stmt/using2.err, csharp/stmt/using2.jerr: modify
 	test cases for "using" aliases to match cscc changes.
 
+	* csharp/expr/Makefile.am, csharp/expr/pointer1.cs,
+	csharp/expr/pointer1.err, csharp/expr/pointer1.il,
+	csharp/expr/pointer1.jerr, csharp/expr/pointer2.cs,
+	csharp/expr/pointer2.err, csharp/expr/pointer2.jerr:
+	add test cases for pointer coercions.
+
 2003-02-21  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/class/delegate1.cs, csharp/class/delegate1.il,

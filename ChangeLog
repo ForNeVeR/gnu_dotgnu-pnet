@@ -4,6 +4,12 @@
 	* doc/native.html: remove "native.html" because it is hopelessly
 	out of date.
 
+	* Makefile.am, configure.in, compat/.cvsignore,
+	compat/CSharpCompiler.cs, compat/Makefile.am, compat/README,
+	compat/VisualC.cs, compat/compat.build: add the "compat" directory,
+	and implement two MS assemblies (Microsoft.VisualC and cscompmgd)
+	within it, solely for the sake of backwards-compatbility.
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, csunit/Makefile.am,

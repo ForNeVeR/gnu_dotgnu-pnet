@@ -166,6 +166,7 @@ System.Xml/Makefile
 csunit/Makefile
 csunit/TestVersion.cs
 csupport/Makefile
+compat/Makefile
 tests/Makefile
 tests/System/Makefile
 tests/System.Xml/Makefile

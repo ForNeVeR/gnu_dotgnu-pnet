@@ -195,6 +195,18 @@ extern	"C" {
 			} while (0)
 
 /*
+ * Throw an array index out of range exception.
+ */
+#define	ARRAY_INDEX_EXCEPTION()	\
+			do { \
+				stacktop[0].ptrValue = \
+					SystemException(thread, "IndexOutOfRangeException", \
+									(ILInt32)(pc - pcstart)); \
+				stacktop += 1; \
+				goto throwException; \
+			} while (0)
+
+/*
  * Read a long value from a stack position.
  */
 static IL_INLINE ILInt64 ReadLong(CVMWord *stack)

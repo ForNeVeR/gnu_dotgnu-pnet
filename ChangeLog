@@ -34,6 +34,8 @@ getting the length of an array.
 
 * engine/cvm_dasm.c: fix the operand type for "ckarray_store_i8".
 
+* engine/cvm.c, engine/cvm_ptr.c: implement array-related instructions.
+
 2001-10-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/doc_texi.c: fixed a bug in the handling

@@ -20,7 +20,50 @@
 
 #if defined(IL_CVM_GLOBALS)
 
-/* No globals required */
+static IL_INLINE int CkArrayStoreI8(CVMWord *posn, void *tempptr,
+									ILUInt32 valueSize, ILUInt32 elemSize)
+{
+	ILUInt64 index = ReadULong(posn);
+	if(index < (ILUInt64)(ILUInt32)(((System_Array *)tempptr)->length))
+	{
+		/* Convert the array pointer into an element pointer.
+		   Note: this assumes that the array can never be
+		   greater than 4 Gb in size */
+		posn[-1].ptrValue = (void *)(((unsigned char *)tempptr) +
+									 sizeof(System_Array) +
+									 (ILUInt32)(index * elemSize));
+
+		/* Shift the value down on the stack to remove the index */
+		IL_MEMMOVE(posn, posn + CVM_WORDS_PER_LONG,
+				   valueSize * sizeof(CVMWord));
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Write a 32-bit float value to a memory location.
+ */
+static IL_INLINE void WriteFloat32(CVMWord *ptr, ILFloat value)
+{
+	*((ILFloat *)ptr) = value;
+}
+
+/*
+ * Write a long value to an unaligned pointer, but don't inline it.
+ * This is needed in "lread_elem" to prevent a register spill on x86.
+ */
+static void WriteHardLong(CVMWord *ptr, ILInt64 value)
+{
+#ifdef CVM_LONGS_ALIGNED_WORD
+	*((ILInt64 *)ptr) = value;
+#else
+	ILMemCpy(ptr, &value, sizeof(ILInt64));
+#endif
+}
 
 #elif defined(IL_CVM_LOCALS)
 
@@ -397,115 +440,206 @@ case COP_LDRVA:
 }
 break;
 
-case COP_BREAD_ELEM:
-{
-	/* Read a byte value from an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -1);
-}
-break;
+/* Read a simple value from an array element */
+#define	SIMPLE_READ_ELEM(name,type) \
+case name: \
+{ \
+	if((tempptr = stacktop[-2].ptrValue) != 0) \
+	{ \
+		if(stacktop[-1].uintValue < \
+				((ILUInt32)(((System_Array *)tempptr)->length))) \
+		{ \
+			stacktop[-2].intValue = \
+				(ILInt32)(((type *)(ArrayToBuffer(tempptr))) \
+							[stacktop[-1].uintValue]); \
+			MODIFY_PC_AND_STACK(1, -1); \
+		} \
+		else \
+		{ \
+			ARRAY_INDEX_EXCEPTION(); \
+		} \
+	} \
+	else \
+	{ \
+		NULL_POINTER_EXCEPTION(); \
+	} \
+} \
+break
 
-case COP_UBREAD_ELEM:
-{
-	/* Read an unsigned byte value from an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -1);
-}
-break;
-
-case COP_SREAD_ELEM:
-{
-	/* Read a short value from an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -1);
-}
-break;
-
-case COP_USREAD_ELEM:
-{
-	/* Read an unsigned short value from an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -1);
-}
-break;
-
-case COP_IREAD_ELEM:
-{
-	/* Read an integer value from an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -1);
-}
-break;
+SIMPLE_READ_ELEM(COP_BREAD_ELEM,  ILInt8);
+SIMPLE_READ_ELEM(COP_UBREAD_ELEM, ILUInt8);
+SIMPLE_READ_ELEM(COP_SREAD_ELEM,  ILInt16);
+SIMPLE_READ_ELEM(COP_USREAD_ELEM, ILUInt16);
+SIMPLE_READ_ELEM(COP_IREAD_ELEM,  ILInt32);
 
 case COP_PREAD_ELEM:
 {
 	/* Read a pointer value from an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -1);
+	if((tempptr = stacktop[-2].ptrValue) != 0)
+	{
+		if(stacktop[-1].uintValue <
+				((ILUInt32)(((System_Array *)tempptr)->length)))
+		{
+			stacktop[-2].ptrValue =
+				((void **)(ArrayToBuffer(tempptr)))[stacktop[-1].uintValue];
+			MODIFY_PC_AND_STACK(1, -1);
+		}
+		else
+		{
+			ARRAY_INDEX_EXCEPTION();
+		}
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 
-case COP_BWRITE_ELEM:
-{
-	/* Write a byte value to an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -3);
-}
-break;
+/* Write a simple value to an array element */
+#define	SIMPLE_WRITE_ELEM(name,type) \
+case name: \
+{ \
+	if((tempptr = stacktop[-3].ptrValue) != 0) \
+	{ \
+		if(stacktop[-2].uintValue < \
+				((ILUInt32)(((System_Array *)tempptr)->length))) \
+		{ \
+			((type *)(ArrayToBuffer(tempptr)))[stacktop[-2].uintValue] = \
+					(type)(stacktop[-1].intValue); \
+			MODIFY_PC_AND_STACK(1, -3); \
+		} \
+		else \
+		{ \
+			ARRAY_INDEX_EXCEPTION(); \
+		} \
+	} \
+	else \
+	{ \
+		NULL_POINTER_EXCEPTION(); \
+	} \
+} \
+break
 
-case COP_SWRITE_ELEM:
-{
-	/* Write a short value to an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -3);
-}
-break;
-
-case COP_IWRITE_ELEM:
-{
-	/* Write an integer value to an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -3);
-}
-break;
+SIMPLE_WRITE_ELEM(COP_BWRITE_ELEM, ILInt8);
+SIMPLE_WRITE_ELEM(COP_SWRITE_ELEM, ILInt16);
+SIMPLE_WRITE_ELEM(COP_IWRITE_ELEM, ILInt32);
 
 case COP_PWRITE_ELEM:
 {
 	/* Write a pointer value to an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, -3);
+	if((tempptr = stacktop[-3].ptrValue) != 0)
+	{
+		if(stacktop[-2].uintValue <
+				((ILUInt32)(((System_Array *)tempptr)->length)))
+		{
+			((void **)(ArrayToBuffer(tempptr)))[stacktop[-2].uintValue] =
+					stacktop[-1].ptrValue;
+			MODIFY_PC_AND_STACK(1, -3);
+		}
+		else
+		{
+			ARRAY_INDEX_EXCEPTION();
+		}
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 
 case COP_CKARRAY_LOAD_I4:
 {
 	/* Check an array load that uses an I4 index */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
+	if((tempptr = stacktop[-2].ptrValue) != 0)
+	{
+		if(stacktop[-1].uintValue <
+				((ILUInt32)(((System_Array *)tempptr)->length)))
+		{
+			/* Adjust the pointer to address the first array element */
+			stacktop[-2].ptrValue = (void *)(((unsigned char *)tempptr) +
+											 sizeof(System_Array));
+			MODIFY_PC_AND_STACK(1, 0);
+		}
+		else
+		{
+			ARRAY_INDEX_EXCEPTION();
+		}
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 
 case COP_CKARRAY_LOAD_I8:
 {
 	/* Check an array load that uses an I8 index */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
+	if((tempptr = stacktop[-(CVM_WORDS_PER_LONG + 1)].ptrValue) != 0)
+	{
+		if(ReadULong(&(stacktop[-CVM_WORDS_PER_LONG])) <
+				((ILUInt64)(ILUInt32)(((System_Array *)tempptr)->length)))
+		{
+			/* Adjust the pointer to address the first array element */
+			stacktop[-(CVM_WORDS_PER_LONG + 1)].ptrValue =
+				(void *)(((unsigned char *)tempptr) + sizeof(System_Array));
+			MODIFY_PC_AND_STACK(1, 0);
+		}
+		else
+		{
+			ARRAY_INDEX_EXCEPTION();
+		}
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 
 case COP_CKARRAY_STORE_I8:
 {
 	/* Check an array store that uses an I8 index */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
+	tempNum = ((ILUInt32)(pc[1]));
+	if((tempptr = (stacktop - tempNum - CVM_WORDS_PER_LONG - 1)->ptrValue) != 0)
+	{
+		if(CkArrayStoreI8(stacktop - tempNum - CVM_WORDS_PER_LONG,
+						  tempptr, tempNum, (ILUInt32)(pc[2])))
+		{
+			MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		}
+		else
+		{
+			ARRAY_INDEX_EXCEPTION();
+		}
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 
 case COP_ARRAY_LEN:
 {
 	/* Get the length of an array */
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
+	if(stacktop[-1].ptrValue != 0)
+	{
+	#ifdef IL_NATIVE_INT32
+		stacktop[-1].intValue =
+			((System_Array *)(stacktop[-1].ptrValue))->length;
+	#else
+		WriteLong(&(stacktop[-1]),
+				  (ILInt64)(((System_Array *)(stacktop[-1].ptrValue))->length));
+	#endif
+		MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_INT - 1);
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 
@@ -942,53 +1076,71 @@ break;
 
 #elif defined(IL_CVM_PREFIX)
 
-case COP_PREFIX_LREAD_ELEM:
-{
-	/* Read a long value from an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, -2 + CVM_WORDS_PER_LONG);
-}
-break;
+/* Read a large value from an array element */
+#define	LARGE_READ_ELEM(name,type,size,read,write) \
+case name: \
+{ \
+	if((tempptr = stacktop[-2].ptrValue) != 0) \
+	{ \
+		if(stacktop[-1].uintValue < \
+				((ILUInt32)(((System_Array *)tempptr)->length))) \
+		{ \
+			write(&(stacktop[-2]), \
+				  read((CVMWord *)&(((type *)(ArrayToBuffer(tempptr))) \
+							        	[stacktop[-1].uintValue]))); \
+			MODIFY_PC_AND_STACK(1, -2 + size); \
+		} \
+		else \
+		{ \
+			ARRAY_INDEX_EXCEPTION(); \
+		} \
+	} \
+	else \
+	{ \
+		NULL_POINTER_EXCEPTION(); \
+	} \
+} \
+break
 
-case COP_PREFIX_FREAD_ELEM:
-{
-	/* Read a float value from an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, -2 + CVM_WORDS_PER_NATIVE_FLOAT);
-}
-break;
+LARGE_READ_ELEM(COP_PREFIX_LREAD_ELEM, ILInt64, CVM_WORDS_PER_LONG,
+				ReadLong, WriteLong);
+LARGE_READ_ELEM(COP_PREFIX_FREAD_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
+				(ILNativeFloat)*(ILFloat *), WriteFloat);
+LARGE_READ_ELEM(COP_PREFIX_DREAD_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
+				ReadDouble, WriteFloat);
 
-case COP_PREFIX_DREAD_ELEM:
-{
-	/* Read a double value from an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, -2 + CVM_WORDS_PER_NATIVE_FLOAT);
-}
-break;
+/* Write a large value to an array element */
+#define	LARGE_WRITE_ELEM(name,type,size,read,write) \
+case name: \
+{ \
+	if((tempptr = stacktop[-(size + 2)].ptrValue) != 0) \
+	{ \
+		if(stacktop[-(size + 1)].uintValue < \
+				((ILUInt32)(((System_Array *)tempptr)->length))) \
+		{ \
+			write(((CVMWord *)&(((type *)(ArrayToBuffer(tempptr))) \
+						[stacktop[-(size + 1)].uintValue])), \
+				  (type)read(&(stacktop[-(size)]))); \
+			MODIFY_PC_AND_STACK(1, -(size + 2)); \
+		} \
+		else \
+		{ \
+			ARRAY_INDEX_EXCEPTION(); \
+		} \
+	} \
+	else \
+	{ \
+		NULL_POINTER_EXCEPTION(); \
+	} \
+} \
+break
 
-case COP_PREFIX_LWRITE_ELEM:
-{
-	/* Write a long value to an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, -2 - CVM_WORDS_PER_LONG);
-}
-break;
-
-case COP_PREFIX_FWRITE_ELEM:
-{
-	/* Write a float value to an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, -2 - CVM_WORDS_PER_NATIVE_FLOAT);
-}
-break;
-
-case COP_PREFIX_DWRITE_ELEM:
-{
-	/* Write a double value to an array element */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, -2 - CVM_WORDS_PER_NATIVE_FLOAT);
-}
-break;
+LARGE_WRITE_ELEM(COP_PREFIX_LWRITE_ELEM, ILInt64, CVM_WORDS_PER_LONG,
+				 ReadLong, WriteHardLong);
+LARGE_WRITE_ELEM(COP_PREFIX_FWRITE_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
+				 ReadFloat, WriteFloat32);
+LARGE_WRITE_ELEM(COP_PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
+				 ReadFloat, WriteDouble);
 
 case COP_PREFIX_MKREFANY:
 {

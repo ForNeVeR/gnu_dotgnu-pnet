@@ -855,8 +855,22 @@ restart:
 	lastWasJump = 0;
 	while(len > 0)
 	{
-		/* Is this a jump target? */
+		/* Fetch the instruction information block */
 		offset = (ILUInt32)(pc - (unsigned char *)(code->code));
+		opcode = pc[0];
+		if(opcode != IL_OP_PREFIX)
+		{
+			insn = &(ILMainOpcodeTable[opcode]);
+		}
+		else
+		{
+			opcode = pc[1];
+			insn = &(ILPrefixOpcodeTable[opcode]);
+			opcode += IL_OP_PREFIX;
+		}
+		insnSize = (ILUInt32)(insn->size);
+
+		/* Is this a jump target? */
 		if(IsJumpTarget(jumpMask, offset))
 		{
 			/* Validate the stack information */
@@ -884,20 +898,6 @@ restart:
 		{
 			ILCoderMarkBytecode(coder, offset);
 		}
-
-		/* Fetch the instruction information block */
-		opcode = pc[0];
-		if(opcode != IL_OP_PREFIX)
-		{
-			insn = &(ILMainOpcodeTable[opcode]);
-		}
-		else
-		{
-			opcode = pc[1];
-			insn = &(ILPrefixOpcodeTable[opcode]);
-			opcode += IL_OP_PREFIX;
-		}
-		insnSize = (ILUInt32)(insn->size);
 
 		/* Validate the stack height changes */
 		if(stackSize < ((ILUInt32)(insn->popped)) ||

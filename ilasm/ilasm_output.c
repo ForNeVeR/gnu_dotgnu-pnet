@@ -1186,8 +1186,9 @@ static ILUInt32 ssaStartOffset = 0;
 void ILAsmOutSSAStart(ILInt32 opcode)
 {
 	ILAsmOutSimple(opcode);
-	ssaStartOffset = offset;
 	OUT_BYTE(0);
+	OUT_BYTE(0);
+	ssaStartOffset = offset;
 }
 
 void ILAsmOutSSAValue(ILInt64 value)
@@ -1198,7 +1199,9 @@ void ILAsmOutSSAValue(ILInt64 value)
 
 void ILAsmOutSSAEnd(void)
 {
-	buffer[ssaStartOffset] = (unsigned char)((offset - ssaStartOffset) / 2);
+	ILUInt32 num = ((offset - ssaStartOffset) / 2);
+	buffer[ssaStartOffset - 2] = (unsigned char)num;
+	buffer[ssaStartOffset - 1] = (unsigned char)(num >> 8);
 }
 
 void ILAsmOutMaxStack(ILUInt32 _maxStack)

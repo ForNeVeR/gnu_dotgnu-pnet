@@ -78,17 +78,16 @@ static unsigned long GetSpecialSize(unsigned char *temp, unsigned long tsize)
 	else if(temp[0] == (unsigned char)IL_OP_ANN_PHI)
 	{
 		/* Static single assignment annotation data */
-		if(tsize < 4)
+		if(tsize < 3)
 		{
 			return 0;
 		}
-		numItems = (unsigned long)(IL_READ_UINT16(temp + 2));
-		if(numItems >= ((unsigned long)0x80000000) ||
-		   (tsize - 4) < (numItems * 2))
+		numItems = (unsigned long)(IL_READ_UINT16(temp + 1));
+		if((tsize - 3) < (numItems * 2))
 		{
 			return 0;
 		}
-		return numItems * 2 + 4;
+		return numItems * 2 + 3;
 	}
 	return 0;
 }

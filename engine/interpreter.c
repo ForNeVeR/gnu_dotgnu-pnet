@@ -1964,7 +1964,7 @@ void _ILInterpreter(ILExecThread *thread)
 			{
 				/* Skip a static single assignment annotation, which
 				   is variable in length */
-				pc += 2 + 2 * ((ILUInt32)(pc[1]));
+				pc += 3 + 2 * ((ILUInt32)IL_READ_UINT16(pc + 1));
 			}
 			break;
 

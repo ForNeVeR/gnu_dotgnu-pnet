@@ -1,3 +1,33 @@
+2003-08-04  Neil Cawse   <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs: Small changes to match ms behaviour.
+	
+	* System.Drawing.Win32/DrawingGraphics.cs: Changes to match ms behaviour.
+	
+	* System.Windows.Forms/TextBox.cs: remove flashing caret. Optimization to
+	minimize X round trips. Implemented more functionality and checked against MS.
+	
+	* System.Windows.Forms/Control.cs: default size of font wrong- part of fonts fix,
+	"Enabled" fix, key filter for keychar moved.
+	
+	* System.Windows.Forms/Label.cs: small fixes to get appearance matched to MS.
+	
+	* System.Drawing/Font.cs, System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/NullTooklit.cs, System.Drawing.Xsharp/DrawingFont.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs : When creating Font, dpi is passed
+	through and used.
+	
+	* System.Windows.Forms/RadioButton.cs, System.Windows.Forms/StatusBar.cs:
+	small bug in calculate state - for compiling on csc.
+	
+	* System.Drawing.Xsharp/DrawingWindow.cs: ignore ASCII DEL 0x7F
+
+	* System.Drawing.Xsharp/DrawingGraphics.cs, System.Drawing.Win32/DrawingFont.cs,
+	System.Drawing.Win32/DrawingToolkit.cs: Drawline includes last point - ms
+	behaviour, Restrict all location and sizes to the bounds allowed under X.
+	
+	* samples/FormsTest.cs: add in drawing primitives tests
+
 
 2003-08-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -1,4 +1,85 @@
 
+0.3.6 (11 May 2002)
+
+	Runtime engine:
+
+	* Implement "pread_this" and "pwrite_this" CVM instructions to
+	  speed up common field access operations.
+	* Method profiling.
+	* Recognise invalid program entry points.
+	* Semantic analysis and code generation for the array "new" operator.
+	* Stub "Reflection.Emit" internalcalls.
+	* Make sure that "ilverify" loads the assembly dependencies.
+	* Insert stack traces into exception objects that are created
+	  by the engine.
+	* Implement stack resizing and overflow checks (Jonathan Springer).
+	* Internalcalls for "ArgIterator" and "TypedReference".
+	* Wrong pointer used to get field names in "Enum.GetEnumName".
+
+	C# Compiler:
+
+	* Compile against the correct system library (builtin vs pnetlib).
+	* Correct handling of "beforefieldinit" on classes.
+	* Output the correct security attributes to mark assemblies as "unsafe".
+	* Do not insert coercions into the result type of an operator.
+	* Don't call "yyerrok" at EOF, because it will cause an infinite loop.
+	* Recognise "ThrowExpr" and "LineInfo" as "return" statements.
+	* Add extra scope nodes to handle local variables with the same
+	  name in different lexical contexts.
+	* Begin semantic analysis for attributes (not yet complete).
+	* Non-static field initializers.
+	* Code generation for "ref" and "out" argument variables.
+	* New keywords to be compatible with features of Microsoft's C# compiler:
+	  "__arglist", "__makeref", "__reftype", and "__refvalue".
+	* Improve method, field, and property handling for value types.
+	* Semantic analysis for the array case of "foreach".
+	* Add the "-fsave-asm" option to assist with debugging.
+	* Do not generate branch instructions at the end of a "then" case
+	  that ends in a "return" statement.
+	* Reversed test in code generation for "!".
+
+	Documentation and Samples:
+
+	* csdoc2test: create test stubs from ECMA documentation (Gopal V).
+	* csdocvalil: process multiple "-fimage" options.
+	* engine/HACKING: document the engine architecture more fully.
+	* codepage.cs: add command-line options to dump the contents
+	  of a code page.
+	* csdoc: bug fixes to XML output generation.
+
+	Linker:
+
+	* Fix linking of synthetic types.
+
+	Loader and Metadata:
+
+	* Scan up the class hierarchy when resolving MemberRef's for "base.X"
+	  expressions.
+	* Resolve the class before determining if it is enumerated or a delegate.
+	* Bug fix to ILWriterTextWrite that caused invalid data to be written.
+	* Fix attribute parsing in "ser_parse.c".
+	* Recognise builtin attribute like "DllImport", "MarshalAs", etc, and
+	  convert them into the proper metadata definitions (not linked into
+	  the compiler yet).
+
+	Platform Support:
+
+	* Begin adding threading primitives to "support" (not linked into
+	  the engine yet).
+	* Implement "Socket.Select" (Charlie Carnow).
+	* Print an error when a child process exits with a signal to catch
+	  SEGV's within the compiler toolchain.
+	* Make the socket code use a consistent address format.
+
+	Other:
+
+	* csant: pass "/noconfig" to csc to stop it linking in the Microsoft
+	  "System.dll" and "System.Xml.dll" assemblies instead of ours.
+	* Rename source files with duplicate names to get around problems
+	  with setting breakpoints in gdb.
+	* libgc: fix a Win32-ism that was affecting Cygwin builds.
+	* libffi: update to latest version from gcc CVS tree.
+
 0.3.4 (20 April 2002)
 
 	Runtime engine:

@@ -347,6 +347,10 @@ public class Form : ContainerControl
 						{
 							ToolkitWindow.SetMaximumSize(value);
 						}
+						if (maximumSize.Width > 0 && Width > maximumSize.Width)
+							Width = maximumSize.Width;
+						if (maximumSize.Height > 0 && Height > maximumSize.Height)
+							Height = maximumSize.Height;
 					}
 				}
 			}
@@ -406,6 +410,10 @@ public class Form : ContainerControl
 						{
 							ToolkitWindow.SetMinimumSize(value);
 						}
+						if (minimumSize.Width > 0 && Width < minimumSize.Width)
+							Width = minimumSize.Width;
+						if (minimumSize.Height > 0 && Height < minimumSize.Height)
+							Height = minimumSize.Height;
 					}
 				}
 			}

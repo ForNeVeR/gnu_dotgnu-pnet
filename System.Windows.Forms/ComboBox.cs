@@ -104,8 +104,11 @@ namespace System.Windows.Forms
 
 		private void Draw()
 		{
-			using (Graphics g = CreateGraphics())
-				Draw(g);
+			if (IsHandleCreated)
+			{
+				using (Graphics g = CreateGraphics())
+					Draw(g);
+			}
 		}
 
 		private void Draw(Graphics g)

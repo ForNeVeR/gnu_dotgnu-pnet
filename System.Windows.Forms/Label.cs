@@ -47,6 +47,7 @@ public class Label : Control
 				this.flatStyle = FlatStyle.Standard;
 				this.alignment = ContentAlignment.TopLeft;
 				this.preferredWidth = -1;
+				TabStop = false;
 			}
 
 	// Get or set this label's properties.

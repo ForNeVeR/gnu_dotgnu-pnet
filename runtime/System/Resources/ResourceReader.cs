@@ -61,7 +61,7 @@ public sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 				}
 			}
 	public ResourceReader(String fileName)
-			: this(new FileStream(fileName, FileMode.Open))
+			: this(new FileStream(fileName, FileMode.Open, FileAccess.Read))
 			{
 				// Nothing to do here.
 			}
@@ -208,8 +208,10 @@ public sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 
 				// Read the primary part of the header and validate it.
 				if(stream.Read(header, 0, 12) != 12 ||
-				   ReadUInt(header, 0) != (uint)0xBEEFCACE ||
-				   ReadUInt(header, 4) != (uint)1)
+				   ReadUInt(header, 0) !=
+				   		(uint)(ResourceManager.MagicNumber) ||
+				   ReadUInt(header, 4) !=
+				   		(uint)(ResourceManager.HeaderVersionNumber))
 				{
 					return false;
 				}
@@ -277,10 +279,10 @@ public sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 				return hash;
 			}
 
-	// Look up a resource string by name.  This is a short-cut
+	// Look up a resource object by name.  This is a short-cut
 	// that "ResourceSet" can use to perform quicker lookups in
 	// the common case of internal assembly string resources.
-	internal String GetString(String name)
+	internal Object GetObject(String name)
 			{
 				int hash = Hash(name);
 				int left, right, middle;

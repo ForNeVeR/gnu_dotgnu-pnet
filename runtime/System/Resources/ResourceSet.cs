@@ -25,33 +25,46 @@ namespace System.Resources
 using System;
 using System.IO;
 using System.Collections;
+using System.Globalization;
 
 public class ResourceSet : IDisposable
 {
 	// Internal state.
 	protected IResourceReader Reader;
 	protected Hashtable Table;
+	private Hashtable ignoreCaseTable;
 
 	// Constructors.
-	[TODO]
 	protected ResourceSet()
 			{
-				// TODO
+				Reader = null;
+				Table = new Hashtable();
+				ignoreCaseTable = null;
 			}
-	[TODO]
 	public ResourceSet(IResourceReader reader)
 			{
-				// TODO
+				if(reader == null)
+				{
+					throw new ArgumentNullException("reader");
+				}
+				Reader = reader;
+				Table = new Hashtable();
+				ignoreCaseTable = null;
+				ReadResources();
 			}
-	[TODO]
 	public ResourceSet(Stream stream)
 			{
-				// TODO
+				Reader = new ResourceReader(stream);
+				Table = new Hashtable();
+				ignoreCaseTable = null;
+				ReadResources();
 			}
-	[TODO]
 	public ResourceSet(String fileName)
 			{
-				// TODO
+				Reader = new ResourceReader(fileName);
+				Table = new Hashtable();
+				ignoreCaseTable = null;
+				ReadResources();
 			}
 
 	// Close this resource set.
@@ -61,10 +74,15 @@ public class ResourceSet : IDisposable
 			}
 
 	// Dispose this resource set.
-	[TODO]
 	protected virtual void Dispose(bool disposing)
 			{
-				// TODO
+				if(Reader != null)
+				{
+					Reader.Close();
+					Reader = null;
+				}
+				Table = null;
+				ignoreCaseTable = null;
 			}
 
 	// Implement IDisposable.
@@ -74,54 +92,154 @@ public class ResourceSet : IDisposable
 			}
 
 	// Get the default reader type for this resource set.
-	[TODO]
 	public virtual Type GetDefaultReader()
 			{
-				// TODO
-				return null;
+				return typeof(ResourceReader);
 			}
 
 	// Get the default write type for this resource set.
-	[TODO]
 	public virtual Type GetDefaultWriter()
 			{
-				// TODO
-				return null;
+				return typeof(ResourceWriter);
+			}
+
+	// Create the "ignore case" table from the primary hash table.
+	private void CreateIgnoreCaseTable()
+			{
+				TextInfo info = CultureInfo.InvariantCulture.TextInfo;
+				ignoreCaseTable = new Hashtable();
+				IDictionaryEnumerator e = Table.GetEnumerator();
+				while(e.MoveNext())
+				{
+					ignoreCaseTable[info.ToLower((String)(e.Key))] = e.Value;
+				}
 			}
 
 	// Get an object from this resource set.
-	[TODO]
 	public virtual Object GetObject(String name)
 			{
-				// TODO
-				return null;
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(Reader == null)
+				{
+					throw new InvalidOperationException
+						(_("Invalid_ResourceReaderClosed"));
+				}
+				else
+				{
+					return Table[name];
+				}
 			}
-	[TODO]
 	public virtual Object GetObject(String name, bool ignoreCase)
 			{
-				// TODO
-				return null;
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(Reader == null)
+				{
+					throw new InvalidOperationException
+						(_("Invalid_ResourceReaderClosed"));
+				}
+
+				// Try looking for the resource by exact name.
+				Object value = Table[name];
+				if(value != null || !ignoreCase)
+				{
+					return value;
+				}
+
+				// Create the "ignore case" table if necessary.
+				if(ignoreCaseTable == null)
+				{
+					CreateIgnoreCaseTable();
+				}
+
+				// Look for the resource in the "ignore case" table.
+				TextInfo info = CultureInfo.InvariantCulture.TextInfo;
+				return ignoreCaseTable[info.ToLower(name)];
 			}
 
 	// Get a string from this resource set.
-	[TODO]
 	public virtual String GetString(String name)
 			{
-				// TODO
-				return null;
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(Reader == null)
+				{
+					throw new InvalidOperationException
+						(_("Invalid_ResourceReaderClosed"));
+				}
+				try
+				{
+					return (String)(Table[name]);
+				}
+				catch(InvalidCastException)
+				{
+					throw new InvalidOperationException
+						(_("Invalid_ResourceNotString"));
+				}
 			}
-	[TODO]
 	public virtual String GetString(String name, bool ignoreCase)
 			{
-				// TODO
-				return null;
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(Reader == null)
+				{
+					throw new InvalidOperationException
+						(_("Invalid_ResourceReaderClosed"));
+				}
+
+				// Try looking for the resource by exact name.
+				Object value = Table[name];
+				if(value != null || !ignoreCase)
+				{
+					try
+					{
+						return (String)value;
+					}
+					catch
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ResourceNotString"));
+					}
+				}
+
+				// Create the "ignore case" table if necessary.
+				if(ignoreCaseTable == null)
+				{
+					CreateIgnoreCaseTable();
+				}
+
+				// Look for the resource in the "ignore case" table.
+				try
+				{
+					TextInfo info = CultureInfo.InvariantCulture.TextInfo;
+					return (String)(ignoreCaseTable[info.ToLower(name)]);
+				}
+				catch
+				{
+					throw new InvalidOperationException
+						(_("Invalid_ResourceNotString"));
+				}
 			}
 
 	// Read all resources into the hash table.
-	[TODO]
 	public virtual void ReadResources()
 			{
-				// TODO
+				IDictionaryEnumerator e = Reader.GetEnumerator();
+				while(e.MoveNext())
+				{
+					Table.Add(e.Key, e.Value);
+				}
 			}
 
 }; // class ResourceSet

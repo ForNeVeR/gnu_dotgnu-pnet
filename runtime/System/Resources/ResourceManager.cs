@@ -2,7 +2,7 @@
  * ResourceManager.cs - Implementation of the
  *		"System.Resources.ResourceManager" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,15 +42,17 @@ public class ResourceManager
 	protected Hashtable ResourceSets;
 	private bool ignoreCase;
 	private Type resourceSetType;
+	private String resourceDir;
 
 	// Constructors.
 	protected ResourceManager()
 			{
 				BaseNameField = null;
 				MainAssembly = null;
-				ResourceSets = null;
+				ResourceSets = new Hashtable();
 				ignoreCase = false;
 				resourceSetType = null;
+				resourceDir = null;
 			}
 	public ResourceManager(Type resourceSource)
 			{
@@ -60,9 +62,10 @@ public class ResourceManager
 				}
 				BaseNameField = resourceSource.FullName;
 				MainAssembly = resourceSource.Assembly;
+				ResourceSets = new Hashtable();
 				ignoreCase = false;
-				resourceSetType = typeof(ResourceSet);
-				InitAssemblyResources();
+				resourceSetType = typeof(BuiltinResourceSet);
+				resourceDir = null;
 			}
 	public ResourceManager(String baseName, Assembly assembly)
 			{
@@ -76,9 +79,10 @@ public class ResourceManager
 				}
 				BaseNameField = baseName;
 				MainAssembly = assembly;
+				ResourceSets = new Hashtable();
 				ignoreCase = false;
-				resourceSetType = typeof(ResourceSet);
-				InitAssemblyResources();
+				resourceSetType = typeof(BuiltinResourceSet);
+				resourceDir = null;
 			}
 	public ResourceManager(String baseName, Assembly assembly,
 						   Type usingResourceSet)
@@ -93,7 +97,9 @@ public class ResourceManager
 				}
 				BaseNameField = baseName;
 				MainAssembly = assembly;
+				ResourceSets = new Hashtable();
 				ignoreCase = false;
+				resourceDir = null;
 				if(usingResourceSet != null)
 				{
 					if(!usingResourceSet.IsSubclassOf(typeof(ResourceSet)))
@@ -106,13 +112,21 @@ public class ResourceManager
 				}
 				else
 				{
-					resourceSetType = typeof(ResourceSet);
+					resourceSetType = typeof(BuiltinResourceSet);
 				}
-				InitAssemblyResources();
+			}
+	private ResourceManager(String baseName, String resourceDir,
+							Type usingResourceSet)
+			{
+				BaseNameField = baseName;
+				MainAssembly = null;
+				ResourceSets = new Hashtable();
+				ignoreCase = false;
+				resourceSetType = usingResourceSet;
+				this.resourceDir = resourceDir;
 			}
 
 	// Create a resource manager from a file.
-	[TODO]
 	public static ResourceManager CreateFileBasedResourceManager
 				(String baseName, String resourceDir, Type usingResourceSet)
 			{
@@ -125,16 +139,25 @@ public class ResourceManager
 					throw new ArgumentException
 						(_("Arg_EndsWithResources"), "baseName");
 				}
-				// TODO
-				return null;
-			}
-
-	// Initialize the resources for the main assembly.
-	[TODO]
-	private void InitAssemblyResources()
-			{
-				// TODO
-				ResourceSets = null;
+				else if(resourceDir == null)
+				{
+					throw new ArgumentNullException("baseName");
+				}
+				if(usingResourceSet != null)
+				{
+					if(!usingResourceSet.IsSubclassOf(typeof(ResourceSet)))
+					{
+						throw new ArgumentException
+							(_("Arg_MustBeResourceSet"),
+							 "usingResourceSet");
+					}
+				}
+				else
+				{
+					usingResourceSet = typeof(BuiltinResourceSet);
+				}
+				return new ResourceManager(baseName, resourceDir,
+										   usingResourceSet);
 			}
 
 	// Get the base name for this resource manager.
@@ -169,14 +192,24 @@ public class ResourceManager
 			}
 
 	// Get an object from this resource manager.
-	public Object GetObject(String name)
+	public virtual Object GetObject(String name)
 			{
 				return GetObject(name, null);
 			}
-	[TODO]
-	public Object GetObject(String name, CultureInfo culture)
+	public virtual Object GetObject(String name, CultureInfo culture)
 			{
-				// TODO
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				if(culture == null)
+				{
+					culture = CultureInfo.CurrentCulture;
+				}
+				lock(this)
+				{
+					// TODO
+				}
 				return null;
 			}
 
@@ -197,14 +230,24 @@ public class ResourceManager
 			}
 
 	// Get a string from this resource manager.
-	public String GetString(String name)
+	public virtual String GetString(String name)
 			{
 				return GetString(name, null);
 			}
-	[TODO]
-	public String GetString(String name, CultureInfo culture)
+	public virtual String GetString(String name, CultureInfo culture)
 			{
-				// TODO
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				if(culture == null)
+				{
+					culture = CultureInfo.CurrentCulture;
+				}
+				lock(this)
+				{
+					// TODO
+				}
 				return name;
 			}
 
@@ -232,20 +275,147 @@ public class ResourceManager
 			}
 
 	// Get the name of a resource file for a particular culture.
-	[TODO]
 	protected virtual String GetResourceFileName(CultureInfo culture)
 			{
-				// TODO
-				return null;
+				if(culture == null || culture.LCID == 0x7F)
+				{
+					// This is the invariant culture.
+					return BaseNameField + ".resources";
+				}
+				else
+				{
+					// This is a named culture.
+					return BaseNameField + "." + culture.Name + ".resources";
+				}
 			}
 
 	// Find a resource set for a particular culture.
-	[TODO]
 	protected virtual ResourceSet InternalGetResourceSet
 				(CultureInfo culture, bool createIfNotExists,
 				 bool tryParents)
 			{
-				// TODO
+				CultureInfo current = culture;
+				ResourceSet set;
+				do
+				{
+					// If this is the invariant culture, then stop.
+					if(culture.Equals(CultureInfo.InvariantCulture))
+					{
+						break;
+					}
+
+					// See if we have a cached resource set for this culture.
+					set = (ResourceSet)(ResourceSets[current.Name]);
+					if(set != null)
+					{
+						return set;
+					}
+
+					// Attempt to load a resource for this culture.
+					if(createIfNotExists)
+					{
+						set = AttemptLoad(current);
+						if(set != null)
+						{
+							ResourceSets[current.Name] = set;
+							return set;
+						}
+					}
+
+					// Move up to the parent culture.
+					current = current.Parent;
+				}
+				while(current != null && tryParents);
+
+				// Try looking for the neutral language attribute.
+				if(MainAssembly != null)
+				{
+					current = GetNeutralResourcesLanguage(MainAssembly);
+				}
+				else
+				{
+					current = null;
+				}
+				if(current != null)
+				{
+					// See if we have a cached resource set for this culture.
+					set = (ResourceSet)(ResourceSets[current.Name]);
+					if(set != null)
+					{
+						return set;
+					}
+
+					// Attempt to load a resource for this culture.
+					if(createIfNotExists)
+					{
+						set = AttemptLoad(current);
+						if(set != null)
+						{
+							ResourceSets[current.Name] = set;
+							return set;
+						}
+					}
+				}
+
+				// Last ditch attempt: try the invariant culture.
+				current = CultureInfo.InvariantCulture;
+				set = (ResourceSet)(ResourceSets[current.Name]);
+				if(set != null)
+				{
+					return set;
+				}
+				if(createIfNotExists)
+				{
+					set = AttemptLoad(current);
+					if(set != null)
+					{
+						ResourceSets[current.Name] = set;
+						return set;
+					}
+				}
+
+				// We could not find an appropriate resource set.
+				return null;
+			}
+
+	// Attempt to load a resource set for a particular culture.
+	private ResourceSet AttemptLoad(CultureInfo culture)
+			{
+				Stream stream;
+				if(MainAssembly != null)
+				{
+					// Try loading the resources from an assembly.
+					stream = MainAssembly.GetManifestResourceStream
+							(GetResourceFileName(culture));
+					if(stream != null)
+					{
+						Object[] args = new Object [1];
+						args[0] = stream;
+						return (ResourceSet)
+							(Activator.CreateInstance(resourceSetType, args));
+					}
+				}
+				else if(resourceDir != null)
+				{
+					// Try loading the resources from a directory.
+					try
+					{
+						stream = new FileStream(resourceDir +
+												Path.DirectorySeparatorChar +
+												GetResourceFileName(culture),
+												FileMode.Open,
+												FileAccess.Read);
+					}
+					catch(IOException)
+					{
+						// The file or directory probably does not exist.
+						return null;
+					}
+					Object[] args = new Object [1];
+					args[0] = stream;
+					return (ResourceSet)
+						(Activator.CreateInstance(resourceSetType, args));
+				}
 				return null;
 			}
 

@@ -24,6 +24,7 @@ namespace System.Windows.Forms
 using System;
 using System.Collections;
 
+	[TODO]
 	public class CheckedListBox : ListBox
 	{
 		private CheckedItemCollection checkedItems;
@@ -73,6 +74,7 @@ using System.Collections;
 			}
 		}
 
+		[TODO]
 		public override object DataSource
 		{
 			get
@@ -86,6 +88,7 @@ using System.Collections;
 			}
 		}
 
+		[TODO]
 		public override string DisplayMember
 		{
 			get
@@ -112,11 +115,24 @@ using System.Collections;
 			}
 		}
 
+		[TODO]
+		public bool ThreeDCheckBoxes 
+		{
+			get
+			{
+				return false;
+			}
+			set
+			{
+			}
+		}
+
 		protected override ListBox.ObjectCollection CreateItemCollection()
 		{
 			return new ObjectCollection(this);
 		}
 
+		[TODO]
 		public CheckState GetItemCheckState(int index)
 		{
 			return CheckState.Indeterminate;
@@ -135,6 +151,7 @@ using System.Collections;
 			}
 		}
 
+		[TODO]
 		public new ObjectCollection Items
 		{
 			get

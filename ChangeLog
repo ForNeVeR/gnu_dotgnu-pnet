@@ -1,4 +1,9 @@
 
+2004-03-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_declspec.c (CDeclCreatePrototype): deal with a bug
+	in the declaration of functions that return a function pointer.
+
 2004-03-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c: output the parameter types for

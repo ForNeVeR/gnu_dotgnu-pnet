@@ -1206,20 +1206,33 @@ CDeclarator CDeclCreatePrototype(ILGenInfo *info, CDeclarator decl,
 	ILType *signature;
 	ILType **returnHole;
 
-	/* Bail out if we already have parameters in the declarator */
+	/* Bail out if we already have parameters in the declarator
+	   and we aren't declaring a function pointer return value */
 	if(decl.params)
 	{
-		CCError(_("cannot declare a function returning a function"));
-		return decl;
+		if(!ILType_IsPointer(decl.type) || !(decl.typeHole))
+		{
+			CCError(_("cannot declare a function returning a function"));
+			return decl;
+		}
 	}
 
 	/* If the declarator has a type hole, then create a signature
 	   inside it, and replace the hole with the return type */
-	if(decl.typeHole)
+	if(decl.typeHole && !(decl.params))
 	{
 		signature = ParamsToSignature(info, params, 0, 0, &returnHole);
 		*(decl.typeHole) = signature;
 		decl.typeHole = returnHole;
+		return decl;
+	}
+
+	/* Deal with functions that return function pointers */
+	if(decl.params)
+	{
+		signature = ParamsToSignature(info, params, 0, 0, &returnHole);
+		*returnHole = decl.type;
+		decl.type = signature;
 		return decl;
 	}
 

@@ -1,4 +1,13 @@
 
+2005-01-16  Stephen Compall  <s11@member.fsf.org>
+
+	* doc/pnettools.texi (Build file syntax): Specify behavior in
+	cases in which insufficient permissions prevent particular
+	actions (thanks to Marcus Urban <mathpup@mylinuxisp.com>).
+	(Compile tag): Warn about tags whose subsequent instances in a
+	particular context are ignored: sources, references, and
+	resources (thanks to Marcus Urban).
+
 2005-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.12" release.

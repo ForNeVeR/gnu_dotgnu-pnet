@@ -2954,21 +2954,26 @@ Delete the specified FILE, which is interpreted relative to the build
 directory.
 
 If @code{failonerror} is @code{false} (the default), then the build will
-continue normally if the file does not exist.  If @code{failonerror}
-is @code{true}, then the build will fail if the file does not exist.
+continue normally if the file does not exist or if the user does not
+have permission to delete the file.  If @code{failonerror} is
+@code{true}, then the build will fail if the file does not exist or if
+the user does not have permission to delete the file.
 
 @cindex mkdir (csant tag)
 @item <mkdir dir="DIRECTORY"/>
 Make the specified DIRECTORY.  Does nothing if the directory already exists.
-The DIRECTORY is interpreted relative to the build directory.
+If the user does not have permission to create the directory, the build
+fails.  The DIRECTORY is interpreted relative to the build directory.
 
 @cindex copy (csant tag)
 @item <copy file="FROM" [tofile="TO"] [todir="DIR"]/>
 Copy a file.  The destination can be a filename specified by
 @code{tofile}, or alternatively a directory specified by
-@code{todir}.  If the directory @code{todir} does not exist
-it will be created.  All pathnames are interpreted relative to
-the build directory.
+@code{todir}.  The build will fail if both @code{tofile} and
+@code{todir} are given or if the user lacks permission to copy
+to the destination.  If the directory @code{todir} does not
+exist it will be created.  All pathnames are interpreted relative
+to the build directory.
 
 @cindex csant (csant tag)
 @item <csant buildfile="FILE" [target="TARGET"] [basedir="DIR"]/>
@@ -3086,7 +3091,9 @@ passed when necessary.
 @item <sources [basedir="DIR"]>
 Specify a set of source files for the build.  If @code{basedir} is
 present, then it is used to modify the source directory to find the
-source files.
+source files.  @strong{Warning:} If multiple @code{<sources>} tags
+appear under the same @code{<compile>} tag, only the first set of
+sources is considered.  The others are silently ignored.
 
 The @code{<includes name="SPEC" [if="COND"]/>} child tag is used to specify a
 group of files to include in the set.  For example, @code{*.cs} will
@@ -3111,13 +3118,17 @@ will only include the contents of the @code{foo} directory if the
 @item <references [basedir="DIR"]>
 Specify a set of library assemblies for the build.  If @code{basedir} is
 present, then it is used to modify the build directory to find the
-library assemblies.
+library assemblies.  @strong{Warning:} If multiple @code{<references>}
+tags appear under the same @code{<compile>} tag, only the first set of
+references is considered.  The others are silently ignored.
 
 @cindex resources (csant tag)
 @item <resources [basedir="DIR"]>
 Specify a set of resource files for the build.  If @code{basedir} is
 present, then it is used to modify the build directory to find the
-resource files.
+resource files.  @strong{Warning:} If multiple @code{<resources>} tags appear
+under the same @code{<compile>} tag, only the first set of resources
+is considered.  The others are silently ignored.
 @end table
 
 @c -----------------------------------------------------------------------

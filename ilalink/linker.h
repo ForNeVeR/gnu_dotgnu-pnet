@@ -217,12 +217,9 @@ int _ILLinkerFindSymbol(ILLinker *linker, const char *name,
 int _ILLinkerCreateSymbolHash(ILLinker *linker);
 
 /*
- * Add a global symbol definition for the image being linked.
- * Returns zero if the symbol is already defined.
+ * Add the global symbols in a link image to a linker context.
  */
-int _ILLinkerAddSymbol(ILLinker *linker, const char *name,
-					   const char *aliasFor, int flags,
-					   ILMember *member);
+void _ILLinkerAddSymbols(ILLinker *linker, ILImage *image);
 
 /*
  * Convert a class reference in a foreign image into a

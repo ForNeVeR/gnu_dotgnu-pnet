@@ -201,6 +201,7 @@ int ILLinkerAddImage(ILLinker *linker, ILContext *context,
 		linker->images = linkImage;
 	}
 	linker->lastImage = linkImage;
+	_ILLinkerAddSymbols(linker, image);
 	return 1;
 }
 

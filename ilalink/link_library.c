@@ -448,19 +448,49 @@ static int AddGlobalSymbol(ILLinker *linker, ILLibrary *library,
 						   ILMember *member)
 {
 	ILLibrarySymbol *libSymbol;
-	if((libSymbol = ILMemPoolAlloc(&(library->pool), ILLibrarySymbol)) == 0)
+	if(library)
 	{
-		_ILLinkerOutOfMemory(linker);
-		return 0;
+		if((libSymbol = ILMemPoolAlloc(&(library->pool), ILLibrarySymbol)) == 0)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		libSymbol->name = name;
+		libSymbol->aliasFor = aliasFor;
+		libSymbol->flags = flags;
+		libSymbol->member = member;
+		if(!ILHashAdd(library->symbolHash, libSymbol))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
 	}
-	libSymbol->name = name;
-	libSymbol->aliasFor = aliasFor;
-	libSymbol->flags = flags;
-	libSymbol->member = member;
-	if(!ILHashAdd(library->symbolHash, libSymbol))
+	else
 	{
-		_ILLinkerOutOfMemory(linker);
-		return 0;
+		/* Search for an existing definition */
+		libSymbol = ILHashFindType(linker->symbolHash, name, ILLibrarySymbol);
+		if(libSymbol)
+		{
+			fprintf(stderr, "%s : multiply defined\n", name);
+			linker->error = 1;
+			return 1;
+		}
+
+		/* Add the definition to the image being linked */
+		if((libSymbol = ILMemPoolAlloc(&(linker->pool), ILLibrarySymbol)) == 0)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		libSymbol->name = name;
+		libSymbol->aliasFor = aliasFor;
+		libSymbol->flags = flags;
+		libSymbol->member = member;
+		if(!ILHashAdd(linker->symbolHash, libSymbol))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
 	}
 	return 1;
 }
@@ -961,15 +991,22 @@ static ILMember *CreateSymbolRef(ILLinker *linker, ILLibrary *library,
 	}
 
 	/* Make a "TypeRef" for the library's "<Module>" type */
-	find.linker = linker;
-	find.library = library;
-	libClass.name = IL_LINKER_DLL_MODULE_NAME;
-	libClass.namespace = 0;
-	libClass.parent = 0;
-	classInfo = MakeTypeRef(&find, &libClass, linker->image);
-	if(!classInfo)
+	if(library)
 	{
-		return 0;
+		find.linker = linker;
+		find.library = library;
+		libClass.name = IL_LINKER_DLL_MODULE_NAME;
+		libClass.namespace = 0;
+		libClass.parent = 0;
+		classInfo = MakeTypeRef(&find, &libClass, linker->image);
+		if(!classInfo)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		classInfo = _ILLinkerModuleClass(linker);
 	}
 
 	/* Create a "MemberRef" token and cache it */
@@ -1040,7 +1077,11 @@ int _ILLinkerFindSymbol(ILLinker *linker, const char *name,
 		{
 			*aliasFor = libSymbol->aliasFor;
 			*library = 0;
-			*memberRef = libSymbol->member;
+			*memberRef = CreateSymbolRef(linker, 0, libSymbol);
+			if(!(*memberRef))
+			{
+				return 0;
+			}
 			return libSymbol->flags;
 		}
 	}
@@ -1095,41 +1136,25 @@ int _ILLinkerCreateSymbolHash(ILLinker *linker)
 	return 1;
 }
 
-int _ILLinkerAddSymbol(ILLinker *linker, const char *name,
-					   const char *aliasFor, int flags,
-					   ILMember *member)
+void _ILLinkerAddSymbols(ILLinker *linker, ILImage *image)
 {
-	char *origAliasFor;
-	ILLibrary *origLibrary;
-	ILMember *origMember;
-	int origFlags;
-	ILLibrarySymbol *libSymbol;
+	ILClass *classInfo;
 
-	/* See if we already have a definition for this symbol */
-	origFlags = _ILLinkerFindSymbol(linker, name, &origAliasFor,
-								    &origLibrary, &origMember);
-	if(origFlags != 0 && origLibrary == 0)
+	/* Look for the "<Module>" type within the image */
+	classInfo = ILClassLookup(ILClassGlobalScope(image),
+							  IL_LINKER_EXE_MODULE_NAME, 0);
+	if(!classInfo)
 	{
-		return 0;
+		classInfo = ILClassLookup(ILClassGlobalScope(image),
+								  IL_LINKER_DLL_MODULE_NAME, 0);
+		if(!classInfo)
+		{
+			return;
+		}
 	}
 
-	/* Add a new symbol definition to the image */
-	if((libSymbol = ILMemPoolAlloc(&(linker->pool), ILLibrarySymbol)) == 0)
-	{
-		_ILLinkerOutOfMemory(linker);
-		return 0;
-	}
-	libSymbol->name = (ILInternString((char *)name, -1)).string;
-	libSymbol->aliasFor =
-		(aliasFor ? (ILInternString((char *)aliasFor, -1)).string : 0);
-	libSymbol->flags = flags | IL_LINKSYM_HAVE_REF;
-	libSymbol->member = member;
-	if(!ILHashAdd(linker->symbolHash, libSymbol))
-	{
-		_ILLinkerOutOfMemory(linker);
-		return 0;
-	}
-	return 1;
+	/* Walk the symbol definitions in the "<Module>" type */
+	WalkGlobals(linker, image, 0, classInfo);
 }
 
 #ifdef	__cplusplus

@@ -61,6 +61,9 @@ to value type constructors.
 fix stack size handling for "ldsfld", "ldsflda", and "stsfld"; fix result
 type for "unbox".
 
+* engine/verify_branch.c: record the stack information for exception
+block entry points.
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

@@ -201,6 +201,39 @@ static BranchLabel *CopyStack(TempAllocator *allocator, ILUInt32 address,
 }
 
 /*
+ * Copy exception information to a new label block.
+ * Returns NULL if out of memory.
+ */
+static BranchLabel *CopyExceptionStack(TempAllocator *allocator,
+									   ILUInt32 address, ILClass *classInfo,
+									   ILUInt32 stackSize)
+{
+	BranchLabel *label;
+
+	/* Allocate space for the label */
+	label = (BranchLabel *)TempAllocate
+				(allocator, sizeof(BranchLabel) +
+							sizeof(ILEngineStackItem) * stackSize);
+	if(!label)
+	{
+		return 0;
+	}
+
+	/* Copy the address and stack information to the label */
+	label->address = address;
+	label->stackSize = stackSize;
+	if(stackSize > 0)
+	{
+		((ILEngineStackItem *)(label + 1))->engineType = ILEngineType_O;
+		((ILEngineStackItem *)(label + 1))->typeInfo =
+				ILType_FromClass(classInfo);
+	}
+
+	/* The label has been initialized */
+	return label;
+}
+
+/*
  * Reload the contents of the stack from a pre-existing label.
  * Returns the new stack size.
  */
@@ -268,6 +301,66 @@ static ILUInt32 ReloadStack(BranchLabel *label, ILEngineStackItem *stack)
 					} \
 					currLabel = CopyStack(&allocator, (address), \
 										  stack, stackSize); \
+					if(!currLabel) \
+					{ \
+						VERIFY_MEMORY_ERROR(); \
+					} \
+					currLabel->next = labelList; \
+					labelList = currLabel; \
+				} \
+			} while (0)
+
+/*
+ * Set the contents of the stack at a particular point
+ * in the method to a given exception object type.
+ */
+#define	SET_TARGET_STACK(address,classInfo)	\
+			do { \
+				currLabel = FindLabel(labelList, (address)); \
+				if(currLabel) \
+				{ \
+					/* Check the stack contents for equality */ \
+					if(currLabel->stackSize != 1 || \
+					   ((ILEngineStackItem *)(currLabel + 1))->engineType \
+					   		!= ILEngineType_O || \
+					   ((ILEngineStackItem *)(currLabel + 1))->typeInfo \
+					   		!= ILType_FromClass((classInfo))) \
+					{ \
+						VERIFY_STACK_ERROR(); \
+					} \
+				} \
+				else \
+				{ \
+					currLabel = CopyExceptionStack(&allocator, (address), \
+										  		   (classInfo), 1); \
+					if(!currLabel) \
+					{ \
+						VERIFY_MEMORY_ERROR(); \
+					} \
+					currLabel->next = labelList; \
+					labelList = currLabel; \
+				} \
+			} while (0)
+
+/*
+ * Set the contents of the stack at a particular point
+ * in the method to empty.
+ */
+#define	SET_TARGET_STACK_EMPTY(address)	\
+			do { \
+				currLabel = FindLabel(labelList, (address)); \
+				if(currLabel) \
+				{ \
+					/* Check the stack contents for equality */ \
+					if(currLabel->stackSize != 0) \
+					{ \
+						VERIFY_STACK_ERROR(); \
+					} \
+				} \
+				else \
+				{ \
+					currLabel = CopyExceptionStack(&allocator, (address), \
+										  		   0, 0); \
 					if(!currLabel) \
 					{ \
 						VERIFY_MEMORY_ERROR(); \

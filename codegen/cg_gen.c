@@ -550,7 +550,7 @@ ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 			/* Check for a "params" parameter by looking for the
 			   "System.ParamArrayAttribute" attribute on the
 			   last parameter supplied to the method */
-			if(num == signature->num)
+			if(num == ILTypeNumParams(signature))
 			{
 				if(ILGenItemHasAttribute((ILProgramItem *)param,
 										 "ParamArrayAttribute"))
@@ -559,9 +559,9 @@ ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 					   single-dimensional array type */
 					if(*type != 0 &&
 					   ILType_IsComplex(*type) &&
-					   (*type)->kind == IL_TYPE_COMPLEX_ARRAY)
+					   ILType_Kind(*type) == IL_TYPE_COMPLEX_ARRAY)
 					{
-						*type = (*type)->un.array.elemType;
+						*type = ILType_ElemType(*type);
 						return ILParamMod_params;
 					}
 				}
@@ -570,9 +570,9 @@ ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 			/* Determine if the parameter is "byref" */
 			if(*type != 0 &&
 			   ILType_IsComplex(*type) &&
-			   ((*type)->kind == IL_TYPE_COMPLEX_BYREF))
+			   ILType_Kind(*type) == IL_TYPE_COMPLEX_BYREF)
 			{
-				*type = (*type)->un.refType;
+				*type = ILType_Ref(*type);
 				isByRef = 1;
 			}
 			else

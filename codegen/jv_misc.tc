@@ -1281,8 +1281,8 @@ JavaGenValue(ILNode_InvocationExpression)
 	if(node->methodInfo)
 	{
 		JavaGenCallMethod(info, node->methodInfo, saveStack);
-		resultType = ILTypeToMachineType(ILMethod_Signature(node->methodInfo)
-											->un.method.retType);
+		resultType = ILTypeToMachineType
+			(ILTypeGetReturn(ILMethod_Signature(node->methodInfo)));
 	}
 	else
 	{

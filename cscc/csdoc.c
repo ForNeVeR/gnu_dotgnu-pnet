@@ -746,6 +746,7 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 {
 	ILMethod *method = decl->methodInfo;
 	ILType *signature;
+	ILType *returnType;
 	ILUInt32 num, param;
 	ILParameter *paramInfo;
 	int isConstructor;
@@ -797,12 +798,12 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	Indent(stream, indent + 2);
 	fputs("<MemberSignature Language=\"C#\" Value=\"", stream);
 	ILDumpFlags(stream, decl->modifiers, CSharpMethodFlags, 0);
-	fputs(CSTypeToName(signature->un.method.retType), stream);
+	fputs(CSTypeToName(ILTypeGetReturn(signature)), stream);
 	putc(' ', stream);
 	methodName = ConvertOperatorNames(method);
 	fputs(methodName, stream);
 	putc('(', stream);
-	num = signature->num;
+	num = ILTypeNumParams(signature);
 	for(param = 1; param <= num; ++param)
 	{
 		if(param != 1)
@@ -836,12 +837,13 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 
 	/* Output the method's type */
 	Indent(stream, indent + 2);
-	if(signature->un.method.retType != ILType_Void)
+	returnType = ILTypeGetReturn(signature);
+	if(returnType != ILType_Void)
 	{
 		fputs("<ReturnValue>\n", stream);
 		Indent(stream, indent + 4);
 		fprintf(stream, "<ReturnType>%s</ReturnType>\n",
-				CSTypeToName(signature->un.method.retType));
+				CSTypeToName(returnType));
 		Indent(stream, indent + 2);
 		fputs("</ReturnValue>\n", stream);
 	}
@@ -898,6 +900,7 @@ static void GenerateDocsForProperty(FILE *stream,
 {
 	ILProperty *property = decl->propertyInfo;
 	ILType *signature;
+	ILType *returnType;
 	ILUInt32 num, param;
 	ILParameter *paramInfo;
 	int isIndexer;
@@ -930,7 +933,7 @@ static void GenerateDocsForProperty(FILE *stream,
 
 	/* Is this property an indexer? */
 	signature = ILProperty_Signature(property);
-	isIndexer = (signature->num != 0);
+	isIndexer = (ILTypeNumParams(signature) != 0);
 
 	/* Find the getter and setter methods */
 	getter = ILProperty_Getter(property);
@@ -973,7 +976,7 @@ static void GenerateDocsForProperty(FILE *stream,
 	Indent(stream, indent + 2);
 	fputs("<MemberSignature Language=\"C#\" Value=\"", stream);
 	ILDumpFlags(stream, decl->modifiers, CSharpMethodFlags, 0);
-	fputs(CSTypeToName(signature->un.method.retType), stream);
+	fputs(CSTypeToName(ILTypeGetReturn(signature)), stream);
 	putc(' ', stream);
 	propertyName = ILProperty_Name(property);
 	if(isIndexer)
@@ -1001,7 +1004,7 @@ static void GenerateDocsForProperty(FILE *stream,
 	{
 		fputs(propertyName, stream);
 	}
-	num = signature->num;
+	num = ILTypeNumParams(signature);
 	if(isIndexer)
 	{
 		putc('[', stream);
@@ -1044,12 +1047,13 @@ static void GenerateDocsForProperty(FILE *stream,
 
 	/* Output the property's type */
 	Indent(stream, indent + 2);
-	if(signature->un.method.retType != ILType_Void)
+	returnType = ILTypeGetReturn(signature);
+	if(returnType != ILType_Void)
 	{
 		fputs("<ReturnValue>\n", stream);
 		Indent(stream, indent + 4);
 		fprintf(stream, "<ReturnType>%s</ReturnType>\n",
-				CSTypeToName(signature->un.method.retType));
+				CSTypeToName(returnType));
 		Indent(stream, indent + 2);
 		fputs("</ReturnValue>\n", stream);
 	}

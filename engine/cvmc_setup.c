@@ -120,7 +120,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 
 	/* Allocate offsets for the arguments */
 	signature = ILMethod_Signature(method);
-	num = (ILUInt32)(signature->num);
+	num = ILTypeNumParams(signature);
 	if(ILType_HasThis(signature) && !suppressThis)
 	{
 		/* Allocate an argument slot for the "this" parameter */
@@ -361,9 +361,9 @@ static int IsStringRefType(ILType *type)
 {
 	if(type != ILType_Invalid && ILType_IsComplex(type))
 	{
-		if(type->kind == IL_TYPE_COMPLEX_BYREF)
+		if(ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF)
 		{
-			return IsStringType(type->un.refType);
+			return IsStringType(ILType_Ref(type));
 		}
 	}
 	return 0;
@@ -378,9 +378,10 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
 	ILType *signature = ILMethod_Signature(method);
-	ILType *returnType = signature->un.method.retType;
+	ILType *returnType = ILTypeGetReturn(signature);
 	int numArgs;
 	ILUInt32 param;
+	ILUInt32 numParams;
 	ILUInt32 extraLocals;
 	int returnIsTop;
 	ILType *tempType;
@@ -419,7 +420,8 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 		{
 			pinvAttrs = 0;
 		}
-		for(param = 1; param <= signature->num; ++param)
+		numParams = ILTypeNumParams(signature);
+		for(param = 1; param <= numParams; ++param)
 		{
 			if(ILType_HasThis(signature))
 			{
@@ -503,7 +505,8 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 			CVM_BYTE(COP_POP);
 			CVM_ADJUST(-1);
 		}
-		for(param = 0; param <= signature->num; ++param)
+		numParams = ILTypeNumParams(signature);
+		for(param = 0; param <= numParams; ++param)
 		{
 			if(param > 0 &&
 			   ILType_IsValueType(ILTypeGetEnumType
@@ -529,7 +532,8 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	else
 	{
 		/* This method does not have a "this" pointer */
-		for(param = 0; param < signature->num; ++param)
+		numParams = ILTypeNumParams(signature);
+		for(param = 0; param < numParams; ++param)
 		{
 			if(ILType_IsValueType(ILTypeGetEnumType
 			   		(ILTypeGetParam(signature, param + 1))))
@@ -690,6 +694,7 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	ILType *signature = ILMethod_Signature(method);
 	int numArgs;
 	ILUInt32 param;
+	ILUInt32 numParams;
 	ILUInt32 extraLocals;
 	int returnIsTop;
 	ILInt32 dest;
@@ -741,7 +746,8 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 		CVM_BYTE(COP_PUSH_THREAD);
 		++numArgs;
 	}
-	for(param = 0; param < signature->num; ++param)
+	numParams = ILTypeNumParams(signature);
+	for(param = 0; param < numParams; ++param)
 	{
 		if(ILType_IsValueType(ILTypeGetEnumType
 		   		(ILTypeGetParam(signature, param + 1))))

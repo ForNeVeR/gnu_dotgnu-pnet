@@ -134,7 +134,8 @@ ILType *ILStandAloneSigGetType(ILStandAloneSig *sig)
 
 int ILStandAloneSigIsLocals(ILStandAloneSig *sig)
 {
-	return (sig->type && sig->type->kind == IL_TYPE_COMPLEX_LOCALS);
+	return (sig->type && ILType_IsComplex(sig->type) &&
+	        ILType_Kind(sig->type) == IL_TYPE_COMPLEX_LOCALS);
 }
 
 void _ILStandAloneSigSetTypeIndex(ILStandAloneSig *sig, ILUInt32 index)

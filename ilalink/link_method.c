@@ -32,13 +32,13 @@ static int IsStringArray(ILType *type)
 {
 	const char *namespace;
 	if(type == 0 || !ILType_IsComplex(type) ||
-	   type->kind != IL_TYPE_COMPLEX_ARRAY ||
-	   type->un.array.size != 0 ||
-	   type->un.array.lowBound != 0)
+	   ILType_Kind(type) != IL_TYPE_COMPLEX_ARRAY ||
+	   ILType_Size(type) != 0 ||
+	   ILType_LowBound(type) != 0)
 	{
 		return 0;
 	}
-	type = type->un.array.elemType;
+	type = ILType_ElemType(type);
 	if(!ILType_IsClass(type))
 	{
 		return 0;
@@ -560,6 +560,7 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	const char *name = ILMethod_Name(method);
 	ILType *signature = ILMethod_Signature(method);
 	ILType *newSignature;
+	ILType *returnType;
 	ILParameter *param;
 	ILParameter *newParam;
 	ILModule *module;
@@ -568,6 +569,7 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	ILMethod *decl;
 	ILMethodCode code;
 	ILException *exceptions;
+	ILUInt32 numParams;
 
 	/* See if we already have a definition of this method in the class */
 	newMethod = 0;
@@ -622,9 +624,8 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	}
 
 	/* Copy the calling conventions */
-	newSignature->kind = (newSignature->kind & 0xFF) |
-						 (signature->kind & 0xFF00);
-	ILMethodSetCallConv(newMethod, (signature->kind >> 8));
+	ILTypeSetCallConv(newSignature, ILType_CallConv(signature));
+	ILMethodSetCallConv(newMethod, ILType_CallConv(signature));
 
 	/* Copy the implementation attributes */
 	ILMethodSetImplAttrs(newMethod, ~((ILUInt32)0),
@@ -724,13 +725,14 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	else if(!strcmp(name, "Main") && ILMethod_IsStatic(method))
 	{
 		/* This may be an entry point method: check the signature */
-		if(signature->un.method.retType == ILType_Int32 ||
-		   signature->un.method.retType == ILType_UInt32 ||
-		   signature->un.method.retType == ILType_Void)
+		returnType = ILTypeGetReturn(signature);
+		if(returnType == ILType_Int32 ||
+		   returnType == ILType_UInt32 ||
+		   returnType == ILType_Void)
 		{
-			if(signature->num == 0 ||
-			   (signature->num == 1 &&
-			    IsStringArray(signature->un.method.param[0])))
+			numParams = ILTypeNumParams(signature);
+			if(numParams == 0 ||
+			   (numParams == 1 && IsStringArray(ILTypeGetParam(signature, 1))))
 			{
 				goto setEntryPoint;
 			}
@@ -839,7 +841,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 			return 0;
 		}
 		ILMemberSetSignature((ILMember *)method, newSignature);
-		ILMethodSetCallConv(method, (newSignature->kind >> 8));
+		ILMethodSetCallConv(method, ILType_CallConv(newSignature));
 		return (ILMember *)method;
 	}
 	else

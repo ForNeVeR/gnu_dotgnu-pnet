@@ -23,6 +23,26 @@
 	* codegen/cg_output.c, codegen/jv_output.c, cscc/cs_lvalue.tc:
 	expand constant fields inline into method code.
 
+	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,
+	codegen/cg_lvalue.tc, codegen/cg_misc.tc, codegen/cg_resolve.c,
+	codegen/jv_lvalue.tc, codegen/jv_misc.tc, codegen/jv_stmt.tc,
+	cscc/cs_cast.tc, cscc/cs_decls.tc, cscc/cs_gather.c, cscc/cs_invoke.tc,
+	cscc/cs_lvalue.tc, cscc/cs_oper.tc, cscc/cs_stmt.tc, cscc/csdoc.c,
+	csdoc/doc_valil.c, dumpasm/dump_type.c, engine/call.c,
+	engine/cvmc_setup.c, engine/engine.h, engine/layout.c,
+	engine/lib_array.c, engine/lib_helpers.c, engine/lib_reflect.c,
+	engine/lib_type.c, engine/lookup.c, engine/pinvoke.c, engine/verify.c,
+	engine/verify_call.c, engine/verify_obj.c, engine/verify_ptr.c,
+	engine/verify_var.c, ilalink/link_method.c, ilalink/link_type.c,
+	ilasm/ilasm_build.c, ilasm/ilasm_grammar.y, ildasm/ildasm_attrs.c,
+	ildasm/ildasm_method.c, image/class.c, image/java_loader.c,
+	image/marshal.c, image/member.c, image/meta_build.c,
+	image/meta_writer.c, image/misc.c, image/ser_parse.c,
+	image/sig_parse.c, image/sig_writer.c, image/synthetic.c,
+	image/types.c, include/il_types.h: modify the API in "il_types.h"
+	to be slightly more opaque, and then update every usage of the API
+	to be consistent with the modifications.
+
 2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_decls.tc (AddConstantValue): decimal attribute values

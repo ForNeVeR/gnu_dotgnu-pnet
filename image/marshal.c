@@ -180,8 +180,8 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, unsigned long param)
 		return (IL_META_MARSHAL_STRING | StringCharSet(pinvoke));
 	}
 	else if(type != ILType_Invalid && ILType_IsComplex(type) &&
-			type->kind == IL_TYPE_COMPLEX_BYREF &&
-			ILTypeIsStringClass(type->un.refType))
+			ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF &&
+			ILTypeIsStringClass(ILType_Ref(type)))
 	{
 		/* Reference string type */
 		if(parameter != 0 &&

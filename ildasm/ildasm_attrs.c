@@ -214,7 +214,7 @@ static void DumpAttrBlob(FILE *outstream, ILImage *image, ILMethod *method,
 	}
 
 	/* Dump the parameters */
-	numParams = (ILMethod_Signature(method))->num;
+	numParams = ILTypeNumParams(ILMethod_Signature(method));
 	needComma = 0;
 	putc('(', outstream);
 	while(numParams > 0)

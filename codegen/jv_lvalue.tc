@@ -175,7 +175,7 @@ JavaGenValue(ILNode_StaticProperty)
 {
 	ILMethod *getter = ILProperty_Getter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	ILMachineType type = ILTypeToMachineType(signature->un.method.retType);
+	ILMachineType type = ILTypeToMachineType(ILTypeGetReturn(signature));
 	JavaGenCallMethod(info, getter, info->stackHeight);
 	JavaGenAdjust(info, JavaGenTypeSize(type) - 1);
 	return type;
@@ -188,7 +188,7 @@ JavaGenValue(ILNode_MemberProperty)
 {
 	ILMethod *getter = ILProperty_Getter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	ILMachineType type = ILTypeToMachineType(signature->un.method.retType);
+	ILMachineType type = ILTypeToMachineType(ILTypeGetReturn(signature));
 	long saveStack = info->stackHeight;
 	JavaGenCast(info, JavaGenValue(node->expr, info),
 			    ILMachineType_ObjectRef);
@@ -269,7 +269,7 @@ JavaPrepare(ILNode_StaticProperty)
 {
 	/* Nothing needs to be done here */
 	ILType *signature = ILProperty_Signature(node->property);
-	return ILTypeToMachineType(signature->un.method.retType);
+	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
 /*
@@ -280,7 +280,7 @@ JavaPrepare(ILNode_MemberProperty)
 	ILType *signature = ILProperty_Signature(node->property);
 	JavaGenCast(info, JavaGenValue(node->expr, info),
 			    ILMachineType_ObjectRef);
-	return ILTypeToMachineType(signature->un.method.retType);
+	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
 /*
@@ -406,7 +406,7 @@ JavaGetAndPrepare(ILNode_StaticProperty)
 {
 	ILMethod *getter = ILProperty_Getter(node->property);
 	ILMachineType type = ILTypeToMachineType
-		(ILProperty_Signature(node->property)->un.method.retType);
+		(ILTypeGetReturn(ILProperty_Signature(node->property)));
 	JavaGenCallMethod(info, getter, info->stackHeight);
 	JavaGenAdjust(info, JavaGenTypeSize(type));
 	if(leave)
@@ -423,7 +423,7 @@ JavaGetAndPrepare(ILNode_MemberProperty)
 {
 	ILMethod *getter = ILProperty_Getter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	ILType *propType = signature->un.method.retType;
+	ILType *propType = ILTypeGetReturn(signature);
 	ILMachineType type = ILTypeToMachineType(propType);
 	int size = JavaGenTypeSize(type);
 	long saveStack;
@@ -566,7 +566,7 @@ JavaStore(ILNode_StaticProperty)
 {
 	ILMethod *setter = ILProperty_Setter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	ILType *propType = signature->un.method.retType;
+	ILType *propType = ILTypeGetReturn(signature);
 	ILMachineType type = ILTypeToMachineType(propType);
 	int size = JavaGenTypeSize(type);
 	if(leave)
@@ -584,7 +584,7 @@ JavaStore(ILNode_MemberProperty)
 {
 	ILMethod *setter = ILProperty_Setter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	ILType *propType = signature->un.method.retType;
+	ILType *propType = ILTypeGetReturn(signature);
 	ILMachineType type = ILTypeToMachineType(propType);
 	int size = JavaGenTypeSize(type);
 

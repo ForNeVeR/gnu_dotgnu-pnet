@@ -657,14 +657,7 @@ static ILInt32 ClrType_GetClrArrayRank(ILExecThread *thread, ILObject *_this)
 	ILType *synType = (classInfo ? ILClassGetSynType(classInfo) : 0);
 	if(synType != 0)
 	{
-		ILInt32 rank = 1;
-		while(synType != 0 && ILType_IsComplex(synType) &&
-		      synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
-		{
-			++rank;
-			synType = synType->un.array.elemType;
-		}
-		return rank;
+		return (ILInt32)(ILTypeGetRank(synType));
 	}
 	else
 	{
@@ -702,19 +695,23 @@ static ILObject *ClrType_GetElementType(ILExecThread *thread, ILObject *_this)
 		synType = ILClassGetSynType(classInfo);
 		if(synType != 0 && ILType_IsComplex(synType))
 		{
-		   	while(synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+			switch(ILType_Kind(synType))
 			{
-				synType = synType->un.array.elemType;
-			}
-			if(synType->kind == IL_TYPE_COMPLEX_ARRAY)
-			{
-				return _ILGetClrTypeForILType
-							(thread, synType->un.array.elemType);
-			}
-			else if(synType->kind == IL_TYPE_COMPLEX_BYREF ||
-			        synType->kind == IL_TYPE_COMPLEX_PTR)
-			{
-				return _ILGetClrTypeForILType(thread, synType->un.refType);
+				case IL_TYPE_COMPLEX_ARRAY:
+				case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
+				{
+					return _ILGetClrTypeForILType
+							(thread, ILTypeGetElemType(synType));
+				}
+				/* Not reached */
+
+				case IL_TYPE_COMPLEX_BYREF:
+				case IL_TYPE_COMPLEX_PTR:
+				{
+					return _ILGetClrTypeForILType
+							(thread, ILType_Ref(synType));
+				}
+				/* Not reached */
 			}
 		}
 	}
@@ -749,7 +746,7 @@ static ILInt32 ClrType_GetClrTypeCategory(ILExecThread *thread, ILObject *_this)
 		synType = ILClassGetSynType(classInfo);
 		if(synType != 0 && ILType_IsComplex(synType))
 		{
-			switch(synType->kind & 0xFF)
+			switch(ILType_Kind(synType))
 			{
 				case IL_TYPE_COMPLEX_ARRAY:
 				case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
@@ -1026,11 +1023,13 @@ static ILInt32 NameOutputTypeSuffixes(ILUInt16 *buf, ILType *type)
 {
 	ILInt32 len = 0;
 	ILInt32 rank;
+	int kind;
 	if(type != 0 && ILType_IsComplex(type))
 	{
-		if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+		kind = ILType_Kind(type);
+		if(kind == IL_TYPE_COMPLEX_ARRAY)
 		{
-			len += NameOutputTypeSuffixes(buf, type->un.array.elemType);
+			len += NameOutputTypeSuffixes(buf, ILType_ElemType(type));
 			if(buf != 0)
 			{
 				buf[len++] = (ILUInt16)'[';
@@ -1041,17 +1040,10 @@ static ILInt32 NameOutputTypeSuffixes(ILUInt16 *buf, ILType *type)
 				len += 2;
 			}
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		else if(kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
-			rank = 1;
-			type = type->un.array.elemType;
-			while(type != 0 && ILType_IsComplex(type) &&
-			      type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
-			{
-				++rank;
-				type = type->un.array.elemType;
-			}
-			len += NameOutputTypeSuffixes(buf, type);
+			rank = ILTypeGetRank(type);
+			len += NameOutputTypeSuffixes(buf, ILTypeGetElemType(type));
 			if(buf != 0)
 			{
 				buf[len++] = (ILUInt16)'[';
@@ -1081,9 +1073,9 @@ static ILInt32 NameOutputTypeSuffixes(ILUInt16 *buf, ILType *type)
 				++len;
 			}
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_BYREF)
+		else if(kind == IL_TYPE_COMPLEX_BYREF)
 		{
-			len += NameOutputTypeSuffixes(buf, type->un.refType);
+			len += NameOutputTypeSuffixes(buf, ILType_Ref(type));
 			if(buf != 0)
 			{
 				buf[len++] = (ILUInt16)'&';
@@ -1093,9 +1085,9 @@ static ILInt32 NameOutputTypeSuffixes(ILUInt16 *buf, ILType *type)
 				++len;
 			}
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_PTR)
+		else if(kind == IL_TYPE_COMPLEX_PTR)
 		{
-			len += NameOutputTypeSuffixes(buf, type->un.refType);
+			len += NameOutputTypeSuffixes(buf, ILType_Ref(type));
 			if(buf != 0)
 			{
 				buf[len++] = (ILUInt16)'*';
@@ -1121,6 +1113,7 @@ static ILString *GetTypeName(ILExecThread *thread, ILObject *_this,
 	ILString *str;
 	ILUInt16 *buf;
 	ILType *synType;
+	int kind;
 
 	/* Get the ILClass structure for the runtime type */
 	classInfo = _ILGetClrClass(thread, _this);
@@ -1135,15 +1128,16 @@ static ILString *GetTypeName(ILExecThread *thread, ILObject *_this,
 	synType = ILClassGetSynType(classInfo);
 	while(synType != 0 && ILType_IsComplex(synType))
 	{
-		if(synType->kind == IL_TYPE_COMPLEX_ARRAY ||
-		   synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		kind = ILType_Kind(synType);
+		if(kind == IL_TYPE_COMPLEX_ARRAY ||
+		   kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
-			synType = synType->un.array.elemType;
+			synType = ILType_ElemType(synType);
 		}
-		else if(synType->kind == IL_TYPE_COMPLEX_BYREF ||
-		        synType->kind == IL_TYPE_COMPLEX_PTR)
+		else if(kind == IL_TYPE_COMPLEX_BYREF ||
+		        kind == IL_TYPE_COMPLEX_PTR)
 		{
-			synType = synType->un.refType;
+			synType = ILType_Ref(synType);
 		}
 		else
 		{
@@ -1243,21 +1237,23 @@ static ILString *ClrType_GetClrNamespace(ILExecThread *thread, ILObject *_this)
 	ILClass *nestedParent;
 	ILType *synType;
 	const char *namespace;
+	int kind;
 	if(classInfo)
 	{
 		/* Find the innermost element type if the class is synthesised */
 		synType = ILClassGetSynType(classInfo);
 		while(synType != 0 && ILType_IsComplex(synType))
 		{
-			if(synType->kind == IL_TYPE_COMPLEX_ARRAY ||
-			   synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+			kind = ILType_Kind(synType);
+			if(kind == IL_TYPE_COMPLEX_ARRAY ||
+			   kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 			{
-				synType = synType->un.array.elemType;
+				synType = ILType_ElemType(synType);
 			}
-			else if(synType->kind == IL_TYPE_COMPLEX_BYREF ||
-			        synType->kind == IL_TYPE_COMPLEX_PTR)
+			else if(kind == IL_TYPE_COMPLEX_BYREF ||
+			        kind == IL_TYPE_COMPLEX_PTR)
 			{
-				synType = synType->un.refType;
+				synType = ILType_Ref(synType);
 			}
 			else
 			{
@@ -1645,7 +1641,7 @@ static int ParameterTypeMatch(ILExecThread *thread, ILType *signature,
 	ILType *typeInfo;
 
 	/* Check the number of parameters */
-	if(((ILInt32)(signature->num)) != types->length)
+	if(ILTypeNumParams(signature) != types->length)
 	{
 		return 0;
 	}

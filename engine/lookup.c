@@ -443,20 +443,20 @@ static int MatchClassName(ILClass *classInfo, const char *name)
 static int CountRanks(ILType *type, ILType **elemType)
 {
 	int rank = 1;
-	while(type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+	while(ILType_Kind(type) == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 	{
-		if(type->un.array.size != 0 || type->un.array.lowBound != 0)
+		if(ILType_Size(type) != 0 || ILType_LowBound(type) != 0)
 		{
 			return -1;
 		}
-		type = type->un.array.elemType;
+		type = ILType_ElemType(type);
 		++rank;
 	}
-	if(type->un.array.size != 0 || type->un.array.lowBound != 0)
+	if(ILType_Size(type) != 0 || ILType_LowBound(type) != 0)
 	{
 		return -1;
 	}
-	*elemType = type->un.array.elemType;
+	*elemType = ILType_ElemType(type);
 	return rank;
 }
 
@@ -468,6 +468,7 @@ static int MatchTypeName(ILType *type, const char *name)
 {
 	int len, rank;
 	ILType *elemType;
+	int kind;
 
 	if(ILType_IsPrimitive(type))
 	{
@@ -531,14 +532,15 @@ static int MatchTypeName(ILType *type, const char *name)
 	else if(type != 0 && ILType_IsComplex(type))
 	{
 		/* Match some other kind of complex type */
-		if(type->kind == IL_TYPE_COMPLEX_BYREF)
+		kind = ILType_Kind(type);
+		if(kind == IL_TYPE_COMPLEX_BYREF)
 		{
 			/* Match a reference type */
 			if(*name != '&')
 			{
 				return 0;
 			}
-			len = MatchTypeName(type->un.refType, name + 1);
+			len = MatchTypeName(ILType_Ref(type), name + 1);
 			if(len != 0)
 			{
 				return len + 1;
@@ -548,14 +550,14 @@ static int MatchTypeName(ILType *type, const char *name)
 				return 0;
 			}
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_PTR)
+		else if(kind == IL_TYPE_COMPLEX_PTR)
 		{
 			/* Match a pointer type */
 			if(*name != '*')
 			{
 				return 0;
 			}
-			len = MatchTypeName(type->un.refType, name + 1);
+			len = MatchTypeName(ILType_Ref(type), name + 1);
 			if(len != 0)
 			{
 				return len + 1;
@@ -565,19 +567,19 @@ static int MatchTypeName(ILType *type, const char *name)
 				return 0;
 			}
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+		else if(kind == IL_TYPE_COMPLEX_ARRAY)
 		{
 			/* Match a single-dimensional array type */
 			if(*name != '[')
 			{
 				return 0;
 			}
-			if(type->un.array.size != 0 ||
-			   type->un.array.lowBound != 0)
+			if(ILType_Size(type) != 0 ||
+			   ILType_LowBound(type) != 0)
 			{
 				return 0;
 			}
-			len = MatchTypeName(type->un.array.elemType, name + 1);
+			len = MatchTypeName(ILType_ElemType(type), name + 1);
 			if(len != 0)
 			{
 				return len + 1;
@@ -587,7 +589,7 @@ static int MatchTypeName(ILType *type, const char *name)
 				return 0;
 			}
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		else if(kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
 			/* Match a multi-dimensional array type */
 			if(*name != '{')
@@ -626,7 +628,7 @@ static int MatchTypeName(ILType *type, const char *name)
 				return len + rank;
 			}
 		}
-		else if((type->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+		else if((kind & IL_TYPE_COMPLEX_METHOD) != 0)
 		{
 			/* Match a method pointer type */
 			if(*name != '%')
@@ -660,7 +662,7 @@ static int MatchSignatureName(ILType *signature, const char *name)
 	int matchLen;
 
 	/* Match the parameters */
-	numParams = signature->num;
+	numParams = ILTypeNumParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
 		paramType = ILTypeGetParam(signature, param);
@@ -677,7 +679,7 @@ static int MatchSignatureName(ILType *signature, const char *name)
 	{
 		return 0;
 	}
-	matchLen = MatchTypeName(signature->un.method.retType, name + 1);
+	matchLen = MatchTypeName(ILTypeGetReturn(signature), name + 1);
 	if(matchLen == 0 || name[matchLen + 1] != '\0')
 	{
 		return 0;
@@ -799,7 +801,7 @@ int _ILLookupTypeMatch(ILType *type, const char *signature)
 	{
 		/* Match a method signature */
 		if(type == 0 || !ILType_IsComplex(type) ||
-		   (type->kind & 0xFF) != IL_TYPE_COMPLEX_METHOD)
+		   ILType_Kind(type) != IL_TYPE_COMPLEX_METHOD)
 		{
 			return 0;
 		}

@@ -72,18 +72,18 @@ static ILMethod *ResolveMethod(ILClass *info, ILClass *callScope,
 
 			/* Check that this is the signature we are interested in */
 			signature = ILMethod_Signature(method);
-			if(!signature || (signature->kind & IL_TYPE_COMPLEX_METHOD) == 0)
+			if(!ILType_IsMethod(signature))
 			{
 				continue;
 			}
 			if(returnType)
 			{
-				if(!ILTypeIdentical(returnType, signature->un.method.retType))
+				if(!ILTypeIdentical(returnType, ILTypeGetReturn(signature)))
 				{
 					continue;
 				}
 			}
-			if(numArgs != (int)(signature->num))
+			if(numArgs != (int)(ILTypeNumParams(signature)))
 			{
 				continue;
 			}

@@ -255,7 +255,7 @@ static ILType *CreateMethodSig(ILInt64 callingConventions,
 	{
 		ILAsmOutOfMemory();
 	}
-	type->kind |= (short)(callingConventions << 8);
+	ILTypeSetCallConv(type, (ILUInt32)callingConventions);
 
 	/* Add the parameters to the method signature */
 	while(params != 0)
@@ -382,7 +382,7 @@ static ILType *CreatePropertySig(ILInt64 callingConventions,
 	{
 		ILAsmOutOfMemory();
 	}
-	type->kind |= (short)(callingConventions << 8);
+	ILTypeSetCallConv(type, (ILUInt32)callingConventions);
 
 	/* Add the parameters to the property signature */
 	while(params != 0)
@@ -448,43 +448,43 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 
 	/* If the element type is an array, we need to insert the shell
 	   at the inner-most level of the element type */
-	if(ILType_IsComplex(elemType) && elemType != 0 &&
-	   (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
-	    elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	if(ILType_IsArray(elemType))
 	{
 		temp = elemType;
-		while(ILType_IsComplex(temp->un.array.elemType) &&
-			  temp->un.array.elemType != 0 &&
-			  (temp->un.array.elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
-			   temp->un.array.elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+		while(ILType_ElemType(temp) != 0 &&
+		      ILType_IsComplex(ILType_ElemType(temp)) &&
+			  (ILType_Kind(ILType_ElemType(temp)) == IL_TYPE_COMPLEX_ARRAY ||
+			   ILType_Kind(ILType_ElemType(temp))
+			   		== IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 		{
-			temp = temp->un.array.elemType;
+			temp = ILType_ElemType(temp);
 		}
-		temp2 = temp->un.array.elemType;
-		temp->un.array.elemType = shell;
+		temp2 = ILType_ElemType(temp);
+		ILType_ElemType(temp) = shell;
 		if(cont)
 		{
-			temp->kind = IL_TYPE_COMPLEX_ARRAY_CONTINUE;
+			temp->kind__ = IL_TYPE_COMPLEX_ARRAY_CONTINUE;
 		}
 		temp = shell;
-		while(temp->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		while(ILType_Kind(temp) == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
-			temp = temp->un.array.elemType;
+			temp = ILType_ElemType(temp);
 		}
-		temp->un.array.elemType = temp2;
+		ILType_ElemType(temp) = temp2;
 		return elemType;
 	}
 
 	/* Wrap the shell around the element type */
 	temp = shell;
-	while(ILType_IsComplex(temp->un.array.elemType) &&
-		  temp->un.array.elemType != 0 &&
-		  (temp->un.array.elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
-		   temp->un.array.elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	while(ILType_ElemType(temp) != 0 &&
+	      ILType_IsComplex(ILType_ElemType(temp)) &&
+		  (ILType_Kind(ILType_ElemType(temp)) == IL_TYPE_COMPLEX_ARRAY ||
+		   ILType_Kind(ILType_ElemType(temp))
+			   		== IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 	{
-		temp = temp->un.array.elemType;
+		temp = ILType_ElemType(temp);
 	}
-	temp->un.array.elemType = elemType;
+	ILType_ElemType(temp) = elemType;
 	return shell;
 }
 

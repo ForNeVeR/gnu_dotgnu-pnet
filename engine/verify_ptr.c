@@ -84,12 +84,10 @@ static ILType *ArrayElementType(ILType *type)
 		/* The type of the array is "null" */
 		return ILType_Void;
 	}
-	else if(ILType_IsComplex(type) &&
-	        type->kind == IL_TYPE_COMPLEX_ARRAY &&
-			type->un.array.lowBound == 0)
+	else if(ILType_IsSimpleArray(type))
 	{
 		/* Single-dimensional array with a lower bound of zero */
-		return type->un.array.elemType;
+		return ILType_ElemType(type);
 	}
 	else
 	{

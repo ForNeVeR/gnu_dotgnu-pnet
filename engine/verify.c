@@ -195,7 +195,7 @@ static ILEngineType TypeToEngineType(ILType *type)
 	}
 	else if(ILType_IsComplex(type) && type != 0)
 	{
-		switch(type->kind & 0xFF)
+		switch(ILType_Kind(type))
 		{
 			case IL_TYPE_COMPLEX_PTR:
 			{
@@ -214,7 +214,7 @@ static ILEngineType TypeToEngineType(ILType *type)
 			case IL_TYPE_COMPLEX_PINNED:
 			{
 				/* Pinned types are the same as their underlying type */
-				return TypeToEngineType(type->un.refType);
+				return TypeToEngineType(ILType_Ref(type));
 			}
 			/* Not reached */
 
@@ -222,7 +222,7 @@ static ILEngineType TypeToEngineType(ILType *type)
 			case IL_TYPE_COMPLEX_CMOD_OPT:
 			{
 				/* Strip the modifier and inspect the underlying type */
-				return TypeToEngineType(type->un.modifier.type);
+				return TypeToEngineType(type->un.modifier__.type__);
 			}
 			/* Not reached */
 
@@ -254,9 +254,7 @@ static int IsObjectRef(ILType *type)
 	{
 		return 1;
 	}
-	else if(ILType_IsComplex(type) &&
-	        (type->kind == IL_TYPE_COMPLEX_ARRAY ||
-			 type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	else if(ILType_IsArray(type))
 	{
 		return 1;
 	}
@@ -275,7 +273,7 @@ static IL_INLINE int IsUnsafeType(ILType *type)
 	{
 		return 0;
 	}
-	else if(type->kind == IL_TYPE_COMPLEX_PTR)
+	else if(ILType_Kind(type) == IL_TYPE_COMPLEX_PTR)
 	{
 		return 1;
 	}
@@ -302,7 +300,7 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 		if(item->typeInfo != 0 && ILType_IsComplex(item->typeInfo))
 		{
 			/* May be trying to assign a method pointer to a method type */
-			if((item->typeInfo->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+			if(ILType_IsMethod(item->typeInfo))
 			{
 				if(ILTypeIdentical(item->typeInfo, type))
 				{
@@ -314,8 +312,8 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 		{
 			if(type != 0 && ILType_IsComplex(type))
 			{
-				if((type->kind & IL_TYPE_COMPLEX_METHOD) != 0 ||
-				   type->kind == IL_TYPE_COMPLEX_PTR)
+				if((ILType_Kind(type) & IL_TYPE_COMPLEX_METHOD) != 0 ||
+				   ILType_Kind(type) == IL_TYPE_COMPLEX_PTR)
 				{
 					return 1;
 				}
@@ -819,7 +817,7 @@ restart:
 
 	/* Get the method signature, plus the number of arguments and locals */
 	signature = ILMethod_Signature(method);
-	numArgs = signature->num;
+	numArgs = ILTypeNumParams(signature);
 	if(ILType_HasThis(signature))
 	{
 		/* Account for the "this" argument */

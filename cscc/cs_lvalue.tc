@@ -522,7 +522,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 							  "property has neither `get' nor `set' methods");
 				value.kind = CS_SEMKIND_LVALUE;
 			}
-			value.type = signature->un.method.retType;
+			value.type = ILTypeGetReturn(signature);
 
 			/* Replace this identifier with a property access node */
 			if((getter != 0 && ILMethod_IsStatic(getter)) ||

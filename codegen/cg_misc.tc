@@ -125,8 +125,8 @@ ILNode_GetType(ILNode_InvocationExpression)
 {
 	if(node->methodInfo)
 	{
-		return ILTypeToMachineType(ILMethod_Signature(node->methodInfo)
-										->un.method.retType);
+		return ILTypeToMachineType
+			(ILTypeGetReturn(ILMethod_Signature(node->methodInfo)));
 	}
 	else
 	{
@@ -774,8 +774,8 @@ ILNode_GenValue(ILNode_InvocationExpression)
 		{
 			ILGenCallByMethod(info, node->methodInfo);
 		}
-		resultType = ILTypeToMachineType(ILMethod_Signature(node->methodInfo)
-											->un.method.retType);
+		resultType = ILTypeToMachineType
+			(ILTypeGetReturn(ILMethod_Signature(node->methodInfo)));
 	}
 	else
 	{

@@ -735,7 +735,7 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 			error = IL_LOADERR_MEMORY;
 			goto cleanup;
 		}
-		signature->kind |= (short)(ILMethodGetCallConv(method) << 8);
+		ILTypeSetCallConv(signature, ILMethodGetCallConv(method));
 		if(sigReader.len < 1 ||
 		   sigReader.data[0] != (unsigned char)'(')
 		{
@@ -788,7 +788,7 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 				{
 					goto cleanup;
 				}
-				signature->un.method.retType = argType;
+				ILTypeSetReturn(signature, argType);
 			}
 		}
 		ILMemberSetSignature((ILMember *)method, signature);

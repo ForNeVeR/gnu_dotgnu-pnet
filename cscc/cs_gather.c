@@ -399,7 +399,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	}
 	if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
 	{
-		signature->kind |= (short)(IL_META_CALLCONV_HASTHIS << 8);
+		ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 		ILMethodSetCallConv(methodInfo, IL_META_CALLCONV_HASTHIS);
 	}
 
@@ -549,7 +549,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	}
 	if((property->modifiers & IL_META_METHODDEF_STATIC) == 0)
 	{
-		signature->kind |= (short)(IL_META_CALLCONV_HASTHIS << 8);
+		ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	}
 
 	/* Create the parameters for the property */

@@ -95,6 +95,56 @@ typedef struct _tagILClass     ILClass;
 #define	ILType_Sentinel		ILType_FromElement(IL_META_ELEMTYPE_SENTINEL)
 
 /*
+ * Kinds of complex types.
+ */
+#define	IL_TYPE_COMPLEX_BYREF					1
+#define	IL_TYPE_COMPLEX_PTR						2
+#define	IL_TYPE_COMPLEX_ARRAY					3
+#define	IL_TYPE_COMPLEX_ARRAY_CONTINUE			4
+#define	IL_TYPE_COMPLEX_CMOD_REQD				6
+#define	IL_TYPE_COMPLEX_CMOD_OPT				7
+#define	IL_TYPE_COMPLEX_PROPERTY				8
+#define	IL_TYPE_COMPLEX_SENTINEL				9
+#define	IL_TYPE_COMPLEX_PINNED					10
+#define	IL_TYPE_COMPLEX_LOCALS					11
+#define	IL_TYPE_COMPLEX_METHOD					16
+#define	IL_TYPE_COMPLEX_METHOD_SENTINEL			1
+
+/*
+ * Complex types.
+ */
+struct _tagILType
+{
+	short			kind__;		/* Kind of complex type */
+	unsigned short	num__;		/* Number of parameters for a method */
+	union {
+		ILType	   *refType__;	/* Referenced type */
+		struct {
+			ILType *elemType__;	/* Element type */
+			long	size__;		/* Size of the dimension */
+			long	lowBound__;	/* Low bound for the dimension */
+		} array__;
+		struct {
+			ILType *retType__;	/* Return type */
+			ILType *param__[3];	/* Parameters */
+			ILType *next__;		/* Overflow for the rest of the parameters */
+		} method__;
+		struct {
+			ILType *param__[4];	/* Overflow parameters */
+			ILType *next__;		/* Overflow for the rest of the parameters */
+		} params__;
+		struct {
+			ILClass *info__;	/* Information on the modifier's class */
+			ILType  *type__;	/* The type that is being modified */
+		} modifier__;
+		struct {
+			ILType *local__[4];	/* Types for up to 4 locals */
+			ILType *next__;		/* Overflow for the rest of the locals */
+		} locals__;
+	} un;
+};
+
+/*
  * Determine if a type is primitive.
  */
 #define	ILType_IsPrimitive(type)	\
@@ -120,60 +170,73 @@ typedef struct _tagILClass     ILClass;
 
 /*
  * Determine if a method type has a non-explicit "this" argument.
+ * This assumes that its argument is a complex type.
  */
 #define	ILType_HasThis(type)	\
-				(((type)->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 && \
-				 ((type)->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+				(((type)->kind__ & (IL_META_CALLCONV_HASTHIS << 8)) != 0 && \
+				 ((type)->kind__ & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
 
 /*
- * Kinds of complex types.
+ * Determine if a type is a single-dimensional array with
+ * a zero lower bound.
  */
-#define	IL_TYPE_COMPLEX_BYREF					1
-#define	IL_TYPE_COMPLEX_PTR						2
-#define	IL_TYPE_COMPLEX_ARRAY					3
-#define	IL_TYPE_COMPLEX_ARRAY_CONTINUE			4
-#define	IL_TYPE_COMPLEX_CMOD_REQD				6
-#define	IL_TYPE_COMPLEX_CMOD_OPT				7
-#define	IL_TYPE_COMPLEX_PROPERTY				8
-#define	IL_TYPE_COMPLEX_SENTINEL				9
-#define	IL_TYPE_COMPLEX_PINNED					10
-#define	IL_TYPE_COMPLEX_LOCALS					11
-#define	IL_TYPE_COMPLEX_METHOD					16
-#define	IL_TYPE_COMPLEX_METHOD_SENTINEL			1
+#define	ILType_IsSimpleArray(type)	\
+				((type) != 0 && ILType_IsComplex((type)) && \
+				 (type)->kind__ == IL_TYPE_COMPLEX_ARRAY && \
+				 (type)->un.array__.lowBound__ == 0)
 
 /*
- * Complex types.
+ * Determine if a type is an array of arbitrary dimensions.
  */
-struct _tagILType
-{
-	short			kind;		/* Kind of complex type */
-	unsigned short	num;		/* Number of parameters for a method */
-	union {
-		ILType	   *refType;	/* Referenced type */
-		struct {
-			ILType *elemType;	/* Element type */
-			long	size;		/* Size of the dimension */
-			long	lowBound;	/* Low bound for the dimension */
-		} array;
-		struct {
-			ILType *retType;	/* Return type */
-			ILType *param[3];	/* Parameters */
-			ILType *next;		/* Overflow for the rest of the parameters */
-		} method;
-		struct {
-			ILType *param[4];	/* Overflow parameters */
-			ILType *next;		/* Overflow for the rest of the parameters */
-		} params;
-		struct {
-			ILClass *info;		/* Information on the modifier's class */
-			ILType  *type;		/* The type that is being modified */
-		} modifier;
-		struct {
-			ILType *local[4];	/* Types for up to 4 locals */
-			ILType *next;		/* Overflow for the rest of the locals */
-		} locals;
-	} un;
-};
+#define	ILType_IsArray(type)	\
+				((type) != 0 && ILType_IsComplex((type)) && \
+				 ((type)->kind__ == IL_TYPE_COMPLEX_ARRAY || \
+				  (type)->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+
+/*
+ * Determine if a type is a method.
+ */
+#define	ILType_IsMethod(type)	\
+				((type) != 0 && ILType_IsComplex((type)) && \
+				 ((type)->kind__ & IL_TYPE_COMPLEX_METHOD) != 0)
+
+/*
+ * Determine if a type is a property.
+ */
+#define	ILType_IsProperty(type)	\
+				((type) != 0 && ILType_IsComplex((type)) && \
+				 ((type)->kind__ & 0xFF) == IL_TYPE_COMPLEX_PROPERTY)
+
+/*
+ * Get the kind that is associated with a complex type.
+ */
+#define	ILType_Kind(type)		((type)->kind__ & 0xFF)
+
+/*
+ * Get the referenced type associated with a complex type.
+ */
+#define	ILType_Ref(type)		((type)->un.refType__)
+
+/*
+ * Get the calling conventions associated with a complex type.
+ */
+#define	ILType_CallConv(type)	((ILUInt32)((type)->kind__ >> 8))
+
+/*
+ * Get the element type of an array, but only go down a single level.
+ * Use "ILTypeGetElemType" to get the "real" element type.
+ */
+#define	ILType_ElemType(type)	((type)->un.array__.elemType__)
+
+/*
+ * Get the size of an array dimension.
+ */
+#define	ILType_Size(type)		((type)->un.array__.size__)
+
+/*
+ * Get the lower bound of an array dimension.
+ */
+#define	ILType_LowBound(type)	((type)->un.array__.lowBound__)
 
 /*
  * Create a reference type.  Returns NULL if out of memory.
@@ -230,6 +293,11 @@ unsigned long ILTypeNumLocals(ILType *locals);
 ILType *ILTypeGetLocal(ILType *locals, unsigned long index);
 
 /*
+ * Get the type for a specific local, with modifier prefixes.
+ */
+ILType *ILTypeGetLocalWithPrefixes(ILType *locals, unsigned long index);
+
+/*
  * Create a method type with a specific return type.
  * Returns NULL if out of memory.
  */
@@ -254,11 +322,43 @@ int ILTypeAddParam(ILContext *context, ILType *method, ILType *paramType);
 int ILTypeAddSentinel(ILContext *context, ILType *method);
 
 /*
+ * Get the number of parameters associated with a method or
+ * property type.
+ */
+unsigned long ILTypeNumParams(ILType *method);
+
+/*
  * Get a specific parameter from a method or property type.
  * The index 0 indicates the return type.  Returns NULL if
  * the parameter index is invalid.
  */
 ILType *ILTypeGetParam(ILType *method, unsigned long index);
+
+/*
+ * Get a specific parameter, including its modifier prefixes.
+ */
+ILType *ILTypeGetParamWithPrefixes(ILType *method, unsigned long index);
+
+/*
+ * Set the calling conventions for a method or property type.
+ */
+void ILTypeSetCallConv(ILType *type, ILUInt32 callConv);
+
+/*
+ * Set the return type for a method or property type.
+ */
+void ILTypeSetReturn(ILType *type, ILType *retType);
+
+/*
+ * Get the return type for a method or property type.
+ */
+ILType *ILTypeGetReturn(ILType *type);
+
+/*
+ * Get the return type for a method or property type,
+ * including its modifier prefixes.
+ */
+ILType *ILTypeGetReturnWithPrefixes(ILType *type);
 
 /*
  * Parse a type from a MethodDefSig within the signature blob.
@@ -330,6 +430,16 @@ char *ILTypeToName(ILType *type);
  * If the type is not enumerated, then return as-is.
  */
 ILType *ILTypeGetEnumType(ILType *type);
+
+/*
+ * Get the element type for an array.
+ */
+ILType *ILTypeGetElemType(ILType *type);
+
+/*
+ * Get the rank of an element.
+ */
+int ILTypeGetRank(ILType *type);
 
 /*
  * Convert a type into a blob offset for the encoded form

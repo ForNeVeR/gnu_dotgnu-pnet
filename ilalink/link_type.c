@@ -208,14 +208,14 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 			return ILType_Invalid;
 		}
 		*newType = *type;
-		switch(type->kind & 0xFF)
+		switch(ILType_Kind(type))
 		{
 			case IL_TYPE_COMPLEX_BYREF:
 			case IL_TYPE_COMPLEX_PTR:
 			case IL_TYPE_COMPLEX_PINNED:
 			{
-				if((newType->un.refType =
-					_ILLinkerConvertType(linker, type->un.refType)) != 0)
+				if((newType->un.refType__ =
+					_ILLinkerConvertType(linker, type->un.refType__)) != 0)
 				{
 					return newType;
 				}
@@ -225,8 +225,9 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 			case IL_TYPE_COMPLEX_ARRAY:
 			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
 			{
-				if((newType->un.array.elemType =
-					_ILLinkerConvertType(linker, type->un.array.elemType)) != 0)
+				if((newType->un.array__.elemType__ =
+					_ILLinkerConvertType
+						(linker, type->un.array__.elemType__)) != 0)
 				{
 					return newType;
 				}
@@ -236,12 +237,12 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 			case IL_TYPE_COMPLEX_CMOD_REQD:
 			case IL_TYPE_COMPLEX_CMOD_OPT:
 			{
-				newType->un.modifier.info = _ILLinkerConvertClassRef
-								(linker, type->un.modifier.info);
-				newType->un.modifier.type = _ILLinkerConvertType
-								(linker, type->un.modifier.type);
-				if(newType->un.modifier.info != 0&&
-				   newType->un.modifier.type != 0)
+				newType->un.modifier__.info__ = _ILLinkerConvertClassRef
+								(linker, type->un.modifier__.info__);
+				newType->un.modifier__.type__ = _ILLinkerConvertType
+								(linker, type->un.modifier__.type__);
+				if(newType->un.modifier__.info__ != 0&&
+				   newType->un.modifier__.type__ != 0)
 				{
 					return newType;
 				}
@@ -256,12 +257,12 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 
 			case IL_TYPE_COMPLEX_LOCALS:
 			{
-				newType->num = 0;
+				newType->num__ = 0;
 				numLocals = ILTypeNumLocals(type);
 				for(param = 0; param < numLocals; ++param)
 				{
 					paramType = _ILLinkerConvertType
-						(linker, ILTypeGetLocal(type, param));
+						(linker, ILTypeGetLocalWithPrefixes(type, param));
 					if(!paramType)
 					{
 						return ILType_Invalid;
@@ -280,17 +281,17 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 			case IL_TYPE_COMPLEX_METHOD:
 			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
 			{
-				newType->num = 0;
-				newType->un.method.retType =
-					_ILLinkerConvertType(linker, type->un.method.retType);
-				if(!(newType->un.method.retType))
+				newType->num__ = 0;
+				newType->un.method__.retType__ =
+					_ILLinkerConvertType(linker, type->un.method__.retType__);
+				if(!(newType->un.method__.retType__))
 				{
 					return ILType_Invalid;
 				}
-				for(param = 1; param <= (ILUInt32)(type->num); ++param)
+				for(param = 1; param <= (ILUInt32)(type->num__); ++param)
 				{
 					paramType = _ILLinkerConvertType
-						(linker, ILTypeGetParam(type, param));
+						(linker, ILTypeGetParamWithPrefixes(type, param));
 					if(!paramType)
 					{
 						return ILType_Invalid;

@@ -438,9 +438,8 @@ ILNode_SemAnalysis(ILNode_Continue)
 ILNode_SemAnalysis(ILNode_Return)
 {
 	/* Emit an error if the return type is not "void" */
-	ILType *returnType = ILMethod_Signature
-		(((ILNode_MethodDeclaration *)(info->currentMethod))->methodInfo)
-				->un.method.retType;
+	ILType *returnType = ILTypeGetReturn(ILMethod_Signature
+		(((ILNode_MethodDeclaration *)(info->currentMethod))->methodInfo));
 	if(returnType != ILType_Void)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -471,9 +470,8 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 	}
 
 	/* Determine if the value is compatible with the return type */
-	returnType = ILMethod_Signature
-		(((ILNode_MethodDeclaration *)(info->currentMethod))->methodInfo)
-				->un.method.retType;
+	returnType = ILTypeGetReturn(ILMethod_Signature
+		(((ILNode_MethodDeclaration *)(info->currentMethod))->methodInfo));
 	if(returnType == ILType_Void)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),

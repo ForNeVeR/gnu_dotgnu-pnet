@@ -799,8 +799,7 @@ static int SigWrite_StandAloneSig(ILStandAloneSig *sig)
 {
 	if(sig->type && !(sig->typeBlob))
 	{
-		if(ILType_IsComplex(sig->type) &&
-		   (sig->type->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+		if(ILType_IsMethod(sig->type))
 		{
 			sig->typeBlob = ILTypeToMethodSig
 					(sig->programItem.image, sig->type);

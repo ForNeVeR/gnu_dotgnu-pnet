@@ -312,7 +312,7 @@ static ILInt32 ClrHelpers_GetNumParameters(ILExecThread *thread,
 	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
 	if(method)
 	{
-		return (ILInt32)(ILMethod_Signature(method)->num);
+		return (ILInt32)(ILTypeNumParams(ILMethod_Signature(method)));
 	}
 	return 0;
 }
@@ -732,7 +732,7 @@ static ILObject *ClrProperty_GetPropertyType(ILExecThread *thread,
 	if(property)
 	{
 		return _ILGetClrTypeForILType
-			(thread, ILProperty_Signature(property)->un.method.retType);
+			(thread, ILTypeGetReturn(ILProperty_Signature(property)));
 	}
 	else
 	{
@@ -860,7 +860,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 	ILImage *image = ILProgramItem_Image(method);
 
 	/* Check that the number of parameters is correct */
-	numParams = (ILInt32)(signature->num);
+	numParams = (ILInt32)ILTypeNumParams(signature);
 	if(numParams == 0)
 	{
 		if(parameters && parameters->length != 0)
@@ -945,8 +945,8 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 			}
 			else if(paramType != 0 && ILType_IsComplex(paramType))
 			{
-				if(paramType->kind == IL_TYPE_COMPLEX_ARRAY ||
-				   paramType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+				if(ILType_Kind(paramType) == IL_TYPE_COMPLEX_ARRAY ||
+				   ILType_Kind(paramType) == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 				{
 					/* Array object references are passed directly */
 					args[argNum].objValue = paramObject;
@@ -981,7 +981,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 
 	/* Allocate a boxing object for the result if it is a value type */
 	ILMemZero(&result, sizeof(result));
-	paramType = ILTypeGetEnumType(signature->un.method.retType);
+	paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
 	if(ILType_IsValueType(paramType))
 	{
 		paramObject = (ILObject *)_ILEngineAllocObject
@@ -1021,7 +1021,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 		{
 			return 0;
 		}
-		return ILExecThreadBox(thread, signature->un.method.retType, &result);
+		return ILExecThreadBox(thread, ILTypeGetReturn(signature), &result);
 	}
 	else if(ILType_IsClass(paramType))
 	{
@@ -1029,8 +1029,8 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 		return result.objValue;
 	}
 	else if(paramType != 0 && ILType_IsComplex(paramType) &&
-	        (paramType->kind == IL_TYPE_COMPLEX_ARRAY ||
-			 paramType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	        (ILType_Kind(paramType) == IL_TYPE_COMPLEX_ARRAY ||
+			 ILType_Kind(paramType) == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 	{
 		/* Return array values directly */
 		return result.objValue;

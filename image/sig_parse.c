@@ -431,7 +431,7 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 			{
 				break;
 			}
-			type->kind |= (sigKind << 8);
+			ILTypeSetCallConv(type, sigKind);
 
 			/* Parse the parameters */
 			param = 0;
@@ -447,7 +447,7 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 						return ILType_Invalid;
 					}
 					sawSentinel = 1;
-					type->kind |= IL_TYPE_COMPLEX_METHOD_SENTINEL;
+					type->kind__ |= IL_TYPE_COMPLEX_METHOD_SENTINEL;
 					--(reader->len);
 					++(reader->data);
 					if(!ILTypeAddSentinel(context, type))
@@ -475,9 +475,9 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 
 			/* If we have a sentinel, then we must have VARARG or C */
 			if(sawSentinel &&
-			   ((type->kind >> 8) & IL_META_CALLCONV_MASK)
+			   ((type->kind__ >> 8) & IL_META_CALLCONV_MASK)
 			   		!= IL_META_CALLCONV_VARARG &&
-			   ((type->kind >> 8) & IL_META_CALLCONV_MASK)
+			   ((type->kind__ >> 8) & IL_META_CALLCONV_MASK)
 			   		!= IL_META_CALLCONV_C)
 			{
 				break;
@@ -614,7 +614,7 @@ ILType *ILTypeFromMethodRefSig(ILContext *context, ILImage *image,
 	if(!(reader.error) && type &&
 	   (kind == SIGNATURE_METHOD_DEF || kind == SIGNATURE_METHOD_REF))
 	{
-		kind = ((type->kind >> 8) & IL_META_CALLCONV_MASK);
+		kind = ((type->kind__ >> 8) & IL_META_CALLCONV_MASK);
 		if(kind == IL_META_CALLCONV_DEFAULT ||
 		   kind == IL_META_CALLCONV_VARARG)
 		{

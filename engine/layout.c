@@ -637,8 +637,8 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		/* Is this the finalize method? */
 		if(method->member.name[0] == 'F' &&
 		   !strcmp(method->member.name + 1, "inalize") &&
-		   method->member.signature->un.method.retType == ILType_Void &&
-		   method->member.signature->num == 0)
+		   method->member.signature->un.method__.retType__ == ILType_Void &&
+		   method->member.signature->num__ == 0)
 		{
 			/* Determine if the finalizer is non-trivial */
 			if(!ILMethodGetCode(method, &code) ||

@@ -873,7 +873,8 @@ break;
 case IL_OP_PREFIX + IL_PREFIX_OP_ARGLIST:
 {
 	/* Get a pointer to the variable argument list */
-	if((ILMethod_Signature(method)->kind & (IL_META_CALLCONV_VARARG << 8)) != 0)
+	if((ILType_CallConv(ILMethod_Signature(method))
+				& IL_META_CALLCONV_VARARG) != 0)
 	{
 		ILCoderArgList(coder);
 		stack[stackSize - 1].engineType = ILEngineType_MV;

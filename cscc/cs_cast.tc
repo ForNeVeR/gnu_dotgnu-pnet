@@ -133,31 +133,32 @@ const char *CSTypeToName(ILType *type)
 	else if(type != ILType_Invalid)
 	{
 		/* Get the name of a complex type */
-		if(type->kind == IL_TYPE_COMPLEX_BYREF)
+		int kind = ILType_Kind(type);
+		if(kind == IL_TYPE_COMPLEX_BYREF)
 		{
 			return ILInternAppendedString
-					(ILInternString((char *)CSTypeToName(type->un.refType), -1),
+					(ILInternString((char *)CSTypeToName(ILType_Ref(type)), -1),
 					 ILInternString((char *)" &", 2)).string;
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_PTR)
+		else if(kind == IL_TYPE_COMPLEX_PTR)
 		{
 			return ILInternAppendedString
-					(ILInternString((char *)CSTypeToName(type->un.refType), -1),
+					(ILInternString((char *)CSTypeToName(ILType_Ref(type)), -1),
 					 ILInternString((char *)" *", 2)).string;
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_ARRAY ||
-			    type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		else if(kind == IL_TYPE_COMPLEX_ARRAY ||
+			    kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
-			ILType *elemType = type->un.array.elemType;
+			ILType *elemType = ILType_ElemType(type);
 			ILIntString str;
 			ILIntString open;
 			ILIntString close;
 			ILIntString comma;
 			while(ILType_IsComplex(elemType) && elemType != ILType_Invalid &&
-			      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
-				   elemType->kind == IL_TYPE_COMPLEX_ARRAY))
+			      (ILType_Kind(elemType) == IL_TYPE_COMPLEX_ARRAY ||
+				   ILType_Kind(elemType) == IL_TYPE_COMPLEX_ARRAY))
 			{
-				elemType = elemType->un.array.elemType;
+				elemType = ILType_ElemType(elemType);
 			}
 			str = ILInternString((char *)CSTypeToName(elemType), -1);
 			open = ILInternString((char *)"[", 1);
@@ -166,10 +167,10 @@ const char *CSTypeToName(ILType *type)
 			str = ILInternAppendedString(str, open);
 			while(type != elemType)
 			{
-				if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+				if(ILType_Kind(type) == IL_TYPE_COMPLEX_ARRAY)
 				{
 					str = ILInternAppendedString(str, close);
-					type = type->un.array.elemType;
+					type = ILType_ElemType(type);
 					if(type != elemType)
 					{
 						str = ILInternAppendedString(str, open);
@@ -178,17 +179,17 @@ const char *CSTypeToName(ILType *type)
 				else
 				{
 					str = ILInternAppendedString(str, comma);
-					type = type->un.array.elemType;
+					type = ILType_ElemType(type);
 				}
 			}
 			return str.string;
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_CMOD_REQD ||
-				type->kind == IL_TYPE_COMPLEX_CMOD_OPT)
+		else if(kind == IL_TYPE_COMPLEX_CMOD_REQD ||
+				kind == IL_TYPE_COMPLEX_CMOD_OPT)
 		{
-			return CSTypeToName(type->un.modifier.type);
+			return CSTypeToName(type->un.modifier__.type__);
 		}
-		else if((type->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+		else if((kind & IL_TYPE_COMPLEX_METHOD) != 0)
 		{
 			/* TODO */
 		}

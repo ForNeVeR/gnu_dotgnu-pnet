@@ -86,7 +86,7 @@ ILNode_GetType(ILNode_StaticProperty),
 ILNode_GetType(ILNode_MemberProperty)
 {
 	ILType *signature = ILProperty_Signature(node->property);
-	return ILTypeToMachineType(signature->un.method.retType);
+	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
 /*
@@ -219,7 +219,7 @@ ILNode_GenValue(ILNode_StaticProperty)
 	ILType *signature = ILProperty_Signature(node->property);
 	ILGenCallByMethod(info, getter);
 	ILGenAdjust(info, 1);
-	return ILTypeToMachineType(signature->un.method.retType);
+	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
 /*
@@ -232,7 +232,7 @@ ILNode_GenValue(ILNode_MemberProperty)
 	ILGenCast(info, ILNode_GenValue(node->expr, info),
 			  ILMachineType_ObjectRef);
 	ILGenCallByMethod(info, getter);
-	return ILTypeToMachineType(signature->un.method.retType);
+	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
 /*
@@ -307,7 +307,7 @@ ILNode_Prepare(ILNode_MemberField)
 ILNode_Prepare(ILNode_StaticProperty)
 {
 	ILType *signature = ILProperty_Signature(node->property);
-	return ILTypeToMachineType(signature->un.method.retType);
+	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
 /*
@@ -319,7 +319,7 @@ ILNode_Prepare(ILNode_MemberProperty)
 	node->tempVar = IL_MAX_UINT32;
 	ILGenCast(info, ILNode_GenValue(node->expr, info),
 			  ILMachineType_ObjectRef);
-	return ILTypeToMachineType(signature->un.method.retType);
+	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
 /*
@@ -458,7 +458,7 @@ ILNode_GetAndPrepare(ILNode_StaticProperty)
 		ILGenSimple(info, IL_OP_DUP);
 		ILGenAdjust(info, 1);
 	}
-	return ILTypeToMachineType(signature->un.method.retType);
+	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
 /*
@@ -468,7 +468,7 @@ ILNode_GetAndPrepare(ILNode_MemberProperty)
 {
 	ILMethod *getter = ILProperty_Getter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	ILType *propType = signature->un.method.retType;
+	ILType *propType = ILTypeGetReturn(signature);
 	if(leave)
 	{
 		/* Generate the object reference */
@@ -647,7 +647,7 @@ ILNode_Store(ILNode_MemberProperty)
 {
 	ILMethod *setter = ILProperty_Setter(node->property);
 	ILType *signature = ILProperty_Signature(node->property);
-	ILType *propType = signature->un.method.retType;
+	ILType *propType = ILTypeGetReturn(signature);
 	if(leave)
 	{
 		/* Copy the result into a temporary local */

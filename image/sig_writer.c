@@ -167,61 +167,61 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr);
  */
 static int WriteMethodParams(SigBuffer *buffer, ILType *method)
 {
-	long num = (long)(unsigned long)(method->num);
+	long num = (long)(unsigned long)(method->num__);
 	ILType *params;
 	if(num > 0)
 	{
-		if(!WriteType(buffer, method->un.method.param[0], 1))
+		if(!WriteType(buffer, method->un.method__.param__[0], 1))
 		{
 			return 0;
 		}
 	}
 	if(num > 1)
 	{
-		if(!WriteType(buffer, method->un.method.param[1], 1))
+		if(!WriteType(buffer, method->un.method__.param__[1], 1))
 		{
 			return 0;
 		}
 	}
 	if(num > 2)
 	{
-		if(!WriteType(buffer, method->un.method.param[2], 1))
+		if(!WriteType(buffer, method->un.method__.param__[2], 1))
 		{
 			return 0;
 		}
 	}
 	if(num > 3)
 	{
-		params = method->un.method.next;
+		params = method->un.method__.next__;
 		num -= 3;
 		while(num > 0)
 		{
-			if(!WriteType(buffer, params->un.params.param[0], 1))
+			if(!WriteType(buffer, params->un.params__.param__[0], 1))
 			{
 				return 1;
 			}
 			if(num > 1)
 			{
-				if(!WriteType(buffer, params->un.params.param[1], 1))
+				if(!WriteType(buffer, params->un.params__.param__[1], 1))
 				{
 					return 1;
 				}
 			}
 			if(num > 2)
 			{
-				if(!WriteType(buffer, params->un.params.param[2], 1))
+				if(!WriteType(buffer, params->un.params__.param__[2], 1))
 				{
 					return 1;
 				}
 			}
 			if(num > 3)
 			{
-				if(!WriteType(buffer, params->un.params.param[3], 1))
+				if(!WriteType(buffer, params->un.params__.param__[3], 1))
 				{
 					return 1;
 				}
 			}
-			params = params->un.params.next;
+			params = params->un.params__.next__;
 			num -= 4;
 		}
 	}
@@ -233,36 +233,36 @@ static int WriteMethodParams(SigBuffer *buffer, ILType *method)
  */
 static int WriteLocalVars(SigBuffer *buffer, ILType *locals)
 {
-	long num = (long)(unsigned long)(locals->num);
+	long num = (long)(unsigned long)(locals->num__);
 	ILType *temp = locals;
 	while(num > 0)
 	{
-		if(!WriteType(buffer, temp->un.locals.local[0], 1))
+		if(!WriteType(buffer, temp->un.locals__.local__[0], 1))
 		{
 			return 1;
 		}
 		if(num > 1)
 		{
-			if(!WriteType(buffer, temp->un.locals.local[1], 1))
+			if(!WriteType(buffer, temp->un.locals__.local__[1], 1))
 			{
 				return 1;
 			}
 		}
 		if(num > 2)
 		{
-			if(!WriteType(buffer, temp->un.locals.local[2], 1))
+			if(!WriteType(buffer, temp->un.locals__.local__[2], 1))
 			{
 				return 1;
 			}
 		}
 		if(num > 3)
 		{
-			if(!WriteType(buffer, temp->un.locals.local[3], 1))
+			if(!WriteType(buffer, temp->un.locals__.local__[3], 1))
 			{
 				return 1;
 			}
 		}
-		temp = temp->un.locals.next;
+		temp = temp->un.locals__.next__;
 		num -= 4;
 	}
 	return 1;
@@ -328,34 +328,29 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 	else if(type != ILType_Invalid)
 	{
 		/* Encode a complex type */
-		switch(type->kind & 0xFF)
+		switch(ILType_Kind(type))
 		{
 			case IL_TYPE_COMPLEX_BYREF:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_BYREF);
-				return WriteType(buffer, type->un.refType, 1);
+				return WriteType(buffer, ILType_Ref(type), 1);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_PTR:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_PTR);
-				return WriteType(buffer, type->un.refType, 1);
+				return WriteType(buffer, ILType_Ref(type), 1);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_ARRAY:
 			{
-				if(type->un.array.size == 0 &&
-				   type->un.array.lowBound == 0 &&
-				   (!ILType_IsComplex(type->un.array.elemType) ||
-				    (type->un.array.elemType->kind != IL_TYPE_COMPLEX_ARRAY &&
-					 type->un.array.elemType->kind !=
-					 		IL_TYPE_COMPLEX_ARRAY_CONTINUE)))
+				if(ILType_IsSimpleArray(type) && type->un.array__.size__ == 0)
 				{
 					/* Single dimensional array with no specified bounds */
 					SIG_WRITE(IL_META_ELEMTYPE_SZARRAY);
-					return WriteType(buffer, type->un.array.elemType, 1);
+					return WriteType(buffer, type->un.array__.elemType__, 1);
 				}
 			}
 			/* Fall through */
@@ -374,26 +369,26 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				needSizes = 0;
 				elemType = type;
 				while(ILType_IsComplex(elemType) &&
-				      elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+				      ILType_Kind(elemType) == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 				{
 					++rank;
-					if(elemType->un.array.lowBound != 0 ||
-					   elemType->un.array.size != 0)
+					if(elemType->un.array__.lowBound__ != 0 ||
+					   elemType->un.array__.size__ != 0)
 					{
 						needSizes = 1;
 					}
-					elemType = elemType->un.array.elemType;
+					elemType = elemType->un.array__.elemType__;
 				}
 				if(ILType_IsComplex(elemType) &&
-				   elemType->kind == IL_TYPE_COMPLEX_ARRAY)
+				   ILType_Kind(elemType) == IL_TYPE_COMPLEX_ARRAY)
 				{
 					++rank;
-					if(elemType->un.array.lowBound != 0 ||
-					   elemType->un.array.size != 0)
+					if(elemType->un.array__.lowBound__ != 0 ||
+					   elemType->un.array__.size__ != 0)
 					{
 						needSizes = 1;
 					}
-					elemType = elemType->un.array.elemType;
+					elemType = elemType->un.array__.elemType__;
 				}
 				if(needSizes)
 				{
@@ -422,14 +417,14 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				{
 					elemType = type;
 					while(ILType_IsComplex(elemType) &&
-					      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
-						   elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+					      (elemType->kind__ == IL_TYPE_COMPLEX_ARRAY ||
+						   elemType->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 					{
-						if(!WriteIntValue(buffer, elemType->un.array.size))
+						if(!WriteIntValue(buffer, elemType->un.array__.size__))
 						{
 							return 0;
 						}
-						elemType = elemType->un.array.elemType;
+						elemType = elemType->un.array__.elemType__;
 					}
 				}
 				if(!WriteValue(buffer, rank))
@@ -438,15 +433,15 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				}
 				elemType = type;
 				while(ILType_IsComplex(elemType) &&
-				      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
-					   elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+				      (elemType->kind__ == IL_TYPE_COMPLEX_ARRAY ||
+					   elemType->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 				{
 					if(!WriteIntValue(buffer,
-									  elemType->un.array.lowBound))
+									  elemType->un.array__.lowBound__))
 					{
 						return 0;
 					}
-					elemType = elemType->un.array.elemType;
+					elemType = elemType->un.array__.elemType__;
 				}
 			}
 			break;
@@ -454,33 +449,33 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 			case IL_TYPE_COMPLEX_CMOD_REQD:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_CMOD_REQD);
-				if(!WriteClassToken(buffer, type->un.modifier.info))
+				if(!WriteClassToken(buffer, type->un.modifier__.info__))
 				{
 					return 0;
 				}
-				return WriteType(buffer, type->un.modifier.type, 1);
+				return WriteType(buffer, type->un.modifier__.type__, 1);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_CMOD_OPT:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_CMOD_OPT);
-				if(!WriteClassToken(buffer, type->un.modifier.info))
+				if(!WriteClassToken(buffer, type->un.modifier__.info__))
 				{
 					return 0;
 				}
-				return WriteType(buffer, type->un.modifier.type, 1);
+				return WriteType(buffer, type->un.modifier__.type__, 1);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_PROPERTY:
 			{
 				SIG_WRITE(IL_META_CALLCONV_PROPERTY);
-				if(!WriteValue(buffer, (unsigned long)(type->num)))
+				if(!WriteValue(buffer, (unsigned long)(type->num__)))
 				{
 					return 0;
 				}
-				if(!WriteType(buffer, type->un.method.retType, 1))
+				if(!WriteType(buffer, type->un.method__.retType__, 1))
 				{
 					return 0;
 				}
@@ -497,14 +492,14 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 			case IL_TYPE_COMPLEX_PINNED:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_PINNED);
-				return WriteType(buffer, type->un.refType, 1);
+				return WriteType(buffer, type->un.refType__, 1);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_LOCALS:
 			{
 				SIG_WRITE(IL_META_CALLCONV_LOCAL_SIG);
-				if(!WriteValue(buffer, (unsigned long)(type->num)))
+				if(!WriteValue(buffer, (unsigned long)(type->num__)))
 				{
 					return 0;
 				}
@@ -522,27 +517,27 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				}
 
 				/* Write the calling conventions */
-				SIG_WRITE(type->kind >> 8);
+				SIG_WRITE(ILType_CallConv(type));
 
 				/* Write the number of parameters */
-				if((type->kind & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
+				if((type->kind__ & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
 				{
 					/* Subtract one from the count if a sentinel is present */
-					if(!WriteValue(buffer, ((unsigned long)(type->num)) - 1))
+					if(!WriteValue(buffer, ((unsigned long)(type->num__)) - 1))
 					{
 						return 0;
 					}
 				}
 				else
 				{
-					if(!WriteValue(buffer, ((unsigned long)(type->num))))
+					if(!WriteValue(buffer, ((unsigned long)(type->num__))))
 					{
 						return 0;
 					}
 				}
 
 				/* Write the return type */
-				if(!WriteType(buffer, type->un.method.retType, 1))
+				if(!WriteType(buffer, type->un.method__.retType__, 1))
 				{
 					return 0;
 				}

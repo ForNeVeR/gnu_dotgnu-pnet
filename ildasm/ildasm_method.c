@@ -768,7 +768,7 @@ static void DumpLocals(ILImage *image, FILE *outstream,
 		{
 			fputs(",\n\t\t            ", outstream);
 		}
-		type = ILTypeGetLocal(locals, index);
+		type = ILTypeGetLocalWithPrefixes(locals, index);
 		ILDumpType(outstream, image, type, flags);
 	}
 }

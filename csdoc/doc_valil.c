@@ -179,7 +179,7 @@ static char *TypeToName(ILType *type, int shortForm)
 	const char *classNamespace;
 	const char *suffix;
 	char buffer[128];
-	int posn;
+	int posn, kind;
 
 	if(ILType_IsPrimitive(type))
 	{
@@ -234,39 +234,40 @@ static char *TypeToName(ILType *type, int shortForm)
 	}
 	else if(type != 0 && ILType_IsComplex(type))
 	{
-		if(type->kind == IL_TYPE_COMPLEX_BYREF)
+		kind = ILType_Kind(type);
+		if(kind == IL_TYPE_COMPLEX_BYREF)
 		{
-			name = TypeToName(type->un.refType, shortForm);
+			name = TypeToName(ILType_Ref(type), shortForm);
 			suffix = "&";
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_PTR)
+		else if(kind == IL_TYPE_COMPLEX_PTR)
 		{
-			name = TypeToName(type->un.refType, shortForm);
+			name = TypeToName(ILType_Ref(type), shortForm);
 			suffix = "*";
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+		else if(kind == IL_TYPE_COMPLEX_ARRAY)
 		{
-			name = TypeToName(type->un.refType, shortForm);
+			name = TypeToName(ILType_Ref(type), shortForm);
 			suffix = "[]";
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		else if(kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
 			buffer[0] = '[';
 			posn = 1;
 			while(type != 0 && ILType_IsComplex(type) &&
-			      type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE &&
+			      ILType_Kind(type) == IL_TYPE_COMPLEX_ARRAY_CONTINUE &&
 				  posn < (sizeof(buffer) - 8))
 			{
 				buffer[posn++] = ',';
-				type = type->un.array.elemType;
+				type = ILType_ElemType(type);
 			}
 			buffer[posn++] = ']';
 			buffer[posn] = '\0';
 			suffix = buffer;
 			if(type != 0 && ILType_IsComplex(type) &&
-			   type->kind == IL_TYPE_COMPLEX_ARRAY)
+			   ILType_Kind(type) == IL_TYPE_COMPLEX_ARRAY)
 			{
-				name = TypeToName(type->un.array.elemType, shortForm);
+				name = TypeToName(ILType_ElemType(type), shortForm);
 			}
 			else
 			{
@@ -332,7 +333,7 @@ static int MatchType(ILType *type, const char *typeName)
 static int MatchSignature(ILType *signature, ILDocMember *member)
 {
 	ILDocParameter *param = member->parameters;
-	unsigned numParams = signature->num;
+	unsigned numParams = ILTypeNumParams(signature);
 	unsigned paramNum = 1;
 	while(param != 0 && paramNum <= numParams)
 	{
@@ -351,7 +352,7 @@ static int MatchSignature(ILType *signature, ILDocMember *member)
 	   !strcmp(member->name, "op_Implicit"))
 	{
 		/* The return type is part of the signature of a conversion */
-		if(!MatchType(signature->un.method.retType, member->returnType))
+		if(!MatchType(ILTypeGetReturn(signature), member->returnType))
 		{
 			return 0;
 		}
@@ -366,7 +367,7 @@ static int MatchPropertySignature(ILType *signature,
 								  ILDocMember *member, int isSet)
 {
 	ILDocParameter *param = member->parameters;
-	unsigned numParams = signature->num;
+	unsigned numParams = ILTypeNumParams(signature);
 	unsigned paramNum = 1;
 	while(param != 0 && paramNum <= numParams)
 	{
@@ -761,7 +762,7 @@ static void PrintEndMember(FILE *stream, ILDocType *type, ILDocMember *member)
 static void PrintILSignature(FILE *stream, ILType *signature,
 							 const char *memberName)
 {
-	unsigned numParams = signature->num;
+	unsigned numParams = ILTypeNumParams(signature);
 	unsigned paramNum;
 	ILType *paramType;
 	putc('(', stream);
@@ -780,7 +781,7 @@ static void PrintILSignature(FILE *stream, ILType *signature,
 	{
 		/* Report the return type too for conversion operators */
 		fputs(" : ", stream);
-		PrintType(stream, signature->un.method.retType);
+		PrintType(stream, ILTypeGetReturn(signature));
 	}
 }
 
@@ -833,8 +834,8 @@ static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 							{
 								fputs("static ", stream);
 							}
-							PrintType(stream, ILMember_Signature(member)
-												->un.method.retType);
+							PrintType(stream, ILTypeGetReturn
+								(ILMember_Signature(member)));
 							putc(' ', stream);
 							PrintString(ILMember_Name(member), stream);
 							PrintILSignature(stream, ILMember_Signature(member),
@@ -895,8 +896,8 @@ static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 						fputs("\t\t<property name=\"", stream);
 						PrintString(ILMember_Name(member), stream);
 						fputs("\" type=\"", stream);
-						PrintType(stream, ILMember_Signature(member)
-											->un.method.retType);
+						PrintType(stream, ILTypeGetReturn
+							(ILMember_Signature(member)));
 						fputs("\">\n", stream);
 						memberNameWritten = 1;
 					}
@@ -1240,7 +1241,7 @@ static char *AttributeToName(ILAttribute *attr)
 	}
 
 	/* Get the attribute arguments */
-	numParams = ILMethod_Signature(method)->num;
+	numParams = ILTypeNumParams(ILMethod_Signature(method));
 	needComma = 0;
 	while(numParams > 0)
 	{
@@ -1595,7 +1596,7 @@ static int ValidateMethod(FILE *stream, ILImage *image,
 	}
 
 	/* Match the return type */
-	if(!MatchType(ILMethod_Signature(method)->un.method.retType,
+	if(!MatchType(ILTypeGetReturn(ILMethod_Signature(method)),
 				  member->returnType))
 	{
 		PrintName(stream, type, member);
@@ -1606,7 +1607,7 @@ static int ValidateMethod(FILE *stream, ILImage *image,
 		PrintString("should have return type `", stream);
 		PrintString(member->returnType, stream);
 		PrintString("', but has `", stream);
-		PrintType(stream, ILMethod_Signature(method)->un.method.retType);
+		PrintType(stream, ILTypeGetReturn(ILMethod_Signature(method)));
 		PrintString("' instead", stream);
 		if(xmlOutput)
 		{
@@ -1756,7 +1757,7 @@ static int ValidateProperty(FILE *stream, ILImage *image,
 		if(accessor)
 		{
 			isSet = 0;
-			propertyType = ILMethod_Signature(accessor)->un.method.retType;
+			propertyType = ILTypeGetReturn(ILMethod_Signature(accessor));
 		}
 		else
 		{
@@ -1778,7 +1779,8 @@ static int ValidateProperty(FILE *stream, ILImage *image,
 			}
 			isSet = 1;
 			propertyType = ILMethod_Signature(accessor);
-			propertyType = ILTypeGetParam(propertyType, propertyType->num);
+			propertyType = ILTypeGetParam
+				(propertyType, ILTypeNumParams(propertyType));
 		}
 
 		/* Match the property signature */

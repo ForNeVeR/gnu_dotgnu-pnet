@@ -1526,14 +1526,12 @@ ILClass *ILClassFromType(ILImage *image, void *data, ILType *type,
 	else if(type != 0 && ILType_IsComplex(type))
 	{
 		/* Recognise complex types */
-		if(type->kind == IL_TYPE_COMPLEX_ARRAY &&
-		   type->un.array.lowBound == 0)
+		if(ILType_IsSimpleArray(type))
 		{
 			/* Single-dimensional array with no lower bound */
 			return _ILTypeToSyntheticArray(image, type, 1);
 		}
-		else if(type->kind == IL_TYPE_COMPLEX_ARRAY ||
-		        type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		else if(ILType_IsArray(type))
 		{
 			/* Multi-dimensional array or an array with specified bounds */
 			return _ILTypeToSyntheticArray(image, type, 0);

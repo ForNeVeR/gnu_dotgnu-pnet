@@ -595,7 +595,7 @@ ILToken ILAsmResolveMember(ILProgramItem *scope, const char *name,
 			ILAsmOutOfMemory();
 		}
 		ILMemberSetSignature((ILMember *)method, sig);
-		ILMethodSetCallConv(method, (sig->kind >> 8));
+		ILMethodSetCallConv(method, ILType_CallConv(sig));
 		return ILMethod_Token(method);
 	}
 	else
@@ -637,7 +637,7 @@ ILMethod *ILAsmMethodCreate(ILClass *classInfo, const char *name,
 			else
 			{
 				/* Convert the MemberRef into a MethodDef */
-				ILMethodSetCallConv(method, (sig->kind >> 8));
+				ILMethodSetCallConv(method, ILType_CallConv(sig));
 				ILMemberSetAttrs((ILMember *)method,
 								 ~((ILUInt32)0), attributes);
 				if((ILMethod_Token(method) & IL_META_TOKEN_MASK)
@@ -657,7 +657,7 @@ ILMethod *ILAsmMethodCreate(ILClass *classInfo, const char *name,
 		ILAsmOutOfMemory();
 	}
 	ILMemberSetSignature((ILMember *)method, sig);
-	ILMethodSetCallConv(method, (sig->kind >> 8));
+	ILMethodSetCallConv(method, ILType_CallConv(sig));
 	return method;
 }
 

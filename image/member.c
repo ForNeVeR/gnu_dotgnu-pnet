@@ -690,7 +690,7 @@ int ILMethodIsConstructor(ILMethod *method)
 	   (method->member.attributes & IL_META_METHODDEF_RT_SPECIAL_NAME) != 0 &&
 	   (method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0 &&
 	   ILType_HasThis(method->member.signature) &&
-	   method->member.signature->un.method.retType == ILType_Void)
+	   method->member.signature->un.method__.retType__ == ILType_Void)
 	{
 		return 1;
 	}
@@ -706,8 +706,8 @@ int ILMethodIsStaticConstructor(ILMethod *method)
 	   (method->member.attributes & IL_META_METHODDEF_RT_SPECIAL_NAME) != 0 &&
 	   (method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0 &&
 	   !ILType_HasThis(method->member.signature) &&
-	   method->member.signature->un.method.retType == ILType_Void &&
-	   method->member.signature->num == 0)
+	   method->member.signature->un.method__.retType__ == ILType_Void &&
+	   method->member.signature->num__ == 0)
 	{
 		return 1;
 	}

@@ -136,7 +136,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 		}
 		++stacktop;
 	}
-	numParams = signature->num;
+	numParams = ILTypeNumParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
 		paramType = ILTypeGetEnumType(ILTypeGetParam(signature, param));
@@ -232,7 +232,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 			stacktop += sizeInWords;
 		}
 		else if(paramType != 0 && ILType_IsComplex(paramType) &&
-				paramType->kind == IL_TYPE_COMPLEX_BYREF)
+				ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF)
 		{
 			/* Process a value that is being passed by reference */
 			CHECK_SPACE(1);
@@ -307,7 +307,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	else
 	{
 		/* Copy the return value into place */
-		paramType = ILTypeGetEnumType(signature->un.method.retType);
+		paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
 		if(ILType_IsPrimitive(paramType))
 		{
 			/* Process a primitive value */
@@ -466,7 +466,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 		}
 		++stacktop;
 	}
-	numParams = signature->num;
+	numParams = ILTypeNumParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
 		paramType = ILTypeGetEnumType(ILTypeGetParam(signature, param));
@@ -566,7 +566,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 			stacktop += sizeInWords;
 		}
 		else if(paramType != 0 && ILType_IsComplex(paramType) &&
-				paramType->kind == IL_TYPE_COMPLEX_BYREF)
+				ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF)
 		{
 			/* Process a value that is being passed by reference */
 			CHECK_SPACE(1);
@@ -643,7 +643,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	else
 	{
 		/* Copy the return value into place */
-		paramType = ILTypeGetEnumType(signature->un.method.retType);
+		paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
 		if(ILType_IsPrimitive(paramType))
 		{
 			/* Process a primitive value */

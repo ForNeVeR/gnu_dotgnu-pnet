@@ -434,7 +434,7 @@ const char *CSMethodToName(ILMethod *method)
 		/* Convert the return type into a string */
 		str = ILInternAppendedString
 				(str, ILInternString((char *)CSTypeToName
-										(signature->un.method.retType), -1));
+										(ILTypeGetReturn(signature)), -1));
 		str = ILInternAppendedString(str, ILInternString(" ", 1));
 
 		/* Append the class name to the string */
@@ -450,7 +450,7 @@ const char *CSMethodToName(ILMethod *method)
 
 	/* Add the parameter types to the string */
 	str = ILInternAppendedString(str, ILInternString("(", 1));
-	numParams = signature->num;
+	numParams = ILTypeNumParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
 		paramMod = ILGenGetParamInfo(method, signature, param, &type);
@@ -611,14 +611,14 @@ void CSEvalFreeArguments(CSEvalArg *args)
 static ILType *GetMethodParamType(ILMethod *method, ILType *signature,
 								  int paramNum, ILParameterModifier *paramMod)
 {
-	int numParams = signature->num;
+	int numParams = ILTypeNumParams(signature);
 	int firstParam;
 	ILType *paramType;
 
 	/* If we have an "explicit this" method, then we need to
 	   adjust for the first parameter, which is always "this" */
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) != 0 &&
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_HASTHIS) != 0 &&
+	   (ILType_CallConv(signature) & IL_META_CALLCONV_EXPLICITTHIS) != 0 &&
 	   numParams > 0)
 	{
 		firstParam = 2;
@@ -664,7 +664,7 @@ static ILType *GetMethodExpandedType(ILMethod *method, ILType *signature,
 		else
 		{
 			/* We are using the "params" array in its array form */
-			return ILTypeGetParam(signature, signature->num);
+			return ILTypeGetParam(signature, ILTypeNumParams(signature));
 		}
 	}
 	return paramType;
@@ -677,9 +677,9 @@ static ILType *GetMethodExpandedType(ILMethod *method, ILType *signature,
 static ILType *GetArrayElemType(ILType *type)
 {
 	if(type != 0 && ILType_IsComplex(type) &&
-	   type->kind == IL_TYPE_COMPLEX_ARRAY)
+	   ILType_Kind(type) == IL_TYPE_COMPLEX_ARRAY)
 	{
-		return type->un.array.elemType;
+		return ILType_ElemType(type);
 	}
 	else
 	{
@@ -971,7 +971,8 @@ ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
 			   ILCanCoerce(info->context, elemType, paramType))
 			{
 				/* Pass the argument as an array */
-				paramType = ILTypeGetParam(signature, signature->num);
+				paramType = ILTypeGetParam
+					(signature, ILTypeNumParams(signature));
 				ILCoerce(info, args[argNum].node,
 						 args[argNum].parent, args[argNum].type, paramType);
 				argArray = 0;
@@ -1039,7 +1040,7 @@ ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
 	}
 
 	/* Return the method's return type to the caller */
-	return signature->un.method.retType;
+	return ILTypeGetReturn(signature);
 }
 
 %}

@@ -416,7 +416,7 @@ JavaGenDiscard(ILNode_ForeachCollection)
 	JavaGenAdjust(info, JavaGenTypeSize(enumType));
 	JavaGenCallMethod(info, node->getCurrent, saveStack);
 	JavaGenAdjust(info, -(JavaGenTypeSize(enumType)));
-	returnType = ILMethod_Signature(node->getCurrent)->un.method.retType;
+	returnType = ILTypeGetReturn(ILMethod_Signature(node->getCurrent));
 	JavaGenAdjust(info, JavaGenTypeSize(ILTypeToMachineType(returnType)));
 	if(node->doCast)
 	{

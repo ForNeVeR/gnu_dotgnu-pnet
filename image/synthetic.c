@@ -53,39 +53,40 @@ static unsigned long HashType(unsigned long start, ILType *type)
 	}
 	else if(type != 0 && ILType_IsComplex(type))
 	{
-		start = (start << 5) + start + (unsigned long)(type->kind);
-		switch(type->kind & 0xFF)
+		start = (start << 5) + start + (unsigned long)(type->kind__);
+		switch(ILType_Kind(type) & 0xFF)
 		{
 			case IL_TYPE_COMPLEX_BYREF:
 			case IL_TYPE_COMPLEX_PTR:
 			case IL_TYPE_COMPLEX_PINNED:
 			{
-				return HashType(start, type->un.refType);
+				return HashType(start, type->un.refType__);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_ARRAY:
 			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
 			{
-				return HashType(start, type->un.array.elemType);
+				return HashType(start, type->un.array__.elemType__);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_CMOD_REQD:
 			case IL_TYPE_COMPLEX_CMOD_OPT:
 			{
-				return HashType(start, type->un.modifier.type);
+				return HashType(start, type->un.modifier__.type__);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_METHOD:
 			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
 			{
-				start = HashType(start, type->un.method.retType);
-				numParams = type->num;
+				start = HashType(start, type->un.method__.retType__);
+				numParams = type->num__;
 				for(param = 1; param <= numParams; ++param)
 				{
-					start = HashType(start, ILTypeGetParam(type, param));
+					start = HashType
+						(start, ILTypeGetParamWithPrefixes(type, param));
 				}
 			}
 			break;
@@ -207,7 +208,7 @@ static int AddSArrayMethods(ILClass *info, ILType *type)
 	{
 		return 0;
 	}
-	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	if(!ILTypeAddParam(context, signature, ILType_Int32))
 	{
 		return 0;
@@ -236,16 +237,16 @@ static int AddMArrayMethods(ILClass *info, ILType *type)
 	temp = type;
 	numDims = 0;
 	while(temp != 0 && ILType_IsComplex(temp) &&
-		  temp->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		  temp->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 	{
 		++numDims;
-		temp = temp->un.array.elemType;
+		temp = temp->un.array__.elemType__;
 	}
 	if(temp != 0 && ILType_IsComplex(temp) &&
-	   temp->kind == IL_TYPE_COMPLEX_ARRAY)
+	   temp->kind__ == IL_TYPE_COMPLEX_ARRAY)
 	{
 		++numDims;
-		temp = temp->un.array.elemType;
+		temp = temp->un.array__.elemType__;
 	}
 	if(!temp)
 	{
@@ -267,7 +268,7 @@ static int AddMArrayMethods(ILClass *info, ILType *type)
 	{
 		return 0;
 	}
-	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	for(dim = 0; dim < numDims; ++dim)
 	{
 		if(!ILTypeAddParam(context, signature, ILType_Int32))
@@ -293,7 +294,7 @@ static int AddMArrayMethods(ILClass *info, ILType *type)
 	{
 		return 0;
 	}
-	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	for(dim = 0; dim < numDims; ++dim)
 	{
 		if(!ILTypeAddParam(context, signature, ILType_Int32))
@@ -321,7 +322,7 @@ static int AddMArrayMethods(ILClass *info, ILType *type)
 	{
 		return 0;
 	}
-	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	for(dim = 0; dim < numDims; ++dim)
 	{
 		if(!ILTypeAddParam(context, signature, ILType_Int32))
@@ -345,7 +346,7 @@ static int AddMArrayMethods(ILClass *info, ILType *type)
 	{
 		return 0;
 	}
-	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	for(dim = 0; dim < numDims; ++dim)
 	{
 		if(!ILTypeAddParam(context, signature, ILType_Int32))
@@ -378,7 +379,7 @@ static int AddMArrayMethods(ILClass *info, ILType *type)
 	{
 		return 0;
 	}
-	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	for(dim = 0; dim < numDims; ++dim)
 	{
 		if(!ILTypeAddParam(context, signature, ILType_Int32))

@@ -112,7 +112,7 @@ checkLDArg:
 				TypeToEngineType(stack[stackSize].typeInfo)) == ILEngineType_M)
 	{
 		/* Convert the type of a "BYREF" parameter */
-		stack[stackSize].typeInfo = stack[stackSize].typeInfo->un.refType;
+		stack[stackSize].typeInfo = ILType_Ref(stack[stackSize].typeInfo);
 		ILCoderLoadArg(coder, argNum, stack[stackSize].typeInfo);
 	}
 	else if(!IsUnsafeType(stack[stackSize].typeInfo) || unsafeAllowed)
@@ -196,7 +196,7 @@ checkLDLoc:
 			TypeToEngineType(stack[stackSize].typeInfo)) == ILEngineType_M)
 	{
 		/* Convert the type of a "BYREF" local */
-		stack[stackSize].typeInfo = stack[stackSize].typeInfo->un.refType;
+		stack[stackSize].typeInfo = ILType_Ref(stack[stackSize].typeInfo);
 	}
 	else if(IsUnsafeType(stack[stackSize].typeInfo) && !unsafeAllowed)
 	{

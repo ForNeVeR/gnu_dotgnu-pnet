@@ -109,8 +109,9 @@ static ffi_type *TypeToFFI(ILType *type)
 void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal)
 {
 	ILType *signature = ILMethod_Signature(method);
-	ILType *returnType = ILTypeGetEnumType(signature->un.method.retType);
+	ILType *returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
 	ILUInt32 numArgs;
+	ILUInt32 numParams;
 	ffi_cif *cif;
 	ffi_type **args;
 	ffi_type *rtype;
@@ -118,7 +119,7 @@ void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal)
 	ILUInt32 param;
 
 	/* Determine the number of argument blocks that we need */
-	numArgs = signature->num;
+	numArgs = numParams = ILTypeNumParams(signature);
 	if(ILType_HasThis(signature))
 	{
 		++numArgs;
@@ -165,7 +166,7 @@ void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal)
 		/* Pointer argument for "this" */
 		args[arg++] = &ffi_type_pointer;
 	}
-	for(param = 1; param <= signature->num; ++param)
+	for(param = 1; param <= numParams; ++param)
 	{
 		args[arg++] = TypeToFFI(ILTypeGetEnumType
 									(ILTypeGetParam(signature, param)));
@@ -183,6 +184,7 @@ void *_ILMakeCifForConstructor(ILCoder *coder, ILMethod *method,
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILUInt32 numArgs;
+	ILUInt32 numParams;
 	ffi_cif *cif;
 	ffi_type **args;
 	ffi_type *rtype;
@@ -190,7 +192,7 @@ void *_ILMakeCifForConstructor(ILCoder *coder, ILMethod *method,
 	ILUInt32 param;
 
 	/* Determine the number of argument blocks that we need */
-	numArgs = signature->num;
+	numArgs = numParams = ILTypeNumParams(signature);
 	if(isInternal)
 	{
 		/* This is an "internalcall" or "runtime" method
@@ -218,7 +220,7 @@ void *_ILMakeCifForConstructor(ILCoder *coder, ILMethod *method,
 		/* Pointer argument for the thread */
 		args[arg++] = &ffi_type_pointer;
 	}
-	for(param = 1; param <= signature->num; ++param)
+	for(param = 1; param <= numParams; ++param)
 	{
 		args[arg++] = TypeToFFI(ILTypeGetEnumType
 									(ILTypeGetParam(signature, param)));

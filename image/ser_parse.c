@@ -128,12 +128,10 @@ int ILSerializeGetType(ILType *type)
 			}
 		}
 	}
-	else if(type != 0 && ILType_IsComplex(type) &&
-			type->kind == IL_TYPE_COMPLEX_ARRAY &&
-			type->un.array.lowBound == 0)
+	else if(ILType_IsSimpleArray(type))
 	{
 		/* Determine if this is an array of simple types */
-		elemType = ILSerializeGetType(type->un.array.elemType);
+		elemType = ILSerializeGetType(ILTypeGetElemType(type));
 		if(elemType != -1 && (elemType & IL_META_SERIALTYPE_ARRAYOF) == 0)
 		{
 			return (IL_META_SERIALTYPE_ARRAYOF | elemType);
@@ -286,7 +284,7 @@ static int HasSufficientSpace(ILSerializeReader *reader, int type)
 int ILSerializeReaderGetParamType(ILSerializeReader *reader)
 {
 	int type;
-	if(reader->param < ((ILUInt32)(reader->signature->num)))
+	if(reader->param < ILTypeNumParams(reader->signature))
 	{
 		++(reader->param);
 		type = ILSerializeGetType(ILTypeGetParam(reader->signature,
@@ -564,7 +562,7 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader,
 			{
 				return -1;
 			}
-			memberType = member->signature->un.method.retType;
+			memberType = ILTypeGetReturn(member->signature);
 		}
 
 		/* Convert the member type into a serialization type */

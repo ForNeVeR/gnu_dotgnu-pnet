@@ -1142,7 +1142,7 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 		(values[IL_OFFSET_METHODDEF_IMPL_ATTRS] &
 			~(IL_META_METHODIMPL_JAVA_FP_STRICT |
 			  IL_META_METHODIMPL_JAVA)));
-	ILMethodSetCallConv(method, (signature->kind >> 8));
+	ILMethodSetCallConv(method, ILType_CallConv(signature));
 	ILMethodSetRVA(method, values[IL_OFFSET_METHODDEF_RVA]);
 
 	/* Parse the parameter definitions */
@@ -1156,8 +1156,8 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 	else
 	{
 		/* Get the number of real parameters from the signature */
-		num = signature->num;
-		if((signature->kind & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
+		num = ILTypeNumParams(signature);
+		if((ILType_Kind(signature) & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
 		{
 			--num;
 		}
@@ -1727,7 +1727,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 				{
 					return IL_LOADERR_MEMORY;
 				}
-				ILMethodSetCallConv(method, (type->kind >> 8));
+				ILMethodSetCallConv(method, ILType_CallConv(type));
 				member = (ILMember *)method;
 			}
 			else

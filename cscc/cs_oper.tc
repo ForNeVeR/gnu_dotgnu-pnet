@@ -122,7 +122,7 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		{
 			CSOutOfMemory();
 		}
-		returnType = ILMethod_Signature(method)->un.method.retType;
+		returnType = ILTypeGetReturn(ILMethod_Signature(method));
 		*parent = ILNode_UserBinaryOp_create
 						(node->expr1, node->expr2,
 						 ILTypeToMachineType(returnType), method);
@@ -219,7 +219,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 		{
 			CSOutOfMemory();
 		}
-		returnType = ILMethod_Signature(method)->un.method.retType;
+		returnType = ILTypeGetReturn(ILMethod_Signature(method));
 		*parent = ILNode_UserUnaryOp_create
 						(node->expr, ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
@@ -299,7 +299,7 @@ ILNode_SemAnalysis(ILNode_Add)
 	method = FindUserBinaryOperator("op_Addition", value1.type, value2.type);
 	if(method)
 	{
-		returnType = ILMethod_Signature(method)->un.method.retType;
+		returnType = ILTypeGetReturn(ILMethod_Signature(method));
 		*parent = ILNode_UserBinaryOp_create
 						(node->expr1, node->expr2,
 						 ILTypeToMachineType(returnType), method);
@@ -562,7 +562,7 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	method = FindUserBinaryOperator(name, value1.type, value2.type);
 	if(method)
 	{
-		returnType = ILMethod_Signature(method)->un.method.retType;
+		returnType = ILTypeGetReturn(ILMethod_Signature(method));
 		*parent = ILNode_UserBinaryOp_create
 						(node->expr1, node->expr2,
 						 ILTypeToMachineType(returnType), method);
@@ -880,7 +880,7 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
 		method = FindUserUnaryOperator("op_LogicalNot", value.type);
 		if(method)
 		{
-			returnType = ILMethod_Signature(method)->un.method.retType;
+			returnType = ILTypeGetReturn(ILMethod_Signature(method));
 			*parent = ILNode_UserUnaryOp_create
 						(node->expr, ILTypeToMachineType(returnType), method);
 			yysetfilename(*parent, yygetfilename(node));
@@ -1131,7 +1131,7 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	method = FindUserBinaryOperator(name, value1.type, value2.type);
 	if(method)
 	{
-		returnType = ILMethod_Signature(method)->un.method.retType;
+		returnType = ILTypeGetReturn(ILMethod_Signature(method));
 		*parent = ILNode_UserBinaryOp_create
 						(node->expr1, node->expr2,
 						 ILTypeToMachineType(returnType), method);

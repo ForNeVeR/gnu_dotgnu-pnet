@@ -102,7 +102,7 @@ static System_Array *System_SArray_ctor(ILExecThread *thread,
 	type = ILClassGetSynType(classInfo);
 
 	/* Compute the element size */
-	elemSize = ILSizeOfType(type->un.array.elemType);
+	elemSize = ILSizeOfType(ILType_ElemType(type));
 
 	/* Determine the total size of the array in bytes */
 	totalSize = ((ILUInt64)elemSize) * ((ILUInt64)length);
@@ -113,8 +113,8 @@ static System_Array *System_SArray_ctor(ILExecThread *thread,
 	}
 
 	/* Allocate the array, initialize, and return it */
-	if(ILType_IsPrimitive(type->un.array.elemType) &&
-	   type->un.array.elemType != ILType_TypedRef)
+	if(ILType_IsPrimitive(ILType_ElemType(type)) &&
+	   ILType_ElemType(type) != ILType_TypedRef)
 	{
 		/* The array will never contain pointers, so use atomic allocation */
 		array = (System_Array *)_ILEngineAllocAtomic
@@ -152,15 +152,15 @@ static System_MArray *ConstructMArrayHeader(ILExecThread *thread,
 	rank = 1;
 	elemType = type;
 	while(elemType != 0 && ILType_IsComplex(type) &&
-		  elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		  ILType_Kind(elemType) == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 	{
 		++rank;
-		elemType = elemType->un.array.elemType;
+		elemType = ILType_ElemType(elemType);
 	}
 	if(elemType != 0 && ILType_IsComplex(elemType) &&
-	   elemType->kind == IL_TYPE_COMPLEX_ARRAY)
+	   ILType_Kind(elemType) == IL_TYPE_COMPLEX_ARRAY)
 	{
-		elemType = elemType->un.array.elemType;
+		elemType = ILType_ElemType(elemType);
 	}
 	else
 	{
@@ -926,25 +926,6 @@ static int IsMArrayClass(ILClass *classInfo)
 	return (name != 0 && !strcmp(name, "$Synthetic"));
 }
 
-ILType *_ILGetElementType(ILType *array)
-{
-	while(array != 0 && ILType_IsComplex(array) &&
-	      array->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
-	{
-		array = array->un.array.elemType;
-	}
-	if(array != 0 && ILType_IsComplex(array) &&
-	   array->kind == IL_TYPE_COMPLEX_ARRAY)
-	{
-		return array->un.array.elemType;
-	}
-	else
-	{
-		/* Shouldn't happen, but do something sane anyway */
-		return ILType_Int32;
-	}
-}
-
 /*
  * Get the internal version of a synthetic "SArray" or "MArray" method.
  */
@@ -964,8 +945,7 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 	{
 		return 0;
 	}
-	if(type->kind == IL_TYPE_COMPLEX_ARRAY &&
-	   type->un.array.lowBound == 0)
+	if(ILType_IsSimpleArray(type))
 	{
 		/* Single-dimensional arrays have a simple constructor only */
 		if(!strcmp(name, ".ctor"))
@@ -1000,7 +980,7 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 	if(!strcmp(name, "Get"))
 	{
 		/* Determine which get function to use based on the element type */
-		type = ILTypeGetEnumType(_ILGetElementType(type));
+		type = ILTypeGetEnumType(ILTypeGetElemType(type));
 		if(ILType_IsPrimitive(type))
 		{
 			switch(ILType_ToElement(type))
@@ -1105,7 +1085,7 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 	else if(!strcmp(name, "Set"))
 	{
 		/* Determine which set function to use based on the element type */
-		type = ILTypeGetEnumType(_ILGetElementType(type));
+		type = ILTypeGetEnumType(ILTypeGetElemType(type));
 		if(ILType_IsPrimitive(type))
 		{
 			switch(ILType_ToElement(type))
@@ -1235,7 +1215,7 @@ int _ILIsMArray(System_Array *array)
 static ILType *GetArrayElemType(System_Array *array)
 {
 	ILType *type = ILClassGetSynType(GetObjectClass(array));
-	return _ILGetElementType(type);
+	return ILTypeGetElemType(type);
 }
 
 /*
@@ -1340,7 +1320,7 @@ static void System_Array_Initialize(ILExecThread *thread, System_Array *_this)
 				 IL_META_MEMBERKIND_METHOD)) != 0)
 	{
 		if(ILMethod_IsConstructor(method) &&
-		   ILMethod_Signature(method)->num == 0)
+		   ILTypeNumParams(ILMethod_Signature(method)) == 0)
 		{
 			break;
 		}
@@ -2297,7 +2277,7 @@ static ILInt32 System_Buffer_GetLength(ILExecThread *thread,
 	if(_ILIsSArray(array))
 	{
 		ILType *synType = ILClassGetSynType(GetObjectClass(array));
-		return array->length * ILSizeOfType(synType->un.array.elemType);
+		return array->length * ILSizeOfType(ILType_ElemType(synType));
 	}
 	else if(_ILIsMArray(array))
 	{
@@ -2376,7 +2356,7 @@ int ILExecThreadGetElem(ILExecThread *thread, void *value,
 		{
 			/* Get the element size */
 			type = ILClassGetSynType(GetObjectClass(array));
-			elemSize = (ILInt32)(ILSizeOfType(type->un.array.elemType));
+			elemSize = (ILInt32)(ILSizeOfType(ILType_ElemType(type)));
 
 			/* Copy the element to the "value" buffer */
 			ILMemCpy(value, ((unsigned char *)(ArrayToBuffer(_array))) +
@@ -2417,7 +2397,7 @@ int ILExecThreadSetElem(ILExecThread *thread, ILObject *_array,
 		{
 			/* Get the element size */
 			type = ILClassGetSynType(GetObjectClass(array));
-			type = ILTypeGetEnumType(type->un.array.elemType);
+			type = ILTypeGetEnumType(ILType_ElemType(type));
 			elemSize = (ILInt32)(ILSizeOfType(type));
 
 			/* Copy the value to the element */

@@ -88,7 +88,7 @@ static void RuntimeHelpers_InitializeArray(ILExecThread *thread,
 
 	/* Get the element type and make sure that it is primitive and numeric */
 	elemType = ILClassGetSynType(GetObjectClass(array));
-	elemType = _ILGetElementType(elemType);
+	elemType = ILTypeGetElemType(elemType);
 	switch((unsigned long)elemType)
 	{
 		case (unsigned long)ILType_Boolean:

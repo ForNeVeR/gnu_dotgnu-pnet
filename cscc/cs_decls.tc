@@ -626,7 +626,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 
 	/* If the return type is not void, then make sure that the
 	   method ends in some kind of return statement */
-	returnType = ILMethod_Signature(node->methodInfo)->un.method.retType;
+	returnType = ILTypeGetReturn(ILMethod_Signature(node->methodInfo));
 	if(returnType != ILType_Void && node->body)
 	{
 		if(!ILMethod_IsAbstract(node->methodInfo) &&

@@ -29,8 +29,8 @@ ILType *ILTypeCreateRef(ILContext *context, int kind, ILType *refType)
 	ILType *type = ILMemPoolCalloc(&(context->typePool), ILType);
 	if(type)
 	{
-		type->kind = kind;
-		type->un.refType = refType;
+		type->kind__ = kind;
+		type->un.refType__ = refType;
 	}
 	return type;
 }
@@ -41,18 +41,18 @@ ILType *ILTypeCreateArray(ILContext *context, unsigned long rank,
 	ILType *type = ILMemPoolCalloc(&(context->typePool), ILType);
 	if(type)
 	{
-		type->kind = IL_TYPE_COMPLEX_ARRAY;
-		type->un.array.elemType = elem;
-		type->un.array.size = 0;
-		type->un.array.lowBound = 0;
+		type->kind__ = IL_TYPE_COMPLEX_ARRAY;
+		type->un.array__.elemType__ = elem;
+		type->un.array__.size__ = 0;
+		type->un.array__.lowBound__ = 0;
 		while(rank > 1)
 		{
 			elem = type;
 			type = ILMemPoolCalloc(&(context->typePool), ILType);
-			type->kind = IL_TYPE_COMPLEX_ARRAY_CONTINUE;
-			type->un.array.elemType = elem;
-			type->un.array.size = 0;
-			type->un.array.lowBound = 0;
+			type->kind__ = IL_TYPE_COMPLEX_ARRAY_CONTINUE;
+			type->un.array__.elemType__ = elem;
+			type->un.array__.size__ = 0;
+			type->un.array__.lowBound__ = 0;
 			--rank;
 		}
 	}
@@ -63,20 +63,20 @@ void ILTypeSetSize(ILType *array, unsigned long dimension, long value)
 {
 	while(dimension > 0)
 	{
-		array = array->un.array.elemType;
+		array = array->un.array__.elemType__;
 		--dimension;
 	}
-	array->un.array.size = value;
+	array->un.array__.size__ = value;
 }
 
 void ILTypeSetLowBound(ILType *array, unsigned long dimension, long value)
 {
 	while(dimension > 0)
 	{
-		array = array->un.array.elemType;
+		array = array->un.array__.elemType__;
 		--dimension;
 	}
-	array->un.array.lowBound = value;
+	array->un.array__.lowBound__ = value;
 }
 
 ILType *ILTypeCreateModifier(ILContext *context, ILType *list,
@@ -85,9 +85,9 @@ ILType *ILTypeCreateModifier(ILContext *context, ILType *list,
 	ILType *type = ILMemPoolCalloc(&(context->typePool), ILType);
 	if(type)
 	{
-		type->kind = kind;
-		type->un.modifier.info = info;
-		type->un.modifier.type = 0;
+		type->kind__ = kind;
+		type->un.modifier__.info__ = info;
+		type->un.modifier__.type__ = 0;
 		if(!list)
 		{
 			/* The list was empty, so create a new list */
@@ -97,11 +97,11 @@ ILType *ILTypeCreateModifier(ILContext *context, ILType *list,
 		{
 			/* Append the modifier to the list */
 			ILType *temp = list;
-			while(temp->un.modifier.type != 0)
+			while(temp->un.modifier__.type__ != 0)
 			{
-				temp = temp->un.modifier.type;
+				temp = temp->un.modifier__.type__;
 			}
-			temp->un.modifier.type = type;
+			temp->un.modifier__.type__ = type;
 			return list;
 		}
 	}
@@ -114,11 +114,11 @@ ILType *ILTypeCreateModifier(ILContext *context, ILType *list,
 ILType *ILTypeAddModifiers(ILContext *context, ILType *modifiers, ILType *type)
 {
 	ILType *temp = modifiers;
-	while(temp->un.modifier.type != 0)
+	while(temp->un.modifier__.type__ != 0)
 	{
-		temp = temp->un.modifier.type;
+		temp = temp->un.modifier__.type__;
 	}
-	temp->un.modifier.type = type;
+	temp->un.modifier__.type__ = type;
 	return modifiers;
 }
 
@@ -127,8 +127,8 @@ ILType *ILTypeCreateLocalList(ILContext *context)
 	ILType *type = ILMemPoolCalloc(&(context->typePool), ILType);
 	if(type)
 	{
-		type->kind = IL_TYPE_COMPLEX_LOCALS;
-		type->num = 0;
+		type->kind__ = IL_TYPE_COMPLEX_LOCALS;
+		type->num__ = 0;
 		return type;
 	}
 	else
@@ -144,21 +144,21 @@ int ILTypeAddLocal(ILContext *context, ILType *locals, ILType *type)
 	ILType *start;
 
 	/* Find the end of the current local list */
-	num = locals->num;
+	num = locals->num__;
 	end = 0;
 	start = locals;
 	while(num >= 4)
 	{
-		end = &(locals->un.locals.next);
-		locals = locals->un.locals.next;
+		end = &(locals->un.locals__.next__);
+		locals = locals->un.locals__.next__;
 		num -= 4;
 	}
 
 	/* Will it fit in the current block? */
 	if(locals)
 	{
-		locals->un.locals.local[num] = type;
-		++(start->num);
+		locals->un.locals__.local__[num] = type;
+		++(start->num__);
 		return 1;
 	}
 
@@ -168,16 +168,16 @@ int ILTypeAddLocal(ILContext *context, ILType *locals, ILType *type)
 	{
 		return 0;
 	}
-	(*end)->un.locals.local[0] = type;
-	++(start->num);
+	(*end)->un.locals__.local__[0] = type;
+	++(start->num__);
 	return 1;
 }
 
 unsigned long ILTypeNumLocals(ILType *locals)
 {
-	if(locals->kind == IL_TYPE_COMPLEX_LOCALS)
+	if(locals->kind__ == IL_TYPE_COMPLEX_LOCALS)
 	{
-		return (unsigned long)(locals->num);
+		return (unsigned long)(locals->num__);
 	}
 	else
 	{
@@ -187,14 +187,19 @@ unsigned long ILTypeNumLocals(ILType *locals)
 
 ILType *ILTypeGetLocal(ILType *locals, unsigned long index)
 {
+	return ILTypeStripPrefixes(ILTypeGetLocalWithPrefixes(locals, index));
+}
+
+ILType *ILTypeGetLocalWithPrefixes(ILType *locals, unsigned long index)
+{
 	while(locals != 0 && index >= 4)
 	{
 		index -= 4;
-		locals = locals->un.locals.next;
+		locals = locals->un.locals__.next__;
 	}
 	if(locals)
 	{
-		return locals->un.locals.local[index];
+		return locals->un.locals__.local__[index];
 	}
 	else
 	{
@@ -207,9 +212,9 @@ ILType *ILTypeCreateMethod(ILContext *context, ILType *returnType)
 	ILType *type = ILMemPoolCalloc(&(context->typePool), ILType);
 	if(type)
 	{
-		type->kind = IL_TYPE_COMPLEX_METHOD;
-		type->num = 0;
-		type->un.method.retType = returnType;
+		type->kind__ = IL_TYPE_COMPLEX_METHOD;
+		type->num__ = 0;
+		type->un.method__.retType__ = returnType;
 	}
 	return type;
 }
@@ -219,9 +224,9 @@ ILType *ILTypeCreateProperty(ILContext *context, ILType *propType)
 	ILType *type = ILMemPoolCalloc(&(context->typePool), ILType);
 	if(type)
 	{
-		type->kind = IL_TYPE_COMPLEX_PROPERTY;
-		type->num = 0;
-		type->un.method.retType = propType;
+		type->kind__ = IL_TYPE_COMPLEX_PROPERTY;
+		type->num__ = 0;
+		type->un.method__.retType__ = propType;
 	}
 	return type;
 }
@@ -233,29 +238,29 @@ int ILTypeAddParam(ILContext *context, ILType *method, ILType *paramType)
 	ILType *start;
 
 	/* Put the parameter in the method block if it will fit */
-	if(method->num < 3)
+	if(method->num__ < 3)
 	{
-		method->un.method.param[(method->num)++] = paramType;
+		method->un.method__.param__[(method->num__)++] = paramType;
 		return 1;
 	}
 
 	/* Find the end of the overflow parameter list */
-	num = method->num - 3;
-	end = &(method->un.method.next);
+	num = method->num__ - 3;
+	end = &(method->un.method__.next__);
 	start = method;
-	method = method->un.method.next;
+	method = method->un.method__.next__;
 	while(num >= 4)
 	{
-		end = &(method->un.params.next);
-		method = method->un.params.next;
+		end = &(method->un.params__.next__);
+		method = method->un.params__.next__;
 		num -= 4;
 	}
 
 	/* Will it fit in the current overflow block? */
 	if(method)
 	{
-		method->un.params.param[num] = paramType;
-		++(start->num);
+		method->un.params__.param__[num] = paramType;
+		++(start->num__);
 		return 1;
 	}
 
@@ -265,8 +270,8 @@ int ILTypeAddParam(ILContext *context, ILType *method, ILType *paramType)
 	{
 		return 0;
 	}
-	(*end)->un.params.param[0] = paramType;
-	++(start->num);
+	(*end)->un.params__.param__[0] = paramType;
+	++(start->num__);
 	return 1;
 }
 
@@ -275,8 +280,20 @@ int ILTypeAddSentinel(ILContext *context, ILType *method)
 	ILType *paramType = ILMemPoolCalloc(&(context->typePool), ILType);
 	if(paramType)
 	{
-		paramType->kind = IL_TYPE_COMPLEX_SENTINEL;
+		paramType->kind__ = IL_TYPE_COMPLEX_SENTINEL;
 		return ILTypeAddParam(context, method, paramType);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+unsigned long ILTypeNumParams(ILType *method)
+{
+	if(ILType_IsMethod(method) || ILType_IsProperty(method))
+	{
+		return method->num__;
 	}
 	else
 	{
@@ -286,38 +303,97 @@ int ILTypeAddSentinel(ILContext *context, ILType *method)
 
 ILType *ILTypeGetParam(ILType *method, unsigned long index)
 {
-	if(!index)
+	return ILTypeStripPrefixes(ILTypeGetParamWithPrefixes(method, index));
+}
+
+ILType *ILTypeGetParamWithPrefixes(ILType *method, unsigned long index)
+{
+	if(!ILType_IsMethod(method) && !ILType_IsProperty(method))
 	{
-		return method->un.method.retType;
+		return 0;
 	}
-	else if(index > (unsigned long)(method->num))
+	else if(!index)
+	{
+		return method->un.method__.retType__;
+	}
+	else if(index > (unsigned long)(method->num__))
 	{
 		return 0;
 	}
 	else if(index <= 3)
 	{
-		return method->un.method.param[index - 1];
+		return method->un.method__.param__[index - 1];
 	}
 	else
 	{
 		index -= 4;
-		method = method->un.method.next;
+		method = method->un.method__.next__;
 		while(index >= 4)
 		{
 			index -= 4;
-			method = method->un.params.next;
+			method = method->un.params__.next__;
 		}
-		return method->un.params.param[index];
+		return method->un.params__.param__[index];
+	}
+}
+
+void ILTypeSetCallConv(ILType *type, ILUInt32 callConv)
+{
+	if(ILType_IsMethod(type) || ILType_IsProperty(type))
+	{
+		type->kind__ = (short)((type->kind__ & 0xFF) | (callConv << 8));
+	}
+}
+
+void ILTypeSetReturn(ILType *type, ILType *retType)
+{
+	if(ILType_IsMethod(type) || ILType_IsProperty(type))
+	{
+		type->un.method__.retType__ = retType;
+	}
+}
+
+ILType *ILTypeGetReturn(ILType *type)
+{
+	if(ILType_IsMethod(type) || ILType_IsProperty(type))
+	{
+		return ILTypeStripPrefixes(type->un.method__.retType__);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ILType *ILTypeGetReturnWithPrefixes(ILType *type)
+{
+	if(ILType_IsMethod(type) || ILType_IsProperty(type))
+	{
+		return type->un.method__.retType__;
+	}
+	else
+	{
+		return 0;
 	}
 }
 
 ILType *ILTypeStripPrefixes(ILType *type)
 {
-	while(type != 0 && ILType_IsComplex(type) &&
-	      (type->kind == IL_TYPE_COMPLEX_CMOD_REQD ||
-		   type->kind == IL_TYPE_COMPLEX_CMOD_OPT))
+	while(type != 0 && ILType_IsComplex(type))
 	{
-		type = type->un.modifier.type;
+		if(type->kind__ == IL_TYPE_COMPLEX_CMOD_REQD ||
+		   type->kind__ == IL_TYPE_COMPLEX_CMOD_OPT)
+		{
+			type = type->un.modifier__.type__;
+		}
+		else if(type->kind__ == IL_TYPE_COMPLEX_PINNED)
+		{
+			type = type->un.refType__;
+		}
+		else
+		{
+			break;
+		}
 	}
 	return type;
 }
@@ -378,30 +454,31 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 
 	/* Determine how to perform the test based on the complex type kind */
 	if(!ILType_IsComplex(type1) || !ILType_IsComplex(type2) ||
-	   type1->kind != type2->kind)
+	   type1->kind__ != type2->kind__)
 	{
 		return 0;
 	}
-	switch(type1->kind)
+	switch(type1->kind__)
 	{
 		case IL_TYPE_COMPLEX_BYREF:
 		case IL_TYPE_COMPLEX_PTR:
 		case IL_TYPE_COMPLEX_PINNED:
 		{
-			return ILTypeIdentical(type1->un.refType, type2->un.refType);
+			return ILTypeIdentical(type1->un.refType__, type2->un.refType__);
 		}
 		/* Not reached */
 
 		case IL_TYPE_COMPLEX_ARRAY:
 		case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
 		{
-			if(!ILTypeIdentical(type1->un.array.elemType,
-								type2->un.array.elemType))
+			if(!ILTypeIdentical(type1->un.array__.elemType__,
+								type2->un.array__.elemType__))
 			{
 				return 0;
 			}
-			return (type1->un.array.size == type2->un.array.size &&
-					type1->un.array.lowBound == type2->un.array.lowBound);
+			return (type1->un.array__.size__ == type2->un.array__.size__ &&
+					type1->un.array__.lowBound__ ==
+							type2->un.array__.lowBound__);
 		}
 		/* Not reached */
 
@@ -414,23 +491,23 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 		default:
 		{
 			/* Probably a method or property */
-			if((type1->kind & 0xFF) == IL_TYPE_COMPLEX_PROPERTY ||
-			   (type1->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+			if((type1->kind__ & 0xFF) == IL_TYPE_COMPLEX_PROPERTY ||
+			   (type1->kind__ & IL_TYPE_COMPLEX_METHOD) != 0)
 			{
 				/* Check the property or method signature */
-				if(type1->num != type2->num)
+				if(type1->num__ != type2->num__)
 				{
 					return 0;
 				}
-				if(!ILTypeIdentical(type1->un.method.retType,
-									type2->un.method.retType))
+				if(!ILTypeIdentical(type1->un.method__.retType__,
+									type2->un.method__.retType__))
 				{
 					return 0;
 				}
-				for(arg = 1; arg <= type1->num; ++arg)
+				for(arg = 1; arg <= type1->num__; ++arg)
 				{
-					if(!ILTypeIdentical(ILTypeGetParam(type1, arg),
-										ILTypeGetParam(type2, arg)))
+					if(!ILTypeIdentical(ILTypeGetParamWithPrefixes(type1, arg),
+										ILTypeGetParamWithPrefixes(type2, arg)))
 					{
 						return 0;
 					}
@@ -592,11 +669,11 @@ char *ILTypeToName(ILType *type)
 	}
 	else
 	{
-		switch(type->kind)
+		switch(type->kind__)
 		{
 			case IL_TYPE_COMPLEX_PTR:
 			{
-				name = ILTypeToName(type->un.refType);
+				name = ILTypeToName(type->un.refType__);
 				return AppendString(name, " *");
 			}
 			/* Not reached */
@@ -605,12 +682,12 @@ char *ILTypeToName(ILType *type)
 			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
 			{
 				/* Find the element type */
-				elemType = type->un.array.elemType;
+				elemType = type->un.array__.elemType__;
 				while(ILType_IsComplex(elemType) &&
-				      (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
-					   elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+				      (elemType->kind__ == IL_TYPE_COMPLEX_ARRAY ||
+					   elemType->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 				{
-					elemType = elemType->un.array.elemType;
+					elemType = elemType->un.array__.elemType__;
 				}
 
 				/* Convert the element type into a name */
@@ -619,27 +696,30 @@ char *ILTypeToName(ILType *type)
 				/* Add the rank specifiers */
 				while(type != elemType)
 				{
-					if(!(type->un.array.size) && type->un.array.lowBound)
+					if(!(type->un.array__.size__) &&
+					   type->un.array__.lowBound__)
 					{
-						sprintf(numbuf, "%ld...", type->un.array.lowBound);
+						sprintf(numbuf, "%ld...", type->un.array__.lowBound__);
 						name = AppendString(name, numbuf);
 					}
-					else if(!(type->un.array.lowBound) && type->un.array.size)
+					else if(!(type->un.array__.lowBound__) &&
+							type->un.array__.size__)
 					{
-						sprintf(numbuf, "%ld", type->un.array.size);
+						sprintf(numbuf, "%ld", type->un.array__.size__);
 						name = AppendString(name, numbuf);
 					}
-					else if(type->un.array.size && type->un.array.lowBound)
+					else if(type->un.array__.size__ &&
+							type->un.array__.lowBound__)
 					{
 						sprintf(numbuf, "%ld...%ld",
-								type->un.array.lowBound,
-								type->un.array.lowBound +
-									type->un.array.size - 1);
+								type->un.array__.lowBound__,
+								type->un.array__.lowBound__ +
+									type->un.array__.size__ - 1);
 						name = AppendString(name, numbuf);
 					}
-					if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+					if(type->kind__ == IL_TYPE_COMPLEX_ARRAY)
 					{
-						type = type->un.array.elemType;
+						type = type->un.array__.elemType__;
 						if(type != elemType)
 						{
 							name = AppendString(name, "][");
@@ -652,7 +732,7 @@ char *ILTypeToName(ILType *type)
 					else
 					{
 						name = AppendString(name, ",");
-						type = type->un.array.elemType;
+						type = type->un.array__.elemType__;
 					}
 				}
 
@@ -700,6 +780,42 @@ ILType *ILTypeGetEnumType(ILType *type)
 		}
 	}
 	return type;
+}
+
+ILType *ILTypeGetElemType(ILType *type)
+{
+	while(type != 0 && ILType_IsComplex(type) &&
+		  type->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+	{
+		type = type->un.array__.elemType__;
+	}
+	if(type != 0 && ILType_IsComplex(type))
+	{
+		if(type->kind__ == IL_TYPE_COMPLEX_ARRAY)
+		{
+			return type->un.array__.elemType__;
+		}
+	}
+	return 0;
+}
+
+int ILTypeGetRank(ILType *type)
+{
+	int rank = 0;
+	while(type != 0 && ILType_IsComplex(type) &&
+		  type->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+	{
+		++rank;
+		type = type->un.array__.elemType__;
+	}
+	if(type != 0 && ILType_IsComplex(type))
+	{
+		if(type->kind__ == IL_TYPE_COMPLEX_ARRAY)
+		{
+			++rank;
+		}
+	}
+	return rank;
 }
 
 int ILTypeIsStringClass(ILType *type)
@@ -767,8 +883,8 @@ static int IsObjectRef(ILType *type)
 		return 1;
 	}
 	else if(ILType_IsComplex(type) &&
-	        (type->kind == IL_TYPE_COMPLEX_ARRAY ||
-			 type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	        (type->kind__ == IL_TYPE_COMPLEX_ARRAY ||
+			 type->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
 	{
 		return 1;
 	}

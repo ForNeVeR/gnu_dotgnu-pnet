@@ -105,7 +105,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 							  int suppressThis)
 {
 	ILClass *owner = (method ? ILMethod_Owner(method) : 0);
-	ILUInt32 numParams = signature->num;
+	ILUInt32 numParams = ILTypeNumParams(signature);
 	ILUInt32 param;
 	ILType *paramType;
 	ILEngineStackItem *item;
@@ -325,8 +325,8 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 					item->engineType = ILEngineType_I8;
 				}
 				else if(paramType != 0 && ILType_IsComplex(paramType) &&
-				        (paramType->kind == IL_TYPE_COMPLEX_PTR ||
-						 paramType->kind == IL_TYPE_COMPLEX_BYREF))
+				        (ILType_Kind(paramType) == IL_TYPE_COMPLEX_PTR ||
+						 ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF))
 				{
 					/* Can pass unmanaged pointers by pointer or reference
 					   only if unsafe IL code is permitted */
@@ -368,8 +368,8 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				   for transient pointers because it will scan the
 				   stack regardless */
 				if(paramType != 0 && ILType_IsComplex(paramType) &&
-				   paramType->kind == IL_TYPE_COMPLEX_BYREF &&
-				   ILTypeIdentical(paramType->un.refType, item->typeInfo))
+				   ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF &&
+				   ILTypeIdentical(ILType_Ref(paramType), item->typeInfo))
 				{
 					/* Passing a managed pointer to a reference parameter */
 				}
@@ -383,8 +383,8 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 					}
 				}
 				else if(paramType != 0 && ILType_IsComplex(paramType) &&
-				        paramType->kind == IL_TYPE_COMPLEX_PTR &&
-				        ILTypeIdentical(paramType->un.refType, item->typeInfo))
+				        ILType_Kind(paramType) == IL_TYPE_COMPLEX_PTR &&
+				        ILTypeIdentical(ILType_Ref(paramType), item->typeInfo))
 				{
 					/* Converting from a managed to an unmanaged pointer */
 					if(!unsafeAllowed)
@@ -580,6 +580,7 @@ static int GetInlineMethodType(ILMethod *method)
 #elif defined(IL_VERIFY_LOCALS)
 
 ILType *methodSignature;
+ILType *returnType;
 ILInt32 numParams;
 int inlineType;
 
@@ -638,12 +639,11 @@ case IL_OP_CALL:
 									   unsafeAllowed, 0);
 			if(numParams >= 0)
 			{
-				if(methodSignature->un.method.retType != ILType_Void)
+				returnType = ILTypeGetReturn(methodSignature);
+				if(returnType != ILType_Void)
 				{
-					stack[stackSize].engineType = TypeToEngineType
-							(methodSignature->un.method.retType);
-					stack[stackSize].typeInfo =
-							methodSignature->un.method.retType;
+					stack[stackSize].engineType = TypeToEngineType(returnType);
+					stack[stackSize].typeInfo = returnType;
 				}
 				else
 				{
@@ -658,7 +658,7 @@ case IL_OP_CALL:
 									  methodInfo);
 				}
 				stackSize -= (ILUInt32)numParams;
-				if(methodSignature->un.method.retType != ILType_Void)
+				if(returnType != ILType_Void)
 				{
 					if(stackSize < code->maxStack)
 					{
@@ -698,7 +698,8 @@ break;
 case IL_OP_RET:
 {
 	/* Return from the current method */
-	if(signature->un.method.retType != ILType_Void)
+	returnType = ILTypeGetReturn(signature);
+	if(returnType != ILType_Void)
 	{
 		/* Make sure that we have one item on the stack */
 		if(stackSize < 1)
@@ -708,15 +709,13 @@ case IL_OP_RET:
 
 		/* Validate the type of the return value */
 		if(!AssignCompatible(method, &(stack[stackSize - 1]),
-							 signature->un.method.retType,
-							 unsafeAllowed))
+							 returnType, unsafeAllowed))
 		{
 			VERIFY_TYPE_ERROR();
 		}
 
 		/* Notify the coder of the return instruction */
-		ILCoderReturnInsn(coder, stack[stackSize - 1].engineType,
-					      signature->un.method.retType);
+		ILCoderReturnInsn(coder, stack[stackSize - 1].engineType, returnType);
 
 		/* Pop the item from the stack */
 		--stackSize;
@@ -745,12 +744,11 @@ case IL_OP_CALLVIRT:
 									   unsafeAllowed, 0);
 			if(numParams >= 0)
 			{
-				if(methodSignature->un.method.retType != ILType_Void)
+				returnType = ILTypeGetReturn(methodSignature);
+				if(returnType != ILType_Void)
 				{
-					stack[stackSize].engineType = TypeToEngineType
-							(methodSignature->un.method.retType);
-					stack[stackSize].typeInfo =
-							methodSignature->un.method.retType;
+					stack[stackSize].engineType = TypeToEngineType(returnType);
+					stack[stackSize].typeInfo = returnType;
 				}
 				else
 				{
@@ -783,7 +781,7 @@ case IL_OP_CALLVIRT:
 									   &(stack[stackSize]), methodInfo);
 				}
 				stackSize -= (ILUInt32)numParams;
-				if(methodSignature->un.method.retType != ILType_Void)
+				if(returnType != ILType_Void)
 				{
 					if(stackSize < code->maxStack)
 					{
@@ -856,15 +854,14 @@ case IL_OP_NEWOBJ:
 			   value, and then the constructor arguments.  We assume
 			   that we have 2 "slop" positions, as above. */
 			classType = ILClassToType(classInfo);
+			numParams = ILTypeNumParams(methodSignature);
 			InsertCtorArgs(stack, stackSize,
-						   stackSize - (ILUInt32)(methodSignature->num),
+						   stackSize - numParams,
 						   ILEngineType_MV, classType,
 						   ILEngineType_M, classType);
 			stackSize += 2;
 			ILCoderValueCtorArgs(coder, classInfo,
-						    stack + stackSize -
-									(ILUInt32)(methodSignature->num),
-							(ILUInt32)(methodSignature->num));
+						    stack + stackSize - numParams, numParams);
 
 			/* Match the constructor signature */
 			numParams = MatchSignature(coder, stack, stackSize,

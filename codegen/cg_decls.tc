@@ -320,13 +320,12 @@ static void AllocJLVars(ILGenInfo *info, ILType *signature,
 	/* Allocate frame positions to the method arguments */
 	JavaGenStartFrame(info);
 	vars = signature;
-	if((vars->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (vars->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	if(ILType_HasThis(vars))
 	{
 		/* Allocate a slot for the "this" argument */
 		JavaGenAddFrameSlot(info, ILMachineType_ObjectRef);
 	}
-	num = vars->num;
+	num = ILTypeNumParams(vars);
 	for(index = 1; index <= num; ++index)
 	{
 		JavaGenAddFrameSlot
@@ -461,7 +460,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 
 	/* Set up the return type so that "return" statements
 	   know what to cast the return value to upon exit */
-	info->returnType = ILMethod_Signature(method)->un.method.retType;
+	info->returnType = ILTypeGetReturn(ILMethod_Signature(method));
 	returnMachineType = ILTypeToMachineType(info->returnType);
 
 	/* The local variable frame is created differently in IL and JL */

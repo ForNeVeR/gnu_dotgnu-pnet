@@ -75,7 +75,7 @@ static int AddDefaultConstructor(ILClass *classInfo)
 	{
 		return 0;
 	}
-	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	ILMemberSetSignature((ILMember *)method, signature);
 	return 1;
 }
@@ -106,7 +106,7 @@ static int AddDecimalConstructor(ILClass *classInfo)
 	{
 		return 0;
 	}
-	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	if(!ILTypeAddParam(context, signature, ILType_UInt8))
 	{
 		return 0;
@@ -154,7 +154,7 @@ static ILMethod *AddAbstractMethod(ILClass *classInfo, const char *name,
 	{
 		return 0;
 	}
-	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	if(argType != ILType_Void)
 	{
 		if(!ILTypeAddParam(ILClassToContext(classInfo), signature, argType))
@@ -374,7 +374,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 									   ILType_Void));
 	ABORT_IF(signature, ILTypeCreateProperty(info->context,
 									 		 ILType_FromClass(objectClass)));
-	signature->kind |= (short)(IL_META_CALLCONV_HASTHIS << 8);
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	ABORT_IF(property, ILPropertyCreate(enumeratorInterface, 0, "Current",
 										0, signature));
 	if(!ILMethodSemCreate((ILProgramItem *)property, 0,

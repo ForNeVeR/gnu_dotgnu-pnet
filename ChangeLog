@@ -1,4 +1,13 @@
 
+2002-05-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/binary3.jl: change to output file due to bug
+	fix in the compiler.
+
+	* csharp/expr/Makefile.am, csharp/expr/invoke1.cs,
+	csharp/expr/invoke1.il, csharp/expr/invoke1.jl: test method
+	invocation on value types.
+
 2002-05-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/arglist1.cs,

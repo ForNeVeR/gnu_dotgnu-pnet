@@ -37,12 +37,10 @@
 	new	'Y'
 	dup
 	aload_0
-	pop
-	aconst_null
+	invokestatic	"Y" "copyIn__" "(LY;)LY;"
 	getfield	int32 'Y'::'y'
 	aload_1
-	pop
-	aconst_null
+	invokestatic	"X" "copyIn__" "(LX;)LX;"
 	getfield	int32 'X'::'x'
 	isub
 	invokespecial	instance void 'Y'::'.ctor'(int32)
@@ -55,12 +53,10 @@
 	new	'X'
 	dup
 	aload_0
-	pop
-	aconst_null
+	invokestatic	"Y" "copyIn__" "(LY;)LY;"
 	getfield	int32 'Y'::'y'
 	aload_1
-	pop
-	aconst_null
+	invokestatic	"Y" "copyIn__" "(LY;)LY;"
 	getfield	int32 'Y'::'y'
 	isub
 	invokespecial	instance void 'X'::'.ctor'(int32)

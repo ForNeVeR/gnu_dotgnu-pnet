@@ -36,6 +36,11 @@
 	#ifdef out vararg, networking, and reflection support if
 	requested by the profile.
 
+	* engine/call.c, engine/convert.c, engine/cvm.c, engine/cvm_call.c,
+	engine/verify.c: arrange to throw "NotSupportedException" if
+	an internalcall method is not present, and "MissingMethodException"
+	if a PInvoke method is not present.
+
 2002-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_config_win.h, include/il_values.h: remove the out

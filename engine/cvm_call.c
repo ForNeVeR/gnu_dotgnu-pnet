@@ -454,7 +454,7 @@ VMCASE(COP_CALL):
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
-			VERIFY_FAILED_EXCEPTION();
+			CONVERT_FAILED_EXCEPTION();
 		}
 
 		/* Allocate a new call frame */
@@ -539,7 +539,7 @@ VMCASE(COP_CALL_CTOR):
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
-			VERIFY_FAILED_EXCEPTION();
+			CONVERT_FAILED_EXCEPTION();
 		}
 
 		/* Allocate a new call frame */
@@ -763,7 +763,7 @@ VMCASE(COP_CALL_VIRTUAL):
 			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 			if(!tempptr)
 			{
-				VERIFY_FAILED_EXCEPTION();
+				CONVERT_FAILED_EXCEPTION();
 			}
 
 			/* Allocate a new call frame */
@@ -865,7 +865,7 @@ VMCASE(COP_CALL_INTERFACE):
 			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 			if(!tempptr)
 			{
-				VERIFY_FAILED_EXCEPTION();
+				CONVERT_FAILED_EXCEPTION();
 			}
 
 			/* Allocate a new call frame */
@@ -1270,7 +1270,7 @@ VMCASE(COP_CALLI):
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
-			VERIFY_FAILED_EXCEPTION();
+			CONVERT_FAILED_EXCEPTION();
 		}
 
 		/* Allocate a new call frame */
@@ -1326,7 +1326,7 @@ case COP_CALL_VIRTUAL:
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
-			VERIFY_FAILED_EXCEPTION();
+			CONVERT_FAILED_EXCEPTION();
 		}
 
 		/* Allocate a new call frame */
@@ -1376,7 +1376,7 @@ case COP_CALL_INTERFACE:
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if(!tempptr)
 		{
-			VERIFY_FAILED_EXCEPTION();
+			CONVERT_FAILED_EXCEPTION();
 		}
 
 		/* Allocate a new call frame */
@@ -1455,7 +1455,7 @@ VMCASE(COP_PREFIX_TAIL_CALL):
 		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
 		if (!tempptr)
 		{
-			VERIFY_FAILED_EXCEPTION();
+			CONVERT_FAILED_EXCEPTION();
 		}
 		RESTORE_STATE_FROM_THREAD();
 	}

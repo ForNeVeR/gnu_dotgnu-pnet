@@ -200,18 +200,13 @@ extern	"C" {
 			} while (0)
 
 /*
- * Throw a verification failed exception.  This is called when
- * "_ILConvertMethod" fails, when the state is already copied
- * into the thread.
+ * Process an exception that was thrown by "_ILConvertMethod".
+ * The state is already copied into the thread, with the
+ * exception ready to be detected by "RESTORE_STATE_FROM_THREAD".
  */
-#define	VERIFY_FAILED_EXCEPTION()	\
+#define	CONVERT_FAILED_EXCEPTION()	\
 			do { \
 				RESTORE_STATE_FROM_THREAD(); \
-				stacktop[0].ptrValue = \
-					_ILSystemException \
-						(thread, "System.Security.VerificationException"); \
-				stacktop += 1; \
-				goto throwException; \
 			} while (0)
 
 /*

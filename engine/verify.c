@@ -506,15 +506,6 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 #include "verify_ann.c"
 #undef IL_VERIFY_LOCALS
 
-#ifndef IL_CONFIG_VARARGS
-	/* Cannot verify if a vararg method */
-	if((ILMethod_CallConv(method) & IL_META_CALLCONV_MASK) ==
-			IL_META_CALLCONV_VARARG)
-	{
-		return 0;
-	}
-#endif
-
 	/* Get the exception list */
 	if(!ILMethodGetExceptions(method, code, &exceptions))
 	{

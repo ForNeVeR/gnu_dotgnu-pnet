@@ -260,9 +260,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	pcstart = _ILConvertMethod(thread, method);
 	if(!pcstart)
 	{
-		/* Throw a "VerificationException" */
-		ILExecThreadThrowSystem
-			(thread, "System.Security.VerificationException", 0);
+		/* "_ILConvertMethod" threw an exception */
 		return 1;
 	}
 
@@ -601,9 +599,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	pcstart = _ILConvertMethod(thread, method);
 	if(!pcstart)
 	{
-		/* Throw a "VerificationException" */
-		ILExecThreadThrowSystem
-			(thread, "System.Security.VerificationException", 0);
+		/* "_ILConvertMethod" threw an exception */
 		return 1;
 	}
 

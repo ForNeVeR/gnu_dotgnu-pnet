@@ -24,6 +24,15 @@
 extern	"C" {
 #endif
 
+/*
+ * Error codes for "_ILConvertMethod".
+ */
+#define	IL_CONVERT_OK				0
+#define	IL_CONVERT_VERIFY_FAILED	1
+#define	IL_CONVERT_MISSING_METHOD	2
+#define	IL_CONVERT_NOT_SUPPORTED	3
+#define	IL_CONVERT_OUT_OF_MEMORY	4
+
 #ifdef IL_CONFIG_PINVOKE
 
 /*
@@ -76,7 +85,12 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name,
 
 #endif /* IL_CONFIG_PINVOKE */
 
-unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
+/*
+ * Inner version of "_ILConvertMethod", which detects the type of
+ * exception to throw, but does not throw it.
+ */
+static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
+								    int *errorCode)
 {
 	ILMethodCode code;
 	ILPInvoke *pinv;
@@ -101,8 +115,20 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	if((start = (unsigned char *)(method->userData)) != 0)
 	{
 		IL_METADATA_UNLOCK(thread);
+		*errorCode = IL_CONVERT_OK;
 		return start;
 	}
+
+#ifndef IL_CONFIG_VARARGS
+	/* Vararg methods are not supported */
+	if((ILMethod_CallConv(method) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		IL_METADATA_UNLOCK(thread);
+		*errorCode = IL_CONVERT_NOT_SUPPORTED;
+		return 0;
+	}
+#endif
 
 	/* Get the method code */
 	if(!ILMethodGetCode(method, &code))
@@ -119,6 +145,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 					  ILImageIsSecure(ILProgramItem_Image(method))))
 		{
 			IL_METADATA_UNLOCK(thread);
+			*errorCode = IL_CONVERT_VERIFY_FAILED;
 			return 0;
 		}
 	}
@@ -136,7 +163,6 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 					 IL_META_METHODIMPL_INTERNAL_CALL |
 					 IL_META_METHODIMPL_JAVA))
 		{
-		#ifdef IL_CONFIG_PINVOKE
 			case IL_META_METHODIMPL_IL:
 			case IL_META_METHODIMPL_OPTIL:
 			{
@@ -145,20 +171,24 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				if(!pinv)
 				{
 					IL_METADATA_UNLOCK(thread);
+					*errorCode = IL_CONVERT_MISSING_METHOD;
 					return 0;
 				}
 
+			#ifdef IL_CONFIG_PINVOKE
 				/* Find the module for the PInvoke record */
 				module = ILPInvoke_Module(pinv);
 				if(!module)
 				{
 					IL_METADATA_UNLOCK(thread);
+					*errorCode = IL_CONVERT_MISSING_METHOD;
 					return 0;
 				}
 				name = ILModule_Name(module);
 				if(!name || *name == '\0')
 				{
 					IL_METADATA_UNLOCK(thread);
+					*errorCode = IL_CONVERT_MISSING_METHOD;
 					return 0;
 				}
 				moduleHandle = LocateExternalModule
@@ -166,6 +196,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				if(!moduleHandle)
 				{
 					IL_METADATA_UNLOCK(thread);
+					*errorCode = IL_CONVERT_MISSING_METHOD;
 					return 0;
 				}
 
@@ -178,9 +209,13 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 
 				/* Look up the method within the module */
 				fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+			#else /* !IL_CONFIG_PINVOKE */
+				IL_METADATA_UNLOCK(thread);
+				*errorCode = IL_CONVERT_NOT_SUPPORTED;
+				return 0;
+			#endif /* IL_CONFIG_PINVOKE */
 			}
 			break;
-		#endif /* IL_CONFIG_PINVOKE */
 
 			case IL_META_METHODIMPL_RUNTIME:
 			case IL_META_METHODIMPL_IL | IL_META_METHODIMPL_INTERNAL_CALL:
@@ -190,6 +225,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				if(pinv)
 				{
 					IL_METADATA_UNLOCK(thread);
+					*errorCode = IL_CONVERT_VERIFY_FAILED;
 					return 0;
 				}
 
@@ -201,12 +237,14 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 						if(!_ILFindInternalCall(method, 1, &ctorfnInfo))
 						{
 							IL_METADATA_UNLOCK(thread);
+							*errorCode = IL_CONVERT_NOT_SUPPORTED;
 							return 0;
 						}
 					}
 					else
 					{
 						IL_METADATA_UNLOCK(thread);
+						*errorCode = IL_CONVERT_NOT_SUPPORTED;
 						return 0;
 					}
 				}
@@ -221,6 +259,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			{
 				/* No idea how to invoke this method */
 				IL_METADATA_UNLOCK(thread);
+				*errorCode = IL_CONVERT_VERIFY_FAILED;
 				return 0;
 			}
 			/* Not reached */
@@ -230,6 +269,10 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		if(!(fnInfo.func) && !(ctorfnInfo.func))
 		{
 			IL_METADATA_UNLOCK(thread);
+			if(pinv)
+				*errorCode = IL_CONVERT_MISSING_METHOD;
+			else
+				*errorCode = IL_CONVERT_NOT_SUPPORTED;
 			return 0;
 		}
 
@@ -242,6 +285,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			if(!cif)
 			{
 				IL_METADATA_UNLOCK(thread);
+				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 				return 0;
 			}
 		}
@@ -256,6 +300,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			if(!ctorcif)
 			{
 				IL_METADATA_UNLOCK(thread);
+				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 				return 0;
 			}
 		}
@@ -277,6 +322,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 								   fnInfo.func, cif, (pinv == 0)))
 			{
 				IL_METADATA_UNLOCK(thread);
+				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 				return 0;
 			}
 			while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
@@ -285,12 +331,14 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				if(result != IL_CODER_END_RESTART)
 				{
 					IL_METADATA_UNLOCK(thread);
+					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
 				}
 				if(!ILCoderSetupExtern(coder, &start, method,
 									   fnInfo.func, cif, (pinv == 0)))
 				{
 					IL_METADATA_UNLOCK(thread);
+					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
 				}
 			}
@@ -304,6 +352,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 									   (pinv == 0)))
 			{
 				IL_METADATA_UNLOCK(thread);
+				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 				return 0;
 			}
 			while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
@@ -312,6 +361,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				if(result != IL_CODER_END_RESTART)
 				{
 					IL_METADATA_UNLOCK(thread);
+					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
 				}
 				if(!ILCoderSetupExternCtor(coder, &start, method,
@@ -320,6 +370,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 										   (pinv == 0)))
 				{
 					IL_METADATA_UNLOCK(thread);
+					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
 				}
 			}
@@ -329,7 +380,51 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	/* The method is converted now */
 	method->userData = (void *)start;
 	IL_METADATA_UNLOCK(thread);
+	*errorCode = IL_CONVERT_OK;
 	return start;
+}
+
+unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
+{
+	int errorCode = IL_CONVERT_VERIFY_FAILED;
+	unsigned char *start = ConvertMethod(thread, method, &errorCode);
+	if(start)
+	{
+		return start;
+	}
+	else
+	{
+		switch(errorCode)
+		{
+			case IL_CONVERT_VERIFY_FAILED:
+			{
+				ILExecThreadThrowSystem
+					(thread, "System.Security.VerificationException", 0);
+			}
+			break;
+
+			case IL_CONVERT_MISSING_METHOD:
+			{
+				ILExecThreadThrowSystem
+					(thread, "System.MissingMethodException", 0);
+			}
+			break;
+
+			case IL_CONVERT_NOT_SUPPORTED:
+			{
+				ILExecThreadThrowSystem
+					(thread, "System.NotSupportedException", 0);
+			}
+			break;
+
+			case IL_CONVERT_OUT_OF_MEMORY:
+			{
+				ILExecThreadThrowOutOfMemory(thread);
+			}
+			break;
+		}
+		return start;
+	}
 }
 
 #ifdef	__cplusplus

@@ -521,6 +521,15 @@ IL_METHOD_BEGIN(TimeMethods_Methods)
 	IL_METHOD("GetUpTime", "()i", _IL_TimeMethods_GetUpTime)
 IL_METHOD_END
 
+IL_METHOD_BEGIN(IPAddress_Methods)
+	IL_METHOD("HostToNetworkOrder", "(l)l", _IL_IPAddress_HostToNetworkOrder_l)
+	IL_METHOD("HostToNetworkOrder", "(i)i", _IL_IPAddress_HostToNetworkOrder_i)
+	IL_METHOD("HostToNetworkOrder", "(s)s", _IL_IPAddress_HostToNetworkOrder_s)
+	IL_METHOD("NetworkToHostOrder", "(l)l", _IL_IPAddress_NetworkToHostOrder_l)
+	IL_METHOD("NetworkToHostOrder", "(i)i", _IL_IPAddress_NetworkToHostOrder_i)
+	IL_METHOD("NetworkToHostOrder", "(s)s", _IL_IPAddress_NetworkToHostOrder_s)
+IL_METHOD_END
+
 IL_METHOD_BEGIN(CodeTable_Methods)
 	IL_METHOD("GetAddress", "(oSystem.IO.Stream;l)*B", _IL_CodeTable_GetAddress)
 IL_METHOD_END
@@ -562,6 +571,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"GC", "System", GC_Methods},
 	{"GCHandle", "System.Runtime.InteropServices", GCHandle_Methods},
 	{"Guid", "System", Guid_Methods},
+	{"IPAddress", "System.Net", IPAddress_Methods},
 	{"Interlocked", "System.Threading", Interlocked_Methods},
 	{"Math", "System", Math_Methods},
 	{"MethodBase", "System.Reflection", MethodBase_Methods},

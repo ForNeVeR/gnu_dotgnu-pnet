@@ -50,6 +50,11 @@
 extern	"C" {
 #endif
 
+/*
+   Note: IP addresses are in network byte order.
+         Port numbers are in host byte order.
+*/
+
 ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
 {
 	return (ILSysIOHandle)(socket(domain, type, protocol));
@@ -62,7 +67,7 @@ int ILSysIOSocketBind(ILSysIOHandle sockfd, ILSysIOSockAddr *local_addr)
 	ILMemZero(&addr, sizeof(addr));
 	addr.sin_port = htons(local_addr->port);
 	addr.sin_family = local_addr->family;
-	addr.sin_addr.s_addr = htonl(local_addr->addr);
+	addr.sin_addr.s_addr = local_addr->addr;
 
 	return (bind((int)sockfd, (struct sockaddr *)&addr,
 				 sizeof(struct sockaddr_in)) == 0);
@@ -75,7 +80,7 @@ int ILSysIOSocketConnect(ILSysIOHandle sockfd, ILSysIOSockAddr *serv_addr)
 	ILMemZero(&addr, sizeof(addr));
 	addr.sin_port = htons(serv_addr->port);
 	addr.sin_family = serv_addr->family;
-	addr.sin_addr.s_addr = htonl(serv_addr->addr);
+	addr.sin_addr.s_addr = serv_addr->addr;
 
 	return (connect((int)sockfd, (struct sockaddr *)&addr,
 					sizeof(struct sockaddr_in)) == 0);
@@ -98,7 +103,7 @@ ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd, ILSysIOSockAddr *out)
   
 	out->port = ntohs(addr.sin_port);
 	out->family = addr.sin_family;
-	out->addr = ntohl(addr.sin_addr.s_addr);
+	out->addr = addr.sin_addr.s_addr;
 
 	return (ILSysIOHandle)newfd;
 }
@@ -124,7 +129,7 @@ ILInt32 ILSysIOSocketSendTo(ILSysIOHandle sockfd, const void *msg,
 	ILMemZero(&addr, sizeof(addr));
 	addr.sin_port = htons(to->port);
 	addr.sin_family = to->family;
-	addr.sin_addr.s_addr = htonl(to->addr);
+	addr.sin_addr.s_addr = to->addr;
 
 	return sendto((int)sockfd, msg, len, flags,
 				  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
@@ -145,7 +150,7 @@ ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf,
 
 	from->port = ntohs(addr.sin_port);
 	from->family = addr.sin_family;
-	from->addr = ntohl(addr.sin_addr.s_addr);
+	from->addr = addr.sin_addr.s_addr;
 
 	return (ILInt32)result;
 }

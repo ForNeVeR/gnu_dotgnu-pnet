@@ -221,3 +221,85 @@ ILString *_IL_SocketMethods_GetErrnoMessage(ILExecThread *thread, ILInt32 error)
 		return 0;
 	}
 }
+
+/*
+ * public static long HostToNetworkOrder(long host);
+ */
+ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread *thread, ILInt64 host)
+{
+	unsigned char value[8];
+	value[0] = (unsigned char)(host >> 56);
+	value[1] = (unsigned char)(host >> 48);
+	value[2] = (unsigned char)(host >> 40);
+	value[3] = (unsigned char)(host >> 32);
+	value[4] = (unsigned char)(host >> 24);
+	value[5] = (unsigned char)(host >> 16);
+	value[6] = (unsigned char)(host >> 8);
+	value[7] = (unsigned char)host;
+	return *((ILInt64 *)value);
+}
+
+/*
+ * public static int HostToNetworkOrder(int host);
+ */
+ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread *thread, ILInt32 host)
+{
+	unsigned char value[4];
+	value[0] = (unsigned char)(host >> 24);
+	value[1] = (unsigned char)(host >> 16);
+	value[2] = (unsigned char)(host >> 8);
+	value[3] = (unsigned char)host;
+	return *((ILInt32 *)value);
+}
+
+/*
+ * public static short HostToNetworkOrder(short host);
+ */
+ILInt16 _IL_IPAddress_HostToNetworkOrder_s(ILExecThread *thread, ILInt16 host)
+{
+	unsigned char value[2];
+	value[0] = (unsigned char)(host >> 8);
+	value[1] = (unsigned char)host;
+	return *((ILInt16 *)value);
+}
+
+#define	GETBYTE(type,value,offset,shift)	\
+			(((type)(((unsigned char *)&(value))[(offset)])) << (shift))
+
+/*
+ * public static long NetworkToHostOrder(long host);
+ */
+ILInt64 _IL_IPAddress_NetworkToHostOrder_l(ILExecThread *thread,
+										   ILInt64 network)
+{
+	return GETBYTE(ILInt64, network, 0, 56) |
+		   GETBYTE(ILInt64, network, 1, 48) |
+		   GETBYTE(ILInt64, network, 2, 40) |
+		   GETBYTE(ILInt64, network, 3, 32) |
+		   GETBYTE(ILInt64, network, 4, 24) |
+		   GETBYTE(ILInt64, network, 5, 16) |
+		   GETBYTE(ILInt64, network, 6,  8) |
+		   GETBYTE(ILInt64, network, 7,  0);
+}
+
+/*
+ * public static int NetworkToHostOrder(int host);
+ */
+ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread *thread,
+										   ILInt32 network)
+{
+	return GETBYTE(ILInt32, network, 0, 24) |
+		   GETBYTE(ILInt32, network, 1, 16) |
+		   GETBYTE(ILInt32, network, 2,  8) |
+		   GETBYTE(ILInt32, network, 3,  0);
+}
+
+/*
+ * public static int NetworkToHostOrder(int host);
+ */
+ILInt16 _IL_IPAddress_NetworkToHostOrder_s(ILExecThread *thread,
+										   ILInt16 network)
+{
+	return GETBYTE(ILInt16, network, 0, 8) |
+		   GETBYTE(ILInt16, network, 1, 0);
+}

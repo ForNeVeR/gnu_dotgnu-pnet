@@ -22,6 +22,11 @@
 	* support/socket.c: use "sizeof(struct sockaddr_in)" instead of
 	"sizeof(struct sockaddr)".
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_socket.c,
+	support/socket.c: make the IP addresses consistently network
+	byte order in all relevant places; implement conversions between
+	host and network byte order.
+
 2002-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/HACKING: update the section on "internalcall" methods.

@@ -417,5 +417,12 @@ extern ILInt64 _IL_TimeMethods_GetCurrentUtcTime(ILExecThread * _thread);
 extern ILInt32 _IL_TimeMethods_GetTimeZoneAdjust(ILExecThread * _thread);
 extern ILInt32 _IL_TimeMethods_GetUpTime(ILExecThread * _thread);
 
+extern ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread * _thread, ILInt64 host);
+extern ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread * _thread, ILInt32 host);
+extern ILInt16 _IL_IPAddress_HostToNetworkOrder_s(ILExecThread * _thread, ILInt16 host);
+extern ILInt64 _IL_IPAddress_NetworkToHostOrder_l(ILExecThread * _thread, ILInt64 network);
+extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 network);
+extern ILInt16 _IL_IPAddress_NetworkToHostOrder_s(ILExecThread * _thread, ILInt16 network);
+
 extern ILUInt8 * _IL_CodeTable_GetAddress(ILExecThread * _thread, ILObject * stream, ILInt64 position);
 

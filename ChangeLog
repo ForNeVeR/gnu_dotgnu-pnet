@@ -24,6 +24,9 @@ tools/run_test.sh.in: modify the configuration scripts to create the
 * tests/System/Makefile.am, tools/run_test.sh.in: hook the "run_tests.sh"
 script into "make check", and fix some minor bugs in the script.
 
+* csunit/TestSuite.cs: fix the type of the parameters for the constructor
+invoke.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Invalid.txt,

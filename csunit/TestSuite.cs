@@ -81,7 +81,7 @@ public class TestSuite : Test
 				MethodInfo[] methods = type.GetMethods(BindingFlags.Public |
 													   BindingFlags.Instance);
 				String name;
-				String[] parameters = new String [1];
+				Object[] parameters = new Object [1];
 				foreach(MethodInfo method in methods)
 				{
 					name = method.Name;

@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.5.0 release.
 
+	* configure.in: update working version to "0.5.1".
+
 2003-01-11  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs: fixed bugs in logic

@@ -178,13 +178,13 @@ internal sealed class DrawingTopLevelWindow
 	// Move this window to above one of its siblings.
 	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
 			{
-				// TODO
+				// Not used for top-level windows.
 			}
 
 	// Move this window to below one of its siblings.
 	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)
 			{
-				// TODO
+				// Not used for top-level windows.
 			}
 
 	// Get the HWND for this window.  IntPtr.Zero if not supported.
@@ -234,7 +234,7 @@ internal sealed class DrawingTopLevelWindow
 	// Set the owner for modal and modeless dialog support.
 	void IToolkitTopLevelWindow.SetDialogOwner(IToolkitTopLevelWindow owner)
 			{
-				// TODO
+				TransientFor = (owner as TopLevelWindow);
 			}
 
 	// Set this window's icon.
@@ -246,13 +246,15 @@ internal sealed class DrawingTopLevelWindow
 	// Set this window's maximum size.
 	void IToolkitTopLevelWindow.SetMaximumSize(Size size)
 			{
-				// TODO
+				SetMaximumSize(DrawingGraphics.RestrictXY(size.Width),
+							   DrawingGraphics.RestrictXY(size.Height));
 			}
 
 	// Set this window's minimum size.
 	void IToolkitTopLevelWindow.SetMinimumSize(Size size)
 			{
-				// TODO
+				SetMinimumSize(DrawingGraphics.RestrictXY(size.Width),
+							   DrawingGraphics.RestrictXY(size.Height));
 			}
 
 	// Set the window title (top-level windows only).
@@ -313,6 +315,14 @@ internal sealed class DrawingTopLevelWindow
 				if((flags & ToolkitWindowFlags.Modal) == 0)
 				{
 					inputType = MotifInputType.ApplicationModal;
+				}
+
+				// Remove the "transient for" hint if we are changing a
+				// modal form back into a regular form.
+				if(InputType == MotifInputType.ApplicationModal &&
+				   inputType == MotifInputType.Normal)
+				{
+					RemoveTransientFor();
 				}
 
 				// Send the Motif flags to the window manager.

@@ -18,6 +18,12 @@
 	middle-aligned text looks better (the text descent is factored out
 	of the centering calculation).
 
+	* System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Windows.Forms/Form.cs, Xsharp/TopLevelWindow.cs:
+	implement the window hints for dialog owners, modality, minimum
+	size, and maximum size.
+
 2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Font.cs: remove a public constructor that is no longer

@@ -819,6 +819,24 @@ public class Form : ContainerControl
 				SetWindowFlag(ToolkitWindowFlags.Modal, true);
 				try
 				{
+					// Create the control.  We must do this before
+					// we set the owner or make the form visible.
+					CreateControl();
+
+					// Set the dialog owner.
+					IToolkitTopLevelWindow toolkitWindow = ToolkitWindow;
+					if(toolkitWindow != null)
+					{
+						if(owner != null)
+						{
+							toolkitWindow.SetDialogOwner(owner.ToolkitWindow);
+						}
+						else
+						{
+							toolkitWindow.SetDialogOwner(null);
+						}
+					}
+
 					// Make the form visible.
 					Visible = true;
 

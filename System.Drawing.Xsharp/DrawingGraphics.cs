@@ -293,7 +293,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	// Because internally coordinates are represented by shorts, the x, y
 	// position plus the window coordinates cant exceed this. So we make
 	// the |min|, |max| doesnt exceed short/2.
-	private static int RestrictXY(int value)
+	internal static int RestrictXY(int value)
 	{
 		if (value < short.MinValue/2)
 			value = short.MinValue/2;

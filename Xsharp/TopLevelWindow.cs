@@ -47,6 +47,8 @@ public class TopLevelWindow : InputOutputWidget
 	private TopLevelWindow transientFor;
 	private Timer resizeTimer;
 	private int expectedWidth, expectedHeight;
+	private int minWidth, minHeight;
+	private int maxWidth, maxHeight;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.TopLevelWindow"/>
@@ -187,6 +189,42 @@ public class TopLevelWindow : InputOutputWidget
 				}
 			}
 
+	// Construct the XSizeHints structure for this window.
+	private XSizeHints BuildSizeHints(int x, int y, int width, int height)
+			{
+				XSizeHints hints = new XSizeHints();
+				if(x != 0 || y != 0)
+				{
+					hints.flags = SizeHintsMask.USPosition |
+								  SizeHintsMask.USSize;
+					hints.x = x;
+					hints.y = y;
+				}
+				else
+				{
+					hints.flags = SizeHintsMask.USSize;
+				}
+				hints.width = width;
+				hints.height = height;
+				if(minWidth != 0 || minHeight != 0)
+				{
+					hints.flags |= SizeHintsMask.PMinSize;
+					hints.min_width = minWidth;
+					hints.min_height = minHeight;
+				}
+				if(maxWidth != 0 || maxWidth != 0)
+				{
+					hints.flags |= SizeHintsMask.PMaxSize;
+					hints.max_width = maxWidth;
+					hints.max_height = maxHeight;
+				}
+				return hints;
+			}
+	private XSizeHints BuildSizeHints()
+			{
+				return BuildSizeHints(x, y, width, height);
+			}
+
 	// Perform a MoveResize request.
 	internal override void PerformMoveResize
 				(IntPtr display, int newX, int newY,
@@ -201,20 +239,8 @@ public class TopLevelWindow : InputOutputWidget
 				// move/resize event.
 				if(!firstMapDone)
 				{
-					XSizeHints hints = new XSizeHints();
-					if(newX != 0 || newY != 0)
-					{
-						hints.flags = SizeHintsMask.USPosition |
-									  SizeHintsMask.USSize;
-						hints.x = newX;
-						hints.y = newY;
-					}
-					else
-					{
-						hints.flags = SizeHintsMask.USSize;
-					}
-					hints.width = newWidth;
-					hints.height = newHeight;
+					XSizeHints hints = BuildSizeHints
+						(newX, newY, newWidth, newHeight);
 					Xlib.XSetWMNormalHints(display, handle, ref hints);
 					if(newWidth != width || newHeight != height)
 					{
@@ -645,8 +671,9 @@ public class TopLevelWindow : InputOutputWidget
 	/// </value>
 	///
 	/// <remarks>
-	/// <para>Setting this property to <see langword="null"/> or the
-	/// current widget will have no effect.</para>
+	/// <para>Setting this property to the current widget will have
+	/// no effect.  Setting this property to <see langword="null"/>
+	/// will make the window transient for the root window.</para>
 	/// </remarks>
 	public TopLevelWindow TransientFor
 			{
@@ -656,7 +683,7 @@ public class TopLevelWindow : InputOutputWidget
 				}
 				set
 				{
-					if(value != null && value != transientFor && value != this)
+					if(value != this)
 					{
 						// Change the "transient for" hint information.
 						try
@@ -664,17 +691,61 @@ public class TopLevelWindow : InputOutputWidget
 							// Lock down the display and get the handles.
 							IntPtr display = dpy.Lock();
 							Xlib.Window handle = GetWidgetHandle();
-							Xlib.Window thandle =
-								transientFor.GetWidgetHandle();
+							Xlib.Window thandle;
+							if(value != null)
+							{
+								thandle = value.GetWidgetHandle();
+							}
+							else
+							{
+								thandle = screen.RootWindow.GetWidgetHandle();
+							}
 
 							// Set the "transient for" hint.
 							Xlib.XSetTransientForHint(display, handle, thandle);
+
+							// Record the value for next time.
+							transientFor = value;
 						}
 						finally
 						{
 							dpy.Unlock();
 						}
 					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Remove the transient parent window hint.</para>
+	/// </summary>
+	///
+	/// <remarks>
+	/// <para>Setting the <c>TransientFor</c> property to
+	/// <see langword="null"/> will mark the window as transient, but
+	/// for the whole screen instead of an application window.</para>
+	///
+	/// <para>Calling <c>RemoveTransientFor</c> removes the hint entirely,
+	/// resetting the window back to the normal "non-transient" mode.</para>
+	/// </remarks>
+	public void RemoveTransientFor()
+			{
+				try
+				{
+					// Lock down the display and get the handle.
+					IntPtr display = dpy.Lock();
+					Xlib.Window handle = GetWidgetHandle();
+
+					// Remove the "transient for" hint.
+					Xlib.XDeleteProperty
+						(display, handle, Xlib.XInternAtom
+							(display, "WM_TRANSIENT_FOR", Xlib.Bool.False));
+
+					// We no longer have a transient parent for this window.
+					transientFor = null;
+				}
+				finally
+				{
+					dpy.Unlock();
 				}
 			}
 
@@ -713,6 +784,96 @@ public class TopLevelWindow : InputOutputWidget
 								(S._("X_InvalidFocusChild"));
 						}
 					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Set the minimum size for the window.</para>
+	/// </summary>
+	///
+	/// <param name="width">
+	/// <para>The new minimum width for the window.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The new minimum width for the window.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>Raised if <paramref name="width"/> or <paramref name="height"/>
+	/// is out of range.</para>
+	/// </exception>
+	///
+	/// <remarks>
+	/// <para>Set both <paramref name="width"/> and <paramref name="height"/>
+	/// to disable the minimum size.</para>
+	/// </remarks>
+	public void SetMinimumSize(int width, int height)
+			{
+				if(width < 0 || height < 0 || width > 32767 || height > 32767)
+				{
+					throw new XException(S._("X_InvalidSize"));
+				}
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.Window handle = GetWidgetHandle();
+					if(width != minWidth || height != minHeight)
+					{
+						minWidth = width;
+						minHeight = height;
+					}
+					XSizeHints hints = BuildSizeHints();
+					Xlib.XSetWMNormalHints(display, handle, ref hints);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Set the maximum size for the window.</para>
+	/// </summary>
+	///
+	/// <param name="width">
+	/// <para>The new maximum width for the window.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The new maximum width for the window.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>Raised if <paramref name="width"/> or <paramref name="height"/>
+	/// is out of range.</para>
+	/// </exception>
+	///
+	/// <remarks>
+	/// <para>Set both <paramref name="width"/> and <paramref name="height"/>
+	/// to disable the maximum size.</para>
+	/// </remarks>
+	public void SetMaximumSize(int width, int height)
+			{
+				if(width < 0 || height < 0 || width > 32767 || height > 32767)
+				{
+					throw new XException(S._("X_InvalidSize"));
+				}
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.Window handle = GetWidgetHandle();
+					if(width != maxWidth || height != maxHeight)
+					{
+						maxWidth = width;
+						maxHeight = height;
+					}
+					XSizeHints hints = BuildSizeHints();
+					Xlib.XSetWMNormalHints(display, handle, ref hints);
+				}
+				finally
+				{
+					dpy.Unlock();
 				}
 			}
 

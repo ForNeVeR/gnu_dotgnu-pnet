@@ -1147,7 +1147,7 @@ static int processFile(ILLinker *linker, const char *filename,
 				{
 					--temp;
 				}
-				if(temp > 0 && arhdr.ar_name[temp - 1] == '/')
+				while(temp > 0 && arhdr.ar_name[temp - 1] == '/')
 				{
 					--temp;
 				}

@@ -18,6 +18,9 @@
 	* cscc/c/c_declspec.h, cscc/c/c_grammar.y: inhibit the "useless
 	keyword" warning for anonymous enumerations.
 
+	* ilalink/link_main.c: strip multiple "/" characters from the end
+	of "ar" entry names because some archives have a "//" entry.
+
 2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,

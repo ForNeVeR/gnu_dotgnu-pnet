@@ -7,6 +7,7 @@ RESOURCEFILES = Arg.txt \
 				DivZero.txt \
 				Exception.txt \
 				Format.txt \
+				NotSupp.txt \
 				Overflow.txt
 
 noinst_DATA = $(RESOURCENAME)

@@ -5,6 +5,7 @@ DEFRESOURCES = $(top_srcdir)/resources/en_US/runtime/runtime.resources
 
 CSSRC = Activator.cs \
 		AccessException.cs \
+		AppDomain.cs \
 		AppDomainUnloadedException.cs \
 		ApplicationException.cs \
 		ArgIterator.cs \
@@ -12,6 +13,7 @@ CSSRC = Activator.cs \
 		ArgumentNullException.cs \
 		ArgumentOutOfRangeException.cs \
 		ArithmeticException.cs \
+		ArrayTypeMismatchException.cs \
 		AsyncCallback.cs \
 		Array.cs \
 		Attribute.cs \
@@ -32,6 +34,8 @@ CSSRC = Activator.cs \
 		Empty.cs \
 		Enum.cs \
 		Environment.cs \
+		EventArgs.cs \
+		EventHandler.cs \
 		Exception.cs \
 		FlagsAttribute.cs \
 		FormatException.cs \
@@ -61,7 +65,9 @@ CSSRC = Activator.cs \
 		PlatformID.cs \
 		Radix.cs \
 		Random.cs \
+		RankException.cs \
 		RuntimeArgumentHandle.cs \
+		RuntimeType.cs \
 		RuntimeTypeHandle.cs \
 		RuntimeFieldHandle.cs \
 		SByte.cs \

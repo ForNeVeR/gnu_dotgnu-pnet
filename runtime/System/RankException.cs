@@ -1,6 +1,5 @@
 /*
- * IList.cs - Implementation of the
- *		"System.Collections.IList" interface.
+ * RankException.cs - Implementation of the "System.RankException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,25 +18,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Collections
+namespace System
 {
 
-using System;
-
-public interface IList : ICollection, IEnumerable
+public class RankException : SystemException
 {
 
-	int  Add(Object value);
-	void Clear();
-	bool Contains(Object value);
-	int  IndexOf(Object value);
-	void Insert(int index, Object value);
-	void Remove(Object value);
-	void RemoveAt(int index);
-	bool IsFixedSize { get; }
-	bool IsReadOnly { get; }
-	Object this[int index] { get; set; }
+	// Constructors.
+	public RankException()
+		: base(Environment.GetResourceString("Exception_Rank")) {}
+	public RankException(String msg)
+		: base(msg) {}
+	public RankException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-}; // interface IList
+}; // class RankException
 
-}; // namespace System.Collections
+}; // namespace System

@@ -21,10 +21,1116 @@
 namespace System
 {
 
-public class Array
+using System.Collections;
+using System.Runtime.InteropServices;
+
+public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 {
 
-// TODO
+	// Constructor.
+	protected Array()
+	{
+		// Nothing to do here.
+	}
+
+	// Inner version of "BinarySearch" used by the methods below
+	// once the arguments have been validated.
+	private static int InnerBinarySearch(Array array, int lower,
+										 int upper, Object value,
+										 IComparer comparer)
+	{
+		int left, right, middle, cmp;
+		Object elem;
+		IComparable icmp;
+		left = lower;
+		right = upper;
+		while(left <= right)
+		{
+			middle = (left + right) / 2;
+			elem = array.GetValue(middle);
+			if(elem != null && value != null)
+			{
+				if(comparer != null)
+				{
+					cmp = comparer.Compare(value, elem);
+				}
+				else if((icmp = (elem as IComparable)) != null)
+				{
+					cmp = -(icmp.CompareTo(value));
+				}
+				else if((icmp = (value as IComparable)) != null)
+				{
+					cmp = icmp.CompareTo(elem);
+				}
+				else
+				{
+					throw new ArgumentException
+						(Environment.GetResourceString("Arg_SearchCompare"));
+				}
+			}
+			else if(elem != null)
+			{
+				cmp = -1;
+			}
+			else if(value != null)
+			{
+				cmp = 1;
+			}
+			else
+			{
+				cmp = 0;
+			}
+			if(cmp == 0)
+			{
+				return middle;
+			}
+			else if(cmp < 0)
+			{
+				right = middle - 1;
+			}
+			else
+			{
+				left = middle + 1;
+			}
+		}
+		return ~left;
+	}
+
+	// Perform a binary search within an array for a value.
+	public static int BinarySearch(Array array, Object value)
+	{
+		return BinarySearch(array, value, (IComparer)null);
+	}
+
+	// Perform a binary search within an array sub-range for a value.
+	public static int BinarySearch(Array array, int index, int length,
+								   Object value)
+	{
+		return BinarySearch(array, index, length, value, (IComparer)null);
+	}
+
+	// Perform a binary search within an array for a value,
+	// using a specific element comparer.
+	public static int BinarySearch(Array array, Object value,
+								   IComparer comparer)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		else if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		return InnerBinarySearch(array, array.GetLowerBound(0),
+								 array.GetUpperBound(0), value, comparer);
+	}
+
+	// Perform a binary search within an array sub-range for a value,
+	// using a specific element comparer.
+	public static int BinarySearch(Array array, int index, int length,
+								   Object value, IComparer comparer)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		else if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		else if(index < array.GetLowerBound(0))
+		{
+			throw new ArgumentOutOfRangeException
+				("index",
+				 Environment.GetResourceString("ArgRange_Array"));
+		}
+		else if(length < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length",
+				 Environment.GetResourceString("ArgRange_Array"));
+		}
+		else if(index > array.GetUpperBound(0) ||
+		        length > (array.GetUpperBound(0) - index + 1))
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+		}
+		return InnerBinarySearch(array, index, index + length - 1,
+								 value, null);
+	}
+
+	// Clear the contents of an array.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void Clear(Array array, int index, int length);
+
+	// Initialize the contents of an array of value types.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public void Initialize();
+
+	// Clone this array.
+	public Object Clone()
+	{
+		return MemberwiseClone();
+	}
+
+	// Copy the contents of one array into another.
+	public static void Copy(Array sourceArray, Array destinationArray,
+							int length)
+	{
+		if(sourceArray == null)
+		{
+			throw new ArgumentNullException("sourceArray");
+		}
+		else if(destinationArray == null)
+		{
+			throw new ArgumentNullException("destinationArray");
+		}
+		Copy(sourceArray, sourceArray.GetLowerBound(0),
+		     destinationArray, destinationArray.GetLowerBound(0),
+			 length);
+	}
+
+	// Copy the contents of one array into another (general-purpose version).
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void Copy(Array sourceArray, int sourceIndex,
+								   Array destinationArray,
+								   int destinationIndex, int length);
+
+	// Implement the ICollection interface.
+	public void CopyTo(Array array, int index)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		else if(array.Rank != 1 || Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		else
+		{
+			Copy(this, 0, array, index, Length);
+		}
+	}
+	public int Count
+	{
+		get
+		{
+			return Length;
+		}
+	}
+	public bool IsSynchronized
+	{
+		get
+		{
+			return false;
+		}
+	}
+	public Object SyncRoot
+	{
+		get
+		{
+			return this;
+		}
+	}
+
+	// Internal versions of "CreateInstance".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Array InternalCreate(RuntimeType elementType,
+											   int rank, int length1,
+											   int length2, int length3);
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Array InternalCreateEx(RuntimeType elementType,
+											     int[] lengths,
+												 int[] lowerBounds);
+
+	// Create a single-dimensional array instance.
+	public static Array CreateInstance(Type elementType, int length)
+	{
+		RuntimeType runtimeType;
+		if(elementType == null)
+		{
+			throw new ArgumentNullException("elementType");
+		}
+		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
+		if(runtimeType == null)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustBeType"));
+		}
+		if(length < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length",
+				 Environment.GetResourceString("ArgRange_NonNegative"));
+		}
+		return InternalCreate(runtimeType, 1, length, 0, 0);
+	}
+
+	// Create a double-dimensional array instance.
+	public static Array CreateInstance(Type elementType,
+									   int length1, int length2)
+	{
+		RuntimeType runtimeType;
+		if(elementType == null)
+		{
+			throw new ArgumentNullException("elementType");
+		}
+		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
+		if(runtimeType == null)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustBeType"));
+		}
+		if(length1 < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length1",
+				 Environment.GetResourceString("ArgRange_NonNegative"));
+		}
+		if(length2 < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length2",
+				 Environment.GetResourceString("ArgRange_NonNegative"));
+		}
+		return InternalCreate(runtimeType, 2, length1, length2, 0);
+	}
+
+	// Create a triple-dimensional array instance.
+	public static Array CreateInstance(Type elementType, int length1,
+									   int length2, int length3)
+	{
+		RuntimeType runtimeType;
+		if(elementType == null)
+		{
+			throw new ArgumentNullException("elementType");
+		}
+		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
+		if(runtimeType == null)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustBeType"));
+		}
+		if(length1 < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length1",
+				 Environment.GetResourceString("ArgRange_NonNegative"));
+		}
+		if(length2 < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length2",
+				 Environment.GetResourceString("ArgRange_NonNegative"));
+		}
+		if(length3 < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length3",
+				 Environment.GetResourceString("ArgRange_NonNegative"));
+		}
+		return InternalCreate(runtimeType, 3, length1, length2, length3);
+	}
+
+	// Create an array instance from an array of length values.
+	public static Array CreateInstance(Type elementType, int[] lengths)
+	{
+		RuntimeType runtimeType;
+		int index;
+		if(elementType == null)
+		{
+			throw new ArgumentNullException("elementType");
+		}
+		if(lengths == null)
+		{
+			throw new ArgumentNullException("lengths");
+		}
+		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
+		if(runtimeType == null)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustBeType"));
+		}
+		if(lengths.Length < 1)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustHaveOneElement"));
+		}
+		for(index = lengths.Length - 1; index >= 0; --index)
+		{
+			if(lengths[index] < 0)
+			{
+				throw new ArgumentOutOfRangeException
+					("lengths[" + (lengths[index]).ToString() + "]",
+					 Environment.GetResourceString("ArgRange_NonNegative"));
+			}
+		}
+		return InternalCreateEx(runtimeType, lengths, null);
+	}
+
+	// Create an array instance from an array of length values,
+	// and an array of lower bounds.
+	public static Array CreateInstance(Type elementType, int[] lengths,
+									   int[] lowerBounds)
+	{
+		RuntimeType runtimeType;
+		int index;
+		if(elementType == null)
+		{
+			throw new ArgumentNullException("elementType");
+		}
+		if(lengths == null)
+		{
+			throw new ArgumentNullException("lengths");
+		}
+		if(lowerBounds == null)
+		{
+			throw new ArgumentNullException("lowerBounds");
+		}
+		if(lengths.Length != lowerBounds.Length)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustBeSameSize"));
+		}
+		runtimeType = (elementType.UnderlyingSystemType as RuntimeType);
+		if(runtimeType == null)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustBeType"));
+		}
+		if(lengths.Length < 1)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustHaveOneElement"));
+		}
+		for(index = lengths.Length - 1; index >= 0; --index)
+		{
+			if(lengths[index] < 0)
+			{
+				throw new ArgumentOutOfRangeException
+					("lengths[" + (lengths[index]).ToString() + "]",
+					 Environment.GetResourceString("ArgRange_NonNegative"));
+			}
+		}
+		return InternalCreateEx(runtimeType, lengths, lowerBounds);
+	}
+
+	// Implement the IEnumerable interface.
+	public IEnumerator GetEnumerator()
+	{
+		// TODO.
+		return null;
+	}
+
+	// Get the length of an array rank.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public int GetLength(int dimension);
+
+	// Get the lower bound of an array rank.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public int GetLowerBound(int dimension);
+
+	// Get the upper bound of an array rank.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public int GetUpperBound(int dimension);
+
+	// Internal versions of "GetValue".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private Object InternalGetValue(int index1, int index2, int index3);
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private Object InternalGetValueEx(int[] indices);
+
+	// Get the value at a particular index within a multi-dimensional array.
+	public Object GetValue(int[] indices)
+	{
+		if(indices == null)
+		{
+			throw new ArgumentNullException("indices");
+		}
+		if(indices.Length != Rank)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustBeSameSize"));
+		}
+		return InternalGetValueEx(indices);
+	}
+
+	// Get the value at a particular index within a single-dimensional array.
+	public Object GetValue(int index)
+	{
+		if(Rank != 1)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		return InternalGetValue(index, 0, 0);
+	}
+
+	// Get the value at a particular index within a double-dimensional array.
+	public Object GetValue(int index1, int index2)
+	{
+		if(Rank != 2)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_RankMustBe2"));
+		}
+		return InternalGetValue(index1, index2, 0);
+	}
+
+	// Get the value at a particular index within a triple-dimensional array.
+	public Object GetValue(int index1, int index2, int index3)
+	{
+		if(Rank != 3)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_RankMustBe3"));
+		}
+		return InternalGetValue(index1, index2, index3);
+	}
+
+	// Inner version of "IndexOf".
+	public static int InnerIndexOf(Array array, Object value,
+								   int start, int length)
+	{
+		Object elem;
+		while(length > 0)
+		{
+			elem = array.GetValue(start);
+			if(value != null && elem != null)
+			{
+				if(value.Equals(elem))
+				{
+					return start;
+				}
+			}
+			else if(value == null && elem == null)
+			{
+				return start;
+			}
+			++start;
+			--length;
+		}
+		return array.GetLowerBound(0) - 1;
+	}
+
+	// Inner version of "LastIndexOf".
+	public static int InnerLastIndexOf(Array array, Object value,
+								       int start, int length)
+	{
+		Object elem;
+		start += length - 1;
+		while(length > 0)
+		{
+			elem = array.GetValue(start);
+			if(value != null && elem != null)
+			{
+				if(value.Equals(elem))
+				{
+					return start;
+				}
+			}
+			else if(value == null && elem == null)
+			{
+				return start;
+			}
+			--start;
+			--length;
+		}
+		return array.GetLowerBound(0) - 1;
+	}
+
+	// Get the first index of a specific value within an array.
+	public static int IndexOf(Array array, Object value)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		return InnerIndexOf(array, value, array.GetLowerBound(0),
+					array.GetUpperBound(0) - array.GetLowerBound(0) + 1);
+	}
+
+	// Get the last index of a specific value within an array.
+	public static int LastIndexOf(Array array, Object value)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		return InnerLastIndexOf(array, value, array.GetLowerBound(0),
+					array.GetUpperBound(0) - array.GetLowerBound(0) + 1);
+	}
+
+	// Get the first index of a specific value within an array,
+	// starting at a particular index.
+	public static int IndexOf(Array array, Object value, int startIndex)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		if(startIndex < array.GetLowerBound(0) ||
+		   startIndex > array.GetUpperBound(0))
+		{
+			throw new ArgumentOutOfRangeException
+				("startIndex",
+				 Environment.GetResourceString("Arg_InvalidArrayIndex"));
+		}
+		return InnerIndexOf(array, value, startIndex,
+							array.GetUpperBound(0) - startIndex + 1);
+	}
+
+	// Get the last index of a specific value within an array,
+	// starting at a particular index.
+	public static int LastIndexOf(Array array, Object value, int startIndex)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		if(startIndex < array.GetLowerBound(0) ||
+		   startIndex > array.GetUpperBound(0))
+		{
+			throw new ArgumentOutOfRangeException
+				("startIndex",
+				 Environment.GetResourceString("Arg_InvalidArrayIndex"));
+		}
+		return InnerLastIndexOf(array, value, array.GetLowerBound(0),
+								startIndex - array.GetLowerBound(0) + 1);
+	}
+
+	// Get the first index of a specific value within an array,
+	// starting at a particular index, searching for "count" items.
+	public static int IndexOf(Array array, Object value,
+							  int startIndex, int count)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		if(startIndex < array.GetLowerBound(0) ||
+		   startIndex > array.GetUpperBound(0) ||
+		   count < 0 ||
+		   count > (array.GetUpperBound(0) - startIndex + 1))
+		{
+			throw new ArgumentOutOfRangeException
+				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+		}
+		return InnerIndexOf(array, value, startIndex, count);
+	}
+
+	// Get the last index of a specific value within an array,
+	// starting at a particular index, searching for "count" items.
+	public static int LastIndexOf(Array array, Object value,
+							      int startIndex, int count)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		if(startIndex < array.GetLowerBound(0) ||
+		   startIndex > array.GetUpperBound(0) ||
+		   count < 0 ||
+		   count > (startIndex - array.GetLowerBound(0) + 1))
+		{
+			throw new ArgumentOutOfRangeException
+				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+		}
+		return InnerLastIndexOf(array, value, startIndex - count + 1, count);
+	}
+
+	// Inner version of "Reverse".
+	public static void InnerReverse(Array array, int lower, int upper)
+	{
+		Object temp;
+		while(lower < upper)
+		{
+			temp = array.GetValue(lower);
+			array.SetValue(array.GetValue(upper), lower);
+			array.SetValue(temp, upper);
+			++lower;
+			--upper;
+		}
+	}
+
+	// Reverse the order of elements in an array.
+	public static void Reverse(Array array)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		InnerReverse(array, array.GetLowerBound(0), array.GetUpperBound(0));
+	}
+
+	// Reverse the order of elements in an array sub-range.
+	public static void Reverse(Array array, int index, int length)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		if(index < array.GetLowerBound(0))
+		{
+			throw new ArgumentOutOfRangeException
+				("index",
+				 Environment.GetResourceString("ArgRange_Array"));
+		}
+		if(length < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length",
+				 Environment.GetResourceString("ArgRange_Array"));
+		}
+		if(index > array.GetUpperBound(0) ||
+	       length > (array.GetUpperBound(0) - index + 1))
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+		}
+		InnerReverse(array, index, index + length - 1);
+	}
+
+	// Internal versions of "SetValue".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private void InternalSetValue(Object value, int index1,
+										 int index2, int index3);
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private void InternalSetValueEx(Object value, int[] indices);
+
+	// Set the value at a particular index within a multi-dimensional array.
+	public void SetValue(Object value, int[] indices)
+	{
+		if(indices == null)
+		{
+			throw new ArgumentNullException("indices");
+		}
+		if(indices.Length != Rank)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_MustBeSameSize"));
+		}
+		InternalSetValueEx(value, indices);
+	}
+
+	// Set the value at a particular index within a single-dimensional array.
+	public void SetValue(Object value, int index)
+	{
+		if(Rank != 1)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		InternalSetValue(value, index, 0, 0);
+	}
+
+	// Set the value at a particular index within a double-dimensional array.
+	public void SetValue(Object value, int index1, int index2)
+	{
+		if(Rank != 2)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_RankMustBe2"));
+		}
+		InternalSetValue(value, index1, index2, 0);
+	}
+
+	// Set the value at a particular index within a triple-dimensional array.
+	public void SetValue(Object value, int index1, int index2, int index3)
+	{
+		if(Rank != 3)
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_RankMustBe3"));
+		}
+		InternalSetValue(value, index1, index2, index3);
+	}
+
+	// Inner version of "Sort".  Based on the Quicksort implementation
+	// described in R. Sedgewick, "Algorithms in C++", Addison-Wesley, 1992.
+	public static void InnerSort(Array keys, Array items,
+						         int lower, int upper,
+						         IComparer comparer)
+	{
+		int i, j, cmp;
+		Object testKey;
+		Object valuei;
+		Object valuej;
+		if(lower < upper)
+		{
+			// Partition the array.
+			testKey = keys.GetValue(upper);
+			i = lower - 1;
+			j = upper;
+			for(;;)
+			{
+				do
+				{
+					++i;
+					valuei = keys.GetValue(i);
+					if(comparer != null)
+					{
+						cmp = comparer.Compare(valuei, testKey);
+					}
+					else
+					{
+						cmp = ((IComparable)valuei).CompareTo(testKey);
+					}
+				}
+				while(cmp < 0);
+				do
+				{
+					--j;
+					valuej = keys.GetValue(j);
+					if(comparer != null)
+					{
+						cmp = comparer.Compare(valuej, testKey);
+					}
+					else
+					{
+						cmp = ((IComparable)valuej).CompareTo(testKey);
+					}
+				}
+				while(cmp > 0);
+				if(i >= j)
+				{
+					break;
+				}
+				keys.SetValue(valuej, i);
+				keys.SetValue(valuei, j);
+				if(items != null)
+				{
+					valuei = items.GetValue(i);
+					valuej = items.GetValue(j);
+					items.SetValue(valuej, i);
+					items.SetValue(valuei, j);
+				}
+			}
+			valuei = keys.GetValue(i);
+			valuej = keys.GetValue(upper);
+			keys.SetValue(valuej, i);
+			keys.SetValue(valuei, upper);
+			if(items != null)
+			{
+				valuei = items.GetValue(i);
+				valuej = items.GetValue(upper);
+				items.SetValue(valuej, i);
+				items.SetValue(valuei, upper);
+			}
+
+			// Sort the sub-partitions.
+			InnerSort(keys, items, lower, i - 1, comparer);
+			InnerSort(keys, items, i + 1, upper, comparer);
+		}
+	}
+
+	// Sort an array of keys.
+	public static void Sort(Array array)
+	{
+		Sort(array, (IComparer)null);
+	}
+
+	// Sort an array of keys using a comparer.
+	public static void Sort(Array array, IComparer comparer)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		InnerSort(array, null, array.GetLowerBound(0),
+				  array.GetUpperBound(0), comparer);
+	}
+
+	// Sort an array of keys and items.
+	public static void Sort(Array keys, Array items)
+	{
+		Sort(keys, items, (IComparer)null);
+	}
+
+	// Sort an array of keys and items using a comparer.
+	public static void Sort(Array keys, Array items, IComparer comparer)
+	{
+		if(keys == null)
+		{
+			throw new ArgumentNullException("keys");
+		}
+		if(keys.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		if(items != null)
+		{
+			if(items.Rank != 1)
+			{
+				throw new RankException
+					(Environment.GetResourceString("Arg_RankMustBe1"));
+			}
+			if(items.GetLowerBound(0) != keys.GetLowerBound(0))
+			{
+				throw new ArgumentException
+					(Environment.GetResourceString("Arg_LowBoundsMustMatch"));
+			}
+			if(items.Length < keys.Length)
+			{
+				throw new ArgumentException
+					(Environment.GetResourceString("Arg_ShortItemsArray"));
+			}
+		}
+		InnerSort(keys, items, keys.GetLowerBound(0),
+				  keys.GetUpperBound(0), comparer);
+	}
+
+	// Sort an array sub-range of keys.
+	public static void Sort(Array array, int index, int length)
+	{
+		Sort(array, index, length, (IComparer)null);
+	}
+
+	// Sort an array sub-range of keys using a comparer.
+	public static void Sort(Array array, int index, int length,
+							IComparer comparer)
+	{
+		if(array == null)
+		{
+			throw new ArgumentNullException("array");
+		}
+		if(array.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		if(index < array.GetLowerBound(0))
+		{
+			throw new ArgumentOutOfRangeException
+				("index",
+				 Environment.GetResourceString("ArgRange_Array"));
+		}
+		if(length < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length",
+				 Environment.GetResourceString("ArgRange_Array"));
+		}
+		if(index > array.GetUpperBound(0) ||
+		   length > (array.GetUpperBound(0) - index + 1))
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+		}
+		InnerSort(array, null, index, index + length - 1, comparer);
+	}
+
+	// Sort an array sub-range of keys and items.
+	public static void Sort(Array keys, Array items, int index, int length)
+	{
+		Sort(keys, items, index, length, (IComparer)null);
+	}
+
+	// Sort an array sub-range of keys and items using a comparer.
+	public static void Sort(Array keys, Array items,
+							int index, int length,
+							IComparer comparer)
+	{
+		if(keys == null)
+		{
+			throw new ArgumentNullException("keys");
+		}
+		if(keys.Rank != 1)
+		{
+			throw new RankException
+				(Environment.GetResourceString("Arg_RankMustBe1"));
+		}
+		if(index < keys.GetLowerBound(0))
+		{
+			throw new ArgumentOutOfRangeException
+				("index",
+				 Environment.GetResourceString("ArgRange_Array"));
+		}
+		if(length < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length",
+				 Environment.GetResourceString("ArgRange_Array"));
+		}
+		if(index > keys.GetUpperBound(0) ||
+		   length > (keys.GetUpperBound(0) - index + 1))
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_InvalidArrayRange"));
+		}
+		if(items != null)
+		{
+			if(items.Rank != 1)
+			{
+				throw new RankException
+					(Environment.GetResourceString("Arg_RankMustBe1"));
+			}
+			if(index < items.GetLowerBound(0))
+			{
+				throw new ArgumentOutOfRangeException
+					("index",
+					 Environment.GetResourceString("ArgRange_Array"));
+			}
+			if(index > items.GetUpperBound(0) ||
+			   length > (items.GetUpperBound(0) - index + 1))
+			{
+				throw new ArgumentException
+					(Environment.GetResourceString("Arg_InvalidArrayRange"));
+			}
+		}
+		InnerSort(keys, items, index, index + length - 1, comparer);
+	}
+
+	// Implement the "IList" interface.
+	int IList.Add(Object value)
+	{
+		throw new NotSupportedException
+			(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+	}
+	void IList.Clear()
+	{
+		Clear(this, 0, Length);
+	}
+	bool IList.Contains(Object value)
+	{
+		return (IndexOf(this, value) >= GetLowerBound(0));
+	}
+	int IList.IndexOf(Object value)
+	{
+		return IndexOf(this, value);
+	}
+	void IList.Insert(int index, Object value)
+	{
+		throw new NotSupportedException
+			(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+	}
+	void IList.Remove(Object value)
+	{
+		throw new NotSupportedException
+			(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+	}
+	void IList.RemoveAt(int index)
+	{
+		throw new NotSupportedException
+			(Environment.GetResourceString("NotSupp_FixedSizeCollection"));
+	}
+	public bool IsFixedSize
+	{
+		get
+		{
+			return true;
+		}
+	}
+	public bool IsReadOnly
+	{
+		get
+		{
+			return false;
+		}
+	}
+	Object IList.this[int index]
+	{
+		get
+		{
+			return GetValue(index);
+		}
+		set
+		{
+			SetValue(value, index);
+		}
+	}
+
+	// Internal implementation of the "Length" and "Rank" properties.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private int GetLengthNative();
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private int GetRankNative();
+
+	// Properties.
+	public int Length
+	{
+		get
+		{
+			return GetLengthNative();
+		}
+	}
+	public long LongLength
+	{
+		get
+		{
+			// Normally this will return the same as "Length", but it
+			// is theoretically possible that really huge arrays could
+			// exist on 64-bit systems in the future, so we calculate
+			// the value carefully.
+			long len = 1;
+			int ranks = GetRankNative();
+			while(ranks > 0)
+			{
+				--ranks;
+				len *= (long)(GetUpperBound(ranks) - GetLowerBound(ranks) + 1);
+			}
+			return len;
+		}
+	}
+	public int Rank
+	{
+		get
+		{
+			return GetRankNative();
+		}
+	}
 
 }; // class Array
 

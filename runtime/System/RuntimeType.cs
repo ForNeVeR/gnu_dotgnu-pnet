@@ -1,6 +1,5 @@
 /*
- * IList.cs - Implementation of the
- *		"System.Collections.IList" interface.
+ * RuntimeType.cs - Implementation of the "System.RuntimeType" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,25 +18,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Collections
+namespace System
 {
 
-using System;
+using System.Reflection;
 
-public interface IList : ICollection, IEnumerable
+internal class RuntimeType : Type
 {
 
-	int  Add(Object value);
-	void Clear();
-	bool Contains(Object value);
-	int  IndexOf(Object value);
-	void Insert(int index, Object value);
-	void Remove(Object value);
-	void RemoveAt(int index);
-	bool IsFixedSize { get; }
-	bool IsReadOnly { get; }
-	Object this[int index] { get; set; }
+	public override String FullName { get { return ""; } }
+	public override Type UnderlyingSystemType { get { return this; } }
 
-}; // interface IList
+}; // class RuntimeType
 
-}; // namespace System.Collections
+}; // namespace System

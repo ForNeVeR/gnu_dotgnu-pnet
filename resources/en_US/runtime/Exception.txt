@@ -34,3 +34,5 @@ Exception_TypeLoad=Could not load the specified type.
 Exception_AppDomainUnloaded=The application domain has been unloaded.
 Exception_Application=An application exception occurred.
 Exception_NotImplemented=The requested functionality is not implemented.
+Exception_Rank=Incorrect array rank specified.
+Exception_ArrayTypeMismatch=Element type does not match the array type.

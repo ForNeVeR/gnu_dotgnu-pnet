@@ -1,0 +1,21 @@
+
+0.0.3 (?)
+
+	* Rewrote the "System.Collections" classes.
+	* A few more classes in "System", particularly array and string related.
+
+0.0.2 (6 August 2001)
+
+	* Update classes so that the library compiles with Microsoft's
+	  Beta 2 compiler.
+	* A handful classes within the "System" namespace, and stubs for
+	  classes that "System" depends upon elsewhere.
+
+0.0.1 (9 April 2001)
+
+	* Initial release.  Library split from the main Portable.NET tree.
+	* Separate resource area created.
+	* Structure of Makefile's and build logic created.
+	* Integrated some contributions from Mike Krueger.
+	* Implemented a large number of classes from "System", together with
+	  skeletons from other namespaces to make the source compile correctly.

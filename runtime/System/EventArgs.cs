@@ -1,6 +1,5 @@
 /*
- * IList.cs - Implementation of the
- *		"System.Collections.IList" interface.
+ * EventArgs.cs - Implementation of the "System.EventArgs" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,25 +18,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Collections
+namespace System
 {
 
-using System;
-
-public interface IList : ICollection, IEnumerable
+public class EventArgs
 {
 
-	int  Add(Object value);
-	void Clear();
-	bool Contains(Object value);
-	int  IndexOf(Object value);
-	void Insert(int index, Object value);
-	void Remove(Object value);
-	void RemoveAt(int index);
-	bool IsFixedSize { get; }
-	bool IsReadOnly { get; }
-	Object this[int index] { get; set; }
+// TODO
 
-}; // interface IList
+}; // class EventArgs
 
-}; // namespace System.Collections
+}; // namespace System

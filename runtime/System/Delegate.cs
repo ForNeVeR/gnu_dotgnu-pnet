@@ -26,6 +26,21 @@ public class Delegate
 
 // TODO
 
+	public static Delegate Combine(Delegate a, Delegate b)
+	{
+		return null;
+	}
+
+	public static Delegate Combine(Delegate[] delegates)
+	{
+		return null;
+	}
+
+	public static Delegate Remove(Delegate source, Delegate value)
+	{
+		return null;
+	}
+
 }; // class Delegate
 
 }; // namespace System

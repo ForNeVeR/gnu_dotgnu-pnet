@@ -32,6 +32,7 @@ public abstract class Type
 // TODO
 
 	public abstract String FullName { get; }
+	public abstract Type UnderlyingSystemType { get; }
 	public Type GetTypeFromHandle(RuntimeTypeHandle handle) { return null; }
 
 }; // class Type

@@ -1,6 +1,6 @@
 /*
- * IList.cs - Implementation of the
- *		"System.Collections.IList" interface.
+ * IFormatProvider.cs - Implementation of the
+ *		"System.IFormatProvider" interface.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,25 +19,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Collections
+namespace System
 {
 
-using System;
-
-public interface IList : ICollection, IEnumerable
+public interface IFormatProvider
 {
 
-	int  Add(Object value);
-	void Clear();
-	bool Contains(Object value);
-	int  IndexOf(Object value);
-	void Insert(int index, Object value);
-	void Remove(Object value);
-	void RemoveAt(int index);
-	bool IsFixedSize { get; }
-	bool IsReadOnly { get; }
-	Object this[int index] { get; set; }
+	Object GetFormat(Type formatType);
 
-}; // interface IList
+}; // interface IFormatProvider
 
-}; // namespace System.Collections
+}; // namespace System

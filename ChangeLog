@@ -20,6 +20,9 @@
 	* support/mul_long.c (ILUInt64MulOvf): explicitly cast 32-bit
 	subcomponents to 64 bits before multiplying, to prevent truncation.
 
+	* samples/mscorlib.dll: updated assembly after fixing 64-bit
+	constant multiplication.
+
 2002-11-27  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_varusage.h , codegen/cg_varusage.c, codegen/cg_gen.h,

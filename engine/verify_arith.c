@@ -176,8 +176,16 @@ case IL_OP_ADD_OVF_UN:
 	        commonType == ILEngineType_T)
 	{
 		ILCoderBinaryPtr(coder, opcode, STK_BINARY_1, STK_BINARY_2);
-		STK_BINARY_1 = commonType;
-		STK_TYPEINFO_1 = 0;
+		if(STK_BINARY_1 == ILEngineType_M ||
+		   STK_BINARY_1 == ILEngineType_T)
+		{
+			STK_BINARY_1 = commonType;
+		}
+		else
+		{
+			STK_BINARY_1 = commonType;
+			STK_TYPEINFO_1 = STK_TYPEINFO_2;
+		}
 		--stackSize;
 	}
 	else if(commonType != ILEngineType_Invalid)
@@ -217,7 +225,6 @@ case IL_OP_SUB_OVF_UN:
 	{
 		ILCoderBinaryPtr(coder, opcode, STK_BINARY_1, STK_BINARY_2);
 		STK_BINARY_1 = commonType;
-		STK_TYPEINFO_1 = 0;
 		--stackSize;
 	}
 	else if(commonType != ILEngineType_Invalid)

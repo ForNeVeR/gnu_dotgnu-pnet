@@ -11,6 +11,9 @@ a little to make it easier to maintain.
 * engine/verify_branch.c: validate the target stack as empty just after
 an unconditional jump, even if the location does not have a label.
 
+* engine/verify_arith.c: set the correct result type for "add" and "sub"
+operations on pointers.
+
 2001-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * support/filemap.c: modify the #ifdef's according to suggestions from

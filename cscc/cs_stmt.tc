@@ -18,17 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- * Perform semantic analysis for the empty statement.
- */
-ILNode_SemAnalysis(ILNode_Empty)
-{
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
-}
-
 %{
 
 /*
@@ -55,7 +44,90 @@ static void StmtSem(ILNode *node, ILGenInfo *info, ILNode **parent)
 	}
 }
 
+/*
+ * Statement context flags.
+ */
+#define	CS_STMT_LOOP		1
+#define	CS_STMT_SWITCH		2
+#define	CS_STMT_TRY			4
+#define	CS_STMT_CATCH		8
+#define	CS_STMT_FINALLY		16
+
+/*
+ * Push a statement context.
+ */
+static void PushStmtContext(ILGenInfo *info, int context)
+{
+	if(info->contextStackSize >= info->contextStackMax)
+	{
+		/* Increase the size of the context stack */
+		int *newstack;
+		newstack = (int *)ILRealloc(info->contextStack,
+									sizeof(int) * (info->contextStackMax + 4));
+		if(!newstack)
+		{
+			ILGenOutOfMemory(info);
+		}
+		info->contextStack = newstack;
+		info->contextStackMax += 4;
+	}
+	info->contextStack[info->contextStackSize] = context;
+	++(info->contextStackSize);
+}
+
+/*
+ * Pop the top-most statement context.
+ */
+static void PopStmtContext(ILGenInfo *info)
+{
+	--(info->contextStackSize);
+}
+
+/*
+ * Determine if we are within a specific context, but not
+ * within a "stop" context.  e.g. "break" can be used
+ * within a loop, but not in the body of a "finally"
+ * within the loop.  "finally" is the "stop" context.
+ */
+static int StmtContextOK(ILGenInfo *info, int context, int stopContext)
+{
+	long posn = info->contextStackSize;
+	while(posn > 0)
+	{
+		--posn;
+		if((info->contextStack[posn] & stopContext) != 0)
+		{
+			return 0;
+		}
+		if((info->contextStack[posn] & context) != 0)
+		{
+			return 1;
+		}
+	}
+	if(!context)
+	{
+		/* We are checking a "return" statement */
+		return 1;
+	}
+	else
+	{
+		/* We are checking some other kind of statement */
+		return 0;
+	}
+}
+
 %}
+
+/*
+ * Perform semantic analysis for the empty statement.
+ */
+ILNode_SemAnalysis(ILNode_Empty)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
 
 /*
  * Perform semantic analysis for the compound statement.
@@ -111,9 +183,9 @@ ILNode_SemAnalysis(ILNode_While)
 {
 	CSSemValue value;
 	ILNode_SemAnalysis(node->cond, info, &(node->cond));
-	++(info->numLoops);
+	PushStmtContext(info, CS_STMT_LOOP);
 	StmtSem(node->stmt, info, &(node->stmt));
-	--(info->numLoops);
+	PopStmtContext(info);
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -129,9 +201,9 @@ ILNode_SemAnalysis(ILNode_While)
 ILNode_SemAnalysis(ILNode_Do)
 {
 	CSSemValue value;
-	++(info->numLoops);
+	PushStmtContext(info, CS_STMT_LOOP);
 	StmtSem(node->stmt, info, &(node->stmt));
-	--(info->numLoops);
+	PopStmtContext(info);
 	ILNode_SemAnalysis(node->cond, info, &(node->cond));
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -151,9 +223,9 @@ ILNode_SemAnalysis(ILNode_For)
 	StmtSem(node->init, info, &(node->init));
 	ILNode_SemAnalysis(node->cond, info, &(node->cond));
 	StmtSem(node->incr, info, &(node->incr));
-	++(info->numLoops);
+	PushStmtContext(info, CS_STMT_LOOP);
 	StmtSem(node->stmt, info, &(node->stmt));
-	--(info->numLoops);
+	PopStmtContext(info);
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -180,6 +252,8 @@ ILNode_SemAnalysis(ILNode_Foreach)
 ILNode_SemAnalysis(ILNode_Switch)
 {
 	CSSemValue value;
+	PushStmtContext(info, CS_STMT_SWITCH);
+	PopStmtContext(info);
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -290,10 +364,20 @@ ILNode_SemAnalysis(ILNode_GotoDefault)
 ILNode_SemAnalysis(ILNode_Break)
 {
 	CSSemValue value;
-	if(!(info->numLoops) && !(info->numSwitches))
+	PushStmtContext(info, CS_STMT_SWITCH);
+
+	if(!StmtContextOK(info, CS_STMT_LOOP | CS_STMT_SWITCH, CS_STMT_FINALLY))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "break used outside loop or switch");
+		if(StmtContextOK(info, CS_STMT_FINALLY, 0))
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`break' used inside `finally' clause");
+		}
+		else
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`break' used outside loop or switch");
+		}
 	}
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -306,10 +390,18 @@ ILNode_SemAnalysis(ILNode_Break)
 ILNode_SemAnalysis(ILNode_Continue)
 {
 	CSSemValue value;
-	if(!(info->numLoops))
+	if(!StmtContextOK(info, CS_STMT_LOOP, CS_STMT_FINALLY))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "continue used outside loop");
+		if(StmtContextOK(info, CS_STMT_FINALLY, 0))
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`continue' used inside `finally' clause");
+		}
+		else
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`continue' used outside loop");
+		}
 	}
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -329,6 +421,11 @@ ILNode_SemAnalysis(ILNode_Return)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "`return' with no value, in method returning non-void");
+	}
+	if(!StmtContextOK(info, 0, CS_STMT_FINALLY))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  		  "`return' used inside `finally' clause");
 	}
 	return CSSemValueDefault;
 }
@@ -370,6 +467,13 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 		}
 	}
 
+	/* Check that the return was not used inside a "finally" clause */
+	if(!StmtContextOK(info, 0, CS_STMT_FINALLY))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  		  "`return' used inside `finally' clause");
+	}
+
 	/* Done */
 	return CSSemValueDefault;
 }
@@ -380,6 +484,11 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 ILNode_SemAnalysis(ILNode_Throw)
 {
 	CSSemValue value;
+	if(!StmtContextOK(info, CS_STMT_CATCH, CS_STMT_FINALLY | CS_STMT_TRY))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	  		  "`throw' with no value must be used inside a `catch' clause");
+	}
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -391,6 +500,27 @@ ILNode_SemAnalysis(ILNode_Throw)
 ILNode_SemAnalysis(ILNode_ThrowExpr)
 {
 	CSSemValue value;
+	ILType *exceptionClass;
+
+	/* Perform semantic analysis on the value */
+	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	  		  		  "invalid throw expression");
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILType_Null;
+	}
+
+	/* Attempt to coerce the value to "System.Exception" */
+	exceptionClass = ILFindSystemType(info, "Exception");
+	if(!ILCoerce(info, node->expr, &(node->expr), value.type, exceptionClass))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	  		  		  "no conversion from `%s' to `%s'",
+					  CSTypeToName(value.type), CSTypeToName(exceptionClass));
+	}
+
+	/* Done */
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -402,17 +532,23 @@ ILNode_SemAnalysis(ILNode_ThrowExpr)
 ILNode_SemAnalysis(ILNode_Try)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
-}
 
-/*
- * Perform semantic analysis for the "catch clauses" statement.
- */
-ILNode_SemAnalysis(ILNode_CatchClauses)
-{
-	CSSemValue value;
+	/* Enter a "try" context */
+	PushStmtContext(info, CS_STMT_TRY);
+
+	/* Perform semantic analysis on the "try" body */
+	StmtSem(node->stmt, info, &(node->stmt));
+
+	/* Perform semantic analysis on the "catch" clauses */
+	StmtSem(node->catchClauses, info, &(node->catchClauses));
+
+	/* Perform semantic analysis on the "finally" clause */
+	StmtSem(node->finallyClause, info, &(node->finallyClause));
+
+	/* Exit from the "try" context */
+	PopStmtContext(info);
+
+	/* Done */
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -424,6 +560,72 @@ ILNode_SemAnalysis(ILNode_CatchClauses)
 ILNode_SemAnalysis(ILNode_CatchClause)
 {
 	CSSemValue value;
+	ILType *exceptionType = ILFindSystemType(info, "Exception");
+	ILType *thrownType;
+	ILScope *newScope;
+	ILNode_MethodDeclaration *method =
+		(ILNode_MethodDeclaration *)(info->currentMethod);
+
+	/* Enter a "catch" context */
+	PushStmtContext(info, CS_STMT_CATCH);
+
+	/* Wrap the catch body in a new scope */
+	newScope = ILScopeCreate(info, info->currentScope);
+	node->stmt = ILNode_NewScope_create(node->stmt);
+	((ILNode_NewScope *)(node->stmt))->scope = newScope;
+
+	/* Validate the thrown value type */
+	if(node->type)
+	{
+		thrownType = CSSemType(node->type, info, &(node->type));
+		if(!ILCanCoerce(info->context, thrownType, exceptionType))
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		  		  		  "`%s' does not inherit from `%s'",
+						  CSTypeToName(thrownType),
+						  CSTypeToName(exceptionType));
+			thrownType = exceptionType;
+		}
+	}
+	else
+	{
+		thrownType = exceptionType;
+	}
+	node->classInfo = ILTypeToClass(info, thrownType);
+
+	/* Declare a new local variable for the catch value */
+	if(node->name)
+	{
+		/* Add the type to the local variable signature for this method */
+		if(!(method->localVarSig))
+		{
+			method->localVarSig = ILTypeCreateLocalList(info->context);
+			if(!(method->localVarSig))
+			{
+				CSOutOfMemory();
+			}
+		}
+		if(!ILTypeAddLocal(info->context, method->localVarSig, thrownType))
+		{
+			CSOutOfMemory();
+		}
+
+		/* Create a local variable entry in the current scope */
+		ILScopeDeclareLocal(newScope, node->name,
+							ILTypeNumLocals(method->localVarSig) - 1,
+							node->nameNode);
+
+		/* Record the local variable index for the code generator */
+		node->varIndex = ILTypeNumLocals(method->localVarSig) - 1;
+	}
+
+	/* Perform semantic analysis on the catch body */
+	StmtSem(node->stmt, info, &(node->stmt));
+
+	/* Exit from the "catch" context */
+	PopStmtContext(info);
+
+	/* Done */
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -435,6 +637,17 @@ ILNode_SemAnalysis(ILNode_CatchClause)
 ILNode_SemAnalysis(ILNode_FinallyClause)
 {
 	CSSemValue value;
+
+	/* Enter a "finally" context */
+	PushStmtContext(info, CS_STMT_FINALLY);
+
+	/* Perform semantic analysis on the finally body */
+	StmtSem(node->stmt, info, &(node->stmt));
+
+	/* Exit from the "finally" context */
+	PopStmtContext(info);
+
+	/* Done */
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -446,25 +659,38 @@ ILNode_SemAnalysis(ILNode_FinallyClause)
 ILNode_SemAnalysis(ILNode_Lock)
 {
 	CSSemValue value;
+	ILType *objectType = ILFindSystemType(info, "Object");
+
+	/* Perform semantic analysis on the lock expression */
+	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
+	{
+		CSErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
+					  "invalid lock expression");
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = objectType;
+	}
+
+	/* Coerce the lock expression to "System.Object" */
+	if(!ILCoerce(info, node->expr, &(node->expr), value.type, objectType))
+	{
+		CSErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
+					  "no conversion from `%s' to `%s'",
+					  CSTypeToName(value.type), CSTypeToName(objectType));
+	}
+
+	/* Enter a "try" context */
+	PushStmtContext(info, CS_STMT_TRY);
+
+	/* Perform semantic analysis on the lock statement body */
+	StmtSem(node->stmt, info, &(node->stmt));
+
+	/* Exit from the "try" context */
+	PopStmtContext(info);
+
+	/* Done */
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
-}
-
-/*
- * Generate discard code for the "lock" statement.
- */
-ILNode_GenDiscard(ILNode_Lock)
-{
-	/* TODO */
-}
-
-/*
- * Generate Java discard code for the "lock" statement.
- */
-JavaGenDiscard(ILNode_Lock)
-{
-	/* TODO */
 }
 
 /*

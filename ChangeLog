@@ -1,3 +1,9 @@
+2004-06-24  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingGraphics.cs: fixed GetHdc/ReleaseHdc
+	behavior so that proper pairing of the two is enforced.
+
 2004-06-24  Maciek Plewa  <milsim@mil-sim.net>
 
 	* System.Drawing.Win32/DrawingToolkit.cs: implemented system color scheme

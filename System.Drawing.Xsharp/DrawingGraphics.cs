@@ -32,6 +32,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 {
 	// Internal state.
 	internal Xsharp.Graphics graphics;
+	private bool gaveHdc;
 
 	// Constructor.
 	public DrawingGraphics(IToolkit toolkit, Xsharp.Graphics graphics)
@@ -39,6 +40,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 			{
 				this.graphics = graphics;
 				this.font = null;
+				this.gaveHdc = false;
 			}
 
 	// Dispose of this object.
@@ -235,16 +237,28 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	///
 	public override IntPtr GetHdc()
 			{
+				if(gaveHdc)
+				{
+					throw new InvalidOperationException(/* TODO */);
+				}
+				gaveHdc = true;
+
 				GCHandle handle = GCHandle.Alloc(graphics);
-				
+
 				return (IntPtr)handle;
 			}
 
 	// Release a HDC that was obtained using "GetHdc()".
 	public override void ReleaseHdc(IntPtr hdc)
 			{
+				if(!gaveHdc)
+				{
+					throw new InvalidOperationException(/* TODO */);
+				}
+				gaveHdc = false;
+
 				GCHandle handle = (GCHandle)hdc;
-				
+
 				handle.Free();				
 			}
 

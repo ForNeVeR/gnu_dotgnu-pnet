@@ -29,11 +29,13 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Internal state.
 	//internal Xsharp.Font font;
 	internal IntPtr hdc;
+	private bool gaveHdc;
 
 	public DrawingGraphics(IToolkit toolkit, IntPtr hdc)
 		: base(toolkit)
 	{
 		this.hdc = hdc;
+		this.gaveHdc = false;
 	}
 
 
@@ -232,13 +234,22 @@ public override void FillPie ( System.Drawing.Point[] rect, float startAngle, fl
 	// Get the HDC associated with this graphics object.
 	public override IntPtr GetHdc()
 	{
+		if(gaveHdc)
+		{
+			throw new InvalidOperationException(/* TODO */);
+		}
+		gaveHdc = true;
 		return hdc;
 	}
 
 	// Release a HDC that was obtained using "GetHdc()".
 	public override void ReleaseHdc(IntPtr hdc)
 	{
-		DeleteDC();
+		if(!gaveHdc)
+		{
+			throw new InvalidOperationException(/* TODO */);
+		}
+		gaveHdc = false;
 	}
 
 	// Set the clipping region to empty.

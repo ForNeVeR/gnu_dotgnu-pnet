@@ -1,3 +1,9 @@
+2003-08-27  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* libc/stdlib/Makefile.am, libc/stdlib/getenv.c,
+	libc/stdlib/getenv-glue.cs: apply patch #1840, "getenv()
+	implementation", from Mario D. Santana.
+
 2003-08-23  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* libc/dirent/dirent-glue.cs: move implementation of

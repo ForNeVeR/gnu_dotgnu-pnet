@@ -890,9 +890,15 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
 
 #endif /* THREADS && !SRC_M3 */
 
-#if defined(GC_WIN32_THREADS) /* && !defined(__CYGWIN32__) && !defined(__CYGWIN__) */
+#if defined(GC_WIN32_THREADS) && !defined(__CYGWIN32__) && !defined(__CYGWIN__)
 # include <windows.h>
 
+#if defined(__CYGWIN32__) || defined(__CYGWIN__)
+   GC_API HANDLE GC_CreateThread(
+      LPSECURITY_ATTRIBUTES lpThreadAttributes,
+      DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress,
+      LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId );
+#else
   /*
    * All threads must be created using GC_CreateThread, so that they will be
    * recorded in the thread table.  For backwards compatibility, this is not
@@ -904,6 +910,7 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
       LPSECURITY_ATTRIBUTES lpThreadAttributes,
       DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress,
       LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId );
+#endif
 
 # if defined(_WIN32_WCE)
   /*

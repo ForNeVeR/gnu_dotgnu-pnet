@@ -684,7 +684,7 @@ static void *main_thread_start(void *arg)
  * Wrapper for CreateThread.  This function is for CYGWIN systems and
  * redirects CreateThread calls to GC_pthread_create.
  */
-GC_API HANDLE WINAPI GC_CreateThread(
+GC_API HANDLE GC_CreateThread(
     LPSECURITY_ATTRIBUTES lpThreadAttributes, 
     DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, 
     LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId )

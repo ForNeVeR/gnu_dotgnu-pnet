@@ -1326,7 +1326,14 @@ ILType *CDeclFinalize(ILGenInfo *info, CDeclSpec spec, CDeclarator decl,
 	type = ReplaceArrayTypes(info, type);
 
 	/* If we have a method declaration, then build a function prototype */
-	if(method)
+	if(method && !(decl.params) && CTypeIsFunction(type))
+	{
+		/* We probably got the type by stripping it from another
+		   function using "typeof" */
+		ILMemberSetSignature((ILMember *)method, type);
+		ILMethodSetCallConv(method, ILType_CallConv(type));
+	}
+	else if(method)
 	{
 		if(!(decl.params))
 		{

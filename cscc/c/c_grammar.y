@@ -404,7 +404,8 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 
 	/* If there is a parameter list associated with the declarator, then
 	   we are declaring a forward function reference, not a variable */
-	if(decl.params != 0)
+	if(decl.params != 0 ||
+	   (spec.baseType != ILType_Invalid && CTypeIsFunction(spec.baseType)))
 	{
 		ProcessFunctionDeclaration(spec, decl, init, list);
 		return;

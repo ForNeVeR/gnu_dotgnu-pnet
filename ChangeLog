@@ -14,6 +14,10 @@
 	exhausted" when an exception occurs that cannot be converted
 	into a string for some reason.
 
+	* image/class.c, image/image.h, image/synthetic.c: convert
+	non-array types such as pointer and byref types into synthetic
+	classes, so that they can be encapsulated during reflection.
+
 2002-11-05  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: Fix the indexername returned , using

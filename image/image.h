@@ -480,6 +480,12 @@ void _ILClassRemoveAllFromHash(ILImage *image);
 ILClass *_ILTypeToSyntheticArray(ILImage *image, ILType *type, int singleDim);
 
 /*
+ * Convert a non-array type into a synthetic class that represents it.
+ * Returns NULL if not possible, or out of memory.
+ */
+ILClass *_ILTypeToSyntheticOther(ILImage *image, ILType *type);
+
+/*
  * Compact all type and member references in an image to
  * remove tokens that have been replaced with definitions.
  */

@@ -482,6 +482,56 @@ ILClass *_ILTypeToSyntheticArray(ILImage *image, ILType *type, int singleDim)
 	return info;
 }
 
+ILClass *_ILTypeToSyntheticOther(ILImage *image, ILType *type)
+{
+	ILContext *context = ILImageToContext(image);
+	ILImage *synthetic;
+	ILClass *parent, *info;
+	char name[32];
+
+	/* See if we already have a synthetic class for this type */
+	info = ILHashFindType(context->syntheticHash, type, ILClass);
+	if(info)
+	{
+		return info;
+	}
+
+	/* Bail out if not enough memory to create the synthetic image */
+	synthetic = ILContextGetSynthetic(context);
+	if(!synthetic)
+	{
+		return 0;
+	}
+
+	/* Create a unique name for the synthetic class */
+	sprintf(name, "$%lu",
+			(unsigned long)(synthetic->memStack.currSize -
+							synthetic->memStack.size +
+							synthetic->memStack.posn));
+
+	/* Inherit the class off "System.ValueType" */
+	parent = ILClassResolveSystem(image, 0, "ValueType", "System");
+	if(!parent)
+	{
+		return 0;
+	}
+	info = CreateSynthetic(synthetic, name, parent, 1);
+	if(!info)
+	{
+		return 0;
+	}
+
+	/* Set the "synthetic" member for the class */
+	info->synthetic = type;
+
+	/* Add the synthetic class to the synthetic types hash table */
+	if(!ILHashAdd(context->syntheticHash, info))
+	{
+		return 0;
+	}
+	return info;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -1425,6 +1425,11 @@ ILClass *ILClassFromType(ILImage *image, void *data, ILType *type,
 			/* Multi-dimensional array or an array with specified bounds */
 			return _ILTypeToSyntheticArray(image, type, 0);
 		}
+		else
+		{
+			/* Create some other kind of synthetic type */
+			return _ILTypeToSyntheticOther(image, type);
+		}
 	}
 	return 0;
 }

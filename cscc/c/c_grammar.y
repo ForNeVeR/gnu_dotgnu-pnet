@@ -1068,6 +1068,8 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_CSHARP			"`__csharp__'"
 %token K_FUNCTION		"`__FUNCTION__'"
 %token K_FUNC			"`__func__'"
+%token K_LONG_LONG		"`__long_long__'"
+%token K_UINT			"`__unsigned_int__'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -1740,6 +1742,8 @@ TypeSpecifier
 	| K_SHORT			{ CDeclSpecSet($$, C_SPEC_SHORT); }
 	| K_INT				{ CDeclSpecSetType($$, ILType_Int32); }
 	| K_LONG			{ CDeclSpecSet($$, C_SPEC_LONG); }
+	| K_LONG_LONG		{ CDeclSpecSetType($$, ILType_Int64); }
+	| K_UINT			{ CDeclSpecSetType($$, ILType_UInt32); }
 	| K_SIGNED			{ CDeclSpecSet($$, C_SPEC_SIGNED); }
 	| K_UNSIGNED		{ CDeclSpecSet($$, C_SPEC_UNSIGNED); }
 	| K_NATIVE			{ CDeclSpecSet($$, C_SPEC_NATIVE); }

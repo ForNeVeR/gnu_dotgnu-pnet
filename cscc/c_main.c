@@ -59,26 +59,17 @@ int CCPluginInit(void)
 	{
 		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 						"__WORDSIZE=64");
-#if defined(__APPLE__) && defined(__MACH__)
 		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-						"__PTRDIFF_TYPE__=\"long long\"");
-#else
-		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-						"__PTRDIFF_TYPE__=long long");
-#endif
+						"__PTRDIFF_TYPE__=__long_long__");
 	}
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__SIZE_TYPE__=__unsigned_int__");
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__WINT_TYPE__=__unsigned_int__");
 #if defined(__APPLE__) && defined(__MACH__)
-	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-					"__SIZE_TYPE__=\"unsigned int\"");
-	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-					"__WINT_TYPE__=\"unsigned int\"");
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__VERSION__=\"" VERSION "-cscc\"");
 #else
-	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-					"__SIZE_TYPE__=unsigned int");
-	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-					"__WINT_TYPE__=unsigned int");
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__VERSION__=\"" VERSION " (cscc)\"");
 #endif

@@ -1,4 +1,10 @@
 
+2003-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c_main.c, cscc/c/c_grammar.y, cscc/c/c_scanner.l:
+	add some extra keywords to the C compiler, so that spaces
+	and quotes can be avoided in the cpp options for MacOS X.
+
 2003-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_reflect.c: "Assembly.GetLocation" should return

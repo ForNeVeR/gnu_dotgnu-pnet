@@ -167,6 +167,9 @@ WHITE			[ \t\v\r\f]
 "__PRETTY_FUNCTION__"	{ return K_FUNCTION; }
 "__func__"				{ return K_FUNC; }
 
+"__long_long__"			{ return K_LONG_LONG; }
+"__unsigned_int__"		{ return K_UINT; }
+
 \"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
 								  RETURNTOK(STRING_LITERAL); }
 

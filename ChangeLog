@@ -12,6 +12,9 @@
 
 	* auto_gen.sh, libtool.m4: add some m4 support code for libtool.
 
+	* tests/runtime/System/TestArgIterator.cs: disable the ArgIterator
+	tests because they are creating some strange problems under Cygwin.
+
 2003-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/PlaceholderWindow.cs, Xsharp/RootWindow.cs,

@@ -42,6 +42,7 @@ public class TestArgIterator : TestCase
 				// Nothing to do here.
 			}
 
+#if false
 #if !ECMA_COMPAT
 
 	// Helper method for "TestArgIteratorGetType".
@@ -385,5 +386,6 @@ public class TestArgIterator : TestCase
 			}
 
 #endif // !ECMA_COMPAT
+#endif
 
 }; // class TestArgIterator

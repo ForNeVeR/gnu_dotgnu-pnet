@@ -150,7 +150,7 @@ static char const notMatrix[ILEngineType_ValidTypes] =
 
 #elif defined(IL_VERIFY_LOCALS)
 
-ILValueType commonType;
+ILEngineType commonType;
 
 #else /* IL_VERIFY_CODE */
 

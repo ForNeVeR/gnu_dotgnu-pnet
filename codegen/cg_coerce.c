@@ -203,7 +203,7 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 			ILGenOutOfMemory(info);
 		}
 		*parent = ILNode_UserConversion_create
-						(node, ILTypeToValueType(toType), method);
+						(node, ILTypeToMachineType(toType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 	}

@@ -125,7 +125,7 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		returnType = ILMethod_Signature(method)->un.method.retType;
 		*parent = ILNode_UserBinaryOp_create
 						(node->expr1, node->expr2,
-						 ILTypeToValueType(returnType), method);
+						 ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		value1.kind = CS_SEMKIND_RVALUE;
@@ -221,7 +221,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 		}
 		returnType = ILMethod_Signature(method)->un.method.retType;
 		*parent = ILNode_UserUnaryOp_create
-						(node->expr, ILTypeToValueType(returnType), method);
+						(node->expr, ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		value.kind = CS_SEMKIND_RVALUE;
@@ -302,7 +302,7 @@ ILNode_SemAnalysis(ILNode_Add)
 		returnType = ILMethod_Signature(method)->un.method.retType;
 		*parent = ILNode_UserBinaryOp_create
 						(node->expr1, node->expr2,
-						 ILTypeToValueType(returnType), method);
+						 ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		value1.kind = CS_SEMKIND_RVALUE;
@@ -565,7 +565,7 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		returnType = ILMethod_Signature(method)->un.method.retType;
 		*parent = ILNode_UserBinaryOp_create
 						(node->expr1, node->expr2,
-						 ILTypeToValueType(returnType), method);
+						 ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		value1.kind = CS_SEMKIND_RVALUE;
@@ -878,7 +878,7 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
 		{
 			returnType = ILMethod_Signature(method)->un.method.retType;
 			*parent = ILNode_UserUnaryOp_create
-						(node->expr, ILTypeToValueType(returnType), method);
+						(node->expr, ILTypeToMachineType(returnType), method);
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
 			value.kind = CS_SEMKIND_RVALUE;
@@ -1130,7 +1130,7 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		returnType = ILMethod_Signature(method)->un.method.retType;
 		*parent = ILNode_UserBinaryOp_create
 						(node->expr1, node->expr2,
-						 ILTypeToValueType(returnType), method);
+						 ILTypeToMachineType(returnType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		value1.kind = CS_SEMKIND_RVALUE;

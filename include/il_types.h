@@ -320,11 +320,6 @@ ILType *ILTypeStripPrefixes(ILType *type);
 int ILTypeIdentical(ILType *type1, ILType *type2);
 
 /*
- * Convert a type into the primitive runtime type that represents it.
- */
-ILValueType ILTypeToValueType(ILType *type);
-
-/*
  * Get the name form of a type.  The return value should
  * be free'd with "ILFree".
  */

@@ -83,7 +83,7 @@ static int ParseFloat(char *text)
 	{
 		/* Shouldn't happen, but do something reasonable */
 		yylval.real.value = (ILDouble)0.0;
-		yylval.real.type = IL_TYPE_FLOAT64;
+		yylval.real.type = CS_NUMTYPE_FLOAT64;
 		return FLOAT_CONSTANT;
 	}
 	yylval.real.value = (ILDouble)result;
@@ -93,7 +93,7 @@ static int ParseFloat(char *text)
 	/* Process the floating point suffix, if present */
 	if(*endptr == 'f' || *endptr == 'F')
 	{
-		yylval.real.type = IL_TYPE_FLOAT32;
+		yylval.real.type = CS_NUMTYPE_FLOAT32;
 		return FLOAT_CONSTANT;
 	}
 	else if(*endptr == 'm' || *endptr == 'M')
@@ -109,7 +109,7 @@ static int ParseFloat(char *text)
 	}
 	else
 	{
-		yylval.real.type = IL_TYPE_FLOAT64;
+		yylval.real.type = CS_NUMTYPE_FLOAT64;
 		return FLOAT_CONSTANT;
 	}
 }
@@ -261,12 +261,12 @@ static void ParseInt(char *text)
 		/* Unsigned constant */
 		if((value & 0xFFFFFFFF00000000ULL) != 0)
 		{
-			yylval.integer.type = IL_TYPE_UINT64;
+			yylval.integer.type = CS_NUMTYPE_UINT64;
 			yylval.integer.canneg = 0;
 		}
 		else
 		{
-			yylval.integer.type = IL_TYPE_UINT32;
+			yylval.integer.type = CS_NUMTYPE_UINT32;
 			yylval.integer.canneg = 0;
 		}
 	}
@@ -275,24 +275,24 @@ static void ParseInt(char *text)
 		/* Long constant */
 		if(value == 0x8000000000000000ULL)
 		{
-			yylval.integer.type = IL_TYPE_UINT64;
+			yylval.integer.type = CS_NUMTYPE_UINT64;
 			yylval.integer.canneg = 1;
 		}
 		else if((value & 0x8000000000000000ULL) != 0)
 		{
-			yylval.integer.type = IL_TYPE_UINT64;
+			yylval.integer.type = CS_NUMTYPE_UINT64;
 			yylval.integer.canneg = 0;
 		}
 		else
 		{
-			yylval.integer.type = IL_TYPE_INT64;
+			yylval.integer.type = CS_NUMTYPE_INT64;
 			yylval.integer.canneg = 1;
 		}
 	}
 	else if(*text != '\0')
 	{
 		/* Unsigned long constant */
-		yylval.integer.type = IL_TYPE_UINT64;
+		yylval.integer.type = CS_NUMTYPE_UINT64;
 		yylval.integer.canneg = 0;
 	}
 	else
@@ -300,32 +300,32 @@ static void ParseInt(char *text)
 		/* Untyped constant */
 		if(value == 0x8000000000000000ULL)
 		{
-			yylval.integer.type = IL_TYPE_UINT64;
+			yylval.integer.type = CS_NUMTYPE_UINT64;
 			yylval.integer.canneg = 1;
 		}
 		else if((value & 0x8000000000000000ULL) != 0)
 		{
-			yylval.integer.type = IL_TYPE_UINT64;
+			yylval.integer.type = CS_NUMTYPE_UINT64;
 			yylval.integer.canneg = 0;
 		}
 		else if((value & 0xFFFFFFFF00000000ULL) != 0)
 		{
-			yylval.integer.type = IL_TYPE_INT64;
+			yylval.integer.type = CS_NUMTYPE_INT64;
 			yylval.integer.canneg = 1;
 		}
 		else if(value == 0x0000000080000000ULL)
 		{
-			yylval.integer.type = IL_TYPE_UINT32;
+			yylval.integer.type = CS_NUMTYPE_UINT32;
 			yylval.integer.canneg = 1;
 		}
 		else if((value & 0x0000000080000000ULL) != 0)
 		{
-			yylval.integer.type = IL_TYPE_UINT32;
+			yylval.integer.type = CS_NUMTYPE_UINT32;
 			yylval.integer.canneg = 0;
 		}
 		else
 		{
-			yylval.integer.type = IL_TYPE_INT32;
+			yylval.integer.type = CS_NUMTYPE_INT32;
 			yylval.integer.canneg = 1;
 		}
 	}

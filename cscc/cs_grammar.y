@@ -1175,19 +1175,19 @@ LiteralExpression
 	| INTEGER_CONSTANT			{
 				switch($1.type)
 				{
-					case IL_TYPE_INT32:
+					case CS_NUMTYPE_INT32:
 					{
 						$$ = ILNode_Int32_create($1.value, 0, $1.canneg);
 					}
 					break;
 
-					case IL_TYPE_UINT32:
+					case CS_NUMTYPE_UINT32:
 					{
 						$$ = ILNode_UInt32_create($1.value, 0, $1.canneg);
 					}
 					break;
 
-					case IL_TYPE_INT64:
+					case CS_NUMTYPE_INT64:
 					{
 						$$ = ILNode_Int64_create($1.value, 0, $1.canneg);
 					}
@@ -1201,7 +1201,7 @@ LiteralExpression
 				}
 			}
 	| FLOAT_CONSTANT			{
-				if($1.type == IL_TYPE_FLOAT32)
+				if($1.type == CS_NUMTYPE_FLOAT32)
 				{
 					$$ = ILNode_Float32_create($1.value);
 				}

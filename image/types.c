@@ -445,44 +445,6 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 	return 0;
 }
 
-ILValueType ILTypeToValueType(ILType *type)
-{
-	if(ILType_IsPrimitive(type))
-	{
-		switch(ILType_ToElement(type))
-		{
-			case IL_META_ELEMTYPE_BOOLEAN:		return IL_TYPE_BOOLEAN;
-			case IL_META_ELEMTYPE_CHAR:			return IL_TYPE_CHAR;
-			case IL_META_ELEMTYPE_I1:			return IL_TYPE_INT8;
-			case IL_META_ELEMTYPE_U1:			return IL_TYPE_UINT8;
-			case IL_META_ELEMTYPE_I2:			return IL_TYPE_INT16;
-			case IL_META_ELEMTYPE_U2:			return IL_TYPE_UINT16;
-			case IL_META_ELEMTYPE_I4:			return IL_TYPE_INT32;
-			case IL_META_ELEMTYPE_U4:			return IL_TYPE_UINT32;
-			case IL_META_ELEMTYPE_I8:			return IL_TYPE_INT64;
-			case IL_META_ELEMTYPE_U8:			return IL_TYPE_UINT64;
-			case IL_META_ELEMTYPE_R4:			return IL_TYPE_FLOAT32;
-			case IL_META_ELEMTYPE_R8:			return IL_TYPE_FLOAT64;
-			case IL_META_ELEMTYPE_I:			return IL_TYPE_NATIVE_INT;
-			case IL_META_ELEMTYPE_U:			return IL_TYPE_NATIVE_UINT;
-			case IL_META_ELEMTYPE_R:			return IL_TYPE_NATIVE_FLOAT;
-		}
-		return IL_TYPE_VOID;
-	}
-	else if(ILType_IsClass(type))
-	{
-		return IL_TYPE_OBJECT_REF;
-	}
-	else if(ILType_IsValueType(type))
-	{
-		return IL_TYPE_MANAGED_VALUE;
-	}
-	else
-	{
-		return IL_TYPE_OBJECT_REF;
-	}
-}
-
 static char *AppendString(char *str1, const char *str2)
 {
 	if(str1)

@@ -62,6 +62,16 @@ extern	"C" {
 #define	CS_LOCAL_IS_ARG				0x80000000
 
 /*
+ * Type values that are used to classify the size of numeric values.
+ */
+#define	CS_NUMTYPE_INT32			0
+#define	CS_NUMTYPE_UINT32			1
+#define	CS_NUMTYPE_INT64			2
+#define	CS_NUMTYPE_UINT64			3
+#define	CS_NUMTYPE_FLOAT32			4
+#define	CS_NUMTYPE_FLOAT64			5
+
+/*
  * Pre-processor object that is being used by the lexer.
  */
 extern CSPreProc CSPreProcessorStream;

@@ -482,6 +482,11 @@ extern	"C" {
 #define	COP_PREFIX_UNROLL_METHOD	0x4D
 
 /*
+ * Allocate local stack space.
+ */
+#define	COP_PREFIX_LOCAL_ALLOC		0x4E
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

@@ -389,4 +389,49 @@ case COP_SET_NUM_ARGS:
 }
 VMBREAKNOEND;
 
-#endif /* IL_CVM_WIDE */
+#elif defined(IL_CVM_PREFIX)
+
+/**
+ * <opcode name="local_alloc" group="Stack manipulation">
+ *   <operation>Allocate local stack space</operation>
+ *
+ *   <format>prefix<fsep/>local_alloc</format>
+ *   <dformat>{local_alloc}</dformat>
+ *
+ *   <form name="local_alloc" code="COP_PREFIX_LOCAL_ALLOC"/>
+ *
+ *   <before>..., size</before>
+ *   <after>..., pointer</after>
+ *
+ *   <description>Pop <i>size</i> from the stack as type <code>uint</code>,
+ *   and then push a <i>pointer</i> to a block of memory of <i>size</i> bytes
+ *   in size.</description>
+ *
+ *   <notes>The block is not expected to last beyond the lifetime of
+ *   the current method, but implementations may allocate longer-term
+ *   memory if it is difficult to do direct stack allocation.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.OutOfMemoryException">Raised if
+ *     there is insufficient memory to allocate the block.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_LOCAL_ALLOC):
+{
+	/* Allocate local stack space.  We allocate it within the
+	   garbage-collected heap because we don't have a traditional
+	   C-style stack that we can use */
+	if((stacktop[-1].ptrValue =
+			ILGCAlloc((unsigned long)(stacktop[-1].uintValue))) != 0)
+	{
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+	}
+	else
+	{
+		STACK_OVERFLOW_EXCEPTION();
+	}
+}
+VMBREAK(COP_PREFIX_LOCAL_ALLOC);
+
+#endif /* IL_CVM_PREFIX */

@@ -547,9 +547,13 @@ static CVMOpcode const prefixOpcodes[80] = {
 	{"unroll_method",	CVM_OPER_NONE},
 
 	/*
+	 * Allocate local stack space.
+	 */
+	{"local_alloc",		CVM_OPER_NONE},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_4e",	CVM_OPER_NONE},
 	{"preserved_4f",	CVM_OPER_NONE},
 };
 

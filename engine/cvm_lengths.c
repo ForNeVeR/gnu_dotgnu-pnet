@@ -507,9 +507,13 @@ unsigned char const _ILCVMLengths[512] = {
 	/* unroll_method */		CVMP_LEN_NONE,
 
 	/*
+	 * Allocate local stack space.
+	 */
+	/* local_alloc */		CVMP_LEN_NONE,
+
+	/*
 	 * Reserved opcodes.
 	 */
-	/* preserved_4e */		CVMP_LEN_NONE,
 	/* preserved_4f */		CVMP_LEN_NONE,
 
 	/* preserved_50 */		CVMP_LEN_NONE,

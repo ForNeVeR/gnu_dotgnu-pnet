@@ -15,6 +15,10 @@
 	engine/cvm_lengths.c, engine/cvmc_call.c: add the new CVM
 	instructions "monitor_enter" and "monitor_exit".
 
+	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_lengths.c,
+	engine/cvm_stack.c, engine/cvmc_var.c: add the new CVM instruction
+	"local_alloc" to implement IL's "localloc" instruction.
+
 2002-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am: add mising .h files to the install.

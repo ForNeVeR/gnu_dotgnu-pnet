@@ -388,7 +388,14 @@ static void CVMCoder_AddrOfLocal(ILCoder *coder, ILUInt32 localNum)
  */
 static void CVMCoder_LocalAlloc(ILCoder *coder, ILEngineType sizeType)
 {
-	/* TODO */
+#ifdef IL_NATIVE_INT64
+	if(sizeType == ILEngineType_I)
+	{
+		CVM_OUT_NONE(COP_L2I);
+		CVM_ADJUST(-(CVM_WORDS_PER_LONG - 1));
+	}
+#endif
+	CVMP_OUT_NONE(COP_PREFIX_LOCAL_ALLOC);
 }
 
 #endif	/* IL_CVMC_CODE */

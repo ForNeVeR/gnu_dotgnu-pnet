@@ -1,4 +1,9 @@
 
+2004-09-09  Marcus Urban <mathpup@mylinuxisp.com>
+
+	* resources/en_US/runtime/Emit.txt: English text resources for
+	CustomAttributeBuilder. (patch #3353, Gopal).
+
 2004-09-07  Russell Stuart <russell-savannah@stuart.id.au>
 
 	* build-debian-packages.conf,

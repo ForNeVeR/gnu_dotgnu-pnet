@@ -2305,7 +2305,26 @@ ILObject *_IL_Module_GetModuleType(ILExecThread *_thread, ILObject *_this)
  */
 ILObject *_IL_Module_GetAssembly(ILExecThread *_thread, ILObject *_this)
 {
-	/* TODO */
+	ILProgramItem *item;
+	ILImage *image;
+	ILAssembly *assembly;
+	const char *name;
+
+	item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	if (image)
+	{
+		assembly = ILAssembly_FromToken(image, (IL_META_TOKEN_ASSEMBLY | 1));
+		if (ILImageType(image) == IL_IMAGETYPE_BUILDING)
+		{
+			name = "System.Reflection.Emit.AssemblyBuilder";
+		}
+		else
+		{
+			name = "System.Reflection.Assembly";
+		}
+		return _ILClrToObject(_thread, assembly, name);
+	}
 	return 0;
 }
 

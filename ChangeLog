@@ -1,3 +1,7 @@
+2003-07-26  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* engine/lib_reflect.c: implement GetAssembly for modules.
+
 2003-07-26  Andrew Mitchell  <ajmitch@gnu.org>
 
 	* tools/pnet_build.sh: Update test building script for the pnet suite.

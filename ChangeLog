@@ -1,4 +1,9 @@
 
+2003-05-25  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Net/WebClient.cs: Implement this non-ecma class partially for
+	web access abstraction.
+
 2003-05-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/AppSettingsReader.cs,

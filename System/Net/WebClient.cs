@@ -32,14 +32,41 @@ namespace System.Net
 	{
 		private WebRequest webrequest=null;
 		private WebResponse webresponse=null;
+		private String baseAddress=null;
 
-		private void WriteToStream(Stream inStream, Stream outStream)
+		private void CreateWebrequest(String str)
+		{
+			if(str == null)
+			{
+				throw new ArgumentNullException(str);
+			}
+			if(webrequest!=null)
+			{
+				throw new WebException("Multiple connection attempts");
+			}
+			Uri uri = new Uri(str);
+			webrequest = WebRequest.Create(uri);
+			if(webrequest is HttpWebRequest)
+			{
+				(webrequest as HttpWebRequest).KeepAlive = false;
+			}
+			this.baseAddress = str;
+		}
+
+		private void WriteToStream(Stream inStream, Stream outStream,
+									long maxBytes) 
 		{
 			byte[] buf = new byte [4096];
 			int read;
+			bool checkMax = (maxBytes != -1);
 			while((read=inStream.Read(buf, 0 , 4096)) > 0)
 			{
 				outStream.Write(buf,0,read);
+				maxBytes -= read;
+				if(checkMax && maxBytes <= 0)
+				{
+					break;	
+				}
 			}
 		}
 		
@@ -47,61 +74,92 @@ namespace System.Net
 		{
 			Stream stream = OpenRead(address);
 			MemoryStream memory = new MemoryStream();
-			WriteToStream(stream, memory);
-			return memory.GetBuffer();
+			WriteToStream(stream, memory,webresponse.ContentLength);
+			byte[] retval = new byte[memory.Length];
+			Array.Copy(memory.GetBuffer(),retval,retval.Length);
+			memory.Close();
+			return retval;
 		}
 
 		public void DownloadFile(String address, String fileName)
 		{
 			Stream stream = OpenRead(address);
 			FileStream file = File.OpenWrite(fileName);
-			WriteToStream(stream, file);
+			WriteToStream(stream, file, webresponse.ContentLength);
+			file.Close();
 		}
 
 
 		public Stream OpenRead(String address)
 		{
-			Uri uri= new Uri(address);
-			webrequest = WebRequest.CreateDefault(uri);	
+			CreateWebrequest(address);
 			webresponse = webrequest.GetResponse();
 			return webresponse.GetResponseStream();
 		}
 
-		[TODO]
 		public Stream OpenWrite(String address)
 		{
-			// POST ?
-			throw new NotImplementedException("OpenWrite");
+			return OpenWrite(address, "POST");
 		}
 
-		[TODO]
 		public Stream OpenWrite(String address, String method)
 		{
-			throw new NotImplementedException("OpenWrite");
+			CreateWebrequest(address);
+			webrequest.Method = method;
+			return webrequest.GetRequestStream();
 		}
-
-		[TODO]
+	
 		public byte[] UploadData(String address, byte[] data)
 		{
-			throw new NotImplementedException("UploadData");
+			return UploadData(address, "POST", data);
 		}
 
-		[TODO]
+		/* TODO : someday I'm going to implement Chunked data sends 
+				this way */
 		public byte[] UploadData(String address, String method, byte[] data)
 		{
-			throw new NotImplementedException("UploadData");
+			CreateWebrequest(address);
+			webrequest.Method = method;
+			webrequest.ContentLength = data.Length;
+			Stream stream = webrequest.GetRequestStream();
+			stream.Write(data,0,data.Length);
+			webresponse = webrequest.GetResponse();
+			MemoryStream memory = new MemoryStream(1024);
+			WriteToStream(webresponse.GetResponseStream(),memory, 
+								webresponse.ContentLength);
+			byte [] retval = new byte[memory.Length];
+			Array.Copy(memory.GetBuffer(), retval, retval.Length);
+			memory.Close();
+			return retval;
 		}
 
-		[TODO]
 		public byte[] UploadFile(String address, String fileName)
 		{
-			throw new NotImplementedException("UploadFile");
+			return UploadFile(address, "POST", fileName);
 		}
 
-		[TODO]
 		public byte[] UploadFile(String address, String method, String fileName)
 		{
-			throw new NotImplementedException("UploadFile");
+			CreateWebrequest(address);
+			webrequest.Method = method;
+			Stream file = File.OpenRead(fileName);
+			try
+			{
+				webrequest.ContentLength = file.Length;
+			}
+			catch
+			{
+			}
+			Stream stream = webrequest.GetRequestStream();
+			WriteToStream(file,stream, -1);
+			webresponse = webrequest.GetResponse();
+			MemoryStream memory = new MemoryStream(1024);
+			WriteToStream(webresponse.GetResponseStream(),memory, 
+							webresponse.ContentLength);
+			byte [] retval = new byte[memory.Length];
+			Array.Copy(memory.GetBuffer(), retval, retval.Length);
+			memory.Close();
+			return retval;
 		}
 
 		[TODO]
@@ -116,16 +174,15 @@ namespace System.Net
 			throw new NotImplementedException("UploadValues");
 		}
 
-		[TODO]
 		public String BaseAddress 
 		{
  			get
 			{
-				throw new NotImplementedException("BaseAddress");
+				return this.baseAddress;
 			}
 			set
 			{
-				throw new NotImplementedException("BaseAddress");
+				this.baseAddress=value;
 			}
 		}
 

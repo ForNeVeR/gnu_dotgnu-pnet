@@ -74,6 +74,11 @@ CC="$CSCC"
 CPPFLAGS="-nostdinc"
 LDFLAGS="-fcross-compile-check -nostdlib"
 
+dnl Force the configure script to believe that we are a cross-compiler.
+dnl Configure may still try to run the binary anyway, in which case
+dnl the "-fcross-compile-check" flag should catch us.
+cross_compiling=yes
+
 dnl Checks for programs.
 AC_PROG_AWK
 AC_PROG_CC

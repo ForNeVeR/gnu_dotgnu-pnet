@@ -4,6 +4,8 @@
 	* cscc/common/cc_options.c, cscc/cscc.1 , doc/pnettools.texi: Add
 	a new "-winforms" option to simplify compiling WinForms applications.
 
+	* cscc/vb/vb_grammar.y: Fix error with Bison 1.75
+
 2003-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/class.c, image/context.c: fix a scope bug in class name

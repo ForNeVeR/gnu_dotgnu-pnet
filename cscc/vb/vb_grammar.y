@@ -1170,6 +1170,7 @@ EnumDeclaration
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
 			}
+	;
 
 EnumBase
 	: /* empty */	{ $$ = ILNode_PrimitiveType_create(IL_META_ELEMTYPE_I4); }

@@ -5,6 +5,10 @@
 	runtime/System/Runtime/Remoting/ObjectHandle.cs: implement the
 	missing functionality in "System.Activator".
 
+	* runtime/Platform/DirMethods.cs, runtime/Platform/InfoMethods.cs,
+	runtime/Platform/TaskMethods.cs, runtime/System/Environment.cs:
+	reflect more of "System.Environment" through to the runtime engine.
+
 2002-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/runtime.build: turn on debug mode for "mscorlib.dll",

@@ -159,7 +159,7 @@ public sealed class Environment
 			{
 				get
 				{
-					return new Version(TaskMethods.GetRuntimeVersion());
+					return new Version(InfoMethods.GetRuntimeVersion());
 				}
 			}
 
@@ -230,13 +230,11 @@ public sealed class Environment
 			}
 
 	// Get the NetBIOS machine name.
-	[TODO]
 	public static String MachineName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return InfoMethods.GetNetBIOSMachineName();
 				}
 			}
 
@@ -245,19 +243,21 @@ public sealed class Environment
 			{
 				get
 				{
-					// In our world, everyone is "Unix 0.0".
+					OperatingSystem os = InfoMethods.GetOSVersion();
+					if(os != null)
+					{
+						return os;
+					}
 					return new OperatingSystem(PlatformID.Unix, new Version());
 				}
 			}
 
 	// Get the domain name for this machine.
-	[TODO]
 	public static String UserDomainName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return InfoMethods.GetUserDomainName();
 				}
 			}
 
@@ -266,18 +266,16 @@ public sealed class Environment
 			{
 				get
 				{
-					return false;
+					return InfoMethods.IsUserInteractive();
 				}
 			}
 
 	// Get the name of the current user.
-	[TODO]
 	public static String UserName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return InfoMethods.GetUserName();
 				}
 			}
 
@@ -286,8 +284,7 @@ public sealed class Environment
 			{
 				get
 				{
-					// There is no reliable and portable way to get this.
-					return 0;
+					return InfoMethods.GetWorkingSet();
 				}
 			}
 
@@ -367,10 +364,12 @@ public sealed class Environment
 	// Get a path to a specific system folder.
 	public static String GetFolderPath(SpecialFolder folder)
 			{
-				// For security reasons, we don't allow access to
-				// system folders except "System", which will normally
-				// be rejected by the runtime engine anyway.
-				if(folder == SpecialFolder.System)
+				String path = InfoMethods.GetSpecialFolder(folder);
+				if(path != null)
+				{
+					return path;
+				}
+				else if(folder == SpecialFolder.System)
 				{
 					return DirMethods.GetSystemDirectory();
 				}
@@ -381,11 +380,9 @@ public sealed class Environment
 			}
 
 	// Get a list of logical drives on the system.
-	[TODO]
 	public static String[] GetLogicalDrives()
 			{
-				// TODO
-				return null;
+				return DirMethods.GetLogicalDrives();
 			}
 
 #endif // !ECMA_COMPAT

@@ -63,13 +63,10 @@ internal class DirMethods
 	extern public static Errno GetFilesInDirectory(string path, out InternalFileInfo[]
 	files);
 
-	
+	// Get a list of the logical drives in this system.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String[] GetLogicalDrives();
 
 }; // class DirMethods
 
 }; // namespace Platform
-
-
-
-
-

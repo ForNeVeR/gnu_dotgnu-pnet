@@ -342,6 +342,11 @@ public class Control : IWin32Window, IDisposable
 				iParm.args   = args;
 				iParm.wr = new WeakReference(ar);
 
+				if(toolkitWindow == null)
+				{
+					CreateHandle();
+				}
+
 				lock(this)	// this may not be necessary
 					toolkitWindow.SendBeginInvoke(i_gch);
 

@@ -1,4 +1,9 @@
 
+2004-09-26  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/Control.cs: Fix for BeginInvoke null
+	exception. (bug #10391, ptha).
+
 2004-09-23  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* JScript/Builtins/NumberObject.cs, JScript/Builtins/NumberPrototype.cs,

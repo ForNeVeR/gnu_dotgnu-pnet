@@ -4,6 +4,8 @@
 	tests/runtime/System/Reflection/TestInvoke.cs: Unit tests for
 	Method.Invoke/Delegate.Invoke etc.
 	
+	* tests/runtime/Testruntime.cs: Added SuiteReflection.
+	
 2004-05-17  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/Collections/Hashtable.cs: Rename HashCodeProviderName

@@ -1,4 +1,11 @@
 
+2003-02-14  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Text/RegularExpressions/ChangeLog,
+	System/Text/RegularExpressions/collections.cs,
+	System/Text/RegularExpressions/regex.cs : synchronize the 
+	imported tree with the original.
+
 2003-02-14  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 	
 	* runtime/System/IO/Directory.cs: Directory.Exists() should not

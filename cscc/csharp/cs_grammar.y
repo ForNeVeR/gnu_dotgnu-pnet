@@ -3115,9 +3115,11 @@ OperatorDeclaration
 
 NormalOperatorDeclaration
 	: OptAttributes OptModifiers Type OPERATOR OverloadableOperator
-			'(' Type Identifier ')'	Block {
+			TypeFormals '(' Type Identifier ')'	Block {
 				ILUInt32 attrs;
 				ILNode *params;
+
+				/* TODO: generic parameters */
 
 				/* Validate the name of the unary operator */
 				if($5.unary == 0)
@@ -3132,19 +3134,21 @@ NormalOperatorDeclaration
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
 				ILNode_List_Add(params,
-					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
+					ILNode_FormalParameter_create(0, ILParamMod_empty, $8, $9));
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3,
 						 ILQualIdentSimple(ILInternString($5.unary, -1).string),
-						 params, $10);
+						 params, $11);
 				CloneLine($$, $3);
 			}
 	| OptAttributes OptModifiers Type OPERATOR OverloadableOperator
-			'(' Type Identifier ',' Type Identifier ')' Block	{
+			TypeFormals '(' Type Identifier ',' Type Identifier ')' Block	{
 				ILUInt32 attrs;
 				ILNode *params;
+
+				/* TODO: generic parameters */
 
 				/* Validate the name of the binary operator */
 				if($5.binary == 0)
@@ -3160,17 +3164,17 @@ NormalOperatorDeclaration
 				params = ILNode_List_create();
 				ILNode_List_Add(params,
 					ILNode_FormalParameter_create
-						(0, ILParamMod_empty, $7, $8));
+						(0, ILParamMod_empty, $8, $9));
 				ILNode_List_Add(params,
 					ILNode_FormalParameter_create
-						(0, ILParamMod_empty, $10, $11));
+						(0, ILParamMod_empty, $11, $12));
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3,
 						 ILQualIdentSimple
 						 	(ILInternString($5.binary, -1).string),
-						 params, $13);
+						 params, $14);
 				CloneLine($$, $3);
 			}
 	;
@@ -3201,47 +3205,51 @@ OverloadableOperator
 	;
 
 ConversionOperatorDeclaration
-	: OptAttributes OptModifiers IMPLICIT OPERATOR Type
+	: OptAttributes OptModifiers IMPLICIT OPERATOR TypeFormals Type
 			'(' Type Identifier ')' Block	{
 				ILUInt32 attrs;
 				ILNode *params;
 
+				/* TODO: generic parameters */
+
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($5, $2);
+				attrs = CSModifiersToOperatorAttrs($6, $2);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
 				ILNode_List_Add(params,
-					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
+					ILNode_FormalParameter_create(0, ILParamMod_empty, $8, $9));
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1, attrs, $5,
+						($1, attrs, $6,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Implicit", -1).string),
-						 params, $10);
-				CloneLine($$, $5);
+						 params, $11);
+				CloneLine($$, $6);
 			}
-	| OptAttributes OptModifiers EXPLICIT OPERATOR Type
+	| OptAttributes OptModifiers EXPLICIT OPERATOR TypeFormals Type
 			'(' Type Identifier ')' Block	{
 				ILUInt32 attrs;
 				ILNode *params;
 
+				/* TODO: generic parameters */
+
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($5, $2);
+				attrs = CSModifiersToOperatorAttrs($6, $2);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
 				ILNode_List_Add(params,
-					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
+					ILNode_FormalParameter_create(0, ILParamMod_empty, $8, $9));
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1, attrs, $5,
+						($1, attrs, $6,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Explicit", -1).string),
-						 params, $10);
-				CloneLine($$, $5);
+						 params, $11);
+				CloneLine($$, $6);
 			}
 	;
 

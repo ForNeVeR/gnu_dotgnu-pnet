@@ -1,4 +1,8 @@
 
+2004-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* NEWS, configure.in: update version for the "0.6.2" release.
+
 2003-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, libc/Makefile.am, libm/Makefile.am: update the

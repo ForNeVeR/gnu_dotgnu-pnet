@@ -27,6 +27,7 @@ extern	"C" {
 int   CSAntJustPrint   = 0;
 int   CSAntKeepGoing   = 0;
 int   CSAntSilent      = 0;
+int   CSAntRedirectCsc = 0;
 int   CSAntDummyDoc    = 0;
 char *CSAntCompiler    = 0;
 

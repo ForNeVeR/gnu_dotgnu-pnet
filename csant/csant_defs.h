@@ -38,6 +38,7 @@ extern	"C" {
 extern int   CSAntJustPrint;
 extern int   CSAntKeepGoing;
 extern int   CSAntSilent;
+extern int   CSAntRedirectCsc;
 extern int   CSAntDummyDoc;
 extern char *CSAntCompiler;
 extern char *CSAntBaseSrcDir;

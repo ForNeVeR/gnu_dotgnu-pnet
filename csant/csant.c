@@ -86,6 +86,10 @@ static ILCmdLineOption const options[] = {
 	{"--silent", 's', 0,
 		"--silent               or -s",
 		"Do not print the names of commands as they are executed."},
+	{"-c", 'c', 0, 0, 0},
+	{"--csc-redirect", 'c', 0,
+		"--csc-redirect         or -c",
+		"Treat <csc> tags as <compile> tags (for NAnt compatibility)."},
 	{"--quiet", 's', 0, 0, 0},
 	{"-C", 'C', 1, 0, 0},
 	{"--compiler", 'C', 1,
@@ -187,6 +191,12 @@ int main(int argc, char *argv[])
 			case 's':
 			{
 				CSAntSilent = 1;
+			}
+			break;
+
+			case 'c':
+			{
+				CSAntRedirectCsc = 1;
 			}
 			break;
 

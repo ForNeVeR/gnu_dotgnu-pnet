@@ -278,6 +278,10 @@ static int Task_CSAnt(CSAntTask *task)
 	{
 		argv[argc++] = "-s";
 	}
+	if(CSAntRedirectCsc)
+	{
+		argv[argc++] = "-c";
+	}
 	argv[argc++] = "-C";
 	argv[argc++] = (char *)compiler;
 	if(target)

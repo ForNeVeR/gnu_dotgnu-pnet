@@ -465,28 +465,31 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	}
 
 	/* Collect up additional arguments */
-	node = task->taskChildren;
-	while(node != 0)
+	if(!CSAntRedirectCsc)
 	{
-		if(!strcmp(node->name, "arg"))
+		node = task->taskChildren;
+		while(node != 0)
 		{
-			/* Does this argument only apply to a specific compiler? */
-			value = CSAntTaskParam(node, "compiler");
-			if(!value || !ILStrICmp(value, compilerName))
+			if(!strcmp(node->name, "arg"))
 			{
-				value = CSAntTaskParam(node, "value");
-				if(value)
+				/* Does this argument only apply to a specific compiler? */
+				value = CSAntTaskParam(node, "compiler");
+				if(!value || !ILStrICmp(value, compilerName))
 				{
-					copyValue = ILDupString(value);
-					if(!copyValue)
+					value = CSAntTaskParam(node, "value");
+					if(value)
 					{
-						CSAntOutOfMemory();
+						copyValue = ILDupString(value);
+						if(!copyValue)
+						{
+							CSAntOutOfMemory();
+						}
+						AddArg(&(args->args), &(args->numArgs), copyValue);
 					}
-					AddArg(&(args->args), &(args->numArgs), copyValue);
 				}
 			}
+			node = node->next;
 		}
-		node = node->next;
 	}
 
 	/* Done */
@@ -974,16 +977,24 @@ int CSAntTask_Cscc(CSAntTask *task)
  */
 int CSAntTask_Csc(CSAntTask *task)
 {
-	CSAntCompileArgs args;
-
-	/* Parse the arguments */
-	if(!ParseCompileArgs(task, &args, 1, "csc"))
+	if(CSAntRedirectCsc)
 	{
-		return 0;
+		/* Redirect NAnt-style <csc> tags to the <compile> functionality */
+		return CSAntTask_Compile(task);
 	}
+	else
+	{
+		CSAntCompileArgs args;
 
-	/* Execute the command */
-	return BuildAndExecute(&args, BuildCscCommandLine);
+		/* Parse the arguments */
+		if(!ParseCompileArgs(task, &args, 1, "csc"))
+		{
+			return 0;
+		}
+
+		/* Execute the command */
+		return BuildAndExecute(&args, BuildCscCommandLine);
+	}
 }
 
 /*

@@ -221,7 +221,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				linesFilled = 0;
 				if(!ascentOnly)
 				{
-					return new Size(size.cx, size.cy - 1); /*ascent + descent*/
+					return new Size(size.cx, size.cy); /*ascent + descent*/
 				}
 				else
 				{

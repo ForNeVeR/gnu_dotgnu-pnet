@@ -1,5 +1,8 @@
 2004-12-28  Deryk Robosson  <deryk@0x0a.com>
 
+	* runtime/System/Private/NumberParser.cs: Mimic MS behavior when
+	parsing by permitting '\0' chars.  Fixes bug #11333.
+
 	* runtime/System/IO/StreamWriter.cs: Mimic MS behavior in Close
 	method.  Fixes bug #11403.
 

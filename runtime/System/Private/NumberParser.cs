@@ -325,11 +325,18 @@ internal sealed class NumberParser
 		uint digit, low, high;
 		ulong tempa, tempb;
 		bool noOverflow = true;
-
+		int t;
+		
 		// Validate the parameters.
 		if(s == null)
 		{
 			throw new ArgumentNullException("s");
+		}
+
+		while((t = s.IndexOf('\0')) != -1)
+		{
+			string tmp = s.Remove(t, 1);
+			s = tmp;
 		}
 
 		// Get the number format information to use.
@@ -579,6 +586,11 @@ internal sealed class NumberParser
 				else if(Char.IsWhiteSpace(ch))
 				{
 					lastWasWhite = true;
+					++posn;
+				}
+				else if(ch == '\0')
+				{
+					lastWasWhite = false;
 					++posn;
 				}
 				else
@@ -1291,6 +1303,16 @@ internal sealed class NumberParser
 		char[] str = s.ToCharArray();
 		int stridx = 0;
 		int end = str.Length - 1;
+		int t;
+		
+		while((t = s.IndexOf('\0')) != -1)
+		{
+			string tmp = s.Remove(t, 1);
+			s = tmp;
+		}
+
+		str = s.ToCharArray();
+		end = str.Length - 1;
 
 		// skip whitespaces and handle currency symbol and parenthesis
 		SkipWhiteSpace(ref str, nfi.CurrencySymbol, style, ref stridx, ref end,
@@ -1471,10 +1493,17 @@ internal sealed class NumberParser
 		int expDigits = 0;
 		ulong expValue = 0;
 		double result = 0;
+		int t;
 
 		//  Double does not parse hex numbers
 		if ((style & NumberStyles.AllowHexSpecifier) != 0)
 			throw new FormatException(_("Format_HexNotSupported"));
+
+		while((t = s.IndexOf('\0')) != -1)
+		{
+			string tmp = s.Remove(t, 1);
+			s = tmp;
+		}
 
 		char[] str = s.ToCharArray();
 		end = str.Length - 1;

@@ -81,6 +81,15 @@ int ILHasThreads(void)
 
 void ILThreadInit(void)
 {
+	static int volatile initialized = 0;
+
+	/* Bail out if already initialized */
+	if(initialized)
+	{
+		return;
+	}
+	initialized = 1;
+
 	/* Allocate a TLS key for storing thread objects */
 	threadObjectKey = TlsAlloc();
 

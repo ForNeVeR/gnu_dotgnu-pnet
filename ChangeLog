@@ -20,6 +20,9 @@
 	* support/pt_thread.c: set the thread object in a thread-specific
 	variable for the main thread.
 
+	* support/w32_thread.c: make sure that the body of "ILThreadInit"
+	is only run once.
+
 2002-04-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_thread.h, support/Makefile.am, support/no_thread.c,

@@ -37,6 +37,9 @@
 	* image/meta_writer.c: output TypeSpec tokens for type parents
 	and member reference owners where required.
 
+	* image/synthetic.c: don't inherit synthetic generic types from
+	"System.ValueType".
+
 2003-02-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* support/dir.c : fix build breaking on Mingw32 

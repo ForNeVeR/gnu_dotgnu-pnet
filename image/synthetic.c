@@ -509,11 +509,18 @@ ILClass *_ILTypeToSyntheticOther(ILImage *image, ILType *type)
 							synthetic->memStack.size +
 							synthetic->memStack.posn));
 
-	/* Inherit the class off "System.ValueType" */
-	parent = ILClassResolveSystem(image, 0, "ValueType", "System");
-	if(!parent)
+	/* Inherit the class off "System.ValueType" unless it is a generic type */
+	if(ILType_IsWith(type))
 	{
-		return 0;
+		parent = 0;
+	}
+	else
+	{
+		parent = ILClassResolveSystem(image, 0, "ValueType", "System");
+		if(!parent)
+		{
+			return 0;
+		}
 	}
 	info = CreateSynthetic(synthetic, name, parent, 1);
 	if(!info)

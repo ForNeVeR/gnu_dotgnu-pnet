@@ -1,4 +1,10 @@
 
+2002-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/Remoting/Messaging/AsyncResult.cs,
+	runtime/System/Runtime/Remoting/Messaging/Makefile: add the
+	"AsyncResult" class, for assisting with asynchronous delegates.
+
 2002-06-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Delegate.cs: change the delegate "method" field

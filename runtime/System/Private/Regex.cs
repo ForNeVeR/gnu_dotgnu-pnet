@@ -280,6 +280,11 @@ internal sealed class Regex : IDisposable
 							builder.Append(']');
 						}
 						break;
+						default:
+						{
+							builder.Append(ch);
+						}
+						break;
 					}
 				}
 				builder.Append('$');

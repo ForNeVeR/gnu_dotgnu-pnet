@@ -1,4 +1,9 @@
 
+2003-05-18  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Private/Regex.cs: Fix wildcard searches to match
+	extensions correctly.
+
 2003-05-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, Basic/.cvsignore, Basic/AppWinStyle.cs,

@@ -18,6 +18,10 @@
 	enums to the System.Xml.XPath namespace and stub out unimplemented
 	methods and properties
 
+	* System/ComponentModel/PropertyDescriptorCollection.cs,
+	System.Xml/XmlConvert.cs: A few non-Ecma additions for compatibility
+	with external libraries.
+
 2003-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Diagnostics/BooleanSwitch.cs,

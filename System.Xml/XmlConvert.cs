@@ -449,6 +449,14 @@ public class XmlConvert
 			}
 #endif
 
+#if !ECMA_COMPAT
+	[TODO]
+	public static Guid ToGuid(String value) 
+			{
+				throw new NotImplementedException("ToGuid");
+			}
+#endif
+
 	// Convert a string to an Int16 value.
 	public static short ToInt16(String s)
 			{
@@ -661,6 +669,14 @@ public class XmlConvert
 				return value.ToString
 					(format, DateTimeFormatInfo.InvariantInfo);
 			}
+	
+#if !ECMA_COMPAT	
+	[TODO]
+	public static String ToString(Guid value) 
+			{
+				throw new NotImplementedException("ToString(Guid)");
+			}
+#endif
 
 	// Inner version of "VerifyName" and "VerifyNCName".
 	private static String InnerVerify(String name, bool allowColon)

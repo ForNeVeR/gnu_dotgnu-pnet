@@ -594,6 +594,7 @@ tests/System/Makefile
 tests/System.Xml/Makefile
 tests/runtime/Makefile
 tests/JScript/Makefile
+tests/Basic/Makefile
 resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile

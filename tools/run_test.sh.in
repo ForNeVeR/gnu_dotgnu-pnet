@@ -37,8 +37,15 @@ exec "$ILRUN" -L"$TOP_BUILDDIR"/runtime \
 	-L"$TOP_BUILDDIR"/I18N \
 	-L"$TOP_BUILDDIR"/System \
 	-L"$TOP_BUILDDIR"/DotGNU.SSL \
+	-L"$TOP_BUILDDIR"/DotGNU.Images \
 	-L"$TOP_BUILDDIR"/System.Xml \
 	-L"$TOP_BUILDDIR"/csunit \
 	-L"$TOP_BUILDDIR"/compat \
 	-L"$TOP_BUILDDIR"/JScript \
+	-L"$TOP_BUILDDIR"/Basic \
+	-L"$TOP_BUILDDIR"/System.Drawing \
+	-L"$TOP_BUILDDIR"/System.Windows.Forms \
+	-L"$TOP_BUILDDIR"/SharpZipLib \
+	-L"$TOP_BUILDDIR"/OpenSystem.Platform \
+	-L"$TOP_BUILDDIR"/compat \
 	"$TOP_BUILDDIR/csunit/csunit.exe" $*

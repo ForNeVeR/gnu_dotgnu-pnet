@@ -1,3 +1,12 @@
+
+2004-07-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, Basic/Strings.cs, resources/en_US/Basic/Basic.txt,
+	tests/Makefile.am, tests/Basic/.cvsignore, tests/Basic/Makefile.am,
+	tests/Basic/TestBasic.build, tests/Basic/TestBasic.cs,
+	tests/Basic/TestString.cs, tools/run_test.sh.in: missing methods
+	in the VB "Strings" class; add the beginnings of a VB test suite.
+
 2004-07-15  klaus Treichel  <ktreichel@web.de>
 
 	* System/Net/HttpWebRequest.cs: uncomment ServicePoint property.	

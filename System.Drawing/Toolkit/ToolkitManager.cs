@@ -26,6 +26,7 @@ using System.Drawing.Printing;
 using System.Reflection;
 using System.IO;
 
+[NonStandardExtra]
 public sealed class ToolkitManager
 {
 	// Global state.

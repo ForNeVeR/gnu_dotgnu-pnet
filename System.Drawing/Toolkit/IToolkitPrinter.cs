@@ -24,6 +24,7 @@ namespace System.Drawing.Toolkit
 
 using System.Drawing.Printing;
 
+[NonStandardExtra]
 public interface IToolkitPrinter
 {
 	// Determine if this printer supports duplex operation.

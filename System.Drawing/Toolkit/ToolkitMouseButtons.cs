@@ -24,6 +24,7 @@ namespace System.Drawing.Toolkit
 
 // Definition must match "System.Windows.Forms.MouseButtons".
 [Flags]
+[NonStandardExtra]
 public enum ToolkitMouseButtons
 {
 	None		= 0x00000000,

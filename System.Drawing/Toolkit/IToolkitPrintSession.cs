@@ -24,6 +24,7 @@ namespace System.Drawing.Toolkit
 
 using System.Drawing.Printing;
 
+[NonStandardExtra]
 public interface IToolkitPrintSession
 {
 	// Get or set the document that is associated with this session.

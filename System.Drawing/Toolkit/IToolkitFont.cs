@@ -22,6 +22,7 @@
 namespace System.Drawing.Toolkit
 {
 
+[NonStandardExtra]
 public interface IToolkitFont : IToolkitSelectObject
 {
 	// Get the raw HFONT for this toolkit font.  IntPtr.Zero if none.

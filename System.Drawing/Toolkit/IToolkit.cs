@@ -27,6 +27,7 @@ using System.Drawing.Text;
 using System.Threading;
 using DotGNU.Images;
 
+[NonStandardExtra]
 public interface IToolkit
 {
 	// Process events in the event queue.  If "waitForEvent" is true,

@@ -1,6 +1,6 @@
 /*
- * IToolkitSelectObject.cs - Implementation of the
- *			"System.Drawing.Toolkit.IToolkitSelectObject" class.
+ * NonStandardExtraAttribute.cs - Implementation of the
+ *			"System.NonStandardExtraAttribute" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,15 +19,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Drawing.Toolkit
+namespace System
 {
 
-[NonStandardExtra]
-public interface IToolkitSelectObject : IDisposable
+// This is a pseudo attribute which is used to tag classes that
+// are exported from the assembly, but which are not part of the
+// standard API.  Classes marked with this attribute are for internal
+// use only, and should not be used by user-level applications.
+
+[AttributeUsage(AttributeTargets.Class |
+				AttributeTargets.Interface |
+				AttributeTargets.Enum |
+				AttributeTargets.Struct |
+				AttributeTargets.Delegate,
+				AllowMultiple=false, Inherited=true)]
+internal sealed class NonStandardExtraAttribute : Attribute
 {
-	// Select this object into a graphics object.
-	void Select(IToolkitGraphics graphics);
+	public NonStandardExtraAttribute() {}
 
-}; // interface IToolkitSelectObject
+}; // class NonStandardExtraAttribute
 
-}; // namespace System.Drawing.Toolkit
+}; // namespace System

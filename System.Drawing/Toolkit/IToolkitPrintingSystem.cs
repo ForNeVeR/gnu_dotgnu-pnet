@@ -22,6 +22,7 @@
 namespace System.Drawing.Toolkit
 {
 
+[NonStandardExtra]
 public interface IToolkitPrintingSystem
 {
 

@@ -31,6 +31,7 @@ using DotGNU.Images;
 // cannot be found, and to also act as a base class for printer
 // drivers which don't need windows and event loop functionality.
 
+[NonStandardExtra]
 public class NullToolkit : IToolkit
 {
 	// Constructor.

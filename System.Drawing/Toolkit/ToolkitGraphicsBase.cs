@@ -29,6 +29,7 @@ using System.Drawing.Drawing2D;
 // This base class provides some common functionality which should
 // help to make it easier to write "IToolkitGraphics" handlers.
 
+[NonStandardExtra]
 public abstract class ToolkitGraphicsBase : IToolkitGraphics
 {
 	// Dirty bit flags for changed values.

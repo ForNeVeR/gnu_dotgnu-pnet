@@ -23,6 +23,7 @@ namespace System.Drawing.Toolkit
 {
 
 // Definition must match "System.Windows.Forms.Keys".
+[NonStandardExtra]
 public enum ToolkitKeys
 {
 	// No key specified.

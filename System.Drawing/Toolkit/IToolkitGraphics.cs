@@ -26,6 +26,7 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.Drawing.Drawing2D;
 
+[NonStandardExtra]
 public interface IToolkitGraphics : IDisposable
 {
 	// Get or set the graphics object's properties.

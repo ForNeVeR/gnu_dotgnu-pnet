@@ -22,6 +22,7 @@
 namespace System.Drawing.Toolkit
 {
 
+[NonStandardExtra]
 public interface IToolkitPen : IToolkitSelectObject
 {
 	// Select a brush-based pen into a graphics object.

@@ -25,6 +25,7 @@ namespace System.Drawing.Toolkit
 // This interface is implemented by higher-level controls
 // that need to receive events from an IToolkitWindow.
 
+[NonStandardExtra]
 public interface IToolkitEventSink
 {
 	// Event that is emitted for an expose on this window.

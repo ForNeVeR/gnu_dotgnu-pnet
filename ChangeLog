@@ -22,6 +22,32 @@
 	resources/en_US/System/Invalid.txt: missing classes in
 	"System.ComponentModel".
 
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/IToolkitBrush.cs,
+	System.Drawing/Toolkit/IToolkitEventSink.cs,
+	System.Drawing/Toolkit/IToolkitFont.cs,
+	System.Drawing/Toolkit/IToolkitGraphics.cs,
+	System.Drawing/Toolkit/IToolkitImage.cs,
+	System.Drawing/Toolkit/IToolkitPen.cs,
+	System.Drawing/Toolkit/IToolkitPrintSession.cs,
+	System.Drawing/Toolkit/IToolkitPrinter.cs,
+	System.Drawing/Toolkit/IToolkitPrintingSystem.cs,
+	System.Drawing/Toolkit/IToolkitSelectObject.cs,
+	System.Drawing/Toolkit/IToolkitWindow.cs,
+	System.Drawing/Toolkit/NonStandardExtraAttribute.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Drawing/Toolkit/ToolkitKeys.cs,
+	System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing/Toolkit/ToolkitMouseButtons.cs,
+	System.Drawing/Toolkit/ToolkitWindowFlags.cs,
+	runtime/System/NonStandardExtraAttribute.cs,
+	runtime/System/Globalization/_I18NCompareInfo.cs,
+	runtime/System/Globalization/_I18NTextInfo.cs,
+	runtime/System/Resources/ECMAResourceManager.cs:
+	introduce the "NonStandardExtra" attribute and use it to mark
+	extra classes that are public but should be ignored by "csdocvalil".
+
 2003-09-11  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Region.cs: added in correct copyright notice.

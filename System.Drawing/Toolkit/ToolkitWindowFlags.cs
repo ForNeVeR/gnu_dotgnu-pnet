@@ -25,6 +25,7 @@ namespace System.Drawing.Toolkit
 // Supported window manager properties.
 
 [Flags]
+[NonStandardExtra]
 public enum ToolkitWindowFlags
 {
 	Close			= (1 << 0),

@@ -24,6 +24,7 @@ namespace System.Drawing.Toolkit
 
 using DotGNU.Images;
 
+[NonStandardExtra]
 public interface IToolkitImage : IDisposable
 {
 }

@@ -29,6 +29,7 @@ namespace System.Globalization
 // really isn't any other way of doing this because the specification
 // says that "CompareInfo" does not have a public constructor.
 
+[NonStandardExtra]
 public abstract class _I18NCompareInfo : CompareInfo
 {
 	// Constructors.

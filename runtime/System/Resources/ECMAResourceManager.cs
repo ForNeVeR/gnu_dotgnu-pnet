@@ -32,6 +32,7 @@ using System.Reflection;
 // in ECMA_COMPAT mode, when ResourceManager is not available.
 // Use of this class in non-pnetlib code is not recommended.
 
+[NonStandardExtra]
 public sealed class ECMAResourceManager
 {
 	// Internal state.

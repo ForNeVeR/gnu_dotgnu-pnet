@@ -26,6 +26,7 @@ namespace System.Drawing.Toolkit
 // managing rectangular regions in a stack.  It can be used to
 // create owner-draw widgets and the like.
 
+[NonStandardExtra]
 public interface IToolkitWindow
 {
 	// Get the toolkit that owns this window.

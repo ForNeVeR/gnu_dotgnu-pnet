@@ -30,6 +30,9 @@ the implementation of "System.Enum".
 * runtime/System/Activator.cs: implement "Activator.CreateInstance" using
 reflection.
 
+* runtime/System/Attribute.cs: implement "Attribute.Equals" and
+"Attribute.GetHashCode" using reflection.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

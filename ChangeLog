@@ -1,4 +1,11 @@
 
+2001-08-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* cscc/cs_stmt.tc: semantic analysis for return statements.
+
+* cscc/cs_decls.tc: output an error if control reaches the end of a
+non-void method.
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

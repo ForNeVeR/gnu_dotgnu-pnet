@@ -242,6 +242,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	ILScopeData *data;
 	char *name;
 	ILNode *errorNode;
+	ILType *returnType;
 
 	/* Record the current method that we are in */
 	savedMethod = info->currentMethod;
@@ -318,6 +319,22 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		info->currentScope = scope;
 		ILNode_SemAnalysis(node->body, info, &(node->body));
 		info->currentScope = savedScope;
+	}
+
+	/* If the return type is not void, then make sure that the
+	   method ends in some kind of return statement */
+	returnType = ILMethod_Signature(node->methodInfo)->un.method.retType;
+	if(returnType != ILType_Void && node->body)
+	{
+		if(!ILMethod_IsAbstract(node->methodInfo) &&
+		   ILMethod_IsIL(node->methodInfo))
+		{
+			if(!ILNodeEndsInReturn(node->body))
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "control reaches end of non-void method");
+			}
+		}
 	}
 
 	/* Leave the unsafe context for the method */

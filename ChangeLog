@@ -4,6 +4,9 @@
 	* engine/verify_except.c: reverse OutputExceptionTable patch
 	as Tum discovered problems with it.
 
+	* engine/verify_except.c (OutputExceptionTable): fix the nested
+	try/catch bug (#8838) properly.
+
 2004-05-23  Jonas Printzen  <jonas@printzen.net>
 
 	* engine/verify_except.c: change OutputExceptionTable() so that 

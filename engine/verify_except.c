@@ -34,7 +34,6 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 {
 	ILUInt32 offset;
 	ILUInt32 end;
-	ILUInt32 lowestTry;
 	ILException *exception;
 	ILClass *classInfo;
 
@@ -42,36 +41,33 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 	offset = 0;
 	for(;;)
 	{
-		/* Find the exception region that matches the offset */
+		/* Find the end of the region that starts at "offset" */
+		end = IL_MAX_UINT32;
 		exception = exceptions;
-		lowestTry = IL_MAX_UINT32;
 		while(exception != 0)
 		{
-			if(offset >= exception->tryOffset &&
-			   offset < (exception->tryOffset + exception->tryLength))
+			if(offset < exception->tryOffset)
 			{
-				/* The offset is within this region */
-				break;
+				/* We are in the code before this exception region */
+				if(end > exception->tryOffset)
+				{
+					end = exception->tryOffset;
+				}
 			}
-			else if(offset < exception->tryOffset)
+			else if(offset >= exception->tryOffset &&
+			        offset < (exception->tryOffset + exception->tryLength))
 			{
-				/* The offset starts entirely before this region */
-				lowestTry = exception->tryOffset;
-				break;
+				/* We are in code in the middle of this exception region */
+				if(end > (exception->tryOffset + exception->tryLength))
+				{
+					end = exception->tryOffset + exception->tryLength;
+				}
 			}
 			exception = exception->next;
 		}
-		if(!exception)
+		if(end == IL_MAX_UINT32)
 		{
 			break;
-		}
-		if(lowestTry != IL_MAX_UINT32)
-		{
-			end = lowestTry;
-		}
-		else
-		{
-			end = exception->tryOffset + exception->tryLength;
 		}
 
 		/* Output the region information to the table */

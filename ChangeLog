@@ -7,6 +7,9 @@
 	* image/member.c: allow parameters without names to be created with
 	ILParameterCreate().
 
+	* cscc/csharp/cs_lvalue.tc: define ILNode_SemAnalysisType operation
+	for	ILNode_MemberAccess node to resolve member conflicts in type lookups.
+
 2003-05-08  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc : Use the info->inSemType to streamline

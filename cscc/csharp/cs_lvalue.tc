@@ -1166,6 +1166,33 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 }
 
 /*
+ * Perform semantic analysis for member access operators favouring types.
+ */
+
+ILNode_SemAnalysisType(ILNode_MemberAccess)
+{
+	CSSemValue value;
+	CSSemValue value2;
+	int savedState = info->inSemType;
+	char *name;
+	
+	info->inSemType=1;
+	/* Get the semantic value for the left part of the identifier */
+	value = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	
+	/* Convert the second subexpression into a name */
+	name = ILQualIdentName(node->expr2, 0);
+
+	/* Resolve the member */
+	value = CSResolveMemberName(info, (ILNode *)node, value, name, 0);
+
+	info->inSemType=savedState;
+	
+	/* the result is a type */
+	return value ;
+}
+
+/*
  * Perform semantic analysis for base member access operators.
  */
 ILNode_SemAnalysis(ILNode_BaseAccess)

@@ -1,3 +1,10 @@
+
+2002-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/XmlConvert.cs, tests/System.Xml/TestNameTable.cs,
+	tests/System.Xml/TestXml.cs, tests/System.Xml/TestXmlConvert.cs:
+	test cases and bug fixes for "NameTable" and "XmlConvert".
+
 2002-12-01  Stephen Compall  <rushing@sigecom.net>
 
 	* pnetlib.spec.in: Fixed requires, new & improved description.

@@ -27,8 +27,9 @@ public class TestXml
 	public static TestSuite Suite()
 			{
 				TestSuite suite = new TestSuite("System.Xml Tests");
-				suite.AddTests(typeof(TestXmlException));
+				suite.AddTests(typeof(TestNameTable));
 				suite.AddTests(typeof(TestXmlConvert));
+				suite.AddTests(typeof(TestXmlException));
 				return suite;
 			}
 

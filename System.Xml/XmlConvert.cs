@@ -180,7 +180,7 @@ public class XmlConvert
 				}
 			}
 
-	// Decode a name that has escaped hexadecimal characters.EnclosingMark ||
+	// Decode a name that has escaped hexadecimal characters.
 	public static String DecodeName(String name)
 			{
 				int posn, posn2;
@@ -209,13 +209,12 @@ public class XmlConvert
 						result.Append((char)((FromHex(name[posn + 2]) << 12) |
 											 (FromHex(name[posn + 3]) << 8) |
 											 (FromHex(name[posn + 4]) << 4) |
-											  FromHex(name[posn + 3])));
+											  FromHex(name[posn + 5])));
 						posn += 7;
 					}
 					else
 					{
 						// Search for the next candidate.
-						result.Append('_');
 						posn2 = name.IndexOf('_', posn + 1);
 						if(posn2 != -1)
 						{
@@ -224,6 +223,7 @@ public class XmlConvert
 						}
 						else
 						{
+							result.Append('_');
 							break;
 						}
 					}
@@ -243,10 +243,13 @@ public class XmlConvert
 	// Append the hexadecimal version of a character to a string builder.
 	private static void AppendHex(StringBuilder result, char ch)
 			{
+				result.Append('_');
+				result.Append('x');
 				result.Append(hexchars[(ch >> 12) & 0x0F]);
 				result.Append(hexchars[(ch >> 8) & 0x0F]);
 				result.Append(hexchars[(ch >> 4) & 0x0F]);
 				result.Append(hexchars[ch & 0x0F]);
+				result.Append('_');
 			}
 
 	// Inner version of "EncodeName", "EncodeLocalName", and "EncodeNmToken".
@@ -427,6 +430,7 @@ public class XmlConvert
 	// Convert a string to a double-precision value.
 	public static double ToDouble(String s)
 			{
+				s = s.Trim();
 				if(s == "-INF")
 				{
 					return Double.NegativeInfinity;
@@ -510,6 +514,7 @@ public class XmlConvert
 	// Convert a string to a single-precision value.
 	public static float ToSingle(String s)
 			{
+				s = s.Trim();
 				if(s == "-INF")
 				{
 					return Single.NegativeInfinity;

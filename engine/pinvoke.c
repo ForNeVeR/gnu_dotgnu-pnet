@@ -455,6 +455,8 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 	ILUInt32 size, sizeInWords;
 	ILNativeFloat tempFloat;
 	ILUInt32 marshalType;
+	char *customName;
+	int customNameLen;
 	char *strValue;
 
 	/* Get the top and extent of the stack */
@@ -473,7 +475,8 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 	for(param = 1; param <= numParams; ++param)
 	{
 		/* Marshal parameters that need special handling */
-		marshalType = ILPInvokeGetMarshalType(0, method, param);
+		marshalType = ILPInvokeGetMarshalType(0, method, param,
+											  &customName, &customNameLen);
 		if(marshalType != IL_META_MARSHAL_DIRECT)
 		{
 			switch(marshalType)
@@ -540,6 +543,22 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 					else
 					{
 						stacktop->ptrValue = 0;
+					}
+					++args;
+					++stacktop;
+				}
+				continue;
+
+				case IL_META_MARSHAL_CUSTOM:
+				{
+					/* Marshal a custom value from the native world */
+					CHECK_SPACE(1);
+					stacktop->ptrValue = _ILCustomToObject
+						(thread, *((void **)(*args)),
+						 customName, customNameLen);
+					if(ILExecThreadHasException(thread))
+					{
+						return 1;
 					}
 					++args;
 					++stacktop;
@@ -684,9 +703,12 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 	ILUInt32 size, sizeInWords;
 	ILNativeFloat tempFloat;
 	ILUInt32 marshalType;
+	char *customName;
+	int customNameLen;
 
 	/* Marshal return types that need special handling */
-	marshalType = ILPInvokeGetMarshalType(0, method, 0);
+	marshalType = ILPInvokeGetMarshalType
+			(0, method, 0, &customName, &customNameLen);
 	if(marshalType != IL_META_MARSHAL_DIRECT)
 	{
 		switch(marshalType)
@@ -740,6 +762,16 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 				{
 					*((void **)result) = 0;
 				}
+			}
+			return;
+
+			case IL_META_MARSHAL_CUSTOM:
+			{
+				/* Marshal a custom value to the native world */
+				*((void **)result) = _ILObjectToCustom
+					(thread, (ILObject *)(thread->stackTop[-1].ptrValue),
+					 customName, customNameLen);
+				--(thread->stackTop);
 			}
 			return;
 		}

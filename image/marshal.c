@@ -65,7 +65,8 @@ static ILUInt32 StringCharSet(ILPInvoke *pinvoke, ILMethod *method)
 }
 
 ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
-								 unsigned long param)
+								 unsigned long param, char **customName,
+								 int *customNameLen)
 {
 	ILType *type = ILTypeGetParam(method->member.signature, param);
 	ILParameter *parameter;
@@ -99,12 +100,23 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 		}
 	}
 
+	/* Initialize the custom name return information to nothing */
+	*customName = 0;
+	*customNameLen = 0;
+
 	/* If the native type is "interface", then always marshal directly.
 	   This is normally used to force strings, delegates, and arrays
 	   to be passed as objects */
 	if(nativeTypeCode == IL_META_NATIVETYPE_INTF)
 	{
 		return IL_META_MARSHAL_DIRECT;
+	}
+
+	/* Check for custom marshalling */
+	if(nativeTypeCode == IL_META_NATIVETYPE_CUSTOMMARSHALER &&
+	   ILTypeIsReference(type))
+	{
+		return IL_META_MARSHAL_CUSTOM;
 	}
 
 	/* Determine what to do based on the parameter type */

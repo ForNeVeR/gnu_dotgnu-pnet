@@ -2125,12 +2125,84 @@ VMCASE(COP_PREFIX_REFARRAY2UTF8):
 }
 VMBREAK(COP_PREFIX_REFARRAY2UTF8);
 
+/**
+ * <opcode name="tocustom" group="Conversion operators">
+ *   <operation>Convert an object reference into a custom native
+ *				pointer</operation>
+ *
+ *   <format>prefix<fsep/>tocustom<fsep/>len[4]<fsep/>name</format>
+ *   <dformat>{tocustom}<fsep/>len<fsep/>name</dformat>
+ *
+ *   <form name="tocustom" code="COP_PREFIX_TOCUSTOM"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>ptr</code>.  The custom marshaler called <i>name</i>
+ *   is used to convert <i>value</i> into a native pointer <i>result</i>.
+ *   The value <i>len</i> is the length of the <i>name</i>.
+ *   </description>
+ *
+ *   <notes>This instruction is used to perform custom marshaling
+ *   during "PInvoke" operations.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_TOCUSTOM):
+{
+	/* Convert an object reference into a native pointer */
+	COPY_STATE_TO_THREAD();
+	stacktop[-1].ptrValue = _ILObjectToCustom
+		(thread, (ILObject *)(stacktop[-1].ptrValue),
+		 CVMP_ARG_WORD_PTR(const char *), CVMP_ARG_WORD);
+	RESTORE_STATE_FROM_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD_PTR, 0);
+}
+VMBREAK(COP_PREFIX_TOCUSTOM);
+
+/**
+ * <opcode name="fromcustom" group="Conversion operators">
+ *   <operation>Convert a custom native pointer into an object
+ *				reference</operation>
+ *
+ *   <format>prefix<fsep/>fromcustom<fsep/>len[4]<fsep/>name</format>
+ *   <dformat>{fromcustom}<fsep/>len<fsep/>name</dformat>
+ *
+ *   <form name="fromcustom" code="COP_PREFIX_FROMCUSTOM"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>ptr</code>.  The custom marshaler called <i>name</i>
+ *   is used to convert <i>value</i> into an object refernce <i>result</i>.
+ *   The value <i>len</i> is the length of the <i>name</i>.
+ *   </description>
+ *
+ *   <notes>This instruction is used to perform custom marshaling
+ *   during "PInvoke" operations.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_FROMCUSTOM):
+{
+	/* Convert a native pointer into an object reference */
+	COPY_STATE_TO_THREAD();
+	stacktop[-1].ptrValue = _ILCustomToObject
+		(thread, stacktop[-1].ptrValue,
+		 CVMP_ARG_WORD_PTR(const char *), CVMP_ARG_WORD);
+	RESTORE_STATE_FROM_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD_PTR, 0);
+}
+VMBREAK(COP_PREFIX_FROMCUSTOM);
+
 #else /* !IL_CONFIG_PINVOKE */
 
 VMCASE(COP_PREFIX_STR2ANSI):
 VMCASE(COP_PREFIX_STR2UTF8):
 VMCASE(COP_PREFIX_ANSI2STR):
 VMCASE(COP_PREFIX_UTF82STR):
+VMCASE(COP_PREFIX_STR2UTF16):
+VMCASE(COP_PREFIX_UTF162STR):
 VMCASE(COP_PREFIX_DELEGATE2FNPTR):
 VMCASE(COP_PREFIX_ARRAY2PTR):
 VMCASE(COP_PREFIX_REFARRAY2ANSI):
@@ -2140,6 +2212,14 @@ VMCASE(COP_PREFIX_REFARRAY2UTF8):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_STR2ANSI);
+
+VMCASE(COP_PREFIX_TOCUSTOM):
+VMCASE(COP_PREFIX_FROMCUSTOM):
+{
+	/* Stub out PInvoke-related CVM opcodes */
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD_PTR, 0);
+}
+VMBREAK(COP_PREFIX_TOCUSTOM);
 
 #endif /* !IL_CONFIG_PINVOKE */
 

@@ -541,6 +541,20 @@ void _ILBreak(ILExecThread *thread, int type);
 
 #endif /* IL_CONFIG_DEBUG_LINES */
 
+/*
+ * Perform custom marshalling to convert an object reference
+ * into a native pointer.
+ */
+void *_ILObjectToCustom(ILExecThread *thread, ILObject *obj,
+						const char *customName, int customNameLen);
+
+/*
+ * Perform custom marshalling to convert a native pointer
+ * into an object reference.
+ */
+ILObject *_ILCustomToObject(ILExecThread *thread, void *ptr,
+							const char *customName, int customNameLen);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -537,6 +537,8 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 	ILPInvoke *pinv;
 #ifdef IL_CONFIG_PINVOKE
 	ILUInt32 marshalType;
+	char *customName;
+	int customNameLen;
 #endif
 
 	/* Get the PInvoke information */
@@ -570,7 +572,8 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 	#ifdef IL_CONFIG_PINVOKE
 		/* Perform PInvoke expansions on the parameter */
 		if(!isInternal &&
-		   (marshalType = ILPInvokeGetMarshalType(pinv, method, param))
+		   (marshalType = ILPInvokeGetMarshalType(pinv, method, param,
+		   										  &customName, &customNameLen))
 				!= IL_META_MARSHAL_DIRECT)
 		{
 			offset = coder->argOffsets[param - thisAdjust];
@@ -624,6 +627,14 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 				case IL_META_MARSHAL_REF_UTF8_ARRAY:
 				{
 					CVMP_OUT_NONE(COP_PREFIX_REFARRAY2UTF8);
+				}
+				break;
+
+				case IL_META_MARSHAL_CUSTOM:
+				{
+					CVMP_OUT_WORD_PTR(COP_PREFIX_TOCUSTOM,
+									  (ILUInt32)(ILInt32)customNameLen,
+									  (void *)customName);
 				}
 				break;
 			}
@@ -790,6 +801,8 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 	int hasReturn;
 	ILUInt32 size;
 	ILUInt32 marshalType;
+	char *customName;
+	int customNameLen;
 
 	/* Push the address of the argument array onto the stack */
 	if(useRawCalls)
@@ -1011,7 +1024,7 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 		{
 			/* Marshal the PInvoke return value back into a CLR object */
 			marshalType = ILPInvokeGetMarshalType
-				(ILPInvokeFind(method), method, 0);
+				(ILPInvokeFind(method), method, 0, &customName, &customNameLen);
 			switch(marshalType)
 			{
 				case IL_META_MARSHAL_ANSI_STRING:
@@ -1029,6 +1042,14 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 				case IL_META_MARSHAL_UTF16_STRING:
 				{
 					CVMP_OUT_NONE(COP_PREFIX_UTF162STR);
+				}
+				break;
+
+				case IL_META_MARSHAL_CUSTOM:
+				{
+					CVMP_OUT_WORD_PTR(COP_PREFIX_FROMCUSTOM,
+									  (ILUInt32)(ILInt32)customNameLen,
+									  (void *)customName);
 				}
 				break;
 			}

@@ -55,6 +55,7 @@ extern	"C" {
 #define	CVM_OPER_LD_INTERFACE		24
 #define	CVM_OPER_TAIL_CALL			25
 #define	CVM_OPER_PACK_VARARGS		26
+#define	CVM_OPER_CUSTOM				27
 
 /*
  * Table of CVM opcodes.  This must be kept in sync with "cvm.h".
@@ -525,6 +526,8 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"array2ptr",		CVM_OPER_NONE},
 	{"refarray2ansi",	CVM_OPER_NONE},
 	{"refarray2utf8",	CVM_OPER_NONE},
+	{"tocustom",		CVM_OPER_CUSTOM},
+	{"fromcustom",		CVM_OPER_CUSTOM},
 
 	/*
 	 * Inline method replacements.
@@ -558,8 +561,6 @@ static CVMOpcode const prefixOpcodes[96] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_53",	CVM_OPER_NONE},
-	{"preserved_54",	CVM_OPER_NONE},
 	{"preserved_55",	CVM_OPER_NONE},
 	{"preserved_56",	CVM_OPER_NONE},
 	{"preserved_57",	CVM_OPER_NONE},
@@ -956,6 +957,15 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 					ILDumpType(stream, ILProgramItem_Image(currMethod),
 							   (ILType *)CVMReadPointer(pc + 10), 0);
 					size = 10 + sizeof(void *);
+				}
+				break;
+
+				case CVM_OPER_CUSTOM:
+				{
+					putc('"', stream);
+					fwrite((void *)CVMReadPointer(pc + 6), 1,
+						   (unsigned)(IL_READ_UINT32(pc + 2)), stream);
+					putc('"', stream);
 				}
 				break;
 

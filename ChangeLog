@@ -3,6 +3,12 @@
 
 	* ildasm/ildasm_data.c: deal with a signed vs unsigned lockup bug.
 
+	* engine/Makefile.am, engine/custom.c, engine/cvm.h,
+	engine/cvm_conv.c, engine/cvm_dasm.c, engine/cvmc_setup.c,
+	engine/engine.h, engine/pinvoke.c, image/marshal.c,
+	include/il_meta.h, include/il_program.h: put some of the support
+	code in place for custom marshaling (doesn't work yet).
+
 2003-01-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* dumpasm/dump_flags.c, ilasm/ilasm_grammar.y, ildasm/ildasm_global.c:

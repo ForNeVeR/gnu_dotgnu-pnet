@@ -6,6 +6,7 @@ libILEngine_a_SOURCES = cvm.c \
 						box.c \
 						call.c \
 						convert.c \
+						custom.c \
 						cvm_dasm.c \
 						cvm_lengths.c \
 						cvmc.c \

@@ -37,6 +37,8 @@ libILSupport_a_SOURCES = alloc.c \
 						 unicode.c \
 						 utf8.c \
 						 utf16.c \
+						 w32_thread.c \
+						 w32_mutex.c \
 						 write_float.c \
 						 xml.c
 

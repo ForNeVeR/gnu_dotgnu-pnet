@@ -21,33 +21,10 @@
 #ifndef	_PT_INCLUDE_H
 #define	_PT_INCLUDE_H
 
-#include "il_config.h"
-#include "il_thread.h"
-
-/*
- * An easy way to turn off threads completely for testing.
- */
-/*#define IL_NO_THREADS*/
-
-/*
- * Determine if we can use pthreads.  Right now, we only do this
- * for Linux, but we will extend it to other systems later.
- */
-#if !defined(IL_NO_THREADS)
-#if defined(linux) || defined(__linux) || defined(__linux__)
-#define	IL_USE_PTHREADS
-#endif
-#if !defined(IL_USE_PTHREADS)
-#define	IL_NO_THREADS
-#endif
-#endif
+#include "thr_choose.h"
 
 #ifdef IL_USE_PTHREADS
 
-/* We need to include <pthread.h> via the garbage collector,
-   because it redirects some of the routines elsewhere to
-   ensure that the GC is notified of thread creation */
-#include <gc.h>
 #include <semaphore.h>
 
 #ifdef	__cplusplus

@@ -18,8 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "il_gc.h"
-#include "pt_include.h"
+#include "thr_choose.h"
 
 #ifdef IL_NO_THREADS
 
@@ -61,6 +60,14 @@ void ILThreadInit(void)
 ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 {
 	/* We cannot create new threads with this implementation */
+	return 0;
+}
+
+int ILThreadStart(ILThread *thread)
+{
+	/* We can't actually start other threads, so this will
+	   never get called.  If it is, then the thread cannot
+	   be started */
 	return 0;
 }
 

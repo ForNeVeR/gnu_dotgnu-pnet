@@ -9,6 +9,12 @@
 	libgc/misc.c, libgc/include/private/gcconfig.h, support/hb_gc.c:
 	enable libgc's threading support for Win32/Cygwin.
 
+	* support/Makefile.am, support/no_thread.c, support/pt_include.h,
+	support/pt_mutex.c, support/pt_thread.c, support/pt_wait.c,
+	support/thr_choose.h, support/w32_mutex.c, support/w32_thread.c:
+	begin implementing Win32 thread routines and centralise the
+	detection of thread packages into "thr_choose.h".
+
 2002-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/HACKING: describe more of the engine architecture.

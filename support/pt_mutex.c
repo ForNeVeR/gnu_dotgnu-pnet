@@ -20,7 +20,6 @@
 
 #define	_GNU_SOURCE		/* Get read-write lock support from <pthread.h> */
 
-#include "il_gc.h"
 #include "pt_include.h"
 
 #ifdef IL_USE_PTHREADS

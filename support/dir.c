@@ -1,7 +1,7 @@
 /*
  * dir.c - Directory Related Functions
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -197,6 +197,14 @@ struct _tagILDir
 };
 
 /*
+ * Determine if the "struct dirent" definition is broken.
+ * Broken means that "d_name" is declared with a size of 1.
+ */
+#if defined(__sun__)
+#define	BROKEN_DIRENT	1
+#endif
+
+/*
  * Define the ILDirEnt type.
  */
 struct _tagILDirEnt
@@ -204,6 +212,9 @@ struct _tagILDirEnt
 	int type;
 	struct dirent *dptr;
 	struct dirent de;
+#ifdef BROKEN_DIRENT
+	char name[256];
+#endif
 };
 
 /*
@@ -264,7 +275,7 @@ ILDirEnt *ILReadDir(ILDir *directory)
 {
 #ifdef HAVE_DIRENT_H
     
-#ifdef HAVE_READDIR_R
+#if defined(HAVE_READDIR_R) && !defined(BROKEN_DIRENT)
 	ILDirEnt *result = NULL;
 
 	/* Threadsafe version of readdir() */
@@ -304,6 +315,9 @@ ILDirEnt *ILReadDir(ILDir *directory)
 	{
 		allocatedResult->dptr = &(allocatedResult->de);
 		ILMemCpy(&(allocatedResult->de), result, sizeof(struct dirent));
+#if defined(BROKEN_DIRENT)
+		strcpy(allocatedResult->de.d_name, result->d_name);
+#endif
 		GetDirEntryType(directory, allocatedResult);
 	}
 	return allocatedResult;

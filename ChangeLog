@@ -1,4 +1,9 @@
 
+2003-05-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/dir.c: work around a broken definition of "struct dirent"
+	on Solaris systems.
+
 2003-05-09  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_invoke.tc: allow a delegate variable to be used as
@@ -8,7 +13,8 @@
 	ILParameterCreate().
 
 	* cscc/csharp/cs_lvalue.tc: define ILNode_SemAnalysisType operation
-	for	ILNode_MemberAccess node to resolve member conflicts in type lookups.
+	for ILNode_MemberAccess node to resolve member conflicts in type
+	lookups.
 
 2003-05-08  Gopal.V  <gopalv82@symonds.net>
 	

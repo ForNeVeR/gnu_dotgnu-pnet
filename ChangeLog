@@ -7,6 +7,12 @@ to platform-specific error facilities.
 * runtime/Platform/FileMethods.cs: primitive file handle operations for
 the platform layer.
 
+* runtime/Platform/ISecurityManager.cs,
+runtime/Platform/NullSecurityManager.cs,
+runtime/Platform/RuntimeSecurityManager.cs,
+runtime/Platform/Security.cs: implement a Java-like security manager
+system for handling the security of sensitive platform operations.
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for the "0.1.0" release.

@@ -19,6 +19,7 @@
  */
 
 #include "engine_private.h"
+#include "lib_defs.h"
 #include "cvm.h"
 #include "ffi.h"
 #ifdef HAVE_MATH_H
@@ -170,6 +171,18 @@ extern	"C" {
 			do { \
 				stacktop[0].ptrValue = \
 					SystemException(thread, "MissingMethodException", \
+									(ILInt32)(pc - pcstart)); \
+				stacktop += 1; \
+				goto throwException; \
+			} while (0)
+
+/*
+ * Throw an invalid cast exception.
+ */
+#define	INVALID_CAST_EXCEPTION()	\
+			do { \
+				stacktop[0].ptrValue = \
+					SystemException(thread, "InvalidCastException", \
 									(ILInt32)(pc - pcstart)); \
 				stacktop += 1; \
 				goto throwException; \

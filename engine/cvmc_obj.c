@@ -23,7 +23,31 @@
 static void CVMCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 							   int throwException)
 {
-	/* TODO */
+	if(ILClass_IsInterface(classInfo))
+	{
+		/* We are casting to an interface */
+		if(throwException)
+		{
+			CVM_BYTE(COP_CASTINTERFACE);
+		}
+		else
+		{
+			CVM_BYTE(COP_ISINTERFACE);
+		}
+	}
+	else
+	{
+		/* We are casting to a class */
+		if(throwException)
+		{
+			CVM_BYTE(COP_CASTCLASS);
+		}
+		else
+		{
+			CVM_BYTE(COP_ISINST);
+		}
+	}
+	CVM_PTR(classInfo);
 }
 
 /*

@@ -360,6 +360,8 @@ static CVMOpcode const opcodes[256] = {
 	 */
 	{"castclass",		CVM_OPER_CLASS},
 	{"isinst",			CVM_OPER_CLASS},
+	{"castinterface",	CVM_OPER_CLASS},
+	{"isinterface",		CVM_OPER_CLASS},
 	{"get_static",		CVM_OPER_CLASS},
 	{"new",				CVM_OPER_NONE},
 	{"new_value",		CVM_OPER_WIDE_TWO_UINT},
@@ -368,8 +370,6 @@ static CVMOpcode const opcodes[256] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"reserved_e6",		CVM_OPER_NONE},
-	{"reserved_e7",		CVM_OPER_NONE},
 	{"reserved_e8",		CVM_OPER_NONE},
 	{"reserved_e9",		CVM_OPER_NONE},
 	{"reserved_ea",		CVM_OPER_NONE},

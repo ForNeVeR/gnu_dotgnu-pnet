@@ -25,6 +25,7 @@
 #elif defined(IL_CVM_LOCALS)
 
 void *tempptr;
+ILClass *classInfo;
 
 #elif defined(IL_CVM_MAIN)
 
@@ -667,8 +668,16 @@ break;
 case COP_CASTCLASS:
 {
 	/* Cast the object on the stack top to a new class */
-	/* TODO */
-	MODIFY_PC_AND_STACK(5, 0);
+	classInfo = (ILClass *)(ReadPointer(pc + 1));
+	if(!stacktop[-1].ptrValue ||
+	   ILClassInheritsFrom(GetObjectClass(stacktop[-1].ptrValue), classInfo))
+	{
+		MODIFY_PC_AND_STACK(1 + sizeof(void), 0);
+	}
+	else
+	{
+		INVALID_CAST_EXCEPTION();
+	}
 }
 break;
 
@@ -676,8 +685,43 @@ case COP_ISINST:
 {
 	/* Determine if the object on the stack top is an
 	   instance of a particular class */
-	/* TODO */
-	MODIFY_PC_AND_STACK(5, 0);
+	classInfo = (ILClass *)(ReadPointer(pc + 1));
+	if(stacktop[-1].ptrValue != 0 &&
+	   !ILClassInheritsFrom(GetObjectClass(stacktop[-1].ptrValue), classInfo))
+	{
+		stacktop[-1].ptrValue = 0;
+	}
+	MODIFY_PC_AND_STACK(1 + sizeof(void *), 0);
+}
+break;
+
+case COP_CASTINTERFACE:
+{
+	/* Cast the object on the stack top to a new interface */
+	classInfo = (ILClass *)(ReadPointer(pc + 1));
+	if(!stacktop[-1].ptrValue ||
+	   ILClassImplements(GetObjectClass(stacktop[-1].ptrValue), classInfo))
+	{
+		MODIFY_PC_AND_STACK(1 + sizeof(void), 0);
+	}
+	else
+	{
+		INVALID_CAST_EXCEPTION();
+	}
+}
+break;
+
+case COP_ISINTERFACE:
+{
+	/* Determine if the object on the stack top is an
+	   instance of a particular interface */
+	classInfo = (ILClass *)(ReadPointer(pc + 1));
+	if(stacktop[-1].ptrValue != 0 &&
+	   !ILClassImplements(GetObjectClass(stacktop[-1].ptrValue), classInfo))
+	{
+		stacktop[-1].ptrValue = 0;
+	}
+	MODIFY_PC_AND_STACK(1 + sizeof(void *), 0);
 }
 break;
 

@@ -316,10 +316,12 @@ extern	"C" {
  */
 #define	COP_CASTCLASS				0xE0
 #define	COP_ISINST					0xE1
-#define	COP_GET_STATIC				0xE2
-#define	COP_NEW						0xE3
-#define	COP_NEW_VALUE				0xE4
-#define	COP_LDSTR					0xE5
+#define	COP_CASTINTERFACE			0xE2
+#define	COP_ISINTERFACE				0xE3
+#define	COP_GET_STATIC				0xE4
+#define	COP_NEW						0xE5
+#define	COP_NEW_VALUE				0xE6
+#define	COP_LDSTR					0xE7
 
 /*
  * Make the next instruction wider.

@@ -30,6 +30,12 @@ public sealed class IsConst {}
 // A modifier class that is used to mark function pointer types.
 public sealed class IsFunctionPointer {}
 
+// A modifier class that is used to mark a managed type.
+public sealed class IsManaged {}
+
+// A modifier class that is used to mark an unmanaged type.
+public sealed class IsUnmanaged {}
+
 // An attribute class that is used to declare bit fields.
 [AttributeUsage(AttributeTargets.Struct, AllowMultiple=true)]
 public sealed class BitFieldAttribute : Attribute

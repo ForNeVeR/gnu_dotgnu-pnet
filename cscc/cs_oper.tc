@@ -1434,7 +1434,7 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	/* The type must be an object reference type */
 	if(!ILTypeIsReference(type))
 	{
-		CSErrorOnLine(yygetfilename(node->expr2), yygetlinenum(node->expr2),
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "reference type required");
 		type = ILFindSystemType(info, "Object");
 	}
@@ -1463,7 +1463,7 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	/* Report an error for the conversion */
 	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  		  "no conversion from `%s' to `%s'",
-		  		  CSTypeToName(value.type), type);
+		  		  CSTypeToName(value.type), CSTypeToName(type));
 	return result;
 }
 

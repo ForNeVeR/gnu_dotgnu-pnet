@@ -15,6 +15,8 @@
 	* codegen/cg_misc.tc (ILNode_Box): update the code generator for
 	"box" to conform with the ECMA specification.
 
+	* cscc/cs_oper.tc (ILNode_AsUntyped): fixes to error reporting.
+
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_coerce.h, include/il_types.h, image/types.c:

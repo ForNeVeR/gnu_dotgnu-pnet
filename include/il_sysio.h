@@ -332,6 +332,8 @@ int ILSysIOSocketGetName(ILSysIOHandle sockfd, unsigned char *addr,
 #define	IL_SO_SEND_TIMEOUT		0x1005
 #define	IL_SO_RECV_TIMEOUT		0x1006
 
+#define IL_SO_BROADCAST 32
+
 /*
  * Set an integer or boolean socket option.  Returns zero on error.
  */

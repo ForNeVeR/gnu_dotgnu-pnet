@@ -965,6 +965,17 @@ static int SocketOptionsToNative(ILInt32 level, ILInt32 name,
 					#endif
 				}
 				break;
+				
+				case IL_SO_BROADCAST:
+				{
+					#ifdef SO_BROADCAST
+						(*nativeName) = SO_BROADCAST;
+					#else
+						return 0;
+					#endif
+				}
+				break;
+				
 				default:
 					return 0;
 			}

@@ -1,3 +1,7 @@
+2005-02-21  Doru Budai  <doru.budai@gmail.com>
+
+	* include/il_sysio.h, support/socket.c: Enable UDP broadcast. (patch
+	#3757, applied by drobosson)
 
 2005-02-21  Klaus Treichel  <ktreichel@web.de>
 

@@ -10,6 +10,10 @@
 	is possible to write the global element immediately without
 	first outputting an XML declaration (Bug #2637).
 
+	* runtime/System/Reflection/ClrResourceStream.cs: we still need
+	the "ClrResourceStream" class, even if reflection is turned off,
+	so that we can load string resources.
+
 2003-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Convert.cs,

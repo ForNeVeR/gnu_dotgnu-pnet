@@ -22,8 +22,6 @@
 namespace System.Reflection
 {
 
-#if CONFIG_REFLECTION
-
 using System;
 using System.IO;
 using System.Threading;
@@ -300,7 +298,5 @@ internal sealed class ClrResourceStream : Stream
 				(IntPtr handle, long position);
 
 }; // class ClrResourceStream
-
-#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

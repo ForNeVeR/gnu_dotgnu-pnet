@@ -4625,9 +4625,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 								// set the previous span ended in new line flag
 								prevIsNewLine = true;
-
-								// we're done here
-								return;
 							}
 
 							// reset line space usage

@@ -10,6 +10,9 @@
 	runtime/System/Runtime/Remoting/Lifetime/LifetimeServices.cs:
 	minor TODO's in "Activator" and "MarshalByRefObject".
 
+	* runtime/System/Reflection/Assembly.cs: add missing internalcall's
+	to "System.Reflection.Assembly".
+
 2003-08-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* csupport/Directory.cs: add and implement the underlying C# object for

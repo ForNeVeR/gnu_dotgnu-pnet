@@ -641,6 +641,10 @@ public class Assembly : IClrProgramItem
 				return GetModules(getResourceModules);
 			}
 
+	// Get a module by name from this assembly.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private Module GetModuleInternal(String name);
+
 	// Get a particular module from within this assembly.
 	public Module GetModule(String name)
 			{
@@ -648,8 +652,12 @@ public class Assembly : IClrProgramItem
 				{
 					throw new ArgumentNullException("name");
 				}
-				// TODO
-				return null;
+				else if(name.Length == 0)
+				{
+					throw new ArgumentException
+						(_("ArgRange_StringNotEmpty"), "name");
+				}
+				return GetModuleInternal(name);
 			}
 
 	// Get the modules within this assembly.
@@ -657,12 +665,8 @@ public class Assembly : IClrProgramItem
 			{
 				return GetModules(false);
 			}
-	[TODO]
-	public Module[] GetModules(bool getResourceModules)
-			{
-				// TODO
-				return new Module [0];
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public Module[] GetModules(bool getResourceModules);
 
 	// Fill in an assembly name block with a loaded assembly's information.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -695,12 +699,25 @@ public class Assembly : IClrProgramItem
 				return GetName();
 			}
 
+	// Get the assemblies referenced by this one.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private Assembly[] GetReferencedAssembliesInternal();
+
 	// Get a list of the assemblies that are referenced by this one.
-	[TODO]
 	public AssemblyName[] GetReferencedAssemblies()
 			{
-				// TODO
-				return new AssemblyName [0];
+				Assembly[] list = GetReferencedAssembliesInternal();
+				if(list == null)
+				{
+					return null;
+				}
+				AssemblyName[] names = new AssemblyName [list.Length];
+				int posn;
+				for(posn = 0; posn < list.Length; ++posn)
+				{
+					names[posn] = list[posn].GetName();
+				}
+				return names;
 			}
 
 	// Get a satellite resource assembly.

@@ -6,6 +6,9 @@
 	profiles/kernel, profiles/kernel-fp, profiles/tiny:
 	add support for gzip-compressed PE/COFF binaries.
 
+	* image/pecoff_loader.c: disable in-place execution when
+	the binary image has been compressed.
+
 2003-08-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:

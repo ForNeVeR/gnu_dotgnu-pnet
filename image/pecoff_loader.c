@@ -458,6 +458,9 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 		/* Suppress the use of mmap to load the stream's contents */
 		flags |= IL_LOADFLAG_NO_MAP;
 
+		/* Disable in-place execution */
+		flags &= ~IL_LOADFLAG_IN_PLACE;
+
 		/* Re-read the magic number bytes from the uncompressed data */
 		if((*(ctx->readFunc))(ctx, buffer, 2) != 2)
 		{

@@ -25,13 +25,27 @@ using System.Windows.Forms;
 
 public class FormsHello : Form
 {
+	private Button button;
+	private int msgNum;
 	
 	private FormsHello()
 	{
+		// Force the entire form to repaint when it is resized.
 		SetStyle(ControlStyles.ResizeRedraw, true);
+
+		// Create a button control on the form.
+		button = new Button();
+		button.Text = "Click Me!";
+		button.Location = new Point(30, 130);
+		Controls.Add(button);
+		button.Show();
+
+		// Hook up interesting events.
+		Paint += new PaintEventHandler(HandlePaint);
+		button.Click += new EventHandler(HandleClick);
 	}
 
-	private static void HandlePaint(Object sender, PaintEventArgs e)
+	private void HandlePaint(Object sender, PaintEventArgs e)
 	{
 		Graphics graphics = e.Graphics;
 		Form form = (sender as Form);
@@ -60,13 +74,25 @@ public class FormsHello : Form
 		brush.Dispose();
 	}
 
+	private static readonly String[] Messages = {
+		"I've been clicked!",
+		"Oww! That hurts!",
+		"Stop it!",
+		"Thank you sir! May I have another?"
+	};
+
+	private void HandleClick(Object sender, EventArgs e)
+	{
+		Console.WriteLine(Messages[msgNum]);
+		msgNum = (msgNum + 1) % Messages.Length;
+	}
+
 	public static void Main(String[] args)
 	{
-		Form form = new FormsHello();
+		FormsHello form = new FormsHello();
 		form.Width = 400;
 		form.Height = 250;
 		form.Text = "Forms Hello";
-		form.Paint += new PaintEventHandler(HandlePaint);
 		Application.Run(form);
 	}
 }

@@ -25,6 +25,7 @@ namespace System.Windows.Forms
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Toolkit;
+using System.Drawing.Text;
 using System.Collections;
 using System.Windows.Forms.Toolkit;
 
@@ -63,6 +64,7 @@ public class Control : IWin32Window
 	private Object tag;
 	private ControlStyles styles;
 	private CreateParams createParams;
+	private static Font defaultFont;
 
 	// Constructors.
 	public Control()
@@ -550,13 +552,20 @@ public class Control : IWin32Window
 					return SystemColors.Control;
 				}
 			}
-	[TODO]
 	public static Font DefaultFont
 			{
 				get
 				{
-					// TODO
-					return null;
+					lock(typeof(Control))
+					{
+						if(defaultFont == null)
+						{
+							defaultFont = new Font
+								(new FontFamily
+									(GenericFontFamilies.SansSerif), 12.0f);
+						}
+						return defaultFont;
+					}
 				}
 			}
 	public static Color DefaultForeColor

@@ -166,13 +166,20 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	public override Size MeasureString
 				(String s, System.Drawing.Point[] layoutRectangle,
 				 StringFormat format, out int charactersFitted,
-				 out int linesFilled)
+				 out int linesFilled, bool ascentOnly)
 			{
 				// TODO: line wrapping, etc
 				int width, ascent, descent;
 				graphics.MeasureString
 					(s, font, out width, out ascent, out descent);
-				return new Size(width, ascent + descent);
+				if(!ascentOnly)
+				{
+					return new Size(width, ascent + descent);
+				}
+				else
+				{
+					return new Size(width, ascent);
+				}
 			}
 
 	// Flush the graphics subsystem

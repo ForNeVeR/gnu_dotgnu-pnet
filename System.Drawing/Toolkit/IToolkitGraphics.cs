@@ -89,7 +89,7 @@ public interface IToolkitGraphics : IDisposable
 	// Measure a string using the current font and a given layout rectangle.
 	Size MeasureString(String s, Point[] layoutRectangle,
 					   StringFormat format, out int charactersFitted,
-					   out int linesFilled);
+					   out int linesFilled, bool ascentOnly);
 
 	// Flush the graphics subsystem
 	void Flush(FlushIntention intention);

@@ -331,7 +331,7 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	public abstract Size MeasureString
 				(String s, Point[] layoutRectangle,
 				 StringFormat format, out int charactersFitted,
-				 out int linesFilled);
+				 out int linesFilled, bool ascentOnly);
 
 	// Flush the graphics subsystem
 	public virtual void Flush(FlushIntention intention)

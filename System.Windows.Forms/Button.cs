@@ -24,13 +24,18 @@ namespace System.Windows.Forms
 
 using System.Windows.Forms.Toolkit;
 
-public class Button : ButtonBase
+public class Button : ButtonBase, IButtonControl
 {
 	// Internal result.
 	private DialogResult result;
 
 	// Contructor.
-	public Button() {}
+	public Button()
+			{
+				// Turn off the standard click styles.
+				SetStyle(ControlStyles.StandardClick |
+						 ControlStyles.StandardDoubleClick, false);
+			}
 
 	// Get or set the dialog result associated with this button.
 	public virtual DialogResult DialogResult
@@ -43,6 +48,18 @@ public class Button : ButtonBase
 				{
 					result = value;
 				}
+			}
+
+	// Notify the button that it is now the default button.
+	public virtual void NotifyDefault(bool value)
+			{
+				IsDefault = value;
+			}
+
+	// Perform a click on this control.
+	public void PerformClick()
+			{
+				OnClick(EventArgs.Empty);
 			}
 
 	// Process a button click.
@@ -60,6 +77,46 @@ public class Button : ButtonBase
 
 				// Perform the default button click behaviour.
 				base.OnClick(e);
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return base.ToString() + ", Text: " + Text;
+			}
+
+	// Get the create parameters.  Not used in this implementation.
+	protected override CreateParams CreateParams
+			{
+				get
+				{
+					return base.CreateParams;
+				}
+			}
+
+	// Handle the mouse up event to cause "Click" to be emitted.
+	protected override void OnMouseUp(MouseEventArgs e)
+			{
+				bool clicked = (entered && pressed);
+				base.OnMouseUp(e);
+				if(clicked)
+				{
+					OnClick(EventArgs.Empty);
+				}
+			}
+
+	// Process a key mnemonic.
+	protected override bool ProcessMnemonic(char charCode)
+			{
+				if(IsMnemonic(charCode, Text))
+				{
+					PerformClick();
+					return true;
+				}
+				else
+				{
+					return base.ProcessMnemonic(charCode);
+				}
 			}
 
 }; // class Button

@@ -56,15 +56,16 @@ internal sealed class DrawingPen : IToolkitPen
 			}
 
 	// Map the cap style from "System.Drawing" to "Xsharp".
-	private static CapStyle MapCapStyle(DashCap style)
+	private static CapStyle MapCapStyle(LineCap style)
 			{
 				switch(style)
 				{
-					case DashCap.Flat:
-					case DashCap.Triangle:
-					default:
+					case LineCap.Square:
+						return CapStyle.CapProjecting;
+					case LineCap.Flat:
 						return CapStyle.CapButt;
-					case DashCap.Round:
+					case LineCap.Round:
+					default:
 						return CapStyle.CapRound;
 				}
 			}
@@ -94,7 +95,7 @@ internal sealed class DrawingPen : IToolkitPen
 					Xsharp.Graphics g = graphics.graphics;
 					g.LineWidth = (int)(properties.Width);
 					g.LineStyle = MapLineStyle(properties.DashStyle);
-					g.CapStyle = MapCapStyle(properties.DashCap);
+					g.CapStyle = MapCapStyle(properties.EndCap);
 					g.JoinStyle = MapJoinStyle(properties.LineJoin);
 					g.Foreground = DrawingToolkit.DrawingToXColor
 						(properties.Color);

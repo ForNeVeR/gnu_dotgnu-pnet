@@ -182,7 +182,7 @@ public sealed class StringFormat
 			}
 
 	// Get tab stop information for this format.
-	public float[] GetTopStops(out float firstTabOffset)
+	public float[] GetTabStops(out float firstTabOffset)
 			{
 			#if CONFIG_EXTENDED_NUMERICS
 				if(this.tabStops == null)

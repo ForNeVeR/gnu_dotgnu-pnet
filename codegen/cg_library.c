@@ -229,6 +229,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *intPtrClass;
 	ILClass *uintPtrClass;
 	ILClass *typedRefClass;
+	ILClass *argIterClass;
 	ILClass *argHandleClass;
 	ILClass *attributeClass;
 	ILClass *paramAttributeClass;
@@ -352,6 +353,17 @@ void ILGenMakeLibrary(ILGenInfo *info)
 			 ILClassCreate(scope, 0, "TypedReference", "System",
 			 			   valueTypeClass));
 	ILClassSetAttrs(typedRefClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_VALUE_TYPE |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_SEALED);
+
+	/* Create the "System.ArgIterator" class */
+	ABORT_IF(argIterClass,
+			 ILClassCreate(scope, 0, "ArgIterator", "System",
+			 			   valueTypeClass));
+	ILClassSetAttrs(argIterClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
 				    IL_META_TYPEDEF_SERIALIZABLE |

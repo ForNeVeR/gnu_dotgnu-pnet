@@ -27,11 +27,7 @@
 extern	"C" {
 #endif
 
-/*
- * Create a basic image structure with an initial module,
- * assembly, and "<Module>" type.
- */
-static ILImage *CreateBasicImage(ILContext *context, const char *assemName)
+ILImage *ILGenCreateBasicImage(ILContext *context, const char *assemName)
 {
 	ILImage *image;
 
@@ -80,13 +76,14 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	{
 		assemName = "<Assembly>";
 	}
-	if((info->image = CreateBasicImage(info->context, assemName)) == 0)
+	if((info->image = ILGenCreateBasicImage(info->context, assemName)) == 0)
 	{
 		ILGenOutOfMemory(info);
 	}
 	if(useBuiltinLibrary)
 	{
-		if((info->libImage = CreateBasicImage(info->context, ".library")) == 0)
+		if((info->libImage =
+				ILGenCreateBasicImage(info->context, ".library")) == 0)
 		{
 			ILGenOutOfMemory(info);
 		}

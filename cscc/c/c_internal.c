@@ -50,6 +50,9 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope)
 
 void CGenBeginCode(ILGenInfo *info)
 {
+	/* Register the builtin library */
+	CGenRegisterLibrary(info);
+
 	/* Tag the module with the memory model, which tells the linker
 	   that this is a C module requiring special treatment */
 	if(info->asmOutput)

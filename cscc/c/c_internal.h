@@ -65,6 +65,11 @@ void CGenEndCode(ILGenInfo *info);
  */
 void CGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item);
 
+/*
+ * Register the builtin "clang" library so the compiler can use it.
+ */
+void CGenRegisterLibrary(ILGenInfo *info);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -287,6 +287,12 @@ void ILGenPushTry(ILGenInfo *info);
  */
 void ILGenPopTry(ILGenInfo *info);
 
+/*
+ * Create a basic image structure with an initial module,
+ * assembly, and "<Module>" type.
+ */
+ILImage *ILGenCreateBasicImage(ILContext *context, const char *assemName);
+
 #ifdef	__cplusplus
 };
 #endif

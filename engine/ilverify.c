@@ -175,11 +175,29 @@ static ILCoder *Coder_Create(ILExecThread *thread, ILUInt32 size)
 {
 	return 0;
 }
-static int Coder_Setup(ILCoder *coder, ILMethod *method, ILMethodCode *code)
+static ILUInt32 Coder_Generation(ILCoder *coder)
+{
+	return 1;
+}
+static void *Coder_Alloc(ILCoder *coder, ILUInt32 size)
+{
+	return 0;
+}
+static int Coder_Setup(ILCoder *coder, unsigned char **start,
+					   ILMethod *method, ILMethodCode *code)
+{
+	return 1;
+}
+static int Coder_SetupExtern(ILCoder *coder, unsigned char **start,
+							 ILMethod *method, void *fn, void *cif,
+							 int isInternal)
 {
 	return 1;
 }
 static void Coder_Destroy(ILCoder *coder)
+{
+}
+static void Coder_Flush(ILCoder *coder)
 {
 }
 static int Coder_Finish(ILCoder *coder)
@@ -408,8 +426,12 @@ static void Coder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
  */
 static ILCoderClass const DefaultCoderClass = {
 	Coder_Create,
+	Coder_Generation,
+	Coder_Alloc,
 	Coder_Setup,
+	Coder_SetupExtern,
 	Coder_Destroy,
+	Coder_Flush,
 	Coder_Finish,
 	Coder_Restart,
 	Coder_Label,
@@ -504,6 +526,7 @@ static int verify(const char *filename, FILE *stream, int closeStream,
 	ILMethod *method;
 	ILMethodCode code;
 	int result;
+	unsigned char *start;
 
 	/* Attempt to load the image into memory */
 	loadError = ILImageLoad(stream, filename, context, &image,
@@ -537,7 +560,7 @@ static int verify(const char *filename, FILE *stream, int closeStream,
 		}
 
 		/* Verify the method */
-		result = _ILVerify(&DefaultCoder, method, &code, allowUnsafe);
+		result = _ILVerify(&DefaultCoder, &start, method, &code, allowUnsafe);
 		if(!result)
 		{
 			printError(method, "could not verify code");

@@ -93,15 +93,42 @@ struct _tagILCoderClass
 	ILCoder *(*create)(ILExecThread *thread, ILUInt32 size);
 	
 	/*
+	 * Get the current generation count for this coder instance.
+	 * The count changes whenever a cache flush occurs.
+	 */
+	ILUInt32 (*generation)(ILCoder *coder);
+
+	/*
+	 * Allocate a block of memory within this coder instance.
+	 * Returns NULL if cache overflow has occurred.
+	 */
+	void *(*alloc)(ILCoder *coder, ILUInt32 size);
+
+	/*
 	 * Set up a coder instance for processing a specific method.
+	 * Returns zero if not possible.  The start of the method is
+	 * returned in "*start".
+	 */
+	int (*setup)(ILCoder *coder, unsigned char **start,
+				 ILMethod *method, ILMethodCode *code);
+
+	/*
+	 * Set up a coder instance for processing a specific external method.
 	 * Returns zero if not possible.
 	 */
-	int (*setup)(ILCoder *coder, ILMethod *method, ILMethodCode *code);
+	int (*setupExtern)(ILCoder *coder, unsigned char **start,
+					   ILMethod *method, void *fn, void *cif,
+					   int isInternal);
 
 	/*
 	 * Destroy a coder instance.
 	 */
 	void (*destroy)(ILCoder *coder);
+
+	/*
+	 * Flush a coder instance and advance the generation count.
+	 */
+	void (*flush)(ILCoder *coder);
 
 	/*
 	 * Finish processing on the method.  Returns zero if
@@ -485,10 +512,19 @@ struct _tagILCoderClass
  */
 #define	ILCoderCreate(classInfo,thread)	\
 			((*((classInfo)->create))((thread)))
-#define	ILCoderSetup(coder,method,code) \
-			((*((coder)->classInfo->setup))((coder), (method), (code)))
+#define	ILCoderGeneration(coder)	\
+			((*((coder)->classInfo->generation))((coder)))
+#define	ILCoderAlloc(coder,size)	\
+			((*((coder)->classInfo->alloc))((coder), (size)))
+#define	ILCoderSetup(coder,start,method,code) \
+			((*((coder)->classInfo->setup))((coder), (start), (method), (code)))
+#define	ILCoderSetupExtern(coder,start,method,fn,cif,isInternal) \
+			((*((coder)->classInfo->setupExtern))((coder), (start), (method), \
+												  (fn), (cif), (isInternal)))
 #define	ILCoderDestroy(coder) \
 			((*((coder)->classInfo->destroy))((coder)))
+#define	ILCoderFlush(coder) \
+			((*((coder)->classInfo->flush))((coder)))
 #define	ILCoderFinish(coder) \
 			((*((coder)->classInfo->finish))((coder)))
 #define	ILCoderRestart(coder) \

@@ -21,6 +21,7 @@
 using CSUnit;
 using System;
 using System.Reflection;
+using System.IO;
 using System.Text;
 using System.Security.Cryptography;
 
@@ -167,6 +168,38 @@ public class CryptoTestCase : TestCase
 				{
 					Fail("incorrect hash value produced");
 				}
+
+				// Get the hash value over the input in a sub-buffer.
+				byte[] input2 = new byte [input.Length + 20];
+				if(input.Length != 0)
+				{
+					Array.Copy(input, 0, input2, 10, input.Length);
+				}
+				hash = alg.ComputeHash(input2, 10, input.Length);
+
+				// Compare the hash with the expected value.
+				AssertNotNull("returned hash was null", hash);
+				AssertEquals("hash length is wrong", hash.Length,
+							 expected.Length);
+				if(!IdenticalBlock(hash, 0, expected, 0, expected.Length))
+				{
+					Fail("incorrect hash value produced");
+				}
+
+#if false // TODO
+				// Get the hash value over the input via a stream.
+				MemoryStream stream = new MemoryStream(input, false);
+				hash = alg.ComputeHash(stream);
+
+				// Compare the hash with the expected value.
+				AssertNotNull("returned hash was null", hash);
+				AssertEquals("hash length is wrong", hash.Length,
+							 expected.Length);
+				if(!IdenticalBlock(hash, 0, expected, 0, expected.Length))
+				{
+					Fail("incorrect hash value produced");
+				}
+#endif
 			}
 	protected void RunHash(String name, String value, byte[] expected)
 			{
@@ -244,9 +277,31 @@ public class CryptoTestCase : TestCase
 				CheckSize("initial block size is not legal",
 						  alg.LegalBlockSizes, alg.BlockSize);
 
-				// Try setting the key size to all legal values.
+				// TODO: Try setting the key size to all legal values.
 
 				// TODO: check automatic key and IV generation
+			}
+
+	// Test the properties on a hash algorithm instance.
+	protected void HashPropertyTest(HashAlgorithm alg, int expectedHashSize)
+			{
+				AssertEquals("hash size is incorrect",
+							 alg.HashSize, expectedHashSize);
+				AssertEquals("input block size is incorrect",
+							 alg.InputBlockSize, 1);
+				AssertEquals("output block size is incorrect",
+							 alg.OutputBlockSize, 1);
+				AssertEquals("multiple block transform flag is incorrect",
+							 alg.CanTransformMultipleBlocks, true);
+				try
+				{
+					byte[] hash = alg.Hash;
+					Fail("should not be able to get the hash yet");
+				}
+				catch(CryptographicException)
+				{
+					// Success
+				}
 			}
 
 }; // CryptoTestCase

@@ -86,4 +86,10 @@ public class TestSHA1 : CryptoTestCase
 				}
 			}
 
+	// Test the properties of the default algorithm instance.
+	public void TestSHA1Properties()
+			{
+				HashPropertyTest(SHA1.Create(), 160);
+			}
+
 }; // TestSHA1

@@ -142,4 +142,10 @@ public class TestMD5 : CryptoTestCase
 				}
 			}
 
+	// Test the properties of the default algorithm instance.
+	public void TestMD5Properties()
+			{
+				HashPropertyTest(MD5.Create(), 128);
+			}
+
 }; // TestMD5

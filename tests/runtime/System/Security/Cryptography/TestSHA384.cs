@@ -95,4 +95,10 @@ public class TestSHA384 : CryptoTestCase
 				}
 			}
 
+	// Test the properties of the default algorithm instance.
+	public void TestSHA384Properties()
+			{
+				HashPropertyTest(SHA384.Create(), 384);
+			}
+
 }; // TestSHA384

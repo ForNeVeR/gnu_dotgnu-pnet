@@ -90,4 +90,10 @@ public class TestSHA256 : CryptoTestCase
 				}
 			}
 
+	// Test the properties of the default algorithm instance.
+	public void TestSHA256Properties()
+			{
+				HashPropertyTest(SHA256.Create(), 256);
+			}
+
 }; // TestSHA256

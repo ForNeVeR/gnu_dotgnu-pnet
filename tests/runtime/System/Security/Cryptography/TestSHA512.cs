@@ -99,4 +99,10 @@ public class TestSHA512 : CryptoTestCase
 				}
 			}
 
+	// Test the properties of the default algorithm instance.
+	public void TestSHA512Properties()
+			{
+				HashPropertyTest(SHA512.Create(), 512);
+			}
+
 }; // TestSHA512

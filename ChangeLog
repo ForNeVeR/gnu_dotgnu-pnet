@@ -42,6 +42,14 @@
 	runtime/System/Security/Cryptography/ToBase64Transform.cs:
 	add the "IDisposable" interface to cryptography classes that need it.
 
+	* tests/runtime/System/Security/Cryptography/CryptoTestCase.cs,
+	tests/runtime/System/Security/Cryptography/TestMD5.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA1.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA256.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA384.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA512.cs:
+	test hash algorithm properties and all forms of "ComputeHash".
+
 2002-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* pnetlib.spec.in, configure.in : RPM builds for pnetlib

@@ -714,7 +714,11 @@ out:
 
 
 #if defined(MSWIN32) || defined(MSWINCE)
+#if defined(__CYGWIN32__) || defined(__CYGWIN__)
+# define LOG_FILE "gc.log"
+#else
 # define LOG_FILE _T("gc.log")
+#endif
 
   HANDLE GC_stdout = 0;
 

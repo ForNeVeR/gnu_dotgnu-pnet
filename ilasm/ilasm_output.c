@@ -306,7 +306,7 @@ void ILAsmOutVar(ILInt32 opcode, ILInt64 num)
 		case 0xFE00 | IL_PREFIX_OP_LDLOC:
 		{
 			OutLongVar(0xFE00 | IL_PREFIX_OP_LDLOC, IL_OP_LDLOC_S,
-					   IL_OP_LDARG_0, num);
+					   IL_OP_LDLOC_0, num);
 		}
 		break;
 

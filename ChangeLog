@@ -22,6 +22,9 @@ Intel's performance guidelines suggest that increment instructions
 should be avoided.  This does produce a slight improvement in engine
 performance.
 
+* ilasm/ilasm_output.c: bug in "ILAsmOutVar", which caused it to
+output "ldarg" instead of "ldloc" in some cases.
+
 2001-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * tests/Makefile.am, tests/ilunit.c, tests/test_varith.c,

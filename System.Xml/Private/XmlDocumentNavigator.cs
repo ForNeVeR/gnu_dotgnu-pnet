@@ -39,9 +39,15 @@ internal class XmlDocumentNavigator : XPathNavigator
 							(XmlDocument)node : node.OwnerDocument;
 	}
 
+	public XmlDocumentNavigator(XmlDocumentNavigator copy)
+	{
+		this.node = copy.node;
+		this.document = copy.document;
+	}
+
 	public override XPathNavigator Clone()
 	{
-		return null;
+		return new XmlDocumentNavigator(this);
 	}
 
 	public override String GetAttribute(String localName, String namespaceURI)
@@ -117,10 +123,11 @@ internal class XmlDocumentNavigator : XPathNavigator
 
 	public override bool MoveToFirstChild()
 	{
-		//TODO: handled DTD entries
+		//TODO: handle DTD entries
 		if(node.FirstChild != null)
 		{
 			node = node.FirstChild;
+			return true;
 		}
 		return false;
 	}
@@ -230,7 +237,7 @@ internal class XmlDocumentNavigator : XPathNavigator
 		// TODO: make sure we don't use this for fragments
 		if(document != null && document.DocumentElement != null)
 		{
-			node = document.DocumentElement;
+			node = document;
 		}
 		return;
 	}
@@ -431,6 +438,11 @@ internal class XmlDocumentNavigator : XPathNavigator
 		{
 			return String.Empty;
 		}
+	}
+
+	public override String ToString()
+	{
+		return String.Format("<XPathNavigator {0} , {1}>", node,document);
 	}
 }
 

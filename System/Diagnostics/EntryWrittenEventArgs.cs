@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * EntryWrittenEventArgs.cs - Implementation of the
+ *			"System.Diagnostics.EntryWrittenEventArgs" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,31 @@ namespace System.Diagnostics
 #if !ECMA_COMPAT
 
 [Serializable]
-public enum ProcessWindowStyle
+public class EntryWrittenEventArgs : EventArgs
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
+	// Internal state.
+	private EventLogEntry entry;
 
-}; // enum ProcessWindowStyle
+	// Constructor.
+	public EntryWrittenEventArgs()
+			{
+				this.entry = null;
+			}
+	public EntryWrittenEventArgs(EventLogEntry entry)
+			{
+				this.entry = entry;
+			}
+
+	// Get the entry that was written to the log.
+	public EventLogEntry Entry
+			{
+				get
+				{
+					return entry;
+				}
+			}
+
+}; // class EntryWrittenEventArgs
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * CounterSampleCalculator.cs - Implementation of the
+ *			"System.Diagnostics.CounterSampleCalculator" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,15 +24,24 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
-[Serializable]
-public enum ProcessWindowStyle
+public sealed class CounterSampleCalculator
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
+	// Cannot instantiate this class.
+	private CounterSampleCalculator() {}
 
-}; // enum ProcessWindowStyle
+	// Compute the floating-point form of a counter sample value.
+	// Don't use these methods.
+	public static float ComputeCounterValue(CounterSample newSample)
+			{
+				throw new NotImplementedException();
+			}
+	public static float ComputeCounterValue(CounterSample oldSample,
+											CounterSample newSample)
+			{
+				throw new NotImplementedException();
+			}
+
+}; // class CounterSampleCalculator
 
 #endif // !ECMA_COMPAT
 

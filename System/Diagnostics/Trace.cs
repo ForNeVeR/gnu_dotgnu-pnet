@@ -1,9 +1,8 @@
 /*
- * Trace.cs - Implementation of "System.Diagnostics.Trace" 
+ * Trace.cs - Implementation of the
+ *			"System.Diagnostics.Trace" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * 
- * Contributed by Gopal.V
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,213 +19,360 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.Diagnostics
 {
-	public sealed class Trace
-	{
-		[TODO]
-		public static void Assert(bool condition)
-		{
-			 /*TODO: Implement this */
-		}
 
-		[TODO]
-		public static void Assert(bool condition, String message)
-		{
-			 /*TODO: Implement this */
-		}
+#if !ECMA_COMPAT
 
-		[TODO]
-		public static void Assert(bool condition, String message, String detailMessage)
-		{
-			 /*TODO: Implement this */
-		}
+#define	TRACE
 
-		[TODO]
-		public static void Close()
-		{
-			 /*TODO: Implement this */
-		}
+public sealed class Trace
+{
+	// Internal state.
+	private static bool autoFlush;
+	private static int indentLevel;
+	private static int indentSize = 4;
+	private static TraceListenerCollection listeners;
 
-		[TODO]
-		public static void Fail(String message)
-		{
-			 /*TODO: Implement this */
-		}
+	// This class cannot be instantiated.
+	private Trace() {}
 
-		[TODO]
-		public static void Fail(String message, String detailMessage)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void Flush()
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void Indent()
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void Unindent()
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void Write(Object value)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void Write(String message)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void Write(Object value, String category)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void Write(String message, String category)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteIf(bool condition, Object value)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteIf(bool condition, String message)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteIf(bool condition, Object value, String category)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteIf(bool condition, String message, String category)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteLine(Object value)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteLine(String message)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteLine(Object value, String category)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteLine(String message, String category)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteLineIf(bool condition, Object value)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteLineIf(bool condition, String message)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteLineIf(bool condition, Object value, String category)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static void WriteLineIf(bool condition, String message, String category)
-		{
-			 /*TODO: Implement this */
-		}
-
-		[TODO]
-		public static bool AutoFlush 
-		{
- 			get
+	// Global trace properties.
+	public static bool AutoFlush
 			{
-				return false;
-				/*TODO: Implement this */
+				get
+				{
+					lock(typeof(Trace))
+					{
+						return autoFlush;
+					}
+				}
+				set
+				{
+					lock(typeof(Trace))
+					{
+						autoFlush = value;
+					}
+				}
 			}
- 			set
+	public static int IndentLevel
 			{
-				/*TODO: Implement this */
+				get
+				{
+					lock(typeof(Trace))
+					{
+						return indentLevel;
+					}
+				}
+				set
+				{
+					lock(typeof(Trace))
+					{
+						if(value < 0)
+						{
+							value = 0;
+						}
+						indentLevel = value;
+						foreach(TraceListener listener in Listeners)
+						{
+							listener.IndentLevel = value;
+						}
+					}
+				}
 			}
- 		}
+	public static int IndentSize
+			{
+				get
+				{
+					lock(typeof(Trace))
+					{
+						return indentSize;
+					}
+				}
+				set
+				{
+					lock(typeof(Trace))
+					{
+						if(value < 0)
+						{
+							value = 0;
+						}
+						indentSize = value;
+						foreach(TraceListener listener in Listeners)
+						{
+							listener.IndentSize = value;
+						}
+					}
+				}
+			}
+	public static TraceListenerCollection Listeners
+			{
+				get
+				{
+					lock(typeof(Trace))
+					{
+						if(listeners == null)
+						{
+							listeners = new TraceListenerCollection();
+							listeners.Add(new DefaultTraceListener());
+						}
+						return listeners;
+					}
+				}
+			}
 
-		[TODO]
-		public static int IndentLevel 
-		{
- 			get
+	// Assert on a particular condition.
+	[Conditional("TRACE")]
+	public static void Assert(bool condition)
 			{
-				return 0;
-				/*TODO: Implement this */
+				if(!condition)
+				{
+					Fail(String.Empty, null);
+				}
 			}
- 			set
+	[Conditional("TRACE")]
+	public static void Assert(bool condition, String message)
 			{
-				/*TODO: Implement this */
+				if(!condition)
+				{
+					Fail(message, null);
+				}
 			}
- 		}
+	[Conditional("TRACE")]
+	public static void Assert(bool condition, String message,
+							  String detailMessage)
+			{
+				if(!condition)
+				{
+					Fail(message, detailMessage);
+				}
+			}
 
-		[TODO]
-		public static int IndentSize 
-		{
- 			get
+	// Flush and close all listeners.
+	[Conditional("TRACE")]
+	public static void Close()
 			{
-				return 4;
-				/*TODO: Implement this */
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.Close();
+				}
 			}
- 			set
-			{
-				/*TODO: Implement this */
-			}
- 		}
-#if false
-		[TODO]
-		public static TraceListenerCollection Listeners 
-		{
- 			get
-			{
-				/*TODO: Implement this */
-			}
- 		}
-#endif
 
-	}
-}//namespace
+	// Record that some condition has failed.
+	[Conditional("TRACE")]
+	public static void Fail(String message)
+			{
+				Fail(message, null);
+			}
+	[Conditional("TRACE")]
+	public static void Fail(String message, String detailMessage)
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.Fail(message, detailMessage);
+				}
+			}
+
+	// Flush all trace listeners.
+	[Conditional("TRACE")]
+	public static void Flush()
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.Flush();
+				}
+			}
+
+	// Increase the indent level by one.
+	[Conditional("TRACE")]
+	public static void Indent()
+			{
+				IndentLevel = IndentLevel + 1;
+			}
+
+	// Decrease the indent level by one.
+	[Conditional("TRACE")]
+	public static void Unindent()
+			{
+				int level = IndentLevel - 1;
+				if(level >= 0)
+				{
+					IndentLevel = level;
+				}
+			}
+
+	// Write a message to all trace listeners.
+	[Conditional("TRACE")]
+	public static void Write(Object value)
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.Write(value);
+					if(AutoFlush)
+					{
+						listener.Flush();
+					}
+				}
+			}
+	[Conditional("TRACE")]
+	public static void Write(String message)
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.Write(message);
+					if(AutoFlush)
+					{
+						listener.Flush();
+					}
+				}
+			}
+	[Conditional("TRACE")]
+	public static void Write(Object value, String category)
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.Write(value, category);
+					if(AutoFlush)
+					{
+						listener.Flush();
+					}
+				}
+			}
+	[Conditional("TRACE")]
+	public static void Write(String message, String category)
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.Write(message, category);
+					if(AutoFlush)
+					{
+						listener.Flush();
+					}
+				}
+			}
+
+	// Write a message to all trace listeners if a condition is true.
+	[Conditional("TRACE")]
+	public static void WriteIf(bool condition, Object value)
+			{
+				if(condition)
+				{
+					Write(value);
+				}
+			}
+	[Conditional("TRACE")]
+	public static void WriteIf(bool condition, String message)
+			{
+				if(condition)
+				{
+					Write(message);
+				}
+			}
+	[Conditional("TRACE")]
+	public static void WriteIf(bool condition, Object value, String category)
+			{
+				if(condition)
+				{
+					Write(value, category);
+				}
+			}
+	[Conditional("TRACE")]
+	public static void WriteIf(bool condition, String message, String category)
+			{
+				if(condition)
+				{
+					Write(message, category);
+				}
+			}
+
+	// Write a message to all trace listeners.
+	[Conditional("TRACE")]
+	public static void WriteLine(Object value)
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.WriteLine(value);
+					if(AutoFlush)
+					{
+						listener.Flush();
+					}
+				}
+			}
+	[Conditional("TRACE")]
+	public static void WriteLine(String message)
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.WriteLine(message);
+					if(AutoFlush)
+					{
+						listener.Flush();
+					}
+				}
+			}
+	[Conditional("TRACE")]
+	public static void WriteLine(Object value, String category)
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.WriteLine(value, category);
+					if(AutoFlush)
+					{
+						listener.Flush();
+					}
+				}
+			}
+	[Conditional("TRACE")]
+	public static void WriteLine(String message, String category)
+			{
+				foreach(TraceListener listener in Listeners)
+				{
+					listener.WriteLine(message, category);
+					if(AutoFlush)
+					{
+						listener.Flush();
+					}
+				}
+			}
+
+	// Write a message to all trace listeners if a condition is true.
+	[Conditional("TRACE")]
+	public static void WriteLineIf(bool condition, Object value)
+			{
+				if(condition)
+				{
+					WriteLine(value);
+				}
+			}
+	[Conditional("TRACE")]
+	public static void WriteLineIf(bool condition, String message)
+			{
+				if(condition)
+				{
+					WriteLine(message);
+				}
+			}
+	[Conditional("TRACE")]
+	public static void WriteLineIf
+				(bool condition, Object value, String category)
+			{
+				if(condition)
+				{
+					WriteLine(value, category);
+				}
+			}
+	[Conditional("TRACE")]
+	public static void WriteLineIf
+				(bool condition, String message, String category)
+			{
+				if(condition)
+				{
+					WriteLine(message, category);
+				}
+			}
+
+}; // class Trace
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.Diagnostics

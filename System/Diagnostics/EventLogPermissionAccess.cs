@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * EventLogPermissionAccess.cs - Implementation of the
+ *			"System.Diagnostics.EventLogPermissionAccess" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,15 @@ namespace System.Diagnostics
 #if !ECMA_COMPAT
 
 [Serializable]
-public enum ProcessWindowStyle
+[Flags]
+public enum EventLogPermissionAccess
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
+	None       = 0x0000,
+	Browse     = 0x0002,
+	Instrument = 0x0006,
+	Audit      = 0x000A
 
-}; // enum ProcessWindowStyle
+}; // enum EventLogPermissionAccess
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * PerformanceCounterPermissionAccess.cs - Implementation of the
+ *			"System.Diagnostics.PerformanceCounterPermissionAccess" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,15 @@ namespace System.Diagnostics
 #if !ECMA_COMPAT
 
 [Serializable]
-public enum ProcessWindowStyle
+[Flags]
+public enum PerformanceCounterPermissionAccess
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
+	None       = 0x0000,
+	Browse     = 0x0002,
+	Instrument = 0x0006,
+	Administer = 0x000E
 
-}; // enum ProcessWindowStyle
+}; // enum PerformanceCounterPermissionAccess
 
 #endif // !ECMA_COMPAT
 

@@ -25,6 +25,47 @@
 	add ECMA_COMPAT to non-ECMA classes under System.Diagnostics;
 	implement remaining TODO's.
 
+	* System/Diagnostics/BooleanSwitch.cs,
+	System/Diagnostics/CounterCreationData.cs,
+	System/Diagnostics/CounterCreationDataCollection.cs,
+	System/Diagnostics/CounterSample.cs,
+	System/Diagnostics/CounterSampleCalculator.cs,
+	System/Diagnostics/Debug.cs,
+	System/Diagnostics/DefaultTraceListener.cs,
+	System/Diagnostics/EntryWrittenEventArgs.cs,
+	System/Diagnostics/EntryWrittenEventHandler.cs,
+	System/Diagnostics/EventLog.cs,
+	System/Diagnostics/EventLogEntry.cs,
+	System/Diagnostics/EventLogEntryCollection.cs,
+	System/Diagnostics/EventLogEntryType.cs,
+	System/Diagnostics/EventLogInstaller.cs,
+	System/Diagnostics/EventLogPermissionAccess.cs,
+	System/Diagnostics/FileVersionInfo.cs,
+	System/Diagnostics/InstanceData.cs,
+	System/Diagnostics/InstanceDataCollection.cs,
+	System/Diagnostics/InstanceDataCollectionCollection.cs,
+	System/Diagnostics/Makefile,
+	System/Diagnostics/MonitoringDescriptionAttribute.cs,
+	System/Diagnostics/PerformanceCounter.cs,
+	System/Diagnostics/PerformanceCounterCategory.cs,
+	System/Diagnostics/PerformanceCounterPermissionAccess.cs,
+	System/Diagnostics/PerformanceCounterType.cs,
+	System/Diagnostics/ProcessPriorityClass.cs,
+	System/Diagnostics/ProcessWindowStyle.cs,
+	System/Diagnostics/Switch.cs,
+	System/Diagnostics/TextWriterTraceListener.cs,
+	System/Diagnostics/ThreadPriorityLevel.cs,
+	System/Diagnostics/ThreadState.cs,
+	System/Diagnostics/ThreadWaitReason.cs,
+	System/Diagnostics/Trace.cs,
+	System/Diagnostics/TraceLevel.cs,
+	System/Diagnostics/TraceListener.cs,
+	System/Diagnostics/TraceListenerCollection.cs,
+	System/Diagnostics/TraceSwitch.cs,
+	resources/en_US/System/Arg.txt,
+	resources/en_US/System/Invalid.txt: implement missing classes in
+	the "System.Diagnostics" namespace within the "System" assembly.
+
 2003-04-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/Serialization/SerializationInfo.cs:

@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * InstanceData.cs - Implementation of the
+ *			"System.Diagnostics.InstanceData" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,15 +24,43 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
-[Serializable]
-public enum ProcessWindowStyle
+public class InstanceData
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
+	// Internal state.
+	private String instanceName;
+	private CounterSample sample;
 
-}; // enum ProcessWindowStyle
+	// Constructor.
+	public InstanceData(String instanceName, CounterSample sample)
+			{
+				this.instanceName = instanceName;
+				this.sample = sample;
+			}
+
+	// Properties.
+	public String InstanceName
+			{
+				get
+				{
+					return instanceName;
+				}
+			}
+	public long RawValue
+			{
+				get
+				{
+					return sample.RawValue;
+				}
+			}
+	public CounterSample Sample
+			{
+				get
+				{
+					return sample;
+				}
+			}
+
+}; // class InstanceData
 
 #endif // !ECMA_COMPAT
 

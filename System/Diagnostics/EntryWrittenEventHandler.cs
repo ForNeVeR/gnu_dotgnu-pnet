@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * EntryWrittenEventHandler.cs - Implementation of the
+ *			"System.Diagnostics.EntryWrittenEventHandler" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,8 @@ namespace System.Diagnostics
 #if !ECMA_COMPAT
 
 [Serializable]
-public enum ProcessWindowStyle
-{
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
-
-}; // enum ProcessWindowStyle
+public delegate void EntryWrittenEventHandler
+		(Object sender, EntryWrittenEventArgs e);
 
 #endif // !ECMA_COMPAT
 

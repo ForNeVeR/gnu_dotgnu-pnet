@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * EventLogEntryType.cs - Implementation of the
+ *			"System.Diagnostics.EventLogEntryType" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,15 @@ namespace System.Diagnostics
 #if !ECMA_COMPAT
 
 [Serializable]
-public enum ProcessWindowStyle
+public enum EventLogEntryType
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
+	Error        = 0x0001,
+	Warning      = 0x0002,
+	Information  = 0x0004,
+	SuccessAudit = 0x0008,
+	FailureAudit = 0x0010
 
-}; // enum ProcessWindowStyle
+}; // enum EventLogEntryType
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * TraceLevel.cs - Implementation of the
+ *			"System.Diagnostics.TraceLevel" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,16 @@ namespace System.Diagnostics
 #if !ECMA_COMPAT
 
 [Serializable]
-public enum ProcessWindowStyle
+public enum TraceLevel
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
 
-}; // enum ProcessWindowStyle
+	Off     = 0,
+	Error   = 1,
+	Warning = 2,
+	Info    = 3,
+	Verbose = 4
+
+}; // enum TraceLevel
 
 #endif // !ECMA_COMPAT
 

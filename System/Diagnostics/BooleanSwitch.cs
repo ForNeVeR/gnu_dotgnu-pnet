@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * BooleanSwitch.cs - Implementation of the
+ *			"System.Diagnostics.BooleanSwitch" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,15 +24,26 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
-[Serializable]
-public enum ProcessWindowStyle
+public class BooleanSwitch : Switch
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
+	// Constructor.
+	public BooleanSwitch(String displayName, String description)
+			: base(displayName, description) {}
 
-}; // enum ProcessWindowStyle
+	// Get or set the switch state.
+	public bool BooleanSwitch
+			{
+				get
+				{
+					return (SwitchSetting != 0);
+				}
+				set
+				{
+					SwitchSetting = (value ? 1 : 0);
+				}
+			}
+
+}; // class BooleanSwitch
 
 #endif // !ECMA_COMPAT
 

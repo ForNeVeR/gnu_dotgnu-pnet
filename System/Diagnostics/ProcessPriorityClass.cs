@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * ProcessPriorityClass.cs - Implementation of the
+ *			"System.Diagnostics.ProcessPriorityClass" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,17 @@ namespace System.Diagnostics
 #if !ECMA_COMPAT
 
 [Serializable]
-public enum ProcessWindowStyle
+public enum ProcessPriorityClass
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
 
-}; // enum ProcessWindowStyle
+	Normal      = 0x0020,
+	Idle        = 0x0040,
+	High        = 0x0080,
+	RealTime    = 0x0100,
+	BelowNormal = 0x4000,
+	AboveNormal = 0x8000
+
+}; // enum ProcessPriorityClass
 
 #endif // !ECMA_COMPAT
 

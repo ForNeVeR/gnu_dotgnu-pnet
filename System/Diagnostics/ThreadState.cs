@@ -1,6 +1,6 @@
 /*
- * ProcessWindowStyle.cs - Implementation of the
- *			"System.Diagnostics.ProcessWindowStyle" class.
+ * ThreadState.cs - Implementation of the
+ *			"System.Diagnostics.ThreadState" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,14 +25,18 @@ namespace System.Diagnostics
 #if !ECMA_COMPAT
 
 [Serializable]
-public enum ProcessWindowStyle
+public enum ThreadState
 {
-	Normal    = 0,
-	Hidden    = 1,
-	Minimized = 2,
-	Maximized = 3
+	Initialized = 0,
+	Ready       = 1,
+	Running     = 2,
+	Standby     = 3,
+	Terminated  = 4,
+	Wait        = 5,
+	Transition  = 6,
+	Unknown     = 7
 
-}; // enum ProcessWindowStyle
+}; // enum ThreadState
 
 #endif // !ECMA_COMPAT
 

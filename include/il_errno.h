@@ -30,6 +30,7 @@ extern	"C" {
 #define IL_ERRNO_Success 		0	/* Operation succeeded */
 #define IL_ERRNO_EPERM			1	/* Operation not permitted */
 #define IL_ERRNO_ENOENT			2	/* No such file or directory */
+#define IL_ERRNO_ENOFILE		IL_ERRNO_ENOENT /* No such file */
 #define IL_ERRNO_ESRCH			3	/* No such process */
 #define IL_ERRNO_EINTR			4	/* Interrupted system call */
 #define IL_ERRNO_EIO			5	/* I/O error */

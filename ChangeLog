@@ -1,3 +1,8 @@
+2004-08-23  Thong Nguyen  <tum@veridicus.com>
+
+	* include/il_errno.h: Added IL_ERRNO_ENOFILE (mapped to
+	IL_ERRNO_ENOENT).
+	
 2004-08-22  Thong Nguyen  <tum@veridicus.com>
 
 	* include/il_thread.h: Added ILThreadSuspendRequest and IL_SUSPEND_*

@@ -1,9 +1,18 @@
 
-2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (Load_MemberRef): report "unresolved external
 	references" instead of "invalid metadata" when a MemberRef cannot
 	be resolved.
+
+2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,
+	codegen/cg_nodemap.c, codegen/cg_nodemap.h, cscc/csharp/cs_decls.tc,
+	cscc/csharp/cs_gather.c, cscc/csharp/cs_lookup.c,
+	cscc/csharp/cs_types.tc, image/class.c, image/generic.c,
+	include/il_program.h: begin implementing type gathering
+	for generic types.
 
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
@@ -15,13 +24,6 @@
 	* image/class.c (_ILClassRemoveAllFromHash): remove the
 	namespace entries from "context->namespaceHash" when destroying
 	an ILImage.  Fixes a crash bug in "ilfind".
-
-	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,
-	codegen/cg_nodemap.c, codegen/cg_nodemap.h, cscc/csharp/cs_decls.tc,
-	cscc/csharp/cs_gather.c, cscc/csharp/cs_lookup.c,
-	cscc/csharp/cs_types.tc, image/class.c, image/generic.c,
-	include/il_program.h: begin implementing type gathering
-	for generic types.
 
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -1,3 +1,9 @@
+
+2004-05-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* profiles/default1.1: add a profile variant of "framework1.1" which
+	will install the 1.1 version as the default.
+
 2004-05-18  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/runtime/System/Reflection/SuiteReflection.cs,

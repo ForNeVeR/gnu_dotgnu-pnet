@@ -1049,7 +1049,7 @@ public class OpCodes
 		 			OpCodeType.Primitive, OperandType.InlineNone,
 					StackBehaviour.Popi_popi, StackBehaviour.Pushi);
 
-	public static readonly OpCode Cgt_un =
+	public static readonly OpCode Cgt_Un =
 		 new OpCode("cgt.un", 0xFE03, FlowControl.Next,
 		 			OpCodeType.Primitive, OperandType.InlineNone,
 					StackBehaviour.Popi_popi, StackBehaviour.Pushi);

@@ -25,6 +25,7 @@ namespace System.Reflection.Emit
 #if !ECMA_COMPAT
 
 using System;
+using System.IO;
 using System.Reflection;
 using System.Security;
 using System.Security.Policy;
@@ -95,6 +96,133 @@ public sealed class AssemblyBuilder : Assembly
 				{
 					return entryPoint;
 				}
+			}
+	
+	[TODO]
+	public void AddResourceFile(String name, String fileName)
+			{
+		 		throw new NotImplementedException("AddResourceFile");
+			}
+
+	[TODO]
+	public void AddResourceFile(String name, String fileName, ResourceAttributes attribute)
+			{
+		 		throw new NotImplementedException("AddResourceFile");
+			}
+
+	[TODO]
+	public ModuleBuilder DefineDynamicModule(String name)
+			{
+		 		throw new NotImplementedException("DefineDynamicModule");
+			}
+
+	[TODO]
+	public ModuleBuilder DefineDynamicModule(String name, bool emitSymbolInfo)
+			{
+		 		throw new NotImplementedException("DefineDynamicModule");
+			}
+
+	[TODO]
+	public ModuleBuilder DefineDynamicModule(String name, String fileName)
+			{
+		 		throw new NotImplementedException("DefineDynamicModule");
+			}
+
+	[TODO]
+	public ModuleBuilder DefineDynamicModule(String name, String fileName, 
+											 bool emitSymbolInfo)
+			{
+		 		throw new NotImplementedException("DefineDynamicModule");
+			}
+/*
+	[TODO]
+	public IResourceWriter DefineResource(String name, String description, 
+										  String fileName)
+			{
+		 		throw new NotImplementedException("DefineResource");
+			}
+
+	[TODO]
+	public IResourceWriter DefineResource(String name, String description, 
+										  String fileName, 
+										  ResourceAttributes attribute)
+			{
+		 		throw new NotImplementedException("DefineResource");
+			}
+*/
+	[TODO]
+	public void DefineUnmanagedResource(byte[] resource)
+			{
+		 		throw new NotImplementedException("DefineUnmanagedResource");
+			}
+
+	[TODO]
+	public void DefineUnmanagedResource(String resourceFileName)
+			{
+		 		throw new NotImplementedException("DefineUnmanagedResource");
+			}
+
+	[TODO]
+	public void DefineVersionInfoResource()
+			{
+		 		throw new NotImplementedException("DefineVersionInfoResource");
+			}
+
+	[TODO]
+	public void DefineVersionInfoResource(String product, String productVersion
+										 ,String company, String copyright, 
+										  String trademark)
+			{
+		 		throw new NotImplementedException("DefineVersionInfoResource");
+			}
+
+	[TODO]
+	public void EmbedResourceFile(String name, String fileName)
+			{
+		 		throw new NotImplementedException("EmbedResourceFile");
+			}
+
+	[TODO]
+	public void EmbedResourceFile(String name, String fileName, 
+								  ResourceAttributes attribute)
+			{
+		 		throw new NotImplementedException("EmbedResourceFile");
+			}
+
+	[TODO]
+	public ModuleBuilder GetDynamicModule(String name)
+			{
+		 		throw new NotImplementedException("GetDynamicModule");
+			}
+
+	[TODO]
+	public override Type[] GetExportedTypes()
+			{
+		 		throw new NotImplementedException("GetExportedTypes");
+			}
+
+	[TODO]
+	public override FileStream GetFile(String name)
+			{
+		 		throw new NotImplementedException("GetFile");
+			}
+
+	[TODO]
+	public void Save(String assemblyFileName)
+			{
+		 		throw new NotImplementedException("Save");
+			}
+
+	[TODO]
+	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
+			{
+		 		throw new NotImplementedException("SetCustomAttribute");
+			}
+
+	[TODO]
+	public void SetCustomAttribute(ConstructorInfo con, byte[] binaryAttribute)
+			{
+		 		throw new NotImplementedException("SetCustomAttribute");
 			}
 
 	// Set the entry point for this assembly builder.

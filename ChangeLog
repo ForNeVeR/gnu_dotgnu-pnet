@@ -8,6 +8,21 @@
 	Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c: implement the "wakeup"
 	signal for Xsharp.
 
+	* System.Drawing/Bitmap.cs, System.Drawing/Icon.cs,
+	resources/en_US/System.Windows.Forms/Makefile.am,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.asterisk.ico
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.exclamation.ico
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.hand.ico
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.question.ico
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.small_application.ico
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.small_dll.ico
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.small_document.ico
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.small_folder.ico
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.small_text.ico:
+	rename the System.Windows.Forms icon resources to match the naming
+	requirements of "<namespace>.<filename>.ico"; modify "Bitmap" and
+	"Icon" to use the correct form of "GetManifestResourceStream".
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

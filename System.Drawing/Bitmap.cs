@@ -82,7 +82,7 @@ public sealed class Bitmap : System.Drawing.Image
 	public Bitmap(Type type, String resource)
 			{
 				Stream stream = type.Module.Assembly.GetManifestResourceStream
-					(resource);
+					(type, resource);
 				if(stream == null)
 				{
 					throw new ArgumentException(S._("Arg_UnknownResource"));

@@ -8,6 +8,12 @@ System.Windows.Forms.resources:
 
 CLEANFILES = System.Windows.Forms.resources
 
-EXTRA_DIST = asterisk.ico exclamation.ico hand.ico question.ico \
-			 small_application.ico small_dll.ico small_document.ico \
-			 small_folder.ico small_text.ico
+EXTRA_DIST = System.Windows.Forms.asterisk.ico \
+			 System.Windows.Forms.exclamation.ico \
+			 System.Windows.Forms.hand.ico \
+			 System.Windows.Forms.question.ico \
+			 System.Windows.Forms.small_application.ico \
+			 System.Windows.Forms.small_dll.ico \
+			 System.Windows.Forms.small_document.ico \
+			 System.Windows.Forms.small_folder.ico \
+			 System.Windows.Forms.small_text.ico

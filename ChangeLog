@@ -5,7 +5,7 @@
 
 	* tests/runtime/System/Collections/TestHashtable.cs: Added test case
 	for adding and removing elements with keys that generates identical
-	hashkeys
+	hashkeys (patch #3784, applied by drobosson)
 
 2005-02-28  Klaus Treichel  <ktreichel@web.de>
 

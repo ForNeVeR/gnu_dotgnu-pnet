@@ -12,6 +12,9 @@
 	thread suspends; describe what needs to be done to add a new
 	thread package.
 
+	* tests/.cvsignore, tests/Makefile.am, tests/test_thread.c:
+	add the beginnings of a regression test suite for threading.
+
 2002-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_thread.h, support/Makefile.am, support/no_thread.c,

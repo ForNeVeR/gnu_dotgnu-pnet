@@ -2,3 +2,4 @@ Makefile
 Makefile.in
 .deps
 test_verify
+test_thread

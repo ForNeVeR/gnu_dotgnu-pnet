@@ -531,10 +531,18 @@ struct _tagILEvalValue
 {
 	ILNode *type;
 	char   *name;
+	ILNode *nameNode;
 	ILNode *stmt;
+	%nocreate ILClass *classInfo = {0};
+	%nocreate unsigned long varIndex = {0};
 }
 %node ILNode_FinallyClause ILNode_Statement =
 {
+	ILNode *stmt;
+}
+%node ILNode_Lock ILNode_Statement =
+{
+	ILNode *expr;
 	ILNode *stmt;
 }
 %node ILNode_LocalVarDeclaration ILNode_Statement =

@@ -366,6 +366,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_CastClass,
 	CVMCoder_LoadField,
 	CVMCoder_LoadStaticField,
+	CVMCoder_LoadThisField,
 	CVMCoder_LoadFieldAddr,
 	CVMCoder_LoadStaticFieldAddr,
 	CVMCoder_StoreField,

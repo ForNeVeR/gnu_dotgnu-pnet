@@ -292,6 +292,42 @@ static void CVMCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
 				 fieldType, field->offset, 1);
 }
 
+static void CVMCoder_LoadThisField(ILCoder *coder, ILField *field,
+							   	   ILType *fieldType)
+{
+	ILType *enumType;
+
+	/* Determine if the field type and offset are suitable for
+	   use with the optimised "*read_this" instructions */
+	enumType = ILTypeGetEnumType(fieldType);
+	if(enumType == ILType_Int32 || enumType == ILType_UInt32)
+	{
+		if(field->offset < 256)
+		{
+			CVM_BYTE(COP_IREAD_THIS);
+			CVM_BYTE(field->offset);
+			CVM_ADJUST(1);
+			return;
+		}
+	}
+	else if(ILType_IsClass(enumType) || ILType_IsArray(enumType))
+	{
+		if(field->offset < 256)
+		{
+			CVM_BYTE(COP_PREAD_THIS);
+			CVM_BYTE(field->offset);
+			CVM_ADJUST(1);
+			return;
+		}
+	}
+
+	/* Fall back to the normal code because we cannot optimise this case */
+	CVM_BYTE(COP_PLOAD_0);
+	CVM_ADJUST(1);
+	CVMLoadField(coder, ILEngineType_O, ILType_Invalid, field,
+				 fieldType, field->offset, 1);
+}
+
 /* Forward declaration: defined in "cvmc_call.c" */
 static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
 								  int isCtor);

@@ -2098,6 +2098,89 @@ case COP_PWRITE_FIELD:
 }
 break;
 
+#define GET_THIS_FIELD(type)	\
+(*((type *)(((unsigned char *)(frame[0].ptrValue)) + \
+				(ILUInt32)(pc[1]))))
+
+/**
+ * <opcode name="pread_this" group="Object handling">
+ *   <operation>Read <code>ptr</code> field from <code>this</code></operation>
+ *
+ *   <format>pread_this<fsep/>N[1]</format>
+ *
+ *   <form name="pread_this" code="COP_PREAD_THIS"/>
+ *
+ *   <before>...</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Retrieve offset 0 from the frame as <i>object</i>,
+ *   of type <code>ptr</code>.  Fetch the <code>ptr</code> value at
+ *   <i>object + N</i>, and push it onto the stack.</description>
+ *
+ *   <notes>This instruction is used to optimise the sequence
+ *   <i>pload_0, pread_field N</i>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
+case COP_PREAD_THIS:
+{
+	/* Read a pointer value from a field within "this" */
+	if(frame[0].ptrValue != 0)
+	{
+		stacktop[0].ptrValue = GET_THIS_FIELD(void *);
+		MODIFY_PC_AND_STACK(2, 1);
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+}
+break;
+
+/**
+ * <opcode name="iread_this" group="Object handling">
+ *   <operation>Read <code>int32</code> field from
+ *				<code>this</code></operation>
+ *
+ *   <format>iread_this<fsep/>N[1]</format>
+ *
+ *   <form name="iread_this" code="COP_IREAD_THIS"/>
+ *
+ *   <before>...</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Retrieve offset 0 from the frame as <i>object</i>,
+ *   of type <code>ptr</code>.  Fetch the <code>int32</code> value at
+ *   <i>object + N</i>, and push it onto the stack.</description>
+ *
+ *   <notes>This instruction is used to optimise the sequence
+ *   <i>pload_0, iread_field N</i>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
+case COP_IREAD_THIS:
+{
+	/* Read an integer value from a field within "this" */
+	if(frame[0].ptrValue != 0)
+	{
+		stacktop[0].intValue = GET_THIS_FIELD(ILInt32);
+		MODIFY_PC_AND_STACK(2, 1);
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+}
+break;
+
 /**
  * <opcode name="castclass" group="Object handling">
  *   <operation>Cast an object to a new class</operation>

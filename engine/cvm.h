@@ -290,64 +290,66 @@ extern	"C" {
 #define	COP_SWRITE_FIELD			0xCB
 #define	COP_IWRITE_FIELD			0xCC
 #define	COP_PWRITE_FIELD			0xCD
+#define	COP_PREAD_THIS				0xCE
+#define	COP_IREAD_THIS				0xCF
 
 /*
  * Call management opcodes.
  */
-#define	COP_CALL					0xCE
-#define	COP_CALL_EXTERN				0xCF
-#define	COP_CALL_CTOR				0xD0
-#define	COP_CALL_NATIVE				0xD1
-#define	COP_CALL_NATIVE_VOID		0xD2
-#define	COP_CALL_VIRTUAL			0xD3
-#define	COP_CALL_INTERFACE			0xD4
-#define	COP_RETURN					0xD5
-#define	COP_RETURN_1				0xD6
-#define	COP_RETURN_2				0xD7
-#define	COP_RETURN_N				0xD8
-#define	COP_JSR						0xD9
-#define	COP_RET_JSR					0xDA
-#define	COP_PUSH_THREAD				0xDB
-#define	COP_PUSHDOWN				0xDC
-#define	COP_CCTOR_ONCE				0xDD
-#define	COP_CALLI					0xDE
-#define	COP_JMPI					0xDF
+#define	COP_CALL					0xD0
+#define	COP_CALL_EXTERN				0xD1
+#define	COP_CALL_CTOR				0xD2
+#define	COP_CALL_NATIVE				0xD3
+#define	COP_CALL_NATIVE_VOID		0xD4
+#define	COP_CALL_VIRTUAL			0xD5
+#define	COP_CALL_INTERFACE			0xD6
+#define	COP_RETURN					0xD7
+#define	COP_RETURN_1				0xD8
+#define	COP_RETURN_2				0xD9
+#define	COP_RETURN_N				0xDA
+#define	COP_JSR						0xDB
+#define	COP_RET_JSR					0xDC
+#define	COP_PUSH_THREAD				0xDD
+#define	COP_PUSHDOWN				0xDE
+#define	COP_CCTOR_ONCE				0xDF
+#define	COP_CALLI					0xE0
+#define	COP_JMPI					0xE1
 
 /*
  * Class-related opcodes.
  */
-#define	COP_CASTCLASS				0xE0
-#define	COP_ISINST					0xE1
-#define	COP_CASTINTERFACE			0xE2
-#define	COP_ISINTERFACE				0xE3
-#define	COP_GET_STATIC				0xE4
-#define	COP_NEW						0xE5
-#define	COP_NEW_VALUE				0xE6
-#define	COP_LDSTR					0xE7
-#define	COP_LDTOKEN					0xE8
-#define	COP_BOX						0xE9
-#define	COP_BOX_PTR					0xEA
+#define	COP_CASTCLASS				0xE2
+#define	COP_ISINST					0xE3
+#define	COP_CASTINTERFACE			0xE4
+#define	COP_ISINTERFACE				0xE5
+#define	COP_GET_STATIC				0xE6
+#define	COP_NEW						0xE7
+#define	COP_NEW_VALUE				0xE8
+#define	COP_LDSTR					0xE9
+#define	COP_LDTOKEN					0xEA
+#define	COP_BOX						0xEB
+#define	COP_BOX_PTR					0xEC
 
 /*
  * Memory-related opcodes.
  */
-#define	COP_MEMCPY					0xEB
-#define	COP_MEMMOVE					0xEC
-#define	COP_MEMZERO					0xED
-#define	COP_MEMSET					0xEE
+#define	COP_MEMCPY					0xED
+#define	COP_MEMMOVE					0xEE
+#define	COP_MEMZERO					0xEF
+#define	COP_MEMSET					0xF0
 
 /*
  * Argument packing for native calls.
  */
-#define	COP_WADDR_NATIVE_M1			0xEF
-#define	COP_WADDR_NATIVE_0			0xF0
-#define	COP_WADDR_NATIVE_1			0xF1
-#define	COP_WADDR_NATIVE_2			0xF2
-#define	COP_WADDR_NATIVE_3			0xF3
-#define	COP_WADDR_NATIVE_4			0xF4
-#define	COP_WADDR_NATIVE_5			0xF5
-#define	COP_WADDR_NATIVE_6			0xF6
-#define	COP_WADDR_NATIVE_7			0xF7
+#define	COP_WADDR_NATIVE_M1			0xF1
+#define	COP_WADDR_NATIVE_0			0xF2
+#define	COP_WADDR_NATIVE_1			0xF3
+#define	COP_WADDR_NATIVE_2			0xF4
+#define	COP_WADDR_NATIVE_3			0xF5
+#define	COP_WADDR_NATIVE_4			0xF6
+#define	COP_WADDR_NATIVE_5			0xF7
+#define	COP_WADDR_NATIVE_6			0xF8
+#define	COP_WADDR_NATIVE_7			0xF9
 
 /*
  * Make the next instruction wider.

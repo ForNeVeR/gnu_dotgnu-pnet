@@ -354,6 +354,12 @@ struct _tagILCoderClass
 							ILType *fieldType);
 
 	/*
+	 * Load the contents of an instance field onto the stack,
+	 * where the pointer is an object reference in argument 0.
+	 */
+	void (*loadThisField)(ILCoder *coder, ILField *field, ILType *fieldType);
+
+	/*
 	 * Load the address of an instance field onto the stack.
 	 */
 	void (*loadFieldAddr)(ILCoder *coder, ILEngineType ptrType,
@@ -735,6 +741,9 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->loadField))((coder), (ptrType), \
 												(objectType), (field), \
 												(fieldType)))
+#define	ILCoderLoadThisField(coder,field,fieldType) \
+			((*((coder)->classInfo->loadThisField))((coder), (field), \
+													(fieldType)))
 #define	ILCoderLoadStaticField(coder,field,fieldType) \
 			((*((coder)->classInfo->loadStaticField))((coder), (field), \
 													  (fieldType)))

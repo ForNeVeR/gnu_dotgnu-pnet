@@ -331,6 +331,8 @@ static CVMOpcode const opcodes[256] = {
 	{"swrite_field",	CVM_OPER_UINT8},
 	{"iwrite_field",	CVM_OPER_UINT8},
 	{"pwrite_field",	CVM_OPER_UINT8},
+	{"pread_this",		CVM_OPER_UINT8},
+	{"iread_this",		CVM_OPER_UINT8},
 
 	/*
 	 * Call management opcodes.
@@ -393,8 +395,6 @@ static CVMOpcode const opcodes[256] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"reserved_f8",		CVM_OPER_NONE},
-	{"reserved_f9",		CVM_OPER_NONE},
 	{"reserved_fa",		CVM_OPER_NONE},
 	{"reserved_fb",		CVM_OPER_NONE},
 	{"reserved_fc",		CVM_OPER_NONE},

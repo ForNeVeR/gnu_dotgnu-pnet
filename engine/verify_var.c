@@ -69,11 +69,58 @@ ILUInt32 argNum;
 #else /* IL_VERIFY_CODE */
 
 case IL_OP_LDARG_0:
+{
+	/* If argument 0 looks like a "this" pointer, and this instruction
+	   is followed by "ldfld", then we attempt to optimise field loads */
+	argNum = 0;
+	if(argNum >= numArgs)
+	{
+		VERIFY_INSN_ERROR();
+	}
+	stack[stackSize].typeInfo = GetParamType(signature, method, argNum);
+	if(ILType_IsClass(stack[stackSize].typeInfo))
+	{
+		if(len >= 6 && pc[1] == IL_OP_LDFLD &&
+		   !IsJumpTarget(jumpMask, offset + 1))
+		{
+			/* We have a match on the pattern "ldarg.0, ldfld".
+			   See if the field is valid and instance-based */
+			fieldInfo = GetFieldToken(method, pc + 1);
+			if(fieldInfo)
+			{
+				classType = ILField_Type(fieldInfo);
+				if(IsSubClass(stack[stackSize].typeInfo,
+							  ILField_Owner(fieldInfo)))
+				{
+					if(!ILField_IsStatic(fieldInfo))
+					{
+						/* Load the "this"-based field onto the stack */
+						ILCoderLoadThisField(coder, fieldInfo, classType);
+
+						/* Push the field's type onto the stack */
+						stack[stackSize].engineType =
+							TypeToEngineType(classType);
+						stack[stackSize].typeInfo = classType;
+						++stackSize;
+
+						/* Skip the following "ldfld" instruction because
+						   we have just handled it */
+						insnSize += 5;
+						break;
+					}
+				}
+			}
+		}
+	}
+	goto checkLDArg2;
+}
+/* Not reached */
+
 case IL_OP_LDARG_1:
 case IL_OP_LDARG_2:
 case IL_OP_LDARG_3:
 {
-	/* Load one of the first four arguments onto the stack */
+	/* Load an argument onto the stack - tiny form */
 	argNum = opcode - IL_OP_LDARG_0;
 	goto checkLDArg;
 }
@@ -81,7 +128,7 @@ case IL_OP_LDARG_3:
 
 case IL_OP_LDARG_S:
 {
-	/* Load an argument onto the stack */
+	/* Load an argument onto the stack - short form */
 	argNum = (ILUInt32)(pc[1]);
 	goto checkLDArg;
 }
@@ -97,6 +144,7 @@ checkLDArg:
 		VERIFY_INSN_ERROR();
 	}
 	stack[stackSize].typeInfo = GetParamType(signature, method, argNum);
+checkLDArg2:
 	if(stack[stackSize].typeInfo == ILType_Invalid)
 	{
 		/* The "this" parameter is being passed as a managed pointer */

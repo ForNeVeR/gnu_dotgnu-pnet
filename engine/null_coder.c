@@ -173,6 +173,10 @@ static void Coder_LoadField(ILCoder *coder, ILEngineType ptrType,
 							ILType *fieldType)
 {
 }
+static void Coder_LoadThisField(ILCoder *coder, ILField *field,
+							    ILType *fieldType)
+{
+}
 static void Coder_LoadStaticField(ILCoder *coder, ILField *field,
 							      ILType *fieldType)
 {
@@ -384,6 +388,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_CastClass,
 	Coder_LoadField,
 	Coder_LoadStaticField,
+	Coder_LoadThisField,
 	Coder_LoadFieldAddr,
 	Coder_LoadStaticFieldAddr,
 	Coder_StoreField,

@@ -5,3 +5,9 @@
 	"doc/ChangeLog-2", because it was starting to get too big to manage.
 
 	* engine/cvm.c, engine/cvm_dasm.c: profile "wide" instructions.
+
+	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_ptr.c, engine/cvmc.c,
+	engine/cvmc_obj.c, engine/null_coder.c, engine/verify_var.c,
+	include/il_coder.h: introduce the "pread_this" and "iread_this"
+	instructions into CVM to optimise the common cases of accessing
+	fields relative to "this".

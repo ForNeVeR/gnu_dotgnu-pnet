@@ -544,17 +544,14 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 				return 0;
 			}
 		}
-		else if(IsParam("MarshalType", IL_META_SERIALTYPE_STRING))
+		else if(IsParam("MarshalType", IL_META_SERIALTYPE_STRING) ||
+		        IsParam("MarshalTypeRef", IL_META_SERIALTYPE_TYPE))
 		{
 			marshalTypeLen = ILSerializeReaderGetString(reader, &marshalType);
 			if(marshalTypeLen < 0)
 			{
 				return 0;
 			}
-		}
-		else if(IsParam("MarshalTypeRef", IL_META_SERIALTYPE_TYPE))
-		{
-			/* Unused - ignore it */
 		}
 		else if(IsParam("SizeConst", IL_META_SERIALTYPE_I4))
 		{

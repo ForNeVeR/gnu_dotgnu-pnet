@@ -1373,6 +1373,73 @@ ILNode_SemAnalysis(ILNode_ToConst)
 }
 
 /*
+ * Perform semantic analysis for the "ToAttrConst" operator.
+ */
+ILNode_SemAnalysis(ILNode_ToAttrConst)
+{
+	CSSemValue value;
+	ILNode_TypeOf *typeofNode;
+
+	/* Special case: types can be used as attribute constants */
+	if(yyisa(node->expr, ILNode_TypeOf))
+	{
+		/* Get the semantic value for the typeof sub-expression */
+		typeofNode = (ILNode_TypeOf *)(node->expr);
+		value = ILNode_SemAnalysisType
+			(typeofNode->expr, info, &(typeofNode->expr));
+
+		/* Check that the argument is of the correct kind */
+		if(CSSemIsType(value))
+		{
+			if(ILType_IsPrimitive(CSSemGetType(value)))
+			{
+				typeofNode->type = ILType_FromClass
+					(ILTypeToClass(info, CSSemGetType(value)));
+			}
+			else
+			{
+				typeofNode->type = CSSemGetType(value);
+			}
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "invalid argument to `typeof' operator");
+			typeofNode->type = ILFindSystemType(info, "Int32");
+		}
+		CSSemSetType(value, typeofNode->type);
+		return value;
+	}
+
+	/* Perform semantic analysis on the sub-expression */
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+
+	/* Types can be used as constants in attributes */
+	if(CSSemIsType(value))
+	{
+		return value;
+	}
+
+	/* Determine if the sub-expression evaluates to a constant */
+	if(!CSSemIsConstant(value) || CSSemIsDynConstant(value))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "constant value required");
+		if(!CSSemIsValue(value))
+		{
+			CSSemSetDynConstant(value, ILType_Int32);
+		}
+		else
+		{
+			CSSemSetDynConstant(value, CSSemGetType(value));
+		}
+	}
+
+	/* Return the semantic information to the caller */
+	return value;
+}
+
+/*
  * Perform semantic analysis for the logical NOT operator.
  */
 ILNode_SemAnalysis(ILNode_LogicalNot)

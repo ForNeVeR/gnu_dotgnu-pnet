@@ -2503,7 +2503,7 @@ NamedArgument
 	;
 
 AttributeArgumentExpression
-	: ConstantExpression			{ $$ = $1; }
+	: Expression			{ $$ = ILNode_ToAttrConst_create($1); }
 	;
 
 /*

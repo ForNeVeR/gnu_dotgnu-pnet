@@ -241,6 +241,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	ILAttribute *attribute;
 	ILNode *nameNode;
 	int retry;
+	int skipConst;
 
 	/* Try the attribute name without "Attribute" first */
 	nameNode = attr->name;
@@ -364,8 +365,11 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			   have to worry about reporting errors here */
 			if(!CSSemExpectValue(arg, info, iter.last, &value))
 			{
-				haveErrors = 1;
-				evalArgs[argNum].type = ILType_Int32;
+				if(!CSSemIsType(value))
+				{
+					haveErrors = 1;
+					evalArgs[argNum].type = ILType_Int32;
+				}
 			}
 			else
 			{
@@ -376,10 +380,19 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			evalArgs[argNum].modifier = ILParamMod_empty;
 
 			/* Evaluate the constant value of the argument */
-			if(!haveErrors &&
-			   !ILNode_EvalConst(*(iter.last), info, &(evalValues[argNum])))
+			if(CSSemIsType(value))
 			{
-				haveErrors = 1;
+				evalValues[argNum].valueType = ILMachineType_Void;
+				evalValues[argNum].un.oValue = CSSemGetType(value);
+				evalArgs[argNum].type = ILFindSystemType(info, "Type");
+			}
+			else
+			{
+				if(!haveErrors &&
+				   !ILNode_EvalConst(*(iter.last), info, &(evalValues[argNum])))
+				{
+					haveErrors = 1;
+				}
 			}
 
 			/* Advance to the next argument */
@@ -443,8 +456,11 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			if(!CSSemExpectValue(((ILNode_NamedArg *)arg)->value, info,
 								 &(((ILNode_NamedArg *)arg)->value), &value))
 			{
-				haveErrors = 1;
-				namedArgs[argNum].type = ILType_Int32;
+				if(!CSSemIsType(value))
+				{
+					haveErrors = 1;
+					namedArgs[argNum].type = ILType_Int32;
+				}
 			}
 			else
 			{
@@ -455,11 +471,22 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			namedArgs[argNum].modifier = ILParamMod_empty;
 
 			/* Evaluate the constant value of the argument */
-			if(!haveErrors &&
-			   !ILNode_EvalConst(namedArgs[argNum].node, info,
-			   					 &(namedValues[argNum])))
+			if(CSSemIsType(value))
 			{
-				haveErrors = 1;
+				namedValues[argNum].valueType = ILMachineType_Void;
+				namedValues[argNum].un.oValue = CSSemGetType(value);
+				namedArgs[argNum].type = ILFindSystemType(info, "Type");
+				skipConst = 1;
+			}
+			else
+			{
+				if(!haveErrors &&
+				   !ILNode_EvalConst(namedArgs[argNum].node, info,
+				   					 &(namedValues[argNum])))
+				{
+					haveErrors = 1;
+				}
+				skipConst = 0;
 			}
 
 			/* Cast the constant to the final type */
@@ -469,11 +496,11 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 							namedArgs[argNum].parent,
 							namedArgs[argNum].type,
 							GetAttrFieldType(namedFields[argNum]),1) &&
-				   ILGenCastConst
+				   (skipConst || ILGenCastConst
 				   		(info, &(namedValues[argNum]),
 				   		 namedValues[argNum].valueType,
 						 ILTypeToMachineType
-								(GetAttrFieldType(namedFields[argNum]))))
+								(GetAttrFieldType(namedFields[argNum])))))
 				{
 					namedArgs[argNum].node = *(namedArgs[argNum].parent);
 				}
@@ -571,23 +598,26 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	for(argNum = 0; argNum < numArgs; ++argNum)
 	{
 		paramType = ILTypeGetParam(signature, argNum + 1);
-		if(!ILGenCastConst(info, &(evalValues[argNum]),
-						   evalValues[argNum].valueType,
-						   ILTypeToMachineType(paramType)))
+		if(evalValues[argNum].valueType != ILMachineType_Void)
 		{
-			CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
-						  yygetlinenum(evalArgs[argNum].node),
-						  _("could not coerce constant argument %d"),
-						  argNum + 1);
-			haveErrors = 1;
-		}
-		else if(ILSerializeGetType(paramType) == -1)
-		{
-			CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
-						  yygetlinenum(evalArgs[argNum].node),
-						  _("attribute argument %d is not serializable"),
-						  argNum + 1);
-			haveErrors = 1;
+			if(!ILGenCastConst(info, &(evalValues[argNum]),
+							   evalValues[argNum].valueType,
+							   ILTypeToMachineType(paramType)))
+			{
+				CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
+							  yygetlinenum(evalArgs[argNum].node),
+							  _("could not coerce constant argument %d"),
+							  argNum + 1);
+				haveErrors = 1;
+			}
+			else if(ILSerializeGetType(paramType) == -1)
+			{
+				CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
+							  yygetlinenum(evalArgs[argNum].node),
+							  _("attribute argument %d is not serializable"),
+							  argNum + 1);
+				haveErrors = 1;
+			}
 		}
 	}
 	if(haveErrors)
@@ -648,9 +678,17 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			}
 			break;
 
+			case IL_META_SERIALTYPE_TYPE:
+			{
+				const char *name = CSTypeToName
+					((ILType *)(argValue->un.strValue.str));
+				ILSerializeWriterSetString(writer, name, strlen(name));
+			}
+			break;
+
 			default:
 			{
-				/* TODO: types and arrays */
+				/* TODO: arrays and implicit coercions to Object */
 			}
 			break;
 		}
@@ -659,8 +697,15 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	for(argNum = 0; argNum < numNamedArgs; ++argNum)
 	{
 		argValue = &(namedValues[argNum]);
-		paramType = ILValueTypeToType(info, argValue->valueType);
-		serialType = ILSerializeGetType(paramType);
+		if(argValue->valueType == ILMachineType_Void)
+		{
+			serialType = IL_META_SERIALTYPE_TYPE;
+		}
+		else
+		{
+			paramType = ILValueTypeToType(info, argValue->valueType);
+			serialType = ILSerializeGetType(paramType);
+		}
 		if(ILMember_IsField(((ILMember *)(namedFields[argNum]))))
 		{
 			ILSerializeWriterSetField
@@ -715,9 +760,17 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			}
 			break;
 
+			case IL_META_SERIALTYPE_TYPE:
+			{
+				const char *name = CSTypeToName
+					((ILType *)(argValue->un.strValue.str));
+				ILSerializeWriterSetString(writer, name, strlen(name));
+			}
+			break;
+
 			default:
 			{
-				/* TODO: types and arrays */
+				/* TODO: arrays and implicit coercions to Object */
 			}
 			break;
 		}

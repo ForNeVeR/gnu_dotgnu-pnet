@@ -15,6 +15,10 @@
 	* engine/lib_enum.c (GetRawEnumValue): recognise the underlying
 	type when unpacking enum values.
 
+	* cscc/csharp/cs_attrs.c, cscc/csharp/cs_defs.tc,
+	cscc/csharp/cs_grammar.y, cscc/csharp/cs_oper.tc, image/lib_attrs.c:
+	support "MarshalTypeRef" in custom marshalling declarations.
+
 2003-02-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/engine.h, engine/pinvoke.c: use the

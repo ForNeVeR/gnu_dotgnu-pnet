@@ -108,6 +108,7 @@
 {
 	CSSemValue	value;
 }
+%node ILNode_ToAttrConst ILNode_ToConst
 
 /*
  * Statements.

@@ -22,10 +22,41 @@
 namespace System.Runtime.InteropServices
 {
 
-public class MarshalAsAttribute : Attribute
+[AttributeUsage(AttributeTargets.Field |
+				AttributeTargets.Parameter |
+				AttributeTargets.ReturnValue,
+				AllowMultiple=false, Inherited=false)]
+public sealed class MarshalAsAttribute : Attribute
 {
+	// Internal state.
+	private UnmanagedType type;
 
-// TODO
+	// Constructors.
+	public MarshalAsAttribute(UnmanagedType unmanagedType)
+			{
+				type = unmanagedType;
+			}
+	public MarshalAsAttribute(short unmanagedType)
+			{
+				type = (UnmanagedType)unmanagedType;
+			}
+
+	// Public fields.
+	public UnmanagedType ArraySubType;
+	public String MarshalCookie;
+	public String MarshalType;
+	public String MarshalTypeRef;
+	public int SizeConst;
+	public short SizeParamIndex;
+
+	// Properties.
+	public UnmanagedType Value
+			{
+				get
+				{
+					return type;
+				}
+			}
 
 }; // class MarshalAsAttribute
 

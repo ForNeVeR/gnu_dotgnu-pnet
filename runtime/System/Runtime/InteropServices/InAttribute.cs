@@ -22,10 +22,13 @@
 namespace System.Runtime.InteropServices
 {
 
-public class InAttribute : Attribute
+[AttributeUsage(AttributeTargets.Parameter,
+				AllowMultiple=false, Inherited=false)]
+public sealed class InAttribute : Attribute
 {
 
-// TODO
+	// Constructor.
+	public InAttribute() : base() {}
 
 }; // class InAttribute
 

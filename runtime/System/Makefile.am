@@ -210,11 +210,15 @@ CSSRC = Activator.cs \
 		Runtime/CompilerServices/RequiredAttributeAttribute.cs \
 		Runtime/CompilerServices/RuntimeHelpers.cs \
 		Runtime/CompilerServices/CSharp/IndexerNameAttribute.cs \
+		Runtime/InteropServices/CallingConvention.cs \
+		Runtime/InteropServices/CharSet.cs \
 		Runtime/InteropServices/ComImportAttribute.cs \
 		Runtime/InteropServices/DllImportAttribute.cs \
 		Runtime/InteropServices/DispIdAttribute.cs \
 		Runtime/InteropServices/ExposeHResultAttribute.cs \
 		Runtime/InteropServices/FieldOffsetAttribute.cs \
+		Runtime/InteropServices/GCHandle.cs \
+		Runtime/InteropServices/GCHandleType.cs \
 		Runtime/InteropServices/GuidAttribute.cs \
 		Runtime/InteropServices/InAttribute.cs \
 		Runtime/InteropServices/InterfaceTypeAttribute.cs \
@@ -222,6 +226,7 @@ CSSRC = Activator.cs \
 		Runtime/InteropServices/MarshalAsAttribute.cs \
 		Runtime/InteropServices/OutAttribute.cs \
 		Runtime/InteropServices/StructLayoutAttribute.cs \
+		Runtime/InteropServices/UnmanagedType.cs \
 		Runtime/Remoting/Message.cs \
 		Runtime/Remoting/ObjectHandle.cs \
 		Runtime/Serialization/ISerializable.cs \

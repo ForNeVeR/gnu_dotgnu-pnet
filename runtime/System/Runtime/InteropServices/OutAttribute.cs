@@ -22,10 +22,13 @@
 namespace System.Runtime.InteropServices
 {
 
-public class OutAttribute : Attribute
+[AttributeUsage(AttributeTargets.Parameter,
+				AllowMultiple=false, Inherited=false)]
+public sealed class OutAttribute : Attribute
 {
 
-// TODO
+	// Constructor.
+	public OutAttribute() : base() {}
 
 }; // class OutAttribute
 

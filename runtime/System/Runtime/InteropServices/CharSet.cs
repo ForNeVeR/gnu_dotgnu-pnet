@@ -1,6 +1,6 @@
 /*
- * DllImportAttribute.cs - Implementation of the
- *			"System.Runtime.InteropServices.DllImportAttribute" class.
+ * CharSet.cs - Implementation of the
+ *			"System.Runtime.InteropServices.CharSet" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -22,35 +22,13 @@
 namespace System.Runtime.InteropServices
 {
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
-public sealed class DllImportAttribute : Attribute
+public enum CharSet
 {
-	// Internal state.
-	private String name;
+	None    = 1,
+	Ansi    = 2,
+	Unicode = 3,
+	Auto    = 4
 
-	// Constructors.
-	public DllImportAttribute(String dllName)
-			{
-				name = dllName;
-			}
-
-	// Public fields.
-	public System.Runtime.InteropServices.CallingConvention CallingConvention;
-	public System.Runtime.InteropServices.CharSet CharSet;
-	public String EntryPoint;
-	public bool ExactSpelling;
-	public bool PreserveSig;
-	public bool SetLastError;
-
-	// Properties.
-	public String Value
-			{
-				get
-				{
-					return name;
-				}
-			}
-
-}; // class DllImportAttribute
+}; // enum CharSet
 
 }; // namespace System.Runtime.InteropServices

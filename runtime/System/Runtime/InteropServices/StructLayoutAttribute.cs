@@ -22,20 +22,37 @@
 namespace System.Runtime.InteropServices
 {
 
-public class StructLayoutAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
+				AllowMultiple=false, Inherited=false)]
+public sealed class StructLayoutAttribute : Attribute
 {
+	// Internal state.
+	private LayoutKind kind;
+
+	// Constructors.
+	public StructLayoutAttribute(LayoutKind layoutKind)
+			{
+				kind = layoutKind;
+			}
+
+	public StructLayoutAttribute(short layoutKind)
+			{
+				kind = (LayoutKind)layoutKind;
+			}
+
+	// Public fields.
+	public System.Runtime.InteropServices.CharSet CharSet;
 	public int Size;
 	public int Pack;
 
-	public StructLayoutAttribute(short layoutKind)
-	{
-		// TODO
-	}
-
-	public StructLayoutAttribute(LayoutKind layoutKind)
-	{
-		// TODO
-	}
+	// Properties.
+	public LayoutKind Value
+			{
+				get
+				{
+					return kind;
+				}
+			}
 
 }; // class StructLayoutAttribute
 

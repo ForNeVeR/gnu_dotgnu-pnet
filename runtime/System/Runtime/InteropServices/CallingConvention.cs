@@ -1,6 +1,6 @@
 /*
- * DllImportAttribute.cs - Implementation of the
- *			"System.Runtime.InteropServices.DllImportAttribute" class.
+ * CallingConvention.cs - Implementation of the
+ *			"System.Runtime.InteropServices.CallingConvention" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -22,35 +22,14 @@
 namespace System.Runtime.InteropServices
 {
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
-public sealed class DllImportAttribute : Attribute
+public enum CallingConvention
 {
-	// Internal state.
-	private String name;
+	Winapi   = 1,
+	Cdecl    = 2,
+	StdCall  = 3,
+	ThisCall = 4,
+	FastCall = 5
 
-	// Constructors.
-	public DllImportAttribute(String dllName)
-			{
-				name = dllName;
-			}
-
-	// Public fields.
-	public System.Runtime.InteropServices.CallingConvention CallingConvention;
-	public System.Runtime.InteropServices.CharSet CharSet;
-	public String EntryPoint;
-	public bool ExactSpelling;
-	public bool PreserveSig;
-	public bool SetLastError;
-
-	// Properties.
-	public String Value
-			{
-				get
-				{
-					return name;
-				}
-			}
-
-}; // class DllImportAttribute
+}; // enum CallingConvention
 
 }; // namespace System.Runtime.InteropServices

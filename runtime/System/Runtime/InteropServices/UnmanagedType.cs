@@ -1,6 +1,6 @@
 /*
- * DllImportAttribute.cs - Implementation of the
- *			"System.Runtime.InteropServices.DllImportAttribute" class.
+ * UnmanagedType.cs - Implementation of the
+ *			"System.Runtime.InteropServices.UnmanagedType" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -22,35 +22,44 @@
 namespace System.Runtime.InteropServices
 {
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
-public sealed class DllImportAttribute : Attribute
+public enum UnmanagedType
 {
-	// Internal state.
-	private String name;
-
-	// Constructors.
-	public DllImportAttribute(String dllName)
-			{
-				name = dllName;
-			}
-
-	// Public fields.
-	public System.Runtime.InteropServices.CallingConvention CallingConvention;
-	public System.Runtime.InteropServices.CharSet CharSet;
-	public String EntryPoint;
-	public bool ExactSpelling;
-	public bool PreserveSig;
-	public bool SetLastError;
-
-	// Properties.
-	public String Value
-			{
-				get
-				{
-					return name;
-				}
-			}
-
-}; // class DllImportAttribute
+	Bool				= 0x02,
+	I1					= 0x03,
+	U1					= 0x04,
+	I2					= 0x05,
+	U2					= 0x06,
+	I4					= 0x07,
+	U4					= 0x08,
+	I8					= 0x09,
+	U8					= 0x0A,
+	R4					= 0x0B,
+	R8					= 0x0C,
+	Currency			= 0x0F,
+	BStr				= 0x13,
+	LPStr				= 0x14,
+	LPWStr				= 0x15,
+	LPTStr				= 0x16,
+	ByValTStr			= 0x17,
+	IUnknown			= 0x19,
+	IDispatch			= 0x1A,
+	Struct				= 0x1B,
+	Interface			= 0x1C,
+	SafeArray			= 0x1D,
+	ByValArray			= 0x1E,
+	SysInt				= 0x1F,
+	SysUInt				= 0x20,
+	VBByRefStr			= 0x22,
+	AnsiBStr			= 0x23,
+	TBStr				= 0x24,
+	VariantBool			= 0x25,
+	FunctionPtr			= 0x26,
+	AsAny				= 0x28,
+	LPArray				= 0x2A,
+	LPStruct			= 0x2B,
+	CustomMarshaler		= 0x2C,
+	Error				= 0x2D
+	
+}; // enum UnmanagedType
 
 }; // namespace System.Runtime.InteropServices

@@ -22,10 +22,26 @@
 namespace System.Runtime.InteropServices
 {
 
-public class FieldOffsetAttribute : Attribute
+[AttributeUsage(AttributeTargets.Field, AllowMultiple=false, Inherited=false)]
+public sealed class FieldOffsetAttribute : Attribute
 {
+	// Internal state.
+	private int fieldOffset;
 
-// TODO
+	// Constructors.
+	public FieldOffsetAttribute(int offset)
+			{
+				fieldOffset = offset;
+			}
+
+	// Properties.
+	public int Value
+			{
+				get
+				{
+					return fieldOffset;
+				}
+			}
 
 }; // class FieldOffsetAttribute
 

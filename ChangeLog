@@ -35,6 +35,22 @@ consistent with the latest ECMA specification.
 runtime/System/Runtime/InteropServices/MethodImplOptions.cs: remove
 obsolete classes.
 
+* runtime/System/Makefile.am,
+runtime/System/Runtime/InteropServices/CallingConvention.cs,
+runtime/System/Runtime/InteropServices/CharSet.cs,
+runtime/System/Runtime/InteropServices/DllImportAttribute.cs,
+runtime/System/Runtime/InteropServices/FieldOffsetAttribute.cs,
+runtime/System/Runtime/InteropServices/GCHandle.cs,
+runtime/System/Runtime/InteropServices/GCHandleType.cs,
+runtime/System/Runtime/InteropServices/InAttribute.cs,
+runtime/System/Runtime/InteropServices/Makefile,
+runtime/System/Runtime/InteropServices/MarshalAsAttribute.cs,
+runtime/System/Runtime/InteropServices/OutAttribute.cs,
+runtime/System/Runtime/InteropServices/StructLayoutAttribute.cs,
+runtime/System/Runtime/InteropServices/UnmanagedType.cs,
+resources/en_US/runtime/Invalid.txt: implement the ECMA-compliant
+classes in "System.Runtime.InteropServices".
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/String.cs: implement string comparison methods.

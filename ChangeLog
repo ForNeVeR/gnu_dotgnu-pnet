@@ -13,6 +13,9 @@
 
 	* engine/md_arm.h, engine/arm_codegen.h: macro expansion bugs on ARM.
 
+	* doc/unrolling.txt: update the generic unroller documentation
+	to describe all of the code generation macros.
+
 2003-07-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ChangeLog, doc/ChangeLog-4: move the bulk of ChangeLog into

@@ -2,8 +2,8 @@
  * ToolkitGraphicsImageBase.cs - Implementation of the
  *			"System.Drawing.Toolkit.ToolkitGraphicsImageBase" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2003  Neil Cawse.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,11 @@ namespace System.Drawing.Toolkit
 
 		protected override void Dispose(bool disposing)
 		{
-
+			if (image != null)
+			{
+				image.Dispose();
+				image = null;
+			}
 		}
 
 

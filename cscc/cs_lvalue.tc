@@ -116,13 +116,40 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 		}
 		break;
 
+		case CS_SEMKIND_METHOD_GROUP:
+		{
+			/* Reference to a method group */
+			if(!(info->currentMethod))
+			{
+				/* We are performing semantic analysis of declarations,
+				   which does not permit methods to be used as types */
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`%s' is not declared as a type in the current scope",
+					  name);
+				value.kind = CS_SEMKIND_TYPE;
+				value.type = ILType_Int32;
+				return value;
+			}
+
+			/* Replace the node with either the object expression or "this" */
+			if(expr)
+			{
+				*parent = expr;
+			}
+			else
+			{
+				*parent = ILNode_This_create();
+			}
+		}
+		break;
+
 		case CS_SEMKIND_PROPERTY:
 		{
 			/* Reference to a class field */
 			if(!(info->currentMethod))
 			{
 				/* We are performing semantic analysis of declarations,
-				   which does not permit property to be used as types */
+				   which does not permit properties to be used as types */
 				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`%s' is not declared as a type in the current scope",
 					  name);

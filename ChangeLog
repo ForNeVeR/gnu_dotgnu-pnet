@@ -14,6 +14,11 @@ engine/cvm_conv.c, engine/cvm_except.c, engine/cvm_ptr.c, engine/cvm_stack.c,
 engine/cvm_var.c: implementation of the new "Converted Virtual Machine",
 which uses more efficient bytecode instructions at runtime.
 
+* engine/cvmc.c, engine/cvmc_arith.c, engine/cvmc_branch.c, engine/cvmc_call.c,
+engine/cvmc_const.c, engine/cvmc_conv.c, engine/cvmc_obj.c, engine/cvmc_ptr.c,
+engine/cvmc_setup.c, engine/cvmc_stack.c, engine/cvmc_var.c: implementation
+of the "CVM Converter", which converts IL instructions into CVM at runtime.
+
 2001-10-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_branch.c: verification for "switch" instructions; process

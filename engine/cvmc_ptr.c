@@ -1,0 +1,575 @@
+/*
+ * cvmc_ptr.c - Coder implementation for CVM pointers and arrays.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#ifdef IL_CVMC_CODE
+
+/*
+ * Load elements from an array.
+ */
+static void LoadArrayElem(ILCoder *coder, int opcode1, int opcode2,
+						  ILEngineType engineType, int shift, int stackSize)
+{
+#ifdef IL_NATIVE_INT64
+	if(indexType == ILEngineType_I4)
+#endif
+	{
+		if(opcode1 < COP_PREFIX)
+		{
+			CVM_BYTE(opcode1);
+		}
+		else
+		{
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(opcode1 - COP_PREFIX);
+		}
+		CVM_ADJUST(-2 + stackSize);
+	}
+#ifdef IL_NATIVE_INT64
+	else
+	{
+		CVM_BYTE(COP_CKARRAY_LOAD_I8);
+		if(shift != 0)
+		{
+			CVM_BYTE(COP_LDC_I4_0 + shift);
+			CVM_ADJUST(1);
+			CVM_BYTE(COP_LSHL);
+			CVM_ADJUST(-1);
+		}
+		CVM_BYTE(COP_PADD_I8);
+		if(opcode2 != COP_MREAD)
+		{
+			CVM_BYTE(opcode2);
+		}
+		else
+		{
+			CVM_BYTE(opcode2);
+			CVM_BYTE(1 << shift);
+		}
+		CVM_ADJUST(-(1 + CVM_WORDS_PER_LONG) + stackSize);
+	}
+#endif
+}
+
+/*
+ * Store elements to an array.
+ */
+static void StoreArrayElem(ILCoder *coder, int opcode1, int opcode2,
+						   ILEngineType indexType, int shift, int stackSize)
+{
+#ifdef IL_NATIVE_INT64
+	if(indexType == ILEngineType_I4)
+#endif
+	{
+		if(opcode1 < COP_PREFIX)
+		{
+			CVM_BYTE(opcode1);
+		}
+		else
+		{
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(opcode1 - COP_PREFIX);
+		}
+		CVM_ADJUST(-(2 + stackSize));
+	}
+#ifdef IL_NATIVE_INT64
+	else
+	{
+		CVM_BYTE(COP_CKARRAY_STORE_I8);
+		CVM_BYTE(stackSize);
+		CVM_BYTE(1 << shift);
+		if(opcode2 != COP_MWRITE)
+		{
+			CVM_BYTE(opcode2);
+		}
+		else
+		{
+			CVM_BYTE(opcode2);
+			CVM_BYTE(1 << shift);
+		}
+		CVM_ADJUST(-(1 + CVM_WORDS_PER_LONG + stackSize));
+	}
+#endif
+}
+
+/*
+ * Handle an array access opcode.
+ */
+static void CVMCoder_ArrayAccess(ILCoder *coder, int opcode,
+								 ILEngineType indexType, ILType *elemType)
+{
+	ILUInt32 size;
+
+	switch(opcode)
+	{
+		case IL_OP_LDELEMA:
+		{
+			/* Load the address of an array element */
+			size = ILSizeOfType(coder->thread, elemType);
+		#ifdef IL_NATIVE_INT64
+			if(indexType == ILEngineType_I4)
+		#endif
+			{
+				CVM_BYTE(COP_CKARRAY_LOAD_I4);
+				if(size == 2)
+				{
+					CVM_BYTE(COP_LDC_I4_1);
+					CVM_ADJUST(1);
+					CVM_BYTE(COP_ISHL);
+					CVM_ADJUST(-1);
+				}
+				else if(size == 4)
+				{
+					CVM_BYTE(COP_LDC_I4_2);
+					CVM_ADJUST(1);
+					CVM_BYTE(COP_ISHL);
+					CVM_ADJUST(-1);
+				}
+				else if(size == 8)
+				{
+					CVM_BYTE(COP_LDC_I4_3);
+					CVM_ADJUST(1);
+					CVM_BYTE(COP_ISHL);
+					CVM_ADJUST(-1);
+				}
+				else if(size != 1)
+				{
+					if(size < 8)
+					{
+						CVM_BYTE(COP_LDC_I4_0 + size);
+					}
+					else if(size < 128)
+					{
+						CVM_BYTE(COP_LDC_I4_S);
+						CVM_BYTE(size);
+					}
+					else
+					{
+						CVM_BYTE(COP_LDC_I4);
+						CVM_BYTE(size);
+						CVM_BYTE(size >> 8);
+						CVM_BYTE(size >> 16);
+						CVM_BYTE(size >> 24);
+					}
+					CVM_ADJUST(1);
+					CVM_BYTE(COP_IMUL);
+					CVM_ADJUST(-1);
+				}
+				CVM_BYTE(COP_PADD_I4);
+				CVM_ADJUST(-1);
+			}
+		#ifdef IL_NATIVE_INT64
+			else
+			{
+				CVM_BYTE(COP_CKARRAY_LOAD_I8);
+				if(size == 2)
+				{
+					CVM_BYTE(COP_LDC_I4_1);
+					CVM_ADJUST(1);
+					CVM_BYTE(COP_LSHL);
+					CVM_ADJUST(-1);
+				}
+				else if(size == 4)
+				{
+					CVM_BYTE(COP_LDC_I4_2);
+					CVM_ADJUST(1);
+					CVM_BYTE(COP_LSHL);
+					CVM_ADJUST(-1);
+				}
+				else if(size == 8)
+				{
+					CVM_BYTE(COP_LDC_I4_3);
+					CVM_ADJUST(1);
+					CVM_BYTE(COP_LSHL);
+					CVM_ADJUST(-1);
+				}
+				else if(size != 1)
+				{
+					if(size < 8)
+					{
+						CVM_BYTE(COP_LDC_I4_0 + size);
+					}
+					else if(size < 128)
+					{
+						CVM_BYTE(COP_LDC_I4_S);
+						CVM_BYTE(size);
+					}
+					else
+					{
+						CVM_BYTE(COP_LDC_I4);
+						CVM_BYTE(size);
+						CVM_BYTE(size >> 8);
+						CVM_BYTE(size >> 16);
+						CVM_BYTE(size >> 24);
+					}
+					CVM_BYTE(COP_IU2L);
+					CVM_ADJUST(CVM_WORDS_PER_LONG);
+					CVM_BYTE(COP_LMUL);
+					CVM_ADJUST(-CVM_WORDS_PER_LONG);
+				}
+				CVM_BYTE(CVM_PADD_I8);
+				CVM_ADJUST(-CVM_WORDS_PER_LONG);
+			}
+		#endif
+		}
+		break;
+
+		case IL_OP_LDELEM_I1:
+		{
+			/* Load a signed byte from an array */
+			LoadArrayElem(coder, COP_BREAD_ELEM, COP_BREAD,
+						  indexType, 0, 1);
+		}
+		break;
+
+		case IL_OP_LDELEM_U1:
+		{
+			/* Load an unsigned byte from an array */
+			LoadArrayElem(coder, COP_UBREAD_ELEM, COP_UBREAD,
+						  indexType, 0, 1);
+		}
+		break;
+
+		case IL_OP_LDELEM_I2:
+		{
+			/* Load a signed short from an array */
+			LoadArrayElem(coder, COP_SREAD_ELEM, COP_SREAD,
+						  indexType, 1, 1);
+		}
+		break;
+
+		case IL_OP_LDELEM_U2:
+		{
+			/* Load an unsigned short from an array */
+			LoadArrayElem(coder, COP_USREAD_ELEM, COP_USREAD,
+						  indexType, 1, 1);
+		}
+		break;
+
+		case IL_OP_LDELEM_I4:
+		case IL_OP_LDELEM_U4:
+	#ifdef IL_NATIVE_INT32
+		case IL_OP_LDELEM_I:
+	#endif
+		{
+			/* Load an integer from an array */
+			LoadArrayElem(coder, COP_IREAD_ELEM, COP_IREAD,
+						  indexType, 2, 1);
+		}
+		break;
+
+		case IL_OP_LDELEM_I8:
+	#ifdef IL_NATIVE_INT64
+		case IL_OP_LDELEM_I:
+	#endif
+		{
+			/* Load a long from an array */
+			LoadArrayElem(coder, COP_PREFIX + COP_PREFIX_LREAD_ELEM, COP_MREAD,
+						  indexType, 3, CVM_WORDS_PER_LONG);
+		}
+		break;
+
+		case IL_OP_LDELEM_R4:
+		{
+			/* Load a 32-bit float from an array */
+			LoadArrayElem(coder, COP_PREFIX + COP_PREFIX_FREAD_ELEM, COP_FREAD,
+						  indexType, 2, CVM_WORDS_PER_NATIVE_FLOAT);
+		}
+		break;
+
+		case IL_OP_LDELEM_R8:
+		{
+			/* Load a 64-bit float from an array */
+			LoadArrayElem(coder, COP_PREFIX + COP_PREFIX_DREAD_ELEM, COP_DREAD,
+						  indexType, 3, CVM_WORDS_PER_NATIVE_FLOAT);
+		}
+		break;
+
+		case IL_OP_LDELEM_REF:
+		{
+			/* Load a pointer from an array */
+			if(sizeof(void *) == 4)
+			{
+				LoadArrayElem(coder, COP_PREAD_ELEM, COP_PREAD,
+				              indexType, 2, 1);
+			}
+			else
+			{
+				LoadArrayElem(coder, COP_PREAD_ELEM, COP_PREAD,
+				              indexType, 3, 1);
+			}
+		}
+		break;
+
+		case IL_OP_STELEM_I1:
+		{
+			/* Store a byte value to an array */
+			StoreArrayElem(coder, COP_BWRITE_ELEM, COP_BWRITE,
+			               indexType, 0, 1);
+		}
+		break;
+
+		case IL_OP_STELEM_I2:
+		{
+			/* Store a short value to an array */
+			StoreArrayElem(coder, COP_SWRITE_ELEM, COP_SWRITE,
+			               indexType, 1, 1);
+		}
+		break;
+
+		case IL_OP_STELEM_I4:
+	#ifdef IL_NATIVE_INT32
+		case IL_OP_STELEM_I:
+	#endif
+		{
+			/* Store an integer value to an array */
+			StoreArrayElem(coder, COP_IWRITE_ELEM, COP_IWRITE,
+			               indexType, 2, 1);
+		}
+		break;
+
+		case IL_OP_STELEM_I8:
+	#ifdef IL_NATIVE_INT64
+		case IL_OP_STELEM_I:
+	#endif
+		{
+			/* Store a long value to an array */
+			StoreArrayElem(coder, COP_PREFIX + COP_PREFIX_LWRITE_ELEM,
+						   COP_MWRITE, indexType, 3, CVM_WORDS_PER_LONG);
+		}
+		break;
+
+		case IL_OP_STELEM_R4:
+		{
+			/* Store a 32-bit floating point value to an array */
+			StoreArrayElem(coder, COP_PREFIX + COP_PREFIX_FWRITE_ELEM,
+						   COP_FWRITE, indexType, 2,
+						   CVM_WORDS_PER_NATIVE_FLOAT);
+		}
+		break;
+
+		case IL_OP_STELEM_R8:
+		{
+			/* Store a 64-bit floating point value to an array */
+			StoreArrayElem(coder, COP_PREFIX + COP_PREFIX_DWRITE_ELEM,
+						   COP_DWRITE, indexType, 3,
+						   CVM_WORDS_PER_NATIVE_FLOAT);
+		}
+		break;
+
+		case IL_OP_STELEM_REF:
+		{
+			/* Store a pointer to an array */
+			if(sizeof(void *) == 4)
+			{
+				StoreArrayElem(coder, COP_PWRITE_ELEM, COP_PWRITE,
+							   indexType, 2, 1);
+			}
+			else
+			{
+				StoreArrayElem(coder, COP_PWRITE_ELEM, COP_PWRITE,
+							   indexType, 3, 1);
+			}
+		}
+		break;
+	}
+}
+
+/*
+ * Handle a pointer indirection opcode.
+ */
+static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
+{
+	switch(opcode)
+	{
+		case IL_OP_LDIND_I1:
+		{
+			/* Load a signed byte from a pointer */
+			CVM_BYTE(COP_BREAD);
+		}
+		break;
+
+		case IL_OP_LDIND_U1:
+		{
+			/* Load an unsigned byte from a pointer */
+			CVM_BYTE(COP_UBREAD);
+		}
+		break;
+
+		case IL_OP_LDIND_I2:
+		{
+			/* Load a signed short from a pointer */
+			CVM_BYTE(COP_SREAD);
+		}
+		break;
+
+		case IL_OP_LDIND_U2:
+		{
+			/* Load an unsigned short from a pointer */
+			CVM_BYTE(COP_USREAD);
+		}
+		break;
+
+		case IL_OP_LDIND_I4:
+		case IL_OP_LDIND_U4:
+	#ifdef IL_NATIVE_INT32
+		case IL_OP_LDIND_I:
+	#endif
+		{
+			/* Load an integer from a pointer */
+			CVM_BYTE(COP_IREAD);
+		}
+		break;
+
+		case IL_OP_LDIND_I8:
+	#ifdef IL_NATIVE_INT64
+		case IL_OP_LDIND_I:
+	#endif
+		{
+			/* Load a long from a pointer */
+			CVM_BYTE(COP_MREAD);
+			CVM_BYTE(8);
+			CVM_ADJUST(CVM_WORDS_PER_LONG - 1);
+		}
+		break;
+
+		case IL_OP_LDIND_R4:
+		{
+			/* Load a 32-bit float from a pointer */
+			CVM_BYTE(COP_FREAD);
+			CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
+		}
+		break;
+
+		case IL_OP_LDIND_R8:
+		{
+			/* Load a 64-bit float from a pointer */
+			CVM_BYTE(COP_DREAD);
+			CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
+		}
+		break;
+
+		case IL_OP_LDIND_REF:
+		{
+			/* Load a pointer from a pointer */
+			CVM_BYTE(COP_PREAD);
+		}
+		break;
+
+		case IL_OP_STIND_REF:
+		{
+			/* Store a pointer to a pointer */
+			CVM_BYTE(COP_PWRITE);
+			CVM_ADJUST(-2);
+		}
+		break;
+
+		case IL_OP_STIND_I1:
+		{
+			/* Store a byte to a pointer */
+			CVM_BYTE(COP_BWRITE);
+			CVM_ADJUST(-2);
+		}
+		break;
+
+		case IL_OP_STIND_I2:
+		{
+			/* Store a short to a pointer */
+			CVM_BYTE(COP_SWRITE);
+			CVM_ADJUST(-2);
+		}
+		break;
+
+		case IL_OP_STIND_I4:
+	#ifdef IL_NATIVE_INT32
+		case IL_OP_STIND_I:
+	#endif
+		{
+			/* Store an integer to a pointer */
+			CVM_BYTE(COP_IWRITE);
+			CVM_ADJUST(-2);
+		}
+		break;
+
+		case IL_OP_STIND_I8:
+	#ifdef IL_NATIVE_INT64
+		case IL_OP_STIND_I:
+	#endif
+		{
+			/* Store a long to a pointer */
+			CVM_BYTE(COP_MWRITE);
+			CVM_BYTE(8);
+			CVM_ADJUST(-(CVM_WORDS_PER_LONG + 1));
+		}
+		break;
+
+		case IL_OP_STIND_R4:
+		{
+			/* Store a 32-bit float to a pointer */
+			CVM_BYTE(COP_FWRITE);
+			CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT + 1));
+		}
+		break;
+
+		case IL_OP_STIND_R8:
+		{
+			/* Store a 64-bit float to a pointer */
+			CVM_BYTE(COP_DWRITE);
+			CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT + 1));
+		}
+		break;
+	}
+}
+
+/*
+ * Handle a pointer indirection opcode for a managed value.
+ */
+static void CVMCoder_PtrAccessManaged(ILCoder *coder, int opcode,
+									  ILClass *classInfo)
+{
+	/* TODO */
+}
+
+/*
+ * Process a pointer alignment prefix.  An "alignment" value
+ * of zero indicates a "volatile" prefix.
+ */
+static void CVMCoder_PtrPrefix(ILCoder *coder, int alignment)
+{
+	/* TODO */
+}
+
+/*
+ * Get the length of an array.
+ */
+static void CVMCoder_ArrayLength(ILCoder *coder)
+{
+	/* TODO */
+}
+
+/*
+ * Construct a new array, given a type and length value.
+ */
+static void CVMCoder_NewArray(ILCoder *coder, ILType *elemType,
+					 		  ILEngineType lengthType)
+{
+	/* TODO */
+}
+
+#endif	/* IL_CVMC_CODE */

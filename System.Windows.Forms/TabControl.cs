@@ -418,6 +418,11 @@ namespace System.Windows.Forms
 				return tabOwner.Controls.Contains(control);
 			}
 
+			public bool Contains(TabPage control)
+			{
+				return tabOwner.Controls.Contains(control);
+			}
+
 			public int IndexOf(TabPage control)
 			{
 				return tabOwner.Controls.IndexOf(control);

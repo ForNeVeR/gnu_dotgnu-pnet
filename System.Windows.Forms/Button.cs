@@ -57,7 +57,10 @@ public class Button : ButtonBase, IButtonControl
 	// Perform a click on this control.
 	public void PerformClick()
 			{
-				OnClick(EventArgs.Empty);
+				if(Visible && Enabled)
+				{
+					OnClick(EventArgs.Empty);
+				}
 			}
 
 	// Process a button click.

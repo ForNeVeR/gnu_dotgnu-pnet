@@ -110,7 +110,9 @@ public sealed class File
 	public static void Delete(String path)
 			{
 				Directory.ValidatePath(path);
-				Directory.HandleErrorsFile(DirMethods.Delete(path));
+				Errno errno = DirMethods.Delete(path);
+				if (errno != Errno.ENOENT)
+					Directory.HandleErrorsFile(errno);
 			}
 
 	// Determine whether a file exists.

@@ -122,6 +122,15 @@ public class FileStream : Stream
 					Errno errno = FileMethods.GetErrno();
 					if(errno == Errno.ENOENT)
 					{
+						//
+						// Under UNIX ENOENT is returned if the
+						// directory the file lives in doesn't exist.
+						// ECMA requires DirectoryNotFountException
+						// in that case.
+						//
+						String dirname = System.IO.Path.GetDirectoryName(path);
+						if (!System.IO.Directory.Exists(dirname))
+							throw new DirectoryNotFoundException();
 						throw new FileNotFoundException(null, path);
 					}
 					else if(errno == Errno.ENOTDIR)

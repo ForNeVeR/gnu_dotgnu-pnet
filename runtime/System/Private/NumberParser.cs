@@ -364,7 +364,10 @@ internal sealed class NumberParser
 			{
 				++posn;
 			}
-			else if(ch >= '0' && ch <= '9')
+			else if( ((style & NumberStyles.AllowHexSpecifier) != 0 &&
+					((ch >= 'A' && ch <= 'F') ||
+					 (ch >= 'a' && ch <= 'f'))) || 
+				 (ch >= '0' && ch <= '9') )
 			{
 				break;
 			}
@@ -383,16 +386,11 @@ internal sealed class NumberParser
 		// Parse the main part of the number.
 		low = 0;
 		high = 0;
-		if((style & NumberStyles.AllowHexSpecifier) != 0 && (posn + 2) <= len &&
-		   s[posn] == '0' &&
-		   (s[posn + 1] == 'x' || s[posn + 1] == 'X'))
+		if((style & NumberStyles.AllowHexSpecifier) != 0)
+/*		   s[posn] == '0' &&
+		   (s[posn + 1] == 'x' || s[posn + 1] == 'X')) || // Strings parsed using this style are not permitted to be prefixed with "0x". */
 		{
 			// Parse a hexadecimal value.
-			posn += 2;
-			if(posn >= len)
-			{
-				throw new FormatException(_("Format_Integer"));
-			}
 			do
 			{
 				// Get the next digit from the string.

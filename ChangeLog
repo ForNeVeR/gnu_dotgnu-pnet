@@ -5,6 +5,9 @@
 	engine/lib_dir.c, engine/lib_info.c, engine/lib_task.c: introduce
 	the "Platform.InfoMethods" class for random environment information.
 
+	* configure.in, include/il_config.h.in: add "isatty" and "getlogin"
+	to the list of functions that are detected at configuration time.
+
 2002-11-28  James McParlane  <james@massive.com.au>
 
 	* configure.in: add the "--disable-optimizations" flag to

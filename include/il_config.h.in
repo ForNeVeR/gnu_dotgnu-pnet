@@ -165,6 +165,9 @@
 /* Define if you have the gethostbyname function.  */
 #undef HAVE_GETHOSTBYNAME
 
+/* Define if you have the getlogin function.  */
+#undef HAVE_GETLOGIN
+
 /* Define if you have the getpagesize function.  */
 #undef HAVE_GETPAGESIZE
 
@@ -176,6 +179,9 @@
 
 /* Define if you have the getwd function.  */
 #undef HAVE_GETWD
+
+/* Define if you have the isatty function.  */
+#undef HAVE_ISATTY
 
 /* Define if you have the isinf function.  */
 #undef HAVE_ISINF

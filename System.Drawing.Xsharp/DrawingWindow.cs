@@ -623,25 +623,8 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				}
 				else if(cursorType == ToolkitCursorType.Default)
 				{
-					// Try to inherit the desktop's cursor for the default.
-					Widget parent = widget.Parent;
-					while(parent != null)
-					{
-						if(parent.Cursor != null)
-						{
-							break;
-						}
-						parent = parent.Parent;
-					}
-					if(parent != null)
-					{
-						widget.Cursor = new Cursor(CursorType.XC_left_ptr);
-					}
-					else
-					{
-						widget.Cursor =
-							new Cursor(CursorType.XC_inherit_parent);
-					}
+					// Set the default cursor to something matching X.
+					widget.Cursor = new Cursor(CursorType.XC_left_ptr);
 				}
 				else
 				{

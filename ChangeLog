@@ -29,6 +29,10 @@
 	sizes into X-style point sizes in System.Drawing.Xsharp, rather
 	than trying to fudge the "8.25" font in Xsharp.
 
+	* System.Drawing.Xsharp/DrawingWindow.cs,
+	System.Windows.Forms/ScrollBar.cs: set scroll bar cursors to the
+	default, so that they don't inherit the i-beam in text boxes.
+
 2004-01-05  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/Panel.cs,

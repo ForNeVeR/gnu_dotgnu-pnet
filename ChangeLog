@@ -1,3 +1,58 @@
+2004-01-15  Neil Cawse  <neilcawse@geotab.com>
+
+	* DotGNU.Images/GifWriter.cs, DotGNU.Images/PngReader.cs,
+	System.Xml/XmlTextReader.cs: csc compile issues.
+
+	* System.Drawing/Graphics.cs: bug fix to DrawString wrapping, treat
+	/n same as /r/n, improve draw/measure efficiency.
+
+	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs: do dispose.
+
+	* System.Drawing/Toolkit/ToolkitManager.cs: new overload on
+	CreateGraphics to improve efficiency by presetting a clip when
+	creating a toolkit graphics.
+
+	* System.Drawing.Win32/DrawingBrush.cs,
+	System.Drawing.Win32/DrawingPopupWindow.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingWindow.cs: fix small bugs in popups,
+	keyboard handling. improved painting efficiency.
+
+	* System.Drawing.Xsharp/DrawingMdiClient.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs: improved painting efficiency.
+
+	* System.Windows.Forms/ButtonBase.cs,
+	System.Windows.Forms/CheckBox.cs, 
+	System.Windows.Forms/ContainerControl.cs,
+	System.Windows.Forms/ContextMenu.cs, System.Windows.Forms/Control.cs,
+	System.Windows.Forms/HBoxLayout.cs, System.Windows.Forms/Label.cs,
+	System.Windows.Forms/MainMenu.cs, System.Windows.Forms/Menu.cs,
+	System.Windows.Forms/MessageBox.cs,
+	System.Windows.Forms/MonthCalendar.cs, System.Windows.Forms/Panel.cs,
+	System.Windows.Forms/PopupControl.cs,
+	System.Windows.Forms/ScrollableControl.cs,
+	System.Windows.Forms/TabControl.cs, System.Windows.Forms/TextBox.cs,
+	System.Windows.Forms/TextBoxBase.cs, System.Windows.Forms/TreeNode.cs,
+	System.Windows.Forms/TreeView.cs: sundry small control fixes.
+	Redid ContainerControl - implemented ms compatible focus handling,
+	did validation of controls, did ms compatible OnEnter and OnLeave
+	events. Improved Menus, they now behave like windows menus in terms
+	of delays, clicks and highlighting but Xsharp popups need some
+	changes for menus to work 100% on that platform. ContainsFocus bugfix,
+	FindForm bugfix, Control.ProcessCmdKey implemented. Setting a
+	control invisible correctly shifts focus to next control. Some
+	low level stuff for double buffering. HBoxLayout improved to get the
+	recommended size of labels better. MessageBox layout improved.
+	MonthCalendar compile issues and using wrong Graphics. Focus bug
+	fixes in TabControl. DoubleClick support added to textbox, TextBox
+	partially rewritten to use invalidate and improve efficiency. Other
+	textBox bugs fixed. All remaining TreeView bugs fixed, added full
+	keyboard support, both scrollbars but some minor Xsharp related
+	drawing issues still being seen on that platform.
+
+	* samples/forms/FormsTest.cs: add an openfile dialog test.
 
 2004-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 

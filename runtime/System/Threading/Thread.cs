@@ -76,12 +76,10 @@ public sealed class Thread
 				Abort();
 			}
 
-	// Get the application domain of the currently execution thread.
-	[TODO]
+	// Get the application domain of the currently executing thread.
 	public static AppDomain GetDomain()
 			{
-				// TODO
-				return null;
+				return AppDomain.CurrentDomain;
 			}
 
 	// Join with this thread.
@@ -311,10 +309,10 @@ public sealed class Thread
 	extern private System.Threading.ThreadState InternalGetState();
 
 	// Get the packed stack trace information for this thread.
-	[TODO]
 	internal PackedStackFrame[] GetPackedStackTrace()
 			{
-				// TODO
+				// We don't currently support getting the stack trace
+				// for a foreign thread.  It is too risky security-wise.
 				return null;
 			}
 

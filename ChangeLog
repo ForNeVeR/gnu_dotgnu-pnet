@@ -19,6 +19,9 @@
 	runtime/System/Security/Permissions/UIPermissionWindow.cs:
 	implement the remainder of the non-ECMA permission classes.
 
+	* runtime/System/AppDomain.cs, runtime/System/Threading/Thread.cs:
+	implement missing ECMA TODO's in "System.Threading.Thread".
+
 2003-03-31  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs,

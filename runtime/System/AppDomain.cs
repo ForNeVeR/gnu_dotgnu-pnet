@@ -135,19 +135,13 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 	// Event that is emitted when an exception is unhandled by the domain.
 	public event UnhandledExceptionEventHandler UnhandledException;
 
-#if !ECMA_COMPAT
-
-	// Base directory used to resolve assemblies.
-	public String BaseDirectory
-			{
-				get
-				{
-					return setup.ApplicationBase;
-				}
-			}
-
 	// Get the current domain.
-	public static AppDomain CurrentDomain
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	static AppDomain CurrentDomain
 			{
 				get
 				{
@@ -159,6 +153,17 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 						}
 						return currentDomain;
 					}
+				}
+			}
+
+#if !ECMA_COMPAT
+
+	// Base directory used to resolve assemblies.
+	public String BaseDirectory
+			{
+				get
+				{
+					return setup.ApplicationBase;
 				}
 			}
 

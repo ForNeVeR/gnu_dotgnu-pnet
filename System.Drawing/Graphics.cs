@@ -817,7 +817,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				   targetRect.Height == icon.Height)
 				{
 					// This is the easy case.
-					ToolkitDrawIcon(icon, targetRect.X, targetRect.Y);
+					ToolkitDrawIcon(icon, targetRect.X + baseWindow.X,
+						targetRect.Y + baseWindow.Y);
 				}
 				else
 				{
@@ -1450,27 +1451,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawString(String s, Font font, Brush brush,
 						   float x, float y, StringFormat format)
 			{
-				// TODO
-				if(s == null || s.Length == 0)
-				{
-					return;
-				}
-				int dx, dy;
-				ConvertPoint(x, y, out dx, out dy, pageUnit);
-				dx += baseWindow.X;
-				dy += baseWindow.Y;
-				// Simple optimization
-				if (clip != null)
-				{
-					if (dx > deviceClipExtent.Right || dy > deviceClipExtent.Bottom)
-						return;
-				}
-				lock(this)
-				{
-					SelectFont(font);
-					SelectBrush(brush);
-					ToolkitGraphics.DrawString(s, dx, dy, format);
-				}
+				DrawString(s, font, brush, new RectangleF(x, y, 999999.0f, 999999.0f), format);
 			}
 
 	// Reset the graphics state back to a previous container level.
@@ -2213,13 +2194,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 									i++;
 								}
 							}
-							// Dynamically allocate the array if we need more space.
-							if (wordCount >= words.Length)
-							{
-								SplitWord[] newWords = new SplitWord[words.Length * 2];
-								Array.Copy(words, newWords, words.Length);
-								words = newWords;
-							}
+						}
+						// Dynamically allocate the array if we need more space.
+						if (wordCount >= words.Length)
+						{
+							SplitWord[] newWords = new SplitWord[words.Length * 2];
+							Array.Copy(words, newWords, words.Length);
+							words = newWords;
 						}
 						// Add the word.
 						words[wordCount++] = new SplitWord(start, i - start);
@@ -3498,6 +3479,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					Point p = points[i];
 					p.X += baseWindow.X;
 					p.Y += baseWindow.Y;
+					points[i] = p;
 				}
 			}
 	

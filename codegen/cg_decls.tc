@@ -290,24 +290,10 @@ ILNode_GenDiscard(ILNode_EventPropertyDeclaration)
 	ILNode_GenDiscard(node->removeAccessor, info);
 }
 
-/*
- * Generate discard code for method declaration 
+/* 
+ * Generate discard code for method declarations.
  */
 ILNode_GenDiscard(ILNode_MethodDeclaration)
-{
-	ILNode_GenDiscard(node->methodHeader, info);
-	if (node->methodBody && info->asmOutput)
-	{
-		fputs ("{\n", info->asmOutput);
-		ILNode_GenDiscard(node->methodBody, info);
-		fputs ("}\n", info->asmOutput);
-	}
-}
-
-/* 
- * Generate discard code for method header
- */
-ILNode_GenDiscard(ILNode_MethodHeader)
 {
 	if (info->asmOutput)
 	{
@@ -350,6 +336,16 @@ ILNode_GenDiscard(ILNode_MethodHeader)
 		fputc (')', info->asmOutput);
 		/* FIXME implementation attributes */
 		fputc ('\n', info->asmOutput);
+		fputs ("{\n", info->asmOutput);
+		if(node->initCode)
+		{
+			ILNode_GenDiscard(node->initCode, info);
+		}
+		if(node->body)
+		{
+			ILNode_GenDiscard(node->body, info);
+		}
+		fputs ("}\n", info->asmOutput);
 	}
 }
 
@@ -385,21 +381,6 @@ ILNode_GenDiscard(ILNode_EnumMemberDeclaration)
 }
 
 ILNode_GenDiscard(ILNode_DelegateDeclaration)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_ConstructorDeclaration)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_ConstructorDeclarator)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_DestructorDeclaration)
 {
 	/* TODO */
 }

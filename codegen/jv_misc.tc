@@ -1124,6 +1124,14 @@ JavaGenValue(ILNode_InvocationExpression)
 	return ILMachineType_Void;
 }
 
+JavaGenValue(ILNode_BaseInit),
+JavaGenValue(ILNode_ThisInit)
+{
+	/* These are place-holders that are used by "InvocationExpression"
+	   to assist with the invocation of parent class constructors */
+	return ILMachineType_Void;
+}
+
 /*
  * Generate the "then" branch for a comma expression.
  */

@@ -335,6 +335,9 @@ struct _tagILEvalValue
 	ILNode	   *argList;
 }
 
+%node ILNode_BaseInit ILNode_Expression
+%node ILNode_ThisInit ILNode_Expression
+
 /*
  * Identifiers and l-values.
  */
@@ -545,16 +548,14 @@ struct _tagILEvalValue
  */
 %node ILNode_MethodDeclaration ILNode_Declaration =
 {
-	ILNode	   *methodHeader;
-	ILNode	   *methodBody;
-}
-%node ILNode_MethodHeader ILNode_Declaration =
-{
 	ILNode	   *attributes;
 	ILUInt32	modifiers;
 	ILNode	   *type;
 	ILNode	   *name;
 	ILNode	   *params;
+	ILNode     *initCode;
+	ILNode     *body;
+	%nocreate ILMethod *methodInfo = {0};
 }
 
 /*
@@ -604,35 +605,6 @@ struct _tagILEvalValue
 	ILNode	   *returnType;
 	ILNode	   *name;
 	ILNode	   *params; /* list of parameters */
-}
-
-%node ILNode_ConstructorDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	ILUInt32	modifiers;
-	ILNode	   *declarator;
-	ILNode	   *body;
-}
-
-%enum ILInitType =
-{
-		ILInitType_empty,
-		ILInitType_base,
-		ILInitType_this,
-}
-
-%node ILNode_ConstructorDeclarator ILNode_Declaration =
-{
-	ILNode	   *name;
-	ILNode	   *params;
-	ILInitType 	initType;
-	ILNode	   *initArgs;
-}
-%node ILNode_DestructorDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	ILNode	   *name;
-	ILNode	   *body;
 }
 
 %enum ILParameterModifier =

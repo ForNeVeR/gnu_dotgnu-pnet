@@ -127,6 +127,14 @@ ILNode_GetType(ILNode_InvocationExpression)
 	return ILMachineType_Void;
 }
 
+ILNode_GetType(ILNode_BaseInit),
+ILNode_GetType(ILNode_ThisInit)
+{
+	/* These are place-holders that are recognized by "InvocationExpression"
+	   for invoking parent class constructors */
+	return ILMachineType_Void;
+}
+
 %{
 
 /*
@@ -599,6 +607,14 @@ ILNode_GenValue(ILNode_ObjectCreationExpression)
 ILNode_GenValue(ILNode_InvocationExpression)
 {
 	/* TODO */
+	return ILMachineType_Void;
+}
+
+ILNode_GenValue(ILNode_BaseInit),
+ILNode_GenValue(ILNode_ThisInit)
+{
+	/* These are place-holders that are recognized by "InvocationExpression"
+	   for invoking parent class constructors */
 	return ILMachineType_Void;
 }
 

@@ -278,12 +278,6 @@ ILNode_SemAnalysis(ILNode_EventPropertyDeclaration)
 
 ILNode_SemAnalysis(ILNode_MethodDeclaration)
 {
-	ILNode_SemAnalysis(node->methodHeader, info, &(node->methodHeader));
-	return ILNode_SemAnalysis(node->methodBody, info, &(node->methodBody));
-}
-
-ILNode_SemAnalysis(ILNode_MethodHeader)
-{
 	CSSemValue value;
 
 	/* Enter an unsafe context for the method if necessary */
@@ -309,6 +303,12 @@ ILNode_SemAnalysis(ILNode_MethodHeader)
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
 		CSUnsafeLeave(info);
+	}
+
+	/* Perform semantic analysis on the method body */
+	if(node->body)
+	{
+		value = ILNode_SemAnalysis(node->body, info, &(node->body));
 	}
 
 	return value;
@@ -365,24 +365,6 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 }
 
 ILNode_SemAnalysis(ILNode_DelegateDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_ConstructorDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_ConstructorDeclarator)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_DestructorDeclaration)
 {
 	/* TODO */
 	return CSSemValueDefault;

@@ -101,15 +101,6 @@ JavaGenDiscard(ILNode_EventPropertyDeclaration)
  */
 JavaGenDiscard(ILNode_MethodDeclaration)
 {
-	JavaGenDiscard(node->methodHeader, info);
-	JavaGenDiscard(node->methodBody, info);
-}
-
-/*
- * Generate discard code for MethodHeader
- */
-JavaGenDiscard(ILNode_MethodHeader)
-{
 	/* TODO */
 }
 
@@ -134,21 +125,6 @@ JavaGenDiscard(ILNode_EnumMemberDeclaration)
 }
 
 JavaGenDiscard(ILNode_DelegateDeclaration)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_ConstructorDeclaration)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_ConstructorDeclarator)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_DestructorDeclaration)
 {
 	/* TODO */
 }

@@ -245,6 +245,52 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 	return ILNode_Neg_create((ILNode *)node);
 }
 
+/*
+ * The class name stack, which is used to verify the names
+ * of constructors and destructors against the name of their
+ * enclosing classes.
+ */
+static ILNode **classNameStack = 0;
+static int		classNameStackSize = 0;
+static int		classNameStackMax = 0;
+
+/*
+ * Push an item onto the class name stack.
+ */
+static void ClassNamePush(ILNode *name)
+{
+	if(classNameStackSize >= classNameStackMax)
+	{
+		classNameStack = (ILNode **)ILRealloc
+			(classNameStack, sizeof(ILNode *) * (classNameStackMax + 4));
+		if(!classNameStack)
+		{
+			CSOutOfMemory();
+		}
+		classNameStackMax += 4;
+	}
+	classNameStack[classNameStackSize++] = name;
+}
+
+/*
+ * Pop an item from the class name stack.
+ */
+static void ClassNamePop(void)
+{
+	--classNameStackSize;
+}
+
+/*
+ * Determine if an identifier is identical to
+ * the top of the class name stack.
+ */
+static int ClassNameSame(ILNode *name)
+{
+	return (strcmp(((ILNode_Identifier *)name)->name,
+	   ((ILNode_Identifier *)(classNameStack[classNameStackSize - 1]))->name)
+	   			== 0);
+}
+
 %}
 
 /*
@@ -279,11 +325,6 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 		ILNode		   *item1;
 		ILNode		   *item2;
 	} pair;
-	struct
-	{	
-		ILInitType		type;
-		ILNode		   *args;
-	} cinit;
 	ILParameterModifier	pmod;
 	struct
 	{
@@ -475,7 +516,7 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 %type <node>		EventPropertyDeclaration 
 %type <pair>		EventAccessorBlock EventAccessorDeclarations
 
-%type <node>		ReturnType MethodDeclaration MethodHeader MethodBody
+%type <node>		ReturnType MethodDeclaration MethodBody
 %type <node>		OptFormalParameterList FormalParameterList FormalParameter
 %type <pmod>		ParameterModifier
 %type <node>		PropertyDeclaration 
@@ -498,11 +539,10 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 %type <node>		EnumBase EnumDeclaration EnumBody OptEnumMemberDeclarations
 %type <node>		EnumMemberDeclarations EnumMemberDeclaration
 %type <node>		DelegateDeclaration
-%type <node>		ConstructorDeclaration ConstructorDeclarator 
-%type <cinit>		ConstructorInitializer
+%type <node>		ConstructorDeclaration ConstructorInitializer
 %type <node>		DestructorDeclaration
-%type <node>		OperatorDeclaration OperatorDeclarator
-%type <node>		NormalOperatorDeclarator ConversionOperatorDeclarator 
+%type <node>		OperatorDeclaration NormalOperatorDeclaration
+%type <node>		ConversionOperatorDeclaration
 %type <opName>		OverloadableOperator
 %type <node>		TypeSuffix TypeSuffixList TypeSuffixes
 %type <node>		OptAttributes AttributeSections AttributeSection
@@ -1802,6 +1842,9 @@ ClassDeclaration
 	: OptAttributes OptModifiers CLASS Identifier ClassBase {
 				/* Enter a new nesting level */
 				++NestingLevel;
+
+				/* Push the identifier onto the class name stack */
+				ClassNamePush($4);
 			}
 			ClassBody OptSemiColon	{
 				/* Validate the modifiers */
@@ -1819,6 +1862,9 @@ ClassDeclaration
 							 CurrNamespace.string,	/* Namespace */
 							 $5,					/* ClassBase */
 							 $7);					/* ClassBody */
+
+				/* Pop the class name stack */
+				ClassNamePop();
 
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
@@ -1914,20 +1960,17 @@ FieldDeclaration
  */
 
 MethodDeclaration
-	: MethodHeader MethodBody		{ MakeBinary(MethodDeclaration, $1, $2); }
-	;
-
-MethodHeader
 	: OptAttributes OptModifiers Type QualifiedIdentifier
-			'(' OptFormalParameterList ')'	{
+			'(' OptFormalParameterList ')' MethodBody	{
 				ILUInt32 attrs = CSModifiersToMethodAttrs($2);
-				$$ = ILNode_MethodHeader_create($1, attrs, $3, $4, $6);
+				$$ = ILNode_MethodDeclaration_create
+						($1, attrs, $3, $4, $6, 0, $8);
 			}
 	| OptAttributes OptModifiers VOID QualifiedIdentifier
-			'(' OptFormalParameterList ')'	{
+			'(' OptFormalParameterList ')' MethodBody	{
 				ILUInt32 attrs = CSModifiersToMethodAttrs($2);
-				$$ = ILNode_MethodHeader_create($1, attrs,
-							ILNode_VoidType_create(), $4, $6);
+				$$ = ILNode_MethodDeclaration_create
+						($1, attrs, ILNode_VoidType_create(), $4, $6, 0, $8);
 			}
 	;
 
@@ -1938,7 +1981,7 @@ ReturnType
 
 MethodBody
 	: Block			{ $$ = $1; }
-	| ';'			{ MakeSimple(Empty); }
+	| ';'			{ $$ = 0; }
 	;
 
 OptFormalParameterList
@@ -2102,7 +2145,7 @@ EventAccessorDeclarations
 	;
 
 OptAddAccessorDeclaration
-	: /* empty */				{ MakeSimple(Empty); }
+	: /* empty */				{ $$ = 0; }
 	| AddAccessorDeclaration	{ $$ = $1; }
 	;
 
@@ -2113,7 +2156,7 @@ AddAccessorDeclaration
 	;
 
 OptRemoveAccessorDeclaration
-	: /* empty */				{ MakeSimple(Empty); }
+	: /* empty */				{ $$ = 0; }
 	| RemoveAccessorDeclaration	{ $$ = $1; }
 	;
 
@@ -2187,17 +2230,13 @@ FormalIndexParameter
  */
 
 OperatorDeclaration
-	: OperatorDeclarator Block		{ MakeBinary(MethodDeclaration, $1, $2); }
+	: NormalOperatorDeclaration		{ $$ = $1; }
+	| ConversionOperatorDeclaration	{ $$ = $1; }
 	;
 
-OperatorDeclarator
-	: NormalOperatorDeclarator		{ $$ = $1; }
-	| ConversionOperatorDeclarator	{ $$ = $1; }
-	;
-
-NormalOperatorDeclarator
+NormalOperatorDeclaration
 	: OptAttributes OptModifiers Type OPERATOR OverloadableOperator
-			'(' Type Identifier ')'	{
+			'(' Type Identifier ')'	Block {
 				ILUInt32 attrs;
 				ILNode *params;
 
@@ -2217,13 +2256,13 @@ NormalOperatorDeclarator
 					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
 
 				/* Create a method definition for the operator */
-				$$ = ILNode_MethodHeader_create
+				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3,
 						 ILQualIdentSimple(ILInternString($5.unary, -1).string),
-						 params);
+						 params, 0, $10);
 			}
 	| OptAttributes OptModifiers Type OPERATOR OverloadableOperator
-			'(' Type Identifier ',' Type Identifier ')'		{
+			'(' Type Identifier ',' Type Identifier ')' Block	{
 				ILUInt32 attrs;
 				ILNode *params;
 
@@ -2247,11 +2286,11 @@ NormalOperatorDeclarator
 						(0, ILParamMod_empty, $10, $11));
 
 				/* Create a method definition for the operator */
-				$$ = ILNode_MethodHeader_create
+				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3,
 						 ILQualIdentSimple
 						 	(ILInternString($5.binary, -1).string),
-						 params);
+						 params, 0, $13);
 			}
 	;
 
@@ -2280,9 +2319,9 @@ OverloadableOperator
 	| LE_OP		{ $$.binary = "op_LessThanOrEqual"; $$.unary = 0; }
 	;
 
-ConversionOperatorDeclarator
+ConversionOperatorDeclaration
 	: OptAttributes OptModifiers IMPLICIT OPERATOR Type
-			'(' Type Identifier ')'	{
+			'(' Type Identifier ')' Block	{
 				ILUInt32 attrs;
 				ILNode *params;
 
@@ -2295,14 +2334,14 @@ ConversionOperatorDeclarator
 					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
 
 				/* Create a method definition for the operator */
-				$$ = ILNode_MethodHeader_create
+				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $5,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Implicit", -1).string),
-						 params);
+						 params, 0, $10);
 			}
 	| OptAttributes OptModifiers EXPLICIT OPERATOR Type
-			'(' Type Identifier ')'	{
+			'(' Type Identifier ')' Block	{
 				ILUInt32 attrs;
 				ILNode *params;
 
@@ -2315,11 +2354,11 @@ ConversionOperatorDeclarator
 					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
 
 				/* Create a method definition for the operator */
-				$$ = ILNode_MethodHeader_create
+				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $5,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Explicit", -1).string),
-						 params);
+						 params, 0, $10);
 			}
 	;
 
@@ -2328,37 +2367,76 @@ ConversionOperatorDeclarator
  */
 
 ConstructorDeclaration
-	: OptAttributes OptModifiers ConstructorDeclarator MethodBody	{
+	: OptAttributes OptModifiers Identifier '(' OptFormalParameterList ')'
+			ConstructorInitializer MethodBody	{
 				ILUInt32 attrs = CSModifiersToConstructorAttrs($2);
-				$$ = ILNode_ConstructorDeclaration_create ($1, attrs, $3, $4);
-			}
-	;
-
-ConstructorDeclarator
-	: Identifier '(' OptFormalParameterList ')' ConstructorInitializer	{
-				$$ = ILNode_ConstructorDeclarator_create($1, $3, $5.type, 
-														 $5.args);
+				ILNode *cname;
+				if((attrs & IL_META_METHODDEF_STATIC) != 0)
+				{
+					cname = ILQualIdentSimple
+								(ILInternString(".cctor", 6).string);
+				}
+				else
+				{
+					cname = ILQualIdentSimple
+								(ILInternString(".ctor", 5).string);
+				}
+				if(!ClassNameSame($3))
+				{
+					CSErrorOnLine(yygetfilename($3), yygetlinenum($3),
+						"constructor name does not match class name");
+				}
+				$$ = ILNode_MethodDeclaration_create
+					  ($1, attrs, ILNode_VoidType_create(), cname, $5, $7, $8);
 			}
 	;
 
 ConstructorInitializer
-	: /* empty */							{
-				$$.type = ILInitType_empty;
-				$$.args = 0;
-			}
+	: /* empty */							{ $$ = 0; }
 	| ':' BASE '(' OptArgumentList ')'		{
-				$$.type = ILInitType_base;
-				$$.args = $4;
+				MakeBinary(InvocationExpression, ILNode_BaseInit_create(), $4);
 			}
 	| ':' THIS '(' OptArgumentList ')'		{
-				$$.type = ILInitType_this;
-				$$.args = $4;
+				MakeBinary(InvocationExpression, ILNode_ThisInit_create(), $4);
 			}
 	;
 
 DestructorDeclaration
 	: OptAttributes '~' Identifier '(' ')' Block		{
-				$$ = ILNode_DestructorDeclaration_create($1, $3, $6);
+				ILUInt32 attrs;
+				ILNode *name;
+				ILNode *body;
+
+				/* Validate the destructor name */
+				if(!ClassNameSame($3))
+				{
+					CSErrorOnLine(yygetfilename($3), yygetlinenum($3),
+						"destructor name does not match class name");
+				}
+
+				/* Build the list of attributes needed on "Finalize" */
+				attrs = IL_META_METHODDEF_FAMILY |
+						IL_META_METHODDEF_HIDE_BY_SIG |
+						IL_META_METHODDEF_VIRTUAL;
+
+				/* Build the name of the "Finalize" method */
+				name = ILQualIdentSimple(ILInternString("Finalize", -1).string);
+
+				/* Destructors must always call their parent finalizer
+				   even if an exception occurs.  We force this to happen
+				   by wrapping the method body with a try block whose
+				   finally clause always calls its parent */
+				body = ILNode_InvocationExpression_create
+							(ILNode_BaseAccess_create(name), 0);
+				body = ILNode_Try_create
+							($6, 0, ILNode_FinallyClause_create(body));
+
+				/* Construct the finalizer declaration */
+				$$ = ILNode_MethodDeclaration_create
+							($1, attrs, ILNode_VoidType_create(),
+							 ILQualIdentSimple
+							 	(ILInternString("Finalize", -1).string),
+							 0, 0, body);
 			}
 	;
 
@@ -2370,6 +2448,9 @@ StructDeclaration
 	: OptAttributes OptModifiers STRUCT Identifier StructInterfaces	{
 				/* Enter a new nesting level */
 				++NestingLevel;
+
+				/* Push the identifier onto the class name stack */
+				ClassNamePush($4);
 			}
 			StructBody OptSemiColon	{
 				ILNode *baseList;
@@ -2403,6 +2484,9 @@ StructDeclaration
 							 baseList,				/* ClassBase */
 							 $7);					/* StructBody */
 
+				/* Pop the class name stack */
+				ClassNamePop();
+
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
 			}
@@ -2431,6 +2515,9 @@ InterfaceDeclaration
 	: OptAttributes OptModifiers INTERFACE Identifier InterfaceBase	{
 				/* Increase the nesting level */
 				++NestingLevel;
+
+				/* Push the identifier onto the class name stack */
+				ClassNamePush($4);
 			}
 			InterfaceBody OptSemiColon	{
 				/* Validate the modifiers */
@@ -2450,6 +2537,9 @@ InterfaceDeclaration
 							 CurrNamespace.string,	/* Namespace */
 							 $5,					/* ClassBase */
 							 $7);					/* ClassBody */
+
+				/* Pop the class name stack */
+				ClassNamePop();
 
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
@@ -2498,7 +2588,8 @@ InterfaceMethodDeclaration
 								 IL_META_METHODDEF_VIRTUAL |
 								 IL_META_METHODDEF_ABSTRACT |
 								 IL_META_METHODDEF_HIDE_BY_SIG;
-				$$ = ILNode_MethodHeader_create($1, attrs, $3, $4, $6);
+				$$ = ILNode_MethodDeclaration_create
+						($1, attrs, $3, $4, $6, 0, 0);
 			}
 	| OptAttributes OptNew VOID Identifier '(' OptFormalParameterList ')' ';' {
 				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
@@ -2506,8 +2597,8 @@ InterfaceMethodDeclaration
 								 IL_META_METHODDEF_VIRTUAL |
 								 IL_META_METHODDEF_ABSTRACT |
 								 IL_META_METHODDEF_HIDE_BY_SIG;
-				$$ = ILNode_MethodHeader_create($1, attrs,
-							ILNode_VoidType_create(), $4, $6);
+				$$ = ILNode_MethodDeclaration_create($1, attrs,
+							ILNode_VoidType_create(), $4, $6, 0, 0);
 			}
 	;
 

@@ -214,31 +214,49 @@ case COP_CALL_EXTERN:
 {
 	/* Call a method that we don't know if it has been converted */
 	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
-
-	/* Copy the state back into the thread object */
-	COPY_STATE_TO_THREAD();
-
-	/* Convert the method */
-	tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
-	if(!tempptr)
+	if(methodToCall->userData)
 	{
-		MISSING_METHOD_EXCEPTION();
+		/* It is converted: allocate a new call frame */
+		ALLOC_CALL_FRAME();
+
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = pc + sizeof(void *) + 1;
+		callFrame->frame = (ILUInt32)(frame - stackbottom);
+		callFrame->exceptHeight = thread->exceptHeight;
+
+		/* Pass control to the new method */
+		pc = (unsigned char *)(methodToCall->userData);
+		thread->exceptHeight = 0;
+		method = methodToCall;
 	}
+	else
+	{
+		/* Copy the state back into the thread object */
+		COPY_STATE_TO_THREAD();
 
-	/* Allocate a new call frame */
-	ALLOC_CALL_FRAME();
+		/* Convert the method */
+		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		if(!tempptr)
+		{
+			MISSING_METHOD_EXCEPTION();
+		}
 
-	/* Fill in the call frame details */
-	callFrame->method = method;
-	callFrame->pc = thread->pc + 1 + sizeof(void *);
-	callFrame->frame = thread->frame;
-	callFrame->exceptHeight = thread->exceptHeight;
+		/* Allocate a new call frame */
+		ALLOC_CALL_FRAME();
 
-	/* Restore the state information and jump to the new method */
-	RESTORE_STATE_FROM_THREAD();
-	pc = (unsigned char *)tempptr;
-	thread->exceptHeight = 0;
-	method = methodToCall;
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = thread->pc + 1 + sizeof(void *);
+		callFrame->frame = thread->frame;
+		callFrame->exceptHeight = thread->exceptHeight;
+
+		/* Restore the state information and jump to the new method */
+		RESTORE_STATE_FROM_THREAD();
+		pc = (unsigned char *)tempptr;
+		thread->exceptHeight = 0;
+		method = methodToCall;
+	}
 #ifdef IL_PROFILE_CVM_METHODS
 	++(method->count);
 #endif

@@ -19,6 +19,9 @@
 	image/ser_parse.c, image/ser_writer.c: fix a bug related to the
 	serialization of null strings in attribute blocks.
 
+	* support/cmdline.c: remove trailing spaces and TAB's from lines
+	within a response file.
+
 2004-07-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_gc.c: fix _IL_GCHandle_GCAddrOfPinnedObject behavior

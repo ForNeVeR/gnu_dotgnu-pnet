@@ -634,7 +634,8 @@ void ILCmdLineExpand(int *argc, char ***argv)
 				{
 					len = strlen(buffer);
 					while(len > 0 &&
-					      (buffer[len - 1] == '\r' || buffer[len - 1] == '\n'))
+					      (buffer[len - 1] == '\r' || buffer[len - 1] == '\n' ||
+						   buffer[len - 1] == '\t' || buffer[len - 1] == ' '))
 					{
 						--len;
 					}

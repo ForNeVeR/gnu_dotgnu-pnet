@@ -6,6 +6,8 @@
 	class/ICSharpCode.SharpZipLib/Makefile.am: remove the zip library
 	from "ml-pnet" because pnetlib now has its own version.
 
+	* copy-mcs.sh: remove the zip library from the build helper script.
+
 2003-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, copy-mcs.sh, class/Makefile.am,

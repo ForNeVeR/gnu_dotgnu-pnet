@@ -3,6 +3,10 @@
 
 	* HACKING: update URL for ECMA class specification.
 
+	* runtime/System/Int16.cs, runtime/System/Int32.cs,
+	runtime/System/SByte.cs: cast negated values to "uint" before
+	casting up to "ulong", to prevent sign-extension.
+
 2002-01-27  Charlie Carnow <carnow@gmx.net>
 
 	* runtime/System/IO/File.cs: Implemented GetAccessTime, and other

@@ -75,7 +75,8 @@ public struct Int32 : IComparable, IFormattable
 					else
 					{
 						return NumberFormatter.FormatFixedPoint
-									((ulong)(-value__), 0, 0, true, format,
+									((ulong)(uint)(-value__), 0, 0,
+									 true, format,
 									 NumberFormatInfo.GetInstance(provider));
 					}
 				}

@@ -1,6 +1,12 @@
+
+2002-05-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/IO/Directory.cs: correct semantic compile errors.
+
 2002-05-02  Charlie Carnow   <carnow@gmx.net>
 
-	* runtime/System/IO/Directory.cs: new class contributed by Abhaya Agarwal <abhayag@iitk.ac.in>
+	* runtime/System/IO/Directory.cs: new class contributed by
+	Abhaya Agarwal <abhayag@iitk.ac.in>
 		
 2002-05-02  Stephen Compall  <rushing@sigecom.net>
 

@@ -24,7 +24,9 @@
 namespace System.IO
 {
 	using System;
+	using System.Security;
 	using Platform;
+
 	public sealed class Directory 
 	{
 		
@@ -51,29 +53,29 @@ namespace System.IO
 
 			switch(errno)
 			{
-				case ENOENT:
+				case Errno.ENOENT:
 					throw new DirectoryNotFoundException(_("IO_DirNotFound"));
-					break;
 
-				case ENOTEMPTY:
+				case Errno.ENOTEMPTY:
 					if(!recursive)
+					{
 						throw new IOException(_("IO_Error"));
+					}
 					else
-						[TODO]
+					{
+						// TODO
+					}
 					break;
 
-				case EROFS:
+				case Errno.EROFS:
 					throw new IOException(_("IO_Error"));
-					break;
 
-				case EACCES:
+				case Errno.EACCES:
 					throw new SecurityException(_("IO_PathnameSecurity"));
-					break;
 
 				// Needs to be confirmed.
-				case ENAMETOOLONG:					
+				case Errno.ENAMETOOLONG:					
 					throw new PathTooLongException();
-					break;
 				// TODO
 				// Throw some appropriate exception.
 				default:
@@ -84,62 +86,70 @@ namespace System.IO
 		[TODO]
 		public static bool Exists(string path)
 		{
-
+			return false;
 		}
 
 		public static DateTime GetCreationTime(string path)
 		{
-			File.GetCreationTime(path);
+			return File.GetCreationTime(path);
 		}
 
 		[TODO]
 		public static string GetCurrentDirectory()
 		{
+			return null;
 		}
 
 		[TODO]
 		public static string[] GetDirectories(string path)
 		{
+			return null;
 		}
 
 		[TODO]
 		public static string[] GetDirectories(string path, string searchPattern)
 		{
+			return null;
 		}
 
 		[TODO]
 		public static string GetDirectoryRoot(string path)
 		{
+			return null;
 		}
 
 		[TODO]
 		public static string[] GetFileSystemEntries(string path)
 		{
+			return null;
 		}
 
 		[TODO]
 		public static string[] GetFileSystemEntries(string path, string searchPattern)
 		{
+			return null;
 		}
 
 		[TODO]
 		public static string[] GetFiles(string path)
 		{
+			return null;
 		}
 
 		[TODO]
 		public static string[] GetFiles(string path, string searchPattern)
 		{
+			return null;
 		}
 
 		public static DateTime GetLastAccessTime(string path)
 		{
-			File.GetLastAccessTime(path);
+			return File.GetLastAccessTime(path);
 		}
 
 		public static DateTime GetLastWriteTime(string path)
 		{
-			File.GetLastWriteTime(path);
+			return File.GetLastWriteTime(path);
 		}
 
 		[TODO]
@@ -169,5 +179,3 @@ namespace System.IO
 
 	}
 }
-
-

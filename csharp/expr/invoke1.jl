@@ -7,7 +7,7 @@
 	.ver 0:0:0:0
 }
 .module '<Module>'
-.class public sequential value sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
+.class public sequential sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
 {
 .field private int32 'x'
 .method public hidebysig specialname rtspecialname instance void '.ctor'(int32 '_x') cil managed java 

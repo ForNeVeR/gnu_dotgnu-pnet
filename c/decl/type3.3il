@@ -35,55 +35,55 @@
 	ret
 	.maxstack 0
 } // method f4
-.class public explicit value sealed serializable ansi 'array int[20]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int[20]' extends ['.library']'System'.'ValueType'
 {
 .size 80
 .pack 4
 .field [0] public specialname int32 'elem__'
 } // class array int[20]
-.class public explicit value sealed serializable ansi 'array int[1]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int[1]' extends ['.library']'System'.'ValueType'
 {
 .size 4
 .pack 4
 .field [0] public specialname int32 'elem__'
 } // class array int[1]
-.class public explicit value sealed serializable ansi 'array int[0]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int[0]' extends ['.library']'System'.'ValueType'
 {
 .size 0
 .pack 4
 .field public static specialname int32 'elem__'
 } // class array int[0]
-.class public explicit value sealed serializable ansi 'array int[3][5]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int[3][5]' extends ['.library']'System'.'ValueType'
 {
 .size 60
 .pack 4
 .field [0] public specialname valuetype 'array int[5]' 'elem__'
 } // class array int[3][5]
-.class public explicit value sealed serializable ansi 'array int *[20]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int *[20]' extends ['.library']'System'.'ValueType'
 {
 .size 80
 .pack 4
 .field [0] public specialname int32 * 'elem__'
 } // class array int *[20]
-.class public explicit value sealed serializable ansi 'array int *[3][5]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int *[3][5]' extends ['.library']'System'.'ValueType'
 {
 .size 60
 .pack 4
 .field [0] public specialname valuetype 'array int *[5]' 'elem__'
 } // class array int *[3][5]
-.class public explicit value sealed serializable ansi 'array int[3]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int[3]' extends ['.library']'System'.'ValueType'
 {
 .size 12
 .pack 4
 .field [0] public specialname int32 'elem__'
 } // class array int[3]
-.class public explicit value sealed serializable ansi 'array int[5]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int[5]' extends ['.library']'System'.'ValueType'
 {
 .size 20
 .pack 4
 .field [0] public specialname int32 'elem__'
 } // class array int[5]
-.class public explicit value sealed serializable ansi 'array int *[5]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int *[5]' extends ['.library']'System'.'ValueType'
 {
 .size 20
 .pack 4

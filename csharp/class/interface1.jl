@@ -23,7 +23,7 @@
 	.get instance class ['.library']'System'.'Object' 'IEnumerator'::'get_Current'()
 } // property Current
 } // class IEnumerator
-.class public sequential value sealed serializable ansi 'DictionaryEntry' extends ['.library']'System'.'ValueType'
+.class public sequential sealed serializable ansi 'DictionaryEntry' extends ['.library']'System'.'ValueType'
 {
 .field private class ['.library']'System'.'Object' 'key__'
 .field private class ['.library']'System'.'Object' 'value__'

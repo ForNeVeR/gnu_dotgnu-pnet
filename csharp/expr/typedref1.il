@@ -7,7 +7,7 @@
 	.ver 0:0:0:0
 }
 .module '<Module>'
-.class private sequential value sealed serializable ansi 'W' extends ['.library']'System'.'ValueType'
+.class private sequential sealed serializable ansi 'W' extends ['.library']'System'.'ValueType'
 {
 .field private int32 'w'
 } // class W

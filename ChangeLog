@@ -5,6 +5,19 @@
 	csharp/parser/error4.err, csharp/parser/error4.jerr:
 	check for "namespace XXX }" error.
 
+	* c/decl/type3.3il, c/decl/type3.il, c/expr/arrayptr1.3il,
+	c/expr/arrayptr1.il, csharp/class/interface1.il,
+	csharp/class/interface1.jl, csharp/expr/binary3.il,
+	csharp/expr/binary3.jl, csharp/expr/cast6.il,
+	csharp/expr/cast6.jl, csharp/expr/incdec1.il,
+	csharp/expr/incdec1.jl, csharp/expr/invoke1.il,
+	csharp/expr/invoke1.jl, csharp/expr/new1.il,
+	csharp/expr/new1.jl, csharp/expr/newarray1.il,
+	csharp/expr/newarray1.jl, csharp/expr/sizeof1.il,
+	csharp/expr/typedref1.il, csharp/stmt/foreach5.il,
+	csharp/stmt/foreach5.jl: remove the obsolete "value" flag from
+	struct types.
+
 2002-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/constructor2.err, csharp/class/constructor2.jerr:

@@ -7,7 +7,7 @@
 	.ver 0:0:0:0
 }
 .module '<Module>'
-.class private sequential value sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
+.class private sequential sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
 {
 .field public int32 'x'
 .method public hidebysig specialname rtspecialname instance void '.ctor'(int32 '_x') cil managed java 
@@ -20,7 +20,7 @@
 	.maxstack 2
 } // method .ctor
 } // class X
-.class private sequential value sealed serializable ansi 'Y' extends ['.library']'System'.'ValueType'
+.class private sequential sealed serializable ansi 'Y' extends ['.library']'System'.'ValueType'
 {
 .field private int32 'y'
 .method public hidebysig specialname rtspecialname instance void '.ctor'(int32 '_y') cil managed java 

@@ -24,7 +24,7 @@
 	ret
 	.maxstack 1
 } // method func2
-.class public explicit value sealed serializable ansi 'array int[100]' extends ['.library']'System'.'ValueType'
+.class public explicit sealed serializable ansi 'array int[100]' extends ['.library']'System'.'ValueType'
 {
 .size 400
 .pack 4

@@ -92,7 +92,7 @@
 	.maxstack 1
 } // method .ctor
 } // class TestEnumerator
-.class private sequential value sealed serializable ansi 'TestEnumerable' extends ['.library']'System'.'ValueType' implements 'System.Collections'.'IEnumerable'
+.class private sequential sealed serializable ansi 'TestEnumerable' extends ['.library']'System'.'ValueType' implements 'System.Collections'.'IEnumerable'
 {
 .method private final virtual hidebysig newslot instance class 'System.Collections'.'IEnumerator' 'IEnumerable.GetEnumerator'() cil managed 
 {

@@ -19,7 +19,7 @@
 .class private auto interface abstract ansi 'L'
 {
 } // class L
-.class private sequential value sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
+.class private sequential sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
 {
 .field private int32 'x'
 } // class X

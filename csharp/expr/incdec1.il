@@ -21,7 +21,7 @@
 .field public static literal valuetype 'ColorSmall' 'Blue' = int8(0x02)
 .field public specialname rtspecialname int8 'value__'
 } // class ColorSmall
-.class public sequential value sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
+.class public sequential sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
 {
 .method public static hidebysig specialname valuetype 'X' 'op_Increment'(valuetype 'X' 'x') cil managed 
 {

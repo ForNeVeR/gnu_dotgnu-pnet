@@ -11,7 +11,7 @@
 }
 .module '<Module>'
 .custom instance void [.library]System.Security.UnverifiableCodeAttribute::.ctor() = (01 00 00 00)
-.class private sequential value sealed serializable ansi 'S' extends ['.library']'System'.'ValueType'
+.class private sequential sealed serializable ansi 'S' extends ['.library']'System'.'ValueType'
 {
 .field private int32 'x'
 .field private int32 'y'

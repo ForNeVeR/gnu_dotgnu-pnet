@@ -97,7 +97,8 @@ using System.Reflection;
 				ArrayList arrayList = new ArrayList();
 				for (int i = 0; i < properties.Length; i++)
 					arrayList.Add(properties[i].GetValue(null, null as object[]));
-				values = new StandardValuesCollection(arrayList.ToArray());
+				values = new StandardValuesCollection
+					((ICollection)(arrayList.ToArray()));
 			}
 			return values;
 		}

@@ -142,7 +142,8 @@ int ILMemberAccessible(ILMember *member, ILClass *scope)
 			case IL_META_METHODDEF_FAMILY:
 			{
 				/* Scope must be in the same family */
-				return ILClassInheritsFrom(scope, info);
+				return (ILClassInheritsFrom(scope, info) || 
+							ILClassIsNestedInheritsFrom(scope, info));
 			}
 			/* Not reached */
 

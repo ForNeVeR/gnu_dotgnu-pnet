@@ -899,6 +899,20 @@ int ILClassIsNested(ILClass *parent, ILClass *child)
 	return 0;
 }
 
+int ILClassIsNestedInheritsFrom(ILClass *nestedChild, ILClass *ancestor)
+{
+      ILClass *temp = (nestedChild ? ILClassGetNestedParent(nestedChild) : 0);
+      while(temp != 0)
+      {
+              if((temp == ancestor) || ILClassInheritsFrom(temp,ancestor))
+              {
+                      return 1;
+              }
+              temp = ILClassGetNestedParent(temp);
+      }
+      return 0;
+}
+
 int ILClassCanNest(ILClass *parent, ILClass *child)
 {
 	/* If the parent and child are not in the same image, then cannot nest */

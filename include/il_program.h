@@ -651,6 +651,12 @@ ILClass *ILImplementsGetInterface(ILImplements *impl);
 int ILClassIsNested(ILClass *parent, ILClass *child);
 
 /*
+ * Determine if "nestedChild" has a containing class
+ * that inherits from "ancestor".
+ */
+int ILClassIsNestedInheritsFrom(ILClass *nestedChild, ILClass *ancestor);
+
+/*
  * Determine if "child" can be nested within "parent".
  */
 int ILClassCanNest(ILClass *parent, ILClass *child);

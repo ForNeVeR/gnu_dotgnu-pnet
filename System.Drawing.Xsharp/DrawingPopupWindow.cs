@@ -91,6 +91,12 @@ internal sealed class DrawingPopupWindow : PopupWindow, IToolkitWindow
 				}
 			}
 
+	// Set the focus to this window
+	void IToolkitWindow.Focus()
+			{
+				RequestFocus();
+			}
+
 	// Destroy this window and all of its children.
 	void IToolkitWindow.Destroy()
 			{
@@ -197,7 +203,7 @@ internal sealed class DrawingPopupWindow : PopupWindow, IToolkitWindow
 			{
 				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
 				DrawingToolkit.ValidateWindowSize(ref width, ref height);
-				Repaint();
+				Repaint(x, y, width, height);
 			}
 
 	// Force an update of all invalidated regions.

@@ -91,6 +91,12 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				}
 			}
 
+	// Set the focus to this window.
+	void IToolkitWindow.Focus()
+			{
+				//TODO
+			}
+
 	// Destroy this window and all of its children.
 	void IToolkitWindow.Destroy()
 			{
@@ -251,7 +257,7 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 			{
 				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
 				DrawingToolkit.ValidateWindowSize(ref width, ref height);
-				Repaint();
+				Repaint(x, y, width, height);
 			}
 
 	// Force an update of all invalidated regions.

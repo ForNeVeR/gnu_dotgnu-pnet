@@ -682,16 +682,15 @@ public class Uri : MarshalByRefObject
 		if (nextpos < absoluteUri.Length) // implies curpos also
 		{
 			nextpos = absoluteUri.IndexOf('?', curpos);
-			if (nextpos >= 0 && nextpos != absoluteUri.Length)
+			if (nextpos >= 0)
 			{
 				// there is query mark
-				// TODO: ? w/o query?
 				query = absoluteUri.Substring(nextpos + 1);
 			}
 			else
 			{
 				nextpos = absoluteUri.IndexOf('#', curpos);
-				if (nextpos >= 0 && nextpos != absoluteUri.Length) // there is fragment
+				if (nextpos >= 0) // there is fragment
 					fragment = absoluteUri.Substring(nextpos + 1);
 			}
 			if (nextpos == -1) // no path nor query

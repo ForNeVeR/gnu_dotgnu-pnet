@@ -1,5 +1,5 @@
 
-2004-11-01  Deryk Robosson  <deryk@0x0a.com>
+2004-11-01  <langstefan@gmx.at>
 
 	* System.Windows.Forms/ListBox.cs: Raise SelectedValueChanged before
 	SelectedIndexChanged (patch #3482, applied by ptha).

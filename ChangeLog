@@ -6,6 +6,9 @@
 	ildb/ildb_source.h: implement "list ,main", "info line", and
 	"info source", to assist with integration with xxgdb.
 
+	* image/item.c (_ILProgramItemLink): never link a program
+	item to itself.
+
 2002-06-26  Gopal.V  <gopalv82@symonds.net>
 
 	* ilnative/ilcheck.c : repurpose it for checking for PInvoke 

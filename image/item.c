@@ -148,6 +148,12 @@ int _ILProgramItemLink(ILProgramItem *item1, ILProgramItem *item2)
 	ILProgramItemLink *link;
 	ILProgramItemLink *link2;
 
+	/* Bail out if item1 and item2 are identical */
+	if(item1 == item2)
+	{
+		return 1;
+	}
+
 	/* Create the link from item1 to item2 */
 	if(!(item1->linked))
 	{

@@ -457,6 +457,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 {
 	ILType *type;
 	char *name;
+	ILNode *thisExpr;
 	ILNode *args;
 }
 %node ILNode_CArrayAccess ILNode_ArrayAccess

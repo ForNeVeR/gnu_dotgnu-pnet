@@ -1935,6 +1935,11 @@ int CTypeIsFunctionPtr(ILType *type)
 	return ILType_IsMethod(type);
 }
 
+int CTypeIsReference(ILType *type)
+{
+	return ILTypeIsReference(ILTypeStripPrefixes(type));
+}
+
 int CTypeIsFunction(ILType *type)
 {
 	if(CheckForModifier(type, "IsFunctionPointer", "OpenSystem.C"))

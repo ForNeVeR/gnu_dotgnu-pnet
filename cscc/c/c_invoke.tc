@@ -350,9 +350,18 @@ ILNode_CSemAnalysis(ILNode_CInvocationExpression)
 		if(CSemIsMethodGroup(value))
 		{
 			/* Reference to a method group: switch to C# invocation */
-			/* TODO: instance methods */
-			*parent = ILNode_CSharpInvocation_create
-				(CSemGetType(value), CSemGetMethodName(value), node->expr2);
+			if(yyisa(node->expr1, ILNode_AsIs))
+			{
+				*parent = ILNode_CSharpInvocation_create
+					(CSemGetType(value), CSemGetMethodName(value),
+					 node->expr1, node->expr2);
+			}
+			else
+			{
+				*parent = ILNode_CSharpInvocation_create
+					(CSemGetType(value), CSemGetMethodName(value),
+					 0, node->expr2);
+			}
 			CGenCloneLine(*parent, (ILNode *)node);
 			return ILNode_CSemAnalysis(*parent, info, parent, stmtLevel);
 		}
@@ -540,7 +549,7 @@ ILNode_GenValue(ILNode_CInvocationExpression)
  */
 static ILMethod *ResolveCSMethod(ILGenInfo *info, ILClass *classInfo,
 							     ILClass *callScope, const char *name,
-							     ILType **args, int numArgs)
+							     ILType **args, int numArgs, int isStatic)
 {
 	ILMember *member;
 	ILMethod *method;
@@ -558,8 +567,12 @@ static ILMethod *ResolveCSMethod(ILGenInfo *info, ILClass *classInfo,
 		{
 			/* Filter out members that aren't interesting */
 			method = (ILMethod *)member;
-			if(strcmp(ILMethod_Name(method), name) != 0 ||
-			   !ILMethod_IsStatic(method))
+			if(strcmp(ILMethod_Name(method), name) != 0)
+			{
+				continue;
+			}
+			if((isStatic && !ILMethod_IsStatic(method)) ||
+			   (!isStatic && ILMethod_IsStatic(method)))
 			{
 				continue;
 			}
@@ -619,7 +632,8 @@ static ILMethod *ResolveCSMethod(ILGenInfo *info, ILClass *classInfo,
 			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
 				method = ResolveCSMethod(info, ILImplementsGetInterface(impl),
-									     callScope, name, args, numArgs);
+									     callScope, name, args, numArgs,
+										 isStatic);
 				if(method)
 				{
 					return method;
@@ -691,7 +705,8 @@ ILNode_CSemAnalysis(ILNode_CSharpInvocation)
 	if(classInfo)
 	{
 		method = ResolveCSMethod(info, classInfo, callScope,
-								 node->name, typeArray, (int)numArgs);
+								 node->name, typeArray,
+								 (int)numArgs, (node->thisExpr == 0));
 	}
 	else
 	{
@@ -725,7 +740,7 @@ ILNode_CSemAnalysis(ILNode_CSharpInvocation)
 	invoke = (ILNode_InvocationExpression *)
 		ILNode_InvocationExpression_create(0, node->args);
 	CGenCloneLine((ILNode *)invoke, (ILNode *)node);
-	invoke->thisExpr = 0;
+	invoke->thisExpr = node->thisExpr;
 	invoke->methodInfo = method;
 	invoke->callSiteSig = 0;
 	*parent = (ILNode *)invoke;

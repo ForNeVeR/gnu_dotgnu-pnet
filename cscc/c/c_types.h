@@ -375,6 +375,11 @@ int CTypeIsFunction(ILType *type);
 int CTypeIsFunctionPtr(ILType *type);
 
 /*
+ * Determine if a C type is an object reference.
+ */
+int CTypeIsReference(ILType *type);
+
+/*
  * Convert a C type into an element type.
  */
 int CTypeToElementType(ILType *type);

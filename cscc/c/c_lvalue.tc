@@ -28,6 +28,82 @@ ILNode_CSemAnalysis(ILNode_Identifier)
 	return CSemValueError;
 }
 
+%{
+
+/*
+ * Convert a C# member reference.
+ */
+static CSemValue ConvertCSharpMember(ILGenInfo *info, ILNode *expr,
+									 ILNode **parent, CSemValue value)
+{
+	ILField *field;
+	ILProperty *property;
+	ILType *type;
+
+	if(CSemIsField(value))
+	{
+		/* We've resolved a member field */
+		field = CSemGetField(value);
+		type = ILField_Type(field);
+		if(CTypeIsArray(type))
+		{
+			/* Arrays decay immediately into r-values */
+			CSemSetDecayedRValue(value, CTypeDecay(info, type), type);
+		}
+		else if(ILField_IsInitOnly(field))
+		{
+			/* Read-only fields cannot be l-values */
+			CSemSetRValue(value, type);
+		}
+		else
+		{
+			/* Everything else must be an l-value field */
+			CSemSetLValue(value, type);
+		}
+		*parent = ILNode_MemberField_create(expr, field);
+		CGenCloneLine(*parent, (ILNode *)expr);
+	}
+	else if(CSemIsProperty(value))
+	{
+		/* We've resolved a member property */
+		property = CSemGetProperty(value);
+		type = ILTypeGetReturn(ILProperty_Signature(property));
+		if(ILProperty_Getter(property))
+		{
+			if(ILProperty_Setter(property))
+			{
+				/* Read-write properties are l-values */
+				CSemSetLValueNoRef(value, type);
+			}
+			else
+			{
+				/* Read-only properties are r-values */
+				CSemSetRValue(value, type);
+			}
+		}
+		else
+		{
+			/* Write-only properties are s-values */
+			CSemSetSValue(value, type);
+		}
+		*parent = ILNode_MemberProperty_create(expr, property);
+		CGenCloneLine(*parent, (ILNode *)expr);
+	}
+	else if(CSemIsMethodGroup(value))
+	{
+		/* We've resolved a method group.  We mark it with an "as-is"
+		   node so that "c_invoke.tc" can detect the difference between
+		   static and instance method calls */
+		*parent = ILNode_AsIs_create(expr);
+		CGenCloneLine(*parent, (ILNode *)expr);
+	}
+
+	/* Return the modified semantic value */
+	return value;
+}
+
+%}
+
 /*
  * Perform semantic analysis for a member access node.
  */
@@ -55,6 +131,16 @@ ILNode_CSemAnalysis(ILNode_CMemberField)
 	type = CSemGetType(value);
 	if(!CTypeIsStruct(type) && !CTypeIsUnion(type))
 	{
+		if(CTypeIsReference(type))
+		{
+			/* Try to resolve the member using C# semantics */
+			value = ResolveMember
+				(info, ILTypeStripPrefixes(type), node->name, 0);
+			if(!CSemIsError(value))
+			{
+				return ConvertCSharpMember(info, node->expr, parent, value);
+			}
+		}
 		goto typeError;
 	}
 
@@ -825,6 +911,7 @@ ILNode_CGenAddress(ILNode_CStaticField)
 ILNode_CSemAnalysis(ILNode_CDerefField)
 {
 	CSemValue value;
+	CSemValue value2;
 	ILType *type;
 	ILType *structType;
 	ILType *fieldType;
@@ -845,6 +932,15 @@ ILNode_CSemAnalysis(ILNode_CDerefField)
 
 	/* Make sure that the expression is a pointer to a structure or union */
 	type = CSemGetType(value);
+	if(CTypeIsReference(type))
+	{
+		/* Try to resolve the member using C# semantics */
+		value2 = ResolveMember(info, ILTypeStripPrefixes(type), node->name, 0);
+		if(!CSemIsError(value2))
+		{
+			return ConvertCSharpMember(info, node->expr, parent, value2);
+		}
+	}
 	if(!CTypeIsPointer(type))
 	{
 		goto typeError;

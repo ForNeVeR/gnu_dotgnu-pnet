@@ -1,3 +1,9 @@
+
+2003-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/XsharpSupport.c: fix the DIB to XImage conversion code
+	for mask bitmaps.
+
 2003-10-08  Neil Cawse  <neilcawse@geotab.com>
 
 	* : many small fixes to compile with csc

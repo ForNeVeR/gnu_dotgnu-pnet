@@ -59,6 +59,7 @@ struct _tagILScope
 	ILScope		   *parent;		/* Parent scope */
 	ILRBTree		nameTree;	/* Tree containing all names in the scope */
 	ILScopeUsingInfo *using;	/* Using declarations for the scope */
+	ILScope			*aliases;	/* aliases lookup scope */
 	ILClass		   *classInfo;	/* Data attached to the scope for searching */
 
 	/* Function for looking up an item within the scope */
@@ -97,6 +98,15 @@ static ILScopeData *UsingScope_Lookup(ILScope *scope, const char *name)
 	if(data != 0)
 	{
 		return data;
+	}
+
+	if(scope->aliases)
+	{
+		data=(*(scope->aliases->lookup))(scope->aliases,name);
+		if(data !=0)
+		{
+			return data;
+		}
 	}
 
 	/* Search each of the "using" scopes */
@@ -140,6 +150,7 @@ ILScope *ILScopeCreate(ILGenInfo *info, ILScope *parent)
 	scope->parent = parent;
 	ILRBTreeInit(&(scope->nameTree), NameCompare, 0);
 	scope->using = 0;
+	scope->aliases = 0;
 	scope->classInfo = 0;
 	scope->lookup = NormalScope_Lookup;
 	return scope;
@@ -400,16 +411,16 @@ int ILScopeUsing(ILScope *scope, const char *identifier)
 	using->refScope = namespaceScope;
 	using->next = scope->using;
 	scope->using = using;
-	
+
 	/* Change the lookup function to one which handles "using" clauses */
 	scope->lookup = UsingScope_Lookup;
-
 	return 1;
 }
 
 void ILScopeClearUsing(ILScope *scope)
 {
 	scope->using = 0;
+	scope->aliases = 0;
 }
 
 ILScopeData *ILScopeLookup(ILScope *scope, const char *identifier, int up)
@@ -526,20 +537,11 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 	/* Create a new scope to hold the "using" context for the type.
 	   We must do this because the global "using" context will be
 	   cleared at the end of the parse, but we need the information
-	   it contains after the parse . The attachScope contains the
-	   alias information to which the namespaceref scopes are attached
-	   by the following code.*/
-	if(attachScope)
-	{
-		usingScope=attachScope; /* reuse the attachScope for ->using */
-	}
-	else
-	{
-		usingScope = ILScopeCreate(scope->info, scope);
-	}
+	   it contains after the parse */
+	usingScope = ILScopeCreate(scope->info, scope);
+	usingScope->aliases = attachScope;
 	usingScope->using = scope->using;
 	usingScope->lookup = UsingScope_Lookup;
-	
 
 	/* Create a scope to hold the type itself */
 	typeScope = ILScopeCreate(scope->info, usingScope);

@@ -14,6 +14,8 @@
 	* codegen/cg_optable.c: Override numeric type promotion for boolean data
 	types.
 
+	* codegen/cg_scope.c: A split in the scope tree for aliases are added .
+
 2002-11-16  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_oper.tc: Correct a minor fix in coercion of the 

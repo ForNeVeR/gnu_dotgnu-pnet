@@ -7,6 +7,8 @@
 
 	* System.Windows.Forms/Label.cs: add the "FlatStyle" property.
 
+	* configure.in, NEWS: update version and news for the 0.6.4 release.
+
 2004-03-12  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlTextWriter.cs, tests/System.Xml/TestXmlTextReader.cs:

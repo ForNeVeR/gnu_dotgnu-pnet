@@ -1,4 +1,63 @@
 
+0.6.4 (13 March 2004)
+
+	System.Windows.Forms & System.Drawing:
+
+	* Missing "CtrlN" and "CtrlShiftN" shortcut values (Rhys Weatherley).
+	* Implement the "Splitter" control (Rhys Weatherley).
+	* Rewrite the binding classes (Rhys Weatherley).
+	* Bugs in Win32 window handling (Gopal V, Neil Cawse).
+	* Fixes to ComboBox drop-down width (Neil Cawse).
+	* Don't perform layout on minimized windows (Neil Cawse).
+	* Reduce ProgressBar flicker (Neil Cawse).
+	* Fixes to TabControl, TextBox, TreeView, CustomControl (Neil Cawse).
+	* Finish off the Panel control (Neil Cawse).
+	* Add support for Control.OnClick and Control.OnDoubleClick (Neil Cawse).
+	* Fix toolkit control offsets (Neil Cawse).
+	* ImageList fixes (Neil Cawse).
+	* Set scroll bar cursors to a more appropriate value (Rhys Weatherley).
+	* Tweaks to get the SharpDevelop code editor working (Simon Guindon).
+	* Stub out the color and folder browser dialogs (Rhys Weatherley).
+	* Implement the font selection dialog (Rhys Weatherley).
+	* DrawString fixes (Neil Cawse).
+	* Bugs in popups, keyboard handling, and paint efficiency (Neil Cawse).
+	* Lots of layout and interaction fixes (Neil Cawse).
+	* Double buffering framework (Neil Cawse).
+	* Mnenmonic support (Neil Cawse).
+	* Fix DrawIcon, DrawIconUnstretched, DrawImage (Rhys Weatherley).
+	* Speed up 1-to-1 image draws (Rhys Weatherley).
+	* Invalidate/Update improvements (Neil Cawse).
+	* Signature issues in TabPageCollection (Miroslaw Dobrzanski-Neumann).
+	* TabPageCollection should not inherit from ControlCollection (Rhys W).
+	* Add the missing Label.FlatStyle property (Rhys Weatherley).
+
+	Xsharp:
+
+	* Process pending invalidates before an XFlush (Rhys Weatherley).
+	* Use XEventsQueued to check for events before issuing timeouts;
+	  fixes queue starvation when short timeouts are present (Rhys W).
+	* Get the font family list for use in the font dialog (Rhys Weatherley).
+	* Alter the Windows to Xsharp font size conversion code (Rhys Weatherley).
+	* DOUBLE-BUFFER extension support logic (Rhys Weatherley).
+	* Tweak XImage drawing when double buffering is used (Rhys Weatherley).
+
+	Other:
+
+	* New System.Xml parser (Richard Baumann, Adam Ballai).
+	* Blocking bugs in StreamReader classes (Richard Baumann).
+	* Overflow bug in StringBuilder when maximum capacity was set (Rhys W).
+	* Import the Mono System.Text.RegularExpressions code (Rhys Weatherley).
+	* Generate transparency masks in DotGNU.Images correctly (Rhys W).
+	* Infinite loop in MulticastDelegate.GetInvocationList (Richard Baumann).
+	* Enumerator bug in Queue (Rhys Weatherley).
+	* Add the "OpenSystem.Platform" assembly (Rhys Weatherley).
+	* Use separate locks for socket reads and writes (Rhys Weatherley).
+	* New internalcall interface for wait handles (Rhys Weatherley).
+	* New marker classes to support the C ABI changes (Rhys Weatherley).
+	* Auto-discover full names of .so's for debian (Andrew Mitchell, Rhys W).
+	* Clean up pnetlib.spec (Russell Stuart).
+	* XML bugs in "WriteQuotedString" (Richard Baumann).
+
 0.6.2 (3 January 2004)
 
 	System.Windows.Forms & System.Drawing:

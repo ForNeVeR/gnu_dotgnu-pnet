@@ -139,10 +139,6 @@ extern	"C" {
  */
 #define	_CVM_OUT_RETURN(size)	\
 			do { \
-				if(((ILCVMCoder*)coder)->flags & IL_CODER_FLAG_METHOD_TRACE)\
-				{\
-					CVMP_OUT_WORD(COP_PREFIX_TRACE_OUT,0);\
-				}\
 				if(((ILCVMCoder *)coder)->debugEnabled) \
 				{ \
 					_CVM_OUT_BREAK(IL_BREAK_EXIT_METHOD); \
@@ -1014,7 +1010,13 @@ extern	"C" {
 			_CVM_OUT_DWIDE((opcode), (value1), (value2))
 #define	CVM_OUT_DWIDE_PTR(opcode,value1,value2,value3)	\
 			_CVM_OUT_DWIDE_PTR((opcode), (value1), (value2), (value3))
-#define	CVM_OUT_RETURN(size)		_CVM_OUT_RETURN((size))
+#define	CVM_OUT_RETURN(size)		do {\
+				if(((ILCVMCoder*)coder)->flags & IL_CODER_FLAG_METHOD_TRACE)\
+				{\
+					CVMP_OUT_WORD(COP_PREFIX_TRACE_OUT,0);\
+				}\
+				_CVM_OUT_RETURN((size))\
+				}while(0)
 #define	CVM_OUT_NONE(opcode)		_CVM_OUT_NONE((opcode))
 #define	CVMP_OUT_NONE(opcode)		_CVMP_OUT_NONE((opcode))
 #define	CVM_OUT_BYTE(opcode,value)	_CVM_OUT_BYTE((opcode), (value))

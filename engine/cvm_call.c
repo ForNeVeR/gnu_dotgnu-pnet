@@ -217,14 +217,13 @@ ILUInt32 _ILStackWordsForType(ILExecThread *thread, ILType *type)
 	}
 }
 
-#ifdef IL_CONFIG_VARARGS
-
 /*
- * Pack a set of arguments into a vararg "Object[]" array.
+ * Pack a set of arguments into a params "Object[]" array.
  * Returns the number of stack words to pop from the function,
- * and the new array in "*array".
+ * and the new array in "*array". This is not included in VarArgs
+ * as this is needed by non-vararg operations like BeginInvoke
  */
-ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
+ILUInt32 _ILPackCVMStackArgs(ILExecThread *thread, CVMWord *stacktop,
 							ILUInt32 firstParam, ILUInt32 numArgs,
 							ILType *callSiteSig, void **array)
 {
@@ -514,8 +513,6 @@ ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	/* Return the height of the varargs arguments to the caller */
 	return height;
 }
-
-#endif /* IL_CONFIG_VARARGS */
 
 /*
  * Get the number of parameter words for a method.

@@ -382,7 +382,7 @@ static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
 		);
 
 	/* Pack the parameters into a managed object array */
-	_ILPackVarArgs
+	_ILPackCVMStackArgs
 		(
 			thread,
 			 /* stackTop is the part "just below" the IAsyncResult parameter */

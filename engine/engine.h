@@ -839,11 +839,11 @@ int _ILExecMonitorProcessCreate(ILExecProcess *process);
 int _ILExecMonitorProcessDestroy(ILExecProcess *process);
 
 /*
- * Pack a set of arguments into a vararg "Object[]" array.
+ * Pack a set of arguments into a params "Object[]" array.
  * Returns the number of stack words to pop from the function,
  * and the new array in "*array".
  */
-ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
+ILUInt32 _ILPackCVMStackArgs(ILExecThread *thread, CVMWord *stacktop,
 							ILUInt32 firstParam, ILUInt32 numArgs,
 							ILType *callSiteSig, void **array);
 

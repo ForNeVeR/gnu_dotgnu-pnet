@@ -1,3 +1,15 @@
+
+2004-10-20  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/cvm_call.c, engine/engine.h, engine/lib_delegate.c: Change 
+	_ILPackVarArgs to _ILPackCVMStackArgs and remove it from var args 
+	#ifdef.
+
+	* engine/cvmc_gen.h: Move the COP_TRACE generation out of the 
+	_CVM_OUT_RETURN macro to fix kernel-fp compliation.
+
+	* engine/internal.c: Add DnsMethods suppression if networking is disabled.
+
 2004-10-19  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_reflect.c: Fixed null dereference when using

@@ -42,6 +42,7 @@ extern	"C" {
 #if !defined(IL_CONFIG_NETWORKING)
 	#define _IL_IPAddress_suppressed
 	#define _IL_SocketMethods_suppressed
+	#define _IL_DnsMethods_suppressed
 #endif
 #if !defined(IL_CONFIG_REFLECTION)
 	#define _IL_AssemblyBuilder_suppressed

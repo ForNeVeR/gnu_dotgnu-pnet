@@ -1848,15 +1848,15 @@ public class CodePropertyReferenceExpression : CodeExpression
 [Serializable]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
-public class CodePropertySetValueExpression : CodeExpression
+public class CodePropertySetValueReferenceExpression : CodeExpression
 {
 
 	// Constructors.
-	public CodePropertySetValueExpression()
+	public CodePropertySetValueReferenceExpression()
 	{
 	}
 
-}; // class CodePropertySetValueExpression
+}; // class CodePropertySetValueReferenceExpression
 
 [Serializable]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]

@@ -55,6 +55,14 @@
 	System/CodeDom/Compiler/TempFileCollection.cs: implement some of
 	the classes in the "System.CodeDom.Compiler" namespace.
 
+	* System/CodeDom/RuleOutput.cs,
+	System/CodeDom/rules.txt,
+	System/CodeDom/Compiler/CSharpCodeCompiler.cs,
+	System/CodeDom/Compiler/CodeCompiler.cs,
+	System/CodeDom/Compiler/CodeGenerator.cs,
+	resources/en_US/System/Arg.txt: stub out the code generation
+	classes in "System.CodeDom.Compiler" (not fully implemented yet).
+
 2002-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/ClassInterfaceAttribute.cs

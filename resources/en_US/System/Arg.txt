@@ -26,4 +26,5 @@ Arg_UriPort=The port specified with the URI was nonexistent
 Arg_UriPathAbs=The relative path specified with the URI could not be converted to an absolute path
 Arg_UriHostName=URI host names must be specified in DNS or IPv4 format
 Arg_UriNotEscaped=You told the constructor that the Uri was properly escaped, but it wasn't
+Arg_InvalidIdentifier=Invalid identifier specified
 ArgRange_NonNegative=Value must not be negative

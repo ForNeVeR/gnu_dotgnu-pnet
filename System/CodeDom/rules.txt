@@ -95,7 +95,7 @@ CodeParameterDeclarationExpressionCollection:
 CodePrimitiveExpression: Object<Value>
 CodePropertyReferenceExpression:
 	CodeExpression<TargetObject> String<PropertyName>
-CodePropertySetValueExpression
+CodePropertySetValueReferenceExpression
 
 CodeSnippetExpression: String<Value>
 CodeSnippetStatement: String<Value>

@@ -97,4 +97,5 @@ ildb/Makefile
 csdoc/Makefile
 csant/Makefile
 samples/Makefile
-doc/Makefile])
+doc/Makefile
+tests/Makefile])

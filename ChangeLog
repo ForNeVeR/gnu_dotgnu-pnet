@@ -16,6 +16,11 @@ remove some obsolete files.
 * engine/Makefile.am, engine/null_coder.c, engine/ilverify.c: split the
 null coder into a separate source file so it can be reused by other programs.
 
+* Makefile.am, configure.in, tests/.cvsignore, tests/Makefile.am,
+tests/ilunit.c, tests/ilunit.h, tests/test_verify.c: implement an
+XUnit-style testing framework to assist with testing the system;
+begin writing a test harness for the bytecode verifier.
+
 2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,

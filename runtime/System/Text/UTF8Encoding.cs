@@ -442,6 +442,10 @@ public class UTF8Encoding : Encoding
 				// Return the final count to the caller.
 				return posn - byteIndex;
 			}
+	public override byte[] GetBytes(String s)
+			{
+				return base.GetBytes(s);
+			}
 
 	// Internal version of "GetCharCount" which can handle a rolling
 	// state between multiple calls to this method.

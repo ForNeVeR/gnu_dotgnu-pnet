@@ -192,6 +192,10 @@ public class UnicodeEncoding : Encoding
 				}
 				return posn - byteIndex;
 			}
+	public override byte[] GetBytes(String s)
+			{
+				return base.GetBytes(s);
+			}
 
 	// Get the number of characters needed to decode a byte buffer.
 	public override int GetCharCount(byte[] bytes, int index, int count)

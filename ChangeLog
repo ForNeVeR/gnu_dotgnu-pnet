@@ -1,4 +1,10 @@
 
+2003-03-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/UTF8Encoding.cs,
+	runtime/System/Text/UnicodeEncoding.cs: add the "GetBytes(String)"
+	method to UTF8Encoding and UnicodeEncoding, for ECMA-compatibility.
+
 2003-03-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/AppDomain.cs,

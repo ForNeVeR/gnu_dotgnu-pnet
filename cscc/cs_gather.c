@@ -364,6 +364,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	ILNode *param;
 	ILNode_FormalParameter *fparam;
 	ILUInt32 paramNum;
+	ILParameter *parameter;
 	
 	/* Get the name of the method */
 	if(yykind(method->name) == yykindof(ILNode_Identifier))
@@ -406,11 +407,21 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	ILNode_ListIter_Init(&iterator, method->params);
 	while((param = ILNode_ListIter_Next(&iterator)) != 0)
 	{
-		/* TODO: parameter modifiers */
-
 		/* Get the type of the parameter */
 		fparam = (ILNode_FormalParameter *)param;
 		tempType = CSSemType(fparam->type, info, &(fparam->type));
+
+		/* Add a "byref" node to the type if "out" or "ref" */
+		if(fparam->pmod == ILParamMod_out ||
+		   fparam->pmod == ILParamMod_ref)
+		{
+			tempType = ILTypeCreateRef(info->context,
+									   IL_TYPE_COMPLEX_BYREF, tempType);
+			if(!tempType)
+			{
+				CSOutOfMemory();
+			}
+		}
 
 		/* Add the parameter type to the method signature */
 		if(!ILTypeAddParam(info->context, signature, tempType))
@@ -419,11 +430,23 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 		}
 
 		/* Create a parameter definition in the metadata to record the name */
-		if(!ILParameterCreate(methodInfo, 0, ILQualIdentName(fparam->name, 0),
-							  0, paramNum))
+		parameter = ILParameterCreate
+				(methodInfo, 0, ILQualIdentName(fparam->name, 0),
+			     ((fparam->pmod == ILParamMod_out) ? IL_META_PARAMDEF_OUT : 0),
+				 paramNum);
+		if(!parameter)
 		{
 			CSOutOfMemory();
 		}
+
+		/* Add "System.ParamArrayAttribute" if the parameter is "params" */
+		if(fparam->pmod == ILParamMod_params)
+		{
+			ILGenItemAddAttribute(info, (ILProgramItem *)parameter,
+								  "ParamArrayAttribute");
+		}
+
+		/* Advance to the next parameter */
 		++paramNum;
 	}
 

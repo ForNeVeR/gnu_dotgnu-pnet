@@ -18,6 +18,9 @@ are passed as zero-element arrays, not "null".
 * cscc/cs_invoke.tc: semantic analysis for "ref", "out", and "params"
 parameters.
 
+* cscc/cs_gather.c: process parameter modifiers when building method
+signatures.
+
 2001-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, Makefile.am, ildiff/AUTHORS, ildiff/README, ildiff/TODO,

@@ -597,10 +597,11 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 {
 	char **argv = 0;
 	int argc = 0;
-	int posn;
+	int posn, len, len2;
 	unsigned long numFiles;
 	unsigned long file;
 	char *temp;
+	char *temp2;
 
 	/* Add the program name and fixed options */
 	AddArg(&argv, &argc, FindMSPath());
@@ -671,8 +672,29 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 	numFiles = CSAntFileSetSize(args->resources);
 	for(file = 0; file < numFiles; ++file)
 	{
-		AddValueArg(&argv, &argc, "/resource:",
-					CSAntFileSetFile(args->resources, file));
+		temp = CSAntFileSetFile(args->resources, file);
+		len = len2 = strlen(temp);
+		while(len > 0 && temp[len - 1] != '/' && temp[len - 1] != '\\')
+		{
+			--len;
+		}
+		if(len > 0)
+		{
+			temp2 = (char *)ILMalloc(len2 + (len2 - len) + 2);
+			if(!temp2)
+			{
+				CSAntOutOfMemory();
+			}
+			strcpy(temp2, temp);
+			strcat(temp2, ",");
+			strcat(temp2, temp + len);
+			AddValueArg(&argv, &argc, "/resource:", temp2);
+			ILFree(temp2);
+		}
+		else
+		{
+			AddValueArg(&argv, &argc, "/resource:", temp);
+		}
 	}
 
 	/* Add the references to the command-line */

@@ -41,6 +41,10 @@
 	* csant/csant_cscc.c (BuildCscCommandLine): split multiple resource
 	files into multiple "/resource" options to "csc".
 
+	* csant/csant_cscc.c (BuildCscCommandLine): pass the base name of
+	resources to "csc" to force it to output the correct identifiers for
+	manifest resources.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

@@ -63,7 +63,7 @@ public sealed class Bitmap : System.Drawing.Image
 				// TODO
 			}
 	public Bitmap(int width, int height)
-			: this(width, height, PixelFormat.Format32bppArgb) {}
+			: this(width, height, Imaging.PixelFormat.Format32bppArgb) {}
 	[TODO]
 	public Bitmap(int width, int height,
 				  System.Drawing.Imaging.PixelFormat format)

@@ -539,6 +539,9 @@ extern	"C" {
 /*
  * More inline method replacements.
  */
+#define COP_PREFIX_ABS_I4				0x6D
+#define COP_PREFIX_ABS_R4				0x6E
+#define COP_PREFIX_ABS_R8				0x6F
 #define	COP_PREFIX_ASIN					0x70
 #define	COP_PREFIX_ATAN					0x71
 #define	COP_PREFIX_ATAN2				0x72
@@ -565,10 +568,8 @@ extern	"C" {
 #define	COP_PREFIX_SINH					0x87
 #define	COP_PREFIX_SQRT					0x88
 #define	COP_PREFIX_TAN					0x89
-#define	COP_PREFIX_TANH					0x90
-#define COP_PREFIX_ABS_I4				0x9A
-#define COP_PREFIX_ABS_R4				0x9B
-#define COP_PREFIX_ABS_R8				0x9C
+#define	COP_PREFIX_TANH					0x8A
+
 
 /*
  * Definition of a CVM stack word which can hold

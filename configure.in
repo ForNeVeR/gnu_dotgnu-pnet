@@ -259,6 +259,7 @@ AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h dirent.h sys/utime.h utime.h)
 AC_CHECK_HEADERS(linux/types.h limits.h inttypes.h stddef.h sys/param.h)
 AC_CHECK_HEADERS(sys/file.h sys/wait.h malloc.h stdbool.h)
 AC_CHECK_HEADERS(setjmp.h sys/ucontext.h sys/sysinfo.h direct.h)
+AC_CHECK_HEADERS(netinet/tcp.h netinet/udp.h)
 AC_CHECK_HEADERS([linux/irda.h], [], [],
 [[#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>

@@ -55,6 +55,12 @@
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
+#ifdef HAVE_NETINET_TCP_H
+#include <netinet/tcp.h>
+#endif
+#ifdef HAVE_NETINET_UDP_H
+#include <netinet/udp.h>
+#endif
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
@@ -802,8 +808,11 @@ static int SocketOptionsToNative(ILInt32 level, ILInt32 name,
 			{
 				case IL_SO_NO_DELAY:
 				{
-					/* TODO */
+				#ifdef TCP_NODELAY
+					(*nativeName) = TCP_NODELAY;
+				#else
 					return 0;
+				#endif
 				}
 				break;
 				
@@ -817,6 +826,7 @@ static int SocketOptionsToNative(ILInt32 level, ILInt32 name,
 					return 0;
 			}
 #else
+			#warning "SOL_TCP not available"
 			return 0;
 #endif
 		}
@@ -829,6 +839,7 @@ static int SocketOptionsToNative(ILInt32 level, ILInt32 name,
 			/* TODO */
 			return 0;
 #else
+			#warning "SOL_UDP not available"
 			return 0;
 #endif
 		}
@@ -903,6 +914,7 @@ static int SocketOptionsToNative(ILInt32 level, ILInt32 name,
 					return 0;
 			}
 #else
+			#warning "SOL_SOCKET is not defined"
 			return 0;
 #endif
 		}

@@ -9,6 +9,9 @@
 	in a support ILGetHostName() wrapper, add detection code and implement
 	InternalGetHostName() internal call.
 
+	* support/socket.c, configure.in: fix SetSocketOption and put 
+	#warning directives for the function not available cases. (bug #9326).
+
 2004-06-18  Klaus Treichel  <ktreichel@web.de>
 
 	* clrwrap/Makefile.am, csant/Makefile.am, csant/Makefile.am,

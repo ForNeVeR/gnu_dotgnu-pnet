@@ -288,8 +288,8 @@ static int printNatives(const char *filename, FILE *stream,
 				}
 			}
 			else if(ILMethod_IsInternalCall(method) ||
-			        (!ILMethod_RVA(method) &&
-					 !ILClass_IsInterface(ILMethod_Owner(method))))
+			        ILMethod_IsNative(method) ||
+			        ILMethod_IsRuntime(method))
 			{
 				if(namesOnly)
 				{

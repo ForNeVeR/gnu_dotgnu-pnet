@@ -3,6 +3,10 @@
 
 * image/java_loader.c: add support for .jar files to the loader.
 
+* ilnative/ilnative.c (printNatives): remove a previous hack that
+recognised any empty method as native, and then add code to recognise
+the "native" and "runtime" implementation types.
+
 2001-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: implement a Java class file to IL converter.

@@ -118,7 +118,11 @@ ILInt32 ILCreateDir(const char *path)
 		return IL_ERRNO_ENOENT;
 	}
 #ifdef HAVE_MKDIR
-	return ILSysIOConvertErrno(mkdir(path, 0777));
+	#ifdef IL_WIN32_NATIVE
+		return ILSysIOConvertErrno(mkdir(path));
+	#else
+		return ILSysIOConvertErrno(mkdir(path, 0777));
+	#endif
 #else
 	return IL_ERRNO_ENOSYS;
 #endif

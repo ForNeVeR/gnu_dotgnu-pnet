@@ -1,4 +1,10 @@
 
+2003-05-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/ser_parse.c (ILSerializeGetType): assume that an
+	unresolved value type is an enumerated type value,
+	to process attributes when IL_LOADFLAG_NO_RESOLVE is set.
+
 2003-05-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/arm_codegen.h: rewrite some of the ARM code generation

@@ -84,6 +84,16 @@ int ILSerializeGetType(ILType *type)
 	/* Resolve enumerated type references to get the underlying type */
 	type = ILTypeGetEnumType(type);
 
+	/* If the type is an unresolved reference value type, then
+	   assume that it is an integer-based enumerated type.  This
+	   is needed to parse attributes across assembly boundaries
+	   when "IL_LOADFLAG_NO_RESOLVE" is set */
+	if(ILType_IsValueType(type) &&
+	   ILClassIsRef(ILClassResolve(ILType_ToValueType(type))))
+	{
+		return IL_META_SERIALTYPE_I4;
+	}
+
 	/* Determine how to serialize the value */
 	if(ILType_IsPrimitive(type))
 	{

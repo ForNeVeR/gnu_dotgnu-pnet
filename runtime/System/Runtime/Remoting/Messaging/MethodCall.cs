@@ -31,7 +31,8 @@ using System.Runtime.Serialization;
 [Serializable]
 [CLSCompliant(false)]
 public class MethodCall : IMethodCallMessage, ISerializable,
-						  IMethodMessage, IMessage, ISerializationRootObject
+						  IMethodMessage, IMessage, ISerializationRootObject,
+						  IMessageDictionary
 {
 	// Internal state.
 	protected IDictionary ExternalProperties;
@@ -41,6 +42,7 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 	private String typeName;
 	private String uri;
 	private bool hasVarArgs;
+	private bool isSoap;
 	private LogicalCallContext context;
 	private MethodBase method;
 	private ParameterInfo[] parameters;
@@ -50,6 +52,7 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 	// Constructors.
 	public MethodCall(Header[] h1)
 			{
+				isSoap = true;		// This form is used for SOAP requests.
 				Init();
 				if(h1 != null)
 				{
@@ -87,7 +90,6 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 			}
 
 	// Implement the IMethodCallMessage interface.
-	[TODO]
 	public virtual IDictionary Properties
 			{
 				get
@@ -98,8 +100,8 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 					}
 					if(ExternalProperties == null)
 					{
-						// TODO: use a message dictionary
-						ExternalProperties = new Hashtable();
+						ExternalProperties = new MessageProperties
+							(this, InternalProperties);
 					}
 					return ExternalProperties;
 				}
@@ -287,18 +289,42 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 			}
 
 	// Implement the ISerializable interface.
-	[TODO]
 	public void GetObjectData(SerializationInfo info,
 							  StreamingContext context)
 			{
-				// TODO
+				throw new NotSupportedException();
 			}
 
 	// Handle incoming headers.
-	[TODO]
 	public virtual Object HeaderHandler(Header[] h)
 			{
-				// TODO
+				// Extract the method name from the headers, if present.
+				if(h != null && h.Length != 0 && h[0].Name == "__methodName")
+				{
+					methodName = (String)(h[0].Value);
+					if(h.Length != 1)
+					{
+						Header[] nh = new Header [h.Length - 1];
+						Array.Copy(h, 1, nh, 0, h.Length - 1);
+						nh = h;
+					}
+					else
+					{
+						h = null;
+					}
+				}
+
+				// Process the headers to set the message properties.
+				if(h != null)
+				{
+					foreach(Header header in h)
+					{
+						ProcessHeader(header.Name, header.Value);
+					}
+				}
+
+				// Resolve the method.
+				ResolveMethod(false);
 				return null;
 			}
 
@@ -309,14 +335,24 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 			}
 
 	// Resolve the method.
-	[TODO]
 	public void ResolveMethod()
+			{
+				ResolveMethod(true);
+			}
+	[TODO]
+	private void ResolveMethod(bool throwOnError)
+			{
+				// TODO
+			}
+
+	// Set the root object data for a SOAP method call.
+	[TODO]
+	private void RootSetSoapObjectData(SerializationInfo info)
 			{
 				// TODO
 			}
 
 	// Set the root object data for this method call.
-	[TODO]
 	public void RootSetObjectData(SerializationInfo info,
 								  StreamingContext context)
 			{
@@ -324,7 +360,33 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 				{
 					throw new ArgumentNullException("info");
 				}
-				// TODO
+
+				// Use a different algorithm for SOAP messages.
+				if(isSoap)
+				{
+					RootSetSoapObjectData(info);
+					return;
+				}
+
+				// De-serialize the main values.
+				SerializationInfoEnumerator se = info.GetEnumerator();
+				while(se.MoveNext())
+				{
+					ProcessHeader(se.Name, se.Value);
+				}
+
+				// Process the headers in the streaming context.
+				if(context.State == StreamingContextStates.Remoting)
+				{
+					Header[] headers = (context.Context as Header[]);
+					if(headers != null)
+					{
+						foreach(Header header in headers)
+						{
+							ProcessHeader(header.Name, header.Value);
+						}
+					}
+				}
 			}
 
 	// Set the server identity within this object.
@@ -334,10 +396,9 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 			}
 
 	// Process a header.
-	[TODO]
 	private void ProcessHeader(String name, Object value)
 			{
-				// TODO
+				Properties[name] = value;
 			}
 
 	// Perform an access check on the resolved method.
@@ -353,6 +414,55 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 				if(parameters == null && method != null)
 				{
 					parameters = method.GetParameters();
+				}
+			}
+
+	// Implement the IMessageDictionary interface.
+	String[] IMessageDictionary.SpecialProperties
+			{
+				get
+				{
+					return SpecialProperties;
+				}
+			}
+	Object IMessageDictionary.GetSpecialProperty(String name)
+			{
+				return GetSpecialProperty(name);
+			}
+	void IMessageDictionary.SetSpecialProperty(String name, Object value)
+			{
+				SetSpecialProperty(name, value);
+			}
+	internal virtual String[] SpecialProperties
+			{
+				get
+				{
+					return new String[] {
+						"__Uri", "__MethodName", "__MethodSignature",
+						"__TypeName", "__Args", "__CallContext"
+					};
+				}
+			}
+	internal virtual Object GetSpecialProperty(String name)
+			{
+				switch(name)
+				{
+					case "__Uri":				return Uri;
+					case "__MethodName":		return MethodName;
+					case "__MethodSignature":	return MethodSignature;
+					case "__TypeName":			return TypeName;
+					case "__Args":				return Args;
+					case "__CallContext":		return LogicalCallContext;
+				}
+				return null;
+			}
+	internal virtual void SetSpecialProperty(String name, Object value)
+			{
+				switch(name)
+				{
+					case "__Uri":				Uri = (String)value; break;
+					case "__CallContext":
+						context = (LogicalCallContext)value; break;
 				}
 			}
 

@@ -99,22 +99,49 @@ public class ConstructionCall : MethodCall, IConstructionCallMessage,
 			}
 
 	// Override the parent properties.
-	[TODO]
 	public override IDictionary Properties
 			{
 				get
 				{
-					if(InternalProperties == null)
-					{
-						InternalProperties = new Hashtable();
-					}
-					if(ExternalProperties == null)
-					{
-						// TODO: use a message dictionary
-						ExternalProperties = new Hashtable();
-					}
-					return ExternalProperties;
+					return base.Properties;
 				}
+			}
+
+	// Implement the IMessageDictionary interface.
+	internal override String[] SpecialProperties
+			{
+				get
+				{
+					return new String[] {
+						"__Uri", "__MethodName", "__MethodSignature",
+						"__TypeName", "__Args", "__CallContext",
+						"__CallSiteActivationAttributes",
+						"__ActivationType", "__ContextProperties",
+						"__Activator", "__ActivationTypeName"
+					};
+				}
+			}
+	internal override Object GetSpecialProperty(String name)
+			{
+				switch(name)
+				{
+					case "__CallSiteActivationAttributes":
+						return CallSiteActivationAttributes;
+					case "__ActivationType":
+						return null;	// Not serialized.
+					case "__ContextProperties":
+						return ContextProperties;
+					case "__Activator":
+						return Activator;
+					case "__ActivationTypeName":
+						return ActivationTypeName;
+					default:
+						return base.GetSpecialProperty(name);
+				}
+			}
+	internal override void SetSpecialProperty(String name, Object value)
+			{
+				base.SetSpecialProperty(name, value);
 			}
 
 }; // class ConstructionCall

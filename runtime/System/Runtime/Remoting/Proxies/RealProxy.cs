@@ -27,58 +27,86 @@ namespace System.Runtime.Remoting.Proxies
 using System.Runtime.Serialization;
 using System.Runtime.Remoting.Activation;
 using System.Runtime.Remoting.Messaging;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 public abstract class RealProxy
 {
 	// Internal state.
 	private Type type;
 	private Object stubData;
+	private MarshalByRefObject serverObject;
+	private Object proxy;
+	private static readonly Object defaultStub = (Object)(-1);
 
 	// Constructor.
-	[TODO]
-	protected RealProxy()
-			{
-				// TODO
-			}
-	[TODO]
+	protected RealProxy() {}
 	protected RealProxy(Type classToProxy)
-			{
-				// TODO
-			}
-	[TODO]
+			: this(classToProxy, IntPtr.Zero, null) {}
 	protected RealProxy(Type classToProxy, IntPtr stub, Object stubData)
 			{
-				// TODO
+				// The class must be either an interface or MarshalByRef.
+				if(!(classToProxy.IsInterface) &&
+				   !(classToProxy.IsMarshalByRef))
+				{
+					throw new ArgumentException
+						(_("Remoting_NotMarshalOrInterface"),
+						 "classToProxy");
+				}
+
+				// Get the default stub data if necessary.
+				if(stub == IntPtr.Zero)
+				{
+					stubData = defaultStub;
+				}
+
+				// Validate the stub data.
+				if(stubData == null)
+				{
+					throw new ArgumentNullException("stubData");
+				}
+
+				// Initialize this object's state.
+				this.type = classToProxy;
+				this.stubData = stubData;
+				this.serverObject = null;
+				this.proxy = CreateTransparentProxy(classToProxy);
 			}
 
 	// Create an object reference of the specified type.
-	[TODO]
 	public virtual ObjRef CreateObjRef(Type requestedType)
 			{
-				// TODO
-				return null;
+				return RemotingServices.Marshal
+					((MarshalByRefObject)GetTransparentProxy(),
+					 null, requestedType);
 			}
 
 	// Get the unmanaged IUnknown proxy instance.
-	[TODO]
 	public virtual IntPtr GetCOMIUnknown(bool fIsMarshalled)
 			{
-				// TODO
+				// COM is not supported in this implementation.
 				return IntPtr.Zero;
 			}
 
 	// Get the serialization data for this instance.
-	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,
 									  StreamingContext context)
 			{
-				// TODO
+				RemotingServices.GetObjectData
+					(GetTransparentProxy(), info, context);
 			}
 
 	// Get the type being proxied by this instance.
 	public Type GetProxiedType()
 			{
-				return type;
+				if(!(type.IsInterface))
+				{
+					return type;
+				}
+				else
+				{
+					return typeof(MarshalByRefObject);
+				}
 			}
 
 	// Get the stub data within a proxy.
@@ -95,11 +123,9 @@ public abstract class RealProxy
 			}
 
 	// Get a transparent proxy for the current instance.
-	[TODO]
 	public virtual Object GetTransparentProxy()
 			{
-				// TODO
-				return null;
+				return proxy;
 			}
 
 	// Initialize a server object.
@@ -107,18 +133,42 @@ public abstract class RealProxy
 	public IConstructionReturnMessage InitializeServerObject
 				(IConstructionCallMessage ctorMsg)
 			{
-				// TODO
-				return null;
+				// Nothing to do if we already have a server object.
+				if(serverObject != null)
+				{
+					return null;
+				}
+
+				// Create the server object.
+				Type serverType = GetProxiedType();
+				if(ctorMsg != null && ctorMsg.ActivationType != serverType)
+				{
+					throw new RemotingException(_("Remoting_CtorMsg"));
+				}
+				serverObject = (MarshalByRefObject)
+					FormatterServices.GetUninitializedObject(serverType);
+				if(stubData == defaultStub)
+				{
+					stubData = Thread.CurrentContext.ContextID;
+				}
+				Object proxy = GetTransparentProxy();
+				if(ctorMsg == null)
+				{
+					// TODO: create a default constructor call message.
+				}
+				IMethodReturnMessage returnMessage;
+				returnMessage = RemotingServices.ExecuteMessage
+					((MarshalByRefObject)proxy, ctorMsg);
+				return new ConstructionResponse(returnMessage);
 			}
 
 	// Invoke a message on the object underlying this proxy.
 	public abstract IMessage Invoke(IMessage msg);
 
 	// Set the unmanaged IUnknown information for this object.
-	[TODO]
 	public virtual void SetCOMIUnknown(IntPtr i)
 			{
-				// TODO
+				// COM is not supported in this implementation.
 			}
 
 	// Set the stub data for a particular proxy.
@@ -131,34 +181,48 @@ public abstract class RealProxy
 			}
 
 	// Get a COM interface for a particular Guid on this object.
-	[TODO]
 	public virtual IntPtr SupportsInterface(ref Guid iid)
 			{
-				// TODO
+				// COM is not supported in this implementation.
 				return IntPtr.Zero;
 			}
 
 	// Attach this proxy to a remote server.
-	[TODO]
 	protected void AttachServer(MarshalByRefObject s)
 			{
-				// TODO
+				serverObject = s;
 			}
 
 	// Detach this proxy from a remote server.
-	[TODO]
 	protected MarshalByRefObject DetachServer()
 			{
-				// TODO
-				return null;
+				MarshalByRefObject saved = serverObject;
+				serverObject = null;
+				return saved;
 			}
 
 	// Get the unwrapped server instance for this proxy.
-	[TODO]
 	protected MarshalByRefObject GetUnwrappedServer()
 			{
-				// TODO
+				return serverObject;
+			}
+
+	// Create a transparency proxy using the runtime engine.
+	//[MethodImpl(MethodImplOptions.InternalCall)]
+	[TODO]
+	internal static Object CreateTransparentProxy(Type serverType)
+			{
+				// TODO: make into an internalcall
 				return null;
+			}
+
+	// Determine if an object is a transparent proxy.
+	//[MethodImpl(MethodImplOptions.InternalCall)]
+	[TODO]
+	internal static bool IsTransparentProxy(Object proxy)
+			{
+				// TODO: make into an internalcall.
+				return false;
 			}
 
 }; // class RealProxy

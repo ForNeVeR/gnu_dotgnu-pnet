@@ -52,18 +52,15 @@ public class ProxyAttribute : Attribute, IContextAttribute
 			}
 
 	// Get the properties for a new construction context.
-	[TODO]
 	public void GetPropertiesForNewContext(IConstructionCallMessage ctorMsg)
 			{
-				// TODO
+				// Nothing to do here.
 			}
 
 	// Determine if a context is OK with respect to this attribute.
-	[TODO]
 	public bool IsContextOK(Context ctx, IConstructionCallMessage msg)
 			{
-				// TODO
-				return false;
+				return true;
 			}
 
 }; // class ProxyAttribute

@@ -1,4 +1,18 @@
 
+2003-12-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Remoting.txt,
+	runtime/System/Runtime/Remoting/RemotingServices.cs,
+	runtime/System/Runtime/Remoting/Messaging/ConstructionCall.cs,
+	runtime/System/Runtime/Remoting/Messaging/ConstructionResponse.cs,
+	runtime/System/Runtime/Remoting/Messaging/IMessageDictionary.cs,
+	runtime/System/Runtime/Remoting/Messaging/MessageProperties.cs,
+	runtime/System/Runtime/Remoting/Messaging/MethodCall.cs,
+	runtime/System/Runtime/Remoting/Messaging/MethodResponse.cs,
+	runtime/System/Runtime/Remoting/Proxies/ProxyAttribute.cs,
+	runtime/System/Runtime/Remoting/Proxies/RealProxy.cs:
+	implement some missing functionality in "System.Runtime.Remoting".
+
 2003-12-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Resources/ResourceWriter.cs: use "FileMode.Create"

@@ -1,6 +1,6 @@
 /*
- * ConstructionResponse.cs - Implementation of the
- *			"System.Runtime.Remoting.Messaging.ConstructionResponse" class.
+ * IMessageDictionary.cs - Implementation of the
+ *			"System.Runtime.Remoting.Messaging.IMessageDictionary" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,34 +22,21 @@
 namespace System.Runtime.Remoting.Messaging
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
-using System.Collections;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Runtime.Remoting.Activation;
-
-[Serializable]
-[CLSCompliant(false)]
-public class ConstructionResponse : MethodResponse, IConstructionReturnMessage,
-									IMethodMessage, IMessage
+internal interface IMessageDictionary
 {
-	// Constructors.
-	public ConstructionResponse(Header[] h1, IMethodCallMessage mcm)
-			: base(h1, mcm) {}
-	internal ConstructionResponse(IMethodReturnMessage mrm) : base(mrm) {}
+	// Get the list of special property values.
+	String[] SpecialProperties { get; }
 
-	// Override the properties from the base class.
-	public override IDictionary Properties
-			{
-				get
-				{
-					return base.Properties;
-				}
-			}
+	// Get the value of a special property.
+	Object GetSpecialProperty(String name);
 
-}; // class ConstructionResponse
+	// Set the value of a special property.
+	void SetSpecialProperty(String name, Object value);
 
-#endif // CONFIG_REMOTING
+}; // interface IMessageDictionary
+
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Messaging

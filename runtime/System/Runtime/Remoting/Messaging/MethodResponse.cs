@@ -32,169 +32,226 @@ using System.Runtime.Serialization;
 [CLSCompliant(false)]
 public class MethodResponse : IMethodReturnMessage, ISerializable,
 							  IMethodMessage, IMessage,
-							  ISerializationRootObject
+							  ISerializationRootObject,
+							  IMessageDictionary
 {
 	// Internal state.
 	protected IDictionary ExternalProperties;
 	protected IDictionary InternalProperties;
+	private Object[] outArgs;
+	private String methodName;
+	private String typeName;
+	private String uri;
+	private bool hasVarArgs;
+	private bool isSoap;
+	private LogicalCallContext context;
+	private MethodBase method;
+	private ParameterInfo[] parameters;
+	private Type[] signature;
+	private Exception exception;
+	private Object returnValue;
 
-	// Constructor.
-	[TODO]
+	// Constructors.
 	public MethodResponse(Header[] h1, IMethodCallMessage mcm)
 			{
-				// TODO
+				isSoap = true;		// This form is used for SOAP requests.
+				if(mcm == null)
+				{
+					throw new ArgumentNullException("mcm");
+				}
+				methodName = mcm.MethodName;
+				typeName = mcm.TypeName;
+				method = mcm.MethodBase;
+				hasVarArgs = mcm.HasVarArgs;
+				if(h1 != null)
+				{
+					foreach(Header header in h1)
+					{
+						ProcessHeader(header.Name, header.Value);
+					}
+				}
+			}
+	internal MethodResponse(IMethodReturnMessage mrm)
+			{
+				outArgs = mrm.OutArgs;
+				methodName = mrm.MethodName;
+				typeName = mrm.TypeName;
+				uri = mrm.Uri;
+				hasVarArgs = mrm.HasVarArgs;
+				context = mrm.LogicalCallContext;
+				method = mrm.MethodBase;
+				exception = mrm.Exception;
+				returnValue = mrm.ReturnValue;
 			}
 
 	// Implement the IMethodCallMessage interface.
-	[TODO]
 	public virtual IDictionary Properties
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(InternalProperties == null)
+					{
+						InternalProperties = new Hashtable();
+					}
+					if(ExternalProperties == null)
+					{
+						ExternalProperties = new MessageProperties
+							(this, InternalProperties);
+					}
+					return ExternalProperties;
 				}
 			}
-	[TODO]
 	public int ArgCount
 			{
 				get
 				{
-					// TODO
-					return 0;
+					return OutArgCount;
 				}
 			}
-	[TODO]
 	public Object[] Args
 			{
 				get
 				{
-					// TODO
-					return null;
+					return OutArgs;
 				}
 			}
-	[TODO]
 	public bool HasVarArgs
 			{
 				get
 				{
-					// TODO
-					return false;
+					return hasVarArgs;
 				}
 			}
-	[TODO]
 	public LogicalCallContext LogicalCallContext
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(context == null)
+					{
+						context = new LogicalCallContext();
+					}
+					return context;
 				}
 			}
-	[TODO]
 	public MethodBase MethodBase
 			{
 				get
 				{
-					// TODO
-					return null;
+					return method;
 				}
 			}
-	[TODO]
 	public String MethodName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return methodName;
 				}
 			}
-	[TODO]
 	public Object MethodSignature
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(signature == null)
+					{
+						FetchParameters();
+						if(parameters != null)
+						{
+							signature = new Type [parameters.Length];
+							int posn;
+							for(posn = 0; posn < signature.Length; ++posn)
+							{
+								signature[posn] =
+									parameters[posn].ParameterType;
+							}
+						}
+					}
+					return signature;
 				}
 			}
-	[TODO]
 	public String TypeName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return typeName;
 				}
 			}
-	[TODO]
 	public String Uri
 			{
 				get
 				{
-					// TODO
-					return null;
+					return uri;
+				}
+				set
+				{
+					uri = value;
 				}
 			}
-	[TODO]
 	public Object GetArg(int argNum)
 			{
-				// TODO
-				return null;
+				return GetOutArg(argNum);
 			}
-	[TODO]
 	public String GetArgName(int index)
 			{
-				// TODO
-				return null;
+				return GetOutArgName(index);
 			}
-	[TODO]
 	public Exception Exception
 			{
 				get
 				{
-					// TODO
-					return null;
+					return exception;
 				}
 			}
-	[TODO]
 	public int OutArgCount
 			{
 				get
 				{
-					// TODO
-					return 0;
+					if(outArgs != null)
+					{
+						return outArgs.Length;
+					}
+					else
+					{
+						return 0;
+					}
 				}
 			}
-	[TODO]
 	public Object[] OutArgs
 			{
 				get
 				{
-					// TODO
-					return null;
+					return outArgs;
 				}
 			}
-	[TODO]
 	public Object ReturnValue
 			{
 				get
 				{
-					// TODO
-					return null;
+					return returnValue;
 				}
 			}
-	[TODO]
 	public Object GetOutArg(int argNum)
 			{
-				// TODO
-				return null;
+				return outArgs[argNum];
 			}
-	[TODO]
 	public String GetOutArgName(int index)
 			{
-				// TODO
-				return null;
+				FetchParameters();
+				if(parameters != null && outArgs != null)
+				{
+					int posn;
+					for(posn = 0; posn < parameters.Length; ++posn)
+					{
+						if(parameters[posn].ParameterType.IsByRef)
+						{
+							if(index == 0)
+							{
+								return parameters[posn].Name;
+							}
+							--index;
+						}
+					}
+				}
+				throw new IndexOutOfRangeException(_("Arg_InvalidArrayIndex"));
 			}
 
 	// Implement the ISerializable interface.
@@ -206,15 +263,58 @@ public class MethodResponse : IMethodReturnMessage, ISerializable,
 			}
 
 	// Handle incoming headers.
-	[TODO]
 	public virtual Object HeaderHandler(Header[] h)
 			{
-				// TODO
+				// Extract the method name from the headers, if present.
+				if(h != null && h.Length != 0 && h[0].Name == "__methodName")
+				{
+					methodName = (String)(h[0].Value);
+					if(h.Length != 1)
+					{
+						Header[] nh = new Header [h.Length - 1];
+						Array.Copy(h, 1, nh, 0, h.Length - 1);
+						nh = h;
+					}
+					else
+					{
+						h = null;
+					}
+				}
+
+				// Process the headers to set the message properties.
+				if(h != null)
+				{
+					foreach(Header header in h)
+					{
+						ProcessHeader(header.Name, header.Value);
+					}
+				}
 				return null;
 			}
 
-	// Set the root object data for this method call.
+	// Process a header.
+	private void ProcessHeader(String name, Object value)
+			{
+				Properties[name] = value;
+			}
+
+	// Fetch the parameter information from the method block.
+	private void FetchParameters()
+			{
+				if(parameters == null && method != null)
+				{
+					parameters = method.GetParameters();
+				}
+			}
+
+	// Set the root object data for a SOAP method call.
 	[TODO]
+	private void RootSetSoapObjectData(SerializationInfo info)
+			{
+				// TODO
+			}
+
+	// Set the root object data for this method call.
 	public void RootSetObjectData(SerializationInfo info,
 								  StreamingContext context)
 			{
@@ -222,7 +322,101 @@ public class MethodResponse : IMethodReturnMessage, ISerializable,
 				{
 					throw new ArgumentNullException("info");
 				}
-				// TODO
+
+				// Use a different algorithm for SOAP messages.
+				if(isSoap)
+				{
+					RootSetSoapObjectData(info);
+					return;
+				}
+
+				// De-serialize the supplied data.
+				SerializationInfoEnumerator se = info.GetEnumerator();
+				while(se.MoveNext())
+				{
+					if(se.Name == "__return")
+					{
+						exception = null;
+					}
+					else if(se.Name == "__fault")
+					{
+						exception = (Exception)(se.Value);
+					}
+					else
+					{
+						ProcessHeader(se.Name, se.Value);
+					}
+				}
+			}
+
+	// Implement the IMessageDictionary interface.
+	String[] IMessageDictionary.SpecialProperties
+			{
+				get
+				{
+					return SpecialProperties;
+				}
+			}
+	Object IMessageDictionary.GetSpecialProperty(String name)
+			{
+				return GetSpecialProperty(name);
+			}
+	void IMessageDictionary.SetSpecialProperty(String name, Object value)
+			{
+				SetSpecialProperty(name, value);
+			}
+	internal virtual String[] SpecialProperties
+			{
+				get
+				{
+					if(Exception == null)
+					{
+						return new String[] {
+							"__Uri", "__MethodName", "__MethodSignature",
+							"__TypeName", "__Return", "__OutArgs",
+							"__CallContext"
+						};
+					}
+					else
+					{
+						return new String[] {
+							"__Uri", "__MethodName", "__MethodSignature",
+							"__TypeName", "__CallContext"
+						};
+					}
+				}
+			}
+	internal virtual Object GetSpecialProperty(String name)
+			{
+				switch(name)
+				{
+					case "__Uri":				return Uri;
+					case "__MethodName":		return MethodName;
+					case "__MethodSignature":	return MethodSignature;
+					case "__TypeName":			return TypeName;
+					case "__Return":
+						if(Exception != null)
+						{
+							return Exception;
+						}
+						else
+						{
+							return ReturnValue;
+						}
+						break;
+					case "__OutArgs":			return OutArgs;
+					case "__CallContext":		return LogicalCallContext;
+				}
+				return null;
+			}
+	internal virtual void SetSpecialProperty(String name, Object value)
+			{
+				switch(name)
+				{
+					case "__Uri":		Uri = (String)value; break;
+					case "__CallContext":
+						context = (LogicalCallContext)value; break;
+				}
 			}
 
 }; // class MethodResponse

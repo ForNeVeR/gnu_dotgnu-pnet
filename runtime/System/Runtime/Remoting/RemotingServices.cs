@@ -170,11 +170,9 @@ public sealed class RemotingServices
 			}
 
 	// Determine if an object is a transparent proxy.
-	[TODO]
 	public static bool IsTransparentProxy(Object proxy)
 			{
-				// TODO
-				return false;
+				return RealProxy.IsTransparentProxy(proxy);
 			}
 
 	// Set the log remoting stage.

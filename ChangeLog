@@ -4,6 +4,9 @@
 	* engine/lib_reflect.c: wrong value used to check for superclass
 	in "ClrField.GetValue" and "ClrField.SetValue".
 
+	* ildasm/ildasm_class.c: put the ".overflow" directive for a method
+	inside the ".method" block on internalcall methods (bug #2163).
+
 2003-01-09  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_file.c,

@@ -33,6 +33,7 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 	ILUInt32 rva;
 	ILPInvoke *pinvoke;
 	ILOverride *over;
+	int haveContents;
 
 	/* Skip the method if it is a reference (probably a vararg call site) */
 	if((ILMethod_Token(method) & IL_META_TOKEN_MASK) ==
@@ -79,7 +80,9 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 	ILDumpFlags(outstream, ILMethod_ImplAttrs(method),
 				ILMethodImplementationFlags, 0);
 	rva = ILMethod_RVA(method);
-	if(ILProgramItem_HasAttrs(method) || rva)
+	haveContents = (ILProgramItem_HasAttrs(method) || rva ||
+					ILOverrideFromMethod(method));
+	if(haveContents)
 	{
 		fputs("\n\t{\n", outstream);
 	}
@@ -123,7 +126,7 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 	}
 
 	/* Output the method footer and exit */
-	if(ILProgramItem_HasAttrs(method) || rva)
+	if(haveContents)
 	{
 		fputs("\t}\n", outstream);
 	}

@@ -111,7 +111,7 @@ static int ExpandBuffer(SigBuffer *buffer)
 /*
  * Write the token code for a class into a signature.
  */
-static int WriteClassToken(SigBuffer *buffer, ILClass *info)
+static int WriteClassToken(ILImage *image, SigBuffer *buffer, ILClass *info)
 {
 	if((buffer->posn + IL_META_COMPRESS_MAX_SIZE) > buffer->len)
 	{
@@ -120,6 +120,7 @@ static int WriteClassToken(SigBuffer *buffer, ILClass *info)
 			return 0;
 		}
 	}
+	info = ILClassImport(image, info);
 	buffer->posn += ILMetaCompressToken(buffer->buf + buffer->posn,
 										ILClass_Token(info));
 	return 1;
@@ -160,32 +161,32 @@ static int WriteIntValue(SigBuffer *buffer, long value)
 /*
  * Forward declaration.
  */
-static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr);
+static int WriteType(ILImage *image, SigBuffer *buffer, ILType *type, int methodPtr);
 
 /*
  * Write the parameters for a method or property.
  */
-static int WriteMethodParams(SigBuffer *buffer, ILType *method)
+static int WriteMethodParams(ILImage *image, SigBuffer *buffer, ILType *method)
 {
 	long num = (long)(unsigned long)(method->num__);
 	ILType *params;
 	if(num > 0)
 	{
-		if(!WriteType(buffer, method->un.method__.param__[0], 1))
+		if(!WriteType(image, buffer, method->un.method__.param__[0], 1))
 		{
 			return 0;
 		}
 	}
 	if(num > 1)
 	{
-		if(!WriteType(buffer, method->un.method__.param__[1], 1))
+		if(!WriteType(image, buffer, method->un.method__.param__[1], 1))
 		{
 			return 0;
 		}
 	}
 	if(num > 2)
 	{
-		if(!WriteType(buffer, method->un.method__.param__[2], 1))
+		if(!WriteType(image, buffer, method->un.method__.param__[2], 1))
 		{
 			return 0;
 		}
@@ -196,27 +197,27 @@ static int WriteMethodParams(SigBuffer *buffer, ILType *method)
 		num -= 3;
 		while(num > 0)
 		{
-			if(!WriteType(buffer, params->un.params__.param__[0], 1))
+			if(!WriteType(image, buffer, params->un.params__.param__[0], 1))
 			{
 				return 1;
 			}
 			if(num > 1)
 			{
-				if(!WriteType(buffer, params->un.params__.param__[1], 1))
+				if(!WriteType(image, buffer, params->un.params__.param__[1], 1))
 				{
 					return 1;
 				}
 			}
 			if(num > 2)
 			{
-				if(!WriteType(buffer, params->un.params__.param__[2], 1))
+				if(!WriteType(image, buffer, params->un.params__.param__[2], 1))
 				{
 					return 1;
 				}
 			}
 			if(num > 3)
 			{
-				if(!WriteType(buffer, params->un.params__.param__[3], 1))
+				if(!WriteType(image, buffer, params->un.params__.param__[3], 1))
 				{
 					return 1;
 				}
@@ -231,33 +232,33 @@ static int WriteMethodParams(SigBuffer *buffer, ILType *method)
 /*
  * Write the signature encoding for a list of local variables.
  */
-static int WriteLocalVars(SigBuffer *buffer, ILType *locals)
+static int WriteLocalVars(ILImage *image, SigBuffer *buffer, ILType *locals)
 {
 	long num = (long)(unsigned long)(locals->num__);
 	ILType *temp = locals;
 	while(num > 0)
 	{
-		if(!WriteType(buffer, temp->un.locals__.local__[0], 1))
+		if(!WriteType(image, buffer, temp->un.locals__.local__[0], 1))
 		{
 			return 1;
 		}
 		if(num > 1)
 		{
-			if(!WriteType(buffer, temp->un.locals__.local__[1], 1))
+			if(!WriteType(image, buffer, temp->un.locals__.local__[1], 1))
 			{
 				return 1;
 			}
 		}
 		if(num > 2)
 		{
-			if(!WriteType(buffer, temp->un.locals__.local__[2], 1))
+			if(!WriteType(image, buffer, temp->un.locals__.local__[2], 1))
 			{
 				return 1;
 			}
 		}
 		if(num > 3)
 		{
-			if(!WriteType(buffer, temp->un.locals__.local__[3], 1))
+			if(!WriteType(image, buffer, temp->un.locals__.local__[3], 1))
 			{
 				return 1;
 			}
@@ -271,7 +272,7 @@ static int WriteLocalVars(SigBuffer *buffer, ILType *locals)
 /*
  * Write the signature encoding for a type.
  */
-static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
+static int WriteType(ILImage *image, SigBuffer *buffer, ILType *type, int methodPtr)
 {
 	unsigned long value;
 	ILClass *info;
@@ -305,7 +306,7 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 			}
 		}
 		SIG_WRITE(IL_META_ELEMTYPE_CLASS);
-		return WriteClassToken(buffer, ILType_ToClass(type));
+		return WriteClassToken(image, buffer, ILType_ToClass(type));
 	}
 	else if(ILType_IsValueType(type))
 	{
@@ -323,7 +324,7 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 			}
 		}
 		SIG_WRITE(IL_META_ELEMTYPE_VALUETYPE);
-		return WriteClassToken(buffer, ILType_ToValueType(type));
+		return WriteClassToken(image, buffer, ILType_ToValueType(type));
 	}
 	else if(type != ILType_Invalid)
 	{
@@ -333,14 +334,14 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 			case IL_TYPE_COMPLEX_BYREF:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_BYREF);
-				return WriteType(buffer, ILType_Ref(type), 1);
+				return WriteType(image, buffer, ILType_Ref(type), 1);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_PTR:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_PTR);
-				return WriteType(buffer, ILType_Ref(type), 1);
+				return WriteType(image, buffer, ILType_Ref(type), 1);
 			}
 			/* Not reached */
 
@@ -350,7 +351,7 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				{
 					/* Single dimensional array with no specified bounds */
 					SIG_WRITE(IL_META_ELEMTYPE_SZARRAY);
-					return WriteType(buffer, type->un.array__.elemType__, 1);
+					return WriteType(image, buffer, type->un.array__.elemType__, 1);
 				}
 			}
 			/* Fall through */
@@ -402,7 +403,7 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 
 				/* Encode the array */
 				SIG_WRITE(IL_META_ELEMTYPE_ARRAY);
-				if(!WriteType(buffer, elemType, 1))
+				if(!WriteType(image, buffer, elemType, 1))
 				{
 					return 0;
 				}
@@ -454,22 +455,22 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 			case IL_TYPE_COMPLEX_CMOD_REQD:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_CMOD_REQD);
-				if(!WriteClassToken(buffer, type->un.modifier__.info__))
+				if(!WriteClassToken(image, buffer, type->un.modifier__.info__))
 				{
 					return 0;
 				}
-				return WriteType(buffer, type->un.modifier__.type__, 1);
+				return WriteType(image, buffer, type->un.modifier__.type__, 1);
 			}
 			/* Not reached */
 
 			case IL_TYPE_COMPLEX_CMOD_OPT:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_CMOD_OPT);
-				if(!WriteClassToken(buffer, type->un.modifier__.info__))
+				if(!WriteClassToken(image, buffer, type->un.modifier__.info__))
 				{
 					return 0;
 				}
-				return WriteType(buffer, type->un.modifier__.type__, 1);
+				return WriteType(image, buffer, type->un.modifier__.type__, 1);
 			}
 			/* Not reached */
 
@@ -480,11 +481,11 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				{
 					return 0;
 				}
-				if(!WriteType(buffer, type->un.method__.retType__, 1))
+				if(!WriteType(image, buffer, type->un.method__.retType__, 1))
 				{
 					return 0;
 				}
-				return WriteMethodParams(buffer, type);
+				return WriteMethodParams(image, buffer, type);
 			}
 			/* Not reached */
 
@@ -497,7 +498,7 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 			case IL_TYPE_COMPLEX_PINNED:
 			{
 				SIG_WRITE(IL_META_ELEMTYPE_PINNED);
-				return WriteType(buffer, type->un.refType__, 1);
+				return WriteType(image, buffer, type->un.refType__, 1);
 			}
 			/* Not reached */
 
@@ -508,7 +509,7 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				{
 					return 0;
 				}
-				return WriteLocalVars(buffer, type);
+				return WriteLocalVars(image, buffer, type);
 			}
 			/* Not reached */
 
@@ -516,12 +517,12 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 			{
 				/* Write out a generic type with parameters */
 				SIG_WRITE(IL_META_ELEMTYPE_WITH);
-				if(!WriteType(buffer, type->un.method__.retType__, 1))
+				if(!WriteType(image, buffer, type->un.method__.retType__, 1))
 				{
 					return 0;
 				}
 				SIG_WRITE(type->num__);
-				return WriteMethodParams(buffer, type);
+				return WriteMethodParams(image, buffer, type);
 			}
 			/* Not reached */
 
@@ -584,14 +585,14 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				if((ILType_CallConv(type) & IL_META_CALLCONV_MASK) !=
 						IL_META_CALLCONV_INSTANTIATION)
 				{
-					if(!WriteType(buffer, type->un.method__.retType__, 1))
+					if(!WriteType(image, buffer, type->un.method__.retType__, 1))
 					{
 						return 0;
 					}
 				}
 
 				/* Write the parameters */
-				return WriteMethodParams(buffer, type);
+				return WriteMethodParams(image, buffer, type);
 			}
 			/* Not reached */
 		}
@@ -604,7 +605,7 @@ unsigned long ILTypeToMethodSig(ILImage *image, ILType *type)
 	SigBuffer buffer;
 	unsigned long offset;
 	SIG_INIT();
-	if(!WriteType(&buffer, type, 0))
+	if(!WriteType(image, &buffer, type, 0))
 	{
 		SIG_DESTROY();
 		return 0;
@@ -620,7 +621,7 @@ unsigned long ILTypeToFieldSig(ILImage *image, ILType *type)
 	unsigned long offset;
 	SIG_INIT();
 	buffer.buf[(buffer.posn)++] = (unsigned char)IL_META_CALLCONV_FIELD;
-	if(!WriteType(&buffer, type, 1))
+	if(!WriteType(image, &buffer, type, 1))
 	{
 		SIG_DESTROY();
 		return 0;
@@ -635,7 +636,7 @@ unsigned long ILTypeToOtherSig(ILImage *image, ILType *type)
 	SigBuffer buffer;
 	unsigned long offset;
 	SIG_INIT();
-	if(!WriteType(&buffer, type, 1))
+	if(!WriteType(image, &buffer, type, 1))
 	{
 		SIG_DESTROY();
 		return 0;

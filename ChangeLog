@@ -1,4 +1,9 @@
 
+2004-09-24  Gopal V  <gopalv82@yahoo.com>
+
+	* image/sig_writer.c: Import classes before writing class tokens.
+	(patch #3387 from ryan@netsengercorp.com).
+
 2004-09-24  Maciek Plewa  <maciek@mil-sim.net>
 
 	* cscc/cpp/cppmain.c, cscc/cpp/Makefile.am: Add response file support 

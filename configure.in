@@ -96,14 +96,14 @@ if test "$MSTOOLS" = "no"; then
 		CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
 	else
 		AC_PATH_PROG(CSHARP_PLUGIN, cscc-cs,, $PNET_PATH/cscc:${prefix}/lib/cscc/plugins:${prefix}/bin:$PATH)
-		if test "x$CYGPATH" = "xno" ; then
+		if test "x$CYGPATH" = "x" ; then
 			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
 		else
 			# Convert the cscc and cscc-cs paths into their Windows
 			# forms, to ensure that spawns from csant work correctly.
 			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
-			CSHARP_COMPILER=`cygpath -w "$CSHARP_COMPILER"`
-			CSHARP_PLUGIN=`cygpath -w "$CSHARP_PLUGIN"`
+			CSHARP_COMPILER=`"$CYGPATH" -w "$CSHARP_COMPILER"`
+			CSHARP_PLUGIN=`"$CYGPATH" -w "$CSHARP_PLUGIN"`
 		fi
 		CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
 	fi

@@ -17,6 +17,8 @@
 	* tools/link_res.sh.in: use the non-cygpath version of the
 	cscc pathname in "link_res.sh".
 
+	* configure.in: fix a bug in the "cygpath" detection code.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* runtime/System/IO/Directory.cs: Support recursive directory deletion,

@@ -1,3 +1,8 @@
+2004-06-22  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/XmlElement.cs: fixed IsEmpty behavior for non-empty
+	elements.
+
 2004-06-22  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Xml/XmlConvert.cs: added internal method ToHexString for BinHex

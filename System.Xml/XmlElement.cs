@@ -119,6 +119,10 @@ class XmlElement : XmlLinkedNode
 			{
 				get
 				{
+					// only override the flag if there's content
+					if(FirstChild != null) { isEmpty = false; }
+
+					// return the empty flag
 					return isEmpty;
 				}
 				set

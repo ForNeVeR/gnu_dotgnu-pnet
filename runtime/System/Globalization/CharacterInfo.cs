@@ -75,7 +75,7 @@ public class CharacterInfo
 			{
 				UnicodeCategory category = GetUnicodeCategory(ch);
 				return (category == UnicodeCategory.NonSpacingMark ||
-						category == UnicodeCategory.SpaceCombiningMark ||
+						category == UnicodeCategory.SpacingCombiningMark ||
 						category == UnicodeCategory.EnclosingMark);
 			}
 	public static bool IsNumber(char ch)

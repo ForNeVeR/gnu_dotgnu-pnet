@@ -24,7 +24,8 @@ namespace System.IO
 {
 	using Platform;
 	using System;
-	using System.Security.SecurityException;
+	using System.Security;
+
 	public sealed class File
 	{
 		public static StreamWriter AppendText(string path) 
@@ -35,7 +36,7 @@ namespace System.IO
 
 		public static void Copy(string source, string dest) 
 		{
-			return Copy(source, dest, false);
+			Copy(source, dest, false);
 		}
 
 				
@@ -45,7 +46,7 @@ namespace System.IO
 			
 	
 		
-		public static void Copy(string src, string dest, bool overwrite) 
+		public static void Copy(string source, string dest, bool overwrite) 
 		{
 			
 			if (source == null || dest == null) 
@@ -69,12 +70,13 @@ namespace System.IO
 				case Errno.EEXIST:
 					if (overwrite)
 					{
-						Move(src, dest);
+						Move(source, dest);
 					}
 					else
 					{
 						throw new IOException(_("IO_CopyFileExists"));
 					}
+					break;
                                 
 
 
@@ -86,7 +88,7 @@ namespace System.IO
 					}
 					else
 					{
-						throw new FileNotFoundExceptio(_("IO_FileNotFound"));		       
+						throw new FileNotFoundException(_("IO_FileNotFound"));		       
 					}
 
 					
@@ -103,7 +105,7 @@ namespace System.IO
 	
 		public static FileStream Create(string path) 
 		{
-			return Create(path, FileStream.DefaultBufferSize);
+			return new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
 		}
 
 		public static FileStream Create(string path, int buffersize) 
@@ -146,7 +148,7 @@ namespace System.IO
 						throw new FileNotFoundException(_("IO_FileNotFound"));
 					} 
 
-				case Errno.EACCESS:
+				case Errno.EACCES:
 					throw new SecurityException(_("IO_PathnameSecurity"));
 
 		
@@ -157,11 +159,12 @@ namespace System.IO
 		public static bool Exists(string path) 
 		{
 			
+			FileStream test;
+
 			try
 			{
-				FileStream test = Open(path, FileMode.Open);   
+				test = Open(path, FileMode.Open);   
 			}
-			
 			catch (Exception e) 
 			{
 				return false;
@@ -176,7 +179,7 @@ namespace System.IO
 		public static DateTime GetCreationTime(string path)
 		{
 			long time;
-			DirMethods.GetCreationTime(path, time);
+			DirMethods.GetCreationTime(path, out time);
 			DateTime datetime = new DateTime(time);
 			return DateTime.Parse(String.Concat(datetime.ToShortDateString(), " ", datetime.ToShortTimeString()));  
 		}	
@@ -185,7 +188,7 @@ namespace System.IO
 		public static DateTime GetLastAccessTime(string path) 
 		{
 			long time;
-			DirMethods.GetLastAccess(path, time);
+			DirMethods.GetLastAccess(path, out time);
 			DateTime datetime = new DateTime(time);
 			return DateTime.Parse(String.Concat(datetime.ToShortDateString(), " ", datetime.ToShortDateString()));
 		}	
@@ -194,7 +197,7 @@ namespace System.IO
 		public static DateTime GetLastWriteTime(string path) 
 		{
 			long time;
-			DirMethods.GetCreationTime(path, time);
+			DirMethods.GetCreationTime(path, out time);
 			DateTime datetime = new DateTime(time);
 			return DateTime.Parse(String.Concat(datetime.ToLongDateString(), " ", datetime.ToLongTimeString() ) ); 
 		}	

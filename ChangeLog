@@ -1,3 +1,8 @@
+
+2003-09-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* NEWS, configure.in: update version for the "0.5.12" release.
+
 2003-08-27  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* libc/stdlib/Makefile.am, libc/stdlib/getenv.c,

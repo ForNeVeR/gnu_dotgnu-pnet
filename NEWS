@@ -1,4 +1,10 @@
 
+0.5.12 (4 September 2003)
+
+	* Stub out mmap-related system calls (Mario D.Santana).
+	* Implement dirent-style functions (Richard Baumann).
+	* Implementation of getenv (Mario D. Santana).
+
 0.5.10 (26 July 2003)
 
 	* Began porting the glibc version of stdio into pnetC.

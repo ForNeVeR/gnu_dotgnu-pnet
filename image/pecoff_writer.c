@@ -824,6 +824,13 @@ void ILWriterTextAlign(ILWriter *writer)
 	WriteBlockPadding(writer, 4);
 }
 
+void ILWriterTextWrite32Bit(ILWriter *writer, unsigned long rva,
+							unsigned long value)
+{
+	unsigned long offset = rva + writer->firstSection - 0x2000;
+	WriteBackPatch32(writer, offset, value);
+}
+
 void ILWriterOtherWrite(ILWriter *writer, const char *name,
 						unsigned long flags, const void *buffer,
 						unsigned size)

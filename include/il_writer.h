@@ -119,6 +119,12 @@ void ILWriterTextWrite(ILWriter *writer, const void *buffer,
 void ILWriterTextAlign(ILWriter *writer);
 
 /*
+ * Write a 32-bit value at a particular RVA within the text section.
+ */
+void ILWriterTextWrite32Bit(ILWriter *writer, unsigned long rva,
+							unsigned long value);
+
+/*
  * Write a buffer of bytes to another section.
  */
 void ILWriterOtherWrite(ILWriter *writer, const char *name,

@@ -16,6 +16,9 @@
 	* samples/mscorlib.dll: new version with "SocketMethods" and
 	exception fixes.
 
+	* engine/cvmc_except.c (CVMCoder_TryHandlerStart): bug in label
+	computation for exception regions.
+
 2002-04-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,

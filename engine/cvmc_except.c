@@ -165,13 +165,13 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 		{
 			return;
 		}
-		CVM_WORD(label->offset - (CVM_POSN() - coder->start));
+		CVM_WORD(label->offset);
 		label = GetLabel(coder, end);
 		if(!label)
 		{
 			return;
 		}
-		CVM_WORD(label->offset - (CVM_POSN() - coder->start));
+		CVM_WORD(label->offset);
 	}
 
 	/* Output a place-holder for the length value */

@@ -13,6 +13,10 @@
 	samples/mscorlib.dll: update all assemblies from the latest
 	version of pnetlib.
 
+	* engine/lib_crypt.c, include/Makefile.am, include/il_bignum.h,
+	support/Makefile.am, support/bignum.c: add big number arithmetic
+	routines to the support and engine code.
+
 2002-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_crypt.c, include/il_crypt.h, support/Makefile.am,

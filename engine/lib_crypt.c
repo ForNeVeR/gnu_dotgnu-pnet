@@ -21,6 +21,7 @@
 #include "engine_private.h"
 #include "lib_defs.h"
 #include "il_crypt.h"
+#include "il_bignum.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -544,6 +545,85 @@ void _IL_CryptoMethods_SymmetricFree(ILExecThread *_thread, ILNativeInt state)
 }
 
 /*
+ * Convert 1 to 3 "byte[]" arrays into "ILBigNum" values.
+ * Returns zero if out of memory.
+ */
+static int ByteArraysToBigNums(ILExecThread *_thread,
+							   System_Array *x, ILBigNum **xbig,
+							   System_Array *y, ILBigNum **ybig,
+							   System_Array *z, ILBigNum **zbig)
+{
+	if(x)
+	{
+		*xbig = ILBigNumFromBytes((unsigned char *)(ArrayToBuffer(x)),
+								  x->length);
+		if(!(*xbig))
+		{
+			ILExecThreadThrowOutOfMemory(_thread);
+			return 0;
+		}
+	}
+	if(y)
+	{
+		*ybig = ILBigNumFromBytes((unsigned char *)(ArrayToBuffer(y)),
+								  y->length);
+		if(!(*ybig))
+		{
+			if(x)
+			{
+				ILBigNumFree(*xbig);
+			}
+			ILExecThreadThrowOutOfMemory(_thread);
+			return 0;
+		}
+	}
+	if(z)
+	{
+		*zbig = ILBigNumFromBytes((unsigned char *)(ArrayToBuffer(z)),
+								  z->length);
+		if(!(*zbig))
+		{
+			if(x)
+			{
+				ILBigNumFree(*xbig);
+			}
+			if(y)
+			{
+				ILBigNumFree(*ybig);
+			}
+			ILExecThreadThrowOutOfMemory(_thread);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/*
+ * Convert a big number into a byte array.
+ */
+static System_Array *BigNumToByteArray(ILExecThread *_thread, ILBigNum *x)
+{
+	if(x)
+	{
+		ILInt32 size = ILBigNumByteCount(x);
+		System_Array *array =
+			(System_Array *)ILExecThreadNew(_thread, "[B", "(Ti)V",
+											(ILVaInt)size);
+		if(array)
+		{
+			ILBigNumToBytes(x, (unsigned char *)(ArrayToBuffer(array)));
+		}
+		ILBigNumFree(x);
+		return array;
+	}
+	else
+	{
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+}
+
+/*
  * public static byte[] NumAdd(byte[] x, byte[] y, byte[] modulus);
  */
 System_Array *_IL_CryptoMethods_NumAdd(ILExecThread *_thread,
@@ -551,8 +631,16 @@ System_Array *_IL_CryptoMethods_NumAdd(ILExecThread *_thread,
 									   System_Array *y,
 									   System_Array *modulus)
 {
-	/* TODO */
-	return 0;
+	ILBigNum *xbig, *ybig, *modbig, *result;
+	if(!ByteArraysToBigNums(_thread, x, &xbig, y, &ybig, modulus, &modbig))
+	{
+		return 0;
+	}
+	result = ILBigNumAdd(xbig, ybig, modbig);
+	ILBigNumFree(xbig);
+	ILBigNumFree(ybig);
+	ILBigNumFree(modbig);
+	return BigNumToByteArray(_thread, result);
 }
 
 /*
@@ -563,8 +651,16 @@ System_Array *_IL_CryptoMethods_NumMul(ILExecThread *_thread,
 									   System_Array *y,
 									   System_Array *modulus)
 {
-	/* TODO */
-	return 0;
+	ILBigNum *xbig, *ybig, *modbig, *result;
+	if(!ByteArraysToBigNums(_thread, x, &xbig, y, &ybig, modulus, &modbig))
+	{
+		return 0;
+	}
+	result = ILBigNumMul(xbig, ybig, modbig);
+	ILBigNumFree(xbig);
+	ILBigNumFree(ybig);
+	ILBigNumFree(modbig);
+	return BigNumToByteArray(_thread, result);
 }
 
 /*
@@ -575,8 +671,16 @@ System_Array *_IL_CryptoMethods_NumPow(ILExecThread *_thread,
 									   System_Array *y,
 									   System_Array *modulus)
 {
-	/* TODO */
-	return 0;
+	ILBigNum *xbig, *ybig, *modbig, *result;
+	if(!ByteArraysToBigNums(_thread, x, &xbig, y, &ybig, modulus, &modbig))
+	{
+		return 0;
+	}
+	result = ILBigNumPow(xbig, ybig, modbig);
+	ILBigNumFree(xbig);
+	ILBigNumFree(ybig);
+	ILBigNumFree(modbig);
+	return BigNumToByteArray(_thread, result);
 }
 
 /*
@@ -586,8 +690,15 @@ System_Array *_IL_CryptoMethods_NumInv(ILExecThread *_thread,
 									   System_Array *x,
 									   System_Array *modulus)
 {
-	/* TODO */
-	return 0;
+	ILBigNum *xbig, *modbig, *result;
+	if(!ByteArraysToBigNums(_thread, x, &xbig, 0, 0, modulus, &modbig))
+	{
+		return 0;
+	}
+	result = ILBigNumInv(xbig, modbig);
+	ILBigNumFree(xbig);
+	ILBigNumFree(modbig);
+	return BigNumToByteArray(_thread, result);
 }
 
 /*
@@ -597,8 +708,15 @@ System_Array *_IL_CryptoMethods_NumMod(ILExecThread *_thread,
 									   System_Array *x,
 									   System_Array *modulus)
 {
-	/* TODO */
-	return 0;
+	ILBigNum *xbig, *modbig, *result;
+	if(!ByteArraysToBigNums(_thread, x, &xbig, 0, 0, modulus, &modbig))
+	{
+		return 0;
+	}
+	result = ILBigNumMod(xbig, modbig);
+	ILBigNumFree(xbig);
+	ILBigNumFree(modbig);
+	return BigNumToByteArray(_thread, result);
 }
 
 /*
@@ -608,8 +726,16 @@ ILBool _IL_CryptoMethods_NumEq(ILExecThread *_thread,
 							   System_Array *x,
 							   System_Array *y)
 {
-	/* TODO */
-	return 0;
+	ILBigNum *xbig, *ybig;
+	ILBool result;
+	if(!ByteArraysToBigNums(_thread, x, &xbig, y, &ybig, 0, 0))
+	{
+		return 0;
+	}
+	result = (ILBigNumCompare(xbig, ybig) == 0);
+	ILBigNumFree(xbig);
+	ILBigNumFree(ybig);
+	return result;
 }
 
 /*
@@ -617,7 +743,15 @@ ILBool _IL_CryptoMethods_NumEq(ILExecThread *_thread,
  */
 ILBool _IL_CryptoMethods_NumZero(ILExecThread *_thread, System_Array *x)
 {
-	return 0;
+	ILBigNum *xbig;
+	ILBool result;
+	if(!ByteArraysToBigNums(_thread, x, &xbig, 0, 0, 0, 0))
+	{
+		return 0;
+	}
+	result = (ILBigNumIsZero(xbig) != 0);
+	ILBigNumFree(xbig);
+	return result;
 }
 
 /*

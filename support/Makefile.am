@@ -4,6 +4,7 @@ noinst_PROGRAMS = mkcategory mknumber
 libILSupport_a_SOURCES = aes.c \
 						 allocate.c \
 						 ansi.c \
+						 bignum.c \
 						 clflush.c \
 						 cmdline.c \
 						 cvt_float.c \

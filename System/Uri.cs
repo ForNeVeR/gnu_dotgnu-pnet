@@ -241,7 +241,7 @@ public class Uri : MarshalByRefObject
 	}
 
 	// check if characters in a String in a given range are alphanumeric or -.
-	private CharsAreAlnumDash(String checkthis, int first, int last)
+	private bool CharsAreAlnumDash(String checkthis, int first, int last)
 	{
 		char check;
 		for (; first <= last; ++first)

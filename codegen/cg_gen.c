@@ -20,6 +20,7 @@
 
 #include "cg_nodes.h"
 #include "cg_scope.h"
+#include "cg_resolve.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -163,7 +164,12 @@ void ILGenInfoDestroy(ILGenInfo *info)
 
 void ILGenOutOfMemory(ILGenInfo *info)
 {
-	fprintf(stderr, "%s: virtual memory exhausted\n", info->progname);
+	if(info->progname)
+	{
+		fputs(info->progname, stderr);
+		fputs(": ", stderr);
+	}
+	fputs("virtual memory exhausted\n", stderr);
 	exit(1);
 }
 
@@ -621,6 +627,160 @@ void ILGenReleaseTempVar(ILGenInfo *info, unsigned localNum)
 	{
 		info->tempVars[localNum - info->tempLocalBase].allocated = 0;
 	}
+}
+
+int ILGenItemHasAttribute(ILProgramItem *item, const char *name)
+{
+	ILAttribute *attr = 0;
+	ILMethod *method;
+	ILClass *classInfo;
+	const char *namespace;
+	while((attr = ILProgramItemNextAttribute(item, attr)) != 0)
+	{
+		method = ILProgramItemToMethod(ILAttribute_TypeAsItem(attr));
+		if(method && !strcmp(ILMethod_Name(method), ".ctor"))
+		{
+			classInfo = ILMethod_Owner(method);
+			if(!strcmp(ILClass_Name(classInfo), name))
+			{
+				namespace = ILClass_Namespace(classInfo);
+				if(namespace && !strcmp(namespace, "System"))
+				{
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+void ILGenItemAddAttribute(ILGenInfo *info, ILProgramItem *item,
+						   const char *name)
+{
+	ILType *typeInfo;
+	ILClass *classInfo;
+	ILClass *scopeInfo;
+	ILMethod *ctor;
+	ILAttribute *attr;
+	static unsigned char const blob[4] = {1, 0, 0, 0};
+
+	/* Find the attribute class */
+	typeInfo = ILFindSystemType(info, name);
+	if(!typeInfo)
+	{
+		return;
+	}
+	classInfo = ILType_ToClass(typeInfo);
+
+	/* Use the "<Module>" type of the program as the lookup scope */
+	scopeInfo = ILClassLookup(ILClassGlobalScope(info->image),
+							  "<Module>", 0);
+	if(!scopeInfo)
+	{
+		return;
+	}
+
+	/* Find the zero-argument constructor for the class */
+	ctor = ILResolveConstructor(classInfo, scopeInfo, 0, 0);
+	if(!ctor)
+	{
+		return;
+	}
+	ctor = (ILMethod *)ILMemberImport(info->image, (ILMember *)ctor);
+	if(!ctor)
+	{
+		ILGenOutOfMemory(info);
+	}
+
+	/* Create an attribute object */
+	attr = ILAttributeCreate(info->image, 0);
+	if(!attr)
+	{
+		ILGenOutOfMemory(info);
+	}
+	ILAttributeSetType(attr, (ILProgramItem *)ctor);
+	if(!ILAttributeSetValue(attr, blob, 4))
+	{
+		ILGenOutOfMemory(info);
+	}
+
+	/* Attach the attribute to the program item */
+	ILProgramItemAddAttribute(item, attr);
+}
+
+ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
+									  ILUInt32 num, ILType **type)
+{
+	ILParameter *param;
+	int isByRef;
+
+	/* Get the signature if the input is NULL */
+	if(!signature)
+	{
+		signature = ILMethod_Signature(method);
+	}
+
+	/* Get the parameter's type */
+	*type = ILTypeGetParam(signature, num);
+
+	/* Find the parameter information block */
+	param = 0;
+	while((param = ILMethodNextParam(method, param)) != 0)
+	{
+		if(ILParameter_Num(param) == num)
+		{
+			/* Check for a "params" parameter by looking for the
+			   "System.ParamArrayAttribute" attribute on the
+			   last parameter supplied to the method */
+			if(num == signature->num)
+			{
+				if(ILGenItemHasAttribute((ILProgramItem *)param,
+										 "ParamArrayAttribute"))
+				{
+					/* Make sure that this parameter has a
+					   single-dimensional array type */
+					if(*type != 0 &&
+					   ILType_IsComplex(*type) &&
+					   (*type)->kind == IL_TYPE_COMPLEX_ARRAY)
+					{
+						*type = (*type)->un.array.elemType;
+						return ILParamMod_params;
+					}
+				}
+			}
+
+			/* Determine if the parameter is "byref" */
+			if(*type != 0 &&
+			   ILType_IsComplex(*type) &&
+			   ((*type)->kind == IL_TYPE_COMPLEX_BYREF))
+			{
+				*type = (*type)->un.refType;
+				isByRef = 1;
+			}
+			else
+			{
+				isByRef = 0;
+			}
+
+			/* Check for "out" parameters */
+			if(ILParameter_IsOut(param) && isByRef)
+			{
+				return ILParamMod_out;
+			}
+
+			/* Check for "ref" parameters */
+			if(isByRef)
+			{
+				return ILParamMod_ref;
+			}
+
+			/* This is a normal parameter */
+			return ILParamMod_empty;
+		}
+	}
+
+	/* If we get here, the parameter is normal */
+	return ILParamMod_empty;
 }
 
 #ifdef	__cplusplus

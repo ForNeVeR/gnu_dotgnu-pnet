@@ -214,6 +214,26 @@ ILMachineType ILCommonType(ILGenInfo *info, ILMachineType type1,
  */
 void ILGenMakeLibrary(ILGenInfo *info);
 
+/*
+ * Determine if a program item has a particular "System"
+ * attribute attached to it.
+ */
+int ILGenItemHasAttribute(ILProgramItem *item, const char *name);
+
+/*
+ * Add a particular "System" attribute to program item.
+ */
+void ILGenItemAddAttribute(ILGenInfo *info, ILProgramItem *item,
+						   const char *name);
+
+/*
+ * Get the parameter information associated with a specific
+ * method parameter.  "signature" can be NULL, or a cached
+ * copy of the method's signature.
+ */
+ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
+									  ILUInt32 num, ILType **type);
+
 #ifdef	__cplusplus
 };
 #endif

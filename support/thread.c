@@ -63,10 +63,10 @@ static void ThreadInit(void)
 	/* Perform system-specific initialization */
 	_ILThreadInitSystem(&mainThread);
 
-	/* Initialize "threadLockAll", "atomicLock", and "startupAck" */
+	/* Initialize synchronization objects that we need */
 	_ILMutexCreate(&threadLockAll);
-	_ILMutexCreate(&atomicLock);
 	_ILSemaphoreCreate(&startupAck);
+	_ILMutexCreate(&atomicLock);
 
 	/* Set up the "main" thread.  "_ILThreadInitSystem" has already
 	   set the "handle" and "identifier" fields for us */
@@ -79,9 +79,7 @@ static void ThreadInit(void)
 	_ILSemaphoreCreate(&(mainThread.suspendAck));
 	mainThread.startFunc        = 0;
 	mainThread.objectArg        = 0;
-	_ILMutexCreate(&(mainThread.wakeupMutex));
-	mainThread.wakeupType       = IL_WAKEUP_NONE;
-	_ILSemaphoreCreate(&(mainThread.wakeup));
+	_ILWakeupCreate(&(mainThread.wakeup));
 
 	/* Set the thread object for the "main" thread */
 	_ILThreadSetSelf(&mainThread);
@@ -155,9 +153,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	_ILSemaphoreCreate(&(thread->suspendAck));
 	thread->startFunc = startFunc;
 	thread->objectArg = objectArg;
-	_ILMutexCreate(&(thread->wakeupMutex));
-	thread->wakeupType = IL_WAKEUP_NONE;
-	_ILSemaphoreCreate(&(thread->wakeup));
+	_ILWakeupCreate(&(thread->wakeup));
 
 	/* Lock out the thread system */
 	_ILMutexLock(&threadLockAll);
@@ -166,8 +162,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	if(!_ILThreadCreateSystem(thread))
 	{
 		_ILMutexUnlock(&threadLockAll);
-		_ILSemaphoreDestroy(&(thread->wakeup));
-		_ILMutexDestroy(&(thread->wakeupMutex));
+		_ILWakeupDestroy(&(thread->wakeup));
 		_ILSemaphoreDestroy(&(thread->suspendAck));
 		_ILSemaphoreDestroy(&(thread->resumeAck));
 		_ILMutexDestroy(&(thread->lock));
@@ -241,10 +236,9 @@ void ILThreadDestroy(ILThread *thread)
 	_ILMutexUnlock(&(thread->lock));
 	_ILThreadDestroy(thread);
 	_ILMutexDestroy(&(thread->lock));
-	_ILMutexDestroy(&(thread->wakeupMutex));
 	_ILSemaphoreDestroy(&(thread->suspendAck));
 	_ILSemaphoreDestroy(&(thread->resumeAck));
-	_ILSemaphoreDestroy(&(thread->wakeup));
+	_ILWakeupDestroy(&(thread->wakeup));
 	ILFree(thread);
 
 	/* Adjust the thread counts */
@@ -394,33 +388,25 @@ void ILThreadResume(ILThread *thread)
 
 void ILThreadInterrupt(ILThread *thread)
 {
-	unsigned int state;
-
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
-	state = thread->state;
-	if((state & (IL_TS_INTERRUPTED | IL_TS_STOPPED)) != 0)
+	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
 	{
-		/* Nothing to do here - an interrupt is already pending
-		   or the thread is in the stopped state */
-	}
-	else if((state & IL_TS_WAIT_SLEEP_JOIN) != 0)
-	{
-		/* The thread is in the "wait/sleep/join" state, so interrupt it */
-		thread->state |= IL_TS_INTERRUPTED;
-		_ILThreadInterrupt(thread);
+		/* Unlock the thread object: we never hold the thread
+		   lock when updating the thread's wakeup object */
+		_ILMutexUnlock(&(thread->lock));
+
+		/* Mark the thread as needing to be interrupted the next
+		   time a "wait/sleep/join" occurs */
+		_ILWakeupInterrupt(&(thread->wakeup));
 	}
 	else
 	{
-		/* Mark the thread as needing to be interrupted the next
-		   time a "wait/sleep/join" occurs */
-		thread->state |= IL_TS_INTERRUPTED;
+		/* Unlock the thread object */
+		_ILMutexUnlock(&(thread->lock));
 	}
-
-	/* Unlock the thread object */
-	_ILMutexUnlock(&(thread->lock));
 }
 
 int ILThreadGetBackground(ILThread *thread)
@@ -517,6 +503,53 @@ void ILThreadGetCounts(unsigned long *numForeground,
 	*numForeground = (unsigned long)(numThreads - numBackgroundThreads);
 	*numBackground = (unsigned long)(numBackgroundThreads);
 	_ILMutexUnlock(&threadLockAll);
+}
+
+int ILThreadSleep(ILUInt32 ms)
+{
+	ILThread *thread = _ILThreadGetSelf();
+	int result;
+
+	/* Lock down the thread */
+	_ILMutexLock(&(thread->lock));
+
+	/* Put the thread into the "wait/sleep/join" state */
+	thread->state |= IL_TS_WAIT_SLEEP_JOIN;
+
+	/* Unlock the thread to allow others to access it */
+	_ILMutexUnlock(&(thread->lock));
+
+	/* Wait on the thread's wakeup object, which will never be signalled,
+	   but which may be interrupted by some other thread */
+	result = (_ILWakeupWait(&(thread->wakeup), ms, 1, (void **)0) >= 0);
+
+	/* Lock down the thread again */
+	_ILMutexLock(&(thread->lock));
+
+	/* Exit from the "wait/sleep/join" state */
+	thread->state &= ~IL_TS_WAIT_SLEEP_JOIN;
+
+	/* Did someone else ask us to suspend? */
+	if((thread->state & IL_TS_SUSPEND_REQUESTED) != 0)
+	{
+		/* Suspend the current thread */
+		thread->state &= ~IL_TS_SUSPEND_REQUESTED;
+		thread->state |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
+		thread->resumeRequested = 0;
+		
+		/* Unlock the thread object prior to suspending */
+		_ILMutexUnlock(&(thread->lock));
+
+		/* Suspend until we receive notification from another thread */
+		_ILThreadSuspendSelf(thread);
+
+		/* We are resumed, and the thread object is already unlocked */
+		return result;
+	}
+
+	/* Unlock the thread and exit */
+	_ILMutexUnlock(&(thread->lock));
+	return result;
 }
 
 void _ILThreadSuspendRequest(ILThread *thread)

@@ -46,6 +46,20 @@ extern	"C" {
 #endif
 
 /*
+ * Internal structure of a wakeup object.
+ */
+typedef struct _tagILWakeup
+{
+	_ILCondMutex			lock;
+	_ILCondVar				condition;
+	ILUInt32	volatile	count;
+	ILUInt32	volatile	limit;
+	int			volatile	interrupted;
+	void *      volatile    object;
+
+} _ILWakeup;
+
+/*
  * Internal structure of a thread descriptor.
  */
 struct _tagILThread
@@ -61,9 +75,7 @@ struct _tagILThread
 	_ILSemaphore					suspendAck;
 	ILThreadStartFunc 	volatile	startFunc;
 	void *            	volatile	objectArg;
-	_ILMutex						wakeupMutex;
-	int				  	volatile	wakeupType;
-	_ILSemaphore					wakeup;
+	_ILWakeup						wakeup;
 
 };
 
@@ -71,15 +83,7 @@ struct _tagILThread
  * Extra thread state flags and masks that are used internally.
  */
 #define	IL_TS_PUBLIC_FLAGS		0x01FF
-#define	IL_TS_INTERRUPTED		0x0200
-#define	IL_TS_SUSPENDED_SELF	0x0400
-
-/*
- * Thread wakeup types.
- */
-#define	IL_WAKEUP_NONE			0
-#define	IL_WAKEUP_ONCE			1
-#define	IL_WAKEUP_ALL			2
+#define	IL_TS_SUSPENDED_SELF	0x0200
 
 /*
  * Safe mutex lock and unlock operations that will prevent the
@@ -95,6 +99,29 @@ struct _tagILThread
 			do { \
 				ILThread *__self = _ILThreadGetSelf(); \
 				_ILMutexUnlockUnsafe((mutex)); \
+				if(--(__self->numLocksHeld) == 0) \
+				{ \
+					if(__self->suspendRequested) \
+					{ \
+						_ILThreadSuspendRequest(__self); \
+					} \
+				} \
+			} while (0)
+
+/*
+ * Safe condition mutex lock and unlock operations that will prevent
+ * the thread from being suspended while it holds a lock.
+ */
+#define	_ILCondMutexLock(mutex)	\
+			do { \
+				ILThread *__self = _ILThreadGetSelf(); \
+				++(__self->numLocksHeld); \
+				_ILCondMutexLockUnsafe((mutex)); \
+			} while (0)
+#define	_ILCondMutexUnlock(mutex)	\
+			do { \
+				ILThread *__self = _ILThreadGetSelf(); \
+				_ILCondMutexUnlockUnsafe((mutex)); \
 				if(--(__self->numLocksHeld) == 0) \
 				{ \
 					if(__self->suspendRequested) \
@@ -156,6 +183,36 @@ int _ILThreadCreateSystem(ILThread *thread);
  * Process a request to suspend the current thread.
  */
 void _ILThreadSuspendRequest(ILThread *thread);
+
+/*
+ * Create a thread wakeup object.
+ */
+void _ILWakeupCreate(_ILWakeup *wakeup);
+
+/*
+ * Destroy a thread wakeup object.
+ */
+void _ILWakeupDestroy(_ILWakeup *wakeup);
+
+/*
+ * Wait for a thread wakeup object to become available.  The "limit"
+ * value indicates how many signals are expected.  Returns 1 if the
+ * required number of signals arrived, 0 on timeout, or -1 if the
+ * wakeup was interrupted.
+ */
+int _ILWakeupWait(_ILWakeup *wakeup, ILUInt32 ms,
+				  ILUInt32 limit, void **object);
+
+/*
+ * Signal a thread wakeup object.  Returns zero if the wakeup
+ * object is already signalled or interrupted.
+ */
+int _ILWakeupSignal(_ILWakeup *wakeup, void *object);
+
+/*
+ * Interrupt a thread wakeup object.
+ */
+void _ILWakeupInterrupt(_ILWakeup *wakeup);
 
 #ifdef	__cplusplus
 };

@@ -69,6 +69,27 @@ int _ILThreadCreateSystem(ILThread *thread)
 	return (thread->handle != NULL);
 }
 
+/*
+ * Note: this implementation is not fully atomic.  There is a
+ * window of opportunity between when the current thread notices
+ * that the condition is signalled and when the mutex is regained.
+ * The caller is expected to code around this.
+ */
+int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
+{
+	DWORD result;
+	if(ms != IL_MAX_UINT32)
+	{
+		result = SignalObjectAndWait(*mutex, *cond, (DWORD)ms, FALSE);
+	}
+	else
+	{
+		result = SignalObjectAndWait(*mutex, *cond, INFINITE, FALSE);
+	}
+	WaitForSingleObject(*mutex, INFINITE);
+	return (result == WAIT_OBJECT_0);
+}
+
 #ifdef	__cplusplus
 };
 #endif

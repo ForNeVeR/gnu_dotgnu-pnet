@@ -19,6 +19,20 @@
  */
 
 #include "thr_defs.h"
+#if TIME_WITH_SYS_TIME
+	#include <sys/time.h>
+    #include <time.h>
+#else
+    #if HAVE_SYS_TIME_H
+		#include <sys/time.h>
+    #else
+        #include <time.h>
+    #endif
+#endif
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <errno.h>
 
 #ifdef IL_USE_PTHREADS
 
@@ -197,6 +211,40 @@ int _ILThreadCreateSystem(ILThread *thread)
 	else
 	{
 		return 0;
+	}
+}
+
+int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
+{
+	struct timeval tv;
+	struct timespec ts;
+	int result;
+
+	if(ms != IL_MAX_UINT32)
+	{
+		/* Convert the milliseconds value into an absolute timeout */
+		gettimeofday(&tv, 0);
+		ts.tv_sec = tv.tv_sec + (long)(ms / 1000);
+		ts.tv_nsec = tv.tv_usec + (long)((ms % 1000) * 1000);
+		if(ts.tv_nsec >= 1000000000L)
+		{
+			++(ts.tv_sec);
+			ts.tv_nsec -= 1000000000L;
+		}
+
+		/* Wait until we are signalled or the timeout expires */
+		do
+		{
+			result = pthread_cond_timedwait(cond, mutex, &ts);
+		}
+		while(result == EINTR);
+		return ((result == 0) ? 1 : 0);
+	}
+	else
+	{
+		/* Wait forever until the condition variable is signalled */
+		pthread_cond_wait(cond, mutex);
+		return 1;
 	}
 }
 

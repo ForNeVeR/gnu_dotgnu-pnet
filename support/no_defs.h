@@ -29,6 +29,8 @@ extern	"C" {
  * Types that are needed elsewhere.
  */
 typedef int	_ILMutex;
+typedef int	_ILCondMutex;
+typedef int	_ILCondVar;
 typedef int	_ILThreadHandle;
 typedef int	_ILThreadIdentifier;
 typedef int	_ILSemaphore;
@@ -77,6 +79,14 @@ typedef int	_ILRWLock;
 #define	_ILMutexUnlockUnsafe(mutex)		do { ; } while (0)
 
 /*
+ * Primitive condition mutex operations.
+ */
+#define	_ILCondMutexCreate(mutex)		do { *(mutex) = 0; } while (0)
+#define	_ILCondMutexDestroy(mutex)		do { ; } while (0)
+#define	_ILCondMutexLockUnsafe(mutex)	do { ; } while (0)
+#define	_ILCondMutexUnlockUnsafe(mutex)	do { ; } while (0)
+
+/*
  * Primitive read/write lock operations.
  */
 #define	_ILRWLockCreate(rwlock)				do { *(rwlock) = 0; } while (0)
@@ -92,6 +102,14 @@ typedef int	_ILRWLock;
 #define	_ILSemaphoreDestroy(sem)	do { ; } while (0)
 #define	_ILSemaphoreWait(sem)		do { ; } while (0)
 #define	_ILSemaphorePost(sem)		do { ; } while (0)
+
+/*
+ * Primitive condition variable operations.
+ */
+#define	_ILCondVarCreate(cond)		do { *(cond) = 0; } while (0)
+#define	_ILCondVarDestroy(cond)		do { ; } while (0)
+#define	_ILCondVarSignal(cond)		do { ; } while (0)
+int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
 
 /*
  * Get or set the thread object that is associated with "self".

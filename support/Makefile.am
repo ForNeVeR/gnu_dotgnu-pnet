@@ -38,6 +38,7 @@ libILSupport_a_SOURCES = allocate.c \
 						 utf8.c \
 						 utf16.c \
 						 w32_defs.c \
+						 wakeup.c \
 						 write_float.c \
 						 xml.c
 

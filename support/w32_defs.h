@@ -112,6 +112,28 @@ typedef CRITICAL_SECTION	_ILRWLock;
 			} while (0)
 
 /*
+ * Primitive condition mutex operations.  These are similar to
+ * normal mutexes, except that they can be used with condition
+ * variables to do an atomic "unlock and wait" operation.
+ */
+#define	_ILCondMutexCreate(mutex)	\
+			do { \
+				*(mutex) = CreateMutex(NULL, FALSE, NULL); \
+			} while (0)
+#define	_ILCondMutexDestroy(mutex)	\
+			do { \
+				CloseHandle(*(mutex)); \
+			} while (0)
+#define	_ILCondMutexLockUnsafe(mutex)	\
+			do { \
+				WaitForSingleObject(*(mutex), INFINITE); \
+			} while (0)
+#define	_ILCondMutexUnlockUnsafe(mutex)	\
+			do { \
+				ReleaseMutex(*(mutex)); \
+			} while (0)
+
+/*
  * Primitive read/write lock operations.  Note: the "Lock" and
  * "Unlock" operations are not "suspend-safe".
  */
@@ -140,6 +162,14 @@ typedef CRITICAL_SECTION	_ILRWLock;
 			do { \
 				ReleaseSemaphore(*(sem), 1, NULL); \
 			} while (0)
+
+/*
+ * Primitive condition variable operations.
+ */
+#define	_ILCondVarCreate(cond)		_ILSemaphoreCreate((cond))
+#define	_ILCondVarDestroy(cond)		_ILSemaphoreDestroy((cond))
+#define	_ILCondVarSignal(cond)		_ILSemaphorePost((cond))
+int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
 
 /*
  * Get or set the thread object that is associated with "self".

@@ -19,6 +19,9 @@
  */
 
 #include "thr_defs.h"
+#ifdef HAVE_UNISTD_H
+	#include <unistd.h>
+#endif
 
 #ifdef IL_NO_THREADS
 
@@ -35,6 +38,41 @@ void _ILThreadInitSystem(ILThread *mainThread)
 int _ILThreadCreateSystem(ILThread *thread)
 {
 	return 0;
+}
+
+int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
+{
+	/* On a system without threads, we wait for the timeout
+	   to expire but otherwise ignore the request.  We have
+	   to do this because there are no other threads in the
+	   system that could possibly signal us */
+#ifdef HAVE_USLEEP
+	if(ms != IL_MAX_UINT32)
+	{
+		/* Sleep for the specified timeout */
+		while(ms >= 100000)
+		{
+			usleep(100000000);
+			ms -= 100000;
+		}
+		if(ms > 0)
+		{
+			usleep(ms * 1000);
+		}
+	}
+	else
+	{
+		/* Sleep forever */
+		for(;;)
+		{
+			usleep(100000000);
+		}
+	}
+	return 0;
+#else
+	/* We don't know how to sleep on this platform, so report "interrupted" */
+	return -1;
+#endif
 }
 
 #ifdef	__cplusplus

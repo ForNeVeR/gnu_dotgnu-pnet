@@ -163,6 +163,14 @@ void ILThreadGetCounts(unsigned long *numForeground,
 					   unsigned long *numBackground);
 
 /*
+ * Put a thread to sleep for a given number of milliseconds.
+ * Specifying "ms == 0" is the same as yielding the thread.
+ * Specifying "ms == IL_MAX_UINT32" will sleep forever.
+ * Returns zero if the sleep was interrupted.
+ */
+int ILThreadSleep(ILUInt32 ms);
+
+/*
  * Create a mutex.  Note: this type of mutex will not
  * necessarily update the thread's "wait/sleep/join"
  * state, so it isn't directly suitable for emulating

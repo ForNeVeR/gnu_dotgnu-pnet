@@ -78,6 +78,8 @@ extern	"C" {
  * Types that are needed elsewhere.
  */
 typedef pthread_mutex_t		_ILMutex;
+typedef pthread_mutex_t		_ILCondMutex;
+typedef pthread_cond_t		_ILCondVar;
 typedef pthread_t			_ILThreadHandle;
 typedef pthread_t			_ILThreadIdentifier;
 typedef sem_t				_ILSemaphore;
@@ -161,6 +163,16 @@ void _ILThreadSuspendUntilResumed(ILThread *thread);
 			(pthread_mutex_unlock((mutex)))
 
 /*
+ * Primitive condition mutex operations.  These are similar to
+ * normal mutexes, except that they can be used with condition
+ * variables to do an atomic "unlock and wait" operation.
+ */
+#define	_ILCondMutexCreate(mutex)		_ILMutexCreate((mutex))
+#define	_ILCondMutexDestroy(mutex)		_ILMutexDestroy((mutex))
+#define	_ILCondMutexLockUnsafe(mutex)	_ILMutexLockUnsafe((mutex))
+#define	_ILCondMutexUnlockUnsafe(mutex)	_ILMutexUnlockUnsafe((mutex))
+
+/*
  * Primitive read/write lock operations.  Note: the "Lock" and
  * "Unlock" operations are not "suspend-safe".
  */
@@ -190,6 +202,17 @@ void _ILThreadSuspendUntilResumed(ILThread *thread);
 #define	_ILSemaphoreDestroy(sem)	(sem_destroy((sem)))
 #define	_ILSemaphoreWait(sem)		(sem_wait((sem)))
 #define	_ILSemaphorePost(sem)		(sem_post((sem)))
+
+/*
+ * Primitive condition variable operations.
+ */
+#define	_ILCondVarCreate(cond)		\
+			(pthread_cond_init((cond), (pthread_condattr_t *)0))
+#define	_ILCondVarDestroy(cond)		\
+			(pthread_cond_destroy((cond)))
+#define	_ILCondVarSignal(cond)		\
+			(pthread_cond_signal((cond)))
+int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
 
 /*
  * Get or set the thread object that is associated with "self".

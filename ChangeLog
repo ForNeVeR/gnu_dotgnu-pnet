@@ -19,6 +19,12 @@
 
 	* samples/System.dll, samples/mscorlib.dll: updated assemblies.
 
+	* include/il_thread.h, support/Makefile.am, support/no_defs.c,
+	support/no_defs.h, support/pt_defs.c, support/pt_defs.h,
+	support/thr_defs.h, support/thread.c, support/w32_defs.c,
+	support/w32_defs.h, support/wakeup.c: implement condition mutexes,
+	condition variables, thread wakeup objects, and thread sleeping.
+
 2002-04-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,

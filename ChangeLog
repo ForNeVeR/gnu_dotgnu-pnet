@@ -41,6 +41,10 @@
 	* samples/fib.cs: modify the Fibonacci example to use the
 	increment and decrement operators, instead of "+" and "-".
 
+	* codegen/jv_misc.tc (ILNode_As): fix the JVM implementation of
+	"as" so that it uses "instanceof" instead of "checkcast", because
+	"as" should not throw exceptions.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,

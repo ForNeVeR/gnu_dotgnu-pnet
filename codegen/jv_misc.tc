@@ -429,12 +429,21 @@ JavaGenValue(ILNode_ArgArray)
  */
 JavaGenValue(ILNode_As)
 {
+	ILLabel label1 = ILLabel_Undefined;
+
 	/* Evaluate the sub-expression and cast to an object reference */
 	JavaGenCast(info, JavaGenValue(node->expr, info),
 			    ILMachineType_ObjectRef);
 
-	/* Test the object using the "checkcast" instruction */
-	JavaGenClassRef(info, JAVA_OP_CHECKCAST, node->classInfo);
+	/* Test the object using the "instanceof" instruction */
+	JavaGenSimple(info, JAVA_OP_DUP);
+	JavaGenAdjust(info, 1);
+	JavaGenClassRef(info, JAVA_OP_INSTANCEOF, node->classInfo);
+	JavaGenJump(info, JAVA_OP_IFNE, &label1);
+	JavaGenAdjust(info, -1);
+	JavaGenSimple(info, JAVA_OP_POP);
+	JavaGenSimple(info, JAVA_OP_ACONST_NULL);
+	JavaGenLabel(info, &label1);
 
 	/* The return value is also an object */
 	return ILMachineType_ObjectRef;
@@ -1658,25 +1667,9 @@ JavaGenElse(ILNode_ToBool)
 }
 
 /*
- * Generate the "then" branch for an "as" expression.
+ * Generate the "then" branch for an "as" or "is" expression.
  */
-JavaGenThen(ILNode_As)
-{
-	/* Evaluate the sub-expression and cast to an object reference */
-	JavaGenCast(info, JavaGenValue(node->expr, info),
-			    ILMachineType_ObjectRef);
-
-	/* Test the object using the "checkcast" instruction */
-	JavaGenClassRef(info, JAVA_OP_CHECKCAST, node->classInfo);
-
-	/* Jump based on the result */
-	JavaGenJump(info, JAVA_OP_IFNONNULL, label);
-	JavaGenAdjust(info, -1);
-}
-
-/*
- * Generate the "then" branch for an "is" expression.
- */
+JavaGenThen(ILNode_As),
 JavaGenThen(ILNode_Is)
 {
 	/* Evaluate the sub-expression and cast to an object reference */
@@ -1692,25 +1685,9 @@ JavaGenThen(ILNode_Is)
 }
 
 /*
- * Generate the "else" branch for an "as" expression.
+ * Generate the "else" branch for an "as" or "is" expression.
  */
-JavaGenElse(ILNode_As)
-{
-	/* Evaluate the sub-expression and cast to an object reference */
-	JavaGenCast(info, JavaGenValue(node->expr, info),
-			    ILMachineType_ObjectRef);
-
-	/* Test the object using the "checkcast" instruction */
-	JavaGenClassRef(info, JAVA_OP_CHECKCAST, node->classInfo);
-
-	/* Jump based on the result */
-	JavaGenJump(info, JAVA_OP_IFNULL, label);
-	JavaGenAdjust(info, -1);
-}
-
-/*
- * Generate the "else" branch for an "is" expression.
- */
+JavaGenElse(ILNode_As),
 JavaGenElse(ILNode_Is)
 {
 	/* Evaluate the sub-expression and cast to an object reference */

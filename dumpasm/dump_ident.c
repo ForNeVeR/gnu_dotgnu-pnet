@@ -28,8 +28,10 @@ static void DumpIdentifier(FILE *stream, const char *name, int flags)
 {
 	int len;
 	int quote;
+	int hardQuote;
 	len = 0;
 	quote = ((flags & IL_DUMP_QUOTE_NAMES) != 0);
+	hardQuote = 0;
 	while(name[len] != '\0')
 	{
 		if(!((name[len] >= 'A' && name[len] <= 'Z') ||
@@ -37,18 +39,41 @@ static void DumpIdentifier(FILE *stream, const char *name, int flags)
 		     (name[len] >= '0' && name[len] <= '9') ||
 		      name[len] == '_' || name[len] == '$' || name[len] == '.'))
 		{
-			quote = 1;
+			hardQuote = 1;
 		}
 		++len;
 	}
+	quote |= hardQuote;
 	if(!quote)
 	{
 		fwrite(name, 1, len, stream);
 	}
-	else
+	else if(!hardQuote)
 	{
 		putc('\'', stream);
 		fwrite(name, 1, len, stream);
+		putc('\'', stream);
+	}
+	else
+	{
+		putc('\'', stream);
+		while(*name != '\0')
+		{
+			if(*name == '\\' || *name == '\'')
+			{
+				putc('\\', stream);
+				putc(*name, stream);
+			}
+			else if(*name < 0x20 || *name > 0x7E)
+			{
+				fprintf(stream, "\\x%02X", ((int)(*name)) & 0xFF);
+			}
+			else
+			{
+				putc(*name, stream);
+			}
+			++name;
+		}
 		putc('\'', stream);
 	}
 }

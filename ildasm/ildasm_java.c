@@ -117,7 +117,7 @@ static unsigned long JavaInsnSize(unsigned char *buf, unsigned long size,
 		{
 			return 0;
 		}
-		len += 8 + swsize * 4;
+		len += 8 + swsize * 8;
 		if(size < len)
 		{
 			return 0;
@@ -139,7 +139,7 @@ static unsigned long JavaInsnSize(unsigned char *buf, unsigned long size,
 		tempa = IL_BREAD_INT32(buf + len + 4);
 		tempb = IL_BREAD_INT32(buf + len + 8);
 		if(tempa > tempb ||
-		   (swsize = (ILUInt32)(tempb - tempa)) > (ILUInt32)0x20000000)
+		   (swsize = (ILUInt32)(tempb - tempa + 1)) > (ILUInt32)0x20000000)
 		{
 			return 0;
 		}
@@ -163,10 +163,24 @@ static unsigned long JavaInsnSize(unsigned char *buf, unsigned long size,
 }
 
 /*
+ * Mark a destination jump point.
+ */
+#define	MarkDest(dest)	\
+			do { \
+				unsigned long _dest = (unsigned long)(dest); \
+				if(_dest < size) \
+				{ \
+					jumpPoints[_dest / 32] |= \
+						(ILUInt32)(1L << (_dest % 32)); \
+				} \
+			} while (0)
+
+/*
  * Dump all Java instructions in a given buffer.  Returns zero
  * if there is something wrong with the buffer's format.
  */
-static int DumpJavaInstructions(ILImage *image, FILE *outstream,
+static int DumpJavaInstructions(ILImage *image, ILClass *classInfo,
+							    FILE *outstream,
 								unsigned char *buf, unsigned long size,
 							    unsigned long addr, ILException *clauses,
 							    int flags)
@@ -174,6 +188,7 @@ static int DumpJavaInstructions(ILImage *image, FILE *outstream,
 	ILUInt32 *jumpPoints;
 	int result = 0;
 	unsigned char *temp;
+	unsigned char *temp2;
 	unsigned long tsize;
 	unsigned long offset;
 	unsigned long dest;
@@ -182,7 +197,7 @@ static int DumpJavaInstructions(ILImage *image, FILE *outstream,
 	const ILOpcodeInfo *info;
 	int argType;
 	unsigned long numItems;
-	/*unsigned long item;*/
+	unsigned long item;
 	int isWide;
 
 	/* Allocate a helper array to mark jump points within the code */
@@ -199,33 +214,13 @@ static int DumpJavaInstructions(ILImage *image, FILE *outstream,
 	/* Mark the position of exception clauses */
 	while(clauses != 0)
 	{
-		dest = clauses->tryOffset;
-		if(dest < size)
-		{
-			jumpPoints[dest / 32] |= (ILUInt32)(1L << (dest % 32));
-		}
-		dest = clauses->tryOffset + clauses->tryLength;
-		if(dest < size)
-		{
-			jumpPoints[dest / 32] |= (ILUInt32)(1L << (dest % 32));
-		}
-		dest = clauses->handlerOffset;
-		if(dest < size)
-		{
-			jumpPoints[dest / 32] |= (ILUInt32)(1L << (dest % 32));
-		}
-		dest = clauses->handlerOffset + clauses->handlerLength;
-		if(dest < size)
-		{
-			jumpPoints[dest / 32] |= (ILUInt32)(1L << (dest % 32));
-		}
+		MarkDest(clauses->tryOffset);
+		MarkDest(clauses->tryOffset + clauses->tryLength);
+		MarkDest(clauses->handlerOffset);
+		MarkDest(clauses->handlerOffset + clauses->handlerLength);
 		if((clauses->flags & IL_META_EXCEPTION_FILTER) != 0)
 		{
-			dest = clauses->extraArg;
-			if(dest < size)
-			{
-				jumpPoints[dest / 32] |= (ILUInt32)(1L << (dest % 32));
-			}
+			MarkDest(clauses->extraArg);
 		}
 		clauses = clauses->next;
 	}
@@ -248,23 +243,58 @@ static int DumpJavaInstructions(ILImage *image, FILE *outstream,
 		{
 			dest = (unsigned long)(((long)offset) +
 								   (long)(IL_BREAD_INT16(temp + 1)));
-			if(dest < size)
-			{
-				jumpPoints[dest / 32] |= (ILUInt32)(1L << (dest % 32));
-			}
+			MarkDest(dest);
 		}
 		else if(info->args == IL_OPCODE_ARGS_LONG_JUMP)
 		{
 			dest = (unsigned long)(((long)offset) +
-								   (long)(IL_BREAD_UINT32(temp + 1)));
-			if(dest < size)
-			{
-				jumpPoints[dest / 32] |= (ILUInt32)(1L << (dest % 32));
-			}
+								   (long)(IL_BREAD_INT32(temp + 1)));
+			MarkDest(dest);
 		}
 		else if(info->args == IL_OPCODE_ARGS_SWITCH)
 		{
-			/* TODO */
+			/* Align the switch instruction's arguments */
+			args = 1;
+			while(((offset + args) & 3) != 0)
+			{
+				++args;
+			}
+
+			/* Mark the default label */
+			dest = (unsigned long)(((long)offset) +
+								   (long)(IL_BREAD_INT32(temp + args)));
+			MarkDest(dest);
+
+			/* Process the bulk of the switch */
+			if(temp[0] == JAVA_OP_TABLESWITCH)
+			{
+				/* Mark all of the labels in a table-based switch */
+				item = (unsigned long)(IL_BREAD_INT32(temp + args + 8) -
+									   IL_BREAD_INT32(temp + args + 4) + 1);
+				temp2 = temp + args + 12;
+				while(item > 0)
+				{
+					dest = (unsigned long)(((long)offset) +
+										   (long)(IL_BREAD_INT32(temp2)));
+					MarkDest(dest);
+					--item;
+					temp2 += 4;
+				}
+			}
+			else
+			{
+				/* Mark all of the labels in a lookup-based switch */
+				item = (unsigned long)(IL_BREAD_UINT32(temp + args + 4));
+				temp2 = temp + args + 8 + 4;
+				while(item > 0)
+				{
+					dest = (unsigned long)(((long)offset) +
+										   (long)(IL_BREAD_INT32(temp2)));
+					MarkDest(dest);
+					--item;
+					temp2 += 8;
+				}
+			}
 		}
 		offset += isize;
 		temp += isize;
@@ -330,14 +360,268 @@ static int DumpJavaInstructions(ILImage *image, FILE *outstream,
 			case IL_OPCODE_ARGS_INT16:
 			{
 				fprintf(outstream, "%d",
-				        (int)(ILInt16)(IL_READ_UINT16(temp + args)));
+				        (int)(ILInt16)(IL_BREAD_UINT16(temp + args)));
 			}
 			break;
 
 			case IL_OPCODE_ARGS_TOKEN:
+			case IL_OPCODE_ARGS_CALL:
+			{
+				/* An instruction that takes a constant pool entry argument */
+				if(temp[0] == JAVA_OP_LDC)
+				{
+					item = (unsigned long)(temp[args]);
+				}
+				else
+				{
+					item = (unsigned long)(IL_BREAD_UINT16(temp + args));
+				}
+				switch(ILJavaGetConstType(classInfo, (ILUInt32)item))
+				{
+					case JAVA_CONST_UTF8:
+					{
+						const char *str;
+						ILUInt32 len;
+						str = ILJavaGetUTF8String
+							(classInfo, (ILUInt32)item, &len);
+						if(str && len)
+						{
+							ILDumpStringLen(outstream, str, (int)len);
+						}
+						else
+						{
+							fputs("\"\"", outstream);
+						}
+					}
+					break;
+
+					case JAVA_CONST_INTEGER:
+					{
+						ILInt32 value;
+						if(ILJavaGetInteger(classInfo, (ILUInt32)item, &value))
+						{
+							fprintf(outstream, "%ld", (long)value);
+						}
+						else
+						{
+							fputs("??", outstream);
+						}
+					}
+					break;
+
+					case JAVA_CONST_FLOAT:
+					{
+						ILFloat value;
+						unsigned char buf[4];
+						if(ILJavaGetFloat(classInfo, (ILUInt32)item, &value))
+						{
+							IL_WRITE_FLOAT(buf, value);
+							fprintf(outstream, "float32(0x%02X%02X%02X%02X)",
+									(((int)(buf[3])) & 0xFF),
+									(((int)(buf[2])) & 0xFF),
+									(((int)(buf[1])) & 0xFF),
+									(((int)(buf[0])) & 0xFF));
+						}
+						else
+						{
+							fputs("??", outstream);
+						}
+					}
+					break;
+
+					case JAVA_CONST_LONG:
+					{
+						ILInt64 value;
+						if(ILJavaGetLong(classInfo, (ILUInt32)item, &value))
+						{
+							fprintf(outstream, "0x%08lX%08lX",
+									(long)((value >> 32) & (long)0xFFFFFFFF),
+									(long)(value & (long)0xFFFFFFFF));
+						}
+						else
+						{
+							fputs("??", outstream);
+						}
+					}
+					break;
+
+					case JAVA_CONST_DOUBLE:
+					{
+						ILDouble value;
+						unsigned char buf[8];
+						if(ILJavaGetDouble(classInfo, (ILUInt32)item, &value))
+						{
+							IL_WRITE_DOUBLE(buf, value);
+							fprintf(outstream,
+								"float64(0x%02X%02X%02X%02X%02X%02X%02X%02X)",
+								(((int)(buf[7])) & 0xFF),
+								(((int)(buf[6])) & 0xFF),
+								(((int)(buf[5])) & 0xFF),
+								(((int)(buf[4])) & 0xFF),
+								(((int)(buf[3])) & 0xFF),
+								(((int)(buf[2])) & 0xFF),
+								(((int)(buf[1])) & 0xFF),
+								(((int)(buf[0])) & 0xFF));
+						}
+						else
+						{
+							fputs("??", outstream);
+						}
+					}
+					break;
+
+					case JAVA_CONST_CLASS:
+					{
+						ILClass *ref;
+						ref = ILJavaGetClass(classInfo, (ILUInt32)item, 1);
+						if(ref)
+						{
+							ILDumpClassName(outstream, image, ref, flags);
+						}
+						else
+						{
+							fputs("??", outstream);
+						}
+					}
+					break;
+
+					case JAVA_CONST_STRING:
+					{
+						const char *str;
+						ILUInt32 len;
+						str = ILJavaGetString(classInfo, (ILUInt32)item, &len);
+						if(str && len)
+						{
+							ILDumpStringLen(outstream, str, (int)len);
+						}
+						else
+						{
+							fputs("\"\"", outstream);
+						}
+					}
+					break;
+
+					case JAVA_CONST_FIELDREF:
+					{
+						ILField *field;
+						ILClass *info;
+						field = ILJavaGetField(classInfo, (ILUInt32)item, 1,
+									(temp[0] == JAVA_OP_GETSTATIC ||
+									 temp[0] == JAVA_OP_PUTSTATIC));
+						if(field)
+						{
+							ILDumpType(outstream, image,
+									   ILField_Type(field), flags);
+							putc(' ', outstream);
+							info = ILField_Owner(field);
+							if(ILClassIsValueType(info))
+							{
+								fputs("valuetype ", outstream);
+							}
+							else
+							{
+								fputs("class ", outstream);
+							}
+							ILDumpClassName(outstream, image, info, flags);
+							fputs("::", outstream);
+							ILDumpIdentifier(outstream,
+											 ILField_Name(field), 0, flags);
+						}
+						else
+						{
+							fputs("??", outstream);
+						}
+					}
+					break;
+
+					case JAVA_CONST_METHODREF:
+					{
+						ILMethod *method;
+						method = ILJavaGetMethod(classInfo, (ILUInt32)item, 1,
+									(temp[0] == JAVA_OP_INVOKESTATIC));
+						if(method)
+						{
+							ILDumpMethodType(outstream, image,
+											 ILMethod_Signature(method), flags,
+											 ILMethod_Owner(method),
+											 ILMethod_Name(method),
+											 method);
+						}
+						else
+						{
+							fputs("??", outstream);
+						}
+					}
+					break;
+
+					default:
+					{
+						fputs("??", outstream);
+					}
+					break;
+				}
+			}
+			break;
+
 			case IL_OPCODE_ARGS_NEW:
 			{
-				/* TODO */
+				/* "newarray" instruction */
+				switch(temp[args])
+				{
+					case JAVA_ARRAY_OF_BOOL:
+					{
+						fputs("bool", outstream);
+					}
+					break;
+
+					case JAVA_ARRAY_OF_CHAR:
+					{
+						fputs("char", outstream);
+					}
+					break;
+
+					case JAVA_ARRAY_OF_FLOAT:
+					{
+						fputs("float32", outstream);
+					}
+					break;
+
+					case JAVA_ARRAY_OF_DOUBLE:
+					{
+						fputs("float64", outstream);
+					}
+					break;
+
+					case JAVA_ARRAY_OF_BYTE:
+					{
+						fputs("int8", outstream);
+					}
+					break;
+
+					case JAVA_ARRAY_OF_SHORT:
+					{
+						fputs("int16", outstream);
+					}
+					break;
+
+					case JAVA_ARRAY_OF_INT:
+					{
+						fputs("int32", outstream);
+					}
+					break;
+
+					case JAVA_ARRAY_OF_LONG:
+					{
+						fputs("int64", outstream);
+					}
+					break;
+
+					default:
+					{
+						fprintf(outstream, "%d", ((int)(temp[args])) & 0xFF);
+					}
+					break;
+				}
 			}
 			break;
 
@@ -371,77 +655,92 @@ static int DumpJavaInstructions(ILImage *image, FILE *outstream,
 			}
 			break;
 
-			case IL_OPCODE_ARGS_CALL:
-			{
-				/* TODO */
-			/*
-				DumpToken(image, outstream, flags,
-					      (unsigned long)(IL_READ_UINT32(temp + args)));
-			*/
-			}
-			break;
-
 			case IL_OPCODE_ARGS_CALLI:
 			{
-				/* TODO */
-			/*
-				DumpToken(image, outstream, flags,
-					      (unsigned long)(IL_READ_UINT32(temp + args)));
-			*/
+				/* Dump a call to an interface method */
+				ILMethod *method;
+				item = (unsigned long)(IL_BREAD_UINT16(temp + args));
+				method = ILJavaGetMethod(classInfo, (ILUInt32)item, 1, 0);
+				if(method)
+				{
+					ILDumpMethodType(outstream, image,
+									 ILMethod_Signature(method), flags,
+									 ILMethod_Owner(method),
+									 ILMethod_Name(method),
+									 method);
+				}
+				else
+				{
+					fputs("??", outstream);
+				}
+				fprintf(outstream, " %d", (int)(ILUInt8)(temp[args + 2]));
 			}
 			break;
 
 			case IL_OPCODE_ARGS_SWITCH:
 			{
-				/* Process a switch statement */
+				/* Align the switch instruction's arguments */
 				while(((offset + args) & 3) != 0)
 				{
 					++args;
 				}
+
+				/* Output the default label */
+				dest = (unsigned long)(((long)offset) +
+									   (long)(IL_BREAD_INT32(temp + args)));
+				fprintf(outstream, "?L%lx (", dest + addr);
+
+				/* Dump the bulk of the switch instruction */
 				if(temp[0] == JAVA_OP_TABLESWITCH)
 				{
-					/* Table-based switch statement */
-#if 0
-					putc('(', outstream);
-					numItems = (unsigned long)(IL_READ_UINT32(temp + args));
+					/* Dump the base value for the table-based switch */
+					fprintf(outstream, "%ld : ",
+						    (long)(IL_BREAD_INT32(temp + args + 4)));
+
+					/* Determine the number of items */
+					numItems = (unsigned long)
+							(IL_BREAD_INT32(temp + args + 8) -
+							 IL_BREAD_INT32(temp + args + 4) + 1);
+
+					/* Dump the labels for the items */
+					temp2 = temp + args + 12;
 					for(item = 0; item < numItems; ++item)
 					{
-						dest = (unsigned long)(((long)offset) + 5 +
-								   ((long)numItems) * 4 +
-							   	   (long)(IL_READ_UINT32(temp + args + 4 +
-								   						 item * 4)));
 						if(item != 0)
 						{
 							putc(',', outstream);
 							putc(' ', outstream);
 						}
+						dest = (unsigned long)(((long)offset) +
+									   		   (long)(IL_BREAD_INT32(temp2)));
 						fprintf(outstream, "?L%lx", dest + addr);
+						temp2 += 4;
 					}
-					putc(')', outstream);
-#endif
 				}
 				else
 				{
-					/* Lookup-based switch statement */
-#if 0
-					putc('(', outstream);
-					numItems = (unsigned long)(IL_READ_UINT32(temp + args));
+					/* Lookup-based switch instruction */
+					numItems = (unsigned long)
+							(IL_BREAD_UINT32(temp + args + 4));
+					temp2 = temp + args + 8;
 					for(item = 0; item < numItems; ++item)
 					{
-						dest = (unsigned long)(((long)offset) + 5 +
-								   ((long)numItems) * 4 +
-							   	   (long)(IL_READ_UINT32(temp + args + 4 +
-								   						 item * 4)));
 						if(item != 0)
 						{
 							putc(',', outstream);
 							putc(' ', outstream);
 						}
+						fprintf(outstream, "%ld : ",
+								(long)(IL_BREAD_INT32(temp2)));
+						dest = (unsigned long)(((long)offset) +
+								   		   (long)(IL_BREAD_INT32(temp2 + 4)));
 						fprintf(outstream, "?L%lx", dest + addr);
+						temp2 += 8;
 					}
-					putc(')', outstream);
-#endif
 				}
+
+				/* Terminate the switch instruction */
+				putc(')', outstream);
 			}
 			break;
 
@@ -523,7 +822,8 @@ void ILDAsmDumpJavaMethod(ILImage *image, FILE *outstream,
 	fprintf(outstream, "\t\t.locals  %lu\n", (unsigned long)(code.javaLocals));
 
 	/* Dump the instructions within the method */
-	if(!DumpJavaInstructions(image, outstream, (unsigned char *)(code.code),
+	if(!DumpJavaInstructions(image, ILMethod_Owner(method),
+							 outstream, (unsigned char *)(code.code),
 						     code.codeLen, addr, 0, /*clauses,*/ flags))
 	{
 		/*ILMethodFreeExceptions(clauses);*/

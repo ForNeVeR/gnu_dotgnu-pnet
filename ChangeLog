@@ -8,6 +8,9 @@
 	implement more of the Java program loader, including field and
 	method references.
 
+	* ildasm/ildasm_java.c: continue the disassembler code for
+	Java methods.
+
 2001-02-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for "0.3.0" release.

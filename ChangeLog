@@ -18,6 +18,9 @@
 	support/file.c: implement internalcalls for file attributes
 	and file lengths.
 
+	* configure.in, pnet.spec.in: Add "cli-unknown-*" to pnet.spec,
+	and also make the treecc version choice automatic.
+
 2004-03-11  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_invoke.tc: make sure that "params" array matching

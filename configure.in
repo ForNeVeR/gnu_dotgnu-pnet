@@ -19,12 +19,16 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_PROG_YACC
 AM_PROG_LEX
+
 AC_PATH_PROG(TREECC, treecc,, ${prefix}/bin:$PATH)
 if test -z "$TREECC" ; then
     echo "treecc is required to build and can be obtained from"
     echo "http://www.southern-storm.com.au"
     exit 1
 fi
+TREECC_VERSION=`"$TREECC" -v | (read name version rest; echo $version)`
+AC_SUBST(TREECC_VERSION)
+
 AC_PATH_PROG(SYSTEM_AR, ar)
 
 dnl Option to disable cygwin1.dll under Windows.

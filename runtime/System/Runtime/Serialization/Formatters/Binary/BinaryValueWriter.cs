@@ -49,13 +49,7 @@ internal abstract class BinaryValueWriter
 	private static BinaryValueWriter stringWriter = new StringWriter();
 	private static BinaryValueWriter objectWriter = new ObjectWriter();
 	private static BinaryValueWriter infoWriter = new SurrogateWriter(null);
-#if false
-	// TODO
-	private static BinaryValueWriter arrayOfObjectWriter
-			= new ArrayWriter(BinaryPrimitiveTypeCode.ArrayOfObject);
-	private static BinaryValueWriter arrayOfStringWriter
-			= new ArrayWriter(BinaryPrimitiveTypeCode.ArrayOfString);
-#endif
+	private static BinaryValueWriter arrayWriter = new ArrayWriter();
 
 	// Context information for writing binary values.
 	public class BinaryValueContext
@@ -253,26 +247,10 @@ internal abstract class BinaryValueWriter
 				{
 					return objectWriter;
 				}
-#if false
-// TODO
-				if(type == typeof(Object[]))
+				else if(type.IsArray)
 				{
-					return arrayOfObjectWriter;
+					return arrayWriter;
 				}
-				if(type == typeof(String[]))
-				{
-					return arrayOfStringWriter;
-				}
-				if(type.IsArray && type.GetArrayRank() == 1)
-				{
-					code = GetPrimitiveTypeCode(type.GetElementType());
-					if(code != (BinaryPrimitiveTypeCode)0)
-					{
-						return new ArrayWriter
-							(BinaryTypeTag.ArrayOfPrimitiveType, code);
-					}
-				}
-#endif
 
 				// Check for surrogates.
 				ISurrogateSelector selector;
@@ -1096,6 +1074,231 @@ internal abstract class BinaryValueWriter
 				}
 
 	}; // class StringWriter
+
+	// Write array values.
+	private class ArrayWriter : BinaryValueWriter
+	{
+		// Constructor.
+		public ArrayWriter() : base() {}
+
+		// Get the type of an array.
+		private BinaryArrayType GetArrayType(Array value, Type type)
+				{
+					int rank = type.GetArrayRank();
+					bool hasLowerBounds = false;
+					int dim;
+					for(dim = 0; dim < rank; ++dim)
+					{
+						if(value.GetLowerBound(dim) != 0)
+						{
+							hasLowerBounds = true;
+							break;
+						}
+					}
+					if(type.GetElementType().IsArray)
+					{
+						if(rank == 1)
+						{
+							if(hasLowerBounds)
+							{
+								return BinaryArrayType.JaggedWithLowerBounds;
+							}
+							else
+							{
+								return BinaryArrayType.Jagged;
+							}
+						}
+						else
+						{
+							if(hasLowerBounds)
+							{
+								return BinaryArrayType.
+									MultidimensionalWithLowerBounds;
+							}
+							else
+							{
+								return BinaryArrayType.Multidimensional;
+							}
+						}
+					}
+					else if(rank == 1)
+					{
+						if(hasLowerBounds)
+						{
+							return BinaryArrayType.SingleWithLowerBounds;
+						}
+						else
+						{
+							return BinaryArrayType.Single;
+						}
+					}
+					else
+					{
+						if(hasLowerBounds)
+						{
+							return BinaryArrayType.
+								MultidimensionalWithLowerBounds;
+						}
+						else
+						{
+							return BinaryArrayType.Multidimensional;
+						}
+					}
+				}
+
+		// Write the type tag for a type.
+		public override void WriteTypeTag
+					(BinaryValueContext context, Type type)
+				{
+					if(type == typeof(Object[]))
+					{
+						context.writer.Write
+							((byte)(BinaryTypeTag.ArrayOfObject));
+					}
+					else if(type == typeof(String[]))
+					{
+						context.writer.Write
+							((byte)(BinaryTypeTag.ArrayOfString));
+					}
+					else
+					{
+						BinaryPrimitiveTypeCode prim;
+						prim = GetPrimitiveTypeCode(type.GetElementType());
+						if(prim != (BinaryPrimitiveTypeCode)0 &&
+						   type.GetArrayRank() == 1)
+						{
+							context.writer.Write
+								((byte)(BinaryTypeTag.ArrayOfPrimitiveType));
+						}
+						else
+						{
+							context.writer.Write
+								((byte)(BinaryTypeTag.GenericType));
+						}
+					}
+				}
+
+		// Write the type specification for a type.
+		public override void WriteTypeSpec
+					(BinaryValueContext context, Type type)
+				{
+					if(type == typeof(Object[]) || type == typeof(String[]))
+					{
+						return;
+					}
+					else
+					{
+						BinaryPrimitiveTypeCode prim;
+						prim = GetPrimitiveTypeCode(type.GetElementType());
+						if(prim != (BinaryPrimitiveTypeCode)0 &&
+						   type.GetArrayRank() == 1)
+						{
+							context.writer.Write((byte)prim);
+						}
+						else
+						{
+							// TODO: generic array typespecs
+						}
+					}
+				}
+
+		// Write the inline form of values for a type.
+		public override void WriteInline(BinaryValueContext context,
+										 Object value, Type type,
+										 Type fieldType)
+				{
+					bool firstTime;
+					long objectID;
+					if(value == null)
+					{
+						// Write a null value.
+						context.writer.Write
+							((byte)(BinaryElementType.NullValue));
+					}
+					else
+					{
+						// Queue the object to be expanded later.
+						objectID = context.gen.GetId(value, out firstTime);
+						context.writer.Write
+							((byte)(BinaryElementType.ObjectReference));
+						context.writer.Write((int)objectID);
+						if(firstTime)
+						{
+							context.queue.Enqueue(value);
+						}
+					}
+				}
+
+		// Write the object header information for a type.
+		public override void WriteObjectHeader(BinaryValueContext context,
+											   Object value, Type type,
+											   long objectID, long prevObject)
+				{
+					BinaryPrimitiveTypeCode prim;
+					BinaryArrayType atype;
+					prim = GetPrimitiveTypeCode(type.GetElementType());
+					atype = GetArrayType((Array)value, type);
+					if(type == typeof(Object[]))
+					{
+						context.writer.Write
+							((byte)(BinaryElementType.ArrayOfObject));
+						context.writer.Write((int)objectID);
+						context.writer.Write(((Array)value).GetLength(0));
+					}
+					else if(type == typeof(String[]))
+					{
+						context.writer.Write
+							((byte)(BinaryElementType.ArrayOfString));
+						context.writer.Write((int)objectID);
+						context.writer.Write(((Array)value).GetLength(0));
+					}
+					else if(prim != (BinaryPrimitiveTypeCode)0 &&
+							atype == BinaryArrayType.Single)
+					{
+						context.writer.Write
+							((byte)(BinaryElementType.ArrayOfPrimitiveType));
+						context.writer.Write((int)objectID);
+						context.writer.Write(((Array)value).GetLength(0));
+						context.writer.Write((byte)prim);
+					}
+					else
+					{
+						int rank = type.GetArrayRank();
+						int dim;
+						context.writer.Write
+							((byte)(BinaryElementType.GenericArray));
+						context.writer.Write((int)objectID);
+						context.writer.Write((byte)atype);
+						context.writer.Write(rank);
+						for(dim = 0; dim < rank; ++dim)
+						{
+							context.writer.Write
+								(((Array)value).GetLength(dim));
+						}
+						if(((int)atype) >= 3)
+						{
+							for(dim = 0; dim < rank; ++dim)
+							{
+								context.writer.Write
+									(((Array)value).GetLowerBound(dim));
+							}
+						}
+						BinaryValueWriter vw;
+						type = type.GetElementType();
+						vw = GetWriter(context, type);
+						vw.WriteTypeTag(context, type);
+						vw.WriteTypeSpec(context, type);
+					}
+				}
+
+		// Write the object form of values for a type.
+		public override void WriteObject(BinaryValueContext context,
+										 Object value, Type type)
+				{
+					// TODO: write the array contents
+				}
+
+	}; // class ArrayWriter
 
 }; // class BinaryValueWriter
 

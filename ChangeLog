@@ -13,6 +13,10 @@
 	profiles/tiny, profiles/tiny-fp, samples/Makefile.am,
 	tests/Makefile.am: profile-related and warning fixes.
 
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryArrayType.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	add some supporting code for writing the serialized form of arrays.
+
 2003-12-28  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* Xsharp/XsharpPCF.c: fix build on systems without X.

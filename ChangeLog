@@ -10,6 +10,9 @@
 	* engine/lib_enum.c: Fix masking features to use retain the sign
 	of the masked value.
 
+	* engine/lib_enum.c: Use ", " instead of "," for seperating flagged
+	enums.
+
 2003-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll_arm.c, engine/unroll_arm_arith.c,

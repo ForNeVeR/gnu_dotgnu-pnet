@@ -679,7 +679,7 @@ ILString *_IL_Enum_FormatEnumWithFlags(ILExecThread *thread,
 	{
 		if(!comma)
 		{
-			comma = ILStringCreate(thread, ",");
+			comma = ILStringCreate(thread, ", ");
 			if(!comma)
 			{
 				if(maxMatches > 4)

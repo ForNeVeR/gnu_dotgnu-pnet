@@ -5,6 +5,13 @@
 	class/System.Data/System.Data.build: Add the build for System.Data
 	assembly
 
+	* configure.in, class/Makefile.am, 
+	class/Mono.Data.PostgreSqlClient/Makefile.am,
+	class/Mono.Data.PostgreSqlClient/Mono.Data.PostgreSqlClient.build,
+	class/Mono.Data.MySql/Makefile.am,
+	class/Mono.Data.MySql/Mono.Data.MySql.build: Add the Postgres and
+	MySql client plugin builds for System.Data .
+
 2003-05-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, class/Makefile.am, class/System.Messaging/.cvsignore,

@@ -10,6 +10,8 @@ SUBDIRS = Custommarshalers \
 		  ICSharpCode.SharpZipLib \
 		  Mono.Data.Tds \
 		  System.Data \
+		  Mono.Data.PostgreSqlClient \
+		  Mono.Data.MySql \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix

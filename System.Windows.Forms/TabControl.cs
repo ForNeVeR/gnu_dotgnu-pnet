@@ -77,6 +77,9 @@ namespace System.Windows.Forms
 		private const int minimumTabSize = 45;
 		// Indent of the actual tabs from the side of the control
 		private const int indent = 2;
+		// Used to track first paint call, hack to mimmick MS implementation
+		// of setting first added tab as active
+		private bool firstPaint = true;
 
 		// Tab events
 		public event DrawItemEventHandler DrawItem;
@@ -273,7 +276,7 @@ namespace System.Windows.Forms
 				}
 				else
 				{
-					return tabPageCollection[selectedIndex] as TabPage;
+					return (TabPage)tabPageCollection[selectedIndex];
 				}
 			}
 			set
@@ -543,6 +546,18 @@ namespace System.Windows.Forms
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
+			// Work around to set the SelectedTab to the first
+			// added TabPage.
+			if(firstPaint)
+			{
+				if((selectedIndex > -1) &&
+					(tabPageCollection.Count > 0))
+				{
+					SelectedTab = (TabPage)tabPageCollection[selectedIndex];
+				}
+				firstPaint = false;
+			}
+
 			Draw(e.Graphics);
 			// Draw the visible TabPage (child controls)
 			base.OnPaint (e);

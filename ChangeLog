@@ -1,3 +1,8 @@
+2004-12-17  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/TabControl.cs: SelectedTab is now set to first
+	added tab.  SelectedTab uses a cast versus the 'as' keyword.
+
 2004-12-24  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlResolver.cs, System.Xml/XmlUrlResolver.cs: remove uri

@@ -375,7 +375,7 @@ break;
 case COP_CKNULL_N:
 {
 	/* Check a value some way down the stack for "null" */
-	if(stacktop[-((int)(pc[1]))].ptrValue != 0)
+	if(stacktop[-(((int)(pc[1])) + 1)].ptrValue != 0)
 	{
 		MODIFY_PC_AND_STACK(2, 0);
 	}
@@ -716,7 +716,7 @@ break;
 case COP_CKNULL_N:
 {
 	/* Wide version of "cknull_n" */
-	if(stacktop[-((int)IL_READ_UINT32(pc + 2))].ptrValue != 0)
+	if(stacktop[-(((int)IL_READ_UINT32(pc + 2)) + 1)].ptrValue != 0)
 	{
 		MODIFY_PC_AND_STACK(6, 0);
 	}

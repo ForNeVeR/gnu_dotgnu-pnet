@@ -18,6 +18,8 @@
 	* runtime/System/IO/Path.cs: rename "PathSeparatorChar" to
 	"PathSeparator", to be ECMA-compatible.
 
+	* configure.in, NEWS: update version and news for the 0.5.4 release.
+
 2003-03-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/System.Xml/TestXmlTextWriter.cs: ECMA fix for test case.

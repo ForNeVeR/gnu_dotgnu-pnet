@@ -1,4 +1,35 @@
 
+0.5.4 (29 March 2003)
+
+	* Stub out System.Diagnostics.SymbolStore (Gopal V).
+	* Use "" for the invariant culture name instead of "iv" in some areas.
+	* Null string fix for Console.WriteLine (Marcus Urban).
+	* Null name handling in NameValueCollection (Marcus Urban).
+	* DayOfWeek fixes (Yannis BRES).
+	* Various ECMA-compatibility mode fixes.
+	* Fixes to "Directory" and "Process" (Yannis BRES).
+	* Re-sync regular expression code with Mono (Gopal V).
+	* Type.FindMembers (Gopal V).
+	* Make the inheritance of SocketException variable for ECMA (Gopal V).
+	* Stub out some threading classes (Gopal V).
+	* Continue System.Xml implementation (Adam Ballai).
+	* Directory.CreateDirectory (Aditya P. Bansod).
+	* Extra methods for supporting generic types.
+	* Collection bug fixes.
+	* Parsing comma-separated enumerated values.
+	* "==" and "!=" operators for "Version" (Yannis BRES).
+	* Begin implementing a generic collections class library.
+	* Endian issues in IPAddress test cases (Jonathan Springer).
+	* Performance improvements to StringBuilder, XmlTextReader, I18N.
+	* Implement most of System.Reflection.Emit (Gopal V, Rhys Weatherley).
+	* Fix to NodeList iterator that was skipping the first child.
+	* Byte order mark detection in UnicodeEncoding.
+	* Add UCS-4 handler to System.Xml.
+	* Continue implementing JScript.
+	* DateTime parsing and formatting code (Michael Moore).
+	* Number parsing and formatting code (Jonathan Springer).
+	* Fill out the AppDomain class (Gopal V, Rhys Weatherley).
+
 0.5.2 (8 February 2003)
 
 	* Unit tests for wait events and reset events (Thong Nguyen).

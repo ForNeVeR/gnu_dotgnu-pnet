@@ -255,13 +255,7 @@ public sealed class Console
 			}
 	public static void Write(String value)
 			{
-				//Out.Write(value);
-
-				// For testing - fix later.
-				if(value != null)
-				{
-					Stdio.StdWrite(1, value);
-				}
+				Out.Write(value);
 			}
 
 	// Write a newline to standard output.
@@ -340,14 +334,7 @@ public sealed class Console
 			}
 	public static void WriteLine(String value)
 			{
-				//Out.WriteLine(value);
-
-				// For testing - fix later.
-				if(value != null)
-				{
-					Stdio.StdWrite(1, value);
-					Stdio.StdWrite(1, "\r\n");
-				}
+				Out.WriteLine(value);
 			}
 
 }; // class Console

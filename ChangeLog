@@ -1,4 +1,10 @@
 
+2001-10-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/Console.cs: remove the temporary code in "Console" that
+caused it to call "Platform.Stdio" directly, rather than go through the
+"System.IO.TextWriter" class.
+
 2001-10-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Reflection/*.cs: many new reflection classes.

@@ -1,9 +1,13 @@
 
-2001-10-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods
 for null before passing control to an "internalcall" or "PInvoke" function;
 use "ILType_HasThis" and "ILType_IsConstructor" where appropriate.
+
+* engine/engine.h: add "runtimeType" to "ILClassPrivate"; declare
+"_ILEngineAlloc", "_ILEngineAllocObject", "_ILLookupTypeMatch",
+"_ILMakeCifForConstructor"; add "outOfMemoryObject" to the process.
 
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 

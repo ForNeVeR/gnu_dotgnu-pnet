@@ -79,6 +79,9 @@ struct _tagILExecProcess
 	ILCoder		   *coder;
 	ILUInt32		coderGeneration;
 
+	/* The object to throw when the system runs out of memory */
+	ILObject	   *outOfMemoryObject;
+
 };
 
 /*
@@ -141,8 +144,33 @@ struct _tagILClassPrivate
 	ILUInt32		alignment : 15;		/* Preferred instance alignment */
 	ILUInt32		vtableSize : 16;	/* Size of the vtable */
 	ILMethod      **vtable;				/* Methods within the vtable */
+	ILObject       *runtimeType;		/* Associated runtime type object */
 
 };
+
+/*
+ * Structure of an "internalcall" method table entry.
+ */
+typedef struct
+{
+	const char	   *methodName;
+	const char	   *signature;
+	void           *func;
+
+} ILMethodTableEntry;
+
+/*
+ * Helper macros for defining "internalcall" method tables.
+ */
+#define	IL_METHOD_BEGIN(name)	\
+			ILMethodTableEntry const name[] = {
+#define	IL_METHOD(name,sig,func)	\
+			{(name), (sig), (void *)(func)},
+#define	IL_CONSTRUCTOR(name,sig,func,allocFunc)	\
+			{(name), (sig), (void *)(func)}, \
+			{(name), 0, (void *)(allocFunc)},
+#define	IL_METHOD_END			\
+			{0, 0, 0}};
 
 /*
  * Class information for the CVM coder.
@@ -185,10 +213,42 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal);
 
 /*
+ * Construct the "ffi_cif" structure that is needed to
+ * call a PInvoke or "internalcall" constructor in
+ * allocation mode.  Returns NULL if insufficient memory
+ * for the structure.
+ */
+void *_ILMakeCifForConstructor(ILCoder *coder, ILMethod *method,
+							   int isInternal);
+
+/*
  * Convert a method into executable code.  Returns a pointer
  * to the method entry point or NULL if something is wrong.
  */
 unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method);
+
+/*
+ * Allocate a block of memory and associate it with a specific class.
+ * This will throw an exception if out of memory, and return zero.
+ */
+ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
+						 ILUInt32 size);
+
+/*
+ * Allocate a block of memory for a specific class.  Get the size
+ * from the class information block.
+ */
+ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo);
+
+/*
+ * Find the function for an "internalcall" method.
+ */
+void *_ILFindInternalCall(ILMethod *method, int ctorAlloc);
+
+/*
+ * Match a type against a lookup signature value.
+ */
+int _ILLookupTypeMatch(ILType *type, const char *signature);
 
 #ifdef	__cplusplus
 };

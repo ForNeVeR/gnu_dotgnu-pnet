@@ -493,7 +493,7 @@ static ILObject *ImageToAssembly(ILExecThread *thread, ILImage *image)
  */
 static ILObject *Assembly_GetCallingAssembly(ILExecThread *thread)
 {
-	ILCallFrame *frame = _ILGetCallFrame(thread, 2);
+	ILCallFrame *frame = _ILGetCallFrame(thread, 1);
 	if(frame && frame->method)
 	{
 		return ImageToAssembly(thread, ILProgramItem_Image(frame->method));
@@ -525,7 +525,7 @@ static ILObject *Assembly_GetEntryAssembly(ILExecThread *thread)
  */
 static ILObject *Assembly_GetExecutingAssembly(ILExecThread *thread)
 {
-	ILCallFrame *frame = _ILGetCallFrame(thread, 1);
+	ILCallFrame *frame = _ILGetCallFrame(thread, 0);
 	if(frame && frame->method)
 	{
 		return ImageToAssembly(thread, ILProgramItem_Image(frame->method));

@@ -39,11 +39,11 @@ ALL_LINES=`$* -E "$SRC" | grep '^# ' | \
 for f in $ALL_LINES; do
 	if test -n "$f"; then
 		if test -z "$FILE"; then
-			CHKLINE=`grep EINVAL "$f"`
+			CHKLINE=`grep EINVAL "$f" 2>/dev/null`
 			if test -n "$CHKLINE"; then
 				FILE="$f"
 			else
-				CHKLINE=`grep ENOSYS "$f"`
+				CHKLINE=`grep ENOSYS "$f" 2>/dev/null`
 				if test -n "$CHKLINE"; then
 					FILE="$f"
 				fi

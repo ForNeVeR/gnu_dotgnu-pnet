@@ -1,4 +1,9 @@
 
+2003-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/gen_errno.sh: suppress unnecessary error messages
+	from grep when searching for the correct errno.h.
+
 2003-06-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_internal.h,

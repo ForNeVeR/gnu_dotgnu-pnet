@@ -31,9 +31,13 @@ complete.
 */
 
 public class TestUri : TestCase
- {
+{
 
 	Uri rmsUri, pathEnding, noPathEnding;
+	const String rmsString
+				="ftp://rms@ftp.gnu.org:2538/pub/gnu/?freesoftware=good";
+	const String guileDir= "http://www.gnu.org/software/../software/guile/";
+	const String guileFile= "http://www.gnu.org/software/../software/guile";
 
 	// Constructor.
 	public TestUri(String name)	: base(name)
@@ -44,9 +48,9 @@ public class TestUri : TestCase
 	// Set up for the tests.
 	protected override void Setup()
 	{
-		this.rmsUri = new Uri("ftp://rms@ftp.gnu.org:2538/pub/gnu/?freesoftware=good");
-		this.pathEnding = new Uri("http://www.gnu.org/software/../software/guile/");
-		this.noPathEnding = new Uri("http://www.gnu.org/software/../software/guile");
+		this.rmsUri = new Uri(rmsString);
+		this.pathEnding = new Uri(guileDir);
+		this.noPathEnding = new Uri(guileFile);
 	}
 
 	// Clean up after the tests.
@@ -54,81 +58,70 @@ public class TestUri : TestCase
 	{
 		// Nothing to do here.
 	}
-
-	private bool constructorTested = false;
+
 	public void TestUriConstructor()
 	{
-		try
+		String lasturi = null;
+		try // good constructors
 		{
-			if (!constructorTested) // others depend on this one
-			{
-				String lasturi = null;
-				try // good constructors
-				{
-					Uri myUri = new Uri(lasturi = "ftp://rms@ftp.gnu.org:2538/pub/gnu/?freesoftware=good");
-					myUri = new Uri(lasturi = "http://www.gnu.org/software/../software/guile/");
-					myUri = new Uri(lasturi = "http://www.gnu.org/software/../software/guile");
-				}
-				catch (Exception)
-				{
-					Fail(lasturi.ToString()+" threw an exception it shouldn't have!");
-				}
-			}
+			new Uri(lasturi = rmsString);
+			new Uri(lasturi = guileDir);
+			new Uri(lasturi = guileFile);
+			new Uri(lasturi = "mailto:gnu@gnu.org");
+			new Uri(lasturi = "jabber:gnu@gnu.org/MyPresence");
 		}
-		finally
+		catch (Exception)
 		{
-			constructorTested = true;
+			Fail(lasturi.ToString()+" threw an exception it shouldn't have!");
 		}
 	}
 
 	public void TestUriCanonicalize()
 	{
-		AssertEquals("StripMetaDirectories should keep the ending slash when there is one",
-			     pathEnding.AbsolutePath,
-			     "/software/guile/");
-		AssertEquals("StripMetaDirectories shouldn't have an ending slash when there isn't one",
-			     noPathEnding.AbsolutePath,
-			     "/software/guile");
+		AssertEquals("Should keep the ending slash when there is one",
+				     "/software/guile/", pathEnding.AbsolutePath);
 		
+		AssertEquals("Shouldn't have an ending slash when there isn't one",
+			     	"/software/guile",
+				     noPathEnding.AbsolutePath);
 	}
 
 	public void TestUriCheckHostName()
 	{
 		AssertEquals("www.gnu.org is a DNS name",
-			     Uri.CheckHostName("www.gnu.org"),
-			     UriHostNameType.Dns);
+			     UriHostNameType.Dns,
+			     Uri.CheckHostName("www.gnu.org"));
 		AssertEquals("www.southern.-storm.com.au is not a DNS name",
-			     Uri.CheckHostName("www.southern.-storm.com.au"),
-			     UriHostNameType.Unknown);
+			     UriHostNameType.Unknown,
+			     Uri.CheckHostName("www.southern.-storm.com.au"));
 		AssertEquals("www.southern-storm.com.au is a DNS name",
-			     Uri.CheckHostName("www.southern-storm.com.au"),
-			     UriHostNameType.Dns);
+			     UriHostNameType.Dns,
+			     Uri.CheckHostName("www.southern-storm.com.au"));
 		AssertEquals("127.0.0.1 is an IPv4 address",
-			     Uri.CheckHostName("127.0.0.1"),
-			     UriHostNameType.IPv4);
+			     UriHostNameType.IPv4,
+			     Uri.CheckHostName("127.0.0.1"));
 		AssertEquals(".63.64.201.1 is not an IPv4 address",
-			     Uri.CheckHostName(".63.64.201.1"),
-			     UriHostNameType.Unknown);
+			     UriHostNameType.Unknown,
+			     Uri.CheckHostName(".63.64.201.1"));
 		AssertEquals("207..211.18.4 is not an IPv4 address",
-			     Uri.CheckHostName("207..211.18.4"),
-			     UriHostNameType.Unknown);
+			     UriHostNameType.Unknown,
+			     Uri.CheckHostName("207..211.18.4"));
 
 		// checking IPng
-		/*
+
 		AssertEquals(":F0F0::0 should have bad IPng zerocompress at beginning",
-			     Uri.CheckHostName(":F0F0::0"),
-			     UriHostNameType.Unknown);*/
+			     UriHostNameType.Unknown,
+			     Uri.CheckHostName(":F0F0::0"));
 
 		AssertEquals("::F0F0:0 allows fake zerocompress at beginning",
-			     Uri.CheckHostName("::F0F0:0"),
-			     UriHostNameType.IPv6);
-		/*
+			     UriHostNameType.IPv6,
+			     Uri.CheckHostName("::F0F0:0"));
 		AssertEquals("0:1:2:3:4:5:6:127.0.0.1 has too many elements",
-			     Uri.CheckHostName("0:1:2:3:4:5:6:127.0.0.1"),
-			     UriHostNameType.Unknown);*/
+			     UriHostNameType.Unknown,
+			     Uri.CheckHostName("0:1:2:3:4:5:6:127.0.0.1"));
 		AssertEquals("0:1:2:3:4:5:127.0.0.1 has the right number of elements",
-			     Uri.CheckHostName("0:1:2:3:4:5:127.0.0.1"),
-			     UriHostNameType.IPv6);
+			     UriHostNameType.IPv6,
+			     Uri.CheckHostName("0:1:2:3:4:5:127.0.0.1"));
 	}
 
 	public void TestUriCheckSchemeName()
@@ -224,8 +217,6 @@ public class TestUri : TestCase
 	/*TODO*/
 	}
 
-	/* TODO */
-/*
 	public void TestUriMakeRelative()
 	{
 		Uri gnuphil = new Uri("http://www.gnu.org/philosophy/why-free.html");
@@ -236,9 +227,10 @@ public class TestUri : TestCase
 		Uri debian = new Uri("ftp://distro.ibiblio.org/pub/Linux/distributions/debian/main/");
 		Uri debianrelease = new Uri("ftp://distro.ibiblio.org/pub/Linux/distributions/debian/main/source/Release");
 
-		AssertEquals("Code figures out simple relative Uri correctly (with files)",
+		AssertEquals(
+				"Code figures out simple relative Uri correctly (with files)",
 			     gnuphil.MakeRelative(gnuoreilly),
-			     "../thegnuproject.html");
+			     "../gnu/thegnuproject.html");
 		AssertEquals("notices different schemes when comparing Uris",
 			     mozillaftp.MakeRelative(mozillahttp),
 			     mozillahttp.AbsoluteUri);
@@ -249,20 +241,26 @@ public class TestUri : TestCase
 			debianrelease.MakeRelative(debian), "../");
 		AssertEquals("correctly goes further into subdirectories",
 			debian.MakeRelative(debianrelease), "source/Release");
-	}*/
+	}
 
 	// Parse N/A
 
 	public void TestUriToString()
 	{
-	/*TODO*/
+		Uri uri=new Uri("http://dotgnu.org:80");	
+		AssertEquals("Removing default ports from uris",
+					"http://dotgnu.org/",
+					uri.ToString());
+		uri = new Uri("mailto:developers:secret@dotgnu.org");
+		AssertEquals("Passwords in the uris",
+					"mailto:developers:secret@dotgnu.org",
+					uri.ToString());
 	}
 
 	public void TestUriUnescape()
 	{
 	/*TODO*/
 	}
-
 	public void TestUriAbsolutePath()
 	{
 	/*TODO*/

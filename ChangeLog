@@ -9,6 +9,9 @@
 	* System/Net/IPv6Address.cs, System/Uri.cs: Add a new IPv6Address
 	class and implement IPv6 identification in System.Uri.
 
+	* tests/System/TestUri.cs: Cleanup and uncomment some of the regression
+	tests & add some new tests.
+
 2003-05-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/LicenseContext.cs,

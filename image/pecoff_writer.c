@@ -822,7 +822,7 @@ void ILWriterTextWrite(ILWriter *writer, const void *buffer, unsigned long size)
 	{
 		if(size > 2048)
 		{
-			WriteToImage(writer, buffer, size);
+			WriteToImage(writer, buffer, 2048);
 			size -= 2048;
 			buffer = (const void *)(((char *)buffer) + 2048);
 		}

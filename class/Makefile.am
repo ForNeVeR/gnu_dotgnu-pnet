@@ -1,6 +1,5 @@
 
-SUBDIRS = Accessibility \
-		  Custommarshalers \
+SUBDIRS = Custommarshalers \
 		  System.EnterpriseServices \
 		  System.Configuration.Install \
 		  System.Management \

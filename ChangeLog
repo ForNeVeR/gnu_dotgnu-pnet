@@ -1,3 +1,12 @@
+2002-09-14  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs (ParseAuthority): Eliminated.
+	(CheckHostName): Cleaned up code for IPng, decrementing by proper
+	number for last-element-ipv4, and disallowed parts[0] from being
+	the zero-compress; updated Internet-draft.
+	(UriAuthority()): Construction of sub-struct.
+	(Parse): Using new UriAuthority().
+
 2002-09-06  Francis Rogers  <franny644@comcast.net>
 
 	* System/Net/Sockets/TcpClient.cs: New non-standard class.

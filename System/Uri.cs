@@ -37,7 +37,7 @@ global TODO:
 
 public class Uri : MarshalByRefObject
 {
-
+
 	// the capital letters are between 0x41 and 0x5A
 	// the lowercase letters are between 0x61 and 0x7A
 	// the numbers are between 0x30 and 0x39
@@ -57,18 +57,23 @@ public class Uri : MarshalByRefObject
 	public static readonly String UriSchemeNntp = "nntp";
 
 	// end magic strings
-
+
 	// state. mostly the same as UriBuilder
 
 
-	// here's some of chiraz's extras
-	// note that I did not make them capitalised; I do not want namespace conflict
+	// here are some of chiraz's extras
+	// note that I did not make them capitalised; I do not want
+	// namespace conflict
 	// use this.path instead of absolutePath
-	private String          absoluteUri;  // the absolute uri to the resource as originally passed to the constructor (don't use)
-	// is true if the user had already escaped the URL before it was passed
-	// into the constructor. (escaped was true).
-	// however, if the user did escape it, but didn't tell the constructor, it
-	// is up to the system to detect whether or not it was escaped.
+	private String          absoluteUri;  // the absolute uri to the
+					      // resource as originally
+					      // passed to the constructor
+					      // (don't use)
+	// is true if the user had already escaped the URL before it was
+	// passed into the constructor. (escaped was true).
+	// however, if the user did escape it, but didn't tell the
+	// constructor, it is up to the system to detect whether or not
+	// it was escaped.
 	private bool		userEscaped;
 	private UriHostNameType hostNameType;
 	// authority, isdefaultport, isloopback
@@ -98,7 +103,7 @@ public class Uri : MarshalByRefObject
 	// also known as hash
 
 	// end of state
-
+
 	// Constructors.
 	public Uri(String uriString) : this(uriString, false)
 	{
@@ -136,7 +141,8 @@ public class Uri : MarshalByRefObject
 		userEscaped = dontEscape;
 
 		int newlastchar;
-		for (newlastchar = myBaseUri.Length; myBaseUri[--newlastchar] == '/';)
+		for (newlastchar = myBaseUri.Length;
+		     myBaseUri[--newlastchar] == '/';)
 			; // empty body
 		myBaseUri = myBaseUri.Substring(0, newlastchar + 1);
 
@@ -149,7 +155,7 @@ public class Uri : MarshalByRefObject
 		this.Parse();
 		this.Canonicalize();
 	}
-
+
 	// methods
 	protected virtual void Canonicalize()
 	{
@@ -161,8 +167,9 @@ public class Uri : MarshalByRefObject
 			this.path = this.path.Replace("//", "/");
 		}
 
+		// find out if .. dirs are present
 		if (path.IndexOf("/../") > -1 || path.EndsWith("/..")
-		    || path.IndexOf("/./") > -1 || path.EndsWith("/.")) // .. dirs present
+		    || path.IndexOf("/./") > -1 || path.EndsWith("/.")) 
 		{
 			path = StripMetaDirectories(path);
 		}
@@ -178,20 +185,31 @@ public class Uri : MarshalByRefObject
 			path = "/";
 	}
 
-	// The following takes . or .. directories out of an absolute path.
-	// Throws UriFormatException if the ..s try to extend beyond the root dir.
+	// The following takes . or .. directories out of an absolute
+	// path. Throws UriFormatException if the ..s try to extend
+	// beyond the root dir.
 	private static String StripMetaDirectories(String oldpath)
 	{
+		// use toBeRemoved when you detect a .., and need to
+		// remove previous directories because of it. i.e.,
+		// /gd/gnuorg/../.. will (going backwards) make
+		// toBeRemoved=2 on the .. couple, then decrement it
+		// by deleting gnuorg and gd
 		int toBeRemoved = 0;
-		String[] dirs = oldpath.Split('/'); // in abspath, dirs[0] is ""
-		// the scanner will set not-shown to "" to make the tests at the end
-		// faster
-		for (int curDir = dirs.Length; --curDir >= 1;) // scan all but 0
+
+		// in abspath, dirs[0] is ""
+		String[] dirs = oldpath.Split('/');
+
+		// the scanner will set not-shown to "" to make the
+		// tests at the end faster
+		// scan all but 0
+		for (int curDir = dirs.Length; --curDir >= 1;)
 		{
 			if (dirs[curDir] == "..")
 			{
 				++toBeRemoved;
-				dirs[curDir] = ""; // always removed w/o affecting toBeRemoved
+				// removed w/o affecting toBeRemoved
+				dirs[curDir] = "";
 			}
 			else if (dirs[curDir] == ".")
 				dirs[curDir] = ""; // doesn't affect anything
@@ -202,8 +220,11 @@ public class Uri : MarshalByRefObject
 			}
 			// if normal state (no .., normal dir) do nothing
 		}
+
 		if (toBeRemoved > 0) // wants to delete root
-			throw new UriFormatException(S._("Arg_UriPathAbs"));
+			throw new UriFormatException
+			  (S._("Arg_UriPathAbs"));
+
 		StringBuilder newpath = new StringBuilder(oldpath.Length);
 		foreach (String dir in dirs)
 			if (dir.Length > 0) // visible?
@@ -221,7 +242,8 @@ public class Uri : MarshalByRefObject
 		bool isDns = true;
 		foreach (String tok in name.Split('.'))
 		{
-			if (!Char.IsLetterOrDigit(tok, 0) || !Char.IsLetterOrDigit(tok, tok.Length - 1)
+			if (!Char.IsLetterOrDigit(tok, 0)
+			    || !Char.IsLetterOrDigit(tok, tok.Length - 1)
 			    || !CharsAreAlnumDash(tok, 1, tok.Length - 2))
 			{
 				isDns = false;
@@ -231,7 +253,8 @@ public class Uri : MarshalByRefObject
 		if (isDns)
 			return UriHostNameType.Dns;
 
-		// TODO: make this more efficient (hint: IPAddress is in same assembly)
+		// TODO: make this more efficient (hint: IPAddress is in
+		// same assembly)
 		try
 		{
 			System.Net.IPAddress.Parse(name);
@@ -242,47 +265,74 @@ public class Uri : MarshalByRefObject
 			// not IPv4
 		}
 
-		// IPv6, see http://search.ietf.org/internet-drafts/draft-ietf-ipngwg-addr-arch-v3-07.txt
+		// IPv6, see http://search.ietf.org/internet-drafts/draft-ietf-ipngwg-addr-arch-v3-09.txt
 		// section 2.2, page 4, for my source in implementation
+		// TODO: change to some IPng class/struct
 		try
 		{
 			String[] parts = name.Split(':');
-			int dex;
-			if (parts.Length <= 8) // 128-bit, maybe IPv4 last 2 wds
-				dex = parts.Length;
-			else
+			int dex = parts.Length;
+
+			// 128-bit. The spec allows the last two words
+			// to be specified by the old IPv4 method
+			// can't be more than 8 parts
+			if (parts.Length > 8)
 				throw new FormatException();
 
+			// presence of . in the last element means it
+			// *must* be the special IPv4
 			bool usingIPv4maybe = false;
-			if (parts[parts.Length - 1].IndexOf('.') >= 0) // 2wds?
+			if (parts[parts.Length - 1].IndexOf('.') >= 0)
 			{
-				--dex;
+				// only 6 to check now
+				dex -= 2;
 				usingIPv4maybe = true;
 			}
 
+			// *once* in an IPv6 addr, you can specify 0
+			// across a range by leaving the part blank,
+			// i.e. ::0, ::, F1F0::207.241.30.1
 			bool usedZeroCompress = false;
 			while (--dex >= 0) // check all hexes
 			{
 				int pos = 0;
-				if (parts[dex].Length == 0) // zero compress?
+				// handle special case to avoid parsing
+				// if we had a zerocompress in pos 1
+				if (dex == 0
+				    && parts[dex].Length == 0
+				    && parts[dex].Length == 0)
+					continue;
+
+				// check for 0 compress
+				if (parts[dex].Length == 0 && dex != 0)
 				{
+					// may only use once
 					if (usedZeroCompress)
 						throw new FormatException();
 					else
 						usedZeroCompress = true;
 				}
+
 				parseHexWord(parts[dex], ref pos);
-				if (pos != parts[dex].Length) // some bad chars in seg
+
+				// if parseHexWord doesn't move pos to
+				// the end, there are bad chars
+				if (pos != parts[dex].Length)
 					throw new FormatException();
 			}
-			if (!usedZeroCompress &&
-				((usingIPv4maybe && parts.Length < 7) ||
-				(!usingIPv4maybe && parts.Length < 8))
-			   ) // not enough items
+
+			// we should have had enough items!
+			if (!usedZeroCompress
+			    && ((usingIPv4maybe && parts.Length < 7)
+				|| (!usingIPv4maybe && parts.Length < 8)))
 				throw new FormatException();
+
+			// check the last element if believed IPv4
 			if (usingIPv4maybe)
 				// will throw FormatException if bad
 				System.Net.IPAddress.Parse(parts[parts.Length - 1]);
+
+			// if we got this far, it's fine
 			return UriHostNameType.IPv6;
 		}
 		catch (FormatException)
@@ -293,8 +343,11 @@ public class Uri : MarshalByRefObject
 		return UriHostNameType.Unknown;
 	}
 
-	// check if characters in a String in a given range are alphanumeric or -.
-	private static bool CharsAreAlnumDash(String checkthis, int first, int last)
+	// check if characters in a String in a given range are
+	// alphanumeric or -.
+	private static bool CharsAreAlnumDash(String checkthis,
+					      int first,
+					      int last)
 	{
 		char check;
 		for (; first <= last; ++first)
@@ -364,7 +417,9 @@ public class Uri : MarshalByRefObject
 	public override bool Equals(Object comparand)
 	{
 		Uri rurib;
-		if (comparand == null || (!(comparand is String) && !(comparand is Uri)))
+		if (comparand == null
+		    || (!(comparand is String)
+			&& !(comparand is Uri)))
 			return false;
 		else if (comparand is String)
 			rurib = new Uri((String)comparand);
@@ -375,9 +430,10 @@ public class Uri : MarshalByRefObject
 
 		// do not check query and fragment
 		// this makes the boolean
-		return (String.Equals(this.Host, rurib.Host) &&
-			  String.Equals(this.AbsolutePath, rurib.AbsolutePath) &&
-			  String.Equals(this.Scheme, rurib.Scheme));
+		return (String.Equals(this.Host, rurib.Host)
+			&& String.Equals(this.AbsolutePath,
+					 rurib.AbsolutePath)
+			&& String.Equals(this.Scheme, rurib.Scheme));
 	}
 
 	protected virtual void Escape()
@@ -435,9 +491,12 @@ public class Uri : MarshalByRefObject
 		case UriPartial.Path:
 			return this.ToStringNoFragQuery();
 		case UriPartial.Authority:
-			return String.Concat(this.scheme, this.schemeDelim(), this.Authority);
+			return String.Concat(this.scheme,
+					     this.schemeDelim(),
+					     this.Authority);
 		case UriPartial.Scheme:
-			return String.Concat(this.scheme, this.schemeDelim());
+			return String.Concat(this.scheme,
+					     this.schemeDelim());
 		default:
 			throw new ArgumentException(S._("Arg_UriPartial"));
 		}
@@ -527,17 +586,17 @@ public class Uri : MarshalByRefObject
 
 	protected static bool IsExcludedCharacter(char character)
 	{
-		return (character < 0x20 || character > 0x7F ||
-			"<>#%\"{}|\\^[]`".IndexOf(character) >= 0);
+		return (character < 0x20 || character > 0x7F
+			|| "<>#%\"{}|\\^[]`".IndexOf(character) >= 0);
 	}
 
 	public static bool IsHexDigit(char character)
 	{
 		return
 		(
-			(character >= '0' && character <= '9') ||
-			(character >= 'A' && character <= 'F') ||
-			(character >= 'a' && character <= 'f')
+			(character >= '0' && character <= '9')
+			|| (character >= 'A' && character <= 'F')
+			|| (character >= 'a' && character <= 'f')
 		);
 	}
 
@@ -621,7 +680,8 @@ public class Uri : MarshalByRefObject
 		int curpos = absoluteUri.IndexOf(':');
 		int nextpos = 0;
 
-		// Set all to nothing just in case info was left behind somewhere somehow...
+		// Set all to nothing just in case info was left behind
+		// somewhere somehow... TODO remove
 		path = "";
 		fragment = "";
 		host = "";
@@ -635,15 +695,17 @@ public class Uri : MarshalByRefObject
 		{
 			String maybescheme = absoluteUri.Substring(0, curpos).ToLower();
 
-			if (!CheckSchemeName(maybescheme)) // might be no-scheme
+			// not giving a scheme is equivalent to "http"
+			if (!CheckSchemeName(maybescheme))
 			{
 				try
 				{
-					this.ParseAuthority(this.scheme);
+					new UriAuthority(this.scheme);
 				}
 				catch (UriFormatException) // not authority
 				{
-					throw new UriFormatException(S._("Arg_UriScheme"));
+					throw new UriFormatException
+					  (S._("Arg_UriScheme"));
 				}
 				// else is authority
 				this.scheme = "http";
@@ -652,7 +714,8 @@ public class Uri : MarshalByRefObject
 			else // ok, it's a real scheme
 			{
 				// some Uris don't use the // after scheme:
-				if (String.Compare(AbsoluteUri, curpos, SchemeDelimiter, 0, 3) == 0)
+				if (String.Compare(AbsoluteUri, curpos,
+						   SchemeDelimiter, 0, 3) == 0)
 					curpos += 3;
 				else
 					++curpos;
@@ -667,12 +730,16 @@ public class Uri : MarshalByRefObject
 		// curpos is now at the authority
 
 		// put nextpos post-authority
-		nextpos = absoluteUri.IndexOfAny(new char[]{'/', '?', '#'}, curpos);
+		nextpos = absoluteUri.IndexOfAny(new char[]{'/', '?', '#'},
+						 curpos);
 		if (nextpos < 0)
 			nextpos = absoluteUri.Length;
 
-		// even if the "scheme" was an authority, we have to redo
-		UriAuthority tryauth = ParseAuthority(absoluteUri.Substring(curpos, nextpos - curpos));
+		// even if the "scheme" was an authority, we have to
+		// redo because we cut off the potential port (:)
+		UriAuthority tryauth = new UriAuthority
+		  (absoluteUri.Substring(curpos, nextpos - curpos));
+
 		this.userinfo = tryauth.userinfo;
 		this.host = tryauth.hostname;
 		this.port = tryauth.port;
@@ -711,54 +778,12 @@ public class Uri : MarshalByRefObject
 		}
 		else // user should have escaped
 		{
-			if (needsEscaping(path) ||
-			    needsEscaping(query) ||
-			    needsEscaping(fragment))
+			if (needsEscaping(path)
+			    || needsEscaping(query)
+			    || needsEscaping(fragment))
 				throw new UriFormatException(S._("Arg_UriNotEscaped"));
 		}
 
-	}
-
-	// help for Parse()!
-	// this must depend entirely on the argument
-	private UriAuthority ParseAuthority(String authority)
-	{
-		UriAuthority retval;
-		int interimpos1=0, interimpos2=0;
-
-		interimpos1 = authority.IndexOf('@');
-		if (interimpos1 > 0) // there is userinfo
-		{
-			retval.userinfo = authority.Substring(0, interimpos1 - 1);
-			interimpos2 = interimpos1 + 1;
-		}
-
-		interimpos1 = authority.IndexOf(':', interimpos2);
-		if (interimpos1 > 0) // there is a port
-		{
-			retval.hostname = authority.Substring(interimpos2, interimpos1 - interimpos2);
-			try
-			{
-				// technically, ports are 16 bit, but...
-				retval.port = Int32.Parse(authority.Substring(interimpos1 + 1));
-			}
-			catch (FormatException fe) { retval.port = -1; }
-			catch (OverflowException oe)
-			{
-				throw new UriFormatException(S._("Arg_UriPort"));
-			}
-		}
-		else // no port
-		{
-			retval.hostname = authority.Substring(interimpos2);
-			retval.port = -1;
-		}
-
-		// now test host, standard says must be IPv4 or DNS
-		retval.hosttype = CheckHostName(retval.hostname);
-		if (retval.hosttype != UriHostNameType.Dns &&
-			retval.hosttype != UriHostNameType.IPv4)
-			throw new UriFormatException(S._("Arg_UriHostName"));
 	}
 
 	public override String ToString()
@@ -874,7 +899,7 @@ public class Uri : MarshalByRefObject
 		else
 			return 0;
 	}
-
+
 	// properties
 	public String AbsolutePath
 	{
@@ -960,10 +985,11 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
-			return (String.Equals(this.host, "localhost") ||
-				// according to System.Net.IPAddress, anything in 127.X.Y.Z
+			return (String.Equals(this.host, "localhost")
+				// according to System.Net.IPAddress,
+				// anything in 127.X.Y.Z
 				// is loopback. Maybe change this to comply.
-				String.Equals(this.host, "127.0.0.1"));
+				|| String.Equals(this.host, "127.0.0.1"));
 		}
 	}
 
@@ -1050,7 +1076,7 @@ public class Uri : MarshalByRefObject
 		}
 	}
 
-
+
 	// my junk
 
 	// to group the authority stuff together
@@ -1059,6 +1085,67 @@ public class Uri : MarshalByRefObject
 		public String userinfo, hostname;
 		public int port;
 		public UriHostNameType hosttype;
+
+		public UriAuthority(String authority)
+		{
+			int interimpos1=0, interimpos2=0;
+
+			// check for userinfo delimiter
+			interimpos1 = authority.IndexOf('@');
+			if (interimpos1 > 0)
+			{
+				this.userinfo = authority.Substring
+				  (0, interimpos1 - 1);
+
+				interimpos2 = interimpos1 + 1;
+			}
+
+			// check remainder for an explicit port
+			interimpos1 = authority.IndexOf(':', interimpos2);
+			if (interimpos1 > 0)
+			{
+				this.hostname = authority.Substring
+					(interimpos2, interimpos1
+					 - interimpos2);
+				try
+				{
+					// technically, ports are 16 bit,
+					// but...
+					this.port = Int32.Parse
+					  (authority.Substring
+					   (interimpos1 + 1));
+				}
+				// this is not a real port, just use
+				// default
+				catch (FormatException fe)
+				{
+					this.port = -1;
+				}
+				// the number is too big
+				catch (OverflowException oe)
+				{
+					throw new UriFormatException
+					  (S._("Arg_UriPort"));
+				}
+			}
+			else // no port indicated
+			{
+				// use rest of string
+				this.hostname = authority.Substring
+				  (interimpos2);
+
+				this.port = -1;
+			}
+
+			// now test host, standard says must be IPv4 or DNS
+			this.hosttype = CheckHostName(this.hostname);
+			if (this.hosttype != UriHostNameType.Dns
+			    && this.hosttype != UriHostNameType.IPv4)
+			{
+				throw new UriFormatException
+				  (S._("Arg_UriHostName"));
+			}
+		}
 	}
 
 	// use this to get the default port for the scheme

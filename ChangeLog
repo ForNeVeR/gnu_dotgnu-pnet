@@ -1,4 +1,9 @@
 
+2003-08-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_types.c (MD5HashType): bug in the value used for
+	hashing primitive element types (bug #4528).
+
 2003-08-10  CH Gowri Kumar  <gkumar@csa.iisc.ernet.in>
 
 	* engine/Makefile.am, engine/cvm.c, engine/cvm_config.h,

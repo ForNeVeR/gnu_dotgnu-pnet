@@ -1164,7 +1164,7 @@ static void MD5HashType(ILMD5Context *md5, ILType *type)
 	if(ILType_IsPrimitive(type))
 	{
 		/* Hash a primitive type */
-		MD5HashAddChar(md5, ILType_ToElement(md5));
+		MD5HashAddChar(md5, ILType_ToElement(type));
 	}
 	else if(ILType_IsValueType(type))
 	{

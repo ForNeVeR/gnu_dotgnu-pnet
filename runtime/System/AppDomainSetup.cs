@@ -23,6 +23,8 @@ namespace System
 
 #if !ECMA_COMPAT
 
+using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 [Serializable]
@@ -102,11 +104,24 @@ public sealed class AppDomainSetup : IAppDomainSetup
 			{
 				get
 				{
-					return dynamicBase;
+					if(dynamicBase == null)
+					{
+						return null;
+					}
+
+					if(Path.IsPathRooted(dynamicBase))
+					{
+						// absolute path
+						return dynamicBase;
+					}
+
+					return Path.Combine(ApplicationBase, dynamicBase);
 				}
 				set
 				{
-					dynamicBase = value;
+					// make sure we don't have the same path for every run
+					dynamicBase = Path.Combine(value, 
+								applicationName.GetHashCode().ToString("X"));
 				}
 			}
 	public String LicenseFile

@@ -115,6 +115,11 @@ void JavaGenLoadArg(ILGenInfo *info, unsigned varNum,
 				    ILMachineType type);
 
 /*
+ * Output a "ret" instruction, taking the address from a specific local.
+ */
+void JavaGenRet(ILGenInfo *info, unsigned varNum);
+
+/*
  * Get the number of stack positions occupied by a machine type.
  */
 int JavaGenTypeSize(ILMachineType type);

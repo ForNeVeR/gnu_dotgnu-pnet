@@ -464,6 +464,15 @@ void JavaGenLoadArg(ILGenInfo *info, unsigned varNum,
 	LoadLocal(info, info->javaInfo->localMap[varNum], type);
 }
 
+void JavaGenRet(ILGenInfo *info, unsigned varNum)
+{
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "\tret\t%u\n",
+				info->javaInfo->localMap[varNum + info->javaInfo->numArgs]);
+	}
+}
+
 int JavaGenTypeSize(ILMachineType type)
 {
 	if(type == ILMachineType_Void)

@@ -333,7 +333,9 @@ public class Assembly : IClrProgramItem
 				}
 				else
 				{
-					assembly = LoadFromName(assemblyString, out error, caller);
+					AssemblyName name = AssemblyName.Parse(assemblyString);
+					assembly = LoadFromName(name.Name, out error, 
+											caller);
 				}
 				if(error == LoadError_OK)
 				{
@@ -379,7 +381,8 @@ public class Assembly : IClrProgramItem
 				}
 				else
 				{
-					assembly = LoadFromName(assemblyFile, out error,
+					AssemblyName name = AssemblyName.Parse(assemblyFile);
+					assembly = LoadFromName(name.Name, out error,
 												 caller);
 				}
 				if(error == LoadError_OK)
@@ -478,12 +481,14 @@ public class Assembly : IClrProgramItem
 												Assembly caller)
 			{
 				Assembly assembly;
+				AssemblyName name;
 				int error;
 				if(partialName == null)
 				{
 					throw new ArgumentNullException("partialName");
 				}
-				assembly = LoadFromName(partialName, out error, caller);
+				name = AssemblyName.Parse(partialName);
+				assembly = LoadFromName(name.Name, out error, caller);
 				if(error == LoadError_OK)
 				{
 					return assembly;

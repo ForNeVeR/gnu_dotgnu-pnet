@@ -376,6 +376,23 @@ public sealed class AssemblyName
 				version = new Version(major, minor, build, revision);
 			}
 
+	static internal AssemblyName Parse(String assemblyName)
+			{
+				AssemblyName retval = new AssemblyName();
+				if(assemblyName.IndexOf(",") == -1)
+				{
+					retval.Name = assemblyName;
+				}
+				else
+				{
+					// TODO : Parse the rest of the information
+					// as well. Version maybe important .
+					retval.Name = assemblyName.Substring(0,
+										assemblyName.IndexOf(","));
+				}
+				return retval;
+			}
+
 #if CONFIG_SERIALIZATION
 
 	// Get the serialization data for this object.

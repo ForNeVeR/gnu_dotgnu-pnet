@@ -250,27 +250,12 @@ ILNode_GenValue(ILNode_VaArg)
 			"[.library]System.ArgIterator::GetNextArg()");
 
 	/* Unpack the typed reference using the natural passing type */
-	if(ILTypeStripPrefixes(node->type) != ILType_Float)
-	{
-		naturalType = ILTypeStripPrefixes
-			(CFunctionNaturalType(info, node->type, 1));
-		ILGenClassToken
-			(info, IL_OP_REFANYVAL, ILTypeToClass(info, naturalType));
-		machineType = ILTypeToMachineType(naturalType);
-		ILGenLoadManaged(info, machineType, naturalType);
-	}
-	else
-	{
-		/* Use the "Unpack" method on the "OpenSystem.C.LongDouble"
-		   type to unpack "native float" arguments */
-		if(info->asmOutput)
-		{
-			fputs("\trefanyval\tOpenSystem.C.LongDouble\n", info->asmOutput);
-			fputs("\tcall\tinstance native float OpenSystem.C.LongDouble::"
-						"Unpack()\n", info->asmOutput);
-		}
-		machineType = ILMachineType_NativeFloat;
-	}
+	naturalType = ILTypeStripPrefixes
+		(CFunctionNaturalType(info, node->type, 1));
+	ILGenClassToken
+		(info, IL_OP_REFANYVAL, ILTypeToClass(info, naturalType));
+	machineType = ILTypeToMachineType(naturalType);
+	ILGenLoadManaged(info, machineType, naturalType);
 
 	/* Return the natural machine type to the caller, which will take
 	   care of casting it to the final type that was requested */
@@ -510,36 +495,4 @@ ILNode_EndsInReturnImpl(ILNode_AsmStmt)
 		return IL_ENDS_IN_RETURN;
 	}
 	return 0;
-}
-
-/*
- * Perform semantic analysis for the "pack native float" expression.
- */
-ILNode_CSemAnalysis(ILNode_NativeFloatPack)
-{
-	/* Nothing to do: this node is synthesised */
-	return CSemValueDefault;
-}
-
-/*
- * Get the type of a "pack native float" expression.
- */
-ILNode_GetType(ILNode_NativeFloatPack)
-{
-	return ILMachineType_ManagedValue;
-}
-
-/*
- * Generate value code for the "pack native float" expression.
- */
-ILNode_GenValue(ILNode_NativeFloatPack)
-{
-	ILNode_GenValue(node->expr, info);
-	ILGenNewObj(info, "OpenSystem.C.LongDouble", "(native float)");
-	return ILMachineType_ManagedValue;
-}
-JavaGenValue(ILNode_NativeFloatPack)
-{
-	/* Never called: nothing to do here */
-	return ILMachineType_ManagedValue;
 }

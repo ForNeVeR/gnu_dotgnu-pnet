@@ -514,7 +514,7 @@ static ILNode *MulPtrSize(ILNode *node, CSemValue value, ILType *elemType)
 	}
 	else
 	{
-		/* The size is dynamic: check for the simple 0 and 1 cases */
+		/* The size is dynamic: check for the simple 0 case */
 		if(evalValue && IsSmallIntegerMachineType(evalValue->valueType))
 		{
 			if(evalValue->un.i4Value == 0)
@@ -522,10 +522,6 @@ static ILNode *MulPtrSize(ILNode *node, CSemValue value, ILType *elemType)
 				newNode = ILNode_Int_create(0, 0, 0);
 				CGenCloneLine(newNode, node);
 				return newNode;
-			}
-			else if(evalValue->un.i4Value == 1)
-			{
-				return node;
 			}
 		}
 		newNode = ILNode_Mul_create(node, ILNode_SizeOfType_create(elemType));
@@ -1054,11 +1050,6 @@ static CSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 			if(elemSize != 1)
 			{
 				elemType = ILTypeStripPrefixes(elemType);
-				if(elemType == ILType_Float)
-				{
-					elemType = ILFindNonSystemType
-						(info, "LongDouble", "OpenSystem.C");
-				}
 				elemClass = ILTypeToClass(info, elemType);
 				if(yyisa(node, ILNode_PreInc))
 				{

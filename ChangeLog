@@ -1,4 +1,14 @@
 
+2004-02-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_oper.tc (MulPtrSize): fix a bug where 1 * sizeof(type)
+	was being converted into 1 instead of sizeof(type) if "type"
+	was dynamic in size.
+
+	* cscc/c/c_builtin.tc, cscc/c/c_defs.tc, cscc/c/c_internal.c,
+	cscc/c/c_invoke.tc, cscc/c/c_library.c: remove the remaining
+	references to the obsolete "OpenSystem.C.LongDouble" type.
+
 2004-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_typeout.c, cscc/c/c_types.c, doc/c_language_abi.html:

@@ -348,7 +348,6 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 {
 	char *code;
 }
-%node ILNode_NativeFloatPack ILNode_UnaryExpression
 %node ILNode_CLocalVar ILNode_LocalVar =
 {
 	ILType *type;

@@ -186,17 +186,7 @@ void CGenSizeOf(ILGenInfo *info, ILType *type)
 	}
 	else
 	{
-		type = ILTypeStripPrefixes(type);
-		if(type == ILType_Float)
-		{
-			/* We need to use a special value type to measure
-			   native floats, because the CLS doesn't have an
-			   appropriate type that we can measure directly */
-			type = ILFindNonSystemType(info, "LongDouble", "OpenSystem.C");
-			ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
-							ILTypeToClass(info, type));
-		}
-		else if(ILType_IsPrimitive(type) || ILType_IsValueType(type))
+		if(ILType_IsPrimitive(type) || ILType_IsValueType(type))
 		{
 			/* Calculate the size of the underlying value type */
 			ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,

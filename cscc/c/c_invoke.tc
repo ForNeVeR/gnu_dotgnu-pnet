@@ -239,20 +239,11 @@ static ILType *BuildVarargCallSite(ILGenInfo *info,
 	for(paramNum = 0; paramNum < numArgs; ++paramNum)
 	{
 		type = CFunctionNaturalType(info, CSemGetType(args[paramNum].value), 1);
-		if(type != ILType_Float)
-		{
-			/* Use "CCastNode" to prevent "pointer->integer" warnings
-			   that are not important in this context */
-			CCastNode(info, args[paramNum].node, args[paramNum].parent,
-					  args[paramNum].value, type);
-		}
-		else
-		{
-			/* "native float" values need to be handled carefully */
-			*(args[paramNum].parent) = ILNode_NativeFloatPack_create
-					(args[paramNum].node);
-			CGenCloneLine(*(args[paramNum].parent), args[paramNum].node);
-		}
+
+		/* Use "CCastNode" to prevent "pointer->integer" warnings
+		   that are not important in this context */
+		CCastNode(info, args[paramNum].node, args[paramNum].parent,
+				  args[paramNum].value, type);
 		if(!ILTypeAddParam(info->context, signature, type))
 		{
 			CCOutOfMemory();

@@ -128,7 +128,7 @@ public class ListBox : ListControl
  			result = List.Add(value);
  			if(this.owner != null)
 			{
-				this.owner.Invalidate();
+				this.owner.PaintItem(result);
 				this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
 				this.owner.CalculateScrollbars();
 			}
@@ -291,11 +291,15 @@ public class ListBox : ListControl
  		public int Add(int value)
  		{
  			int result;
- 			result = List.Add(value);
+ 			
+			result = List.Add(value);
  			if(this.owner != null)
+			{
 				this.owner.PaintItem(value);
-			if(this.owner != null && !this.owner.suppressEvents)
-				this.owner.FireSelectedIndexChanged();
+				if(!this.owner.suppressEvents)
+					this.owner.FireSelectedIndexChanged();
+			}
+			
  			return result;
  		}
 		
@@ -315,10 +319,10 @@ public class ListBox : ListControl
 			{
 				foreach(object o in values)
 					this.owner.PaintItem((int) o);
+			
+				if(!this.owner.suppressEvents)
+					this.owner.FireSelectedIndexChanged();
 			}
-
-			if(this.owner != null && !this.owner.suppressEvents)
-				this.owner.FireSelectedIndexChanged();
  		}
 
  		public virtual void Clear()
@@ -326,10 +330,12 @@ public class ListBox : ListControl
  			List.Clear();
 
 			if(this.owner != null)
+			{
  				this.owner.RedrawList();
 
-			if(this.owner != null && !this.owner.suppressEvents)
-				this.owner.FireSelectedIndexChanged();
+				if(!this.owner.suppressEvents)
+					this.owner.FireSelectedIndexChanged();
+			}
  		}
 
  		public bool Contains(Object value)
@@ -346,20 +352,24 @@ public class ListBox : ListControl
  		{
  			List.Insert(index, value);
 			if(this.owner != null)
+			{
  				this.owner.PaintItem((int) value);
 
-			if(this.owner != null && !this.owner.suppressEvents)
-				this.owner.FireSelectedIndexChanged();
+				if(!this.owner.suppressEvents)
+					this.owner.FireSelectedIndexChanged();
+			}
  		}
 		
  		public void Remove(object value)
  		{
  			List.Remove(value);
 			if(this.owner != null)
+			{
  				this.owner.PaintItem((int) value);
 
-			if(this.owner != null && !this.owner.suppressEvents)
-				this.owner.FireSelectedIndexChanged();
+				if(!this.owner.suppressEvents)
+					this.owner.FireSelectedIndexChanged();
+			}
  		}
 
  		public void RemoveAt(int index)
@@ -367,10 +377,12 @@ public class ListBox : ListControl
 			int value = (int) List[index];
  			List.RemoveAt(index);
 			if(this.owner != null)
+			{
 				this.owner.PaintItem(value);
 
-			if(this.owner != null && !this.owner.suppressEvents)
-				this.owner.FireSelectedIndexChanged();
+				if(!this.owner.suppressEvents)
+					this.owner.FireSelectedIndexChanged();
+			}
  		}
 
 	}; // class ListBox.SelectedIndexCollection
@@ -649,16 +661,17 @@ public class ListBox : ListControl
 		}
 	}
 
-	[TODO]
 	public bool MultiColumn
 	{
 		get
 		{
-			return false;
+			return this.multiColumn;
 		}
 
 		set
 		{
+			this.multiColumn = value;
+			this.Redraw();
 		}
 	}
 
@@ -826,6 +839,19 @@ public class ListBox : ListControl
 			return false;
 		}
 
+		set
+		{
+		}
+	}
+	
+	[TODO]
+	public bool IntegralHeight
+	{
+		get
+		{
+			return true;
+		}
+		
 		set
 		{
 		}
@@ -1072,7 +1098,9 @@ public class ListBox : ListControl
 	private SolidBrush backgroundBrush;
 	private SolidBrush disabledBrush;
 	private int focusedItem = 0;
+	private Timer vScrollTimer;
 	internal bool suppressEvents = false;
+	private bool suppressDraw = false;
 	
 	// Used for control-dragging in MultiExtended mode.
 	private SelectedIndexCollection prevSelectedIndices;
@@ -1085,6 +1113,7 @@ public class ListBox : ListControl
 	internal SelectedIndexCollection selectedIndices;
 	private SelectedObjectCollection selectedItems;
 	private bool horizontalScrollbar = false;
+	private bool multiColumn = false;
 
 	// Constructor
 	public ListBox()
@@ -1117,6 +1146,11 @@ public class ListBox : ListControl
 		this.PositionControls();
 		this.CalculateScrollbars();
 		
+		this.vScrollTimer = new Timer();
+		this.vScrollTimer.Tick += new EventHandler(this.VScrollTick);
+		this.vScrollTimer.Interval = 1;
+		this.vScrollTimer.Stop();
+
 		this.vertScrollbar.Scroll += new ScrollEventHandler(this.OnVScroll);
 		this.vertScrollbar.ValueChanged += new EventHandler(this.OnVValueChanged);
 		this.horizScrollbar.Scroll += new ScrollEventHandler(this.OnHScroll);
@@ -1303,12 +1337,6 @@ public class ListBox : ListControl
 	{
 		Rectangle listArea = this.ListArea;
 	
-		// Repaint the background
-		if(this.Enabled)
-			g.FillRectangle(this.backgroundBrush, listArea);
-		else
-			g.FillRectangle(this.disabledBrush, listArea);
-
 		// Redraw the items
 		Region oldClip = g.Clip;
 		g.Clip = new Region(listArea);
@@ -1325,15 +1353,13 @@ public class ListBox : ListControl
 			this.vertScrollbar.Visible = false;
 		else
 		{
-			//TODO: Crashes the ScrollBar
-//			this.vertScrollbar.Maximum = data.Count;
-//			this.vertScrollbar.LargeChange = NumItemsVisible;
+			this.vertScrollbar.Maximum = data.Count;
+			this.vertScrollbar.LargeChange = NumItemsVisible;
 		}
 		
 		// Set up the horizontal scrollbar
 		this.horizScrollbar.Maximum = this.LongestItemWidth;
-		//TODO: Crashes the ScrollBar
-		//this.horizScrollbar.LargeChange = this.listArea.Width;
+		this.horizScrollbar.LargeChange = listArea.Width;
 	}
 	
 	protected override void OnBorderStyleChanged(EventArgs e)
@@ -1434,11 +1460,34 @@ public class ListBox : ListControl
 	
 	private void PaintItem(Graphics g, int dataIndex)
 	{
+		if(this.suppressDraw)
+			return;
+
+		Rectangle realItemRect = this.GetItemRect(dataIndex);
 		IList data = (IList) base.dataSource;
+
+		Brush textBrush = SystemBrushes.WindowText;
+
+		// Is this item selected?
+		if(this.SelectedIndices.Contains(dataIndex))
+		{
+			// Paint the selected background
+			g.FillRectangle(SystemBrushes.Highlight, realItemRect);
+			textBrush = SystemBrushes.HighlightText;
+		}
+		else
+		{
+			// Paint the normal background
+			if(this.Enabled)
+				g.FillRectangle(this.backgroundBrush, realItemRect);
+			else
+				g.FillRectangle(this.disabledBrush, realItemRect);
+		}
 		
-		if(dataIndex >= 0 && dataIndex < data.Count)
-		{		
-			Rectangle realItemRect = this.GetItemRect(dataIndex);
+		if(dataIndex >= this.topIndex && 
+		   dataIndex < this.topIndex + this.NumItemsVisible &&
+		   dataIndex < data.Count)
+		{
 			Rectangle itemRect = realItemRect;
 			if(this.horizScrollbar.Visible)
 			{
@@ -1446,24 +1495,6 @@ public class ListBox : ListControl
 				itemRect.Width += this.horizScrollbar.Value;
 			}
 			string s = base.GetItemText(data[dataIndex]);
-		
-			Brush textBrush = SystemBrushes.WindowText;
-		
-			// Is this item selected?
-			if(this.SelectedIndices.Contains(dataIndex))
-			{
-				// Paint the selected background
-				g.FillRectangle(SystemBrushes.Highlight, realItemRect);
-				textBrush = SystemBrushes.HighlightText;
-			}
-			else
-			{
-				// Paint the normal background
-				if(this.Enabled)
-					g.FillRectangle(this.backgroundBrush, realItemRect);
-				else
-					g.FillRectangle(this.disabledBrush, realItemRect);
-			}
 							
 			// Paint the text
 			g.DrawString(s, this.Font, textBrush, itemRect, new StringFormat());
@@ -1497,17 +1528,24 @@ public class ListBox : ListControl
 	{
 		if(this.topIndex != this.vertScrollbar.Value)
 		{
-			this.topIndex = this.vertScrollbar.Value;
-			RedrawList(this.nonClientGraphics);
+			if(!this.vScrollTimer.Enabled)
+				this.vScrollTimer.Start();
 		}
+	}
+	
+	private void VScrollTick(object sender, EventArgs e)
+	{
+		this.topIndex = this.vertScrollbar.Value;
+		RedrawList(this.nonClientGraphics);
+		this.vScrollTimer.Stop();
 	}
 	
 	private void OnVValueChanged(object sender, EventArgs e)
 	{
 		if(this.topIndex != this.vertScrollbar.Value)
 		{
-			this.topIndex = this.vertScrollbar.Value;
-			RedrawList(this.nonClientGraphics);
+			if(!this.vScrollTimer.Enabled)
+				this.vScrollTimer.Start();
 		}
 	}
 	
@@ -1560,6 +1598,9 @@ public class ListBox : ListControl
 		}
 		else
 		{
+			ArrayList invalidated = new ArrayList();
+			this.suppressDraw = true;
+
 			int direction = (dataInd > lastInd ? 1 : -1);
 			
 			this.suppressEvents = true;
@@ -1567,11 +1608,17 @@ public class ListBox : ListControl
 			if(clear)
 			{
 				// Start off with a clean slate.
+				foreach(int ind in this.selectedIndices)
+					invalidated.Add(ind);
+				
 				this.selectedIndices.Clear();
 			}
 
 			for(int i = lastInd; i != dataInd + direction; i += direction)
 			{
+				if(!invalidated.Contains(i))
+					invalidated.Add(i);
+
 				if(clear && select)
 				{
 					this.selectedIndices.Insert(0, i);
@@ -1582,16 +1629,20 @@ public class ListBox : ListControl
 					if(!this.selectedIndices.Contains(i))
 						this.selectedIndices.Insert(0, i);
 				}
-					else if(!clear && !select)
+				else if(!clear && !select)
 				{
 					if(this.selectedIndices.Contains(i))
 						this.selectedIndices.Remove(i);
 				}
 			}
 
+			this.suppressDraw = false;
+			foreach(int ind in invalidated)
+				this.PaintItem(ind);
+
 			this.suppressEvents = false;
 			this.FireSelectedIndexChanged();
-		}
+		}	
 	}
 	
 	protected override void OnMouseDown(MouseEventArgs e)
@@ -1619,10 +1670,7 @@ public class ListBox : ListControl
 					// Remove any previous selection and focus/select
 					// this item.
 					this.suppressEvents = true;
-					
-					this.selectedIndices.Clear();
-					this.selectedIndices.Add(dataInd);
-					
+					this.MoveSelection(dataInd);
 					this.suppressEvents = false;
 					this.FireSelectedIndexChanged();
 					break;
@@ -1667,10 +1715,8 @@ public class ListBox : ListControl
 					{
 						// Just select this one.
 						this.suppressEvents = true;
-						
 						this.selectedIndices.Clear();
 						this.selectedIndices.Add(dataInd);
-						
 						this.suppressEvents = false;
 						this.FireSelectedIndexChanged();
 					}
@@ -1679,6 +1725,17 @@ public class ListBox : ListControl
 		}
 		
 		base.OnMouseDown(e);
+	}
+	
+	// This function only applies for single selection mode.
+	private void MoveSelection(int newInd)
+	{
+		Debug.Assert(this.selectionMode == SelectionMode.One);
+	
+		if(this.selectedIndices.Count > 0)
+			this.selectedIndices.Remove(this.selectedIndices[0]);
+		this.selectedIndices.Add(newInd);
+		
 	}
 	
 	protected override void OnMouseMove(MouseEventArgs e)
@@ -1716,10 +1773,7 @@ public class ListBox : ListControl
 				case SelectionMode.One:
 					this.FocusedItem = dataInd;
 					this.suppressEvents = true;
-					
-					this.selectedIndices.Clear();
-					this.selectedIndices.Add(dataInd);
-					
+					this.MoveSelection(dataInd);
 					this.suppressEvents = false;
 					this.FireSelectedIndexChanged();
 					break;
@@ -1759,12 +1813,18 @@ public class ListBox : ListControl
 	{
 		if(!IsItemVisible(this.FocusedItem))
 		{
+			int oldIndex = this.topIndex;
+
 			if(this.FocusedItem < this.topIndex)
 				this.topIndex = this.FocusedItem;
 			else if(this.FocusedItem >= this.topIndex + this.NumItemsVisible)
 				this.topIndex = this.FocusedItem - this.NumItemsVisible + 1;
 				
-			RedrawList();
+			if(this.topIndex != oldIndex)
+			{
+				RedrawList();
+				this.vertScrollbar.Value = this.topIndex;
+			}
 		}
 	}
 
@@ -1850,13 +1910,18 @@ public class ListBox : ListControl
 		
 		if(e.Handled)
 		{
-			if(this.selectionMode == SelectionMode.One || (multiEx && !shift))
+			if(this.selectionMode == SelectionMode.One)
 			{
 				this.suppressEvents = true;	
-			
+				this.MoveSelection(this.FocusedItem);
+				this.suppressEvents = false;
+				this.FireSelectedIndexChanged();
+			}
+			else if(multiEx && !shift)
+			{
+				this.suppressEvents = true;
 				this.selectedIndices.Clear();
 				this.selectedIndices.Add(this.FocusedItem);
-				
 				this.suppressEvents = false;
 				this.FireSelectedIndexChanged();
 			}

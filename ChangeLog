@@ -1,3 +1,8 @@
+2004-07-07  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/TextBoxBase.cs: add the nested internal
+	classes which constitute the new model/view backend for text boxes.
+
 2004-07-05  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Globalization/CultureInfo.cs: clone DateTimeFormat and

@@ -247,8 +247,8 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 
 	// Internal version of "LoadFrom".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Assembly LoadFromFile(String name, out int error,
-												Assembly parent);
+	extern internal static Assembly LoadFromFile(String name, out int error,
+												 Assembly parent);
 
 	// Throw an exception based on a load error.
 	private static void ThrowLoadError(String name, int error)
@@ -427,6 +427,13 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	extern private RuntimeMethodHandle GetEntryPoint();
 
 #endif // !ECMA_COMPAT
+
+	// Get the full pathname of a satellite file underneath
+	// the directory containing this assembly.  Returns null
+	// if it isn't possible to retrieve the path or the file
+	// doesn't exist.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal String GetSatellitePath(String filename);
 
 }; // class Assembly
 

@@ -40,6 +40,7 @@ public class ResourceManager
 	protected String BaseNameField;
 	protected Assembly MainAssembly;
 	protected Hashtable ResourceSets;
+	private Hashtable notPresent;
 	private bool ignoreCase;
 	private Type resourceSetType;
 	private String resourceDir;
@@ -50,6 +51,7 @@ public class ResourceManager
 				BaseNameField = null;
 				MainAssembly = null;
 				ResourceSets = new Hashtable();
+				notPresent = new Hashtable();
 				ignoreCase = false;
 				resourceSetType = null;
 				resourceDir = null;
@@ -63,6 +65,7 @@ public class ResourceManager
 				BaseNameField = resourceSource.FullName;
 				MainAssembly = resourceSource.Assembly;
 				ResourceSets = new Hashtable();
+				notPresent = new Hashtable();
 				ignoreCase = false;
 				resourceSetType = typeof(BuiltinResourceSet);
 				resourceDir = null;
@@ -80,6 +83,7 @@ public class ResourceManager
 				BaseNameField = baseName;
 				MainAssembly = assembly;
 				ResourceSets = new Hashtable();
+				notPresent = new Hashtable();
 				ignoreCase = false;
 				resourceSetType = typeof(BuiltinResourceSet);
 				resourceDir = null;
@@ -98,6 +102,7 @@ public class ResourceManager
 				BaseNameField = baseName;
 				MainAssembly = assembly;
 				ResourceSets = new Hashtable();
+				notPresent = new Hashtable();
 				ignoreCase = false;
 				resourceDir = null;
 				if(usingResourceSet != null)
@@ -121,6 +126,7 @@ public class ResourceManager
 				BaseNameField = baseName;
 				MainAssembly = null;
 				ResourceSets = new Hashtable();
+				notPresent = new Hashtable();
 				ignoreCase = false;
 				resourceSetType = usingResourceSet;
 				this.resourceDir = resourceDir;
@@ -251,21 +257,42 @@ public class ResourceManager
 				}
 				lock(this)
 				{
-					ResourceSet set = InternalGetResourceSet
-						(culture, true, true);
-					if(set != null)
+					// Scan up through the parent cultures until we
+					// find a string that matches the tag.  We do this
+					// so that we can pick up the neutral fallbacks if
+					// language-specific versions are not available.
+					do
 					{
-						return set.GetString(name);
+						ResourceSet set = InternalGetResourceSet
+							(culture, true, true);
+						if(set != null)
+						{
+							return set.GetString(name);
+						}
+						if(culture.Equals(CultureInfo.InvariantCulture))
+						{
+							break;
+						}
+						culture = culture.Parent;
 					}
+					while(culture != null);
 				}
 				return name;
 			}
 
 	// Release all cached resources.
-	[TODO]
 	public virtual void ReleaseAllResources()
 			{
-				// TODO
+				lock(this)
+				{
+					IDictionaryEnumerator e = ResourceSets.GetEnumerator();
+					while(e.MoveNext())
+					{
+						((ResourceSet)(e.Value)).Dispose();
+					}
+					ResourceSets = new Hashtable();
+					notPresent = new Hashtable();
+				}
 			}
 
 	// Get the neutral culture to use, based on an assembly's attributes.
@@ -314,6 +341,14 @@ public class ResourceManager
 						break;
 					}
 
+					// If "notPresent" is set, then we know that we looked
+					// for the culture previously and didn't find it.
+					if(notPresent[current.Name] != null)
+					{
+						current = current.Parent;
+						continue;
+					}
+
 					// See if we have a cached resource set for this culture.
 					set = (ResourceSet)(ResourceSets[current.Name]);
 					if(set != null)
@@ -330,6 +365,7 @@ public class ResourceManager
 							ResourceSets[current.Name] = set;
 							return set;
 						}
+						notPresent[current.Name] = (Object)true;
 					}
 
 					// Move up to the parent culture.
@@ -356,7 +392,7 @@ public class ResourceManager
 					}
 
 					// Attempt to load a resource for this culture.
-					if(createIfNotExists)
+					if(notPresent[current.Name] == null && createIfNotExists)
 					{
 						set = AttemptLoad(current);
 						if(set != null)
@@ -364,6 +400,7 @@ public class ResourceManager
 							ResourceSets[current.Name] = set;
 							return set;
 						}
+						notPresent[current.Name] = (Object)true;
 					}
 				}
 
@@ -374,7 +411,7 @@ public class ResourceManager
 				{
 					return set;
 				}
-				if(createIfNotExists)
+				if(notPresent[current.Name] == null && createIfNotExists)
 				{
 					set = AttemptLoad(current);
 					if(set != null)
@@ -382,6 +419,7 @@ public class ResourceManager
 						ResourceSets[current.Name] = set;
 						return set;
 					}
+					notPresent[current.Name] = (Object)true;
 				}
 
 				// We could not find an appropriate resource set.
@@ -420,14 +458,37 @@ public class ResourceManager
 	private ResourceSet AttemptLoad(CultureInfo culture)
 			{
 				Stream stream;
+				Assembly assembly;
+				int error;
+
 				if(MainAssembly != null)
 				{
-					// Try loading the resources from an assembly.
+					// Try loading the resources from the main assembly.
 					stream = MainAssembly.GetManifestResourceStream
 							(GetResourceFileName(culture));
 					if(stream != null)
 					{
 						return AttemptCreate(resourceSetType, stream);
+					}
+
+					// Try loading the resources from a satellite assembly.
+					String path = MainAssembly.GetSatellitePath
+						(culture.Name + Path.DirectorySeparatorChar +
+						 MainAssembly.FullName + ".resources.dll");
+					if(path != null)
+					{
+						error = 1;
+						assembly = Assembly.LoadFromFile
+							(path, out error, MainAssembly);
+						if(assembly != null && error == 0)
+						{
+							stream = MainAssembly.GetManifestResourceStream
+									(GetResourceFileName(culture));
+							if(stream != null)
+							{
+								return AttemptCreate(resourceSetType, stream);
+							}
+						}
 					}
 				}
 				else if(resourceDir != null)

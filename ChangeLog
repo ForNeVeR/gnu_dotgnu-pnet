@@ -24,6 +24,11 @@
 	culture rules with the current culture identifier if there isn't
 	a specific handler for the culture.
 
+	* runtime/System/Reflection/Assembly.cs,
+	runtime/System/Resources/ResourceManager.cs: attempt to load
+	satellite assemblies for foreign language resources, before
+	falling back to the builtin English defaults.
+
 2002-12-11  Gopal.V  <gopalv82@symonds.net>
 
 	* resources/de_DE/I18N/Makefile.am, de_DE/runtime/Makefile.am, 

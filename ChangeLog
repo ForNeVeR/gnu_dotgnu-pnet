@@ -35,6 +35,8 @@
 	* runtime/System/Text/README: remove obsolete text now that the
 	encoding routines are in "I18N".
 
+	* I18N/CJK/CP932.cs: declare "ENCshift_jis" as public.
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

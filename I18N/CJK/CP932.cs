@@ -817,7 +817,7 @@ public unsafe class CP932 : Encoding
 
 }; // class CP932
 
-internal class ENCshift_jis : CP932
+public class ENCshift_jis : CP932
 {
 	public ENCshift_jis() : base() {}
 

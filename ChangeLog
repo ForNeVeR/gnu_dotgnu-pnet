@@ -9,8 +9,9 @@
 	* System.Xml/XmlTextWriter.cs: WriteString and WriteRaw
 	now output correctly.  
 	* System.Xml/XmlTextReader.cs: Renamed Read to ReadNode
-	and now internal method.  The new Read mimics mono's Read
-	behavior for cooperation across platforms.
+	and now internal method.  The new Read operates similar to 
+	other runtime libraries available for predicatable behavior
+	across platforms.
 	* System.Xml/XmlTextWriter.cs: Reversed last edit till further
 	research.
 	

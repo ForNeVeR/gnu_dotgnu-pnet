@@ -1216,6 +1216,23 @@ ILNode_GenValue(ILNode_DefaultConstructor)
 		}
 		break;
 
+		case ILMachineType_String:
+		case ILMachineType_ObjectRef:
+		{
+			ILGenSimple(info, IL_OP_LDNULL);
+			ILGenAdjust(info, 1);
+		}
+		break;
+
+		case ILMachineType_Decimal:
+		{
+			ILGenSimple(info, IL_OP_LDC_I4_0);
+			ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int32)");
+			ILGenAdjust(info, 1);
+		}
+		break;
+
 		default:
 		{
 			/* Allocate a temporary variable, initialize it, and
@@ -2749,6 +2766,76 @@ ILNode_EvalConst(ILNode_Argument)
 {
 	/*  Evaluate the expression  */
 	return ILNode_EvalConst(node->expression, info, value);
+}
+
+/*
+ * Evaluate the constant value of a default constructor.
+ */
+ILNode_EvalConst(ILNode_DefaultConstructor)
+{
+	ILMachineType type = ILTypeToMachineType(node->type);
+	switch(type)
+	{
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			value->valueType = type;
+			value->un.i4Value = 0;
+			return 1;
+		}
+		/* Not reached */
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			value->valueType = type;
+			value->un.i8Value = 0;
+			return 1;
+		}
+		/* Not reached */
+
+		case ILMachineType_Float32:
+		{
+			value->valueType = type;
+			value->un.r4Value = (ILFloat)0.0;
+			return 1;
+		}
+		/* Not reached */
+
+		case ILMachineType_Float64:
+		{
+			value->valueType = type;
+			value->un.r8Value = (ILDouble)0.0;
+			return 1;
+		}
+		/* Not reached */
+
+		case ILMachineType_String:
+		case ILMachineType_ObjectRef:
+		{
+			value->valueType = ILMachineType_ObjectRef;
+			value->un.oValue = 0;
+			return 1;
+		}
+		/* Not reached */
+
+		case ILMachineType_Decimal:
+		{
+			value->valueType = type;
+			ILDecimalFromInt32(&(value->un.decValue), 0);
+			return 1;
+		}
+		/* Not reached */
+
+		default: break;
+	}
+	return 0;
 }
 
 /*

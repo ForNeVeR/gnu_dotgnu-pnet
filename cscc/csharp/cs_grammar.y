@@ -1493,6 +1493,12 @@ PrimaryExpression
 	| REFVALUE '(' Expression ',' Type ')'	{ MakeBinary(RefValue, $3, $5); }
 	| MODULE			{ $$ = ILQualIdentSimple("<Module>"); }
 	| DELEGATE AnonymousMethod				{ $$ = $2; }
+	| PrimaryExpression '.' DEFAULT			{
+				$$ = ILNode_DefaultConstructor_create($1, 0);
+			}
+	| BuiltinType '.' DEFAULT			{
+				$$ = ILNode_DefaultConstructor_create($1, 0);
+			}
 	;
 
 LiteralExpression

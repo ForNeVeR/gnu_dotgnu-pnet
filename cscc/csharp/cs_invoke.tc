@@ -735,7 +735,7 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 		if(!(node->argList))
 		{
 			/* Replace this node with a default constructor call */
-			*parent = ILNode_DefaultConstructor_create(objectType);
+			*parent = ILNode_DefaultConstructor_create(0, objectType);
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
 			return value;
@@ -848,8 +848,74 @@ ILNode_SemAnalysis(ILNode_DelegateCreationExpression)
  */
 ILNode_SemAnalysis(ILNode_DefaultConstructor)
 {
-	/* This is a dummy: it won't be called in practice */
-	return CSSemValueDefault;
+	ILEvalValue evalValue;
+	CSSemValue value;
+
+	/* Evaluate the type sub-expression */
+	node->type = CSSemType(node->expr, info, &(node->expr));
+
+	/* Perform constant evaluation */
+	if(ILTypeIsReference(node->type))
+	{
+		evalValue.valueType = ILMachineType_ObjectRef;
+		evalValue.un.oValue = 0;
+		CSSemSetConstant(value, node->type, evalValue);
+	}
+	else
+	{
+		evalValue.valueType = ILTypeToMachineType(node->type);
+		switch(evalValue.valueType)
+		{
+			case ILMachineType_Boolean:
+			case ILMachineType_Int8:
+			case ILMachineType_UInt8:
+			case ILMachineType_Int16:
+			case ILMachineType_UInt16:
+			case ILMachineType_Char:
+			case ILMachineType_Int32:
+			case ILMachineType_UInt32:
+			{
+				evalValue.un.i4Value = 0;
+			}
+			break;
+	
+			case ILMachineType_Int64:
+			case ILMachineType_UInt64:
+			{
+				evalValue.un.i8Value = 0;
+			}
+			break;
+	
+			case ILMachineType_Float32:
+			{
+				evalValue.un.r4Value = (ILFloat)0.0;
+			}
+			break;
+	
+			case ILMachineType_Float64:
+			{
+				evalValue.un.r8Value = (ILDouble)0.0;
+			}
+			break;
+	
+			case ILMachineType_Decimal:
+			{
+				ILDecimalFromInt32(&(evalValue.un.decValue), 0);
+			}
+			break;
+	
+			default:
+			{
+				CSSemSetRValue(value, node->type);
+				return value;
+			}
+			/* Not reached */
+		}
+		CSSemSetConstant(value, node->type, evalValue);
+	}
+
+	/* Return the final semantic value to the caller */
+	return value;
 }
 
 /*

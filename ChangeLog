@@ -4,6 +4,10 @@
 	* cscc/cs_main.c: enable the "-fgenerics" option by default because
 	the keyword ambiguities have been dealt with.
 
+	* codegen/cg_misc.tc, codegen/cg_nodes.tc, codegen/jv_misc.tc,
+	cscc/csharp/cs_grammar.y, cscc/csharp/cs_invoke.tc: add the
+	"Type.default" idiom to the C# compiler, for C# 2.0 compatibility.
+
 2003-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/console.c: add extra keycodes to the function/arrow key

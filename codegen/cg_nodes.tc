@@ -484,6 +484,7 @@ struct _tagILSwitchValue
 }
 %node ILNode_DefaultConstructor ILNode_Expression =
 {
+	ILNode	   *expr;
 	ILType     *type;
 }
 

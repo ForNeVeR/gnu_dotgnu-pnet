@@ -1,4 +1,8 @@
 
+2004-03-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in: detect some extra headers in configure.in for "cpp".
+
 2004-03-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_lexutils.c, cscc/c/c_lexutils.h, cscc/c/c_scanner.l:

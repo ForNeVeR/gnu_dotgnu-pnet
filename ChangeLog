@@ -8,6 +8,10 @@
 	* System.Xml/Serialization/IXmlSerializable.cs: add a missing interface
 	that is used by Mono's "System.Data".
 
+	* runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs,
+	runtime/System/DateTime.cs: swap the order of some parameters to
+	avoid ambiguities in compiler lookups.
+
 2003-07-25  Neil Cawse   <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: implement UpdateClip to support clipping

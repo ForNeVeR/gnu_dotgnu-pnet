@@ -936,7 +936,7 @@ public struct DateTime : IComparable, IFormattable
 				for(index = 0; index < patterns.Length; ++index)
 				{
 					results[index] = DateTimeFormatter.Format
-						(this, patterns[index], info);
+						(patterns[index], this, info);
 				}
 				return results;
 			}

@@ -28,7 +28,7 @@ using System.Text;
 internal sealed class DateTimeFormatter
 {
 	// Format a date value as a string using a particular pattern format.
-	public static String Format(DateTime date, String format,
+	public static String Format(String format, DateTime date,
 								DateTimeFormatInfo info)
 			{
 				// Format the date/time value.
@@ -516,7 +516,7 @@ internal sealed class DateTimeFormatter
 						// Not reached.
 					}
 				}
-				return Format(date, format, info);
+				return Format(format, date, info);
 			}
 
 }; // class DateTimeFormatter

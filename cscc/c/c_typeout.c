@@ -167,6 +167,13 @@ static void OutputPendingClass(ILGenInfo *info, ILClass *classInfo,
 	ILClassLayout *classLayout;
 	ILFieldLayout *fieldLayout;
 
+	/* Ignore class references, which will normally be struct's or
+	   union's that weren't fully defined in the current module */
+	if(ILClassIsRef(classInfo))
+	{
+		return;
+	}
+
 	/* Output the class header.  We assume that there are no interfaces
 	   because C structs, unions, etc do not need interfaces */
 	fputs(".class ", stream);

@@ -43,13 +43,16 @@
 #endif
 #include <errno.h>
 #include <signal.h>
-#ifdef HAVE_TERMCAP_H
+#if defined(IL_USE_TERMCAP)
 	#include <termcap.h>
-#elif defined(HAVE_TERM_H)
+	#define	USE_TERMCAP	1
+#elif defined(IL_USE_TERMINFO)
 	#ifdef HAVE_CURSES_H
 		#include <curses.h>
 	#endif
-	#include <term.h>
+	#ifdef HAVE_TERM_H
+		#include <term.h>
+	#endif
 #endif
 #ifdef HAVE_SYS_IOCTL_H
 	#include <sys/ioctl.h>
@@ -80,8 +83,7 @@ extern	"C" {
 	#define	IL_CONSOLE_WIN32	1
 #else
 #if defined(USE_TTY_OPS) && \
-		(defined(HAVE_TERMCAP_H) || defined(HAVE_TERM_H)) && \
-		defined(HAVE_TGOTO)
+		(defined(IL_USE_TERMCAP) || defined(IL_USE_TERMINFO))
 	#define	IL_CONSOLE_TERMCAP	1
 #endif
 #endif
@@ -271,160 +273,161 @@ static void MapCharToKey(int ch, ILInt32 *key, ILInt32 *modifiers);
 typedef struct
 {
 	const char		   *name;
+	const char		   *terminfoName;
 	ConsoleKey			key;
 	ConsoleModifiers	modifiers;
 
 } SpecialKeyCap;
 static SpecialKeyCap const SpecialKeys[] = {
-	{"#1",			Key_Help,			Mod_Shift},
-	{"#2",			Key_Home,			Mod_Shift},
-	{"#4",			Key_LeftArrow,		Mod_Shift},
-	{"%1",			Key_Help,			0},
-	{"%9",			Key_Print,			0},
-	{"&9",			Key_Home,			Mod_Shift},
-	{"*7",			Key_End,			Mod_Shift},
-	{"@1",			Key_Home,			0},
-	{"@7",			Key_End,			0},
-	{"k0",			Key_F10,			0},
-	{"k1",			Key_F1,				0},
-	{"k2",			Key_F2,				0},
-	{"k3",			Key_F3,				0},
-	{"k4",			Key_F4,				0},
-	{"k5",			Key_F5,				0},
-	{"k6",			Key_F6,				0},
-	{"k7",			Key_F7,				0},
-	{"k8",			Key_F8,				0},
-	{"k9",			Key_F9,				0},
-	{"k;",			Key_F10,			0},
-	{"F1",			Key_F11,			0},
-	{"F2",			Key_F12,			0},
-	{"F3",			Key_F13,			0},
-	{"F4",			Key_F14,			0},
-	{"F5",			Key_F15,			0},
-	{"F6",			Key_F16,			0},
-	{"F7",			Key_F17,			0},
-	{"F8",			Key_F18,			0},
-	{"F9",			Key_F19,			0},
-	{"FA",			Key_F20,			0},
-	{"FB",			Key_F21,			0},
-	{"FC",			Key_F22,			0},
-	{"FD",			Key_F23,			0},
-	{"FE",			Key_F24,			0},
-	{"K1",			Key_Home,			0},
-	{"K3",			Key_PageUp,			0},
-	{"K4",			Key_End,			0},
-	{"K5",			Key_PageDown,		0},
-	{"kb",			Key_Back,			0},
-	{"kB",			Key_Tab,			Mod_Shift},
-	{"kd",			Key_DownArrow,		0},
-	{"kD",			Key_Delete,			0},
-	{"kF",			Key_PageDown,		0},
-	{"kh",			Key_Home,			0},
-	{"kH",			Key_PageDown,		Mod_Control},
-	{"kI",			Key_Insert,			0},
-	{"kl",			Key_LeftArrow,		0},
-	{"kN",			Key_PageDown,		0},
-	{"kP",			Key_PageUp,			0},
-	{"kr",			Key_RightArrow,		0},
-	{"kR",			Key_PageUp,			0},
-	{"ku",			Key_UpArrow,		0},
+	{"#1",			"kHLP",		Key_Help,			Mod_Shift},
+	{"#2",			"hHOM",		Key_Home,			Mod_Shift},
+	{"#4",			"kLFT",		Key_LeftArrow,		Mod_Shift},
+	{"%1",			"khlp",		Key_Help,			0},
+	{"%9",			"kprt",		Key_Print,			0},
+	{"&9",			"kBEG",		Key_Home,			Mod_Shift},
+	{"*7",			"kEND",		Key_End,			Mod_Shift},
+	{"@1",			"kbeg",		Key_Home,			0},
+	{"@7",			"kend",		Key_End,			0},
+	{"k0",			"kf0",		Key_F10,			0},
+	{"k1",			"kf1",		Key_F1,				0},
+	{"k2",			"kf2",		Key_F2,				0},
+	{"k3",			"kf3",		Key_F3,				0},
+	{"k4",			"kf4",		Key_F4,				0},
+	{"k5",			"kf5",		Key_F5,				0},
+	{"k6",			"kf6",		Key_F6,				0},
+	{"k7",			"kf7",		Key_F7,				0},
+	{"k8",			"kf8",		Key_F8,				0},
+	{"k9",			"kf9",		Key_F9,				0},
+	{"k;",			"kf10",		Key_F10,			0},
+	{"F1",			"kf11",		Key_F11,			0},
+	{"F2",			"kf12",		Key_F12,			0},
+	{"F3",			"kf13",		Key_F13,			0},
+	{"F4",			"kf14",		Key_F14,			0},
+	{"F5",			"kf15",		Key_F15,			0},
+	{"F6",			"kf16",		Key_F16,			0},
+	{"F7",			"kf17",		Key_F17,			0},
+	{"F8",			"kf18",		Key_F18,			0},
+	{"F9",			"kf19",		Key_F19,			0},
+	{"FA",			"kf20",		Key_F20,			0},
+	{"FB",			"kf21",		Key_F21,			0},
+	{"FC",			"kf22",		Key_F22,			0},
+	{"FD",			"kf23",		Key_F23,			0},
+	{"FE",			"kf24",		Key_F24,			0},
+	{"K1",			"ka1",		Key_Home,			0},
+	{"K3",			"ka3",		Key_PageUp,			0},
+	{"K4",			"kc1",		Key_End,			0},
+	{"K5",			"kc3",		Key_PageDown,		0},
+	{"kb",			"kbs",		Key_Back,			0},
+	{"kB",			"kcbt",		Key_Tab,			Mod_Shift},
+	{"kd",			"kcud1",	Key_DownArrow,		0},
+	{"kD",			"kdch1",	Key_Delete,			0},
+	{"kF",			"kind",		Key_PageDown,		0},
+	{"kh",			"khome",	Key_Home,			0},
+	{"kH",			"kll",		Key_PageDown,		Mod_Control},
+	{"kI",			"kich1",	Key_Insert,			0},
+	{"kl",			"kcub1",	Key_LeftArrow,		0},
+	{"kN",			"knp",		Key_PageDown,		0},
+	{"kP",			"kpp",		Key_PageUp,			0},
+	{"kr",			"kcuf1",	Key_RightArrow,		0},
+	{"kR",			"kri",		Key_PageUp,			0},
+	{"ku",			"kcuu1",	Key_UpArrow,		0},
 
 	/* Known VT* special key codes that are sometimes not listed in termcap but
 	   can be generated if the terminal is in an odd ANSI/VT compat mode */
-	{"\033[A",		Key_UpArrow,		0},
-	{"\033[B",		Key_DownArrow,		0},
-	{"\033[C",		Key_RightArrow,		0},
-	{"\033[D",		Key_LeftArrow,		0},
-	{"\033[H",		Key_Home,			0},
-	{"\033[F",		Key_End,			0},
-	{"\033[P",		Key_F1,				0},
-	{"\033[Q",		Key_F2,				0},
-	{"\033[R",		Key_F3,				0},
-	{"\033[S",		Key_F4,				0},
-	{"\033[Z",		Key_Tab,			Mod_Shift},
-	{"\033OA",		Key_UpArrow,		0},
-	{"\033OB",		Key_DownArrow,		0},
-	{"\033OC",		Key_RightArrow,		0},
-	{"\033OD",		Key_LeftArrow,		0},
-	{"\033OH",		Key_Home,			0},
-	{"\033OF",		Key_End,			0},
-	{"\033OP",		Key_F1,				0},
-	{"\033OQ",		Key_F2,				0},
-	{"\033OR",		Key_F3,				0},
-	{"\033OS",		Key_F4,				0},
-	{"\033OZ",		Key_Tab,			Mod_Shift},
+	{"\033[A",		0,			Key_UpArrow,		0},
+	{"\033[B",		0,			Key_DownArrow,		0},
+	{"\033[C",		0,			Key_RightArrow,		0},
+	{"\033[D",		0,			Key_LeftArrow,		0},
+	{"\033[H",		0,			Key_Home,			0},
+	{"\033[F",		0,			Key_End,			0},
+	{"\033[P",		0,			Key_F1,				0},
+	{"\033[Q",		0,			Key_F2,				0},
+	{"\033[R",		0,			Key_F3,				0},
+	{"\033[S",		0,			Key_F4,				0},
+	{"\033[Z",		0,			Key_Tab,			Mod_Shift},
+	{"\033OA",		0,			Key_UpArrow,		0},
+	{"\033OB",		0,			Key_DownArrow,		0},
+	{"\033OC",		0,			Key_RightArrow,		0},
+	{"\033OD",		0,			Key_LeftArrow,		0},
+	{"\033OH",		0,			Key_Home,			0},
+	{"\033OF",		0,			Key_End,			0},
+	{"\033OP",		0,			Key_F1,				0},
+	{"\033OQ",		0,			Key_F2,				0},
+	{"\033OR",		0,			Key_F3,				0},
+	{"\033OS",		0,			Key_F4,				0},
+	{"\033OZ",		0,			Key_Tab,			Mod_Shift},
 
 	/* Other common keycodes, typical to the "linux" and "xterm" entries */
-	{"\033[[A",		Key_F1,				0},
-	{"\033[[B",		Key_F2,				0},
-	{"\033[[C",		Key_F3,				0},
-	{"\033[[D",		Key_F4,				0},
-	{"\033[[E",		Key_F5,				0},
-	{"\033[15~",	Key_F5,				0},
-	{"\033[17~",	Key_F6,				0},
-	{"\033[18~",	Key_F7,				0},
-	{"\033[19~",	Key_F8,				0},
-	{"\033[20~",	Key_F9,				0},
-	{"\033[21~",	Key_F10,			0},
-	{"\033[23~",	Key_F11,			0},
-	{"\033[24~",	Key_F12,			0},
-	{"\033[25~",	Key_F13,			0},
-	{"\033[26~",	Key_F14,			0},
-	{"\033[28~",	Key_F15,			0},
-	{"\033[29~",	Key_F16,			0},
-	{"\033[31~",	Key_F17,			0},
-	{"\033[32~",	Key_F18,			0},
-	{"\033[33~",	Key_F19,			0},
-	{"\033[34~",	Key_F20,			0},
-	{"\033[[2A",	Key_F1,				0},
-	{"\033[[2B",	Key_F2,				0},
-	{"\033[[2C",	Key_F3,				0},
-	{"\033[[2D",	Key_F4,				0},
-	{"\033[[2E",	Key_F5,				0},
-	{"\033[2P",		Key_F1,				Mod_Shift},
-	{"\033[2Q",		Key_F2,				Mod_Shift},
-	{"\033[2R",		Key_F3,				Mod_Shift},
-	{"\033[2S",		Key_F4,				Mod_Shift},
-	{"\033[15;2~",	Key_F5,				Mod_Shift},
-	{"\033[17;2~",	Key_F6,				Mod_Shift},
-	{"\033[18;2~",	Key_F7,				Mod_Shift},
-	{"\033[19;2~",	Key_F8,				Mod_Shift},
-	{"\033[20;2~",	Key_F9,				Mod_Shift},
-	{"\033[21;2~",	Key_F10,			Mod_Shift},
-	{"\033[23;2~",	Key_F11,			Mod_Shift},
-	{"\033[24;2~",	Key_F12,			Mod_Shift},
-	{"\033[25;2~",	Key_F13,			0},
-	{"\033[26;2~",	Key_F14,			0},
-	{"\033[28;2~",	Key_F15,			0},
-	{"\033[29;2~",	Key_F16,			0},
-	{"\033[31;2~",	Key_F17,			0},
-	{"\033[32;2~",	Key_F18,			0},
-	{"\033[33;2~",	Key_F19,			0},
-	{"\033[34;2~",	Key_F20,			0},
-	{"\033O2P",		Key_F1,				Mod_Shift},
-	{"\033O2Q",		Key_F2,				Mod_Shift},
-	{"\033O2R",		Key_F3,				Mod_Shift},
-	{"\033O2S",		Key_F4,				Mod_Shift},
-	{"\033[1~",		Key_Home,			0},
-	{"\033[2~",		Key_Insert,			0},
-	{"\033[3~",		Key_Delete,			0},
-	{"\033[4~",		Key_End,			0},
-	{"\033[5~",		Key_PageUp,			0},
-	{"\033[6~",		Key_PageDown,		0},
-	{"\033[7~",		Key_Home,			0},
-	{"\033[8~",		Key_End,			0},
-	{"\033[2H",		Key_Home,			Mod_Shift},
-	{"\033[2F",		Key_End,			Mod_Shift},
-	{"\033O2H",		Key_Home,			Mod_Shift},
-	{"\033O2F",		Key_End,			Mod_Shift},
-	{"\033[1;2~",	Key_Home,			Mod_Shift},
-	{"\033[2;2~",	Key_Insert,			Mod_Shift},
-	{"\033[3;2~",	Key_Delete,			Mod_Shift},
-	{"\033[4;2~",	Key_End,			Mod_Shift},
-	{"\033[5;2~",	Key_PageUp,			Mod_Shift},
-	{"\033[6;2~",	Key_PageDown,		Mod_Shift},
-	{"\033[7;2~",	Key_Home,			Mod_Shift},
-	{"\033[8;2~",	Key_End,			Mod_Shift},
+	{"\033[[A",		0,			Key_F1,				0},
+	{"\033[[B",		0,			Key_F2,				0},
+	{"\033[[C",		0,			Key_F3,				0},
+	{"\033[[D",		0,			Key_F4,				0},
+	{"\033[[E",		0,			Key_F5,				0},
+	{"\033[15~",	0,			Key_F5,				0},
+	{"\033[17~",	0,			Key_F6,				0},
+	{"\033[18~",	0,			Key_F7,				0},
+	{"\033[19~",	0,			Key_F8,				0},
+	{"\033[20~",	0,			Key_F9,				0},
+	{"\033[21~",	0,			Key_F10,			0},
+	{"\033[23~",	0,			Key_F11,			0},
+	{"\033[24~",	0,			Key_F12,			0},
+	{"\033[25~",	0,			Key_F13,			0},
+	{"\033[26~",	0,			Key_F14,			0},
+	{"\033[28~",	0,			Key_F15,			0},
+	{"\033[29~",	0,			Key_F16,			0},
+	{"\033[31~",	0,			Key_F17,			0},
+	{"\033[32~",	0,			Key_F18,			0},
+	{"\033[33~",	0,			Key_F19,			0},
+	{"\033[34~",	0,			Key_F20,			0},
+	{"\033[[2A",	0,			Key_F1,				0},
+	{"\033[[2B",	0,			Key_F2,				0},
+	{"\033[[2C",	0,			Key_F3,				0},
+	{"\033[[2D",	0,			Key_F4,				0},
+	{"\033[[2E",	0,			Key_F5,				0},
+	{"\033[2P",		0,			Key_F1,				Mod_Shift},
+	{"\033[2Q",		0,			Key_F2,				Mod_Shift},
+	{"\033[2R",		0,			Key_F3,				Mod_Shift},
+	{"\033[2S",		0,			Key_F4,				Mod_Shift},
+	{"\033[15;2~",	0,			Key_F5,				Mod_Shift},
+	{"\033[17;2~",	0,			Key_F6,				Mod_Shift},
+	{"\033[18;2~",	0,			Key_F7,				Mod_Shift},
+	{"\033[19;2~",	0,			Key_F8,				Mod_Shift},
+	{"\033[20;2~",	0,			Key_F9,				Mod_Shift},
+	{"\033[21;2~",	0,			Key_F10,			Mod_Shift},
+	{"\033[23;2~",	0,			Key_F11,			Mod_Shift},
+	{"\033[24;2~",	0,			Key_F12,			Mod_Shift},
+	{"\033[25;2~",	0,			Key_F13,			0},
+	{"\033[26;2~",	0,			Key_F14,			0},
+	{"\033[28;2~",	0,			Key_F15,			0},
+	{"\033[29;2~",	0,			Key_F16,			0},
+	{"\033[31;2~",	0,			Key_F17,			0},
+	{"\033[32;2~",	0,			Key_F18,			0},
+	{"\033[33;2~",	0,			Key_F19,			0},
+	{"\033[34;2~",	0,			Key_F20,			0},
+	{"\033O2P",		0,			Key_F1,				Mod_Shift},
+	{"\033O2Q",		0,			Key_F2,				Mod_Shift},
+	{"\033O2R",		0,			Key_F3,				Mod_Shift},
+	{"\033O2S",		0,			Key_F4,				Mod_Shift},
+	{"\033[1~",		0,			Key_Home,			0},
+	{"\033[2~",		0,			Key_Insert,			0},
+	{"\033[3~",		0,			Key_Delete,			0},
+	{"\033[4~",		0,			Key_End,			0},
+	{"\033[5~",		0,			Key_PageUp,			0},
+	{"\033[6~",		0,			Key_PageDown,		0},
+	{"\033[7~",		0,			Key_Home,			0},
+	{"\033[8~",		0,			Key_End,			0},
+	{"\033[2H",		0,			Key_Home,			Mod_Shift},
+	{"\033[2F",		0,			Key_End,			Mod_Shift},
+	{"\033O2H",		0,			Key_Home,			Mod_Shift},
+	{"\033O2F",		0,			Key_End,			Mod_Shift},
+	{"\033[1;2~",	0,			Key_Home,			Mod_Shift},
+	{"\033[2;2~",	0,			Key_Insert,			Mod_Shift},
+	{"\033[3;2~",	0,			Key_Delete,			Mod_Shift},
+	{"\033[4;2~",	0,			Key_End,			Mod_Shift},
+	{"\033[5;2~",	0,			Key_PageUp,			Mod_Shift},
+	{"\033[6;2~",	0,			Key_PageDown,		Mod_Shift},
+	{"\033[7;2~",	0,			Key_Home,			Mod_Shift},
+	{"\033[8;2~",	0,			Key_End,			Mod_Shift},
 };
 #define	NumSpecialKeys	(sizeof(SpecialKeys) / sizeof(SpecialKeyCap))
 static char *SpecialKeyStrings[NumSpecialKeys];
@@ -434,8 +437,10 @@ static char *SpecialKeyStrings[NumSpecialKeys];
  */
 static int consoleMode = IL_CONSOLE_NORMAL;
 static int termcapInitialized = 0;
+#ifdef IL_USE_TERMCAP
 static char *termcapBuffer = 0;
 static char *termcapBuffer2 = 0;
+#endif
 static int consoleIsTty = 0;
 static int screenX = 0;
 static int screenY = 0;
@@ -467,12 +472,46 @@ static int ConsolePutchar(int ch)
 }
 
 /*
+ * Get a particular string capability.
+ */
+static char *GetStringCap(const char *termcapName, const char *terminfoName)
+{
+#ifdef IL_USE_TERMCAP
+	char *area = termcapBuffer2;
+	return tgetstr((char *)termcapName, &area);
+#else
+	char *str;
+	if(!terminfoName)
+	{
+		return 0;
+	}
+	str = tigetstr((char *)terminfoName);
+	if(!str || str == (char *)(ILNativeInt)(-1))
+	{
+		return 0;
+	}
+	return str;
+#endif
+}
+
+/*
+ * Get a particular flag capability.
+ */
+static int GetFlagCap(const char *termcapName, const char *terminfoName)
+{
+#ifdef IL_USE_TERMCAP
+	return tgetflag((char *)termcapName);
+#else
+	return (tigetflag((char *)terminfoName) > 0);
+#endif
+}
+
+/*
  * Output a particular string capability.  Returns zero if no such capability.
  */
-static int OutputStringCap(char *name)
+static int OutputStringCap(const char *termcapName, const char *terminfoName)
 {
-	char *area = termcapBuffer2;
-	char *str = tgetstr(name, &area);
+	char *str = GetStringCap(termcapName, terminfoName);
 	if(str)
 	{
 		tputs(str, 1, ConsolePutchar);
@@ -492,9 +531,11 @@ static int OutputStringCap(char *name)
 static int InitTermcapDriver(void)
 {
 	char *term;
-	char *area;
 	char *str;
 	int posn;
+#if defined(IL_USE_TERMINFO)
+	int errret = ERR;
+#endif
 	if(termcapInitialized)
 	{
 		return consoleIsTty;
@@ -505,6 +546,7 @@ static int InitTermcapDriver(void)
 		/* Either stdin or stdout is not a tty, so cannot use console mode */
 		consoleIsTty = 0;
 	}
+#ifdef IL_USE_TERMCAP
 	else if((termcapBuffer = (char *)ILMalloc(8192)) == 0 ||
 	        (termcapBuffer2 = (char *)ILMalloc(8192)) == 0)
 	{
@@ -516,9 +558,17 @@ static int InitTermcapDriver(void)
 		/* Could not load the termcap entry for the terminal */
 		consoleIsTty = 0;
 	}
+#else
+	if(setupterm(term, 1, &errret) != OK)
+	{
+		/* Could not load the terminfo entry for the terminal */
+		consoleIsTty = 0;
+	}
+#endif
 	else
 	{
 		/* Prime the screen size information from the termcap details */
+	#ifdef IL_USE_TERMCAP
 		screenWidth = tgetnum("co");
 		if(screenWidth <= 0)
 		{
@@ -529,6 +579,18 @@ static int InitTermcapDriver(void)
 		{
 			screenHeight = 24;
 		}
+	#else
+		screenWidth = tigetnum("cols");
+		if(screenWidth <= 0)
+		{
+			screenWidth = 80;
+		}
+		screenHeight = tigetnum("lines");
+		if(screenHeight <= 0)
+		{
+			screenHeight = 24;
+		}
+	#endif
 
 		/* Query the terminal itself as to what the size is */
 	#ifdef TIOCGWINSZ
@@ -566,8 +628,7 @@ static int InitTermcapDriver(void)
 		}
 
 		/* Determine if the terminal has ANSI color sequences */
-		area = termcapBuffer2;
-		if(tgetstr("AB", &area))
+		if(GetStringCap("AB", "setab"))
 		{
 			terminalHasColor = 1;
 		}
@@ -592,8 +653,8 @@ static int InitTermcapDriver(void)
 			}
 			else
 			{
-				area = termcapBuffer2;
-				str = tgetstr(SpecialKeys[posn].name, &area);
+				str = GetStringCap(SpecialKeys[posn].name,
+								   SpecialKeys[posn].terminfoName);
 				if(str && *str != '\0')
 				{
 					SpecialKeyStrings[posn] = ILDupString(str);
@@ -611,14 +672,12 @@ static int InitTermcapDriver(void)
 		if(consoleMode == IL_CONSOLE_CBREAK_ALT ||
 		   consoleMode == IL_CONSOLE_RAW_ALT)
 		{
-			area = termcapBuffer2;
-			str = tgetstr("ti", &area);
+			str = GetStringCap("ti", "smcup");
 			if(str && *str != '\0')
 			{
 				enterAltMode = ILDupString(str);
 			}
-			area = termcapBuffer2;
-			str = tgetstr("te", &area);
+			str = GetStringCap("te", "rmcup");
 			if(str && *str != '\0')
 			{
 				leaveAltMode = ILDupString(str);
@@ -837,7 +896,7 @@ void ILConsoleBeep(void)
 {
 	if(InitTermcapDriver())
 	{
-		OutputStringCap("bl");
+		OutputStringCap("bl", "bel");
 	}
 }
 
@@ -845,10 +904,10 @@ void ILConsoleClear(void)
 {
 	if(InitTermcapDriver())
 	{
-		if(!OutputStringCap("cl"))
+		if(!OutputStringCap("cl", "clear"))
 		{
-			OutputStringCap("ho");
-			OutputStringCap("cd");
+			OutputStringCap("ho", "home");
+			OutputStringCap("cd", "ed");
 		}
 	}
 }
@@ -1059,8 +1118,7 @@ void ILConsoleSetPosition(ILInt32 x, ILInt32 y)
 {
 	if(InitTermcapDriver())
 	{
-		char *area = termcapBuffer2;
-		char *str = tgetstr("cm", &area);
+		char *str = GetStringCap("cm", "cup");
 		if(!str)
 		{
 			return;
@@ -1081,7 +1139,11 @@ void ILConsoleSetPosition(ILInt32 x, ILInt32 y)
 		{
 			y = screenHeight - 1;
 		}
+	#ifdef IL_USE_TERMCAP
 		str = tgoto(str, x, y);
+	#else
+		str = tparm(str, y, x);
+	#endif
 		if(str)
 		{
 			tputs(str, 1, ConsolePutchar);
@@ -1183,17 +1245,17 @@ void ILConsoleSetAttributes(ILInt32 attrs)
 			if((attrs & 0x08) != 0)
 			{
 				/* Enable a high intensity mode */
-				if(!OutputStringCap("md"))
+				if(!OutputStringCap("md", "bold"))
 				{
-					OutputStringCap("so");
+					OutputStringCap("so", "smso");
 				}
 			}
 			else
 			{
 				/* Return to the normal mode */
-				if(!OutputStringCap("me"))
+				if(!OutputStringCap("me", "sgr0"))
 				{
-					OutputStringCap("se");
+					OutputStringCap("se", "rmso");
 				}
 			}
 		}
@@ -1227,7 +1289,7 @@ void ILConsoleWriteChar(ILInt32 ch)
 			/* Backspace and erase one character */
 			if(screenX > 0)
 			{
-				if(!OutputStringCap("bc"))
+				if(!OutputStringCap("bc", 0))
 				{
 					putc(0x08, stdout);
 				}
@@ -1237,10 +1299,10 @@ void ILConsoleWriteChar(ILInt32 ch)
 			{
 				screenX = screenWidth - 1;
 				--screenY;
-				if(tgetflag("bw"))
+				if(GetFlagCap("bw", "bw"))
 				{
 					/* The terminal will wrap to the previous line for us */
-					if(!OutputStringCap("bc"))
+					if(!OutputStringCap("bc", 0))
 					{
 						putc(0x08, stdout);
 					}
@@ -1268,7 +1330,7 @@ void ILConsoleWriteChar(ILInt32 ch)
 			++screenX;
 			if(screenX >= screenWidth)
 			{
-				if(!tgetflag("am"))
+				if(!GetFlagCap("am", "am"))
 				{
 					/* The cursor doesn't automatically wrap, so simulate */
 					putc(0x0D, stdout);

@@ -8,6 +8,10 @@
 	* ilsize/ilsize.c: dump the assembly version in the detailed
 	output mode of "ilsize".
 
+	* configure.in, support/console.c: implement terminfo-based
+	console routines for systems that lack termcap, or a termcap
+	that interfaces to terminfo.
+
 2003-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, support/console.c: use a better detection mechanism

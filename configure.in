@@ -212,28 +212,13 @@ AC_CHECK_LIB(socket, connect)
 AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(z, inflate)
 
-dnl Collect up the libraries that we need for termcap access.
-AC_SUBST(TERMCAPLIBS)
-TERMCAPLIBS=""
-has_tgoto=no
-AC_CHECK_LIB(termcap, tgoto, [TERMCAPLIBS="-ltermcap"
-has_tgoto=yes],
-[AC_CHECK_LIB(curses, tgoto, [TERMCAPLIBS="-lcurses"
-has_tgoto=yes],
-[AC_CHECK_LIB(ncurses, tgoto, [TERMCAPLIBS="-lncurses"
-has_tgoto=yes], [])])])
-if test "x$has_tgoto" = "xyes" ; then
-	AC_DEFINE(HAVE_TGOTO, 1, [Define if you have the tgoto function.])
-fi
-
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 AC_CHECK_HEADERS(string.h strings.h memory.h stdlib.h math.h fcntl.h)
 AC_CHECK_HEADERS(stdarg.h varargs.h sys/mman.h unistd.h sys/stat.h)
-AC_CHECK_HEADERS(sys/time.h sys/types.h dlfcn.h ieeefp.h)
-AC_CHECK_HEADERS(readline/readline.h readline/history.h wchar.h)
+AC_CHECK_HEADERS(sys/time.h sys/types.h dlfcn.h ieeefp.h wchar.h)
 AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h dirent.h sys/utime.h utime.h)
 AC_CHECK_HEADERS(linux/types.h)
@@ -244,12 +229,37 @@ AC_CHECK_HEADERS([linux/irda.h], [], [],
 #ifdef HAVE_LINUX_TYPES_H
 #include <linux/types.h>
 #endif]])
-AC_CHECK_HEADERS(sys/utsname.h zlib.h termcap.h)
-AC_CHECK_HEADERS(termios.h sys/termios.h curses.h)
+AC_CHECK_HEADERS(sys/utsname.h zlib.h termios.h sys/termios.h)
+AC_CHECK_HEADERS(termcap.h curses.h)
 AC_CHECK_HEADERS([term.h], [], [],
 [[#ifdef HAVE_CURSES_H
 #include <curses.h>
 #endif]])
+
+dnl Collect up the libraries that we need for termcap access.
+AC_SUBST(TERMCAPLIBS)
+TERMCAPLIBS=""
+TERMINFOLIBS=""
+maybe_termcap=no
+maybe_terminfo=no
+AC_CHECK_LIB(termcap, tgetflag, [TERMCAPLIBS="-ltermcap"
+maybe_termcap=yes])
+AC_CHECK_LIB(curses, tigetflag, [TERMINFOLIBS="-lcurses"
+maybe_terminfo=yes],
+[AC_CHECK_LIB(ncurses, tigetflag, [TERMINFOLIBS="-lncurses"
+maybe_terminfo=yes])])
+if test "x$maybe_termcap" = "xyes" ; then
+	if test "x$ac_cv_header_termcap_h" = "xyes" ; then
+		maybe_terminfo=no
+		AC_DEFINE(IL_USE_TERMCAP, 1, [Define to use the termcap library.])
+	else
+		TERMCAPLIBS=""
+	fi
+fi
+if test "x$maybe_terminfo" = "xyes" ; then
+	TERMCAPLIBS="$TERMINFOLIBS"
+	AC_DEFINE(IL_USE_TERMINFO, 1, [Define to use the terminfo library.])
+fi
 
 dnl Check for "sin6_scope_id".
 AC_TRY_COMPILE([#include "confdefs.h"

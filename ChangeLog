@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.6.10" release.
 
+	* configure.in: update working version to "0.6.11".
+
 2004-09-07  Russell Stuart <russell-savannah@stuart.id.au>
 
 	* build-debian-packages.conf,

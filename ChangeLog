@@ -10,6 +10,9 @@
 	runtime/System/Reflection/ClrProperty.cs: implement "ToString()"
 	for the method, field, constructor, and property reflection types.
 
+	* runtime/System/Activator.cs (CreateInstance): add the flag
+	"BindingFlags.CreateInstance" when calling "Type.InvokeMember".
+
 2002-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/DateTime.cs: change to "DateToTicks" to correct

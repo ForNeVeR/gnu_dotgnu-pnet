@@ -107,8 +107,9 @@ sealed class Activator
 		{
 			throw new ArgumentNullException("type");
 		}
-		return type.InvokeMember(String.Empty, bindingAttr, binder,
-								 null, args, null, culture, null);
+		return type.InvokeMember(String.Empty,
+								 BindingFlags.CreateInstance | bindingAttr,
+								 binder, null, args, null, culture, null);
 	}
 
 	// Create an object instance from a type in another assembly.

@@ -40,16 +40,6 @@ internal sealed class SegmentInfo : NodeInfo
 			}
 
 
-	// Get the local name.
-	public override String LocalName
-			{
-				get
-				{
-					if(text) { return String.Empty; }
-					return data;
-				}
-			}
-
 	// Get the fully-qualified name.
 	public override String Name
 			{

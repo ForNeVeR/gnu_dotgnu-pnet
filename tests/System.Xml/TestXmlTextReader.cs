@@ -27,28 +27,45 @@ using System.Xml;
 
 public class TestXmlTextReader : TestCase
 {
-	private XmlTextReader xmlReader;
-	private StringReader stringReader;
-	
-	enum ReturnType : int
-			{
-				Name = 0,
-				Value = 1,
-				Innertext = 2,
-				InnerXml = 3,
-				OuterXml = 4,
-				LocalName = 5,
-				Prefix = 6
-			};
-		
-	private String[] xml = {"<soda caffeine=\"yes\">\n<size>medium</size>\n</soda>", 
-					"<soda><size>medium</size></soda>",
-					"<free>software's freedom</free>",
-					"<?xml version=\"1.0\" ?><bookstore><book><title>Understanding The Linux Kernel</title>
-					<author>Daniel P. Bovet and Marco Cesati</author></book><book><title>Learning Perl</title>
-					<author>Randal L. Schwartz and Tom Christiansen</author></book></bookstore>"};
+	private XmlTextReader xr;
+	private StringReader sr;
+	private String[] xml =
+	{
+		"<soda caffeine=\"yes\">\n<size>medium</size>\n</soda>",
+		"<soda><size>medium</size></soda>",
+		"<free>software's freedom</free>",
+		("<?xml version='1.0' ?>" +
+		 "<bookstore>" +
+		 "	<book>" +
+		 "		<title>Understanding The Linux Kernel</title>" +
+		 "		<author>Daniel P. Bovet and Marco Cesati</author>" +
+		 "	</book>" +
+		 "	<book>" +
+		 "		<title>Learning Perl</title>" +
+		 "		<author>Randal L. Schwartz and Tom Christiansen</author>" +
+		 "	</book>" +
+		 "</bookstore>"),
+		("<?xml version='1.0'?>" +
+		 "<!DOCTYPE test [" +
+		 "	<!ELEMENT test (#PCDATA) >" +
+		 "	<!ENTITY % foo '&#37;bar;'>" +
+		 "	<!ENTITY % bar '&#60;!ENTITY GNU \"GNU&#39;s NOT UNIX\" >' >" +
+		 "	<!ENTITY fu '&#37;bar;'>" +
+		 "	%foo;" +
+		 "]>" +
+		 "<test>Brave &GNU; World... &fu;<![CDATA[bar]]></test>"),
+		("<?xml version='1.0'?>" +
+		 "<!DOCTYPE test [" +
+		 "	<!ELEMENT test (#PCDATA) >" +
+		 "	<!ENTITY hello 'hello world'>" +
+		 "]>" +
+		 "<!-- a sample comment -->" +
+		 "<test>Brave GNU <![CDATA[World]]> &hello;</test>" +
+		 "					" +
+		 "<?pi HeLlO wOrLd ?>"),
+	};
 
-	
+
 	// Constructor.
 	public TestXmlTextReader(String name)
 			: base(name)
@@ -59,8 +76,7 @@ public class TestXmlTextReader : TestCase
 	// Set up for the tests.
 	protected override void Setup()
 			{
-				stringReader = new StringReader(xml[0]);
-				xmlReader = new XmlTextReader(stringReader);
+				// Nothing to do here.
 			}
 
 	// Clean up after the tests.
@@ -69,48 +85,23 @@ public class TestXmlTextReader : TestCase
 				// Nothing to do here.
 			}
 
-	// Check that the current contents of the output is a particular string.
-	private void Check(String msg, String expected, ReturnType retType)
-			{
-				String actual;
-				switch (retType)
-				{
-					case ReturnType.Name:
-						actual = xmlReader.Name;
-						break;
-					case ReturnType.Value:
-						actual = xmlReader.Value;
-						break;
-					case ReturnType.InnerXml:
-						actual = xmlReader.ReadInnerXml();
-						break;
-					case ReturnType.OuterXml:
-						actual = xmlReader.ReadOuterXml();
-						break;
-					case ReturnType.LocalName:
-						actual = xmlReader.LocalName;
-						break;
-					case ReturnType.Prefix:
-						actual = xmlReader.Prefix;
-						break;
-					default:
-						// do nothing
-						break;
-				}
-				
-				AssertEquals(msg, expected, actual);
-			}
-
 	// Clear the current output.
 	private void Clear()
 			{
-				xmlReader = null;
+				sr = null;
+				xr = null;
 			}
 
 	// Reset the entire XML text reader.
-	private void Reset()
+	private void Reset(int index)
 			{
-				xmlReader = new XmlTextReader(stringReader);
+				sr = new StringReader(xml[index]);
+				xr = new XmlTextReader(sr);
+			}
+	private void Reset(TextReader tr)
+			{
+				sr = null;
+				xr = new XmlTextReader(tr);
 			}
 
 	// Test the constructors
@@ -119,111 +110,128 @@ public class TestXmlTextReader : TestCase
 				// TODO: Test each constructor
 			}
 
-
-	// Test OuterXml.
-	public void TestXmlTextReaderReadOuterXml()
-			{		
-				Reset();
-				xmlReader.Read();
-				Check("ReadOuterXml (1)", xml[0], ReturnType.OuterXml);
-			
-				Reset();
-				stringReader = new StringReader(xml[1]);
-				xmlReader = new XmlTextReader(stringReader);
-				
-				xmlReader.Read();
-				Check("ReadOuterXml (2)", xml[1], ReturnType.OuterXml);
-
-				Clear();
-					
-			}
-
-	public void TestXmlTextReaderRead()
-			{
-				bool ret = xmlReader.Read();
-				AssertEquals("Read (1)", true, ret);
-				
-				Check("Read (2)", "soda", ReturnType.Name);
-				Check("Read (3)", "soda", ReturnType.LocalName);
-				
-				ret = xmlReader.Read();
-				AssertEquals("Read (4)", true, ret);
-			
-				ret = xmlReader.Read();
-				Check("Read (5)", "size", ReturnType.Name);
-				Check("Read (6)", "size", ReturnType.LocalName);
-
-				ret = xmlReader.Read();
-				AssertEquals("Read (7)", true, ret);
-
-				Check("Read (8)", "medium", ReturnType.Value);
-				
-				Reset();
-				stringReader = new StringReader(xml[2]);
-				xmlReader = new XmlTextReader(stringReader);
-
-				xmlReader.Read();
-				Check("Read (9)", "free", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (9)", "software's freedom", ReturnType.Value);
-
-				Clear();
-			}
-
-	public void TestXmlTextReaderReadAttributeValue()
-			{
-				stringReader = new StringReader(xml[0]);
-				xmlReader = new XmlTextReader(stringReader);
-				xmlReader.Read();
-				xmlReader.MoveToFirstAttribute();
-				xmlReader.ReadAttributeValue();
-				AssertEquals("Read (1)", XmlNodeType.Text, xmlReader.NodeType);
-			}	
-	
+	// Test the GetRemainder method.
 	public void TestXmlTextReaderGetRemainder()
 			{
-				stringReader = new StringReader(xml[3]);
-				xmlReader = new XmlTextReader(stringReader);
-				bool ret = xmlReader.Read();
-				AssertEquals("Read (1)", true, ret);
-				xmlReader.Read();
-				xmlReader.Read();
-				Check("Read (2)", "book", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (3)", "title", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (4)", "Understanding The Linux Kernel", ReturnType.Value);
-				xmlReader.Read();
-				Check("Read (5)", "title", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (6)", "author", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (7)", "Daniel P. Bovet and Marco Cesati", ReturnType.Value);
-				xmlReader.Read();
-				Check("Read (8)", "author", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (9)", "book", ReturnType.Name);
+				Reset(3);
+				xr.WhitespaceHandling = WhitespaceHandling.None;
+				AssertEquals("GetRemainder (1)", true, xr.Read());
+				AssertEquals("GetRemainder (2)", true, xr.Read());
+				AssertEquals("GetRemainder (3)", true, xr.Read());
+				AssertEquals("GetRemainder (4)", "book", xr.Name);
+				AssertEquals("GetRemainder (5)", true, xr.Read());
+				AssertEquals("GetRemainder (6)", "title", xr.Name);
+				AssertEquals("GetRemainder (7)", true, xr.Read());
+				AssertEquals("GetRemainder (8)", "Understanding The Linux Kernel", xr.Value);
+				AssertEquals("GetRemainder (9)", true, xr.Read());
+				AssertEquals("GetRemainder (10)", "title", xr.Name);
+				AssertEquals("GetRemainder (11)", true, xr.Read());
+				AssertEquals("GetRemainder (12)", "author", xr.Name);
+				AssertEquals("GetRemainder (13)", true, xr.Read());
+				AssertEquals("GetRemainder (14)", "Daniel P. Bovet and Marco Cesati", xr.Value);
+				AssertEquals("GetRemainder (15)", true, xr.Read());
+				AssertEquals("GetRemainder (16)", "author", xr.Name);
+				AssertEquals("GetRemainder (17)", true, xr.Read());
+				AssertEquals("GetRemainder (18)", "book", xr.Name);
 
-				xmlReader = new XmlTextReader(xmlReader.GetRemainder());
-				xmlReader.Read();
-				Check("Read (2)", "book", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (3)", "title", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (4)", "Learning Perl", ReturnType.Value);
-				xmlReader.Read();
-				Check("Read (5)", "title", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (6)", "author", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (7)", "Randal L. Schwartz and Tom Christiansen", ReturnType.Value);
-				xmlReader.Read();
-				Check("Read (8)", "author", ReturnType.Name);
-				xmlReader.Read();
-				Check("Read (9)", "book", ReturnType.Name);
-				xmlReader.Close();
+				Reset(xr.GetRemainder());
+				xr.WhitespaceHandling = WhitespaceHandling.None;
+				AssertEquals("GetRemainder (19)", true, xr.Read());
+				AssertEquals("GetRemainder (20)", "book", xr.Name);
+				AssertEquals("GetRemainder (21)", true, xr.Read());
+				AssertEquals("GetRemainder (22)", "title", xr.Name);
+				AssertEquals("GetRemainder (23)", true, xr.Read());
+				AssertEquals("GetRemainder (24)", "Learning Perl", xr.Value);
+				AssertEquals("GetRemainder (25)", true, xr.Read());
+				AssertEquals("GetRemainder (26)", "title", xr.Name);
+				AssertEquals("GetRemainder (27)", true, xr.Read());
+				AssertEquals("GetRemainder (28)", "author", xr.Name);
+				AssertEquals("GetRemainder (29)", true, xr.Read());
+				AssertEquals("GetRemainder (30)", "Randal L. Schwartz and Tom Christiansen", xr.Value);
+				AssertEquals("GetRemainder (31)", true, xr.Read());
+				AssertEquals("GetRemainder (32)", "author", xr.Name);
+				AssertEquals("GetRemainder (33)", true, xr.Read());
+				AssertEquals("GetRemainder (34)", "book", xr.Name);
 
 				Clear();
 			}
 
-}; // class TestXmlTextWriter
+	// Test the Read method.
+	public void TestXmlTextReaderRead()
+			{
+				Reset(0);
+				AssertEquals("Read (1)", true, xr.Read());
+				AssertEquals("Read (2)", "soda", xr.Name);
+				AssertEquals("Read (3)", "soda", xr.LocalName);
+				AssertEquals("Read (4)", true, xr.Read());
+				AssertEquals("Read (5)", true, xr.Read());
+				AssertEquals("Read (6)", "size", xr.Name);
+				AssertEquals("Read (7)", "size", xr.LocalName);
+				AssertEquals("Read (8)", true, xr.Read());
+				AssertEquals("Read (9)", "medium", xr.Value);
+
+				Reset(2);
+				AssertEquals("Read (10)", true, xr.Read());
+				AssertEquals("Read (11)", "free", xr.Name);
+				AssertEquals("Read (12)", true, xr.Read());
+				AssertEquals("Read (13)", "software's freedom", xr.Value);
+
+				Reset(4);
+				AssertEquals("Read (14)", true, xr.Read());
+				AssertEquals("Read (15)", "xml", xr.Name);
+				AssertEquals("Read (16)", "1.0", xr["version"]);
+				AssertEquals("Read (17)", true, xr.Read());
+				AssertEquals("Read (18)", "test", xr.Name);
+				AssertEquals("Read (19)", true, xr.Read());
+				AssertEquals("Read (20)", "test", xr.Name);
+				AssertEquals("Read (21)", true, xr.Read());
+				AssertEquals("Read (22)", "Brave ", xr.Value);
+				AssertEquals("Read (23)", true, xr.Read());
+				AssertEquals("Read (24)", "GNU", xr.Name);
+				AssertEquals("Read (25)", true, xr.Read());
+				AssertEquals("Read (26)", " World... ", xr.Value);
+				AssertEquals("Read (27)", true, xr.Read());
+				AssertEquals("Read (28)", "fu", xr.Name);
+				AssertEquals("Read (29)", true, xr.Read());
+				AssertEquals("Read (30)", "bar", xr.Value);
+				AssertEquals("Read (31)", true, xr.Read());
+				AssertEquals("Read (32)", "test", xr.Name);
+
+				Clear();
+			}
+
+	// Test the ReadAttributeValue method.
+	public void TestXmlTextReaderReadAttributeValue()
+			{
+				Reset(0);
+				AssertEquals("ReadAttributeValue (1)", true, xr.Read());
+				AssertEquals("ReadAttributeValue (2)", true, xr.MoveToFirstAttribute());
+				AssertEquals("ReadAttributeValue (3)", true, xr.ReadAttributeValue());
+				AssertEquals("ReadAttributeValue (4)", XmlNodeType.Text, xr.NodeType);
+
+				Clear();
+			}
+
+	// Test the ReadOuterXml method.
+	public void TestXmlTextReaderReadOuterXml()
+			{
+				Reset(0);
+				AssertEquals("ReadOuterXml (1)", true, xr.Read());
+				AssertEquals("ReadOuterXml (2)", xml[0], xr.ReadOuterXml());
+
+				Reset(1);
+				AssertEquals("ReadOuterXml (3)", true, xr.Read());
+				AssertEquals("ReadOuterXml (4)", xml[1], xr.ReadOuterXml());
+
+				Clear();
+			}
+
+	// Test the ReadString method.
+	public void TestXmlTextReaderReadString()
+			{
+				Reset(5);
+				AssertEquals("ReadString (1)", XmlNodeType.Element, xr.MoveToContent());
+				AssertEquals("ReadString (2)", "Brave GNU World ", xr.ReadString());
+			}
+
+}; // class TestXmlTextReader

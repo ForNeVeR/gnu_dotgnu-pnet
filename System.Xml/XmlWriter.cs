@@ -270,16 +270,18 @@ public abstract class XmlWriter
 
 						case XmlNodeType.DocumentType:
 						{
-							WriteDocType(reader.Name, "PUBLIC", "SYSTEM",
-									     reader.Value);
+							WriteDocType
+								(reader.Name, reader["PUBLIC"],
+								 reader["SYSTEM"], reader.Value);
 						}
 						break;
 
 						case XmlNodeType.Element:
 						{
 							// Write the starting information for the element.
-							WriteStartElement(reader.Prefix, reader.LocalName,
-											  reader.NamespaceURI);
+							WriteStartElement
+								(reader.Prefix, reader.LocalName,
+								 reader.NamespaceURI);
 
 							// Write all of the element attributes.
 							WriteAttributes(reader, defattr);

@@ -23,6 +23,7 @@ namespace System.Xml
 {
 
 using System;
+using System.IO;
 using System.Text;
 using System.Xml.Private;
 
@@ -36,7 +37,6 @@ class XmlDeclaration : XmlLinkedNode
 	// Internal state.
 	private String encoding;
 	private String standalone;
-	private String version;
 	private XmlAttributeCollection attributes;
 
 	// Constructor.
@@ -51,7 +51,6 @@ class XmlDeclaration : XmlLinkedNode
 					throw new ArgumentException
 						(S._("Xml_InvalidVersion"), "version");
 				}
-				this.version = version;
 				this.attributes = null;
 			}
 	protected internal XmlDeclaration(String version, String encoding,
@@ -107,7 +106,37 @@ class XmlDeclaration : XmlLinkedNode
 				}
 				set
 				{
-					// TODO: parse the declaration and set the values.
+					// find the document root
+					XmlDocument doc = FindOwnerQuick();
+
+					// get the name table
+					XmlNameTable nt;
+					if(doc == null)
+					{
+						nt = new NameTable();
+					}
+					else
+					{
+						nt = ((XmlDocument)doc).implementation.nameTable;
+					}
+
+					// create the reader
+					XmlTextReader r = new XmlTextReader
+						(new StringReader("<?xml "+value+"?>"), nt);
+
+					// read the value
+					r.Read();
+
+					// read the version attribute
+					if(r["version"] != "1.0")
+					{
+						throw new ArgumentException
+							(S._("Xml_InvalidVersion"), "value");
+					}
+
+					// read the optional attributes
+					Encoding = r["encoding"];
+					Standalone = r["standalone"];
 				}
 			}
 
@@ -182,7 +211,7 @@ class XmlDeclaration : XmlLinkedNode
 			{
 				get
 				{
-					return version;
+					return "1.0";
 				}
 			}
 
@@ -190,7 +219,7 @@ class XmlDeclaration : XmlLinkedNode
 	public override XmlNode CloneNode(bool deep)
 			{
 				return OwnerDocument.CreateXmlDeclaration
-						(version, encoding, standalone);
+						("1.0", encoding, standalone);
 			}
 
 	// Writes the contents of this node to a specified XmlWriter.

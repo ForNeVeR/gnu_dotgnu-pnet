@@ -23,8 +23,9 @@ namespace System.Xml.Private
 {
 
 using System;
+using System.IO;
 using System.Text;
-using System.Collections.Specialized;
+using System.Collections;
 
 internal class XmlDTDParserInput : XmlParserInputBase
 {
@@ -36,7 +37,7 @@ internal class XmlDTDParserInput : XmlParserInputBase
 	private bool scanForPE;
 	private int pePosition;
 	private String peValue;
-	private NameValueCollection parameterEntities;
+	private PEManager parameterEntities;
 	private XmlParserInput input;
 
 
@@ -50,7 +51,8 @@ internal class XmlDTDParserInput : XmlParserInputBase
 				this.peValue = null;
 				this.pePosition = -1;
 				this.scanForPE = true;
-				this.parameterEntities = new NameValueCollection();
+				this.parameterEntities = new PEManager
+					(nameTable, input.ErrorHandler);
 			#if !ECMA_COMPAT
 				this.valid = true;
 				this.started = false;
@@ -78,7 +80,7 @@ internal class XmlDTDParserInput : XmlParserInputBase
 			}
 
 	// Get or set the list of parameter entities.
-	public NameValueCollection ParameterEntities
+	public PEManager ParameterEntities
 			{
 				get { return parameterEntities; }
 				set { parameterEntities = value; }
@@ -152,6 +154,7 @@ internal class XmlDTDParserInput : XmlParserInputBase
 					retval = true;
 					if(pePosition == -1)
 					{
+						pePosition++;
 						currChar = ' ';
 					}
 					else if(pePosition < peValue.Length)
@@ -186,7 +189,7 @@ internal class XmlDTDParserInput : XmlParserInputBase
 							String name = input.ReadName();
 							input.Expect(';');
 							peValue = parameterEntities[name];
-							pePosition = 0;
+							pePosition = -1;
 							peekChar = ' ';
 						}
 					}
@@ -194,7 +197,7 @@ internal class XmlDTDParserInput : XmlParserInputBase
 				else
 				{
 					retval = true;
-					if(pePosition+1 < peValue.Length)
+					if(pePosition != -1 && pePosition < peValue.Length)
 					{
 						peekChar = peValue[pePosition];
 					}
@@ -212,6 +215,238 @@ internal class XmlDTDParserInput : XmlParserInputBase
 				pePosition = -1;
 				peValue = null;
 			}
+
+
+
+
+	// this is just a temporary hack until we come up
+	// with something better for entity handling
+	public sealed class PEManager : XmlErrorProcessor
+	{
+		// Internal state.
+		private Hashtable table;
+		private XmlParserInput input;
+
+
+		// Constructor.
+		public PEManager(XmlNameTable nameTable, ErrorHandler error)
+				: base(error)
+				{
+					table = new Hashtable();
+					input = new XmlParserInput(null, nameTable, error);
+				}
+
+
+		// Get or set the value for the given name.
+		public String this[String name]
+				{
+					get
+					{
+						Object obj = table[name];
+						if(obj == null) { return null; }
+						PEValue pe = (PEValue)obj;
+						if(!pe.expanded)
+						{
+							pe.value = Expand(name, pe.value);
+							pe.expanded = true;
+							table[name] = pe;
+						}
+						return pe.value;
+					}
+					set { table[name] = new PEValue(Expand(name, value)); }
+				}
+
+
+		// Check if the given entity is contained in the table.
+		public bool Contains(String name)
+				{
+					return table.Contains(name);
+				}
+
+		// Expand the pe reference.
+		private String Expand(String rootName, String rawValue)
+				{
+					// set up our reader
+					input.Reader = new StringReader(rawValue);
+
+					// create our log and push it onto the logger's log stack
+					StringBuilder log = new StringBuilder();
+					input.Logger.Push(log);
+
+					// read until we consume the entire value
+					while(input.PeekChar())
+					{
+						if(input.peekChar == '&')
+						{
+							int position = log.Length;
+							char c;
+
+							// move to the '&' character
+							input.NextChar();
+
+							// read the reference
+							if(ReadCharacterReference(out c))
+							{
+								log.Length = position;
+								log.Append(c);
+							}
+						}
+						else if(input.peekChar == '%')
+						{
+							// pop the log while reading the pe reference
+							input.Logger.Pop();
+
+							// move to the '%' character
+							input.NextChar();
+
+							// read the pe reference name
+							String name = input.ReadName();
+
+							// give an error on recursion
+							if(name == rootName) { Error(/* TODO */); }
+
+							// the pe reference must end with ';' at this point
+							input.Expect(';');
+
+							// get the value for the entity
+							String value = this[name];
+
+							// check to make sure the entity has been defined
+							if(value == null) { Error(/* TODO */); }
+
+							// append the replacement text to the log
+							log.Append(value);
+
+							// push the log back onto the log stack
+							input.Logger.Push(log);
+						}
+						else
+						{
+							input.NextChar();
+						}
+					}
+
+					// close the reader
+					input.Close();
+
+					// pop the log from the log stack, and return the value
+					return input.Logger.Pop().ToString();
+				}
+
+		// Read a character reference, returning false for general entity references.
+		//
+		// Already read: '&'
+		private bool ReadCharacterReference(out char value)
+				{
+					// check for an empty reference
+					if(!input.PeekChar()) { Error(/* TODO */); }
+					if(input.peekChar == ';') { Error(/* TODO */); }
+
+					// set the defaults
+					value = (char)0;
+
+					// handle character or general references
+					if(input.peekChar == '#')
+					{
+						input.NextChar();
+
+						// check for an empty character reference
+						if(!input.PeekChar()) { Error(/* TODO */); }
+						if(input.peekChar == ';') { Error(/* TODO */); }
+
+						// handle a hex or decimal character reference
+						if(input.peekChar == 'x')
+						{
+							input.NextChar();
+
+							// check for an empty hex character reference
+							if(!input.PeekChar()) { Error(/* TODO */); }
+							if(input.peekChar == ';') { Error(/* TODO */); }
+
+							// read until we consume all the digits
+							while(input.NextChar() && input.currChar != ';')
+							{
+								value *= 0x10;
+								if(input.currChar >= '0' && input.currChar <= '9')
+								{
+									value += input.currChar - '0';
+								}
+								else if(input.currChar >= 'A' && input.currChar <= 'F')
+								{
+									value += (input.currChar - 'A') + 10;
+								}
+								else if(input.currChar >= 'a' && input.currChar <= 'f')
+								{
+									value += (input.currChar - 'a') + 10;
+								}
+								else
+								{
+									Error(/* TODO */);
+								}
+							}
+						}
+						else
+						{
+							// read until we consume all the digits
+							while(input.NextChar() && input.currChar != ';')
+							{
+								value *= 10;
+								if(input.currChar >= '0' && input.currChar <= '9')
+								{
+									value += input.currChar - '0';
+								}
+								else
+								{
+									Error(/* TODO */);
+								}
+							}
+						}
+
+						// we hit eof, otherwise we'd have ';', so give an error
+						if(input.currChar != ';') { Error("Xml_UnexpectedEOF"); }
+
+						// check the range of the character
+						if(!XmlCharInfo.IsChar(value))
+						{
+							Error(/* TODO */);
+						}
+
+						return true;
+					}
+					else
+					{
+						// read the reference name
+						input.ReadName();
+
+						// the reference must end with ';' at this point
+						input.Expect(';');
+
+						// signal that a general entity reference was encountered
+						return false;
+					}
+				}
+
+
+
+
+
+		private struct PEValue
+		{
+			// Internal state.
+			public bool expanded;
+			public String value;
+
+			// Constructor.
+			public PEValue(String value)
+					{
+						this.expanded = false;
+						this.value = value;
+					}
+
+		}; // struct PEValue
+
+
+	}; // class PEManager
 
 }; // class XmlDTDParserInput
 

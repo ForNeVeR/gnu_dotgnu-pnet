@@ -147,6 +147,12 @@ internal sealed class AttributeInfo : IterableNodeInfo
 				return true;
 			}
 
+	// Read the next attribute value in the input stream.
+	public override bool ReadAttributeValue()
+			{
+				return Next();
+			}
+
 	// Reset the iteration.
 	public override void Reset()
 			{

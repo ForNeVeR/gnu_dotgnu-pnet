@@ -50,16 +50,6 @@ internal sealed class XmlDeclarationInfo : NodeWithAttributesInfo
 				}
 			}
 
-	// Get the local name.
-	public override String LocalName
-			{
-				get
-				{
-					if(index == -1) { return xml; }
-					return attributes[index].LocalName;
-				}
-			}
-
 	// Get the fully-qualified name.
 	public override String Name
 			{
@@ -86,7 +76,7 @@ internal sealed class XmlDeclarationInfo : NodeWithAttributesInfo
 				get
 				{
 					if(index == -1) { return XmlNodeType.XmlDeclaration; }
-					return XmlNodeType.Attribute;
+					return attributes[index].NodeType;
 				}
 			}
 

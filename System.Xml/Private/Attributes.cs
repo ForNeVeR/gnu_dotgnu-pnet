@@ -74,7 +74,15 @@ internal sealed class Attributes : XmlErrorProcessor
 	public int Find(String localName, String namespaceURI)
 			{
 				// create the search key
-				Key key = new Key(nt.Get(localName), nt.Get(namespaceURI));
+				Key key;
+				if(nm == null && (namespaceURI == null || namespaceURI == ""))
+				{
+					key = new Key(nt.Get(localName));
+				}
+				else
+				{
+					key = new Key(nt.Get(localName), nt.Get(namespaceURI));
+				}
 
 				// perform the lookup and return the results
 				Object val = names[key];
@@ -102,7 +110,7 @@ internal sealed class Attributes : XmlErrorProcessor
 					}
 					else
 					{
-						key = new Key(name, defaultNS);
+						key = new Key(nt.Get(name), defaultNS);
 					}
 				}
 

@@ -114,17 +114,14 @@ internal class XmlParserInput : XmlParserInputBase
 	// Move to the next character, returning false on EOF.
 	public override bool NextChar()
 			{
-				if(bufferPos == bufferLen)
-				{
-					bufferLen = reader.Read(buffer, 0, BUFSIZE);
-					bufferPos = 0;
-					if(bufferLen == 0)
-					{
-						EOF();
-						return false;
-					}
-				}
+				if(!EnsureCapacity(0)) { return false; }
 				currChar = buffer[bufferPos++];
+				if(currChar == '\r')
+				{
+					if(!EnsureCapacity(0)) { return false; }
+					if(buffer[bufferPos] == '\n') { ++bufferPos; }
+					currChar = '\n';
+				}
 				if(currChar == '\n')
 				{
 					++lineNumber;
@@ -141,39 +138,43 @@ internal class XmlParserInput : XmlParserInputBase
 	// Peek at the next character, returning false on EOF.
 	public override bool PeekChar()
 			{
-				if(bufferPos == bufferLen)
-				{
-					bufferLen = reader.Read(buffer, 0, BUFSIZE);
-					bufferPos = 0;
-					if(bufferLen == 0)
-					{
-						EOF();
-						return false;
-					}
-				}
+				if(!EnsureCapacity(0)) { return false; }
 				peekChar = buffer[bufferPos];
+				if(peekChar == '\r')
+				{
+					if(!EnsureCapacity(1)) { return false; }
+					if(buffer[bufferPos+1] == '\n') { ++bufferPos; }
+					peekChar = '\n';
+				}
 				return true;
 			}
 
 	// This is a hack for the double look-ahead in the subset reader.
 	internal bool ExtraPeekChar()
 			{
-				if(bufferPos+1 >= bufferLen)
+				if(!EnsureCapacity(1)) { return false; }
+				extraPeekChar = buffer[bufferPos+1];
+				return true;
+			}
+
+	// Ensure the capacity of the character buffer.
+	private bool EnsureCapacity(int save)
+			{
+				if(reader == null) { return false; }
+				if(bufferPos+save == bufferLen)
 				{
-					if(!PeekChar()) { return false; }
-					if(bufferPos+1 == bufferLen)
+					if(save > 0)
 					{
-						buffer[0] = peekChar;
-						bufferLen = reader.Read(buffer, 1, BUFSIZE-1) + 1;
-						bufferPos = 0;
-						if(bufferLen == 1)
-						{
-							EOF();
-							return false;
-						}
+						Array.Copy(buffer, bufferPos, buffer, 0, save);
+					}
+					bufferLen = reader.Read(buffer, save, BUFSIZE-save) + save;
+					bufferPos = 0;
+					if(bufferLen == save)
+					{
+						EOF();
+						return false;
 					}
 				}
-				extraPeekChar = buffer[bufferPos+1];
 				return true;
 			}
 

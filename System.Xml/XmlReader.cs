@@ -2,6 +2,7 @@
  * XmlReader.cs - Implementation of the "System.Xml.XmlReader" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +23,8 @@ namespace System.Xml
 {
 
 using System;
+using System.IO;
+using System.Text;
 
 public abstract class XmlReader
 {
@@ -206,10 +209,125 @@ public abstract class XmlReader
 			}
 
 	// Read the contents of the current node, including all markup.
-	public abstract String ReadInnerXml();
+	public virtual String ReadInnerXml()
+			{
+				// bail out now if there's nothing to read
+				if(ReadState != ReadState.Interactive) { return String.Empty; }
+
+				if(NodeType == XmlNodeType.Attribute)
+				{
+					// create the writer
+					StringWriter sw = new StringWriter();
+
+					// store these so we can reset the ReadAttributeValue state
+					String namespaceURI = NamespaceURI;
+					String localName = LocalName;
+
+					// read until we consume all of the attribute value
+					while(ReadAttributeValue())
+					{
+						WriteAttributeValue(sw);
+					}
+
+					// reset the ReadAttributeValue state
+					MoveToAttribute(localName, namespaceURI);
+
+					// return the full attribute value
+					return sw.ToString();
+				}
+				else if(NodeType == XmlNodeType.Element)
+				{
+					// handle the empty element case
+					if(IsEmptyElement)
+					{
+						Read();
+						return String.Empty;
+					}
+
+					// create the writers
+					StringWriter sw = new StringWriter();
+					XmlTextWriter w = new XmlTextWriter(sw);
+
+					// store the start depth so we know when to stop
+					int startDepth = Depth;
+
+					// read past the start tag
+					Read();
+
+					// read until we consume all the children
+					while(startDepth != Depth)
+					{
+						w.WriteNode(this, false);
+					}
+
+					// read past the end tag
+					Read();
+
+					// return the element content
+					return sw.ToString();
+				}
+				else
+				{
+					Read();
+					return String.Empty;
+				}
+			}
 
 	// Read the current node, including all markup.
-	public abstract String ReadOuterXml();
+	public virtual String ReadOuterXml()
+			{
+				// bail out now if there's nothing to read
+				if(ReadState != ReadState.Interactive) { return String.Empty; }
+
+				if(NodeType == XmlNodeType.Attribute)
+				{
+					// create the writers
+					StringWriter sw = new StringWriter();
+					XmlTextWriter w = new XmlTextWriter(sw);
+
+					// store these so we can reset the ReadAttributeValue state
+					String namespaceURI = NamespaceURI;
+					String localName = LocalName;
+
+					// set the quote character
+					w.QuoteChar = QuoteChar;
+
+					// start writing the attribute
+					w.WriteStartAttribute(Prefix, localName, namespaceURI);
+
+					// read until we consume all of the attribute value
+					while(ReadAttributeValue())
+					{
+						WriteAttributeValue(sw);
+					}
+
+					// finish writing the attribute
+					w.WriteEndAttribute();
+
+					// reset the ReadAttributeValue state
+					MoveToAttribute(localName, namespaceURI);
+
+					// return the full attribute value
+					return sw.ToString();
+				}
+				else if(NodeType == XmlNodeType.Element)
+				{
+					// create the writers
+					StringWriter sw = new StringWriter();
+					XmlTextWriter w = new XmlTextWriter(sw);
+
+					// write the element and its children
+					w.WriteNode(this, false);
+
+					// return the element content
+					return sw.ToString();
+				}
+				else
+				{
+					Read();
+					return String.Empty;
+				}
+			}
 
 	// Read a start element with a particular name.
 	public virtual void ReadStartElement(String localname, String ns)
@@ -252,7 +370,47 @@ public abstract class XmlReader
 			}
 
 	// Read the contents of an element or text node as a string.
-	public abstract String ReadString();
+	public virtual String ReadString()
+			{
+				// bail out now if there's nothing to read
+				if(ReadState != ReadState.Interactive) { return String.Empty; }
+
+				// move to the element (in case we're on one of its attributes)
+				MoveToElement();
+
+				// move past the element, if we're positioned on it
+				if(NodeType == XmlNodeType.Element)
+				{
+					// bail out now if there's nothing to read
+					if(IsEmptyElement) { return String.Empty; }
+					Read();
+				}
+
+				// create the content log
+				StringBuilder log = new StringBuilder();
+
+				// read until we consume all the text content
+				bool stop = false;
+				do
+				{
+					XmlNodeType nodeType = NodeType;
+					if(nodeType == XmlNodeType.Text ||
+					   nodeType == XmlNodeType.CDATA ||
+					   nodeType == XmlNodeType.Whitespace ||
+					   nodeType == XmlNodeType.SignificantWhitespace)
+					{
+						log.Append(Value);
+					}
+					else
+					{
+						stop = true;
+					}
+				}
+				while(!stop && Read());
+
+				// return the text content
+				return log.ToString();
+			}
 
 	// Resolve an entity reference.
 	public abstract void ResolveEntity();
@@ -372,6 +530,61 @@ public abstract class XmlReader
 
 	// Get the current xml:space scope.
 	public abstract XmlSpace XmlSpace { get; }
+
+
+
+	private static readonly String builtinChars = "'\"<>&";
+	private static readonly String[] builtinRefs = new String[]
+	{
+		"&apos;",
+		"&quot;",
+		"&lt;",
+		"&gt;",
+		"&amp;"
+	};
+
+	// Write the value of an attribute node to a text writer.
+	private void WriteAttributeValue(TextWriter w)
+			{
+				if(NodeType == XmlNodeType.EntityReference)
+				{
+					// write a general entity reference
+					w.Write("&{0};", Name);
+				}
+				else
+				{
+					String v = Value;
+					int len = v.Length;
+
+					// read until we consume all of the value
+					int textStart = 0;
+					for(int i = 0; i < len; ++i)
+					{
+						// if we have a builtin for the character, escape it
+						int pos = builtinChars.IndexOf(v[i]);
+						if(pos != -1)
+						{
+							// if we have text, write it
+							if(i > textStart)
+							{
+								w.Write(v.Substring(textStart, i - textStart));
+							}
+
+							// write the builtin reference
+							w.Write(builtinRefs[pos]);
+
+							// store the start index of the next segment
+							textStart = i+1;
+						}
+					}
+
+					// if we have text, write it
+					if(len > textStart)
+					{
+						w.Write(v.Substring(textStart, len - textStart));
+					}
+				}
+			}
 
 }; // class XmlReader
 

@@ -54,6 +54,7 @@ public class XmlValidatingReader : XmlReader, IXmlLineInfo
 				}
 				entityHandling = EntityHandling.ExpandEntities;
 				validationType = ValidationType.Auto;
+				this.reader.Normalization = true;
 			}
 	public XmlValidatingReader(Stream xmlFragment, XmlNodeType fragType,
 							   XmlParserContext context)
@@ -61,6 +62,7 @@ public class XmlValidatingReader : XmlReader, IXmlLineInfo
 				reader = new XmlTextReader(xmlFragment, fragType, context);
 				entityHandling = EntityHandling.ExpandEntities;
 				validationType = ValidationType.Auto;
+				reader.Normalization = true;
 			}
 	public XmlValidatingReader(String xmlFragment, XmlNodeType fragType,
 							   XmlParserContext context)
@@ -68,6 +70,7 @@ public class XmlValidatingReader : XmlReader, IXmlLineInfo
 				reader = new XmlTextReader(xmlFragment, fragType, context);
 				entityHandling = EntityHandling.ExpandEntities;
 				validationType = ValidationType.Auto;
+				reader.Normalization = true;
 			}
 
 	// Clean up the resources that were used by this XML reader.
@@ -377,19 +380,6 @@ public class XmlValidatingReader : XmlReader, IXmlLineInfo
 				set
 				{
 					reader.Namespaces = value;
-				}
-			}
-
-	// Get or set the "normalize" flag for this reader.
-	public bool Normalization
-			{
-				get
-				{
-					return reader.Normalization;
-				}
-				set
-				{
-					reader.Normalization = value;
 				}
 			}
 

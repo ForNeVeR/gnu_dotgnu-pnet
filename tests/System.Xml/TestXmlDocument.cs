@@ -27,6 +27,38 @@ using System.Xml;
 
 public class TestXmlDocument : TestCase
 {
+	private String[] xml = new String[]
+	{
+		("<UI version='3.1' stdsetdef='1'>" +
+		 "	<class>Form1</class>" +
+		 "	<widget class='QDialog'>" +
+		 "		<property name='name'>" +
+		 "			<cstring>Form1</cstring>" +
+		 "		</property>" +
+		 "		<property name='geometry'>" +
+		 "			<rect>" +
+		 "				<x>0</x>" +
+		 "				<y>0</y>" +
+		 "				<width>179</width>" +
+		 "				<height>158</height>" +
+		 "			</rect>" +
+		 "		</property>" +
+		 "		<property name='caption'>" +
+		 "			<string>Form1</string>" +
+		 "		</property>" +
+		 "	</widget>" +
+		 "</UI>"),
+		("<?xml version='1.0'?>" +
+		 "<!DOCTYPE test [" +
+		 "	<!ELEMENT test (#PCDATA) >" +
+		 "	<!ENTITY hello 'hello world'>" +
+		 "]>" +
+		 "<!-- a sample comment -->" +
+		 "<test>Brave GNU <![CDATA[World]]> &hello;</test>" +
+		 "					" +
+		 "<?pi HeLlO wOrLd ?>"),
+	};
+
 	// Constructor.
 	public TestXmlDocument(String name)
 			: base(name)
@@ -46,8 +78,6 @@ public class TestXmlDocument : TestCase
 				// Nothing to do here.
 			}
 
-	public string xmlASCII = "<UI version=\"3.1\" stdsetdef=\"1\"><class>Form1</class><widget class=\"QDialog\"><property name=\"name\"><cstring>Form1</cstring></property><property name=\"geometry\"><rect><x>0</x><y>0</y><width>179</width><height>158</height></rect></property><property name=\"caption\"><string>Form1</string></property></widget></UI>";
-		
 	// Test document construction.
 	public void TestXmlDocumentConstruct()
 			{
@@ -71,25 +101,23 @@ public class TestXmlDocument : TestCase
 
 				// Verify the initial conditions.
 				AssertNull("Properties (1)", doc.Attributes);
-				AssertEquals("Properties (2)", doc.BaseURI, String.Empty);
+				AssertEquals("Properties (2)", "", doc.BaseURI);
 				AssertNotNull("Properties (3)", doc.ChildNodes);
 				AssertNull("Properties (4)", doc.DocumentElement);
 				AssertNull("Properties (5)", doc.DocumentType);
 				AssertNull("Properties (6)", doc.FirstChild);
 				Assert("Properties (7)", !doc.HasChildNodes);
 				Assert("Properties (8)", !doc.IsReadOnly);
-				AssertEquals("Properties (9)", doc.LocalName, "#document");
-				AssertEquals("Properties (10)", doc.Name, "#document");
-				AssertEquals("Properties (11)", doc.NamespaceURI,
-							 String.Empty);
+				AssertEquals("Properties (9)", "#document", doc.LocalName);
+				AssertEquals("Properties (10)", "#document", doc.Name);
+				AssertEquals("Properties (11)", "", doc.NamespaceURI);
 				AssertNull("Properties (12)", doc.NextSibling);
-				AssertEquals("Properties (13)", doc.NodeType,
-							 XmlNodeType.Document);
-				AssertNull("Properties (13)", doc.OwnerDocument);
-				AssertNull("Properties (14)", doc.ParentNode);
-				AssertEquals("Properties (15)", doc.Prefix, String.Empty);
-				AssertNull("Properties (16)", doc.PreviousSibling);
-				AssertEquals("Properties (17)", doc.Value, String.Empty);
+				AssertEquals("Properties (13)", XmlNodeType.Document, doc.NodeType);
+				AssertNull("Properties (14)", doc.OwnerDocument);
+				AssertNull("Properties (15)", doc.ParentNode);
+				AssertEquals("Properties (16)", "", doc.Prefix);
+				AssertNull("Properties (17)", doc.PreviousSibling);
+				AssertEquals("Properties (18)", "", doc.Value);
 			}
 
 	// Test adding an XML declaration to the document.
@@ -296,19 +324,31 @@ public class TestXmlDocument : TestCase
 				// Adding a document type before should succeed.
 				doc.InsertBefore(type, element);
 			}
-	
+
 	// Test searching children ie: doc["elementname"]
 	public void TestXmlDocumentFindElement()
 			{
 				XmlDocument doc = new XmlDocument();
-				doc.Load( new StringReader(xmlASCII) );
+				doc.Load(new StringReader(xml[0]));
 				XmlElement e = doc["UI"];
 				AssertEquals("XmlFindElement (1)", "UI", e.Name);
 				AssertEquals("XmlFindElement (2)", "Form1", e["class"].InnerText);
 				AssertEquals("XmlFindElement (3)", "Form1", e["widget"]["property"].InnerText);
-				
+
 				XmlElement n = doc["notgonnabefound"];
-				AssertNull("XmlFindElement (2)", n);
+				AssertNull("XmlFindElement (4)", n);
+			}
+
+	// Test loading xml.
+	public void TestXmlDocumentLoadXml()
+			{
+				XmlDocument doc = new XmlDocument();
+				doc.PreserveWhitespace = true;
+				doc.LoadXml(xml[1]);
+				AssertNotNull("LoadXml (1)", doc.FirstChild);
+				AssertNotNull("LoadXml (2)", doc.DocumentType);
+				AssertNotNull("LoadXml (3)", doc.DocumentElement);
+				Assert("LoadXml (4)", (doc.FirstChild is XmlDeclaration));
 			}
 
 }; // class TestXmlDocument

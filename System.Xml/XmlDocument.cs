@@ -34,12 +34,12 @@ public
 class XmlDocument : XmlNode
 {
 	// Internal state.
-	private XmlImplementation implementation;
 	private String baseURI;
 	private bool preserveWhitespace;
 	private XmlResolver xmlResolver;
 	internal NameCache nameCache;
 	internal XmlDocumentFragment placeholder;
+	internal XmlImplementation implementation;
 	internal static readonly String xmlns = "http://www.w3.org/2000/xmlns/";
 
 	// Constructors.
@@ -625,7 +625,6 @@ class XmlDocument : XmlNode
 	// Load XML into this document.
 	public virtual void Load(Stream inStream)
 			{
-				RemoveAll();
 				Load(new XmlTextReader(inStream));
 			}
 	public virtual void Load(String filename)
@@ -639,201 +638,459 @@ class XmlDocument : XmlNode
 			}
 	public virtual void Load(TextReader txtReader)
 			{
-				RemoveAll();
 				Load(new XmlTextReader(txtReader));
 			}
 	public virtual void Load(XmlReader reader)
 			{
-				
 				RemoveAll();
-		
-				try
+				if(!BuildStructure((XmlTextReader)reader))
 				{
-					if(!BuildStructure((XmlTextReader)reader))
-					{
-						throw new XmlException(
-								S._("XmlException_NoXml"));
-					}
-					
-					
-				}
-				catch(XmlException)
-				{
-					throw new XmlException(
-							S._("XmlException_ParseError"));
+					throw new XmlException(S._("XmlException_NoXml"));
 				}
 			}
 
 	// Load XML into this document from a string.
 	public virtual void LoadXml(String xml)
 			{
-				if (xml == null || xml == String.Empty)
+				if(xml == null || xml == String.Empty)
 				{
-					throw new XmlException(
-							S._("XmlException_NoXml"));
+					throw new XmlException(S._("XmlException_NoXml"));
 				}
-				
-				XmlTextReader reader = new XmlTextReader(xml, XmlNodeType.Element, null);
-				try
-				{
-					BuildStructure(reader);
-				}
-				catch(XmlException)
-				{
-					throw new XmlException(
-							S._("XmlException_ParseError"));
-				}
+
+				XmlTextReader reader = new XmlTextReader(xml, XmlNodeType.Document, null);
+				BuildStructure(reader);
 			}
 
 	// Used by Load/LoadXml methods to do the DOM structure
 	private bool BuildStructure(XmlTextReader reader)
 			{
-				XmlNode parent = this;
-				XmlNode docType = null;
+				// check if we should read in a full document
+				bool complete = (reader.Depth == 0);
 
-				parent = ReadNode(reader);
-				
-				if(parent != null && reader.NodeType != XmlNodeType.DocumentType)
+				// read the first child
+				XmlNode node = ReadNode(reader);
+				if(node == null) { return false; }
+
+				// return now if we don't need to read any more
+				if(!complete) { return true; }
+
+				// read until we've consumed the full document and return
+				while(node != null) { node = ReadNode(reader); }
+				return true;
+			}
+
+	// Read the children of a node.
+	private void ReadChildren(XmlReader r, XmlNode parent)
+			{
+				if(parent is XmlAttribute)
 				{
-				
-					this.AppendChild(parent);
-					return true;
-				}
-				else if(parent != null && reader.NodeType == XmlNodeType.DocumentType)
-				{
-					docType = parent;
-					parent = ReadNode(reader);
-					this.AppendChild(parent);
-					// add DocumentType
-					this.AppendChild(docType);
-					return true;
+					while(r.ReadAttributeValue())
+					{
+						XmlNodeType nodeType = r.NodeType;
+						if(nodeType == XmlNodeType.Text)
+						{
+							parent.AppendChild(CreateTextNode(r.Value));
+						}
+						else if(nodeType == XmlNodeType.EntityReference)
+						{
+							parent.AppendChild(CreateEntityReference(r.Name));
+						}
+						else
+						{
+							throw new InvalidOperationException(/* TODO */);
+						}
+					}
 				}
 				else
 				{
-					return false;
+					int startDepth = r.Depth;
+
+					r.Read();
+					while(r.ReadState == ReadState.Interactive &&
+					      r.Depth != startDepth)
+					{
+						// read child
+						XmlNode child = ReadNodeInternal(r);
+
+						// ignore nulls, at least for now
+						if(child != null)
+						{
+							// append child
+							parent.AppendChild(child);
+						}
+					}
+
+					// if we hit end-of-file, give an error
+					if(r.Depth != startDepth)
+					{
+						throw new InvalidOperationException(/* TODO */);
+					}
+
+					// if we have an element, read past the end element node
+					if(parent is XmlElement) { r.Read(); }
+				}
+			}
+
+	// Used by the ReadNode method for recursively building a DOM subtree.
+	private XmlNode ReadNodeInternal(XmlReader r)
+			{
+				switch(r.NodeType)
+				{
+					case XmlNodeType.Attribute:
+					{
+						// create the attribute
+						XmlAttribute att = CreateAttribute(r.Name);
+						att.Value = r.Value;
+
+						// read and append the children
+						ReadChildren(r, att);
+
+						// return the attribute
+						return att;
+					}
+					// Not reached.
+
+					case XmlNodeType.CDATA:
+					{
+						// create the character data section
+						XmlCDataSection cdata = CreateCDataSection(r.Value);
+
+						// advance the reader to the next node
+						r.Read();
+
+						// return the character data section
+						return cdata;
+					}
+					// Not reached.
+
+					case XmlNodeType.Comment:
+					{
+						// create the comment
+						XmlComment comment = CreateComment(r.Value);
+
+						// advance the reader to the next node
+						r.Read();
+
+						// return the comment
+						return comment;
+					}
+					// Not reached.
+
+					case XmlNodeType.DocumentType:
+					{
+						// create the document type
+						XmlDocumentType doctype = CreateDocumentType
+							(r.Name, r["PUBLIC"], r["SYSTEM"], r.Value);
+
+						// advance the reader to the next node
+						r.Read();
+
+						// return the document type
+						return doctype;
+					}
+					// Not reached.
+
+					case XmlNodeType.Element:
+					{
+						// create the element
+						XmlElement elem = CreateElement
+							(r.Prefix, r.LocalName, r.NamespaceURI);
+						bool isEmptyElement = r.IsEmptyElement;
+
+						// read the attributes
+						while(r.MoveToNextAttribute())
+						{
+							XmlAttribute att = (XmlAttribute)ReadNodeInternal(r);
+							elem.SetAttributeNode(att);
+						}
+						r.MoveToElement();
+
+						// return now if there are no children
+						if(isEmptyElement) { return elem; }
+
+						// read and append the children
+						ReadChildren(r, elem);
+
+						// return the element
+						return elem;
+					}
+					// Not reached.
+
+					case XmlNodeType.DocumentFragment:
+					case XmlNodeType.EndElement:
+					case XmlNodeType.EndEntity:
+					case XmlNodeType.Entity:
+					case XmlNodeType.Notation:
+					{
+						// TODO
+
+						// advance the reader to the next node
+						r.Read();
+
+						// nothing to return
+						return null;
+					}
+					// Not reached.
+
+					case XmlNodeType.EntityReference:
+					{
+						// create the entity reference
+						XmlEntityReference er = CreateEntityReference(r.Name);
+
+						// advance the reader to the next node
+						r.Read();
+
+						// return the entity reference
+						return er;
+					}
+					// Not reached.
+
+					case XmlNodeType.ProcessingInstruction:
+					{
+						// create the processing instruction
+						XmlProcessingInstruction pi = CreateProcessingInstruction
+							(r.Name, r.Value);
+
+						// advance the reader to the next node
+						r.Read();
+
+						// return the processing instruction
+						return pi;
+					}
+					// Not reached.
+
+					case XmlNodeType.SignificantWhitespace:
+					{
+						// create the significant whitespace
+						XmlSignificantWhitespace sws = CreateSignificantWhitespace
+							(r.Value);
+
+						// advance the reader to the next node
+						r.Read();
+
+						// return the significant whitespace
+						return sws;
+					}
+					// Not reached.
+
+					case XmlNodeType.Text:
+					{
+						// create the text
+						XmlText text = CreateTextNode(r.Value);
+
+						// advance the reader to the next node
+						r.Read();
+
+						// return the text
+						return text;
+					}
+					// Not reached.
+
+					case XmlNodeType.Whitespace:
+					{
+						// if whitespace preservation is off, skip whitespace
+						if(!preserveWhitespace)
+						{
+							while(r.Read())
+							{
+								if(r.NodeType != XmlNodeType.Whitespace)
+								{
+									return ReadNodeInternal(r);
+								}
+							}
+							return null;
+						}
+
+						// create the whitespace
+						XmlWhitespace ws = CreateWhitespace(r.Value);
+
+						// advance the reader to the next node
+						r.Read();
+
+						// return the whitespace
+						return ws;
+					}
+					// Not reached.
+
+					case XmlNodeType.XmlDeclaration:
+					{
+						// set up the defaults
+						String e = String.Empty;
+						String s = String.Empty;
+
+						// read the version
+						r.MoveToNextAttribute();
+
+						// read the optional attributes
+						if(r.MoveToNextAttribute())
+						{
+							if(r.Name == "encoding")
+							{
+								e = r.Value;
+								if(r.MoveToNextAttribute())
+								{
+									s = r.Value;
+								}
+							}
+							else
+							{
+								s = r.Value;
+							}
+						}
+
+						// create the xml declaration
+						XmlDeclaration xml = CreateXmlDeclaration("1.0", e, s);
+
+						// advance the reader to the next node
+						r.Read();
+
+						// return the xml declaration
+						return xml;
+					}
+					// Not reached.
+
+					default:
+					{
+						throw new InvalidOperationException(/* TODO */);
+					}
+					// Not reached.
 				}
 			}
 
 	// Read a node into this document.
 	public virtual XmlNode ReadNode(XmlReader reader)
 			{
-				XmlNode currentNode = null;
-				XmlNode resultNode = null;
-				bool isEmptyElement = false;
-				
-				int startDepth = reader.Depth;
-				
-				while(reader.Read())
+				// if there's no current node, read one
+				if(reader.ReadState == ReadState.Initial)
 				{
-					switch(reader.NodeType)
-					{
-						case XmlNodeType.Element:
-							XmlElement newElementNode = CreateElement(reader.Prefix, 
-										reader.LocalName,
-										reader.NamespaceURI);
-							if(startDepth == 0)
-							{
-								// set as root node
-							}
+					reader.Read();
 
-							/* Grab Element Node State - isEmpty switches to true for <node/> */
-							isEmptyElement = reader.IsEmptyElement;
-							
-							if(reader.HasAttributes)
-							{
-								while(reader.MoveToNextAttribute())
-								{
-									XmlAttribute newAttributeNode = CreateAttribute(reader.Name);
-									if(reader.ReadAttributeValue())
-									{
-										newAttributeNode.Value = reader.Value;
-									}
-										
-									newElementNode.SetAttributeNode(newAttributeNode);
-								}
-							}
-							
-							if(currentNode != null)
-							{
-								// append child
-								currentNode.AppendChild(newElementNode);
-							}
-							else
-							{
-								currentNode = newElementNode;
-							}
-							// update result
-							resultNode = currentNode;
-							if( isEmptyElement == false )
-							{
-								// move child to currentNode
-								currentNode = newElementNode;
-							}
-							break;
-						case XmlNodeType.Attribute:
-							XmlAttribute newAttributeNode1 = CreateAttribute(reader.Name);
-							
-							if(reader.ReadAttributeValue())
-							{
-								newAttributeNode1.Value = reader.Value;
-							}
-								
-							currentNode.AppendChild(newAttributeNode1);
-							break;
-						case XmlNodeType.CDATA:
-							XmlCDataSection newCDATANode = CreateCDataSection(reader.Value);
-							currentNode.AppendChild(newCDATANode);
-							break;
-						case XmlNodeType.Comment:
-							// TODO: Comment
-							// Append Comments to parent Node
-							break;
-						case XmlNodeType.EndElement:
-							if( currentNode.ParentNode != null )
-							{
-								currentNode = currentNode.ParentNode;
-							}
-							break;
-						case XmlNodeType.EndEntity:
-							// TODO: EndEntity
-							break;
-						case XmlNodeType.ProcessingInstruction:
-							// TODO: ProcessingInstruction
-							break;
-						case XmlNodeType.Text:
-							XmlText newTextNode = CreateTextNode(reader.Value);
-							currentNode.AppendChild(newTextNode);
-							break;
-						case XmlNodeType.XmlDeclaration:
-							// TODO: XmlDeclaration
-							break;
-						case XmlNodeType.DocumentType:
-							if(currentNode != null)
-							{
-								throw new XmlException(
-										S._("XmlException_InvalidPosition"));
-							}
-							currentNode = CreateDocumentType(
-									reader.Name,
-									reader.GetAttribute("PUBLIC"),
-									reader.GetAttribute("SYSTEM"),
-									reader.Value);
-							
-							
-								
-							break;
-						case XmlNodeType.SignificantWhitespace:
-							// TODO: SignificantWhitespace
-							break;
-						case XmlNodeType.Whitespace:
-							XmlWhitespace newWhitespaceNode = CreateWhitespace(reader.Value);
-							currentNode.AppendChild(newWhitespaceNode);
-							// TODO: Append Whitespace to parent node
-							break;
+					// if the reader's input was empty, return null
+					if(reader.NodeType == XmlNodeType.None)
+					{
+						return null;
 					}
 				}
-					
-				return currentNode;
+				else if(reader.ReadState != ReadState.Interactive)
+				{
+					// if the reader is not in a readable state, return null
+					return null;
+				}
+
+				XmlNode result;
+				switch(reader.NodeType)
+				{
+					case XmlNodeType.Attribute:
+					{
+						// read the attribute and its children
+						result = ReadNodeInternal(reader);
+					}
+					break;
+
+					case XmlNodeType.CDATA:
+					{
+						// read the cdata
+						result = ReadNodeInternal(reader);
+					}
+					break;
+
+					case XmlNodeType.Comment:
+					{
+						// read the comment
+						result = ReadNodeInternal(reader);
+
+						// append the comment to this document
+						AppendChild(result);
+					}
+					break;
+
+					case XmlNodeType.DocumentType:
+					{
+						// read the doctype
+						result = ReadNodeInternal(reader);
+
+						// append the doctype to this document
+						AppendChild(result);
+					}
+					break;
+
+					case XmlNodeType.Element:
+					{
+						// read the element and its children
+						result = ReadNodeInternal(reader);
+
+						// append the element to this document
+						AppendChild(result);
+					}
+					break;
+
+					case XmlNodeType.EndElement:
+					case XmlNodeType.EndEntity:
+					{
+						throw new InvalidOperationException(/* TODO */);
+					}
+					// Not reached.
+
+					case XmlNodeType.ProcessingInstruction:
+					{
+						// read the processing instruction
+						result = ReadNodeInternal(reader);
+
+						// append the processing instruction to this document
+						AppendChild(result);
+					}
+					break;
+
+					case XmlNodeType.SignificantWhitespace:
+					{
+						// read the significant whitespace
+						result = ReadNodeInternal(reader);
+					}
+					break;
+
+					case XmlNodeType.Text:
+					{
+						// read the text
+						result = ReadNodeInternal(reader);
+					}
+					break;
+
+					case XmlNodeType.Whitespace:
+					{
+						// if whitespace preservation is off, skip whitespace
+						if(!preserveWhitespace)
+						{
+							while(reader.Read())
+							{
+								if(reader.NodeType != XmlNodeType.Whitespace)
+								{
+									return ReadNode(reader);
+								}
+							}
+							return null;
+						}
+
+						// read the whitespace
+						result = ReadNodeInternal(reader);
+
+						// append the whitespace to this document
+						AppendChild(result);
+					}
+					break;
+
+					case XmlNodeType.XmlDeclaration:
+					{
+						// read the xml declaration
+						result = ReadNodeInternal(reader);
+
+						// append the xml declaration to this document
+						AppendChild(result);
+					}
+					break;
+				}
+
+				// return the result node
+				return result;
 			}
 
 	// Save XML data from this document.

@@ -202,9 +202,9 @@ public class XmlParserContext
 
 
 	// Pop the current scope.
-	internal void PopScope()
+	internal bool PopScope()
 			{
-				stackmanager.PopScope();
+				return stackmanager.PopScope();
 			}
 
 	// Push a new scope.
@@ -212,6 +212,21 @@ public class XmlParserContext
 			{
 				stackmanager.PushScope();
 			}
+
+	// Reset all values to defaults.
+	internal void Reset()
+			{
+				while(stackmanager.PopScope()) {}
+				while(namespacemanager.PopScope()) {}
+				BaseURI = String.Empty;
+				XmlLang = String.Empty;
+				XmlSpace = XmlSpace.None;
+				SystemId = String.Empty;
+				PublicId = String.Empty;
+				DocTypeName = String.Empty;
+				InternalSubset = String.Empty;
+			}
+
 
 
 

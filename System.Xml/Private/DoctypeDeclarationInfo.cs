@@ -25,7 +25,7 @@ namespace System.Xml.Private
 using System;
 using System.Xml;
 
-internal sealed class DoctypeDeclarationInfo : NodeInfo
+internal sealed class DoctypeDeclarationInfo : NodeWithAttributesInfo
 {
 	// Internal state.
 	private String name;
@@ -34,34 +34,57 @@ internal sealed class DoctypeDeclarationInfo : NodeInfo
 
 	// Constructor.
 	public DoctypeDeclarationInfo()
+			: base()
 			{
 				name = null;
 				value = null;
 			}
 
+	// Get the quote character.
+	public override char QuoteChar
+			{
+				get
+				{
+					if(index == -1) { return '"'; }
+					return attributes[index].QuoteChar;
+				}
+			}
 
 	// Get the fully-qualified name.
 	public override String Name
 			{
-				get { return name; }
+				get
+				{
+					if(index == -1) { return name; }
+					return attributes[index].Name;
+				}
 			}
 
 	// Get the text value.
 	public override String Value
 			{
-				get { return value; }
+				get
+				{
+					if(index == -1) { return value; }
+					return attributes[index].Value;
+				}
 			}
 
 	// Get the type of the current node.
 	public override XmlNodeType NodeType
 			{
-				get { return XmlNodeType.DocumentType; }
+				get
+				{
+					if(index == -1) { return XmlNodeType.DocumentType; }
+					return XmlNodeType.Attribute;
+				}
 			}
 
 
 	// Set the node information.
-	public void SetInfo(String name, String value)
+	public void SetInfo(Attributes attributes, String name, String value)
 			{
+				base.Reset(attributes);
 				this.name = name;
 				this.value = value;
 			}

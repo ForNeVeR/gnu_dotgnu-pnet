@@ -40,12 +40,6 @@ internal sealed class ProcessingInstructionInfo : NodeInfo
 			}
 
 
-	// Get the local name.
-	public override String LocalName
-			{
-				get { return name; }
-			}
-
 	// Get the fully-qualified name.
 	public override String Name
 			{

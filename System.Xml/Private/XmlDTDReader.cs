@@ -82,11 +82,15 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 				input.ScanForPE = false;
 
 				// require whitespace, then read the name
-				if(input.SkipWhitespace()) { Error(/* TODO */); }
+				if(!input.SkipWhitespace()) { Error(/* TODO */); }
 				context.DocTypeName = input.ReadName();
 
 				// value of internal subset defaults to empty
 				context.InternalSubset = String.Empty;
+
+				// values of the public and system ids default to empty
+				context.PublicId = String.Empty;
+				context.SystemId = String.Empty;
 
 				// check for an external id
 				bool hasWS = input.SkipWhitespace();
@@ -97,7 +101,7 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 					if(!hasWS) { Error(/* TODO */); }
 
 					// allow only an external id, not a public id
-					ReadExternalOrPublicID(false);
+					ReadExternalOrPublicID(false, true);
 
 					// skip potentially optional whitespace
 					hasWS = input.SkipWhitespace();
@@ -694,7 +698,7 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 					// add the pe to the pe table
 					if(value != null)
 					{
-						input.ParameterEntities.Add(name, value);
+						input.ParameterEntities[name] = value;
 					}
 				}
 				else
@@ -770,30 +774,39 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 					// pe scanning on string literals isn't handled inline
 					input.ScanForPE = false;
 
+					// create our log and push it onto the logger's log stack
+					StringBuilder log = new StringBuilder();
+					input.Logger.Push(log);
+
 					// read until we hit the quote character
-					StringBuilder sb = new StringBuilder();
-					while(input.NextChar() && input.currChar != quoteChar)
+					while(input.PeekChar() && input.peekChar != quoteChar)
 					{
-						sb.Append(input.currChar);
+						input.NextChar();
 					}
+
+					// pop the log from the log stack
+					input.Logger.Pop();
+
+					// the entity value must be properly terminated
+					input.Expect(quoteChar);
 
 					// turn inline pe scanning back on
 					input.ScanForPE = true;
 
-					// we hit eof, otherwise we'd have quoteChar, so give an error
-					if(input.currChar != quoteChar) { Error("Xml_UnexpectedEOF"); }
-
 					// return the entity value contents
-					// TODO: scan this for references
-					return sb.ToString();
+					return log.ToString();
 				}
 			}
 
 	// Read an external or public id.
 	//
 	// Already read: ''
-	[TODO]
 	private void ReadExternalOrPublicID(bool allowPub)
+			{
+				ReadExternalOrPublicID(allowPub, false);
+			}
+	[TODO]
+	private void ReadExternalOrPublicID(bool allowPub, bool setContext)
 			{
 				// TODO: load external subsets and parse them...
 				//       remember not to log them in the internal subset log
@@ -819,18 +832,24 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 					// pe scanning on string literals isn't handled inline
 					input.ScanForPE = false;
 
-					// read until we hit the quote character
-					while(input.NextChar() && input.currChar != quoteChar)
-					{
-						// TODO: do something with what we read here...
-						//       part of external subset todo
-					}
+					// create our log and push it onto the log stack
+					StringBuilder log = new StringBuilder();
+					input.Logger.Push(log);
 
-					// turn inline pe scanning back on
-					input.ScanForPE = true;
+					// read until we hit the quote character
+					while(input.NextChar() && input.currChar != quoteChar) {}
 
 					// we hit eof, otherwise we'd have quoteChar, so give an error
 					if(input.currChar != quoteChar) { Error("Xml_UnexpectedEOF"); }
+
+					// pop the log from the log stack
+					input.Logger.Pop();
+
+					// set the system id
+					if(setContext) { context.SystemId = log.ToString(); }
+
+					// turn inline pe scanning back on
+					input.ScanForPE = true;
 				}
 				else if(input.currChar == 'P')
 				{
@@ -851,6 +870,10 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 					// pe scanning on string literals isn't handled inline
 					input.ScanForPE = false;
 
+					// create our log and push it onto the log stack
+					StringBuilder log = new StringBuilder();
+					input.Logger.Push(log);
+
 					// read until we hit the quote character
 					while(input.NextChar() && input.currChar != quoteChar)
 					{
@@ -859,16 +882,22 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 						{
 							Error(/* TODO */);
 						}
-
-						// TODO: do something with what we read here...
-						//       part of external subset todo
 					}
-
-					// turn inline pe scanning back on
-					input.ScanForPE = true;
 
 					// we hit eof, otherwise we'd have quoteChar, so give an error
 					if(input.currChar != quoteChar) { Error("Xml_UnexpectedEOF"); }
+
+					// pop the log from the log stack
+					input.Logger.Pop();
+
+					// set the system id
+					if(setContext) { context.PublicId = log.ToString(); }
+
+					// reset the log
+					log.Length = 0;
+
+					// turn inline pe scanning back on
+					input.ScanForPE = true;
 
 					// skip potentially optional whitespace
 					bool hasWS = input.SkipWhitespace();
@@ -890,18 +919,23 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 					// pe scanning on string literals isn't handled inline
 					input.ScanForPE = false;
 
-					// read until we hit the quote character
-					while(input.NextChar() && input.currChar != quoteChar)
-					{
-						// TODO: do something with what we read here...
-						//       part of external subset todo
-					}
+					// push the log onto the log stack
+					input.Logger.Push(log);
 
-					// turn inline pe scanning back on
-					input.ScanForPE = true;
+					// read until we hit the quote character
+					while(input.NextChar() && input.currChar != quoteChar) {}
 
 					// we hit eof, otherwise we'd have quoteChar, so give an error
 					if(input.currChar != quoteChar) { Error("Xml_UnexpectedEOF"); }
+
+					// pop the log from the log stack
+					input.Logger.Pop();
+
+					// set the system id
+					if(setContext) { context.SystemId = log.ToString(); }
+
+					// turn inline pe scanning back on
+					input.ScanForPE = true;
 				}
 				else
 				{
@@ -1011,7 +1045,9 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 				input.ResetPE();
 
 				// the internal subset must end with ']' at this point
+				StringBuilder log = input.Logger.Pop();
 				input.Expect(']');
+				input.Logger.Push(log);
 			}
 
 	// Read a notation declaration.
@@ -1052,6 +1088,9 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 				// TODO: check target for ('X'|'x')('M'|'m')('L'|'l')
 				input.ReadName();
 
+				// turn off pe scanning
+				input.ScanForPE = false;
+
 				// skip potentially optional whitespace
 				bool hasWS = input.SkipWhitespace();
 
@@ -1082,10 +1121,16 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 						input.EndTag();
 					#endif
 
+						// turn on pe scanning
+						input.ScanForPE = true;
+
 						input.NextChar();
 						return;
 					}
 				}
+
+				// if we make it this far, we hit eof
+				Error("Xml_UnexpectedEOF");
 			}
 
 }; // class XmlDTDReader

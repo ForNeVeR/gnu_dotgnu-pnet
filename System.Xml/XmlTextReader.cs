@@ -35,15 +35,18 @@ public class XmlTextReader : XmlReader
 {
 	// Internal state.
 	private bool contextSupport;
+	private bool hasRoot;
 	private bool incDepth;
 	private bool namespaces;
 	private bool normalize;
 	private bool xmlPopScope;
 	private bool xmlnsPopScope;
 	private int depth;
+	private int sawPreserve;
 	private NodeManager nodes;
 	private ReadState readState;
 	private Stack elementNames;
+	private State state;
 	private WhitespaceHandling whitespace;
 	private XmlDTDReader dtdReader;
 	private XmlParserContext context;
@@ -54,6 +57,20 @@ public class XmlTextReader : XmlReader
 	private readonly Object xmlLangName;
 	private readonly Object xmlSpaceName;
 	private readonly Object xmlNSPrefix;
+	private readonly Object xmlCompareQuick;
+
+
+	// Possible Document States.
+	private enum State
+	{
+		XmlDeclaration     = 0,
+		DoctypeDeclaration = 1,
+		Element            = 2,
+		Content            = 3,
+		Misc               = 4,
+		Attribute          = 5,
+
+	}; // enum State
 
 
 	// Constructors.
@@ -79,19 +96,23 @@ public class XmlTextReader : XmlReader
 				xmlLangName = nt.Add("xml:lang");
 				xmlSpaceName = nt.Add("xml:space");
 				xmlNSPrefix = nt.Add("xmlns");
+				xmlCompareQuick = nt.Add("xml");
 
 				contextSupport = false;
+				hasRoot = true;
+				incDepth = false;
 				xmlPopScope = false;
 				xmlnsPopScope = false;
-				incDepth = false;
+				sawPreserve = -1;
+				state = State.XmlDeclaration;
 				elementNames = new Stack();
-				dtdReader = new XmlDTDReader(context);
 				nodes = new NodeManager(nt, new ErrorHandler(Error));
 				input = new XmlParserInput
 					(null, nt, new EOFHandler(HandleEOF), new ErrorHandler(Error));
 				context = new XmlParserContext
 					(nt, new XmlNamespaceManager(nt), String.Empty, XmlSpace.None);
 				resolver = new XmlUrlResolver();
+				dtdReader = new XmlDTDReader(context);
 			}
 	public XmlTextReader(Stream input)
 			: this(String.Empty, input, new NameTable())
@@ -167,9 +188,17 @@ public class XmlTextReader : XmlReader
 				{
 					throw new ArgumentNullException("xmlFragment");
 				}
-				if(fragType != XmlNodeType.Element &&
-				   fragType != XmlNodeType.Attribute &&
-				   fragType != XmlNodeType.Document)
+				if(fragType == XmlNodeType.Attribute)
+				{
+					state = State.Attribute;
+					hasRoot = false;
+				}
+				else if(fragType == XmlNodeType.Element)
+				{
+					state = State.Content;
+					hasRoot = false;
+				}
+				else if(fragType != XmlNodeType.Document)
 				{
 					throw new XmlException(S._("Xml_InvalidNodeType"));
 				}
@@ -214,9 +243,17 @@ public class XmlTextReader : XmlReader
 				{
 					throw new ArgumentNullException("xmlFragment");
 				}
-				if(fragType != XmlNodeType.Element &&
-				   fragType != XmlNodeType.Attribute &&
-				   fragType != XmlNodeType.Document)
+				if(fragType == XmlNodeType.Attribute)
+				{
+					state = State.Attribute;
+					hasRoot = false;
+				}
+				else if(fragType == XmlNodeType.Element)
+				{
+					state = State.Content;
+					hasRoot = false;
+				}
+				else if(fragType != XmlNodeType.Document)
 				{
 					throw new XmlException(S._("Xml_InvalidNodeType"));
 				}
@@ -547,14 +584,26 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Get the remainder of the current XML stream.
-	[TODO] // ********************************************************* TODO
 	public TextReader GetRemainder()
 			{
-				String tmp = input.Reader.ReadToEnd();
-				StringReader s = new StringReader(tmp);
+				// clear the logger's log stack
+				input.Logger.Clear();
+
+				// create the log and push it onto the logger's log stack
+				StringBuilder log = new StringBuilder();
+				input.Logger.Push(log);
+
+				// read until we consume all of the input
+				while(input.NextChar()) {}
+
+				// pop the log from the logger's log stack
+				input.Logger.Pop();
+
+				// close this reader
 				Close();
-				readState = ReadState.EndOfFile;
-				return s;
+
+				// return a new text reader using the logged data
+				return new StringReader(log.ToString());
 			}
 
 	// Resolve a namespace in the scope of the current element.
@@ -641,12 +690,6 @@ public class XmlTextReader : XmlReader
 	// Read the next attribute value in the input stream.
 	public override bool ReadAttributeValue()
 			{
-
-				if(readState != ReadState.Interactive)
-				{
-					throw new XmlException
-						(S._("Xml_WrongReadState"));
-				}
 				return nodes.Current.ReadAttributeValue();
 			}
 
@@ -721,146 +764,6 @@ public class XmlTextReader : XmlReader
 				return 0;
 			}
 
-	// Read the contents of the current node, including all markup.
-	[TODO] // ********************************************************* TODO
-	public override String ReadInnerXml()
-			{
-				XmlNodeType nodeType = NodeType;
-				if(nodeType != XmlNodeType.Element && nodeType != XmlNodeType.Attribute)
-				{
-					throw new XmlException
-						(S._("Xml_WrongNodeType"));
-				}
-
-				/*
-				if(nodeType == XmlNodeType.Element)
-				{
-					StringBuilder sb = new StringBuilder();
-					char[] target = Name.ToCharArray();
-					MoveToContent();
-					while(input.NextChar() && input.PeekChar())
-					{
-						sb.Append(input.currChar);
-						if(input.currChar == '<' && input.peekChar == '/')
-						{
-							input.NextChar();
-							int i = 0;
-							bool match = true;
-							while(match && i < target.Length && input.NextChar())
-							{
-								sb.Append(input.currChar);
-								if(input.currChar != target[i])
-								{
-									match = false;
-								}
-								++i;
-							}
-							if(match && input.NextChar())
-							{
-								if(input.currChar == '>')
-								{
-									int len = sb.Length - (target.Length + 2);
-									return sb.ToString(0, len);
-								}
-								else
-								{
-									sb.Append(input.currChar);
-								}
-							}
-						}
-					}
-					return String.Empty;
-				}
-				else if(nodeType == XmlNodeType.Attribute)
-				{
-					Read();
-					return value;
-				}
-				*/
-				return String.Empty;
-			}
-
-	// Read the current node, including all markup.
-	[TODO] // ********************************************************* TODO
-	public override String ReadOuterXml()
-			{
-				StringBuilder sb = new StringBuilder();
-				MoveToContent();
-				if(NodeType == XmlNodeType.Element)
-				{
-					char[] target = Name.ToCharArray();
-					sb.Append("<" + Name);
-					int count = nodes.Current.AttributeCount;
-					NodeInfo tmp;
-					for (int i = 0; i < count; ++i)
-					{
-						tmp = nodes.Current.GetAttribute(i);
-						String name = tmp.Name;
-						String value = tmp.Value;
-						char quoteChar = tmp.QuoteChar;
-
-						sb.Append(" ");
-						sb.Append(name);
-						sb.Append("=");
-						sb.Append(quoteChar);
-						sb.Append(value);
-						sb.Append(quoteChar);
-					}
-					sb.Append(">");
-					while(input.NextChar() && input.PeekChar())
-					{
-						sb.Append(input.currChar);
-						if(input.currChar == '<' && input.peekChar == '/')
-						{
-							input.NextChar();
-							int i = 0;
-							bool match = true;
-							while(match && i < target.Length && input.NextChar())
-							{
-								sb.Append(input.currChar);
-								if(input.currChar != target[i])
-								{
-									match = false;
-								}
-								++i;
-							}
-							if(match && input.NextChar())
-							{
-								sb.Append(input.currChar);
-								if(input.currChar == '>')
-								{
-									return sb.ToString();
-								}
-							}
-						}
-					}
-				}
-				else if(NodeType == XmlNodeType.Attribute)
-				{
-					Read();
-					NodeInfo node = nodes.Current;
-					String name = node.Name;
-					String value = node.Value;
-					char quoteChar = node.QuoteChar;
-
-					sb.Append(name);
-					sb.Append("=");
-					sb.Append(quoteChar);
-					sb.Append(value);
-					sb.Append(quoteChar);
-					return sb.ToString();
-				}
-				return String.Empty;
-			}
-
-	// Read the contents of an element or text node as a string.
-	[TODO]
-	public override String ReadString()
-			{
-				// TODO
-				return null;
-			}
-
 	// Reset to the initial state.
 	public void ResetState()
 			{
@@ -870,23 +773,90 @@ public class XmlTextReader : XmlReader
 						(S._("Xml_ContextNotNull"));
 				}
 
+				context.Reset();
+				elementNames.Clear();
+				incDepth = false;
+				xmlPopScope = false;
+				xmlnsPopScope = false;
+				depth = 0;
+				if(hasRoot) { state = State.XmlDeclaration; }
 				readState = ReadState.Initial;
 			}
 
 	// Resolve an entity reference.
 	public override void ResolveEntity()
 			{
-				throw new InvalidOperationException(
-						S._("Xml_CannotResolveEntity"));
+				throw new InvalidOperationException
+					(S._("Xml_CannotResolveEntity"));
 			}
 
-	// Clear the node information.
-	[TODO] // ********************************************************* TODO
-	private void ClearNodeInfo()
+	// Check the node state against the current state.
+	private void CheckState(State nodeState)
 			{
-				context.SystemId = String.Empty;
-				context.PublicId = String.Empty;
-				nodes.Reset();
+				switch(nodeState)
+				{
+					case State.XmlDeclaration:
+					{
+						if(state != State.XmlDeclaration)
+						{
+							Error(/* TODO */);
+						}
+						state = State.DoctypeDeclaration;
+					}
+					break;
+
+					case State.DoctypeDeclaration:
+					{
+						if(state != State.XmlDeclaration &&
+						   state != State.DoctypeDeclaration)
+						{
+							Error(/* TODO */);
+						}
+						state = State.Element;
+					}
+					break;
+
+					case State.Element:
+					{
+						if(state == State.Misc || state == State.Attribute)
+						{
+							Error(/* TODO */);
+						}
+						state = State.Content;
+					}
+					break;
+
+					case State.Content:
+					{
+						if(state != State.Content)
+						{
+							Error(/* TODO */);
+						}
+					}
+					break;
+
+					case State.Misc:
+					{
+						if(state == State.XmlDeclaration)
+						{
+							state = State.DoctypeDeclaration;
+						}
+						else if(state == State.Attribute)
+						{
+							Error(/* TODO */);
+						}
+					}
+					break;
+
+					case State.Attribute:
+					{
+						if(state != State.Attribute)
+						{
+							Error(/* TODO */);
+						}
+					}
+					break;
+				}
 			}
 
 	// Enter the error state, and throw an XmlException.
@@ -897,7 +867,7 @@ public class XmlTextReader : XmlReader
 	private void Error(String messageTag, params Object[] args)
 			{
 				readState = ReadState.Error;
-				ClearNodeInfo();
+				nodes.Reset();
 				input.Logger.Clear();
 				throw new XmlException(String.Format(S._(messageTag), args));
 			}
@@ -946,7 +916,6 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Callback for eof in the input handler.
-	[TODO]
 	private void HandleEOF()
 			{
 				readState = ReadState.EndOfFile;
@@ -979,6 +948,10 @@ public class XmlTextReader : XmlReader
 						else if(tmpValue == "preserve")
 						{
 							context.XmlSpace = XmlSpace.Preserve;
+							if(sawPreserve == -1)
+							{
+								sawPreserve = elementNames.Count;
+							}
 						}
 						else
 						{
@@ -999,6 +972,32 @@ public class XmlTextReader : XmlReader
 						}
 					}
 				}
+			}
+
+	// Read an attribute fragment.
+	//
+	// Already read: ''
+	private void ReadAttributeFragment()
+			{
+				// create our value log
+				StringBuilder log = new StringBuilder();
+
+				// get the attribute and segment information nodes
+				AttributeInfo att = nodes.Attribute;
+				Segments segments = att.Segments;
+
+				// read the attribute value
+				if(normalize)
+				{
+					ReadAttributeValueNormalize(log, segments, '\0');
+				}
+				else
+				{
+					ReadAttributeValue(log, segments, '\0');
+				}
+
+				// set the attribute information
+				att.SetInfo(segments, '"', String.Empty, log.ToString());
 			}
 
 	// Read an attribute value.
@@ -1167,7 +1166,6 @@ public class XmlTextReader : XmlReader
 	// Read the attributes for an element start tag or xml declaration tag.
 	//
 	// Already read: ''
-	[TODO]
 	private void ReadAttributes(bool qmark)
 			{
 				// create our value log
@@ -1233,8 +1231,7 @@ public class XmlTextReader : XmlReader
 					}
 
 					// the attribute value must be properly terminated
-					if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
-					if(input.currChar != quoteChar) { Error(/* TODO */); }
+					input.Expect(quoteChar);
 
 					// get the value from the log
 					String value = log.ToString();
@@ -1250,10 +1247,10 @@ public class XmlTextReader : XmlReader
 	// Read a character data section.
 	//
 	// Already read: '<![CDATA['
-	[TODO]
 	private void ReadCDATA()
 			{
-				// TODO: state handling
+				// check the state
+				CheckState(State.Content);
 
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();
@@ -1291,10 +1288,10 @@ public class XmlTextReader : XmlReader
 	// Read a comment.
 	//
 	// Already read: '<!--'
-	[TODO]
 	private void ReadComment()
 			{
-				// TODO: state handling
+				// check the state
+				CheckState(State.Misc);
 
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();
@@ -1330,21 +1327,43 @@ public class XmlTextReader : XmlReader
 	// Read the xml document.
 	//
 	// Already read: ''
-	[TODO]
 	private bool ReadDocument()
 			{
-				// use the iterable node's next node if possible
+				// use the text node's next node if possible
 				NodeInfo current = nodes.Current;
-				if(current is IterableNodeInfo)
+				if(current is TextInfo)
 				{
-					if(((IterableNodeInfo)current).Next())
+					if(((TextInfo)current).Next())
 					{
 						return true;
 					}
 				}
 
-				// return false if there are no nodes left to read
-				if(!input.PeekChar()) { return false; }
+				// handle the eof case
+				if(!input.PeekChar())
+				{
+					// give an error if there are missing end tags
+					if(elementNames.Count > 0)
+					{
+						Error(/* TODO */);
+					}
+
+					// give an error if document level rules have been broken
+					if(hasRoot && state != State.Misc)
+					{
+						Error(/* TODO */);
+					}
+
+					// return false if there are no nodes left to read
+					return false;
+				}
+
+				// handle the attribute fragment case
+				if(state == State.Attribute)
+				{
+					ReadAttributeFragment();
+					return true;
+				}
 
 				// increase the depth if we last read an element start tag
 				if(incDepth)
@@ -1358,6 +1377,10 @@ public class XmlTextReader : XmlReader
 				{
 					context.PopScope();
 					xmlPopScope = false;
+					if(sawPreserve == elementNames.Count)
+					{
+						sawPreserve = -1;
+					}
 				}
 
 				// pop the namespace scope if we last read an element end tag
@@ -1424,6 +1447,14 @@ public class XmlTextReader : XmlReader
 							input.SkipWhitespace();
 							return ReadDocument();
 						}
+						if(whitespace == WhitespaceHandling.Significant)
+						{
+							if(sawPreserve != -1)
+							{
+								input.SkipWhitespace();
+								return ReadDocument();
+							}
+						}
 						ReadWhitespace();
 					}
 					break;
@@ -1445,7 +1476,8 @@ public class XmlTextReader : XmlReader
 	// Already read: '<!DOCTYPE'
 	private void ReadDoctypeDeclaration()
 			{
-				// TODO: state handling
+				// check the state
+				CheckState(State.DoctypeDeclaration);
 
 				// (re)initialize the dtd reader
 				dtdReader.Init(input, resolver);
@@ -1453,15 +1485,60 @@ public class XmlTextReader : XmlReader
 				// read the dtd
 				dtdReader.Read();
 
+				// get the SYSTEM and PUBLIC values
+				char quoteSYS = '"';
+				char quotePUB = '"';
+				String sysID = context.SystemId;
+				String pubID = context.PublicId;
+				if(sysID != String.Empty)
+				{
+					int len = sysID.Length-1;
+					quoteSYS = sysID[len];
+					sysID = sysID.Substring(0, len);
+					context.SystemId = sysID;
+				}
+				if(pubID != String.Empty)
+				{
+					int len = pubID.Length-1;
+					quotePUB = pubID[len];
+					pubID = pubID.Substring(0, len);
+					context.PublicId = pubID;
+				}
+
+				// get the attribute list
+				Attributes attributes = nodes.Attributes;
+
+				// get the name table
+				XmlNameTable nt = context.NameTable;
+
+				// add the SYSTEM attribute
+				AttributeInfo att = attributes[0];
+				Segments segments = att.Segments;
+				segments[0].SetInfo(true, sysID);
+				segments.Count = 1;
+				att.SetInfo(segments, quoteSYS, nt.Add("SYSTEM"), sysID);
+
+				// add the SYSTEM attribute
+				att = attributes[1];
+				segments = att.Segments;
+				segments[0].SetInfo(true, pubID);
+				segments.Count = 1;
+				att.SetInfo(segments, quotePUB, nt.Add("PUBLIC"), pubID);
+
+				// set the length of the attributes list
+				attributes.Count = 2;
+
+				// update search information
+				attributes.UpdateInfo(context.NameTable);
+
 				// set the current node information
 				nodes.DoctypeDeclaration.SetInfo
-					(context.DocTypeName, context.InternalSubset);
+					(attributes, context.DocTypeName, context.InternalSubset);
 			}
 
 	// Read a '<!' tag.
 	//
 	// Already read: '<!'
-	[TODO]
 	private void ReadEMarkTag()
 			{
 				// handle all the possible emark tag cases
@@ -1504,10 +1581,10 @@ public class XmlTextReader : XmlReader
 	// Read an element end tag.
 	//
 	// Already read: '</'
-	[TODO]
 	private void ReadETag()
 			{
-				// TODO: state handling
+				// check the state
+				CheckState(State.Content);
 
 				// read the element name
 				String name = input.ReadName();
@@ -1528,11 +1605,17 @@ public class XmlTextReader : XmlReader
 				xmlnsPopScope = namespaces;
 
 				// this end tag must match the last start tag
-				if(elementNames.Pop() != (Object)name) { Error(/* TODO */); }
+				if(elementNames.Count == 0 ||
+				   elementNames.Pop() != (Object)name)
+				{
+					Error(/* TODO */);
+				}
 
-				// add the name to the name table
-				XmlNameTable nt = context.NameTable;
-				name = nt.Add(name);
+				// enforce document level rules
+				if(hasRoot && elementNames.Count == 0)
+				{
+					state = State.Misc;
+				}
 
 				// get the namespace information
 				String localName;
@@ -1551,8 +1634,10 @@ public class XmlTextReader : XmlReader
 	[TODO]
 	private void ReadProcessingInstruction(String target)
 			{
-				// TODO: state handling
 				// TODO: check target for ('X'|'x')('M'|'m')('L'|'l')
+
+				// check the state
+				CheckState(State.Misc);
 
 				// skip potentially optional whitespace
 				bool hasWS = input.SkipWhitespace();
@@ -1602,14 +1687,13 @@ public class XmlTextReader : XmlReader
 	// Read a '<?' tag.
 	//
 	// Already read: '<?'
-	[TODO]
 	private void ReadQMarkTag()
 			{
 				// read the pi target name
 				String target = input.ReadName();
 
 				// check if we have a pi or xml declaration
-				if(target == "xml")
+				if((Object)target == xmlCompareQuick)
 				{
 					ReadXmlDeclaration();
 				}
@@ -1684,6 +1768,7 @@ public class XmlTextReader : XmlReader
 					// the reference must end with ';' at this point
 					input.Expect(';');
 				}
+
 				// pop the log and return the reference name
 				input.Logger.Pop();
 				return context.NameTable.Add(log.ToString(0, log.Length-1));
@@ -1828,10 +1913,10 @@ public class XmlTextReader : XmlReader
 	// Read an element start tag.
 	//
 	// Already read: '<'
-	[TODO]
 	private void ReadSTag()
 			{
-				// TODO: state handling
+				// check the state
+				CheckState(State.Element);
 
 				// read the element name
 				String name = input.ReadName();
@@ -1848,6 +1933,12 @@ public class XmlTextReader : XmlReader
 					empty = true;
 					xmlPopScope = true;
 					xmlnsPopScope = namespaces;
+
+					// enforce document level rules
+					if(hasRoot && elementNames.Count == 0)
+					{
+						state = State.Misc;
+					}
 				}
 				else
 				{
@@ -1894,9 +1985,11 @@ public class XmlTextReader : XmlReader
 	// Read a text node.
 	//
 	// Already read: ''
-	[TODO]
 	private void ReadText()
 			{
+				// check the state
+				CheckState(State.Content);
+
 				// set things up
 				int segLen = 0;
 				SegmentInfo seg;
@@ -1969,11 +2062,13 @@ public class XmlTextReader : XmlReader
 	// Read a whitespace node.
 	//
 	// Already read: ''
-	[TODO]
 	private void ReadWhitespace()
 			{
-				// TODO: state handling
-				// TODO: figure out when whitespace is significant
+				// check the state
+				CheckState(State.Misc);
+
+				// set the significant whitespace flag
+				bool significant = (sawPreserve != -1);
 
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();
@@ -1986,7 +2081,7 @@ public class XmlTextReader : XmlReader
 				String value = input.Logger.Pop().ToString();
 
 				// set the current node information
-				nodes.Whitespace.SetInfo(false, value);
+				nodes.Whitespace.SetInfo(significant, value);
 			}
 
 	// Read an xml declaration.
@@ -1995,9 +2090,10 @@ public class XmlTextReader : XmlReader
 	[TODO]
 	private void ReadXmlDeclaration()
 			{
-				// TODO: state handling
 				// TODO: encoding checks
-				// TODO: ensure attributes are well-formed and in correct order
+
+				// check the state
+				CheckState(State.XmlDeclaration);
 
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();
@@ -2006,15 +2102,72 @@ public class XmlTextReader : XmlReader
 				// read the xml declaration's attributes
 				ReadAttributes(true);
 
-				// the xml declaration must end with '?>' at this point
-				input.Expect("?>");
-
 				// get attributes from the log and pop it from the logger
 				String value = input.Logger.Pop().ToString();
+
+				// trim the leading and trailing whitespace from the value
+				value = value.Trim(' ', '\t', '\n', '\r');
+
+				// the xml declaration must end with '?>' at this point
+				input.Expect("?>");
 
 				// update search information and check for duplicates
 				Attributes attributes = nodes.Attributes;
 				attributes.UpdateInfo(context.NameTable);
+
+				// check that we have the right number of attributes
+				if(attributes.Count < 1 || attributes.Count > 3)
+				{
+					Error(/* TODO */);
+				}
+
+				// check the version attribute
+				AttributeInfo att = attributes[0];
+				if(att.Name != "version")
+				{
+					Error(/* TODO */);
+				}
+				if(att.Value != "1.0")
+				{
+					Error(/* TODO */);
+				}
+
+				// check the optional attributes
+				if(attributes.Count > 1)
+				{
+					bool requireStandalone = true;
+					att = attributes[1];
+					if(att.Name == "encoding")
+					{
+						// TODO: encoding checks need to be done, but the
+						//       XmlStreamReader also needs support for a
+						//       larger range of encodings and should use the
+						//       "<?xml" sequence to guesstimate the encoding
+						//       if byte-order marks are not present... we will
+						//       also need to determine if the guessed encoding
+						//       is close enough to the actual to allow it
+						//       without error
+						if(attributes.Count > 2)
+						{
+							att = attributes[2];
+						}
+						else
+						{
+							requireStandalone = false;
+						}
+					}
+					if(requireStandalone)
+					{
+						if(att.Name != "standalone")
+						{
+							Error(/* TODO */);
+						}
+						if(att.Value != "yes" && att.Value != "no")
+						{
+							Error(/* TODO */);
+						}
+					}
+				}
 
 				// set the current node information
 				nodes.XmlDeclaration.SetInfo(attributes, value);

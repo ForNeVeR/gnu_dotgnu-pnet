@@ -53,7 +53,7 @@ internal abstract class NodeInfo
 	// Get the local name.
 	public virtual String LocalName
 			{
-				get { return String.Empty; }
+				get { return Name; }
 			}
 
 	// Get the fully-qualified name.

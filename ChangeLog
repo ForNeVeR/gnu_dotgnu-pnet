@@ -1,3 +1,40 @@
+2004-02-18  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/XmlDocument.cs: fix document loading (fixes bug #7536).
+
+	* System.Xml/XmlDeclaration.cs: implement inner text parsing.
+
+	* System.Xml/XmlParserContext.cs: add some scope handling enhancements.
+
+	* System.Xml/XmlReader.cs: implement the ReadInnerXml, ReadOuterXml,
+	and ReadString methods.
+
+	* System.Xml/XmlTextReader.cs: fix some bugs, add support for fragment
+	parsing, and implement state handling.
+
+	* System.Xml/XmlValidatingReader.cs: fix a couple of minor mistakes
+	with normalization.
+
+	* System.Xml/XmlWriter.cs: fix a bug in document type writing.
+
+	* System.Xml/Private/AttributeInfo.cs,
+	System.Xml/Private/Attributes.cs,
+	System.Xml/Private/DoctypeDeclarationInfo.cs,
+	System.Xml/Private/NodeInfo.cs,
+	System.Xml/Private/ProcessingInstructionInfo.cs,
+	System.Xml/Private/SegmentInfo.cs,
+	System.Xml/Private/XmlDeclarationInfo.cs: more bug fixes.
+
+	* System.Xml/Private/XmlDTDParserInput.cs,
+	System.Xml/Private/XmlDTDReader.cs: implement proper parameter entity
+	reference handling.
+
+	* System.Xml/Private/XmlParserInput.cs: implement end-of-line
+	normalization.
+
+	* tests/System.Xml/TestXmlDocument.cs,
+	tests/System.Xml/TestXmlTextReader.cs: add new tests and fix existing
+	ones.
 
 2004-02-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 

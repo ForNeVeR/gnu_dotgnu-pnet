@@ -1,10 +1,11 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace FormsTest
 {
-	public class FormsTest : System.Windows.Forms.Form
+	public class FormsTest : Form
 	{
 		#region declares
 		private TabControl tabControl1;
@@ -19,171 +20,176 @@ namespace FormsTest
 		private TabPage tabPage9;
 		private TabPage tabPage10;
 		private TabPage tabPage11;
+		private TabPage tabPage12;
+		private TabPage tabPage13;
+		private TabPage tabPage14;
+		private TabPage tabPage15;
+		private TabPage tabPage16;
+		private TabPage tabPage17;
+		private TabPage tabPage18;
 		
 		// Tab1 Labels Test
-		private System.Windows.Forms.Label label;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.Label label8;
-		private System.Windows.Forms.Label label9;
-		private System.Windows.Forms.Label label10;
-		private System.Windows.Forms.Label label11;
-		private System.Windows.Forms.Label label12;
-		private System.Windows.Forms.Label label13;
-		private System.Windows.Forms.Label label14;
-		private System.Windows.Forms.Label label15;
-		private System.Windows.Forms.Label label16;
-		private System.Windows.Forms.Label label17;
-		private System.Windows.Forms.Label label18;
-		private System.Windows.Forms.Label label19;
-		private System.Windows.Forms.Label label20;
-		private System.Windows.Forms.Label label21;
-		private System.Windows.Forms.Label label22;
-		private System.Windows.Forms.Label label23;
-		private System.Windows.Forms.Label label24;
-		private System.Windows.Forms.Label label25;
+		private Label label;
+		private Label label2;
+		private Label label3;
+		private Label label4;
+		private Label label5;
+		private Label label6;
+		private Label label7;
+		private Label label8;
+		private Label label9;
+		private Label label10;
+		private Label label11;
+		private Label label12;
+		private Label label13;
+		private Label label14;
+		private Label label15;
+		private Label label16;
+		private Label label17;
+		private Label label18;
+		private Label label19;
+		private Label label20;
+		private Label label21;
+		private Label label22;
+		private Label label23;
+		private Label label24;
+		private Label label25;
 
 		// Tab2 Button Test
-		private System.Windows.Forms.Button button;
-		private System.Windows.Forms.Button button2;
-		private System.Windows.Forms.Button button3;
-		private System.Windows.Forms.Button button4;
-		private System.Windows.Forms.Button button5;
-		private System.Windows.Forms.Button button6;
-		private System.Windows.Forms.Button button7;
-		private System.Windows.Forms.Button button8;
-		private System.Windows.Forms.Button button9;
-		private System.Windows.Forms.Button button10;
-		private System.Windows.Forms.Button button11;
-		private System.Windows.Forms.Button button12;
-		private System.Windows.Forms.Button button13;
-		private System.Windows.Forms.Button button14;
-		private System.Windows.Forms.Button button15;
-		private System.Windows.Forms.Button button16;
-		private System.Windows.Forms.Button button17;
-		private System.Windows.Forms.Button button18;
-		private System.Windows.Forms.Button button19;
-		private System.Windows.Forms.Button button20;
-		private System.Windows.Forms.Button button21;
-		private System.Windows.Forms.Button button22;
-		private System.Windows.Forms.Button button23;
+		private Button button;
+		private Button button2;
+		private Button button3;
+		private Button button4;
+		private Button button5;
+		private Button button6;
+		private Button button7;
+		private Button button12;
+		private Button button13;
+		private Button button14;
+		private Button button15;
+		private Button button16;
+		private Button button17;
+		private Button button18;
+		private Button button19;
+		private Button button20;
+		private Button button21;
+		private Button button22;
+		private Button button23;
 
 		// Tab3 TextBox Test
-		private System.Windows.Forms.TextBox textBox;
-		private System.Windows.Forms.TextBox textBox1;
-		private System.Windows.Forms.TextBox textBox2;
-		private System.Windows.Forms.TextBox textBox3;
-		private System.Windows.Forms.TextBox textBox4;
-		private System.Windows.Forms.TextBox textBox5;
-		private System.Windows.Forms.TextBox textBox6;
-		private System.Windows.Forms.TextBox textBox7;
-		private System.Windows.Forms.TextBox textBox8;
-		private System.Windows.Forms.TextBox textBox9;
-		private System.Windows.Forms.TextBox textBox10;
-		private System.Windows.Forms.TextBox textBox14;
-		private System.Windows.Forms.TextBox textBox11;
-		private System.Windows.Forms.TextBox textBox12;
-		private System.Windows.Forms.TextBox textBox13;
-		private System.Windows.Forms.TextBox textBox15;
-		private System.Windows.Forms.TextBox textBox16;
-		private System.Windows.Forms.TextBox textBox17;
-		private System.Windows.Forms.TextBox textBox18;
-		private System.Windows.Forms.TextBox textBox19;
-		private System.Windows.Forms.TextBox textBox20;
+		private TextBox textBox;
+		private TextBox textBox1;
+		private TextBox textBox2;
+		private TextBox textBox3;
+		private TextBox textBox4;
+		private TextBox textBox5;
+		private TextBox textBox6;
+		private TextBox textBox7;
+		private TextBox textBox8;
+		private TextBox textBox9;
+		private TextBox textBox10;
+		private TextBox textBox14;
+		private TextBox textBox11;
+		private TextBox textBox12;
+		private TextBox textBox13;
+		private TextBox textBox15;
+		private TextBox textBox16;
+		private TextBox textBox17;
+		private TextBox textBox18;
+		private TextBox textBox19;
+		private TextBox textBox20;
 		private Button textBoxLinesButton;
+		private Button textBoxTextButton;
+		private Button textBoxSelectedTextButton;
 
 		// Tab4 RadioButtons Test
-		private System.Windows.Forms.RadioButton radioButton;
-		private System.Windows.Forms.RadioButton radioButton2;
-		private System.Windows.Forms.RadioButton radioButton3;
-		private System.Windows.Forms.RadioButton radioButton4;
-		private System.Windows.Forms.RadioButton radioButton5;
-		private System.Windows.Forms.RadioButton radioButton6;
-		private System.Windows.Forms.RadioButton radioButton7;
-		private System.Windows.Forms.RadioButton radioButton8;
-		private System.Windows.Forms.RadioButton radioButton9;
-		private System.Windows.Forms.RadioButton radioButton10;
-		private System.Windows.Forms.RadioButton radioButton11;
-		private System.Windows.Forms.RadioButton radioButton12;
-		private System.Windows.Forms.RadioButton radioButton13;
-		private System.Windows.Forms.RadioButton radioButton14;
-		private System.Windows.Forms.RadioButton radioButton15;
-		private System.Windows.Forms.RadioButton radioButton16;
-		private System.Windows.Forms.RadioButton radioButton17;
-		private System.Windows.Forms.RadioButton radioButton18;
-		private System.Windows.Forms.RadioButton radioButton19;
-		private System.Windows.Forms.RadioButton radioButton20;
-		private System.Windows.Forms.RadioButton radioButton21;
-		private System.Windows.Forms.RadioButton radioButton22;
-		private System.Windows.Forms.RadioButton radioButton23;
-		private System.Windows.Forms.RadioButton radioButton24;
-		private System.Windows.Forms.RadioButton radioButton25;
-		private System.Windows.Forms.RadioButton radioButton26;
-		private System.Windows.Forms.RadioButton radioButton27;
-		private System.Windows.Forms.RadioButton radioButton28;
-		private System.Windows.Forms.RadioButton radioButton29;
-		private System.Windows.Forms.RadioButton radioButton30;
-		private System.Windows.Forms.RadioButton radioButton31;
-		private System.Windows.Forms.RadioButton radioButton32;
-		private System.Windows.Forms.RadioButton radioButton33;
+		private RadioButton radioButton;
+		private RadioButton radioButton2;
+		private RadioButton radioButton3;
+		private RadioButton radioButton4;
+		private RadioButton radioButton5;
+		private RadioButton radioButton6;
+		private RadioButton radioButton7;
+		private RadioButton radioButton8;
+		private RadioButton radioButton9;
+		private RadioButton radioButton10;
+		private RadioButton radioButton11;
+		private RadioButton radioButton12;
+		private RadioButton radioButton13;
+		private RadioButton radioButton14;
+		private RadioButton radioButton15;
+		private RadioButton radioButton16;
+		private RadioButton radioButton17;
+		private RadioButton radioButton18;
+		private RadioButton radioButton19;
+		private RadioButton radioButton20;
+		private RadioButton radioButton21;
+		private RadioButton radioButton22;
+		private RadioButton radioButton23;
+		private RadioButton radioButton24;
+		private RadioButton radioButton25;
+		private RadioButton radioButton26;
+		private RadioButton radioButton27;
+		private RadioButton radioButton28;
+		private RadioButton radioButton29;
+		private RadioButton radioButton30;
+		private RadioButton radioButton31;
+		private RadioButton radioButton32;
+		private RadioButton radioButton33;
 
 		//Tab6 TabTest
-		private System.Windows.Forms.TabPage tabPageT1;
-		private System.Windows.Forms.TabPage tabPageT2;
-		private System.Windows.Forms.TabPage tabPageT3;
-		private System.Windows.Forms.TabPage tabPageT4;
-		private System.Windows.Forms.TabPage tabPageT5;
-		private System.Windows.Forms.TabControl tabControlT2;
-		private System.Windows.Forms.TabPage tabPageT6;
-		private System.Windows.Forms.TabControl tabControlT3;
-		private System.Windows.Forms.TabPage tabPageT7;
-		private System.Windows.Forms.TabPage tabPageT8;
-		private System.Windows.Forms.Button buttonT1;
-		private System.Windows.Forms.Label labelT1;
-		private System.Windows.Forms.Label labelT2;
-		private System.Windows.Forms.TabPage tabPageT9;
-		private System.Windows.Forms.TabPage tabPageT10;
-		private System.Windows.Forms.TabControl tabControlT4;
-		private System.Windows.Forms.TabPage tabPageT11;
-		private System.Windows.Forms.TabPage tabPageT12;
-		private System.Windows.Forms.TabPage tabPageT13;
-		private System.Windows.Forms.TabPage tabPageT14;
-		private System.Windows.Forms.TabPage tabPageT15;
-		private System.Windows.Forms.TabPage tabPageT16;
-		private System.Windows.Forms.TabPage tabPageT17;
-		private System.Windows.Forms.TabPage tabPageT18;
-		private System.Windows.Forms.TabPage tabPageT19;
-		private System.Windows.Forms.TabPage tabPageT20;
-		private System.Windows.Forms.TabPage tabPageT21;
-		private System.Windows.Forms.TabPage tabPageT22;
-		private System.Windows.Forms.TabPage tabPageT23;
-		private System.Windows.Forms.TabPage tabPageT24;
-		private System.Windows.Forms.TabPage tabPageT25;
-		private System.Windows.Forms.TabControl tabControlT5;
-		private System.Windows.Forms.TabPage tabPageT26;
-		private System.Windows.Forms.TabPage tabPageT27;
-		private System.Windows.Forms.TabPage tabPageT28;
-		private System.Windows.Forms.TabControl tabControlT6;
-		private System.Windows.Forms.TabPage tabPageT29;
-		private System.Windows.Forms.TabPage tabPageT30;
-		private System.Windows.Forms.TabPage tabPageT31;
-		private System.Windows.Forms.TabControl tabControlT7;
-		private System.Windows.Forms.TabPage tabPageT32;
-		private System.Windows.Forms.TabPage tabPageT33;
-		private System.Windows.Forms.TabControl Docked;
-		private System.Windows.Forms.TabPage tabPageT34;
-		private System.Windows.Forms.TabControl tabControlT1;
-		private System.Windows.Forms.TabPage tabPageT35;
-		private System.Windows.Forms.TabPage tabPageT36;
-		private System.Windows.Forms.TabControl tabControlT8;
-		private System.Windows.Forms.TabPage tabPageT37;
-		private System.Windows.Forms.TabPage tabPageT38;
-		private System.Windows.Forms.Label labelT3;
-		private System.Windows.Forms.Label labelT4;
+		private TabPage tabPageT1;
+		private TabPage tabPageT2;
+		private TabPage tabPageT3;
+		private TabPage tabPageT4;
+		private TabPage tabPageT5;
+		private TabControl tabControlT2;
+		private TabPage tabPageT6;
+		private TabControl tabControlT3;
+		private TabPage tabPageT7;
+		private TabPage tabPageT8;
+		private Button buttonT1;
+		private Label labelT1;
+		private Label labelT2;
+		private TabPage tabPageT9;
+		private TabPage tabPageT10;
+		private TabControl tabControlT4;
+		private TabPage tabPageT11;
+		private TabPage tabPageT12;
+		private TabPage tabPageT13;
+		private TabPage tabPageT14;
+		private TabPage tabPageT15;
+		private TabPage tabPageT16;
+		private TabPage tabPageT17;
+		private TabPage tabPageT18;
+		private TabPage tabPageT19;
+		private TabPage tabPageT20;
+		private TabPage tabPageT21;
+		private TabPage tabPageT22;
+		private TabPage tabPageT23;
+		private TabPage tabPageT24;
+		private TabPage tabPageT25;
+		private TabControl tabControlT5;
+		private TabPage tabPageT26;
+		private TabPage tabPageT27;
+		private TabPage tabPageT28;
+		private TabControl tabControlT6;
+		private TabPage tabPageT29;
+		private TabPage tabPageT30;
+		private TabPage tabPageT31;
+		private TabControl tabControlT7;
+		private TabPage tabPageT32;
+		private TabPage tabPageT33;
+		private TabControl Docked;
+		private TabPage tabPageT34;
+		private TabControl tabControlT1;
+		private TabPage tabPageT35;
+		private TabPage tabPageT36;
+		private TabControl tabControlT8;
+		private TabPage tabPageT37;
+		private TabPage tabPageT38;
+		private Label labelT3;
+		private Label labelT4;
 
 		private MainMenu mainMenu;
 		private MenuItem fileMenuItem;
@@ -194,54 +200,99 @@ namespace FormsTest
 		private MenuItem exitMenuItem;
 		private MenuItem thisMenuItem, thatMenuItem, otherMenuItem, otherAMenuItem, otherBMenuItem, otherCMenuItem, cutMenuItem, copyMenuItem, pasteMenuItem, aboutMenuItem, seperatorMenuItem;
 		private ContextMenu contextMenu;
+		private Label contextMenuLabel1;
 
 		private Image image1;
 
 		private ComboBox comboBox1, comboBox2;
 
+		private TreeView treeView1;
+
+		private ListBox listBox1, listBox2;
+
+		private Button formsButton1;
+
+		private VScrollBar vScrollBar;
+		private HScrollBar hScrollBar;
+		private Label scroll1LabelMin, scroll1LabelMax, scroll1LabelValue, scroll1LabelLarge, scroll1LabelSmall;
+		private Label scroll2LabelMin, scroll2LabelMax, scroll2LabelValue, scroll2LabelLarge, scroll2LabelSmall;
+		private TextBox scroll1TextBoxMin, scroll1TextBoxMax, scroll1TextBoxValue, scroll1TextBoxLarge, scroll1TextBoxSmall;
+		private TextBox scroll2TextBoxMin, scroll2TextBoxMax, scroll2TextBoxValue, scroll2TextBoxLarge, scroll2TextBoxSmall;
+
 		#endregion
+		
+		public static void Main(String[] args)
+		{
+			FormsTest form = new FormsTest();
+			Application.Run(form);
+		}
+
 		public FormsTest()
 		{
-			ClientSize = new System.Drawing.Size(500, 820);
+			ClientSize = new Size(500, 650);
 			Text = "System.Windows.Forms Tests";
 			
 			SuspendLayout();
 			tabControl1 = new TabControl();
 			tabControl1.Dock = DockStyle.Fill;
+			tabControl1.Multiline = true;
+			tabControl1.SizeMode = TabSizeMode.FillToRight;
+			
+			tabPage18 = new TabPage();
+			tabPage18.Text = "Scrollbar";
+			tabControl1.Controls.Add(tabPage18);
+			tabPage15 = new TabPage();
+			tabPage15.Text = "Transform";
+			tabControl1.Controls.Add(tabPage15);
+			tabPage13 = new TabPage();
+			tabPage13.Text = "ListBox";
+			tabControl1.Controls.Add(tabPage13);
+			tabPage12 = new TabPage();
+			tabPage12.Text = "TreeView";
+			tabControl1.Controls.Add(tabPage12);
 			tabPage11 = new TabPage();
 			tabPage11.Text = "ComboBox";
-			tabControl1.Controls.Add(this.tabPage11);
+			tabControl1.Controls.Add(tabPage11);
 			tabPage1 = new TabPage();
-			tabPage1.Text = "Labels";
-			tabControl1.Controls.Add(this.tabPage1);
+			tabPage1.Text = "Label";
+			tabControl1.Controls.Add(tabPage1);
 			tabControl1.SelectedIndex = 0;
 			tabPage2 = new TabPage();
-			tabPage2.Text = "Buttons";
-			tabControl1.Controls.Add(this.tabPage2);
+			tabPage2.Text = "Button";
+			tabControl1.Controls.Add(tabPage2);
 			tabPage3 = new TabPage();
-			tabPage3.Text = "TextBoxes";
-			tabControl1.Controls.Add(this.tabPage3);
+			tabPage3.Text = "TextBox";
+			tabControl1.Controls.Add(tabPage3);
 			tabPage4 = new TabPage();
-			tabPage4.Text = "RadioButtons";
-			tabControl1.Controls.Add(this.tabPage4);
+			tabPage4.Text = "RadioButton";
+			tabControl1.Controls.Add(tabPage4);
 			tabPage5 = new TabPage();
-			tabPage5.Text = "Regions";
-			tabControl1.Controls.Add(this.tabPage5);
+			tabPage5.Text = "Region";
+			tabControl1.Controls.Add(tabPage5);
 			tabPage6 = new TabPage();
-			tabPage6.Text = "TabControls";
-			tabControl1.Controls.Add(this.tabPage6);
+			tabPage6.Text = "TabControl";
+			tabControl1.Controls.Add(tabPage6);
 			tabPage7 = new TabPage();
 			tabPage7.Text = "Primitives";
-			tabControl1.Controls.Add(this.tabPage7);
+			tabControl1.Controls.Add(tabPage7);
+			tabPage14 = new TabPage();
+			tabPage14.Text = "Form";
+			tabControl1.Controls.Add(tabPage14);
 			tabPage8 = new TabPage();
 			tabPage8.Text = "Graphics";
-			tabControl1.Controls.Add(this.tabPage8);
+			tabControl1.Controls.Add(tabPage8);
+			tabPage16 = new TabPage();
+			tabPage16.Text = "GraphicsPath";
+			tabControl1.Controls.Add(tabPage16);
+			tabPage17 = new TabPage();
+			tabPage17.Text = "GraphicsDrawString";
+			tabControl1.Controls.Add(tabPage17);
 			tabPage9 = new TabPage();
 			tabPage9.Text = "ContextMenu";
-			tabControl1.Controls.Add(this.tabPage9);
+			tabControl1.Controls.Add(tabPage9);
 			tabPage10 = new TabPage();
-			tabPage10.Text = "Images";
-			tabControl1.Controls.Add(this.tabPage10);
+			tabPage10.Text = "Image";
+			tabControl1.Controls.Add(tabPage10);
 			
 			Controls.Add(tabControl1);
 
@@ -253,1921 +304,934 @@ namespace FormsTest
 			AddTabControlsTest(tabPage6);
 			AddPrimitivesTest(tabPage7);
 			AddMenuTest();
-			AddGraphicsTest();
-			AddContextTest();
-			AddImageTest();
+			AddGraphicsTest(tabPage8);
+			AddGraphicsPathTest(tabPage16);
+			AddGraphicsDrawStringTest(tabPage17);
+			AddContextTest(tabPage9);
+			AddImageTest(tabPage10);
 			AddComboTest(tabPage11);
+			AddTreeViewTest(tabPage12);
+			AddListBoxTest(tabPage13);
+			AddFormsTest(tabPage14);
+			AddTransformsTest(tabPage15);
+			AddScrollbarTest(tabPage18);
 
 			ResumeLayout(false);
-
-
 		}
 
 		private void AddLabelTest(Control control)
 		{
-			this.label22 = new System.Windows.Forms.Label();
-			this.label23 = new System.Windows.Forms.Label();
-			this.label8 = new System.Windows.Forms.Label();
-			this.label9 = new System.Windows.Forms.Label();
-			this.label4 = new System.Windows.Forms.Label();
-			this.label5 = new System.Windows.Forms.Label();
-			this.label6 = new System.Windows.Forms.Label();
-			this.label7 = new System.Windows.Forms.Label();
-			this.label2 = new System.Windows.Forms.Label();
-			this.label3 = new System.Windows.Forms.Label();
-			this.label15 = new System.Windows.Forms.Label();
-			this.label14 = new System.Windows.Forms.Label();
-			this.label17 = new System.Windows.Forms.Label();
-			this.label16 = new System.Windows.Forms.Label();
-			this.label11 = new System.Windows.Forms.Label();
-			this.label10 = new System.Windows.Forms.Label();
-			this.label13 = new System.Windows.Forms.Label();
-			this.label20 = new System.Windows.Forms.Label();
-			this.label21 = new System.Windows.Forms.Label();
-			this.label24 = new System.Windows.Forms.Label();
-			this.label25 = new System.Windows.Forms.Label();
-			this.label19 = new System.Windows.Forms.Label();
-			this.label18 = new System.Windows.Forms.Label();
-			this.label12 = new System.Windows.Forms.Label();
-			this.label = new System.Windows.Forms.Label();
+			label22 = new Label();
+			label23 = new Label();
+			label8 = new Label();
+			label9 = new Label();
+			label4 = new Label();
+			label5 = new Label();
+			label6 = new Label();
+			label7 = new Label();
+			label2 = new Label();
+			label3 = new Label();
+			label15 = new Label();
+			label14 = new Label();
+			label17 = new Label();
+			label16 = new Label();
+			label11 = new Label();
+			label10 = new Label();
+			label13 = new Label();
+			label20 = new Label();
+			label21 = new Label();
+			label24 = new Label();
+			label25 = new Label();
+			label19 = new Label();
+			label18 = new Label();
+			label12 = new Label();
+			label = new Label();
 
-			//
-			// label22
-			//
-			this.label22.Dock = System.Windows.Forms.DockStyle.Top;
-			this.label22.Location = new System.Drawing.Point(0, 0);
-			this.label22.Name = "label22";
-			this.label22.Size = new System.Drawing.Size(480, 16);
-			this.label22.TabIndex = 21;
-			this.label22.Text = "A normal label : Dock=Top";
+			label22.Dock = DockStyle.Top;
+			label22.Location = new Point(0, 0);
+			label22.Name = "label22";
+			label22.Size = new Size(480, 16);
+			label22.TabIndex = 21;
+			label22.Text = "A normal label : Dock=Top";
 
-			//
-			// label23
-			//
-			this.label23.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.label23.Location = new System.Drawing.Point(0, 517);
-			this.label23.Name = "label23";
-			this.label23.Size = new System.Drawing.Size(480, 16);
-			this.label23.TabIndex = 22;
-			this.label23.Text = "A normal label : Dock=Bottom";
+			label23.Dock = DockStyle.Bottom;
+			label23.Location = new Point(0, 517);
+			label23.Name = "label23";
+			label23.Size = new Size(480, 16);
+			label23.TabIndex = 22;
+			label23.Text = "A normal label : Dock=Bottom";
 
-			//
-			// label8
-			//
-			this.label8.Location = new System.Drawing.Point(10, 125);
-			this.label8.Name = "label8";
-			this.label8.Size = new System.Drawing.Size(464, 16);
-			this.label8.TabIndex = 7;
-			this.label8.Text = "A normal label : TextAlign=MiddleLeft";
-			this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			label8.Location = new Point(10, 125);
+			label8.Name = "label8";
+			label8.Size = new Size(464, 16);
+			label8.TabIndex = 7;
+			label8.Text = "A normal label : TextAlign=MiddleLeft";
+			label8.TextAlign = ContentAlignment.MiddleLeft;
 
-			//
-			// label9
-			//
-			this.label9.Location = new System.Drawing.Point(10, 185);
-			this.label9.Name = "label9";
-			this.label9.Size = new System.Drawing.Size(464, 16);
-			this.label9.TabIndex = 8;
-			this.label9.Text = "A normal label : TextAlign=BottomLeft";
-			this.label9.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+			label9.Location = new Point(10, 185);
+			label9.Name = "label9";
+			label9.Size = new Size(464, 16);
+			label9.TabIndex = 8;
+			label9.Text = "A normal label : TextAlign=BottomLeft";
+			label9.TextAlign = ContentAlignment.BottomLeft;
 
-			//
-			// label4
-			//
-			this.label4.Location = new System.Drawing.Point(10, 85);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(464, 16);
-			this.label4.TabIndex = 3;
-			this.label4.Text = "A normal label : TextAlign=TopCenter";
-			this.label4.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+			label4.Location = new Point(10, 85);
+			label4.Name = "label4";
+			label4.Size = new Size(464, 16);
+			label4.TabIndex = 3;
+			label4.Text = "A normal label : TextAlign=TopCenter";
+			label4.TextAlign = ContentAlignment.TopCenter;
 
-			//
-			// label5
-			//
-			this.label5.Location = new System.Drawing.Point(10, 145);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(464, 16);
-			this.label5.TabIndex = 4;
-			this.label5.Text = "A normal label : TextAlign=MiddleCenter";
-			this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			label5.Location = new Point(10, 145);
+			label5.Name = "label5";
+			label5.Size = new Size(464, 16);
+			label5.TabIndex = 4;
+			label5.Text = "A normal label : TextAlign=MiddleCenter";
+			label5.TextAlign = ContentAlignment.MiddleCenter;
 
-			//
-			// label6
-			//
-			this.label6.Location = new System.Drawing.Point(10, 165);
-			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(464, 16);
-			this.label6.TabIndex = 5;
-			this.label6.Text = "A normal label : TextAlign=MiddleRight";
-			this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			label6.Location = new Point(10, 165);
+			label6.Name = "label6";
+			label6.Size = new Size(464, 16);
+			label6.TabIndex = 5;
+			label6.Text = "A normal label : TextAlign=MiddleRight";
+			label6.TextAlign = ContentAlignment.MiddleRight;
 
-			//
-			// label7
-			//
-			this.label7.Location = new System.Drawing.Point(10, 105);
-			this.label7.Name = "label7";
-			this.label7.Size = new System.Drawing.Size(464, 16);
-			this.label7.TabIndex = 6;
-			this.label7.Text = "A normal label : TextAlign=TopRight";
-			this.label7.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			label7.Location = new Point(10, 105);
+			label7.Name = "label7";
+			label7.Size = new Size(464, 16);
+			label7.TabIndex = 6;
+			label7.Text = "A normal label : TextAlign=TopRight";
+			label7.TextAlign = ContentAlignment.TopRight;
 
-			//
-			// label2
-			//
-			this.label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label2.Location = new System.Drawing.Point(10, 45);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(464, 16);
-			this.label2.TabIndex = 1;
-			this.label2.Text = "A normal label : BorderStyle=FixedSingle";
+			label2.BorderStyle = BorderStyle.FixedSingle;
+			label2.Location = new Point(10, 45);
+			label2.Name = "label2";
+			label2.Size = new Size(464, 16);
+			label2.TabIndex = 1;
+			label2.Text = "A normal label : BorderStyle=FixedSingle";
 
-			//
-			// label3
-			//
-			this.label3.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.label3.Location = new System.Drawing.Point(10, 65);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(464, 16);
-			this.label3.TabIndex = 2;
-			this.label3.Text = "A normal label : BorderStyle=Fixed3D";
+			label3.BorderStyle = BorderStyle.Fixed3D;
+			label3.Location = new Point(10, 65);
+			label3.Name = "label3";
+			label3.Size = new Size(464, 16);
+			label3.TabIndex = 2;
+			label3.Text = "A normal label : BorderStyle=Fixed3D";
 
-			//
-			// label15
-			//
-			this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.label15.Location = new System.Drawing.Point(10, 305);
-			this.label15.Name = "label15";
-			this.label15.Size = new System.Drawing.Size(464, 16);
-			this.label15.TabIndex = 14;
-			this.label15.Text = "A normal label : Font.Italic=true";
+			label15.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Italic, GraphicsUnit.Point, ((System.Byte)(0)));
+			label15.Location = new Point(10, 305);
+			label15.Name = "label15";
+			label15.Size = new Size(464, 16);
+			label15.TabIndex = 14;
+			label15.Text = "A normal label : Font.Italic=true";
 
-			//
-			// label14
-			//
-			this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.label14.Location = new System.Drawing.Point(10, 285);
-			this.label14.Name = "label14";
-			this.label14.Size = new System.Drawing.Size(464, 16);
-			this.label14.TabIndex = 13;
-			this.label14.Text = "A normal label : Font.Bold=true";
+			label14.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
+			label14.Location = new Point(10, 285);
+			label14.Name = "label14";
+			label14.Size = new Size(464, 16);
+			label14.TabIndex = 13;
+			label14.Text = "A normal label : Font.Bold=true";
 
 
-			//
-			// label17
-			//
-			this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.label17.Location = new System.Drawing.Point(10, 345);
-			this.label17.Name = "label17";
-			this.label17.Size = new System.Drawing.Size(464, 16);
-			this.label17.TabIndex = 16;
-			this.label17.Text = "A normal label : Font.Underline=true";
+			label17.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Underline, GraphicsUnit.Point, ((System.Byte)(0)));
+			label17.Location = new Point(10, 345);
+			label17.Name = "label17";
+			label17.Size = new Size(464, 16);
+			label17.TabIndex = 16;
+			label17.Text = "A normal label : Font.Underline=true";
 
-			//
-			// label16
-			//
-			this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Strikeout, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.label16.Location = new System.Drawing.Point(10, 325);
-			this.label16.Name = "label16";
-			this.label16.Size = new System.Drawing.Size(464, 16);
-			this.label16.TabIndex = 15;
-			this.label16.Text = "A normal label : Font.Strikeout=true";
+			label16.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Strikeout, GraphicsUnit.Point, ((System.Byte)(0)));
+			label16.Location = new Point(10, 325);
+			label16.Name = "label16";
+			label16.Size = new Size(464, 16);
+			label16.TabIndex = 15;
+			label16.Text = "A normal label : Font.Strikeout=true";
 
-			//
-			// label11
-			//
-			this.label11.Location = new System.Drawing.Point(10, 225);
-			this.label11.Name = "label11";
-			this.label11.Size = new System.Drawing.Size(464, 16);
-			this.label11.TabIndex = 10;
-			this.label11.Text = "A normal label : TextAlign=BottomRight";
-			this.label11.TextAlign = System.Drawing.ContentAlignment.BottomRight;
+			label11.Location = new Point(10, 225);
+			label11.Name = "label11";
+			label11.Size = new Size(464, 16);
+			label11.TabIndex = 10;
+			label11.Text = "A normal label : TextAlign=BottomRight";
+			label11.TextAlign = ContentAlignment.BottomRight;
 
-			//
-			// label10
-			//
-			this.label10.Location = new System.Drawing.Point(10, 205);
-			this.label10.Name = "label10";
-			this.label10.Size = new System.Drawing.Size(464, 16);
-			this.label10.TabIndex = 9;
-			this.label10.Text = "A normal label : TextAlign=BottomCenter";
-			this.label10.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			label10.Location = new Point(10, 205);
+			label10.Name = "label10";
+			label10.Size = new Size(464, 16);
+			label10.TabIndex = 9;
+			label10.Text = "A normal label : TextAlign=BottomCenter";
+			label10.TextAlign = ContentAlignment.BottomCenter;
 
-			//
-			// label13
-			//
-			this.label13.ForeColor = System.Drawing.Color.Red;
-			this.label13.Location = new System.Drawing.Point(10, 265);
-			this.label13.Name = "label13";
-			this.label13.Size = new System.Drawing.Size(464, 16);
-			this.label13.TabIndex = 12;
-			this.label13.Text = "A normal label : ForeColor=Red";
+			label13.ForeColor = Color.Red;
+			label13.Location = new Point(10, 265);
+			label13.Name = "label13";
+			label13.Size = new Size(464, 16);
+			label13.TabIndex = 12;
+			label13.Text = "A normal label : ForeColor=Red";
 
-			//
-			// label20
-			//
-			this.label20.BackColor = System.Drawing.SystemColors.Control;
-			this.label20.Enabled = false;
-			this.label20.Location = new System.Drawing.Point(10, 405);
-			this.label20.Name = "label20";
-			this.label20.Size = new System.Drawing.Size(464, 16);
-			this.label20.TabIndex = 19;
-			this.label20.Text = "A normal label : Enabled=false";
+			label20.BackColor = SystemColors.Control;
+			label20.Enabled = false;
+			label20.Location = new Point(10, 405);
+			label20.Name = "label20";
+			label20.Size = new Size(464, 16);
+			label20.TabIndex = 19;
+			label20.Text = "A normal label : Enabled=false";
 
-			//
-			// label21
-			//
-			this.label21.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-				| System.Windows.Forms.AnchorStyles.Left)
-				| System.Windows.Forms.AnchorStyles.Right)));
-			this.label21.BackColor = System.Drawing.SystemColors.Control;
-			this.label21.Location = new System.Drawing.Point(10, 495);
-			this.label21.Name = "label21";
-			this.label21.Size = new System.Drawing.Size(460, 15);
-			this.label21.TabIndex = 20;
-			this.label21.Text = "A normal label : Anchor=All";
+			label21.Anchor = (AnchorStyles)AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			label21.BackColor = SystemColors.Control;
+			label21.Location = new Point(10, 495);
+			label21.Name = "label21";
+			label21.Size = new Size(460, 15);
+			label21.TabIndex = 20;
+			label21.Text = "A normal label : Anchor=All";
 
-			//
-			// label24
-			//
-			this.label24.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label24.Location = new System.Drawing.Point(10, 425);
-			this.label24.Name = "label24";
-			this.label24.Size = new System.Drawing.Size(464, 40);
-			this.label24.TabIndex = 23;
-			this.label24.Text = "A normal label : BorderStyle=FixedSingle , Height=40";
+			label24.BorderStyle = BorderStyle.FixedSingle;
+			label24.Location = new Point(10, 425);
+			label24.Name = "label24";
+			label24.Size = new Size(464, 40);
+			label24.TabIndex = 23;
+			label24.Text = "A normal label : BorderStyle=FixedSingle , Height=40";
 
-			//
-			// label25
-			//
-			this.label25.AutoSize = true;
-			this.label25.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.label25.Location = new System.Drawing.Point(10, 470);
-			this.label25.Name = "label25";
-			this.label25.Size = new System.Drawing.Size(294, 19);
-			this.label25.TabIndex = 24;
-			this.label25.Text = "A normal label : BorderStyle=FixedSingle , AutoSize=true";
+			label25.AutoSize = true;
+			label25.BorderStyle = BorderStyle.FixedSingle;
+			label25.Location = new Point(10, 470);
+			label25.Name = "label25";
+			label25.Size = new Size(294, 19);
+			label25.TabIndex = 24;
+			label25.Text = "A normal label : BorderStyle=FixedSingle , AutoSize=true";
 
-			//
-			// label19
-			//
-			this.label19.BackColor = System.Drawing.Color.Red;
-			this.label19.Location = new System.Drawing.Point(10, 385);
-			this.label19.Name = "label19";
-			this.label19.Size = new System.Drawing.Size(464, 16);
-			this.label19.TabIndex = 18;
-			this.label19.Text = "A normal label : BackColor=Red";
+			label19.BackColor = Color.Red;
+			label19.Location = new Point(10, 385);
+			label19.Name = "label19";
+			label19.Size = new Size(464, 16);
+			label19.TabIndex = 18;
+			label19.Text = "A normal label : BackColor=Red";
 
-			//
-			// label18
-			//
-			this.label18.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.label18.Location = new System.Drawing.Point(10, 365);
-			this.label18.Name = "label18";
-			this.label18.Size = new System.Drawing.Size(464, 16);
-			this.label18.TabIndex = 17;
-			this.label18.Text = "A normal label : Font=Verdana; 9.75pt";
+			label18.Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+			label18.Location = new Point(10, 365);
+			label18.Name = "label18";
+			label18.Size = new Size(464, 16);
+			label18.TabIndex = 17;
+			label18.Text = "A normal label : Font=Verdana; 9.75pt";
 
-			//
-			// label12
-			//
-			this.label12.Location = new System.Drawing.Point(10, 245);
-			this.label12.Name = "label12";
-			this.label12.Size = new System.Drawing.Size(464, 16);
-			this.label12.TabIndex = 11;
-			this.label12.Text = "A normal label : With a &shortcut letter (Alt+S)";
+			label12.Location = new Point(10, 245);
+			label12.Name = "label12";
+			label12.Size = new Size(464, 16);
+			label12.TabIndex = 11;
+			label12.Text = "A normal label : With a &shortcut letter (Alt+S)";
 
-			//
-			// label
-			//
-			this.label.Location = new System.Drawing.Point(10, 25);
-			this.label.Name = "label";
-			this.label.Size = new System.Drawing.Size(464, 16);
-			this.label.TabIndex = 0;
-			this.label.Text = "A normal label";
+			label.Location = new Point(10, 25);
+			label.Name = "label";
+			label.Size = new Size(464, 16);
+			label.TabIndex = 0;
+			label.Text = "A normal label";
 
-			control.Controls.AddRange(new System.Windows.Forms.Control[] {
-																			 this.label25,
-																			 this.label24,
-																			 this.label23,
-																			 this.label22,
-																			 this.label21,
-																			 this.label20,
-																			 this.label19,
-																			 this.label18,
-																			 this.label17,
-																			 this.label16,
-																			 this.label15,
-																			 this.label14,
-																			 this.label13,
-																			 this.label12,
-																			 this.label11,
-																			 this.label10,
-																			 this.label9,
-																			 this.label8,
-																			 this.label7,
-																			 this.label6,
-																			 this.label5,
-																			 this.label4,
-																			 this.label3,
-																			 this.label2,
-																			 this.label});
+			control.Controls.AddRange(new Control[] {
+																			 label25,
+																			 label24,
+																			 label23,
+																			 label22,
+																			 label21,
+																			 label20,
+																			 label19,
+																			 label18,
+																			 label17,
+																			 label16,
+																			 label15,
+																			 label14,
+																			 label13,
+																			 label12,
+																			 label11,
+																			 label10,
+																			 label9,
+																			 label8,
+																			 label7,
+																			 label6,
+																			 label5,
+																			 label4,
+																			 label3,
+																			 label2,
+																			 label});
 		}
 
 		private void AddButtonTest(Control control)
 		{
-			this.button20 = new System.Windows.Forms.Button();
-			this.button21 = new System.Windows.Forms.Button();
-			this.button6 = new System.Windows.Forms.Button();
-			this.button18 = new System.Windows.Forms.Button();
-			this.button19 = new System.Windows.Forms.Button();
-			this.button14 = new System.Windows.Forms.Button();
-			this.button17 = new System.Windows.Forms.Button();
-			this.button16 = new System.Windows.Forms.Button();
-			this.button15 = new System.Windows.Forms.Button();
-			this.button8 = new System.Windows.Forms.Button();
-			this.button9 = new System.Windows.Forms.Button();
-			this.button11 = new System.Windows.Forms.Button();
-			this.button10 = new System.Windows.Forms.Button();
-			this.button4 = new System.Windows.Forms.Button();
-			this.button5 = new System.Windows.Forms.Button();
-			this.button = new System.Windows.Forms.Button();
-			this.button7 = new System.Windows.Forms.Button();
-			this.button13 = new System.Windows.Forms.Button();
-			this.button12 = new System.Windows.Forms.Button();
-			this.button2 = new System.Windows.Forms.Button();
-			this.button3 = new System.Windows.Forms.Button();
-			this.button22 = new System.Windows.Forms.Button();
-			this.button23 = new System.Windows.Forms.Button();
+			button = new Button();
+			button.Dock = DockStyle.Top;
+			button.Location = new Point(0, 0);
+			button.Size = new Size(496, 24);
+			button.TabIndex = 0;
+			button.Text = "A normal button : Dock=Top";
 
-			//
-			// button20
-			//
-			this.button20.Location = new System.Drawing.Point(8, 616);
-			this.button20.Name = "button20";
-			this.button20.Size = new System.Drawing.Size(480, 32);
-			this.button20.TabIndex = 19;
-			this.button20.Text = "A normal button : TextAlign=BottomLeft";
-			this.button20.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+			button2 = new Button();
+			button2.Location = new Point(8, 32);
+			button2.Size = new Size(480, 24);
+			button2.TabIndex = 1;
+			button2.Text = "A normal button";
 
-			//
-			// button21
-			//
-			this.button21.Location = new System.Drawing.Point(8, 656);
-			this.button21.Name = "button21";
-			this.button21.Size = new System.Drawing.Size(480, 32);
-			this.button21.TabIndex = 20;
-			this.button21.Text = "A normal button : TextAlign=BottomCenter";
-			this.button21.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			button3 = new Button();
+			button3.Dock = DockStyle.Bottom;
+			button3.Location = new Point(0, 32);
+			button3.Size = new Size(496, 24);
+			button3.TabIndex = 2;
+			button3.Text = "A normal button : Dock=Bottom";
+			
+			button4 = new Button();
+			button4.Enabled = false;
+			button4.Location = new Point(8, 64);
+			button4.Size = new Size(480, 24);
+			button4.TabIndex = 3;
+			button4.Text = "A normal button : Enabled=false";
 
-			//
-			// button6
-			//
-			this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.button6.Location = new System.Drawing.Point(8, 128);
-			this.button6.Name = "button6";
-			this.button6.Size = new System.Drawing.Size(480, 24);
-			this.button6.TabIndex = 5;
-			this.button6.Text = "A normal button : FlatStyle=Flat";
+			button5 = new Button();
+			button5.BackColor = Color.Red;
+			button5.Location = new Point(8, 96);
+			button5.Size = new Size(480, 24);
+			button5.TabIndex = 4;
+			button5.Text = "A normal button : BackColor=Red";
 
-			//
-			// button18
-			//
-			this.button18.Location = new System.Drawing.Point(8, 536);
-			this.button18.Name = "button18";
-			this.button18.Size = new System.Drawing.Size(480, 32);
-			this.button18.TabIndex = 17;
-			this.button18.Text = "A normal button : TextAlign=MiddleLeft";
-			this.button18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			button6 = new Button();
+			button6.FlatStyle = FlatStyle.Flat;
+			button6.Location = new Point(8, 128);
+			button6.Size = new Size(480, 24);
+			button6.TabIndex = 5;
+			button6.Text = "A normal button : FlatStyle=Flat";
 
-			//
-			// button19
-			//
-			this.button19.Location = new System.Drawing.Point(8, 576);
-			this.button19.Name = "button19";
-			this.button19.Size = new System.Drawing.Size(480, 32);
-			this.button19.TabIndex = 18;
-			this.button19.Text = "A normal button : TextAlign=MiddleRight";
-			this.button19.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			button7 = new Button();
+			button7.FlatStyle = FlatStyle.Popup;
+			button7.Location = new Point(8, 160);
+			button7.Size = new Size(480, 24);
+			button7.TabIndex = 6;
+			button7.Text = "A normal button : FlatStyle=Popup";
+			
+			button12 = new Button();
+			button12.Font = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+			button12.Location = new Point(8, 192);
+			button12.Size = new Size(480, 24);
+			button12.TabIndex = 11;
+			button12.Text = "A normal button : Font.Size=10";
 
-			//
-			// button14
-			//
-			this.button14.ForeColor = System.Drawing.Color.Red;
-			this.button14.Location = new System.Drawing.Point(8, 384);
-			this.button14.Name = "button14";
-			this.button14.Size = new System.Drawing.Size(480, 24);
-			this.button14.TabIndex = 13;
-			this.button14.Text = "A normal button : ForeColor=Red";
+			button13 = new Button();
+			button13.Font = new Font("Verdana", 8.25F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+			button13.Location = new Point(8, 224);
+			button13.Size = new Size(480, 24);
+			button13.TabIndex = 12;
+			button13.Text = "A normal button : Font=Verdana; 8,25pt";
+		
+			button14 = new Button();
+			button14.ForeColor = Color.Red;
+			button14.Location = new Point(8, 256);
+			button14.Size = new Size(480, 24);
+			button14.TabIndex = 13;
+			button14.Text = "A normal button : ForeColor=Red";
 
-			//
-			// button17
-			//
-			this.button17.Location = new System.Drawing.Point(8, 496);
-			this.button17.Name = "button17";
-			this.button17.Size = new System.Drawing.Size(480, 32);
-			this.button17.TabIndex = 16;
-			this.button17.Text = "A normal button : TextAlign=TopRight";
-			this.button17.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			button15 = new Button();
+			button15.Location = new Point(8, 288);
+			button15.Size = new Size(480, 32);
+			button15.TabIndex = 14;
+			button15.Text = "A normal button : TextAlign=TopLeft";
+			button15.TextAlign = ContentAlignment.TopLeft;
+			
+			button16 = new Button();
+			button16.Location = new Point(8, 320);
+			button16.Size = new Size(480, 32);
+			button16.TabIndex = 15;
+			button16.Text = "A normal button : TextAlign=TopCenter";
+			button16.TextAlign = ContentAlignment.TopCenter;
 
-			//
-			// button16
-			//
-			this.button16.Location = new System.Drawing.Point(8, 456);
-			this.button16.Name = "button16";
-			this.button16.Size = new System.Drawing.Size(480, 32);
-			this.button16.TabIndex = 15;
-			this.button16.Text = "A normal button : TextAlign=TopCenter";
-			this.button16.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+			button17 = new Button();
+			button17.Location = new Point(8, 352);
+			button17.Size = new Size(480, 32);
+			button17.TabIndex = 16;
+			button17.Text = "A normal button : TextAlign=TopRight";
+			button17.TextAlign = ContentAlignment.TopRight;
 
-			//
-			// button15
-			//
-			this.button15.Location = new System.Drawing.Point(8, 416);
-			this.button15.Name = "button15";
-			this.button15.Size = new System.Drawing.Size(480, 32);
-			this.button15.TabIndex = 14;
-			this.button15.Text = "A normal button : TextAlign=TopLeft";
-			this.button15.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+			button18 = new Button();
+			button18.Location = new Point(8, 384);
+			button18.Size = new Size(480, 32);
+			button18.TabIndex = 17;
+			button18.Text = "A normal button : TextAlign=MiddleLeft";
+			button18.TextAlign =ContentAlignment.MiddleLeft;
 
-			//
-			// button8
-			//
-			this.button8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.button8.Location = new System.Drawing.Point(8, 192);
-			this.button8.Name = "button8";
-			this.button8.Size = new System.Drawing.Size(480, 24);
-			this.button8.TabIndex = 7;
-			this.button8.Text = "A normal button : Font.Bold=true";
+			button19 = new Button();
+			button19.Location = new Point(8, 418);
+			button19.Size = new Size(480, 32);
+			button19.TabIndex = 18;
+			button19.Text = "A normal button : TextAlign=MiddleRight";
+			button19.TextAlign = ContentAlignment.MiddleRight;
 
-			//
-			// button9
-			//
-			this.button9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.button9.Location = new System.Drawing.Point(8, 224);
-			this.button9.Name = "button9";
-			this.button9.Size = new System.Drawing.Size(480, 24);
-			this.button9.TabIndex = 8;
-			this.button9.Text = "A normal button : Font.Italic=true";
+			button20 = new Button();
+			button20.Location = new Point(8, 450);
+			button20.Size = new Size(480, 32);
+			button20.TabIndex = 19;
+			button20.Text = "A normal button : TextAlign=BottomLeft";
+			button20.TextAlign = ContentAlignment.BottomLeft;
 
-			//
-			// button11
-			//
-			this.button11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.button11.Location = new System.Drawing.Point(8, 288);
-			this.button11.Name = "button11";
-			this.button11.Size = new System.Drawing.Size(480, 24);
-			this.button11.TabIndex = 10;
-			this.button11.Text = "A normal button : Font.Underline=true";
+			button21 = new Button();
+			button21.Location = new Point(8, 482);
+			button21.Size = new Size(480, 32);
+			button21.TabIndex = 20;
+			button21.Text = "A normal button : TextAlign=BottomCenter";
+			button21.TextAlign = ContentAlignment.BottomCenter;
+	
+			button22 = new Button();
+			button22.Location = new Point(8, 514);
+			button22.Size = new Size(480, 32);
+			button22.TabIndex = 21;
+			button22.Text = "A normal button : TextAlign=BottomRight";
+			button22.TextAlign = ContentAlignment.BottomRight;
 
-			//
-			// button10
-			//
-			this.button10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Strikeout, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.button10.Location = new System.Drawing.Point(8, 256);
-			this.button10.Name = "button10";
-			this.button10.Size = new System.Drawing.Size(480, 24);
-			this.button10.TabIndex = 9;
-			this.button10.Text = "A normal button : Font.Strikeout=true";
+			button23 = new Button();
+			button23.Anchor = (AnchorStyles)AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			button23.Location = new Point(8, 546);
+			button23.Name = "button23";
+			button23.Size = new Size(480, 24);
+			button23.TabIndex = 22;
+			button23.Text = "A normal button : Anchor=All";
 
-			//
-			// button4
-			//
-			this.button4.Enabled = false;
-			this.button4.Location = new System.Drawing.Point(8, 64);
-			this.button4.Name = "button4";
-			this.button4.Size = new System.Drawing.Size(480, 24);
-			this.button4.TabIndex = 3;
-			this.button4.Text = "A normal button : Enabled=false";
-
-			//
-			// button5
-			//
-			this.button5.BackColor = System.Drawing.Color.Red;
-			this.button5.Location = new System.Drawing.Point(8, 96);
-			this.button5.Name = "button5";
-			this.button5.Size = new System.Drawing.Size(480, 24);
-			this.button5.TabIndex = 4;
-			this.button5.Text = "A normal button : BackColor=Red";
-
-			//
-			// button
-			//
-			this.button.Dock = System.Windows.Forms.DockStyle.Top;
-			this.button.Location = new System.Drawing.Point(0, 0);
-			this.button.Name = "button";
-			this.button.Size = new System.Drawing.Size(496, 24);
-			this.button.TabIndex = 0;
-			this.button.Text = "A normal button : Dock=Top";
-
-			//
-			// button7
-			//
-			this.button7.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.button7.Location = new System.Drawing.Point(8, 160);
-			this.button7.Name = "button7";
-			this.button7.Size = new System.Drawing.Size(480, 24);
-			this.button7.TabIndex = 6;
-			this.button7.Text = "A normal button : FlatStyle=Popup";
-
-			//
-			// button13
-			//
-			this.button13.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.button13.Location = new System.Drawing.Point(8, 352);
-			this.button13.Name = "button13";
-			this.button13.Size = new System.Drawing.Size(480, 24);
-			this.button13.TabIndex = 12;
-			this.button13.Text = "A normal button : Font=Verdana; 8,25pt";
-
-			//
-			// button12
-			//
-			this.button12.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.button12.Location = new System.Drawing.Point(8, 320);
-			this.button12.Name = "button12";
-			this.button12.Size = new System.Drawing.Size(480, 24);
-			this.button12.TabIndex = 11;
-			this.button12.Text = "A normal button : Font.Size=10";
-
-			//
-			// button2
-			//
-			this.button2.Location = new System.Drawing.Point(8, 32);
-			this.button2.Name = "button2";
-			this.button2.Size = new System.Drawing.Size(480, 24);
-			this.button2.TabIndex = 1;
-			this.button2.Text = "A normal button";
-
-			//
-			// button3
-			//
-			this.button3.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.button3.Location = new System.Drawing.Point(0, 765);
-			this.button3.Name = "button3";
-			this.button3.Size = new System.Drawing.Size(496, 24);
-			this.button3.TabIndex = 2;
-			this.button3.Text = "A normal button : Dock=Bottom";
-
-			//
-			// button22
-			//
-			this.button22.Location = new System.Drawing.Point(8, 696);
-			this.button22.Name = "button22";
-			this.button22.Size = new System.Drawing.Size(480, 32);
-			this.button22.TabIndex = 21;
-			this.button22.Text = "A normal button : TextAlign=BottomRight";
-			this.button22.TextAlign = System.Drawing.ContentAlignment.BottomRight;
-
-			//
-			// button23
-			//
-			this.button23.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-				| System.Windows.Forms.AnchorStyles.Left)
-				| System.Windows.Forms.AnchorStyles.Right)));
-			this.button23.Location = new System.Drawing.Point(8, 736);
-			this.button23.Name = "button23";
-			this.button23.Size = new System.Drawing.Size(480, 24);
-			this.button23.TabIndex = 22;
-			this.button23.Text = "A normal button : Anchor=All";
-
-			control.Controls.AddRange(new System.Windows.Forms.Control[] {
-																			 this.button23,
-																			 this.button22,
-																			 this.button21,
-																			 this.button20,
-																			 this.button19,
-																			 this.button18,
-																			 this.button17,
-																			 this.button16,
-																			 this.button15,
-																			 this.button14,
-																			 this.button13,
-																			 this.button12,
-																			 this.button11,
-																			 this.button10,
-																			 this.button9,
-																			 this.button8,
-																			 this.button7,
-																			 this.button6,
-																			 this.button5,
-																			 this.button4,
-																			 this.button3,
-																			 this.button2,
-																			 this.button});
+			control.Controls.AddRange(new Control[] { button, button2, button3, button4, button5, button6, button7, button12, button13, button14, button15, button16, button17, button18, button19, button20, button21, button22, button23});
 		}
 	
 		private void AddTextBoxTest(Control control)
 		{
-
-			this.textBox19 = new System.Windows.Forms.TextBox();
-			this.textBox3 = new System.Windows.Forms.TextBox();
-			this.textBox20 = new System.Windows.Forms.TextBox();
-			this.textBox18 = new System.Windows.Forms.TextBox();
-			this.textBox2 = new System.Windows.Forms.TextBox();
-			this.textBox1 = new System.Windows.Forms.TextBox();
-			this.textBox6 = new System.Windows.Forms.TextBox();
-			this.textBox7 = new System.Windows.Forms.TextBox();
-			this.textBox4 = new System.Windows.Forms.TextBox();
-			this.textBox5 = new System.Windows.Forms.TextBox();
-			this.textBox10 = new System.Windows.Forms.TextBox();
-			this.textBox8 = new System.Windows.Forms.TextBox();
-			this.textBox9 = new System.Windows.Forms.TextBox();
-			this.textBox13 = new System.Windows.Forms.TextBox();
-			this.textBox12 = new System.Windows.Forms.TextBox();
-			this.textBox11 = new System.Windows.Forms.TextBox();
-			this.textBox = new System.Windows.Forms.TextBox();
-			this.textBox17 = new System.Windows.Forms.TextBox();
-			this.textBox16 = new System.Windows.Forms.TextBox();
-			this.textBox15 = new System.Windows.Forms.TextBox();
-			this.textBox14 = new System.Windows.Forms.TextBox();
+			textBox19 = new TextBox();
+			textBox3 = new TextBox();
+			textBox20 = new TextBox();
+			textBox18 = new TextBox();
+			textBox2 = new TextBox();
+			textBox1 = new TextBox();
+			textBox6 = new TextBox();
+			textBox7 = new TextBox();
+			textBox4 = new TextBox();
+			textBox5 = new TextBox();
+			textBox10 = new TextBox();
+			textBox8 = new TextBox();
+			textBox9 = new TextBox();
+			textBox13 = new TextBox();
+			textBox12 = new TextBox();
+			textBox11 = new TextBox();
+			textBox = new TextBox();
+			textBox17 = new TextBox();
+			textBox16 = new TextBox();
+			textBox15 = new TextBox();
+			textBox14 = new TextBox();
 			textBoxLinesButton = new Button();
+			textBoxTextButton = new Button();
+			textBoxSelectedTextButton = new Button();
 
-			//
-			// textBox19
-			//
-			this.textBox19.Dock = System.Windows.Forms.DockStyle.Top;
-			this.textBox19.Location = new System.Drawing.Point(0, 0);
-			this.textBox19.Name = "textBox19";
-			this.textBox19.Size = new System.Drawing.Size(450, 20);
-			this.textBox19.TabIndex = 19;
-			this.textBox19.Text = "A normal textbox - MS Sans Serif : Dock=Top";
+			textBox19.Dock = DockStyle.Top;
+			textBox19.Location = new Point(0, 0);
+			textBox19.Name = "textBox19";
+			textBox19.Size = new Size(450, 20);
+			textBox19.TabIndex = 19;
+			textBox19.Text = "A normal textbox - MS Sans Serif : Dock=Top";
 
-			//
-			// textBox3
-			//
-			this.textBox3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.textBox3.Location = new System.Drawing.Point(8, 95);
-			this.textBox3.Name = "textBox3";
-			this.textBox3.Size = new System.Drawing.Size(450, 20);
-			this.textBox3.TabIndex = 3;
-			this.textBox3.Text = "A normal textbox - MS Sans Serif : BorderStyle=FixedSingle";
+			textBox3.BorderStyle = BorderStyle.FixedSingle;
+			textBox3.Location = new Point(8, 95);
+			textBox3.Name = "textBox3";
+			textBox3.Size = new Size(450, 20);
+			textBox3.TabIndex = 3;
+			textBox3.Text = "A normal textbox - MS Sans Serif : BorderStyle=FixedSingle";
 
-			//
-			// textBox20
-			//
-			this.textBox20.Enabled = false;
-			this.textBox20.Location = new System.Drawing.Point(10, 390);
-			this.textBox20.Name = "textBox20";
-			this.textBox20.Size = new System.Drawing.Size(450, 20);
-			this.textBox20.TabIndex = 20;
-			this.textBox20.Text = "A normal textbox - MS Sans Serif : Enabled=false";
+			textBox20.Enabled = false;
+			textBox20.Location = new Point(10, 390);
+			textBox20.Name = "textBox20";
+			textBox20.Size = new Size(450, 20);
+			textBox20.TabIndex = 20;
+			textBox20.Text = "A normal textbox - MS Sans Serif : Enabled=false";
 
-			//
-			// textBox18
-			//
-			this.textBox18.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.textBox18.Location = new System.Drawing.Point(0, 518);
-			this.textBox18.Name = "textBox18";
-			this.textBox18.Size = new System.Drawing.Size(450, 20);
-			this.textBox18.TabIndex = 18;
-			this.textBox18.Text = "A normal textbox - MS Sans Serif : Dock=Bottom";
+			textBox18.Dock = DockStyle.Bottom;
+			textBox18.Location = new Point(0, 518);
+			textBox18.Name = "textBox18";
+			textBox18.Size = new Size(450, 20);
+			textBox18.TabIndex = 18;
+			textBox18.Text = "A normal textbox - MS Sans Serif : Dock=Bottom";
 
-			//
-			// textBox2
-			//
-			this.textBox2.Location = new System.Drawing.Point(8, 70);
-			this.textBox2.Name = "textBox2";
-			this.textBox2.Size = new System.Drawing.Size(450, 20);
-			this.textBox2.TabIndex = 2;
-			this.textBox2.Text = "A normal textbox - MS Sans Serif : TextAlign=Center";
-			this.textBox2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			textBox2.Location = new Point(8, 70);
+			textBox2.Name = "textBox2";
+			textBox2.Size = new Size(450, 20);
+			textBox2.TabIndex = 2;
+			textBox2.Text = "A normal textbox - MS Sans Serif : TextAlign=Center";
+			textBox2.TextAlign = HorizontalAlignment.Center;
 
-			//
-			// textBox1
-			//
-			this.textBox1.Location = new System.Drawing.Point(8, 45);
-			this.textBox1.Name = "textBox1";
-			this.textBox1.Size = new System.Drawing.Size(450, 20);
-			this.textBox1.TabIndex = 0;
-			this.textBox1.Text = "A normal textbox - MS Sans Serif : TextAlign=Right";
-			this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			textBox1.Location = new Point(8, 45);
+			textBox1.Name = "textBox1";
+			textBox1.Size = new Size(450, 20);
+			textBox1.TabIndex = 0;
+			textBox1.Text = "A normal textbox - MS Sans Serif : TextAlign=Right";
+			textBox1.TextAlign = HorizontalAlignment.Right;
 
-			//
-			// textBox6
-			//
-			this.textBox6.Font = new System.Drawing.Font("Serifa BT", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.textBox6.Location = new System.Drawing.Point(10, 190);
-			this.textBox6.Name = "textBox6";
-			this.textBox6.Size = new System.Drawing.Size(450, 20);
-			this.textBox6.TabIndex = 6;
-			this.textBox6.Text = "A normal textbox - Serifa BT";
+			textBox6.Font = new Font("Serifa BT", 8.25F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+			textBox6.Location = new Point(10, 190);
+			textBox6.Name = "textBox6";
+			textBox6.Size = new Size(450, 20);
+			textBox6.TabIndex = 6;
+			textBox6.Text = "A normal textbox - Serifa BT";
 
-			//
-			// textBox7
-			//
-			this.textBox7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.textBox7.Location = new System.Drawing.Point(8, 215);
-			this.textBox7.Name = "textBox7";
-			this.textBox7.Size = new System.Drawing.Size(450, 20);
-			this.textBox7.TabIndex = 7;
-			this.textBox7.Text = "A normal textbox - MS Sans Serif : Font.Bold=true";
+			textBox7.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
+			textBox7.Location = new Point(8, 215);
+			textBox7.Name = "textBox7";
+			textBox7.Size = new Size(450, 20);
+			textBox7.TabIndex = 7;
+			textBox7.Text = "A normal textbox - MS Sans Serif : Font.Bold=true";
 
-			//
-			// textBox4
-			//
-			this.textBox4.Location = new System.Drawing.Point(8, 120);
-			this.textBox4.Multiline = true;
-			this.textBox4.Name = "textBox4";
-			this.textBox4.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.textBox4.Size = new System.Drawing.Size(450, 40);
-			this.textBox4.TabIndex = 4;
-			this.textBox4.Text = "A MultiLine textbox - MS Sans Serif : ScrollBars=Both, Height=40\nOh give me a home\nWhere the buffalo roam\nAnd the deer and 45 (forty-five) antelope play\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day.\nHome, Home on the Range\nWhere the deer and the antelope play.\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day....";
+			textBox4.Location = new Point(8, 120);
+			textBox4.Multiline = true;
+			textBox4.Name = "textBox4";
+			textBox4.ScrollBars = ScrollBars.Both;
+			textBox4.Size = new Size(450, 40);
+			textBox4.TabIndex = 4;
+			textBox4.Text = "A MultiLine textbox - MS Sans Serif : ScrollBars=Both, Height=40\nOh give me a home\nWhere the buffalo roam\nAnd the deer and 45 (forty-five) antelope play\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day.\nHome, Home on the Range\nWhere the deer and the antelope play.\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day....";
 
-			//
-			// textBox5
-			//
-			this.textBox5.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.textBox5.Location = new System.Drawing.Point(10, 165);
-			this.textBox5.Name = "textBox5";
-			this.textBox5.Size = new System.Drawing.Size(450, 21);
-			this.textBox5.TabIndex = 5;
-			this.textBox5.Text = "A normal textbox - Arial; 9pt";
+			textBox5.Font = new Font("Arial", 9F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+			textBox5.Location = new Point(10, 165);
+			textBox5.Name = "textBox5";
+			textBox5.Size = new Size(450, 21);
+			textBox5.TabIndex = 5;
+			textBox5.Text = "A normal textbox - Arial; 9pt";
 
-			//
-			// textBox10
-			//
-			this.textBox10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline);
-			this.textBox10.Location = new System.Drawing.Point(10, 290);
-			this.textBox10.Name = "textBox10";
-			this.textBox10.Size = new System.Drawing.Size(450, 20);
-			this.textBox10.TabIndex = 10;
-			this.textBox10.Text = "A normal textbox - MS Sans Serif : Font.Underline=true";
+			textBox10.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Underline);
+			textBox10.Location = new Point(10, 290);
+			textBox10.Name = "textBox10";
+			textBox10.Size = new Size(450, 20);
+			textBox10.TabIndex = 10;
+			textBox10.Text = "A normal textbox - MS Sans Serif : Font.Underline=true";
 
-			//
-			// textBox8
-			//
-			this.textBox8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic);
-			this.textBox8.Location = new System.Drawing.Point(10, 240);
-			this.textBox8.Name = "textBox8";
-			this.textBox8.Size = new System.Drawing.Size(450, 20);
-			this.textBox8.TabIndex = 8;
-			this.textBox8.Text = "A normal textbox - MS Sans Serif : Font.Italic=true";
+			textBox8.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Italic);
+			textBox8.Location = new Point(10, 240);
+			textBox8.Name = "textBox8";
+			textBox8.Size = new Size(450, 20);
+			textBox8.TabIndex = 8;
+			textBox8.Text = "A normal textbox - MS Sans Serif : Font.Italic=true";
 
-			//
-			// textBox9
-			//
-			this.textBox9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Strikeout);
-			this.textBox9.Location = new System.Drawing.Point(10, 265);
-			this.textBox9.Name = "textBox9";
-			this.textBox9.Size = new System.Drawing.Size(450, 20);
-			this.textBox9.TabIndex = 9;
-			this.textBox9.Text = "A normal textbox - MS Sans Serif : Font.StrikeOut=true";
+			textBox9.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Strikeout);
+			textBox9.Location = new Point(10, 265);
+			textBox9.Name = "textBox9";
+			textBox9.Size = new Size(450, 20);
+			textBox9.TabIndex = 9;
+			textBox9.Text = "A normal textbox - MS Sans Serif : Font.StrikeOut=true";
 
-			//
-			// textBox13
-			//
-			this.textBox13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-			this.textBox13.Location = new System.Drawing.Point(10, 365);
-			this.textBox13.Name = "textBox13";
-			this.textBox13.ReadOnly = true;
-			this.textBox13.Size = new System.Drawing.Size(450, 20);
-			this.textBox13.TabIndex = 13;
-			this.textBox13.Text = "A normal textbox - MS Sans Serif : ReadOnly=true";
+			textBox13.Font = new Font("Microsoft Sans Serif", 8.25F);
+			textBox13.Location = new Point(10, 365);
+			textBox13.Name = "textBox13";
+			textBox13.ReadOnly = true;
+			textBox13.Size = new Size(450, 20);
+			textBox13.TabIndex = 13;
+			textBox13.Text = "A normal textbox - MS Sans Serif : ReadOnly=true";
 
-			//
-			// textBox12
-			//
-			this.textBox12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-			this.textBox12.Location = new System.Drawing.Point(10, 340);
-			this.textBox12.Name = "textBox12";
-			this.textBox12.PasswordChar = '*';
-			this.textBox12.Size = new System.Drawing.Size(450, 20);
-			this.textBox12.TabIndex = 12;
-			this.textBox12.Text = "A normal textbox - MS Sans Serif : PasswordChar=*";
+			textBox12.Font = new Font("Microsoft Sans Serif", 8.25F);
+			textBox12.Location = new Point(10, 340);
+			textBox12.Name = "textBox12";
+			textBox12.PasswordChar = '*';
+			textBox12.Size = new Size(450, 20);
+			textBox12.TabIndex = 12;
+			textBox12.Text = "A normal textbox - MS Sans Serif : PasswordChar=*";
 
-			//
-			// textBox11
-			//
-			this.textBox11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-			this.textBox11.ForeColor = System.Drawing.Color.Red;
-			this.textBox11.Location = new System.Drawing.Point(10, 315);
-			this.textBox11.Name = "textBox11";
-			this.textBox11.Size = new System.Drawing.Size(450, 20);
-			this.textBox11.TabIndex = 11;
-			this.textBox11.Text = "A normal textbox - MS Sans Serif : ForeColor=red";
+			textBox11.Font = new Font("Microsoft Sans Serif", 8.25F);
+			textBox11.ForeColor = Color.Red;
+			textBox11.Location = new Point(10, 315);
+			textBox11.Name = "textBox11";
+			textBox11.Size = new Size(450, 20);
+			textBox11.TabIndex = 11;
+			textBox11.Text = "A normal textbox - MS Sans Serif : ForeColor=red";
 
-			//
-			// textBox
-			//
-			this.textBox.Location = new System.Drawing.Point(8, 25);
-			this.textBox.Name = "textBox";
-			this.textBox.Size = new System.Drawing.Size(450, 20);
-			this.textBox.TabIndex = 1;
-			this.textBox.Text = "A normal textbox - MS Sans Serif";
+			textBox.Location = new Point(8, 25);
+			textBox.Name = "textBox";
+			textBox.Size = new Size(450, 20);
+			textBox.TabIndex = 1;
+			textBox.Text = "A normal textbox - MS Sans Serif";
 
-			//
-			// textBox17
-			//
-			this.textBox17.AcceptsTab = true;
-			this.textBox17.Location = new System.Drawing.Point(10, 490);
-			this.textBox17.Name = "textBox17";
-			this.textBox17.Size = new System.Drawing.Size(450, 20);
-			this.textBox17.TabIndex = 17;
-			this.textBox17.Text = "A normal textbox - MS Sans Serif : AllowTab=true";
+			textBox17.AcceptsTab = true;
+			textBox17.Location = new Point(10, 490);
+			textBox17.Name = "textBox17";
+			textBox17.Size = new Size(450, 20);
+			textBox17.TabIndex = 17;
+			textBox17.Text = "A normal textbox - MS Sans Serif : AllowTab=true";
 
-			//
-			// textBox16
-			//
-			this.textBox16.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-				| System.Windows.Forms.AnchorStyles.Left)
-				| System.Windows.Forms.AnchorStyles.Right)));
-			this.textBox16.Location = new System.Drawing.Point(10, 465);
-			this.textBox16.Name = "textBox16";
-			this.textBox16.Size = new System.Drawing.Size(450, 20);
-			this.textBox16.TabIndex = 16;
-			this.textBox16.Text = "A normal textbox - MS Sans Serif : Anchor=All";
+			textBox16.Anchor = ((AnchorStyles)((((AnchorStyles.Top | AnchorStyles.Bottom)
+				| AnchorStyles.Left)
+				| AnchorStyles.Right)));
+			textBox16.Location = new Point(10, 465);
+			textBox16.Name = "textBox16";
+			textBox16.Size = new Size(450, 20);
+			textBox16.TabIndex = 16;
+			textBox16.Text = "A normal textbox - MS Sans Serif : Anchor=All";
 
-			//
-			// textBox15
-			//
-			this.textBox15.BackColor = System.Drawing.Color.Red;
-			this.textBox15.Location = new System.Drawing.Point(10, 440);
-			this.textBox15.Name = "textBox15";
-			this.textBox15.Size = new System.Drawing.Size(450, 20);
-			this.textBox15.TabIndex = 15;
-			this.textBox15.Text = "A normal textbox - MS Sans Serif : BackColor=Red";
+			textBox15.BackColor = Color.Red;
+			textBox15.Location = new Point(10, 440);
+			textBox15.Name = "textBox15";
+			textBox15.Size = new Size(450, 20);
+			textBox15.TabIndex = 15;
+			textBox15.Text = "A normal textbox - MS Sans Serif : BackColor=Red";
 
-			//
-			// textBox14
-			//
-			this.textBox14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-			this.textBox14.Location = new System.Drawing.Point(10, 415);
-			this.textBox14.MaxLength = 50;
-			this.textBox14.Name = "textBox14";
-			this.textBox14.Size = new System.Drawing.Size(450, 20);
-			this.textBox14.TabIndex = 14;
-			this.textBox14.Text = "A normal textbox - MS Sans Serif : MaxLength=50";
+			textBox14.Font = new Font("Microsoft Sans Serif", 8.25F);
+			textBox14.Location = new Point(10, 415);
+			textBox14.MaxLength = 50;
+			textBox14.Name = "textBox14";
+			textBox14.Size = new Size(450, 20);
+			textBox14.TabIndex = 14;
+			textBox14.Text = "A normal textbox - MS Sans Serif : MaxLength=50";
 
 			textBoxLinesButton.Bounds = new Rectangle( 10, 510, 150, 30);
 			textBoxLinesButton.Text = "Lines[] for Multiline";
 			textBoxLinesButton.Click+=new EventHandler(textBoxLinesButton_Click);
 
-			control.Controls.AddRange(new System.Windows.Forms.Control[] {
-																			this.textBox19,
-																			this.textBox20,
-																			this.textBox18,
-																			this.textBox17,
-																			this.textBox16,
-																			this.textBox15,
-																			this.textBox14,
-																			this.textBox13,
-																			this.textBox12,
-																			this.textBox11,
-																			this.textBox10,
-																			this.textBox9,
-																			this.textBox8,
-																			this.textBox7,
-																			this.textBox6,
-																			this.textBox5,
-																			this.textBox4,
-																			this.textBox3,
-																			this.textBox2,
-																			this.textBox,
-																			this.textBox1,
-																			textBoxLinesButton
+			textBoxTextButton.Bounds = new Rectangle( 180, 510, 70, 30);
+			textBoxTextButton.Text = "Set Text";
+			textBoxTextButton.Click+=new EventHandler(textBoxTextButton_Click);
+
+			textBoxSelectedTextButton.Bounds = new Rectangle( 250, 510, 150, 30);
+			textBoxSelectedTextButton.Text = "Set Selected Text";
+			textBoxSelectedTextButton.Click+=new EventHandler(textBoxSelectedTextButton_Click);
+
+			control.Controls.AddRange(new Control[] {
+																			textBox19,
+																			textBox20,
+																			textBox18,
+																			textBox17,
+																			textBox16,
+																			textBox15,
+																			textBox14,
+																			textBox13,
+																			textBox12,
+																			textBox11,
+																			textBox10,
+																			textBox9,
+																			textBox8,
+																			textBox7,
+																			textBox6,
+																			textBox5,
+																			textBox4,
+																			textBox3,
+																			textBox2,
+																			textBox,
+																			textBox1,
+																			textBoxLinesButton,
+																			textBoxTextButton,
+																			textBoxSelectedTextButton
 																		 });
+		}
+
+		private void textBoxLinesButton_Click(object sender, EventArgs e)
+		{
+			foreach(String s in textBox4.Lines)
+				Console.WriteLine(s);
+		}
+
+		private void textBoxTextButton_Click(object sender, EventArgs e)
+		{
+			textBox4.Text = "1234 123456 123";
+		}
+		private void textBoxSelectedTextButton_Click(object sender, EventArgs e)
+		{
+			textBox4.SelectedText = "aaaa bbbbb cccc";
 		}
 
 		private void AddRadioButtonsTest(Control control)
 		{
-			this.radioButton18 = new System.Windows.Forms.RadioButton();
-			this.radioButton19 = new System.Windows.Forms.RadioButton();
-			this.radioButton14 = new System.Windows.Forms.RadioButton();
-			this.radioButton15 = new System.Windows.Forms.RadioButton();
-			this.radioButton16 = new System.Windows.Forms.RadioButton();
-			this.radioButton17 = new System.Windows.Forms.RadioButton();
-			this.radioButton10 = new System.Windows.Forms.RadioButton();
-			this.radioButton11 = new System.Windows.Forms.RadioButton();
-			this.radioButton12 = new System.Windows.Forms.RadioButton();
-			this.radioButton13 = new System.Windows.Forms.RadioButton();
-			this.radioButton29 = new System.Windows.Forms.RadioButton();
-			this.radioButton28 = new System.Windows.Forms.RadioButton();
-			this.radioButton27 = new System.Windows.Forms.RadioButton();
-			this.radioButton24 = new System.Windows.Forms.RadioButton();
-			this.radioButton23 = new System.Windows.Forms.RadioButton();
-			this.radioButton32 = new System.Windows.Forms.RadioButton();
-			this.radioButton9 = new System.Windows.Forms.RadioButton();
-			this.radioButton8 = new System.Windows.Forms.RadioButton();
-			this.radioButton5 = new System.Windows.Forms.RadioButton();
-			this.radioButton4 = new System.Windows.Forms.RadioButton();
-			this.radioButton7 = new System.Windows.Forms.RadioButton();
-			this.radioButton6 = new System.Windows.Forms.RadioButton();
-			this.radioButton26 = new System.Windows.Forms.RadioButton();
-			this.radioButton25 = new System.Windows.Forms.RadioButton();
-			this.radioButton3 = new System.Windows.Forms.RadioButton();
-			this.radioButton2 = new System.Windows.Forms.RadioButton();
-			this.radioButton22 = new System.Windows.Forms.RadioButton();
-			this.radioButton21 = new System.Windows.Forms.RadioButton();
-			this.radioButton20 = new System.Windows.Forms.RadioButton();
-			this.radioButton = new System.Windows.Forms.RadioButton();
-			this.radioButton33 = new System.Windows.Forms.RadioButton();
-			this.radioButton30 = new System.Windows.Forms.RadioButton();
-			this.radioButton31 = new System.Windows.Forms.RadioButton();
+			radioButton18 = new RadioButton();
+			radioButton19 = new RadioButton();
+			radioButton14 = new RadioButton();
+			radioButton15 = new RadioButton();
+			radioButton16 = new RadioButton();
+			radioButton17 = new RadioButton();
+			radioButton10 = new RadioButton();
+			radioButton11 = new RadioButton();
+			radioButton12 = new RadioButton();
+			radioButton13 = new RadioButton();
+			radioButton29 = new RadioButton();
+			radioButton28 = new RadioButton();
+			radioButton27 = new RadioButton();
+			radioButton24 = new RadioButton();
+			radioButton23 = new RadioButton();
+			radioButton32 = new RadioButton();
+			radioButton9 = new RadioButton();
+			radioButton8 = new RadioButton();
+			radioButton5 = new RadioButton();
+			radioButton4 = new RadioButton();
+			radioButton7 = new RadioButton();
+			radioButton6 = new RadioButton();
+			radioButton26 = new RadioButton();
+			radioButton25 = new RadioButton();
+			radioButton3 = new RadioButton();
+			radioButton2 = new RadioButton();
+			radioButton22 = new RadioButton();
+			radioButton21 = new RadioButton();
+			radioButton20 = new RadioButton();
+			radioButton = new RadioButton();
+			radioButton33 = new RadioButton();
+			radioButton30 = new RadioButton();
+			radioButton31 = new RadioButton();
 
-			//
-			// radioButton18
-			//
-			this.radioButton18.Location = new System.Drawing.Point(8, 368);
-			this.radioButton18.Name = "radioButton18";
-			this.radioButton18.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-			this.radioButton18.Size = new System.Drawing.Size(288, 24);
-			this.radioButton18.TabIndex = 17;
-			this.radioButton18.Text = "A normal RadioButton : RightToLeft=True";
+			radioButton18.Location = new Point(8, 368);
+			radioButton18.Name = "radioButton18";
+			radioButton18.RightToLeft = RightToLeft.Yes;
+			radioButton18.Size = new Size(288, 24);
+			radioButton18.TabIndex = 17;
+			radioButton18.Text = "RightToLeft=True";
 
-			//
-			// radioButton19
-			//
-			this.radioButton19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.radioButton19.Location = new System.Drawing.Point(312, 352);
-			this.radioButton19.Name = "radioButton19";
-			this.radioButton19.Size = new System.Drawing.Size(288, 24);
-			this.radioButton19.TabIndex = 18;
-			this.radioButton19.Text = "A normal RadioButton : Font.Bold=True";
+			radioButton19.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
+			radioButton19.Location = new Point(240, 352);
+			radioButton19.Name = "radioButton19";
+			radioButton19.Size = new Size(200, 24);
+			radioButton19.TabIndex = 18;
+			radioButton19.Text = "Font.Bold=True";
 
-			//
-			// radioButton14
-			//
-			this.radioButton14.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
-			this.radioButton14.Location = new System.Drawing.Point(8, 128);
-			this.radioButton14.Name = "radioButton14";
-			this.radioButton14.Size = new System.Drawing.Size(288, 24);
-			this.radioButton14.TabIndex = 13;
-			this.radioButton14.Text = "A normal RadioButton :  CheckAlign=TopLeft";
+			radioButton14.CheckAlign = ContentAlignment.TopLeft;
+			radioButton14.Location = new Point(8, 128);
+			radioButton14.Name = "radioButton14";
+			radioButton14.Size = new Size(200, 24);
+			radioButton14.TabIndex = 13;
+			radioButton14.Text = " CheckAlign=TopLeft";
 
-			//
-			// radioButton15
-			//
-			this.radioButton15.Dock = System.Windows.Forms.DockStyle.Top;
-			this.radioButton15.Location = new System.Drawing.Point(0, 0);
-			this.radioButton15.Name = "radioButton15";
-			this.radioButton15.Size = new System.Drawing.Size(608, 24);
-			this.radioButton15.TabIndex = 14;
-			this.radioButton15.Text = "A normal RadioButton: Dock=Top";
+			radioButton15.Dock = DockStyle.Top;
+			radioButton15.Location = new Point(0, 0);
+			radioButton15.Name = "radioButton15";
+			radioButton15.Size = new Size(608, 24);
+			radioButton15.TabIndex = 14;
+			radioButton15.Text = "Dock=Top";
 
-			//
-			// radioButton16
-			//
-			this.radioButton16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.radioButton16.Location = new System.Drawing.Point(312, 448);
-			this.radioButton16.Name = "radioButton16";
-			this.radioButton16.Size = new System.Drawing.Size(288, 24);
-			this.radioButton16.TabIndex = 39;
-			this.radioButton16.Text = "A normal RadioButton : Font.Underline=True";
+			radioButton16.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Underline, GraphicsUnit.Point, ((System.Byte)(0)));
+			radioButton16.Location = new Point(240, 448);
+			radioButton16.Name = "radioButton16";
+			radioButton16.Size = new Size(200, 24);
+			radioButton16.TabIndex = 39;
+			radioButton16.Text = "Font.Underline=True";
 
-			//
-			// radioButton17
-			//
-			this.radioButton17.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.radioButton17.Location = new System.Drawing.Point(312, 288);
-			this.radioButton17.Name = "radioButton17";
-			this.radioButton17.Size = new System.Drawing.Size(288, 24);
-			this.radioButton17.TabIndex = 16;
-			this.radioButton17.Text = "A normal RadioButton : FlatStyle=Flat";
+			radioButton17.FlatStyle = FlatStyle.Flat;
+			radioButton17.Location = new Point(240, 200);
+			radioButton17.Name = "radioButton17";
+			radioButton17.Size = new Size(200, 24);
+			radioButton17.TabIndex = 16;
+			radioButton17.Text = "FlatStyle=Flat";
 
-			//
-			// radioButton10
-			//
-			this.radioButton10.BackColor = System.Drawing.Color.SeaGreen;
-			this.radioButton10.Location = new System.Drawing.Point(8, 400);
-			this.radioButton10.Name = "radioButton10";
-			this.radioButton10.Size = new System.Drawing.Size(288, 24);
-			this.radioButton10.TabIndex = 9;
-			this.radioButton10.Text = "A normal RadioButton : BackColor=SeaGreen";
+			radioButton10.BackColor = Color.SeaGreen;
+			radioButton10.Location = new Point(8, 400);
+			radioButton10.Name = "radioButton10";
+			radioButton10.Size = new Size(200, 24);
+			radioButton10.TabIndex = 9;
+			radioButton10.Text = "BackColor=SeaGreen";
 
-			//
-			// radioButton11
-			//
-			this.radioButton11.Location = new System.Drawing.Point(312, 32);
-			this.radioButton11.Name = "radioButton11";
-			this.radioButton11.Size = new System.Drawing.Size(288, 24);
-			this.radioButton11.TabIndex = 10;
-			this.radioButton11.Text = "A normal RadioButton : TextAlign=MiddleCenter";
-			this.radioButton11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			radioButton11.Location = new Point(240, 32);
+			radioButton11.Name = "radioButton11";
+			radioButton11.Size = new Size(200, 24);
+			radioButton11.TabIndex = 10;
+			radioButton11.Text = "TextAlign=MiddleCenter";
+			radioButton11.TextAlign = ContentAlignment.MiddleCenter;
 
-			//
-			// radioButton12
-			//
-			this.radioButton12.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-			this.radioButton12.Location = new System.Drawing.Point(312, 320);
-			this.radioButton12.Name = "radioButton12";
-			this.radioButton12.Size = new System.Drawing.Size(288, 24);
-			this.radioButton12.TabIndex = 37;
-			this.radioButton12.Text = "A normal RadioButton : FlatStyle=Popup";
+			radioButton12.FlatStyle = FlatStyle.Popup;
+			radioButton12.Location = new Point(240, 320);
+			radioButton12.Name = "radioButton12";
+			radioButton12.Size = new Size(200, 24);
+			radioButton12.TabIndex = 37;
+			radioButton12.Text = "FlatStyle=Popup";
 
-			//
-			// radioButton13
-			//
-			this.radioButton13.CheckAlign = System.Drawing.ContentAlignment.BottomLeft;
-			this.radioButton13.Location = new System.Drawing.Point(8, 232);
-			this.radioButton13.Name = "radioButton13";
-			this.radioButton13.Size = new System.Drawing.Size(288, 24);
-			this.radioButton13.TabIndex = 12;
-			this.radioButton13.Text = "A normal RadioButton : CheckAlign=BottomLeft";
+			radioButton13.CheckAlign = ContentAlignment.BottomLeft;
+			radioButton13.Location = new Point(8, 232);
+			radioButton13.Name = "radioButton13";
+			radioButton13.Size = new Size(200, 24);
+			radioButton13.TabIndex = 12;
+			radioButton13.Text = "CheckAlign=BottomLeft";
 
-			//
-			// radioButton29
-			//
-			this.radioButton29.Location = new System.Drawing.Point(312, 256);
-			this.radioButton29.Name = "radioButton29";
-			this.radioButton29.Size = new System.Drawing.Size(288, 24);
-			this.radioButton29.TabIndex = 36;
-			this.radioButton29.Text = "A normal RadioButton : TextAlign=BottomRight";
-			this.radioButton29.TextAlign = System.Drawing.ContentAlignment.BottomRight;
+			radioButton29.Location = new Point(240, 256);
+			radioButton29.Name = "radioButton29";
+			radioButton29.Size = new Size(200, 24);
+			radioButton29.TabIndex = 36;
+			radioButton29.Text = "TextAlign=BottomRight";
+			radioButton29.TextAlign = ContentAlignment.BottomRight;
 
-			//
-			// radioButton28
-			//
-			this.radioButton28.Location = new System.Drawing.Point(312, 224);
-			this.radioButton28.Name = "radioButton28";
-			this.radioButton28.Size = new System.Drawing.Size(288, 24);
-			this.radioButton28.TabIndex = 35;
-			this.radioButton28.Text = "A normal RadioButton : TextAlign=BottomCenter";
-			this.radioButton28.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+			radioButton28.Location = new Point(240, 224);
+			radioButton28.Name = "radioButton28";
+			radioButton28.Size = new Size(200, 24);
+			radioButton28.TabIndex = 35;
+			radioButton28.Text = "TextAlign=BottomCenter";
+			radioButton28.TextAlign = ContentAlignment.BottomCenter;
 
-			//
-			// radioButton27
-			//
-			this.radioButton27.Location = new System.Drawing.Point(312, 192);
-			this.radioButton27.Name = "radioButton27";
-			this.radioButton27.Size = new System.Drawing.Size(288, 24);
-			this.radioButton27.TabIndex = 34;
-			this.radioButton27.Text = "A normal RadioButton : TextAlign=BottomLeft";
-			this.radioButton27.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+			radioButton27.Location = new Point(240, 192);
+			radioButton27.Name = "radioButton27";
+			radioButton27.Size = new Size(200, 24);
+			radioButton27.TabIndex = 34;
+			radioButton27.Text = "TextAlign=BottomLeft";
+			radioButton27.TextAlign = ContentAlignment.BottomLeft;
 
-			//
-			// radioButton24
-			//
-			this.radioButton24.Location = new System.Drawing.Point(312, 160);
-			this.radioButton24.Name = "radioButton24";
-			this.radioButton24.Size = new System.Drawing.Size(288, 24);
-			this.radioButton24.TabIndex = 33;
-			this.radioButton24.Text = "A normal RadioButton : TextAlign=TopRight";
-			this.radioButton24.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			radioButton24.Location = new Point(240, 160);
+			radioButton24.Name = "radioButton24";
+			radioButton24.Size = new Size(200, 24);
+			radioButton24.TabIndex = 33;
+			radioButton24.Text = "TextAlign=TopRight";
+			radioButton24.TextAlign = ContentAlignment.TopRight;
 
-			//
-			// radioButton23
-			//
-			this.radioButton23.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-			this.radioButton23.Location = new System.Drawing.Point(8, 96);
-			this.radioButton23.Name = "radioButton23";
-			this.radioButton23.Size = new System.Drawing.Size(288, 24);
-			this.radioButton23.TabIndex = 26;
-			this.radioButton23.Text = "A normal RadioButton : CheckAlign=MiddleRight";
+			radioButton23.CheckAlign = ContentAlignment.MiddleRight;
+			radioButton23.Location = new Point(8, 96);
+			radioButton23.Name = "radioButton23";
+			radioButton23.Size = new Size(200, 24);
+			radioButton23.TabIndex = 26;
+			radioButton23.Text = "CheckAlign=MiddleRight";
 
-			//
-			// radioButton32
-			//
-			this.radioButton32.ForeColor = System.Drawing.Color.Green;
-			this.radioButton32.Location = new System.Drawing.Point(8, 432);
-			this.radioButton32.Name = "radioButton32";
-			this.radioButton32.Size = new System.Drawing.Size(288, 24);
-			this.radioButton32.TabIndex = 42;
-			this.radioButton32.Text = "A normal RadioButton : ForeColor=Green";
+			radioButton32.ForeColor = Color.Green;
+			radioButton32.Location = new Point(8, 432);
+			radioButton32.Name = "radioButton32";
+			radioButton32.Size = new Size(200, 24);
+			radioButton32.TabIndex = 42;
+			radioButton32.Text = "ForeColor=Green";
 
-			//
-			// radioButton9
-			//
-			this.radioButton9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.radioButton9.Location = new System.Drawing.Point(312, 384);
-			this.radioButton9.Name = "radioButton9";
-			this.radioButton9.Size = new System.Drawing.Size(288, 24);
-			this.radioButton9.TabIndex = 8;
-			this.radioButton9.Text = "A normal RadioButton : Font.Italic=True";
+			radioButton9.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Italic, GraphicsUnit.Point, ((System.Byte)(0)));
+			radioButton9.Location = new Point(240, 384);
+			radioButton9.Name = "radioButton9";
+			radioButton9.Size = new Size(200, 24);
+			radioButton9.TabIndex = 8;
+			radioButton9.Text = "Font.Italic=True";
 
-			//
-			// radioButton8
-			//
-			this.radioButton8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Strikeout, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.radioButton8.Location = new System.Drawing.Point(312, 416);
-			this.radioButton8.Name = "radioButton8";
-			this.radioButton8.Size = new System.Drawing.Size(288, 24);
-			this.radioButton8.TabIndex = 38;
-			this.radioButton8.Text = "A normal RadioButton : Font.Strikeout=True";
+			radioButton8.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Strikeout, GraphicsUnit.Point, ((System.Byte)(0)));
+			radioButton8.Location = new Point(240, 416);
+			radioButton8.Name = "radioButton8";
+			radioButton8.Size = new Size(200, 24);
+			radioButton8.TabIndex = 38;
+			radioButton8.Text = "Font.Strikeout=True";
 
-			//
-			// radioButton5
-			//
-			this.radioButton5.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.radioButton5.Location = new System.Drawing.Point(0, 541);
-			this.radioButton5.Name = "radioButton5";
-			this.radioButton5.Size = new System.Drawing.Size(608, 24);
-			this.radioButton5.TabIndex = 4;
-			this.radioButton5.Text = "A normal RadioButton : Dock = Bottom";
+			radioButton5.Dock = DockStyle.Bottom;
+			radioButton5.Location = new Point(0, 541);
+			radioButton5.Name = "radioButton5";
+			radioButton5.Size = new Size(608, 24);
+			radioButton5.TabIndex = 4;
+			radioButton5.Text = "Dock = Bottom";
 
-			//
-			// radioButton4
-			//
-			this.radioButton4.CheckAlign = System.Drawing.ContentAlignment.TopRight;
-			this.radioButton4.Location = new System.Drawing.Point(8, 200);
-			this.radioButton4.Name = "radioButton4";
-			this.radioButton4.Size = new System.Drawing.Size(288, 24);
-			this.radioButton4.TabIndex = 3;
-			this.radioButton4.Text = "A normal RadioButton : CheckAlign=TopRight";
+			radioButton4.CheckAlign = ContentAlignment.TopRight;
+			radioButton4.Location = new Point(8, 200);
+			radioButton4.Name = "radioButton4";
+			radioButton4.Size = new Size(200, 24);
+			radioButton4.TabIndex = 3;
+			radioButton4.Text = "CheckAlign=TopRight";
 
-			//
-			// radioButton7
-			//
-			this.radioButton7.Checked = true;
-			this.radioButton7.Location = new System.Drawing.Point(8, 336);
-			this.radioButton7.Name = "radioButton7";
-			this.radioButton7.Size = new System.Drawing.Size(288, 24);
-			this.radioButton7.TabIndex = 6;
-			this.radioButton7.TabStop = true;
-			this.radioButton7.Text = "A normal RadioButton : Checked=True";
+			radioButton7.Checked = true;
+			radioButton7.Location = new Point(8, 336);
+			radioButton7.Name = "radioButton7";
+			radioButton7.Size = new Size(200, 24);
+			radioButton7.TabIndex = 6;
+			radioButton7.TabStop = true;
+			radioButton7.Text = "Checked=True";
 
-			//
-			// radioButton6
-			//
-			this.radioButton6.Location = new System.Drawing.Point(8, 32);
-			this.radioButton6.Name = "radioButton6";
-			this.radioButton6.Size = new System.Drawing.Size(288, 24);
-			this.radioButton6.TabIndex = 22;
-			this.radioButton6.Text = "A normal RadioButton";
+			radioButton6.Location = new Point(8, 32);
+			radioButton6.Name = "radioButton6";
+			radioButton6.Size = new Size(200, 24);
+			radioButton6.TabIndex = 22;
+			radioButton6.Text = "A normal RadioButton";
 
-			//
-			// radioButton26
-			//
-			this.radioButton26.Location = new System.Drawing.Point(312, 96);
-			this.radioButton26.Name = "radioButton26";
-			this.radioButton26.Size = new System.Drawing.Size(288, 24);
-			this.radioButton26.TabIndex = 31;
-			this.radioButton26.Text = "A normal RadioButton : TextAlign=TopLeft";
-			this.radioButton26.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+			radioButton26.Location = new Point(240, 96);
+			radioButton26.Name = "radioButton26";
+			radioButton26.Size = new Size(200, 24);
+			radioButton26.TabIndex = 31;
+			radioButton26.Text = "TextAlign=TopLeft";
+			radioButton26.TextAlign = ContentAlignment.TopLeft;
 
-			//
-			// radioButton25
-			//
-			this.radioButton25.Location = new System.Drawing.Point(312, 128);
-			this.radioButton25.Name = "radioButton25";
-			this.radioButton25.Size = new System.Drawing.Size(288, 24);
-			this.radioButton25.TabIndex = 32;
-			this.radioButton25.Text = "A normal RadioButton : TextAlign=TopCenter";
-			this.radioButton25.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+			radioButton25.Location = new Point(240, 128);
+			radioButton25.Name = "radioButton25";
+			radioButton25.Size = new Size(200, 24);
+			radioButton25.TabIndex = 32;
+			radioButton25.Text = "TextAlign=TopCenter";
+			radioButton25.TextAlign = ContentAlignment.TopCenter;
 
-			//
-			// radioButton3
-			//
-			this.radioButton3.CheckAlign = System.Drawing.ContentAlignment.BottomRight;
-			this.radioButton3.Location = new System.Drawing.Point(8, 304);
-			this.radioButton3.Name = "radioButton3";
-			this.radioButton3.Size = new System.Drawing.Size(288, 24);
-			this.radioButton3.TabIndex = 2;
-			this.radioButton3.Text = "A normal RadioButton : CheckAlign=BottomRight";
+			radioButton3.CheckAlign = ContentAlignment.BottomRight;
+			radioButton3.Location = new Point(8, 304);
+			radioButton3.Name = "radioButton3";
+			radioButton3.Size = new Size(200, 24);
+			radioButton3.TabIndex = 2;
+			radioButton3.Text = "CheckAlign=BottomRight";
 
-			//
-			// radioButton2
-			//
-			this.radioButton2.CheckAlign = System.Drawing.ContentAlignment.TopCenter;
-			this.radioButton2.Location = new System.Drawing.Point(8, 160);
-			this.radioButton2.Name = "radioButton2";
-			this.radioButton2.Size = new System.Drawing.Size(288, 32);
-			this.radioButton2.TabIndex = 1;
-			this.radioButton2.Text = "A normal RadioButton : CheckAlign=TopCenter";
+			radioButton2.CheckAlign = ContentAlignment.TopCenter;
+			radioButton2.Location = new Point(8, 160);
+			radioButton2.Name = "radioButton2";
+			radioButton2.Size = new Size(200, 32);
+			radioButton2.TabIndex = 1;
+			radioButton2.Text = "CheckAlign=TopCenter";
 
-			//
-			// radioButton22
-			//
-			this.radioButton22.CheckAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this.radioButton22.Location = new System.Drawing.Point(8, 64);
-			this.radioButton22.Name = "radioButton22";
-			this.radioButton22.Size = new System.Drawing.Size(288, 24);
-			this.radioButton22.TabIndex = 25;
-			this.radioButton22.Text = "A normal RadioButton : CheckAlign=MiddleCenter";
+			radioButton22.CheckAlign = ContentAlignment.MiddleCenter;
+			radioButton22.Location = new Point(8, 64);
+			radioButton22.Name = "radioButton22";
+			radioButton22.Size = new Size(200, 24);
+			radioButton22.TabIndex = 25;
+			radioButton22.Text = "CheckAlign=MiddleCenter";
 
-			//
-			// radioButton21
-			//
-			this.radioButton21.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-				| System.Windows.Forms.AnchorStyles.Left)
-				| System.Windows.Forms.AnchorStyles.Right)));
-			this.radioButton21.Location = new System.Drawing.Point(8, 496);
-			this.radioButton21.Name = "radioButton21";
-			this.radioButton21.Size = new System.Drawing.Size(288, 24);
-			this.radioButton21.TabIndex = 21;
-			this.radioButton21.Text = "A normal RadioButton : Anchor=All";
+			radioButton21.Anchor = ((AnchorStyles)((((AnchorStyles.Top | AnchorStyles.Bottom)
+				| AnchorStyles.Left)
+				| AnchorStyles.Right)));
+			radioButton21.Location = new Point(8, 496);
+			radioButton21.Name = "radioButton21";
+			radioButton21.Size = new Size(200, 24);
+			radioButton21.TabIndex = 21;
+			radioButton21.Text = "Anchor=All";
 
-			//
-			// radioButton20
-			//
-			this.radioButton20.CheckAlign = System.Drawing.ContentAlignment.BottomCenter;
-			this.radioButton20.Location = new System.Drawing.Point(8, 264);
-			this.radioButton20.Name = "radioButton20";
-			this.radioButton20.Size = new System.Drawing.Size(288, 32);
-			this.radioButton20.TabIndex = 23;
-			this.radioButton20.Text = "A normal RadioButton : CheckAlign=BottomCenter";
+			radioButton20.CheckAlign = ContentAlignment.BottomCenter;
+			radioButton20.Location = new Point(8, 264);
+			radioButton20.Name = "radioButton20";
+			radioButton20.Size = new Size(200, 32);
+			radioButton20.TabIndex = 23;
+			radioButton20.Text = "CheckAlign=BottomCenter";
 
-			//
-			// radioButton
-			//
-			this.radioButton.Location = new System.Drawing.Point(312, 64);
-			this.radioButton.Name = "radioButton";
-			this.radioButton.Size = new System.Drawing.Size(288, 24);
-			this.radioButton.TabIndex = 0;
-			this.radioButton.Text = "A normal RadioButton : TextAlign=MiddleRight";
-			this.radioButton.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			radioButton.Location = new Point(240, 64);
+			radioButton.Name = "radioButton";
+			radioButton.Size = new Size(200, 24);
+			radioButton.TabIndex = 0;
+			radioButton.Text = "TextAlign=MiddleRight";
+			radioButton.TextAlign = ContentAlignment.MiddleRight;
 
-			//
-			// radioButton33
-			//
-			this.radioButton33.Appearance = System.Windows.Forms.Appearance.Button;
-			this.radioButton33.Location = new System.Drawing.Point(312, 512);
-			this.radioButton33.Name = "radioButton33";
-			this.radioButton33.Size = new System.Drawing.Size(288, 24);
-			this.radioButton33.TabIndex = 43;
-			this.radioButton33.Text = "A normal RadioButton : Appearance=Button";
+			radioButton33.Appearance = Appearance.Button;
+			radioButton33.Location = new Point(240, 512);
+			radioButton33.Name = "radioButton33";
+			radioButton33.Size = new Size(200, 24);
+			radioButton33.TabIndex = 43;
+			radioButton33.Text = "Appearance=Button";
 
-			//
-			// radioButton30
-			//
-			this.radioButton30.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.radioButton30.Location = new System.Drawing.Point(8, 464);
-			this.radioButton30.Name = "radioButton30";
-			this.radioButton30.Size = new System.Drawing.Size(288, 24);
-			this.radioButton30.TabIndex = 40;
-			this.radioButton30.Text = "A normal RadioButton : Font.Size=10";
+			radioButton30.Font = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+			radioButton30.Location = new Point(8, 464);
+			radioButton30.Name = "radioButton30";
+			radioButton30.Size = new Size(200, 24);
+			radioButton30.TabIndex = 40;
+			radioButton30.Text = "Font.Size=10";
 
-			//
-			// radioButton31
-			//
-			this.radioButton31.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.radioButton31.Location = new System.Drawing.Point(312, 480);
-			this.radioButton31.Name = "radioButton31";
-			this.radioButton31.Size = new System.Drawing.Size(288, 24);
-			this.radioButton31.TabIndex = 41;
-			this.radioButton31.Text = "A normal RadioButton : Font=Verdana; 8,25pt";
+			radioButton31.Font = new Font("Verdana", 8.25F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+			radioButton31.Location = new Point(240, 480);
+			radioButton31.Name = "radioButton31";
+			radioButton31.Size = new Size(200, 24);
+			radioButton31.TabIndex = 41;
+			radioButton31.Text = "Font=Verdana; 8,25pt";
 
-			control.Controls.AddRange(new System.Windows.Forms.Control[] {
-																			 this.radioButton33,
-																			 this.radioButton32,
-																			 this.radioButton31,
-																			 this.radioButton30,
-																			 this.radioButton16,
-																			 this.radioButton8,
-																			 this.radioButton12,
-																			 this.radioButton29,
-																			 this.radioButton28,
-																			 this.radioButton27,
-																			 this.radioButton24,
-																			 this.radioButton25,
-																			 this.radioButton26,
-																			 this.radioButton23,
-																			 this.radioButton22,
-																			 this.radioButton20,
-																			 this.radioButton6,
-																			 this.radioButton21,
-																			 this.radioButton19,
-																			 this.radioButton18,
-																			 this.radioButton17,
-																			 this.radioButton15,
-																			 this.radioButton14,
-																			 this.radioButton13,
-																			 this.radioButton11,
-																			 this.radioButton10,
-																			 this.radioButton9,
-																			 this.radioButton7,
-																			 this.radioButton5,
-																			 this.radioButton4,
-																			 this.radioButton3,
-																			 this.radioButton2,
-																			 this.radioButton});
+			control.Controls.AddRange(new Control[] {
+																			 radioButton33,
+																			 radioButton32,
+																			 radioButton31,
+																			 radioButton30,
+																			 radioButton16,
+																			 radioButton8,
+																			 radioButton12,
+																			 radioButton29,
+																			 radioButton28,
+																			 radioButton27,
+																			 radioButton24,
+																			 radioButton25,
+																			 radioButton26,
+																			 radioButton23,
+																			 radioButton22,
+																			 radioButton20,
+																			 radioButton6,
+																			 radioButton21,
+																			 radioButton19,
+																			 radioButton18,
+																			 radioButton17,
+																			 radioButton15,
+																			 radioButton14,
+																			 radioButton13,
+																			 radioButton11,
+																			 radioButton10,
+																			 radioButton9,
+																			 radioButton7,
+																			 radioButton5,
+																			 radioButton4,
+																			 radioButton3,
+																			 radioButton2,
+																			 radioButton});
 		}
 		private void AddRegionsTest(Control control)
 		{
 			control.Paint+=new PaintEventHandler(Regions_Paint);
-		}
-
-		private void AddTabControlsTest(Control control)
-		{
-			this.Docked = new System.Windows.Forms.TabControl();
-			this.tabPageT1 = new System.Windows.Forms.TabPage();
-			this.tabControlT2 = new System.Windows.Forms.TabControl();
-			this.tabPageT6 = new System.Windows.Forms.TabPage();
-			this.labelT2 = new System.Windows.Forms.Label();
-			this.labelT1 = new System.Windows.Forms.Label();
-			this.buttonT1 = new System.Windows.Forms.Button();
-			this.tabPageT22 = new System.Windows.Forms.TabPage();
-			this.tabPageT23 = new System.Windows.Forms.TabPage();
-			this.tabPageT21 = new System.Windows.Forms.TabPage();
-			this.tabPageT9 = new System.Windows.Forms.TabPage();
-			this.tabPageT24 = new System.Windows.Forms.TabPage();
-			this.tabPageT25 = new System.Windows.Forms.TabPage();
-			this.tabPageT10 = new System.Windows.Forms.TabPage();
-			this.tabControlT8 = new System.Windows.Forms.TabControl();
-			this.tabPageT37 = new System.Windows.Forms.TabPage();
-			this.tabPageT38 = new System.Windows.Forms.TabPage();
-			this.tabPageT20 = new System.Windows.Forms.TabPage();
-			this.tabControlT5 = new System.Windows.Forms.TabControl();
-			this.tabPageT26 = new System.Windows.Forms.TabPage();
-			this.tabPageT27 = new System.Windows.Forms.TabPage();
-			this.tabPageT28 = new System.Windows.Forms.TabPage();
-			this.tabPageT2 = new System.Windows.Forms.TabPage();
-			this.tabControlT3 = new System.Windows.Forms.TabControl();
-			this.tabPageT7 = new System.Windows.Forms.TabPage();
-			this.tabPageT8 = new System.Windows.Forms.TabPage();
-			this.tabPageT3 = new System.Windows.Forms.TabPage();
-			this.tabControlT4 = new System.Windows.Forms.TabControl();
-			this.tabPageT11 = new System.Windows.Forms.TabPage();
-			this.tabPageT12 = new System.Windows.Forms.TabPage();
-			this.tabPageT13 = new System.Windows.Forms.TabPage();
-			this.tabPageT14 = new System.Windows.Forms.TabPage();
-			this.tabPageT15 = new System.Windows.Forms.TabPage();
-			this.tabPageT16 = new System.Windows.Forms.TabPage();
-			this.tabPageT17 = new System.Windows.Forms.TabPage();
-			this.tabPageT18 = new System.Windows.Forms.TabPage();
-			this.tabPageT4 = new System.Windows.Forms.TabPage();
-			this.tabControlT6 = new System.Windows.Forms.TabControl();
-			this.tabPageT29 = new System.Windows.Forms.TabPage();
-			this.tabPageT30 = new System.Windows.Forms.TabPage();
-			this.tabPageT31 = new System.Windows.Forms.TabPage();
-			this.tabPageT5 = new System.Windows.Forms.TabPage();
-			this.tabControlT7 = new System.Windows.Forms.TabControl();
-			this.tabPageT32 = new System.Windows.Forms.TabPage();
-			this.tabPageT33 = new System.Windows.Forms.TabPage();
-			this.tabPageT19 = new System.Windows.Forms.TabPage();
-			this.tabPageT34 = new System.Windows.Forms.TabPage();
-			this.tabControlT1 = new System.Windows.Forms.TabControl();
-			this.tabPageT35 = new System.Windows.Forms.TabPage();
-			this.tabPageT36 = new System.Windows.Forms.TabPage();
-			this.labelT3 = new System.Windows.Forms.Label();
-			this.labelT4 = new System.Windows.Forms.Label();
-			
-			this.Docked.Controls.Add(this.tabPageT1);
-			this.Docked.Controls.Add(this.tabPageT10);
-			this.Docked.Controls.Add(this.tabPageT5);
-			this.Docked.Controls.Add(this.tabPageT19);
-			this.Docked.Controls.Add(this.tabPageT20);
-			this.Docked.Controls.Add(this.tabPageT2);
-			this.Docked.Controls.Add(this.tabPageT3);
-			this.Docked.Controls.Add(this.tabPageT4);
-			this.Docked.Controls.Add(this.tabPageT34);
-			this.Docked.Location = new System.Drawing.Point(24, 16);
-			this.Docked.Name = "Docked";
-			this.Docked.SelectedIndex = 0;
-			this.Docked.Size = new System.Drawing.Size(384, 320);
-			this.Docked.TabIndex = 0;
-			// 
-			// tabPage1
-			// 
-			this.tabPageT1.Controls.Add(this.tabControlT2);
-			this.tabPageT1.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT1.Name = "tabPage1";
-			this.tabPageT1.Size = new System.Drawing.Size(376, 294);
-			this.tabPageT1.TabIndex = 0;
-			this.tabPageT1.Text = "FillToRight";
-			// 
-			// tabControl2
-			// 
-			this.tabControlT2.Controls.Add(this.tabPageT6);
-			this.tabControlT2.Controls.Add(this.tabPageT22);
-			this.tabControlT2.Controls.Add(this.tabPageT23);
-			this.tabControlT2.Controls.Add(this.tabPageT21);
-			this.tabControlT2.Controls.Add(this.tabPageT9);
-			this.tabControlT2.Controls.Add(this.tabPageT24);
-			this.tabControlT2.Controls.Add(this.tabPageT25);
-			this.tabControlT2.Location = new System.Drawing.Point(16, 24);
-			this.tabControlT2.Multiline = true;
-			this.tabControlT2.Name = "tabControl2";
-			this.tabControlT2.SelectedIndex = 0;
-			this.tabControlT2.Size = new System.Drawing.Size(344, 248);
-			this.tabControlT2.SizeMode = System.Windows.Forms.TabSizeMode.FillToRight;
-			this.tabControlT2.TabIndex = 1;
-			// 
-			// tabPage6
-			// 
-			this.tabPageT6.Controls.Add(this.labelT2);
-			this.tabPageT6.Controls.Add(this.labelT1);
-			this.tabPageT6.Controls.Add(this.buttonT1);
-			this.tabPageT6.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT6.Name = "tabPage6";
-			this.tabPageT6.Size = new System.Drawing.Size(336, 204);
-			this.tabPageT6.TabIndex = 0;
-			this.tabPageT6.Text = "First";
-			// 
-			// label2
-			// 
-			this.labelT2.Location = new System.Drawing.Point(144, 160);
-			this.labelT2.Name = "label2";
-			this.labelT2.Size = new System.Drawing.Size(112, 40);
-			this.labelT2.TabIndex = 2;
-			this.labelT2.Text = "label2";
-			// 
-			// label1
-			// 
-			this.labelT1.Location = new System.Drawing.Point(144, 88);
-			this.labelT1.Name = "label1";
-			this.labelT1.Size = new System.Drawing.Size(112, 40);
-			this.labelT1.TabIndex = 1;
-			this.labelT1.Text = "label1";
-			// 
-			// button1
-			// 
-			this.buttonT1.Location = new System.Drawing.Point(24, 16);
-			this.buttonT1.Name = "button1";
-			this.buttonT1.Size = new System.Drawing.Size(96, 40);
-			this.buttonT1.TabIndex = 0;
-			this.buttonT1.Text = "button1";
-			// 
-			// tabPage22
-			// 
-			this.tabPageT22.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT22.Name = "tabPage22";
-			this.tabPageT22.Size = new System.Drawing.Size(336, 204);
-			this.tabPageT22.TabIndex = 3;
-			this.tabPageT22.Text = "tabPage22";
-			// 
-			// tabPage23
-			// 
-			this.tabPageT23.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT23.Name = "tabPage23";
-			this.tabPageT23.Size = new System.Drawing.Size(336, 204);
-			this.tabPageT23.TabIndex = 4;
-			this.tabPageT23.Text = "tabPage23";
-			// 
-			// tabPage21
-			// 
-			this.tabPageT21.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT21.Name = "tabPage21";
-			this.tabPageT21.Size = new System.Drawing.Size(336, 204);
-			this.tabPageT21.TabIndex = 2;
-			this.tabPageT21.Text = "tabPage21";
-			// 
-			// tabPage9
-			// 
-			this.tabPageT9.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT9.Name = "tabPage9";
-			this.tabPageT9.Size = new System.Drawing.Size(336, 204);
-			this.tabPageT9.TabIndex = 1;
-			this.tabPageT9.Text = "Second";
-			// 
-			// tabPage24
-			// 
-			this.tabPageT24.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT24.Name = "tabPage24";
-			this.tabPageT24.Size = new System.Drawing.Size(336, 204);
-			this.tabPageT24.TabIndex = 5;
-			this.tabPageT24.Text = "tabPage24";
-			// 
-			// tabPage25
-			// 
-			this.tabPageT25.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT25.Name = "tabPage25";
-			this.tabPageT25.Size = new System.Drawing.Size(336, 204);
-			this.tabPageT25.TabIndex = 6;
-			this.tabPageT25.Text = "tabPage25";
-			// 
-			// tabPage10
-			// 
-			this.tabPageT10.Controls.Add(this.tabControlT8);
-			this.tabPageT10.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT10.Name = "tabPage10";
-			this.tabPageT10.Size = new System.Drawing.Size(376, 294);
-			this.tabPageT10.TabIndex = 5;
-			this.tabPageT10.Text = "OwnerDraw";
-			// 
-			// tabControl8
-			// 
-			this.tabControlT8.Controls.Add(this.tabPageT37);
-			this.tabControlT8.Controls.Add(this.tabPageT38);
-			this.tabControlT8.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
-			this.tabControlT8.Location = new System.Drawing.Point(32, 24);
-			this.tabControlT8.Name = "tabControl8";
-			this.tabControlT8.SelectedIndex = 0;
-			this.tabControlT8.Size = new System.Drawing.Size(328, 248);
-			this.tabControlT8.TabIndex = 0;
-			this.tabControlT8.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabControlT8_DrawItem);
-			// 
-			// tabPage37
-			// 
-			this.tabPageT37.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT37.Name = "tabPage37";
-			this.tabPageT37.Size = new System.Drawing.Size(320, 222);
-			this.tabPageT37.TabIndex = 0;
-			this.tabPageT37.Text = "tabPage37";
-			// 
-			// tabPage38
-			// 
-			this.tabPageT38.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT38.Name = "tabPage38";
-			this.tabPageT38.Size = new System.Drawing.Size(320, 222);
-			this.tabPageT38.TabIndex = 1;
-			this.tabPageT38.Text = "tabPage38";
-			// 
-			// tabPage20
-			// 
-			this.tabPageT20.Controls.Add(this.tabControlT5);
-			this.tabPageT20.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT20.Name = "tabPage20";
-			this.tabPageT20.Size = new System.Drawing.Size(376, 294);
-			this.tabPageT20.TabIndex = 7;
-			this.tabPageT20.Text = "FixedSize";
-			// 
-			// tabControl5
-			// 
-			this.tabControlT5.Controls.Add(this.tabPageT26);
-			this.tabControlT5.Controls.Add(this.tabPageT27);
-			this.tabControlT5.Controls.Add(this.tabPageT28);
-			this.tabControlT5.ItemSize = new System.Drawing.Size(100, 30);
-			this.tabControlT5.Location = new System.Drawing.Point(24, 32);
-			this.tabControlT5.Name = "tabControl5";
-			this.tabControlT5.SelectedIndex = 0;
-			this.tabControlT5.Size = new System.Drawing.Size(336, 256);
-			this.tabControlT5.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
-			this.tabControlT5.TabIndex = 0;
-			// 
-			// tabPage26
-			// 
-			this.tabPageT26.Location = new System.Drawing.Point(4, 34);
-			this.tabPageT26.Name = "tabPage26";
-			this.tabPageT26.Size = new System.Drawing.Size(328, 218);
-			this.tabPageT26.TabIndex = 0;
-			this.tabPageT26.Text = "a";
-			// 
-			// tabPage27
-			// 
-			this.tabPageT27.Location = new System.Drawing.Point(4, 34);
-			this.tabPageT27.Name = "tabPage27";
-			this.tabPageT27.Size = new System.Drawing.Size(328, 218);
-			this.tabPageT27.TabIndex = 1;
-			this.tabPageT27.Text = "second";
-			// 
-			// tabPage28
-			// 
-			this.tabPageT28.Location = new System.Drawing.Point(4, 34);
-			this.tabPageT28.Name = "tabPage28";
-			this.tabPageT28.Size = new System.Drawing.Size(328, 218);
-			this.tabPageT28.TabIndex = 2;
-			this.tabPageT28.Text = "3rd";
-			// 
-			// tabPage2
-			// 
-			this.tabPageT2.Controls.Add(this.tabControlT3);
-			this.tabPageT2.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT2.Name = "tabPage2";
-			this.tabPageT2.Size = new System.Drawing.Size(376, 294);
-			this.tabPageT2.TabIndex = 1;
-			this.tabPageT2.Text = "AlignBot";
-			// 
-			// tabControl3
-			// 
-			this.tabControlT3.Alignment = System.Windows.Forms.TabAlignment.Bottom;
-			this.tabControlT3.Controls.Add(this.tabPageT7);
-			this.tabControlT3.Controls.Add(this.tabPageT8);
-			this.tabControlT3.Location = new System.Drawing.Point(32, 32);
-			this.tabControlT3.Name = "tabControl3";
-			this.tabControlT3.SelectedIndex = 0;
-			this.tabControlT3.Size = new System.Drawing.Size(232, 208);
-			this.tabControlT3.TabIndex = 1;
-			// 
-			// tabPage7
-			// 
-			this.tabPageT7.Location = new System.Drawing.Point(4, 4);
-			this.tabPageT7.Name = "tabPage7";
-			this.tabPageT7.Size = new System.Drawing.Size(224, 182);
-			this.tabPageT7.TabIndex = 0;
-			this.tabPageT7.Text = "tabPage7";
-			// 
-			// tabPage8
-			// 
-			this.tabPageT8.Location = new System.Drawing.Point(4, 4);
-			this.tabPageT8.Name = "tabPage8";
-			this.tabPageT8.Size = new System.Drawing.Size(224, 182);
-			this.tabPageT8.TabIndex = 1;
-			this.tabPageT8.Text = "tabPage8";
-			// 
-			// tabPage3
-			// 
-			this.tabPageT3.Controls.Add(this.tabControlT4);
-			this.tabPageT3.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT3.Name = "tabPage3";
-			this.tabPageT3.Size = new System.Drawing.Size(376, 294);
-			this.tabPageT3.TabIndex = 2;
-			this.tabPageT3.Text = "MultiLine";
-			// 
-			// tabControl4
-			// 
-			this.tabControlT4.Controls.Add(this.tabPageT11);
-			this.tabControlT4.Controls.Add(this.tabPageT12);
-			this.tabControlT4.Controls.Add(this.tabPageT13);
-			this.tabControlT4.Controls.Add(this.tabPageT14);
-			this.tabControlT4.Controls.Add(this.tabPageT15);
-			this.tabControlT4.Controls.Add(this.tabPageT16);
-			this.tabControlT4.Controls.Add(this.tabPageT17);
-			this.tabControlT4.Controls.Add(this.tabPageT18);
-			this.tabControlT4.Location = new System.Drawing.Point(16, 16);
-			this.tabControlT4.Multiline = true;
-			this.tabControlT4.Name = "tabControl4";
-			this.tabControlT4.SelectedIndex = 0;
-			this.tabControlT4.Size = new System.Drawing.Size(344, 256);
-			this.tabControlT4.TabIndex = 0;
-			// 
-			// tabPage11
-			// 
-			this.tabPageT11.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT11.Name = "tabPage11";
-			this.tabPageT11.Size = new System.Drawing.Size(336, 212);
-			this.tabPageT11.TabIndex = 0;
-			this.tabPageT11.Text = "tabPage11";
-			// 
-			// tabPage12
-			// 
-			this.tabPageT12.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT12.Name = "tabPage12";
-			this.tabPageT12.Size = new System.Drawing.Size(336, 212);
-			this.tabPageT12.TabIndex = 1;
-			this.tabPageT12.Text = "tabPage12";
-			// 
-			// tabPage13
-			// 
-			this.tabPageT13.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT13.Name = "tabPageT13";
-			this.tabPageT13.Size = new System.Drawing.Size(336, 212);
-			this.tabPageT13.TabIndex = 2;
-			this.tabPageT13.Text = "tabPageT13";
-			// 
-			// tabPageT14
-			// 
-			this.tabPageT14.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT14.Name = "tabPageT14";
-			this.tabPageT14.Size = new System.Drawing.Size(336, 212);
-			this.tabPageT14.TabIndex = 3;
-			this.tabPageT14.Text = "tabPageT14";
-			// 
-			// tabPageT15
-			// 
-			this.tabPageT15.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT15.Name = "tabPageT15";
-			this.tabPageT15.Size = new System.Drawing.Size(336, 212);
-			this.tabPageT15.TabIndex = 4;
-			this.tabPageT15.Text = "tabPageT15";
-			// 
-			// tabPageT16
-			// 
-			this.tabPageT16.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT16.Name = "tabPageT16";
-			this.tabPageT16.Size = new System.Drawing.Size(336, 212);
-			this.tabPageT16.TabIndex = 5;
-			this.tabPageT16.Text = "tabPageT16";
-			// 
-			// tabPageT17
-			// 
-			this.tabPageT17.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT17.Name = "tabPageT17";
-			this.tabPageT17.Size = new System.Drawing.Size(336, 212);
-			this.tabPageT17.TabIndex = 6;
-			this.tabPageT17.Text = "tabPageT17";
-			// 
-			// tabPageT18
-			// 
-			this.tabPageT18.BackColor = System.Drawing.Color.Red;
-			this.tabPageT18.Location = new System.Drawing.Point(4, 40);
-			this.tabPageT18.Name = "tabPageT18";
-			this.tabPageT18.Size = new System.Drawing.Size(336, 212);
-			this.tabPageT18.TabIndex = 7;
-			this.tabPageT18.Text = "tabPageT18";
-			// 
-			// tabPageT4
-			// 
-			this.tabPageT4.Controls.Add(this.tabControlT6);
-			this.tabPageT4.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT4.Name = "tabPageT4";
-			this.tabPageT4.Size = new System.Drawing.Size(376, 294);
-			this.tabPageT4.TabIndex = 3;
-			this.tabPageT4.Text = "Hottrack";
-			// 
-			// tabControlT6
-			// 
-			this.tabControlT6.Controls.Add(this.tabPageT29);
-			this.tabControlT6.Controls.Add(this.tabPageT30);
-			this.tabControlT6.Controls.Add(this.tabPageT31);
-			this.tabControlT6.HotTrack = true;
-			this.tabControlT6.Location = new System.Drawing.Point(8, 24);
-			this.tabControlT6.Name = "tabControlT6";
-			this.tabControlT6.SelectedIndex = 0;
-			this.tabControlT6.Size = new System.Drawing.Size(352, 248);
-			this.tabControlT6.TabIndex = 0;
-			// 
-			// tabPageT29
-			// 
-			this.tabPageT29.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT29.Name = "tabPageT29";
-			this.tabPageT29.Size = new System.Drawing.Size(344, 222);
-			this.tabPageT29.TabIndex = 0;
-			this.tabPageT29.Text = "tabPageT29";
-			// 
-			// tabPageT30
-			// 
-			this.tabPageT30.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT30.Name = "tabPageT30";
-			this.tabPageT30.Size = new System.Drawing.Size(344, 222);
-			this.tabPageT30.TabIndex = 1;
-			this.tabPageT30.Text = "tabPageT30";
-			// 
-			// tabPageT31
-			// 
-			this.tabPageT31.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT31.Name = "tabPageT31";
-			this.tabPageT31.Size = new System.Drawing.Size(344, 222);
-			this.tabPageT31.TabIndex = 2;
-			this.tabPageT31.Text = "tabPageT31";
-			// 
-			// tabPageT5
-			// 
-			this.tabPageT5.Controls.Add(this.labelT3);
-			this.tabPageT5.Controls.Add(this.tabControlT7);
-			this.tabPageT5.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT5.Name = "tabPageT5";
-			this.tabPageT5.Size = new System.Drawing.Size(376, 294);
-			this.tabPageT5.TabIndex = 4;
-			this.tabPageT5.Text = "Right";
-			// 
-			// tabControlT7
-			// 
-			this.tabControlT7.Alignment = System.Windows.Forms.TabAlignment.Right;
-			this.tabControlT7.Controls.Add(this.tabPageT32);
-			this.tabControlT7.Controls.Add(this.tabPageT33);
-			this.tabControlT7.Location = new System.Drawing.Point(8, 48);
-			this.tabControlT7.Multiline = true;
-			this.tabControlT7.Name = "tabControlT7";
-			this.tabControlT7.SelectedIndex = 0;
-			this.tabControlT7.Size = new System.Drawing.Size(360, 232);
-			this.tabControlT7.TabIndex = 0;
-			// 
-			// tabPageT32
-			// 
-			this.tabPageT32.Location = new System.Drawing.Point(4, 4);
-			this.tabPageT32.Name = "tabPageT32";
-			this.tabPageT32.Size = new System.Drawing.Size(333, 224);
-			this.tabPageT32.TabIndex = 0;
-			this.tabPageT32.Text = "tabPageT32";
-			// 
-			// tabPageT33
-			// 
-			this.tabPageT33.Location = new System.Drawing.Point(4, 4);
-			this.tabPageT33.Name = "tabPageT33";
-			this.tabPageT33.Size = new System.Drawing.Size(333, 256);
-			this.tabPageT33.TabIndex = 1;
-			this.tabPageT33.Text = "tabPageT33";
-			// 
-			// tabPageT19
-			// 
-			this.tabPageT19.Controls.Add(this.labelT4);
-			this.tabPageT19.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT19.Name = "tabPageT19";
-			this.tabPageT19.Size = new System.Drawing.Size(376, 294);
-			this.tabPageT19.TabIndex = 6;
-			this.tabPageT19.Text = "ImageList";
-			// 
-			// tabPageT34
-			// 
-			this.tabPageT34.Controls.Add(this.tabControlT1);
-			this.tabPageT34.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT34.Name = "tabPageT34";
-			this.tabPageT34.Size = new System.Drawing.Size(376, 294);
-			this.tabPageT34.TabIndex = 8;
-			this.tabPageT34.Text = "Docked";
-			// 
-			// tabControlT1
-			// 
-			this.tabControlT1.Controls.Add(this.tabPageT35);
-			this.tabControlT1.Controls.Add(this.tabPageT36);
-			this.tabControlT1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.tabControlT1.Location = new System.Drawing.Point(0, 0);
-			this.tabControlT1.Name = "tabControlT1";
-			this.tabControlT1.SelectedIndex = 0;
-			this.tabControlT1.Size = new System.Drawing.Size(376, 294);
-			this.tabControlT1.TabIndex = 0;
-			// 
-			// tabPageT35
-			// 
-			this.tabPageT35.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT35.Name = "tabPageT35";
-			this.tabPageT35.Size = new System.Drawing.Size(368, 268);
-			this.tabPageT35.TabIndex = 0;
-			this.tabPageT35.Text = "tabPageT35";
-			// 
-			// tabPageT36
-			// 
-			this.tabPageT36.Location = new System.Drawing.Point(4, 22);
-			this.tabPageT36.Name = "tabPageT36";
-			this.tabPageT36.Size = new System.Drawing.Size(208, 158);
-			this.tabPageT36.TabIndex = 1;
-			this.tabPageT36.Text = "tabPageT36";
-			// 
-			// label3
-			// 
-			this.labelT3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.labelT3.Location = new System.Drawing.Point(112, 8);
-			this.labelT3.Name = "label3";
-			this.labelT3.Size = new System.Drawing.Size(104, 24);
-			this.labelT3.TabIndex = 1;
-			this.labelT3.Text = "TODO:";
-			// 
-			// label4
-			// 
-			this.labelT4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-			this.labelT4.Location = new System.Drawing.Point(128, 80);
-			this.labelT4.Name = "label4";
-			this.labelT4.Size = new System.Drawing.Size(104, 24);
-			this.labelT4.TabIndex = 2;
-			this.labelT4.Text = "TODO:";
-			
-			control.Controls.Add(this.Docked);
-
-		}
-
-		private void AddPrimitivesTest(Control control)
-		{
-			control.Paint+=new PaintEventHandler(DrawPrimitives);
-		}
-		private void AddMenuTest()
-		{
-			seperatorMenuItem = new MenuItem("-");
-					thisMenuItem = new MenuItem("This");
-					thatMenuItem = new MenuItem("That");
-						otherAMenuItem = new MenuItem("OtherA");
-						otherBMenuItem = new MenuItem("OtherB");
-						otherCMenuItem = new MenuItem("OtherC");
-					otherMenuItem = new MenuItem("Other", new MenuItem[]{otherAMenuItem, otherBMenuItem, seperatorMenuItem, otherCMenuItem});
-				newMenuItem = new MenuItem("New", new MenuItem[]{thisMenuItem, thatMenuItem, otherMenuItem});
-				openMenuItem = new MenuItem("Open");
-				exitMenuItem = new MenuItem("Exit");
-				exitMenuItem.Click +=new EventHandler(exitMenuItem_Click);
-			fileMenuItem = new MenuItem("File",new MenuItem[] {newMenuItem, openMenuItem, exitMenuItem});
-				cutMenuItem = new MenuItem("Cut");
-				copyMenuItem = new MenuItem("Copy");
-				pasteMenuItem = new MenuItem("Paste");
-			editMenuItem = new MenuItem("Edit", new MenuItem[] {cutMenuItem, copyMenuItem, seperatorMenuItem, pasteMenuItem});
-				aboutMenuItem = new MenuItem("About");
-			helpMenuItem = new MenuItem("Help", new MenuItem[] {aboutMenuItem});
-			mainMenu = new MainMenu(new MenuItem[] { fileMenuItem, editMenuItem, helpMenuItem });
-			Menu = mainMenu;
-		}
-		private void AddGraphicsTest()
-		{
-			tabPage8.Paint+=new PaintEventHandler(tabPage8_Paint);
-		}
-		private void AddContextTest()
-		{
-			contextMenu = new ContextMenu( new MenuItem[] { cutMenuItem, copyMenuItem, seperatorMenuItem, pasteMenuItem });
-			tabPage9.ContextMenu = contextMenu;
-		}
-
-		private void AddImageTest()
-		{
-			image1 = Image.FromFile("test.bmp");
-			tabPage10.Paint+=new PaintEventHandler(Image_Paint);
-		}
-
-		private void AddComboTest(Control control)
-		{
-			comboBox1 = new ComboBox();
-			comboBox2 = new ComboBox();
-			comboBox1.Location = new Point(10, 10);
-			comboBox1.Enabled = false;
-			comboBox1.Items.AddRange(new object[]
-			{
-				"Item 1",
-				"Item 2",
-				"Item 3",
-				"Item 4",
-				"Item 5"
-			});
-
-			comboBox2.Location = new Point(10, 50);
-			comboBox2.Items.AddRange(new object[]
-			{
-				"Item 1",
-				"Item 2",
-				"Item 3",
-				"Item 4",
-				"Item 5"
-			});
-			control.Controls.AddRange(new Control[] {comboBox1, comboBox2});
-			comboBox1.Visible = true;
-		}
-		public static void Main(String[] args)
-		{
-			FormsTest form = new FormsTest();
-			Application.Run(form);
-		}
-
-		private void tabControlT8_DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
-		{
-			Graphics g = e.Graphics;
-			using (Pen p = new Pen(Color.Blue))
-			{
-				using (Font font = new Font("Arial", 9.0f))
-				{
-					using (SolidBrush brush = new SolidBrush(Color.Red))
-					{
-						Rectangle b = e.Bounds;
-						b.Inflate(-2,-2);
-						g.DrawRectangle(p, b);
-						g.DrawString("OWNER", font, brush, b);
-					}
-				}
-			}
-		
 		}
 
 		private void Regions_Paint(object sender, PaintEventArgs e)
@@ -2254,6 +1318,466 @@ namespace FormsTest
 			}
 		}
 
+		private void AddTabControlsTest(Control control)
+		{
+			Docked = new TabControl();
+			tabPageT1 = new TabPage();
+			tabControlT2 = new TabControl();
+			tabPageT6 = new TabPage();
+			labelT2 = new Label();
+			labelT1 = new Label();
+			buttonT1 = new Button();
+			tabPageT22 = new TabPage();
+			tabPageT23 = new TabPage();
+			tabPageT21 = new TabPage();
+			tabPageT9 = new TabPage();
+			tabPageT24 = new TabPage();
+			tabPageT25 = new TabPage();
+			tabPageT10 = new TabPage();
+			tabControlT8 = new TabControl();
+			tabPageT37 = new TabPage();
+			tabPageT38 = new TabPage();
+			tabPageT20 = new TabPage();
+			tabControlT5 = new TabControl();
+			tabPageT26 = new TabPage();
+			tabPageT27 = new TabPage();
+			tabPageT28 = new TabPage();
+			tabPageT2 = new TabPage();
+			tabControlT3 = new TabControl();
+			tabPageT7 = new TabPage();
+			tabPageT8 = new TabPage();
+			tabPageT3 = new TabPage();
+			tabControlT4 = new TabControl();
+			tabPageT11 = new TabPage();
+			tabPageT12 = new TabPage();
+			tabPageT13 = new TabPage();
+			tabPageT14 = new TabPage();
+			tabPageT15 = new TabPage();
+			tabPageT16 = new TabPage();
+			tabPageT17 = new TabPage();
+			tabPageT18 = new TabPage();
+			tabPageT4 = new TabPage();
+			tabControlT6 = new TabControl();
+			tabPageT29 = new TabPage();
+			tabPageT30 = new TabPage();
+			tabPageT31 = new TabPage();
+			tabPageT5 = new TabPage();
+			tabControlT7 = new TabControl();
+			tabPageT32 = new TabPage();
+			tabPageT33 = new TabPage();
+			tabPageT19 = new TabPage();
+			tabPageT34 = new TabPage();
+			tabControlT1 = new TabControl();
+			tabPageT35 = new TabPage();
+			tabPageT36 = new TabPage();
+			labelT3 = new Label();
+			labelT4 = new Label();
+			
+			Docked.Controls.Add(tabPageT1);
+			Docked.Controls.Add(tabPageT10);
+			Docked.Controls.Add(tabPageT5);
+			Docked.Controls.Add(tabPageT19);
+			Docked.Controls.Add(tabPageT20);
+			Docked.Controls.Add(tabPageT2);
+			Docked.Controls.Add(tabPageT3);
+			Docked.Controls.Add(tabPageT4);
+			Docked.Controls.Add(tabPageT34);
+			Docked.Location = new Point(24, 16);
+			Docked.Name = "Docked";
+			Docked.SelectedIndex = 0;
+			Docked.Size = new Size(384, 320);
+			Docked.TabIndex = 0;
+			
+			tabPageT1.Controls.Add(tabControlT2);
+			tabPageT1.Location = new Point(4, 22);
+			tabPageT1.Name = "tabPage1";
+			tabPageT1.Size = new Size(376, 294);
+			tabPageT1.TabIndex = 0;
+			tabPageT1.Text = "FillToRight";
+			
+			tabControlT2.Controls.Add(tabPageT6);
+			tabControlT2.Controls.Add(tabPageT22);
+			tabControlT2.Controls.Add(tabPageT23);
+			tabControlT2.Controls.Add(tabPageT21);
+			tabControlT2.Controls.Add(tabPageT9);
+			tabControlT2.Controls.Add(tabPageT24);
+			tabControlT2.Controls.Add(tabPageT25);
+			tabControlT2.Location = new Point(16, 24);
+			tabControlT2.Multiline = true;
+			tabControlT2.Name = "tabControl2";
+			tabControlT2.SelectedIndex = 0;
+			tabControlT2.Size = new Size(344, 248);
+			tabControlT2.SizeMode = TabSizeMode.FillToRight;
+			tabControlT2.TabIndex = 1;
+			
+			tabPageT6.Controls.Add(labelT2);
+			tabPageT6.Controls.Add(labelT1);
+			tabPageT6.Controls.Add(buttonT1);
+			tabPageT6.Location = new Point(4, 40);
+			tabPageT6.Name = "tabPage6";
+			tabPageT6.Size = new Size(336, 204);
+			tabPageT6.TabIndex = 0;
+			tabPageT6.Text = "First";
+			
+			labelT2.Location = new Point(144, 160);
+			labelT2.Name = "label2";
+			labelT2.Size = new Size(112, 40);
+			labelT2.TabIndex = 2;
+			labelT2.Text = "label2";
+			
+			labelT1.Location = new Point(144, 88);
+			labelT1.Name = "label1";
+			labelT1.Size = new Size(112, 40);
+			labelT1.TabIndex = 1;
+			labelT1.Text = "label1";
+			
+			buttonT1.Location = new Point(24, 16);
+			buttonT1.Name = "button1";
+			buttonT1.Size = new Size(96, 40);
+			buttonT1.TabIndex = 0;
+			buttonT1.Text = "button1";
+			
+			tabPageT22.Location = new Point(4, 40);
+			tabPageT22.Name = "tabPage22";
+			tabPageT22.Size = new Size(336, 204);
+			tabPageT22.TabIndex = 3;
+			tabPageT22.Text = "tabPage22";
+			
+			tabPageT23.Location = new Point(4, 40);
+			tabPageT23.Name = "tabPage23";
+			tabPageT23.Size = new Size(336, 204);
+			tabPageT23.TabIndex = 4;
+			tabPageT23.Text = "tabPage23";
+			
+			tabPageT21.Location = new Point(4, 40);
+			tabPageT21.Name = "tabPage21";
+			tabPageT21.Size = new Size(336, 204);
+			tabPageT21.TabIndex = 2;
+			tabPageT21.Text = "tabPage21";
+			
+			tabPageT9.Location = new Point(4, 40);
+			tabPageT9.Name = "tabPage9";
+			tabPageT9.Size = new Size(336, 204);
+			tabPageT9.TabIndex = 1;
+			tabPageT9.Text = "Second";
+			
+			tabPageT24.Location = new Point(4, 40);
+			tabPageT24.Name = "tabPage24";
+			tabPageT24.Size = new Size(336, 204);
+			tabPageT24.TabIndex = 5;
+			tabPageT24.Text = "tabPage24";
+			
+			tabPageT25.Location = new Point(4, 40);
+			tabPageT25.Name = "tabPage25";
+			tabPageT25.Size = new Size(336, 204);
+			tabPageT25.TabIndex = 6;
+			tabPageT25.Text = "tabPage25";
+			
+			tabPageT10.Controls.Add(tabControlT8);
+			tabPageT10.Location = new Point(4, 22);
+			tabPageT10.Name = "tabPage10";
+			tabPageT10.Size = new Size(376, 294);
+			tabPageT10.TabIndex = 5;
+			tabPageT10.Text = "OwnerDraw";
+			
+			tabControlT8.Controls.Add(tabPageT37);
+			tabControlT8.Controls.Add(tabPageT38);
+			tabControlT8.DrawMode = TabDrawMode.OwnerDrawFixed;
+			tabControlT8.Location = new Point(32, 24);
+			tabControlT8.Name = "tabControl8";
+			tabControlT8.SelectedIndex = 0;
+			tabControlT8.Size = new Size(328, 248);
+			tabControlT8.TabIndex = 0;
+			tabControlT8.DrawItem += new DrawItemEventHandler(tabControlT8_DrawItem);
+			
+			tabPageT37.Location = new Point(4, 22);
+			tabPageT37.Name = "tabPage37";
+			tabPageT37.Size = new Size(320, 222);
+			tabPageT37.TabIndex = 0;
+			tabPageT37.Text = "tabPage37";
+			
+			tabPageT38.Location = new Point(4, 22);
+			tabPageT38.Name = "tabPage38";
+			tabPageT38.Size = new Size(320, 222);
+			tabPageT38.TabIndex = 1;
+			tabPageT38.Text = "tabPage38";
+			
+			tabPageT20.Controls.Add(tabControlT5);
+			tabPageT20.Location = new Point(4, 22);
+			tabPageT20.Name = "tabPage20";
+			tabPageT20.Size = new Size(376, 294);
+			tabPageT20.TabIndex = 7;
+			tabPageT20.Text = "FixedSize";
+			
+			tabControlT5.Controls.Add(tabPageT26);
+			tabControlT5.Controls.Add(tabPageT27);
+			tabControlT5.Controls.Add(tabPageT28);
+			tabControlT5.ItemSize = new Size(100, 30);
+			tabControlT5.Location = new Point(24, 32);
+			tabControlT5.Name = "tabControl5";
+			tabControlT5.SelectedIndex = 0;
+			tabControlT5.Size = new Size(336, 256);
+			tabControlT5.SizeMode = TabSizeMode.Fixed;
+			tabControlT5.TabIndex = 0;
+			
+			tabPageT26.Location = new Point(4, 34);
+			tabPageT26.Name = "tabPage26";
+			tabPageT26.Size = new Size(328, 218);
+			tabPageT26.TabIndex = 0;
+			tabPageT26.Text = "a";
+			
+			tabPageT27.Location = new Point(4, 34);
+			tabPageT27.Name = "tabPage27";
+			tabPageT27.Size = new Size(328, 218);
+			tabPageT27.TabIndex = 1;
+			tabPageT27.Text = "second";
+			
+			tabPageT28.Location = new Point(4, 34);
+			tabPageT28.Name = "tabPage28";
+			tabPageT28.Size = new Size(328, 218);
+			tabPageT28.TabIndex = 2;
+			tabPageT28.Text = "3rd";
+			
+			tabPageT2.Controls.Add(tabControlT3);
+			tabPageT2.Location = new Point(4, 22);
+			tabPageT2.Name = "tabPage2";
+			tabPageT2.Size = new Size(376, 294);
+			tabPageT2.TabIndex = 1;
+			tabPageT2.Text = "AlignBot";
+			
+			tabControlT3.Alignment = TabAlignment.Bottom;
+			tabControlT3.Controls.Add(tabPageT7);
+			tabControlT3.Controls.Add(tabPageT8);
+			tabControlT3.Location = new Point(32, 32);
+			tabControlT3.Name = "tabControl3";
+			tabControlT3.SelectedIndex = 0;
+			tabControlT3.Size = new Size(232, 208);
+			tabControlT3.TabIndex = 1;
+			
+			tabPageT7.Location = new Point(4, 4);
+			tabPageT7.Name = "tabPage7";
+			tabPageT7.Size = new Size(224, 182);
+			tabPageT7.TabIndex = 0;
+			tabPageT7.Text = "tabPage7";
+			
+			tabPageT8.Location = new Point(4, 4);
+			tabPageT8.Name = "tabPage8";
+			tabPageT8.Size = new Size(224, 182);
+			tabPageT8.TabIndex = 1;
+			tabPageT8.Text = "tabPage8";
+			
+			tabPageT3.Controls.Add(tabControlT4);
+			tabPageT3.Location = new Point(4, 22);
+			tabPageT3.Name = "tabPage3";
+			tabPageT3.Size = new Size(376, 294);
+			tabPageT3.TabIndex = 2;
+			tabPageT3.Text = "MultiLine";
+			
+			tabControlT4.Controls.Add(tabPageT11);
+			tabControlT4.Controls.Add(tabPageT12);
+			tabControlT4.Controls.Add(tabPageT13);
+			tabControlT4.Controls.Add(tabPageT14);
+			tabControlT4.Controls.Add(tabPageT15);
+			tabControlT4.Controls.Add(tabPageT16);
+			tabControlT4.Controls.Add(tabPageT17);
+			tabControlT4.Controls.Add(tabPageT18);
+			tabControlT4.Location = new Point(16, 16);
+			tabControlT4.Multiline = true;
+			tabControlT4.Name = "tabControl4";
+			tabControlT4.SelectedIndex = 0;
+			tabControlT4.Size = new Size(344, 256);
+			tabControlT4.TabIndex = 0;
+			
+			tabPageT11.Location = new Point(4, 40);
+			tabPageT11.Name = "tabPage11";
+			tabPageT11.Size = new Size(336, 212);
+			tabPageT11.TabIndex = 0;
+			tabPageT11.Text = "tabPage11";
+			
+			tabPageT12.Location = new Point(4, 40);
+			tabPageT12.Name = "tabPage12";
+			tabPageT12.Size = new Size(336, 212);
+			tabPageT12.TabIndex = 1;
+			tabPageT12.Text = "tabPage12";
+			
+			tabPageT13.Location = new Point(4, 40);
+			tabPageT13.Name = "tabPageT13";
+			tabPageT13.Size = new Size(336, 212);
+			tabPageT13.TabIndex = 2;
+			tabPageT13.Text = "tabPageT13";
+			
+			tabPageT14.Location = new Point(4, 40);
+			tabPageT14.Name = "tabPageT14";
+			tabPageT14.Size = new Size(336, 212);
+			tabPageT14.TabIndex = 3;
+			tabPageT14.Text = "tabPageT14";
+			
+			tabPageT15.Location = new Point(4, 40);
+			tabPageT15.Name = "tabPageT15";
+			tabPageT15.Size = new Size(336, 212);
+			tabPageT15.TabIndex = 4;
+			tabPageT15.Text = "tabPageT15";
+			
+			tabPageT16.Location = new Point(4, 40);
+			tabPageT16.Name = "tabPageT16";
+			tabPageT16.Size = new Size(336, 212);
+			tabPageT16.TabIndex = 5;
+			tabPageT16.Text = "tabPageT16";
+			
+			tabPageT17.Location = new Point(4, 40);
+			tabPageT17.Name = "tabPageT17";
+			tabPageT17.Size = new Size(336, 212);
+			tabPageT17.TabIndex = 6;
+			tabPageT17.Text = "tabPageT17";
+			
+			tabPageT18.BackColor = Color.Red;
+			tabPageT18.Location = new Point(4, 40);
+			tabPageT18.Name = "tabPageT18";
+			tabPageT18.Size = new Size(336, 212);
+			tabPageT18.TabIndex = 7;
+			tabPageT18.Text = "tabPageT18";
+			
+			tabPageT4.Controls.Add(tabControlT6);
+			tabPageT4.Location = new Point(4, 22);
+			tabPageT4.Name = "tabPageT4";
+			tabPageT4.Size = new Size(376, 294);
+			tabPageT4.TabIndex = 3;
+			tabPageT4.Text = "Hottrack";
+			
+			tabControlT6.Controls.Add(tabPageT29);
+			tabControlT6.Controls.Add(tabPageT30);
+			tabControlT6.Controls.Add(tabPageT31);
+			tabControlT6.HotTrack = true;
+			tabControlT6.Location = new Point(8, 24);
+			tabControlT6.Name = "tabControlT6";
+			tabControlT6.SelectedIndex = 0;
+			tabControlT6.Size = new Size(352, 248);
+			tabControlT6.TabIndex = 0;
+			
+			tabPageT29.Location = new Point(4, 22);
+			tabPageT29.Name = "tabPageT29";
+			tabPageT29.Size = new Size(344, 222);
+			tabPageT29.TabIndex = 0;
+			tabPageT29.Text = "tabPageT29";
+			
+			tabPageT30.Location = new Point(4, 22);
+			tabPageT30.Name = "tabPageT30";
+			tabPageT30.Size = new Size(344, 222);
+			tabPageT30.TabIndex = 1;
+			tabPageT30.Text = "tabPageT30";
+			
+			tabPageT31.Location = new Point(4, 22);
+			tabPageT31.Name = "tabPageT31";
+			tabPageT31.Size = new Size(344, 222);
+			tabPageT31.TabIndex = 2;
+			tabPageT31.Text = "tabPageT31";
+			
+			tabPageT5.Controls.Add(labelT3);
+			tabPageT5.Controls.Add(tabControlT7);
+			tabPageT5.Location = new Point(4, 22);
+			tabPageT5.Name = "tabPageT5";
+			tabPageT5.Size = new Size(376, 294);
+			tabPageT5.TabIndex = 4;
+			tabPageT5.Text = "Right";
+			
+			tabControlT7.Alignment = TabAlignment.Right;
+			tabControlT7.Controls.Add(tabPageT32);
+			tabControlT7.Controls.Add(tabPageT33);
+			tabControlT7.Location = new Point(8, 48);
+			tabControlT7.Multiline = true;
+			tabControlT7.Name = "tabControlT7";
+			tabControlT7.SelectedIndex = 0;
+			tabControlT7.Size = new Size(360, 232);
+			tabControlT7.TabIndex = 0;
+			
+			tabPageT32.Location = new Point(4, 4);
+			tabPageT32.Name = "tabPageT32";
+			tabPageT32.Size = new Size(333, 224);
+			tabPageT32.TabIndex = 0;
+			tabPageT32.Text = "tabPageT32";
+			
+			tabPageT33.Location = new Point(4, 4);
+			tabPageT33.Name = "tabPageT33";
+			tabPageT33.Size = new Size(333, 256);
+			tabPageT33.TabIndex = 1;
+			tabPageT33.Text = "tabPageT33";
+			
+			tabPageT19.Controls.Add(labelT4);
+			tabPageT19.Location = new Point(4, 22);
+			tabPageT19.Name = "tabPageT19";
+			tabPageT19.Size = new Size(376, 294);
+			tabPageT19.TabIndex = 6;
+			tabPageT19.Text = "ImageList";
+			
+			tabPageT34.Controls.Add(tabControlT1);
+			tabPageT34.Location = new Point(4, 22);
+			tabPageT34.Name = "tabPageT34";
+			tabPageT34.Size = new Size(376, 294);
+			tabPageT34.TabIndex = 8;
+			tabPageT34.Text = "Docked";
+			
+			tabControlT1.Controls.Add(tabPageT35);
+			tabControlT1.Controls.Add(tabPageT36);
+			tabControlT1.Dock = DockStyle.Fill;
+			tabControlT1.Location = new Point(0, 0);
+			tabControlT1.Name = "tabControlT1";
+			tabControlT1.SelectedIndex = 0;
+			tabControlT1.Size = new Size(376, 294);
+			tabControlT1.TabIndex = 0;
+			
+			tabPageT35.Location = new Point(4, 22);
+			tabPageT35.Name = "tabPageT35";
+			tabPageT35.Size = new Size(368, 268);
+			tabPageT35.TabIndex = 0;
+			tabPageT35.Text = "tabPageT35";
+			
+			tabPageT36.Location = new Point(4, 22);
+			tabPageT36.Name = "tabPageT36";
+			tabPageT36.Size = new Size(208, 158);
+			tabPageT36.TabIndex = 1;
+			tabPageT36.Text = "tabPageT36";
+			
+			labelT3.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
+			labelT3.Location = new Point(112, 8);
+			labelT3.Name = "label3";
+			labelT3.Size = new Size(104, 24);
+			labelT3.TabIndex = 1;
+			labelT3.Text = "TODO:";
+			
+			labelT4.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
+			labelT4.Location = new Point(128, 80);
+			labelT4.Name = "label4";
+			labelT4.Size = new Size(104, 24);
+			labelT4.TabIndex = 2;
+			labelT4.Text = "TODO:";
+			
+			control.Controls.Add(Docked);
+
+		}
+		
+		private void tabControlT8_DrawItem(object sender, DrawItemEventArgs e)
+		{
+			Graphics g = e.Graphics;
+			using (Pen p = new Pen(Color.Blue))
+			{
+				using (Font font = new Font("Arial", 9.0f))
+				{
+					using (SolidBrush brush = new SolidBrush(Color.Red))
+					{
+						Rectangle b = e.Bounds;
+						b.Inflate(-2,-2);
+						g.DrawRectangle(p, b);
+						g.DrawString("OWNER", font, brush, b);
+					}
+				}
+			}
+		
+		}
+	
+		private void AddPrimitivesTest(Control control)
+		{
+			control.Paint+=new PaintEventHandler(DrawPrimitives);
+		}
 		private void DrawPrimitives(object sender, PaintEventArgs e)
 		{
 			using( Brush b = new SolidBrush(Color.Red))
@@ -2352,27 +1876,28 @@ namespace FormsTest
 			}
 		}
 
-		private void textBoxLinesButton_Click(object sender, EventArgs e)
+		private void AddMenuTest()
 		{
-			foreach(String s in textBox4.Lines)
-				Console.WriteLine(s);
-		}
-
-		private void tabPage8_Paint(object sender, PaintEventArgs e)
-		{
-			// TODO
-			Graphics g = e.Graphics;
-			using (Brush bb = new SolidBrush(Color.Black), rb = new SolidBrush(Color.Red), gb = new SolidBrush(Color.Green))
-			{
-				g.DrawString("BeginContainer", Font, bb, 0, 0);
-				g.SetClip(new Rectangle(20,20, 50, 50));
-				g.FillRectangle(rb, 0, 0, 100, 100);
-				System.Drawing.Drawing2D.GraphicsContainer gc =  g.BeginContainer();
-				g.SetClip(new Rectangle(30, 30, 50, 50));
-				g.ResetClip();
-				g.FillRectangle(gb, 0, 0, 100, 100);
-				g.EndContainer(gc);
-			}
+			seperatorMenuItem = new MenuItem("-");
+					thisMenuItem = new MenuItem("This");
+					thatMenuItem = new MenuItem("That");
+						otherAMenuItem = new MenuItem("OtherA");
+						otherBMenuItem = new MenuItem("OtherB");
+						otherCMenuItem = new MenuItem("OtherC");
+					otherMenuItem = new MenuItem("Other", new MenuItem[]{otherAMenuItem, otherBMenuItem, seperatorMenuItem, otherCMenuItem});
+				newMenuItem = new MenuItem("New", new MenuItem[]{thisMenuItem, thatMenuItem, otherMenuItem});
+				openMenuItem = new MenuItem("Open");
+				exitMenuItem = new MenuItem("Exit");
+				exitMenuItem.Click +=new EventHandler(exitMenuItem_Click);
+			fileMenuItem = new MenuItem("File",new MenuItem[] {newMenuItem, openMenuItem, exitMenuItem});
+				cutMenuItem = new MenuItem("Cut");
+				copyMenuItem = new MenuItem("Copy");
+				pasteMenuItem = new MenuItem("Paste");
+			editMenuItem = new MenuItem("Edit", new MenuItem[] {cutMenuItem, copyMenuItem, seperatorMenuItem, pasteMenuItem});
+				aboutMenuItem = new MenuItem("About");
+			helpMenuItem = new MenuItem("Help", new MenuItem[] {aboutMenuItem});
+			mainMenu = new MainMenu(new MenuItem[] { fileMenuItem, editMenuItem, helpMenuItem });
+			Menu = mainMenu;
 		}
 
 		private void exitMenuItem_Click(object sender, EventArgs e)
@@ -2380,9 +1905,510 @@ namespace FormsTest
 			Close();
 		}
 
+		private void AddGraphicsTest(Control c)
+		{
+			c.Paint+=new PaintEventHandler(GraphicsTestPaint);
+		}
+		private void GraphicsTestPaint(object sender, PaintEventArgs e)
+		{
+			Graphics g = e.Graphics;
+			boundsX = boundsY = boundsPad;
+			Rectangle b;
+
+			using (Brush bb = new SolidBrush(Color.Black), rb = new SolidBrush(Color.Red), gb = new SolidBrush(Color.Green))
+				using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
+				{
+					b = NextBounds(g, "DrawArc");
+					g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45, 90);
+					b = NextBounds(g, "DrawArc");
+					g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45, 270);
+					b = NextBounds(g, "DrawBezier");
+					g.DrawBezier(rp, b.Left, b.Top, b.Left, b.Top + .1F * b.Height, b.Right, b.Top + .2F * b. Height, b.Right, b.Bottom );
+					b = NextBounds(g, "DrawClosedCurve");
+					g.DrawClosedCurve(rp, new Point[] {b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)});
+					b = NextBounds(g, "DrawCurve");
+					g.DrawCurve(rp, new Point[]{b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)}); 
+					b = NextBounds(g, "DrawCurve");
+					g.DrawCurve(rp, new Point[]{b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)}, 0.5F);
+					b = NextBounds(g, "DrawEllipse");
+					g.DrawEllipse(rp, b);
+					b = NextBounds(g, "DrawIcon");
+					//g.DrawIcon()
+					b = NextBounds(g, "DrawIconUnstretched");
+					//g.DrawIconUnstretched();
+					b = NextBounds(g, "DrawImage");
+					//g.DrawImage();
+					b = NextBounds(g, "DrawImageUnscaled");
+					//g.DrawImageUnscaled();
+					b = NextBounds(g, "DrawLine");
+					g.DrawLine(rp, b.Left, b.Top, b.Right, b.Bottom);
+					b = NextBounds(g, "DrawLines");
+					g.DrawLines(rp, new Point[] { b.Location, new Point (b.Right, b.Bottom), new Point(b.Right, b.Top), new Point(b.Left, b.Bottom)});
+					b = NextBounds(g, "DrawPie");
+					g.DrawPie(rp, b, 0, 45);
+					b = NextBounds(g, "DrawPie");
+					g.DrawPie(rp, b, 135, 270);
+					b = NextBounds(g, "DrawPolygon");
+					g.DrawPolygon(rp, new Point[] { b.Location, new Point (b.Right, b.Bottom), new Point(b.Right, b.Top), new Point(b.Left, b.Bottom)});
+					b = NextBounds(g, "DrawRectangle");
+					g.DrawRectangle(rp, b);
+					b = NextBounds(g, "DrawRectangles");
+					g.DrawRectangles(rp, new Rectangle[] { b, new Rectangle(b.Right - 5, b.Bottom - 5, 10, 10)});
+					b = NextBounds(g, "FillClosedCurve");
+					g.FillClosedCurve(rb, new Point[] {b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)});
+					b = NextBounds(g, "FillEllipse");
+					g.FillEllipse(rb, b);
+					b = NextBounds(g, "FillPie");
+					g.FillPie(rb, b, 135, 270);
+					b = NextBounds(g, "FillPolygon");
+					g.FillPolygon(rb, new Point[] { b.Location, new Point (b.Right, b.Bottom), new Point(b.Right, b.Top), new Point(b.Left, b.Bottom)});
+					b = NextBounds(g, "FillRectangle");
+					g.FillRectangle(rb, b);
+					b = NextBounds(g, "FillRectangles");
+					g.FillRectangles(rb, new Rectangle[] { b, new Rectangle(b.Right - 5, b.Bottom - 5, 10, 10)});
+				}
+
+			
+				/*g.DrawString("BeginContainer", Font, bb, 0, 0);
+				g.SetClip(new Rectangle(20,20, 50, 50));
+				g.FillRectangle(rb, 0, 0, 100, 100);
+				System.Drawing.Drawing2D.GraphicsContainer gc =  g.BeginContainer();
+				g.SetClip(new Rectangle(30, 30, 50, 50));
+				g.ResetClip();
+				g.FillRectangle(gb, 0, 0, 100, 100);
+				g.EndContainer(gc);
+				*/
+		}
+
+		private void AddGraphicsPathTest(Control c)
+		{
+			c.Paint+=new PaintEventHandler(GraphicsPathTestPaint);
+		}
+		private void GraphicsPathTestPaint(object sender, PaintEventArgs e)
+		{
+			Graphics g = e.Graphics;
+			boundsX = boundsY = boundsPad;
+			Rectangle b;
+
+			using (Brush bb = new SolidBrush(Color.Black), rb = new SolidBrush(Color.Red), gb = new SolidBrush(Color.Green))
+			using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
+			{
+				GraphicsPath path;
+				
+				b = NextBounds(g, "DrawPath");
+				path = new GraphicsPath();
+				path.AddArc(b, 0, 135);
+				path.AddLine(b.Left, b.Top, b.Right, b.Bottom);
+				g.DrawPath(rp, path);
+				b = NextBounds(g, "FillPath");
+				path = new GraphicsPath();
+				path.AddArc(b, 0, 135);
+				path.AddLine(b.Left, b.Top, b.Right, b.Bottom);
+				g.FillPath(rb, path);
+			}
+		}
+
+		private void AddGraphicsDrawStringTest(Control c)
+		{
+			c.Paint+=new PaintEventHandler(GraphicsDrawStringTest);
+		}
+		private void GraphicsDrawStringTest(object sender, PaintEventArgs e)
+		{
+			// TODO
+			Graphics g = e.Graphics;
+			boundsX = boundsY = boundsPad;
+			Rectangle b;
+
+			using (Brush bb = new SolidBrush(Color.Black), rb = new SolidBrush(Color.Red), gb = new SolidBrush(Color.Green))
+			using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
+			{
+				
+				string s = "Hello 1234 1&2345 1&&23456 123 12 12345";
+				StringFormat sf = new StringFormat();
+				Font f = new Font("Arial", 6);
+					
+				b = NextBounds(g, "DrawString");
+				g.DrawString(s, f, rb, b.Left, b.Top);
+					
+				b = NextBounds(g, "DrawString");
+				g.DrawString(s, f, rb, b);
+					
+				sf = new StringFormat(StringFormatFlags.NoWrap);
+				b = NextBounds(g, ":NoWrap");
+				g.DrawString(s, f, rb, b, sf);
+					
+				sf = new StringFormat(StringFormatFlags.NoWrap);
+				sf.Alignment = StringAlignment.Far;
+				b = NextBounds(g, ":NoWrap, Far");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.Alignment = StringAlignment.Far;
+				b = NextBounds(g, ":Far");
+				g.DrawString(s, f, rb, b, sf);
+					
+				sf = new StringFormat();
+				sf.Alignment = StringAlignment.Center;
+				b = NextBounds(g, ":Center");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.LineAlignment = StringAlignment.Far;
+				b = NextBounds(g, ":LineFar");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.LineAlignment = StringAlignment.Center;
+				b = NextBounds(g, ":LineCenter");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.LineAlignment = StringAlignment.Far;
+				sf.Alignment = StringAlignment.Far;
+				b = NextBounds(g, ":LineFar Far");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.LineAlignment = StringAlignment.Far;
+				sf.Alignment = StringAlignment.Center;
+				b = NextBounds(g, ":LineCenter Center");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Hide;
+				b = NextBounds(g, ":Hotkey Hide");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.None;
+				b = NextBounds(g, ":Hotkey None");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Show;
+				b = NextBounds(g, ":Hotkey Show");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Hide;
+				b = NextBounds(g, ":Hotkey Hide");
+				g.DrawString(s, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.Trimming = StringTrimming.Word;
+				b = NextBounds(g, ":Trim word");
+				g.DrawString(s, f, rb, b, sf);
+					
+				sf = new StringFormat();
+				sf.Trimming = StringTrimming.EllipsisWord;
+				b = NextBounds(g, ":Trim ellipsisWord");
+				g.DrawString(s, f, rb, b, sf);
+					
+				sf = new StringFormat();
+				sf.Trimming = StringTrimming.Character;
+				b = NextBounds(g, ":Character");
+				g.DrawString(s, f, rb, b, sf);
+					
+				sf = new StringFormat();
+				sf.Trimming = StringTrimming.EllipsisCharacter;
+				b = NextBounds(g, ":EllipisCharacter");
+				g.DrawString(s, f, rb, b, sf);
+					
+				sf = new StringFormat();
+				sf.Trimming = StringTrimming.EllipsisPath;
+				b = NextBounds(g, ":EllipsisPath");
+				g.DrawString(s, f, rb, b, sf);
+					
+			}
+		}
+
+		private const int boundsPad = 15;
+		private const int boundsSize = 80;
+		private int boundsX;
+		private int boundsY;
+		private Rectangle NextBounds(Graphics g, string text)
+		{
+			Rectangle r = new Rectangle(boundsX, boundsY, boundsSize, boundsSize);
+			boundsX += boundsSize + boundsPad;
+			if (boundsX + boundsSize > Width - 10)
+			{
+				boundsX = boundsPad;
+				boundsY += boundsSize + boundsPad;
+			}
+			g.DrawRectangle(SystemPens.ControlLightLight, r);
+			g.DrawString(text, new Font("Arial", 8),SystemBrushes.ControlLightLight, r.X, r.Bottom);
+			return r;
+		}
+
+		private void AddContextTest(Control c)
+		{
+			contextMenuLabel1 = new Label();
+			contextMenuLabel1.Location = new Point(0, 0);
+			contextMenuLabel1.Text = "Right click in this tab page for context menu.";
+			contextMenuLabel1.Dock = DockStyle.Top;
+			c.Controls.Add(contextMenuLabel1);
+			contextMenu = new ContextMenu( new MenuItem[] { cutMenuItem, copyMenuItem, seperatorMenuItem, pasteMenuItem });
+			c.ContextMenu = contextMenu;
+		}
+
+		private void AddImageTest(Control c)
+		{
+			image1 = Image.FromFile("test.bmp");
+			c.Paint += new PaintEventHandler(Image_Paint);
+		}
+
 		private void Image_Paint(object sender, PaintEventArgs e)
 		{
 			e.Graphics.DrawImage(image1, 10, 10);
 		}
+
+		private void AddComboTest(Control c)
+		{
+			comboBox1 = new ComboBox();
+			comboBox2 = new ComboBox();
+			comboBox1.Location = new Point(10, 10);
+			comboBox1.Enabled = false;
+			comboBox1.Items.AddRange(new object[]
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3",
+				"Item 4",
+				"Item 5"
+			});
+
+			comboBox2.Location = new Point(10, 50);
+			comboBox2.Items.AddRange(new object[]
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3",
+				"Item 4",
+				"Item 5"
+			});
+			c.Controls.AddRange(new Control[] {comboBox1, comboBox2});
+			comboBox1.Visible = true;
+		}
+
+		private void AddTreeViewTest(Control c)
+		{
+			treeView1 = new TreeView();
+			treeView1.BeginUpdate();
+			treeView1.Nodes.Add("Node1");
+			treeView1.Nodes[0].Nodes.Add("Node11");
+			treeView1.Nodes[0].Nodes[0].Nodes.Add("Node111");
+			treeView1.Nodes[0].Nodes.Add("Node12");
+			treeView1.Nodes.Add("Node2");
+			treeView1.Nodes.Add("Node3");
+			treeView1.Nodes.Add("Node4");
+			treeView1.Nodes[3].Nodes.Add("Node41");
+			treeView1.Nodes[3].Nodes[0].Nodes.Add("Node411");
+			treeView1.Nodes[3].Nodes[0].Nodes.Add("Node412");
+			treeView1.Nodes[3].Nodes.Add("Node42");
+			treeView1.Nodes[3].Nodes.Add("Node43");
+			
+			treeView1.EndUpdate();
+			treeView1.Bounds = new Rectangle(10,10, 250, 500);
+			treeView1.LabelEdit = true;
+			c.Controls.Add(treeView1);
+		}
+
+		private void AddListBoxTest(Control c)
+		{
+			listBox1 = new ListBox();
+			listBox1.Bounds = new Rectangle(10, 10, 200, 100);
+			listBox2 = new ListBox();
+			listBox2.Bounds = new Rectangle(10, 150, 200, 100);
+			c.Controls.Add(listBox1);
+			c.Controls.Add(listBox2);
+			listBox1.MultiColumn = true;
+			listBox1.SelectionMode = SelectionMode.MultiExtended;
+			listBox1.BeginUpdate();
+			for (int x = 1; x <= 50; x++)
+			{
+				listBox1.Items.Add("Item " + x.ToString());
+			}
+			listBox1.EndUpdate();
+			listBox1.SetSelected(1, true);
+			listBox1.SetSelected(3, true);
+			listBox1.SetSelected(5, true);
+
+			//Console.WriteLine(listBox1.SelectedItems[1].ToString());
+			//Console.WriteLine(listBox1.SelectedIndices[0].ToString());
+
+			listBox2.Items.Add("Item 1");
+			listBox2.Items.Add("Item 2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+			listBox2.Enabled = false;
+
+		}
+
+		private void AddFormsTest(Control c)
+		{
+			formsButton1 = new Button();
+			formsButton1.Bounds = new Rectangle(20, 20, 120, 20);
+			formsButton1.Text = "New Normal Form";
+			formsButton1.Click+=new EventHandler(FormsTestClick);
+			c.Controls.Add(formsButton1);
+		}
+
+		private void FormsTestClick(object sender, EventArgs e)
+		{
+			Form f = new Form();
+			f.Show();
+		}
+
+		private void AddTransformsTest(Control c)
+		{
+			c.Paint+=new PaintEventHandler(TransformsTestPaint);
+		}
+
+		private void TransformsTestPaint(object sender, PaintEventArgs e)
+		{
+			e.Graphics.DrawString("Coming soon..", Font, SystemBrushes.ControlText, 10, 10);
+		}
+
+		private void AddScrollbarTest(Control c)
+		{
+			vScrollBar = new VScrollBar();
+			vScrollBar.Bounds = new Rectangle(10, 10, 20, 400);
+			vScrollBar.ValueChanged+=new EventHandler(vScrollBar_ValueChanged);
+			c.Controls.Add(vScrollBar);
+
+			hScrollBar = new HScrollBar();
+			hScrollBar.Bounds = new Rectangle(200, 10, 250, 20);
+			hScrollBar.ValueChanged+=new EventHandler(hScrollBar_ValueChanged);
+			c.Controls.Add(hScrollBar);
+			scroll1LabelMin = new Label();
+			scroll1LabelMin.Text = "min";
+			scroll1LabelMin.Bounds = new Rectangle(vScrollBar.Right + 10, vScrollBar.Top + 100, 35, 20);
+			c.Controls.Add(scroll1LabelMin);
+			scroll1TextBoxMin = new TextBox();
+			scroll1TextBoxMin.Text = vScrollBar.Minimum.ToString();
+			scroll1TextBoxMin.Bounds = new Rectangle(scroll1LabelMin.Right + 5, scroll1LabelMin.Top, 30, 20);
+			scroll1TextBoxMin.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll1TextBoxMin);
+
+			scroll1LabelMax = new Label();
+			scroll1LabelMax.Text = "max";
+			scroll1LabelMax.Bounds = new Rectangle(scroll1LabelMin.Left, scroll1LabelMin.Bottom + 10, 35, 20);
+			c.Controls.Add(scroll1LabelMax);
+			scroll1TextBoxMax = new TextBox();
+			scroll1TextBoxMax.Text = vScrollBar.Maximum.ToString();
+			scroll1TextBoxMax.Bounds = new Rectangle(scroll1LabelMax.Right + 5, scroll1LabelMax.Top, 30, 20); 
+			scroll1TextBoxMax.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll1TextBoxMax);
+
+			scroll1LabelValue = new Label();
+			scroll1LabelValue.Text = "value";
+			scroll1LabelValue.Bounds = new Rectangle(scroll1LabelMax.Left, scroll1LabelMax.Bottom + 10, 35, 20);
+			c.Controls.Add(scroll1LabelValue);
+			scroll1TextBoxValue = new TextBox();
+			scroll1TextBoxValue.Text = vScrollBar.Value.ToString();
+			scroll1TextBoxValue.Bounds = new Rectangle(scroll1LabelValue.Right + 5, scroll1LabelValue.Top, 30, 20); 
+			scroll1TextBoxValue.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll1TextBoxValue);
+
+			scroll1LabelLarge = new Label();
+			scroll1LabelLarge.Text = "large";
+			scroll1LabelLarge.Bounds = new Rectangle(scroll1LabelValue.Left, scroll1LabelValue.Bottom + 10, 35, 20);
+			c.Controls.Add(scroll1LabelLarge);
+			scroll1TextBoxLarge = new TextBox();
+			scroll1TextBoxLarge.Text = vScrollBar.LargeChange.ToString();
+			scroll1TextBoxLarge.Bounds = new Rectangle(scroll1LabelLarge.Right + 5, scroll1LabelLarge.Top, 30, 20); 
+			scroll1TextBoxLarge.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll1TextBoxLarge);
+
+			scroll1LabelSmall = new Label();
+			scroll1LabelSmall.Text = "small";
+			scroll1LabelSmall.Bounds = new Rectangle(scroll1LabelLarge.Left, scroll1LabelLarge.Bottom + 10, 35, 20);
+			c.Controls.Add(scroll1LabelSmall);
+			scroll1TextBoxSmall = new TextBox();
+			scroll1TextBoxSmall.Text = vScrollBar.SmallChange.ToString();
+			scroll1TextBoxSmall.Bounds = new Rectangle(scroll1LabelSmall.Right + 5, scroll1LabelSmall.Top, 30, 20); 
+			scroll1TextBoxSmall.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll1TextBoxSmall);
+
+			scroll2LabelMin = new Label();
+			scroll2LabelMin.Text = "min";
+			scroll2LabelMin.Bounds = new Rectangle(hScrollBar.Left + 90, hScrollBar.Bottom + 10, 35, 20);
+			c.Controls.Add(scroll2LabelMin);
+			scroll2TextBoxMin = new TextBox();
+			scroll2TextBoxMin.Text = hScrollBar.Minimum.ToString();
+			scroll2TextBoxMin.Bounds = new Rectangle(scroll2LabelMin.Right + 5, scroll2LabelMin.Top, 30, 20); 
+			scroll2TextBoxMin.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll2TextBoxMin);
+
+			scroll2LabelMax = new Label();
+			scroll2LabelMax.Text = "max";
+			scroll2LabelMax.Bounds = new Rectangle(scroll2LabelMin.Left, scroll2LabelMin.Bottom + 10, 35, 20);
+			c.Controls.Add(scroll2LabelMax);
+			scroll2TextBoxMax = new TextBox();
+			scroll2TextBoxMax.Text = hScrollBar.Maximum.ToString();
+			scroll2TextBoxMax.Bounds = new Rectangle(scroll2LabelMax.Right + 5, scroll2LabelMax.Top, 30, 20); 
+			scroll2TextBoxMax.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll2TextBoxMax);
+
+			scroll2LabelValue = new Label();
+			scroll2LabelValue.Text = "value";
+			scroll2LabelValue.Bounds = new Rectangle(scroll2LabelMax.Left, scroll2LabelMax.Bottom + 10, 35, 20);
+			c.Controls.Add(scroll2LabelValue);
+			scroll2TextBoxValue = new TextBox();
+			scroll2TextBoxValue.Text = hScrollBar.Value.ToString();
+			scroll2TextBoxValue.Bounds = new Rectangle(scroll2LabelValue.Right + 5, scroll2LabelValue.Top, 30, 20); 
+			scroll2TextBoxValue.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll2TextBoxValue);
+
+			scroll2LabelLarge = new Label();
+			scroll2LabelLarge.Text = "large";
+			scroll2LabelLarge.Bounds = new Rectangle(scroll2LabelValue.Left, scroll2LabelValue.Bottom + 10, 35, 20);
+			c.Controls.Add(scroll2LabelLarge);
+			scroll2TextBoxLarge = new TextBox();
+			scroll2TextBoxLarge.Text = vScrollBar.LargeChange.ToString();
+			scroll2TextBoxLarge.Bounds = new Rectangle(scroll2LabelLarge.Right + 5, scroll2LabelLarge.Top, 30, 20); 
+			scroll2TextBoxLarge.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll2TextBoxLarge);
+
+			scroll2LabelSmall = new Label();
+			scroll2LabelSmall.Text = "small";
+			scroll2LabelSmall.Bounds = new Rectangle(scroll2LabelLarge.Left, scroll2LabelLarge.Bottom + 10, 35, 20);
+			c.Controls.Add(scroll2LabelSmall);
+			scroll2TextBoxSmall = new TextBox();
+			scroll2TextBoxSmall.Text = vScrollBar.SmallChange.ToString();
+			scroll2TextBoxSmall.Bounds = new Rectangle(scroll2LabelSmall.Right + 5, scroll2LabelSmall.Top, 30, 20); 
+			scroll2TextBoxSmall.TextChanged+=new EventHandler(scrollTextBox_TextChanged);
+			c.Controls.Add(scroll2TextBoxSmall);
+
+		}
+
+		private void vScrollBar_ValueChanged(object sender, EventArgs e)
+		{
+			scroll1TextBoxValue.Text = vScrollBar.Value.ToString();
+		}
+
+		private void hScrollBar_ValueChanged(object sender, EventArgs e)
+		{
+			scroll2TextBoxValue.Text = hScrollBar.Value.ToString();
+		}
+
+		private void scrollTextBox_TextChanged(object sender, EventArgs e)
+		{
+			try //Lazy!!
+			{
+				vScrollBar.Minimum = int.Parse(scroll1TextBoxMin.Text);
+				vScrollBar.Maximum = int.Parse(scroll1TextBoxMax.Text);
+				vScrollBar.Value = int.Parse(scroll1TextBoxValue.Text);
+				vScrollBar.LargeChange = int.Parse(scroll1TextBoxLarge.Text);
+				vScrollBar.SmallChange = int.Parse(scroll1TextBoxSmall.Text);
+				hScrollBar.Minimum = int.Parse(scroll2TextBoxMin.Text);
+				hScrollBar.Maximum = int.Parse(scroll2TextBoxMax.Text);
+				hScrollBar.Value = int.Parse(scroll2TextBoxValue.Text);
+				hScrollBar.LargeChange = int.Parse(scroll2TextBoxLarge.Text);
+				hScrollBar.SmallChange = int.Parse(scroll2TextBoxSmall.Text);
+			}
+			catch
+			{}
+			
+		}
+
 	}
 }

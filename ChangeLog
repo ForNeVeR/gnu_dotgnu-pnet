@@ -1,4 +1,9 @@
 
+2002-12-21  Gopal.V  <gopalv82@symonds.net>
+	
+	* include/il_system.h, support/file.c, csant/csant_task.c: Add a
+	"delete" task to csant.
+
 2002-12-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_var.c, engine/mklabel.sh: introduce a __asm__ hack

@@ -75,6 +75,28 @@ static int Task_Fail(CSAntTask *task)
 }
 
 /*
+ * Delete a file from the build (for "clean" targets mainly)
+ */
+static int Task_Delete(CSAntTask *task)
+{
+	const char *file = CSAntTaskParam(task, "file");
+	const char *fail = CSAntTaskParam(task, "failonerror");
+	int retval;
+	if(!file)
+	{
+		fprintf(stderr,"no file to delete in <delete>\n");
+		return 0;
+	}
+	retval=ILDeleteFile(file);
+	if(retval && fail && !strcmp(fail,"true"))
+	{
+		fprintf(stderr,"could not delete '%s'\n",file);
+		return 0;
+	}
+	return 1;
+}
+
+/*
  * Invoke a sub-process containing another invocation of "csant".
  */
 static int Task_CSAnt(CSAntTask *task)
@@ -172,6 +194,7 @@ CSAntTaskInfo const CSAntTasks[] = {
 	{"echo",			Task_Echo},
 	{"fail",			Task_Fail},
 	{"csant",			Task_CSAnt},
+	{"delete",			Task_Delete},
 };
 int const CSAntNumTasks = (sizeof(CSAntTasks) / sizeof(CSAntTaskInfo));
 

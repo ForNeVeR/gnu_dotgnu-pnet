@@ -109,7 +109,7 @@ int ILMapFileToMemory(int fd, unsigned long start, unsigned long end,
 void ILUnmapFileFromMemory(void *mapAddress, unsigned long mapLength);
 
 /* Delete a file from disk */
-void ILDeleteFile(const char *filename);
+int ILDeleteFile(const char *filename);
 
 /* Determine if a file exists.  If "newExePath" is not NULL,
    then the file is expected to be executable.  If it is an

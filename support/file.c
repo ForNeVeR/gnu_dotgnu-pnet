@@ -46,13 +46,13 @@
 extern	"C" {
 #endif
 
-void ILDeleteFile(const char *filename)
+int ILDeleteFile(const char *filename)
 {
 #ifdef HAVE_UNLINK
-	unlink(filename);
+	return unlink(filename);
 #else
 #ifdef HAVE_REMOVE
-	remove(filename);
+	return remove(filename);
 #endif
 #endif
 }

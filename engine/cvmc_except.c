@@ -71,10 +71,9 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 	ILCacheNewRegion(&(coder->codePosn), (void *)0);
 
 	/* Set up the method's frame to perform exception handling */
-	coder->enterTry = CVM_POSN();
+	coder->needTry = 1;
 	CVM_BYTE(COP_PREFIX);
 	CVM_BYTE(COP_PREFIX_ENTER_TRY);
-	CVM_WORD(0);
 }
 
 /*
@@ -135,11 +134,11 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
 	ILCVMLabel *label;
 
-	/* Back-patch the "enter_try" instruction */
-	if(coder->enterTry != 0 && CVM_VALID(coder->enterTry, 6))
+	/* End the exception region if this is the first try block */
+	if(coder->needTry)
 	{
-		IL_WRITE_UINT32(coder->enterTry + 2, CVM_POSN() - coder->enterTry);
-		coder->enterTry = 0;
+		/* Don't need to do this again */
+		coder->needTry = 0;
 
 		/* Set the cookie for the method's exception region
 		   to the current method position */

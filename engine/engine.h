@@ -116,22 +116,19 @@ struct _tagILExecProcess
 
 /*
  * Information that is stored in a stack call frame.
- * Offsets are used to refer to the stack and program
- * instead of pointers.  This allows the stack to be
- * realloc'ed, or the coder cache re-generated, without
- * having to rearrange the saved frame data.
+ * Offsets are used to refer to the stack instead of
+ * pointers.  This allows the stack to be realloc'ed,
+ * without having to rearrange the saved frame data.
  */
 typedef struct _tagILCallFrame
 {
 	ILMethod       *method;			/* Method being executed in the frame */
 	unsigned char  *pc;				/* PC to return to in the parent method */
 	ILUInt32	   	frame;			/* Base of the local variable frame */
-	unsigned char  *except;			/* PC to jump to on an exception */
 	ILUInt32		exceptHeight;	/* Height of the frame for exceptions */
 
 } ILCallFrame;
 #define	IL_INVALID_PC		((unsigned char *)(ILNativeInt)(-1))
-#define	IL_INVALID_EXCEPT	((unsigned char *)(ILNativeInt)(-1))
 
 /*
  * Execution control context for a single thread.
@@ -151,7 +148,6 @@ struct _tagILExecThread
 
 	/* Current thread state */
 	unsigned char  *pc;				/* Current program position */
-	unsigned char  *except;			/* Position of exception handler table */
 	ILUInt32		exceptHeight;	/* Height of the frame for exceptions */
 	ILUInt32		frame;			/* Base of the local variable frame */
 	CVMWord        *stackTop;		/* Current stack top */

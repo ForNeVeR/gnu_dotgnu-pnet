@@ -58,7 +58,6 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 
 	/* Initialize the thread state */
 	thread->pc = 0;
-	thread->except = IL_INVALID_EXCEPT;
 	thread->frame = 0;
 	thread->stackTop = thread->stackBase;
 	thread->method = 0;
@@ -129,13 +128,9 @@ ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n)
 	{
 		--posn;
 		frame = &(thread->frameStack[posn]);
-		if(frame->except == IL_INVALID_EXCEPT)
+		if(!n)
 		{
-			if(!n)
-			{
-				return frame;
-			}
-			--n;
+			return frame;
 		}
 	}
 	return 0;
@@ -145,16 +140,15 @@ ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame)
 {
 	ILUInt32 posn;
 	posn = frame - thread->frameStack;
-	while(posn > 0)
+	if(posn > 0)
 	{
 		--posn;
-		frame = &(thread->frameStack[posn]);
-		if(frame->except == IL_INVALID_EXCEPT)
-		{
-			return frame;
-		}
+		return &(thread->frameStack[posn]);
 	}
-	return 0;
+	else
+	{
+		return 0;
+	}
 }
 
 ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num)

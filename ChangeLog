@@ -20,6 +20,12 @@
 	include/il_coder.h: convert exception handling to use the
 	method cache for throw lookups.
 
+	* engine/call.c, engine/cvm_call.c, engine/cvm_dasm.c,
+	engine/cvm_except.c, engine/cvmc.c, engine/cvmc_except.c,
+	engine/engine.h, engine/thread.c: remove "except" from the
+	call frame because it is no longer required; simplify the
+	"enter_try" CVM instruction.
+
 2002-04-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/pnettools.texi, image/Makefile.am, image/debug_reader.c,

@@ -52,9 +52,8 @@ extern	"C" {
 #define	CVM_OPER_STRING				21
 #define	CVM_OPER_WIDE				22
 #define	CVM_OPER_PREFIX				23
-#define	CVM_OPER_ENTER_TRY			24
-#define	CVM_OPER_METHOD				25
-#define	CVM_OPER_LD_INTERFACE		26
+#define	CVM_OPER_METHOD				24
+#define	CVM_OPER_LD_INTERFACE		25
 
 /*
  * Table of CVM opcodes.  This must be kept in sync with "cvm.h".
@@ -459,7 +458,7 @@ static CVMOpcode const prefixOpcodes[80] = {
 	/*
 	 * Prefixed exception handling opcodes.
 	 */
-	{"enter_try",		CVM_OPER_ENTER_TRY},
+	{"enter_try",		CVM_OPER_NONE},
 	{"throw",			CVM_OPER_NONE},
 	{"throw_caller",	CVM_OPER_NONE},
 
@@ -871,14 +870,6 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 				case CVM_OPER_NONE:
 				{
 					size = 2;
-				}
-				break;
-
-				case CVM_OPER_ENTER_TRY:
-				{
-					dest = pc + IL_READ_INT32(pc + 2);
-					fprintf(stream, "0x%08lX", (unsigned long)dest);
-					size = 6;
 				}
 				break;
 

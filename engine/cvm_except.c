@@ -79,9 +79,8 @@ break;
 case COP_PREFIX_ENTER_TRY:
 {
 	/* Enter a try context for this method */
-	thread->except = pc + IL_READ_INT32(pc + 2);
 	thread->exceptHeight = (ILUInt32)(stacktop - frame);
-	MODIFY_PC_AND_STACK(6, 0);
+	MODIFY_PC_AND_STACK(2, 0);
 }
 break;
 
@@ -89,9 +88,6 @@ break;
 throwException:
 {
 	if(!ILCoderPCToHandler(thread->process->coder, pc, 0))
-#if 0
-	if(thread->except == IL_INVALID_EXCEPT)
-#endif
 	{
 		goto throwCaller;
 	}
@@ -108,9 +104,6 @@ case COP_PREFIX_THROW:
 searchForHandler:
 	tempNum = (ILUInt32)(pc - (unsigned char *)(method->userData1));
 	pc = ILCoderPCToHandler(thread->process->coder, pc, 0);
-#if 0
-	pc = thread->except;
-#endif
 	while(tempNum < IL_READ_UINT32(pc) || tempNum >= IL_READ_UINT32(pc + 4))
 	{
 		pc += IL_READ_UINT32(pc + 8);
@@ -137,7 +130,6 @@ throwCaller:
 		callFrame = &(thread->frameStack[--(thread->numFrames)]);
 		methodToCall = callFrame->method;
 		pc = callFrame->pc;
-		thread->except = callFrame->except;
 		thread->exceptHeight = callFrame->exceptHeight;
 		frame = stackbottom + callFrame->frame;
 		method = methodToCall;

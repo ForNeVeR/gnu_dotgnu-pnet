@@ -275,7 +275,6 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	frame->method = thread->method;
 	frame->pc = IL_INVALID_PC;
 	frame->frame = thread->frame;
-	frame->except = thread->except;
 	frame->exceptHeight = thread->exceptHeight;
 
 	/* Call the method */
@@ -289,7 +288,6 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	{
 		thread->pc = pcstart;
 	}
-	thread->except = IL_INVALID_EXCEPT;
 	thread->exceptHeight = 0;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);
@@ -610,7 +608,6 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	frame->method = thread->method;
 	frame->pc = IL_INVALID_PC;
 	frame->frame = thread->frame;
-	frame->except = thread->except;
 	frame->exceptHeight = thread->exceptHeight;
 
 	/* Call the method */
@@ -624,7 +621,6 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	{
 		thread->pc = pcstart;
 	}
-	thread->except = IL_INVALID_EXCEPT;
 	thread->exceptHeight = 0;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);

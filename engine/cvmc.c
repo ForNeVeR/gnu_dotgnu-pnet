@@ -55,7 +55,7 @@ struct _tagILCVMCoder
 	ILCachePosn		codePosn;
 	unsigned char  *start;
 	unsigned char  *stackCheck;
-	unsigned char  *enterTry;
+	int				needTry;
 	unsigned char  *tryHandler;
 	ILUInt32		generation;
 	long			height;
@@ -232,7 +232,7 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	}
 	coder->start = 0;
 	coder->stackCheck = 0;
-	coder->enterTry = 0;
+	coder->needTry = 0;
 	coder->tryHandler = 0;
 	coder->generation = 1;
 	coder->height = 0;

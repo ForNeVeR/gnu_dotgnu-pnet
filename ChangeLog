@@ -32,6 +32,9 @@
 
 	* I18N/Common/Manager.cs: bugs in the handler-location code.
 
+	* runtime/System/Text/README: remove obsolete text now that the
+	encoding routines are in "I18N".
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

@@ -4,6 +4,10 @@
 	* csharp/lexer/ident1.il, csharp/lexer/ident1.jl: update
 	test case for new quoting format for UTF-8 identifiers.
 
+	* c/decl/Makefile.am, c/decl/struct1.3il, c/decl/struct1.c,
+	c/decl/struct1.il, c/decl/struct2.3il, c/decl/struct2.c,
+	c/decl/struct2.il: test cases for C structs.
+
 2003-03-09  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/expr/Makefile.am , csharp/expr/ternary1.cs,

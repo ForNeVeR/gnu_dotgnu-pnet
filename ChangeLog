@@ -9,6 +9,8 @@
 
 	* samples/mscorlib.dll: add a number of non-ECMA reflection attributes.
 
+	* support/dir.c: remove an outstanding reference to "d_type".
+
 2002-11-06  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_gc.c: Allow inherited methods to invoke GC.SuppressFinalize

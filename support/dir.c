@@ -221,7 +221,6 @@ ILDirEnt *ILReadDir(ILDir *directory)
 	allocatedResult = (ILDirEnt *)ILMalloc(sizeof(ILDirEnt));
 	if(allocatedResult != NULL)
 	{
-		allocatedResult->type = result->d_type;
 		allocatedResult->dptr = &(allocatedResult->de);
 		ILMemCpy(&(allocatedResult->de), result, sizeof(struct dirent));
 		GetDirEntryType(directory, allocatedResult);

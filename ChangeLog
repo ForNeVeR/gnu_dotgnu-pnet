@@ -1,4 +1,10 @@
 
+2002-11-03  Richard Baumann  <biochem333@nyc.rr.com>
+	
+	* runtime/System/Private/NumberFormatter.cs: Implement basic
+	Float and Double ToString() operations using the FormatReal
+	internal call.
+
 2002-11-02  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Math.cs: changed Math.Max(Decimal,Decimal) to call

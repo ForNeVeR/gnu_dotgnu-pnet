@@ -24,6 +24,7 @@ namespace System.Private
 
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 internal sealed class NumberFormatter
 {
@@ -319,15 +320,19 @@ internal sealed class NumberFormatter
 	public static String FormatSingle(float value, String format,
 									  NumberFormatInfo nfi)
 	{
-		return "";
+		return FormatReal(((double) value),"%.6g",16);
 	}
 
 	// Format a double value.
 	public static String FormatDouble(double value, String format,
 									  NumberFormatInfo nfi)
 	{
-		return "";
+		return FormatReal(value,"%.14g",24);
 	}
+
+	// Formats a double using the snprintf style <format> format.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String FormatReal(double d, String format, int buflen);
 
 	// Format a number in a specific base.
 	public static String FormatInBase(long value, int toBase, int numBits)

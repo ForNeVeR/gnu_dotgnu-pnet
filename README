@@ -10,11 +10,21 @@ DotGNU Portable.NET Library is part of the GNU project, developed
 as part of the DotGNU (http://www.dotgnu.org/) meta-project.
 
 The source code for the library is distributed under the terms of the
-GNU General Public License, with the following exception: if you link
-this library against your own program, then you do not need to release
-the source code for that program.  However, any changes that you make
-to the library itself, or to any native methods upon which the library
-relies, must be re-distributed in accordance with the terms of the GPL.
+GNU General Public License, with the following exception:
+
+	As a special exception, the copyright holders of this library give you
+	permission to link this library with independent modules to produce an
+	executable, regardless of the license terms of these independent modules,
+	and to copy and distribute the resulting executable under terms of your
+	choice, provided that you also meet, for each linked independent module,
+	the terms and conditions of the license of that module.  An independent
+	module is a module which is not derived from or based on this library.
+	If you modify this library, you may extend this exception to your
+	version of the library, but you are not obligated to do so.  If you do
+	not wish to do so, delete this exception statement from your version. 
+
+This exception is intended to be consistent with GNU Classpath
+(http://www.gnu.org/software/classpath/classpath.html).
 
 Contributions are welcome.  You must release your code under the terms
 of the GPL, and you must also agree to allow your code to be used with

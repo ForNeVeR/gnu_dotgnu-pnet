@@ -7,6 +7,8 @@
 
 	* NEWS, configure.in: update version for the "0.5.8" release.
 
+	* configure.in: update working version to "0.5.9".
+
 2003-06-17  James Michael DuPont  <mdupont777@yahoo.com>
 
 	* doc/cvm.dtd: DTD file for the CVM opcode definitions.

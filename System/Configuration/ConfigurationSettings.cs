@@ -25,11 +25,13 @@ namespace System.Configuration
 #if !ECMA_COMPAT
 
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Specialized;
 #if SECOND_PASS
 using System.Xml;
 #endif
+using Platform;
 
 public sealed class ConfigurationSettings
 {
@@ -94,13 +96,79 @@ public sealed class ConfigurationSettings
 	// The builtin configuration system handler.
 	private class BuiltinConfigurationSystem : IConfigurationSystem
 	{
+		// Internal state.
+		private bool initialized;
+
 		// Constructor.
-		public BuiltinConfigurationSystem() {}
+		public BuiltinConfigurationSystem()
+				{
+					initialized = false;
+				}
+
+		// Check for a machine configuration file's existence in a directory.
+		private static String CheckForMachineConfig(String dir)
+				{
+					// Bail out if the directory was not specified.
+					if(dir == null || dir.Length == 0)
+					{
+						return null;
+					}
+
+					// Build the full pathname and check for its existence.
+					String pathname = Path.Combine(dir, "machine.config");
+					if(!File.Exists(pathname))
+					{
+						return null;
+					}
+					return pathname;
+				}
+
+		// Load a configuration file and merge it with the current settings.
+		private void Load(String filename)
+				{
+					// TODO
+				}
 
 		// Initialize the configuration system.
 		public void Init()
 				{
-					// TODO
+					// Bail out if already initialized.
+					if(initialized)
+					{
+						return;
+					}
+					try
+					{
+						// Find the machine configuration file.
+						String machineConfigFile;
+						machineConfigFile = CheckForMachineConfig
+							(InfoMethods.GetUserStorageDir());
+						if(machineConfigFile == null)
+						{
+							machineConfigFile = CheckForMachineConfig
+								(InfoMethods.GetGlobalConfigDir());
+						}
+
+						// Find the application's configuration file.
+						String appConfigFile =
+							AppDomain.CurrentDomain.SetupInformation
+								.ConfigurationFile;
+
+						// Load the configuration files.
+						if(machineConfigFile != null)
+						{
+							Load(machineConfigFile);
+						}
+						if(appConfigFile != null && File.Exists(appConfigFile))
+						{
+							Load(appConfigFile);
+						}
+					}
+					finally
+					{
+						// The system has been initialized.
+						initialized = true;
+					}
 				}
 
 		// Get the object for a specific configuration key.

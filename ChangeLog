@@ -8,6 +8,10 @@
 	* runtime/System/AppDomain.cs, runtime/System/IO/Path.cs:
 	populate the "SetupInformation" property for the current domain.
 
+	* System/Configuration/ConfigurationSettings.cs,
+	System/Platform/InfoMethods.cs: locate the application and
+	machine configuration files for "System.Configuration".
+
 2003-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/GlobalProxySelection.cs, System/Net/HttpWebRequest.cs:

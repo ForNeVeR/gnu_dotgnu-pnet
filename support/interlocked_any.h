@@ -25,6 +25,15 @@
 #define IL_HAVE_INTERLOCK 1
 
 /*
+* Flush cache and set a memory barrier.
+*/
+static IL_INLINE void ILInterlockedMemoryBarrier()
+{
+	ILThreadAtomicStart();
+	ILThreadAtomicEnd();
+}
+
+/*
  * Compare and exchange two 32bit integers.
  */
 static IL_INLINE ILInt32 ILInterlockedCompareAndExchange(ILInt32 *destination, ILInt32 value,

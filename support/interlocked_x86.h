@@ -150,4 +150,14 @@ static IL_INLINE void *ILInterlockedExchangePointers(void **destination, void *v
 	return retval;
 }
 
+/*
+ * Flush cache and set a memory barrier.
+ */
+static IL_INLINE void ILInterlockedMemoryBarrier()
+{
+	ILInt32 x = 0;
+
+	ILInterlockedIncrement(&x);
+}
+
 #endif

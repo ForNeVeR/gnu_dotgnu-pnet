@@ -34,6 +34,7 @@ static ILCallFrame *AllocCallFrame(ILExecThread *thread)
 				printf("Entering %s::%s\n", \
 					   methodToCall->member.owner->name, \
 					   methodToCall->member.name); \
+				fflush(stdout); \
 			} while (0)
 #else
 #define	REPORT_METHOD_CALL()
@@ -338,6 +339,7 @@ popFrame:
 	/* Dump the name of the method we are returning to */
 	printf("Returning to %s::%s\n", method->member.owner->name,
 		   method->member.name);
+	fflush(stdout);
 #endif
 }
 break;

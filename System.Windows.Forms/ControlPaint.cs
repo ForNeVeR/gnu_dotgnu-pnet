@@ -89,7 +89,7 @@ public sealed class ControlPaint
 					b += (temp2 - temp1) * t3 / 60.0f;
 				else if(t3 < 180.0f)
 					b = temp2;
-				else
+				else if(t3 < 240.0f)
 					b += (temp2 - temp1) * (240.0f - t3) / 60.0f;
 			}
 		}

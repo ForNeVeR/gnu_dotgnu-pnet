@@ -1,4 +1,9 @@
 
+2004-07-10  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/ControlPaint.cs: Fix minor bug in HSB to RGB 
+	conversion (bug #9315).
+
 2004-07-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Basic/DefaultValueAttribute.cs, Basic/Ecma/DefaultValueAttribute.cs:

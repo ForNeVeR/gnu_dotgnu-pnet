@@ -1,3 +1,7 @@
+2003-07-26  Thong Nguyen  <tum@veridicus.com>
+
+	* System/Net/Sockets/TcpListener.cs: Small fix for TcpListener.Start.
+	
 2003-07-26  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Reflection/Module.cs,

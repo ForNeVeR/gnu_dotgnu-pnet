@@ -106,7 +106,7 @@ public class TcpListener
 	// Start the listener.
 	public void Start()
 			{
-				if(server != null)
+				if(server == null)
 				{
 					server = new Socket(AddressFamily.InterNetwork,
 										SocketType.Stream,

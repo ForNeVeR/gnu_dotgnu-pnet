@@ -54,27 +54,7 @@ internal sealed class Win32KeyProvider : IRegistryKeyProvider
 	// Determine if we should use the Win32 registry.
 	public static bool IsWin32()
 			{
-				try
-				{
-					// We query the information about the LocalMachine
-					// hive to determine if the Win32 registry routines
-					// are present or not.  The runtime engine will
-					// throw a "MissingMethodException" if it was unable
-					// to resolve the function (i.e. on non-Win32 platforms),
-					// or if "winapi" calling conventions are not supported.
-					uint numSubKeys, numValues;
-					RegQueryInfoKey(HiveToHKey(RegistryHive.LocalMachine),
-									null, IntPtr.Zero, IntPtr.Zero,
-									out numSubKeys, IntPtr.Zero,
-									IntPtr.Zero, out numValues,
-									IntPtr.Zero, IntPtr.Zero,
-									IntPtr.Zero, IntPtr.Zero);
-					return true;
-				}
-				catch(MissingMethodException)
-				{
-					return false;
-				}
+				return (Environment.OSVersion.Platform != PlatformID.Unix);
 			}
 
 	// Close a reference to this key and flush any modifications to disk.

@@ -1,4 +1,10 @@
 
+2003-07-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Microsoft/Win32/Win32KeyProvider.cs: detect Win32 in
+	a way that doesn't produce the side-effect of printing a low-level
+	debug message on non-Win32 platforms.
+
 2003-07-09  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebHeaderCollection.cs, resources/en_US/System/Arg.txt:

@@ -1,7 +1,7 @@
 /*
- * XmlException.cs - Implementation of the "System.XmlException" class.
+ * TODOAttribute.cs - Implementation of the "System.TODOAttribute" class.
  *
- * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,40 +17,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 namespace System.Xml
 {
 
-[TODO]
-public class XmlException : SystemException
+// This is a pseudo attribute which is used to tag classes, methods,
+// fields, properties, etc, that are not yet complete.  This allows
+// automated tools to scan the resulting binary to provide a list
+// of incomplete sections of the code.
+
+[AttributeUsage(AttributeTargets.All, AllowMultiple=false, Inherited=true)]
+internal sealed class TODOAttribute : Attribute
 {
-	//TODO: The line number stuff
+	public TODOAttribute()
+	{
+		// Nothing to do here.
+	}
 
-	// Constructors.
-	public XmlException()
-		: base(S._("Xml_Default")) {}
-	public XmlException(String msg)
-		: base(msg) {}
-	public XmlException(String msg, Exception inner)
-		: base(msg, inner) {}
-	
-	// Get the default message to use for this exception type.
-	public override String Message
-			{
-				get
-				{
-					String parentMsg = base.Message;
-					if(parentMsg != null)
-					{
-						return parentMsg;
-					}
-					else
-					{
-						return S._("Xml_Default");
-					}
-				}
-			}
+}; // class TODOAttribute
 
-}; //class XmlException
-
-}; //namespace System.Xml
+}; // namespace System.Xml

@@ -22,6 +22,14 @@
 	lots of small changes here and there to make "System" compile
 	using csc.
 
+	* System.Xml/.cvsignore, System.Xml/Makefile.am,
+	System.Xml/NameTable.cs, System.Xml/S.cs,
+	System.Xml/TODOAttribute.cs, System.Xml/XmlException.cs,
+	System.Xml/XmlNameTable.cs, System.Xml/XmlNamespaceManager.cs,
+	System.Xml/XmlParserContext.cs, System.Xml/XmlReader.cs,
+	resources/en_US/System.Xml/.cvsignore: lots of small changes here
+	and there to make "System.Xml" compile using csc.
+
 2002-04-20  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Compile fixes.

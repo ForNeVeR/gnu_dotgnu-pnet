@@ -24,7 +24,7 @@ namespace System.Xml
 using System;
 using System.Collections;
 
-public class NameTable
+public class NameTable : XmlNameTable
 {
 	private ArrayList myarraylist = new ArrayList();
 	
@@ -32,7 +32,7 @@ public class NameTable
 	
 	public override String Add(String key)
 	{
-		if (key == 0)
+		if (key == null)
 			throw new ArgumentNullException("key");		
 		
 		foreach(String s in myarraylist)
@@ -49,26 +49,23 @@ public class NameTable
 	
 	public override String Add(char[] key, int start, int len)
 	{
-		String tempstr = new String();
-		tempstr = key;		
-		
 		if (len < 0)
 			throw new ArgumentOutOfRangeException("len");
 		
-		if ((len > key.Length() - start) && (len != 0))
+		if ((len > key.Length - start) && (len != 0))
 			throw new IndexOutOfRangeException("key");
 		
-		if ((start < 0 || start >= key.Length()) && (len != 0))
+		if ((start < 0 || start >= key.Length) && (len != 0))
 			throw new IndexOutOfRangeException("start");
 		
-		String newstr = tempstr.SubString(start, len);
+		String newstr = new String(key, start, len);
 		
 		return Add(newstr);
 	}
 	
 	public override String Get(String value)
 	{
-		if (value == 0)
+		if (value == null)
 			throw new ArgumentNullException("value");		
 		
 		foreach(String s in myarraylist)
@@ -79,24 +76,21 @@ public class NameTable
 			}
 		}
 		
-		return 0;
+		return null;
 	}
 	
 	public override String Get(char[] value, int offset, int length)
 	{
-		String tempstr = new String();
-		tempstr = value;		
+		if (length < 0)
+			throw new ArgumentOutOfRangeException("length");
 		
-		if (len < 0)
-			throw new ArgumentOutOfRangeException("len");
-		
-		if ((len > value.Length() - start) && (len != 0))
+		if ((length > value.Length - offset) && (length != 0))
 			throw new IndexOutOfRangeException("value");
 		
-		if ((start < 0 || start >= value.Length()) && (len != 0))
-			throw new IndexOutOfRangeException("start");
+		if ((offset < 0 || offset >= value.Length) && (length != 0))
+			throw new IndexOutOfRangeException("offset");
 		
-		String newstr = tempstr.SubString(start, len);
+		String newstr = new String(value, offset, length);
 		
 		return Get(newstr);
 	}

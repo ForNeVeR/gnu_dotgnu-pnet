@@ -24,7 +24,7 @@ namespace System.Xml
 using System;
 using System.Collections;
 
-public class XmlNamespaceManager /* : IEnumerable */ //NO ENUMERATION FOR NOW
+public class XmlNamespaceManager : IEnumerable
 {
 	//TODO: The scope stuff
 	
@@ -32,10 +32,10 @@ public class XmlNamespaceManager /* : IEnumerable */ //NO ENUMERATION FOR NOW
 
 	public XmlNamespaceManager(XmlNameTable nameTable)
 			{
-				if (nameTable == 0)
+				if (nameTable == null)
 					throw new ArgumentNullException("nameTable");
 				
-				nametable = nametable;
+				this.nametable = nametable;
 				
 			}
 	
@@ -43,12 +43,12 @@ public class XmlNamespaceManager /* : IEnumerable */ //NO ENUMERATION FOR NOW
 	public virtual void AddNamespace(String prefix, String uri)
 			{
 				if (prefix == "xml" || prefix == "xmlns")
-					throw new ArgumentException("prefix", _("Xml_InvalidPrefix"));
+					throw new ArgumentException("prefix", S._("Xml_InvalidPrefix"));
 					
-				if (prefix == 0)
+				if (prefix == null)
 					throw new ArgumentNullException("prefix");
 					
-				if (uri == 0)
+				if (uri == null)
 					throw new ArgumentNullException("uri");
 
 				//<!> serves as seperator
@@ -63,6 +63,8 @@ public class XmlNamespaceManager /* : IEnumerable */ //NO ENUMERATION FOR NOW
 				//SOLUTION: This class will access the ArrayList in
 				//nametable directly to do the job								
 
+			#if false
+				// TODO: XmlNameTable does not have ArrayList - Rhys.
 				foreach(String s in nametable.ArrayList)
 				{
 					if (s == newentry)
@@ -72,30 +74,41 @@ public class XmlNamespaceManager /* : IEnumerable */ //NO ENUMERATION FOR NOW
 						return;
 					}
 				}
+			#endif
 				
 				return;									
 			}
 	
+	[TODO]
 	public virtual IEnumerator GetEnumerator() 
 			{
-				return nametable.GetEnumerator();		
+				// TODO: XmlNameTable does not have GetEnumerator - Rhys.
+				//return nametable.GetEnumerator();		
+				return null;
 			}
 
+	[TODO]
 	public virtual bool HasNamespace(String prefix) 
 			{
+			#if false
+				// TODO: nametable does not implement ICollection - Rhys.
 				foreach (String s in nametable)
 				{
 					if (s.Split("<!>")[0] == prefix)
 						return true;
 				}
+			#endif
 
 				return false;
 			}
 	
+	[TODO]
 	public virtual String LookupNamespace(String prefix) 
 			{
 				//The default namespace is stored with prefix String.Empty
 				//so there isn't need for special searching functions
+			#if false
+				// TODO: nametable does not implement ICollection - Rhys.
 				foreach (String s in nametable)
 				{
 					if (s.Split("<!>")[0] == prefix)
@@ -103,14 +116,18 @@ public class XmlNamespaceManager /* : IEnumerable */ //NO ENUMERATION FOR NOW
 							return s.Split("<!>")[1];
 						}
 				}
+			#endif
 				
 				return null;
 			}
 	
+	[TODO]
 	public virtual String LookupPrefix(String uri)
 			{
 				if (uri == null) return null;
 				
+			#if false
+				// TODO: nametable does not implement ICollection - Rhys.
 				foreach (String s in nametable)
 				{
 					if (s.Split("<!>")[1] == uri)
@@ -118,22 +135,23 @@ public class XmlNamespaceManager /* : IEnumerable */ //NO ENUMERATION FOR NOW
 							return s.Split("<!>")[0];
 						}
 				}
+			#endif
 				
 				return String.Empty;
 			}	
 	
 	[TODO]
-	public virtual bool PopScope() {}
+	public virtual bool PopScope() { return false; }
 	
 	[TODO]
 	public virtual void PushScope() {}
 
 	public virtual void RemoveNamespace(String prefix, String uri)
 			{
-				if (prefix == 0)
+				if (prefix == null)
 					throw new ArgumentNullException("prefix");
 					
-				if (uri == 0)
+				if (uri == null)
 					throw new ArgumentNullException("uri");				
 				
 				//Another ECMA mistake, nametable cannot remove an instance
@@ -142,7 +160,8 @@ public class XmlNamespaceManager /* : IEnumerable */ //NO ENUMERATION FOR NOW
 				//<!> serves as seperator
 				String newentry = prefix + "<!>" + uri;
 				
-				nametable.ArrayList.Remove(newentry);
+				// TODO: nametable does not have ArrayList - Rhys.
+				//nametable.ArrayList.Remove(newentry);
 				
 				return;							
 			}

@@ -35,11 +35,11 @@ using System.Text;
 public abstract class XmlReader
 {
 	//Variables
-	protected XmlNode root; //The root node, it can be used to access all other nodes
-	protected XmlNode currentnode; //The pointer node
+	internal XmlNode root; //The root node, it can be used to access all other nodes
+	internal XmlNode currentnode; //The pointer node
 
 	//Methods
-	protected XmlReader();
+	protected XmlReader() {}
 	
 	public abstract void Close();
 	
@@ -73,13 +73,14 @@ public abstract class XmlReader
 			}
 	
 	[TODO]
-	public virtual bool IsStartElement(String localname, String ns) {}
+	public virtual bool IsStartElement(String localname, String ns)
+			{ return false; }
 	
 	[TODO]
-	public virtual bool IsStartElement(String name) {}
+	public virtual bool IsStartElement(String name) { return false; }
 	
 	[TODO]
-	public virtual bool IsStartElement() {}
+	public virtual bool IsStartElement() { return false; }
 	
 	public abstract String LookupNamespace(String prefix);
 	
@@ -90,7 +91,7 @@ public abstract class XmlReader
 	public abstract bool MoveToAttribute(String name);
 	
 	[TODO]
-	public virtual XmlNodeType MoveToContent() {}
+	public virtual XmlNodeType MoveToContent() { return XmlNodeType.None; }
 	
 	public abstract bool MoveToElement();
 	
@@ -103,13 +104,14 @@ public abstract class XmlReader
 	public abstract bool ReadAttributeValue();
 	
 	[TODO]
-	public virtual String ReadElementString(String localname, String ns) {}
+	public virtual String ReadElementString(String localname, String ns)
+			{ return null; }
 	
 	[TODO]
-	public virtual String ReadElementString(String name) {}
+	public virtual String ReadElementString(String name) { return null; }
 	
 	[TODO]
-	public virtual String ReadElementString() {}
+	public virtual String ReadElementString() { return null; }
 	
 	[TODO]
 	public virtual void ReadEndElement() {}
@@ -155,6 +157,8 @@ public abstract class XmlReader
 			{ 
 				get
 				{
+					// TODO
+					return false;
 				}
 			}
 	
@@ -193,7 +197,7 @@ public abstract class XmlReader
 	public abstract XmlSpace XmlSpace { get; }
 
 	//Internal methods
-	protected internal bool IsNameChar(char theChar)
+	protected internal static bool IsNameChar(char theChar)
 			{
 				return (IsLetter(theChar) || IsDigit(theChar)
 					|| theChar == '.' || theChar == '-'
@@ -202,12 +206,12 @@ public abstract class XmlReader
 					|| IsExtender(theChar));
 			}
 	
-	protected internal bool IsLetter(char theChar)
+	protected internal static bool IsLetter(char theChar)
 			{
 				return (IsBaseChar(theChar) || IsIdeographic(theChar));
 			}
 	
-	protected internal bool IsDigit(char theChar)
+	protected internal static bool IsDigit(char theChar)
 			{
 				return ((theChar >= 0x0030 && theChar <= 0x0039) 
 					|| (theChar >= 0x0660 && theChar <= 0x0669) 
@@ -226,7 +230,7 @@ public abstract class XmlReader
 					|| (theChar >= 0x0F20 && theChar <= 0x0F29));		
 			}
 			
-	protected internal bool IsCombiningChar(char theChar)
+	protected internal static bool IsCombiningChar(char theChar)
 			{
 				return ((theChar >= 0x0300 && theChar <= 0x0345) 
 					|| (theChar >= 0x0360 && theChar <= 0x0361) 
@@ -318,7 +322,7 @@ public abstract class XmlReader
 					|| theChar == 0x3099 || theChar == 0x309A);
 			}
 			
-	protected internal bool IsExtender (char theChar)
+	protected internal static bool IsExtender (char theChar)
 			{
 				return (theChar == 0x00B7 || theChar == 0x02D0 
 					|| theChar == 0x02D1 || theChar == 0x0387 
@@ -329,7 +333,7 @@ public abstract class XmlReader
 					|| (theChar >= 0x30FC && theChar <= 0x30FE));
 			}
 
-	protected internal bool IsBaseChar (char theChar)
+	protected internal static bool IsBaseChar (char theChar)
 			{					
 				//188 lines of if statement, it's a record :-)
 				return ((theChar >= 0x0041 && theChar <= 0x005A) 
@@ -524,7 +528,7 @@ public abstract class XmlReader
 				//Long, wasn't it?									
 			} //end method IsBaseChar
 
-	protected internal bool IsIdeographic (char theChar)
+	protected internal static bool IsIdeographic (char theChar)
 			{
 				return ((theChar >= 0x4E00 && theChar <= 0x9FA5) 
 					|| theChar == 0x3007 

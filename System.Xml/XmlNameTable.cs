@@ -23,7 +23,7 @@ namespace System.Xml
 
 public abstract class XmlNameTable
 {
-	protected XmlNameTable();
+	protected XmlNameTable() {}
 	
 	public abstract String Add(String array);
 	

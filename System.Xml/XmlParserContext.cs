@@ -55,49 +55,49 @@ public class XmlParserContext
 		String docTypeName, String pubId, String sysId, String internalSubset, 
 		String baseURI, String xmlLang, XmlSpace xmlSpace)
 		:this(nt, nsMgr, docTypeName, pubId, sysId, 
-			internalSubset, baseUri, xmlLang, xmlSpace, null)	
+			internalSubset, baseURI, xmlLang, xmlSpace, null)	
 			{}
 			
 	public XmlParserContext(XmlNameTable nt, XmlNamespaceManager nsMgr, 
 		String docTypeName, String pubId, String sysId, String internalSubset, 
 		String baseURI, String xmlLang, XmlSpace xmlSpace, Encoding enc)
 			{
-				if (!((nsMgr.NameTable == nt) || (nt == 0)))
-					throw new XmlException("nt", _("Xml_WrongNameTable"));
+				if (!((nsMgr.NameTable == nt) || (nt == null)))
+					throw new XmlException(S._("Xml_WrongNameTable"));
 				
-				if (nt == 0)
+				if (nt == null)
 					nametable = nsMgr.NameTable;
 				else
 					nametable = nt;
 				
 				namespacemanager = nsMgr;
 					
-				if (docTypeName == 0)
+				if (docTypeName == null)
 					doctypename = String.Empty;
 				else	
 					doctypename = docTypeName;
 					
-				if (pubId == 0)
-					pubid = String.Empty;
+				if (pubId == null)
+					publicid = String.Empty;
 				else
-					pubid = pubId;
+					publicid = pubId;
 				
-				if (sysId == 0)
-					sysid = String.Empty;
+				if (sysId == null)
+					systemid = String.Empty;
 				else
-					sysid = sysId;
+					systemid = sysId;
 					
-				if (internalSubset == 0)
+				if (internalSubset == null)
 					internalsubset = String.Empty;
 				else
 					internalsubset = internalSubset;
 					
-				if (baseUri == 0)
+				if (baseURI == null)
 					baseuri = String.Empty;
 				else
-					baseuri = baseUri;
+					baseuri = baseURI;
 					
-				if (xmlLang == 0)
+				if (xmlLang == null)
 					xmllang = String.Empty;
 				else
 					xmllang = xmlLang;			
@@ -116,7 +116,7 @@ public class XmlParserContext
 				}
 				set
 				{
-					if (value == 0)
+					if (value == null)
 						baseuri = String.Empty;
 					else
 						baseuri = value;
@@ -131,7 +131,7 @@ public class XmlParserContext
 				}
 				set
 				{
-					if (value == 0)
+					if (value == null)
 						doctypename = String.Empty;
 					else
 						doctypename = value;
@@ -158,7 +158,7 @@ public class XmlParserContext
 				}
 				set
 				{
-					if (value == 0)
+					if (value == null)
 						internalsubset = String.Empty;
 					else
 						internalsubset = value;
@@ -197,7 +197,7 @@ public class XmlParserContext
 				}
 				set
 				{
-					if (value == 0)
+					if (value == null)
 						publicid = String.Empty;
 					else
 						publicid = value;
@@ -212,7 +212,7 @@ public class XmlParserContext
 				}
 				set
 				{
-					if (value == 0)
+					if (value == null)
 						systemid = String.Empty;
 					else
 						systemid = value;
@@ -227,7 +227,7 @@ public class XmlParserContext
 				}
 				set
 				{
-					if (value == 0)
+					if (value == null)
 						xmllang = String.Empty;
 					else
 						xmllang = value;

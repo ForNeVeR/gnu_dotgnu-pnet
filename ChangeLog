@@ -1,3 +1,9 @@
+
+2003-01-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Diagnostics/Debug.cs: implement the debug assert routines
+	using simple "report to stderr" behaviour.
+
 2003-01-12  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs: Attributes, Value, and Terminating

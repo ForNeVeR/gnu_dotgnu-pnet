@@ -1,2 +1,2 @@
 
-SUBDIRS = SqlSharp
+SUBDIRS = SqlSharp wdsl

@@ -1,5 +1,14 @@
 2004-06-12  Klaus Treichel  <ktreichel@web.de>
 
+	* configure.in: add creation of tools/wdsl/Makefile
+
+	* tools/Makefile.am: add wdsl to SUBDIRS
+
+	* tools/wdsl/.cvsignore, tools/wdsl/Makefile.am, tools/wdsl/wdsl.build,
+	tools/wdsl/wdsl-run.sh: added
+
+2004-06-12  Klaus Treichel  <ktreichel@web.de>
+
 	* tests/Makefile.am, tests/Test.build: add building of TestSystem.dll and
 	missing references building testcases to tests/Test.build
 

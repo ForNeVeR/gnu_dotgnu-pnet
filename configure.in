@@ -308,6 +308,7 @@ nunit20/nunit-console/Makefile
 tools/run_test.sh
 tools/Makefile
 tools/SqlSharp/Makefile
+tools/wdsl/Makefile
 jay/Makefile
 tests/Makefile
 ])

@@ -9,6 +9,9 @@
 	* System.Windows.Forms/FileDialog.cs: add directory scanning routines
 	to the "FileDialog" class.
 
+	* Xsharp/Display.cs: remove the "inMainLoop" check because it was
+	preventing the main loop from re-entering itself on the same thread.
+
 2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Font.cs: remove a public constructor that is no longer

@@ -1,4 +1,9 @@
 
+2004-04-24  Gopal V <gopalv82@yahoo.com>
+
+	* cscc/c/c_lvalue.tc: Allow array access to happen on Managed
+	arrays. (bug #8638)
+
 2004-04-22  Gopal V <gopalv82@yahoo.com>
 
 	* cscc/cscc.c: Add a NULL sentinel while doing an AddArgument.

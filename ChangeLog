@@ -1,3 +1,11 @@
+
+2004-05-28  Gopal V  <gopalv82@yahoo.com>
+
+	* samples/dcop/DcopBrowser.cs, samples/dcop/dcop.build, 
+	samples/dcop/Class.bmp, samples/dcop/DcopBrowser.bmp, 
+	samples/dcop/Interface.bmp, samples/dcop/Method.bmp: Add a 
+	sample DcopObject browser application.
+	
 2004-05-28  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/runtime/System/Threading/TestMonitor.cs: Added sleep

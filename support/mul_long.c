@@ -39,17 +39,17 @@ int ILUInt64MulOvf(ILUInt64 *product, ILUInt64 value1, ILUInt64 value2)
 	low1  = (ILUInt32)value1;
 	high2 = (ILUInt32)(value2 >> 32);
 	low2  = (ILUInt32)value2;
-	temp = low1 * low2;
+	temp = ((ILUInt64)low1) * ((ILUInt64)low2);
 	result1 = (ILUInt32)temp;
 	result2 = (ILUInt32)(temp >> 32);
-	temp = low1 * high2;
+	temp = ((ILUInt64)low1) * ((ILUInt64)high2);
 	orig = result2;
 	result2 += (ILUInt32)temp;
 	if(result2 < orig)
 		result3 = (((ILUInt32)(temp >> 32)) + 1);
 	else
 		result3 = ((ILUInt32)(temp >> 32));
-	temp = high1 * low2;
+	temp = ((ILUInt64)high1) * ((ILUInt64)low2);
 	orig = result2;
 	result2 += (ILUInt32)temp;
 	if(result2 < orig)
@@ -70,7 +70,7 @@ int ILUInt64MulOvf(ILUInt64 *product, ILUInt64 value1, ILUInt64 value2)
 		else
 			result4 = 0;
 	}
-	temp = high1 * high2;
+	temp = ((ILUInt64)high1) * ((ILUInt64)high2);
 	orig = result3;
 	result3 += (ILUInt32)temp;
 	if(result3 < orig)

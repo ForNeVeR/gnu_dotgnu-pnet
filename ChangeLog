@@ -10,6 +10,10 @@
 	for the Xft extension - currently commented out because it doesn't
 	work yet.
 
+	* Xsharp/XsharpSupport.c: don't destroy the "matched" pattern
+	after creating the font, or it will cause a segv when the font
+	is destroyed.
+
 2003-07-07  Gopal.V  <gopalv82@symonds.net>
  	
 	* System/Text/RegularExpressions/category.cs,

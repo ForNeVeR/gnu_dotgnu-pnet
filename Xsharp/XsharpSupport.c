@@ -225,11 +225,7 @@ void *XSharpCreateFont(Display *dpy, const char *family,
 	}
 
 	/* Create an Xft font based on the matched pattern */
-	font = XftFontOpenPattern(dpy, matched);
-	XftPatternDestroy(matched);
-
-	/* Return the font to the caller */
-	return font;
+	return XftFontOpenPattern(dpy, matched);
 
 #else /* !USE_XFT_EXTENSION */
 

@@ -23,4 +23,4 @@ libILLink_a_SOURCES = link_attrs.c \
 AM_CFLAGS = -I$(top_srcdir)/include
 
 install-exec-hook:
-	ln $(DESTDIR)$(bindir)/ilalink $(DESTDIR)$(bindir)/al
+	ln $(DESTDIR)$(bindir)/ilalink$(EXEEXT) $(DESTDIR)$(bindir)/al$(EXEEXT)

@@ -734,6 +734,16 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					}
 					types = MemberTypes.Constructor;
 					invokeAttr |= BindingFlags.DeclaredOnly;
+					// Specification say that if CreateInstance is present
+					// the lookup is treated as Public Instance by default
+					if((invokeAttr & BindingFlags.NonPublic) == 0)
+					{
+						invokeAttr |= BindingFlags.Public;
+					}
+					if((invokeAttr & BindingFlags.Static) == 0)
+					{
+						invokeAttr |= BindingFlags.Instance;
+					}
 					name = ".ctor";
 					if(target != null)
 					{

@@ -3,6 +3,10 @@
 
 	* System.Drawing/Image.cs: implement DeSerialization of Images.
 
+	* runtime/System/Reflection/ClrType.cs: Use public instance by
+	default if CreateInstance binding attribute is given without 
+	access specifiers.
+
 2004-05-25  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlTextReader.cs, System.Xml/Private/Attributes.cs: fix

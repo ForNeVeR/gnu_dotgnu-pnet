@@ -34,6 +34,9 @@ public sealed class Thread
 
 	// Internal runtime handle for the thread.
 	private IntPtr privateData;
+	
+	// Flagged true if the thread has been created from managed code.
+	private bool createdFromManagedCode;
 
 	// State information for abort exceptions.
 	private Object stateInfo;
@@ -72,6 +75,7 @@ public sealed class Thread
 				}
 				privateData = new IntPtr(0);
 				this.start = start;
+				this.createdFromManagedCode = true;
 
 				InitializeThread();
 			}

@@ -1,3 +1,9 @@
+
+2004-06-07  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/TextBox.cs: Fix flicker issue with scrollbars
+	in TextBox.
+
 2004-06-06  Thong Nguyen  <tum@veridicus.com>
 
 	* System.Drawing.Xsharp/DrawingGraphics.cs: Added implementation

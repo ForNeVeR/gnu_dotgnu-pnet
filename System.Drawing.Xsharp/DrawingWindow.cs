@@ -33,6 +33,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	private IToolkit toolkit;
 	private IToolkitEventSink sink;
 	private ButtonName button;
+	private bool hasCapture;
 
 	// Constructor.
 	public DrawingWindow(IToolkit toolkit, Widget parent,
@@ -89,6 +90,22 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				get
 				{
 					return Focused;
+				}
+			}
+
+	// Get or set the mouse capture on this window.  Mouse captures
+	// typically aren't required in the same place where Windows
+	// needs them.  It is also highly dangerous to allow X applications
+	// to capture the mouse without very careful thought.
+	bool IToolkitWindow.Capture
+			{
+				get
+				{
+					return hasCapture;
+				}
+				set
+				{
+					hasCapture = value;
 				}
 			}
 

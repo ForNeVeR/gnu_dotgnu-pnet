@@ -32,6 +32,7 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 	// Internal state.
 	private IToolkit toolkit;
 	private IToolkitEventSink sink;
+	private bool hasCapture;
 
 	// Constructor.
 	public DrawingTopLevelWindow(IToolkit toolkit, String name,
@@ -91,10 +92,26 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				}
 			}
 
+	// Get or set the mouse capture on this window.  Mouse captures
+	// typically aren't required in the same place where Windows
+	// needs them.  It is also highly dangerous to allow X applications
+	// to capture the mouse without very careful thought.
+	bool IToolkitWindow.Capture
+			{
+				get
+				{
+					return hasCapture;
+				}
+				set
+				{
+					hasCapture = value;
+				}
+			}
+
 	// Set the focus to this window.
 	void IToolkitWindow.Focus()
 			{
-				//TODO
+				RequestFocus();
 			}
 
 	// Destroy this window and all of its children.

@@ -1,4 +1,15 @@
 
+2003-08-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/Toolkit/IToolkitWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	System.Windows.Forms/Control.cs: add toolkit support for "Capture",
+	which is needed for Win32, but ignored under Xsharp since X already
+	does implicit captures between a mouse down and a mouse up.
+
 2003-07-31  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Reflection/ClrType.cs: Fix bug in TrimMembers and 

@@ -146,6 +146,20 @@ internal abstract class DrawingWindow : IToolkitWindow
 		}
 	}
 
+	// Get or set the mouse capture on this window.
+	bool IToolkitWindow.Capture
+	{
+		get
+		{
+			// TODO
+			return false;
+		}
+		set
+		{
+			// TODO
+		}
+	}
+
 	//Set the focus to this window
 	void IToolkitWindow.Focus()
 	{

@@ -392,17 +392,25 @@ public class Control : IWin32Window
 					}
 				}
 			}
-	[TODO]
 	public bool Capture
 			{
 				get
 				{
-					// TODO
-					return false;
+					if(toolkitWindow != null)
+					{
+						return toolkitWindow.Capture;
+					}
+					else
+					{
+						return false;
+					}
 				}
 				set
 				{
-					// TODO
+					if(toolkitWindow != null)
+					{
+						toolkitWindow.Capture = value;
+					}
 				}
 			}
 	public Rectangle ClientRectangle

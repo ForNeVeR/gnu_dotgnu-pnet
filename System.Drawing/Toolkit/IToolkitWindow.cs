@@ -43,6 +43,9 @@ public interface IToolkitWindow
 	// Determine if this window currently has the input focus.
 	bool Focused { get; }
 
+	// Get or set the mouse capture on this window.
+	bool Capture { get; set; }
+
 	// Set the focus to this window.
 	void Focus();
 

@@ -130,7 +130,10 @@ static ILObject *GetMarshallingInstance(ILExecThread *thread,
  */
 static void ThrowCustomError(ILExecThread *thread)
 {
-	/* TODO */
+	if(!ILExecThreadHasException(thread))
+	{
+		ILExecThreadThrowSystem(thread, "System.InvalidOperationException", 0);
+	}
 }
 
 void *_ILObjectToCustom(ILExecThread *thread, ILObject *obj,

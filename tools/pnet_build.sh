@@ -200,7 +200,7 @@ run $PNET_MAKE check
 # Build pnet.
 run cd "$PNET_BUILD_ACTUAL/pnet"
 run ./auto_gen.sh
-TREECC="$PNET_BUILD_ACTUAL/treecc/treecc -s $PNET_BUILD_ACTUAL/etc"
+TREECC="$PNET_BUILD_ACTUAL/treecc/treecc -s $PNET_BUILD_ACTUAL/treecc/etc"
 export TREECC
 run ./configure $PNET_CONFIGURE_OPTIONS
 run $PNET_MAKE

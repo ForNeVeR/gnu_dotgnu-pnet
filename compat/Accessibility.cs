@@ -129,13 +129,9 @@ public interface IAccessible
 	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC6F))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
-	[IndexerName("accHelpTopic")]
-	int this[[MarshalAs(UnmanagedType.BStr)] out String pszHelp,
-			 [In] [Optional] [MarshalAs(UnmanagedType.Struct)]
-			 		Object varChild]
-			{
-				get;
-			}
+	int get_accHelpTopic([MarshalAs(UnmanagedType.BStr)] out String pszHelp,
+			 			 [In] [Optional] [MarshalAs(UnmanagedType.Struct)]
+			 			 Object varChild);
 
 	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC6E))]
@@ -254,8 +250,7 @@ public interface IAccessible
 	[IndexerName("accHelp")]
 	String this[Object varChild] { get; }
 
-	[IndexerName("accHelpTopic")]
-	int this[out String pszHelp, Object varChild] { get; }
+	int get_accHelpTopic(out String pszHelp, Object varChild);
 
 	[IndexerName("accKeyboardShortcut")]
 	String this[Object varChild] { get; }

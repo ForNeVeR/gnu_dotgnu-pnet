@@ -362,13 +362,9 @@ public class AccessibleObject : MarshalByRefObject, IAccessible
 					throw new NotImplementedException();
 				}
 			}
-	[IndexerName("accHelpTopic")]
-	int IAccessible.this[out String pszHelp, Object varChild]
+	int IAccessible.get_accHelpTopic(out String pszHelp, Object varChild)
 			{
-				get
-				{
-					throw new NotImplementedException();
-				}
+				throw new NotImplementedException();
 			}
 	[IndexerName("accKeyboardShortcut")]
 	String IAccessible.this[Object varChild]

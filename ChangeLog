@@ -1,4 +1,8 @@
 
+2004-12-15  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/RichTextBox.cs: Add stub.
+
 2004-12-14  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* System.Windows.Forms/TextBox.cs: Fixed null-exception for set_Text;

@@ -404,7 +404,8 @@ namespace FormsTest
 			AddTreeViewTest(tabPage12);
 			AddListBoxTest(tabPage13);
 			AddFormsTest(tabPage14);
-			AddTransformsTest(tabPage15);
+			//TransformsTest chews too much CPU - remove for now - Rhys.
+			//AddTransformsTest(tabPage15);
 			AddScrollbarTest(tabPage18);
 			AddPropertyGridTest(tabPage19);
 			AddPictureBoxTest(tabPage21);

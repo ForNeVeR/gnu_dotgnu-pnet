@@ -38,6 +38,10 @@
 
 	* configure.in: put back the "chmod +x" for "ilrun.sh".
 
+	* samples/FormsTest.cs: comment out the call to "AddTransformsTest"
+	because that page chews too much CPU in the background, causing event
+	processing delays on the other tabs.
+
 2003-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, JScript/JScript.build, JScript/Makefile.am,

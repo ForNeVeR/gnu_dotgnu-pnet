@@ -709,30 +709,50 @@ VMCASE(COP_CALL_VIRTUAL):
 		methodToCall = ((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
 							->vtable[CVM_ARG_DWIDE2_SMALL];
 
-		/* Copy the state back into the thread object */
-		COPY_STATE_TO_THREAD();
-
-		/* Convert the method */
-		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
-		if(!tempptr)
+		/* Has the method already been converted? */
+		if(methodToCall->userData)
 		{
-			VERIFY_FAILED_EXCEPTION();
+			/* It is converted: allocate a new call frame */
+			ALLOC_CALL_FRAME();
+
+			/* Fill in the call frame details */
+			callFrame->method = method;
+			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(pc);
+			callFrame->frame = frame;
+			callFrame->exceptHeight = thread->exceptHeight;
+
+			/* Pass control to the new method */
+			pc = (unsigned char *)(methodToCall->userData);
+			method = methodToCall;
+			CVM_OPTIMIZE_BLOCK();
 		}
+		else
+		{
+			/* Copy the state back into the thread object */
+			COPY_STATE_TO_THREAD();
 
-		/* Allocate a new call frame */
-		ALLOC_CALL_FRAME();
+			/* Convert the method */
+			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+			if(!tempptr)
+			{
+				VERIFY_FAILED_EXCEPTION();
+			}
 
-		/* Fill in the call frame details */
-		callFrame->method = method;
-		callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(thread->pc);
-		callFrame->frame = thread->frame;
-		callFrame->exceptHeight = thread->exceptHeight;
+			/* Allocate a new call frame */
+			ALLOC_CALL_FRAME();
 
-		/* Restore the state information and jump to the new method */
-		RESTORE_STATE_FROM_THREAD();
-		pc = (unsigned char *)tempptr;
-		method = methodToCall;
-		CVM_OPTIMIZE_BLOCK();
+			/* Fill in the call frame details */
+			callFrame->method = method;
+			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(thread->pc);
+			callFrame->frame = thread->frame;
+			callFrame->exceptHeight = thread->exceptHeight;
+
+			/* Restore the state information and jump to the new method */
+			RESTORE_STATE_FROM_THREAD();
+			pc = (unsigned char *)tempptr;
+			method = methodToCall;
+			CVM_OPTIMIZE_BLOCK();
+		}
 	#ifdef IL_PROFILE_CVM_METHODS
 		++(method->count);
 	#endif
@@ -791,30 +811,50 @@ VMCASE(COP_CALL_INTERFACE):
 			MISSING_METHOD_EXCEPTION();
 		}
 
-		/* Copy the state back into the thread object */
-		COPY_STATE_TO_THREAD();
-
-		/* Convert the method */
-		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
-		if(!tempptr)
+		/* Has the method already been converted? */
+		if(methodToCall->userData)
 		{
-			VERIFY_FAILED_EXCEPTION();
+			/* It is converted: allocate a new call frame */
+			ALLOC_CALL_FRAME();
+
+			/* Fill in the call frame details */
+			callFrame->method = method;
+			callFrame->pc = CVM_ARG_CALLI_RETURN_SMALL(pc);
+			callFrame->frame = frame;
+			callFrame->exceptHeight = thread->exceptHeight;
+
+			/* Pass control to the new method */
+			pc = (unsigned char *)(methodToCall->userData);
+			method = methodToCall;
+			CVM_OPTIMIZE_BLOCK();
 		}
+		else
+		{
+			/* Copy the state back into the thread object */
+			COPY_STATE_TO_THREAD();
+	
+			/* Convert the method */
+			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+			if(!tempptr)
+			{
+				VERIFY_FAILED_EXCEPTION();
+			}
 
-		/* Allocate a new call frame */
-		ALLOC_CALL_FRAME();
+			/* Allocate a new call frame */
+			ALLOC_CALL_FRAME();
 
-		/* Fill in the call frame details */
-		callFrame->method = method;
-		callFrame->pc = CVM_ARG_CALLI_RETURN_SMALL(thread->pc);
-		callFrame->frame = thread->frame;
-		callFrame->exceptHeight = thread->exceptHeight;
+			/* Fill in the call frame details */
+			callFrame->method = method;
+			callFrame->pc = CVM_ARG_CALLI_RETURN_SMALL(thread->pc);
+			callFrame->frame = thread->frame;
+			callFrame->exceptHeight = thread->exceptHeight;
 
-		/* Restore the state information and jump to the new method */
-		RESTORE_STATE_FROM_THREAD();
-		pc = (unsigned char *)tempptr;
-		method = methodToCall;
-		CVM_OPTIMIZE_BLOCK();
+			/* Restore the state information and jump to the new method */
+			RESTORE_STATE_FROM_THREAD();
+			pc = (unsigned char *)tempptr;
+			method = methodToCall;
+			CVM_OPTIMIZE_BLOCK();
+		}
 	#ifdef IL_PROFILE_CVM_METHODS
 		++(method->count);
 	#endif

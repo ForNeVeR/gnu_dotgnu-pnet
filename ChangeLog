@@ -19,6 +19,9 @@
 	* configure.in: move AC_EXEEXT and AC_OBJEXT down to after
 	AC_PROG_CC, because they depend upon on it on some platforms.
 
+	* engine/cvm_call.c: short-cut "call_virtual" and "call_interface"
+	when the method has already been converted.
+
 2002-05-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_array.c: add special cases for 2-dimensional arrays.

@@ -43,6 +43,11 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 	ILNestedInfo *nested;
 	ILMember *member;
 	ILLibraryFind find;
+	ILUInt32 genericNum;
+	ILGenericPar *genPar;
+	ILGenericPar *newGenPar;
+	ILProgramItem *constraint;
+	ILTypeSpec *spec;
 
 	/* Convert the parent class reference */
 	parent = ILClass_ParentRef(classInfo);
@@ -223,6 +228,46 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		{
 			return 0;
 		}
+	}
+
+	/* Convert the generic parameters, if any */
+	genericNum = 0;
+	while((genPar = ILGenericParGetFromOwner
+				(ILToProgramItem(classInfo), genericNum)) != 0)
+	{
+		newGenPar = ILGenericParCreate
+			(linker->image, 0, ILToProgramItem(newClass), genericNum);
+		if(!newGenPar)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		if(!ILGenericParSetName(newGenPar, ILGenericPar_Name(genPar)))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		constraint = ILGenericPar_Constraint(genPar);
+		if(constraint)
+		{
+			spec = ILProgramItemToTypeSpec(constraint);
+			if(spec)
+			{
+				constraint = ILToProgramItem
+					(_ILLinkerConvertTypeSpec(linker, ILTypeSpec_Type(spec)));
+			}
+			else
+			{
+				constraint = ILToProgramItem
+					(_ILLinkerConvertClassRef(linker, (ILClass *)constraint));
+			}
+			if(!constraint)
+			{
+				return 0;
+			}
+			ILGenericParSetConstraint(newGenPar, constraint);
+		}
+		++genericNum;
 	}
 
 	/* Convert the class members */

@@ -142,6 +142,13 @@ static int ConvertToken(ILLinker *linker, ILMethod *method,
 		}
 		break;
 
+		case IL_META_TOKEN_METHOD_SPEC:
+		{
+			/* Convert a generic method specification */
+			/* TODO */
+		}
+		break;
+
 		default:
 		{
 			/* This token type is illegal in method bodies, so just zero it */
@@ -573,6 +580,11 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	ILException *exceptions;
 	ILUInt32 numParams;
 	char *newName = 0;
+	ILUInt32 genericNum;
+	ILGenericPar *genPar;
+	ILGenericPar *newGenPar;
+	ILProgramItem *constraint;
+	ILTypeSpec *spec;
 
 	/* Rename the method if it is within the "<Module>" class and private */
 	if(ILMethod_IsPrivate(method) && ILMethod_IsStatic(method) &&
@@ -786,6 +798,46 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 				goto setEntryPoint;
 			}
 		}
+	}
+
+	/* Convert the generic parameters, if any */
+	genericNum = 0;
+	while((genPar = ILGenericParGetFromOwner
+				(ILToProgramItem(method), genericNum)) != 0)
+	{
+		newGenPar = ILGenericParCreate(linker->image, 0,
+									   ILToProgramItem(newMethod), genericNum);
+		if(!newGenPar)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		if(!ILGenericParSetName(newGenPar, ILGenericPar_Name(genPar)))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		constraint = ILGenericPar_Constraint(genPar);
+		if(constraint)
+		{
+			spec = ILProgramItemToTypeSpec(constraint);
+			if(spec)
+			{
+				constraint = ILToProgramItem
+					(_ILLinkerConvertTypeSpec(linker, ILTypeSpec_Type(spec)));
+			}
+			else
+			{
+				constraint = ILToProgramItem
+					(_ILLinkerConvertClassRef(linker, (ILClass *)constraint));
+			}
+			if(!constraint)
+			{
+				return 0;
+			}
+			ILGenericParSetConstraint(newGenPar, constraint);
+		}
+		++genericNum;
 	}
 
 	/* Get the method's code.  If there is no code, then we are done */

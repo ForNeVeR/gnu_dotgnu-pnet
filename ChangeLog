@@ -6,6 +6,9 @@
 
 	* cscc/c_main.c: quote cpp arguments that contain spaces on MacOS X.
 
+	* cscc/cscc.c (IsSinglePlugin): single-file plugins end in "-s",
+	not ".s".
+
 2007-07-03  Thong Nguyen  <tum@veridicus.com>
 
 	* support/hb_gc.c: ILGCDeinit now performs a garbage collection

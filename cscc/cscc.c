@@ -904,7 +904,7 @@ static int IsSinglePlugin(const char *filename)
 	/* Determine if the executable name ends in "-s" */
 	if(len > 2 &&
 	   (filename[len - 1] == 's' || filename[len - 1] == 'S') &&
-	   filename[len - 2] == '.')
+	   filename[len - 2] == '-')
 	{
 		return 1;
 	}

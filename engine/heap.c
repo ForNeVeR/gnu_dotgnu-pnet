@@ -275,7 +275,7 @@ void _ILHeapFree(ILHeap *heap, void *block, ILUInt32 size)
 static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 {
 	/* Lay out the class's fields */
-	if(!_ILLayoutClass(thread, classInfo))
+	if(!_ILLayoutClass(classInfo))
 	{
 		/* TODO: Throw a "TypeInitializationException" */
 		return 0;

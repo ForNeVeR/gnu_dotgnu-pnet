@@ -106,7 +106,7 @@ static System_MArray *ConstructMArrayHeader(ILExecThread *thread,
 
 	/* Fill in the array header with the rank and element size values */
 	_this->rank = rank;
-	_this->elemSize = (ILInt32)ILSizeOfType(thread, elemType);
+	_this->elemSize = (ILInt32)ILSizeOfType(elemType);
 	return _this;
 }
 

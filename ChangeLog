@@ -17,6 +17,10 @@
 	* tests/runtime/System/TestString.cs: remove some currency and
 	number formatting tests because cultures make them unpredictable.
 
+	* I18N/Common/Manager.cs, I18N/Common/RegionData.cs,
+	I18N/Common/RegionName.cs, I18N/Common/RegionNameTable.cs:
+	remove redundant information from RegionNameTable.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Uri.cs: Remove multiple static constructors in the code.

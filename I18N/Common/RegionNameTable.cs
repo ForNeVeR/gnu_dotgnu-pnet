@@ -62,411 +62,410 @@ internal sealed class RegionNameTable
 	public static void PopulateNameTable()
 	{
 		Add(new RegionName
-			("SA", 0x0401, "SA", "SAU", "SAU",
-			 "Saudi Arabia", true, "\u0631.\u0633.\u200F", "SAR"));
+			(0x0401, "SA", "SAU", "SAU",
+			 true, "\u0631.\u0633.\u200F", "SAR"));
 		Add(new RegionName
-			("BG", 0x0402, "BG", "BGR", "BGR",
-			 "Bulgaria", true, "\u043B\u0432", "BGL"));
+			(0x0402, "BG", "BGR", "BGR",
+			 true, "\u043B\u0432", "BGL"));
 		Add(new RegionName
-			("ES", 0x0403, "ES", "ESP", "ESP",
-			 "Spain", true, "\u20AC", "EUR"));
+			(0x0403, "ES", "ESP", "ESP",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("TW", 0x0404, "TW", "TWN", "TWN",
-			 "Taiwan", true, "NT$", "TWD"));
+			(0x0404, "TW", "TWN", "TWN",
+			 true, "NT$", "TWD"));
 		Add(new RegionName
-			("CZ", 0x0405, "CZ", "CZE", "CZE",
-			 "Czech Republic", true, "K\u010D", "CZK"));
+			(0x0405, "CZ", "CZE", "CZE",
+			 true, "K\u010D", "CZK"));
 		Add(new RegionName
-			("DK", 0x0406, "DK", "DNK", "DNK",
-			 "Denmark", true, "kr", "DKK"));
+			(0x0406, "DK", "DNK", "DNK",
+			 true, "kr", "DKK"));
 		Add(new RegionName
-			("DE", 0x0407, "DE", "DEU", "DEU",
-			 "Germany", true, "\u20AC", "EUR"));
+			(0x0407, "DE", "DEU", "DEU",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("GR", 0x0408, "GR", "GRC", "GRC",
-			 "Greece", true, "\u20AC", "EUR"));
+			(0x0408, "GR", "GRC", "GRC",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("US", 0x0409, "US", "USA", "USA",
-			 "United States", false, "$", "USD"));
+			(0x0409, "US", "USA", "USA",
+			 false, "$", "USD"));
 		Add(new RegionName
-			("ES", 0x040A, "ES", "ESP", "ESP",
-			 "Spain", true, "\u20AC", "EUR"));
+			(0x040A, "ES", "ESP", "ESP",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("FI", 0x040B, "FI", "FIN", "FIN",
-			 "Finland", true, "\u20AC", "EUR"));
+			(0x040B, "FI", "FIN", "FIN",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("FR", 0x040C, "FR", "FRA", "FRA",
-			 "France", true, "\u20AC", "EUR"));
+			(0x040C, "FR", "FRA", "FRA",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("IL", 0x040D, "IL", "ISR", "ISR",
-			 "Israel", true, "\u20AA", "ILS"));
+			(0x040D, "IL", "ISR", "ISR",
+			 true, "\u20AA", "ILS"));
 		Add(new RegionName
-			("HU", 0x040E, "HU", "HUN", "HUN",
-			 "Hungary", true, "Ft", "HUF"));
+			(0x040E, "HU", "HUN", "HUN",
+			 true, "Ft", "HUF"));
 		Add(new RegionName
-			("IS", 0x040F, "IS", "ISL", "ISL",
-			 "Iceland", true, "kr.", "ISK"));
+			(0x040F, "IS", "ISL", "ISL",
+			 true, "kr.", "ISK"));
 		Add(new RegionName
-			("IT", 0x0410, "IT", "ITA", "ITA",
-			 "Italy", true, "\u20AC", "EUR"));
+			(0x0410, "IT", "ITA", "ITA",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("JP", 0x0411, "JP", "JPN", "JPN",
-			 "Japan", true, "\u00A5", "JPY"));
+			(0x0411, "JP", "JPN", "JPN",
+			 true, "\u00A5", "JPY"));
 		Add(new RegionName
-			("KR", 0x0412, "KR", "KOR", "KOR",
-			 "Korea", true, "\u20A9", "KRW"));
+			(0x0412, "KR", "KOR", "KOR",
+			 true, "\u20A9", "KRW"));
 		Add(new RegionName
-			("NL", 0x0413, "NL", "NLD", "NLD",
-			 "Netherlands", true, "\u20AC", "EUR"));
+			(0x0413, "NL", "NLD", "NLD",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("NO", 0x0414, "NO", "NOR", "NOR",
-			 "Norway", true, "kr", "NOK"));
+			(0x0414, "NO", "NOR", "NOR",
+			 true, "kr", "NOK"));
 		Add(new RegionName
-			("PL", 0x0415, "PL", "POL", "POL",
-			 "Poland", true, "z\u0142", "PLN"));
+			(0x0415, "PL", "POL", "POL",
+			 true, "z\u0142", "PLN"));
 		Add(new RegionName
-			("BR", 0x0416, "BR", "BRA", "BRA",
-			 "Brazil", true, "R$ ", "BRL"));
+			(0x0416, "BR", "BRA", "BRA",
+			 true, "R$ ", "BRL"));
 		Add(new RegionName
-			("RO", 0x0418, "RO", "ROM", "ROM",
-			 "Romania", true, "lei", "ROL"));
+			(0x0418, "RO", "ROM", "ROM",
+			 true, "lei", "ROL"));
 		Add(new RegionName
-			("RU", 0x0419, "RU", "RUS", "RUS",
-			 "Russia", true, "\u0440.", "RUR"));
+			(0x0419, "RU", "RUS", "RUS",
+			 true, "\u0440.", "RUR"));
 		Add(new RegionName
-			("HR", 0x041A, "HR", "HRV", "HRV",
-			 "Croatia", true, "kn", "HRK"));
+			(0x041A, "HR", "HRV", "HRV",
+			 true, "kn", "HRK"));
 		Add(new RegionName
-			("SK", 0x041B, "SK", "SVK", "SVK",
-			 "Slovakia", true, "Sk", "SKK"));
+			(0x041B, "SK", "SVK", "SVK",
+			 true, "Sk", "SKK"));
 		Add(new RegionName
-			("AL", 0x041C, "AL", "ALB", "ALB",
-			 "Albania", true, "Lek", "ALL"));
+			(0x041C, "AL", "ALB", "ALB",
+			 true, "Lek", "ALL"));
 		Add(new RegionName
-			("SE", 0x041D, "SE", "SWE", "SWE",
-			 "Sweden", true, "kr", "SEK"));
+			(0x041D, "SE", "SWE", "SWE",
+			 true, "kr", "SEK"));
 		Add(new RegionName
-			("TH", 0x041E, "TH", "THA", "THA",
-			 "Thailand", true, "\u0E3F", "THB"));
+			(0x041E, "TH", "THA", "THA",
+			 true, "\u0E3F", "THB"));
 		Add(new RegionName
-			("TR", 0x041F, "TR", "TUR", "TUR",
-			 "Turkey", true, "TL", "TRL"));
+			(0x041F, "TR", "TUR", "TUR",
+			 true, "TL", "TRL"));
 		Add(new RegionName
-			("PK", 0x0420, "PK", "PAK", "PAK",
-			 "Islamic Republic of Pakistan", true, "Rs", "PKR"));
+			(0x0420, "PK", "PAK", "PAK",
+			 true, "Rs", "PKR"));
 		Add(new RegionName
-			("ID", 0x0421, "ID", "IDN", "IDN",
-			 "Indonesia", true, "Rp", "IDR"));
+			(0x0421, "ID", "IDN", "IDN",
+			 true, "Rp", "IDR"));
 		Add(new RegionName
-			("UA", 0x0422, "UA", "UKR", "UKR",
-			 "Ukraine", true, "\u0433\u0440\u043D.", "UAH"));
+			(0x0422, "UA", "UKR", "UKR",
+			 true, "\u0433\u0440\u043D.", "UAH"));
 		Add(new RegionName
-			("BY", 0x0423, "BY", "BLR", "BLR",
-			 "Belarus", true, "\u0440.", "BYB"));
+			(0x0423, "BY", "BLR", "BLR",
+			 true, "\u0440.", "BYB"));
 		Add(new RegionName
-			("SI", 0x0424, "SI", "SVN", "SVN",
-			 "Slovenia", true, "SIT", "SIT"));
+			(0x0424, "SI", "SVN", "SVN",
+			 true, "SIT", "SIT"));
 		Add(new RegionName
-			("EE", 0x0425, "EE", "EST", "EST",
-			 "Estonia", true, "kr", "EEK"));
+			(0x0425, "EE", "EST", "EST",
+			 true, "kr", "EEK"));
 		Add(new RegionName
-			("LV", 0x0426, "LV", "LVA", "LVA",
-			 "Latvia", true, "Ls", "LVL"));
+			(0x0426, "LV", "LVA", "LVA",
+			 true, "Ls", "LVL"));
 		Add(new RegionName
-			("LT", 0x0427, "LT", "LTU", "LTU",
-			 "Lithuania", true, "Lt", "LTL"));
+			(0x0427, "LT", "LTU", "LTU",
+			 true, "Lt", "LTL"));
 		Add(new RegionName
-			("IR", 0x0429, "IR", "IRN", "IRN",
-			 "Iran", true, "\u0631\u064A\u0627\u0644", "IRR"));
+			(0x0429, "IR", "IRN", "IRN",
+			 true, "\u0631\u064A\u0627\u0644", "IRR"));
 		Add(new RegionName
-			("VN", 0x042A, "VN", "VNM", "VNM",
-			 "Viet Nam", true, "\u20AB", "VND"));
+			(0x042A, "VN", "VNM", "VNM",
+			 true, "\u20AB", "VND"));
 		Add(new RegionName
-			("AM", 0x042B, "AM", "ARM", "ARM",
-			 "Armenia", true, "\u0564\u0580.", "AMD"));
+			(0x042B, "AM", "ARM", "ARM",
+			 true, "\u0564\u0580.", "AMD"));
 		Add(new RegionName
-			("AZ", 0x042C, "AZ", "AZE", "AZE",
-			 "Azerbaijan", true, "man.", "AZM"));
+			(0x042C, "AZ", "AZE", "AZE",
+			 true, "man.", "AZM"));
 		Add(new RegionName
-			("ES", 0x042D, "ES", "ESP", "ESP",
-			 "Spain", true, "\u20AC", "EUR"));
+			(0x042D, "ES", "ESP", "ESP",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("MK", 0x042F, "MK", "MKD", "MKD",
-			 "Former Yugoslav Republic of Macedonia", true,
-			 "\u0434\u0435\u043D.", "MKD"));
+			(0x042F, "MK", "MKD", "MKD",
+			 true, "\u0434\u0435\u043D.", "MKD"));
 		Add(new RegionName
-			("ZA", 0x0436, "ZA", "ZAF", "ZAF",
-			 "South Africa", true, "R", "ZAR"));
+			(0x0436, "ZA", "ZAF", "ZAF",
+			 true, "R", "ZAR"));
 		Add(new RegionName
-			("GE", 0x0437, "GE", "GEO", "GEO",
-			 "Georgia", true, "Lari", "GEL"));
+			(0x0437, "GE", "GEO", "GEO",
+			 true, "Lari", "GEL"));
 		Add(new RegionName
-			("FO", 0x0438, "FO", "FRO", "FRO",
-			 "Faeroe Islands", true, "kr", "DKK"));
+			(0x0438, "FO", "FRO", "FRO",
+			 true, "kr", "DKK"));
 		Add(new RegionName
-			("IN", 0x0439, "IN", "IND", "IND",
-			 "India", true, "\u0930\u0941", "INR"));
+			(0x0439, "IN", "IND", "IND",
+			 true, "\u0930\u0941", "INR"));
 		Add(new RegionName
-			("MY", 0x043E, "MY", "MYS", "MYS",
-			 "Malaysia", true, "R", "MYR"));
+			(0x043E, "MY", "MYS", "MYS",
+			 true, "R", "MYR"));
 		Add(new RegionName
-			("KZ", 0x043F, "KZ", "KAZ", "KAZ",
-			 "Kazakhstan", true, "\u0422", "KZT"));
+			(0x043F, "KZ", "KAZ", "KAZ",
+			 true, "\u0422", "KZT"));
 		Add(new RegionName
-			("KG", 0x0440, "KG", "KGZ", "KGZ",
-			 "Kyrgyzstan", true, "\u0441\u043E\u043C", "KGS"));
+			(0x0440, "KG", "KGZ", "KGZ",
+			 true, "\u0441\u043E\u043C", "KGS"));
 		Add(new RegionName
-			("KE", 0x0441, "KE", "KEN", "KEN",
-			 "Kenya", false, "S", "KES"));
+			(0x0441, "KE", "KEN", "KEN",
+			 false, "S", "KES"));
 		Add(new RegionName
-			("UZ", 0x0443, "UZ", "UZB", "UZB",
-			 "Uzbekistan", true, "su'm", "UZS"));
+			(0x0443, "UZ", "UZB", "UZB",
+			 true, "su'm", "UZS"));
 		Add(new RegionName
-			("TA", 0x0444, "TA", "TAT", "TAT",
-			 "Tatarstan", true, "\u0440.", "RUR"));
+			(0x0444, "TA", "TAT", "TAT",
+			 true, "\u0440.", "RUR"));
 		Add(new RegionName
-			("IN", 0x0446, "IN", "IND", "IND",
-			 "India", true, "\u0930\u0941", "INR"));
+			(0x0446, "IN", "IND", "IND",
+			 true, "\u0930\u0941", "INR"));
 		Add(new RegionName
-			("IN", 0x0447, "IN", "IND", "IND",
-			 "India", true, "\u0930\u0941", "INR"));
+			(0x0447, "IN", "IND", "IND",
+			 true, "\u0930\u0941", "INR"));
 		Add(new RegionName
-			("IN", 0x0449, "IN", "IND", "IND",
-			 "India", true, "\u0930\u0941", "INR"));
+			(0x0449, "IN", "IND", "IND",
+			 true, "\u0930\u0941", "INR"));
 		Add(new RegionName
-			("IN", 0x044A, "IN", "IND", "IND",
-			 "India", true, "\u0930\u0941", "INR"));
+			(0x044A, "IN", "IND", "IND",
+			 true, "\u0930\u0941", "INR"));
 		Add(new RegionName
-			("IN", 0x044B, "IN", "IND", "IND",
-			 "India", true, "\u0930\u0941", "INR"));
+			(0x044B, "IN", "IND", "IND",
+			 true, "\u0930\u0941", "INR"));
 		Add(new RegionName
-			("IN", 0x044E, "IN", "IND", "IND",
-			 "India", true, "\u0930\u0941", "INR"));
+			(0x044E, "IN", "IND", "IND",
+			 true, "\u0930\u0941", "INR"));
 		Add(new RegionName
-			("IN", 0x044F, "IN", "IND", "IND",
-			 "India", true, "\u0930\u0941", "INR"));
+			(0x044F, "IN", "IND", "IND",
+			 true, "\u0930\u0941", "INR"));
 		Add(new RegionName
-			("MN", 0x0450, "MN", "MNG", "MNG",
-			 "Mongolia", true, "\u20AE", "MNT"));
+			(0x0450, "MN", "MNG", "MNG",
+			 true, "\u20AE", "MNT"));
 		Add(new RegionName
-			("ES", 0x0456, "ES", "ESP", "ESP",
-			 "Spain", true, "\u20AC", "EUR"));
+			(0x0456, "ES", "ESP", "ESP",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("IN", 0x0457, "IN", "IND", "IND",
-			 "India", true, "\u0930\u0941", "INR"));
+			(0x0457, "IN", "IND", "IND",
+			 true, "\u0930\u0941", "INR"));
 		Add(new RegionName
-			("SY", 0x045A, "SY", "SYR", "SYR",
-			 "Syria", true, "\u0644.\u0633.\u200F", "SYP"));
+			(0x045A, "SY", "SYR", "SYR",
+			 true, "\u0644.\u0633.\u200F", "SYP"));
 		Add(new RegionName
-			("MV", 0x0465, "MV", "MDV", "MDV",
-			 "Maldives", true, "\u0783.", "MVR"));
+			(0x0465, "MV", "MDV", "MDV",
+			 true, "\u0783.", "MVR"));
 		Add(new RegionName
-			("IQ", 0x0801, "IQ", "IRQ", "IRQ",
-			 "Iraq", true, "\u062F.\u0639.\u200F", "IQD"));
+			(0x0801, "IQ", "IRQ", "IRQ",
+			 true, "\u062F.\u0639.\u200F", "IQD"));
 		Add(new RegionName
-			("CN", 0x0804, "CN", "CHN", "CHN",
-			 "People's Republic of China", true, "\uFFE5", "CNY"));
+			(0x0804, "CN", "CHN", "CHN",
+			 true, "\uFFE5", "CNY"));
 		Add(new RegionName
-			("CH", 0x0807, "CH", "CHE", "CHE",
-			 "Switzerland", true, "SFr.", "CHF"));
+			(0x0807, "CH", "CHE", "CHE",
+			 true, "SFr.", "CHF"));
 		Add(new RegionName
-			("GB", 0x0809, "GB", "GBR", "GBR",
-			 "United Kingdom", true, "\u00A3", "GBP"));
+			(0x0809, "GB", "GBR", "GBR",
+			 true, "\u00A3", "GBP"));
 		Add(new RegionName
-			("MX", 0x080A, "MX", "MEX", "MEX",
-			 "Mexico", true, "$", "MXN"));
+			(0x080A, "MX", "MEX", "MEX",
+			 true, "$", "MXN"));
 		Add(new RegionName
-			("BE", 0x080C, "BE", "BEL", "BEL",
-			 "Belgium", true, "\u20AC", "EUR"));
+			(0x080C, "BE", "BEL", "BEL",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("CH", 0x0810, "CH", "CHE", "CHE",
-			 "Switzerland", true, "SFr.", "CHF"));
+			(0x0810, "CH", "CHE", "CHE",
+			 true, "SFr.", "CHF"));
 		Add(new RegionName
-			("BE", 0x0813, "BE", "BEL", "BEL",
-			 "Belgium", true, "\u20AC", "EUR"));
+			(0x0813, "BE", "BEL", "BEL",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("NO", 0x0814, "NO", "NOR", "NOR",
-			 "Norway", true, "kr", "NOK"));
+			(0x0814, "NO", "NOR", "NOR",
+			 true, "kr", "NOK"));
 		Add(new RegionName
-			("PT", 0x0816, "PT", "PRT", "PRT",
-			 "Portugal", true, "\u20AC", "EUR"));
+			(0x0816, "PT", "PRT", "PRT",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("SP", 0x081A, "SP", "SPB", "SPB",
-			 "Serbia", true, "Din.", "YUN"));
+			(0x081A, "SP", "SPB", "SPB",
+			 true, "Din.", "YUN"));
 		Add(new RegionName
-			("FI", 0x081D, "FI", "FIN", "FIN",
-			 "Finland", true, "\u20AC", "EUR"));
+			(0x081D, "FI", "FIN", "FIN",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("AZ", 0x082C, "AZ", "AZE", "AZE",
-			 "Azerbaijan", true, "man.", "AZM"));
+			(0x082C, "AZ", "AZE", "AZE",
+			 true, "man.", "AZM"));
 		Add(new RegionName
-			("BN", 0x083E, "BN", "BRN", "BRN",
-			 "Brunei Darussalam", true, "$", "BND"));
+			(0x083E, "BN", "BRN", "BRN",
+			 true, "$", "BND"));
 		Add(new RegionName
-			("UZ", 0x0843, "UZ", "UZB", "UZB",
-			 "Uzbekistan", true, "su'm", "UZS"));
+			(0x0843, "UZ", "UZB", "UZB",
+			 true, "su'm", "UZS"));
 		Add(new RegionName
-			("EG", 0x0C01, "EG", "EGY", "EGY",
-			 "Egypt", true, "\u062C.\u0645.\u200F", "EGP"));
+			(0x0C01, "EG", "EGY", "EGY",
+			 true, "\u062C.\u0645.\u200F", "EGP"));
 		Add(new RegionName
-			("HK", 0x0C04, "HK", "HKG", "HKG",
-			 "Hong Kong S.A.R.", true, "HK$", "HKD"));
+			(0x0C04, "HK", "HKG", "HKG",
+			 true, "HK$", "HKD"));
 		Add(new RegionName
-			("AT", 0x0C07, "AT", "AUT", "AUT",
-			 "Austria", true, "\u20AC", "EUR"));
+			(0x0C07, "AT", "AUT", "AUT",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("AU", 0x0C09, "AU", "AUS", "AUS",
-			 "Australia", true, "$", "AUD"));
+			(0x0C09, "AU", "AUS", "AUS",
+			 true, "$", "AUD"));
 		Add(new RegionName
-			("ES", 0x0C0A, "ES", "ESP", "ESP",
-			 "Spain", true, "\u20AC", "EUR"));
+			(0x0C0A, "ES", "ESP", "ESP",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("CA", 0x0C0C, "CA", "CAN", "CAN",
-			 "Canada", true, "$", "CAD"));
+			(0x0C0C, "CA", "CAN", "CAN",
+			 true, "$", "CAD"));
 		Add(new RegionName
-			("SP", 0x0C1A, "SP", "SPB", "SPB",
-			 "Serbia", true, "Din.", "YUN"));
+			(0x0C1A, "SP", "SPB", "SPB",
+			 true, "Din.", "YUN"));
 		Add(new RegionName
-			("LY", 0x1001, "LY", "LBY", "LBY",
-			 "Libya", true, "\u062F.\u0644.\u200F", "LYD"));
+			(0x1001, "LY", "LBY", "LBY",
+			 true, "\u062F.\u0644.\u200F", "LYD"));
 		Add(new RegionName
-			("SG", 0x1004, "SG", "SGP", "SGP",
-			 "Singapore", false, "$", "SGD"));
+			(0x1004, "SG", "SGP", "SGP",
+			 false, "$", "SGD"));
 		Add(new RegionName
-			("LU", 0x1007, "LU", "LUX", "LUX",
-			 "Luxembourg", true, "\u20AC", "EUR"));
+			(0x1007, "LU", "LUX", "LUX",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("CA", 0x1009, "CA", "CAN", "CAN",
-			 "Canada", true, "$", "CAD"));
+			(0x1009, "CA", "CAN", "CAN",
+			 true, "$", "CAD"));
 		Add(new RegionName
-			("GT", 0x100A, "GT", "GTM", "GTM",
-			 "Guatemala", true, "Q", "GTQ"));
+			(0x100A, "GT", "GTM", "GTM",
+			 true, "Q", "GTQ"));
 		Add(new RegionName
-			("CH", 0x100C, "CH", "CHE", "CHE",
-			 "Switzerland", true, "SFr.", "CHF"));
+			(0x100C, "CH", "CHE", "CHE",
+			 true, "SFr.", "CHF"));
 		Add(new RegionName
-			("DZ", 0x1401, "DZ", "DZA", "DZA",
-			 "Algeria", true, "\u062F.\u062C.\u200F", "DZD"));
+			(0x1401, "DZ", "DZA", "DZA",
+			 true, "\u062F.\u062C.\u200F", "DZD"));
 		Add(new RegionName
-			("MO", 0x1404, "MO", "MAC", "MCO",
-			 "Macau S.A.R.", true, "P", "MOP"));
+			(0x1404, "MO", "MAC", "MCO",
+			 true, "P", "MOP"));
 		Add(new RegionName
-			("LI", 0x1407, "LI", "LIE", "LIE",
-			 "Liechtenstein", true, "CHF", "CHF"));
+			(0x1407, "LI", "LIE", "LIE",
+			 true, "CHF", "CHF"));
 		Add(new RegionName
-			("NZ", 0x1409, "NZ", "NZL", "NZL",
-			 "New Zealand", true, "$", "NZD"));
+			(0x1409, "NZ", "NZL", "NZL",
+			 true, "$", "NZD"));
 		Add(new RegionName
-			("CR", 0x140A, "CR", "CRI", "CRI",
-			 "Costa Rica", true, "\u20A1", "CRC"));
+			(0x140A, "CR", "CRI", "CRI",
+			 true, "\u20A1", "CRC"));
 		Add(new RegionName
-			("LU", 0x140C, "LU", "LUX", "LUX",
-			 "Luxembourg", true, "\u20AC", "EUR"));
+			(0x140C, "LU", "LUX", "LUX",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("MA", 0x1801, "MA", "MAR", "MAR",
-			 "Morocco", true, "\u062F.\u0645.\u200F", "MAD"));
+			(0x1801, "MA", "MAR", "MAR",
+			 true, "\u062F.\u0645.\u200F", "MAD"));
 		Add(new RegionName
-			("IE", 0x1809, "IE", "IRL", "IRL",
-			 "Ireland", true, "\u20AC", "EUR"));
+			(0x1809, "IE", "IRL", "IRL",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("PA", 0x180A, "PA", "PAN", "PAN",
-			 "Panama", true, "B/.", "PAB"));
+			(0x180A, "PA", "PAN", "PAN",
+			 true, "B/.", "PAB"));
 		Add(new RegionName
-			("MC", 0x180C, "MC", "MCO", "MCO",
-			 "Principality of Monaco", true, "\u20AC", "EUR"));
+			(0x180C, "MC", "MCO", "MCO",
+			 true, "\u20AC", "EUR"));
 		Add(new RegionName
-			("TN", 0x1C01, "TN", "TUN", "TUN",
-			 "Tunisia", true, "\u062F.\u062A.\u200F", "TND"));
+			(0x1C01, "TN", "TUN", "TUN",
+			 true, "\u062F.\u062A.\u200F", "TND"));
 		Add(new RegionName
-			("ZA", 0x1C09, "ZA", "ZAF", "ZAF",
-			 "South Africa", true, "R", "ZAR"));
+			(0x1C09, "ZA", "ZAF", "ZAF",
+			 true, "R", "ZAR"));
 		Add(new RegionName
-			("DO", 0x1C0A, "DO", "DOM", "DOM",
-			 "Dominican Republic", true, "RD$", "DOP"));
+			(0x1C0A, "DO", "DOM", "DOM",
+			 true, "RD$", "DOP"));
 		Add(new RegionName
-			("OM", 0x2001, "OM", "OMN", "OMN",
-			 "Oman", true, "\u0631.\u0639.\u200F", "OMR"));
+			(0x2001, "OM", "OMN", "OMN",
+			 true, "\u0631.\u0639.\u200F", "OMR"));
 		Add(new RegionName
-			("JM", 0x2009, "JM", "JAM", "JAM",
-			 "Jamaica", false, "J$", "JMD"));
+			(0x2009, "JM", "JAM", "JAM",
+			 false, "J$", "JMD"));
 		Add(new RegionName
-			("VE", 0x200A, "VE", "VEN", "VEN",
-			 "Venezuela", true, "Bs", "VEB"));
+			(0x200A, "VE", "VEN", "VEN",
+			 true, "Bs", "VEB"));
 		Add(new RegionName
-			("YE", 0x2401, "YE", "YEM", "YEM",
-			 "Yemen", true, "\u0631.\u064A.\u200F", "YER"));
+			(0x2401, "YE", "YEM", "YEM",
+			 true, "\u0631.\u064A.\u200F", "YER"));
 		Add(new RegionName
-			("CB", 0x2409, "CB", "CAR", "CAR",
-			 "Caribbean", false, "$", "USD"));
+			(0x2409, "CB", "CAR", "CAR",
+			 false, "$", "USD"));
 		Add(new RegionName
-			("CO", 0x240A, "CO", "COL", "COL",
-			 "Colombia", true, "$", "COP"));
+			(0x240A, "CO", "COL", "COL",
+			 true, "$", "COP"));
 		Add(new RegionName
-			("SY", 0x2801, "SY", "SYR", "SYR",
-			 "Syria", true, "\u0644.\u0633.\u200F", "SYP"));
+			(0x2801, "SY", "SYR", "SYR",
+			 true, "\u0644.\u0633.\u200F", "SYP"));
 		Add(new RegionName
-			("BZ", 0x2809, "BZ", "BLZ", "BLZ",
-			 "Belize", true, "BZ$", "BZD"));
+			(0x2809, "BZ", "BLZ", "BLZ",
+			 true, "BZ$", "BZD"));
 		Add(new RegionName
-			("PE", 0x280A, "PE", "PER", "PER",
-			 "Peru", true, "S/.", "PEN"));
+			(0x280A, "PE", "PER", "PER",
+			 true, "S/.", "PEN"));
 		Add(new RegionName
-			("JO", 0x2C01, "JO", "JOR", "JOR",
-			 "Jordan", true, "\u062F.\u0627.\u200F", "JOD"));
+			(0x2C01, "JO", "JOR", "JOR",
+			 true, "\u062F.\u0627.\u200F", "JOD"));
 		Add(new RegionName
-			("TT", 0x2C09, "TT", "TTO", "TTO",
-			 "Trinidad and Tobago", true, "TT$", "TTD"));
+			(0x2C09, "TT", "TTO", "TTO",
+			 true, "TT$", "TTD"));
 		Add(new RegionName
-			("AR", 0x2C0A, "AR", "ARG", "ARG",
-			 "Argentina", true, "$", "ARS"));
+			(0x2C0A, "AR", "ARG", "ARG",
+			 true, "$", "ARS"));
 		Add(new RegionName
-			("LB", 0x3001, "LB", "LBN", "LBN",
-			 "Lebanon", true, "\u0644.\u0644.\u200F", "LBP"));
+			(0x3001, "LB", "LBN", "LBN",
+			 true, "\u0644.\u0644.\u200F", "LBP"));
 		Add(new RegionName
-			("ZW", 0x3009, "ZW", "ZWE", "ZWE",
-			 "Zimbabwe", false, "Z$", "ZWD"));
+			(0x3009, "ZW", "ZWE", "ZWE",
+			 false, "Z$", "ZWD"));
 		Add(new RegionName
-			("EC", 0x300A, "EC", "ECU", "ECU",
-			 "Ecuador", true, "$", "USD"));
+			(0x300A, "EC", "ECU", "ECU",
+			 true, "$", "USD"));
 		Add(new RegionName
-			("KW", 0x3401, "KW", "KWT", "KWT",
-			 "Kuwait", true, "\u062F.\u0643.\u200F", "KWD"));
+			(0x3401, "KW", "KWT", "KWT",
+			 true, "\u062F.\u0643.\u200F", "KWD"));
 		Add(new RegionName
-			("PH", 0x3409, "PH", "PHL", "PHL",
-			 "Republic of the Philippines", false, "Php", "PHP"));
+			(0x3409, "PH", "PHL", "PHL",
+			 false, "Php", "PHP"));
 		Add(new RegionName
-			("CL", 0x340A, "CL", "CHL", "CHL",
-			 "Chile", true, "$", "CLP"));
+			(0x340A, "CL", "CHL", "CHL",
+			 true, "$", "CLP"));
 		Add(new RegionName
-			("AE", 0x3801, "AE", "ARE", "ARE",
-			 "U.A.E.", true, "\u062F.\u0625.\u200F", "AED"));
+			(0x3801, "AE", "ARE", "ARE",
+			 true, "\u062F.\u0625.\u200F", "AED"));
 		Add(new RegionName
-			("UY", 0x380A, "UY", "URY", "URY",
-			 "Uruguay", true, "$U", "UYU"));
+			(0x380A, "UY", "URY", "URY",
+			 true, "$U", "UYU"));
 		Add(new RegionName
-			("BH", 0x3C01, "BH", "BHR", "BHR",
-			 "Bahrain", true, "\u062F.\u0628.\u200F", "BHD"));
+			(0x3C01, "BH", "BHR", "BHR",
+			 true, "\u062F.\u0628.\u200F", "BHD"));
 		Add(new RegionName
-			("PY", 0x3C0A, "PY", "PRY", "PRY",
-			 "Paraguay", true, "Gs", "PYG"));
+			(0x3C0A, "PY", "PRY", "PRY",
+			 true, "Gs", "PYG"));
 		Add(new RegionName
-			("QA", 0x4001, "QA", "QAT", "QAT",
-			 "Qatar", true, "\u0631.\u0642.\u200F", "QAR"));
+			(0x4001, "QA", "QAT", "QAT",
+			 true, "\u0631.\u0642.\u200F", "QAR"));
 		Add(new RegionName
-			("BO", 0x400A, "BO", "BOL", "BOL",
-			 "Bolivia", true, "$b", "BOB"));
+			(0x400A, "BO", "BOL", "BOL",
+			 true, "$b", "BOB"));
 		Add(new RegionName
-			("SV", 0x440A, "SV", "SLV", "SLV",
-			 "El Salvador", true, "$", "USD"));
+			(0x440A, "SV", "SLV", "SLV",
+			 true, "$", "USD"));
 		Add(new RegionName
-			("HN", 0x480A, "HN", "HND", "HND",
-			 "Honduras", true, "L.", "HNL"));
+			(0x480A, "HN", "HND", "HND",
+			 true, "L.", "HNL"));
 		Add(new RegionName
-			("NI", 0x4C0A, "NI", "NIC", "NIC",
-			 "Nicaragua", true, "C$", "NIO"));
+			(0x4C0A, "NI", "NIC", "NIC",
+			 true, "C$", "NIO"));
 		Add(new RegionName
-			("PR", 0x500A, "PR", "PRI", "PRI",
-			 "Puerto Rico", true, "$", "USD"));
+			(0x500A, "PR", "PRI", "PRI",
+			 true, "$", "USD"));
 	}
 
 	// Create the region name table.
@@ -499,7 +498,7 @@ internal sealed class RegionNameTable
 				int posn = numRegions - 1;
 				while(posn >= 0)
 				{
-					if(regions[posn].name == name)
+					if(regions[posn].twoLetterISOName == name)
 					{
 						return regions[posn];
 					}

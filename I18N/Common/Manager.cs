@@ -203,8 +203,8 @@ public class Manager
 				return name;
 			}
 
-	// Get the display name for a particular culture.
-	public static String GetDisplayName(RootCulture info)
+	// Get the culture handler for the current culture.
+	public static RootCulture GetCurrentCulture()
 			{
 				// Get the culture handler for the current culture.
 				int cultureID = CultureInfo.CurrentCulture.LCID;
@@ -222,9 +222,13 @@ public class Manager
 				{
 					culture = new CNen();
 				}
+				return culture;
+			}
 
-				// Build the display name from the language and country.
-				return GetCultureName(info, culture);
+	// Get the display name for a particular culture.
+	public static String GetDisplayName(RootCulture info)
+			{
+				return GetCultureName(info, GetCurrentCulture());
 			}
 
 	// Get the English name for a particular culture.

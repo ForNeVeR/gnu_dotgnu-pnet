@@ -29,29 +29,25 @@ internal sealed class RegionName
 {
 
 	// Accessible internal state.
-	public String name;
 	public int	  regionID;
 	public String twoLetterISOName;
 	public String threeLetterISOName;
 	public String threeLetterWindowsName;
-	public String englishName;
 	public bool   isMetric;
 	public String currencySymbol;
 	public String isoCurrencySymbol;
 
 	// Construct a "RegionName" instance.
-	public RegionName(String name, int regionID,
+	public RegionName(int regionID,
 					  String twoLetterISOName, String threeLetterISOName,
-					  String threeLetterWindowsName, String englishName,
+					  String threeLetterWindowsName,
 					  bool isMetric, String currencySymbol,
 					  String isoCurrencySymbol)
 			{
-				this.name                   = name;
 				this.regionID               = regionID;
 				this.twoLetterISOName       = twoLetterISOName;
 				this.threeLetterISOName     = threeLetterISOName;
 				this.threeLetterWindowsName = threeLetterWindowsName;
-				this.englishName            = englishName;
 				this.isMetric				= isMetric;
 				this.currencySymbol			= currencySymbol;
 				this.isoCurrencySymbol		= isoCurrencySymbol;

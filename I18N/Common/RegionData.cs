@@ -50,18 +50,15 @@ internal class RegionData : RegionInfo
 			{
 				get
 				{
-					// The "DisplayName" returns the name of the region
-					// in the installation language, not the current locale.
-					// In our system, the installation language is always
-					// going to be English.
-					return regionName.englishName;
+					// Use the current culture to determine the display name.
+					return (Manager.GetCurrentCulture()).ResolveCountry(Name);
 				}
 			}
 	public override String EnglishName
 			{
 				get
 				{
-					return regionName.englishName;
+					return (new CNen()).ResolveCountry(Name);
 				}
 			}
 	public override bool IsMetric
@@ -82,7 +79,7 @@ internal class RegionData : RegionInfo
 			{
 				get
 				{
-					return regionName.name;
+					return regionName.twoLetterISOName;
 				}
 			}
 	public override String ThreeLetterISORegionName

@@ -1,4 +1,24 @@
 
+0.6.4 (13 March 2004)
+
+	* Time functions.
+	* Use "__declspec(thread)" to mark thread-specific variables.
+	* Signal handling functions.
+	* Move the pthread routines out of libc into a separate library.
+	* Implement the rest of libpthread.
+	* Group file functions (e.g. "getgrent").
+	* Clean up the mmap-related stubs.
+	* Implement strerror, strsignal, perror, and psignal.
+	* Number conversion routines like atoi, strtod, etc.
+	* Remove "__module" and "__csharp__" as they are deprecated.
+	* Use the new-style syntax for accessing the C# library.
+	* Add <assembly/foo.h> files for importing C# assemblies.
+	* Add <csharp.h> to provide handy definitions for C# interoperation.
+	* Remove support for memory models as they are no longer required.
+	* Stub out some of the locale routines.
+	* Add pnetc.spec.in (Russell Stuart).
+	* Detect "ilranlib" correctly in "configure.in".
+
 0.6.2 (3 January 2004)
 
 	* Use the new assembly cache for installations.

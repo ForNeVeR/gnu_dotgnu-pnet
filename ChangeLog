@@ -3,6 +3,8 @@
 
 	* configure.in: detect "ilranlib" and set "RANLIB" appropriately.
 
+	* NEWS, configure.in: update version for the "0.6.4" release.
+
 2004-03-11  Russell Stuart  <russell@stuart.id.au>
 
 	* .cvsignore, configure.in, pnetc.spec.in: add an RPM spec

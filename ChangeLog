@@ -8,6 +8,9 @@
 	GetElementsByName to XmlElement and add names to the NameTable 
 	in GetElementsByName.
 
+	* System.Xml/Private/ElementList.cs : Fix enumerator over the 
+	ElementList to check for NodeMatches before providing a result.
+
 2004-04-28  Gopal V <gopalv82@yahoo.com>
 
 	* System.Xml/XmlDocument.cs: Add CreateNavigator protected method to

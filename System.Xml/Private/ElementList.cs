@@ -232,12 +232,18 @@ namespace System.Xml.Private
 						done = true;
 						return false;
 					}
-					else
+					else if(list.NodeMatches(current))
 					{
 						return true;
 					}
 				}
-				current = current.list.nextSibling;
+
+				do
+				{
+					current = list.GetFollowingNode(current);
+				}
+				while(current != null && list.NodeMatches(current) == false);
+				
 				if(current != null)
 				{
 					return true;

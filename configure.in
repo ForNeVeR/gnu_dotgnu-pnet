@@ -309,5 +309,6 @@ tools/run_test.sh
 tools/Makefile
 tools/SqlSharp/Makefile
 jay/Makefile
+tests/Makefile
 ])
 

@@ -1,3 +1,13 @@
+2004-06-11  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/.cvsignore, tests/Magefile.am, tests/Test.build: add building and
+	execution of testcases using nunit.
+
+	* tools/run_test.sh.in: add arg -C 4096 to ilrun for Testcorlib.dll and
+	some more library directories.  
+
+	* configure.in: add creation of tests/Makefile.
+
 2004-06-09  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: add creation of class/System.Runtime.Remoting/Makefile

@@ -35,11 +35,13 @@ LC_ALL=en_US
 export LANG LC_ALL
 
 # Run the test.
-exec "$ILRUN" -L"$PNETLIB_PATH"/runtime \
+exec "$ILRUN" -C 4096 \
+	-L"$PNETLIB_PATH"/runtime \
 	-L"$PNETLIB_PATH"/I18N \
 	-L"$PNETLIB_PATH"/System \
-	-L"$PNETLIB_PATH"/DotGNU.SSL \
 	-L"$PNETLIB_PATH"/System.Xml \
+	-L"$PNETLIB_PATH"/DotGNU.SSL \
+	-L"$PNETLIB_PATH"/System.EnterpriseServices \
 	-L"$PNETLIB_PATH"/compat \
 	-L"$PNETLIB_PATH"/JScript \
 	-L"$TOP_BUILDDIR"/nunit20/framework \
@@ -50,6 +52,9 @@ exec "$ILRUN" -L"$PNETLIB_PATH"/runtime \
 	-L"$TOP_BUILDDIR"/class/Mono.Security \
 	-L"$TOP_BUILDDIR"/class/Mono.Data.Tds \
 	-L"$TOP_BUILDDIR"/class/System.Data \
+	-L"$TOP_BUILDDIR"/class/System.Web \
+	-L"$TOP_BUILDDIR"/class/System.Web.Services \
+	-L"$TOP_BUILDDIR"/class/System.Runtime.Remoting \
 	-L"$TOP_BUILDDIR"/class/Mono.Directory.LDAP \
 	-L. \
 	"$TOP_BUILDDIR/nunit20/nunit-console/nunit-console.exe" $* \

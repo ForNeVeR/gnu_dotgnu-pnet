@@ -32,8 +32,13 @@ public
 #endif
 abstract class XPathNodeIterator : ICloneable
 {
-	public abstract Object Clone();
+	public abstract XPathNodeIterator Clone();
 	
+	Object ICloneable.Clone()
+			{
+				return Clone();
+			}
+
 	public abstract bool MoveNext();
 
 	[TODO]

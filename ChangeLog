@@ -1,3 +1,9 @@
+2004-01-19  Adam Ballai <adam@thefrontnetworks.net>
+	
+	* System.Xml/XPath/XPathNavigator.cs,
+	  System.Xml/XPath/XPathNodeIterator.cs:  Fix up for proper
+	  return values and formatting ready for implementation.
+
 2004-01-18  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs, System.Drawing/Toolkit/IToolkit.cs,

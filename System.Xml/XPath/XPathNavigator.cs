@@ -39,38 +39,43 @@ abstract class XPathNavigator : ICloneable
 	protected XPathNavigator() {}
 
 	// Implement the ICloneable interface.
-	public abstract Object Clone();
+	public abstract XPathNavigator Clone();
+
+	private Object ICloneable.Clone()
+			{
+				return Clone();
+			}
 
 	[TODO]
 	public virtual XmlNodeOrder ComparePosition(XPathNavigator nav)
-	{
-		 throw new NotImplementedException("ComparePosition");
-	}
+			{
+				 throw new NotImplementedException("ComparePosition");
+			}
 
 	[TODO]
 	public virtual XPathExpression Compile(String xpath)
-	{
-		 throw new NotImplementedException("Compile");
-	}
+			{
+				 throw new NotImplementedException("Compile");
+			}
 
 	[TODO]
 	public virtual Object Evaluate(XPathExpression expr)
-	{
-		 throw new NotImplementedException("Evaluate");
-	}
+			{
+				 throw new NotImplementedException("Evaluate");
+			}
 
 	[TODO]
 	public virtual Object Evaluate(XPathExpression expr, 
 									XPathNodeIterator context)
-	{
-		 throw new NotImplementedException("Evaluate");
-	}
+			{
+				 throw new NotImplementedException("Evaluate");
+			}
 
 	[TODO]
 	public virtual Object Evaluate(String xpath)
-	{
-		 throw new NotImplementedException("Evaluate");
-	}
+			{
+				 throw new NotImplementedException("Evaluate");
+			}
 
 	public abstract String GetAttribute(String localName, String namespaceURI);
 
@@ -78,23 +83,23 @@ abstract class XPathNavigator : ICloneable
 
 	[TODO]
 	public virtual bool IsDescendant(XPathNavigator nav)
-	{
-		 throw new NotImplementedException("IsDescendant");
-	}
+			{
+				 throw new NotImplementedException("IsDescendant");
+			}
 
 	public abstract bool IsSamePosition(XPathNavigator other);
 
 	[TODO]
 	public virtual bool Matches(XPathExpression expr)
-	{
-		 throw new NotImplementedException("Matches");
-	}
+			{
+				 throw new NotImplementedException("Matches");
+			}
 
 	[TODO]
 	public virtual bool Matches(String xpath)
-	{
-		 throw new NotImplementedException("Matches");
-	}
+			{
+				 throw new NotImplementedException("Matches");
+			}
 
 	public abstract bool MoveTo(XPathNavigator other);
 
@@ -108,9 +113,9 @@ abstract class XPathNavigator : ICloneable
 
 	[TODO]
 	public bool MoveToFirstNamespace()
-	{
-		 throw new NotImplementedException("MoveToFirstNamespace");
-	}
+			{
+				 throw new NotImplementedException("MoveToFirstNamespace");
+			}
 
 	public abstract bool MoveToFirstNamespace(
 								XPathNamespaceScope namespaceScope);
@@ -125,9 +130,9 @@ abstract class XPathNavigator : ICloneable
 
 	[TODO]
 	public bool MoveToNextNamespace()
-	{
-		 throw new NotImplementedException("MoveToNextNamespace");
-	}
+			{
+				 throw new NotImplementedException("MoveToNextNamespace");
+			}
 
 	public abstract bool MoveToNextNamespace(XPathNamespaceScope namespaceScope);
 
@@ -139,124 +144,124 @@ abstract class XPathNavigator : ICloneable
 
 	[TODO]
 	public virtual XPathNodeIterator Select(XPathExpression expr)
-	{
-		 throw new NotImplementedException("Select");
-	}
+			{
+				 throw new NotImplementedException("Select");
+			}
 
 	[TODO]
 	public virtual XPathNodeIterator Select(String xpath)
-	{
-		 throw new NotImplementedException("Select");
-	}
+			{
+				 throw new NotImplementedException("Select");
+			}
 
 	[TODO]
 	public virtual XPathNodeIterator SelectAncestors(XPathNodeType type, 
 													bool matchSelf)
-	{
-		 throw new NotImplementedException("SelectAncestors");
-	}
+			{
+				 throw new NotImplementedException("SelectAncestors");
+			}
 
 	[TODO]
 	public virtual XPathNodeIterator SelectAncestors(String name, 
 													String namespaceURI, 
 													bool matchSelf)
-	{
-		 throw new NotImplementedException("SelectAncestors");
-	}
+			{
+				 throw new NotImplementedException("SelectAncestors");
+			}
 
 	[TODO]
 	public virtual XPathNodeIterator SelectChildren(XPathNodeType type)
-	{
-		 throw new NotImplementedException("SelectChildren");
-	}
+			{
+				 throw new NotImplementedException("SelectChildren");
+			}
 
 	[TODO]
 	public virtual XPathNodeIterator SelectChildren(String name, 
 													String namespaceURI)
-	{
-		 throw new NotImplementedException("SelectChildren");
-	}
+			{
+				 throw new NotImplementedException("SelectChildren");
+			}
 
 	[TODO]
 	public virtual XPathNodeIterator SelectDescendants(XPathNodeType type, 
 														bool matchSelf)
-	{
-		 throw new NotImplementedException("SelectDescendants");
-	}
+			{
+				 throw new NotImplementedException("SelectDescendants");
+			}
 
 	[TODO]
 	public virtual XPathNodeIterator SelectDescendants(String name, 
 														String namespaceURI, 
 														bool matchSelf)
-	{
-		 throw new NotImplementedException("SelectDescendants");
-	}
+			{
+				 throw new NotImplementedException("SelectDescendants");
+			}
 
 	[TODO]
 	public override String ToString()
-	{
-		 throw new NotImplementedException("ToString");
-	}
+			{
+				 throw new NotImplementedException("ToString");
+			}
 
 	public abstract String BaseURI 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract bool HasAttributes 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract bool HasChildren 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract bool IsEmptyElement 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract String LocalName 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract String Name 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract XmlNameTable NameTable 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract String NamespaceURI 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract XPathNodeType NodeType 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract String Prefix 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract String Value 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 	public abstract String XmlLang 
-	{
-		get;
-	}
+			{
+				get;
+			}
 
 
 }; // class XPathNavigator

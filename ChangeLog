@@ -1,4 +1,9 @@
 
+2002-11-28  Michael Moore  <mtmoore@uga.edu>
+
+	* runtime/System/Private/DateTimeFormatter.cs: implement
+	DateTimeFormatter; g,f, and z formatting options not yet implemented.
+
 2002-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Activator.cs, runtime/System/Reflection/Assembly.cs,

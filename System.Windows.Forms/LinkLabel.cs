@@ -39,7 +39,6 @@ public class LinkLabel : Label, IButtonControl
 	private Color linkColor;
 	private LinkCollection links;
 	private bool linkVisited;
-	private string text;
 	private Color visitedLinkColor;
 
 	[TODO]
@@ -379,7 +378,7 @@ public class LinkLabel : Label, IButtonControl
 	}
 
 	[TODO]
-	public class LinkCollection : IList, ICollection, IEnumerable
+	public class LinkCollection : IList
 	{
 		private int count;
 		private bool isReadOnly;

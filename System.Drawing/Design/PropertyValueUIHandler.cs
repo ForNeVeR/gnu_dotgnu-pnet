@@ -1,8 +1,8 @@
 /*
- * ItemChangedEventArgs.cs - Implementation of the
- *			"System.Windows.Forms.ItemChangedEventArgs" class.
+ * PropertyValueUIHandler.cs - Implementation of the
+ *		"System.Drawing.Design.PropertyValueUIHandler" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,29 +19,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Windows.Forms
+namespace System.Drawing.Design
 {
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
-public class ItemChangedEventArgs : EventArgs
-{
-	// Internal state.
-	private int index;
+	using System;
+	using System.Collections;
+	using System.ComponentModel;
 
-	// Constructor.
-	internal ItemChangedEventArgs(int index)
-			{
-				this.index = index;
-			}
-
-	// Get the index of the item that changed.
-	public int Index
-			{
-				get
-				{
-					return index;
-				}
-			}
-
-}; // class ItemChangedEventArgs
-
-}; // namespace System.Windows.Forms
+	public delegate void PropertyValueUIHandler(ITypeDescriptorContext context, PropertyDescriptor propDesc, ArrayList valueUIItemList);
+#endif
+}

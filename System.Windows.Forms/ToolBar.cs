@@ -48,7 +48,6 @@ public class ToolBar : Control
 	private Size staticSize;
 	private int[] wrapData = new int[1] { 1 };
 
-	private bool entered = false;
 	private int mouseDownClick = -1;
 	private int mouseDownDrop = -1;
 	private int mouseHoverClick = -1;
@@ -1581,7 +1580,7 @@ public class ToolBar : Control
 
 
 
-	public class ToolBarButtonCollection : IList, ICollection, IEnumerable
+	public class ToolBarButtonCollection : IList
 	{
 		// Variables
 		private ToolBar owner;

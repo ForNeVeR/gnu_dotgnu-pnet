@@ -132,10 +132,10 @@ public class DataFormats
 				return f;
 			}
 		}
-		Format f = new Format(name, GetNextID());
-		formats.Add(f);
+		Format f1 = new Format(name, GetNextID());
+		formats.Add(f1);
 
-		return f;
+		return f1;
 	}
 
 

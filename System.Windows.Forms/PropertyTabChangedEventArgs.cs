@@ -23,6 +23,7 @@ namespace System.Windows.Forms
 {
 
 using System.Runtime.InteropServices;
+using System.Windows.Forms.Design;
 
 #if !ECMA_COMPAT
 [ComVisible(true)]

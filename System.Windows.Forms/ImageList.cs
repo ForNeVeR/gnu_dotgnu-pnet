@@ -24,7 +24,9 @@ namespace System.Windows.Forms
 {
 
 using System.Collections;
+#if CONFIG_COMPONENT_MODEL
 using System.ComponentModel;
+#endif
 using System.Drawing;
 
 
@@ -183,7 +185,7 @@ public sealed class ImageList
 
 
 	[TODO]
-	public sealed class ImageCollection : IList, ICollection, IEnumerable
+	public sealed class ImageCollection : IList
 	{
 		// Variables
 		private ImageList owner;
@@ -224,7 +226,6 @@ public sealed class ImageList
 	#endif
 
 		// Methods
-#if false // Icon is TODO
 		public void Add(Icon icon)
 		{
 			Image image;
@@ -233,7 +234,7 @@ public sealed class ImageList
 			{
 				throw new ArgumentNullException(/* TODO */);
 			}
-			if ((image = icon.ToBitmap) == null)
+			if ((image = icon.ToBitmap()) == null)
 			{
 				throw new ArgumentException(/* TODO */);
 			}
@@ -242,7 +243,7 @@ public sealed class ImageList
 		#endif
 			images.Add(image);
 		}
-#endif
+
 		public void Add(Image image)
 		{
 			if (image == null)

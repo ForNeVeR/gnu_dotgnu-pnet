@@ -92,21 +92,19 @@ public class Binding
 		}
 	}
 
-	[TODO]
 	public event ConvertEventHandler Format;
-
-	[TODO]
 	public event ConvertEventHandler Parse;
 
-
-	[TODO]
 	protected virtual void OnFormat( ConvertEventArgs cev )
 	{
+		if (Format != null)
+			Format(this, cev);
 	}
 
-	[TODO]
 	protected virtual void OnParse( ConvertEventArgs cev )
 	{
+		if (Parse != null)
+			Parse(this, cev);
 	}
 	
 }; // class Binding

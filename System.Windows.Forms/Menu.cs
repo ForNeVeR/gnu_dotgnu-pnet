@@ -340,7 +340,7 @@ public abstract class Menu
 	}
 
 	// Collection of menu items.
-	public class MenuItemCollection : IList, ICollection, IEnumerable
+	public class MenuItemCollection : IList
 	{
 		// Internal State.
 		private Menu owner;

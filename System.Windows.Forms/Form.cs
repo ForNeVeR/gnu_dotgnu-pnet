@@ -55,6 +55,8 @@ public class Form : ContainerControl
 	private Color transparencyKey;
 	private FormWindowState windowState;
 	internal static Form activeForm;
+	private bool showInTaskBar;
+	private bool controlBox;
 	
 	// Constructor.
 	public Form()
@@ -468,7 +470,11 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					SetWindowFlag(ToolkitWindowFlags.ShowInTaskBar, value);
+					if (value != showInTaskBar)
+					{
+						showInTaskBar = value;
+						SetWindowFlag(ToolkitWindowFlags.ShowInTaskBar, value);
+					}
 				}
 			}
 	public new Size Size
@@ -1257,16 +1263,16 @@ public class Form : ContainerControl
 			}
 
 	protected override Size ToolkitDrawSize
-	{
-		get
-		{
-			int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
-			ToolkitManager.Toolkit.GetWindowAdjust
-				(out leftAdjust, out topAdjust,
-				out rightAdjust, out bottomAdjust, GetFullFlags());
-			return new Size(leftAdjust + rightAdjust, topAdjust + bottomAdjust);
-		}
-	}
+			{
+				get
+				{
+					int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
+					ToolkitManager.Toolkit.GetWindowAdjust
+						(out leftAdjust, out topAdjust,
+						out rightAdjust, out bottomAdjust, GetFullFlags());
+					return new Size(leftAdjust + rightAdjust, topAdjust + bottomAdjust);
+				}
+			}
 	
 	// Convert a client size into a window bounds size.
 	internal override Size ClientToBounds(Size size)
@@ -1347,32 +1353,48 @@ public class Form : ContainerControl
 
 
 	protected override void OnMouseDown(MouseEventArgs e)
-	{
-		// If the mouse is in the non client area,
-		// it must be over the menu
-		if (e.Y < 0 && menu != null)
-			menu.OnMouseDown(e);
-				
-		base.OnMouseDown (e);
-	}
+			{
+				// If the mouse is in the non client area,
+				// it must be over the menu
+				if (e.Y < 0 && menu != null)
+					menu.OnMouseDown(e);
+						
+				base.OnMouseDown (e);
+			}
 
 	protected override void OnMouseLeave(EventArgs e)
-	{
-		// The menu needs to remove the highlighting
-		if (menu != null)
-			menu.OnMouseLeave();
-		base.OnMouseLeave (e);
-	}
+			{
+				// The menu needs to remove the highlighting
+				if (menu != null)
+					menu.OnMouseLeave();
+				base.OnMouseLeave (e);
+			}
 
 
 	protected override void OnMouseMove(MouseEventArgs e)
-	{
-		// If the mouse is in the non client area,
-		// it must be over the menu
-		if (e.Y < 0 && menu != null)
-			menu.OnMouseMove(e);
-		base.OnMouseMove (e);
-	}
+			{
+				// If the mouse is in the non client area,
+				// it must be over the menu
+				if (e.Y < 0 && menu != null)
+					menu.OnMouseMove(e);
+				base.OnMouseMove (e);
+			}
+
+	public bool ControlBox
+			{
+				get
+				{
+					return controlBox;
+				}
+				set
+				{
+					if (value != controlBox)
+					{
+						controlBox = value;
+						//TODO
+					}
+				}
+			}
 
 }; // class Form
 

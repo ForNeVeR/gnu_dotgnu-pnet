@@ -21,13 +21,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-using System.ComponentModel;
-using System.Collections;
-
-
 namespace System.Windows.Forms
 {
+
+using System;
+using System.Collections;
+#if CONFIG_COMPONENT_MODEL
+using System.ComponentModel;
+#endif
 
 [TODO]
 public class CurrencyManager: BindingManagerBase
@@ -138,9 +139,10 @@ public class CurrencyManager: BindingManagerBase
 	{
 	}
 	
-	[TODO]	
 	protected virtual void OnItemChanged( ItemChangedEventArgs ev )
 	{
+		if (ItemChanged != null)
+			ItemChanged(this, ev);
 	}
 
 	[TODO]	

@@ -114,7 +114,7 @@ public sealed class ToolTip : Component, IExtenderProvider
 				return String.Empty;
 			}
 //	[TODO]
-	public virtual bool CanExtend(Object target)
+	public bool CanExtend(Object target)
 			{
 				// TODO
 				return false;

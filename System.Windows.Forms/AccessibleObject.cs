@@ -223,7 +223,6 @@ public class AccessibleObject : MarshalByRefObject
 				return -1;
 			}
 
-#if __CSCC__
 	// Get the accessible object for the focused control.
 	public virtual AccessibleObject GetFocused()
 			{
@@ -280,6 +279,8 @@ public class AccessibleObject : MarshalByRefObject
 			{
 				// Nothing to do here.
 			}
+
+#if __CSCC__
 
 	// Stub out the IAccessible implementation, which we don't use.
 	// It is peculiar to Microsoft's COM implementation of accessibility.

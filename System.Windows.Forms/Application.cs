@@ -31,7 +31,6 @@ using System.Drawing.Toolkit;
 public sealed class Application
 {
 	// Internal state.
-	private static ApplicationContext context;
 	private static Request requests;
 	private static Request lastRequest;
 

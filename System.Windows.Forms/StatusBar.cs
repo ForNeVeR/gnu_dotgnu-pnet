@@ -318,7 +318,7 @@ namespace System.Windows.Forms
 		}
 		#endif // !CONFIG_COMPACT_FORMS
 
-		public class StatusBarPanelCollection : IList, ICollection, IEnumerable	
+		public class StatusBarPanelCollection : IList	
 		{	
 			private StatusBar owner;
 			private ArrayList list;
@@ -387,15 +387,15 @@ namespace System.Windows.Forms
 
 			int IList.Add(Object value)
 			{
-				int result;
-				result =  List.Add(value);
-				owner.Invalidate();
-				return result;
+				return Add(value as StatusBarPanel);				
 			}
 
 			public virtual int Add(StatusBarPanel value)
 			{
-				return List.Add(value);
+				int result = list.Add(value);
+				value.parent = owner;
+				owner.Invalidate();
+				return result;
 			}
 
 			public virtual StatusBarPanel Add(string text)

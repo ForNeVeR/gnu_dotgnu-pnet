@@ -1,8 +1,8 @@
 /*
- * ItemChangedEventArgs.cs - Implementation of the
- *			"System.Windows.Forms.ItemChangedEventArgs" class.
+ * ContentsResizedEventArgs.cs - Implementation of the
+ *			"System.Windows.Forms.ContentsResizedEventArgs" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,27 +21,25 @@
 
 namespace System.Windows.Forms
 {
+	using System;
+	using System.Drawing;
 
-public class ItemChangedEventArgs : EventArgs
-{
-	// Internal state.
-	private int index;
+	public class ContentsResizedEventArgs : EventArgs
+	{
+		private Rectangle newRectangle;
 
-	// Constructor.
-	internal ItemChangedEventArgs(int index)
+		public ContentsResizedEventArgs(Rectangle newRectangle)
+		{
+			this.newRectangle = newRectangle;
+		}
+		
+		public Rectangle NewRectangle
+		{
+			get
 			{
-				this.index = index;
+				return newRectangle;
 			}
+		}
+	}
 
-	// Get the index of the item that changed.
-	public int Index
-			{
-				get
-				{
-					return index;
-				}
-			}
-
-}; // class ItemChangedEventArgs
-
-}; // namespace System.Windows.Forms
+}

@@ -38,7 +38,7 @@ namespace System.Windows.Forms
 		private StatusBarPanelBorderStyle borderStyle;
 		private Icon icon;
 		private int minWidth;
-		private StatusBar parent;
+		internal StatusBar parent;
 		private StatusBarPanelStyle style;
 		private string text;
 		private string toolTipText;

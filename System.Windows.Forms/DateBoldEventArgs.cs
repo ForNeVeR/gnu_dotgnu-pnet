@@ -1,8 +1,8 @@
 /*
- * ItemChangedEventArgs.cs - Implementation of the
- *			"System.Windows.Forms.ItemChangedEventArgs" class.
+ * DateBoldEventArgs.cs - Implementation of the
+ *			"System.Windows.Forms.DateBoldEventArgs" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,27 +21,48 @@
 
 namespace System.Windows.Forms
 {
+using System;
 
-public class ItemChangedEventArgs : EventArgs
-{
-	// Internal state.
-	private int index;
+	public class DateBoldEventArgs : EventArgs
+	{
+		private DateTime start;
+		private int size;
+		private int[] daysToBold = null;
 
-	// Constructor.
-	internal ItemChangedEventArgs(int index)
+		internal DateBoldEventArgs(DateTime start, int size)
+		{
+			this.start = start;
+			this.size = size;
+		}
+
+		public int[] DaysToBold
+		{
+			get
 			{
-				this.index = index;
+				return daysToBold;
 			}
 
-	// Get the index of the item that changed.
-	public int Index
+			set
 			{
-				get
-				{
-					return index;
-				}
+				daysToBold = value;
 			}
+		}
 
-}; // class ItemChangedEventArgs
+		public DateTime StartDate
+		{
+			get
+			{
+				return start;
+			}
+		}
 
-}; // namespace System.Windows.Forms
+		public int Size
+		{
+			get
+			{
+				return size;
+			}
+		}
+	}
+
+}

@@ -33,7 +33,6 @@ namespace System.Windows.Forms
 		internal int childCount = 0;
 		internal TreeNode[] children;
 		internal TreeNode parent;
-		internal int line;
 		internal bool expanded;
 		internal Rectangle bounds;
 		internal Rectangle heirarchyMarkerBounds;

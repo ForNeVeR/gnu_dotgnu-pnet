@@ -1880,6 +1880,162 @@ ILString *_IL_Assembly_GetImageRuntimeVersion(ILExecThread *_thread,
 	}
 }
 
+ILObject *_IL_Assembly_GetModuleInternal(ILExecThread *_thread,
+										 ILObject *_this, ILString *name)
+{
+	char *nameutf = ILStringToUTF8(_thread, name);
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	ILModule *module;
+	ILFileDecl *file;
+	if(nameutf && image)
+	{
+		/* Search the module table for the name */
+		module = 0;
+		while((module = (ILModule *)ILImageNextToken
+				(image, IL_META_TOKEN_MODULE, module)) != 0)
+		{
+			if(!ILStrICmp(ILModule_Name(module), nameutf))
+			{
+				return _ILClrToObject
+					(_thread, module, "System.Reflection.Module");
+			}
+		}
+
+		/* Search the file table for the name */
+		file = 0;
+		while((file = (ILFileDecl *)ILImageNextToken
+				(image, IL_META_TOKEN_FILE, file)) != 0)
+		{
+			if(!ILStrICmp(ILFileDecl_Name(file), nameutf))
+			{
+				return _ILClrToObject
+					(_thread, file, "System.Reflection.Module");
+			}
+		}
+	}
+	return 0;
+}
+
+System_Array *_IL_Assembly_GetModules(ILExecThread *_thread,
+									  ILObject *_this,
+									  ILBool getResourceModules)
+{
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	unsigned long size;
+	ILModule *module;
+	ILFileDecl *file;
+	System_Array *array;
+	ILObject **buf;
+	if(image)
+	{
+		/* Count the number of relevant program items */
+		size = ILImageNumTokens(image, IL_META_TOKEN_MODULE);
+		file = 0;
+		while((file = (ILFileDecl *)ILImageNextToken
+				(image, IL_META_TOKEN_FILE, file)) != 0)
+		{
+			if(getResourceModules || ILFileDecl_HasMetaData(file))
+			{
+				++size;
+			}
+		}
+
+		/* Allocate the module array */
+		array = (System_Array *)ILExecThreadNew
+			(_thread, "[oSystem.Reflection.Module;", "(Ti)V", (ILVaInt)size);
+		if(!array)
+		{
+			return 0;
+		}
+		buf = (ILObject **)(ArrayToBuffer(array));
+
+		/* Fill the module array */
+		size = 0;
+		module = 0;
+		while((module = (ILModule *)ILImageNextToken
+				(image, IL_META_TOKEN_MODULE, module)) != 0)
+		{
+			buf[size] = _ILClrToObject
+				(_thread, module, "System.Reflection.Module");
+			if(!(buf[size]))
+			{
+				return 0;
+			}
+			++size;
+		}
+		file = 0;
+		while((file = (ILFileDecl *)ILImageNextToken
+				(image, IL_META_TOKEN_FILE, file)) != 0)
+		{
+			if(getResourceModules || ILFileDecl_HasMetaData(file))
+			{
+				buf[size] = _ILClrToObject
+					(_thread, file, "System.Reflection.Module");
+				if(!(buf[size]))
+				{
+					return 0;
+				}
+				++size;
+			}
+		}
+
+		/* Return the array to the caller */
+		return array;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+System_Array *_IL_Assembly_GetReferencedAssembliesInternal
+					(ILExecThread *_thread, ILObject *_this)
+{
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	unsigned long size;
+	ILAssembly *assem;
+	System_Array *array;
+	ILObject **buf;
+	if(image)
+	{
+		/* Get the number of assembly references */
+		size = ILImageNumTokens(image, IL_META_TOKEN_ASSEMBLY_REF);
+
+		/* Allocate the assembly array */
+		array = (System_Array *)ILExecThreadNew
+			(_thread, "[oSystem.Reflection.Assembly;", "(Ti)V", (ILVaInt)size);
+		if(!array)
+		{
+			return 0;
+		}
+		buf = (ILObject **)(ArrayToBuffer(array));
+
+		/* Fill the assembly */
+		size = 0;
+		assem = 0;
+		while((assem = (ILAssembly *)ILImageNextToken
+				(image, IL_META_TOKEN_ASSEMBLY_REF, assem)) != 0)
+		{
+			buf[size] = ImageToAssembly(_thread, ILAssemblyToImage(assem));
+			if(!(buf[size]))
+			{
+				return 0;
+			}
+			++size;
+		}
+
+		/* Return the array to the caller */
+		return array;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 #ifdef IL_CONFIG_REFLECTION
 
 /*
@@ -2788,7 +2944,18 @@ ILObject *_IL_Module_GetType(ILExecThread *_thread, ILObject *_this,
 							 ILString *name, ILBool throwOnError,
 							 ILBool ignoreCase)
 {
-	/* TODO */
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILModule *module;
+	ILFileDecl *file;
+	if((module = ILProgramItemToModule(item)) != 0)
+	{
+		return _ILGetTypeFromImage(_thread, ILProgramItem_Image(module),
+								   name, throwOnError, ignoreCase);
+	}
+	else if((file = ILProgramItemToFileDecl(item)) != 0)
+	{
+		/* TODO: metadata-based file modules */
+	}
 	return 0;
 }
 
@@ -2806,8 +2973,16 @@ System_Array *_IL_Module_GetTypes(ILExecThread *_thread, ILObject *_this)
  */
 ILBool _IL_Module_IsResource(ILExecThread *_thread, ILObject *_this)
 {
-	/* TODO */
-	return 0;
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILFileDecl *file = ILProgramItemToFileDecl(item);
+	if(file != 0)
+	{
+		return !ILFileDecl_HasMetaData(file);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*

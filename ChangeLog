@@ -1,4 +1,9 @@
 
+2003-08-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:
+	new internalcalls for "Assembly"; implement "Module" internalcalls.
+
 2003-08-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:

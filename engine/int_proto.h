@@ -294,6 +294,7 @@ extern ILObject * _IL_Assembly_GetManifestResourceStream(ILExecThread * _thread,
 extern ILString * _IL_Assembly_GetSatellitePath(ILExecThread * _thread, ILObject * _this, ILString * _p1);
 extern ILObject * _IL_Assembly_LoadFromFile(ILExecThread * _thread, ILString * _p1, ILInt32 * error, ILObject * _p3);
 extern ILString * _IL_Assembly_GetFullName(ILExecThread * _thread, ILObject * _this);
+extern ILObject * _IL_Assembly_GetModuleInternal(ILExecThread * _thread, ILObject * _this, ILString * _p1);
 extern ILObject * _IL_Assembly_GetEntryAssembly(ILExecThread * _thread);
 extern System_Array * _IL_Assembly_GetExportedTypes(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Assembly_GetFile(ILExecThread * _thread, ILObject * _this, ILString * _p1);
@@ -306,6 +307,8 @@ extern ILString * _IL_Assembly_GetLocation(ILExecThread * _thread, ILObject * _t
 extern void _IL_Assembly_FillAssemblyName(ILExecThread * _thread, ILObject * _this, ILObject * _p1);
 extern void _IL_Assembly_GetEntryPoint(ILExecThread * _thread, void * _result, ILObject * _this);
 extern ILString * _IL_Assembly_GetImageRuntimeVersion(ILExecThread * _thread, ILObject * _this);
+extern System_Array * _IL_Assembly_GetModules(ILExecThread * _thread, ILObject * _this, ILBool _p1);
+extern System_Array * _IL_Assembly_GetReferencedAssembliesInternal(ILExecThread * _thread, ILObject * _this);
 
 extern ILObject * _IL_MethodBase_GetMethodFromHandle(ILExecThread * _thread, void * _p1);
 extern ILObject * _IL_MethodBase_GetCurrentMethod(ILExecThread * _thread);

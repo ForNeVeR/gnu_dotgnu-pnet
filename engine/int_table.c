@@ -1566,6 +1566,7 @@ IL_METHOD_BEGIN(Assembly_Methods)
 	IL_METHOD("GetSatellitePath", "(ToSystem.String;)oSystem.String;", _IL_Assembly_GetSatellitePath, marshal_pppp)
 	IL_METHOD("LoadFromFile", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromFile, marshal_ppppp)
 	IL_METHOD("GetFullName", "(T)oSystem.String;", _IL_Assembly_GetFullName, marshal_ppp)
+	IL_METHOD("GetModuleInternal", "(ToSystem.String;)oSystem.Reflection.Module;", _IL_Assembly_GetModuleInternal, marshal_pppp)
 	IL_METHOD("GetEntryAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetEntryAssembly, marshal_pp)
 	IL_METHOD("GetExportedTypes", "(T)[oSystem.Type;", _IL_Assembly_GetExportedTypes, marshal_ppp)
 	IL_METHOD("GetFile", "(ToSystem.String;)oSystem.IO.FileStream;", _IL_Assembly_GetFile, marshal_pppp)
@@ -1578,6 +1579,8 @@ IL_METHOD_BEGIN(Assembly_Methods)
 	IL_METHOD("FillAssemblyName", "(ToSystem.Reflection.AssemblyName;)V", _IL_Assembly_FillAssemblyName, marshal_vppp)
 	IL_METHOD("GetEntryPoint", "(T)vSystem.RuntimeMethodHandle;", _IL_Assembly_GetEntryPoint, marshal_vppp)
 	IL_METHOD("GetImageRuntimeVersion", "(T)oSystem.String;", _IL_Assembly_GetImageRuntimeVersion, marshal_ppp)
+	IL_METHOD("GetModules", "(TZ)[oSystem.Reflection.Module;", _IL_Assembly_GetModules, marshal_pppb)
+	IL_METHOD("GetReferencedAssembliesInternal", "(T)[oSystem.Reflection.Assembly;", _IL_Assembly_GetReferencedAssembliesInternal, marshal_ppp)
 IL_METHOD_END
 
 #endif

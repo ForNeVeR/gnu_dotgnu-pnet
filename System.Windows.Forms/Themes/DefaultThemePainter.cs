@@ -1175,10 +1175,82 @@ internal class DefaultThemePainter : IThemePainter
 	// Draw a radio button control.
 	[TODO]
 	public virtual void DrawRadioButton
-				(Graphics graphics, int x, int y, int width,
-				 int height, ButtonState state)
+				(Graphics graphics, int x, int y, int width, int height,
+				 ButtonState state, Color foreColor, Color backColor,
+				 Brush backgroundBrush)
 			{
-				// TODO
+				// fill in the background
+				graphics.FillRectangle(backgroundBrush, x, y, width, height);
+
+				Color lightlight = ControlPaint.LightLight(backColor);
+				Color darkdark = ControlPaint.DarkDark(backColor);
+				Color light = ControlPaint.Light(backColor);
+				Color dark = ControlPaint.Dark(backColor);
+
+				Color fillColor = lightlight;
+				if ((state & ButtonState.Inactive) != 0)
+				{
+					fillColor = light;
+				}
+
+				// fill in center area
+				using (Brush b = new SolidBrush(fillColor))
+				{
+					graphics.FillEllipse(b, x+1, y+1, width-1, width-1);
+				}
+
+				if ((state & ButtonState.Flat) == 0)
+				{
+					// draw inner border
+					using (Pen p = new Pen(darkdark))
+					{
+						graphics.DrawArc(p, x+2, y+2, width-2, width-2, 30, 190);
+					}
+					using (Pen p = new Pen(light))
+					{
+						graphics.DrawArc(p, x+2, y+2, width-2, width-2, 220, 180);
+					}
+
+					// draw outer border
+					using (Pen p = new Pen(dark))
+					{
+						graphics.DrawArc(p, x+1, y+1, width, width, 30, 190);
+					}
+					using (Pen p = new Pen(lightlight))
+					{
+						graphics.DrawArc(p, x+1, y+1, width, width, 220, 180);
+					}
+				}
+				else
+				{
+					// draw border
+					using (Pen p = new Pen(darkdark))
+					{
+						graphics.DrawArc(p, x+1, y+1, width-1, width-1, 0, 360);
+					}
+				}
+
+				// draw check
+				if ((state & ButtonState.Checked) != 0)
+				{
+					Color checkColor = foreColor;
+					if ((state & ButtonState.Inactive) != 0)
+					{
+						checkColor = ControlPaint.Light(foreColor);
+					}
+
+					using (Brush b = new SolidBrush(checkColor))
+					{
+						if ((state & ButtonState.Flat) != 0)
+						{
+							graphics.FillEllipse(b, x+4, y+4, 6, 6);
+						}
+						else
+						{
+							graphics.FillEllipse(b, x+5, y+5, 5, 5);
+						}
+					}
+				}
 			}
 
 	// Draw a reversible frame.

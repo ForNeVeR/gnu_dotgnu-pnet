@@ -140,7 +140,12 @@ public abstract class ButtonBase : Control
 					base.ImeMode = value;
 				}
 			}
-	public virtual ContentAlignment TextAlign
+#if !CONFIG_COMPACT_FORMS
+	public
+#else
+	internal
+#endif
+	virtual ContentAlignment TextAlign
 			{
 				get
 				{
@@ -208,6 +213,12 @@ public abstract class ButtonBase : Control
 			{
 				// Nothing to do in this implementation.
 				base.Dispose(disposing);
+			}
+
+	// Get the correct string format, based on text alignment and RTL info.
+	internal StringFormat GetStringFormat()
+			{
+				return format;
 			}
 
 	// Set the correct string format, based on text alignment and RTL info.

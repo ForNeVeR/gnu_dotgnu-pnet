@@ -429,8 +429,12 @@ public sealed class ControlPaint
 				(Graphics graphics, int x, int y, int width,
 				 int height, ButtonState state)
 			{
-				ThemeManager.MainPainter.DrawRadioButton
-					(graphics, x, y, width, height, state);
+				using (Brush bg = new SolidBrush(SystemColors.Control))
+				{
+					ThemeManager.MainPainter.DrawRadioButton
+						(graphics, x, y, width, height, state,
+						 SystemColors.ControlText, SystemColors.Control, bg);
+				}
 			}
 
 	// Draw a reversible frame.

@@ -1,3 +1,28 @@
+2003-08-03  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ButtonBase.cs: some improvements for inheritors,
+	and some fixes for compact forms.
+
+	* System.Windows.Forms/ControlPaint.cs: update calls to the theme
+	painter for changes there.
+
+	* System.Windows.Forms/RadioButton.cs,
+	samples/samples.build, samples/radiobuttons.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs: apply patch #1785,
+	"RadioButton Implementation", from Mario Luca Bernardi, after cleaning
+	it up a bit.
+
+	* System.Windows.Forms/RadioButton.cs: refactor layout and drawing code
+	to depend more on the theme painter.
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: improvements and
+	fixes to radio button drawing code.
+
+	* System.Windows.Forms/Themes/IThemePainter.cs: modified DrawRadioButton
+	signature.
+
+	* samples/samples.build, samples/radiobuttons.cs: add radio buttons
+	example program.
 
 2003-08-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 

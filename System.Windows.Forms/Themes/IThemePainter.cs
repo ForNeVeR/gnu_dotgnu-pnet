@@ -104,8 +104,10 @@ internal interface IThemePainter
 				 		   int height, ButtonState state);
 
 	// Draw a radio button control.
-	void DrawRadioButton(Graphics graphics, int x, int y, int width,
-				 		 int height, ButtonState state);
+	void DrawRadioButton
+				(Graphics graphics, int x, int y, int width, int height,
+				 ButtonState state, Color foreColor, Color backColor,
+				 Brush backgroundBrush);
 
 	// Draw a reversible frame.
 	void DrawReversibleFrame

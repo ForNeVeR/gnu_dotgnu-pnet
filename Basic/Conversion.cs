@@ -23,6 +23,7 @@ namespace Microsoft.VisualBasic
 {
 
 using System;
+using System.Text;
 using Microsoft.VisualBasic.CompilerServices;
 
 [StandardModule]
@@ -32,17 +33,30 @@ public sealed class Conversion
 	private Conversion() {}
 
 	// Get the error message for a particular error number.
-	[TODO]
 	public static String ErrorToString()
 			{
-				// TODO
-				return null;
+				String desc = Information.Err().Description;
+				if(desc == null || desc == String.Empty)
+				{
+					return ErrorToString(Information.Err().Number);
+				}
+				else
+				{
+					return desc;
+				}
 			}
-	[TODO]
 	public static String ErrorToString(int errornumber)
 			{
-				// TODO
-				return null;
+				if(errornumber == 0)
+				{
+					return String.Empty;
+				}
+				String res = S._(String.Format("VB_Error{0}", errornumber));
+				if(res != null)
+				{
+					return res;
+				}
+				return S._("VB_ErrorDefault");
 			}
 
 	// Get the "fix" integer version of a value.
@@ -84,11 +98,42 @@ public sealed class Conversion
 			{
 				return Decimal.Truncate(Number);
 			}
-	[TODO]
 	public static Object Fix(Object Number)
 			{
-				// TODO
-				return Number;
+				if(Number == null)
+				{
+					throw new ArgumentNullException("Number");
+				}
+				switch(ObjectType.GetTypeCode(Number))
+				{
+					case TypeCode.Boolean:
+					case TypeCode.Char:
+					case TypeCode.SByte:
+					case TypeCode.Byte:
+					case TypeCode.Int16:
+					case TypeCode.UInt16:
+					case TypeCode.Int32:
+						return Fix(IntegerType.FromObject(Number));
+
+					case TypeCode.UInt32:
+					case TypeCode.Int64:
+					case TypeCode.UInt64:
+						return Number;
+
+					case TypeCode.Single:
+						return Fix(SingleType.FromObject(Number));
+
+					case TypeCode.Double:
+						return Fix(DoubleType.FromObject(Number));
+
+					case TypeCode.Decimal:
+						return Fix(DecimalType.FromObject(Number));
+
+					case TypeCode.String:
+						return Fix(DoubleType.FromString
+							(StringType.FromObject(Number)));
+				}
+				throw new ArgumentException(S._("VB_InvalidNumber"), "Number");
 			}
 
 	// Get the hexadecimal form of a value.
@@ -108,11 +153,42 @@ public sealed class Conversion
 			{
 				return Number.ToString("X");
 			}
-	[TODO]
 	public static String Hex(Object Number)
 			{
-				// TODO
-				return null;
+				if(Number == null)
+				{
+					throw new ArgumentNullException("Number");
+				}
+				switch(ObjectType.GetTypeCode(Number))
+				{
+					case TypeCode.Byte:
+						return Hex(ByteType.FromObject(Number));
+
+					case TypeCode.Int16:
+						return Hex(ShortType.FromObject(Number));
+
+					case TypeCode.Boolean:
+					case TypeCode.Char:
+					case TypeCode.SByte:
+					case TypeCode.UInt16:
+					case TypeCode.Int32:
+						return Hex(IntegerType.FromObject(Number));
+
+					case TypeCode.Int64:
+						return Hex(LongType.FromObject(Number));
+
+					case TypeCode.UInt32:
+					case TypeCode.UInt64:
+					case TypeCode.Single:
+					case TypeCode.Double:
+					case TypeCode.Decimal:
+						return Hex(LongType.FromObject(Number));
+
+					case TypeCode.String:
+						return Hex(LongType.FromString
+							(StringType.FromObject(Number)));
+				}
+				throw new ArgumentException(S._("VB_InvalidNumber"), "Number");
 			}
 
 	// Get the integer version of a value.
@@ -140,11 +216,42 @@ public sealed class Conversion
 			{
 				return Decimal.Floor(Number);
 			}
-	[TODO]
 	public static Object Int(Object Number)
 			{
-				// TODO
-				return Number;
+				if(Number == null)
+				{
+					throw new ArgumentNullException("Number");
+				}
+				switch(ObjectType.GetTypeCode(Number))
+				{
+					case TypeCode.Boolean:
+					case TypeCode.Char:
+					case TypeCode.SByte:
+					case TypeCode.Byte:
+					case TypeCode.Int16:
+					case TypeCode.UInt16:
+					case TypeCode.Int32:
+						return Int(IntegerType.FromObject(Number));
+
+					case TypeCode.UInt32:
+					case TypeCode.Int64:
+					case TypeCode.UInt64:
+						return Number;
+
+					case TypeCode.Single:
+						return Int(SingleType.FromObject(Number));
+
+					case TypeCode.Double:
+						return Int(DoubleType.FromObject(Number));
+
+					case TypeCode.Decimal:
+						return Int(DecimalType.FromObject(Number));
+
+					case TypeCode.String:
+						return Int(DoubleType.FromString
+							(StringType.FromObject(Number)));
+				}
+				throw new ArgumentException(S._("VB_InvalidNumber"), "Number");
 			}
 
 	// Get the octal form of a value.
@@ -160,33 +267,72 @@ public sealed class Conversion
 			{
 				return Oct((long)Number);
 			}
-	[TODO]
 	public static String Oct(long Number)
 			{
-				// TODO
-				return null;
+				int numDigits = 1;
+				long mask = 7;
+				while((Number & ~mask) != 0)
+				{
+					++numDigits;
+					mask |= (mask << 3);
+				}
+				StringBuilder builder = new StringBuilder();
+				while(numDigits > 0)
+				{
+					--numDigits;
+					mask = Number >> (numDigits * 3);
+					builder.Append((char)(0x30 + (int)(mask & 7)));
+				}
+				return builder.ToString();
 			}
-	[TODO]
 	public static String Oct(Object Number)
 			{
-				// TODO
-				return null;
+				if(Number == null)
+				{
+					throw new ArgumentNullException("Number");
+				}
+				switch(ObjectType.GetTypeCode(Number))
+				{
+					case TypeCode.Byte:
+						return Oct(ByteType.FromObject(Number));
+
+					case TypeCode.Int16:
+						return Oct(ShortType.FromObject(Number));
+
+					case TypeCode.Boolean:
+					case TypeCode.Char:
+					case TypeCode.SByte:
+					case TypeCode.UInt16:
+					case TypeCode.Int32:
+						return Oct(IntegerType.FromObject(Number));
+
+					case TypeCode.Int64:
+						return Oct(LongType.FromObject(Number));
+
+					case TypeCode.UInt32:
+					case TypeCode.UInt64:
+					case TypeCode.Single:
+					case TypeCode.Double:
+					case TypeCode.Decimal:
+						return Oct(LongType.FromObject(Number));
+
+					case TypeCode.String:
+						return Oct(LongType.FromString
+							(StringType.FromObject(Number)));
+				}
+				throw new ArgumentException(S._("VB_InvalidNumber"), "Number");
 			}
 
 	// Convert an object into a string.
-	[TODO]
 	public static String Str(Object Number)
 			{
-				// TODO
-				return null;
+				return StringType.FromObject(Number);
 			}
 
 	// Get the numeric value of a string.
-	[TODO]
 	public static double Val(String InputStr)
 			{
-				// TODO
-				return 0.0;
+				return DoubleType.FromString(InputStr);
 			}
 	public static double Val(Object Expression)
 			{

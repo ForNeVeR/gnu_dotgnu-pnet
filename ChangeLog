@@ -8,6 +8,9 @@
 	implement an ECMA-compliant version of hex and octal parsing;
 	recognise full-width hex digits.
 
+	* Basic/Conversion.cs, resources/en_US/Basic/Basic.txt,
+	Basic/ErrObject.cs: implement TODO's in "Conversion" and "ErrObject".
+
 2004-07-12  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/Form.cs: added missing stub for AllowTransparency.

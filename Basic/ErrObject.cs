@@ -338,10 +338,99 @@ public sealed class ErrObject
 			}
 
 	// Convert a HRESULT value into an error number.
-	[TODO]
 	internal static int HResultToNumber(int hr)
 			{
-				// TODO
+				if((((uint)hr) & 0xFFFF0000) == 0x800A0000)
+				{
+					return (hr & 0xFFFF);
+				}
+				switch((uint)hr)
+				{
+					case 0x80004001: return 445;
+					case 0x80004002: return 430;
+					case 0x80004004: return 287;
+					case 0x80020001: return 438;
+					case 0x80020003: return 438;
+					case 0x80020004: return 448;
+					case 0x80020005: return 13;
+					case 0x80020006: return 438;
+					case 0x80020007: return 446;
+					case 0x80020008: return 458;
+					case 0x8002000A: return 6;
+					case 0x8002000B: return 9;
+					case 0x8002000C: return 447;
+					case 0x8002000D: return 10;
+					case 0x8002000E: return 450;
+					case 0x8002000F: return 449;
+					case 0x80020011: return 451;
+					case 0x80020012: return 11;
+					case 0x80028016: return 32790;
+					case 0x80028017: return 461;
+					case 0x80028018: return 32792;
+					case 0x80028019: return 32793;
+					case 0x8002801C: return 32796;
+					case 0x8002801D: return 32797;
+					case 0x80028027: return 32807;
+					case 0x80028028: return 32808;
+					case 0x80028029: return 32809;
+					case 0x8002802A: return 32810;
+					case 0x8002802B: return 32811;
+					case 0x8002802C: return 32812;
+					case 0x8002802D: return 32813;
+					case 0x8002802E: return 32814;
+					case 0x8002802F: return 453;
+					case 0x800288BD: return 35005;
+					case 0x800288C5: return 35013;
+					case 0x80028CA0: return 13;
+					case 0x80028CA1: return 9;
+					case 0x80028CA2: return 57;
+					case 0x80028CA3: return 322;
+					case 0x80029C4A: return 48;
+					case 0x80029C83: return 40067;
+					case 0x80029C84: return 40068;
+					case 0x80030001: return 32774;
+					case 0x80030002: return 53;
+					case 0x80030003: return 76;
+					case 0x80030004: return 67;
+					case 0x80030005: return 70;
+					case 0x80030006: return 32772;
+					case 0x80030008: return 7;
+					case 0x80030012: return 67;
+					case 0x80030013: return 70;
+					case 0x80030019: return 32771;
+					case 0x8003001D: return 32773;
+					case 0x8003001E: return 32772;
+					case 0x80030020: return 75;
+					case 0x80030021: return 70;
+					case 0x80030050: return 58;
+					case 0x80030070: return 61;
+					case 0x800300FB: return 32792;
+					case 0x800300FC: return 53;
+					case 0x800300FD: return 32792;
+					case 0x800300FE: return 32768;
+					case 0x80030100: return 70;
+					case 0x80030101: return 70;
+					case 0x80030102: return 32773;
+					case 0x80030103: return 57;
+					case 0x80030104: return 32793;
+					case 0x80030105: return 32793;
+					case 0x80030106: return 32789;
+					case 0x80030107: return 32793;
+					case 0x80030108: return 32793;
+					case 0x80040112: return 429;
+					case 0x80040154: return 429;
+					case 0x800401E3: return 429;
+					case 0x800401E6: return 432;
+					case 0x800401EA: return 432;
+					case 0x800401F3: return 429;
+					case 0x800401F5: return 429;
+					case 0x800401FE: return 429;
+					case 0x80070005: return 70;
+					case 0x8007000E: return 7;
+					case 0x80070057: return 5;
+					case 0x800706BA: return 462;
+					case 0x80080005: return 429;
+				}
 				return hr;
 			}
 

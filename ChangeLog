@@ -26,6 +26,9 @@
 	* Xsharp/Widget.cs: don't change the cursor if the widget handle
 	has been destroyed (can happen when closing an MDI child).
 
+	* samples/forms/ImageViewer.cs, samples/forms/forms.build:
+	add a simple image viewing app, to demonstrate file dialogs and MDI.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

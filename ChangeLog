@@ -1,4 +1,16 @@
 
+2003-11-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Collections/IKeyedCollection.cs,
+	System/Collections/KeyedCollection.cs,
+	System/Collections/KeyedCollectionBase.cs,
+	System/Collections/KeyedCollectionNotificationDetails.cs,
+	System/Collections/Specialized/IOrderedDictionary.cs,
+	runtime/System/Collections/ComparisonType.cs,
+	runtime/System/Collections/IKeyComparer.cs,
+	runtime/System/Collections/KeyComparer.cs: add some new .NET
+	Framework 1.2 collection classes.
+
 2003-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/Stdio.cs, runtime/System/Console.cs,

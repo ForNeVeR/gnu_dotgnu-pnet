@@ -14,6 +14,8 @@
 	make sure that the "-ftarget-assembly-name" and "-fstdlib-name"
 	options are passed to all tools launched by "cscc".
 
+	* cscc/cscc.c: print a warning about "-fmetadata-only".
+
 2001-03-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, engine/lib_file.c, include/Makefile.am,

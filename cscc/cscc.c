@@ -363,6 +363,17 @@ int main(int argc, char *argv[])
 		if(status == 0 && executable_flag)
 		{
 			status = LinkExecutable();
+			if(status == 0 &&
+			   CCStringListContains(extension_flags, num_extension_flags,
+								    "metadata-only"))
+			{
+				fputs("******************** Warning **************************\n", stderr);
+				fputs("The compiler has only done a metadata compile, and\n", stderr);
+				fputs("not a full compile.  Portable.NET is a work in\n", stderr);
+				fputs("progress and full compilation is still to be completed.\n", stderr);
+				fputs("You will need to use Microsoft's compiler to build.\n", stderr);
+				fputs("*******************************************************\n", stderr);
+			}
 		}
 	}
 	else if(CCStringListContains(extension_flags, num_extension_flags,

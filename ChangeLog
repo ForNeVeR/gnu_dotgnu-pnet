@@ -1,4 +1,11 @@
 
+2002-07-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilalink/link_create.c, ilalink/link_field.c, ilalink/link_image.c,
+	ilalink/linker.h, image/image.c, image/image.h, image/pecoff_loader.c,
+	include/il_image.h: implement linker functionality for ".sdata"
+	and ".tls" sections.
+
 2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, cscc/csharp/cs_attrs.c: begin to put the

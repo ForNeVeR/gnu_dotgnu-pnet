@@ -138,6 +138,10 @@ int ILImageLoad(FILE *file, const char *filename,
 	unsigned long maxAddress;
 	unsigned long debugRVA;
 	unsigned long debugSize;
+	unsigned long dataRVA;
+	unsigned long dataSize;
+	unsigned long tlsRVA;
+	unsigned long tlsSize;
 	ILSectionMap *map;
 	ILSectionMap *newMap;
 	char *data;
@@ -266,6 +270,10 @@ int ILImageLoad(FILE *file, const char *filename,
 	maxAddress = 0;
 	debugRVA = 0;
 	debugSize = 0;
+	dataRVA = 0;
+	dataSize = 0;
+	tlsRVA = 0;
+	tlsSize = 0;
 	while(numSections > 0)
 	{
 		if(fread(buffer, 1, 40, file) != 40)
@@ -319,6 +327,16 @@ int ILImageLoad(FILE *file, const char *filename,
 		{
 			debugRVA = newMap->virtAddr;
 			debugSize = newMap->virtSize;
+		}
+		else if(!ILMemCmp(buffer, ".sdata\0\0", 8))
+		{
+			dataRVA = newMap->virtAddr;
+			dataSize = newMap->virtSize;
+		}
+		else if(!ILMemCmp(buffer, ".tls\0\0\0\0", 8))
+		{
+			tlsRVA = newMap->virtAddr;
+			tlsSize = newMap->virtSize;
 		}
 		if(newMap->realSize > 0)
 		{
@@ -513,6 +531,10 @@ int ILImageLoad(FILE *file, const char *filename,
 	(*image)->realStart = minAddress;
 	(*image)->debugRVA = debugRVA;
 	(*image)->debugSize = debugSize;
+	(*image)->dataRVA = dataRVA;
+	(*image)->dataSize = dataSize;
+	(*image)->tlsRVA = tlsRVA;
+	(*image)->tlsSize = tlsSize;
 
 	/* Load the meta information from the image */
 	if((flags & IL_LOADFLAG_NO_METADATA) == 0)
@@ -908,6 +930,22 @@ int _ILImageGetSection(ILImage *image, int section,
 			/* Debug information section */
 			*address = image->debugRVA;
 			*size = image->debugSize;
+		}
+		break;
+
+		case IL_SECTION_DATA:
+		{
+			/* Data section */
+			*address = image->dataRVA;
+			*size = image->dataSize;
+		}
+		break;
+
+		case IL_SECTION_TLS:
+		{
+			/* TLS data section */
+			*address = image->tlsRVA;
+			*size = image->tlsSize;
 		}
 		break;
 

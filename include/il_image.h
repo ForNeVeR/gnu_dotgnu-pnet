@@ -73,6 +73,8 @@ extern	"C" {
 #define	IL_SECTION_STRONG_NAMES	4	/* StrongNameSignature section */
 #define	IL_SECTION_CODE_MANAGER	5	/* Code Manager Table section */
 #define	IL_SECTION_DEBUG		6	/* Debug section */
+#define	IL_SECTION_DATA			7	/* Data section */
+#define	IL_SECTION_TLS			8	/* TLS data section */
 
 /*
  * Opaque data structure for a program context, that contains
@@ -253,6 +255,11 @@ unsigned long ILImageRealOffset(ILImage *image, unsigned long address);
  * Get the virtual address of a particular section.
  */
 unsigned long ILImageGetSectionAddr(ILImage *image, int section);
+
+/*
+ * Get the virtual size of a particular section.
+ */
+unsigned long ILImageGetSectionSize(ILImage *image, int section);
 
 /*
  * Get the address and size of a particular image section.

@@ -69,6 +69,8 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	linker->error = 0;
 	linker->resourceRVA = 0;
 	linker->entryPoint = 0;
+	linker->dataLength = 0;
+	linker->tlsLength = 0;
 
 	/* Ready to go */
 	return linker;

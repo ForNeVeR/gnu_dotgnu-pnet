@@ -36,6 +36,8 @@ int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename)
 	unsigned long blobLen;
 	ILUInt32 thisCompat;
 	ILUInt32 compat;
+	void *dataSection;
+	unsigned long dataLen;
 
 	/* Get the module and assembly for the final output image */
 	thisModule = (ILModule *)ILImageTokenInfo(linker->image,
@@ -142,6 +144,20 @@ int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename)
 	if(!_ILLinkerConvertClasses(linker, image))
 	{
 		return 0;
+	}
+
+	/* Copy the contents of the ".sdata" and ".tls" sections */
+	if(ILImageGetSection(image, IL_SECTION_DATA, &dataSection, &dataLen))
+	{
+		ILWriterOtherWrite(linker->writer, ".sdata", IL_IMAGESECT_SDATA,
+						   dataSection, dataLen);
+		linker->dataLength += dataLen;
+	}
+	if(ILImageGetSection(image, IL_SECTION_TLS, &dataSection, &dataLen))
+	{
+		ILWriterOtherWrite(linker->writer, ".tls", IL_IMAGESECT_TLS,
+						   dataSection, dataLen);
+		linker->tlsLength += dataLen;
 	}
 
 	/* Done */

@@ -78,6 +78,8 @@ struct _tagILLinker
 	int				error;			/* Some other error occurred */
 	unsigned long	resourceRVA;	/* RVA of resource section start */
 	ILMethod       *entryPoint;		/* Current entry point that is set */
+	ILUInt32		dataLength;		/* Length of ".sdata" section */
+	ILUInt32		tlsLength;		/* Length of ".tls" section */
 
 };
 

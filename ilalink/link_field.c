@@ -119,6 +119,11 @@ int _ILLinkerConvertMarshal(ILLinker *linker, ILProgramItem *oldItem,
 	ILFieldRVA *rva;
 	const void *blob;
 	unsigned long blobLen;
+	unsigned long rvaValue;
+	unsigned long dataRVA;
+	unsigned long dataSize;
+	unsigned long tlsRVA;
+	unsigned long tlsSize;
 
 	/* Convert the marshalling information */
 	marshal = ILFieldMarshalGetFromOwner(oldItem);
@@ -186,8 +191,33 @@ int _ILLinkerConvertMarshal(ILLinker *linker, ILProgramItem *oldItem,
 	rva = ILFieldRVAGetFromOwner((ILField *)oldItem);
 	if(rva)
 	{
+		/* Convert the RVA value from the old image to the new one */
+		rvaValue = ILFieldRVA_RVA(rva);
+		dataRVA = ILImageGetSectionAddr(ILProgramItem_Image(oldItem),
+										IL_SECTION_DATA);
+		dataSize = ILImageGetSectionSize(ILProgramItem_Image(oldItem),
+										 IL_SECTION_DATA);
+		tlsRVA = ILImageGetSectionAddr(ILProgramItem_Image(oldItem),
+									   IL_SECTION_TLS);
+		tlsSize = ILImageGetSectionSize(ILProgramItem_Image(oldItem),
+										IL_SECTION_TLS);
+		if(rvaValue >= dataRVA && rvaValue < (dataRVA + dataSize))
+		{
+			rvaValue = rvaValue - dataRVA + linker->dataLength;
+		}
+		else if(rvaValue >= tlsRVA && rvaValue < (tlsRVA + tlsSize))
+		{
+			rvaValue = rvaValue - tlsRVA + linker->tlsLength;
+			rvaValue |= (unsigned long)0x80000000;
+		}
+		else
+		{
+			rvaValue = 0;
+		}
+
+		/* Create an RVA token in the new image */
 		rva = ILFieldRVACreate(linker->image, 0, (ILField *)newItem,
-							   ILFieldRVA_RVA(rva));
+							   (ILUInt32)rvaValue);
 		if(!rva)
 		{
 			_ILLinkerOutOfMemory(linker);

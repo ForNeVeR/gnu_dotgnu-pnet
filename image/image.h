@@ -162,6 +162,10 @@ struct _tagILImage
 	unsigned long	realStart;		/* Real file offset of "data" */
 	unsigned long	debugRVA;		/* RVA for the start of the debug data */
 	unsigned long	debugSize;		/* Size of the debug data */
+	unsigned long	dataRVA;		/* RVA for the start of ".sdata" */
+	unsigned long	dataSize;		/* Size of ".sdata" */
+	unsigned long	tlsRVA;			/* RVA for the start of ".tls" */
+	unsigned long	tlsSize;		/* Size of ".tls" */
 
 	/* Memory stack that is used to allocate program objects */
 	ILMemStack		memStack;

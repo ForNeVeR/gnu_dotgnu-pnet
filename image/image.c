@@ -155,6 +155,17 @@ unsigned long ILImageGetSectionAddr(ILImage *image, int section)
 	return virtAddr;
 }
 
+unsigned long ILImageGetSectionSize(ILImage *image, int section)
+{
+	unsigned long virtAddr = 0;
+	unsigned long virtSize = 0;
+	if(!_ILImageGetSection(image, section, &virtAddr, &virtSize))
+	{
+		return 0;
+	}
+	return virtSize;
+}
+
 int ILImageGetSection(ILImage *image, int section,
 					  void **address, unsigned long *size)
 {

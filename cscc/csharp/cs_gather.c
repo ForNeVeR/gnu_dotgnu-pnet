@@ -805,6 +805,38 @@ static ILMember *FindInterfaceDecl(ILNode *node, ILClass *classInfo,
 }
 
 /*
+ * Get the full name of an explicit interface override member.
+ */
+static char *GetFullExplicitName(ILClass *interface, char *memberName)
+{
+	char *name;
+	if(ILClass_Namespace(interface) != 0)
+	{
+		name = ILInternAppendedString
+			(ILInternAppendedString
+				(ILInternString
+					((char *)ILClass_Namespace(interface), -1),
+				 ILInternString(".", 1)),
+			 ILInternString
+			 	((char *)ILClass_Name(interface), -1)).string;
+		name = ILInternAppendedString
+			(ILInternAppendedString
+				(ILInternString(name, -1),
+				 ILInternString(".", 1)),
+			 ILInternString(memberName, -1)).string;
+	}
+	else
+	{
+		name = ILInternAppendedString
+			(ILInternAppendedString
+				(ILInternString((char *)ILClass_Name(interface), -1),
+				 ILInternString(".", 1)),
+			 ILInternString(memberName, -1)).string;
+	}
+	return name;
+}
+
+/*
  * Create a method definition.
  */
 static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
@@ -854,6 +886,10 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 			else
 			{
 				interface = ILType_ToClass(signature);
+
+				/* Modify the method name to include the fully-qualified
+				   form of the interface's class name */
+				name = GetFullExplicitName(interface, basicName);
 			}
 		}
 		if(ILClass_IsInterface(classInfo))
@@ -1186,6 +1222,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 						   ILNode_PropertyDeclaration *property)
 {
 	char *name;
+	char *basicName;
 	ILType *propType;
 	ILType *tempType;
 	ILProperty *propertyInfo;
@@ -1220,6 +1257,8 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		/* Qualified property name that overrides some interface property */
 		name = ILQualIdentName(property->name, 0);
+		basicName = ILQualIdentName
+			(((ILNode_QualIdent *)(property->name))->right, 0);
 		signature = CSSemType
 				(((ILNode_QualIdent *)(property->name))->left, info,
 			     &(((ILNode_QualIdent *)(property->name))->left));
@@ -1231,6 +1270,11 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 				CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
 							  "`%s' is not an interface",
 							  CSTypeToName(signature));
+			}
+			else
+			{
+				name = GetFullExplicitName(ILType_ToClass(signature),
+										   basicName);
 			}
 		}
 		if(ILClass_IsInterface(classInfo))
@@ -1356,6 +1400,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 							ILNode_EventDeclarator *eventDecl)
 {
 	char *name;
+	char *basicName;
 	ILNode *eventName;
 	ILEvent *eventInfo;
 	ILType *signature;
@@ -1391,6 +1436,8 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	{
 		/* Qualified event name that overrides some interface event */
 		name = ILQualIdentName(eventName, 0);
+		basicName = ILQualIdentName
+			(((ILNode_QualIdent *)eventName)->right, 0);
 		signature = CSSemType
 				(((ILNode_QualIdent *)eventName)->left, info,
 			     &(((ILNode_QualIdent *)eventName)->left));
@@ -1403,6 +1450,11 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 							  yygetlinenum(eventName),
 							  "`%s' is not an interface",
 							  CSTypeToName(signature));
+			}
+			else
+			{
+				name = GetFullExplicitName(ILType_ToClass(signature),
+										   basicName);
 			}
 		}
 		if(ILClass_IsInterface(classInfo))

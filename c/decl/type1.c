@@ -31,6 +31,16 @@ unsigned short us;
 short unsigned us2;
 signed short ss;
 short signed ss2;
+short int s2;
+unsigned short int us3;
+short unsigned int us4;
+signed short int ss3;
+short signed int ss4;
+int short s3;
+unsigned int short us5;
+short int unsigned us6;
+signed int short ss5;
+short int signed ss6;
 
 /* "int" and "unsigned int" */
 int i;

@@ -1114,26 +1114,46 @@ class XmlDocument : XmlNode
 				return result;
 			}
 
-	// Save XML data from this document.
-	[TODO]
+	// Save the contents of this document to a writer.
+	// This method uses Save(XMLWriter w) and indents
+	// the writer output.
+	[TODO] // Fix internal XmlTextWriter class
 	public virtual void Save(Stream outStream)
 			{
-				// TODO
+				XmlTextWriter w = new XmlTextWriter(outStream, null);
+				w.Formatting = Formatting.Indented;
+				Save(w);
 			}
-	[TODO]
+	
+	// Save the contents of this document to a writer.
+	// This method uses Save(XMLWriter w) and indents
+	// the writer output.
+	[TODO] // Fix internal XmlTextWriter class
 	public virtual void Save(String filename)
 			{
-				// TODO
+				XmlTextWriter w = new XmlTextWriter(filename, null);
+				w.Formatting = Formatting.Indented;
+				Save(w);
 			}
-	[TODO]
+	
+	// Save the contents of this document to a writer.
+	// This method uses Save(XMLWriter w) and indents
+	// the writer output.
+	[TODO] // Fix internal XmlTextWriter class
 	public virtual void Save(TextWriter writer)
 			{
-				// TODO
+				XmlTextWriter w = new XmlTextWriter(writer);
+				w.Formatting = Formatting.Indented;
+				Save(w);
 			}
-	[TODO]
+			
+	// Save the contents of this document to an XML writer.
+	// This method uses WriteTo(XMLWriter w)
+	[TODO] // Fix internal XmlTextWriter class
 	public virtual void Save(XmlWriter w)
 			{
-				// TODO
+				WriteTo(w);	
+				w.Close();
 			}
 
 	// Write the contents of this document to an XML writer.

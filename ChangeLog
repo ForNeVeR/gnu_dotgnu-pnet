@@ -1,4 +1,10 @@
 
+2004-05-16  Andres March  <me@andresmarch.com>
+
+	* System.Xml/XmlDocument.cs, tests/System.Xml/TestXmlDocument.cs: 
+	Implement XmlDocument.Save and Add tests for Save , which are 
+	commented because they fail. (patch #3055, Gopal)
+
 2004-05-15  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Reflection/ClrConstructor.cs, 

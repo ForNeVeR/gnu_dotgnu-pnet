@@ -191,7 +191,7 @@ void ILGenAllocLocal(ILGenInfo *info, ILType *type, const char *name)
 {
 	if(info->asmOutput)
 	{
-		fputs("\t.locals\t(", info->asmOutput);
+		fputs("\t.locals init\t(", info->asmOutput);
 		ILDumpType(info->asmOutput, info->image, type, IL_DUMP_QUOTE_NAMES);
 		if(name)
 		{

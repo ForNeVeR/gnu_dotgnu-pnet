@@ -438,7 +438,7 @@ static void DumpILLocals(ILGenInfo *info, FILE *outstream, ILType *localVarSig)
 	{
 		unsigned long num = ILTypeNumLocals(localVarSig);
 		unsigned long index;
-		fputs("\t.locals\t(", outstream);
+		fputs("\t.locals init\t(", outstream);
 		for(index = 0; index < num; ++index)
 		{
 			if(index != 0)

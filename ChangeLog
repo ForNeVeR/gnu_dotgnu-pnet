@@ -4,6 +4,9 @@
 	* include/il_regex.h: remove references to "__restrict" because
 	they interfere with more recent versions of glibc.
 
+	* codegen/cg_decls.tc, codegen/cg_output.c: force local variables
+	to be initialized using ".locals init".
+
 2002-12-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* include/il_system.h, support/file.c, csant/csant_task.c: Add a

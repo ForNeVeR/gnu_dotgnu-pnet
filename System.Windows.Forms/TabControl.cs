@@ -94,8 +94,6 @@ namespace System.Windows.Forms
 			appearance = TabAppearance.Normal;
 			tabPageCollection = new TabPageCollection(this);
 			SetStyle(ControlStyles.UserPaint, true);
-			// Switch on double buffering.
-			SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
 			moveButtonLeftState = ButtonState.Normal;
 			moveButtonRightState = ButtonState.Normal;

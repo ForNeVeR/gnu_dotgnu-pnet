@@ -182,8 +182,9 @@ namespace System.IO
 			    devote time to busting it up into an array  */
  			pathChars = path.ToCharArray();
  
- 			if((pathChars[0] == DirectorySeparatorChar) 
-				&& (pathChars[1] == DirectorySeparatorChar))
+ 			if((DirectorySeparatorChar=='\\') 
+				&& (pathChars[0] == '\\')
+				&& (pathChars[1] == '\\'))
  			{
  				/*  Looks like we have a SMB/CIFS/Silly MS Drive Share thing 
 					happening  Starting at index 2 because we just checked 

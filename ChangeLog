@@ -1,4 +1,9 @@
 
+2002-10-30  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/IO/Path.cs: Change the code so that SMB
+	mode is entered only if DirectorySeperatorChar is '\\'
+
 2002-10-30  Charles Shuller  <kyeran@hermes-solutions.biz>
 
 	* runtime/System/IO/Path.cs: Added patch to GetPathRoot

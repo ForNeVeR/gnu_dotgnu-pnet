@@ -81,7 +81,11 @@ static void InitGlobalNamespace(void)
 {
 	if(!CurrNamespaceNode)
 	{
+		ILNode_UsingNamespace *using;
 		CurrNamespaceNode = (ILNode_Namespace *)ILNode_Namespace_create(0, 0);
+		using = (ILNode_UsingNamespace *)ILNode_UsingNamespace_create("System");
+		using->next = CurrNamespaceNode->using;
+		CurrNamespaceNode->using = using;
 	}
 }
 
@@ -98,6 +102,7 @@ static ILScope *GlobalScope(void)
 	{
 		CSGlobalScope = ILScopeCreate(&CSCodeGen, 0);
 		ILScopeDeclareNamespace(CSGlobalScope, "System");
+		ILScopeUsing(CSGlobalScope, "System", 0);
 		return CSGlobalScope;
 	}
 }
@@ -112,6 +117,24 @@ static void ResetState(void)
 	CurrNamespaceNode = 0;
 	HaveDecls = 0;
 	ILScopeClearUsing(GlobalScope());
+}
+
+/*
+ * Determine if the current namespace already has a "using"
+ * declaration for a particular namespace.
+ */
+static int HaveUsingNamespace(char *name)
+{
+	ILNode_UsingNamespace *using = CurrNamespaceNode->using;
+	while(using != 0)
+	{
+		if(!strcmp(using->name, name))
+		{
+			return 1;
+		}
+		using = using->next;
+	}
+	return 0;
 }
 
 static void
@@ -991,11 +1014,14 @@ UsingDirective
 				{
 					CSError("`%s' is not a namespace", $2.string);
 				}
-				using = (ILNode_UsingNamespace *)
-					ILNode_UsingNamespace_create($2.string);
 				InitGlobalNamespace();
-				using->next = CurrNamespaceNode->using;
-				CurrNamespaceNode->using = using;
+				if(!HaveUsingNamespace($2.string))
+				{
+					using = (ILNode_UsingNamespace *)
+						ILNode_UsingNamespace_create($2.string);
+					using->next = CurrNamespaceNode->using;
+					CurrNamespaceNode->using = using;
+				}
 			}
 	;
 

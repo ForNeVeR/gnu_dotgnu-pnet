@@ -7,6 +7,9 @@ with the resolution of library definitions.
 * cscc/cs_lookup.c: bug in "FilterStatic" and "FilterNonStatic" that caused
 it to use the wrong pointer for the method.
 
+* cscc/cs_grammar.y: make sure that the "System" namespace is always
+included at the global level of every source file.
+
 2001-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/sig_writer.c (WriteType): modify the representation of multi-

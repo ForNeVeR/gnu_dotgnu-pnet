@@ -42,7 +42,11 @@ public class TestXmlTextReader : TestCase
 			};
 		
 	private String[] xml = {"<soda caffeine=\"yes\">\n<size>medium</size>\n</soda>", 
-					"<soda><size>medium</size></soda>"};
+					"<soda><size>medium</size></soda>",
+					"<free>software's freedom</free>",
+					"<?xml version=\"1.0\" ?><bookstore><book><title>Understanding The Linux Kernel</title>
+					<author>Daniel P. Bovet and Marco Cesati</author></book><book><title>Learning Perl</title>
+					<author>Randal L. Schwartz and Tom Christiansen</author></book></bookstore>"};
 
 	
 	// Constructor.
@@ -144,9 +148,63 @@ public class TestXmlTextReader : TestCase
 				AssertEquals("Read (7)", true, ret);
 
 				Check("Read (8)", "medium", ReturnType.Value);
+				
+				Reset();
+				stringReader = new StringReader(xml[2]);
+				xmlReader = new XmlTextReader(stringReader);
 
-				
+				xmlReader.Read();
+				Check("Read (9)", "free", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (9)", "software's freedom", ReturnType.Value);
+
+				Clear();
 			}
-				
+	
+	public void TestXmlTextReaderGetRemainder()
+			{
+				stringReader = new StringReader(xml[3]);
+				xmlReader = new XmlTextReader(stringReader);
+				bool ret = xmlReader.Read();
+				AssertEquals("Read (1)", true, ret);
+				xmlReader.Read();
+				xmlReader.Read();
+				Check("Read (2)", "book", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (3)", "title", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (4)", "Understanding The Linux Kernel", ReturnType.Value);
+				xmlReader.Read();
+				Check("Read (5)", "title", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (6)", "author", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (7)", "Daniel P. Bovet and Marco Cesati", ReturnType.Value);
+				xmlReader.Read();
+				Check("Read (8)", "author", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (9)", "book", ReturnType.Name);
+
+				xmlReader = new XmlTextReader(xmlReader.GetRemainder());
+				xmlReader.Read();
+				Check("Read (2)", "book", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (3)", "title", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (4)", "Learning Perl", ReturnType.Value);
+				xmlReader.Read();
+				Check("Read (5)", "title", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (6)", "author", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (7)", "Randal L. Schwartz and Tom Christiansen", ReturnType.Value);
+				xmlReader.Read();
+				Check("Read (8)", "author", ReturnType.Name);
+				xmlReader.Read();
+				Check("Read (9)", "book", ReturnType.Name);
+				xmlReader.Close();
+
+				Clear();
+			}
 
 }; // class TestXmlTextWriter

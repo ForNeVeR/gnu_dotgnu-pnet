@@ -189,7 +189,12 @@ public class XmlTextReader : XmlReader
 				if(context == null)
 				{
 					baseURI = String.Empty;
-					// TODO: find byte order mark
+					// TODO: find byte order mark 
+					// // EF BB BF = utf8
+					// // FE FF = utf16/ucs-2 little endian
+					// // FF FE = utf16/ucs-2, big endian
+					// // FF FE 00 00 = UTF-32/ucs-4, little endian
+					// // 00 00 FE FF = UTC-32/UCS-4, big endian
 					// else ...
 					// encoding = System.Text.UT8Encoding(true);
 				}
@@ -272,10 +277,21 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Clean up the resources that were used by this XML reader.
-	[TODO]
 	public override void Close()
 			{
-				// TODO
+				prefix = String.Empty;
+				localName = String.Empty;
+				namespaceURI = String.Empty;
+				value = String.Empty;
+				attr = new XmlAttributeToken(nameTable,null,null);
+				attributes = new XmlAttributeCollection(attr); 
+				attributeIndex = -1;
+				depth = 0;
+				isEmpty = false;
+				contextSupport = false;
+				name = String.Empty;
+				readAttribute = false;
+				reader = null;
 			}
 
 	// Returns the value of an attribute with a specific index.
@@ -323,11 +339,15 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Get the remainder of the the current XML stream.
-	[TODO]
 	public TextReader GetRemainder()
 			{
-				// TODO
-				return null;
+				String tmp = reader.ReadToEnd();
+				Console.WriteLine(tmp);
+				StringReader s = new StringReader(tmp);
+				Close();
+				readState = ReadState.EndOfFile;
+				
+				return s;
 			}
 
 	// Resolve a namespace in the scope of the current element.
@@ -841,15 +861,17 @@ public class XmlTextReader : XmlReader
 						// reset buffer
 						builder = new StringBuilder();
 						break;
-					case '\'':	
+					case '\'':
 					case '"':
 						// get quote
 						quoteChar = (char)ch;
 						if(nodeType != XmlNodeType.Attribute)
 						{
-							throw new XmlException
-								(S._("Xml_WrongNode"));
+							builder.Append((char)ch);
+							AnalyzeChar(ReadChar(), false);
+							return;	
 						}
+						
 						// Get Text value of an Attribute	
 						while((ch = ReadChar()) != -1)
 						{

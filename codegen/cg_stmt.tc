@@ -1990,6 +1990,12 @@ ILNode_GenDiscard(ILNode_Try)
 	if(info->asmOutput)
 	{
 		fputs("\t.try {\n", info->asmOutput);
+		if(node->finallyClause && node->catchClauses)
+		{
+			/* We need two levels of ".try" if we have both
+			   "catch" and "finally" blocks */
+			fputs("\t.try {\n", info->asmOutput);
+		}
 	}
 
 	/* Output the body of the "try" block */
@@ -2033,6 +2039,13 @@ ILNode_GenDiscard(ILNode_Try)
 	/* Output the finally clause */
 	if(node->finallyClause)
 	{
+		if(node->catchClauses)
+		{
+			if(info->asmOutput)
+			{
+				fputs("\t}\n", info->asmOutput);
+			}
+		}
 		ILNode_GenDiscard(node->finallyClause, info);
 	}
 

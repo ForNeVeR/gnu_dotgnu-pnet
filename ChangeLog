@@ -1,4 +1,9 @@
 
+2002-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_stmt.tc (ILNode_Try): make sure that the finally
+	block's try range covers the catch clauses.
+
 2002-11-05  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: Fix the indexername returned , using

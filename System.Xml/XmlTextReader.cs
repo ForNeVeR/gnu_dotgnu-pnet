@@ -58,10 +58,18 @@ public class XmlTextReader : XmlReader
 	private int attributeIndex;
 	private int depth;
 	private bool isEmpty;
-	internal bool readAttribute;
-	internal bool contextSupport;
-	internal StringBuilder builder;
-	internal String	name;
+	private bool readAttribute;
+	private bool contextSupport;
+	private StringBuilder builder;
+	private String	name;
+	private String systemId;
+	private String publicId;
+	private XmlParserContext parserContext;
+	private String docTypeName;
+	private String internalSubset;
+	private bool isEntity = false;
+	private int startEntity = 0;
+
 	// Constructors.
 	protected XmlTextReader()
 			: this(new NameTable())
@@ -94,6 +102,8 @@ public class XmlTextReader : XmlReader
 				prefix = String.Empty;
 				localName = String.Empty;
 				namespaceURI = String.Empty;
+				docTypeName = String.Empty;
+				internalSubset = String.Empty;
 				value = String.Empty;
 				attr = new XmlAttributeToken(nameTable,null,null);
 				attributes = new XmlAttributeCollection(attr); 
@@ -103,6 +113,10 @@ public class XmlTextReader : XmlReader
 				contextSupport = false;
 				name = String.Empty;
 				readAttribute = false;
+				systemId = String.Empty;
+				publicId = String.Empty;
+				parserContext = new XmlParserContext(nt, namespaceManager, xmlLang,
+						xmlSpace );
 			}
 	public XmlTextReader(Stream input)
 			: this(String.Empty, input, new NameTable())
@@ -198,6 +212,7 @@ public class XmlTextReader : XmlReader
 					xmlLang = context.XmlLang;
 					xmlSpace = context.XmlSpace;
 					contextSupport = true;
+					parserContext = context;
 				}
 				namespaces = false;
 				
@@ -220,9 +235,10 @@ public class XmlTextReader : XmlReader
 				if(context == null)
 				{
 					baseURI = String.Empty;
-					XmlStreamReader sr = new XmlStreamReader(xmlFragment);
+					XmlStreamReader sr = new XmlStreamReader(new StringReader(xmlFragment));
+					
 					encoding = sr.CurrentEncoding;
-					reader = sr;
+					reader = sr.TxtReader;
 				}
 				else
 				{
@@ -230,7 +246,7 @@ public class XmlTextReader : XmlReader
 					xmlLang = context.XmlLang;
 					xmlSpace = context.XmlSpace;
 					contextSupport = true;
-					XmlStreamReader sr = new XmlStreamReader(xmlFragment);
+					XmlStreamReader sr = new XmlStreamReader(new StringReader(xmlFragment));
 					if(context.Encoding == null)
 					{
 						encoding = sr.CurrentEncoding;
@@ -239,7 +255,8 @@ public class XmlTextReader : XmlReader
 					{
 						encoding = context.Encoding;
 					}
-					reader = sr;
+					reader = sr.TxtReader;
+					parserContext = context;
 				}
 
 				namespaces = false;	
@@ -269,6 +286,7 @@ public class XmlTextReader : XmlReader
 				XmlStreamReader sr = new XmlStreamReader(url, true);
 				encoding = sr.CurrentEncoding;
 				reader = sr;
+				parserContext.NameTable = nt;
 			}
 
 	// Clean up the resources that were used by this XML reader.
@@ -278,6 +296,8 @@ public class XmlTextReader : XmlReader
 				localName = String.Empty;
 				namespaceURI = String.Empty;
 				value = String.Empty;
+				systemId = String.Empty;
+				publicId = String.Empty;
 				attr = new XmlAttributeToken(nameTable,null,null);
 				attributes = new XmlAttributeCollection(attr); 
 				attributeIndex = -1;
@@ -476,6 +496,8 @@ public class XmlTextReader : XmlReader
 				localName = String.Empty;
 				namespaceURI = String.Empty;
 				value = String.Empty;
+				systemId = String.Empty;
+				publicId = String.Empty;
 				attr = new XmlAttributeToken(nameTable,null,null);
 				attributes = new XmlAttributeCollection(attr);
 				attributeIndex = -1;
@@ -553,7 +575,15 @@ public class XmlTextReader : XmlReader
 				}
 				return null;
 			}
-
+#if !ECMA_COMPAT	
+	private String ParseEntity(String entityref)
+			{
+				String value = parserContext.NameCollection.Get(entityref);
+				return value;
+			}
+#endif
+	
+	
 	// Set the name information from an identifier.
 	private void SetName(String identifier)
 			{
@@ -572,6 +602,114 @@ public class XmlTextReader : XmlReader
 				}
 			}
 
+	internal string ReadTo(char stop)
+			{
+				StringBuilder builder = new StringBuilder();
+				int ch = 0;
+				while((ch = ReadChar()) != -1 && (char)ch != stop)
+				{
+					builder.Append((char)ch);
+				}
+				return builder.ToString();
+			}
+	
+#if !ECMA_COMPAT
+	internal void ReadDTDInternalSubset(int ch)
+			{
+				StringBuilder builder = new StringBuilder();
+				SkipWhite ();
+				builder.Append((char)ch);
+				switch((char)ch)
+				{
+					case ']':
+						nodeType = XmlNodeType.None;
+						break;
+					case '%':
+						string peName = ReadIdentifier(ch); 
+						Expect (';');
+						nodeType = XmlNodeType.EntityReference;	
+						break;
+					case '<':
+						ch = ReadChar();
+						builder.Append((char)ch);
+						switch((char)ch)
+						{
+							case '!':
+								ch = ReadChar();
+								builder.Append((char)ch);
+								switch((char)ch)
+								{
+									case '-':
+										AnalyzeChar(ch, true);
+										break;
+									case 'E':
+										ch = ReadChar();
+										builder.Append((char)ch);
+										switch((char)ch)
+										{
+											case 'N':
+												while((ch = ReadChar()) != -1)
+												{
+													builder.Append((char)ch);
+													if(builder.ToString() == "<!ENTITY")
+													{
+														SkipWhite();
+														String name = ReadTo(' ');
+														String space = ReadTo('\'');
+														String value = ReadTo('\'');
+														builder.Append(name + space + value + ReadTo('>'));
+														parserContext.InternalSubset = builder.ToString();
+														parserContext.NameCollection.Add(name, value);
+														return;
+													}
+												}
+												break;
+											case 'L':
+												while((ch = ReadChar()) != -1)
+												{
+													builder.Append((char)ch);
+													if(builder.ToString() == "<!ELEMENT")
+													{
+														ch = ReadChar();
+														if(!Char.IsWhiteSpace((char)ch))
+															throw new XmlException(
+																	S._("Xml_BadDTDDeclaration"));
+
+														builder.Append((char)ch);
+														builder.Append(ReadTo('>'));
+														parserContext.InternalSubset = builder.ToString();
+														return;
+													}
+												}
+												break;
+											default:
+												throw new XmlException(S._("Syntax Error after '<!E' (ELEMENT or ENTITY must be found)"));
+										}
+										break;
+									case 'A':
+										//Expect ("TTLIST");
+										//ReadAttListDecl ();
+										break;
+									case 'N':
+										//Expect ("OTATION");
+										//ReadNotationDecl ();
+										break;
+									default:
+										throw new XmlException(S._("Syntax Error after '<!' characters."));
+								}
+								break;
+							default:
+								throw new XmlException(S._("Syntax Error after '<' character."));
+						}
+						break;
+					default:
+						throw new XmlException(S._("Syntax Error inside doctypedecl markup."));
+				}
+
+				return;
+			}
+#endif
+	
 	
 	// Skip white space characters.
 	private void SkipWhite()
@@ -609,7 +747,7 @@ public class XmlTextReader : XmlReader
 
 	internal void AnalyzeChar(int ch, bool structFlag)
 			{
-			
+
 				if(ch == -1)
 				{
 					if(linePosition > 1)
@@ -620,7 +758,6 @@ public class XmlTextReader : XmlReader
 					ClearNodeInfo();
 					return;
 				}
-				
 				
 				switch((char)ch)
 				{
@@ -821,6 +958,170 @@ public class XmlTextReader : XmlReader
 									throw new XmlException
 										(S._("Xml_Malformed"));
 								}
+								SkipWhite();
+								builder = new StringBuilder();
+								while((ch = ReadChar()) != -1)
+								{
+									
+									if(Char.IsWhiteSpace((char)ch))
+									{
+										SkipWhite();
+										name = builder.ToString();
+										break;
+									}
+									else if((char)ch == '>')
+									{
+										name = builder.ToString();
+										return;
+									}	
+									else
+									{
+										builder.Append((char)ch);	
+									}
+								}
+								SkipWhite();
+								if((char)ch == '>')
+								{
+									return;
+								}
+								builder = new StringBuilder();
+								while((ch = ReadChar()) != -1)
+								{
+									builder.Append((char)ch);
+									if(Char.IsWhiteSpace((char)reader.Peek()))
+									{
+#if !ECMA_COMPAT
+										if(builder.ToString() == "SYSTEM")
+										{
+											builder = new StringBuilder();
+											SkipWhite();
+											int qChar = ReadChar();
+											ch = ReadChar();
+											while(ch != qChar && ch != -1)
+											{
+												builder.Append((char)ch);
+												ch = ReadChar();
+											}
+											systemId = builder.ToString();
+											
+											break;
+										}
+										else if(builder.ToString() == "PUBLIC")
+										{
+											builder = new StringBuilder();
+											SkipWhite();
+											int qChar = ReadChar();
+											ch = ReadChar();
+											while(ch != qChar && ch != -1)
+											{
+												builder.Append((char)ch);
+												ch = ReadChar();
+												// TODO: Check for non-pubid characters
+											}
+											publicId = builder.ToString();
+											builder = new StringBuilder();
+											SkipWhite();
+											qChar = ReadChar();
+											ch = ReadChar();
+											while(ch != qChar && ch != -1)
+											{
+												builder.Append((char)ch);
+												ch = ReadChar();
+											}
+											systemId = builder.ToString();
+											break;
+										}
+										else if((char)ch == '[')
+										{
+											// seek to ']'
+											SkipWhite();
+											
+											while((ch = ReadChar()) != -1)
+											{
+												builder.Append((char)ch);
+												if((char)ch == ']' && (char)reader.Peek() == '>')
+												{
+													internalSubset = builder.ToString();
+													ReadChar();
+													return;
+												}
+											}
+											
+											break;
+										}
+										else
+										{
+											name = builder.ToString();
+											SkipWhite();
+											ch = ReadChar();
+											if((char)ch == '[')
+											{
+												// seek to ']'
+												SkipWhite();
+												ch = ReadChar();
+												builder.Append((char)ch);
+												ReadDTDInternalSubset(ch);
+												break;
+											}
+
+											break;
+										}
+#else
+										if((char)ch == '[')
+										{
+											isEntity = true;
+										}
+										if((char)ch == ']' && (char)reader.Peek() == '>' 
+												&& isEntity == true)
+										{
+											internalSubset = builder.ToString();
+											ReadChar();
+											return;
+										}
+#endif
+
+									}
+								}
+
+								SkipWhite();
+								builder = new StringBuilder();
+								int level = 0;
+								if((char)reader.Peek() == '[')
+								{
+									// seek to ']'
+									while((ch = ReadChar()) != -1)
+									{
+										builder.Append((char)ch);
+										if((char)reader.Peek() == ']' && level == 0)
+										{
+											ReadChar();
+											break;
+										}
+										else if((char)reader.Peek() == '[')
+										{
+											// DTDInternalSubset
+											ReadChar();
+											while(reader.Peek() != ']')
+											{
+#if !ECMA_COMPAT
+												ReadDeclaration();
+#else
+												builder.Append((char)ch);
+#endif
+											}
+										}
+											
+									}
+									
+								}
+								else if((char)reader.Peek() == '>')
+								{
+									ReadChar();
+									isEmpty = false;
+									value = parserContext.InternalSubset;
+									return;
+								}
+
 								builder = new StringBuilder();
 								count++;
 							}
@@ -873,7 +1174,14 @@ public class XmlTextReader : XmlReader
 							{
 								attr.Value = builder.ToString();
 								attributes.Append(attr);
-								nodeType = XmlNodeType.Text;
+								if(!isEntity)
+								{
+									nodeType = XmlNodeType.Text;
+								}
+								else
+								{
+									nodeType = XmlNodeType.EntityReference;
+								}
 								if(prefix == "xmlns")
 								{
 									// append namespace
@@ -902,8 +1210,25 @@ public class XmlTextReader : XmlReader
 								ungetch = ch;
 								break;
 							}
-							
-							builder.Append((char)ch);
+#if !ECMA_COMPAT
+							else if((char)ch == '&')
+							{
+								// found entity reference
+								isEntity = true;
+								startEntity = builder.Length;
+							}
+							else if((char)ch == ';' && isEntity == true)
+							{
+								String entityRef = builder.ToString(startEntity, builder.Length - startEntity);
+								builder.Remove(startEntity, builder.Length - startEntity);
+								builder.Append( ParseEntity(entityRef) );
+								isEntity = false;
+							}
+#endif
+							else
+							{
+								builder.Append((char)ch);
+							}
 						}
 						break;
 					default:
@@ -925,12 +1250,47 @@ public class XmlTextReader : XmlReader
 						}
 						else
 						{
-								
-							ch = ReadChar(); 
+#if !ECMA_COMPAT
+							if((char)ch == '&')
+							{
+								// found entity reference
+								isEntity = true;
+								startEntity = builder.Length -1;
+								builder.Remove(builder.Length-1, 1);
+							}
+#endif
+							ch = ReadChar(); 	
 							if((char)ch != '<')
 							{
-								AnalyzeChar(ch, false);
+#if !ECMA_COMPAT
+								if((char)ch == ';' && isEntity == true)
+								{
+									String entityRef = builder.ToString(startEntity, builder.Length - startEntity);
+									builder.Remove(startEntity, builder.Length - startEntity);
+									builder.Append(ParseEntity(entityRef));
+									isEntity = false;
+
+									ch = ReadChar();
+									if((char)ch != '<')
+									{
+										AnalyzeChar(ch, false);
+									}
+									else
+									{
+										ClearNodeInfo();
+										nodeType = XmlNodeType.Text;
+										ungetch = ch;
+										value = builder.ToString();
+									}
+								}
+								else
+								{
+									AnalyzeChar(ch, false);
+								}
 								break;
+#else
+								AnalyzeChar(ch, false);
+#endif
 							}
 							else
 							{
@@ -939,13 +1299,72 @@ public class XmlTextReader : XmlReader
 								ungetch = ch;
 								value = builder.ToString();
 							}
+
+							
 						}
 						break;
 					
 				}// end switch(ch)
 			}// end AnalyzeChar
-		
+#if !ECMA_COMPAT		
+	internal bool ReadDeclaration()
+			{
+				int ch;
+				string tempName;
+				builder = new StringBuilder();
 
+				// Validate the current state of the stream.
+				if(readState == ReadState.EndOfFile)
+				{
+					return false;
+				}
+				else if(reader == null)
+				{
+					throw new XmlException(S._("Xml_ReaderClosed"));
+				}
+				else if(readState == ReadState.Error)
+				{
+					throw new XmlException(S._("Xml_ReaderError"));
+				}
+				
+				// Skip white space in the input stream.
+				SkipWhite();
+
+				ch = ReadChar();
+
+				if(ch == -1)
+				{
+					// We've reached the end of the stream.  Throw
+					// an error if we haven't closed all elements.
+					if(linePosition > 1)
+					{
+						--linePosition;
+					}
+					readState = ReadState.EndOfFile;
+					ClearNodeInfo();
+					return false;
+				}
+				
+				readState = ReadState.Interactive;	
+				// Determine what to do based on the next character.
+				
+			
+				
+				// Handling, set flag to true if first char is <
+				if ((char)ch == '<')
+				{
+					while(ch != -1)
+					{
+						ReadDTDInternalSubset(ch);
+						ch = ReadChar();
+					}
+				}			
+				return false;
+
+
+			}
+#endif	
+	
 	// Read the next node in the input stream. -- This should mimic mono's interpretation of Read()
 	public override bool Read()
 			{
@@ -1301,8 +1720,10 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Read the contents of an element or text node as a string.
+	[TODO]
 	public override String ReadString()
 			{
+				// TODO
 				return null;	
 			}
 
@@ -1319,10 +1740,10 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Resolve an entity reference.
-	[TODO]
 	public override void ResolveEntity()
 			{
-				// TODO
+				throw new InvalidOperationException(
+						S._("Xml_CannotResolveEntity"));
 			}
 
 	// Get the number of attributes on the current node.
@@ -1735,6 +2156,15 @@ public class XmlTextReader : XmlReader
 				{
 					return xmlSpace;
 				}
+			}
+
+	internal XmlParserContext ParserContext 
+			{
+				get
+				{
+					return parserContext;
+				}
+
 			}
 
 

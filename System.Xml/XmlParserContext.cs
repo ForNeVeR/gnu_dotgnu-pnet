@@ -24,6 +24,7 @@ namespace System.Xml
 
 using System;
 using System.Text;
+using System.Collections.Specialized;
 
 public class XmlParserContext
 {
@@ -33,6 +34,9 @@ public class XmlParserContext
 	private Encoding encoding;
 	private String internalsubset;
 	private XmlNameTable nametable;
+#if !ECMA_COMPAT
+	private NameValueCollection namecollection;
+#endif
 	private XmlNamespaceManager namespacemanager;
 	private String publicid;
 	private String systemid;
@@ -68,11 +72,18 @@ public class XmlParserContext
 					if (nsMgr.NameTable != nt)
 						throw new XmlException(S._("Xml_WrongNameTable"));
 				}
+					
 				
 				if (nt == null)
+				{
+					if(nsMgr == null)
+						nsMgr = new XmlNamespaceManager(new NameTable());
 					nametable = nsMgr.NameTable;
+				}
 				else
+				{
 					nametable = nt;
+				}
 				
 				namespacemanager = nsMgr;
 					
@@ -108,7 +119,19 @@ public class XmlParserContext
 				
 				xmlspace = xmlSpace;
 				
-				encoding = enc;				
+				encoding = enc;	
+
+#if !ECMA_COMPAT
+				namecollection = new NameValueCollection();
+
+				if (internalSubset != null)
+				{
+					XmlTextReader reader = new XmlTextReader(internalSubset, XmlNodeType.Document, null);
+					while( reader.ReadDeclaration() );
+					
+					namecollection = reader.ParserContext.NameCollection;
+				}
+#endif
 			}		
 			
 	//Properties
@@ -249,6 +272,19 @@ public class XmlParserContext
 					xmlspace = value;
 				}
 			}
+#if !ECMA_COMPAT
+	internal NameValueCollection NameCollection
+			{
+				get
+				{
+					return namecollection;
+				}
+				set
+				{
+					namecollection = value;
+				}
+			}
+#endif
 
 }; // class XmlParserContext
 

@@ -51,10 +51,27 @@ internal class XmlStreamReader : TextReader
 	private int    		outBufferPosn;
 	private int    		outBufferLen;
 	private bool   		sawEOF;
+	internal TextReader TxtReader;
+	internal bool canseek;
 
 	// Constructors that are based on a stream.
 	public XmlStreamReader(Stream stream)
 			: this(stream, Encoding.UTF8, true, STREAM_BUFSIZ) {}
+
+	internal XmlStreamReader(TextReader txtReader)
+			{
+				this.TxtReader = txtReader;
+				StreamReader strReader = txtReader as StreamReader;
+				if(strReader != null)
+				{
+					canseek = strReader.BaseStream.CanSeek;
+				}
+				else
+				{
+					canseek = txtReader != null && txtReader.Peek() != -1;
+				}
+				
+			}
 	public XmlStreamReader(Stream stream, bool detectEncodingFromByteOrderMarks)
 			: this(stream, Encoding.UTF8,
 				   detectEncodingFromByteOrderMarks, STREAM_BUFSIZ) {}

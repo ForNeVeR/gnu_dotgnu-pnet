@@ -689,14 +689,23 @@ class XmlDocument : XmlNode
 	private bool BuildStructure(XmlTextReader reader)
 			{
 				XmlNode parent = this;
-				XmlNode current = null;
+				XmlNode docType = null;
 
 				parent = ReadNode(reader);
 				
-				if(parent != null)
+				if(parent != null && reader.NodeType != XmlNodeType.DocumentType)
 				{
 				
 					this.AppendChild(parent);
+					return true;
+				}
+				else if(parent != null && reader.NodeType == XmlNodeType.DocumentType)
+				{
+					docType = parent;
+					parent = ReadNode(reader);
+					this.AppendChild(parent);
+					// add DocumentType
+					this.AppendChild(docType);
 					return true;
 				}
 				else
@@ -792,7 +801,19 @@ class XmlDocument : XmlNode
 							// TODO: XmlDeclaration
 							break;
 						case XmlNodeType.DocumentType:
-							// TODO: DocumentType
+							if(currentNode != null)
+							{
+								throw new XmlException(
+										S._("XmlException_InvalidPosition"));
+							}
+							currentNode = CreateDocumentType(
+									reader.Name,
+									reader.GetAttribute("PUBLIC"),
+									reader.GetAttribute("SYSTEM"),
+									reader.Value);
+							
+							
+								
 							break;
 						case XmlNodeType.SignificantWhitespace:
 							// TODO: SignificantWhitespace
@@ -803,7 +824,6 @@ class XmlDocument : XmlNode
 							// TODO: Append Whitespace to parent node
 							break;
 					}
-					
 				}
 					
 				return currentNode;

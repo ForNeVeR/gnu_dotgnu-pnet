@@ -56,7 +56,7 @@ internal sealed class NodeList : XmlNodeList
 			}
 
 	// Get a particular item within this node list.
-	public override XmlNode Itemx(int i)
+	public override XmlNode Item(int i)
 			{
 				if(i >= 0 && i < count)
 				{

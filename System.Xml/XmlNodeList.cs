@@ -44,12 +44,12 @@ abstract class XmlNodeList : IEnumerable
 			{
 				get
 				{
-					return Itemx(i);
+					return Item(i);
 				}
 			}
 
 	// Get a particular item within this node list.
-	public abstract XmlNode Itemx(int i);
+	public abstract XmlNode Item(int i);
 
 	// Implement the "IEnumerable" interface.
 	public abstract IEnumerator GetEnumerator();

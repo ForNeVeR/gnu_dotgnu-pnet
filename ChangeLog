@@ -17,6 +17,9 @@
 	* runtime/System/NonSerializedAttribute.cs: add the "AttributeUsage"
 	declaration for "NonSerializedAttribute".
 
+	* System.Xml/NodeList.cs, System.Xml/XmlNodeList.cs: rename
+	"Itemx" to "Item" now that "IndexerName" works.
+
 2002-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Makefile.am, System.Xml/Makefile.am, runtime/Makefile.am:

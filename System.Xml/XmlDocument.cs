@@ -806,7 +806,14 @@ class XmlDocument : XmlNode
 						r.MoveToElement();
 
 						// return now if there are no children
-						if(isEmptyElement) { return elem; }
+						if(isEmptyElement)
+						{
+							// advance the reader to the next node
+							r.Read();
+
+							// return the empty element
+							return elem;
+						}
 
 						// read and append the children
 						ReadChildren(r, elem);

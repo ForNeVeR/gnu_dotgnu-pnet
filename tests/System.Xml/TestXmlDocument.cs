@@ -57,6 +57,7 @@ public class TestXmlDocument : TestCase
 		 "<test>Brave GNU <![CDATA[World]]> &hello;</test>" +
 		 "					" +
 		 "<?pi HeLlO wOrLd ?>"),
+		("<test><testempty/></test>"),
 	};
 
 	// Constructor.
@@ -342,13 +343,19 @@ public class TestXmlDocument : TestCase
 	// Test loading xml.
 	public void TestXmlDocumentLoadXml()
 			{
-				XmlDocument doc = new XmlDocument();
+				XmlDocument doc;
+
+				doc = new XmlDocument();
 				doc.PreserveWhitespace = true;
 				doc.LoadXml(xml[1]);
 				AssertNotNull("LoadXml (1)", doc.FirstChild);
 				AssertNotNull("LoadXml (2)", doc.DocumentType);
 				AssertNotNull("LoadXml (3)", doc.DocumentElement);
 				Assert("LoadXml (4)", (doc.FirstChild is XmlDeclaration));
+
+				doc = new XmlDocument();
+				doc.LoadXml(xml[2]);
+				AssertNotNull("LoadXml (3)", doc.DocumentElement);
 			}
 
 }; // class TestXmlDocument

@@ -1871,7 +1871,9 @@ namespace FormsTest
 					StringFormat sf = new StringFormat();
 					sf.SetMeasurableCharacterRanges(new CharacterRange[] { new CharacterRange(0,1), new CharacterRange(1,1) });
 					RectangleF re = g.MeasureCharacterRanges("jM",f,new Rectangle(0,0,100,100),sf)[0].GetBounds(g);
+				#if CONFIG_EXTENDED_NUMERICS
 					g.DrawString("jM Meas:" + re.Left +"," + re.Top + "," + re.Width + "," + re.Height, f, b, x, y);
+				#endif
 					y+=20;
 					g.DrawString("jM", f, b, x, y, sf);
 					re.Offset(x,y);
@@ -1879,7 +1881,9 @@ namespace FormsTest
 
 					DrawPrimitive(g, 19, "Arial 10", out x, out y);
 					re = g.MeasureCharacterRanges("jM",f,new Rectangle(0,0,100,100),sf)[1].GetBounds(g);
+				#if CONFIG_EXTENDED_NUMERICS
 					g.DrawString("jM Meas:" + re.Left +"," + re.Top + "," + re.Width + "," + re.Height, f, b, x, y);
+				#endif
 					y+=20;
 					g.DrawString("jM", f, b, x, y, sf);
 					re.Offset(x,y);

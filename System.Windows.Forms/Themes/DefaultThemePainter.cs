@@ -1104,9 +1104,17 @@ internal class DefaultThemePainter : IThemePainter
 				if(text == null) { text = ""; }
 
 				// measure text
+			#if CONFIG_EXTENDED_NUMERICS
 				Size textSize = Size.Ceiling(graphics.MeasureString(text, font,
 				                                                    bounds.Width,
 				                                                    format));
+			#else
+				SizeF textSizeF = graphics.MeasureString(text, font,
+		                                                 bounds.Width,
+		                                                 format);
+				Size textSize = new Size((int)(textSizeF.Width),
+										 (int)(textSizeF.Height));
+			#endif
 
 				// draw text
 				if(enabled)

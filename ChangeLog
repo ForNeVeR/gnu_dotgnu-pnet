@@ -4,6 +4,10 @@
 	* runtime/System/IO/FileStream.cs: disable the handle access
 	check temporarily because it doesn't seem to work with pipes.
 
+	* SharpZipLib/Tar/TarArchive.cs, System.Windows.Forms/MessageBox.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	samples/FormsTest.cs: profile-related fixes.
+
 2003-10-10  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: measureCharacterRanges now complies with

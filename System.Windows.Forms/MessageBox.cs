@@ -141,7 +141,7 @@ public class MessageBox
 					(text, caption, buttons, icon,
 					 defaultButton, options);
 				DialogResult result = form.ShowDialog(owner as Form);
-				form.Dispose();
+				form.DisposeDialog();
 				return result;
 			}
 
@@ -496,6 +496,12 @@ public class MessageBox
 			{
 				Graphics g = args.Graphics;
 				g.DrawIcon(icon, 0, 0);
+			}
+
+		// Dispose of this dialog.
+		public void DisposeDialog()
+			{
+				Dispose(true);
 			}
 
 	}; // class MessageBoxForm

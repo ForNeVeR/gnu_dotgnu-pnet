@@ -1,4 +1,13 @@
 
+2003-04-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Microsoft/Win32/IRegistryKeyProvider.cs,
+	runtime/Microsoft/Win32/MemoryKeyProvider.cs,
+	runtime/Microsoft/Win32/Registry.cs,
+	runtime/Microsoft/Win32/RegistryKey.cs,
+	runtime/Microsoft/Win32/Win32KeyProvider.cs: implement the Win32
+	version of the registry routines.
+
 2003-04-03  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/IO/Directory.cs, resources/en_US/runtime/IO.txt:

@@ -83,6 +83,8 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 				int index;
 				String temp;
 				IRegistryKeyProvider key;
+				RegistryKey savedStart = start;
+				RegistryKey prevStart;
 
 				while((index = subkey.IndexOf('\\')) != -1 ||
 				      (index = subkey.IndexOf('/')) != -1)
@@ -98,6 +100,7 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 					}
 
 					// Create or open a new component.
+					prevStart = start;
 					if(create)
 					{
 						key = start.provider.OpenSubKey(temp, true);
@@ -115,6 +118,12 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 							return null;
 						}
 						start = new RegistryKey(key, false);
+					}
+					if(prevStart != savedStart)
+					{
+						// Intermediate registry key that we won't be needing
+						// any more, so clean up its resources.
+						prevStart.Close();
 					}
 				}
 				last = subkey;
@@ -171,6 +180,17 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 					throw new IOException(_("IO_RegistryKeyClosed"));
 				}
 
+				// Take a shortcut if we need to "delete from parents".
+				if(provider.DeleteFromParents)
+				{
+					if(!provider.DeleteSubKey(subkey) && throwOnMissingSubKey)
+					{
+						throw new ArgumentException
+							(_("IO_RegistryKeyNotExist"));
+					}
+					return;
+				}
+
 				// Resolve the subkey to a parent and last component.
 				String last;
 				RegistryKey parent;
@@ -216,6 +236,17 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 				if(provider == null)
 				{
 					throw new IOException(_("IO_RegistryKeyClosed"));
+				}
+
+				// Take a shortcut if we need to "delete from parents".
+				if(provider.DeleteFromParents)
+				{
+					if(!provider.DeleteSubKeyTree(subkey))
+					{
+						throw new ArgumentException
+							(_("IO_RegistryKeyNotExist"));
+					}
+					return;
 				}
 
 				// Resolve the subkey to a parent and last component.
@@ -341,18 +372,40 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 				{
 					throw new ArgumentNullException("machineName");
 				}
-				else if(machineName != String.Empty)
-				{
-					// Accessing remote registries is a big security risk.
-					// Always deny the request.
-					throw new SecurityException(_("Invalid_RemoteRegistry"));
-				}
 
-				// Open the local hive.
+				// Get the name of the hive to be accessed.
 				String name = hiveNames
 					[((int)hKey) - (int)(RegistryHive.ClassesRoot)];
+
+				// Is this a remote hive reference?
+				if(machineName != String.Empty)
+				{
+					if(Win32KeyProvider.IsWin32())
+					{
+						// Attempt to connect to the remote registry.
+						IntPtr newKey;
+						if(Win32KeyProvider.RegConnectRegistry
+								(machineName,
+								 Win32KeyProvider.HiveToHKey(hKey),
+								 out newKey) != 0)
+						{
+							throw new SecurityException
+								(_("Invalid_RemoteRegistry"));
+						}
+						return new RegistryKey
+							(new Win32KeyProvider(name, newKey), true);
+					}
+					else
+					{
+						// Not Win32 - cannot access remote registries.
+						throw new SecurityException
+							(_("Invalid_RemoteRegistry"));
+					}
+				}
+
+				// Open a local hive.
 				return new RegistryKey
-					(Registry.GetProvider(hKey, name), false);
+					(Registry.GetProvider(hKey, name), true);
 			}
 
 	// Open a subkey.

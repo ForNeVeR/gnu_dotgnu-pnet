@@ -85,6 +85,23 @@ internal sealed class MemoryKeyProvider : IRegistryKeyProvider
 				}
 			}
 
+	// Returns true if we should delete subkeys from their parents.
+	public bool DeleteFromParents
+			{
+				get
+				{
+					// Use "Delete" and "DeleteTree".
+					return false;
+				}
+			}
+
+	// Delete a subkey of this key entry.  Returns false if not present.
+	public bool DeleteSubKey(String name)
+			{
+				// Not used for memory-based registries.
+				return false;
+			}
+
 	// Delete this key entry.
 	public void Delete()
 			{
@@ -128,6 +145,14 @@ internal sealed class MemoryKeyProvider : IRegistryKeyProvider
 						}
 					}
 				}
+			}
+
+	// Delete a subkey entry and all of its descendents.
+	// Returns false if not present.
+	public bool DeleteSubKeyTree(String name)
+			{
+				// Not used for memory-based registries.
+				return false;
 			}
 
 	// Delete this key entry and all of its descendents.

@@ -86,7 +86,8 @@ public sealed class Registry
 					// Create a Win32 provider if we are on a Windows system.
 					if(Win32KeyProvider.IsWin32())
 					{
-						providers[index] = new Win32KeyProvider(name);
+						providers[index] = new Win32KeyProvider
+							(name, Win32KeyProvider.HiveToHKey(hKey));
 						return providers[index];
 					}
 

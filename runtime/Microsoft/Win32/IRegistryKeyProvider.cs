@@ -38,8 +38,18 @@ internal interface IRegistryKeyProvider
 	// Create a subkey underneath this particular registry key.
 	IRegistryKeyProvider CreateSubKey(String subkey);
 
+	// Returns true if we should delete subkeys from their parents.
+	bool DeleteFromParents { get; }
+
+	// Delete a subkey of this key entry.  Returns false if not present.
+	bool DeleteSubKey(String name);
+
 	// Delete this key entry.
 	void Delete();
+
+	// Delete a subkey entry and all of its descendents.
+	// Returns false if not present.
+	bool DeleteSubKeyTree(String name);
 
 	// Delete this key entry and all of its descendents.
 	void DeleteTree();

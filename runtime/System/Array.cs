@@ -291,7 +291,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			     index + array.GetLowerBound(0), Length);
 		}
 	}
-	public int Count
+	int ICollection.Count
 	{
 		get
 		{

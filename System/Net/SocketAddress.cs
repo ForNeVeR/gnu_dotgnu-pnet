@@ -153,7 +153,7 @@ public class SocketAddress
 			default:
 				return null;
 		}
-		str += myarray.Count.ToString();
+		str += myarray.Length.ToString();
 		str += ':';
 		str += '{';
 		string tmp = String.Empty;
@@ -196,7 +196,7 @@ public class SocketAddress
 	{
 		get
 		{
-			return myarray.Count;
+			return myarray.Length;
 		}
 	}	
 

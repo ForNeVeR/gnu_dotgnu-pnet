@@ -7,6 +7,9 @@
 	make it "internal", to prevent it being exported publicly from
 	"mscorlib.dll" and hence a security problem.
 
+	* System/Net/SocketAddress.cs, runtime/System/Array.cs: the
+	"Array.Count" property is supposed to be private.
+
 2002-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Makefile.am, System.Xml/Makefile.am, runtime/Makefile.am:

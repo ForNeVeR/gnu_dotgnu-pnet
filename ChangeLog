@@ -1,3 +1,14 @@
+2003-10-14  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs
+	System.Drawing.Win32/DrawingToolkit.cs
+	System.Drawing.Win32/DrawingWindow.cs
+	System.Windows.Forms/Control.cs
+	System.Windows.Forms/TabControl.cs
+	System.Windows.Forms/TabPage.cs
+	System.Windows.Forms/TextBox.cs
+	samples/FormsTest.cs : small bug fixes. All round control performance
+	improvement. Layout bug in tab control.
 
 2003-10-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 

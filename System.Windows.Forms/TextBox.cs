@@ -23,6 +23,7 @@ namespace System.Windows.Forms
 {
 
 using System.Drawing;
+using System.Text;
 
 public class TextBox : TextBoxBase
 {
@@ -360,35 +361,22 @@ public class TextBox : TextBoxBase
 			System.Text.StringBuilder sb = new System.Text.StringBuilder();
 			if (value.Length > 0)
 			{
-				char cNext = value[0];
-				if (value.Length > 1)
-			
+				char cPrevious = (char)0;
+				for (int i = 0; i < value.Length; i++)
 				{
-					for (int i = 0; i < value.Length - 1; i++)
-					{
-						char c = cNext;
-						cNext = value[i + 1];
-						if (c == '\r' && cNext == '\n')
-						{
-							sb.Append("\r\n");
-							++i;
-							if (i < value.Length)
-								cNext = value[i + 1];
-						}
-						else if ( c == '\r' || c == '\n')
-						{
-							sb.Append("\r\n");
-						}
-						else
-							sb.Append(c);
-					}
+					char c = value[i];
+					bool isNext = (i < value.Length - 1);
+					char cNext = (char)0;
+					if (isNext)
+						cNext = value[i+1];
+					if ((!isNext || cNext != '\n') && c == '\r')
+						sb.Append("\r\n");
+					else if (c=='\n' && cPrevious != '\r')
+						sb.Append("\r\n");
+					else
+						sb.Append(c);
+					cPrevious = c;
 				}
-				if (cNext == '\n' || cNext == '\r')
-				{
-					sb.Append("\r\n");
-				}
-				else
-					sb.Append(cNext);
 			}
 			SetTextActual( sb.ToString());
 			// Set the position to the end
@@ -424,30 +412,15 @@ public class TextBox : TextBoxBase
 			string[] lines = new string[line];
 			int start = 0;
 			line = 0;
-			y = 0;
 			// Break into strings
 			for (int i = 0; i < Text.Length; i++)
 			{
-				int currentY = layout.Items[i].bounds.Y;
-				if (currentY != y)
+				if (Text[i] == '\r' && i < Text.Length - 1 && Text[i+1] == '\n') // Look for CRLF
 				{
-					if (Text[i - 2] == '\r') // Look for CRLF
-					{
-						lines[line++] = Text.Substring(start, i - 2 - start);
-					}
-					else
-						lines[line++] = Text.Substring(start, i - 1 - start);
+					lines[line++] = Text.Substring(start, i - start);
+					i+=2;
 					start = i;
-					y = currentY;
 				}
-			}
-			if (start != Text.Length)
-			{
-				if (Text[Text.Length - 2] == '\r') // Look for CRLF
-					lines[line++] = Text.Substring(start, Text.Length - start - 2 /* CRLF */);
-				else
-					lines[line++] = Text.Substring(start);
-					
 			}
 			
 			return lines;
@@ -479,7 +452,8 @@ public class TextBox : TextBoxBase
 			{
 				textAlign = value;
 				// Layout changes
-				LayoutFromText();
+				LayoutFromText(Text);
+				SetScrollBarPositions();
 				
 				ResetView();
 				OnTextAlignChanged(EventArgs.Empty);
@@ -767,12 +741,45 @@ public class TextBox : TextBoxBase
 
 	// Create the drawLayout from the text
 	// All rendered in client coordinates.
-	protected void LayoutFromText()
+	protected void LayoutFromText(String newText)
 	{
-		layout = new LayoutInfo();
-		layout.Items = new LayoutInfo.Item[Text.Length];
+		if (layout == null)
+		{
+			layout = new LayoutInfo();
+			layout.Items = new LayoutInfo.Item[0];
+		}
+		
+		// Optimization - only re-layout from the beginning of the last line modified.
+		// Find posLine, the position of the beginning of the line we must start updating from.
+		// yLine is the y coordinate of this point.
+		int yLine = 1;
+		int posLine = 0;
+		for (int i = 0; i < layout.Items.Length; i++)
+		{
+			if (i > newText.Length - 1)
+				break;
+			
+			if (layout.Items[i].bounds.Top != yLine)
+			{
+				posLine = i;
+				yLine = layout.Items[i].bounds.Top;
+			}
+			if (newText[i] != Text[i])
+				break;
+		}
+		// We leave 1 pixel on the left and right for the caret
+		// Multiline textboxes are infinite in the y direction
+		// non multiline are infinite in the x direction and we scroll when needed
+		// This is the area we need to lay the text into.
+		Rectangle measureBounds;
+		if (Multiline)
+				measureBounds = new Rectangle(1, yLine - 1, TextDrawArea.Width - 2, maxXY - (yLine - 1));
+			else
+				measureBounds = new Rectangle(1, yLine - 1, maxXY, TextDrawArea.Height - (yLine - 1));
 
-		// Convert control settings to a StringFormat
+		string measureText = newText.Substring(posLine);
+
+		// Convert the control settings to a StringFormat
 		StringFormat format = new StringFormat();
 		if (RightToLeft == RightToLeft.Yes)
 			format.FormatFlags |= StringFormatFlags.DirectionRightToLeft;
@@ -785,71 +792,71 @@ public class TextBox : TextBoxBase
 		else if (textAlign == HorizontalAlignment.Center)
 			format.Alignment = StringAlignment.Center;
 	
-		// We want to measure each character individually
-		CharacterRange[] range = new CharacterRange[Text.Length];
-		for (int i = 0; i < Text.Length; i++)
+		// To use MeasureCharacterRanges, we need to specify that we want to measure each character individually.
+		// This MS api isnt very clever!
+		CharacterRange[] range = new CharacterRange[measureText.Length];
+		for (int i = 0; i < measureText.Length; i++)
 			range[i] = new CharacterRange(i, 1);
 		format.SetMeasurableCharacterRanges(range);
-		if (range.Length > 0)
+		
+		Region[] bounds;
+		if (measureText.Length == 0)
+			bounds = new Region[0];
+		else if (passwordChar == 0)
+			bounds = ControlGraphics.MeasureCharacterRanges(measureText, Font, measureBounds, format);
+		else
+			bounds = ControlGraphics.MeasureCharacterRanges(new string(passwordChar, measureText.Length), Font, measureBounds, format);
+		LayoutInfo.Item[] newItems = new LayoutInfo.Item[newText.Length];
+		// Copy in the previously measured items.
+		Array.Copy(layout.Items, 0, newItems, 0, posLine);
+		layout.Items = newItems;
+		
+		// Convert the MeasureCharacterRanges to LayoutInfo
+		// MeasureCharacterRanges will return an empty rectangle for all characters
+		// that are not visible. We need to figure out the positions of LF and spaces
+		// that are swallowed
+		Rectangle prevBounds;
+		if (posLine == 0)
+			prevBounds = new Rectangle(CaretXFromAlign, 0, 0, Font.Height);
+		else
+			prevBounds = layout.Items[posLine - 1].bounds;
+		LayoutInfo.Item.CharType prevType = LayoutInfo.Item.CharType.VisibleChar;
+		for (int i = posLine; i < newText.Length;i++)
 		{
-			// We leave 1 pixel on the left and right for the caret
-			// Multiline textboxes are infinite in the y direction
-			// non multiline are infinite in the x direction and we scroll when needed
-			Rectangle measureBounds;
-			if (Multiline)
-				measureBounds = new Rectangle(1, 0, TextDrawArea.Width - 2, maxXY);
-			else
-				measureBounds = new Rectangle(1, 0, maxXY, TextDrawArea.Height);
-			Region[] bounds;
-			if (passwordChar == 0)
-				bounds = ControlGraphics.MeasureCharacterRanges(Text, Font, measureBounds, format);
-			else
-				bounds = ControlGraphics.MeasureCharacterRanges(new string(passwordChar, Text.Length), Font, measureBounds, format);
-
-			// Convert the MeasureCharacterRanges to LayoutInfo
-			// MeasureCharacterRanges will return an empty rectangle for all characters
-			// that are not visible. We need to figure out the positions of LF and spaces
-			// that are swallowed
-			Rectangle prevBounds = new Rectangle(CaretXFromAlign, 0, 0, Font.Height);
-			LayoutInfo.Item.CharType prevType = LayoutInfo.Item.CharType.VisibleChar;
-			for (int i=0; i<Text.Length;i++)
+			LayoutInfo.Item item = new LayoutInfo.Item();
+			char c = newText[i];
+			Rectangle rect = Rectangle.Truncate(bounds[i - posLine].GetBounds( ControlGraphics));
+			if (c == '\r')
 			{
-				LayoutInfo.Item item = new LayoutInfo.Item();
-				char c = Text[i];
-				Rectangle rect = Rectangle.Truncate(bounds[i].GetBounds( ControlGraphics));
-				if (c == '\r')
-				{
-					item.type = LayoutInfo.Item.CharType.CR;
-					// Linefeed. The bounds is to the right of the previous character.
-					// If the previous character was also a linefeed, we move down a line
-					// from the previous bounds.
-					if (i > 0 && Text[i-1] == '\n')
-						rect = new Rectangle(CaretXFromAlign, prevBounds.Top + Font.Height, 0, Font.Height);
-					else
-						rect = new Rectangle(prevBounds.Right, prevBounds.Top, 0, prevBounds.Height);
-				}
-				else if (c == '\n')
-				{
-					item.type = LayoutInfo.Item.CharType.LF;
-					rect = new Rectangle(prevBounds.Right, prevBounds.Top, (int) Font.Size, prevBounds.Height);
-						// give this LF a non-empty bounds so that it appears in a selection
-				}
-				else // c != CR, LF
-					item.type = LayoutInfo.Item.CharType.VisibleChar;
-				
-				if (rect.IsEmpty)
-				{
-					item.type = LayoutInfo.Item.CharType.OutOfBoundsChar;
-					// Look for spaces that are swallowed
-					if (c == ' ' && prevType == LayoutInfo.Item.CharType.VisibleChar)
-						rect = new Rectangle(prevBounds.Right, prevBounds.Top, 0, prevBounds.Height);
-				}
-				item.bounds = prevBounds = rect;
-				layout.Items[i] = item;
-				prevType = item.type;
+				item.type = LayoutInfo.Item.CharType.CR;
+				// Return. The bounds is to the right of the previous character.
+				// If the previous character was also a linefeed, we move down a line
+				// from the previous bounds.
+				if (i > 0 && newText[i-1] == '\n')
+					rect = new Rectangle(CaretXFromAlign, prevBounds.Top + Font.Height, 0, Font.Height);
+				else
+					rect = new Rectangle(prevBounds.Right, prevBounds.Top, 2, prevBounds.Height);
 			}
+			else if (c == '\n')
+			{
+				item.type = LayoutInfo.Item.CharType.LF;
+				rect = new Rectangle(prevBounds.Right, prevBounds.Top, 2, prevBounds.Height);
+					// give this LF a non-empty bounds so that it appears in a selection
+			}
+			else // c != CR, LF
+				item.type = LayoutInfo.Item.CharType.VisibleChar;
+			
+			if (rect.IsEmpty)
+			{
+				item.type = LayoutInfo.Item.CharType.OutOfBoundsChar;
+				// Look for spaces that are swallowed
+				if (c == ' ' && prevType == LayoutInfo.Item.CharType.VisibleChar)
+					rect = new Rectangle(prevBounds.Right, prevBounds.Top, 0, prevBounds.Height);
+			}
+			item.bounds = prevBounds = rect;
+			layout.Items[i] = item;
+			prevType = item.type;
 		}
-		SetScrollBarPositions();
 	}
 
 	// Make sure the caret is visible
@@ -938,7 +945,7 @@ public class TextBox : TextBoxBase
 			layout.Items[i].selected = selected;
 			Rectangle b = layout.Items[i].bounds;
 			b = new Rectangle(b.Left, b.Top, b.Width, b.Height + 1);
-			if (selected && layout.Items[i].type == LayoutInfo.Item.CharType.VisibleChar)
+			if (selected)
 				newRegion.Union(b);
 		}
 		// Find the region we need to redraw by Xoring with old
@@ -959,8 +966,7 @@ public class TextBox : TextBoxBase
 
 	protected override void SetTextInternal(string text)
 	{
-		SetTextActual(text);
-		Redraw(ControlGraphics);
+		Text = text;
 	}
 
 	
@@ -973,9 +979,10 @@ public class TextBox : TextBoxBase
 		if (prevLayout)
 			oldLayout = (LayoutInfo)layout.Clone();
 		string oldText = Text;
+		LayoutFromText(text);
 		// We must not trigger the onTextChanged event yet else this controls text could be change in the event!
 		(this as Control).text = text;
-		LayoutFromText();
+		SetScrollBarPositions();
 		if (prevLayout)
 		{
 			Region update = new Region(RectangleF.Empty);
@@ -1219,7 +1226,8 @@ public class TextBox : TextBoxBase
 			if (graphics != null)
 				graphics.Dispose();
 			graphics = null;
-			LayoutFromText();
+			LayoutFromText(Text);
+			SetScrollBarPositions();
 		}
 		ResetView();
 	}
@@ -1228,11 +1236,15 @@ public class TextBox : TextBoxBase
 	// Paint the text using layout information
 	private void DrawText(Graphics g, bool focused)
 	{
-		String s = String.Empty;
+		Font font = Font;
+		StringBuilder s = new StringBuilder();
 		Brush prevFore = null;
 		int x = -1;
 		int y = -1;
-		for (int i=0; i<Text.Length;i++) 
+		int textLength = 0;
+		if (text != null)
+			textLength = text.Length;
+		for (int i=0; i < textLength;i++) 
 		{
 			LayoutInfo.Item item = layout.Items[i];
 			Rectangle bounds = item.bounds;
@@ -1247,23 +1259,24 @@ public class TextBox : TextBoxBase
 				if (bounds.Top == y && prevFore == fore)
 				{
 					if (passwordChar != 0)
-						s += passwordChar;
+						s.Append(passwordChar);
 					else
-						s += Text[i];
+						s.Append(text[i]);
 				}
 				else
 				{
 					if (s.Length > 0)
 					{
 						if (Enabled )
-							g.DrawString(s, Font, prevFore, new Point (x, y));
+							g.DrawString(s.ToString(), font, prevFore, new Point (x, y));
 						else
-							ControlPaint.DrawStringDisabled(g, s, Font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
+							ControlPaint.DrawStringDisabled(g, s.ToString(), font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
 					}
+					s.Remove(0, s.Length);
 					if (passwordChar != 0)
-						s = passwordChar.ToString();
+						s.Append(passwordChar);
 					else
-						s = Text[i].ToString();
+						s.Append(text[i]);
 					x = bounds.X;
 					y = bounds.Y;
 				}
@@ -1273,11 +1286,13 @@ public class TextBox : TextBoxBase
 		if (s.Length != 0)
 		{
 			if (Enabled )
-				g.DrawString(s, Font, prevFore, new Point (x, y));
+				g.DrawString(s.ToString(), Font, prevFore, new Point (x, y));
 			else
-				ControlPaint.DrawStringDisabled(g, s, Font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
+				ControlPaint.DrawStringDisabled(g, s.ToString(), font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
 		}
 	}
+
+	private int previousClosest = -1;
 
 	// Handle all mouse processing
 	private void ProcessMouse(MouseEventArgs e)
@@ -1292,8 +1307,9 @@ public class TextBox : TextBoxBase
 					pt.Offset(XViewOffset, YViewOffset);
 					
 					int closest = CaretGetPosition(pt);
-					if (closest >= 0)
+					if (closest >= 0 && previousClosest != closest)
 						UpdateSelectionInternal(closest);
+					previousClosest = closest;
 				}
 				else 
 				{
@@ -1308,6 +1324,7 @@ public class TextBox : TextBoxBase
 				{
 					// We are clicking to move the caret
 					Point pt = new Point(e.X,e.Y);
+					previousClosest = -1;
 					pt.Offset(XViewOffset, YViewOffset);
 					int closest = CaretGetPosition(pt);
 					if (closest >= 0)
@@ -1369,7 +1386,7 @@ public class TextBox : TextBoxBase
 			switch (TextAlign)
 			{
 				case(HorizontalAlignment.Left):
-					return 0;
+					return 1;
 				case(HorizontalAlignment.Center):
 					if (Multiline)
 						return TextDrawArea.Width/2;
@@ -1464,6 +1481,10 @@ public class TextBox : TextBoxBase
 				prevBounds = bounds;
 			}
 		}
+
+		// CR's only get selected, so if this position is the beginning of a selection then select the LF as well
+		if (caretPosition < (GetSelectionStart()+ GetSelectionLength()) && Text.Length > 1 && layout.Items[caretPosition].type == LayoutInfo.Item.CharType.LF && layout.Items[caretPosition - 1].type == LayoutInfo.Item.CharType.CR)
+			caretPosition--;
 	
 		if (i == Text.Length)
 		{

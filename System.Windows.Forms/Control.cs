@@ -1752,7 +1752,7 @@ protected virtual void Dispose(bool disposing)
 		(Control affectedControl, String affectedProperty)
 			{
 				// Bail out if layout was suspended.
-				if(layoutSuspended > 0)
+				if(layoutSuspended > 0 || !IsHandleCreated)
 				{
 					return;
 				}
@@ -2332,6 +2332,7 @@ protected virtual void Dispose(bool disposing)
 		(int x, int y, int width, int height,
 		BoundsSpecified specified)
 			{
+				bool modified = (x != this.left || y != this.top || width != this.width || height != this.height);
 				// Set unspecified components to the right values.
 				if((specified & BoundsSpecified.X) == 0)
 				{
@@ -2351,7 +2352,7 @@ protected virtual void Dispose(bool disposing)
 				}
 
 				// Move and resize the toolkit version of the control.
-				if(toolkitWindow != null)
+				if(toolkitWindow != null && modified)
 				{
 					// Convert from outside to toolkit coordinates
 					int xT = x + ToolkitDrawOrigin.X;
@@ -3978,7 +3979,7 @@ protected virtual void Dispose(bool disposing)
 				{
 					toolkitWindow.IsMapped = visible;
 				}
-				else if(Visible && !disposed)
+				else if(Visible && !disposed && !(parent != null && !parent.IsHandleCreated) )
 				{
 					// Create the toolkit window for the first time.
 					// This will also map the toolkit window to the screen.
@@ -4325,7 +4326,7 @@ protected virtual void Dispose(bool disposing)
 					if(index < newIndex)
 					{
 						MoveToBelow(owner.children[newIndex], child);
-						for(posn = index; posn < newIndex; ++index)
+						for(posn = index; posn < newIndex; ++posn)
 						{
 							owner.children[posn] = owner.children[posn + 1];
 						}

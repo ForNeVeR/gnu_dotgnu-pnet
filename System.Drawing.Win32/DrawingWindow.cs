@@ -96,7 +96,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 	// Is this really useful?
 	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)
 	{
-		throw new NotImplementedException();
 	}
 
 	// Move this window to above one of its siblings.
@@ -549,8 +548,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 		DrawingWindow found = null;
 
 		// Child windows lower down the heirachy will always be last in the windows list
-		foreach(DrawingWindow w in toolkit.windows)
+		for (int i = 0; i < toolkit.windows.Count; i++)
 		{
+			DrawingWindow w = toolkit.windows[i] as DrawingWindow;
 			if (toolkit.capturedWindow != null)
 			{
 				if (w.Visible && toolkit.capturedWindow.IsParentOf(w) && w.DimensionsScreen.Contains(x,y))

@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
+using System.Text;
 
 namespace FormsTest
 {
@@ -223,7 +224,7 @@ namespace FormsTest
 		private TextBox scroll1TextBoxMin, scroll1TextBoxMax, scroll1TextBoxValue, scroll1TextBoxLarge, scroll1TextBoxSmall;
 		private TextBox scroll2TextBoxMin, scroll2TextBoxMax, scroll2TextBoxValue, scroll2TextBoxLarge, scroll2TextBoxSmall;
 
-		private TextBox textBoxTest2;
+		private TextBox textBoxTest2a, textBoxTest2b;
 
 		//private PropertyGrid propertyGrid;
 		#endregion
@@ -891,7 +892,7 @@ namespace FormsTest
 			textBoxLinesButton.Click+=new EventHandler(textBoxLinesButton_Click);
 
 			textBoxTextButton.Bounds = new Rectangle( 180, 510, 70, 30);
-			textBoxTextButton.Text = "Set Text";
+			textBoxTextButton.Text = "Add Text";
 			textBoxTextButton.Click+=new EventHandler(textBoxTextButton_Click);
 
 			textBoxSelectedTextButton.Bounds = new Rectangle( 250, 510, 150, 30);
@@ -925,18 +926,6 @@ namespace FormsTest
 																		 });
 		}
 
-		private void AddTextBoxTest2(Control c)
-		{
-			textBoxTest2 = new TextBox();
-			textBoxTest2.Bounds = new Rectangle(10,10, 200, 300);
-			textBoxTest2.Multiline = true;
-			textBoxTest2.WordWrap = false;
-			textBoxTest2.ScrollBars = ScrollBars.Both;
-			textBoxTest2.Text = "Play around...";
-			c.Controls.Add(textBoxTest2);
-
-		}
-
 		private void textBoxLinesButton_Click(object sender, EventArgs e)
 		{
 			foreach(String s in textBox4.Lines)
@@ -945,11 +934,48 @@ namespace FormsTest
 
 		private void textBoxTextButton_Click(object sender, EventArgs e)
 		{
-			textBox4.Text = textBox4.Text + "1234 123456 123";
+			textBox4.AppendText("1234 123456 123");
 		}
 		private void textBoxSelectedTextButton_Click(object sender, EventArgs e)
 		{
 			textBox4.SelectedText = "aaaa bbbbb cccc";
+		}
+
+		private void AddTextBoxTest2(Control c)
+		{
+			textBoxTest2b = new TextBox();
+			textBoxTest2b.Bounds = new Rectangle(250,10, 200, 300);
+			textBoxTest2b.Multiline = true;
+			textBoxTest2b.ReadOnly = true;
+			textBoxTest2b.ScrollBars = ScrollBars.Both;
+			
+			textBoxTest2a = new TextBox();
+			textBoxTest2a.Bounds = new Rectangle(10,10, 200, 300);
+			textBoxTest2a.Multiline = true;
+			textBoxTest2a.WordWrap = false;
+			textBoxTest2a.ScrollBars = ScrollBars.Both;
+			textBoxTest2a.TextChanged+=new EventHandler(textBoxTest2a_TextChanged);
+			textBoxTest2a.Text = "Play around...\r\n";
+
+			c.Controls.Add(textBoxTest2a);
+			c.Controls.Add(textBoxTest2b);
+
+		}
+
+		private void textBoxTest2a_TextChanged(object sender, EventArgs e)
+		{
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < textBoxTest2a.Text.Length; i++)
+			{
+				if (textBoxTest2a.Text[i] == '\n')
+					sb.Append("\\n\r\n");
+				else if (textBoxTest2a.Text[i] == '\r')
+					sb.Append("\\r");
+				else
+					sb.Append(textBoxTest2a.Text[i]);
+			}
+			textBoxTest2b.Text = sb.ToString();
+
 		}
 
 		private void AddRadioButtonsTest(Control control)

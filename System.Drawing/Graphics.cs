@@ -2048,9 +2048,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				for (int i = 0; i < stringFormat.ranges.Length; i++)
 				{
 					CharacterRange range = stringFormat.ranges[i];
-					Region region = new Region(RectangleF.Empty);
+					Region region = null;
 					for (int j = range.First; j < range.First + range.Length; j++)
-						region.Union(bounds[j]);
+					{
+						if (region == null)
+							region = new Region(bounds[j]);
+						else
+							region.Union(bounds[j]);
+					}
 					regions[i] = region;
 				}
 				return regions;
@@ -2323,7 +2328,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				Region other = g.Clip;
 				switch(combineMode)
 				{
-					case CombineMode.Replace:	clip = other.Clone(); break;
+					case CombineMode.Replace:
+						clip = other.Clone(); break;
 
 					case CombineMode.Intersect:
 					{
@@ -3030,7 +3036,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Update the clipping region within the IToolkitGraphics object.
 	private void UpdateClip()
 			{
-				RectangleF[] rectsF = clip.GetRegionScans(new Matrix());
+				RectangleF[] rectsF = clip.GetRegionScans(Transform);
 				Rectangle[] rects = new Rectangle[rectsF.Length];
 				for(int i=0;i < rectsF.Length; i++)
 				{

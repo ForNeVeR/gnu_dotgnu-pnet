@@ -659,9 +659,12 @@ public class DrawingToolkit : IToolkit
 
 	internal DrawingWindow DrawingWindow(IntPtr hwnd)
 	{
-		foreach(DrawingWindow window in windows)
+		for(int i = 0; i < windows.Count; i++)
+		{
+			DrawingWindow window = (DrawingWindow)windows[i];
 			if (window.hwnd == hwnd)
 				return window;
+		}
 		return null;
 	}
 

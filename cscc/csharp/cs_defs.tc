@@ -119,6 +119,8 @@
 	CSSemValue	value;
 }
 %node ILNode_ToAttrConst ILNode_ToConst
+%node ILNode_AttrQualIdent ILNode_QualIdent
+%node ILNode_AttrIdentifier ILNode_Identifier
 
 /*
  * Statements.

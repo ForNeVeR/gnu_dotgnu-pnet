@@ -1,4 +1,11 @@
 
+2003-05-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_attrs.c, cscc/csharp/cs_defs.tc,
+	cscc/csharp/cs_lvalue.tc: handle qualified attribute names
+	that optionally end in "Attribute" better by pushing the
+	X / XAttribute check further down into semantic analysis.
+
 2003-05-29  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_nodes.tc, codegen/cg_lvalue.tc, cscc/csharp/cs_lvalue.tc,

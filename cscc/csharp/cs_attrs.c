@@ -114,18 +114,30 @@ static int IsAttributeUsage(ILClass *classInfo)
 }
 
 /*
- * Modify an attribute name so that it ends in "Attribute".
+ * Modify an attribute name node so that it uses ILNode_AttrQualIdent
+ * or ILNode_AttrIdentifier for the top-level attribute lookup.
  */
-static void ModifyAttrName(ILNode_Identifier *ident,int force)
+static ILNode *ModifyAttrName(ILNode *node)
 {
-	char *name = ident->name;
-	int namelen = strlen(name);
-	if(force || (namelen < 9 || strcmp(name + namelen - 9, "Attribute") != 0))
+	ILNode *newNode;
+	if(yyisa(node, ILNode_QualIdent))
 	{
-		ident->name = ILInternAppendedString
-			(ILInternString(name, namelen),
-			 ILInternString("Attribute", 9)).string;
+		newNode = ILNode_AttrQualIdent_create
+			(((ILNode_QualIdent *)node)->left,
+			 ((ILNode_QualIdent *)node)->right);
 	}
+	else if(yyisa(node, ILNode_Identifier))
+	{
+		newNode = ILNode_AttrIdentifier_create
+			(((ILNode_Identifier *)node)->name);
+	}
+	else
+	{
+		return node;
+	}
+	yysetfilename(newNode, yygetfilename(node));
+	yysetlinenum(newNode, yygetlinenum(node));
+	return newNode;
 }
 
 /*
@@ -413,58 +425,14 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	const void *blob;
 	unsigned long blobLen;
 	ILAttribute *attribute;
-	ILNode *nameNode;
-	int retry;
 	int skipConst;
 	ILType *argType;
 
-	/* Hack: recognize "System.AttributeUsage" and add "Attribute".
-	   This doesn't solve all "ends in Attribute and lives in a namespace"
-	   problems, but gets rid of a particularly annoying one until a better
-	   solution can be devised */
-	if(!strcmp(ILQualIdentName(attr->name, 0), "System.AttributeUsage"))
-	{
-		((ILNode_QualIdent *)(attr->name))->right =
-			ILNode_Identifier_create
-				(ILInternString("AttributeUsageAttribute", -1).string);
-	}
-	else if(!strcmp(ILQualIdentName(attr->name, 0), "System.Serializable"))
-	{
-		((ILNode_QualIdent *)(attr->name))->right =
-			ILNode_Identifier_create
-				(ILInternString("SerializableAttribute", -1).string);
-	}
+	/* Modify the name so as to correctly handle "Attribute" suffixes,
+	   and then perform semantic analysis on the type */
+	attr->name = ModifyAttrName(attr->name);
+	type = CSSemType(attr->name, info, &(attr->name));
 
-	/* Try the attribute name without "Attribute" first */
-	nameNode = attr->name;
-	retry = 1;
-	type = 0;
-	if(CSSemExpectType(attr->name, info, &(attr->name)))
-	{
-		type = CSSemType(attr->name, info, &(attr->name));
-	    if(ILTypeAssignCompatible(info->image, type,
-	   						      ILFindSystemType(info, "Attribute")))
-		{
-			retry = 0;
-		}
-	}
-
-	/* Retry with "Attribute" appended to the name if necessary */
-	if(retry)
-	{
-		attr->name = nameNode;
-		if(yyisa(attr->name, ILNode_Identifier))
-		{
-			ModifyAttrName((ILNode_Identifier *)(attr->name), 1);
-		}
-		else if(yyisa(attr->name, ILNode_QualIdent))
-		{
-			ModifyAttrName((ILNode_Identifier *)(((ILNode_QualIdent *)
-											(attr->name))->right), 1);
-		}
-		type = CSSemType(attr->name, info, &(attr->name));
-	}
-	
 	/* The type must inherit from "System.Attribute" and not be abstract */
 	if(!ILTypeAssignCompatible
 			(info->image, type, ILFindSystemType(info, "Attribute")))

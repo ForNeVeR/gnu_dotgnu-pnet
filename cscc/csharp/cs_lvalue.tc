@@ -996,6 +996,80 @@ ILNode_SemAnalysisType(ILNode_Identifier)
 }
 
 /*
+ * Perform semantic analysis with a bias to returning Type objects.
+ * Also handle names that optionally end in "Attribute".
+ */
+ILNode_SemAnalysisType(ILNode_AttrIdentifier)
+{
+	CSSemValue value;
+	ILNode_UsingAlias *alias;
+	ILScopeData *data;
+	int savedState=info->inSemType;
+	char *name;
+
+	/* Resolve the simple name */
+	info->inSemType=1;
+	value = CSResolveSimpleNameQuiet(info, (ILNode *)node, node->name, 1);
+	info->inSemType=savedState;
+
+	if (CSSemGetKind(value) == CS_SEMKIND_TYPE &&
+	    ILTypeAssignCompatible(info->image, CSSemGetType(value),
+	   					       ILFindSystemType(info, "Attribute")))
+	{
+		/* Convert the result into an l-value or r-value and return it */
+		return SemToLRValue((ILNode *)node, info, parent, 
+							value, node->name, 0, 0);
+	}
+
+	/* Try again, this time with "Attribute" appended */
+	name = ILInternAppendedString
+		(ILInternString(node->name, strlen(node->name)),
+		 ILInternString("Attribute", 9)).string;
+	info->inSemType=1;
+	value = CSResolveSimpleNameQuiet(info, (ILNode *)node, name, 1);
+	info->inSemType=savedState;
+
+	if (CSSemGetKind(value) == CS_SEMKIND_TYPE)
+	{
+		/* Convert the result into an l-value or r-value and return it */
+		return SemToLRValue((ILNode *)node, info, parent, 
+							value, node->name, 0, 0);
+	}
+
+	data = ILScopeLookup(info->currentScope, node->name, 1);
+	
+	if(data && ILScopeDataGetKind(data) == IL_SCOPE_ALIAS &&
+	   !(info->resolvingAlias))
+	{
+		alias=(ILNode_UsingAlias*)ILScopeDataGetNode(data);
+		if(alias->visited==ILVisitMode_Processing)
+		{
+			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
+			  "circularity detected in `using' declaration");
+			CSSemSetLValue(value, ILType_Int32);
+			return value;
+		}
+		alias->visited=ILVisitMode_Processing;
+		*parent = (ILNode*)ILScopeDataGetData1(data);
+		if(info->resolvingAlias)
+		{
+			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
+						  "using aliases may not refer to other aliases");
+		}
+		info->resolvingAlias = 1;
+		savedState=info->inSemType;
+		info->inSemType=1;
+		value = ILNode_SemAnalysis(*parent,info,parent);
+		info->inSemType=savedState;
+		info->resolvingAlias = 0;
+		alias->visited=ILVisitMode_Done;
+		return value;
+	}
+
+	return CSSemValueDefault;
+}
+
+/*
  * Perform semantic analysis for qualified identifiers.
  */
 ILNode_SemAnalysis(ILNode_QualIdent)
@@ -1036,6 +1110,53 @@ ILNode_SemAnalysisType(ILNode_QualIdent)
 	name = ILQualIdentName(node->right, 0);
 	value2 = CSResolveMemberName(info, (ILNode *)node, value, name, 1);
 	
+	info->inSemType = savedState;
+
+	if (CSSemGetKind(value2) != CS_SEMKIND_TYPE)
+	{
+		return CSSemValueDefault;
+	}
+	else
+	{
+		/* Convert the result into an l-value or r-value and return it */
+		return SemToLRValue((ILNode *)node, info, parent, value2,
+						name, node->left, &value);
+	}
+}
+
+/*
+ * Perform semantic analysis with a bias to returning Type objects.
+ * If the first lookup fails, another is tried where the right-hand
+ * part of the identifier ends in "Attribute".
+ */
+ILNode_SemAnalysisType(ILNode_AttrQualIdent)
+{
+	CSSemValue value;
+	CSSemValue value2;
+	char *name;
+	int savedState = info->inSemType;
+
+	/* Restrict lookups for types only (ie namespaces , types, nested types */
+	info->inSemType = 1;
+
+	/* Get the semantic value for the left part of the identifier */
+	value = ILNode_SemAnalysis(node->left, info, &(node->left));
+
+	/* Resolve the member */
+	name = ILQualIdentName(node->right, 0);
+	value2 = CSResolveMemberNameQuiet(info, (ILNode *)node, value, name, 1);
+
+	/* If the resolution failed, then try again with "Attribute" appended */
+	if(CSSemGetKind(value2) != CS_SEMKIND_TYPE ||
+	   !ILTypeAssignCompatible(info->image, CSSemGetType(value2),
+	   					       ILFindSystemType(info, "Attribute")))
+	{
+		name = ILInternAppendedString
+			(ILInternString(name, strlen(name)),
+			 ILInternString("Attribute", 9)).string;
+		value2 = CSResolveMemberName(info, (ILNode *)node, value, name, 1);
+	}
+
 	info->inSemType = savedState;
 
 	if (CSSemGetKind(value2) != CS_SEMKIND_TYPE)

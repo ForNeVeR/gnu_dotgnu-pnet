@@ -5,6 +5,9 @@
 	nunit20/nunit-console/nunit.console.build, nunit20/util/nunit.util.build:
 	Add nunit20 to the default build and swap around the assembly references.
 	Install nunit-console into the PATH using clrwrap.
+
+	* nunit20/util/nunit.util.build, nunit20/util/Makefile.am: Work around
+	the resource naming problem by copying to the required name.
 	
 2004-08-03  Gopal.V  <gopalv82@yahoo.com>
 

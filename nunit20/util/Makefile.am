@@ -8,7 +8,7 @@ nunit.util.dll:
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-b "$(srcdir)" -B . -f nunit.util.build all
 
-CLEANFILES = nunit.util.dll
+CLEANFILES = nunit.util.dll NUnit.Util.Transform.resources
 
 install-data-local:
 	@$(NORMAL_INSTALL)

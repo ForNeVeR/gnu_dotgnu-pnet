@@ -2,6 +2,11 @@
 
 <project name="nunit.util" default="all">
 	<target name="all">
+
+		<!-- Work around the name vs filename mapping needed for this resource -->
+		<copy file="${mono.sources}/nunit20/util/Transform.resources" 
+					tofile="./NUnit.Util.Transform.resources"/>
+
 		<compile target="library"
 				 output="nunit.util.dll"
 				 debug="${debug.flag}"
@@ -15,8 +20,8 @@
 				<includes name="**/*.cs"/> 
 			</sources>
 
-			<resources basedir="${mono.sources}/nunit20/util/">
-				<includes name="Transform.resources"/>
+			<resources>
+				<includes name="NUnit.Util.Transform.resources"/>
 			</resources>
 
 			<references>

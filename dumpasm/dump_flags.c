@@ -210,7 +210,7 @@ ILFlagInfo const ILMethodImplementationFlags[] = {
 	{"noinlining", IL_META_METHODIMPL_NO_INLINING, 0},
 	{"forwardref", IL_META_METHODIMPL_FORWARD_REF, 0},
 	{"synchronized", IL_META_METHODIMPL_SYNCHRONIZED, 0},
-	{"preserve_sig", IL_META_METHODIMPL_PRESERVE_SIG, 0},
+	{"preservesig", IL_META_METHODIMPL_PRESERVE_SIG, 0},
 	{"internalcall", IL_META_METHODIMPL_INTERNAL_CALL, 0},
 	{"java_fp_strict", IL_META_METHODIMPL_JAVA_FP_STRICT, 0},
 	{"java", IL_META_METHODIMPL_JAVA, 0},

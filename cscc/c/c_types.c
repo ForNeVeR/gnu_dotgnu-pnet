@@ -71,7 +71,7 @@ ILType *CTypeCreateStructOrUnion(ILGenInfo *info, const char *name,
 	if(funcNameLen > 0)
 	{
 		strcpy(newName + prefixLen, funcName);
-		newName[prefixLen + funcNameLen - 1] = '.';
+		newName[prefixLen + funcNameLen - 1] = '-';
 	}
 	strcpy(newName + prefixLen + funcNameLen, name);
 
@@ -123,7 +123,7 @@ ILType *CTypeCreateEnum(ILGenInfo *info, const char *name,
 	if(funcNameLen > 0)
 	{
 		strcpy(newName + 5, funcName);
-		newName[5 + funcNameLen - 1] = '.';
+		newName[5 + funcNameLen - 1] = '-';
 	}
 	strcpy(newName + funcNameLen + 5, name);
 

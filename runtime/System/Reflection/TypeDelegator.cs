@@ -88,7 +88,7 @@ public class TypeDelegator : Type
 	// Implementation of the "IsValueType" property.
 	protected override bool IsValueTypeImpl()
 			{
-				return typeImpl.IsValueType();
+				return typeImpl.IsValueType;
 			}
 
 	// General properties.

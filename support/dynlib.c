@@ -23,6 +23,9 @@
 #ifdef HAVE_DLFCN_H
 	#include <dlfcn.h>
 #endif
+#ifdef IL_WIN32_NATIVE
+	#include <windows.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {

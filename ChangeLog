@@ -1,3 +1,9 @@
+
+2003-03-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/dynlib.c: include <windows.h> to get the declarations
+	necessary for Win32 dynamic libraries.
+
 2003-03-23  Jonathan Springer  <jonathan.springer@verizon.net>
 
 	* cscc/c_main.c, cscc/common/cc_main.c: Small changes to deal with the

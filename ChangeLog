@@ -1,4 +1,9 @@
 
+2004-10-14  Carl-Adam Brengesjo <ca.brengesjo@telia.com>
+
+	* System.Windows.Forms/TextBox.cs: set_Lines had no affect, fixed.
+	(reported by "k8t0").
+
 2004-10-14  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/runtime/System/TestBoolean.cs: added test for GetTypeCode.

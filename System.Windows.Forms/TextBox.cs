@@ -438,10 +438,13 @@ public class TextBox : TextBoxBase
 		set
 		{
 			System.Text.StringBuilder sb = new System.Text.StringBuilder();
-			foreach(string s in Lines)
+			if(value != null)
 			{
-				sb.Append(s);
-				sb.Append("\r\n");
+				foreach(string s in value)
+				{
+					sb.Append(s);
+					sb.Append("\r\n");
+				}
 			}
 			SetTextActual( sb.ToString());
 			ResetView();

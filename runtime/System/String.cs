@@ -1375,7 +1375,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						("length", _("ArgRange_StringRange"));
 				}
 				result = new char [length];
-				CopyToChecked(0, result, 0, length);
+				CopyToChecked(startIndex, result, 0, length);
 				return result;
 			}
 

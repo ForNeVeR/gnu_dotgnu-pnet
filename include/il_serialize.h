@@ -194,6 +194,12 @@ void ILSerializeWriterSetField(ILSerializeWriter *writer,
 void ILSerializeWriterSetProperty(ILSerializeWriter *writer,
 								  const char *name, int type);
 
+/*
+ * Write a boxed prefix header to the serialize stream
+ */
+void ILSerializeWriterSetBoxedPrefix(ILSerializeWriter *writer, int type);
+
+
 #ifdef	__cplusplus
 };
 #endif

@@ -236,14 +236,18 @@ static int IsAttributeTargetDistinct(ILGenInfo *info, ILProgramItem *item,
 
 /* 
  * write an entry into the serialized stream using the provide paramType and
- * argValue and serialType 
+ * argValue and serialType. 
  */
 
-static void WriteSerializedEntry(ILSerializeWriter *writer, 
+static void WriteSerializedEntry(ILGenInfo *info,
+								 ILSerializeWriter *writer, 
 								 ILType *paramType,
 								 ILEvalValue *argValue,
+								 ILType *argType,
 								 int serialType)
-{
+{	
+	ILType *systemType=ILFindSystemType(info,"Type");
+
 	switch(serialType)
 	{
 		case IL_META_SERIALTYPE_BOOLEAN:
@@ -296,7 +300,74 @@ static void WriteSerializedEntry(ILSerializeWriter *writer,
 
 		default:
 		{
-			/* TODO: arrays and implicit coercions to Object */
+			/* Note : We assume the values are castable and
+			 * do not provide any checks here */
+			if(ILType_IsArray(paramType))
+			{
+				/* TODO: arrays */
+			}
+			else if(ILType_IsPrimitive(argType))
+			{
+				switch(argValue->valueType)
+				{	
+					case ILMachineType_Boolean:
+					case ILMachineType_Int8:
+					case ILMachineType_UInt8:
+					case ILMachineType_Int16:
+					case ILMachineType_UInt16:
+					case ILMachineType_Char:
+					case ILMachineType_Int32:
+					case ILMachineType_UInt32:
+					case ILMachineType_Int64:
+					case ILMachineType_UInt64:
+					case ILMachineType_Float32:
+					case ILMachineType_Float64:
+					case ILMachineType_Decimal:
+					{
+						serialType=ILSerializeGetType(argType);
+						
+						ILSerializeWriterSetBoxedPrefix(writer, 
+														   serialType);
+
+						WriteSerializedEntry(info, writer, paramType, 
+											 argValue, argType, serialType);
+					}
+					break;
+					
+					case ILMachineType_String:
+					{
+						/* TODO */
+					}
+					break;
+					
+					default:
+					{
+					}
+					break;
+				}
+			}
+			else if(ILTypeIdentical(argType, systemType))
+			{ 
+				ILSerializeWriterSetBoxedPrefix(writer,
+										IL_META_SERIALTYPE_TYPE);
+				
+				WriteSerializedEntry(info, writer, paramType, 
+									 argValue, argType,
+									 IL_META_SERIALTYPE_TYPE);
+			}
+			else if(ILTypeIsEnum(argType))
+			{
+				const char *name = CSTypeToName	((ILType *)(argType));
+				ILSerializeWriterSetBoxedPrefix(writer,
+										IL_META_SERIALTYPE_ENUM);
+				ILSerializeWriterSetString(writer, name, strlen(name));
+
+				serialType=ILSerializeGetType(argType);
+
+				WriteSerializedEntry(info, writer, paramType,
+										argValue, argType,
+										serialType);	
+			}
 		}
 		break;
 	}
@@ -340,6 +411,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	ILNode *nameNode;
 	int retry;
 	int skipConst;
+	ILType *argType;
 
 	/* Hack: recognize "System.AttributeUsage" and add "Attribute".
 	   This doesn't solve all "ends in Attribute and lives in a namespace"
@@ -719,11 +791,18 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 							   evalValues[argNum].valueType,
 							   ILTypeToMachineType(paramType)))
 			{
-				CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
-							  yygetlinenum(evalArgs[argNum].node),
-							  _("could not coerce constant argument %d"),
-							  argNum + 1);
-				haveErrors = 1;
+				if(!ILCanCastKind(info, evalArgs[argNum].type,
+							paramType,
+							IL_CONVERT_STANDARD,
+							0))
+				{
+								
+					CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
+								  yygetlinenum(evalArgs[argNum].node),
+								  _("could not coerce constant argument %d"),
+								  argNum + 1);
+					haveErrors = 1;
+				}
 			}
 			else if(ILSerializeGetType(paramType) == -1)
 			{
@@ -750,8 +829,9 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	{
 		paramType = ILTypeGetParam(signature, argNum + 1);
 		argValue = &(evalValues[argNum]);
+		argType = evalArgs[argNum].type;
 		serialType = ILSerializeGetType(paramType);
-		WriteSerializedEntry(writer,paramType,argValue,serialType);
+		WriteSerializedEntry(info,writer,paramType,argValue,argType,serialType);
 	}
 	ILSerializeWriterSetNumExtra(writer, numNamedArgs);
 	for(argNum = 0; argNum < numNamedArgs; ++argNum)
@@ -760,6 +840,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 		if(argValue->valueType == ILMachineType_Void)
 		{
 			serialType = IL_META_SERIALTYPE_TYPE;
+			paramType = NULL;
 		}
 		else
 		{
@@ -778,7 +859,8 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 				(writer, ILMember_Name((ILMember *)(namedFields[argNum])),
 				 serialType);
 		}
-		WriteSerializedEntry(writer,paramType,argValue,serialType);
+		argType=namedArgs[argNum].type;
+		WriteSerializedEntry(info,writer,paramType,argValue,argType,serialType);
 	}
 	blob = ILSerializeWriterGetBlob(writer, &blobLen);
 	if(!blob)

@@ -1,8 +1,14 @@
 
 2003-05-02  Gopal.V  <gopalv82@symonds.net>
 	
-	* cscc/csharp/cs_attrs.tc: Split out the serialization stuff into a
+	* cscc/csharp/cs_attrs.c: Split out the serialization stuff into a
 	single function.
+
+	* image/ser_writer.c, include/il_serialize.h: implement the boxed
+	prefix generation for serialization.
+
+	* cscc/csharp/cs_attrs.c: implement the object coercion for value
+	parameters. (fixes Bug #2556)
 
 2003-05-01  Gopal.V  <gopalv82@symonds.net>
 	

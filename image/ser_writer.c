@@ -236,6 +236,18 @@ void ILSerializeWriterSetProperty(ILSerializeWriter *writer,
 	}
 }
 
+/* Boxed function for the object coercions */
+
+void ILSerializeWriterSetBoxedPrefix(ILSerializeWriter *writer,int type)
+{
+	unsigned char *buf;
+	buf = GetSpace(writer, 1);
+	if(buf)
+	{
+		*buf = type;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

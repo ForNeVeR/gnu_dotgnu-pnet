@@ -51,7 +51,7 @@ public class TestUri : TestCase
 	{
 		// Nothing to do here.
 	}
-
+
 	private bool constructorTested = false;
 	public void TestConstructor()
 	{
@@ -80,20 +80,48 @@ public class TestUri : TestCase
 
 	public void TestUriCheckHostName()
 	{
-		AssertEquals("www.gnu.org is a DNS name", Uri.CheckHostName("www.gnu.org"), UriHostNameType.Dns);
-		AssertEquals("www.southern.-storm.com.au is not a DNS name", Uri.CheckHostName("www.southern.-storm.com.au"), UriHostNameType.Unknown);
-		AssertEquals("www.southern-storm.com.au is a DNS name", Uri.CheckHostName("www.southern-storm.com.au"), UriHostNameType.Dns);
-		AssertEquals("127.0.0.1 is an IPv4 address", Uri.CheckHostName("127.0.0.1"), UriHostNameType.IPv4);
-		AssertEquals(".63.64.201.1 is not an IPv4 address", Uri.CheckHostName(".63.64.201.1"), UriHostNameType.Unknown);
-		AssertEquals("207..211.18.4 is not an IPv4 address", Uri.CheckHostName("207..211.18.4"), UriHostNameType.Unknown);
-		// TODO: IPv6!
+		AssertEquals("www.gnu.org is a DNS name",
+			     Uri.CheckHostName("www.gnu.org"),
+			     UriHostNameType.Dns);
+		AssertEquals("www.southern.-storm.com.au is not a DNS name",
+			     Uri.CheckHostName("www.southern.-storm.com.au"),
+			     UriHostNameType.Unknown);
+		AssertEquals("www.southern-storm.com.au is a DNS name",
+			     Uri.CheckHostName("www.southern-storm.com.au"),
+			     UriHostNameType.Dns);
+		AssertEquals("127.0.0.1 is an IPv4 address",
+			     Uri.CheckHostName("127.0.0.1"),
+			     UriHostNameType.IPv4);
+		AssertEquals(".63.64.201.1 is not an IPv4 address",
+			     Uri.CheckHostName(".63.64.201.1"),
+			     UriHostNameType.Unknown);
+		AssertEquals("207..211.18.4 is not an IPv4 address",
+			     Uri.CheckHostName("207..211.18.4"),
+			     UriHostNameType.Unknown);
+
+		// checking IPng
+		AssertEquals(":F0F0::0 should have bad IPng zerocompress at beginning",
+			     Uri.CheckHostName(":F0F0::0"),
+			     UriHostNameType.Unknown);
+		AssertEquals("::F0F0:0 allows fake zerocompress at beginning",
+			     Uri.CheckHostName("::F0F0:0"),
+			     UriHostNameType.IPv6);
+		AssertEquals("0:1:2:3:4:5:6:127.0.0.1 has too many elements"
+			     Uri.CheckHostName("0:1:2:3:4:5:6:127.0.0.1"),
+			     UriHostNameType.Unknown);
+		AssertEquals("0:1:2:3:4:5:127.0.0.1 has the right number of elements",
+			     Uri.CheckHostName("0:1:2:3:4:5:127.0.0.1"),
+			     UriHostNameType.IPv6);
 	}
 
 	public void TestUriCheckSchemeName()
 	{
-		Assert("Anr.7 is a scheme name", Uri.CheckSchemeName("Anr.7"));
-		Assert("6thsense is not a scheme name", !Uri.CheckSchemeName("6thsense"));
-		Assert("gnu+freedom-limits is a scheme name", Uri.CheckSchemeName("gnu+freedom-limits"));
+		Assert("Anr.7 is a scheme name",
+		       Uri.CheckSchemeName("Anr.7"));
+		Assert("6thsense is not a scheme name",
+		       !Uri.CheckSchemeName("6thsense"));
+		Assert("gnu+freedom-limits is a scheme name",
+		       Uri.CheckSchemeName("gnu+freedom-limits"));
 		// that's GNU plus Freedom minus Limits
 	}
 
@@ -157,8 +185,10 @@ public class TestUri : TestCase
 		// incidentally, 0xC9 in binary is...11001001
 		Assert("f is a hex digit", Uri.IsHexDigit('f'));
 		Assert("G is not a hex digit", !Uri.IsHexDigit('G'));
-		Assert("\x00C9 is not a hex digit", !Uri.IsHexDigit('\x00C9')); // I am one funny guy
-		Assert("\x20AC is not a hex digit (then again, neither is $)", !Uri.IsHexDigit('\x20AC'));
+		Assert("\x00C9 is not a hex digit",
+		       !Uri.IsHexDigit('\x00C9')); // I am one funny guy
+		Assert("\x20AC is not a hex digit (then again, neither is $)",
+		       !Uri.IsHexDigit('\x20AC'));
 		// ok, classes like this don't really need all this testing ;)
 	}
 
@@ -188,11 +218,14 @@ public class TestUri : TestCase
 		Uri debianrelease = new Uri("ftp://distro.ibiblio.org/pub/Linux/distributions/debian/main/source/Release");
 
 		AssertEquals("Code figures out simple relative Uri correctly (with files)",
-			gnuphil.MakeRelative(gnuoreilly), "../thegnuproject.html");
+			     gnuphil.MakeRelative(gnuoreilly),
+			     "../thegnuproject.html");
 		AssertEquals("notices different schemes when comparing Uris",
-			mozillaftp.MakeRelative(mozillahttp), mozillahttp.AbsoluteUri);
+			     mozillaftp.MakeRelative(mozillahttp),
+			     mozillahttp.AbsoluteUri);
 		AssertEquals("figures out more complex, directory-based relative Uri",
-			mandrake.MakeRelative(debian), "../../../debian/main/");
+			     mandrake.MakeRelative(debian),
+			     "../../../debian/main/");
 		AssertEquals("tells difference between files and directorys, by looking for ending slash",
 			debianrelease.MakeRelative(debian), "../");
 		AssertEquals("correctly goes further into subdirectories",

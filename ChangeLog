@@ -1,3 +1,8 @@
+2002-09-15  Stephen Compall  <rushing@sigecom.net>
+
+	* tests/System/Uri.cs: general code formatting cleanup.
+	(CheckHostName): IPng checks for aforementioned bug fixes.
+
 2002-09-14  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs (ParseAuthority): Eliminated.

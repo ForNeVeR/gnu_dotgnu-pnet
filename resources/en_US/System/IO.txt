@@ -1,7 +1,7 @@
 #
 # IO.txt - Resources for I/O-related errors and exceptions.
 #
-# Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+# Copyright (C) 2001, 2004  Southern Storm Software, Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,3 +21,14 @@ IO_Socket=An error occured while accessing the socket
 IO_SocketNotBlocking=The specified socket is not blocking
 IO_SocketNotConnected=The specified socket is not connected
 IO_SocketIncorrectType=The specified socket is not of the correct type
+IO_NotReadable=The specified stream is not readable
+IO_NotWritable=The specified stream is not writable
+IO_CompressionMode=Invalid compression mode
+IO_Decompress_NeedDict=The compressed data needs a dictionary
+IO_Decompress_Invalid=Invalid state encountered during decompression
+IO_Decompress_Truncated=The stream to be decompressed was truncated
+IO_Decompress_GzipHeader=The gzip header on the stream is invalid
+IO_Decompress_GzipFooter=The gzip footer on the stream is invalid
+IO_Decompress_Checksum=The gzip checksum did not match
+IO_Decompress_Total=The gzip total byte counter did not match
+IO_Compress_Input=Could not deflate all input for some reason

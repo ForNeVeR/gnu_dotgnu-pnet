@@ -9,25 +9,25 @@
 .module '<Module>'
 .class private auto interface ansi 'I'
 {
-.method public virtual hidebysig abstract instance void 'm1'() cil managed java 
+.method public virtual hidebysig newslot abstract instance void 'm1'() cil managed java 
 {
 } // method m1
 } // class I
 .class private auto interface ansi 'J' implements 'I'
 {
-.method public virtual hidebysig abstract instance void 'm2'() cil managed java 
+.method public virtual hidebysig newslot abstract instance void 'm2'() cil managed java 
 {
 } // method m2
 } // class J
 .class private auto interface ansi 'K' implements 'J', 'I'
 {
-.method public virtual hidebysig abstract instance void 'm3'() cil managed java 
+.method public virtual hidebysig newslot abstract instance void 'm3'() cil managed java 
 {
 } // method m3
 } // class K
 .class private auto interface ansi 'L'
 {
-.method public virtual hidebysig abstract instance void 'm4'() cil managed java 
+.method public virtual hidebysig newslot abstract instance void 'm4'() cil managed java 
 {
 } // method m4
 } // class L

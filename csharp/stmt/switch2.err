@@ -1,5 +1,5 @@
 ./switch2.cs:40: invalid expression for `switch' statement
-./switch2.cs:83: `System.Object' is invalid as the governing type for a `switch'
+./switch2.cs:46: `System.Object' is invalid as the governing type for a `switch'
 ./switch2.cs:55: multiple `default' labels in `switch' statement
 ./switch2.cs:54: previous `default' label here
 ./switch2.cs:61: constant value required

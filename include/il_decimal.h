@@ -32,10 +32,10 @@ extern	"C" {
  */
 typedef struct
 {
-	ILUInt32		low;
-	ILUInt32		middle;
-	ILUInt32		high;
 	ILUInt32		flags;
+	ILUInt32		high;
+	ILUInt32		middle;
+	ILUInt32		low;
 
 } ILDecimal;
 

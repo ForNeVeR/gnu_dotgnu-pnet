@@ -17,6 +17,9 @@ the "ILClass" structure for "System.RuntimeType".
 implementing the "internalcall" methods for "System.Type" and
 "System.RuntimeType".
 
+* include/il_decimal.h: rearrange the fields in "ILDecimal" to
+match the new order in "pnetlib".
+
 2001-10-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_scanner.l: fixed a bug in the assembler's lexer that

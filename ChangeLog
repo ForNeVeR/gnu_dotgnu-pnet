@@ -1,4 +1,16 @@
 
+2004-12-08  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XPath/Private/XPathCompile.tc,
+	System.Xml/XPath/Private/XPathEvaluate.tc,
+	System.Xml/XPath/Private/XPathNodes.tc,
+	System.Xml/XPath/Private/XPathParser.cs,
+	System.Xml/XPath/Private/XPathParser.jay: Redesign of XPath 
+	functions support.
+
+	* System.Xml/Private/XmlDocumentNavigator.cs: Implement GetAttribute
+	and Add IHasXmlNode for	XmlDocumentNavigator for Gtk# support.
+
 2004-12-07  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/CheckBox.cs, System.Windows.Forms/CreateParams.cs,

@@ -250,7 +250,7 @@ PrimaryExpr
 	| '(' Expr ')'			{ $$ = null; } 
 	| LITERAL 				{ $$ = new LiteralExpression((String)$1); }
 	| NUMBER				{ $$ = new NumberExpression((Double)$1); }
-	| FunctionCall
+	| FunctionCall			{ $$ = $1; }
 	;
 
 VariableReference
@@ -263,14 +263,187 @@ VariableReference
 
 /* [16] */
 FunctionCall
-	: FUNCTIONNAME '(' ')'
+	: FUNCTIONNAME '(' OptArgumentList ')'
 	{
-		$$ = new FunctionCallExpression((String)$1, null);
+		String name = (String)$1;
+		switch(name)
+		{
+			case "count":
+			{
+				$$ = new XPathCountFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "id":
+			{
+				$$ = new XPathIdFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "last":
+			{
+				$$ = new XPathLastFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "local-name":
+			{
+				$$ = new XPathLocalNameFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "name":
+			{
+				$$ = new XPathNameFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "namespace-uri":
+			{
+				$$ = new XPathNamespaceUriFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "position":
+			{
+				$$ = new XPathPositionFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "concat":
+			{
+				$$ = new XPathConcatFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "contains":
+			{
+				$$ = new XPathContainsFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "normalize-space":
+			{
+				$$ = new XPathNormalizeFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "starts-with":
+			{
+				$$ = new XPathStartsWithFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "string":
+			{
+				$$ = new XPathStringFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "string-length":
+			{
+				$$ = new XPathStringLengthFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "substring":
+			{
+				$$ = new XPathSubstringFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "substring-after":
+			{
+				$$ = new XPathSubstringAfterFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "substring-before":
+			{
+				$$ = new XPathSubstringBeforeFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "translate":
+			{
+				$$ = new XPathTranslateFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "ceiling":
+			{
+				$$ = new XPathCeilingFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "floor":
+			{
+				$$ = new XPathFloorFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "number":
+			{
+				$$ = new XPathNumberFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "round":
+			{
+				$$ = new XPathRoundFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "sum":
+			{
+				$$ = new XPathSumFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "boolean":
+			{
+				$$ = new XPathBooleanFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "false":
+			{
+				$$ = new XPathFalseFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "lang":
+			{
+				$$ = new XPathLangFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "not":
+			{
+				$$ = new XPathNotFunction(name, (ArgumentList)$3);
+			}
+			break;
+			
+			case "true":
+			{
+				$$ = new XPathTrueFunction(name, (ArgumentList)$3);
+			}
+			break;
+			default:
+			{
+				$$ = new XPathExternalFunction(name, (ArgumentList)$3);
+			}
+			break;
+		}
 	}
-	| FUNCTIONNAME '(' ArgumentList ')'
+	;
+
+OptArgumentList
+	: /* Nothing */
 	{
-		$$ = new FunctionCallExpression((String)$1, (ArgumentList)$3);
+		$$ = null;
 	}
+	| ArgumentList
 	;
 
 /* avoid left recursion */

@@ -253,42 +253,124 @@ EvaluateInternal(OrExpression)
 
 EvaluateInternal(FunctionCallExpression)
 {
-	switch(node.name)
-	{
-		case "true":
-		{
-			return true;
-		}
-		break;
-		case "false":
-		{
-			return false;
-		}
-		break;
-		case "boolean":
-		{
-			return (bool)node.args.expr.EvaluateAs(iterator, XPathResultType.Boolean);
-		}
-		break;
-		case "number":
-		{
-			return (double)node.args.expr.EvaluateAs(iterator, XPathResultType.Number);
-		}
-		break;
-		case "string-length":
-		{
-			// TODO
-		}
-		break;
-		case "string":
-		{
-			// TODO
-		}
-		break;
-		case "local-name":
-		{
-		}
-		break;
-	}
-	throw new NotImplementedException("TODO:" + node.name + "()");
+	throw new NotImplementedException("XSLT external functions are not implemented yet");
+}
+
+/* Nodeset Functions */
+EvaluateInternal(XPathCountFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathIdFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathLastFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathLocalNameFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathNameFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathNamespaceUriFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathPositionFunction)
+{
+	/* compile() this node if not done already */
+	XPathResultType result = node.ReturnType; 
+	return (double)iterator.CurrentPosition; /* TODO */
+}
+
+/* Boolean functions */
+EvaluateInternal(XPathBooleanFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathTrueFunction)
+{
+	return true; /* TODO */
+}
+EvaluateInternal(XPathFalseFunction)
+{
+	return false; /* TODO */
+}
+EvaluateInternal(XPathLangFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathNotFunction)
+{
+	return null; /* TODO */
+}
+
+/* Number functions */
+
+EvaluateInternal(XPathCeilingFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathFloorFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathNumberFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathRoundFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathSumFunction)
+{
+	return null; /* TODO */
+}
+
+/* String functions */
+EvaluateInternal(XPathConcatFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathContainsFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathNormalizeFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathStartsWithFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathStringFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathStringLengthFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathSubstringFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathSubstringAfterFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathSubstringBeforeFunction)
+{
+	return null; /* TODO */
+}
+EvaluateInternal(XPathTranslateFunction)
+{
+	return null; /* TODO */
 }

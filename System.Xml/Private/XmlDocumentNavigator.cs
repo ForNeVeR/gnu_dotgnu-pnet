@@ -27,7 +27,7 @@ using System.Xml;
 using System.Xml.XPath;
 
 
-internal class XmlDocumentNavigator : XPathNavigator
+internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 {
 	private XmlNode node;
 	private XmlDocument document;
@@ -52,6 +52,12 @@ internal class XmlDocumentNavigator : XPathNavigator
 
 	public override String GetAttribute(String localName, String namespaceURI)
 	{
+		XmlAttribute attr = node.Attributes[localName, namespaceURI] ;
+
+		if(attr != null)
+		{
+			return attr.Value;
+		}
 		return null;
 	}
 
@@ -469,6 +475,11 @@ internal class XmlDocumentNavigator : XPathNavigator
 		{
 			return this.node;
 		}
+	}
+
+	XmlNode IHasXmlNode.GetNode()
+	{
+		return this.node;
 	}
 }
 

@@ -130,11 +130,88 @@ using System.Collections;
 	%nocreate ArgumentList next = {null};
 }
 
-%node FunctionCallExpression Expression =
+%node FunctionCallExpression Expression %abstract =
 {
 	String name;
 	ArgumentList args;
 }
+
+%node XPathBuiltinFunction FunctionCallExpression %abstract
+
+/* Nodeset Functions 
+	count()
+	id()
+	last()
+	local-name()
+	name()
+	namespace-uri()
+	position()
+*/
+
+%node XPathCountFunction XPathBuiltinFunction
+%node XPathIdFunction XPathBuiltinFunction
+%node XPathLastFunction XPathBuiltinFunction
+%node XPathLocalNameFunction XPathBuiltinFunction
+%node XPathNameFunction XPathBuiltinFunction
+%node XPathNamespaceUriFunction XPathBuiltinFunction
+%node XPathPositionFunction XPathBuiltinFunction
+
+/*
+Boolean Functions
+	boolean()
+	false()
+	true()
+	lang()
+	not()
+*/
+
+%node XPathBooleanFunction XPathBuiltinFunction
+%node XPathTrueFunction XPathBuiltinFunction
+%node XPathFalseFunction XPathBuiltinFunction
+%node XPathLangFunction XPathBuiltinFunction
+%node XPathNotFunction XPathBuiltinFunction
+
+/*
+Number Functions
+	ceiling()
+	floor()
+	number()
+	round()
+	sum()
+*/
+
+%node XPathCeilingFunction XPathBuiltinFunction
+%node XPathFloorFunction XPathBuiltinFunction
+%node XPathNumberFunction XPathBuiltinFunction
+%node XPathRoundFunction XPathBuiltinFunction
+%node XPathSumFunction XPathBuiltinFunction
+
+/*
+String Functions
+	concat()
+	contains()
+	normalize-space()
+	starts-with()
+	string()
+	string-length()
+	substring()
+	substring-after()
+	substring-before()
+	translate()
+*/
+
+%node XPathConcatFunction XPathBuiltinFunction
+%node XPathContainsFunction XPathBuiltinFunction
+%node XPathNormalizeFunction XPathBuiltinFunction
+%node XPathStartsWithFunction XPathBuiltinFunction
+%node XPathStringFunction XPathBuiltinFunction
+%node XPathStringLengthFunction XPathBuiltinFunction
+%node XPathSubstringFunction XPathBuiltinFunction
+%node XPathSubstringAfterFunction XPathBuiltinFunction
+%node XPathSubstringBeforeFunction XPathBuiltinFunction
+%node XPathTranslateFunction XPathBuiltinFunction
+
+%node XPathExternalFunction FunctionCallExpression
 
 %include "XPathCompile.tc"
 %include "XPathEvaluate.tc"

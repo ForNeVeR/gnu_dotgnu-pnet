@@ -58,76 +58,6 @@ Compile(PathExpression)
 	return XPathResultType.NodeSet;
 }
 
-Compile(FunctionCallExpression)
-{
-	switch(node.name)
-	{
-		//TODO  add typechecking for parameters for all functions
-		case "boolean":
-		{
-			if(node.args == null)
-			{
-				throw new XPathException("Need at least one parameter for boolean()", null);
-			}
-			if(node.args.next != null)
-			{
-				throw new XPathException("More than one parameter for boolean()", null);
-			}
-			return XPathResultType.Boolean;
-		}
-		break;
-		case "true":
-		case "false":
-		{
-			if(node.args != null)
-			{
-				throw new XPathException("No parameters allowed for " + node.name + "()" , null);
-			}
-			return XPathResultType.Boolean;
-		}
-		break;
-
-		case "number":
-		{
-			if(node.args == null)
-			{
-				throw new XPathException("Need at least one parameter for number()", null);
-			}
-			if(node.args.next != null)
-			{
-				throw new XPathException("More than one parameter for number()", null);
-			}
-			return XPathResultType.Number;
-		}
-		break;
-		
-		case "string-length":
-		{
-			if(node.args == null)
-			{
-				throw new XPathException("Need at least one parameter for string-length()", null);
-			}
-			if(node.args.next != null)
-			{
-				throw new XPathException("More than one parameter for string-length()", null);
-			}
-			if(node.args.next.ReturnType != XPathResultType.String)
-			{
-				throw new XPathException("Need a string parameter for string-length()", null);
-			}
-			return XPathResultType.Number;
-		}
-		break;
-		case "local-name":
-		{
-			// TODO
-		}
-		break;
-		// TODO : lots more functions exist 
-	}
-	return XPathResultType.Any;
-}
-
 /* You would typically never call this thing */
 Compile(ArgumentList)
 {
@@ -140,4 +70,126 @@ Compile(ArgumentList)
 		}
 	}
 	return type;
+}
+
+Compile(FunctionCallExpression)
+{
+	throw new NotImplementedException("XSLT functions are not supported");
+}
+
+/* Nodeset Functions */
+Compile(XPathCountFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathIdFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathLastFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathLocalNameFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathNameFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathNamespaceUriFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathPositionFunction)
+{
+	return XPathResultType.Number; /* TODO */
+}
+
+/* Boolean functions */
+Compile(XPathBooleanFunction)
+{
+	return XPathResultType.Boolean; /* TODO */
+}
+Compile(XPathTrueFunction)
+{
+	return XPathResultType.Boolean; /* TODO */
+}
+Compile(XPathFalseFunction)
+{
+	return XPathResultType.Boolean; /* TODO */
+}
+Compile(XPathLangFunction)
+{
+	return XPathResultType.Boolean; /* TODO */
+}
+Compile(XPathNotFunction)
+{
+	return XPathResultType.Boolean; /* TODO */
+}
+
+/* Number functions */
+
+Compile(XPathCeilingFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathFloorFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathNumberFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathRoundFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathSumFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+
+/* String functions */
+Compile(XPathConcatFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathContainsFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathNormalizeFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathStartsWithFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathStringFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathStringLengthFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathSubstringFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathSubstringAfterFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathSubstringBeforeFunction)
+{
+	return XPathResultType.Any; /* TODO */
+}
+Compile(XPathTranslateFunction)
+{
+	return XPathResultType.Any; /* TODO */
 }

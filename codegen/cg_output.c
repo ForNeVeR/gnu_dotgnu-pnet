@@ -226,18 +226,6 @@ void ILGenJump(ILGenInfo *info, int opcode, ILLabel *label)
 	}
 }
 
-void ILGenBrOrLeaveJump(ILGenInfo *info, ILLabel *label)
-{
-	if(*label == ILLabel_Undefined)
-	{
-		*label = (info->nextLabel)++;
-	}
-	if(info->asmOutput)
-	{
-		fprintf(info->asmOutput, "\tbr_or_leave\t?L%lu\n", *label);
-	}
-}
-
 void ILGenLabel(ILGenInfo *info, ILLabel *label)
 {
 	if(*label == ILLabel_Undefined)

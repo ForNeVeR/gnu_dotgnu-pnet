@@ -1348,12 +1348,13 @@ ILNode_GenDiscard(ILNode_Goto)
 	else
 	{
 		/* The label is not yet defined and there is a "try"
-		   block in force.  We must use a pseudo-instruction
-		   called "br_or_leave" which will be fixed up by the
-		   assembler once we know if we are crossing a "try"
-		   block boundary or not */
+		   block in force.  We must use a the "leave" instruction
+		   to allow if we are crossing a "try" block boundary .
+		   Otherwise it does not make much of a difference because
+		   "leave" is like "br" for this case inside try cases
+		   as well. */
 		entry->scopeLevel = info->scopeLevel;
-		ILGenBrOrLeaveJump(info, &(entry->label));
+		ILGenJump(info, IL_OP_LEAVE, &(entry->label));
 	}
 }
 

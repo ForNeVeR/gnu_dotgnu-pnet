@@ -16,6 +16,9 @@
 	* engine/verify_except.c: Empty the stack when we encounter a "leave"
 	opcode.
 
+	* codegen/cg_stmt.tc, codegen/cg_output.c: Replace the virtual
+	"br_or_leave" virtual instruction with the "leave" instruction.
+
 2002-12-20  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	* support/dir.c: Remove the resets for errno and use the return

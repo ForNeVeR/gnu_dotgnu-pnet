@@ -9,6 +9,45 @@
 	System.Windows.Forms/UserControl.cs: "WndProc" should be "protected",
 	not "public".
 
+	* System.Windows.Forms/DateRangeEventArgs.cs,
+	System.Windows.Forms/DateRangeEventHandler.cs,
+	System.Windows.Forms/DrawItemEventArgs.cs,
+	System.Windows.Forms/DrawItemEventHandler.cs,
+	System.Windows.Forms/GridItem.cs,
+	System.Windows.Forms/ItemDragEventArgs.cs,
+	System.Windows.Forms/ItemDragEventHandler.cs,
+	System.Windows.Forms/LabelEditEventArgs.cs,
+	System.Windows.Forms/LabelEditEventHandler.cs,
+	System.Windows.Forms/LinkClickedEventArgs.cs,
+	System.Windows.Forms/LinkClickedEventHandler.cs,
+	System.Windows.Forms/LinkLabel.cs,
+	System.Windows.Forms/LinkLabelLinkClickedEventArgs.cs,
+	System.Windows.Forms/LinkLabelLinkClickedEventHandler.cs,
+	System.Windows.Forms/MeasureItemEventArgs.cs,
+	System.Windows.Forms/MeasureItemEventHandler.cs,
+	System.Windows.Forms/MethodInvoker.cs,
+	System.Windows.Forms/NavigateEventArgs.cs,
+	System.Windows.Forms/NavigateEventHandler.cs,
+	System.Windows.Forms/NodeLabelEditEventArgs.cs,
+	System.Windows.Forms/NodeLabelEditEventHandler.cs,
+	System.Windows.Forms/PropertyTab.cs,
+	System.Windows.Forms/PropertyTabChangedEventArgs.cs,
+	System.Windows.Forms/PropertyTabChangedEventHandler.cs,
+	System.Windows.Forms/PropertyValueChangedEventArgs.cs,
+	System.Windows.Forms/PropertyValueChangedEventHandler.cs,
+	System.Windows.Forms/ScrollEventArgs.cs,
+	System.Windows.Forms/ScrollEventHandler.cs,
+	System.Windows.Forms/SelectedGridItemChangedEventArgs.cs,
+	System.Windows.Forms/SelectedGridItemChangedEventHandler.cs,
+	System.Windows.Forms/SplitterEventArgs.cs,
+	System.Windows.Forms/SplitterEventHandler.cs,
+	System.Windows.Forms/StatusBarDrawItemEventArgs.cs,
+	System.Windows.Forms/StatusBarDrawItemEventHandler.cs,
+	System.Windows.Forms/StatusBarPanel.cs,
+	System.Windows.Forms/StatusBarPanelClickEventArgs.cs,
+	System.Windows.Forms/StatusBarPanelClickEventHandler.cs:
+	missing "*EventArgs" and "*EventHandler" classes for Forms.
+
 2003-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/Control.cs, samples/FormsHello.cs:

@@ -394,6 +394,8 @@ struct _tagILSwitchValue
 {
 	ILMachineType machineType;
 }
+%node ILNode_IsNull ILNode_UnaryExpression
+%node ILNode_IsNonNull ILNode_UnaryExpression
 
 /*
  * Object and array construction expressions.

@@ -313,6 +313,15 @@ ILNode_GetType(ILNode_Unbox)
 }
 
 /*
+ * Get the type of an "is null" or "is not null" expression.
+ */
+ILNode_GetType(ILNode_IsNull),
+ILNode_GetType(ILNode_IsNonNull)
+{
+	return ILMachineType_Boolean;
+}
+
+/*
  * Generate discard code for a comma or argument list expression.
  */
 ILNode_GenDiscard(ILNode_Comma),
@@ -459,6 +468,16 @@ ILNode_GenDiscard(ILNode_This)
  */
 ILNode_GenDiscard(ILNode_As),
 ILNode_GenDiscard(ILNode_Is)
+{
+	/* Evaluate the expression for its side effects only */
+	ILNode_GenDiscard(node->expr, info);
+}
+
+/*
+ * Generate discard code for an "is null" or "is not null" expression.
+ */
+ILNode_GenDiscard(ILNode_IsNull),
+ILNode_GenDiscard(ILNode_IsNonNull)
 {
 	/* Evaluate the expression for its side effects only */
 	ILNode_GenDiscard(node->expr, info);
@@ -1259,6 +1278,36 @@ ILNode_GenValue(ILNode_Unbox)
 }
 
 /*
+ * Generate value code for an "is null" expression.
+ */
+ILNode_GenValue(ILNode_IsNull)
+{
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	ILGenSimple(info, IL_OP_LDNULL);
+	ILGenAdjust(info, 1);
+	ILGenSimple(info, IL_PREFIX_OP_CEQ + IL_OP_PREFIX);
+	ILGenAdjust(info, -1);
+	return ILMachineType_Boolean;
+}
+
+/*
+ * Generate value code for an "is not null" expression.
+ */
+ILNode_GenValue(ILNode_IsNonNull)
+{
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	ILGenSimple(info, IL_OP_LDNULL);
+	ILGenAdjust(info, 1);
+	ILGenSimple(info, IL_PREFIX_OP_CEQ + IL_OP_PREFIX);
+	ILGenSimple(info, IL_OP_LDC_I4_1);
+	ILGenSimple(info, IL_OP_XOR);
+	ILGenAdjust(info, -1);
+	return ILMachineType_Boolean;
+}
+
+/*
  * Generate the "then" branch for a comma expression.
  */
 ILNode_GenThen(ILNode_Comma)
@@ -1615,6 +1664,30 @@ ILNode_GenElse(ILNode_Is)
 {
 	As_GenValue((ILNode_As *)node, info);
 	ILGenJump(info, IL_OP_BRFALSE, label);
+	ILGenAdjust(info, -1);
+}
+
+/*
+ * Generate the "then" branch for an "is null" expression.
+ */
+ILNode_GenThen(ILNode_IsNull),
+ILNode_GenElse(ILNode_IsNonNull)
+{
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	ILGenJump(info, IL_OP_BRFALSE, label);
+	ILGenAdjust(info, -1);
+}
+
+/*
+ * Generate the "else" branch for an "is null" expression.
+ */
+ILNode_GenElse(ILNode_IsNull),
+ILNode_GenThen(ILNode_IsNonNull)
+{
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	ILGenJump(info, IL_OP_BRTRUE, label);
 	ILGenAdjust(info, -1);
 }
 

@@ -188,6 +188,16 @@ JavaGenDiscard(ILNode_AddressOf)
 }
 
 /*
+ * Generate discard code for an "is null" or "is not null" expression.
+ */
+JavaGenDiscard(ILNode_IsNull),
+JavaGenDiscard(ILNode_IsNonNull)
+{
+	/* Evaluate the expression for its side effects only */
+	JavaGenDiscard(node->expr, info);
+}
+
+/*
  * Generate value code for a comma expression.
  */
 JavaGenValue(ILNode_Comma)
@@ -1445,6 +1455,42 @@ JavaGenValue(ILNode_ThisInit)
 }
 
 /*
+ * Generate value code for an "is null" expression.
+ */
+JavaGenValue(ILNode_IsNull)
+{
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+				ILMachineType_ObjectRef);
+	JavaGenJump(info, JAVA_OP_IFNULL, &label1);
+	JavaGenSimple(info, JAVA_OP_ICONST_0);
+	JavaGenJump(info, JAVA_OP_GOTO, &label2);
+	JavaGenLabel(info, &label1);
+	JavaGenSimple(info, JAVA_OP_ICONST_1);
+	JavaGenLabel(info, &label2);
+	return ILMachineType_Boolean;
+}
+
+/*
+ * Generate value code for an "is not null" expression.
+ */
+JavaGenValue(ILNode_IsNonNull)
+{
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+				ILMachineType_ObjectRef);
+	JavaGenJump(info, JAVA_OP_IFNONNULL, &label1);
+	JavaGenSimple(info, JAVA_OP_ICONST_0);
+	JavaGenJump(info, JAVA_OP_GOTO, &label2);
+	JavaGenLabel(info, &label1);
+	JavaGenSimple(info, JAVA_OP_ICONST_1);
+	JavaGenLabel(info, &label2);
+	return ILMachineType_Boolean;
+}
+
+/*
  * Generate the "then" branch for a comma expression.
  */
 JavaGenThen(ILNode_Comma)
@@ -1819,6 +1865,30 @@ JavaGenElse(ILNode_Is)
 
 	/* Jump based on the result */
 	JavaGenJump(info, JAVA_OP_IFEQ, label);
+	JavaGenAdjust(info, -1);
+}
+
+/*
+ * Generate the "then" branch for an "is null" expression.
+ */
+JavaGenThen(ILNode_IsNull),
+JavaGenElse(ILNode_IsNonNull)
+{
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+				ILMachineType_ObjectRef);
+	JavaGenJump(info, JAVA_OP_IFNULL, label);
+	JavaGenAdjust(info, -1);
+}
+
+/*
+ * Generate the "else" branch for an "is null" expression.
+ */
+JavaGenElse(ILNode_IsNull),
+JavaGenThen(ILNode_IsNonNull)
+{
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+				ILMachineType_ObjectRef);
+	JavaGenJump(info, JAVA_OP_IFNONNULL, label);
 	JavaGenAdjust(info, -1);
 }
 

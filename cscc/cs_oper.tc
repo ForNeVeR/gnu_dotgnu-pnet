@@ -1172,15 +1172,39 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	/* If both of the arguments are strings, or one is a string
 	   and the other is null, then the code generator knows how
 	   to handle the operation */
-	if(ILTypeIsStringClass(value1.type) &&
-	   (ILTypeIsStringClass(value2.type) || value2.type == ILType_Null))
+	if(ILTypeIsStringClass(value1.type))
 	{
-		value1.kind = CS_SEMKIND_RVALUE;
-		value1.type = ILType_Boolean;
-		return value1;
+		if(ILTypeIsStringClass(value2.type))
+		{
+			value1.kind = CS_SEMKIND_RVALUE;
+			value1.type = ILType_Boolean;
+			return value1;
+		}
+		else if(value2.type == ILType_Null)
+		{
+			if(table == ILOp_Eq)
+			{
+				*parent = ILNode_IsNull_create(node->expr1);
+			}
+			else
+			{
+				*parent = ILNode_IsNonNull_create(node->expr1);
+			}
+			value1.kind = CS_SEMKIND_RVALUE;
+			value1.type = ILType_Boolean;
+			return value1;
+		}
 	}
 	else if(value1.type == ILType_Null && ILTypeIsStringClass(value2.type))
 	{
+		if(table == ILOp_Eq)
+		{
+			*parent = ILNode_IsNull_create(node->expr2);
+		}
+		else
+		{
+			*parent = ILNode_IsNonNull_create(node->expr2);
+		}
 		value1.kind = CS_SEMKIND_RVALUE;
 		value1.type = ILType_Boolean;
 		return value1;
@@ -1201,17 +1225,48 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		return value1;
 	}
 
-	/* If both arguments are objects, then we can compare them
+	/* If both arguments are object references, then we can compare them
 	   using the built-in code generator logic */
-	if(ILType_IsClass(value1.type) && ILType_IsClass(value2.type))
+	if(value1.type != ILType_Null && ILTypeIsReference(value1.type))
 	{
-		if(ILCanCoerceNode(info, node->expr1, value1.type, value2.type) ||
-		   ILCanCoerceNode(info, node->expr2, value2.type, value1.type))
+		if(value2.type == ILType_Null)
 		{
+			if(table == ILOp_Eq)
+			{
+				*parent = ILNode_IsNull_create(node->expr1);
+			}
+			else
+			{
+				*parent = ILNode_IsNonNull_create(node->expr1);
+			}
 			value1.kind = CS_SEMKIND_RVALUE;
 			value1.type = ILType_Boolean;
 			return value1;
 		}
+		else if(ILTypeIsReference(value2.type))
+		{
+			if(ILCanCoerceNode(info, node->expr1, value1.type, value2.type) ||
+			   ILCanCoerceNode(info, node->expr2, value2.type, value1.type))
+			{
+				value1.kind = CS_SEMKIND_RVALUE;
+				value1.type = ILType_Boolean;
+				return value1;
+			}
+		}
+	}
+	else if(value1.type == ILType_Null && ILTypeIsReference(value2.type))
+	{
+		if(table == ILOp_Eq)
+		{
+			*parent = ILNode_IsNull_create(node->expr2);
+		}
+		else
+		{
+			*parent = ILNode_IsNonNull_create(node->expr2);
+		}
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = ILType_Boolean;
+		return value1;
 	}
 
 	/* Could not find a suitable operator */
@@ -1240,7 +1295,7 @@ ILNode_SemAnalysis(ILNode_Eq)
 ILNode_SemAnalysis(ILNode_Ne)
 {
 	return EqualitySem(info, (ILNode_BinaryExpression *)node, parent,
-					   ILOp_Eq, "op_Inequality", "!=");
+					   ILOp_Ne, "op_Inequality", "!=");
 }
 
 /*
@@ -1689,6 +1744,15 @@ ILNode_SemAnalysis(ILNode_As)
  * Perform semantic analysis for the "is" operator.
  */
 ILNode_SemAnalysis(ILNode_Is)
+{
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for the "is null" and "is not null" operators.
+ */
+ILNode_SemAnalysis(ILNode_IsNull),
+ILNode_SemAnalysis(ILNode_IsNonNull)
 {
 	return CSSemValueDefault;
 }

@@ -1,4 +1,9 @@
 
+2003-07-01  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/java/java_grammar.y: wrap For statements in a new scope
+	(fixes bug #4127)
+
 2003-07-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/c_users_guide.html: update the user's guide for the C

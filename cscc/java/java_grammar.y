@@ -1412,10 +1412,12 @@ WhileStatement
 ForStatement
 	: FOR '(' ForInit  ';' Expression 	';' ForUpdate ')' Statement	{
 		MakeQuaternary(For, $3, ILNode_ToBool_create($5), $7, $9);
+		$$=ILNode_NewScope_create($$);
 	}
 	| FOR '(' ForInit  ';' 	 		';' ForUpdate ')' Statement	{
 		MakeQuaternary(For, $3, ILNode_ToBool_create(ILNode_True_create()), 
 						$6, $8);
+		$$=ILNode_NewScope_create($$);
 	}
 	;
 

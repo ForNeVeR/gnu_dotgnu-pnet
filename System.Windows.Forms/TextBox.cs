@@ -623,7 +623,6 @@ public class TextBox : TextBoxBase
 		if (layout == null)
 		{
 			LayoutFromText(Text);
-			SetupScrollBars();
 			ResetView();
 		}
 		// Draw scrollbar corner if both are visible
@@ -868,6 +867,7 @@ public class TextBox : TextBoxBase
 			layout.Items[i] = item;
 			prevType = item.type;
 		}
+		SetupScrollBars();
 	}
 
 	// Make sure the caret is visible

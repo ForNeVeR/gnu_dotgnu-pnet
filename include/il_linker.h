@@ -95,7 +95,8 @@ int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename);
  * This must be done after all libraries have been added.
  */
 int ILLinkerAddCObject(ILLinker *linker, ILImage *image,
-					   const char *filename, int memoryModel);
+					   const char *filename, int memoryModel,
+					   int alignFlags);
 
 /*
  * Add a binary resource to a linker context.  Returns zero
@@ -134,8 +135,9 @@ ILSerializeReader *ILLinkerReadAttribute(ILAttribute *attr);
 /*
  * Get the C memory model associated with an image.  Returns
  * 32 or 64 for the memory model, or zero if not a C image.
+ * Optional native alignment flags are returned in "alignFlags".
  */
-int ILLinkerCMemoryModel(ILImage *image);
+int ILLinkerCMemoryModel(ILImage *image, int *alignFlags);
 
 /*
  * Call the linker as if it were an executable with command-line

@@ -915,7 +915,7 @@ static int processFile(ILLinker *linker, const char *filename,
 	ILContext *context;
 	ILImage *image;
 	int loadError;
-	int model;
+	int model, alignFlags;
 #if 0
 	char libcName[64];
 #endif
@@ -940,7 +940,7 @@ static int processFile(ILLinker *linker, const char *filename,
 	else
 	{
 		/* Add the image to the linker context */
-		model = ILLinkerCMemoryModel(image);
+		model = ILLinkerCMemoryModel(image, &alignFlags);
 		if(model != 0)
 		{
 			/* Load the standard C libraries that we need for linking */
@@ -971,7 +971,7 @@ static int processFile(ILLinker *linker, const char *filename,
 			}
 
 			/* Add the C object file to the linker */
-			if(!ILLinkerAddCObject(linker, image, filename, model))
+			if(!ILLinkerAddCObject(linker, image, filename, model, alignFlags))
 			{
 				errors |= 1;
 			}

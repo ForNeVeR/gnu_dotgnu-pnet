@@ -81,6 +81,7 @@ struct _tagILLinker
 	ILUInt32		dataLength;		/* Length of ".sdata" section */
 	ILUInt32		tlsLength;		/* Length of ".tls" section */
 	int				memoryModel;	/* Memory model of a C application */
+	int				modelFlags;		/* Alignment flags for the memory model */
 
 };
 

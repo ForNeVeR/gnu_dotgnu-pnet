@@ -114,12 +114,12 @@ ILSerializeReader *ILLinkerReadAttribute(ILAttribute *attr)
 	}
 }
 
-int ILLinkerCMemoryModel(ILImage *image)
+int ILLinkerCMemoryModel(ILImage *image, int *alignFlags)
 {
 	ILModule *module;
 	ILAttribute *attr;
 	ILSerializeReader *reader;
-	int model;
+	int model, hasAlign;
 
 	/* Find the main module within this assembly */
 	module = ILModule_FromToken(image, IL_META_TOKEN_MODULE | 1);
@@ -129,12 +129,20 @@ int ILLinkerCMemoryModel(ILImage *image)
 	}
 
 	/* Check the module to see if it has the "MemoryModel" attribute */
+	hasAlign = 0;
 	attr = ILLinkerFindAttribute
 			(ILToProgramItem(module), "MemoryModelAttribute", "OpenSystem.C",
 			 ILType_Int32, ILType_Invalid);
 	if(!attr)
 	{
-		return 0;
+		attr = ILLinkerFindAttribute
+			(ILToProgramItem(module), "MemoryModelAttribute", "OpenSystem.C",
+			 ILType_Int32, ILType_Int32);
+		if(!attr)
+		{
+			return 0;
+		}
+		hasAlign = 1;
 	}
 
 	/* Read the memory model value from the attribute */
@@ -144,9 +152,18 @@ int ILLinkerCMemoryModel(ILImage *image)
 		return 0;
 	}
 	model = 0;
+	*alignFlags = 0;
 	if(ILSerializeReaderGetParamType(reader) == IL_META_ELEMTYPE_I4)
 	{
 		model = (int)ILSerializeReaderGetInt32(reader, IL_META_ELEMTYPE_I4);
+		if(hasAlign)
+		{
+			if(ILSerializeReaderGetParamType(reader) == IL_META_ELEMTYPE_I4)
+			{
+				*alignFlags = (int)ILSerializeReaderGetInt32
+						(reader, IL_META_ELEMTYPE_I4);
+			}
+		}
 	}
 	ILSerializeReaderDestroy(reader);
 	return model;

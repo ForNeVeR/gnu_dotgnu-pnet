@@ -82,6 +82,7 @@ public sealed class FinalizerOrderAttribute : Attribute
 public sealed class MemoryModelAttribute : Attribute
 {
 	public MemoryModelAttribute(int ptrBits) {}
+	public MemoryModelAttribute(int ptrBits, int alignFlags) {}
 }
 
 } // namespace OpenSystem.C

@@ -13,6 +13,11 @@
 	cscc/c/c_typesize.c, cscc/c/c_typesize.h: remove "gen_32bit_only"
 	and replace it with a smarter type size detection system.
 
+	* csupport/Markers.cs, ilalink/link_create.c, ilalink/link_image.c,
+	ilalink/link_main.c, ilalink/link_module.c, ilalink/linker.h,
+	include/il_linker.h: recognise memory model alignment flags in
+	the linker.
+
 2002-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,

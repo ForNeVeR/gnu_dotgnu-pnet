@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using Xsharp.Types;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.PopupWindow"/> class manages
@@ -124,7 +125,7 @@ public class PopupWindow : OverrideWindow
 				if(!IsMapped)
 				{
 					GetGrabWindow().AddPopup(this);
-					base.Raise();
+					Raise();
 					base.Map();
 				}
 			}
@@ -150,7 +151,22 @@ public class PopupWindow : OverrideWindow
 				{
 					GetGrabWindow().AddPopup(this);
 				}
-				base.Raise();
+
+				try
+				{
+					IntPtr display = dpy.Lock();
+					XWindowChanges changes = new XWindowChanges();
+					changes.stack_mode = 0;		/* Above */
+
+						Xlib.XConfigureWindow
+								(display, GetWidgetHandle(),
+							     (uint)(ConfigureWindowMask.CWStackMode),
+								 ref changes);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
 			}
 
 	/// <summary>
@@ -162,7 +178,22 @@ public class PopupWindow : OverrideWindow
 				{
 					GetGrabWindow().LowerPopup(this);
 				}
-				base.Lower();
+
+				try
+				{
+					IntPtr display = dpy.Lock();
+					XWindowChanges changes = new XWindowChanges();
+					changes.stack_mode = 0;		/* Above */
+
+						Xlib.XConfigureWindow
+								(display, GetWidgetHandle(),
+							     (uint)(ConfigureWindowMask.CWStackMode),
+								 ref changes);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
 			}
 
 } // class PopupWindow

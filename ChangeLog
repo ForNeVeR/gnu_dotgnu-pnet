@@ -1,9 +1,14 @@
 
+2004-12-12  Gopal V  <gopalv82@yahoo.com>
+
+	* Xsharp/PopupWindow.cs: Override Raise() operation to raise the
+	popup over all other windows, not just the siblings.
+
 2004-12-11  Marc Haisenko  <haisenko@webport.de>
 
 	* System.Windows.Forms/Form.cs: Fix two Form size issues.
 	(patch #3565, Klaus)
- 
+
 2004-12-10  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XPath/Private/XPathCompile.tc

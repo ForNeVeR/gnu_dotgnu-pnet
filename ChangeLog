@@ -36,6 +36,9 @@ and ILScopeLookupInNamespace.
 
 * cscc/cs_defs.tc: new semantic kinds, plus modifications to namespace nodes.
 
+* cscc/cs_gather.c: modify type gathering to use CSSemBaseType instead
+of ILScopeResolveType.
+
 2001-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_coder.h, engine/ilverify.c: new coder operations.

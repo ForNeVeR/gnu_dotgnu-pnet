@@ -62,6 +62,23 @@ static int CountBaseClasses(ILNode *node)
 }
 
 /*
+ * Convert a class definition node into an ILClass value.
+ */
+static ILClass *NodeToClass(ILNode *node)
+{
+	if(node)
+	{
+		ILNode_ClassDefn *defn = (ILNode_ClassDefn *)node;
+		if(defn->classInfo != ((ILClass *)1) &&
+		   defn->classInfo != ((ILClass *)2))
+		{
+			return defn->classInfo;
+		}
+	}
+	return 0;
+}
+
+/*
  * Create the program structure for a type and all of its base types.
  * Returns the new end of the top-level type list.
  */
@@ -77,11 +94,11 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	ILNode *baseNodeList;
 	ILNode *baseNode;
 	ILNode *baseTypeNode;
-	char *tempName;
 	ILClass *parent;
 	ILClass *classInfo;
 	int errorReported;
 	ILNode_ClassDefn *defn;
+	ILNode *savedNamespace;
 
 	/* Get the name and namespace for the type, for error reporting */
 	defn = (ILNode_ClassDefn *)type;
@@ -107,6 +124,10 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 
 	/* Mark this type as already seen so that we can detect recursion */
 	defn->classInfo = (ILClass *)2;
+
+	/* Set the namespace to use for resolving type names */
+	savedNamespace = info->currentNamespace;
+	info->currentNamespace = defn->namespaceNode;
 
 	/* Create all of the base classes */
 	numBases = CountBaseClasses(defn->baseClass);
@@ -137,31 +158,18 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		}
 
 		/* Look in the scope for the base class */
-		if(ILIsQualIdent(baseNode))
+		if(CSSemBaseType(baseNode, info, &baseNode,
+						 &baseTypeNode, &(baseList[base])))
 		{
-			if(ILScopeResolveType(globalScope, baseNode, namespace,
-								  &(baseList[base]), &baseTypeNode))
+			if(baseList[base] == 0)
 			{
+				baseList[base] = NodeToClass(baseTypeNode);
 				if(baseList[base] == 0)
 				{
 					CreateType(info, globalScope, list,
 							   systemObjectName, baseTypeNode);
-					if(((ILNode_ClassDefn *)baseTypeNode)->classInfo
-								!= ((ILClass *)1) &&
-					   ((ILNode_ClassDefn *)baseTypeNode)->classInfo
-					   			!= ((ILClass *)2))
-					{
-						baseList[base] =
-							((ILNode_ClassDefn *)baseTypeNode)->classInfo;
-					}
+					baseList[base] = NodeToClass(baseTypeNode);
 				}
-			}
-			else
-			{
-				/* The base class does not exist */
-				tempName = ILQualIdentName(baseNode, 0);
-				CSErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
-							  "`%s' is not declared as a type", tempName);
 			}
 		}
 		else
@@ -194,7 +202,26 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 			}
 		}
 	}
-	if(!parent)
+
+	/* Change to the global namespace to resolve "System.Object" */
+	while(((ILNode_Namespace *)(info->currentNamespace))->enclosing != 0)
+	{
+		info->currentNamespace = (ILNode *)
+			((ILNode_Namespace *)(info->currentNamespace))->enclosing;
+	}
+
+	/* Test for interfaces, or find "System.Object" if no parent yet */
+   	if((defn->modifiers & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK)
+	   		== IL_META_TYPEDEF_INTERFACE)
+	{
+		if(parent)
+		{
+			CSErrorOnLine(yygetfilename(type), yygetlinenum(type),
+						  "interface inherits from non-interface class");
+			parent = 0;
+		}
+	}
+	else if(!parent)
 	{
 		if(!strcmp(name, "Object") && namespace != 0 &&
 		   !strcmp(namespace, "System"))
@@ -205,10 +232,30 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		else
 		{
 			/* Compiling something else that inherits "System.Object" */
-			ILScopeResolveType(globalScope, systemObjectName, 0,
-							   &parent, &baseTypeNode);
+			if(CSSemBaseType(systemObjectName, info, &systemObjectName,
+							 &baseTypeNode, &parent))
+			{
+				if(!parent)
+				{
+					parent = NodeToClass(baseTypeNode);
+					if(!parent)
+					{
+						CreateType(info, globalScope, list,
+								   systemObjectName, baseTypeNode);
+						parent = NodeToClass(baseTypeNode);
+					}
+				}
+			}
+			else
+			{
+				/* Use the builtin library's "System.Object" */
+				parent = ILType_ToClass(ILFindSystemType(info, "Object"));
+			}
 		}
 	}
+
+	/* Restore the namespace */
+	info->currentNamespace = savedNamespace;
 
 	/* Output an error if attempting to inherit from a sealed class */
 	if(parent && ILClass_IsSealed(parent))
@@ -507,6 +554,8 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	ILNode *body;
 	ILScope *scope;
 	ILScope *savedScope;
+	ILNode *savedClass;
+	ILNode *savedNamespace;
 	ILNode_ListIter iterator;
 	ILNode *member;
 
@@ -533,6 +582,10 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	/* Set the new scope for use by the semantic analysis routines */
 	savedScope = info->currentScope;
 	info->currentScope = scope;
+	savedClass = info->currentClass;
+	info->currentClass = classNode;
+	savedNamespace = info->currentNamespace;
+	info->currentNamespace = ((ILNode_ClassDefn *)classNode)->namespaceNode;
 
 	/* Iterate over the member definitions in the class body */
 	ILNode_ListIter_Init(&iterator, body);
@@ -566,6 +619,8 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 
 	/* Return to the original scope */
 	info->currentScope = savedScope;
+	info->currentClass = savedClass;
+	info->currentNamespace = savedNamespace;
 }
 
 ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
@@ -579,7 +634,6 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 	const char *name;
 	const char *namespace;
 	ILScope *scope;
-	ILClass *tempClass;
 	ILNode *systemObject;
 
 	/* Create a new top-level list for the program */
@@ -676,15 +730,6 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 	tree = (ILNode *)list;
 	list = (ILNode_List *)ILNode_List_create();
 	systemObject = ILQualIdentTwo("System", "Object");
-	if(ILScopeResolveType(globalScope, systemObject, 0, &tempClass, &child) &&
-	   child != 0)
-	{
-		/* The programmer has declared "System.Object", so we must
-		   create it first.  This is necessary because other classes
-		   do not need to explicitly inherit this and so we won't
-		   pick it up during normal type creation otherwise */
-		CreateType(info, globalScope, list, systemObject, child);
-	}
 	ILNode_ListIter_Init(&iterator, tree);
 	while((child = ILNode_ListIter_Next(&iterator)) != 0)
 	{

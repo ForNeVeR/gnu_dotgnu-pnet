@@ -1,4 +1,9 @@
 
+2003-07-04  Gopal.V  <gopalv82@symonds.net>
+	
+	* include/il_sysio.h, support/socket.c: Partially implelement the 
+	socket options.
+
 2003-07-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/class.c (ILClassCreate): forcibly change TypeRef tokens

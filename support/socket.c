@@ -725,12 +725,181 @@ int ILSysIOSocketGetName(ILSysIOHandle sockfd, unsigned char *addr,
 	return 1;
 }
 
+/* Convert the IL options to the corresponding system values 
+ * Note: Modify to port to new platforms 
+ * */
+static int SocketOptionsToNative(ILInt32 level, ILInt32 name, 
+							ILInt32 *nativeLevel, ILInt32 *nativeName)
+{
+	switch(level)
+	{
+		case (IL_SOL_IP):
+		{
+#ifdef SOL_IP
+			(*nativeLevel)=SOL_IP;
+			switch(name)
+			{
+				case IL_SO_ADD_MEMBERSHIP:
+				{
+					#ifdef SO_ATTACH_FILTER
+						(*nativeName) = SO_ATTACH_FILTER;
+					#else
+						return 0;
+					#endif
+				}
+				break;
+				
+				case IL_SO_DROP_MEMBERSHIP:
+				{
+					#ifdef SO_DETACH_FILTER
+						(*nativeName) = SO_DETACH_FILTER;
+					#else
+						return 0;
+					#endif
+				}
+				break;
+
+				default:
+					return 0;
+			}
+#else
+			return 0;
+#endif
+		}
+		break;
+		
+		case (IL_SOL_TCP):
+		{
+#ifdef SOL_TCP
+			(*nativeLevel)=SOL_TCP;
+			switch(name)
+			{
+				case IL_SO_NO_DELAY:
+				{
+					/* TODO */
+					return 0;
+				}
+				break;
+				
+				case IL_SO_EXPEDITED:
+				{
+					/* TODO */
+					return 0;
+				}
+				break;
+				default:
+					return 0;
+			}
+#else
+			return 0;
+#endif
+		}
+		break;
+		
+		case (IL_SOL_UDP):
+		{
+#ifdef SOL_UDP
+			(*nativeLevel)=SOL_UDP;
+			/* TODO */
+			return 0;
+#else
+			return 0;
+#endif
+		}
+		break;
+		
+		case (IL_SOL_SOCKET):
+		{
+#ifdef SOL_SOCKET
+			(*nativeLevel)=SOL_SOCKET;
+			switch(name)
+			{
+				case IL_SO_REUSE_ADDRESS:
+				{
+					#ifdef SO_REUSEADDR
+						(*nativeName) = SO_REUSEADDR;
+					#else
+						return 0;
+					#endif
+				}
+				break;
+					
+				case IL_SO_KEEP_ALIVE:
+				{
+					#ifdef SO_KEEPALIVE
+						(*nativeName) = SO_KEEPALIVE;
+					#else
+						return 0;
+					#endif
+				}
+				break;
+				
+				case IL_SO_SEND_BUFFER:
+				{
+					#ifdef SO_SNDBUF
+						(*nativeName) = SO_SNDBUF;
+					#else
+						return 0;
+					#endif
+				}
+				break;
+				
+				case IL_SO_RECV_BUFFER:
+				{
+					#ifdef SO_RCVBUF
+						(*nativeName) = SO_RCVBUF;
+					#else
+						return 0;
+					#endif
+				}
+				break;
+				
+				case IL_SO_SEND_TIMEOUT:
+				{
+					#ifdef SO_SNDTIMEO
+						(*nativeName) = SO_SNDTIMEO;
+					#else
+						return 0;
+					#endif
+				}
+				break;
+				
+				case IL_SO_RECV_TIMEOUT:
+				{
+					#ifdef SO_RCVTIMEO
+						(*nativeName) = SO_RCVTIMEO;
+					#else
+						return 0;
+					#endif
+				}
+				break;
+				default:
+					return 0;
+			}
+#else
+			return 0;
+#endif
+		}
+		break;
+		
+		default:
+			return 0;
+	}
+	return 1;
+}
+
 int ILSysIOSocketSetOption(ILSysIOHandle sockfd, ILInt32 level,
 						   ILInt32 name, ILInt32 value)
 {
 #ifdef HAVE_SETSOCKOPT
-	return (setsockopt((int)(ILNativeInt)sockfd,level,name,&value,
-			sizeof(value))== 0);
+	ILInt32 nativeLevel, nativeName;
+	if(SocketOptionsToNative(level, name, &nativeLevel,&nativeName)==0)
+	{
+		ILSysIOSetErrno(IL_ERRNO_EINVAL);
+		return 0;
+	}
+	return (setsockopt((int)(ILNativeInt)sockfd,nativeLevel,nativeName,
+			&value,	sizeof(value))== 0);
 #else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
@@ -742,7 +911,14 @@ int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
 {
 #ifdef HAVE_GETSOCKOPT
 	int len=sizeof(ILInt32);
-	return (getsockopt((int)(ILNativeInt)sockfd,level,name,value,&len) == 0);
+	ILInt32 nativeLevel, nativeName;
+	if(SocketOptionsToNative(level, name, &nativeLevel,&nativeName)==0)
+	{
+		ILSysIOSetErrno(IL_ERRNO_EINVAL);
+		return 0;
+	}
+	return (getsockopt((int)(ILNativeInt)sockfd,nativeLevel,nativeName,
+								value,&len) == 0);
 #else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;

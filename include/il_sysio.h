@@ -298,7 +298,7 @@ int ILSysIOSocketGetName(ILSysIOHandle sockfd, unsigned char *addr,
 #define	IL_SO_NO_CHECKSUM		1		/* UDP options */
 #define	IL_SO_CHKSUM_COVERAGE	20
 #define	IL_SO_REUSE_ADDRESS		0x0004	/* Socket options */
-#define	IL_SO_KEEEP_ALIVE		0x0008
+#define	IL_SO_KEEP_ALIVE		0x0008
 #define	IL_SO_SEND_BUFFER		0x1001
 #define	IL_SO_RECV_BUFFER		0x1002
 #define	IL_SO_SEND_TIMEOUT		0x1005

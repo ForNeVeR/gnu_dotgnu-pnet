@@ -42,7 +42,6 @@ public class XmlTextReader : XmlReader
 	private bool xmlPopScope;
 	private bool xmlnsPopScope;
 	private int depth;
-	private int sawPreserve;
 	private NodeManager nodes;
 	private ReadState readState;
 	private Stack elementNames;
@@ -103,7 +102,6 @@ public class XmlTextReader : XmlReader
 				incDepth = false;
 				xmlPopScope = false;
 				xmlnsPopScope = false;
-				sawPreserve = -1;
 				state = State.XmlDeclaration;
 				elementNames = new Stack();
 				nodes = new NodeManager(nt, new ErrorHandler(Error));
@@ -948,10 +946,6 @@ public class XmlTextReader : XmlReader
 						else if(tmpValue == "preserve")
 						{
 							context.XmlSpace = XmlSpace.Preserve;
-							if(sawPreserve == -1)
-							{
-								sawPreserve = elementNames.Count;
-							}
 						}
 						else
 						{
@@ -1377,10 +1371,6 @@ public class XmlTextReader : XmlReader
 				{
 					context.PopScope();
 					xmlPopScope = false;
-					if(sawPreserve == elementNames.Count)
-					{
-						sawPreserve = -1;
-					}
 				}
 
 				// pop the namespace scope if we last read an element end tag
@@ -1449,7 +1439,7 @@ public class XmlTextReader : XmlReader
 						}
 						if(whitespace == WhitespaceHandling.Significant)
 						{
-							if(sawPreserve != -1)
+							if(elementNames.Count == 0)
 							{
 								input.SkipWhitespace();
 								return ReadDocument();
@@ -1987,6 +1977,10 @@ public class XmlTextReader : XmlReader
 	// Already read: ''
 	private void ReadText()
 			{
+				ReadText(false);
+			}
+	private void ReadText(bool fromWhitespace)
+			{
 				// check the state
 				CheckState(State.Content);
 
@@ -1997,9 +1991,19 @@ public class XmlTextReader : XmlReader
 				Segments segments = info.Segments;
 				XmlNameTable nt = context.NameTable;
 
-				// create our log and push it onto the logger's log stack
-				StringBuilder log = new StringBuilder();
-				input.Logger.Push(log);
+				// handle log setup, based on if text was read as whitespace
+				StringBuilder log;
+				if(fromWhitespace)
+				{
+					// copy the whitespace log from the logger's log stack
+					log = input.Logger.Peek();
+				}
+				else
+				{
+					// create a new log and push it onto the logger's log stack
+					log = new StringBuilder();
+					input.Logger.Push(log);
+				}
 
 				// read until we consume all the text
 				while(input.PeekChar() && input.peekChar != '<')
@@ -2068,7 +2072,7 @@ public class XmlTextReader : XmlReader
 				CheckState(State.Misc);
 
 				// set the significant whitespace flag
-				bool significant = (sawPreserve != -1);
+				bool significant = (elementNames.Count > 0);
 
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();
@@ -2076,6 +2080,13 @@ public class XmlTextReader : XmlReader
 
 				// skip the required whitespace
 				if(!input.SkipWhitespace()) { Error(/* TODO */); }
+
+				// check to see if we should treat the whitespace as text
+				if(input.PeekChar() && input.peekChar != '<')
+				{
+					ReadText(true);
+					return;
+				}
 
 				// get the whitespace from the log and pop it from the logger
 				String value = input.Logger.Pop().ToString();

@@ -1,7 +1,8 @@
 /*
  * XmlDocument.cs - Implementation of the "System.Xml.XmlDocument" class.
  *
- * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -742,8 +743,8 @@ class XmlDocument : XmlNode
 					case XmlNodeType.Attribute:
 					{
 						// create the attribute
-						XmlAttribute att = CreateAttribute(r.Name);
-						// the attribute value is read as a child text node
+						XmlAttribute att = CreateAttribute
+							(r.Prefix, r.LocalName, r.NamespaceURI);
 
 						// read and append the children
 						ReadChildren(r, att);

@@ -1,4 +1,14 @@
+2004-05-05  Richard Baumann  <biochem333@nyc.rr.com>
 
+	* Generics/TreeBase.cs: fix a couple of typos.
+
+	* System.Xml/XmlDocument.cs: fixes to attribute handling and the
+	copyright notice.
+
+	* System.Xml/XmlTextReader.cs, System.Xml/Private/Attributes.cs:
+	fixes to whitespace and namespace handling.
+
+	* System.Xml/Private/NameCache.cs: fix for proper name table usage.
 
 2004-05-03  Klaus Treichel  <ktreichel@web.de>
 

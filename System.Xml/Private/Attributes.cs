@@ -35,6 +35,8 @@ internal sealed class Attributes : XmlErrorProcessor
 	private XmlNameTable nt;
 	private XmlNamespaceManager nm;
 
+	private static readonly String xmlnsUri = "http://www.w3.org/2000/xmlns/";
+
 
 	// Constructor.
 	public Attributes(ErrorHandler error)
@@ -203,6 +205,10 @@ internal sealed class Attributes : XmlErrorProcessor
 
 						// set the namespace uri based on the prefix
 						namespaceURI = nm.LookupNamespace(prefix);
+					}
+					else if(localName == "xmlns")
+					{
+						namespaceURI = nt.Add(xmlnsUri);
 					}
 
 					// create the key

@@ -93,7 +93,7 @@ public abstract class TreeBase<KeyT, ValueT>
 			}
 
 	// Rotate the tree right around a node.
-	private void RotateRight(TreeNode<KeyT, ValueT> y)
+	private void RotateRight(TreeNode<KeyT, ValueT> x)
 			{
 				TreeNode<KeyT, ValueT> y = x.left;
 				x.left = y.right;
@@ -258,13 +258,13 @@ public abstract class TreeBase<KeyT, ValueT>
 					{
 						root = x;
 					}
-					else if(z.parent.left = z)
+					else if(z.parent.left == z)
 					{
 						z.parent.left = x;
 					}
 					else
 					{
-						z.parent.right = y;
+						z.parent.right = x;
 					}
 					if(leftMost == z)
 					{
@@ -298,7 +298,7 @@ public abstract class TreeBase<KeyT, ValueT>
 						if(w.red)
 						{
 							w.red = false;
-							x_parent.color = red;
+							x_parent.red = true;
 							RotateLeft(x_parent);
 							w = x_parent.right;
 						}

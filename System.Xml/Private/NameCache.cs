@@ -32,11 +32,15 @@ internal sealed class NameCache : Hashtable
 {
 	// Internal state.
 	private XmlNameTable nameTable;
+	private String emptyString;
 
 	// Constructor.
 	public NameCache(XmlNameTable nt) : base()
 			{
 				nameTable = nt;
+
+				// only NameTable is guaranted to use String.Empty
+				emptyString = nt.Add(String.Empty);
 			}
 
 	// Add an entry to the name cache.
@@ -50,7 +54,7 @@ internal sealed class NameCache : Hashtable
 				}
 				else
 				{
-					localName = String.Empty;
+					localName = emptyString;
 				}
 				if(prefix != null)
 				{
@@ -58,7 +62,7 @@ internal sealed class NameCache : Hashtable
 				}
 				else
 				{
-					prefix = String.Empty;
+					prefix = emptyString;
 				}
 				if(ns != null)
 				{
@@ -66,7 +70,7 @@ internal sealed class NameCache : Hashtable
 				}
 				else
 				{
-					ns = String.Empty;
+					ns = emptyString;
 				}
 				if(prefix.Length > 0)
 				{

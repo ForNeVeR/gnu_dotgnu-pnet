@@ -490,6 +490,13 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 	int result, result2;
 	unsigned long saveCount;
 
+	result = EnterWait(ILThreadSelf());
+	
+	if (result != 0)
+	{
+		return result;
+	}
+		
 	/* Lock down the monitor */
 	_ILMutexLock(&(monitor->parent.parent.lock));
 
@@ -536,7 +543,7 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 
 			/* Wait until we are signalled */			
 			result = _ILWakeupWait(wakeup, timeout, 0);
-			
+						
 			if(result < 0)
 			{
 				result = IL_WAIT_INTERRUPTED;
@@ -575,10 +582,11 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 	}
 
 	--monitor->waiters;
-
+	
 	/* Unlock the monitor and return */
 	_ILMutexUnlock(&(monitor->parent.parent.lock));
-	return result;
+
+	return LeaveWait(ILThreadSelf(), result);
 }
 
 int ILWaitMonitorPulse(ILWaitHandle *handle)

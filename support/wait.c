@@ -45,7 +45,7 @@ int ILWaitHandleClose(ILWaitHandle *handle)
 /*
  * Enter the "wait/sleep/join" state on the current thread.
  */
-static int EnterWait(ILThread *thread)
+int EnterWait(ILThread *thread)
 {
 	_ILMutexLock(&(thread->lock));
 	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
@@ -61,7 +61,7 @@ static int EnterWait(ILThread *thread)
 /*
  * Leave the "wait/sleep/join" state on the current thread.
  */
-static int LeaveWait(ILThread *thread, int result)
+int LeaveWait(ILThread *thread, int result)
 {
 	_ILMutexLock(&(thread->lock));
 	/* Abort has more priority over interrupt */

@@ -419,6 +419,16 @@ _ILWakeup *_ILWakeupQueueWake(_ILWakeupQueue *queue);
  */
 void _ILWakeupQueueWakeAll(_ILWakeupQueue *queue);
 
+/*
+ * Make the thread enter a waiting state.
+ */
+int EnterWait(ILThread *thread);
+
+/*
+ * Make the thread leave a waiting state.
+ */
+int LeaveWait(ILThread *thread, int result);
+
 #ifdef	__cplusplus
 };
 #endif

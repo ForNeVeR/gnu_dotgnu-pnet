@@ -1,3 +1,13 @@
+2004-05-03  Thong Nguye <tum@veridicus.com>
+
+	* support/thr_defs.h: Added defs for EnterWait and LeaveWait.
+	
+	* support/wait.c: Made EnterWait and LeaveWait non-static,
+	shared methods so that they can be used by wait_mutex.c.
+	
+	* support/wait_mutex.c: Made ILWaitMonitorWait change
+	the state of the thread to waiting so that it can be aborted.
+
 2004-05-03  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fixed bug in ILWaitMonitorWait

@@ -3,6 +3,20 @@
 	
 	* System/Net/WebClient.cs: Implement MIME based file uploads using
 	multipart/form-data and boundaries.
+	
+	* System.Xml/XPath/XmlCaseOrder.cs,
+	System.Xml/XPath/XmlDataType.cs,
+	System.Xml/XPath/XmlSortOrder.cs,
+	System.Xml/XPath/XPathDocument.cs,
+	System.Xml/XPath/XPathException.cs,
+	System.Xml/XPath/XPathExpression.cs,
+	System.Xml/XPath/XPathNamespaceScope.cs,
+	System.Xml/XPath/XPathNodeIterator.cs,
+	System.Xml/XPath/XPathNodeType.cs,
+	System.Xml/XPath/XPathNavigator.cs,
+	System.Xml/XPath/XPathResultType.cs : Add some non-ecma classes and 
+	enums to the System.Xml.XPath namespace and stub out unimplemented
+	methods and properties
 
 2003-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

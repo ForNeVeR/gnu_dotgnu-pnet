@@ -1200,6 +1200,12 @@ case IL_OP_RET:
 			VERIFY_TYPE_ERROR();
 		}
 
+		if (isSynchronized)
+		{
+			PUSH_SYNC_OBJECT();
+			ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0);
+		}
+
 		/* Notify the coder of the return instruction */
 		ILCoderReturnInsn(coder, stack[stackSize - 1].engineType, returnType);
 
@@ -1208,9 +1214,16 @@ case IL_OP_RET:
 	}
 	else
 	{
+		if (isSynchronized)
+		{
+			PUSH_SYNC_OBJECT();
+			ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0);
+		}
+
 		/* Notify the coder of a non-value return instruction */
 		ILCoderReturnInsn(coder, ILEngineType_Invalid, ILType_Void);
 	}
+
 	lastWasJump = 1;
 }
 break;

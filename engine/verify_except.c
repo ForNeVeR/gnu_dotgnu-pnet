@@ -34,6 +34,7 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 {
 	ILUInt32 offset;
 	ILUInt32 end;
+	int isStatic;
 	ILException *exception;
 	ILClass *classInfo;
 	
@@ -117,6 +118,15 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 	/* If execution gets here, then there were no applicable catch blocks,
 	   so we always throw the exception to the calling method */
 	ILCoderTryHandlerStart(coder, 0, IL_MAX_UINT32);
+	
+	if (ILMethod_IsSynchronized(method))
+	{
+		/* Exit the sync lock before throwing to the calling method */
+		isStatic = ILMethod_IsStatic(method);
+		PUSH_SYNC_OBJECT();
+		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0);
+	}
+
 	ILCoderThrow(coder, 0);
 	ILCoderTryHandlerEnd(coder);
 }
@@ -216,7 +226,23 @@ case IL_OP_THROW:
 		   the object to those handlers.  Otherwise throw directly
 		   to the calling method */
 		ILCoderSetStackTrace(coder);
-		ILCoderThrow(coder, (exceptions != 0));
+		if (exceptions)
+		{
+			/* Throw to the exception table */
+			ILCoderThrow(coder, 1);
+		}
+		else
+		{
+			/* If throwing to the calling method then make sure we exit the sync lock */
+
+			if (isSynchronized)
+			{
+				PUSH_SYNC_OBJECT();
+				ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0);
+			}
+
+			ILCoderThrow(coder, 0);
+		}
 		stackSize = 0;
 		lastWasJump = 1;
 	}

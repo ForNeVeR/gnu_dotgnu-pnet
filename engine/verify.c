@@ -567,6 +567,20 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 }
 
 /*
+ * Push the appropriate synchronization object for a synchronized method.
+ */
+#define PUSH_SYNC_OBJECT() \
+	if (isStatic) \
+	{ \
+		ILCoderPushToken(coder, (ILProgramItem *)ILMethod_Owner(method)); \
+		ILCoderCallInlineable(coder, IL_INLINEMETHOD_TYPE_FROM_HANDLE, 0); \
+	} \
+	else \
+	{ \
+		ILCoderLoadArg(coder, 0, ILType_FromClass(ILMethod_Owner(method))); \
+	}
+
+/*
  * Bailout routines for various kinds of verification failure.
  */
 #ifndef IL_CONFIG_REDUCE_CODE
@@ -619,6 +633,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	int result;
 	unsigned opcode;
 	ILUInt32 insnSize;
+	int isStatic, isSynchronized;
 	int insnType;
 	ILUInt32 offset = 0;
 	ILEngineStackItem *stack;
@@ -669,6 +684,9 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 		return 0;
 	}
 
+	isStatic = ILMethod_IsStatic(method);
+	isSynchronized = ILMethod_IsSynchronized(method);
+		
 restart:
 	result = 0;
 	labelList = 0;
@@ -1001,7 +1019,7 @@ restart:
 	}
 
 	/* Set up for exception handling if necessary */
-	if(exceptions)
+	if(exceptions || isSynchronized)
 	{
 		ILCoderSetupExceptions(coder, exceptions, hasRethrow);
 	}
@@ -1010,6 +1028,14 @@ restart:
 	pc = code->code;
 	len = code->codeLen;
 	lastWasJump = 0;
+
+	/* If the method is synchronized then generate the Monitor.Enter call */
+	if (isSynchronized)
+	{
+		PUSH_SYNC_OBJECT();
+		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_ENTER, 0);
+	}
+
 	while(len > 0)
 	{
 		/* Fetch the instruction information block */
@@ -1106,7 +1132,7 @@ restart:
 	ILCoderMarkEnd(coder);
 
 	/* Output the exception handler table, if necessary */
-	if(exceptions != 0)
+	if(exceptions != 0 || isSynchronized)
 	{
 		OutputExceptionTable(coder, method, exceptions, hasRethrow);
 	}

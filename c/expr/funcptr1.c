@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/* Thanks to James McParlane for the test case */
+
 typedef void( *F_fp )(); 
 
 void f(F_fp p_F); 

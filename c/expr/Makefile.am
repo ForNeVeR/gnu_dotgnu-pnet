@@ -1,6 +1,7 @@
 
 TESTS = funcptr1.c \
 	    funcptr2.c \
+	    funcptr3.c \
 		ptr1.c \
 	    ptr2.c
 

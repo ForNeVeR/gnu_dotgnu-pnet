@@ -1,5 +1,5 @@
 /*
- * funcptr2.c - Test function typedef usage.
+ * funcptr3.c - Test function pointer usage.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -20,20 +20,16 @@
 
 /* Thanks to James McParlane for the test case */
 
-typedef void F_f(); 
+typedef void( *F_fp )();
 
-void g(F_f * p_F); 
+void f(F_fp p_F);
 
-void n() 
-{ 
-} 
+void n()
+{
+}
 
-main() 
-{ 
-	g(0); 
-	g(n); 
-} 
-
-void g(F_f * p_F) 
-{ 
-} 
+main()
+{
+	F_fp fn = n;
+	fn();
+}

@@ -9,12 +9,12 @@ AM_CFLAGS = -I$(top_srcdir)/include
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-ranlib
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-ar
-	$(LN_S) ilranlib $(DESTDIR)$(bindir)/cli-unknown-ranlib
-	$(LN_S) $(SYSTEM_AR) $(DESTDIR)$(bindir)/cli-unknown-ar
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-ranlib$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-ar$(EXEEXT)
+	$(LN_S) ilranlib$(EXEEXT) $(DESTDIR)$(bindir)/cli-unknown-ranlib$(EXEEXT)
+	$(LN_S) $(SYSTEM_AR) $(DESTDIR)$(bindir)/cli-unknown-ar$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-ranlib
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-ar
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-ranlib$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-ar$(EXEEXT)

@@ -51,29 +51,29 @@ install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/plugins
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) cscc-cs $(DESTDIR)$(libdir)/cscc/plugins/cscc-cs
-	$(INSTALL_PROGRAM) cscc-c-s $(DESTDIR)$(libdir)/cscc/plugins/cscc-c-s
-	$(INSTALL_PROGRAM) cscc-vb $(DESTDIR)$(libdir)/cscc/plugins/cscc-vb
-	$(INSTALL_PROGRAM) cscc-java $(DESTDIR)$(libdir)/cscc/plugins/cscc-java
-	$(INSTALL_PROGRAM) cscc-bf $(DESTDIR)$(libdir)/cscc/plugins/cscc-bf
-	$(INSTALL_PROGRAM) cscc $(DESTDIR)$(bindir)/cscc
-	$(INSTALL_PROGRAM) csdoc $(DESTDIR)$(bindir)/csdoc
-	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
-	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-b
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-gcc
-	$(LN_S) cscc-cs $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
-	$(LN_S) cscc-bf $(DESTDIR)$(libdir)/cscc/plugins/cscc-b
-	$(LN_S) cscc $(DESTDIR)$(bindir)/cli-unknown-gcc
+	$(INSTALL_PROGRAM) cscc-cs$(EXEEXT) $(DESTDIR)$(libdir)/cscc/plugins/cscc-cs$(EXEEXT)
+	$(INSTALL_PROGRAM) cscc-c-s$(EXEEXT) $(DESTDIR)$(libdir)/cscc/plugins/cscc-c-s$(EXEEXT)
+	$(INSTALL_PROGRAM) cscc-vb$(EXEEXT) $(DESTDIR)$(libdir)/cscc/plugins/cscc-vb$(EXEEXT)
+	$(INSTALL_PROGRAM) cscc-java$(EXEEXT) $(DESTDIR)$(libdir)/cscc/plugins/cscc-java$(EXEEXT)
+	$(INSTALL_PROGRAM) cscc-bf$(EXEEXT) $(DESTDIR)$(libdir)/cscc/plugins/cscc-bf$(EXEEXT)
+	$(INSTALL_PROGRAM) cscc$(EXEEXT) $(DESTDIR)$(bindir)/cscc$(EXEEXT)
+	$(INSTALL_PROGRAM) csdoc$(EXEEXT) $(DESTDIR)$(bindir)/csdoc$(EXEEXT)
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp$(EXEEXT)
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-b$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-gcc$(EXEEXT)
+	$(LN_S) cscc-cs$(EXEEXT) $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp$(EXEEXT)
+	$(LN_S) cscc-bf$(EXEEXT) $(DESTDIR)$(libdir)/cscc/plugins/cscc-b$(EXEEXT)
+	$(LN_S) cscc$(EXEEXT) $(DESTDIR)$(bindir)/cli-unknown-gcc$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
-	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
-	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-cs
-	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-c-s
-	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-vb
-	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-java
-	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-bf
-	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-b
-	rm -f $(DESTDIR)$(bindir)/cscc
-	rm -f $(DESTDIR)$(bindir)/csdoc
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-gcc
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp$(EXEEXT)
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-cs$(EXEEXT)
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-c-s$(EXEEXT)
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-vb$(EXEEXT)
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-java$(EXEEXT)
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-bf$(EXEEXT)
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-b$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/cscc$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/csdoc$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-gcc$(EXEEXT)

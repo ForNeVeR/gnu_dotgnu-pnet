@@ -10,9 +10,9 @@ AM_CFLAGS = -I$(top_srcdir)/include
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-size
-	$(LN_S) ilsize $(DESTDIR)$(bindir)/cli-unknown-size
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-size$(EXEEXT)
+	$(LN_S) ilsize$(EXEEXT) $(DESTDIR)$(bindir)/cli-unknown-size$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-size
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-size$(EXEEXT)

@@ -564,9 +564,18 @@ class ResourceManager
 					}
 
 					// Try loading the resources from a satellite assembly.
+					String assemblyName = MainAssembly.FullName;
+					if(assemblyName != null)
+					{
+						int index = assemblyName.IndexOf(',');
+						if(index != -1)
+						{
+							assemblyName = assemblyName.Substring(0, index);
+						}
+					}
 					String path = MainAssembly.GetSatellitePath
 						(culture.Name + Path.DirectorySeparatorChar +
-						 MainAssembly.FullName + ".resources.dll");
+						 assemblyName + ".resources.dll");
 					if(path != null)
 					{
 						error = 1;

@@ -1,4 +1,9 @@
 
+2003-10-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Resources/ResourceManager.cs: fix the assembly
+	name that is used when looking for satellite resource assemblies.
+
 2003-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/XsharpSupport.c: be a little more selective as to when

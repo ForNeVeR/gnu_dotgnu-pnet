@@ -657,23 +657,27 @@ void _ILLinkerPrintClass(ILLibraryFind *find, const char *name,
 static ILClass *MakeTypeRef(ILLibraryFind *find, ILLibraryClass *libClass,
 							ILImage *image)
 {
+	ILClass *parent;
 	ILClass *classInfo;
 	ILAssembly *assem;
-
-	/* TODO: Look for an existing type reference */
 
 	/* Make a new type reference */
 	if(libClass->parent)
 	{
 		/* Make a reference to a nested class */
-		classInfo = MakeTypeRef(find, libClass->parent, image);
-		if(!classInfo)
+		parent = MakeTypeRef(find, libClass->parent, image);
+		if(!parent)
 		{
 			return 0;
 		}
-		classInfo = ILClassCreateRef(ILToProgramItem(classInfo), 0,
-								     libClass->name,
-									 libClass->namespace);
+		classInfo = ILClassLookup(ILToProgramItem(parent),
+								  libClass->name, libClass->namespace);
+		if(classInfo)
+		{
+			return classInfo;
+		}
+		classInfo = ILClassCreateRef(ILToProgramItem(parent), 0,
+								     libClass->name, libClass->namespace);
 		if(!classInfo)
 		{
 			_ILLinkerOutOfMemory(find->linker);
@@ -704,6 +708,14 @@ static ILClass *MakeTypeRef(ILLibraryFind *find, ILLibraryClass *libClass,
 				return 0;
 			}
 			ILAssemblySetVersion(assem, find->library->version);
+		}
+
+		/* See if we already have a reference */
+		classInfo = ILClassLookup(ILToProgramItem(assem),
+								  libClass->name, libClass->namespace);
+		if(classInfo)
+		{
+			return classInfo;
 		}
 
 		/* Import the class using the AssemblyRef */

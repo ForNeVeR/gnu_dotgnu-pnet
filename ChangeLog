@@ -24,6 +24,9 @@ Reverse will lead to linking issues when searching for classes.
 * ilalink/linker.h, ilalink/link_library.c: modify the library class
 name hash table so that it uses the routines in "il_utils.h".
 
+* ilalink/link_library.c (MakeTypeRef): look for a pre-existing TypeRef
+before creating a new one.
+
 2001-10-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/lib_array.c: bug fix - set the array length in a newly-allocated

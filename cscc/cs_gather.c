@@ -421,6 +421,13 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 			{
 				CSOutOfMemory();
 			}
+			if(info->outputIsJava)
+			{
+				CSErrorOnLine(yygetfilename(method), yygetlinenum(method),
+				  	"`%s' parameters not permitted when compiling "
+						"to Java bytecode",
+				    (fparam->pmod == ILParamMod_out ? "out" : "ref"));
+			}
 		}
 
 		/* Add the parameter type to the method signature */

@@ -14,6 +14,9 @@
 	runtime/System/Collections/Generic/KeyValuePair.cs:
 	check in the beginnings of the "System.Collections.Generic" namespace.
 
+	* SharpZipLib/SharpZipLib.build: add the "-fno-generics" flag,
+	to work around a generics-related ambiguity in SharpZipLib.
+
 2003-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/samples.build, samples/snake.cs: check in a simple

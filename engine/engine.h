@@ -56,7 +56,7 @@ extern	"C" {
  * Determine if we should use interface method tables.
  */
 #ifndef IL_CONFIG_REDUCE_CODE
-	#define	IL_USE_IMTS	1
+	/*#define	IL_USE_IMTS	1*/
 #endif
 
 /*

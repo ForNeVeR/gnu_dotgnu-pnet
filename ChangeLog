@@ -1,3 +1,14 @@
+2002-03-05  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Added a few of the basic methods. Eventually,
+	much of the details in UriBuilder will be moved to Uri, to make
+	UriBuilder depend on Uri, but not vice versa.
+
+	* System/UriBuilder.cs: Made a few changes to reflect the updated
+	design, described above. Also a fix or two.
+
+	* resources/en_US/System/Exception.txt: Added some useful
+	exceptions for hexadecimal and URIs.
 
 2002-03-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -45,6 +45,7 @@ know if the user doesn't really want the path to be "/".
 public class UriBuilder
 {
 	// because you can't append to a char :)
+	// maybe move these to Uri, make internal, change accessors
 	private static String slash = "/";
 	private static String questionmark = "?";
 	private static String hash = "#";
@@ -79,7 +80,7 @@ public class UriBuilder
 		this.host = "loopback";
 		this.password = String.Empty;
 		this.path = String.Empty;
-		this.port = 80;
+		this.port = -1;
 		this.scheme = Uri.UriSchemeHttp;
 		this.username = String.Empty;
 	}
@@ -124,7 +125,7 @@ public class UriBuilder
 	{
 		this.scheme = ValidateScheme(scheme, false);
 		this.host = ValidateHost(host, false);
-		if (port < 0) throw new ArgumentOutOfRangeException("port");
+		if (port < -1) throw new ArgumentOutOfRangeException("port");
 		this.port = port;
 		this.path = path;
 		if (extraValue[0] == '?')
@@ -200,22 +201,24 @@ public class UriBuilder
 		{
 			// parsePort input: startPort = first character of port
 			// eoAuthority = the /, ?, or # that ends the port
+			// have made default this.port = -1 (throw later @ runtime)
 			try
 			{
 				this.port = Int32.Parse(instr.Substring(startPort,
 					eoAuthority - startPort));
 			}
-			catch (FormatException fe) { this.port = 80; }
+			catch (FormatException fe) { this.port = -1; }
 			catch (OverflowException oe)
 			{
 				throw new UriFormatException();
 			}
+			// you shouldn't type "-1" if you mean -1...type ""
 			if (this.port < 0 || this.port > 65535)
 				throw new UriFormatException();
 			eoAuthority = startPort - 1;
 		}
 		else
-			this.port = 80;
+			this.port = -1;
 
 		// let's get our bearings:
 		// curpos should be the beginning of server...done
@@ -256,13 +259,6 @@ public class UriBuilder
 			this.fragment = String.Empty;
 	}
 
-	// use this to get the default port for the scheme
-	// makes it really easy to add support for new schemes
-	// just use a switch/case or something in implementation
-	private int DefaultPortForScheme(String scheme)
-	{
-	}
-
 	private static String ValidateScheme(String scheme, boolean escaped)
 	{
 		
@@ -274,13 +270,7 @@ public class UriBuilder
 
 	public override bool Equals(Object rparam)
 	{
-		if (this.Fragment == rparam.Fragment && this.Host == rparam.Host &&
-		    this.Password == rparam.Password && this.Path == rparam.Path &&
-		    this.Scheme == rparam.Scheme && this.Query == rparam.Query &&
-		    this.Port == rparam.Port && this.UserName == rparam.UserName)
-			return true;
-		else
-			return false;
+		return this.Uri.Equals(rparam);
 	}
 
 	public override int GetHashCode()
@@ -401,7 +391,6 @@ public class UriBuilder
 		}
 	}
 
-	[TODO]
 	public String Scheme
 	{
 		get
@@ -411,7 +400,7 @@ public class UriBuilder
 		set
 		{
 			if (value == null)
-				value = String.Empty;
+				this.scheme = String.Empty;
 			else
 			{
 				int colon = value.IndexOf(':');

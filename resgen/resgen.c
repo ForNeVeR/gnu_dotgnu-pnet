@@ -323,10 +323,14 @@ int main(int argc, char *argv[])
 			else
 			{
 				/* Write binary resources to a specified file */
-				if((file = fopen(outputFile, "w")) == NULL)
+				/* BUG 1841: Support Cygwin/text-mode file systems */
+				if((file = fopen(outputFile, "wb")) == NULL) 
 				{
-					perror(outputFile);
-					return 1;
+					if((file = fopen(outputFile, "w")) == NULL)
+					{
+						perror(outputFile);
+						return 1;
+					}
 				}
 				ILResWriteBinary(file);
 				fclose(file);

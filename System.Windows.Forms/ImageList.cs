@@ -35,13 +35,16 @@ public sealed class ImageList : Component
 
 	// Variables
 	private ColorDepth colorDepth = ColorDepth.Depth8Bit;
-	private ImageCollection images = new ImageCollection(this);
+	private ImageCollection images;
 	private Size imageSize = new Size(16,16);
 	private ImageListStreamer imageStream = null;
 	private Color transparentColor = Color.Transparent;
 
 	// Constructor
-	public ImageList() : base() {}
+	public ImageList() : base()
+	{
+		images = new ImageCollection(this);
+	}
 #if !CONFIG_COMPACT_FORMS
 	public ImageList(IContainer container) : base() { container.Add(this); }
 #endif
@@ -136,7 +139,7 @@ public sealed class ImageList : Component
 
 
 
-	public sealed class ImageCollection : IList, ICollection, IEnumerable
+	public class ImageCollection : IList, ICollection, IEnumerable
 	{
 		// TODO
 

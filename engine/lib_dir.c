@@ -229,8 +229,8 @@ extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread,ILStrin
 			break;
 		}
         
-		buffer->fileName = ILStringCreate(_thread, dirEntry->d_name);
-		buffer->fileType = dirEntry->d_type;
+		buffer->fileName = ILStringCreate(_thread, ILDirEntName(dirEntry));
+		buffer->fileType = ILDirEntType(dirEntry);
 		ILFree(dirEntry);
 		buffer++;
 	}

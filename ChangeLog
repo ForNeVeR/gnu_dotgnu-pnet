@@ -25,6 +25,10 @@
 	"ILCLIToUnixTime" and "ILUnixToCLITime" so that they don't
 	rely upon "time_t" for their definition.
 
+	* engine/lib_dir.c, include/il_sysio.h, support/dir.c:
+	make the directory scanning routines more opaque and handle
+	platforms that don't have "d_type".
+
 2002-11-05  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: Fix the indexername returned , using

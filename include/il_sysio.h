@@ -23,9 +23,6 @@
 
 #include "il_system.h"
 #include "il_config.h"
-#ifdef HAVE_DIRENT_H
-#include <dirent.h>
-#endif
 #include <errno.h>
 
 #ifdef	__cplusplus
@@ -265,25 +262,34 @@ int ILSysIOPathGetLastModification(const char *path, ILInt64 *time);
 int ILSysIOPathGetCreation(const char *path, ILInt64 *time);
 
 
-/* dir.c */
-#ifdef HAVE_DIRENT_H
-typedef DIR ILDir;
-#else
-/* If your system doesn't use DIRENT, notably windows, you need to typedef 
- * it's equivalent here.  I explicitly do NOT want to typedef a catchall 
- * void*, as this breaks compile time warnings on other systems */ 
-#endif
- 
-#ifdef HAVE_DIRENT_H
-typedef struct dirent ILDirEnt;
-#else
-	/*  See above note  */
-#endif
+/*
+ * Opaque type that is used to represent an open directory and an entry.
+ */
+typedef struct _tagILDir    ILDir;
+typedef struct _tagILDirEnt ILDirEnt;
 
+/*
+ * Values returned from "ILDirEntType".
+ */
+#define ILFileType_Unknown			0
+#define	ILFileType_FIFO				1
+#define	ILFileType_CHR				2
+#define	ILFileType_DIR				4
+#define	ILFileType_BLK				6
+#define	ILFileType_REG				8
+#define	ILFileType_LNK				10
+#define	ILFileType_SOCK				12
+#define	ILFileType_WHT				14
+
+/*
+ * Directory access functions.
+ */
 ILInt32 ILDeleteDir(const char *path);
 ILDir *ILOpenDir(char *path);
 ILDirEnt *ILReadDir(ILDir *directory);
 int ILCloseDir(ILDir *directory);
+const char *ILDirEntName(ILDirEnt *entry);
+int ILDirEntType(ILDirEnt *entry);
 
 #ifdef	__cplusplus 
 };

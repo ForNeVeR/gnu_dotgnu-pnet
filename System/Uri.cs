@@ -323,36 +323,6 @@ public class Uri : MarshalByRefObject
 		return true;
 	}
 
-	private static bool IsIPV4Name(String name)
-	{
-		try
-		{
-			IPAddress.Parse(name);
-			return true;
-		}
-		catch (FormatException)
-		{
-			return false;
-		}
-		return false;
-	}
-
-	/* This method is to be moved into an IPV6Address class */
-	private static bool IsIPV6Name(String name)
-	{
-		try
-		{
-			IPv6Address.Parse(name);
-			return true;
-		}
-		catch (FormatException)
-		{
-			return false;
-		}
-		return false;
-	}
-	
-
 	public static UriHostNameType CheckHostName(String name)
 	{
 		if (name == null || name.Length == 0)
@@ -362,13 +332,19 @@ public class Uri : MarshalByRefObject
 		{
 			return UriHostNameType.Dns;
 		}
-		if(IsIPV4Name(name))
+		
+		try
 		{
-			return UriHostNameType.IPv4;
+			switch(IPAddress.Parse(name).AddressFamily)
+			{
+				case AddressFamily.InterNetwork:
+					return UriHostNameType.IPv4;
+				case AddressFamily.InterNetworkV6:
+					return UriHostNameType.IPv6;
+			}
 		}
-		if(IsIPV6Name(name))
+		catch (FormatException)
 		{
-			return UriHostNameType.IPv6;
 		}
 		return UriHostNameType.Unknown;
 	}

@@ -1,5 +1,5 @@
 
-2003-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+2003-05-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/EndPoint.cs, System/Net/IPAddress.cs,
 	System/Net/IPEndPoint.cs, System/Net/SocketAddress.cs,
@@ -22,6 +22,12 @@
 
 	* System/ComponentModel/MarshalByValueComponent.cs: Remove the exception
 	in constructor.
+
+	* System/Net/IPv6Address.cs: Remove IPv6Address and incorporate 
+	the functionality into IPAddress class.
+
+	* System/Net/IPAddress.cs , System/Uri.cs: Implement IPv6 Parse and
+	ToString for IPAddress classes.
 
 2003-05-26  Gopal.V  <gopalv82@symonds.net>
 	

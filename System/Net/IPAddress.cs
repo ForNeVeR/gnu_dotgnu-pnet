@@ -24,7 +24,9 @@ namespace System.Net
 {
 
 using System;
+using System.Text;
 using System.Net.Sockets;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 // Note: the IPv6 stuff isn't ECMA-compatible, strictly speaking,
@@ -93,7 +95,15 @@ public class IPAddress
 								 (address[posn * 2 + 1]));
 				}
 			}
-
+			
+	public IPAddress(ushort[] address, long scopeid)
+			{
+				this.family = AddressFamily.InterNetworkV6;
+				this.value = scopeid;
+				this.ipv6=new ushort[8];
+				Array.Copy(address,this.ipv6,8);
+			}
+	
 	// Determine if two objects are equal.
 	public override bool Equals(Object comparand)
 			{
@@ -203,11 +213,8 @@ public class IPAddress
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static short NetworkToHostOrder(short network);
 
-	[TODO]
-	public static IPAddress Parse(String ipString)
+	private static IPAddress ParseIPv4(String ipString)
 			{
-				// TODO: ipv6 support
-
 				int parsed;
 				String[]  tokenizedString;
 				int quadA;
@@ -215,13 +222,7 @@ public class IPAddress
 				int quadC;
 				int quadD;
 				bool  numbersign;
-
-				if (ipString == null)
-				{
-					throw new ArgumentNullException
-						("ipString", S._("Arg_NotNull"));
-				}
-
+				
 				// this only takes char[]. not String
 				tokenizedString = ipString.Split(new char[]{'.'}, 4);
 
@@ -248,15 +249,177 @@ public class IPAddress
 				parsed|=((quadA << 24) & unchecked((int)0xFF000000));
 
 				return new IPAddress((long)(uint)HostToNetworkOrder(parsed));
+			}
+	
+	// IPv6 Parsing
+	
+	private static ushort[] ParseHex(String input)
+			{
+				if(input==String.Empty)
+				{
+					return new ushort[0];
+				}
+				String [] toks = input.Split(':');
+				ushort [] retval = new ushort[toks.Length];
+				for(int i=0; i< toks.Length; i++)
+				{
+					try
+					{
+						retval[i] =
+							UInt16.Parse("0x"+toks[i],NumberStyles.HexNumber);
+					}
+					catch(OverflowException)
+					{
+						throw new FormatException(S._("Format_IP"));
+					}
+				}
+				return retval;
+			}
+		
+	private static ushort[] ParseNoCompress(String input)
+			{
+				if(input==String.Empty)
+				{
+					return new ushort[0];
+				}
+				int ipv4Start=input.IndexOf(".");
+				int lastPart = input.LastIndexOf(":");
+				String ip4 = null;
+				ushort [] retval;
+				if(ipv4Start!=-1 && lastPart!=-1)
+				{
+					// F00F::0:13.2.3.4
+					if(lastPart > ipv4Start)
+					{
+						throw new FormatException(S._("Format_IP"));
+					}
+					ip4 = input.Substring(input.LastIndexOf(":")+1);
+					input = input.Substring(0, input.LastIndexOf(":"));
+				}
+				else if(ipv4Start!=-1 && lastPart == -1)
+				{
+					// F00F::13.2.2.3
+					ip4 = input.Substring(input.LastIndexOf(":")+1);
+					input = String.Empty;
+				}
+				ushort[] hex4 = ParseHex(input);
+				
+				retval = new ushort[hex4.Length + ((ip4!=null) ? 2 : 0)];
+				
+				Array.Copy(hex4,retval,hex4.Length);
+
+				if(ip4!=null)
+				{
+					long ipValue = ParseIPv4(ip4).value; 
+					retval [hex4.Length] = (ushort) 
+										(((int) (ipValue & 0xff) << 8) + 
+										((int) ((ipValue >> 8) & 0xff)));
+												
+					retval [hex4.Length + 1] = (ushort) 
+									(((int) ((ipValue >> 16) & 0xff) << 8)
+									+ ((int) ((ipValue >> 24) & 0xff)));
+				}
+				return retval;
+			}
+	
+	public static IPAddress ParseIPv6(String input)
+			{
+				long scopeid=0;
+				bool zeroCompress, multipleCompress ;
+
+				if(input==null)
+				{
+					throw new ArgumentNullException("input");
+				}
+				if(input.IndexOf('/')!=-1)
+				{
+					String prefix=input.Substring(input.IndexOf('/')+1);
+					try
+					{
+						scopeid=Int64.Parse(prefix);
+					}
+					catch
+					{
+						throw new FormatException("Invalid prefix");
+					}
+					input=input.Substring(0,input.IndexOf('/'));
+				}
+				
+				zeroCompress = (input.IndexOf("::") != -1);
+				multipleCompress = 
+							(input.IndexOf("::") != input.LastIndexOf("::"));
+				if(!zeroCompress)
+				{
+					ushort[] retval=ParseNoCompress(input);
+					if(retval.Length != 8)
+					{
+						throw new FormatException(S._("Format_IP"));
+					}
+					return new IPAddress(retval,scopeid);
+				}
+				else if(!multipleCompress)
+				{
+					String part1=input.Substring(0,input.IndexOf("::"));
+					String part2=input.Substring(input.IndexOf("::")+2);
+
+					// Parse the two peices independently 
+					ushort[] retval1=ParseNoCompress(part1);
+					ushort[] retval2=ParseNoCompress(part2);
+					
+					if((retval1.Length + retval2.Length) >= 8)
+						throw new FormatException(S._("Format_IP"));
+
+					ushort[] retval = new ushort[8]{0,0,0,0,0,0,0,0};
+
+					// fill in the peices from either end , leaving the
+					// zero block to remain between.
+
+					Array.Copy(retval1, retval, retval1.Length);
+					Array.Copy(retval2, 0, retval, 8-retval2.Length, 
+													retval2.Length);
+					return new IPAddress(retval,scopeid);
+				}
+				throw new FormatException(S._("Format_IP"));
+			}
+
+	public static IPAddress Parse(String ipString)
+			{
+				if (ipString == null)
+				{
+					throw new ArgumentNullException
+						("ipString", S._("Arg_NotNull"));
+				}
+				if(ipString.IndexOf(":")!=-1)
+				{
+					return ParseIPv6(ipString);
+				}
+				else
+				{
+					return ParseIPv4(ipString);
+				}
 			}	
+	
 	public override string ToString()
 			{
-				// TODO: ipv6 support
-				int host = NetworkToHostOrder((int)value);
-				return ((host >> 24) & 0xFF).ToString() + "." +
-					   ((host >> 16) & 0xFF).ToString() + "." +
-					   ((host >> 8) & 0xFF).ToString() + "." +
-					   (host & 0xFF).ToString();
+				if(family==AddressFamily.InterNetworkV6)
+				{
+					StringBuilder sb=new StringBuilder(8*5);
+					for(int i=0;i<7;i++)
+					{
+						sb.Append(ipv6[i].ToString("X4"));
+						sb.Append('.');
+					}
+					sb.Append(ipv6[7].ToString("X4"));
+					return sb.ToString();
+				}
+				else
+				{
+					int host = NetworkToHostOrder((int)value);
+					return ((host >> 24) & 0xFF).ToString() + "." +
+						   ((host >> 16) & 0xFF).ToString() + "." +
+						   ((host >> 8) & 0xFF).ToString() + "." +
+						   (host & 0xFF).ToString();
+				}
 			}
 
 	// Get or set the IPv4 address.

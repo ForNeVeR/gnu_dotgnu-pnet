@@ -1,4 +1,10 @@
 
+2002-12-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_coerce.c, cscc/c/c_defs.tc, cscc/c/c_invoke.tc,
+	cscc/c/c_oper.tc: improvements to C# method invocation in the
+	C compiler; implement implicit C to C# string conversion.
+
 2002-12-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_class.c: allow a class to be defined multiple times

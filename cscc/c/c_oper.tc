@@ -2079,6 +2079,45 @@ ILNode_CSemAnalysis(ILNode_CastType)
 	return CCastNode(info, node->expr, parent, value, node->type);
 }
 
+/*
+ * Perform semantic analysis for C to C# string conversion.
+ */
+ILNode_CSemAnalysis(ILNode_CToCSharpString)
+{
+	/* Not used, so nothing to do here */
+	return CSemValueDefault;
+}
+
+/*
+ * Get the type of a C to C# string conversion.
+ */
+ILNode_GetType(ILNode_CToCSharpString)
+{
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for a C to C# string conversion.
+ */
+ILNode_GenValue(ILNode_CToCSharpString)
+{
+	/* Evaluate the C version of the string */
+	ILNode_GenValue(node->expr, info);
+
+	/* Use "Marshal.PtrToStringAnsi" to convert the string */
+	ILGenCallByName(info, "instance [.library]System.String "
+						  "[.library]System.Runtime.InteropServices.Marshal::"
+						  "PtrToStringAnsi(native int)");
+
+	/* The result is always an object reference */
+	return ILMachineType_ObjectRef;
+}
+JavaGenValue(ILNode_CToCSharpString)
+{
+	/* Java output is not supported */
+	return ILMachineType_ObjectRef;
+}
+
 %{
 
 /*

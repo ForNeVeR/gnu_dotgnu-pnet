@@ -35,6 +35,7 @@ extern	"C" {
 #define	C_COERCE_PTR_TO_PTR			(1<<4)
 #define	C_COERCE_NULL_PTR			(1<<5)
 #define	C_COERCE_SIMPLE				(1<<6)
+#define	C_COERCE_C_TO_CS_STRING		(1<<7)
 
 /*
  * Determine if a primitive type is numeric or boolean.
@@ -268,6 +269,20 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 		}
 	}
 
+	/* Deal with coercions between C and C# strings */
+	if(CTypeIsPointer(fromType) &&
+	   ILTypeStripPrefixes(CTypeGetPtrRef(fromType)) == ILType_Int8 &&
+	   ILTypeIsStringClass(toType))
+	{
+		return C_COERCE_C_TO_CS_STRING;
+	}
+
+	/* We allow identical C# types to be coerced */
+	if(ILTypeIdentical(fromType, toType))
+	{
+		return C_COERCE_OK;
+	}
+
 	/* We will get here if we don't have a C type or we have
 	   a completely invalid combination of C types */
 	return C_COERCE_INVALID;
@@ -418,6 +433,24 @@ static CSemValue ApplyCoercion(ILGenInfo *info, ILNode *node, ILNode **parent,
 		{
 			CSemSetRValue(fromValue, toType);
 		}
+	}
+	else if((rules & C_COERCE_C_TO_CS_STRING) != 0)
+	{
+		/* Convert a C string into a C# string */
+		if(yyisa(node, ILNode_CString))
+		{
+			/* The argument is a constant, so merely change its node type */
+			*parent = ILNode_String_create
+				(((ILNode_CString *)node)->str, ((ILNode_CString *)node)->len);
+			CGenCloneLine(*parent, node);
+		}
+		else
+		{
+			/* We need to call "PtrToStringAnsi" to convert the string */
+			*parent = ILNode_CToCSharpString_create(node);
+			CGenCloneLine(*parent, node);
+		}
+		CSemSetRValue(fromValue, toType);
 	}
 	else
 	{

@@ -478,6 +478,112 @@ ILNode_GenValue(ILNode_CInvocationExpression)
 	return resultType;
 }
 
+%{
+
+/*
+ * Internal worker function for locating static C# methods.
+ */
+static ILMethod *ResolveCSMethod(ILGenInfo *info, ILClass *classInfo,
+							     ILClass *callScope, const char *name,
+							     ILType **args, int numArgs)
+{
+	ILMember *member;
+	ILMethod *method;
+	ILMethod *closestMatch = 0;
+	ILType *signature;
+	ILType *argType;
+	int arg, same;
+
+	while(classInfo != 0)
+	{
+		classInfo = ILClassResolve(classInfo);
+		member = 0;
+		while((member = ILClassNextMemberByKind
+					(classInfo, member, IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			/* Filter out members that aren't interesting */
+			method = (ILMethod *)member;
+			if(strcmp(ILMethod_Name(method), name) != 0 ||
+			   !ILMethod_IsStatic(method))
+			{
+				continue;
+			}
+
+			/* Check that this is the signature we are interested in */
+			signature = ILMethod_Signature(method);
+			if(!ILType_IsMethod(signature))
+			{
+				continue;
+			}
+			if(numArgs != (int)(ILTypeNumParams(signature)))
+			{
+				continue;
+			}
+			same = 1;
+			for(arg = 1; arg <= numArgs; ++arg)
+			{
+				argType = ILTypeGetParam(signature, arg);
+				if(!ILTypeIdentical(argType, args[arg - 1]))
+				{
+					if(!CCanCoerce(args[arg - 1], argType))
+					{
+						break;
+					}
+					same = 0;
+				}
+			}
+			if(arg <= numArgs)
+			{
+				continue;
+			}
+
+			/* Check the method's access level against the call scope */
+			if(!ILMemberAccessible(member, callScope))
+			{
+				continue;
+			}
+
+			/* We've found a candidate method */
+			if(same)
+			{
+				/* We have an exact match, so return that */
+				return method;
+			}
+			else if(!closestMatch)
+			{
+				/* This match is close, but try to find a better one */
+				closestMatch = method;
+			}
+		}
+
+		/* Move up to the parent class */
+		if(ILClass_IsInterface(classInfo))
+		{
+			/* Scan the parents of this interface */
+			ILImplements *impl = 0;
+			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+			{
+				method = ResolveCSMethod(info, ILImplementsGetInterface(impl),
+									     callScope, name, args, numArgs);
+				if(method)
+				{
+					return method;
+				}
+			}
+			classInfo = 0;
+		}
+		else
+		{
+			classInfo = ILClass_Parent(classInfo);
+		}
+	}
+
+	/* Return the closest match if we didn't find an exact match */
+	return closestMatch;
+}
+
+%}
+
 /*
  * Perform semantic analysis for C# invocation expressions.
  */
@@ -529,8 +635,8 @@ ILNode_CSemAnalysis(ILNode_CSharpInvocation)
 	callScope = ILClassLookup(ILClassGlobalScope(info->image), "<Module>", 0);
 	if(classInfo)
 	{
-		method = ILResolveStaticMethod(info, classInfo, callScope,
-									   node->name, typeArray, (int)numArgs);
+		method = ResolveCSMethod(info, classInfo, callScope,
+								 node->name, typeArray, (int)numArgs);
 	}
 	else
 	{
@@ -551,14 +657,13 @@ ILNode_CSemAnalysis(ILNode_CSharpInvocation)
 		return CSemValueError;
 	}
 
-	/* Coerce the arguments to the method's actual parameter types,
-	   using C#-style coercion rules rather than C-style rules */
+	/* Coerce the arguments to the method's actual parameter types */
 	signature = ILMethod_Signature(method);
 	for(argNum = 0; argNum < numArgs; ++argNum)
 	{
-		ILCoerce(info, argTypes[argNum].node, argTypes[argNum].parent,
-				 ILTypeStripPrefixes(CSemGetType(argTypes[argNum].value)),
-				 ILTypeGetParam(signature, argNum + 1),1);
+		CCoerceNode(info, argTypes[argNum].node,
+					argTypes[argNum].parent, argTypes[argNum].value,
+				    ILTypeGetParam(signature, argNum + 1));
 	}
 
 	/* Build the new method invocation node for the code generator */

@@ -189,8 +189,12 @@ void ILGCDeinit()
 {
 	g_Deinit = 1;
 
+	GC_TRACE("ILGCDeinit: Performing final GC [thread:%d]\n", (int)ILThreadSelf());
+
 	/* Do a final GC */
 	ILGCCollect();
+
+	GC_TRACE("ILGCDeinit: Peforming last finalizer run [thread:%d]\n", (int)ILThreadSelf());
 
 	/* Wait up to 10 seconds for the finalizers to run */		
 	PrivateGCNotifyFinalize(10000);
@@ -198,12 +202,20 @@ void ILGCDeinit()
 	/* Cleanup the finalizer thread */
 	if (g_FinalizerThread)
 	{
+		GC_TRACE("ILGCDeinit: Waiting for finalizer thread to end [thread:%d]\n", (int)ILThreadSelf());
+
 		/* Unregister and destroy the finalizer thread if it's responding */
 		if (ILThreadJoin(g_FinalizerThread, 1000))
 		{
+			GC_TRACE("ILGCDeinit: Finalizer thread finished [thread:%d]\n", (int)ILThreadSelf());
+
 			ILThreadUnregisterForManagedExecution(g_FinalizerThread);
 			ILThreadDestroy(g_FinalizerThread);			
-		}		
+		}
+		else
+		{
+			GC_TRACE("ILGCDeinit: Finalizer thread not responding [thread:%d]\n", (int)ILThreadSelf());
+		}
 	}
 
 	ILMutexDestroy(g_GcLock);

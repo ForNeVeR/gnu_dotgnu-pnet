@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.IO;
+using System.Text;
 using System.Private;
 using Platform;
 
@@ -96,7 +97,10 @@ public sealed class Console
 						}
 						else
 						{
-							stdout = new StdWriter(1);
+							StreamWriter writer = new StreamWriter
+								(new StdStream(1), Encoding.Default);
+							writer.AutoFlush = true;
+							stdout = writer;
 							return stdout;
 						}
 					}
@@ -116,7 +120,10 @@ public sealed class Console
 						}
 						else
 						{
-							stderr = new StdWriter(2);
+							StreamWriter writer = new StreamWriter
+								(new StdStream(2), Encoding.Default);
+							writer.AutoFlush = true;
+							stderr = writer;
 							return stderr;
 						}
 					}

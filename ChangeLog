@@ -1,4 +1,9 @@
 
+2003-06-08  Gopal.V  <gopalv82@symonds.net>
+	
+	* csdoc/doc_stub.c: Do not generate [TODO] while stubbing out
+	interfaces or abstract methods/properties.
+
 2003-06-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: disable "GenericReference" because it

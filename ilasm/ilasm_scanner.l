@@ -1047,7 +1047,7 @@ SIGN			[+-]
 			return INTEGER_CONSTANT;
 		}
 
-<INITIAL,JAVAMODE>'(\\.|[^\\'])+'		{
+<INITIAL,JAVAMODE>'(\\.|[^\\'])*'		{
 			yylval.strValue = ParseString(yytext, &(yylval.strValue.len));
 			return SQUOTE_STRING;
 		}

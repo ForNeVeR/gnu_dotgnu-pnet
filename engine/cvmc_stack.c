@@ -21,12 +21,80 @@
 #ifdef IL_CVMC_CODE
 
 /*
+ * Compute the size of a list of stack items.  The return
+ * value is the number of stack words occupied by the items.
+ */
+static ILUInt32 ComputeStackSize(ILCoder *coder, ILEngineStackItem *stack,
+								 ILUInt32 stackSize)
+{
+	ILUInt32 total = 0;
+	while(stackSize > 0)
+	{
+		--stackSize;
+		switch(stack[stackSize].engineType)
+		{
+			case ILEngineType_I4:
+			case ILEngineType_M:
+			case ILEngineType_T:
+			case ILEngineType_O:
+			{
+				++total;
+			}
+			break;
+
+			case ILEngineType_I8:
+			{
+				total += CVM_WORDS_PER_LONG;
+			}
+			break;
+
+			case ILEngineType_I:
+			{
+			#ifdef IL_NATIVE_INT32
+				++total;
+			#else
+				total += CVM_WORDS_PER_LONG;
+			#endif
+			}
+			break;
+
+			case ILEngineType_F:
+			{
+				total += CVM_WORDS_PER_NATIVE_FLOAT;
+			}
+			break;
+
+			case ILEngineType_MV:
+			{
+				total += GetTypeSize(coder->thread, stack[stackSize].typeInfo);
+			}
+			break;
+
+			case ILEngineType_TypedRef:
+			{
+				total += 2;
+			}
+			break;
+
+			case ILEngineType_Invalid: break;
+		}
+	}
+	return total;
+}
+
+/*
  * Refresh the coder's notion of the stack contents.
  */
-static void CVMCoder_StackRefresh(ILCoder *coder, ILEngineStackItem *stack,
+static void CVMCoder_StackRefresh(ILCoder *_coder, ILEngineStackItem *stack,
 							      ILUInt32 stackSize)
 {
-	/* TODO */
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	coder->height = coder->minHeight +
+					ComputeStackSize(_coder, stack, stackSize);
+	if(coder->height > coder->maxHeight)
+	{
+		coder->maxHeight = coder->height;
+	}
 }
 
 /*

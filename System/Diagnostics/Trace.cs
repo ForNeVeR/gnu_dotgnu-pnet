@@ -45,8 +45,6 @@ public sealed class Trace
 	// Make sure that the trace configuration is loaded.
 	internal static void Initialize()
 			{
-				Object value;
-
 				// Bail out if already initialized, or called recursively.
 				if(initialized)
 				{

@@ -470,7 +470,7 @@ public class QDataStream
 				{
 					return null;
 				}
-				else if(len == 0xffffffff)
+				else if((uint)len == 0xffffffff)
 				{
 					return null;
 				}

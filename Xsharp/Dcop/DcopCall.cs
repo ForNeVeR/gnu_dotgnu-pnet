@@ -20,7 +20,7 @@
 
 namespace Xsharp.Dcop
 {
-
+using System;
 // This class is not ECMA-compatible strictly speaking, but it is
 // needed to support thread-static variables in the ECMA engine.
 

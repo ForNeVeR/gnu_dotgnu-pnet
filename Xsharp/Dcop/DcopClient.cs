@@ -215,7 +215,6 @@ public sealed class DcopClient : IceClient
 				byte[] data;
 				MemoryStream mem;
 				QDataStream ds;
-				string type;
 				DcopReply reply = oReply as DcopReply;
 				key = ReceiveHeader(4); // Read 4-byte DCOP key
 
@@ -313,7 +312,7 @@ public sealed class DcopClient : IceClient
 				{
 					ds = QDataStream.Marshal(mem, fun, parameters);
 				}
-				catch (Exception e)
+				catch (Exception)
 				{
 					throw new DcopNamingException("Failed to marshal parameters");
 				}
@@ -361,7 +360,7 @@ public sealed class DcopClient : IceClient
 			}
 
 	[DcopCall("QCString registerAs(QCString)")]
-	protected string registerAs(string name)
+	private string registerAs(string name)
 	{
 		return (string)Call("DCOPServer", "", "QCString registerAs(QCString)", name);
 	}

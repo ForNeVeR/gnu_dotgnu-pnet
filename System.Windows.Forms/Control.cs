@@ -2900,6 +2900,11 @@ public class Control : IWin32Window, IDisposable
 	protected void RecreateHandle()
 			{
 				// TODO
+				if (toolkitWindow == null)
+				{
+					return;
+				}
+				toolkitWindow.Invalidate(0, 0, width, height);
 			}
 
 	// Convert a screen rectangle into client co-ordinates.
@@ -6233,10 +6238,7 @@ public class Control : IWin32Window, IDisposable
 				set
 				{
 					borderStyle = value;
-					if (toolkitWindow != null)
-					{
-						toolkitWindow.Invalidate(0, 0, width, height);
-					}
+					RecreateHandle();
 				}
 			}
 	[TODO]

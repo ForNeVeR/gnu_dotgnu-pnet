@@ -29,6 +29,7 @@ namespace System.Globalization
 // really isn't any other way of doing this because the specification
 // says that "TextInfo" does not have a public constructor.
 
+[CLSCompliant(false)]
 [NonStandardExtra]
 public abstract class _I18NTextInfo : TextInfo
 {

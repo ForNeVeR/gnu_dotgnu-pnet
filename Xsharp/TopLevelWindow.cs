@@ -776,7 +776,7 @@ public class TopLevelWindow : InputOutputWidget
 				(IntPtr display, XWindow handle, bool maximize)
 			{
 				XEvent xevent = new XEvent();
-				xevent.xany.type = (int)(EventType.ClientMessage);
+				xevent.xany.type = (int)(Xsharp.Events.EventType.ClientMessage);
 				xevent.xany.window = handle;
 				xevent.xclient.message_type = Xlib.XInternAtom
 					(display, "_NET_WM_STATE", XBool.False);
@@ -1805,10 +1805,10 @@ public class TopLevelWindow : InputOutputWidget
 				InputOnlyWidget io;
 				Xlib.Xlong[] data;
 
-				switch((EventType)(xevent.xany.type__))
+				switch((Xsharp.Events.EventType)(xevent.xany.type__))
 				{
-					case EventType.ClientMessage:
-					{
+					case Xsharp.Events.EventType.ClientMessage:
+						{
 						// Handle messages from the window manager.
 						if(xevent.xclient.message_type == dpy.wmProtocols)
 						{
@@ -1855,7 +1855,7 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
-					case EventType.PropertyNotify:
+				case Xsharp.Events.EventType.PropertyNotify:
 					{
 						// Handle a property change notification.
 						if(xevent.xproperty.atom == dpy.wmState)
@@ -1937,14 +1937,14 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
-					case EventType.FocusIn:
+				case Xsharp.Events.EventType.FocusIn:
 					{
 						// This window has received the focus.
 						PrimaryFocusIn();
 					}
 					break;
 
-					case EventType.FocusOut:
+				case Xsharp.Events.EventType.FocusOut:
 					{
 						// This window has lost the focus.
 						if(hasPrimaryFocus)
@@ -1959,7 +1959,7 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
-					case EventType.KeyPress:
+				case Xsharp.Events.EventType.KeyPress:
 					{
 						// Convert the event into a symbol and a string.
 						if(keyBuffer == IntPtr.Zero)
@@ -2035,7 +2035,7 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
-					case EventType.KeyRelease:
+				case Xsharp.Events.EventType.KeyRelease:
 					{
 						// Convert the event into a symbol and a string.
 						if(keyBuffer == IntPtr.Zero)
@@ -2069,7 +2069,7 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
-					case EventType.ConfigureNotify:
+				case Xsharp.Events.EventType.ConfigureNotify:
 					{
 						// The window manager may have caused us to move/resize.
 						if(xevent.xconfigure.window != xevent.window)
@@ -2123,7 +2123,7 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
-					case EventType.ReparentNotify:
+				case Xsharp.Events.EventType.ReparentNotify:
 					{
 						// We may have been reparented by the window manager.
 						if(xevent.xreparent.window != (XWindow)handle)
@@ -2148,7 +2148,7 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
-					case EventType.MapNotify:
+				case Xsharp.Events.EventType.MapNotify:
 					{
 						// The window manager mapped us to the screen.
 						if(Parent is CaptionWidget)
@@ -2168,7 +2168,7 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
-					case EventType.UnmapNotify:
+				case Xsharp.Events.EventType.UnmapNotify:
 					{
 						// We were unmapped from the screen.  If "mapped"
 						// is true, then we are being iconified by the window

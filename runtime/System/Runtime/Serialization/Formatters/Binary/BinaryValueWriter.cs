@@ -620,9 +620,6 @@ internal abstract class BinaryValueWriter
 						// write out number of members
 						context.writer.Write((int)info.MemberCount);
 
-						int index;
-						Type fieldType;
-
 						foreach(SerializationEntry entry in info)
 						{
 							context.writer.Write(entry.Name);
@@ -1559,7 +1556,8 @@ internal abstract class BinaryValueWriter
 					int length = ar.GetLength(0);
 					for(int i = 0; i < length; i++) 
 					{
-						if(ar.GetValue(i) == null)
+						object o = ar.GetValue(i);
+						if(o == null)
 						{
 							// Write a null value.
 							context.writer.Write
@@ -1570,7 +1568,7 @@ internal abstract class BinaryValueWriter
 							BinaryValueWriter writer = GetWriter(context, type.GetElementType());
 							if(writer != null)
 							{
-								writer.WriteInline(context, ar.GetValue(i), ar.GetValue(i).GetType(), type);
+								writer.WriteInline(context, o, o.GetType(), type);
 							}
 							else
 							{

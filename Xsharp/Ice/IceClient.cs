@@ -261,7 +261,7 @@ public abstract unsafe class IceClient
 					haveReply = true;
 					replyReadyRet = ProcessMessage((int)opcode, replyWait.reply) ? XBool.True:XBool.False; // We omit `swap' here, can one need it? Even theoretrically?..
 				}
-				catch (NullReferenceException nre)
+				catch (NullReferenceException)
 				{
 					haveReply = false;
 					replyReadyRet = ProcessMessage((int)opcode) ? XBool.True:XBool.False;

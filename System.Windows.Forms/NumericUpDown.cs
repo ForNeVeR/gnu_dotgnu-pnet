@@ -259,8 +259,6 @@ public class NumericUpDown : UpDownBase, ISupportInitialize
 
 	protected override void UpdateEditText()
 	{
-		string f;
-
 		if (hexadecimal)
 		{
 			base.Text = currentValue.ToString("X");

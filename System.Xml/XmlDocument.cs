@@ -998,7 +998,7 @@ class XmlDocument : XmlNode
 					return null;
 				}
 
-				XmlNode result;
+				XmlNode result = null;
 				switch(reader.NodeType)
 				{
 					case XmlNodeType.Attribute:

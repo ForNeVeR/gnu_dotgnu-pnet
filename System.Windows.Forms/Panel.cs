@@ -26,8 +26,6 @@ namespace System.Windows.Forms
 {
 	public class Panel: ScrollableControl
 	{
-		BorderStyle border=BorderStyle.None;
-
 		public Panel() : base()
 		{
 			TabStop = false;

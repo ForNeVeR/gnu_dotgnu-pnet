@@ -37,8 +37,7 @@ public class DomainUpDown : UpDownBase
 	private bool wrap;
 
 	[TODO]
-	[DefaultMember("Item")]
- 	public class DomainUpDownItemCollection : ArrayList	
+	public class DomainUpDownItemCollection : ArrayList	
  	{
 		private DomainUpDown owner;
 

@@ -791,7 +791,7 @@ public class FontDialog : CommonDialog
 					int index = nameList.SelectedIndex;
 					if(index >= 0)
 					{
-						name.Text = (nameList.Items[index]).ToString();
+						name.Text = ((IList)nameList.Items)[index].ToString();
 					}
 					else
 					{
@@ -807,7 +807,7 @@ public class FontDialog : CommonDialog
 					int index = sizeList.SelectedIndex;
 					if(index >= 0)
 					{
-						size.Text = (sizeList.Items[index]).ToString();
+						size.Text = ((IList)sizeList.Items)[index].ToString();
 					}
 					SetFont();
 					UpdateSample();

@@ -141,7 +141,7 @@ namespace System.Windows.Forms.Themes
 				ConstructorInfo ctor = type.GetConstructor(new Type [0]);
 				return (IThemePainter)(ctor.Invoke(new Object [0]));
 			}
-			catch (Exception e)
+			catch
 			{
 				// some how the new ThemePainter failed
 				return new DefaultThemePainter();

@@ -413,6 +413,8 @@ internal sealed class XmlDTDReader : XmlErrorProcessor
 				else
 				{
 					Error(/* TODO */);
+					// Shouldnt reach here.
+					separator = (char)0;
 				}
 
 				// read until we've consumed all the content particles

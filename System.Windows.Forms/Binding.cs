@@ -276,7 +276,7 @@ public class Binding
 					PropertyInfo sInfo = sourceType.GetProperty(this.BindingMemberInfo.BindingField);
 					PropertyInfo controlDataInfo = sourceType.GetProperty(this.PropertyName);
 					Object sVal = sInfo.GetValue(this.DataSource, null);
-					this.BindingMemberInfo.BindingFieldType = sVal.GetType();
+					this.bindingMemberInfo.BindingFieldType = sVal.GetType();
 	
 					dataSourceData = sVal;
 				}

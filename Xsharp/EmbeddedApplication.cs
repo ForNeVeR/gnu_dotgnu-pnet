@@ -749,7 +749,7 @@ public class EmbeddedApplication : InputOutputWidget
 	// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
-				if(xevent.type == EventType.DestroyNotify &&
+				if (xevent.type == Xsharp.Events.EventType.DestroyNotify &&
 				   xevent.xdestroywindow.window == child)
 				{
 					// The child window has been destroyed.
@@ -852,7 +852,7 @@ public class EmbeddedApplication : InputOutputWidget
 				{
 					IntPtr display;
 					XWindow child;
-					if(xevent.type == EventType.MapRequest)
+					if (xevent.type == Xsharp.Events.EventType.MapRequest)
 					{
 						// This may be notification of a new window
 						// that we need to take control of.
@@ -892,7 +892,7 @@ public class EmbeddedApplication : InputOutputWidget
 							dpy.Unlock();
 						}
 					}
-					else if(xevent.type == EventType.ConfigureRequest)
+					else if (xevent.type == Xsharp.Events.EventType.ConfigureRequest)
 					{
 						// Replay the configure event direct to the X server.
 						XWindowChanges wc = new XWindowChanges();

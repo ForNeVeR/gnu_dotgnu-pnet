@@ -1317,6 +1317,8 @@ namespace System.Windows.Forms
 					break;
 			}
 			Invalidate(bounds);
+			// Make sure the tabs are drawn before the tab page (looks better)
+			Update();
 		}
 
 		// The event thats called when controls need to relayout their contents

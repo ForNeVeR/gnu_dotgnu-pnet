@@ -22,6 +22,8 @@
 #include "il_utils.h"
 #ifdef IL_WIN32_NATIVE
 #include <winsock.h>
+#define	HAVE_GETHOSTBYNAME	1
+#define	HAVE_GETHOSTBYADDR	1
 #else
 #if HAVE_STDLIB_H
 #include <stdlib.h>

@@ -1,4 +1,9 @@
 
+2003-09-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/dns.c, support/socket.c: make sure that the socket
+	functions are properly detected under mingw32 (bug #3511).
+
 2003-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant_cscc.c: add the "--unsafe" option to the command-line

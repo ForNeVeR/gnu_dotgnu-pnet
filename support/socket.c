@@ -27,6 +27,11 @@
 #include <winsock.h>
 #include <time.h>
 #define	close	closesocket
+#define	ioctl	ioctlsocket
+#define	HAVE_SIN6_SCOPE_ID	1
+#define	HAVE_IOCTL			1
+#define	HAVE_SETSOCKOPT		1
+#define	HAVE_GETSOCKOPT		1
 #else
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>
@@ -678,7 +683,7 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 int ILSysIOSocketSetBlocking(ILSysIOHandle sockfd, int flag)
 {
 #if defined(FIONBIO) && defined(HAVE_IOCTL)
-	return (ioctl((int)(ILNativeInt)sockfd, FIONBIO, &flag) >= 0);
+	return (ioctl((int)(ILNativeInt)sockfd, FIONBIO, (void *)&flag) >= 0);
 #else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
@@ -689,7 +694,7 @@ ILInt32 ILSysIOSocketGetAvailable(ILSysIOHandle sockfd)
 {
 #if defined(FIONREAD) && defined(HAVE_IOCTL)
 	int result = 0;
-	if(ioctl((int)(ILNativeInt)sockfd, FIONREAD, &result) >= 0)
+	if(ioctl((int)(ILNativeInt)sockfd, FIONREAD, (void *)&result) >= 0)
 	{
 		return (ILInt32)result;
 	}
@@ -899,7 +904,7 @@ int ILSysIOSocketSetOption(ILSysIOHandle sockfd, ILInt32 level,
 		return 0;
 	}
 	return (setsockopt((int)(ILNativeInt)sockfd,nativeLevel,nativeName,
-			&value,	sizeof(value))== 0);
+			(void *)&value,	sizeof(value))== 0);
 #else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
@@ -910,6 +915,7 @@ int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
 						   ILInt32 name, ILInt32 *value)
 {
 #ifdef HAVE_GETSOCKOPT
+	int option = 0;
 	int len=sizeof(ILInt32);
 	ILInt32 nativeLevel, nativeName;
 	if(SocketOptionsToNative(level, name, &nativeLevel,&nativeName)==0)
@@ -917,8 +923,16 @@ int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
 		ILSysIOSetErrno(IL_ERRNO_EINVAL);
 		return 0;
 	}
-	return (getsockopt((int)(ILNativeInt)sockfd,nativeLevel,nativeName,
-								value,&len) == 0);
+	if(getsockopt((int)(ILNativeInt)sockfd,nativeLevel,nativeName,
+								(void *)&option,&len) == 0)
+	{
+		*value = (ILInt32)option;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 #else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
@@ -931,8 +945,8 @@ int ILSysIOSocketSetLinger(ILSysIOHandle handle, int enabled, int seconds)
 	struct linger _linger;
 	_linger.l_onoff=enabled;
 	_linger.l_linger=seconds;
-	if(setsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,&(_linger),
-						sizeof(struct linger)) < 0)
+	if(setsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,
+						(void *)&(_linger), sizeof(struct linger)) < 0)
 	{
 		return 0;
 	}
@@ -948,8 +962,8 @@ int ILSysIOSocketGetLinger(ILSysIOHandle handle, int *enabled, int *seconds)
 #if defined(HAVE_SETSOCKOPT) && defined(SO_LINGER)
 	struct linger _linger;
 	int size=sizeof(struct linger);
-	if(getsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,&(_linger),
-						&size) < 0)
+	if(getsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,
+				  (void *)&(_linger), &size) < 0)
 	{
 		return 0;
 	}

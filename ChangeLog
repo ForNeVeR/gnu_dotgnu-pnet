@@ -1,4 +1,10 @@
 
+2001-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/DateTime.cs, runtime/Platform/TimeMethods.cs, doc/native.html:
+introduce new functionality for dealing with the difference between local
+and UTC timezones.
+
 2001-11-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/native.html, doc/native.txt: convert the "native.txt" file into

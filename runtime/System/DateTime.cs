@@ -461,6 +461,13 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 					return new DateTime(TimeMethods.GetCurrentTime());
 				}
 			}
+	public static DateTime UtcNow
+			{
+				get
+				{
+					return new DateTime(TimeMethods.GetCurrentTime());
+				}
+			}
 	public static DateTime Today
 			{
 				get

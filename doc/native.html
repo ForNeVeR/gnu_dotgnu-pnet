@@ -6,7 +6,7 @@
 <h1>Internalcall methods for pnetlib</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/11/17 05:43:13 $<p>
+Last Modified: $Date: 2001/11/20 04:27:40 $<p>
 
 Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -225,6 +225,8 @@ that use the library.<p>
 <li><a href="#Platform_TimeMethods">Platform.TimeMethods</a></li>
 	<ul>
 		<li><a href="#Platform_TimeMethods_GetCurrentTime">GetCurrentTime</a></li>
+		<li><a href="#Platform_TimeMethods_GetCurrentUtcTime">GetCurrentUtcTime</a></li>
+		<li><a href="#Platform_TimeMethods_GetTimeZoneAdjust">GetTimeZoneAdjust</a></li>
 		<li><a href="#Platform_TimeMethods_GetUpTime">GetUpTime</a></li>
 	</ul>
 </ul>
@@ -1321,15 +1323,36 @@ specific index.  Returns <code>null</code> if the index is invalid.
 
 <a name="Platform_TimeMethods"><h3>Platform.TimeMethods</h3>
 
-<a name="Platform_TimeMethods">
+<a name="Platform_TimeMethods_GetCurrentTime">
 <pre>public static long GetCurrentTime();</pre>
 
 <blockquote>
 Get the current time in tenths of a microsecond since
-12:00am 1 Jan 0001 as a 64-bit value.  It is the responsibility
-of the CLR to convert from the system's epoch into this one.
-The CLR should return the most accurate time value that it
-can obtain, even if it isn't accurate to a tenth of a microsecond.
+12:00am 1 Jan 0001 as a 64-bit value.  This returns local time.
+It is the responsibility of the CLR to convert from the system's
+epoch into this one, and to handle local timezone conversions.
+The CLR should return the most accurate time value that it can
+obtain, even if it isn't accurate to a tenth of a microsecond.
+</blockquote>
+
+<a name="Platform_TimeMethods_GetCurrentUtcTime">
+<pre>public static long GetCurrentUtcTime();</pre>
+
+<blockquote>
+Get the current time in tenths of a microsecond since
+12:00am 1 Jan 0001 as a 64-bit value.  This returns UTC time
+(sometimes incorrectly called "GMT").  It is the responsibility of
+the CLR to convert from the system's epoch into this one.  The
+CLR should return the most accurate time value that it can obtain,
+even if it isn't accurate to a tenth of a microsecond.
+</blockquote>
+
+<a name="Platform_TimeMethods_GetTimeZoneAdjust">
+<pre>public static int GetTimeZoneAdjust();</pre>
+
+<blockquote>
+Gets the number of seconds West of UTC for the local timezone,
+including any applicable daylight savings adjustments.
 </blockquote>
 
 <a name="Platform_TimeMethods_GetUpTime">

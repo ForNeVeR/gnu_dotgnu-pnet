@@ -28,8 +28,18 @@ internal class TimeMethods
 {
 
 	// Get the time in tenths of a microsecond since 12:00am 1 Jan 0001.
+	// The returned value is in local time.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static long GetCurrentTime();
+
+	// Get the time in tenths of a microsecond since 12:00am 1 Jan 0001.
+	// The returned value is in UTC time.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static long GetCurrentUtcTime();
+
+	// Get the number of seconds West of GMT for the local timezone.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int GetTimeZoneAdjust();
 
 	// Get the number of milliseconds since the system was rebooted.
 	[MethodImpl(MethodImplOptions.InternalCall)]

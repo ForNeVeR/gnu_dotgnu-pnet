@@ -1,4 +1,9 @@
 
+2003-02-18  Jonathan Springer  <jonathan.springer@verizon.net>
+
+	* support/decimal.c:  Eliminate a very pesky bug in Decimal
+	division support.
+
 2003-02-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_index.c: forgot to terminate the Fields_GenericPar

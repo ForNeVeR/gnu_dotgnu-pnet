@@ -757,7 +757,7 @@ static int Divide(ILUInt32 *quotient, const ILDecimal *valuea,
 	ILUInt32 testquot;
 
 	/* Expand valuea to a 228-bit value, shifted up by 29 places */
-	tempa[0] = tempa[1] = tempa[2] = tempb[3] = 0;
+	tempa[0] = tempa[1] = tempa[2] = tempa[3] = 0;
 	tempa[4] = valuea->high;
 	tempa[5] = valuea->middle;
 	tempa[6] = valuea->low;

@@ -379,6 +379,17 @@ resources/de_DE/runtime/Makefile
 resources/de_DE/I18N/Makefile
 resources/de_DE/System/Makefile
 resources/de_DE/System.Xml/Makefile
+resources/ca_ES/Makefile
+resources/ca_ES/Basic/Makefile 
+resources/ca_ES/I18N/Makefile
+resources/ca_ES/System/Makefile
+resources/ca_ES/System.Configuration.Install/Makefile
+resources/ca_ES/System.Drawing/Makefile
+resources/ca_ES/System.Windows.Forms/Makefile
+resources/ca_ES/System.Xml/Makefile
+resources/ca_ES/System.Net.IrDA/Makefile
+resources/ca_ES/Xsharp/Makefile
+resources/ca_ES/runtime/Makefile
 samples/Makefile
 samples/ilrun.sh
 tools/run_test.sh

@@ -23,6 +23,8 @@ that they make more sense.
 
 * configure.in, NEWS: update version and news for 0.2.2 release.
 
+* configure.in: change the version to 0.2.3 for the new working version.
+
 2001-11-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilalink/linker.h: include "il_dumpasm.h" because it is needed in multiple

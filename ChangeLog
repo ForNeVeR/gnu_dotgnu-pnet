@@ -42,6 +42,13 @@
 	performance optimization. Keep controls from being created
 	unnecessarily causing extra calls to the toolkits.
 
+	* System.Drawing.Win32/DrawingPopupWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs: fix a small capture mouse move
+	issue.
+
+	* System.Windows.Forms/TreeView.cs: finish off image support in
+	TreeView.
+
 2003-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/TopLevelWindow.cs: redirect Alt+F4 to close top-level

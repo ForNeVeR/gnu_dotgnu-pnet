@@ -22,11 +22,12 @@
 namespace System.Runtime.Serialization.Formatters.Binary
 {
 
-#if CONFIG_SERIALIZATION
+//#if CONFIG_SERIALIZATION
 
 using System.IO;
 using System.Reflection;
 using System.Collections;
+using System.Runtime.Serialization;
 
 internal abstract class BinaryValueWriter
 {
@@ -49,6 +50,7 @@ internal abstract class BinaryValueWriter
 	private static BinaryValueWriter stringWriter = new StringWriter();
 	private static BinaryValueWriter objectWriter = new ObjectWriter();
 	private static BinaryValueWriter infoWriter = new SurrogateWriter(null);
+	private static BinaryValueWriter serializableWriter = new ISerializableWriter();
 	private static BinaryValueWriter arrayWriter = new ArrayWriter();
 
 	// Context information for writing binary values.
@@ -243,6 +245,12 @@ internal abstract class BinaryValueWriter
 						return stringWriter;
 				}
 
+				// Check for types that implement ISerializable.
+				if(typeof(ISerializable).IsAssignableFrom(type))
+				{
+					return serializableWriter;
+				}
+
 				// Handle special types that we recognize.
 				if(type == typeof(Object))
 				{
@@ -267,15 +275,9 @@ internal abstract class BinaryValueWriter
 					}
 				}
 
-				// Check for types that implement ISerializable.
-				if(typeof(ISerializable).IsAssignableFrom(type))
-				{
-					return infoWriter;
-				}
-
 				// Bail out if the type is not marked with the
 				// "serializable" flag.
-				if(!type.IsSerializable)
+				if(!type.IsSerializable && !type.IsInterface)
 				{
 					throw new SerializationException
 						(String.Format
@@ -315,7 +317,7 @@ internal abstract class BinaryValueWriter
 	private static String GetMemberName(MemberInfo[] allMembers, MemberInfo member) {
 		bool prefix = false;
 		foreach(MemberInfo mi in allMembers) {
-			if(mi.Name == member.Name) {
+			if(mi.Name == member.Name && mi.DeclaringType != member.DeclaringType) {
 				prefix = true;
 				break;
 			}
@@ -571,6 +573,117 @@ internal abstract class BinaryValueWriter
 				}
 
 	}; // class ObjectWriter
+
+	private class ISerializableWriter : ObjectWriter 
+	{
+		// Write the object header information for a type.
+		// IS11n objects are written like normal objects, but the
+		// members are replaced by the key->value pairs from the
+		// SerInfo.
+		public override void WriteObjectHeader(BinaryValueContext context,
+											   Object value, Type type,
+											   long objectID, long prevObject)
+				{
+					if(prevObject == -1)
+					{
+						// Write the full type information.
+						long assemblyID;
+						if(type.Assembly == Assembly.GetExecutingAssembly())
+						{
+							context.writer.Write
+								((byte)(BinaryElementType.RuntimeObject));
+							assemblyID = -1;
+						}
+						else
+						{
+							bool firstTime;
+							assemblyID = context.gen.GetId
+								(type.Assembly, out firstTime);
+							if(firstTime)
+							{
+								context.writer.Write
+									((byte)(BinaryElementType.Assembly));
+								context.writer.Write((int)assemblyID);
+								WriteAssemblyName(context, type.Assembly);
+							}
+							context.writer.Write
+								((byte)(BinaryElementType.ExternalObject));
+						}
+						context.writer.Write((int)objectID);
+						context.writer.Write(type.FullName);
+
+						// get members
+						StreamingContext streamContext = context.formatter.Context;
+						SerializationInfo info = new SerializationInfo(type, context.formatter.converter);
+						((ISerializable) value).GetObjectData(info, streamContext);
+
+						// write out number of members
+						context.writer.Write((int)info.MemberCount);
+
+						int index;
+						Type fieldType;
+
+						foreach(SerializationEntry entry in info)
+						{
+							context.writer.Write(entry.Name);
+						}
+
+						foreach(SerializationEntry entry in info)
+						{
+							GetWriter(context, entry.ObjectType).WriteTypeTag
+								(context, entry.ObjectType);
+						}
+
+						foreach(SerializationEntry entry in info)
+						{
+							GetWriter(context, entry.ObjectType).WriteTypeSpec
+								(context, entry.ObjectType);
+						}
+						if(assemblyID != -1)
+						{
+							context.writer.Write((int)assemblyID);
+						}
+					}
+					else
+					{
+						// Write a short header, referring to a previous
+						// object's type information.
+						context.writer.Write
+							((byte)(BinaryElementType.RefTypeObject));
+						context.writer.Write((int)objectID);
+						context.writer.Write((int)prevObject);
+					}
+				}
+
+		// Write the object form of values for a type.
+		public override void WriteObject(BinaryValueContext context,
+			Object value, Type type)
+		{
+			StreamingContext streamContext = context.formatter.Context;
+			SerializationInfo info = new SerializationInfo(type, context.formatter.converter);
+			
+			((ISerializable) value).GetObjectData(info, streamContext);
+
+            // the entries are written using the type-spec supplied when
+            // they were put into the SerInfo, but the writer is determined
+            // by the real type!
+			foreach(SerializationEntry entry in info)
+			{
+				Object val = entry.Value;
+				if(val != null)
+				{
+					GetWriter(context, val.GetType()).WriteInline
+						(context, val, val.GetType(), entry.ObjectType);
+				}
+				else
+				{
+                    // NULL is always written as object
+					GetWriter(context, typeof(Object)).WriteInline
+						(context, val, typeof(Object), entry.ObjectType);
+				}
+			}
+		}
+	}
 
 	// Write object values using serialization surrogates.
 	private class SurrogateWriter : ObjectWriter
@@ -1472,6 +1585,6 @@ internal abstract class BinaryValueWriter
 
 }; // class BinaryValueWriter
 
-#endif // CONFIG_SERIALIZATION
+//#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization.Formatters.Binary

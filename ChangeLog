@@ -1,4 +1,27 @@
 
+2004-05-17  Andre Seidelt <pnet-devel01@foobarquarium.de>
+
+	* runtime/System/Collections/Hashtable.cs: Rename HashCodeProviderName
+	to HashCodeProvider to match serialization keys.
+
+	* runtime/System/Runtime/Serialization/ObjectManager.cs: Handle
+	fixups for forward references and derserialization events .
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueReader.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	Reader and writer handles ISerializable types properly. (Gopal)
+
+2004-05-17  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/UpDownBase.cs,
+	System.Windows.Forms/DomainUpDown.cs: Implemented almost completely.
+	
+	* System.Windows.Forms/NumericUpDown.cs: Added implementation of 
+	NumericUpDown class
+
+	* samples/forms/FormsTest.cs: Added page for UpDown test cases.
+	(patch #3069, Gopal)
+
 2004-05-17  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XmlAttribute.cs: Return null for OwnerElement if the

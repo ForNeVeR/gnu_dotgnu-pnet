@@ -24,27 +24,31 @@ namespace System.Runtime.Serialization
 
 #if CONFIG_SERIALIZATION
 
+using System;
 using System.Collections;
 using System.Reflection;
 using System.Security.Permissions;
+using System.Runtime.Serialization;
 
 public class ObjectManager
 {
 	// Common information that is stored for a member fixup.
 	private abstract class ObjectFixup
 	{
+        public ObjectManager manager;
 		public ObjectInfo value;
 		public ObjectFixup nextFixup;
 
 		// Constructor.
-		protected ObjectFixup(ObjectInfo value, ObjectFixup nextFixup)
+		protected ObjectFixup(ObjectManager manager, ObjectInfo value, ObjectFixup nextFixup)
 				{
+				    this.manager = manager;
 					this.value = value;
 					this.nextFixup = nextFixup;
 				}
 
 		// Apply this fixup to an object.
-		public virtual void Apply(Object obj)
+		public virtual void Apply(ObjectInfo objI)
 				{
 					throw new SerializationException
 						(_("Serialize_BadFixup"));
@@ -58,19 +62,19 @@ public class ObjectManager
 		private MemberInfo member;
 
 		// Constructor.
-		public MemberInfoFixup(ObjectInfo value, MemberInfo member,
-							   ObjectFixup nextFixup)
-				: base(value, nextFixup)
+		public MemberInfoFixup(ObjectManager manager, ObjectInfo value,
+		                       MemberInfo member, ObjectFixup nextFixup)
+				: base(manager, value, nextFixup)
 				{
 					this.member = member;
 				}
 
 		// Apply this fixup to an object.
-		public override void Apply(Object obj)
+		public override void Apply(ObjectInfo objI)
 				{
 					if(member is FieldInfo)
 					{
-						((FieldInfo)member).SetValue(obj, value.obj);
+						((FieldInfo)member).SetValue(objI.obj, value.obj);
 					}
 					else
 					{
@@ -87,32 +91,54 @@ public class ObjectManager
 		private String memberName;
 
 		// Constructor.
-		public MemberNameFixup(ObjectInfo value, String memberName,
-							   ObjectFixup nextFixup)
-				: base(value, nextFixup)
+		public MemberNameFixup(ObjectManager manager, ObjectInfo value,
+		                       String memberName, ObjectFixup nextFixup)
+				: base(manager, value, nextFixup)
 				{
 					this.memberName = memberName;
 				}
 
 		// Apply this fixup to an object.
-		public override void Apply(Object obj)
-				{
-					MemberInfo[] member = obj.GetType().GetMember
-						(memberName);
-					if(member == null || member.Length != 1)
-					{
-						throw new SerializationException
-							(_("Serialize_BadFixup"));
-					}
-					if(member[0] is FieldInfo)
-					{
-						((FieldInfo)(member[0])).SetValue(obj, value.obj);
-					}
-					else
-					{
-						throw new SerializationException
-							(_("Serialize_BadFixup"));
-					}
+		public override void Apply(ObjectInfo objI)
+				{				    
+				    if(objI.sinfo != null)
+				    {
+				        objI.sinfo.AddValue(memberName, value.obj);
+
+				        if(nextFixup == null)
+				        {
+				            BindingFlags flags = BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance;
+				            Type[] pTypes = new Type[] {typeof(SerializationInfo), typeof(StreamingContext)};
+				            Type type = objI.obj.GetType();
+				            ConstructorInfo ctor = type.GetConstructor(flags, null , pTypes, null);
+				            if(ctor == null)
+				            {
+				                throw new SerializationException
+        							(_("Serialize_BadFixup"));
+				            }
+				            Object[] parms = new Object[] {objI.sinfo, manager.context};
+				            ctor.InvokeOnEmpty(objI.obj, parms);
+				        }
+				    }
+				    else
+				    {
+			    		MemberInfo[] member = objI.obj.GetType().GetMember
+		    				(memberName);
+	    				if(member == null || member.Length != 1)
+    					{
+					    	throw new SerializationException
+				    			(_("Serialize_BadFixup"));
+			    		}
+		    			if(member[0] is FieldInfo)
+	    				{
+    						((FieldInfo)(member[0])).SetValue(objI.obj, value.obj);
+					    }
+				    	else
+			    		{
+		    				throw new SerializationException
+	    						(_("Serialize_BadFixup"));
+    					}
+				    }
 				}
 
 	}; // class MemberNameFixup
@@ -123,17 +149,17 @@ public class ObjectManager
 		private int[] indices;
 
 		// Constructor.
-		public ArrayIndexFixup(ObjectInfo value, int[] indices,
-							   ObjectFixup nextFixup)
-				: base(value, nextFixup)
+		public ArrayIndexFixup(ObjectManager manager, ObjectInfo value,
+		                       int[] indices, ObjectFixup nextFixup)
+				: base(manager, value, nextFixup)
 				{
 					this.indices = indices;
 				}
 
 		// Apply this fixup to an object.
-		public override void Apply(Object obj)
+		public override void Apply(ObjectInfo objI)
 				{
-					((Array)obj).SetValue(value.obj, indices);
+					((Array)objI.obj).SetValue(value.obj, indices);
 				}
 
 	}; // class ArrayIndexFixup
@@ -144,17 +170,17 @@ public class ObjectManager
 		private int index;
 
 		// Constructor.
-		public SingleArrayIndexFixup(ObjectInfo value, int index,
-							   		 ObjectFixup nextFixup)
-				: base(value, nextFixup)
+		public SingleArrayIndexFixup(ObjectManager manager, ObjectInfo value,
+		                             int index, ObjectFixup nextFixup)
+				: base(manager, value, nextFixup)
 				{
 					this.index = index;
 				}
 
 		// Apply this fixup to an object.
-		public override void Apply(Object obj)
+		public override void Apply(ObjectInfo objI)
 				{
-					((Array)obj).SetValue(value.obj, index);
+					((Array)objI.obj).SetValue(value.obj, index);
 				}
 
 	}; // class SingleArrayIndexFixup
@@ -176,7 +202,7 @@ public class ObjectManager
 
 	// Internal state.
 	private ISurrogateSelector selector;
-	private StreamingContext context;
+	protected StreamingContext context;
 	private Hashtable objects;
 	private ArrayList callbackList;
 
@@ -251,7 +277,7 @@ public class ObjectManager
 								throw new SerializationException
 									(_("Serialize_MissingFixup"));
 							}
-							fixup.Apply(contain.obj);
+							fixup.Apply(contain);
 							fixup = fixup.nextFixup;
 						}
 						ApplyContained(oinfo, contain);
@@ -295,10 +321,11 @@ public class ObjectManager
 							throw new SerializationException
 								(_("Serialize_MissingFixup"));
 						}
-						fixup.Apply(oinfo.obj);
+						fixup.Apply(oinfo);
 						fixup = fixup.nextFixup;
 					}
 				}
+				RaiseDeserializationEvent();
 			}
 
 	// Return an object with a specific identifier.
@@ -363,7 +390,7 @@ public class ObjectManager
 				ObjectInfo oinfo1 = GetObjectInfo(arrayToBeFixed);
 				ObjectInfo oinfo2 = GetObjectInfo(objectRequired);
 				oinfo1.fixups = new SingleArrayIndexFixup
-					(oinfo2, index, oinfo1.fixups);
+					(this, oinfo2, index, oinfo1.fixups);
 			}
 	public virtual void RecordArrayElementFixup
 				(long arrayToBeFixed, int[] indices, long objectRequired)
@@ -375,7 +402,7 @@ public class ObjectManager
 					throw new ArgumentNullException("indices");
 				}
 				oinfo1.fixups = new ArrayIndexFixup
-					(oinfo2, indices, oinfo1.fixups);
+					(this, oinfo2, indices, oinfo1.fixups);
 			}
 
 	// Record an object member fixup to be performed later.
@@ -389,7 +416,7 @@ public class ObjectManager
 					throw new ArgumentNullException("memberName");
 				}
 				oinfo1.fixups = new MemberNameFixup
-					(oinfo2, memberName, oinfo1.fixups);
+					(this, oinfo2, memberName, oinfo1.fixups);
 			}
 	public virtual void RecordFixup
 				(long objectToBeFixed, MemberInfo member, long objectRequired)
@@ -401,7 +428,7 @@ public class ObjectManager
 					throw new ArgumentNullException("member");
 				}
 				oinfo1.fixups = new MemberInfoFixup
-					(oinfo2, member, oinfo1.fixups);
+					(this, oinfo2, member, oinfo1.fixups);
 			}
 
 	// Register an object with the object manager.
@@ -447,6 +474,10 @@ public class ObjectManager
 				{
 					// Update the information for an existing reference.
 					oinfo.obj = obj;
+					if(obj is IDeserializationCallback)
+					{
+						callbackList.Add(obj);
+					}
 					if(info != null)
 					{
 						oinfo.sinfo = info;

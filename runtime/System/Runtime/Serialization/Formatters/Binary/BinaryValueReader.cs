@@ -28,13 +28,13 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Collections;
+using System.Runtime.Serialization;
 
 /*
 *  unsupported features:
 * 	- BinaryElementType.MethodCall: not needed by me :-)
 * 	- BinaryElementType.MethodResponse: not needed by me :-)
 *   - user defined serialization headers
-* 	- classes implementing the ISerializable interface
 * 
 *  unsupported array types:
 *   - Arrays of Enums
@@ -111,12 +111,17 @@ internal class DeserializationContext
 		}
 	}
 
-	public ObjectManager manager 
+	public ObjectManager Manager 
 	{
 		get { return mObjManager; }
 	}
 
-	public BinaryReader reader
+	public BinaryFormatter Formatter
+	{
+		get { return mFormatter; }
+	}
+
+	public BinaryReader Reader
 	{
 		get { return mReader; }
 	}
@@ -207,10 +212,13 @@ internal class TypeInfo
 	private TypeSpecification[] mTypeSpec;
 	private Type mObjectType;
 	private MemberInfo[] mMembers;
+    private bool mIsIserializable;
+    private FormatterConverter mConverter;
 
-	public TypeInfo(String name, String[] fieldNames, BinaryTypeTag[] tt, 
-					TypeSpecification[] ts, Assembly assembly) 
+	public TypeInfo(DeserializationContext context, String name, String[] fieldNames,
+	                BinaryTypeTag[] tt, TypeSpecification[] ts, Assembly assembly) 
 	{
+        mConverter = context.Formatter.converter;
 		mFieldNames = fieldNames;
 		mTypeTag = tt;
 		mTypeSpec = ts;
@@ -225,100 +233,109 @@ internal class TypeInfo
 			mObjectType = assembly.GetType(name, true);
 		}
 
-		// lookup all members once
-		mMembers = new MemberInfo[NumMembers];
-		for(int i = 0; i < NumMembers; i++) 
-		{
-					// ms and mono have their values for boxed primitive types called 'm_value', we need a fix for that
-			if(mObjectType.IsPrimitive && (mFieldNames[i] == "m_value")) 
-			{
-				mFieldNames[i] = "value_";
-			}
-			else if (mObjectType == typeof(DateTime) && 
-						(mFieldNames[i] == "ticks")) 
-			{
-				// this is for DateTime
-				mFieldNames[i] = "value_";
-			} 
-			else if (mObjectType == typeof(TimeSpan) && 
-						(mFieldNames[i] == "_ticks")) 
-			{
-				// this is for TimeSpan
-				mFieldNames[i] = "value_";
-			} 
-			else if (mObjectType == typeof(Decimal)) 
-			{
-				switch(mFieldNames[i]) 
-				{
-					case "hi":
-					{
-						mFieldNames[i] = "high";
-					}
-					break;
-					case "lo":
-					{
-						mFieldNames[i] = "low";
-					}
-					break;
-					case "mid":
-					{
-						mFieldNames[i] = "middle";
-					}
-					break;
-				}
-			}
+		if(typeof(ISerializable).IsAssignableFrom(mObjectType))
+        {
+            mIsIserializable = true;
+        }
+        else
+        {
+            mIsIserializable = false;
 
-			Type memberType;
-			String memberName;
-			int classSeparator = mFieldNames[i].IndexOf('+');
-			if(classSeparator != -1) 
-			{
-				/*
-				*  TODO: check if there are constraints in which assembly 
-				*  the Type may be looked up! for now just look it up 
-				*  generally
-				*/
-				String baseName = mFieldNames[i].Substring(0, classSeparator);
-				memberName = mFieldNames[i].Substring(classSeparator+1, mFieldNames[i].Length-classSeparator-1);
-				memberType = mObjectType;
+		    // lookup all members once
+	    	mMembers = new MemberInfo[NumMembers];
+    		for(int i = 0; i < NumMembers; i++) 
+		    {
+	    		// ms and mono have their values for boxed primitive types called 'm_value', we need a fix for that
+    			if(mObjectType.IsPrimitive && (mFieldNames[i] == "m_value")) 
+			    {
+		    		mFieldNames[i] = "value_";
+	    		}
+    			else if (mObjectType == typeof(DateTime) && 
+			    			(mFieldNames[i] == "ticks")) 
+		    	{
+	    			// this is for DateTime
+    				mFieldNames[i] = "value_";
+			    } 
+		    	else if (mObjectType == typeof(TimeSpan) && 
+	    					(mFieldNames[i] == "_ticks")) 
+    			{
+		    		// this is for TimeSpan
+	    			mFieldNames[i] = "value_";
+    			} 
+			    else if (mObjectType == typeof(Decimal)) 
+		    	{
+	    			switch(mFieldNames[i]) 
+    				{
+				    	case "hi":
+			    		{
+		    				mFieldNames[i] = "high";
+	    				}
+    					break;
+					    case "lo":
+				    	{
+			    			mFieldNames[i] = "low";
+		    			}
+	    				break;
+    					case "mid":
+					    {
+				    		mFieldNames[i] = "middle";
+			    		}
+		    			break;
+	    			}
+    			}
 
-				// MS does NOT store the FullQualifiedTypename if there 
-				// is no collision but only the Typename :-(
-				while(!memberType.FullName.EndsWith(baseName)) 
-				{
-					// check if we reached System.Object
-					if(memberType == memberType.BaseType || memberType == null) 
-					{
-						// TODO : I18n
-						throw new SerializationException("Can't find member "+mFieldNames[i]);
-					}
-					memberType = memberType.BaseType;
-				}
-			} 
-			else 
-			{
-				memberType = mObjectType;
-				memberName = mFieldNames[i];
-			}
+		    	Type memberType;
+	    		String memberName;
+    			int classSeparator = mFieldNames[i].IndexOf('+');
+			    if(classSeparator != -1) 
+		    	{
+	    			/*
+    				*  TODO: check if there are constraints in which assembly 
+				    *  the Type may be looked up! for now just look it up 
+			    	*  generally
+		    		*/
+	    			String baseName = mFieldNames[i].Substring(0, classSeparator);
+    				memberName = mFieldNames[i].Substring(classSeparator+1, mFieldNames[i].Length-classSeparator-1);
+    				memberType = mObjectType;
 
-			// get member from object
-			MemberInfo[] members = memberType.GetMember(memberName, 
-											MemberTypes.Field | 
-											MemberTypes.Property, 
-											BindingFlags.Instance | 
-											BindingFlags.Public | 
-											BindingFlags.NonPublic);
+	    			// MS does NOT store the FullQualifiedTypename if there 
+    				// is no collision but only the Typename :-(
+				    while(!memberType.FullName.EndsWith(baseName)) 
+			    	{
+		    			// check if we reached System.Object
+	    				if(memberType == memberType.BaseType || memberType == null) 
+    					{
+						    // TODO : I18n
+					    	throw new SerializationException("Can't find member "+mFieldNames[i]);
+				    	}
+			    		memberType = memberType.BaseType;
+		    		}
+	    		} 
+    			else 
+			    {
+		    		memberType = mObjectType;
+	    			memberName = mFieldNames[i];
+    			}
 
-			if((members == null) || (members.Length < 1)) 
-			{
-				// TODO: I18n
-				throw new SerializationException("Can't find member "+mFieldNames[i]);
-			} 
-			else 
-			{
-				mMembers[i] = members[0];
-			}
-		}
+	    		// get member from object
+    			MemberInfo[] members = memberType.GetMember(memberName, 
+				    							MemberTypes.Field | 
+			    								MemberTypes.Property, 
+		    									BindingFlags.Instance | 
+	    										BindingFlags.Public | 
+    											BindingFlags.NonPublic);
+
+		    	if((members == null) || (members.Length < 1)) 
+	    		{
+    				// TODO: I18n
+			    	throw new SerializationException("Can't find member "+mFieldNames[i]);
+		    	} 
+	    		else 
+    			{
+			    	mMembers[i] = members[0];
+		    	}
+	    	}
+    	}
 	}
 
 	public BinaryTypeTag GetTypeTag(uint index) 
@@ -336,6 +353,16 @@ internal class TypeInfo
 		return mMembers[index];
 	}
 
+	public String GetFieldName(uint index) 
+	{
+		return mFieldNames[index];
+	}
+
+	public SerializationInfo GetSerializationInfo() 
+	{
+		return new SerializationInfo(mObjectType, mConverter);
+	}
+
 	public Type ObjectType 
 	{
 		get {return mObjectType; }
@@ -344,6 +371,11 @@ internal class TypeInfo
 	public int NumMembers 
 	{
 		get { return mTypeTag.Length; }
+	}
+
+	public bool IsISerializable
+	{
+		get { return mIsIserializable; }
 	}
 }
 
@@ -454,42 +486,42 @@ abstract class BinaryValueReader
 		}
 	}
 
-	public static object ReadPrimitiveType(DeserializationContext context, BinaryPrimitiveTypeCode typeCode) 
+	public static Object ReadPrimitiveType(DeserializationContext context, BinaryPrimitiveTypeCode typeCode) 
 	{
 		switch(typeCode) 
 		{
 			case BinaryPrimitiveTypeCode.Boolean:
-				return context.reader.ReadBoolean();
+				return context.Reader.ReadBoolean();
 			case BinaryPrimitiveTypeCode.Byte:
-				return context.reader.ReadByte();
+				return context.Reader.ReadByte();
 			case BinaryPrimitiveTypeCode.Char:
-				return context.reader.ReadChar();
+				return context.Reader.ReadChar();
 			case BinaryPrimitiveTypeCode.Decimal:
-				return Decimal.Parse(context.reader.ReadString());
+				return Decimal.Parse(context.Reader.ReadString());
 			case BinaryPrimitiveTypeCode.Double:
-				return context.reader.ReadDouble();
+				return context.Reader.ReadDouble();
 			case BinaryPrimitiveTypeCode.Int16:
-				return context.reader.ReadInt16();
+				return context.Reader.ReadInt16();
 			case BinaryPrimitiveTypeCode.Int32:
-				return context.reader.ReadInt32();
+				return context.Reader.ReadInt32();
 			case BinaryPrimitiveTypeCode.Int64:
-				return context.reader.ReadInt64();
+				return context.Reader.ReadInt64();
 			case BinaryPrimitiveTypeCode.SByte:
-				return context.reader.ReadSByte();
+				return context.Reader.ReadSByte();
 			case BinaryPrimitiveTypeCode.Single:
-				return context.reader.ReadSingle();
+				return context.Reader.ReadSingle();
 			case BinaryPrimitiveTypeCode.TimeSpan:
-				return new TimeSpan(context.reader.ReadInt64());
+				return new TimeSpan(context.Reader.ReadInt64());
 			case BinaryPrimitiveTypeCode.DateTime:
-				return new DateTime(context.reader.ReadInt64());
+				return new DateTime(context.Reader.ReadInt64());
 			case BinaryPrimitiveTypeCode.UInt16:
-				return context.reader.ReadUInt16();
+				return context.Reader.ReadUInt16();
 			case BinaryPrimitiveTypeCode.UInt32:
-				return context.reader.ReadUInt32();
+				return context.Reader.ReadUInt32();
 			case BinaryPrimitiveTypeCode.UInt64:
-				return context.reader.ReadUInt64();
+				return context.Reader.ReadUInt64();
 			case BinaryPrimitiveTypeCode.String:
-				return context.reader.ReadString();
+				return context.Reader.ReadString();
 
 			default:
 				throw new SerializationException("unknown primitive type code:"+typeCode);
@@ -538,10 +570,10 @@ abstract class BinaryValueReader
 		}
 	}
 
-	public static object Deserialize(DeserializationContext context) 
+	public static Object Deserialize(DeserializationContext context) 
 	{
 		bool keepGoing = true;
-		object tree = null;
+		Object tree = null;
 
 		// TODO: find better solution for finding the root of the object tree
 		do 
@@ -557,9 +589,9 @@ abstract class BinaryValueReader
 		return tree;
 	}
 
-	public static bool ReadValue(DeserializationContext context, out object outVal) 
+	public static bool ReadValue(DeserializationContext context, out Object outVal) 
 	{
-		BinaryElementType element = (BinaryElementType) context.reader.ReadByte();
+		BinaryElementType element = (BinaryElementType) context.Reader.ReadByte();
 		BinaryValueReader reader = GetReader(element);
 		return reader.Read(context, out outVal);
 	}
@@ -570,27 +602,39 @@ abstract class BinaryValueReader
 		{
 			case BinaryTypeTag.PrimitiveType:
 			case BinaryTypeTag.ArrayOfPrimitiveType:
-				return new TypeSpecification((BinaryPrimitiveTypeCode) context.reader.ReadByte());
+				return new TypeSpecification((BinaryPrimitiveTypeCode) context.Reader.ReadByte());
 
 			case BinaryTypeTag.RuntimeType:
-				return new TypeSpecification(context.reader.ReadString());
+				return new TypeSpecification(context.Reader.ReadString());
 
 			case BinaryTypeTag.GenericType:
-				String typeName = context.reader.ReadString();
-				uint assId = context.reader.ReadUInt32();
+				String typeName = context.Reader.ReadString();
+				uint assId = context.Reader.ReadUInt32();
 				return new TypeSpecification(typeName, assId);
+
+            case BinaryTypeTag.String:
+                return new TypeSpecification("System.String");
+
+            case BinaryTypeTag.ObjectType:
+                return new TypeSpecification("System.Object");
+
+            case BinaryTypeTag.ArrayOfString:
+                return new TypeSpecification("System.String[]");
+
+            case BinaryTypeTag.ArrayOfObject:
+                return new TypeSpecification("System.Object[]");
 
 			default:
 				return null;
 		}
 	}
 
-	public abstract bool Read(DeserializationContext context, out object outVal);
+	public abstract bool Read(DeserializationContext context, out Object outVal);
 }
 
 class NullReader : BinaryValueReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
 		outVal = null;
 		return true;
@@ -599,9 +643,9 @@ class NullReader : BinaryValueReader
 
 class EndReader : BinaryValueReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
-		context.manager.DoFixups();
+		context.Manager.DoFixups();
 		outVal = null;
 		return false;
 	}
@@ -609,12 +653,12 @@ class EndReader : BinaryValueReader
 
 class HeaderReader : BinaryValueReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
-		uint id = context.reader.ReadUInt32();
+		uint id = context.Reader.ReadUInt32();
 		
 		// check if there is a serialization header
-		int hasHeader = context.reader.ReadInt32();
+		int hasHeader = context.Reader.ReadInt32();
 		if(hasHeader == 2) 
 		{
 			context.IsHeaderPresent = true;
@@ -629,8 +673,8 @@ class HeaderReader : BinaryValueReader
 		}
 
 		// read major/minor version
-		context.MajorVersion = context.reader.ReadUInt32();
-		context.MinorVersion = context.reader.ReadUInt32();
+		context.MajorVersion = context.Reader.ReadUInt32();
+		context.MinorVersion = context.Reader.ReadUInt32();
 
 		outVal = null;
 		return true;
@@ -639,12 +683,12 @@ class HeaderReader : BinaryValueReader
 
 class StringReader : BinaryValueReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
-		uint id = context.reader.ReadUInt32();
-		String str = context.reader.ReadString();
+		uint id = context.Reader.ReadUInt32();
+		String str = context.Reader.ReadString();
 
-		context.manager.RegisterObject(str, id);
+		context.Manager.RegisterObject(str, id);
 		outVal = str;
 		return true;
 	}
@@ -666,7 +710,7 @@ abstract class ArrayReader : BinaryValueReader
 			array = Array.CreateInstance(convertedType, (int) count);
 			for(uint i = 0; i < count; i++) 
 			{
-				object val;
+				Object val;
 				val = ReadPrimitiveType(context, (BinaryPrimitiveTypeCode) type);
 				array.SetValue(val, i);
 			}
@@ -678,14 +722,14 @@ abstract class ArrayReader : BinaryValueReader
 			array = Array.CreateInstance(convertedType, (int) count);
 			for(int i = 0; i < count; i++) 
 			{
-				object val;
+				Object val;
 				ret &= ReadValue(context, out val);
 					
 				if(val is DelayedReferenceHolder) 
 				{
 					// record this index for fixup
 					DelayedReferenceHolder holder = (DelayedReferenceHolder) val;
-					context.manager.RecordArrayElementFixup(id, i, holder.ReferenceId);
+					context.Manager.RecordArrayElementFixup(id, i, holder.ReferenceId);
 				} 
 				else if(val is ArrayNullValueHolder) 
 				{
@@ -708,7 +752,7 @@ abstract class ArrayReader : BinaryValueReader
 			throw new SerializationException("illegal call with:"+type);
 		}
 			
-		context.manager.RegisterObject(array, id);
+		context.Manager.RegisterObject(array, id);
 		outVal = array;
 
 		return ret;
@@ -717,10 +761,10 @@ abstract class ArrayReader : BinaryValueReader
 
 class StringArrayReader : ArrayReader 
 {
-	public override bool Read(DeserializationContext context, out object outVal) 
+	public override bool Read(DeserializationContext context, out Object outVal) 
 	{
-		uint id = context.reader.ReadUInt32();
-		uint count = context.reader.ReadUInt32();
+		uint id = context.Reader.ReadUInt32();
+		uint count = context.Reader.ReadUInt32();
 
 		return Read(context, id, count, typeof(String), out outVal);
 	}
@@ -728,10 +772,10 @@ class StringArrayReader : ArrayReader
 
 class ObjectArrayReader : ArrayReader 
 {
-	public override bool Read(DeserializationContext context, out object outVal) 
+	public override bool Read(DeserializationContext context, out Object outVal) 
 	{
-		uint id = context.reader.ReadUInt32();
-		uint count = context.reader.ReadUInt32();
+		uint id = context.Reader.ReadUInt32();
+		uint count = context.Reader.ReadUInt32();
 
 		return Read(context, id, count, typeof(Object), out outVal);
 	}
@@ -739,28 +783,28 @@ class ObjectArrayReader : ArrayReader
 
 class PrimitiveArrayReader : ArrayReader 
 {
-	public override bool Read(DeserializationContext context, out object outVal) 
+	public override bool Read(DeserializationContext context, out Object outVal) 
 	{
-		uint id = context.reader.ReadUInt32();
-		uint count = context.reader.ReadUInt32();
+		uint id = context.Reader.ReadUInt32();
+		uint count = context.Reader.ReadUInt32();
 
-		BinaryPrimitiveTypeCode typeCode = (BinaryPrimitiveTypeCode) context.reader.ReadByte();
+		BinaryPrimitiveTypeCode typeCode = (BinaryPrimitiveTypeCode) context.Reader.ReadByte();
 		return Read(context, id, count, typeCode, out outVal);
 	}
 }
 
 class GenericArrayReader : ArrayReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
-		uint id = context.reader.ReadUInt32();
-		uint arrayType = context.reader.ReadByte();
-		uint dimensions = context.reader.ReadUInt32();
+		uint id = context.Reader.ReadUInt32();
+		uint arrayType = context.Reader.ReadByte();
+		uint dimensions = context.Reader.ReadUInt32();
 
 		uint[] dimSizes = new uint[dimensions];
 		for(int i = 0; i < dimensions; i++) 
 		{
-			dimSizes[i] = context.reader.ReadUInt32();
+			dimSizes[i] = context.Reader.ReadUInt32();
 		}
 
 		// TODO: up to now we only support single dimension arrays
@@ -769,7 +813,7 @@ class GenericArrayReader : ArrayReader
 			throw new SerializationException("array dimmensions > 1 || jagged arrays NYI!");
 		}
 			
-		BinaryTypeTag typeTag = (BinaryTypeTag) context.reader.ReadByte();
+		BinaryTypeTag typeTag = (BinaryTypeTag) context.Reader.ReadByte();
 		TypeSpecification typeSpec = ReadTypeSpec(context, typeTag);
 
 		if(typeTag == BinaryTypeTag.PrimitiveType) 
@@ -785,10 +829,10 @@ class GenericArrayReader : ArrayReader
 
 class AssemblyReader : BinaryValueReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
-		uint id = context.reader.ReadUInt32();
-		String name = context.reader.ReadString();
+		uint id = context.Reader.ReadUInt32();
+		String name = context.Reader.ReadString();
 
 		// load specified assembly
 		Assembly assembly = Assembly.Load(name);
@@ -809,57 +853,100 @@ class AssemblyReader : BinaryValueReader
 
 abstract class ObjectReader : BinaryValueReader
 {
-	public bool Read(DeserializationContext context, out object outVal, uint id, TypeInfo typeInfo) 
+	public bool Read(DeserializationContext context, out Object outVal, uint id, TypeInfo typeInfo) 
 	{
 		bool ret = true;
 
-		// create instance
-		Object obj = FormatterServices.GetUninitializedObject(typeInfo.ObjectType);
+    	// create instance
+   		Object obj = null;
+        SerializationInfo info = null;
+	    
+        if(typeInfo.IsISerializable)
+        {
+            info = typeInfo.GetSerializationInfo();
 
-		// read and set values
-		for(uint i = 0; i < typeInfo.NumMembers; i++) 
-		{
-			// first get inlined data
-			Object memberValue;
-			if(typeInfo.GetTypeTag(i) == BinaryTypeTag.PrimitiveType) 
-			{
-				memberValue = ReadPrimitiveType(context, typeInfo.GetTypeSpecification(i).GetPrimitiveType());
-			} 
-			else 
-			{
-				ret &= ReadValue(context, out memberValue);
-			}
+	    	// create instance
+    		obj = FormatterServices.GetUninitializedObject(typeInfo.ObjectType);
 
-			// set value
-			MemberInfo field = typeInfo.GetMember(i);
-			if(memberValue is DelayedReferenceHolder) 
-			{
-				// this is a reference
-				DelayedReferenceHolder holder = (DelayedReferenceHolder) memberValue;
-				context.manager.RecordFixup(id, field, holder.ReferenceId);
-			} 
-			else 
-			{
-				// this is a real value
-				if(field is FieldInfo) 
-				{
-					FieldInfo fi = (FieldInfo) field;
-					fi.SetValue(obj, memberValue);
-				}
-					// TODO: i'm not sure if I have to cover that case, too!
-					// I just noticed that Mono does this
-					//				else if(field is PropertyInfo)
-					//				{
-					//					PropertyInfo pi = (PropertyInfo) field;
-					//					pi.SetValue();
-				else 
-				{
-					throw new SerializationException("unknown memeber type:"+field.GetType());
-				}
-			}
-		}
+	    	// read and set values
+    		for(uint i = 0; i < typeInfo.NumMembers; i++) 
+		    {
+	    		// first get inlined data
+    			Object memberValue;
+			    if(typeInfo.GetTypeTag(i) == BinaryTypeTag.PrimitiveType) 
+		    	{
+	    			memberValue = ReadPrimitiveType(context, typeInfo.GetTypeSpecification(i).GetPrimitiveType());
+    			} 
+			    else 
+		    	{
+	    			ret &= ReadValue(context, out memberValue);
+    			}
 
-		context.manager.RegisterObject(obj, id);
+    			// set value
+			    String field = typeInfo.GetFieldName(i);
+		    	if(memberValue is DelayedReferenceHolder) 
+	    		{
+    				// this is a reference
+				    DelayedReferenceHolder holder = (DelayedReferenceHolder) memberValue;
+			    	context.Manager.RecordDelayedFixup(id, field, holder.ReferenceId);
+		    	}
+	    		else 
+    			{
+    		    	// this is a real value
+	    	        info.AddValue(field, memberValue, typeInfo.GetTypeSpecification(i).GetObjectType(context));
+	    		}
+    		}
+    		context.Manager.RegisterObject(obj, id, info);
+        }
+        else
+        {
+	    	// create instance
+    		obj = FormatterServices.GetUninitializedObject(typeInfo.ObjectType);
+
+	    	// read and set values
+    		for(uint i = 0; i < typeInfo.NumMembers; i++) 
+		    {
+	    		// first get inlined data
+    			Object memberValue;
+			    if(typeInfo.GetTypeTag(i) == BinaryTypeTag.PrimitiveType) 
+		    	{
+	    			memberValue = ReadPrimitiveType(context, typeInfo.GetTypeSpecification(i).GetPrimitiveType());
+    			} 
+			    else 
+		    	{
+	    			ret &= ReadValue(context, out memberValue);
+    			}
+
+    			// set value
+			    MemberInfo field = typeInfo.GetMember(i);
+		    	if(memberValue is DelayedReferenceHolder) 
+	    		{
+    				// this is a reference
+				    DelayedReferenceHolder holder = (DelayedReferenceHolder) memberValue;
+			    	context.Manager.RecordFixup(id, field, holder.ReferenceId);
+		    	} 
+	    		else 
+    			{
+		    		// this is a real value
+	    			if(field is FieldInfo) 
+    				{
+			    		FieldInfo fi = (FieldInfo) field;
+		    			fi.SetValue(obj, memberValue);
+	    			}
+    					// TODO: i'm not sure if I have to cover that case, too!
+					    // I just noticed that Mono does this
+				    	//				else if(field is PropertyInfo)
+			    		//				{
+		    			//					PropertyInfo pi = (PropertyInfo) field;
+	    				//					pi.SetValue();
+    				else 
+				    {
+			    		throw new SerializationException("unknown memeber type:"+field.GetType());
+		    		}
+	    		}
+    		}
+    		context.Manager.RegisterObject(obj, id);
+        }
 		outVal = obj;
 		return ret;
 	}
@@ -867,25 +954,25 @@ abstract class ObjectReader : BinaryValueReader
 
 abstract class FullObjectReader : ObjectReader
 {
-	public bool Read(DeserializationContext context, out object outVal, bool external)
+	public bool Read(DeserializationContext context, out Object outVal, bool external)
 	{
-		uint id = context.reader.ReadUInt32();
-		String name = context.reader.ReadString();
+		uint id = context.Reader.ReadUInt32();
+		String name = context.Reader.ReadString();
 
-		uint fieldCount = context.reader.ReadUInt32();
+		uint fieldCount = context.Reader.ReadUInt32();
 
 		// collect the names of the fields
 		String[] fieldNames = new String[fieldCount];
 		for(int i = 0; i < fieldCount; i++) 
 		{
-			fieldNames[i] = context.reader.ReadString();
+			fieldNames[i] = context.Reader.ReadString();
 		}
 
 		// collect the type-tags of the fields
 		BinaryTypeTag[] typeTags = new BinaryTypeTag[fieldCount];
 		for(int i = 0; i < fieldCount; i++) 
 		{
-			typeTags[i] = (BinaryTypeTag) context.reader.ReadByte();
+			typeTags[i] = (BinaryTypeTag) context.Reader.ReadByte();
 		}
 
 		// collect the type-specifications of the fields if necessary
@@ -899,11 +986,11 @@ abstract class FullObjectReader : ObjectReader
 		Assembly assembly = null;
 		if(external) 
 		{
-			assembly = context.GetAssembly(context.reader.ReadUInt32());
+			assembly = context.GetAssembly(context.Reader.ReadUInt32());
 		}
 
 		// store type-information for later usage
-		TypeInfo typeInfo = new TypeInfo(name, fieldNames, typeTags, typeSpecs, assembly);
+		TypeInfo typeInfo = new TypeInfo(context, name, fieldNames, typeTags, typeSpecs, assembly);
 		context.SetTypeInfo(id, typeInfo);
 
 		// let our parent read the inlined values
@@ -913,7 +1000,7 @@ abstract class FullObjectReader : ObjectReader
 
 class ExternalObjectReader : FullObjectReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
 		return Read(context, out outVal, true);
 	}
@@ -921,7 +1008,7 @@ class ExternalObjectReader : FullObjectReader
 
 class RuntimeObjectReader : FullObjectReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
 		return Read(context, out outVal, false);
 	}
@@ -929,10 +1016,10 @@ class RuntimeObjectReader : FullObjectReader
 
 class RefObjectReader : ObjectReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
-		uint id = context.reader.ReadUInt32();
-		uint refId = context.reader.ReadUInt32();
+		uint id = context.Reader.ReadUInt32();
+		uint refId = context.Reader.ReadUInt32();
 
 		// get type-information from context
 		TypeInfo typeInfo = context.GetTypeInfo(refId);
@@ -943,9 +1030,9 @@ class RefObjectReader : ObjectReader
 
 class ObjectReferenceReader : BinaryValueReader
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
-		uint refId = context.reader.ReadUInt32();
+		uint refId = context.Reader.ReadUInt32();
 
 		// this 'special' object indicates that we haven't read a real object, but will read it later on
 		outVal = new DelayedReferenceHolder(refId);
@@ -955,9 +1042,9 @@ class ObjectReferenceReader : BinaryValueReader
 
 class ArrayFiller8bReader : BinaryValueReader 
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
-		uint numNulls = context.reader.ReadByte();
+		uint numNulls = context.Reader.ReadByte();
 
 		// this 'special' object indicates that we haven't read a real object,
 		// but should insert a number of NULL values.
@@ -968,9 +1055,9 @@ class ArrayFiller8bReader : BinaryValueReader
 
 class ArrayFiller32bReader : BinaryValueReader 
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
-		uint numNulls = context.reader.ReadUInt32();
+		uint numNulls = context.Reader.ReadUInt32();
 
 		// this 'special' object indicates that we haven't read a real object,
 		// but should insert a number of NULL values.
@@ -981,7 +1068,7 @@ class ArrayFiller32bReader : BinaryValueReader
 
 class BoxedPrimitiveTypeValue : BinaryValueReader 
 {
-	public override bool Read(DeserializationContext context, out object outVal)
+	public override bool Read(DeserializationContext context, out Object outVal)
 	{
 		TypeSpecification typeSpec = ReadTypeSpec(context, BinaryTypeTag.PrimitiveType);
 		outVal = ReadPrimitiveType(context, typeSpec.GetPrimitiveType());

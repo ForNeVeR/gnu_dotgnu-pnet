@@ -868,7 +868,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				info.AddValue("LoadFactor", loadFactor);
 				info.AddValue("Version", generation);
 				info.AddValue("Comparer", comparer, typeof(IComparer));
-				info.AddValue("HashCodeProviderName", hcp,
+				info.AddValue("HashCodeProvider", hcp,
 							  typeof(IHashCodeProvider));
 				info.AddValue("HashSize", (table == null ? 0 : table.Length));
 

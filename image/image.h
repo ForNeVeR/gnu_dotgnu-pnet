@@ -145,6 +145,7 @@ struct _tagILImage
 
 	/* Housekeeping for managing the raw PE/COFF for of an image */
 	int				type : 8;		/* Type of image */
+	int				secure : 1;		/* Non-zero if image source is secure */
 	int				hadNative : 1;	/* Non-zero if image had native code */
 	int				only32Bit : 1;	/* Non-zero if image is 32-bit only */
 	int				mapped : 1;		/* Non-zero if mmap used to load image */

@@ -36,7 +36,6 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor);
 void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 {
 	ILImage *image;
-	ILImage *systemImage;
 	ILClass *owner;
 	const char *name;
 	const char *namespace;
@@ -47,14 +46,13 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 	int isCtor;
 	int cmp;
 
-	/* If the method is not in the system image, then this is
+	/* If the method is not in a secure image, then this is
 	   probably an attempt to circumvent system security, which
 	   we don't allow */
 	image = ILProgramItem_Image(method);
-	systemImage = ILContextGetSystem(ILImageToContext(image));
-	if(systemImage != 0 && image != systemImage)
+	if(!ILImageIsSecure(image))
 	{
-		return 0;
+		goto arraysOnly;
 	}
 
 	/* Find the method's owner and bail out if no namespace
@@ -114,6 +112,7 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 	}
 
 	/* Perhaps this is a "runtime" method for an array? */
+arraysOnly:
 	func = _ILGetInternalArray(method, &isCtor);
 	if(func)
 	{

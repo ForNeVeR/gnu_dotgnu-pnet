@@ -52,6 +52,7 @@ extern	"C" {
 #define	IL_LOADFLAG_NO_METADATA		2	/* Don't parse the metadata */
 #define	IL_LOADFLAG_PRE_VALIDATE	4	/* Pre-validate the token metadata */
 #define	IL_LOADFLAG_NO_RESOLVE		8	/* Don't resolve external references */
+#define	IL_LOADFLAG_INSECURE		16	/* Loaded from an insecure source */
 
 /*
  * Image types.
@@ -195,6 +196,11 @@ ILContext *ILImageToContext(ILImage *image);
  * Get a loaded image's type.
  */
 int ILImageType(ILImage *image);
+
+/*
+ * Determine if an image was loaded from a secure source.
+ */
+int ILImageIsSecure(ILImage *image);
 
 /*
  * Determine if the loaded image had non-stub native code

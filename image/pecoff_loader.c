@@ -499,6 +499,7 @@ int ILImageLoad(FILE *file, const char *filename,
 	}
 	(*image)->type = (isOBJ ? IL_IMAGETYPE_OBJ :
 						(isDLL ? IL_IMAGETYPE_DLL : IL_IMAGETYPE_EXE));
+	(*image)->secure = ((flags & IL_LOADFLAG_INSECURE) == 0);
 	(*image)->hadNative = hadNative;
 	(*image)->only32Bit = only32Bit;
 	(*image)->mapped = isMapped;

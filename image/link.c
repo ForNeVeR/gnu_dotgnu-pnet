@@ -292,7 +292,8 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
  * Returns the malloc'ed path, or NULL if not found.
  */
 static char *LocateAssembly(ILContext *context, const char *name,
-							ILUInt16 *version, const char *parentAssemblyPath)
+							ILUInt16 *version, const char *parentAssemblyPath,
+							int *sameDir)
 {
 	int namelen;
 	int pathlen;
@@ -309,6 +310,7 @@ static char *LocateAssembly(ILContext *context, const char *name,
 	}
 
 	/* Look in the same directory as the parent assembly */
+	*sameDir = 1;
 	if(parentAssemblyPath)
 	{
 		pathlen = strlen(parentAssemblyPath);
@@ -336,6 +338,7 @@ static char *LocateAssembly(ILContext *context, const char *name,
 			}
 		}
 	}
+	*sameDir = 0;
 
 	/* Use the standard search order */
 	return ILImageSearchPath(name, version,
@@ -349,6 +352,7 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 	char *pathname;
 	int error;
 	ILImage *newImage;
+	int sameDir;
 
 	/* Scan the AssemblyRef table for the assemblies that we require */
 	assem = 0;
@@ -363,7 +367,7 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 
 		/* Locate the assembly */
 		pathname = LocateAssembly(image->context, assem->name,
-								  assem->version, filename);
+								  assem->version, filename, &sameDir);
 		if(!pathname)
 		{
 		#if IL_DEBUG_META
@@ -374,6 +378,13 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 					(unsigned)(assem->version[3]));
 		#endif
 			return IL_LOADERR_UNRESOLVED;
+		}
+
+		/* If the assembly was loaded from a system directory, then we
+		   can assume that it is being loaded from a secure location */
+		if(!sameDir)
+		{
+			flags &= ~IL_LOADFLAG_INSECURE;
 		}
 
 		/* Load the image */
@@ -582,6 +593,13 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 		return 0;
 	}
 	name = pinvoke->module->name;
+
+	/* Disallow the request if the image containing the PInvoke
+	   declaration is marked as insecure */
+	if(!(pinvoke->member.programItem.image->secure))
+	{
+		return 0;
+	}
 
 	/* Does the name need to be remapped for this platform? */
 	namelen = SearchForDllMap(&(pinvoke->method->member.programItem),

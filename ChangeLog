@@ -7,6 +7,12 @@
 	* engine/lib_reflect.c, image/pecoff_loader.c: implement
 	file-based resources.
 
+	* engine/internal.c, engine/lib_reflect.c, image/image.c,
+	image/image.h, image/link.c, image/pecoff_loader.c, include/il_image.h:
+	implement a better policy for deciding whether an assembly has
+	access to facilities such as internalcall's, PInvoke's, manifest
+	files, etc.
+
 2002-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/init.d-pnet, doc/pnet_faq.html: add the init.d script

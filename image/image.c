@@ -124,6 +124,11 @@ int ILImageType(ILImage *image)
 	return image->type;
 }
 
+int ILImageIsSecure(ILImage *image)
+{
+	return image->secure;
+}
+
 int ILImageHadNative(ILImage *image)
 {
 	return image->hadNative;

@@ -510,13 +510,127 @@ System_Array *_IL_Assembly_GetExportedTypes(ILExecThread *_thread,
 }
 
 /*
+ * Construct a "FileStream" object for a particular
+ * filename in the same directory as an assembly.
+ */
+static ILObject *CreateFileStream(ILExecThread *thread, const char *assemFile,
+								  const char *filename, int throw)
+{
+	int len;
+	char *newPath;
+	ILString *name;
+
+	/* Bail out if the parameters are incorrect in some way */
+	if(!assemFile || !filename)
+	{
+		if(throw)
+		{
+			ILExecThreadThrowSystem
+				(thread, "System.IO.FileNotFoundException", 0);
+		}
+		return 0;
+	}
+
+	/* Strip path information from "filename" */
+	len = strlen(filename);
+	while(len > 0 && filename[len - 1] != '/' && filename[len - 1] != '\\' &&
+	      filename[len - 1] != ':')
+	{
+		--len;
+	}
+	filename += len;
+
+	/* Create a new pathname for the file in the assembly's directory */
+	len = strlen(assemFile);
+	while(len > 0 && assemFile[len - 1] != '/' && assemFile[len - 1] != '\\')
+	{
+		--len;
+	}
+	if(!len)
+	{
+		if(throw)
+		{
+			ILExecThreadThrowSystem
+				(thread, "System.IO.FileNotFoundException", 0);
+		}
+		return 0;
+	}
+	newPath = (char *)ILMalloc(len + strlen(filename) + 2);
+	if(!newPath)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+	ILMemCpy(newPath, assemFile, len);
+	newPath[len++] = '/';
+	strcpy(newPath + len, filename);
+
+	/* Bail out if the file does not exist */
+	if(!ILFileExists(newPath, (char **)0))
+	{
+		if(throw)
+		{
+			ILExecThreadThrowSystem
+				(thread, "System.IO.FileNotFoundException", 0);
+		}
+		return 0;
+	}
+
+	/* Convert the pathname into a string object */
+	name = ILStringCreate(thread, newPath);
+	ILFree(newPath);
+	if(!name)
+	{
+		return 0;
+	}
+
+	/* Create the FileStream object */
+	return ILExecThreadNew(thread, "System.IO.FileStream",
+		   "(ToSystem.String;vSystem.IO.FileMode;vSystem.IO.FileAccess;)V",
+		   name, (ILVaInt)3 /* Open */, (ILVaInt)1 /* Read */);
+}
+
+/*
  * public virtual FileStream GetFile(String name);
+ *
+ * Note: the semantics of this implementation are different than
+ * the .NET Framework SDK.  This can provide access to any file
+ * in the same directory as the assembly, as long as the caller
+ * has the appropriate security level.
+ *
+ * The modified semantics make this method very useful for locating
+ * configuration tables in the same directory as the assembly.  These
+ * tables may have been modified since the assembly was compiled.
+ * The usual .NET Framework SDK semantics cannot support files that
+ * are modified after linking.
+ *
+ * These altered semantics are still ECMA-compatible from a certain
+ * point of view because ECMA doesn't specify the behaviour of
+ * "GetFile" at all.
  */
 ILObject *_IL_Assembly_GetFile(ILExecThread *thread, ILObject *_this,
 							   ILString *name)
 {
-	/* We don't support manifest files yet */
-	return 0;
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	char *str = ILStringToUTF8(thread, name);
+	if(image && str)
+	{
+		/* Check the caller's access permissions */
+		if(!ILImageIsSecure(_ILClrCallerImage(thread)))
+		{
+			ILExecThreadThrowSystem
+				(thread, "System.IO.FileNotFoundException", 0);
+			return 0;
+		}
+
+		/* Attempt to load the file from the same directory as the assembly */
+		return CreateFileStream(thread, image->filename, str, 1);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*
@@ -550,65 +664,6 @@ System_Array *_IL_Assembly_GetManifestResourceNames(ILExecThread *thread,
 {
 	/* TODO */
 	return 0;
-}
-
-/*
- * Construct a "FileStream" object for a particular
- * filename in the same directory as an assembly.
- */
-static ILObject *CreateFileStream(ILExecThread *thread, const char *assemFile,
-								  const char *filename)
-{
-	int len;
-	char *newPath;
-	ILString *name;
-
-	/* Bail out if the parameters are incorrect in some way */
-	if(!assemFile || !filename)
-	{
-		return 0;
-	}
-
-	/* Strip path information from "filename" */
-	len = strlen(filename);
-	while(len > 0 && filename[len - 1] != '/' && filename[len - 1] != '\\' &&
-	      filename[len - 1] != ':')
-	{
-		--len;
-	}
-	filename += len;
-
-	/* Create a new pathname for the file in the assembly's directory */
-	len = strlen(assemFile);
-	while(len > 0 && assemFile[len - 1] != '/' && assemFile[len - 1] != '\\')
-	{
-		--len;
-	}
-	if(!len)
-	{
-		return 0;
-	}
-	newPath = (char *)ILMalloc(len + strlen(filename) + 2);
-	if(!newPath)
-	{
-		return 0;
-	}
-	ILMemCpy(newPath, assemFile, len);
-	newPath[len++] = '/';
-	strcpy(newPath + len, filename);
-
-	/* Convert the pathname into a string object */
-	name = ILStringCreate(thread, newPath);
-	ILFree(newPath);
-	if(!name)
-	{
-		return 0;
-	}
-
-	/* Create the FileStream object */
-	return ILExecThreadNew(thread, "System.IO.FileStream",
-		   "(ToSystem.String;vSystem.IO.FileMode;vSystem.IO.FileAccess;)V",
-		   name, (ILVaInt)3 /* Open */, (ILVaInt)1 /* Read */);
 }
 
 /*
@@ -706,9 +761,14 @@ ILObject *_IL_Assembly_GetManifestResourceStream(ILExecThread *thread,
 				/* Handle resources in external files */
 				if((file = ILManifestRes_OwnerFile(res)) != 0)
 				{
-					/* TODO: need to enforce some extra security to prevent
-					   wayward applications from reading arbitrary files in
-					   the same directory as an assembly */
+					/* If the calling image is not secure, then disallow.
+					   Otherwise, applications may be able to force
+					   the engine to read arbitrary files from the
+					   same directory as a library assembly */
+					if(!ILImageIsSecure(_ILClrCallerImage(thread)))
+					{
+						return 0;
+					}
 
 					/* The file must not have metadata and it must
 					   start at offset 0 to be a valid file resource */
@@ -720,7 +780,7 @@ ILObject *_IL_Assembly_GetManifestResourceStream(ILExecThread *thread,
 
 					/* Create a "FileStream" for the file resource */
 					return CreateFileStream(thread, image->filename,
-											ILFileDecl_Name(file));
+											ILFileDecl_Name(file), 0);
 				}
 
 				/* Find the manifest resource at "posn" within the image */

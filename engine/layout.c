@@ -559,7 +559,38 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 				maxAlignment = typeLayout.alignment;
 			}
 		}
-		else if((field->member.attributes & IL_META_FIELDDEF_LITERAL) == 0)
+	}
+
+	/* Compute the final class size based on explicit sizes and alignment */
+	if(maxAlignment > layout->alignment)
+	{
+		layout->alignment = maxAlignment;
+	}
+	if(explicitSize > layout->size)
+	{
+		layout->size = explicitSize;
+	}
+	else if((layout->size % layout->alignment) != 0)
+	{
+		layout->size += layout->alignment -
+				(layout->size % layout->alignment);
+	}
+
+	/* Record the object size information for this class */
+	classPrivate->size = layout->size;
+	classPrivate->alignment = layout->alignment;
+	classPrivate->inLayout = 0;
+
+	/* Allocate the static fields.  We must do this after the
+	   regular fields because some of the statics may be instances
+	   of the class that we are trying to lay out, especially
+	   in value type definitions */
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+			(info, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if((field->member.attributes & IL_META_FIELDDEF_STATIC) != 0 &&
+		   (field->member.attributes & IL_META_FIELDDEF_LITERAL) == 0)
 		{
 			/* Lay out a static field */
 			fieldRVA = ILFieldRVAGetFromOwner(field);
@@ -589,21 +620,6 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 				layout->staticSize += typeLayout.size;
 			}
 		}
-	}
-
-	/* Compute the final class size based on explicit sizes and alignment */
-	if(maxAlignment > layout->alignment)
-	{
-		layout->alignment = maxAlignment;
-	}
-	if(explicitSize > layout->size)
-	{
-		layout->size = explicitSize;
-	}
-	else if((layout->size % layout->alignment) != 0)
-	{
-		layout->size += layout->alignment -
-				(layout->size % layout->alignment);
 	}
 
 	/* Allocate vtable slots to the virtual methods in this class */
@@ -715,14 +731,11 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		}
 	}
 
-	/* Record the layout information for this class */
-	classPrivate->size = layout->size;
+	/* Record the rest of the layout information for this class */
 	classPrivate->staticSize = layout->staticSize;
-	classPrivate->alignment = layout->alignment;
 	classPrivate->vtableSize = layout->vtableSize;
 	classPrivate->vtable = vtable;
 	classPrivate->hasFinalizer = layout->hasFinalizer;
-	classPrivate->inLayout = 0;
 	layout->vtable = vtable;
 
 	/* Done */

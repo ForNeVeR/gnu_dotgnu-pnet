@@ -626,7 +626,7 @@ VMCASE(COP_CALL):
 		BEGIN_NATIVE_CALL();
 
 		/* Convert the method */
-		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		IL_CONVERT_METHOD(tempptr, thread, methodToCall);
 		if(!tempptr)
 		{
 			END_NATIVE_CALL();
@@ -716,7 +716,7 @@ VMCASE(COP_CALL_CTOR):
 		/* Convert the method */
 		BEGIN_NATIVE_CALL();
 
-		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		IL_CONVERT_METHOD(tempptr, thread, methodToCall);
 		if(!tempptr)
 		{
 			END_NATIVE_CALL();
@@ -960,7 +960,7 @@ VMCASE(COP_CALL_VIRTUAL):
 			/* Convert the method */
 			BEGIN_NATIVE_CALL();
 
-			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+			IL_CONVERT_METHOD(tempptr, thread, methodToCall);
 			if(!tempptr)
 			{
 				END_NATIVE_CALL();
@@ -1080,7 +1080,7 @@ VMCASE(COP_CALL_INTERFACE):
 			/* Convert the method */
 			BEGIN_NATIVE_CALL();
 
-			tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+			IL_CONVERT_METHOD(tempptr, thread, methodToCall);
 			if(!tempptr)
 			{
 				END_NATIVE_CALL();
@@ -1493,7 +1493,7 @@ VMCASE(COP_CALLI):
 		/* Convert the method */
 		BEGIN_NATIVE_CALL();
 
-		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		IL_CONVERT_METHOD(tempptr, thread, methodToCall);
 		if(!tempptr)
 		{
 			END_NATIVE_CALL();
@@ -1552,7 +1552,7 @@ case COP_CALL_VIRTUAL:
 		/* Convert the method */
 		BEGIN_NATIVE_CALL();
 
-		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		IL_CONVERT_METHOD(tempptr, thread, methodToCall);
 		if(!tempptr)
 		{
 			END_NATIVE_CALL();
@@ -1619,7 +1619,7 @@ case COP_CALL_INTERFACE:
 		/* Convert the method */
 		BEGIN_NATIVE_CALL();
 
-		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		IL_CONVERT_METHOD(tempptr, thread, methodToCall);
 		if(!tempptr)
 		{
 			END_NATIVE_CALL();
@@ -1700,7 +1700,7 @@ performTailCall:
 		COPY_STATE_TO_THREAD();
 		BEGIN_NATIVE_CALL();
 
-		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		IL_CONVERT_METHOD(tempptr, thread, methodToCall);
 		if (!tempptr)
 		{
 			END_NATIVE_CALL();

@@ -1,6 +1,14 @@
+2005-03-25  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.h: add macro IL_CONVERT_METHOD to avoid function calls if
+	method is already converted.
+
+	*engine/cvm/call.c: replace function calls to _ILConvertMethod with macro
+	calls of IL_CONVERT_METHOD.
+
 2005-03-22  Klaus Treichel  <ktreichel@web.de>
 
-	* engine/thread.c: Fix a possibe engine lookup.
+	* engine/thread.c: Fix a possibe engine lockup.
 
 2005-03-09  Klaus Treichel  <ktreichel@web.de>
 

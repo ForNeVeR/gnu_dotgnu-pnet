@@ -532,6 +532,15 @@ void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method);
 unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method);
 
 /*
+ * define a shortcut to get the converted method if it is already converted
+ */
+#define IL_CONVERT_METHOD(start, thread, methodToCall) \
+	if ((((start) = ((methodToCall)->userData))) == 0) \
+	{											\
+		(start) = (void *)_ILConvertMethod((thread), (methodToCall)); \
+	}
+
+/*
  * Finalization callback that is invoked by the garbage collector.
  */
 void _ILFinalizeObject(void *block, void *data);

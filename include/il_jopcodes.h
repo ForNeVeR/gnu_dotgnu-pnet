@@ -298,4 +298,14 @@
 #define	JAVA_ACC_ABSTRACT					0x0400
 #define	JAVA_ACC_STRICT						0x0800
 
+/* Element types for "newarray" */
+#define	JAVA_ARRAY_OF_BOOL					4
+#define	JAVA_ARRAY_OF_CHAR					5
+#define	JAVA_ARRAY_OF_FLOAT					6
+#define	JAVA_ARRAY_OF_DOUBLE				7
+#define	JAVA_ARRAY_OF_BYTE					8
+#define	JAVA_ARRAY_OF_SHORT					9
+#define	JAVA_ARRAY_OF_INT					10
+#define	JAVA_ARRAY_OF_LONG					11
+
 #endif	/* _IL_JOPCODES_H */

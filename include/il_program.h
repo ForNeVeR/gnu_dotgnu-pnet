@@ -2211,17 +2211,23 @@ ILClass *ILJavaGetClass(ILClass *info, ILUInt32 index, int refOnly);
  * Resolve a method reference from a constant pool entry.
  * Returns NULL if the constant index is invalid, or the
  * method could not be resolved.  If the "refOnly" flag
- * is zero, then the method must be present.
+ * is zero, then the method must be present.  If the
+ * "isStatic" field is non-zero, then the method is being
+ * used with a static instruction.
  */
-ILMethod *ILJavaGetMethod(ILClass *info, ILUInt32 index, int refOnly);
+ILMethod *ILJavaGetMethod(ILClass *info, ILUInt32 index,
+						  int refOnly, int isStatic);
 
 /*
  * Resolve a field reference from a constant pool entry.
  * Returns NULL if the constant index is invalid, or the
  * field could not be resolved.  If the "refOnly" flag
- * is zero, then the field must be present.
+ * is zero, then the field must be present.  If the
+ * "isStatic" field is non-zero, then the field is being
+ * used with a static instruction.
  */
-ILField *ILJavaGetField(ILClass *info, ILUInt32 index, int refOnly);
+ILField *ILJavaGetField(ILClass *info, ILUInt32 index,
+						int refOnly, int isStatic);
 
 #ifdef	__cplusplus
 };

@@ -459,7 +459,7 @@ static ILClass *ResolveJavaClassLoad(ILImage *image, JavaConstEntry *constPool,
  */
 static int ParseJavaType(ILImage *image, int flags,
 						 JavaReader *reader, JavaReader *mangled,
-						 ILType **type)
+						 ILType **type, int showError)
 {
 	char typeChar;
 	unsigned long nameLen;
@@ -601,7 +601,8 @@ static int ParseJavaType(ILImage *image, int flags,
 			case '[':
 			{
 				/* Parse an array type */
-				error = ParseJavaType(image, flags, reader, mangled, type);
+				error = ParseJavaType(image, flags, reader,
+									  mangled, type, showError);
 				if(error == 0)
 				{
 					*type = ILTypeCreateArray(image->context, 1, *type);
@@ -621,7 +622,10 @@ static int ParseJavaType(ILImage *image, int flags,
 			default: break;
 		}
 	}
-	META_ERROR("invalid type specification");
+	if(showError)
+	{
+		META_ERROR("invalid type specification");
+	}
 	return IL_LOADERR_BAD_META;
 }
 
@@ -748,8 +752,10 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 		/* Create the method block */
 		if(!strcmp(copiedName, "<init>"))
 		{
+			/* Instance constructors are never virtual */
 			method = ILMethodCreate(classInfo, 0, ".ctor",
-									(accessFlags & 0xFFFF));
+									(accessFlags & 0xFFFF) &
+										~IL_META_METHODDEF_VIRTUAL);
 		}
 		else if(!strcmp(copiedName, "<clinit>"))
 		{
@@ -804,7 +810,7 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 			      sigReader.data[0] != (unsigned char)')')
 			{
 				error = ParseJavaType(image, flags, &sigReader,
-									  &mangled, &argType);
+									  &mangled, &argType, 1);
 				if(error != 0)
 				{
 					goto cleanup;
@@ -837,7 +843,7 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 			else
 			{
 				error = ParseJavaType(image, flags, &sigReader,
-									  &mangled, &argType);
+									  &mangled, &argType, 1);
 				if(error != 0)
 				{
 					goto cleanup;
@@ -860,7 +866,8 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 			error = IL_LOADERR_MEMORY;
 			goto cleanup;
 		}
-		error = ParseJavaType(image, flags, &sigReader, &mangled, &signature);
+		error = ParseJavaType(image, flags, &sigReader,
+							  &mangled, &signature, 1);
 		if(error == 0)
 		{
 			ILMemberSetSignature((ILMember *)field, signature);
@@ -1732,16 +1739,693 @@ ILClass *ILJavaGetClass(ILClass *info, ILUInt32 index, int refOnly)
 	return classInfo;
 }
 
-ILMethod *ILJavaGetMethod(ILClass *info, ILUInt32 index, int refOnly)
+/*
+ * Get the name and type information from a field or method reference.
+ */
+static int JavaGetNameAndType(ILClass *info, ILUInt32 index,
+							  const char **name, ILUInt32 *nameLen,
+							  const char **type, ILUInt32 *typeLen)
 {
-	/* TODO */
+	JavaConstEntry *entry;
+	entry = &(info->ext->constPool[index]);
+	*name = ILJavaGetUTF8String(info, entry->un.nameAndType.name, nameLen);
+	*type = ILJavaGetUTF8String(info, entry->un.nameAndType.type, typeLen);
+	return (*name != 0 && *type != 0);
+}
+
+/*
+ * Perform a simple type match against a signature type code.
+ */
+#define	SIMPLE_TYPE_MATCH(code)	\
+			do { \
+				if(*(type->data) == (unsigned char)(code)) \
+				{ \
+					++(type->data); \
+					--(type->len); \
+					return 1; \
+				} \
+			} while (0)
+
+/*
+ * Perform a type match with a mandatory mangling code.
+ */
+#define	MANGLED_TYPE_MATCH(code,mang)	\
+			do { \
+				if(*(type->data) == (unsigned char)(code)) \
+				{ \
+					if(mangled->len > 0 && *(mangled->data) == \
+							(unsigned char)(mang)) \
+					{ \
+						++(type->data); \
+						--(type->len); \
+						++(mangled->data); \
+						--(mangled->len); \
+						return 1; \
+					} \
+				} \
+			} while (0)
+
+/*
+ * Perform a type match with an optional mangling code.
+ */
+#define	OPT_MANGLED_TYPE_MATCH(code,mang)	\
+			do { \
+				if(*(type->data) == (unsigned char)(code)) \
+				{ \
+					if(mangled->len == 0) \
+					{ \
+						++(type->data); \
+						--(type->len); \
+						return 1; \
+					} \
+					if(*(mangled->data) == (unsigned char)(mang)) \
+					{ \
+						++(type->data); \
+						--(type->len); \
+						++(mangled->data); \
+						--(mangled->len); \
+						return 1; \
+					} \
+				} \
+			} while (0)
+
+/*
+ * Match an object reference or value type against an IL type.
+ */
+static int JavaRefMatch(ILClass *classInfo, int manglingCode,
+						JavaReader *type, JavaReader *mangled)
+{
+	const char *jname;
+	ILUInt32 jnameLen;
+	char *name;
+	char *namespace;
+	char *freeName;
+
+	/* The signature code must be 'L' */
+	if(*(type->data) != (unsigned char)'L')
+	{
+		return 0;
+	}
+	++(type->data);
+	--(type->len);
+
+	/* Match the mangling code */
+	if(mangled->len > 0)
+	{
+		if(*(mangled->data) != (unsigned char)manglingCode)
+		{
+			return 0;
+		}
+		++(mangled->data);
+		--(mangled->len);
+	}
+	else if(manglingCode != 'C')
+	{
+		return 0;
+	}
+
+	/* Extract the Java name for the class */
+	jname = (const char *)(type->data);
+	jnameLen = 0;
+	while(jnameLen < type->len && jname[jnameLen] != ';')
+	{
+		++jnameLen;
+	}
+	if(jnameLen >= type->len)
+	{
+		return 0;
+	}
+	type->data += jnameLen + 1;
+	type->len -= jnameLen + 1;
+
+	/* Convert the Java name into an IL name */
+	if(!JavaNameToILName(jname, jnameLen, &name, &namespace, &freeName))
+	{
+		return 0;
+	}
+
+	/* Match the name information against the signature class */
+	if(!strcmp(ILClass_Name(classInfo), name))
+	{
+		jname = ILClass_Namespace(classInfo);
+		if(namespace && jname && !strcmp(namespace, jname))
+		{
+			ILFree(freeName);
+			return 1;
+		}
+		else if(!namespace && !jname)
+		{
+			ILFree(freeName);
+			return 1;
+		}
+	}
+	ILFree(freeName);
 	return 0;
 }
 
-ILField *ILJavaGetField(ILClass *info, ILUInt32 index, int refOnly)
+/*
+ * Match a Java signature against an IL type - inner version.
+ */
+static int JavaSigMatch(ILType *signature, JavaReader *type,
+						JavaReader *mangled)
 {
-	/* TODO */
+	if(!(type->len))
+	{
+		return 0;
+	}
+	if(ILType_IsPrimitive(signature))
+	{
+		/* Primitive type */
+		switch(ILType_ToElement(signature))
+		{
+			case IL_META_ELEMTYPE_VOID:
+			{
+				SIMPLE_TYPE_MATCH('V');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_BOOLEAN:
+			{
+				SIMPLE_TYPE_MATCH('Z');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I1:
+			{
+				SIMPLE_TYPE_MATCH('B');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U1:
+			{
+				MANGLED_TYPE_MATCH('I', 'B');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I2:
+			{
+				SIMPLE_TYPE_MATCH('S');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U2:
+			{
+				MANGLED_TYPE_MATCH('I', 'S');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_CHAR:
+			{
+				SIMPLE_TYPE_MATCH('C');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I4:
+			{
+				OPT_MANGLED_TYPE_MATCH('I', 'i');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U4:
+			{
+				MANGLED_TYPE_MATCH('I', 'I');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I8:
+			{
+				OPT_MANGLED_TYPE_MATCH('J', 'l');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U8:
+			{
+				MANGLED_TYPE_MATCH('J', 'L');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R4:
+			{
+				SIMPLE_TYPE_MATCH('F');
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R8:
+			{
+				SIMPLE_TYPE_MATCH('D');
+			}
+			break;
+
+			default: break;
+		}
+	}
+	else if(ILType_IsClass(signature))
+	{
+		/* Class reference */
+		return JavaRefMatch(ILType_ToClass(signature), 'C', type, mangled);
+	}
+	else if(ILType_IsValueType(signature))
+	{
+		/* Value type reference */
+		return JavaRefMatch(ILType_ToClass(signature), 'V', type, mangled);
+	}
+	else if(signature != 0 && ILType_IsComplex(signature))
+	{
+		if(ILType_IsSimpleArray(signature))
+		{
+			/* Match a simple 1-dimensional array */
+			if(*(type->data) != (unsigned char)'[')
+			{
+				return 0;
+			}
+			++(type->data);
+			--(type->len);
+			return JavaSigMatch(ILType_ElemType(signature), type, mangled);
+		}
+		else if(ILType_IsMethod(signature))
+		{
+			/* Match a method signature */
+			unsigned long numParams;
+			unsigned long param;
+			if(*(type->data) != (unsigned char)'(')
+			{
+				return 0;
+			}
+			++(type->data);
+			--(type->len);
+			numParams = ILTypeNumParams(signature);
+			for(param = 1; param <= numParams; ++param)
+			{
+				if(!JavaSigMatch(ILTypeGetParam(signature, param),
+							     type, mangled))
+				{
+					return 0;
+				}
+			}
+			if(*(type->data) != (unsigned char)')')
+			{
+				return 0;
+			}
+			++(type->data);
+			--(type->len);
+			return JavaSigMatch(ILTypeGetReturn(signature), type, mangled);
+		}
+	}
 	return 0;
+}
+
+/*
+ * Match a Java signature against an IL type.
+ */
+static int JavaSignatureMatch(ILType *signature, JavaReader *type,
+							  JavaReader *mangled)
+{
+	if(!JavaSigMatch(signature, type, mangled))
+	{
+		return 0;
+	}
+	return (type->len == 0 && mangled->len == 0);
+}
+
+/*
+ * Resolve a class member.
+ */
+static ILMember *JavaResolveMember(ILClass *classInfo, int kind,
+								   int refOnly, int isStatic,
+								   const char *name, ILUInt32 nameLen,
+								   const char *type, ILUInt32 typeLen)
+{
+	ILMember *member;
+	const char *memberName;
+	ILUInt32 memberNameLen;
+	ILUInt32 sigPosn;
+	JavaReader signature;
+	JavaReader mangled;
+	char *nameCopy;
+	ILType *sigType;
+	ILType *paramType;
+
+	/* Resolve the class as far as we can */
+	classInfo = ILClassResolve(classInfo);
+
+	/* Determine if the name looks like it contains signature information.
+	   Leading and trailing "__" sequences are not signature indicators */
+	memberName = name;
+	memberNameLen = nameLen;
+	sigPosn = 0;
+	if(memberNameLen >= 1 && memberName[0] == '_')
+	{
+		++memberName;
+		--memberNameLen;
+	}
+	while(memberNameLen > 2)
+	{
+		if(memberName[0] == '_' && memberName[1] == '_')
+		{
+			/* Record the location of the last "__" sequence */
+			sigPosn = (ILUInt32)((memberName + 2) - name);
+		}
+		++memberName;
+		--memberNameLen;
+	}
+
+	/* Scan the class, looking for a member match */
+	member = 0;
+	while((member = ILClassNextMemberByKind(classInfo, member, kind)) != 0)
+	{
+		/* Get the member's name */
+		memberName = ILMember_Name(member);
+		memberNameLen = (ILUInt32)(strlen(memberName));
+
+		/* Check for a simple match, with no name signature information */
+		if(memberNameLen == nameLen && !ILMemCmp(memberName, name, nameLen))
+		{
+			signature.data = (unsigned char *)type;
+			signature.len = typeLen;
+			mangled.data = 0;
+			mangled.len = 0;
+			if(JavaSignatureMatch(ILMember_Signature(member),
+							      &signature, &mangled))
+			{
+				return member;
+			}
+		}
+
+		/* Check for a more complex signature match */
+		if(sigPosn != 0 && memberNameLen == (sigPosn - 2) &&
+		   !ILMemCmp(memberName, name, memberNameLen))
+		{
+			signature.data = (unsigned char *)type;
+			signature.len = typeLen;
+			mangled.data = (unsigned char *)(name + sigPosn);
+			mangled.len = nameLen - sigPosn;
+			if(JavaSignatureMatch(ILMember_Signature(member),
+							      &signature, &mangled))
+			{
+				return member;
+			}
+		}
+	}
+
+	/* Bail out if we are looking for an actual definition */
+	if(!refOnly || !ILClassIsRef(classInfo))
+	{
+		return 0;
+	}
+
+	/* Create a reference place-holder for the member */
+	signature.data = (unsigned char *)type;
+	signature.len = typeLen;
+	if(sigPosn != 0)
+	{
+		mangled.data = (unsigned char *)(name + sigPosn);
+		mangled.len = nameLen - sigPosn;
+		nameLen = sigPosn - 2;
+	}
+	else
+	{
+		mangled.data = 0;
+		mangled.len = 0;
+	}
+	nameCopy = (char *)ILMalloc(nameLen + 1);
+	if(!nameCopy)
+	{
+		return 0;
+	}
+	ILMemCpy(nameCopy, name, nameLen);
+	nameCopy[nameLen] = '\0';
+	member = 0;
+	if(kind == IL_META_MEMBERKIND_METHOD)
+	{
+		/* Create a method reference */
+		ILMethod *method;
+		if(!strcmp(nameCopy, "<init>"))
+		{
+			/* Instance constructors are never virtual */
+			method = ILMethodCreate(classInfo, (ILToken)IL_MAX_UINT32,
+									".ctor",
+									IL_META_METHODDEF_PUBLIC);
+			isStatic = 0;
+		}
+		else if(!strcmp(nameCopy, "<clinit>"))
+		{
+			method = ILMethodCreate(classInfo, (ILToken)IL_MAX_UINT32,
+									".cctor",
+									IL_META_METHODDEF_PUBLIC |
+									IL_META_METHODDEF_STATIC);
+			isStatic = 1;
+		}
+		else
+		{
+			method = ILMethodCreate(classInfo, (ILToken)IL_MAX_UINT32,
+									nameCopy,
+									(isStatic ?
+										(IL_META_METHODDEF_PUBLIC |
+										 IL_META_METHODDEF_STATIC) :
+										(IL_META_METHODDEF_PUBLIC |
+										 IL_META_METHODDEF_VIRTUAL)));
+		}
+		if(!method)
+		{
+			ILFree(nameCopy);
+			return 0;
+		}
+		if(signature.len == 0 || *(signature.data) != (unsigned char)'(')
+		{
+			ILFree(nameCopy);
+			return 0;
+		}
+		++(signature.data);
+		--(signature.len);
+		sigType = ILTypeCreateMethod(ILClassToContext(classInfo), ILType_Void);
+		if(!sigType)
+		{
+			ILFree(nameCopy);
+			return 0;
+		}
+		if(isStatic)
+		{
+			ILTypeSetCallConv(sigType, IL_META_CALLCONV_DEFAULT);
+		}
+		else
+		{
+			ILTypeSetCallConv(sigType, IL_META_CALLCONV_HASTHIS);
+		}
+		ILMethodSetCallConv(method, ILType_CallConv(sigType));
+		while(signature.len > 0 && *(signature.data) != (unsigned char)')')
+		{
+			if(ParseJavaType(ILClassToImage(classInfo), IL_LOADFLAG_NO_RESOLVE,
+							 &signature, &mangled, &paramType, 0) != 0)
+			{
+				ILFree(nameCopy);
+				return 0;
+			}
+			if(!ILTypeAddParam(ILClassToContext(classInfo),
+							   sigType, paramType))
+			{
+				ILFree(nameCopy);
+				return 0;
+			}
+		}
+		if(signature.len == 0 || *(signature.data) != (unsigned char)')')
+		{
+			ILFree(nameCopy);
+			return 0;
+		}
+		++(signature.data);
+		--(signature.len);
+		if(signature.len > 0 && *(signature.data) == (unsigned char)'V')
+		{
+			++(signature.data);
+			--(signature.len);
+		}
+		else
+		{
+			if(ParseJavaType(ILClassToImage(classInfo), IL_LOADFLAG_NO_RESOLVE,
+							 &signature, &mangled, &paramType, 0) != 0)
+			{
+				ILFree(nameCopy);
+				return 0;
+			}
+			ILTypeSetReturn(sigType, paramType);
+		}
+		member = (ILMember *)method;
+		ILMemberSetSignature(member, sigType);
+	}
+	else
+	{
+		/* Create a field reference */
+		ILField *field = ILFieldCreate
+				(classInfo, (ILToken)IL_MAX_UINT32, nameCopy,
+			     IL_META_FIELDDEF_PUBLIC |
+				 	(isStatic ? IL_META_FIELDDEF_STATIC : 0));
+		if(field)
+		{
+			if(ParseJavaType(ILClassToImage(classInfo), IL_LOADFLAG_NO_RESOLVE,
+							 &signature, &mangled, &sigType, 0) == 0)
+			{
+				member = (ILMember *)field;
+				ILMemberSetSignature(member, sigType);
+			}
+		}
+	}
+	ILFree(nameCopy);
+	return member;
+}
+
+ILMethod *ILJavaGetMethod(ILClass *info, ILUInt32 index,
+						  int refOnly, int isStatic)
+{
+	int entryType;
+	JavaConstEntry *entry;
+	ILClass *classInfo;
+	const char *name;
+	ILUInt32 nameLen;
+	const char *type;
+	ILUInt32 typeLen;
+	char *nameCopy;
+
+	/* Make sure that the entry is of an appropriate type */
+	if((entryType = ILJavaGetConstType(info, index)) != JAVA_CONST_METHODREF &&
+	   entryType != JAVA_CONST_INTERFACEMETHODREF)
+	{
+		return 0;
+	}
+	entry = &(info->ext->constPool[index]);
+
+	/* Resolve the reference if necessary */
+	if(!(entry->un.refValue.item))
+	{
+		/* Resolve the class that contains the member */
+		classInfo = ILJavaGetClass(info, entry->un.refValue.classIndex,
+								   refOnly);
+		if(!classInfo)
+		{
+			return 0;
+		}
+
+		/* Get the name and type information */
+		if(!JavaGetNameAndType(info, entry->un.refValue.nameAndType,
+							   &name, &nameLen, &type, &typeLen))
+		{
+			return 0;
+		}
+		nameCopy = 0;
+		if(nameLen >= 6 && !ILMemCmp(name, "<init>", 6))
+		{
+			/* We are looking up an instance constructor */
+			if(nameLen == 6)
+			{
+				name = ".ctor";
+				nameLen = 5;
+			}
+			else
+			{
+				/* We need to preserve the name mangling information */
+				nameCopy = (char *)ILMalloc(nameLen - 1);
+				if(!nameCopy)
+				{
+					return 0;
+				}
+				ILMemCpy(nameCopy, ".ctor", 5);
+				ILMemCpy(nameCopy + 5, name + 6, nameLen - 6);
+				--nameLen;
+			}
+		}
+		else if(nameLen == 8 && !ILMemCmp(name, "<clinit>", 8))
+		{
+			/* We are looking up a static constructor */
+			name = ".cctor";
+			nameLen = 6;
+		}
+
+		/* Find the member within the class */
+		entry->un.refValue.item = (ILProgramItem *)
+			JavaResolveMember(classInfo, IL_META_MEMBERKIND_METHOD,
+							  refOnly, isStatic,
+							  name, nameLen, type, typeLen);
+		if(!(entry->un.refValue.item))
+		{
+			if(nameCopy)
+			{
+				ILFree(nameCopy);
+			}
+			return 0;
+		}
+		if(nameCopy)
+		{
+			ILFree(nameCopy);
+		}
+	}
+
+	/* Return the method to the caller */
+	if(refOnly)
+	{
+		return (ILMethod *)(entry->un.refValue.item);
+	}
+	else
+	{
+		return (ILMethod *)(ILMemberResolveRef
+					((ILMember *)(entry->un.refValue.item)));
+	}
+}
+
+ILField *ILJavaGetField(ILClass *info, ILUInt32 index,
+						int refOnly, int isStatic)
+{
+	JavaConstEntry *entry;
+	ILClass *classInfo;
+	const char *name;
+	ILUInt32 nameLen;
+	const char *type;
+	ILUInt32 typeLen;
+
+	/* Make sure that the entry is of an appropriate type */
+	if(ILJavaGetConstType(info, index) != JAVA_CONST_FIELDREF)
+	{
+		return 0;
+	}
+	entry = &(info->ext->constPool[index]);
+
+	/* Resolve the reference if necessary */
+	if(!(entry->un.refValue.item))
+	{
+		/* Resolve the class that contains the member */
+		classInfo = ILJavaGetClass(info, entry->un.refValue.classIndex,
+								   refOnly);
+		if(!classInfo)
+		{
+			return 0;
+		}
+
+		/* Get the name and type information */
+		if(!JavaGetNameAndType(info, entry->un.refValue.nameAndType,
+							   &name, &nameLen, &type, &typeLen))
+		{
+			return 0;
+		}
+
+		/* Find the member within the class */
+		entry->un.refValue.item = (ILProgramItem *)
+			JavaResolveMember(classInfo, IL_META_MEMBERKIND_FIELD,
+							  refOnly, isStatic,
+							  name, nameLen, type, typeLen);
+		if(!(entry->un.refValue.item))
+		{
+			return 0;
+		}
+	}
+
+	/* Return the field to the caller */
+	if(refOnly)
+	{
+		return (ILField *)(entry->un.refValue.item);
+	}
+	else
+	{
+		return (ILField *)(ILMemberResolveRef
+					((ILMember *)(entry->un.refValue.item)));
+	}
 }
 
 #ifdef	__cplusplus

@@ -6,6 +6,8 @@
 
 	* libc/stdlib/atoi.c: use the correct base when multiplying.
 
+	* include/sys/Makefile.am, include/sys/param.h: add <sys/param.h>.
+
 2004-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/signal.h, libc/signal/kill.c, libpthread/pthread_kill.c:

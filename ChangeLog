@@ -8,6 +8,8 @@
 
 	* configure.in, NEWS: update for the "0.2.2" release.
 
+	* configure.in: update working version to "0.2.2".
+
 2002-06-01  Peter Minten  <silvernerd@users.sf.net>
         * runtime/Platform/DnsMethods.cs: Created
         * System.Xml/XmlReader.cs: got rid of useless internal methods

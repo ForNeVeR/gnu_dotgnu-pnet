@@ -22,5 +22,6 @@ Exception_UriFormat=The supplied URI did not have the correct format
 Arg_HexDigit=That is not a valid hexadecimal digit
 Arg_UriScheme=The scheme supplied with the URI was not valid
 Arg_UriPort=The port specified with the URI was nonexistent
+Arg_UriPathAbs=The relative path specified with the URI could not be converted to an absolute path
 Arg_UriHostName=URI host names must be specified in DNS or IPv4 format
 ArgRange_NonNegative=Value must not be negative

@@ -114,10 +114,9 @@ public class IPAddress
 					throw new ArgumentNullException("ipString",S._("Arg_NotNull"));
 				}
 
-				char[] point = {'.'};
 				// this only takes char[]. not String
-				tokenizedString = ipString.Split(point, 4);
-				
+				tokenizedString = ipString.Split(new char[]{'.'}, 4);
+
 				if (tokenizedString.Length < 4)
 				{
 					throw new FormatException(S._("Format_IP"));

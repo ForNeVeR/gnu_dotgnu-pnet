@@ -1,9 +1,18 @@
+2002-04-29  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Net/IPAddress.cs: small syntax change for new arrays.
+
+	* System/Uri.cs: Canonicalize(), and CheckHostName(String) works except
+	for IPv6. Minor fix to ToString().
+
+	* resources/en_US/System/Arg.txt: "Arg_UriPathAbs".
+
 2002-04-28  Stephen Compall  <rushing@sigecom.net>
 
 	* runtime/System/IO/MemoryStream.cs: Fixes for ECMA compliance,
 	whatever that means.
 
-	* resources/en_US/runtime/Exception.cs: new "Exception_HiddenBuffer".
+	* resources/en_US/runtime/Exception.txt: new "Exception_HiddenBuffer".
 
 2002-04-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 

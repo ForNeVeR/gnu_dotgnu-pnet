@@ -116,44 +116,96 @@ public class Uri : MarshalByRefObject
 
 	public Uri(Uri baseUri, String relativeUri, bool dontEscape)
 	{
-	if (baseUri== null)
-		throw new ArgumentNullException("baseUri");
+		if (baseUri== null)
+			throw new ArgumentNullException("baseUri");
 
-	if (relativeUri== null)
-		throw new ArgumentNullException("relativeUri");
+		if (relativeUri== null)
+			throw new ArgumentNullException("relativeUri");
 
-	// Making local copies that we use for modification
-	String myBaseUri = baseUri.AbsoluteUri.Trim();
-	String myRelativeUri = relativeUri.Trim();
-	userEscaped = dontEscape;
+		// Making local copies that we use for modification
+		String myBaseUri = baseUri.AbsoluteUri.Trim();
+		String myRelativeUri = relativeUri.Trim();
+		userEscaped = dontEscape;
 
-	int newlastchar;
-	for (newlastchar = myBaseUri.Length; myBaseUri[--newlastchar] == '/';)
-		; // empty body
-	myBaseUri = myBaseUri.Substring(0, newlastchar + 1);
+		int newlastchar;
+		for (newlastchar = myBaseUri.Length; myBaseUri[--newlastchar] == '/';)
+			; // empty body
+		myBaseUri = myBaseUri.Substring(0, newlastchar + 1);
 
-	for (newlastchar = -1; myRelativeUri[++newlastchar] == '/';)
-		; // empty body
-	myRelativeUri = myRelativeUri.Substring(newlastchar);
+		for (newlastchar = -1; myRelativeUri[++newlastchar] == '/';)
+			; // empty body
+		myRelativeUri = myRelativeUri.Substring(newlastchar);
 
-	this.absoluteUri = String.Concat(myBaseUri, "/", myRelativeUri);
+		this.absoluteUri = String.Concat(myBaseUri, "/", myRelativeUri);
 
-	this.Parse();
-	this.Canonicalize();
+		this.Parse();
+		this.Canonicalize();
 	}
 
 	// methods
-	[TODO]
 	protected virtual void Canonicalize()
 	{
-		if (String.Equals(this.Scheme, "file"))
-		{
-			// TODO: convert file to platform based file reference
-		}
-
+		// TODO: `replace' this with something more efficient, i.e.
+		// scan like Flex and output to a StringBuilder(path.Length)
 		this.path = this.path.Replace('\\', '/').Replace("//", "/")
-			.Replace("/../", "/").Replace("/./", "/");
+			.Replace("/.", "");
+
+		if (path.IndexOf("/../") > -1 || path.EndsWith("/..")) // .. dirs present
+			path = new AbsPathScanner(path).Parse();
 	}
+
+	// the following parses a path that may have the .. special directory
+	// in it. It scans the folders backwards, looking for .., and if it finds it,
+	// it removes the previous directory from the path. If that is a .., it removes
+	// the previous 2 from the path, and so on.
+	private struct AbsPathScanner
+	{
+		private int originalLength;
+		private String[] dirs;
+		private bool[] printthisdir;
+		public AbsPathScanner(String path)
+		{
+			originalLength = path.Length;
+			dirs = path.Split('/');
+			printthisdir = new bool[dirs.Length];
+			// TODO: find some sort of efficient SetAll
+			for (int i = printthisdir.Length; --i >= 0;)
+				printthisdir[i] = true;
+		}
+		public String Parse()
+		{
+			for (int curDir = dirs.Length; --curDir >= 1;)
+			{
+				// Remove(ref int, int) will move curDir back to next one that matters
+				if (String.Equals(dirs[curDir], ".."))
+					Remove(ref --curDir, 0);
+			}
+			StringBuilder newpath = new StringBuilder(originalLength);
+			for (int i = 0; i < printthisdir.Length; ++i)
+			{
+				if (printthisdir[i] && dirs[i].Length > 0)
+				{
+					newpath.Append('/').Append(dirs[i]);
+				}
+			}
+			return newpath.ToString();
+		}
+		// tbrCache signifies the number of .. instances that have built up besides
+		// the current one. If >0, it should call itself.
+		private void Remove(ref int toBeRemoved, int tbrCache)
+		{
+			if (toBeRemoved == 0)
+				throw new UriFormatException(_("Arg_UriPathAbs"));
+			printthisdir[toBeRemoved] = false;
+			if (String.Equals(dirs[toBeRemoved], ".."))
+				Remove(ref --toBeRemoved, ++tbrCache);
+			else if (tbrCache > 0)
+				Remove(ref --toBeRemoved, --tbrCache);
+			// after recursion finishes, toBeRemoved will be the last one
+			// removed, and the test in the for loop will go back to a visible dir
+		}
+	}
+
 
 	[TODO]
 	public static UriHostNameType CheckHostName(String name)
@@ -161,8 +213,44 @@ public class Uri : MarshalByRefObject
 		if (name == null || name.Length == 0)
 			return UriHostNameType.Unknown;
 
-		// TODO: the other detections
+		bool isDns = true;
+		foreach (String tok in name.Split('.'))
+		{
+			if (!Char.IsLetterOrDigit(tok, 0) || !Char.IsLetterOrDigit(tok, tok.Length - 1)
+			    || !CharsAreAlnumDash(tok, 1, tok.Length - 2))
+			{
+				isDns = false;
+				break;
+			}
+		}
+		if (isDns)
+			return UriHostNameType.Dns;
+
+		// TODO: make this more efficient (hint: IPAddress is in same assembly)
+		try
+		{
+			System.Net.IPAddress.Parse(name);
+			return UriHostNameType.IPv4;
+		}
+		catch (FormatException)
+		{
+			// not IPv4
+		}
+		// TODO: IPv6
 		return UriHostNameType.Unknown;
+	}
+
+	// check if characters in a String in a given range are alphanumeric or -.
+	private CharsAreAlnumDash(String checkthis, int first, int last)
+	{
+		char check;
+		for (; first <= last; ++first)
+		{
+			check = checkthis[first];
+			if (!Char.IsLetterOrDigit(check) && check != '-')
+				return false;
+		}
+		return true;
 	}
 
 	public static bool CheckSchemeName(String schemeName)
@@ -588,10 +676,10 @@ public class Uri : MarshalByRefObject
 
 		myStringBuilder.Append(host);
 
-		if (this.Port >= 0)
+		if (this.port >= 0)
 		{
 			myStringBuilder.Append(':');
-			myStringBuilder.Append(this.userinfo);
+			myStringBuilder.Append(this.port);
 		}
 
 		myStringBuilder.Append(PathAndQuery);

@@ -13,6 +13,8 @@ simplify the definitions.
 
 * cscc/cs_semantics.tc: semantic analysis for ILNode_DummySem.
 
+* codegen/cg_nodes.tc: add a "namespaceNode" field to ILNode_ClassDefn.
+
 2001-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_coder.h, engine/ilverify.c: new coder operations.

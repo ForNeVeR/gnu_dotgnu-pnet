@@ -338,7 +338,8 @@ csunit/TestVersion.cs
 csupport/Makefile
 samples/Makefile
 doc/Makefile
-tests/Makefile])
+tests/Makefile
+pnet.spec])
 
 dnl Configure libffi and libgc.  We do these manually to avoid
 dnl some issues with different versions of autotools, and so that

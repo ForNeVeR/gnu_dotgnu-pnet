@@ -1,0 +1,86 @@
+Name: pnet
+Version: @VERSION@
+Release: custom
+Source: http://www.southern-storm.com.au/download/%{name}-%{version}.tar.gz
+License: GPL
+Vendor: DotGNU
+BuildRoot: %{_tmppath}/%{name}-%{version}-root
+Group: System/Emulators
+BuildRequires: flex, bison, treecc
+Summary: The DotGNU Portable.NET tools
+%description
+The goal of this project is to build a suite of Free Software tools
+to build and execute .NET applications, including a C# compiler,
+assembler, disassembler, and runtime engine.  The initial target
+platform is GNU/Linux, with other platforms to follow in the future.
+
+%package interpreter
+Summary: The Portable.Net runtime engine
+Group: System/Emulators
+%description interpreter
+The runtime engine executes the .NET binaries . It is the Virtual 
+Machine for the .NET bytecode .
+
+%package compiler
+Summary: The Portable.Net compiler collection
+Group: System/Compilers
+%description compiler
+The compilers for C# and C are included in this package . The cscc 
+wraps both to provide a standard interface for compilation.
+
+%package tools
+Summary: The Portable.Net tools
+Group: System/Tools
+%description tools
+The general toolkit provided along with the compiler and runtime
+engines.
+
+%prep
+%setup -q
+%build
+%configure
+make
+%install
+make DESTDIR=${RPM_BUILD_ROOT} install
+%clean
+if test "/" != "${RPM_BUILD_ROOT}"; then rm -rf ${RPM_BUILD_ROOT}; fi
+
+%files interpreter
+%doc AUTHORS COPYING ChangeLog INSTALL NEWS README
+/usr/bin/ilrun
+/usr/share/man/man1/ilrun.1.gz
+
+%files compiler
+%doc AUTHORS COPYING ChangeLog INSTALL NEWS README
+/usr/bin/cscc
+/usr/bin/csant
+/usr/bin/ilasm
+/usr/bin/ilalink
+/usr/bin/resgen
+/usr/lib/cscc/plugins/cscc-cs
+/usr/lib/cscc/plugins/cscc-csharp
+/usr/share/man/man1/resgen.1.gz
+/usr/share/man/man1/ilasm.1.gz
+/usr/share/man/man1/cscc.1.gz
+
+%files tools
+%doc AUTHORS COPYING ChangeLog INSTALL NEWS README
+/usr/bin/ildb
+/usr/bin/ildasm
+/usr/bin/ildiff
+/usr/bin/ildd
+/usr/bin/ilfind
+/usr/bin/ilsize
+/usr/bin/ilnative
+/usr/bin/ilverify
+/usr/bin/csdoc
+/usr/bin/csdoc2html
+/usr/bin/csdoc2hier
+/usr/bin/csdoc2texi
+/usr/share/man/man1/ilfind.1.gz
+/usr/share/man/man1/ildd.1.gz
+/usr/share/man/man1/ilsize.1.gz
+/usr/share/man/man1/ilnative.1.gz
+/usr/share/man/man1/ildiff.1.gz
+/usr/share/man/man1/csdoc*
+/usr/share/info/pnettools.info*

@@ -19,7 +19,7 @@
  */
 
 #include "il_dumpasm.h"
-#include "cvm.h"
+#include "engine.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -540,6 +540,10 @@ static void *CVMReadPointer(unsigned char *pc)
 #endif
 }
 
+/* internal.c */
+const ILMethodTableEntry *_ILFindInternalByAddr(void *addr,
+												const char **className);
+
 int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 {
 	const CVMOpcode *opcode = &(opcodes[pc[0]]);
@@ -553,6 +557,7 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 	const char *str;
 	unsigned long strLen;
 	unsigned long numCases;
+	const ILMethodTableEntry *methodEntry;
 
 	/* Dump the address of the instruction */
 	fprintf(stream, "0x%08lX:  ", (unsigned long)pc);
@@ -681,9 +686,22 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 
 		case CVM_OPER_CALL_NATIVE:
 		{
-			fprintf(stream, "0x%08lX",
-					(unsigned long)(CVMReadPointer(pc + 1)));
-			size = sizeof(void *) * 2 + 1;
+			fprintf(stream, "0x%08lX (",
+					(unsigned long)(CVMReadPointer(pc + 2)));
+			methodEntry = _ILFindInternalByAddr(CVMReadPointer(pc + 2),
+												&str);
+			if(methodEntry)
+			{
+				fprintf(stream, "%s.%s \"%s\"", str, methodEntry->methodName,
+						(methodEntry->signature ?
+							methodEntry->signature : "()V"));
+			}
+			else
+			{
+				putc('?', stream);
+			}
+			putc(')', stream);
+			size = sizeof(void *) * 2 + 2;
 		}
 		break;
 
@@ -789,6 +807,28 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 					fprintf(stream, ", %lu",
 							(unsigned long)IL_READ_UINT32(pc + 2));
 					size = 6 + sizeof(void *);
+				}
+				break;
+
+				case CVM_OPER_CALL_NATIVE:
+				{
+					fprintf(stream, "0x%08lX (",
+							(unsigned long)(CVMReadPointer(pc + 6)));
+					methodEntry = _ILFindInternalByAddr(CVMReadPointer(pc + 6),
+														&str);
+					if(methodEntry)
+					{
+						fprintf(stream, "%s.%s \"%s\"",
+								str, methodEntry->methodName,
+								(methodEntry->signature ?
+									methodEntry->signature : "()V"));
+					}
+					else
+					{
+						putc('?', stream);
+					}
+					putc(')', stream);
+					size = sizeof(void *) * 2 + 6;
 				}
 				break;
 

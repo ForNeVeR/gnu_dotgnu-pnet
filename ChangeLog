@@ -18,6 +18,9 @@ how the program is loaded.
 * engine/layout.c: bug in the alignment code that was using "&" instead
 of "%".
 
+* engine/internal.c, engine/cvm_dasm.c: dump the names of native
+methods when dumping "call_native" and "call_native_void".
+
 2001-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm_dasm.c, engine/cvmc_obj.c, engine/cvm_ptr.c,

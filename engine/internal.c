@@ -182,6 +182,31 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 	return 0;
 }
 
+/*
+ * Find an "internalcall" method from its address, which is
+ * useful when debugging the virtual machine.
+ */
+const ILMethodTableEntry *_ILFindInternalByAddr(void *addr,
+												const char **className)
+{
+	int index;
+	const ILMethodTableEntry *entry;
+	for(index = 0; index < numInternalClasses; ++index)
+	{
+		entry = internalClassTable[index].entry;
+		while(entry->methodName != 0)
+		{
+			if(entry->func == addr)
+			{
+				*className = internalClassTable[index].name;
+				return entry;
+			}
+			++entry;
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

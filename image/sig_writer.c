@@ -120,6 +120,7 @@ static int WriteClassToken(ILImage *image, SigBuffer *buffer, ILClass *info)
 			return 0;
 		}
 	}
+	info = ILClassResolve(info);
 	info = ILClassImport(image, info);
 	buffer->posn += ILMetaCompressToken(buffer->buf + buffer->posn,
 										ILClass_Token(info));

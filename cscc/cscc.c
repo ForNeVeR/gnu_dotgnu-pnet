@@ -187,8 +187,7 @@ int main(int argc, char *argv[])
 			if(len > 0 && filename[len - 1] == '.')
 			{
 				/* Check for special extensions */
-				if(CompareExtensions(filename + len, "io") ||
-				   CompareExtensions(filename + len, "o") ||
+				if(CompareExtensions(filename + len, "o") ||
 				   CompareExtensions(filename + len, "obj") ||
 				   CompareExtensions(filename + len, "dll") ||
 				   CompareExtensions(filename + len, "exe") ||
@@ -1123,7 +1122,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	}
 	else
 	{
-		obj_output = ChangeExtension((char *)filename, "io");
+		obj_output = ChangeExtension((char *)filename, "obj");
 	}
 	AddArgument(&cmdline, &cmdline_size, "-o");
 	AddArgument(&cmdline, &cmdline_size, obj_output);

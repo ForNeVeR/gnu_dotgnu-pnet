@@ -30,6 +30,9 @@ to use the '(' form.
 * codegen/cg_decls.tc: avoid following parent links when dumping
 parent class names.
 
+* cscc/cscc.c (main, ProcessWithPlugin): change references to the
+obsolete ".io" extension into ".obj".
+
 2001-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: implement a Java class file to IL converter.

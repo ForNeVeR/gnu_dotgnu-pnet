@@ -1,7 +1,8 @@
 /*
- * HttpContinueDelegate.cs - Implementation of the "System.Net.HttpContinueDelegate" class.
+ * HttpContinueDelegate.cs - Implementation of the
+ *			"System.Net.HttpContinueDelegate" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,7 @@
 namespace System.Net
 {
 
-public delegate void HttpContinueDelegate(int StatusCode, WebHeaderCollection httpHeaders);
+public delegate void HttpContinueDelegate
+			(int StatusCode, WebHeaderCollection httpHeaders);
 
 }; //namespace System.Net

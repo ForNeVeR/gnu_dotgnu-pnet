@@ -1,8 +1,9 @@
 /*
- * WebExceptionStatus.cs - Implementation of the "System.Net.Sockets.WebExceptionStatus" class.
+ * WebExceptionStatus.cs - Implementation of the
+ *			"System.Net.Sockets.WebExceptionStatus" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -23,23 +24,25 @@ namespace System.Net
 
 public enum WebExceptionStatus
 {
-	ConnectFailure = 2,
-	ConnectionClosed = 8,
-	KeepAliveFailure = 12,
-	NameResolutionFailure = 1,
-	Pending = 13,
-	PipelineFailure = 5,
-	ProtocolError = 7,
-	ProxyNameResolutionFailure = 15,
-	ReceiveFailure = 3,
-	RequestCanceled = 6,
-	SecureChannelFailure = 10,
-	SendFailure = 4,
-	ServerProtocolViolation = 11,
-	Success = 0,
-	Timeout = 14,
-	TrustFailure = 9
+	Success						= 0,
+	NameResolutionFailure		= 1,
+	ConnectFailure				= 2,
+	ReceiveFailure				= 3,
+	SendFailure					= 4,
+	PipelineFailure				= 5,
+	RequestCanceled				= 6,
+	ProtocolError				= 7,
+	ConnectionClosed			= 8,
+	TrustFailure				= 9,
+	SecureChannelFailure		= 10,
+	ServerProtocolViolation		= 11,
+	KeepAliveFailure			= 12,
+	Pending						= 13,
+	Timeout						= 14,
+	ProxyNameResolutionFailure	= 15,
+	UnknownError				= 16,
+	MessageLengthLimitExceeded	= 17,
+
 }; // enum WebExceptionStatus
 
 }; // namespace System.Net
-

@@ -1,4 +1,16 @@
 
+2003-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/AuthenticationManager.cs, System/Net/Authorization.cs,
+	System/Net/Cookie.cs, System/Net/HttpContinueDelegate.cs,
+	System/Net/HttpStatusCode.cs, System/Net/IAuthenticationModule.cs,
+	System/Net/ICertificatePolicy.cs, System/Net/ICredentials.cs,
+	System/Net/IWebProxy.cs, System/Net/IWebRequestCreate.cs,
+	System/Net/NetworkAccess.cs, System/Net/SecurityPrototypeType.cs,
+	System/Net/TransportType.cs, System/Net/WebExceptionStatus.cs,
+	resources/en_US/System/Invalid.txt: clean up various classes in
+	"System.Net" and add some missing ones.
+
 2003-08-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Collections/Specialized/NameObjectCollectionBase.cs,

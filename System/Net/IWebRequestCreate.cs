@@ -1,8 +1,9 @@
 /*
- * IWebRequestCreate.cs - Implementation of the "System.Net.IWebRequestCreate" class.
+ * IWebRequestCreate.cs - Implementation of the
+ *			"System.Net.IWebRequestCreate" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -25,8 +26,9 @@ using System;
 
 public interface IWebRequestCreate
 {
+	// Create a web requestor for a specific URI.
 	WebRequest Create(Uri uri);	
+
 }; // interface IWebRequestCreate
 
 }; // namespace System.Net
-

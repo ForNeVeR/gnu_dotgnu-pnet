@@ -1,5 +1,6 @@
 /*
- * ICredentials.cs - Implementation of the "System.Net.ICredentials" class.
+ * SecurityProtocolType.cs - Implementation of the
+ *			"System.Net.SecurityProtocolType" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -21,13 +22,12 @@
 namespace System.Net
 {
 
-using System;
-
-public interface ICredentials
+[Flags]
+public enum SecurityProtocolType
 {
-	// Get a credential object for a specific uri and authentication type.
-	NetworkCredential GetCredential(Uri uri, String authType);	
+	Ssl3		= 0x0030,
+	Tls			= 0x00C0
 
-}; // interface ICredentials
+}; // enum SecurityProtocolType
 
 }; // namespace System.Net

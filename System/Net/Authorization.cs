@@ -1,7 +1,7 @@
 /*
  * Authorization.cs - Implementation of the "System.Net.Authorization" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,85 +21,69 @@
 namespace System.Net
 {
 
-using System;
-
 public class Authorization
 {
-	private bool complete;
-	private String connectiongroupid;
-	private String message;
-	private String[] protectionrealm;
+	// Internal state.
+	private String token;
+	private bool finished;
+	private String connectionGroupId;
+	private String[] protectionRealm;
 
-	public Authorization(string token) 
-	{
-		if (token == null || token == "")
-			message = null;
-		
-		message = token;
-		complete = true;
-		connectiongroupid = null;
-	}
-	
-	public Authorization(string token, bool finished) 
-	{
-		if (token == null || token == "")
-			message = null;
-		
-		message = token;
-		complete = finished;
-		connectiongroupid = null;	
-	}
-	
-	public Authorization(string token, bool finished, string connectionGroupId) 
-	{
-		if (token == null || token == "")
-			message = null;
-			
-		if (connectionGroupId == null || connectionGroupId == "")
-			connectiongroupid = null;
-		
-		message = token;
-		complete = finished;
-		connectiongroupid = connectionGroupId;	
-	}
-	
-	public bool Complete 
-	{ 
-		get
-		{ 
-			return complete;
-		} 
-	}
-	
-	public String ConnectionGroupId 
-	{ 
-		get
-		{ 
-			return connectiongroupid; 
-		} 
-	}
-	
-	public String Message 
-	{ 
-		get
-		{ 
-			return message; 
-		} 
-	}
-	
-	public String[] ProtectionRealm 
-	{ 
-		get
-		{ 
-			return protectionrealm; 
-		} 
-		set
-		{
-			protectionrealm = value;
-		} 
-	}
-	
-}; //class Authorization
+	// Constructors.
+	public Authorization(String token) : this(token, true, null) {}
+	public Authorization(String token, bool finished)
+			: this(token, finished, null) {}
+	public Authorization(String token, bool finished,
+						 String connectionGroupId)
+			{
+				this.token = (token == String.Empty ? null : token);
+				this.finished = finished;
+				this.connectionGroupId =
+					(connectionGroupId == String.Empty
+						? null : connectionGroupId);
+			}
 
-}; //namespace System.Net
+	// Get this object's properties.
+	public bool Complete
+			{
+				get
+				{
+					return finished;
+				}
+			}
+	public String ConnectionGroupId
+			{
+				get
+				{
+					return connectionGroupId;
+				}
+			}
+	public String Message
+			{
+				get
+				{
+					return token;
+				}
+			}
+	public String[] ProtectionRealm
+			{
+				get
+				{
+					return protectionRealm;
+				}
+				set
+				{
+					if(value != null && value.Length == 0)
+					{
+						protectionRealm = null;
+					}
+					else
+					{
+						protectionRealm = value;
+					}
+				}
+			}
 
+}; // class Authorization
+
+}; // namespace System.Net

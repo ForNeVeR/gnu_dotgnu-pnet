@@ -1,5 +1,6 @@
 /*
- * ICredentials.cs - Implementation of the "System.Net.ICredentials" class.
+ * ICertificatePolicy.cs - Implementation of the
+ *			"System.Net.ICertificatePolicy" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -21,13 +22,20 @@
 namespace System.Net
 {
 
-using System;
+#if CONFIG_X509_CERTIFICATES
 
-public interface ICredentials
+using System.Security.Cryptography.X509Certificates;
+
+public interface ICertificatePolicy
 {
-	// Get a credential object for a specific uri and authentication type.
-	NetworkCredential GetCredential(Uri uri, String authType);	
 
-}; // interface ICredentials
+	// Validate a server certificate.
+	bool CheckValidationResult
+			(ServicePoint srvPoint, X509Certificate certificate,
+	     	 WebRequest request, int certificateProblem);
+
+}; // interface ICertificatePolicy
+
+#endif // CONFIG_X509_CERTIFICATES
 
 }; // namespace System.Net

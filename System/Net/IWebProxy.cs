@@ -1,8 +1,8 @@
 /*
  * IWebProxy.cs - Implementation of the "System.Net.IWebProxy" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -25,9 +25,15 @@ using System;
 
 public interface IWebProxy
 {
-	Uri GetProxy(Uri destination);
-	bool IsBypassed(Uri host);
+	// Get or set the credentials to submit to the proxy server.
 	ICredentials Credentials { get; set; }
+
+	// Get the URI of a proxy for a specific destination.
+	Uri GetProxy(Uri destination);
+
+	// Determine if a URI should be bypassed for proxy use.
+	bool IsBypassed(Uri host);
+
 }; // interface IWebProxy
 
 }; // namespace System.Net

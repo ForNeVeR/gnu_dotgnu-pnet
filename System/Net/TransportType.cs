@@ -1,8 +1,8 @@
 /*
  * TransportType.cs - Implementation of the "System.Net.TransportType" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -23,12 +23,12 @@ namespace System.Net
 
 public enum TransportType
 {
-	All = 3,
-	ConnectionOriented = 2,
-	Connectionless = 1,
-	Tcp = 2,
-	Udp = 1	
+	Udp					= 1,
+	Tcp					= 2,
+	All					= 3,
+	ConnectionOriented	= Tcp,
+	Connectionless		= Udp
+
 }; // enum TransportType
 
 }; // namespace System.Net
- 

@@ -1,8 +1,9 @@
 /*
- * IAuthenticationModule.cs - Implementation of the "System.Net.IAuthenticationModule" class.
+ * IAuthenticationModule.cs - Implementation of the
+ *			"System.Net.IAuthenticationModule" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -25,10 +26,20 @@ using System;
 
 public interface IAuthenticationModule
 {
-	Authorization Authenticate(String challenge, WebRequest request, ICredentials credentials);
-	Authorization PreAuthenticate(WebRequest request, ICredentials credentials);
+	// Get the authentiation type supported by this module.
 	String AuthenticationType { get; }
+
+	// Determine if this module supports pre-authentication.
 	bool CanPreAuthenticate { get; }
+
+	// Authenticate a challenge from the server.
+	Authorization Authenticate
+		(String challenge, WebRequest request, ICredentials credentials);
+
+	// Pre-authenticate a request.
+	Authorization PreAuthenticate
+		(WebRequest request, ICredentials credentials);
+
 }; // interface IAuthenticationModule
 
 }; // namespace System.Net

@@ -1,4 +1,9 @@
 
+2004-10-28  Gopal V  <gopalv82@yahoo.com>
+
+	* cscc/csharp/cs_grammar.y: Fix segfault due to missing yyisa check.
+	(bug #10753).
+
 2004-10-27  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* support/socket.c: BeOS has incomplete socket support (thanks to Tomas

@@ -389,7 +389,13 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 		ILNode_ListIter_Init(&iter, attrTree->sections);
 		while((temp = ILNode_ListIter_Next(&iter))!=0)
 		{	
-			if(!temp || !((ILNode_AttributeSection*)temp)->attrs)continue;
+			if(!(temp != NULL
+					&& yyisa(temp, ILNode_AttributeSection) &&
+					((ILNode_AttributeSection*)temp)->attrs != NULL))
+			{
+				continue;
+			}
+			
 			ILNode_ListIter_Init(&iter2, 
 				((ILNode_AttributeSection*)(temp))->attrs);
 			while((attr = ILNode_ListIter_Next(&iter2))!=0)

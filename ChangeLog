@@ -7,6 +7,9 @@
 	* engine/verify_branch.c: passed the wrong value for the second
 	parameter to "ILCoderSwitchStart".
 
+	* engine/cvm_dasm.c: fix the debug disassembly code for the CVM
+	"switch" instruction.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

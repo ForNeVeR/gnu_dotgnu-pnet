@@ -688,8 +688,9 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 		case CVM_OPER_SWITCH:
 		{
 			numCases = IL_READ_UINT32(pc + 1);
-			fprintf(stream, "%lu", numCases);
-			size = 5;
+			dest = pc + IL_READ_INT32(pc + 5);
+			fprintf(stream, "%lu, 0x%08lX", numCases, (unsigned long)dest);
+			size = 9;
 			while(numCases > 0)
 			{
 				dest = pc + IL_READ_INT32(pc + size);

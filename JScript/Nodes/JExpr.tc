@@ -189,7 +189,7 @@ Eval(JAssignOp)
 	value2 = Convert.ToPrimitive(value2, DefaultValueHint.None);
 	switch(oper)
 	{
-		case JSToken.Plus:
+		case JSToken.PlusAssign:
 		{
 			if(value1 is String || value2 is String)
 			{
@@ -202,63 +202,63 @@ Eval(JAssignOp)
 		}
 		break;
 
-		case JSToken.Minus:
+		case JSToken.MinusAssign:
 		{
 			value1 = Convert.ToNumber(value1) - Convert.ToNumber(value2);
 		}
 		break;
 
-		case JSToken.Multiply:
+		case JSToken.MultiplyAssign:
 		{
 			value1 = Convert.ToNumber(value1) * Convert.ToNumber(value2);
 		}
 		break;
 
-		case JSToken.Divide:
+		case JSToken.DivideAssign:
 		{
 			value1 = Convert.ToNumber(value1) / Convert.ToNumber(value2);
 		}
 		break;
 
-		case JSToken.Modulo:
+		case JSToken.ModuloAssign:
 		{
 			value1 = Convert.ToNumber(value1) % Convert.ToNumber(value2);
 		}
 		break;
 
-		case JSToken.BitwiseOr:
+		case JSToken.BitwiseOrAssign:
 		{
 			value1 = Convert.ToInt32(value1) | Convert.ToInt32(value2);
 		}
 		break;
 
-		case JSToken.BitwiseXor:
+		case JSToken.BitwiseXorAssign:
 		{
 			value1 = Convert.ToInt32(value1) ^ Convert.ToInt32(value2);
 		}
 		break;
 
-		case JSToken.BitwiseAnd:
+		case JSToken.BitwiseAndAssign:
 		{
 			value1 = Convert.ToInt32(value1) & Convert.ToInt32(value2);
 		}
 		break;
 
-		case JSToken.LeftShift:
+		case JSToken.LeftShiftAssign:
 		{
 			value1 = Convert.ToInt32(value1) <<
 			         (int)(Convert.ToUInt32(value2) & 0x1F);
 		}
 		break;
 
-		case JSToken.RightShift:
+		case JSToken.RightShiftAssign:
 		{
 			value1 = Convert.ToInt32(value1) >>
 			         (int)(Convert.ToUInt32(value2) & 0x1F);
 		}
 		break;
 
-		case JSToken.UnsignedRightShift:
+		case JSToken.UnsignedRightShiftAssign:
 		{
 			value1 = Convert.ToUInt32(value1) >>
 			         (int)(Convert.ToUInt32(value2) & 0x1F);

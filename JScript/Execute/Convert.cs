@@ -575,6 +575,19 @@ public sealed class Convert
 	// if the conversion is not possible.
 	public static Object ToObject(Object value, VsaEngine engine)
 			{
+				EngineInstance instance = EngineInstance.GetEngineInstance(engine);
+				if(value is String)
+				{
+					return instance.GetStringConstructor().Construct(
+														engine,
+														new Object[] { value });
+				}
+				else if(value is Array)
+				{
+					return instance.GetArrayConstructor().Construct(
+														engine,
+														new Object[] { value });
+				}
 				// TODO
 				return value;
 			}

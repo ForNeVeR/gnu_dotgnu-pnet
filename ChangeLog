@@ -4,6 +4,12 @@
 	* JScript/Parser/JSParser.cs: Implement hex literal parsing and
 	fix bitwise operation parsing.
 
+	* JScript/Execute/Convert.cs: Use constructors and generate JSObjects
+	from Convert.ToObject() for Strings and Arrays
+
+	* JScript/Nodes/JExpr.tc: Fix JAssignOp to use the right token
+	identifiers.
+
 2004-08-14  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* JScript/Builtins/ArrayObject.cs: Implement enumerators for ArrayObject

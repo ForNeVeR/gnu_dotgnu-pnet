@@ -3653,7 +3653,7 @@ static int RedoTypeRef(ILImage *image, ILClass *classInfo)
 {
 	ILProgramItem *scope = ILClassGetScope(classInfo);
 	ILProgramItem *importScope;
-	ILImage *importImage;
+	ILImage *importImage = 0;
 	ILClass *importInfo = 0;
 	switch(ILProgramItem_Token(scope) & IL_META_TOKEN_MASK)
 	{
@@ -3671,22 +3671,36 @@ static int RedoTypeRef(ILImage *image, ILClass *classInfo)
 		}
 		break;
 
+		case IL_META_TOKEN_MODULE_REF:
+		{
+			/* Type is imported from a foreign module */
+			importImage = ILModuleToImage((ILModule *)scope);
+		}
+		break;
+
 		case IL_META_TOKEN_ASSEMBLY_REF:
 		{
 			/* Type is imported from a foreign assembly */
 			importImage = ILAssemblyToImage((ILAssembly *)scope);
-			if(importImage)
-			{
-				importScope = ILClassGlobalScope(importImage);
-				if(importScope)
-				{
-					importInfo = ILClassLookup
-						(importScope, ILClass_Name(classInfo),
-						 ILClass_Namespace(classInfo));
-				}
-			}
 		}
 		break;
+
+		case IL_META_TOKEN_FILE:
+		{
+			/* Type is imported from a foreign file */
+			importImage = ILFileDeclToImage((ILFileDecl *)scope);
+		}
+		break;
+	}
+	if(importImage)
+	{
+		importScope = ILClassGlobalScope(importImage);
+		if(importScope)
+		{
+			importInfo = ILClassLookup
+				(importScope, ILClass_Name(classInfo),
+				 ILClass_Namespace(classInfo));
+		}
 	}
 	if(importInfo)
 	{

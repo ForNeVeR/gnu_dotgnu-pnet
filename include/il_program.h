@@ -2139,6 +2139,12 @@ int ILFileDeclSetHash(ILFileDecl *decl, const void *hash, unsigned long len);
 const void *ILFileDeclGetHash(ILFileDecl *decl, unsigned long *len);
 
 /*
+ * Convert a file declaration into a fully resolved image.
+ * Returns NULL if insufficient linkages available.
+ */
+ILImage *ILFileDeclToImage(ILFileDecl *decl);
+
+/*
  * Helper macros for querying information about file declarations.
  */
 #define	ILFileDecl_FromToken(image,token)	\

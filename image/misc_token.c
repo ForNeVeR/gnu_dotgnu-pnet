@@ -798,6 +798,45 @@ const void *ILFileDeclGetHash(ILFileDecl *decl, unsigned long *len)
 	return ILImageGetBlob(decl->programItem.image, decl->hash, len);
 }
 
+ILImage *ILFileDeclToImage(ILFileDecl *decl)
+{
+	if(decl->programItem.linked)
+	{
+		/* We have cached a previous image */
+		return _ILProgramItemResolve(&(decl->programItem))->image;
+	}
+	else
+	{
+		/* Search for a matching ILModule in another image */
+		ILImage *image;
+		ILModule *newModule = 0;
+		image = decl->programItem.image->context->firstImage;
+		while(image != 0 && newModule == 0)
+		{
+			newModule = 0;
+			while((newModule = (ILModule *)ILImageNextToken
+						(image, IL_META_TOKEN_MODULE, newModule)) != 0)
+			{
+				if(!ILStrICmp(newModule->name, decl->name))
+				{
+					break;
+				}
+			}
+			image = image->nextImage;
+		}
+		if(!newModule)
+		{
+			return 0;
+		}
+
+		/* Link the reference to the foreign module */
+		_ILProgramItemLink(&(decl->programItem), &(newModule->programItem));
+
+		/* Return the new module's image to the caller */
+		return newModule->programItem.image;
+	}
+}
+
 ILManifestRes *ILManifestResCreate(ILImage *image, ILToken token,
 								   const char *name, ILUInt32 attrs)
 {

@@ -120,7 +120,8 @@ static int ClassHash_Match(const ILClassName *classInfo,
 		/* Exported types in a file scope will also match module requests */
 		if(classInfo->scope &&
 	       (classInfo->scope->token & IL_META_TOKEN_MASK) ==
-		   			IL_META_TOKEN_FILE)
+		   			IL_META_TOKEN_FILE &&
+		   key->scopeItem->image == classInfo->scope->image)
 		{
 			goto moduleScope;
 		}

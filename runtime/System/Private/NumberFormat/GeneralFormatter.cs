@@ -80,7 +80,7 @@ internal class GeneralFormatter : Formatter
 			else
 			{
 				return 
-					new ScientificFormatter(precision, Ee).Format(o, provider);
+					new ScientificFormatter(-1, Ee).Format(o, provider);
 			}
 		}
 

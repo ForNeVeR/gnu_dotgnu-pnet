@@ -158,42 +158,34 @@ internal class CustomFormatter : Formatter
 
 		//  Scaling
 		int formatindex = decimalPos - 1;
-		while (format[formatindex] == groupSeparator)
+		while (formatindex >=0 && format[formatindex] == groupSeparator)
 		{
 			scale += 3;
 			--formatindex;
 		}
 
-		if (scale > 0)
+		// Move the decimal point
+		StringBuilder temp = new StringBuilder();
+		if (scale <= value.IndexOf('.'))
 		{
-			// Move the decimal point
-			StringBuilder temp 
-				= new StringBuilder(value.Substring(0,value.IndexOf('.')));
-			if (temp.Length < scale)
-			{
-				temp.Insert(0,"0",scale - temp.Length);
-			}
-			temp.Insert(temp.Length - scale,'.');
-			temp.Append(value.Substring(value.IndexOf('.')+1));
-			if (includeNegSign && sign == -1)
-			{
-				temp.Insert(0, NumberFormatInfo(provider).NegativeSign);
-			}
-			rawnumber = temp.ToString();
-		}
+			temp.Append(value.Substring(0, value.IndexOf('.') - scale))
+					.Append(".")
+					.Append(value.Substring(value.IndexOf('.') - scale, scale));
+		}					
 		else
 		{
-			if (includeNegSign && sign == -1)
-			{
-				StringBuilder temp = new StringBuilder(value);
-				temp.Insert(0,NumberFormatInfo(provider).NegativeSign);
-				rawnumber = temp.ToString();
-			}
-			else
-			{
-				rawnumber = value;
-			}
+			temp.Append(".")
+				.Append(value
+						.Substring(0, value.IndexOf('.'))
+						.PadLeft(scale, '0'));
 		}
+		temp.Append(value.Substring(value.IndexOf('.') + 1));
+
+		if (includeNegSign && sign == -1)
+		{
+			temp.Insert(0, NumberFormatInfo(provider).NegativeSign);
+		}
+		rawnumber = temp.ToString();
 
 		//  Formatting
 		int rawindex = rawnumber.IndexOf('.') - 1;
@@ -239,7 +231,7 @@ internal class CustomFormatter : Formatter
 
 		if (rawindex >= 0)
 		{
-			ret.Insert(0, rawnumber.Substring(0,rawindex));
+			ret.Insert(0, rawnumber.Substring(0, rawindex+1));
 		}
 
 		//  Zero pad
@@ -251,7 +243,7 @@ internal class CustomFormatter : Formatter
 				if (format[formatindex] == digitPlaceholder
 						|| format[formatindex] == zeroPlaceholder)
 				{
-					ret.Insert(0,'0');
+					ret.Insert(0, '0');
 				}
 				else if (format[formatindex] == groupSeparator)
 				{
@@ -340,8 +332,8 @@ internal class CustomFormatter : Formatter
 
 		//  Format the mantissa
 		StringBuilder ret = new StringBuilder(
-				FormatFloat(mantissa, format.Substring(1, i), sign, provider)
-									+ format[i++]);
+				FormatFloat(mantissa, format.Substring(0, i), sign, provider))
+			.Append(format[i++]);
 
 		//  Sign logic
 		if (format[i] == '+' && exponent >= 0)
@@ -408,7 +400,7 @@ internal class CustomFormatter : Formatter
 			}
 		}
 
-		return FormatRawNumber( Formatter.FormatFloat(d, precision+2), 
+		return FormatRawNumber( Formatter.FormatFloat(d, precision + 2), 
 										format, sign, provider);
 	}
 

@@ -105,9 +105,10 @@ internal class NumberFormatter : Formatter
 		//
 		if (precision > 0)
 		{
-			ret.Append(NumberFormatInfo(provider).NumberDecimalSeparator);
-			ret.Append(
-				rawnumber.Substring(rawnumber.IndexOf('.')+1, precision));
+			ret.Append(NumberFormatInfo(provider).NumberDecimalSeparator)
+				.Append(rawnumber
+					.PadRight(rawnumber.IndexOf('.')+1+precision,'0')
+					.Substring(rawnumber.IndexOf('.')+1, precision));
 		}
 
 		//

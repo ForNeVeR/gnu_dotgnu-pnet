@@ -34,7 +34,7 @@ internal class ScientificFormatter : Formatter
 
 	public ScientificFormatter(int precision, char Ee)
 	{
-		this.precision = precision == -1 ? 6 : 0;
+		this.precision = precision == -1 ? 6 : precision;
 		this.Ee = Ee;
 	}
 
@@ -63,10 +63,14 @@ internal class ScientificFormatter : Formatter
 
 		rawnumber = FormatFloat(mantissa, precision);
 
-		ret = new StringBuilder(
-				rawnumber.Substring(0,rawnumber.IndexOf('.')) +
-				NumberFormatInfo(provider).NumberDecimalSeparator +
-				rawnumber.Substring(rawnumber.IndexOf('.')+1));
+		ret = new StringBuilder( 
+				rawnumber.Substring(0, rawnumber.IndexOf('.')));
+
+		if (precision > 0)
+		{
+			ret.Append(NumberFormatInfo(provider).NumberDecimalSeparator)
+				.Append(rawnumber.Substring(rawnumber.IndexOf('.')+1));
+		}
 
 		if (isNegative)
 		{

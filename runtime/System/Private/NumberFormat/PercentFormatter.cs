@@ -118,9 +118,10 @@ internal class PercentFormatter : Formatter
 		//
 		if (precision > 0)
 		{
-			ret.Append(NumberFormatInfo(provider).PercentDecimalSeparator);
-			ret.Append(
-				rawnumber.Substring(rawnumber.IndexOf('.')+1, precision));
+			ret.Append(NumberFormatInfo(provider).PercentDecimalSeparator)
+				.Append(rawnumber
+						.PadRight(rawnumber.IndexOf('.')+1 + precision, '0')
+						.Substring(rawnumber.IndexOf('.')+1, precision));
 		}
 
 		//

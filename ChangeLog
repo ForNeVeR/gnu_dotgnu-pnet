@@ -44,6 +44,9 @@
 	System/Net/Sockets/SocketException.cs: signature-compatibility
 	fixes in "System.Net".
 
+	* runtime/System/Globalization/HebrewCalendar.cs: "ToDateTime"
+	should not be public.
+
 2003-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/ArrayConverter.cs,

@@ -495,8 +495,8 @@ public class HebrewCalendar : Calendar
 			}
 
 	// Convert a particular time into a DateTime value.
-	public DateTime ToDateTime(int year, int month, int day,
-							   long tickOffset, int era)
+	private DateTime ToDateTime(int year, int month, int day,
+							    long tickOffset, int era)
 			{
 				// Validate the parameters.
 				if(era != CurrentEra && era != HebrewEra)

@@ -1643,6 +1643,45 @@ static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Create a formal parameter with a system type
+ */
+static ILNode_FormalParameter* CreateFormalParameter(char *systemtype,
+													 char *name)
+{
+	ILNode *param=ILNode_FormalParameter_create(
+						NULL,ILParamMod_empty, 
+						ILNode_SystemType_create(systemtype),
+		 				ILQualIdentSimple(ILInternString(name, -1).string));
+	return (ILNode_FormalParameter*)param;
+}
+
+/* 
+ * Append parameters in `from' to `to' , the onlyPtrs flag if enabled
+ * appends only out or ref parameters
+ */
+static void AppendParameters(ILNode *from,ILNode_List *to,int onlyPtrs)
+{
+	ILNode_ListIter iter;
+	ILNode_FormalParameter *node;
+	if(!yyisa(from,ILNode_List)) return;
+	ILNode_ListIter_Init(&iter,from);
+	while((node = (ILNode_FormalParameter*)ILNode_ListIter_Next(&iter))!=0)
+	{
+		if((!onlyPtrs) || (node->pmod==ILParamMod_ref || 
+							node->pmod == ILParamMod_out))
+		{
+			ILNode_FormalParameter *param= (ILNode_FormalParameter*)
+											ILNode_FormalParameter_create(NULL,
+													node->pmod,node->type,
+													node->name);
+			yysetfilename((ILNode*)param,yygetfilename(node));
+			yysetlinenum((ILNode*)param, yygetlinenum(node));
+			ILNode_List_Add(to,param);
+		}
+	}
+}
+
+/*
  * Create a delegate member definition.
  */
 static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
@@ -1651,6 +1690,7 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 	ILMethod *method;
 	ILType *signature;
 	ILNode_MethodDeclaration *decl;
+	ILNode_List *params;
 
 	/* Create the delegate constructor */
 	method = ILMethodCreate(classInfo, 0, ".ctor",
@@ -1700,6 +1740,10 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 		 member->returnType,
 		 ILQualIdentSimple(ILInternString("Invoke", -1).string),
 		 member->params, 0);
+	
+	yysetfilename((ILNode*)decl,yygetfilename(member));
+	yysetlinenum((ILNode*)decl, yygetlinenum(member));
+
 	CreateMethod(info, classInfo, decl);
 	method = member->invokeMethod = decl->methodInfo;
 	if(method)
@@ -1709,6 +1753,71 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 	}
 
 	/* TODO: asynchronous interface for delegates */
+	/* Clone the params list */
+	params=(ILNode_List*)ILNode_List_create();
+	AppendParameters(member->params,params,0);
+
+	ILNode_List_Add(params,
+						CreateFormalParameter("AsyncCallback","callback"));
+	ILNode_List_Add(params,
+						CreateFormalParameter("Object","object"));
+
+	/* Create the "BeginInvoke" method */
+	decl = (ILNode_MethodDeclaration*) ILNode_MethodDeclaration_create
+			(0,
+			IL_META_METHODDEF_PUBLIC |
+			IL_META_METHODDEF_VIRTUAL |
+			IL_META_METHODDEF_NEW_SLOT |
+			IL_META_METHODDEF_HIDE_BY_SIG |
+			IL_META_METHODDEF_COMPILER_CONTROLLED,
+			ILNode_SystemType_create("IAsyncResult"),
+			ILQualIdentSimple(ILInternString("BeginInvoke", -1).string),
+			(ILNode*)params,
+			0);
+
+	yysetfilename((ILNode*)decl,yygetfilename(member));
+	yysetlinenum((ILNode*)decl, yygetlinenum(member));
+
+	CreateMethod(info, classInfo, decl);
+	method = member->beginInvokeMethod = decl->methodInfo;
+	if(method)
+	{
+		ILMethodSetImplAttrs(method, ~((ILUInt32)0),
+							 IL_META_METHODIMPL_RUNTIME);
+	}
+
+	/* Clone the params list */
+	params=(ILNode_List*)ILNode_List_create();
+	
+	/* Append only the managed parameters */
+	AppendParameters(member->params,params,1);
+
+	ILNode_List_Add(params,
+						CreateFormalParameter("IAsyncResult","result"));
+
+	/* Create the "EndInvoke" method */
+	decl = (ILNode_MethodDeclaration*) ILNode_MethodDeclaration_create
+			(0,
+			IL_META_METHODDEF_PUBLIC |
+			IL_META_METHODDEF_VIRTUAL |
+			IL_META_METHODDEF_NEW_SLOT |
+			IL_META_METHODDEF_HIDE_BY_SIG |
+			IL_META_METHODDEF_COMPILER_CONTROLLED,
+			member->returnType,
+			ILQualIdentSimple(ILInternString("EndInvoke", -1).string),
+			(ILNode*)params,
+			0);
+	
+	yysetfilename((ILNode*)decl,yygetfilename(member));
+	yysetlinenum((ILNode*)decl, yygetlinenum(member));
+
+	CreateMethod(info, classInfo, decl);
+	method = member->endInvokeMethod = decl->methodInfo;
+	if(method)
+	{
+		ILMethodSetImplAttrs(method, ~((ILUInt32)0),
+							 IL_META_METHODIMPL_RUNTIME);
+	}
 }
 
 /*

@@ -1,4 +1,9 @@
 
+2003-02-21  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_gather.c: Generate compiler controlled asynchronous 
+	delegate functions BeginInvoke and EndInvoke .
+
 2003-02-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/generic.c, image/image.h, image/program.h,

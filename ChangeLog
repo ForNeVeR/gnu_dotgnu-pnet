@@ -57,6 +57,9 @@ value types incorrectly.
 
 * samples/mscorlib.dll: new version with "DateTime" operator fix.
 
+* engine/verify_branch.c: fix the definition of "GET_SHORT_DEST" so that
+it computes the offset as signed instead of unsigned.
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

@@ -96,7 +96,7 @@ struct _tagBranchLabel
 /*
  * Get the destination for a short or long branch instruction.
  */
-#define	GET_SHORT_DEST()	(offset + 2 + ((ILUInt32)(ILInt32)(pc[1])))
+#define	GET_SHORT_DEST()	(offset + 2 + ((ILUInt32)(ILInt32)(ILInt8)(pc[1])))
 #define	GET_LONG_DEST()		(offset + 5 + ((ILUInt32)IL_READ_INT32(pc + 1)))
 
 /*

@@ -252,7 +252,6 @@ static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
 	}
 	attrs |= IL_META_TYPEDEF_SEALED |
 			 IL_META_TYPEDEF_SERIALIZABLE |
-			 IL_META_TYPEDEF_VALUE_TYPE |
 			 IL_META_TYPEDEF_EXPLICIT_LAYOUT;
 
 	/* Create the class that corresponds to the array type */
@@ -456,8 +455,7 @@ static void SetupStructAttrs(ILGenInfo *info, ILClass *classInfo, int kind)
 						IL_META_TYPEDEF_PUBLIC |
 						IL_META_TYPEDEF_SERIALIZABLE |
 						IL_META_TYPEDEF_EXPLICIT_LAYOUT |
-						IL_META_TYPEDEF_SEALED |
-						IL_META_TYPEDEF_VALUE_TYPE);
+						IL_META_TYPEDEF_SEALED);
 	
 		/* The type initially has a packing alignment
 		   of 1 and a total size of 0 */
@@ -476,8 +474,7 @@ static void SetupStructAttrs(ILGenInfo *info, ILClass *classInfo, int kind)
 						IL_META_TYPEDEF_PUBLIC |
 						IL_META_TYPEDEF_SERIALIZABLE |
 						IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
-						IL_META_TYPEDEF_SEALED |
-						IL_META_TYPEDEF_VALUE_TYPE);
+						IL_META_TYPEDEF_SEALED);
 	}
 }
 

@@ -15,6 +15,10 @@
 	* engine/int_proto.h, engine/int_table.c: update the internalcall
 	tables from pnetlib.
 
+	* cscc/c/c_library.c, cscc/c/c_types.c, cscc/csharp/cs_grammar.y:
+	remove the obsolete "IL_META_TYPEDEF_VALUE_TYPE" flag from struct
+	types in the compiler.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

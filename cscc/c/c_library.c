@@ -215,10 +215,8 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	/* Create "OpenSystem.C.LongDouble" */
 	classInfo = CreateClass(info, scope, "LongDouble", valueTypeClass);
 	ILClassSetAttrs(classInfo,
-					IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
-						IL_META_TYPEDEF_VALUE_TYPE,
-					IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
-						IL_META_TYPEDEF_VALUE_TYPE);
+					IL_META_TYPEDEF_LAYOUT_SEQUENTIAL,
+					IL_META_TYPEDEF_LAYOUT_SEQUENTIAL);
 }
 
 #ifdef	__cplusplus

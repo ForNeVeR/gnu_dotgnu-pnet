@@ -3304,8 +3304,7 @@ StructDeclaration
 				attrs = CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
 
 				/* Add extra attributes that structs need */
-				attrs |= IL_META_TYPEDEF_VALUE_TYPE |
-						 IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
+				attrs |= IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
 						 IL_META_TYPEDEF_SERIALIZABLE |
 						 IL_META_TYPEDEF_SEALED;
 

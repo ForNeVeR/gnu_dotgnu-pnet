@@ -19,6 +19,9 @@
 	* cscc/csharp/cs_grammar.y: wrap blocks and for/foreach statements
 	in "ILNode_NewScope" nodes to perform correct variable scoping.
 
+	* support/socket.c: use "sizeof(struct sockaddr_in)" instead of
+	"sizeof(struct sockaddr)".
+
 2002-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/HACKING: update the section on "internalcall" methods.

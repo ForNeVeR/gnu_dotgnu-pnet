@@ -65,7 +65,7 @@ int ILSysIOSocketBind(ILSysIOHandle sockfd, ILSysIOSockAddr *local_addr)
 	addr.sin_addr.s_addr = htonl(local_addr->addr);
 
 	return (bind((int)sockfd, (struct sockaddr *)&addr,
-				 sizeof(struct sockaddr)) == 0);
+				 sizeof(struct sockaddr_in)) == 0);
 }
 
 int ILSysIOSocketConnect(ILSysIOHandle sockfd, ILSysIOSockAddr *serv_addr)
@@ -78,7 +78,7 @@ int ILSysIOSocketConnect(ILSysIOHandle sockfd, ILSysIOSockAddr *serv_addr)
 	addr.sin_addr.s_addr = htonl(serv_addr->addr);
 
 	return (connect((int)sockfd, (struct sockaddr *)&addr,
-					sizeof(struct sockaddr)) == 0);
+					sizeof(struct sockaddr_in)) == 0);
 }
 
 int ILSysIOSocketListen(ILSysIOHandle sockfd, ILInt32 backlog)
@@ -127,7 +127,7 @@ ILInt32 ILSysIOSocketSendTo(ILSysIOHandle sockfd, const void *msg,
 	addr.sin_addr.s_addr = htonl(to->addr);
 
 	return sendto((int)sockfd, msg, len, flags,
-				  (struct sockaddr *)&addr, sizeof(struct sockaddr));
+				  (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 }
 
 ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf,
@@ -138,7 +138,7 @@ ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf,
 	struct sockaddr_in addr;
 
 	ILMemZero(&addr, sizeof(addr));
-  	fromlen = sizeof(struct sockaddr);
+  	fromlen = sizeof(struct sockaddr_in);
 
 	result = recvfrom((int)sockfd, buf, len, flags,
 					  (struct sockaddr *)&addr, &fromlen);

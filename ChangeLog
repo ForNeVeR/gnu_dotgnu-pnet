@@ -5,6 +5,9 @@
 	engine/unroll.c, engine/unroll_var.c: check in some of the
 	generic unroller code (it isn't working yet).
 
+	* engine/cvmc_gen.h: define the CVM_OUT macros as function calls when
+	IL_CONFIG_REDUCE_CODE is set, to reduce the size of the CVM coder.
+
 2003-05-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* configure.in, support/socket.c: Implement the ILSysIOSetSocketOption

@@ -77,7 +77,7 @@ extern	"C" {
 /*
  * Output a wide instruction to the CVM coder buffer.
  */
-#define	CVM_OUT_WIDE(opcode,value)	\
+#define	_CVM_OUT_WIDE(opcode,value)	\
 			do { \
 				if((value) < 256) \
 				{ \
@@ -95,7 +95,7 @@ extern	"C" {
 /*
  * Output a double wide instruction to the CVM coder buffer.
  */
-#define	CVM_OUT_DWIDE(opcode,value1,value2)	\
+#define	_CVM_OUT_DWIDE(opcode,value1,value2)	\
 			do { \
 				if((value1) < 256 && (value2) < 256) \
 				{ \
@@ -115,7 +115,7 @@ extern	"C" {
 /*
  * Output a double wide with pointer instruction to the CVM coder buffer.
  */
-#define	CVM_OUT_DWIDE_PTR(opcode,value1,value2,value3)	\
+#define	_CVM_OUT_DWIDE_PTR(opcode,value1,value2,value3)	\
 			do { \
 				if((value1) < 256 && (value2) < 256) \
 				{ \
@@ -137,35 +137,35 @@ extern	"C" {
 /*
  * Output a return instruction.
  */
-#define	CVM_OUT_RETURN(size)	\
+#define	_CVM_OUT_RETURN(size)	\
 			do { \
 				if(((ILCVMCoder *)coder)->debugEnabled) \
 				{ \
-					CVM_OUT_BREAK(IL_BREAK_EXIT_METHOD); \
+					_CVM_OUT_BREAK(IL_BREAK_EXIT_METHOD); \
 				} \
 				if((size) == 0) \
 				{ \
-					CVM_OUT_NONE(COP_RETURN); \
+					_CVM_OUT_NONE(COP_RETURN); \
 				} \
 				else if((size) == 1) \
 				{ \
-					CVM_OUT_NONE(COP_RETURN_1); \
+					_CVM_OUT_NONE(COP_RETURN_1); \
 				} \
 				else if((size) == 2) \
 				{ \
-					CVM_OUT_NONE(COP_RETURN_2); \
+					_CVM_OUT_NONE(COP_RETURN_2); \
 				} \
 				else \
 				{ \
-					CVM_OUT_WORD(COP_RETURN_N, (size)); \
+					_CVM_OUT_WORD(COP_RETURN_N, (size)); \
 				} \
 			} while (0)
 
 /*
  * Output an instruction that takes no parameters.
  */
-#define	CVM_OUT_NONE(opcode)	_CVM_BYTE((opcode))
-#define	CVMP_OUT_NONE(opcode)	\
+#define	_CVM_OUT_NONE(opcode)	_CVM_BYTE((opcode))
+#define	_CVMP_OUT_NONE(opcode)	\
 			do { \
 				_CVM_BYTE(COP_PREFIX); \
 				_CVM_BYTE((opcode)); \
@@ -174,14 +174,8 @@ extern	"C" {
 /*
  * Output an instruction that has a byte argument.
  */
-#define	CVM_OUT_BYTE(opcode,value)	\
+#define	_CVM_OUT_BYTE(opcode,value)	\
 			do { \
-				_CVM_BYTE((opcode)); \
-				_CVM_BYTE((value)); \
-			} while (0)
-#define	CVMP_OUT_BYTE(opcode,value)	\
-			do { \
-				_CVM_BYTE(COP_PREFIX); \
 				_CVM_BYTE((opcode)); \
 				_CVM_BYTE((value)); \
 			} while (0)
@@ -189,7 +183,7 @@ extern	"C" {
 /*
  * Output an instruction that has two byte arguments.
  */
-#define	CVM_OUT_BYTE2(opcode,value1,value2)	\
+#define	_CVM_OUT_BYTE2(opcode,value1,value2)	\
 			do { \
 				_CVM_BYTE((opcode)); \
 				_CVM_BYTE((value1)); \
@@ -199,12 +193,12 @@ extern	"C" {
 /*
  * Output an instruction that has a word argument.
  */
-#define	CVM_OUT_WORD(opcode,value)	\
+#define	_CVM_OUT_WORD(opcode,value)	\
 			do { \
 				_CVM_BYTE((opcode)); \
 				_CVM_WORD((value)); \
 			} while (0)
-#define	CVMP_OUT_WORD(opcode,value)	\
+#define	_CVMP_OUT_WORD(opcode,value)	\
 			do { \
 				_CVM_BYTE(COP_PREFIX); \
 				_CVM_BYTE((opcode)); \
@@ -214,13 +208,7 @@ extern	"C" {
 /*
  * Output an instruction that has two word arguments.
  */
-#define	CVM_OUT_WORD2(opcode,value1,value2)	\
-			do { \
-				_CVM_BYTE((opcode)); \
-				_CVM_WORD((value1)); \
-				_CVM_WORD((value2)); \
-			} while (0)
-#define	CVMP_OUT_WORD2(opcode,value1,value2)	\
+#define	_CVMP_OUT_WORD2(opcode,value1,value2)	\
 			do { \
 				_CVM_BYTE(COP_PREFIX); \
 				_CVM_BYTE((opcode)); \
@@ -231,12 +219,12 @@ extern	"C" {
 /*
  * Output an instruction that has a pointer argument.
  */
-#define	CVM_OUT_PTR(opcode,value)	\
+#define	_CVM_OUT_PTR(opcode,value)	\
 			do { \
 				_CVM_BYTE((opcode)); \
 				_CVM_PTR((value)); \
 			} while (0)
-#define	CVMP_OUT_PTR(opcode,value)	\
+#define	_CVMP_OUT_PTR(opcode,value)	\
 			do { \
 				_CVM_BYTE(COP_PREFIX); \
 				_CVM_BYTE((opcode)); \
@@ -246,7 +234,7 @@ extern	"C" {
 /*
  * Output an instruction that has two pointer arguments.
  */
-#define	CVM_OUT_PTR2(opcode,value1,value2)	\
+#define	_CVM_OUT_PTR2(opcode,value1,value2)	\
 			do { \
 				_CVM_BYTE((opcode)); \
 				_CVM_PTR((value1)); \
@@ -256,7 +244,7 @@ extern	"C" {
 /*
  * Output an instruction that has a word argument and a pointer argument.
  */
-#define	CVMP_OUT_WORD_PTR(opcode,value1,value2)	\
+#define	_CVMP_OUT_WORD_PTR(opcode,value1,value2)	\
 			do { \
 				_CVM_BYTE(COP_PREFIX); \
 				_CVM_BYTE((opcode)); \
@@ -267,7 +255,7 @@ extern	"C" {
 /*
  * Output an instruction that has two word arguments and a pointer argument.
  */
-#define	CVMP_OUT_WORD2_PTR(opcode,value1,value2,value3)	\
+#define	_CVMP_OUT_WORD2_PTR(opcode,value1,value2,value3)	\
 			do { \
 				_CVM_BYTE(COP_PREFIX); \
 				_CVM_BYTE((opcode)); \
@@ -279,7 +267,7 @@ extern	"C" {
 /*
  * Output an instruction that has two word arguments and two pointer arguments.
  */
-#define	CVMP_OUT_WORD2_PTR2(opcode,value1,value2,value3,value4)	\
+#define	_CVMP_OUT_WORD2_PTR2(opcode,value1,value2,value3,value4)	\
 			do { \
 				_CVM_BYTE(COP_PREFIX); \
 				_CVM_BYTE((opcode)); \
@@ -292,16 +280,16 @@ extern	"C" {
 /*
  * Output an instruction that has a wide argument and a pointer argument.
  */
-#define	CVM_OUT_WIDE_PTR(opcode,value1,value2)	\
+#define	_CVM_OUT_WIDE_PTR(opcode,value1,value2)	\
 			do { \
-				CVM_OUT_WIDE((opcode), (value1)); \
+				_CVM_OUT_WIDE((opcode), (value1)); \
 				_CVM_PTR((value2)); \
 			} while (0)
 
 /*
  * Output an instruction that has a "long" argument.
  */
-#define	CVM_OUT_LONG(opcode,arg)	\
+#define	_CVM_OUT_LONG(opcode,arg)	\
 			do { \
 				_CVM_BYTE((opcode)); \
 				_CVM_BYTE((arg)[0]); \
@@ -317,7 +305,7 @@ extern	"C" {
 /*
  * Output an instruction that has a "float" argument.
  */
-#define	CVM_OUT_FLOAT(opcode,arg)	\
+#define	_CVM_OUT_FLOAT(opcode,arg)	\
 			do { \
 				_CVM_BYTE((opcode)); \
 				_CVM_BYTE((arg)[0]); \
@@ -329,7 +317,7 @@ extern	"C" {
 /*
  * Output an instruction that has a "double" argument.
  */
-#define	CVM_OUT_DOUBLE(opcode,arg)	\
+#define	_CVM_OUT_DOUBLE(opcode,arg)	\
 			do { \
 				_CVM_BYTE((opcode)); \
 				_CVM_BYTE((arg)[0]); \
@@ -345,7 +333,7 @@ extern	"C" {
 /*
  * Output a short branch from the current position.
  */
-#define	CVM_OUT_BRANCH(opcode,offset)	\
+#define	_CVM_OUT_BRANCH(opcode,offset)	\
 			do { \
 				_CVM_BYTE((opcode)); \
 				_CVM_BYTE((offset)); \
@@ -355,7 +343,7 @@ extern	"C" {
 /*
  * Output a long branch from the current position.
  */
-#define	CVM_OUT_BRANCH_LONG(opcode,offset)	\
+#define	_CVM_OUT_BRANCH_LONG(opcode,offset)	\
 			do { \
 				_CVM_BYTE(COP_BR_LONG); \
 				_CVM_BYTE((opcode)); \
@@ -365,7 +353,7 @@ extern	"C" {
 /*
  * Output a branch placeholder at the current position.
  */
-#define	CVM_OUT_BRANCH_PLACEHOLDER(opcode)	\
+#define	_CVM_OUT_BRANCH_PLACEHOLDER(opcode)	\
 			do { \
 				_CVM_BYTE((opcode)); \
 				_CVM_BYTE((opcode)); \
@@ -375,7 +363,7 @@ extern	"C" {
 /*
  * Backpatch a short branch.
  */
-#define	CVM_BACKPATCH_BRANCH(pc,relative)	\
+#define	_CVM_BACKPATCH_BRANCH(pc,relative)	\
 			do { \
 				if(_CVM_VALID((pc), 2)) \
 				{ \
@@ -386,7 +374,7 @@ extern	"C" {
 /*
  * Backpatch a long branch.
  */
-#define	CVM_BACKPATCH_BRANCH_LONG(pc,relative)	\
+#define	_CVM_BACKPATCH_BRANCH_LONG(pc,relative)	\
 			do { \
 				if(_CVM_VALID((pc), 6)) \
 				{ \
@@ -399,13 +387,13 @@ extern	"C" {
  * Compute the offset of the default switch case from the
  * number of entries.
  */
-#define	CVM_DEFCASE_OFFSET(numEntries)	\
+#define	_CVM_DEFCASE_OFFSET(numEntries)	\
 			(9 + (numEntries) * 4)
 
 /*
  * Output the head of a switch instruction.
  */
-#define	CVM_OUT_SWHEAD(numEntries,defCase)	\
+#define	_CVM_OUT_SWHEAD(numEntries,defCase)	\
 			do { \
 				_CVM_BYTE(COP_SWITCH); \
 				_CVM_WORD((numEntries)); \
@@ -415,7 +403,7 @@ extern	"C" {
 /*
  * Output a switch entry at the current position.
  */
-#define	CVM_OUT_SWENTRY(swstart,relative)	\
+#define	_CVM_OUT_SWENTRY(swstart,relative)	\
 			do { \
 				_CVM_WORD((relative)); \
 			} while (0)
@@ -423,7 +411,7 @@ extern	"C" {
 /*
  * Output a switch entry placeholder at the current position.
  */
-#define	CVM_OUT_SWENTRY_PLACEHOLDER()	\
+#define	_CVM_OUT_SWENTRY_PLACEHOLDER()	\
 			do { \
 				_CVM_WORD(0); \
 			} while (0)
@@ -431,7 +419,7 @@ extern	"C" {
 /*
  * Backpatch a switch entry.
  */
-#define	CVM_BACKPATCH_SWENTRY(swstart,relative,writepc)	\
+#define	_CVM_BACKPATCH_SWENTRY(swstart,relative,writepc)	\
 			do { \
 				if(_CVM_VALID((writepc), 4)) \
 				{ \
@@ -442,7 +430,7 @@ extern	"C" {
 /*
  * Output the start of a try header.
  */
-#define	CVM_OUT_TRY(start,end)	\
+#define	_CVM_OUT_TRY(start,end)	\
 			do { \
 				_CVM_WORD((start)); \
 				_CVM_WORD((end)); \
@@ -452,7 +440,7 @@ extern	"C" {
 /*
  * Backpatch a try header with the length value.
  */
-#define	CVM_BACKPATCH_TRY(trypc)	\
+#define	_CVM_BACKPATCH_TRY(trypc)	\
 			do { \
 				if(_CVM_VALID((trypc), 12)) \
 				{ \
@@ -464,7 +452,7 @@ extern	"C" {
 /*
  * Output a "pushdown" instruction placeholder.
  */
-#define	CVM_OUT_PUSHDOWN()		\
+#define	_CVM_OUT_PUSHDOWN()		\
 			do { \
 				_CVM_BYTE(COP_PUSHDOWN); \
 				_CVM_WORD(0); \
@@ -473,7 +461,7 @@ extern	"C" {
 /*
  * Backpatch a "pushdown" instruction.
  */
-#define	CVM_BACKPATCH_PUSHDOWN(pushpc,value)	\
+#define	_CVM_BACKPATCH_PUSHDOWN(pushpc,value)	\
 			do { \
 				if(_CVM_VALID((pushpc), 5)) \
 				{ \
@@ -484,7 +472,7 @@ extern	"C" {
 /*
  * Output a "ckheight" instruction placeholder.
  */
-#define	CVM_OUT_CKHEIGHT()		\
+#define	_CVM_OUT_CKHEIGHT()		\
 			do { \
 				_CVM_BYTE(COP_CKHEIGHT_N); \
 				_CVM_WORD(0); \
@@ -493,7 +481,7 @@ extern	"C" {
 /*
  * Backpatch a "ckheight" instruction.
  */
-#define	CVM_BACKPATCH_CKHEIGHT(ckpc,value)	\
+#define	_CVM_BACKPATCH_CKHEIGHT(ckpc,value)	\
 			do { \
 				if(_CVM_VALID((ckpc), 5)) \
 				{ \
@@ -511,7 +499,7 @@ extern	"C" {
 /*
  * Output a "jump over" instruction to skip a non-constructor entry point.
  */
-#define	CVM_OUT_JUMPOVER(pc,relative)	\
+#define	_CVM_OUT_JUMPOVER(pc,relative)	\
 			do { \
 				if(_CVM_VALID((pc), 6)) \
 				{ \
@@ -532,7 +520,7 @@ extern	"C" {
 /*
  * Output a "break" instruction.
  */
-#define	CVM_OUT_BREAK(subcode)	\
+#define	_CVM_OUT_BREAK(subcode)	\
 			do { \
 				_CVM_BYTE(COP_BREAK); \
 				_CVM_BYTE((subcode)); \
@@ -624,7 +612,7 @@ extern	"C" {
 /*
  * Output a wide instruction to the CVM coder buffer.
  */
-#define	CVM_OUT_WIDE(opcode,value)	\
+#define	_CVM_OUT_WIDE(opcode,value)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_WORD((value)); \
@@ -633,7 +621,7 @@ extern	"C" {
 /*
  * Output a double wide instruction to the CVM coder buffer.
  */
-#define	CVM_OUT_DWIDE(opcode,value1,value2)	\
+#define	_CVM_OUT_DWIDE(opcode,value1,value2)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_WORD((value1)); \
@@ -643,7 +631,7 @@ extern	"C" {
 /*
  * Output a double wide with pointer instruction to the CVM coder buffer.
  */
-#define	CVM_OUT_DWIDE_PTR(opcode,value1,value2,value3)	\
+#define	_CVM_OUT_DWIDE_PTR(opcode,value1,value2,value3)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_WORD((value1)); \
@@ -654,54 +642,49 @@ extern	"C" {
 /*
  * Output a return instruction.
  */
-#define	CVM_OUT_RETURN(size)	\
+#define	_CVM_OUT_RETURN(size)	\
 			do { \
 				if(((ILCVMCoder *)coder)->debugEnabled) \
 				{ \
-					CVM_OUT_BREAK(IL_BREAK_EXIT_METHOD); \
+					_CVM_OUT_BREAK(IL_BREAK_EXIT_METHOD); \
 				} \
 				if((size) == 0) \
 				{ \
-					CVM_OUT_NONE(COP_RETURN); \
+					_CVM_OUT_NONE(COP_RETURN); \
 				} \
 				else if((size) == 1) \
 				{ \
-					CVM_OUT_NONE(COP_RETURN_1); \
+					_CVM_OUT_NONE(COP_RETURN_1); \
 				} \
 				else if((size) == 2) \
 				{ \
-					CVM_OUT_NONE(COP_RETURN_2); \
+					_CVM_OUT_NONE(COP_RETURN_2); \
 				} \
 				else \
 				{ \
-					CVM_OUT_WORD(COP_RETURN_N, (size)); \
+					_CVM_OUT_WORD(COP_RETURN_N, (size)); \
 				} \
 			} while (0)
 
 /*
  * Output an instruction that takes no parameters.
  */
-#define	CVM_OUT_NONE(opcode)	_CVM_OPCODE((opcode))
-#define	CVMP_OUT_NONE(opcode)	_CVMP_OPCODE((opcode))
+#define	_CVM_OUT_NONE(opcode)	_CVM_OPCODE((opcode))
+#define	_CVMP_OUT_NONE(opcode)	_CVMP_OPCODE((opcode))
 
 /*
  * Output an instruction that has a byte argument.
  */
-#define	CVM_OUT_BYTE(opcode,value)	\
+#define	_CVM_OUT_BYTE(opcode,value)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
-				_CVM_WORD((ILInt32)(value)); \
-			} while (0)
-#define	CVMP_OUT_BYTE(opcode,value)	\
-			do { \
-				_CVMP_OPCODE((opcode)); \
 				_CVM_WORD((ILInt32)(value)); \
 			} while (0)
 
 /*
  * Output an instruction that has two byte arguments.
  */
-#define	CVM_OUT_BYTE2(opcode,value1,value2)	\
+#define	_CVM_OUT_BYTE2(opcode,value1,value2)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_WORD((ILInt32)(value1)); \
@@ -711,12 +694,12 @@ extern	"C" {
 /*
  * Output an instruction that has a word argument.
  */
-#define	CVM_OUT_WORD(opcode,value)	\
+#define	_CVM_OUT_WORD(opcode,value)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_WORD((value)); \
 			} while (0)
-#define	CVMP_OUT_WORD(opcode,value)	\
+#define	_CVMP_OUT_WORD(opcode,value)	\
 			do { \
 				_CVMP_OPCODE((opcode)); \
 				_CVM_WORD((value)); \
@@ -725,13 +708,7 @@ extern	"C" {
 /*
  * Output an instruction that has two word arguments.
  */
-#define	CVM_OUT_WORD2(opcode,value1,value2)	\
-			do { \
-				_CVM_OPCODE((opcode)); \
-				_CVM_WORD((value1)); \
-				_CVM_WORD((value2)); \
-			} while (0)
-#define	CVMP_OUT_WORD2(opcode,value1,value2)	\
+#define	_CVMP_OUT_WORD2(opcode,value1,value2)	\
 			do { \
 				_CVMP_OPCODE((opcode)); \
 				_CVM_WORD((value1)); \
@@ -741,12 +718,12 @@ extern	"C" {
 /*
  * Output an instruction that has a pointer argument.
  */
-#define	CVM_OUT_PTR(opcode,value)	\
+#define	_CVM_OUT_PTR(opcode,value)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_PTR((value)); \
 			} while (0)
-#define	CVMP_OUT_PTR(opcode,value)	\
+#define	_CVMP_OUT_PTR(opcode,value)	\
 			do { \
 				_CVMP_OPCODE((opcode)); \
 				_CVM_PTR((value)); \
@@ -755,7 +732,7 @@ extern	"C" {
 /*
  * Output an instruction that has two pointer arguments.
  */
-#define	CVM_OUT_PTR2(opcode,value1,value2)	\
+#define	_CVM_OUT_PTR2(opcode,value1,value2)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_PTR((value1)); \
@@ -765,7 +742,7 @@ extern	"C" {
 /*
  * Output an instruction that has a word argument and a pointer argument.
  */
-#define	CVMP_OUT_WORD_PTR(opcode,value1,value2)	\
+#define	_CVMP_OUT_WORD_PTR(opcode,value1,value2)	\
 			do { \
 				_CVMP_OPCODE((opcode)); \
 				_CVM_WORD((value1)); \
@@ -775,7 +752,7 @@ extern	"C" {
 /*
  * Output an instruction that has two word arguments and a pointer argument.
  */
-#define	CVMP_OUT_WORD2_PTR(opcode,value1,value2,value3)	\
+#define	_CVMP_OUT_WORD2_PTR(opcode,value1,value2,value3)	\
 			do { \
 				_CVMP_OPCODE((opcode)); \
 				_CVM_WORD((value1)); \
@@ -786,7 +763,7 @@ extern	"C" {
 /*
  * Output an instruction that has two word arguments and two pointer arguments.
  */
-#define	CVMP_OUT_WORD2_PTR2(opcode,value1,value2,value3,value4)	\
+#define	_CVMP_OUT_WORD2_PTR2(opcode,value1,value2,value3,value4)	\
 			do { \
 				_CVMP_OPCODE((opcode)); \
 				_CVM_WORD((value1)); \
@@ -798,7 +775,7 @@ extern	"C" {
 /*
  * Output an instruction that has a wide argument and a pointer argument.
  */
-#define	CVM_OUT_WIDE_PTR(opcode,value1,value2)	\
+#define	_CVM_OUT_WIDE_PTR(opcode,value1,value2)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_WORD((value1)); \
@@ -808,7 +785,7 @@ extern	"C" {
 /*
  * Output an instruction that has a "long" argument.
  */
-#define	CVM_OUT_LONG(opcode,arg)	\
+#define	_CVM_OUT_LONG(opcode,arg)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_COPY((arg), 8); \
@@ -817,7 +794,7 @@ extern	"C" {
 /*
  * Output an instruction that has a "float" argument.
  */
-#define	CVM_OUT_FLOAT(opcode,arg)	\
+#define	_CVM_OUT_FLOAT(opcode,arg)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_COPY((arg), 4); \
@@ -826,7 +803,7 @@ extern	"C" {
 /*
  * Output an instruction that has a "double" argument.
  */
-#define	CVM_OUT_DOUBLE(opcode,arg)	\
+#define	_CVM_OUT_DOUBLE(opcode,arg)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_COPY((arg), 8); \
@@ -835,7 +812,7 @@ extern	"C" {
 /*
  * Output a short branch from the current position.
  */
-#define	CVM_OUT_BRANCH(opcode,offset)	\
+#define	_CVM_OUT_BRANCH(opcode,offset)	\
 			do { \
 				unsigned char *_posn = CVM_POSN(); \
 				_CVM_OPCODE((opcode)); \
@@ -845,13 +822,13 @@ extern	"C" {
 /*
  * Output a long branch from the current position.
  */
-#define	CVM_OUT_BRANCH_LONG(opcode,offset)	\
-			CVM_OUT_BRANCH((opcode), (offset))
+#define	_CVM_OUT_BRANCH_LONG(opcode,offset)	\
+			_CVM_OUT_BRANCH((opcode), (offset))
 
 /*
  * Output a branch placeholder at the current position.
  */
-#define	CVM_OUT_BRANCH_PLACEHOLDER(opcode)	\
+#define	_CVM_OUT_BRANCH_PLACEHOLDER(opcode)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
 				_CVM_PTR(0); \
@@ -860,7 +837,7 @@ extern	"C" {
 /*
  * Backpatch a short branch.
  */
-#define	CVM_BACKPATCH_BRANCH(pc,relative)	\
+#define	_CVM_BACKPATCH_BRANCH(pc,relative)	\
 			do { \
 				if(_CVM_VALID((pc), 2)) \
 				{ \
@@ -872,20 +849,20 @@ extern	"C" {
 /*
  * Backpatch a long branch.
  */
-#define	CVM_BACKPATCH_BRANCH_LONG(pc,relative)	\
+#define	_CVM_BACKPATCH_BRANCH_LONG(pc,relative)	\
 			CVM_BACKPATCH_BRANCH((pc), (relative))
 
 /*
  * Compute the offset of the default switch case from the
  * number of entries.
  */
-#define	CVM_DEFCASE_OFFSET(numEntries)	\
+#define	_CVM_DEFCASE_OFFSET(numEntries)	\
 			(((numEntries) + 3) * sizeof(void *))
 
 /*
  * Output the head of a switch instruction.
  */
-#define	CVM_OUT_SWHEAD(numEntries,defCase)	\
+#define	_CVM_OUT_SWHEAD(numEntries,defCase)	\
 			do { \
 				unsigned char *_posn = CVM_POSN(); \
 				_CVM_OPCODE(COP_SWITCH); \
@@ -896,7 +873,7 @@ extern	"C" {
 /*
  * Output a switch entry at the current position.
  */
-#define	CVM_OUT_SWENTRY(swstart,relative)	\
+#define	_CVM_OUT_SWENTRY(swstart,relative)	\
 			do { \
 				_CVM_PTR((swstart) + (ILNativeInt)(relative)); \
 			} while (0)
@@ -904,7 +881,7 @@ extern	"C" {
 /*
  * Output a switch entry placeholder at the current position.
  */
-#define	CVM_OUT_SWENTRY_PLACEHOLDER()	\
+#define	_CVM_OUT_SWENTRY_PLACEHOLDER()	\
 			do { \
 				_CVM_PTR(0); \
 			} while (0)
@@ -912,7 +889,7 @@ extern	"C" {
 /*
  * Backpatch a switch entry.
  */
-#define	CVM_BACKPATCH_SWENTRY(swstart,relative,writepc)	\
+#define	_CVM_BACKPATCH_SWENTRY(swstart,relative,writepc)	\
 			do { \
 				if(_CVM_VALID((writepc), 1)) \
 				{ \
@@ -924,7 +901,7 @@ extern	"C" {
 /*
  * Output the start of a try header.
  */
-#define	CVM_OUT_TRY(start,end)	\
+#define	_CVM_OUT_TRY(start,end)	\
 			do { \
 				_CVM_WORD((start)); \
 				_CVM_WORD((end)); \
@@ -934,7 +911,7 @@ extern	"C" {
 /*
  * Backpatch a try header with the length value.
  */
-#define	CVM_BACKPATCH_TRY(trypc)	\
+#define	_CVM_BACKPATCH_TRY(trypc)	\
 			do { \
 				if(_CVM_VALID((trypc), 3)) \
 				{ \
@@ -946,7 +923,7 @@ extern	"C" {
 /*
  * Output a "pushdown" instruction placeholder.
  */
-#define	CVM_OUT_PUSHDOWN()		\
+#define	_CVM_OUT_PUSHDOWN()		\
 			do { \
 				_CVM_OPCODE(COP_PUSHDOWN); \
 				_CVM_WORD(0); \
@@ -955,7 +932,7 @@ extern	"C" {
 /*
  * Backpatch a "pushdown" instruction.
  */
-#define	CVM_BACKPATCH_PUSHDOWN(pushpc,value)	\
+#define	_CVM_BACKPATCH_PUSHDOWN(pushpc,value)	\
 			do { \
 				if(_CVM_VALID((pushpc), 2)) \
 				{ \
@@ -967,7 +944,7 @@ extern	"C" {
 /*
  * Output a "ckheight" instruction placeholder.
  */
-#define	CVM_OUT_CKHEIGHT()		\
+#define	_CVM_OUT_CKHEIGHT()		\
 			do { \
 				_CVM_OPCODE(COP_CKHEIGHT_N); \
 				_CVM_WORD(0); \
@@ -976,7 +953,7 @@ extern	"C" {
 /*
  * Backpatch a "ckheight" instruction.
  */
-#define	CVM_BACKPATCH_CKHEIGHT(ckpc,value)	\
+#define	_CVM_BACKPATCH_CKHEIGHT(ckpc,value)	\
 			do { \
 				if(_CVM_VALID((ckpc), 2)) \
 				{ \
@@ -996,7 +973,7 @@ extern	"C" {
 /*
  * Output a "jump over" instruction to skip a non-constructor entry point.
  */
-#define	CVM_OUT_JUMPOVER(pc,relative)	\
+#define	_CVM_OUT_JUMPOVER(pc,relative)	\
 			do { \
 				if(_CVM_VALID((pc), 2)) \
 				{ \
@@ -1010,12 +987,279 @@ extern	"C" {
 /*
  * Output a "break" instruction.
  */
-#define	CVM_OUT_BREAK(subcode)	\
+#define	_CVM_OUT_BREAK(subcode)	\
 			do { \
-				CVM_OUT_WORD(COP_BREAK, (subcode)); \
+				_CVM_OUT_WORD(COP_BREAK, (subcode)); \
 			} while (0)
 
 #endif /* IL_CVM_DIRECT */
+
+/*
+ * Public versions of the above macros.  If we are reducing code
+ * sizes, then we define them as functions instead.
+ */
+#ifndef	IL_CONFIG_REDUCE_CODE
+
+#define	CVM_OUT_WIDE(opcode,value)	_CVM_OUT_WIDE((opcode), (value))
+#define	CVM_OUT_DWIDE(opcode,value1,value2)	\
+			_CVM_OUT_DWIDE((opcode), (value1), (value2))
+#define	CVM_OUT_DWIDE_PTR(opcode,value1,value2,value3)	\
+			_CVM_OUT_DWIDE_PTR((opcode), (value1), (value2), (value3))
+#define	CVM_OUT_RETURN(size)		_CVM_OUT_RETURN((size))
+#define	CVM_OUT_NONE(opcode)		_CVM_OUT_NONE((opcode))
+#define	CVMP_OUT_NONE(opcode)		_CVMP_OUT_NONE((opcode))
+#define	CVM_OUT_BYTE(opcode,value)	_CVM_OUT_BYTE((opcode), (value))
+#define	CVM_OUT_BYTE2(opcode,value1,value2)	\
+			_CVM_OUT_BYTE2((opcode), (value1), (value2))
+#define	CVM_OUT_WORD(opcode,value)	_CVM_OUT_WORD((opcode), (value))
+#define	CVMP_OUT_WORD(opcode,value)	_CVMP_OUT_WORD((opcode), (value))
+#define	CVMP_OUT_WORD2(opcode,value1,value2)	\
+			_CVMP_OUT_WORD2((opcode), (value1), (value2))
+#define	CVM_OUT_PTR(opcode,value)	_CVM_OUT_PTR((opcode), (value))
+#define	CVMP_OUT_PTR(opcode,value)	_CVMP_OUT_PTR((opcode), (value))
+#define	CVM_OUT_PTR2(opcode,value1,value2)	\
+			_CVM_OUT_PTR2((opcode), (value1), (value2))
+#define	CVMP_OUT_WORD_PTR(opcode,value1,value2)	\
+			_CVMP_OUT_WORD_PTR((opcode), (value1), (value2))
+#define	CVMP_OUT_WORD2_PTR(opcode,value1,value2,value3)	\
+			_CVMP_OUT_WORD2_PTR((opcode), (value1), (value2), (value3))
+#define	CVMP_OUT_WORD2_PTR2(opcode,value1,value2,value3,value4)	\
+	_CVMP_OUT_WORD2_PTR2((opcode), (value1), (value2), (value3), (value4))
+#define	CVM_OUT_WIDE_PTR(opcode,value1,value2)	\
+			_CVM_OUT_WIDE_PTR((opcode), (value1), (value2))
+#define	CVM_OUT_LONG(opcode,arg)	_CVM_OUT_LONG((opcode), (arg))
+#define	CVM_OUT_FLOAT(opcode,arg)	_CVM_OUT_FLOAT((opcode), (arg))
+#define	CVM_OUT_DOUBLE(opcode,arg)	_CVM_OUT_DOUBLE((opcode), (arg))
+#define	CVM_OUT_BRANCH(opcode,offset)	\
+			_CVM_OUT_BRANCH((opcode), (offset))
+#define	CVM_OUT_BRANCH_LONG(opcode,offset)	\
+			_CVM_OUT_BRANCH_LONG((opcode), (offset))
+#define	CVM_OUT_BRANCH_PLACEHOLDER(opcode)	\
+			_CVM_OUT_BRANCH_PLACEHOLDER((opcode))
+#define	CVM_BACKPATCH_BRANCH(pc,relative)	\
+			_CVM_BACKPATCH_BRANCH((pc), (relative))
+#define	CVM_BACKPATCH_BRANCH_LONG(pc,relative)	\
+			_CVM_BACKPATCH_BRANCH_LONG((pc), (relative))
+#define	CVM_DEFCASE_OFFSET(numEntries)	\
+			_CVM_DEFCASE_OFFSET((numEntries))
+#define	CVM_OUT_SWHEAD(numEntries,defCase)	\
+			_CVM_OUT_SWHEAD((numEntries), (defCase))
+#define	CVM_OUT_SWENTRY(swstart,relative)	\
+			_CVM_OUT_SWENTRY((swstart), (relative))
+#define	CVM_OUT_SWENTRY_PLACEHOLDER()	\
+			_CVM_OUT_SWENTRY_PLACEHOLDER()
+#define	CVM_BACKPATCH_SWENTRY(swstart,relative,writepc)	\
+			_CVM_BACKPATCH_SWENTRY((swstart), (relative), (writepc))
+#define	CVM_OUT_TRY(start,end)	\
+			_CVM_OUT_TRY((start), (end))
+#define	CVM_BACKPATCH_TRY(trypc)	\
+			_CVM_BACKPATCH_TRY((trypc))
+#define	CVM_OUT_PUSHDOWN()		\
+			_CVM_OUT_PUSHDOWN()
+#define	CVM_BACKPATCH_PUSHDOWN(pushpc,value)	\
+			_CVM_BACKPATCH_PUSHDOWN((pushpc), (value))
+#define	CVM_OUT_CKHEIGHT()		\
+			_CVM_OUT_CKHEIGHT()
+#define	CVM_BACKPATCH_CKHEIGHT(ckpc,value)	\
+			_CVM_BACKPATCH_CKHEIGHT((ckpc), (value))
+#define	CVM_OUT_JUMPOVER(pc,relative)	\
+			_CVM_OUT_JUMPOVER((pc), (relative))
+#define	CVM_OUT_BREAK(subcode)	\
+			_CVM_OUT_BREAK((subcode))
+
+#else /* IL_CONFIG_REDUCE_CODE */
+
+static void cvm_out_wide(ILCoder *coder, int opcode, ILInt32 value)
+{
+	_CVM_OUT_WIDE(opcode, value);
+}
+static void cvm_out_dwide(ILCoder *coder, int opcode,
+						  ILInt32 value1, ILInt32 value2)
+{
+	_CVM_OUT_DWIDE(opcode, value1, value2);
+}
+static void cvm_out_dwide_ptr(ILCoder *coder, int opcode,
+						      ILInt32 value1, ILInt32 value2,
+							  void *value3)
+{
+	_CVM_OUT_DWIDE_PTR(opcode, value1, value2, value3);
+}
+static void cvm_out_return(ILCoder *coder, ILInt32 size)
+{
+	_CVM_OUT_RETURN(size);
+}
+static void cvm_out_none(ILCoder *coder, int opcode)
+{
+	_CVM_OUT_NONE(opcode);
+}
+static void cvmp_out_none(ILCoder *coder, int opcode)
+{
+	_CVMP_OUT_NONE(opcode);
+}
+static void cvm_out_byte(ILCoder *coder, int opcode, ILInt32 value)
+{
+	_CVM_OUT_BYTE(opcode, value);
+}
+#ifdef IL_NATIVE_INT64
+static void cvm_out_byte2(ILCoder *coder, int opcode,
+						  ILInt32 value1, ILInt32 value2)
+{
+	_CVM_OUT_BYTE2(opcode, value1, value2);
+}
+#endif
+static void cvm_out_word(ILCoder *coder, int opcode, ILInt32 value)
+{
+	_CVM_OUT_WORD(opcode, value);
+}
+static void cvmp_out_word(ILCoder *coder, int opcode, ILInt32 value)
+{
+	_CVMP_OUT_WORD(opcode, value);
+}
+static void cvmp_out_word2(ILCoder *coder, int opcode,
+						   ILInt32 value1, ILInt32 value2)
+{
+	_CVMP_OUT_WORD2(opcode, value1, value2);
+}
+static void cvm_out_ptr(ILCoder *coder, int opcode, void *value)
+{
+	_CVM_OUT_PTR(opcode, value);
+}
+static void cvmp_out_ptr(ILCoder *coder, int opcode, void *value)
+{
+	_CVMP_OUT_PTR(opcode, value);
+}
+static void cvm_out_ptr2(ILCoder *coder, int opcode, void *value1, void *value2)
+{
+	_CVM_OUT_PTR2(opcode, value1, value2);
+}
+static void cvmp_out_word2_ptr(ILCoder *coder, int opcode,
+							   ILInt32 value1, ILInt32 value2, void *value3)
+{
+	_CVMP_OUT_WORD2_PTR(opcode, value1, value2, value3);
+}
+static void cvmp_out_word2_ptr2(ILCoder *coder, int opcode,
+							    ILInt32 value1, ILInt32 value2,
+								void *value3, void *value4)
+{
+	_CVMP_OUT_WORD2_PTR2(opcode, value1, value2, value3, value4);
+}
+
+#define	CVM_OUT_WIDE(opcode,value)	\
+	do { \
+		cvm_out_wide(((ILCoder *)coder), (opcode), (ILInt32)(value)); \
+	} while (0)
+#define	CVM_OUT_DWIDE(opcode,value1,value2)	\
+	do { \
+		cvm_out_dwide(((ILCoder *)coder), (opcode), \
+					  (ILInt32)(value1), (ILInt32)(value2)); \
+	} while (0)
+#define	CVM_OUT_DWIDE_PTR(opcode,value1,value2,value3)	\
+	do { \
+		cvm_out_dwide_ptr(((ILCoder *)coder), (opcode), \
+					      (ILInt32)(value1), (ILInt32)(value2), (value3)); \
+	} while (0)
+#define	CVM_OUT_RETURN(size)	\
+	do { \
+		cvm_out_return(((ILCoder *)coder), (ILInt32)(size)); \
+	} while (0)
+#define	CVM_OUT_NONE(opcode)	\
+	do { \
+		cvm_out_none(((ILCoder *)coder), (opcode)); \
+	} while (0)
+#define	CVMP_OUT_NONE(opcode)	\
+	do { \
+		cvmp_out_none(((ILCoder *)coder), (opcode)); \
+	} while (0)
+#define	CVM_OUT_BYTE(opcode,value)	\
+	do { \
+		cvm_out_byte(((ILCoder *)coder), (opcode), (ILInt32)(value)); \
+	} while (0)
+#define	CVM_OUT_BYTE2(opcode,value1,value2)	\
+	do { \
+		cvm_out_byte2(((ILCoder *)coder), (opcode), \
+					  (ILInt32)(value1), (ILInt32)(value2)); \
+	} while (0)
+#define	CVM_OUT_WORD(opcode,value)	\
+	do { \
+		cvm_out_word(((ILCoder *)coder), (opcode), (ILInt32)(value)); \
+	} while (0)
+#define	CVMP_OUT_WORD(opcode,value)	\
+	do { \
+		cvmp_out_word(((ILCoder *)coder), (opcode), (ILInt32)(value)); \
+	} while (0)
+#define	CVMP_OUT_WORD2(opcode,value1,value2)	\
+	do { \
+		cvmp_out_word2(((ILCoder *)coder), (opcode), \
+					   (ILInt32)(value1), (ILInt32)(value2)); \
+	} while (0)
+#define	CVM_OUT_PTR(opcode,value)	\
+	do { \
+		cvm_out_ptr(((ILCoder *)coder), (opcode), (value)); \
+	} while (0)
+#define	CVMP_OUT_PTR(opcode,value)	\
+	do { \
+		cvmp_out_ptr(((ILCoder *)coder), (opcode), (value)); \
+	} while (0)
+#define	CVM_OUT_PTR2(opcode,value1,value2)	\
+	do { \
+		cvm_out_ptr2(((ILCoder *)coder), (opcode), (value1), (value2)); \
+	} while (0)
+#define	CVMP_OUT_WORD_PTR(opcode,value1,value2)	\
+			_CVMP_OUT_WORD_PTR((opcode), (value1), (value2))
+#define	CVMP_OUT_WORD2_PTR(opcode,value1,value2,value3)	\
+	do { \
+		cvmp_out_word2_ptr(((ILCoder *)coder), (opcode), \
+						   (ILInt32)(value1), (ILInt32)(value2), (value3)); \
+	} while (0)
+#define	CVMP_OUT_WORD2_PTR2(opcode,value1,value2,value3,value4)	\
+	do { \
+		cvmp_out_word2_ptr2(((ILCoder *)coder), (opcode), \
+						    (ILInt32)(value1), (ILInt32)(value2), \
+							(value3), (value4)); \
+	} while (0)
+#define	CVM_OUT_WIDE_PTR(opcode,value1,value2)	\
+			_CVM_OUT_WIDE_PTR((opcode), (value1), (value2))
+#define	CVM_OUT_LONG(opcode,arg)	_CVM_OUT_LONG((opcode), (arg))
+#define	CVM_OUT_FLOAT(opcode,arg)	_CVM_OUT_FLOAT((opcode), (arg))
+#define	CVM_OUT_DOUBLE(opcode,arg)	_CVM_OUT_DOUBLE((opcode), (arg))
+#define	CVM_OUT_BRANCH(opcode,offset)	\
+			_CVM_OUT_BRANCH((opcode), (offset))
+#define	CVM_OUT_BRANCH_LONG(opcode,offset)	\
+			_CVM_OUT_BRANCH_LONG((opcode), (offset))
+#define	CVM_OUT_BRANCH_PLACEHOLDER(opcode)	\
+			_CVM_OUT_BRANCH_PLACEHOLDER((opcode))
+#define	CVM_BACKPATCH_BRANCH(pc,relative)	\
+			_CVM_BACKPATCH_BRANCH((pc), (relative))
+#define	CVM_BACKPATCH_BRANCH_LONG(pc,relative)	\
+			_CVM_BACKPATCH_BRANCH_LONG((pc), (relative))
+#define	CVM_DEFCASE_OFFSET(numEntries)	\
+			_CVM_DEFCASE_OFFSET((numEntries))
+#define	CVM_OUT_SWHEAD(numEntries,defCase)	\
+			_CVM_OUT_SWHEAD((numEntries), (defCase))
+#define	CVM_OUT_SWENTRY(swstart,relative)	\
+			_CVM_OUT_SWENTRY((swstart), (relative))
+#define	CVM_OUT_SWENTRY_PLACEHOLDER()	\
+			_CVM_OUT_SWENTRY_PLACEHOLDER()
+#define	CVM_BACKPATCH_SWENTRY(swstart,relative,writepc)	\
+			_CVM_BACKPATCH_SWENTRY((swstart), (relative), (writepc))
+#define	CVM_OUT_TRY(start,end)	\
+			_CVM_OUT_TRY((start), (end))
+#define	CVM_BACKPATCH_TRY(trypc)	\
+			_CVM_BACKPATCH_TRY((trypc))
+#define	CVM_OUT_PUSHDOWN()		\
+			_CVM_OUT_PUSHDOWN()
+#define	CVM_BACKPATCH_PUSHDOWN(pushpc,value)	\
+			_CVM_BACKPATCH_PUSHDOWN((pushpc), (value))
+#define	CVM_OUT_CKHEIGHT()		\
+			_CVM_OUT_CKHEIGHT()
+#define	CVM_BACKPATCH_CKHEIGHT(ckpc,value)	\
+			_CVM_BACKPATCH_CKHEIGHT((ckpc), (value))
+#define	CVM_OUT_JUMPOVER(pc,relative)	\
+			_CVM_OUT_JUMPOVER((pc), (relative))
+#define	CVM_OUT_BREAK(subcode)	\
+			_CVM_OUT_BREAK((subcode))
+
+#endif /* IL_CONFIG_REDUCE_CODE */
 
 #ifdef	__cplusplus
 };

@@ -8,7 +8,7 @@ wsdl-pnet.exe:
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-b "$(srcdir)" -B . -f wsdl.build all
 
-CLEANFILES = wdsl-pnet.exe
+CLEANFILES = wsdl-pnet.exe
 
 install-exec-local:
 	@$(NORMAL_INSTALL)

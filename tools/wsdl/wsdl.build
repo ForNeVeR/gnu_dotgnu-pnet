@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="wdsl" default="all">
+<project name="wsdl" default="all">
 	<target name="all">
 		<compile target="executable"
 				 output="wsdl-pnet.exe"

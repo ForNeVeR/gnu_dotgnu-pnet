@@ -12,20 +12,6 @@
 			<sources basedir="${mono.sources}/class/Mono.Security">
 				<includes name="**/*.cs"/> 
 				<excludes name="Test/**"/>
-
-				<!-- TODO: figure out why the TLS code doesn't build -->
-				<excludes name="Mono.Security.Protocol.Tls/Alert*.cs"/>
-				<excludes name="Mono.Security.Protocol.Tls/Cipher*.cs"/>
-				<excludes name="Mono.Security.Protocol.Tls/Https*.cs"/>
-				<excludes name="Mono.Security.Protocol.Tls/Record*.cs"/>
-				<excludes name="Mono.Security.Protocol.Tls/Tls*.cs"/>
-				<excludes name="Mono.Security.Protocol.Tls/Client*.cs"/>
-				<excludes name="Mono.Security.Protocol.Tls/Server*.cs"/>
-				<excludes name="Mono.Security.Protocol.Tls/Context*.cs"/>
-				<excludes name="Mono.Security.Protocol.Tls/Ssl*.cs"/>
-				<excludes name="Mono.Security.Protocol.Tls.Handshake/**"/>
-				<excludes name="Mono.Security.Protocol.Tls.Handshake.Client/**"/>
-				<excludes name="Mono.Security.Protocol.Tls.Handshake.Server/**"/>
 			</sources>
 
 			<references>

@@ -1,3 +1,10 @@
+2004-06-13  Klaus Treichel  <ktreichel@webllde>
+
+	* class/Mono.Security/Mono.Security.build: remove excludes from build file
+	since they compile now.
+
+	* tools/wsdl/Makefile.am, tools/wsdl/wsdl.build: change last wdsls to wsdl
+
 2004-06-13  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: change tools/wdsl/Makefile to tools/wsdl/Makefile

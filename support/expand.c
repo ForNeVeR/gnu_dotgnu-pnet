@@ -23,6 +23,9 @@
 #ifdef HAVE_UNISTD_H
 	#include <unistd.h>
 #endif
+#ifdef IL_WIN32_NATIVE
+	#include <windows.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -33,9 +36,14 @@ char *ILExpandFilename(const char *filename, char *searchPath)
 	char *env;
 	char *path;
 	char *newPath;
-	int len, len2;
-
-	/* TODO: Win32 pathname expansion */
+	int len;
+#ifdef IL_WIN32_NATIVE
+	char fullName[MAX_PATH];
+	LPSTR filePart;
+	DWORD pathLen;
+#else
+	int len2;
+#endif
 
 	/* Should we do a path search? */
 	if(searchPath && strchr(filename, '/') == 0 && strchr(filename, '\\') == 0)
@@ -45,14 +53,22 @@ char *ILExpandFilename(const char *filename, char *searchPath)
 		{
 			while(*env != '\0')
 			{
+			#ifndef IL_WIN32_NATIVE
 				if(*env == ':')
+			#else
+				if(*env == ';')
+			#endif
 				{
 					++env;
 				}
 				else
 				{
 					len = 1;
+				#ifndef IL_WIN32_NATIVE
 					while(env[len] != '\0' && env[len] != ':')
+				#else
+					while(env[len] != '\0' && env[len] != ';')
+				#endif
 					{
 						++len;
 					}
@@ -60,7 +76,11 @@ char *ILExpandFilename(const char *filename, char *searchPath)
 					if(path)
 					{
 						strncpy(path, env, len);
+					#ifndef IL_WIN32_NATIVE
 						path[len++] = '/';
+					#else
+						path[len++] = '\\';
+					#endif
 						strcpy(path + len, filename);
 						if(ILFileExists(path, &newPath))
 						{
@@ -79,6 +99,7 @@ char *ILExpandFilename(const char *filename, char *searchPath)
 		}
 	}
 
+#ifndef IL_WIN32_NATIVE
 	/* Get the starting directory for name resolution */
 	if(*filename == '/')
 	{
@@ -168,6 +189,27 @@ char *ILExpandFilename(const char *filename, char *searchPath)
 
 	/* Done */
 	return path;
+
+#else /* IL_WIN32_NATIVE */
+
+	/* Expand the filename using Win32 functions */
+	filePart = 0;
+	pathLen = GetFullPathName(filename, sizeof(fullName), fullName, &filePart);
+	if(!pathLen)
+	{
+		/* Something is wrong with the filename, so just return it as-is */
+		return ILDupString(filename);
+	}
+	else if(pathLen < sizeof(fullName))
+	{
+		return ILDupString(fullName);
+	}
+	newPath = (char *)ILMalloc(pathLen + 1);
+	pathLen = GetFullPathName(filename, pathLen + 1, newPath, &filePart);
+	newPath[pathLen] = '\0';
+	return newPath;
+
+#endif /* IL_WIN32_NATIVE */
 }
 
 #ifdef	__cplusplus

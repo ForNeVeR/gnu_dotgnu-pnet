@@ -32,14 +32,18 @@ AC_SUBST(TREECC_VERSION)
 AC_PATH_PROG(SYSTEM_AR, ar)
 
 dnl Option to disable cygwin1.dll under Windows.
+case "$host$" in
+	*-*-cygwin*) def_cygwin=false ;;
+	*)           def_cygwin=true ;;
+esac
 AC_SUBST(SOCKETLIBS)
 AC_ARG_ENABLE(cygwin,
-[  --disable-cygwin        Disable cygwin1.dll under Windows],
+[  --enable-cygwin         Enable cygwin1.dll under Windows],
 [case "${enableval}" in
   yes) cygwin=true ;;
   no)  cygwin=false ;;
   *) AC_MSG_ERROR(bad value ${enableval} for --enable-cygwin) ;;
-esac],[cygwin=true])
+esac],[cygwin=$def_cygwin])
 if test x$cygwin = xfalse ; then
   CC="$CC -mno-cygwin"
   SOCKETLIBS="-lwsock32"
@@ -231,10 +235,12 @@ if test "x$suppress_libm" = "xno" ; then
 				  LIBS="-lz $LIBS"], [])
 else
 	dnl Use the static version of zlib under mingw32 to avoid a
-	dnl dependency upon "mgwz.dll".
-	AC_CHECK_LIB(z, inflate,
-				 [have_libz=yes
-		 		  LIBS="-Bstatic -lz -Bdynamic $LIBS"], [])
+	dnl dependency upon "mgwz.dll".  Disabled for now because
+	dnl the "-Bstatic" trick doesn't work on recent mingw32's.
+	dnl AC_CHECK_LIB(z, inflate,
+	dnl 			 [have_libz=yes
+	dnl 	 		  LIBS="-Bstatic -lz -Bdynamic $LIBS"], [])
+	:
 fi
 if test "x$have_libz" = "xyes" ; then
 	AC_DEFINE(HAVE_LIBZ, 1, [Define if you have the z library (-lz).])

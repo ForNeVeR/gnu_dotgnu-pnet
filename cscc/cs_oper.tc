@@ -23,7 +23,8 @@
 /*
  * Look for a user-specified binary operator of a particular name.
  */
-static ILMethod *FindUserBinaryOperator(const char *name,
+static ILMethod *FindUserBinaryOperator(ILGenInfo *info,
+										const char *name,
 										ILType *arg1Type,
 										ILType *arg2Type)
 {
@@ -32,7 +33,7 @@ static ILMethod *FindUserBinaryOperator(const char *name,
 	/* Try looking in the first type */
 	if(ILType_IsClass(arg1Type))
 	{
-		method = ILResolveBinaryOperator(ILType_ToClass(arg1Type),
+		method = ILResolveBinaryOperator(info, ILType_ToClass(arg1Type),
 										 name, arg1Type, arg2Type);
 		if(method)
 		{
@@ -41,7 +42,7 @@ static ILMethod *FindUserBinaryOperator(const char *name,
 	}
 	else if(ILType_IsValueType(arg1Type))
 	{
-		method = ILResolveBinaryOperator(ILType_ToValueType(arg1Type),
+		method = ILResolveBinaryOperator(info, ILType_ToValueType(arg1Type),
 										 name, arg1Type, arg2Type);
 		if(method)
 		{
@@ -52,7 +53,7 @@ static ILMethod *FindUserBinaryOperator(const char *name,
 	/* Try looking in the second type */
 	if(ILType_IsClass(arg2Type))
 	{
-		method = ILResolveBinaryOperator(ILType_ToClass(arg2Type),
+		method = ILResolveBinaryOperator(info, ILType_ToClass(arg2Type),
 										 name, arg1Type, arg2Type);
 		if(method)
 		{
@@ -61,7 +62,7 @@ static ILMethod *FindUserBinaryOperator(const char *name,
 	}
 	else if(ILType_IsValueType(arg2Type))
 	{
-		method = ILResolveBinaryOperator(ILType_ToValueType(arg2Type),
+		method = ILResolveBinaryOperator(info, ILType_ToValueType(arg2Type),
 										 name, arg1Type, arg2Type);
 		if(method)
 		{
@@ -114,7 +115,7 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator(name, value1.type, value2.type);
+	method = FindUserBinaryOperator(info, name, value1.type, value2.type);
 	if(method)
 	{
 		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
@@ -145,13 +146,14 @@ error:
 /*
  * Look for a user-specified unary operator of a particular name.
  */
-static ILMethod *FindUserUnaryOperator(const char *name, ILType *argType)
+static ILMethod *FindUserUnaryOperator(ILGenInfo *info, const char *name,
+									   ILType *argType)
 {
 	ILMethod *method;
 
 	if(ILType_IsClass(argType))
 	{
-		method = ILResolveUnaryOperator(ILType_ToClass(argType),
+		method = ILResolveUnaryOperator(info, ILType_ToClass(argType),
 										name, argType);
 		if(method)
 		{
@@ -160,7 +162,7 @@ static ILMethod *FindUserUnaryOperator(const char *name, ILType *argType)
 	}
 	else if(ILType_IsValueType(argType))
 	{
-		method = ILResolveUnaryOperator(ILType_ToValueType(argType),
+		method = ILResolveUnaryOperator(info, ILType_ToValueType(argType),
 										name, argType);
 		if(method)
 		{
@@ -211,7 +213,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserUnaryOperator(name, value.type);
+	method = FindUserUnaryOperator(info, name, value.type);
 	if(method)
 	{
 		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
@@ -296,7 +298,8 @@ ILNode_SemAnalysis(ILNode_Add)
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator("op_Addition", value1.type, value2.type);
+	method = FindUserBinaryOperator(info, "op_Addition",
+									value1.type, value2.type);
 	if(method)
 	{
 		returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -559,7 +562,7 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator(name, value1.type, value2.type);
+	method = FindUserBinaryOperator(info, name, value1.type, value2.type);
 	if(method)
 	{
 		returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -751,7 +754,7 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	}
 
 	/* Look for an appropriate operator */
-	method = FindUserUnaryOperator(opName, value.type);
+	method = FindUserUnaryOperator(info, opName, value.type);
 	if(!method)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -848,9 +851,9 @@ ILNode_SemAnalysis(ILNode_ToBool)
 	   the other one */
 	classInfo = ILType_ToClass(value.type);
 	trueMethod = ILResolveConversionOperator
-					(classInfo, "op_True", value.type, ILType_Boolean);
+					(info, classInfo, "op_True", value.type, ILType_Boolean);
 	falseMethod = ILResolveConversionOperator
-					(classInfo, "op_False", value.type, ILType_Boolean);
+					(info, classInfo, "op_False", value.type, ILType_Boolean);
 	if(!trueMethod && !falseMethod)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -942,7 +945,7 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
 	/* If the type is not boolean, we need to look for an operator */
 	if(value.type != ILType_Boolean)
 	{
-		method = FindUserUnaryOperator("op_LogicalNot", value.type);
+		method = FindUserUnaryOperator(info, "op_LogicalNot", value.type);
 		if(method)
 		{
 			returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -989,12 +992,12 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 	   (ILType_IsValueType(value1.type) || ILType_IsClass(value1.type)))
 	{
 		method1 = FindUserBinaryOperator
-					("op_BitwiseAnd", value1.type, value1.type);
+					(info, "op_BitwiseAnd", value1.type, value1.type);
 		method2 = ILResolveConversionOperator
-					(ILType_ToClass(value1.type), "op_True", value1.type,
+					(info, ILType_ToClass(value1.type), "op_True", value1.type,
 					 ILType_Boolean);
 		method3 = ILResolveConversionOperator
-					(ILType_ToClass(value1.type), "op_False", value1.type,
+					(info, ILType_ToClass(value1.type), "op_False", value1.type,
 					 ILType_Boolean);
 		if(method1 && (method2 || method3))
 		{
@@ -1080,12 +1083,12 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 	   (ILType_IsValueType(value1.type) || ILType_IsClass(value1.type)))
 	{
 		method1 = FindUserBinaryOperator
-					("op_BitwiseOr", value1.type, value1.type);
+					(info, "op_BitwiseOr", value1.type, value1.type);
 		method2 = ILResolveConversionOperator
-					(ILType_ToClass(value1.type), "op_True", value1.type,
+					(info, ILType_ToClass(value1.type), "op_True", value1.type,
 					 ILType_Boolean);
 		method3 = ILResolveConversionOperator
-					(ILType_ToClass(value1.type), "op_False", value1.type,
+					(info, ILType_ToClass(value1.type), "op_False", value1.type,
 					 ILType_Boolean);
 		if(method1 && (method2 || method3))
 		{
@@ -1193,7 +1196,7 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator(name, value1.type, value2.type);
+	method = FindUserBinaryOperator(info, name, value1.type, value2.type);
 	if(method)
 	{
 		returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -1408,34 +1411,46 @@ ILNode_SemAnalysis(ILNode_Comma)
 }
 
 /*
- * Perform semantic analysis for the "as" operator.
- */
-ILNode_SemAnalysis(ILNode_As)
-{
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
-}
-
-/*
  * Perform semantic analysis for the "as untyped" operator.
  */
 ILNode_SemAnalysis(ILNode_AsUntyped)
 {
-	/* TODO */
+#if 0
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
-}
+	ILType *type;
 
-/*
- * Perform semantic analysis for the "is" operator.
- */
-ILNode_SemAnalysis(ILNode_Is)
-{
+	/* Perform semantic analysis on the two arguments */
+	if(!CSSemExpectValue(node->expr1, info, &(node->expr1), &value))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid operands to binary `as'");
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILFindSystemType(info, "Object");
+	}
+	type = CSSemType(node->expr2, info, &(node->expr2));
+
+	/* The type must be an object reference type */
+	if(!ILTypeAssignCompatible(info->image, 0, type))
+	{
+		CSErrorOnLine(yygetfilename(node->expr2), yygetlinenum(node->expr2),
+					  "reference type required");
+		type = ILFindSystemType(info, "Object");
+	}
+
+	/* TODO: box the value if it isn't a reference */
+
+	/* Determine if there is an implicit reference coercion.
+	   The C# standard */
+
+	/* If there is an implicit coercion to "type", then use that */
+	if(ILCoerce(info, node->expr1, &(node->expr1), value.type, type))
+	{
+		*parent = node->expr1;
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = type;
+		return value;
+	}
+#endif
 	/* TODO */
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
@@ -1603,6 +1618,22 @@ ILNode_SemAnalysis(ILNode_UserPreInc),
 ILNode_SemAnalysis(ILNode_UserPreDec),
 ILNode_SemAnalysis(ILNode_UserPostInc),
 ILNode_SemAnalysis(ILNode_UserPostDec)
+{
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for the "as" operator.
+ */
+ILNode_SemAnalysis(ILNode_As)
+{
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for the "is" operator.
+ */
+ILNode_SemAnalysis(ILNode_Is)
 {
 	return CSSemValueDefault;
 }

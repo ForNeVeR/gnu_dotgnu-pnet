@@ -600,7 +600,7 @@ ILNode_SemAnalysis(ILNode_CatchClause)
 	if(node->type)
 	{
 		thrownType = CSSemType(node->type, info, &(node->type));
-		if(!ILCanCoerce(info->context, thrownType, exceptionType))
+		if(!ILCanCoerce(info, thrownType, exceptionType))
 		{
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  		  		  "`%s' does not inherit from `%s'",

@@ -206,7 +206,7 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 									   "System.Runtime.CompilerServices");
 			if(type && ILType_IsClass(type))
 			{
-				ctor = ILResolveConstructor(ILType_ToClass(type),
+				ctor = ILResolveConstructor(info, ILType_ToClass(type),
 											ILField_Owner(field),
 											(ILType **)decConstArgs, 5);
 				if(ctor)

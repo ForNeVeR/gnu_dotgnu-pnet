@@ -28,38 +28,42 @@ extern	"C" {
 /*
  * Resolve a call to a static method.
  */
-ILMethod *ILResolveStaticMethod(ILClass *info, ILClass *callScope,
-							    const char *name, ILType **args, int numArgs);
+ILMethod *ILResolveStaticMethod(ILGenInfo *info, ILClass *classInfo,
+								ILClass *callScope, const char *name,
+								ILType **args, int numArgs);
 
 /*
  * Resolve a call to an instance method.
  */
-ILMethod *ILResolveInstanceMethod(ILClass *info, ILClass *callScope,
-							      const char *name, ILType **args, int numArgs);
+ILMethod *ILResolveInstanceMethod(ILGenInfo *info, ILClass *classInfo,
+								  ILClass *callScope, const char *name,
+								  ILType **args, int numArgs);
 
 /*
  * Resolve a call to a constructor.
  */
-ILMethod *ILResolveConstructor(ILClass *info, ILClass *callScope,
-							   ILType **args, int numArgs);
+ILMethod *ILResolveConstructor(ILGenInfo *info, ILClass *classInfo,
+							   ILClass *callScope, ILType **args, int numArgs);
 
 /*
  * Resolve a call to a unary operator.
  */
-ILMethod *ILResolveUnaryOperator(ILClass *info, const char *name,
-								 ILType *argType);
+ILMethod *ILResolveUnaryOperator(ILGenInfo *info, ILClass *classInfo,
+								 const char *name, ILType *argType);
 
 /*
  * Resolve a call to a binary operator.
  */
-ILMethod *ILResolveBinaryOperator(ILClass *info, const char *name,
-								  ILType *arg1Type, ILType *arg2Type);
+ILMethod *ILResolveBinaryOperator(ILGenInfo *info, ILClass *classInfo,
+								  const char *name, ILType *arg1Type,
+								  ILType *arg2Type);
 
 /*
  * Resolve a call to a conversion operator.
  */
-ILMethod *ILResolveConversionOperator(ILClass *info, const char *name,
-									  ILType *fromType, ILType *toType);
+ILMethod *ILResolveConversionOperator(ILGenInfo *info, ILClass *classInfo,
+									  const char *name, ILType *fromType,
+									  ILType *toType);
 
 #ifdef	__cplusplus
 };

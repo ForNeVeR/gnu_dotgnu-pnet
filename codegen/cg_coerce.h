@@ -93,7 +93,7 @@ void ILApplyBinaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
  * Determine if it is possible to coerce implicitly
  * from one type to another.
  */
-int ILCanCoerce(ILContext *context, ILType *fromType, ILType *toType);
+int ILCanCoerce(ILGenInfo *info, ILType *fromType, ILType *toType);
 
 /*
  * Determine if it is possible to coerce a node implicitly

@@ -36,8 +36,9 @@ extern	"C" {
 /*
  * Internal worker function for locating methods.
  */
-static ILMethod *ResolveMethod(ILClass *info, ILClass *callScope,
-							   const char *name, ILType **args, int numArgs,
+static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
+							   ILClass *callScope, const char *name,
+							   ILType **args, int numArgs,
 						       ILType *returnType, ILUInt32 attrs,
 							   int normalOrVirtual, int dontInherit)
 {
@@ -48,12 +49,12 @@ static ILMethod *ResolveMethod(ILClass *info, ILClass *callScope,
 	ILType *argType;
 	int arg, same;
 
-	while(info != 0)
+	while(classInfo != 0)
 	{
-		info = ILClassResolve(info);
+		classInfo = ILClassResolve(classInfo);
 		member = 0;
 		while((member = ILClassNextMemberByKind
-							(info, member, IL_META_MEMBERKIND_METHOD)) != 0)
+					(classInfo, member, IL_META_MEMBERKIND_METHOD)) != 0)
 		{
 			/* Filter out members that aren't interesting */
 			if(strcmp(ILMember_Name(member), name) != 0 ||
@@ -93,8 +94,7 @@ static ILMethod *ResolveMethod(ILClass *info, ILClass *callScope,
 				argType = ILTypeGetParam(signature, arg);
 				if(!ILTypeIdentical(argType, args[arg - 1]))
 				{
-					if(!ILCanCoerce(ILClassToContext(info),
-									argType, args[arg - 1]))
+					if(!ILCanCoerce(info, argType, args[arg - 1]))
 					{
 						break;
 					}
@@ -126,62 +126,67 @@ static ILMethod *ResolveMethod(ILClass *info, ILClass *callScope,
 		}
 
 		/* Move up to the parent class */
-		info = (dontInherit ? 0 : ILClass_Parent(info));
+		classInfo = (dontInherit ? 0 : ILClass_Parent(classInfo));
 	}
 
 	/* Return the closest match if we didn't find an exact match */
 	return closestMatch;
 }
 
-ILMethod *ILResolveStaticMethod(ILClass *info, ILClass *callScope,
-							    const char *name, ILType **args, int numArgs)
+ILMethod *ILResolveStaticMethod(ILGenInfo *info, ILClass *classInfo,
+								ILClass *callScope, const char *name,
+								ILType **args, int numArgs)
 {
-	return ResolveMethod(info, callScope, name, args, numArgs, 0,
+	return ResolveMethod(info, classInfo, callScope, name, args, numArgs, 0,
 					     IL_META_METHODDEF_STATIC, 0, 0);
 }
 
-ILMethod *ILResolveInstanceMethod(ILClass *info, ILClass *callScope,
-							      const char *name, ILType **args, int numArgs)
+ILMethod *ILResolveInstanceMethod(ILGenInfo *info, ILClass *classInfo,
+								  ILClass *callScope, const char *name,
+								  ILType **args, int numArgs)
 {
-	return ResolveMethod(info, callScope, name, args, numArgs, 0, 0, 1, 0);
+	return ResolveMethod(info, classInfo, callScope, name,
+						 args, numArgs, 0, 0, 1, 0);
 }
 
-ILMethod *ILResolveConstructor(ILClass *info, ILClass *callScope,
-							   ILType **args, int numArgs)
+ILMethod *ILResolveConstructor(ILGenInfo *info, ILClass *classInfo,
+							   ILClass *callScope, ILType **args, int numArgs)
 {
-	return ResolveMethod(info, callScope, ".ctor",
+	return ResolveMethod(info, classInfo, callScope, ".ctor",
 						 args, numArgs, ILType_Void,
 					     IL_META_METHODDEF_SPECIAL_NAME |
 					     IL_META_METHODDEF_RT_SPECIAL_NAME, 0, 1);
 }
 
-ILMethod *ILResolveUnaryOperator(ILClass *info, const char *name,
-								 ILType *argType)
+ILMethod *ILResolveUnaryOperator(ILGenInfo *info, ILClass *classInfo,
+							     const char *name, ILType *argType)
 {
 	ILType *args[1];
 	args[0] = argType;
-	return ResolveMethod(info, 0, name, args, 1, 0,
+	return ResolveMethod(info, classInfo, 0, name, args, 1, 0,
 					     IL_META_METHODDEF_STATIC |
 					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
 }
 
-ILMethod *ILResolveBinaryOperator(ILClass *info, const char *name,
-						 	      ILType *arg1Type, ILType *arg2Type)
+ILMethod *ILResolveBinaryOperator(ILGenInfo *info, ILClass *classInfo,
+								  const char *name, ILType *arg1Type,
+								  ILType *arg2Type)
 {
 	ILType *args[2];
 	args[0] = arg1Type;
 	args[1] = arg2Type;
-	return ResolveMethod(info, 0, name, args, 2, 0,
+	return ResolveMethod(info, classInfo, 0, name, args, 2, 0,
 					     IL_META_METHODDEF_STATIC |
 					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
 }
 
-ILMethod *ILResolveConversionOperator(ILClass *info, const char *name,
-									  ILType *fromType, ILType *toType)
+ILMethod *ILResolveConversionOperator(ILGenInfo *info, ILClass *classInfo,
+									  const char *name, ILType *fromType,
+									  ILType *toType)
 {
 	ILType *args[1];
 	args[0] = fromType;
-	return ResolveMethod(info, 0, name, args, 1, toType,
+	return ResolveMethod(info, classInfo, 0, name, args, 1, toType,
 					     IL_META_METHODDEF_STATIC |
 					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
 }

@@ -718,7 +718,7 @@ int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
 			{
 				/* We already started matching as an element type,
 				   so we must keep matching as an element type */
-				if(!ILCanCoerce(info->context, args[argNum].type, paramType))
+				if(!ILCanCoerce(info, args[argNum].type, paramType))
 				{
 					return 0;
 				}
@@ -728,13 +728,12 @@ int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
 				/* The match can either be as an array, or as an element type */
 				elemType = GetArrayElemType(args[argNum].type);
 				if(elemType != ILType_Invalid &&
-				   ILCanCoerce(info->context, elemType, paramType))
+				   ILCanCoerce(info, elemType, paramType))
 				{
 					/* Matched as an array */
 					++paramNum;
 				}
-				else if(!ILCanCoerce(info->context, args[argNum].type,
-									 paramType))
+				else if(!ILCanCoerce(info, args[argNum].type, paramType))
 				{
 					/* Could not match as an array or as an element */
 					return 0;
@@ -754,7 +753,7 @@ int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
 		else if(paramMod == ILParamMod_empty)
 		{
 			/* Match anything that can coerce to the parameter type */
-			if(!ILCanCoerce(info->context, args[argNum].type, paramType))
+			if(!ILCanCoerce(info, args[argNum].type, paramType))
 			{
 				return 0;
 			}
@@ -968,7 +967,7 @@ ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
 		{
 			elemType = GetArrayElemType(args[argNum].type);
 			if(elemType != ILType_Invalid &&
-			   ILCanCoerce(info->context, elemType, paramType))
+			   ILCanCoerce(info, elemType, paramType))
 			{
 				/* Pass the argument as an array */
 				paramType = ILTypeGetParam

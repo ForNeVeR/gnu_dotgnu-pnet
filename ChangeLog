@@ -5,6 +5,12 @@
 	new functions "ILTypeIsReference", "ILTypeIsEnum", and "ILTypeIsValue";
 	move "ILType_Null" from "cg_coerce.h" to "il_types.h"
 
+	* codegen/cg_coerce.c, codegen/cg_coerce.h, codegen/cg_gen.c,
+	codegen/cg_resolve.c, codegen/cg_resolve.h, cscc/cs_decls.tc,
+	cscc/cs_invoke.tc, cscc/cs_oper.tc, cscc/cs_stmt.tc: improve the
+	coercion and method resolution API's; implement more implicit
+	coercions.
+
 2001-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_nodes.tc, codegen/jv_decls.tc,

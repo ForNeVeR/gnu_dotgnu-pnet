@@ -45,13 +45,14 @@ typedef struct
 /*
  * Find a user-defined conversion operator.
  */
-static int FindConversion(ILClass *info, ILType *fromType, ILType *toType,
+static int FindConversion(ILGenInfo *info, ILClass *classInfo,
+						  ILType *fromType, ILType *toType,
 						  int explicit, ConvertRules *rules)
 {
 	ILMethod *method;
 
 	/* Look for an implicit operator definition */
-	method = ILResolveConversionOperator(info, "op_Implicit",
+	method = ILResolveConversionOperator(info, classInfo, "op_Implicit",
 										 fromType, toType);
 	if(method)
 	{
@@ -62,7 +63,7 @@ static int FindConversion(ILClass *info, ILType *fromType, ILType *toType,
 	/* Look for an explicit operator definition */
 	if(explicit)
 	{
-		method = ILResolveConversionOperator(info, "op_Explicit",
+		method = ILResolveConversionOperator(info, classInfo, "op_Explicit",
 											 fromType, toType);
 		if(method)
 		{
@@ -78,11 +79,13 @@ static int FindConversion(ILClass *info, ILType *fromType, ILType *toType,
 /*
  * Get the rules to be used to convert from one type to another.
  */
-static int GetConvertRules(ILContext *context, ILType *fromType,
+static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 						   ILType *toType, int explicit,
 						   ConvertRules *rules)
 {
 	const ILConversion *conv;
+	ILClass *classFrom;
+	ILClass *classTo;
 
 	/* Clear the rules */
 	rules->boxClass = 0;
@@ -99,10 +102,16 @@ static int GetConvertRules(ILContext *context, ILType *fromType,
 		return 1;
 	}
 
-	/* If "fromType" is null, then "toType" must be a class type */
+	/* We can never convert to the "null" type */
+	if(toType == ILType_Null)
+	{
+		return 0;
+	}
+
+	/* If "fromType" is null, then "toType" must be a reference type */
 	if(fromType == ILType_Null)
 	{
-		return ILType_IsClass(toType);
+		return ILTypeIsReference(toType);
 	}
 
 	/* Look for a builtin conversion */
@@ -116,7 +125,7 @@ static int GetConvertRules(ILContext *context, ILType *fromType,
 	/* Look for a user-defined conversion */
 	if(ILType_IsClass(fromType))
 	{
-		if(FindConversion(ILType_ToClass(fromType),
+		if(FindConversion(info, ILType_ToClass(fromType),
 					  	  fromType, toType, explicit, rules))
 		{
 			return 1;
@@ -124,7 +133,7 @@ static int GetConvertRules(ILContext *context, ILType *fromType,
 	}
 	else if(ILType_IsValueType(fromType))
 	{
-		if(FindConversion(ILType_ToValueType(fromType),
+		if(FindConversion(info, ILType_ToValueType(fromType),
 					  	  fromType, toType, explicit, rules))
 		{
 			return 1;
@@ -132,7 +141,7 @@ static int GetConvertRules(ILContext *context, ILType *fromType,
 	}
 	if(ILType_IsClass(toType))
 	{
-		if(FindConversion(ILType_ToClass(toType),
+		if(FindConversion(info, ILType_ToClass(toType),
 					  	  fromType, toType, explicit, rules))
 		{
 			return 1;
@@ -140,29 +149,81 @@ static int GetConvertRules(ILContext *context, ILType *fromType,
 	}
 	else if(ILType_IsValueType(toType))
 	{
-		if(FindConversion(ILType_ToValueType(toType),
+		if(FindConversion(info, ILType_ToValueType(toType),
 					  	  fromType, toType, explicit, rules))
 		{
 			return 1;
 		}
 	}
 
-	/* See if "fromType" inherits from "toType", or vice versa */
-	if(ILType_IsClass(fromType) && ILType_IsClass(toType))
+	/* We need reference types for the remainder of this function */
+	if(!ILTypeIsReference(fromType) || !ILTypeIsReference(toType))
 	{
-		if(ILClassInheritsFrom(ILType_ToClass(fromType),
-							   ILType_ToClass(toType)))
+		return 0;
+	}
+
+	/* Any reference type can be implicitly coerced to "Object" */
+	if(ILTypeIsObjectClass(toType))
+	{
+		return 1;
+	}
+
+	/* "Object" can be explicitly converted into any reference type */
+	if(ILTypeIsObjectClass(fromType) && explicit)
+	{
+		return 1;
+	}
+
+	/* Convert "fromType" and "toType" into their class versions */
+	classFrom = ILTypeToClass(info, fromType);
+	classTo = ILTypeToClass(info, toType);
+	if(!classFrom || !classTo)
+	{
+		return 0;
+	}
+
+	/* See if "fromType" inherits from "toType", or vice versa */
+	if(ILClassInheritsFrom(classFrom, classTo))
+	{
+		/* Implicit conversion to a base type */
+		return 1;
+	}
+	if(explicit)
+	{
+		if(ILClassInheritsFrom(classTo, classFrom))
 		{
-			// Implicit conversion to a base type.
+			/* Explicit conversion to a descendent type */
 			return 1;
 		}
-		if(explicit)
+	}
+
+	/* See if "fromType" implements "toType", or is an interface
+	   that is derived from "toType" */
+	if(ILClass_IsInterface(classTo))
+	{
+		if(ILClassImplements(classFrom, classTo))
 		{
-			if(ILClassInheritsFrom(ILType_ToClass(toType),
-								   ILType_ToClass(fromType)))
+			/* Implicit conversion to an interface */
+			return 1;
+		}
+	}
+
+	/* Check array type compatibility */
+	if(ILType_IsArray(fromType) && ILType_IsArray(toType))
+	{
+		/* The ranks must be equal, the element types must
+		   be references, and there must be a valid conversion
+		   between the element types */
+		if(ILTypeGetRank(fromType) == ILTypeGetRank(toType))
+		{
+			ILType *elemFrom = ILTypeGetElemType(fromType);
+			ILType *elemTo = ILTypeGetElemType(toType);
+			if(ILTypeIsReference(elemFrom) && ILTypeIsReference(elemTo))
 			{
-				// Explicit conversion to a descendent type.
-				return 1;
+				if(GetConvertRules(info, elemFrom, elemTo, explicit, rules))
+				{
+					return 1;
+				}
 			}
 		}
 	}
@@ -283,20 +344,41 @@ static ILMachineType CanCoerceConst(ILGenInfo *info, ILNode *node,
 			}
 		}
 	}
+	else if(ILType_IsPrimitive(fromType) && ILTypeIsEnum(toType) &&
+	   	    ILNode_EvalConst(node, info, &value))
+	{
+		/* We can coerce the integer value zero to any enumerated type */
+		if(fromType == ILType_Int8 || fromType == ILType_UInt8 ||
+		   fromType == ILType_Int16 || fromType == ILType_UInt16 ||
+		   fromType == ILType_Int32 || fromType == ILType_UInt32)
+		{
+			if(value.un.i4Value == 0)
+			{
+				return ILTypeToMachineType(toType);
+			}
+		}
+		else if(fromType == ILType_Int64 || fromType == ILType_UInt64)
+		{
+			if(value.un.i8Value == 0)
+			{
+				return ILTypeToMachineType(toType);
+			}
+		}
+	}
 	return ILMachineType_Void;
 }
 
-int ILCanCoerce(ILContext *context, ILType *fromType, ILType *toType)
+int ILCanCoerce(ILGenInfo *info, ILType *fromType, ILType *toType)
 {
 	ConvertRules rules;
-	return GetConvertRules(context, fromType, toType, 0, &rules);
+	return GetConvertRules(info, fromType, toType, 0, &rules);
 }
 
 int ILCanCoerceNode(ILGenInfo *info, ILNode *node,
 				    ILType *fromType, ILType *toType)
 {
 	ConvertRules rules;
-	if(GetConvertRules(info->context, fromType, toType, 0, &rules))
+	if(GetConvertRules(info, fromType, toType, 0, &rules))
 	{
 		return 1;
 	}
@@ -315,7 +397,7 @@ int ILCoerce(ILGenInfo *info, ILNode *node, ILNode **parent,
 {
 	ConvertRules rules;
 	ILMachineType constType;
-	if(GetConvertRules(info->context, fromType, toType, 0, &rules))
+	if(GetConvertRules(info, fromType, toType, 0, &rules))
 	{
 		ApplyRules(info, node, parent, &rules, toType);
 		return 1;
@@ -336,7 +418,7 @@ int ILCast(ILGenInfo *info, ILNode *node, ILNode **parent,
 		   ILType *fromType, ILType *toType)
 {
 	ConvertRules rules;
-	if(GetConvertRules(info->context, fromType, toType, 1, &rules))
+	if(GetConvertRules(info, fromType, toType, 1, &rules))
 	{
 		ApplyRules(info, node, parent, &rules, toType);
 		return 1;
@@ -362,13 +444,13 @@ int ILBetterConversion(ILGenInfo *info, ILType *sType,
 	{
 		return IL_BETTER_T2;
 	}
-	else if(ILCanCoerce(info->context, t1Type, t2Type) &&
-	        !ILCanCoerce(info->context, t2Type, t1Type))
+	else if(ILCanCoerce(info, t1Type, t2Type) &&
+	        !ILCanCoerce(info, t2Type, t1Type))
 	{
 		return IL_BETTER_T1;
 	}
-	else if(ILCanCoerce(info->context, t2Type, t1Type) &&
-	        !ILCanCoerce(info->context, t1Type, t2Type))
+	else if(ILCanCoerce(info, t2Type, t1Type) &&
+	        !ILCanCoerce(info, t1Type, t2Type))
 	{
 		return IL_BETTER_T2;
 	}

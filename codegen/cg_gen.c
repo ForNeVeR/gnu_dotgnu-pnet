@@ -499,7 +499,7 @@ void ILGenItemAddAttribute(ILGenInfo *info, ILProgramItem *item,
 	}
 
 	/* Find the zero-argument constructor for the class */
-	ctor = ILResolveConstructor(classInfo, scopeInfo, 0, 0);
+	ctor = ILResolveConstructor(info, classInfo, scopeInfo, 0, 0);
 	if(!ctor)
 	{
 		return;

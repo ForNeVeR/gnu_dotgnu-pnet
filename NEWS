@@ -1,4 +1,87 @@
 
+0.5.12 (6 September 2003)
+
+	Runtime engine:
+
+	* Start adding a treecc-based marshalling system.
+	* Use the correct exceptions for missing PInvoke functions.
+	* Check for exact member matches before inexact ones (Richard Baumann).
+	* Interface name matching in the reflection code (Richard Baumann).
+	* Primitive conversions for "initobj" (Gopal V).
+	* Check in the beginnings of PPC and ia64 unrollers (Rhys, CH Gowri Kumar).
+	* Internalcall for "MethodInfo.GetBaseDefinition".
+	* "Assembly.Location" and "AppDomain.GetAssemblies" (Richard Baumann).
+	* Update generic internalcalls to match latest specification.
+	* Handle assembly names that end in ".dll" even when not expected to.
+	* Remove obsolete internalcalls that will be superceded by CAS.
+	* New internalcalls for "Assembly", "AssemblyName", and "Module".
+	* Add the "Thread.SpinWait" internalcall.
+	* Fix a lockup in the bytecode verifier.
+	* Internalcalls for Unicode case conversion and string comparison.
+	* Temporarily disable IMT's because of a hash table clash bug.
+	* New internalcalls for obtaining configuration directories.
+	* New Internalcall for "FormatterServices" to get serializable members.
+
+	Common Compiler Issues:
+
+	* Rearrange code generation for "switch" statements to prevent values
+	  being left on the stack during fall-through situations.
+	* Convert instances of "SecurityPermissionAttribute" into declarative
+	  security blobs in program metadata.
+
+	C# Compiler:
+
+	* Fix a problem where "final virtual" was being used on methods that
+	  weren't actually interface implementations.
+	* Report duplicates of "override" methods correctly.
+
+	C Compiler:
+
+	* Allow typedef names to be used as struct field names.
+	* Bug in the struct hash algorithm for primitive types.
+	* Ignore missing libraries when compiling C code.
+	* Additional error line to clarify "two or more types in declaration".
+	* Bug with "short int" in type definitions.
+	* Constant evaluation for conditional expressions.
+	* Allow "long double" to be used inside non-native structs and unions.
+	* Rearrange precedence so that "=" is higher than "?:".
+	* Work around bugs in MacOS X cpp's that cannot handle spaces.
+	* "GetType" and "GenValue" for compound statements, to support
+	  statement expressions.
+
+	VB Compiler:
+
+	* '$' is not a legal identifier character, only a suffix.
+
+	Disassembler:
+
+	* "--resolve-all" option (Gopal V).
+
+	Loader and Metadata:
+
+	* Add support for gzip'ed PE/COFF binaries.
+
+	Linker:
+
+	* Report multiply-defined symbols once for each instance.
+
+	Documentation:
+
+	* Man page for csant (Gopal V).
+	* Fix quoting of '&' throughout the documentation tools.
+	* Improve the quality of difference reports form il2doc and csdocvalil.
+	* Man page for cssrc2html (Andrew Mitchell, Rhys Weatherley).
+
+	Platform Support:
+
+	* mb/wc workarounds for MacOS X.
+	* Support routines for Unicode case conversion.
+	* Unicode case-sensitive string comparisons.
+
+	Other:
+
+	* Fix carry outs during decimal multiplication.
+
 0.5.10 (26 July 2003)
 
 	Runtime engine:

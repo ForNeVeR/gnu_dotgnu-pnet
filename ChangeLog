@@ -26,6 +26,8 @@ scope information is output.
 
 * doc/debug.html: removed because the text is now in "pnettools.texi".
 
+* ilasm/ilasm.1: fixed doc bugs and moved syntax to texinfo documentation.
+
 2001-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * pnet.spec: applied patch submitted by mdaniel to create RPM spec file.

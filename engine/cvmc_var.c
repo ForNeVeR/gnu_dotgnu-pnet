@@ -137,7 +137,7 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 		if(ILType_IsValueType(type))
 		{
 			/* Managed value type */
-			ILUInt32 size = GetTypeSize(coder->thread, type);
+			ILUInt32 size = GetTypeSize(type);
 			CVM_DWIDE(COP_MLOAD, offset, size);
 			CVM_ADJUST(size);
 		}
@@ -280,7 +280,7 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 		if(ILType_IsValueType(type))
 		{
 			/* Managed value type */
-			ILUInt32 size = GetTypeSize(coder->thread, type);
+			ILUInt32 size = GetTypeSize(type);
 			CVM_DWIDE(COP_MSTORE, offset, size);
 			CVM_ADJUST(-((ILInt32)size));
 		}

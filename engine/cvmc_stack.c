@@ -66,7 +66,7 @@ static ILUInt32 ComputeStackSize(ILCoder *coder, ILEngineStackItem *stack,
 
 			case ILEngineType_MV:
 			{
-				total += GetTypeSize(coder->thread, stack[stackSize].typeInfo);
+				total += GetTypeSize(stack[stackSize].typeInfo);
 			}
 			break;
 
@@ -152,7 +152,7 @@ static void CVMCoder_Dup(ILCoder *coder, ILEngineType engineType, ILType *type)
 
 		case ILEngineType_MV:
 		{
-			ILUInt32 size = GetTypeSize(coder->thread, type);
+			ILUInt32 size = GetTypeSize(type);
 			DupWords(coder, size);
 		}
 		break;
@@ -216,7 +216,7 @@ static void CVMCoder_Pop(ILCoder *coder, ILEngineType engineType, ILType *type)
 
 		case ILEngineType_MV:
 		{
-			ILUInt32 size = GetTypeSize(coder->thread, type);
+			ILUInt32 size = GetTypeSize(type);
 			PopWords(coder, size);
 		}
 		break;

@@ -751,6 +751,10 @@ struct _tagILSwitchValue
 {
 	ILNode	   *returnType;
 	ILNode	   *params;
+	%nocreate  ILMethod *ctorMethod = {0};
+	%nocreate  ILMethod *invokeMethod = {0};
+	%nocreate  ILMethod *beginInvokeMethod = {0};
+	%nocreate  ILMethod *endInvokeMethod = {0};
 }
 
 %node ILNode_FormalParameter ILNode_Declaration =

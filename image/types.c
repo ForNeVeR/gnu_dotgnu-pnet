@@ -1011,6 +1011,39 @@ int ILTypeIsValue(ILType *type)
 	}
 }
 
+int ILTypeIsDelegate(ILType *type)
+{
+	return (ILTypeGetDelegateMethod(type) != 0);
+}
+
+void *ILTypeGetDelegateMethod(ILType *type)
+{
+	if(ILType_IsClass(type))
+	{
+		ILClass *classInfo = ILType_ToClass(type);
+		ILClass *parent = ILClass_Parent(classInfo);
+		if(parent)
+		{
+			const char *namespace = ILClass_Namespace(parent);
+			if(namespace && !strcmp(namespace, "System") &&
+			   !strcmp(ILClass_Name(parent), "MulticastDelegate"))
+			{
+				ILMethod *method = 0;
+				while((method = (ILMethod *)ILClassNextMemberByKind
+							(classInfo, (ILMember *)method,
+							 IL_META_MEMBERKIND_METHOD)) != 0)
+				{
+					if(!strcmp(ILMethod_Name(method), "Invoke"))
+					{
+						return method;
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

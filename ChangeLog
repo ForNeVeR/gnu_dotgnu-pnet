@@ -7,6 +7,11 @@
 	* samples/mscorlib.dll: updated version with file, string, and
 	number format information fixes.
 
+	* codegen/cg_decls.tc, codegen/cg_nodes.tc, cscc/cs_decls.tc,
+	cscc/cs_gather.c, cscc/cs_internal.h, cscc/cs_invoke.tc,
+	cscc/cs_lookup.c, image/types.c, include/il_types.h: implement
+	synchronous delegate declarations and invocations.
+
 2001-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_method.c (_ILLinkerConvertMemberRef): convert the

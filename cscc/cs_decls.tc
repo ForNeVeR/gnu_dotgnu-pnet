@@ -778,7 +778,11 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 
 ILNode_SemAnalysis(ILNode_DelegateMemberDeclaration)
 {
-	/* TODO */
+	if(info->outputIsJava)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "delegate definitions are not permitted with Java output");
+	}
 	return CSSemValueDefault;
 }
 

@@ -1253,6 +1253,21 @@ CSSemValue CSResolveIndexers(ILGenInfo *genInfo, ILNode *node,
 	return value;
 }
 
+void *CSCreateMethodGroup(ILMethod *method)
+{
+	CSMemberLookupInfo results;
+
+	/* Clear the results buffer */
+	InitMembers(&results);
+
+	/* Add the method as a group member */
+	AddMember(&results, ILToProgramItem(method),
+			  ILMethod_Owner(method), IL_META_MEMBERKIND_METHOD);
+
+	/* Return the group to the caller */
+	return results.members;
+}
+
 ILProgramItem *CSGetGroupMember(void *group, unsigned long n)
 {
 	CSMemberInfo *member = (CSMemberInfo *)group;

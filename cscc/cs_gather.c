@@ -741,7 +741,67 @@ static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
 static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 								 ILNode_DelegateMemberDeclaration *member)
 {
-	/* TODO */
+	ILMethod *method;
+	ILType *signature;
+	ILNode_MethodDeclaration *decl;
+
+	/* Create the delegate constructor */
+	method = ILMethodCreate(classInfo, 0, ".ctor",
+						    IL_META_METHODDEF_PUBLIC |
+						    IL_META_METHODDEF_HIDE_BY_SIG |
+						    IL_META_METHODDEF_SPECIAL_NAME |
+						    IL_META_METHODDEF_RT_SPECIAL_NAME);
+	if(!method)
+	{
+		CSOutOfMemory();
+	}
+	member->ctorMethod = method;
+	signature = ILTypeCreateMethod(info->context, ILType_Void);
+	if(!signature)
+	{
+		CSOutOfMemory();
+	}
+	if(!ILTypeAddParam(info->context, signature,
+					   ILFindSystemType(info, "Object")))
+	{
+		CSOutOfMemory();
+	}
+	if(!ILTypeAddParam(info->context, signature, ILType_UInt))
+	{
+		CSOutOfMemory();
+	}
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
+	ILMethodSetCallConv(method, IL_META_CALLCONV_HASTHIS);
+	ILMemberSetSignature((ILMember *)method, signature);
+	ILMethodSetImplAttrs(method, ~((ILUInt32)0),
+						 IL_META_METHODIMPL_RUNTIME);
+	if(!ILParameterCreate(method, 0, "object", 0, 1))
+	{
+		CSOutOfMemory();
+	}
+	if(!ILParameterCreate(method, 0, "method", 0, 2))
+	{
+		CSOutOfMemory();
+	}
+
+	/* Create the "Invoke" method */
+	decl = (ILNode_MethodDeclaration *)ILNode_MethodDeclaration_create
+		(0, IL_META_METHODDEF_PUBLIC |
+			IL_META_METHODDEF_VIRTUAL |
+			IL_META_METHODDEF_NEW_SLOT |
+			IL_META_METHODDEF_HIDE_BY_SIG,
+		 member->returnType,
+		 ILQualIdentSimple(ILInternString("Invoke", -1).string),
+		 member->params, 0);
+	CreateMethod(info, classInfo, decl);
+	method = member->invokeMethod = decl->methodInfo;
+	if(method)
+	{
+		ILMethodSetImplAttrs(method, ~((ILUInt32)0),
+							 IL_META_METHODIMPL_RUNTIME);
+	}
+
+	/* TODO: asynchronous interface for delegates */
 }
 
 /*

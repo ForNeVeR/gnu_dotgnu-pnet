@@ -668,9 +668,44 @@ ILNode_GenDiscard(ILNode_EnumMemberDeclaration)
 	}
 }
 
+%{
+
+/*
+ * Dump the definition of a "runtime" method.
+ */
+static void DumpRuntimeMethod(ILGenInfo *info, FILE *outstream,
+							  ILMethod *method)
+{
+	/* Bail out if the parameters are incorrect */
+	if(!outstream || !method)
+	{
+		return;
+	}
+
+	/* Dump the method heading */
+	fputs(".method ", outstream);
+	ILDumpFlags(outstream, ILMethod_Attrs(method),
+				ILMethodDefinitionFlags, 0);
+	ILDumpMethodType(outstream, info->image,
+					 ILMethod_Signature(method),
+					 IL_DUMP_QUOTE_NAMES, 0,
+					 ILMethod_Name(method), method);
+	putc(' ', outstream);
+	ILDumpFlags(outstream, ILMethod_ImplAttrs(method),
+				ILMethodImplementationFlags, 0);
+
+	/* Dump the method body, which is empty */
+	fputs("{}\n", outstream);
+}
+
+%}
+
 ILNode_GenDiscard(ILNode_DelegateMemberDeclaration)
 {
-	/* TODO */
+	DumpRuntimeMethod(info, info->asmOutput, node->ctorMethod);
+	DumpRuntimeMethod(info, info->asmOutput, node->invokeMethod);
+	DumpRuntimeMethod(info, info->asmOutput, node->beginInvokeMethod);
+	DumpRuntimeMethod(info, info->asmOutput, node->endInvokeMethod);
 }
 
 ILNode_GenDiscard(ILNode_FormalParameter)

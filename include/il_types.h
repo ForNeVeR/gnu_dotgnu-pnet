@@ -503,6 +503,17 @@ int ILTypeIsEnum(ILType *type);
  */
 int ILTypeIsValue(ILType *type);
 
+/*
+ * Determine if a type is a delegate.
+ */
+int ILTypeIsDelegate(ILType *type);
+
+/*
+ * Get the "Invoke" method associated with a delegate type.
+ * Returns NULL if not a delegate type.
+ */
+void *ILTypeGetDelegateMethod(ILType *type);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -241,6 +241,11 @@ CSSemValue CSResolveIndexers(ILGenInfo *genInfo, ILNode *node,
 							 ILClass *classInfo);
 
 /*
+ * Create a method group that contains a single method.
+ */
+void *CSCreateMethodGroup(ILMethod *method);
+
+/*
  * Get the n'th member from a method or indexer group.
  * Returns NULL at the end of the group.
  */

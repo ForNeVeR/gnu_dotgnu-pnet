@@ -238,14 +238,20 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 		itemName = 0;
 	}
 
-	/* TODO: delegate invocation */
-
 	/* Perform semantic analysis on the method expression */
 	method = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
-	if(method.kind != CS_SEMKIND_METHOD_GROUP)
+	if(CSIsSemValue(method.kind) && ILTypeIsDelegate(method.type))
+	{
+		/* This is a delegate invocation: create a method group
+		   that contains the "Invoke" method as its only member */
+		method.kind = CS_SEMKIND_METHOD_GROUP;
+		method.type = (ILType *)CSCreateMethodGroup
+				(ILTypeGetDelegateMethod(method.type));
+	}
+	else if(method.kind != CS_SEMKIND_METHOD_GROUP)
 	{
 		CSErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
-					  "called object is not a method");
+					  "called object is not a method or delegate");
 		return CSSemValueDefault;
 	}
 
@@ -699,16 +705,7 @@ void CSEvalFreeArguments(CSEvalArg *args)
  */
 static ILMethod *GetDelegateInvoke(ILClass *info)
 {
-	ILMethod *method = 0;
-	while((method = (ILMethod *)ILClassNextMemberByKind
-				(info, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
-	{
-		if(!strcmp(ILMethod_Name(method), "Invoke"))
-		{
-			return method;
-		}
-	}
-	return 0;
+	return ILTypeGetDelegateMethod(ILType_FromClass(info));
 }
 
 /*

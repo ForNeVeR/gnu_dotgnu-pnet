@@ -96,8 +96,8 @@ public sealed class ControlPaint
 							break;
 					}
 					return Color.FromArgb
-						((int)(r / 255.0f), (int)(g / 255.0f),
-						 (int)(b / 255.0f));
+						((int)(r * 255.0f), (int)(g * 255.0f),
+						 (int)(b * 255.0f));
 				}
 			}
 

@@ -30,6 +30,11 @@ namespace System
 using System.Text;
 using System.IO;
 
+/*
+global TODO:
+* adapt to use the authority struct
+*/
+
 public class Uri : MarshalByRefObject
 {
 
@@ -569,10 +574,10 @@ public class Uri : MarshalByRefObject
 		if (this.host.Equals(toUri.host))
 		{
 			if (this.path.Equals(toUri.path)) { return ""; } // return empty string... URIs are identical
-			
+
 			String[] thisUri = this.path.Split('/');  // split the path up at the / chars
 			String[] otherUri = toUri.path.Split('/'); // now make tokens for the other uri
-			
+
 			int currentItem = 0; // loop var
 			StringBuilder myStringBuilder = new StringBuilder(toUri.path.Length); // temp var (return)
 
@@ -600,7 +605,7 @@ public class Uri : MarshalByRefObject
 				myStringBuilder.Append(otherUri[currentItem]); // add next part of path
 				myStringBuilder.Append('/'); // add path separator
 			}
-			
+
 			if (otherFile) { myStringBuilder.Remove(myStringBuilder.Length - 1, 1); } // ends with a file... strip last /
 
 			return myStringBuilder.ToString(); // return relative
@@ -626,20 +631,34 @@ public class Uri : MarshalByRefObject
 		userinfo = "";
 
 
-		if (curpos > 0)
+		if (curpos > 0) // scheme specified (or a port delim)
 		{
-			this.scheme = absoluteUri.Substring(0, curpos).ToLower();
+			String maybescheme = absoluteUri.Substring(0, curpos).ToLower();
 
-			if (!CheckSchemeName(this.scheme))
-				throw new UriFormatException(S._("Arg_UriScheme"));
-
-			// some Uris don't use the // after scheme:
-			if (String.Compare(AbsoluteUri, curpos, SchemeDelimiter, 0, 3) == 0)
-				curpos += 3;
-			else
-				++curpos;
+			if (!CheckSchemeName(maybescheme)) // might be no-scheme
+			{
+				try
+				{
+					this.ParseAuthority(this.scheme);
+				}
+				catch (UriFormatException) // not authority
+				{
+					throw new UriFormatException(S._("Arg_UriScheme"));
+				}
+				// else is authority
+				this.scheme = "http";
+				this.port = 80;
+			}
+			else // ok, it's a real scheme
+			{
+				// some Uris don't use the // after scheme:
+				if (String.Compare(AbsoluteUri, curpos, SchemeDelimiter, 0, 3) == 0)
+					curpos += 3;
+				else
+					++curpos;
+			}
 		}
-		else
+		else // scheme not specified
 		{
 			this.scheme = "http";
 			this.port = 80;
@@ -652,77 +671,94 @@ public class Uri : MarshalByRefObject
 		if (nextpos < 0)
 			nextpos = absoluteUri.Length;
 
-		this.ParseAuthority(absoluteUri.Substring(curpos, nextpos - curpos));
+		// even if the "scheme" was an authority, we have to redo
+		UriAuthority tryauth = ParseAuthority(absoluteUri.Substring(curpos, nextpos - curpos));
+		this.userinfo = tryauth.userinfo;
+		this.host = tryauth.hostname;
+		this.port = tryauth.port;
+		this.hostNameType = tryauth.hosttype;
 		curpos = nextpos;
 
-		if (nextpos < absoluteUri.Length)
+		if (nextpos < absoluteUri.Length) // implies curpos also
 		{
 			nextpos = absoluteUri.IndexOf('?', curpos);
-			if (nextpos > 0)
+			if (nextpos >= 0 && nextpos != absoluteUri.Length)
 			{
-				// there is query
+				// there is query mark
+				// TODO: ? w/o query?
 				query = absoluteUri.Substring(nextpos + 1);
-				curpos = nextpos + 1;
 			}
 			else
 			{
 				nextpos = absoluteUri.IndexOf('#', curpos);
-				if (nextpos > 0)
-					// there is fragment
+				if (nextpos >= 0 && nextpos != absoluteUri.Length) // there is fragment
 					fragment = absoluteUri.Substring(nextpos + 1);
 			}
-			if (nextpos == 0)
+			if (nextpos == -1) // no path nor query
 				path = absoluteUri.Substring(curpos);
 			else
 				path = absoluteUri.Substring(curpos, nextpos);
-
-			if (!userEscaped)
-			{
-				if (needsEscaping(path))
-					// Escape() only affects path
-					this.Escape();
-				if (needsEscaping(query))
-					query = EscapeString(query);
-				if (needsEscaping(fragment))
-					fragment = EscapeString(fragment);
-			}
 		}
+
+		if (!userEscaped)
+		{
+			if (needsEscaping(path))
+				// Escape() only affects path
+				this.Escape();
+			if (needsEscaping(query))
+				query = EscapeString(query);
+			if (needsEscaping(fragment))
+				fragment = EscapeString(fragment);
+		}
+		else // user should have escaped
+		{
+			if (needsEscaping(path) ||
+			    needsEscaping(query) ||
+			    needsEscaping(fragment))
+				throw new UriFormatException(S._("Arg_UriNotEscaped"));
+		}
+
 	}
 
 	// help for Parse()!
-	private void ParseAuthority(String authority)
+	// this must depend entirely on the argument
+	private UriAuthority ParseAuthority(String authority)
 	{
+		UriAuthority retval;
 		int interimpos1=0, interimpos2=0;
 
 		interimpos1 = authority.IndexOf('@');
 		if (interimpos1 > 0) // there is userinfo
 		{
-			userinfo = authority.Substring(0, interimpos1 - 1);
+			retval.userinfo = authority.Substring(0, interimpos1 - 1);
 			interimpos2 = interimpos1 + 1;
 		}
 
 		interimpos1 = authority.IndexOf(':', interimpos2);
 		if (interimpos1 > 0) // there is a port
 		{
-			this.host = authority.Substring(interimpos2, interimpos1 - interimpos2);
+			retval.hostname = authority.Substring(interimpos2, interimpos1 - interimpos2);
 			try
 			{
 				// technically, ports are 16 bit, but...
-				this.port = Int32.Parse(authority.Substring(interimpos1 + 1));
+				retval.port = Int32.Parse(authority.Substring(interimpos1 + 1));
 			}
-			catch (FormatException fe) { this.port = -1; }
+			catch (FormatException fe) { retval.port = -1; }
 			catch (OverflowException oe)
 			{
 				throw new UriFormatException(S._("Arg_UriPort"));
 			}
 		}
 		else // no port
-			host = authority.Substring(interimpos2);
+		{
+			retval.hostname = authority.Substring(interimpos2);
+			retval.port = -1;
+		}
 
 		// now test host, standard says must be IPv4 or DNS
-		this.hostNameType = CheckHostName(host);
-		if (this.hostNameType != UriHostNameType.Dns &&
-			this.hostNameType != UriHostNameType.IPv4)
+		retval.hosttype = CheckHostName(retval.hostname);
+		if (retval.hosttype != UriHostNameType.Dns &&
+			retval.hosttype != UriHostNameType.IPv4)
 			throw new UriFormatException(S._("Arg_UriHostName"));
 	}
 
@@ -1017,6 +1053,14 @@ public class Uri : MarshalByRefObject
 
 
 	// my junk
+
+	// to group the authority stuff together
+	private struct UriAuthority
+	{
+		public String userinfo, hostname;
+		public int port;
+		public UriHostNameType hosttype;
+	}
 
 	// use this to get the default port for the scheme
 	// makes it really easy to add support for new schemes

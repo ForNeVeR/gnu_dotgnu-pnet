@@ -1,3 +1,14 @@
+2002-09-06  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs (Parse): Lots of fixes.
+
+	* resources/en_US/System/Arg.txt (Arg_UriNotEscaped): New string.
+
+	* tests/System/TestString.cs: A little more testing for Length
+	weirdness.
+
+	* tests/System/TestUri.cs: Rearrangement of testing to start on
+	constructors.
 
 2002-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -2,7 +2,7 @@
  * TestString.cs - Tests for the "System.String" class.
  *
  * Copyright (C) 2002  Free Software Foundation, Inc.
- * 
+ *
  * Authors : Stephen Compall & Gopal.V
  *
  * This program is free software; you can redistribute it and/or modify
@@ -44,13 +44,6 @@ public class TestString : TestCase
 				// Nothing to do here.
 			}
 
-	public void TestIndexOfAcceptsLength()
-	{
-		try
-			"x".IndexOf(a, 1);
-		catch (ArgumentOutOfRangeException aoore)
-			Fail("IndexOf(char, int) should not throw when passed Length as the int");
-	}
 	//Methods
 	public void TestClone()
 	{
@@ -64,18 +57,18 @@ public class TestString : TestCase
 		String caps = "ABC";*/
 
 		AssertEquals("String.Compare(null,null))",0,String.Compare(null,null));
-		AssertEquals("String.Compare(\"abc\",null)",1, 
+		AssertEquals("String.Compare(\"abc\",null)",1,
 			String.Compare("abc", null));
-			
-		Assert("String.Compare(null,\"abc\")", 
+
+		Assert("String.Compare(null,\"abc\")",
 			String.Compare(null,"abc") < 0);
-		
+
 		Assert("String.Compare(\"abc\",\"xyz\")",
 			String.Compare("abc","xyz") < 0);
-			
+
 		Assert("String.Compare(\"abc\",\"abcd\")",
 			String.Compare("abc","abcd") < 0);
-			
+
 		Assert("String.Compare(\"xyz\",\"abc\")",
 			String.Compare("xyz","abc") == 0);
 
@@ -121,7 +114,7 @@ public class TestString : TestCase
 			//Ok, that worked :)
 			//move on folks
 		}
-		
+
 		Assert("String.Compare(\"ABCDC\",1,\"bcd\",0,3,false)",
 			String.Compare("ABCDC",1,"bcd",0,3,false) !=0);
 			
@@ -404,6 +397,14 @@ public class TestString : TestCase
 		AssertEquals("fubar.IndexOf('o',0,1)", fubar.IndexOf('o',0,1),-1);
 		AssertEquals("fubar.IndexOf(' ',1,5)", fubar.IndexOf(' ',1,5),3);
 
+		try
+		{
+			fubar.IndexOf('h', fubar.Length); // shouldn't throw per ECMA
+		}
+		catch (ArgumentOutOfRangeException)
+		{
+			Fail("IndexOf(char, int) should not throw when passed Length as the int");
+		}
 	/*
 		TODO: I don't know any more test ideas , do you have one ?
 	*/
@@ -509,7 +510,28 @@ public class TestString : TestCase
 
 	public void TestStringSubstring()
 	{
-	/*TODO*/
+		// some freaky behavior... with Substring(int), it throws
+		// if you pass Length, but with Substring(int, int), it doesn't
+		// per ECMA spec
+		try
+		{
+			"x".Substring(0, 1);
+		}
+		catch (ArgumentOutOfRangeException aoore)
+		{
+			Fail("Substring(int, int) should not throw when passed Length as the int");
+		}
+		try
+		{
+			"x".Substring(1);
+			Fail("Substring(int) should throw when passed Length");
+		}
+		catch (ArgumentOutOfRangeException)
+		{
+			// all's well S11 ;)
+		}
+	}
+
 	}
 
 	public void TestStringToCharArray()

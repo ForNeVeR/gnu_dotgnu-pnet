@@ -32,7 +32,7 @@ complete.
 
 public class TestUri : TestCase
  {
- 
+
 	Uri rmsUri;
 
 	// Constructor.
@@ -44,7 +44,6 @@ public class TestUri : TestCase
 	// Set up for the tests.
 	protected override void Setup()
 	{
-		rmsUri = new Uri("ftp://rms@ftp.gnu.org:2538/pub/gnu/?freesoftware=good");
 	}
 
 	// Clean up after the tests.
@@ -52,15 +51,32 @@ public class TestUri : TestCase
 	{
 		// Nothing to do here.
 	}
+
+	private bool constructorTested = false;
 	public void TestConstructor()
 	{
-	/*TODO*/
+		try
+		{
+			if (!constructorTested) // others depend on this one
+			{
+				String lasturi;
+				try // good constructors
+				{
+					rmsUri = new Uri(lasturi = "ftp://rms@ftp.gnu.org:2538/pub/gnu/?freesoftware=good");
+				}
+				catch (Exception)
+				{
+					Fail("{0} threw an exception it shouldn't have!", lasturi)
+				}
+			}
+		}
+		finally
+		{
+			constructorTested = true;
+		}
 	}
 
-	public void TestUriCanonicalize()
-	{
-	/*TODO*/
-	}
+	// Canonicalize N/A
 
 	public void TestUriCheckHostName()
 	{
@@ -140,15 +156,20 @@ public class TestUri : TestCase
 		Assert("9 is a hex digit", Uri.IsHexDigit('9'));
 		// incidentally, 0xC9 in binary is...11001001
 		Assert("f is a hex digit", Uri.IsHexDigit('f'));
-		Assert("G is not a hex digit", Uri.IsHexDigit('G'));
-		Assert("\x00C9 is not a hex digit", Uri.IsHexDigit('\x00C9')); // I am one funny guy
-		Assert("\x20AC is not a hex digit (then again, neither is $)", Uri.IsHexDigit('\x20AC'));
+		Assert("G is not a hex digit", !Uri.IsHexDigit('G'));
+		Assert("\x00C9 is not a hex digit", !Uri.IsHexDigit('\x00C9')); // I am one funny guy
+		Assert("\x20AC is not a hex digit (then again, neither is $)", !Uri.IsHexDigit('\x20AC'));
 		// ok, classes like this don't really need all this testing ;)
 	}
 
 	public void TestUriIsHexEncoding()
 	{
-	/*TODO*/
+		Assert("\"%c9\", position 0, is hex encoding", Uri.IsHexEncoding("%c9", 0));
+		Assert("\"%c9\", position -1, is not hex encoding", !Uri.IsHexEncoding("%c9", -1));
+		Assert("\"0x%c9\", position 3, is not hex encoding", !Uri.IsHexEncoding("0x%c9", 3));
+		Assert("\"0x%c9\", position 2, is hex encoding", Uri.IsHexEncoding("0x%c9", 2));
+		Assert("\"%at\", position 0, is not hex encoding", !Uri.IsHexEncoding("%at", 0));
+		Assert("\"%af\", position 100, is not hex encoding", !Uri.IsHexEncoding("%af", 100));
 	}
 
 	public void TestUriIsReservedCharacter()
@@ -158,13 +179,27 @@ public class TestUri : TestCase
 
 	public void TestUriMakeRelative()
 	{
-	/*TODO*/
+		Uri gnuphil = new Uri("http://www.gnu.org/philosophy/why-free.html");
+		Uri gnuoreilly = new Uri("http://www.gnu.org/gnu/thegnuproject.html");
+		Uri mozillaftp = new Uri("ftp://ftp.mozilla.org/pub/mozilla/latest/mozilla-i686-pc-linux-gnu-sea.tar.gz");
+		Uri mozillahttp = new Uri("http://ftp.mozilla.org/pub/mozilla/latest/mozilla-i686-pc-linux-gnu-sea.tar.gz");
+		Uri mandrake = new Uri("ftp://distro.ibiblio.org/pub/Linux/distributions/mandrake/Mandrake/iso/");
+		Uri debian = new Uri("ftp://distro.ibiblio.org/pub/Linux/distributions/debian/main/");
+		Uri debianrelease = new Uri("ftp://distro.ibiblio.org/pub/Linux/distributions/debian/main/source/Release");
+
+		AssertEquals("Code figures out simple relative Uri correctly (with files)",
+			gnuphil.MakeRelative(gnuoreilly), "../thegnuproject.html");
+		AssertEquals("notices different schemes when comparing Uris",
+			mozillaftp.MakeRelative(mozillahttp), mozillahttp.AbsoluteUri);
+		AssertEquals("figures out more complex, directory-based relative Uri",
+			mandrake.MakeRelative(debian), "../../../debian/main/");
+		AssertEquals("tells difference between files and directorys, by looking for ending slash",
+			debianrelease.MakeRelative(debian), "../");
+		AssertEquals("correctly goes further into subdirectories",
+			debian.MakeRelative(debianrelease), "source/Release");
 	}
 
-	public void TestUriParse()
-	{
-	/*TODO*/
-	}
+	// Parse N/A
 
 	public void TestUriToString()
 	{

@@ -35,6 +35,9 @@ internal class DnsMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	internal extern static bool InternalGetHostByAddr(long address,out String h_name,
 								out String[] h_aliases, out long[] h_addr_list);
+	
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	internal extern static String InternalGetHostName();
 }
 
 }

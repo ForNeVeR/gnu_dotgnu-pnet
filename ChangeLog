@@ -1,3 +1,8 @@
+
+2004-05-10  Gopal V  <gopalv82@yahoo.com>
+
+	* support/interlocked.h : Remove CRLFs from file.
+
 2004-05-10  Thong Nguyen  <tum@veridicus.com>
 
 	* profiles/full: Made full profile use standard lcosk.

@@ -206,9 +206,10 @@ OPDEF("stelem.r4",			3, 0, IL_OPCODE_ARGS_NONE, 1)
 OPDEF("stelem.r8",			3, 0, IL_OPCODE_ARGS_NONE, 1)
 OPDEF("stelem.ref",			3, 0, IL_OPCODE_ARGS_NONE, 1)
 
-OPDEF("unused_A3",			0, 0, IL_OPCODE_ARGS_INVALID, 1)
-OPDEF("unused_A4",			0, 0, IL_OPCODE_ARGS_INVALID, 1)
-OPDEF("unused_A5",			0, 0, IL_OPCODE_ARGS_INVALID, 1)
+OPDEF("ldelem",				2, 1, IL_OPCODE_ARGS_TOKEN, 5)
+OPDEF("stelem",				3, 0, IL_OPCODE_ARGS_TOKEN, 5)
+OPDEF("unbox.any",			1, 1, IL_OPCODE_ARGS_TOKEN, 5)
+
 OPDEF("unused_A6",			0, 0, IL_OPCODE_ARGS_INVALID, 1)
 OPDEF("unused_A7",			0, 0, IL_OPCODE_ARGS_INVALID, 1)
 OPDEF("unused_A8",			0, 0, IL_OPCODE_ARGS_INVALID, 1)

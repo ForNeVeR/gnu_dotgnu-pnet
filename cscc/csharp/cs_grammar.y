@@ -786,6 +786,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token VIRTUAL				"`virtual'"
 %token VOID					"`void'"
 %token VOLATILE				"`volatile'"
+%token WHERE				"`where'"
 %token WHILE				"`while'"
 
 /*
@@ -826,6 +827,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <mask>		OptModifiers Modifiers Modifier
 
 %type <node>		Identifier QualifiedIdentifier BuiltinType
+%type <node>		QualifiedIdentifierPart
 
 %type <node>		Type NonExpressionType LocalVariableType
 
@@ -910,7 +912,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 17
+%expect 21
 
 %start CompilationUnit
 %%
@@ -1045,8 +1047,15 @@ Identifier
 	;
 
 QualifiedIdentifier
+	: QualifiedIdentifierPart							{ $$ = $1; }
+	| QualifiedIdentifier '.' QualifiedIdentifierPart	{
+				MakeBinary(QualIdent, $1, $3);
+			}
+	;
+
+QualifiedIdentifierPart
 	: Identifier							{ $$ = $1; }
-	| QualifiedIdentifier '.' Identifier	{ MakeBinary(QualIdent, $1, $3); }
+	| Identifier '<' TypeActuals '>'		{ $$ = $1; /* TODO */ }
 	;
 
 /*
@@ -1229,6 +1238,10 @@ Type
 	| Type '*'			{
 				MakeUnary(PtrType, $1);
 			}
+	| Type '<' TypeActuals '>'	{
+				/* TODO: generic type references */
+				$$ = $1;
+			}
 	;
 
 NonExpressionType
@@ -1242,6 +1255,15 @@ NonExpressionType
 	| Expression '*'		{ 
 				MakeUnary(PtrType, $1);
 			}
+	| NonExpressionType '<' TypeActuals '>'	{
+				/* TODO: generic type references */
+				$$ = $1;
+			}
+	;
+
+TypeActuals
+	: Type						{ /* TODO */ }
+	| TypeActuals ',' Type		{ /* TODO */ }
 	;
 
 /*
@@ -1318,6 +1340,9 @@ BuiltinType
 /*
  * Expressions.
  */
+
+/* TODO: Identifier '<' TypeActuals '>' for generic type references.
+   A bit problematic at the moment due to reduce/reduce issues */
 
 PrimaryExpression
 	: LiteralExpression				{ $$ = $1; }
@@ -2498,7 +2523,8 @@ Modifier
  */
 
 ClassDeclaration
-	: OptAttributes OptModifiers CLASS Identifier ClassBase {
+	: OptAttributes OptModifiers CLASS Identifier TypeFormals
+			ClassBase Constraints {
 				/* Enter a new nesting level */
 				++NestingLevel;
 
@@ -2506,7 +2532,7 @@ ClassDeclaration
 				ClassNamePush($4);
 			}
 			ClassBody OptSemiColon	{
-				ILNode *classBody = ($7).body;
+				ILNode *classBody = ($9).body;
 
 				/* Validate the modifiers */
 				ILUInt32 attrs =
@@ -2547,9 +2573,9 @@ ClassDeclaration
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
-							 $5,					/* ClassBase */
+							 $6,					/* ClassBase */
 							 classBody,
-							 ($7).staticCtors);
+							 ($9).staticCtors);
 				CloneLine($$, $4);
 
 				/* Pop the class name stack */
@@ -2558,6 +2584,33 @@ ClassDeclaration
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
 			}
+	;
+
+/* TODO: general parameter formal parameter list */
+TypeFormals
+	: /* empty */
+	| '<' TypeFormalList '>'
+	;
+
+TypeFormalList
+	: Identifier					{ /* TODO */ }
+	| TypeFormalList ',' Identifier	{ /* TODO */ }
+	;
+
+/* TODO: generic parameter constraints */
+Constraints
+	: /* empty */
+	| WHERE ConstraintList
+	;
+
+ConstraintList
+	: Constraint
+	| ConstraintList ',' Constraint
+	;
+
+Constraint
+	: Identifier ':' Type			{ /* TODO */ }
+	| Identifier ':' NEW '(' ')'	{ /* TODO */ }
 	;
 
 ModuleDeclaration
@@ -3296,7 +3349,8 @@ DestructorDeclaration
  */
 
 StructDeclaration
-	: OptAttributes OptModifiers STRUCT Identifier StructInterfaces	{
+	: OptAttributes OptModifiers STRUCT Identifier TypeFormals
+			StructInterfaces Constraints {
 				/* Enter a new nesting level */
 				++NestingLevel;
 
@@ -3320,9 +3374,9 @@ StructDeclaration
 
 				/* Make sure that we have "ValueType" in the base list */
 				baseList = MakeSystemType("ValueType");
-				if($5 != 0)
+				if($6 != 0)
 				{
-					baseList = ILNode_ArgList_create($5, baseList);
+					baseList = ILNode_ArgList_create($6, baseList);
 				}
 
 				/* Create the class definition */
@@ -3334,8 +3388,8 @@ StructDeclaration
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 baseList,				/* ClassBase */
-							 ($7).body,				/* StructBody */
-							 ($7).staticCtors);		/* StaticCtors */
+							 ($9).body,				/* StructBody */
+							 ($9).staticCtors);		/* StaticCtors */
 				CloneLine($$, $4);
 
 				/* Pop the class name stack */
@@ -3368,7 +3422,8 @@ StructBody
  */
 
 InterfaceDeclaration
-	: OptAttributes OptModifiers INTERFACE Identifier InterfaceBase	{
+	: OptAttributes OptModifiers INTERFACE Identifier TypeFormals
+			InterfaceBase Constraints {
 				/* Increase the nesting level */
 				++NestingLevel;
 
@@ -3395,8 +3450,8 @@ InterfaceDeclaration
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
-							 $5,					/* ClassBase */
-							 $7,					/* InterfaceBody */
+							 $6,					/* ClassBase */
+							 $9,					/* InterfaceBody */
 							 0);					/* StaticCtors */
 				CloneLine($$, $4);
 
@@ -3682,7 +3737,7 @@ EnumMemberDeclaration
  */
 
 DelegateDeclaration
-	: OptAttributes OptModifiers DELEGATE Type Identifier
+	: OptAttributes OptModifiers DELEGATE Type Identifier TypeFormals
 				'(' OptFormalParameterList ')' ';'	{
 				ILNode *baseList;
 				ILNode *bodyList;
@@ -3698,7 +3753,7 @@ DelegateDeclaration
 				/* Construct the body of the delegate class */
 				bodyList = ILNode_List_create();
 				ILNode_List_Add(bodyList,
-					ILNode_DelegateMemberDeclaration_create($4, $7));
+					ILNode_DelegateMemberDeclaration_create($4, $8));
 
 				/* Create the class definition */
 				InitGlobalNamespace();

@@ -158,6 +158,12 @@ static ILUInt32 const ExportedType_Desc[] =
 	 1,
 	 END_DESC};
 
+static ILUInt32 const GenericParOwner_Desc[] =
+	{1,
+	 IL_META_TOKEN_TYPE_DEF,
+	 IL_META_TOKEN_METHOD_DEF,
+	 END_DESC};
+
 /*
  * Special field types.
  */
@@ -302,6 +308,13 @@ static const ILUInt32 * const Fields_ExeLocation[] =
 static const ILUInt32 * const Fields_NestedClass[] =
 	{TKREF_FIELD(TYPE_DEF), TKREF_FIELD(TYPE_DEF), END_FIELD};
 
+static const ILUInt32 * const Fields_GenericPar[] =
+	{UINT16_FIELD, UINT16_FIELD, GenericParOwner_Desc, 
+	 STRREF_FIELD, TypeDefRefOrSpec_Desc, TypeDefRefOrSpec_Desc};
+
+static const ILUInt32 * const Fields_MethodSpec[] =
+	{MethodDefOrRef_Desc, BLOBREF_FIELD};
+
 /*
  * Table of all field description types.
  */
@@ -348,8 +361,8 @@ static const ILUInt32 * const * const FieldDescriptions[] = {
 	Fields_ExportedType,
 	Fields_ManifestResource,	/* 28 */
 	Fields_NestedClass,
-	0,
-	0,
+	Fields_GenericPar,
+	Fields_MethodSpec,
 	0,
 	0,
 	0,

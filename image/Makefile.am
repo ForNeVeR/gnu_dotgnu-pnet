@@ -11,6 +11,7 @@ libILImage_a_SOURCES = assembly.c \
 					   debug_reader.c \
 					   debug_writer.c \
 					   errors.c \
+					   generic.c \
 					   image.c \
 					   item.c \
 					   java_loader.c \

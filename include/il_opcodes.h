@@ -209,10 +209,11 @@
 #define	IL_OP_STELEM_R8						0xA1
 #define	IL_OP_STELEM_REF					0xA2
 
-#define	IL_OP_UNUSED_A3						0xA3		/* !! */
-#define	IL_OP_UNUSED_A4						0xA4
-#define	IL_OP_UNUSED_A5						0xA5
-#define	IL_OP_UNUSED_A6						0xA6
+#define	IL_OP_LDELEM						0xA3
+#define	IL_OP_STELEM						0xA4
+#define	IL_OP_UNBOX_ANY						0xA5
+
+#define	IL_OP_UNUSED_A6						0xA6		/* !! */
 #define	IL_OP_UNUSED_A7						0xA7
 #define	IL_OP_UNUSED_A8						0xA8
 #define	IL_OP_UNUSED_A9						0xA9

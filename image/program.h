@@ -245,7 +245,8 @@ struct _tagILClass
 #define	IL_META_TYPEDEF_REFERENCE		0x80000000	/* Not yet really defined */
 #define	IL_META_TYPEDEF_COMPLETE		0x40000000	/* Definition is complete */
 #define	IL_META_TYPEDEF_CCTOR_ONCE		0x20000000	/* .cctor already done */
-#define	IL_META_TYPEDEF_SYSTEM_MASK		0xE0000000	/* System flags */
+#define	IL_META_TYPEDEF_GENERIC_PARS	0x10000000	/* Has generic parameters */
+#define	IL_META_TYPEDEF_SYSTEM_MASK		0xF0000000	/* System flags */
 
 /*
  * Information about an "implements" clause for a class.
@@ -618,6 +619,37 @@ struct _tagILExportedType
 	ILProgramItem  *scope;				/* Scope where the type exists */
 
 };
+
+/*
+ * Information about a generic parameter.
+ */
+struct _tagILGenericPar
+{
+	ILOwnedItem		ownedItem;			/* Parent class fields */
+	ILUInt16		number;				/* Parameter number */
+	ILUInt16		flags;				/* Parameter flags */
+	const char     *name;				/* Parameter name */
+	ILProgramItem  *kind;				/* Parameter kind */
+	ILProgramItem  *constraint;			/* Parameter constraint */
+
+};
+
+/*
+ * Information about a generic method specification.
+ */
+struct _tagILMethodSpec
+{
+	ILProgramItem	programItem;		/* Parent class fields */
+	ILMember       *method;				/* Method specification applies to */
+	ILType         *type;				/* Instantiation information */
+	ILUInt32		typeBlob;			/* Blob offset of the type */
+
+};
+
+/*
+ * Set the value of a MethodSpec type to an explicit blob index.
+ */
+void _ILMethodSpecSetTypeIndex(ILMethodSpec *spec, ILUInt32 index);
 
 #ifdef	__cplusplus
 };

@@ -33,6 +33,7 @@ extern	"C" {
 #define	IL_DUMP_SHOW_TOKENS			1
 #define	IL_DUMP_QUOTE_NAMES			2
 #define	IL_DUMP_CLASS_PREFIX		4
+#define	IL_DUMP_GENERIC_PARAMS		8
 
 /*
  * Structure of a flag information block.  This is used when

@@ -2275,6 +2275,90 @@ static int Load_ExportedType(ILImage *image, ILUInt32 *values,
 	return 0;
 }
 
+/*
+ * Load a generic parameter token.
+ */
+static int Load_GenericPar(ILImage *image, ILUInt32 *values,
+				   	 	   ILUInt32 *valuesNext, ILToken token,
+				   	 	   void *userData)
+{
+	ILProgramItem *owner;
+	ILGenericPar *genPar;
+
+	/* Get the owner */
+	owner = ILProgramItem_FromToken(image, values[IL_OFFSET_GENERICPAR_OWNER]);
+	if(!owner)
+	{
+		META_VAL_ERROR("invalid generic parameter owner");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Generate the generic parameter record */
+	genPar = ILGenericParCreate
+			(image, token, owner, values[IL_OFFSET_GENERICPAR_NUMBER]);
+	if(!genPar)
+	{
+		return IL_LOADERR_MEMORY;
+	}
+
+	/* Set the record's properties */
+	genPar->flags = (ILUInt16)(values[IL_OFFSET_GENERICPAR_FLAGS]);
+	if(!ILGenericParSetName(genPar, ILImageGetString
+			(image, values[IL_OFFSET_GENERICPAR_NAME])))
+	{
+		return IL_LOADERR_MEMORY;
+	}
+	ILGenericParSetKind(genPar, ILProgramItem_FromToken
+			(image, values[IL_OFFSET_GENERICPAR_KIND]));
+	ILGenericParSetConstraint(genPar, ILProgramItem_FromToken
+			(image, values[IL_OFFSET_GENERICPAR_CONSTRAINT]));
+
+	/* Done */
+	return 0;
+}
+
+/*
+ * Load a method specification token.
+ */
+static int Load_MethodSpec(ILImage *image, ILUInt32 *values,
+				   	 	   ILUInt32 *valuesNext, ILToken token,
+				   	 	   void *userData)
+{
+	ILMember *method;
+	ILType *signature;
+	ILMethodSpec *spec;
+
+	/* Get the method */
+	method = ILMember_FromToken(image, values[IL_OFFSET_METHODSPEC_METHOD]);
+	if(!method)
+	{
+		META_VAL_ERROR("invalid method spec owner");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Get the signature instantiation information */
+	signature =
+		ILTypeFromMethodDefSig(image->context, image,
+						       values[IL_OFFSET_METHODSPEC_INST],
+						       values[IL_OFFSET_METHODSPEC_INST_LEN]);
+	if(!signature)
+	{
+		META_VAL_ERROR("invalid method spec signature");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Generate the method specification record */
+	spec = ILMethodSpecCreate(image, token, method, signature);
+	if(!spec)
+	{
+		return IL_LOADERR_MEMORY;
+	}
+	_ILMethodSpecSetTypeIndex(spec, values[IL_OFFSET_METHODSPEC_INST_RAW]);
+
+	/* Done */
+	return 0;
+}
+
 int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 								int loadFlags)
 {
@@ -2362,6 +2446,14 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	/* Load the custom attributes for all of the above */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CUSTOM_ATTRIBUTE,
 							 Load_CustomAttr, 0));
+
+	/* Load generic type parameters */
+	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_GENERIC_PAR,
+							 Load_GenericPar, 0));
+
+	/* Load generic method specifications */
+	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_METHOD_SPEC,
+							 Load_MethodSpec, 0));
 
 	/* Only do the following if we are pre-validating */
 	if((loadFlags & IL_LOADFLAG_PRE_VALIDATE) != 0)

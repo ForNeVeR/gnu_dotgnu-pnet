@@ -74,7 +74,8 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 			fputs("pinvokeimpl() ", outstream);
 		}
 	}
-	ILDumpMethodType(outstream, image, ILMethod_Signature(method), flags,
+	ILDumpMethodType(outstream, image, ILMethod_Signature(method),
+					 flags | IL_DUMP_GENERIC_PARAMS,
 					 0, ILMethod_Name(method), method);
 	putc(' ', outstream);
 	ILDumpFlags(outstream, ILMethod_ImplAttrs(method),
@@ -332,6 +333,83 @@ static void Dump_PropertyDef(ILImage *image, FILE *outstream, int flags,
 }
 
 /*
+ * Dump a class name with generic parameter information.
+ */
+static void DumpClassName(FILE *outstream, ILImage *image,
+						  ILClass *info, int flags, int withNamespace)
+{
+	ILType *type;
+	ILUInt32 genericNum;
+	ILGenericPar *genPar;
+	const char *name;
+	ILProgramItem *constraint;
+	ILTypeSpec *spec;
+
+	/* Use a different approach if the class is a type specification */
+	type = ILClassGetSynType(info);
+	if(type)
+	{
+		ILDumpType(outstream, image, type, flags);
+		return;
+	}
+
+	/* Dump the main part of the class name */
+	if(withNamespace)
+	{
+		ILDumpClassName(outstream, image, info, flags);
+	}
+	else
+	{
+		ILDumpIdentifier(outstream, ILClass_Name(info), 0, flags);
+	}
+
+	/* Dump the generic parameters, if any are present */
+	genericNum = 0;
+	genPar = ILGenericParGetFromOwner(ILToProgramItem(info), genericNum);
+	if(genPar)
+	{
+		putc('<', outstream);
+		do
+		{
+			if(genericNum > 0)
+			{
+				fputs(", ", outstream);
+			}
+			constraint = ILGenericPar_Constraint(genPar);
+			if(constraint)
+			{
+				putc('(', outstream);
+				spec = ILProgramItemToTypeSpec(constraint);
+				if(spec)
+				{
+					ILDumpType(outstream, image, ILTypeSpec_Type(spec), flags);
+				}
+				else
+				{
+					ILDumpType(outstream, image,
+							   ILClassToType((ILClass *)constraint), flags);
+				}
+				putc(')', outstream);
+			}
+			name = ILGenericPar_Name(genPar);
+			if(name)
+			{
+				ILDumpIdentifier(outstream, name, 0, flags);
+			}
+			else
+			{
+				fprintf(outstream, "G_%d", (int)(genericNum + 1));
+			}
+			++genericNum;
+			genPar = ILGenericParGetFromOwner
+					(ILToProgramItem(info), genericNum);
+		}
+		while(genPar != 0);
+		putc('>', outstream);
+	}
+}
+
+/*
  * Dump information about a type definition and its nested classes.
  */
 static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
@@ -363,11 +441,11 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 	{
 		fputs(".class ", outstream);
 		ILDumpFlags(outstream, ILClass_Attrs(info), ILTypeDefinitionFlags, 0);
-		ILDumpIdentifier(outstream, ILClass_Name(info), 0, flags);
+		DumpClassName(outstream, image, info, flags, 0);
 		if(ILClass_Parent(info))
 		{
 			fputs(" extends ", outstream);
-			ILDumpClassName(outstream, image, ILClass_Parent(info), flags);
+			DumpClassName(outstream, image, ILClass_Parent(info), flags, 1);
 		}
 		first = 1;
 		impl = 0;
@@ -383,7 +461,7 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 			{
 				fputs(", ", outstream);
 			}
-			ILDumpClassName(outstream, image, interface, flags);
+			DumpClassName(outstream, image, interface, flags, 1);
 		}
 		fputs("\n{\n", outstream);
 

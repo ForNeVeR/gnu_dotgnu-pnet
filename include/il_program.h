@@ -61,6 +61,8 @@ typedef struct _tagILDeclSecurity	ILDeclSecurity;
 typedef struct _tagILFileDecl		ILFileDecl;
 typedef struct _tagILManifestRes	ILManifestRes;
 typedef struct _tagILExportedType	ILExportedType;
+typedef struct _tagILGenericPar		ILGenericPar;
+typedef struct _tagILMethodSpec		ILMethodSpec;
 
 /*
  * Iterate over the list of attributes that are associated
@@ -2210,6 +2212,112 @@ ILExportedType *ILExportedTypeFind(ILImage *image,
 #define	ILExportedType_Name(type)		(ILExportedTypeGetName((type)))
 #define	ILExportedType_Namespace(type)	(ILExportedTypeGetNamespace((type)))
 #define	ILExportedType_Scope(type)		(ILExportedTypeGetScope((type)))
+
+/*
+ * Create a generic parameter record.
+ */
+ILGenericPar *ILGenericParCreate(ILImage *image, ILToken token,
+								 ILProgramItem *owner, ILUInt32 number);
+
+/*
+ * Get the number associated with a generic parameter.
+ */
+ILUInt32 ILGenericParGetNumber(ILGenericPar *genPar);
+
+/*
+ * Get the flags associated with a generic parameter.
+ */
+ILUInt32 ILGenericParGetFlags(ILGenericPar *genPar);
+
+/*
+ * Set the flags associated with a generic parameter.
+ */
+void ILGenericParSetFlags(ILGenericPar *genPar, ILUInt32 mask, ILUInt32 value);
+
+/*
+ * Get the owner associated with a generic parameter.
+ */
+ILProgramItem *ILGenericParGetOwner(ILGenericPar *genPar);
+
+/*
+ * Get the name associated with a generic parameter.
+ */
+const char *ILGenericParGetName(ILGenericPar *genPar);
+
+/*
+ * Set the name associated with a generic parameter.  Returns
+ * zero if out of memory.
+ */
+int ILGenericParSetName(ILGenericPar *genPar, const char *name);
+
+/*
+ * Get the kind associated with a generic parameter.
+ */
+ILProgramItem *ILGenericParGetKind(ILGenericPar *genPar);
+
+/*
+ * Set the kind associated with a generic parameter.
+ */
+void ILGenericParSetKind(ILGenericPar *genPar, ILProgramItem *type);
+
+/*
+ * Get the constraint associated with a generic parameter.
+ */
+ILProgramItem *ILGenericParGetConstraint(ILGenericPar *genPar);
+
+/*
+ * Set the constraint associated with a generic parameter.
+ */
+void ILGenericParSetConstraint(ILGenericPar *genPar, ILProgramItem *type);
+
+/*
+ * Get a generic parameter record for a particular owner and number.
+ * Returns NULL if the record could not be found.
+ */
+ILGenericPar *ILGenericParGetFromOwner(ILProgramItem *owner, ILUInt32 number);
+
+/*
+ * Get the number of generic parameters that are owned by an item.
+ */
+ILUInt32 ILGenericParGetNumParams(ILProgramItem *owner);
+
+/*
+ * Helper macros for querying information about generic parameters.
+ */
+#define	ILGenericPar_FromToken(image,token)	\
+				((ILGenericPar *)ILImageTokenInfo((image), (token)))
+#define	ILGenericPar_Token(genPar)		(ILProgramItem_Token((genPar)))
+#define	ILGenericPar_Number(genPar)		(ILGenericParGetNumber((genPar)))
+#define	ILGenericPar_Flags(genPar)		(ILGenericParGetFlags((genPar)))
+#define	ILGenericPar_Owner(genPar)		(ILGenericParGetOwner((genPar)))
+#define	ILGenericPar_Name(genPar)		(ILGenericParGetName((genPar)))
+#define	ILGenericPar_Kind(genPar)		(ILGenericParGetKind((genPar)))
+#define	ILGenericPar_Constraint(genPar)	(ILGenericParGetConstraint((genPar)))
+
+/*
+ * Create a method specification record.
+ */
+ILMethodSpec *ILMethodSpecCreate(ILImage *image, ILToken token,
+								 ILMember *method, ILType *type);
+
+/*
+ * Get the method associated with a MethodSpec token.
+ */
+ILMember *ILMethodSpecGetMethod(ILMethodSpec *spec);
+
+/*
+ * Get the type associated with a MethodSpec token.
+ */
+ILType *ILMethodSpecGetType(ILMethodSpec *spec);
+
+/*
+ * Helper macros for querying information about method specifications.
+ */
+#define	ILMethodSpec_FromToken(image,token)	\
+				((ILMethodSpec *)ILImageTokenInfo((image), (token)))
+#define	ILMethodSpec_Token(spec)		(ILProgramItem_Token((spec)))
+#define	ILMethodSpec_Method(spec)		(ILMethodSpecGetMethod((spec)))
+#define	ILMethodSpec_Type(spec)			(ILMethodSpecGetType((spec)))
 
 /*
  * Get the type of a Java constant pool entry for a class.

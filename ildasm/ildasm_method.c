@@ -107,6 +107,7 @@ static void DumpToken(ILImage *image, FILE *outstream,
 	ILTypeSpec *spec;
 	ILStandAloneSig *sig;
 	ILType *type;
+	ILMethodSpec *mspec;
 
 	switch(token & IL_META_TOKEN_MASK)
 	{
@@ -256,6 +257,33 @@ static void DumpToken(ILImage *image, FILE *outstream,
 				{
 					ILDumpType(outstream, image, type, flags);
 				}
+			}
+			else
+			{
+				fprintf(outstream, "#%lx", token);
+			}
+		}
+		break;
+
+		case IL_META_TOKEN_METHOD_SPEC:
+		{
+			/* A reference to a method with generic parameters */
+			mspec = ILMethodSpec_FromToken(image, token);
+			if(mspec)
+			{
+				if(prefixWithKind)
+				{
+					fputs("method ", outstream);
+				}
+				fprintf(outstream, "#%lx", token);
+				/* TODO */
+			#if 0
+				ILDumpMethodType(outstream, image,
+								 ILMethod_Signature(method), flags,
+								 ILMethod_Owner(method),
+								 ILMethod_Name(method),
+								 0/*method*/);
+			#endif
 			}
 			else
 			{

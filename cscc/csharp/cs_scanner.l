@@ -1067,6 +1067,7 @@ WHITE			[ \t\r\f\v\032]
 "virtual"				{ RETURNTOK(VIRTUAL); }
 "void"					{ RETURNTOK(VOID); }
 "volatile"				{ RETURNTOK(VOLATILE); }
+"where"					{ RETURNTOK(WHERE); }
 "while"					{ RETURNTOK(WHILE); }
 
 {IDALPHA}({DIGIT}|{IDALPHA})*		{

@@ -786,6 +786,10 @@ SIGN			[+-]
 "switch"				{ yylval.opcode = IL_OP_SWITCH;	/* Switch opcodes */
 						  return I_SWITCH; }
 
+"ldelem"				{ OPCODE_TYPE(LDELEM); }
+"stelem"				{ OPCODE_TYPE(STELEM); }
+"unbox.any"				{ OPCODE_TYPE(UNBOX_ANY); }
+
 <JAVAMODE>"nop"			{ JOPCODE_NONE(NOP); }	/* Java opcodes with no args */
 <JAVAMODE>"aconst_null"	{ JOPCODE_NONE(ACONST_NULL); }
 <JAVAMODE>"iconst_m1"	{ JOPCODE_NONE(ICONST_M1); }

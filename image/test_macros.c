@@ -433,6 +433,24 @@ void TestFromTokenMacros(ILImage *image, ILToken token)
 	IGNORE(ILExportedType_FromToken(image, token));
 }
 
+void TestGenericParMacros(ILGenericPar *genPar)
+{
+	IGNORE(ILGenericPar_Token(genPar));
+	IGNORE(ILGenericPar_Number(genPar));
+	IGNORE(ILGenericPar_Flags(genPar));
+	IGNORE(ILGenericPar_Owner(genPar));
+	IGNORE(ILGenericPar_Name(genPar));
+	IGNORE(ILGenericPar_Kind(genPar));
+	IGNORE(ILGenericPar_Constraint(genPar));
+}
+
+void TestMethodSpecMacros(ILMethodSpec *spec)
+{
+	IGNORE(ILMethodSpec_Token(spec));
+	IGNORE(ILMethodSpec_Method(spec));
+	IGNORE(ILMethodSpec_Type(spec));
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -276,6 +276,40 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 			}
 			break;
 
+			case IL_TYPE_COMPLEX_WITH:
+			{
+				unsigned long numParams;
+				unsigned long param;
+				ILDumpType(stream, image,
+						   ILTypeGetWithMainWithPrefixes(type), flags);
+				putc('<', stream);
+				numParams = ILTypeNumWithParams(type);
+				for(param = 1; param <= numParams; ++param)
+				{
+					if(param != 1)
+					{
+						fputs(", ", stream);
+					}
+					ILDumpType(stream, image,
+							   ILTypeGetWithParamWithPrefixes(type, param),
+							   flags);
+				}
+				putc('>', stream);
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_MVAR:
+			{
+				fprintf(stream, "!!%d", ILType_VarNum(type));
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_VAR:
+			{
+				fprintf(stream, "!%d", ILType_VarNum(type));
+			}
+			break;
+
 			default:
 			{
 				if((type->kind__ & IL_TYPE_COMPLEX_METHOD) != 0)
@@ -455,6 +489,19 @@ void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
 {
 	ILUInt32 callingConventions;
 	ILType *synType;
+	int dumpGenerics;
+	ILUInt32 genericNum;
+	ILGenericPar *genPar;
+	const char *name;
+	ILProgramItem *constraint;
+	ILTypeSpec *spec;
+
+	/* Determine if we need to dump the generic parameters */
+	dumpGenerics = ((flags & IL_DUMP_GENERIC_PARAMS) != 0);
+
+	/* Strip off the "generic parameters" flag so that we don't
+	   end up passing it down to the parameter types */
+	flags &= ~IL_DUMP_GENERIC_PARAMS;
 
 	/* Dump the calling conventions for the method */
 	callingConventions = ILType_CallConv(type);
@@ -488,6 +535,56 @@ void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
 	else
 	{
 		putc('*', stream);
+	}
+
+	/* Dump the generic method parameters if necessary */
+	if(dumpGenerics && methodInfo)
+	{
+		genericNum = 0;
+		genPar = ILGenericParGetFromOwner
+				(ILToProgramItem(methodInfo), genericNum);
+		if(genPar)
+		{
+			putc('<', stream);
+			do
+			{
+				if(genericNum > 0)
+				{
+					fputs(", ", stream);
+				}
+				constraint = ILGenericPar_Constraint(genPar);
+				if(constraint)
+				{
+					putc('(', stream);
+					spec = ILProgramItemToTypeSpec(constraint);
+					if(spec)
+					{
+						ILDumpType(stream, image,
+								   ILTypeSpec_Type(spec), flags);
+					}
+					else
+					{
+						ILDumpType(stream, image,
+							   	   ILClassToType((ILClass *)constraint), flags);
+					}
+					putc(')', stream);
+				}
+				name = ILGenericPar_Name(genPar);
+				if(name)
+				{
+					ILDumpIdentifier(stream, name, 0, flags);
+				}
+				else
+				{
+					fprintf(stream, "G_%d", (int)(genericNum + 1));
+				}
+				++genericNum;
+				genPar = ILGenericParGetFromOwner
+					(ILToProgramItem(info), genericNum);
+			}
+			while(genPar != 0);
+			putc('>', stream);
+		}
 	}
 
 	/* Dump the parameters */

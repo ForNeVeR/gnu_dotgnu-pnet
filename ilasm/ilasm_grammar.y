@@ -252,10 +252,25 @@ static ILModule *FindModuleRef(ILImage *image, const char *name)
 static ILType *CreateMethodSig(ILInt64 callingConventions,
 							   ILType *returnType,
 							   ILAsmParamInfo *params,
+							   ILAsmParamInfo *genericParams,
 							   int freeParams)
 {
 	ILType *type;
 	ILAsmParamInfo *nextParam;
+	ILUInt32 numGenericParams;
+
+	/* Set the "generic" flag if there are generic parameters */
+	numGenericParams = 0;
+	if(genericParams)
+	{
+		callingConventions |= IL_META_CALLCONV_GENERIC;
+		nextParam = genericParams;
+		while(nextParam != 0)
+		{
+			++numGenericParams;
+			nextParam = nextParam->next;
+		}
+	}
 
 	/* Create the main method type block */
 	type = ILTypeCreateMethod(ILAsmContext, returnType);
@@ -264,6 +279,7 @@ static ILType *CreateMethodSig(ILInt64 callingConventions,
 		ILAsmOutOfMemory();
 	}
 	ILTypeSetCallConv(type, (ILUInt32)callingConventions);
+	ILType_SetNumGen(type, numGenericParams);
 
 	/* Add the parameters to the method signature */
 	while(params != 0)
@@ -292,6 +308,35 @@ static ILType *CreateMethodSig(ILInt64 callingConventions,
 
 	/* Return the final method type to the caller */
 	return type;
+}
+
+/*
+ * Create a method specification token.
+ */
+static ILToken CreateMethodSpec(ILToken method, ILAsmParamInfo *params)
+{
+	ILMember *member;
+	ILType *signature;
+	ILMethodSpec *spec;
+	
+	/* Convert the method token back into a MethodDef or MemberRef */
+	member = ILMember_FromToken(ILAsmImage, method);
+	if(!member)
+	{
+		return method;
+	}
+
+	/* Create the method instantiation signature */
+	signature = CreateMethodSig(IL_META_CALLCONV_INSTANTIATION,
+								ILType_Invalid, params, 0, 1);
+
+	/* Create the MethodSpec token */
+	spec = ILMethodSpecCreate(ILAsmImage, 0, member, signature);
+	if(!spec)
+	{
+		ILAsmOutOfMemory();
+	}
+	return ILMethodSpec_Token(spec);
 }
 
 /*
@@ -896,7 +941,7 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 %type <opcode>		I_NEWARRAY I_MULTINEWARRAY
 %type <floatValue>	Float64 InstructionFloat
 %type <byteList>	ByteList
-%type <classInfo>	ExtendsClause ClassName CatchClause
+%type <classInfo>	ExtendsClause ClassName CatchClause ClassNameTypeSpec
 %type <type>		Type ArrayBounds Bounds
 %type <marshType>	MarshalledType
 %type <typeSpec>	TypeSpecification
@@ -908,7 +953,12 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 %type <exception>	ExceptionClause ExceptionClauses
 %type <exception>	JavaExceptionClause JavaExceptionClauses
 %type <token>		MethodReference InstanceMethodReference
+%type <token>		GenericMethodReference
 %type <integer>		DataItemCount
+%type <params>		FormalGenericParamsOpt FormalGenericParams
+%type <params>		FormalGenericParam MethodRefGenericParamsOpt
+%type <params>		MethodRefGenericParams
+%type <type>		ActualGenericParams
 
 %expect 8
 
@@ -1177,12 +1227,64 @@ ModuleHeading
  */
 
 ClassHeading
-	: D_CLASS ClassAttributes Identifier ExtendsClause {
+	: D_CLASS ClassAttributes Identifier FormalGenericParamsOpt ExtendsClause {
 				/* Create the new class */
-				ILAsmBuildNewClass($3.string, $4, (ILUInt32)($2));
+				ILAsmBuildNewClass($3.string, $4.paramFirst,
+								   $5, (ILUInt32)($2));
 				ILAsmBuildPushScope(ILAsmClass);
 			}
 	  ImplementsClause
+	;
+
+FormalGenericParamsOpt
+	: /* empty */					{ $$.paramFirst = 0; $$.paramLast = 0; }
+	| '<' FormalGenericParams '>'	{ $$ = $2; }
+	;
+
+FormalGenericParams
+	: FormalGenericParam			{ $$ = $1; }
+	| FormalGenericParams ',' FormalGenericParam	{
+				$1.paramLast->next = $3.paramFirst;
+				$$.paramFirst = $1.paramFirst;
+				$$.paramLast = $3.paramLast;
+		}
+	;
+
+FormalGenericParam
+	: '(' TypeSpecification ')' Identifier	{
+				/* Generic parameter with a type constraint */
+				ILAsmParamInfo *param;
+				param = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
+				if(!param)
+				{
+					ILAsmOutOfMemory();
+				}
+				param->type = $2.type;
+				param->nativeType.string = "";
+				param->nativeType.len = 0;
+				param->parameterAttrs = 0;
+				param->name = $4.string;
+				param->next = 0;
+				$$.paramFirst = param;
+				$$.paramLast = param;
+			}
+	| Identifier	{
+				/* Generic parameter with no constraints */
+				ILAsmParamInfo *param;
+				param = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
+				if(!param)
+				{
+					ILAsmOutOfMemory();
+				}
+				param->type = 0;
+				param->nativeType.string = "";
+				param->nativeType.len = 0;
+				param->parameterAttrs = 0;
+				param->name = $1.string;
+				param->next = 0;
+				$$.paramFirst = param;
+				$$.paramLast = param;
+			}
 	;
 
 ClassAttributes
@@ -1229,7 +1331,7 @@ ExtendsClause
 				/* Probably "System.Object" or an interface */
 				$$ = 0;
 			}
-	| K_EXTENDS ClassName	{
+	| K_EXTENDS ClassNameTypeSpec	{
 				/* Extend a named class */
 				$$ = $2;
 			}
@@ -1241,13 +1343,13 @@ ImplementsClause
 	;
 
 ClassNameList
-	: ClassName		{
+	: ClassNameTypeSpec		{
 				if(!ILClassAddImplements(ILAsmClass, $1, 0))
 				{
 					ILAsmOutOfMemory();
 				}
 			}
-	| ClassNameList ',' ClassName	{
+	| ClassNameList ',' ClassNameTypeSpec	{
 				if(!ILClassAddImplements(ILAsmClass, $3, 0))
 				{
 					ILAsmOutOfMemory();
@@ -1333,7 +1435,7 @@ ClassDeclaration
 				ILMethod *body;
 
 				/* Create a signature block for the methods */
-				sig = CreateMethodSig($6, $7, $12.paramFirst, 1);
+				sig = CreateMethodSig($6, $7, $12.paramFirst, 0, 1);
 
 				/* Create a MemberRef for the first part of the override */
 				token = ILAsmResolveMember($2.item, $4.string, sig,
@@ -1724,12 +1826,18 @@ FieldInitialization
 
 MethodHeading
 	: D_METHOD MethodAttributes CallingConventions ParameterAttributes
-			MarshalledType MethodName '(' OptSignatureArguments ')'
-			ImplementationAttributes
+			MarshalledType MethodName FormalGenericParamsOpt
+			'(' OptSignatureArguments ')' ImplementationAttributes
 					{
 				ILType *sig;
 				ILMethod *method;
 				ILUInt32 callConv;
+				ILAsmParamInfo *genericParams;
+				ILAsmParamInfo *nextGeneric;
+				ILUInt32 genericNum;
+				ILGenericPar *genPar;
+				ILProgramItem *constraint;
+				ILTypeSpec *spec;
 
 				/* Create the method definition */
 				callConv = (ILUInt32)($3);
@@ -1740,12 +1848,13 @@ MethodHeading
 					   (Partition II, section 14.3) */
 					callConv |= IL_META_CALLCONV_HASTHIS;
 				}
-				sig = CreateMethodSig(callConv, $5.type, $8.paramFirst, 0);
+				sig = CreateMethodSig(callConv, $5.type, $9.paramFirst,
+									  $7.paramFirst, 0);
 				method = ILAsmMethodCreate
 							(ILAsmClass, $6.string, $2.flags, sig);
-				ILMethodSetImplAttrs(method, ~0, (ILUInt16)($10));
-				ILAsmOutAddParams($8.paramFirst, callConv);
-				AddMethodParams(method, $4, $5.nativeType, $8.paramFirst);
+				ILMethodSetImplAttrs(method, ~0, (ILUInt16)($11));
+				ILAsmOutAddParams($9.paramFirst, callConv);
+				AddMethodParams(method, $4, $5.nativeType, $9.paramFirst);
 				if(($2.flags & IL_META_METHODDEF_PINVOKE_IMPL) != 0)
 				{
 					ILModule *module;
@@ -1755,6 +1864,47 @@ MethodHeading
 					{
 						ILAsmOutOfMemory();
 					}
+				}
+
+				/* Add the formal generic parameters to the method */
+				genericNum = 0;
+				genericParams = $7.paramFirst;
+				while(genericParams != 0)
+				{
+					nextGeneric = genericParams->next;
+					genPar = ILGenericParCreate
+						(ILAsmImage, 0, ILToProgramItem(method), genericNum);
+					if(!genPar)
+					{
+						ILAsmOutOfMemory();
+					}
+					if(!ILGenericParSetName(genPar, genericParams->name))
+					{
+						ILAsmOutOfMemory();
+					}
+					if(genericParams->type)
+					{
+						if(ILType_IsClass(genericParams->type) ||
+			   			   ILType_IsValueType(genericParams->type))
+						{
+							constraint = ILToProgramItem
+								(ILType_ToClass(genericParams->type));
+						}
+						else
+						{
+							spec = ILTypeSpecCreate
+								(ILAsmImage, 0, genericParams->type);
+							if(!spec)
+							{
+								ILAsmOutOfMemory();
+							}
+							constraint = ILToProgramItem(spec);
+						}
+						ILGenericParSetConstraint(genPar, constraint);
+					}
+					ILFree(genericParams);
+					genericParams = nextGeneric;
+					++genericNum;
 				}
 
 				/* The current scope is now the method */
@@ -2277,35 +2427,115 @@ MethodReference
 	: CallingConventions Type TypeSpecification COLON_COLON
 			MethodName '(' OptSignatureArguments ')'	{
 				ILType *sig;
-				sig = CreateMethodSig($1, $2, $7.paramFirst, 1);
+				sig = CreateMethodSig($1, $2, $7.paramFirst, 0, 1);
 				$$ = ILAsmResolveMember($3.item, $5.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
 			}
 	| CallingConventions Type MethodName '(' OptSignatureArguments ')' {
 				/* Reference a method in the global module class */
-				ILType *sig = CreateMethodSig($1, $2, $5.paramFirst, 1);
+				ILType *sig = CreateMethodSig($1, $2, $5.paramFirst, 0, 1);
 				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmModuleClass),
 									    $3.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
 			}
 	;
 
-InstanceMethodReference
+GenericMethodReference
 	: CallingConventions Type TypeSpecification COLON_COLON
-			MethodName '(' OptSignatureArguments ')'	{
+			MethodName MethodRefGenericParamsOpt
+			'(' OptSignatureArguments ')'	{
 				ILType *sig;
-				sig = CreateMethodSig($1 | IL_META_CALLCONV_HASTHIS,
-									  $2, $7.paramFirst, 1);
+				sig = CreateMethodSig($1, $2, $8.paramFirst, $6.paramFirst, 1);
 				$$ = ILAsmResolveMember($3.item, $5.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
+				if($6.paramFirst)
+				{
+					$$ = CreateMethodSpec($$, $6.paramFirst);
+				}
 			}
-	| CallingConventions Type MethodName '(' OptSignatureArguments ')' {
+	| CallingConventions Type MethodName MethodRefGenericParamsOpt
+			'(' OptSignatureArguments ')' {
 				/* Reference a method in the global module class */
-				ILType *sig = CreateMethodSig($1 | IL_META_CALLCONV_HASTHIS,
-											  $2, $5.paramFirst, 1);
+				ILType *sig = CreateMethodSig
+						($1, $2, $6.paramFirst, $4.paramFirst, 1);
 				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmModuleClass),
 									    $3.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
+				if($4.paramFirst)
+				{
+					$$ = CreateMethodSpec($$, $4.paramFirst);
+				}
+			}
+	;
+
+InstanceMethodReference
+	: CallingConventions Type TypeSpecification COLON_COLON
+			MethodName MethodRefGenericParamsOpt
+			'(' OptSignatureArguments ')'	{
+				ILType *sig;
+				sig = CreateMethodSig($1 | IL_META_CALLCONV_HASTHIS,
+									  $2, $8.paramFirst, $6.paramFirst, 1);
+				$$ = ILAsmResolveMember($3.item, $5.string, sig,
+								        IL_META_MEMBERKIND_METHOD);
+				if($6.paramFirst)
+				{
+					$$ = CreateMethodSpec($$, $6.paramFirst);
+				}
+			}
+	| CallingConventions Type MethodName MethodRefGenericParamsOpt
+			'(' OptSignatureArguments ')' {
+				/* Reference a method in the global module class */
+				ILType *sig = CreateMethodSig
+						($1 | IL_META_CALLCONV_HASTHIS,
+					     $2, $6.paramFirst, $4.paramFirst, 1);
+				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmModuleClass),
+									    $3.string, sig,
+								        IL_META_MEMBERKIND_METHOD);
+				if($4.paramFirst)
+				{
+					$$ = CreateMethodSpec($$, $4.paramFirst);
+				}
+			}
+	;
+
+MethodRefGenericParamsOpt
+	: /* empty */					  { $$.paramFirst = 0; $$.paramLast = 0; }
+	| '<' MethodRefGenericParams '>'  { $$ = $2; }
+	;
+
+MethodRefGenericParams
+	: Type			{
+				ILAsmParamInfo *param;
+				param = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
+				if(!param)
+				{
+					ILAsmOutOfMemory();
+				}
+				param->type = $1;
+				param->nativeType.string = "";
+				param->nativeType.len = 0;
+				param->parameterAttrs = 0;
+				param->name = 0;
+				param->next = 0;
+				$$.paramFirst = param;
+				$$.paramLast = param;
+			}
+	| MethodRefGenericParams ',' Type	{
+				ILAsmParamInfo *param;
+				param = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
+				if(!param)
+				{
+					ILAsmOutOfMemory();
+				}
+				param->type = $3;
+				param->nativeType.string = "";
+				param->nativeType.len = 0;
+				param->parameterAttrs = 0;
+				param->name = 0;
+				param->next = 0;
+				$1.paramLast->next = param;
+				$$.paramFirst = $1.paramFirst;
+				$$.paramLast = param;
 			}
 	;
 
@@ -2604,6 +2834,12 @@ ClassName
 			}
 	;
 
+ClassNameTypeSpec
+	: TypeSpecification		{
+				$$ = ILProgramItemToClass($1.item);
+			}
+	;
+
 SlashedName
 	: QualifiedName						{ $$ = $1; }
 	| SlashedName '/' QualifiedName		{
@@ -2652,9 +2888,8 @@ Type
 											 IL_TYPE_COMPLEX_CMOD_OPT, $4);
 				$$ = ILTypeAddModifiers(ILAsmContext, modifiers, $1);
 			}
-	| '!' Integer32					{ $$ = ILType_FromElement($2); }
 	| K_METHOD CallingConventions Type '*' '(' OptSignatureArguments ')'	{
-				$$ = CreateMethodSig($2, $3, $6.paramFirst, 1);
+				$$ = CreateMethodSig($2, $3, $6.paramFirst, 0, 1);
 			}
 	| K_TYPEDREF					{ $$ = ILType_TypedRef; }
 	| K_WCHAR						{ $$ = ILType_Char; }
@@ -2676,6 +2911,42 @@ Type
 	| K_NATIVE K_FLOAT				{ $$ = ILType_Float; }
 	| K_STRING			{ $$ = ILType_FromClass(ILAsmSystemClass("String")); }
 	| K_OBJECT			{ $$ = ILType_FromClass(ILAsmSystemClass("Object")); }
+	| '!' Integer32					{
+				/* Reference to a class generic parameter */
+				$$ = ILTypeCreateVarNum
+						(ILAsmContext, IL_TYPE_COMPLEX_VAR, (int)($2));
+			}
+	| '!' '!' Integer32					{
+				/* Reference to a method generic parameter */
+				$$ = ILTypeCreateVarNum
+						(ILAsmContext, IL_TYPE_COMPLEX_MVAR, (int)($3));
+			}
+	| Type '<' ActualGenericParams '>'	{
+				/* Reference to a generic type instantiation */
+				($3)->un.method__.retType__ = $1;
+				$$ = $3;
+			}
+	;
+
+ActualGenericParams
+	: Type			{
+				$$ = ILTypeCreateWith(ILAsmContext, ILType_Invalid);
+				if(!($$))
+				{
+					ILAsmOutOfMemory();
+				}
+				if(!ILTypeAddWithParam(ILAsmContext, $$, $1))
+				{
+					ILAsmOutOfMemory();
+				}
+			}
+	| ActualGenericParams ',' Type	{
+				if(!ILTypeAddWithParam(ILAsmContext, $1, $3))
+				{
+					ILAsmOutOfMemory();
+				}
+				$$ = $1;
+			}
 	;
 
 ArrayBounds
@@ -3589,7 +3860,7 @@ Instruction
 			}
 	| I_BRANCH Integer32		{ ILAsmOutBranchInt($1, $2); }
 	| I_BRANCH Identifier		{ ILAsmOutBranch($1, $2.string); }
-	| I_METHOD MethodReference	{ ILAsmOutToken($1, $2); }
+	| I_METHOD GenericMethodReference	{ ILAsmOutToken($1, $2); }
 	| I_IMETHOD InstanceMethodReference { ILAsmOutToken($1, $2); }
 	| I_FIELD Type TypeSpecification COLON_COLON Identifier	{
 				/* Refer to a field in some other class */
@@ -3620,7 +3891,7 @@ Instruction
 	| I_STRING ComposedString		{ ILAsmOutString($2); }
 	| I_STRING K_BYTEARRAY Bytes	{ ILAsmOutString($3); }
 	| I_SIGNATURE CallingConventions Type '(' OptSignatureArguments ')'	{
-				ILType *sig = CreateMethodSig($2, $3, $5.paramFirst, 1);
+				ILType *sig = CreateMethodSig($2, $3, $5.paramFirst, 0, 1);
 				ILStandAloneSig *stand =
 					ILStandAloneSigCreate(ILAsmImage, 0, sig);
 				if(!stand)

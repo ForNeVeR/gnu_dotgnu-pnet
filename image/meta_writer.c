@@ -645,6 +645,32 @@ static void Format_NestedClass(ILWriter *writer, ILImage *image,
 }
 
 /*
+ * Format a GenericPar token.
+ */
+static void Format_GenericPar(ILWriter *writer, ILImage *image,
+	 		                  ILUInt32 *values, ILGenericPar *genPar)
+{
+	values[IL_OFFSET_GENERICPAR_NUMBER] = genPar->number;
+	values[IL_OFFSET_GENERICPAR_FLAGS] = genPar->flags;
+	values[IL_OFFSET_GENERICPAR_OWNER] = genPar->ownedItem.owner->token;
+	values[IL_OFFSET_GENERICPAR_NAME] = GetPersistString(image, genPar->name);
+	values[IL_OFFSET_GENERICPAR_KIND] =
+			(genPar->kind ? genPar->kind->token : 0);
+	values[IL_OFFSET_GENERICPAR_CONSTRAINT] =
+			(genPar->constraint ? genPar->constraint->token : 0);
+}
+
+/*
+ * Format a MethodSpec token.
+ */
+static void Format_MethodSpec(ILWriter *writer, ILImage *image,
+	 		                  ILUInt32 *values, ILMethodSpec *spec)
+{
+	values[IL_OFFSET_METHODSPEC_METHOD] = spec->method->programItem.token;
+	values[IL_OFFSET_METHODSPEC_INST_RAW] = spec->typeBlob;
+}
+
+/*
  * Array of all formatting routines for the known token types.
  */
 typedef void (*ILFormatFunc)(ILWriter *writer, ILImage *image,
@@ -692,8 +718,8 @@ static ILFormatFunc const Formatters[64] = {
 	(ILFormatFunc)Format_ExportedType,
 	(ILFormatFunc)Format_ManifestResource,		/* 28 */
 	(ILFormatFunc)Format_NestedClass,
-	0,
-	0,
+	(ILFormatFunc)Format_GenericPar,
+	(ILFormatFunc)Format_MethodSpec,
 	0,
 	0,
 	0,
@@ -856,6 +882,23 @@ static int SigWrite_TypeSpec(ILTypeSpec *spec)
 }
 
 /*
+ * Write signature information for a method specification.
+ */
+static int SigWrite_MethodSpec(ILMethodSpec *spec)
+{
+	if(spec->type && !(spec->typeBlob))
+	{
+		spec->typeBlob =
+			ILTypeToMethodSig(spec->programItem.image, spec->type);
+		if(!(spec->typeBlob))
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/*
  * Array of all signature writing routines for the known token types.
  */
 typedef int (*ILSigWriteFunc)(void *data);
@@ -903,7 +946,7 @@ static ILSigWriteFunc const SigWriters[64] = {
 	0,											/* 28 */
 	0,
 	0,
-	0,
+	(ILSigWriteFunc)SigWrite_MethodSpec,
 	0,
 	0,
 	0,
@@ -1227,7 +1270,7 @@ static ILSortFunc const SortFuncs[64] = {
 	0,
 	0,											/* 28 */
 	(ILSortFunc)Sort_NestedClass,
-	0,
+	(ILSortFunc)Sort_OwnedItem,
 	0,
 	0,
 	0,

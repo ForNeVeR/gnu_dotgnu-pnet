@@ -253,10 +253,16 @@ void ILAsmSplitName(const char *str, int len, const char **name,
 	}
 }
 
-void ILAsmBuildNewClass(const char *name, ILClass *parent, ILUInt32 attrs)
+void ILAsmBuildNewClass(const char *name, ILAsmParamInfo *genericParams,
+						ILClass *parent, ILUInt32 attrs)
 {
 	ILClass *info;
 	char uniqueName[64];
+	ILAsmParamInfo *nextGeneric;
+	ILUInt32 genericNum;
+	ILGenericPar *genPar;
+	ILProgramItem *constraint;
+	ILTypeSpec *spec;
 
 	/* Set the default parent to "System.Object" if necessary */
 	if(!parent &&
@@ -332,6 +338,45 @@ void ILAsmBuildNewClass(const char *name, ILClass *parent, ILUInt32 attrs)
 
 	/* Set the class attributes */
 	ILClassSetAttrs(info, ~((ILUInt32)0), attrs);
+
+	/* Add the formal generic parameters, if necessary */
+	genericNum = 0;
+	while(genericParams != 0)
+	{
+		nextGeneric = genericParams->next;
+		genPar = ILGenericParCreate
+				(ILAsmImage, 0, ILToProgramItem(info), genericNum);
+		if(!genPar)
+		{
+			ILAsmOutOfMemory();
+		}
+		if(!ILGenericParSetName(genPar, genericParams->name))
+		{
+			ILAsmOutOfMemory();
+		}
+		if(genericParams->type)
+		{
+			if(ILType_IsClass(genericParams->type) ||
+			   ILType_IsValueType(genericParams->type))
+			{
+				constraint =
+					ILToProgramItem(ILType_ToClass(genericParams->type));
+			}
+			else
+			{
+				spec = ILTypeSpecCreate(ILAsmImage, 0, genericParams->type);
+				if(!spec)
+				{
+					ILAsmOutOfMemory();
+				}
+				constraint = ILToProgramItem(spec);
+			}
+			ILGenericParSetConstraint(genPar, constraint);
+		}
+		ILFree(genericParams);
+		genericParams = nextGeneric;
+		++genericNum;
+	}
 
 	/* Add the previous class to the class stack */
 	if(classStackSize >= classStackMax)

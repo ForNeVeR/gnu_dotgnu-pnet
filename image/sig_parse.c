@@ -134,6 +134,7 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 	unsigned long value;
 	ILType *modifiers = 0;
 	ILType *type = 0;
+	ILType *tempType;
 	ILClass *info;
 	int sigKind;
 
@@ -360,6 +361,89 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 		}
 		break;
 
+		case IL_META_ELEMTYPE_WITH:
+		{
+			/* Parse a generic type with parameters */
+			if(depth > 0)
+			{
+				/* Parse the main "with" type */
+				tempType = ParseElemType(context, image, reader,
+										 depth - 1, categories);
+				if(tempType == ILType_Invalid)
+				{
+					return 0;
+				}
+				type = ILTypeCreateWith(context, tempType);
+				if(!type)
+				{
+					return 0;
+				}
+
+				/* Get the number of parameters */
+				if(!(reader->error) && reader->len > 0)
+				{
+					value = *((reader->data)++);
+					--(reader->len);
+				}
+				else
+				{
+					reader->error = 1;
+					return 0;
+				}
+
+				/* Parse the type parameters */
+				while(value > 0)
+				{
+					tempType = ParseElemType(context, image, reader,
+											 depth - 1, categories);
+					if(tempType == ILType_Invalid)
+					{
+						return 0;
+					}
+					if(!ILTypeAddWithParam(context, type, tempType))
+					{
+						return 0;
+					}
+					--value;
+				}
+			}
+		}
+		break;
+
+		case IL_META_ELEMTYPE_MVAR:
+		{
+			/* Parse a generic method variable reference */
+			if(!(reader->error) && reader->len > 0)
+			{
+				value = *((reader->data)++);
+				--(reader->len);
+				type = ILTypeCreateVarNum
+					(context, IL_META_ELEMTYPE_MVAR, (int)value);
+			}
+			else
+			{
+				reader->error = 1;
+			}
+		}
+		break;
+
+		case IL_META_ELEMTYPE_VAR:
+		{
+			/* Parse a generic class variable reference */
+			if(!(reader->error) && reader->len > 0)
+			{
+				value = *((reader->data)++);
+				--(reader->len);
+				type = ILTypeCreateVarNum
+					(context, IL_META_ELEMTYPE_VAR, (int)value);
+			}
+			else
+			{
+				reader->error = 1;
+			}
+		}
+		break;
+
 		default:	break;
 	}
 
@@ -381,6 +465,7 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 							  int depth)
 {
 	unsigned long sigKind;
+	unsigned long numGenericParams;
 	unsigned long numParams;
 	unsigned long param;
 	int sawSentinel;
@@ -400,7 +485,24 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 		case IL_META_CALLCONV_FASTCALL:
 		case IL_META_CALLCONV_VARARG:
 		case IL_META_CALLCONV_UNMGD:
+		case IL_META_CALLCONV_INSTANTIATION:
 		{
+			/* Parse the number of generic parameters */
+			if((sigKind & IL_META_CALLCONV_GENERIC) != 0)
+			{
+				numGenericParams = ILMetaUncompressData(reader);
+				if(numGenericParams > (unsigned long)0xFF)
+				{
+					/* Cannot have this many parameters, because "with"
+					   types use a single byte for parameter counts */
+					break;
+				}
+			}
+			else
+			{
+				numGenericParams = 0;
+			}
+
 			/* Parse the number of method parameters */
 			numParams = ILMetaUncompressData(reader);
 			if(numParams > (unsigned long)0xFFFF)
@@ -417,12 +519,21 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 			}
 
 			/* Parse the return type */
-			type = ParseElemType(context, image, reader, depth - 1,
-								 CATEGORY_CMOD | CATEGORY_VOID |
-								 CATEGORY_TYPEDBYREF | CATEGORY_BYREF);
-			if(type == ILType_Invalid)
+			if((sigKind & IL_META_CALLCONV_MASK) !=
+					IL_META_CALLCONV_INSTANTIATION)
 			{
-				break;
+				type = ParseElemType(context, image, reader, depth - 1,
+									 CATEGORY_CMOD | CATEGORY_VOID |
+									 CATEGORY_TYPEDBYREF | CATEGORY_BYREF);
+				if(type == ILType_Invalid)
+				{
+					break;
+				}
+			}
+			else
+			{
+				/* Instantiation signatures don't have return types */
+				type = ILType_Invalid;
 			}
 
 			/* Construct the method type */
@@ -432,6 +543,7 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 				break;
 			}
 			ILTypeSetCallConv(type, sigKind);
+			ILType_SetNumGen(type, numGenericParams);
 
 			/* Parse the parameters */
 			param = 0;

@@ -489,11 +489,19 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 		}
 		/* Not reached */
 
+		case IL_TYPE_COMPLEX_MVAR:
+		case IL_TYPE_COMPLEX_VAR:
+		{
+			return (ILType_VarNum(type1) == ILType_VarNum(type2));
+		}
+		/* Not reached */
+
 		default:
 		{
-			/* Probably a method or property */
+			/* Probably a method, property, or generic type specification */
 			if((type1->kind__ & 0xFF) == IL_TYPE_COMPLEX_PROPERTY ||
-			   (type1->kind__ & IL_TYPE_COMPLEX_METHOD) != 0)
+			   (type1->kind__ & IL_TYPE_COMPLEX_METHOD) != 0 ||
+			   (type1->kind__ & 0xFF) == IL_TYPE_COMPLEX_WITH)
 			{
 				/* Check the property or method signature */
 				if(type1->num__ != type2->num__)
@@ -545,11 +553,14 @@ static char *AppendString(char *str1, const char *str2)
 char *ILTypeToName(ILType *type)
 {
 	char *name;
+	char *elemName;
 	ILClass *info;
 	int len;
 	const char *assemName;
 	char numbuf[80];
 	ILType *elemType;
+	unsigned long numParams;
+	unsigned long param;
 
 	/* Strip unnecessary prefixes from the type */
 	type = ILTypeStripPrefixes(type);
@@ -744,9 +755,80 @@ char *ILTypeToName(ILType *type)
 
 			case IL_TYPE_COMPLEX_METHOD:
 			{
-				/* TODO */
+				name = ILTypeToName(ILTypeGetReturn(type));
+				if(ILType_HasThis(type))
+				{
+					name = AppendString(name, " * instance (");
+				}
+				else
+				{
+					name = AppendString(name, " * (");
+				}
+				numParams = ILTypeNumWithParams(type);
+				for(param = 1; param <= numParams; ++param)
+				{
+					if(param != 1)
+					{
+						name = AppendString(name, ", ");
+					}
+					elemType = ILTypeGetParam(type, param);
+					elemName = ILTypeToName(elemType);
+					if(!elemName)
+					{
+						if(name)
+						{
+							ILFree(name);
+						}
+						return 0;
+					}
+					name = AppendString(name, elemName);
+					ILFree(elemName);
+				}
+				return AppendString(name, ")");
 			}
-			break;
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_WITH:
+			{
+				name = ILTypeToName(ILTypeGetWithMain(type));
+				name = AppendString(name, "<");
+				numParams = ILTypeNumWithParams(type);
+				for(param = 1; param <= numParams; ++param)
+				{
+					if(param != 1)
+					{
+						name = AppendString(name, ", ");
+					}
+					elemType = ILTypeGetWithParam(type, param);
+					elemName = ILTypeToName(elemType);
+					if(!elemName)
+					{
+						if(name)
+						{
+							ILFree(name);
+						}
+						return 0;
+					}
+					name = AppendString(name, elemName);
+					ILFree(elemName);
+				}
+				return AppendString(name, ">");
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_MVAR:
+			{
+				sprintf(numbuf, "!!%d", ILType_VarNum(type));
+				return ILDupString(numbuf);
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_VAR:
+			{
+				sprintf(numbuf, "!%d", ILType_VarNum(type));
+				return ILDupString(numbuf);
+			}
+			/* Not reached */
 
 			default: break;
 		}
@@ -1138,6 +1220,59 @@ int ILTypeIsDelegateSubClass(ILType *type)
 		}
 	}
 	return 0;
+}
+
+ILType *ILTypeCreateVarNum(ILContext *context, int kind, int num)
+{
+	ILType *type = ILMemPoolCalloc(&(context->typePool), ILType);
+	if(type)
+	{
+		type->kind__ = kind;
+		type->un.num__ = num;
+	}
+	return type;
+}
+
+ILType *ILTypeCreateWith(ILContext *context, ILType *mainType)
+{
+	ILType *type = ILMemPoolCalloc(&(context->typePool), ILType);
+	if(type)
+	{
+		type->kind__ = IL_TYPE_COMPLEX_WITH;
+		type->num__ = 0;
+		type->un.method__.retType__ = mainType;
+	}
+	return type;
+}
+
+int ILTypeAddWithParam(ILContext *context, ILType *type, ILType *paramType)
+{
+	return ILTypeAddParam(context, type, paramType);
+}
+
+unsigned long ILTypeNumWithParams(ILType *type)
+{
+	return ILTypeNumParams(type);
+}
+
+ILType *ILTypeGetWithParam(ILType *type, unsigned long num)
+{
+	return ILTypeGetParam(type, num);
+}
+
+ILType *ILTypeGetWithParamWithPrefixes(ILType *type, unsigned long num)
+{
+	return ILTypeGetParamWithPrefixes(type, num);
+}
+
+ILType *ILTypeGetWithMain(ILType *type)
+{
+	return ILTypeGetReturn(type);
+}
+
+ILType *ILTypeGetWithMainWithPrefixes(ILType *type)
+{
+	return ILTypeGetReturnWithPrefixes(type);
 }
 
 #ifdef	__cplusplus

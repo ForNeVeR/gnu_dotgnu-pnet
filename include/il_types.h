@@ -113,6 +113,9 @@ typedef struct _tagILClass     ILClass;
 #define	IL_TYPE_COMPLEX_SENTINEL				9
 #define	IL_TYPE_COMPLEX_PINNED					10
 #define	IL_TYPE_COMPLEX_LOCALS					11
+#define	IL_TYPE_COMPLEX_WITH					12
+#define	IL_TYPE_COMPLEX_MVAR					13
+#define	IL_TYPE_COMPLEX_VAR						14
 #define	IL_TYPE_COMPLEX_METHOD					16
 #define	IL_TYPE_COMPLEX_METHOD_SENTINEL			1
 
@@ -134,6 +137,7 @@ struct _tagILType
 			ILType *retType__;	/* Return type */
 			ILType *param__[3];	/* Parameters */
 			ILType *next__;		/* Overflow for the rest of the parameters */
+			ILUInt32 gparams__;	/* Number of generic parameters */
 		} method__;
 		struct {
 			ILType *param__[4];	/* Overflow parameters */
@@ -147,6 +151,7 @@ struct _tagILType
 			ILType *local__[4];	/* Types for up to 4 locals */
 			ILType *next__;		/* Overflow for the rest of the locals */
 		} locals__;
+		int         num__;		/* Generic variable number */
 	} un;
 };
 
@@ -251,6 +256,18 @@ struct _tagILType
  * Get the lower bound of an array dimension.
  */
 #define	ILType_LowBound(type)	((type)->un.array__.lowBound__)
+
+/*
+ * Get the generic variable number from a type.
+ */
+#define	ILType_VarNum(type)		((type)->un.num__)
+
+/*
+ * Get or set the number of generic parameters for a method signature.
+ */
+#define	ILType_NumGen(type)		((type)->un.method__.gparams__)
+#define	ILType_SetNumGen(type,num)	\
+			((type)->un.method__.gparams__ = (ILUInt32)(num))
 
 /*
  * Create a reference type.  Returns NULL if out of memory.
@@ -532,6 +549,47 @@ int ILTypeDelegateSignatureMatch(ILType *type, void *method);
  * Determine if a type is "System.Delegate" or a subclass.
  */
 int ILTypeIsDelegateSubClass(ILType *type);
+
+/*
+ * Create generic variable reference.  Returns NULL if out of memory.
+ */
+ILType *ILTypeCreateVarNum(ILContext *context, int kind, int num);
+
+/*
+ * Create a "with" generic type reference.  Returns NULL if out of memory.
+ */
+ILType *ILTypeCreateWith(ILContext *context, ILType *mainType);
+
+/*
+ * Add a parameter to a "with" generic type reference.  Returns zero
+ * if out of memory.
+ */
+int ILTypeAddWithParam(ILContext *context, ILType *type, ILType *paramType);
+
+/*
+ * Get the number of "with" parameters on a generic type reference.
+ */
+unsigned long ILTypeNumWithParams(ILType *type);
+
+/*
+ * Get a specific "with" parameter.  1 is the first parameter.
+ */
+ILType *ILTypeGetWithParam(ILType *type, unsigned long num);
+
+/*
+ * Get a specific "with" parameter with prefixes.
+ */
+ILType *ILTypeGetWithParamWithPrefixes(ILType *type, unsigned long num);
+
+/*
+ * Get the main "with" type for a generic type reference.
+ */
+ILType *ILTypeGetWithMain(ILType *type);
+
+/*
+ * Get the main "with" type with prefixes.
+ */
+ILType *ILTypeGetWithMainWithPrefixes(ILType *type);
 
 #ifdef	__cplusplus
 };

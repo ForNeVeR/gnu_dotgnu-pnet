@@ -512,6 +512,35 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 			}
 			/* Not reached */
 
+			case IL_TYPE_COMPLEX_WITH:
+			{
+				/* Write out a generic type with parameters */
+				SIG_WRITE(IL_META_ELEMTYPE_WITH);
+				if(!WriteType(buffer, type->un.method__.retType__, 1))
+				{
+					return 0;
+				}
+				SIG_WRITE(type->num__);
+				return WriteMethodParams(buffer, type);
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_MVAR:
+			{
+				SIG_WRITE(IL_META_ELEMTYPE_MVAR);
+				SIG_WRITE((unsigned char)(ILType_VarNum(type)));
+				return 1;
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_VAR:
+			{
+				SIG_WRITE(IL_META_ELEMTYPE_VAR);
+				SIG_WRITE((unsigned char)(ILType_VarNum(type)));
+				return 1;
+			}
+			/* Not reached */
+
 			case IL_TYPE_COMPLEX_METHOD:
 			case (IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL):
 			{
@@ -523,6 +552,16 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 
 				/* Write the calling conventions */
 				SIG_WRITE(ILType_CallConv(type));
+
+				/* Write the number of generic parameters */
+				if((ILType_CallConv(type) & IL_META_CALLCONV_GENERIC) != 0)
+				{
+					if(!WriteValue
+						(buffer, (unsigned long)(ILType_NumGen(type))))
+					{
+						return 0;
+					}
+				}
 
 				/* Write the number of parameters */
 				if((type->kind__ & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
@@ -542,9 +581,13 @@ static int WriteType(SigBuffer *buffer, ILType *type, int methodPtr)
 				}
 
 				/* Write the return type */
-				if(!WriteType(buffer, type->un.method__.retType__, 1))
+				if((ILType_CallConv(type) & IL_META_CALLCONV_MASK) !=
+						IL_META_CALLCONV_INSTANTIATION)
 				{
-					return 0;
+					if(!WriteType(buffer, type->un.method__.retType__, 1))
+					{
+						return 0;
+					}
 				}
 
 				/* Write the parameters */

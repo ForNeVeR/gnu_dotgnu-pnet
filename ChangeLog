@@ -1,4 +1,19 @@
 
+2003-02-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_scanner.l,
+	dumpasm/dump_flags.c, dumpasm/dump_type.c, ilasm/ilasm_build.c,
+	ilasm/ilasm_build.h, ilasm/ilasm_grammar.y, ilasm/ilasm_scanner.l,
+	ildasm/ildasm_class.c, ildasm/ildasm_method.c, image/Makefile.am,
+	image/generic.c, image/image.h, image/meta_build.c,
+	image/meta_index.c, image/meta_types.c, image/meta_writer.c,
+	image/opdef.c, image/program.h, image/sig_parse.c,
+	image/sig_writer.c, image/test_macros.c, include/il_dumpasm.h,
+	include/il_meta.h, include/il_opcodes.h, include/il_program.h,
+	include/il_types.h: add support for Generic IL to "image",
+	"ilasm", and "ildasm"; some syntax extensions for Generic C#, but
+	no semantic analysis (yet).
+
 2003-02-17 Aditya P. Bansod <abansod@fullenergy.com>
 
 	* configure.in, engine/int_proto.h, engine/int_table.c

@@ -733,6 +733,18 @@ void WriteJavaClass(ILWriter *writer, ILClass *class);
 #define	IL_OFFSET_NESTEDCLASS_CHILD			0
 #define	IL_OFFSET_NESTEDCLASS_PARENT		1
 
+#define	IL_OFFSET_GENERICPAR_NUMBER			0
+#define	IL_OFFSET_GENERICPAR_FLAGS			1
+#define	IL_OFFSET_GENERICPAR_OWNER			2
+#define	IL_OFFSET_GENERICPAR_NAME			3
+#define	IL_OFFSET_GENERICPAR_KIND			4
+#define	IL_OFFSET_GENERICPAR_CONSTRAINT		5
+
+#define	IL_OFFSET_METHODSPEC_METHOD			0
+#define	IL_OFFSET_METHODSPEC_INST_RAW		1
+#define	IL_OFFSET_METHODSPEC_INST			2
+#define	IL_OFFSET_METHODSPEC_INST_LEN		3
+
 /*
  * Get the raw data associated with a particular token.
  * Returns zero if the token does not exist.  The "values"

@@ -25,3 +25,8 @@ include/gc.h:
 	GC_PTHREADS is defined if GC_WIN32_THREADS and 
 	__CYGWIN32__ are defined but only if
 	GC_DISABLE_CYGWIN_PTHREADS is not defined.
+
+
+Other changes:
+
+win32_threads.c:  MAX_THREADS increased to 1024.

@@ -324,6 +324,14 @@ extern	"C" {
 #define	COP_LDSTR					0xE7
 
 /*
+ * Memory-related opcodes.
+ */
+#define	COP_MEMCPY					0xE8
+#define	COP_MEMMOVE					0xE9
+#define	COP_MEMZERO					0xEA
+#define	COP_MEMSET					0xEB
+
+/*
  * Make the next instruction wider.
  */
 #define	COP_WIDE					0xFD

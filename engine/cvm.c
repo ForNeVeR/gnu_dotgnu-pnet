@@ -69,11 +69,12 @@ extern	"C" {
 	 * Memory copies on x86 use esi and edi, but we want them
 	 * for something else.  So we force the copy to go through
 	 * a function to prevent register spills in gcc.  Similarly
-	 * for memory zero'ing operations.
+	 * for memory set operations.
 	 */
 	#define	IL_MEMCPY(dst,src,len)			LocalMemCpy((dst), (src), (len))
 	#define	IL_MEMMOVE(dst,src,len)			LocalMemMove((dst), (src), (len))
 	#define	IL_MEMZERO(dst,len)				LocalMemZero((dst), (len))
+	#define	IL_MEMSET(dst,ch,len)			LocalMemSet((dst), (ch), (len))
 	static void LocalMemCpy(void *dst, const void *src, unsigned len)
 	{
 		ILMemCpy(dst, src, len);
@@ -86,6 +87,10 @@ extern	"C" {
 	{
 		ILMemZero(dst, len);
 	}
+	static void LocalMemSet(void *dst, int ch, unsigned len)
+	{
+		ILMemSet(dst, ch, len);
+	}
 #else
     #define REGISTER_ASM_PC(x)              x
     #define REGISTER_ASM_STACK(x)           x
@@ -93,6 +98,7 @@ extern	"C" {
 	#define	IL_MEMCPY(dst,src,len)			(ILMemCpy((dst), (src), (len)))
 	#define	IL_MEMMOVE(dst,src,len)			(ILMemMove((dst), (src), (len)))
 	#define	IL_MEMZERO(dst,len)				(ILMemZero((dst), (len)))
+	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
 #endif
 
 /*

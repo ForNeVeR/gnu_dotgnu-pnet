@@ -368,12 +368,16 @@ static CVMOpcode const opcodes[256] = {
 	{"ldstr",			CVM_OPER_STRING},
 
 	/*
+	 * Memory-related opcodes.
+	 */
+	{"memcpy",			CVM_OPER_WIDE_UINT},
+	{"memmove",			CVM_OPER_NONE},
+	{"memzero",			CVM_OPER_WIDE_UINT},
+	{"memset",			CVM_OPER_NONE},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"reserved_e8",		CVM_OPER_NONE},
-	{"reserved_e9",		CVM_OPER_NONE},
-	{"reserved_ea",		CVM_OPER_NONE},
-	{"reserved_eb",		CVM_OPER_NONE},
 	{"reserved_ec",		CVM_OPER_NONE},
 	{"reserved_ed",		CVM_OPER_NONE},
 	{"reserved_ee",		CVM_OPER_NONE},

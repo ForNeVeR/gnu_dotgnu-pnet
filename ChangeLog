@@ -2,7 +2,11 @@
 2001-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm_dasm.c, engine/cvmc_obj.c, engine/cvm_ptr.c,
-engine.cvm.c: implement the "castclass" and "isinst" instructions.
+engine/cvm.c: implement the "castclass" and "isinst" instructions.
+
+* engine/cvm.h, engine/cvm_dasm.c, engine/cvmc_obj.c, engine/cvm_ptr.c,
+engine/cvm.c: implement the "cpobj", "cpblk", "initobj", and "initblk"
+instructions.
 
 2001-10-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 

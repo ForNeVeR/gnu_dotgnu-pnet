@@ -749,24 +749,110 @@ static void CVMCoder_StoreStaticField(ILCoder *coder, ILField *field,
 static void CVMCoder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 							    ILEngineType srcPtrType, ILClass *classInfo)
 {
-	/* TODO */
+	ILUInt32 size;
+
+#ifdef IL_NATIVE_INT64
+	/* Normalize the pointers */
+	if(destPtrType == ILEngineType_I4)
+	{
+		CVM_WIDE(COP_I2P_LOWER, 1);
+	}
+	if(srcPtrType == ILEngineType_I4)
+	{
+		CVM_WIDE(COP_I2P_LOWER, 0);
+	}
+#endif
+
+	/* Check the values for null */
+	if(destPtrType != ILEngineType_M && destPtrType != ILEngineType_T)
+	{
+		CVM_WIDE(COP_CKNULL_N, 1);
+	}
+	if(srcPtrType != ILEngineType_M && srcPtrType != ILEngineType_T)
+	{
+		CVM_BYTE(COP_CKNULL);
+	}
+
+	/* Copy the memory block */
+	size = ILSizeOfType(ILType_FromValueType(classInfo));
+	CVM_WIDE(COP_MEMCPY, size);
+	CVM_ADJUST(-2);
 }
 
 static void CVMCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
 							   ILEngineType srcPtrType)
 {
-	/* TODO */
+#ifdef IL_NATIVE_INT64
+	/* Normalize the pointers */
+	if(destPtrType == ILEngineType_I4)
+	{
+		CVM_WIDE(COP_I2P_LOWER, 2);
+	}
+	if(srcPtrType == ILEngineType_I4)
+	{
+		CVM_WIDE(COP_I2P_LOWER, 1);
+	}
+#endif
+
+	/* Check the values for null */
+	if(destPtrType != ILEngineType_M && destPtrType != ILEngineType_T)
+	{
+		CVM_WIDE(COP_CKNULL_N, 2);
+	}
+	if(srcPtrType != ILEngineType_M && srcPtrType != ILEngineType_T)
+	{
+		CVM_WIDE(COP_CKNULL_N, 1);
+	}
+
+	/* Copy the memory block */
+	CVM_BYTE(COP_MEMMOVE);
+	CVM_ADJUST(-3);
 }
 
 static void CVMCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
 							    ILClass *classInfo)
 {
-	/* TODO */
+	ILUInt32 size;
+
+#ifdef IL_NATIVE_INT64
+	/* Normalize the pointer */
+	if(ptrType == ILEngineType_I4)
+	{
+		CVM_WIDE(COP_I2P_LOWER, 0);
+	}
+#endif
+
+	/* Check the pointer value for null */
+	if(ptrType != ILEngineType_M && ptrType != ILEngineType_T)
+	{
+		CVM_BYTE(COP_CKNULL);
+	}
+
+	/* Initialize the block to all-zeroes */
+	size = ILSizeOfType(ILType_FromValueType(classInfo));
+	CVM_WIDE(COP_MEMZERO, size);
+	CVM_ADJUST(-1);
 }
 
 static void CVMCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
 {
-	/* TODO */
+#ifdef IL_NATIVE_INT64
+	/* Normalize the pointer */
+	if(ptrType == ILEngineType_I4)
+	{
+		CVM_WIDE(COP_I2P_LOWER, 2);
+	}
+#endif
+
+	/* Check the pointer value for null */
+	if(ptrType != ILEngineType_M && ptrType != ILEngineType_T)
+	{
+		CVM_WIDE(COP_CKNULL_N, 2);
+	}
+
+	/* Initialize the block to bytes of the same value */
+	CVM_BYTE(COP_MEMSET);
+	CVM_ADJUST(-3);
 }
 
 static void CVMCoder_Box(ILCoder *coder, ILClass *boxClass,

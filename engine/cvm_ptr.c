@@ -769,6 +769,40 @@ case COP_LDSTR:
 }
 break;
 
+case COP_MEMCPY:
+{
+	/* Copy a fixed-size memory block */
+	IL_MEMCPY(stacktop[-2].ptrValue, stacktop[-1].ptrValue, (unsigned)(pc[1]));
+	MODIFY_PC_AND_STACK(2, -2);
+}
+break;
+
+case COP_MEMMOVE:
+{
+	/* Move a variable-size memory block */
+	IL_MEMMOVE(stacktop[-3].ptrValue, stacktop[-2].ptrValue,
+			   stacktop[-1].uintValue);
+	MODIFY_PC_AND_STACK(1, -3);
+}
+break;
+
+case COP_MEMZERO:
+{
+	/* Fill a fixed-size memory block with zeroes */
+	IL_MEMZERO(stacktop[-1].ptrValue, (unsigned)(pc[1]));
+	MODIFY_PC_AND_STACK(2, -1);
+}
+break;
+
+case COP_MEMSET:
+{
+	/* Set the contents of a memory block to the same byte value */
+	IL_MEMSET(stacktop[-3].ptrValue, (int)(stacktop[-2].intValue),
+			  stacktop[-1].uintValue);
+	MODIFY_PC_AND_STACK(1, -3);
+}
+break;
+
 #elif defined(IL_CVM_WIDE)
 
 case COP_MREAD:

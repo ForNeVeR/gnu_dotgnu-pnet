@@ -427,6 +427,13 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 			}
 		}
 
+		/* Check for "IntPtr.Zero", which is very common in unmanaged code */
+		if(!strcmp(ILField_Name(field), "Zero") &&
+		   ILClassToType(ILField_Owner(field)) == ILType_Int)
+		{
+			return ILNode_Int_create(0, 0, 0);
+		}
+
 		/* Load the contents of the read-only field using regular techniques */
 		return 0;
 	}

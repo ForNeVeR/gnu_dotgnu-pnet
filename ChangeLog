@@ -8,6 +8,9 @@
 	* engine/cvmc_branch.c: add missing cases for type-I arguments
 	to branch and compare opcodes.
 
+	* cscc/csharp/cs_lvalue.c, codegen/cg_const.tc: expand "IntPtr.Zero"
+	inline to "ldc.i4.0, conv.i", for greater runtime efficiency.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/marshal.c (ILPInvokeGetMarshalType): fix a typo

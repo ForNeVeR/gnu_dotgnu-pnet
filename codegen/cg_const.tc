@@ -295,7 +295,7 @@ ILNode_GenValue(ILNode_Int)
 	{
 		if(node->value <= (ILUInt64)(ILUInt32)IL_MAX_INT32)
 		{
-			ILGenInt32(info, (ILInt32)(node->value));
+			ILGenIntNative(info, (ILInt32)(node->value));
 			ILGenAdjust(info, 1);
 			return ILMachineType_NativeInt;
 		}

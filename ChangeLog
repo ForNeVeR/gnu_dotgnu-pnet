@@ -1,4 +1,11 @@
 
+2003-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, class/Makefile.am, class/ByteFX.Data/ByteFX.Data.build,
+	class/ICSharpCode.SharpZipLib/ICSharpCode.SharpZipLib.build,
+	class/ICSharpCode.SharpZipLib/Makefile.am: remove the zip library
+	from "ml-pnet" because pnetlib now has its own version.
+
 2003-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, copy-mcs.sh, class/Makefile.am,

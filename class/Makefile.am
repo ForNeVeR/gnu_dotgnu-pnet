@@ -5,7 +5,6 @@ SUBDIRS = Custommarshalers \
 		  System.ServiceProcess \
 		  System.Runtime.Serialization.Formatters.Soap \
 		  PEAPI \
-		  ICSharpCode.SharpZipLib \
 		  Mono.Data.Tds \
 		  System.Data \
 		  Mono.Data.PostgreSqlClient \

@@ -157,7 +157,6 @@ class/System.Messaging/Makefile
 class/System.ServiceProcess/Makefile
 class/System.Runtime.Serialization.Formatters.Soap/Makefile
 class/PEAPI/Makefile
-class/ICSharpCode.SharpZipLib/Makefile
 class/Mono.Data.Tds/Makefile
 class/System.Data/Makefile
 class/Mono.Data.PostgreSqlClient/Makefile

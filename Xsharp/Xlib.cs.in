@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 using Xsharp.Events;
 using Xsharp.Types;
 
-internal sealed class Xlib
+internal sealed unsafe class Xlib
 {
 	// Declare Xlib types that may be different sizes on different platforms.
 	//
@@ -34,27 +34,28 @@ internal sealed class Xlib
 	// integer type of the correct size that is guaranteed to be marshalled
 	// to Xlib in the same way as the underlying integer type.
 
-	public enum Pixel    : @X_ulong@ { Zero }
-	public enum XID      : @X_ulong@ { Zero }
-	public enum Mask     : @X_ulong@ { Zero }
-	public enum Atom     : @X_ulong@ { Zero }
-	public enum VisualID : @X_ulong@ { Zero }
-	public enum Time     : @X_ulong@ { CurrentTime }
-	public enum Window   : @X_ulong@ { Zero }
-	public enum Drawable : @X_ulong@ { Zero }
-	public enum Font     : @X_ulong@ { Zero }
-	public enum Pixmap   : @X_ulong@ { Zero, ParentRelative }
-	public enum Cursor   : @X_ulong@ { Zero }
-	public enum Colormap : @X_ulong@ { Zero }
-	public enum GContext : @X_ulong@ { Zero }
-	public enum KeySym   : @X_ulong@ { Zero }
-	public enum KeyCode  : byte { Zero }
-	public enum Bool     : @X_int@ { False, True }
-	public enum Status   : @X_int@ { Zero }
-	public enum Xint     : @X_int@ { Zero }
-	public enum Xuint    : @X_uint@ { Zero }
-	public enum Xlong    : @X_long@ { Zero }
-	public enum Xulong   : @X_ulong@ { Zero }
+	public enum Pixel     : @X_ulong@ { Zero }
+	public enum XID       : @X_ulong@ { Zero }
+	public enum Mask      : @X_ulong@ { Zero }
+	public enum Atom      : @X_ulong@ { Zero }
+	public enum VisualID  : @X_ulong@ { Zero }
+	public enum Time      : @X_ulong@ { CurrentTime }
+	public enum Window    : @X_ulong@ { Zero }
+	public enum Drawable  : @X_ulong@ { Zero }
+	public enum Font      : @X_ulong@ { Zero }
+	public enum Pixmap    : @X_ulong@ { Zero, ParentRelative }
+	public enum Cursor    : @X_ulong@ { Zero }
+	public enum Colormap  : @X_ulong@ { Zero }
+	public enum GContext  : @X_ulong@ { Zero }
+	public enum XAppGroup : @X_ulong@ { Zero }
+	public enum KeySym    : @X_ulong@ { Zero }
+	public enum KeyCode   : byte { Zero }
+	public enum Bool      : @X_int@ { False, True }
+	public enum Status    : @X_int@ { Zero }
+	public enum Xint      : @X_int@ { Zero }
+	public enum Xuint     : @X_uint@ { Zero }
+	public enum Xlong     : @X_long@ { Zero }
+	public enum Xulong    : @X_ulong@ { Zero }
 
 	// Declare display-related external functions.
 
@@ -468,8 +469,15 @@ internal sealed class Xlib
 			(IntPtr display, Window w, Window prop_window);
 
 	[DllImport("X11")]
+	extern public static Status XGetTransientForHint
+			(IntPtr display, Window w, out Window prop_window);
+
+	[DllImport("X11")]
 	extern public static void XSetWMNormalHints
 			(IntPtr display, Window w, ref XSizeHints hints);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XKillClient(IntPtr display, XID resource);
 
 	// Declare color-related external functions.
 
@@ -574,6 +582,10 @@ internal sealed class Xlib
 	extern public static void XSharpGetImageSize
 			(IntPtr image, out @X_int@ width, out @X_int@ height);
 
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpSendClose
+			(IntPtr display, Xlib.Window window);
+
 	// Helper functions from "libImlib.so" for loading images.
 
 	[DllImport("Imlib")]
@@ -586,6 +598,41 @@ internal sealed class Xlib
 
 	[DllImport("Xext")]
 	extern public static Bool XShmQueryExtension(IntPtr display);
+
+	// Helper functions for creating and managing application groups.
+
+	[DllImport("Xext")]
+	extern public static Bool XagQueryVersion
+			(IntPtr display, out Xint major, out Xint minor);
+
+	[DllImport("Xext")]
+	extern public static Status XagCreateEmbeddedApplicationGroup
+			(IntPtr display, VisualID root_visual, Colormap default_colormap,
+			 Pixel black_pixel, Pixel white_pixel, out XAppGroup app_group);
+
+	[DllImport("Xext")]
+	extern public static Status XagDestroyApplicationGroup
+			(IntPtr display, XAppGroup app_group);
+
+	// Helper functions for managing security tokens.
+
+	public enum XSecurityAuthorization : @X_ulong@ { Zero }
+
+	[DllImport("Xext")]
+	extern public static Bool XSecurityQueryExtension
+			(IntPtr display, out Xint major, out Xint minor);
+
+	[DllImport("Xext")]
+	extern public static Xauth *XSecurityAllocXauth();
+
+	[DllImport("Xext")]
+	extern public static void XSecurityFreeXauth(Xauth *auth);
+
+	[DllImport("Xext")]
+	extern public static Xauth *XSecurityGenerateAuthorization
+			(IntPtr dpy, Xauth *auth_in, @X_ulong@ valuemask,
+			 ref XSecurityAuthorizationAttributes attributes,
+			 out XSecurityAuthorization auth_id_return);
 
 } // class Xlib
 

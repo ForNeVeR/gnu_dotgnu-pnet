@@ -50,6 +50,7 @@
 #endif
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 int XNextEventWithTimeout(Display *dpy, XEvent *event, int timeout)
 {
@@ -1094,6 +1095,54 @@ void XSharpGetRegionRect(Region region, int index, XRectangle *rect)
 	rect->height = box->y2 - box->y1;
 }
 
+/*
+ * Send a close request to a window.  Tries to send "WM_DELETE_WINDOW",
+ * and if that doesn't work, sends "XKillClent" instead.
+ */
+void XSharpSendClose(Display *dpy, Window window)
+{
+	Atom wmDeleteWindow = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
+	Atom *protocols;
+	int num_protocols, posn;
+	int use_kill = 1;
+
+	/* Get the protocols that are supported by the client window */
+	protocols = 0;
+	num_protocols = 0;
+	if(XGetWMProtocols(dpy, window, &protocols, &num_protocols))
+	{
+		for(posn = 0; posn < num_protocols; ++posn)
+		{
+			if(protocols[posn] == wmDeleteWindow)
+			{
+				use_kill = 0;
+				break;
+			}
+		}
+		if(protocols)
+		{
+			XFree(protocols);
+		}
+	}
+
+	/* Send the close request to the client application */
+	if(use_kill)
+	{
+		XKillClient(dpy, (XID)window);
+	}
+	else
+	{
+		XEvent msg;
+		memset(&msg, 0, sizeof(msg));
+		msg.xclient.type = ClientMessage;
+		msg.xclient.window = window;
+		msg.xclient.message_type = XInternAtom(dpy, "WM_PROTOCOLS", False);
+		msg.xclient.format = 32;
+		msg.xclient.data.l[0] = wmDeleteWindow;
+		XSendEvent(dpy, window, False, NoEventMask, &msg);
+	}
+}
+
 #else /* X_DISPLAY_MISSING || !HAVE_SELECT */
 
 int XNextEventWithTimeout(void *dpy, void *event, int timeout)
@@ -1173,6 +1222,11 @@ int XSharpGetRegionSize(void *region)
 }
 
 void XSharpGetRegionRect(void *region, int index, void *rect)
+{
+	/* Nothing to do here */
+}
+
+void XSharpSendClose(Display *dpy, Window window)
 {
 	/* Nothing to do here */
 }

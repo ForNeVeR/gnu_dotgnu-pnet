@@ -1,4 +1,13 @@
 
+2003-10-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Display.cs, Xsharp/EmbeddedApplication.cs,
+	Xsharp/Xlib.cs.in, Xsharp/Xsharp.build,
+	Xsharp/XsharpSupport.c, Xsharp/Types/XSecurityAttributeMask.cs,
+	Xsharp/Types/XSecurityAuthorizationAttributes.cs,
+	Xsharp/Types/Xauth.cs: add support to Xsharp to embed third
+	party X applications inside a child widget using XC-APPGROUP.
+
 2003-10-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/TextReader.cs: properly increment the

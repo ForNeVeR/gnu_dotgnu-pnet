@@ -38,7 +38,7 @@ public sealed class Display : IDisposable
 {
 	// Internal state.
 	internal IntPtr dpy;
-	private String displayName;
+	internal String displayName;
 	private Screen[] screens;
 	private int defaultScreen;
 	private Application app;

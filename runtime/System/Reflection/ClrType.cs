@@ -722,6 +722,18 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				{
 					throw new ArgumentNullException("name");
 				}
+				
+				// Specification say that if type of look up is absent
+				// the lookup is treated as Public Instance by default
+				if((invokeAttr & BindingFlags.NonPublic) == 0)
+				{
+					invokeAttr |= BindingFlags.Public;
+				}
+				if((invokeAttr & BindingFlags.Static) == 0)
+				{
+					invokeAttr |= BindingFlags.Instance;
+				}
+				
 				if((invokeAttr & BindingFlags.CreateInstance) != 0)
 				{
 					if((invokeAttr & (BindingFlags.InvokeMethod |
@@ -735,16 +747,6 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					}
 					types = MemberTypes.Constructor;
 					invokeAttr |= BindingFlags.DeclaredOnly;
-					// Specification say that if CreateInstance is present
-					// the lookup is treated as Public Instance by default
-					if((invokeAttr & BindingFlags.NonPublic) == 0)
-					{
-						invokeAttr |= BindingFlags.Public;
-					}
-					if((invokeAttr & BindingFlags.Static) == 0)
-					{
-						invokeAttr |= BindingFlags.Instance;
-					}
 					name = ".ctor";
 					if(target != null)
 					{

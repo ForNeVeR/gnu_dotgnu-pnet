@@ -4,6 +4,9 @@
 	* System.Xml/XPath/Private/.cvsignore: Add generated files to 
 	cvsignore.
 
+	* runtime/System/Reflection/ClrType.cs: Provide default values
+	for visibility and instance binding values.
+
 2004-12-08 Shylaja Kokoori  <skokoori@cox.net>
 
 	* System.Windows.Forms/Listbox.cs: Added functionality for FindString, 

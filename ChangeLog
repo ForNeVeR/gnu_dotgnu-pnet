@@ -1,4 +1,9 @@
 
+2003-06-21  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/cs_main.c , cscc/csharp/cs_scanner.l , cscc/csharp/cs_internal.h:
+	Use CSLatin1Charset to detect the -flatin1-charset option in cs_main.
+
 2003-06-21  Thong Nguen  <tum@veridicus.com>
 
 	* engine/lib_enum.c: fixed bug where flag enums don't return correct

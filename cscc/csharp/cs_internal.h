@@ -91,6 +91,11 @@ extern int CSMetadataOnly;
 extern int CSNoGenerics;
 
 /*
+ * A flag that is set to 1 to use latin1 encoding
+ */
+extern int CSLatin1Charset;
+
+/*
  * Determine if a type or parameter node contains unsafe types.
  */
 int CSHasUnsafeType(ILNode *node);

@@ -33,6 +33,7 @@ extern YYLTYPE yylloc;
 
 int       CSGetSetKeywords = 0;
 int		  CSNoGenerics = 0;
+int       CSLatin1Charset = 0;
 
 /*
  * Get the next line of input from the C# pre-processor.
@@ -469,8 +470,7 @@ static int ParseEncodedChar(const char *text, ILUInt32 *value)
 {
 	const char *begin = text;
 
-	if(CCStringListContains(extension_flags, num_extension_flags,
-							"latin1-charset"))
+	if(CSLatin1Charset)
 	{
 		/* Latin-1 character */
 		*value = (((ILUInt32)(*text)) & (ILUInt32)0xFF);

@@ -38,6 +38,7 @@ internal class PopupControl : Control
 			{
 				// Popups are not visible by default.
 				visible = false;
+				SetStyle(ControlStyles.Selectable, false);
 			}
 
 	protected override Size DefaultSize

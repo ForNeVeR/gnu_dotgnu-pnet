@@ -18,7 +18,7 @@
 <define name="CONFIG_EXTENDED_NUMERICS" value="true"/>
 
 <!-- Use line number debug information -->
-<define name="CONFIG_DEBUG_LINES" value="true"/>
+<define name="CONFIG_DEBUG_LINES" value="false"/>
 
 <!-- Use remoting facilities -->
 <define name="CONFIG_REMOTING" value="false"/>

@@ -120,6 +120,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	if(ILType_HasThis(signature) && !suppressThis)
 	{
 		/* Allocate an argument slot for the "this" parameter */
+		ALLOC_ARGS(num + 1);
 		coder->argOffsets[0] = 0;
 		argIndex = 1;
 		offset = 1;
@@ -129,11 +130,11 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		/* No "this" parameter, or it is explicitly provided in the
 		   signature, or this is an allocating constructor which must
 		   create its own "this" parameter during execution */
+		ALLOC_ARGS(num);
 		argIndex = 0;
 		offset = 0;
 	}
-	ALLOC_ARGS(argIndex + num);
-	for(current = 1; current <= num; ++num)
+	for(current = 1; current <= num; ++current)
 	{
 		type = ILTypeGetEnumType(ILTypeGetParam(signature, current));
 		coder->argOffsets[argIndex++] = offset;
@@ -174,7 +175,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		/* No "this" parameter, or it is explicitly provided in the signature */
 		argIndex = 0;
 	}
-	for(current = 1; current <= num; ++num)
+	for(current = 1; current <= num; ++current)
 	{
 		type = ILTypeGetEnumType(ILTypeGetParam(signature, current));
 		offset = coder->argOffsets[argIndex++];
@@ -221,7 +222,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		signature = ILStandAloneSigGetType(localVarSig);
 		num = ILTypeNumLocals(signature);
 		ALLOC_LOCALS(num);
-		for(current = 0; current < num; ++num)
+		for(current = 0; current < num; ++current)
 		{
 			type = ILTypeGetLocal(signature, current);
 			coder->localOffsets[current] = offset;
@@ -301,11 +302,19 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	returnType = ILTypeGetEnumType(returnType);
 	if(returnType == ILType_Void)
 	{
-		returnType = 0;
+		if(!CVMEntryPoint(coder, start, method, 0, (ILType *)0,
+						  ILMethod_IsConstructor(method), 0))
+		{
+			return 0;
+		}
 	}
-	if(!CVMEntryPoint(coder, start, method, 0, returnType, 0, 0))
+	else
 	{
-		return 0;
+		if(!CVMEntryPoint(coder, start, method, 0, returnType,
+						  ILMethod_IsConstructor(method), 0))
+		{
+			return 0;
+		}
 	}
 
 	/* Push the arguments for the call onto the stack */
@@ -533,13 +542,12 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	}
 	CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
 	CVM_ADJUST(1);
-	++numArgs;
 
 	/* Output the call to the external method */
 	CVM_WIDE(COP_CALL_NATIVE, numArgs);
 	CVM_PTR(ctorfn);
 	CVM_PTR(ctorcif);
-	CVM_ADJUST(-((ILInt32)numArgs));
+	CVM_ADJUST(-((ILInt32)(numArgs + 1)));
 
 	/* Return the contents of the local, which is the allocated object */
 	CVM_RETURN(1);

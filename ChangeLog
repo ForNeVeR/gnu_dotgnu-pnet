@@ -20,6 +20,10 @@ in "MatchClassNameInner"; bad length determination in "MatchClassNameInner".
 
 * engine/call.c: implement constructor method calls.
 
+* engine/cvmc_setup.c: bug in the allocation of "argOffsets" in "this"
+methods; bug in limit testing when scanning arguments; use the helper
+macro "ILMethod_IsConstructor" to recognise constructors in "SetupExtern".
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

@@ -1,3 +1,8 @@
+
+2003-06-28  Thong Nguyen  <tum@veridicus.com>
+
+	* runtime/System/Console.cs: Make default writers synchronized.
+	
 2003-06-28  Neil Cawse  <neilc@geotab.ca>
 
 	* System.Drawing.Win32/DrawingWindow.cs : Mouse events now passing

@@ -111,7 +111,7 @@ public sealed class Console
 							StreamWriter writer = new StreamWriter
 								(new StdStream(1), encoding);
 							writer.AutoFlush = true;
-							stdout = writer;
+							SetOut(writer);
 							return stdout;
 						}
 					}
@@ -140,7 +140,7 @@ public sealed class Console
 							StreamWriter writer = new StreamWriter
 								(new StdStream(2), encoding);
 							writer.AutoFlush = true;
-							stderr = writer;
+							SetError(writer);
 							return stderr;
 						}
 					}

@@ -337,6 +337,19 @@ extern	"C" {
 #define	COP_MEMSET					0xEE
 
 /*
+ * Argument packing for native calls.
+ */
+#define	COP_WADDR_NATIVE_M1			0xEF
+#define	COP_WADDR_NATIVE_0			0xF0
+#define	COP_WADDR_NATIVE_1			0xF1
+#define	COP_WADDR_NATIVE_2			0xF2
+#define	COP_WADDR_NATIVE_3			0xF3
+#define	COP_WADDR_NATIVE_4			0xF4
+#define	COP_WADDR_NATIVE_5			0xF5
+#define	COP_WADDR_NATIVE_6			0xF6
+#define	COP_WADDR_NATIVE_7			0xF7
+
+/*
  * Make the next instruction wider.
  */
 #define	COP_WIDE					0xFD
@@ -469,6 +482,11 @@ typedef union
 #endif
 #define	CVM_WORDS_PER_TYPED_REF	\
 			((sizeof(ILTypedRef) + sizeof(CVMWord) - 1) / sizeof(CVMWord))
+
+/*
+ * Maximum number of arguments that can be packed for a native call.
+ */
+#define	CVM_MAX_NATIVE_ARGS		8
 
 #ifdef	__cplusplus
 };

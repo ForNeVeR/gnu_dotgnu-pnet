@@ -376,6 +376,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	CVMWord *stackmax = thread->stackLimit;
 	CVMWord *stackbottom = thread->stackBase;
 	ILMethod *method = thread->method;
+	void *nativeArgs[CVM_MAX_NATIVE_ARGS + 1];
 
 	/* Define local variables that are used by the instruction categories */
 	#define IL_CVM_LOCALS

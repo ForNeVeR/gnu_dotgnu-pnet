@@ -1,4 +1,12 @@
 
+2001-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/cvm.h, engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c,
+engine/cvmc_setup.c: modify the argument packing for "ffi_call" so
+that arguments are pushed onto a "native argument stack" instead of
+the normal stack.  This is a little faster, and also avoids alignment
+problems on platforms with 32-bit pointers, but 64-bit alignment.
+
 2001-11-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for "0.2.4" release.

@@ -379,17 +379,21 @@ static CVMOpcode const opcodes[256] = {
 	{"memset",			CVM_OPER_NONE},
 
 	/*
+	 * Argument packing for native calls.
+	 */
+	{"waddr_native_m1",	CVM_OPER_WIDE_UINT},
+	{"waddr_native_0",	CVM_OPER_WIDE_UINT},
+	{"waddr_native_1",	CVM_OPER_WIDE_UINT},
+	{"waddr_native_2",	CVM_OPER_WIDE_UINT},
+	{"waddr_native_3",	CVM_OPER_WIDE_UINT},
+	{"waddr_native_4",	CVM_OPER_WIDE_UINT},
+	{"waddr_native_5",	CVM_OPER_WIDE_UINT},
+	{"waddr_native_6",	CVM_OPER_WIDE_UINT},
+	{"waddr_native_7",	CVM_OPER_WIDE_UINT},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"reserved_ef",		CVM_OPER_NONE},
-	{"reserved_f0",		CVM_OPER_NONE},
-	{"reserved_f1",		CVM_OPER_NONE},
-	{"reserved_f2",		CVM_OPER_NONE},
-	{"reserved_f3",		CVM_OPER_NONE},
-	{"reserved_f4",		CVM_OPER_NONE},
-	{"reserved_f5",		CVM_OPER_NONE},
-	{"reserved_f6",		CVM_OPER_NONE},
-	{"reserved_f7",		CVM_OPER_NONE},
 	{"reserved_f8",		CVM_OPER_NONE},
 	{"reserved_f9",		CVM_OPER_NONE},
 	{"reserved_fa",		CVM_OPER_NONE},
@@ -689,8 +693,8 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 		case CVM_OPER_CALL_NATIVE:
 		{
 			fprintf(stream, "0x%08lX (",
-					(unsigned long)(CVMReadPointer(pc + 2)));
-			methodEntry = _ILFindInternalByAddr(CVMReadPointer(pc + 2),
+					(unsigned long)(CVMReadPointer(pc + 1)));
+			methodEntry = _ILFindInternalByAddr(CVMReadPointer(pc + 1),
 												&str);
 			if(methodEntry)
 			{
@@ -704,7 +708,7 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 				putc('?', stream);
 			}
 			putc(')', stream);
-			size = sizeof(void *) * 2 + 2;
+			size = sizeof(void *) * 2 + 1;
 		}
 		break;
 
@@ -811,28 +815,6 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 							(unsigned long)IL_READ_UINT32(pc + 2),
 							(unsigned long)IL_READ_UINT32(pc + 6));
 					size = 10 + sizeof(void *);
-				}
-				break;
-
-				case CVM_OPER_CALL_NATIVE:
-				{
-					fprintf(stream, "0x%08lX (",
-							(unsigned long)(CVMReadPointer(pc + 6)));
-					methodEntry = _ILFindInternalByAddr(CVMReadPointer(pc + 6),
-														&str);
-					if(methodEntry)
-					{
-						fprintf(stream, "%s.%s \"%s\"",
-								str, methodEntry->methodName,
-								(methodEntry->signature ?
-									methodEntry->signature : "()V"));
-					}
-					else
-					{
-						putc('?', stream);
-					}
-					putc(')', stream);
-					size = sizeof(void *) * 2 + 6;
 				}
 				break;
 

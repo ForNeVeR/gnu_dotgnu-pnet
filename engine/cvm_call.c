@@ -190,15 +190,14 @@ break;
 case COP_CALL_NATIVE:
 {
 	/* Call a native method */
-	tempNum = pc[1];
 	COPY_STATE_TO_THREAD();
-	ffi_call((ffi_cif *)(ReadPointer(pc + 2 + sizeof(void *))),
-	         (void (*)())(ReadPointer(pc + 2)), stacktop[-1].ptrValue,
-			 (void **)(stacktop - tempNum - 1));
+	ffi_call((ffi_cif *)(ReadPointer(pc + 1 + sizeof(void *))),
+	         (void (*)())(ReadPointer(pc + 1)), stacktop[-1].ptrValue,
+			 nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
 	pcstart = thread->pcstart;
 	pc = pcstart + thread->pc;
-	MODIFY_PC_AND_STACK(2 + sizeof(void *) * 2, -(ILInt32)(tempNum + 1));
+	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, -1);
 }
 break;
 
@@ -206,14 +205,12 @@ case COP_CALL_NATIVE_VOID:
 {
 	/* Call a native method that has no return value */
 	COPY_STATE_TO_THREAD();
-	tempNum = pc[1];
-	ffi_call((ffi_cif *)(ReadPointer(pc + 2 + sizeof(void *))),
-	         (void (*)())(ReadPointer(pc + 2)), 0,
-			 (void **)(stacktop - tempNum));
+	ffi_call((ffi_cif *)(ReadPointer(pc + 1 + sizeof(void *))),
+	         (void (*)())(ReadPointer(pc + 1)), 0, nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
 	pcstart = thread->pcstart;
 	pc = pcstart + thread->pc;
-	MODIFY_PC_AND_STACK(2 + sizeof(void *) * 2, -(ILInt32)tempNum);
+	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, 0);
 }
 break;
 
@@ -391,9 +388,9 @@ case COP_RETURN_N:
 
 case COP_PUSH_THREAD:
 {
-	/* Push a pointer to the thread value onto the stack */
-	stacktop[0].ptrValue = (void *)&thread;
-	MODIFY_PC_AND_STACK(1, 1);
+	/* Push a pointer to the thread value onto the native argument stack */
+	nativeArgs[0] = (void *)&thread;
+	MODIFY_PC_AND_STACK(1, 0);
 }
 break;
 
@@ -420,29 +417,26 @@ case COP_PUSHDOWN:
 }
 break;
 
+#define COP_WADDR_NATIVE(name,value)	\
+case COP_WADDR_NATIVE_##name: \
+{ \
+	/* Set a value within the native argument stack */ \
+	nativeArgs[(value) + 1] = (void *)(&(frame[pc[1]])); \
+	MODIFY_PC_AND_STACK(2, 0); \
+} \
+break
+
+COP_WADDR_NATIVE(M1, -1);
+COP_WADDR_NATIVE(0, 0);
+COP_WADDR_NATIVE(1, 1);
+COP_WADDR_NATIVE(2, 2);
+COP_WADDR_NATIVE(3, 3);
+COP_WADDR_NATIVE(4, 4);
+COP_WADDR_NATIVE(5, 5);
+COP_WADDR_NATIVE(6, 6);
+COP_WADDR_NATIVE(7, 7);
+
 #elif defined(IL_CVM_WIDE)
-
-case COP_CALL_NATIVE:
-{
-	/* Wide version of "call_native" */
-	tempNum = IL_READ_UINT32(pc + 2);
-	ffi_call((ffi_cif *)(ReadPointer(pc + 6 + sizeof(void *))),
-	         (void (*)())(ReadPointer(pc + 6)), stacktop[-1].ptrValue,
-			 (void **)(stacktop - tempNum - 1));
-	MODIFY_PC_AND_STACK(6 + sizeof(void *) * 2, -(ILInt32)(tempNum + 1));
-}
-break;
-
-case COP_CALL_NATIVE_VOID:
-{
-	/* Wide version of "call_native_void" */
-	tempNum = IL_READ_UINT32(pc + 2);
-	ffi_call((ffi_cif *)(ReadPointer(pc + 6 + sizeof(void *))),
-	         (void (*)())(ReadPointer(pc + 6)), 0,
-			 (void **)(stacktop - tempNum));
-	MODIFY_PC_AND_STACK(6 + sizeof(void *) * 2, -(ILInt32)tempNum);
-}
-break;
 
 case COP_CALL_VIRTUAL:
 {
@@ -546,6 +540,25 @@ case COP_JMPI:
 	MODIFY_PC_AND_STACK(1, 0);
 }
 break;
+
+#define COP_WADDR_NATIVE_WIDE(name,value)	\
+case COP_WADDR_NATIVE_##name: \
+{ \
+	/* Wide version of "waddr_native_*" */ \
+	nativeArgs[(value) + 1] = (void *)(&(frame[IL_READ_UINT32(pc + 2)])); \
+	MODIFY_PC_AND_STACK(6, 0); \
+} \
+break
+
+COP_WADDR_NATIVE_WIDE(M1, -1);
+COP_WADDR_NATIVE_WIDE(0, 0);
+COP_WADDR_NATIVE_WIDE(1, 1);
+COP_WADDR_NATIVE_WIDE(2, 2);
+COP_WADDR_NATIVE_WIDE(3, 3);
+COP_WADDR_NATIVE_WIDE(4, 4);
+COP_WADDR_NATIVE_WIDE(5, 5);
+COP_WADDR_NATIVE_WIDE(6, 6);
+COP_WADDR_NATIVE_WIDE(7, 7);
 
 #elif defined(IL_CVM_PREFIX)
 

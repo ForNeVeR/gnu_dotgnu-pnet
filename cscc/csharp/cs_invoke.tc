@@ -1131,6 +1131,7 @@ static ILType *GetItemParamType(ILProgramItem *item, ILType *signature,
 	ILType *paramType;
 	ILMethod *method;
 	ILClass *classInfo;
+	ILProperty *property;
 
 	/* If we have an "explicit this" method, then we need to
 	   adjust for the first parameter, which is always "this" */
@@ -1164,6 +1165,26 @@ static ILType *GetItemParamType(ILProgramItem *item, ILType *signature,
 		method = GetDelegateInvoke(classInfo);
 		*paramMod = ILGenGetParamInfo
 				(method, signature, paramNum + firstParam, &paramType);
+	}
+	else if((property=ILProgramItemToProperty(item))!=0)
+	{
+		/* To handle the rare case of a variable params indexer
+		 * NOTE: get_ and set_ methods have the same sig , right ? */	
+		 if((method=ILProperty_Getter(property))!=0)
+		 {
+			*paramMod = ILGenGetParamInfo(method, signature, 
+										paramNum + firstParam,&paramType);
+		 }
+		 else if((method=ILProperty_Setter(property))!=0)
+		 {
+			*paramMod = ILGenGetParamInfo(method, signature, 
+										paramNum + firstParam,&paramType);
+		 }
+		 else /* just for that rare case */
+		 {
+			*paramMod = ILGenGetParamInfo
+						(0, signature, paramNum + firstParam, &paramType);
+		 }
 	}
 	else
 	{

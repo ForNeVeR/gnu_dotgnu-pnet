@@ -2959,8 +2959,8 @@ FormalIndexParameterList
 	;
 
 FormalIndexParameter
-	: OptAttributes Type Identifier 					{
-				$$ = ILNode_FormalParameter_create($1, ILParamMod_empty, $2, $3);
+	: OptAttributes ParameterModifier Type Identifier 					{
+				$$ = ILNode_FormalParameter_create($1, $2, $3, $4);
 			}
 	| ARGLIST	{
 				$$ = ILNode_FormalParameter_create(0, ILParamMod_arglist, 0, 0);

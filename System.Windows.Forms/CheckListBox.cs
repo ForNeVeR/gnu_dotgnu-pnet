@@ -187,10 +187,12 @@ using System.Drawing.Design;
 		}
 
 		[TODO]
+#if !CONFIG_SMALL_CONSOLE
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 		[Editor("ListControlStringCollectionEditor, System.Design", typeof(UITypeEditor))]
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
 		[Localizable(true)]
+#endif
 #endif
 		public new ObjectCollection Items
 		{

@@ -100,7 +100,11 @@ namespace System.Xml.XPath.Private
   /** error output stream.
       It should be changeable.
     */
+#if CONFIG_SMALL_CONSOLE
+  public System.IO.TextWriter ErrorOutput = System.IO.TextWriter.Null;
+#else
   public System.IO.TextWriter ErrorOutput = System.Console.Out;
+#endif
 
   /** simplified error message.
       @see <a href="#yyerror(java.lang.String, java.lang.String[])">yyerror</a>
@@ -1105,7 +1109,11 @@ namespace yydebug {
 	 
 	 class yyDebugSimple : yyDebug {
 		 void println (string s){
+		 #if CONFIG_SMALL_CONSOLE
+			 Console.WriteLine (s);
+		 #else
 			 Console.Error.WriteLine (s);
+		 #endif
 		 }
 		 
 		 public void push (int state, Object value) {

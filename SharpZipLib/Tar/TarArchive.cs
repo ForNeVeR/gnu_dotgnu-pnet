@@ -366,9 +366,11 @@ namespace ICSharpCode.SharpZipLib.Tar {
 				TarEntry entry = this.tarIn.GetNextEntry();
 				
 				if (entry == null) {
+				#if !CONFIG_SMALL_CONSOLE
 					if (this.debug) {
 						Console.Error.WriteLine("READ EOF BLOCK");
 					}
+				#endif
 					break;
 				}
 				OnProgressMessageEvent(entry, null);
@@ -387,9 +389,11 @@ namespace ICSharpCode.SharpZipLib.Tar {
 				TarEntry entry = this.tarIn.GetNextEntry();
 				
 				if (entry == null) {
+				#if !CONFIG_SMALL_CONSOLE
 					if (this.debug) {
 						Console.Error.WriteLine("READ EOF BLOCK");
 					}
+				#endif
 					break;
 				}
 				

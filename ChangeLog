@@ -1,3 +1,11 @@
+
+2005-02-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* SharpZipLib/Tar/TarArchive.cs, System.Windows.Forms/CheckListBox.cs,
+	System.Xml/XPath/Private/XPathParser.cs,
+	runtime/System/IO/StreamWriter.cs: fix some build issues with the
+	"mscompact" profile.
+
 2005-02-09  Marc Haisenko <marc@darkdust.net>
 	* System.Windows.Forms/TextBox.cs: Fix bug in TextBox: if the width or
 	height changed we have to reset the "view", that is make sure the text

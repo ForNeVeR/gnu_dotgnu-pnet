@@ -544,6 +544,10 @@ typedef unsigned int *ppc_inst_ptr;
 #define	ppc_load_membase_ushort(inst,reg,basereg,offset)	\
 			ppc_membase_common((inst), (reg), (basereg), (offset), 40)
 
+#define	ppc_load_membase_float_32(inst,freg,basereg,offset)	\
+			ppc_membase_common((inst), (freg), (basereg), (offset), 48)
+#define	ppc_load_membase_float_64(inst,freg,basereg,offset)	\
+			ppc_membase_common((inst), (freg), (basereg), (offset), 50)
 /*
  * Store values of various sizes to a memory location defined by a
  * base register plus an offset.
@@ -559,6 +563,10 @@ typedef unsigned int *ppc_inst_ptr;
 #define	ppc_store_membase_ushort(inst,reg,basereg,offset)	\
 			ppc_membase_common((inst), (reg), (basereg), (offset), 44)
 
+#define	ppc_store_membase_float_32(inst,freg,basereg,offset)	\
+			ppc_membase_common((inst), (freg), (basereg), (offset), 52)
+#define	ppc_store_membase_float_64(inst,freg,basereg,offset)	\
+			ppc_membase_common((inst), (freg), (basereg), (offset), 54)
 /*
  * Load various sized values from a memory location defined by a base
  * register and an index register.

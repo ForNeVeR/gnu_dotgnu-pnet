@@ -64,22 +64,22 @@ extern	"C" {
  * -1 is the list terminator.  The floating point register numbers
  * must include the MD_FREG_MASK value.
  */
-#define	MD_FREG_0		-1
-#define	MD_FREG_1		-1
-#define	MD_FREG_2		-1
-#define	MD_FREG_3		-1
-#define	MD_FREG_4		-1
-#define	MD_FREG_5		-1
-#define	MD_FREG_6		-1
-#define	MD_FREG_7		-1
-#define	MD_FREG_8		-1
-#define	MD_FREG_9		-1
-#define	MD_FREG_10		-1
-#define	MD_FREG_11		-1
-#define	MD_FREG_12		-1
-#define	MD_FREG_13		-1
-#define	MD_FREG_14		-1
-#define	MD_FREG_15		-1
+#define	MD_FREG_0		-1 /* TODO: enable FP */
+#define	MD_FREG_1		(MD_FREG_MASK | PPC_F1)
+#define	MD_FREG_2		(MD_FREG_MASK | PPC_F2)
+#define	MD_FREG_3		(MD_FREG_MASK | PPC_F3)
+#define	MD_FREG_4		(MD_FREG_MASK | PPC_F4)
+#define	MD_FREG_5		(MD_FREG_MASK | PPC_F5)
+#define	MD_FREG_6		(MD_FREG_MASK | PPC_F6)
+#define	MD_FREG_7		(MD_FREG_MASK | PPC_F7)
+#define	MD_FREG_8		(MD_FREG_MASK | PPC_F8)
+#define	MD_FREG_9		(MD_FREG_MASK | PPC_F9)
+#define	MD_FREG_10		(MD_FREG_MASK | PPC_F10)
+#define	MD_FREG_11		(MD_FREG_MASK | PPC_F11)
+#define	MD_FREG_12		(MD_FREG_MASK | PPC_F12)
+#define	MD_FREG_13		(MD_FREG_MASK | PPC_F13)
+#define	MD_FREG_14		(MD_FREG_MASK | PPC_F14)
+#define	MD_FREG_15		(MD_FREG_MASK | PPC_F15)
 
 /*
  * Set this to a non-zero value if floating-point registers are organised
@@ -177,14 +177,22 @@ typedef ppc_inst_ptr	md_inst_ptr;
  * is at a particular memory location.  If the system does not use
  * floating-point registers, then load onto the top of the stack.
  */
-#define	md_load_const_float_32(inst,reg,mem)	do { ; } while (0)
+#define	md_load_const_float_32(inst,freg,mem)	\
+			do { \
+				ppc_mov_reg_imm((inst), PPC_WORK, mem);\
+				ppc_load_membase_float_32((inst), (freg) & (~MD_FREG_MASK), PPC_WORK, 0);\
+			}while(0)
 
 /*
  * Load a 64-bit floating-point constant into a register.  The constant
  * is at a particular memory location.  If the system does not use
  * floating-point registers, then load onto the top of the stack.
  */
-#define	md_load_const_float_64(inst,reg,mem)	do { ; } while (0)
+#define	md_load_const_float_64(inst,freg,mem)   \
+			do { \
+				ppc_mov_reg_imm((inst), PPC_WORK, mem);\
+				ppc_load_membase_float_64((inst), (freg) & (~MD_FREG_MASK), PPC_WORK, 0);\
+			}while(0)
 
 /*
  * Load the 32-bit constant zero into a register.  This will zero-extend
@@ -249,15 +257,15 @@ typedef ppc_inst_ptr	md_inst_ptr;
 /*
  * Load a floating-point value from an offset from a pointer register.
  * If the system uses floating-point registers, then the value is
- * loaded into "reg".  Otherwise it is loaded onto the top of the
+ * loaded into "freg".  Otherwise it is loaded onto the top of the
  * floating-point stack.
  */
-#define	md_load_membase_float_32(inst,reg,basereg,offset)	\
-			do { ; } while (0)
-#define	md_load_membase_float_64(inst,reg,basereg,offset)	\
-			do { ; } while (0)
-#define	md_load_membase_float_native(inst,reg,basereg,offset)	\
-			do { ; } while (0)
+#define	md_load_membase_float_32(inst,freg,basereg,offset)	\
+			ppc_load_membase_float_32(inst, (freg) & (~MD_FREG_MASK), basereg, offset)
+#define	md_load_membase_float_64(inst,freg,basereg,offset)	\
+			ppc_load_membase_float_64(inst, (freg) & (~MD_FREG_MASK), basereg, offset)
+#define	md_load_membase_float_native(inst,freg,basereg,offset)	\
+			ppc_load_membase_float_64(inst, (freg) & (~MD_FREG_MASK), basereg, offset)
 
 /*
  * Store a 32-bit word register to an offset from a pointer register.
@@ -311,12 +319,12 @@ typedef ppc_inst_ptr	md_inst_ptr;
  * stored from "reg".  Otherwise it is stored from the top of the
  * floating-point stack.
  */
-#define	md_store_membase_float_32(inst,reg,basereg,offset)	\
-			do { ; } while (0)
-#define	md_store_membase_float_64(inst,reg,basereg,offset)	\
-			do { ; } while (0)
-#define	md_store_membase_float_native(inst,reg,basereg,offset)	\
-			do { ; } while (0)
+#define	md_store_membase_float_32(inst,freg,basereg,offset)	\
+			ppc_store_membase_float_32(inst, (freg) & (~MD_FREG_MASK), basereg, offset)
+#define	md_store_membase_float_64(inst,freg,basereg,offset)	\
+			ppc_store_membase_float_64(inst, (freg) & (~MD_FREG_MASK), basereg, offset)
+#define	md_store_membase_float_native(inst,freg,basereg,offset)	\
+			ppc_store_membase_float_64(inst, (freg) & (~MD_FREG_MASK), basereg, offset)
 
 /*
  * Add an immediate value to a register.
@@ -439,6 +447,24 @@ typedef ppc_inst_ptr	md_inst_ptr;
 #define	md_freg_swap(inst)		do { ; } while (0)
 
 /*
+ * Floating point arithmetic operations
+ */
+#define	md_add_reg_reg_float(inst,reg1,reg2)	\
+			do { ; } while (0)
+#define	md_sub_reg_reg_float(inst,reg1,reg2)	\
+			do { ; } while (0)
+#define	md_mul_reg_reg_float(inst,reg1,reg2)	\
+			do { ; } while (0)
+#define	md_div_reg_reg_float(inst,reg1,reg2)	\
+			do { ; } while (0)
+#define	md_rem_reg_reg_float(inst,reg1,reg2,used)	\
+			do { ; } while (0)
+#define	md_neg_reg_float(inst,reg)	\
+			do { ; } while (0)
+#define	md_cmp_reg_reg_float(inst,dreg,sreg1,sreg2,lessop)	\
+			do { ; } while (0)
+
+/*
  * Jump back into the CVM interpreter to execute the instruction
  * at "pc".  If "label" is non-NULL, then it indicates the address
  * of the CVM instruction handler to jump directly to.
@@ -464,10 +490,17 @@ typedef ppc_inst_ptr	md_inst_ptr;
  */
 #define	md_switch(inst,reg,table)	\
 			do { \
-				ppc_load_membase((inst), PPC_WORK, PPC_PC, 4); \
-				ppc_load_memindex((inst), MD_REG_PC, PPC_WORK, (reg)); \
-				ppc_load_membase((inst), PPC_PC, MD_REG_PC, 0); \
-				*((inst)++) = (unsigned int)(table); \
+					/* pc = table[reg] */\
+					ppc_mov_reg_imm(inst, PPC_WORK, (int)(table));\
+					/* cannot use ppc_load_memindex as that will clobber 
+					PPC_WORK instead of using reg as the shift dest - so
+					essentially same code but different clobbering
+					*/\
+					ppc_alu_rlwinm(inst, reg, reg, 2, 0, 29);\
+					ppc_memindex_common(inst, MD_REG_PC, PPC_WORK, reg, 0, 23);\
+					/* goto *pc; */\
+					ppc_load_membase(inst, PPC_WORK, MD_REG_PC, 0);\
+					ppc_jump_reg(inst, PPC_WORK);\
 			} while (0)
 
 /*

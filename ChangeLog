@@ -1,4 +1,9 @@
 
+2004-12-25  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/md_ppc.h, engine/ppc_codegen.h: Stub macros for FPU ops and
+	implement md_switch()
+
 2004-12-22  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/unroll_ptr.c: Implement 2D array operations for 

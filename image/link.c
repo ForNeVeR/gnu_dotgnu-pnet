@@ -275,12 +275,8 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 			}
 		}
 
-		/* Try looking in LD_LIBRARY_PATH or PATH for the assembly */
-	#ifndef IL_WIN32_PLATFORM
+		/* Try looking in LD_LIBRARY_PATH for the assembly */
 		env = getenv("LD_LIBRARY_PATH");
-	#else
-		env = getenv("PATH");
-	#endif
 		if(env && *env != '\0')
 		{
 			path = SearchPathForAssembly(env, name, namelen, version);
@@ -289,6 +285,28 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 				return path;
 			}
 		}
+		else
+		{
+			path = SearchPathForAssembly(MODULE_LINK_PATH,
+										 name, namelen, version);
+			if(path)
+			{
+				return path;
+			}
+		}
+
+	#ifdef IL_WIN32_PLATFORM
+		/* Win32: try looking in PATH for the assembly */
+		env = getenv("PATH");
+		if(env && *env != '\0')
+		{
+			path = SearchPathForAssembly(env, name, namelen, version);
+			if(path)
+			{
+				return path;
+			}
+		}
+	#endif
 	}
 
 	/* Search the after path list */

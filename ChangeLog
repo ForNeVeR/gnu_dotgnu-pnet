@@ -6,6 +6,9 @@
 	* engine/verify_ptr.c (IL_OP_LDOBJ): fix verification of "ldobj"
 	instructions that involve primitive types like IntPtr and UIntPtr.
 
+	* image/link.c: search a default module path if LD_LIBRARY_PATH
+	is not defined.
+
 2002-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,

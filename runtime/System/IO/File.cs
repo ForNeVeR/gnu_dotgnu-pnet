@@ -256,9 +256,12 @@ namespace System.IO
 		{
 			Exception e = ValidatePath(path, "path");
 			if(e != null) { throw e; }
+
+			Errno err = FileMethods.SetCreationTime(path, creationTime.ToUniversalTime().Ticks);
+			e = GetTimeExceptionHandler(err);
+			if(e != null) { throw e; }
 		}
 		
-		[TODO]	
 		public static void SetLastAccessTime(string path, DateTime lastAccessTime) 
 		{
 			Exception e = ValidatePath(path, "path");

@@ -122,6 +122,11 @@ internal class FileMethods
 	// Returns an Errno for the call status
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Errno SetLastAccessTime(string path, long ticks);
+
+	// Sets the creation time for a file
+	// Returns an Errno for the call status
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno SetCreationTime(string path, long ticks);
 	
 }; // class FileMethods
 

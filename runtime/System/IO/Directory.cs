@@ -298,8 +298,7 @@ namespace System.IO
 		[TODO]
 		public static void SetCreationTime(string path, DateTime creationTime)
 		{
-			Exception e=ValidatePath(path,"path");
-			if(e != null) throw e;
+			File.SetCreationTime(path, creationTime);
 		}
 
 		public static void SetCurrentDirectory(string path)
@@ -313,18 +312,14 @@ namespace System.IO
 			if(e != null) throw e;
 		}
 
-		[TODO]
 		public static void SetLastAccessTime(string path, DateTime lastAccessTime)
 		{
-			Exception e=ValidatePath(path,"path");
-			if(e != null) throw e;
+			File.SetLastAccessTime(path, lastAccessTime);
 		}
 
-		[TODO]
 		public static void SetLastWriteTime(string path, DateTime lastWriteTime)
 		{
-			Exception e=ValidatePath(path,"path");
-			if(e != null) throw e;
+			File.SetLastWriteTime(path, lastWriteTime);
 		}
 		
 		/* internal class to convert Glob expression to Regexp */

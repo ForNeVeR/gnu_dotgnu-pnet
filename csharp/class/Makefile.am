@@ -14,6 +14,7 @@ TESTS = ainit1.cs \
 		interface1.cs \
 		interface2.cs \
 		interface3.cs \
+		interface4.cs \
 		method1.cs \
 		method2.cs \
 		method3.cs \

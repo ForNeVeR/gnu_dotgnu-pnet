@@ -23,7 +23,9 @@
 	.get instance class ['.library']'System'.'Object' 'get_Current'()
 } // property Current
 } // class IEnumerator
-.class private auto ansi 'Test' extends ['.library']'System'.'Object' implements 'IEnumerator'
+.class private auto ansi 'Test' extends ['.library']'System'.'Object'
+{
+.class nested public auto ansi 'Test2' extends ['.library']'System'.'Object' implements 'IEnumerator'
 {
 .method public virtual hidebysig newslot instance bool 'MoveNext'() cil managed 
 {
@@ -53,33 +55,7 @@
 	ret
 	.maxstack 1
 } // method .ctor
-} // class Test
-.class private auto ansi 'Test2' extends ['.library']'System'.'Object' implements 'IEnumerator'
-{
-.method private final virtual hidebysig newslot instance bool 'IEnumerator.MoveNext'() cil managed 
-{
-	.override	'IEnumerator'::'MoveNext'
-	ldc.i4.0
-	ret
-	.maxstack 1
-} // method IEnumerator.MoveNext
-.method private final virtual hidebysig newslot instance void 'IEnumerator.Reset'() cil managed 
-{
-	.override	'IEnumerator'::'Reset'
-	ret
-	.maxstack 0
-} // method IEnumerator.Reset
-.method private final virtual hidebysig newslot specialname instance class ['.library']'System'.'Object' 'IEnumerator.get_Current'() cil managed 
-{
-	.override	'IEnumerator'::'get_Current'
-	ldnull
-	ret
-	.maxstack 1
-} // method IEnumerator.get_Current
-.property instance class ['.library']'System'.'Object' 'IEnumerator.Current'()
-{
-	.get instance class ['.library']'System'.'Object' 'IEnumerator.get_Current'()
-} // property IEnumerator.Current
+} // class Test2
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {
 	ldarg.0
@@ -87,4 +63,4 @@
 	ret
 	.maxstack 1
 } // method .ctor
-} // class Test2
+} // class Test

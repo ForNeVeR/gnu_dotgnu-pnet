@@ -1,5 +1,5 @@
 /*
- * interface3.cs - Test interface method implementation.
+ * interface4.cs - Test interface method implementation with forward decls.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -18,6 +18,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+class Test
+{
+	public class Test2 : IEnumerator
+	{
+		public bool MoveNext() { return false; }
+		public void Reset() {}
+		public Object Current
+			{
+				get
+				{
+					return null;
+				}
+			}
+	}
+
+}
+
 public interface IEnumerator
 {
 
@@ -25,30 +42,4 @@ public interface IEnumerator
 	void Reset();
 	Object Current { get; }
 
-}
-
-class Test : IEnumerator
-{
-	public bool MoveNext() { return false; }
-	public void Reset() {}
-	public Object Current
-		{
-			get
-			{
-				return null;
-			}
-		}
-}
-
-class Test2 : IEnumerator
-{
-	bool IEnumerator.MoveNext() { return false; }
-	void IEnumerator.Reset() {}
-	Object IEnumerator.Current
-		{
-			get
-			{
-				return null;
-			}
-		}
 }

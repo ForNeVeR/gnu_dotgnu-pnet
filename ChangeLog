@@ -1,4 +1,11 @@
 
+2002-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/interface3.cs,
+	csharp/class/interface3.il, csharp/class/interface3.jl,
+	csharp/class/interface4.cs, csharp/class/interface4.il,
+	csharp/class/interface4.jl: new interface override tests.
+
 2002-03-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/method2.jerr, csharp/class/method8.err,

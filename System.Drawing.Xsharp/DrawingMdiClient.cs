@@ -428,6 +428,11 @@ internal sealed class DrawingMdiClient : MdiClientWidget, IToolkitMdiClient
 					}
 				}
 			}
+
+	protected override void OnActivateChild(TopLevelWindow child)
+			{
+				sink.ToolkitMdiActivate((IToolkitWindow)child);
+			}
 	
 	private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
 			{

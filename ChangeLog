@@ -13,6 +13,9 @@
 	* runtime/System/Resources/ResourceManager.cs: Follow the right 
 	precedence while looking up resources. (fix bug #9366).
 
+	* System.Drawing.Xsharp/DrawingMdiClient.cs: Generate the
+	ToolkitMdiActivate even for the OnActivateChild() call from Xsharp.
+
 2004-06-17  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/runtime/System/Threading/SuiteThreading.cs, TestMutex.cs:

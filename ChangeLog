@@ -7,6 +7,24 @@
 	System/Collections/Specialized/StringEnumerator.cs: implement some
 	missing classes from "System.Collections.Specialized".
 
+	* runtime/System/Reflection/AssemblyCompanyAttribute.cs,
+	runtime/System/Reflection/AssemblyConfigurationAttribute.cs,
+	runtime/System/Reflection/AssemblyCopyrightAttribute.cs,
+	runtime/System/Reflection/AssemblyCultureAttribute.cs,
+	runtime/System/Reflection/AssemblyDefaultAliasAttribute.cs,
+	runtime/System/Reflection/AssemblyDelaySignAttribute.cs,
+	runtime/System/Reflection/AssemblyDescriptionAttribute.cs,
+	runtime/System/Reflection/AssemblyFileVersionAttribute.cs,
+	runtime/System/Reflection/AssemblyFlagsAttribute.cs,
+	runtime/System/Reflection/AssemblyInformationalVersionAttribute.cs,
+	runtime/System/Reflection/AssemblyKeyFileAttribute.cs,
+	runtime/System/Reflection/AssemblyKeyNameAttribute.cs,
+	runtime/System/Reflection/AssemblyProductAttribute.cs,
+	runtime/System/Reflection/AssemblyTitleAttribute.cs,
+	runtime/System/Reflection/AssemblyTrademarkAttribute.cs,
+	runtime/System/Reflection/AssemblyVersionAttribute.cs: add a number
+	of non-ECMA reflection attributes.
+
 2002-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Common/ByteEncoding.cs: missing "++" when converting strings

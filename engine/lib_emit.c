@@ -365,20 +365,63 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
 }
 
 /*
- * private static IntPtr ClrTypeCreate(IntPtr module, String name,
- *									   String nspace, TypeAttributes attr,
- *									   TypeToken parent);
+ * private static IntPtr ClrTypeCreate(IntPtr module, IntPtr scope,
+ *                                     String name, String nspace,
+ *                                     TypeAttributes attr, TypeToken parent);
  */
 ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
-										  ILNativeInt module,
-										  ILNativeInt nestedParent,
-										  ILString *name,
-										  ILString *nspace,
-										  ILInt32 attr,
-										  void *parent)
+                                          ILNativeInt module,
+                                          ILNativeInt nestedParent,
+                                          ILString *name,
+                                          ILString *nspace,
+                                          ILInt32 attr,
+                                          void *parent)
 {
-	/* TODO */
-	return 0;
+	ILImage *image;
+	ILToken token;
+	ILProgramItem *scope;
+	const char *typeName;
+	const char *nameSpace;
+	ILClass *baseClass;
+	ILClass *retval;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	image = ((ILProgramItem *)module)->image;
+	token = (ILToken)parent;
+	if (!(scope = (ILProgramItem *)nestedParent) &&
+	    !(scope = ILClassGlobalScope(image)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (!(typeName = (const char *)ILStringToAnsi(_thread, name)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (nspace && !(nameSpace = (const char *)ILStringToAnsi(_thread, nspace)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (!(baseClass = ILClass_FromToken(image, token)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+
+	if ((retval = ILClassCreate(scope, token, typeName, nameSpace, baseClass)))
+	{
+		ILClassSetAttrs(retval, (ILUInt32)-1, (ILUInt32)attr);
+	}
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILNativeInt)retval;
 }
 
 /*

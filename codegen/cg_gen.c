@@ -581,7 +581,7 @@ ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
 			IL_META_CALLCONV_VARARG)
 	{
-		if(*type == ILType_Sentinel || num > ILTypeNumParams(signature))
+		if(ILType_IsSentinel(*type) || num > ILTypeNumParams(signature))
 		{
 			*type = ILType_Null;
 			return ILParamMod_arglist;

@@ -1082,6 +1082,12 @@ int ILMethodIsConstructor(ILMethod *method);
 int ILMethodIsStaticConstructor(ILMethod *method);
 
 /*
+ * Resolve a vararg method call site reference into a method definition.
+ * Returns the method itself if not a call site.
+ */
+ILMethod *ILMethodResolveCallSite(ILMethod *method);
+
+/*
  * Helper macros for querying information about a method.
  */
 #define	ILMethod_FromToken(image,token)	\

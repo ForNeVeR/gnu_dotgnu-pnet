@@ -836,6 +836,110 @@ int ILMethodIsStaticConstructor(ILMethod *method)
 	}
 }
 
+/*
+ * Determine if we have a signature match between an actual
+ * method and a specified call site.
+ */
+static int SentinelSigMatch(ILType *actualSig, ILType *callSiteSig)
+{
+	unsigned long actualNum;
+	unsigned long callSiteNum;
+	unsigned long paramNum;
+	ILType *paramType;
+
+	/* Bail out if the actual signature contains sentinels */
+	if(ILType_Kind(actualSig) != IL_TYPE_COMPLEX_METHOD)
+	{
+		return 0;
+	}
+
+	/* Match the calling conventions */
+	if(ILType_CallConv(actualSig) != ILType_CallConv(callSiteSig))
+	{
+		return 0;
+	}
+
+	/* Match the return types */
+	if(!ILTypeIdentical(ILTypeGetReturn(actualSig),
+						ILTypeGetReturn(callSiteSig)))
+	{
+		return 0;
+	}
+
+	/* Check the number of parameters */
+	actualNum = ILTypeNumParams(actualSig);
+	callSiteNum = ILTypeNumParams(callSiteSig);
+	if(actualNum >= callSiteNum)
+	{
+		return 0;
+	}
+
+	/* Check that parameter "actualNum + 1" is the sentinel in "callSiteSig" */
+	paramType = ILTypeGetParam(callSiteSig, actualNum + 1);
+	if(!ILType_IsSentinel(paramType))
+	{
+		return 0;
+	}
+
+	/* Match the first "actualNum" parameters */
+	for(paramNum = 1; paramNum <= actualNum; ++paramNum)
+	{
+		if(!ILTypeIdentical(ILTypeGetParam(actualSig, paramNum),
+							ILTypeGetParam(callSiteSig, paramNum)))
+		{
+			return 0;
+		}
+	}
+
+	/* If we get here, then we have a match */
+	return 1;
+}
+
+ILMethod *ILMethodResolveCallSite(ILMethod *method)
+{
+	ILClass *classInfo;
+	ILMethod *testMethod;
+
+	/* Resolve the method across image boundaries */
+	method = (ILMethod *)ILMemberResolve((ILMember *)method);
+
+	/* If the method is not a MemberRef, then it is its own call site */
+	if((method->member.programItem.token & IL_META_TOKEN_MASK) !=
+				IL_META_TOKEN_MEMBER_REF)
+	{
+		return method;
+	}
+
+	/* If the method does not contain a sentinel, it is its own call site */
+	if(ILType_Kind(method->member.signature) !=
+			(IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL))
+	{
+		return method;
+	}
+
+	/* Look for the non-sentinel version of the method */
+	classInfo = ILClassResolve(ILMethod_Owner(method));
+	while(classInfo != 0)
+	{
+		testMethod = 0;
+		while((testMethod = (ILMethod *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)testMethod,
+					 IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if(!strcmp(testMethod->member.name, method->member.name) &&
+			   SentinelSigMatch(testMethod->member.signature,
+			   					method->member.signature))
+			{
+				return testMethod;
+			}
+		}
+		classInfo = ILClass_Parent(classInfo);
+	}
+
+	/* We could not find the resolved version */
+	return method;
+}
+
 ILParameter *ILParameterCreate(ILMethod *method, ILToken token,
 							   const char *name, ILUInt32 attributes,
 							   ILUInt32 paramNum)

@@ -39,7 +39,7 @@ public sealed class Monitor
 				{
 					throw new ArgumentNullException("obj");
 				}
-				return InternalTryEnter(obj, -1);
+				return InternalTryEnter(obj, 0);
 			}
 
 	// Try to enter a monitor on an object within a specified timeout.

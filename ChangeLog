@@ -1,4 +1,8 @@
+2004-06-02  Thong Nguyen  <tum@veridicus.com>
 
+	* runtime/System/Threading/Monitor.cs: Changed TryEnter()
+	to use a timeout value of 0 rather than -1.
+	
 2004-05-31  David Logan  <djlogan2@comcast.net>
 
 	* System.Drawing/Toolkit/IToolkitEventSink.cs,
@@ -59,7 +63,8 @@
 2004-05-29  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Threading/ThreadPool.cs: Fix NullReferenceException
-	when no work items are queued.
+	when no work items are queued.  Fix pulse/wait race between
+	queueing and processing an item.
 	
 2004-05-28  Gopal V  <gopalv82@yahoo.com>
 

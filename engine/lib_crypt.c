@@ -349,8 +349,21 @@ ILBool _IL_CryptoMethods_SameKey(ILExecThread *_thread, System_Array *key1,
 								 ILInt32 offset1, System_Array *key2,
 								 ILInt32 offset2)
 {
-	return !ILMemCmp(((unsigned char *)(ArrayToBuffer(key1))) + offset1,
-					 ((unsigned char *)(ArrayToBuffer(key2))) + offset2, 8);
+	unsigned char *ptr1 = ((unsigned char *)(ArrayToBuffer(key1))) + offset1;
+	unsigned char *ptr2 = ((unsigned char *)(ArrayToBuffer(key2))) + offset2;
+	int len = 8;
+	while(len > 0)
+	{
+		/* Ignore the DES parity bit, as it isn't important */
+		if((*ptr1 & 0xFE) != (*ptr2 & 0xFE))
+		{
+			return 0;
+		}
+		++ptr1;
+		++ptr2;
+		--len;
+	}
+	return 1;
 }
 
 /*

@@ -379,6 +379,138 @@ static void thread_suspend_destroy(void *arg)
 }
 
 /*
+ * Thread start function that holds a mutex for a period of time.
+ */
+static void mutexHold(void *arg)
+{
+	ILMutex *mutex = ILMutexCreate();
+	ILMutexLock(mutex);
+	sleepFor(2);
+	globalFlag = 1;
+	ILMutexUnlock(mutex);
+	ILMutexDestroy(mutex);
+	sleepFor(2);
+}
+
+/*
+ * Test that a thread cannot be suspended while it holds
+ * a mutex, but that it will suspend as soon as it gives
+ * up the mutex.
+ */
+static void thread_suspend_mutex(void *arg)
+{
+	ILThread *thread;
+	int savedFlag;
+
+	/* Create the thread */
+	thread = ILThreadCreate(mutexHold, 0);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Clear the global flag */
+	globalFlag = 0;
+
+	/* Start the thread, which should immediately suspend */
+	ILThreadStart(thread);
+
+	/* Wait 1 time step */
+	sleepFor(1);
+
+	/* Attempt to suspend the thread: this should block for 1 time step */
+	ILThreadSuspend(thread);
+
+	/* Save the global flag at this point */
+	savedFlag = globalFlag;
+
+	/* Resume the thread */
+	ILThreadResume(thread);
+
+	/* Wait 4 more time steps for the thread to exit */
+	sleepFor(4);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors: the flag must have been set */
+	if(!savedFlag)
+	{
+		ILUnitFailed("thread suspended while holding a mutex");
+	}
+}
+
+/*
+ * Thread start function that holds a read lock for a period of time.
+ */
+static void rwlockHold(void *arg)
+{
+	ILRWLock *rwlock = ILRWLockCreate();
+	if(arg)
+	{
+		ILRWLockReadLock(rwlock);
+	}
+	else
+	{
+		ILRWLockWriteLock(rwlock);
+	}
+	sleepFor(2);
+	globalFlag = 1;
+	ILRWLockUnlock(rwlock);
+	ILRWLockDestroy(rwlock);
+	sleepFor(2);
+}
+
+/*
+ * Test that a thread cannot be suspended while it holds
+ * a read/write lock, but that it will suspend as soon as
+ * it gives up the lock.  Read lock if arg != 0, and write
+ * lock otherwise.
+ */
+static void thread_suspend_rwlock(void *arg)
+{
+	ILThread *thread;
+	int savedFlag;
+
+	/* Create the thread */
+	thread = ILThreadCreate(rwlockHold, arg);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Clear the global flag */
+	globalFlag = 0;
+
+	/* Start the thread, which should immediately suspend */
+	ILThreadStart(thread);
+
+	/* Wait 1 time step */
+	sleepFor(1);
+
+	/* Attempt to suspend the thread: this should block for 1 time step */
+	ILThreadSuspend(thread);
+
+	/* Save the global flag at this point */
+	savedFlag = globalFlag;
+
+	/* Resume the thread */
+	ILThreadResume(thread);
+
+	/* Wait 4 more time steps for the thread to exit */
+	sleepFor(4);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors: the flag must have been set */
+	if(!savedFlag)
+	{
+		ILUnitFailed("thread suspended while holding the lock");
+	}
+}
+
+/*
  * Test that the descriptor for the main thread is not NULL.
  */
 static void thread_main_nonnull(void *arg)
@@ -567,12 +699,15 @@ void ILUnitRegisterTests(void)
 	RegisterSimple(thread_create_destroy);
 
 	/*
-	 * Test thread suspend and resume behaviours.
+	 * Test thread suspend behaviours.
 	 */
-	ILUnitRegisterSuite("Thread Suspend/Resume");
+	ILUnitRegisterSuite("Thread Suspend");
 	RegisterSimple(thread_suspend);
 	RegisterSimple(thread_suspend_self);
 	RegisterSimple(thread_suspend_destroy);
+	RegisterSimple(thread_suspend_mutex);
+	ILUnitRegister("thread_suspend_rdlock", thread_suspend_rwlock, (void *)1);
+	ILUnitRegister("thread_suspend_wrlock", thread_suspend_rwlock, (void *)0);
 
 	/*
 	 * Test the properties of the "main" thread.

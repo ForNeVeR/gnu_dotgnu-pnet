@@ -32,6 +32,9 @@
 	test suite; implement "safe" thread suspension that ensures that
 	critical sections are not held by suspended Win32 threads.
 
+	* tests/test_thread.c: add tests that check that a thread cannot
+	be suspended while it holds a mutex or a read/write lock.
+
 2002-04-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_thread.h, support/Makefile.am, support/no_thread.c,

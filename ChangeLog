@@ -1,4 +1,8 @@
+2004-05-15  Thong Nguyen  <tum@veridicus.com>
 
+	* tests/runtime/System/TestDelegate.cs, tests/runtime/System/
+	SuiteSystem.cs: Added tests for asynchronous delegates.
+	
 2004-05-14  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/MainMenu.cs: Fix a minor bug , on

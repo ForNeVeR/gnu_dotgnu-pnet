@@ -43,6 +43,11 @@ public class InstallContext
 				this.logFilePath = logFilePath;
 				this.parameters = ParseCommandLine(commandLine);
 			}
+    internal InstallContext(StringDictionary parameters)
+			{
+				this.logFilePath = parameters["logfile"];
+				this.parameters = parameters;
+			}
 
     // Get the command-line parameters.
     public StringDictionary Parameters
@@ -57,6 +62,11 @@ public class InstallContext
     public bool IsParameterTrue(String paramName)
 			{
 				String value = parameters[paramName.ToLower()];
+				if(value == null)
+				{
+					// Special check for "--x" forms of option names.
+					value = parameters["-" + paramName.ToLower()];
+				}
 				if(value == null)
 				{
 					return false;
@@ -103,6 +113,16 @@ public class InstallContext
 				}
 			}
 
+	// Add to a string dictionary, overridding previous values.
+	private static void Add(StringDictionary dict, String name, String value)
+			{
+				if(dict[name] != null)
+				{
+					dict.Remove(name);
+				}
+				dict[name] = value;
+			}
+
     // Parse a command line into a string dictionary.
     protected static StringDictionary ParseCommandLine(String[] args)
 		    {
@@ -128,15 +148,15 @@ public class InstallContext
 										// Option of the form "/name = value".
 										if((posn + 2) < args.Length)
 										{
-										    dict.Add
-												(str.Substring(1).ToLower(),
+										    Add(dict,
+												str.Substring(1).ToLower(),
 												 "");
 										    ++posn;
 										}
 										else
 										{
-										    dict.Add
-												(str.Substring(1).ToLower(),
+										    Add(dict,
+												str.Substring(1).ToLower(),
 												 args[posn + 2]);
 										    posn += 2;
 										}
@@ -144,7 +164,7 @@ public class InstallContext
 								    else
 								    {
 										// Option of the form "/name =value".
-										dict.Add(str.Substring(1).ToLower(),
+										Add(dict, str.Substring(1).ToLower(),
 												 args[posn + 1].Substring(1));
 										++posn;
 								    }
@@ -152,20 +172,20 @@ public class InstallContext
 								else
 								{
 								    // Option of the form "/name".
-								    dict.Add(str.Substring(1).ToLower(), "");
+								    Add(dict, str.Substring(1).ToLower(), "");
 								}
 						    }
 						    else if((index + 1) < str.Length &&
 									(posn + 1) < args.Length)
 						    {
 								// Option of the form "/name= value".
-								dict.Add(str.Substring(1, index - 1).ToLower(),
+								Add(dict, str.Substring(1, index - 1).ToLower(),
 										 args[posn + 1]);
 						    }
 						    else
 						    {
 								// Option of the form "/name=value".
-								dict.Add(str.Substring(1, index - 1).ToLower(),
+								Add(dict, str.Substring(1, index - 1).ToLower(),
 										 str.Substring(index + 1));
 						    }
 						}
@@ -174,6 +194,13 @@ public class InstallContext
 				}
 				return dict;
 		    }
+    internal static StringDictionary ParseCommandLine
+				(String[] args, int start, int length, out String[] newArgs)
+			{
+				newArgs = new String [length];
+				Array.Copy(args, start, newArgs, 0, length);
+				return ParseCommandLine(newArgs);
+			}
 
 }; // class InstallContext
 

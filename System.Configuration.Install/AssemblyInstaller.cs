@@ -202,7 +202,7 @@ public class AssemblyInstaller : Installer
     public override void Commit(IDictionary savedState)
 			{
 				Initialize();
-				// TODO
+				base.Commit(savedState);
 			}
 
     // Perform the installation process, saving the previous
@@ -210,21 +210,21 @@ public class AssemblyInstaller : Installer
     public override void Install(IDictionary stateSaver)
 			{
 				Initialize();
-				// TODO
+				base.Install(stateSaver);
 			}
 
     // Roll back the current installation to "savedState".
     public override void Rollback(IDictionary savedState)
 			{
 				Initialize();
-				// TODO
+				base.Rollback(savedState);
 			}
 
     // Uninstall and return to a previously saved state.
     public override void Uninstall(IDictionary savedState)
 			{
 				Initialize();
-				// TODO
+				base.Uninstall(savedState);
 			}
 
 	// Load an assembly by name and get the information object for it.

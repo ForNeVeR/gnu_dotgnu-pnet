@@ -610,6 +610,7 @@ ILMethod *CFunctionGetCurrent(void)
 unsigned CGenAllocLocal(ILGenInfo *info, ILType *type)
 {
 	unsigned num;
+	CTypeMarkForOutput(info, type);
 	if(!localVarSig)
 	{
 		localVarSig = ILTypeCreateLocalList(info->context);

@@ -1,5 +1,7 @@
 
-TESTS = binary1.cs \
+TESTS = as1.cs \
+		as2.cs \
+		binary1.cs \
 		binary2.cs \
 		bitwise1.cs \
 		bitwise2.cs \

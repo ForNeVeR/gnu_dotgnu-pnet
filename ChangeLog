@@ -8,6 +8,10 @@
 	* csharp/expr/cast6.cs, csharp/expr/cast6.il, csharp/expr/cast6.jl:
 	more tests for successful reference casts and coercions.
 
+	* csharp/expr/Makefile.am, csharp/expr/as1.cs, csharp/expr/as1.il,
+	csharp/expr/as1.jl, csharp/expr/as2.cs, csharp/expr/as2.err,
+	csharp/expr/as2.jerr: add tests for the "as" operator.
+
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/cast4.cs,

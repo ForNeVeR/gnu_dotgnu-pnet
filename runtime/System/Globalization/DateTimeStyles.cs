@@ -33,7 +33,8 @@ public enum DateTimeStyles
 	AllowTrailingWhite   = 0x0002,
 	AllowInnerWhite      = 0x0004,
 	AllowWhiteSpaces     = 0x0007,
-	NoCurrentDateDefault = 0x0008
+	NoCurrentDateDefault = 0x0008,
+	AdjustToUniversal    = 0x0010
 
 }; // enum DateTimeStyles
 

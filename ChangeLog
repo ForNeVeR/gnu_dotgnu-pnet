@@ -39,6 +39,9 @@ runtime/System/Private/SynchronizedList.cs: move some "internal" classes
 out of the main namespaces into "System.Private", to avoid pollution
 of the standardised parts of the library.
 
+* runtime/System/Globalization/DateTimeStyles.cs: add the missing
+"AdjustToUniversal" enumeration constant.
+
 2001-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Makefile.am, runtime/System/Collections/ArrayList.cs:

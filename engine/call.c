@@ -818,7 +818,7 @@ static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
 		/* This is an ordinary virtual method call */
 		if(ILClassInheritsFrom(objectClass, classInfo))
 		{
-			method = ((ILClassPrivate *)(classInfo->userData))->
+			method = ((ILClassPrivate *)(objectClass->userData))->
 							vtable[method->index];
 			if(method)
 			{

@@ -384,6 +384,7 @@ extern ILInt32 _IL_DirMethods_GetCreationTime(ILExecThread * _thread, ILString *
 extern ILInt32 _IL_DirMethods_GetLastAccess(ILExecThread * _thread, ILString * path, ILInt64 * lastac);
 extern ILInt32 _IL_DirMethods_GetLastModification(ILExecThread * _thread, ILString * path, ILInt64 * last_mod);
 extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread, ILString * path, System_Array * * files);
+extern ILInt32 _IL_DirMethods_ChangeDirectory(ILExecThread * _thread, ILString * name);
 
 extern void _IL_Stdio_StdClose(ILExecThread * _thread, ILInt32 fd);
 extern ILInt32 _IL_Stdio_StdPeek(ILExecThread * _thread, ILInt32 fd);

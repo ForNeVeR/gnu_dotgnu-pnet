@@ -64,6 +64,20 @@ ILInt32 ILDeleteDir(const char *path)
 
 }
 
+ILInt32 ILChangeDir(const char *path)
+{
+	if(path==NULL)
+	{
+		return IL_ERRNO_ENOENT;
+	}
+#ifdef HAVE_CHDIR
+	return ILSysIOConvertErrno(chdir(path));	
+#else
+	return IL_ERRNO_ENOSYS;
+#endif
+
+}
+
 #ifdef HAVE_DIRENT_H
 
 /*

@@ -291,6 +291,11 @@ int ILCloseDir(ILDir *directory);
 const char *ILDirEntName(ILDirEnt *entry);
 int ILDirEntType(ILDirEnt *entry);
 
+/*
+ * Change Directory
+ */
+ILInt32 ILChangeDir(const char *path);
+
 #ifdef	__cplusplus 
 };
 #endif

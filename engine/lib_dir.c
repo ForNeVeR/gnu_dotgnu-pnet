@@ -169,6 +169,12 @@ ILString *_IL_DirMethods_GetCurrentDirectory(ILExecThread *_thread)
 	}
 }
 
+ILInt32 _IL_DirMethods_ChangeDirectory(ILExecThread * _thread, 
+										ILString * name)
+{
+	return ILChangeDir(ILStringToAnsi(_thread,name));
+}
+
 /*
  * public static Errno GetFilesInDirectory(String path, out 
  * 											Platform.InternalFileInfo[] files);

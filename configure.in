@@ -104,11 +104,7 @@ AC_PATH_PROG(CYGPATH, cygpath)
 
 dnl Find the location of the "ilranlib" program.
 AC_PATH_PROG(ILRANLIB, ilranlib,, ${PNET_PATH}/ilranlib:${prefix}/bin:$PATH)
-if test "x$CYGPATH" != "x" ; then
-	RANLIB=`"$CYGPATH" -ws "${ILRANLIB}"`
-else
-	RANLIB="$ILRANLIB"
-fi
+RANLIB="$ILRANLIB"
 ac_cv_prog_RANLIB="$RANLIB"
 
 dnl Determine additional flags that we need to force "cscc" to act sane.

@@ -1,3 +1,9 @@
+
+2004-05-18  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/lib_type.c: Include interfaces inherited by a type in
+	Type.GetInterfaces().
+
 2004-05-18  Thong Nguyen  <tum@veridicus.com>
 
 	* include/il_engine.h: Added prototype for ILExecThreadBoxNoValue.

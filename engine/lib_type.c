@@ -827,10 +827,19 @@ static ILInt32 GetMaxInterfaces(ILClass *classInfo)
 {
 	ILImplements *impl = 0;
 	ILInt32 count = 0;
+	
+	if(classInfo == NULL)
+	{
+		return 0;
+	}
+	
 	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 	{
 		count += 1 + GetMaxInterfaces(ILImplementsGetInterface(impl));
 	}
+
+	// Traverse up into the parent class as well
+	count += GetMaxInterfaces(ILClassGetParent(classInfo));
 	return count;
 }
 
@@ -845,6 +854,12 @@ static ILInt32 FillWithInterfaces(ILExecThread *thread, ILClass *classInfo,
 	ILClass *interface;
 	ILObject *clrType;
 	ILInt32 index;
+	
+	if(classInfo == NULL)
+	{
+		return posn;
+	}
+	
 	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 	{
 		interface = ILImplementsGetInterface(impl);
@@ -862,6 +877,9 @@ static ILInt32 FillWithInterfaces(ILExecThread *thread, ILClass *classInfo,
 			posn = FillWithInterfaces(thread, interface, array, posn);
 		}
 	}
+
+	// Traverse up into the parent class as well
+	posn = FillWithInterfaces(thread, ILClassGetParent(classInfo), array, posn);
 	return posn;
 }
 

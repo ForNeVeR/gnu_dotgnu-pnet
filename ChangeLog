@@ -1,4 +1,9 @@
 
+2002-11-01  Gopal.V  <gopalv82@symonds.net>
+
+	* codegen/cg_arith.tc: prevent ILNativeFloat from generating
+	add.ovf,mul.ovf or sub.ovf instructions in checked mode.
+
 2002-10-31  Sylvain Pasche <sylvain_pasche@yahoo.fr>
 	
 	* codegen/jv_output.c,ilasm/ilasm_grammar.y, ilasm/ilasm_output.c, 

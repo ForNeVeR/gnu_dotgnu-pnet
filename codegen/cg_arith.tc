@@ -755,8 +755,7 @@ ILBinary_ApplyOp(ILNode_Add, ILMachineType_Char)
 }
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_Int32),
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_Int64),
-ILBinary_ApplyOp(ILNode_Add, ILMachineType_NativeInt),
-ILBinary_ApplyOp(ILNode_Add, ILMachineType_NativeFloat)
+ILBinary_ApplyOp(ILNode_Add, ILMachineType_NativeInt)
 {
 	if(info->overflowInsns)
 	{
@@ -798,6 +797,10 @@ ILBinary_ApplyOp(ILNode_Add, ILMachineType_Float64)
 		/* Clamp the result back to "float64" */
 		ILGenSimple(info, IL_OP_CONV_R8);
 	}
+}
+ILBinary_ApplyOp(ILNode_Add, ILMachineType_NativeFloat)
+{
+	ILGenSimple(info, IL_OP_ADD);
 }
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_Decimal)
 {
@@ -882,8 +885,7 @@ ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Char)
 }
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Int32),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Int64),
-ILBinary_ApplyOp(ILNode_Sub, ILMachineType_NativeInt),
-ILBinary_ApplyOp(ILNode_Sub, ILMachineType_NativeFloat)
+ILBinary_ApplyOp(ILNode_Sub, ILMachineType_NativeInt)
 {
 	if(info->overflowInsns)
 	{
@@ -925,6 +927,10 @@ ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Float64)
 		/* Clamp the result back to "float64" */
 		ILGenSimple(info, IL_OP_CONV_R8);
 	}
+}
+ILBinary_ApplyOp(ILNode_Sub, ILMachineType_NativeFloat)
+{
+	ILGenSimple(info, IL_OP_SUB);
 }
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Decimal)
 {
@@ -1004,8 +1010,7 @@ ILBinary_ApplyOp(ILNode_Mul, ILMachineType_Char)
 }
 ILBinary_ApplyOp(ILNode_Mul, ILMachineType_Int32),
 ILBinary_ApplyOp(ILNode_Mul, ILMachineType_Int64),
-ILBinary_ApplyOp(ILNode_Mul, ILMachineType_NativeInt),
-ILBinary_ApplyOp(ILNode_Mul, ILMachineType_NativeFloat)
+ILBinary_ApplyOp(ILNode_Mul, ILMachineType_NativeInt)
 {
 	if(info->overflowInsns)
 	{
@@ -1046,6 +1051,10 @@ ILBinary_ApplyOp(ILNode_Mul, ILMachineType_Float64)
 		/* Clamp the result back to "float64" */
 		ILGenSimple(info, IL_OP_CONV_R8);
 	}
+}
+ILBinary_ApplyOp(ILNode_Mul, ILMachineType_NativeFloat)
+{
+	ILGenSimple(info, IL_OP_MUL);
 }
 ILBinary_ApplyOp(ILNode_Mul, ILMachineType_Decimal)
 {

@@ -933,4 +933,28 @@ case COP_PREFIX_DWRITE_ELEM:
 }
 break;
 
+case COP_PREFIX_MKREFANY:
+{
+	/* Make a typedref from an address and class information block */
+	stacktop[0].ptrValue = stacktop[-1].ptrValue;
+	stacktop[-1].ptrValue = ReadPointer(pc + 2);
+	MODIFY_PC_AND_STACK(2 + sizeof(void *), 1);
+}
+break;
+
+case COP_PREFIX_REFANYVAL:
+{
+	/* Extract the value part of a typedref */
+	if(stacktop[-2].ptrValue == ReadPointer(pc + 2))
+	{
+		stacktop[-2].ptrValue = stacktop[-1].ptrValue;
+		MODIFY_PC_AND_STACK(2 + sizeof(void *), -1);
+	}
+	else
+	{
+		INVALID_CAST_EXCEPTION();
+	}
+}
+break;
+
 #endif /* IL_CVM_PREFIX */

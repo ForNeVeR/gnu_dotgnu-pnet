@@ -460,10 +460,14 @@ static CVMOpcode const prefixOpcodes[64] = {
 	{"throw",			CVM_OPER_NONE},
 
 	/*
+	 * Prefixed typedref handling opcodes.
+	 */
+	{"mkrefany",		CVM_OPER_CLASS},
+	{"refanyval",		CVM_OPER_CLASS},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_1a",	CVM_OPER_NONE},
-	{"preserved_1b",	CVM_OPER_NONE},
 	{"preserved_1c",	CVM_OPER_NONE},
 	{"preserved_1d",	CVM_OPER_NONE},
 	{"preserved_1e",	CVM_OPER_NONE},
@@ -803,6 +807,15 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 					dest = pc + IL_READ_INT32(pc + 2);
 					fprintf(stream, "0x%08lX", (unsigned long)dest);
 					size = 6;
+				}
+				break;
+
+				case CVM_OPER_CLASS:
+				{
+					classInfo = (ILClass *)CVMReadPointer(pc + 2);
+					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
+									classInfo, 0);
+					size = 2 + sizeof(void *);
 				}
 				break;
 

@@ -876,17 +876,29 @@ static void CVMCoder_Unbox(ILCoder *coder, ILClass *boxClass)
 
 static void CVMCoder_MakeTypedRef(ILCoder *coder, ILClass *classInfo)
 {
-	/* TODO */
+	CVM_BYTE(COP_CKNULL);
+	CVM_BYTE(COP_PREFIX);
+	CVM_BYTE(COP_PREFIX_MKREFANY);
+	CVM_PTR(classInfo);
+	CVM_ADJUST(1);
 }
 
 static void CVMCoder_RefAnyVal(ILCoder *coder, ILClass *classInfo)
 {
-	/* TODO */
+	CVM_BYTE(COP_PREFIX);
+	CVM_BYTE(COP_PREFIX_REFANYVAL);
+	CVM_PTR(classInfo);
+	CVM_ADJUST(-1);
 }
 
 static void CVMCoder_RefAnyType(ILCoder *coder)
 {
-	/* TODO */
+	/* Typed references are stored as two pointers on the
+	   stack.  The type is pushed and then the data pointer.
+	   So, if we pop the data pointer, we will get the type
+	   token that we require */
+	CVM_BYTE(COP_POP);
+	CVM_ADJUST(-1);
 }
 
 static void CVMCoder_PushToken(ILCoder *coder, ILProgramItem *item)

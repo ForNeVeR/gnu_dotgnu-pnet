@@ -382,6 +382,12 @@ extern	"C" {
 #define	COP_PREFIX_THROW			0x19
 
 /*
+ * Prefixed typedref handling opcodes.
+ */
+#define	COP_PREFIX_MKREFANY			0x1A
+#define	COP_PREFIX_REFANYVAL		0x1B
+
+/*
  * Prefixed conversion opcodes.
  */
 #define	COP_PREFIX_I2B_OVF			0x20

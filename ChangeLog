@@ -16,6 +16,9 @@ implement the "ldtoken" instruction.
 
 * engine/cvm_ptr.c: implement the wide versions of "memcpy" and "memzero".
 
+* engine/cvm.h, engine/cvm_dasm.c, engine/cvmc_obj.c, engine/cvm_ptr.c:
+implement the "mkrefany", "refanyval", and "refanytype" instructions.
+
 2001-10-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/doc_texi.c: fixed a bug in the handling

@@ -1,4 +1,9 @@
 
+2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* c/stmt/switch1.3il, c/stmt/switch1.il: update C switch test
+	cases for changes to cscc.
+
 2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/stmt/foreach4.il, csharp/stmt/foreach4.jl,

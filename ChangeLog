@@ -1,4 +1,8 @@
 
+2005-02-22  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/PrintDialog.cs: Add a little meat to the stubs.
+
 2005-02-23  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XmlNode.cs,

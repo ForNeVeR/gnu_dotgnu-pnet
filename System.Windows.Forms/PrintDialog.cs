@@ -29,9 +29,26 @@ namespace System.Windows.Forms
 	[TODO]
 	public sealed class PrintDialog : CommonDialog
 	{
+		private bool allowPrintToFile;
+		private bool allowSelection;
+		private bool allowSomePages;
+		private bool showHelp;
+		private bool printToFile;
+		private bool showNetwork;
+		private PrintDocument printDocument;
+		private PrinterSettings printerSettings;
+
 		[TODO]
 		public PrintDialog()
 		{
+			allowPrintToFile = true;
+			allowSelection = true;
+			allowSomePages = false;
+			printDocument = null;
+			printToFile = false;
+			showHelp = false;
+			showNetwork = true;
+			printerSettings = null;
 		}
 
 		[TODO]
@@ -51,12 +68,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				throw new NotImplementedException("AllowPrintToFile");
+				return allowPrintToFile;
 			}
 
  			set
 			{
-				throw new NotImplementedException("AllowPrintToFile");
+				allowPrintToFile = value;
 			}
 
  		}
@@ -66,12 +83,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				throw new NotImplementedException("AllowSelection");
+				return allowSelection;
 			}
 
  			set
 			{
-				throw new NotImplementedException("AllowSelection");
+				allowSelection = value;
 			}
 
  		}
@@ -81,12 +98,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				throw new NotImplementedException("AllowSomePages");
+				return allowSomePages;
 			}
 
  			set
 			{
-				throw new NotImplementedException("AllowSomePages");
+				allowSomePages = value;
 			}
 
  		}
@@ -96,12 +113,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				throw new NotImplementedException("Document");
+				return printDocument;
 			}
 
  			set
 			{
-				throw new NotImplementedException("Document");
+				printDocument = value;
 			}
 
  		}
@@ -111,12 +128,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				throw new NotImplementedException("PrintToFile");
+				return printToFile;
 			}
 
  			set
 			{
-				throw new NotImplementedException("PrintToFile");
+				printToFile = value;
 			}
 
  		}
@@ -126,12 +143,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				throw new NotImplementedException("PrinterSettings");
+				return printerSettings;
 			}
 
  			set
 			{
-				throw new NotImplementedException("PrinterSettings");
+				printerSettings = value;
 			}
 
  		}
@@ -141,12 +158,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				throw new NotImplementedException("ShowHelp");
+				return showHelp;
 			}
 
  			set
 			{
-				throw new NotImplementedException("ShowHelp");
+				showHelp = value;
 			}
 
  		}
@@ -156,12 +173,12 @@ namespace System.Windows.Forms
 		{
  			get
 			{
-				throw new NotImplementedException("ShowNetwork");
+				return showNetwork;
 			}
 
  			set
 			{
-				throw new NotImplementedException("ShowNetwork");
+				showNetwork = value;
 			}
 
  		}

@@ -104,7 +104,9 @@
 	System/Web/Makefile: implement missing classes from the
 	"System.Timers" and "System.Web" namespaces in the "System" assembly.
 
-	* System/Timers/Timer.cs: signature-compatibility fixes.
+	* System/Timers/Timer.cs, System/Web/AspNetHostingPermission.cs,
+	System/Web/AspNetHostingPermissionAttribute.cs:
+	signature-compatibility fixes.
 
 2003-05-23  Gopal.V  <gopalv82@symonds.net>
 	

@@ -602,11 +602,26 @@ public sealed class Console
 			}
 
 	// Clear the display to the current foreground and background color.
+	// If "Clear" is the first extended console method called, then it
+	// indicates that the terminal should enter the "alternative" mode
+	// used for programs like "vi".  Returning to the normal mode will
+	// restore what used to be displayed previously.
 	public static void Clear()
 			{
 				lock(typeof(Console))
 				{
-					SpecialMode();
+					if(!specialMode)
+					{
+						specialMode = true;
+						if(treatControlCAsInput)
+						{
+							Stdio.SetConsoleMode(Stdio.MODE_RAW_ALT);
+						}
+						else
+						{
+							Stdio.SetConsoleMode(Stdio.MODE_CBREAK_ALT);
+						}
+					}
 					Stdio.Clear();
 				}
 			}
@@ -624,9 +639,26 @@ public sealed class Console
 					SpecialMode();
 					char ch;
 					int key, modifiers;
-					Stdio.ReadKey(out ch, out key, out modifiers);
-					return new ConsoleKeyInfo
-						(ch, (ConsoleKey)key, (ConsoleModifiers)modifiers);
+					for(;;)
+					{
+						Stdio.ReadKey(out ch, out key, out modifiers);
+						if(key == 0x1202)		// Interrupt
+						{
+							HandleCancel(ConsoleSpecialKeys.ControlC);
+							continue;
+						}
+						else if(key == 0x1203)	// CtrlBreak
+						{
+							HandleCancel(ConsoleSpecialKeys.ControlBreak);
+							continue;
+						}
+						if(!intercept && ch != '\0')
+						{
+							Stdio.StdWrite(1, ch);
+						}
+						return new ConsoleKeyInfo
+							(ch, (ConsoleKey)key, (ConsoleModifiers)modifiers);
+					}
 				}
 			}
 
@@ -826,18 +858,20 @@ public sealed class Console
 	// Event that is emitted for cancel keycodes like CTRL+C.
 	public static event ConsoleCancelEventHandler CancelKeyPress;
 
-	// Method that is called from the runtime engine to handle "cancel" events.
-	// Returns "false" to quit the application, or "true" to continue.
-	private static bool HandleCancel(int specialKeys)
+	// Method that is called to handle "cancel" events.
+	private static void HandleCancel(ConsoleSpecialKeys specialKeys)
 			{
 				ConsoleCancelEventArgs args;
-				args = new ConsoleCancelEventArgs
-					((ConsoleSpecialKeys)specialKeys);
+				args = new ConsoleCancelEventArgs(specialKeys);
 				if(CancelKeyPress != null)
 				{
 					CancelKeyPress(null, args);
 				}
-				return args.Cancel;
+				if(!(args.Cancel))
+				{
+					NormalMode();
+					Environment.Exit(1);
+				}
 			}
 
 #else // !CONFIG_EXTENDED_CONSOLE

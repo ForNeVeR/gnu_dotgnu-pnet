@@ -170,6 +170,12 @@ public enum ConsoleKey
 	Pa1					= 0xFD,
 	OemClear			= 0xFE,
 
+	// Special key codes that are used internally by our implementation.
+	//SizeChanged		= 0x1200,		// Window size has changed.
+	//Resumed			= 0x1201,		// Resumed after CTRL-Z suspend.
+	//Interrupt			= 0x1202,		// CTRL-C interrupt detected.
+	//CtrlBreak			= 0x1203,		// CTRL-BREAK interrupt detected.
+
 }; // enum ConsoleKey
 
 #endif // CONFIG_EXTENDED_CONSOLE

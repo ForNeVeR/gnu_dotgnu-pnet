@@ -1,3 +1,10 @@
+
+2003-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/Stdio.cs, runtime/System/Console.cs,
+	runtime/System/ConsoleKey.cs: modifications to the C# library
+	to match internalcall changes for the extended console.
+
 2003-11-02  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpReader.cs, DotGNU.Images/BmpReformatter.cs,

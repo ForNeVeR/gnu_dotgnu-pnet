@@ -70,9 +70,11 @@ internal class Stdio
 	extern public static void SetConsoleMode(int mode);
 
 	// Supported console modes.
-	public const int MODE_NORMAL = 0;
-	public const int MODE_CBREAK = 1;
-	public const int MODE_RAW    = 2;
+	public const int MODE_NORMAL     = 0;
+	public const int MODE_CBREAK     = 1;
+	public const int MODE_RAW        = 2;
+	public const int MODE_CBREAK_ALT = 3;
+	public const int MODE_RAW_ALT    = 4;
 
 	// Get the buffer dimensions for the console.  If the console
 	// does not support scroll-back buffering, or cannot query the

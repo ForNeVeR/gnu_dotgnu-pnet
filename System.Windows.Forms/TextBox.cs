@@ -966,7 +966,8 @@ public class TextBox : TextBoxBase
 
 	protected override void SetTextInternal(string text)
 	{
-		Text = text;
+		SetTextActual(text);
+		Redraw(ControlGraphics);
 	}
 
 	

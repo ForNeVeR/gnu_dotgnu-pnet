@@ -875,7 +875,7 @@ static void CVMCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 	/* Align the value on the proper stack word boundary and then box it */
 	switch(ILType_ToElement(smallerType))
 	{
-		case ILType_Int8:
+		case IL_META_ELEMTYPE_I1:
 		{
 			CVM_BYTE(COP_PREFIX);
 			CVM_BYTE(COP_PREFIX_I2B_ALIGNED);
@@ -883,7 +883,7 @@ static void CVMCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 		}
 		break;
 
-		case ILType_Int16:
+		case IL_META_ELEMTYPE_I2:
 		{
 			CVM_BYTE(COP_PREFIX);
 			CVM_BYTE(COP_PREFIX_I2S_ALIGNED);
@@ -891,7 +891,7 @@ static void CVMCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 		}
 		break;
 
-		case ILType_Float32:
+		case IL_META_ELEMTYPE_R4:
 		{
 			CVM_BYTE(COP_PREFIX);
 			CVM_BYTE(COP_PREFIX_F2F_ALIGNED);
@@ -900,7 +900,7 @@ static void CVMCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 		}
 		break;
 
-		case ILType_Float64:
+		case IL_META_ELEMTYPE_R8:
 		{
 			CVM_BYTE(COP_PREFIX);
 			CVM_BYTE(COP_PREFIX_F2D_ALIGNED);

@@ -7,6 +7,9 @@ parameters better.
 * engine/cvm_call.c, engine/cvm_dasm.c: flush stdout after dumping
 CVM instruction data.
 
+* engine/cvmc_obj.c: bug in "CVMCoder_BoxSmaller" - the wrong constants
+were being used in the switch cases.
+
 2001-11-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm_dasm.c: dump the correct signature for constructors when

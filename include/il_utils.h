@@ -325,9 +325,16 @@ void ILUnicodeStringToLower(unsigned short *dest, const unsigned short *src,
 /*
  * Compare two unicode strings, while ignoring case.
  */
-int ILUnicodeStringCompare(const unsigned short *str1,
-						   const unsigned short *str2,
-						   unsigned long len);
+int ILUnicodeStringCompareIgnoreCase(const unsigned short *str1,
+									 const unsigned short *str2,
+									 unsigned long len);
+
+/*
+ * Compare two unicode strings, while not ignoring case.
+ */
+int ILUnicodeStringCompareNoIgnoreCase(const unsigned short *str1,
+									   const unsigned short *str2,
+									   unsigned long len);
 
 /*
  * Option descriptors for command-line parsing support.

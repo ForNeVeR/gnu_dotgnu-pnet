@@ -1,4 +1,9 @@
 
+2004-11-22  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_utils.h, engine/lib_string.c, support/unicode.c: Fix case
+	sensitive string comparision (upper case char > lower case char).
+
 2004-11-22  Gopal V  <gopalv82@yahoo.com>
 
 	* support/console.c: Use a portable invocation of tparm() with
@@ -3893,3 +3898,4 @@
 
 	* engine/lib_reflect.c: closures are not available if libffi
 	is disabled.
+

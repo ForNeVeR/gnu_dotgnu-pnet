@@ -391,6 +391,8 @@ ILInt32 _IL_String_Compare(ILExecThread *thread,
 						   System_String *strA,
 						   System_String *strB)
 {
+	int cmp;
+
 	/* Handle the easy cases first */
 	if(!strA)
 	{
@@ -413,8 +415,35 @@ ILInt32 _IL_String_Compare(ILExecThread *thread,
 	}
 
 	/* Compare the two strings */
-	return ILStrCmpUnicode(StringToBuffer(strA), strA->length,
-						   StringToBuffer(strB), strB->length);
+	if(strA->length >= strB->length)
+	{
+		cmp = ILUnicodeStringCompareNoIgnoreCase(StringToBuffer(strA),
+						StringToBuffer(strB),
+						strB->length);
+		if(cmp != 0)
+		{
+			return cmp;
+		}
+		if(strA->length > strB->length)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		cmp = ILUnicodeStringCompareNoIgnoreCase(StringToBuffer(strA),
+						StringToBuffer(strB),
+						strB->length);
+		if(cmp != 0)
+		{
+			return cmp;
+		}
+		return -1;
+	}
 }
 
 /*
@@ -449,44 +478,56 @@ ILInt32 _IL_String_CompareInternal(ILExecThread *thread,
 	}
 
 	/* Compare the two strings */
-	if(ignoreCase)
+	if(lengthA >= lengthB)
 	{
-		if(lengthA >= lengthB)
+		if(ignoreCase)
 		{
-			cmp = ILUnicodeStringCompare
+			cmp = ILUnicodeStringCompareIgnoreCase
 					(StringToBuffer(strA) + indexA,
 					 StringToBuffer(strB) + indexB,
 					 (unsigned long)(long)lengthB);
-			if(cmp != 0)
-			{
-				return cmp;
-			}
-			if(lengthA > lengthB)
-			{
-				return 1;
-			}
-			else
-			{
-				return 0;
-			}
 		}
 		else
 		{
-			cmp = ILUnicodeStringCompare
+			cmp = ILUnicodeStringCompareNoIgnoreCase
 					(StringToBuffer(strA) + indexA,
 					 StringToBuffer(strB) + indexB,
-					 (unsigned long)(long)lengthA);
-			if(cmp != 0)
-			{
-				return cmp;
-			}
-			return -1;
+					 (unsigned long)(long)lengthB);
+		}
+		if(cmp != 0)
+		{
+			return cmp;
+		}
+		if(lengthA > lengthB)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
 		}
 	}
 	else
 	{
-		return ILStrCmpUnicode(StringToBuffer(strA) + indexA, lengthA,
-							   StringToBuffer(strB) + indexB, lengthB);
+		if(ignoreCase)
+		{
+			cmp = ILUnicodeStringCompareIgnoreCase
+					(StringToBuffer(strA) + indexA,
+					 StringToBuffer(strB) + indexB,
+					 (unsigned long)(long)lengthA);
+		}
+		else
+		{
+			cmp = ILUnicodeStringCompareNoIgnoreCase
+					(StringToBuffer(strA) + indexA,
+					 StringToBuffer(strB) + indexB,
+					 (unsigned long)(long)lengthA);
+		}
+		if(cmp != 0)
+		{
+			return cmp;
+		}
+		return -1;
 	}
 }
 

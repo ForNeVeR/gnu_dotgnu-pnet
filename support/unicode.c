@@ -279,9 +279,9 @@ void ILUnicodeStringToLower(unsigned short *dest, const unsigned short *src,
 	}
 }
 
-int ILUnicodeStringCompare(const unsigned short *str1,
-						   const unsigned short *str2,
-						   unsigned long len)
+int ILUnicodeStringCompareIgnoreCase(const unsigned short *str1,
+									 const unsigned short *str2,
+									 unsigned long len)
 {
 	unsigned ch1;
 	unsigned ch2;
@@ -343,6 +343,129 @@ int ILUnicodeStringCompare(const unsigned short *str1,
 	}
 	return 0;
 }
+
+int ILUnicodeStringCompareNoIgnoreCase(const unsigned short *str1,
+									   const unsigned short *str2,
+									   unsigned long len)
+{
+	unsigned ch1;
+	unsigned ch2;
+	int uc1;
+	int uc2;
+	unsigned tc;
+	while(len > 0)
+	{
+		ch1 = *str1++;
+		uc1 = 0;
+		ch2 = *str2++;
+		uc2 = 0;
+		if(ch1 != ch2)
+		{
+#ifdef SMALL_UNICODE_TABLE
+			if(ch1 < 0x0100)
+			{
+				if(ch1 != unicodeToLower[ch1])
+				{
+					ch1 = unicodeToLower[ch1];
+					uc1 = 1;
+				}
+			}
+#else
+			if(ch1 <= UNICASE_RANGE1_UPPER)
+			{
+				unsigned tc = unicodeToLower[ch1];
+				if(tc != ch1)
+				{
+					ch1 = tc;
+					uc1 = 1;
+				}
+			}
+			else if(ch1 >= UNICASE_RANGE2_LOWER && ch1 <= UNICASE_RANGE2_UPPER)
+			{
+				unsigned tc = unicodeToLower
+					[ch1 - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+				if(tc != ch1)
+				{
+					ch1 = tc;
+					uc1 = 1;
+				}
+			}
+			else if(ch1 >= UNICASE_RANGE3_LOWER && ch1 <= UNICASE_RANGE3_LOWER)
+			{
+				unsigned tc = unicodeToLower
+					[ch1 - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+				if(tc != ch1)
+				{
+					ch1 = tc;
+					uc1 = 1;
+				}
+			}
+#endif
+#ifdef SMALL_UNICODE_TABLE
+			if(ch2 < 0x0100)
+			{
+				if(ch2 != unicodeToLower[ch2])
+				{
+					ch2 = unicodeToLower[ch2];
+					uc2 = 1;
+				}
+			}
+#else
+			if(ch2 <= UNICASE_RANGE1_UPPER)
+			{
+				unsigned tc = unicodeToLower[ch2];
+				if(tc != ch2)
+				{
+					ch2 = tc;
+					uc2 = 1;
+				}
+			}
+			else if(ch2 >= UNICASE_RANGE2_LOWER && ch2 <= UNICASE_RANGE2_UPPER)
+			{
+				unsigned tc = unicodeToLower
+					[ch2 - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+				if(tc != ch2)
+				{
+					ch2 = tc;
+					uc2 = 1;
+				}
+			}
+			else if(ch2 >= UNICASE_RANGE3_LOWER && ch2 <= UNICASE_RANGE3_LOWER)
+			{
+				unsigned tc = unicodeToLower
+					[ch2 - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+				if(tc != ch2)
+				{
+					ch2 = tc;
+					uc2 = 1;
+				}
+			}
+#endif
+			if(ch1 < ch2)
+			{
+				return -1;
+			}
+			else if(ch1 > ch2)
+			{
+				return 1;
+			}
+			else
+			{
+				if(uc1 < uc2)
+				{
+					return -1;
+				}
+				else if(uc1 > uc2)
+				{
+					return 1;
+				}
+			}
+		}
+		--len;
+	}
+	return 0;
+}
+
 
 #ifdef	__cplusplus
 };

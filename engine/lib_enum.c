@@ -428,6 +428,7 @@ ILObject *_IL_Enum_GetEnumValueFromName(ILExecThread *thread,
 			{
 				break;
 			}
+			name++;
 		}
 	}
 	else
@@ -439,6 +440,7 @@ ILObject *_IL_Enum_GetEnumValueFromName(ILExecThread *thread,
 			if(*name >= '0' && *name <= '9')
 			{
 				fieldValue += (ILInt64)(*name - '0');
+				name++;
 			}
 			else
 			{

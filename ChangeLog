@@ -1,4 +1,9 @@
 
+2003-01-02  Jeff Post  <j_post@pacbell.net>
+
+	* engine/lib_enum.c: GetEnumValueFromName - increment name
+	pointer to avoid infinite loop.
+
 2003-01-01  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* engine/lib_string.c: fix to String.RemoveSpace

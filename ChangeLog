@@ -14,6 +14,9 @@
 
 	* */*.build, */*.am, configure.in: fix out of tree builds.
 
+	* missing: update the "missing" script so that it is no longer
+	"too old or missing".
+
 2003-11-26  Adam Ballai <adam@thefrontnetworks.net>
 
 	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs:

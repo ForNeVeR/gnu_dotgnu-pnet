@@ -1,4 +1,8 @@
 
+2005-03-06  Klaus Treichel  <ktreichel@web.de>
+
+	* ilranlib/Makefile.am: fix problem with make install on cygwin.
+
 2005-03-05  Hermann Weiss  <Hermann.Weiss@de.trumpf-laser.com>
 
 	* engine/lib_task.c:  Added functions _IL_Process_GetErrnoMessage

@@ -18,7 +18,7 @@ install-exec-local:
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/cli-unknown-ranlib$(EXEEXT)
 	$(LN_S) ilranlib$(EXEEXT) $(DESTDIR)$(bindir)/cli-unknown-ranlib$(EXEEXT)
-	rm -f $(DESTDIR)/$(bindir)/cli-unknown-ar$(EXEEXT)
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-ar$(EXEEXT)
 	a="$(bindir)/cli-unknown-ar$(EXEEXT)"; b=.$${a%/*}/b; c="$(SYSTEM_AR)"; d=.$${c%/*}//; e=; \
 	  while [ ."$${b%%/*}" = ."$${d%%/*}" ]; do b=$${b#*/}; d=$${d#*/}; done; \
 	  while [ ."$$b" != ."b" ]; do b=$${b#*/}; e=../$$e; done;		\

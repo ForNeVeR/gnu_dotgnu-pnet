@@ -4106,6 +4106,13 @@ public class Control : IWin32Window
 				}
 			}
 
+	// Create a brush that can be used to fill with the background color/image.
+	internal Brush CreateBackgroundBrush()
+			{
+				// TODO: background images
+				return new SolidBrush(BackColor);
+			}
+
 }; // class Control
 
 }; // namespace System.Windows.Forms

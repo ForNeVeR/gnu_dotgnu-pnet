@@ -42,6 +42,9 @@
 	System.Windows.Forms/SizeGripStyle.cs: implement more of the
 	"Form" class.
 
+	* System.Windows.Forms/Control.cs: add the "CreateBackgroundBrush()"
+	helper method.
+
 2003-06-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/Control.cs: Fix minor bug with Bounds 

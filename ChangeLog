@@ -1,4 +1,12 @@
 
+2002-05-21	Gopal.V	<gopalv82@symonds.net>
+
+	* csharp/class/Makefile.am, csharp/class/method11.cs ,
+	csharp/class/method11.il,csharp/class/method11.jl,
+	csharp/class/method12.cs,csharp/class/method12.err,
+	csharp/class/method12.jerr : test code generation for
+	"base" reference methods
+	
 2002-05-11	Gopal.V <gopalv82@symonds.net>
 	* csharp/stmt/Makefile.am, csharp/stmt/locals2.cs,
 	csharp/stmt/locals2.il,csharp/stmt/local2.jl, 

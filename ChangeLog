@@ -11,6 +11,10 @@
 	I18N/tools/cvt.sh: update the Mac-related code pages with some
 	better UCM definition files.
 
+	* I18N/West/CP737.cs, I18N/West/CP775.cs, I18N/West/oem-737.ucm,
+	I18N/West/oem-775.ucm, I18N/tools/cvt.sh: add code pages for
+	OEM Greek and OEM Baltic.
+
 2003-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/CJK/CP51932.cs, I18N/CJK/CP932.cs: changes to the

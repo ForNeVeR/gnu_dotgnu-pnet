@@ -1,7 +1,7 @@
 
-SUBDIRS = common csharp c vb java
+SUBDIRS = common csharp c vb java bf
 
-noinst_PROGRAMS = cscc-cs cscc-c-s cscc-vb cscc-java cscc csdoc
+noinst_PROGRAMS = cscc-cs cscc-c-s cscc-vb cscc-java cscc csdoc cscc-bf
 man_MANS        = cscc.1 csdoc.1
 EXTRA_DIST      = $(man_MANS)
 
@@ -36,6 +36,11 @@ csdoc_LDADD   = csharp/libILCSharp.a common/libILCCommon.a \
 				../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
 				../image/libILImage.a ../support/libILSupport.a
 
+cscc_bf_SOURCES = bf_main.c
+cscc_bf_LDADD   = bf/libILBf.a common/libILCCommon.a \
+				  ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
+				  ../image/libILImage.a ../support/libILSupport.a
+
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 
 install-exec-local:
@@ -46,10 +51,13 @@ install-exec-local:
 	$(INSTALL_PROGRAM) cscc-c-s $(DESTDIR)$(libdir)/cscc/plugins/cscc-c-s
 	$(INSTALL_PROGRAM) cscc-vb $(DESTDIR)$(libdir)/cscc/plugins/cscc-vb
 	$(INSTALL_PROGRAM) cscc-java $(DESTDIR)$(libdir)/cscc/plugins/cscc-java
+	$(INSTALL_PROGRAM) cscc-bf $(DESTDIR)$(libdir)/cscc/plugins/cscc-bf
 	$(INSTALL_PROGRAM) cscc $(DESTDIR)$(bindir)/cscc
 	$(INSTALL_PROGRAM) csdoc $(DESTDIR)$(bindir)/csdoc
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-b
 	$(LN_S) cscc-cs $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
+	$(LN_S) cscc-bf $(DESTDIR)$(libdir)/cscc/plugins/cscc-b
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
@@ -58,5 +66,7 @@ uninstall-local:
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-c-s
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-vb
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-java
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-bf
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-b
 	rm -f $(DESTDIR)$(bindir)/cscc
 	rm -f $(DESTDIR)$(bindir)/csdoc

@@ -414,6 +414,7 @@ cscc/csharp/Makefile
 cscc/c/Makefile
 cscc/vb/Makefile
 cscc/java/Makefile
+cscc/bf/Makefile
 resgen/Makefile
 ildb/Makefile
 csdoc/Makefile

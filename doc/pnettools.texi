@@ -5,12 +5,57 @@
 @setchapternewpage off
 @c %** end of header
 
+@dircategory DotGNU
+@direntry
+* Portable .NET: (pnettools).   Development toolchain for applications
+                                targeted at the CLI, such as those
+                                written in C#.
+@end direntry
+
+@dircategory Individual utilities
+@direntry
+* cscc: (pnettools)cscc invocation.
+                                Compiling to DotGNU Portable .NET.
+* csdoc: (pnettools)csdoc invocation.
+                                Extracting C# program documentation.
+* csdoc2hier: (pnettools)csdoc2hier invocation.
+                                Viewing C# class hierarchies.
+* csdoc2html: (pnettools)csdoc2html invocation.
+                                Converting `csdoc' output to HTML.
+* csdoc2texi: (pnettools)csdoc2texi invocation.
+                                Converting `csdoc' output to Texinfo.
+* ilalink: (pnettools)ilalink invocation.  Link Portable .NET objects.
+* ilasm: (pnettools)ilasm invocation.    Assemble IL to Portable .NET
+                                assemblies.
+* ildasm: (pnettools)ildasm invocation.
+                                Debug problems with Portable .NET
+                                executables by disassembly.
+* ildd: (pnettools)ildd invocation.
+                                Portable .NET library dependencies.
+* ilfind: (pnettools)ilfind invocation.     Search for patterns in
+                                Portable .NET objects.
+* ilnative: (pnettools)ilnative invocation.
+                                List native methods used in a Portable
+                                .NET assemblies/objects.
+* ilsize: (pnettools)ilsize invocation.
+                                List size information for CLI objects.
+* resgen: (pnettools)resgen invocation.     Make data resources for
+                                            Portable .NET assemblies.
+@end direntry
+
+@c Produces entries for csant tags in an appropriate index.
+@macro csanttag {tag}
+@cindex @code{\tag\} (@command{csant} tag)
+@cindex @command{csant} tag @code{\tag\}
+@end macro
+
 @ifinfo
 The Portable.NET development tools assist with building
 and manipulating images in the portable executable format.
 development.
 
-Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd
+Copyright @copyright{} 2001, 2002 Southern Storm Software, Pty Ltd
+Copyright @copyright{} 2003  Free Software Foundation, Inc.
 @end ifinfo
 
 @titlepage
@@ -18,7 +63,8 @@ Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd
 @center @titlefont{Portable.NET Development Tools}
 
 @vskip 0pt plus 1fill
-@center{Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd}
+@center{Copyright @copyright{} 2001, 2002 Southern Storm Software, Pty Ltd}
+@center{Copyright @copyright{} 2003  Free Software Foundation, Inc.}
 @end titlepage
 
 @c -----------------------------------------------------------------------
@@ -50,14 +96,14 @@ Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd
 This manual describes a set of tools that can be used to build
 and manipulate applications for the Portable.NET platform.
 
-@table @code
+@table @command
 @item cscc
 The C# compiler.  @xref{C# Compiler}, for more information.
 @item csdoc
 The C# documentation conversion utility.  @xref{Documentation}, for
 more information.
 @item csdoc2hier
-Used to convert C# XML documentation into a tree hierarhcy diagram.
+Used to convert C# XML documentation into a tree hierarchy diagram.
 @xref{csdoc2hier invocation}, for more information.
 @item csdoc2html
 Used to convert C# XML documentation into HTML.  @xref{csdoc2html invocation},

@@ -198,6 +198,7 @@ static void ThreadInit(void)
 		thread->wakeupType      = IL_WAKEUP_NONE;
 		sem_init(&(thread->wakeup), 0, 0);
 		++numThreads;
+		pthread_setspecific(threadObjectKey, thread);
 	}
 
 	/* Block the IL_SIG_RESUME signal in the current thread.

@@ -781,6 +781,23 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	return 1;
 }
 
+/*
+ * Determine if a class is the special "<ModuleExtern>" type,
+ * which we use to indicate dangling references within C modules.
+ */
+static int IsModuleExtern(ILClass *classInfo)
+{
+	if(!strcmp(ILClass_Name(classInfo), "<ModuleExtern>") &&
+	   ILClass_Namespace(classInfo) == 0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 {
 	ILClass *owner;
@@ -813,6 +830,15 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 			_ILLinkerOutOfMemory(linker);
 			return 0;
 		}
+	}
+	else if(IsModuleExtern(owner))
+	{
+		/* Look for a global definition of this member */
+		/* TODO */
+
+		/* Create a reference to the current image's "<Module>" type */
+		owner = ILClassLookup(ILClassGlobalScope(linker->image),
+							  "<Module>", 0);
 	}
 	else
 	{

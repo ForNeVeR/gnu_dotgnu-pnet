@@ -73,6 +73,13 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	linker->tlsLength = 0;
 	linker->memoryModel = 0;
 	linker->modelFlags = 0;
+	if(!_ILLinkerCreateSymbolHash(linker))
+	{
+		ILWriterDestroy(linker->writer);
+		ILContextDestroy(linker->context);
+		ILFree(linker);
+		return 0;
+	}
 
 	/* Ready to go */
 	return linker;
@@ -232,6 +239,10 @@ int ILLinkerDestroy(ILLinker *linker)
 	{
 		ILWriterOutputMetadata(linker->writer, linker->image);
 	}
+
+	/* Destroy the global symbol pool for the linked image */
+	ILHashDestroy(linker->symbolHash);
+	ILMemPoolDestroy(&(linker->pool));
 
 	/* Destroy the libraries */
 	_ILLinkerDestroyLibraries(linker);

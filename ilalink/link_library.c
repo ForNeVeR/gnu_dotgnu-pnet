@@ -145,15 +145,16 @@ static void LibraryDestroy(ILLibrary *library)
 	{
 		next = library->altNames;
 		ILFree(library->name);
-		ILHashDestroy(library->hashTable);
-		ILMemPoolDestroy(&(library->classPool));
+		ILHashDestroy(library->classHash);
+		ILHashDestroy(library->symbolHash);
+		ILMemPoolDestroy(&(library->pool));
 		ILFree(library);
 		library = next;
 	}
 }
 
 /*
- * Key that is used to index the library hash table.
+ * Key that is used to index the class hash table.
  */
 typedef struct
 {
@@ -161,28 +162,29 @@ typedef struct
 	const char *namespace;
 	ILLibraryClass *parent;
 
-} LibHashKey;
+} ClassHashKey;
 
 /*
- * Compute the hash value for an element.
+ * Compute the class hash value for an element.
  */
-static unsigned long LibHash_Compute(const ILLibraryClass *libClass)
+static unsigned long ClassHash_Compute(const ILLibraryClass *libClass)
 {
 	return ILHashString(0, libClass->name, strlen(libClass->name));
 }
 
 /*
- * Compute the hash value for a key.
+ * Compute the class hash value for a key.
  */
-static unsigned long LibHash_KeyCompute(const LibHashKey *key)
+static unsigned long ClassHash_KeyCompute(const ClassHashKey *key)
 {
 	return ILHashString(0, key->name, strlen(key->name));
 }
 
 /*
- * Match a key against an element.
+ * Match a class key against an element.
  */
-static int LibHash_Match(const ILLibraryClass *libClass, const LibHashKey *key)
+static int ClassHash_Match(const ILLibraryClass *libClass,
+						   const ClassHashKey *key)
 {
 	if(strcmp(libClass->name, key->name) != 0)
 	{
@@ -204,6 +206,31 @@ static int LibHash_Match(const ILLibraryClass *libClass, const LibHashKey *key)
 		return (key->namespace == 0);
 	}
 	return (key->parent == libClass->parent);
+}
+
+/*
+ * Compute the symbol hash value for an element.
+ */
+static unsigned long SymbolHash_Compute(const ILLibrarySymbol *libSymbol)
+{
+	return ILHashString(0, libSymbol->name, strlen(libSymbol->name));
+}
+
+/*
+ * Compute the symbol hash value for a key.
+ */
+static unsigned long SymbolHash_KeyCompute(const char *key)
+{
+	return ILHashString(0, key, strlen(key));
+}
+
+/*
+ * Match a symbol key against an element.
+ */
+static int SymbolHash_Match(const ILLibrarySymbol *libSymbol,
+						    const char *key)
+{
+	return (strcmp(libSymbol->name, key) == 0);
 }
 
 /*
@@ -246,24 +273,38 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILImage *image,
 		nextLibrary->altNames = 0;
 		if(library)
 		{
-			nextLibrary->hashTable = 0;
+			nextLibrary->classHash = 0;
+			nextLibrary->symbolHash = 0;
 		}
 		else
 		{
-			nextLibrary->hashTable =
-				ILHashCreate(0, (ILHashComputeFunc)LibHash_Compute,
-								(ILHashKeyComputeFunc)LibHash_KeyCompute,
-								(ILHashMatchFunc)LibHash_Match,
+			nextLibrary->classHash =
+				ILHashCreate(0, (ILHashComputeFunc)ClassHash_Compute,
+								(ILHashKeyComputeFunc)ClassHash_KeyCompute,
+								(ILHashMatchFunc)ClassHash_Match,
 								(ILHashFreeFunc)0);
-			if(!(nextLibrary->hashTable))
+			if(!(nextLibrary->classHash))
 			{
 				ILFree(nextLibrary->name);
 				ILFree(nextLibrary);
 				LibraryDestroy(library);
 				return 0;
 			}
+			nextLibrary->symbolHash =
+				ILHashCreate(0, (ILHashComputeFunc)SymbolHash_Compute,
+								(ILHashKeyComputeFunc)SymbolHash_KeyCompute,
+								(ILHashMatchFunc)SymbolHash_Match,
+								(ILHashFreeFunc)0);
+			if(!(nextLibrary->symbolHash))
+			{
+				ILHashDestroy(nextLibrary->classHash);
+				ILFree(nextLibrary->name);
+				ILFree(nextLibrary);
+				LibraryDestroy(library);
+				return 0;
+			}
 		}
-		ILMemPoolInitType(&(nextLibrary->classPool), ILLibraryClass, 0);
+		ILMemPoolInitType(&(nextLibrary->pool), ILLibraryClassOrSymbol, 0);
 		nextLibrary->next = 0;
 		if(lastLibrary)
 		{
@@ -308,7 +349,7 @@ static int WalkTypeAndNested(ILLinker *linker, ILImage *image,
 	{
 		namespace = (ILInternString(namespace, -1)).string;
 	}
-	if((libClass = ILMemPoolAlloc(&(library->classPool), ILLibraryClass)) == 0)
+	if((libClass = ILMemPoolAlloc(&(library->pool), ILLibraryClass)) == 0)
 	{
 		_ILLinkerOutOfMemory(linker);
 		return 0;
@@ -316,7 +357,7 @@ static int WalkTypeAndNested(ILLinker *linker, ILImage *image,
 	libClass->name = name;
 	libClass->namespace = namespace;
 	libClass->parent = parent;
-	if(!ILHashAdd(library->hashTable, libClass))
+	if(!ILHashAdd(library->classHash, libClass))
 	{
 		_ILLinkerOutOfMemory(linker);
 		return 0;
@@ -348,6 +389,92 @@ static int WalkTypeAndNested(ILLinker *linker, ILImage *image,
 }
 
 /*
+ * Add a global symbol definition to a library.
+ *
+ * TODO: we need to find some way to record a symbol's signature
+ * without importing foreign "TypeRef"'s until we are absolutely
+ * sure that the binary being linked uses the symbol.
+ */
+static int AddGlobalSymbol(ILLinker *linker, ILLibrary *library,
+						   char *name, char *aliasFor, int flags,
+						   ILType *signature)
+{
+	ILLibrarySymbol *libSymbol;
+	if((libSymbol = ILMemPoolAlloc(&(library->pool), ILLibrarySymbol)) == 0)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	libSymbol->name = name;
+	libSymbol->aliasFor = aliasFor;
+	libSymbol->flags = flags;
+	libSymbol->data = _ILLinkerConvertType(linker, signature);
+	if(libSymbol->data == ILType_Invalid)
+	{
+		return 0;
+	}
+	if(!ILHashAdd(library->symbolHash, libSymbol))
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	return 1;
+}
+
+/*
+ * Walk the global symbol definitions in a "<Module>" type.
+ */
+static int WalkGlobals(ILLinker *linker, ILImage *image,
+					   ILLibrary *library, ILClass *classInfo)
+{
+	ILMember *member;
+	ILField *field;
+	ILMethod *method;
+	char *name;
+
+	/* Find all public static fields and methods in the type */
+	member = 0;
+	while((member = ILClassNextMember(classInfo, member)) != 0)
+	{
+		if(ILMember_IsField(member))
+		{
+			field = (ILField *)member;
+			if(ILField_IsPublic(field) && ILField_IsStatic(field))
+			{
+				name = (ILInternString
+					((char *)(ILField_Name(field)), -1)).string;
+				/* TODO: strong aliases */
+				if(!AddGlobalSymbol(linker, library, name,
+									0, IL_LINKSYM_VARIABLE,
+									ILMember_Signature(member)))
+				{
+					return 0;
+				}
+			}
+		}
+		else if(ILMember_IsMethod(member))
+		{
+			method = (ILMethod *)member;
+			if(ILMethod_IsPublic(method) && ILMethod_IsStatic(method))
+			{
+				name = (ILInternString
+					((char *)(ILMethod_Name(method)), -1)).string;
+				/* TODO: weak and strong aliases */
+				if(!AddGlobalSymbol(linker, library, name,
+									0, IL_LINKSYM_FUNCTION,
+									ILMember_Signature(member)))
+				{
+					return 0;
+				}
+			}
+		}
+	}
+
+	/* Done */
+	return 1;
+}
+
+/*
  * Walk the type definitions within an image to build
  * a list of names that can be linked against.
  */
@@ -364,6 +491,16 @@ static int WalkTypeDefs(ILLinker *linker, ILImage *image, ILLibrary *library)
 			if(ILClass_IsPublic(classInfo))
 			{
 				if(!WalkTypeAndNested(linker, image, library, classInfo, 0))
+				{
+					return 0;
+				}
+			}
+
+			/* If this is the "<Module>" type, then walk the global symbols */
+			if(!strcmp(ILClass_Name(classInfo), "<Module>") &&
+			   ILClass_Namespace(classInfo) == 0)
+			{
+				if(!WalkGlobals(linker, image, library, classInfo))
 				{
 					return 0;
 				}
@@ -461,11 +598,11 @@ static ILLibraryClass *FindClass(ILLibrary *library,
 								 const char *name, const char *namespace,
 								 ILLibraryClass *parent)
 {
-	LibHashKey key;
+	ClassHashKey key;
 	key.name = name;
 	key.namespace = namespace;
 	key.parent = parent;
-	return ILHashFindType(library->hashTable, &key, ILLibraryClass);
+	return ILHashFindType(library->classHash, &key, ILLibraryClass);
 }
 
 int _ILLinkerFindClass(ILLibraryFind *find, const char *name,
@@ -630,6 +767,188 @@ ILClass *_ILLinkerMakeTypeRef(ILLibraryFind *find, ILImage *image)
 	{
 		return 0;
 	}
+}
+
+/*
+ * Create a "MemberRef" token that refers to a global symbol in a library.
+ */
+static ILMember *CreateSymbolRef(ILLinker *linker, ILLibrary *library,
+								 ILLibrarySymbol *libSymbol)
+{
+	ILLibraryFind find;
+	ILLibraryClass libClass;
+	ILClass *classInfo;
+	ILField *field;
+	ILMethod *method;
+
+	/* See if we have a cached "MemberRef" from last time */
+	if((libSymbol->flags & IL_LINKSYM_HAVE_REF) != 0)
+	{
+		return (ILMember *)(libSymbol->data);
+	}
+
+	/* Make a "TypeRef" for the library's "<Module>" type */
+	find.linker = linker;
+	find.library = library;
+	libClass.name = "<Module>";
+	libClass.namespace = 0;
+	libClass.parent = 0;
+	classInfo = MakeTypeRef(&find, &libClass, linker->image);
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Create a "MemberRef" token and cache it */
+	if((libSymbol->flags & IL_LINKSYM_VARIABLE) != 0)
+	{
+		field = ILFieldCreate(classInfo, (ILToken)IL_MAX_UINT32,
+							  libSymbol->name, 0);
+		if(!field)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		ILMemberSetSignature((ILMember *)field, (ILType *)(libSymbol->data));
+		libSymbol->data = field;
+		libSymbol->flags |= IL_LINKSYM_HAVE_REF;
+		return (ILMember *)field;
+	}
+	else
+	{
+		method = ILMethodCreate(classInfo, (ILToken)IL_MAX_UINT32,
+							    libSymbol->name, 0);
+		if(!method)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		ILMemberSetSignature((ILMember *)method, (ILType *)(libSymbol->data));
+		ILMethodSetCallConv
+			(method, ILType_CallConv((ILType *)(libSymbol->data)));
+		libSymbol->data = method;
+		libSymbol->flags |= IL_LINKSYM_HAVE_REF;
+		return (ILMember *)method;
+	}
+}
+
+int _ILLinkerFindSymbol(ILLinker *linker, const char *name,
+						char **aliasFor, ILLibrary **library,
+						ILMember **memberRef)
+{
+	ILLibrary *lib;
+	ILLibrarySymbol *libSymbol;
+
+	/* Search the image that is being linked for the symbol */
+	libSymbol = ILHashFindType(linker->symbolHash, name, ILLibrarySymbol);
+	if(libSymbol)
+	{
+		/* Resolve strong symbol references within the image */
+		while(libSymbol && (libSymbol->flags & IL_LINKSYM_STRONG) != 0)
+		{
+			libSymbol = ILHashFindType(linker->symbolHash,
+									   libSymbol->aliasFor,
+									   ILLibrarySymbol);
+		}
+
+		/* Return the symbol information to the caller */
+		if(libSymbol)
+		{
+			*aliasFor = libSymbol->aliasFor;
+			*library = 0;
+			*memberRef = (ILMember *)(libSymbol->data);
+			return libSymbol->flags;
+		}
+	}
+
+	/* Search the libraries for the symbol */
+	lib = linker->libraries;
+	while(lib != 0)
+	{
+		libSymbol = ILHashFindType(lib->symbolHash, name, ILLibrarySymbol);
+		if(libSymbol)
+		{
+			/* Resolve strong symbol references within the same library */
+			while(libSymbol && (libSymbol->flags & IL_LINKSYM_STRONG) != 0)
+			{
+				libSymbol = ILHashFindType(lib->symbolHash,
+										   libSymbol->aliasFor,
+										   ILLibrarySymbol);
+			}
+
+			/* Return the symbol information to the caller */
+			if(libSymbol)
+			{
+				*aliasFor = libSymbol->aliasFor;
+				*library = lib;
+				*memberRef = CreateSymbolRef(linker, lib, libSymbol);
+				if(!(*memberRef))
+				{
+					return 0;
+				}
+				return libSymbol->flags;
+			}
+		}
+		lib = lib->next;
+	}
+
+	/* We could not find the symbol */
+	return 0;
+}
+
+int _ILLinkerCreateSymbolHash(ILLinker *linker)
+{
+	linker->symbolHash =
+		ILHashCreate(0, (ILHashComputeFunc)SymbolHash_Compute,
+						(ILHashKeyComputeFunc)SymbolHash_KeyCompute,
+						(ILHashMatchFunc)SymbolHash_Match,
+						(ILHashFreeFunc)0);
+	if(!(linker->symbolHash))
+	{
+		return 0;
+	}
+	ILMemPoolInitType(&(linker->pool), ILLibraryClassOrSymbol, 0);
+	return 1;
+}
+
+int _ILLinkerAddSymbol(ILLinker *linker, const char *name,
+					   const char *aliasFor, int flags,
+					   ILMember *member)
+{
+	char *origAliasFor;
+	ILLibrary *origLibrary;
+	ILMember *origMember;
+	int origFlags;
+	ILLibrarySymbol *libSymbol;
+
+	/* See if we already have a definition for this symbol */
+	origFlags = _ILLinkerFindSymbol(linker, name, &origAliasFor,
+								    &origLibrary, &origMember);
+	if(origFlags != 0 && origLibrary == 0)
+	{
+		return 0;
+	}
+
+	/* TODO: redirect references to the symbol that previously
+	   went to the library, so that they now point to the image */
+
+	/* Add a new symbol definition to the image */
+	if((libSymbol = ILMemPoolAlloc(&(linker->pool), ILLibrarySymbol)) == 0)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	libSymbol->name = (ILInternString((char *)name, -1)).string;
+	libSymbol->aliasFor =
+		(aliasFor ? (ILInternString((char *)aliasFor, -1)).string : 0);
+	libSymbol->flags = flags | IL_LINKSYM_HAVE_REF;
+	libSymbol->data = member;
+	if(!ILHashAdd(linker->symbolHash, libSymbol))
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	return 1;
 }
 
 #ifdef	__cplusplus

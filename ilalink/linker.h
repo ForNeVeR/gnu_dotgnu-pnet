@@ -47,6 +47,37 @@ struct _tagILLibraryClass
 };
 
 /*
+ * Information about a global symbol in a library assembly.
+ */
+typedef struct _tagILLibrarySymbol ILLibrarySymbol;
+struct _tagILLibrarySymbol
+{
+	char		   *name;			/* Intern'ed name of the symbol */
+	char           *aliasFor;		/* Intern'ed name of the aliased symbol */
+	int				flags;			/* Flags that define the symbol kind */
+	void           *data;			/* Extra data with the symbol */
+};
+
+/*
+ * Global symbol flags.
+ */
+#define	IL_LINKSYM_FUNCTION		(1<<0)
+#define	IL_LINKSYM_VARIABLE		(1<<1)
+#define	IL_LINKSYM_WEAK			(1<<2)
+#define	IL_LINKSYM_STRONG		(1<<3)
+#define	IL_LINKSYM_HAVE_REF		(1<<4)
+
+/*
+ * Combined structure, for allocation within "ILLibrary::pool".
+ */
+typedef union
+{
+	ILLibraryClass	classInfo;
+	ILLibrarySymbol	symbolInfo;
+
+} ILLibraryClassOrSymbol;
+
+/*
  * Information that is stored for a library assembly.
  */
 typedef struct _tagILLibrary ILLibrary;
@@ -55,8 +86,9 @@ struct _tagILLibrary
 	char		   *name;			/* Name of the library's assembly */
 	ILUInt16		version[4];		/* Version of the library's assembly */
 	ILLibrary	   *altNames;		/* Alternative names for the library */
-	ILHashTable    *hashTable;		/* Hash table for class name lookup */
-	ILMemPool		classPool;		/* Memory pool for class allocation */
+	ILHashTable    *classHash;		/* Hash table for class name lookup */
+	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
+	ILMemPool		pool;			/* Memory pool for symbol allocation */
 	ILLibrary	   *next;			/* Next library used by the linker */
 
 };
@@ -82,6 +114,8 @@ struct _tagILLinker
 	ILUInt32		tlsLength;		/* Length of ".tls" section */
 	int				memoryModel;	/* Memory model of a C application */
 	int				modelFlags;		/* Alignment flags for the memory model */
+	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
+	ILMemPool		pool;			/* Memory pool for symbol allocation */
 
 };
 
@@ -135,6 +169,28 @@ void _ILLinkerPrintClass(ILLibraryFind *find, const char *name,
  * Make a TypeRef for a class that was found within "image".
  */
 ILClass *_ILLinkerMakeTypeRef(ILLibraryFind *find, ILImage *image);
+
+/*
+ * Locate a global symbol definition within all libraries.
+ * Returns the symbol flags, or zero if not found.  "*library"
+ * will be NULL if the symbol is in the image being linked.
+ */
+int _ILLinkerFindSymbol(ILLinker *linker, const char *name,
+						char **aliasFor, ILLibrary **library,
+						ILMember **memberRef);
+
+/*
+ * Create the global symbol hash for the image being linked.
+ */
+int _ILLinkerCreateSymbolHash(ILLinker *linker);
+
+/*
+ * Add a global symbol definition for the image being linked.
+ * Returns zero if the symbol is already defined.
+ */
+int _ILLinkerAddSymbol(ILLinker *linker, const char *name,
+					   const char *aliasFor, int flags,
+					   ILMember *member);
 
 /*
  * Convert a class reference in a foreign image into a

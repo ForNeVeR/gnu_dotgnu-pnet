@@ -541,6 +541,13 @@ static int InitCodeGen(void)
 		}
 	}
 
+	/* Set the library path for the context so that assembly
+	   references can be resolved properly */
+	if(num_link_dirs)
+	{
+		ILContextSetLibraryDirs(CCCodeGen.context, link_dirs, num_link_dirs);
+	}
+
 	/* Load all of the other libraries, in reverse order */
 	for(library = num_libraries - 1; library >= 0; --library)
 	{

@@ -6,6 +6,9 @@
 	implement semantic analysis for delegate creation expressions
 	in the C# compiler.
 
+	* cscc/common/cc_main.c (InitCodeGen): add the -L link path to
+	the image context so that assembly references can be resolved.
+
 2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/configure, libffi/configure.in: add host detection

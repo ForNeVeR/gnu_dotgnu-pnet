@@ -8,6 +8,9 @@
 	HotKeyPrefix.Show for all menu items to display the "&" as an
 	underline.
 
+	* System.Windows.Forms/MessageBox.cs: Set HotkeyPrefix.Show for
+	MessageBox buttons .
+
 2004-06-06  Thong Nguyen  <tum@veridicus.com>
 
 	* System.Drawing.Xsharp/DrawingGraphics.cs: Added implementation

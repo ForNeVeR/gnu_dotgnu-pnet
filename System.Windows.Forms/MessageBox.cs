@@ -23,6 +23,7 @@ namespace System.Windows.Forms
 
 using System;
 using System.Drawing;
+using System.Drawing.Text;
 using System.ComponentModel;
 
 public class MessageBox
@@ -308,9 +309,9 @@ public class MessageBox
 
 					case MessageBoxButtons.AbortRetryIgnore:
 					{
-						button1 = new Button();
-						button2 = new Button();
-						button3 = new Button();
+						button1 = SetHotkeyPrefix(new Button());
+						button2 = SetHotkeyPrefix(new Button());
+						button3 = SetHotkeyPrefix(new Button());
 						button1.Text = S._("SWF_MessageBox_Abort", "&Abort");
 						button2.Text = S._("SWF_MessageBox_Retry", "&Retry");
 						button3.Text = S._("SWF_MessageBox_Ignore", "&Ignore");
@@ -320,9 +321,9 @@ public class MessageBox
 
 					case MessageBoxButtons.YesNoCancel:
 					{
-						button1 = new Button();
-						button2 = new Button();
-						button3 = new Button();
+						button1 = SetHotkeyPrefix(new Button());
+						button2 = SetHotkeyPrefix(new Button());
+						button3 = SetHotkeyPrefix(new Button());
 						button1.Text = S._("SWF_MessageBox_Yes", "&Yes");
 						button2.Text = S._("SWF_MessageBox_No", "&No");
 						button3.Text = S._("SWF_MessageBox_Cancel", "Cancel");
@@ -332,8 +333,8 @@ public class MessageBox
 
 					case MessageBoxButtons.YesNo:
 					{
-						button1 = new Button();
-						button2 = new Button();
+						button1 = SetHotkeyPrefix(new Button());
+						button2 = SetHotkeyPrefix(new Button());
 						button1.Text = S._("SWF_MessageBox_Yes", "&Yes");
 						button2.Text = S._("SWF_MessageBox_No", "&No");
 						button3 = null;
@@ -343,8 +344,8 @@ public class MessageBox
 
 					case MessageBoxButtons.RetryCancel:
 					{
-						button1 = new Button();
-						button2 = new Button();
+						button1 = SetHotkeyPrefix(new Button());
+						button2 = SetHotkeyPrefix(new Button());
 						button1.Text = S._("SWF_MessageBox_Retry", "&Retry");
 						button2.Text = S._("SWF_MessageBox_Cancel", "Cancel");
 						button3 = null;
@@ -519,6 +520,13 @@ public class MessageBox
 			{
 				Graphics g = args.Graphics;
 				g.DrawIcon(icon, 0, 0);
+			}
+
+		private static Button SetHotkeyPrefix(Button btn)
+			{
+				StringFormat format = btn.GetStringFormat();
+				format.HotkeyPrefix = HotkeyPrefix.Show;
+				return btn;
 			}
 
 		// Dispose of this dialog.

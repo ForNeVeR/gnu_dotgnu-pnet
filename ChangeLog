@@ -4,6 +4,11 @@
 	* cscc/cs_decls.tc (AddConstantValue): decimal attribute values
 	were missing the trailing field/property count.
 
+	* configure.in, engine/cvm.c, engine/lib_math.c,
+	include/il_config.h.in, support/test_float.c: include the <ieeefp.h>
+	header file on systems that have it; needed on Solaris 8 to define
+	the "finite" function.
+
 2001-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_string.c, engine/lib_type.c, ilasm/ilasm_grammar.y,

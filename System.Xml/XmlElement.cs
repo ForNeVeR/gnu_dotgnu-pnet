@@ -88,6 +88,7 @@ class XmlElement : XmlLinkedNode
 						// Remove the children and create a new text node.
 						RemoveContents();
 						AppendChild(OwnerDocument.CreateTextNode(value));
+						IsEmpty=false;
 					}
 				}
 			}

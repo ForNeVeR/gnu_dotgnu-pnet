@@ -13,6 +13,7 @@ SUBDIRS = Custommarshalers \
 		  Mono.Data.PostgreSqlClient \
 		  Mono.Data.MySql \
 		  ByteFX.Data \
+		  Npgsql \
 		  Mono.Data.DB2Client \
 		  System.Data.OracleClient \
 		  Mono.Directory.LDAP \

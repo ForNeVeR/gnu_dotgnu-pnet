@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<project name="Npgsql" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="Npgsql.dll"
+				 debug="${debug.flag}"
+				 unsafe="true">
+
+			<sources basedir="${mono.sources}/class/Npgsql/">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+			</sources>
+
+			<references>
+				<file name="System.dll"/>
+				<file name="System.Xml.dll"/>
+				<file name="../System.Data/System.Data.dll"/>
+				<file name="../Mono.Data.Tds/Mono.Data.Tds.dll"/>
+				<file name="../System.EnterpriseServices/System.EnterpriseServices.dll"/>
+			</references>
+
+			<arg compiler="cscc" value="-fminimize-parameters"/>
+
+		</compile>
+	</target>
+</project>

@@ -9,6 +9,10 @@
 	tools/SqlSharp/SqlSharp.build: Provide the path to the various
 	dependency libraries inside ml-pnet for builds using System.Data
 
+	* configure.in, class/Makefile.am, class/Npgsql/Makefile.am , 
+	class/Npgsql/Npgsql.build: Add the Npgsql managed provider for
+	PostgreSql.
+
 2003-05-31  Gopal.V  <gopalv82@symonds.net>
 
 	* configure.in, Makefile.am, tools/Makefile.am

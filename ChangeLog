@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update for version "0.1.4" release.
 
+	* configure.in: update the working version to "0.1.5".
+
 2002-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: update URL for ECMA class specification.

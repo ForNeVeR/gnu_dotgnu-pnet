@@ -9,6 +9,8 @@
 	* engine/lib_task.c: create Win32 pipes using the file descriptor
 	functions, to be consistent with the routines in "file.c".
 
+	* engine/ilrun.c, engine/cvmc_setup.c: remove unnecessary TODO markers.
+
 2003-07-20  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_relop.tc: Special handling for float types to correctly

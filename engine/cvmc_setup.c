@@ -1347,11 +1347,7 @@ static int CVMCoder_Finish(ILCoder *_coder)
 static void CVMCoder_SetFlags(ILCoder *_coder,int flags)
 {
 	ILCVMCoder *coder = (ILCVMCoder*)_coder;
-	/*TODO*/
-	/*Need a better of doing this using the bitwise operators.
-	 * But for now the flags are just assigned
-	 */
-	  coder->flags = flags;
+	coder->flags = flags;
 }
 
 /*

@@ -23,6 +23,7 @@
 #include "il_image.h"
 #include "il_utils.h"
 #include "il_thread.h"
+#include "il_coder.h"
 #if defined(HAVE_UNISTD_H) && !defined(_MSC_VER)
 #include <unistd.h>
 #endif
@@ -235,12 +236,7 @@ int main(int argc, char *argv[])
 
 			case 'M':
 			{
-				/*TODO*/
-				/*flags |= IL_CODER_FLAG_METHOD_PROFILE;
-				 *Should have been something like the above
-				 *but for making it work temporarily, doing this
-				 **/
-				flags |= 2;
+				flags |= IL_CODER_FLAG_METHOD_PROFILE;
 				dumpMethodProfile = 1;
 			}
 			break;

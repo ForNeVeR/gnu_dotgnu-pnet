@@ -4,6 +4,9 @@
 	* runtime/System/Text/UnicodeEncoding.cs: wrong buffer index used
 	to detect byte order marks.
 
+	* System.Xml/UCS4Encoding.cs: implement the UCS-4 encoding for
+	use by the System.Xml library.
+
 2003-03-05  Adam Ballai <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextWriter.cs: filestream in 

@@ -138,14 +138,32 @@ using System.Drawing;
 		{
 			using (Graphics g = ownerForm.CreateNonClientGraphics())
 			{
+				int i = 0;
+
 				// Measure the menus if they need to be.
 				if (itemBounds == null)
 				{
 					MeasureItemBounds(g);
 				}
-				for (int i = 0; i < MenuItems.Count; i++)
+				for (i = 0; i < MenuItems.Count; i++)
 				{
 					DrawMenuItem(g, i, false);
+				}
+				// Fill in the rest of the menu, or the whole lot if no items
+				if(i > 0)
+				{
+					i--;
+					g.FillRectangle(SystemBrushes.Menu, new Rectangle(
+								itemBounds[i].X + itemBounds[i].Width, 0,
+								ownerForm.Width - MenuPaddingSize.Width,
+								SystemInformation.MenuHeight));
+				}
+				else
+				{
+					g.FillRectangle(SystemBrushes.Menu, new Rectangle
+							(MenuPaddingOrigin.X, MenuPaddingOrigin.Y,
+							 ownerForm.Width - MenuPaddingSize.Width,
+							 ownerForm.Height - MenuPaddingSize.Height));
 				}
 			}
 		}

@@ -1,3 +1,8 @@
+2004-12-29  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/MainMenu.cs: Fill remaining menu to right owner
+	form.
+
 2004-12-28  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/TabControl.cs: Reverse my previous patch and

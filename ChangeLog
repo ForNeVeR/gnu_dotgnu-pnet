@@ -1,3 +1,9 @@
+
+2001-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csant/csant_fileset.c: minor fix to regular expression code
+	to make it work with cygwin's regcomp implementation.
+
 2001-03-21 Gopal.V <gopalv82@yahoo.com>
 	* csdoc/doc_stub.c : Added the Csdoc to C# stub generation.
 

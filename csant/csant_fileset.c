@@ -138,6 +138,8 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 						REGEX_CHAR('/');
 					#endif
 						REGEX_CHAR('|');
+						REGEX_CHAR('(');
+						REGEX_CHAR(')');
 						REGEX_CHAR(')');
 						arg += 2;
 					}
@@ -227,7 +229,7 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 	/* POSIX-style regular expression library */
 	if(regcomp(state, regex, REG_EXTENDED | REG_NOSUB) != 0)
 	{
-		fprintf(stderr, "Invalid regular expression\n");
+		fprintf(stderr, "Invalid regular expression: %s\n", regex);
 		exit(1);
 	}
 #else
@@ -235,7 +237,7 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 	/* BSD-style regular expression library */
 	if(re_comp(regex) != 0)
 	{
-		fprintf(stderr, "Invalid regular expression\n");
+		fprintf(stderr, "Invalid regular expression: %s\n", regex);
 		exit(1);
 	}
 	*state = 0;

@@ -341,12 +341,12 @@ ILNode_CSemAnalysis(ILNode_CDerefField)
 		goto typeError;
 	}
 
-	/* Search for the field within the type */
-	field = CTypeLookupField(info, type, node->name,
+	/* Search for the field within the dereferenced struct type */
+	field = CTypeLookupField(info, structType, node->name,
 							 &bitFieldStart, &bitFieldSize);
 	if(!field)
 	{
-		if(CTypeIsStruct(type))
+		if(CTypeIsStruct(structType))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  			  _("structure has no member named `%s'"),

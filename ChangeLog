@@ -5,6 +5,10 @@
 	codegen/jv_arith.tc, cscc/csharp/cs_oper.tc: fix string and object
 	comparisons.
 
+	* configure.in, include/il_config.h.in, csant/csant_dir.c:
+	convert Win32 paths using Cygwin functions, to ensure that the
+	correct filenames are passed to "csc".
+
 2002-09-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc (ILNode_EndsInReturnImpl): flow control issue

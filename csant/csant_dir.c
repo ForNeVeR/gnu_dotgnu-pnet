@@ -26,6 +26,9 @@
 #ifdef HAVE_REGEX_H
 #include <regex.h>
 #endif
+#ifdef HAVE_SYS_CYGWIN_H
+#include <sys/cygwin.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -259,8 +262,8 @@ char *CSAntDirCombine(const char *pathname, const char *filename)
 char *CSAntDirCombineWin32(const char *pathname, const char *filename,
 						   const char *extension)
 {
+	/* Combine the path components */
 	char *name;
-	char *temp;
 	if(filename &&
 	   (filename[0] == '/' || filename[0] == '\\' ||
 	    (filename[0] != '\0' && filename[1] == ':')))
@@ -297,14 +300,40 @@ char *CSAntDirCombineWin32(const char *pathname, const char *filename,
 			}
 		}
 	}
-	temp = name;
-	while(*temp != '\0')
+
+#if defined(HAVE_SYS_CYGWIN_H) && \
+    defined(HAVE_CYGWIN_CONV_TO_WIN32_PATH)
+
+	/* Use the Cygwin-supplied function to convert the path */
 	{
-		if(*temp == '/' || *temp == '\\')
+		char buf[4096];
+		char *temp;
+		if(cygwin_conv_to_win32_path(name, buf) == 0)
 		{
-			*temp = '\\';
+			temp = ILDupString(buf);
+			if(!temp)
+			{
+				CSAntOutOfMemory();
+			}
+			ILFree(name);
+			return temp;
 		}
-		++temp;
+	}
+
+#endif
+
+	/* Simple method - just convert slashes into backslashes */
+	{
+		char *temp;
+		temp = name;
+		while(*temp != '\0')
+		{
+			if(*temp == '/' || *temp == '\\')
+			{
+				*temp = '\\';
+			}
+			++temp;
+		}
 	}
 	return name;
 }

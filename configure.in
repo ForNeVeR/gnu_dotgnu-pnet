@@ -195,7 +195,7 @@ AC_CHECK_HEADERS(stdarg.h varargs.h sys/mman.h unistd.h sys/stat.h)
 AC_CHECK_HEADERS(sys/time.h sys/types.h regex.h dlfcn.h ieeefp.h)
 AC_CHECK_HEADERS(readline/readline.h readline/history.h wchar.h)
 AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h)
-AC_CHECK_HEADERS(sys/select.h netdb.h)
+AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -278,6 +278,7 @@ AC_CHECK_FUNCS(acos asin atan atan2 ceil cos cosh exp floor remainder)
 AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh)
 AC_CHECK_FUNCS(wctomb wcrtomb mbtowc mbrtowc nl_langinfo setlocale)
 AC_CHECK_FUNCS(usleep gethostbyname gethostbyaddr)
+AC_CHECK_FUNCS(cygwin_conv_to_win32_path)
 AC_FUNC_ALLOCA
 
 dnl Add the thread libraries to the end of the link line.

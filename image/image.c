@@ -84,6 +84,16 @@ void ILImageDestroy(ILImage *image)
 		image->context->firstImage = image->nextImage;
 	}
 
+	/* Null out "systemImage" or "syntheticImage" if we are that image */
+	if(image == image->context->systemImage)
+	{
+		image->context->systemImage = 0;
+	}
+	if(image == image->context->syntheticImage)
+	{
+		image->context->syntheticImage = 0;
+	}
+
 	/* Destroy the memory stack */
 	ILMemStackDestroy(&(image->memStack));
 

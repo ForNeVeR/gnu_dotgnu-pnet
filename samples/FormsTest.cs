@@ -273,7 +273,19 @@ namespace FormsTest
 		private Label labelImageFileName;
 		private TextBox textBoxImageFileName;
 		private Button buttonImageSave;
-		
+
+		private Timer timerTransform;
+		private PointF[] transformTestPoints;
+		private int transformRotation = 0;
+		private int transformRotationOffSet = 5;
+		private int transformX = 100;
+		private int transformXOffset = -1;
+		private int transformY = 100;
+		private int transformYOffset = 1;
+		private float transformScaleX = 1F;
+		private float transformScaleXOffset = 0.03F;
+		private float transformScaleY = 1F;
+		private float transformScaleYOffset = 0.03F;
 
 		//private PropertyGrid propertyGrid;
 		#endregion
@@ -295,6 +307,9 @@ namespace FormsTest
 			tabControl1.Multiline = true;
 			tabControl1.SizeMode = TabSizeMode.FillToRight;
 			
+			tabPage17 = new TabPage();
+			tabPage17.Text = "DrawString";
+			tabControl1.Controls.Add(tabPage17);
 			tabPage11 = new TabPage();
 			tabPage11.Text = "ComboBox";
 			tabControl1.Controls.Add(tabPage11);
@@ -365,9 +380,6 @@ namespace FormsTest
 			tabPage16 = new TabPage();
 			tabPage16.Text = "Path";
 			tabControl1.Controls.Add(tabPage16);
-			tabPage17 = new TabPage();
-			tabPage17.Text = "DrawString";
-			tabControl1.Controls.Add(tabPage17);
 			tabPage9 = new TabPage();
 			tabPage9.Text = "ContextMenu";
 			tabControl1.Controls.Add(tabPage9);
@@ -1984,7 +1996,42 @@ namespace FormsTest
 					re.Offset(x,y);
 					g.DrawRectangle(p,Rectangle.Truncate(re));
 
+					DrawPrimitive(g, 20, "Pen width - with transform", out x, out y);
+					g.DrawLine(p, x, y, x + 10, y);
+					g.PageScale = 2;
+					g.DrawLine(p, x/2, (y + 5)/2F, (x + 10)/2F, (y + 5)/2F);
+					g.PageScale = 1;
+					float xScale = 3;
+					float yScale = 2;
+					g.ScaleTransform(xScale, yScale);
+					g.DrawLine(p, x/xScale, (y + 10)/yScale, (x + 10)/xScale, (y + 10)/yScale);
+					g.DrawLine(p, (x + 15)/xScale, (y + 10)/yScale, (x + 15)/xScale, (y + 20)/yScale);
+					g.ResetTransform();
+			
+					Graphics g1 = this.CreateGraphics();
+					f = new Font("Arial",7);
+					DrawPrimitive(g, 22, "VisibleClipBounds", out x, out y);
+					String s = "Pixels:"+g1.VisibleClipBounds.ToString();
+					g.DrawString(s, f, b, x, y);
 					
+					g1.PageUnit = GraphicsUnit.Inch;
+					s = "Inches:"+g1.VisibleClipBounds.ToString();
+					g.DrawString(s, f, b, x, y + 10);
+
+					g1.ResetTransform(); 
+					g1.PageUnit = GraphicsUnit.Millimeter;
+					s = "mm:"+g1.VisibleClipBounds.ToString();
+					g.DrawString(s, f, b, x, y + 20);
+					
+					g1.ResetTransform(); 
+					g1.PageUnit = GraphicsUnit.Point;
+					s = "Point:"+g1.VisibleClipBounds.ToString();
+					g.DrawString(s, f, b, x, y + 30);
+
+					g1.ResetTransform(); 
+					g1.PageUnit = GraphicsUnit.Document;
+					s = "Document:"+g1.VisibleClipBounds.ToString();
+					g.DrawString(s, f, b, x, y + 40);
 				}
 			}
 
@@ -2044,9 +2091,9 @@ namespace FormsTest
 			using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
 			{
 				b = NextBounds(g, "DrawArc");
-				g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45, 90);
+				g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45f, 90f);
 				b = NextBounds(g, "DrawArc");
-				g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45, 270);
+				g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45f, 270f);
 				b = NextBounds(g, "DrawBezier");
 				g.DrawBezier(rp, b.Left, b.Top, b.Left, b.Top + .1F * b.Height, b.Right, b.Top + .2F * b. Height, b.Right, b.Bottom );
 				b = NextBounds(g, "DrawClosedCurve");
@@ -2056,7 +2103,7 @@ namespace FormsTest
 				b = NextBounds(g, "DrawCurve");
 				g.DrawCurve(rp, new Point[]{b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)}, 0.5F);
 				b = NextBounds(g, "DrawEllipse");
-				g.DrawEllipse(rp, b);
+				g.DrawEllipse(rp, new Rectangle(b.X, b.Y, b.Width, b.Height/2));
 				b = NextBounds(g, "DrawIcon");
 				//g.DrawIcon()
 				b = NextBounds(g, "DrawIconUnstretched");
@@ -2082,7 +2129,7 @@ namespace FormsTest
 				b = NextBounds(g, "FillClosedCurve");
 				g.FillClosedCurve(rb, new Point[] {b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)});
 				b = NextBounds(g, "FillEllipse");
-				g.FillEllipse(rb, b);
+				g.FillEllipse(rb, new Rectangle(b.X, b.Y, b.Width, b.Height/2));
 				b = NextBounds(g, "FillPie");
 				g.FillPie(rb, b, 135, 270);
 				b = NextBounds(g, "FillPolygon");
@@ -2148,14 +2195,15 @@ namespace FormsTest
 			using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
 			{
 				
-				string s = "Hello 1234 1&2345 1&&23456 123 12 12345";
+				string s = "Hello 1234 1&2345& 1&&23456 123 12 123&45";
+				string s1 = s + s + s + s + s;
 				StringFormat sf = new StringFormat();
 				Font f = new Font("Arial", 6);
 					
 				b = NextBounds(g, "DrawString");
-				g.DrawString(s, f, rb, b.Left, b.Top);
+				g.DrawString("Hello 1234 1&2345 1&&23", f, rb, b.Left, b.Top);
 					
-				b = NextBounds(g, "DrawString");
+				b = NextBounds(g, "DrawString default");
 				g.DrawString(s, f, rb, b);
 					
 				sf = new StringFormat(StringFormatFlags.NoWrap);
@@ -2220,30 +2268,62 @@ namespace FormsTest
 				g.DrawString(s, f, rb, b, sf);
 
 				sf = new StringFormat();
+				sf.FormatFlags |= StringFormatFlags.LineLimit;
 				sf.Trimming = StringTrimming.Word;
-				b = NextBounds(g, ":Trim word");
-				g.DrawString(s, f, rb, b, sf);
+				b = NextBounds(g, ":Trim word, LineLimit");
+				g.DrawString(s1, f, rb, b, sf);
 					
 				sf = new StringFormat();
+				sf.FormatFlags |= StringFormatFlags.LineLimit;
 				sf.Trimming = StringTrimming.EllipsisWord;
 				b = NextBounds(g, ":Trim ellipsisWord");
-				g.DrawString(s, f, rb, b, sf);
+				g.DrawString(s1, f, rb, b, sf);
 					
 				sf = new StringFormat();
+				sf.FormatFlags |= StringFormatFlags.LineLimit;
 				sf.Trimming = StringTrimming.Character;
 				b = NextBounds(g, ":Character");
-				g.DrawString(s, f, rb, b, sf);
+				g.DrawString(s1, f, rb, b, sf);
 					
 				sf = new StringFormat();
+				sf.FormatFlags |= StringFormatFlags.LineLimit;
 				sf.Trimming = StringTrimming.EllipsisCharacter;
 				b = NextBounds(g, ":EllipisCharacter");
-				g.DrawString(s, f, rb, b, sf);
+				g.DrawString(s1, f, rb, b, sf);
 					
 				sf = new StringFormat();
+				sf.FormatFlags |= StringFormatFlags.LineLimit;
 				sf.Trimming = StringTrimming.EllipsisPath;
 				b = NextBounds(g, ":EllipsisPath");
-				g.DrawString(s, f, rb, b, sf);
-					
+				g.DrawString(s1, f, rb, b, sf);
+
+				sf = new StringFormat();
+				b = NextBounds(g, "No Line Limit");
+				g.DrawString(s1, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.FormatFlags |= StringFormatFlags.LineLimit;
+				b = NextBounds(g, "Line Limit");
+				g.DrawString(s1, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.FormatFlags |= StringFormatFlags.DirectionRightToLeft;
+				b = NextBounds(g, "DirectionRightToLeft");
+				g.DrawString(s1, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.FormatFlags |= StringFormatFlags.DirectionVertical;
+				b = NextBounds(g, "DirectionVertical");
+				g.DrawString(s1, f, rb, b, sf);
+
+				sf = new StringFormat();
+				sf.FormatFlags |= StringFormatFlags.LineLimit;
+				int charactersFitted, linesFilled;
+				SizeF size = g.MeasureString(s1, f, b.Size, sf, out charactersFitted, out linesFilled);
+				b = NextBounds(g, "MeasString cf:" + charactersFitted +", lf: " + linesFilled);
+				g.DrawString(s1, f, rb, b, sf);
+				using (Pen p = new Pen(Color.Green))
+					g.DrawRectangle(p, b.X, b.Y, size.Width, size.Height);
 			}
 		}
 
@@ -2261,7 +2341,7 @@ namespace FormsTest
 				boundsY += boundsSize + boundsPad;
 			}
 			g.DrawRectangle(SystemPens.ControlLightLight, r);
-			g.DrawString(text, new Font("Arial", 8),SystemBrushes.ControlLightLight, r.X, r.Bottom);
+			g.DrawString(text, new Font("Arial", 7),SystemBrushes.ControlText, r.X, r.Bottom);
 			return r;
 		}
 
@@ -2310,7 +2390,7 @@ namespace FormsTest
 			buttonImageLoad1bpp.Text = "Load 1bpp";
 			buttonImageLoad1bpp.Bounds = r;
 			buttonImageLoad1bpp.Click+=new EventHandler(buttonImageLoad1bpp_Click);
-				r = new Rectangle(x, r.Y + r.Height + gap, r.Width, r.Height);
+			r = new Rectangle(x, r.Y + r.Height + gap, r.Width, r.Height);
 			buttonImageConvert24bpp = new Button();
 			buttonImageConvert24bpp.Text = "-> 24bpp";
 			buttonImageConvert24bpp.Bounds = r;
@@ -2387,19 +2467,19 @@ namespace FormsTest
 			if (i>0)
 				textBoxImageFileName.Text = textBoxImageFileName.Text.Substring(0,i);
 			textBoxImageFileName.Text += ".bmp";
-/*
-			ImageCodecInfo bmpImageCodecInfo = null;
-			ImageCodecInfo[] encoders =  ImageCodecInfo.GetImageEncoders();
-			for(int j = 0; j < encoders.Length; ++j)
-			{
-				//Console.WriteLine(encoders[j].MimeType);
-				if(encoders[j].MimeType == "image/bmp")
-				{
-					bmpImageCodecInfo = encoders[j];
-					//break;
-				}
-			}
-*/
+			/*
+						ImageCodecInfo bmpImageCodecInfo = null;
+						ImageCodecInfo[] encoders =  ImageCodecInfo.GetImageEncoders();
+						for(int j = 0; j < encoders.Length; ++j)
+						{
+							//Console.WriteLine(encoders[j].MimeType);
+							if(encoders[j].MimeType == "image/bmp")
+							{
+								bmpImageCodecInfo = encoders[j];
+								//break;
+							}
+						}
+			*/
 			if (imageNew != null)
 				imageNew.Save(textBoxImageFileName.Text);
 		}
@@ -2692,12 +2772,107 @@ namespace FormsTest
 
 		private void AddTransformsTest(Control c)
 		{
+			transformTestPoints = new PointF[24]
+			{
+				new PointF(5, 0), new PointF(25, 0),
+				new PointF(25, 0), new PointF(30, 5),
+				new PointF(30, 5), new PointF(30, 25),
+				new PointF(30, 25), new PointF(25, 30),
+				new PointF(25, 30), new PointF(5, 30),
+				new PointF(5, 30), new PointF(0, 25),
+				new PointF(0, 25), new PointF(0, 5),
+				new PointF(0, 5), new PointF(5, 0),
+				new PointF(15, 10), new PointF(15, 15),
+				new PointF(5, 20), new PointF(10, 25),
+				new PointF(10, 25), new PointF(20, 25),
+				new PointF(20, 25), new PointF(25, 20),
+			};
+
+			for (int i = 0; i < transformTestPoints.Length;i++)
+			{
+				transformTestPoints[i].X -= 30;
+				transformTestPoints[i].Y -= 30;
+			}
+
 			c.Paint+=new PaintEventHandler(TransformsTestPaint);
+			timerTransform = new Timer();
+			timerTransform.Interval = 20;
+			timerTransform.Tick +=new EventHandler(t_Tick);
+			timerTransform.Start();
+		}
+
+		private void t_Tick(object sender, EventArgs e)
+		{
+			if (tabControl1.SelectedTab == tabPage15)
+				using (Graphics g = tabPage15.CreateGraphics())
+					TransformsTestDraw(g);
 		}
 
 		private void TransformsTestPaint(object sender, PaintEventArgs e)
 		{
-			e.Graphics.DrawString("Coming soon..", Font, SystemBrushes.ControlText, 10, 10);
+			TransformsTestDraw(e.Graphics);
+		}
+		private void TransformsTestDraw(Graphics g)
+		{
+			g.FillRectangle(SystemBrushes.Control, tabPage15.ClientRectangle);
+			boundsX = boundsY = boundsPad;
+			using (Pen p = new Pen(Color.Blue))
+			{
+
+				int mid = (Height-50)/2;
+				if (mid > (Width-10)/2)
+					mid = (Width-10)/2;
+				
+				PointF[] f = (PointF[])transformTestPoints.Clone();
+				g.RotateTransform(transformRotation);
+				g.TranslateTransform(transformX, transformY);
+				g.ScaleTransform(transformScaleX, transformScaleY);
+				g.TransformPoints(CoordinateSpace.Page,
+					CoordinateSpace.World,
+					f);
+
+				using (Brush b = new SolidBrush(Color.CadetBlue))
+				{
+					g.FillEllipse(b, -20, -20, 20, 10);
+					g.DrawString("Hello", Font, b, 0, 0);
+				}
+				g.ResetTransform();
+
+				if (transformX < -200 || transformX > 200)
+				{
+					transformXOffset = -transformXOffset;
+					transformScaleXOffset = -transformScaleXOffset;
+				}
+
+				if (transformY < -200 || transformY > 200)
+				{
+					transformYOffset = -transformYOffset;
+					transformScaleYOffset = -transformScaleYOffset;
+				}
+
+				for (int i = 0; i < transformTestPoints.Length; i+=2)
+					g.DrawLine(p, f[i].X + mid, f[i].Y + mid, f[i+1].X + mid, f[i+1].Y + mid);
+
+				transformX += transformXOffset;
+				transformY += transformYOffset;
+				transformRotation += transformRotationOffSet;
+				transformScaleX += transformScaleXOffset;
+				transformScaleY += transformScaleYOffset;
+
+				/*				Font f = new Font("Arial", 6);
+				
+								Rectangle b = NextBounds(g, "Rectangle");
+								Rectangle b1 = new Rectangle(b.Left + 5, b.Top + 5, b.Width - 10, b.Height - 10);
+								g.DrawRectangle(p, b1);
+				
+								g.RotateTransform(45);
+								b = NextBounds(g, "RotateTransform(45)");
+								b1 = new Rectangle(b.Left + 5, b.Top + 5, b.Width - 10, b.Height - 10);
+								g.DrawRectangle(p, b1);
+				*/				
+
+			}
+			
 		}
 
 		private void AddScrollbarTest(Control c)

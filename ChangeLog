@@ -8,6 +8,9 @@
 	Close the underlying stream only if it is locally constructed and not
 	pased out via BaseStream property.
 
+	* System.Xml/XmlTextReader.cs: Accept "?" and "!" in text (ie non-struct)
+	conditions (fixes Bug #3528).
+
 2003-05-09  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/WebRequest.cs : Move the static initialization code

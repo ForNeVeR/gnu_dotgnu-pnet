@@ -794,9 +794,14 @@ public class XmlTextReader : XmlReader
 						// <? PITarget 
 						if(structFlag != true)
 						{
-							throw new XmlException
-								(S._("Xml_Malformed"));
+							builder.Append((char)ch);
+							ch = ReadChar();
+							AnalyzeChar(ch, false);
+							break;
 						}
+
+						/* else */
+
 						ClearNodeInfo();
 						builder = new StringBuilder();
 						while((ch = ReadChar()) != -1)
@@ -833,10 +838,11 @@ public class XmlTextReader : XmlReader
 						// Check for correct structure 
 						if(structFlag != true)
 						{
-							throw new XmlException
-								(S._("Xml_Malformed"));
+							builder.Append((char)ch);
+							ch = ReadChar();
+							AnalyzeChar(ch, false);
+							break;
 						}
-
 
 						// Comment, CDATA, or document type information.
 						ch = ReadChar();
@@ -1623,7 +1629,6 @@ public class XmlTextReader : XmlReader
 				if(nodeType == XmlNodeType.Element)
 				{
 					MoveToContent();
-					ReadChar();
 					while((ch = ReadChar()) != -1)
 					{
 						builder.Append((char)ch);

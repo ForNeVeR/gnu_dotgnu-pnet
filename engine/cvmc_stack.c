@@ -158,6 +158,12 @@ static void CVMCoder_Dup(ILCoder *coder, ILEngineType engineType, ILType *type)
 		}
 		break;
 
+		case ILEngineType_TypedRef:
+		{
+			DupWords(coder, CVM_WORDS_PER_TYPED_REF);
+		}
+		break;
+
 		default: break;
 	}
 }
@@ -220,6 +226,12 @@ static void CVMCoder_Pop(ILCoder *coder, ILEngineType engineType, ILType *type)
 		{
 			ILUInt32 size = GetTypeSize(type);
 			PopWords(coder, size);
+		}
+		break;
+
+		case ILEngineType_TypedRef:
+		{
+			PopWords(coder, CVM_WORDS_PER_TYPED_REF);
 		}
 		break;
 

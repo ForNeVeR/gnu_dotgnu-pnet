@@ -1,3 +1,9 @@
+
+2004-08-03  Gopal.V  <gopalv82@yahoo.com>
+
+	* tools/wsdl/Makefile.am: change a "wdsl" to "wsdl" for the install
+	target.
+
 2004-07-23  Klaus Treichel  <ktreichel@web.de>
 
 	* class/Makefile.am: exclude Mono.Posix from build

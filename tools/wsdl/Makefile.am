@@ -16,7 +16,7 @@ install-exec-local:
 	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
 			-Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
-			-f "$(srcdir)/wdsl.build" -i all
+			-f "$(srcdir)/wsdl.build" -i all
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/wsdl-pnet.exe
 	rm -f $(DESTDIR)$(bindir)/wsdl-pnet

@@ -63,11 +63,11 @@ public class UriBuilder
 	// contains the slash
 	private String path;
 
-	// doesn't contain the ? mark
+	// contains the ? mark
 	private String query;
 
 	// remember: this is not part of the uri
-	// doesn't contain the #
+	// contains the #
 	private String fragment;
 	// also known as hash
 
@@ -88,10 +88,28 @@ public class UriBuilder
 	{
 	}
 
-	[TODO]
 	public UriBuilder(Uri uri)
 	{
+		scheme = uri.Scheme;
+		host = uri.Host;
+		port = uri.Port;
+		path = uri.AbsolutePath;
+		query = uri.Query;
+		fragment = uri.Fragment;
 
+		// set username&passwd from UserInfo
+		String userinfo = uri.UserInfo;
+		int passSplit = userinfo.IndexOf(':');
+		if (passSplit >= 0) // there is a password
+		{
+			username = userinfo.Substring(0, passSplit);
+			password = userinfo.Substring(passSplit + 1);
+		}
+		else
+		{
+			username = userinfo;
+			password = "";
+		}
 	}
 
 	public UriBuilder(String schemeName, String hostName) : this(schemeName,
@@ -110,20 +128,23 @@ public class UriBuilder
 	{
 	}
 
-	[TODO]
 	public UriBuilder(String scheme, String host, int port, String path,
 		String extraValue)
 	{
-		// capitalised where using built-in validation
-		this.Scheme = scheme;
+		scheme = scheme.ToLower();
+		if (!Uri.CheckSchemeName(scheme))
+			throw new ArgumentException
+				(S._("Arg_UriScheme"));
+		this.scheme = scheme;
 		this.host = host;
-		if (port < 0) throw new ArgumentOutOfRangeException("port");
+		if (port < 0 || (port < -1 && scheme == "file"))
+			throw new ArgumentOutOfRangeException("port");
 		this.port = port;
 		this.path = path;
 		if (extraValue[0] == '?')
-			this.query = extraValue.Substring(1, extraValue.Length-1);
+			this.query = extraValue;
 		else if (extraValue[0] == '#')
-			this.fragment = extraValue.Substring(1, extraValue.Length-1);
+			this.fragment = extraValue;
 		else if (extraValue != null && extraValue.Length != 0)
 			throw new ArgumentException
 				(S._("Exception_Argument"), "extraValue");
@@ -132,170 +153,6 @@ public class UriBuilder
 	}
 
 	// Methods.
-
-	// takes the string and sets all values on that basis
-	private void ParseString(String instr, bool escaped)
-	{
-
-		// TODO: make default scheme "http://" if none given (OK done)
-		int curpos = instr.IndexOf(':');
-		if (curpos < 0)
-			throw new UriFormatException();
-		try
-		{
-			this.scheme = ValidateScheme(instr.Substring(0, curpos++), escaped);
-		}
-		catch (UriFormatException ufe)
-		{
-			this.scheme = Uri.UriSchemeHttp;
-			curpos = 0;
-		}
-
-		// here's a real hack
-		if (curpos != 0 && scheme != Uri.UriSchemeNews && 
-			scheme != Uri.UriSchemeMailto)
-		{
-			if (curpos + 2 >= instr.Length ||
-			    instr.Substring(curpos, 2) != "//")
-				throw new UriFormatException();
-			else
-				curpos += 3;
-		}
-
-		// parsing Authority:
-		// note: fixed this to stop before ? or #, which don't require
-		// path to come first (look at mailto:)
-		char[] sqh = {'/', '?', '#'};
-		int eoAuthority = instr.IndexOfAny(sqh, curpos);
-		if (eoAuthority == -1) eoAuthority = instr.Length;
-		int eoSect = instr.IndexOf('@', curpos, eoAuthority - curpos);
-		if (eoSect > 0)
-		{
-			// parsing username:password
-			// input: curpos = first character
-			// eoSect = @ sign separating it from rest of authority
-			int eoUname = instr.IndexOf(':', curpos, eoSect-curpos);
-			if (eoUname > 0)
-			{
-				this.username = ValidateUsername(instr.Substring
-					(curpos, eoUname-curpos), escaped);
-				this.password = ValidatePassword(instr.Substring
-					(eoUname+1, eoSect-eoUname-1), escaped);
-			}
-			else
-				this.username = ValidateUsername(instr.Substring
-					(curpos, eoSect-curpos), escaped);
-			curpos = eoSect + 1;
-		}
-
-		// parsing port
-		int startPort = instr.LastIndexOf(':', curpos, eoAuthority-curpos) + 1;
-		if (startPort > 0)
-		{
-			// parsePort input: startPort = first character of port
-			// eoAuthority = the /, ?, or # that ends the port
-			// have made default this.port = -1 (throw later @ runtime)
-			try
-			{
-				this.port = Int32.Parse(instr.Substring(startPort,
-					eoAuthority - startPort));
-			}
-			catch (FormatException fe) { this.port = -1; }
-			catch (OverflowException oe)
-			{
-				throw new UriFormatException();
-			}
-			// you shouldn't type "-1" if you mean -1...type ""
-			if (this.port < 0 || this.port > 65535)
-				throw new UriFormatException();
-			eoAuthority = startPort - 1;
-		}
-		else
-			this.port = -1;
-
-		// let's get our bearings:
-		// curpos should be the beginning of server...done
-		// eoAuthority should be separating character...done
-		// now parse server
-		this.host = ValidateHost(instr.Substring(curpos, eoAuthority));
-		curpos = eoAuthority;
-
-		// next up, parse path, query, and fragment
-		// then it's done!
-
-		if (curpos == instr.Length) return;
-
-		// redefining eoSect to be the start of the #fragment
-		eoSect = instr.LastIndexOf('#', curpos);
-		if (eoSect == -1) eoSect = instr.Length;
-
-		// redefining eoAuthority to be start of ?query
-		eoAuthority = instr.IndexOf('?', curpos, eoSect - curpos);
-		if (eoAuthority == -1) eoAuthority = eoSect;
-
-		if (curpos < eoAuthority)
-			this.path = ValidatePath(instr.Substring(curpos,
-				eoAuthority - curpos), escaped);
-		else
-			this.path = "/";
-
-		if (eoAuthority < eoSect)
-			this.query = ValidateQuery(instr.Substring(eoAuthority + 1,
-				eoSect - eoAuthority-1), escaped);
-		else
-			this.query = "";
-
-		if (eoSect < instr.Length)
-			this.fragment = ValidateFragment(instr.Substring(eoSect+1,
-				instr.Length - eoSect-1), escaped);
-		else
-			this.fragment = "";
-	}
-
-	// all validation methods should throw if bad, return the valid string otherwise
-	// and they should be static
-
-	private static String ValidateScheme(String scheme, bool escaped)
-	{
-		// TODO
-		return scheme;
-	}
-
-	private static String ValidateUsername(String username, bool escaped)
-	{
-		// TODO
-		return username;
-	}
-
-	private static String ValidatePassword(String password, bool escaped)
-	{
-		// TODO
-		return password;
-	}
-
-	private static String ValidateHost(String host)
-	{
-		// TODO
-		return host;
-	}
-
-	private static String ValidatePath(String path, bool escaped)
-	{
-		// TODO
-		return path;
-	}
-
-	private static String ValidateQuery(String query, bool escaped)
-	{
-		// TODO
-		return query;
-	}
-
-	private static String ValidateFragment(String fragment, bool escaped)
-	{
-		// TODO
-		return fragment;
-	}
 
 	public override bool Equals(Object rparam)
 	{
@@ -312,11 +169,41 @@ public class UriBuilder
 			return full.Substring(0, hash).GetHashCode();
 	}
 
-	[TODO]
 	public override String ToString()
 	{
-		// TODO
-		return null;
+		StringBuilder maybeuri = new StringBuilder();
+		maybeuri.Append(Scheme).Append("://");
+		if (UserName.Length > 0)
+		{
+			maybeuri.Append(UserName);
+			if (Password.Length > 0)
+				maybeuri.Append(':').Append(Password);
+			maybeuri.Append('@');
+		}
+		maybeuri.Append(Host);
+		try
+		{
+			if (Port != Uri.DefaultPortForScheme(Scheme))
+				throw new ArgumentException();
+		}
+		catch (ArgumentException)
+		{
+			if (Scheme != "file")
+				maybeuri.Append(':').Append(Port);
+		}
+
+		String esc_path = Path;
+		if (Uri.needsEscaping(esc_path))
+			esc_path = Uri.impl_EscapeString(esc_path);
+		maybeuri.Append(esc_path);
+
+		if (Query.Length > 0)
+			maybeuri.Append(Query);
+		else
+			if (Fragment.Length > 0)
+				maybeuri.Append(Fragment);
+
+		return maybeuri.ToString();
 	}
 
 	// Properties.
@@ -332,11 +219,7 @@ public class UriBuilder
 		get
 		{
 			// gets with the #
-			if (this.fragment.Length != 0)
-				return this.fragment;
-			else
-				// whoops...return frag, not query!
-				return String.Concat("#", this.fragment);
+			return this.fragment;
 
 		}
 		set
@@ -344,7 +227,7 @@ public class UriBuilder
 			if (value == null)
 				this.fragment = "";
 			else
-				this.fragment = value;
+				this.fragment = String.Concat("#", value);
 			this.query = "";
 		}
 	}
@@ -413,17 +296,14 @@ public class UriBuilder
 		get
 		{
 			// gets with the ?
-			if (this.query == "")
-				return this.query;
-			else
-				return new StringBuilder(this.query.Length+1).Append('?').Append(this.query).ToString();
+			return this.query;
 		}
 		set
 		{
 			if (value == null)
 				this.query = "";
 			else
-				this.query = value;
+				this.query = String.Concat("?", value);
 			this.fragment = "";
 		}
 	}
@@ -450,13 +330,11 @@ public class UriBuilder
 		}
 	}
 
-	[TODO]
 	public Uri Uri
 	{
 		get
 		{
-			// TODO
-			return null;
+			return new Uri(this.ToString(), true);
 		}
 	}
 

@@ -1,3 +1,10 @@
+2002-05-27 Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Some changes for compatibility with
+	UriBuilder.
+
+	* System/UriBuilder.cs: Completed implementation.
+
 2002-05-26 Stephen Compall  <rushing@sigecom.net>
 
 	* runtime/System/IO/MemoryStream.cs: Implemented SetLength(long)

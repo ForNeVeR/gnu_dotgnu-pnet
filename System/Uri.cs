@@ -715,18 +715,6 @@ public class Uri : MarshalByRefObject
 			throw new UriFormatException(S._("Arg_UriHostName"));
 	}
 
-	private static bool needsEscaping(String instr)
-	{
-		char c;
-		for (int i = 0; i < instr.Length; i++)
-		{
-			c = instr[i];
-			if (IsExcludedCharacter(c) || IsReserved(c))
-				return true;
-		}
-		return false;
-	}
-
 	public override String ToString()
 	{
 		StringBuilder myStringBuilder = new StringBuilder(absoluteUri.Length);
@@ -1044,6 +1032,24 @@ public class Uri : MarshalByRefObject
 			return 119;
 		else
 			throw new ArgumentException();
+	}
+
+	// for use by UriBuilder
+	internal static String impl_EscapeString(String str)
+	{
+		return EscapeString(str);
+	}
+
+	internal static bool needsEscaping(String instr)
+	{
+		char c;
+		for (int i = 0; i < instr.Length; i++)
+		{
+			c = instr[i];
+			if (IsExcludedCharacter(c) || IsReserved(c))
+				return true;
+		}
+		return false;
 	}
 
 	// for use by comparators, which want none of this

@@ -113,11 +113,11 @@ static void WriteFlush(ILWriter *writer)
 
 /*
  * Write zero bytes until we have padded to a particular boundary.
- * We assume that "size" is 512 or less.
+ * We assume that "size" is 1024 or less.
  */
 static void WriteBlockPadding(ILWriter *writer, unsigned long size)
 {
-	char buffer[512];
+	char buffer[1024];
 	if((writer->offset & (size - 1)) != 0)
 	{
 		ILMemZero(buffer, size);
@@ -395,7 +395,7 @@ static void WritePECOFFHeader(ILWriter *writer)
 		IL_WRITE_UINT16(opthdr + 46, 0);			/* User Minor */
 		IL_WRITE_UINT16(opthdr + 48, 4);			/* System Major */
 		IL_WRITE_UINT16(opthdr + 50, 0);			/* System Minor */
-		IL_WRITE_UINT32(opthdr + 60, 512);			/* Combined header size */
+		IL_WRITE_UINT32(opthdr + 60, 1024);			/* Combined header size */
 		if((writer->flags & IL_WRITEFLAG_SUBSYS_GUI) != 0)
 		{
 			IL_WRITE_UINT16(opthdr + 68, 2);		/* Subsystem (WindowsGUI) */
@@ -477,16 +477,16 @@ void _ILWriteHeaders(ILWriter *writer)
 	/* Write the PE/COFF header and optional header */
 	WritePECOFFHeader(writer);
 
-	/* Pad with zeroes until we reach a multiple of 256 (object files)
-	   or 512 bytes (executables and DLL's).  This should leave enough
-	   room for 5 section table entries, which is plenty for our purposes */
+	/* Pad with zeroes until we reach a multiple of 512 (object files)
+	   or 1024 bytes (executables and DLL's).  This should leave enough
+	   room for all of the section table entries we are likely to have */
 	if(writer->type == IL_IMAGETYPE_OBJ)
 	{
-		WriteBlockPadding(writer, 256);
+		WriteBlockPadding(writer, 512);
 	}
 	else
 	{
-		WriteBlockPadding(writer, 512);
+		WriteBlockPadding(writer, 1024);
 	}
 
 	/* Back-patch the combined header size */

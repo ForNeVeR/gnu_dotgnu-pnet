@@ -9,6 +9,9 @@
 	* cscc/c/c_invoke.tc, cscc/c/c_stmt.tc, cscc/c/c_types.c:
 	invocation support for static C# methods.
 
+	* image/pecoff_writer.c: add extra padding at the beginning
+	of a PE/COFF image to make room for 4 or more sections.
+
 2002-08-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_const.tc, cscc/c/c_types.c: code generation for

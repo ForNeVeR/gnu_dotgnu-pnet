@@ -14,6 +14,11 @@
 	runtime/System/Security/SecurityElement.cs: add some utility
 	routines to "SecurityElement" and "MiniXml".
 
+	* runtime/System/Runtime/Serialization/FormatterServices.cs:
+	convert "GetSerializableMembers" into an internalcall so that
+	it is more efficient and can more easily get same-named fields
+	in parent classes.
+
 2003-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Other/CP20838.cs, I18N/Other/ibm-838.ucm, I18N/Rare/CP20105.cs,

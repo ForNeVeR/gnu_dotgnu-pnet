@@ -103,56 +103,20 @@ public sealed class FormatterServices
 				{
 					throw new ArgumentNullException("type");
 				}
-
-				// Fetch the property and field lists.
-				FieldInfo[] fields = type.GetFields
-					(BindingFlags.Public | BindingFlags.NonPublic |
-					 BindingFlags.Instance);
-				PropertyInfo[] properties = type.GetProperties
-					(BindingFlags.Public | BindingFlags.NonPublic |
-					 BindingFlags.Instance);
-
-				// Determine the size of the final array.
-				int size = 0;
-				int posn;
-				for(posn = 0; posn < fields.Length; ++posn)
+				else if(!(type is ClrType))
 				{
-					if((fields[posn].Attributes &
-							FieldAttributes.NotSerialized) == 0)
-					{
-						++size;
-					}
+					return new MemberInfo [0];
 				}
-				for(posn = 0; posn < properties.Length; ++posn)
+				else
 				{
-					if(properties[posn].CanRead &&
-					   properties[posn].CanWrite)
-					{
-						++size;
-					}
+					return InternalGetSerializableMembers(type);
 				}
-
-				// Create the member array and populate it.
-				MemberInfo[] members = new MemberInfo [size];
-				size = 0;
-				for(posn = 0; posn < fields.Length; ++posn)
-				{
-					if((fields[posn].Attributes &
-							FieldAttributes.NotSerialized) == 0)
-					{
-						members[size++] = fields[posn];
-					}
-				}
-				for(posn = 0; posn < properties.Length; ++posn)
-				{
-					if(properties[posn].CanRead &&
-					   properties[posn].CanWrite)
-					{
-						members[size++] = properties[posn];
-					}
-				}
-				return members;
 			}
+
+	// Internal version of "GetSerializableMembers".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static MemberInfo[] InternalGetSerializableMembers
+				(Type type);
 
 	// Get an assembly by name.
 	internal static Assembly GetAssemblyByName(String assem)

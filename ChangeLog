@@ -37,6 +37,8 @@ use the new float writing routines.
 
 * dumpasm/dump_string (ILDumpUnicodeString): new function.
 
+* ildasm/dump_const.c, ildasm/Makefile.am: remove obsolete file.
+
 2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);

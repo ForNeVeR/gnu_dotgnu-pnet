@@ -5,6 +5,9 @@
 	cscc/c/c_stubs.tc, cscc/csharp/cs_lvalue.tc: support the use
 	of "this" as an l-value within struct's.
 
+	* csunit/TestWriterResult.cs: prevent double reporting of
+	csunit test failures in the final count.
+
 2002-11-23  Gopal.V  <gopalv82@symonds.net>
 
 	* .cvsignore: add pnet.spec to cvsignore

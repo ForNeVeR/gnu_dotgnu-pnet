@@ -83,7 +83,6 @@ public class TestWriterResult : TestResult
 			{
 				if(sawFailure)
 				{
-					++numFailures;
 					if(stopAtFail)
 					{
 						// Stop testing immediately.

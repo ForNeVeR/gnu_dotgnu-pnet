@@ -584,6 +584,7 @@ System.EnterpriseServices/Makefile
 System.Windows.Forms/Makefile
 System.Design/Makefile
 DotGNU.Terminal/Makefile
+DotGNU.XmlRpc/Makefile
 OpenSystem.Platform/Makefile
 OpenSystem.Platform/Types.cs
 tests/Makefile

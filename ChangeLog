@@ -1,4 +1,13 @@
 
+2003-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* libc/ctype/ctype.c, libc/malloc/calloc.c, libc/malloc/free.c,
+	libc/malloc/malloc.c, libc/malloc/realloc.c, libc/pwd/pwent.c,
+	libc/stdio/printf.c, libc/stdlib/_exit.c, libc/unistd/close.c,
+	libc/unistd/dup.c, libc/unistd/dup2.c, libc/unistd/getlogin.c,
+	libm/redirect.c, libm/test.c: replace instances of "__invoke__"
+	with the new "::" syntax.
+
 2003-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/stdio.h, include/sys/cdefs.h: add the <stdio.h> file

@@ -79,14 +79,12 @@ __nextpwent (int posn, struct passwd *pwd)
 		  /* Fetch the rest of the user information */
 		  String str;
 		  currentReal = currentUser;
-		  str = __invoke__ Environment.GetEnvironmentVariable("HOME");
-		  currentHome = (char *)__invoke__
-		  	Marshal.StringToHGlobalAnsi(str);
+		  str = Environment::GetEnvironmentVariable("HOME");
+		  currentHome = (char *)Marshal::StringToHGlobalAnsi(str);
 		  if(!currentHome)
 		    currentHome = FAKE_CURRENT_HOME;
-		  str = __invoke__ Environment.GetEnvironmentVariable("SHELL");
-		  currentShell = (char *)__invoke__
-		  	Marshal.StringToHGlobalAnsi(str);
+		  str = Environment::GetEnvironmentVariable("SHELL");
+		  currentShell = (char *)Marshal::StringToHGlobalAnsi(str);
 		  if(!currentShell)
 		    currentShell = FAKE_SHELL;
 		}

@@ -66,8 +66,7 @@ get_category (int c)
 {
   if (c >= 0 && c < 65536)
     {
-      return (UnicodeCategory)
-        (__invoke__ Char.GetUnicodeCategory ((__wchar__)c));
+      return (UnicodeCategory)(Char::GetUnicodeCategory ((__wchar__)c));
     }
   else
     {
@@ -196,7 +195,7 @@ tolower (int c)
 {
   if (c >= 0 && c < 65535)
     {
-      return (int)(__invoke__ Char.ToLower ((__wchar__)c));
+      return (int)(Char::ToLower ((__wchar__)c));
     }
   else
     {
@@ -215,7 +214,7 @@ toupper (int c)
 {
   if (c >= 0 && c < 65535)
     {
-      return (int)(__invoke__ Char.ToUpper ((__wchar__)c));
+      return (int)(Char::ToUpper ((__wchar__)c));
     }
   else
     {

@@ -37,8 +37,8 @@ getlogin (void)
   pthread_mutex_lock(&loginMutex);
   if (!loginName)
     {
-       String str = __invoke__ Environment.get_UserName ();
-       loginName = (char *)__invoke__ Marshal.StringToHGlobalAnsi (str);
+       String str = Environment::get_UserName ();
+       loginName = (char *)Marshal::StringToHGlobalAnsi (str);
        if (!loginName)
          {
 	   loginName = strdup("nobody");

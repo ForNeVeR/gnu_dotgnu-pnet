@@ -44,7 +44,7 @@ __calloc(size_t nmemb, size_t size)
     }
 
   /* Allocate memory from the runtime engine */
-  ptr = (void *)__invoke__ Marshal.AllocHGlobal((__native__ int)full_size);
+  ptr = (void *)Marshal::AllocHGlobal((__native__ int)full_size);
   if(ptr != 0)
     {
       return ptr;

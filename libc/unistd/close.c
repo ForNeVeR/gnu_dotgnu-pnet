@@ -27,7 +27,7 @@ typedef __csharp__ (OpenSystem.C.FileTable) FileTable;
 int
 __libc_close (int fd)
 {
-  if (__invoke__ FileTable.Close (fd) == 0)
+  if (FileTable::Close (fd) == 0)
     {
       return 0;
     }

@@ -27,7 +27,7 @@ typedef __csharp__ (OpenSystem.C.FileTable) FileTable;
 int
 __dup2 (int oldfd, int newfd)
 {
-  int result = __invoke__ FileTable.Dup2 (oldfd, newfd);
+  int result = FileTable::Dup2 (oldfd, newfd);
   if (result >= 0)
     {
       return result;

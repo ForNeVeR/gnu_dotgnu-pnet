@@ -34,15 +34,15 @@ typedef __csharp__(System.Double) Double;
 int
 __isfinitef(float value)
 {
-  return !__invoke__ Single.IsNaN(value) &&
-         !__invoke__ Single.IsInfinity(value);
+  return !Single::IsNaN(value) &&
+         !Single::IsInfinity(value);
 }
 
 int
 __isfinite(double value)
 {
-  return !__invoke__ Double.IsNaN(value) &&
-         !__invoke__ Double.IsInfinity(value);
+  return !Double::IsNaN(value) &&
+         !Double::IsInfinity(value);
 }
 
 int
@@ -54,13 +54,13 @@ __isfinitel(long double value)
 int
 __isinff(float value)
 {
-  return __invoke__ Single.IsInfinity(value);
+  return Single::IsInfinity(value);
 }
 
 int
 __isinf(double value)
 {
-  return __invoke__ Double.IsInfinity(value);
+  return Double::IsInfinity(value);
 }
 
 int
@@ -72,13 +72,13 @@ __isinfl(long double value)
 int
 __isnanf(float value)
 {
-  return __invoke__ Single.IsNaN(value);
+  return Single::IsNaN(value);
 }
 
 int
 __isnan(double value)
 {
-  return __invoke__ Double.IsNaN(value);
+  return Double::IsNaN(value);
 }
 
 int

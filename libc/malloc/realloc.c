@@ -41,12 +41,12 @@ __realloc(void *ptr, size_t size)
           errno = ENOMEM;
           return 0;
         }
-      ptr = (void *)__invoke__ Marshal.AllocHGlobal((__native__ int)size);
+      ptr = (void *)Marshal::AllocHGlobal((__native__ int)size);
     }
   else if(size == 0)
     {
       /* Perform a "free" operation */
-      __invoke__ Marshal.FreeHGlobal((__native__ int)ptr);
+      (void)Marshal::FreeHGlobal((__native__ int)ptr);
       return 0;
     }
   else if(size > (size_t)INT32_MAX)
@@ -56,7 +56,7 @@ __realloc(void *ptr, size_t size)
     }
   else
     {
-      ptr = (void *)__invoke__ Marshal.ReAllocHGlobal
+      ptr = (void *)Marshal::ReAllocHGlobal
                 ((__native__ int)ptr, (__native__ int)size);
     }
   if(ptr != 0)

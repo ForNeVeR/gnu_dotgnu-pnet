@@ -27,28 +27,28 @@ typedef __csharp__(System.Math) Math;
 #define	__MATHREDIR1(name,csname) \
 float name##f(float value) \
 { \
-  return (float)(__invoke__ Math.csname((double)value)); \
+  return (float)(Math::csname((double)value)); \
 } \
 double name(double value) \
 { \
-  return __invoke__ Math.csname(value); \
+  return Math::csname(value); \
 } \
 long double name##l(long double value) \
 { \
-  return (long double)(__invoke__ Math.csname((double)value)); \
+  return (long double)(Math::csname((double)value)); \
 }
 #define	__MATHREDIR2(name,csname) \
 float name##f(float value1, float value2) \
 { \
-  return (float)(__invoke__ Math.csname((double)value1, (double)value2)); \
+  return (float)(Math::csname((double)value1, (double)value2)); \
 } \
 double name(double value1, double value2) \
 { \
-  return __invoke__ Math.csname(value1, value2); \
+  return Math::csname(value1, value2); \
 } \
 long double name##l(long double value1, long double value2) \
 { \
-  return (long double)(__invoke__ Math.csname((double)value1, \
+  return (long double)(Math::csname((double)value1, \
                                               (double)value2)); \
 }
 

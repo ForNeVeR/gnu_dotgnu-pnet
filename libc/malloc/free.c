@@ -27,7 +27,7 @@ void
 __free(void *ptr)
 {
   if(ptr != 0)
-    __invoke__ Marshal.FreeHGlobal((__native__ int)ptr);
+    Marshal::FreeHGlobal((__native__ int)ptr);
 }
 
 weak_alias(__free, free)

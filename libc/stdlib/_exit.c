@@ -26,5 +26,5 @@ typedef __csharp__(System.Environment) Environment;
 void
 _exit (int status)
 {
-  __invoke__ Environment.Exit (status);
+  (void)Environment::Exit (status);
 }

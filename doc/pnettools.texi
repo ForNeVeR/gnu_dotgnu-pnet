@@ -1290,6 +1290,10 @@ Insert a link at the current point in the documentation to the
 program item referred to by @code{CREF}.  This is used inline
 within a documentation block.
 
+@item <see langword="WORD"/>
+Insert a reference to a keyword called @code{WORD} in the C# language.
+The keyword will normally be output using the same font as @code{<code>}.
+
 @item <sub> ... </sub>
 Format the text between @code{<sub>} and @code{</sub>} in a subscript font.
 

@@ -258,7 +258,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 	<!ELEMENT see			EMPTY>
 	<!ATTLIST see
-			  cref			CDATA #REQUIRED>
+			  langword		CDATA #IMPLIED
+			  cref			CDATA #IMPLIED>
 
 	<!ELEMENT subscript		(#PCDATA | %textElement;)*>
 	<!ATTLIST subscript

@@ -4,6 +4,9 @@
 * csdoc/doc_html.c, csdoc/doc_texi.c: fixed a bug in the handling
 of <see langword="x"> within the documentation generators.
 
+* doc/csdoc.dtd, doc/pnettools.texi: update the documentation for
+"csdoc" to reflect the usage of <see langword="x">.
+
 2001-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/unicode.c: implement the new helper

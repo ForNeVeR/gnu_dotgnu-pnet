@@ -116,6 +116,7 @@ public class TestDouble : TestCase
 
 		d = 1.13d;
 		AssertEquals("1.13", "1.13", d.ToString());
+		AssertEquals("d=1.13; d.ToString(\"R\",null)", "1.13", d.ToString("R", null));
 
 		//d = -1.13d;
 		//AssertEquals("-1.13", "-1.13", d.ToString());

@@ -394,16 +394,48 @@ internal abstract class Formatter
 	{
 		if (value == 0.0) return ".";
 
-		StringBuilder ret =
-			new StringBuilder(FormatInteger((ulong)Math.Floor(value)));
-		double fraction = (value - Math.Floor(value)) * 10.0;
+		//  
+		int exponent = (int)Math.Floor(Math.Log10(Math.Abs(value)));
+		double work = value * Math.Pow(10, 16 - exponent);
+		
+		//
+		//  Build a numeric representation, sans decimal point.
+		//
+		StringBuilder sb = 
+			new StringBuilder(FormatInteger((ulong)Math.Floor(work)));
+		sb.Remove(sb.Length-1, 1);    // Ditch the trailing decimal point
 
-		for (int i=0; i < precision && fraction > 0.0; i++)
+		if (sb.Length > precision + exponent + 1)
 		{
-			ret.Append(decimalDigits[(int)Math.Floor(fraction)]);
-			fraction = (fraction - Math.Floor(fraction)) * 10;
+			sb.Remove(precision+exponent+1, sb.Length-(precision+exponent+1));
+		}	
+
+		//
+		//  Cases for reinserting the decimal point.
+		//
+		if (exponent >= -1 && exponent < sb.Length)
+		{
+			sb.Insert(exponent+1,'.');
 		}
-		return ret.ToString();
+		else if (exponent < -1)
+		{
+			sb.Insert(0,new String('0',-exponent - 1));
+			sb.Insert(0,".");
+		}
+		else 
+		{
+			sb.Append(new String('0', exponent - sb.Length + 1));
+			sb.Append('.');
+		}
+
+		//
+		//  Remove trailing zeroes.
+		//
+		while (sb[sb.Length-1] == '0') {
+			sb.Remove(sb.Length-1, 1);
+		}
+
+		return sb.ToString();
 	}
 
 	static protected string GroupInteger(string value, int[] groupSizes,

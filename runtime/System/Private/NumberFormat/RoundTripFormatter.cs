@@ -37,18 +37,9 @@ internal class RoundTripFormatter : Formatter
 	{
 		//  Calculate precision
 		int precision;
-		if (o is Single)
-		{
-			precision = 9;
-		}
-		else if (o is Double)
-		{
-			precision = 17;
-		}
-		else
-		{
-			throw new FormatException(_("Format_TypeException"));
-		}
+		if (o is Single) precision = 7;
+		else if (o is Double) precision = 15;
+		else throw new FormatException(_("Format_TypeException"));
 
 		//  Get initial number
 		string rawnumber = FormatAnyRound(o, precision);
@@ -60,18 +51,17 @@ internal class RoundTripFormatter : Formatter
 			rawnumber = rawnumber.Substring(1);
 		}
 
-		if (rawnumber[0] == '.')
-		{
-			ret.Append('0');
-		}
-		else
-		{
-			ret.Append(rawnumber.Substring(0,rawnumber.IndexOf('.')));
-		}
+		//  Create portion before the decimal point
+		if (rawnumber[0] == '.') ret.Append('0');
+		else ret.Append(rawnumber.Substring(0,rawnumber.IndexOf('.')));
 
+		//  Insert decimal point
 		ret.Append(NumberFormatInfo(provider).NumberDecimalSeparator);
-		
-		ret.Append(rawnumber.Substring(rawnumber.IndexOf('.')+1, precision));
+
+		//  Append the portion of the number following the decimal point
+		int decpt = rawnumber.IndexOf('.')+1;	
+		ret.Append(rawnumber.Substring(decpt,
+								Math.Min(rawnumber.Length-decpt, precision)));
 
 		return ret.ToString();
 	}		

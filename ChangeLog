@@ -1,4 +1,12 @@
 
+2003-03-17  Jonathan Springer  <jonathan.springer@verizon.net>
+
+	* runtime/System/Private/NumberParser.cs,
+	runtime/System/Private/NumberFormat/Formatter.cs,
+	runtime/System/Private/NumberFormat/RoundTripFormatter.cs,
+	test/runtime/System/TestDouble.cs:  Further refinements and bug-fixes
+	for floating point formatting and parsing.
+
 2003-03-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* JScript/Builtins/GlobalObject.cs,

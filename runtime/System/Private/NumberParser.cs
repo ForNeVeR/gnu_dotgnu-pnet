@@ -1110,6 +1110,36 @@ internal sealed class NumberParser
 		return (float)ParseDouble(s, style, nfi);
 	}
 
+	//  Array of powers of ten -- keeps precision within reason
+	private static double [] powten = {
+		1.0e0, 1.0e1, 1.0e2, 1.0e3, 1.0e4, 1.0e5,
+		1.0e6, 1.0e7, 1.0e8, 1.0e9, 1.0e10,
+		1.0e11, 1.0e12, 1.0e13, 1.0e14, 1.0e15,
+		1.0e16, 1.0e17, 1.0e18, 1.0e19, 1.0e20 };
+
+	//  Build a number 10^exponent using the above array.  This
+	//  seems more precise than Math.Pow for two reasons:
+	//  1.  The mantissa is a known constant.
+	//  2.  The exponents are integral.	
+	private static double Pow10(int exponent)
+	{
+		double ret = 1.0d;
+		int exp = exponent;
+	
+		if (exp < 0)
+		{
+			for (; exp < -20; exp += 20) ret /= powten[20];
+			ret /= powten[exp*-1];
+		}
+		else
+		{
+			for (; exp > 20; exp -=20) ret *= powten[20];
+			ret *= powten[exp];
+		}
+
+		return ret;
+	}
+		
 	public static double ParseDouble(String s, NumberStyles style,
 								     NumberFormatInfo nfi)
 	{
@@ -1117,70 +1147,73 @@ internal sealed class NumberParser
 		if ((style & NumberStyles.AllowHexSpecifier) != 0)
 			throw new FormatException(_("Format_HexNotSupported"));
 
+		//  Strip out the silliness
 		StringBuilder sb = new StringBuilder(RawString(s, style, nfi));
-
 		bool negative = StripSign(sb, nfi);
 
+		//  Figure out what our exponent was, then ditch the decimal point
+		int exponent = sb.ToString().IndexOf('.')-1;
+
+		if (exponent == -2)   // Not Found
+		{
+			exponent = Math.Max(sb.ToString().IndexOf('e'), 
+								sb.ToString().IndexOf('E')) - 1;
+			if (exponent == -2)   // Not Found
+				exponent = sb.Length - 1;
+		}
+		else sb.Remove(exponent+1,1);
+
+		//  Remove leading zeroes that might gum up the works
+		while (sb.Length > 0 && sb[0] == '0') {
+			sb.Remove(0,1);
+			exponent--;
+		}
+
+		//  Guard case...
+		if (sb.Length == 0) return 0.0;
 		string str = sb.ToString();
-		int stridx = 0;
 
-		//  Parse up to the decimal
-		double work = 0.0d;
+		//  Parse up to the exponent
+		ulong ulwork = 0;
+		int i;
 
-		while (stridx < str.Length 
-				&& str[stridx] >= '0' && str[stridx] <= '9')
+		//  This loop tops out at 18 -- the most digits in a ulong
+		for (i = 0; 
+				i < str.Length && i < 18 && str[i] >= '0' && str[i] <= '9'; 
+				i++) 
 		{
-			work = work * 10.0d + (uint)(str[stridx++] - '0');
+			ulwork = (ulwork * 10) + unchecked((uint)(str[i]-'0'));
 		}
+		double work = (double)ulwork * Pow10(exponent - i + 1);
 
-		//  Parse after the decimal
-		if (stridx < str.Length && 
-				str.Substring(stridx).StartsWith(nfi.NumberDecimalSeparator))
-		{
-			stridx += nfi.NumberDecimalSeparator.Length;
-			for (double mult = 0.1d;
-					stridx < str.Length && 
-					str[stridx] >= '0' && str[stridx] <= '9';
-					mult /= 10.0d)
-			{
-				work += (uint)(str[stridx++] - '0') * mult;
-			}	
-		}
+		//  Bleed off the over-precise numbers
+		while (i < str.Length && str[i] >= '0' && str[i] <= '9') i++;
 
 		//  Parse after the exponent
-		if (stridx < str.Length 
-				&& (str[stridx] == 'e' || str[stridx] == 'E') ) 
+		if (i < str.Length && (str[i] == 'e' || str[i] == 'E') ) 
 		{
-			uint exponent = 0;
+			exponent = 0;
 			bool negExponent = false;
-			stridx++;
-			if (str.Substring(stridx).StartsWith(nfi.PositiveSign)) 
+			i++;
+
+			if (str.Substring(i).StartsWith(nfi.PositiveSign)) 
 			{
-				stridx++;
+				i++;
 			} 
-			else if (str.Substring(stridx).StartsWith(nfi.NegativeSign)) 
+			else if (str.Substring(i).StartsWith(nfi.NegativeSign)) 
 			{
 				negExponent = true;
-				stridx++;
+				i++;
 			} 
-			/*  --- Removed in response to bug #2222
-			else 
-			{
-				//  Darn it, we're supposed to have a sign.
-				throw new FormatException(_("Format_ExponentRequiresSign"));
-			}
-			*/
 
-		    while (stridx < str.Length && 
-					str[stridx] >= '0' && str[stridx] <= '9')
-			{
-				exponent = 10 * exponent + (uint)(str[stridx++] - '0');
-			}
+		    while (i < str.Length && str[i] >= '0' && str[i] <= '9')
+				exponent = (10*exponent) + (int)(str[i++] - '0');
 
-			work *= Math.Pow(10, exponent * (negExponent ? -1 : 1));
+			if (negExponent) exponent *= -1;
+			work *= Pow10(exponent);
 		}
 
-		if (stridx < str.Length)
+		if (i < str.Length)
 		{
 			//  Oops.  Throw a "junk found" exception.
 			throw new FormatException();
@@ -1190,7 +1223,6 @@ internal sealed class NumberParser
 
 		return work;
 	}
-
 }; // class NumberParser
 
 }; // namespace System.Private

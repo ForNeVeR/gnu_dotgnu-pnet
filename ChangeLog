@@ -1,5 +1,5 @@
 
-2004-11-04  Simon Guindon  <simon@nureality.ca>
+2004-12-16  Simon Guindon  <simon@nureality.ca>
 
 	* System.Windows.Forms/StatusBar.cs: Fixes text rendering in multiple
 	StatusBarPanel's.  Rectangle calculations were being miscalculated

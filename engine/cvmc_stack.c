@@ -72,7 +72,7 @@ static ILUInt32 ComputeStackSize(ILCoder *coder, ILEngineStackItem *stack,
 
 			case ILEngineType_TypedRef:
 			{
-				total += 2;
+				total += CVM_WORDS_PER_TYPED_REF;
 			}
 			break;
 

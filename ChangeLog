@@ -4,6 +4,9 @@
 * engine/Makefile.am: remove "interpreter.c" from the engine build;
 add "call.c" and "lookup.c" to the engine build.
 
+* engine/cvmc_stack.c: use "CVM_WORDS_PER_TYPED_REF" instead of a
+hard-wired constant.
+
 2001-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify.c: mark the stack as empty on entry to a try region.

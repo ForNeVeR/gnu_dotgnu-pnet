@@ -677,7 +677,76 @@ void _IL_Thread_VolatileWrite_RObjectObject(ILExecThread *thread,
 void _IL_WaitHandle_InternalClose(ILExecThread *_thread,
 								  ILNativeInt privateData)
 {
-	/* TODO */
+	if(privateData)
+	{
+		ILWaitHandleClose((ILWaitHandle *)privateData);
+	}
+}
+
+/*
+ * Handle the result from an "ILWait*" function call.
+ */
+static void HandleWaitResult(ILExecThread *thread, int result)
+{
+	if(result == IL_WAIT_INTERRUPTED)
+	{
+		ILExecThreadThrowSystem
+			(thread, "System.Threading.ThreadInterruptedException",
+			 (const char *)0);
+	}
+	else if(result == IL_WAIT_ABORTED)
+	{
+		/* Determine if we currently have an abort in progress,
+		   or if we need to throw a new abort exception */
+		if(ILThreadIsAborting())
+		{
+			if(ILThreadAbort(ILThreadSelf()))
+			{
+				/* Allocate an instance of "ThreadAbortException" and throw */
+				/* TODO */
+			}
+		}
+	}
+}
+
+/*
+ * Maximum number of wait handles that can be processed at once.
+ */
+#define	IL_MAX_WAIT_HANDLES		64
+
+/*
+ * Convert a C# array of wait handles into a C array.
+ * Returns zero if something is wrong.
+ */
+static int ConvertWaitHandleArray(ILExecThread *_thread,
+								  System_Array *waitHandles,
+								  ILWaitHandle **handles)
+{
+	ILInt32 index;
+
+	/* Validate the length of the incoming array */
+	if(waitHandles->length > IL_MAX_WAIT_HANDLES)
+	{
+		ILExecThreadThrowSystem
+			(_thread, "System.NotSupportedException",
+			 (const char *)0);
+		return 0;
+	}
+
+	/* Convert the WaitHandle objects into system wait handles */
+	for(index = 0; index < waitHandles->length; ++index)
+	{
+		handles[index] = *((ILWaitHandle **)
+			(((ILObject **)(ArrayToBuffer(waitHandles)))[index]));
+		if(handles[index] == 0)
+		{
+			ILExecThreadThrowArgNull(_thread, "waitHandles");
+			return 0;
+		}
+	}
+
+	/* Ready to go */
+	return 1;
 }
 
 /*
@@ -689,8 +758,25 @@ ILBool _IL_WaitHandle_InternalWaitAll(ILExecThread *_thread,
 									  ILInt32 timeout,
 									  ILBool exitContext)
 {
-	/* TODO */
-	return 1;
+	ILWaitHandle *handles[IL_MAX_WAIT_HANDLES];
+	int result;
+
+	/* Return immediately if there are no handles */
+	if(!(waitHandles->length))
+	{
+		return 1;
+	}
+
+	/* Convert the WaitHandle objects into system wait handles */
+	if(!ConvertWaitHandleArray(_thread, waitHandles, handles))
+	{
+		return 0;
+	}
+
+	/* Perform the wait */
+	result = ILWaitAll(handles, (ILUInt32)(waitHandles->length), timeout);
+	HandleWaitResult(_thread, result);
+	return (result == 0);
 }
 
 /*
@@ -701,8 +787,25 @@ ILInt32 _IL_WaitHandle_InternalWaitAny(ILExecThread *_thread,
 									   System_Array *waitHandles,
 									   ILInt32 timeout, ILBool exitContext)
 {
-	/* TODO */
-	return 0;
+	ILWaitHandle *handles[IL_MAX_WAIT_HANDLES];
+	int result;
+
+	/* Return immediately if there are no handles */
+	if(!(waitHandles->length))
+	{
+		return 1;
+	}
+
+	/* Convert the WaitHandle objects into system wait handles */
+	if(!ConvertWaitHandleArray(_thread, waitHandles, handles))
+	{
+		return 0;
+	}
+
+	/* Perform the wait */
+	result = ILWaitAny(handles, (ILUInt32)(waitHandles->length), timeout);
+	HandleWaitResult(_thread, result);
+	return (result == 0);
 }
 
 /*
@@ -712,7 +815,12 @@ ILBool _IL_WaitHandle_InternalWaitOne(ILExecThread *_thread,
 									  ILNativeInt privateData,
 									  ILInt32 timeout)
 {
-	/* TODO */
+	if(privateData)
+	{
+		int result = ILWaitOne((ILWaitHandle *)privateData, timeout);
+		HandleWaitResult(_thread, result);
+		return (result == 0);
+	}
 	return 0;
 }
 
@@ -726,8 +834,37 @@ ILNativeInt _IL_Mutex_InternalCreateMutex(ILExecThread *_thread,
 										  ILString *name,
 										  ILBool *gotOwnership)
 {
-	/* TODO */
-	return 0;
+	ILWaitHandle *handle;
+	if(!name)
+	{
+		/* Create an ordinary mutex */
+		handle = ILWaitMutexCreate(initiallyOwned);
+		*gotOwnership = initiallyOwned;
+	}
+	else
+	{
+		/* Create a named mutex */
+		char *nameStr = ILStringToUTF8(_thread, name);
+		if(nameStr)
+		{
+			int gotOwn = 0;
+			handle = ILWaitMutexNamedCreate(nameStr, initiallyOwned, &gotOwn);
+			*gotOwnership = (ILBool)gotOwn;
+		}
+		else
+		{
+			handle = 0;
+		}
+	}
+	if(handle)
+	{
+		return (ILNativeInt)handle;
+	}
+	else
+	{
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
 }
 
 /*
@@ -735,7 +872,10 @@ ILNativeInt _IL_Mutex_InternalCreateMutex(ILExecThread *_thread,
  */
 void _IL_Mutex_InternalReleaseMutex(ILExecThread *_thread, ILNativeInt mutex)
 {
-	/* TODO */
+	if(mutex != 0)
+	{
+		ILWaitMutexRelease((ILWaitHandle *)mutex);
+	}
 }
 
 #ifdef	__cplusplus

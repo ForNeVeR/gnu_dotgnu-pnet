@@ -14,6 +14,9 @@
 	* engine/process.c (ILExecProcessDestroy): bug fix for SEGV
 	in previous check-in.
 
+	* engine/lib_thread.c: implement internalcall methods for
+	"WaitHandle" and "Mutex".
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/convert.c, engine/cvm_arith.c, engine/cvm_var.c,

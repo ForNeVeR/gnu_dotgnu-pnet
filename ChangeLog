@@ -1,4 +1,9 @@
 
+2004-04-01  Russell Stuart  <russell@stuart.id.au>
+
+	* csant/csant_task.c, include/il_sysio.h, support/dir.c:
+	Add support for <delete dir=...> to csant (patch #2827).
+
 2004-03-27  Gopal V <gopalv82@symonds.net>
 
 	* cscc/common/cc_compat.c: Add a quick fix to support the 

@@ -422,7 +422,7 @@ typedef struct _tagILDirEnt ILDirEnt;
  */
 ILInt32 ILDeleteDir(const char *path);
 ILInt32 ILRenameDir(const char *old_name, const char *new_name);
-ILDir *ILOpenDir(char *path);
+ILDir *ILOpenDir(const char *path);
 ILDirEnt *ILReadDir(ILDir *directory);
 int ILCloseDir(ILDir *directory);
 const char *ILDirEntName(ILDirEnt *entry);

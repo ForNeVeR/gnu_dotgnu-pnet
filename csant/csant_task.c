@@ -85,35 +85,166 @@ static int Task_Fail(CSAntTask *task)
 }
 
 /*
+ * Do an "rm -r" on a directory.  Returns 0 on success, 1 on fail.
+ * If it fails, fileFile may contain an ILMalloc'ed string to the
+ * file that caused it to fail.  Then again, it may just contain 0.
+ */
+static int Rm_R(const char* dir, char** failFile)
+{
+	int		error;
+  	ILDir*		ilDir;
+	ILDirEnt*	ilDirEnt;
+	char*		pathname;
+	int		retval;
+
+	ilDir = ILOpenDir(dir);
+	if(!ilDir)
+	{
+	  	*failFile = ILDupString(dir);
+		goto failed;
+	}
+	/*
+	 * Loop through all files in the directory.
+	 */
+	while((ilDirEnt = ILReadDir(ilDir)))
+	{
+	  	/*
+		 * Ignore '.' and '..'.
+		 */
+	  	if(!strcmp(ILDirEntName(ilDirEnt), ".") || !strcmp(ILDirEntName(ilDirEnt), ".."))
+		{
+		  	continue;
+		}
+	  	/*
+		 * We need the full path name, so cat the directory name
+		 * and path name together.
+		 */
+	  	pathname = CSAntDirCombine(dir, ILDirEntName(ilDirEnt));
+		if(!pathname)
+		{
+		  	goto failed;
+		}
+		/*
+		 * Normal file or sub-directory?
+		 */
+	  	if(ILDirEntType(ilDirEnt) == ILFileType_REG)
+		{
+		  	retval = ILDeleteFile(pathname);
+			if(retval)
+			{
+			  	*failFile = pathname;
+				goto failed;
+			}
+		}
+		else
+		{
+		  	retval = Rm_R(pathname, failFile);
+			if(retval)
+			{
+				ILFree(pathname);
+			  	goto failed;
+			}
+		}
+		ILFree(pathname);
+	}
+	/*
+	 * Done - close the directory iterator and delete the directory.
+	 */
+	retval = ILCloseDir(ilDir);
+	ilDir = 0;
+	if(retval)
+	{
+		retval = ILDeleteDir(dir);
+	}
+	if(retval)
+	{
+	  	*failFile = ILDupString(dir);
+		goto failed;
+	}
+	return 0;
+
+	/*
+	 * Opps - something went wrong.  Free all resources we have open.
+	 */
+failed:
+	error = errno;
+	if(ilDir != 0)
+	  	ILCloseDir(ilDir);
+	errno = error;
+	return 1;
+}
+
+/*
  * Delete a file from the build (for "clean" targets mainly)
  */
 static int Task_Delete(CSAntTask *task)
 {
-	const char *file = CSAntTaskParam(task, "file");
-	const char *fail = CSAntTaskParam(task, "failonerror");
+	const char *dirParam = CSAntTaskParam(task, "dir");
+	const char *fileParam = CSAntTaskParam(task, "file");
+	const char *failnoerror = CSAntTaskParam(task, "failonerror");
+	char *dir;
+	char *file;
+	char* failFile;
 	int retval;
-	if(!file)
+	if(!fileParam && !dirParam)
 	{
-		fprintf(stderr, "no file to delete in <delete>\n");
+		fprintf(stderr, "no file or dir to delete in <delete>\n");
 		return 0;
 	}
-	file = CSAntDirCombine(CSAntBaseBuildDir, file);
-	if(!CSAntSilent)
+	if(fileParam)
 	{
-		if(!fail || ILStrICmp(fail, "true") != 0)
+		file = CSAntDirCombine(CSAntBaseBuildDir, fileParam);
+		if(!CSAntSilent)
 		{
-			printf("rm -f %s\n", file);
+			if(!failnoerror || ILStrICmp(failnoerror, "true") != 0)
+			{
+				printf("rm -f %s\n", file);
+			}
+			else
+			{
+				printf("rm %s\n", file);
+			}
 		}
-		else
+		retval = ILDeleteFile(file);
+		if(retval && failnoerror && !ILStrICmp(failnoerror, "true"))
 		{
-			printf("rm %s\n", file);
+			perror(file);
+			ILFree(file);
+			return 0;
 		}
+		ILFree(file);
 	}
-	retval = ILDeleteFile(file);
-	if(retval && fail && !ILStrICmp(fail, "true"))
+	if(dirParam)
 	{
-		perror(file);
-		return 0;
+		dir = CSAntDirCombine(CSAntBaseBuildDir, dirParam);
+		if(!CSAntSilent)
+		{
+			if(!failnoerror || ILStrICmp(failnoerror, "true") != 0)
+			{
+				printf("rm -rf %s\n", dir);
+			}
+			else
+			{
+				printf("rm -r %s\n", dir);
+			}
+		}
+		failFile = 0;
+		retval = Rm_R(dir, &failFile);
+		if(retval && failnoerror && !ILStrICmp(failnoerror, "true"))
+		{
+			perror(failFile ? failFile : dir);
+			if(failFile)
+			{
+			  	ILFree(dir);
+				ILFree(failFile);
+			}
+			return 0;
+		}
+		if(failFile)
+		{
+		  	ILFree(failFile);
+		}
+		ILFree(dir);
 	}
 	return 1;
 }
@@ -123,14 +254,15 @@ static int Task_Delete(CSAntTask *task)
  */
 static int Task_Mkdir(CSAntTask *task)
 {
-	const char *dir = CSAntTaskParam(task, "dir");
+	const char *dirParam = CSAntTaskParam(task, "dir");
+	char *dir;
 	int retval;
-	if(!dir)
+	if(!dirParam)
 	{
 		fprintf(stderr, "no directory to make in <mkdir>\n");
 		return 0;
 	}
-	dir = CSAntDirCombine(CSAntBaseBuildDir, dir);
+	dir = CSAntDirCombine(CSAntBaseBuildDir, dirParam);
 	if(!CSAntSilent)
 	{
 		printf("mkdir %s\n", dir);
@@ -143,8 +275,10 @@ static int Task_Mkdir(CSAntTask *task)
 	if(retval && errno != EEXIST)
 	{
 		perror(dir);
+		ILFree(dir);
 		return 0;
 	}
+	ILFree(dir);
 	return 1;
 }
 
@@ -153,26 +287,37 @@ static int Task_Mkdir(CSAntTask *task)
  */
 static int Task_Copy(CSAntTask *task)
 {
-	const char *fromfile = CSAntTaskParam(task, "file");
-	const char *tofile = CSAntTaskParam(task, "tofile");
+	const char *fromfileParam = CSAntTaskParam(task, "file");
+	const char *tofileParam = CSAntTaskParam(task, "tofile");
+	char *fromfile;
+	char *tofile;
 	FILE *instream;
 	FILE *outstream;
 	char buffer[BUFSIZ];
 	int len;
 
 	/* Validate the parameters */
-	if(!fromfile)
+	if(!fromfileParam)
 	{
 		fprintf(stderr, "no source file in <copy>\n");
 		return 0;
 	}
-	if(!tofile)
+	if(!tofileParam)
 	{
 		fprintf(stderr, "no destination file in <copy>\n");
 		return 0;
 	}
-	fromfile = CSAntDirCombine(CSAntBaseBuildDir, fromfile);
-	tofile = CSAntDirCombine(CSAntBaseBuildDir, tofile);
+	fromfile = CSAntDirCombine(CSAntBaseBuildDir, fromfileParam);
+	if (!fromfile)
+	{
+	  	return 0;
+	}
+	tofile = CSAntDirCombine(CSAntBaseBuildDir, tofileParam);
+	if (!tofile)
+	{
+		ILFree(fromfile);
+	  	return 0;
+	}
 
 	/* Report the command that we will be executing */
 	if(!CSAntSilent)
@@ -186,6 +331,8 @@ static int Task_Copy(CSAntTask *task)
 		if((instream = fopen(fromfile, "r")) == NULL)
 		{
 			perror(fromfile);
+		  	ILFree(fromfile);
+			ILFree(tofile);
 			return 0;
 		}
 	}
@@ -197,6 +344,8 @@ static int Task_Copy(CSAntTask *task)
 		{
 			perror(tofile);
 			fclose(instream);
+		  	ILFree(fromfile);
+			ILFree(tofile);
 			return 0;
 		}
 	}
@@ -216,12 +365,16 @@ static int Task_Copy(CSAntTask *task)
 		fclose(instream);
 		fclose(outstream);
 		ILDeleteFile(tofile);
+		ILFree(fromfile);
+		ILFree(tofile);
 		return 0;
 	}
 
 	/* Done */
 	fclose(instream);
 	fclose(outstream);
+	ILFree(fromfile);
+	ILFree(tofile);
 	return 1;
 }
 

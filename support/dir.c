@@ -259,7 +259,7 @@ static void GetDirEntryType(ILDir *dir, ILDirEnt *entry)
  * Implementing this way because opendir seems to be somewhat non-standardised.
  * so basically I think this way will be a lot more portable.
  */
-ILDir *ILOpenDir(char *path)
+ILDir *ILOpenDir(const char *path)
 {
 #ifdef HAVE_DIRENT_H
 	ILDir *dir = (ILDir *)ILMalloc(sizeof(ILDir));
@@ -271,7 +271,7 @@ ILDir *ILOpenDir(char *path)
 			ILFree(dir);
 			return (ILDir *)0;
 		}
-		dir->dir = opendir(path);
+		dir->dir = opendir(dir->pathname);
 		if(!(dir->dir))
 		{
 			ILFree(dir->pathname);
@@ -421,7 +421,7 @@ struct _tagILDirEnt
 	char name[1];
 };
 
-ILDir *ILOpenDir(char *path)
+ILDir *ILOpenDir(const char *path)
 {
 	char *spec;
 	int len;
@@ -558,7 +558,7 @@ int ILGetFileType(const char *path)
 	return ILFileType_REG;
 }
 
-ILDir *ILOpenDir(char *path)
+ILDir *ILOpenDir(const char *path)
 {
 	return 0;
 }

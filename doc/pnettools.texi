@@ -194,7 +194,7 @@ Otherwise the exit status is 0.
 @example
 -e ENTRYPOINT -LDIR -nostdlib -lLIBRARY
 -shared -static -m32bit-only -fresources=RESFILE
--mcui-subsystem -mgui-subsystem
+-mcui-subsystem -mgui-subsystem -gtk -gnome
 @end example
 
 @item Other Options
@@ -647,6 +647,14 @@ under Windows.  This is the default.
 @item -mgui-subsystem
 Tag the output file so that it can run within the GUI subsystem
 under Windows.
+
+@cindex -gtk option (cscc)
+@item -gtk
+Link against all of the libraries that are necessary to use Gtk#.
+
+@cindex -gnome option (cscc)
+@item -gnome
+Link against all of the libraries that are necessary to use Gnome#.
 @end table
 
 @c -----------------------------------------------------------------------

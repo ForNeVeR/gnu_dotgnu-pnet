@@ -110,6 +110,8 @@ curve for new users.
 \-fresources=\fIresfile\fR
 \-mcui\-subsystem
 \-mgui\-subsystem
+\-gtk
+\-gnome
 .TP
 .B Other Options
 \-dumpversion
@@ -435,6 +437,12 @@ under Windows.  This is the default.
 .B \-mgui\-subsystem
 Tag the output file so that it can run within the GUI subsystem
 under Windows.
+.TP
+.B \-gtk
+Link against all of the libraries that are necessary to use Gtk#.
+.TP
+.B \-gnome
+Link against all of the libraries that are necessary to use Gnome#.
 .SH "OTHER OPTIONS"
 .TP
 .B \-dumpversion

@@ -9,6 +9,9 @@
 	that it is consistent with the engine and linker with respect
 	to system assemblies.
 
+	* doc/pnettools.texi, cscc/cscc.1: document the "-gtk" and
+	"-gnome" options.
+
 2002-07-02  Gopal.V  <gopalv82@symonds.net>
 
 	* doc/Doxyfile: Add Doxygen configuration file (contributed

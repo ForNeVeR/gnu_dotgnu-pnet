@@ -5,6 +5,8 @@
 	before the generic "dlopen" version, as some MacOS X systems
 	have "dlopen", but it doesn't do the right thing.
 
+	* NEWS, configure.in: update version for the "0.5.8" release.
+
 2003-06-17  James Michael DuPont  <mdupont777@yahoo.com>
 
 	* doc/cvm.dtd: DTD file for the CVM opcode definitions.

@@ -1,4 +1,81 @@
 
+0.5.8 (17 June 2003)
+
+	Runtime engine:
+
+	* Implement an unroller for ARM platforms.
+	* PInvoke lookups for global variables.
+	* Fix the CVM coder logic for vararg methods.
+	* Reduce the size of the CVM coder on embedded platforms.
+	* Improve the regexp internalcalls for sub-string matches (Gopal V).
+	* Correct stack traces for exceptions (Gopal V).
+	* Flip ILClass and ILClassPrivate in the object header so that
+	  virtual method lookups need one less pointer indirection.
+	* Implement some of the "Reflection.Emit" internalcalls.
+	* "IntPtr" and "UIntPtr" constructors give type I, not MV.
+	* New internalcall interface for "Marshal".
+	* Layout interfaces with no methods correctly.
+	* Move some long shifts out of line to prevent register spills.
+	* Fix the "sizeof" computation for pointer types.
+	* Verification bug with multi-dimensional arrays.
+	* Make "RuntimeMethodHandle.GetFunctionPointer" return a closure.
+	* Increase the maximum non-raw libffi argument count from 8 to 32.
+
+	Compiler:
+
+	* Serializing boxed enumerations (Gopal V).
+	* Force type-centric resolution of attributes names (Gopal V).
+	* Boolean conversions (Gopal V).
+	* Add support for "#line default" in the pre-processor (Gopal V).
+	* Avoid semantic analysis of method bodies in "csdoc" (Gopal V).
+	* Visual Basic language front-end.
+	* Java language front-end (Gopal V).
+	* Bf language front-end (Gopal V).
+	* Add the "specialname" attribute to event accessors.
+	* Do not allocate local variables for constants (Gopal V).
+	* Semantic analysis and code generation for "base[???]" (Gopal V).
+	* Better recognition of "Attribute" suffixes on type names.
+	* Pointer comparison and dereferencing.
+	* Recognise enumerators by interface where applicable (Gopal V).
+	* Add the "-fno-generics" option for code that uses "where" (Gopal V).
+	* Error handling for static constructors (Gopal V).
+	* Enum initializers using non-identical enum types (Gopal V).
+	* Print nested type names correctly in "CSTypeToName".
+	* Wrap "using" blocks in a local variable scope (Gopal V).
+	* Allow "unsafe" destructors (Gopal V).
+
+	Disassembler:
+
+	* Dump custom attributes and constants that are attached to parameters.
+
+	Loader and Metadata:
+
+	* Creating parameters without names (Gopal V).
+	* Detect enumerated types across image boundaries during de-serialization.
+	* On-demand loading of various token types.
+
+	Linker:
+
+	* Embedding public keys in images.
+	* Creating public key tokens when linking against images with public keys.
+
+	Platform Support:
+
+	* Use the Win32 version of ILSpawnProcess in both cygwin and non-cygwin.
+	* Better support for cross-compilation in "configure.in".
+	* Work around a broken definition of "dirent" on Solaris systems.
+	* Socket option support functions (Gopal V).
+	* Make the code friendlier to m68k-palmos (doesn't link yet due to > 64k).
+	* Socket support for IPv6 and IrDA.
+	* Dynamic library support under MacOS X (Ian Fung).
+	* Use ".dylib" instead of ".so" for MacOS X (Ian Fung).
+
+	Other:
+
+	* "il2doc" utility program, for converting IL binaries into XML.
+	* Don't generate TODO for auto-stubbed interfaces and abstracts (Gopal V).
+	* DTD for the CVM documentation syntax (James Michael DuPont).
+
 0.5.6 (3 May 2003)
 
 	Runtime engine:

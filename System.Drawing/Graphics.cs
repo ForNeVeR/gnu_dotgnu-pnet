@@ -1005,30 +1005,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				dest[2].Y = image.Height;
 				ToolkitDrawImage(image, src, dest);
 			}
-	[TODO]
-	public void DrawImage(Image image, Point[] destPoints,
-						  Rectangle srcRect, GraphicsUnit srcUnit,
-						  ImageAttributes imageAttr)
-			{
-				// TODO
-				DrawImage(image, destPoints, srcRect, srcUnit);
-			}
-	[TODO]
-	public void DrawImage(Image image, PointF[] destPoints,
-						  RectangleF srcRect, GraphicsUnit srcUnit,
-						  ImageAttributes imageAttr)
-			{
-				// TODO
-				DrawImage(image, destPoints, srcRect, srcUnit);
-			}
-	[TODO]
 	public void DrawImage(Image image, float x, float y,
 						  RectangleF srcRect, GraphicsUnit srcUnit)
 			{
 				Point[] src = ConvertRectangle3(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, srcUnit);
-				Point[] dest = ConvertRectangle3(x, y, 0, 0, pageUnit);
-				dest[1].X = image.Width;
-				dest[2].Y = image.Height;
+				Point[] dest = ConvertRectangle3(x, y, srcRect.Width, srcRect.Height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
 	public void DrawImage(Image image, float x, float y,
@@ -1038,43 +1019,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				Point[] dest = ConvertRectangle3(x, y, width, height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
-	[TODO]
-	public void DrawImage(Image image, Point[] destPoints,
-						  Rectangle srcRect, GraphicsUnit srcUnit,
-						  ImageAttributes imageAttr,
-						  DrawImageAbort callback)
-			{
-				// TODO
-				DrawImage(image, destPoints, srcRect, srcUnit);
-			}
-	[TODO]
-	public void DrawImage(Image image, PointF[] destPoints,
-						  RectangleF srcRect, GraphicsUnit srcUnit,
-						  ImageAttributes imageAttr,
-						  DrawImageAbort callback)
-			{
-				// TODO
-				DrawImage(image, destPoints, srcRect, srcUnit);
-			}
-	[TODO]
-	public void DrawImage(Image image, Point[] destPoints,
-						  Rectangle srcRect, GraphicsUnit srcUnit,
-						  ImageAttributes imageAttr,
-						  DrawImageAbort callback, int callbackdata)
-			{
-				// TODO
-				DrawImage(image, destPoints, srcRect, srcUnit);
-			}
-	[TODO]
-	public void DrawImage(Image image, PointF[] destPoints,
-						  RectangleF srcRect, GraphicsUnit srcUnit,
-						  ImageAttributes imageAttr,
-						  DrawImageAbort callback, int callbackdata)
-			{
-				// TODO
-				DrawImage(image, destPoints, srcRect, srcUnit);
-			}
-
 	public void DrawImage(Image image, Rectangle destRect,
 						  int srcX, int srcY, int srcWidth, int srcHeight,
 						  GraphicsUnit srcUnit)
@@ -1093,60 +1037,97 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				Point[] dest = ConvertRectangle3(destRect.X, destRect.Y, destRect.Width, destRect.Height, pageUnit);
 				ToolkitDrawImage(image, src, dest);
 			}
-	[TODO]
+
+	// We don't use image attributes or image abort procedures in this
+	// implementation, so stub out the remaining DrawImage methods.
+	public void DrawImage(Image image, Point[] destPoints,
+						  Rectangle srcRect, GraphicsUnit srcUnit,
+						  ImageAttributes imageAttr)
+			{
+				DrawImage(image, destPoints, srcRect, srcUnit);
+			}
+	public void DrawImage(Image image, PointF[] destPoints,
+						  RectangleF srcRect, GraphicsUnit srcUnit,
+						  ImageAttributes imageAttr)
+			{
+				DrawImage(image, destPoints, srcRect, srcUnit);
+			}
+	public void DrawImage(Image image, Point[] destPoints,
+						  Rectangle srcRect, GraphicsUnit srcUnit,
+						  ImageAttributes imageAttr,
+						  DrawImageAbort callback)
+			{
+				DrawImage(image, destPoints, srcRect, srcUnit);
+			}
+	public void DrawImage(Image image, PointF[] destPoints,
+						  RectangleF srcRect, GraphicsUnit srcUnit,
+						  ImageAttributes imageAttr,
+						  DrawImageAbort callback)
+			{
+				DrawImage(image, destPoints, srcRect, srcUnit);
+			}
+	public void DrawImage(Image image, Point[] destPoints,
+						  Rectangle srcRect, GraphicsUnit srcUnit,
+						  ImageAttributes imageAttr,
+						  DrawImageAbort callback, int callbackdata)
+			{
+				DrawImage(image, destPoints, srcRect, srcUnit);
+			}
+	public void DrawImage(Image image, PointF[] destPoints,
+						  RectangleF srcRect, GraphicsUnit srcUnit,
+						  ImageAttributes imageAttr,
+						  DrawImageAbort callback, int callbackdata)
+			{
+				DrawImage(image, destPoints, srcRect, srcUnit);
+			}
 	public void DrawImage(Image image, Rectangle destRect,
 						  int srcX, int srcY, int srcWidth, int srcHeight,
 						  GraphicsUnit srcUnit, ImageAttributes imageAttr)
 			{
-				// TODO
-				DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight, srcUnit);
+				DrawImage(image, destRect, srcX, srcY, srcWidth,
+						  srcHeight, srcUnit);
 			}
-	[TODO]
 	public void DrawImage(Image image, Rectangle destRect,
 						  float srcX, float srcY,
 						  float srcWidth, float srcHeight,
 						  GraphicsUnit srcUnit, ImageAttributes imageAttr)
 			{
-				// TODO
-				DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight, srcUnit);
+				DrawImage(image, destRect, srcX, srcY, srcWidth,
+						  srcHeight, srcUnit);
 			}
-	[TODO]
 	public void DrawImage(Image image, Rectangle destRect,
 						  int srcX, int srcY, int srcWidth, int srcHeight,
 						  GraphicsUnit srcUnit, ImageAttributes imageAttr,
 						  DrawImageAbort callback)
 			{
-				// TODO
-				DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight, srcUnit);
+				DrawImage(image, destRect, srcX, srcY, srcWidth,
+						  srcHeight, srcUnit);
 			}
-	[TODO]
 	public void DrawImage(Image image, Rectangle destRect,
 						  float srcX, float srcY,
 						  float srcWidth, float srcHeight,
 						  GraphicsUnit srcUnit, ImageAttributes imageAttr,
 						  DrawImageAbort callback)
 			{
-				// TODO
-				DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight, srcUnit);
+				DrawImage(image, destRect, srcX, srcY, srcWidth,
+						  srcHeight, srcUnit);
 			}
-	[TODO]
 	public void DrawImage(Image image, Rectangle destRect,
 						  int srcX, int srcY, int srcWidth, int srcHeight,
 						  GraphicsUnit srcUnit, ImageAttributes imageAttr,
 						  DrawImageAbort callback, IntPtr callbackData)
 			{
-				// TODO
-				DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight, srcUnit);
+				DrawImage(image, destRect, srcX, srcY, srcWidth,
+						  srcHeight, srcUnit);
 			}
-	[TODO]
 	public void DrawImage(Image image, Rectangle destRect,
 						  float srcX, float srcY,
 						  float srcWidth, float srcHeight,
 						  GraphicsUnit srcUnit, ImageAttributes imageAttr,
 						  DrawImageAbort callback, IntPtr callbackData)
 			{
-				// TODO
-				DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight, srcUnit);
+				DrawImage(image, destRect, srcX, srcY, srcWidth,
+						  srcHeight, srcUnit);
 			}
 
 	// Draw an unscaled image.
@@ -1154,7 +1135,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				DrawImageUnscaled(image, point.X, point.Y);
 			}
-
 	public void DrawImageUnscaled(Image image, Rectangle rect)
 			{
 				DrawImageUnscaled(image, rect.X, rect.Y);

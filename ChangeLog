@@ -8,6 +8,9 @@
 	ToolkitDrawIcon is already adjusting by the base co-ordinates;
 	doing it again is an error.
 
+	* System.Drawing/Graphics.cs: clean out some of the unnecessary
+	TODO's in "DrawImage".
+
 2004-01-25  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpResizer.cs, DotGNU.Images/Frame.cs,

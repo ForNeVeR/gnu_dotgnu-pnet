@@ -1074,6 +1074,7 @@ static ILObject *CreateResourceStream(ILExecThread *thread, ILImage *image,
 	unsigned char *section;
 	unsigned long sectionLen;
 	unsigned long start;
+	unsigned long pad;
 	ILUInt32 length;
 
 	/* Find the resource section within the image */
@@ -1096,9 +1097,17 @@ static ILObject *CreateResourceStream(ILExecThread *thread, ILImage *image,
 		{
 			return 0;
 		}
-		start += length + 4;
-		section += length + 4;
-		sectionLen -= length + 4;
+		if((length % 4) != 0)
+		{
+			pad = 4 - (length % 4);
+		}
+		else
+		{
+			pad = 0;
+		}
+		start += length + pad + 4;
+		section += length + pad + 4;
+		sectionLen -= length + pad + 4;
 		--posn;
 	}
 

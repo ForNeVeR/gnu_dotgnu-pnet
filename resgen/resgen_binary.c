@@ -377,6 +377,7 @@ int ILResLoadBinaryIL(const char *filename, unsigned char *address,
 {
 	unsigned long len;
 	unsigned long magic;
+	unsigned long pad;
 	while(size >= 8)
 	{
 		/* Read the header for the next resource sub-section */
@@ -390,12 +391,20 @@ int ILResLoadBinaryIL(const char *filename, unsigned char *address,
 		address += 8;
 		size -= 8;
 		len -= 4;
+		if((len % 4) != 0)
+		{
+			pad = 4 - (len % 4);
+		}
+		else
+		{
+			pad = 0;
+		}
 
 		/* Skip if not string resources */
 		if(magic != (unsigned long)0xBEEFCACE)
 		{
-			address += len;
-			size -= len;
+			address += len + pad;
+			size -= len + pad;
 			continue;
 		}
 
@@ -404,8 +413,8 @@ int ILResLoadBinaryIL(const char *filename, unsigned char *address,
 		{
 			return 1;
 		}
-		address += len;
-		size -= len;
+		address += len + pad;
+		size -= len + pad;
 	}
 	return 0;
 }

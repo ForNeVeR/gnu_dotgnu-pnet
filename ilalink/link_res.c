@@ -57,6 +57,13 @@ int ILLinkerAddResource(ILLinker *linker, const char *name,
 		}
 	}
 
+	/* Pad the resource section to a multiple of 4 bytes */
+	if((length % 4) != 0)
+	{
+		ILMemZero(buffer, 4);
+		ILWriterTextWrite(linker->writer, buffer, 4 - (int)(length % 4));
+	}
+
 	/* Back-patch the place-holder with the resource length */
 	ILWriterTextWrite32Bit(linker->writer, rva, length);
 

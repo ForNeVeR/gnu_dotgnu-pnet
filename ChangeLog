@@ -1,4 +1,9 @@
 
+2002-10-30  Charles Shuller  <kyeran@hermes-solutions.biz>
+
+	* runtime/System/IO/Path.cs: Added patch to GetPathRoot
+	to support SMB paths in windows (commit by Gopal)
+
 2002-10-29  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs, runtime/Platform/Errno.cs,

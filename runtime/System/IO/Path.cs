@@ -161,15 +161,63 @@ namespace System.IO
 			return sb.ToString();
 		}
 		
-		[TODO]
 		public static String GetPathRoot(String path)
 		{
-			if (path == null) 
-			{
-				return null;
-			}
+ 			char[] pathChars;
+ 			int i = 0;  /*  Look an index var for my for loop  */
+ 			bool passedServerDelimeter = false;  
+ 
+ 			if(path == null)
+ 			{
+ 				throw new ArgumentNullException();
+ 			}
+ 			if(path == "")
+ 			{
+ 				throw new ArgumentException();
+ 			}
 			
-			return path.Substring(0, 1);
+			if(!IsPathRooted(path))path=Path.GetFullPath(path);
+ 
+ 			/*  Now that were done checking what path is, we can 
+			    devote time to busting it up into an array  */
+ 			pathChars = path.ToCharArray();
+ 
+ 			if((pathChars[0] == DirectorySeparatorChar) 
+				&& (pathChars[1] == DirectorySeparatorChar))
+ 			{
+ 				/*  Looks like we have a SMB/CIFS/Silly MS Drive Share thing 
+					happening  Starting at index 2 because we just checked 
+					indicies 0 and 1 above  */
+ 				for(i = 2; i < path.length; i++)
+ 				{
+ 					if(pathChars[i] == DirectorySeparatorChar
+						&& passedServerDelimeter == false)
+ 					{
+ 						passedServerDelimeter = true;
+ 					}
+ 					else if(pathChars[i] == DirectorySeparatorChar
+						&& passedServerDelimeter == true)
+ 					{
+ 						return new String(pathChars, 0, i);
+ 					}
+ 				}
+ 				
+ 				if(passedServerDelimeter == true)
+ 				{
+ 					/*  Have to assume the passed in string is actually 
+						the root  */
+ 					return path;
+ 				}
+ 				else
+ 				{
+ 					/*  The passed in result is not a valid SMB resource 
+						locator  */
+ 					/*  The spec isn't too clear on this, but I'm throwing 
+						an argument exception  */
+ 					throw new ArgumentException();
+ 				}
+ 			}
+ 			return new String(pathChars[0],1);
 		}
 		
 		/* generate /tmp/pnetXXXXXX */

@@ -23,6 +23,9 @@
 	* engine/process.c: Added globalTraceMutex initialization
 	to ILExecInit and deinitialization to ILExecDeinit.
 	
+	* libgc/win32_threads.c: Made GC_CreateThread CYGWIN wrapper
+	faster by removing need to dynamically allocate/free memory.
+	
 2004-05-26  Thong Nguyen <tum@veridicus.com>
 
 	* support/dir.c: Fix for Win32 version of ILCloseDir (return

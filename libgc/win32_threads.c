@@ -623,8 +623,8 @@ int GC_pthread_join(pthread_t pthread_id, void **retval) {
  */
 struct createthread_startinfo
 {
-	HANDLE handle;
-	DWORD threadid;	
+	HANDLE *handle_ptr;
+	DWORD *threadid_ptr;	
 	HANDLE waitHandle;
 	LPVOID parameter;
 	DWORD creationFlags;
@@ -646,21 +646,25 @@ static void *main_thread_start(void *arg)
 	if (!DuplicateHandle(GetCurrentProcess(),
 			GetCurrentThread(),
 			GetCurrentProcess(),
-			&startinfo_ptr->handle,
+			startinfo_ptr->handle_ptr,
 			0,
 			0,
 			DUPLICATE_SAME_ACCESS))
 	{
 		DWORD last_error = GetLastError();
 		GC_printf1("Last error code: %lx\n", last_error);
+		
 		ABORT("DuplicateHandle failed");
 	}
 
 	/* Return the ThreadID through the startinfo_ptr */
-	startinfo_ptr->threadid = GetCurrentThreadId();
+	if (startinfo_ptr->threadid_ptr)
+	{
+		*startinfo_ptr->threadid_ptr = GetCurrentThreadId();
+	}
 	
-	/* Make a copy of the startinfo because it'it could be freed by the
-	   creater thread any time after we set startinfo.waitHandle */
+	/* Make a copy of the startinfo because it could be invalid
+	   any time after we signal startinfo.waitHandle */
 	startinfo = *startinfo_ptr;
 
 	/* Let the creater thread  know we have set the handle/threadid */
@@ -688,52 +692,41 @@ GC_API HANDLE WINAPI GC_CreateThread(
 	HANDLE handle;
 	pthread_t new_thread;
 	pthread_attr_t attr;
-	struct createthread_startinfo *startinfo_ptr;
+	struct createthread_startinfo startinfo;
 
 	/* Make sure GC is initialized (i.e. main thread is attached) */
 	if (!GC_is_initialized)
 	{
 		GC_init();
 	}
-
-	/* Allocate start information for the CreateThread call */
-	/* It appears to be unsafe to use the GC's allocator here */
-	startinfo_ptr = malloc(sizeof(struct createthread_startinfo)); 
-	
-	if (startinfo_ptr == 0)
-	{
-		SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-
-        return NULL;
-    }
 	
 	/* This WaitHandle will be signalled once the new thread has filled in
 	   its handle/threadid information */
-	startinfo_ptr->waitHandle = CreateEvent(0, 1, 0, 0);
+	startinfo.waitHandle = CreateEvent(0, 1, 0, 0);
 
-	if (startinfo_ptr->waitHandle == NULL)
+	if (startinfo.waitHandle == NULL)
 	{
 		SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-		free(startinfo_ptr);
-
-		return NULL;
+		
+		return 0;
 	}
 
+	handle = 0;
+
 	/* Setup the CreateThread start information */
-	startinfo_ptr->handle = 0;
-	startinfo_ptr->threadid = 0;
-	startinfo_ptr->parameter = lpParameter;
-	startinfo_ptr->startFunc = lpStartAddress;
-	startinfo_ptr->creationFlags = dwCreationFlags;
+	startinfo.handle_ptr = &handle;
+	startinfo.threadid_ptr = lpThreadId;
+	startinfo.parameter = lpParameter;
+	startinfo.startFunc = lpStartAddress;
+	startinfo.creationFlags = dwCreationFlags;
 
 	/* Initialize the pthread_attr_t with defaults */
 	if (pthread_attr_init(&attr) != 0)
 	{
 		SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-		CloseHandle(startinfo_ptr->waitHandle);
-		free(startinfo_ptr);
-
-		return NULL;
+		CloseHandle(startinfo.waitHandle);
+		
+		return 0;
 	}
 	
 	if (dwStackSize != 0)
@@ -743,19 +736,10 @@ GC_API HANDLE WINAPI GC_CreateThread(
 	}
 
 	/* Create a CYGWIN pthread */
-	if (GC_pthread_create(&new_thread, &attr, main_thread_start, startinfo_ptr) == 0)
+	if (GC_pthread_create(&new_thread, &attr, main_thread_start, &startinfo) == 0)
 	{
-		/* Wait for the handle/threadid */
-		WaitForSingleObject(startinfo_ptr->waitHandle, INFINITE);
-
-		if (lpThreadId)
-		{
-			/* Get and set the new threadid */
-			*lpThreadId = startinfo_ptr->threadid;
-		}
-		
-		/* Get the new thread handle */
-		handle = startinfo_ptr->handle;
+		/* Wait for the handle/threadid to be filled in */
+		WaitForSingleObject(startinfo.waitHandle, INFINITE);
 	}
 	else
 	{
@@ -770,10 +754,8 @@ GC_API HANDLE WINAPI GC_CreateThread(
 	/* Free the pthread_attr_t structure */
 	pthread_attr_destroy(&attr);
 	/* Free the wait event */
-	CloseHandle(startinfo_ptr->waitHandle);
-	/* Free the startinfo */
-	free(startinfo_ptr);
-
+	CloseHandle(startinfo.waitHandle);
+	
 	return handle;
 }
 

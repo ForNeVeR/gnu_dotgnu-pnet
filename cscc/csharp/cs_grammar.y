@@ -1003,7 +1003,7 @@ CompilationUnit
 					InitGlobalNamespace();
 					CCPluginAddStandaloneAttrs
 						(ILNode_StandaloneAttr_create
-							(CurrNamespaceNode, $2));
+							((ILNode*)CurrNamespaceNode, $2));
 				}
 				ResetState();
 			}
@@ -1014,7 +1014,7 @@ CompilationUnit
 					InitGlobalNamespace();
 					CCPluginAddStandaloneAttrs
 						(ILNode_StandaloneAttr_create
-							(CurrNamespaceNode, $1));
+							((ILNode*)CurrNamespaceNode, $1));
 				}
 				ResetState();
 			}
@@ -1170,7 +1170,7 @@ NamespaceDeclaration
 					InitGlobalNamespace();
 					CCPluginAddStandaloneAttrs
 						(ILNode_StandaloneAttr_create
-							(CurrNamespaceNode, $1));
+							((ILNode*)CurrNamespaceNode, $1));
 				}
 				while(posn < $3.len)
 				{
@@ -2989,6 +2989,12 @@ MethodDeclaration
 	: OptAttributes OptModifiers Type QualifiedIdentifier
 			'(' OptFormalParameterList ')' MethodBody	{
 				ILUInt32 attrs = CSModifiersToMethodAttrs($3, $2);
+				if($2 & CS_MODIFIER_PRIVATE  && yyisa($4, ILNode_QualIdent))
+				{
+					// NOTE: clean this up later
+					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+						"`private' cannot be used in this context");
+				}
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3, $4, $6, $8);
 				CloneLine($$, $4);

@@ -4,6 +4,9 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_info.c:
 	add the "InfoMethods.GetPlatformID" internalcall.
 
+	* libffi/src/x86/sysv.S, libffi/src/x86/win32.S: make the x86 libffi
+	code more robust in the face of callee-pop winapi conventions.
+
 2003-06-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h: duplicate opcode value where it shouldn't be.

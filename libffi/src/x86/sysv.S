@@ -59,8 +59,9 @@ ffi_call_SYSV:
 	call  *28(%ebp)
 
 	/* Remove the space we pushed for the args  */
-	movl  16(%ebp),%ecx
-	addl  %ecx,%esp
+	/* Commented out by Rhys -- will cause problems with winapi calls */
+	/*movl  16(%ebp),%ecx
+	addl  %ecx,%esp*/
 
 	/* Load %ecx with the return type code  */
 	movl  20(%ebp),%ecx	

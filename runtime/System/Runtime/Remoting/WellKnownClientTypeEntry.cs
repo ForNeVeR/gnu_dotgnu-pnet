@@ -43,6 +43,7 @@ public class WellKnownClientTypeEntry : TypeEntry
 				{
 					throw new ArgumentNullException("objectUrl");
 				}
+				actualType = type;
 				TypeName = type.FullName;
 				AssemblyName = type.Assembly.FullName;
 				this.objectUrl = objectUrl;
@@ -85,7 +86,7 @@ public class WellKnownClientTypeEntry : TypeEntry
 			{
 				get
 				{
-					return Type.GetType(TypeName + ", " + AssemblyName);
+					return GetObjectType();
 				}
 			}
 

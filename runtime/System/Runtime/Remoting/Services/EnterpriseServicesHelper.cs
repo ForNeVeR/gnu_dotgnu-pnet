@@ -27,29 +27,30 @@ namespace System.Runtime.Remoting.Services
 using System.Runtime.Remoting.Activation;
 using System.Runtime.Remoting.Proxies;
 
+// This class is intended to be used by "System.EnterpriseServices.dll"
+// to help with wrapping COM objects for remoting.  Since we don't
+// actually support COM in this implementation, we just stub the class.
+
 public sealed class EnterpriseServicesHelper
 {
 	// Create a return message for a constructor call.
-	[TODO]
 	public static IConstructionReturnMessage CreateConstructionReturnMessage
 				(IConstructionCallMessage ctorMsg, MarshalByRefObject retObj)
 			{
-				// TODO
+				// Not used in this implementation.
 				return null;
 			}
 
 	// Switch proxy wrappers.
-	[TODO]
 	public static void SwitchWrappers(RealProxy oldcp, RealProxy newcp)
 			{
-				// TODO
+				// Not used in this implementation.
 			}
 
 	// Wrap an unmanaged IUnknown instance with a COM object.
-	[TODO]
 	public static Object WrapIUnknownWithComObject(IntPtr punk)
 			{
-				// TODO
+				// Not used in this implementation.
 				return null;
 			}
 

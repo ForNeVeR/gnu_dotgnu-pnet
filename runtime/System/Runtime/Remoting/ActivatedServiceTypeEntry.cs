@@ -39,6 +39,7 @@ public class ActivatedServiceTypeEntry : TypeEntry
 				{
 					throw new ArgumentNullException("type");
 				}
+				actualType = type;
 				TypeName = type.FullName;
 				AssemblyName = type.Assembly.FullName;
 			}
@@ -75,7 +76,7 @@ public class ActivatedServiceTypeEntry : TypeEntry
 			{
 				get
 				{
-					return Type.GetType(TypeName + ", " + AssemblyName);
+					return GetObjectType();
 				}
 			}
 

@@ -44,6 +44,7 @@ public class ActivatedClientTypeEntry : TypeEntry
 				{
 					throw new ArgumentNullException("appUrl");
 				}
+				actualType = type;
 				TypeName = type.FullName;
 				AssemblyName = type.Assembly.FullName;
 				applicationUrl = appUrl;
@@ -95,7 +96,7 @@ public class ActivatedClientTypeEntry : TypeEntry
 			{
 				get
 				{
-					return Type.GetType(TypeName + ", " + AssemblyName);
+					return GetObjectType();
 				}
 			}
 

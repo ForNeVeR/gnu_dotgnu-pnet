@@ -31,41 +31,45 @@ public sealed class CallContext
 	// We cannot instantiate this class.
 	private CallContext() {}
 
-	// Free the contents of a named data slot.
+	// Get the logical call context for the current thread.
 	[TODO]
+	private static LogicalCallContext LogicalCallContext
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+
+	// Free the contents of a named data slot.
 	public static void FreeNamedDataSlot(String name)
 			{
-				// TODO
+				LogicalCallContext.FreeNamedDataSlot(name);
 			}
 
 	// Get the data in a particular named data slot.
-	[TODO]
 	public static Object GetData(String name)
 			{
-				// TODO
-				return null;
+				return LogicalCallContext.GetData(name);
 			}
 
 	// Get the headers that were sent with the method call.
-	[TODO]
 	public static Header[] GetHeaders()
 			{
-				// TODO
-				return null;
+				return LogicalCallContext.GetHeaders();
 			}
 
 	// Set the contents of a named data slot.
-	[TODO]
 	public static void SetData(String name, Object value)
 			{
-				// TODO
+				LogicalCallContext.SetData(name, value);
 			}
 
 	// Set the headers to be sent along with the method call.
-	[TODO]
 	public static void SetHeaders(Header[] headers)
 			{
-				// TODO
+				LogicalCallContext.SetHeaders(headers);
 			}
 
 }; // class CallContext

@@ -46,6 +46,7 @@ public class WellKnownServiceTypeEntry : TypeEntry
 				{
 					throw new ArgumentNullException("objectUri");
 				}
+				actualType = type;
 				TypeName = type.FullName;
 				AssemblyName = type.Assembly.FullName;
 				this.objectUri = objectUri;
@@ -100,7 +101,7 @@ public class WellKnownServiceTypeEntry : TypeEntry
 			{
 				get
 				{
-					return Type.GetType(TypeName + ", " + AssemblyName);
+					return GetObjectType();
 				}
 			}
 

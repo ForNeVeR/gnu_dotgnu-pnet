@@ -32,11 +32,17 @@ public abstract class MarshalByRefObject
 
 #if CONFIG_REMOTING
 
+	// Identity of this object.
+	private RemotingServices.Identity identity;
+
 	// Create a marshalable reference for this object.
 	public virtual ObjRef CreateObjRef(Type requestedType)
 			{
-				// Remoting is not yet supported by this class library.
-				throw new RemotingException(_("NotSupp_Remoting"));
+				if(identity == null)
+				{
+					throw new RemotingException(_("Remoting_NoIdentity"));
+				}
+				return new ObjRef(this, requestedType);
 			}
 
 	// Get a lifetime service object for this object.
@@ -49,6 +55,48 @@ public abstract class MarshalByRefObject
 	public virtual Object InitializeLifetimeService()
 			{
 				return LifetimeServices.InitializeLifetimeService(this);
+			}
+
+	// Get this object's identity.
+	internal RemotingServices.Identity GetIdentity()
+			{
+				lock(this)
+				{
+					if(RemotingServices.IsTransparentProxy(this))
+					{
+						return RemotingServices.GetRealProxy(this).Identity;
+					}
+					else
+					{
+						return identity;
+					}
+				}
+			}
+
+	// Clear this object's identity.
+	internal void ClearIdentity()
+			{
+				lock(this)
+				{
+					identity = null;
+				}
+			}
+
+	// Set this object's identity.
+	internal void SetIdentity(RemotingServices.Identity identity)
+			{
+				lock(this)
+				{
+					if(RemotingServices.IsTransparentProxy(this))
+					{
+						RemotingServices.GetRealProxy(this).Identity
+							= identity;
+					}
+					else
+					{
+						this.identity = identity;
+					}
+				}
 			}
 
 #endif // CONFIG_REMOTING

@@ -13,6 +13,21 @@
 	runtime/System/Runtime/Remoting/Proxies/RealProxy.cs:
 	implement some missing functionality in "System.Runtime.Remoting".
 
+	* resources/en_US/runtime/Remoting.txt,
+	runtime/System/MarshalByRefObject.cs,
+	runtime/System/Runtime/Remoting/ActivatedClientTypeEntry.cs,
+	runtime/System/Runtime/Remoting/ActivatedServiceTypeEntry.cs,
+	runtime/System/Runtime/Remoting/RemotingConfiguration.cs,
+	runtime/System/Runtime/Remoting/RemotingServices.cs,
+	runtime/System/Runtime/Remoting/TypeEntry.cs,
+	runtime/System/Runtime/Remoting/WellKnownClientTypeEntry.cs,
+	runtime/System/Runtime/Remoting/WellKnownServiceTypeEntry.cs,
+	runtime/System/Runtime/Remoting/Messaging/CallContext.cs,
+	runtime/System/Runtime/Remoting/Messaging/LogicalCallContext.cs,
+	runtime/System/Runtime/Remoting/Proxies/RealProxy.cs,
+	runtime/System/Runtime/Remoting/Services/EnterpriseServicesHelper.cs:
+	more missing functionality in "System.Runtime.Remoting".
+
 2003-12-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Resources/ResourceWriter.cs: use "FileMode.Create"

@@ -111,6 +111,21 @@ public sealed class LogicalCallContext : ISerializable, ICloneable
 				}
 			}
 
+	// Get the headers that are stored in this logical call context.
+	[TODO]
+	internal Header[] GetHeaders()
+			{
+				// TODO
+				return null;
+			}
+
+	// Set the headers that are stored in this logical call context.
+	[TODO]
+	internal void SetHeaders(Header[] headers)
+			{
+				// TODO
+			}
+
 }; // class LogicalCallContext
 
 #endif // CONFIG_SERIALIZATION

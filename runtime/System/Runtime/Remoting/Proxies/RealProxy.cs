@@ -37,6 +37,7 @@ public abstract class RealProxy
 	private Object stubData;
 	private MarshalByRefObject serverObject;
 	private Object proxy;
+	private RemotingServices.Identity identity;
 	private static readonly Object defaultStub = (Object)(-1);
 
 	// Constructor.
@@ -223,6 +224,19 @@ public abstract class RealProxy
 			{
 				// TODO: make into an internalcall.
 				return false;
+			}
+
+	// Get this proxy's identity.
+	internal RemotingServices.Identity Identity
+			{
+				get
+				{
+					return identity;
+				}
+				set
+				{
+					identity = value;
+				}
 			}
 
 }; // class RealProxy

@@ -24,3 +24,7 @@ Remoting_SinkStackNonEmpty=The sink stack is not empty
 Remoting_NotMarshalOrInterface=Type is not MarshalByRef or an interface
 Remoting_CtorMsg=Constructor message is not applicable to the type
 Remoting_InvalidKey=Cannot use special key in this context
+Remoting_NoIdentity=The object does not have a remoting identity
+Remoting_NotLocal=The object is not local to the current application domain
+Remoting_HasIdentity=The object's identity has already been set
+Remoting_NoProxy=The object does not have a remoting proxy

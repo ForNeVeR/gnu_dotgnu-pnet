@@ -28,7 +28,9 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
+using System.Runtime.Remoting.Contexts;
 using System.Diagnostics;
+using System.Threading;
 
 public sealed class RemotingServices
 {
@@ -65,20 +67,29 @@ public sealed class RemotingServices
 			}
 
 	// Get the envoy chain for a specific proxy object.
-	[TODO]
 	public static IMessageSink GetEnvoyChainForProxy
 				(MarshalByRefObject obj)
 			{
-				// TODO
+				if(IsObjectOutOfContext(obj))
+				{
+					RealProxy proxy = GetRealProxy(obj);
+					Identity id = proxy.Identity;
+					if(id != null)
+					{
+						return id.envoyChain;
+					}
+				}
 				return null;
 			}
 
 	// Get a lifetime service object.
-	[TODO]
 	public static Object GetLifetimeService(MarshalByRefObject obj)
 			{
-				// TODO
-				return null;
+				if(obj == null)
+				{
+					return null;
+				}
+				return obj.GetLifetimeService();
 			}
 
 	// Get the method associated with a specific message.
@@ -90,27 +101,55 @@ public sealed class RemotingServices
 			}
 
 	// Serialize an object.
-	[TODO]
 	public static void GetObjectData(Object obj, SerializationInfo info,
 									 StreamingContext context)
 			{
-				// TODO
+				if(obj == null)
+				{
+					throw new ArgumentNullException("obj");
+				}
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				ObjRef objRef = Marshal((MarshalByRefObject)obj, null, null);
+				objRef.GetObjectData(info, context);
 			}
 
 	// Get the URI for a specific object.
-	[TODO]
 	public static String GetObjectUri(MarshalByRefObject obj)
 			{
-				// TODO
+				if(obj != null)
+				{
+					Identity identity = obj.GetIdentity();
+					if(identity != null)
+					{
+						return identity.uri;
+					}
+				}
 				return null;
 			}
 
 	// Get an object reference that represents an object proxy.
-	[TODO]
 	public static ObjRef GetObjRefForProxy(MarshalByRefObject obj)
 			{
-				// TODO
-				return null;
+				if(IsTransparentProxy(obj))
+				{
+					RealProxy proxy = GetRealProxy(obj);
+					Identity id = proxy.Identity;
+					if(id != null)
+					{
+						return id.objRef;
+					}
+					else
+					{
+						return null;
+					}
+				}
+				else
+				{
+					throw new RemotingException(_("Remoting_NoProxy"));
+				}
 			}
 
 	// Get the real proxy underlying a transparent one.
@@ -130,43 +169,67 @@ public sealed class RemotingServices
 			}
 
 	// Get the session ID from a particular message.
-	[TODO]
 	public static String GetSessionIdForMethodMessage(IMethodMessage msg)
 			{
-				// TODO
-				return null;
+				return msg.Uri;
 			}
 
 	// Determine if a method is overloaded.
-	[TODO]
 	public static bool IsMethodOverloaded(IMethodMessage msg)
 			{
-				// TODO
-				return false;
+				MethodBase method = msg.MethodBase;
+				return (method.DeclaringType.GetMember
+							(method.Name, MemberTypes.Method,
+							 BindingFlags.Public |
+							 BindingFlags.NonPublic |
+							 BindingFlags.Instance).Length > 1);
 			}
 
 	// Determine if an object is outside the current application domain.
-	[TODO]
 	public static bool IsObjectOutOfAppDomain(Object tp)
 			{
-				// TODO
-				return false;
+				if(!(tp is MarshalByRefObject))
+				{
+					return false;
+				}
+				Identity id = ((MarshalByRefObject)tp).GetIdentity();
+				if(id != null)
+				{
+					return id.otherAppDomain;
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 	// Determine if an object is outside the current context.
-	[TODO]
 	public static bool IsObjectOutOfContext(Object tp)
 			{
-				// TODO
+				if(IsTransparentProxy(tp))
+				{
+					RealProxy proxy = GetRealProxy(tp);
+					Identity id = proxy.Identity;
+					if(id != null && id.context != Thread.CurrentContext)
+					{
+						return true;
+					}
+				}
 				return false;
 			}
 
 	// Determine if a method is one-way.
-	[TODO]
 	public static bool IsOneWay(MethodBase method)
 			{
-				// TODO
-				return false;
+				if(method != null)
+				{
+					return (method.GetCustomAttributes
+						(typeof(OneWayAttribute), false).Length > 0);
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 	// Determine if an object is a transparent proxy.
@@ -176,11 +239,10 @@ public sealed class RemotingServices
 			}
 
 	// Set the log remoting stage.
-	[TODO]
 	[Conditional("REMOTING_PERF")]
 	public static void LogRemotingStage(int stage)
 			{
-				// TODO
+				// Not used in this implementation.
 			}
 
 	// Marshal an object.
@@ -201,11 +263,36 @@ public sealed class RemotingServices
 			}
 
 	// Set the URI to use to marshal an object.
-	[TODO]
 	public static void SetObjectUriForMarshal
 				(MarshalByRefObject obj, String uri)
 			{
-				// TODO
+				if(obj == null)
+				{
+					return;
+				}
+				Identity id = obj.GetIdentity();
+				if(id != null)
+				{
+					// Update the object's current identity.
+					if(id.otherAppDomain)
+					{
+						throw new RemotingException(_("Remoting_NotLocal"));
+					}
+					if(id.uri != null)
+					{
+						throw new RemotingException(_("Remoting_HasIdentity"));
+					}
+					id.uri = uri;
+				}
+				else
+				{
+					// Create a new identity for the object and set it.
+					id = new Identity();
+					id.uri = uri;
+					id.context = Thread.CurrentContext;
+					id.otherAppDomain = false;
+					obj.SetIdentity(id);
+				}
 			}
 
 	// Create a proxy for an object reference.
@@ -219,6 +306,18 @@ public sealed class RemotingServices
 				// TODO
 				return null;
 			}
+
+	// Identity values, that are attached to marshalled objects.
+	internal class Identity
+	{
+		// Accessible state.
+		public String uri;
+		public Context context;
+		public bool otherAppDomain;
+		public ObjRef objRef;
+		public IMessageSink envoyChain;
+
+	}; // class Identity
 
 }; // class RemotingServices
 

@@ -24,50 +24,93 @@ namespace System.Runtime.Remoting
 
 #if CONFIG_REMOTING
 
+using System.Collections;
+using System.Reflection;
 using System.Security.Permissions;
 
 [SecurityPermission(SecurityAction.Demand,
 					Flags=SecurityPermissionFlag.RemotingConfiguration)]
 public class RemotingConfiguration
 {
+	// Internal state.
+	private static String applicationId;
+	private static String applicationName;
+	private static String processId;
+	private static bool customErrorsEnabled;
+	private static bool customErrorsSet;
+	private static Hashtable registeredClientTypes;
+	private static Hashtable registeredServiceTypes;
+	private static Hashtable activatedClientTypes;
+	private static Hashtable activatedServiceTypes;
+
 	// This class cannot be instantiated.
 	private RemotingConfiguration() {}
 
 	// Get the identifier for the currently running application
-	[TODO]
 	public static String ApplicationId
 			{
 				get
 				{
-					// TODO
-					return null;
+					lock(typeof(RemotingConfiguration))
+					{
+						EnsureLoaded();
+						return applicationId;
+					}
 				}
 			}
 
 	// Get or set the application name.
-	[TODO]
 	public static String ApplicationName
 			{
 				get
 				{
-					// TODO
-					return null;
+					lock(typeof(RemotingConfiguration))
+					{
+						EnsureLoaded();
+						return applicationName;
+					}
 				}
 				set
 				{
-					// TODO
+					lock(typeof(RemotingConfiguration))
+					{
+						applicationName = value;
+					}
 				}
 			}
 
 	// Get the process ID for the current process.
-	[TODO]
 	public static String ProcessId
 			{
 				get
 				{
-					// TODO
-					return null;
+					lock(typeof(RemotingConfiguration))
+					{
+						EnsureLoaded();
+						return processId;
+					}
 				}
+			}
+
+	// Get a type from its name and assembly.
+	internal static Type GetType(String typeName, String assemblyName)
+			{
+				if(assemblyName != null)
+				{
+					Assembly assembly = Assembly.Load(assemblyName);
+					return assembly.GetType(typeName);
+				}
+				else
+				{
+					return Type.GetType(typeName);
+				}
+			}
+
+	// Ensure that the configuration information has been loaded.
+	[TODO]
+	private static void EnsureLoaded()
+			{
+				// TODO
 			}
 
 	// Read remoting information from a configuration file.
@@ -78,97 +121,165 @@ public class RemotingConfiguration
 			}
 
 	// Determine if custom errors are enabled.
-	[TODO]
 	public static bool CustomErrorsEnabled(bool isLocalRequest)
 			{
-				// TODO
-				return false;
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					if(customErrorsSet)
+					{
+						return customErrorsEnabled;
+					}
+				}
+				return !isLocalRequest;
+			}
+
+	// Convert a hash table into an array.
+	private static Array ToArray(Hashtable table, Type elemType)
+			{
+				if(table == null)
+				{
+					return Array.CreateInstance(elemType, 0);
+				}
+				Array array = Array.CreateInstance(elemType, table.Count);
+				IDictionaryEnumerator e = table.GetEnumerator();
+				int index = 0;
+				while(e.MoveNext())
+				{
+					array.SetValue(e.Value, index++);
+				}
+				return array;
 			}
 
 	// Get a list of client types that can be activated remotely.
-	[TODO]
 	public static ActivatedClientTypeEntry[]
 				GetRegisteredActivatedClientTypes()
 			{
-				// TODO
-				return null;
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					return (ActivatedClientTypeEntry[])
+						ToArray(activatedClientTypes,
+								typeof(ActivatedClientTypeEntry));
+				}
 			}
 
 	// Get a list of service types that can be activated by remote clients.
-	[TODO]
 	public static ActivatedServiceTypeEntry[]
 				GetRegisteredActivatedServiceTypes()
 			{
-				// TODO
-				return null;
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					return (ActivatedServiceTypeEntry[])
+						ToArray(activatedServiceTypes,
+								typeof(ActivatedServiceTypeEntry));
+				}
 			}
 
 	// Get a list of well known client types.
-	[TODO]
 	public static WellKnownClientTypeEntry[]
 				GetRegisteredWellKnownClientTypes()
 			{
-				// TODO
-				return null;
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					return (WellKnownClientTypeEntry[])
+						ToArray(registeredClientTypes,
+								typeof(WellKnownClientTypeEntry));
+				}
 			}
 
 	// Get a list of well known service types.
-	[TODO]
 	public static WellKnownServiceTypeEntry[]
 				GetRegisteredWellKnownServiceTypes()
 			{
-				// TODO
-				return null;
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					return (WellKnownServiceTypeEntry[])
+						ToArray(registeredServiceTypes,
+								typeof(WellKnownServiceTypeEntry));
+				}
 			}
 
 	// Determine if activation is allowed on a type.
-	[TODO]
 	public static bool IsActivationAllowed(Type svrType)
 			{
-				// TODO
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					if(activatedServiceTypes != null)
+					{
+						return activatedServiceTypes.ContainsKey(svrType);
+					}
+				}
 				return false;
 			}
 
 	// Determine if a type can be remotely activated.
-	[TODO]
 	public static ActivatedClientTypeEntry
 				IsRemotelyActivatedClientType(Type svrType)
 			{
-				// TODO
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					if(activatedClientTypes != null)
+					{
+						return (activatedClientTypes[svrType]
+									as ActivatedClientTypeEntry);
+					}
+				}
 				return null;
 			}
-	[TODO]
 	public static ActivatedClientTypeEntry
 				IsRemotelyActivatedClientType
 					(String typeName, String assemblyName)
 			{
-				// TODO
-				return null;
+				return IsRemotelyActivatedClientType
+					(GetType(typeName, assemblyName));
 			}
 
 	// Determine if a type is a well known client type.
-	[TODO]
 	public static WellKnownClientTypeEntry
 				IsWellKnownClientType(Type svrType)
 			{
-				// TODO
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					if(registeredClientTypes != null)
+					{
+						return (registeredClientTypes[svrType]
+									as WellKnownClientTypeEntry);
+					}
+				}
 				return null;
 			}
-	[TODO]
 	public static WellKnownClientTypeEntry
 				IsWellKnownClientType
 					(String typeName, String assemblyName)
 			{
-				// TODO
-				return null;
+				return IsWellKnownClientType
+					(GetType(typeName, assemblyName));
 			}
 
 	// Register a client type that can be activated remotely.
-	[TODO]
 	public static void RegisterActivatedClientType
 				(ActivatedClientTypeEntry entry)
 			{
-				// TODO
+				if(entry == null)
+				{
+					throw new ArgumentNullException("entry");
+				}
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					if(activatedClientTypes == null)
+					{
+						activatedClientTypes = new Hashtable();
+					}
+					activatedClientTypes[entry.ObjectType] = entry;
+				}
 			}
 	public static void RegisterActivatedClientType(Type type, String appUrl)
 			{
@@ -177,11 +288,22 @@ public class RemotingConfiguration
 			}
 
 	// Register a service type that can be activated by a remote client.
-	[TODO]
 	public static void RegisterActivatedServiceType
 				(ActivatedServiceTypeEntry entry)
 			{
-				// TODO
+				if(entry == null)
+				{
+					throw new ArgumentNullException("entry");
+				}
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					if(activatedServiceTypes == null)
+					{
+						activatedServiceTypes = new Hashtable();
+					}
+					activatedServiceTypes[entry.ObjectType] = entry;
+				}
 			}
 	public static void RegisterActivatedServiceType(Type type)
 			{
@@ -190,11 +312,22 @@ public class RemotingConfiguration
 			}
 
 	// Register a well known client type.
-	[TODO]
 	public static void RegisterWellKnownClientType
 				(WellKnownClientTypeEntry entry)
 			{
-				// TODO
+				if(entry == null)
+				{
+					throw new ArgumentNullException("entry");
+				}
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					if(registeredClientTypes == null)
+					{
+						registeredClientTypes = new Hashtable();
+					}
+					registeredClientTypes[entry.ObjectType] = entry;
+				}
 			}
 	public static void RegisterWellKnownClientType
 				(Type type, String objectUrl)
@@ -204,11 +337,22 @@ public class RemotingConfiguration
 			}
 
 	// Register a well known service type entry.
-	[TODO]
 	public static void RegisterWellKnownServiceType
 				(WellKnownServiceTypeEntry entry)
 			{
-				// TODO
+				if(entry == null)
+				{
+					throw new ArgumentNullException("entry");
+				}
+				lock(typeof(RemotingConfiguration))
+				{
+					EnsureLoaded();
+					if(registeredServiceTypes == null)
+					{
+						registeredServiceTypes = new Hashtable();
+					}
+					registeredServiceTypes[entry.ObjectType] = entry;
+				}
 			}
 	public static void RegisterWellKnownServiceType
 				(Type type, String objectUri, WellKnownObjectMode mode)

@@ -27,6 +27,7 @@ namespace System.Runtime.Remoting
 public class TypeEntry
 {
 	// Internal state.
+	internal Type actualType;
 	private String assemblyName;
 	private String typeName;
 
@@ -56,6 +57,20 @@ public class TypeEntry
 				set
 				{
 					typeName = value;
+				}
+			}
+
+	// Get the object type.
+	internal Type GetObjectType()
+			{
+				if(actualType != null)
+				{
+					return actualType;
+				}
+				else
+				{
+					return RemotingConfiguration.GetType
+						(TypeName, AssemblyName);
 				}
 			}
 

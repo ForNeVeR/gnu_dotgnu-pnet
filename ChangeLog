@@ -45,6 +45,10 @@
 	Generics/SynchronizedQueue.cs, Generics/SynchronizedSet.cs,
 	Generics/SynchronizedStack.cs: move "IsReadOnly" and "IsFixedSize"
 	into "ICollection<T>" because they are common collection traits.
+
+	* Generics/Generics.html, Generics/README: check-in a more
+	detailed description of the design constraints underlying
+	the generics library.
 	
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 

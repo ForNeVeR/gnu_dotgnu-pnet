@@ -64,22 +64,8 @@ public struct Int32 : IComparable, IFormattable
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				unchecked
-				{
-					if(value__ >= 0)
-					{
-						return NumberFormatter.FormatFixedPoint
-									((ulong)value__, 0, 0, false, format,
-									 NumberFormatInfo.GetInstance(provider));
-					}
-					else
-					{
-						return NumberFormatter.FormatFixedPoint
-									((ulong)(uint)(-value__), 0, 0,
-									 true, format,
-									 NumberFormatInfo.GetInstance(provider));
-					}
-				}
+				return NumberFormatter.FormatInt
+				(value__, format, NumberFormatInfo.GetInstance(provider));
 			}
 
 	// Parsing methods.

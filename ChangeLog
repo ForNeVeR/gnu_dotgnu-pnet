@@ -6,6 +6,16 @@
 
 	* runtime/System/Collections/BitArray.cs: error in "int[]" constructor.
 
+	* runtime/System/Byte.cs, runtime/System/Int16.cs,
+	runtime/System/Int32.cs, runtime/System/Int64.cs,
+	runtime/System/SByte.cs, runtime/System/UInt16.cs,
+	runtime/System/UInt32.cs, runtime/System/UInt64.cs,
+	runtime/System/Private/CustomNumberFormat.cs,
+	runtime/System/Private/CustomNumberFormatter.cs,
+	runtime/System/Private/FormatNumber.cs,
+	runtime/System/Private/NumberFormatter.cs: apply the number formatting
+	patches to pnetlib.
+
 2002-10-01  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* make_patch.sh : Adjust script to include .build files.

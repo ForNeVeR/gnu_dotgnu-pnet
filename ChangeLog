@@ -1,4 +1,9 @@
 
+2003-04-02  Gopal.V  <gopalv82@symonds.net>
+	
+	* codegen/cg_optable.c, codegen/cg_coerce.h: Add the ILOp_UShr
+	into the opcode tables. (Patch #1342)
+
 2003-04-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_thread.c:

@@ -116,6 +116,13 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 		ILFree(newName);
 	}
 
+	/* Update the symbol definition if this is in the global module */
+	if(_ILLinkerIsModule(ILMember_Owner(newField)))
+	{
+		_ILLinkerUpdateSymbol(linker, ILMember_Name(newField),
+							  (ILMember *)newField);
+	}
+
 	/* Convert the attributes that are attached to the field */
 	if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)field,
 							  (ILProgramItem *)newField))

@@ -1210,6 +1210,18 @@ int _ILLinkerFindSymbol(ILLinker *linker, const char *name,
 	return 0;
 }
 
+void _ILLinkerUpdateSymbol(ILLinker *linker, const char *name,
+						   ILMember *member)
+{
+	ILLibrarySymbol *libSymbol;
+	libSymbol = ILHashFindType(linker->symbolHash, name, ILLibrarySymbol);
+	if(libSymbol && (libSymbol->flags & IL_LINKSYM_HAVE_REF) == 0)
+	{
+		libSymbol->member = member;
+		libSymbol->flags |= IL_LINKSYM_HAVE_REF;
+	}
+}
+
 int _ILLinkerCreateSymbolHash(ILLinker *linker)
 {
 	linker->symbolHash =

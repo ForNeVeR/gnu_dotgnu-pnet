@@ -137,6 +137,8 @@ static void ReportUnresolved(ILLinker *linker)
 	ILMember *member;
 	int reported;
 	ILType *signature;
+	ILToken token;
+	ILToken numTokens;
 
 	/* Scan the TypeRef table for unresolved types */
 	classInfo = 0;
@@ -189,9 +191,17 @@ static void ReportUnresolved(ILLinker *linker)
 
 	/* Scan the MemberRef table for unresolved members */
 	member = 0;
-	while((member = (ILMember *)ILImageNextToken
-				(linker->image, IL_META_TOKEN_MEMBER_REF, member)) != 0)
+	numTokens = ILImageNumTokens(linker->image, IL_META_TOKEN_MEMBER_REF);
+	for(token = 1; token <= numTokens; ++token)
 	{
+		/* Get the token and shift past if it was already set to null */
+		member = (ILMember *)ILImageTokenInfo
+			(linker->image, IL_META_TOKEN_MEMBER_REF | token);
+		if(!member)
+		{
+			continue;
+		}
+
 		/* Skip method members that contain sentinels, as they
 		   correspond to vararg call sites, which are OK */
 		signature = ILMember_Signature(member);

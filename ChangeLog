@@ -6,6 +6,11 @@
 	be properly handled in unmanaged C code even when the wrong
 	kind of pointer is supplied.
 
+	* ilalink/link_create.c, ilalink/link_field.c, ilalink/link_library.c,
+	ilalink/link_method.c, ilalink/linker.h: improve the detection of
+	unresolved externals; fix problems with linking backward references
+	within C assemblies.
+
 2004-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, support/time.c: use the "tm_gmtoff" field within

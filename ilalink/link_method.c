@@ -689,6 +689,13 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 		ILFree(newName);
 	}
 
+	/* Update the symbol definition if this is in the global module */
+	if(_ILLinkerIsModule(ILMember_Owner(newMethod)))
+	{
+		_ILLinkerUpdateSymbol(linker, ILMember_Name(newMethod),
+							  (ILMember *)newMethod);
+	}
+
 	/* Copy the calling conventions */
 	ILTypeSetCallConv(newSignature, ILType_CallConv(signature));
 	ILMethodSetCallConv(newMethod, ILType_CallConv(signature));

@@ -221,6 +221,12 @@ int _ILLinkerFindSymbol(ILLinker *linker, const char *name,
 						ILMember **memberRef);
 
 /*
+ * Update a global definition that was found.
+ */
+void _ILLinkerUpdateSymbol(ILLinker *linker, const char *name,
+						   ILMember *member);
+
+/*
  * Create the global symbol hash for the image being linked.
  */
 int _ILLinkerCreateSymbolHash(ILLinker *linker);

@@ -13,6 +13,7 @@ libILLink_a_SOURCES = link_attrs.c \
 					  link_field.c \
 					  link_image.c \
 					  link_library.c \
+					  link_main.c \
 					  link_method.c \
 					  link_misc.c \
 					  link_res.c \

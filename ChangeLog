@@ -1,4 +1,12 @@
 
+2002-07-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/Makefile.am, cscc/cscc.c, ilalink/Makefile.am,
+	ilalink/ilalink.c, ilalink/link_main.c, include/il_linker.h,
+	samples/Makefile.am: integrate the linker directly into the
+	"cscc" front-end so that it isn't necessary to call out to
+	a separate program to do the link.
+
 2002-07-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/Makefile.am, ilalink/ilalink.c, ilalink/link_create.c,

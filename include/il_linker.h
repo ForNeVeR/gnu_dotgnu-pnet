@@ -102,6 +102,12 @@ int ILLinkerSetEntryPoint(ILLinker *linker, const char *name);
  */
 int ILLinkerHasEntryPoint(ILLinker *linker);
 
+/*
+ * Call the linker as if it were an executable with command-line
+ * options.  It is really linked into the calling program.
+ */
+int ILLinkerMain(int argc, char *argv[]);
+
 #ifdef	__cplusplus
 };
 #endif

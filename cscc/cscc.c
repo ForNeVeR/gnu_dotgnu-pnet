@@ -34,6 +34,7 @@ Environment variables:
 #include <stdio.h>
 #include "il_system.h"
 #include "il_utils.h"
+#include "il_linker.h"
 #include "common/cc_options.h"
 #include "common/cc_intl.h"
 
@@ -135,7 +136,6 @@ extern	"C" {
  * Global variables.
  */
 static char *ilasm_program = 0;
-static char *ilalink_program = 0;
 static char *csharp_compiler = 0;
 static char **plugin_list;
 static int *file_proc_types;
@@ -920,52 +920,6 @@ static void FindILAsmProgram(void)
 }
 
 /*
- * Find the "ilalink" program.
- */
-static void FindILALinkProgram(void)
-{
-	char *path;
-
-	/* Check for a "-filalink-path" option on the command-line */
-	path = CCStringListGetValue(extension_flags, num_extension_flags,
-								"ilalink-path");
-	if(path)
-	{
-		ilalink_program = path;
-		return;
-	}
-
-	/* Use the CSCC_ILALINK_PATH environment variable if present */
-	path = getenv("CSCC_ILALINK_PATH");
-	if(path && *path != '\0' && (path = FilePresent(path)) != 0)
-	{
-		ilalink_program = path;
-		return;
-	}
-
-	/* Search the contents of PATH */
-	path = SearchPath(getenv("PATH"), "ilalink");
-	if(path)
-	{
-		ilalink_program = path;
-		return;
-	}
-
-	/* Search the contents of the default path */
-	path = SearchPath(ILASM_PATH, "ilalink");
-	if(path)
-	{
-		ilalink_program = path;
-		return;
-	}
-
-	/* Could not find "ilalink", so bail out of the compiler */
-	fprintf(stderr, _("%s: could not locate the `ilalink' program\n"),
-			progname);
-	exit(1);
-}
-
-/*
  * Compare two file extensions for equality, while ignoring case.
  */
 static int CompareExtensions(const char *ext1, const char *ext2)
@@ -1051,14 +1005,10 @@ static void AddArgument(char ***list, int *num, char *str)
 }
 
 /*
- * Execute a child process and wait for it to exit.
- * Returns the status code.
+ * Dump a command-line in verbose mode.
  */
-static int ExecChild(char **argv, const char *filename)
+static void DumpCmdLine(char **argv)
 {
-	int status;
-
-	/* Dump the filename or command-line if we are in verbose mode */
 	if(verbose_mode == VERBOSE_CMDLINES)
 	{
 		int posn;
@@ -1072,6 +1022,18 @@ static int ExecChild(char **argv, const char *filename)
 		}
 		putc('\n', stderr);
 	}
+}
+
+/*
+ * Execute a child process and wait for it to exit.
+ * Returns the status code.
+ */
+static int ExecChild(char **argv, const char *filename)
+{
+	int status;
+
+	/* Dump the command-line if we are in verbose mode */
+	DumpCmdLine(argv);
 
 	/* Use the system-specifc process spawn routine */
 	status = ILSpawnProcess(argv);
@@ -1395,13 +1357,10 @@ static int LinkExecutable(void)
 	int cmdline_size;
 	int posn, status;
 
-	/* Find the linker executable */
-	FindILALinkProgram();
-
 	/* Build the linker command-line */
 	cmdline = 0;
 	cmdline_size = 0;
-	AddArgument(&cmdline, &cmdline_size, ilalink_program);
+	AddArgument(&cmdline, &cmdline_size, "ilalink");
 	AddArgument(&cmdline, &cmdline_size, "-o");
 	AddArgument(&cmdline, &cmdline_size, output_filename);
 	if(shared_flag)
@@ -1457,7 +1416,8 @@ static int LinkExecutable(void)
 	AddArgument(&cmdline, &cmdline_size, 0);
 
 	/* Execute the linker */
-	status = ExecChild(cmdline, 0);
+	DumpCmdLine(cmdline);
+	status = ILLinkerMain(cmdline_size - 1, cmdline);
 	ILFree(cmdline);
 	if(status != 0)
 	{

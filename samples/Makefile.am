@@ -6,9 +6,8 @@ noinst_DATA = evenodd.exe hello.exe fib.exe getenv.exe except.exe \
 CSCC	= ../cscc/cscc
 
 ## the -L flag is necessary to resolve mscorlib
-S11_CSFLAGS	= -L$(srcdir) -fplugin-cs-path=../cscc/cscc-cs \
-			-filasm-path=../ilasm/ilasm \
-			-filalink-path=../ilalink/ilalink
+CSFLAGS	= -L$(srcdir) -fplugin-cs-path=../cscc/cscc-cs \
+		  -filasm-path=../ilasm/ilasm
 
 evenodd.exe: evenodd.il
 	../ilasm/ilasm -o evenodd.exe $(srcdir)/evenodd.il
@@ -17,19 +16,19 @@ hello.exe: hello.il
 	../ilasm/ilasm -o hello.exe $(srcdir)/hello.il
 
 fib.exe: fib.cs
-	$(CSCC) $(S11_CSFLAGS) -o fib.exe $(srcdir)/fib.cs
+	$(CSCC) $(CSFLAGS) -o fib.exe $(srcdir)/fib.cs
 
 getenv.exe: getenv.cs
-	$(CSCC) $(S11_CSFLAGS) -o getenv.exe $(srcdir)/getenv.cs
+	$(CSCC) $(CSFLAGS) -o getenv.exe $(srcdir)/getenv.cs
 
 except.exe: except.cs
-	$(CSCC) $(S11_CSFLAGS) -g -o except.exe $(srcdir)/except.cs
+	$(CSCC) $(CSFLAGS) -g -o except.exe $(srcdir)/except.cs
 
 httpsrv.exe: httpsrv.cs
-	$(CSCC) $(S11_CSFLAGS) -lSystem -o httpsrv.exe $(srcdir)/httpsrv.cs
+	$(CSCC) $(CSFLAGS) -lSystem -o httpsrv.exe $(srcdir)/httpsrv.cs
 
 codepage.exe: codepage.cs
-	$(CSCC) $(S11_CSFLAGS) -o codepage.exe $(srcdir)/codepage.cs
+	$(CSCC) $(CSFLAGS) -o codepage.exe $(srcdir)/codepage.cs
 
 CLEANFILES = $(noinst_DATA)
 

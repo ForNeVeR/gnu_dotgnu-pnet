@@ -56,6 +56,15 @@ extern	"C" {
 	#define _IL_Module_suppressed
 	#define _IL_ModuleBuilder_suppressed
 	#define _IL_RuntimeMethodHandle_suppressed
+	#define _IL_AssemblyBuilder_suppressed
+	#define _IL_EventBuilder_suppressed
+	#define _IL_FieldBuilder_suppressed
+	#define _IL_FieldBuilder_suppressed
+	#define _IL_PropertyBuilder_suppressed
+	#define _IL_TypeBuilder_suppressed
+	#define _IL_MethodBuilder_suppressed
+	#define _IL_SignatureHelper_suppressed
+	#define _IL_ParameterBuilder_suppressed
 #endif
 #if !defined(IL_CONFIG_RUNTIME_INFRA) && !defined(IL_CONFIG_REFLECTION)
 	#define	_IL_Type_suppressed

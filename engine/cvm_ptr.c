@@ -3252,6 +3252,7 @@ LARGE_WRITE_ELEM(PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
  */
 VMCASE(COP_PREFIX_GET2D):
 {
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	if(stacktop[-3].ptrValue)
 	{
 		System_MArray *array = (System_MArray *)(stacktop[-3].ptrValue);
@@ -3275,6 +3276,9 @@ VMCASE(COP_PREFIX_GET2D):
 	{
 		NULL_POINTER_EXCEPTION();
 	}
+#else
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -2);
+#endif
 }
 VMBREAK(COP_PREFIX_GET2D);
 
@@ -3312,6 +3316,7 @@ VMBREAK(COP_PREFIX_GET2D);
  */
 VMCASE(COP_PREFIX_SET2D):
 {
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	tempNum = CVMP_ARG_WORD;
 	if((stacktop - tempNum - 3)->ptrValue)
 	{
@@ -3341,6 +3346,9 @@ VMCASE(COP_PREFIX_SET2D):
 	{
 		NULL_POINTER_EXCEPTION();
 	}
+#else
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -2);
+#endif
 }
 VMBREAK(COP_PREFIX_SET2D);
 

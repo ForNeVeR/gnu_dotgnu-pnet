@@ -198,7 +198,9 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 #else	/* !IL_CONFIG_PINVOKE */
 
 ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
-								 unsigned long param)
+								 unsigned long param, char **customName,
+								 int *customNameLen, char **customCookie,
+								 int *customCookieLen)
 {
 	return IL_META_MARSHAL_DIRECT;
 }

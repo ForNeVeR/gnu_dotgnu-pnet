@@ -28,6 +28,9 @@
 	* cscc/c/c_oper.tc: constant evaluation for the "sizeof"
 	operator (Bug #2776).
 
+	* engine/cvm_ptr.c, engine/internal.c, image/marshal.c:
+	fix some broken code in the "compact" and "kernel" profiles.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_misc.c: rewrite "GetNextArg(RuntimeTypeHandle)"

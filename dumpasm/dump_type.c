@@ -149,13 +149,13 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 	}
 	else if(ILType_IsClass(type))
 	{
-		ILDumpClassName(stream, image, ILType_ToClass(type),
-						flags | IL_DUMP_CLASS_PREFIX);
+		fputs("class ", stream);
+		ILDumpClassName(stream, image, ILType_ToClass(type), flags);
 	}
 	else if(ILType_IsValueType(type))
 	{
-		ILDumpClassName(stream, image, ILType_ToValueType(type),
-						flags | IL_DUMP_CLASS_PREFIX);
+		fputs("valuetype ", stream);
+		ILDumpClassName(stream, image, ILType_ToValueType(type), flags);
 	}
 	else if(type && ILType_IsComplex(type))
 	{

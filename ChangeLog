@@ -39,6 +39,8 @@ enumerated member declarations.
 
 * codegen/cg_library.c: add the "System.Enum" class to the builtin library.
 
+* dumpasm/dump_type.c (ILDumpType): better type prefix handling.
+
 2001-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.h, codegen/cg_gen.c: new functions "ILGenItemHasAttribute",

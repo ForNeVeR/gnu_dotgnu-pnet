@@ -407,7 +407,7 @@ case COP_RETURN_N:
 {
 	/* Return from a method with an N-word return value */
 	tempNum = IL_READ_UINT32(pc + 1);
-	IL_MEMMOVE(frame, stacktop, sizeof(CVMWord) * tempNum);
+	IL_MEMMOVE(frame, stacktop - tempNum, sizeof(CVMWord) * tempNum);
 	stacktop = frame + tempNum;
 	goto popFrame;
 }

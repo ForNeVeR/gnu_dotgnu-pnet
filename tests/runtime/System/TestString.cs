@@ -135,6 +135,35 @@ public class TestString : TestCase
 			//move on folks
 		}
 			
+		try
+		{
+			AssertEquals("String.Compare(\"ab\",1,\"abd\",1,7)",
+				-1 , String.Compare("ab",1,"abd",1,7));
+#if ECMA_COMPAT
+			Fail(" String.Compare(\"ab\",1,\"abc\",1,7,true) did not throw ArgumentOutOfRangeException");
+#endif
+		}
+		catch(ArgumentOutOfRangeException err)
+		{
+#if !ECMA_COMPAT
+			Fail(" String.Compare(\"ab\",1,\"abc\",1,7,true) should NOT throw an ArgumentOutOfRangeException");
+#endif
+		}
+
+		try
+		{
+			AssertEquals("String.Compare(\"ab\",1,\"abc\",3,7,true)",
+				1 , String.Compare("ab",1,"abc",3,7,true));
+#if ECMA_COMPAT
+			Fail(" String.Compare(\"ab\",1,\"abc\",3,7,true) did not throw ArgumentOutOfRangeException");
+#endif
+		}
+		catch(ArgumentOutOfRangeException err)
+		{
+#if !ECMA_COMPAT
+			Fail(" String.Compare(\"ab\",1,\"abc\",3,7,true) should NOT throw an ArgumentOutOfRangeException");
+#endif
+		}
 	/*
 		TODO: put in a looped check for Compare ()
 	*/

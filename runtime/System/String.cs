@@ -216,10 +216,72 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							  String strB, int indexB,
 							  int length)
 			{
+#if !ECMA_COMPAT
+				int lengthA = length;
+				int lengthB = length;
+
+				if(strA == null)
+				{
+					if(indexA != 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("indexA", _("ArgRange_StringIndex"));
+					}
+					lengthA = 0;
+				}
+				else
+				{
+					if(indexA < 0 || indexA >= strA.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("indexA", _("ArgRange_StringIndex"));
+					}
+					int adj = strA.Length - indexA - lengthA;
+					if(adj < 0)
+					{ 
+						lengthA += adj;
+					}
+					if(lengthA < 0)
+					{
+						lengthA = 0;
+					}
+				}
+
+				if(strB == null)
+				{
+					indexB = 0;
+					lengthB = 0;
+				}
+				else
+				{
+					if(indexB < 0 || indexB >= strB.Length)
+					{
+						indexB = 0;
+						lengthB = 0;
+					}
+					else
+					{
+						int adj = strB.Length - indexB - lengthB;
+						if(adj < 0)
+						{ 
+							lengthB += adj;
+						}
+						if(lengthB < 0)
+						{
+							lengthB = 0;
+						}
+					}
+				}
+				return CultureInfo.CurrentCulture.CompareInfo
+							.Compare(strA, indexA, lengthA,
+									 strB, indexB, lengthB,
+									 CompareOptions.None);
+#else
 				return CultureInfo.CurrentCulture.CompareInfo
 							.Compare(strA, indexA, length,
 									 strB, indexB, length,
 									 CompareOptions.None);
+#endif
 			}
 
 	// Compare two sub-strings while optionally ignoring case.
@@ -227,11 +289,74 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							  String strB, int indexB,
 							  int length, bool ignoreCase)
 			{
+#if !ECMA_COMPAT
+				int lengthA = length;
+				int lengthB = length;
+
+				if(strA == null)
+				{
+					if(indexA != 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("indexA", _("ArgRange_StringIndex"));
+					}
+					lengthA = 0;
+				}
+				else
+				{
+					if(indexA < 0 || indexA >= strA.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("indexA", _("ArgRange_StringIndex"));
+					}
+					int adj = strA.Length - indexA - lengthA;
+					if(adj < 0)
+					{ 
+						lengthA += adj;
+					}
+					if(lengthA < 0)
+					{
+						lengthA = 0;
+					}
+				}
+
+				if(strB == null)
+				{
+					indexB = 0;
+					lengthB = 0;
+				}
+				else
+				{
+					if(indexB < 0 || indexB >= strB.Length)
+					{
+						indexB = 0;
+						lengthB =0;
+					}
+					else
+					{
+						int adj = strB.Length - indexB - lengthB;
+						if(adj < 0)
+						{ 
+							lengthB += adj;
+						}
+						if(lengthB < 0)
+						{
+							lengthB = 0;
+						}
+					}
+				}
+				return CultureInfo.CurrentCulture.CompareInfo
+							.Compare(strA, indexA, lengthA,
+									 strB, indexB, lengthB,
+									 (ignoreCase ? CompareOptions.IgnoreCase
+									 			 : CompareOptions.None));
+#else
 				return CultureInfo.CurrentCulture.CompareInfo
 							.Compare(strA, indexA, length,
 									 strB, indexB, length,
 									 (ignoreCase ? CompareOptions.IgnoreCase
 									 			 : CompareOptions.None));
+#endif
 			}
 
 	// Compare two sub-strings with a particular culture's comparison rules.

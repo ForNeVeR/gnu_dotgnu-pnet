@@ -1,3 +1,10 @@
+
+2004-11-22  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/String.cs, tests/runtime/System/TestString.cs: Fix
+	bug #10411 (Don't throw an exception if index of second string is out of
+	bounds or length > length of either of both strings).
+	
 2004-11-21  Thong Nguyen  <tum@veridicus.com>
 
 	* System.Drawing.Win32/Win32.cs: Added GetLastError and SetLastError.

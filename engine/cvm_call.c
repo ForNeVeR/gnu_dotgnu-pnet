@@ -201,7 +201,6 @@ VMBREAK;
  *         exception frame height are saved into the call frame.</li>
  *     <li>The program counter is set to the first instruction in
  *         the method <i>mptr</i>.</li>
- *     <li>The exception frame height is set to zero.</li>
  *     <li>The current method is set to <i>mptr</i>.</li>
  *   </ul>
  *   </description>

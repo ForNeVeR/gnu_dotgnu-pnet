@@ -156,6 +156,9 @@ internal class PostscriptGraphics : ToolkitGraphicsBase
 				 out int linesFilled, bool ascentOnly)
 			{
 				// TODO
+				charactersFitted = 0;
+				linesFilled = 0;
+				ascentOnly = false;
 				return new Size(0, 0);
 			}
 

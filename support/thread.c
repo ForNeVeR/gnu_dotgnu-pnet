@@ -289,10 +289,10 @@ void ILThreadDestroy(ILThread *thread)
 		if((thread->state & IL_TS_UNSTARTED) == 0)
 		{
 			_ILThreadTerminate(thread);
-		}
 
-		/* Adjust the thread count */
-		_ILThreadAdjustCount(-1, (thread->state & IL_TS_BACKGROUND) ? -1 : 0);		
+			/* Adjust the thread count */
+			_ILThreadAdjustCount(-1, (thread->state & IL_TS_BACKGROUND) ? -1 : 0);
+		}
 
 		_ILMutexUnlock(&thread->lock);
 		

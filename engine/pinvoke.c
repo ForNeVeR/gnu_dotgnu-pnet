@@ -447,6 +447,7 @@ typedef struct
 {
 	void     **args;
 	ILMethod  *pinvokeInfo;
+	int		   needThis;
 
 } PackDelegateUserData;
 
@@ -481,7 +482,17 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 	{
 		/* Push the "this" argument */
 		CHECK_SPACE(1);
-		stacktop->ptrValue = _this;
+		if(((PackDelegateUserData *)userData)->needThis)
+		{
+			/* We get the "this" value from the incoming arguments */
+			stacktop->ptrValue = *((void **)(*args));
+			++args;
+		}
+		else
+		{
+			/* We get the "this" value from the delegate object */
+			stacktop->ptrValue = _this;
+		}
 		++stacktop;
 	}
 	numParams = ILTypeNumParams(signature);
@@ -934,9 +945,43 @@ static void DelegateInvoke(ffi_cif *cif, void *result,
 	userData.args = args;
 	userData.pinvokeInfo = (ILMethod *)ILTypeGetDelegateMethod
 		(ILType_FromClass(GetObjectClass(delegate)));
+	userData.needThis = 0;
 	if(_ILCallMethod(thread, method,
 				     UnpackDelegateResult, result,
 				     0, ((System_Delegate *)delegate)->target,
+				     PackDelegateParams, &userData))
+	{
+		/* An exception occurred, which is already stored in the thread */
+		type = ILMethod_Signature(method);
+		type = ILTypeGetEnumType(ILTypeGetReturn(type));
+		if(type != ILType_Void)
+		{
+			/* Clear the native return value, because we cannot assume
+			   that the native caller knows how to handle exceptions */
+			size = ILSizeOfType(thread, type);
+			ILMemZero(result, size);
+		}
+	}
+}
+
+/*
+ * Invoke a method from a closure.
+ */
+static void MethodInvoke(ffi_cif *cif, void *result,
+						 void **args, void *_method)
+{
+	ILExecThread *thread = ILExecThreadCurrent();
+	ILMethod *method = (ILMethod *)_method;
+	ILType *type;
+	ILUInt32 size;
+	PackDelegateUserData userData;
+
+	/* Call the method */
+	userData.args = args;
+	userData.pinvokeInfo = method;
+	userData.needThis = 0;
+	if(_ILCallMethod(thread, method,
+				     UnpackDelegateResult, result, 0, 0,
 				     PackDelegateParams, &userData))
 	{
 		/* An exception occurred, which is already stored in the thread */
@@ -972,7 +1017,7 @@ void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method)
 
 	/* Allocate space for the cif */
 	cif = (ffi_cif *)ILMalloc(sizeof(ffi_cif) +
-							  sizeof(ffi_type *) * numArgs);
+							  sizeof(ffi_type *) * (numArgs + 1));
 	if(!cif)
 	{
 		return 0;
@@ -984,6 +1029,11 @@ void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method)
 
 	/* Convert the argument types */
 	arg = 0;
+	if(!delegate && ILType_HasThis(signature))
+	{
+		/* We need an extra argument for the method's "this" value */
+		args[arg++] = &ffi_type_pointer;
+	}
 	for(param = 1; param <= numArgs; ++param)
 	{
 		args[arg++] = TypeToFFI(ILTypeGetEnumType
@@ -991,7 +1041,7 @@ void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method)
 	}
 
 	/* Prepare the "ffi_cif" structure for the call */
-	if(ffi_prep_cif(cif, FFI_DEFAULT_ABI, numArgs, rtype, args) != FFI_OK)
+	if(ffi_prep_cif(cif, FFI_DEFAULT_ABI, arg, rtype, args) != FFI_OK)
 	{
 		fprintf(stderr, "Cannot marshal a type in the definition of %s::%s\n",
 				ILClass_Name(ILMethod_Owner(method)), ILMethod_Name(method));
@@ -1008,12 +1058,25 @@ void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method)
 	}
 
 	/* Prepare the closure using the call parameters */
-	if(ffi_prep_closure(closure, cif, DelegateInvoke, (void *)delegate)
-			!= FFI_OK)
+	if(delegate)
 	{
-		fprintf(stderr, "Cannot create a closure for %s::%s\n",
+		if(ffi_prep_closure(closure, cif, DelegateInvoke, (void *)delegate)
+				!= FFI_OK)
+		{
+			fprintf(stderr, "Cannot create a closure for %s::%s\n",
 				ILClass_Name(ILMethod_Owner(method)), ILMethod_Name(method));
-		return 0;
+			return 0;
+		}
+	}
+	else
+	{
+		if(ffi_prep_closure(closure, cif, MethodInvoke, (void *)method)
+				!= FFI_OK)
+		{
+			fprintf(stderr, "Cannot create a closure for %s::%s\n",
+				ILClass_Name(ILMethod_Owner(method)), ILMethod_Name(method));
+			return 0;
+		}
 	}
 
 	/* The closure is ready to go */

@@ -1838,8 +1838,17 @@ ILObject *_IL_MethodBase_GetCurrentMethod(ILExecThread *thread)
 ILNativeInt _IL_RuntimeMethodHandle_GetFunctionPointer
 				(ILExecThread *thread, void *_this)
 {
-	/* Function pointers don't make any sense for us, so always return NULL */
-	return 0;
+	ILMethod *method = *((ILMethod **)_this);
+	if(method)
+	{
+		/* Create a closure for the method, without a delegate around it */
+		return (ILNativeInt)(_ILMakeClosureForDelegate(0, method));
+	}
+	else
+	{
+		/* Invalid RuntimeMethodHandle value */
+		return 0;
+	}
 }
 
 /*

@@ -4,6 +4,9 @@
 	* engine/verify_call.c: verifier bug with rectangular arrays
 	and the "Address" method (Bug #3845).
 
+	* engine/pinvoke.c, engine/lib_reflect.c: implement
+	"RuntimeMethodHandle.GetFunctionPointer".
+
 2003-06-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ildasm/ildasm_method.c: dump custom attribute and constant

@@ -33,6 +33,9 @@
 	* cscc/cs_preproc.c (ParseIdentifier): inverted test when checking
 	for identifier start characters.
 
+	* cscc/cs_preproc.c (ParsePrimaryExpression): bug fix - (E) should
+	be applied to "or expressions", not "equality expressions".
+
 2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,

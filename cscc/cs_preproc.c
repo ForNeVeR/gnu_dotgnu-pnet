@@ -837,8 +837,8 @@ static void NextToken(char **_line, CSPreProcToken *token)
 /*
  * Forward declaration.
  */
-static int ParseEqualityExpression(CSPreProc *preproc, char **line,
-								   CSPreProcToken *token);
+static int ParseOrExpression(CSPreProc *preproc, char **line,
+						     CSPreProcToken *token);
 
 /*
  * Parse a primary expression.
@@ -866,7 +866,7 @@ static int ParsePrimaryExpression(CSPreProc *preproc, char **line,
 	else if(token->type == CSPP_TOKEN_LPAREN)
 	{
 		NextToken(line, token);
-		result = ParseEqualityExpression(preproc, line, token);
+		result = ParseOrExpression(preproc, line, token);
 		if(token->type == CSPP_TOKEN_RPAREN)
 		{
 			NextToken(line, token);

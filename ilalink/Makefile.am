@@ -18,8 +18,4 @@ libILLink_a_SOURCES = link_attrs.c \
 					  link_res.c \
 					  link_type.c
 
-if USINGGCC
-INCLUDES = -Wall -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\"
-else
-INCLUDES = -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\"
-endif
+AM_CFLAGS = -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\"

@@ -16,7 +16,3 @@ ildb_SOURCES = ildb_cmd.c \
 ildb_LDADD   = ../engine/libILEngine.a ../image/libILImage.a \
 			   ../support/libILSupport.a $(FFILIBS) \
 			   ../libgc/.libs/libgc.a $(READLINELIBS)
-
-if USINGGCC
-INCLUDES = -Wall
-endif

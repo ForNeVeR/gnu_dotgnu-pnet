@@ -19,10 +19,6 @@ csdoc_LDADD   = csharp/libILCSharp.a common/libILCCommon.a \
 				../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
 				../image/libILImage.a ../support/libILSupport.a
 
-if USINGGCC
-INCLUDES = -Wall
-endif
-
 AM_CFLAGS = -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\" \
 		    -DCSCC_BIN_PREFIX=\"$(bindir)\" \
 			-I$(top_srcdir) -I$(top_builddir)

@@ -52,11 +52,7 @@ ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			     ../image/libILImage.a ../support/libILSupport.a \
 			  	 $(PACKAGE_LIBS)
 
-if USINGGCC
-INCLUDES = -Wall -I../libffi/include
-else
-INCLUDES = -I../libffi/include
-endif
+AM_CFLAGS = -I../libffi/include
 
 cvm.o: cvm_labels.h
 

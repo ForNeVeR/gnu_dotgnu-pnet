@@ -38,12 +38,6 @@ libILImage_a_SOURCES = assembly.c \
 
 libILTestMacros_a_SOURCES = test_macros.c
 
-if USINGGCC
-INCLUDES = -Wall -DCSCC_LIB_DIR=\"$(libdir)\" \
-		   -DCSCC_HOST_TRIPLET=\"$(host_triplet)\" \
-		   -DCSCC_HOST_ALIAS=\"$(host_alias)\"
-else
-INCLUDES = -DCSCC_LIB_DIR=\"$(libdir)\" \
-		   -DCSCC_HOST_TRIPLET=\"$(host_triplet)\" \
-		   -DCSCC_HOST_ALIAS=\"$(host_alias)\"
-endif
+AM_CFLAGS = -DCSCC_LIB_DIR=\"$(libdir)\" \
+		    -DCSCC_HOST_TRIPLET=\"$(host_triplet)\" \
+		    -DCSCC_HOST_ALIAS=\"$(host_alias)\"

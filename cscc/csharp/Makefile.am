@@ -28,10 +28,6 @@ libILCSharp_a_SOURCES  = $(TREECC_SRCOUT) \
 
 YFLAGS = -d
 
-if USINGGCC
-INCLUDES = -Wall
-endif
-
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir)
 
 STAMP = stamp-treecc

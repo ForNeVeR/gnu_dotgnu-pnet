@@ -46,11 +46,7 @@ mkcategory_SOURCES = mkcategory.c
 
 mknumber_SOURCES = mknumber.c
 
-if USINGGCC
-INCLUDES = -Wall -I../libgc/include
-else
-INCLUDES = -I../libgc/include
-endif
+AM_CFLAGS = -I../libgc/include
 
 CLEANFILES = errno_map.c
 

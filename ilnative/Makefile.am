@@ -14,7 +14,3 @@ ilcheck_LDADD = ../engine/libILEngine.a ../dumpasm/libILDumpAsm.a \
 
 ilinternal_SOURCES = ilinternal.c
 ilinternal_LDADD   = ../image/libILImage.a ../support/libILSupport.a
-
-if USINGGCC
-INCLUDES = -Wall
-endif

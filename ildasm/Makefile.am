@@ -10,7 +10,3 @@ ildasm_SOURCES = ildasm_attrs.c \
 				 ildasm_utils.c
 ildasm_LDADD   = ../dumpasm/libILDumpAsm.a ../image/libILImage.a \
 				 ../support/libILSupport.a
-
-if USINGGCC
-INCLUDES = -Wall
-endif

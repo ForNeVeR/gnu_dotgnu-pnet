@@ -8,7 +8,3 @@ resgen_SOURCES = resgen.c \
 				 resgen_text.c \
 				 resgen_xml.c
 resgen_LDADD   = ../image/libILImage.a ../support/libILSupport.a
-
-if USINGGCC
-INCLUDES = -Wall
-endif

@@ -9,6 +9,10 @@ AM_INIT_AUTOMAKE(pnet, 0.3.7)
 AM_CONFIG_HEADER(include/il_config.h)
 AM_MAINTAINER_MODE
 
+dnl Check for file extensions.
+AC_EXEEXT
+AC_OBJEXT
+
 dnl Checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
@@ -200,7 +204,9 @@ AC_TRY_COMPILE([], [
 AC_MSG_RESULT($piccompgoto)
 
 dnl Check to see if we are using gcc or not.
-AM_CONDITIONAL(USINGGCC, test x$GCC = xyes)
+if test x$GCC = xyes ; then
+	CFLAGS="$CFLAGS -Wall"
+fi
 
 dnl Checks for library functions.
 AC_FUNC_MEMCMP

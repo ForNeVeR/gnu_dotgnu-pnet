@@ -6,8 +6,4 @@ libILCCommon_a_SOURCES = cc_errors.c \
 						 cc_options.c \
 						 cc_preproc.c
 
-if USINGGCC
-INCLUDES = -Wall
-endif
-
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir)

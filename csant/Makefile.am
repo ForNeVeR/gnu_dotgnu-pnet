@@ -10,7 +10,3 @@ csant_SOURCES  = csant.c \
 				 csant_prop.c \
 				 csant_task.c
 csant_LDADD    = ../support/libILSupport.a $(REGEXLIBS)
-
-if USINGGCC
-INCLUDES = -Wall
-endif

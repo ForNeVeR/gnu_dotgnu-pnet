@@ -27,7 +27,3 @@ csdoc2test_SOURCES = doc_test.c $(CSDOC_COMMON)
 csdoc2test_LDADD   = $(CSDOC_LIBS)
 
 src2xml_SOURCES    = src2xml.c
-
-if USINGGCC
-INCLUDES = -Wall
-endif

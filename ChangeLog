@@ -10,6 +10,9 @@
 	and implement two MS assemblies (Microsoft.VisualC and cscompmgd)
 	within it, solely for the sake of backwards-compatbility.
 
+	* compat/CSharpCompiler.cs: implement "cscompmgd" in terms of
+	the definitions in "System.CodeDom.Compiler".
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, csunit/Makefile.am,

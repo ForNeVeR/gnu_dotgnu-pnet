@@ -270,7 +270,7 @@ static void Coder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 {
 }
 static void Coder_CheckCallNull(ILCoder *coder, ILEngineStackItem *args,
-					   		    ILUInt32 numArgs)
+					   		    ILUInt32 numArgs, int extraVarArgParam)
 {
 }
 static void Coder_CallMethod(ILCoder *coder, ILEngineStackItem *args,

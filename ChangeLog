@@ -10,6 +10,10 @@
 	* engine/cvm_call.c, engine/cvm_except.c: fix a bug in the CVM
 	instruction dump code.
 
+	* engine/cvmc_call.c, engine/null_coder.c, engine/verify_call.c,
+	include/il_coder.h: handle vararg method calls correctly in
+	"ILCoderCheckCallNull".
+
 2003-04-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_call.c (MatchSignature): pass the correct

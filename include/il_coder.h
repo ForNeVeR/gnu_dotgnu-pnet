@@ -530,7 +530,7 @@ struct _tagILCoderClass
 	 * Check a method call's first parameter for null.
 	 */
 	void (*checkCallNull)(ILCoder *coder, ILEngineStackItem *args,
-					      ILUInt32 numArgs);
+					      ILUInt32 numArgs, int extraVarArgParam);
 
 	/*
 	 * Call a method directly.
@@ -878,9 +878,10 @@ struct _tagILCoderClass
 #define	ILCoderValueCtorArgs(coder,_classInfo,args,numArgs) \
 			((*((coder)->classInfo->valueCtorArgs))((coder), (_classInfo), \
 												    (args), (numArgs)))
-#define	ILCoderCheckCallNull(coder,args,numArgs) \
+#define	ILCoderCheckCallNull(coder,args,numArgs,extraVarArgParam) \
 			((*((coder)->classInfo->checkCallNull))((coder), (args), \
-												    (numArgs)))
+												    (numArgs), \
+													(extraVarArgParam)))
 #define	ILCoderCallMethod(coder,args,numArgs,returnItem,methodInfo) \
 			((*((coder)->classInfo->callMethod))((coder), (args), \
 												 (numArgs), (returnItem), \

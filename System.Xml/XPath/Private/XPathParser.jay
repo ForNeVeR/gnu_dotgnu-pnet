@@ -1,0 +1,361 @@
+%{
+/*
+ * XPathParser.jay - Grammar for XPath
+ *
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+using System;
+using System.Xml;
+using System.Xml.XPath;
+using System.Diagnostics;
+
+namespace System.Xml.XPath.Private
+{
+	internal class XPathParser
+	{
+		internal XPathParser()
+		{
+		}
+		internal XPathExpression Parse(String path)
+		{
+			XPathTokenizer tokenizer = new XPathTokenizer(path);
+			return (XPathExpression) yyparse(tokenizer);
+		}
+		// Console.WriteLine((char)27 + "[31m" + $1 + (char)27 + "[39m");
+%}
+
+%token ERROR
+%token EOF
+
+%token AXISNAME					"axisname"
+%token OP_OR					"or"
+%token OP_AND					"and"
+%token OP_EQ					"="
+%token OP_NE					"!="
+%token OP_LT					"<"
+%token OP_GT					">"
+%token OP_LE					"<="
+%token OP_GE					">="
+%token OP_PLUS					"+"
+%token OP_MINUS					"-"
+%token OP_MUL					"*"
+%token OP_DIV					"div"
+%token OP_MOD					"mod"
+
+%token LITERAL					"quoted-string"
+%token NUMBER					"number"
+
+%token QNAME					"qualified name" 
+%token WILDCARD					"*"
+%token WILDCARDNAME				"NCName:*"
+%token FUNCTIONNAME				"function-name"
+
+%token NODETYPE					"node type"
+
+%token PARENT_NODE				".."
+%token AXIS_SUFFIX				"::"
+%token RECURSIVE_DESCENT		"//"
+
+%left OP_AND
+%left OP_OR
+%left OP_EQ OP_NE OP_LE OP_GE OP_GT OP_LT
+%left OP_MUL OP_DIV OP_MOD 
+%left OP_PLUS OP_MINUS
+
+%start Expr
+
+%%
+
+/* [1] */
+
+LocationPath 
+	: RelativeLocationPath
+	| AbsoluteLocationPath
+	;
+
+/* [2] */
+AbsoluteLocationPath
+	: '/' /* empty*/
+	{
+		$$ = new RootPathExpression();
+	}
+	| '/' RelativeLocationPath
+	{
+		$$ = new SlashExpression(new RootPathExpression(), (Expression) $2);
+	}
+	| AbbreviatedAbsoluteLocationPath
+	;
+
+/* [3] */
+RelativeLocationPath
+	: Step
+	| RelativeLocationPath '/' Step
+	{
+		$$ = new SlashExpression((Expression)$1 , (Expression)$3);
+	}
+	| AbbreviatedRelativeLocationPath
+	;
+
+/* [4] */
+Step
+	: AxisTest OptPredicates
+	{
+		if($2 != null)
+		{
+			$$ = new FilterExpression((Expression)$1, (Expression)$2);
+		}
+		else
+		{
+			$$ = $1;
+		}
+	}
+	| AbbreviatedStep
+	;
+
+/* AxisSpecifier moved from [4] and combined with [7] (NodeTest) and NameTest
+	from lexer tokens moved to parser */
+AxisTest:
+	AxisSpecifier QNAME
+	{
+		$$ = new NodeTest((XPathAxis)$1, 
+						 	XPathNodeType.All, (XmlQualifiedName)$2);
+	}
+	| AxisSpecifier WILDCARD
+	{
+		$$ = new NodeTest((XPathAxis)$1, 
+						 	XPathNodeType.All, null);
+	}
+	| AxisSpecifier WILDCARDNAME
+	{
+		$$ = new NodeTest((XPathAxis)$1, 
+						 	XPathNodeType.All, (XmlQualifiedName)$2);
+	}
+	| AxisSpecifier NODETYPE '(' OptLiteral ')'
+	{
+		XmlQualifiedName nodeName = null;
+		if($4 != null)
+		{
+			nodeName = new XmlQualifiedName((String)$4);
+		}
+		if((XPathNodeType)$2 != XPathNodeType.ProcessingInstruction)
+		{
+			/* error */
+		}
+		
+		$$ = new NodeTest((XPathAxis)$1, 
+						 	(XPathNodeType)$2, nodeName);
+	}
+	;
+
+/* expansion of Predicate* from [4] */
+OptPredicates
+	: /* empty */
+	{
+		$$ = null;
+	}
+	| Predicate OptPredicates
+	{
+		/* TODO predicate list */
+		$$ = $1;
+	}
+	;
+
+/* [5] */
+AxisSpecifier
+	: AXISNAME AXIS_SUFFIX
+	{
+		$$ = $1;
+	}
+	| AbbreviatedAxisSpecifier
+	;
+
+OptLiteral
+	: /* empty */
+	{
+		$$ = null;
+	}
+	| LITERAL
+	;
+
+/* [8] && [9] */
+Predicate
+	: '[' Expr ']'
+	{
+		$$ = $2;
+	}
+	;
+
+/* [10] */
+AbbreviatedAbsoluteLocationPath 
+	: RECURSIVE_DESCENT RelativeLocationPath
+	;
+
+/* [11] */
+AbbreviatedRelativeLocationPath
+	: RelativeLocationPath RECURSIVE_DESCENT Step
+	;
+
+/* [12] */
+AbbreviatedStep
+	: '.'
+	{
+		$$ = new NodeTest(XPathAxis.Self, XPathNodeType.All, null);
+	}
+	| PARENT_NODE
+	{
+		$$ = new NodeTest(XPathAxis.Parent, XPathNodeType.All, null);
+	}
+	;
+
+/* [13] */
+AbbreviatedAxisSpecifier
+	: /* empty */
+	{
+		$$ = XPathAxis.Child;
+	}
+	| '@'
+	{
+		$$ = XPathAxis.Attribute;
+	}
+	;
+
+/* [14] */
+Expr
+	: OrExpr
+	;
+
+/* [15] */
+PrimaryExpr
+	: VariableReference		{ $$ = null; }
+	| '(' Expr ')'			{ $$ = null; } 
+	| LITERAL 				{ $$ = new LiteralExpression((String)$1); }
+	| NUMBER				{ $$ = new NumberExpression((Double)$1); }
+	| FunctionCall
+	;
+
+VariableReference
+	: '$' QNAME
+	{
+		/* TODO: neede for XSL */
+		$$ = null;
+	}
+	;
+
+/* [16] */
+FunctionCall
+	: FUNCTIONNAME '(' ')'
+	| FUNCTIONNAME '(' ArgumentList ')'
+	;
+
+/* avoid left recursion */
+ArgumentList
+	: Argument
+	| Argument ',' ArgumentList
+	;
+
+/* [17] */
+Argument 
+	: Expr
+	;
+	
+/* [18] */
+UnionExpr 
+	: PathExpr
+	| UnionExpr '|' PathExpr
+	{
+		$$ = new UnionExpression((Expression)$1, (Expression)$3);
+	}
+	;
+
+/* [19] */
+PathExpr
+	: LocationPath
+	| FilterExpr
+	| FilterExpr '/' RelativeLocationPath
+	{
+		$$ = new SlashExpression((Expression)$1, (Expression)$2);
+	}
+	| FilterExpr RECURSIVE_DESCENT RelativeLocationPath
+	{
+		$$ = null; /* TODO */
+	}
+	;
+
+/* [20] */
+FilterExpr
+	: PrimaryExpr
+	| FilterExpr Predicate
+	{
+		$$ = new FilterExpression((Expression)$1, (Expression)$2);
+	}
+	;
+
+/* [21] */
+OrExpr
+	: AndExpr
+	| OrExpr OP_OR AndExpr
+	;
+
+/* [22] */
+AndExpr
+	: EqualityExpr
+	| AndExpr OP_AND EqualityExpr
+	;
+
+/* [23] */
+EqualityExpr
+	: RelationalExpr
+	| EqualityExpr OP_EQ RelationalExpr
+	{
+		$$ = new EqualityExpression((Expression)$1, (Expression)$3, false); 
+	}
+	| EqualityExpr OP_NE RelationalExpr
+	;
+
+/* [24] */
+RelationalExpr
+	: AdditiveExpr
+	| RelationalExpr OP_LT AdditiveExpr
+	| RelationalExpr OP_GT AdditiveExpr
+	| RelationalExpr OP_LE AdditiveExpr
+	| RelationalExpr OP_GE AdditiveExpr
+	;
+
+/* [25] */
+AdditiveExpr
+	: MultiplicativeExpr
+	| AdditiveExpr OP_PLUS MultiplicativeExpr
+	| AdditiveExpr OP_MINUS MultiplicativeExpr
+	;
+
+/* [26] */
+MultiplicativeExpr
+	: UnaryExpr
+	| MultiplicativeExpr OP_MUL UnaryExpr
+	| MultiplicativeExpr OP_DIV UnaryExpr
+	| MultiplicativeExpr OP_MOD UnaryExpr
+	;
+
+/* [27] */
+UnaryExpr
+	: UnionExpr
+	| OP_MINUS UnaryExpr
+	;
+	
+%%
+}

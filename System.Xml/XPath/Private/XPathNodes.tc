@@ -1,0 +1,127 @@
+%{
+/*
+ * XPathNodes.tc - node definitions for XPath 
+ *
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+%}
+
+%option lang="C#"
+%output "XPathNodes.cs"
+%option base_type="XPathExpressionBase"
+%option internal_access
+%option namespace = "System.Xml.XPath.Private"
+
+%{
+using System.IO;
+using System.Xml;
+using System.Xml.XPath;
+using System.Collections;
+%}
+
+%node Expression %abstract %typedef
+
+%node BinaryExpression Expression = 
+{
+	Expression left;
+	Expression right;
+}
+
+%node UnionExpression BinaryExpression
+
+%node BooleanExpression BinaryExpression
+
+%node OrExpression BooleanExpression
+%node AndExpression BooleanExpression
+
+%node CompareExpression BooleanExpression=
+{
+	bool invert;
+}
+
+%node EqualityExpression CompareExpression
+%node RelationalExpr CompareExpression
+
+%node ArithmeticExpression BinaryExpression
+%node AddExpression ArithmeticExpression
+%node SubExpression ArithmeticExpression
+%node MulExpression ArithmeticExpression
+%node DivExpression ArithmeticExpression
+%node ModExpression ArithmeticExpression
+
+%node UnaryExpression Expression =
+{
+	Expression expr;
+}
+
+%node NegExpression UnaryExpression
+
+%node PathExpression Expression 
+
+%node RecursiveDescentPathExpression PathExpression
+%node RootPathExpression PathExpression
+
+%node SlashExpression PathExpression =
+{
+	Expression left;
+	Expression right;
+}
+
+%node StepExpression PathExpression=
+{
+	XPathAxis axis;
+	Expression filter;
+}
+
+
+%node FilterExpression Expression =
+{
+	Expression expr;
+	Expression predicate;
+}
+
+/*
+   [7]    NodeTest 
+*/
+
+%node NodeTest Expression=
+{
+	XPathAxis axis;
+	XPathNodeType nodeType;
+	// null name == only nodeType
+	XmlQualifiedName name;
+}
+
+%node ConstantExpression Expression %abstract
+
+%node LiteralExpression ConstantExpression =
+{
+	String value;
+}
+
+%node NumberExpression ConstantExpression =
+{
+	Double number;
+}
+
+%node FunctionCallExpression Expression =
+{
+	/* TODO */	
+}
+
+%include "XPathCompile.tc"
+%include "XPathEvaluate.tc"

@@ -1,4 +1,17 @@
 
+2004-10-08  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/Makefile.am, System.Xml/XPath/Private/XPathAxis.cs,
+	System.Xml/XPath/Private/XPathExpressionBase.cs,
+	System.Xml/XPath/Private/XPathParser.cs,
+	System.Xml/XPath/Private/XPathCompile.tc,
+	System.Xml/XPath/Private/XPathIterators.cs,
+	System.Xml/XPath/Private/XPathParser.jay,
+	System.Xml/XPath/Private/XPathEvaluate.tc,
+	System.Xml/XPath/Private/XPathNodes.tc,
+	System.Xml/XPath/Private/XPathTokenizer.cs: First cut of the XPath
+	implementation.
+
 2004-10-07  Klaus Treichel  <ktreichel@web.de>
 
 	* samples/developers/MainForm.cs,

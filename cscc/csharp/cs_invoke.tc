@@ -1477,9 +1477,9 @@ int CSItemIsCandidate(ILGenInfo *info, ILProgramItem *item,
 			}
 			else
 			{
-				/* The match can either be as an array, or as an element type */
+				/* The match can either be as an array, or as an element type */			
 				elemType = GetArrayElemType(args[argNum].type);
-				if(elemType != ILType_Invalid &&
+				if((argNum == (numArgs-1)) && elemType != ILType_Invalid &&
 				   ILCanCoerce(info, elemType, paramType,1))
 				{
 					/* Matched as an array */
@@ -1743,7 +1743,7 @@ ILType *CSItemCoerceArgs(ILGenInfo *info, ILProgramItem *item,
 		if(argNum < numArgs)
 		{
 			elemType = GetArrayElemType(args[argNum].type);
-			if(elemType != ILType_Invalid &&
+			if((argNum == (numArgs-1)) && elemType != ILType_Invalid &&
 			   ILCanCoerce(info, elemType, paramType,1))
 			{
 				/* Pass the argument as an array */

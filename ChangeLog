@@ -10,6 +10,11 @@
 	* pnet.spec.in: improve the RPM spec file (thanks to
 	Russell Stuart <russell@stuart.id.au>).
 
+2004-03-11  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_invoke.tc: make sure that "params" array matching
+	is only used on the last parameter (bug #8016).
+
 2004-03-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c: output the parameter types for

@@ -68,6 +68,7 @@ Copyright @copyright{} 2001, 2002, 2003 Southern Storm Software, Pty Ltd
 @menu
 * Overview::                The tools in brief
 * C# Compiler::             C# compiler
+* C Compiler::              C compiler
 * Documentation::           XML documentation tools
 * Build Management::        Build management with csant
 * Assembler::               Intermediate language assembler
@@ -1355,7 +1356,7 @@ command-line option.
 
 @c -----------------------------------------------------------------------
 
-@node Pre-processor Syntax, Documentation, Pre-defined Macros, Differences
+@node Pre-processor Syntax, C Compiler, Pre-defined Macros, Differences
 @section Pre-processor syntax
 @cindex Pre-processor syntax
 
@@ -1420,7 +1421,539 @@ region directives will not cause an error.
 
 @c -----------------------------------------------------------------------
 
-@node Documentation, Documentation Sections, Pre-processor Syntax, Top
+@node C Compiler, Hello World, Pre-processor Syntax, Top
+@chapter C Compiler
+@cindex C Compiler
+
+This section of the documentation describes the Portable.NET C
+compiler.  We describe how to use it, the definitions that you
+may expect to be in the language and library, and extensions that
+we have added to ease integration with C# code.
+
+As much as possible, we try to present a standard ANSI C interface
+to the programmer.  We did however have to make some implementation
+decisions when adapting C to the CLI environment.  These decisions
+are described in the sections that follow.
+
+Where we have borrowed syntax and semantics from other systems,
+we tag them with [gcc], [Managed C++], or [C++], indicating the
+GNU C compiler, Microsoft's Managed Extensions for C++, and
+ANSI standard C++ respectively.  We reserve [pnet] to tag features
+that are unique to our implementation.
+
+@menu
+* Hello World::                Writing and compiling "Hello World" in C
+* C# keywords::                Using C# keywords in C
+* Referring to C# types::      Referring to C# types from C code
+* Primitive types::            Primitive types that may be used in C
+* String literals::            Wide and object string literals in C
+* Setjmp and alloca::          Restrictions on using setjmp and alloca
+* Typeof operator::            Getting the type of values in C
+* Boxing and unboxing::        Boxing and unboxing values in C
+* Labels as values::           Using goto labels as values in functions
+* Reference parameters::       Passing values by reference to functions
+* Thread-specific variables::  Declaring thread-specific variables
+* Other keywords::             Other keywords in the C compiler
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Hello World, Primitive types, C Compiler, C Compiler
+@section Writing and compiling "Hello World" in C
+@cindex Hello World in C
+
+The traditional "Hello World" program in C is as follows:
+
+@example
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+@{
+    printf("Hello World!\n");
+    return 0;
+@}
+@end example
+
+To compile and run this with Portable.NET, you would use the
+following commands:
+
+@example
+$ cscc -o hello.exe hello.c
+$ ilrun hello.exe
+Hello World!
+$ _
+@end example
+
+The output of the C compiler is a pure IL binary, just as for the
+C# compiler.
+
+@c -----------------------------------------------------------------------
+
+@node Primitive types, C# keywords, Hello World, C Compiler
+@section Primitive types that may be used in C
+@cindex Primitive C types
+
+@multitable @columnfractions .35 .10 .55
+@item Type @tab Size @tab Description
+@item @code{void}
+@tab 1
+@tab The void type.  [gcc] The size is 1 to be consistent with gcc.
+
+@cindex _Bool keyword
+@item @code{_Bool}
+@tab 1
+@tab [C++] 8-bit boolean value, which is identical to the C# @code{bool} type.
+
+@item @code{char}
+@tab 1
+@tab Signed 8-bit integer type.
+
+@item @code{unsigned char}
+@tab 1
+@tab Unsigned 8-bit integer type.
+
+@item @code{short}
+@tab 2
+@tab Signed 16-bit integer type.
+
+@item @code{unsigned short}
+@tab 2
+@tab Unsigned 16-bit integer type.
+
+@cindex __wchar__ keyword
+@item @code{__wchar__}
+@tab 2
+@tab [pnet] 16-bit wide character type, which is identical
+to the C# @code{char} type.
+
+@item @code{int}
+@tab 4
+@tab Signed 32-bit integer type.
+
+@item @code{unsigned int}
+@tab 4
+@tab Unsigned 32-bit integer type.
+
+@item @code{long}
+@tab 4/8
+@tab Signed 32-bit or 64-bit integer type.
+
+@item @code{unsigned long}
+@tab 4/8
+@tab Unsigned 32-bit or 64-bit integer type.
+
+@item @code{long long}
+@tab 8
+@tab Signed 64-bit integer type.
+
+@item @code{unsigned long long}
+@tab 8
+@tab Unsigned 64-bit integer type.
+
+@cindex __int64 keyword
+@item @code{__int64}
+@tab 8
+@tab [Managed C++] Same as @code{long long}.
+
+@item @code{unsigned __int64}
+@tab 8
+@tab [Managed C++] Same as @code{unsigned long long}.
+
+@item @code{float}
+@tab 4
+@tab 32-bit IEEE floating point type.
+
+@item @code{double}
+@tab 8
+@tab 64-bit IEEE floating point type.
+
+@item @code{long double}
+@tab 8
+@tab Same as @code{double}.
+
+@item @code{type *}
+@tab 4/8
+@tab Pointer to @code{type}.
+@end multitable
+
+@noindent
+The size of the long and pointer types may be either 32-bit or 64-bit,
+depending upon the particular runtime engine that is used to execute
+the application.  The expressions @code{sizeof(long)} and
+@code{sizeof(type *)} are constant, but computed at runtime.
+
+You normally wouldn't use the @code{__wchar__} type directly.
+Instead, @code{#include <wchar.h>} and use the @code{wchar_t} type.
+
+You should @code{#include <stdbool.h>} to get the @code{bool} type
+and the constants @code{true} and @code{false}.  Internally, @code{bool}
+is defined to @code{_Bool}.
+
+@c -----------------------------------------------------------------------
+
+@node C# keywords, Referring to C# types, Primitive types, C Compiler
+@section Using C# keywords in C
+@cindex C# keywords in C
+@cindex __catch__ keyword
+@cindex __checked__ keyword
+@cindex __false__ keyword
+@cindex __finally__ keyword
+@cindex __finally keyword
+@cindex __lock__ keyword
+@cindex __null__ keyword
+@cindex __true__ keyword
+@cindex __try__ keyword
+@cindex __checked__ keyword
+
+@noindent
+[pnet] The keywords @code{__catch__}, @code{__checked__}, @code{__false__},
+@code{__finally__}, @code{__lock__}, @code{__null__}, @code{__true__},
+@code{__try__}, and @code{__unchecked__} fulfill the same functions
+as their C# counterparts.
+
+@noindent
+[Managed C++] The keyword @code{__finally} can be used in place of
+@code{__finally__}.
+
+The keywords are quoted to prevent clashes with normal C identifiers.
+The @code{<csharp.h>} file can be included to define these keywords to
+friendlier versions without the underscores, to make it easier to interface
+to C# code.
+
+@c -----------------------------------------------------------------------
+
+@node Referring to C# types, String literals, C# keywords, C Compiler
+@section Referring to C# types from C code
+@cindex C# types in C
+@cindex __using__ keyword
+@cindex __namespace__ keyword
+
+@noindent
+[C++] A C# namespace can be imported with the @code{__using__ __namespace__}
+construct:
+
+@example
+__using__ __namespace__ System;
+__using__ __namespace__ System::IO;
+__using__ __namespace__ System::Collections;
+@end example
+
+The above lines result in all C# types in the @code{System},
+@code{System.IO}, and @code{System.Collections} namespaces being
+imported into the global scope.  Alternatively, you can include
+the @code{<csharp.h>} file and then write the above as follows
+(the @code{System} namespace is imported by the header file
+and so doesn't appear here):
+
+@example
+#include <csharp.h>
+
+using namespace System::IO;
+using namespace System::Collections;
+@end example
+
+Once you have imported the namespaces you want, you can refer to
+C# types in your code as though they were C types.
+
+@example
+String *hello = "Hello World!";
+Object *obj;
+Int32 ivalue;
+@end example
+
+@noindent
+[Managed C++] Note that reference types are followed by @code{*}, whereas
+value types can be named directly.  This is for compatibility with
+existing Managed C++ code.
+
+Types can also be imported individually if you don't wish to import
+an entire namespace:
+
+@example
+__using__ System::Text::StringBuilder;
+
+StringBuilder builder;
+@end example
+
+@cindex #using directive
+@noindent
+[Managed C++] By default, only @code{mscorlib.dll} is loaded when a
+C program is compiled.  You can load other assemblies with the
+@code{#using} pre-processor directive:
+
+@example
+#include <csharp.h>
+#using <System.Xml.dll>
+
+using namespace System::Xml;
+@end example
+
+For convenience, we have provided header files for all of the major
+C# assemblies which import their namespaces.  The following example
+imports all definitions in @code{System.dll}, @code{System.Xml.dll} and
+@code{System.Windows.Forms.dll} into the global scope:
+
+@example
+#include <assembly/System.h>
+#include <assembly/System.Xml.h>
+#include <assembly/System.Windows.Forms.h>
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node String literals, Setjmp and alloca, Referring to C# types, C Compiler
+@section Wide and object string literals in C
+@cindex Wide strings
+@cindex Object strings
+
+String literals follow the usual ANSI C syntax; i.e. a sequence of
+characters and escape sequences delimited by double quotes:
+
+@example
+char *x = "Hello World!";
+@end example
+
+@noindent
+[gcc, Managed C++] Wide string literals, that contain 16-bit Unicode
+characters can be specified using a "L" or "l" prefix:
+
+@example
+wchar_t *x = L"Hello World!";
+wchar_t *y = l"And Then Goodbye!";
+@end example
+
+@noindent
+[Managed C++] If you know that you want a C# string object, you can
+use the "S" or "s" prefix on the literal:
+
+@example
+#include <csharp.h>
+
+String *x = S"Hello World!";
+String *y = s"And Then Goodbye!";
+@end example
+
+If a normal or wide string literal is used in a context where a
+C# string object is expected, it will be implicitly converted.
+
+@c -----------------------------------------------------------------------
+
+@node Setjmp and alloca, Typeof operator, String literals, C Compiler
+@section Restrictions on using setjmp and alloca
+@cindex setjmp
+@cindex alloca
+
+Because of the way that our C compiler builds programs, the @code{setjmp}
+and @code{alloca} constructs must be used carefully.  In particular,
+they must be used at the outermost "statement level" of an expression.
+The following code is correct:
+
+@example
+jmp_buf env;
+
+if(setjmp(env) != 0)
+@{
+    /* longjmp occurred */
+@}
+@end example
+
+@noindent
+But the following code will give an error when compiled:
+
+@example
+jmp_buf env;
+
+if((1 + setjmp(env)) != 1)
+@{
+    /* longjmp occurred */
+@}
+@end example
+
+This is because the @code{setjmp} does not occur at the outermost level
+of the expression (the value 1 is stored on the stack temporarily,
+pending the addition operation).  The @code{alloca} construct has a
+similar issue.  If you get such an error, you can split up your code
+to avoid the problem:
+
+@example
+jmp_buf env;
+int result;
+
+result = setjmp(env);
+if((1 + result) != 1)
+@{
+    /* longjmp occurred */
+@}
+@end example
+
+The variable that you assign to will normally need to be a local
+variable, global variable, or parameter.  Other kinds of variables
+(e.g. array elements) will change the expression level and so
+cannot be used.
+
+The restriction is imposed by the way that CLR's execute
+@code{setjmp} and @code{alloca} internally.  Since most C programmers
+already use these constructs at the statement level of an expression,
+this restriction is not expected to affect much existing code.
+
+@c -----------------------------------------------------------------------
+
+@node Typeof operator, Boxing and unboxing, Setjmp and alloca, C Compiler
+@section Getting the type of values in C
+@cindex typeof keyword
+@cindex __typeof keyword
+
+@noindent
+[gcc] The @code{typeof} operator can be used in any context where a
+C type is expected:
+
+@example
+int x;
+typeof(x) y;
+@end example
+
+The @code{typeof} operator in C is not the same as the @code{typeof}
+operator in C#.  For that, you need to use the @code{__typeof}
+operator [Managed C++]:
+
+@example
+System::Type *t = __typeof(obj);
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Boxing and unboxing, Labels as values, Typeof operator, C Compiler
+@section Boxing and unboxing values in C
+@cindex Boxing and unboxing
+@cindex __box keyword
+
+@noindent
+[Managed C++] A value can be boxed into an object using the
+@code{__box (Expression)} operator.  If the expression is already a
+reference type (e.g. a C# class or array reference), then it will
+be left unchanged.
+
+@example
+System::Object o = __box(3);  // Boxed object is of type "System::Int32".
+o = __box("Hello");           // No change - already a reference.
+@end example
+
+@noindent
+[Managed C++] The @code{__box} keyword can also be used to modify a value
+type to convert it into its class form:
+
+@example
+__box int x;
+__box struct y z;
+@end example
+
+@noindent
+[pnet] An explicit C cast operation can be used to unbox a value:
+
+@example
+System::Object o = __box(6);
+int x = (int)o;               // x will be set to the value 6.
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Labels as values, Reference parameters, Boxing and unboxing, C Compiler
+@section Using goto labels as values in functions
+@cindex Labels as values
+
+@noindent
+[gcc] The address of a goto label can be obtained using the construct
+@code{&&label}, and then jumped to using @code{goto *value}.
+
+Because IL does not support taking the raw address of an instruction,
+our compiler turns the @code{goto *} statement into a @code{switch} on the
+label value.
+
+@c -----------------------------------------------------------------------
+
+@node Reference parameters, Thread-specific variables, Labels as values, C Compiler
+@section Passing values by reference to functions
+@cindex Reference parameters
+
+@noindent
+[C++] Parameters to functions can be passed by reference, rather than
+value, using the @code{&} designator:
+
+@example
+void func(int& x)
+@{
+    x = 3;
+@}
+
+int i;
+func(i);
+@end example
+
+This syntax was borrowed from C++ because of the need to interact
+with C# methods that have @code{ref} and @code{out} parameters.
+
+@c -----------------------------------------------------------------------
+
+@node Thread-specific variables, Other keywords, Reference parameters, C Compiler
+@section Declaring thread-specific variables
+@cindex Thread-specific variables
+@cindex __declspec keyword
+
+@noindent
+[Managed C++] A global or static variable can be declared as thread-specific
+by using the @code{__declspec(thread)} storage class specifier:
+
+@example
+int __declspec(thread) xyzzy;
+@end example
+
+This construct causes the C compiler to tag the variable with the
+@code{[ThreadStatic]} custom attribute.  The runtime engine will
+then automatically allocate a thread-specific slot for the variable.
+
+This is the only use of the @code{__declspec} keyword that is supported
+by our compiler at present.  All other arguments (e.g. @code{dllimport},
+@code{dllexport}, @code{naked}, etc) are ignored.
+
+@c -----------------------------------------------------------------------
+
+@node Other keywords, Documentation, Thread-specific variables, C Compiler
+@section Other keywords in the C compiler
+@cindex Other C keywords
+@cindex __asm__ keyword
+@cindex __const__ keyword
+@cindex __inline__ keyword
+@cindex __signed__ keyword
+@cindex __typeof__ keyword
+@cindex __volatile__ keyword
+@cindex __FUNCTION__ keyword
+@cindex __PRETTY_FUNCTION__ keyword
+@cindex __func__ keyword
+@cindex __attribute__ keyword
+@cindex __unsigned_int__ keyword
+
+@noindent
+[gcc] @code{__asm__}, @code{__const__}, @code{__inline__},
+@code{__signed__}, @code{__typeof__}, and @code{__volatile__} can be
+used in place of their counterparts that lack underscores.  This is
+for compatibility with GNU C library headers.
+
+@noindent
+[gcc] The @code{__FUNCTION__}, @code{__PRETTY_FUNCTION__}, and
+@code{__func__} keywords can be used to get the name of the current
+function in various forms as a string.
+
+@noindent
+[gcc] The @code{__attribute__} keyword is used to define function
+and variable attributes.  Attributes that are not recognized are ignored.
+
+@noindent
+[pnet] The @code{__unsigned_int__} keyword is used internally and
+may be removed in a future version of the C compiler.
+
+@c -----------------------------------------------------------------------
+
+@node Documentation, Documentation Sections, Other keywords, Top
 @chapter Documentation tools
 @cindex Documentation
 

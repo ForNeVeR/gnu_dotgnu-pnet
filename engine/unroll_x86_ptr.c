@@ -105,6 +105,7 @@ static void Check2DArrayAccess(X86Unroll *unroll, int reg, int reg2, int reg3,
 	x86_alu_reg_membase(unroll->out, X86_CMP, reg3, reg, 28);
 	patch2 = unroll->out;
 	x86_branch32(unroll->out, X86_CC_LT, 0, 0);
+	x86_alu_reg_membase(unroll->out, X86_ADD, reg2, reg, 12);
 	x86_alu_reg_membase(unroll->out, X86_ADD, reg3, reg, 28);
 
 	/* Re-execute the current instruction in the interpreter */

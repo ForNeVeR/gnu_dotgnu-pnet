@@ -28,9 +28,10 @@
 #ifdef HAVE_SYS_MMAN_H
 	#include <sys/mman.h>
 #endif
-#ifdef _WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 	#include <windows.h>
 	#include <io.h>
+	#define	IL_USE_WIN32_MMAP
 #endif
 
 #ifdef	__cplusplus
@@ -40,7 +41,7 @@ extern	"C" {
 /*
  * Perform an mmap on a file and test whether it succeeded or not.
  */
-#ifndef _WIN32
+#ifndef IL_USE_WIN32_MMAP
 
 #if defined(HAVE_MMAP) && defined(HAVE_MUNMAP)
 
@@ -58,7 +59,7 @@ extern	"C" {
 
 #endif	/* !HAVE_MMAP || !HAVE_MUNMAP */
 
-#else	/* _WIN32 */
+#else	/* IL_USE_WIN32_MMAP */
 
 /* We are using Windows-specific API's to map files */
 static void *mmapPerform(int fd, unsigned long offset,
@@ -100,7 +101,7 @@ static void *mmapPerform(int fd, unsigned long offset,
 
 #define	mmapInvalid(addr)		((addr) == ((void *)0))
 
-#endif	/* _WIN32 */
+#endif	/* IL_USE_WIN32_MMAP */
 
 /*
  * Map a region of a file to memory.  Returns zero if not possible.
@@ -139,7 +140,7 @@ int ILMapFileToMemory(int fd, unsigned long start, unsigned long end,
  */
 void ILUnmapFileFromMemory(void *addr, unsigned long len)
 {
-#ifndef _WIN32
+#ifndef IL_USE_WIN32_MMAP
 #if defined(HAVE_MMAP) && defined(HAVE_MUNMAP)
 	munmap(addr, len);
 #endif

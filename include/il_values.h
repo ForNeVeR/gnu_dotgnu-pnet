@@ -260,6 +260,18 @@ void _ILWriteFloat(unsigned char *buf, ILFloat value);
 void _ILWriteDouble(unsigned char *buf, ILDouble value);
 #define	IL_WRITE_DOUBLE(buf,value)	(_ILWriteDouble((buf), (value)))
 
+/*
+ * Multiply 64-bit values with overflow testing.
+ * Returns zero on overflow.
+ */
+int ILInt64MulOvf(ILInt64 *product, ILInt64 value1, ILInt64 value2);
+int ILUInt64MulOvf(ILUInt64 *product, ILUInt64 value1, ILUInt64 value2);
+
+/*
+ * Compute the floating-point remainder of two values.
+ */
+ILNativeFloat ILNativeFloatRem(ILNativeFloat value1, ILNativeFloat value2);
+
 #ifdef	__cplusplus
 };
 #endif

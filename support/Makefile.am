@@ -13,7 +13,9 @@ libILSupport_a_SOURCES = alloc.c \
 						 memory.c \
 						 mempool.c \
 						 memstack.c \
+						 mul_long.c \
 						 read_float.c \
+						 rem_float.c \
 						 spawn.c \
 						 strings.c \
 						 time.c \

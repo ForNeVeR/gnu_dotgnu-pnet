@@ -29,6 +29,11 @@ they are now obsolete.
 * include/il_values.h, image/image.h: move the "IL_WRITE_*" macros from
 "image.h" to "il_values.h" so that they can be reused elsewhere in the code.
 
+* include/il_values.h, support/Makefile.am, support/mul_long.c,
+support/rem_float.c, codegen/cg_arith.tc, engine/cvm_arith.c: implement
+the and use helper functions "ILInt64MulOvf", "ILUInt64MulOvf", and
+"ILNativeFloatRem".
+
 2001-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/l10n.html: check in a proposal for a new resource system for C#.

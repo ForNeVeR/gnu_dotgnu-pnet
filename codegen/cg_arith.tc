@@ -2206,59 +2206,37 @@ ILBinary_EvalOp(ILNode_Mul, ILMachineType_UInt32)
 }
 ILBinary_EvalOp(ILNode_Mul, ILMachineType_Int64)
 {
-#if 0
-/* FIXME */
-	ILValue val1, val2;
-	val1.valueType = IL_TYPE_INT64;
-	val1.un.i8Value = value1->un.i8Value;
-	val2.valueType = IL_TYPE_INT64;
-	val2.un.i8Value = value2->un.i8Value;
 	if(info->overflowInsns)
 	{
-		if(ILValueMulOvf(&val1, &val2) != ILVALUE_RESULT_OK)
+		if(!ILInt64MulOvf(&(value1->un.i8Value),
+						  value1->un.i8Value, value2->un.i8Value))
 		{
 			return 0;
 		}
 	}
 	else
 	{
-		if(ILValueMul(&val1, &val2) != ILVALUE_RESULT_OK)
-		{
-			return 0;
-		}
+		value1->un.i8Value *= value2->un.i8Value;
 	}
-	value1->un.i8Value = val1.un.i8Value;
 	return 1;
-#endif
-	return 0;
 }
 ILBinary_EvalOp(ILNode_Mul, ILMachineType_UInt64)
 {
-#if 0
-/* FIXME */
-	ILValue val1, val2;
-	val1.valueType = IL_TYPE_UINT64;
-	val1.un.i8Value = value1->un.i8Value;
-	val2.valueType = IL_TYPE_UINT64;
-	val2.un.i8Value = value2->un.i8Value;
 	if(info->overflowInsns)
 	{
-		if(ILValueMulOvfUn(&val1, &val2) != ILVALUE_RESULT_OK)
+		if(!ILUInt64MulOvf((ILUInt64 *)&(value1->un.i8Value),
+						   (ILUInt64)(value1->un.i8Value),
+						   (ILUInt64)(value2->un.i8Value)))
 		{
 			return 0;
 		}
 	}
 	else
 	{
-		if(ILValueMulUn(&val1, &val2) != ILVALUE_RESULT_OK)
-		{
-			return 0;
-		}
+		value1->un.i8Value = (ILInt64)(((ILUInt64)(value1->un.i8Value)) *
+									   ((ILUInt64)(value2->un.i8Value)));
 	}
-	value1->un.i8Value = val1.un.i8Value;
 	return 1;
-#endif
-	return 0;
 }
 ILBinary_EvalOp(ILNode_Mul, ILMachineType_NativeInt)
 {
@@ -2516,40 +2494,16 @@ ILBinary_EvalOp(ILNode_Rem, ILMachineType_UInt64)
 }
 ILBinary_EvalOp(ILNode_Rem, ILMachineType_Float32)
 {
-#if 0
-/* FIXME */
-	ILValue val1, val2;
-	val1.valueType = IL_TYPE_FLOAT32;
-	val1.un.fValue = value1->un.r4Value;
-	val2.valueType = IL_TYPE_FLOAT32;
-	val2.un.fValue = value2->un.r4Value;
-	if(ILValueRem(&val1, &val2) != ILVALUE_RESULT_OK)
-	{
-		return 0;
-	}
-	value1->un.r4Value = (ILFloat)(val1.un.fValue);
+	value1->un.r4Value = (ILFloat)ILNativeFloatRem(value1->un.r4Value,
+												   value2->un.r4Value);
 	return 1;
-#endif
-	return 0;
 }
 ILBinary_EvalOp(ILNode_Rem, ILMachineType_Float64),
 ILBinary_EvalOp(ILNode_Rem, ILMachineType_NativeFloat)
 {
-#if 0
-/* FIXME */
-	ILValue val1, val2;
-	val1.valueType = IL_TYPE_FLOAT64;
-	val1.un.fValue = value1->un.r8Value;
-	val2.valueType = IL_TYPE_FLOAT64;
-	val2.un.fValue = value2->un.r8Value;
-	if(ILValueRem(&val1, &val2) != ILVALUE_RESULT_OK)
-	{
-		return 0;
-	}
-	value1->un.r8Value = (ILDouble)(val1.un.fValue);
+	value1->un.r8Value = (ILDouble)ILNativeFloatRem(value1->un.r8Value,
+												    value2->un.r8Value);
 	return 1;
-#endif
-	return 0;
 }
 ILBinary_EvalOp(ILNode_Rem, ILMachineType_Decimal)
 {

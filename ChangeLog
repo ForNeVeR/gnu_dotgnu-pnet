@@ -1,4 +1,9 @@
 
+2003-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvmc_const.c: fix a 32-bit vs 64-bit pointer size bug
+	in the handling for COP_LDTOKEN.
+
 2003-01-19  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_decls.tc: Fix an order bug in resolving const fields.

@@ -70,7 +70,7 @@ static void CVMCoder_StringConstant(ILCoder *coder, ILToken token, void *object)
 	if(object)
 	{
 		/* Push the object pointer directly, to save time at runtime */
-		CVM_OUT_WORD(COP_LDTOKEN, object);
+		CVM_OUT_PTR(COP_LDTOKEN, object);
 		CVM_ADJUST(1);
 	}
 	else

@@ -523,7 +523,7 @@ case IL_OP_LDFLDA:
 			   pointer always returns an unmanaged pointer */
 			stack[stackSize - 1].engineType = ILEngineType_I;
 			stack[stackSize - 1].typeInfo = 0;
-			continue;
+			break;
 		}
 		else
 		{

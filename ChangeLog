@@ -24,6 +24,9 @@
 	* System.Drawing.Win32/DrawingWindowBuffer.cs: forgot to add, part of
 	double buffering infrastructure.
 
+	* System.Drawing.Xsharp/DrawingToolkit.cs: disable double buffer
+	support in Xsharp for now.
+
 2004-01-18  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs: fix

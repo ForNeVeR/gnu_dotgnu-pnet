@@ -8,6 +8,10 @@
 	* cscc/csharp/cs_grammar.y: process IndexerName attribute for indexers
 	before starting the TypeGather phase. (hack)
 
+	* cscc/csharp/cs_grammar.y: Fix error in previous commit for and 
+	support a prefix for an indexer for implementing an	interface 
+	indexer.
+
 2002-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/Makefile.am: add missing "queue.c" to Makefile.am.

@@ -320,7 +320,8 @@ static int ClassNameSame(ILNode *name)
  * they had to make the variable names resolved later using an attribute
  * public int <name>[int posn] would have been a cleaner design 
  */
-static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree)
+static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
+								ILNode* prefixName)
 {
 	ILNode_ListIter iter;
 	ILNode_ListIter iter2;
@@ -328,6 +329,7 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree)
 	ILNode *attr;
 	ILNode_List *args;
 	ILEvalValue evalValue;
+	char* prefix=(prefixName) ? ILQualIdentName(prefixName,0) : NULL;
 	if(attrTree && attrTree->sections)
 	{
 		ILNode_ListIter_Init(&iter, attrTree->sections);
@@ -348,17 +350,28 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree)
 						ILNode_EvalConst(args->item1,info,&evalValue);
 						if(evalValue.valueType==ILMachineType_String)
 						{
-							return ILQualIdentSimple(ILInternString(
-										evalValue.un.strValue.str
-										,evalValue.un.strValue.len).string);
+							if(!prefix)
+							{
+								return ILQualIdentSimple(
+										ILInternString("Item", 4).string);
+							}
+							else 
+							{
+								return ILNode_QualIdent_create(prefixName,
+										ILQualIdentSimple(
+											ILInternString("Item",4).string));
+							}
 						}
 					}
 				}
 			}
 		}
 	}
-	/* THE BIG ELSE */
-	return ILQualIdentSimple(ILInternString("Item", 4).string);
+	if(!prefix)
+		return ILQualIdentSimple(ILInternString("Item", 4).string);
+	else 
+		return ILNode_QualIdent_create(prefixName,
+						ILQualIdentSimple(ILInternString("Item",4).string));
 }
 /*
  * Adjust the name of a property to include a "get_" or "set_" prefix.
@@ -2893,7 +2906,8 @@ RemoveAccessorDeclaration
 IndexerDeclaration
 	: OptAttributes OptModifiers IndexerDeclarator
 			StartAccessorBlock AccessorBlock		{
-				ILNode* name=GetIndexerName(NULL,(ILNode_AttributeTree*)$1);
+				ILNode* name=GetIndexerName(NULL,(ILNode_AttributeTree*)$1,
+							$3.ident);
 				ILUInt32 attrs = CSModifiersToPropertyAttrs($3.type, $2);
 				$$ = ILNode_PropertyDeclaration_create($1,
 								   attrs, $3.type, name, $3.params,
@@ -2910,15 +2924,12 @@ IndexerDeclaration
 IndexerDeclarator
 	: Type THIS FormalIndexParameters		{
 				$$.type = $1;
-				$$.ident = ILQualIdentSimple
-								(ILInternString("Item", 4).string);
+				$$.ident = ILQualIdentSimple(NULL);
 				$$.params = $3;
 			}
 	| Type QualifiedIdentifier '.' THIS FormalIndexParameters	{
 				$$.type = $1;
-				$$.ident = ILNode_QualIdent_create($2,
-							ILQualIdentSimple
-								(ILInternString("Item", 4).string));
+				$$.ident = $2;
 				$$.params = $5;
 			}
 	;
@@ -3465,7 +3476,8 @@ InterfaceIndexerDeclaration
 								 IL_META_METHODDEF_HIDE_BY_SIG |
 								 IL_META_METHODDEF_SPECIAL_NAME |
 								 IL_META_METHODDEF_NEW_SLOT;
-				ILNode* name=GetIndexerName(NULL,(ILNode_AttributeTree*)$1);
+				ILNode* name=GetIndexerName(NULL,(ILNode_AttributeTree*)$1,
+								ILQualIdentSimple(NULL));
 				$$ = ILNode_PropertyDeclaration_create
 								($1, attrs, $3, name, $5, 0, 0, $7);
 				CloneLine($$, $3);

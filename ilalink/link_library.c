@@ -238,7 +238,10 @@ static int ClassHash_Match(const ILLibraryClass *libClass,
 	{
 		if(key->namespace)
 		{
-			return !strcmp(libClass->namespace, key->namespace);
+			if(strcmp(libClass->namespace, key->namespace) != 0)
+			{
+				return 0;
+			}
 		}
 		else
 		{
@@ -247,7 +250,10 @@ static int ClassHash_Match(const ILLibraryClass *libClass,
 	}
 	else
 	{
-		return (key->namespace == 0);
+		if(key->namespace != 0)
+		{
+			return 0;
+		}
 	}
 	return (key->parent == libClass->parent);
 }

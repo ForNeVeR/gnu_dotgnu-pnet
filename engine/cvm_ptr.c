@@ -1127,8 +1127,8 @@ VMBREAK(COP_CKNULL_N);
 VMCASE(COP_LDRVA):
 {
 	/* Load a relative virtual address (RVA) onto the stack */
-	/* TODO */
-	stacktop[0].ptrValue = 0;
+	stacktop[0].ptrValue = ILImageMapAddress
+		(ILProgramItem_Image(method), CVM_ARG_WORD);
 	MODIFY_PC_AND_STACK(CVM_LEN_WORD, 1);
 }
 VMBREAK(COP_LDRVA);

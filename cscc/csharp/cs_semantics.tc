@@ -138,8 +138,24 @@ static ILType *CSSemValidate(ILNode *type, CSSemValue value)
 	{
 		if(!CSSemIsError(value))
 		{
-			CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
+			if(yyisa(type, ILNode_QualIdent) 
+				|| yyisa(type, ILNode_Identifier))
+			{
+				CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
+						  "invalid type specification `%s' ", 
+						  ILQualIdentName(type,0));
+			}
+			else if(yyisa(type, ILNode_MemberAccess))
+			{
+				CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
+						  "invalid type specification `%s' ", 
+						  ILMemberAccessName(type));
+			}
+			else
+			{
+				CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
 						  "invalid type specification");
+			}
 		}
 		return ILType_Int32;
 	}

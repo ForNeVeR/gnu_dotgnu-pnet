@@ -4,6 +4,9 @@
 	* doc/pnettools.texi, ildd/ildd.1, ildd/ildd.c: dump module
 	references and add an option for dumping PInvoke declarations.
 
+	* image/link.c (SearchForDllMap): add a temporary hack to
+	recognize Gtk# module references and remap them to shared objects.
+
 2003-05-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_attrs.c: Split out the serialization stuff into a

@@ -823,6 +823,37 @@ static int SearchForDllMap(ILProgramItem *item, const char *name,
 	const char *newName;
 	int newNameLen;
 
+#ifndef IL_WIN32_PLATFORM
+	/* Hack around a hard-wired library names in Gtk#.  This is temporary
+	   until we can come up with a better solution that does not require
+	   the user to manually edit configuration files */
+	if(!strcmp(name, "libgtk-win32-2.0-0.dll"))
+	{
+		*remapName = "libgtk-x11-2.0.so";
+		return strlen(*remapName);
+	}
+	else if(!strcmp(name, "libgobject-2.0-0.dll"))
+	{
+		*remapName = "libgobject-2.0.so";
+		return strlen(*remapName);
+	}
+	else if(!strcmp(name, "libglib-2.0-0.dll"))
+	{
+		*remapName = "libglib-2.0.so";
+		return strlen(*remapName);
+	}
+	else if(!strcmp(name, "libpango-1.0-0.dll"))
+	{
+		*remapName = "libpango-1.0.so";
+		return strlen(*remapName);
+	}
+	else if(!strcmp(name, "libatk-1.0-0.dll"))
+	{
+		*remapName = "libatk-1.0.so";
+		return strlen(*remapName);
+	}
+#endif
+
 	attr = 0;
 	while((attr = ILProgramItemNextAttribute(item, attr)) != 0)
 	{
@@ -947,7 +978,7 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 			}
 			++posn;
 		}
-		if(!needSuffix)
+		if(needSuffix)
 		{
 			/* Strip ".dll" from the end of the name if present */
 			if(namelen >= 4 && name[namelen - 4] == '.' &&

@@ -1,4 +1,9 @@
 
+2004-08-09  Gopal.V  <gopalv82@yahoo.com>
+
+	* README: The comment about needing mono sources is applicable only
+	when building from CVS.
+
 2004-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* copy-mcs.sh: add missing directories.

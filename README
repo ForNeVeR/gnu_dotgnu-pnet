@@ -7,9 +7,10 @@ of the Mono class libraries and utility programs with Portable.NET's
 C# compiler, so that they can be installed and used with Portable.NET's
 runtime engine.
 
-You will need a copy of the Mono library source tree (CVS module "mcs"),
-because this distribution does not contain the Mono sources.  See
-"www.go-mono.com" for details on obtaining the Mono library source.
+If you are building this from CVS, you will need a copy of the Mono library 
+source tree (CVS module "mcs"), because the CVS distribution does not contain 
+the Mono sources.  See "www.go-mono.com" for details on obtaining the Mono 
+library source.
 
 Once you have the Mono library source, configure and build as follows:
 

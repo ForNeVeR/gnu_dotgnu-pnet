@@ -31,6 +31,8 @@ using System.Drawing.Toolkit;
 
 internal class PopupControl : Control
 {
+	// Occurs when the mouse is down outside the area of the control
+	internal event EventHandler PopDown;
 	// Constructor.
 	public PopupControl()
 			{
@@ -38,12 +40,21 @@ internal class PopupControl : Control
 				visible = false;
 			}
 
+	protected override Size DefaultSize
+	{
+		get
+		{
+			return new Size(1,1);
+		}
+	}
+
 	// Create the toolkit window underlying this control.
 	internal override IToolkitWindow CreateToolkitWindow(IToolkitWindow parent)
 			{
 				CreateParams cp = CreateParams;
 				return ToolkitManager.Toolkit.CreatePopupWindow
-						(cp.X, cp.Y, cp.Width, cp.Height);
+						(cp.X + ToolkitDrawOrigin.X, cp.Y + ToolkitDrawOrigin.Y,
+						 cp.Width - ToolkitDrawSize.Width, cp.Height - ToolkitDrawSize.Height, this);
 			}
 
 	// Trap the "OnMouseDown" event and pop down the window if a
@@ -59,8 +70,16 @@ internal class PopupControl : Control
 				if(x < 0 || x >= Width || y < 0 || y >= Height)
 				{
 					Hide();
+					if (PopDown != null)
+						PopDown(this, EventArgs.Empty);
 				}
 			}
+
+	protected override void OnMouseMove(MouseEventArgs e)
+	{
+		base.OnMouseMove (e);
+	}
+
 
 }; // class PopupControl
 

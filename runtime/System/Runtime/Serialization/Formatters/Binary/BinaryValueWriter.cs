@@ -133,7 +133,7 @@ internal abstract class BinaryValueWriter
 									 Object value, Type type);
 
 	// Get the primitive type code for a type.
-	private static BinaryPrimitiveTypeCode GetPrimitiveTypeCode(Type type)
+	internal static BinaryPrimitiveTypeCode GetPrimitiveTypeCode(Type type)
 			{
 				if(type == typeof(bool))
 				{
@@ -773,7 +773,7 @@ internal abstract class BinaryValueWriter
 	// Write boolean values.
 	private class BooleanWriter : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public BooleanWriter() : base(BinaryPrimitiveTypeCode.Boolean) {}
 
 		// Write the inline form of values for a type.
@@ -789,7 +789,7 @@ internal abstract class BinaryValueWriter
 	// Write byte values.
 	private class ByteWriter : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public ByteWriter() : base(BinaryPrimitiveTypeCode.Byte) {}
 
 		// Write the inline form of values for a type.
@@ -805,7 +805,7 @@ internal abstract class BinaryValueWriter
 	// Write sbyte values.
 	private class SByteWriter : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public SByteWriter() : base(BinaryPrimitiveTypeCode.SByte) {}
 
 		// Write the inline form of values for a type.
@@ -821,7 +821,7 @@ internal abstract class BinaryValueWriter
 	// Write char values.
 	private class CharWriter : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public CharWriter() : base(BinaryPrimitiveTypeCode.Char) {}
 
 		// Write the inline form of values for a type.
@@ -829,7 +829,7 @@ internal abstract class BinaryValueWriter
 										 Object value, Type type,
 										 Type fieldType)
 				{
-					context.writer.Write((char)value);
+					context.writer.Write((ushort)(char)value);
 				}
 
 	}; // class CharWriter
@@ -837,7 +837,7 @@ internal abstract class BinaryValueWriter
 	// Write short values.
 	private class Int16Writer : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public Int16Writer() : base(BinaryPrimitiveTypeCode.Int16) {}
 
 		// Write the inline form of values for a type.
@@ -853,7 +853,7 @@ internal abstract class BinaryValueWriter
 	// Write ushort values.
 	private class UInt16Writer : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public UInt16Writer() : base(BinaryPrimitiveTypeCode.UInt16) {}
 
 		// Write the inline form of values for a type.
@@ -869,7 +869,7 @@ internal abstract class BinaryValueWriter
 	// Write int values.
 	private class Int32Writer : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public Int32Writer() : base(BinaryPrimitiveTypeCode.Int32) {}
 
 		// Write the inline form of values for a type.
@@ -885,7 +885,7 @@ internal abstract class BinaryValueWriter
 	// Write uint values.
 	private class UInt32Writer : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public UInt32Writer() : base(BinaryPrimitiveTypeCode.UInt32) {}
 
 		// Write the inline form of values for a type.
@@ -901,7 +901,7 @@ internal abstract class BinaryValueWriter
 	// Write long values.
 	private class Int64Writer : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public Int64Writer() : base(BinaryPrimitiveTypeCode.Int64) {}
 
 		// Write the inline form of values for a type.
@@ -917,7 +917,7 @@ internal abstract class BinaryValueWriter
 	// Write ulong values.
 	private class UInt64Writer : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public UInt64Writer() : base(BinaryPrimitiveTypeCode.UInt64) {}
 
 		// Write the inline form of values for a type.
@@ -933,7 +933,7 @@ internal abstract class BinaryValueWriter
 	// Write float values.
 	private class SingleWriter : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public SingleWriter() : base(BinaryPrimitiveTypeCode.Single) {}
 
 		// Write the inline form of values for a type.
@@ -949,7 +949,7 @@ internal abstract class BinaryValueWriter
 	// Write double values.
 	private class DoubleWriter : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public DoubleWriter() : base(BinaryPrimitiveTypeCode.Double) {}
 
 		// Write the inline form of values for a type.
@@ -965,7 +965,7 @@ internal abstract class BinaryValueWriter
 	// Write Decimal values.
 	private class DecimalWriter : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public DecimalWriter() : base(BinaryPrimitiveTypeCode.Decimal) {}
 
 		// Write the object header information for a type.
@@ -1022,7 +1022,7 @@ internal abstract class BinaryValueWriter
 	// Write DateTime values.
 	private class DateTimeWriter : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public DateTimeWriter()
 			: base(BinaryPrimitiveTypeCode.DateTime, "ticks") {}
 
@@ -1039,7 +1039,7 @@ internal abstract class BinaryValueWriter
 	// Write TimeSpan values.
 	private class TimeSpanWriter : PrimitiveWriter
 	{
-		// Construtor.
+		// Constructor.
 		public TimeSpanWriter()
 			: base(BinaryPrimitiveTypeCode.TimeSpan, "_ticks") {}
 
@@ -1056,7 +1056,7 @@ internal abstract class BinaryValueWriter
 	// Write String values.
 	private class StringWriter : BinaryValueWriter
 	{
-		// Construtor.
+		// Constructor.
 		public StringWriter() : base() {}
 
 		// Write the type tag for a type.

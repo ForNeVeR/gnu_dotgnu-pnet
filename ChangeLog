@@ -1,3 +1,11 @@
+
+2003-08-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueReader.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	begin adding the infrastructure for binary serialization readers.
+
 2003-08-05  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/Path.cs: fix to GetFullPath for handling ".".

@@ -66,7 +66,17 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 	public Object Deserialize(Stream serializationStream,
 							  HeaderHandler handler)
 			{
-				// TODO
+				// Validate the parameters.
+				if(serializationStream == null)
+				{
+					throw new ArgumentNullException("serializationStream");
+				}
+
+				// Wrap the stream in a binary reader.
+				using(BinaryReader reader =
+						new BinaryReader(serializationStream))
+				{
+				}
 				return null;
 			}
 

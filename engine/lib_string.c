@@ -1194,6 +1194,7 @@ static System_String *System_String_Replace_1(ILExecThread *thread,
 		else
 		{
 			*buf2++ = newChar;
+			++buf1;
 		}
 		--len;
 	}

@@ -4,6 +4,9 @@
 	* HACKING: add a "Standards" section with links to the ECMA
 	specifications for C# and CLI.
 
+	* engine/lib_string.c (System_String_Replace_1): increment the
+	"buf1" pointer when replacing a matching character.
+
 2001-01-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_var.c: bug in "ldarg" and "ldloc" when "byref" types

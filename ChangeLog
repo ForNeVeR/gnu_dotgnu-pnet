@@ -1,4 +1,9 @@
 
+2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cs_decls.tc (AddConstantValue): decimal attribute values
+	were missing the trailing field/property count.
+
 2001-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_string.c, engine/lib_type.c, ilasm/ilasm_grammar.y,

@@ -82,7 +82,7 @@ ILNode_SemAnalysis(ILNode_ScopeChange)
 static void AddConstantValue(ILGenInfo *info, ILField *field,
 							 ILEvalValue *evalValue)
 {
-	unsigned char constBuf[16];
+	unsigned char constBuf[18];
 	int constBufLen;
 	int constElemType;
 	ILConstant *constant;
@@ -216,6 +216,8 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 					IL_WRITE_UINT32(constBuf + 8,
 								    evalValue->un.decValue.middle);
 					IL_WRITE_UINT32(constBuf + 12, evalValue->un.decValue.low);
+					constBuf[16] = 0x00;
+					constBuf[17] = 0x00;
 
 					/* Create and attach the attribute */
 					if((attr = ILAttributeCreate
@@ -224,7 +226,7 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 						CSOutOfMemory();
 					}
 					ILAttributeSetType(attr, ILToProgramItem(ctor));
-					if(!ILAttributeSetValue(attr, constBuf, 16))
+					if(!ILAttributeSetValue(attr, constBuf, 18))
 					{
 						CSOutOfMemory();
 					}

@@ -6,6 +6,9 @@
 	* runtime/System/IO/BufferedStream.cs: Add this class for compatibilty
 	with external libraries.
 
+	* runtime/System/Security/SuppressUnmanagedCodeSecurityAttribute.cs:
+	Class added for certain external libraries.
+
 2003-01-26  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/Schema, System.Xml/Schema/ValidationEventArgs.cs,

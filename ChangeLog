@@ -21,6 +21,8 @@ that they make more sense.
 
 * doc/pnettools.texi: document the linker within the texinfo documentation.
 
+* configure.in, NEWS: update version and news for 0.2.2 release.
+
 2001-11-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilalink/linker.h: include "il_dumpasm.h" because it is needed in multiple

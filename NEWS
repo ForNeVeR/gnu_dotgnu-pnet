@@ -1,4 +1,22 @@
 
+0.2.2 (3 November 2001)
+
+	* Synthetic class structures for array types.
+	* Implement constructors for single-dimensional arrays.
+	* Add a mini-disassembler for CVM, to assist with debugging.
+	* Add "internalcall" methods for "System.Math", "System.Single",
+	  "System.Double", "System.Type", "System.RuntimeType", "System.String,
+	  "System.Threading.Monitor", and miscellaneous "Platform" classes.
+	* Fixes to the assembler's lexer and member resolution code.
+	* Handle "object" and "string" correctly in the assembler.
+	* Numeric values for Unicode characters.
+	* Improve the speed of "internalcall" method lookup.
+	* Unicode-based lookup routines for classes.
+	* Properly handle '<see langword="x">' in "csdoc".
+	* Implement the CVM instructions related to objects, comparisons,
+	  arrays, object construction, virtual methods,
+	* Implement and document the linker.
+
 0.2.0 (20 October 2001)
 
 	* Better code generation for "return" statements.

@@ -17,3 +17,6 @@
 
 /* Define if you have support for computed gotos */
 #undef HAVE_COMPUTED_GOTO
+
+/* Define if you have support for computed gotos in read-only PIC code */
+#undef HAVE_PIC_COMPUTED_GOTO

@@ -39,7 +39,7 @@ echo '#ifdef HAVE_COMPUTED_GOTO'
 echo ''
 
 # Are we compiling PIC code?
-echo '#ifdef PIC'
+echo '#if defined(PIC) && defined(HAVE_PIC_COMPUTED_GOTO)'
 echo ''
 
 # Output a table of PIC labels, based on an incoming stream

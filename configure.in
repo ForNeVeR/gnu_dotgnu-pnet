@@ -167,16 +167,24 @@ dnl Check for computed goto support in the compiler.
 AC_MSG_CHECKING(for computed goto support)
 AC_TRY_COMPILE([], [
 	static void *labels[] = {&&label0, &&label1, &&label2};
-	static int labelOffsets[] =
-		{&&label0 - &&label0, &&label1 - &&label0, &&label2 - &&label0};
 	unsigned char *pc = 0;
 	goto *labels[*pc];
 	label0: ;
 	label1: ;
 	label2: ;
-	goto *(&&label0 + labelOffsets[*pc]);
 ], AC_DEFINE(HAVE_COMPUTED_GOTO) compgoto=yes, compgoto=no)
 AC_MSG_RESULT($compgoto)
+AC_MSG_CHECKING(for pic computed goto support)
+AC_TRY_COMPILE([], [
+	static int labelOffsets[] =
+		{&&label0 - &&label0, &&label1 - &&label0, &&label2 - &&label0};
+	unsigned char *pc = 0;
+	goto *(&&label0 + labelOffsets[*pc]);
+	label0: ;
+	label1: ;
+	label2: ;
+], AC_DEFINE(HAVE_PIC_COMPUTED_GOTO) piccompgoto=yes, piccompgoto=no)
+AC_MSG_RESULT($piccompgoto)
 
 dnl Check to see if we are using gcc or not.
 AM_CONDITIONAL(USINGGCC, test x$GCC = xyes)

@@ -77,7 +77,7 @@ internal sealed class StdStream : Stream
 				ValidateBuffer(buffer, offset, count);
 				if(fd == 0)
 				{
-					return Stdio.StdRead(buffer, offset, count);
+					return Stdio.StdRead(fd, buffer, offset, count);
 				}
 				else if(fd != -1)
 				{
@@ -110,7 +110,7 @@ internal sealed class StdStream : Stream
 				ValidateBuffer(buffer, offset, count);
 				if(fd == 1 || fd == 2)
 				{
-					return Stdio.StdWrite(buffer, offset, count);
+					Stdio.StdWrite(fd, buffer, offset, count);
 				}
 				else if(fd != -1)
 				{

@@ -595,7 +595,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				{
 					return -1;
 				}
-				value = ((int)ch) - ((int)'0');
+				value = ((uint)ch) - ((uint)'0');
 				while(temp < len)
 				{
 					ch = format[temp];

@@ -90,7 +90,6 @@ namespace System.IO
 					{
 						throw new FileNotFoundException(_("IO_FileNotFound"));		       
 					}
-					break;
 					
 				
 				case Errno.EIO:
@@ -150,7 +149,6 @@ namespace System.IO
 					{
 						throw new FileNotFoundException(_("IO_FileNotFound"));
 					} 
-				break;
 				case Errno.EACCES:
 					throw new SecurityException(_("IO_PathnameSecurity"));
 

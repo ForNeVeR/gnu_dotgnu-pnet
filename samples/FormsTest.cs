@@ -28,6 +28,7 @@ namespace FormsTest
 		private TabPage tabPage17;
 		private TabPage tabPage18;
 		private TabPage tabPage19;
+		private TabPage tabPage20;
 		
 		// Tab1 Labels Test
 		private Label label;
@@ -222,6 +223,8 @@ namespace FormsTest
 		private TextBox scroll1TextBoxMin, scroll1TextBoxMax, scroll1TextBoxValue, scroll1TextBoxLarge, scroll1TextBoxSmall;
 		private TextBox scroll2TextBoxMin, scroll2TextBoxMax, scroll2TextBoxValue, scroll2TextBoxLarge, scroll2TextBoxSmall;
 
+		private TextBox textBoxTest2;
+
 		//private PropertyGrid propertyGrid;
 		#endregion
 		
@@ -242,6 +245,12 @@ namespace FormsTest
 			tabControl1.Multiline = true;
 			tabControl1.SizeMode = TabSizeMode.FillToRight;
 			
+			tabPage20 = new TabPage();
+			tabPage20.Text = "TextBox 2";
+			tabControl1.Controls.Add(tabPage20);
+			tabPage3 = new TabPage();
+			tabPage3.Text = "TextBox";
+			tabControl1.Controls.Add(tabPage3);
 			tabPage19 = new TabPage();
 			tabPage19.Text = "PropertyGrid";
 			tabControl1.Controls.Add(tabPage19);
@@ -267,9 +276,6 @@ namespace FormsTest
 			tabPage2 = new TabPage();
 			tabPage2.Text = "Button";
 			tabControl1.Controls.Add(tabPage2);
-			tabPage3 = new TabPage();
-			tabPage3.Text = "TextBox";
-			tabControl1.Controls.Add(tabPage3);
 			tabPage4 = new TabPage();
 			tabPage4.Text = "RadioButton";
 			tabControl1.Controls.Add(tabPage4);
@@ -306,6 +312,7 @@ namespace FormsTest
 			AddLabelTest(tabPage1);
 			AddButtonTest(tabPage2);
 			AddTextBoxTest(tabPage3);
+			AddTextBoxTest2(tabPage20);
 			AddRadioButtonsTest(tabPage4);
 			AddRegionsTest(tabPage5);
 			AddTabControlsTest(tabPage6);
@@ -356,181 +363,181 @@ namespace FormsTest
 			label = new Label();
 
 			label22.Dock = DockStyle.Top;
-			label22.Location = new Point(0, 0);
+			label22.Location = new Point(10, 0);
 			label22.Name = "label22";
-			label22.Size = new Size(480, 16);
+			label22.Width = 465;
 			label22.TabIndex = 21;
 			label22.Text = "A normal label : Dock=Top";
 
-			label23.Dock = DockStyle.Bottom;
-			label23.Location = new Point(0, 517);
-			label23.Name = "label23";
-			label23.Size = new Size(480, 16);
-			label23.TabIndex = 22;
-			label23.Text = "A normal label : Dock=Bottom";
-
-			label8.Location = new Point(10, 125);
-			label8.Name = "label8";
-			label8.Size = new Size(464, 16);
-			label8.TabIndex = 7;
-			label8.Text = "A normal label : TextAlign=MiddleLeft";
-			label8.TextAlign = ContentAlignment.MiddleLeft;
-
-			label9.Location = new Point(10, 185);
-			label9.Name = "label9";
-			label9.Size = new Size(464, 16);
-			label9.TabIndex = 8;
-			label9.Text = "A normal label : TextAlign=BottomLeft";
-			label9.TextAlign = ContentAlignment.BottomLeft;
-
-			label4.Location = new Point(10, 85);
-			label4.Name = "label4";
-			label4.Size = new Size(464, 16);
-			label4.TabIndex = 3;
-			label4.Text = "A normal label : TextAlign=TopCenter";
-			label4.TextAlign = ContentAlignment.TopCenter;
-
-			label5.Location = new Point(10, 145);
-			label5.Name = "label5";
-			label5.Size = new Size(464, 16);
-			label5.TabIndex = 4;
-			label5.Text = "A normal label : TextAlign=MiddleCenter";
-			label5.TextAlign = ContentAlignment.MiddleCenter;
-
-			label6.Location = new Point(10, 165);
-			label6.Name = "label6";
-			label6.Size = new Size(464, 16);
-			label6.TabIndex = 5;
-			label6.Text = "A normal label : TextAlign=MiddleRight";
-			label6.TextAlign = ContentAlignment.MiddleRight;
-
-			label7.Location = new Point(10, 105);
-			label7.Name = "label7";
-			label7.Size = new Size(464, 16);
-			label7.TabIndex = 6;
-			label7.Text = "A normal label : TextAlign=TopRight";
-			label7.TextAlign = ContentAlignment.TopRight;
-
+			label.Location = new Point(10, 25);
+			label.Name = "label";
+			label.Size = new Size(465, 16);
+			label.TabIndex = 0;
+			label.Text = "A normal label";
+			
 			label2.BorderStyle = BorderStyle.FixedSingle;
-			label2.Location = new Point(10, 45);
+			label2.Location = new Point(10, 50);
 			label2.Name = "label2";
-			label2.Size = new Size(464, 16);
+			label2.Width = 465;
 			label2.TabIndex = 1;
 			label2.Text = "A normal label : BorderStyle=FixedSingle";
 
 			label3.BorderStyle = BorderStyle.Fixed3D;
-			label3.Location = new Point(10, 65);
+			label3.Location = new Point(10, 75);
 			label3.Name = "label3";
-			label3.Size = new Size(464, 16);
+			label3.Width = 465;
 			label3.TabIndex = 2;
 			label3.Text = "A normal label : BorderStyle=Fixed3D";
 
-			label15.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Italic, GraphicsUnit.Point, ((System.Byte)(0)));
-			label15.Location = new Point(10, 305);
-			label15.Name = "label15";
-			label15.Size = new Size(464, 16);
-			label15.TabIndex = 14;
-			label15.Text = "A normal label : Font.Italic=true";
+			label4.Location = new Point(10, 100);
+			label4.Name = "label4";
+			label4.Width = 465;
+			label4.TabIndex = 3;
+			label4.Text = "A normal label : TextAlign=TopCenter";
+			label4.TextAlign = ContentAlignment.TopCenter;
 
-			label14.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
-			label14.Location = new Point(10, 285);
-			label14.Name = "label14";
-			label14.Size = new Size(464, 16);
-			label14.TabIndex = 13;
-			label14.Text = "A normal label : Font.Bold=true";
+			label7.Location = new Point(10, 125);
+			label7.Name = "label7";
+			label7.Width = 465;
+			label7.TabIndex = 6;
+			label7.Text = "A normal label : TextAlign=TopRight";
+			label7.TextAlign = ContentAlignment.TopRight;
 
+			label8.Location = new Point(10, 150);
+			label8.Name = "label8";
+			label8.Width = 465;
+			label8.TabIndex = 7;
+			label8.Text = "A normal label : TextAlign=MiddleLeft";
+			label8.TextAlign = ContentAlignment.MiddleLeft;
 
-			label17.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Underline, GraphicsUnit.Point, ((System.Byte)(0)));
-			label17.Location = new Point(10, 345);
-			label17.Name = "label17";
-			label17.Size = new Size(464, 16);
-			label17.TabIndex = 16;
-			label17.Text = "A normal label : Font.Underline=true";
+			label5.Location = new Point(10, 175);
+			label5.Name = "label5";
+			label5.Width = 465;
+			label5.TabIndex = 4;
+			label5.Text = "A normal label : TextAlign=MiddleCenter";
+			label5.TextAlign = ContentAlignment.MiddleCenter;
 
-			label16.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Strikeout, GraphicsUnit.Point, ((System.Byte)(0)));
-			label16.Location = new Point(10, 325);
-			label16.Name = "label16";
-			label16.Size = new Size(464, 16);
-			label16.TabIndex = 15;
-			label16.Text = "A normal label : Font.Strikeout=true";
+			label9.Location = new Point(10, 200);
+			label9.Name = "label9";
+			label9.Width = 465;
+			label9.TabIndex = 8;
+			label9.Text = "A normal label : TextAlign=BottomLeft";
+			label9.TextAlign = ContentAlignment.BottomLeft;
 
-			label11.Location = new Point(10, 225);
-			label11.Name = "label11";
-			label11.Size = new Size(464, 16);
-			label11.TabIndex = 10;
-			label11.Text = "A normal label : TextAlign=BottomRight";
-			label11.TextAlign = ContentAlignment.BottomRight;
+			label6.Location = new Point(10, 225);
+			label6.Name = "label6";
+			label6.Width = 465;
+			label6.TabIndex = 5;
+			label6.Text = "A normal label : TextAlign=MiddleRight";
+			label6.TextAlign = ContentAlignment.MiddleRight;
 
-			label10.Location = new Point(10, 205);
+			label10.Location = new Point(10, 250);
 			label10.Name = "label10";
-			label10.Size = new Size(464, 16);
+			label10.Size = new Size(465, 16);
 			label10.TabIndex = 9;
 			label10.Text = "A normal label : TextAlign=BottomCenter";
 			label10.TextAlign = ContentAlignment.BottomCenter;
 
+			label11.Location = new Point(10, 275);
+			label11.Name = "label11";
+			label11.Size = new Size(465, 16);
+			label11.TabIndex = 10;
+			label11.Text = "A normal label : TextAlign=BottomRight";
+			label11.TextAlign = ContentAlignment.BottomRight;
+
+			label12.Location = new Point(10, 300);
+			label12.Name = "label12";
+			label12.Size = new Size(465, 16);
+			label12.TabIndex = 11;
+			label12.Text = "A normal label : With a &shortcut letter (Alt+S)";
+
 			label13.ForeColor = Color.Red;
-			label13.Location = new Point(10, 265);
+			label13.Location = new Point(10, 325);
 			label13.Name = "label13";
-			label13.Size = new Size(464, 16);
+			label13.Size = new Size(465, 16);
 			label13.TabIndex = 12;
 			label13.Text = "A normal label : ForeColor=Red";
 
+			label14.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
+			label14.Location = new Point(10, 350);
+			label14.Name = "label14";
+			label14.Size = new Size(465, 16);
+			label14.TabIndex = 13;
+			label14.Text = "A normal label : Font.Bold=true";
+
+			label15.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Italic, GraphicsUnit.Point, ((System.Byte)(0)));
+			label15.Location = new Point(10, 375);
+			label15.Name = "label15";
+			label15.Size = new Size(465, 16);
+			label15.TabIndex = 14;
+			label15.Text = "A normal label : Font.Italic=true";
+
+			label17.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Underline, GraphicsUnit.Point, ((System.Byte)(0)));
+			label17.Location = new Point(10, 400);
+			label17.Name = "label17";
+			label17.Size = new Size(465, 16);
+			label17.TabIndex = 16;
+			label17.Text = "A normal label : Font.Underline=true";
+
+			label16.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Strikeout, GraphicsUnit.Point, ((System.Byte)(0)));
+			label16.Location = new Point(10, 425);
+			label16.Name = "label16";
+			label16.Size = new Size(465, 16);
+			label16.TabIndex = 15;
+			label16.Text = "A normal label : Font.Strikeout=true";
+
+			label18.Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+			label18.Location = new Point(10, 450);
+			label18.Name = "label18";
+			label18.Size = new Size(465, 16);
+			label18.TabIndex = 17;
+			label18.Text = "A normal label : Font=Verdana; 9.75pt";
+
+			label19.BackColor = Color.Red;
+			label19.Location = new Point(10, 475);
+			label19.Name = "label19";
+			label19.Size = new Size(465, 16);
+			label19.TabIndex = 18;
+			label19.Text = "A normal label : BackColor=Red";
+
 			label20.BackColor = SystemColors.Control;
 			label20.Enabled = false;
-			label20.Location = new Point(10, 405);
+			label20.Location = new Point(10, 500);
 			label20.Name = "label20";
-			label20.Size = new Size(464, 16);
+			label20.Size = new Size(465, 16);
 			label20.TabIndex = 19;
 			label20.Text = "A normal label : Enabled=false";
 
-			label21.Anchor = (AnchorStyles)AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-			label21.BackColor = SystemColors.Control;
-			label21.Location = new Point(10, 495);
-			label21.Name = "label21";
-			label21.Size = new Size(460, 15);
-			label21.TabIndex = 20;
-			label21.Text = "A normal label : Anchor=All";
-
 			label24.BorderStyle = BorderStyle.FixedSingle;
-			label24.Location = new Point(10, 425);
+			label24.Location = new Point(10, 525);
 			label24.Name = "label24";
-			label24.Size = new Size(464, 40);
+			label24.Size = new Size(465, 40);
 			label24.TabIndex = 23;
 			label24.Text = "A normal label : BorderStyle=FixedSingle , Height=40";
 
 			label25.AutoSize = true;
 			label25.BorderStyle = BorderStyle.FixedSingle;
-			label25.Location = new Point(10, 470);
+			label25.Location = new Point(10, 550);
 			label25.Name = "label25";
-			label25.Size = new Size(294, 19);
+			label25.Size = new Size(465, 19);
 			label25.TabIndex = 24;
 			label25.Text = "A normal label : BorderStyle=FixedSingle , AutoSize=true";
 
-			label19.BackColor = Color.Red;
-			label19.Location = new Point(10, 385);
-			label19.Name = "label19";
-			label19.Size = new Size(464, 16);
-			label19.TabIndex = 18;
-			label19.Text = "A normal label : BackColor=Red";
+			label21.Anchor = (AnchorStyles)AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			label21.BackColor = SystemColors.Control;
+			label21.Location = new Point(10, 575);
+			label21.Name = "label21";
+			label21.Size = new Size(465, 15);
+			label21.TabIndex = 20;
+			label21.Text = "A normal label : Anchor=All";
 
-			label18.Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
-			label18.Location = new Point(10, 365);
-			label18.Name = "label18";
-			label18.Size = new Size(464, 16);
-			label18.TabIndex = 17;
-			label18.Text = "A normal label : Font=Verdana; 9.75pt";
 
-			label12.Location = new Point(10, 245);
-			label12.Name = "label12";
-			label12.Size = new Size(464, 16);
-			label12.TabIndex = 11;
-			label12.Text = "A normal label : With a &shortcut letter (Alt+S)";
-
-			label.Location = new Point(10, 25);
-			label.Name = "label";
-			label.Size = new Size(464, 16);
-			label.TabIndex = 0;
-			label.Text = "A normal label";
+			label23.Dock = DockStyle.Bottom;
+			label23.Location = new Point(10, 600);
+			label23.Name = "label23";
+			label23.Width = 465;
+			label23.TabIndex = 22;
+			label23.Text = "A normal label : Dock=Bottom";
 
 			control.Controls.AddRange(new Control[] {
 																			 label25,
@@ -726,7 +733,7 @@ namespace FormsTest
 			textBoxSelectedTextButton = new Button();
 
 			textBox19.Dock = DockStyle.Top;
-			textBox19.Location = new Point(0, 0);
+			textBox19.Location = new Point(8, 0);
 			textBox19.Name = "textBox19";
 			textBox19.Size = new Size(450, 20);
 			textBox19.TabIndex = 19;
@@ -740,14 +747,14 @@ namespace FormsTest
 			textBox3.Text = "A normal textbox - MS Sans Serif : BorderStyle=FixedSingle";
 
 			textBox20.Enabled = false;
-			textBox20.Location = new Point(10, 390);
+			textBox20.Location = new Point(8, 390);
 			textBox20.Name = "textBox20";
 			textBox20.Size = new Size(450, 20);
 			textBox20.TabIndex = 20;
 			textBox20.Text = "A normal textbox - MS Sans Serif : Enabled=false";
 
 			textBox18.Dock = DockStyle.Bottom;
-			textBox18.Location = new Point(0, 518);
+			textBox18.Location = new Point(8, 518);
 			textBox18.Name = "textBox18";
 			textBox18.Size = new Size(450, 20);
 			textBox18.TabIndex = 18;
@@ -767,58 +774,64 @@ namespace FormsTest
 			textBox1.Text = "A normal textbox - MS Sans Serif : TextAlign=Right";
 			textBox1.TextAlign = HorizontalAlignment.Right;
 
-			textBox6.Font = new Font("Serifa BT", 8.25F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
-			textBox6.Location = new Point(10, 190);
-			textBox6.Name = "textBox6";
-			textBox6.Size = new Size(450, 20);
-			textBox6.TabIndex = 6;
-			textBox6.Text = "A normal textbox - Serifa BT";
-
-			textBox7.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
-			textBox7.Location = new Point(8, 215);
-			textBox7.Name = "textBox7";
-			textBox7.Size = new Size(450, 20);
-			textBox7.TabIndex = 7;
-			textBox7.Text = "A normal textbox - MS Sans Serif : Font.Bold=true";
-
 			textBox4.Location = new Point(8, 120);
 			textBox4.Multiline = true;
 			textBox4.Name = "textBox4";
-			textBox4.ScrollBars = ScrollBars.Both;
 			textBox4.Size = new Size(450, 40);
 			textBox4.TabIndex = 4;
-			textBox4.Text = "A MultiLine textbox - MS Sans Serif : ScrollBars=Both, Height=40\nOh give me a home\nWhere the buffalo roam\nAnd the deer and 45 (forty-five) antelope play\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day.\nHome, Home on the Range\nWhere the deer and the antelope play.\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day....";
+			textBox4.Text = "Multiline = true:\nOh give me a home\nWhere the buffalo roam\nAnd the deer and 45 (forty-five) antelope play\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day.\nHome, Home on the Range\nWhere the deer and the antelope play.\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day....";
 
-			textBox5.Font = new Font("Arial", 9F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
-			textBox5.Location = new Point(10, 165);
+			textBox5.Location = new Point(8, 165);
 			textBox5.Name = "textBox5";
 			textBox5.Size = new Size(450, 21);
 			textBox5.TabIndex = 5;
-			textBox5.Text = "A normal textbox - Arial; 9pt";
+			textBox5.Multiline = true;
+			textBox5.ScrollBars = ScrollBars.Both;
+			textBox5.WordWrap = false;
+			textBox5.Text = "Multiline = true,ScrollBars=Both, WordWrap = false:\nOh give me a home\nWhere the buffalo roam\nAnd the deer and 45 (forty-five) antelope play\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day.\nHome, Home on the Range\nWhere the deer and the antelope play.\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day....";
 
-			textBox10.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Underline);
-			textBox10.Location = new Point(10, 290);
-			textBox10.Name = "textBox10";
-			textBox10.Size = new Size(450, 20);
-			textBox10.TabIndex = 10;
-			textBox10.Text = "A normal textbox - MS Sans Serif : Font.Underline=true";
-
+			textBox6.Location = new Point(8, 190);
+			textBox6.Name = "textBox6";
+			textBox6.Size = new Size(450, 40);
+			textBox6.TabIndex = 5;
+			textBox6.Multiline = true;
+			textBox6.ScrollBars = ScrollBars.Both;
+			textBox6.WordWrap = false;
+			textBox6.Text = "Multiline = true,ScrollBars=Both,WordWrap = false:\nOh give me a home\nWhere the buffalo roam\nAnd the deer and 45 (forty-five) antelope play\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day.\nHome, Home on the Range\nWhere the deer and the antelope play.\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day....";
+	
 			textBox8.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Italic);
-			textBox8.Location = new Point(10, 240);
+			textBox8.Location = new Point(8, 240);
 			textBox8.Name = "textBox8";
 			textBox8.Size = new Size(450, 20);
 			textBox8.TabIndex = 8;
 			textBox8.Text = "A normal textbox - MS Sans Serif : Font.Italic=true";
 
 			textBox9.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Strikeout);
-			textBox9.Location = new Point(10, 265);
+			textBox9.Location = new Point(8, 265);
 			textBox9.Name = "textBox9";
 			textBox9.Size = new Size(450, 20);
 			textBox9.TabIndex = 9;
 			textBox9.Text = "A normal textbox - MS Sans Serif : Font.StrikeOut=true";
 
+			textBox10.Location = new Point(8, 290);
+			textBox10.Name = "textBox10";
+			textBox10.Size = new Size(450, 20);
+			textBox10.TabIndex = 5;
+			textBox10.Multiline = true;
+			textBox10.ScrollBars = ScrollBars.Both;
+			textBox10.WordWrap = false;
+			textBox10.Text = "Multiline = true,ScrollBars=Both, WordWrap=false:\nOh give me a home\nWhere the buffalo roam\nAnd the deer and 45 (forty-five) antelope play\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day.\nHome, Home on the Range\nWhere the deer and the antelope play.\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day....";
+
+			textBox11.Font = new Font("Microsoft Sans Serif", 8.25F);
+			textBox11.ScrollBars = ScrollBars.Vertical;
+			textBox11.Location = new Point(8, 315);
+			textBox11.Name = "textBox11";
+			textBox11.Size = new Size(450, 20);
+			textBox11.TabIndex = 11;
+			textBox11.Text = "ScrollBars=Vertical:";
+
 			textBox13.Font = new Font("Microsoft Sans Serif", 8.25F);
-			textBox13.Location = new Point(10, 365);
+			textBox13.Location = new Point(8, 365);
 			textBox13.Name = "textBox13";
 			textBox13.ReadOnly = true;
 			textBox13.Size = new Size(450, 20);
@@ -826,20 +839,14 @@ namespace FormsTest
 			textBox13.Text = "A normal textbox - MS Sans Serif : ReadOnly=true";
 
 			textBox12.Font = new Font("Microsoft Sans Serif", 8.25F);
-			textBox12.Location = new Point(10, 340);
+			textBox12.Location = new Point(8, 340);
 			textBox12.Name = "textBox12";
 			textBox12.PasswordChar = '*';
 			textBox12.Size = new Size(450, 20);
 			textBox12.TabIndex = 12;
 			textBox12.Text = "A normal textbox - MS Sans Serif : PasswordChar=*";
 
-			textBox11.Font = new Font("Microsoft Sans Serif", 8.25F);
-			textBox11.ForeColor = Color.Red;
-			textBox11.Location = new Point(10, 315);
-			textBox11.Name = "textBox11";
-			textBox11.Size = new Size(450, 20);
-			textBox11.TabIndex = 11;
-			textBox11.Text = "A normal textbox - MS Sans Serif : ForeColor=red";
+			
 
 			textBox.Location = new Point(8, 25);
 			textBox.Name = "textBox";
@@ -848,7 +855,7 @@ namespace FormsTest
 			textBox.Text = "A normal textbox - MS Sans Serif";
 
 			textBox17.AcceptsTab = true;
-			textBox17.Location = new Point(10, 490);
+			textBox17.Location = new Point(8, 490);
 			textBox17.Name = "textBox17";
 			textBox17.Size = new Size(450, 20);
 			textBox17.TabIndex = 17;
@@ -857,28 +864,28 @@ namespace FormsTest
 			textBox16.Anchor = ((AnchorStyles)((((AnchorStyles.Top | AnchorStyles.Bottom)
 				| AnchorStyles.Left)
 				| AnchorStyles.Right)));
-			textBox16.Location = new Point(10, 465);
+			textBox16.Location = new Point(8, 465);
 			textBox16.Name = "textBox16";
 			textBox16.Size = new Size(450, 20);
 			textBox16.TabIndex = 16;
 			textBox16.Text = "A normal textbox - MS Sans Serif : Anchor=All";
 
 			textBox15.BackColor = Color.Red;
-			textBox15.Location = new Point(10, 440);
+			textBox15.Location = new Point(8, 440);
 			textBox15.Name = "textBox15";
 			textBox15.Size = new Size(450, 20);
 			textBox15.TabIndex = 15;
 			textBox15.Text = "A normal textbox - MS Sans Serif : BackColor=Red";
 
 			textBox14.Font = new Font("Microsoft Sans Serif", 8.25F);
-			textBox14.Location = new Point(10, 415);
+			textBox14.Location = new Point(8, 415);
 			textBox14.MaxLength = 50;
 			textBox14.Name = "textBox14";
 			textBox14.Size = new Size(450, 20);
 			textBox14.TabIndex = 14;
 			textBox14.Text = "A normal textbox - MS Sans Serif : MaxLength=50";
 
-			textBoxLinesButton.Bounds = new Rectangle( 10, 510, 150, 30);
+			textBoxLinesButton.Bounds = new Rectangle( 8, 510, 150, 30);
 			textBoxLinesButton.Text = "Lines[] for Multiline";
 			textBoxLinesButton.Click+=new EventHandler(textBoxLinesButton_Click);
 
@@ -904,7 +911,6 @@ namespace FormsTest
 																			textBox10,
 																			textBox9,
 																			textBox8,
-																			textBox7,
 																			textBox6,
 																			textBox5,
 																			textBox4,
@@ -918,6 +924,18 @@ namespace FormsTest
 																		 });
 		}
 
+		private void AddTextBoxTest2(Control c)
+		{
+			textBoxTest2 = new TextBox();
+			textBoxTest2.Bounds = new Rectangle(10,10, 200, 300);
+			textBoxTest2.Multiline = true;
+			textBoxTest2.WordWrap = false;
+			textBoxTest2.ScrollBars = ScrollBars.Both;
+			textBoxTest2.Text = "Play around...";
+			c.Controls.Add(textBoxTest2);
+
+		}
+
 		private void textBoxLinesButton_Click(object sender, EventArgs e)
 		{
 			foreach(String s in textBox4.Lines)
@@ -926,7 +944,7 @@ namespace FormsTest
 
 		private void textBoxTextButton_Click(object sender, EventArgs e)
 		{
-			textBox4.Text = "1234 123456 123";
+			textBox4.Text = textBox4.Text + "1234 123456 123";
 		}
 		private void textBoxSelectedTextButton_Click(object sender, EventArgs e)
 		{

@@ -328,14 +328,11 @@ static IL_INLINE void *ReadPointer(unsigned char *pc)
 	return *((void **)pc);
 #else
 	/* We need to be careful about alignment on other platforms */
-	if(sizeof(void *) == 4)
-	{
-		return (void *)(IL_READ_UINT32(pc));
-	}
-	else
-	{
-		return (void *)(IL_READ_UINT64(pc));
-	}
+#if SIZEOF_VOID_P == 4
+	return (void *)(IL_READ_UINT32(pc));
+#else
+	return (void *)(IL_READ_UINT64(pc));
+#endif
 #endif
 }
 

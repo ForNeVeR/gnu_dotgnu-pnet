@@ -6,6 +6,9 @@
 	parts of the code use "void *" instead of "unsigned char *", which
 	causes problems with some versions of gcc.
 
+	* engine/cvm.c (ReadPointer): try to make the code sensitive to
+	32-bit vs 64-bit system differences.
+
 2001-12-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_cast.tc, codegen/jv_cast.tc: insert the "%split"

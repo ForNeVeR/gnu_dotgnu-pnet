@@ -923,7 +923,7 @@ static int IsSinglePlugin(const char *filename)
  */
 static void AddArgument(char ***list, int *num, char *str)
 {
-	if(((*num) & 15) == 0)
+	if(((*num) & 14) == 0)
 	{
 		char **newlist = (char **)ILRealloc(*list, sizeof(char *) *
 												   (*num + 16));
@@ -934,6 +934,7 @@ static void AddArgument(char ***list, int *num, char *str)
 		*list = newlist;
 	}
 	(*list)[*num] = str;
+	(*list)[*num + 1] = 0;
 	++(*num);
 }
 

@@ -1,4 +1,10 @@
-2004-04-21 Russell Stuart  <russell-savannah@stuart.id.au>
+
+2004-04-22  Gopal V <gopalv82@yahoo.com>
+
+	* cscc/cscc.c: Add a NULL sentinel while doing an AddArgument.
+	(bug #8655)
+
+2004-04-21  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* engine/lib_dir.c: System.IO.Directory.GetFiles was throwing
 	System.IO.IOException - interrupted system call.

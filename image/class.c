@@ -1584,6 +1584,48 @@ done:
 	return result;
 }
 
+void ILClassDetachMember(ILMember *member)
+{
+	ILClass *info = member->owner;
+	ILMember *current = info->firstMember;
+	ILMember *prev = 0;
+	while(current != 0 && current != member)
+	{
+		prev = current;
+		current = current->nextMember;
+	}
+	if(current != 0)
+	{
+		if(prev)
+		{
+			prev->nextMember = member->nextMember;
+		}
+		else
+		{
+			info->firstMember = member->nextMember;
+		}
+		if(member->nextMember == 0)
+		{
+			info->lastMember = prev;
+		}
+	}
+}
+
+void ILClassAttachMember(ILClass *info, ILMember *member)
+{
+	member->owner = info;
+	if(info->lastMember)
+	{
+		info->lastMember->nextMember = member;
+	}
+	else
+	{
+		info->firstMember = member;
+	}
+	member->nextMember = 0;
+	info->lastMember = member;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -761,6 +761,16 @@ void ILClassSetUserData(ILClass *info, void *data);
 ILMethod *ILClassGetMethodImpl(ILClass *info, ILMethod *method);
 
 /*
+ * Detach a member from its owning class.
+ */
+void ILClassDetachMember(ILMember *member);
+
+/*
+ * Attach a member to a new owning class.
+ */
+void ILClassAttachMember(ILClass *info, ILMember *member);
+
+/*
  * Helper macros for querying information about a class.
  */
 #define	ILClass_FromToken(image,token)	\

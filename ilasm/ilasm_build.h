@@ -144,6 +144,11 @@ void ILAsmBuildNewClass(const char *name, ILClass *parent, ILUInt32 attrs);
 void ILAsmBuildPopClass(void);
 
 /*
+ * End processing of the global module class.
+ */
+void ILAsmBuildEndModule(void);
+
+/*
  * Look up a class with a specific name, and create a
  * TypeRef within the given scope if not found.
  */

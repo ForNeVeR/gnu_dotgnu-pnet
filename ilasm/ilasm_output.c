@@ -251,6 +251,7 @@ void ILAsmOutCreate(FILE *stream, int seekable, int type, int flags)
 int ILAsmOutDestroy(void)
 {
 	int error;
+	ILAsmBuildEndModule();
 	ILWriterOutputMetadata(ILAsmWriter, ILAsmImage);
 	error = ILWriterDestroy(ILAsmWriter);
 	if(error < 0)

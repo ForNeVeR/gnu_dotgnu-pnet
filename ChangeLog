@@ -23,6 +23,10 @@
 	* ilasm/ilasm_grammar.y: change the "<Module>" type to "public" if
 	it contains public fields or methods.
 
+	* ilasm/ilasm_build.c, ilasm/ilasm_build.h, ilasm/ilasm_output.c,
+	image/class.c, include/il_program.h: move dangling global references
+	to the "<ModuleExtern>" typeref at the end of the assembling process.
+
 2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, cscc/csharp/cs_attrs.c: begin to put the

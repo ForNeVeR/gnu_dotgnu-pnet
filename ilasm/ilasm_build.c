@@ -346,6 +346,49 @@ void ILAsmBuildPopClass(void)
 	ILAsmClass = classStack[--classStackSize];
 }
 
+void ILAsmBuildEndModule(void)
+{
+	ILMember *member;
+	ILClass *moduleExtern = 0;
+	ILType *signature;
+
+	/* Search for any methods or fields that are still MemberRef's,
+	   which means they were referenced, but not defined.  We need
+	   to turn them into references to the "<ModuleExtern>" type */
+	member = 0;
+	while((member = (ILMember *)ILClassNextMember
+				(ILAsmModuleClass, member)) != 0)
+	{
+		if((ILMember_Token(member) & IL_META_TOKEN_MASK)
+				== IL_META_TOKEN_MEMBER_REF)
+		{
+			/* If the member includes a sentinel, then it is OK */
+			signature = ILMember_Signature(member);
+			if(signature == 0 || !ILType_IsComplex(signature) ||
+			   ILType_Kind(signature) !=
+			   		(IL_TYPE_COMPLEX_METHOD |
+					 IL_TYPE_COMPLEX_METHOD_SENTINEL))
+			{
+				/* Detach the member from its current class */
+				ILClassDetachMember(member);
+
+				/* Create the "<ModuleExtern>" type reference if necessary */
+				if(!moduleExtern)
+				{
+					moduleExtern = ILClassCreateRef
+						(ILToProgramItem(ILAsmModule), 0, "<ModuleExtern>", 0);
+				}
+
+				/* Attach the member to the "<ModuleExtern>" type */
+				ILClassAttachMember(moduleExtern, member);
+			}
+		}
+	}
+
+	/* Mark the global module class as complete */
+	ILClassMarkComplete(ILAsmModuleClass);
+}
+
 ILClass *ILAsmClassLookup(const char *name, ILProgramItem *scope)
 {
 	const char *baseName;

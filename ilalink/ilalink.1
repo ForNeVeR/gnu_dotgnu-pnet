@@ -1,4 +1,4 @@
-.\" Copyright (c) 2001 Southern Storm Software, Pty Ltd.
+.\" Copyright (c) 2001, 2002, 2003 Southern Storm Software, Pty Ltd.
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH ilalink 1 "3 November 2001" "Southern Storm Software" "Portable.NET Development Tools"
+.TH ilalink 1 "14 February 2003" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 ilalink \- the Intermediate Language (IL) assembly linker
 .SH SYNOPSIS
@@ -110,6 +110,10 @@ Mark the resources as private to the output assembly.
 .B \-H ALG, \-fhash\-algorithm=ALG
 Set the assembly hash algorithm to "ALG", which must be either
 "SHA1" or "MD5".  The default is "SHA1".
+.TP
+.B \-z, \-fminimize\-parameters
+Minimize the size of the parameter definition table by discarding
+parameters that don't strictly need to be present for correct execution.
 .TP
 .B \-3, \-m32bit\-only
 Mark the final output assembly so that it can only be used on 32-bit

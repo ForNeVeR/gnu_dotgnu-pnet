@@ -123,6 +123,7 @@ struct _tagILLinker
 	int				outOfMemory;	/* Set to non-zero when out of memory */
 	int				error;			/* Some other error occurred */
 	int				is32Bit;		/* Non-zero if "-m32bit-only" supplied */
+	int				linkerFlags;	/* Extra flags for the linker */
 	ILLinkImage    *images;			/* List of images to be linked */
 	ILLinkImage    *lastImage;		/* Last image on the "images" list */
 	ILUInt32		imageNum;		/* Number of the image being linked */

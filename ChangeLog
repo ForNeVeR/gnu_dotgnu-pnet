@@ -5,6 +5,12 @@
 	load the parameter information because it is possible that not
 	all method parameters will have ParamDef blocks.
 
+	* doc/pnettools.texi, ilalink/ilalink.1, ilalink/link_create.c,
+	ilalink/link_main.c, ilalink/link_method.c, ilalink/linker.h,
+	include/il_linker.h: add the "-fminimize-parameters" option to
+	the linker which can be used to strip the ParamDef table down
+	to just those parameter blocks that are strictly necessary.
+
 2003-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, coremul/.cvsignore, coremul/Makefile.am,

@@ -67,6 +67,7 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	linker->outOfMemory = 0;
 	linker->error = 0;
 	linker->is32Bit = ((flags & IL_WRITEFLAG_32BIT_ONLY) != 0);
+	linker->linkerFlags = 0;
 	linker->images = 0;
 	linker->lastImage = 0;
 	linker->resourceRVA = 0;
@@ -353,6 +354,13 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 
 	/* Ready to go */
 	return 1;
+}
+
+int ILLinkerSetFlags(ILLinker *linker, int flags)
+{
+	int oldFlags = linker->linkerFlags;
+	linker->linkerFlags = flags;
+	return oldFlags;
 }
 
 #ifdef	__cplusplus

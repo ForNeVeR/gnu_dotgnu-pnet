@@ -674,6 +674,14 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	param = 0;
 	while((param = ILMethodNextParam(method, param)) != 0)
 	{
+		if((linker->linkerFlags & IL_LINKFLAG_MINIMIZE_PARAMS) != 0 &&
+		   !ILParameter_Attrs(param) &&
+		   !ILProgramItem_HasAttrs(param) &&
+		   !ILFieldMarshalGetFromOwner(ILToProgramItem(param)))
+		{
+			/* This parameter block doesn't add anything useful */
+			continue;
+		}
 		newParam = ILParameterCreate(newMethod, 0, ILParameter_Name(param),
 									 ILParameter_Attrs(param),
 									 ILParameter_Num(param));

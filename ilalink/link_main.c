@@ -102,6 +102,9 @@ static ILCmdLineOption const options[] = {
 	{"-p", 'p', 0,
 		"-fprivate-resources         or -p",
 		"Mark the resources as private to the output assembly."},
+	{"-z", 'z', 0,
+		"-fminimize-parameters       or -z",
+		"Minimize the size of the parameter table in the output."},
 	{"-H", 'H', 1,
 		"-fhash-algorithm=name       or -H name",
 		"Specify the algorithm to use to hash files (SHA1 or MD5)"},
@@ -209,6 +212,7 @@ int ILLinkerMain(int argc, char *argv[])
 	int isStatic = 0;
 	int privateResources = 0;
 	int defaultIsLib = 0;
+	int linkerFlags = 0;
 	int firstFile;
 	int temp, temp2;
 	ILLinker *linker;
@@ -415,6 +419,12 @@ int ILLinkerMain(int argc, char *argv[])
 			}
 			break;
 
+			case 'z':
+			{
+				linkerFlags |= IL_LINKFLAG_MINIMIZE_PARAMS;
+			}
+			break;
+
 			case 'S':
 			{
 				stdLibrary = param;
@@ -505,6 +515,10 @@ int ILLinkerMain(int argc, char *argv[])
 				else if(!strcmp(param, "private-resources"))
 				{
 					privateResources = 1;
+				}
+				else if(!strcmp(param, "minimize-parameters"))
+				{
+					linkerFlags |= IL_LINKFLAG_MINIMIZE_PARAMS;
 				}
 				else
 				{
@@ -698,6 +712,7 @@ int ILLinkerMain(int argc, char *argv[])
 		ILDeleteFile(outputFile);
 		outOfMemory();
 	}
+	ILLinkerSetFlags(linker, linkerFlags);
 
 	/* Create the global module and assembly */
 	if(!ILLinkerCreateModuleAndAssembly(linker, moduleName,

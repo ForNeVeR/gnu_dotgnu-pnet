@@ -34,6 +34,11 @@ extern	"C" {
 typedef struct _tagILLinker ILLinker;
 
 /*
+ * Extra linker flags.
+ */
+#define	IL_LINKFLAG_MINIMIZE_PARAMS		(1<<0)
+
+/*
  * Create a linker context.  The supplied parameters
  * are used to create an ILWriter for the final image.
  * Returns NULL if out of memory.
@@ -139,6 +144,11 @@ void ILLinkerModuleCreate(ILLinker *linker);
  * Link the final binary.  Returns zero on error.
  */
 int ILLinkerPerformLink(ILLinker *linker);
+
+/*
+ * Set the extra linker flags.  Returns the previous state.
+ */
+int ILLinkerSetFlags(ILLinker *linker, int flags);
 
 /*
  * Call the linker as if it were an executable with command-line

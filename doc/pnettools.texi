@@ -2541,6 +2541,13 @@ Mark the resources as private to the output assembly.
 Set the assembly hash algorithm to @code{ALG}, which must be either
 @code{SHA1} or @code{MD5}.  The default is @code{SHA1}.
 
+@cindex -z option (ilalink)
+@cindex -fminimize-parameters option (ilalink)
+@item -z
+@itemx -fminimize-parameters
+Minimize the size of the parameter definition table by discarding
+parameters that don't strictly need to be present for correct execution.
+
 @cindex -3 option (ilalink)
 @cindex -m32bit-only option (ilalink)
 @item -3

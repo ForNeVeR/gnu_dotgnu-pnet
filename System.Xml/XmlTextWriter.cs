@@ -1306,6 +1306,7 @@ public class XmlTextWriter : XmlWriter
 				Sync(WriteStateFlag.ElementFlag |
 					 WriteStateFlag.AttributeFlag |
 					 WriteStateFlag.ContentFlag |
+					 WriteStateFlag.StartFlag |
 					 WriteStateFlag.PrologFlag);
 
 				// Get the current scope prefix.

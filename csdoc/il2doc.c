@@ -2229,7 +2229,8 @@ static void DumpClass(ILClass *classInfo)
 			fputs("enum ", stdout);
 			baseClass = 0;
 		}
-		else if(InheritsFrom(classInfo, "ValueType"))
+		else if(InheritsFrom(classInfo, "ValueType") &&
+		        !ILClass_IsAbstract(classInfo))
 		{
 			ILDumpFlags(stdout, ILClass_Attrs(classInfo) &
 								~IL_META_TYPEDEF_SEALED, CSharpTypeFlags, 0);

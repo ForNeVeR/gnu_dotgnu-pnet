@@ -4,6 +4,9 @@
 	* cscc/csharp/cs_gather.c: report duplicates for "override"
 	methods correctly (bug #4861).
 
+	* csdoc/il2doc.c: abstract types that inherit from "ValueType"
+	are classes, not structs.
+
 2003-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/vb/vb_scanner.l: '$' is not valid in VB identifiers except

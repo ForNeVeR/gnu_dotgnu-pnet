@@ -42,6 +42,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	CSSemValue value;
 	ILNode *savedClass;
 	ILNode *savedNamespace;
+	int hadStaticCtorsBefore = (node->staticCtors != 0);
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
 		CCUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
@@ -108,6 +109,13 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
 		CCUnsafeLeave(info);
+	}
+	if(!hadStaticCtorsBefore && node->staticCtors)
+	{
+		/* The class contains static initializers for fields, but no
+		   explicit static constructor.  Add the "beforefieldinit"
+		   flag to the set of modifiers */
+		node->modifiers |= IL_META_TYPEDEF_BEFORE_FIELD_INIT;
 	}
 	return value;
 }

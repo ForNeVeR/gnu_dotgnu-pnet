@@ -6,6 +6,9 @@
 	command-line option is supplied; create AssemblyRef's for all
 	libraries that are specified by "-l" options.
 
+	* cscc/csharp/cs_decls.tc: add the "beforefieldinit" flag to
+	classes that need it.
+
 2002-04-21  Gopal.V  <gopalv82@symonds.net>
 
 	* csdoc/doc_test.c : Test stubber for ECMA classes , added

@@ -543,6 +543,7 @@ case IL_OP_SWITCH:
 	/* Switch statement */
 	if(STK_UNARY == ILEngineType_I4)
 	{
+		--stackSize;
 		numEntries = IL_READ_UINT32(pc + 1);
 		insnSize = 5 + numEntries * 4;
 		ILCoderSwitchStart(coder, numArgs);
@@ -553,7 +554,6 @@ case IL_OP_SWITCH:
 			ILCoderSwitchEntry(coder, dest);
 			VALIDATE_BRANCH_STACK(dest);
 		}
-		--stackSize;
 	}
 	else
 	{

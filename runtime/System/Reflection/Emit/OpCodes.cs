@@ -833,6 +833,21 @@ public class OpCodes
 		 			OpCodeType.Objmodel, OperandType.InlineNone,
 					StackBehaviour.Popref_popi_popref, StackBehaviour.Push0);
 
+	public static readonly OpCode Ldelem_Any =
+		 new OpCode("ldelem.any", 0xA3, FlowControl.Next,
+		 			OpCodeType.Objmodel, OperandType.InlineType,
+					StackBehaviour.Popref_popi, StackBehaviour.Push1);
+
+	public static readonly OpCode Stelem_Any =
+		 new OpCode("stelem.any", 0xA4, FlowControl.Next,
+		 			OpCodeType.Objmodel, OperandType.InlineType,
+					StackBehaviour.Popref_popi_popref, StackBehaviour.Push0);
+
+	public static readonly OpCode Unbox_Any =
+		 new OpCode("unbox.any", 0xA5, FlowControl.Next,
+		 			OpCodeType.Objmodel, OperandType.InlineType,
+					StackBehaviour.Popref, StackBehaviour.Push1);
+
 	public static readonly OpCode Conv_Ovf_I1 =
 		 new OpCode("conv.ovf.i1", 0xB3, FlowControl.Next,
 		 			OpCodeType.Primitive, OperandType.InlineNone,

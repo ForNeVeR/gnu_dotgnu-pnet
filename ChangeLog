@@ -1,4 +1,9 @@
 
+2003-02-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Reflection/Emit/OpCodes.cs: add the "ldelem.any",
+	"stelem.any" and "unbox.any" opcodes to the Reflection.Emit list.
+
 2003-02-17  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	* runtime/System/IO/Directory.cs, runtime/Platform/DirMethods.cs:

@@ -33,6 +33,9 @@ parent class names.
 * cscc/cscc.c (main, ProcessWithPlugin): change references to the
 obsolete ".io" extension into ".obj".
 
+* doc/pnettools.texi: update the tools doc with information on
+the name mangling rules that are used when compiling to the JVM.
+
 2001-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: implement a Java class file to IL converter.

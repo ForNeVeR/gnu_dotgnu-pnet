@@ -948,6 +948,89 @@ This approach makes it relatively easy to support JVM in language
 plug-ins that already support IL.  Only the bodies of methods need
 to be compiled differently.
 
+Because C# supports some features that aren't present in Java, it is
+necessary to perform some "name mangling" on the names of fields and
+methods to accomodate the differences.  Mangling is performed on
+any field or method that involves a C#-specific type.  The simple
+numeric types are mapped as follows:
+
+@multitable {XXXXXXXXXXXXX} {XXXXXXXXXXXXX} {XXXXXXXXXXXXX} {XXXXXXXXXXXXXX}
+@item C# Type @tab Java Type @tab Problematic? @tab Mangled Code
+@item @code{sbyte} @tab @code{byte} @tab No @tab
+@item @code{byte} @tab @code{int} @tab Yes @tab @code{B}
+@item @code{short} @tab @code{short} @tab No @tab
+@item @code{ushort} @tab @code{int} @tab Yes @tab @code{S}
+@item @code{int} @tab @code{int} @tab Sometimes @tab @code{i}
+@item @code{uint} @tab @code{uint} @tab Yes @tab @code{I}
+@item @code{long} @tab @code{long} @tab Sometimes @tab @code{l}
+@item @code{ulong} @tab @code{long} @tab Yes @tab @code{L}
+@item @code{char} @tab @code{char} @tab No @tab
+@item @code{float} @tab @code{float} @tab No @tab
+@item @code{double} @tab @code{double} @tab No @tab
+@item @code{bool} @tab @code{boolean} @tab No @tab
+@end multitable
+
+Enumerated and value types are always problematic.  Regular class
+types are sometimes problematic.
+
+Enumerated types are mapped to their underlying type, and the mangled
+code is @code{Ename$}.  Value types are mapped to object references
+and the mangled code is @code{V}.  Regular class types are mapped
+to object references and the mangled code is @code{C}.
+
+If a field is declared with a problematic type, then its name is
+converted into @code{name__code} where @code{code} is the mangled
+code.  The field's type will be the corresponding Java type.
+If the field's type is only sometimes problematic, then it is not
+mapped.
+
+If a method is declared with at least one problematic parameter or
+the return type is problematic, then the method signature must
+be converted.  All problematic and sometimes problematic types
+are converted into mangled codes, in the order of declaration.
+Consider the following method definitions:
+
+@example
+void m1(int x);
+void m2(uint x);
+long m3(int x, byte y, uint z);
+decimal m4(decimal x, string y);
+void m5(System.TypeCode x);
+void m6(uint[] x);
+@end example
+
+These will be converted into the following Java definitions after
+mangling has been applied:
+
+@example
+void m1(int x);
+void m2__I(int x);
+long m3__iIl(int x, byte y, int z);
+System.Decimal m4__VCV(System.Decimal x, System.String y);
+void m5__ESystem.TypeCode$(int x);
+void m6__I(int[] x);
+@end example
+
+Note that types that are sometimes problematic must be converted
+if any of the other types are problematic.  The mangled code for
+an array type is the mangled code for the element type.
+
+Any field or method that is mangled should also have the Java
+attribute @code{pnet.NameMangle}, which indicates that mangling
+has been applied to the name.
+
+Properties are compiled to get and set methods, as in C#.  Then
+the Java attribute @code{pnet.Properties} is added to the class.
+The contents of this attribute is a list of property names, plus
+the methods that implement each property.
+
+Events are compiled in a similar fashion, with the Java attribute
+@code{pnet.Events} indicating which methods correspond to events.
+
+The above mangled codes and attributes can be used to recover the
+type information when a @code{.class} file is loaded by a C#-aware
+compiler or runtime engine.
+
 @c -----------------------------------------------------------------------
 
 @node Assembler, ilasm invocation, Compiling to the JVM, Top

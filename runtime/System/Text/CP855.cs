@@ -20,6 +20,8 @@
 
 // Generated from "ibm-855.ucm".
 
+#if RARE_CODE_PAGES
+
 namespace System.Text
 {
 
@@ -86,34 +88,8 @@ internal class CP855 : ByteEncoding
 		while(charCount > 0)
 		{
 			ch = (int)(chars[charIndex++]);
-			switch(ch)
+			if(ch >= 26) switch(ch)
 			{
-				case 0x0000:
-				case 0x0001:
-				case 0x0002:
-				case 0x0003:
-				case 0x0004:
-				case 0x0005:
-				case 0x0006:
-				case 0x0007:
-				case 0x0008:
-				case 0x0009:
-				case 0x000A:
-				case 0x000B:
-				case 0x000C:
-				case 0x000D:
-				case 0x000E:
-				case 0x000F:
-				case 0x0010:
-				case 0x0011:
-				case 0x0012:
-				case 0x0013:
-				case 0x0014:
-				case 0x0015:
-				case 0x0016:
-				case 0x0017:
-				case 0x0018:
-				case 0x0019:
 				case 0x001B:
 				case 0x001D:
 				case 0x001E:
@@ -376,102 +352,6 @@ internal class CP855 : ByteEncoding
 				case 0x2666: ch = 0x04; break;
 				case 0x266A: ch = 0x0D; break;
 				case 0x266B: ch = 0x0E; break;
-				case 0xFF01:
-				case 0xFF02:
-				case 0xFF03:
-				case 0xFF04:
-				case 0xFF05:
-				case 0xFF06:
-				case 0xFF07:
-				case 0xFF08:
-				case 0xFF09:
-				case 0xFF0A:
-				case 0xFF0B:
-				case 0xFF0C:
-				case 0xFF0D:
-				case 0xFF0E:
-				case 0xFF0F:
-				case 0xFF10:
-				case 0xFF11:
-				case 0xFF12:
-				case 0xFF13:
-				case 0xFF14:
-				case 0xFF15:
-				case 0xFF16:
-				case 0xFF17:
-				case 0xFF18:
-				case 0xFF19:
-				case 0xFF1A:
-				case 0xFF1B:
-				case 0xFF1C:
-				case 0xFF1D:
-				case 0xFF1E:
-				case 0xFF1F:
-				case 0xFF20:
-				case 0xFF21:
-				case 0xFF22:
-				case 0xFF23:
-				case 0xFF24:
-				case 0xFF25:
-				case 0xFF26:
-				case 0xFF27:
-				case 0xFF28:
-				case 0xFF29:
-				case 0xFF2A:
-				case 0xFF2B:
-				case 0xFF2C:
-				case 0xFF2D:
-				case 0xFF2E:
-				case 0xFF2F:
-				case 0xFF30:
-				case 0xFF31:
-				case 0xFF32:
-				case 0xFF33:
-				case 0xFF34:
-				case 0xFF35:
-				case 0xFF36:
-				case 0xFF37:
-				case 0xFF38:
-				case 0xFF39:
-				case 0xFF3A:
-				case 0xFF3B:
-				case 0xFF3C:
-				case 0xFF3D:
-				case 0xFF3E:
-				case 0xFF3F:
-				case 0xFF40:
-				case 0xFF41:
-				case 0xFF42:
-				case 0xFF43:
-				case 0xFF44:
-				case 0xFF45:
-				case 0xFF46:
-				case 0xFF47:
-				case 0xFF48:
-				case 0xFF49:
-				case 0xFF4A:
-				case 0xFF4B:
-				case 0xFF4C:
-				case 0xFF4D:
-				case 0xFF4E:
-				case 0xFF4F:
-				case 0xFF50:
-				case 0xFF51:
-				case 0xFF52:
-				case 0xFF53:
-				case 0xFF54:
-				case 0xFF55:
-				case 0xFF56:
-				case 0xFF57:
-				case 0xFF58:
-				case 0xFF59:
-				case 0xFF5A:
-				case 0xFF5B:
-				case 0xFF5C:
-				case 0xFF5D:
-				case 0xFF5E:
-					ch -= 0xFEE0;
-					break;
 				case 0xFFE8: ch = 0xB3; break;
 				case 0xFFE9: ch = 0x1B; break;
 				case 0xFFEA: ch = 0x18; break;
@@ -479,7 +359,14 @@ internal class CP855 : ByteEncoding
 				case 0xFFEC: ch = 0x19; break;
 				case 0xFFED: ch = 0xFE; break;
 				case 0xFFEE: ch = 0x09; break;
-				default: ch = 0x3F; break;
+				default:
+				{
+					if(ch >= 0xFF01 && ch <= 0xFF5E)
+						ch -= 0xFEE0;
+					else
+						ch = 0x3F;
+				}
+				break;
 			}
 			bytes[byteIndex++] = (byte)ch;
 			--charCount;
@@ -493,34 +380,8 @@ internal class CP855 : ByteEncoding
 		while(charCount > 0)
 		{
 			ch = (int)(s[charIndex++]);
-			switch(ch)
+			if(ch >= 26) switch(ch)
 			{
-				case 0x0000:
-				case 0x0001:
-				case 0x0002:
-				case 0x0003:
-				case 0x0004:
-				case 0x0005:
-				case 0x0006:
-				case 0x0007:
-				case 0x0008:
-				case 0x0009:
-				case 0x000A:
-				case 0x000B:
-				case 0x000C:
-				case 0x000D:
-				case 0x000E:
-				case 0x000F:
-				case 0x0010:
-				case 0x0011:
-				case 0x0012:
-				case 0x0013:
-				case 0x0014:
-				case 0x0015:
-				case 0x0016:
-				case 0x0017:
-				case 0x0018:
-				case 0x0019:
 				case 0x001B:
 				case 0x001D:
 				case 0x001E:
@@ -783,102 +644,6 @@ internal class CP855 : ByteEncoding
 				case 0x2666: ch = 0x04; break;
 				case 0x266A: ch = 0x0D; break;
 				case 0x266B: ch = 0x0E; break;
-				case 0xFF01:
-				case 0xFF02:
-				case 0xFF03:
-				case 0xFF04:
-				case 0xFF05:
-				case 0xFF06:
-				case 0xFF07:
-				case 0xFF08:
-				case 0xFF09:
-				case 0xFF0A:
-				case 0xFF0B:
-				case 0xFF0C:
-				case 0xFF0D:
-				case 0xFF0E:
-				case 0xFF0F:
-				case 0xFF10:
-				case 0xFF11:
-				case 0xFF12:
-				case 0xFF13:
-				case 0xFF14:
-				case 0xFF15:
-				case 0xFF16:
-				case 0xFF17:
-				case 0xFF18:
-				case 0xFF19:
-				case 0xFF1A:
-				case 0xFF1B:
-				case 0xFF1C:
-				case 0xFF1D:
-				case 0xFF1E:
-				case 0xFF1F:
-				case 0xFF20:
-				case 0xFF21:
-				case 0xFF22:
-				case 0xFF23:
-				case 0xFF24:
-				case 0xFF25:
-				case 0xFF26:
-				case 0xFF27:
-				case 0xFF28:
-				case 0xFF29:
-				case 0xFF2A:
-				case 0xFF2B:
-				case 0xFF2C:
-				case 0xFF2D:
-				case 0xFF2E:
-				case 0xFF2F:
-				case 0xFF30:
-				case 0xFF31:
-				case 0xFF32:
-				case 0xFF33:
-				case 0xFF34:
-				case 0xFF35:
-				case 0xFF36:
-				case 0xFF37:
-				case 0xFF38:
-				case 0xFF39:
-				case 0xFF3A:
-				case 0xFF3B:
-				case 0xFF3C:
-				case 0xFF3D:
-				case 0xFF3E:
-				case 0xFF3F:
-				case 0xFF40:
-				case 0xFF41:
-				case 0xFF42:
-				case 0xFF43:
-				case 0xFF44:
-				case 0xFF45:
-				case 0xFF46:
-				case 0xFF47:
-				case 0xFF48:
-				case 0xFF49:
-				case 0xFF4A:
-				case 0xFF4B:
-				case 0xFF4C:
-				case 0xFF4D:
-				case 0xFF4E:
-				case 0xFF4F:
-				case 0xFF50:
-				case 0xFF51:
-				case 0xFF52:
-				case 0xFF53:
-				case 0xFF54:
-				case 0xFF55:
-				case 0xFF56:
-				case 0xFF57:
-				case 0xFF58:
-				case 0xFF59:
-				case 0xFF5A:
-				case 0xFF5B:
-				case 0xFF5C:
-				case 0xFF5D:
-				case 0xFF5E:
-					ch -= 0xFEE0;
-					break;
 				case 0xFFE8: ch = 0xB3; break;
 				case 0xFFE9: ch = 0x1B; break;
 				case 0xFFEA: ch = 0x18; break;
@@ -886,7 +651,14 @@ internal class CP855 : ByteEncoding
 				case 0xFFEC: ch = 0x19; break;
 				case 0xFFED: ch = 0xFE; break;
 				case 0xFFEE: ch = 0x09; break;
-				default: ch = 0x3F; break;
+				default:
+				{
+					if(ch >= 0xFF01 && ch <= 0xFF5E)
+						ch -= 0xFEE0;
+					else
+						ch = 0x3F;
+				}
+				break;
 			}
 			bytes[byteIndex++] = (byte)ch;
 			--charCount;
@@ -902,3 +674,5 @@ internal class ENCibm855 : CP855
 }; // class ENCibm855
 
 }; // namespace System.Text
+
+#endif // RARE_CODE_PAGES

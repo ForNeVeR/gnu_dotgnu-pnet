@@ -439,27 +439,59 @@ static void printByteToChar(void)
  */
 static void printConvertSwitch(void)
 {
+	unsigned long directLimit;
 	unsigned long posn;
 	unsigned long posn2;
 	unsigned long rangeSize;
+	int haveDirect;
+	int haveFullWidth;
 
-	/* Print the switch header */
-	printf("\t\t\tswitch(ch)\n");
+	/* Find the limit of direct byte mappings */
+	directLimit = 0;
+	while(directLimit < 256 && charToByte[directLimit] == (int)directLimit)
+	{
+		++directLimit;
+	}
+
+	/* Determine if we have the full-width Latin1 mappings, which
+	   we can optimise in the default case of the switch */
+	haveFullWidth = 1;
+	for(posn = 0xFF01; posn <= 0xFF5E; ++posn)
+	{
+		if((charToByte[posn] - 0x21) != (int)(posn - 0xFF01))
+		{
+			haveFullWidth = 0;
+		}
+	}
+
+	/* Print the switch header.  The "if" is an optimisation
+	   to ignore the common case of direct ASCII mappings */
+	printf("\t\t\tif(ch >= %lu) switch(ch)\n", directLimit);
 	printf("\t\t\t{\n");
 
-	/* Handle all direct byte mappings */
-	for(posn = 0; posn < 256; ++posn)
+	/* Handle all direct byte mappings above the direct limit */
+	haveDirect = 0;
+	for(posn = directLimit; posn < 256; ++posn)
 	{
 		if(charToByte[posn] == (int)posn)
 		{
+			haveDirect = 1;
 			printf("\t\t\t\tcase 0x%04lX:\n", posn);
 		}
 	}
-	printf("\t\t\t\t\tbreak;\n");
+	if(haveDirect)
+	{
+		printf("\t\t\t\t\tbreak;\n");
+	}
 
 	/* Handle the indirect mappings */
 	for(posn = 0; posn < 65536; ++posn)
 	{
+		if(haveFullWidth && posn >= 0xFF01 && posn <= 0xFF5E)
+		{
+			/* Handle full-width Latin1 conversions later */
+			continue;
+		}
 		if(charToByte[posn] != (int)posn &&
 		   charToByte[posn] != -1)
 		{
@@ -510,7 +542,21 @@ static void printConvertSwitch(void)
 	}
 
 	/* Print the switch footer */
-	printf("\t\t\t\tdefault: ch = 0x3F; break;\n");
+	if(!haveFullWidth)
+	{
+		printf("\t\t\t\tdefault: ch = 0x3F; break;\n");
+	}
+	else
+	{
+		printf("\t\t\t\tdefault:\n");
+		printf("\t\t\t\t{\n");
+		printf("\t\t\t\t\tif(ch >= 0xFF01 && ch <= 0xFF5E)\n");
+		printf("\t\t\t\t\t\tch -= 0xFEE0;\n");
+		printf("\t\t\t\t\telse\n");
+		printf("\t\t\t\t\t\tch = 0x3F;\n");
+		printf("\t\t\t\t}\n");
+		printf("\t\t\t\tbreak;\n");
+	}
 	printf("\t\t\t}\n");
 }
 

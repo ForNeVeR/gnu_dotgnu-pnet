@@ -20,6 +20,8 @@
 
 // Generated from "ibm-875.ucm".
 
+#if RARE_CODE_PAGES
+
 namespace System.Text
 {
 
@@ -86,12 +88,8 @@ internal class CP875 : ByteEncoding
 		while(charCount > 0)
 		{
 			ch = (int)(chars[charIndex++]);
-			switch(ch)
+			if(ch >= 4) switch(ch)
 			{
-				case 0x0000:
-				case 0x0001:
-				case 0x0002:
-				case 0x0003:
 				case 0x000B:
 				case 0x000C:
 				case 0x000D:
@@ -499,12 +497,8 @@ internal class CP875 : ByteEncoding
 		while(charCount > 0)
 		{
 			ch = (int)(s[charIndex++]);
-			switch(ch)
+			if(ch >= 4) switch(ch)
 			{
-				case 0x0000:
-				case 0x0001:
-				case 0x0002:
-				case 0x0003:
 				case 0x000B:
 				case 0x000C:
 				case 0x000D:
@@ -914,3 +908,5 @@ internal class ENCibm875 : CP875
 }; // class ENCibm875
 
 }; // namespace System.Text
+
+#endif // RARE_CODE_PAGES

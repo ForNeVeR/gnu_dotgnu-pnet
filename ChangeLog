@@ -3,6 +3,10 @@
 
 	* runtime/System/Text/UTF7Encoding.cs: implement the UTF-7 encoding.
 
+	* runtime/System/Text/ucm2cp.c, runtime/System/Text/CP*.cs:
+	optimise the common conversion cases of ASCII and full-width Latin1
+	which reduces the size of "mscorlib.dll" by about 300k.
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/*.cs: activate the rare code page handlers.

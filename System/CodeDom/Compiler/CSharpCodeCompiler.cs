@@ -28,6 +28,7 @@ using System.IO;
 using System.Reflection;
 using System.Globalization;
 using System.Text;
+using System.Diagnostics;
 
 internal class CSharpCodeCompiler : CodeCompiler
 {
@@ -101,9 +102,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 	// the "cscc" syntax within "CmdArgsFromParameters".
 	private static String[] ArgsFromOptions(String options)
 			{
-				String[] args = new String [0];
-				// TODO
-				return args;
+				return ProcessStartInfo.ArgumentsToArgV(options);
 			}
 
 	// Determine if a string looks like a "csc" option.

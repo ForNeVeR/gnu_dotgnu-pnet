@@ -25,6 +25,7 @@ namespace System.CodeDom.Compiler
 #if CONFIG_CODEDOM
 
 using System.IO;
+using System.Collections;
 using System.Reflection;
 using System.Diagnostics;
 using System.Globalization;
@@ -117,8 +118,86 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 	protected virtual CompilerResults FromFileBatch
 				(CompilerParameters options, String[] fileNames)
 			{
-				// TODO
-				return null;
+				// Add an output filename to the options if necessary.
+				if(options.OutputAssembly == null ||
+				   options.OutputAssembly.Length == 0)
+				{
+					if(options.GenerateExecutable)
+					{
+						options.OutputAssembly = options.TempFiles.AddExtension
+							("exe", !(options.GenerateInMemory));
+					}
+					else
+					{
+						options.OutputAssembly = options.TempFiles.AddExtension
+							("dll", !(options.GenerateInMemory));
+					}
+				}
+
+				// Build the full command-line to pass to the compiler.
+				String args = CmdArgsFromParameters(options);
+				args = args + " " + JoinStringArray(fileNames, " ");
+
+				// If the argument array is too long, then write the
+				// command-line to a temporary file and use "@file".
+				if(args.Length > 100)
+				{
+					args = GetResponseFileCmdArgs(options, args);
+				}
+
+				// Create a compiler results block.
+				CompilerResults results;
+				results = new CompilerResults(options.TempFiles);
+
+				// Build the process start info block.
+				ProcessStartInfo startInfo;
+				startInfo = new ProcessStartInfo(CompilerName, args);
+				startInfo.RedirectStandardError = true;
+
+				// Create and run the process.
+				Process process = Process.Start(startInfo);
+
+				// Read the stderr stream until EOF.
+				String line;
+				while((line = process.StandardError.ReadLine()) != null)
+				{
+					results.Output.Add(line);
+					ProcessCompilerOutputLine(results, line);
+				}
+
+				// Wait for the process to exit and record the return code.
+				process.WaitForExit();
+				results.NativeCompilerReturnValue = process.ExitCode;
+				process.Close();
+
+				// Load the assembly into memory if necessary.
+				if(!(results.Errors.HasErrors) && options.GenerateInMemory)
+				{
+					FileStream stream;
+					stream = new FileStream(options.OutputAssembly,
+											FileMode.Open, FileAccess.Read,
+											FileShare.Read);
+					try
+					{
+						// We must use the memory-based load method,
+						// because "OutputAssembly" may be deleted
+						// before we are done with the assembly.
+						byte[] buf = new byte [(int)(stream.Length)];
+						stream.Read(buf, 0, buf.Length);
+						results.CompiledAssembly = Assembly.Load(buf);
+					}
+					finally
+					{
+						stream.Close();
+					}
+				}
+				else
+				{
+					results.PathToAssembly = options.OutputAssembly;
+				}
+
+				// Return the final results to the caller.
+				return results;
 			}
 
 	// Compile a source string.
@@ -142,7 +221,7 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 				for(src = 0; src < sources.Length; ++src)
 				{
 					tempFiles[src] = options.TempFiles.AddExtension
-							(src + FileExtension);
+							(src + "." + FileExtension);
 					stream = new FileStream(tempFiles[src], FileMode.Create,
 											FileAccess.Write, FileShare.Read);
 					try

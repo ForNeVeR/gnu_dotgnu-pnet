@@ -5,6 +5,10 @@
 	System/CodeDom/Compiler/VBCodeCompiler.cs: implement the VB
 	code generator for CodeDom; fix some minor bugs in the C# generator.
 
+	* System/CodeDom/Compiler/CSharpCodeCompiler.cs,
+	System/CodeDom/Compiler/CodeCompiler.cs: implement the
+	remaining TODO's in "System.CodeDom.Compiler".
+
 2003-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/BinaryWriter.cs,

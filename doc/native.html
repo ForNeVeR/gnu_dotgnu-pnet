@@ -6,7 +6,7 @@
 <h1>Internalcall methods for pnetlib</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/12/03 11:19:11 $<p>
+Last Modified: $Date: 2001/12/07 05:08:39 $<p>
 
 Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -189,6 +189,8 @@ that use the library.<p>
 		<li><a href="#System_String_NewString">NewString</a></li>
 		<li><a href="#System_String_NewBuilder">NewBuilder</a></li>
 		<li><a href="#System_String_Copy">Copy</a></li>
+		<li><a href="#System_String_InsertSpace">InsertSpace</a></li>
+		<li><a href="#System_String_RemoveSpace">RemoveSpace</a></li>
 		<li><a href="#System_String_FinalizeBuilder">FillSubstring</a></li>
 		<li><a href="#System_String_Concat">Concat</a></li>
 		<li><a href="#System_String_CopyToChecked">CopyToChecked</a></li>
@@ -257,10 +259,6 @@ that use the library.<p>
 <li><a href="#Reflection_ClrConstructor">System.Reflection.ClrConstructor</a></li>
 	<ul>
 		<li><a href="#Reflection_ClrConstructor_Invoke">Invoke</a></li>
-	</ul>
-<li><a href="#Reflection_ClrEvent">System.Reflection.ClrEvent</a></li>
-	<ul>
-		<li><a href="#Reflection_ClrEvent_GetEventType">GetEventType</a></li>
 	</ul>
 <li><a href="#Reflection_ClrField">System.Reflection.ClrField</a></li>
 	<ul>
@@ -549,7 +547,7 @@ of this method, and the exceptions that it may throw.
 </blockquote>
 
 <a name="System_Array_CreateArray">
-<pre>private static Array CreateArray(RuntimeType elementType,
+<pre>private static Array CreateArray(IntPtr elementType,
                                  int rank, int length1,
                                  int length2, int length3);</pre>
 
@@ -561,8 +559,8 @@ The CLR can assume that all arguments have been validated.
 </blockquote>
 
 <a name="System_Array_CreateArray_2">
-<pre>private static Array CreateArray(RuntimeType elementType,
-                                 int[] lengths, int lowerBounds[]);</pre>
+<pre>private static Array CreateArray(IntPtr elementType,
+                                 int[] lengths, int[] lowerBounds);</pre>
 
 <blockquote>
 Create an array of elements.  This is called for creating arbitrarily-sized
@@ -1295,13 +1293,20 @@ the length of <code>dest</code> if the string object is being constructed
 by a <code>StringBuilder</code>.  The CLR should not range-check this value.
 </blockquote>
 
-<a name="System_String_FinalizeBuilder">
-<pre>internal void FinalizeBuilder(int length);</pre>
+<a name="System_String_InsertSpace">
+<pre>internal static void InsertSpace(String str, int srcPos, int destPos);</pre>
 
 <blockquote>
-Set the length of this string to <code>length</code>.  This is used
-by the <code>StringBuilder</code> class to finalize a string object
-after it has been filled with new characters.
+Insert space into a string by moving all characters starting at
+<code>srcPos</code> to a new location starting at <code>destPos</code>.
+</blockquote>
+
+<a name="System_String_RemoveSpace">
+<pre>internal static void RemoveSpace(String str, int index, int length);</pre>
+
+<blockquote>
+Remove <code>length</code> characters from a string starting at
+<code>index</code>.
 </blockquote>
 
 <a name="System_String_Concat">
@@ -1476,7 +1481,6 @@ case-sensitive search regardless.
 
 <a name="System_Type_GetTypeHandle">
 <pre>public static RuntimeTypeHandle GetTypeHandle(Object obj);</pre>
-
 
 <blockquote>
 Get the type handle associated with the type of the specified object.
@@ -1806,17 +1810,6 @@ Invoke this constructor with the specified parameters and return the
 new object.
 </blockquote>
 
-<a name="Reflection_ClrEvent"><h3>System.Reflection.ClrEvent</h3>
-
-<a name="Reflection_ClrEvent_GetEventType">
-<pre>private static Type GetEventType(IntPtr item);</pre>
-
-<blockquote>
-Get the type of an event program item.  The <code>item</code> value will
-be the same as the <code>privateData</code> member within the
-<code>ClrEvent</code> class.
-</blockquote>
-
 <a name="Reflection_ClrField"><h3>System.Reflection.ClrField</h3>
 
 <a name="Reflection_ClrField_GetValue">
@@ -2118,18 +2111,20 @@ or <code>ClrType</code>.
 <a name="Reflection_ClrType_GetMembersImpl">
 <pre>private Object GetMembersImpl(MemberTypes memberTypes,
                               BindingFlags bindingAttr,
-                              Type arrayType);</pre>
+                              Type arrayType, String name);</pre>
 
 <blockquote>
 Get an array of all members that match the specified conditions.
 The <code>memberTypes</code> parameter indicates the kind of members
-that should be returned.  The <code>arrayType</code> parameter
-indicates the type of the array to be created.  This is normally one
-of <code>MemberInfo[]</code>, <code>MethodInfo[]</code>,
-<code>ConstructorInfo[]</code>, <code>FieldInfo[]</code>,
-<code>EventInfo[]</code>, <code>PropertyInfo[]</code>,
-or <code>Type[]</code>, depending upon the type of lookup that is
-being performed.
+that should be returned.  If <code>name</code> is not <code>null</code>,
+then only return members with the given name.<p>
+
+The <code>arrayType</code> parameter indicates the type of the array to
+be created.  This is normally one of <code>MemberInfo[]</code>,
+<code>MethodInfo[]</code>, <code>ConstructorInfo[]</code>,
+<code>FieldInfo[]</code>, <code>EventInfo[]</code>,
+<code>PropertyInfo[]</code>, or <code>Type[]</code>, depending
+upon the type of lookup that is being performed.
 </blockquote>
 
 <a name="Reflection_ClrType_GetClrTypeCategory">
@@ -2649,7 +2644,7 @@ Abort this thread.
 </blockquote>
 
 <a name="Threading_Thread_InternalJoin">
-<pre>public void InternalJoin(int timeout);</pre>
+<pre>private void InternalJoin(int timeout);</pre>
 
 <blockquote>
 Attempt to join the executing thread with the thread represented
@@ -2674,7 +2669,7 @@ Reset the pending abort on the current thread.
 </blockquote>
 
 <a name="Threading_Thread_InternalSleep">
-<pre>public static void InternalSleep(int timeout);</pre>
+<pre>private static void InternalSleep(int timeout);</pre>
 
 <blockquote>
 Put the current thread to sleep for a certain period of time.

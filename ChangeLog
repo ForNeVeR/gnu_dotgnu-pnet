@@ -23,6 +23,8 @@ and "GetDefaultMembers".
 * resources/en_US/runtime/Arg.txt: extra error messages used by the
 runtime engine when implementing arrays.
 
+* doc/native.html: minor updates to fix errors.
+
 2001-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/AppDomain.cs,

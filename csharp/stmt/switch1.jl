@@ -61,184 +61,179 @@
 	pop
 ?L6:
 	iload_1
-	tableswitch (
-		?L7,
+	tableswitch ?L7 ( 0 :
 		?L8,
 		?L9,
 		?L10,
 		?L11,
 		?L12,
 		?L13,
-		?L14
+		?L14,
+		?L15
 	)
-	goto	?L15
-?L7:
+?L8:
 	iconst_0
 	istore_2
 	goto	?L16
-?L8:
-	iconst_1
-	istore_2
-	goto	?L16
 ?L9:
-	iconst_2
+	iconst_1
 	istore_2
 	goto	?L16
 ?L10:
-	iconst_3
+	iconst_2
 	istore_2
 	goto	?L16
 ?L11:
-	iconst_4
+	iconst_3
 	istore_2
 	goto	?L16
 ?L12:
-	iconst_5
+	iconst_4
 	istore_2
 	goto	?L16
 ?L13:
-	bipush	6
+	iconst_5
 	istore_2
 	goto	?L16
 ?L14:
-	bipush	7
+	bipush	6
 	istore_2
 	goto	?L16
 ?L15:
+	bipush	7
+	istore_2
+	goto	?L16
+?L7:
 ?L16:
 	iload_1
-	iconst_1
-	isub
-	tableswitch (
-		?L17,
+	tableswitch ?L17 ( 1 :
 		?L18,
 		?L19,
 		?L20,
 		?L21,
 		?L22,
 		?L23,
-		?L24
+		?L24,
+		?L25
 	)
-	goto	?L25
-?L17:
+?L18:
 	iconst_1
 	istore_2
 	goto	?L26
-?L18:
+?L19:
 	iconst_2
 	istore_2
 	goto	?L26
-?L19:
+?L20:
 	iconst_3
 	istore_2
 	goto	?L26
-?L20:
+?L21:
 	iconst_4
 	istore_2
 	goto	?L26
-?L21:
+?L22:
 	iconst_5
 	istore_2
 	goto	?L26
-?L22:
+?L23:
 	bipush	6
 	istore_2
 	goto	?L26
-?L23:
+?L24:
 	bipush	7
 	istore_2
 	goto	?L26
-?L24:
+?L25:
 	bipush	8
 	istore_2
 	goto	?L26
-?L25:
+?L17:
 ?L26:
 	iload_1
-	lookupswitch (
-		100 : ?L27,
-		200 : ?L28,
-		300 : ?L29,
-		400 : ?L30,
-		500 : ?L31,
-		600 : ?L32,
-		700 : ?L33,
-		800 : ?L34,
-		900 : ?L35,
-		1000 : ?L36,
-		1100 : ?L37,
-		1200 : ?L38,
-		1300 : ?L39,
-		1400 : ?L40,
-		1500 : ?L41,
-		1600 : ?L42
+	lookupswitch ?L27 (
+		100 : ?L28,
+		200 : ?L29,
+		300 : ?L30,
+		400 : ?L31,
+		500 : ?L32,
+		600 : ?L33,
+		700 : ?L34,
+		800 : ?L35,
+		900 : ?L36,
+		1000 : ?L37,
+		1100 : ?L38,
+		1200 : ?L39,
+		1300 : ?L40,
+		1400 : ?L41,
+		1500 : ?L42,
+		1600 : ?L43
 	)
-	goto	?L43
-?L42:
+?L43:
 	sipush	1600
 	istore_2
 	goto	?L44
-?L41:
+?L42:
 	sipush	1500
 	istore_2
 	goto	?L44
-?L40:
+?L41:
 	sipush	1400
 	istore_2
 	goto	?L44
-?L39:
+?L40:
 	sipush	1300
 	istore_2
 	goto	?L44
-?L38:
+?L39:
 	sipush	1200
 	istore_2
 	goto	?L44
-?L37:
+?L38:
 	sipush	1100
 	istore_2
 	goto	?L44
-?L36:
+?L37:
 	sipush	1000
 	istore_2
 	goto	?L44
-?L35:
+?L36:
 	sipush	900
 	istore_2
 	goto	?L44
-?L34:
+?L35:
 	sipush	800
 	istore_2
 	goto	?L44
-?L33:
+?L34:
 	sipush	700
 	istore_2
 	goto	?L44
-?L32:
+?L33:
 	sipush	600
 	istore_2
 	goto	?L44
-?L31:
+?L32:
 	sipush	500
 	istore_2
 	goto	?L44
-?L30:
+?L31:
 	sipush	400
 	istore_2
 	goto	?L44
-?L29:
+?L30:
 	sipush	300
 	istore_2
 	goto	?L44
-?L28:
+?L29:
 	sipush	200
 	istore_2
 	goto	?L44
-?L27:
+?L28:
 	bipush	100
 	istore_2
 	goto	?L44
-?L43:
+?L27:
 ?L44:
 	return
 	.locals 3
@@ -560,50 +555,49 @@
 	pop
 ?L84:
 	iload_1
-	tableswitch (
-		?L85,
+	tableswitch ?L85 ( 0 :
 		?L86,
 		?L87,
 		?L88,
 		?L89,
 		?L90,
 		?L91,
-		?L92
+		?L92,
+		?L93
 	)
-	goto	?L93
-?L85:
+?L86:
 	iconst_0
 	istore_2
 	goto	?L94
-?L86:
+?L87:
 	iconst_1
 	istore_2
 	goto	?L94
-?L87:
+?L88:
 	iconst_2
 	istore_2
 	goto	?L94
-?L88:
+?L89:
 	iconst_3
 	istore_2
 	goto	?L94
-?L89:
+?L90:
 	iconst_4
 	istore_2
 	goto	?L94
-?L90:
+?L91:
 	iconst_5
 	istore_2
 	goto	?L94
-?L91:
+?L92:
 	bipush	6
 	istore_2
 	goto	?L94
-?L92:
+?L93:
 	bipush	7
 	istore_2
 	goto	?L94
-?L93:
+?L85:
 ?L94:
 	return
 	.locals 3

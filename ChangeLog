@@ -3,6 +3,8 @@
 
 	* I18N/Rare/CP20261.cs: add the T.61 encoding to the I18N routines.
 
+	* I18N/Common/HandlerCollection.cs: increase handler count estimate.
+
 2003-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/MidEast/CP10004.cs, I18N/MidEast/CP10005.cs,

@@ -105,8 +105,14 @@ static int PrivateGCNotifyFinalize(void)
 	if (!ILHasThreads())
 	{
 		GC_invoke_finalizers();
-
 		return 1;
+	}
+	
+	if (ILThreadSelf() == g_FinalizerThread)
+	{
+		/* Finalizer thread can't recursively call finalizers */
+		
+		return 0;
 	}
 
 	/* Register the finalizer thread for managed code execution */
@@ -118,8 +124,16 @@ static int PrivateGCNotifyFinalize(void)
 		/* This can't be done in ILGCInit cause the runtime isn't fully initialized in that function */
 
 		thread = (ILExecThread *)ILThreadGetObject(ILThreadSelf());
-
-		ILThreadRegisterForManagedExecution(ILExecThreadGetProcess(thread), g_FinalizerThread, 0);
+		
+		if (thread != 0)
+		{
+			ILThreadRegisterForManagedExecution(ILExecThreadGetProcess(thread), g_FinalizerThread, 0);
+		}
+		else
+		{
+			/* The thread calling finalize isn't managed */
+			/* Finalizers for managed objects won't work properly */
+		}
 	}
 
 	ILThreadAtomicEnd();
@@ -132,7 +146,7 @@ static int PrivateGCNotifyFinalize(void)
 		
 	/* Wait until finalizers have finished */
 	ILWaitOne(g_FinalizerResponse, -1);
-
+	
 	GC_TRACE("ILGCInvokeFinalizers: Finalizers finished[thread: %d]\n", (int)ILThreadSelf());
 
 	return 1;
@@ -232,7 +246,10 @@ void ILGCCollect(void)
 
 void ILGCInvokeFinalizers(void)
 {
-	PrivateGCNotifyFinalize();
+	if (GC_should_invoke_finalizers())
+	{
+		PrivateGCNotifyFinalize();
+	}
 }
 
 void ILGCDisableFinalizers(void)

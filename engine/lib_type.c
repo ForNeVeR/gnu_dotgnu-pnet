@@ -151,11 +151,14 @@ ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 	ILObject *obj;
 
 	/* Make sure that the class has been laid out */
+	IL_METADATA_WRLOCK(thread);
 	if(!_ILLayoutClass(classInfo))
 	{
+		IL_METADATA_UNLOCK(thread);
 		ThrowTypeLoad(thread, 0);
 		return 0;
 	}
+	IL_METADATA_UNLOCK(thread);
 
 	/* Does the class already have a "ClrType" instance? */
 	if(((ILClassPrivate *)(classInfo->userData))->clrType)

@@ -88,10 +88,14 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	ILInternalInfo fnInfo;
 	ILInternalInfo ctorfnInfo;
 
+	/* We need the metadata write lock */
+	IL_METADATA_WRLOCK(thread);
+
 	/* Is the method already converted? */
-	if(method->userData != 0)
+	if((start = (unsigned char *)(method->userData)) != 0)
 	{
-		return (unsigned char *)(method->userData);
+		IL_METADATA_UNLOCK(thread);
+		return start;
 	}
 
 	/* Get the method code */
@@ -108,6 +112,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		if(!_ILVerify(coder, &start, method, &code,
 					  ILImageIsSecure(ILProgramItem_Image(method))))
 		{
+			IL_METADATA_UNLOCK(thread);
 			return 0;
 		}
 	}
@@ -132,6 +137,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				   know what to map this method call to */
 				if(!pinv)
 				{
+					IL_METADATA_UNLOCK(thread);
 					return 0;
 				}
 
@@ -139,17 +145,20 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				module = ILPInvoke_Module(pinv);
 				if(!module)
 				{
+					IL_METADATA_UNLOCK(thread);
 					return 0;
 				}
 				name = ILModule_Name(module);
 				if(!name || *name == '\0')
 				{
+					IL_METADATA_UNLOCK(thread);
 					return 0;
 				}
 				moduleHandle = LocateExternalModule
 									(thread->process, name, pinv);
 				if(!moduleHandle)
 				{
+					IL_METADATA_UNLOCK(thread);
 					return 0;
 				}
 
@@ -172,6 +181,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				   have PInvoke records associated with them */
 				if(pinv)
 				{
+					IL_METADATA_UNLOCK(thread);
 					return 0;
 				}
 
@@ -182,11 +192,13 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 					{
 						if(!_ILFindInternalCall(method, 1, &ctorfnInfo))
 						{
+							IL_METADATA_UNLOCK(thread);
 							return 0;
 						}
 					}
 					else
 					{
+						IL_METADATA_UNLOCK(thread);
 						return 0;
 					}
 				}
@@ -200,6 +212,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			default:
 			{
 				/* No idea how to invoke this method */
+				IL_METADATA_UNLOCK(thread);
 				return 0;
 			}
 			/* Not reached */
@@ -208,6 +221,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		/* Bail out if we did not find the underlying native method */
 		if(!(fnInfo.func) && !(ctorfnInfo.func))
 		{
+			IL_METADATA_UNLOCK(thread);
 			return 0;
 		}
 
@@ -219,6 +233,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			cif = _ILMakeCifForMethod(method, (pinv == 0));
 			if(!cif)
 			{
+				IL_METADATA_UNLOCK(thread);
 				return 0;
 			}
 		}
@@ -232,6 +247,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			ctorcif = _ILMakeCifForConstructor(method, (pinv == 0));
 			if(!ctorcif)
 			{
+				IL_METADATA_UNLOCK(thread);
 				return 0;
 			}
 		}
@@ -252,6 +268,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			if(!ILCoderSetupExtern(coder, &start, method,
 								   fnInfo.func, cif, (pinv == 0)))
 			{
+				IL_METADATA_UNLOCK(thread);
 				return 0;
 			}
 			while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
@@ -259,11 +276,13 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				/* Do we need a coder restart due to cache overflow? */
 				if(result != IL_CODER_END_RESTART)
 				{
+					IL_METADATA_UNLOCK(thread);
 					return 0;
 				}
 				if(!ILCoderSetupExtern(coder, &start, method,
 									   fnInfo.func, cif, (pinv == 0)))
 				{
+					IL_METADATA_UNLOCK(thread);
 					return 0;
 				}
 			}
@@ -276,6 +295,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 									   ctorfnInfo.func, ctorcif,
 									   (pinv == 0)))
 			{
+				IL_METADATA_UNLOCK(thread);
 				return 0;
 			}
 			while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
@@ -283,6 +303,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				/* Do we need a coder restart due to cache overflow? */
 				if(result != IL_CODER_END_RESTART)
 				{
+					IL_METADATA_UNLOCK(thread);
 					return 0;
 				}
 				if(!ILCoderSetupExternCtor(coder, &start, method,
@@ -290,6 +311,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 										   ctorfnInfo.func, ctorcif,
 										   (pinv == 0)))
 				{
+					IL_METADATA_UNLOCK(thread);
 					return 0;
 				}
 			}
@@ -298,6 +320,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 
 	/* The method is converted now */
 	method->userData = (void *)start;
+	IL_METADATA_UNLOCK(thread);
 	return start;
 }
 

@@ -197,7 +197,7 @@ ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num);
 /*
  * Determine the size of a type's values in bytes.
  */
-ILUInt32 ILSizeOfType(ILType *type);
+ILUInt32 ILSizeOfType(ILExecThread *thread, ILType *type);
 
 /*
  * Look up a class name within a particular thread's context.

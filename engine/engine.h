@@ -21,6 +21,7 @@
 #ifndef	_ENGINE_ENGINE_H
 #define	_ENGINE_ENGINE_H
 
+#include "il_thread.h"
 #include "il_engine.h"
 #include "il_system.h"
 #include "il_program.h"
@@ -69,6 +70,9 @@ struct _tagILLoadedModule
  */
 struct _tagILExecProcess
 {
+	/* Lock to serialize access to this object */
+	ILMutex        *lock;
+
 	/* List of threads that are active within this process */
 	ILExecThread   *firstThread;
 
@@ -81,6 +85,9 @@ struct _tagILExecProcess
 
 	/* Context that holds all images that have been loaded by this process */
 	ILContext 	   *context;
+
+	/* Read/write lock for the metadata in "context" */
+	ILRWLock       *metadataLock;
 
 	/* Exit status if the process executes something like "exit(N)" */
 	int 			exitStatus;
@@ -257,6 +264,11 @@ int _ILLayoutClass(ILClass *info);
 ILUInt32 _ILLayoutClassReturn(ILClass *info, ILUInt32 *alignment);
 
 /*
+ * Determine if layout of a class has already been done.
+ */
+int _ILLayoutAlreadyDone(ILClass *info);
+
+/*
  * Verify the contents of a method.
  */
 int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
@@ -398,6 +410,26 @@ int _ILCVMUnrollPossible(void);
  * Unroll a CVM method to native code.
  */
 int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method);
+
+/*
+ * Determine the size of a type's values in bytes.  This assumes
+ * that the caller has obtained the metadata write lock.
+ */
+ILUInt32 _ILSizeOfTypeLocked(ILType *type);
+
+/*
+ * Lock metadata for reading or writing from the current thread.
+ */
+#define	IL_METADATA_WRLOCK(thread)	\
+			ILRWLockWriteLock((thread)->process->metadataLock)
+#define	IL_METADATA_RDLOCK(thread)	\
+			ILRWLockReadLock((thread)->process->metadataLock)
+
+/*
+ * Unlock metadata from the current thread.
+ */
+#define	IL_METADATA_UNLOCK(thread)	\
+			ILRWLockUnlock((thread)->process->metadataLock)
 
 #ifdef	__cplusplus
 };

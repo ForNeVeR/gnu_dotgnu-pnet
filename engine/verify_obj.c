@@ -120,7 +120,7 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 	ILUInt32 size;
 
 	/* Get the size of the value type */
-	size = ILSizeOfType(ILType_FromValueType(boxClass));
+	size = _ILSizeOfTypeLocked(ILType_FromValueType(boxClass));
 
 	/* Determine how to box the value based on its engine type */
 	if(valueType == ILEngineType_I4)

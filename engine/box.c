@@ -40,7 +40,7 @@ ILObject *ILExecThreadBox(ILExecThread *thread, ILType *type, void *ptr)
 			ILExecThreadThrowOutOfMemory(thread);
 			return 0;
 		}
-		typeSize = ILSizeOfType(type);
+		typeSize = ILSizeOfType(thread, type);
 		object = (ILObject *)_ILEngineAlloc(thread, classInfo, typeSize);
 		if(object)
 		{
@@ -61,7 +61,7 @@ int ILExecThreadUnbox(ILExecThread *thread, ILType *type,
 	   (ILType_IsPrimitive(type) || ILType_IsValueType(type)) &&
 	   ILTypeIdentical(type, ILClassToType(GetObjectClass(object))))
 	{
-		ILMemCpy(ptr, object, ILSizeOfType(type));
+		ILMemCpy(ptr, object, ILSizeOfType(thread, type));
 		return 1;
 	}
 	else

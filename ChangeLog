@@ -1,4 +1,13 @@
 
+2002-06-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/box.c, engine/call.c, engine/convert.c, engine/cvm_call.c,
+	engine/cvmc.c, engine/cvmc_obj.c, engine/cvmc_ptr.c, engine/engine.h,
+	engine/heap.c, engine/layout.c, engine/lib_array.c, engine/lib_type.c,
+	engine/lookup.c, engine/process.c, engine/thread.c,
+	engine/verify_obj.c, include/il_engine.h: begin adding support
+	for metadata locks to the engine.
+
 2002-06-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvmc_branch.c: wrong offset for switch entries.

@@ -29,14 +29,27 @@ extern	"C" {
  */
 static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 {
-	/* Lay out the class's fields */
+	/* Quick check to see if the class is already laid out,
+	   to avoid acquiring the metadata lock if possible */
+	if(_ILLayoutAlreadyDone(classInfo))
+	{
+		return 1;
+	}
+
+	/* Acquire the metadata write lock */
+	IL_METADATA_WRLOCK(thread);
+
+	/* Lay out the class's fields.  This will check for layout
+	   again, to avoid race condition situations */
 	if(!_ILLayoutClass(classInfo))
 	{
 		/* TODO: Throw a "TypeInitializationException" */
+		IL_METADATA_UNLOCK(thread);
 		return 0;
 	}
 
 	/* The class has been initialized */
+	IL_METADATA_UNLOCK(thread);
 	return 1;
 }
 

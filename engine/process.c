@@ -28,6 +28,9 @@ void ILExecInit(unsigned long maxSize)
 {
 	/* Initialize the global garbage collector */
 	ILGCInit(maxSize);
+
+	/* Initialize the thread routines */
+	ILThreadInit();
 }
 
 ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
@@ -42,12 +45,14 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	}
 
 	/* Initialize the fields */
+	process->lock = 0;
 	process->firstThread = 0;
 	process->mainThread = 0;
 	process->stackSize = ((stackSize < IL_ENGINE_STACK_SIZE)
 							? IL_ENGINE_STACK_SIZE : stackSize);
 	process->frameStackSize = IL_ENGINE_FRAME_STACK_SIZE;
 	process->context = 0;
+	process->metadataLock = 0;
 	process->exitStatus = 0;
 	process->coder = 0;
 	process->objectClass = 0;
@@ -68,17 +73,33 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 		return 0;
 	}
 
-	/* Create the "main" thread */
-	process->mainThread = ILExecThreadCreate(process);
-	if(!(process->mainThread))
+	/* Initialize the CVM coder */
+	process->coder = ILCoderCreate(&_ILCVMCoderClass, 100000);
+	if(!(process->coder))
 	{
 		ILExecProcessDestroy(process);
 		return 0;
 	}
 
-	/* Initialize the CVM coder */
-	process->coder = ILCoderCreate(&_ILCVMCoderClass, 100000);
-	if(!(process->coder))
+	/* Initialize the object lock */
+	process->lock = ILMutexCreate();
+	if(!(process->lock))
+	{
+		ILExecProcessDestroy(process);
+		return 0;
+	}
+
+	/* Initialize the metadata lock */
+	process->metadataLock = ILRWLockCreate();
+	if(!(process->metadataLock))
+	{
+		ILExecProcessDestroy(process);
+		return 0;
+	}
+
+	/* Create the "main" thread */
+	process->mainThread = ILExecThreadCreate(process);
+	if(!(process->mainThread))
 	{
 		ILExecProcessDestroy(process);
 		return 0;
@@ -100,6 +121,12 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	/* Destroy the CVM coder instance */
 	ILCoderDestroy(process->coder);
+
+	/* Destroy the metadata lock */
+	if(process->metadataLock)
+	{
+		ILRWLockDestroy(process->metadataLock);
+	}
 
 	/* Destroy the image loading context */
 	if(process->context)
@@ -127,6 +154,9 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		ILFree(loaded);
 		loaded = nextLoaded;
 	}
+
+	/* Destroy the object lock */
+	ILMutexDestroy(process->lock);
 
 	/* Free the process block itself */
 	ILGCFreePersistent(process);
@@ -166,16 +196,9 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 								        "OutOfMemoryException", "System");
 		if(classInfo)
 		{
-			/* We call the "OutOfMemoryException(int dummy)" constructor
-			   in "pnetlib", which sets up the out of memory exception
-			   object with the necessary localised string information,
-			   but with no stack trace associated with it */
-#if 0
-			process->outOfMemoryObject =
-				ILExecThreadNew(process->mainThread,
-								"System.OutOfMemoryException",
-								"(Ti)V", (ILVaInt)0);
-#endif
+			/* We don't call the "OutOfMemoryException" constructor,
+			   to avoid various circularity problems at this stage
+			   of the loading process */
 			process->outOfMemoryObject =
 				_ILEngineAllocObject(process->mainThread, classInfo);
 		}
@@ -214,8 +237,10 @@ int ILExecProcessLoadImage(ILExecProcess *process, FILE *file)
 {
 	ILImage *image;
 	int loadError;
+	ILRWLockWriteLock(process->metadataLock);
 	loadError = ILImageLoad(file, 0, process->context, &image,
 					   	    IL_LOADFLAG_FORCE_32BIT);
+	ILRWLockUnlock(process->metadataLock);
 	if(loadError == 0)
 	{
 		LoadStandard(process, image);
@@ -227,8 +252,10 @@ int ILExecProcessLoadFile(ILExecProcess *process, const char *filename)
 {
 	int error;
 	ILImage *image;
+	ILRWLockWriteLock(process->metadataLock);
 	error = ILImageLoadFromFile(filename, process->context, &image,
 								IL_LOADFLAG_FORCE_32BIT, 0);
+	ILRWLockUnlock(process->metadataLock);
 	if(error == 0)
 	{
 		LoadStandard(process, image);
@@ -245,16 +272,20 @@ ILMethod *ILExecProcessGetEntry(ILExecProcess *process)
 {
 	ILImage *image = 0;
 	ILToken token;
+	ILMethod *method = 0;
+	ILRWLockReadLock(process->metadataLock);
 	while((image = ILContextNextImage(process->context, image)) != 0)
 	{
 		token = ILImageGetEntryPoint(image);
 		if(token && (token & IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_DEF)
 		{
 			process->entryImage = image;
-			return ILMethod_FromToken(image, token);
+			method = ILMethod_FromToken(image, token);
+			break;
 		}
 	}
-	return 0;
+	ILRWLockUnlock(process->metadataLock);
+	return method;
 }
 
 int ILExecProcessEntryType(ILMethod *method)

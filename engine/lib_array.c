@@ -102,7 +102,7 @@ static System_Array *System_SArray_ctor(ILExecThread *thread,
 	type = ILClassGetSynType(classInfo);
 
 	/* Compute the element size */
-	elemSize = ILSizeOfType(ILType_ElemType(type));
+	elemSize = ILSizeOfType(thread, ILType_ElemType(type));
 
 	/* Determine the total size of the array in bytes */
 	totalSize = ((ILUInt64)elemSize) * ((ILUInt64)length);
@@ -182,7 +182,7 @@ static System_MArray *ConstructMArrayHeader(ILExecThread *thread,
 
 	/* Fill in the array header with the rank and element size values */
 	_this->rank = rank;
-	_this->elemSize = (ILInt32)ILSizeOfType(elemType);
+	_this->elemSize = (ILInt32)ILSizeOfType(thread, elemType);
 	return _this;
 }
 
@@ -2160,7 +2160,7 @@ void _IL_Array_Clear(ILExecThread *thread, ILObject *_array,
 
 	/* Get the element type and size */
 	elemType = GetArrayElemType(array);
-	elemSize = ILSizeOfType(elemType);
+	elemSize = ILSizeOfType(thread, elemType);
 
 	/* Determine the start address of the clear */
 	if(_ILIsSArray(array))
@@ -2229,7 +2229,7 @@ void _IL_Array_Initialize(ILExecThread *thread, ILObject *thisObj)
 
 	/* Get the element type and size */
 	elemType = GetArrayElemType(_this);
-	elemSize = ILSizeOfType(elemType);
+	elemSize = ILSizeOfType(thread, elemType);
 
 	/* Bail out if this is not a value type with a default constructor */
 	if(!ILType_IsValueType(elemType))
@@ -2307,7 +2307,7 @@ void _IL_Array_InternalCopy(ILExecThread *thread,
 	{
 		src = ArrayToBuffer(sourceArray);
 		synType = ILClassGetSynType(GetObjectClass(sourceArray));
-		size = (ILInt32)(ILSizeOfType(ILType_ElemType(synType)));
+		size = (ILInt32)(ILSizeOfType(thread, ILType_ElemType(synType)));
 	}
 	else
 	{
@@ -2366,7 +2366,7 @@ ILObject *_IL_Array_CreateArray_jiiii(ILExecThread *thread,
 	}
 
 	/* Compute the element size */
-	elemSize = ILSizeOfType(elemType);
+	elemSize = ILSizeOfType(thread, elemType);
 
 	/* Determine if the element type is primitive */
 	if(ILType_IsPrimitive(elemType) && elemType != ILType_TypedRef)
@@ -2572,7 +2572,7 @@ ILObject *_IL_Array_CreateArray_jaiai(ILExecThread *thread,
 	}
 
 	/* Compute the element size */
-	elemSize = ILSizeOfType(elemType);
+	elemSize = ILSizeOfType(thread, elemType);
 
 	/* Determine the total size of the array in bytes */
 	totalSize = ((ILUInt64)elemSize);
@@ -2782,7 +2782,7 @@ ILObject *_IL_Array_Get_iii(ILExecThread *thread, ILObject *thisObj,
 {
 	System_Array *_this = (System_Array *)thisObj;
 	ILType *elemType = GetArrayElemType(_this);
-	ILUInt32 elemSize = ILSizeOfType(elemType);
+	ILUInt32 elemSize = ILSizeOfType(thread, elemType);
 	if(_ILIsSArray(_this))
 	{
 		if(index1 >= 0 && index1 < _this->length)
@@ -2916,7 +2916,7 @@ ILObject *_IL_Array_Get_ai(ILExecThread *thread, ILObject *thisObj,
 
 	/* Get the element type and its size */
 	elemType = GetArrayElemType(_this);
-	elemSize = ILSizeOfType(elemType);
+	elemSize = ILSizeOfType(thread, elemType);
 
 	/* Find the specific element position within the array */
 	marray = (System_MArray *)_this;
@@ -2963,7 +2963,7 @@ ILObject *_IL_Array_GetRelative(ILExecThread *thread, ILObject *_this,
 		buf = ArrayToBuffer(_this);
 		synType = ILClassGetSynType(GetObjectClass(_this));
 		elemType = ILType_ElemType(synType);
-		size = (ILInt32)(ILSizeOfType(elemType));
+		size = (ILInt32)(ILSizeOfType(thread, elemType));
 	}
 	else
 	{
@@ -2993,7 +2993,7 @@ void _IL_Array_Set_Objectiii(ILExecThread *thread, ILObject *thisObj,
 {
 	System_Array *_this = (System_Array *)thisObj;
 	ILType *elemType = GetArrayElemType(_this);
-	ILUInt32 elemSize = ILSizeOfType(elemType);
+	ILUInt32 elemSize = ILSizeOfType(thread, elemType);
 	void *ptr;
 
 	if(_ILIsSArray(_this))
@@ -3139,7 +3139,7 @@ void _IL_Array_Set_Objectai(ILExecThread *thread, ILObject *thisObj,
 
 	/* Get the element type and its size */
 	elemType = GetArrayElemType(_this);
-	elemSize = ILSizeOfType(elemType);
+	elemSize = ILSizeOfType(thread, elemType);
 
 	/* Find the specific element position within the array */
 	marray = (System_MArray *)_this;
@@ -3200,7 +3200,7 @@ void _IL_Array_SetRelative(ILExecThread *thread, ILObject *_this,
 		buf = ArrayToBuffer(_this);
 		synType = ILClassGetSynType(GetObjectClass(_this));
 		elemType = ILType_ElemType(synType);
-		size = (ILInt32)(ILSizeOfType(elemType));
+		size = (ILInt32)(ILSizeOfType(thread, elemType));
 	}
 	else
 	{
@@ -3292,7 +3292,7 @@ ILInt32 _IL_Buffer_GetLength(ILExecThread *thread, ILObject *_array)
 	if(_ILIsSArray(array))
 	{
 		ILType *synType = ILClassGetSynType(GetObjectClass(array));
-		return array->length * ILSizeOfType(ILType_ElemType(synType));
+		return array->length * ILSizeOfType(thread, ILType_ElemType(synType));
 	}
 	else if(_ILIsMArray(array))
 	{
@@ -3357,7 +3357,7 @@ int ILExecThreadGetElem(ILExecThread *thread, void *value,
 		{
 			/* Get the element size */
 			type = ILClassGetSynType(GetObjectClass(array));
-			elemSize = (ILInt32)(ILSizeOfType(ILType_ElemType(type)));
+			elemSize = (ILInt32)(ILSizeOfType(thread, ILType_ElemType(type)));
 
 			/* Copy the element to the "value" buffer */
 			ILMemCpy(value, ((unsigned char *)(ArrayToBuffer(_array))) +
@@ -3399,7 +3399,7 @@ int ILExecThreadSetElem(ILExecThread *thread, ILObject *_array,
 			/* Get the element size */
 			type = ILClassGetSynType(GetObjectClass(array));
 			type = ILTypeGetEnumType(ILType_ElemType(type));
-			elemSize = (ILInt32)(ILSizeOfType(type));
+			elemSize = (ILInt32)(ILSizeOfType(thread, type));
 
 			/* Copy the value to the element */
 			{
@@ -3516,7 +3516,7 @@ ILObject *_ILCloneSArray(ILExecThread *thread, System_Array *array)
 
 	/* Get the element type and size */
 	elemType = GetArrayElemType(array);
-	elemSize = ILSizeOfType(elemType);
+	elemSize = ILSizeOfType(thread, elemType);
 
 	/* Get the total length of the array object */
 	totalLen = sizeof(System_Array) + elemSize * ((ILUInt32)(array->length));
@@ -3552,7 +3552,7 @@ ILObject *_ILCloneMArray(ILExecThread *thread, System_MArray *array)
 
 	/* Get the element type and size */
 	elemType = GetArrayElemType((System_Array *)array);
-	elemSize = ILSizeOfType(elemType);
+	elemSize = ILSizeOfType(thread, elemType);
 
 	/* Get the total length of the array header and data */
 	headerLen = sizeof(System_MArray) + array->rank * sizeof(MArrayBounds);

@@ -115,7 +115,7 @@ static void CVMCoder_ArrayAccess(ILCoder *coder, int opcode,
 		case IL_OP_LDELEMA:
 		{
 			/* Load the address of an array element */
-			size = ILSizeOfType(elemType);
+			size = _ILSizeOfTypeLocked(elemType);
 		#ifdef IL_NATIVE_INT64
 			if(indexType == ILEngineType_I4)
 		#endif
@@ -542,7 +542,7 @@ static void CVMCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 									  ILClass *classInfo)
 {
 	/* Compute the size of the managed value in memory and on the stack */
-	ILUInt32 memorySize = ILSizeOfType(ILType_FromValueType(classInfo));
+	ILUInt32 memorySize = _ILSizeOfTypeLocked(ILType_FromValueType(classInfo));
 	ILUInt32 stackSize = (memorySize + sizeof(CVMWord) - 1) / sizeof(CVMWord);
 
 	/* Generate the bytecode for the instruction */

@@ -796,7 +796,20 @@ ILUInt32 _ILLayoutClassReturn(ILClass *info, ILUInt32 *alignment)
 	}
 }
 
-ILUInt32 ILSizeOfType(ILType *type)
+int _ILLayoutAlreadyDone(ILClass *info)
+{
+	if(info->userData)
+	{
+		ILClassPrivate *classPrivate = (ILClassPrivate *)(info->userData);
+		return !(classPrivate->inLayout);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ILUInt32 _ILSizeOfTypeLocked(ILType *type)
 {
 	LayoutInfo layout;
 	if(!LayoutType(type, &layout))
@@ -806,6 +819,24 @@ ILUInt32 ILSizeOfType(ILType *type)
 	else
 	{
 		return layout.size;
+	}
+}
+
+ILUInt32 ILSizeOfType(ILExecThread *thread, ILType *type)
+{
+	if(!ILType_IsValueType(type))
+	{
+		/* We can take a shortcut because the type is not a value type */
+		return _ILSizeOfTypeLocked(type);
+	}
+	else
+	{
+		/* We have to lock down the metadata first */
+		ILUInt32 size;
+		IL_METADATA_WRLOCK(thread);
+		size = _ILSizeOfTypeLocked(type);
+		IL_METADATA_UNLOCK(thread);
+		return size;
 	}
 }
 

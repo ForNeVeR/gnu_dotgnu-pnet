@@ -65,6 +65,7 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 	thread->securityManager = 0;
 
 	/* Attach the thread to the process */
+	ILMutexLock(process->lock);
 	thread->process = process;
 	thread->nextThread = process->firstThread;
 	thread->prevThread = 0;
@@ -73,6 +74,7 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 		process->firstThread->prevThread = thread;
 	}
 	process->firstThread = thread;
+	ILMutexUnlock(process->lock);
 	
 	/* Return the thread block to the caller */
 	return thread;
@@ -80,10 +82,15 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 
 void ILExecThreadDestroy(ILExecThread *thread)
 {
+	ILExecProcess *process = thread->process;
+
+	/* Lock down the process */
+	ILMutexLock(process->lock);
+
 	/* If this is the "main" thread, then clear "process->mainThread" */
-	if(thread->process->mainThread == thread)
+	if(process->mainThread == thread)
 	{
-		thread->process->mainThread = 0;
+		process->mainThread = 0;
 	}
 
 	/* Detach the thread from its process */
@@ -97,7 +104,7 @@ void ILExecThreadDestroy(ILExecThread *thread)
 	}
 	else
 	{
-		thread->process->firstThread = thread->nextThread;
+		process->firstThread = thread->nextThread;
 	}
 
 	/* Destroy the operand stack */
@@ -108,6 +115,9 @@ void ILExecThreadDestroy(ILExecThread *thread)
 
 	/* Destroy the thread block */
 	ILGCFreePersistent(thread);
+
+	/* Unlock the process */
+	ILMutexUnlock(process->lock);
 }
 
 ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread)

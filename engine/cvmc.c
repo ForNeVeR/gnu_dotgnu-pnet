@@ -102,7 +102,7 @@ struct _tagILCVMCoder
  */
 static ILUInt32 GetTypeSize(ILType *type)
 {
-	ILUInt32 size = ILSizeOfType(type);
+	ILUInt32 size = _ILSizeOfTypeLocked(type);
 	return (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
 }
 
@@ -118,7 +118,7 @@ static ILUInt32 GetStackTypeSize(ILType *type)
 	}
 	else
 	{
-		size = ILSizeOfType(type);
+		size = _ILSizeOfTypeLocked(type);
 	}
 	return (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
 }

@@ -151,7 +151,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
  * Determine the number of stack words that are occupied
  * by a specific type.
  */
-static ILUInt32 StackWordsForType(ILType *type)
+static ILUInt32 StackWordsForType(ILExecThread *thread, ILType *type)
 {
 	if(type == ILType_Float32 || type == ILType_Float64)
 	{
@@ -159,7 +159,8 @@ static ILUInt32 StackWordsForType(ILType *type)
 	}
 	else
 	{
-		return ((ILSizeOfType((type)) + sizeof(CVMWord) - 1) / sizeof(CVMWord));
+		return ((ILSizeOfType(thread, type) + sizeof(CVMWord) - 1)
+					/ sizeof(CVMWord));
 	}
 }
 
@@ -196,7 +197,7 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	for(param = 0; param < numArgs; ++param)
 	{
 		height += StackWordsForType
-			(ILTypeGetParam(callSiteSig, firstParam + param));
+			(thread, ILTypeGetParam(callSiteSig, firstParam + param));
 	}
 	stacktop -= height;
 
@@ -307,7 +308,7 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 				return 0;
 			}
 		}
-		stacktop += StackWordsForType(paramType);
+		stacktop += StackWordsForType(thread, paramType);
 		++posn;
 	}
 
@@ -318,7 +319,8 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 /*
  * Get the number of parameter words for a tail call method.
  */
-static ILUInt32 GetTailParamCount(ILMethod *method, int suppressThis)
+static ILUInt32 GetTailParamCount(ILExecThread *thread, ILMethod *method,
+								  int suppressThis)
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILUInt32 num = 0;
@@ -335,7 +337,7 @@ static ILUInt32 GetTailParamCount(ILMethod *method, int suppressThis)
 	numParams = ILTypeNumParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
-		num += StackWordsForType(ILTypeGetParam(signature, param));
+		num += StackWordsForType(thread, ILTypeGetParam(signature, param));
 	}
 
 	/* Account for the vararg array parameter */
@@ -1436,7 +1438,7 @@ VMCASE(COP_PREFIX_TAIL_CALL):
 	/* TODO: we should add an argument to the "tail" instruction
 	   that contains "tempNum", so that we don't have to compute
 	   the value dynamically */
-	tempNum = GetTailParamCount(methodToCall, 0);
+	tempNum = GetTailParamCount(thread, methodToCall, 0);
 	IL_MEMMOVE(frame, stacktop - tempNum, tempNum * sizeof(CVMWord));
 	stacktop = frame + tempNum;
 

@@ -226,7 +226,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 			   put the value into a temporary location and then
 			   passed a pointer to the temporary to us */
 			ptr = (void *)(VA_ARG(va, void *));
-			size = ILSizeOfType(paramType);
+			size = ILSizeOfType(thread, paramType);
 			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
 			CHECK_SPACE(sizeInWords);
 			ILMemCpy(stacktop, ptr, size);
@@ -414,7 +414,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 		else if(ILType_IsValueType(paramType))
 		{
 			/* Process a value type */
-			size = ILSizeOfType(paramType);
+			size = ILSizeOfType(thread, paramType);
 			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
 			ILMemCpy(result, thread->stackTop - sizeInWords, size);
 			thread->stackTop -= sizeInWords;
@@ -565,7 +565,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 			   passed a pointer to the temporary to us */
 			ptr = args->ptrValue;
 			++args;
-			size = ILSizeOfType(paramType);
+			size = ILSizeOfType(thread, paramType);
 			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
 			CHECK_SPACE(sizeInWords);
 			ILMemCpy(stacktop, ptr, size);
@@ -724,7 +724,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 		else if(ILType_IsValueType(paramType))
 		{
 			/* Process a value type */
-			size = ILSizeOfType(paramType);
+			size = ILSizeOfType(thread, paramType);
 			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
 			ILMemCpy(result->ptrValue, thread->stackTop - sizeInWords, size);
 			thread->stackTop -= sizeInWords;
@@ -1064,14 +1064,17 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 
 	/* Make sure that the class has been initialized */
 	classInfo = ILMethod_Owner(ctor);
+	IL_METADATA_WRLOCK(thread);
 	if(!_ILLayoutClass(classInfo))
 	{
 		/* Throw a "TypeLoadException" */
+		IL_METADATA_UNLOCK(thread);
 		VA_END;
 		ILExecThreadThrowSystem(thread, "System.TypeLoadException",
 								(const char *)0);
 		return 0;
 	}
+	IL_METADATA_UNLOCK(thread);
 
 	/* Call the constructor */
 	result = 0;
@@ -1103,13 +1106,16 @@ ILObject *ILExecThreadNewV(ILExecThread *thread, const char *typeName,
 
 	/* Make sure that the class has been initialized */
 	classInfo = ILMethod_Owner(ctor);
+	IL_METADATA_WRLOCK(thread);
 	if(!_ILLayoutClass(classInfo))
 	{
 		/* Throw a "TypeLoadException" */
+		IL_METADATA_UNLOCK(thread);
 		ILExecThreadThrowSystem(thread, "System.TypeLoadException",
 								(const char *)0);
 		return 0;
 	}
+	IL_METADATA_UNLOCK(thread);
 
 	/* Call the constructor */
 	ILMemZero(&result, sizeof(result));

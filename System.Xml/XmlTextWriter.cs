@@ -975,7 +975,8 @@ public class XmlTextWriter : XmlWriter
 				}
 				else
 				{
-					writer.Write(data);
+					char[] buffer = data.ToCharArray();
+					WriteChars(buffer, 0 , buffer.Length);
 				}
 			}
 
@@ -1004,7 +1005,7 @@ public class XmlTextWriter : XmlWriter
 				}
 				else 
 				{
-					writer.Write(buffer, index, count);
+					WriteChars(buffer, index, count);
 				}
 			}
 
@@ -1576,7 +1577,7 @@ public class XmlTextWriter : XmlWriter
 				}
 
 				// Quote the string and output it.
-				WriteChars(text.ToCharArray(), 0, text.Length);
+				WriteQuotedString(text);
 			}
 
 	// Write a surrogate character entity.

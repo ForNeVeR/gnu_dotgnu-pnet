@@ -100,7 +100,7 @@ public class FileStream : Stream
 						("access", _("IO_FileAccess"));
 				}
 				if(mode < FileMode.CreateNew ||
-				   mode > FileMode.Truncate)
+				   mode > FileMode.Append)
 				{
 					throw new ArgumentOutOfRangeException
 						("mode", _("IO_FileMode"));

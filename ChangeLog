@@ -1,4 +1,9 @@
+2003-07-25  Andrew Mitchell  <ajmitch@gnu.org>
 
+	* tools/run_test.sh.in: Fix misspelling in variable which caused the 
+	tests to use the installed compiler rather than one specified with
+	--with-pnet.
+	
 2003-07-20  Gopal.V  <gopalv82@symonds.net>
 	
 	* csharp/expr/relop1.il: modify output files to reflect changes

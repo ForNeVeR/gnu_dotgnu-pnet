@@ -23,7 +23,7 @@ CSCC="@CSCC@"
 CSCC_SYSTEM_FLAGS="@CSCC_SYSTEM_FLAGS@"
 
 # Command to use to invoke "cscc".
-CSCC_INVOKE="${CSCC} ${CSCC_SYSTM_FLAGS}"
+CSCC_INVOKE="${CSCC} ${CSCC_SYSTEM_FLAGS}"
 
 # Options to pass to "cscc".
 CSCC_FLAGS='-Wall -funsafe -nostdlib -fbuiltin-library'

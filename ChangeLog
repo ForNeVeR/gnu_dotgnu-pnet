@@ -9,6 +9,12 @@
 	engine/lib_marshal.c, samples/mscorlib.dll: implement internalcall
 	methods for the "Marshal" class.
 
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll,
+	samples/System.Xml.dll, samples/System.dll,
+	samples/mscorlib.dll: update all assemblies from pnetlib.
+
 2002-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.4.0" release.

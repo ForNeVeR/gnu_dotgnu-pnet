@@ -553,7 +553,12 @@ ILNode_EndsInReturnImpl(ILNode_Do),
 ILNode_EndsInReturnImpl(ILNode_For)
 {
 	int flags;
-	if(!(node->cond) || yyisa(node->cond, ILNode_True))
+	ILEvalValue evalue;
+	if(!(node->cond) || 
+		( ILNode_EvalConst(node->cond,info,&evalue) &&
+		  (evalue.valueType == ILMachineType_Boolean) &&
+		  (evalue.un.i4Value == 1) /* true */
+		))
 	{
 		/* This may be an infinite loop: check for a contained "break" */
 		if(node->stmt)

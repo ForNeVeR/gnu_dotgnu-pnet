@@ -1501,7 +1501,8 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			if(genInfo->typeGather)
 			{
 				if((typeNode =FindNestedClass(NULL,
-									CSSemGetTypeNode(value),name)))
+								(ILNode_ClassDefn*)CSSemGetTypeNode(value),
+								name)))
 				{
 					CSSemSetTypeNode(retSem,typeNode);
 					return retSem;

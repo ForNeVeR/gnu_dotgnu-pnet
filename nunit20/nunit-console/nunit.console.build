@@ -3,7 +3,7 @@
 <project name="nunit.console" default="all">
 	<target name="all">
 		<compile target="executable"
-				 output="nunit-console.exe"
+				 output="nunit-console-pnet.exe"
 				 debug="${debug.flag}"
 				 unsafe="false"
 				 install="true"

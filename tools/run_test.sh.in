@@ -57,5 +57,5 @@ exec "$ILRUN" -C 4096 \
 	-L"$TOP_BUILDDIR"/class/System.Runtime.Remoting \
 	-L"$TOP_BUILDDIR"/class/Mono.Directory.LDAP \
 	-L. \
-	"$TOP_BUILDDIR/nunit20/nunit-console/nunit-console.exe" $* \
+	"$TOP_BUILDDIR/nunit20/nunit-console/nunit-console-pnet.exe" $* \
 	/xmlConsole /transform="$MONO_SOURCE_PATH"/nunit20/core/Summary.xslt

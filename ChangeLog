@@ -1,4 +1,10 @@
 
+2004-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* nunit20/nunit-console/Makefile.am, tools/run_test.sh.in,
+	nunit20/nunit-console/nunit.console.build: rename "nunit-console.exe"
+	to "nunit-console-pnet.exe" to prevent clashes with Mono packages.
+
 2004-08-04  Gopal.V  <gopalv82@yahoo.com>
 	
 	* Makefile.am, nunit20/nunit-console/Makefile.am,

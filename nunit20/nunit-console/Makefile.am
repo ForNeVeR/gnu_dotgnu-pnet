@@ -1,14 +1,14 @@
 
-.PHONY: nunit-console.exe
+.PHONY: nunit-console-pnet.exe
 
-all-local: nunit-console.exe
+all-local: nunit-console-pnet.exe
 
-nunit-console.exe:
+nunit-console-pnet.exe:
 	"$(CSANT)" $(CSANT_FLAGS) -Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-b "$(srcdir)" -B . -f nunit.console.build all
 
-CLEANFILES = nunit-console.exe
+CLEANFILES = nunit-console-pnet.exe
 
 install-data-local:
 	@$(NORMAL_INSTALL)
@@ -17,7 +17,7 @@ install-data-local:
 			-Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-f "$(srcdir)/nunit.console.build" -i all
-	$(LN_S) clrwrap $(DESTDIR)$(bindir)/nunit-console
+	$(LN_S) clrwrap $(DESTDIR)$(bindir)/nunit-console-pnet
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
@@ -25,3 +25,4 @@ uninstall-local:
 			-Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-f "$(srcdir)/nunit.console.build" -u all
+	rm -f $(DESTDIR)$(bindir)/nunit-console-pnet

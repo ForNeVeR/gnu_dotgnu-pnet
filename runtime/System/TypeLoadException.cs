@@ -34,6 +34,8 @@ public class TypeLoadException : SystemException
 	// Internal state.
 	private String typeName;
 	private String assemblyName;
+	private String messageArg;
+	private int resourceId;
 
 	// Constructors.
 	public TypeLoadException()
@@ -47,8 +49,10 @@ public class TypeLoadException : SystemException
 								StreamingContext context)
 		: base(info, context)
 		{
-			typeName = info.GetString("ClassName");
-			assemblyName = info.GetString("AssemblyName");
+			typeName = info.GetString("TypeLoadClassName");
+			assemblyName = info.GetString("TypeLoadAssemblyName");
+			messageArg = info.GetString("TypeLoadMessageArg");
+			resourceId = info.GetInt32("TypeLoadResourceID");
 		}
 #endif
 
@@ -109,8 +113,10 @@ public class TypeLoadException : SystemException
 									   StreamingContext context)
 			{
 				base.GetObjectData(info, context);
-				info.AddValue("ClassName", typeName);
-				info.AddValue("AssemblyName", assemblyName);
+				info.AddValue("TypeLoadClassName", typeName);
+				info.AddValue("TypeLoadAssemblyName", assemblyName);
+				info.AddValue("TypeLoadMessageArg", messageArg);
+				info.AddValue("TypeLoadResourceID", resourceId);
 			}
 #endif
 

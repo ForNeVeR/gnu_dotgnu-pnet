@@ -167,4 +167,12 @@ public class ExceptionTester : TestCase
 				AssertSame("InnerException (7)", e3, e.InnerException);
 			}
 
+	// Check the HResult value on an exception.
+	public static void CheckHResult(String name, Exception e, int hresult)
+			{
+			#if CONFIG_SERIALIZATION
+				AssertEquals(name, hresult, GetHResult(e));
+			#endif
+			}
+
 }; // class ExceptionTester

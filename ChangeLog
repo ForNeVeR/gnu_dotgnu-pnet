@@ -1,4 +1,13 @@
 
+2003-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/TypeLoadException.cs,
+	tests/runtime/System/ExceptionTester.cs,
+	tests/runtime/System/SuiteSystem.cs,
+	tests/runtime/System/TestSystemExceptions.cs,
+	tests/runtime/System/code-review.txt: test cases and bug
+	fixes for exception classes in "runtime/System".
+
 2003-08-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Microsoft/Win32/FileKeyProvider.cs,

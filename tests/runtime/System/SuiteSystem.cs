@@ -37,6 +37,7 @@ public class SuiteSystem
 			#if !ECMA_COMPAT
 				suite.AddTests(typeof(TestGuid));
 			#endif
+				suite.AddTests(typeof(TestSystemExceptions));
 				return suite;
 			}
 

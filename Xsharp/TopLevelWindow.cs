@@ -36,6 +36,7 @@ public class TopLevelWindow : InputOutputWidget
 	private String name;
 	private bool iconic;
 	private bool hasPrimaryFocus;
+	private bool reparented;
 	private IntPtr keyBuffer;
 	private InputOnlyWidget focusWidget;
 	private InputOnlyWidget defaultFocus;
@@ -115,6 +116,7 @@ public class TopLevelWindow : InputOutputWidget
 				this.name = ((name != null) ? name : String.Empty);
 				this.iconic = false;
 				this.hasPrimaryFocus = false;
+				this.reparented = false;
 				this.keyBuffer = IntPtr.Zero;
 				this.focusWidget = this;
 				this.defaultFocus = null;
@@ -142,7 +144,8 @@ public class TopLevelWindow : InputOutputWidget
 
 					// Top-level widgets receive all key and focus events.
 					SelectInput(EventMask.KeyPressMask |
-								EventMask.FocusChangeMask);
+								EventMask.FocusChangeMask |
+								EventMask.StructureNotifyMask);
 				}
 				finally
 				{
@@ -174,6 +177,38 @@ public class TopLevelWindow : InputOutputWidget
 				else
 				{
 					return screen.RootWindow;
+				}
+			}
+
+	/// <summary>
+	/// <para>Determine if this widget is currently iconified.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>Returns <see langword="true"/> if the widget is iconified;
+	/// <see langword="false"/> otherwise.</para>
+	/// </value>
+	///
+	/// <remarks>
+	/// <para>Setting this property is equivalent to calling either
+	/// <c>Iconify</c> or <c>Deiconify</c>.</para>
+	/// </remarks>
+	public bool IsIconic
+			{
+				get
+				{
+					return iconic;
+				}
+				set
+				{
+					if(value)
+					{
+						Iconify();
+					}
+					else
+					{
+						Deiconify();
+					}
 				}
 			}
 
@@ -788,6 +823,90 @@ public class TopLevelWindow : InputOutputWidget
 								break;
 							}
 							widget = widget.Parent;
+						}
+					}
+					break;
+
+					case EventType.ConfigureNotify:
+					{
+						// The window manager may have caused us to move/resize.
+						if(xevent.xconfigure.window != xevent.window)
+						{
+							// SubstructureNotify - not interesting to us.
+							break;
+						}
+						if(xevent.xconfigure.width != width ||
+						   xevent.xconfigure.height != height)
+						{
+							// The size has been changed by the window manager.
+							width = xevent.xconfigure.width;
+							height = xevent.xconfigure.height;
+							OnResize(width, height);
+						}
+						if(xevent.send_event || !reparented)
+						{
+							// The window manager moved us to a new position.
+							if(x != xevent.xconfigure.x ||
+							   y != xevent.xconfigure.y)
+							{
+								x = xevent.xconfigure.x;
+								y = xevent.xconfigure.y;
+								OnMove(x, y);
+							}
+						}
+					}
+					break;
+
+					case EventType.ReparentNotify:
+					{
+						// We may have been reparented by the window manager.
+						if(xevent.xreparent.window != (Xlib.Window)handle)
+						{
+							// SubstructureNotify - not interesting to us.
+							break;
+						}
+						if(xevent.xreparent.parent !=
+								(Xlib.Window)(screen.RootWindow.handle))
+						{
+							// Reparented by the window manager.
+							reparented = true;
+						}
+						else
+						{
+							// Window manager crashed: we are back on the root.
+							reparented = false;
+							x = xevent.xreparent.x;
+							y = xevent.xreparent.y;
+							OnMove(x, y);
+						}
+					}
+					break;
+
+					case EventType.MapNotify:
+					{
+						// The window manager mapped us to the screen.
+						if(iconic)
+						{
+							iconic = false;
+							OnIconicStateChanged(false);
+						}
+						if(!mapped)
+						{
+							mapped = true;
+							OnMapStateChanged();
+						}
+					}
+					break;
+
+					case EventType.UnmapNotify:
+					{
+						// We were unmapped from the screen.  If "mapped"
+						// is true, then we are being iconified by the window
+						// manager.  Otherwise, we asked to be withdrawn.
+						if(!iconic && mapped)
+						{
+							iconic = true;
+							OnIconicStateChanged(true);
 						}
 					}
 					break;

@@ -30,6 +30,13 @@ public interface IToolkit
 	// Run the main event processing loop for the toolkit.
 	void Run();
 
+	// Process events in the event queue.  If "waitForEvent" is true,
+	// then wait for the next event and return "false" if "Quit" was
+	// seen.  If "waitForEvent" is false, then process events in the
+	// queue and return "true".  If "waitForEvent" is false and there
+	// are no events in the queue, then return "false".
+	bool ProcessEvents(bool waitForEvent);
+
 	// Send a quit message to the toolkit, which should cause
 	// it to exit from the "Run" method.
 	void Quit();

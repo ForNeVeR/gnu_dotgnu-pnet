@@ -31,11 +31,17 @@ public interface IToolkitWindow
 	// Get the toolkit that owns this window.
 	IToolkit Toolkit { get; }
 
+	// Get the toolkit parent window.
+	IToolkitWindow Parent { get; }
+
 	// Get the current dimensions of this window.
 	Rectangle Dimensions { get; }
 
 	// Get or set the mapped state of the window.
 	bool IsMapped { get; set; }
+
+	// Determine if this window currently has the input focus.
+	bool Focused { get; }
 
 	// Destroy this window and all of its children.
 	void Destroy();
@@ -61,6 +67,9 @@ public interface IToolkitWindow
 	// Set the window title (top-level windows only).
 	void SetTitle(String title);
 
+	// Set the foreground of the window to a solid color.
+	void SetForeground(Color color);
+
 	// Set the background of the window to a solid color.
 	void SetBackground(Color color);
 
@@ -68,8 +77,22 @@ public interface IToolkitWindow
 	void SetFunctions(ToolkitDecorations decorations,
 					  ToolkitFunctions functions);
 
-	// Event that is emitted for an expose on this window.
-	event ToolkitExposeHandler Expose;
+	// Get the adjustment values for the client area.
+	// On entry, all values are zero.
+	void GetClientAreaAdjust(ref int leftAdjust, ref int topAdjust,
+							 ref int rightAdjust, ref int bottomAdjust);
+
+	// Move this window to above one of its siblings.
+	void MoveToAbove(IToolkitWindow sibling);
+
+	// Move this window to below one of its siblings.
+	void MoveToBelow(IToolkitWindow sibling);
+
+	// Get the HWND for this window.  IntPtr.Zero if not supported.
+	IntPtr GetHwnd();
+
+	// Set the event sink to use for this window.
+	void SetEventSink(IToolkitEventSink sink);
 
 }; // interface IToolkitWindow
 

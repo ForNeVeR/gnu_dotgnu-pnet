@@ -51,6 +51,18 @@ public sealed class DrawingToolkit : IToolkit
 				app.Run();
 			}
 
+	// Process events in the event queue.  If "waitForEvent" is true,
+	// then wait for the next event and return "false" if "Quit" was
+	// seen.  If "waitForEvent" is false, then process events in the
+	// queue and return "true".  If "waitForEvent" is false and there
+	// are no events in the queue, then return "false".
+	public bool ProcessEvents(bool waitForEvent)
+			{
+				// TODO
+				app.Run();
+				return false;
+			}
+
 	// Send a quit message to the toolkit, which should cause
 	// it to exit from the "Run" method.
 	public void Quit()
@@ -138,9 +150,52 @@ public sealed class DrawingToolkit : IToolkit
 				return IntPtr.Zero;
 			}
 
+	// Validate a window size to ensure that it is in-range for X.
+	internal static void ValidateWindowSize(ref int width, ref int height)
+			{
+				if(width < 1)
+				{
+					width = 1;
+				}
+				else if(width > 32767)
+				{
+					width = 32767;
+				}
+				if(height < 1)
+				{
+					height = 1;
+				}
+				else if(height > 32767)
+				{
+					height = 32767;
+				}
+			}
+
+	// Validate a window position to ensure that it is in-range for X.
+	internal static void ValidateWindowPosition(ref int x, ref int y)
+			{
+				if(x < -32767)
+				{
+					x = -32767;
+				}
+				else if(x > 32767)
+				{
+					x = 32767;
+				}
+				if(y < -32767)
+				{
+					y = -32767;
+				}
+				else if(y > 32767)
+				{
+					y = 32767;
+				}
+			}
+
 	// Create a top-level application window.
 	public IToolkitWindow CreateTopLevelWindow(int width, int height)
 			{
+				ValidateWindowSize(ref width, ref height);
 				return new DrawingTopLevelWindow
 					(this, String.Empty, width, height);
 			}
@@ -151,6 +206,7 @@ public sealed class DrawingToolkit : IToolkit
 				 IToolkitWindow dialogParent)
 			{
 				DrawingTopLevelWindow window;
+				ValidateWindowSize(ref width, ref height);
 				window = new DrawingTopLevelWindow
 					(this, String.Empty, width, height);
 				if(dialogParent is TopLevelWindow)
@@ -198,6 +254,8 @@ public sealed class DrawingToolkit : IToolkit
 				{
 					wparent = placeholder;
 				}
+				ValidateWindowPosition(ref x, ref y);
+				ValidateWindowSize(ref width, ref height);
 				return new DrawingWindow(this, wparent, x, y, width, height);
 			}
 

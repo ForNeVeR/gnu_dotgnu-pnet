@@ -18,8 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#if CONFIG_REFLECTION
-
 using System;
 using Xsharp;
 
@@ -55,15 +53,3 @@ public class XHello : TopLevelWindow
 	}
 
 }; // class XHello
-
-#else
-
-public class XHello
-{
-
-	// Stubbed out on platforms without Xsharp.
-	public static void Main(String[] args) {}
-
-}; // class XHello
-
-#endif

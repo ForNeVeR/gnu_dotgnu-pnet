@@ -31,6 +31,7 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 {
 	// Internal state.
 	private IToolkit toolkit;
+	private IToolkitEventSink sink;
 
 	// Constructor.
 	public DrawingTopLevelWindow(IToolkit toolkit, String name,
@@ -47,6 +48,15 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				get
 				{
 					return toolkit;
+				}
+			}
+
+	// Get the toolkit parent window.
+	IToolkitWindow IToolkitWindow.Parent
+			{
+				get
+				{
+					return (IToolkitWindow)Parent;
 				}
 			}
 
@@ -72,6 +82,15 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				}
 			}
 
+	// Determine if this window currently has the input focus.
+	bool IToolkitWindow.Focused
+			{
+				get
+				{
+					return Focused;
+				}
+			}
+
 	// Destroy this window and all of its children.
 	void IToolkitWindow.Destroy()
 			{
@@ -81,6 +100,8 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 	// Move or resize this window.
 	void IToolkitWindow.MoveResize(int x, int y, int width, int height)
 			{
+				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
+				DrawingToolkit.ValidateWindowSize(ref width, ref height);
 				Move(x, y);
 				Resize(width, height);
 			}
@@ -106,7 +127,14 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 	// Reparent this window to underneath a new parent.
 	void IToolkitWindow.Reparent(IToolkitWindow parent, int x, int y)
 			{
-				// TODO
+				if(parent == null)
+				{
+					Reparent(((DrawingToolkit)Toolkit).placeholder, x, y);
+				}
+				else
+				{
+					Reparent((Widget)parent, x, y);
+				}
 			}
 
 	// Get a toolkit graphics object for this window.
@@ -126,6 +154,12 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				Name = title;
 			}
 
+	// Set the foreground of the window to a solid color.
+	void IToolkitWindow.SetForeground(System.Drawing.Color color)
+			{
+				Foreground = DrawingToolkit.DrawingToXColor(color);
+			}
+
 	// Set the background of the window to a solid color.
 	void IToolkitWindow.SetBackground(System.Drawing.Color color)
 			{
@@ -139,21 +173,176 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				// TODO
 			}
 
+	// Get the adjustment values for the client area.
+	// On entry, all values are zero.
+	void IToolkitWindow.GetClientAreaAdjust
+				(ref int leftAdjust, ref int topAdjust,
+				 ref int rightAdjust, ref int bottomAdjust)
+			{
+				// Nothing to do in this implementation.
+			}
+
+	// Move this window to above one of its siblings.
+	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
+			{
+				// TODO
+			}
+
+	// Move this window to below one of its siblings.
+	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)
+			{
+				// TODO
+			}
+
+	// Get the HWND for this window.  IntPtr.Zero if not supported.
+	IntPtr IToolkitWindow.GetHwnd()
+			{
+				return IntPtr.Zero;
+			}
+
+	// Set the event sink to use for this window.
+	void IToolkitWindow.SetEventSink(IToolkitEventSink sink)
+			{
+				this.sink = sink;
+			}
+
+	// Override the button press event from Xsharp.
+	protected override void OnButtonPress(int x, int y, ButtonName button,
+									      ModifierMask modifiers)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitMouseDown
+						(DrawingWindow.MapButton(button),
+						 DrawingWindow.MapKey
+						 	(KeyName.XK_VoidSymbol, modifiers),
+						 1, x, y, 0);
+				}
+			}
+
+	// Override the button release event from Xsharp.
+	protected override void OnButtonRelease(int x, int y, ButtonName button,
+									  	    ModifierMask modifiers)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitMouseUp
+						(DrawingWindow.MapButton(button),
+						 DrawingWindow.MapKey
+						 	(KeyName.XK_VoidSymbol, modifiers),
+						 1, x, y, 0);
+				}
+			}
+
+	// Override the button double click event from Xsharp.
+	protected override void OnButtonDoubleClick
+				(int x, int y, ButtonName button, ModifierMask modifiers)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitMouseDown
+						(DrawingWindow.MapButton(button),
+						 DrawingWindow.MapKey
+						 	(KeyName.XK_VoidSymbol, modifiers),
+						 2, x, y, 0);
+				}
+			}
+
+	// Override the pointer motion event from Xsharp.
+	protected override void OnPointerMotion
+				(int x, int y, ModifierMask modifiers)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitMouseMove
+						(ToolkitMouseButtons.None,
+						 DrawingWindow.MapKey
+						 	(KeyName.XK_VoidSymbol, modifiers),
+						 0, x, y, 0);
+				}
+			}
+
+	// Override the key press event from Xsharp.
+	protected override bool OnKeyPress(KeyName key,
+									   ModifierMask modifiers, String str)
+			{
+				if(sink != null)
+				{
+					// Emit the "KeyDown" event.
+					ToolkitKeys keyData = DrawingWindow.MapKey(key, modifiers);
+					if(keyData != ToolkitKeys.None)
+					{
+						sink.ToolkitKeyDown(keyData);
+					}
+
+					// Emit the "KeyChar" event if necessary.
+					if(str != null)
+					{
+						foreach(char ch in str)
+						{
+							sink.ToolkitKeyChar(ch);
+						}
+					}
+				}
+
+				// The key has been processed.
+				return true;
+			}
+
+	// Override the mouse enter event from Xsharp.
+	protected override void OnEnter(Widget child, int x, int y,
+								    ModifierMask modifiers,
+								    CrossingMode mode,
+								    CrossingDetail detail)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitMouseEnter();
+				}
+			}
+
+	// Override the mouse leave event from Xsharp.
+	protected override void OnLeave(Widget child, int x, int y,
+								    ModifierMask modifiers,
+								    CrossingMode mode,
+								    CrossingDetail detail)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitMouseLeave();
+				}
+			}
+
+	// Override the focus enter event from Xsharp.
+	protected override void OnFocusIn(Widget other)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitFocusEnter();
+				}
+			}
+
+	// Override the focus leave event from Xsharp.
+	protected override void OnFocusOut(Widget other)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitFocusLeave();
+				}
+			}
+
 	// Handle a paint event from Xsharp.
 	protected override void OnPaint(Xsharp.Graphics graphics)
 			{
-				if(Expose != null)
+				if(sink != null)
 				{
 					DrawingGraphics g = new DrawingGraphics(toolkit, graphics);
 					System.Drawing.Graphics gr =
 						ToolkitManager.CreateGraphics(g);
-					Expose(gr);
+					sink.ToolkitExpose(gr);
 					gr.Dispose();
 				}
 			}
-
-	// Event that is emitted for an expose on this window.
-	public event ToolkitExposeHandler Expose;
 
 }; // class DrawingTopLevelWindow
 

@@ -21,7 +21,21 @@
 namespace System.Drawing.Toolkit
 {
 
+// Simple event handler, with EventArgs parameter.
+public delegate void ToolkitSimpleHandler(EventArgs e);
+
 // Handle an expose event, using a particular graphics object to paint.
 public delegate void ToolkitExposeHandler(Graphics graphics);
+
+// Handle a key event.
+public delegate void ToolkitKeyHandler(ToolkitKeys key);
+
+// Handle a key character event.
+public delegate void ToolkitKeyCharHandler(char charCode);
+
+// Handle a mouse event.
+public delegate void ToolkitMouseHandler
+		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
+		 int clicks, int x, int y, int delta);
 
 }; // namespace System.Drawing.Toolkit

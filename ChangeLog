@@ -1,4 +1,17 @@
 
+2002-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Crypto.txt,
+	runtime/System/Security/Cryptography/CryptoConfig.cs,
+	runtime/System/Security/Cryptography/HMACSHA1.cs,
+	runtime/System/Security/Cryptography/HashAlgorithm.cs,
+	runtime/System/Security/Cryptography/KeyedHashAlgorithm.cs,
+	runtime/System/Security/Cryptography/MACTripleDES.cs,
+	runtime/System/Security/Cryptography/RNGCryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/RandomNumberGenerator.cs:
+	continue implementation the crypto classes, with keyed hash
+	algorithms, random number generators, and OID handling.
+
 2002-07-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Crypto.txt,

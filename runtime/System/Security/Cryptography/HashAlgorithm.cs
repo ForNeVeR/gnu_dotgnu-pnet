@@ -166,6 +166,18 @@ public abstract class HashAlgorithm : ICryptoTransform
 	// Finalize the hash and return the final hash value.
 	protected abstract byte[] HashFinal();
 
+	// Access "HashCore" from elsewhere in this library.
+	internal void InternalHashCore(byte[] array, int ibStart, int cbSize)
+			{
+				HashCore(array, ibStart, cbSize);
+			}
+
+	// Access "HashFinal" from elsewhere in this library.
+	internal byte[] InternalHashFinal()
+			{
+				return HashFinal();
+			}
+
 }; // class HashAlgorithm
 
 #endif // !ECMA_COMPAT

@@ -53,6 +53,10 @@ public class CryptoConfig
 		"System.Security.Cryptography.RC2";
 	internal const String RijndaelDefault =
 		"System.Security.Cryptography.Rijndael";
+	internal const String KeyedHashDefault =
+		"System.Security.Cryptography.KeyedHashAlgorithm";
+	internal const String RNGDefault =
+		"System.Security.Cryptography.RandomNumberGenerator";
 
 	// Table that maps algorithm names to implementations.
 	private static readonly Object[] algorithms = {
@@ -95,6 +99,21 @@ public class CryptoConfig
 								typeof(DSACryptoServiceProvider),
 #endif
 
+			"RandomNumberGenerator",
+								typeof(RNGCryptoServiceProvider),
+			"System.Security.Cryptography.RandomNumberGenerator",
+								typeof(RNGCryptoServiceProvider),
+
+			"HMACSHA1",			typeof(HMACSHA1),
+			"System.Security.Cryptography.HMACSHA1",
+								typeof(HMACSHA1),
+			"System.Security.Cryptography.KeyedHashAlgorithm",
+								typeof(HMACSHA1),
+
+			"MACTripleDES",		typeof(MACTripleDES),
+			"System.Security.Cryptography.MACTripleDES",
+								typeof(MACTripleDES),
+
 			"DES",				typeof(DESCryptoServiceProvider),
 			"System.Security.Cryptography.DES",
 								typeof(DESCryptoServiceProvider),
@@ -115,6 +134,23 @@ public class CryptoConfig
 			"System.Security.Cryptography.Rijndael",
 								typeof(RijndaelManaged),
 		};
+
+	// Table that maps algorithm names to OID's.
+	private static readonly String[] oids = {
+			"SHA1",								 "1.3.14.3.2.26",
+			"System.Security.Cryptography.SHA1", "1.3.14.3.2.26",
+			"System.Security.Cryptography.SHA1CryptoServiceProvider",
+												 "1.3.14.3.2.26",
+			"System.Security.Cryptography.SHA1Managed",
+												 "1.3.14.3.2.26",
+
+			"MD5",								 "1.2.840.113549.2.5",
+			"System.Security.Cryptography.MD5CryptoServiceProvider",
+												 "1.2.840.113549.2.5",
+			"System.Security.Cryptography.MD5Managed",
+												 "1.2.840.113549.2.5",
+		};
+
 
 	// Create an instance of a specific cryptographic object.
 	public static Object CreateFromName(String name)
@@ -145,15 +181,168 @@ public class CryptoConfig
 					(_("Crypto_NoProvider"), name);
 			}
 
+	// Determine the size of an OID component.
+	private static int OIDSize(uint value)
+			{
+				if(value < (uint)(1 << 7))
+				{
+					return 1;
+				}
+				else if(value < (uint)(1 << 14))
+				{
+					return 2;
+				}
+				else if(value < (uint)(1 << 21))
+				{
+					return 3;
+				}
+				else if(value < (uint)(1 << 28))
+				{
+					return 4;
+				}
+				else
+				{
+					return 5;
+				}
+			}
+
+	// Encode an OID component.
+	private static int OIDEncode(byte[] result, int index, uint value)
+			{
+				if(value < (uint)(1 << 7))
+				{
+					result[index] = (byte)value;
+					return 1;
+				}
+				else if(value < (uint)(1 << 14))
+				{
+					result[index] = (byte)(0x80 | (value >> 7));
+					result[index + 1] = (byte)(value & 0x7F);
+					return 2;
+				}
+				else if(value < (uint)(1 << 21))
+				{
+					result[index] = (byte)(0x80 | (value >> 14));
+					result[index + 1] = (byte)(0x80 | (value >> 7));
+					result[index + 2] = (byte)(value & 0x7F);
+					return 3;
+				}
+				else if(value < (uint)(1 << 28))
+				{
+					result[index] = (byte)(0x80 | (value >> 21));
+					result[index + 1] = (byte)(0x80 | (value >> 14));
+					result[index + 2] = (byte)(0x80 | (value >> 7));
+					result[index + 3] = (byte)(value & 0x7F);
+					return 4;
+				}
+				else
+				{
+					result[index] = (byte)(0x80 | (value >> 28));
+					result[index + 1] = (byte)(0x80 | (value >> 21));
+					result[index + 2] = (byte)(0x80 | (value >> 14));
+					result[index + 3] = (byte)(0x80 | (value >> 7));
+					result[index + 4] = (byte)(value & 0x7F);
+					return 5;
+				}
+			}
+
 	// Encode an object identifier as a byte array.
 	public static byte[] EncodeOID(String str)
 			{
+				// Bail out if the argument is null.
 				if(str == null)
 				{
 					throw new ArgumentNullException("str");
 				}
-				// TODO
-				return null;
+
+				// Count the number of components and validate the string.
+				int count = 0;
+				int index;
+				char ch;
+				bool prevIsDot = true;
+				uint value = 0;
+				int nbytes = -1;
+				for(index = 0; index < str.Length; ++index)
+				{
+					ch = str[index];
+					if(ch == '.')
+					{
+						if(prevIsDot)
+						{
+							break;
+						}
+						if((count == 0 && value > 2) ||
+						   (count == 1 && value > 39))
+						{
+							prevIsDot = true;
+							break;
+						}
+						nbytes += OIDSize(value);
+						value = (uint)0;
+						++count;
+					}
+					else if(ch < '0' || ch > '9')
+					{
+						prevIsDot = false;
+						value = value * ((uint)10) + ((uint)ch) - (uint)'0';
+					}
+					else
+					{
+						prevIsDot = true;
+						break;
+					}
+				}
+				nbytes += OIDSize(value);
+				if(prevIsDot || count < 2 || nbytes > 127)
+				{
+					throw new CryptographicException
+						(_("Crypto_InvalidOID"), str);
+				}
+
+				// Create the byte array and fill it.
+				byte[] result = new byte [nbytes + 2];
+				count = 0;
+				result[0] = (byte)0x06;
+				result[1] = (byte)nbytes;
+				nbytes = 2;
+				value = (uint)0;
+				for(index = 0; index < str.Length; ++index)
+				{
+					ch = str[index];
+					if(ch == '.')
+					{
+						if(count == 0)
+						{
+							result[2] = (byte)(40 * value);
+						}
+						else if(count == 1)
+						{
+							result[2] = (byte)(result[2] + value);
+							nbytes = 3;
+						}
+						else
+						{
+							nbytes += OIDEncode(result, nbytes, value);
+						}
+						value = (uint)0;
+						++count;
+					}
+					else if(ch < '0' || ch > '9')
+					{
+						value = value * ((uint)10) + ((uint)ch) - (uint)'0';
+					}
+				}
+				if(count == 1)
+				{
+					result[2] = (byte)(result[2] + value);
+				}
+				else
+				{
+					OIDEncode(result, nbytes, value);
+				}
+
+				// Done.
+				return result;
 			}
 
 	// Get the OID of a named algorithm.
@@ -163,7 +352,13 @@ public class CryptoConfig
 				{
 					throw new ArgumentNullException("name");
 				}
-				// TODO
+				for(int index = 0; index < oids.Length; index += 2)
+				{
+					if(oids[index] == name)
+					{
+						return oids[index + 1];
+					}
+				}
 				return null;
 			}
 

@@ -212,6 +212,7 @@ struct _tagILSwitchValue
  * Constant node types.
  */
 %node ILNode_Null ILNode_Constant
+%node ILNode_NullPtr ILNode_Constant
 %node ILNode_True ILNode_Constant
 %node ILNode_False ILNode_Constant
 %node ILNode_Integer ILNode_Constant %abstract =

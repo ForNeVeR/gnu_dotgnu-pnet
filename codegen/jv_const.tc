@@ -30,6 +30,7 @@ JavaGenDiscard(ILNode_Constant)
  * JavaGenThen/Else clauses that always branch.
  */
 JavaGenElse(ILNode_Null),
+JavaGenElse(ILNode_NullPtr),
 JavaGenThen(ILNode_True),
 JavaGenElse(ILNode_False),
 JavaGenThen(ILNode_String)
@@ -41,6 +42,7 @@ JavaGenThen(ILNode_String)
  * JavaGenThen/Else clauses that never branch.
  */
 JavaGenThen(ILNode_Null),
+JavaGenThen(ILNode_NullPtr),
 JavaGenElse(ILNode_True),
 JavaGenThen(ILNode_False),
 JavaGenElse(ILNode_String)
@@ -56,6 +58,16 @@ JavaGenValue(ILNode_Null)
 	JavaGenSimple(info, JAVA_OP_ACONST_NULL);
 	JavaGenAdjust(info, 1);
 	return ILMachineType_ObjectRef;
+}
+
+/*
+ * "null pointer" constant.
+ */
+JavaGenValue(ILNode_NullPtr)
+{
+	JavaGenSimple(info, JAVA_OP_ICONST_0);
+	JavaGenAdjust(info, 1);
+	return ILMachineType_UnmanagedPtr;
 }
 
 /*

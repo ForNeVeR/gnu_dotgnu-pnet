@@ -24,6 +24,10 @@
 	resgen/Makefile.am, samples/Makefile.am, support/Makefile.am,
 	tests/Makefile.am: out of tree builds (Stephen Compall).
 
+	* codegen/cg_cast.tc, codegen/cg_const.tc, codegen/cg_nodes.tc,
+	codegen/jv_const.tc, cscc/csharp/cs_const.tc: implement code
+	generation and constant evaluation for casting pointer values.
+
 2002-07-02  Gopal.V  <gopalv82@symonds.net>
 
 	* doc/Doxyfile: Add Doxygen configuration file (contributed

@@ -232,7 +232,8 @@ ILGenCast(ILMachineType_UInt16, ILMachineType_Int8),
 ILGenCast(ILMachineType_UInt32, ILMachineType_Int8),
 ILGenCast(ILMachineType_UInt64, ILMachineType_Int8),
 ILGenCast(ILMachineType_NativeUInt, ILMachineType_Int8),
-ILGenCast(ILMachineType_Char, ILMachineType_Int8)
+ILGenCast(ILMachineType_Char, ILMachineType_Int8),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int8)
 {
 	if(info->overflowInsns)
 	{
@@ -276,7 +277,6 @@ ILGenCast(ILMachineType_String, ILMachineType_Int8)
 	}
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Int8),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int8),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_Int8),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_Int8),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_Int8)
@@ -305,7 +305,8 @@ ILGenCast(ILMachineType_Int64, ILMachineType_UInt8),
 ILGenCast(ILMachineType_NativeInt, ILMachineType_UInt8),
 ILGenCast(ILMachineType_Float32, ILMachineType_UInt8),
 ILGenCast(ILMachineType_Float64, ILMachineType_UInt8),
-ILGenCast(ILMachineType_NativeFloat, ILMachineType_UInt8)
+ILGenCast(ILMachineType_NativeFloat, ILMachineType_UInt8),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UInt8)
 {
 	if(info->overflowInsns)
 	{
@@ -342,7 +343,6 @@ ILGenCast(ILMachineType_String, ILMachineType_UInt8)
 								"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_UInt8),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UInt8),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_UInt8),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_UInt8),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_UInt8)
@@ -387,7 +387,8 @@ ILGenCast(ILMachineType_UInt16, ILMachineType_Int16),
 ILGenCast(ILMachineType_UInt32, ILMachineType_Int16),
 ILGenCast(ILMachineType_UInt64, ILMachineType_Int16),
 ILGenCast(ILMachineType_NativeUInt, ILMachineType_Int16),
-ILGenCast(ILMachineType_Char, ILMachineType_Int16)
+ILGenCast(ILMachineType_Char, ILMachineType_Int16),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int16)
 {
 	/* Convert an unsigned input value */
 	if(info->overflowInsns)
@@ -410,7 +411,6 @@ ILGenCast(ILMachineType_String, ILMachineType_Int16)
 								"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Int16),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int16),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_Int16),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_Int16),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_Int16)
@@ -471,7 +471,8 @@ ILGenCast(ILMachineType_UInt64, ILMachineType_UInt16),
 ILGenCast(ILMachineType_NativeUInt, ILMachineType_UInt16),
 ILGenCast(ILMachineType_UInt32, ILMachineType_Char),
 ILGenCast(ILMachineType_UInt64, ILMachineType_Char),
-ILGenCast(ILMachineType_NativeUInt, ILMachineType_Char)
+ILGenCast(ILMachineType_NativeUInt, ILMachineType_Char),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Char)
 {
 	/* Convert an unsigned input value */
 	if(info->overflowInsns)
@@ -534,7 +535,6 @@ ILGenCast(ILMachineType_ManagedPtr, ILMachineType_UInt16),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_UInt16),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_UInt16),
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Char),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Char),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_Char),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_Char),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_Char)
@@ -586,7 +586,8 @@ ILGenCast(ILMachineType_UInt32, ILMachineType_Int32)
 	}
 }
 ILGenCast(ILMachineType_UInt64, ILMachineType_Int32),
-ILGenCast(ILMachineType_NativeUInt, ILMachineType_Int32)
+ILGenCast(ILMachineType_NativeUInt, ILMachineType_Int32),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int32)
 {
 	/* Convert an unsigned input value */
 	if(info->overflowInsns)
@@ -609,7 +610,6 @@ ILGenCast(ILMachineType_String, ILMachineType_Int32)
 								"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Int32),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int32),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_Int32),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_Int32),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_Int32)
@@ -661,7 +661,8 @@ ILGenCast(ILMachineType_NativeFloat, ILMachineType_UInt32)
 	}
 }
 ILGenCast(ILMachineType_UInt64, ILMachineType_UInt32),
-ILGenCast(ILMachineType_NativeUInt, ILMachineType_UInt32)
+ILGenCast(ILMachineType_NativeUInt, ILMachineType_UInt32),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UInt32)
 {
 	/* Convert an unsigned input value */
 	if(info->overflowInsns)
@@ -708,7 +709,6 @@ ILGenCast(ILMachineType_String, ILMachineType_UInt32)
 	}
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_UInt32),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UInt32),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_UInt32),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_UInt32),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_UInt32)
@@ -750,7 +750,8 @@ ILGenCast(ILMachineType_Int64, ILMachineType_Int64)
 }
 ILGenCast(ILMachineType_Float32, ILMachineType_Int64),
 ILGenCast(ILMachineType_Float64, ILMachineType_Int64),
-ILGenCast(ILMachineType_NativeFloat, ILMachineType_Int64)
+ILGenCast(ILMachineType_NativeFloat, ILMachineType_Int64),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int64)
 {
 	/* Convert a signed input value */
 	if(info->overflowInsns)
@@ -782,7 +783,6 @@ ILGenCast(ILMachineType_String, ILMachineType_Int64)
 					"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Int64),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int64),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_Int64),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_Int64),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_Int64)
@@ -824,6 +824,7 @@ ILGenCast(ILMachineType_UInt8, ILMachineType_UInt64),
 ILGenCast(ILMachineType_UInt16, ILMachineType_UInt64),
 ILGenCast(ILMachineType_UInt32, ILMachineType_UInt64),
 ILGenCast(ILMachineType_NativeUInt, ILMachineType_UInt64),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UInt64),
 ILGenCast(ILMachineType_Char, ILMachineType_UInt64)
 {
 	/* A simple zero-extend is sufficient */
@@ -895,7 +896,6 @@ ILGenCast(ILMachineType_String, ILMachineType_UInt64)
 	}
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_UInt64),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UInt64),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_UInt64),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_UInt64),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_UInt64)
@@ -930,7 +930,8 @@ ILGenCast(ILMachineType_Char, ILMachineType_NativeInt)
 	/* A simple zero-extend is sufficient */
 	ILGenSimple(info, IL_OP_CONV_U);
 }
-ILGenCast(ILMachineType_NativeInt, ILMachineType_NativeInt)
+ILGenCast(ILMachineType_NativeInt, ILMachineType_NativeInt),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_NativeInt)
 {
 	/* Nothing to do here */
 }
@@ -986,7 +987,6 @@ ILGenCast(ILMachineType_String, ILMachineType_NativeInt)
 	ILGenSimple(info, IL_OP_CONV_OVF_I);
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_NativeInt),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_NativeInt),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_NativeInt),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_NativeInt),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_NativeInt)
@@ -1021,7 +1021,8 @@ ILGenCast(ILMachineType_Char, ILMachineType_NativeUInt)
 	/* A simple zero-extend is sufficient */
 	ILGenSimple(info, IL_OP_CONV_U);
 }
-ILGenCast(ILMachineType_NativeUInt, ILMachineType_NativeUInt)
+ILGenCast(ILMachineType_NativeUInt, ILMachineType_NativeUInt),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_NativeUInt)
 {
 	/* Nothing to do here */
 }
@@ -1074,7 +1075,6 @@ ILGenCast(ILMachineType_String, ILMachineType_NativeUInt)
 	ILGenSimple(info, IL_OP_CONV_OVF_U_UN);
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_NativeUInt),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_NativeUInt),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_NativeUInt),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_NativeUInt),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_NativeUInt)
@@ -1117,7 +1117,8 @@ ILGenCast(ILMachineType_Char, ILMachineType_Float32)
 }
 ILGenCast(ILMachineType_UInt32, ILMachineType_Float32),
 ILGenCast(ILMachineType_UInt64, ILMachineType_Float32),
-ILGenCast(ILMachineType_NativeUInt, ILMachineType_Float32)
+ILGenCast(ILMachineType_NativeUInt, ILMachineType_Float32),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Float32)
 {
 	/* Convert an unsigned input value and also clamp the
 	   result to the "float32" type's precision range */
@@ -1136,7 +1137,6 @@ ILGenCast(ILMachineType_String, ILMachineType_Float32)
 					"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Float32),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Float32),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_Float32),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_Float32),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_Float32)
@@ -1172,7 +1172,8 @@ ILGenCast(ILMachineType_Boolean, ILMachineType_Float64),
 ILGenCast(ILMachineType_UInt8, ILMachineType_Float64),
 ILGenCast(ILMachineType_UInt16, ILMachineType_Float64),
 ILGenCast(ILMachineType_UInt32, ILMachineType_Float64),
-ILGenCast(ILMachineType_Char, ILMachineType_Float64)
+ILGenCast(ILMachineType_Char, ILMachineType_Float64),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Float64)
 {
 	/* Convert an unsigned input value */
 	ILGenSimple(info, IL_OP_CONV_R_UN);
@@ -1197,7 +1198,6 @@ ILGenCast(ILMachineType_String, ILMachineType_Float64)
 					"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Float64),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Float64),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_Float64),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_Float64),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_Float64)
@@ -1233,7 +1233,8 @@ ILGenCast(ILMachineType_UInt16, ILMachineType_NativeFloat),
 ILGenCast(ILMachineType_UInt32, ILMachineType_NativeFloat),
 ILGenCast(ILMachineType_UInt64, ILMachineType_NativeFloat),
 ILGenCast(ILMachineType_NativeUInt, ILMachineType_NativeFloat),
-ILGenCast(ILMachineType_Char, ILMachineType_NativeFloat)
+ILGenCast(ILMachineType_Char, ILMachineType_NativeFloat),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_NativeFloat)
 {
 	/* Convert an unsigned input value */
 	ILGenSimple(info, IL_OP_CONV_R_UN);
@@ -1299,7 +1300,6 @@ ILGenCast(ILMachineType_String, ILMachineType_NativeFloat)
 					"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_NativeFloat),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_NativeFloat),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_NativeFloat),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_NativeFloat),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_NativeFloat)
@@ -1429,7 +1429,8 @@ ILGenCast(ILMachineType_NativeInt, ILMachineType_Decimal)
 	ILGenCallByName(info, "valuetype [.library]System.Decimal "
 							"[.library]System.Decimal::op_Implicit(int64)");
 }
-ILGenCast(ILMachineType_NativeUInt, ILMachineType_Decimal)
+ILGenCast(ILMachineType_NativeUInt, ILMachineType_Decimal),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Decimal)
 {
 	/* Since we don't know how big native integers are,
 	   use the "uint64" conversion operator */
@@ -1465,7 +1466,6 @@ ILGenCast(ILMachineType_String, ILMachineType_Decimal)
 			"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Decimal),
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Decimal),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_Decimal),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_Decimal),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_Decimal)
@@ -1581,7 +1581,8 @@ ILGenCast(ILMachineType_NativeInt, ILMachineType_String)
 	ILGenCallByName(info, "class [.library]System.String "
 					"[.library]System.Int64::ToString(int64)");
 }
-ILGenCast(ILMachineType_NativeUInt, ILMachineType_String)
+ILGenCast(ILMachineType_NativeUInt, ILMachineType_String),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_String)
 {
 	/* We don't know how big the native integer is, so
 	   convert to "uint64" and convert that */
@@ -1618,7 +1619,6 @@ ILGenCast(ILMachineType_ObjectRef, ILMachineType_String)
 {
 	/* Nothing to do here */
 }
-ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_String),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_String),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_String),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_String)
@@ -1631,7 +1631,6 @@ ILGenCast(ILMachineType_ManagedValue, ILMachineType_String)
  * Cast to a pointer type.
  */
 ILGenCast(ILMachineType_Void, ILMachineType_ObjectRef),
-ILGenCast(ILMachineType_Void, ILMachineType_UnmanagedPtr),
 ILGenCast(ILMachineType_Void, ILMachineType_ManagedPtr),
 ILGenCast(ILMachineType_Void, ILMachineType_TransientPtr),
 ILGenCast(ILMachineType_Void, ILMachineType_ManagedValue)
@@ -1640,14 +1639,33 @@ ILGenCast(ILMachineType_Void, ILMachineType_ManagedValue)
 	ILGenSimple(info, IL_OP_LDNULL);
 	ILGenAdjust(info, 1);
 }
+ILGenCast(ILMachineType_Void, ILMachineType_UnmanagedPtr)
+{
+	/* The default pointer value is zero */
+	ILGenSimple(info, IL_OP_LDC_I4_0);
+	ILGenSimple(info, IL_OP_CONV_I);
+	ILGenAdjust(info, 1);
+}
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_ObjectRef),
 ILGenCast(ILMachineType_String, ILMachineType_ObjectRef),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UnmanagedPtr),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_ManagedPtr),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_TransientPtr),
-ILGenCast(ILMachineType_ManagedValue, ILMachineType_ManagedValue)
+ILGenCast(ILMachineType_ManagedValue, ILMachineType_ManagedValue),
+ILGenCast(ILMachineType_NativeInt, ILMachineType_UnmanagedPtr),
+ILGenCast(ILMachineType_NativeUInt, ILMachineType_UnmanagedPtr)
 {
 	/* Nothing to do here */
+}
+ILGenCast(ILMachineType_Int32, ILMachineType_UnmanagedPtr),
+ILGenCast(ILMachineType_Int64, ILMachineType_UnmanagedPtr)
+{
+	ILGenSimple(info, IL_OP_CONV_I);
+}
+ILGenCast(ILMachineType_UInt32, ILMachineType_UnmanagedPtr),
+ILGenCast(ILMachineType_UInt64, ILMachineType_UnmanagedPtr)
+{
+	ILGenSimple(info, IL_OP_CONV_U);
 }
 ILGenCast(ILMachineType, ILMachineType_ObjectRef),
 ILGenCast(ILMachineType, ILMachineType_UnmanagedPtr),
@@ -3161,4 +3179,16 @@ ILGenCastConst(ILMachineType, ILMachineType_ObjectRef)
 {
 	/* Nothing else can be cast as a constant in this way */
 	return 0;
+}
+
+/*
+ * Cast constants to pointer values.
+ */
+ILGenCastConst(ILMachineType_ObjectRef, ILMachineType_UnmanagedPtr),
+ILGenCastConst(ILMachineType_UnmanagedPtr, ILMachineType_UnmanagedPtr)
+{
+	/* Normally this is casting "null", which is OK */
+	value->valueType = ILMachineType_UnmanagedPtr;
+	value->un.i4Value = 0;
+	return 1;
 }

@@ -36,6 +36,7 @@ ILNode_GenDiscard(ILNode_Constant)
  * GenThen/Else clauses that always branch.
  */
 ILNode_GenElse(ILNode_Null),
+ILNode_GenElse(ILNode_NullPtr),
 ILNode_GenThen(ILNode_True),
 ILNode_GenElse(ILNode_False),
 ILNode_GenThen(ILNode_String)
@@ -47,6 +48,7 @@ ILNode_GenThen(ILNode_String)
  * GenThen/Else clauses that never branch.
  */
 ILNode_GenThen(ILNode_Null),
+ILNode_GenThen(ILNode_NullPtr),
 ILNode_GenElse(ILNode_True),
 ILNode_GenThen(ILNode_False),
 ILNode_GenElse(ILNode_String)
@@ -71,6 +73,27 @@ ILNode_EvalConst(ILNode_Null)
 {
 	value->valueType = ILMachineType_ObjectRef;
 	value->un.oValue = 0;
+	return 1;
+}
+
+/*
+ * "null pointer" constant.
+ */
+ILNode_GetType(ILNode_NullPtr)
+{
+	return ILMachineType_UnmanagedPtr;
+}
+ILNode_GenValue(ILNode_NullPtr)
+{
+	ILGenSimple(info, IL_OP_LDC_I4_0);
+	ILGenSimple(info, IL_OP_CONV_I);
+	ILGenAdjust(info, 1);
+	return ILMachineType_UnmanagedPtr;
+}
+ILNode_EvalConst(ILNode_NullPtr)
+{
+	value->valueType = ILMachineType_UnmanagedPtr;
+	value->un.i4Value = 0;
 	return 1;
 }
 

@@ -30,6 +30,18 @@ ILNode_SemAnalysis(ILNode_Null)
 }
 
 /*
+ * Perform semantic analysis for the "null pointer" constant.
+ */
+ILNode_SemAnalysis(ILNode_NullPtr)
+{
+	/* Will never be encountered in C# code, so do the same as "null" */
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Null;
+	return value;
+}
+
+/*
  * Perform semantic analysis for the "true" and "false" constants.
  */
 ILNode_SemAnalysis(ILNode_True),

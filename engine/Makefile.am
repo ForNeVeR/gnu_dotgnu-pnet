@@ -1,10 +1,8 @@
 bin_PROGRAMS = ilrun ilverify
 lib_LIBRARIES = libILEngine.a
 
-noinst_PROGRAMS = ilrun_opt
-noinst_LIBRARIES = libILEngineOpt.a
-
-COMMON_ENGINE_SOURCES = box.c \
+libILEngine_a_SOURCES = cvm.c \
+						box.c \
 						call.c \
 						convert.c \
 						cvm_dasm.c \
@@ -42,21 +40,10 @@ COMMON_ENGINE_SOURCES = box.c \
 						throw.c \
 						verify.c
 
-libILEngine_a_SOURCES = cvm.c \
-						$(COMMON_ENGINE_SOURCES)
-
-libILEngineOpt_a_SOURCES = cvm_opt.s \
-						   $(COMMON_ENGINE_SOURCES)
-
 PACKAGE_LIBS = ../libffi/.libs/libffi.a ../libgc/.libs/libgc.a
 
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
-			  ../image/libILImage.a ../support/libILSupport.a \
-			  $(PACKAGE_LIBS)
-
-ilrun_opt_SOURCES = ilrun.c
-ilrun_opt_LDADD = libILEngineOpt.a ../dumpasm/libILDumpAsm.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
 			  $(PACKAGE_LIBS)
 
@@ -71,17 +58,9 @@ else
 INCLUDES = -I../libffi/include
 endif
 
-cvm_opt.s: cvm.c asmfix cvm.o
-	$(COMPILE) -S -o cvm_opt.s.tmp $<
-	./asmfix <cvm_opt.s.tmp >cvm_opt.s
-	rm -f cvm_opt.s.tmp
-
-asmfix: asmfix.c
-	$(COMPILE) -o $@ $< ../support/libILSupport.a
-
 cvm.o: cvm_labels.h
 
 cvm_labels.h: cvm.h mklabel.sh
 	$(SHELL) mklabel.sh "$(AWK)" cvm.h >cvm_labels.h
 
-CLEANFILES = cvm_opt.s cvm_opt.s.tmp asmfix cvm_labels.h
+CLEANFILES = cvm_opt.s cvm_opt.s.tmp asmfix ilrun_opt cvm_labels.h

@@ -15,6 +15,9 @@
 	* acconfig.h, configure.in, include/il_config.h.in: detect
 	computed goto support during configuration.
 
+	* engine/HACKING, engine/Makefile.am, engine/asmfix.c: remove
+	"ilrun_opt", as "ilrun" is now at least as fast as it.
+
 2002-05-11  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_stmt.tc, codegen/cg_scope.c,  codegen/cg_scope.h, 

@@ -29,6 +29,8 @@ using System.ComponentModel;
 
 // Don't use this class.  Use "System.Threading.Timer" instead.
 
+[DefaultProperty("Interval")]
+[DefaultEvent("Elapsed")]
 public class Timer : Component, ISupportInitialize
 {
 	// Internal state.
@@ -53,6 +55,9 @@ public class Timer : Component, ISupportInitialize
 			}
 
 	// Get or set this object's properties.
+	[TimersDescription("TimerAutoReset")]
+	[Category("Behavior")]
+	[DefaultValue(true)]
 	public bool AutoReset
 			{
 				get
@@ -64,6 +69,9 @@ public class Timer : Component, ISupportInitialize
 					autoReset = value;
 				}
 			}
+	[TimersDescription("TimerEnabled")]
+	[Category("Behavior")]
+	[DefaultValue(false)]
 	public bool Enabled
 			{
 				get
@@ -90,6 +98,10 @@ public class Timer : Component, ISupportInitialize
 					}
 				}
 			}
+	[TimersDescription("TimerInterval")]
+	[Category("Behavior")]
+	[DefaultValue(100.0)]
+	[RecommendedAsConfigurable(true)]
 	public double Interval
 			{
 				get
@@ -117,6 +129,7 @@ public class Timer : Component, ISupportInitialize
 					base.Site = value;
 				}
 			}
+	[TimersDescription("TimerSynchronizingObject")]
 	public ISynchronizeInvoke SynchronizingObject
 			{
 				get
@@ -130,7 +143,10 @@ public class Timer : Component, ISupportInitialize
 			}
 
 	// Begin initialization.
-	public virtual void BeginInit() {}
+	public void BeginInit()
+			{
+				// Not used in this implementation.
+			}
 
 	// Close the timer.
 	public void Close()
@@ -139,7 +155,10 @@ public class Timer : Component, ISupportInitialize
 			}
 
 	// End initialization.
-	public virtual void EndInit() {}
+	public void EndInit()
+			{
+				// Not used in this implementation.
+			}
 
 	// Start the timer.
 	public void Start()
@@ -154,6 +173,8 @@ public class Timer : Component, ISupportInitialize
 			}
 
 	// Event that is raised when the timer elapses.
+	[TimersDescription("TimerIntervalElapsed")]
+	[Category("Behavior")]
 	public event ElapsedEventHandler Elapsed;
 
 	// Dispose of this timer.

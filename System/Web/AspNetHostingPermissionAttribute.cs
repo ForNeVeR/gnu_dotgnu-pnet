@@ -28,7 +28,7 @@ using System.Security;
 using System.Security.Permissions;
 
 [Serializable]
-[AttributeUsage(AttributeTargets.All)]
+[AttributeUsage(AttributeTargets.All, AllowMultiple=true, Inherited=false)]
 public sealed class AspNetHostingPermissionAttribute
 	: CodeAccessSecurityAttribute
 {

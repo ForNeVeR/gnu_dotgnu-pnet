@@ -141,7 +141,7 @@ public sealed class AspNetHostingPermission
 			}
 
 	// Determine if this permission object is unrestricted.
-	public virtual bool IsUnrestricted()
+	public bool IsUnrestricted()
 			{
 				return (level >= AspNetHostingPermissionLevel.Unrestricted);
 			}

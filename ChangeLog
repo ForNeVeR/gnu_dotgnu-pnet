@@ -14,6 +14,10 @@
 	engine/lib_reflect.c, engine/lib_type.c: implement manifest
 	resource stream support in the engine.
 
+	* cscc/csharp/cs_oper.tc (FindUserBinaryOperator,
+	FindUserUnaryOperator): use ILTypeToClass to convert types into
+	classes prior to looking for user-defined operators.
+
 2002-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/process.c, ildb/Makefile.am, ildb/ildb_context.c,

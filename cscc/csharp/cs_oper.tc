@@ -29,21 +29,14 @@ static ILMethod *FindUserBinaryOperator(ILGenInfo *info,
 										ILType *arg2Type)
 {
 	ILMethod *method;
+	ILClass *arg1Class = ILTypeToClass(info, arg1Type);
+	ILClass *arg2Class = ILTypeToClass(info, arg2Type);
 
 	/* Try looking in the first type */
-	if(ILType_IsClass(arg1Type))
+	if(arg1Class)
 	{
-		method = ILResolveBinaryOperator(info, ILType_ToClass(arg1Type),
-										 name, arg1Type, arg2Type);
-		if(method)
-		{
-			return method;
-		}
-	}
-	else if(ILType_IsValueType(arg1Type))
-	{
-		method = ILResolveBinaryOperator(info, ILType_ToValueType(arg1Type),
-										 name, arg1Type, arg2Type);
+		method = ILResolveBinaryOperator(info, arg1Class, name,
+										 arg1Type, arg2Type);
 		if(method)
 		{
 			return method;
@@ -51,19 +44,10 @@ static ILMethod *FindUserBinaryOperator(ILGenInfo *info,
 	}
 
 	/* Try looking in the second type */
-	if(ILType_IsClass(arg2Type))
+	if(arg2Class)
 	{
-		method = ILResolveBinaryOperator(info, ILType_ToClass(arg2Type),
-										 name, arg1Type, arg2Type);
-		if(method)
-		{
-			return method;
-		}
-	}
-	else if(ILType_IsValueType(arg2Type))
-	{
-		method = ILResolveBinaryOperator(info, ILType_ToValueType(arg2Type),
-										 name, arg1Type, arg2Type);
+		method = ILResolveBinaryOperator(info, arg2Class, name,
+										 arg1Type, arg2Type);
 		if(method)
 		{
 			return method;
@@ -151,20 +135,11 @@ static ILMethod *FindUserUnaryOperator(ILGenInfo *info, const char *name,
 									   ILType *argType)
 {
 	ILMethod *method;
+	ILClass *argClass = ILTypeToClass(info, argType);
 
-	if(ILType_IsClass(argType))
+	if(argClass)
 	{
-		method = ILResolveUnaryOperator(info, ILType_ToClass(argType),
-										name, argType);
-		if(method)
-		{
-			return method;
-		}
-	}
-	else if(ILType_IsValueType(argType))
-	{
-		method = ILResolveUnaryOperator(info, ILType_ToValueType(argType),
-										name, argType);
+		method = ILResolveUnaryOperator(info, argClass, name, argType);
 		if(method)
 		{
 			return method;

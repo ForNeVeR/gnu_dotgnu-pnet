@@ -1,3 +1,8 @@
+2004-07-12  Klaus Treichel  <ktreichel@web.de>
+
+	* doc/HACKING: updated instructions to get current cvs version and removed
+	reference to daily snapshots.
+
 2004-05-30  Thong Nguyen  <tum@veridicus.com>
 
 	* libpthread/pthread_glue.cs: Changed spinlock lock/trylock

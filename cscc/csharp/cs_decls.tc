@@ -1216,10 +1216,32 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 
 ILNode_SemAnalysis(ILNode_DelegateMemberDeclaration)
 {
+	unsigned long argNum;
+	unsigned long argIndex;
+	ILNode_ListIter iter;
+	ILNode_FormalParameter *param;
+
+	/* Bail out if compiling to the JVM */
 	if(info->outputIsJava)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "delegate definitions are not permitted with Java output");
+		return CSSemValueDefault;
+	}
+
+	/* Process attributes on the parameters */
+	argNum = 1;
+	argIndex = 1;
+	ILNode_ListIter_Init(&iter, node->params);
+	while((param = (ILNode_FormalParameter *)ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(param->pmod != ILParamMod_arglist)
+		{
+			CSProcessAttrsForParam(info, node->invokeMethod,
+							   	   argIndex, param->attributes);
+		}
+		++argNum;
+		++argIndex;
 	}
 	return CSSemValueDefault;
 }

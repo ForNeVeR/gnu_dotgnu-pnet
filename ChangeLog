@@ -13,6 +13,9 @@
 	engine/engine.h, engine/lookup.c, engine/pinvoke.c,
 	include/il_engine.h: implement the bulk of custom marshalling.
 
+	* cscc/csharp/cs_decls.tc: add the correct marshalling information
+	to delegate parameters.
+
 2003-02-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_values.h: rearrange the detection of ILInt64 a little

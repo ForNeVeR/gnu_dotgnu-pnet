@@ -177,7 +177,7 @@ typedef unsigned int *ppc_inst_ptr;
 						| (31 << 21) \
 						| (0 << 16) \
 						| (0 << 11) \
-						| (4 << 1)) \
+						| (4 << 1)); \
 	} while(0)
 
 /*
@@ -445,7 +445,7 @@ typedef unsigned int *ppc_inst_ptr;
  */
 #define	ppc_branch(inst,cond,target)	\
 			do { \
-				/* TODO */ \
+				TODO_trap(inst);\
 			} while (0)
 
 /*
@@ -453,7 +453,7 @@ typedef unsigned int *ppc_inst_ptr;
  */
 #define ppc_patch(patch, inst) \
 			do {\
-				/* TODO */\
+				TODO_trap(inst);\
 			} while(0);
 
 /*

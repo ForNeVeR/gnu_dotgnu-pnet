@@ -497,25 +497,25 @@ typedef ppc_inst_ptr	md_inst_ptr;
  * Set a register to a 0 or 1 value based on a condition.
  */
 extern md_inst_ptr _md_ppc_setcc(md_inst_ptr inst, int reg,
-								 int cond, int invcond);
+									int cond);
 #define	md_seteq_reg(inst,reg)	\
 			do { (inst) = _md_ppc_setcc \
-					((inst), (reg), PPC_CC_EQ, PPC_CC_NE); } while (0)
+					((inst), (reg), PPC_CC_EQ); } while (0)
 #define	md_setne_reg(inst,reg)	\
 			do { (inst) = _md_ppc_setcc \
-					((inst), (reg), PPC_CC_NE, PPC_CC_EQ); } while (0)
+					((inst), (reg), PPC_CC_NE); } while (0)
 #define	md_setlt_reg(inst,reg)	\
 			do { (inst) = _md_ppc_setcc \
-					((inst), (reg), PPC_CC_LT, PPC_CC_GE); } while (0)
+					((inst), (reg), PPC_CC_LT); } while (0)
 #define	md_setle_reg(inst,reg)	\
 			do { (inst) = _md_ppc_setcc \
-					((inst), (reg), PPC_CC_LE, PPC_CC_GT); } while (0)
+					((inst), (reg), PPC_CC_LE); } while (0)
 #define	md_setgt_reg(inst,reg)	\
 			do { (inst) = _md_ppc_setcc \
-					((inst), (reg), PPC_CC_GT, PPC_CC_LE); } while (0)
+					((inst), (reg), PPC_CC_GT); } while (0)
 #define	md_setge_reg(inst,reg)	\
 			do { (inst) = _md_ppc_setcc \
-					((inst), (reg), PPC_CC_GE, PPC_CC_LT); } while (0)
+					((inst), (reg), PPC_CC_GE); } while (0)
 
 /*
  * Set a register to -1, 0, or 1 based on comparing two values.

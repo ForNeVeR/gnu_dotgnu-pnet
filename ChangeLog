@@ -1,8 +1,11 @@
 
 2004-12-16  Gopal V  <gopalv82@yahoo.com>
 
-	* pnet/engine/md_ppc.h, pnet/engine/ppc_codegen.h: First cut
+	* engine/md_ppc.h, engine/ppc_codegen.h: First cut
 	of the PPC codegen.
+	
+	* engine/Makefile.am, engine/md_ppc.c, engine/md_ppc.h,
+	engine/ppc_codegen.h: Basic arithmetic implemented.	
 
 2004-11-29  Richard Baumann  <biochem333@nyc.rr.com>
 

@@ -58,6 +58,7 @@ libILEngine_a_SOURCES = cvm.c \
 						md_x86.c \
 						md_arm.c \
 						md_ia64.c \
+						md_ppc.c \
 						verify.c
 
 PACKAGE_LIBS = $(FFILIBS) $(GCLIBS) $(SOCKETLIBS) $(WINLIBS)

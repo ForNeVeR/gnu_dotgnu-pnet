@@ -85,4 +85,11 @@ public sealed class MemoryModelAttribute : Attribute
 	public MemoryModelAttribute(int ptrBits, int alignFlags) {}
 }
 
+// An attribute class that is used to mark linker symbol renames.
+[AttributeUsage(AttributeTargets.All)]
+public sealed class OriginalNameAttribute : Attribute
+{
+	public OriginalNameAttribute(String name) {}
+}
+
 } // namespace OpenSystem.C

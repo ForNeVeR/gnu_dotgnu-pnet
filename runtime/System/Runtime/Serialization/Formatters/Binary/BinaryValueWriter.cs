@@ -48,6 +48,7 @@ internal abstract class BinaryValueWriter
 	private static BinaryValueWriter timeSpanWriter = new TimeSpanWriter();
 	private static BinaryValueWriter stringWriter = new StringWriter();
 	private static BinaryValueWriter objectWriter = new ObjectWriter();
+	private static BinaryValueWriter infoWriter = new SurrogateWriter(null);
 #if false
 	// TODO
 	private static BinaryValueWriter arrayOfObjectWriter
@@ -76,6 +77,36 @@ internal abstract class BinaryValueWriter
 					this.assemblyQueue = new Queue();
 				}
 
+		// Process queued objects.
+		public void ProcessQueue()
+				{
+					Assembly assembly;
+					Object obj;
+					bool firstTime;
+					long objectID;
+					for(;;)
+					{
+						if(assemblyQueue.Count > 0)
+						{
+							// Output a pending assembly reference.
+							assembly = (assemblyQueue.Dequeue() as Assembly);
+							objectID = gen.GetId(assembly, out firstTime);
+							writer.Write((byte)(BinaryElementType.Assembly));
+							writer.Write((int)objectID);
+							WriteAssemblyName(this, assembly);
+						}
+						else if(queue.Count > 0)
+						{
+							// Output a pending object.
+							formatter.WriteObject(this, queue.Dequeue());
+						}
+						else
+						{
+							break;
+						}
+					}
+				}
+
 	}; // class BinaryValueContext
 
 	// Constructor.
@@ -94,8 +125,8 @@ internal abstract class BinaryValueWriter
 
 	// Write the object header information for a type.
 	public abstract void WriteObjectHeader(BinaryValueContext context,
-										   Type type, long objectID,
-										   long prevObject);
+										   Object value, Type type,
+										   long objectID, long prevObject);
 
 	// Write the object form of values for a type.
 	public abstract void WriteObject(BinaryValueContext context,
@@ -244,6 +275,35 @@ internal abstract class BinaryValueWriter
 				}
 #endif
 
+				// Check for surrogates.
+				ISurrogateSelector selector;
+				ISerializationSurrogate surrogate;
+				selector = context.formatter.SurrogateSelector;
+				if(selector != null)
+				{
+					surrogate = selector.GetSurrogate
+						(type, context.formatter.Context, out selector);
+					if(surrogate != null)
+					{
+						return new SurrogateWriter(surrogate);
+					}
+				}
+
+				// Check for types that implement ISerializable.
+				if(typeof(ISerializable).IsAssignableFrom(type))
+				{
+					return infoWriter;
+				}
+
+				// Bail out if the type is not marked with the
+				// "serializable" flag.
+				if(!type.IsSerializable)
+				{
+					throw new SerializationException
+						(String.Format
+							(_("Serialize_CannotSerialize"), type));
+				}
+
 				// Everything else is handled as an object.
 				return objectWriter;
 			}
@@ -310,8 +370,17 @@ internal abstract class BinaryValueWriter
 					}
 					else
 					{
+						bool firstTime;
+						long assemblyId;
+						assemblyId = context.gen.GetId
+							(type.Assembly, out firstTime);
 						context.writer.Write(type.FullName);
-						// TODO: assembly ID
+						context.writer.Write((int)assemblyId);
+						if(firstTime)
+						{
+							// We need to output the assembly later.
+							context.assemblyQueue.Enqueue(type.Assembly);
+						}
 					}
 				}
 
@@ -341,7 +410,11 @@ internal abstract class BinaryValueWriter
 							vw = GetWriter(context, type);
 							typeID = context.gen.GetIDForType(type);
 							objectID = context.gen.GetId(value, out firstTime);
-							vw.WriteObjectHeader(context, type,
+							if(typeID == -1)
+							{
+								context.gen.RegisterType(type, objectID);
+							}
+							vw.WriteObjectHeader(context, value, type,
 												 objectID, typeID);
 							vw.WriteObject(context, value, type);
 							return;
@@ -372,8 +445,8 @@ internal abstract class BinaryValueWriter
 
 		// Write the object header information for a type.
 		public override void WriteObjectHeader(BinaryValueContext context,
-											   Type type, long objectID,
-											   long prevObject)
+											   Object value, Type type,
+											   long objectID, long prevObject)
 				{
 					if(prevObject == -1)
 					{
@@ -461,10 +534,170 @@ internal abstract class BinaryValueWriter
 		public override void WriteObject(BinaryValueContext context,
 										 Object value, Type type)
 				{
-					// TODO: output the field value information
+					MemberInfo[] members =
+						FormatterServices.GetSerializableMembers
+							(type, context.formatter.Context);
+					Object[] values =
+						FormatterServices.GetObjectData(value, members);
+					int index;
+					Type fieldType;
+					Type valueType;
+					for(index = 0; index < members.Length; ++index)
+					{
+						if(members[index] is FieldInfo)
+						{
+							fieldType = ((FieldInfo)(members[index]))
+											.FieldType;
+						}
+						else
+						{
+							fieldType = ((PropertyInfo)(members[index]))
+											.PropertyType;
+						}
+						if(values[index] != null)
+						{
+							valueType = values[index].GetType();
+						}
+						else
+						{
+							valueType = fieldType;
+						}
+						GetWriter(context, fieldType).WriteInline
+							(context, values[index], valueType, fieldType);
+					}
 				}
 
 	}; // class ObjectWriter
+
+	// Write object values using serialization surrogates.
+	private class SurrogateWriter : ObjectWriter
+	{
+		// Internal state.
+		private ISerializationSurrogate surrogate;
+
+		// Constructor.
+		public SurrogateWriter(ISerializationSurrogate surrogate)
+				{
+					this.surrogate = surrogate;
+				}
+
+		// Get object data using the prevailing surrogate.
+		private SerializationInfo GetObjectData
+					(BinaryValueContext context, Object value, Type type)
+				{
+					SerializationInfo info = new SerializationInfo
+						(type, context.formatter.converter);
+					if(surrogate == null)
+					{
+						((ISerializable)value).GetObjectData
+							(info, context.formatter.Context);
+					}
+					else
+					{
+						surrogate.GetObjectData
+							(value, info, context.formatter.Context);
+					}
+					return info;
+				}
+
+		// Write the object header information for a type.
+		public override void WriteObjectHeader(BinaryValueContext context,
+											   Object value, Type type,
+											   long objectID, long prevObject)
+				{
+					if(prevObject == -1)
+					{
+						// Write the full type information.
+						long assemblyID;
+						if(type.Assembly == Assembly.GetExecutingAssembly())
+						{
+							context.writer.Write
+								((byte)(BinaryElementType.RuntimeObject));
+							assemblyID = -1;
+						}
+						else
+						{
+							bool firstTime;
+							assemblyID = context.gen.GetId
+								(type.Assembly, out firstTime);
+							if(firstTime)
+							{
+								context.writer.Write
+									((byte)(BinaryElementType.Assembly));
+								context.writer.Write((int)assemblyID);
+								WriteAssemblyName(context, type.Assembly);
+							}
+							context.writer.Write
+								((byte)(BinaryElementType.ExternalObject));
+						}
+						context.writer.Write((int)objectID);
+						context.writer.Write(type.FullName);
+						SerializationInfo info = GetObjectData
+							(context, value, type);
+						SerializationInfoEnumerator e = info.GetEnumerator();
+						Type objectType;
+						while(e.MoveNext())
+						{
+							context.writer.Write(e.Name);
+						}
+						e.Reset();
+						while(e.MoveNext())
+						{
+							objectType = e.ObjectType;
+							GetWriter(context, objectType)
+								.WriteTypeTag(context, objectType);
+						}
+						e.Reset();
+						while(e.MoveNext())
+						{
+							objectType = e.ObjectType;
+							GetWriter(context, objectType)
+								.WriteTypeSpec(context, objectType);
+						}
+						if(assemblyID != -1)
+						{
+							context.writer.Write((int)assemblyID);
+						}
+					}
+					else
+					{
+						// Write a short header, referring to a previous
+						// object's type information.
+						context.writer.Write
+							((byte)(BinaryElementType.RefTypeObject));
+						context.writer.Write((int)objectID);
+						context.writer.Write((int)prevObject);
+					}
+				}
+
+		// Write the object form of values for a type.
+		public override void WriteObject(BinaryValueContext context,
+										 Object value, Type type)
+				{
+					SerializationInfo info = GetObjectData
+						(context, value, type);
+					SerializationInfoEnumerator e = info.GetEnumerator();
+					Type objectType;
+					Type valueType;
+					Object fieldValue;
+					while(e.MoveNext())
+					{
+						objectType = e.ObjectType;
+						fieldValue = e.Value;
+						if(value == null)
+						{
+							valueType = objectType;
+						}
+						else
+						{
+							valueType = fieldValue.GetType();
+						}
+						GetWriter(context, objectType).WriteInline
+							(context, fieldValue, valueType, objectType);
+					}
+				}
+
+	}; // class SurrogateWriter
 
 	// Write primitive values.
 	private abstract class PrimitiveWriter : BinaryValueWriter
@@ -501,8 +734,8 @@ internal abstract class BinaryValueWriter
 
 		// Write the object header information for a type.
 		public override void WriteObjectHeader(BinaryValueContext context,
-											   Type type, long objectID,
-											   long prevObject)
+											   Object value, Type type,
+											   long objectID, long prevObject)
 				{
 					if(prevObject == -1)
 					{
@@ -737,8 +970,8 @@ internal abstract class BinaryValueWriter
 
 		// Write the object header information for a type.
 		public override void WriteObjectHeader(BinaryValueContext context,
-											   Type type, long objectID,
-											   long prevObject)
+											   Object value, Type type,
+											   long objectID, long prevObject)
 				{
 					if(prevObject == -1)
 					{
@@ -850,8 +1083,8 @@ internal abstract class BinaryValueWriter
 
 		// Write the object header information for a type.
 		public override void WriteObjectHeader(BinaryValueContext context,
-											   Type type, long objectID,
-											   long prevObject)
+											   Object value, Type type,
+											   long objectID, long prevObject)
 				{
 					context.writer.Write((byte)(BinaryElementType.String));
 				}

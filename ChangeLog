@@ -40,6 +40,11 @@
 	* System.Drawing.Postscript/PostscriptToolkit.cs: small compile bug,
 	due to recent changes in IToolkit.
 
+	* runtime/System/Runtime/Serialization/ObjectIDGenerator.cs.
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs.
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	continue the implementation of binary formatting.
+
 2003-08-03  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ButtonBase.cs: some improvements for inheritors,

@@ -39,7 +39,7 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 	private FormatterAssemblyStyle assemblyFormat;
 	private FormatterTypeStyle typeFormat;
 	private TypeFilterLevel filterLevel;
-	private FormatterConverter converter;
+	internal FormatterConverter converter;
 
 	// Constructor.
 	public BinaryFormatter()
@@ -74,10 +74,10 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 	private static void WriteHeader(BinaryWriter writer, bool headersPresent)
 			{
 				writer.Write((byte)(BinaryElementType.Header));
-				writer.Write(1);
-				writer.Write((headersPresent ? 2 : -1));
-				writer.Write(1);
-				writer.Write(0);
+				writer.Write(1);							// Main object.
+				writer.Write((headersPresent ? 2 : -1));	// Header object.
+				writer.Write(1);							// Major version.
+				writer.Write(0);							// Minor version
 			}
 
 	// Write a serialization footer to a stream.
@@ -87,7 +87,7 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 			}
 
 	// Write an object to a stream.
-	private void WriteObject
+	internal void WriteObject
 				(BinaryValueWriter.BinaryValueContext context, Object value)
 			{
 				// Handle the null case first.
@@ -105,13 +105,18 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 				// Allocate an object identifier.
 				bool firstTime;
 				long objectID = context.gen.GetId(value, out firstTime);
+				if(typeID == -1)
+				{
+					context.gen.RegisterType(type, objectID);
+				}
 
 				// Get a value writer for the type.
 				BinaryValueWriter writer;
 				writer = BinaryValueWriter.GetWriter(context, type);
 
 				// Write the object header.
-				writer.WriteObjectHeader(context, type, objectID, typeID);
+				writer.WriteObjectHeader
+					(context, value, type, objectID, typeID);
 
 				// Write the object internals.
 				writer.WriteObject(context, value, type);
@@ -123,6 +128,10 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 						  Object graph, Header[] headers)
 			{
 				// Validate the parameters.
+				if(graph == null)
+				{
+					throw new ArgumentNullException("graph");
+				}
 				if(serializationStream == null)
 				{
 					throw new ArgumentNullException("serializationStream");
@@ -135,6 +144,15 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 					// Create a binary value writing context.
 					BinaryValueWriter.BinaryValueContext context =
 						new BinaryValueWriter.BinaryValueContext(this, writer);
+
+					// Allocate object ID's 1 and 2 to the top-most
+					// object graph and the header block, respectively.
+					bool firstTime;
+					context.gen.GetId(graph, out firstTime);
+					if(headers != null)
+					{
+						context.gen.GetId(headers, out firstTime);
+					}
 
 					// Write the header information.
 					WriteHeader(writer, (headers != null));
@@ -150,8 +168,15 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 					}
 					else
 					{
-						WriteObject(context, graph);
+						if(headers != null)
+						{
+							context.queue.Enqueue(headers);
+						}
+						context.queue.Enqueue(graph);
 					}
+
+					// Process outstanding queued objects.
+					context.ProcessQueue();
 
 					// Write the footer information.
 					WriteFooter(writer);

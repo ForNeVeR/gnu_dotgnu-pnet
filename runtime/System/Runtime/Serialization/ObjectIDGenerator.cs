@@ -58,7 +58,6 @@ public class ObjectIDGenerator
 				{
 					firstTime = true;
 					table[obj] = (Object)(nextId);
-					RegisterType(obj.GetType(), nextId);
 					return nextId++;
 				}
 			}
@@ -84,7 +83,7 @@ public class ObjectIDGenerator
 			}
 
 	// Register a type with a previous object identifier that used the type.
-	private void RegisterType(Type type, long id)
+	internal void RegisterType(Type type, long id)
 			{
 				if(typeTable[type] == null)
 				{

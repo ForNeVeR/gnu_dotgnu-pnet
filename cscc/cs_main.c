@@ -322,7 +322,7 @@ static int LoadLibraryFromPath(const char *path, int freePath)
 	{
 		ILFree((char *)path);
 	}
-	return (loadError == 1);
+	return (loadError == 0);
 }
 
 /*

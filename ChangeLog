@@ -17,6 +17,9 @@ than the raw values, because the synthetic image doesn't have raw values.
 characters to be inserted into pathnames; improve the #ifdef's that detect
 if we are compiling on a Win32 platform.
 
+* cscc/cs_main.c (LoadLibraryFromPath): minor status check bug that was
+introduced when the source was updated to use "ILImageLoadFromFile".
+
 * configure.in, NEWS: update for "0.2.6" release.
 
 2001-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>

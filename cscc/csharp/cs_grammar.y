@@ -898,7 +898,10 @@ OuterDeclaration
 					}
 					yychar = YYLEX;
 				}
-				yyerrok;
+				if(yychar != YYEOF)
+				{
+					yyerrok;
+				}
 				NestingLevel = 0;
 			}
 	;

@@ -256,10 +256,19 @@ public class MemoryStream : Stream
 	{
 	}
 
-	[TODO]
 	public virtual byte[] ToArray()
 	{
-		return null;
+		byte[] public_buffer = forceGetBuffer();
+		if (Capacity == public_buffer.Length) // can just clone
+			return (byte[])public_buffer.Clone();
+		else // don't know limits of subclass's buffer, must use own
+		{
+			public_buffer = null; // for possible gc (hey, it's possible)
+			byte[] retarray = new byte[topLimit-bottomLimit];
+			Array.Copy(impl_buffer, bottomLimit, retarray,
+				0, topLimit-bottomLimit);
+			return retarray;
+		}
 	}
 
 	[TODO]

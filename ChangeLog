@@ -2,7 +2,8 @@
 
 	* runtime/System/IO/MemoryStream.cs: Added in Mr. Shivanan's
 	code, along with some fixes to same and quite a few comments
-	on overall implementation.
+	on overall implementation. Also added an implementation of
+	ToArray().
 
 2002-05-21 Haran Shivanan  <ch99057@che.iitm.ac.in>
 

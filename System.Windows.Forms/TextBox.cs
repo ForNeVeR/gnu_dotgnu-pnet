@@ -185,7 +185,8 @@ public class TextBox : TextBoxBase
 	private void SetupScrollBars()
 	{
 		// Set vertical scrollbar
-		if (scrollBars == ScrollBars.Both || scrollBars == ScrollBars.Vertical)
+		// There is no vertical scrollbar if the textbox is not multiline
+		if (Multiline && (scrollBars == ScrollBars.Both || scrollBars == ScrollBars.Vertical))
 		{
 			if (vScrollBar == null)
 			{
@@ -203,8 +204,8 @@ public class TextBox : TextBoxBase
 			vScrollBar = null;
 		}
 		// Set horizontal scrollbar
-		// There is no scrollbar if the textbox is multiline
-		if ((scrollBars == ScrollBars.Both || scrollBars == ScrollBars.Horizontal))
+		// There is no hrizontal scrollbar if WordWrap is true
+		if (!WordWrap && (scrollBars == ScrollBars.Both || scrollBars == ScrollBars.Horizontal))
 		{
 			if (hScrollBar == null)
 			{

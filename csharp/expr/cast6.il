@@ -25,23 +25,70 @@
 {
 } // method m3
 } // class K
+.class private auto interface ansi 'L'
+{
+.method public virtual hidebysig abstract instance void 'm4'() cil managed 
+{
+} // method m4
+} // class L
+.class private sequential value sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
+{
+.field private int32 'x'
+} // class X
 .class private auto ansi 'Test' extends ['.library']'System'.'Object'
 {
 .method public hidebysig instance void 'm1'() cil managed 
 {
-	.locals	(class ['.library']'System'.'Object', class 'Test', class 'Test2', class 'I', class 'J', class 'K', class ['.library']'System'.'Object'[], class 'Test'[], class 'I'[])
+	.locals	(class ['.library']'System'.'Object', class 'Test', class 'Test2', class 'Test3', class 'I', class 'J', class 'K', class 'L', valuetype 'X', class ['.library']'System'.'Object'[], class 'Test'[], class 'I'[], valuetype 'X'[])
 	ldnull
 	stloc.0
 	ldnull
 	stloc.1
 	ldnull
-	stloc.3
+	stloc.s	4
 	ldnull
-	stloc.s	6
+	stloc.s	9
 	ldnull
-	stloc.s	7
+	stloc.s	10
 	ldnull
-	stloc.s	8
+	stloc.s	11
+	ldnull
+	stloc.s	12
+	ldloc.1
+	stloc.0
+	ldloc.2
+	stloc.0
+	ldloc.s	4
+	stloc.0
+	ldloc.s	9
+	stloc.0
+	ldloc.s	10
+	stloc.0
+	ldloc.s	11
+	stloc.0
+	ldloc.s	12
+	stloc.0
+	ldloc.0
+	castclass	'Test'
+	stloc.1
+	ldloc.0
+	castclass	'Test2'
+	stloc.2
+	ldloc.0
+	castclass	'I'
+	stloc.s	4
+	ldloc.0
+	castclass	class ['.library']'System'.'Object'[]
+	stloc.s	9
+	ldloc.0
+	castclass	class 'Test'[]
+	stloc.s	10
+	ldloc.0
+	castclass	class 'I'[]
+	stloc.s	11
+	ldloc.0
+	castclass	valuetype 'X'[]
+	stloc.s	12
 	ldloc.1
 	stloc.0
 	ldloc.2
@@ -56,13 +103,35 @@
 	castclass	'Test2'
 	stloc.2
 	ldloc.2
-	stloc.3
-	ldloc.s	4
-	stloc.3
-	ldloc.s	5
-	stloc.3
+	stloc.s	4
+	ldloc.1
+	castclass	'I'
+	stloc.s	4
 	ldloc.s	5
 	stloc.s	4
+	ldloc.s	6
+	stloc.s	4
+	ldloc.s	6
+	stloc.s	5
+	ldloc.s	5
+	castclass	'Test2'
+	stloc.2
+	ldloc.s	5
+	castclass	'Test3'
+	stloc.3
+	ldloc.s	6
+	castclass	'L'
+	stloc.s	7
+	ldloc.s	10
+	stloc.s	9
+	ldloc.s	11
+	stloc.s	9
+	ldloc.s	9
+	castclass	class 'Test'[]
+	stloc.s	10
+	ldloc.s	10
+	castclass	class 'I'[]
+	stloc.s	11
 	ret
 	.maxstack 1
 } // method m1
@@ -70,3 +139,6 @@
 .class private auto ansi 'Test2' extends 'Test' implements 'I'
 {
 } // class Test2
+.class private auto sealed ansi 'Test3' extends ['.library']'System'.'Object' implements 'J'
+{
+} // class Test3

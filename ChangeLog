@@ -1,8 +1,12 @@
 
 2001-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-	* cast4.cs, cast4.il, cast4.jl, cast5.cs, cast5.err, cast5.jerr:
+	* csharp/expr/cast4.cs, csharp/expr/cast4.il, csharp/expr/cast4.jl,
+	csharp/expr/cast5.cs, csharp/expr/cast5.err, csharp/expr/cast5.jerr:
 	new tests for casts and coercions that involve enumerated types.
+
+	* csharp/expr/cast6.cs, csharp/expr/cast6.il, csharp/expr/cast6.jl:
+	more tests for successful reference casts and coercions.
 
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 

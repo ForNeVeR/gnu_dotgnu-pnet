@@ -71,6 +71,11 @@ int ILExecProcessLoadFile(ILExecProcess *process, const char *filename);
 int ILExecProcessGetStatus(ILExecProcess *process);
 
 /*
+ * Get the entry point method for a process.
+ */
+ILMethod *ILExecProcessGetEntry(ILExecProcess *process);
+
+/*
  * Create a new thread and attach it to a process.
  * Returns NULL if out of memory.
  */
@@ -92,6 +97,12 @@ ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread);
  * executing method.  Returns NULL if "num" is invalid.
  */
 ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num);
+
+/*
+ * Determine the size of a type's values in bytes.
+ * Returns zero if there is something wrong with the type.
+ */
+ILUInt32 ILSizeOfType(ILExecThread *thread, ILType *type);
 
 #ifdef	__cplusplus
 };

@@ -79,7 +79,6 @@ namespace System.Windows.Forms
 		private const int indent = 2;
 		// Used to track first paint call, hack to mimmick MS implementation
 		// of setting first added tab as active
-		private bool firstPaint = true;
 
 		// Tab events
 		public event DrawItemEventHandler DrawItem;
@@ -123,10 +122,11 @@ namespace System.Windows.Forms
 
 		protected virtual void OnSelectedIndexChanged(EventArgs e)
 		{
-			if (selectedIndex == -1 || selectedIndex >= TabCount)
-			{
-				return;
-			}
+			//redundant check, is done is SelectedIndex already
+			//if (selectedIndex == -1 || selectedIndex >= TabCount)
+			//{
+			//	return;
+			//}
 			SuspendLayout();
 			if (prevSelectedIndex > -1)
 			{
@@ -281,7 +281,7 @@ namespace System.Windows.Forms
 			}
 			set
 			{
-				SelectedIndex = tabPageCollection.IndexOf(value);
+				selectedIndex = tabPageCollection.IndexOf(value);
 			}
 		}
 
@@ -357,14 +357,9 @@ namespace System.Windows.Forms
 
 			public override void Add(Control control)
 			{
-				control.Visible = false;
 				base.Add(control);
 				tabOwner.InvalidateTabs	();
 				tabOwner.SetTabPageBounds();
-				if (tabOwner.SelectedTab == control)
-				{
-					control.Visible = true;
-				}
 			}
 
 			[TODO]
@@ -546,17 +541,6 @@ namespace System.Windows.Forms
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
-			// Work around to set the SelectedTab to the first
-			// added TabPage.
-			if(firstPaint)
-			{
-				if((selectedIndex > -1) &&
-					(tabPageCollection.Count > 0))
-				{
-					SelectedTab = (TabPage)tabPageCollection[selectedIndex];
-				}
-				firstPaint = false;
-			}
 
 			Draw(e.Graphics);
 			// Draw the visible TabPage (child controls)
@@ -618,7 +602,7 @@ namespace System.Windows.Forms
 			{
 				for( int i = 0; i < tabPageCollection.Count; i++ )
 				{
-					if (row == PositionInfo.positions[i].row && i != selectedIndex)
+					if (row == PositionInfo.positions[i].row && i != SelectedIndex)
 					{
 						Rectangle bounds = GetTabRect(i);
 						// Remove bottom line off bounds if not selected so border isnt covered
@@ -628,17 +612,17 @@ namespace System.Windows.Forms
 					}
 				}
 			}
-			if (selectedIndex > -1 && selectedIndex < TabPages.Count)
+			if (SelectedIndex < TabPages.Count)
 			{
-				Rectangle bounds = GetTabRect(selectedIndex);
+				Rectangle bounds = GetTabRect(SelectedIndex);
 				g.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height), Drawing.Drawing2D.CombineMode.Intersect);
 				
 				DrawItemState state;
 				if (Focused)
-					state = DrawItemState.Focus;
+					state = DrawItemState.Focus;// | DrawItemState.Selected;
 				else
-					state = DrawItemState.None;
-				OnDrawItem( new DrawItemEventArgs(g, Font, bounds, selectedIndex, state, ForeColor, BackColor));
+					state = DrawItemState.Default; //DrawItemState.Selected;
+				OnDrawItem( new DrawItemEventArgs(g, Font, bounds, SelectedIndex, state, ForeColor, BackColor));
 			}
 
 		}
@@ -688,12 +672,13 @@ namespace System.Windows.Forms
 								SizeTabsFillRight ( ref tabs, graphics, rowWidth, out maxRow );
 						}
 						// Do we need to move the row that was selected to the bottom of the tabs?
-						if (selectedIndex > -1 && selectedIndex < TabCount)
-						{
+						// why is bounds checked here again? its redundant.
+						//if (SelectedIndex < TabCount)
+						//{
 							// Check to see if we have selected a tab that isnt on the last row and move the tab row down
-							if (tabs[selectedIndex].row != maxRow)
-								RowToBottom(ref tabs, tabs[selectedIndex].row, maxRow);
-						}
+							if (tabs[SelectedIndex].row != maxRow)
+								RowToBottom(ref tabs, tabs[SelectedIndex].row, maxRow);
+						//}
 
 						// Find the actual bounds
 						LayoutTabBounds( ref tabs, rowWidth );
@@ -935,13 +920,13 @@ namespace System.Windows.Forms
 				{
 					// Move the tabs thats selected by 1
 					int selDelta = 0;
-					if (i != selectedIndex)
+					if (i != SelectedIndex)
 						selDelta = 1;
 
 					TabPosition tab = tabs[i];
 					int width = tab.bounds.Width + (1-selDelta)*2*indent;
 					// Draw the left edge of tabs that begin a row or are selected
-					if (tab.bounds.Left - leftOffset == 0 || selectedIndex == i)
+					if (tab.bounds.Left - leftOffset == 0 || SelectedIndex == i)
 						tab.leftExposed = true;
 					tab.bounds = new Rectangle(tab.bounds.Left + indent - (1-selDelta)*2 - leftOffset, yDirection *((tab.row + extraRow ) * down + selDelta) + top, width, down + 1 - selDelta );
 					tabs[i] = tab;
@@ -1019,6 +1004,10 @@ namespace System.Windows.Forms
 			}
 			set
 			{
+				if (value < 0 || value >= tabPageCollection.Count)
+				{
+					throw new IndexOutOfRangeException(value.ToString());
+				}
 				if (value != selectedIndex)
 				{
 					prevSelectedIndex = selectedIndex;

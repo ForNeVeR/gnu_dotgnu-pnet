@@ -37,6 +37,7 @@
 #endif
 #ifdef IL_WIN32_PLATFORM
 #include <windows.h>
+#define timezone _timezone
 #endif
 
 #ifdef	__cplusplus

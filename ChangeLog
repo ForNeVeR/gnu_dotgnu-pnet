@@ -1,4 +1,10 @@
 
+2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_stmt.tc, cscc/csharp/cs_attrs.c: begin to put the
+	structure in place to support semantic analysis of attribute values
+	(disabled at present).
+
 2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_stmt.tc (ILNode_Foreach): stack clobbering bug

@@ -112,12 +112,268 @@ static ILProgramItem *GetParamTarget(ILGenInfo *info, ILMethod *method,
 	return ILToProgramItem(param);
 }
 
+#if 0
+
+/*
+ * Determine if a class is "AttributeUsageAttribute".
+ */
+static int IsAttributeUsage(ILClass *classInfo)
+{
+	const char *namespace;
+	if(strcmp(ILClass_Name(classInfo), "AttributeUsageAttribute") != 0)
+	{
+		return 0;
+	}
+	namespace = ILClass_Namespace(classInfo);
+	if(!namespace || strcmp(namespace, "System") != 0)
+	{
+		return 0;
+	}
+	return (ILClass_NestedParent(classInfo) == 0);
+}
+
+#endif
+
 /*
  * Process a single attribute in a section.
  */
 static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 						int target, ILNode_Attribute *attr)
 {
+#if 0
+	ILType *type;
+	ILClass *classInfo;
+	ILNode *argList;
+	int numArgs, argNum;
+	ILNode_ListIter iter;
+	ILNode *arg;
+	CSEvalArg *evalArgs;
+	ILEvalValue *evalValues;
+	CSSemValue value;
+	int haveErrors;
+	CSSemValue method;
+	unsigned long itemNum;
+	int candidateForm;
+	ILProgramItem *itemInfo;
+	ILMethod *methodInfo;
+	ILType *signature;
+	ILType *paramType;
+	int allowMultiple;
+	int inherited;
+
+	/* Perform semantic analysis on the attribute type */
+	type = CSSemType(attr->name, info, &(attr->name));
+
+	/* The type must inherit from "System.Attribute" and not be abstract */
+	if(!ILTypeAssignCompatible
+			(info->image, type, ILFindSystemType(info, "Attribute")))
+	{
+		CCErrorOnLine(yygetfilename(attr), yygetlinenum(attr),
+					  _("`%s' does not inherit from `System.Attribute'"),
+					  CSTypeToName(type));
+		return;
+	}
+	classInfo = ILTypeToClass(info, type);
+	if(ILClass_IsAbstract(classInfo))
+	{
+		CCErrorOnLine(yygetfilename(attr), yygetlinenum(attr),
+			  _("cannot use the abstract type `%s' as an attribute name"),
+			  CSTypeToName(type));
+		return;
+	}
+
+	/* Check that that the attribute can be applied to this kind of target.
+	   We use a different algorithm for "AttributeUsageAttribute", to avoid
+	   circularities in the semantic analysis network */
+	if(!IsAttributeUsage(classInfo))
+	{
+		/* Perform semantic analysis on the attribute type */
+		CSSemProgramItem(info, ILToProgramItem(classInfo));
+
+		/* Get the usage information for the attribute */
+		allowMultiple = 1;
+		inherited = 1;
+	}
+	else
+	{
+		/* We can only use "AttributeUsageAttribute" on classes
+		   that inherit from "System.Attribute" */
+		classInfo = ILProgramItemToClass(item);
+		if(!classInfo)
+		{
+			CCErrorOnLine(yygetfilename(attr), yygetlinenum(attr),
+		     _("`System.AttributeUsageAttribute' may only be used on classes"));
+			return;
+		}
+		if(!ILTypeAssignCompatible(info->image, ILClassToType(classInfo),
+		   						   ILFindSystemType(info, "Attribute")))
+		{
+			CCErrorOnLine(yygetfilename(attr), yygetlinenum(attr),
+						  _("`%s' does not inherit from `System.Attribute'"),
+						  CSTypeToName(ILClassToType(classInfo)));
+			return;
+		}
+		allowMultiple = 0;
+		inherited = 1;
+	}
+
+	/* Check the "AllowMultiple" and "Inherited" states of the attribute */
+	/* TODO */
+
+	/* Perform semantic analysis on the positional attributes */
+	argList = ((ILNode_AttrArgs *)(attr->args))->positionalArgs;
+	numArgs = ILNode_List_Length(argList);
+	haveErrors = 0;
+	if(numArgs)
+	{
+		evalArgs = (CSEvalArg *)ILMalloc(sizeof(CSEvalArg) * numArgs);
+		if(!evalArgs)
+		{
+			CCOutOfMemory();
+		}
+		evalValues = (ILEvalValue *)ILMalloc(sizeof(ILEvalValue) * numArgs);
+		if(!evalValues)
+		{
+			CCOutOfMemory();
+		}
+		ILNode_ListIter_Init(&iter, argList);
+		argNum = 0;
+		while((arg = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			/* Perform semantic analysis on the argument to get the type.
+			   Because the argument is wrapped in "ToConst", we don't
+			   have to worry about reporting errors here */
+			if(!CSSemExpectValue(arg, info, iter.last, &value))
+			{
+				haveErrors = 1;
+				value.type = ILType_Int32;
+			}
+			evalArgs[argNum].type = value.type;
+			evalArgs[argNum].node = *(iter.last);
+			evalArgs[argNum].parent = iter.last;
+			evalArgs[argNum].modifier = ILParamMod_empty;
+
+			/* Evaluate the constant value of the argument */
+			if(!haveErrors &&
+			   !ILNode_EvalConst(*(iter.last), info, &(evalValues[argNum])))
+			{
+				haveErrors = 1;
+			}
+
+			/* Advance to the next argument */
+			++argNum;
+		}
+	}
+	else
+	{
+		evalArgs = 0;
+		evalValues = 0;
+	}
+
+	/* Perform semantic analysis on the named arguments */
+	/* TODO */
+
+	/* Bail out if we had errors during analysis of the arguments */
+	if(haveErrors)
+	{
+		goto cleanup;
+	}
+
+	/* Resolve the constructors in the attribute type */
+	method = CSResolveConstructor(info, (ILNode *)attr, type);
+	if(method.kind != CS_SEMKIND_METHOD_GROUP)
+	{
+		CCErrorOnLine(yygetfilename(attr), yygetlinenum(attr),
+					  "`%s' does not have an accessible constructor",
+					  CSTypeToName(type));
+		goto cleanup;
+	}
+
+	/* Find the set of candidate methods */
+	itemNum = 0;
+	while((itemInfo = CSGetGroupMember((void *)(method.type), itemNum)) != 0)
+	{
+		candidateForm = CSItemIsCandidate(info, itemInfo, evalArgs, numArgs);
+		if(candidateForm)
+		{
+			CSSetGroupMemberForm((void *)(method.type), itemNum,
+								 candidateForm);
+			++itemNum;
+		}
+		else
+		{
+			method.type = (ILType *)CSRemoveGroupMember
+								((void *)(method.type), itemNum);
+		}
+	}
+
+	/* If there are no candidates left, then bail out */
+	itemNum = 0;
+	itemInfo = CSGetGroupMember((void *)(method.type), itemNum);
+	if(!itemInfo)
+	{
+		CSItemCandidateError((ILNode *)attr, 0, 1,
+						     (void *)(method.type), evalArgs, numArgs);
+		goto cleanup;
+	}
+
+	/* There are two or more candidates, then try to find the best one */
+	if(CSGetGroupMember((void *)(method.type), 1) != 0)
+	{
+		itemInfo = CSBestCandidate(info, (void *)(method.type),
+								   evalArgs, numArgs);
+		if(!itemInfo)
+		{
+			CSItemCandidateError((ILNode *)attr, 0, 1,
+							     (void *)(method.type), evalArgs, numArgs);
+			goto cleanup;
+		}
+	}
+
+	/* Import the constructor method into this image */
+	methodInfo = (ILMethod *)ILMemberImport
+						(info->image, (ILMember *)itemInfo);
+	if(!methodInfo)
+	{
+		CCOutOfMemory();
+	}
+
+	/* Coerce the positional arguments to their final types */
+	signature = ILMethod_Signature(methodInfo);
+	haveErrors = 0;
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		paramType = ILTypeGetParam(signature, argNum + 1);
+		if(!ILGenCastConst(info, &(evalValues[argNum]),
+						   evalValues[argNum].valueType,
+						   ILTypeToMachineType(paramType)))
+		{
+			CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
+						  yygetlinenum(evalArgs[argNum].node),
+						  _("could not coerce constant argument %d"),
+						  argNum + 1);
+			haveErrors = 1;
+		}
+	}
+	if(haveErrors)
+	{
+		goto cleanup;
+	}
+
+	/* Build the serialized attribute value */
+	/* TODO */
+
+cleanup:
+	if(evalArgs)
+	{
+		ILFree(evalArgs);
+	}
+	if(evalValues)
+	{
+		ILFree(evalValues);
+	}
+#endif
+
 	/* Quick and dirty hack: recognise the "DllImport" attribute */
 	if(target == CS_ATTR_METHOD)
 	{

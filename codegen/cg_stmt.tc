@@ -125,6 +125,11 @@ void _ILNode_ListIter_Init(ILNode_ListIter *iter, ILNode *node);
 ILNode *ILNode_ListIter_Next(ILNode_ListIter *iter);
 
 /*
+ * Get the length of a list.
+ */
+int ILNode_List_Length(ILNode *list);
+
+/*
  * Create a compound statement node from two other nodes.
  */
 ILNode *ILNode_Compound_CreateFrom(ILNode *left, ILNode *right);
@@ -251,6 +256,19 @@ ILNode *ILNode_ListIter_Next(ILNode_ListIter *iter)
 	{
 		return 0;
 	}
+}
+
+int ILNode_List_Length(ILNode *list)
+{
+	ILNode_ListIter iter;
+	ILNode *node;
+	int length = 0;
+	ILNode_ListIter_Init(&iter, list);
+	while((node = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		++length;
+	}
+	return length;
 }
 
 ILNode *ILNode_Compound_CreateFrom(ILNode *left, ILNode *right)

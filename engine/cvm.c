@@ -589,7 +589,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					VMCASE(COP_PREFIX_UNROLL_METHOD):
 					{
 						/* Unroll the current method to native code */
-					#ifdef IL_CVM_DIRECT
+					#ifdef IL_CVM_DIRECT_UNROLLED
 						if(_ILCVMUnrollMethod(thread->process->coder,
 											  pc, method))
 						{

@@ -30,8 +30,7 @@
 extern	"C" {
 #endif
 
-#if defined(IL_CVM_DIRECT) && defined(CVM_X86) && \
-	defined(__GNUC__) && !defined(IL_NO_ASM)
+#ifdef IL_CVM_DIRECT_UNROLLED_X86
 
 /*
  * Registers that have a fixed meaning assigned by the CVM interpreter.
@@ -1138,7 +1137,7 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	return 1;
 }
 
-#else /* !i386 */
+#else /* !IL_CVM_DIRECT_UNROLLED_X86 */
 
 /*
  * Stub out the unroll API on other platforms.
@@ -1159,7 +1158,7 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	return 0;
 }
 
-#endif /* !i386 */
+#endif /* !IL_CVM_DIRECT_UNROLLED_X86 */
 
 #ifdef	__cplusplus
 };

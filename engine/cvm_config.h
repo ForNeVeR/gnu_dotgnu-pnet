@@ -164,6 +164,17 @@ extern int _ILCVMInsnCount[];
 #endif /* !IL_CVM_DIRECT */
 
 /*
+ * Determine if we can unroll the direct threaded interpreter.
+ */
+#if defined(IL_CVM_DIRECT) && defined(CVM_X86) && \
+	defined(__GNUC__) && !defined(IL_NO_ASM) && \
+	!defined(IL_CVM_PROFILE_CVM_METHODS) && \
+	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE)
+#define	IL_CVM_DIRECT_UNROLLED_X86
+#define	IL_CVM_DIRECT_UNROLLED
+#endif
+
+/*
  * The constructor offset value.
  */
 #ifdef IL_CVM_DIRECT

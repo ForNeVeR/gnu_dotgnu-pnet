@@ -17,6 +17,9 @@
 	support/hb_gc.c: add the "-P" option to ilrun to dump the
 	GC heap and method cache sizes on exit.
 
+	* engine/cvm.c, engine/cvm_config.h, engine/unroll_x86.c:
+	clean up the #ifdef's that detect code unrolling.
+
 2002-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll_x86.c (ReExecute): fix a bug in the stack height

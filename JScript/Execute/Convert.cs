@@ -298,7 +298,8 @@ public sealed class Convert
 			{
 				if(value is ScriptObject)
 				{
-					return ((ScriptObject)value).Normalize();
+					return ((ScriptObject)value).DefaultValue
+								(DefaultValueHint.None);
 				}
 				else if(value is DateTime)
 				{

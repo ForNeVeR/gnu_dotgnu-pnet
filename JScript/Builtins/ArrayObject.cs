@@ -22,6 +22,7 @@ namespace Microsoft.JScript
 {
 
 using System;
+using System.Collections;
 
 public class ArrayObject : JSObject
 {
@@ -66,6 +67,79 @@ public class ArrayObject : JSObject
 			{
 				// This exists for backwards-compatibility, but there
 				// is actually no way to call it from user code.
+			}
+
+	// Get a property from this object.  Null if not present.
+	internal override Object Get(String name)
+			{
+				if(name == "length")
+				{
+					return length;
+				}
+				else
+				{
+					return base.Get(name);
+				}
+			}
+
+	// Get a property from this object by numeric index.
+	internal override Object GetIndex(int index)
+			{
+				if(!isSparse && index >= 0 && ((uint)index) < arrayLen)
+				{
+					return array[index];
+				}
+				else
+				{
+					return base.Get(Convert.ToString(index));
+				}
+			}
+
+	// Put a property to this object.
+	internal override void Put(String name, Object value)
+			{
+				if(name == "length")
+				{
+					length = value;
+				}
+				else
+				{
+					// TODO
+				}
+			}
+
+	// Put a property to this object by numeric index.
+	internal override void PutIndex(int index, Object value)
+			{
+				// TODO
+			}
+
+	// Determine if this object has a specific property.
+	internal override bool HasOwnProperty(String name)
+			{
+				// TODO
+				return false;
+			}
+
+	// Delete a property from this object.
+	internal override bool Delete(String name)
+			{
+				// TODO
+				return true;
+			}
+
+	// Get the default value for this object.
+	internal override Object DefaultValue(DefaultValueHint hint)
+			{
+				// TODO
+				return null;
+			}
+
+	// Get an enumerator for the properties in this object.
+	internal override IEnumerator GetPropertyEnumerator()
+			{
+				// TODO
+				return null;
 			}
 
 }; // class ArrayObject

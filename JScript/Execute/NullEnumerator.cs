@@ -1,5 +1,5 @@
 /*
- * NumericUnary.cs - Numeric unary operators.
+ * NullEnumerator.cs - Enumerator class that returns no elements.
  *
  * Copyright (C) 2003 Southern Storm Software, Pty Ltd.
  *
@@ -22,50 +22,31 @@ namespace Microsoft.JScript
 {
 
 using System;
+using System.Collections;
 
-// Dummy class for backwards-compatibility.
-
-public sealed class NumericUnary : UnaryOp
+internal sealed class NullEnumerator : IEnumerator
 {
 	// Constructor.
-	public NumericUnary(int operatorTok)
-			: base(operatorTok)
+	public NullEnumerator() {}
+
+	// Implement the IEnumerator interface.
+	public bool MoveNext()
+			{
+				return false;
+			}
+	public void Reset()
 			{
 				// Nothing to do here.
 			}
-
-	// Evaluate a numeric unary operator on a value.
-	public Object EvaluateUnary(Object v)
+	public Object Current
 			{
-				switch(operatorTok)
+				get
 				{
-					case JSToken.BitwiseNot:
-					{
-						return ~(Convert.ToInt32(v));
-					}
-					// Not reached.
-
-					case JSToken.LogicalNot:
-					{
-						return !(Convert.ToBoolean(v));
-					}
-					// Not reached.
-
-					case JSToken.Minus:
-					{
-						return -(Convert.ToNumber(v));
-					}
-					// Not reached.
-
-					case JSToken.Plus:
-					{
-						return Convert.ToNumber(v);
-					}
-					// Not reached.
+					// Not positioned on an element.
+					throw new InvalidOperationException();
 				}
-				throw new JScriptException(JSError.InternalError);
 			}
 
-}; // class NumericUnary
+}; // class NullEnumerator
 
 }; // namespace Microsoft.JScript

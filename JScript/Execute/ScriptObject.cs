@@ -22,6 +22,7 @@ namespace Microsoft.JScript
 {
 
 using System;
+using System.Collections;
 using System.Reflection;
 using System.Globalization;
 using Microsoft.JScript.Vsa;
@@ -435,11 +436,10 @@ public abstract class ScriptObject : IReflect
 				return null;
 			}
 
-	// Normalize this object to remove object wrappers.
-	internal virtual Object Normalize()
+	// Get an enumerator for the properties in this object.
+	internal virtual IEnumerator GetPropertyEnumerator()
 			{
-				// By default, no normalization is applied.
-				return this;
+				return new NullEnumerator();
 			}
 
 }; // class ScriptObject

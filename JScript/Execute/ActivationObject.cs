@@ -118,6 +118,13 @@ public abstract class ActivationObject : ScriptObject, IActivationObject,
 			{
 				storage.Put(name, value);
 			}
+	void IVariableAccess.DeclareVariable(String name)
+			{
+				if(!storage.HasOwnProperty(name))
+				{
+					storage.Put(name, null);
+				}
+			}
 	IVariableAccess IVariableAccess.GetParentScope()
 			{
 				return (parent as IVariableAccess);

@@ -35,6 +35,10 @@ internal interface IVariableAccess
 	// Declare a specific variable in this scope and set its value.
 	void SetVariable(String name, Object value);
 
+	// Declare a specific variable in this scope if it isn't already present.
+	// If it is present, then its current value is left unmodified.
+	void DeclareVariable(String name);
+
 	// Get the parent variable scope.
 	IVariableAccess GetParentScope();
 

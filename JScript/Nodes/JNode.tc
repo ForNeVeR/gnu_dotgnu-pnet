@@ -329,7 +329,14 @@ Eval(JFunction)
 		 this, scope);
 
 	// Add the function to the scope.
-	scope.Put(name, obj);
+	if(scope is IVariableAccess)
+	{
+		((IVariableAccess)scope).SetVariable(name, obj);
+	}
+	else
+	{
+		scope.Put(name, obj);
+	}
 
 	// Nothing else to do.
 	return Empty.Value;

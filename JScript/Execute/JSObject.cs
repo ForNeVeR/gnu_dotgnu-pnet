@@ -129,7 +129,14 @@ public class JSObject : ScriptObject, IEnumerable
 					prop = (Property)(overflow[name]);
 					if(prop != null)
 					{
-						return prop.value;
+						if((prop.attrs & PropertyAttributes.Deferred) == 0)
+						{
+							return prop.value;
+						}
+						else
+						{
+							return ((FieldInfo)(prop.value)).GetValue(this);
+						}
 					}
 					else
 					{
@@ -143,7 +150,14 @@ public class JSObject : ScriptObject, IEnumerable
 				{
 					if(prop.name == name)
 					{
-						return prop.value;
+						if((prop.attrs & PropertyAttributes.Deferred) == 0)
+						{
+							return prop.value;
+						}
+						else
+						{
+							return ((FieldInfo)(prop.value)).GetValue(this);
+						}
 					}
 					prop = prop.next;
 				}
@@ -239,7 +253,14 @@ public class JSObject : ScriptObject, IEnumerable
 					}
 					else if((prop.attrs & PropertyAttributes.ReadOnly) == 0)
 					{
-						prop.value = value;
+						if((prop.attrs & PropertyAttributes.Deferred) == 0)
+						{
+							prop.value = value;
+						}
+						else
+						{
+							((FieldInfo)(prop.value)).SetValue(this, value);
+						}
 					}
 					return;
 				}
@@ -254,7 +275,14 @@ public class JSObject : ScriptObject, IEnumerable
 					{
 						if((prop.attrs & PropertyAttributes.ReadOnly) == 0)
 						{
-							prop.value = value;
+							if((prop.attrs & PropertyAttributes.Deferred) == 0)
+							{
+								prop.value = value;
+							}
+							else
+							{
+								((FieldInfo)(prop.value)).SetValue(this, value);
+							}
 						}
 						return;
 					}
@@ -341,6 +369,19 @@ public class JSObject : ScriptObject, IEnumerable
 				return true;
 			}
 
+	// Get an enumerator for the properties in this object.
+	internal override IEnumerator GetPropertyEnumerator()
+			{
+				if(overflow != null)
+				{
+					return new HashKeyEnumerator(overflow.GetEnumerator());
+				}
+				else
+				{
+					return new PropertyEnumerator(this);
+				}
+			}
+
 	// Add a builtin method to a prototype.
 	internal void AddBuiltin(EngineInstance inst, String name)
 			{
@@ -351,7 +392,7 @@ public class JSObject : ScriptObject, IEnumerable
 			}
 
 	// Storage for a property.
-	private class Property
+	private sealed class Property
 	{
 		// Accessible internal state.
 		public Property next;
@@ -369,6 +410,98 @@ public class JSObject : ScriptObject, IEnumerable
 				}
 
 	}; // class Property
+
+	// Enumerator class for properties in this object.
+	private sealed class PropertyEnumerator : IEnumerator
+	{
+		// Internal state.
+		private JSObject obj;
+		private Property prop;
+		private Property current;
+
+		// Constructor.
+		public PropertyEnumerator(JSObject obj)
+				{
+					this.obj = obj;
+					this.prop = obj.properties;
+					this.current = null;
+				}
+
+		// Implement the IEnumerator interface.
+		public bool MoveNext()
+				{
+					while(prop != null)
+					{
+						current = prop;
+						prop = prop.next;
+						if((current.attrs & PropertyAttributes.DontEnum) == 0)
+						{
+							return true;
+						}
+					}
+					return false;
+				}
+		public void Reset()
+				{
+					prop = obj.properties;
+					current = null;
+				}
+		public Object Current
+				{
+					get
+					{
+						if(current != null)
+						{
+							return current.name;
+						}
+						else
+						{
+							throw new InvalidOperationException();
+						}
+					}
+				}
+
+	}; // class PropertyEnumerator
+
+	// Enumerator class for keys in a hash table.
+	private sealed class HashKeyEnumerator : IEnumerator
+	{
+		// Internal state.
+		private IDictionaryEnumerator e;
+
+		// Constructor.
+		public HashKeyEnumerator(IDictionaryEnumerator e)
+				{
+					this.e = e;
+				}
+
+		// Implement the IEnumerator interface.
+		public bool MoveNext()
+				{
+					Property prop;
+					while(e.MoveNext())
+					{
+						prop = (Property)(e.Value);
+						if((prop.attrs & PropertyAttributes.DontEnum) == 0)
+						{
+							return true;
+						}
+					}
+					return false;
+				}
+		public void Reset()
+				{
+					e.Reset();
+				}
+		public Object Current
+				{
+					get
+					{
+						return e.Key;
+					}
+				}
+
+	}; // class HashKeyEnumerator
 
 }; // class JSObject
 

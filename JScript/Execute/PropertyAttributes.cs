@@ -28,7 +28,8 @@ internal enum PropertyAttributes
 	None	   = 0x00,
 	ReadOnly   = 0x01,
 	DontEnum   = 0x02,
-	DontDelete = 0x04
+	DontDelete = 0x04,
+	Deferred   = 0x08
 
 }; // enum PropertyAttributes
 

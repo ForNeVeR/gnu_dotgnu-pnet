@@ -37,15 +37,41 @@ public sealed class NumericBinary : BinaryOp
 	// Evaluate a numeric binary operator on two values.
 	public Object EvaluateNumericBinary(Object v1, Object v2)
 			{
-				// TODO
-				return null;
+				return DoOp(v1, v2, operatorTok);
 			}
 
 	// Evaluate a numeric binary operator on two values.
 	public static Object DoOp(Object v1, Object v2, JSToken operatorTok)
 			{
-				// TODO
-				return null;
+				double n1 = Convert.ToNumber(v1);
+				double n2 = Convert.ToNumber(v2);
+				switch(operatorTok)
+				{
+					case JSToken.Minus:
+					{
+						return (n1 - n2);
+					}
+					// Not reached.
+			
+					case JSToken.Multiply:
+					{
+						return (n1 * n2);
+					}
+					// Not reached.
+			
+					case JSToken.Divide:
+					{
+						return (n1 / n2);
+					}
+					// Not reached.
+			
+					case JSToken.Modulo:
+					{
+						return (n1 % n2);
+					}
+					// Not reached.
+				}
+				throw new JScriptException(JSError.InternalError);
 			}
 
 }; // class NumericBinary

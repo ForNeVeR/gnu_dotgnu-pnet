@@ -50,8 +50,38 @@ public sealed class FunctionObject : ScriptFunction
 	// Perform a call on this object.
 	internal override Object Call(Object thisob, Object[] args)
 			{
-				// TODO
-				return null;
+				// Create a new scope object and initialize the parameters.
+				ScriptObject scope;
+				if(thisob is JSObject)
+				{
+					scope = new FunctionScope
+						((JSObject)thisob, defn.fparams, thisob, args);
+				}
+				else
+				{
+					scope = new FunctionScope
+						(declaringScope, defn.fparams, thisob, args);
+				}
+
+				// Push the scope onto the stack.
+				engine.PushScriptObjectChecked(scope);
+
+				// Call the function and pop the scope afterwards.
+				Object result = Empty.Value;
+				try
+				{
+					if(defn.body != null)
+					{
+						defn.body.Eval(engine);
+					}
+				}
+				finally
+				{
+					engine.PopScriptObject();
+				}
+
+				// Return the function result to the caller.
+				return result;
 			}
 
 }; // class FunctionObject

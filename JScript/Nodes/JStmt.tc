@@ -215,8 +215,68 @@ Eval(JFor)
 // Evaluate a "for-in" statement.
 Eval(JForIn)
 {
-	// TODO
-	return Empty.Value;
+	// Evaluate variable declarations, to make sure that the
+	// variable is properly declared into the current scope.
+	if(decl is JVarDecl)
+	{
+		decl.Eval(engine);
+	}
+
+	// Get the collection that we will be enumerating.
+	Object set = expr.Eval(engine);
+	IEnumerator e = ForIn.JScriptGetEnumerator(set);
+
+	// Loop over the collection.
+	Object result = Empty.Value;
+	Object data1, data2, temp;
+	try
+	{
+		while(e.MoveNext())
+		{
+			try
+			{
+				// Assign e.Current to the loop variable.
+				data1 = null;
+				data2 = null;
+				decl.Prepare(engine, ref data1, ref data2);
+				decl.Store(engine, data1, data2, e.Current);
+
+				// Execute the loop body.
+				if(body != null)
+				{
+					temp = body.Eval(engine);
+					if(temp != Empty.Value)
+					{
+						result = temp;
+					}
+				}
+			}
+			catch(ContinueJumpOut cont)
+			{
+				// We received a "continue" from inside the "for-in" loop.
+				if(!Support.LabelMatch(cont.label, labels))
+				{
+					throw;
+				}
+			}
+		}
+	}
+	catch(BreakJumpOut brk)
+	{
+		// We received a "break" from inside the "for-in" loop.
+		if(!Support.LabelMatch(brk.label, labels))
+		{
+			throw;
+		}
+	}
+	finally
+	{
+		if(e is IDisposable)
+		{
+			((IDisposable)e).Dispose();
+		}
+	}
+	return result;
 }
 
 // Evaluate a "switch" statement.
@@ -426,6 +486,10 @@ Eval(JVarDecl)
 		if(initializer != null)
 		{
 			varAccess.SetVariable(name, initializer.Eval(engine));
+		}
+		else
+		{
+			varAccess.DeclareVariable(name);
 		}
 		return name;
 	}

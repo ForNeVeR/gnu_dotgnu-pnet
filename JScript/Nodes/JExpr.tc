@@ -108,7 +108,8 @@ Eval(JIdentifier)
 }
 
 // Prepare for a store into an identifier.
-Prepare(JIdentifier)
+Prepare(JIdentifier),
+Prepare(JVarDecl)
 {
 	IVariableAccess scope = (engine.ScriptObjectStackTop() as IVariableAccess);
 	while(scope != null)
@@ -124,7 +125,8 @@ Prepare(JIdentifier)
 }
 
 // Get and prepare for a store into an identifier.
-GetAndPrepare(JIdentifier)
+GetAndPrepare(JIdentifier),
+GetAndPrepare(JVarDecl)
 {
 	IVariableAccess scope = (engine.ScriptObjectStackTop() as IVariableAccess);
 	while(scope != null)
@@ -142,7 +144,8 @@ GetAndPrepare(JIdentifier)
 }
 
 // Store into an identifier in the current execution context.
-Store(JIdentifier)
+Store(JIdentifier),
+Store(JVarDecl)
 {
 	((IVariableAccess)data1).SetVariable(name, value);
 }

@@ -97,6 +97,13 @@ internal sealed class WithScope : ScriptObject, IActivationObject,
 			{
 				((ScriptObject)withObject).Put(name, value);
 			}
+	void IVariableAccess.DeclareVariable(String name)
+			{
+				if(!((ScriptObject)withObject).HasProperty(name))
+				{
+					((ScriptObject)withObject).Put(name, null);
+				}
+			}
 	IVariableAccess IVariableAccess.GetParentScope()
 			{
 				return (parent as IVariableAccess);

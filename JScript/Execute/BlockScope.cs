@@ -38,8 +38,7 @@ public class BlockScope : ActivationObject
 	protected override JSVariableField CreateField
 				(String name, Object value, FieldAttributes attributes)
 			{
-				// TODO
-				return null;
+				return base.CreateField(name, value, attributes);
 			}
 
 }; // class BlockScope

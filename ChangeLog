@@ -1,3 +1,17 @@
+
+2003-01-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* JScript/Builtins/ArrayObject.cs, JScript/Builtins/FunctionObject.cs,
+	JScript/Execute/ActivationObject.cs, JScript/Execute/BlockScope.cs,
+	JScript/Execute/Convert.cs, JScript/Execute/IVariableAccess.cs,
+	JScript/Execute/JSObject.cs, JScript/Execute/PropertyAttributes.cs,
+	JScript/Execute/ScriptObject.cs, JScript/Execute/WithScope.cs,
+	JScript/Execute/FunctionScope.cs, JScript/Execute/NullEnumerator.cs,
+	JScript/Jsc/ForIn.cs, JScript/Jsc/NumericBinary.cs,
+	JScript/Jsc/NumericUnary.cs, JScript/Nodes/JExpr.tc,
+	JScript/Nodes/JNode.tc, JScript/Nodes/JStmt.tc: implement function
+	calls; "for-in" statements; variable declarations; property enums.
+
 2003-01-20  Adam Ballai <minddog@cannibutter.com>
 	
 	* System.Xml/XmlTextReader.cs: Fix bug #2250.

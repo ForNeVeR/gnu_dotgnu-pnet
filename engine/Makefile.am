@@ -1,7 +1,9 @@
 bin_PROGRAMS = ilrun ilverify
 lib_LIBRARIES = libILEngine.a
 
-libILEngine_a_SOURCES = heap.c \
+libILEngine_a_SOURCES = cvm.c \
+						cvmc.c \
+						heap.c \
 						interpreter.c \
 						layout.c \
 						process.c \

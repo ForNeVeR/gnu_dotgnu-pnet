@@ -19,6 +19,8 @@ engine/cvmc_const.c, engine/cvmc_conv.c, engine/cvmc_obj.c, engine/cvmc_ptr.c,
 engine/cvmc_setup.c, engine/cvmc_stack.c, engine/cvmc_var.c: implementation
 of the "CVM Converter", which converts IL instructions into CVM at runtime.
 
+* engine/Makefile.am: add CVM and the converter to the engine make process.
+
 2001-10-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_branch.c: verification for "switch" instructions; process

@@ -43,7 +43,7 @@ libILEngine_a_SOURCES = cvm.c \
 						unroll_x86.c \
 						verify.c
 
-PACKAGE_LIBS = $(FFILIBS) ../libgc/.libs/libgc.a
+PACKAGE_LIBS = $(FFILIBS) $(GCLIBS)
 
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \

@@ -97,9 +97,13 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 				{
 					if(nodes)
 					{
+						/* Allow user-defined conversions when resolving
+						   user-defined binary and unary operators */
 						if(!ILCanCoerceNodeKind(info, nodes[arg - 1],
 												args[arg - 1], argType,
-												IL_CONVERT_STANDARD, indirect))
+												IL_CONVERT_STANDARD |
+													IL_CONVERT_USER_DEFINED,
+												indirect))
 						{
 							break;
 						}

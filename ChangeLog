@@ -4,6 +4,10 @@
 	* runtime/System/Reflection/Assembly.cs: Fix LoadFrom to accept 
 	file:// URLS.
 
+	* System.Windows.Forms/ScrollableControl.cs: Implement AutoScrollMinSize
+	and AutoScrollMargin properties and Invalidate scrollable control
+	on scroll.
+
 2004-05-26  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Threading/Thread.cs: Added 

@@ -145,10 +145,12 @@ public class ScrollableControl : Control
 					bool vert, horiz;
 					
 					vert = autoScroll && vscroll && 
-							(displayRect.Height < scrollArea.Height);
+							((displayRect.Height + autoScrollMargin.Height) 
+										< scrollArea.Height);
 
 					horiz = autoScroll && hscroll && 
-							(displayRect.Width < scrollArea.Width);
+							((displayRect.Width + autoScrollMargin.Width)
+										< scrollArea.Width);
 					
 					// Note: for all the people who wonder about the
 					// following expression , it's the *optimised* version
@@ -354,7 +356,8 @@ public class ScrollableControl : Control
 				autoScrollPosition=	new Point(
 										autoScrollPosition.X - offset.Width,
 									   	autoScrollPosition.Y - offset.Height);
-				
+			
+				Invalidate();
 				this.ResumeLayout();
 			}
 			
@@ -403,6 +406,10 @@ public class ScrollableControl : Control
 						Rectangle bounds=child.Bounds;
 						total=Rectangle.Union(bounds,total);
 					}
+					
+					total = Rectangle.Union(total, 
+											new Rectangle(autoScrollPosition,
+														autoScrollMinSize));
 					return total;					
 				}
 			}
@@ -420,8 +427,10 @@ public class ScrollableControl : Control
 			{
 				get
 				{					
-					return  new Rectangle(autoScrollPosition
-										, DisplayRectangle.Size);
+					return  new Rectangle(-autoScrollPosition.X,
+										  -autoScrollPosition.Y,
+										  DisplayRectangle.Width,
+										  DisplayRectangle.Height);
 				}
 			}
 

@@ -5,6 +5,9 @@
 	support/pt_wait.c: implement "safe" thread suspends that will not
 	suspend a thread that is currently holding a mutex or a rwlock.
 
+	* support/pt_thread.c: clean up the mutexes and semaphores that
+	are owned by a thread when it is destroyed.
+
 2002-04-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/pt_thread.c: fix problems with "resumeRequested" flag.

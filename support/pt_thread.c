@@ -371,6 +371,10 @@ void ILThreadDestroy(ILThread *thread)
 
 	/* Unlock the thread object and free it */
 	MutexUnlockSafe(&(thread->lock));
+	pthread_mutex_destroy(&(thread->lock));
+	pthread_mutex_destroy(&(thread->wakeupMutex));
+	sem_destroy(&(thread->suspendAck));
+	sem_destroy(&(thread->wakeup));
 	ILFree(thread);
 
 	/* Adjust the thread counts */

@@ -90,10 +90,13 @@ int _ILLeaveWait(ILThread *thread, int result)
 	{		 
 		result = IL_WAIT_INTERRUPTED;
 	}
+
+	_ILWakeupCancelInterrupt(&(thread->wakeup));
+	thread->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
 	
 	if ((thread->state & IL_TS_SUSPEND_REQUESTED) != 0)
 	{
-        thread->state &= ~IL_TS_SUSPEND_REQUESTED;
+	        thread->state &= ~IL_TS_SUSPEND_REQUESTED;
 		thread->state |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
 		thread->resumeRequested = 0;
 
@@ -102,14 +105,11 @@ int _ILLeaveWait(ILThread *thread, int result)
 
 		/* Suspend until we receive notification from another thread */
 		_ILThreadSuspendSelf(thread);
-
-		_ILMutexLock(&(thread->lock));
 	}
-
-	_ILWakeupCancelInterrupt(&(thread->wakeup));
-	thread->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
-	
-	_ILMutexUnlock(&(thread->lock));
+	else
+	{	
+		_ILMutexUnlock(&(thread->lock));
+	}
 
 	return result;
 }

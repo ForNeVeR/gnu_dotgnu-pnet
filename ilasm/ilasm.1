@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH ilasm 1 "19 July 2001" "Southern Storm Software" "Portable.NET Development Tools"
+.TH ilasm 1 "4 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 ilasm \- the Intermediate Language (IL) assembler
 .SH SYNOPSIS
@@ -111,6 +111,10 @@ under Windows.  This is the default.
 .B \-G, \-\-gui\-subsystem
 Tag the output file so that it can run within the GUI subsystem
 under Windows.
+.TP
+.B \-L NAME, \-\-stdlib\-name NAME
+Change the name of the standard library to NAME.  The default
+value is "mscorlib".
 .TP
 .B \-\-help
 Print a usage message for the \fBilasm\fR program.

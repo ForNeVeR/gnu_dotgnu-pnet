@@ -33,17 +33,17 @@ extern	"C" {
  */
 static ILCmdLineOption const options[] = {
 	{"-o", 'o', 1,
-		"--output file     or    -o file",
+		"--output file      or    -o file",
 		"Specify the output file to use.  The default is\n"
 		"`input.EXT' where EXT depends upon `--format'."},
 	{"-e", 'e', 0,
-		"--format exe      or    -e",
+		"--format exe       or    -e",
 		"Set the output format to executable."},
 	{"-d", 'd', 0,
-		"--format dll      or    -d",
+		"--format dll       or    -d",
 		"Set the output format to dynamic link library."},
 	{"-j", 'j', 0,
-		"--format obj      or    -j",
+		"--format obj       or    -j",
 		"Set the output format to object file."},
 	{"-g", 'g', 0, 0, 0},
 	{"-n", 'n', 0, 0, 0},
@@ -53,37 +53,37 @@ static ILCmdLineOption const options[] = {
 	{"-c", 'c', 0, 0, 0},
 	{"-G", 'G', 0, 0, 0},
 	{"-m", 'm', 0, 0, 0},
-	{"-r", 'r', 1, 0, 0},
+	{"-L", 'L', 1, 0, 0},
 	{"-v", 'v', 0, 0, 0},
 	{"--output", 'o', 1, 0, 0},
 	{"--format", 'f', 1, 0, 0},
 	{"--debug", 'g', 0,
-		"--debug           or    -g",
+		"--debug            or    -g",
 		"Write debug information to the output file."},
 	{"--no-debug", 'n', 0,
-		"--no-debug        or    -n",
+		"--no-debug         or    -n",
 		"Suppress debug information in the output file."},
 	{"--short-insns", 's', 0,
-		"--short-insns     or    -s",
+		"--short-insns      or    -s",
 		"Use shorter instructions if possible (default)."},
 	{"--no-short-insns", 'l', 0,
-		"--no-short-insns  or    -l",
+		"--no-short-insns   or    -l",
 		"Use the stated version of an instruction."},
 	{"--32bit-only", '3', 0,
-		"--32bit-only      or    -3",
+		"--32bit-only       or    -3",
 		"The resulting output file can only be used on 32-bit systems."},
 	{"--cui-subsystem", 'c', 0,
-		"--cui-subsystem   or    -c",
+		"--cui-subsystem    or    -c",
 		"Compile for the command-line subsystem (default)."},
 	{"--gui-subsystem", 'G', 0,
-		"--gui-subsystem   or    -G",
+		"--gui-subsystem    or    -G",
 		"Compile for the GUI subsystem."},
-	{"--res", 'r', 0,
-		"--res file        or    -r file",
-		"Link the specified resource file with the output."},
+	{"--stdlib-name", 'L', 0,
+		"--stdlib-name name or    -L name",
+		"Specify the name of the standard library (default is `mscorlib')."},
 	{"-D", 'D', 0, 0, 0},		/* Enable debugging of yacc parser */
 	{"--version", 'v', 0,
-		"--version         or    -v",
+		"--version          or    -v",
 		"Print the version of the program"},
 	{"--help", 'h', 0,
 		"--help",
@@ -118,7 +118,6 @@ int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
 	char *outputFile = 0;
-	char *resourceFile = 0;
 	int format = -1;
 	int debug = 0;
 	int sawStdin;
@@ -193,9 +192,9 @@ int main(int argc, char *argv[])
 			}
 			break;
 
-			case 'r':
+			case 'L':
 			{
-				resourceFile = param;
+				ILAsmLibraryName = param;
 			}
 			break;
 

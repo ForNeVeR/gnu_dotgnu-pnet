@@ -1188,6 +1188,13 @@ under Windows.  This is the default.
 Tag the output file so that it can run within the GUI subsystem
 under Windows.
 
+@cindex -L option (ilasm)
+@cindex --stdlib-name option (ilasm)
+@item -L NAME
+@itemx --stdlib-name NAME
+Change the name of the standard library to NAME.  The default
+value is "mscorlib".
+
 @cindex --help option (ilasm)
 @item --help
 Print a usage message for the ilasm program.

@@ -103,9 +103,16 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 	/* If we have an RVA, then we need to dump the method's contents */
 	if(rva)
 	{
-		ILDAsmDumpMethod(image, outstream, method, flags,
-						 (ILMethod_Token(method) ==
-						 		ILImageGetEntryPoint(image)));
+		if(ILMethod_IsJava(method))
+		{
+			ILDAsmDumpJavaMethod(image, outstream, method, flags);
+		}
+		else
+		{
+			ILDAsmDumpMethod(image, outstream, method, flags,
+							 (ILMethod_Token(method) ==
+							 		ILImageGetEntryPoint(image)));
+		}
 	}
 
 	/* Output the method footer and exit */

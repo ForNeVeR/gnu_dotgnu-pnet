@@ -56,13 +56,17 @@ void ILDAsmWalkTokens(ILImage *image, FILE *outstream, int flags,
 					  unsigned long refToken);
 
 /*
- * Dump the contents of a method.  "method" points to
- * the start of the method in the code section.  "total"
- * is the total number of bytes left in the code section.
+ * Dump the contents of a method.
  */
 void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
 					  ILMethod *method, int flags,
 					  int isEntryPoint);
+
+/*
+ * Dump the contents of a Java method.
+ */
+void ILDAsmDumpJavaMethod(ILImage *image, FILE *outstream,
+					      ILMethod *method, int flags);
 
 /*
  * Dump custom attributes for a program item.

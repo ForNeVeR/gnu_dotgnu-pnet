@@ -20,6 +20,9 @@
 	* image/java_loader.c, image/program.h, include/il_program.h:
 	add API's for accessing the contents of the Java constant pool.
 
+	* ildasm/Makefile.am, ildasm/ildasm_class.c, ildasm/ildasm_internal.h,
+	ildasm/ildasm_java.c: begin adding Java support to the disassembler.
+
 2001-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: add a "Standards" section with links to the ECMA

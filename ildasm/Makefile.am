@@ -4,6 +4,7 @@ EXTRA_DIST     = $(man_MANS)
 ildasm_SOURCES = ildasm_attrs.c \
 				 ildasm_class.c \
 				 ildasm_global.c \
+				 ildasm_java.c \
 				 ildasm_main.c \
 				 ildasm_method.c \
 				 ildasm_utils.c

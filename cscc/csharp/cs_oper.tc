@@ -23,12 +23,13 @@
 /*
  * Look for a user-specified binary operator of a particular name.
  */
-static ILMethod *FindUserBinaryOperator(ILGenInfo *info,
-										const char *name,
-										ILType *arg1Type,
-										ILType *arg2Type)
+static ILMethod *FindUserBinaryOperator(ILGenInfo *info, const char *name,
+										CSSemValue *arg1, ILNode *arg1Node,
+										CSSemValue *arg2, ILNode *arg2Node)
 {
 	ILMethod *method;
+	ILType *arg1Type = CSSemGetType(*arg1);
+	ILType *arg2Type = CSSemGetType(*arg2);
 	ILClass *arg1Class = ILTypeToClass(info, arg1Type);
 	ILClass *arg2Class = ILTypeToClass(info, arg2Type);
 
@@ -36,7 +37,8 @@ static ILMethod *FindUserBinaryOperator(ILGenInfo *info,
 	if(arg1Class)
 	{
 		method = ILResolveBinaryOperator(info, arg1Class, name,
-										 arg1Type, arg2Type);
+										 arg1Type, arg1Node,
+										 arg2Type, arg2Node);
 		if(method)
 		{
 			return method;
@@ -47,7 +49,8 @@ static ILMethod *FindUserBinaryOperator(ILGenInfo *info,
 	if(arg2Class)
 	{
 		method = ILResolveBinaryOperator(info, arg2Class, name,
-										 arg1Type, arg2Type);
+										 arg1Type, arg1Node,
+										 arg2Type, arg2Node);
 		if(method)
 		{
 			return method;
@@ -209,8 +212,8 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator(info, name, CSSemGetType(value1),
-									CSSemGetType(value2));
+	method = FindUserBinaryOperator(info, name, &(value1), node->expr1,
+									&(value2), node->expr2);
 	if(method)
 	{
 		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,
@@ -271,14 +274,15 @@ error:
  * Look for a user-specified unary operator of a particular name.
  */
 static ILMethod *FindUserUnaryOperator(ILGenInfo *info, const char *name,
-									   ILType *argType)
+									   CSSemValue *arg, ILNode *argNode)
 {
 	ILMethod *method;
+	ILType *argType = CSSemGetType(*arg);
 	ILClass *argClass = ILTypeToClass(info, argType);
 
 	if(argClass)
 	{
-		method = ILResolveUnaryOperator(info, argClass, name, argType);
+		method = ILResolveUnaryOperator(info, argClass, name, argType, argNode);
 		if(method)
 		{
 			return method;
@@ -329,7 +333,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserUnaryOperator(info, name, CSSemGetType(value));
+	method = FindUserUnaryOperator(info, name, &(value), node->expr);
 	if(method)
 	{
 		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
@@ -414,8 +418,8 @@ ILNode_SemAnalysis(ILNode_Add)
 	} 
 	/* Look for a user-specified operator */
 	method = FindUserBinaryOperator(info, "op_Addition",
-									CSSemGetType(value1),
-									CSSemGetType(value2));
+									&(value1), node->expr1,
+									&(value2), node->expr2);
 	if(method)
 	{
 		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,
@@ -565,8 +569,8 @@ ILNode_SemAnalysis(ILNode_Sub)
 
 	/* Look for a user-specified operator */
 	method = FindUserBinaryOperator(info, "op_Subtraction",
-									CSSemGetType(value1),
-									CSSemGetType(value2));
+									&(value1), node->expr1,
+									&(value2), node->expr2);
 	if(method)
 	{
 		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,
@@ -963,8 +967,8 @@ static CSSemValue AssignSem(ILGenInfo *info,
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator(info, name, CSSemGetType(value1),
-									CSSemGetType(value2));
+	method = FindUserBinaryOperator(info, name, &(value1), node->expr1,
+									&(value2), node->expr2);
 
 	if(method)
 	{
@@ -1204,7 +1208,7 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	}
 
 	/* Look for an appropriate operator */
-	method = FindUserUnaryOperator(info, opName, CSSemGetType(value));
+	method = FindUserUnaryOperator(info, opName, &(value), node->expr);
 	if(!method)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -1462,7 +1466,7 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
 	if(CSSemGetType(value) != ILType_Boolean)
 	{
 		method = FindUserUnaryOperator(info, "op_LogicalNot",
-									   CSSemGetType(value));
+									   &(value), node->expr);
 		if(method)
 		{
 			returnType = ILTypeGetReturn(ILMethod_Signature(method));
@@ -1509,8 +1513,8 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 	    ILType_IsClass(CSSemGetType(value1))))
 	{
 		method1 = FindUserBinaryOperator
-					(info, "op_BitwiseAnd", CSSemGetType(value1),
-					 CSSemGetType(value1));
+					(info, "op_BitwiseAnd", &(value1), node->expr1,
+					 &(value1), node->expr2);
 		method2 = ILResolveConversionOperator
 					(info, ILType_ToClass(CSSemGetType(value1)), "op_True",
 					 CSSemGetType(value1), ILType_Boolean);
@@ -1604,8 +1608,8 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 	    ILType_IsClass(CSSemGetType(value1))))
 	{
 		method1 = FindUserBinaryOperator
-					(info, "op_BitwiseOr", CSSemGetType(value1),
-					 CSSemGetType(value1));
+					(info, "op_BitwiseOr", &(value1), node->expr1,
+					 &(value1), node->expr2);
 		method2 = ILResolveConversionOperator
 					(info, ILType_ToClass(CSSemGetType(value1)), "op_True",
 					 CSSemGetType(value1), ILType_Boolean);
@@ -1750,8 +1754,8 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	}
 
 	/* Look for a user-specified operator */
-	method = FindUserBinaryOperator(info, name, CSSemGetType(value1),
-									CSSemGetType(value2));
+	method = FindUserBinaryOperator(info, name, &(value1), node->expr1,
+									&(value2), node->expr2);
 	if(method)
 	{
 		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,

@@ -49,14 +49,16 @@ ILMethod *ILResolveConstructor(ILGenInfo *info, ILClass *classInfo,
  * Resolve a call to a unary operator.
  */
 ILMethod *ILResolveUnaryOperator(ILGenInfo *info, ILClass *classInfo,
-								 const char *name, ILType *argType);
+								 const char *name, ILType *argType,
+								 ILNode *argNode);
 
 /*
  * Resolve a call to a binary operator.
  */
 ILMethod *ILResolveBinaryOperator(ILGenInfo *info, ILClass *classInfo,
 								  const char *name, ILType *arg1Type,
-								  ILType *arg2Type);
+								  ILNode *arg1Node, ILType *arg2Type,
+								  ILNode *arg2Node);
 
 /*
  * Resolve a call to a conversion operator.

@@ -9,6 +9,9 @@
 	csharp/lexer/literal1.il, csharp/lexer/literal1.jl:
 	add "beforefieldinit" to test output files that require it.
 
+	* csharp/expr/sizeof1.il, csharp/parser/member_access3.il:
+	add security attributes that indicate unsafe code.
+
 2002-03-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/enum1.cs,

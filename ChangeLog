@@ -6,6 +6,12 @@
 	is already a def.  This is needed to handle forward definitions
 	within the same class.
 
+	* ilalink/link_field.c, ilalink/link_method.c: back out the
+	previous change.  The real bug was in the search code that
+	converts MemberRef's into MethodDef's and FieldDef's when the
+	actual definition is encountered.  The method or field signature
+	must be converted to the foreign image prior to testing, not after.
+
 2001-01-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_invoke.tc, cscc/cs_lvalue.tc: report errors when instance

@@ -28,10 +28,15 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 {
 	ILField *newField;
 	const char *name = ILField_Name(field);
-	ILType *type = ILField_Type(field);
+	ILType *type = ILFieldGetTypeWithPrefixes(field);
 
 	/* See if we already have a definition of this field in the class */
 	newField = 0;
+	type = _ILLinkerConvertType(linker, type);
+	if(!type)
+	{
+		return 0;
+	}
 	while((newField = (ILField *)ILClassNextMemberByKind
 				(newClass, (ILMember *)newField, IL_META_MEMBERKIND_FIELD))
 						!= 0)
@@ -68,12 +73,7 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 			return 0;
 		}
 
-		/* Convert the field's type */
-		type = _ILLinkerConvertType(linker, type);
-		if(!type)
-		{
-			return 0;
-		}
+		/* Apply the converted type to the field */
 		ILMemberSetSignature((ILMember *)newField, type);
 	}
 	else

@@ -573,6 +573,11 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 
 	/* See if we already have a definition of this method in the class */
 	newMethod = 0;
+	signature = _ILLinkerConvertType(linker, signature);
+	if(!signature)
+	{
+		return 0;
+	}
 	while((newMethod = (ILMethod *)ILClassNextMemberByKind
 				(newClass, (ILMember *)newMethod, IL_META_MEMBERKIND_METHOD))
 						!= 0)
@@ -609,13 +614,9 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 			return 0;
 		}
 
-		/* Convert the signature and apply it */
-		newSignature = _ILLinkerConvertType(linker, signature);
-		if(!newSignature)
-		{
-			return 0;
-		}
-		ILMemberSetSignature((ILMember *)newMethod, newSignature);
+		/* Apply the converted signature to the new method */
+		ILMemberSetSignature((ILMember *)newMethod, signature);
+		newSignature = signature;
 	}
 	else
 	{
@@ -837,14 +838,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 		}
 
 		/* Create a MemberRef for the method */
-		if(ILClassIsRef(owner))
-		{
-			method = ILMethodCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
-		}
-		else
-		{
-			method = ILMethodCreate(owner, 0, name, 0);
-		}
+		method = ILMethodCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
 		if(!method)
 		{
 			_ILLinkerOutOfMemory(linker);
@@ -869,14 +863,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 		}
 
 		/* Create a MemberRef for the field */
-		if(ILClassIsRef(owner))
-		{
-			field = ILFieldCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
-		}
-		else
-		{
-			field = ILFieldCreate(owner, 0, name, 0);
-		}
+		field = ILFieldCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
 		if(!field)
 		{
 			_ILLinkerOutOfMemory(linker);

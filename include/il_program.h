@@ -2181,11 +2181,6 @@ ILExportedType *ILExportedTypeCreate(ILImage *image, ILToken token,
 									 const char *nspace);
 
 /*
- * Get the attributes associated with an exported type declaration.
- */
-ILUInt32 ILExportedTypeGetAttrs(ILExportedType *type);
-
-/*
  * Set the foreign type ID associated with an exported type declaration.
  */
 void ILExportedTypeSetId(ILExportedType *type, ILUInt32 identifier);
@@ -2194,12 +2189,6 @@ void ILExportedTypeSetId(ILExportedType *type, ILUInt32 identifier);
  * Get the foreign type ID associated with an exported type declaration.
  */
 ILUInt32 ILExportedTypeGetId(ILExportedType *type);
-
-/*
- * Get the name and namespace associated with an exported type declaration.
- */
-const char *ILExportedTypeGetName(ILExportedType *type);
-const char *ILExportedTypeGetNamespace(ILExportedType *type);
 
 /*
  * Set the scope in which an exported type can be found to a file.
@@ -2218,12 +2207,6 @@ void ILExportedTypeSetScopeAssembly(ILExportedType *type, ILAssembly *assem);
 void ILExportedTypeSetScopeType(ILExportedType *type, ILExportedType *scope);
 
 /*
- * Get the scope in which an exported type can be found.
- * Normally a File, ExportedType, or AssemblyRef.
- */
-ILProgramItem *ILExportedTypeGetScope(ILExportedType *type);
-
-/*
  * Find an exported type from its name and namespace.
  * Returns NULL if not found.
  */
@@ -2237,11 +2220,11 @@ ILExportedType *ILExportedTypeFind(ILImage *image,
 #define	ILExportedType_FromToken(image,token)	\
 				((ILExportedType *)ILImageTokenInfo((image), (token)))
 #define	ILExportedType_Token(type)		(ILProgramItem_Token((type)))
-#define	ILExportedType_Attrs(type)		(ILExportedTypeGetAttrs((type)))
+#define	ILExportedType_Attrs(type)		(ILClassGetAttrs((ILClass *)(type)))
 #define	ILExportedType_Id(type)			(ILExportedTypeGetId((type)))
-#define	ILExportedType_Name(type)		(ILExportedTypeGetName((type)))
-#define	ILExportedType_Namespace(type)	(ILExportedTypeGetNamespace((type)))
-#define	ILExportedType_Scope(type)		(ILExportedTypeGetScope((type)))
+#define	ILExportedType_Name(type)		(ILClassGetName((ILClass *)(type)))
+#define	ILExportedType_Namespace(type)	(ILClassGetNamespace((ILClass *)(type)))
+#define	ILExportedType_Scope(type)		(ILClassGetScope((ILClass *)(type)))
 
 /*
  * Create a generic parameter record.

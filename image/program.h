@@ -612,12 +612,8 @@ struct _tagILManifestRes
  */
 struct _tagILExportedType
 {
-	ILProgramItem	programItem;		/* Parent class fields */
-	ILUInt32		attributes;			/* Attributes for the type */
+	ILClass			classItem;			/* Parent class fields */
 	ILUInt32		identifier;			/* Foreign identifier for the type */
-	const char     *name;				/* Name for the type */
-	const char     *namespace;			/* Namespace for the type */
-	ILProgramItem  *scope;				/* Scope where the type exists */
 
 };
 

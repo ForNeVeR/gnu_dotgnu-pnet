@@ -647,12 +647,13 @@ static void Format_File(ILWriter *writer, ILImage *image,
 static void Format_ExportedType(ILWriter *writer, ILImage *image,
 	 		            		ILUInt32 *values, ILExportedType *type)
 {
-	values[IL_OFFSET_EXPTYPE_ATTRS] = type->attributes;
+	values[IL_OFFSET_EXPTYPE_ATTRS] = type->classItem.attributes;
 	values[IL_OFFSET_EXPTYPE_CLASS] = type->identifier;
-	values[IL_OFFSET_EXPTYPE_NAME] = GetPersistString(image, type->name);
+	values[IL_OFFSET_EXPTYPE_NAME] =
+			GetPersistString(image, type->classItem.name);
 	values[IL_OFFSET_EXPTYPE_NAMESPACE] =
-			GetPersistString(image, type->namespace);
-	values[IL_OFFSET_EXPTYPE_FILE] = type->scope->token;
+			GetPersistString(image, type->classItem.namespace);
+	values[IL_OFFSET_EXPTYPE_FILE] = type->classItem.scope->token;
 }
 
 /*

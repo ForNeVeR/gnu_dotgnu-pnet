@@ -18,6 +18,11 @@
 	* ildasm/ildasm_global.c (Dump_ExportedType): dump the foreign
 	type identifier in hex.
 
+	* image/class.c, image/item.c, image/meta_writer.c,
+	image/misc_token.c, image/program.h, include/il_program.h:
+	convert ILExportedType into a subclass of ILClass so that we
+	can treat exported types as a special kind of typeref.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

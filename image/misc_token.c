@@ -833,27 +833,51 @@ ILExportedType *ILExportedTypeCreate(ILImage *image, ILToken token,
 	}
 
 	/* Set the exported type fields */
-	type->programItem.image = image;
-	type->attributes = attributes;
+	type->classItem.programItem.image = image;
+	type->classItem.attributes = attributes | IL_META_TYPEDEF_REFERENCE;
 	type->identifier = 0;
-	type->name = _ILContextPersistString(image, name);
-	type->namespace = _ILContextPersistString(image, namespace);
-	type->scope = 0;
+	type->classItem.name = _ILContextPersistString(image, name);
+	if(!(type->classItem.name))
+	{
+		return 0;
+	}
+	if(namespace)
+	{
+		type->classItem.namespace = _ILContextPersistString(image, namespace);
+		if(!(type->classItem.namespace))
+		{
+			return 0;
+		}
+	}
+	type->classItem.scope = 0;
 
 	/* Assign a token code to the exported type */
-	if(!_ILImageSetToken(image, &(type->programItem), token,
+	if(!_ILImageSetToken(image, &(type->classItem.programItem), token,
 						 IL_META_TOKEN_EXPORTED_TYPE))
 	{
 		return 0;
 	}
 
+	/* Add the class to the context's hash table */
+	if(!ILHashAdd(image->context->classHash, &(type->classItem)))
+	{
+		return 0;
+	}
+
+	/* Add the namespace to the context's namespace table if not present */
+	if(namespace)
+	{
+		if(ILHashFind(image->context->namespaceHash, namespace) == 0)
+		{
+			if(!ILHashAdd(image->context->namespaceHash, &(type->classItem)))
+			{
+				return 0;
+			}
+		}
+	}
+
 	/* Return the exported type to the caller */
 	return type;
-}
-
-ILUInt32 ILExportedTypeGetAttrs(ILExportedType *type)
-{
-	return type->attributes;
 }
 
 void ILExportedTypeSetId(ILExportedType *type, ILUInt32 identifier)
@@ -866,34 +890,19 @@ ILUInt32 ILExportedTypeGetId(ILExportedType *type)
 	return type->identifier;
 }
 
-const char *ILExportedTypeGetName(ILExportedType *type)
-{
-	return type->name;
-}
-
-const char *ILExportedTypeGetNamespace(ILExportedType *type)
-{
-	return type->namespace;
-}
-
 void ILExportedTypeSetScopeFile(ILExportedType *type, ILFileDecl *decl)
 {
-	type->scope = (ILProgramItem *)decl;
+	type->classItem.scope = (ILProgramItem *)decl;
 }
 
 void ILExportedTypeSetScopeAssembly(ILExportedType *type, ILAssembly *assem)
 {
-	type->scope = (ILProgramItem *)assem;
+	type->classItem.scope = (ILProgramItem *)assem;
 }
 
 void ILExportedTypeSetScopeType(ILExportedType *type, ILExportedType *scope)
 {
-	type->scope = (ILProgramItem *)scope;
-}
-
-ILProgramItem *ILExportedTypeGetScope(ILExportedType *type)
-{
-	return type->scope;
+	type->classItem.scope = (ILProgramItem *)scope;
 }
 
 ILExportedType *ILExportedTypeFind(ILImage *image,
@@ -909,18 +918,18 @@ ILExportedType *ILExportedTypeFind(ILImage *image,
 	while((type = (ILExportedType *)ILImageNextToken
 				(image, IL_META_TOKEN_EXPORTED_TYPE, type)) != 0)
 	{
-		if(!strcmp(type->name, name))
+		if(!strcmp(type->classItem.name, name))
 		{
 			if(!namespace)
 			{
-				if(!(type->namespace))
+				if(!(type->classItem.namespace))
 				{
 					return type;
 				}
 			}
-			else if(type->namespace)
+			else if(type->classItem.namespace)
 			{
-				if(!strcmp(type->namespace, namespace))
+				if(!strcmp(type->classItem.namespace, namespace))
 				{
 					return type;
 				}

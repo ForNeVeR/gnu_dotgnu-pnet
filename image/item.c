@@ -400,7 +400,8 @@ ILClass *ILProgramItemToClass(ILProgramItem *item)
 		return 0;
 	}
 	else if((item->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_DEF ||
-	        (item->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_REF)
+	        (item->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_REF ||
+	        (item->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_EXPORTED_TYPE)
 	{
 		return (ILClass *)item;
 	}

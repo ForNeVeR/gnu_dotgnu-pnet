@@ -314,7 +314,8 @@ ILProgramItem *ILClassGlobalScope(ILImage *image)
 int ILClassIsNestingScope(ILProgramItem *scope)
 {
 	if((scope->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_REF ||
-	   (scope->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_DEF)
+	   (scope->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_DEF ||
+	   (scope->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_EXPORTED_TYPE)
 	{
 		return 1;
 	}

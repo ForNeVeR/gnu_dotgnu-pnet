@@ -171,6 +171,7 @@ struct _tagILClass
 	ILNestedInfo   *nestedChildren;		/* List of nested children */
 	ILProgramItem  *scope;				/* Scope that the class is defined in */
 	ILType         *synthetic;			/* Synthetic type for this class */
+	void           *userData;			/* Data added by the runtime engine */
 
 };
 
@@ -190,6 +191,7 @@ struct _tagILImplements
 	ILClass		   *implement;			/* Implementing class */
 	ILClass		   *interface;			/* Implemented interface */
 	ILImplements   *nextInterface;		/* Next implemented interface */
+	void           *userData;			/* Data added by the runtime engine */
 
 };
 
@@ -240,6 +242,7 @@ struct _tagILMethod
 	ILUInt32		rva;				/* Address of the method's code */
 	ILParameter    *parameters;			/* Parameter definitions */
 	void           *userData;			/* User data for the runtime engine */
+	ILUInt32		index;				/* Data added by the runtime engine */
 
 };
 
@@ -262,6 +265,7 @@ struct _tagILParameter
 struct _tagILField
 {
 	ILMember		member;				/* Common member fields */
+	ILUInt32		offset;				/* Data added by the runtime engine */
 
 };
 

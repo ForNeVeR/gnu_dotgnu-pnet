@@ -1,3 +1,6 @@
+2002-11-10 Jeff Post <jpost@pacbell.net>
+	* runtime/System/IO/StreamWriter.cs: Add code to output
+	strings, single characters, and buffers of chars to stream.
 
 2002-11-09  Jonathan Springer <jonathan.springer@verizon.net>
 

@@ -212,14 +212,19 @@ public class StreamWriter : TextWriter
 			}
 
 	// Write a string to the stream writer.
-	[TODO]
 	public override void Write(String value)
 			{
-				// TODO
+				char[] chars;
+
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				chars = value.ToCharArray();
+				Write(chars, 0, chars.Length);
 			}
 
 	// Write a buffer of characters to this stream writer.
-	[TODO]
 	public override void Write(char[] buffer, int index, int count)
 			{
 				if(buffer == null)
@@ -241,7 +246,20 @@ public class StreamWriter : TextWriter
 					throw new ArgumentException
 						(_("Arg_InvalidArrayRange"));
 				}
-				// TODO
+
+				while (count > 0)
+				{
+					if (this.outBufferLen >= this.bufferSize - 1)
+					{
+						stream.Write(outBuffer, outBufferPosn,
+									 outBufferLen - outBufferPosn);
+						outBufferPosn = 0;
+						outBufferLen = 0;
+						stream.Flush();
+					}
+					this.outBuffer[this.outBufferLen++] = (byte) buffer[index++];
+					--count;
+				}
 			}
 	public override void Write(char[] buffer)
 			{
@@ -253,10 +271,12 @@ public class StreamWriter : TextWriter
 			}
 
 	// Write a single character to this stream writer.
-	[TODO]
 	public override void Write(char value)
 			{
-				// TODO
+				char[] bfr;
+
+				bfr[0] = value;
+				Write(bfr, 0, 1);
 			}
 
 	// Get or set the autoflush state of this stream writer.

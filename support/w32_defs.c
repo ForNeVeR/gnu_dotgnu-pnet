@@ -19,6 +19,7 @@
  */
 
 #include "thr_defs.h"
+#include <windows.h>
 
 #ifdef	 IL_USE_WIN32_THREADS
 

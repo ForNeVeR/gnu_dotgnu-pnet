@@ -114,6 +114,9 @@ static int ClassHash_Match(const ILClass *classInfo, const ILClassKeyInfo *key)
 	return 1;
 }
 
+/* Defined in "synthetic.c" */
+int _ILContextSyntheticInit(ILContext *context);
+
 ILContext *ILContextCreate(void)
 {
 	ILContext *context = (ILContext *)ILCalloc(1, sizeof(ILContext));
@@ -131,6 +134,11 @@ ILContext *ILContextCreate(void)
 		}
 		ILMemPoolInitType(&(context->typePool), ILType, 0);
 	}
+	if(!_ILContextSyntheticInit(context))
+	{
+		ILContextDestroy(context);
+		return 0;
+	}
 	return context;
 }
 
@@ -144,6 +152,9 @@ void ILContextDestroy(ILContext *context)
 
 	/* Destroy the class hash */
 	ILHashDestroy(context->classHash);
+
+	/* Destroy the synthetic types hash */
+	ILHashDestroy(context->syntheticHash);
 
 	/* Destroy the type pool */
 	ILMemPoolDestroy(&(context->typePool));

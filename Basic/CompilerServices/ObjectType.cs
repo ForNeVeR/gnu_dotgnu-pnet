@@ -49,6 +49,7 @@ public sealed class ObjectType
 				{
 					o2 = o1;
 				}
+			#if !ECMA_COMPAT
 				if(o1 is IConvertible)
 				{
 					tc1 = ((IConvertible)o1).GetTypeCode();
@@ -76,6 +77,27 @@ public sealed class ObjectType
 						tc2 = TypeCode.Empty;
 					}
 				}
+			#else
+				if(o1 is char[])
+				{
+					tc1 = TypeCode.String;
+				}
+				else
+				{
+					tc1 = GetTypeCode(o1);
+				}
+				if(tc2 == (TypeCode)(-1))
+				{
+					if(o2 is char[])
+					{
+						tc2 = TypeCode.String;
+					}
+					else
+					{
+						tc2 = GetTypeCode(o2);
+					}
+				}
+			#endif
 
 				// Handle the special case of string comparisons.
 				if(compare)
@@ -256,6 +278,7 @@ public sealed class ObjectType
 	// Get the type code for an object.
 	internal static TypeCode GetTypeCode(Object obj)
 			{
+			#if !ECMA_COMPAT
 				IConvertible ic = (obj as IConvertible);
 				if(ic != null)
 				{
@@ -265,6 +288,76 @@ public sealed class ObjectType
 				{
 					return TypeCode.Empty;
 				}
+			#else
+				if(obj == null)
+				{
+					return TypeCode.Empty;
+				}
+				if(obj is Boolean)
+				{
+					return TypeCode.Boolean;
+				}
+				else if(obj is Char)
+				{
+					return TypeCode.Char;
+				}
+				else if(obj is SByte)
+				{
+					return TypeCode.SByte;
+				}
+				else if(obj is Byte)
+				{
+					return TypeCode.Byte;
+				}
+				else if(obj is Int16)
+				{
+					return TypeCode.Int16;
+				}
+				else if(obj is UInt16)
+				{
+					return TypeCode.UInt16;
+				}
+				else if(obj is Int32)
+				{
+					return TypeCode.Int32;
+				}
+				else if(obj is UInt32)
+				{
+					return TypeCode.UInt32;
+				}
+				else if(obj is Int64)
+				{
+					return TypeCode.Int64;
+				}
+				else if(obj is UInt64)
+				{
+					return TypeCode.UInt64;
+				}
+				else if(obj is Single)
+				{
+					return TypeCode.Single;
+				}
+				else if(obj is Double)
+				{
+					return TypeCode.Double;
+				}
+				else if(obj is Decimal)
+				{
+					return TypeCode.Decimal;
+				}
+				else if(obj is DateTime)
+				{
+					return TypeCode.DateTime;
+				}
+				else if(obj is String)
+				{
+					return TypeCode.String;
+				}
+				else
+				{
+					return TypeCode.Empty;
+				}
+			#endif
 			}
 
 	// Add two objects.
@@ -636,6 +729,7 @@ public sealed class ObjectType
 	// Convert an object into its primitive form.
 	public static Object GetObjectValuePrimitive(Object o)
 			{
+			#if !ECMA_COMPAT
 				if(o == null)
 				{
 					return null;
@@ -687,6 +781,7 @@ public sealed class ObjectType
 					case TypeCode.DateTime:
 						return ((IConvertible)o).ToDateTime(null);
 				}
+			#endif // !ECMA_COMPAT
 				return o;
 			}
 
@@ -1391,6 +1486,7 @@ public sealed class ObjectType
 	// Concatenate two objects.
 	public static Object StrCatObj(Object o1, Object o2)
 			{
+			#if !ECMA_COMPAT
 				if(o1 is DBNull)
 				{
 					o1 = String.Empty;
@@ -1399,6 +1495,7 @@ public sealed class ObjectType
 				{
 					o2 = String.Empty;
 				}
+			#endif
 				return StringType.FromObject(o1) + StringType.FromObject(o2);
 			}
 

@@ -49,6 +49,7 @@ public sealed class DecimalType
 	public static Decimal FromObject
 				(Object Value, NumberFormatInfo NumberFormat)
 			{
+			#if !ECMA_COMPAT
 				if(Value != null)
 				{
 					IConvertible ic = (Value as IConvertible);
@@ -75,6 +76,76 @@ public sealed class DecimalType
 				{
 					return 0.0m;
 				}
+			#else
+				if(Value == null)
+				{
+					return 0;
+				}
+				Type type = Value.GetType();
+				if(type == typeof(byte))
+				{
+					return Convert.ToDecimal((byte)Value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return Convert.ToDecimal((sbyte)Value);
+				}
+				else if(type == typeof(short))
+				{
+					return Convert.ToDecimal((short)Value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return Convert.ToDecimal((ushort)Value);
+				}
+				else if(type == typeof(char))
+				{
+					return Convert.ToDecimal((char)Value);
+				}
+				else if(type == typeof(int))
+				{
+					return Convert.ToDecimal((int)Value);
+				}
+				else if(type == typeof(uint))
+				{
+					return Convert.ToDecimal((uint)Value);
+				}
+				else if(type == typeof(long))
+				{
+					return Convert.ToDecimal((long)Value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return Convert.ToDecimal((ulong)Value);
+				}
+				else if(type == typeof(float))
+				{
+					return Convert.ToDecimal((float)Value);
+				}
+				else if(type == typeof(double))
+				{
+					return Convert.ToDecimal((double)Value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return (Decimal)Value;
+				}
+				else if(type == typeof(String))
+				{
+					return Convert.ToDecimal((String)Value);
+				}
+				else if(type == typeof(bool))
+				{
+					return Convert.ToDecimal((bool)Value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(S._("VB_InvalidCast"),
+							 Value.GetType(), "System.Decimal"));
+				}
+			#endif
 			}
 
 	// Convert a string into a decimal value.

@@ -35,11 +35,15 @@ public sealed class DoubleType
 	// This class cannot be instantiated.
 	private DoubleType() {}
 
+#if !ECMA_COMPAT
+
 	// Convert a decimal value into a double value.
 	public static double DecimalToDouble(IConvertible ValueInterface)
 			{
 				return Convert.ToDouble(ValueInterface.ToDecimal(null));
 			}
+
+#endif
 
 	// Convert an object into a double value.
 	public static double FromObject(Object Value)
@@ -49,6 +53,7 @@ public sealed class DoubleType
 	public static double FromObject
 				(Object Value, NumberFormatInfo NumberFormat)
 			{
+			#if !ECMA_COMPAT
 				if(Value != null)
 				{
 					IConvertible ic = (Value as IConvertible);
@@ -75,6 +80,76 @@ public sealed class DoubleType
 				{
 					return 0.0;
 				}
+			#else
+				if(Value == null)
+				{
+					return 0;
+				}
+				Type type = Value.GetType();
+				if(type == typeof(byte))
+				{
+					return Convert.ToDouble((byte)Value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return Convert.ToDouble((sbyte)Value);
+				}
+				else if(type == typeof(short))
+				{
+					return Convert.ToDouble((short)Value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return Convert.ToDouble((ushort)Value);
+				}
+				else if(type == typeof(char))
+				{
+					return Convert.ToDouble((char)Value);
+				}
+				else if(type == typeof(int))
+				{
+					return Convert.ToDouble((int)Value);
+				}
+				else if(type == typeof(uint))
+				{
+					return Convert.ToDouble((uint)Value);
+				}
+				else if(type == typeof(long))
+				{
+					return Convert.ToDouble((long)Value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return Convert.ToDouble((ulong)Value);
+				}
+				else if(type == typeof(float))
+				{
+					return (double)(float)Value;
+				}
+				else if(type == typeof(double))
+				{
+					return (double)Value;
+				}
+				else if(type == typeof(Decimal))
+				{
+					return Convert.ToDouble((Decimal)Value);
+				}
+				else if(type == typeof(String))
+				{
+					return Convert.ToDouble((String)Value);
+				}
+				else if(type == typeof(bool))
+				{
+					return Convert.ToDouble((bool)Value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(S._("VB_InvalidCast"),
+							 Value.GetType(), "System.Double"));
+				}
+			#endif
 			}
 
 	// Convert a string into a double value.

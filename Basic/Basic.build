@@ -11,8 +11,8 @@
 				 optimize="true">
 
 			<sources>
-				<includes if="${NON_ECMA}" name="**/*.cs"/>
-				<excludes if="${NON_ECMA}" name="S.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="**/*.cs"/>
+				<excludes if="${CONFIG_EXTENDED_NUMERICS}" name="S.cs"/>
 				<file name="S.cs"/>
 			</sources>
 

@@ -93,8 +93,10 @@ public sealed class ErrObject
 				this.HelpContext = IntegerType.FromObject(HelpContext);
 				this.exception = CreateExceptionFromNumber
 						(Number, this.Description);
+			#if !ECMA_COMPAT
 				this.exception.Source = this.Source;
 				this.exception.HelpLink = this.HelpFile;
+			#endif
 				throw this.exception;
 			}
 
@@ -143,10 +145,12 @@ public sealed class ErrObject
 				set
 				{
 					helpFile = value;
+				#if !ECMA_COMPAT
 					if(exception != null)
 					{
 						exception.HelpLink = helpFile;
 					}
+				#endif
 				}
 			}
 
@@ -202,8 +206,13 @@ public sealed class ErrObject
 				{
 					return 28;
 				}
-				if(exception is DllNotFoundException ||
-				   exception is FileNotFoundException)
+			#if !ECMA_COMPAT
+				if(exception is DllNotFoundException)
+				{
+					return 53;
+				}
+			#endif
+				if(exception is FileNotFoundException)
 				{
 					return 53;
 				}
@@ -370,10 +379,12 @@ public sealed class ErrObject
 				set
 				{
 					source = value;
+				#if !ECMA_COMPAT
 					if(exception != null)
 					{
 						exception.Source = value;
 					}
+				#endif
 				}
 			}
 

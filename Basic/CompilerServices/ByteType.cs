@@ -34,15 +34,20 @@ public sealed class ByteType
 	// This class cannot be instantiated.
 	private ByteType() {}
 
+#if !ECMA_COMPAT
+
 	// Convert a decimal value into a byte.
 	public static byte DecimalToByte(IConvertible ValueInterface)
 			{
 				return Convert.ToByte(ValueInterface.ToDecimal(null));
 			}
 
+#endif
+
 	// Convert an object into a byte value.
 	public static byte FromObject(Object Value)
 			{
+			#if !ECMA_COMPAT
 				if(Value != null)
 				{
 					IConvertible ic = (Value as IConvertible);
@@ -69,6 +74,9 @@ public sealed class ByteType
 				{
 					return 0;
 				}
+			#else
+				return checked((byte)(LongType.FromObject(Value)));
+			#endif
 			}
 
 	// Convert a string into a byte value.

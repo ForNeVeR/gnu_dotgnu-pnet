@@ -34,15 +34,20 @@ public sealed class LongType
 	// This class cannot be instantiated.
 	private LongType() {}
 
+#if !ECMA_COMPAT
+
 	// Convert a decimal value into a long.
 	public static long DecimalToLong(IConvertible ValueInterface)
 			{
 				return Convert.ToInt64(ValueInterface.ToDecimal(null));
 			}
 
+#endif
+
 	// Convert an object into a long value.
 	public static long FromObject(Object Value)
 			{
+			#if !ECMA_COMPAT
 				if(Value != null)
 				{
 					IConvertible ic = (Value as IConvertible);
@@ -69,6 +74,78 @@ public sealed class LongType
 				{
 					return 0;
 				}
+			#else
+				if(Value == null)
+				{
+					return 0;
+				}
+				Type type = Value.GetType();
+				if(type == typeof(byte))
+				{
+					return Convert.ToInt64((byte)Value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return Convert.ToInt64((sbyte)Value);
+				}
+				else if(type == typeof(short))
+				{
+					return Convert.ToInt64((short)Value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return Convert.ToInt64((ushort)Value);
+				}
+				else if(type == typeof(char))
+				{
+					return Convert.ToInt64((char)Value);
+				}
+				else if(type == typeof(int))
+				{
+					return Convert.ToInt64((int)Value);
+				}
+				else if(type == typeof(uint))
+				{
+					return Convert.ToInt64((uint)Value);
+				}
+				else if(type == typeof(long))
+				{
+					return (long)Value;
+				}
+				else if(type == typeof(ulong))
+				{
+					return Convert.ToInt64((ulong)Value);
+				}
+#if CONFIG_EXTENDED_NUMERICS
+				else if(type == typeof(float))
+				{
+					return Convert.ToInt64((float)Value);
+				}
+				else if(type == typeof(double))
+				{
+					return Convert.ToInt64((double)Value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return Convert.ToInt64((Decimal)Value);
+				}
+#endif
+				else if(type == typeof(String))
+				{
+					return Convert.ToInt64((String)Value);
+				}
+				else if(type == typeof(bool))
+				{
+					return Convert.ToInt64((bool)Value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(S._("VB_InvalidCast"),
+							 Value.GetType(), "System.Int64"));
+				}
+			#endif
 			}
 
 	// Try to convert a value using hex or octal forms into "long".
@@ -102,6 +179,8 @@ public sealed class LongType
 				}
 				str = Utils.FixDigits(str);
 				ch = str[posn];
+			#if !ECMA_COMPAT
+				// TODO: handle hex and octal in non-ECMA modes
 				if(ch == 'h' || ch == 'H')
 				{
 					// Recognize a hexadecimal value.
@@ -115,6 +194,7 @@ public sealed class LongType
 					return true;
 				}
 				else
+			#endif
 				{
 					// Not a legitimate number format.
 					throw new FormatException(S._("VB_InvalidHexOrOct"));

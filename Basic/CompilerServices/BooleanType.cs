@@ -34,15 +34,20 @@ public sealed class BooleanType
 	// This class cannot be instantiated.
 	private BooleanType() {}
 
+#if !ECMA_COMPAT
+
 	// Convert a decimal value into boolean.
 	public static bool DecimalToBoolean(IConvertible ValueInterface)
 			{
 				return Convert.ToBoolean(ValueInterface.ToDecimal(null));
 			}
 
+#endif
+
 	// Convert an object into a boolean value.
 	public static bool FromObject(Object Value)
 			{
+			#if !ECMA_COMPAT
 				if(Value != null)
 				{
 					IConvertible ic = (Value as IConvertible);
@@ -69,6 +74,78 @@ public sealed class BooleanType
 				{
 					return false;
 				}
+			#else
+				if(Value == null)
+				{
+					return false;
+				}
+				Type type = Value.GetType();
+				if(type == typeof(byte))
+				{
+					return Convert.ToBoolean((byte)Value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return Convert.ToBoolean((sbyte)Value);
+				}
+				else if(type == typeof(short))
+				{
+					return Convert.ToBoolean((short)Value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return Convert.ToBoolean((ushort)Value);
+				}
+				else if(type == typeof(char))
+				{
+					return Convert.ToBoolean((char)Value);
+				}
+				else if(type == typeof(int))
+				{
+					return Convert.ToBoolean((int)Value);
+				}
+				else if(type == typeof(uint))
+				{
+					return Convert.ToBoolean((uint)Value);
+				}
+				else if(type == typeof(long))
+				{
+					return Convert.ToBoolean((long)Value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return Convert.ToBoolean((ulong)Value);
+				}
+#if CONFIG_EXTENDED_NUMERICS
+				else if(type == typeof(float))
+				{
+					return Convert.ToBoolean((float)Value);
+				}
+				else if(type == typeof(double))
+				{
+					return Convert.ToBoolean((double)Value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return Convert.ToBoolean((Decimal)Value);
+				}
+#endif
+				else if(type == typeof(String))
+				{
+					return Convert.ToBoolean((String)Value);
+				}
+				else if(type == typeof(bool))
+				{
+					return (bool)Value;
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(S._("VB_InvalidCast"),
+							 Value.GetType(), "System.Boolean"));
+				}
+			#endif
 			}
 
 	// Convert a string into a boolean value.

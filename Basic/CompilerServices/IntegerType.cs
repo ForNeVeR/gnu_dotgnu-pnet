@@ -34,15 +34,20 @@ public sealed class IntegerType
 	// This class cannot be instantiated.
 	private IntegerType() {}
 
+#if !ECMA_COMPAT
+
 	// Convert a decimal value into an integer.
 	public static int DecimalToInteger(IConvertible ValueInterface)
 			{
 				return Convert.ToInt32(ValueInterface.ToDecimal(null));
 			}
 
+#endif
+
 	// Convert an object into an integer value.
 	public static int FromObject(Object Value)
 			{
+			#if !ECMA_COMPAT
 				if(Value != null)
 				{
 					IConvertible ic = (Value as IConvertible);
@@ -69,6 +74,9 @@ public sealed class IntegerType
 				{
 					return 0;
 				}
+			#else
+				return checked((int)(LongType.FromObject(Value)));
+			#endif
 			}
 
 	// Convert a string into an integer value.

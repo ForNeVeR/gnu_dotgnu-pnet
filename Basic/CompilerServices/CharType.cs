@@ -37,6 +37,7 @@ public sealed class CharType
 	// Convert an object into a char value.
 	public static char FromObject(Object Value)
 			{
+			#if !ECMA_COMPAT
 				if(Value != null)
 				{
 					IConvertible ic = (Value as IConvertible);
@@ -63,6 +64,60 @@ public sealed class CharType
 				{
 					return '\0';
 				}
+			#else
+				if(Value == null)
+				{
+					return '\u0000';
+				}
+				Type type = Value.GetType();
+				if(type == typeof(byte))
+				{
+					return Convert.ToChar((byte)Value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return Convert.ToChar((sbyte)Value);
+				}
+				else if(type == typeof(short))
+				{
+					return Convert.ToChar((short)Value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return Convert.ToChar((ushort)Value);
+				}
+				else if(type == typeof(char))
+				{
+					return (char)Value;
+				}
+				else if(type == typeof(int))
+				{
+					return Convert.ToChar((int)Value);
+				}
+				else if(type == typeof(uint))
+				{
+					return Convert.ToChar((uint)Value);
+				}
+				else if(type == typeof(long))
+				{
+					return Convert.ToChar((long)Value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return Convert.ToChar((ulong)Value);
+				}
+				else if(type == typeof(String))
+				{
+					return Convert.ToChar((String)Value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(S._("VB_InvalidCast"),
+							 Value.GetType(), "System.Char"));
+				}
+			#endif
 			}
 
 	// Convert a string into a char array value.

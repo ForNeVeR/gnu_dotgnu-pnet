@@ -35,11 +35,15 @@ public sealed class SingleType
 	// This class cannot be instantiated.
 	private SingleType() {}
 
+#if !ECMA_COMPAT
+
 	// Convert a decimal value into a float value.
 	public static float DecimalToSingle(IConvertible ValueInterface)
 			{
 				return Convert.ToSingle(ValueInterface.ToDecimal(null));
 			}
+
+#endif
 
 	// Convert an object into a float value.
 	public static float FromObject(Object Value)
@@ -49,6 +53,7 @@ public sealed class SingleType
 	public static float FromObject
 				(Object Value, NumberFormatInfo NumberFormat)
 			{
+			#if !ECMA_COMPAT
 				if(Value != null)
 				{
 					IConvertible ic = (Value as IConvertible);
@@ -75,6 +80,9 @@ public sealed class SingleType
 				{
 					return 0.0f;
 				}
+			#else
+				return (float)(DoubleType.FromObject(Value, NumberFormat));
+			#endif
 			}
 
 	// Convert a string into a float value.

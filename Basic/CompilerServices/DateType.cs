@@ -38,6 +38,7 @@ public sealed class DateType
 	// Convert an object into a date value.
 	public static DateTime FromObject(Object Value)
 			{
+			#if !ECMA_COMPAT
 				IConvertible ic = (Value as IConvertible);
 				if(ic != null)
 				{
@@ -50,6 +51,12 @@ public sealed class DateType
 						return FromString(ic.ToString(null));
 					}
 				}
+			#else
+				if(Value is DateTime)
+				{
+					return (DateTime)Value;
+				}
+			#endif
 				throw new InvalidCastException
 					(String.Format
 						(S._("VB_InvalidCast"),

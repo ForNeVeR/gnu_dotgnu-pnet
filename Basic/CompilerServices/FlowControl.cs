@@ -87,6 +87,7 @@ public sealed class FlowControl
 	// Cast an object to a new type.
 	private static Object CastToType(Object obj, TypeCode type)
 			{
+			#if !ECMA_COMPAT
 				switch(type)
 				{
 					case TypeCode.Boolean:
@@ -114,6 +115,9 @@ public sealed class FlowControl
 						return ((IConvertible)obj).ToDecimal(null);
 				}
 				return obj;
+			#else
+				return obj;
+			#endif
 			}
 
 	// Determine if a value is negative.

@@ -166,7 +166,7 @@ public sealed class Utils
 
 				// Create a string builder and output the access level.
 				StringBuilder builder = new StringBuilder();
-				if(Method.IsVirtual)
+				if((Method.Attributes & MethodAttributes.Virtual) != 0)
 				{
 					if(Method.DeclaringType.IsInterface)
 					{
@@ -220,7 +220,8 @@ public sealed class Utils
 						builder.Append(", ");
 					}
 					type = parameters[index].ParameterType;
-					if(parameters[index].IsOptional)
+					if((parameters[index].Attributes
+							& ParameterAttributes.Optional) != 0)
 					{
 						builder.Append("Optional ");
 					}
@@ -232,11 +233,13 @@ public sealed class Utils
 					{
 						builder.Append("ByVal ");
 					}
+				#if !ECMA_COMPAT
 					if(type.IsArray && parameters[index].IsDefined
 							(typeof(ParamArrayAttribute), false))
 					{
 						builder.Append("ParamArray ");
 					}
+				#endif
 					name = parameters[index].Name;
 					if(name != null)
 					{
@@ -248,6 +251,7 @@ public sealed class Utils
 					}
 					builder.Append(" As ");
 					AppendType(builder, returnType);
+				#if !ECMA_COMPAT
 					if(parameters[index].IsOptional)
 					{
 						builder.Append(" = ");
@@ -270,6 +274,7 @@ public sealed class Utils
 							builder.Append("Nothing");
 						}
 					}
+				#endif
 				}
 				builder.Append(")");
 
@@ -288,7 +293,9 @@ public sealed class Utils
 	public static Object SetCultureInfo(CultureInfo Culture)
 			{
 				CultureInfo prev = CultureInfo.CurrentCulture;
+			#if !ECMA_COMPAT
 				Thread.CurrentThread.CurrentCulture = Culture;
+			#endif
 				return prev;
 			}
 
@@ -348,6 +355,49 @@ public sealed class Utils
 					}
 				}
 				return builder.ToString();
+			}
+
+	// Base time for OLE Automation values (Midnight, Dec 30, 1899).
+	private static readonly DateTime OLEBaseTime = new DateTime(1899, 12, 30);
+
+	// Convert an OLE Automation date into a DateTime value.
+	internal static DateTime FromOADate(double d)
+			{
+				// Convert the value into ticks, while checking for overflow.
+				long ticks;
+				checked
+				{
+					try
+					{
+						ticks = ((long)(d * (double)TimeSpan.TicksPerDay)) +
+								OLEBaseTime.Ticks;
+					}
+					catch(OverflowException)
+					{
+						throw new ArgumentOutOfRangeException
+							("d", S._("ArgRange_DateTimeRange"));
+					}
+				}
+
+				// Convert the ticks into a DateTime value, which will
+				// perform additional range checking.
+				return new DateTime(ticks);
+			}
+
+	// Convert this DateTime value into an OLE Automation date.
+	internal static double ToOADate(DateTime d)
+			{
+				long value_ = d.Ticks;
+				if(value_ == 0)
+				{
+					// Special case for uninitialized DateTime values.
+					return 0.0;
+				}
+				else
+				{
+					return (((double)value_) / ((double)TimeSpan.TicksPerDay))
+								- ((double)OLEBaseTime.Ticks);
+				}
 			}
 
 }; // class Utils

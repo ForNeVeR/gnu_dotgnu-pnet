@@ -43,11 +43,18 @@ public sealed class CharArrayType
 					{
 						return (char[])Value;
 					}
+				#if !ECMA_COMPAT
 					IConvertible ic = (Value as IConvertible);
 					if(ic != null && ic.GetTypeCode() == TypeCode.String)
 					{
 						return ic.ToString(null).ToCharArray();
 					}
+				#else
+					if(Value is String)
+					{
+						return ((String)Value).ToCharArray();
+					}
+				#endif
 					else
 					{
 						throw new InvalidCastException

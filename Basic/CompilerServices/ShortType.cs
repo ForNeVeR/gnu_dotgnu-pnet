@@ -34,15 +34,20 @@ public sealed class ShortType
 	// This class cannot be instantiated.
 	private ShortType() {}
 
+#if !ECMA_COMPAT
+
 	// Convert a decimal value into a short.
 	public static short DecimalToShort(IConvertible ValueInterface)
 			{
 				return Convert.ToInt16(ValueInterface.ToDecimal(null));
 			}
 
+#endif
+
 	// Convert an object into a short value.
 	public static short FromObject(Object Value)
 			{
+			#if !ECMA_COMPAT
 				if(Value != null)
 				{
 					IConvertible ic = (Value as IConvertible);
@@ -69,6 +74,9 @@ public sealed class ShortType
 				{
 					return 0;
 				}
+			#else
+				return checked((short)(LongType.FromObject(Value)));
+			#endif
 			}
 
 	// Convert a string into a short value.

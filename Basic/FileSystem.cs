@@ -62,7 +62,11 @@ public sealed class FileSystem
 					// Invalid drive letter value.
 					Utils.ThrowException(68);
 				}
+			#if !ECMA_COMPAT
 				char volumeSep = Path.VolumeSeparatorChar;
+			#else
+				char volumeSep = ':';
+			#endif
 				if(volumeSep != 0)
 				{
 					System.IO.Directory.SetCurrentDirectory
@@ -87,7 +91,11 @@ public sealed class FileSystem
 					// Invalid drive letter value.
 					Utils.ThrowException(68);
 				}
+			#if !ECMA_COMPAT
 				char volumeSep = Path.VolumeSeparatorChar;
+			#else
+				char volumeSep = ':';
+			#endif
 				if(volumeSep != 0)
 				{
 					return System.IO.Path.GetFullPath(Drive.ToString() +
@@ -105,6 +113,8 @@ public sealed class FileSystem
 			{
 				return Directory.GetCurrentDirectory();
 			}
+
+#if !ECMA_COMPAT
 
 	// Directory scan information.
 	private sealed class DirScanInfo
@@ -266,6 +276,8 @@ public sealed class FileSystem
 				return NextDirItem(GetScanInfo(Assembly.GetCallingAssembly()));
 			}
 
+#endif // !ECMA_COMPAT
+
 	// Determine if a particular file is at EOF.
 	public static bool EOF(int FileNumber)
 			{
@@ -348,7 +360,7 @@ public sealed class FileSystem
 					(FileNumber, Assembly.GetCallingAssembly(),
 					 OpenMode.Binary | OpenMode.Random);
 				file.SetRecord(RecordNumber);
-				Value = DateTime.FromOADate(file.Reader.ReadDouble());
+				Value = Utils.FromOADate(file.Reader.ReadDouble());
 			}
 	public static void FileGet
 				(int FileNumber, ref char Value,
@@ -442,11 +454,15 @@ public sealed class FileSystem
 				// TODO
 			}
 
+#if !ECMA_COMPAT
+
 	// Get the length of a file.
 	public static long FileLen(String PathName)
 			{
 				return (new FileInfo(PathName)).Length;
 			}
+
+#endif
 
 	// Open a file.
 	public static void FileOpen
@@ -640,7 +656,7 @@ public sealed class FileSystem
 					(FileNumber, Assembly.GetCallingAssembly(),
 					 OpenMode.Binary | OpenMode.Random);
 				file.SetRecord(RecordNumber);
-				file.Writer.Write(Value.ToOADate());
+				file.Writer.Write(Utils.ToOADate(Value));
 			}
 	public static void FilePut
 				(int FileNumber, char Value,
@@ -779,6 +795,8 @@ public sealed class FileSystem
 				return File.FindFreeFile(Assembly.GetCallingAssembly());
 			}
 
+#if !ECMA_COMPAT
+
 	// Get the attributes on a specific file.
 	public static FileAttribute GetAttr(String PathName)
 			{
@@ -786,6 +804,8 @@ public sealed class FileSystem
 				attrs = System.IO.File.GetAttributes(PathName);
 				return (FileAttribute)(((int)attrs) & 0x3F);
 			}
+
+#endif
 
 	// Input a value from a file.
 	[TODO]
@@ -908,11 +928,15 @@ public sealed class FileSystem
 				// TODO
 			}
 
+#if !ECMA_COMPAT
+
 	// Make a new directory.
 	public static void MkDir(String Path)
 			{
 				System.IO.Directory.CreateDirectory(Path);
 			}
+
+#endif
 
 	// Inner version of "Print" and "Write".
 	private static void Print(File file, Object[] Output,
@@ -1153,12 +1177,16 @@ public sealed class FileSystem
 				return 0;
 			}
 
+#if !ECMA_COMPAT
+
 	// Set the attributes on a file.
 	public static void SetAttr(String PathName, FileAttribute Attributes)
 			{
 				System.IO.File.SetAttributes
 					(PathName, (FileAttributes)Attributes);
 			}
+
+#endif
 
 	// Create a "TabInfo" object.
 	public static TabInfo TAB()

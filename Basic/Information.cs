@@ -62,7 +62,11 @@ public sealed class Information
 			}
 	public static bool IsDBNull(Object VarName)
 			{
+			#if !ECMA_COMPAT
 				return (VarName is DBNull);
+			#else
+				return false;
+			#endif
 			}
 	public static bool IsDate(Object VarName)
 			{
@@ -97,6 +101,7 @@ public sealed class Information
 			}
 	public static bool IsNumeric(Object VarName)
 			{
+			#if !ECMA_COMPAT
 				IConvertible ic = (VarName as IConvertible);
 				if(ic != null)
 				{
@@ -127,6 +132,37 @@ public sealed class Information
 					}
 				}
 				return false;
+			#else
+				if(VarName != null)
+				{
+					switch(ObjectType.GetTypeCode(VarName))
+					{
+						case TypeCode.Boolean:
+						case TypeCode.Byte:
+						case TypeCode.Int16:
+						case TypeCode.Int32:
+						case TypeCode.Int64:
+						case TypeCode.Single:
+						case TypeCode.Double:
+						case TypeCode.Decimal:	return true;
+
+						case TypeCode.String:
+						{
+							try
+							{
+								DoubleType.Parse(VarName.ToString());
+								return true;
+							}
+							catch(Exception e)
+							{
+								// If we cannot parse, then it isn't numeric.
+							}
+						}
+						break;
+					}
+				}
+				return false;
+			#endif
 			}
 	public static bool IsReference(Object VarName)
 			{
@@ -211,8 +247,12 @@ public sealed class Information
 	// Get the system type name from a VB type name.
 	public static String SystemTypeName(String VbName)
 			{
+			#if !ECMA_COMPAT
 				VbName = (VbName.Trim()).ToLower
 					(CultureInfo.InvariantCulture);
+			#else
+				VbName = (VbName.Trim()).ToLower();
+			#endif
 				switch(VbName)
 				{
 					case "boolean":		return "System.Boolean";
@@ -329,12 +369,17 @@ public sealed class Information
 				{
 					return VariantType.Date;
 				}
+			#if !ECMA_COMPAT
 				else if(type == typeof(DBNull))
 				{
 					return VariantType.Null;
 				}
-				else if(type == typeof(Missing) ||
-						typeof(Exception).IsAssignableFrom(type))
+				else if(type == typeof(Missing))
+				{
+					return VariantType.Error;
+				}
+			#endif
+				else if(typeof(Exception).IsAssignableFrom(type))
 				{
 					return VariantType.Error;
 				}
@@ -363,8 +408,12 @@ public sealed class Information
 	public static String VbTypeName(String UrtName)
 			{
 				// Normalize the name.
+			#if !ECMA_COMPAT
 				UrtName = (UrtName.Trim()).ToLower
 					(CultureInfo.InvariantCulture);
+			#else
+				UrtName = (UrtName.Trim()).ToLower();
+			#endif
 				if(UrtName.StartsWith("system."))
 				{
 					UrtName = UrtName.Substring(7);

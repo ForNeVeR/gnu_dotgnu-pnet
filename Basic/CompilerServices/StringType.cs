@@ -131,6 +131,7 @@ public sealed class StringType
 					{
 						return (String)Value;
 					}
+				#if !ECMA_COMPAT
 					else if(Value is IConvertible)
 					{
 						return ((IConvertible)Value).ToString(null);
@@ -145,6 +146,12 @@ public sealed class StringType
 							(String.Format(S._("VB_InvalidCast"),
 										   Value.GetType(), "String"));
 					}
+				#else
+					else
+					{
+						return Value.ToString();
+					}
+				#endif
 				}
 				else
 				{

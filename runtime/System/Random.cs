@@ -1,76 +1,115 @@
-// Random.cs
-// A reimplementation of the orginal .NET System.Random class
-// Copyright (C) 2001 Mike Krueger
-// 
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+/*
+ * Random.cs - Implementation of the "System.Random" class.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
-namespace System {
+namespace System
+{
 
-	public class Random
-	{
-		int seed;
-	
-		const int multiplier = 99991;
-		const int addend     = 0xFE;
-		
-		public Random()
-		{
-		}
-		
-		public Random(int seed)
-		{
-			this.seed = seed;
-		}
-		
-		public virtual int Next()
-		{
-			seed = seed * multiplier + addend;
-			return seed & 0x7FFFFFFF;
-		}
-		
-		public virtual int Next(int maxvalue)
-		{
-			if (maxvalue < 0)
-				throw new ArgumentOutOfRangeException("maxvalue can't be negative");
-			return Next() % maxvalue;
-		}
-		
-		public virtual int Next(int minvalue, int maxvalue)
-		{
-			if (maxvalue < minvalue)
-				throw new ArgumentOutOfRangeException("maxvalue is lower than minvalue");
-			return minvalue + Next() % (maxvalue - minvalue);
-		}
-		
-		public virtual void NextBytes(byte[] buffer)
-		{
-			if (buffer == null)
-				throw new ArgumentNullException("buffer can't be a null reference");
-			
-			for (int i = 0; i < buffer.Length; ++i)
-				buffer[i] = (byte)Next();
-		}
-		
-		public virtual double NextDouble()
-		{
-			return Sample();
-		}
-		
-		protected virtual double Sample()
-		{
-			return (double)((uint)Next()) / (double)uint.MaxValue;
-		}
-	}
-}
+public class Random
+{
+	// Current seed value for this instance.
+	private int seed;
+
+	// Constructors.
+	public Random() : this(Environment.TickCount) {}
+	public Random(int seed)
+			{
+				// Make sure that the seed value is positive.
+				this.seed = unchecked(seed & 0x7FFFFFFF);
+			}
+
+	// Compute the next random number sample value.  This algorithm
+	// is based on "rand()" from the FreeBSD sources.
+	protected virtual double Sample()
+			{
+				seed = unchecked((int)((((uint)seed) * 1103515245 + 12345) &
+									   (uint)0x7FFFFFFF));
+				return (((double)seed) / 2147483648.0);
+			}
+
+	// Get the next value in the random sequence.
+	public virtual int Next()
+			{
+				return unchecked((int)(Sample() * 2147483648.0));
+			}
+	public virtual int Next(int maxValue)
+			{
+				if(maxValue < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("maxValue",
+						 Environment.GetResourceString("ArgRange_NonNegative"));
+				}
+				else if(maxValue != 0)
+				{
+					return unchecked((int)(Sample() * (double)maxValue));
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public virtual int Next(int minValue, int maxValue)
+			{
+				uint range;
+				if(minValue > maxValue)
+				{
+					throw new ArgumentOutOfRangeException
+						("minValue",
+						 Environment.GetResourceString
+						 	("ArgRange_MinValueGtMaxValue"));
+				}
+				else if(minValue != maxValue)
+				{
+					// Use an unsigned integer for the range just in
+					// case it is greater than 31 bits in size.
+					range = unchecked((uint)(maxValue - minValue));
+					return unchecked(((int)(Sample() * (double)range)) +
+									 minValue);
+				}
+				else
+				{
+					return minValue;
+				}
+			}
+
+	// Fill an array with random bytes.
+	public virtual void NextBytes(byte[] buffer)
+			{
+				if(buffer == null)
+				{
+					throw new ArgumentNullException("buffer");
+				}
+				int len = buffer.Length;
+				int posn;
+				for(posn = 0; posn < len; ++posn)
+				{
+					buffer[posn] = unchecked((byte)(Sample() * 256.0));
+				}
+			}
+
+	// Get the next double quantity.
+	public virtual double NextDouble()
+			{
+				return Sample();
+			}
+
+}; // class Random
+
+}; // namespace System

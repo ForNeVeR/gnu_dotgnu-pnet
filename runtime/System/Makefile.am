@@ -67,7 +67,6 @@ CSSRC = Activator.cs \
 		OverflowException.cs \
 		ParamArrayAttribute.cs \
 		PlatformID.cs \
-		Radix.cs \
 		Random.cs \
 		RankException.cs \
 		RuntimeArgumentHandle.cs \

@@ -5,3 +5,6 @@
 
 * runtime/System/Radix.cs: remove "System.Radix", which is no longer
 part of the ECMA standard.
+
+* runtime/System/Math.cs, runtime/System/Random.cs, runtime/System/Makefile.am:
+re-implement "System.Math" and "System.Random".

@@ -1,377 +1,434 @@
-// Math.cs
-// A reimplementation of the orginal .NET System.Math class
-// Copyright (C) 2001 Mike Krueger
-// 
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+/*
+ * Math.cs - Implementation of the "System.Math" class.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
-namespace System {
+namespace System
+{
 
-	public sealed class Math
-	{
-		public const double E  = 2.7182818284590452354;
-		
-		public const double PI = 3.14159265358979323846;
-		
-		public static long Abs(long x)
-		{
-			return (x < 0) ? -x : x;
-		}
-		
-		public static int Abs(int x)
-		{
-			return (x < 0) ? -x : x;
-		}
+using System.Runtime.InteropServices;
 
-		public static short Abs(short x)
-		{
-			return (short)((x < 0) ? -x : x);
-		}
+public sealed class Math
+{
+	// Constants.
+	public const double E  = 2.7182818284590452354;
+	public const double PI = 3.14159265358979323846;
 
-		public static sbyte Abs(sbyte x)
-		{
-			return (sbyte)((x < 0) ? -x : x);
-		}
-
-		public static decimal Abs(decimal x)
-		{
-			return (x < 0) ? -x : x;
-		}
-
-		public static double Abs(double x)
-		{
-			return (x < 0) ? -x : x;
-		}
-
-		public static float Abs(float x)
-		{
-			return (x < 0) ? -x : x;
-		}
-
-		public static double Acos(double x)
-		{
-			if (x <= -1 || x >= 1) {
-				if (x == 1)
-					return 0.0;
-				if (x == -1)
-					return PI;
-				return double.NaN;
-			}
-			return PI / 2 - Atan(x / Sqrt(1.0 - (x * x)));
-		}
-
-		public static double Asin(double x)
-		{
-			if (x <= -1 || x >= 1) {
-				if (x == 1)
-					return PI / 2;
-				if (x == -1)
-					return - PI / 2;
-				return double.NaN;
-			}
-			return Atan(x / (Sqrt(1.0 - (x * x))));
-		}
-		
-		public static double Atan(double x)
-		{
-			return 0.0; // TODO
-		}
-		
-		public static double Atan2(double y, double x)
-		{	
-			if (x == 0.0) {
-				if (y == 0.0)
-					return 0.0;
-				if (y > 0.0)
-					return PI / 2;
-				return - PI / 2;
-			}
-			
-			double theta = Atan(y / x);
-			if (x < 0.0) {
-				if (y >= 0.0)
-					theta += PI; // PI/2..PI -> quadrant 2
+	// Get the absolute value of a number.
+	public static sbyte Abs(sbyte value)
+			{
+				if(value >= 0)
+				{
+					return value;
+				}
+				else if(value != SByte.MinValue)
+				{
+					return (sbyte)(-value);
+				}
 				else
-					theta -= PI; // -PI..-PI/2 -> quadrant 3
+				{
+					throw new OverflowException
+						(Environment.GetResourceString
+							("Overflow_NegateTwosCompNum"));
+				}
 			}
-			return theta;
-		}
-		
-		public static double Ceiling(double x)
-		{
-			return 0.0; // TODO
-		}
-		
-		public static double Cos(double x)
-		{
-			double expx = Exp(x);
-			return 0.5 * (expx + 1.0 / expx);
-		}
-		
-		public static double Cosh(double x)
-		{
-			return 0.5 * (Math.Exp(x) * Math.Exp(-x));
-		}
-		
-		public static double Exp(double x)
-		{
-			return 0.0; // TODO
-		}
-		
-		public static double Floor(double x)
-		{
-			return 0.0; // TODO
-		}
-		
-		public static double IEEERemainder(double x, double y)
-		{
-			if (y == 0)
-				return double.NaN;
-			
-			return 0.0; // TODO
-		}
-		
-		public static double Log(double x)
-		{
-			if (x == double.PositiveInfinity)
-				return 0;
-			if (x < 0)
-				return double.NaN;
-			return 0.0; // TODO
-		}
-		
-		public static double Log(double x, double tobase)
-		{
-			if (x == double.PositiveInfinity)
-				return 0;
-			if (x < 0)
-				return double.NaN;
-			return 0.0; // TODO
-		}
+	public static short Abs(short value)
+			{
+				if(value >= 0)
+				{
+					return value;
+				}
+				else if(value != Int16.MinValue)
+				{
+					return (short)(-value);
+				}
+				else
+				{
+					throw new OverflowException
+						(Environment.GetResourceString
+							("Overflow_NegateTwosCompNum"));
+				}
+			}
+	public static int Abs(int value)
+			{
+				if(value >= 0)
+				{
+					return value;
+				}
+				else if(value != Int32.MinValue)
+				{
+					return -value;
+				}
+				else
+				{
+					throw new OverflowException
+						(Environment.GetResourceString
+							("Overflow_NegateTwosCompNum"));
+				}
+			}
+	public static long Abs(long value)
+			{
+				if(value >= 0)
+				{
+					return value;
+				}
+				else if(value != Int64.MinValue)
+				{
+					return -value;
+				}
+				else
+				{
+					throw new OverflowException
+						(Environment.GetResourceString
+							("Overflow_NegateTwosCompNum"));
+				}
+			}
+	public static float Abs(float value)
+			{
+				if(value >= 0.0f)
+				{
+					return value;
+				}
+				else
+				{
+					return -value;
+				}
+			}
+	public static double Abs(double value)
+			{
+				if(value >= 0.0d)
+				{
+					return value;
+				}
+				else
+				{
+					return -value;
+				}
+			}
+	public static Decimal Abs(Decimal value)
+			{
+				return Decimal.Abs(value);
+			}
 
-		public static double Log10(double x)
-		{
-			return Log(x, 10d);
-		}
+	// Multiply two 32-bit numbers to get a 64-bit result.
+	public static long BigMul(int a, int b)
+			{
+				return ((long)a) * ((long)b);
+			}
 
+	// Divide two numbers and get both the quotient and the remainder.
+	public static int DivRem(int a, int b, out int result)
+			{
+				result = (a % b);
+				return (a / b);
+			}
+	public static long DivRem(long a, long b, out long result)
+			{
+				result = (a % b);
+				return (a / b);
+			}
 
-		public static long Max(long x, long y)
-		{
-			return x > y ? x : y;
-		}
+	// Get the logarithm of a number in a specific base.
+	public static double Log(double a, double newBase)
+			{
+				return Log(a) / Log(newBase);
+			}
 
-		public static int Max(int x, int y)
-		{
-			return x > y ? x : y;
-		}
+	// Get the maximum of two values.
+	public static sbyte Max(sbyte val1, sbyte val2)
+			{
+				return (sbyte)((val1 > val2) ? val1 : val2);
+			}
+	public static byte Max(byte val1, byte val2)
+			{
+				return (byte)((val1 > val2) ? val1 : val2);
+			}
+	public static short Max(short val1, short val2)
+			{
+				return (short)((val1 > val2) ? val1 : val2);
+			}
+	public static ushort Max(ushort val1, ushort val2)
+			{
+				return (ushort)((val1 > val2) ? val1 : val2);
+			}
+	public static int Max(int val1, int val2)
+			{
+				return ((val1 > val2) ? val1 : val2);
+			}
+	public static uint Max(uint val1, uint val2)
+			{
+				return ((val1 > val2) ? val1 : val2);
+			}
+	public static long Max(long val1, long val2)
+			{
+				return ((val1 > val2) ? val1 : val2);
+			}
+	public static ulong Max(ulong val1, ulong val2)
+			{
+				return ((val1 > val2) ? val1 : val2);
+			}
+	public static float Max(float val1, float val2)
+			{
+				return ((val1 > val2) ? val1 : val2);
+			}
+	public static double Max(double val1, double val2)
+			{
+				return ((val1 > val2) ? val1 : val2);
+			}
+	public static Decimal Max(Decimal val1, Decimal val2)
+			{
+				return Decimal.Min(val1, val2);
+			}
 
-		public static short Max(short x, short y)
-		{
-			return x > y ? x : y;
-		}
+	// Get the minimum of two values.
+	public static sbyte Min(sbyte val1, sbyte val2)
+			{
+				return (sbyte)((val1 < val2) ? val1 : val2);
+			}
+	public static byte Min(byte val1, byte val2)
+			{
+				return (byte)((val1 < val2) ? val1 : val2);
+			}
+	public static short Min(short val1, short val2)
+			{
+				return (short)((val1 < val2) ? val1 : val2);
+			}
+	public static ushort Min(ushort val1, ushort val2)
+			{
+				return (ushort)((val1 < val2) ? val1 : val2);
+			}
+	public static int Min(int val1, int val2)
+			{
+				return ((val1 < val2) ? val1 : val2);
+			}
+	public static uint Min(uint val1, uint val2)
+			{
+				return ((val1 < val2) ? val1 : val2);
+			}
+	public static long Min(long val1, long val2)
+			{
+				return ((val1 < val2) ? val1 : val2);
+			}
+	public static ulong Min(ulong val1, ulong val2)
+			{
+				return ((val1 < val2) ? val1 : val2);
+			}
+	public static float Min(float val1, float val2)
+			{
+				return ((val1 < val2) ? val1 : val2);
+			}
+	public static double Min(double val1, double val2)
+			{
+				return ((val1 < val2) ? val1 : val2);
+			}
+	public static Decimal Min(Decimal val1, Decimal val2)
+			{
+				return Decimal.Min(val1, val2);
+			}
 
-		public static sbyte Max(sbyte x, sbyte y)
-		{
-			return x > y ? x : y;
-		}
-		
-		public static ulong Max(ulong x, ulong y)
-		{
-			return x > y ? x : y;
-		}
+	// Round a value to a certain number of digits.
+	public static double Round(double value, int digits)
+			{
+				if(digits < 0 || digits > 15)
+				{
+					throw new ArgumentOutOfRangeException
+						("digits",
+						 Environment.GetResourceString
+						 	("ArgRange_RoundDigits"));
+				}
+				return InternalRound(value, digits);
+			}
+	public static Decimal Round(Decimal value)
+			{
+				return Decimal.Round(value, 0);
+			}
+	public static Decimal Round(Decimal value, int decimals)
+			{
+				return Decimal.Round(value, decimals);
+			}
 
-		public static uint Max(uint x, uint y)
-		{
-			return x > y ? x : y;
-		}
+	// Get the sign of a value.
+	public static int Sign(sbyte value)
+			{
+				if(value > 0)
+				{
+					return 1;
+				}
+				else if(value < 0)
+				{
+					return -1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static int Sign(short value)
+			{
+				if(value > 0)
+				{
+					return 1;
+				}
+				else if(value < 0)
+				{
+					return -1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static int Sign(int value)
+			{
+				if(value > 0)
+				{
+					return 1;
+				}
+				else if(value < 0)
+				{
+					return -1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static int Sign(long value)
+			{
+				if(value > 0)
+				{
+					return 1;
+				}
+				else if(value < 0)
+				{
+					return -1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static int Sign(float value)
+			{
+				if(Single.IsNaN(value))
+				{
+					throw new ArithmeticException
+						(Environment.GetResourceString("Arg_NotANumber"));
+				}
+				if(value > 0)
+				{
+					return 1;
+				}
+				else if(value < 0)
+				{
+					return -1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static int Sign(double value)
+			{
+				if(Double.IsNaN(value))
+				{
+					throw new ArithmeticException
+						(Environment.GetResourceString("Arg_NotANumber"));
+				}
+				if(value > 0)
+				{
+					return 1;
+				}
+				else if(value < 0)
+				{
+					return -1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+	public static int Sign(Decimal value)
+			{
+				return Decimal.Compare(value, 0.0m);
+			}
 
-		public static byte Max(byte x, byte y)
-		{
-			return x > y ? x : y;
-		}
-		
-		public static ushort Max(ushort x, ushort y)
-		{
-			return x > y ? x : y;
-		}
+	// Math methods that are implemented in the runtime engine.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Acos(double d);
 
-		public static decimal Max(decimal x, decimal y)
-		{
-			return x > y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Asin(double d);
 
-		public static double Max(double x, double y)
-		{
-			return x > y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Atan(double d);
 
-		public static float Max(float x, float y)
-		{
-			return x > y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Atan2(double y, double x);
 
-		public static long Min(long x, long y)
-		{
-			return x < y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Ceiling(double a);
 
-		public static int Min(int x, int y)
-		{
-			return x < y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Cos(double d);
 
-		public static short Min(short x, short y)
-		{
-			return x < y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Cosh(double value);
 
-		public static sbyte Min(sbyte x, sbyte y)
-		{
-			return x < y ? x : y;
-		}
-		
-		public static ulong Min(ulong x, ulong y)
-		{
-			return x < y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Exp(double d);
 
-		public static uint Min(uint x, uint y)
-		{
-			return x < y ? x : y;
-		}
-		
-		public static byte Min(byte x, byte y)
-		{
-			return x < y ? x : y;
-		}
-		
-		public static ushort Min(ushort x, ushort y)
-		{
-			return x < y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Floor(double d);
 
-		public static decimal Min(decimal x, decimal y)
-		{
-			return x < y ? x : y;
-		}
-		
-		public static double Min(double x, double y)
-		{
-			return x < y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double IEEERemainder(double x, double y);
 
-		public static float Min(float x, float y)
-		{
-			return x < y ? x : y;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Log(double d);
 
-		public static double Pow(double x, double y)
-		{
-			return 0.0; // TODO
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Log10(double d);
 
-		public static decimal Round(decimal x)
-		{
-			return 0.0m; // TODO
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Pow(double x, double y);
 
-		public static double Round(double x)
-		{
-			return 0.0; // TODO
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Round(double a);
 
-		public static double Round(double x, int digits)
-		{
-			return 0.0; // TODO
-		}
-		
-		public static long Sign(long x)
-		{
-			if (x == 0)
-				return 0;
-			return x < 0 ? -1 : 1;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static double InternalRound(double value, int digits);
 
-		public static int Sign(int x)
-		{
-			if (x == 0)
-				return 0;
-			return x < 0 ? -1 : 1;
-		}
-		
-		public static short Sign(short x)
-		{
-			if (x == 0)
-				return 0;
-			return (short)(x < 0 ? -1 : 1);
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Sin(double a);
 
-		public static sbyte Sign(sbyte x)
-		{
-			if (x == 0)
-				return 0;
-			return (sbyte)(x < 0 ? -1 : 1);
-		}
-		
-		public static decimal Sign(decimal x)
-		{
-			if (x == 0)
-				return 0;
-			return x < 0 ? -1 : 1;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Sinh(double a);
 
-		public static double Sign(double x)
-		{
-			if (x == 0)
-				return 0;
-			return x < 0 ? -1 : 1;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Sqrt(double a);
 
-		public static float Sign(float x)
-		{
-			if (x == 0)
-				return 0;
-			return x < 0 ? -1 : 1;
-		}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Tan(double a);
 
-		public static double Sin(double x)
-		{
-			return 0.0; // TODO
-		}
-		
-		public static double Sinh(double x)
-		{
-			return 0.5 * (Math.Exp(x) - Math.Exp(-x));
-		}
-		
-		public static double Sqrt(double x)
-		{
-			if (x < 0)
-				return double.NaN;
-			return 0.0; // TODO
-		}
-		
-		public static double Tan(double x)
-		{	
-			return Sin(x) / Cos(x);
-		}
-		
-		public static double Tanh(double x)
-		{
-			double expx = Exp(x);
-			double expminusx = Exp(-x);
-			return (expx - expminusx) / (expx + expminusx);
-		}
-	}
-}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Tanh(double value);
+
+}; // class Math
+
+}; // namespace System

@@ -1,4 +1,8 @@
 
+2003-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in: adjust the computation of CYG_CACHE in configure.in.
+
 2003-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

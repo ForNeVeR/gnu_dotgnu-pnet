@@ -189,7 +189,7 @@ if test "$MSTOOLS" = "no"; then
 			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
 			CYG_RESGEN="$RESGEN"
 			CYG_ILGAC="$ILGAC"
-			CYG_CACHE="$(libdir)/cscc/lib"
+			CYG_CACHE="${libdir}/cscc/lib"
 		else
 			# Convert the cscc and cscc-cs paths into their Windows
 			# forms, to ensure that spawns from csant work correctly.
@@ -198,7 +198,11 @@ if test "$MSTOOLS" = "no"; then
 			CSHARP_PLUGIN=`"$CYGPATH" -w "$CSHARP_PLUGIN"`
 			CYG_RESGEN=`"$CYGPATH" -w "$RESGEN"`
 			CYG_ILGAC=`"$CYGPATH" -w "$ILGAC"`
-			CYG_CACHE=`"$CYGPATH" -w "$(libdir)/cscc/lib"`
+			if test "x$prefix" = "xNONE" ; then
+				CYG_CACHE=`"$CYGPATH" -w "${ac_default_prefix}/lib/cscc/lib"`
+			else
+				CYG_CACHE=`"$CYGPATH" -w "${prefix}/lib/cscc/lib"`
+			fi
 		fi
 		CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)" -Dresgen="$(CYG_RESGEN)" -Dilgac="$(CYG_ILGAC)" --assembly-cache "$(CYG_CACHE)"'
 	fi

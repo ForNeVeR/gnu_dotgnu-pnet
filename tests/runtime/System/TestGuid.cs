@@ -67,13 +67,17 @@ public class TestGuid : TestCase
 	public void TestGuidParse()
 			{
 				// Tests that are expected to succeed.
-				Guid expected = new Guid((int)0xc0093632,
-									     (short)0xb44c,
-									     (short)0x4cf7,
-									     (byte)0xa2, (byte)0x79,
-									     (byte)0xd8, (byte)0x2f,
-									     (byte)0xe8, (byte)0xa8,
-									     (byte)0x89, (byte)0x0d);
+				Guid expected = new Guid(unchecked((int)0xc0093632),
+									     unchecked((short)0xb44c),
+									     unchecked((short)0x4cf7),
+									     unchecked((byte)0xa2),
+										 unchecked((byte)0x79),
+									     unchecked((byte)0xd8),
+										 unchecked((byte)0x2f),
+									     unchecked((byte)0xe8),
+										 unchecked((byte)0xa8),
+									     unchecked((byte)0x89),
+										 unchecked((byte)0x0d));
 				Guid guid = new Guid(testGuid1);
 				AssertEquals("guid1", expected, guid);
 				guid = new Guid(testGuid2);
@@ -126,13 +130,17 @@ public class TestGuid : TestCase
 	public void TestGuidFormat()
 			{
 				// Tests that are expected to succeed.
-				Guid guid = new Guid((int)0xc0093632,
-								     (short)0xb44c,
-								     (short)0x4cf7,
-								     (byte)0xa2, (byte)0x79,
-								     (byte)0xd8, (byte)0x2f,
-								     (byte)0xe8, (byte)0xa8,
-								     (byte)0x89, (byte)0x0d);
+				Guid guid = new Guid(unchecked((int)0xc0093632),
+								     unchecked((short)0xb44c),
+								     unchecked((short)0x4cf7),
+								     unchecked((byte)0xa2),
+									 unchecked((byte)0x79),
+								     unchecked((byte)0xd8),
+									 unchecked((byte)0x2f),
+								     unchecked((byte)0xe8),
+									 unchecked((byte)0xa8),
+								     unchecked((byte)0x89),
+									 unchecked((byte)0x0d));
 				AssertEquals("guid1", testGuid1, guid.ToString("B"));
 				AssertEquals("guid2", testGuid7, guid.ToString("d"));
 				AssertEquals("guid3", testGuid8, guid.ToString("N"));
@@ -154,20 +162,28 @@ public class TestGuid : TestCase
 	// Test the equality comparison of Guid's.
 	public void TestGuidEquals()
 			{
-				Guid guid1 = new Guid((int)0xc0093632,
-								      (short)0xb44c,
-								      (short)0x4cf7,
-								      (byte)0xa2, (byte)0x79,
-								      (byte)0xd8, (byte)0x2f,
-								      (byte)0xe8, (byte)0xa8,
-								      (byte)0x89, (byte)0x0d);
-				Guid guid2 = new Guid((int)0xc0093632,
-								      (short)0xb44e,
-								      (short)0x4cf7,
-								      (byte)0xa2, (byte)0x79,
-								      (byte)0xd8, (byte)0x2f,
-								      (byte)0xe8, (byte)0xa8,
-								      (byte)0x89, (byte)0x0d);
+				Guid guid1 = new Guid(unchecked((int)0xc0093632),
+								      unchecked((short)0xb44c),
+								      unchecked((short)0x4cf7),
+								      unchecked((byte)0xa2),
+									  unchecked((byte)0x79),
+								      unchecked((byte)0xd8),
+									  unchecked((byte)0x2f),
+								      unchecked((byte)0xe8),
+									  unchecked((byte)0xa8),
+								      unchecked((byte)0x89),
+									  unchecked((byte)0x0d));
+				Guid guid2 = new Guid(unchecked((int)0xc0093632),
+								      unchecked((short)0xb44e),
+								      unchecked((short)0x4cf7),
+								      unchecked((byte)0xa2),
+									  unchecked((byte)0x79),
+								      unchecked((byte)0xd8),
+									  unchecked((byte)0x2f),
+								      unchecked((byte)0xe8),
+									  unchecked((byte)0xa8),
+								      unchecked((byte)0x89),
+									  unchecked((byte)0x0d));
 				Assert(!guid1.Equals(null));
 				Assert(guid1.Equals(guid1));
 				Assert(!guid1.Equals(guid2));

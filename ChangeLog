@@ -53,6 +53,8 @@
 	tests/runtime/System/Security/Cryptography/TestCryptography.cs:
 	rearrange the tests so that each major namespace is in its own suite.
 
+	* tests/runtime/System/TestGuid.cs: semantic errors under csc.
+
 2002-11-28  Michael Moore  <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormatter.cs: implement

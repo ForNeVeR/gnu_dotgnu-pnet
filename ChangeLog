@@ -1,4 +1,15 @@
 
+2002-05-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/field4.cs,
+	csharp/class/field4.il, csharp/class/field4.jl: test non-static
+	field initializers.
+
+	* csharp/expr/Makefile.am, csharp/expr/ref1.cs, csharp/expr/ref1.il,
+	csharp/expr/ref1.jerr, csharp/expr/ref2.cs, csharp/expr/ref2.err,
+	csharp/expr/ref2.jerr: test code generation for "ref" and "out"
+	parameters.
+
 2002-05-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/parser/Makefile.am, csharp/parser/unclosed1.cs,

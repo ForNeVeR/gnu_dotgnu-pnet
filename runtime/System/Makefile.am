@@ -22,7 +22,9 @@ CSSRC = Activator.cs \
 		AttributeTargets.cs \
 		AttributeUsageAttribute.cs \
 		BadImageFormatException.cs \
+		BitConverter.cs \
 		Boolean.cs \
+		Buffer.cs \
 		Byte.cs \
 		CLSCompliantAttribute.cs \
 		CannotUnloadAppDomainException.cs \

@@ -191,15 +191,84 @@ break;
 
 case COP_CALL_VIRTUAL:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
+	/* Call a virtual method */
+	tempptr = stacktop[-((ILInt32)(pc[1]))].ptrValue;
+	if(tempptr)
+	{
+		/* Locate the method to be called */
+		methodToCall = ((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
+							->vtable[(ILUInt32)(pc[2])];
+
+		/* Copy the state back into the thread object */
+		COPY_STATE_TO_THREAD();
+
+		/* Convert the method */
+		pcstart = _ILConvertMethod(thread, methodToCall);
+		if(!pcstart)
+		{
+			MISSING_METHOD_EXCEPTION();
+		}
+
+		/* Allocate a new call frame */
+		ALLOC_CALL_FRAME();
+
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = thread->pc + 3;
+		callFrame->frame = thread->frame;
+		callFrame->except = IL_MAX_UINT32;	/* Not an exception frame */
+
+		/* Restore the state information and jump to the new method */
+		RESTORE_STATE_FROM_THREAD();
+		pc = pcstart;
+		method = methodToCall;
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 
 case COP_CALL_INTERFACE:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
+	/* Call an interface method */
+	tempptr = stacktop[-((ILInt32)(pc[1]))].ptrValue;
+	if(tempptr)
+	{
+		/* Locate the method to be called */
+		methodToCall = _ILLookupInterfaceMethod(GetObjectClass(tempptr),
+												(ILClass *)ReadPointer(pc + 3),
+												(ILUInt32)(pc[2]));
+
+		/* Copy the state back into the thread object */
+		COPY_STATE_TO_THREAD();
+
+		/* Convert the method */
+		pcstart = _ILConvertMethod(thread, methodToCall);
+		if(!pcstart)
+		{
+			MISSING_METHOD_EXCEPTION();
+		}
+
+		/* Allocate a new call frame */
+		ALLOC_CALL_FRAME();
+
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = thread->pc + 3 + sizeof(void *);
+		callFrame->frame = thread->frame;
+		callFrame->except = IL_MAX_UINT32;	/* Not an exception frame */
+
+		/* Restore the state information and jump to the new method */
+		RESTORE_STATE_FROM_THREAD();
+		pc = pcstart;
+		method = methodToCall;
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 
@@ -339,16 +408,83 @@ break;
 case COP_CALL_VIRTUAL:
 {
 	/* Wide version of "call_virtual" */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	tempptr = stacktop[-(IL_READ_INT32(pc + 2))].ptrValue;
+	if(tempptr)
+	{
+		/* Locate the method to be called */
+		methodToCall = ((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
+							->vtable[IL_READ_UINT32(pc + 6)];
+
+		/* Copy the state back into the thread object */
+		COPY_STATE_TO_THREAD();
+
+		/* Convert the method */
+		pcstart = _ILConvertMethod(thread, methodToCall);
+		if(!pcstart)
+		{
+			MISSING_METHOD_EXCEPTION();
+		}
+
+		/* Allocate a new call frame */
+		ALLOC_CALL_FRAME();
+
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = thread->pc + 10;
+		callFrame->frame = thread->frame;
+		callFrame->except = IL_MAX_UINT32;	/* Not an exception frame */
+
+		/* Restore the state information and jump to the new method */
+		RESTORE_STATE_FROM_THREAD();
+		pc = pcstart;
+		method = methodToCall;
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 
 case COP_CALL_INTERFACE:
 {
 	/* Wide version of "call_interface" */
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	tempptr = stacktop[-(IL_READ_INT32(pc + 2))].ptrValue;
+	if(tempptr)
+	{
+		/* Locate the method to be called */
+		methodToCall = _ILLookupInterfaceMethod(GetObjectClass(tempptr),
+												(ILClass *)ReadPointer(pc + 10),
+												IL_READ_UINT32(pc + 6));
+
+		/* Copy the state back into the thread object */
+		COPY_STATE_TO_THREAD();
+
+		/* Convert the method */
+		pcstart = _ILConvertMethod(thread, methodToCall);
+		if(!pcstart)
+		{
+			MISSING_METHOD_EXCEPTION();
+		}
+
+		/* Allocate a new call frame */
+		ALLOC_CALL_FRAME();
+
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = thread->pc + 10 + sizeof(void *);
+		callFrame->frame = thread->frame;
+		callFrame->except = IL_MAX_UINT32;	/* Not an exception frame */
+
+		/* Restore the state information and jump to the new method */
+		RESTORE_STATE_FROM_THREAD();
+		pc = pcstart;
+		method = methodToCall;
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 break;
 

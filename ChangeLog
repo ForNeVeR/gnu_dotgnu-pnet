@@ -4,6 +4,10 @@
 	* doc/c_users_guide.html: update the user's guide for the C
 	compiler to describe the latest conventions.
 
+	* ilheader/ilheader.c: modify the "ilheader" program so
+	that it only outputs the type definitions, because the
+	methods, fields, etc, can be accessed via other means.
+
 2003-07-01  Thong Nguyen  <tum@veridicus.com>
 	
 	* engine/heap.c:  Make ILExecAllocAtomic registers finalizers.

@@ -200,6 +200,8 @@ static void PrintIdentifier(FILE *stream, const char *str, int upper)
 	}
 }
 
+#if 0
+
 /*
  * Print a class name as an identifier.
  */
@@ -406,6 +408,8 @@ static void DumpMethods(FILE *stream, ILClass *classInfo, int defineAliases)
 	}
 }
 
+#endif
+
 /*
  * Generate a .h file that defines the contents of an assembly.
  */
@@ -486,6 +490,7 @@ static void GenerateHeader(FILE *stream, ILImage *image, int defineAliases)
 	}
 	putc('\n', stream);
 
+#if 0
 	/* Declare the contents of public types */
 	classInfo = 0;
 	while((classInfo = (ILClass *)ILImageNextToken
@@ -523,6 +528,7 @@ static void GenerateHeader(FILE *stream, ILImage *image, int defineAliases)
 		/* Dump the methods within the class */
 		DumpMethods(stream, classInfo, defineAliases);
 	}
+#endif
 
 	/* Output the end of the header file */
 	if(assemName)

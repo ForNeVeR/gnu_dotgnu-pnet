@@ -6,7 +6,12 @@
 	runtime/System/IO/DirectoryInfo.cs,
 	runtime/System/IO/FileAttributes.cs,
 	runtime/System/IO/FileInfo.cs,
-	runtime/System/IO/FileSystemInfo.cs: add some non-ECMA classes
+	runtime/System/IO/FileSystemInfo.cs,
+	runtime/System/AppDomain.cs
+	runtime/System/AppDomainSetup.cs
+	runtime/System/IAppDomainSetup.cs
+	runtime/System/LoaderOptimization.cs
+	runtime/System/Security/Policy/Evidence.cs: add some non-ECMA classes
 	that are required by SharpDevelop.
 
 2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>

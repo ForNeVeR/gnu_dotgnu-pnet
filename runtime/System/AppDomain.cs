@@ -21,10 +21,15 @@
 namespace System
 {
 
+using System.Reflection;
+using System.Globalization;
+using System.Security.Policy;
+
 public sealed class AppDomain : MarshalByRefObject, _AppDomain
 {
 	// Internal state.
 	private String friendlyName;
+	private static AppDomain currentDomain;
 
 	// Construct a new AppDomain instance.
 	[TODO]
@@ -93,6 +98,102 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 
 	// Event that is emitted when an exception is unhandled by the domain.
 	public event UnhandledExceptionEventHandler UnhandledException;
+
+#if !ECMA_COMPAT
+
+	// Get the current domain.
+	[TODO]
+	public static AppDomain CurrentDomain
+			{
+				get
+				{
+					lock(typeof(AppDomain))
+					{
+						// TODO - this is a temporary hack until the
+						// runtime engine has real app domains.
+						if(currentDomain == null)
+						{
+							currentDomain = new AppDomain("current");
+						}
+						return currentDomain;
+					}
+				}
+			}
+
+	// Get the security evidence that was used to load the app domain.
+	[TODO]
+	public Evidence Evidence
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+
+	// Event that is emitted to resolve assemblies.
+	public event ResolveEventHandler AssemblyResolve;
+
+	// Event that is emitted on process exit.
+	public event EventHandler ProcessExit;
+
+	// Event that is emitted to resolve resources.
+	public event ResolveEventHandler ResourceResolve;
+
+	// Event that is emitted to resolve types.
+	public event ResolveEventHandler TypeResolve;
+
+	// Get the assemblies in use by this domain.
+	[TODO]
+	public Assembly[] GetAssemblies()
+			{
+				// TODO
+				return new Assembly [0];
+			}
+
+	// Create a new application domain.
+	[TODO]
+	public static AppDomain CreateDomain(String friendlyName,
+										 Evidence evidence,
+										 AppDomainSetup setup)
+			{
+				if(friendlyName == null)
+				{
+					throw new ArgumentNullException("friendlyName");
+				}
+				// TODO
+				return new AppDomain(friendlyName);
+			}
+
+	// Create an instance of an assembly and unwrap its handle.
+	[TODO]
+	public Object CreateInstanceAndUnwrap(String assemblyName, String typeName)
+			{
+				// TODO
+				return null;
+			}
+	public Object CreateInstanceAndUnwrap(String assemblyName,
+						       			  String typeName,
+						       			  Object[] activationAttributes)
+			{
+				// TODO
+				return null;
+			}
+	public Object CreateInstanceAndUnwrap(String assemblyName,
+						       			  String typeName,
+						       			  bool ignoreCase,
+						       			  BindingFlags bindingAttr,
+						       			  Binder binder,
+						       			  Object[] args,
+						       			  CultureInfo culture,
+						       			  Object[] activationAttributes,
+						       			  Evidence securityAttributes)
+			{
+				// TODO
+				return null;
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class AppDomain
 

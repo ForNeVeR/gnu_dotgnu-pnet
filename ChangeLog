@@ -11,6 +11,9 @@ assembly and type reflection.
 * cscc/cs_grammar.y: fix a shift/reduce conflict in the grammar which
 caused it to complain about casts to array types.  e.g. "(A[]) expr".
 
+* samples/mscorlib.dll: new version that matches the engine changes for
+reflection.
+
 2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h, engine/internal.c, engine/lib_defs.h, engine/lib_object.c,

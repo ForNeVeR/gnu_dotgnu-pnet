@@ -5,7 +5,8 @@ RESOURCENAME = System.resources
 RESOURCEFILES = Arg.txt \
 				Exception.txt \
 				Invalid.txt \
-				IO.txt
+				IO.txt \
+				NotSupp.txt
 
 noinst_DATA = $(RESOURCENAME)
 

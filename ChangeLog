@@ -24,6 +24,9 @@
 	csupport/FileTable.cs, csupport/LongDouble.cs: fix some pedantic
 	issues turned up by csc.
 
+	* resources/en_US/System/NotSupp.txt, resources/en_US/System/Makefile.am:
+	add a missing resource file for the "System" assembly.
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, csunit/Makefile.am,

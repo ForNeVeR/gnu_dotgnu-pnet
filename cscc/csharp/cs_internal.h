@@ -197,6 +197,11 @@ int CSGetGroupMemberForm(void *group, unsigned long n);
 void CSAddStaticCtor(ILGenInfo *info, ILNode *stmt);
 
 /*
+ * Add a statement to the initializer constructor for the current class.
+ */
+void CSAddInitCtor(ILGenInfo *info, ILNode *stmt);
+
+/*
  * Initialize the attributes on a class.
  */
 void CSClassInitAttrs(ILGenInfo *info, ILClass *classInfo);

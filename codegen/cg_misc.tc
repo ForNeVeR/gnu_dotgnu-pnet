@@ -165,6 +165,14 @@ ILNode_GetType(ILNode_ThisInit)
 	return ILMachineType_Void;
 }
 
+/*
+ * Get the type of a non-static field initializer node.
+ */
+ILNode_GetType(ILNode_NonStaticInit)
+{
+	return ILMachineType_Void;
+}
+
 %{
 
 /*
@@ -1016,6 +1024,26 @@ ILNode_GenValue(ILNode_ThisInit)
 {
 	/* These are place-holders that are recognized by "InvocationExpression"
 	   for invoking parent class constructors */
+	return ILMachineType_Void;
+}
+
+/*
+ * Generate value code for a non-static field initializer node.
+ */
+ILNode_GenValue(ILNode_NonStaticInit)
+{
+	ILNode_MethodDeclaration *decl;
+	if(info->currentClass)
+	{
+		/* Do we have a non-static initializer for this class? */
+		decl = (ILNode_MethodDeclaration *)
+			(((ILNode_ClassDefn *)(info->currentClass))->initCtorsMethod);
+		if(decl && decl->body)
+		{
+			/* Output the body of the initializer here */
+			ILNode_GenDiscard(decl->body, info);
+		}
+	}
 	return ILMachineType_Void;
 }
 

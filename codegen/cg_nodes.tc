@@ -434,6 +434,7 @@ struct _tagILSwitchValue
 }
 %node ILNode_BaseInit ILNode_Expression
 %node ILNode_ThisInit ILNode_Expression
+%node ILNode_NonStaticInit ILNode_Expression
 
 /*
  * Identifiers and l-values.
@@ -702,6 +703,7 @@ struct _tagILSwitchValue
 	%nocreate ILClass *classInfo = {0};
 	%nocreate ILUInt64 nextEnum = {0};
 	%nocreate ILNode *staticCtorsMethod = {0};
+	%nocreate ILNode *initCtorsMethod = {0};
 	%nocreate ILNode_ClassDefn *nestedParent = {0};
 
 }

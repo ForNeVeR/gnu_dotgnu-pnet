@@ -54,6 +54,12 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		info->currentClass = (ILNode *)node;
 		info->currentNamespace = node->namespaceNode;
 		value = ILNode_SemAnalysis(node->body, info, &(node->body));
+		if(node->initCtorsMethod)
+		{
+			/* Perform semantic analysis on the non-static initializers */
+			ILNode_SemAnalysis(node->initCtorsMethod, info,
+							   &(node->initCtorsMethod));
+		}
 		if(node->staticCtors)
 		{
 			/* Create a method for the static constructors and
@@ -411,6 +417,60 @@ void CSAddStaticCtor(ILGenInfo *info, ILNode *stmt)
 	}
 }
 
+void CSAddInitCtor(ILGenInfo *info, ILNode *stmt)
+{
+	ILNode_ClassDefn *defn = (ILNode_ClassDefn *)(info->currentClass);
+	ILNode *bodyList;
+	if(defn && stmt)
+	{
+		/* Construct the method declaration for ".init" if necessary.
+		   Note: the ".init" method is a pseudo method to collect up
+		   all non-static field initializers.  It isn't output into
+		   the final program.  Instead, its body is expanded inline
+		   into each constructor that requires field initialization */
+		if(!(defn->initCtorsMethod))
+		{
+			ILMethod *methodInfo;
+			ILType *signature;
+			bodyList = ILNode_Compound_create();
+			defn->initCtorsMethod =
+				ILNode_MethodDeclaration_create
+					(0, IL_META_METHODDEF_PRIVATE |
+						IL_META_METHODDEF_HIDE_BY_SIG,
+					 0 /* void */,
+					 ILQualIdentSimple(ILInternString(".init", 5).string),
+					 0 /* no parameters */,
+					 ILNode_NewScope_create(bodyList));
+			methodInfo = ILMethodCreate(defn->classInfo, 0, ".init",
+										IL_META_METHODDEF_PRIVATE |
+										IL_META_METHODDEF_HIDE_BY_SIG);
+			if(!methodInfo)
+			{
+				CCOutOfMemory();
+			}
+			ILMethodSetCallConv(methodInfo, IL_META_CALLCONV_HASTHIS);
+			signature = ILTypeCreateMethod(info->context, ILType_Void);
+			if(!signature)
+			{
+				CCOutOfMemory();
+			}
+			ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
+			ILMemberSetSignature((ILMember *)methodInfo, signature);
+			((ILNode_MethodDeclaration *)(defn->initCtorsMethod))
+					->methodInfo = methodInfo;
+		}
+		else
+		{
+			bodyList = ((ILNode_MethodDeclaration *)(defn->initCtorsMethod))
+							->body;
+			bodyList = ((ILNode_NewScope *)bodyList)->stmt;
+		}
+
+		/* Wrap the statement in a scope and add it to the body */
+		ILNode_List_Add(bodyList, ILNode_NewScope_create(stmt));
+	}
+}
+
 %}
 
 /*
@@ -453,15 +513,11 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 			continue;
 		}
 
-		/* The field must be static to have an initial value */
+		/* Non-static fields are initialized differently */
 		if((node->modifiers & IL_META_FIELDDEF_STATIC) == 0)
 		{
-			/* TODO: temporarily commented out for now */
-		/*
-			CCErrorOnLine(yygetfilename(decl->initializer),
-						  yygetlinenum(decl->initializer),
-						  "initializer used on non-static field");
-		*/
+			CSAddInitCtor(info, ILNode_Assign_create
+							(decl->name, decl->initializer));
 			continue;
 		}
 

@@ -1492,6 +1492,26 @@ JavaGenValue(ILNode_ThisInit)
 }
 
 /*
+ * Generate value code for a non-static field initializer node.
+ */
+JavaGenValue(ILNode_NonStaticInit)
+{
+	ILNode_MethodDeclaration *decl;
+	if(info->currentClass)
+	{
+		/* Do we have a non-static initializer for this class? */
+		decl = (ILNode_MethodDeclaration *)
+			(((ILNode_ClassDefn *)(info->currentClass))->initCtorsMethod);
+		if(decl && decl->body)
+		{
+			/* Output the body of the initializer here */
+			JavaGenDiscard(decl->body, info);
+		}
+	}
+	return ILMachineType_Void;
+}
+
+/*
  * Generate value code for an "is null" expression.
  */
 JavaGenValue(ILNode_IsNull)

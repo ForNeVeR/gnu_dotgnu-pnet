@@ -2364,8 +2364,10 @@ ClassDeclaration
 					ILNode *cname = ILQualIdentSimple
 							(ILInternString(".ctor", 5).string);
 					ILNode *body = ILNode_NewScope_create
-							(ILNode_InvocationExpression_create
-								(ILNode_BaseInit_create(), 0));
+							(ILNode_Compound_CreateFrom
+								(ILNode_NonStaticInit_create(),
+								 ILNode_InvocationExpression_create
+									(ILNode_BaseInit_create(), 0)));
 					ILNode *ctor = ILNode_MethodDeclaration_create
 						  ($1, CSModifiersToConstructorAttrs(cname, ctorMods),
 						   0 /* "void" */, cname,
@@ -3023,10 +3025,16 @@ ConstructorDeclaration
 
 ConstructorInitializer
 	: /* empty */							{
-				MakeBinary(InvocationExpression, ILNode_BaseInit_create(), 0);
+				$$ = ILNode_Compound_CreateFrom
+						(ILNode_NonStaticInit_create(),
+						 ILNode_InvocationExpression_create
+							(ILNode_BaseInit_create(), 0));
 			}
 	| ':' BASE '(' OptArgumentList ')'		{
-				MakeBinary(InvocationExpression, ILNode_BaseInit_create(), $4);
+				$$ = ILNode_Compound_CreateFrom
+						(ILNode_NonStaticInit_create(),
+						 ILNode_InvocationExpression_create
+							(ILNode_BaseInit_create(), $4));
 			}
 	| ':' THIS '(' OptArgumentList ')'		{
 				MakeBinary(InvocationExpression, ILNode_ThisInit_create(), $4);

@@ -578,6 +578,15 @@ ILNode_SemAnalysis(ILNode_ThisInit)
 }
 
 /*
+ * Perform semantic analysis for a reference to a non-static initializer.
+ */
+ILNode_SemAnalysis(ILNode_NonStaticInit)
+{
+	/* Non-static initializer calls are always "void" statements */
+	return CSSemValueDefault;
+}
+
+/*
  * Perform semantic analysis for argument array nodes.
  */
 ILNode_SemAnalysis(ILNode_ArgArray)

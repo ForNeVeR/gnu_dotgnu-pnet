@@ -1,4 +1,9 @@
 
+2004-07-31  Rainer Groesslinger  <scandium@gentoo.org>
+
+	* System.Windows.Forms/Control.cs: Fix silly typo in Control.cs.
+	(patch #3257).
+
 2004-07-31  Deryk Robosson  <deryk@0x0a.com>
 
 	* Xsharp/TopLevelWindow.cs: set proper mask argument to	

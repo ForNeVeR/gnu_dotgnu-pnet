@@ -4779,7 +4779,7 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void OnMouseDown(MouseEventArgs e)
 			{
 				hoverTimer.Enabled = false;
-				hoverTiemr.Stop();
+				hoverTimer.Stop();
 
 				MouseEventHandler handler;
 				handler = (MouseEventHandler)(GetHandler(EventId.MouseDown));
@@ -4826,7 +4826,7 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseLeave(EventArgs e)
 			{
-				hoverTiemr.Enabled = false;
+				hoverTimer.Enabled = false;
 				hoverTimer.Stop();
 
 				EventHandler handler;

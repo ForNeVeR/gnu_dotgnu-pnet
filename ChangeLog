@@ -1,4 +1,9 @@
 
+2003-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_grammar.y, cscc/c/c_scanner.l: add "type::name" syntax
+	to the C compiler, to replace the clumsy "__invoke__ type.name".
+
 2003-06-30  Jeff Post  <j_post@pacbell.net>
 
 	* csdoc/doc_html.c: add code to generate href links to the

@@ -105,6 +105,7 @@ WHITE			[ \t\v\r\f]
 "^="					{ return XOR_ASSIGN_OP; }
 "|="					{ return OR_ASSIGN_OP; }
 "->"					{ return PTR_OP; }
+"::"					{ return COLON_COLON_OP; }
 
 "asm"					{ return K_ASM; }
 "__asm__"				{ return K_ASM; }

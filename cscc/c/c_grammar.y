@@ -1014,6 +1014,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token AND_ASSIGN_OP	"`&='"
 %token XOR_ASSIGN_OP	"`^='"
 %token OR_ASSIGN_OP		"`|='"
+%token COLON_COLON_OP	"`::'"
 
 /*
  * Reserved words.
@@ -1120,7 +1121,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 
 %type <kind>		StructOrUnion TypeQualifierList TypeQualifier
 
-%expect 1
+%expect 5
 
 %start File
 %%
@@ -1368,6 +1369,14 @@ PostfixExpression
 	| K_INVOKE TYPE_NAME '.' AnyIdentifier '(' ArgumentExpressionList ')'	{
 				$$ = ILNode_CSharpInvocation_create
 						(CScopeGetType(CScopeLookup($2)), $4, $6);
+			}
+	| TYPE_NAME COLON_COLON_OP AnyIdentifier '(' ')'	{
+				$$ = ILNode_CSharpInvocation_create
+						(CScopeGetType(CScopeLookup($1)), $3, 0);
+			}
+	| TYPE_NAME COLON_COLON_OP AnyIdentifier '(' ArgumentExpressionList ')'	{
+				$$ = ILNode_CSharpInvocation_create
+						(CScopeGetType(CScopeLookup($1)), $3, $5);
 			}
 	| PostfixExpression PTR_OP AnyIdentifier	{
 				$$ = ILNode_CDerefField_create
@@ -2691,7 +2700,13 @@ AsmStatement
 	: K_ASM '(' StringLiteral ':' ':' ')'	{
 				$$ = ILNode_AsmStmt_create($3.string);
 			}
+	| K_ASM '(' StringLiteral COLON_COLON_OP ')'	{
+				$$ = ILNode_AsmStmt_create($3.string);
+			}
 	| K_ASM K_VOLATILE '(' StringLiteral ':' ':' ')'	{
+				$$ = ILNode_AsmStmt_create($4.string);
+			}
+	| K_ASM K_VOLATILE '(' StringLiteral COLON_COLON_OP ')'	{
 				$$ = ILNode_AsmStmt_create($4.string);
 			}
 	;

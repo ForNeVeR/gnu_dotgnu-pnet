@@ -1338,7 +1338,7 @@
 # ifdef ALPHA
 #   define MACH_TYPE "ALPHA"
 #   define ALIGNMENT 8
-#   define USE_GENERIC_PUSH_REGS
+/*#   define USE_GENERIC_PUSH_REGS -- alpha_mach_dep doesn't use this -- Rhys */
     /* Gcc and probably the DEC/Compaq compiler spill pointers to preserved */
     /* fp registers in some cases when the target is a 21264.  The assembly */
     /* code doesn't handle that yet, and version dependencies make that a   */

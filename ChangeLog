@@ -4,6 +4,9 @@
 	* support/rc2.c: work around problems with unsigned short
 	on Alpha compilers.
 
+	* libgc/include/private/gcconfig.h: comment out USE_GENERIC_PUSH_REGS
+	for alpha, because it doesn't actually use it.
+
 2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,

@@ -33,6 +33,11 @@
 
 	* cscc/csharp/cs_gather.c: improve duplicate detection for events.
 
+	* codegen/cg_nodes.tc, codegen/cg_stmt.tc, codegen/jv_stmt.tc,
+	cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_oper.tc,
+	cscc/csharp/cs_stmt.tc: implement code generation and semantic
+	analysis for the "+=" and "-=" operators on events.
+
 2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/configure, libffi/configure.in: add host detection

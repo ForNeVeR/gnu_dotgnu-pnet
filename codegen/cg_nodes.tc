@@ -746,6 +746,12 @@ struct _tagILSwitchValue
 {
 	ILNode	   *stmt;
 }
+%node ILNode_EventAddOrRemove ILNode_Statement =
+{
+	ILNode *thisExpr;
+	ILNode *delegateExpr;
+	ILMethod *method;
+}
 
 %output "cg_decls.c"
 

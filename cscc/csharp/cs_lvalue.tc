@@ -447,6 +447,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 	ILMethod *setter;
 	ILNode *constNode;
 	ILMethod *method;
+	ILEvent *event;
 	int allowConst;
 	ILType *thisType;
 
@@ -665,7 +666,51 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 
 		case CS_SEMKIND_EVENT:
 		{
-			/* TODO */
+			/* Reference to a class event */
+			event = (ILEvent *)(value.type);
+			if(!(info->currentMethod))
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "`%s' is not declared as a type in the current scope",
+				  name);
+				value.kind = CS_SEMKIND_TYPE;
+				value.type = ILType_Int32;
+				return value;
+			}
+
+			/* Create the final semantic type */
+			value.kind = CS_SEMKIND_EVENT;
+			value.type = (ILType *)event;
+
+			/* Replace this identifier node with the "this"
+			   expression for the event access */
+			method = ILEvent_AddOn(event);
+			if(!method)
+			{
+				method = ILEvent_RemoveOn(event);
+			}
+			if(method && ILMethod_IsStatic(method))
+			{
+				*parent = 0;
+			}
+			else if(expr)
+			{
+				*parent = expr;
+			}
+			else
+			{
+				CheckForInstanceAccess(info, node);
+				thisType = CurrentClassType(info);
+				if(thisType)
+				{
+					*parent = ILNode_MarkType_create
+								(ILNode_This_create(), thisType);
+				}
+				else
+				{
+					*parent = ILNode_This_create();
+				}
+			}
 		}
 		break;
 	}

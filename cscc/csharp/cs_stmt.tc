@@ -1662,3 +1662,13 @@ ILNode_SemAnalysis(ILNode_LineInfo)
 {
 	return ILNode_SemAnalysis(node->stmt, info, &(node->stmt));
 }
+
+/*
+ * Perform semantic analysis for an event add or remove operation.
+ */
+ILNode_SemAnalysis(ILNode_EventAddOrRemove)
+{
+	/* Nothing to do here: this node is generated during semantic
+	   analysis of the "+=" and "-=" operators */
+	return CSSemValueDefault;
+}

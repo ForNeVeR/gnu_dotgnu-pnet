@@ -1737,3 +1737,25 @@ JavaGenDiscard(ILNode_LineInfo)
 {
 	/* TODO */
 }
+
+/*
+ * Generate discard code for an event add or remove operation.
+ */
+JavaGenDiscard(ILNode_EventAddOrRemove)
+{
+	if(node->thisExpr)
+	{
+		/* Event is based off an object */
+		JavaGenValue(node->thisExpr, info);
+		JavaGenValue(node->delegateExpr, info);
+		JavaGenCallByMethod(info, node->method);
+		JavaGenAdjust(info, -2);
+	}
+	else
+	{
+		/* Event is static */
+		JavaGenValue(node->delegateExpr, info);
+		JavaGenCallByMethod(info, node->method);
+		JavaGenAdjust(info, -1);
+	}
+}

@@ -2056,3 +2056,32 @@ ILNode_EndsInReturnImpl(ILNode_LineInfo)
 		return 2;
 	}
 }
+
+/*
+ * Generate discard code for an event add or remove operation.
+ */
+ILNode_GenDiscard(ILNode_EventAddOrRemove)
+{
+	if(node->thisExpr)
+	{
+		/* Event is based off an object */
+		ILNode_GenValue(node->thisExpr, info);
+		ILNode_GenValue(node->delegateExpr, info);
+		if(ILMethod_IsVirtual(node->method))
+		{
+			ILGenCallVirtByMethod(info, node->method);
+		}
+		else
+		{
+			ILGenCallByMethod(info, node->method);
+		}
+		ILGenAdjust(info, -2);
+	}
+	else
+	{
+		/* Event is static */
+		ILNode_GenValue(node->delegateExpr, info);
+		ILGenCallByMethod(info, node->method);
+		ILGenAdjust(info, -1);
+	}
+}

@@ -602,12 +602,12 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				System.Text.StringBuilder sb= new System.Text.StringBuilder();
 				for( int i=0 ; i< format.Length ; i++)
 				{
-					String nextChar = format.SubString(i,1);
-					if(String.Equals(nextChar,"{"))
+					char nextChar = format[i];
+					if(nextChar == '{')
 					{
-						if(String.Equals( format.SubString(i+1,1),"{"))
+						if(String.Equals( format.Substring(i+1,1),"{"))
 						{
-							sb.Appand("{");
+							sb.Append('{');
 							i++;
 							continue;
 						}
@@ -616,11 +616,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						//TODO : get the args number and format it.
 						}
 					}
-					else if(String.Equals( nextChar,"}"))
+					else if(nextChar == '}')
 					{
-						if(String.Equals( format.SubString(i+1,1),"}"))
+						if((i+1) < format.Length && format[i+1] == '}')
 						{
-							sb.Appand("}");
+							sb.Append('}');
 							i++;
 							continue;
 						}

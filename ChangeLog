@@ -1,3 +1,8 @@
+
+2002-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/String.cs: build problems with MS'es compiler.
+
 2002-03-20 Gerard Toonstra <toonstra@ntlworld.com>
 
 	* System/Net/IPAddress.cs: First class contributed! Mostly

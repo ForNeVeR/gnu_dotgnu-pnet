@@ -2,6 +2,7 @@
 0.1.3
 
 	* pnet.spec: applied patch submitted by mdaniel to create RPM spec file.
+	* ilfind/ilfind.1: removed mention of '-V', which isn't supported.
 
 0.1.2 (13 August 2001)
 

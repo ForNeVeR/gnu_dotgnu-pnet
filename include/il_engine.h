@@ -66,6 +66,26 @@ typedef struct
 } ILTypedRef;
 
 /*
+ * A structure that can be used to represent any execution engine value.
+ * This is typically used when it is inconvenient to use vararg calls.
+ */
+typedef union
+{
+	ILInt32			int32Value;
+	ILUInt32		uint32Value;
+	ILInt64			int64Value;
+	ILUInt64		uint64Value;
+	ILNativeInt		nintValue;
+	ILNativeUInt	nuintValue;
+	ILNativeFloat	floatValue;
+	ILTypedRef		typedRefValue;
+	void		   *ptrValue;
+	ILObject	   *objValue;
+	ILString	   *strValue;
+
+} ILExecValue;
+
+/*
  * Initialize the engine and set a default maximum heap size.
  * If the size is zero, then use all of memory for the heap.
  * This should be called only once per application.
@@ -176,6 +196,16 @@ int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
 					 void *result, ...);
 
 /*
+ * Call a particular method within a thread's context,
+ * passing the parameter and return values from
+ * "ILExecValue" structures.  Returns non-zero if an
+ * exception was thrown.  Zero otherwise.  The return
+ * value, if any, is placed in "*result".
+ */
+int ILExecThreadCallV(ILExecThread *thread, ILMethod *method,
+					  ILExecValue *result, ILExecValue *args);
+
+/*
  * Call a particular virtual method within a thread's context.
  * If the method isn't marked as virtual, then an ordinary
  * method call will be used instead.
@@ -184,12 +214,26 @@ int ILExecThreadCallVirtual(ILExecThread *thread, ILMethod *method,
 							void *result, void *_this, ...);
 
 /*
+ * Call a particular virtual method using "ILExecValue" parameters.
+ */
+int ILExecThreadCallVirtualV(ILExecThread *thread, ILMethod *method,
+							 ILExecValue *result, void *_this,
+							 ILExecValue *args);
+
+/*
  * Look up a method by name and then call it.  If the
  * method is not found, an exception will be thrown.
  */
 int ILExecThreadCallNamed(ILExecThread *thread, const char *typeName,
 						  const char *methodName, const char *signature,
 						  void *result, ...);
+
+/*
+ * Look up a method by name and call it with "ILExecValue" parameters.
+ */
+int ILExecThreadCallNamedV(ILExecThread *thread, const char *typeName,
+						   const char *methodName, const char *signature,
+						   ILExecValue *result, ILExecValue *args);
 
 /*
  * Look up a method by name and then call it using a
@@ -201,11 +245,27 @@ int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 						         void *result, void *_this, ...);
 
 /*
+ * Look up a virtual method by name and call it with
+ * "ILExecValue" parameters.
+ */
+int ILExecThreadCallNamedVirtualV(ILExecThread *thread, const char *typeName,
+						          const char *methodName, const char *signature,
+						          ILExecValue *result, void *_this,
+								  ILExecValue *args);
+
+/*
  * Create a new object instance of a class and call its constructor.
  * Returns NULL if an exception occurred.
  */
 ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 						  const char *signature, ...);
+
+/*
+ * Create a new object instance of a class and call its constructor
+ * using "ILExecValue" parameters.
+ */
+ILObject *ILExecThreadNewV(ILExecThread *thread, const char *typeName,
+						   const char *signature, ILExecValue *args);
 
 /*
  * Determine if there is a last-occuring exception

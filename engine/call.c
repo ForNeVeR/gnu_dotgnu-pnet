@@ -205,6 +205,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 					   as a pointer to a temporary typedref structure */
 					CHECK_SPACE(CVM_WORDS_PER_TYPED_REF);
 					ptr = (void *)(VA_ARG(va, void *));
+					ILMemCpy(stacktop, ptr, sizeof(ILTypedRef));
 					stacktop += CVM_WORDS_PER_TYPED_REF;
 				}
 				break;
@@ -423,6 +424,307 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	return threwException;
 }
 
+static int CallMethodV(ILExecThread *thread, ILMethod *method,
+					   ILExecValue *result, int isCtor,
+					   void *_this, ILExecValue *args)
+{
+	ILType *signature = ILMethod_Signature(method);
+	CVMWord *stacktop, *stacklimit;
+	ILUInt32 param, numParams;
+	ILType *paramType;
+	void *ptr;
+	ILUInt32 size, sizeInWords;
+	ILCallFrame *frame;
+	ILUInt32 savePC;
+	int threwException;
+	unsigned char *pcstart;
+
+	/* Get the top and extent of the stack */
+	stacktop = thread->stackTop;
+	stacklimit = thread->stackLimit;
+
+	/* Push the arguments onto the evaluation stack */
+	if(ILType_HasThis(signature) && !isCtor)
+	{
+		/* Push the "this" argument */
+		CHECK_SPACE(1);
+		if(_this)
+		{
+			/* Use the supplied "this" parameter */
+			stacktop->ptrValue = _this;
+		}
+		else
+		{
+			/* Get the "this" parameter from the argument list */
+			stacktop->ptrValue = args->objValue;
+			++args;
+		}
+		++stacktop;
+	}
+	numParams = signature->num;
+	for(param = 1; param <= numParams; ++param)
+	{
+		paramType = ILTypeGetEnumType(ILTypeGetParam(signature, param));
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Process a primitive value */
+			switch(ILType_ToElement(paramType))
+			{
+				case IL_META_ELEMTYPE_VOID:		break;
+
+				case IL_META_ELEMTYPE_BOOLEAN:
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_U1:
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_CHAR:
+				case IL_META_ELEMTYPE_I4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_I:
+			#endif
+				{
+					CHECK_SPACE(1);
+					stacktop->intValue = args->int32Value;
+					++args;
+					++stacktop;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_U4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					CHECK_SPACE(1);
+					stacktop->uintValue = args->uint32Value;
+					++args;
+					++stacktop;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I8:
+				case IL_META_ELEMTYPE_U8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					CHECK_SPACE(CVM_WORDS_PER_LONG);
+					ILMemCpy(stacktop, &(args->int64Value), sizeof(ILInt64));
+					++args;
+					stacktop += CVM_WORDS_PER_LONG;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				case IL_META_ELEMTYPE_R8:
+				case IL_META_ELEMTYPE_R:
+				{
+					CHECK_SPACE(CVM_WORDS_PER_NATIVE_FLOAT);
+					ILMemCpy(stacktop, &(args->floatValue),
+							 sizeof(ILNativeFloat));
+					++args;
+					stacktop += CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+				{
+					CHECK_SPACE(CVM_WORDS_PER_TYPED_REF);
+					ILMemCpy(stacktop, &(args->typedRefValue),
+							 sizeof(ILTypedRef));
+					++args;
+					stacktop += CVM_WORDS_PER_TYPED_REF;
+				}
+				break;
+			}
+		}
+		else if(ILType_IsClass(paramType))
+		{
+			/* Process an object reference */
+			CHECK_SPACE(1);
+			stacktop->ptrValue = args->objValue;
+			++args;
+			++stacktop;
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			/* Process a value type: we assume that the caller has
+			   put the value into a temporary location and then
+			   passed a pointer to the temporary to us */
+			ptr = args->ptrValue;
+			++args;
+			size = ILSizeOfType(paramType);
+			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
+			CHECK_SPACE(sizeInWords);
+			ILMemCpy(stacktop, ptr, size);
+			stacktop += sizeInWords;
+		}
+		else if(paramType != 0 && ILType_IsComplex(paramType) &&
+				paramType->kind == IL_TYPE_COMPLEX_BYREF)
+		{
+			/* Process a value that is being passed by reference */
+			CHECK_SPACE(1);
+			stacktop->ptrValue = args->ptrValue;
+			++args;
+			++stacktop;
+		}
+		else
+		{
+			/* Assume that everything else is an object reference */
+			CHECK_SPACE(1);
+			stacktop->ptrValue = args->objValue;
+			++args;
+			++stacktop;
+		}
+	}
+
+	/* Record the number of arguments for popping later */
+	sizeInWords = thread->stackTop - thread->stackBase;
+	thread->stackTop = stacktop;
+
+	/* Clear the pending exception on entry to the method */
+	thread->thrownException = 0;
+
+	/* Convert the method into CVM bytecode */
+	pcstart = _ILConvertMethod(thread, method);
+	if(!pcstart)
+	{
+		/* TODO: throw a "MissingMethodException" */
+	}
+
+	/* Create a call frame for the method */
+	if(thread->numFrames >= thread->maxFrames)
+	{
+		/* TODO: throw a stack overflow exception */
+	}
+	frame = &(thread->frameStack[(thread->numFrames)++]);
+	savePC = thread->pc;
+	frame->method = thread->method;
+	frame->pc = IL_MAX_UINT32;
+	frame->frame = thread->frame;
+	frame->except = IL_MAX_UINT32;
+
+	/* Call the method */
+	if(isCtor)
+	{
+		/* We are calling the allocation constructor, which starts
+		   several bytes before the actual method entry point */
+		thread->pcstart = pcstart - ILCoderCtorOffset(thread->process->coder);
+	}
+	else
+	{
+		thread->pcstart = pcstart;
+	}
+	thread->pc = 0;
+	thread->method = method;
+	threwException = _ILCVMInterpreter(thread);
+	if(threwException)
+	{
+		/* Pop the exception from the stack */
+		thread->thrownException = thread->stackTop[-1].ptrValue;
+		--(thread->stackTop);
+	}
+	else if(isCtor)
+	{
+		/* Copy the returned object value */
+		*((void **)result) = thread->stackTop[-1].ptrValue;
+		--(thread->stackTop);
+	}
+	else
+	{
+		/* Copy the return value into place */
+		paramType = ILTypeGetEnumType(signature->un.method.retType);
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Process a primitive value */
+			switch(ILType_ToElement(paramType))
+			{
+				case IL_META_ELEMTYPE_VOID:		break;
+
+				case IL_META_ELEMTYPE_BOOLEAN:
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_U1:
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_CHAR:
+				case IL_META_ELEMTYPE_I4:
+				case IL_META_ELEMTYPE_U4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					result->int32Value = thread->stackTop[-1].intValue;
+					--(thread->stackTop);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I8:
+				case IL_META_ELEMTYPE_U8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					ILMemCpy(&(result->int64Value),
+							 thread->stackTop - CVM_WORDS_PER_LONG,
+							 sizeof(ILInt64));
+					thread->stackTop -= CVM_WORDS_PER_LONG;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				case IL_META_ELEMTYPE_R8:
+				case IL_META_ELEMTYPE_R:
+				{
+					ILMemCpy(&(result->floatValue),
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+				{
+					ILMemCpy(&(result->typedRefValue),
+							 thread->stackTop - CVM_WORDS_PER_TYPED_REF,
+							 sizeof(ILTypedRef));
+					thread->stackTop -= CVM_WORDS_PER_TYPED_REF;
+				}
+				break;
+			}
+		}
+		else if(ILType_IsClass(paramType))
+		{
+			/* Process an object reference */
+			result->ptrValue = thread->stackTop[-1].ptrValue;
+			--(thread->stackTop);
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			/* Process a value type */
+			size = ILSizeOfType(paramType);
+			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
+			ILMemCpy(result->ptrValue, thread->stackTop - sizeInWords, size);
+			thread->stackTop -= sizeInWords;
+		}
+		else
+		{
+			/* Assume that everything else is an object reference */
+			result->ptrValue = thread->stackTop[-1].ptrValue;
+			--(thread->stackTop);
+		}
+	}
+
+	/* Restore the original PC: everything else was restored
+	   by the "return" instruction within the interpreter */
+	thread->pc = savePC;
+
+	/* Done */
+	return threwException;
+}
+
 ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
 								   ILClass *interfaceClass,
 								   ILUInt32 index)
@@ -531,6 +833,63 @@ static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
 	return 1;
 }
 
+static int CallVirtualMethodV(ILExecThread *thread, ILMethod *method,
+					  		  ILExecValue *result, void *_this,
+							  ILExecValue *args)
+{
+	ILClass *classInfo;
+	ILClass *objectClass;
+
+	/* Throw a "NullReferenceException" if "this" is NULL */
+	if(!_this)
+	{
+		ILExecThreadThrowSystem(thread, "System.NullReferenceException",
+								(const char *)0);
+		return 1;
+	}
+
+	/* The calling sequence is handled differently depending
+	   upon whether the method is normal, interface, or virtual */
+	if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0)
+	{
+		/* This is a normal method which has been called incorrectly */
+		return CallMethodV(thread, method, result, 0, _this, args);
+	}
+	classInfo = method->member.owner;
+	objectClass = GetObjectClass(_this);
+	if((classInfo->attributes & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK)
+			== IL_META_TYPEDEF_INTERFACE)
+	{
+		/* This is an interface method call */
+		if(ILClassImplements(objectClass, classInfo))
+		{
+			method = _ILLookupInterfaceMethod(objectClass, classInfo,
+											  method->index);
+			if(method)
+			{
+				return CallMethodV(thread, method, result, 0, _this, args);
+			}
+		}
+	}
+	else
+	{
+		/* This is an ordinary virtual method call */
+		if(ILClassInheritsFrom(objectClass, classInfo))
+		{
+			method = ((ILClassPrivate *)(classInfo->userData))->
+							vtable[method->index];
+			if(method)
+			{
+				return CallMethodV(thread, method, result, 0, _this, args);
+			}
+		}
+	}
+
+	/* If we get here, then we could not resolve the virtual */
+	ThrowMethodMissing(thread);
+	return 1;
+}
+
 int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
 					 void *result, ...)
 {
@@ -539,6 +898,12 @@ int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
 	threwException = CallMethod(thread, method, result, 0, 0, VA_GET_LIST);
 	VA_END;
 	return threwException;
+}
+
+int ILExecThreadCallV(ILExecThread *thread, ILMethod *method,
+					  ILExecValue *result, ILExecValue *args)
+{
+	return CallMethodV(thread, method, result, 0, 0, args);
 }
 
 int ILExecThreadCallVirtual(ILExecThread *thread, ILMethod *method,
@@ -550,6 +915,13 @@ int ILExecThreadCallVirtual(ILExecThread *thread, ILMethod *method,
 						(thread, method, result, _this, VA_GET_LIST);
 	VA_END;
 	return threwException;
+}
+
+int ILExecThreadCallVirtualV(ILExecThread *thread, ILMethod *method,
+							 ILExecValue *result, void *_this,
+							 ILExecValue *args)
+{
+	return CallVirtualMethodV(thread, method, result, _this, args);
 }
 
 int ILExecThreadCallNamed(ILExecThread *thread, const char *typeName,
@@ -577,6 +949,24 @@ int ILExecThreadCallNamed(ILExecThread *thread, const char *typeName,
 	return threwException;
 }
 
+int ILExecThreadCallNamedV(ILExecThread *thread, const char *typeName,
+						   const char *methodName, const char *signature,
+						   ILExecValue *result, ILExecValue *args)
+{
+	ILMethod *method;
+	method = ILExecThreadLookupMethod(thread, typeName,
+									  methodName, signature);
+	if(!method)
+	{
+		/* Construct and throw a "MissingMethodException" object */
+		ThrowMethodMissing(thread);
+
+		/* There is a pending exception waiting for the caller */
+		return 1;
+	}
+	return CallMethodV(thread, method, result, 0, 0, args);
+}
+
 int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 						         const char *methodName, const char *signature,
 						         void *result, void *_this, ...)
@@ -601,6 +991,25 @@ int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 						(thread, method, result, _this, VA_GET_LIST);
 	VA_END;
 	return threwException;
+}
+
+int ILExecThreadCallNamedVirtualV(ILExecThread *thread, const char *typeName,
+						          const char *methodName, const char *signature,
+						          ILExecValue *result, void *_this,
+								  ILExecValue *args)
+{
+	ILMethod *method;
+	method = ILExecThreadLookupMethod(thread, typeName,
+									  methodName, signature);
+	if(!method)
+	{
+		/* Construct and throw a "MissingMethodException" object */
+		ThrowMethodMissing(thread);
+
+		/* There is a pending exception waiting for the caller */
+		return 1;
+	}
+	return CallVirtualMethodV(thread, method, result, _this, args);
 }
 
 ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
@@ -642,6 +1051,42 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 	}
 	VA_END;
 	return result;
+}
+
+ILObject *ILExecThreadNewV(ILExecThread *thread, const char *typeName,
+						   const char *signature, ILExecValue *args)
+{
+	ILMethod *ctor;
+	ILClass *classInfo;
+	ILExecValue result;
+
+	/* Find the constructor */
+	ctor = ILExecThreadLookupMethod(thread, typeName, ".ctor", signature);
+	if(!ctor)
+	{
+		/* Throw a "MissingMethodException" */
+		ThrowMethodMissing(thread);
+		return 0;
+	}
+
+	/* Make sure that the class has been initialized */
+	classInfo = ILMethod_Owner(ctor);
+	if(!_ILLayoutClass(classInfo))
+	{
+		/* Throw a "TypeLoadException" */
+		ILExecThreadThrowSystem(thread, "System.TypeLoadException",
+								(const char *)0);
+		return 0;
+	}
+
+	/* Call the constructor */
+	ILMemZero(&result, sizeof(result));
+	if(CallMethodV(thread, ctor, &result, 1, 0, args))
+	{
+		/* The constructor threw an exception */
+		return 0;
+	}
+	return result.objValue;
 }
 
 #ifdef	__cplusplus

@@ -1,4 +1,9 @@
 
+2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* include/il_engine.h, engine/call.c: implement an alternative call API
+that uses structures instead of varargs.
+
 2001-11-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/layout.c: compute the interface lookup tables for the class.

@@ -50,6 +50,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->exitStatus = 0;
 	process->coder = 0;
 	process->coderGeneration = 0;
+	process->stringClass = 0;
 	process->runtimeTypeClass = 0;
 	process->outOfMemoryObject = 0;
 	ILGetCurrTime(&(process->startTime));
@@ -127,6 +128,13 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 			process->outOfMemoryObject =
 				_ILEngineAllocObject(process->mainThread, classInfo);
 		}
+	}
+
+	/* Look for "System.String" */
+	if(!(process->stringClass))
+	{
+		process->stringClass = ILClassLookupGlobal(ILImageToContext(image),
+							        			   "String", "System");
 	}
 
 	/* Look for "System.RuntimeType" */

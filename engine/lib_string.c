@@ -31,10 +31,9 @@ extern	"C" {
 static System_String *AllocString(ILExecThread *thread, ILInt32 length)
 {
 	System_String *str;
-	ILClass *classInfo;
 	ILInt32 roundLen = ((length + 7) & ~7);	/* Round to a multiple of 8 */
-	classInfo = ILMethod_Owner(thread->method);
-	str = (System_String *)_ILEngineAllocAtomic(thread, classInfo,
+	str = (System_String *)_ILEngineAllocAtomic(thread,
+												thread->process->stringClass,
 						 				  		sizeof(System_String) +
 						 				  		roundLen * sizeof(ILUInt16));
 	if(str)

@@ -22,7 +22,6 @@ libILEngine_a_SOURCES = call.c \
 						lookup.c \
 						pinvoke.c \
 						process.c \
-						strapi.c \
 						thread.c \
 						throw.c \
 						verify.c

@@ -520,6 +520,13 @@ ILNode_SemAnalysis(ILNode_BaseInit)
 	value.type = ILType_FromClass(parentInfo);
 	value = CSResolveConstructor(info, (ILNode *)node, value.type);
 
+	/* Report an error if we could not find any accessible constructors */
+	if(value.kind != CS_SEMKIND_METHOD_GROUP)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "no accessible base class constructors");
+	}
+
 	/* Replace the current expression with "this" */
 	*parent = ILNode_This_create();
 	return value;

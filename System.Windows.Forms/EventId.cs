@@ -146,6 +146,13 @@ internal enum EventId
 	SelectedValueChanged,
 	ValueMemberChanged,
 
+	// "PropertyGrid" events,
+	PropertyValueChanged,
+	PropertyTabChanged,
+	SelectedGridItemChanged,
+	PropertySortChanged,
+	SelectedObjectsChanged,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

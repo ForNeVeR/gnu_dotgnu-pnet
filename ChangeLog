@@ -1,3 +1,7 @@
+2003-07-28  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* samples/samples.build, samples/Emit.cs: add an example program for
+	System.Reflection.Emit.
 
 2003-07-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -363,6 +363,31 @@
 			<arg compiler="csc" value="/nowarn:168"/>
 			<arg compiler="csc" value="/nowarn:67"/>
 			<arg compiler="csc" value="/nowarn:169"/>
-		</compile>		
+		</compile>
+
+		<!-- Build the Emit.exe program -->
+		<compile output="Emit.exe"
+				 target="exe"
+				 unsafe="true"
+				 nostdlib="true"
+				 optimize="true"
+				 debug="true">
+
+			<sources>
+				<includes if="${CONFIG_REFLECTION_EMIT}" name="Emit.cs"/>
+			</sources>
+
+			<references>
+				<file name="../runtime/mscorlib.dll"/>
+			</references>
+
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-flatin1-charset"/>
+			<arg compiler="csc" value="/nowarn:626"/>
+			<arg compiler="csc" value="/nowarn:649"/>
+			<arg compiler="csc" value="/nowarn:168"/>
+			<arg compiler="csc" value="/nowarn:67"/>
+			<arg compiler="csc" value="/nowarn:169"/>
+		</compile>	
 	</target>
 </project>

@@ -366,13 +366,13 @@ internal abstract class DrawingWindow : IToolkitWindow
 
 	protected void ButtonDown(int wParam, int lParam)
 	{
-		sink.ToolkitMouseDown(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam), 0 ,MouseX(lParam), MouseY(lParam) ,0);
+		sink.ToolkitMouseDown(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam), 1 ,MouseX(lParam), MouseY(lParam) ,0);
 		d.WriteLine("DrawingWindow.ButtonDown [" + (MouseX(lParam)) + "," + (MouseY(lParam)) + "], key:" + MapMouseToToolkitKeys(wParam) + ", button:" + MapToToolkitMouseButtons(wParam));
 	}
 
 	protected void ButtonUp(int wParam, int lParam)
 	{
-		sink.ToolkitMouseUp(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam), 0 ,MouseX(lParam), MouseY(lParam),0);
+		sink.ToolkitMouseUp(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam), 1 ,MouseX(lParam), MouseY(lParam),0);
 		d.WriteLine("DrawingWindow.ButtonUp [" + (MouseX(lParam)) + "," + (MouseY(lParam)) + "], key:" + MapMouseToToolkitKeys(wParam) + ", button:" + MapToToolkitMouseButtons(wParam));
 	}
 
@@ -384,8 +384,8 @@ internal abstract class DrawingWindow : IToolkitWindow
 
 	protected void KeyDown( int wParam, int lParam)
 	{
-		sink.ToolkitKeyDown((ToolkitKeys)(wParam & 0xFFFF));
-		d.WriteLine("DrawingWindow.KeyDown " + ((ToolkitKeys)(wParam & 0xFFFF)).ToString());
+		sink.ToolkitKeyDown(MapKeyToToolkitKeys( wParam));
+		d.WriteLine("DrawingWindow.KeyDown " + (MapKeyToToolkitKeys( wParam)).ToString() + " " + wParam);
 	}
 
 	protected void Char( int wParam, int lParam)
@@ -396,8 +396,8 @@ internal abstract class DrawingWindow : IToolkitWindow
 	
 	protected void KeyUp( int wParam, int lParam )
 	{
-		sink.ToolkitKeyUp((ToolkitKeys)(wParam & 0xFFFF));
-		d.WriteLine("DrawingWindow.KeyUp " + ((ToolkitKeys)(wParam & 0xFFFF)).ToString());
+		sink.ToolkitKeyUp(MapKeyToToolkitKeys( wParam));
+		d.WriteLine("DrawingWindow.KeyUp " + (MapKeyToToolkitKeys( wParam)).ToString());
 	}
 
 	//TODO:
@@ -671,11 +671,23 @@ internal abstract class DrawingWindow : IToolkitWindow
 		if ((fwKeys & Win32.Api.MouseKeyState.MK_SHIFT)>0)
 			keys |= ToolkitKeys.Shift;
 
-		if ((Win32.Api.GetKeyState(Win32.Api.VirtualKeyType.VK_MENU) & 0x800) > 0)
+		if (Win32.Api.GetKeyState(Win32.Api.VirtualKeyType.VK_MENU) < 0)
 			keys |= ToolkitKeys.Alt;
 		
 		return keys;
 
+	}
+
+	private ToolkitKeys MapKeyToToolkitKeys( int wParam)
+	{
+		ToolkitKeys key =  (ToolkitKeys)(wParam & 0xFFFF);
+		if (Win32.Api.GetKeyState(Win32.Api.VirtualKeyType.VK_MENU) < 0)
+			key |= ToolkitKeys.Alt;
+		if (Win32.Api.GetKeyState(Win32.Api.VirtualKeyType.VK_CONTROL) < 0)
+			key |= ToolkitKeys.Control;
+		if (Win32.Api.GetKeyState(Win32.Api.VirtualKeyType.VK_SHIFT) < 0)
+			key |= ToolkitKeys.Shift;
+		return key;
 	}
 
 	//This is called to set whether a window is visible or not. Can only happen once the window is created

@@ -34,6 +34,9 @@ public sealed class Thread
 	// State information for abort exceptions.
 	private Object stateInfo;
 
+	// Entry point for the thread.
+	private ThreadStart start;
+
 	// Name of this thread.
 	private String name;
 
@@ -45,12 +48,8 @@ public sealed class Thread
 					throw new ArgumentNullException("start");
 				}
 				privateData = new IntPtr(0);
-				InternalSetEntry(start);
+				this.start = start;
 			}
-
-	// Set the entry point for this thread.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private void InternalSetEntry(ThreadStart start);
 
 	// Destructor.
 	~Thread()

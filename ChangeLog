@@ -25,6 +25,9 @@ runtime/System/Threading/WaitHandle.cs: thread-related classes.
 * resources/en_US/runtime/Arg.txt, resources/en_US/runtime/Exception.txt,
 resources/en_US/runtime/Invalid.txt: messages for threads and resources.
 
+* runtime/System/Threading/Thread.cs: store the entry point in a field
+rather than passing it to an "internalcall" method.
+
 2001-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update version and news for 0.0.6 release.

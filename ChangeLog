@@ -1,4 +1,19 @@
 
+2003-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Collections/Generic/Comparer.cs,
+	runtime/System/Collections/Generic/Dictionary.cs,
+	runtime/System/Collections/Generic/ICollection.cs,
+	runtime/System/Collections/Generic/IComparable.cs,
+	runtime/System/Collections/Generic/IComparer.cs,
+	runtime/System/Collections/Generic/IDictionary.cs,
+	runtime/System/Collections/Generic/IEnumerable.cs,
+	runtime/System/Collections/Generic/IEnumerator.cs,
+	runtime/System/Collections/Generic/IKeyComparer.cs,
+	runtime/System/Collections/Generic/IList.cs,
+	runtime/System/Collections/Generic/KeyValuePair.cs:
+	check in the beginnings of the "System.Collections.Generic" namespace.
+
 2003-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/samples.build, samples/snake.cs: check in a simple

@@ -7,6 +7,9 @@
 	* csdoc/doc_stub.c: fix a long outstanding bug concerning default
 	output paths.
 
+	* cscc/csharp/cs_gather.c: Rename attribute definitions to force the
+	"Attribute" suffix .
+
 2002-11-11  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* engine/lib_string.c: Corrected some exception handling to follow ECMA

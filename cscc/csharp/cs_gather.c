@@ -89,6 +89,8 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 {
 	const char *name;
 	const char *namespace;
+	const char *baseName;
+	int namelen;
 	int numBases;
 	ILClass **baseList;
 	int base;
@@ -179,6 +181,35 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		else
 		{
 			baseNode = baseNodeList;
+		}
+
+		if(yyisa(baseNode,ILNode_Identifier))
+		{
+			baseName=ILQualIdentName(baseNode,0);
+		}
+		else if(yyisa(baseNode,ILNode_QualIdent))
+		{
+			baseName=ILQualIdentName(((ILNode_QualIdent*)baseNode)->right,0);
+		}
+		else
+		{
+			baseName=0;
+		}
+	
+		if(baseName)
+		{
+			namelen=strlen(baseName);
+			if(namelen >= 9 && strcmp(baseName + namelen - 9, "Attribute") == 0)
+			{
+				namelen=strlen(name);
+				if(namelen < 9 || strcmp(name + namelen - 9, "Attribute") != 0)
+				{
+					defn->name = ILInternAppendedString
+									(ILInternString(defn->name, namelen),
+									 ILInternString("Attribute", 9)).string;
+					name=defn->name;
+				}
+			}
 		}
 
 		/* Look in the scope for the base class */

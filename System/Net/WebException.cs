@@ -80,23 +80,6 @@ public class WebException : InvalidOperationException
 #endif
 	
 	
-	// Get the default message to use for this exception type.
-	public override String Message
-			{
-				get
-				{
-					String parentMsg = base.Message;
-					if(parentMsg != null)
-					{
-						return parentMsg;
-					}
-					else
-					{
-						return S._("Exception_Web");
-					}
-				}
-			}
-
 	//Properties
 	public WebResponse Response 
 			{

@@ -95,8 +95,7 @@ public class IPAddress
 								 (address[posn * 2 + 1]));
 				}
 			}
-			
-	public IPAddress(ushort[] address, long scopeid)
+	private IPAddress(ushort[] address, long scopeid)
 			{
 				this.family = AddressFamily.InterNetworkV6;
 				this.value = scopeid;
@@ -322,7 +321,7 @@ public class IPAddress
 				return retval;
 			}
 	
-	public static IPAddress ParseIPv6(String input)
+	private static IPAddress ParseIPv6(String input)
 			{
 				long scopeid=0;
 				bool zeroCompress, multipleCompress ;
@@ -423,6 +422,7 @@ public class IPAddress
 			}
 
 	// Get or set the IPv4 address.
+	[Obsolete("IPAddress.Address is address family dependant, use Equals method for comparison.")]
 	public long Address
 			{
 				get

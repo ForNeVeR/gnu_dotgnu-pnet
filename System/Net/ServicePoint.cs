@@ -39,6 +39,7 @@ public class ServicePoint
 	internal Version version;
 	internal bool supportsPipelining;
 	internal bool useNagleAlgorithm;
+	internal bool expect100Continue;
 
 	// Constructor.
 	internal ServicePoint()
@@ -98,6 +99,17 @@ public class ServicePoint
 				get
 				{
 					return currentConnections;
+				}
+			}
+	public bool Expect100Continue
+			{
+				get
+				{
+					return expect100Continue;
+				}
+				set
+				{
+					expect100Continue = value;
 				}
 			}
 	public DateTime IdleSince

@@ -167,7 +167,7 @@ public class WebProxy : IWebProxy
 					bypassOnLocal = value;
 				}
 			}
-	public virtual ICredentials Credentials
+	public ICredentials Credentials
 			{
 				get
 				{
@@ -188,7 +188,7 @@ public class WebProxy : IWebProxy
 			}
 
 	// Get the proxy to use for a particular URI destination.
-	public virtual Uri GetProxy(Uri destination)
+	public Uri GetProxy(Uri destination)
 			{
 				if(IsBypassed(destination))
 				{
@@ -206,7 +206,7 @@ public class WebProxy : IWebProxy
 
 	// Dtermine if a URI destination has been bypassed.
 	[TODO]
-	public virtual bool IsBypassed(Uri host)
+	public bool IsBypassed(Uri host)
 			{
 				if(host.IsLoopback)
 				{

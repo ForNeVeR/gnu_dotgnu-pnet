@@ -25,7 +25,11 @@ using System;
 using System.Text;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Runtime.InteropServices;
 
+#if !ECMA_COMPAT
+[ComVisible(true)]
+#endif
 public class WebHeaderCollection : NameValueCollection
 {
 	private static int[] restrictedHeaders=

@@ -38,6 +38,12 @@
 	* System/Uri.cs, System.UriFormatException.cs: signature-compatibility
 	fixes in "Uri" and "UriFormatException".
 
+	* System/Net/IPAddress.cs, System/Net/ServicePoint.cs,
+	System/Net/WebClient.cs, System/Net/WebException.cs,
+	System/Net/WebHeaderCollection.cs, System/Net/WebProxy.cs,
+	System/Net/Sockets/SocketException.cs: signature-compatibility
+	fixes in "System.Net".
+
 2003-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/ArrayConverter.cs,

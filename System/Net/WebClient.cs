@@ -25,10 +25,12 @@ using System.IO;
 using System.Text;
 using System.ComponentModel;
 using System.Collections.Specialized;
+using System.Runtime.InteropServices;
 
 namespace System.Net
 {
 #if !ECMA_COMPAT
+	[ComVisible(true)]
 	public sealed class WebClient
 #if CONFIG_COMPONENT_MODEL
 		: Component

@@ -72,17 +72,17 @@ public class SocketException :
 
 	// Internal constructors that are used to set correct error codes.
 	internal SocketException(Errno errno)
-		: base(null)
+		: base(DefaultMessage(null, errno))
 		{
 			this.errno = errno;
 		}
 	internal SocketException(Errno errno, String msg)
-		: base(msg)
+		: base(DefaultMessage(msg, errno))
 		{
 			this.errno = errno;
 		}
 	internal SocketException(Errno errno, String msg, Exception inner)
-		: base(msg, inner)
+		: base(DefaultMessage(msg, errno), inner)
 		{
 			this.errno = errno;
 		}
@@ -111,23 +111,19 @@ public class SocketException :
 			}
 
 	// Get the default message to use for this exception type.
-	public override String Message
+	private String DefaultMessage(String msg, Errno errno)
 			{
-				get
+				if(msg != null)
 				{
-					String parentMsg = base.Message;
-					if(parentMsg != null)
-					{
-						return parentMsg;
-					}
-					else if(errno == Errno.EREMOTEIO)
-					{
-						return S._("IO_Socket");
-					}
-					else
-					{
-						return GetErrnoMessage(errno);
-					}
+					return msg;
+				}
+				else if(errno == Errno.EREMOTEIO)
+				{
+					return S._("IO_Socket");
+				}
+				else
+				{
+					return GetErrnoMessage(errno);
 				}
 			}
 

@@ -37,6 +37,12 @@
 	runtime/System/Security/Policy/Evidence.cs: add missing resources
 	and fix tag name spelling mistakes in the source.
 
+	* configure.in, Basic/Basic.build, Basic/S.cs,
+	Basic/CompilerServices/ObjectType.cs, Basic/CompilerServices/Utils.cs,
+	resources/en_US/Makefile.am, resources/en_US/Basic/.cvsignore,
+	resources/en_US/Basic/Basic.txt, resources/en_US/Basic/Makefile.am:
+	add missing resources for the "Microsoft.VisualBasic" assembly.
+
 2003-10-12  Neil Cawse  <neilcawse@hotmail.com>
 
 	* System.Windows.Forms/TreeView.cs: fix paint crash when no nodes bug.

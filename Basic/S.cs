@@ -25,7 +25,7 @@ using System.Reflection;
 using System.Resources;
 
 // This class provides string resource support to the rest
-// of the System.Drawing library assembly.  It is accessed using
+// of the Microsoft.VisualBasic library assembly.  It is accessed using
 // the "S._(tag)" convention.
 
 internal sealed class S
@@ -34,12 +34,13 @@ internal sealed class S
 #if CONFIG_RUNTIME_INFRA
 
 	// Cached copy of the resources for this assembly and mscorlib.
+	// We avoid loading the mscorlib resources in non-ECMA mode,
+	// so that the assembly can be used with other CLR's.
 #if ECMA_COMPAT
 	private static ECMAResourceManager ourResources = null;
 	private static ECMAResourceManager runtimeResources = null;
 #else
 	private static ResourceManager ourResources = null;
-	private static ResourceManager runtimeResources = null;
 #endif
 
 	// Helper for obtaining string resources for this assembly.
@@ -66,18 +67,17 @@ internal sealed class S
 						return value;
 					}
 
+				#if ECMA_COMPAT
 					// Try the fallbacks in the runtime library.
 					if(runtimeResources == null)
 					{
-					#if ECMA_COMPAT
 						runtimeResources = new ECMAResourceManager
 							("runtime", (typeof(String)).Assembly);
-					#else
-						runtimeResources = new ResourceManager
-							("runtime", (typeof(String)).Assembly);
-					#endif
 					}
 					return runtimeResources.GetString(tag, null);
+				#else
+					return tag;
+				#endif
 				}
 			}
 

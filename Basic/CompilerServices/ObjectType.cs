@@ -660,7 +660,7 @@ public sealed class ObjectType
 					default:
 					{
 						throw new InvalidCastException
-							(S._("VB_InvalidBitOrArguments"));
+							(S._("VB_InvalidBitXorArguments"));
 					}
 					// Not reached.
 				}

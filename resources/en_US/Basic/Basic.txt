@@ -1,0 +1,62 @@
+#
+# Basic.txt - Resources for VB.NET.
+#
+# Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+VB_BothBeforeAndAfter=Cannot specify both "Before" and "After" when adding an item to a collection
+VB_InvalidCollectionIndex=Invalid collection index
+VB_KeyAlreadyExists=The specified key already exists in the collection
+VB_InvalidErrorNumber=Invalid error number specified
+VB_InvalidFileMode=Invalid file mode value specified
+VB_InvalidFileAccess=Invalid file access value specified
+VB_InvalidFileShare=Invalid file share value specified
+VB_InvalidRecordLength=Record length must be between 1 and 32767, inclusive
+VB_Obsolete=Obsolete functionality
+VB_InvalidRank=Invalid rank specified for array type
+VB_InvalidColorIndex=Invalid QB color index specified
+VB_NonNegative=Value must not be negative
+VB_EmptyString=Cannot specify an empty string
+VB_InvalidArrayBound=Invalid array bounds specification
+VB_InvalidStringIndex=Invalid string index specification
+VB_InvalidStringLength=Invalid string length specification
+VB_InvalidCast=Cannot cast from {0} to {1}
+VB_IsValueType=Specified object had a value type
+VB_ValueIsNull=Argument cannot be null
+VB_CommonForType=Could not find a common type for an arithmetic operation
+VB_LoopCounterIsNull=Loop counter was not specified
+VB_InvalidHexOrOct=Invalid hexadecimal or octal number format
+VB_InvalidAddArguments=Invalid arguments to binary addition
+VB_InvalidBitAndArguments=Invalid arguments to binary bitwise AND
+VB_InvalidBitOrArguments=Invalid arguments to binary bitwise OR
+VB_InvalidBitXorArguments=Invalid arguments to binary bitwise XOR
+VB_InvalidDivArguments=Invalid arguments to binary division
+VB_InvalidIDivArguments=Invalid arguments to binary integer division
+VB_InvalidModArguments=Invalid arguments to binary modulus
+VB_InvalidMulArguments=Invalid arguments to binary multiplication
+VB_InvalidNegArgument=Invalid argument to unary negation
+VB_InvalidNotArgument=Invalid argument to unary bitwise NOT
+VB_InvalidTstArguments=Invalid arguments to binary test and compare
+VB_InvalidPlusArgument=Invalid argument to unary plus
+VB_InvalidPowArguments=Invalid arguments to binary power operation
+VB_InvalidShiftLeftArguments=Invalid arguments to binary left shift
+VB_InvalidShiftRightArguments=Invalid arguments to binary right shift
+VB_InvalidSubArguments=Invalid arguments to binary subtraction
+VB_InvalidXorArguments=Invalid arguments to binary boolean XOR
+VB_InvalidPattern=Invalid "like" pattern
+VB_MismatchedRanks=Array ranks are mismatched
+VB_MismatchedDimensions=Array dimensions are mismatched
+VB_DateTimeRange=DateTime value is out of range

@@ -375,7 +375,7 @@ public sealed class Utils
 					catch(OverflowException)
 					{
 						throw new ArgumentOutOfRangeException
-							("d", S._("ArgRange_DateTimeRange"));
+							("d", S._("VB_DateTimeRange"));
 					}
 				}
 

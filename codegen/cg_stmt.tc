@@ -947,7 +947,7 @@ ILNode_GenDiscard(ILNode_ForeachCollection)
 	ILGenJump(info, IL_OP_BR, &label2);
 
 	/* Push the loop label information */
-	PushLoop(info, &label1, &label2, node->name);
+	PushLoop(info, &label1, &label5, node->name);
 	ILGenLabel(info, &label1);
 
 	/* Fetch the next collection element and put it into the variable */

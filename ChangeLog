@@ -8,6 +8,9 @@
 
 	* cscc/csharp/cs_lvalue.tc: Fix function calls on enum members.
 
+	* codegen/cg_stmt.tc: Fix the label for break statement in foreach
+	loops.
+
 2002-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* pnet.spec: remove from the CVS server, as it is auto-generated.

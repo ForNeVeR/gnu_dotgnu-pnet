@@ -494,7 +494,7 @@ public sealed class StringBuilder
 				}
 
 				// Move the characters after the index up.
-				if(index < buildLen && length > 0)
+				if(index <= buildLen && length > 0)
 				{
 					String.InsertSpace(buildString, index, index + length);
 				}

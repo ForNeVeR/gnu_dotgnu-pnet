@@ -695,6 +695,154 @@ static CSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	return value;
 }
 
+/*
+ * Perform semantic analysis for a relational operator.
+ */
+static CSemValue RelationalSem(ILGenInfo *info, ILNode_BinaryExpression *node,
+						       ILNode **parent, int stmtLevel,
+						       const char *name)
+{
+	CSemValue value1;
+	CSemValue value2;
+	ILMachineType type1;
+	ILMachineType type2;
+	ILMachineType common;
+	ILType *elemType;
+	ILType *elemType2;
+	ILNode *temp;
+
+	/* Perform semantic analysis on the two arguments, and
+	   check that they are both r-values */
+	value1 = ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), stmtLevel);
+	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), 0);
+	if(!CSemIsRValue(value1) || !CSemIsRValue(value2))
+	{
+		/* Pass error conditions up, but otherwise ignore the problem.
+		   We've already reported the error at the lower level */
+		if(CSemIsError(value1) || CSemIsError(value2))
+		{
+			return CSemValueBool;
+		}
+		goto invalid;
+	}
+
+	/* Find a common type to use for the operation */
+	type1 = ILTypeToMachineType(CSemGetType(value1));
+	type2 = ILTypeToMachineType(CSemGetType(value2));
+	if(IsNumericMachineType(type1) && IsNumericMachineType(type2))
+	{
+		/* Compare numeric values */
+		common = CommonBinaryType(info, type1, type2);
+	}
+	else if(type1 == ILMachineType_UnmanagedPtr &&
+			type2 == ILMachineType_UnmanagedPtr)
+	{
+		/* Compare pointer values */
+		elemType = ILTypeStripPrefixes(CSemGetType(value1));
+		elemType2 = ILTypeStripPrefixes(CSemGetType(value2));
+		if(elemType != ILType_Void && elemType2 != ILType_Void &&
+		   !ILTypeIdentical(elemType, elemType2))
+		{
+			CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+				_("comparison of distinct pointer types lacks a cast"));
+		}
+		common = ILMachineType_UnmanagedPtr;
+	}
+	else if(type1 == ILMachineType_UnmanagedPtr && IsIntegerMachineType(type2))
+	{
+		/* Compare pointer and integer */
+		if(CSemIsZero(value2))
+		{
+			if(yyisa(node, ILNode_Eq))
+			{
+				temp = ILNode_IsNull_create(node->expr1);
+				CGenCloneLine(temp, node->expr1);
+				*parent = temp;
+				return CSemValueBool;
+			}
+			else if(yyisa(node, ILNode_Ne))
+			{
+				temp = ILNode_IsNonNull_create(node->expr1);
+				CGenCloneLine(temp, node->expr1);
+				*parent = temp;
+				return CSemValueBool;
+			}
+		}
+		else
+		{
+			CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+				_("comparison between pointer and integer"));
+		}
+		if(IsSignedMachineType(type2))
+		{
+			common = ILMachineType_NativeInt;
+		}
+		else
+		{
+			common = ILMachineType_NativeUInt;
+		}
+	}
+	else if(IsIntegerMachineType(type1) && type2 == ILMachineType_UnmanagedPtr)
+	{
+		/* Compare integer and pointer */
+		if(CSemIsZero(value1))
+		{
+			if(yyisa(node, ILNode_Eq))
+			{
+				temp = ILNode_IsNull_create(node->expr2);
+				CGenCloneLine(temp, node->expr2);
+				*parent = temp;
+				return CSemValueBool;
+			}
+			else if(yyisa(node, ILNode_Ne))
+			{
+				temp = ILNode_IsNonNull_create(node->expr2);
+				CGenCloneLine(temp, node->expr2);
+				*parent = temp;
+				return CSemValueBool;
+			}
+		}
+		else
+		{
+			CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+				_("comparison between pointer and integer"));
+		}
+		if(IsSignedMachineType(type1))
+		{
+			common = ILMachineType_NativeInt;
+		}
+		else
+		{
+			common = ILMachineType_NativeUInt;
+		}
+	}
+	else
+	{
+		goto invalid;
+	}
+
+	/* Cast the arguments to their final types and return */
+	if(common != type1)
+	{
+		temp = ILNode_CastSimple_create(node->expr1, common);
+		CGenCloneLine(temp, node->expr1);
+		node->expr1 = temp;
+	}
+	if(common != type2)
+	{
+		temp = ILNode_CastSimple_create(node->expr2, common);
+		CGenCloneLine(temp, node->expr2);
+		node->expr2 = temp;
+	}
+	return CSemValueBool;
+
+	/* Report an invalid operands error and bail out */
+invalid:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("invalid operands to binary `%s'"), name);
+	return CSemValueBool;
+}
+
 %}
 
 /*
@@ -1082,21 +1230,31 @@ ILNode_CSemAnalysis(ILNode_Assign)
 	}
 
 	/* Check that we can coerce from "value2" to "value1"'s type */
-	if(!CCanCoerceValue(value2, CSemGetType(value1)))
+	if(ILTypeStripPrefixes(CSemGetType(value1)) == ILType_Boolean &&
+	   (CSemIsBoolean(value2) ||
+	    ILTypeStripPrefixes(CSemGetType(value2)) == ILType_Boolean))
 	{
-		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "incompatible types in assignment");
+		/* Assigning a value to a "__bool__" variable is handled specially */
+		return CSemValueBool;
+	}
+	else
+	{
+		if(!CCanCoerceValue(value2, CSemGetType(value1)))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "incompatible types in assignment");
+			CSemSetRValue(value1, CSemGetType(value1));
+			return value1;
+		}
+
+		/* Insert coercion nodes to convert the rvalue appropriately */
+		CCoerceNode(info, node->expr2, &(node->expr2),
+					value2, CSemGetType(value1));
+
+		/* Convert value1 into an rvalue and return its type */
 		CSemSetRValue(value1, CSemGetType(value1));
 		return value1;
 	}
-
-	/* Insert coercion nodes to convert the rvalue appropriately */
-	CCoerceNode(info, node->expr2, &(node->expr2),
-				value2, CSemGetType(value1));
-
-	/* Convert value1 into an rvalue and return its type */
-	CSemSetRValue(value1, CSemGetType(value1));
-	return value1;
 }
 
 /*
@@ -1231,8 +1389,8 @@ ILNode_CSemAnalysis(ILNode_PostDec)
  */
 ILNode_CSemAnalysis(ILNode_Eq)
 {
-	/* TODO */
-	return CSemValueError;
+	return RelationalSem(info, (ILNode_BinaryExpression *)node,
+				         parent, stmtLevel, "==");
 }
 
 /*
@@ -1240,8 +1398,8 @@ ILNode_CSemAnalysis(ILNode_Eq)
  */
 ILNode_CSemAnalysis(ILNode_Ne)
 {
-	/* TODO */
-	return CSemValueError;
+	return RelationalSem(info, (ILNode_BinaryExpression *)node,
+				         parent, stmtLevel, "!=");
 }
 
 /*
@@ -1249,8 +1407,8 @@ ILNode_CSemAnalysis(ILNode_Ne)
  */
 ILNode_CSemAnalysis(ILNode_Lt)
 {
-	/* TODO */
-	return CSemValueError;
+	return RelationalSem(info, (ILNode_BinaryExpression *)node,
+				         parent, stmtLevel, "<");
 }
 
 /*
@@ -1258,8 +1416,8 @@ ILNode_CSemAnalysis(ILNode_Lt)
  */
 ILNode_CSemAnalysis(ILNode_Le)
 {
-	/* TODO */
-	return CSemValueError;
+	return RelationalSem(info, (ILNode_BinaryExpression *)node,
+				         parent, stmtLevel, "<=");
 }
 
 /*
@@ -1267,8 +1425,8 @@ ILNode_CSemAnalysis(ILNode_Le)
  */
 ILNode_CSemAnalysis(ILNode_Gt)
 {
-	/* TODO */
-	return CSemValueError;
+	return RelationalSem(info, (ILNode_BinaryExpression *)node,
+				         parent, stmtLevel, ">");
 }
 
 /*
@@ -1276,8 +1434,8 @@ ILNode_CSemAnalysis(ILNode_Gt)
  */
 ILNode_CSemAnalysis(ILNode_Ge)
 {
-	/* TODO */
-	return CSemValueError;
+	return RelationalSem(info, (ILNode_BinaryExpression *)node,
+				         parent, stmtLevel, ">=");
 }
 
 /*

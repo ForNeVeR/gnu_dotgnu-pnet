@@ -27,7 +27,7 @@ extern	"C" {
 int gen_32bit_only;
 CSemValue CSemValueDefault = {C_SEMKIND_VOID, ILType_Void, 0};
 CSemValue CSemValueBool = {C_SEMKIND_RVALUE | C_SEMKIND_BOOLEAN,
-						   ILType_Boolean, 0};
+						   ILType_Int32, 0};
 CSemValue CSemValueError = {C_SEMKIND_ERROR, ILType_Void, 0};
 CAddress CAddressDefault = {0, 0};
 
@@ -52,6 +52,34 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope)
 	result = ILNode_CSemAnalysis(node, info, &node, 1);
 	info->currentScope = currentScope;
 	return result;
+}
+
+int CSemIsZero(CSemValue value)
+{
+	ILEvalValue *evalValue = CSemGetConstant(value);
+	if(evalValue)
+	{
+		switch(evalValue->valueType)
+		{
+			case ILMachineType_Int8:
+			case ILMachineType_UInt8:
+			case ILMachineType_Int16:
+			case ILMachineType_UInt16:
+			case ILMachineType_Char:
+			case ILMachineType_Int32:
+			case ILMachineType_UInt32:
+			case ILMachineType_NativeInt:
+			case ILMachineType_NativeUInt:
+				return (evalValue->un.i4Value == 0);
+
+			case ILMachineType_Int64:
+			case ILMachineType_UInt64:
+				return (evalValue->un.i8Value == 0);
+
+			default: break;
+		}
+	}
+	return 0;
 }
 
 void CGenBeginCode(ILGenInfo *info)

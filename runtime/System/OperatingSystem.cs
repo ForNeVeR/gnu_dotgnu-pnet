@@ -23,6 +23,8 @@ namespace System
 
 #if !ECMA_COMPAT
 
+using Platform;
+
 public sealed class OperatingSystem : ICloneable
 {
 	// Internal state.
@@ -82,7 +84,7 @@ public sealed class OperatingSystem : ICloneable
 						break;
 
 					default:
-						os = "Unix ";
+						os = "Unix [" + InfoMethods.GetPlatformName() + "] ";
 						break;
 				}
 				return os + version.ToString();

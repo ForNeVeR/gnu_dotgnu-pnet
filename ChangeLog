@@ -1,4 +1,11 @@
 
+2003-09-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/InfoMethods.cs, runtime/System/OperatingSystem.cs:
+	add the autoconf platform name to the string returned by
+	"OperatingSystem.ToString()" for "Unix" platforms so that
+	applications can detect the system type should they need to.
+
 2003-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/Cookie.cs, System/Net/CookieCollection.cs,

@@ -60,6 +60,10 @@ internal class InfoMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static PlatformID GetPlatformID();
 
+	// Get the autoconf name for the platform that we are running on.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetPlatformName();
+
 #endif // !ECMA_COMPAT
 
 	// Get the global configuration directory.

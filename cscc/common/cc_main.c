@@ -1099,6 +1099,17 @@ void CCPluginParseError(char *msg, char *text)
 					++posn;
 					newmsg[outposn++] = '\'';
 				}
+				else if(newmsg[posn] == ' ' && newmsg[posn + 1] == '\'')
+				{
+					/*  bison 1.75 - <'> following a space becomes <`> */
+					++posn;
+					newmsg[outposn++] = ' ';
+					newmsg[outposn++] = '`';
+				}
+				else if(newmsg[posn] == '"')
+				{
+					/* Ignore quotes - bison 1.75 */
+				}
 				else
 				{
 					/* Ordinary character */

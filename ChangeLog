@@ -1,4 +1,8 @@
 
+2002-10-25  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* cscc/common/cc_main.c:  Change error parsing to accomodate bison 1.75.
+
 2002-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, samples/I18N.CJK.dll,

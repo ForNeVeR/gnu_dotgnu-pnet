@@ -10,6 +10,8 @@ csant/csant_dir.h, csant/csant_cscc.c, csant/csant_defs.h, csant/csant_build.c,
 csant/csant_parse.c, csant/csant_prop.c, csant/csant_task.c, configure.in,
 Makefile.am: add the "csant" program to the build tree.
 
+* doc/l10n.html: check in a proposal for a new resource system for C#.
+
 2001-11-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_arith.c, engine/verify_const.c, engine/verify_ptr.c,

@@ -4,6 +4,9 @@
 	* System.Xml/XmlDocument.cs: Remove the explicit cast to XmlTextReader,
 	it can be a XmlValidatingReader as well.
 
+	* System.Xml/XmlDocument.cs: Partially implement ImportNode using
+	CloneChildrenFrom internal method.
+
 2004-08-02  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/TreeView.cs: Remove the conversions to

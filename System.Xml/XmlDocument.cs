@@ -638,7 +638,14 @@ class XmlDocument : XmlNode
 				XmlNode imported = this.CreateNode(node.NodeType,
 													node.Name,
 													node.NamespaceURI);
-				imported.CloneChildrenFrom(node, deep);
+				
+				if(deep)
+				{
+					foreach(XmlNode child in imported.ChildNodes)
+					{
+						ImportNode(child, deep);
+					}
+				}
 				return imported;
 			}
 

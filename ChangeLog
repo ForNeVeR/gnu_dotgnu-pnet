@@ -1,3 +1,14 @@
+2004-09-09  Russell Stuart  <russell-savannah@stuart.id.au>
+
+	* build-debian-packages.conf,
+	  build-debian-packages.sh,
+	  configure.in,
+	  debian/changelog,
+	  debian/README.Debian,
+	  debian/rules,
+	  ml-pnet.spec.in:
+	  Added rpm and Debian packaging.
+
 
 2004-08-31  Gopal.V  <gopalv82@yahoo.com>
 

@@ -26,6 +26,15 @@ AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PATH_PROG(CYGPATH, cygpath)
 
+AC_PATH_PROG(TREECC, treecc,, ${prefix}/bin:$PATH)
+if test -z "$TREECC" ; then
+    echo "treecc is required to build and can be obtained from"
+    echo "http://www.southern-storm.com.au/treecc.html"
+    exit 1
+fi
+TREECC_VERSION=`"$TREECC" -v | (read name version rest; echo $version)`
+AC_SUBST(TREECC_VERSION)
+
 ML_PNET_PATH="`pwd`"
 
 dnl The --with-pnet option can be used to specify the location of
@@ -311,5 +320,6 @@ tools/SqlSharp/Makefile
 tools/wsdl/Makefile
 jay/Makefile
 tests/Makefile
+ml-pnet.spec
 ])
 

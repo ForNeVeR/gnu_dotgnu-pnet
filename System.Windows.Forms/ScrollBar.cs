@@ -802,9 +802,20 @@ public abstract class ScrollBar : Control
 	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 	{
 		base.SetBoundsCore (x, y, width, height, specified);
-		LayoutScrollBar();
-		Draw();
+		if (IsHandleCreated)
+		{
+			LayoutScrollBar();
+			Draw();
+		}
 	}
+
+	protected override void OnVisibleChanged(EventArgs e)
+	{
+		base.OnVisibleChanged (e);
+		if (IsHandleCreated)
+			LayoutScrollBar();
+	}
+
 
 	// Generate the events when the scrollbar is incremented or decremented
 	private void GenerateManualScrollEvents(int newValue, ScrollEventType type)

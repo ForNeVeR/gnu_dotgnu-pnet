@@ -38,7 +38,7 @@ public class HScrollBar : ScrollBar
 
 	protected override  Size DefaultSize
 	{
-		get { return new Size(400, 16); }
+		get { return new Size(80, SystemInformation.HorizontalScrollBarHeight); }
 	}
 
 }; // class HScrollBar

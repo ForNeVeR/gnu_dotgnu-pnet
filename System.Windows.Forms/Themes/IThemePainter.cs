@@ -151,7 +151,7 @@ internal interface IThemePainter
 				 	  int x, int y, int width, int height);
 
 	// Draw a list box.
-	void DrawListBox(Graphics graphics, BorderStyle border,
+	void DrawListBox(Graphics graphics,
 		int x, int y, int width, int height, bool corner,
 		int cornerHeight, int cornerWidth);
 

@@ -449,14 +449,20 @@ public abstract class ButtonBase : Control
 			{
 				entered = true;
 				if (flatStyle == FlatStyle.Popup)
+				{
 					Redraw();
+				}
 				base.OnMouseEnter(e);
 			}
 	protected override void OnMouseLeave(EventArgs e)
 			{
 				entered = false;
-				if (flatStyle == FlatStyle.Popup)
+				if (flatStyle == FlatStyle.Popup || pressed)
+				{
+					pressed = false;
+					button = MouseButtons.None;
 					Redraw();
+				}
 				base.OnMouseLeave(e);
 			}
 	protected override void OnMouseMove(MouseEventArgs e)

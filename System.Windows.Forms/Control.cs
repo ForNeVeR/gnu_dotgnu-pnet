@@ -158,8 +158,12 @@ public class Control : IWin32Window
 				if(parent != null)
 				{
 					// Use the parent's toolkit to create.
+					if (Parent is Form)
+						return parent.Toolkit.CreateChildWindow
+							(parent, x, y, width, height, this);
+					else
 					return parent.Toolkit.CreateChildWindow
-						(parent, x, y, width, height, this);
+						(parent, x + Parent.ClientOrigin.X, y +  Parent.ClientOrigin.Y, width, height, this);
 				}
 				else
 				{
@@ -938,12 +942,6 @@ public class Control : IWin32Window
 					{
 						OnBindingContextChanged(EventArgs.Empty);
 					}
-
-					// Create the control if it will be visible.
-					if(Visible)
-					{
-						CreateControl();
-					}
 				}
 			}
 	[TODO]
@@ -1610,55 +1608,98 @@ protected virtual void Dispose(bool disposing)
 	// Invalidate a region of the control and queue up a repaint request.
 	public void Invalidate()
 			{
-				if(toolkitWindow != null && Visible)
-				{
-					toolkitWindow.Invalidate();
-				}
+				Invalidate(false);
 			}
-	[TODO]
+
 	public void Invalidate(bool invalidateChildren)
 			{
-				Invalidate();
-				// TODO
+				InvalidateInternal(invalidateChildren);
+				OnInvalidated(new InvalidateEventArgs(ClientRectangle));
 			}
+
 	public void Invalidate(Rectangle rc)
 			{
-				if(toolkitWindow != null && Visible)
-				{
-					Rectangle i = new Rectangle(rc.X + ClientOrigin.X - ToolkitDrawOrigin.X,
-						rc.Y + ClientOrigin.Y - ToolkitDrawOrigin.Y,
-						rc.Width, rc.Height);
-					i.Intersect(new Rectangle(ClientOrigin, ClientSize));
-					toolkitWindow.Invalidate(rc.X + ClientOrigin.X - ToolkitDrawOrigin.X,
-						rc.Y + ClientOrigin.Y - ToolkitDrawOrigin.Y,
-						rc.Width, rc.Height);
-				}
+				Invalidate(rc, false);
 			}
-	[TODO]
+
 	public void Invalidate(Rectangle rc, bool invalidateChildren)
 			{
-				Invalidate(rc);
-				// TODO
+				rc.Offset(PointToScreen(new Point(0,0)));
+				InvalidateInternal(rc, invalidateChildren);
+				OnInvalidated(new InvalidateEventArgs(rc));
 			}
 
 	public void Invalidate(Region region)
 			{
-				// TODO Inefficient
-				RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
-				for (int i = 0; i < rs.Length; i++)
-				{
-					Rectangle b = Rectangle.Truncate(rs[i]);
-					b.Intersect(new Rectangle(ClientOrigin, ClientSize));
-					b.Offset(ClientOrigin.X - ToolkitDrawOrigin.X,
-						ClientOrigin.Y - ToolkitDrawOrigin.Y);
-					Invalidate(Rectangle.Truncate(rs[i]));
-				}
+				Invalidate(region, false);
 			}
 
 	public void Invalidate(Region region, bool invalidateChildren)
 			{
-				// TODO
-				Invalidate(region);
+				// Find region1 which is the area to be invalidated relative
+				// to the screen.
+				Region region1 = region.Clone();
+				Point offset = PointToScreen(new Point(0,0));
+				region1.Translate(offset.X, offset.Y);
+				InvalidateInternal(region1, invalidateChildren);
+				using (Graphics g = CreateGraphics())
+				{
+					Rectangle bounds = Rectangle.Truncate(region.GetBounds(g));
+					OnInvalidated(new InvalidateEventArgs(bounds));
+				}
+			}
+
+	private void InvalidateInternal(Region region, bool invalidateChildren)
+			{
+				if (invalidateChildren)
+				{
+					for(int i = 0; i < numChildren; i++)
+						children[i].InvalidateInternal(region, invalidateChildren);
+				}
+				if(toolkitWindow != null && Visible)
+				{
+					// TODO Inefficient
+					RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
+					for (int i = 0; i < rs.Length; i++)
+					{
+						Rectangle b = Rectangle.Truncate(rs[i]);
+						// Get in local coordinates.
+						b = new Rectangle(PointToClient(b.Location), b.Size);
+						b.Intersect(new Rectangle(ClientOrigin, ClientSize));
+						if (!b.IsEmpty)
+							toolkitWindow.Invalidate(b.X, b.Y, b.Width, b.Height);
+					}
+				}
+			}
+
+	private void InvalidateInternal(Rectangle rc, bool invalidateChildren)
+			{
+				if (invalidateChildren)
+				{
+					for(int i = 0; i < numChildren; i++)
+						children[i].InvalidateInternal(rc, invalidateChildren);
+				}
+				if(toolkitWindow != null && Visible)
+				{
+					// Get in local coordinates.
+					Rectangle i = new Rectangle(PointToClient(rc.Location), rc.Size);
+					i.Intersect(new Rectangle(ClientOrigin, ClientSize));
+					if (!i.IsEmpty)
+						toolkitWindow.Invalidate(i.X, i.Y, i.Width, i.Height);
+				}
+			}
+
+	private void InvalidateInternal(bool invalidateChildren)
+			{
+				if (invalidateChildren)
+				{
+					for(int i = 0; i < numChildren; i++)
+						children[i].InvalidateInternal(true);
+				}
+				if(toolkitWindow != null && Visible)
+				{
+					toolkitWindow.Invalidate();
+				}
 			}
 
 	// Invoke a delegate on the thread that owns the low-level control.
@@ -3740,6 +3781,8 @@ protected virtual void Dispose(bool disposing)
 			}
 	protected virtual void OnPaint(PaintEventArgs e)
 			{
+				if (layoutSuspended > 0)
+					return;
 				PaintEventHandler handler;
 				handler = (PaintEventHandler)(GetHandler(EventId.Paint));
 				if(handler != null)
@@ -4239,8 +4282,8 @@ protected virtual void Dispose(bool disposing)
 							}
 
 							// Now perform layout on the control.
-							owner.PerformLayout(value, "Parent");
-
+							if (owner.IsHandleCreated)
+								owner.PerformLayout(value, "Parent");
 							// Notify the owner that the control was added.
 							owner.OnControlAdded
 								(new ControlEventArgs(value));
@@ -4449,6 +4492,7 @@ protected virtual void Dispose(bool disposing)
 	// Toolkit event that is emitted for an expose on this window.
 	void IToolkitEventSink.ToolkitExpose(Graphics graphics)
 			{
+
 				// PaintEventArgs has the client
 				// Graphics and bounds
 				// Use CreateNonClientGraphics for access to the whole
@@ -4461,7 +4505,8 @@ protected virtual void Dispose(bool disposing)
 						ControlPaint.DrawBorder3D( graphics, new Rectangle(0,0,width, height), Border3DStyle.Sunken);
 						break;
 					case (BorderStyle.FixedSingle):
-						ControlPaint.DrawBorder( graphics, new Rectangle(0,0,width - 1, height - 1), ForeColor, ButtonBorderStyle.Solid);
+						using (Pen p = new Pen(ForeColor))
+							graphics.DrawRectangle(p, 0, 0, width - 1, height - 1);
 						break;
 				}
 			
@@ -4565,7 +4610,17 @@ protected virtual void Dispose(bool disposing)
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
 					
 				currentModifiers = (Keys)modifiers;
-				if (GetStyle(ControlStyles.Selectable) && enabled)
+				// Walk up the heirarchy and see if we must focus the control
+				bool canFocus = true;
+				for (Control c = this; c != null; c = c.parent)
+				{
+					if (!c.GetStyle(ControlStyles.Selectable) || !enabled)
+					{
+						canFocus = false;
+						break;
+					}
+				}
+				if (canFocus)
 					Focus();
 				if (Enabled)
 					OnMouseDown(new MouseEventArgs
@@ -4673,10 +4728,15 @@ protected virtual void Dispose(bool disposing)
 	// Override this function if the clientRectangle is smaller than the full control.
 	internal virtual Size ClientToBounds(Size size)
 			{
-				if (borderStyle == BorderStyle.None)
-					return new Size(size.Width, size.Height);
-				else
-					return new Size(size.Width + 2 * 2, size.Height + 2 * 2);
+				switch (borderStyle)
+				{
+					case (BorderStyle.Fixed3D):
+						return new Size(size.Width + 2 * 2, size.Height + 2 * 2);
+					case (BorderStyle.FixedSingle):
+						return new Size(size.Width + 2, size.Height + 2);
+					default: //BorderStyle.None
+						return new Size(size.Width, size.Height);
+				}
 			}
 
 	// This is the Client Origin relative to the top left outside of the window.
@@ -4687,10 +4747,15 @@ protected virtual void Dispose(bool disposing)
 			{
 				get
 				{
-					if (borderStyle == BorderStyle.None)
-						return Point.Empty;
-					else
-						return new Point(2, 2);
+					switch (borderStyle)
+					{
+						case (BorderStyle.Fixed3D):
+							return new Point(2, 2);
+						case (BorderStyle.FixedSingle):
+							return new Point(1, 1);
+						default: //BorderStyle.None
+							return Point.Empty;
+					}
 				}
 			}
 

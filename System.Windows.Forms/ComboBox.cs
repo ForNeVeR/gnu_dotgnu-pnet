@@ -56,14 +56,14 @@ public class ComboBox : ListControl
  	{
  		items = new ObjectCollection(this);
 
+		BorderStyleInternal = BorderStyle.Fixed3D;
 		txtEntry = new TextBox();
 		txtEntry.BorderStyle = BorderStyle.None;
-		txtEntry.Location = new Point(BorderSize);
 		this.Controls.Add(txtEntry);
- 		
+		
 		popup = new PopupControl();
+		popup.BorderStyleInternal = BorderStyle.FixedSingle;
 		popup.BackColor = SystemColors.Window;
-		popup.Paint += new PaintEventHandler(popup_Paint);
 		popup.PopDown += new EventHandler(popup_PopDown);
 
 		scrollbar = new VScrollBar();
@@ -88,10 +88,10 @@ public class ComboBox : ListControl
 
 	protected void DrawCombo(Graphics g)
 	{
-		ControlPaint.DrawBorder3D(g, 0, 0, Width, Height, Border3DStyle.Sunken, Border3DSide.All);
 		// Fill in the piece between the textbox and the bottom
-		Brush b = Enabled ? SystemBrushes.Window : SystemBrushes.Control;
-		g.FillRectangle(b, BorderSize.Width, Height - BorderSize.Height - 3, Width - BorderSize.Width * 2, 3);
+		// The textbox could autosize to a smaller size than we need, so we need to fill this in.
+		using (Brush b = Enabled ? SystemBrushes.Window : SystemBrushes.Control)
+			g.FillRectangle(b, 0, ClientSize.Height - 2, ClientSize.Width, 2);
 		DrawButton(g);
 	}
 
@@ -103,24 +103,10 @@ public class ComboBox : ListControl
 		}
 	}
 
-	private Size BorderSize
-	{
-		get
-		{
-			return new Size(2,2);
-		}
-	}
-
 	private void DrawButton(Graphics g)
 	{
-		ControlPaint.DrawComboButton(g, Width - BorderSize.Width - ButtonSize.Width, BorderSize.Width, ButtonSize.Width, ButtonSize.Height, buttonState);
+		ControlPaint.DrawComboButton(g, ClientSize.Width - ButtonSize.Width, 0, ButtonSize.Width, ButtonSize.Height, buttonState);
 	}
-
- 	private void popup_Paint(object sender, PaintEventArgs e)
- 	{
- 		Rectangle rect = new Rectangle(0, 0, (int)e.Graphics.ClipBounds.Width, (int)e.Graphics.ClipBounds.Height);
- 		ControlPaint.DrawBorder(e.Graphics, rect, Color.Black, ButtonBorderStyle.Solid);
- 	}
 
  	public DrawMode DrawMode 
  	{
@@ -155,7 +141,7 @@ public class ComboBox : ListControl
 				popup.Height = 100;
 				// TODO calculate height from items
 				popup.Width = Width;
-				popup.Location = PointToScreen(new Point(0, Height));
+				popup.Location = Parent.PointToScreen(new Point(Left, Bottom));
 				popup.Visible = true;
 			}
 			else
@@ -338,7 +324,7 @@ public class ComboBox : ListControl
 
  	protected override void OnMouseDown(MouseEventArgs e)
  	{
- 		if (e.X >= Width - ButtonSize.Width - BorderSize.Width)
+ 		if (e.X >= Width - ButtonSize.Width)
  			DroppedDown = !DroppedDown;
  		base.OnMouseDown(e);
  	}
@@ -419,8 +405,10 @@ public class ComboBox : ListControl
 
  	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
  	{
- 		txtEntry.Width = width - ButtonSize.Width - BorderSize.Width * 2;
-		base.SetBoundsCore(x, y, width, txtEntry.Height + BorderSize.Height * 2, specified);	
+		if (DropDownStyle == ComboBoxStyle.DropDown || DropDownStyle == ComboBoxStyle.DropDownList)
+			height = PreferredHeight;
+		base.SetBoundsCore(x, y, width, height, specified);	
+		txtEntry.Size = new Size(ClientSize.Width - ButtonSize.Width, ClientSize.Height + 5);
  	}
 
  	protected override void SetItemsCore(IList list)

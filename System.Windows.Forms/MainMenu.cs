@@ -114,10 +114,8 @@ using System.Drawing;
 		{
 			// Measure the positions
 			ownerForm = form;
-			using (Graphics g = ownerForm.CreateNonClientGraphics())
-			{
-				MeasureItemBounds(g);
-			}
+			if (!ownerForm.IsHandleCreated)
+				return;
 			// Cause the form to reposition its controls 
 			// now that the client area has changed
 			form.PerformLayout();
@@ -133,9 +131,11 @@ using System.Drawing;
 		}
 
 		internal void OnPaint()
-		{		
+		{
 			using (Graphics g = ownerForm.CreateNonClientGraphics())
 			{
+				if (itemBounds == null)
+					MeasureItemBounds(g);
 				for (int i = 0; i < MenuItems.Count; i++)
 					DrawMenuItem(g, i, false);
 			}

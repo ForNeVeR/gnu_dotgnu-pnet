@@ -268,6 +268,8 @@ public abstract class Menu
 
 	protected int ItemFromPoint(Point p)
 			{
+				if (itemBounds == null)
+					return -1;
 				for (int i = 0; i < MenuItems.Count; i++)
 				{
 					if (itemBounds[i].Contains(p))

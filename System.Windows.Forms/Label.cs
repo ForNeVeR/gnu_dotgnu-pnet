@@ -466,8 +466,9 @@ public class Label : Control
 
 	private void Redraw()
 			{
-				using (Graphics g = CreateGraphics())
-					Draw(g);
+				if (IsHandleCreated)
+					using (Graphics g = CreateGraphics())
+						Draw(g);
 			}
 	// Override the "ParentChanged" event.
 	protected override void OnParentChanged(EventArgs e)

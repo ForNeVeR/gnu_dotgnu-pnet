@@ -88,7 +88,18 @@ internal class DefaultThemePainter : IThemePainter
 					{
 						pen = new Pen(color, 1.0f);
 						pen.EndCap = LineCap.Square;
-						graphics.DrawRectangle(pen, bounds);
+						Rectangle r = new Rectangle(bounds.X,
+							bounds.Y, bounds.Width - 1, bounds.Height - 1);
+						graphics.DrawRectangle(pen, r);
+						pen.Color = ControlPaint.LightLight(color);
+						graphics.DrawLine(pen, bounds.X + 1,
+							bounds.Y + bounds.Height - 1,
+							bounds.X + bounds.Width - 1,
+							bounds.Y + bounds.Height - 1);
+						graphics.DrawLine(pen, bounds.X + bounds.Width - 1,
+							bounds.Y + bounds.Height - 2,
+							bounds.X + bounds.Width - 1,
+							bounds.Y + 1);
 						pen.Dispose();
 					}
 					break;
@@ -976,7 +987,7 @@ internal class DefaultThemePainter : IThemePainter
 			{
 				Border3DStyle style = (state == ButtonState.Pushed) ?
 					Border3DStyle.Sunken : Border3DStyle.Raised;
-				ControlPaint.DrawBorder3D(graphics, x, y, width, height, style, Border3DSide.All);				graphics.FillRectangle(SystemBrushes.Control, x + 2, y + 2, width - 4, height - 4);				x += width / 2;				y += height * 2 / 3;				Brush arrow = (state == ButtonState.Inactive) ?					SystemBrushes.ControlDark : SystemBrushes.ControlText;				graphics.FillPolygon(arrow, new PointF[]
+				ControlPaint.DrawBorder3D(graphics, x, y, width, height, style, Border3DSide.All);				graphics.FillRectangle(SystemBrushes.Control, x + 2, y + 2, width - 4, height - 4);				x += width / 2 + 2;				y += height * 2 / 3 + 2;				Brush arrow = (state == ButtonState.Inactive) ?					SystemBrushes.ControlDark : SystemBrushes.ControlText;				graphics.FillPolygon(arrow, new PointF[]
 					{
 						new Point(x, y), new Point(x - 4, y - 4), new Point(x + 4, y - 4)					});			}
 
@@ -1662,37 +1673,18 @@ internal class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a list box
-	public void DrawListBox(Graphics graphics, BorderStyle border,
+	public void DrawListBox(Graphics graphics,
 		int x, int y, int width, int height, bool corner,
 		int cornerHeight, int cornerWidth)
 			{
-				// Repaint the border
-				switch(border)
-				{
-					case BorderStyle.Fixed3D:
-						ControlPaint.DrawBorder3D(
-							graphics, 
-							new Rectangle(0, 0, width, height),
-							Border3DStyle.Sunken);
-						break;
-						
-					case BorderStyle.FixedSingle:
-						ControlPaint.DrawBorder(
-							graphics, 
-							new Rectangle(0, 0, width - 1, height - 1), 
-							SystemColors.WindowText, 
-							ButtonBorderStyle.Solid);
-						break;
-				}
-				
 				// If both scroll bars are visible, then paint the region
 				// that is blank where the two meet (lower-right corner)
 				if(corner)
 				{
 					graphics.FillRectangle(
 						new SolidBrush(SystemColors.Control),
-						width - this.GetBorderWidth(border) - cornerWidth,
-						height - this.GetBorderWidth(border) - cornerHeight,
+						width - cornerWidth,
+						height - cornerHeight,
 						cornerWidth,
 						cornerHeight);
 				}

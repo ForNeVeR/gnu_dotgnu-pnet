@@ -128,6 +128,9 @@ internal enum EventId
 	Scroll,
 	ValueChanged,
 
+	// "PictureBox" event.
+	SizeModeChanged,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

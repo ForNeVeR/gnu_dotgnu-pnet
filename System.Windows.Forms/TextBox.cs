@@ -194,7 +194,7 @@ public class TextBox : TextBoxBase
 			if (scrollBars == value)
 				return;
 			scrollBars = value;
-			SetupScrollBars();
+			layout = null;
 		}
 	}
 
@@ -383,10 +383,12 @@ public class TextBox : TextBoxBase
 			SelectInternal(Text.Length, 0);
 			if (!inTextChangedEvent)
 			{
-				CaretSetEndSelection();
-
-				ResetView();
-				Redraw(ControlGraphics);
+				if (IsHandleCreated)
+				{
+					CaretSetEndSelection();
+					ResetView();
+					Redraw(ControlGraphics);
+				}
 				OnTextChanged(EventArgs.Empty);
 			}
 
@@ -451,11 +453,13 @@ public class TextBox : TextBoxBase
 			if(textAlign != value)
 			{
 				textAlign = value;
-				// Layout changes
-				LayoutFromText(Text);
-				SetScrollBarPositions();
-				
-				ResetView();
+				if (IsHandleCreated)
+				{
+					// Layout changes
+					LayoutFromText(Text);
+					SetScrollBarPositions();
+					ResetView();
+				}
 				OnTextAlignChanged(EventArgs.Empty);
 			}
 		}
@@ -616,6 +620,12 @@ public class TextBox : TextBoxBase
 	// Redraw a specific portion of the textbox
 	private void Redraw(Graphics g)
 	{
+		if (layout == null)
+		{
+			LayoutFromText(Text);
+			SetupScrollBars();
+			ResetView();
+		}
 		// Draw scrollbar corner if both are visible
 		if (vScrollBar != null && hScrollBar != null && vScrollBar.Visible && hScrollBar.Visible)
 			g.FillRectangle(SystemBrushes.Control, hScrollBar.Right, vScrollBar.Bottom, vScrollBar.Width, hScrollBar.Height);
@@ -645,11 +655,10 @@ public class TextBox : TextBoxBase
 	// Handle the event when multiline is changed.
 	private void HandleMultilineChanged(object sender, EventArgs e)
 	{
-		SetupScrollBars();
+		layout = null;
 		// Set back the actual chosen height
 		// Will cause LayoutFromText to be called
 		Height = chosenHeight;
-		CaretReset();
 	}
 
 	private Graphics ControlGraphics
@@ -743,12 +752,14 @@ public class TextBox : TextBoxBase
 	// All rendered in client coordinates.
 	protected void LayoutFromText(String newText)
 	{
+		if (!IsHandleCreated)
+			return;
 		if (layout == null)
 		{
 			layout = new LayoutInfo();
 			layout.Items = new LayoutInfo.Item[0];
 		}
-		
+
 		// Optimization - only re-layout from the beginning of the last line modified.
 		// Find posLine, the position of the beginning of the line we must start updating from.
 		// yLine is the y coordinate of this point.
@@ -936,6 +947,8 @@ public class TextBox : TextBoxBase
 	{
 		if (start == selectionStartActual && length == selectionLengthActual)
 			return;
+		if (!IsHandleCreated)
+			return;
 		Region newRegion = new Region(RectangleF.Empty);
 		selectionStartActual = start;
 		selectionLengthActual = length;
@@ -974,6 +987,11 @@ public class TextBox : TextBoxBase
 	// Called to change the text. Sets the update to whats needed to but doesnt change the selection point or caret
 	private void SetTextActual( string text)
 	{
+		if (!IsHandleCreated)
+		{
+			(this as Control).text = text;
+			return;
+		}
 		// Layout the new text. Compare with old layout, Creating a region for areas that must be updated.
 		bool prevLayout = layout != null;
 		LayoutInfo oldLayout = null;
@@ -1211,8 +1229,6 @@ public class TextBox : TextBoxBase
 			base.SetClientSizeCore (x - 2 * 2, y - 2 * 2);
 	}
 
-
-
 	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 	{
 		chosenHeight = height;
@@ -1220,6 +1236,8 @@ public class TextBox : TextBoxBase
 		if (!Multiline)
 			height = ClientToBounds(Size.Empty).Height + Font.Height + 1;
 		base.SetBoundsCore (x, y, width, height, specified);
+		if (!IsHandleCreated)
+			return;
 		// If the height or width changes then relayout the text
 		if ((specified & BoundsSpecified.Height) != 0 | (specified & BoundsSpecified.Width) != 0)
 		{
@@ -1232,7 +1250,6 @@ public class TextBox : TextBoxBase
 		}
 		ResetView();
 	}
-
 
 	// Paint the text using layout information
 	private void DrawText(Graphics g, bool focused)
@@ -1406,6 +1423,8 @@ public class TextBox : TextBoxBase
 	// Set update region
 	private void CaretSetPosition( int position)
 	{
+		if (!IsHandleCreated)
+			return;
 		Rectangle newBounds = Rectangle.Empty;
 		int height = Font.Height;
 		if (Text.Length == 0)
@@ -1693,7 +1712,7 @@ public class TextBox : TextBoxBase
 
 	private void HandleWordWrapChanged(object sender, EventArgs e)
 	{
-		SetupScrollBars();
+		layout = null;
 	}
 
 	private Rectangle TextDrawArea

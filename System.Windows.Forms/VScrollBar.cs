@@ -38,7 +38,7 @@ public class VScrollBar : ScrollBar
 
 	protected override  Size DefaultSize
 	{
-		get { return new Size(16,400); }
+		get { return new Size(SystemInformation.VerticalScrollBarWidth, 80); }
 	}
 
 	public override RightToLeft RightToLeft

@@ -30,6 +30,7 @@ public class SuiteSystem
 #if CONFIG_FRAMEWORK_2_0	
 				suite.AddTests(typeof(TestActivationArguments));
 				suite.AddTests(typeof(TestActivationContext));
+				suite.AddTests(typeof(TestApplicationId));
 				suite.AddTests(typeof(TestApplicationIdentity));
 #endif
 				suite.AddTests(typeof(TestArgIterator));
@@ -45,6 +46,7 @@ public class SuiteSystem
 				suite.AddTests(typeof(TestGuid));
 			#endif
 				suite.AddTests(typeof(TestSystemExceptions));
+				suite.AddTests(typeof(TestVersion));
 				return suite;
 			}
 

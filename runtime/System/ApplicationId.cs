@@ -21,7 +21,7 @@
 namespace System
 {
 
-#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
 using System.Text;
 
@@ -39,7 +39,19 @@ public sealed class ApplicationId
 						 Version version, String strProcessorArchitecture,
 						 String strCulture)
 			{
-				this.publicKeyToken = publicKeyToken;
+				if(strName == null)
+				{
+					throw new ArgumentNullException("strName");
+				}
+				if(version == null)
+				{
+					throw new ArgumentNullException("version");
+				}
+				if(publicKeyToken == null)
+				{
+					throw new ArgumentNullException("publicKeyToken");
+				}
+				this.publicKeyToken = (Byte[])publicKeyToken.Clone();
 				this.strName = strName;
 				this.version = version;
 				this.strProcessorArchitecture = strProcessorArchitecture;
@@ -72,7 +84,7 @@ public sealed class ApplicationId
 			{
 				get
 				{
-					return publicKeyToken;
+					return (Byte[])publicKeyToken.Clone();
 				}
 			}
 	public Version Version
@@ -154,34 +166,42 @@ public sealed class ApplicationId
 				{
 					builder.Append(strName);
 				}
-				if(version != null)
-				{
-					builder.Append(", Version=");
-					builder.Append(version.ToString());
-				}
-				if(strProcessorArchitecture != null)
-				{
-					builder.Append(", ProcessorArchitecture=");
-					builder.Append(strProcessorArchitecture);
-				}
 				if(strCulture != null)
 				{
-					builder.Append(", Culture=");
+					builder.Append(", culture=");
+					builder.Append('"');
 					builder.Append(strCulture);
+					builder.Append('"');
+				}
+				if(version != null)
+				{
+					builder.Append(", version=");
+					builder.Append('"');
+					builder.Append(version.ToString());
+					builder.Append('"');
 				}
 				if(publicKeyToken != null)
 				{
-					builder.Append(", PublicKeyToken=");
+					builder.Append(", publicKeyToken=");
+					builder.Append('"');
 					foreach(byte value in publicKeyToken)
 					{
 						BitConverter.AppendHex(builder, value);
 					}
+					builder.Append('"');
+				}
+				if(strProcessorArchitecture != null)
+				{
+					builder.Append(", processorArchitecture =");
+					builder.Append('"');
+					builder.Append(strProcessorArchitecture);
+					builder.Append('"');
 				}
 				return builder.ToString();
 			}
 
 }; // class ApplicationId
 
-#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
 }; // namespace System

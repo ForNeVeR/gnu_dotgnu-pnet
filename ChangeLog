@@ -1,4 +1,13 @@
 
+2005-03-06  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/runtime/System/TestApplicationId.cs,
+	tests/runtime/System/TestVersion.cs: Add testcases.
+
+	* tests/runtime/SuiteSystem.cs: Add testcases above.
+
+	* runtime/System/ApplicationId: Fix some compatibility issues.
+
 2005-03-05  Hermann Weiss  <Hermann.Weiss@de.trumpf-laser.com>
 
 	* System/Diagnostics/Process.cs: Added throwing exceptions, when

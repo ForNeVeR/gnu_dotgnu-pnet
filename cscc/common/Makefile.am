@@ -1,7 +1,8 @@
 
 noinst_LIBRARIES = libILCCommon.a
 
-libILCCommon_a_SOURCES = cc_cppdefs.c \
+libILCCommon_a_SOURCES = cc_compat.c \
+						 cc_cppdefs.c \
 						 cc_errors.c \
 						 cc_main.c \
 						 cc_options.c \

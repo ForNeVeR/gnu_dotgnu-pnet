@@ -570,14 +570,19 @@ static CmdLineOpt const options[] = {
 
 static char *out_of_memory_message = "virtual memory exhausted";
 
+/* Imports from "cc_compat.c" */
+int CCNeedsCompatParser(int argc, char *argv[]);
+void CCParseWithCompatParser(int argc, char *argv[]);
+
 void CCParseCommandLine(int argc, char *argv[], int mode, char *versname)
 {
 	int stdin_is_input;
 	int opt;
 	int nostdlib_mode = ((mode & CMDLINE_PARSE_PLUGIN_NOSTDLIB) != 0);
+	int compat_mode = ((mode & CMDLINE_PARSE_COMPAT) != 0);
 	char *optname;
 	char *value;
-	mode &= ~CMDLINE_PARSE_PLUGIN_NOSTDLIB;
+	mode &= ~(CMDLINE_PARSE_PLUGIN_NOSTDLIB | CMDLINE_PARSE_COMPAT);
 
 	/* Get the translated out of memory message */
 	out_of_memory_message = _("virtual memory exhausted");
@@ -602,8 +607,15 @@ void CCParseCommandLine(int argc, char *argv[], int mode, char *versname)
 		AddString(&pre_defined_symbols, &num_pre_defined_symbols, "__CSCC__");
 	}
 
-	/* Scan the command-line and process the options */
+	/* Do we need to use the compatibility parser? */
 	stdin_is_input = 0;
+	if(compat_mode && CCNeedsCompatParser(argc, argv))
+	{
+		CCParseWithCompatParser(argc, argv);
+		goto done_compat;
+	}
+
+	/* Scan the command-line and process the options */
 	while(argc > 1)
 	{
 		if(argv[1][0] != '-' || argv[1][1] == '\0')
@@ -762,6 +774,7 @@ void CCParseCommandLine(int argc, char *argv[], int mode, char *versname)
 	}
 
 	/* Add either "DEBUG" or "RELEASE" to the pre-defined symbol set */
+done_compat:
 	if(mode == CMDLINE_PARSE_CSCC)
 	{
 		if(debug_flag)

@@ -125,6 +125,7 @@ void CCAddPathStrings(char ***list, int *num, char *path,
 #define	CMDLINE_PARSE_PLUGIN_CPP		2	/* Plugin with C++ includes */
 #define	CMDLINE_PARSE_PLUGIN_NOSTDINC	3	/* Plugin with its own includes */
 #define	CMDLINE_PARSE_PLUGIN_NOSTDLIB	8	/* Plugin with its own libraries */
+#define	CMDLINE_PARSE_COMPAT			16	/* Cscc with compat options */
 
 /*
  * Parse the command-line options.

@@ -4,6 +4,11 @@
 	* engine/unroll_x86_ptr.c: unroll the "get2d" and "get3d" CVM
 	instructions.
 
+	* cscc/cscc.c, cscc/common/Makefile.am, cscc/common/cc_compat.c,
+	cscc/common/cc_options.c, cscc/common/cc_options.h: implement
+	compatibility options for cscc to emulate the behaviour of the
+	csc and mcs command-lines.
+
 2002-12-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_lengths.c, engine/cvm_ptr.c, engine/cvmc_call.c,

@@ -385,7 +385,8 @@ static void ParseCommandLine(int argc, char *argv[])
 	int len;
 
 	/* Call the centralised option parser */
-	CCParseCommandLine(argc, argv, CMDLINE_PARSE_CSCC, "cscc");
+	CCParseCommandLine(argc, argv, CMDLINE_PARSE_CSCC | CMDLINE_PARSE_COMPAT,
+					   "cscc");
 
 	/* Add the system include directories */
 	if(!nostdinc_flag)

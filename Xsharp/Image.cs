@@ -202,6 +202,10 @@ public sealed class Image : IDisposable
 	/// <see langword="null"/>.</para>
 	/// </exception>
 	///
+	/// <exception cref="T:System.FormatException">
+	/// <para>The image format is not recognized.</para>
+	/// </exception>
+	///
 	/// <exception cref="T:Xsharp.XInvalidOperationException">
 	/// <para>Raised if <paramref name="filename"/> could not be
 	/// loaded for some reason.</para>
@@ -227,6 +231,10 @@ public sealed class Image : IDisposable
 	/// <see langword="null"/>.</para>
 	/// </exception>
 	///
+	/// <exception cref="T:System.FormatException">
+	/// <para>The image format is not recognized.</para>
+	/// </exception>
+	///
 	/// <exception cref="T:Xsharp.XInvalidOperationException">
 	/// <para>Raised if <paramref name="filename"/> could not be
 	/// loaded for some reason.</para>
@@ -248,6 +256,20 @@ public sealed class Image : IDisposable
 					screen = dpy.DefaultScreenOfDisplay;
 				}
 				this.screen = screen;
+				DotGNU.Images.Image img = new DotGNU.Images.Image();
+				img.Load(filename);
+				Frame frame = img.GetFrame(0);
+				try
+				{
+					dpy.Lock();
+					pixmapXImage = ConvertImage.FrameToXImage(screen, frame);
+					maskXImage = ConvertImage.MaskToXImage(screen, frame);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			#if false
 				try
 				{
 					// Lock down the display while we do this.
@@ -291,6 +313,7 @@ public sealed class Image : IDisposable
 				{
 					dpy.Unlock();
 				}
+			#endif
 			}
 
 	/// <summary>

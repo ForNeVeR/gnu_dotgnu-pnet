@@ -5,6 +5,11 @@
 	Xsharp/Image.cs, Xsharp/Xlib.cs.in, Xsharp/Xsharp.build,
 	Xsharp/XsharpSupport.c: hook DIB conversion into Xsharp.
 
+	* Xsharp/Image.cs, Xsharp/XsharpSupport.c, samples/XHello.cs,
+	samples/dotgnu-logo.bmp: use "DotGNU.Images" to load image files
+	instead of Imlib; modify "XHello" to display a BMP because JPG
+	support isn't present in "DotGNU.Images" just yet.
+
 2003-09-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/NotSupp.txt,

@@ -27,7 +27,7 @@ public class XHello : TopLevelWindow
 	public static void Main(String[] args)
 	{
 		Application app = new Application("XHello", args);
-		Image image = new Image("dotgnu-logo.jpg");
+		Image image = new Image("dotgnu-logo.bmp");
 		XHello topLevel = new XHello
 			("Hello DotGNU!", image.Width, image.Height, image);
 		topLevel.Map();

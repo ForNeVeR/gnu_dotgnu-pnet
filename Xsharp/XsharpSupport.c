@@ -689,13 +689,68 @@ static void Write_Indexed(XImage *image, int line, unsigned long *input,
 }
 
 /*
+ * Write RGB data directly to an XImage.
+ */
+static void Write_Direct(Display *dpy, Colormap colormap, XImage *image,
+						 int line, unsigned long *input, int num)
+{
+	int column;
+	if(sizeof(unsigned int) == 4)
+	{
+		unsigned int *output = (unsigned int *)
+			(image->data + line * image->bytes_per_line);
+		for(column = 0; column < num; ++column)
+		{
+			*output++ = (unsigned int)(*input++);
+		}
+	}
+	else
+	{
+		unsigned long *output = (unsigned long *)
+			(image->data + line * image->bytes_per_line);
+		for(column = 0; column < num; ++column)
+		{
+			*output++ = *input++;
+		}
+	}
+}
+
+/*
+ * Default writing routine, doing per-pixel color allocations.
+ */
+static void Write_Default(Display *dpy, Colormap colormap, XImage *image,
+						  int line, unsigned long *input, int num)
+{
+	int column;
+	unsigned long rgb;
+	XColor xcolor;
+	for(column = 0; column < num; ++column)
+	{
+		rgb = *input++;
+		xcolor.pixel = 0;
+		xcolor.red = (unsigned short)((rgb >> 8) & 0xFF00);
+		xcolor.green = (unsigned short)(rgb & 0xFF00);
+		xcolor.blue = (unsigned short)((rgb << 8) & 0xFF00);
+		xcolor.flags = DoRed | DoGreen | DoBlue;
+		xcolor.pad = 0;
+		XAllocColor(dpy, colormap, &xcolor);
+		XPutPixel(image, column, line, xcolor.pixel);
+	}
+}
+
+/*
  * Get the write function for an image.
  */
-typedef void (*WriteFunc)(unsigned char *output, unsigned long *input, int num);
+typedef void (*WriteFunc)(Display *dpy, Colormap colormap, XImage *image,
+						  int len, unsigned long *input, int num);
 static WriteFunc GetWriteFunc(XImage *image)
 {
-	/* TODO */
-	return 0;
+	if(image->depth == 24 && image->red_mask == 0x00FF0000 &&
+	   image->green_mask == 0x0000FF00 && image->blue_mask == 0x000000FF)
+	{
+		return Write_Direct;
+	}
+	return Write_Default;
 }
 
 /*
@@ -719,6 +774,7 @@ XImage *XSharpCreateImageFromDIB(Screen *screen, int width, int height,
 {
 	Display *dpy = DisplayOfScreen(screen);
 	Visual *visual = DefaultVisualOfScreen(screen);
+	Colormap colormap = DefaultColormapOfScreen(screen);
 	unsigned int depth;
 	int format;
 	int bitmap_pad;
@@ -860,8 +916,7 @@ XImage *XSharpCreateImageFromDIB(Screen *screen, int width, int height,
 		for(line = 0; line < height; ++line)
 		{
 			(*readFunc)(data + line * stride, tempLine, width);
-			(*writeFunc)(imageData + line * image->bytes_per_line,
-						 tempLine, width);
+			(*writeFunc)(dpy, colormap, image, line, tempLine, width);
 		}
 		free(tempLine);
 	}

@@ -103,14 +103,23 @@ checkLDArg:
 		stack[stackSize].engineType = ILEngineType_M;
 		stack[stackSize].typeInfo =
 			ILType_FromValueType(ILMethod_Owner(method));
+
+		/* Fool the coder into thinking that the parameter is a pointer
+		   so that it doesn't try to load an entire managed value */
+		ILCoderLoadArg(coder, argNum,
+			ILType_FromClass(ILType_ToValueType(stack[stackSize].typeInfo)));
 	}
 	else if((stack[stackSize].engineType =
 				TypeToEngineType(stack[stackSize].typeInfo)) == ILEngineType_M)
 	{
 		/* Convert the type of a "BYREF" parameter */
 		stack[stackSize].typeInfo = stack[stackSize].typeInfo->un.refType;
+		ILCoderLoadArg(coder, argNum, stack[stackSize].typeInfo);
 	}
-	ILCoderLoadArg(coder, argNum, stack[stackSize].typeInfo);
+	else
+	{
+		ILCoderLoadArg(coder, argNum, stack[stackSize].typeInfo);
+	}
 	++stackSize;
 }
 break;

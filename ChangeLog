@@ -1,4 +1,11 @@
 
+2004-05-23  Jonas Printzen  <jonas@printzen.net>
+
+	* engine/verify_except.c: change OutputExceptionTable() so that 
+	nested try/catch don't loose outer try/catch. Also removes 
+	duplication of try-handlers when multiple catch exist for same 
+	try region. (patch #3059, Gopal)
+	
 2004-05-21  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/process.c: Ensure that mis-compiled libraries cannot 

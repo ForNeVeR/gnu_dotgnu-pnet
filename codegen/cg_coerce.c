@@ -332,6 +332,8 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 						   int kinds, ConvertRules *rules)
 {
 	const ILConversion *conv;
+	ILClass *fromClass;
+	ILClass *toClass;
 
 	/* Clear the rules */
 	rules->boxClass = 0;
@@ -384,34 +386,20 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 	/* Look for a user-defined conversion */
 	if((kinds & IL_CONVERT_USER_DEFINED) != 0)
 	{
-		if(ILType_IsClass(fromType))
+		fromClass = ILTypeToClass(info, fromType);
+		toClass = ILTypeToClass(info, toType);
+		if(fromClass != 0)
 		{
-			if(FindConversion(info, ILType_ToClass(fromType),
-						  	  fromType, toType, explicit, rules))
+			if(FindConversion(info, fromClass, fromType, toType,
+							  explicit, rules))
 			{
 				return 1;
 			}
 		}
-		else if(ILType_IsValueType(fromType))
+		if(toClass != 0)
 		{
-			if(FindConversion(info, ILType_ToValueType(fromType),
-						  	  fromType, toType, explicit, rules))
-			{
-				return 1;
-			}
-		}
-		if(ILType_IsClass(toType))
-		{
-			if(FindConversion(info, ILType_ToClass(toType),
-						  	  fromType, toType, explicit, rules))
-			{
-				return 1;
-			}
-		}
-		else if(ILType_IsValueType(toType))
-		{
-			if(FindConversion(info, ILType_ToValueType(toType),
-						  	  fromType, toType, explicit, rules))
+			if(FindConversion(info, toClass, fromType, toType,
+							  explicit, rules))
 			{
 				return 1;
 			}

@@ -46,7 +46,6 @@ extern ILMethodTableEntry const _ILReflectionClrHelpersMethods;
 extern ILMethodTableEntry const _ILReflectionAssemblyMethods;
 extern ILMethodTableEntry const _ILPlatformStdioMethods;
 extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
-extern ILMethodTableEntry const _ILPlatformPtrSizesMethods;
 extern ILMethodTableEntry const _ILPlatformTimeMethods;
 extern ILMethodTableEntry const _ILRuntimeHelpersMethods;
 extern ILMethodTableEntry const _ILDiagnosticsDebuggerMethods;
@@ -78,7 +77,6 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Math",		"System",		&_ILSystemMathMethods},
 	{"Monitor",		"System.Threading", &_ILSystemThreadingMonitorMethods},
 	{"Object",		"System",		&_ILSystemObjectMethods},
-	{"PtrSizes",	"Platform",		&_ILPlatformPtrSizesMethods},
 	{"RuntimeHelpers", "System.Runtime.CompilerServices",
 			&_ILRuntimeHelpersMethods},
 	{"Single",		"System",		&_ILSystemSingleMethods},

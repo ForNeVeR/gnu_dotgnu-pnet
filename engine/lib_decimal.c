@@ -35,8 +35,8 @@ extern	"C" {
  */
 static void ThrowDecimalOverflow(ILExecThread *thread)
 {
-	ILExecThreadThrowSystem(thread, "System.OverflowException",
-							"Overflow_Decimal");
+	ILExecThreadCallNamed(thread, "System.Decimal", "ThrowOverflow",
+						  "()V", (void *)0);
 }
 
 /*
@@ -44,8 +44,8 @@ static void ThrowDecimalOverflow(ILExecThread *thread)
  */
 static void ThrowDecimalDivZero(ILExecThread *thread)
 {
-	ILExecThreadThrowSystem(thread, "System.DivideByZeroException",
-							"Decimal_DivZero");
+	ILExecThreadCallNamed(thread, "System.Decimal", "ThrowDivZero",
+						  "()V", (void *)0);
 }
 
 /*
@@ -200,7 +200,8 @@ static void System_Decimal_Round(ILExecThread *thread,
 {
 	if(decimals < 0 || decimals > 28)
 	{
-		ILExecThreadThrowArgRange(thread, "decimals", "ArgRange_DecimalScale");
+		ILExecThreadCallNamed(thread, "System.Decimal", "ThrowDecimals",
+							  "()V", (void *)0);
 	}
 	else if(!ILDecimalRound(result, value, decimals, DECIMAL_ROUND_MODE))
 	{

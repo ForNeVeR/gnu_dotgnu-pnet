@@ -1218,10 +1218,9 @@ int _ILIsMArray(System_Array *array)
 }
 
 /*
- * private int GetRankNative();
+ * private int GetRank();
  */
-static ILInt32 System_Array_GetRankNative(ILExecThread *thread,
-										  System_Array *_this)
+static ILInt32 System_Array_GetRank(ILExecThread *thread, System_Array *_this)
 {
 	if(_ILIsMArray(_this))
 	{
@@ -1238,10 +1237,10 @@ static ILInt32 System_Array_GetRankNative(ILExecThread *thread,
 }
 
 /*
- * private int GetLengthNative();
+ * private int GetLength();
  */
-static ILInt32 System_Array_GetLengthNative(ILExecThread *thread,
-										    System_Array *_this)
+static ILInt32 System_Array_GetLength(ILExecThread *thread,
+									  System_Array *_this)
 {
 	if(_ILIsSArray(_this))
 	{
@@ -1266,9 +1265,9 @@ static ILInt32 System_Array_GetLengthNative(ILExecThread *thread,
 /*
  * private int GetLength(int dimension);
  */
-static ILInt32 System_Array_GetLength(ILExecThread *thread,
-									  System_Array *_this,
-									  ILInt32 dimension)
+static ILInt32 System_Array_GetLength_2(ILExecThread *thread,
+									    System_Array *_this,
+									    ILInt32 dimension)
 {
 	if(_ILIsSArray(_this))
 	{
@@ -1293,9 +1292,9 @@ static ILInt32 System_Array_GetLength(ILExecThread *thread,
  * Method table for the "System.Array" class.
  */
 IL_METHOD_BEGIN(_ILSystemArrayMethods)
-	IL_METHOD("GetRankNative",	 "(T)i",  System_Array_GetRankNative)
-	IL_METHOD("GetLengthNative", "(T)i",  System_Array_GetLengthNative)
-	IL_METHOD("GetLength",		 "(Ti)i", System_Array_GetLength)
+	IL_METHOD("GetRank", 	 "(T)i",  System_Array_GetRank)
+	IL_METHOD("GetLength",	 "(T)i",  System_Array_GetLength)
+	IL_METHOD("GetLength",	 "(Ti)i", System_Array_GetLength_2)
 IL_METHOD_END
 
 /*
@@ -1357,7 +1356,7 @@ static ILInt32 System_Buffer_GetLength(ILExecThread *thread,
 	}
 	else if(_ILIsMArray(array))
 	{
-		return System_Array_GetLengthNative(thread, array) *
+		return System_Array_GetLength(thread, array) *
 			   ((System_MArray *)array)->elemSize;
 	}
 	else

@@ -1,4 +1,10 @@
 
+2001-12-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/internal.c, engine/lib_array.c, engine/lib_decimal.c,
+engine/lib_math.c, engine/lib_platform.c, engine/lib_string.c: modify the
+names of internalcall methods to match the latest pnetlib requirements.
+
 2001-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/lib_misc.c, engine/lib_array.c, engine/internal.c: implement the

@@ -69,25 +69,6 @@ IL_METHOD_BEGIN(_ILPlatformSysCharInfoMethods)
 IL_METHOD_END
 
 /*
- * public static int GetPtrSize();
- */
-static ILInt32 Platform_PtrSizes_GetPtrSize(ILExecThread *thread)
-{
-#ifdef IL_NATIVE_INT32
-	return 4;
-#else
-	return 8;
-#endif
-}
-
-/*
- * Method table for the "Platform.PtrSizes" class.
- */
-IL_METHOD_BEGIN(_ILPlatformPtrSizesMethods)
-	IL_METHOD("GetPtrSize", "()i", Platform_PtrSizes_GetPtrSize)
-IL_METHOD_END
-
-/*
  * public static long GetCurrentTime();
  *
  * This returns the time since 12:00 Jan 1, 0001 in tenths of a microsecond.

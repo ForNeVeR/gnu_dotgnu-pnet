@@ -71,43 +71,105 @@ extern	"C" {
 #define	NOT_A_NUMBER	((ILDouble)(0.0 / 0.0))
 
 /*
- * Determine if a double value is finite.
- */
-#if defined(HAVE_FINITE)
-#define	FiniteDouble(x)		(finite((x)))
-#elif defined(HAVE_ISNAN) && defined(HAVE_ISINF)
-#define	FiniteDouble(x)		(!isnan((x)) && isinf((x)) == 0)
-#else
-static int FiniteDouble(double x)
-{
-	unsigned char buf[8];
-	IL_WRITE_DOUBLE(buf, (ILDouble)x);
-	return ((IL_READ_UINT32(buf + 4) & (ILUInt32)0x7FF00000)
-					!= (ILUInt32)0x7FF00000);
-}
-#endif
-
-/*
  * Largest integer that can be represented in an IEEE double / 2.
  */
 #define	LARGEST_INT		4503599627370496.0
 
 /*
- * Get the floor of a double value.
+ * Test for "not a number".
  */
-#ifdef HAVE_CEIL
-#define	FloorDouble(x)		(floor((x)))
+#ifdef HAVE_ISNAN
+	#define	Math_IsNaN(x)		(isnan((x)))
 #else
-static double FloorDouble(double x)
+	#define	Math_IsNaN(x)		((x) != (x))
+#endif
+
+/*
+ * Test for infinities.
+ */
+#ifdef	HAVE_ISINF
+	#define	Math_IsInf(x)		(isinf((x)))
+#else	/* !HAVE_ISINF */
+	#ifdef  HAVE_FINITE
+		static IL_INLINE int IsInfDouble(ILDouble x)
+		{
+			if(finite(x))
+			{
+				return 0;
+			}
+			else if(x < (ILDouble)0.0)
+			{
+				return -1;
+			}
+			else
+			{
+				return 1;
+			}
+		}
+	#else	/* !HAVE_FINITE */
+		static int IsInfDouble(ILDouble x)
+		{
+			unsigned char buf[8];
+			ILUInt32 test;
+			IL_WRITE_DOUBLE(buf, (ILDouble)x);
+			test = IL_READ_UINT32(buf + 4);
+			if((test & (ILUInt32)0x7FF80000) == (ILUInt32)0x7FF00000)
+			{
+				if((test & (ILUInt32)0x80000000) != 0)
+				{
+					return -1;
+				}
+				else
+				{
+					return 1;
+				}
+			}
+			else
+			{
+				return 0;
+			}
+		}
+	#endif	/* !HAVE_FINITE */
+	#define	Math_IsInf(x)	(IsInfDouble((ILDouble)(x)))
+#endif	/* !HAVE_ISINF */
+
+/*
+ * Test for finite values.
+ */
+#ifdef HAVE_FINITE
+	#define	Math_Finite(x)	(finite((x)))
+#else
+	#define	Math_Finite(x)	(!Math_IsNaN((x)) && Math_IsInf((x)) == 0)
+#endif
+
+/*
+ * Get the floor or ceiling of a value.
+ */
+#ifdef HAVE_FLOOR
+	#define	Math_Floor(x)	(floor((x)))
+#else
+	static double Math_Floor(double x);
+#endif
+#ifdef HAVE_FLOOR
+	#define	Math_Ceil(x)	(ceil((x)))
+#else
+	static double Math_Ceil(double x);
+#endif
+
+/*
+ * Implement the floor helper function.
+ */
+#ifndef HAVE_FLOOR
+static double Math_Floor(double x)
 {
 	double temp;
-	if(!FiniteDouble(x))
+	if(!Math_Finite(x))
 	{
 		return x;
 	}
 	else if(x < 0.0)
 	{
-		temp = -(FloorDouble(-x));
+		temp = -(Math_Floor(-x));
 		if(temp != x)
 		{
 			return temp - 1.0;
@@ -133,27 +195,25 @@ static double FloorDouble(double x)
 		}
 	}
 }
-#endif
+#endif /* !HAVE_FLOOR */
 
 /*
- * Get the ceiling of a double value.
+ * Implement the ceiling helper function.
  */
-#ifdef HAVE_CEIL
-#define	CeilDouble(x)		(ceil((x)))
-#else
-static double CeilDouble(double x)
+#ifndef HAVE_CEIL
+static double Math_Ceil(double x)
 {
-	if(!FiniteDouble(x))
+	if(!Math_Finite(x))
 	{
 		return x;
 	}
 	else if(x < 0.0)
 	{
-		return -(FloorDouble(-x));
+		return -(Math_Floor(-x));
 	}
 	else
 	{
-		double temp = FloorDouble(x);
+		double temp = Math_Floor(x);
 		if(temp != x)
 		{
 			return temp + 1.0;
@@ -164,17 +224,32 @@ static double CeilDouble(double x)
 		}
 	}
 }
-#endif
+#endif /* !HAVE_CEIL */
 
 /*
  * Compute the IEEE remainder of two double values.
  */
 #ifdef HAVE_REMAINDER
-#define	RemainderDouble(x,y)		(remainder((x), (y)))
+#define	Math_Remainder(x,y)		(remainder((x), (y)))
 #else
-static double RemainderDouble(double x, double y)
+static double Math_Remainder(double x, double y)
 {
-	/* TODO */
+	if(Math_IsNaN(x) || Math_IsNaN(y) || y == 0.0)
+	{
+		return NOT_A_NUMBER;
+	}
+	else
+	{
+		double quotient = x / y;
+		if(quotient >= 0.0)
+		{
+			return (x - Math_Ceil(quotient) * y);
+		}
+		else
+		{
+			return (x - Math_Floor(quotient) * y);
+		}
+	}
 }
 #endif
 
@@ -182,15 +257,15 @@ static double RemainderDouble(double x, double y)
  * Round a "double" value to the nearest integer, using the
  * "round half even" rounding mode.
  */
-static double RoundDouble(double x)
+static double Math_Round(double x)
 {
 	double above, below;
-	if(!FiniteDouble(x))
+	if(!Math_Finite(x))
 	{
 		return x;
 	}
-	above = CeilDouble(x);
-	below = FloorDouble(x);
+	above = Math_Ceil(x);
+	below = Math_Floor(x);
 	if((above - x) < 0.5)
 	{
 		return above;
@@ -199,7 +274,7 @@ static double RoundDouble(double x)
 	{
 		return below;
 	}
-	else if(RemainderDouble(above, 2.0) == 0.0)
+	else if(Math_Remainder(above, 2.0) == 0.0)
 	{
 		return above;
 	}
@@ -262,11 +337,7 @@ static ILDouble System_Math_Atan2(ILExecThread *thread, ILDouble y, ILDouble x)
  */
 static ILDouble System_Math_Ceiling(ILExecThread *thread, ILDouble a)
 {
-#ifdef HAVE_CEIL
-	return (ILDouble)(ceil((double)a));
-#else
-	return NOT_A_NUMBER;
-#endif
+	return (ILDouble)(Math_Ceil((double)a));
 }
 
 /*
@@ -310,11 +381,7 @@ static ILDouble System_Math_Exp(ILExecThread *thread, ILDouble d)
  */
 static ILDouble System_Math_Floor(ILExecThread *thread, ILDouble d)
 {
-#ifdef HAVE_FLOOR
-	return (ILDouble)(floor((double)d));
-#else
-	return NOT_A_NUMBER;
-#endif
+	return (ILDouble)(Math_Floor((double)d));
 }
 
 /*
@@ -323,11 +390,7 @@ static ILDouble System_Math_Floor(ILExecThread *thread, ILDouble d)
 static ILDouble System_Math_IEEERemainder(ILExecThread *thread,
 										  ILDouble x, ILDouble y)
 {
-#ifdef HAVE_REMAINDER
-	return (ILDouble)(remainder((double)x, (double)y));
-#else
-	return NOT_A_NUMBER;
-#endif
+	return (ILDouble)(Math_Remainder((double)x, (double)y));
 }
 
 /*
@@ -371,18 +434,18 @@ static ILDouble System_Math_Pow(ILExecThread *thread, ILDouble x, ILDouble y)
  */
 static ILDouble System_Math_Round(ILExecThread *thread, ILDouble a)
 {
-	return (ILDouble)RoundDouble((double)a);
+	return (ILDouble)Math_Round((double)a);
 }
 
 /*
- * private static double InternalRound(double value, int digits);
+ * private static double RoundDouble(double value, int digits);
  */
-static ILDouble System_Math_InternalRound(ILExecThread *thread,
-										  ILDouble value, ILInt32 digits)
+static ILDouble System_Math_RoundDouble(ILExecThread *thread,
+										ILDouble value, ILInt32 digits)
 {
 	double rounded;
 	double power;
-	rounded = RoundDouble((double)value);
+	rounded = Math_Round((double)value);
 	if(digits == 0 || rounded == (double)value)
 	{
 		/* Simple rounding, or the value is already an integer */
@@ -400,7 +463,7 @@ static ILDouble System_Math_InternalRound(ILExecThread *thread,
 			--digits;
 		}
 	#endif
-		return (RoundDouble(((double)value) * power) / power);
+		return (Math_Round(((double)value) * power) / power);
 	}
 }
 
@@ -469,29 +532,15 @@ static ILDouble System_Math_Tanh(ILExecThread *thread, ILDouble value)
  */
 static ILBool System_Single_IsNaN(ILExecThread *thread, ILFloat f)
 {
-#ifdef HAVE_ISNAN
-	return isnan(f);
-#else
-	unsigned char buf[4];
-	IL_WRITE_FLOAT(buf, f);
-	return ((IL_READ_UINT32(buf) & (ILUInt32)0x7FC00000)
-					== (ILUInt32)0x7FC00000);
-#endif
+	return Math_IsNaN(f);
 }
 
 /*
- * public static bool IsInfinity(float f);
+ * private static int TestInfinity(float f);
  */
-static ILBool System_Single_IsInfinity(ILExecThread *thread, ILFloat f)
+static ILInt32 System_Single_TestInfinity(ILExecThread *thread, ILFloat f)
 {
-#ifdef HAVE_ISINF
-	return (isinf(f) != 0);
-#else
-	unsigned char buf[4];
-	IL_WRITE_FLOAT(buf, f);
-	return ((IL_READ_UINT32(buf) & (ILUInt32)0x7FC00000)
-					== (ILUInt32)0x7F800000);
-#endif
+	return Math_IsInf(f);
 }
 
 /*
@@ -499,29 +548,15 @@ static ILBool System_Single_IsInfinity(ILExecThread *thread, ILFloat f)
  */
 static ILBool System_Double_IsNaN(ILExecThread *thread, ILDouble d)
 {
-#ifdef HAVE_ISNAN
-	return isnan(d);
-#else
-	unsigned char buf[8];
-	IL_WRITE_DOUBLE(buf, d);
-	return ((IL_READ_UINT32(buf + 4) & (ILUInt32)0x7FF80000)
-					== (ILUInt32)0x7FF80000);
-#endif
+	return Math_IsNaN(d);
 }
 
 /*
- * public static bool IsInfinity(double d);
+ * private static int TestInfinity(double d);
  */
-static ILBool System_Double_IsInfinity(ILExecThread *thread, ILDouble d)
+static ILInt32 System_Double_TestInfinity(ILExecThread *thread, ILDouble d)
 {
-#ifdef HAVE_ISINF
-	return (isinf(d) != 0);
-#else
-	unsigned char buf[8];
-	IL_WRITE_DOUBLE(buf, d);
-	return ((IL_READ_UINT32(buf + 4) & (ILUInt32)0x7FF80000)
-					== (ILUInt32)0x7FF00000);
-#endif
+	return Math_IsInf(d);
 }
 
 /*
@@ -542,7 +577,7 @@ IL_METHOD_BEGIN(_ILSystemMathMethods)
 	IL_METHOD("Log10",			 "(d)d",		System_Math_Log10)
 	IL_METHOD("Pow",			 "(d)d",		System_Math_Pow)
 	IL_METHOD("Round",			 "(d)d",		System_Math_Round)
-	IL_METHOD("InternalRound",	 "(di)d",		System_Math_InternalRound)
+	IL_METHOD("RoundDouble",	 "(di)d",		System_Math_RoundDouble)
 	IL_METHOD("Sin",			 "(d)d",		System_Math_Sin)
 	IL_METHOD("Sinh",			 "(d)d",		System_Math_Sinh)
 	IL_METHOD("Sqrt",			 "(d)d",		System_Math_Sqrt)
@@ -555,7 +590,7 @@ IL_METHOD_END
  */
 IL_METHOD_BEGIN(_ILSystemSingleMethods)
 	IL_METHOD("IsNaN",			 "(f)Z",		System_Single_IsNaN)
-	IL_METHOD("IsInfinity",		 "(f)Z",		System_Single_IsInfinity)
+	IL_METHOD("TestInfinity",	 "(f)i",		System_Single_TestInfinity)
 IL_METHOD_END
 
 /*
@@ -563,7 +598,7 @@ IL_METHOD_END
  */
 IL_METHOD_BEGIN(_ILSystemDoubleMethods)
 	IL_METHOD("IsNaN",			 "(d)Z",		System_Double_IsNaN)
-	IL_METHOD("IsInfinity",		 "(d)Z",		System_Double_IsInfinity)
+	IL_METHOD("TestInfinity",	 "(d)i",		System_Double_TestInfinity)
 IL_METHOD_END
 
 #ifdef	__cplusplus

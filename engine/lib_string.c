@@ -628,18 +628,18 @@ static ILBool System_String_Equals(ILExecThread *thread,
 }
 
 /*
- * internal static String FastAllocateString(int length);
+ * internal static String NewString(int length);
  */
-static System_String *System_String_FastAllocateString
+static System_String *System_String_NewString
 							(ILExecThread *thread, ILInt32 length)
 {
 	return AllocString(thread, length);
 }
 
 /*
- * internal static String FastAllocateBuilder(String value, int length);
+ * internal static String NewBuilder(String value, int length);
  */
-static System_String *System_String_FastAllocateBuilder
+static System_String *System_String_NewBuilder
 							(ILExecThread *thread,
 							 System_String *value,
 							 ILInt32 length)
@@ -690,28 +690,27 @@ static System_String *System_String_FastAllocateBuilder
 }
 
 /*
- * internal static void FillString(String dest, int destPos, String src);
+ * internal static void Copy(String dest, int destPos, String src);
  */
-static void System_String_FillString(ILExecThread *thread,
-									 System_String *dest,
-									 ILInt32 destPos,
-									 System_String *src)
+static void System_String_Copy(ILExecThread *thread,
+							   System_String *dest,
+							   ILInt32 destPos,
+							   System_String *src)
 {
 	ILMemCpy(StringToBuffer(dest) + destPos,
 			 StringToBuffer(src), src->length * sizeof(ILUInt16));
 }
 
 /*
- * internal static void FillSubstring(String dest, int destPos,
- *									  String src, int srcPos,
- *                                    int length);
+ * internal static void Copy(String dest, int destPos,
+ *						     String src, int srcPos, int length);
  */
-static void System_String_FillSubstring(ILExecThread *thread,
-									 	System_String *dest,
-									 	ILInt32 destPos,
-									 	System_String *src,
-									 	ILInt32 srcPos,
-									 	ILInt32 length)
+static void System_String_Copy_2(ILExecThread *thread,
+								 System_String *dest,
+							 	 ILInt32 destPos,
+							 	 System_String *src,
+							 	 ILInt32 srcPos,
+							 	 ILInt32 length)
 {
 	ILMemCpy(StringToBuffer(dest) + destPos,
 			 StringToBuffer(src) + srcPos, length * sizeof(ILUInt16));
@@ -743,15 +742,15 @@ static void System_String_RemoveSpace(ILExecThread *thread,
 }
 
 /*
- * private void InternalCopyTo(int sourceIndex, char[] destination,
+ * private void CopyToChecked(int sourceIndex, char[] destination,
  *							   int destinationIndex, int count);
  */
-static void System_String_InternalCopyTo(ILExecThread *thread,
-									 	 System_String *_this,
-									 	 ILInt32 sourceIndex,
-									 	 System_Array *destination,
-									 	 ILInt32 destinationIndex,
-									 	 ILInt32 count)
+static void System_String_CopyToChecked(ILExecThread *thread,
+									 	System_String *_this,
+									 	ILInt32 sourceIndex,
+									 	System_Array *destination,
+									 	ILInt32 destinationIndex,
+									 	ILInt32 count)
 {
 	ILMemCpy(((ILUInt16 *)(ArrayToBuffer(destination))) + destinationIndex,
 			 StringToBuffer(_this) + sourceIndex, count * sizeof(ILUInt16));
@@ -1114,9 +1113,9 @@ static System_String *System_String_IsInterned(ILExecThread *thread,
 }
 
 /*
- * internal static void FillChar(String str, int start, int count, char ch);
+ * internal static void CharFill(String str, int start, int count, char ch);
  */
-static void System_String_FillChar(ILExecThread *thread,
+static void System_String_CharFill(ILExecThread *thread,
 							 	   System_String *str,
 								   ILInt32 start,
 								   ILInt32 count,
@@ -1131,16 +1130,16 @@ static void System_String_FillChar(ILExecThread *thread,
 }
 
 /*
- * internal static void FillWithChars(String str, int start,
- *									  char[] chars, int index,
- 									  int count);
+ * internal static void CharFill(String str, int start,
+ *								 char[] chars, int index,
+ 								 int count);
  */
-static void System_String_FillWithChars(ILExecThread *thread,
-							 	   	 	System_String *str,
-								   		ILInt32 start,
-							 	   	 	System_Array *chars,
-								   		ILInt32 index,
-								   		ILInt32 count)
+static void System_String_CharFill_2(ILExecThread *thread,
+							 	   	 System_String *str,
+								   	 ILInt32 start,
+							 	   	 System_Array *chars,
+								   	 ILInt32 index,
+								   	 ILInt32 count)
 {
 	ILUInt16 *src = ArrayToBuffer(chars) + index;
 	ILUInt16 *dest = StringToBuffer(str) + start;
@@ -1287,9 +1286,8 @@ static System_String *System_String_Replace_2(ILExecThread *thread,
 	return str;
 }
 
-#define	TRIM_HEAD		0
-#define	TRIM_TAIL		1
-#define	TRIM_BOTH		2
+#define	TrimFlag_Front		1
+#define	TrimFlag_End		2
 
 /*
  * Match a character against an array of characters.
@@ -1313,26 +1311,26 @@ static IL_INLINE int IsCharMatch(System_Array *trimChars, ILUInt16 ch)
 }
 
 /*
- * private String TrimHelper(char[] trimChars, int trimType);
+ * private String Trim(char[] trimChars, int trimFlags);
  */
-static System_String *System_String_TrimHelper(ILExecThread *thread,
-							 	    	       System_String *_this,
-								    	 	   System_Array *trimChars,
-								    	 	   ILInt32 trimType)
+static System_String *System_String_Trim(ILExecThread *thread,
+							 	    	 System_String *_this,
+								    	 System_Array *trimChars,
+								    	 ILInt32 trimFlags)
 {
 	ILInt32 start, end;
 	ILUInt16 *buf = StringToBuffer(_this);
 	System_String *str;
 	start = 0;
 	end = _this->length;
-	if(trimType == TRIM_HEAD || trimType == TRIM_BOTH)
+	if((trimFlags & TrimFlag_Front) != 0)
 	{
 		while(start < end && IsCharMatch(trimChars, buf[start]))
 		{
 			++start;
 		}
 	}
-	if(trimType == TRIM_TAIL || trimType == TRIM_BOTH)
+	if((trimFlags & TrimFlag_End) != 0)
 	{
 		while(start < end && IsCharMatch(trimChars, buf[end - 1]))
 		{
@@ -1356,11 +1354,11 @@ static System_String *System_String_TrimHelper(ILExecThread *thread,
 }
 
 /*
- * internal char InternalGetChar(int posn);
+ * internal char GetChar(int posn);
  */
-static ILUInt16 System_String_InternalGetChar(ILExecThread *thread,
-							 	    	      System_String *_this,
-								    	 	  ILInt32 posn)
+static ILUInt16 System_String_GetChar(ILExecThread *thread,
+							  	      System_String *_this,
+							  	 	  ILInt32 posn)
 {
 	if(posn >= 0 && posn < _this->length)
 	{
@@ -1375,11 +1373,11 @@ static ILUInt16 System_String_InternalGetChar(ILExecThread *thread,
 }
 
 /*
- * internal void InternalSetChar(int posn, char value);
+ * internal void SetChar(int posn, char value);
  */
-static void System_String_InternalSetChar(ILExecThread *thread,
-							     	      System_String *_this,
-							    	 	  ILInt32 posn, ILUInt16 value)
+static void System_String_SetChar(ILExecThread *thread,
+						  	      System_String *_this,
+						  	 	  ILInt32 posn, ILUInt16 value)
 {
 	if(posn >= 0 && posn < _this->length)
 	{
@@ -1416,20 +1414,20 @@ IL_METHOD_BEGIN(_ILSystemStringMethods)
 					System_String_InternalOrdinal)
 	IL_METHOD("Equals", "(oSystem.String;oSystem.String;)Z",
 					System_String_Equals)
-	IL_METHOD("FastAllocateString", "(i)oSystem.String;",
-					System_String_FastAllocateString)
-	IL_METHOD("FastAllocateBuilder", "(oSystem.String;i)oSystem.String;",
-					System_String_FastAllocateBuilder)
-	IL_METHOD("FillString",	"(oSystem.String;ioSystem.String;)V",
-					System_String_FillString)
-	IL_METHOD("FillSubstring", "(oSystem.String;ioSystem.String;ii)V",
-				   	System_String_FillSubstring)
+	IL_METHOD("NewString", "(i)oSystem.String;",
+					System_String_NewString)
+	IL_METHOD("NewBuilder", "(oSystem.String;i)oSystem.String;",
+					System_String_NewBuilder)
+	IL_METHOD("Copy",	"(oSystem.String;ioSystem.String;)V",
+					System_String_Copy)
+	IL_METHOD("Copy", "(oSystem.String;ioSystem.String;ii)V",
+				   	System_String_Copy_2)
 	IL_METHOD("InsertSpace", "(oSystem.String;ii)V",
 					System_String_InsertSpace)
 	IL_METHOD("RemoveSpace", "(oSystem.String;ii)V",
 					System_String_RemoveSpace)
-	IL_METHOD("InternalCopyTo", "(Ti[cii)V",
-					System_String_InternalCopyTo)
+	IL_METHOD("CopyToChecked", "(Ti[cii)V",
+					System_String_CopyToChecked)
 	IL_METHOD("GetHashCode", "(T)i",	System_String_GetHashCode)
 	IL_METHOD("IndexOf",	 "(Tcii)i",	System_String_IndexOf)
 	IL_METHOD("IndexOfAny",	 "(T[cii)i", System_String_IndexOfAny)
@@ -1439,15 +1437,14 @@ IL_METHOD_BEGIN(_ILSystemStringMethods)
 	IL_METHOD("IsInterned",	 "(T)oSystem.String;", System_String_IsInterned)
 	IL_METHOD("LastIndexOf", "(Tcii)i", System_String_LastIndexOf)
 	IL_METHOD("LastIndexOfAny", "(T[cii)i", System_String_LastIndexOfAny)
-	IL_METHOD("FillChar",	 "(oSystem.String;iic)V", System_String_FillChar)
-	IL_METHOD("FillWithChars", "(oSystem.String;i[cii)V",
-					System_String_FillWithChars)
+	IL_METHOD("CharFill",	 "(oSystem.String;iic)V", System_String_CharFill)
+	IL_METHOD("CharFill", "(oSystem.String;i[cii)V", System_String_CharFill_2)
 	IL_METHOD("Replace",	 "(Tcc)oSystem.String;", System_String_Replace_1)
 	IL_METHOD("Replace",	 "(ToSystem.String;oSystem.String;)oSystem.String;",
 					System_String_Replace_2)
-	IL_METHOD("TrimHelper",	 "(T[ci)oSystem.String;", System_String_TrimHelper)
-	IL_METHOD("InternalGetChar", "(Ti)c", System_String_InternalGetChar)
-	IL_METHOD("InternalSetChar", "(Tic)V", System_String_InternalSetChar)
+	IL_METHOD("Trim",	 "(T[ci)oSystem.String;", System_String_Trim)
+	IL_METHOD("GetChar", "(Ti)c", System_String_GetChar)
+	IL_METHOD("SetChar", "(Tic)V", System_String_SetChar)
 IL_METHOD_END
 
 ILString *ILStringCreate(ILExecThread *thread, const char *str)

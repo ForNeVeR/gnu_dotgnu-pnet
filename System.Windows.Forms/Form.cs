@@ -585,7 +585,7 @@ public class Form : ContainerControl
 					window.MoveResize
 							((screenSize.Width - cp.Width) / 2,
 							 (screenSize.Height - cp.Height) / 2,
-							 cp.Width, cp.Height);
+							 window.Dimensions.Width, window.Dimensions.Height);
 				}
 				return window;
 			}
@@ -1220,10 +1220,28 @@ public class Form : ContainerControl
 			}
 
 	// Process a dialog key.
-	[TODO]
 	protected override bool ProcessDialogKey(Keys keyData)
 			{
-				// TODO
+				if ((keyData & (Keys.Control | Keys.Alt)) == 0)
+				{
+					Keys key = keyData & Keys.KeyCode;
+					if (key == Keys.Return)
+					{
+						if (acceptButton != null)
+						{
+							acceptButton.PerformClick();
+							return true;
+						}
+					}
+					else if (key == Keys.Escape)
+					{
+						if (cancelButton != null)
+						{
+							cancelButton.PerformClick();
+							return true;
+						}
+					}
+				}
 				return base.ProcessDialogKey(keyData);
 			}
 

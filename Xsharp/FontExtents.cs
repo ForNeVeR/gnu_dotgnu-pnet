@@ -37,29 +37,11 @@ public sealed class FontExtents
 	private int maxWidth;
 
 	// Constructor.
-	internal FontExtents(Font font, IntPtr fontSet)
+	internal FontExtents(int ascent, int descent, int maxWidth)
 			{
-				XRectangle max_ink;
-				XRectangle max_logical;
-
-				// Get the extent information for the font.
-				Xlib.XSharpFontExtents(fontSet, out max_ink, out max_logical);
-
-				// Convert the extent information into values that make sense.
-				ascent = -(max_logical.y);
-				descent = max_logical.height + max_logical.y;
-				maxWidth = max_logical.width;
-
-				// Increase the descent to account for underlining.
-				// We always draw the underline two pixels below
-				// the font base line.
-				if((font.Style & FontStyle.Underlined) != 0)
-				{
-					if(descent < 3)
-					{
-						descent = 3;
-					}
-				}
+				this.ascent = ascent;
+				this.descent = descent;
+				this.maxWidth = maxWidth;
 			}
 
 	/// <summary>

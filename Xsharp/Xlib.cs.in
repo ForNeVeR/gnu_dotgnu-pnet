@@ -534,27 +534,85 @@ internal sealed unsafe class Xlib
 			(IntPtr display, out XEvent xevent, @X_int@ timeout);
 
 	[DllImport("XsharpSupport")]
-	extern public static IntPtr XSharpCreateFont
+	extern public static @X_int@ XSharpUseXft();
+
+	[DllImport("XsharpSupport")]
+	extern public static IntPtr XSharpCreateFontXft
 			(IntPtr display, String family, @X_int@ pointSize, @X_int@ style);
 
 	[DllImport("XsharpSupport")]
-	extern public static void XSharpFreeFont(IntPtr display, IntPtr fontSet);
+	extern public static void XSharpFreeFontXft
+			(IntPtr display, IntPtr fontSet);
 
 	[DllImport("XsharpSupport")]
-	extern public static void XSharpDrawString
+	extern public static void XSharpDrawStringXft
 			(IntPtr display, Drawable drawable, IntPtr gc,
 			 IntPtr fontSet, @X_int@ x, @X_int@ y,
 			 String str, @X_int@ style, IntPtr clipRegion,
 			 @X_ulong@ colorValue);
 
 	[DllImport("XsharpSupport")]
-	extern public static void XSharpTextExtents
+	extern public static void XSharpTextExtentsXft
 			(IntPtr display, IntPtr fontSet, String str,
 			 out XRectangle overall_ink_return,
 			 out XRectangle overall_logical_return);
 
 	[DllImport("XsharpSupport")]
-	extern public static void XSharpFontExtents
+	extern public static void XSharpFontExtentsXft
+			(IntPtr fontSet,
+			 out XRectangle max_ink_return,
+			 out XRectangle max_logical_return);
+
+	[DllImport("XsharpSupport")]
+	extern public static IntPtr XSharpCreateFontSet
+			(IntPtr display, String family, @X_int@ pointSize, @X_int@ style);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpFreeFontSet
+			(IntPtr display, IntPtr fontSet);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpDrawStringSet
+			(IntPtr display, Drawable drawable, IntPtr gc,
+			 IntPtr fontSet, @X_int@ x, @X_int@ y,
+			 String str, @X_int@ style, IntPtr clipRegion,
+			 @X_ulong@ colorValue);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpTextExtentsSet
+			(IntPtr display, IntPtr fontSet, String str,
+			 out XRectangle overall_ink_return,
+			 out XRectangle overall_logical_return);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpFontExtentsSet
+			(IntPtr fontSet,
+			 out XRectangle max_ink_return,
+			 out XRectangle max_logical_return);
+
+	[DllImport("XsharpSupport")]
+	extern public static IntPtr XSharpCreateFontStruct
+			(IntPtr display, String family, @X_int@ pointSize, @X_int@ style);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpFreeFontStruct
+			(IntPtr display, IntPtr fontSet);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpDrawStringStruct
+			(IntPtr display, Drawable drawable, IntPtr gc,
+			 IntPtr fontSet, @X_int@ x, @X_int@ y,
+			 String str, @X_int@ style, IntPtr clipRegion,
+			 @X_ulong@ colorValue);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpTextExtentsStruct
+			(IntPtr display, IntPtr fontSet, String str,
+			 out XRectangle overall_ink_return,
+			 out XRectangle overall_logical_return);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpFontExtentsStruct
 			(IntPtr fontSet,
 			 out XRectangle max_ink_return,
 			 out XRectangle max_logical_return);

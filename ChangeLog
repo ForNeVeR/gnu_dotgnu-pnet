@@ -33,6 +33,10 @@
 	System.Windows.Forms/Control.cs: shift the creation of the default
 	font into the toolkit so that it can be made system-specific.
 
+	* Xsharp/Font.cs, Xsharp/FontExtents.cs, Xsharp/Xlib.cs.in,
+	Xsharp/XsharpSupport.c: rearrange Xsharp font handling into
+	three separate rendering systems: font set, font struct, and Xft.
+
 2003-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/XsharpSupport.c: implement a special case for Latin1

@@ -99,48 +99,25 @@ int XNextEventWithTimeout(Display *dpy, XEvent *event, int timeout)
 #define	FontStyle_Italic		2
 #define	FontStyle_Underline		4
 #define	FontStyle_StrikeOut		8
-#define	FontStyle_Latin1		0x80
-
-#ifndef USE_XFT_EXTENSION
+#define	FontStyle_FontStruct	0x80
 
 /*
- * Determine if the locale looks like Latin1, which we can optimize
- * by using the XFontStruct version of a font, not the XFontSet version.
+ * Determine if we can use the Xft extension.
  */
-static int IsLatin1Locale(void)
+int XSharpUseXft()
 {
-	char *env = getenv("LANG");
-	if(!env || !strcmp(env, "C") || !strcmp(env, "en_US"))
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
+#ifdef USE_XFT_EXTENSION
+	return 1;
+#else
+	return 0;
+#endif
 }
-
-/*
- * Convert an XFontStruct pointer into an XFontSet.
- */
-#define	FontStructToSet(ptr)	((XFontSet)(((unsigned long)(ptr)) | 1))
-
-/*
- * Convert an XFontSet into an XFontStruct pointer.
- */
-#define	FontSetToStruct(ptr)	\
-			((XFontStruct *)(((unsigned long)(ptr)) & ~((unsigned long)1)))
-
-/*
- * Determine if an XFontSet pointer is actually an XFontStruct.
- */
-#define	FontSetIsStruct(ptr)	((((unsigned long)(ptr)) & 1) != 0)
 
 /*
  * Try to create a font with specific parameters.
  */
-static XFontSet TryCreateFont(Display *dpy, const char *family,
-							  int pointSize, int style)
+static void *TryCreateFont(Display *dpy, const char *family,
+						   int pointSize, int style)
 {
 	XFontSet fontSet;
 	char *name;
@@ -188,14 +165,14 @@ static XFontSet TryCreateFont(Display *dpy, const char *family,
 	}
 
 	/* Use the Latin1 XFontStruct creation method if requested */
-	if((style & FontStyle_Latin1) != 0)
+	if((style & FontStyle_FontStruct) != 0)
 	{
 		XFontStruct *fs;
 		fs = XLoadQueryFont(dpy, name);
 		if(fs)
 		{
 			free(name);
-			return FontStructToSet(fs);
+			return (void *)fs;
 		}
 		else
 		{
@@ -213,7 +190,7 @@ static XFontSet TryCreateFont(Display *dpy, const char *family,
 	if(fontSet)
 	{
 		free(name);
-		return fontSet;
+		return (void *)fontSet;
 	}
 	/* TODO: process the missing charsets */
 
@@ -222,13 +199,63 @@ static XFontSet TryCreateFont(Display *dpy, const char *family,
 	return 0;
 }
 
-#endif /* USE_XFT_EXTENSION */
+/*
+ * Create a font set from a description.
+ */
+void *XSharpCreateFontSet(Display *dpy, const char *family,
+					      int pointSize, int style)
+{
+	XFontSet fontSet;
+	int structStyle = (style & FontStyle_FontStruct);
+
+	/* Try with the actual parameters first */
+	fontSet = TryCreateFont(dpy, family, pointSize, style);
+	if(fontSet)
+	{
+		return fontSet;
+	}
+
+	/* Remove the style, but keep the family */
+	fontSet = TryCreateFont(dpy, family, pointSize,
+							FontStyle_Normal | structStyle);
+	if(fontSet)
+	{
+		return fontSet;
+	}
+
+	/* Remove the family, but keep the style */
+	fontSet = TryCreateFont(dpy, 0, pointSize, style);
+	if(fontSet)
+	{
+		return fontSet;
+	}
+
+	/* Remove the point size and the style, but keep the family */
+	fontSet = TryCreateFont(dpy, family, -1, FontStyle_Normal | structStyle);
+	if(fontSet)
+	{
+		return fontSet;
+	}
+
+	/* Remove everything - this will succeed unless X has no fonts at all! */
+	return TryCreateFont(dpy, 0, -1, FontStyle_Normal | structStyle);
+}
 
 /*
- * Create a font from a description.
+ * Create a font struct from a description.
  */
-void *XSharpCreateFont(Display *dpy, const char *family,
-					   int pointSize, int style)
+void *XSharpCreateFontStruct(Display *dpy, const char *family,
+					         int pointSize, int style)
+{
+	return XSharpCreateFontSet(dpy, family, pointSize,
+							   style | FontStyle_FontStruct);
+}
+
+/*
+ * Create an Xft font from a description.
+ */
+void *XSharpCreateFontXft(Display *dpy, const char *family,
+					      int pointSize, int style)
 {
 #ifdef USE_XFT_EXTENSION
 
@@ -283,95 +310,183 @@ void *XSharpCreateFont(Display *dpy, const char *family,
 
 #else /* !USE_XFT_EXTENSION */
 
-	XFontSet fontSet;
+	/* Don't have Xft support on this platform */
+	return 0;
 
-	/* Force creation of a Latin1 XFontStruct if necessary */
-	if(IsLatin1Locale())
-	{
-		style |= FontStyle_Latin1;
-	}
-
-	/* Try with the actual parameters first */
-	fontSet = TryCreateFont(dpy, family, pointSize, style);
-	if(fontSet)
-	{
-		return fontSet;
-	}
-
-	/* Remove the style, but keep the family */
-	fontSet = TryCreateFont(dpy, family, pointSize, FontStyle_Normal);
-	if(fontSet)
-	{
-		return fontSet;
-	}
-
-	/* Remove the family, but keep the style */
-	fontSet = TryCreateFont(dpy, 0, pointSize, style);
-	if(fontSet)
-	{
-		return fontSet;
-	}
-
-	/* Remove the point size and the style, but keep the family */
-	fontSet = TryCreateFont(dpy, family, -1, FontStyle_Normal);
-	if(fontSet)
-	{
-		return fontSet;
-	}
-
-	/* Remove everything - this will succeed unless X has no fonts at all! */
-	return TryCreateFont(dpy, 0, -1, FontStyle_Normal);
-
-#endif
+#endif /* !USE_XFT_EXTENSION */
 }
 
 /*
  * Free a font set.
  */
+void XSharpFreeFontSet(Display *dpy, void *fontSet)
+{
+	XFreeFontSet(dpy, (XFontSet)fontSet);
+}
+
+/*
+ * Free a font struct.
+ */
+void XSharpFreeFontStruct(Display *dpy, void *fontSet)
+{
+	XFreeFont(dpy, (XFontStruct *)fontSet);
+}
+
+/*
+ * Free an Xft font.
+ */
 void XSharpFreeFont(Display *dpy, void *fontSet)
 {
 #ifdef USE_XFT_EXTENSION
 	XftFontClose(dpy, (XftFont *)fontSet);
-#else
-	if(FontSetIsStruct(fontSet))
-	{
-		XFreeFont(dpy, FontSetToStruct(fontSet));
-	}
-	else
-	{
-		XFreeFontSet(dpy, (XFontSet)fontSet);
-	}
 #endif
 }
 
 /*
- * Forward declaration.
+ * Forward declarations.
  */
-void XSharpTextExtents(Display *dpy, void *fontSet, const char *str,
-					   XRectangle *overall_ink_return,
-					   XRectangle *overall_logical_return);
+void XSharpTextExtentsSet(Display *dpy, void *fontSet, const char *str,
+					      XRectangle *overall_ink_return,
+					      XRectangle *overall_logical_return);
+void XSharpTextExtentsStruct(Display *dpy, void *fontSet, const char *str,
+					         XRectangle *overall_ink_return,
+					         XRectangle *overall_logical_return);
+void XSharpTextExtentsXft(Display *dpy, void *fontSet, const char *str,
+					      XRectangle *overall_ink_return,
+					      XRectangle *overall_logical_return);
 
 /*
  * Draw a string using a font set.
  */
-void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
-					  void *fontSet, int x, int y,
-					  const char *str, int style, Region clipRegion,
-					  unsigned long colorValue)
+void XSharpDrawStringSet(Display *dpy, Drawable drawable, GC gc,
+					     void *fontSet, int x, int y,
+					     const char *str, int style, Region clipRegion,
+					     unsigned long colorValue)
 {
 	XRectangle overall_ink_return;
 	XRectangle overall_logical_return;
+	XFontSetExtents *extents;
+	int line1, line2;
+
+	/* Draw the string using the core API */
+	XmbDrawString(dpy, drawable, (XFontSet)fontSet, gc, x, y,
+				  str, strlen(str));
+
+	/* Calculate the positions of the underline and strike-out */
+	if((style & FontStyle_Underline) != 0)
+	{
+		line1 = y + 2;
+	}
+	else
+	{
+		line1 = y;
+	}
+	if((style & FontStyle_StrikeOut) != 0)
+	{
+		extents = XExtentsOfFontSet((XFontSet)fontSet);
+		if(extents)
+		{
+			line2 = y + (extents->max_logical_extent.y / 2);
+		}
+		else
+		{
+			line2 = y;
+		}
+	}
+	else
+	{
+		line2 = y;
+	}
+
+	/* Draw the underline and strike-out */
+	if(line1 != y || line2 != y)
+	{
+		XSharpTextExtentsSet(dpy, fontSet, str,
+				 	         &overall_ink_return, &overall_logical_return);
+		XSetLineAttributes(dpy, gc, 1, LineSolid, CapNotLast, JoinMiter);
+		if(line1 != y)
+		{
+			XDrawLine(dpy, drawable, gc, x, line1,
+					  x + overall_logical_return.width, line1);
+		}
+		if(line2 != y)
+		{
+			XDrawLine(dpy, drawable, gc, x, line2,
+					  x + overall_logical_return.width, line2);
+		}
+	}
+}
+
+/*
+ * Draw a string using a font struct.
+ */
+void XSharpDrawStringStruct(Display *dpy, Drawable drawable, GC gc,
+					        void *fontSet, int x, int y,
+					        const char *str, int style, Region clipRegion,
+					        unsigned long colorValue)
+{
+	XRectangle overall_ink_return;
+	XRectangle overall_logical_return;
+	XFontStruct *fs = (XFontStruct *)fontSet;
+	int line1, line2;
+
+	/* Draw the string using the core API */
+	XSetFont(dpy, gc, fs->fid);
+	XDrawString(dpy, drawable, gc, x, y, str, strlen(str));
+
+	/* Calculate the positions of the underline and strike-out */
+	if((style & FontStyle_Underline) != 0)
+	{
+		line1 = y + 2;
+	}
+	else
+	{
+		line1 = y;
+	}
+	if((style & FontStyle_StrikeOut) != 0)
+	{
+		line2 = y - (fs->ascent / 2);
+	}
+	else
+	{
+		line2 = y;
+	}
+
+	/* Draw the underline and strike-out */
+	if(line1 != y || line2 != y)
+	{
+		XSharpTextExtentsStruct(dpy, fontSet, str,
+				 	            &overall_ink_return, &overall_logical_return);
+		XSetLineAttributes(dpy, gc, 1, LineSolid, CapNotLast, JoinMiter);
+		if(line1 != y)
+		{
+			XDrawLine(dpy, drawable, gc, x, line1,
+					  x + overall_logical_return.width, line1);
+		}
+		if(line2 != y)
+		{
+			XDrawLine(dpy, drawable, gc, x, line2,
+					  x + overall_logical_return.width, line2);
+		}
+	}
+}
+
+/*
+ * Draw a string using an Xft font.
+ */
+void XSharpDrawStringXft(Display *dpy, Drawable drawable, GC gc,
+					     void *fontSet, int x, int y,
+					     const char *str, int style, Region clipRegion,
+					     unsigned long colorValue)
+{
 #ifdef USE_XFT_EXTENSION
+
+	XRectangle overall_ink_return;
+	XRectangle overall_logical_return;
 	XftDraw *draw;
 	XftColor color;
 	XGCValues values;
-#else
-	XFontSetExtents *extents;
-	XFontStruct *fs = 0;
-#endif
 	int line1, line2;
-
-#ifdef USE_XFT_EXTENSION
 
 	/* TODO: 16-bit fonts */
 
@@ -398,23 +513,6 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 		XftDrawDestroy(draw);
 	}
 
-#else
-
-	/* Draw the string using the core API */
-	if(FontSetIsStruct(fontSet))
-	{
-		fs = FontSetToStruct(fontSet);
-		XSetFont(dpy, gc, fs->fid);
-		XDrawString(dpy, drawable, gc, x, y, str, strlen(str));
-	}
-	else
-	{
-		XmbDrawString(dpy, drawable, (XFontSet)fontSet, gc, x, y,
-					  str, strlen(str));
-	}
-
-#endif
-
 	/* Calculate the positions of the underline and strike-out */
 	if((style & FontStyle_Underline) != 0)
 	{
@@ -426,26 +524,7 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 	}
 	if((style & FontStyle_StrikeOut) != 0)
 	{
-	#ifdef USE_XFT_EXTENSION
 		line2 = y + (((XftFont *)fontSet)->height / 2);
-	#else
-		if(FontSetIsStruct(fontSet))
-		{
-			line2 = y - (fs->ascent / 2);
-		}
-		else
-		{
-			extents = XExtentsOfFontSet(fontSet);
-			if(extents)
-			{
-				line2 = y + (extents->max_logical_extent.y / 2);
-			}
-			else
-			{
-				line2 = y;
-			}
-		}
-	#endif
 	}
 	else
 	{
@@ -455,8 +534,8 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 	/* Draw the underline and strike-out */
 	if(line1 != y || line2 != y)
 	{
-		XSharpTextExtents(dpy, fontSet, str,
-				 	      &overall_ink_return, &overall_logical_return);
+		XSharpTextExtentsXft(dpy, fontSet, str,
+				 	         &overall_ink_return, &overall_logical_return);
 		XSetLineAttributes(dpy, gc, 1, LineSolid, CapNotLast, JoinMiter);
 		if(line1 != y)
 		{
@@ -469,14 +548,47 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 					  x + overall_logical_return.width, line2);
 		}
 	}
+#endif /* USE_XFT_EXTENSION */
 }
 
 /*
- * Calculate the extent information for a string.
+ * Calculate the extent information for a string in a font set.
  */
-void XSharpTextExtents(Display *dpy, void *fontSet, const char *str,
-					   XRectangle *overall_ink_return,
-					   XRectangle *overall_logical_return)
+void XSharpTextExtentsSet(Display *dpy, void *fontSet, const char *str,
+					      XRectangle *overall_ink_return,
+					      XRectangle *overall_logical_return)
+{
+	XmbTextExtents((XFontSet)fontSet, str, strlen(str),
+			 	   overall_ink_return, overall_logical_return);
+}
+
+/*
+ * Calculate the extent information for a string in a font struct.
+ */
+void XSharpTextExtentsStruct(Display *dpy, void *fontSet, const char *str,
+					         XRectangle *overall_ink_return,
+					         XRectangle *overall_logical_return)
+{
+	int direction, ascent, descent;
+	XCharStruct overall;
+	XTextExtents((XFontStruct *)fontSet, str, strlen(str),
+				 &direction, &ascent, &descent, &overall);
+	overall_ink_return->x = overall.lbearing;
+	overall_ink_return->y = -(overall.ascent);
+	overall_ink_return->width = overall.rbearing - overall.lbearing;
+	overall_ink_return->height = overall.ascent + overall.descent;
+	overall_logical_return->x = 0;
+	overall_logical_return->y = -ascent;
+	overall_logical_return->width = overall.width;
+	overall_logical_return->height = ascent + descent;
+}
+
+/*
+ * Calculate the extent information for a string in an Xft font.
+ */
+void XSharpTextExtentsXft(Display *dpy, void *fontSet, const char *str,
+					      XRectangle *overall_ink_return,
+					      XRectangle *overall_logical_return)
 {
 #ifdef USE_XFT_EXTENSION
 
@@ -495,36 +607,51 @@ void XSharpTextExtents(Display *dpy, void *fontSet, const char *str,
 	overall_logical_return->width = extents.x + extents.xOff;
 	overall_logical_return->height = extents.y + extents.yOff;
 
-#else
-	if(FontSetIsStruct(fontSet))
-	{
-		int direction, ascent, descent;
-		XCharStruct overall;
-		XTextExtents(FontSetToStruct(fontSet), str, strlen(str),
-					 &direction, &ascent, &descent, &overall);
-		overall_ink_return->x = overall.lbearing;
-		overall_ink_return->y = -(overall.ascent);
-		overall_ink_return->width = overall.rbearing - overall.lbearing;
-		overall_ink_return->height = overall.ascent + overall.descent;
-		overall_logical_return->x = 0;
-		overall_logical_return->y = -ascent;
-		overall_logical_return->width = overall.width;
-		overall_logical_return->height = ascent + descent;
-	}
-	else
-	{
-		XmbTextExtents((XFontSet)fontSet, str, strlen(str),
-				 	   overall_ink_return, overall_logical_return);
-	}
 #endif
 }
 
 /*
- * Calculate the extent information for a font.
+ * Calculate the extent information for a font set.
  */
-void XSharpFontExtents(void *fontSet,
-					   XRectangle *max_ink_return,
-					   XRectangle *max_logical_return)
+void XSharpFontExtentsSet(void *fontSet,
+					      XRectangle *max_ink_return,
+					      XRectangle *max_logical_return)
+{
+	XFontSetExtents *extents;
+	extents = XExtentsOfFontSet((XFontSet)fontSet);
+	if(extents)
+	{
+		*max_ink_return = extents->max_ink_extent;
+		*max_logical_return = extents->max_logical_extent;
+	}
+}
+
+/*
+ * Calculate the extent information for a font struct.
+ */
+void XSharpFontExtentsStruct(void *fontSet,
+					         XRectangle *max_ink_return,
+					         XRectangle *max_logical_return)
+{
+	XFontStruct *fs = (XFontStruct *)fontSet;
+	max_ink_return->x = fs->min_bounds.lbearing;
+	max_ink_return->y = -(fs->max_bounds.ascent);
+	max_ink_return->width =
+		fs->max_bounds.rbearing - fs->min_bounds.lbearing;
+	max_ink_return->height =
+		fs->max_bounds.ascent + fs->max_bounds.descent;
+	max_logical_return->x = 0;
+	max_logical_return->y = -(fs->ascent);
+	max_logical_return->width = fs->max_bounds.width;
+	max_logical_return->height = fs->ascent + fs->descent;
+}
+
+/*
+ * Calculate the extent information for an Xft font.
+ */
+void XSharpFontExtentsXft(void *fontSet,
+					      XRectangle *max_ink_return,
+					      XRectangle *max_logical_return)
 {
 #ifdef USE_XFT_EXTENSION
 
@@ -535,33 +662,6 @@ void XSharpFontExtents(void *fontSet,
 	max_logical_return->height = ((XftFont *)fontSet)->ascent +
 								 ((XftFont *)fontSet)->descent;
 	*max_ink_return = *max_logical_return;
-
-#else
-
-	XFontSetExtents *extents;
-	if(FontSetIsStruct(fontSet))
-	{
-		XFontStruct *fs = FontSetToStruct(fontSet);
-		max_ink_return->x = fs->min_bounds.lbearing;
-		max_ink_return->y = -(fs->max_bounds.ascent);
-		max_ink_return->width =
-			fs->max_bounds.rbearing - fs->min_bounds.lbearing;
-		max_ink_return->height =
-			fs->max_bounds.ascent + fs->max_bounds.descent;
-		max_logical_return->x = 0;
-		max_logical_return->y = -(fs->ascent);
-		max_logical_return->width = fs->max_bounds.width;
-		max_logical_return->height = fs->ascent + fs->descent;
-	}
-	else
-	{
-		extents = XExtentsOfFontSet((XFontSet)fontSet);
-		if(extents)
-		{
-			*max_ink_return = extents->max_ink_extent;
-			*max_logical_return = extents->max_logical_extent;
-		}
-	}
 
 #endif
 }
@@ -1388,35 +1488,110 @@ int XNextEventWithTimeout(void *dpy, void *event, int timeout)
 	return -1;
 }
 
-void *XSharpCreateFont(void *dpy, const char *family, int pointSize, int style)
+int XSharpUseXft()
 {
 	/* Nothing to do here */
 	return 0;
 }
 
-void XSharpFreeFont(void *dpy, void *fontSet)
+void *XSharpCreateFontSet(void *dpy, const char *family,
+						  int pointSize, int style)
+{
+	/* Nothing to do here */
+	return 0;
+}
+
+void XSharpFreeFontSet(void *dpy, void *fontSet)
 {
 	/* Nothing to do here */
 }
 
-void XSharpDrawString(void *dpy, unsigned long drawable, void *gc,
-					  void *fontSet, int x, int y,
-					  const char *str, int style, void *clipRegion,
-					  unsigned long colorValue)
+void XSharpDrawStringSet(void *dpy, unsigned long drawable, void *gc,
+					     void *fontSet, int x, int y,
+					     const char *str, int style, void *clipRegion,
+					     unsigned long colorValue)
 {
 	/* Nothing to do here */
 }
 
-void XSharpTextExtents(void *dpy, void *fontSet, const char *str,
-					   void *overall_ink_return,
-					   void *overall_logical_return)
+void XSharpTextExtentsSet(void *dpy, void *fontSet, const char *str,
+					      void *overall_ink_return,
+					      void *overall_logical_return)
 {
 	/* Nothing to do here */
 }
 
-void XSharpFontExtents(void *fontSet,
-					   void *max_ink_return,
-					   void *max_logical_return)
+void XSharpFontExtentsSet(void *fontSet,
+					      void *max_ink_return,
+					      void *max_logical_return)
+{
+	/* Nothing to do here */
+}
+
+void *XSharpCreateFontStruct(void *dpy, const char *family,
+							 int pointSize, int style)
+{
+	/* Nothing to do here */
+	return 0;
+}
+
+void XSharpFreeFontStruct(void *dpy, void *fontSet)
+{
+	/* Nothing to do here */
+}
+
+void XSharpDrawStringStruct(void *dpy, unsigned long drawable, void *gc,
+					        void *fontSet, int x, int y,
+					        const char *str, int style, void *clipRegion,
+					        unsigned long colorValue)
+{
+	/* Nothing to do here */
+}
+
+void XSharpTextExtentsStruct(void *dpy, void *fontSet, const char *str,
+					         void *overall_ink_return,
+					         void *overall_logical_return)
+{
+	/* Nothing to do here */
+}
+
+void XSharpFontExtentsStruct(void *fontSet,
+					         void *max_ink_return,
+					         void *max_logical_return)
+{
+	/* Nothing to do here */
+}
+
+void *XSharpCreateFontXft(void *dpy, const char *family,
+						  int pointSize, int style)
+{
+	/* Nothing to do here */
+	return 0;
+}
+
+void XSharpFreeFontXft(void *dpy, void *fontSet)
+{
+	/* Nothing to do here */
+}
+
+void XSharpDrawStringXft(void *dpy, unsigned long drawable, void *gc,
+					     void *fontSet, int x, int y,
+					     const char *str, int style, void *clipRegion,
+					     unsigned long colorValue)
+{
+	/* Nothing to do here */
+}
+
+void XSharpTextExtentsXft(void *dpy, void *fontSet, const char *str,
+					      void *overall_ink_return,
+					      void *overall_logical_return)
+{
+	/* Nothing to do here */
+}
+
+void XSharpFontExtentsXft(void *fontSet,
+					      void *max_ink_return,
+					      void *max_logical_return)
 {
 	/* Nothing to do here */
 }

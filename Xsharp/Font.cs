@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using System.Text;
 using Xsharp.Types;
 
 /// <summary>
@@ -41,11 +42,11 @@ public class Font
 	} // class FontInfo
 
 	// Internal state.
-	private String family;
-	private int pointSize;
-	private FontStyle style;
-	private String xname;
-	private FontInfo infoList;
+	internal String family;
+	internal int pointSize;
+	internal FontStyle style;
+	internal String xname;
+	internal FontInfo infoList;
 
 	/// <summary>
 	/// <para>The family name for the default sans-serif font.</para>
@@ -202,6 +203,25 @@ public class Font
 						pointSize + (int)style);
 			}
 
+	// Determine if we appear to be running in a Latin1 locale.
+	// We can optimize font handling a little if we are.
+	private static bool IsLatin1()
+			{
+			#if !ECMA_COMPAT
+				int codePage = Encoding.Default.WindowsCodePage;
+			#else
+				int codePage = Encoding.Default.GetHashCode();
+			#endif
+				if(codePage == 1252 || codePage == 28591)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+
 	/// <summary>
 	/// <para>Constructs a new instance of <see cref="T:Xsharp.Font"/>.
 	/// </para>
@@ -230,7 +250,18 @@ public class Font
 					// TODO: we will need to map this differently in future.
 					family = SansSerif;
 				}
-				return new Font(family, pointSize, style);
+				if(Xlib.XSharpUseXft() != 0)
+				{
+					return new XftFont(family, pointSize, style);
+				}
+				else if(IsLatin1())
+				{
+					return new FontStructFont(family, pointSize, style);
+				}
+				else
+				{
+					return new Font(family, pointSize, style);
+				}
 			}
 
 	/// <summary>
@@ -385,7 +416,7 @@ public class Font
 				try
 				{
 					IntPtr display = graphics.dpy.Lock();
-					Xlib.XSharpTextExtents
+					Xlib.XSharpTextExtentsSet
 						(display, fontSet, str,
 						 out overall_ink, out overall_logical);
 				}
@@ -481,7 +512,7 @@ public class Font
 				try
 				{
 					IntPtr display = graphics.dpy.Lock();
-					Xlib.XSharpDrawString
+					Xlib.XSharpDrawStringSet
 							(display, graphics.drawableHandle, graphics.gc,
 							 fontSet, x, y, str, (int)style,
 							 IntPtr.Zero, graphics.Foreground.value);
@@ -522,7 +553,7 @@ public class Font
 
 	// Normalize a point size to make it match a nearby X font size so
 	// that we don't get unsightly stretching.
-	private static int NormalizePointSize(int pointSize)
+	internal static int NormalizePointSize(int pointSize)
 			{
 				if(pointSize < 90)
 				{
@@ -552,6 +583,44 @@ public class Font
 				{
 					return pointSize;
 				}
+			}
+
+	// Create a native "font set" structure.
+	internal virtual IntPtr CreateFontSet
+				(IntPtr display, out int ascent, out int descent,
+				 out int maxWidth)
+			{
+				XRectangle max_ink;
+				XRectangle max_logical;
+				IntPtr fontSet;
+
+				// Create the raw X font set structure.
+				fontSet = Xlib.XSharpCreateFontSet
+					(display, family,
+					 NormalizePointSize(pointSize), (int)style);
+
+				// Get the extent information for the font.
+				Xlib.XSharpFontExtentsSet
+					(fontSet, out max_ink, out max_logical);
+
+				// Convert the extent information into values that make sense.
+				ascent = -(max_logical.y);
+				descent = max_logical.height + max_logical.y;
+				maxWidth = max_logical.width;
+
+				// Increase the descent to account for underlining.
+				// We always draw the underline two pixels below
+				// the font base line.
+				if((style & FontStyle.Underlined) != 0)
+				{
+					if(descent < 3)
+					{
+						descent = 3;
+					}
+				}
+
+				// Return the font set structure to the caller.
+				return fontSet;
 			}
 
 	// Get the XFontSet structure for this font on a particular display.
@@ -587,12 +656,12 @@ public class Font
 
 					// Create a new font set.
 					IntPtr fontSet;
+					int ascent, descent, maxWidth;
 					try
 					{
 						IntPtr display = dpy.Lock();
-						fontSet = Xlib.XSharpCreateFont
-							(display, family,
-							 NormalizePointSize(pointSize), (int)style);
+						fontSet = CreateFontSet
+							(display, out ascent, out descent, out maxWidth);
 						if(fontSet == IntPtr.Zero)
 						{
 							extents = null;
@@ -607,7 +676,7 @@ public class Font
 					// Associate the font set with the display.
 					info = new FontInfo();
 					info.next = font.infoList;
-					info.extents = new FontExtents(font, fontSet);
+					info.extents = new FontExtents(ascent, descent, maxWidth);
 					info.dpy = dpy;
 					info.fontSet = fontSet;
 					font.infoList = info;
@@ -616,6 +685,12 @@ public class Font
 					extents = info.extents;
 					return fontSet;
 				}
+			}
+
+	// Free a native "font set" structure.
+	internal virtual void FreeFontSet(IntPtr display, IntPtr fontSet)
+			{
+				Xlib.XSharpFreeFontSet(display, fontSet);
 			}
 
 	// Disassociate this font from a particular display.
@@ -641,10 +716,326 @@ public class Font
 						{
 							infoList = info.next;
 						}
-						Xlib.XSharpFreeFont(dpy.dpy, info.fontSet);
+						FreeFontSet(dpy.dpy, info.fontSet);
 					}
 				}
 			}
+
+	// Font class that uses XFontStruct values instead of XFontSet values.
+	private class FontStructFont : Font
+	{
+		// Constructor.
+		public FontStructFont(String family, int pointSize, FontStyle style)
+				: base(family, pointSize, style) {}
+
+		// Create a native "font set" structure.
+		internal override IntPtr CreateFontSet
+					(IntPtr display, out int ascent, out int descent,
+					 out int maxWidth)
+				{
+					XRectangle max_ink;
+					XRectangle max_logical;
+					IntPtr fontSet;
+
+					// Create the raw X font set structure.
+					fontSet = Xlib.XSharpCreateFontStruct
+						(display, family,
+						 NormalizePointSize(pointSize), (int)style);
+
+					// Get the extent information for the font.
+					Xlib.XSharpFontExtentsStruct
+						(fontSet, out max_ink, out max_logical);
+
+					// Convert the extent info into values that make sense.
+					ascent = -(max_logical.y);
+					descent = max_logical.height + max_logical.y;
+					maxWidth = max_logical.width;
+
+					// Increase the descent to account for underlining.
+					// We always draw the underline two pixels below
+					// the font base line.
+					if((style & FontStyle.Underlined) != 0)
+					{
+						if(descent < 3)
+						{
+							descent = 3;
+						}
+					}
+
+					// Return the font set structure to the caller.
+					return fontSet;
+				}
+
+		// Free a native "font set" structure.
+		internal override void FreeFontSet(IntPtr display, IntPtr fontSet)
+				{
+					Xlib.XSharpFreeFontStruct(display, fontSet);
+				}
+
+		// Override the font drawing primitives.
+		public override void MeasureString
+					(Graphics graphics, String str, int index, int count,
+					 out int width, out int ascent, out int descent)
+				{
+					// Validate the parameters.
+					if(graphics == null)
+					{
+						throw new ArgumentNullException("graphics");
+					}
+					if(str == null || count == 0)
+					{
+						width = 0;
+						ascent = 0;
+						descent = 0;
+						return;
+					}
+
+					// Extract the substring to be measured.
+					// TODO: make this more efficient by avoiding the data copy.
+					str = str.Substring(index, count);
+
+					// Get the font set to use to measure the string.
+					IntPtr fontSet = GetFontSet(graphics.dpy);
+					if(fontSet == IntPtr.Zero)
+					{
+						width = 0;
+						ascent = 0;
+						descent = 0;
+						return;
+					}
+
+					// Get the text extents and decode them into useful values.
+					XRectangle overall_ink;
+					XRectangle overall_logical;
+					try
+					{
+						IntPtr display = graphics.dpy.Lock();
+						Xlib.XSharpTextExtentsStruct
+							(display, fontSet, str,
+							 out overall_ink, out overall_logical);
+					}
+					finally
+					{
+						graphics.dpy.Unlock();
+					}
+					width = overall_logical.width;
+					ascent = -(overall_logical.y);
+					descent = overall_logical.height + overall_logical.y;
+
+					// Increase the descent to account for underlining.
+					// We always draw the underline two pixels below
+					// the font base line.
+					if((style & FontStyle.Underlined) != 0)
+					{
+						if(descent < 3)
+						{
+							descent = 3;
+						}
+					}
+				}
+		public override void DrawString
+					(Graphics graphics, int x, int y,
+					 String str, int index, int count)
+				{
+					// Validate the parameters.
+					if(x < -32768 || x > 32767 || y < -32768 || y > 32767)
+					{
+						throw new XException(S._("X_PointCoordRange"));
+					}
+					if(graphics == null)
+					{
+						throw new ArgumentNullException("graphics");
+					}
+					if(str == null || count == 0)
+					{
+						return;
+					}
+
+					// Extract the substring to be measured.
+					// TODO: make this more efficient by avoiding the data copy.
+					str = str.Substring(index, count);
+
+					// Get the font set to use for the font.
+					IntPtr fontSet = GetFontSet(graphics.dpy);
+					if(fontSet == IntPtr.Zero)
+					{
+						return;
+					}
+
+					// Draw the string using the specified font set.
+					try
+					{
+						IntPtr display = graphics.dpy.Lock();
+						Xlib.XSharpDrawStringStruct
+								(display, graphics.drawableHandle, graphics.gc,
+								 fontSet, x, y, str, (int)style,
+								 IntPtr.Zero, graphics.Foreground.value);
+					}
+					finally
+					{
+						graphics.dpy.Unlock();
+					}
+				}
+
+	} // class FontStructFont
+
+	// Font class that uses Xft to perform the rendering operations.
+	private class XftFont : Font
+	{
+		// Constructor.
+		public XftFont(String family, int pointSize, FontStyle style)
+				: base(family, pointSize, style) {}
+
+		// Create a native "font set" structure.
+		internal override IntPtr CreateFontSet
+					(IntPtr display, out int ascent, out int descent,
+					 out int maxWidth)
+				{
+					XRectangle max_ink;
+					XRectangle max_logical;
+					IntPtr fontSet;
+
+					// Create the raw X font set structure.
+					fontSet = Xlib.XSharpCreateFontXft
+						(display, family,
+						 NormalizePointSize(pointSize), (int)style);
+
+					// Get the extent information for the font.
+					Xlib.XSharpFontExtentsXft
+						(fontSet, out max_ink, out max_logical);
+
+					// Convert the extent info into values that make sense.
+					ascent = -(max_logical.y);
+					descent = max_logical.height + max_logical.y;
+					maxWidth = max_logical.width;
+
+					// Increase the descent to account for underlining.
+					// We always draw the underline two pixels below
+					// the font base line.
+					if((style & FontStyle.Underlined) != 0)
+					{
+						if(descent < 3)
+						{
+							descent = 3;
+						}
+					}
+
+					// Return the font set structure to the caller.
+					return fontSet;
+				}
+
+		// Free a native "font set" structure.
+		internal override void FreeFontSet(IntPtr display, IntPtr fontSet)
+				{
+					Xlib.XSharpFreeFontXft(display, fontSet);
+				}
+
+		// Override the font drawing primitives.
+		public override void MeasureString
+					(Graphics graphics, String str, int index, int count,
+					 out int width, out int ascent, out int descent)
+				{
+					// Validate the parameters.
+					if(graphics == null)
+					{
+						throw new ArgumentNullException("graphics");
+					}
+					if(str == null || count == 0)
+					{
+						width = 0;
+						ascent = 0;
+						descent = 0;
+						return;
+					}
+
+					// Extract the substring to be measured.
+					// TODO: make this more efficient by avoiding the data copy.
+					str = str.Substring(index, count);
+
+					// Get the font set to use to measure the string.
+					IntPtr fontSet = GetFontSet(graphics.dpy);
+					if(fontSet == IntPtr.Zero)
+					{
+						width = 0;
+						ascent = 0;
+						descent = 0;
+						return;
+					}
+
+					// Get the text extents and decode them into useful values.
+					XRectangle overall_ink;
+					XRectangle overall_logical;
+					try
+					{
+						IntPtr display = graphics.dpy.Lock();
+						Xlib.XSharpTextExtentsXft
+							(display, fontSet, str,
+							 out overall_ink, out overall_logical);
+					}
+					finally
+					{
+						graphics.dpy.Unlock();
+					}
+					width = overall_logical.width;
+					ascent = -(overall_logical.y);
+					descent = overall_logical.height + overall_logical.y;
+
+					// Increase the descent to account for underlining.
+					// We always draw the underline two pixels below
+					// the font base line.
+					if((style & FontStyle.Underlined) != 0)
+					{
+						if(descent < 3)
+						{
+							descent = 3;
+						}
+					}
+				}
+		public override void DrawString
+					(Graphics graphics, int x, int y,
+					 String str, int index, int count)
+				{
+					// Validate the parameters.
+					if(x < -32768 || x > 32767 || y < -32768 || y > 32767)
+					{
+						throw new XException(S._("X_PointCoordRange"));
+					}
+					if(graphics == null)
+					{
+						throw new ArgumentNullException("graphics");
+					}
+					if(str == null || count == 0)
+					{
+						return;
+					}
+
+					// Extract the substring to be measured.
+					// TODO: make this more efficient by avoiding the data copy.
+					str = str.Substring(index, count);
+
+					// Get the font set to use for the font.
+					IntPtr fontSet = GetFontSet(graphics.dpy);
+					if(fontSet == IntPtr.Zero)
+					{
+						return;
+					}
+
+					// Draw the string using the specified font set.
+					try
+					{
+						IntPtr display = graphics.dpy.Lock();
+						Xlib.XSharpDrawStringXft
+								(display, graphics.drawableHandle, graphics.gc,
+								 fontSet, x, y, str, (int)style,
+								 IntPtr.Zero, graphics.Foreground.value);
+					}
+					finally
+					{
+						graphics.dpy.Unlock();
+					}
+				}
+
+	} // class XftFont
 
 } // class Font
 

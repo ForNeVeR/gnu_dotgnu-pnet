@@ -4,6 +4,9 @@
 	* System.Xml/XmlConvert.cs: implement "ToGuid" and "ToString(Guid)"
 	(thanks to Dennis Hayes <denisraytek@yahoo.com>).
 
+	* runtime/System/Globalization/HebrewCalendar.cs: implement the
+	missing functionality in HebrewCalendar.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Uri.cs: Remove multiple static constructors in the code.

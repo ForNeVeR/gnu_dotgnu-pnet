@@ -34,6 +34,7 @@ public class HebrewCalendar : Calendar
 	private const int DefaultTwoDigitYearMax = 5790;
 	private const int MinYear = 5343;
 	private const int MaxYear = 6000;
+	private const int Year1AD = 3760;
 
 	// There are 1080 "parts" per hour.
 	private const int PartsPerHour = 1080;
@@ -50,6 +51,21 @@ public class HebrewCalendar : Calendar
 	// The time of the new moon in parts on the first day in the
 	// Hebrew calendar (1 Tishri, year 1 which is approx 6 Oct 3761 BC).
 	private const int FirstNewMoon = 11 * PartsPerHour + 204;
+
+	// Number of days in each month for deficient, regular,
+	// and complete years in both normal and leap variants.
+	private static readonly int[] daysPerMonthDeficient =
+			{30, 29, 29, 29, 30, 29, 30, 29, 30, 29, 30, 29};
+	private static readonly int[] daysPerMonthDeficientLeap =
+			{30, 29, 29, 29, 30, 30, 29, 30, 29, 30, 29, 30, 29};
+	private static readonly int[] daysPerMonthRegular =
+			{30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29};
+	private static readonly int[] daysPerMonthRegularLeap =
+			{30, 29, 30, 29, 30, 30, 29, 30, 29, 30, 29, 30, 29};
+	private static readonly int[] daysPerMonthComplete =
+			{30, 30, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29};
+	private static readonly int[] daysPerMonthCompleteLeap =
+			{30, 30, 30, 29, 30, 30, 29, 30, 29, 30, 29, 30, 29};
 
 	// Constructor.
 	public HebrewCalendar()
@@ -90,7 +106,15 @@ public class HebrewCalendar : Calendar
 	// Determine if a year value is a Hebrew leap year.
 	private static bool IsHebrewLeapYear(int year)
 			{
-				return (((year * 12 + 17) % 19) >= 12);
+				switch(year % 19)
+				{
+					case 0: case 3: case 6: case 8:
+					case 11: case 14: case 17:
+						return true;
+
+					default:
+						return false;
+				}
 			}
 
 	// Get the absolute day number that starts a particular year.
@@ -136,57 +160,225 @@ public class HebrewCalendar : Calendar
 				return day;
 			}
 
+	// Get the month table for a specific year.
+	private static int[] GetMonthTable(int year)
+			{
+				switch((int)(StartOfYear(year + 1) - StartOfYear(year)))
+				{
+					case 353: return daysPerMonthDeficient;
+					case 383: return daysPerMonthDeficientLeap;
+
+					case 354: return daysPerMonthRegular;
+					case 384: return daysPerMonthRegularLeap;
+
+					case 355: return daysPerMonthComplete;
+					case 385: return daysPerMonthCompleteLeap;
+
+					// Shouldn't happen.
+					default: throw new ArgumentOutOfRangeException();
+				}
+			}
+
 	// Add a time period to a DateTime value.
-	[TODO]
 	public override DateTime AddMonths(DateTime time, int months)
 			{
-				// TODO
-				return new DateTime(0);
+				// Pull the time value apart.
+				int year = GetYear(time);
+				int month = GetMonth(time);
+				int day = GetDayOfMonth(time);
+
+				// Increment or decrement the month and year values.
+				int monthsInYear;
+				if(months > 0)
+				{
+					while(months > 0)
+					{
+						monthsInYear = GetMonthsInYear(year, CurrentEra);
+						if(months <= monthsInYear)
+						{
+							month += months;
+							months = 0;
+						}
+						else
+						{
+							month += monthsInYear;
+							months -= monthsInYear;
+						}
+						if(month > monthsInYear)
+						{
+							++year;
+							month -= monthsInYear;
+						}
+					}
+				}
+				else if(months < 0)
+				{
+					months = -months;
+					while(months > 0)
+					{
+						if(month > months)
+						{
+							month -= months;
+							months = 0;
+						}
+						else
+						{
+							months -= month;
+							--year;
+							month = GetMonthsInYear(year, CurrentEra);
+						}
+					}
+				}
+
+				// Adjust the day down if it is beyond the end of the month.
+				int daysInMonth = GetDaysInMonth(year, month, CurrentEra);
+				if(day > daysInMonth)
+				{
+					day = daysInMonth;
+				}
+
+				// Build and return the new DateTime value.
+				return ToDateTime(year, month, day,
+								  time.Ticks % TimeSpan.TicksPerDay,
+								  CurrentEra);
 			}
-	[TODO]
 	public override DateTime AddYears(DateTime time, int years)
 			{
-				// TODO
-				return new DateTime(0);
+				// Pull the time value apart and increment it.
+				int year = GetYear(time) + years;
+				int month = GetMonth(time);
+				int day = GetDayOfMonth(time);
+
+				// Range-check the month and day values.
+				int monthsInYear = GetMonthsInYear(year, CurrentEra);
+				if(month > monthsInYear)
+				{
+					month = monthsInYear;
+				}
+				int daysInMonth = GetDaysInMonth(year, month, CurrentEra);
+				if(day > daysInMonth)
+				{
+					day = daysInMonth;
+				}
+
+				// Build and return the new DateTime value.
+				return ToDateTime(year, month, day,
+								  time.Ticks % TimeSpan.TicksPerDay,
+								  CurrentEra);
 			}
 
 	// Extract the components from a DateTime value.
-	[TODO]
 	public override int GetDayOfMonth(DateTime time)
 			{
-				// TODO
-				return 0;
+				// Get the day of the year.
+				int year = GetYear(time);
+				long yearDays = StartOfYear(year) - StartOfYear(Year1AD);
+				int day = (int)((time.Ticks / TimeSpan.TicksPerDay) - yearDays);
+
+				// Get the month table for this year.
+				int[] table = GetMonthTable(year);
+
+				// Scan forward until we find the right month.
+				int posn = 0;
+				while(posn < 12 && day >= table[posn])
+				{
+					day -= table[posn];
+					++posn;
+				}
+				return day + 1;
 			}
 	public override System.DayOfWeek GetDayOfWeek(DateTime time)
 			{
 				// The Gregorian and Hebrew weekdays are identical.
 				return time.DayOfWeek;
 			}
-	[TODO]
 	public override int GetDayOfYear(DateTime time)
 			{
-				// TODO
-				return 0;
+				int year = GetYear(time);
+				long yearDays = StartOfYear(year) - StartOfYear(Year1AD);
+				return (int)(((time.Ticks /
+								TimeSpan.TicksPerDay) - yearDays) + 1);
 			}
-	[TODO]
 	public override int GetMonth(DateTime time)
 			{
-				// TODO
-				return 0;
+				// Get the day of the year.
+				int year = GetYear(time);
+				long yearDays = StartOfYear(year) - StartOfYear(Year1AD);
+				int day = (int)((time.Ticks / TimeSpan.TicksPerDay) - yearDays);
+
+				// Get the month table for this year.
+				int[] table = GetMonthTable(year);
+
+				// Scan forward until we find the right month.
+				int posn = 0;
+				while(posn < 12 && day >= table[posn])
+				{
+					day -= table[posn];
+					++posn;
+				}
+				return posn + 1;
 			}
-	[TODO]
 	public override int GetYear(DateTime time)
 			{
-				// TODO
-				return 0;
+				// Get the absolute day number for "time".
+				long day = time.Ticks / TimeSpan.TicksPerDay;
+				day += StartOfYear(Year1AD);
+
+				// Perform a range check on MinYear and MaxYear.
+				if(day < StartOfYear(MinYear) ||
+				   day >= StartOfYear(MaxYear + 1))
+				{
+					throw new ArgumentOutOfRangeException
+						("year", _("ArgRange_Year"));
+				}
+
+				// Perform a binary search for the year.  There is probably
+				// a smarter way to do this algorithmically, but this version
+				// is easier to understand and debug.  The maximum number
+				// of search steps will be ceil(log2(MaxYear - MinYear)) = 10.
+				int left, right, middle;
+				long start;
+				left = MinYear;
+				right = MaxYear;
+				while(left <= right)
+				{
+					middle = (left + right) / 2;
+					start = StartOfYear(middle);
+					if(day < start)
+					{
+						right = middle - 1;
+					}
+					else if(day >= start && day < StartOfYear(middle + 1))
+					{
+						return middle;
+					}
+					else
+					{
+						left = middle + 1;
+					}
+				}
+				return left;
 			}
 
 	// Get the number of days in a particular month.
-	[TODO]
 	public override int GetDaysInMonth(int year, int month, int era)
 			{
-				// TODO
-				return 0;
+				// Get the number of months in the year, which will
+				// also validate "year" and "era".
+				int monthsInYear = GetMonthsInYear(year, era);
+
+				// Validate the month value.
+				if(month < 1 || month > monthsInYear)
+				{
+					throw new ArgumentOutOfRangeException
+						("month", _("ArgRange_Month"));
+				}
+
+				// Get the days per month table for this year.
+				int[] table = GetMonthTable(year);
+
+				// Return the number of days in the month.
+				return table[month - 1];
 			}
 
 	// Get the number of days in a particular year.
@@ -233,19 +425,58 @@ public class HebrewCalendar : Calendar
 			}
 
 	// Determine if a particular day is a leap day.
-	[TODO]
 	public override bool IsLeapDay(int year, int month, int day, int era)
 			{
-				// TODO
+				// Validate the day value.  "GetDaysInMonth" will
+				// take care of validating the year, month, and era.
+				if(day > GetDaysInMonth(year, month, era) || day < 1)
+				{
+					throw new ArgumentOutOfRangeException
+						("day", _("ArgRange_Day"));
+				}
+
+				// Every day in a leap month is a leap year.
+				if(IsLeapMonth(year, month, era))
+				{
+					return true;
+				}
+
+				// Is this a leap year?
+				if(IsHebrewLeapYear(year))
+				{
+					// The 30th day of the 6th month is a leap day.
+					if(month == 6 && day == 30)
+					{
+						return true;
+					}
+				}
+
+				// All other days are regular days.
 				return false;
 			}
 
 	// Determine if a particular month is a leap month.
-	[TODO]
 	public override bool IsLeapMonth(int year, int month, int era)
 			{
-				// TODO
-				return false;
+				if(era != CurrentEra && era != HebrewEra)
+				{
+					throw new ArgumentException(_("Arg_InvalidEra"));
+				}
+				if(year < MinYear || year > MaxYear)
+				{
+					throw new ArgumentOutOfRangeException
+						("year", _("ArgRange_Year"));
+				}
+				if(month < 1 || month > GetMonthsInYear(year, era))
+				{
+					throw new ArgumentOutOfRangeException
+						("month", _("ArgRange_Month"));
+				}
+				if(!IsHebrewLeapYear(year))
+				{
+					return false;
+				}
+				return (month == 7);
 			}
 
 	// Determine if a particular year is a leap year.
@@ -264,13 +495,54 @@ public class HebrewCalendar : Calendar
 			}
 
 	// Convert a particular time into a DateTime value.
-	[TODO]
+	public DateTime ToDateTime(int year, int month, int day,
+							   long tickOffset, int era)
+			{
+				// Validate the parameters.
+				if(era != CurrentEra && era != HebrewEra)
+				{
+					throw new ArgumentException(_("Arg_InvalidEra"));
+				}
+				if(year < MinYear || year > MaxYear)
+				{
+					throw new ArgumentOutOfRangeException
+						("year", _("ArgRange_Year"));
+				}
+				int monthsInYear = GetMonthsInYear(year, era);
+				if(month < 1 || month > monthsInYear)
+				{
+					throw new ArgumentOutOfRangeException
+						("month", _("ArgRange_Month"));
+				}
+				int daysInMonth = GetDaysInMonth(year, month, era);
+				if(day < 1 || day > daysInMonth)
+				{
+					throw new ArgumentOutOfRangeException
+						("day", _("ArgRange_Day"));
+				}
+
+				// Convert the Hebrew date into a Gregorian date.
+				// We do this by calculating the number of days since
+				// 1 January 0001 AD, which is Hebrew 01/01/3760.
+				long days = StartOfYear(year) - StartOfYear(Year1AD) + day - 1;
+				int[] table = GetMonthTable(year);
+				int posn;
+				for(posn = 1; posn < month; ++posn)
+				{
+					days += table[posn - 1];
+				}
+
+				// Build the DateTime value and return it.
+				return new DateTime(days * TimeSpan.TicksPerDay + tickOffset);
+			}
 	public override DateTime ToDateTime(int year, int month, int day,
 										int hour, int minute, int second,
 										int millisecond, int era)
 			{
-				// TODO
-				return new DateTime(0);
+				long ticks;
+				ticks = DateTime.TimeToTicks(hour, minute, second);
+				ticks += ((long)millisecond) * TimeSpan.TicksPerMillisecond;
+				return ToDateTime(year, month, day, ticks, era);
 			}
 
 	// Convert a two-digit year value into a four-digit year value.

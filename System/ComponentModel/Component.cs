@@ -26,6 +26,7 @@ namespace System.ComponentModel
 
 using System;
 
+[DesignerCategory("Component")]
 public class Component : MarshalByRefObject, IComponent, IDisposable
 {
 	// Internal state.
@@ -43,6 +44,8 @@ public class Component : MarshalByRefObject, IComponent, IDisposable
 			}
 
 	// Get this component's container.
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
 	public IContainer Container
 			{
 				get
@@ -59,6 +62,8 @@ public class Component : MarshalByRefObject, IComponent, IDisposable
 			}
 
 	// Determine if this component is in "design mode".
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
 	protected bool DesignMode
 			{
 				get
@@ -91,6 +96,8 @@ public class Component : MarshalByRefObject, IComponent, IDisposable
 			}
 
 	// Get or set the site associated with this component.
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
 	public virtual ISite Site
 			{
 				get
@@ -104,6 +111,8 @@ public class Component : MarshalByRefObject, IComponent, IDisposable
 			}
 
 	// Event that is raised when a component is disposed.
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+	[Browsable(false)]
 	public event EventHandler Disposed
 			{
 				add

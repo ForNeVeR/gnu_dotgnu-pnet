@@ -24,13 +24,15 @@ namespace System.ComponentModel
 
 #if CONFIG_COMPONENT_MODEL
 
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.All)]
 public sealed class LocalizableAttribute : Attribute
 {
 	// Internal state.
 	private bool localizable;
 
 	// Pre-defined attribute values.
+	public static readonly LocalizableAttribute Default
+			= new LocalizableAttribute(false);
 	public static readonly LocalizableAttribute No
 			= new LocalizableAttribute(false);
 	public static readonly LocalizableAttribute Yes
@@ -49,6 +51,32 @@ public sealed class LocalizableAttribute : Attribute
 				{
 					return localizable;
 				}
+			}
+
+	// Determine if two objects are equal.
+	public override bool Equals(Object obj)
+			{
+				LocalizableAttribute other = (obj as LocalizableAttribute);
+				if(other != null)
+				{
+					return (localizable == other.localizable);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this object.
+	public override int GetHashCode()
+			{
+				return (localizable ? 1 : 0);
+			}
+
+	// Determine if this attribute has the default value.
+	public override bool IsDefaultAttribute()
+			{
+				return !localizable;
 			}
 
 }; // class LocalizableAttribute

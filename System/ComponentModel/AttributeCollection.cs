@@ -53,21 +53,21 @@ public class AttributeCollection : ICollection, IEnumerable
 			{
 				coll.CopyTo(array, index);
 			}
-	public int Count
+	int ICollection.Count
 			{
 				get
 				{
 					return coll.Count;
 				}
 			}
-	public bool IsSynchronized
+	bool ICollection.IsSynchronized
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public Object SyncRoot
+	Object ICollection.SyncRoot
 			{
 				get
 				{
@@ -76,9 +76,18 @@ public class AttributeCollection : ICollection, IEnumerable
 			}
 
 	// Implement the IEnumerable interface.
-	public IEnumerator GetEnumerator()
+	IEnumerator IEnumerable.GetEnumerator()
 			{
 				return coll.GetEnumerator();
+			}
+
+	// Get the number of elements in this collection.
+	public int Count
+			{
+				get
+				{
+					return coll.Count;
+				}
 			}
 
 	// Get an element from this collection, by index.
@@ -150,6 +159,12 @@ public class AttributeCollection : ICollection, IEnumerable
 						return null;
 					}
 				}
+			}
+
+	// Get an enumerator for this collection.
+	public IEnumerator GetEnumerator()
+			{
+				return coll.GetEnumerator();
 			}
 
 	// Determine if an attribute matches something in the collection.

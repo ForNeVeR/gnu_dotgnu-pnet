@@ -1,6 +1,6 @@
 /*
- * RunInstallerAttribute.cs - Implementation of the
- *		"System.ComponentModel.RunInstallerAttribute" class.
+ * MergablePropertyAttribute.cs - Implementation of the
+ *			"System.ComponentModel.MergablePropertyAttribute" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,46 +22,45 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
-using System;
-
-[AttributeUsage(AttributeTargets.Class)]
-public class RunInstallerAttribute : Attribute
+[AttributeUsage(AttributeTargets.All)]
+public sealed class MergablePropertyAttribute : Attribute
 {
 	// Internal state.
-	private bool runInstaller;
+	private bool allowMerge;
 
-	// Builtin attribute values.
-	public static readonly RunInstallerAttribute Default
-			= new RunInstallerAttribute(false);
-	public static readonly RunInstallerAttribute No
-			= new RunInstallerAttribute(false);
-	public static readonly RunInstallerAttribute Yes
-			= new RunInstallerAttribute(true);
+	// Pre-defined attribute values.
+	public static readonly MergablePropertyAttribute Default
+			= new MergablePropertyAttribute(false);
+	public static readonly MergablePropertyAttribute No
+			= new MergablePropertyAttribute(false);
+	public static readonly MergablePropertyAttribute Yes
+			= new MergablePropertyAttribute(true);
 
 	// Constructor.
-	public RunInstallerAttribute(bool runInstaller)
+	public MergablePropertyAttribute(bool allowMerge)
 			{
-				this.runInstaller = runInstaller;
+				this.allowMerge = allowMerge;
 			}
 
-	// Determine if the installer should be run.
-	public bool RunInstaller
+	// Get the attribute's value.
+	public bool AllowMerge
 			{
 				get
 				{
-					return runInstaller;
+					return allowMerge;
 				}
 			}
 
-	// Determine if two object are equal.
+	// Determine if two objects are equal.
 	public override bool Equals(Object obj)
 			{
-				RunInstallerAttribute other = (obj as RunInstallerAttribute);
+				MergablePropertyAttribute other =
+					(obj as MergablePropertyAttribute);
 				if(other != null)
 				{
-					return (other.runInstaller == runInstaller);
+					return (allowMerge == other.allowMerge);
 				}
 				else
 				{
@@ -72,17 +71,17 @@ public class RunInstallerAttribute : Attribute
 	// Get the hash code for this object.
 	public override int GetHashCode()
 			{
-				return (runInstaller ? 1 : 0);
+				return (allowMerge ? 1 : 0);
 			}
 
-	// Determine if this is a default attribute value.
+	// Determine if this attribute has the default value.
 	public override bool IsDefaultAttribute()
 			{
-				return !runInstaller;
+				return !allowMerge;
 			}
 
-}; // class RunInstallerAttribute
+}; // class MergablePropertyAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

@@ -114,7 +114,7 @@ public sealed class EventHandlerList : IDisposable
 			}
 
 	// Implement the IDisposable interface.
-	void IDisposable.Dispose()
+	public void Dispose()
 			{
 				list = null;
 			}

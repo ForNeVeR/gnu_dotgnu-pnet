@@ -30,6 +30,10 @@ public class DescriptionAttribute : Attribute
 	// Internal state.
 	private String desc;
 
+	// Default description value.
+	public static readonly DescriptionAttribute Default
+			= new DescriptionAttribute();
+
 	// Constructor.
 	public DescriptionAttribute()
 			{
@@ -48,7 +52,7 @@ public class DescriptionAttribute : Attribute
 					return DescriptionValue;
 				}
 			}
-	protected virtual String DescriptionValue
+	protected String DescriptionValue
 			{
 				get
 				{

@@ -27,10 +27,15 @@ namespace System.ComponentModel
 using System;
 using System.Globalization;
 
+[AttributeUsage(AttributeTargets.All)]
 public sealed class TypeConverterAttribute : Attribute
 {
 	// Internal state.
 	private String typeName;
+
+	// Pre-defined attribute values.
+	public static readonly TypeConverterAttribute Default
+			= new TypeConverterAttribute();
 
 	// Constructors.
 	public TypeConverterAttribute() : this("") {}

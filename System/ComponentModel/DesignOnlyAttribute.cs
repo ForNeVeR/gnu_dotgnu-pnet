@@ -25,6 +25,7 @@ using System;
 namespace System.ComponentModel
 {
 #if CONFIG_COMPONENT_MODEL
+	[AttributeUsage(AttributeTargets.All)]
 	public sealed class DesignOnlyAttribute: Attribute
 	{
 		private bool designOnly;

@@ -24,8 +24,7 @@ namespace System.ComponentModel
 
 #if CONFIG_COMPONENT_MODEL
 
-[AttributeUsage(AttributeTargets.All,
-				AllowMultiple=false, Inherited=true)]
+[AttributeUsage(AttributeTargets.All)]
 public sealed class RefreshPropertiesAttribute : Attribute
 {
 	// Internal state.

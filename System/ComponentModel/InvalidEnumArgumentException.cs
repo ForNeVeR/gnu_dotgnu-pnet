@@ -54,24 +54,6 @@ public class InvalidEnumArgumentException : ArgumentException
 				this.enumClass = enumClass;
 			}
 
-	// Get the exception message.
-	public override String Message
-			{
-				get
-				{
-					if(enumClass != null)
-					{
-						return String.Format(S._("Exception_InvalidEnumValue"),
-											 invalidValue.ToString(),
-											 ParamName, enumClass.ToString());
-					}
-					else
-					{
-						return base.Message;
-					}
-				}
-			}
-
 }; // class InvalidEnumArgumentException
 
 #endif // !ECMA_COMPAT

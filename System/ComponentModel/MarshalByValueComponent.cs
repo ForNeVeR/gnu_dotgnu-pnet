@@ -1,6 +1,6 @@
 /*
- * MarshalByValueComponent.cs - 
- *		Implementation of "MarshalByValueComponent" class. 
+ * MarshalByValueComponent.cs - Implementation of the
+ *		"System.ComponentModel.MarshalByValueComponent" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,84 +19,177 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
 
-	public class MarshalByValueComponent :	IServiceProvider, 
-											IDisposable, 
-											IComponent
-	{
-		[TODO]
-		public MarshalByValueComponent()
-		{
-		}
+using System;
+using System.ComponentModel.Design;
 
-		[TODO]
-		public void Dispose()
-		{
-			throw new NotImplementedException("Dispose");
-		}
+[DesignerCategory("Component")]
+// TODO: [TypeConverter(typeof(ComponentConverter))]
+#if CONFIG_COMPONENT_MODEL_DESIGN
+[Designer
+	("System.Windows.Forms.Design.ComponentDocumentDesigner, System.Design",
+	 typeof(IRootDesigner))]
+#endif
+public class MarshalByValueComponent
+	: IComponent, IDisposable, IServiceProvider
+{
+	// Internal state.
+	private static readonly Object disposedId = new Object();
+	private EventHandlerList events;
+	private ISite site;
 
-		[TODO]
-		protected virtual void Dispose(bool disposing)
-		{
-			throw new NotImplementedException("Dispose");
-		}
+	// Constructor.
+	public MarshalByValueComponent() {}
 
-		[TODO]
-		~MarshalByValueComponent()
-		{
-			throw new NotImplementedException("Finalize");
-		}
-
-		[TODO]
-		public virtual Object GetService(Type service)
-		{
-			throw new NotImplementedException("GetService");
-		}
-
-		public virtual IContainer Container 
-		{ 
-			get
+	// Destructor.
+	~MarshalByValueComponent()
 			{
-				throw new NotImplementedException("Container");
+				Dispose(false);
 			}
-		}
 
-		public virtual bool DesignMode 
-		{ 
-			get
+	// Get this component's container.
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
+	public virtual IContainer Container
 			{
-				throw new NotImplementedException("DesignMode");
+				get
+				{
+					if(site != null)
+					{
+						return site.Container;
+					}
+					else
+					{
+						return null;
+					}
+				}
 			}
-		}
 
-		protected EventHandlerList Events 
-		{ 
-			get
+	// Determine if this component is in "design mode".
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
+	public virtual bool DesignMode
 			{
-				throw new NotImplementedException("Events");
+				get
+				{
+					if(site != null)
+					{
+						return site.DesignMode;
+					}
+					else
+					{
+						return false;
+					}
+				}
 			}
-		}
 
-		public virtual ISite Site 
-		{ 
-			get
+	// Get the event handler list for this component.
+	protected EventHandlerList Events
 			{
-				throw new NotImplementedException("Site");
+				get
+				{
+					lock(this)
+					{
+						if(events == null)
+						{
+							events = new EventHandlerList();
+						}
+						return events;
+					}
+				}
 			}
-			set
+
+	// Get or set the site associated with this component.
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
+	public virtual ISite Site
 			{
-				throw new NotImplementedException("Site");
+				get
+				{
+					return site;
+				}
+				set
+				{
+					site = value;
+				}
 			}
-		}
 
-		public event EventHandler Disposed;
+	// Event that is raised when a component is disposed.
+	public event EventHandler Disposed
+			{
+				add
+				{
+					Events.AddHandler(disposedId, value);
+				}
+				remove
+				{
+					Events.RemoveHandler(disposedId, value);
+				}
+			}
 
-	}
+	// Implement the IDisposable interface.
+	public void Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+
+	// Dispose this component.
+	protected virtual void Dispose(bool disposing)
+			{
+				if(disposing)
+				{
+					lock(this)
+					{
+						EventHandler dispose;
+						if(site != null && site.Container != null)
+						{
+							site.Container.Remove(this);
+						}
+						if(events != null)
+						{
+							dispose = (EventHandler)(events[disposedId]);
+							if(dispose != null)
+							{
+								dispose(this, EventArgs.Empty);
+							}
+						}
+					}
+				}
+			}
+
+	// Get a service that is implemented by this component.
+	public virtual Object GetService(Type service)
+			{
+				if(site != null)
+				{
+					return site.GetService(service);
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				if(site != null)
+				{
+					return site.Name + "[" + GetType().ToString() + "]";
+				}
+				else
+				{
+					return GetType().ToString();
+				}
+			}
+
+}; // class MarshalByValueComponent
 
 #endif // CONFIG_COMPONENT_MODEL
-}//namespace System.ComponentModel
+
+}; // namespace System.ComponentModel

@@ -87,6 +87,19 @@ public sealed class DesignerAttribute : Attribute
 					return type;
 				}
 			}
+	public override Object TypeId
+			{
+				get
+				{
+					String type = baseType;
+					int index = type.IndexOf(',');
+					if(index != -1)
+					{
+						type = type.Substring(0, index);
+					}
+					return GetType().FullName + type;
+				}
+			}
 
 	// Determine if two instances of this class are equal.
 	public override bool Equals(Object obj)

@@ -25,6 +25,7 @@ using System;
 namespace System.ComponentModel
 {
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
 	public sealed class DesignerSerializationVisibilityAttribute: Attribute
 	{
 		private DesignerSerializationVisibility vis;

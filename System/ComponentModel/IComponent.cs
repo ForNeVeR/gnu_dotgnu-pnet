@@ -25,9 +25,23 @@ namespace System.ComponentModel
 #if CONFIG_COMPONENT_MODEL
 
 using System;
+using System.ComponentModel.Design;
+using System.ComponentModel.Design.Serialization;
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
+//TODO: [TypeConverter(typeof(ComponentConverter))]
+#if CONFIG_COMPONENT_MODEL_DESIGN
+[Designer
+	("System.Windows.Forms.Design.ComponentDocumentDesigner, System.Design",
+	 typeof(IRootDesigner))]
+[Designer
+	("System.Windows.Forms.Design.ComponentDocumentDesigner, System.Design",
+	 typeof(IDesigner))]
+[RootDesignerSerializer
+	("System.ComponentModel.Design.Serialization.RootCodeDomSerializer, System.Design",
+	 "System.ComponentModel.Design.Serialization.CodeDomSerializer, System.Design", true)]
+#endif
 public interface IComponent : IDisposable
 {
 

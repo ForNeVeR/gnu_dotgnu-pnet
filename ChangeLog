@@ -16,6 +16,34 @@
 	System/ComponentModel/Design/IReferenceService.cs: more
 	converter classes for System.ComponentModel.
 
+	* System/ComponentModel/AmbientValueAttribute.cs,
+	System/ComponentModel/AttributeCollection.cs,
+	System/ComponentModel/Component.cs,
+	System/ComponentModel/DefaultValueAttribute.cs,
+	System/ComponentModel/DescriptionAttribute.cs,
+	System/ComponentModel/DesignOnlyAttribute.cs,
+	System/ComponentModel/DesignTimeVisibleAttribute.cs,
+	System/ComponentModel/DesignerAttribute.cs,
+	System/ComponentModel/DesignerCategoryAttribute.cs,
+	System/ComponentModel/DesignerSerializationVisibilityAttribute.cs,
+	System/ComponentModel/EditorAttribute.cs,
+	System/ComponentModel/EventHandlerList.cs,
+	System/ComponentModel/IComNativeDescriptorHandler.cs,
+	System/ComponentModel/IComponent.cs,
+	System/ComponentModel/ITypeDescriptorContext.cs,
+	System/ComponentModel/ImmutableObjectAttribute.cs,
+	System/ComponentModel/InvalidEnumArgumentException.cs,
+	System/ComponentModel/ListBindableAttribute.cs,
+	System/ComponentModel/LocalizableAttribute.cs,
+	System/ComponentModel/MarshalByValueComponent.cs,
+	System/ComponentModel/MergablePropertyAttribute.cs,
+	System/ComponentModel/ParenthesizePropertyNameAttribute.cs,
+	System/ComponentModel/RefreshPropertiesAttribute.cs,
+	System/ComponentModel/RunInstallerAttribute.cs,
+	System/ComponentModel/TypeConverterAttribute.cs,
+	System/ComponentModel/TypeListConverter.cs: improve signature
+	compatibility of the System.ComponentModel classes.
+
 2003-08-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/Serialization/*.cs: stub out the xml serialization classes.

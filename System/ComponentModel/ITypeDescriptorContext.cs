@@ -26,7 +26,9 @@ namespace System.ComponentModel
 
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 
+[ComVisible(true)]
 public interface ITypeDescriptorContext : IServiceProvider
 {
 	// Get the container for this context.
@@ -42,7 +44,7 @@ public interface ITypeDescriptorContext : IServiceProvider
 	void OnComponentChanged();
 
 	// Method that is called when the component is about to change.
-	void OnComponentChanging();
+	bool OnComponentChanging();
 
 }; // interface ITypeDescriptorContext
 

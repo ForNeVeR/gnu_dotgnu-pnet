@@ -1,6 +1,6 @@
 /*
- * RunInstallerAttribute.cs - Implementation of the
- *		"System.ComponentModel.RunInstallerAttribute" class.
+ * ImmutableObjectAttribute.cs - Implementation of the
+ *		"System.ComponentModel.ImmutableObjectAttribute" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -26,42 +26,43 @@ namespace System.ComponentModel
 
 using System;
 
-[AttributeUsage(AttributeTargets.Class)]
-public class RunInstallerAttribute : Attribute
+[AttributeUsage(AttributeTargets.All)]
+public sealed class ImmutableObjectAttribute : Attribute
 {
 	// Internal state.
-	private bool runInstaller;
+	private bool immutable;
 
 	// Builtin attribute values.
-	public static readonly RunInstallerAttribute Default
-			= new RunInstallerAttribute(false);
-	public static readonly RunInstallerAttribute No
-			= new RunInstallerAttribute(false);
-	public static readonly RunInstallerAttribute Yes
-			= new RunInstallerAttribute(true);
+	public static readonly ImmutableObjectAttribute Default
+			= new ImmutableObjectAttribute(false);
+	public static readonly ImmutableObjectAttribute No
+			= new ImmutableObjectAttribute(false);
+	public static readonly ImmutableObjectAttribute Yes
+			= new ImmutableObjectAttribute(true);
 
 	// Constructor.
-	public RunInstallerAttribute(bool runInstaller)
+	public ImmutableObjectAttribute(bool immutable)
 			{
-				this.runInstaller = runInstaller;
+				this.immutable = immutable;
 			}
 
 	// Determine if the installer should be run.
-	public bool RunInstaller
+	public bool Immutable
 			{
 				get
 				{
-					return runInstaller;
+					return immutable;
 				}
 			}
 
 	// Determine if two object are equal.
 	public override bool Equals(Object obj)
 			{
-				RunInstallerAttribute other = (obj as RunInstallerAttribute);
+				ImmutableObjectAttribute other =
+					(obj as ImmutableObjectAttribute);
 				if(other != null)
 				{
-					return (other.runInstaller == runInstaller);
+					return (other.immutable == immutable);
 				}
 				else
 				{
@@ -72,16 +73,16 @@ public class RunInstallerAttribute : Attribute
 	// Get the hash code for this object.
 	public override int GetHashCode()
 			{
-				return (runInstaller ? 1 : 0);
+				return (immutable ? 1 : 0);
 			}
 
 	// Determine if this is a default attribute value.
 	public override bool IsDefaultAttribute()
 			{
-				return !runInstaller;
+				return !immutable;
 			}
 
-}; // class RunInstallerAttribute
+}; // class ImmutableObjectAttribute
 
 #endif // !ECMA_COMPAT
 

@@ -24,7 +24,7 @@ namespace System.ComponentModel
 
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
-[AttributeUsage(AttributeTargets.All)]
+[AttributeUsage(AttributeTargets.All, AllowMultiple=true, Inherited=true)]
 public sealed class EditorAttribute : Attribute
 {
 	// Internal state.

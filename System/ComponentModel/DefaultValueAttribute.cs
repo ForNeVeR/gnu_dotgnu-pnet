@@ -71,12 +71,17 @@ public sealed class DefaultValueAttribute : Attribute
 			{
 				obj = value;
 			}
-	[TODO]
 	public DefaultValueAttribute(Type type, String value)
 			{
-				// TODO: find a converter for the type and then
-				// convert the string using it.
-				obj = value;
+				try
+				{
+					obj = TypeDescriptor.GetConverter(type)
+							.ConvertFromInvariantString(value);
+				}
+				catch(Exception)
+				{
+					// Ignore exceptions during type conversion.
+				}
 			}
 
 	// Get the attribute's value.

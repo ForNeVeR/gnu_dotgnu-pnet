@@ -26,6 +26,7 @@ namespace System.ComponentModel
 {
 
 #if CONFIG_COMPONENT_MODEL
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
 	public sealed class DesignTimeVisibleAttribute: Attribute
 	{
 		

@@ -24,7 +24,7 @@ namespace System.ComponentModel
 
 #if CONFIG_COMPONENT_MODEL
 
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
 public sealed class DesignerCategoryAttribute : Attribute
 {
 	// Internal state.
@@ -33,6 +33,8 @@ public sealed class DesignerCategoryAttribute : Attribute
 	// Pre-defined attribute values.
 	public static readonly DesignerCategoryAttribute Component =
 			new DesignerCategoryAttribute("Component");
+	public static readonly DesignerCategoryAttribute Default =
+			new DesignerCategoryAttribute();
 	public static readonly DesignerCategoryAttribute Form =
 			new DesignerCategoryAttribute("Form");
 	public static readonly DesignerCategoryAttribute Generic =

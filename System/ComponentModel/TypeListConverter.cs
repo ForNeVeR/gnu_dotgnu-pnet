@@ -29,13 +29,13 @@ using System.Collections;
 using System.Globalization;
 using System.ComponentModel.Design.Serialization;
 
-public class TypeListConverter : TypeConverter
+public abstract class TypeListConverter : TypeConverter
 {
 	// Internal state.
 	private Type[] types;
 
 	// Constructor.
-	public TypeListConverter(Type[] types)
+	protected TypeListConverter(Type[] types)
 			{
 				this.types = types;
 			}

@@ -9,6 +9,8 @@
 	engine/unroll_branch.c, engine/unroll_conv.c: implement generic
 	unrolling for branch and conversion opcodes.
 
+	* engine/md_arm.h, engine/unroll.c: some slight fixes for ARM.
+
 2003-07-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ChangeLog, doc/ChangeLog-4: move the bulk of ChangeLog into

@@ -322,7 +322,7 @@ typedef arm_inst_ptr	md_inst_ptr;
 #define	md_and_reg_reg_word_32(inst,reg1,reg2)	\
 			arm_alu_reg_reg((inst), ARM_AND, (reg1), (reg1), (reg2))
 #define	md_xor_reg_reg_word_32(inst,reg1,reg2)	\
-			arm_alu_reg_reg((inst), ARM_XOR, (reg1), (reg1), (reg2))
+			arm_alu_reg_reg((inst), ARM_EOR, (reg1), (reg1), (reg2))
 #define	md_or_reg_reg_word_32(inst,reg1,reg2)	\
 			arm_alu_reg_reg((inst), ARM_ORR, (reg1), (reg1), (reg2))
 #define	md_not_reg_word_32(inst,reg)	\
@@ -341,18 +341,18 @@ typedef arm_inst_ptr	md_inst_ptr;
 			arm_alu_reg_imm((inst), ARM_AND, (reg), (reg), 0xFF)
 #define	md_reg_to_sbyte(inst,reg)	\
 			do { \
-				arm_shift_reg_imm((inst), ARM_SHL, (reg), (reg), 24); \
-				arm_shift_reg_imm((inst), ARM_SAR, (reg), (reg), 24); \
+				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 24); \
+				arm_shift_reg_imm8((inst), ARM_SAR, (reg), (reg), 24); \
 			} while (0)
 #define	md_reg_to_short(inst,reg)	\
 			do { \
-				arm_shift_reg_imm((inst), ARM_SHL, (reg), (reg), 16); \
-				arm_shift_reg_imm((inst), ARM_SAR, (reg), (reg), 16); \
+				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 16); \
+				arm_shift_reg_imm8((inst), ARM_SAR, (reg), (reg), 16); \
 			} while (0)
 #define	md_reg_to_ushort(inst,reg)	\
 			do { \
-				arm_shift_reg_imm((inst), ARM_SHL, (reg), (reg), 16); \
-				arm_shift_reg_imm((inst), ARM_SHR, (reg), (reg), 16); \
+				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 16); \
+				arm_shift_reg_imm8((inst), ARM_SHR, (reg), (reg), 16); \
 			} while (0)
 #define	md_reg_to_word_32(inst,reg)	\
 			do { ; } while (0)
@@ -520,6 +520,13 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
  */
 #define	md_reg_is_zero(inst,reg)	\
 			arm_test_reg_imm8((inst), ARM_CMP, (reg), 0)
+
+/*
+ * Compare a 32-bit register against an immediate value and set
+ * the condition codes based on the result.
+ */
+#define	md_cmp_reg_imm_word_32(inst,reg,imm)	\
+			arm_test_reg_imm((inst), ARM_CMP, (reg), (int)(imm))
 
 /*
  * Output a branch to a location based on a condition.  The actual

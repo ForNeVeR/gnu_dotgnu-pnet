@@ -1145,6 +1145,8 @@ static int GetTopRegisterFlags(MDUnroll *unroll)
 	return 0;
 }
 
+#ifdef MD_HAS_FP
+
 /*
  * Push a register onto the stack directly.
  */
@@ -1170,6 +1172,8 @@ static void PushRegister(MDUnroll *unroll, int reg, int flags)
 		unroll->regsUsed |= (1 << reg);
 	}
 }
+
+#endif /* MD_HAS_FP */
 
 /*
  * Start an unrolled code section if necessary.

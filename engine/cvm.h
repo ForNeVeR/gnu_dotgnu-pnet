@@ -352,6 +352,12 @@ extern	"C" {
 #define	COP_WADDR_NATIVE_7			0xF9
 
 /*
+ * Quick byte loads and stores.
+ */
+#define	COP_BLOAD					0xFA
+#define	COP_BSTORE					0xFB
+
+/*
  * Make the next instruction wider.
  */
 #define	COP_WIDE					0xFD

@@ -7,6 +7,9 @@
 
 	* engine/cvm.c: turn off computed goto's when profiling instructions.
 
+	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_var.c,
+	engine/cvmc_var.c: optimise loads and stores of bool/byte variables.
+
 2002-05-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_decls.tc, cscc/csharp/cs_lvalue.tc,

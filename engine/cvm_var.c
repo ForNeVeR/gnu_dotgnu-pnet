@@ -397,6 +397,69 @@ VMCASE(COP_MADDR):
 VMBREAK;
 
 /**
+ * <opcode name="bload" group="Local variable handling">
+ *   <operation>Load <code>uint8</code> variable
+ *              onto the stack</operation>
+ *
+ *   <format>bload<fsep/>N[1]</format>
+ *
+ *   <form name="bload" code="COP_BLOAD"/>
+ *
+ *   <before>...</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Load the <code>uint8</code> variable from position
+ *   <i>N</i> in the local variable frame and push its <i>value</i>
+ *   onto the stack.</description>
+ *
+ *   <notes>This instruction is a quicker variant of
+ *   <i>waddr N, bread</i>.<p/>
+ *
+ *   This instruction can also be used to load <code>bool</code>
+ *   values onto the stack.</notes>
+ * </opcode>
+ */
+VMCASE(COP_BLOAD):
+{
+	/* Load a byte value from the frame */
+	stacktop[0].intValue = *((ILUInt8 *)&(frame[pc[1]]));
+	MODIFY_PC_AND_STACK(2, 1);
+}
+VMBREAK;
+
+/**
+ * <opcode name="bstore" group="Local variable handling">
+ *   <operation>Store the top of stack into <code>uint8</code>
+ *              variable</operation>
+ *
+ *   <format>bstore<fsep/>N[1]</format>
+ *
+ *   <form name="bstore" code="COP_BSTORE"/>
+ *
+ *   <before>..., value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>value</i> from the stack as type <code>int32</code>
+ *   and store it at position <i>N</i> in the local variable frame,
+ *   truncated to the type <code>uint8</code>.
+ *   </description>
+ *
+ *   <notes>This instruction is a quicker variant of
+ *   <i>waddr N, bwrite_r</i>.<p/>
+ *
+ *   This instruction can also be used to store <code>bool</code>
+ *   values from the stack.</notes>
+ * </opcode>
+ */
+VMCASE(COP_BSTORE):
+{
+	/* Store a byte value to the frame */
+	*((ILUInt8 *)&(frame[pc[1]])) = (ILUInt8)(stacktop[-1].intValue);
+	MODIFY_PC_AND_STACK(2, -1);
+}
+VMBREAK;
+
+/**
  * <opcode name="bfixup" group="Local variable handling">
  *   <operation>Fix up <code>int8</code> variable</operation>
  *

@@ -39,7 +39,6 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 		/* Primitive element type */
 		switch(ILType_ToElement(type))
 		{
-			case IL_META_ELEMTYPE_BOOLEAN:
 			case IL_META_ELEMTYPE_I1:
 			{
 				LoadLocalAddr(coder, offset);
@@ -47,10 +46,19 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 			}
 			break;
 
+			case IL_META_ELEMTYPE_BOOLEAN:
 			case IL_META_ELEMTYPE_U1:
 			{
-				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_UBREAD);
+				if(offset < 256)
+				{
+					CVM_BYTE(COP_BLOAD);
+					CVM_BYTE(offset);
+				}
+				else
+				{
+					LoadLocalAddr(coder, offset);
+					CVM_BYTE(COP_UBREAD);
+				}
 			}
 			break;
 
@@ -184,9 +192,18 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 					CVM_ADJUST(-(CVM_WORDS_PER_LONG - 1));
 				}
 			#endif
-				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_BWRITE_R);
-				CVM_ADJUST(-2);
+				if(offset < 256)
+				{
+					CVM_BYTE(COP_BSTORE);
+					CVM_BYTE(offset);
+					CVM_ADJUST(-1);
+				}
+				else
+				{
+					LoadLocalAddr(coder, offset);
+					CVM_BYTE(COP_BWRITE_R);
+					CVM_ADJUST(-2);
+				}
 			}
 			break;
 

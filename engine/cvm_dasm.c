@@ -394,10 +394,14 @@ static CVMOpcode const opcodes[256] = {
 	{"waddr_native_7",	CVM_OPER_WIDE_UINT},
 
 	/*
+	 * Quick byte loads and stores.
+	 */
+	{"bload",			CVM_OPER_UINT8},
+	{"bstore",			CVM_OPER_UINT8},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"reserved_fa",		CVM_OPER_NONE},
-	{"reserved_fb",		CVM_OPER_NONE},
 	{"reserved_fc",		CVM_OPER_NONE},
 
 	/*

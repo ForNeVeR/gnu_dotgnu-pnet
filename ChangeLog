@@ -8,6 +8,9 @@
 	* ilasm/ilasm_output.c (ILAsmOutSwitchEnd): compute the correct
 	value for the number of switch entries.
 
+	* ilasm/ilasm_output.c: compute switch label references relative
+	to the end of the switch, instead of the position of the reference.
+
 2002-06-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/test_thread.c: simple tests for creating wait mutexes.

@@ -100,9 +100,11 @@ static void OutByte(unsigned char byte)
 typedef struct _tagLabelRef
 {
 	ILUInt32	  posn;
-	ILUInt16	  offset;
+	ILUInt8		  offset;
 	ILUInt8       addrLen;
 	ILUInt8		  squashed;
+	ILUInt8		  isSwitchRef;
+	ILUInt32	  switchStart;
 	char		 *filename;
 	long		  linenum;
 	struct _tagLabelRef *next;
@@ -720,6 +722,8 @@ static void Branch(ILInt32 opcode, char *name)
 		ILAsmOutOfMemory();
 	}
 	ref->posn = offset;
+	ref->isSwitchRef = 0;
+	ref->switchStart = 0;
 	ref->filename = ILAsmFilename;
 	ref->linenum = ILAsmLineNum;
 	ref->next = labelInfo->refs;
@@ -877,6 +881,8 @@ void ILAsmOutBranch(ILInt32 opcode, char *label)
 	Branch(opcode, label);
 }
 
+static ILUInt32 switchCountOffset = 0;
+
 /*
  * Output a switch label reference.
  */
@@ -900,6 +906,8 @@ static void SwitchRef(char *name)
 	ref->offset = 0;
 	ref->addrLen = 4;
 	ref->squashed = 1;
+	ref->isSwitchRef = 1;
+	ref->switchStart = switchCountOffset;
 	ref->filename = ILAsmFilename;
 	ref->linenum = ILAsmLineNum;
 	ref->next = labelInfo->refs;
@@ -911,8 +919,6 @@ static void SwitchRef(char *name)
 	OUT_BYTE(0);
 	OUT_BYTE(0);
 }
-
-static ILUInt32 switchCountOffset = 0;
 
 void ILAsmOutSwitchStart(void)
 {
@@ -1483,7 +1489,24 @@ static int FinishLabels(void)
 			ref = label->refs;
 			while(ref != 0)
 			{
-				if(ref->addrLen == 4)
+				if(ref->isSwitchRef)
+				{
+					/* Find the end of the "switch" instruction */
+					delta = (long)(ref->switchStart + 4 *
+							(IL_READ_UINT32(buffer + ref->switchStart) + 1));
+
+					/* Compute the delta and write it to the "switch" */
+					delta = (long)(label->address - (ILUInt32)delta);
+					buffer[ref->posn + ref->offset] =
+							(unsigned char)delta;
+					buffer[ref->posn + ref->offset + 1] =
+							(unsigned char)(delta >> 8);
+					buffer[ref->posn + ref->offset + 2] =
+							(unsigned char)(delta >> 16);
+					buffer[ref->posn + ref->offset + 3] =
+							(unsigned char)(delta >> 24);
+				}
+				else if(ref->addrLen == 4)
 				{
 					delta = (long)(label->address -
 								   (ref->posn + ref->offset + 4));

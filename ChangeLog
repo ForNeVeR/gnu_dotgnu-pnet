@@ -1,4 +1,9 @@
 
+2001-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/RuntimeType.cs: Use "InternalGetFullName" for the "ToString"
+method on "System.RuntimeType".
+
 2001-10-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/*.cs, resources/en_US/runtime/*.txt: many changes to

@@ -251,10 +251,8 @@ internal class RuntimeType : Type, ICloneable
 	// Convert this type into a string.
 	public override String ToString()
 			{
-				return InternalGetProperlyQualifiedName();
+				return InternalGetFullName();
 			}
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private String InternalGetProperlyQualifiedName();
 
 	// Internal methods for supporting the properties.
 	[MethodImpl(MethodImplOptions.InternalCall)]

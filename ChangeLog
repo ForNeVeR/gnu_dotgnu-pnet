@@ -1,4 +1,10 @@
 
+2002-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/I18N.build, System/System.build, System.Xml/XmlNodeList.cs,
+	runtime/runtime.build, tests/System/TestSystem.build,
+	tools/csccwrap.sh.in: turn off metadata compiles for most of pnetlib.
+
 2002-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs, System.Xml/XmlNodeList.cs: temporary

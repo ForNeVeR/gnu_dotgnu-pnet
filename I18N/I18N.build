@@ -38,7 +38,7 @@
 				 nostdlib="true"
 				 optimize="true">
 
-			<define name="__PNET__" value="true"/>
+			<define name="x_fixme__PNET__" value="true"/>
 
 			<sources>
 				<includes name="CJK/*.cs"/>

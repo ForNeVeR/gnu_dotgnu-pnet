@@ -76,11 +76,7 @@ for i in $* ; do
 done
 
 # Add other flags to the command-line.
-if test "x$META" = "xyes" ; then
-	OTHER_FLAGS="-fmetadata-only"
-else
-	OTHER_FLAGS=""
-fi
+OTHER_FLAGS=""
 
 # Execute the command line.
 exec "$CSCC" "$ILASM_FLAG" "$CSCC_CS_FLAG" "$ILALINK_FLAG" $OTHER_FLAGS $*

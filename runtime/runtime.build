@@ -18,6 +18,7 @@
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-fmetadata-only"/>
 			<arg compiler="csc" value="/nowarn:626"/>
 			<arg compiler="csc" value="/nowarn:649"/>
 			<arg compiler="csc" value="/nowarn:168"/>

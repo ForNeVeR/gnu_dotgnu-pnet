@@ -44,7 +44,7 @@ abstract class XmlNodeList : IEnumerable
 			{
 				get
 				{
-					return Item(i);
+					return Itemx(i);
 				}
 			}
 

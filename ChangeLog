@@ -1,4 +1,9 @@
 
+2003-05-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/ComponentModel/ListChangedEventHandler.cs: correct a
+	mistake in the declaration of the second parameter.
+
 2003-05-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* all/*: add new profile options - CONFIG_COM_INTEROP, CONFIG_CODEDOM,

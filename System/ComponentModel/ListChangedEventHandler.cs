@@ -25,6 +25,6 @@ using System;
 namespace System.ComponentModel
 {
 #if CONFIG_COMPONENT_MODEL
-	public delegate void ListChangedEventHandler (Object sender,ListChangedEventHandler e);
+	public delegate void ListChangedEventHandler (Object sender,ListChangedEventArgs e);
 #endif
 }//namespace

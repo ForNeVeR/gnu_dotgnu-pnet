@@ -1,4 +1,9 @@
 
+2004-05-09  Andre Seidelt <pnet-devel01@foobarquarium.de>
+
+	* runtime/System/Collections/Hashtable.cs: Enable proper
+	serialization of keys and elements arrays (Gopal)
+	
 2004-05-09  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* JScript/jsrun.cs: Implement --help , --version commands for

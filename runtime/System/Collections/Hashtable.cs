@@ -871,11 +871,14 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				info.AddValue("HashCodeProviderName", hcp,
 							  typeof(IHashCodeProvider));
 				info.AddValue("HashSize", (table == null ? 0 : table.Length));
-				Object[] temp = new Object [num];
-				Keys.CopyTo(temp, 0);
-				info.AddValue("Keys", temp, typeof(Object[]));
-				Values.CopyTo(temp, 0);
-				info.AddValue("Values", temp, typeof(Object[]));
+
+				Object[] keyTemp = new Object [num];
+				Keys.CopyTo(keyTemp, 0);
+				info.AddValue("Keys", keyTemp, typeof(Object[]));
+
+				Object[] valTemp = new Object [num];
+				Values.CopyTo(valTemp, 0);
+				info.AddValue("Values", valTemp, typeof(Object[]));
 			}
 
 	// Process a deserialization callback.

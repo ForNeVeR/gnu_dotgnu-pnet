@@ -1,4 +1,9 @@
 
+2003-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/MessageBox.cs, System.Windows.Forms/S.cs:
+	add some infrastructure for message boxes (not finished yet).
+
 2003-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Colormap.cs, Xsharp/ConvertImage.cs, Xsharp/Graphics.cs,

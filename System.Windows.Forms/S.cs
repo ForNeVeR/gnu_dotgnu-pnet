@@ -80,6 +80,18 @@ internal sealed class S
 					return runtimeResources.GetString(tag, null);
 				}
 			}
+	public static String _(String tag, String defaultValue)
+			{
+				String value = _(tag);
+				if(value == null || value == tag)
+				{
+					return defaultValue;
+				}
+				else
+				{
+					return value;
+				}
+			}
 
 #else // !CONFIG_RUNTIME_INFRA
 
@@ -87,6 +99,10 @@ internal sealed class S
 	public static String _(String tag)
 			{
 				return tag;
+			}
+	public static String _(String tag, String defaultValue)
+			{
+				return defaultValue;
 			}
 
 #endif // !CONFIG_RUNTIME_INFRA

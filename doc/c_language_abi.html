@@ -6,7 +6,7 @@
 <h1>Application Binary Interface for C within CLI</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2002/08/22 01:18:36 $<p>
+Last Modified: $Date: 2002/08/22 01:42:56 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -260,6 +260,16 @@ in the "<code>OpenSystem.C</code>" namespace:<p>
 		a constructor that takes a single "<code>native float</code>"
 		argument, and an "<code>Unpack</code>" method that returns
 		a "<code>native float</code>" when applied to an instance.</dd>
+<dt><code>FloatComplex</code>, <code>DoubleComplex</code>,
+    <code>LongDoubleComplex</code></dt>
+	<dd>Value types that correspond to the ISO C complex number types.</dd>
+<dt><code>FloatImaginary</code>, <code>DoubleImaginary</code>,
+    <code>LongDoubleImaginary</code></dt>
+	<dd>Value types that correspond to the ISO C imaginary number types.</dd>
+<dt><code>CNameAttribute</code></dt>
+	<dd>An attribute that specifies the C name of a value type defined
+	    in C# code.  e.g. "<code>FloatComplex</code>" is marked as
+		"<code>float _Complex</code>".</dd>
 </dl>
 
 The meaning of these classes will become clearer in later sections.
@@ -350,6 +360,22 @@ The size and alignment of the primitive types in "Model 64" and
 	<td>8/8</td>
 	<td>4/4</td>
 	<td>Pointer to "<code>type</code>"</td></tr>
+<tr><td><code>float _Complex</code></td>
+	<td>8/4</td>
+	<td>8/4</td>
+	<td>Complex number type based on <code>float</code></td></tr>
+<tr><td><code>double _Complex</code></td>
+	<td>16/8</td>
+	<td>16/8</td>
+	<td>Complex number type based on <code>double</code></td></tr>
+<tr><td><code>float _Imaginary</code></td>
+	<td>4/4</td>
+	<td>4/4</td>
+	<td>Imaginary number type based on <code>float</code></td></tr>
+<tr><td><code>double _Imaginary</code></td>
+	<td>8/8</td>
+	<td>8/8</td>
+	<td>Imaginary number type based on <code>double</code></td></tr>
 </table><p>
 
 <font size="-1">Note 1. These size and alignment values refer to the
@@ -664,6 +690,10 @@ absolutely essential to interoperate with other system components:<p>
 	<td>Unsigned native integer (C# "<code>UIntPtr</code>")</td></tr>
 <tr><td><code>long double</code></td>
 	<td>Native floating-point</td></tr>
+<tr><td><code>long double _Complex</code></td>
+	<td>Complex number type based on <code>long double</code></td></tr>
+<tr><td><code>long double _Imaginary</code></td>
+	<td>Imaginary number type based on <code>long double</code></td></tr>
 </table><p>
 
 The native integer types are "<code>__native__ int</code>" and

@@ -1,8 +1,10 @@
 
-2003-05-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+2003-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/dir.c: work around a broken definition of "struct dirent"
 	on Solaris systems.
+
+	* doc/unrolling.txt: description of new unroller system.
 
 2003-05-09  Gopal.V  <gopalv82@symonds.net>
 	

@@ -5,6 +5,12 @@
 	use "System.ComponentModel.DefaultValueAttribute" to mark default
 	parameter values, for compatibility with other systems.
 
+	* Makefile.am, Basic/Basic.build, Basic/Interaction.cs,
+	Basic/CompilerServices/IVbHost.cs, resources/en_US/Basic/Basic.txt,
+	Basic/CompilerServices/LateBinding.cs: implement more of the
+	"Microsoft.VisualBasic.Interaction" class and add WinForms to
+	the dependencies for the VB system library.
+
 2004-07-08  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/Form.cs: Add dummy implementation of 

@@ -25,6 +25,7 @@ namespace Microsoft.VisualBasic.CompilerServices
 using System;
 using System.ComponentModel;
 using System.Reflection;
+using System.Diagnostics;
 
 [StandardModule]
 #if CONFIG_COMPONENT_MODEL
@@ -36,67 +37,156 @@ public sealed class LateBinding
 	private LateBinding() {}
 
 	// Perform a late call.
-	[TODO]
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public static void LateCall(Object o, Type objType,
 								String name, Object[] args,
 								String[] paramnames,
 								bool[] CopyBack)
 			{
-				// TODO
+				LateCallWithResult
+					(o, objType, name, args, paramnames, CopyBack);
+			}
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
+	internal static Object LateCallWithResult
+				(Object o, Type objType, String name, Object[] args,
+				 String[] paramnames, bool[] CopyBack)
+			{
+			#if CONFIG_REFLECTION
+				if(objType == null)
+				{
+					objType = o.GetType();
+				}
+				return objType.InvokeMember
+					(name, BindingFlags.InvokeMethod |
+						   BindingFlags.Public |
+						   BindingFlags.Static |
+						   BindingFlags.Instance, null, o, args,
+					 null, null, paramnames);
+			#else
+				throw new NotImplementedException();
+			#endif
 			}
 
 	// Perform a late property get.
-	[TODO]
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public static Object LateGet(Object o, Type objType,
 								 String name, Object[] args,
 								 String[] paramnames, bool[] CopyBack)
 			{
-				// TODO
-				return null;
+			#if CONFIG_REFLECTION
+				if(objType == null)
+				{
+					objType = o.GetType();
+				}
+				return objType.InvokeMember
+					(name, BindingFlags.GetField |
+						   BindingFlags.GetProperty |
+						   BindingFlags.Public |
+						   BindingFlags.Static |
+						   BindingFlags.Instance, null, o, args,
+					 null, null, paramnames);
+			#else
+				throw new NotImplementedException();
+			#endif
 			}
 
 	// Perform a late index get.
-	[TODO]
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public static Object LateIndexGet(Object o, Object[] args,
 									  String[] paramnames)
 			{
-				// TODO
-				return null;
+			#if CONFIG_REFLECTION
+				return o.GetType().InvokeMember
+					("", BindingFlags.GetProperty |
+						 BindingFlags.Public |
+						 BindingFlags.Static |
+						 BindingFlags.Instance, null, o, args,
+					 null, null, paramnames);
+			#else
+				throw new NotImplementedException();
+			#endif
 			}
 
 	// Perform a late index set.
-	[TODO]
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public static void LateIndexSet(Object o, Object[] args,
 									String[] paramnames)
 			{
-				// TODO
+			#if CONFIG_REFLECTION
+				o.GetType().InvokeMember
+					("", BindingFlags.SetProperty |
+						 BindingFlags.Public |
+						 BindingFlags.Static |
+						 BindingFlags.Instance, null, o, args,
+				     null, null, paramnames);
+			#else
+				throw new NotImplementedException();
+			#endif
 			}
 
 	// Perform a complex late index set.
-	[TODO]
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public static void LateIndexSetComplex(Object o, Object[] args,
 										   String[] paramnames,
 										   bool OptimisticSet,
 										   bool RValueBase)
 			{
-				// TODO
+				LateIndexSet(o, args, paramnames);
 			}
 
 	// Perform a late property set.
-	[TODO]
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public static void LateSet(Object o, Type objType, String name,
 							   Object[] args, String[] paramnames)
 			{
-				// TODO
+			#if CONFIG_REFLECTION
+				if(objType == null)
+				{
+					objType = o.GetType();
+				}
+				objType.InvokeMember
+					(name, BindingFlags.SetField |
+						   BindingFlags.SetProperty |
+						   BindingFlags.Public |
+						   BindingFlags.Static |
+						   BindingFlags.Instance, null, o, args,
+				     null, null, paramnames);
+			#else
+				throw new NotImplementedException();
+			#endif
 			}
 
 	// Perform a complex late property set.
-	[TODO]
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public static void LateSetComplex(Object o, Type objType, String name,
 							          Object[] args, String[] paramnames,
 									  bool OptimisticSet, bool RValueBase)
 			{
-				// TODO
+				LateSet(o, objType, name, args, paramnames);
 			}
 
 }; // class LateBinding

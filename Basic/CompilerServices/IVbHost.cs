@@ -31,8 +31,10 @@ using System.Windows.Forms;
 #endif
 public interface IVbHost
 {
-	// Get the parent window.  Non-portable.
-	// IWin32Window GetParentWindow();
+#if CONFIG_REFLECTION
+	// Get the parent window.
+	IWin32Window GetParentWindow();
+#endif
 
 	// Get the window title.
 	String GetWindowTitle();

@@ -60,3 +60,7 @@ VB_InvalidPattern=Invalid "like" pattern
 VB_MismatchedRanks=Array ranks are mismatched
 VB_MismatchedDimensions=Array dimensions are mismatched
 VB_DateTimeRange=DateTime value is out of range
+VB_MustBeEvenSized=Array must have an even number of elements
+VB_InvalidCallType=Invalid late binding call type
+VB_CouldntExecute=Could not find {0} or could not execute it
+VB_InvalidAppWinStyle=Invalid application window style

@@ -3,19 +3,19 @@ if HAS_EXTENDED_NUMERICS
 SUBDIRS = tools config resources runtime I18N OpenSystem.Platform \
 		  DotGNU.SSL System System.Xml . \
 		  System.Net.IrDA csunit csupport compat ISymWrapper \
-		  SharpZipLib System.Configuration.Install JScript Basic \
+		  SharpZipLib System.Configuration.Install JScript \
 		  DotGNU.Images Xsharp System.Drawing System.Drawing.Xsharp \
 		  System.Drawing.Win32 System.Drawing.Postscript \
 		  System.EnterpriseServices System.Windows.Forms \
-		  System.Design DotGNU.Terminal DotGNU.XmlRpc \
+		  System.Design Basic DotGNU.Terminal DotGNU.XmlRpc \
 		  tests samples 
 else
 SUBDIRS = tools config resources runtime I18N OpenSystem.Platform \
 		  DotGNU.SSL System System.Xml . \
 		  System.Net.IrDA csunit csupport compat ISymWrapper \
-		  SharpZipLib System.Configuration.Install Basic \
+		  SharpZipLib System.Configuration.Install \
 		  DotGNU.Images Xsharp System.EnterpriseServices \
-		  DotGNU.Terminal DotGNU.XmlRpc \
+		  Basic DotGNU.Terminal DotGNU.XmlRpc \
 		  tests samples
 endif
 else

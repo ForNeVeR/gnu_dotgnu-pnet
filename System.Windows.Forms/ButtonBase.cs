@@ -552,16 +552,6 @@ public abstract class ButtonBase : Control
 				base.OnKeyUp(e);
 			}
 
-	protected override bool ProcessMnemonic(char charCode)
-	{
-		if (Control.IsMnemonic(charCode, Text))
-		{
-			OnClick(EventArgs.Empty);
-			return true;
-		}
-		return base.ProcessMnemonic(charCode);
-	}
-
 	protected override void OnMouseDown(MouseEventArgs e)
 			{
 				if(button == MouseButtons.None && e.Button == MouseButtons.Left)

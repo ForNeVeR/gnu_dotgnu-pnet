@@ -486,12 +486,6 @@ public class TextBox : TextBoxBase
 				}
 			}
 		}
-		// If not multline then we dont recognise "Enter"
-		else if ((keyData & Keys.Alt) == 0 && (keyData & Keys.KeyCode) == Keys.Enter)
-		{
-			return false;
-		}
-
 		return base.IsInputKey(keyData);
 	}
 

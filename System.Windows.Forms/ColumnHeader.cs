@@ -31,29 +31,19 @@ using System.ComponentModel;
 #else
 	public class ColumnHeader
 #endif
+		, ICloneable
 	{
-		private ListView listView;
+		internal ListView listView;
 		internal int width;
-		private HorizontalAlignment textAlign;
+		internal HorizontalAlignment textAlign;
 		internal string text;
+		internal int index;
 
 		public ColumnHeader()
 		{
 			width = 60;
 			textAlign = HorizontalAlignment.Left;
-		}
-
-		internal ListView OwnerListview
-		{
-			get
-			{
-				return listView;
-			}
-
-			set
-			{
-				listView = value;
-			}
+			index = -1;
 		}
 
 		public ListView ListView
@@ -64,19 +54,14 @@ using System.ComponentModel;
 			}
 		}
 
-		[TODO]
 		public int Index
 		{
 			get
 			{
-				if (listView == null)
-					return -1;
-				else
-					return 0; //TODO
+				return index;
 			}
 		}
 
-		[TODO]
 		public HorizontalAlignment TextAlign
 		{
 			get
@@ -86,19 +71,26 @@ using System.ComponentModel;
 
 			set
 			{
-				if (value == textAlign || listView == null)
+				if (value == textAlign)
+				{
 					return;
-				if (Index == 0)
+				}
+				if (index == 0)
+				{
 					textAlign = HorizontalAlignment.Left;
+				}
 				else
+				{
 					textAlign = value;
+				}
 
-				//if (listView != null)
-					//TODO Update ListView
+				if (listView != null)
+				{
+					//TODO: Update ListView
+				}
 			}
 		}
 
-		[TODO]
 		public int Width
 		{
 			get
@@ -108,9 +100,16 @@ using System.ComponentModel;
 
 			set
 			{
+				if (value == width)
+				{
+					return;
+				}
 				width = value;
-				//if (listView != null)
-					//TODO Set Column width
+				if (listView != null)
+				{
+					//TODO: Set Column width
+					//TODO: Update ListView
+				}
 			}
 		}
 
@@ -119,43 +118,60 @@ using System.ComponentModel;
 			ColumnHeader columnHeader = null;
 			Type type = base.GetType();
 			if (type == typeof(ColumnHeader))
+			{
 				columnHeader = new ColumnHeader();
-		#if !ECMA_COMPAT
+			}
+#if !ECMA_COMPAT
 			else
+			{
 				columnHeader = Activator.CreateInstance(type) as ColumnHeader;
-		#else
+			}
+#else
 			else
 				columnHeader = type.InvokeMember
 					(String.Empty, BindingFlags.CreateInstance |
 								   BindingFlags.Public |
 								   BindingFlags.Instance,
 					 null, null, null, null, null, null) as ColumnHeader;
-		#endif
+#endif
 			columnHeader.textAlign = TextAlign;
 			columnHeader.text = text;
 			columnHeader.Width = width;
 			return columnHeader;
 		}
 
-		[TODO]
 		public string Text
 		{
 			get
 			{
 				if (text == null)
+				{
 					return "ColumnHeader";
+				}
 				else
+				{
 					return text;
+				}
 			}
 
 			set
 			{
+				if (value == text)
+				{
+					return;
+				}
 				if (value == null)
-					text = "";
+				{
+					text = string.Empty;
+				}
 				else
+				{
 					text = value;
-				//if (listView != null)
-					//TODO Update ListView
+				}
+				if (listView != null)
+				{
+					//TODO: Update ListView
+				}
 			}
 		}
 
@@ -164,5 +180,19 @@ using System.ComponentModel;
 		{
 			return "ColumnHeader: Text: " + Text;
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && listView != null)
+			{
+				if (index != -1)
+				{
+					listView.Columns.RemoveAt(index);
+				}
+				listView = null;
+			}
+			base.Dispose(disposing);
+		}
+
 	}
 }

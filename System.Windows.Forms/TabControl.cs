@@ -948,17 +948,13 @@ namespace System.Windows.Forms
 					// Handle focus.
 					if (!Focused)
 					{
-						if (SelectedTab.SelectNextControl(null, true, true, false, false))
+						if (!SelectedTab.SelectNextControl(null, true, true, false, false))
 						{
-						}
-						else
-						{
-							/*IContainerControl container = GetContainerControl();
+							IContainerControl container = Parent.GetContainerControl();
 							if (container != null)
 							{
 								container.ActiveControl = this;
-							}*/
-
+							}
 						}
 					}
 

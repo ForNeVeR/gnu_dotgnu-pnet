@@ -21,9 +21,9 @@
 
 namespace System.Windows.Forms
 {
-	using System;
-	using System.Drawing;
-	using System.Collections;
+using System;
+using System.Drawing;
+using System.Collections;
 
 	public class ListView : Control
 	{
@@ -44,19 +44,20 @@ namespace System.Windows.Forms
 		private bool multiSelect;
 		private bool scrollable;
 		private bool hoverSelection;
-		internal int itemCount;
 		private ListViewItemCollection items;
 		private ColumnHeaderCollection columns;
-		private CheckedListViewItemCollection checkedItems;
 		private CheckedIndexCollection checkedIndices;
+		private CheckedListViewItemCollection checkedItems;
 		private SelectedListViewItemCollection selectedItems;
 		internal ColumnHeader[] columnHeaders;
-		private Hashtable listItemsHashTable;
-		private ArrayList listItemsArrayList;
+		internal ArrayList listItems;
 		private SelectedIndexCollection selectedIndices;
 		private IComparer listViewItemSorter;
 		private ImageList largeImageList;
 		private ImageList smallImageList;
+		private ImageList stateImageList;
+		private int updating;
+		private bool inLabelEdit;
 
 		public event LabelEditEventHandler AfterLabelEdit;
 		public event LabelEditEventHandler BeforeLabelEdit;
@@ -64,14 +65,12 @@ namespace System.Windows.Forms
 		public event EventHandler ItemActivate;
 		public event ItemCheckEventHandler ItemCheck;
 		public event ItemDragEventHandler ItemDrag;
-		public event EventHandler SelectedIndexChanged;
 		
 		public ListView()
 		{
 			items = new ListViewItemCollection(this);
 			columns = new ColumnHeaderCollection(this);
-			listItemsHashTable = new Hashtable();
-			listItemsArrayList = new ArrayList();
+			listItems = new ArrayList();
 			autoArrange = true;
 			hideSelection = true;
 			labelWrap = true;
@@ -168,6 +167,7 @@ namespace System.Windows.Forms
 			set
 			{
 				base.BackColor = value;
+				//TODO
 			}
 		}
 
@@ -182,6 +182,10 @@ namespace System.Windows.Forms
 			{
 				base.BackgroundImage = value;
 			}
+		}
+
+		internal void BeginEdit(ListViewItem item)
+		{
 		}
 
 		[TODO]
@@ -225,7 +229,9 @@ namespace System.Windows.Forms
 			get
 			{
 				if (checkedIndices == null)
+				{
 					checkedIndices = new CheckedIndexCollection(this);
+				}
 				return checkedIndices;
 			}
 		}
@@ -235,7 +241,9 @@ namespace System.Windows.Forms
 			get
 			{
 				if (checkedItems == null)
+				{
 					checkedItems = new CheckedListViewItemCollection(this);
+				}
 				return checkedItems;
 			}
 		}
@@ -265,6 +273,15 @@ namespace System.Windows.Forms
 			}
 		}
 
+		[TODO]
+		internal ListViewItem FocusedItemInternal
+		{
+			set
+			{
+
+			}
+		}
+
 		protected override Size DefaultSize
 		{
 			get
@@ -273,6 +290,7 @@ namespace System.Windows.Forms
 			}
 		}
 
+		[TODO]
 		public override Color ForeColor
 		{
 			get
@@ -283,6 +301,7 @@ namespace System.Windows.Forms
 			set
 			{
 				base.ForeColor = value;
+				//TODO
 			}
 		}
 
@@ -358,6 +377,7 @@ namespace System.Windows.Forms
 			}
 		}
 
+		[TODO]
 		public bool HoverSelection
 		{
 			get
@@ -368,7 +388,9 @@ namespace System.Windows.Forms
 			set
 			{
 				if (hoverSelection != value)
+				{
 					hoverSelection = value;
+				}
 			}
 		}
 
@@ -407,6 +429,7 @@ namespace System.Windows.Forms
 			}
 		}
 
+		[TODO]
 		public ImageList LargeImageList
 		{
 			get
@@ -418,7 +441,12 @@ namespace System.Windows.Forms
 			{
 				if (value != largeImageList)
 				{
+					if (largeImageList != null)
+					{
+						largeImageList.Dispose();
+					}
 					largeImageList = value;
+					// TODO
 				}
 		}
 		}
@@ -461,7 +489,6 @@ namespace System.Windows.Forms
 				if (value != multiSelect)
 				{
 					multiSelect = value;
-					//TODO
 				}
 			}
 		}
@@ -489,7 +516,9 @@ namespace System.Windows.Forms
 			get
 			{
 				if (selectedIndices == null)
+				{
 					selectedIndices = new SelectedIndexCollection(this);
+				}
 				return selectedIndices;
 			}
 		}
@@ -499,7 +528,9 @@ namespace System.Windows.Forms
 			get
 			{
 				if (selectedItems == null)
+				{
 					selectedItems = new SelectedListViewItemCollection(this);
+				}
 				return selectedItems;
 			}
 		}
@@ -516,6 +547,10 @@ namespace System.Windows.Forms
 			{
 				if (value != smallImageList)
 				{
+					if (smallImageList != null)
+					{
+						smallImageList.Dispose();
+					}
 					smallImageList = value;
 					//TODO
 				}
@@ -550,6 +585,15 @@ namespace System.Windows.Forms
 
 			set
 			{
+				if (stateImageList == value)
+				{
+					return;
+				}
+				if (stateImageList != null)
+				{
+					stateImageList.Dispose();
+				}
+				stateImageList = value;
 			}
 		}
 
@@ -602,6 +646,15 @@ namespace System.Windows.Forms
 		[TODO]
 		public void ArrangeIcons(ListViewAlignment value)
 		{
+			if (viewStyle == View.Details)
+			{
+				return; 
+			}
+			if (sorting != SortOrder.None)
+			{
+				Sort();
+			}
+			//TODO:
 		}
 
 		public void ArrangeIcons()
@@ -609,12 +662,11 @@ namespace System.Windows.Forms
 			ArrangeIcons(ListViewAlignment.Default);
 		}
 
-		[TODO]
 		public void BeginUpdate()
 		{
+			updating++;
 		}
 
-		[TODO]
 		public void Clear()
 		{
 			Items.Clear();
@@ -628,12 +680,24 @@ namespace System.Windows.Forms
 
 		protected override void Dispose(bool disposing)
 		{
+			if (columnHeaders != null)
+			{
+				// More efficient to remove from the back.
+				for (int i = columnHeaders.Length - 1; i >= 0; i--)
+				{
+					columnHeaders[i].Dispose();
+				}
+				columnHeaders = null;
+			}
 			base.Dispose(disposing);
 		}
 
-		[TODO]
 		public void EndUpdate()
 		{
+			if (--updating <= 0)
+			{
+				Invalidate();
+			}
 		}
 
 		[TODO]
@@ -658,33 +722,55 @@ namespace System.Windows.Forms
 			return Rectangle.Empty;
 		}
 
-		[TODO]
 		protected override bool IsInputKey(Keys keyData)
 		{
+			if ((keyData & Keys.Alt) != 0)
+			{
+				return false;
+			}
+			Keys key = keyData & Keys.KeyCode;
+			if (key == Keys.Prior || key == Keys.Next || key == Keys.Home || key == Keys.End || base.IsInputKey(keyData))
+			{
+				return true;
+			}
+			if (inLabelEdit)
+			{
+				if (key == Keys.Return || key == Keys.Escape)
+				{
+					return true;
+				}
+			}
 			return false;
 		}
 
 		protected virtual void OnAfterLabelEdit(LabelEditEventArgs e)
 		{
 			if (AfterLabelEdit != null)
+			{
 				AfterLabelEdit(this, e);
+			}
 		}
 
 		protected virtual void OnBeforeLabelEdit(LabelEditEventArgs e)
 		{
 			if (BeforeLabelEdit != null)
+			{
 				BeforeLabelEdit(this, e);
+			}
 		}
 
 		protected virtual void OnColumnClick(ColumnClickEventArgs e)
 		{
 			if (ColumnClick != null)
+			{
 				ColumnClick(this, e);
+			}
 		}
 
 		protected override void OnFontChanged(EventArgs e)
 		{
 			base.OnFontChanged(e);
+			Invalidate();
 		}
 
 		protected override void OnHandleCreated(EventArgs e)
@@ -700,37 +786,44 @@ namespace System.Windows.Forms
 		protected virtual void OnItemActivate(EventArgs e)
 		{
 			if (ItemActivate != null)
+			{
 				ItemActivate(this, e);
+			}
 		}
 
 		protected virtual void OnItemCheck(ItemCheckEventArgs ice)
 		{
 			if (ItemCheck != null)
+			{
 				ItemCheck(this, ice);
+			}
 		}
 
 		protected virtual void OnItemDrag(ItemDragEventArgs e)
 		{
 			if (ItemDrag != null)
+			{
 				ItemDrag(this, e);
+			}
 		}
 
-		[TODO]
 		protected virtual void OnSelectedIndexChanged(EventArgs e)
 		{
-			if (SelectedIndexChanged != null)
-				SelectedIndexChanged(this, EventArgs.Empty);
+			EventHandler handler = GetHandler(EventId.SelectedIndexChanged) as EventHandler;
+			if(handler != null)
+			{
+				handler(this, e);
+			}
 		}
 
-		[TODO]
 		protected override void OnSystemColorsChanged(EventArgs e)
 		{
 			base.OnSystemColorsChanged(e);
 		}
 
-		[TODO]
 		protected void RealizeProperties()
 		{
+			// Not required in this implementation.
 		}
 
 		[TODO]
@@ -738,10 +831,23 @@ namespace System.Windows.Forms
 		{
 		}
 
-		[TODO]
 		public override string ToString()
 		{
-			return base.ToString();
+			String s = base.ToString();
+			if (listItems != null)
+			{
+				s += ", Count: " + listItems.Count;
+				if (listItems.Count > 0)
+				{
+					String s1 = ", Items[0]: " + listItems[0];
+					if (s1.Length > 50)
+					{
+						s1 = s1.Substring(0, 50);
+					}
+					s += s1;
+				}
+			}
+			return s;
 		}
 
 		protected void UpdateExtendedStyles()
@@ -753,34 +859,632 @@ namespace System.Windows.Forms
 		}
 #endif
 
-		public class SelectedListViewItemCollection: IList
+		public event EventHandler SelectedIndexChanged
+		{
+			add
+			{
+				AddHandler(EventId.SelectedIndexChanged, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.SelectedIndexChanged, value);
+			}
+		}
+
+		public class CheckedIndexCollection: IList
 		{
 			private ListView owner;
 
-			[TODO]
-			private ListViewItem[] SelectedItemArray
-			{
-				get
-				{
-					return null;
-				}
-			}
-
-			[TODO]
 			public virtual int Count
 			{
 				get
 				{
-					return 0;
+					if (!owner.CheckBoxes)
+					{
+						return 0;
+					}
+					int count = 0;
+					for (int i = 0; i < owner.listItems.Count; i++)
+					{
+						if ((owner.listItems[i] as ListViewItem).Checked)
+						{
+							count++;
+						}
+					}
+					return count;
 				}
 			}
 
-			[TODO]
+			public int this[int index]
+			{
+				get
+				{
+					int pos = 0;
+					for (int i = 0; i < owner.listItems.Count; i++)
+					{
+						if ((owner.listItems[i] as ListViewItem).Checked)
+						{
+							if (pos == index)
+							{
+								return pos;
+							}
+							pos++;
+						}
+					}
+					throw new ArgumentOutOfRangeException();
+				}
+			}
+
+			object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					throw new NotSupportedException();
+				}
+			}
+
+			public virtual bool IsReadOnly
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			public CheckedIndexCollection(ListView owner)
+			{
+				this.owner = owner;
+			}
+
+			object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+			bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			bool IList.IsFixedSize
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			public bool Contains(int checkedIndex)
+			{
+				return (owner.listItems[checkedIndex] as ListViewItem).Checked;
+			}
+
+			bool IList.Contains(object checkedIndex)
+			{
+				if (checkedIndex is int)
+				{
+					return Contains((int)checkedIndex);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			public int IndexOf(int checkedIndex)
+			{
+				int pos = 0;
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					ListViewItem item = owner.listItems[i] as ListViewItem;
+					if (item.Checked)
+					{
+						if (i == checkedIndex)
+						{
+							return pos;
+						}
+						pos++;
+					}
+				}
+				return -1;
+			}
+
+			int IList.IndexOf(object checkedIndex)
+			{
+				if (checkedIndex is Int32)
+				{
+					return IndexOf((int)checkedIndex);
+				}
+				else
+				{
+					return -1;
+				}
+			}
+
+			int IList.Add(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Clear()
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Insert(int index, object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Remove(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.RemoveAt(int index)
+			{
+				throw new NotSupportedException();
+			}
+
+			void ICollection.CopyTo(Array dest, int index)
+			{
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					if ((owner.listItems[i] as ListViewItem).Checked)
+					{
+						dest.SetValue(i, index++);
+					}
+				}
+			}
+
+			public virtual IEnumerator GetEnumerator()
+			{
+				return GenerateCheckedIndexes().GetEnumerator(); 
+			}
+
+			private int[] GenerateCheckedIndexes()
+			{
+				int[] indexes =new int[Count];
+				int pos = 0;
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					if ((owner.listItems[i] as ListViewItem).Checked)
+					{
+						indexes[pos++] = i;
+					}
+				}
+				return indexes;
+			}
+		}
+
+		public class CheckedListViewItemCollection: IList
+		{
+			private ListView owner;
+
+			public virtual int Count
+			{
+				get
+				{
+					return owner.CheckedIndices.Count;
+				}
+			}
+
+			private ListViewItem[] GenerateCheckedItems()
+			{
+				ListViewItem[] indexes =new ListViewItem[owner.CheckedIndices.Count];
+				int pos = 0;
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					ListViewItem item = owner.listItems[i] as ListViewItem;
+					if (item.Checked)
+					{
+						indexes[pos++] = item;
+					}
+				}
+				return indexes;
+			}
+
 			public ListViewItem this[int index]
 			{
 				get
 				{
+					int pos = 0;
+					for (int i = 0; i < owner.listItems.Count; i++)
+					{
+						ListViewItem item = owner.listItems[i] as ListViewItem;
+						if (item.Checked)
+						{
+							if (pos == index)
+							{
+								return item;
+							}
+							pos++;
+						}
+					}
 					return null;
+				}
+			}
+
+			object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					throw new NotSupportedException();
+				}
+			}
+
+			public virtual bool IsReadOnly
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			public CheckedListViewItemCollection(ListView owner)
+			{
+				this.owner = owner;
+			}
+
+			object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+			bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			bool IList.IsFixedSize
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			public bool Contains(ListViewItem item)
+			{
+				if (item != null && item.ListView == owner && item.Checked)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			bool IList.Contains(object item)
+			{
+				if (item is ListViewItem)
+				{
+					return Contains(item as ListViewItem);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			public int IndexOf(ListViewItem item)
+			{
+				int pos = 0;
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					ListViewItem itemArray = owner.listItems[i] as ListViewItem;
+					if (item.Checked)
+					{
+						if (item == itemArray)
+						{
+							return pos;
+						}
+						pos++;
+					}
+				}
+				return -1;
+			}
+
+			int IList.IndexOf(object item)
+			{
+				ListViewItem listViewItem = item as ListViewItem;
+				if (listViewItem != null)
+				{
+					return IndexOf(listViewItem);
+				}
+				else
+				{
+					return -1;
+				}
+			}
+
+			void IList.Clear()
+			{
+				throw new NotSupportedException();
+			}
+
+			int IList.Add(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Insert(int index, object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.RemoveAt(int index)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Remove(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			public virtual void CopyTo(Array dest, int index)
+			{
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					ListViewItem item = owner.listItems[i] as ListViewItem;
+					if (item.Checked)
+					{
+						dest.SetValue(item, index++);
+					}
+				}
+			}
+
+			public virtual IEnumerator GetEnumerator()
+			{
+				return GenerateCheckedItems().GetEnumerator();
+			}
+		}
+		public class SelectedIndexCollection: IList
+		{
+			private ListView owner;
+
+			public virtual int Count
+			{
+				get
+				{
+					int pos = 0;
+					for (int i = 0; i < owner.listItems.Count; i++)
+					{
+						ListViewItem listViewItem = owner.listItems[i] as ListViewItem;
+						if (listViewItem.Selected)
+						{
+							pos++;
+						}
+					}
+					return pos;
+				}
+			}
+
+			public int this[int index]
+			{
+				get
+				{
+					int pos = 0;
+					for (int i = 0; i < owner.listItems.Count; i++)
+					{
+						ListViewItem listViewItem = owner.listItems[i] as ListViewItem;
+						if (listViewItem.Selected)
+						{
+							if (pos == index)
+							{
+								return i;
+							}
+							pos++;
+						}
+					}
+					throw new ArgumentOutOfRangeException();
+				}
+			}
+
+			public virtual bool IsReadOnly
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			public SelectedIndexCollection(ListView owner)
+			{
+				this.owner = owner;
+			}
+
+			object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					throw new NotSupportedException();
+				}
+			}
+
+			object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+			bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			bool IList.IsFixedSize
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+			public bool Contains(int selectedIndex)
+			{
+				return owner.Items[selectedIndex].Selected;
+			}
+
+			bool IList.Contains(object selectedIndex)
+			{
+				if (selectedIndex is Int32)
+				{
+					return Contains((int)selectedIndex);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			public int IndexOf(int selectedIndex)
+			{
+				int pos = 0;
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					ListViewItem listViewItem = owner.listItems[i] as ListViewItem;
+					if (listViewItem.Selected)
+					{
+						if (selectedIndex == i)
+						{
+							return pos;
+						}
+						pos++;
+					}
+				}
+				return -1;
+			}
+
+			int IList.IndexOf(object selectedIndex)
+			{
+				if (selectedIndex is Int32)
+				{
+					return IndexOf((int)selectedIndex);
+				}
+				else
+				{
+					return -1;
+				}
+			}
+
+			int IList.Add(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Clear()
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Insert(int index, object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.RemoveAt(int index)
+			{
+				throw new NotSupportedException();
+			}
+
+			void IList.Remove(object value)
+			{
+				throw new NotSupportedException();
+			}
+
+			public virtual void CopyTo(Array dest, int index)
+			{
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					if ((owner.listItems[i] as ListViewItem).Selected)
+					{
+						dest.SetValue(i, index++);
+					}
+				}
+			}
+
+			public virtual IEnumerator GetEnumerator()
+			{
+				return GenerateSelectedIndexArray().GetEnumerator();	
+			}
+
+			private int[] GenerateSelectedIndexArray()
+			{
+				int[] selectedIndexes = new int[Count];
+				int pos = 0;
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					if ((owner.listItems[i] as ListViewItem).Selected)
+					{
+						selectedIndexes[pos++] = i;
+					}
+				}
+				return selectedIndexes;
+			}
+		}
+
+		public class SelectedListViewItemCollection: IList
+		{
+			private ListView owner;
+
+			public virtual int Count
+			{
+				get
+				{
+					return owner.selectedIndices.Count;
+				}
+			}
+
+			public ListViewItem this[int index]
+			{
+				get
+				{
+					int pos = 0;
+					for (int i = 0;i < owner.listItems.Count; i++)
+					{
+						ListViewItem listViewItem = owner.listItems[i] as ListViewItem;
+						if (listViewItem.Selected)
+						{
+							if (index == pos)
+							{
+								return listViewItem;
+							}
+							pos++;
+						}
+					}
+					throw new ArgumentOutOfRangeException();
 				}
 			}
 
@@ -855,8 +1559,14 @@ namespace System.Windows.Forms
 
 			public virtual void Clear()
 			{
-				for (int i = 0; i < SelectedItemArray.Length; i++)
-					SelectedItemArray[i].Selected = false;
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					ListViewItem listViewItem = owner.listItems[i] as ListViewItem;
+					if (listViewItem.Selected)
+					{
+						listViewItem.Selected = false;
+					}
+				}
 			}
 
 			public bool Contains(ListViewItem item)
@@ -866,42 +1576,76 @@ namespace System.Windows.Forms
 
 			bool IList.Contains(object item)
 			{
-				if (item is ListViewItem)
+				ListViewItem listViewItem = item as ListViewItem;
+				if (listViewItem != null)
+				{
 					return Contains(item as ListViewItem);
+				}
 				else
+				{
 					return false;
+				}
 			}
 
 			public virtual void CopyTo(Array dest, int index)
 			{
-				if (Count > 0)
-					Array.Copy(SelectedItemArray, 0, dest, index, Count);
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					ListViewItem listViewItem = owner.listItems[i] as ListViewItem;
+					if (listViewItem.Selected)
+					{
+						dest.SetValue(listViewItem, index++);
+					}
+				}
 			}
 
 			public int IndexOf(ListViewItem item)
 			{
-				for (int i = 0; i < SelectedItemArray.Length; i++)
+				int pos = 0;
+				for (int i = 0; i < owner.listItems.Count; i++)
 				{
-					if (SelectedItemArray[i] == item)
-						return i;
+					ListViewItem arrayItem = owner.listItems[i] as ListViewItem;
+					
+					if (arrayItem.Selected)
+					{
+						if (arrayItem == item)
+						{
+							return pos;
+						}
+						pos++;
+					}
 				}
 				return -1;
 			}
 
 			public virtual IEnumerator GetEnumerator()
 			{
-				if (SelectedItemArray != null)
-					return SelectedItemArray.GetEnumerator();
-				else
-					return new ListViewItem[0].GetEnumerator();
+				return GenerateSelectedItemArray().GetEnumerator();
+			}
+
+			private ListViewItem[] GenerateSelectedItemArray()
+			{
+				ListViewItem[] selectedItems = new ListViewItem[Count];
+				int pos = 0;
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					ListViewItem item = owner.listItems[i] as ListViewItem;
+					if (item.Selected)
+					{
+						selectedItems[pos++] = item;
+					}
+				}
+				return selectedItems;
 			}
 
 			int IList.IndexOf(object item)
 			{
-				if (item is ListViewItem)
-					return IndexOf(item as ListViewItem);
-				else
-					return -1;
+				ListViewItem listViewItem = item as ListViewItem;
+				if (listViewItem != null)
+				{
+					return IndexOf(listViewItem);
+				}
+				return -1;
 			}
 		}
 
@@ -913,7 +1657,7 @@ namespace System.Windows.Forms
 			{
 				get
 				{
-					return owner.itemCount;
+					return owner.listItems.Count;
 				}
 			}
 
@@ -929,13 +1673,13 @@ namespace System.Windows.Forms
 			{
 				get
 				{
-					return null;
+					return owner.listItems[displayIndex] as ListViewItem;
 				}
 
 				set
 				{
-					RemoveAt(displayIndex);
-					Insert(displayIndex, value);
+					owner.listItems[displayIndex] = value;
+					//TODO
 				}
 			}
 
@@ -982,7 +1726,7 @@ namespace System.Windows.Forms
 					}
 					else if (value != null)
 					{
-						this[index] = new ListViewItem(value.ToString(), -1);
+						this[index] = new ListViewItem(value.ToString());
 					}
 				}
 			}
@@ -995,11 +1739,14 @@ namespace System.Windows.Forms
 			int IList.Add(object item)
 			{
 				if (item is ListViewItem)
-					return IndexOf(Add((ListViewItem)item));
+				{
+					return IndexOf(Add(item as ListViewItem));
+				}
 				if (item != null)
+				{
 					return IndexOf(Add(item.ToString()));
-				else
-					return -1;
+				}
+				return -1;
 			}
 
 			public virtual ListViewItem Add(string text, int imageIndex)
@@ -1011,21 +1758,24 @@ namespace System.Windows.Forms
 
 			public virtual ListViewItem Add(ListViewItem value)
 			{
+				owner.listItems.Add(value);
+				owner.Sort();
+				//TODO
 				return value;
 			}
 
-			[TODO]
 			public void AddRange(ListViewItem[] values)
 			{
-
+				owner.listItems.AddRange(values);
+				owner.Sort();
+				//TODO
 			}
 
-			[TODO]
 			public virtual void Clear()
 			{
-				if (owner.itemCount > 0)
+				if (owner.listItems.Count > 0)
 				{
-					owner.itemCount = 0;
+					owner.listItems.Clear();
 					//TODO
 				}
 			}
@@ -1038,21 +1788,26 @@ namespace System.Windows.Forms
 			bool IList.Contains(object item)
 			{
 				if (item is ListViewItem)
+				{
 					return Contains(item as ListViewItem);
+				}
 				else
+				{
 					return false;
+				}
 			}
 
 			public virtual void CopyTo(Array dest, int index)
 			{
-				if (owner.itemCount > 0)
-					for (int i = 0; i < Count; i++)
-						dest.SetValue(this[i], index++);
+				for (int i = 0; i < owner.listItems.Count; i++)
+				{
+					dest.SetValue(owner.listItems[i], index++);
+				}
 			}
 
 			public virtual IEnumerator GetEnumerator()
 			{
-				ListViewItem[] listViewItems = new ListViewItem[Count];
+				ListViewItem[] listViewItems = new ListViewItem[owner.listItems.Count];
 				CopyTo(listViewItems, 0);
 				return listViewItems.GetEnumerator();
 			}
@@ -1060,52 +1815,66 @@ namespace System.Windows.Forms
 			public int IndexOf(ListViewItem item)
 			{
 				for (int i = 0; i < Count; i++)
+				{
 					if (this[i] == item)
+					{
 						return i;
+					}
+				}
 				return -1;
 			}
 
 			int IList.IndexOf(object item)
 			{
-				if (item is ListViewItem)
-					return IndexOf((ListViewItem)item);
+				ListViewItem listViewItem = item as ListViewItem;
+				if (item != null)
+				{
+					return IndexOf(listViewItem);
+				}
 				else
+				{
 					return -1;
+				}
 			}
 
 			void IList.Insert(int index, object item)
 			{
-				if (item is ListViewItem)
-					Insert(index, (ListViewItem)item);
+				ListViewItem listViewItem = item as ListViewItem;
+				if (listViewItem != null)
+				{
+					Insert(index, listViewItem);
+				}
 				else if (item != null)
+				{
 					Insert(index, item.ToString());
+				}
 			}
 
-			[TODO]
 			public virtual void RemoveAt(int index)
 			{
+				owner.listItems.RemoveAt(index);
+				//TODO
 			}
 
 			public virtual void Remove(ListViewItem item)
 			{
-				if (item == null)
-					return;
-				int i = item.Index;
-				if (i >= 0)
-				{
-					RemoveAt(i);
-				}
+				Remove(item);
+				//TODO
 			}
 
 			void IList.Remove(object item)
 			{
 				if (item == null || !(item is ListViewItem))
+				{
 					return;
+				}
 				Remove(item as ListViewItem);
 			}
 			public ListViewItem Insert(int index, ListViewItem item)
 			{
-				return null;
+				owner.listItems.Insert(index, item);
+				//TODO
+				return item;
 			}
 
 			public ListViewItem Insert(int index, string text)
@@ -1116,141 +1885,6 @@ namespace System.Windows.Forms
 			public ListViewItem Insert(int index, string text, int imageIndex)
 			{
 				return Insert(index, new ListViewItem(text, imageIndex));
-			}
-		}
-
-		public class SelectedIndexCollection: IList
-		{
-			private ListView owner;
-
-			[TODO]
-			public virtual int Count
-			{
-				get
-				{
-					return 0;
-				}
-			}
-
-			[TODO]
-			public int this[int index]
-			{
-				get
-				{
-					return 0;
-				}
-			}
-
-			public virtual bool IsReadOnly
-			{
-				get
-				{
-					return true;
-				}
-			}
-
-			public SelectedIndexCollection(ListView owner)
-			{
-				this.owner = owner;
-			}
-
-			object IList.this[int index]
-			{
-				get
-				{
-					return this[index];
-				}
-				set
-				{
-					throw new NotSupportedException();
-				}
-			}
-
-			object ICollection.SyncRoot
-			{
-				get
-				{
-					return this;
-				}
-			}
-
-			bool ICollection.IsSynchronized
-			{
-				get
-				{
-					return false;
-				}
-			}
-
-			bool IList.IsFixedSize
-			{
-				get
-				{
-					return true;
-				}
-			}
-
-			public bool Contains(int selectedIndex)
-			{
-				return owner.Items[selectedIndex].Selected;
-			}
-
-			bool IList.Contains(object selectedIndex)
-			{
-				if (selectedIndex is Int32)
-					return Contains((int)selectedIndex);
-				else
-					return false;
-			}
-
-			[TODO]
-			public int IndexOf(int selectedIndex)
-			{
-				return -1;
-			}
-
-			int IList.IndexOf(object selectedIndex)
-			{
-				if (selectedIndex is Int32)
-					return IndexOf((int)selectedIndex);
-				else
-					return -1;
-			}
-
-			int IList.Add(object value)
-			{
-				throw new NotSupportedException();
-			}
-
-			void IList.Clear()
-			{
-				throw new NotSupportedException();
-			}
-
-			void IList.Insert(int index, object value)
-			{
-				throw new NotSupportedException();
-			}
-
-			void IList.RemoveAt(int index)
-			{
-				throw new NotSupportedException();
-			}
-
-			void IList.Remove(object value)
-			{
-				throw new NotSupportedException();
-			}
-
-			[TODO]
-			public virtual void CopyTo(Array dest, int index)
-			{
-			}
-
-			[TODO]
-			public virtual IEnumerator GetEnumerator()
-			{
-				return null;
 			}
 		}
 
@@ -1271,9 +1905,13 @@ namespace System.Windows.Forms
 				get
 				{
 					if (owner.columnHeaders != null)
+					{
 						return owner.columnHeaders.Length;
+					}
 					else
+					{
 						return 0;
+					}
 				}
 			}
 
@@ -1281,7 +1919,7 @@ namespace System.Windows.Forms
 			{
 				get
 				{
-					return false;
+					return true;
 				}
 			}
 
@@ -1326,14 +1964,13 @@ namespace System.Windows.Forms
 				}
 			}
 
-			[TODO]
 			public virtual ColumnHeader Add(string str, int width, HorizontalAlignment textAlign)
 			{
 				ColumnHeader columnHeader = new ColumnHeader();
-				columnHeader.Text = str;
-				columnHeader.Width = width;
-				columnHeader.TextAlign = textAlign;
-				//TODO
+				columnHeader.text = str;
+				columnHeader.width = width;
+				columnHeader.textAlign = textAlign;
+				Add(columnHeader);
 				return columnHeader;
 			}
 
@@ -1367,26 +2004,32 @@ namespace System.Windows.Forms
 
 			void ICollection.CopyTo(Array dest, int index)
 			{
-				if (Count > 0)
-					Array.Copy(owner.columnHeaders, 0, dest, index, Count);
+				Array.Copy(owner.columnHeaders, 0, dest, index, owner.columnHeaders.Length);
 			}
 
 			public int IndexOf(ColumnHeader value)
 			{
-				for (int i = 0; i < Count; i++)
+				for (int i = 0; i < owner.columnHeaders.Length; i++)
 				{
 					if (this[i] == value)
+					{
 						return i;
+					}
 				}
 				return -1;
 			}
 
 			int IList.IndexOf(object value)
 			{
-				if (value is ColumnHeader)
-					return IndexOf(value as ColumnHeader);
+				ColumnHeader columnHeader = value as ColumnHeader;
+				if (columnHeader != null)
+				{
+					return IndexOf(columnHeader);
+				}
 				else
+				{
 					return -1;
+				}
 			}
 
 			public bool Contains(ColumnHeader value)
@@ -1396,367 +2039,105 @@ namespace System.Windows.Forms
 
 			bool IList.Contains(object value)
 			{
-				if (value is ColumnHeader)
-					return Contains(value as ColumnHeader);
+				ColumnHeader columnHeader = value as ColumnHeader;
+				if (columnHeader != null)
+				{
+					return Contains(columnHeader);
+				}
 				else
+				{
 					return false;
+				}
 			}
 
-			[TODO]
 			public virtual void Remove(ColumnHeader column)
 			{
-				int i = IndexOf(column);
-				if (i != -1)
-					RemoveAt(i);
+				int pos = IndexOf(column);
+				if (pos != -1)
+				{
+					RemoveAt(pos);
+				}
 			}
 
 			void IList.Remove(object value)
 			{
 				if (value is ColumnHeader)
+				{
 					Remove(value as ColumnHeader);
+				}
 			}
 
 			public virtual void RemoveAt(int index)
 			{
+
+				owner.columnHeaders[index].listView = null;
+				int newLen = owner.columnHeaders.Length - 1;
+				if (newLen == 0)
+				{
+					owner.columnHeaders = null;
+					return; 
+				}
+				ColumnHeader[] columnHeaders = new ColumnHeader[newLen];
+				Array.Copy(owner.columnHeaders, 0, columnHeaders, 0, index);
+				if (index < newLen)
+				{
+					Array.Copy(owner.columnHeaders, index + 1, columnHeaders, index, newLen - index);
+				}
+				owner.columnHeaders = columnHeaders;
+
 			}
 
 			public virtual IEnumerator GetEnumerator()
 			{
 				if (owner.columnHeaders != null)
+				{
 					return owner.columnHeaders.GetEnumerator();
+				}
 				else
+				{
 					return new ColumnHeader[0].GetEnumerator();
+				}
 			}
-			[TODO]
+			
 			public void Insert(int index, ColumnHeader value)
 			{
+				value.listView = owner;
+				int oldLen = 0;
+				if (owner.columnHeaders == null)
+				{
+					owner.columnHeaders = new ColumnHeader[1];
+				}
+				else
+				{
+					oldLen = owner.columnHeaders.Length;
+					ColumnHeader[] newColumnHeaders = new ColumnHeader[oldLen + 1];
+					Array.Copy(owner.columnHeaders, newColumnHeaders, oldLen);
+					owner.columnHeaders = newColumnHeaders;
+				}
+				Array.Copy(owner.columnHeaders, index, owner.columnHeaders, index + 1, oldLen - index);
+				owner.columnHeaders[index] = value;
+				//TODO
 			}
 
-			[TODO]
 			void IList.Insert(int index, object value)
 			{
+				ColumnHeader columnHeader = value as ColumnHeader;
+				if (columnHeader != null)
+				{
+					Insert(index, columnHeader);
+				}
 			}
 
-			[TODO]
 			public void Insert(int index, string str, int width, HorizontalAlignment textAlign)
 			{
+				ColumnHeader columnHeader = new ColumnHeader();
+				columnHeader.text = str;
+				columnHeader.width = width;
+				columnHeader.textAlign = textAlign;
+				Insert(index, columnHeader);
 			}
 		}
 	}
 
-	public class CheckedIndexCollection: IList
-	{
-		private ListView owner;
 
-		public virtual int Count
-		{
-			get
-			{
-				if (!owner.CheckBoxes)
-					return 0;
-				int count = 0;
-				foreach(ListViewItem item in owner.Items)
-					if (item.Checked)
-						count++;
-				return count;
-			}
-		}
-
-		public int this[int index]
-		{
-			get
-			{
-				int pos = 0;
-				foreach(ListViewItem item in owner.Items)
-				{
-					if (item.Checked)
-					{
-						if (pos == index)
-							return pos;
-						pos++;
-					}
-				}
-				throw new ArgumentOutOfRangeException();
-			}
-		}
-
-		object IList.this[int index]
-		{
-			get
-			{
-				return this[index];
-			}
-			set
-			{
-				throw new NotSupportedException();
-			}
-		}
-
-		public virtual bool IsReadOnly
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		public CheckedIndexCollection(ListView owner)
-		{
-			this.owner = owner;
-		}
-
-		object ICollection.SyncRoot
-		{
-			get
-			{
-				return this;
-			}
-		}
-
-		bool ICollection.IsSynchronized
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		bool IList.IsFixedSize
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		public bool Contains(int checkedIndex)
-		{
-			if (owner.Items[checkedIndex].Checked)
-				return true;
-			else
-				return false;
-		}
-
-		bool IList.Contains(object checkedIndex)
-		{
-			if (checkedIndex is Int32)
-			{
-				return Contains((int)checkedIndex);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		[TODO]
-		public int IndexOf(int checkedIndex)
-		{
-			//TODO
-			return -1;
-		}
-
-		[TODO]
-		int IList.IndexOf(object checkedIndex)
-		{
-			if (checkedIndex is Int32)
-			{
-				return IndexOf((int)checkedIndex);
-			}
-			else
-			{
-				return -1;
-			}
-		}
-
-		int IList.Add(object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Clear()
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Insert(int index, object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Remove(object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.RemoveAt(int index)
-		{
-			throw new NotSupportedException();
-		}
-
-		[TODO]
-		void ICollection.CopyTo(Array dest, int index)
-		{
-			//TODO
-		}
-
-		[TODO]
-		public virtual IEnumerator GetEnumerator()
-		{
-			//TODO
-			return null;
-		}
-	}
-
-
-	public class CheckedListViewItemCollection: IList
-	{
-		private ListView owner;
-
-		public virtual int Count
-		{
-			get
-			{
-				return owner.CheckedIndices.Count;
-			}
-		}
-
-		[TODO]
-		private ListViewItem[] ItemArray
-		{
-			get
-			{
-				return null;
-			}
-		}
-
-		[TODO]
-		public ListViewItem this[int index]
-		{
-			get
-			{
-				return null;
-			}
-		}
-
-		object IList.this[int index]
-		{
-			get
-			{
-				return this[index];
-			}
-			set
-			{
-				throw new NotSupportedException();
-			}
-		}
-
-		public virtual bool IsReadOnly
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		public CheckedListViewItemCollection(ListView owner)
-		{
-			this.owner = owner;
-		}
-
-		object ICollection.SyncRoot
-		{
-			get
-			{
-				return this;
-			}
-		}
-
-		bool ICollection.IsSynchronized
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		bool IList.IsFixedSize
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		public bool Contains(ListViewItem item)
-		{
-			if (item != null && item.ListView == owner && item.Checked)
-				return true;
-			else
-				return false;
-		}
-
-		bool IList.Contains(object item)
-		{
-			if (item is ListViewItem)
-				return Contains(item as ListViewItem);
-			else
-				return false;
-		}
-
-		public int IndexOf(ListViewItem item)
-		{
-			for (int i = 0; i < ItemArray.Length; i++)
-				if (ItemArray[i] == item)
-					return i;
-			return -1;
-		}
-
-		int IList.IndexOf(object item)
-		{
-			if (item is ListViewItem)
-				return IndexOf(item as ListViewItem);
-			else
-				return -1;
-		}
-
-		void IList.Clear()
-		{
-			throw new NotSupportedException();
-		}
-
-		int IList.Add(object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Insert(int index, object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.RemoveAt(int index)
-		{
-			throw new NotSupportedException();
-		}
-
-		void IList.Remove(object value)
-		{
-			throw new NotSupportedException();
-		}
-
-		public virtual void CopyTo(Array dest, int index)
-		{
-			if (Count > 0)
-				Array.Copy(ItemArray, 0, dest, index, Count);
-		}
-
-		public virtual IEnumerator GetEnumerator()
-		{
-			if (ItemArray != null)
-				return ItemArray.GetEnumerator();
-			else
-				return new ListViewItem[0].GetEnumerator();
-		}
-	}
 }

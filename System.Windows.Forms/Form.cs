@@ -31,6 +31,7 @@ public class Form : ContainerControl
 {
 	// Internal state.
 	private IButtonControl acceptButton;
+	private IButtonControl defaultButton;
 	private IButtonControl cancelButton;
 	private bool autoScale;
 	private bool keyPreview;
@@ -1431,18 +1432,35 @@ public class Form : ContainerControl
 	protected override void UpdateDefaultButton()
 			{
 				// Find the bottom active control.
-				Control c = this;
-				while (c is ContainerControl)
-					c = (c as ContainerControl).ActiveControl;
+				ContainerControl c = this;
+				while (true)
+				{
+					ContainerControl nextActive = c.ActiveControl as ContainerControl;
+					if (nextActive == null)
+					{
+						break;
+					}
+					c = nextActive;
+				}
 
-				if (c is IButtonControl)
+				IButtonControl newDefaultButton = c as IButtonControl;
+				if (c == null)
+				{
+					newDefaultButton = acceptButton;
+				}
+
+				if (newDefaultButton != defaultButton)
 				{
 					// Notify the previous button that it is not the default.
-					if (acceptButton != null)
-						(acceptButton as IButtonControl).NotifyDefault(false);
-					acceptButton = c as IButtonControl;
-					if (acceptButton != null)
-						(acceptButton as IButtonControl).NotifyDefault(true);
+					if (defaultButton != null)
+					{
+						defaultButton.NotifyDefault(false);
+					}
+					defaultButton = newDefaultButton;
+					if (defaultButton != null)
+					{
+						defaultButton.NotifyDefault(true);
+					}
 				}
 			} 
 

@@ -1373,7 +1373,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				while (ctl != null)
 				{
-					ctl = ctl.Parent;
+					ctl = ctl.parent;
 					if (ctl == this)
 						return true; 
 				}
@@ -2807,7 +2807,8 @@ public class Control : IWin32Window, IDisposable
 				}
 				else if(msgNum == Win32Constants.WM_CHAR)
 				{
-					if(!IsInputChar((char)(msg.key)))
+					bool altKeyDown = ((currentModifiers & Keys.Alt) != 0);
+					if(altKeyDown || !IsInputChar((char)(msg.key)))
 					{
 						return ProcessDialogChar((char)(msg.key));
 					}

@@ -20,6 +20,59 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/* Information on Keyboard handling
+ * Key event processing always starts at the control that has the input focus (e.g. a text control). From there various methods are called upwards in the window hierarchy (from child to parent). This gives parent controls such as forms and panels an opportunity to handle and consume key events before they can reach the target control. There is only one method (ProcessMnemonic) that is called in the opposite direction (from parent to child). Each of the 8 methods returns a boolean value. If a method returns true the key event is considered handled (consumed) and processing of that particular key event will stop immediatly (no further processing methods will be called).
+
+Key event processing actually happens in two phases: preprocessing and processing. The preprocessing phase starts with a call to PreProcessMessage, the processing phase with a call to ProcessKeyMessage. While the processing phase is very similar for all three types of key events (WM_KEYDOWN, WM_KEYUP and WM_CHAR) preprocessing differs completely for WM_KEYDOWN and WM_CHAR and there is no preprocessing phase for WM_KEYUP.
+
+Here is what happens in detail:
+
+Preprocessing Phase (WM_KEYDOWN):
+  1. PreProcessMessage is called on the focused control.
+     2. The focused control calls its own ProcessCmdKey method.
+        3. ProcessCmdKey by default just returns the result of calling
+           ProcessCmdKey on its parent. So effectivly this bubbles the event
+           up the windows hierarchy until the top-most control is reached
+           which - by default - simply returns false.
+     4. The focused control calls IsInputKey on itself. If the result is true
+        the PreProcessMessage terminates at this point with a return value of false.
+     6. The focused control calls its own ProcessDialogKey method.
+        7. Again, ProcessDialogKey is called from child to parent along the parent
+           chaim until the top-most control is reached which usually returns false.
+  7. PreProcessMessage returns.           
+           
+Preprocessing Phase (WM_CHAR):
+  1. PreProcessMessage is called on the focused control.
+     2. The focused control calls IsInputChar on itself. If the result is true
+        the PreProcessMessage terminates at this point with a return value of false.
+     3. The focused control calls its own ProcessDialogChar method.
+        4. ProcessDialogChar is called from child to parent along the parent
+           chain until the top-most control is reached which usually returns false.
+           In addition, for each ContainerControl the following step is
+           performed before the parent's ProcessDialogChar method is invoked:
+           5. The container control calls its own ProcessMnemonic method.
+              6. ProcessMnemonic is called for all child controls of the
+                 container (which in turn might call ProcessMnemonic on their
+                 children).
+  7. PreProcessMessage returns.
+   
+Processing Phase (WM_KEYDOWN, WM_KEYUP and WM_CHAR):
+  1. ProcessKeyMessage is called on the focused control.
+     2. The focused control calls ProcessKeyPreview on the parent control.
+        3. ProcessKeyPreview is called from child to parent along the parent
+           chain until the top-most control is reached which usually returns false.
+     4. The focused control calls ProcessKeyEventArgs on itself.
+        5. ProcessKeyEventArgs calls one of the methods OnKeyDown, OnKeyUp
+           or OnKeyPress depending on the type of key event.
+           6. The On* method invokes all event handlers that have been registerd
+              for the corresponding event.
+   7. ProcessKeyMessage returns.
+           
+Note again that as soon as one method returns true processing will stop and the calling method will immediately return true as well. Also, if the preprocessing phase returns true the processing phase will be skipped.
+
+You may have noticed that in preprocessing of WM_CHAR when there are several container controls in the parent chain the ProcessMnemonic method of child controls will be called unnecessarily often.
+*/
+
 namespace System.Windows.Forms
 {
 
@@ -366,14 +419,14 @@ public class ContainerControl : ScrollableControl, IContainerControl
 
 	protected override bool ProcessDialogChar(char charCode)
 	{
-		if (GetTopLevel() && charCode != ' ' && ProcessMnemonic(charCode))
-		{
-			return true;
-		}
-		else
-		{
-			return base.ProcessDialogChar(charCode);
-		}
+		if (GetTopLevel())
+			{
+				if(charCode != ' ' && ProcessMnemonic(charCode))
+				{
+					return true;
+				}
+			}
+		return base.ProcessDialogChar(charCode);
 	}
 
 	protected override bool ProcessDialogKey(Keys keyData)
@@ -419,9 +472,19 @@ public class ContainerControl : ScrollableControl, IContainerControl
 		}
 		Control active = ActiveControl;
 		// Find the bottom most active control or the container if there isn't one.
-		while ((active is ContainerControl) && active != null)
+		while (true)
 		{
-			active = (active as ContainerControl).ActiveControl;
+			ContainerControl container = active as ContainerControl;
+			if (container == null)
+			{
+				break;
+			}
+			Control newActiveControl = container.ActiveControl;
+			if (newActiveControl == null)
+			{
+				break;
+			}
+			active = newActiveControl;
 		}
 
 		// Process the mnemonics if needed.

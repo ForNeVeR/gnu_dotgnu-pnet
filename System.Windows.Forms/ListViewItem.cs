@@ -33,110 +33,152 @@ using System.Runtime.Serialization;
 		, ISerializable
 #endif
 	{
+		private int stateImageIndex;
 		private int imageIndex;
 		private object tag;
 		internal ListView listView;
+		private ListViewSubItem[] subItems;
+		private int subItemsCount;
+		private bool useItemStyleForSubItems;
+		private ListViewSubItemCollection listViewSubItemCollection;
+		private int index;
+		private bool selected;
 
-		[TODO]
 		public Color BackColor
 		{
 			get
 			{
-				//TODO
-				if (listView == null)
-					return Color.Red;
-				else
-					return listView.BackColor;
+				if (subItemsCount == 0)
+				{
+					if (listView == null)
+					{
+						return SystemColors.Window; 
+					}
+					return listView.BackColor; 
+				}
+				return SubItems[0].BackColor;
 			}
 
 			set
 			{
+				SubItems[0].BackColor = value;
 			}
 		}
 
-		[TODO]
 		public Rectangle Bounds
 		{
 			get
 			{
 				if (listView == null)
+				{
 					return Rectangle.Empty;
+				}
 				else
+				{
 					return listView.GetItemRect(Index);
+				}
 			}
 		}
 
-		[TODO]
 		public bool Checked
 		{
 			get
 			{
-				return false;
+				return (imageIndex > 0);
 			}
 
 			set
 			{
+				if (Checked == value)
+				{
+					return;
+				}
+
+				if (value)
+				{
+					imageIndex = 1;
+				}
+				else
+				{
+					imageIndex = 0;
+				}
 			}
 		}
 
-		[TODO]
 		public bool Focused
 		{
 			get
 			{
-				return false;
+				return (listView.FocusedItem == this);
 			}
 
 			set
 			{
+				listView.FocusedItemInternal = this;
 			}
 		}
 
-		[TODO]
 		public Font Font
 		{
 			get
 			{
-				if (listView == null)
-					return null;
-				else
-					return listView.Font;
+				if (subItemsCount == 0)
+				{
+					if (listView == null)
+					{
+						return Control.DefaultFont; 
+					}
+					return listView.Font; 
+				}
+				return SubItems[0].Font; 
+
 			}
 
 			set
 			{
+				SubItems[0].Font = value;
 			}
 		}
 
-		[TODO]
 		public Color ForeColor
 		{
 			get
 			{
-				//TODO
-				if (listView == null)
-					return Color.Red;
-				else
-					return listView.ForeColor;
+				if (subItemsCount == 0)
+				{
+					if (listView == null)
+					{
+						return SystemColors.WindowText; 
+					}
+					return listView.ForeColor; 
+				}
+				return SubItems[0].ForeColor;
 			}
 
 			set
 			{
+				SubItems[0].ForeColor = value;
 			}
 		}
 
-		[TODO]
 		public int ImageIndex
 		{
 			get
 			{
+				if (ImageList != null && imageIndex != -1 && imageIndex >= ImageList.Images.Count)
+				{
+					return ImageList.Images.Count - 1;
+				}
 				return imageIndex;
 			}
 
 			set
 			{
 				imageIndex = value;
-				//TODO
+				if (listView.IsHandleCreated)
+				{
+					//TODO:
+				}
 			}
 		}
 
@@ -145,7 +187,9 @@ using System.Runtime.Serialization;
 			get
 			{
 				if (listView == null)
+				{
 					return null;
+				}
 				switch (listView.View)
 				{
 					case View.LargeIcon:
@@ -158,7 +202,6 @@ using System.Runtime.Serialization;
 					default:
 						return null;
 				}
-				
 			}
 		}
 
@@ -166,9 +209,7 @@ using System.Runtime.Serialization;
 		{
 			get
 			{
-				if (listView == null)
-					return -1;
-				return 0;
+				return index;
 			}
 		}
 
@@ -180,38 +221,60 @@ using System.Runtime.Serialization;
 			}
 		}
 
-		[TODO]
 		public bool Selected
 		{
 			get
 			{
-				return false;
+				return selected;
 			}
 
 			set
 			{
+				if (value == selected)
+				{
+					return;
+				}
+				selected = value;
+				//TODO:
 			}
 		}
 
-		[TODO]
 		public int StateImageIndex
 		{
 			get
 			{
-				return 0;
+				return stateImageIndex;
 			}
 
 			set
 			{
+				if (stateImageIndex == value)
+				{
+					return;
+				}
+				if (value < -1 || value > 14)
+				{
+					throw new ArgumentOutOfRangeException();
+				}
+				//TODO:
 			}
 		}
 
-		[TODO]
 		public ListViewSubItemCollection SubItems
 		{
 			get
 			{
-				return null;
+				if (subItemsCount == 0)
+				{
+					subItemsCount = 1;
+					subItems = new ListViewSubItem[subItemsCount];
+					subItems[0] = new ListViewSubItem(this, string.Empty);
+				}
+				if (listViewSubItemCollection == null)
+				{
+					listViewSubItemCollection = new ListViewSubItemCollection(this);
+				}
+				return listViewSubItemCollection;
 			}
 		}
 
@@ -228,34 +291,45 @@ using System.Runtime.Serialization;
 			}
 		}
 
-		[TODO]
 		public string Text
 		{
 			get
 			{
-				return String.Empty;
+				if (subItemsCount == 0)
+				{
+					return string.Empty; 
+				}
+				return SubItems[0].Text; 
 			}
 
 			set
 			{
+				SubItems[0].Text = value;
 			}
 		}
 
-		[TODO]
 		public bool UseItemStyleForSubItems
 		{
 			get
 			{
-				return false;
+				return useItemStyleForSubItems;
 			}
 
 			set
 			{
+				useItemStyleForSubItems = value;
 			}
 		}
 
-		public ListViewItem() : base()
+		public ListViewItem()
 		{
+			listViewSubItemCollection = null;
+			index = -1;
+			imageIndex = -1;
+			selected = false;
+			useItemStyleForSubItems = true;
+			imageIndex = -1;
+			subItemsCount = 0;
 		}
 
 		public ListViewItem(string text) : this(text, -1)
@@ -279,47 +353,90 @@ using System.Runtime.Serialization;
 			Font = font;
 		}
 
-		[TODO]
 		public ListViewItem(string[] items, int imageIndex) : this()
 		{
 			this.imageIndex = imageIndex;
-			//TODO
+			if (items == null || items.Length > 0)
+			{
+				return;
+			}
+			subItemsCount = items.Length;
+			subItems = new ListViewSubItem[subItemsCount];
+			for (int i = 0; i < items.Length; i++)
+			{
+				subItems[i] = new ListViewSubItem(this, items[i]);
+			}
 		}
 
-		[TODO]
 		public ListViewItem(ListViewSubItem[] subItems, int imageIndex) : this()
 		{
+			this.imageIndex = imageIndex;
+			this.subItems = subItems;
+			subItemsCount = subItems.Length;
+			for (int i = 0; i < subItemsCount; i++)
+			{
+				subItems[i].owner = this;
+			}
 		}
 
-		[TODO]
 		public virtual object Clone()
 		{
-			return this;
+			// Deep clone the sub items.
+			ListViewSubItem[] newSubItems = new ListViewSubItem[subItemsCount];
+			for (int i = 0; i < subItemsCount; i++)
+			{
+				ListViewSubItem item = subItems[i];
+				newSubItems[i] = new ListViewSubItem(null, item.Text, item.ForeColor, item.BackColor, item.Font);
+			}
+			
+			ListViewItem items = new ListViewItem(newSubItems, imageIndex);
+
+			items.Checked = Checked;
+			items.useItemStyleForSubItems = useItemStyleForSubItems;
+			items.tag = tag;
+			return items;
 		}
 
-		[TODO]
 		public void BeginEdit()
 		{
+			if (Index == 0)
+			{
+				return;
+			}
+			if (!ListView.LabelEdit)
+			{
+				throw new InvalidOperationException();
+			}
+
+			ListView.BeginEdit(this);
 		}
 
 		public virtual void EnsureVisible()
 		{
 			if (listView != null)
+			{
 				listView.EnsureVisible(Index);
+			}
 		}
 
 		public Rectangle GetBounds(ItemBoundsPortion portion)
 		{
 			if (listView != null)
+			{
 				return listView.GetItemRect(Index, portion);
+			}
 			else
+			{
 				return Rectangle.Empty;
+			}
 		}
 
 		public virtual void Remove()
 		{
 			if (listView != null)
+			{
 				listView.Items.RemoveAt(Index);
+			}
 		}
 
 		public override string ToString()
@@ -328,82 +445,221 @@ using System.Runtime.Serialization;
 		}
 
 #if CONFIG_SERIALIZATION
-		[TODO]
 		void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
 		{
 			Serialize(info, context);
 		}
 
-		[TODO]
 		protected virtual void Deserialize(SerializationInfo info, StreamingContext context)
 		{
+			int itemLength = 0;
+			SerializationInfoEnumerator serializationInfos = info.GetEnumerator();
+			while (serializationInfos.MoveNext())
+			{
+				SerializationEntry entry = serializationInfos.Current;
+				if (entry.Name == "Text")
+				{
+					Text = entry.Value as String;
+				}
+				else if (entry.Name == "ImageIndex")
+				{
+					imageIndex = (int)entry.Value;
+				}
+				else if (entry.Name == "SubItemCount")
+				{
+					itemLength = (int)entry.Value;
+				}
+				else if (entry.Name == "BackColor")
+				{
+					BackColor = (System.Drawing.Color)entry.Value;
+				}
+				else if (entry.Name == "Checked")
+				{
+					Checked = (bool)entry.Value;
+				}
+				else if (entry.Name == "Font")
+				{
+					Font = (Font)entry.Value;
+				}
+				else if (entry.Name == "ForeColor")
+				{
+					ForeColor = (System.Drawing.Color)entry.Value;
+				}
+				else if (entry.Name == "UseItemStyleForSubItems")
+				{
+					UseItemStyleForSubItems = (bool)entry.Value;
+				}
+			}
+			if (itemLength > 0)
+			{
+				ListViewSubItem[] subItems = new ListViewSubItem[itemLength];
+				for (int i = 1; i < itemLength; i++)
+				{
+					ListViewSubItem item = info.GetValue("SubItem" + i, typeof(ListViewSubItem)) as ListViewSubItem;
+					item.owner = this;
+					subItems[i] = item;
+				}
+				subItems[0] = this.subItems[0];
+				this.subItems = subItems;
+			}
+
 		}
 
-		[TODO]
 		protected virtual void Serialize(SerializationInfo info, StreamingContext context)
 		{
+			info.AddValue("Text", Text);
+			info.AddValue("ImageIndex", imageIndex);
+			if (subItemsCount > 1)
+			{
+				info.AddValue("SubItemCount", subItemsCount);
+				for (int i = 1; i < subItemsCount; i++)
+				{
+					info.AddValue("SubItem" + i.ToString(), SubItems[i], typeof(ListViewSubItem));
+				}
+ 
+			}
+			info.AddValue("BackColor", BackColor);
+			info.AddValue("Checked", Checked);
+			info.AddValue("Font", Font);
+			info.AddValue("ForeColor", ForeColor);
+			info.AddValue("UseItemStyleForSubItems", UseItemStyleForSubItems);
 		}
 
 #endif
-		
+	
 		public class ListViewSubItem
 		{
 			internal ListViewItem owner;
 			private string text;
+			internal Properties properties;
 
-			[TODO]
+			internal class Properties
+			{
+				public Color backColor = Color.Empty;
+				public Color foreColor = Color.Empty;
+				public Font font = null;
+			}
+
 			public Color BackColor
 			{
 				get
 				{
-					return owner.listView.BackColor;
+					if (properties != null && properties.backColor != Color.Empty)
+					{
+						return properties.backColor; 
+					}
+					if (owner == null || owner.listView == null)
+					{
+						return SystemColors.Window;
+					}
+					return owner.listView.BackColor; 
 				}
 
 				set
 				{
+					if (properties == null)
+					{
+						properties = new Properties();
+					}
+					if (properties.backColor == value)
+					{
+						return;
+					}
+					properties.backColor = value;
+					if (owner != null && owner.listView != null)
+					{
+						owner.listView.Invalidate();
+					}
 				}
 			}
 
-			[TODO]
 			public Font Font
 			{
 				get
 				{
+					if (properties != null && properties.font != null)
+					{
+						return properties.font; 
+					}
+					if (owner == null || owner.listView == null)
+					{
+						return Control.DefaultFont;
+					}
 					return owner.listView.Font;
 				}
 
 				set
 				{
+					if (properties == null)
+					{
+						properties = new Properties();
+ 
+					}
+					if (properties.font != value)
+					{
+						properties.font = value;
+						if (owner != null && owner.listView != null)
+						{
+							owner.listView.Invalidate();
+						}
+					}
 				}
 			}
 
-			[TODO]
 			public Color ForeColor
 			{
 				get
 				{
-					return Color.Red;
+					if (properties != null && properties.foreColor != Color.Empty)
+					{
+						return properties.foreColor; 
+					}
+					if (owner == null || owner.listView == null)
+					{
+						return SystemColors.WindowText;
+					}
+					return owner.listView.ForeColor;
 				}
 
 				set
 				{
+					if (properties == null)
+					{
+						properties = new Properties();
+ 
+					}
+					if (properties.foreColor != value)
+					{
+						properties.foreColor = value;
+						if (owner != null && owner.listView != null)
+						{
+							owner.listView.Invalidate();
+						}
+					}
 				}
 			}
 
-			[TODO]
 			public string Text
 			{
 				get
 				{
 					if (text != null)
+					{
 						return text;
+					}
 					else
-						return "";
+					{
+						return String.Empty;
+					}
 				}
 
 				set
 				{
 					text = value;
+					if (owner != null)
+					{
+						//TODO:
+					}
 				}
 			}
 
@@ -417,14 +673,25 @@ using System.Runtime.Serialization;
 			{
 				this.owner = owner;
 				this.text = text;
+				properties = new Properties();
+				properties.foreColor = foreColor;
+				properties.backColor = backColor;
+				properties.font = font;
 			}
 
 			public ListViewSubItem()
 			{}
 
-			[TODO]
 			public void ResetStyle()
 			{
+				if (properties != null)
+				{
+					properties = null;
+					if (owner != null && owner.listView != null)
+					{
+						owner.listView.Invalidate();
+					}
+				}
 			}
 
 			public override string ToString()
@@ -438,12 +705,11 @@ using System.Runtime.Serialization;
 		{
 			private ListViewItem owner;
 
-			[TODO]
 			public virtual int Count
 			{
 				get
 				{
-					return 0;
+					return owner.subItemsCount;
 				}
 			}
 
@@ -455,16 +721,17 @@ using System.Runtime.Serialization;
 				}
 			}
 
-			[TODO]
 			public ListViewSubItem this[int index]
 			{
 				get
 				{
-					return null;
+					return owner.subItems[index];
 				}
 
 				set
 				{
+					owner.subItems[index] = value;
+					//TODO:
 				}
 			}
 
@@ -497,122 +764,259 @@ using System.Runtime.Serialization;
 				}
 			}
 
-			[TODO]
 			object IList.this[int index]
 			{
 				get
 				{
-					return null;
+					return this[index];
 				}
 				set
 				{
-					
+					this[index] = value as ListViewSubItem;
 				}
 			}
 
-			[TODO]
 			public void AddRange(string[] items)
 			{
+				SizeSubItemArray(items.Length, -1);
+				for (int i = 0; i < items.Length; i++)
+				{
+					String item = items[i];
+					if (item != null)
+					{
+						owner.subItems[++owner.subItemsCount] = new ListViewSubItem(owner, item);
+					}
+				}
+				//TODO:
+
 			}
 
-			[TODO]
 			public void AddRange(ListViewSubItem[] items)
 			{
+				SizeSubItemArray(items.Length, -1);
+				for (int i = 0; i < items.Length; i++)
+				{
+					ListViewSubItem item = items[i];
+					if (item != null)
+					{
+						owner.subItems[owner.subItemsCount++] = item;
+					}
+				}
+				//TODO:
 			}
 
-			[TODO]
 			public void AddRange(string[] items, Color foreColor, Color backColor, Font font)
 			{
+				this.SizeSubItemArray(items.Length, -1);
+				for (int i = 0; i < items.Length; i++)
+				{
+					String item = items[i];
+					if (item != null)
+					{
+						this.owner.subItems[owner.subItemsCount++] = new ListViewSubItem(owner, item, foreColor, backColor, font);
+					}
+				}
+				//TODO:
 			}
 
-			[TODO]
 			public ListViewSubItem Add(ListViewSubItem item)
 			{
-				return null;
+				SizeSubItemArray(1, -1);
+				owner.subItems[owner.subItemsCount++] = item;
+				//TODO
+				return item;
 			}
 
-			[TODO]
 			public ListViewSubItem Add(string text)
 			{
-				return null;
+				ListViewSubItem item = new ListViewSubItem(owner, text);
+				Add(item);
+				return item;
 			}
 
-			[TODO]
 			public ListViewSubItem Add(string text, Color foreColor, Color backColor, Font font)
 			{
-				return null;
+				ListViewSubItem item = new ListViewSubItem(owner, text, foreColor, backColor, font);
+				Add(item);
+				return item;
 			}
 
-			[TODO]
 			int IList.Add(object item)
 			{
-				return -1;
+				return IndexOf(Add(item as ListViewSubItem));
 			}
 
-			[TODO]
 			public virtual void Clear()
 			{
+				owner.subItemsCount = 0;
+				//TODO
 			}
 
-			[TODO]
 			public bool Contains(ListViewSubItem subItem)
 			{
-				return false;
+				return (IndexOf(subItem) != -1); 
 			}
 
-			[TODO]
 			bool IList.Contains(object subItem)
 			{
-				return false;
+				return (IndexOf(subItem as ListViewSubItem) != -1);
 			}
 
-			[TODO]
 			public void Insert(int index, ListViewSubItem item)
 			{
+				SizeSubItemArray(1, index);
+				item.owner = owner;
+				owner.subItems[index] = item;
+				owner.subItemsCount++;
+				//TODO
 			}
 
-			[TODO]
 			void IList.Insert(int index, object item)
 			{
+				Insert(index, item as ListViewSubItem);
 			}
 
-			[TODO]
-			void IList.Remove(object item)
-			{
-			}
-
-			[TODO]
 			public void Remove(ListViewSubItem item)
 			{
+				int pos = this.IndexOf(item);
+				if (pos != -1)
+				{
+					RemoveAt(pos);
+				}
+			}
+			
+			void IList.Remove(object item)
+			{
+				Remove(item as ListViewSubItem);
 			}
 
-			[TODO]
 			public virtual void RemoveAt(int index)
 			{
+				for (int i = index; i < owner.subItemsCount - 1; i++)
+				{
+					owner.subItems[i] = owner.subItems[i + 1];
+				}
+				owner.subItemsCount++;
+				//TODO:
 			}
 
-			[TODO]
 			void ICollection.CopyTo(Array dest, int index)
 			{
+				Array.Copy(owner.subItems, 0, dest, index, owner.subItemsCount);
 			}
 
-			[TODO]
 			public virtual IEnumerator GetEnumerator()
 			{
-				return null;
+				if (owner.subItems != null)
+				{
+					return new ArrayEnumerator(owner.subItems, owner.subItemsCount); 
+				}
+				return new ListViewSubItem[0].GetEnumerator();
 			}
 
-			[TODO]
 			public int IndexOf(ListViewSubItem subItem)
 			{
+				for (int i = 0;i < owner.subItemsCount; i++)
+				{
+					if (owner.subItems[i] == subItem)
+					{
+						return i; 
+					}
+				}
 				return -1;
 			}
 
-			[TODO]
 			int IList.IndexOf(object subItem)
 			{
-				return 0;
+				ListViewSubItem listViewSubItem = subItem as ListViewSubItem;
+				if (listViewSubItem != null)
+				{
+					return IndexOf(listViewSubItem); 
+				}
+				return -1;
 			}
+
+			// Make sure we have enough space in the array. insert at "index" or at the end if index is -1.
+			private void SizeSubItemArray(int size, int index)
+			{
+				// Do we need more space?
+				if (owner.subItems.Length < owner.subItemsCount + size)
+				{
+					int newLength = owner.subItems.Length * 2;
+					int minLength = owner.subItemsCount + size;
+					for (; minLength < newLength ; newLength *= 2)
+					{
+					}
+					ListViewSubItem[] newSubItems = new ListViewSubItem[newLength];
+					if (index != -1)
+					{
+						Array.Copy(owner.subItems, 0, newSubItems, 0, index);
+						Array.Copy(owner.subItems, index, newSubItems, index + size, owner.subItemsCount - index);
+					}
+					else
+					{
+							Array.Copy(owner.subItems, newSubItems, owner.subItemsCount);
+					}
+					owner.subItems = newSubItems;
+					return; 
+				}
+
+				// Move items after index up to make space for the new items.
+				if (index != -1)
+				{
+					for (int i = owner.subItemsCount - 1; i >= index; i--)
+					{
+						owner.subItems[(i + size)] = owner.subItems[i];
+					}
+				}
+ 
+			}
+
+			private class ArrayEnumerator : IEnumerator
+			{
+				private object[] array;
+				private int count;
+				private int current;
+
+				public ArrayEnumerator(object[] array, int count)
+				{
+					this.array = array;
+					this.count = count;
+					current = -1;
+				}
+
+				public object Current
+				{
+					get
+					{
+						if (current == -1)
+						{
+							return null;
+						}
+						return array[current];
+					}
+				}
+
+				public bool MoveNext()
+				{
+					if (current < count - 1)
+					{
+						current++;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+				public void Reset()
+				{
+					current = -1;
+				}
+
+			}
+
 		}
 	}
 }

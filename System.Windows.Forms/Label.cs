@@ -516,12 +516,21 @@ public class Label : Control
 			{
 				if(useMnemonic && IsMnemonic(charCode, Text))
 				{
+
 					Control parent = Parent;
+					Control hierarchy = parent;
+					while (hierarchy != null)
+					{
+						if (!hierarchy.Enabled || !hierarchy.Visible)
+						{
+							return base.ProcessMnemonic(charCode);
+						}
+						hierarchy = hierarchy.Parent;
+					}
+
 					if(parent != null)
 					{
-						parent.SelectNextControl
-							(this, true, false, true, false);
-						if(parent.ContainsFocus)
+						if (parent.SelectNextControl(this, true, false, true, false) && !parent.ContainsFocus)
 						{
 							parent.Focus();
 						}

@@ -115,6 +115,16 @@ public class Button : ButtonBase, IButtonControl
 			{
 				if(IsMnemonic(charCode, Text))
 				{
+					Control hierarchy = Parent;
+					while (hierarchy != null)
+					{
+						if (!hierarchy.Enabled || !hierarchy.Visible)
+						{
+							return base.ProcessMnemonic(charCode);
+						}
+						hierarchy = hierarchy.Parent;
+					}
+
 					PerformClick();
 					return true;
 				}

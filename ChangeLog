@@ -1,8 +1,7 @@
 
 2003-11-14  Gopal.V  <gopalv82@symonds.net>
 
-	* System/Net/AuthenticationManager.cs,
-	System/Net/BasicAuthenticationModule.cs, System/Net/BasicClient.cs,
+	* System/Net/AuthenticationManager.cs, System/Net/BasicClient.cs,
 	System/Net/HttpWebRequest.cs: implement basic HTTP authentication
 	(patch applied by Rhys).
 

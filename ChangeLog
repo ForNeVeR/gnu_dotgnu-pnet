@@ -12,6 +12,9 @@
 	loop if the programmer writes "namespace XXX }" instead of
 	"namespace { XXX }".
 
+	* engine/int_proto.h, engine/int_table.c: update the internalcall
+	tables from pnetlib.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

@@ -99,6 +99,24 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_pppiii(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ippi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_vppii(void (*fn)(), void *rvalue, void **avalue)
 {
 	(*(void (*)(void *, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])));
@@ -111,6 +129,24 @@ static void marshal_vppii(void (*fn)(), void *rvalue, void **avalue)
 static void marshal_vppipii(void (*fn)(), void *rvalue, void **avalue)
 {
 	(*(void (*)(void *, void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_pppi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpppi(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])));
 }
 
 #endif
@@ -135,36 +171,9 @@ static void marshal_ppjpp(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_ippi(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_pppiii(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
 static void marshal_pppp(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_pppi(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
 }
 
 #endif
@@ -178,34 +187,25 @@ static void marshal_vpppiii(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpppi(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])));
-}
-
-#endif
-
 #ifndef _IL_Array_suppressed
 
 IL_METHOD_BEGIN(Array_Methods)
+	IL_METHOD("Get", "(Tiii)oSystem.Object;", _IL_Array_Get_iii, marshal_pppiii)
+	IL_METHOD("GetLowerBound", "(Ti)i", _IL_Array_GetLowerBound, marshal_ippi)
+	IL_METHOD("GetUpperBound", "(Ti)i", _IL_Array_GetUpperBound, marshal_ippi)
+	IL_METHOD("GetRank", "(T)i", _IL_Array_GetRank, marshal_ipp)
 	IL_METHOD("Clear", "(oSystem.Array;ii)V", _IL_Array_Clear, marshal_vppii)
 	IL_METHOD("Initialize", "(T)V", _IL_Array_Initialize, marshal_vpp)
 	IL_METHOD("InternalCopy", "(oSystem.Array;ioSystem.Array;ii)V", _IL_Array_InternalCopy, marshal_vppipii)
-	IL_METHOD("CreateArray", "(jiiii)oSystem.Array;", _IL_Array_CreateArray_jiiii, marshal_ppjiiii)
-	IL_METHOD("CreateArray", "(j[i[i)oSystem.Array;", _IL_Array_CreateArray_jaiai, marshal_ppjpp)
-	IL_METHOD("GetLength", "(Ti)i", _IL_Array_GetLength_i, marshal_ippi)
-	IL_METHOD("GetLowerBound", "(Ti)i", _IL_Array_GetLowerBound, marshal_ippi)
-	IL_METHOD("GetUpperBound", "(Ti)i", _IL_Array_GetUpperBound, marshal_ippi)
-	IL_METHOD("Get", "(Tiii)oSystem.Object;", _IL_Array_Get_iii, marshal_pppiii)
-	IL_METHOD("Get", "(T[i)oSystem.Object;", _IL_Array_Get_ai, marshal_pppp)
 	IL_METHOD("GetRelative", "(Ti)oSystem.Object;", _IL_Array_GetRelative, marshal_pppi)
-	IL_METHOD("Set", "(ToSystem.Object;iii)V", _IL_Array_Set_Objectiii, marshal_vpppiii)
-	IL_METHOD("Set", "(ToSystem.Object;[i)V", _IL_Array_Set_Objectai, marshal_vpppp)
 	IL_METHOD("SetRelative", "(ToSystem.Object;i)V", _IL_Array_SetRelative, marshal_vpppi)
 	IL_METHOD("GetLength", "(T)i", _IL_Array_GetLength_, marshal_ipp)
-	IL_METHOD("GetRank", "(T)i", _IL_Array_GetRank, marshal_ipp)
+	IL_METHOD("CreateArray", "(jiiii)oSystem.Array;", _IL_Array_CreateArray_jiiii, marshal_ppjiiii)
+	IL_METHOD("CreateArray", "(j[i[i)oSystem.Array;", _IL_Array_CreateArray_jaiai, marshal_ppjpp)
+	IL_METHOD("Get", "(T[i)oSystem.Object;", _IL_Array_Get_ai, marshal_pppp)
+	IL_METHOD("GetLength", "(Ti)i", _IL_Array_GetLength_i, marshal_ippi)
+	IL_METHOD("Set", "(ToSystem.Object;iii)V", _IL_Array_Set_Objectiii, marshal_vpppiii)
+	IL_METHOD("Set", "(ToSystem.Object;[i)V", _IL_Array_Set_Objectai, marshal_vpppp)
 IL_METHOD_END
 
 #endif
@@ -240,70 +240,13 @@ static void marshal_pppl(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(Enum_Methods)
 	IL_METHOD("GetEnumValue", "(T)oSystem.Object;", _IL_Enum_GetEnumValue, marshal_ppp)
+	IL_METHOD("FormatEnumWithFlags", "(oSystem.Type;oSystem.Object;)oSystem.String;", _IL_Enum_FormatEnumWithFlags, marshal_pppp)
 	IL_METHOD("GetEnumName", "(oSystem.Type;oSystem.Object;)oSystem.String;", _IL_Enum_GetEnumName, marshal_pppp)
 	IL_METHOD("IsEnumValue", "(oSystem.Type;oSystem.Object;)Z", _IL_Enum_IsEnumValue, marshal_bppp)
 	IL_METHOD("GetEnumValueFromName", "(oSystem.Type;oSystem.String;Z)oSystem.Object;", _IL_Enum_GetEnumValueFromName, marshal_ppppb)
 	IL_METHOD("EnumValueOr", "(oSystem.Object;oSystem.Object;)oSystem.Object;", _IL_Enum_EnumValueOr, marshal_pppp)
 	IL_METHOD("EnumIntToObject", "(oSystem.Type;i)oSystem.Object;", _IL_Enum_EnumIntToObject, marshal_pppi)
 	IL_METHOD("EnumLongToObject", "(oSystem.Type;l)oSystem.Object;", _IL_Enum_EnumLongToObject, marshal_pppl)
-	IL_METHOD("FormatEnumWithFlags", "(oSystem.Type;oSystem.Object;)oSystem.String;", _IL_Enum_FormatEnumWithFlags, marshal_pppp)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *))fn)(*((void * *)(avalue[0])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_lpd(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_dpl(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILDouble *)rvalue) = (*(ILDouble (*)(void *, ILInt64))fn)(*((void * *)(avalue[0])), *((ILInt64 *)(avalue[1])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ipf(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILFloat))fn)(*((void * *)(avalue[0])), *((ILFloat *)(avalue[1])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_fpi(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILFloat *)rvalue) = (*(ILFloat (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
-}
-
-#endif
-
-#ifndef _IL_BitConverter_suppressed
-
-IL_METHOD_BEGIN(BitConverter_Methods)
-	IL_METHOD("GetLittleEndian", "()Z", _IL_BitConverter_GetLittleEndian, marshal_bp)
-	IL_METHOD("DoubleToInt64Bits", "(d)l", _IL_BitConverter_DoubleToInt64Bits, marshal_lpd)
-	IL_METHOD("Int64BitsToDouble", "(l)d", _IL_BitConverter_Int64BitsToDouble, marshal_dpl)
-	IL_METHOD("FloatToInt32Bits", "(f)i", _IL_BitConverter_FloatToInt32Bits, marshal_ipf)
-	IL_METHOD("Int32BitsToFloat", "(i)f", _IL_BitConverter_Int32BitsToFloat, marshal_fpi)
 IL_METHOD_END
 
 #endif
@@ -329,8 +272,8 @@ static void marshal_vppiB(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_Buffer_suppressed
 
 IL_METHOD_BEGIN(Buffer_Methods)
-	IL_METHOD("Copy", "(oSystem.Array;ioSystem.Array;ii)V", _IL_Buffer_Copy, marshal_vppipii)
 	IL_METHOD("GetLength", "(oSystem.Array;)i", _IL_Buffer_GetLength, marshal_ipp)
+	IL_METHOD("Copy", "(oSystem.Array;ioSystem.Array;ii)V", _IL_Buffer_Copy, marshal_vppipii)
 	IL_METHOD("GetElement", "(oSystem.Array;i)B", _IL_Buffer_GetElement, marshal_Bppi)
 	IL_METHOD("SetElement", "(oSystem.Array;iB)V", _IL_Buffer_SetElement, marshal_vppiB)
 IL_METHOD_END
@@ -342,24 +285,6 @@ IL_METHOD_END
 static void marshal_ippp(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vppf(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, void *, ILFloat))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILFloat *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vppd(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, void *, ILDouble))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILDouble *)(avalue[2])));
 }
 
 #endif
@@ -382,23 +307,228 @@ static void marshal_dpp(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vppf(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, void *, ILFloat))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILFloat *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vppd(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, void *, ILDouble))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILDouble *)(avalue[2])));
+}
+
+#endif
+
 #ifndef _IL_Decimal_suppressed
 
 IL_METHOD_BEGIN(Decimal_Methods)
-	IL_METHOD("Add", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Add, marshal_vpppp)
+	IL_METHOD("Round", "(vSystem.Decimal;i)vSystem.Decimal;", _IL_Decimal_Round, marshal_vpppi)
 	IL_METHOD("Compare", "(vSystem.Decimal;vSystem.Decimal;)i", _IL_Decimal_Compare, marshal_ippp)
+	IL_METHOD("Truncate", "(vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Truncate, marshal_vppp)
+	IL_METHOD("ToSingle", "(vSystem.Decimal;)f", _IL_Decimal_ToSingle, marshal_fpp)
+	IL_METHOD("ToDouble", "(vSystem.Decimal;)d", _IL_Decimal_ToDouble, marshal_dpp)
+	IL_CONSTRUCTOR(".ctor", "(Tf)V", _IL_Decimal_ctor_f, marshal_vppf, 0, 0)
+	IL_CONSTRUCTOR(".ctor", "(Td)V", _IL_Decimal_ctor_d, marshal_vppd, 0, 0)
+	IL_METHOD("Add", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Add, marshal_vpppp)
 	IL_METHOD("Divide", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Divide, marshal_vpppp)
 	IL_METHOD("Floor", "(vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Floor, marshal_vppp)
 	IL_METHOD("Remainder", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Remainder, marshal_vpppp)
 	IL_METHOD("Multiply", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Multiply, marshal_vpppp)
 	IL_METHOD("Negate", "(vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Negate, marshal_vppp)
-	IL_METHOD("Round", "(vSystem.Decimal;i)vSystem.Decimal;", _IL_Decimal_Round, marshal_vpppi)
 	IL_METHOD("Subtract", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Subtract, marshal_vpppp)
-	IL_METHOD("Truncate", "(vSystem.Decimal;)vSystem.Decimal;", _IL_Decimal_Truncate, marshal_vppp)
-	IL_CONSTRUCTOR(".ctor", "(Tf)V", _IL_Decimal_ctor_f, marshal_vppf, 0, 0)
-	IL_CONSTRUCTOR(".ctor", "(Td)V", _IL_Decimal_ctor_d, marshal_vppd, 0, 0)
-	IL_METHOD("ToSingle", "(vSystem.Decimal;)f", _IL_Decimal_ToSingle, marshal_fpp)
-	IL_METHOD("ToDouble", "(vSystem.Decimal;)d", _IL_Decimal_ToDouble, marshal_dpp)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppSi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILUInt16, ILInt32))fn)(*((void * *)(avalue[0])), *((ILUInt16 *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_Sppi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILUInt16 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ippiipiibp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32, ILInt8, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((ILInt8 *)(avalue[7])), *((void * *)(avalue[8])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppppi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_pppii(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_pppiip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ippiipii(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vppip(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppppp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ippSii(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILUInt16, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILUInt16 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ippiiip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ipppii(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vppiiS(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, void *, ILInt32, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILUInt16 *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_pppSS(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILUInt16, ILUInt16))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILUInt16 *)(avalue[2])), *((ILUInt16 *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vppiS(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, void *, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILUInt16 *)(avalue[3])));
+}
+
+#endif
+
+#ifndef _IL_String_suppressed
+
+IL_METHOD_BEGIN(String_Methods)
+	IL_METHOD("Concat", "(oSystem.String;oSystem.String;)oSystem.String;", _IL_String_Concat_StringString, marshal_pppp)
+	IL_CONSTRUCTOR(".ctor", "(Tci)V", 0, 0, _IL_String_ctor_ci, marshal_ppSi)
+	IL_METHOD("Equals", "(oSystem.String;oSystem.String;)Z", _IL_String_Equals, marshal_bppp)
+	IL_METHOD("GetChar", "(Ti)c", _IL_String_GetChar, marshal_Sppi)
+	IL_METHOD("NewString", "(i)oSystem.String;", _IL_String_NewString, marshal_ppi)
+	IL_METHOD("Copy", "(oSystem.String;ioSystem.String;ii)V", _IL_String_Copy_StringiStringii, marshal_vppipii)
+	IL_METHOD("InternalCompare", "(oSystem.String;iioSystem.String;iiZoSystem.Globalization.CultureInfo;)i", _IL_String_InternalCompare, marshal_ippiipiibp)
+	IL_METHOD("Trim", "(T[ci)oSystem.String;", _IL_String_Trim, marshal_ppppi)
+	IL_CONSTRUCTOR(".ctor", "(T[cii)V", 0, 0, _IL_String_ctor_acii, marshal_pppii)
+	IL_CONSTRUCTOR(".ctor", "(T[c)V", 0, 0, _IL_String_ctor_ac, marshal_ppp)
+	IL_CONSTRUCTOR(".ctor", "(T*cii)V", 0, 0, _IL_String_ctor_pcii, marshal_pppii)
+	IL_CONSTRUCTOR(".ctor", "(T*c)V", 0, 0, _IL_String_ctor_pc, marshal_ppp)
+	IL_CONSTRUCTOR(".ctor", "(T*biioSystem.Text.Encoding;)V", 0, 0, _IL_String_ctor_pbiiEncoding, marshal_pppiip)
+	IL_CONSTRUCTOR(".ctor", "(T*bii)V", 0, 0, _IL_String_ctor_pbii, marshal_pppii)
+	IL_CONSTRUCTOR(".ctor", "(T*b)V", 0, 0, _IL_String_ctor_pb, marshal_ppp)
+	IL_METHOD("Compare", "(oSystem.String;oSystem.String;)i", _IL_String_Compare, marshal_ippp)
+	IL_METHOD("InternalOrdinal", "(oSystem.String;iioSystem.String;ii)i", _IL_String_InternalOrdinal, marshal_ippiipii)
+	IL_METHOD("NewBuilder", "(oSystem.String;i)oSystem.String;", _IL_String_NewBuilder, marshal_pppi)
+	IL_METHOD("Copy", "(oSystem.String;ioSystem.String;)V", _IL_String_Copy_StringiString, marshal_vppip)
+	IL_METHOD("InsertSpace", "(oSystem.String;ii)V", _IL_String_InsertSpace, marshal_vppii)
+	IL_METHOD("RemoveSpace", "(oSystem.String;ii)V", _IL_String_RemoveSpace, marshal_vppii)
+	IL_METHOD("Concat", "(oSystem.String;oSystem.String;oSystem.String;)oSystem.String;", _IL_String_Concat_StringStringString, marshal_ppppp)
+	IL_METHOD("CopyToChecked", "(Ti[cii)V", _IL_String_CopyToChecked, marshal_vppipii)
+	IL_METHOD("IndexOf", "(Tcii)i", _IL_String_IndexOf, marshal_ippSii)
+	IL_METHOD("GetHashCode", "(T)i", _IL_String_GetHashCode, marshal_ipp)
+	IL_METHOD("FindInRange", "(TiiioSystem.String;)i", _IL_String_FindInRange, marshal_ippiiip)
+	IL_METHOD("IndexOfAny", "(T[cii)i", _IL_String_IndexOfAny, marshal_ipppii)
+	IL_METHOD("Intern", "(oSystem.String;)oSystem.String;", _IL_String_Intern, marshal_ppp)
+	IL_METHOD("IsInterned", "(oSystem.String;)oSystem.String;", _IL_String_IsInterned, marshal_ppp)
+	IL_METHOD("LastIndexOf", "(Tcii)i", _IL_String_LastIndexOf, marshal_ippSii)
+	IL_METHOD("LastIndexOfAny", "(T[cii)i", _IL_String_LastIndexOfAny, marshal_ipppii)
+	IL_METHOD("CharFill", "(oSystem.String;iic)V", _IL_String_CharFill_Stringiic, marshal_vppiiS)
+	IL_METHOD("CharFill", "(oSystem.String;i[cii)V", _IL_String_CharFill_Stringiacii, marshal_vppipii)
+	IL_METHOD("Replace", "(Tcc)oSystem.String;", _IL_String_Replace_cc, marshal_pppSS)
+	IL_METHOD("Replace", "(ToSystem.String;oSystem.String;)oSystem.String;", _IL_String_Replace_StringString, marshal_ppppp)
+	IL_METHOD("SetChar", "(Tic)V", _IL_String_SetChar, marshal_vppiS)
 IL_METHOD_END
 
 #endif
@@ -471,18 +601,66 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_dpd(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_bp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILDouble *)rvalue) = (*(ILDouble (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *))fn)(*((void * *)(avalue[0])));
 }
 
 #endif
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_dpdd(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_lpd(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILDouble *)rvalue) = (*(ILDouble (*)(void *, ILDouble, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])), *((ILDouble *)(avalue[2])));
+	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_dpl(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILDouble *)rvalue) = (*(ILDouble (*)(void *, ILInt64))fn)(*((void * *)(avalue[0])), *((ILInt64 *)(avalue[1])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ipf(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILFloat))fn)(*((void * *)(avalue[0])), *((ILFloat *)(avalue[1])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_fpi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILFloat *)rvalue) = (*(ILFloat (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
+}
+
+#endif
+
+#ifndef _IL_BitConverter_suppressed
+
+IL_METHOD_BEGIN(BitConverter_Methods)
+	IL_METHOD("GetLittleEndian", "()Z", _IL_BitConverter_GetLittleEndian, marshal_bp)
+	IL_METHOD("DoubleToInt64Bits", "(d)l", _IL_BitConverter_DoubleToInt64Bits, marshal_lpd)
+	IL_METHOD("Int64BitsToDouble", "(l)d", _IL_BitConverter_Int64BitsToDouble, marshal_dpl)
+	IL_METHOD("FloatToInt32Bits", "(f)i", _IL_BitConverter_FloatToInt32Bits, marshal_ipf)
+	IL_METHOD("Int32BitsToFloat", "(i)f", _IL_BitConverter_Int32BitsToFloat, marshal_fpi)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_dpd(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILDouble *)rvalue) = (*(ILDouble (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
 }
 
 #endif
@@ -496,9 +674,20 @@ static void marshal_dpdi(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_dpdd(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILDouble *)rvalue) = (*(ILDouble (*)(void *, ILDouble, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])), *((ILDouble *)(avalue[2])));
+}
+
+#endif
+
 #ifndef _IL_Math_suppressed
 
 IL_METHOD_BEGIN(Math_Methods)
+	IL_METHOD("Log", "(d)d", _IL_Math_Log, marshal_dpd)
+	IL_METHOD("RoundDouble", "(di)d", _IL_Math_RoundDouble, marshal_dpdi)
 	IL_METHOD("Acos", "(d)d", _IL_Math_Acos, marshal_dpd)
 	IL_METHOD("Asin", "(d)d", _IL_Math_Asin, marshal_dpd)
 	IL_METHOD("Atan", "(d)d", _IL_Math_Atan, marshal_dpd)
@@ -509,11 +698,9 @@ IL_METHOD_BEGIN(Math_Methods)
 	IL_METHOD("Exp", "(d)d", _IL_Math_Exp, marshal_dpd)
 	IL_METHOD("Floor", "(d)d", _IL_Math_Floor, marshal_dpd)
 	IL_METHOD("IEEERemainder", "(dd)d", _IL_Math_IEEERemainder, marshal_dpdd)
-	IL_METHOD("Log", "(d)d", _IL_Math_Log, marshal_dpd)
 	IL_METHOD("Log10", "(d)d", _IL_Math_Log10, marshal_dpd)
 	IL_METHOD("Pow", "(dd)d", _IL_Math_Pow, marshal_dpdd)
 	IL_METHOD("Round", "(d)d", _IL_Math_Round, marshal_dpd)
-	IL_METHOD("RoundDouble", "(di)d", _IL_Math_RoundDouble, marshal_dpdi)
 	IL_METHOD("Sin", "(d)d", _IL_Math_Sin, marshal_dpd)
 	IL_METHOD("Sinh", "(d)d", _IL_Math_Sinh, marshal_dpd)
 	IL_METHOD("Sqrt", "(d)d", _IL_Math_Sqrt, marshal_dpd)
@@ -560,193 +747,6 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_pppii(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ppSi(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, ILUInt16, ILInt32))fn)(*((void * *)(avalue[0])), *((ILUInt16 *)(avalue[1])), *((ILInt32 *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_pppiip(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ippiipiibp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32, ILInt8, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((ILInt8 *)(avalue[7])), *((void * *)(avalue[8])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ippiipii(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ppi(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vppip(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ppppp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ippSii(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILUInt16, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILUInt16 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ippiiip(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ipppii(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vppiiS(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, void *, ILInt32, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILUInt16 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_pppSS(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILUInt16, ILUInt16))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILUInt16 *)(avalue[2])), *((ILUInt16 *)(avalue[3])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ppppi(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_Sppi(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeUInt *)rvalue) = (*(ILUInt16 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vppiS(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, void *, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILUInt16 *)(avalue[3])));
-}
-
-#endif
-
-#ifndef _IL_String_suppressed
-
-IL_METHOD_BEGIN(String_Methods)
-	IL_CONSTRUCTOR(".ctor", "(T[cii)V", 0, 0, _IL_String_ctor_acii, marshal_pppii)
-	IL_CONSTRUCTOR(".ctor", "(T[c)V", 0, 0, _IL_String_ctor_ac, marshal_ppp)
-	IL_CONSTRUCTOR(".ctor", "(Tci)V", 0, 0, _IL_String_ctor_ci, marshal_ppSi)
-	IL_CONSTRUCTOR(".ctor", "(T*cii)V", 0, 0, _IL_String_ctor_pcii, marshal_pppii)
-	IL_CONSTRUCTOR(".ctor", "(T*c)V", 0, 0, _IL_String_ctor_pc, marshal_ppp)
-	IL_CONSTRUCTOR(".ctor", "(T*biioSystem.Text.Encoding;)V", 0, 0, _IL_String_ctor_pbiiEncoding, marshal_pppiip)
-	IL_CONSTRUCTOR(".ctor", "(T*bii)V", 0, 0, _IL_String_ctor_pbii, marshal_pppii)
-	IL_CONSTRUCTOR(".ctor", "(T*b)V", 0, 0, _IL_String_ctor_pb, marshal_ppp)
-	IL_METHOD("Compare", "(oSystem.String;oSystem.String;)i", _IL_String_Compare, marshal_ippp)
-	IL_METHOD("InternalCompare", "(oSystem.String;iioSystem.String;iiZoSystem.Globalization.CultureInfo;)i", _IL_String_InternalCompare, marshal_ippiipiibp)
-	IL_METHOD("InternalOrdinal", "(oSystem.String;iioSystem.String;ii)i", _IL_String_InternalOrdinal, marshal_ippiipii)
-	IL_METHOD("NewString", "(i)oSystem.String;", _IL_String_NewString, marshal_ppi)
-	IL_METHOD("NewBuilder", "(oSystem.String;i)oSystem.String;", _IL_String_NewBuilder, marshal_pppi)
-	IL_METHOD("Copy", "(oSystem.String;ioSystem.String;)V", _IL_String_Copy_StringiString, marshal_vppip)
-	IL_METHOD("Copy", "(oSystem.String;ioSystem.String;ii)V", _IL_String_Copy_StringiStringii, marshal_vppipii)
-	IL_METHOD("InsertSpace", "(oSystem.String;ii)V", _IL_String_InsertSpace, marshal_vppii)
-	IL_METHOD("RemoveSpace", "(oSystem.String;ii)V", _IL_String_RemoveSpace, marshal_vppii)
-	IL_METHOD("Concat", "(oSystem.String;oSystem.String;)oSystem.String;", _IL_String_Concat_StringString, marshal_pppp)
-	IL_METHOD("Concat", "(oSystem.String;oSystem.String;oSystem.String;)oSystem.String;", _IL_String_Concat_StringStringString, marshal_ppppp)
-	IL_METHOD("CopyToChecked", "(Ti[cii)V", _IL_String_CopyToChecked, marshal_vppipii)
-	IL_METHOD("Equals", "(oSystem.String;oSystem.String;)Z", _IL_String_Equals, marshal_bppp)
-	IL_METHOD("GetHashCode", "(T)i", _IL_String_GetHashCode, marshal_ipp)
-	IL_METHOD("IndexOf", "(Tcii)i", _IL_String_IndexOf, marshal_ippSii)
-	IL_METHOD("FindInRange", "(TiiioSystem.String;)i", _IL_String_FindInRange, marshal_ippiiip)
-	IL_METHOD("IndexOfAny", "(T[cii)i", _IL_String_IndexOfAny, marshal_ipppii)
-	IL_METHOD("Intern", "(oSystem.String;)oSystem.String;", _IL_String_Intern, marshal_ppp)
-	IL_METHOD("IsInterned", "(oSystem.String;)oSystem.String;", _IL_String_IsInterned, marshal_ppp)
-	IL_METHOD("LastIndexOf", "(Tcii)i", _IL_String_LastIndexOf, marshal_ippSii)
-	IL_METHOD("LastIndexOfAny", "(T[cii)i", _IL_String_LastIndexOfAny, marshal_ipppii)
-	IL_METHOD("CharFill", "(oSystem.String;iic)V", _IL_String_CharFill_Stringiic, marshal_vppiiS)
-	IL_METHOD("CharFill", "(oSystem.String;i[cii)V", _IL_String_CharFill_Stringiacii, marshal_vppipii)
-	IL_METHOD("Replace", "(Tcc)oSystem.String;", _IL_String_Replace_cc, marshal_pppSS)
-	IL_METHOD("Replace", "(ToSystem.String;oSystem.String;)oSystem.String;", _IL_String_Replace_StringString, marshal_ppppp)
-	IL_METHOD("Trim", "(T[ci)oSystem.String;", _IL_String_Trim, marshal_ppppi)
-	IL_METHOD("GetChar", "(Ti)c", _IL_String_GetChar, marshal_Sppi)
-	IL_METHOD("SetChar", "(Tic)V", _IL_String_SetChar, marshal_vppiS)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
 static void marshal_pppbb(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt8, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt8 *)(avalue[2])), *((ILInt8 *)(avalue[3])));
@@ -757,9 +757,9 @@ static void marshal_pppbb(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_Type_suppressed
 
 IL_METHOD_BEGIN(Type_Methods)
+	IL_METHOD("GetTypeFromHandle", "(vSystem.RuntimeTypeHandle;)oSystem.Type;", _IL_Type_GetTypeFromHandle, marshal_ppp)
 	IL_METHOD("GetType", "(oSystem.String;ZZ)oSystem.Type;", _IL_Type_GetType, marshal_pppbb)
 	IL_METHOD("GetTypeHandle", "(oSystem.Object;)vSystem.RuntimeTypeHandle;", _IL_Type_GetTypeHandle, marshal_vppp)
-	IL_METHOD("GetTypeFromHandle", "(vSystem.RuntimeTypeHandle;)oSystem.Type;", _IL_Type_GetTypeFromHandle, marshal_ppp)
 IL_METHOD_END
 
 #endif
@@ -858,8 +858,8 @@ static void marshal_bppi(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(Monitor_Methods)
 	IL_METHOD("Enter", "(oSystem.Object;)V", _IL_Monitor_Enter, marshal_vpp)
-	IL_METHOD("InternalTryEnter", "(oSystem.Object;i)Z", _IL_Monitor_InternalTryEnter, marshal_bppi)
 	IL_METHOD("Exit", "(oSystem.Object;)V", _IL_Monitor_Exit, marshal_vpp)
+	IL_METHOD("InternalTryEnter", "(oSystem.Object;i)Z", _IL_Monitor_InternalTryEnter, marshal_bppi)
 	IL_METHOD("InternalWait", "(oSystem.Object;i)Z", _IL_Monitor_InternalWait, marshal_bppi)
 	IL_METHOD("Pulse", "(oSystem.Object;)V", _IL_Monitor_Pulse, marshal_vpp)
 	IL_METHOD("PulseAll", "(oSystem.Object;)V", _IL_Monitor_PulseAll, marshal_vpp)
@@ -1140,11 +1140,20 @@ IL_METHOD_BEGIN(Thread_Methods)
 	IL_METHOD("VolatileWrite", "(&dd)V", _IL_Thread_VolatileWrite_Rdd, marshal_vppd)
 	IL_METHOD("VolatileWrite", "(&oSystem.Object;oSystem.Object;)V", _IL_Thread_VolatileWrite_RObjectObject, marshal_vppp)
 	IL_METHOD("InternalCurrentThread", "()oSystem.Threading.Thread;", _IL_Thread_InternalCurrentThread, marshal_pp)
+	IL_METHOD("InternalGetState", "(T)vSystem.Threading.ThreadState;", _IL_Thread_InternalGetState, marshal_ipp)
 	IL_METHOD("InternalSetBackground", "(TZ)V", _IL_Thread_InternalSetBackground, marshal_vppb)
 	IL_METHOD("InternalGetPriority", "(T)vSystem.Threading.ThreadPriority;", _IL_Thread_InternalGetPriority, marshal_ipp)
 	IL_METHOD("InternalSetPriority", "(TvSystem.Threading.ThreadPriority;)V", _IL_Thread_InternalSetPriority, marshal_vppi)
-	IL_METHOD("InternalGetState", "(T)vSystem.Threading.ThreadState;", _IL_Thread_InternalGetState, marshal_ipp)
 IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *))fn)(*((void * *)(avalue[0])));
+}
 
 #endif
 
@@ -1166,18 +1175,10 @@ static void marshal_ipi(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ip(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *))fn)(*((void * *)(avalue[0])));
-}
-
-#endif
-
 #ifndef _IL_DefaultEncoding_suppressed
 
 IL_METHOD_BEGIN(DefaultEncoding_Methods)
+	IL_METHOD("InternalCodePage", "()i", _IL_DefaultEncoding_InternalCodePage, marshal_ip)
 	IL_METHOD("InternalGetByteCount", "([cii)i", _IL_DefaultEncoding_InternalGetByteCount_acii, marshal_ippii)
 	IL_METHOD("InternalGetByteCount", "(oSystem.String;ii)i", _IL_DefaultEncoding_InternalGetByteCount_Stringii, marshal_ippii)
 	IL_METHOD("InternalGetBytes", "([cii[Bi)i", _IL_DefaultEncoding_InternalGetBytes_aciiaBi, marshal_ippiipi)
@@ -1187,7 +1188,6 @@ IL_METHOD_BEGIN(DefaultEncoding_Methods)
 	IL_METHOD("InternalGetMaxByteCount", "(i)i", _IL_DefaultEncoding_InternalGetMaxByteCount, marshal_ipi)
 	IL_METHOD("InternalGetMaxCharCount", "(i)i", _IL_DefaultEncoding_InternalGetMaxCharCount, marshal_ipi)
 	IL_METHOD("InternalGetString", "([Bii)oSystem.String;", _IL_DefaultEncoding_InternalGetString, marshal_pppii)
-	IL_METHOD("InternalCodePage", "()i", _IL_DefaultEncoding_InternalCodePage, marshal_ip)
 IL_METHOD_END
 
 #endif
@@ -1217,6 +1217,15 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_vpip(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_jpi(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
@@ -1233,24 +1242,15 @@ static void marshal_bpi(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpip(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])));
-}
-
-#endif
-
 #ifndef _IL_GCHandle_suppressed
 
 IL_METHOD_BEGIN(GCHandle_Methods)
-	IL_METHOD("GCAddrOfPinnedObject", "(i)j", _IL_GCHandle_GCAddrOfPinnedObject, marshal_jpi)
-	IL_METHOD("GCAlloc", "(oSystem.Object;vSystem.Runtime.InteropServices.GCHandleType;)i", _IL_GCHandle_GCAlloc, marshal_ippi)
 	IL_METHOD("GCFree", "(i)V", _IL_GCHandle_GCFree, marshal_vpi)
-	IL_METHOD("GCValidate", "(i)Z", _IL_GCHandle_GCValidate, marshal_bpi)
 	IL_METHOD("GCGetTarget", "(i)oSystem.Object;", _IL_GCHandle_GCGetTarget, marshal_ppi)
 	IL_METHOD("GCSetTarget", "(ioSystem.Object;)V", _IL_GCHandle_GCSetTarget, marshal_vpip)
+	IL_METHOD("GCAlloc", "(oSystem.Object;vSystem.Runtime.InteropServices.GCHandleType;)i", _IL_GCHandle_GCAlloc, marshal_ippi)
+	IL_METHOD("GCAddrOfPinnedObject", "(i)j", _IL_GCHandle_GCAddrOfPinnedObject, marshal_jpi)
+	IL_METHOD("GCValidate", "(i)Z", _IL_GCHandle_GCValidate, marshal_bpi)
 IL_METHOD_END
 
 #endif
@@ -1459,15 +1459,6 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_pppb(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt8 *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
 static void marshal_ppppbb(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt8, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt8 *)(avalue[3])), *((ILInt8 *)(avalue[4])));
@@ -1475,22 +1466,31 @@ static void marshal_ppppbb(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_pppb(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt8 *)(avalue[2])));
+}
+
+#endif
+
 #ifndef _IL_Assembly_suppressed
 
 IL_METHOD_BEGIN(Assembly_Methods)
-	IL_METHOD("GetCallingAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetCallingAssembly, marshal_pp)
 	IL_METHOD("GetExecutingAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetExecutingAssembly, marshal_pp)
+	IL_METHOD("GetManifestResourceStream", "(ToSystem.String;)oSystem.IO.Stream;", _IL_Assembly_GetManifestResourceStream, marshal_pppp)
+	IL_METHOD("GetCallingAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetCallingAssembly, marshal_pp)
+	IL_METHOD("LoadFromFile", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromFile, marshal_ppppp)
+	IL_METHOD("LoadFromName", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromName, marshal_ppppp)
+	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;", _IL_Assembly_GetType, marshal_ppppbb)
 	IL_METHOD("GetEntryAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetEntryAssembly, marshal_pp)
 	IL_METHOD("GetExportedTypes", "(T)[oSystem.Type;", _IL_Assembly_GetExportedTypes, marshal_ppp)
 	IL_METHOD("GetFile", "(ToSystem.String;)oSystem.IO.FileStream;", _IL_Assembly_GetFile, marshal_pppp)
 	IL_METHOD("GetFiles", "(TZ)[oSystem.IO.FileStream;", _IL_Assembly_GetFiles, marshal_pppb)
 	IL_METHOD("GetManifestResourceInfo", "(ToSystem.String;)oSystem.Reflection.ManifestResourceInfo;", _IL_Assembly_GetManifestResourceInfo, marshal_pppp)
 	IL_METHOD("GetManifestResourceNames", "(T)[oSystem.String;", _IL_Assembly_GetManifestResourceNames, marshal_ppp)
-	IL_METHOD("GetManifestResourceStream", "(ToSystem.String;)oSystem.IO.Stream;", _IL_Assembly_GetManifestResourceStream, marshal_pppp)
-	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;", _IL_Assembly_GetType, marshal_ppppbb)
 	IL_METHOD("GetTypes", "(T)[oSystem.Type;", _IL_Assembly_GetTypes, marshal_ppp)
-	IL_METHOD("LoadFromName", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromName, marshal_ppppp)
-	IL_METHOD("LoadFromFile", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromFile, marshal_ppppp)
 	IL_METHOD("GetEntryPoint", "(T)vSystem.RuntimeMethodHandle;", _IL_Assembly_GetEntryPoint, marshal_vppp)
 IL_METHOD_END
 
@@ -1501,6 +1501,70 @@ IL_METHOD_END
 IL_METHOD_BEGIN(MethodBase_Methods)
 	IL_METHOD("GetMethodFromHandle", "(vSystem.RuntimeMethodHandle;)oSystem.Reflection.MethodBase;", _IL_MethodBase_GetMethodFromHandle, marshal_ppp)
 	IL_METHOD("GetCurrentMethod", "()oSystem.Reflection.MethodBase;", _IL_MethodBase_GetCurrentMethod, marshal_pp)
+IL_METHOD_END
+
+#endif
+
+#ifndef _IL_FieldInfo_suppressed
+
+IL_METHOD_BEGIN(FieldInfo_Methods)
+	IL_METHOD("GetFieldFromHandle", "(vSystem.RuntimeFieldHandle;)oSystem.Reflection.FieldInfo;", _IL_FieldInfo_GetFieldFromHandle, marshal_ppp)
+IL_METHOD_END
+
+#endif
+
+#ifndef _IL_Module_suppressed
+
+IL_METHOD_BEGIN(Module_Methods)
+	IL_METHOD("GetModuleType", "(T)oSystem.Type;", _IL_Module_GetModuleType, marshal_ppp)
+	IL_METHOD("GetAssembly", "(T)oSystem.Reflection.Assembly;", _IL_Module_GetAssembly, marshal_ppp)
+	IL_METHOD("GetFullName", "(T)oSystem.String;", _IL_Module_GetFullName, marshal_ppp)
+	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;", _IL_Module_GetType, marshal_ppppbb)
+	IL_METHOD("GetTypes", "(T)[oSystem.Type;", _IL_Module_GetTypes, marshal_ppp)
+	IL_METHOD("IsResource", "(T)Z", _IL_Module_IsResource, marshal_bpp)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppppiipipp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt32, ILInt32, void *, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((void * *)(avalue[7])), *((void * *)(avalue[8])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_pppiipp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((void * *)(avalue[5])));
+}
+
+#endif
+
+#ifndef _IL_ClrType_suppressed
+
+IL_METHOD_BEGIN(ClrType_Methods)
+	IL_METHOD("GetClrArrayRank", "(T)i", _IL_ClrType_GetClrArrayRank, marshal_ipp)
+	IL_METHOD("GetAttributeFlagsImpl", "(T)vSystem.Reflection.TypeAttributes;", _IL_ClrType_GetAttributeFlagsImpl, marshal_ipp)
+	IL_METHOD("GetElementType", "(T)oSystem.Type;", _IL_ClrType_GetElementType, marshal_ppp)
+	IL_METHOD("GetInterface", "(ToSystem.String;Z)oSystem.Type;", _IL_ClrType_GetInterface, marshal_ppppb)
+	IL_METHOD("GetInterfaces", "(T)[oSystem.Type;", _IL_ClrType_GetInterfaces, marshal_ppp)
+	IL_METHOD("GetMemberImpl", "(ToSystem.String;vSystem.Reflection.MemberTypes;vSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;vSystem.Reflection.CallingConventions;[oSystem.Type;[vSystem.Reflection.ParameterModifier;)oSystem.Reflection.MemberInfo;", _IL_ClrType_GetMemberImpl, marshal_ppppiipipp)
+	IL_METHOD("GetMembersImpl", "(TvSystem.Reflection.MemberTypes;vSystem.Reflection.BindingFlags;oSystem.Type;oSystem.String;)oSystem.Object;", _IL_ClrType_GetMembersImpl, marshal_pppiipp)
+	IL_METHOD("GetClrTypeCategory", "(T)vSystem.Reflection.ClrTypeCategory;", _IL_ClrType_GetClrTypeCategory, marshal_ipp)
+	IL_METHOD("IsSubclassOf", "(ToSystem.Type;)Z", _IL_ClrType_IsSubclassOf, marshal_bppp)
+	IL_METHOD("IsClrNestedType", "(T)Z", _IL_ClrType_IsClrNestedType, marshal_bpp)
+	IL_METHOD("GetClrFullName", "(T)oSystem.String;", _IL_ClrType_GetClrFullName, marshal_ppp)
+	IL_METHOD("GetClrAssembly", "(T)oSystem.Reflection.Assembly;", _IL_ClrType_GetClrAssembly, marshal_ppp)
+	IL_METHOD("GetClrBaseType", "(T)oSystem.Type;", _IL_ClrType_GetClrBaseType, marshal_ppp)
+	IL_METHOD("GetClrGUID", "(T)vSystem.Guid;", _IL_ClrType_GetClrGUID, marshal_vppp)
+	IL_METHOD("GetClrModule", "(T)oSystem.Reflection.Module;", _IL_ClrType_GetClrModule, marshal_ppp)
+	IL_METHOD("GetClrNestedDeclaringType", "(T)oSystem.Type;", _IL_ClrType_GetClrNestedDeclaringType, marshal_ppp)
+	IL_METHOD("GetClrName", "(T)oSystem.String;", _IL_ClrType_GetClrName, marshal_ppp)
+	IL_METHOD("GetClrNamespace", "(T)oSystem.String;", _IL_ClrType_GetClrNamespace, marshal_ppp)
 IL_METHOD_END
 
 #endif
@@ -1518,14 +1582,6 @@ static void marshal_pppippp(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(ClrConstructor_Methods)
 	IL_METHOD("Invoke", "(TvSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;[oSystem.Object;oSystem.Globalization.CultureInfo;)oSystem.Object;", _IL_ClrConstructor_Invoke, marshal_pppippp)
-IL_METHOD_END
-
-#endif
-
-#ifndef _IL_FieldInfo_suppressed
-
-IL_METHOD_BEGIN(FieldInfo_Methods)
-	IL_METHOD("GetFieldFromHandle", "(vSystem.RuntimeFieldHandle;)oSystem.Reflection.FieldInfo;", _IL_FieldInfo_GetFieldFromHandle, marshal_ppp)
 IL_METHOD_END
 
 #endif
@@ -1560,9 +1616,9 @@ static void marshal_vpprp(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_ClrField_suppressed
 
 IL_METHOD_BEGIN(ClrField_Methods)
+	IL_METHOD("GetFieldType", "(j)oSystem.Type;", _IL_ClrField_GetFieldType, marshal_ppj)
 	IL_METHOD("GetValue", "(ToSystem.Object;)oSystem.Object;", _IL_ClrField_GetValue, marshal_pppp)
 	IL_METHOD("SetValue", "(ToSystem.Object;oSystem.Object;vSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;oSystem.Globalization.CultureInfo;)V", _IL_ClrField_SetValue, marshal_vppppipp)
-	IL_METHOD("GetFieldType", "(j)oSystem.Type;", _IL_ClrField_GetFieldType, marshal_ppj)
 	IL_METHOD("GetValueDirect", "(Tr)oSystem.Object;", _IL_ClrField_GetValueDirect, marshal_pppr)
 	IL_METHOD("SetValueDirect", "(TroSystem.Object;)V", _IL_ClrField_SetValueDirect, marshal_vpprp)
 IL_METHOD_END
@@ -1571,18 +1627,9 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_ppjjb(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_bpj(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((void * *)rvalue) = (*(void * (*)(void *, ILNativeUInt, ILNativeUInt, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((ILInt8 *)(avalue[3])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bpjjb(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILNativeUInt, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((ILInt8 *)(avalue[3])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
 }
 
 #endif
@@ -1607,6 +1654,24 @@ static void marshal_ppjib(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_ppjjb(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILNativeUInt, ILNativeUInt, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((ILInt8 *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjjb(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILNativeUInt, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((ILInt8 *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_bpjib(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt8 *)(avalue[3])));
@@ -1614,31 +1679,22 @@ static void marshal_bpjib(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bpj(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
-}
-
-#endif
-
 #ifndef _IL_ClrHelpers_suppressed
 
 IL_METHOD_BEGIN(ClrHelpers_Methods)
+	IL_METHOD("CanAccess", "(j)Z", _IL_ClrHelpers_CanAccess, marshal_bpj)
+	IL_METHOD("GetMemberAttrs", "(j)i", _IL_ClrHelpers_GetMemberAttrs, marshal_ipj)
+	IL_METHOD("GetSemantics", "(jvSystem.Reflection.MethodSemanticsAttributes;Z)oSystem.Reflection.MethodInfo;", _IL_ClrHelpers_GetSemantics, marshal_ppjib)
+	IL_METHOD("GetName", "(j)oSystem.String;", _IL_ClrHelpers_GetName, marshal_ppj)
+	IL_METHOD("GetNumParameters", "(j)i", _IL_ClrHelpers_GetNumParameters, marshal_ipj)
+	IL_METHOD("GetCallConv", "(j)vSystem.Reflection.CallingConventions;", _IL_ClrHelpers_GetCallConv, marshal_ipj)
+	IL_METHOD("GetImplAttrs", "(j)vSystem.Reflection.MethodImplAttributes;", _IL_ClrHelpers_GetImplAttrs, marshal_ipj)
 	IL_METHOD("GetCustomAttributes", "(jjZ)[oSystem.Object;", _IL_ClrHelpers_GetCustomAttributes, marshal_ppjjb)
 	IL_METHOD("IsDefined", "(jjZ)Z", _IL_ClrHelpers_IsDefined, marshal_bpjjb)
 	IL_METHOD("GetDeclaringType", "(j)j", _IL_ClrHelpers_GetDeclaringType, marshal_jpj)
-	IL_METHOD("GetName", "(j)oSystem.String;", _IL_ClrHelpers_GetName, marshal_ppj)
 	IL_METHOD("GetParameter", "(ji)j", _IL_ClrHelpers_GetParameter, marshal_jpji)
 	IL_METHOD("GetParameterType", "(ji)oSystem.Type;", _IL_ClrHelpers_GetParameterType, marshal_ppji)
-	IL_METHOD("GetNumParameters", "(j)i", _IL_ClrHelpers_GetNumParameters, marshal_ipj)
-	IL_METHOD("GetMemberAttrs", "(j)i", _IL_ClrHelpers_GetMemberAttrs, marshal_ipj)
-	IL_METHOD("GetCallConv", "(j)vSystem.Reflection.CallingConventions;", _IL_ClrHelpers_GetCallConv, marshal_ipj)
-	IL_METHOD("GetImplAttrs", "(j)vSystem.Reflection.MethodImplAttributes;", _IL_ClrHelpers_GetImplAttrs, marshal_ipj)
-	IL_METHOD("GetSemantics", "(jvSystem.Reflection.MethodSemanticsAttributes;Z)oSystem.Reflection.MethodInfo;", _IL_ClrHelpers_GetSemantics, marshal_ppjib)
 	IL_METHOD("HasSemantics", "(jvSystem.Reflection.MethodSemanticsAttributes;Z)Z", _IL_ClrHelpers_HasSemantics, marshal_bpjib)
-	IL_METHOD("CanAccess", "(j)Z", _IL_ClrHelpers_CanAccess, marshal_bpj)
 IL_METHOD_END
 
 #endif
@@ -1661,20 +1717,20 @@ IL_METHOD_END
 
 #endif
 
+#ifndef _IL_ClrProperty_suppressed
+
+IL_METHOD_BEGIN(ClrProperty_Methods)
+	IL_METHOD("GetPropertyType", "(j)oSystem.Type;", _IL_ClrProperty_GetPropertyType, marshal_ppj)
+IL_METHOD_END
+
+#endif
+
 #ifndef _IL_ClrParameter_suppressed
 
 IL_METHOD_BEGIN(ClrParameter_Methods)
 	IL_METHOD("GetParamAttrs", "(j)vSystem.Reflection.ParameterAttributes;", _IL_ClrParameter_GetParamAttrs, marshal_ipj)
 	IL_METHOD("GetParamName", "(j)oSystem.String;", _IL_ClrParameter_GetParamName, marshal_ppj)
 	IL_METHOD("GetDefault", "(j)oSystem.Object;", _IL_ClrParameter_GetDefault, marshal_ppj)
-IL_METHOD_END
-
-#endif
-
-#ifndef _IL_ClrProperty_suppressed
-
-IL_METHOD_BEGIN(ClrProperty_Methods)
-	IL_METHOD("GetPropertyType", "(j)oSystem.Type;", _IL_ClrProperty_GetPropertyType, marshal_ppj)
 IL_METHOD_END
 
 #endif
@@ -1712,62 +1768,6 @@ IL_METHOD_BEGIN(ClrResourceStream_Methods)
 	IL_METHOD("ResourceRead", "(jl[Bii)i", _IL_ClrResourceStream_ResourceRead, marshal_ipjlpii)
 	IL_METHOD("ResourceReadByte", "(jl)i", _IL_ClrResourceStream_ResourceReadByte, marshal_ipjl)
 	IL_METHOD("ResourceGetAddress", "(jl)*B", _IL_ClrResourceStream_ResourceGetAddress, marshal_ppjl)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ppppiipipp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt32, ILInt32, void *, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((void * *)(avalue[7])), *((void * *)(avalue[8])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_pppiipp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((void * *)(avalue[5])));
-}
-
-#endif
-
-#ifndef _IL_ClrType_suppressed
-
-IL_METHOD_BEGIN(ClrType_Methods)
-	IL_METHOD("GetClrArrayRank", "(T)i", _IL_ClrType_GetClrArrayRank, marshal_ipp)
-	IL_METHOD("GetAttributeFlagsImpl", "(T)vSystem.Reflection.TypeAttributes;", _IL_ClrType_GetAttributeFlagsImpl, marshal_ipp)
-	IL_METHOD("GetElementType", "(T)oSystem.Type;", _IL_ClrType_GetElementType, marshal_ppp)
-	IL_METHOD("GetInterface", "(ToSystem.String;Z)oSystem.Type;", _IL_ClrType_GetInterface, marshal_ppppb)
-	IL_METHOD("GetInterfaces", "(T)[oSystem.Type;", _IL_ClrType_GetInterfaces, marshal_ppp)
-	IL_METHOD("GetMemberImpl", "(ToSystem.String;vSystem.Reflection.MemberTypes;vSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;vSystem.Reflection.CallingConventions;[oSystem.Type;[vSystem.Reflection.ParameterModifier;)oSystem.Reflection.MemberInfo;", _IL_ClrType_GetMemberImpl, marshal_ppppiipipp)
-	IL_METHOD("GetMembersImpl", "(TvSystem.Reflection.MemberTypes;vSystem.Reflection.BindingFlags;oSystem.Type;oSystem.String;)oSystem.Object;", _IL_ClrType_GetMembersImpl, marshal_pppiipp)
-	IL_METHOD("GetClrTypeCategory", "(T)vSystem.Reflection.ClrTypeCategory;", _IL_ClrType_GetClrTypeCategory, marshal_ipp)
-	IL_METHOD("IsSubclassOf", "(ToSystem.Type;)Z", _IL_ClrType_IsSubclassOf, marshal_bppp)
-	IL_METHOD("IsClrNestedType", "(T)Z", _IL_ClrType_IsClrNestedType, marshal_bpp)
-	IL_METHOD("GetClrAssembly", "(T)oSystem.Reflection.Assembly;", _IL_ClrType_GetClrAssembly, marshal_ppp)
-	IL_METHOD("GetClrBaseType", "(T)oSystem.Type;", _IL_ClrType_GetClrBaseType, marshal_ppp)
-	IL_METHOD("GetClrFullName", "(T)oSystem.String;", _IL_ClrType_GetClrFullName, marshal_ppp)
-	IL_METHOD("GetClrGUID", "(T)vSystem.Guid;", _IL_ClrType_GetClrGUID, marshal_vppp)
-	IL_METHOD("GetClrModule", "(T)oSystem.Reflection.Module;", _IL_ClrType_GetClrModule, marshal_ppp)
-	IL_METHOD("GetClrNestedDeclaringType", "(T)oSystem.Type;", _IL_ClrType_GetClrNestedDeclaringType, marshal_ppp)
-	IL_METHOD("GetClrName", "(T)oSystem.String;", _IL_ClrType_GetClrName, marshal_ppp)
-	IL_METHOD("GetClrNamespace", "(T)oSystem.String;", _IL_ClrType_GetClrNamespace, marshal_ppp)
-IL_METHOD_END
-
-#endif
-
-#ifndef _IL_Module_suppressed
-
-IL_METHOD_BEGIN(Module_Methods)
-	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;", _IL_Module_GetType, marshal_ppppbb)
-	IL_METHOD("GetTypes", "(T)[oSystem.Type;", _IL_Module_GetTypes, marshal_ppp)
-	IL_METHOD("IsResource", "(T)Z", _IL_Module_IsResource, marshal_bpp)
-	IL_METHOD("GetModuleType", "(T)oSystem.Type;", _IL_Module_GetModuleType, marshal_ppp)
-	IL_METHOD("GetAssembly", "(T)oSystem.Reflection.Assembly;", _IL_Module_GetAssembly, marshal_ppp)
-	IL_METHOD("GetFullName", "(T)oSystem.String;", _IL_Module_GetFullName, marshal_ppp)
 IL_METHOD_END
 
 #endif
@@ -1865,89 +1865,12 @@ static void marshal_pppipp(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_StackFrame_suppressed
 
 IL_METHOD_BEGIN(StackFrame_Methods)
-	IL_METHOD("InternalGetTotalFrames", "()i", _IL_StackFrame_InternalGetTotalFrames, marshal_ip)
+	IL_METHOD("GetExceptionStackTrace", "()[vSystem.Diagnostics.PackedStackFrame;", _IL_StackFrame_GetExceptionStackTrace, marshal_pp)
 	IL_METHOD("InternalGetMethod", "(i)vSystem.RuntimeMethodHandle;", _IL_StackFrame_InternalGetMethod, marshal_vppi)
 	IL_METHOD("InternalGetILOffset", "(i)i", _IL_StackFrame_InternalGetILOffset, marshal_ipi)
 	IL_METHOD("InternalGetNativeOffset", "(i)i", _IL_StackFrame_InternalGetNativeOffset, marshal_ipi)
 	IL_METHOD("InternalGetDebugInfo", "(vSystem.RuntimeMethodHandle;i&i&i)oSystem.String;", _IL_StackFrame_InternalGetDebugInfo, marshal_pppipp)
-	IL_METHOD("GetExceptionStackTrace", "()[vSystem.Diagnostics.PackedStackFrame;", _IL_StackFrame_GetExceptionStackTrace, marshal_pp)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpjp(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bppipi(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_jpip(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpjpipi(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILNativeUInt, void *, ILInt32, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ppipip(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, ILInt32, void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
-}
-
-#endif
-
-#ifndef _IL_CryptoMethods_suppressed
-
-IL_METHOD_BEGIN(CryptoMethods_Methods)
-	IL_METHOD("AlgorithmSupported", "(i)Z", _IL_CryptoMethods_AlgorithmSupported, marshal_bpi)
-	IL_METHOD("HashNew", "(i)j", _IL_CryptoMethods_HashNew, marshal_jpi)
-	IL_METHOD("HashReset", "(j)V", _IL_CryptoMethods_HashReset, marshal_vpj)
-	IL_METHOD("HashUpdate", "(j[Bii)V", _IL_CryptoMethods_HashUpdate, marshal_vpjpii)
-	IL_METHOD("HashFinal", "(j[B)V", _IL_CryptoMethods_HashFinal, marshal_vpjp)
-	IL_METHOD("HashFree", "(j)V", _IL_CryptoMethods_HashFree, marshal_vpj)
-	IL_METHOD("IsSemiWeakKey", "([Bi)Z", _IL_CryptoMethods_IsSemiWeakKey, marshal_bppi)
-	IL_METHOD("IsWeakKey", "([Bi)Z", _IL_CryptoMethods_IsWeakKey, marshal_bppi)
-	IL_METHOD("SameKey", "([Bi[Bi)Z", _IL_CryptoMethods_SameKey, marshal_bppipi)
-	IL_METHOD("GenerateRandom", "([Bii)V", _IL_CryptoMethods_GenerateRandom, marshal_vppii)
-	IL_METHOD("EncryptCreate", "(i[B)j", _IL_CryptoMethods_EncryptCreate, marshal_jpip)
-	IL_METHOD("DecryptCreate", "(i[B)j", _IL_CryptoMethods_DecryptCreate, marshal_jpip)
-	IL_METHOD("Encrypt", "(j[Bi[Bi)V", _IL_CryptoMethods_Encrypt, marshal_vpjpipi)
-	IL_METHOD("Decrypt", "(j[Bi[Bi)V", _IL_CryptoMethods_Decrypt, marshal_vpjpipi)
-	IL_METHOD("SymmetricFree", "(j)V", _IL_CryptoMethods_SymmetricFree, marshal_vpj)
-	IL_METHOD("NumAdd", "([B[B[B)[B", _IL_CryptoMethods_NumAdd, marshal_ppppp)
-	IL_METHOD("NumSub", "([B[B[B)[B", _IL_CryptoMethods_NumSub, marshal_ppppp)
-	IL_METHOD("NumMul", "([B[B[B)[B", _IL_CryptoMethods_NumMul, marshal_ppppp)
-	IL_METHOD("NumPow", "([B[B[B)[B", _IL_CryptoMethods_NumPow, marshal_ppppp)
-	IL_METHOD("NumInv", "([B[B)[B", _IL_CryptoMethods_NumInv, marshal_pppp)
-	IL_METHOD("NumMod", "([B[B)[B", _IL_CryptoMethods_NumMod, marshal_pppp)
-	IL_METHOD("NumEq", "([B[B)Z", _IL_CryptoMethods_NumEq, marshal_bppp)
-	IL_METHOD("NumZero", "([B)Z", _IL_CryptoMethods_NumZero, marshal_bpp)
-	IL_METHOD("GetKey", "(ioSystem.String;vSystem.Security.Cryptography.CspProviderFlags;&i)[B", _IL_CryptoMethods_GetKey, marshal_ppipip)
-	IL_METHOD("StoreKey", "(ioSystem.String;[B)V", _IL_CryptoMethods_StoreKey, marshal_vpipp)
+	IL_METHOD("InternalGetTotalFrames", "()i", _IL_StackFrame_InternalGetTotalFrames, marshal_ip)
 IL_METHOD_END
 
 #endif
@@ -1955,15 +1878,15 @@ IL_METHOD_END
 #ifndef _IL_DirMethods_suppressed
 
 IL_METHOD_BEGIN(DirMethods_Methods)
-	IL_METHOD("GetPathInfo", "()vPlatform.PathInfo;", _IL_DirMethods_GetPathInfo, marshal_vpp)
 	IL_METHOD("GetSystemDirectory", "()oSystem.String;", _IL_DirMethods_GetSystemDirectory, marshal_pp)
+	IL_METHOD("GetPathInfo", "()vPlatform.PathInfo;", _IL_DirMethods_GetPathInfo, marshal_vpp)
+	IL_METHOD("GetCurrentDirectory", "()oSystem.String;", _IL_DirMethods_GetCurrentDirectory, marshal_pp)
+	IL_METHOD("Copy", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Copy, marshal_ippp)
+	IL_METHOD("Rename", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Rename, marshal_ippp)
+	IL_METHOD("Delete", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Delete, marshal_ipp)
+	IL_METHOD("GetCreationTime", "(oSystem.String;&l)vPlatform.Errno;", _IL_DirMethods_GetCreationTime, marshal_ippp)
 	IL_METHOD("GetLastAccess", "(oSystem.String;&l)vPlatform.Errno;", _IL_DirMethods_GetLastAccess, marshal_ippp)
 	IL_METHOD("GetLastModification", "(oSystem.String;&l)vPlatform.Errno;", _IL_DirMethods_GetLastModification, marshal_ippp)
-	IL_METHOD("GetCreationTime", "(oSystem.String;&l)vPlatform.Errno;", _IL_DirMethods_GetCreationTime, marshal_ippp)
-	IL_METHOD("Copy", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Copy, marshal_ippp)
-	IL_METHOD("Delete", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Delete, marshal_ipp)
-	IL_METHOD("Rename", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Rename, marshal_ippp)
-	IL_METHOD("GetCurrentDirectory", "()oSystem.String;", _IL_DirMethods_GetCurrentDirectory, marshal_pp)
 	IL_METHOD("GetFilesInDirectory", "(oSystem.String;&[vPlatform.FileInfo;)vPlatform.Errno;", _IL_DirMethods_GetFilesInDirectory, marshal_ippp)
 IL_METHOD_END
 
@@ -1971,10 +1894,107 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_jp(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_ipipii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *))fn)(*((void * *)(avalue[0])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
 }
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpiS(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILUInt16 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpipii(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+}
+
+#endif
+
+#ifndef _IL_Stdio_suppressed
+
+IL_METHOD_BEGIN(Stdio_Methods)
+	IL_METHOD("StdClose", "(i)V", _IL_Stdio_StdClose, marshal_vpi)
+	IL_METHOD("StdPeek", "(i)i", _IL_Stdio_StdPeek, marshal_ipi)
+	IL_METHOD("StdRead", "(i)i", _IL_Stdio_StdRead_i, marshal_ipi)
+	IL_METHOD("StdRead", "(i[cii)i", _IL_Stdio_StdRead_iacii, marshal_ipipii)
+	IL_METHOD("StdFlush", "(i)V", _IL_Stdio_StdFlush, marshal_vpi)
+	IL_METHOD("StdWrite", "(ic)V", _IL_Stdio_StdWrite_ic, marshal_vpiS)
+	IL_METHOD("StdWrite", "(i[cii)V", _IL_Stdio_StdWrite_iacii, marshal_vpipii)
+	IL_METHOD("StdWrite", "(ioSystem.String;)V", _IL_Stdio_StdWrite_iString, marshal_vpip)
+	IL_METHOD("StdRead", "(i[Bii)i", _IL_Stdio_StdRead_iaBii, marshal_ipipii)
+	IL_METHOD("StdWrite", "(i[Bii)V", _IL_Stdio_StdWrite_iaBii, marshal_vpipii)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_dpS(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILDouble *)rvalue) = (*(ILDouble (*)(void *, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILUInt16 *)(avalue[1])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ipS(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILUInt16 *)(avalue[1])));
+}
+
+#endif
+
+#ifndef _IL_SysCharInfo_suppressed
+
+IL_METHOD_BEGIN(SysCharInfo_Methods)
+	IL_METHOD("GetNumericValue", "(c)d", _IL_SysCharInfo_GetNumericValue, marshal_dpS)
+	IL_METHOD("GetUnicodeCategory", "(c)vSystem.Globalization.UnicodeCategory;", _IL_SysCharInfo_GetUnicodeCategory, marshal_ipS)
+	IL_METHOD("GetNewLine", "()oSystem.String;", _IL_SysCharInfo_GetNewLine, marshal_pp)
+IL_METHOD_END
+
+#endif
+
+#ifndef _IL_TaskMethods_suppressed
+
+IL_METHOD_BEGIN(TaskMethods_Methods)
+	IL_METHOD("Exit", "(i)V", _IL_TaskMethods_Exit, marshal_vpi)
+	IL_METHOD("SetExitCode", "(i)V", _IL_TaskMethods_SetExitCode, marshal_vpi)
+	IL_METHOD("GetCommandLineArgs", "()[oSystem.String;", _IL_TaskMethods_GetCommandLineArgs, marshal_pp)
+	IL_METHOD("GetEnvironmentVariable", "(oSystem.String;)oSystem.String;", _IL_TaskMethods_GetEnvironmentVariable, marshal_ppp)
+	IL_METHOD("GetEnvironmentCount", "()i", _IL_TaskMethods_GetEnvironmentCount, marshal_ip)
+	IL_METHOD("GetEnvironmentKey", "(i)oSystem.String;", _IL_TaskMethods_GetEnvironmentKey, marshal_ppi)
+	IL_METHOD("GetEnvironmentValue", "(i)oSystem.String;", _IL_TaskMethods_GetEnvironmentValue, marshal_ppi)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_lp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *))fn)(*((void * *)(avalue[0])));
+}
+
+#endif
+
+#ifndef _IL_TimeMethods_suppressed
+
+IL_METHOD_BEGIN(TimeMethods_Methods)
+	IL_METHOD("GetCurrentTime", "()l", _IL_TimeMethods_GetCurrentTime, marshal_lp)
+	IL_METHOD("GetCurrentUtcTime", "()l", _IL_TimeMethods_GetCurrentUtcTime, marshal_lp)
+	IL_METHOD("GetTimeZoneAdjust", "()i", _IL_TimeMethods_GetTimeZoneAdjust, marshal_ip)
+	IL_METHOD("GetUpTime", "()i", _IL_TimeMethods_GetUpTime, marshal_ip)
+IL_METHOD_END
 
 #endif
 
@@ -2023,23 +2043,32 @@ static void marshal_bpjl(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_jp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *))fn)(*((void * *)(avalue[0])));
+}
+
+#endif
+
 #ifndef _IL_FileMethods_suppressed
 
 IL_METHOD_BEGIN(FileMethods_Methods)
-	IL_METHOD("GetInvalidHandle", "()j", _IL_FileMethods_GetInvalidHandle, marshal_jp)
+	IL_METHOD("GetErrnoMessage", "(vPlatform.Errno;)oSystem.String;", _IL_FileMethods_GetErrnoMessage, marshal_ppi)
 	IL_METHOD("ValidatePathname", "(oSystem.String;)Z", _IL_FileMethods_ValidatePathname, marshal_bpp)
 	IL_METHOD("Open", "(oSystem.String;vSystem.IO.FileMode;vSystem.IO.FileAccess;vSystem.IO.FileShare;&j)Z", _IL_FileMethods_Open, marshal_bppiiip)
+	IL_METHOD("GetErrno", "()vPlatform.Errno;", _IL_FileMethods_GetErrno, marshal_ip)
 	IL_METHOD("HasAsync", "()Z", _IL_FileMethods_HasAsync, marshal_bp)
 	IL_METHOD("CanSeek", "(j)Z", _IL_FileMethods_CanSeek, marshal_bpj)
 	IL_METHOD("CheckHandleAccess", "(jvSystem.IO.FileAccess;)Z", _IL_FileMethods_CheckHandleAccess, marshal_bpji)
 	IL_METHOD("Seek", "(jlvSystem.IO.SeekOrigin;)l", _IL_FileMethods_Seek, marshal_lpjli)
 	IL_METHOD("Write", "(j[Bii)Z", _IL_FileMethods_Write, marshal_bpjpii)
-	IL_METHOD("Read", "(j[Bii)i", _IL_FileMethods_Read, marshal_ipjpii)
 	IL_METHOD("Close", "(j)Z", _IL_FileMethods_Close, marshal_bpj)
 	IL_METHOD("FlushWrite", "(j)Z", _IL_FileMethods_FlushWrite, marshal_bpj)
+	IL_METHOD("Read", "(j[Bii)i", _IL_FileMethods_Read, marshal_ipjpii)
 	IL_METHOD("SetLength", "(jl)Z", _IL_FileMethods_SetLength, marshal_bpjl)
-	IL_METHOD("GetErrno", "()vPlatform.Errno;", _IL_FileMethods_GetErrno, marshal_ip)
-	IL_METHOD("GetErrnoMessage", "(vPlatform.Errno;)oSystem.String;", _IL_FileMethods_GetErrnoMessage, marshal_ppi)
+	IL_METHOD("GetInvalidHandle", "()j", _IL_FileMethods_GetInvalidHandle, marshal_jp)
 IL_METHOD_END
 
 #endif
@@ -2076,6 +2105,83 @@ IL_METHOD_END
 IL_METHOD_BEGIN(Security_Methods)
 	IL_METHOD("GetSecurityManager", "()oPlatform.ISecurityManager;", _IL_Security_GetSecurityManager, marshal_pp)
 	IL_METHOD("SetSecurityManager", "(oPlatform.ISecurityManager;)V", _IL_Security_SetSecurityManager, marshal_vpp)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_jpip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpjp(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bppipi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppipip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILInt32, void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpjpipi(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt, void *, ILInt32, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])));
+}
+
+#endif
+
+#ifndef _IL_CryptoMethods_suppressed
+
+IL_METHOD_BEGIN(CryptoMethods_Methods)
+	IL_METHOD("IsSemiWeakKey", "([Bi)Z", _IL_CryptoMethods_IsSemiWeakKey, marshal_bppi)
+	IL_METHOD("IsWeakKey", "([Bi)Z", _IL_CryptoMethods_IsWeakKey, marshal_bppi)
+	IL_METHOD("EncryptCreate", "(i[B)j", _IL_CryptoMethods_EncryptCreate, marshal_jpip)
+	IL_METHOD("DecryptCreate", "(i[B)j", _IL_CryptoMethods_DecryptCreate, marshal_jpip)
+	IL_METHOD("SymmetricFree", "(j)V", _IL_CryptoMethods_SymmetricFree, marshal_vpj)
+	IL_METHOD("HashNew", "(i)j", _IL_CryptoMethods_HashNew, marshal_jpi)
+	IL_METHOD("HashFree", "(j)V", _IL_CryptoMethods_HashFree, marshal_vpj)
+	IL_METHOD("HashReset", "(j)V", _IL_CryptoMethods_HashReset, marshal_vpj)
+	IL_METHOD("HashUpdate", "(j[Bii)V", _IL_CryptoMethods_HashUpdate, marshal_vpjpii)
+	IL_METHOD("HashFinal", "(j[B)V", _IL_CryptoMethods_HashFinal, marshal_vpjp)
+	IL_METHOD("AlgorithmSupported", "(i)Z", _IL_CryptoMethods_AlgorithmSupported, marshal_bpi)
+	IL_METHOD("GenerateRandom", "([Bii)V", _IL_CryptoMethods_GenerateRandom, marshal_vppii)
+	IL_METHOD("SameKey", "([Bi[Bi)Z", _IL_CryptoMethods_SameKey, marshal_bppipi)
+	IL_METHOD("GetKey", "(ioSystem.String;vSystem.Security.Cryptography.CspProviderFlags;&i)[B", _IL_CryptoMethods_GetKey, marshal_ppipip)
+	IL_METHOD("NumPow", "([B[B[B)[B", _IL_CryptoMethods_NumPow, marshal_ppppp)
+	IL_METHOD("NumMod", "([B[B)[B", _IL_CryptoMethods_NumMod, marshal_pppp)
+	IL_METHOD("NumInv", "([B[B)[B", _IL_CryptoMethods_NumInv, marshal_pppp)
+	IL_METHOD("NumMul", "([B[B[B)[B", _IL_CryptoMethods_NumMul, marshal_ppppp)
+	IL_METHOD("NumAdd", "([B[B[B)[B", _IL_CryptoMethods_NumAdd, marshal_ppppp)
+	IL_METHOD("NumZero", "([B)Z", _IL_CryptoMethods_NumZero, marshal_bpp)
+	IL_METHOD("NumEq", "([B[B)Z", _IL_CryptoMethods_NumEq, marshal_bppp)
+	IL_METHOD("NumSub", "([B[B[B)[B", _IL_CryptoMethods_NumSub, marshal_ppppp)
+	IL_METHOD("Decrypt", "(j[Bi[Bi)V", _IL_CryptoMethods_Decrypt, marshal_vpjpipi)
+	IL_METHOD("Encrypt", "(j[Bi[Bi)V", _IL_CryptoMethods_Encrypt, marshal_vpjpipi)
+	IL_METHOD("StoreKey", "(ioSystem.String;[B)V", _IL_CryptoMethods_StoreKey, marshal_vpipp)
 IL_METHOD_END
 
 #endif
@@ -2166,139 +2272,6 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_vpiS(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILInt32, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILUInt16 *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpipii(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ipipii(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
-}
-
-#endif
-
-#ifndef _IL_Stdio_suppressed
-
-IL_METHOD_BEGIN(Stdio_Methods)
-	IL_METHOD("StdClose", "(i)V", _IL_Stdio_StdClose, marshal_vpi)
-	IL_METHOD("StdFlush", "(i)V", _IL_Stdio_StdFlush, marshal_vpi)
-	IL_METHOD("StdWrite", "(ic)V", _IL_Stdio_StdWrite_ic, marshal_vpiS)
-	IL_METHOD("StdWrite", "(i[cii)V", _IL_Stdio_StdWrite_iacii, marshal_vpipii)
-	IL_METHOD("StdWrite", "(i[Bii)V", _IL_Stdio_StdWrite_iaBii, marshal_vpipii)
-	IL_METHOD("StdWrite", "(ioSystem.String;)V", _IL_Stdio_StdWrite_iString, marshal_vpip)
-	IL_METHOD("StdRead", "(i)i", _IL_Stdio_StdRead_i, marshal_ipi)
-	IL_METHOD("StdRead", "(i[cii)i", _IL_Stdio_StdRead_iacii, marshal_ipipii)
-	IL_METHOD("StdRead", "(i[Bii)i", _IL_Stdio_StdRead_iaBii, marshal_ipipii)
-	IL_METHOD("StdPeek", "(i)i", _IL_Stdio_StdPeek, marshal_ipi)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ipS(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILUInt16 *)(avalue[1])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_dpS(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILDouble *)rvalue) = (*(ILDouble (*)(void *, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILUInt16 *)(avalue[1])));
-}
-
-#endif
-
-#ifndef _IL_SysCharInfo_suppressed
-
-IL_METHOD_BEGIN(SysCharInfo_Methods)
-	IL_METHOD("GetUnicodeCategory", "(c)vSystem.Globalization.UnicodeCategory;", _IL_SysCharInfo_GetUnicodeCategory, marshal_ipS)
-	IL_METHOD("GetNumericValue", "(c)d", _IL_SysCharInfo_GetNumericValue, marshal_dpS)
-	IL_METHOD("GetNewLine", "()oSystem.String;", _IL_SysCharInfo_GetNewLine, marshal_pp)
-IL_METHOD_END
-
-#endif
-
-#ifndef _IL_TaskMethods_suppressed
-
-IL_METHOD_BEGIN(TaskMethods_Methods)
-	IL_METHOD("Exit", "(i)V", _IL_TaskMethods_Exit, marshal_vpi)
-	IL_METHOD("SetExitCode", "(i)V", _IL_TaskMethods_SetExitCode, marshal_vpi)
-	IL_METHOD("GetCommandLineArgs", "()[oSystem.String;", _IL_TaskMethods_GetCommandLineArgs, marshal_pp)
-	IL_METHOD("GetEnvironmentVariable", "(oSystem.String;)oSystem.String;", _IL_TaskMethods_GetEnvironmentVariable, marshal_ppp)
-	IL_METHOD("GetEnvironmentCount", "()i", _IL_TaskMethods_GetEnvironmentCount, marshal_ip)
-	IL_METHOD("GetEnvironmentKey", "(i)oSystem.String;", _IL_TaskMethods_GetEnvironmentKey, marshal_ppi)
-	IL_METHOD("GetEnvironmentValue", "(i)oSystem.String;", _IL_TaskMethods_GetEnvironmentValue, marshal_ppi)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_lp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *))fn)(*((void * *)(avalue[0])));
-}
-
-#endif
-
-#ifndef _IL_TimeMethods_suppressed
-
-IL_METHOD_BEGIN(TimeMethods_Methods)
-	IL_METHOD("GetCurrentTime", "()l", _IL_TimeMethods_GetCurrentTime, marshal_lp)
-	IL_METHOD("GetCurrentUtcTime", "()l", _IL_TimeMethods_GetCurrentUtcTime, marshal_lp)
-	IL_METHOD("GetTimeZoneAdjust", "()i", _IL_TimeMethods_GetTimeZoneAdjust, marshal_ip)
-	IL_METHOD("GetUpTime", "()i", _IL_TimeMethods_GetUpTime, marshal_ip)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bppppp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bplppp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILInt64, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((ILInt64 *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
-}
-
-#endif
-
-#ifndef _IL_Dns_suppressed
-
-IL_METHOD_BEGIN(Dns_Methods)
-	IL_METHOD("InternalGetHostByName", "(oSystem.String;&oSystem.String;&[oSystem.String;&[l)Z", _IL_Dns_InternalGetHostByName, marshal_bppppp)
-	IL_METHOD("InternalGetHostByAddr", "(l&oSystem.String;&[oSystem.String;&[l)Z", _IL_Dns_InternalGetHostByAddr, marshal_bplppp)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
 static void marshal_lpl(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *, ILInt64))fn)(*((void * *)(avalue[0])), *((ILInt64 *)(avalue[1])));
@@ -2318,12 +2291,39 @@ static void marshal_sps(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_IPAddress_suppressed
 
 IL_METHOD_BEGIN(IPAddress_Methods)
-	IL_METHOD("HostToNetworkOrder", "(l)l", _IL_IPAddress_HostToNetworkOrder_l, marshal_lpl)
 	IL_METHOD("HostToNetworkOrder", "(i)i", _IL_IPAddress_HostToNetworkOrder_i, marshal_ipi)
+	IL_METHOD("HostToNetworkOrder", "(l)l", _IL_IPAddress_HostToNetworkOrder_l, marshal_lpl)
 	IL_METHOD("HostToNetworkOrder", "(s)s", _IL_IPAddress_HostToNetworkOrder_s, marshal_sps)
 	IL_METHOD("NetworkToHostOrder", "(l)l", _IL_IPAddress_NetworkToHostOrder_l, marshal_lpl)
 	IL_METHOD("NetworkToHostOrder", "(i)i", _IL_IPAddress_NetworkToHostOrder_i, marshal_ipi)
 	IL_METHOD("NetworkToHostOrder", "(s)s", _IL_IPAddress_NetworkToHostOrder_s, marshal_sps)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bplppp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILInt64, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((ILInt64 *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bppppp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#ifndef _IL_Dns_suppressed
+
+IL_METHOD_BEGIN(Dns_Methods)
+	IL_METHOD("InternalGetHostByAddr", "(l&oSystem.String;&[oSystem.String;&[l)Z", _IL_Dns_InternalGetHostByAddr, marshal_bplppp)
+	IL_METHOD("InternalGetHostByName", "(oSystem.String;&oSystem.String;&[oSystem.String;&[l)Z", _IL_Dns_InternalGetHostByName, marshal_bppppp)
 IL_METHOD_END
 
 #endif

@@ -2275,6 +2275,33 @@ IL_METHOD_END
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bppppp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bplppp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILInt64, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((ILInt64 *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#ifndef _IL_Dns_suppressed
+
+IL_METHOD_BEGIN(Dns_Methods)
+	IL_METHOD("InternalGetHostByName", "(oSystem.String;&oSystem.String;&[oSystem.String;&[l)Z", _IL_Dns_InternalGetHostByName, marshal_bppppp)
+	IL_METHOD("InternalGetHostByAddr", "(l&oSystem.String;&[oSystem.String;&[l)Z", _IL_Dns_InternalGetHostByAddr, marshal_bplppp)
+IL_METHOD_END
+
+#endif
+
 #ifndef _IL_CodeTable_suppressed
 
 IL_METHOD_BEGIN(CodeTable_Methods)
@@ -2359,6 +2386,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_DirMethods_suppressed
 	{"DirMethods", "Platform", DirMethods_Methods},
+#endif
+#ifndef _IL_Dns_suppressed
+	{"Dns", "System.Net", Dns_Methods},
 #endif
 #ifndef _IL_Double_suppressed
 	{"Double", "System", Double_Methods},

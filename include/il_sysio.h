@@ -237,6 +237,10 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 						    ILSysIOHandle **exceptfds, ILInt32 numExcept,
 						    ILInt64 timeout);
 
+/* dns.c */
+struct hostent* ILGetHostByName(const char *name);
+struct hostent* ILGetHostByAddr(const void *addr, unsigned int len, int type);
+
 #ifdef	__cplusplus 
 };
 #endif

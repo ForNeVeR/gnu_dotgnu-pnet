@@ -22,6 +22,9 @@
 #include "lib_defs.h"
 #include "il_sysio.h"
 #include "il_errno.h"
+#ifdef HAVE_NETDB_H
+	#include <netdb.h>
+#endif
 
 /*
  * public static bool Create(int af, int st, int pt, out IntPtr handle);
@@ -302,4 +305,105 @@ ILInt16 _IL_IPAddress_NetworkToHostOrder_s(ILExecThread *thread,
 {
 	return GETBYTE(ILInt16, network, 0, 8) |
 		   GETBYTE(ILInt16, network, 1, 0);
+}
+
+
+ILBool ToIPHostEntry (ILExecThread *_thread,
+				struct hostent *h_ent,
+				ILString ** h_name,
+				System_Array ** h_aliases,
+				System_Array ** h_addr_list
+				)
+{
+	int length=-1;
+	ILObject *objs;
+	ILInt64 *buffer;
+
+	*h_name=ILStringCreate(_thread,h_ent->h_name);
+	
+	/* Count the aliases using the NULL sentinel */
+	while(h_ent->h_aliases[++length]!=NULL);
+
+	/* Construct an array */
+	*h_aliases = (System_Array *)ILExecThreadNew(_thread, "[oSystem.String;", 
+					"(Ti)V",(ILVaInt)length);
+	
+	if(!(*h_aliases)) 
+	{
+		return 0; /* Assert memory is allocated */
+	}
+
+	objs=(ILObject*)(*h_aliases);
+	
+	while(length--)
+	{
+		ILExecThreadSetElem(_thread, objs, (ILInt32)length,
+			(ILObject*)ILStringCreate(_thread,h_ent->h_aliases[length]));
+	}
+
+	/* length=-1; */ /* I'm already sure it should be */
+	
+	/* Count the addresses using the NULL sentinel */
+	while(h_ent->h_addr_list[++length]!=NULL);
+
+	/* Construct an array */
+	*h_addr_list = (System_Array *)ILExecThreadNew(_thread, "[l", 
+					"(Ti)V",(ILVaInt)length);
+	
+	if(!(*h_addr_list)) return 0; /* Assert memory is allocated */
+
+	buffer=ArrayToBuffer(*h_addr_list);
+	while(length--)
+	{
+		/* crude hack to reuse GETBYTE , but gcc will optimise*/
+		buffer[length]=
+				GETBYTE(ILInt64,*(h_ent->h_addr_list[length]), 0, 0) |
+				GETBYTE(ILInt64,*(h_ent->h_addr_list[length]), 1, 8) |
+				GETBYTE(ILInt64,*(h_ent->h_addr_list[length]), 2, 16) |
+				GETBYTE(ILInt64,*(h_ent->h_addr_list[length]), 3, 24);
+	}
+	return 1;
+}
+
+/*
+ * public static bool InternalGetHostByName(String host, out String h_name ,
+ * 							out String [] h_aliases, out long[] h_addr_list);
+ */
+
+ILBool _IL_Dns_InternalGetHostByName(ILExecThread * _thread, 
+				ILString * host, ILString * * h_name, 
+				System_Array * * h_aliases, System_Array * * h_addr_list)
+{
+	struct hostent* h_ent;
+	
+	h_ent=ILGetHostByName(ILStringToAnsi(_thread,host));
+	
+	if(!h_ent)
+	{
+		return 0; /* false on error */
+	}
+
+	return ToIPHostEntry(_thread,h_ent,h_name,h_aliases,h_addr_list);
+}
+
+/*
+ * public static bool InternalGetHostByAddr(long address, out String h_name ,
+ * 							out String [] h_aliases, out long[] h_addr_list);
+ */
+
+ILBool _IL_Dns_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address, 
+				ILString * * h_name, System_Array * * h_aliases, 
+				System_Array * * h_addr_list)
+{
+	struct hostent *h_ent;	
+	ILInt32 ip=address;//attempt a conversion to 4 byte form...
+
+	h_ent=ILGetHostByAddr(&ip,sizeof(ip),AF_INET);
+	
+	if(!h_ent)
+	{
+		return 0; /* false on error */
+	}
+
+	return ToIPHostEntry(_thread,h_ent,h_name,h_aliases,h_addr_list);
 }

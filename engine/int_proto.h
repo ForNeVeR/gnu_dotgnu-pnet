@@ -478,5 +478,8 @@ extern ILInt64 _IL_IPAddress_NetworkToHostOrder_l(ILExecThread * _thread, ILInt6
 extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 network);
 extern ILInt16 _IL_IPAddress_NetworkToHostOrder_s(ILExecThread * _thread, ILInt16 network);
 
+extern ILBool _IL_Dns_InternalGetHostByName(ILExecThread * _thread, ILString * host, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
+extern ILBool _IL_Dns_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
+
 extern ILUInt8 * _IL_CodeTable_GetAddress(ILExecThread * _thread, ILObject * stream, ILInt64 position);
 

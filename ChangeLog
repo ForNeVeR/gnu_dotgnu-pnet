@@ -1,4 +1,13 @@
 
+2002-09-14  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/int_proto.h, engine/int_table.c, engine/lib_socket.c,
+	support/dns.c, support/Makefile.am, include/il_sysio.h : Implement 
+	the internalcalls and support functions for dns lookup
+
+	* configure.in, include/il_config.h.in : Checks for netdb.h ,
+	gethostbyname() and gethostbyaddr() .
+	
 2002-09-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_coerce.c (GetCoerceRules): don't strip off the

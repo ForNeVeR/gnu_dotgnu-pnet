@@ -123,6 +123,8 @@ include/sys/Makefile
 libc/Makefile
 libc/malloc/Makefile
 libc/misc/Makefile
+libc/pthread/Makefile
+libc/pwd/Makefile
 libc/stdio/Makefile
 libc/string/Makefile
 libc/unistd/Makefile

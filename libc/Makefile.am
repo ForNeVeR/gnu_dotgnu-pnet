@@ -3,6 +3,8 @@ AUTOMAKE_OPTIONS = no-dependencies
 
 SUBDIRS = malloc \
 		  misc \
+		  pthread \
+		  pwd \
 		  stdio \
 		  string \
 		  unistd
@@ -12,6 +14,8 @@ libc_DATA = libc$(LIBRARY_SUFFIX).dll
 
 LIBC_COMPONENTS = malloc/libCMalloc.a \
 				  misc/libCMisc.a \
+				  pthread/libCPthread.a \
+				  pwd/libCPwd.a \
 				  stdio/libCStdio.a \
 				  string/libCString.a \
 				  unistd/libCUnistd.a

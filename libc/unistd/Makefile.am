@@ -8,6 +8,7 @@ libCUnistd_a_SOURCES = chown-stub.c \
                        close.c \
 					   dup.c \
 					   dup2.c \
+					   getlogin.c \
 					   guid-stub.c \
 					   isatty.c \
 					   lseek.c \

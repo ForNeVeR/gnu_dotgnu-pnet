@@ -1,3 +1,8 @@
+2005-02-09  Marc Haisenko <marc@darkdust.net>
+	* System.Windows.Forms/TextBox.cs: Fix bug in TextBox: if the width or
+	height changed we have to reset the "view", that is make sure the text
+	position is reset.
+
 2005-02-08  Marc Haisenko <marc@darkdust.net>
 	* System.Windows.Forms/Control.cs: Fix layouting bug in Control.cs
 	(child controls sometimes got a wrong size), save old size informations

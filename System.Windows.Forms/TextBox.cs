@@ -1366,6 +1366,7 @@ public class TextBox : TextBoxBase
 			layout = null;
 			LayoutFromText(Text);
 			SetScrollBarPositions();
+			ResetView ();
 			// Redraw
 			InvalidateAll();
 		}

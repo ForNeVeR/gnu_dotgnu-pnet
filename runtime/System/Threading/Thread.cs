@@ -44,6 +44,20 @@ public sealed class Thread
 	// Name of this thread.
 	private String name;
 
+#if CONFIG_REMOTING
+
+	// The context for this thread.
+	private Context context;
+
+#endif // CONFIG_REMOTING
+
+#if CONFIG_POLICY_OBJECTS
+
+	// The security principal for this thread.
+	private IPrincipal principal;
+
+#endif // CONFIG_POLICY_OBJECTS
+
 #if !ECMA_COMPAT
 	// Flag that is set for threads in the thread pool.
 	internal bool inThreadPool;
@@ -390,11 +404,9 @@ public sealed class Thread
 			}
 
 	// Get the current domain identifier.
-	[TODO]
 	public static int GetDomainID()
 			{
-				// TODO
-				return 0;
+				return GetDomain().domainID;
 			}
 
 	// Get a previously allocated named data store slot.
@@ -462,13 +474,16 @@ public sealed class Thread
 #if CONFIG_REMOTING
 
 	// Get the remoting context for the current thread.
-	[TODO]
 	public static Context CurrentContext
 			{
 				get
 				{
-					// TODO
-					return null;
+					Thread thread = CurrentThread;
+					if(thread.context == null)
+					{
+						thread.context = Context.DefaultContext;
+					}
+					return thread.context;
 				}
 			}
 
@@ -490,17 +505,15 @@ public sealed class Thread
 #if CONFIG_POLICY_OBJECTS
 
 	// Get or set the principal representing the thread's security context.
-	[TODO]
 	public static IPrincipal CurrentPrincipal
 			{
 				get
 				{
-					// TODO
-					return null;
+					return CurrentThread.principal;
 				}
 				set
 				{
-					// TODO
+					CurrentThread.principal = value;
 				}
 			}
 

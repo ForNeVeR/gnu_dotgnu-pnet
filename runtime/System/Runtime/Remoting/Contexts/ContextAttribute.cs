@@ -78,15 +78,31 @@ public class ContextAttribute : Attribute, IContextAttribute, IContextProperty
 	public virtual void GetPropertiesForNewContext
 				(IConstructionCallMessage ctorMsg)
 			{
-				// TODO
+				if(ctorMsg == null)
+				{
+					throw new ArgumentNullException("ctorMsg");
+				}
+				ctorMsg.ContextProperties.Add(this);
 			}
 
 	// Determine if a context is OK with respect to this attribute.
 	public virtual bool IsContextOK
-				(Context ctx, IConstructionCallMessage msg)
+				(Context ctx, IConstructionCallMessage ctorMsg)
 			{
-				// TODO
-				return false;
+				if(ctx == null)
+				{
+					throw new ArgumentNullException("ctx");
+				}
+				if(ctorMsg == null)
+				{
+					throw new ArgumentNullException("ctorMsg");
+				}
+				if(!ctorMsg.ActivationType.IsContextful)
+				{
+					return true;
+				}
+				Object value = ctx.GetProperty(AttributeName);
+				return (value != null && this.Equals(value));
 			}
 
 	// Determine if a new context is OK for this property.

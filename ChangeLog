@@ -16,6 +16,11 @@
 	* runtime/System/Reflection/Assembly.cs: add missing internalcall's
 	to "System.Reflection.Assembly".
 
+	* resources/en_US/runtime/Invalid.txt, runtime/System/AppDomain.cs,
+	runtime/System/Runtime/Remoting/Contexts/Context.cs,
+	runtime/System/Runtime/Remoting/Contexts/ContextAttribute.cs,
+	runtime/System/Threading/Thread.cs: support code for remoting contexts.
+
 2003-08-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* csupport/Directory.cs: add and implement the underlying C# object for

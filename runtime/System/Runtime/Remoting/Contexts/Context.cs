@@ -24,39 +24,41 @@ namespace System.Runtime.Remoting.Contexts
 
 #if CONFIG_REMOTING
 
+using System.Threading;
+
 public class Context
 {
 	// Internal state.
+	private static int nextContextID = 0;
 	private int contextID;
 	private IContextProperty[] properties;
+	private bool freeze;
 
 	// Constructor.
-	[TODO]
 	public Context()
 			{
-				// TODO
+				lock(typeof(Context))
+				{
+					contextID = ++nextContextID;
+				}
 			}
 
 	// Destructor.
 	~Context()
 			{
-				// TODO
+				// Nothing to do here.
 			}
 
 	// Allocate a local data slot.
-	[TODO]
 	public static LocalDataStoreSlot AllocateDataSlot()
 			{
-				// TODO
-				return null;
+				return Thread.AllocateDataSlot();
 			}
 
 	// Allocate a named local data slot.
-	[TODO]
 	public static LocalDataStoreSlot AllocateNamedDataSlot(String name)
 			{
-				// TODO
-				return null;
+				return Thread.AllocateNamedDataSlot("context_" + name);
 			}
 
 	// Perform a cross-context callback.
@@ -67,40 +69,61 @@ public class Context
 			}
 
 	// Free a named local data slot.
-	[TODO]
 	public static void FreeNamedDataSlot(String name)
 			{
-				// TODO
+				Thread.FreeNamedDataSlot("context_" + name);
 			}
 
 	// Freeze this context.
-	[TODO]
 	public virtual void Freeze()
 			{
-				// TODO
+				lock(this)
+				{
+					if(freeze)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ContextFrozen"));
+					}
+					freeze = true;
+					if(properties != null)
+					{
+						foreach(IContextProperty prop in properties)
+						{
+							prop.Freeze(this);
+						}
+					}
+				}
 			}
 
 	// Get the data stored in a particular data store slot.
-	[TODO]
 	public static Object GetData(LocalDataStoreSlot slot)
 			{
-				// TODO
-				return null;
+				return Thread.GetData(slot);
 			}
 
 	// Get a named data store slot.
-	[TODO]
 	public static LocalDataStoreSlot GetNamedDataSlot(String name)
 			{
-				// TODO
-				return null;
+				return Thread.GetNamedDataSlot("context_" + name);
 			}
 
 	// Get a property from this context.
-	[TODO]
 	public virtual IContextProperty GetProperty(String name)
 			{
-				// TODO
+				lock(this)
+				{
+					if(name == null || properties == null)
+					{
+						return null;
+					}
+					foreach(IContextProperty prop in properties)
+					{
+						if(prop.Name == name)
+						{
+							return prop;
+						}
+					}
+				}
 				return null;
 			}
 
@@ -114,25 +137,67 @@ public class Context
 			}
 
 	// Set the value of a local data store slot.
-	[TODO]
 	public static void SetData(LocalDataStoreSlot slot, Object value)
 			{
-				// TODO
+				Thread.SetData(slot, value);
 			}
 
 	// Set a property on this context.
-	[TODO]
 	public virtual void SetProperty(IContextProperty prop)
 			{
-				// TODO
+				if(prop == null)
+				{
+					throw new ArgumentNullException("prop");
+				}
+				if(prop.Name == null)
+				{
+					throw new ArgumentNullException("prop.Name");
+				}
+				lock(this)
+				{
+					// The context must not be currently frozen.
+					if(freeze)
+					{
+						throw new InvalidOperationException
+							(_("Invalid_ContextFrozen"));
+					}
+
+					// Bail out if there is already a property with this name.
+					if(properties != null)
+					{
+						foreach(IContextProperty prop2 in properties)
+						{
+							if(prop.Name == prop2.Name)
+							{
+								throw new InvalidOperationException
+									(_("Invalid_PropertyClash"));
+							}
+						}
+					}
+
+					// Expand the property array and add the new element.
+					if(properties == null)
+					{
+						properties = new IContextProperty [1];
+						properties[0] = prop;
+					}
+					else
+					{
+						IContextProperty[] newProperties;
+						newProperties = new IContextProperty
+							[properties.Length + 1];
+						Array.Copy(properties, 0, newProperties, 0,
+								   properties.Length);
+						properties[properties.Length] = prop;
+						newProperties = properties;
+					}
+				}
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return "ContextID: " + contextID.ToString();
 			}
 
 	// Unregister a dynamic property.
@@ -158,18 +223,31 @@ public class Context
 			{
 				get
 				{
-					return properties;
+					lock(this)
+					{
+						if(properties == null)
+						{
+							return null;
+						}
+						return (IContextProperty[])(properties.Clone());
+					}
 				}
 			}
 
-	// Get the default context.
-	[TODO]
+	// Get the default context for the current application domain.
 	public static Context DefaultContext
 			{
 				get
 				{
-					// TODO
-					return null;
+					AppDomain domain = Thread.GetDomain();
+					lock(typeof(Context))
+					{
+						if(domain.defaultContext == null)
+						{
+							domain.defaultContext = new Context();
+						}
+						return domain.defaultContext;
+					}
 				}
 			}
 

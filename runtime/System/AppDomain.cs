@@ -28,6 +28,7 @@ using System.Reflection;
 using System.Globalization;
 using System.Reflection.Emit;
 using System.Runtime.Remoting;
+using System.Runtime.Remoting.Contexts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
@@ -47,13 +48,18 @@ public sealed class AppDomain
 #endif
 {
 	// Internal state.
+	private static int nextDomainID = 0;
 	private String friendlyName;
+	internal int domainID;
 #if !ECMA_COMPAT
 	private Evidence evidence;
 	private AppDomainSetup setup;
 	private Hashtable items;
 #endif
 	private static AppDomain currentDomain;
+#if CONFIG_REMOTING
+	internal Context defaultContext;
+#endif
 
 	// Construct a new AppDomain instance.
 	private AppDomain(String name)
@@ -61,6 +67,10 @@ public sealed class AppDomain
 				if(name == null)
 				{
 					throw new ArgumentNullException("name");
+				}
+				lock(typeof(AppDomain))
+				{
+					domainID = ++nextDomainID;
 				}
 				friendlyName = name;
 #if !ECMA_COMPAT

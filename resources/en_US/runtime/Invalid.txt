@@ -34,3 +34,5 @@ Invalid_RWLock=Invalid read/write lock operation
 Invalid_RemoteRegistry=Access to remote registry denied
 Invalid_IsolatedCurrentSize=The current size of this isolated storage object is not available
 Invalid_IsolatedQuota=Isolated storage quota is not specified
+Invalid_ContextFrozen=The context is already frozen
+Invalid_PropertyClash=There is already a context property with the specified name

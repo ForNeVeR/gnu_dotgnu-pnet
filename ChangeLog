@@ -46,6 +46,8 @@ use the new float writing routines.
 * ildasm/ildasm_internal.h: remove the declarations of ILDAsmDumpString
 and ILDAsmDumpConstant.
 
+* codegen/cg_misc.tc: constant evaluation for "ILNode_ToConst" nodes.
+
 2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);

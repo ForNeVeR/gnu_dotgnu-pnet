@@ -1627,9 +1627,10 @@ ILNode_EvalConst(ILNode_Comma)
 }
 
 /*
- * Evaluate the constant value of an "as is" expression.
+ * Evaluate the constant value of an "as is" or "to constant" expression.
  */
-ILNode_EvalConst(ILNode_AsIs)
+ILNode_EvalConst(ILNode_AsIs),
+ILNode_EvalConst(ILNode_ToConst)
 {
 	return ILNode_EvalConst(node->expr, info, value);
 }

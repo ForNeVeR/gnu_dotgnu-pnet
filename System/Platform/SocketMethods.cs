@@ -24,7 +24,7 @@ namespace Platform
 using System;
 using System.Runtime.CompilerServices;
 
-public class SocketMethods
+internal class SocketMethods
 {
 	// Create a socket and obtain a socket descriptor (return true on success).
 	[MethodImpl(MethodImplOptions.InternalCall)]

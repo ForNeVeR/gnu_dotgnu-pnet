@@ -1,4 +1,12 @@
 
+2002-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Platform/Errno.cs, System/Platform/SocketMethods.cs,
+	runtime/Platform/Errno.cs, runtime/Platform/SocketMethods.cs:
+	move the "Platform.SocketMethods" class into "System.dll" and
+	make it "internal", to prevent it being exported publicly from
+	"mscorlib.dll" and hence a security problem.
+
 2002-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Makefile.am, System.Xml/Makefile.am, runtime/Makefile.am:

@@ -354,6 +354,8 @@ CSSRC = Activator.cs \
 		Threading/ThreadState.cs \
 		Threading/ThreadStateException.cs \
 		Threading/Timeout.cs \
+		Threading/Timer.cs \
+		Threading/TimerCallback.cs \
 		Threading/WaitHandle.cs \
 		../Platform/DirMethods.cs \
 		../Platform/FileMethods.cs \

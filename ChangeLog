@@ -1,5 +1,11 @@
 2003-06-25  Neil Cawse  <neilc@geotab.ca>
 
+	* System.Drawing.Win32/Win32.cs, System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Win32/DrawingToolkit.cs : Implemented RegisterTimer
+	UnRegisterTimer, ScreenToClient and ClientToScreen.
+
+2003-06-25  Neil Cawse  <neilc@geotab.ca>
+
 	* System.Windows.Forms/ControlPaint.cs, System.Windows.Forms/ImageList,
 	System.Windows.Forms/ImageListStreamer, Xsharp/GrabWindow.cs : Small
 	changes to allow compiling with csc.

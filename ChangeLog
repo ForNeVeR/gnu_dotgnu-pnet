@@ -8,6 +8,9 @@
 	tests/runtime/System/code-review.txt: test cases and bug
 	fixes for exception classes in "runtime/System".
 
+	* System/Net/Cookie.cs, System/Net/CredentialCache.cs,
+	runtime/System/Resources/ResourceReader.cs: ECMA compat fixes.
+
 2003-08-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Microsoft/Win32/FileKeyProvider.cs,

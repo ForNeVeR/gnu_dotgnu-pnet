@@ -279,8 +279,12 @@ public sealed class Cookie
 				Cookie other = (comparand as Cookie);
 				if(other != null)
 				{
+				#if !ECMA_COMPAT
 					if(String.Compare(name, other.name, true,
 								      CultureInfo.InvariantCulture) != 0)
+				#else
+					if(String.Compare(name, other.name, true) != 0)
+				#endif
 					{
 						return false;
 					}
@@ -292,8 +296,12 @@ public sealed class Cookie
 					{
 						return false;
 					}
+				#if !ECMA_COMPAT
 					if(String.Compare(domain, other.domain, true,
 								      CultureInfo.InvariantCulture) != 0)
+				#else
+					if(String.Compare(domain, other.domain, true) != 0)
+				#endif
 					{
 						return false;
 					}

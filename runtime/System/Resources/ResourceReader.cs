@@ -343,6 +343,8 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 				return hash;
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Read floating-point values.
 	private static float ReadSingle(Stream stream)
 			{
@@ -395,6 +397,8 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 				return BitConverter.Int64BitsToDouble(value);
 			}
 
+#endif // CONFIG_EXTENDED_NUMERICS
+
 	// Read an object value of a particular type.
 	private static Object ReadObject(Stream stream, Type type)
 			{
@@ -442,6 +446,7 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 					temp = (long)(ReadInt(stream));
 					return (ulong)(temp | (((long)ReadInt(stream)) << 32));
 				}
+			#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(Single))
 				{
 					return ReadSingle(stream);
@@ -459,6 +464,7 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 					bits[3] = ReadInt(stream);
 					return new Decimal(bits);
 				}
+			#endif
 				else if(type == typeof(DateTime))
 				{
 					temp = (long)(ReadInt(stream));

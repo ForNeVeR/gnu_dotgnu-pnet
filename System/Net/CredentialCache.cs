@@ -79,9 +79,14 @@ public class CredentialCache : ICredentials, IEnumerable
 				CredentialInfo last = null;
 				while(info != null)
 				{
+				#if !ECMA_COMPAT
 					if(info.uriPrefix.Equals(uriPrefix) &&
 					   String.Compare(info.authType, authType, true,
 					   				  CultureInfo.InvariantCulture) == 0)
+				#else
+					if(info.uriPrefix.Equals(uriPrefix) &&
+					   String.Compare(info.authType, authType, true) == 0)
+				#endif
 					{
 						throw new ArgumentException
 							(S._("Arg_DuplicateCredentials"));
@@ -108,8 +113,12 @@ public class CredentialCache : ICredentials, IEnumerable
 	private static bool Matches(CredentialInfo info, Uri uriPrefix,
 								String authType)
 			{
+			#if !ECMA_COMPAT
 				if(String.Compare(info.authType, authType, true,
 				   				  CultureInfo.InvariantCulture) != 0)
+			#else
+				if(String.Compare(info.authType, authType, true) != 0)
+			#endif
 				{
 					return false;
 				}
@@ -171,9 +180,14 @@ public class CredentialCache : ICredentials, IEnumerable
 				CredentialInfo last = null;
 				while(info != null)
 				{
+				#if !ECMA_COMPAT
 					if(info.uriPrefix.Equals(uriPrefix) &&
 					   String.Compare(info.authType, authType, true,
 					   				  CultureInfo.InvariantCulture) == 0)
+				#else
+					if(info.uriPrefix.Equals(uriPrefix) &&
+					   String.Compare(info.authType, authType, true) == 0)
+				#endif
 					{
 						if(last != null)
 						{

@@ -1,3 +1,8 @@
+2004-01-18  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs: fix
+	more stream reading bugs.
+
 2004-01-17  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs: fix

@@ -39,19 +39,21 @@ internal class XmlStreamReader : TextReader
 	private const int MIN_BUFSIZ    = 128;
 
 	// Internal state.
-	private Stream 		stream;
-	private Encoding	encoding;
-	private Decoder		decoder;
-	private int    		bufferSize;
-	private byte[] 		inBuffer;
-	private int    		inBufferPosn;
-	private int    		inBufferLen;
-	private char[] 		outBuffer;
-	private int    		outBufferPosn;
-	private int    		outBufferLen;
-	private bool   		sawEOF;
-	internal TextReader TxtReader;
-	internal bool canseek;
+	private Stream          stream;
+	private Encoding        encoding;
+	private Decoder         decoder;
+	private int             bufferSize;
+	private byte[]          inBuffer;
+	private int             inBufferPosn;
+	private int             inBufferLen;
+	private char[]          outBuffer;
+	private int             outBufferPosn;
+	private int             outBufferLen;
+	private bool            sawEOF;
+	private bool            streamOwner;
+	private bool            encodingDetected;
+	internal TextReader     TxtReader;
+	internal bool           canseek;
 
 	// Constructors that are based on a stream.
 	public XmlStreamReader(Stream stream)
@@ -69,7 +71,6 @@ internal class XmlStreamReader : TextReader
 				{
 					canseek = txtReader != null && txtReader.Peek() != -1;
 				}
-				
 			}
 	public XmlStreamReader(Stream stream, bool detectEncodingFromByteOrderMarks)
 			: this(stream, Encoding.UTF8,
@@ -118,12 +119,8 @@ internal class XmlStreamReader : TextReader
 				this.outBufferPosn = 0;
 				this.outBufferLen = 0;
 				this.sawEOF = false;
-
-				// Should we change encodings based on a byte order mark?
-				if(detectEncodingFromByteOrderMarks)
-				{
-					DetectByteOrder();
-				}
+				this.streamOwner = false;
+				this.encodingDetected = !detectEncodingFromByteOrderMarks;
 
 				// Get a decoder for the encoding.
 				decoder = encoding.GetDecoder();
@@ -181,65 +178,148 @@ internal class XmlStreamReader : TextReader
 				this.outBufferPosn = 0;
 				this.outBufferLen = 0;
 				this.sawEOF = false;
-
-				// Should we change encodings based on a byte order mark?
-				if(detectEncodingFromByteOrderMarks)
-				{
-					DetectByteOrder();
-				}
+				this.streamOwner = true;
+				this.encodingDetected = !detectEncodingFromByteOrderMarks;
 
 				// Get a decoder for the encoding.
 				decoder = encoding.GetDecoder();
 			}
 
-	// Destructor.
-	~XmlStreamReader()
-			{
-				Dispose(false);
-			}
-
 	// Detect the byte order by inspecting the first few bytes.
 	private void DetectByteOrder()
 			{
-				// Pre-read the first full buffer of input data.
-				inBufferLen = stream.Read(inBuffer, 0, bufferSize);
-				if(inBufferLen <= 0)
+				if(inBufferLen < 1) { return; }
+
+				// Cancel the encoding detection if the marker bytes aren't
+				// recognised.
+				if(inBuffer[0] != 0xFF &&
+				   inBuffer[0] != 0xFE &&
+				   inBuffer[0] != 0xEF &&
+				   inBuffer[0] != 0x00)
 				{
-					sawEOF = true;
-					inBufferLen = 0;
+					/* Cancel encoding detection.  Go with default. */
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 2 &&
+				        inBuffer[1] != 0xFE &&
+				        inBuffer[1] != 0xFF &&
+				        inBuffer[1] != 0xBB &&
+				        inBuffer[1] != 0x00)
+				{
+					/* Cancel encoding detection.  Go with default. */
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 3 &&
+				        inBuffer[2] != 0xBF &&
+				        inBuffer[2] != 0xFE &&
+				        inBuffer[2] != 0xFF &&
+				        inBuffer[2] != 0x00)
+				{
+					/* Cancel encoding detection.  Go with default. */
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 4 &&
+				        inBuffer[3] != 0xFF &&
+				        inBuffer[3] != 0xFE &&
+				        inBuffer[3] != 0x00)
+				{
+					/* Cancel encoding detection.  Go with default. */
+					encodingDetected = true;
 				}
 
 				// Check for recognized byte order marks.
-				if(inBufferLen >= 2 &&
-				   inBuffer[0] == 0xFF &&
-				   inBuffer[1] == 0xFE)
+				if(inBufferLen < 3) { return; }
+				if(inBuffer[0] == 0xEF &&
+				   inBuffer[1] == 0xBB &&
+				   inBuffer[2] == 0xBF)
+				{
+					// UTF-8.
+					encoding = Encoding.UTF8;
+					inBufferPosn = 3;					
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 4 &&
+				        inBuffer[0] == 0x00 &&
+				        inBuffer[1] == 0x00 &&
+				        inBuffer[2] == 0xFE &&
+				        inBuffer[3] == 0xFF)
+				{
+					// UTF-32 (1234).
+					encoding = new UCS4Encoding
+						(UCS4Encoding.ByteOrder.Order_1234);
+					inBufferPosn = 4;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 4 &&
+				        inBuffer[0] == 0xFF &&
+				        inBuffer[1] == 0xFE &&
+				        inBuffer[2] == 0x00 &&
+				        inBuffer[3] == 0x00)
+				{
+					// UTF-32 (4321).
+					encoding = new UCS4Encoding
+						(UCS4Encoding.ByteOrder.Order_4321);
+					inBufferPosn = 4;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 4 &&
+				        inBuffer[0] == 0xFE &&
+				        inBuffer[1] == 0xFF &&
+				        inBuffer[2] == 0x00 &&
+				        inBuffer[3] == 0x00)
+				{
+					// UTF-32 (3412).
+					encoding = new UCS4Encoding
+						(UCS4Encoding.ByteOrder.Order_3412);
+					inBufferPosn = 4;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 4 &&
+				        inBuffer[0] == 0x00 &&
+				        inBuffer[1] == 0x00 &&
+				        inBuffer[2] == 0xFF &&
+				        inBuffer[3] == 0xFE)
+				{
+					// UTF-32 (2143).
+					encoding = new UCS4Encoding
+						(UCS4Encoding.ByteOrder.Order_2143);
+					inBufferPosn = 4;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
+				}
+				else if(inBuffer[0] == 0xFF &&
+				        inBuffer[1] == 0xFE &&
+				        (inBuffer[2] != 0x00 || inBufferLen >= 4))
 				{
 					// Little-endian UTF-16.
 					encoding = Encoding.Unicode;
 					inBufferPosn = 2;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
 				}
-				else if(inBufferLen >= 2 &&
-				        inBuffer[0] == 0xFE &&
-				        inBuffer[1] == 0xFF)
+				else if(inBuffer[0] == 0xFE &&
+				        inBuffer[1] == 0xFF &&
+				        (inBuffer[2] != 0x00 || inBufferLen >= 4))
 				{
 					// Big-endian UTF-16.
 					encoding = Encoding.BigEndianUnicode;
 					inBufferPosn = 2;
-				}
-				else if(inBufferLen >= 3 &&
-						inBuffer[0] == 0xEF &&
-						inBuffer[1] == 0xBB &&
-						inBuffer[2] == 0xBF)
-				{
-					// UTF-8.
-					encoding = Encoding.UTF8;
-					inBufferPosn = 3;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
 				}
 			}
 
 	// Close this stream reader.
 	public override void Close()
 			{
+				if(stream != null)
+				{
+					stream.Close();
+				}
 				Dispose(true);
 			}
 
@@ -264,7 +344,10 @@ internal class XmlStreamReader : TextReader
 			{
 				if(stream != null)
 				{
-					stream.Close();
+					if(this.streamOwner)
+					{
+						stream.Close();
+					}
 					stream = null;
 				}
 				inBuffer = null;
@@ -285,36 +368,62 @@ internal class XmlStreamReader : TextReader
 
 				while(outBufferPosn >= outBufferLen && !sawEOF)
 				{
-					// Move the previous left-over buffer contents down.
-					if((inBufferLen - inBufferPosn) < bufferSize)
-					{
-						if(inBufferPosn < inBufferLen)
-						{
-							Array.Copy
-								(inBuffer, inBufferPosn,
-							     inBuffer, 0, inBufferLen - inBufferPosn);
-							inBufferLen -= inBufferPosn;
-						}
-						else
-						{
-							inBufferLen = 0;
-						}
-						inBufferPosn = 0;
+					// This loop exits when there is an EOF or some bytes have been read and
+					// the encoding has been detected.
 
-						// Read new bytes into the buffer.
-						if(stream == null)
+					while(true)
+					{
+						// Move the previous left-over buffer contents down.
+						if((inBufferLen - inBufferPosn) < bufferSize)
 						{
-							throw new IOException(S._("IO_StreamClosed"));
+							if(inBufferPosn < inBufferLen)
+							{
+								Array.Copy
+									(inBuffer, inBufferPosn,
+									 inBuffer, 0, inBufferLen - inBufferPosn);
+								inBufferLen -= inBufferPosn;
+							}
+							else
+							{
+								inBufferLen = 0;
+							}
+							inBufferPosn = 0;
+
+							// Read new bytes into the buffer.
+							if(stream == null)
+							{
+								throw new IOException(S._("IO_StreamClosed"));
+							}
+							len = stream.Read
+								(inBuffer, inBufferLen, bufferSize - inBufferLen);
+							if(len <= 0)
+							{
+								if(!encodingDetected)
+								{
+									inBufferLen = 0;
+									inBufferPosn = 0;
+								}
+								sawEOF = true;
+								break;
+							}
+							else
+							{
+								inBufferLen += len;
+							}
 						}
-						len = stream.Read(inBuffer, inBufferPosn,
-										  bufferSize - inBufferPosn);
-						if(len <= 0)
+						if(inBufferLen > 0)
 						{
-							sawEOF = true;
-						}
-						else
-						{
-							inBufferLen += len;
+							if(!encodingDetected)
+							{
+								// Try to detect the encoding
+								DetectByteOrder();
+							}
+							if(encodingDetected && (inBufferLen - inBufferPosn > 0))
+							{
+								// Only exit if the encoding has been detected and some bytes
+								// have been read.
+								break;
+							}
 						}
 					}
 
@@ -327,8 +436,8 @@ internal class XmlStreamReader : TextReader
 					}
 
 					// Convert the bytes into characters.
-					outLen = decoder.GetChars(inBuffer, inBufferPosn, len,
-											  outBuffer, 0);
+					outLen = decoder.GetChars
+						(inBuffer, inBufferPosn, len, outBuffer, 0);
 					outBufferPosn = 0;
 					outBufferLen = outLen;
 					inBufferPosn += len;
@@ -522,6 +631,7 @@ internal class XmlStreamReader : TextReader
 			{
 				get
 				{
+					this.streamOwner = false;
 					return stream;
 				}
 			}

@@ -39,19 +39,19 @@ public class StreamReader : TextReader
 	private const int MIN_BUFSIZ    = 128;
 
 	// Internal state.
-	private Stream 		stream;
-	private Encoding	encoding;
-	private Decoder		decoder;
-	private int    		bufferSize;
-	private byte[] 		inBuffer;
-	private int    		inBufferPosn;
-	private int    		inBufferLen;
-	private char[] 		outBuffer;
-	private int    		outBufferPosn;
-	private int    		outBufferLen;
-	private bool   		sawEOF;
-	private bool		streamOwner;
-	private bool		encodingDetected;
+	private Stream      stream;
+	private Encoding    encoding;
+	private Decoder     decoder;
+	private int         bufferSize;
+	private byte[]      inBuffer;
+	private int         inBufferPosn;
+	private int         inBufferLen;
+	private char[]      outBuffer;
+	private int         outBufferPosn;
+	private int         outBufferLen;
+	private bool        sawEOF;
+	private bool        streamOwner;
+	private bool        encodingDetected;
 
 	// Constructors that are based on a stream.
 	public StreamReader(Stream stream)
@@ -172,15 +172,36 @@ public class StreamReader : TextReader
 	// Detect the byte order by inspecting the first few bytes.
 	private void DetectByteOrder()
 			{
-				if(inBufferLen < 1)
+				if(inBufferLen < 1) { return; }
+
+				// Cancel the encoding detection if the marker bytes aren't
+				// recognised.
+				if(inBuffer[0] != 0xFF &&
+				   inBuffer[0] != 0xFE &&
+				   inBuffer[0] != 0xEF)
 				{
-					return;
+					/* Cancel encoding detection.  Go with default. */
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 2 &&
+				        inBuffer[1] != 0xFE &&
+				        inBuffer[1] != 0xFF &&
+				        inBuffer[1] != 0xBB)
+				{
+					/* Cancel encoding detection.  Go with default. */
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 3 &&
+				        inBuffer[2] != 0xBF)
+				{
+					/* Cancel encoding detection.  Go with default. */
+					encodingDetected = true;
 				}
 
 				// Check for recognized byte order marks.
-				if(inBufferLen >= 2 &&
-					inBuffer[0] == 0xFF &&
-					inBuffer[1] == 0xFE)
+				if(inBufferLen < 2) { return; }
+				if(inBuffer[0] == 0xFF &&
+				   inBuffer[1] == 0xFE)
 				{
 					// Little-endian UTF-16.
 					encoding = Encoding.Unicode;
@@ -188,9 +209,8 @@ public class StreamReader : TextReader
 					decoder = encoding.GetDecoder();
 					encodingDetected = true;
 				}
-				else if(inBufferLen >= 2 &&
-					inBuffer[0] == 0xFE &&
-					inBuffer[1] == 0xFF)
+				else if(inBuffer[0] == 0xFE &&
+				        inBuffer[1] == 0xFF)
 				{
 					// Big-endian UTF-16.
 					encoding = Encoding.BigEndianUnicode;
@@ -199,48 +219,15 @@ public class StreamReader : TextReader
 					encodingDetected = true;
 				}
 				else if(inBufferLen >= 3 &&
-					inBuffer[0] == 0xEF &&
-					inBuffer[1] == 0xBB &&
-					inBuffer[2] == 0xBF)
+				        inBuffer[0] == 0xEF &&
+				        inBuffer[1] == 0xBB &&
+				        inBuffer[2] == 0xBF)
 				{
 					// UTF-8.
 					encoding = Encoding.UTF8;
 					inBufferPosn = 3;					
 					decoder = encoding.GetDecoder();
 					encodingDetected = true;
-				}
-				else
-				{
-					// Here we cancel the encoding detection if the marker bytes aren't recognised
-
-					if(inBufferLen >= 1)
-					{
-						if(!(inBuffer[0] == 0xFF || inBuffer[0] == 0xFE
-							|| inBuffer[0] == 0xEF))
-						{
-							/* Cancel encoding detection.  Go with default. */
-
-							encodingDetected = true;
-						}
-						else if(inBufferLen >= 2)
-						{
-							if(!(inBuffer[1] == 0xFE || inBuffer[1] == 0xFF || inBuffer[1] == 0xBB))
-							{
-								/* Cancel encoding detection.  Go with default. */
-
-								encodingDetected = true;
-							} 
-							else if(inBufferLen >= 3)
-							{
-								if(!(inBuffer[3] == 0xBF))
-								{
-									/* Cancel encoding detection.  Go with default. */
-
-									encodingDetected = true;
-								}
-							}
-						}
-					}
 				}
 			}
 

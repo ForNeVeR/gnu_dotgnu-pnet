@@ -1205,9 +1205,24 @@ ILNode_CSemAnalysis(ILNode_Assign)
 	CSemValue value1;
 	CSemValue value2;
 
+	/* Determine if the l-value will leave the machine state at
+	   the statement level of the expression, or if it might leave
+	   values on the stack before computing "expr2".  This check
+	   is necessary to ensure that we can assign the results of
+	   "setjmp" and "alloca" to local/global variables */
+	if(stmtLevel)
+	{
+		if(!yyisa(node->expr1, ILNode_CLocalVar) &&
+		   !yyisa(node->expr1, ILNode_CArgumentVar) &&
+		   !yyisa(node->expr1, ILNode_CGlobalVar))
+		{
+			stmtLevel = 0;
+		}
+	}
+
 	/* Perform semantic analysis on the two values */
 	value1 = ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), 0);
-	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), 0);
+	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
 
 	/* Check that the first is an l-value and the second is an r-value */
 	if(!CSemIsLValue(value1))

@@ -513,11 +513,38 @@ ILType *CFunctionNaturalType(ILGenInfo *info, ILType *type, int vararg)
 			}
 			/* Not reached */
 
+			case IL_META_ELEMTYPE_I:
+			{
+				if(vararg)
+				{
+					if(CTypePtrSize == 4)
+					{
+						return ILType_Int32;
+					}
+					else
+					{
+						return ILType_Int64;
+					}
+				}
+				else
+				{
+					return ILType_Int;
+				}
+			}
+			/* Not reached */
+
 			case IL_META_ELEMTYPE_U:
 			{
 				if(vararg)
 				{
-					return ILType_Int;
+					if(CTypePtrSize == 4)
+					{
+						return ILType_Int32;
+					}
+					else
+					{
+						return ILType_Int64;
+					}
 				}
 				else
 				{
@@ -534,11 +561,18 @@ ILType *CFunctionNaturalType(ILGenInfo *info, ILType *type, int vararg)
 	{
 		if(ILType_Kind(type) == IL_TYPE_COMPLEX_PTR || ILType_IsMethod(type))
 		{
-			/* Pointers are passed as "native int" in vararg mode to
-			   get around cast issues in the "refanyval" instruction */
+			/* Pointers are passed as "long" in vararg mode to get
+			   around cast issues in the "refanyval" instruction */
 			if(vararg)
 			{
-				return ILType_Int;
+				if(CTypePtrSize == 4)
+				{
+					return ILType_Int32;
+				}
+				else
+				{
+					return ILType_Int64;
+				}
 			}
 		}
 		else if(ILType_Kind(type) == IL_TYPE_COMPLEX_CMOD_OPT ||

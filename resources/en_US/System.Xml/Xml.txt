@@ -20,3 +20,5 @@
 Xml_Default=An XML error has occured
 Xml_WrongNameTable=A wrong XmlNameTable has been used
 Xml_InvalidPrefix=The specified prefix is invalid
+Xml_BooleanFormat=Invalid format for boolean value
+Xml_InvalidName=Name is not in a valid XML format

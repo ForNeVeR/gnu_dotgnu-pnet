@@ -1,5 +1,8 @@
 2004-02-08  Richard Baumann  <biochem333@nyc.rr.com>
 
+	* System.Xml/XmlTextReader.cs: fix a bug in empty attribute value
+	handling.
+
 	* System.Xml/Private/Attributes.cs: fix to duplicate attribute checking.
 
 	* System.Xml/XmlTextReader.cs, System.Xml/Private/Attributes.cs,

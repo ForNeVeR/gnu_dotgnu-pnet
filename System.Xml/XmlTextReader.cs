@@ -1057,6 +1057,13 @@ public class XmlTextReader : XmlReader
 					seg.SetInfo(true, log.ToString(textStart, textEnd));
 				}
 
+				// we need at least one segment
+				if(segLen == 0)
+				{
+					seg = segments[segLen++];
+					seg.SetInfo(true, "");
+				}
+
 				// store the number of segments
 				segments.Count = segLen;
 
@@ -1141,6 +1148,13 @@ public class XmlTextReader : XmlReader
 					int textEnd = (log.Length - textStart);
 					seg = segments[segLen++];
 					seg.SetInfo(true, log.ToString(textStart, textEnd));
+				}
+
+				// we need at least one segment
+				if(segLen == 0)
+				{
+					seg = segments[segLen++];
+					seg.SetInfo(true, "");
 				}
 
 				// store the number of segments

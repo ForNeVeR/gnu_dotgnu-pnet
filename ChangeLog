@@ -1,3 +1,9 @@
+
+2004-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Basic/DateAndTime.cs, resources/en_US/Basic/Basic.txt:
+	implement the TODO functionality in the "DateAndTime" class.
+
 2004-07-12  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/Form.cs: added missing stub for AllowTransparency.

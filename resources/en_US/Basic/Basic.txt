@@ -68,3 +68,7 @@ VB_InvalidDDB=Invalid arguments to DDB function
 VB_InvalidNPer=Invalid arguments to NPer function
 VB_InvalidSLN=Invalid arguments to SLN function
 VB_InvalidSYD=Invalid arguments to SYD function
+VB_MonthRange=Month value is out of range
+VB_InvalidWeekday=Invalid weekday value
+VB_InvalidInterval=Invalid date interval specification
+VB_InvalidWeekOfYear=Invalid week of year rule value

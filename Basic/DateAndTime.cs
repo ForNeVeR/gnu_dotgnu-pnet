@@ -34,23 +34,89 @@ public sealed class DateAndTime
 	// This class cannot be instantiated.
 	private DateAndTime() {}
 
+	// Convert the string representation of an interval into a "DateInterval".
+	private static DateInterval StringToInterval(String Interval)
+			{
+				if(Interval == null)
+				{
+					throw new ArgumentException
+						(S._("VB_InvalidInterval"), "Interval");
+				}
+				Interval = Interval.ToLower(CultureInfo.InvariantCulture);
+				switch(Interval)
+				{
+					case "yyyy": 	return DateInterval.Year;
+					case "q":		return DateInterval.Quarter;
+					case "m":		return DateInterval.Month;
+					case "y":		return DateInterval.DayOfYear;
+					case "d":		return DateInterval.Day;
+					case "ww":		return DateInterval.WeekOfYear;
+					case "w":		return DateInterval.Weekday;
+					case "h":		return DateInterval.Hour;
+					case "n":		return DateInterval.Minute;
+					case "s":		return DateInterval.Second;
+				}
+				throw new ArgumentException
+					(S._("VB_InvalidInterval"), "Interval");
+			}
+
+	// Convert a number into an integer, rounded for the purposes of DateAdd.
+	private static int ToInt(double Number)
+			{
+				return checked((int)(Math.Round(Conversion.Fix(Number))));
+			}
+
 	// Add a time interval to a date value.
-	[TODO]
 	public static DateTime DateAdd
 				(String Interval, double Number, Object DateValue)
 			{
-				// TODO
-				return DateTime.MinValue;
+				return DateAdd(StringToInterval(Interval), Number,
+							   DateType.FromObject(DateValue));
 			}
 	public static DateTime DateAdd
 				(DateInterval Interval, double Number, DateTime DateValue)
 			{
-				// TODO
-				return DateTime.MinValue;
+				Calendar calendar = CultureInfo.CurrentCulture.Calendar;
+				switch(Interval)
+				{
+					case DateInterval.Year:
+						return calendar.AddYears(DateValue, ToInt(Number));
+
+					case DateInterval.Quarter:
+						return calendar.AddMonths
+							(DateValue, ToInt(Number * 3.0));
+
+					case DateInterval.Month:
+						return calendar.AddMonths(DateValue, ToInt(Number));
+
+					case DateInterval.DayOfYear:
+					case DateInterval.Day:
+					case DateInterval.Weekday:
+						return DateValue.AddDays(ToInt(Number));
+
+					case DateInterval.WeekOfYear:
+						return DateValue.AddDays(ToInt(Number * 7.0));
+
+					case DateInterval.Hour:
+						return DateValue.AddHours(Number);
+
+					case DateInterval.Minute:
+						return DateValue.AddMinutes(Number);
+
+					case DateInterval.Second:
+						return DateValue.AddSeconds(Number);
+				}
+				throw new ArgumentException
+					(S._("VB_InvalidInterval"), "Interval");
+			}
+
+	// Adjust a tick difference.
+	private static long AdjustDiff(long ticks, long period)
+			{
+				return ToInt(((double)ticks) / ((double)period));
 			}
 
 	// Get the difference between two dates.
-	[TODO]
 	public static long DateDiff
 				(DateInterval Interval, DateTime Date1, DateTime Date2,
 				 [Optional] [DefaultValue(FirstDayOfWeek.Sunday)]
@@ -58,10 +124,58 @@ public sealed class DateAndTime
 				 [Optional] [DefaultValue(FirstWeekOfYear.Jan1)]
 				 	FirstWeekOfYear WeekOfYear)
 			{
-				// TODO
-				return 0;
+				Calendar calendar = CultureInfo.CurrentCulture.Calendar;
+				switch(Interval)
+				{
+					case DateInterval.Year:
+						return calendar.GetYear(Date2) -
+							   calendar.GetYear(Date1);
+
+					case DateInterval.Quarter:
+						return (calendar.GetYear(Date2) -
+							    calendar.GetYear(Date1)) * 4 +
+							   ((calendar.GetMonth(Date2) - 1) / 3) -
+							   ((calendar.GetMonth(Date1) - 1) / 3);
+
+					case DateInterval.Month:
+						return (calendar.GetYear(Date2) -
+							    calendar.GetYear(Date1)) * 12 +
+							   calendar.GetMonth(Date2) -
+							   calendar.GetMonth(Date1);
+
+					case DateInterval.DayOfYear:
+					case DateInterval.Day:
+						return AdjustDiff(Date2.Ticks - Date1.Ticks,
+										  TimeSpan.TicksPerDay);
+
+					case DateInterval.WeekOfYear:
+					{
+						Date1.AddDays(-Weekday(Date1, DayOfWeek));
+						Date2.AddDays(-Weekday(Date2, DayOfWeek));
+						return AdjustDiff(Date2.Ticks - Date1.Ticks,
+										  TimeSpan.TicksPerDay * 7);
+					}
+					// Not reached.
+
+					case DateInterval.Weekday:
+						return AdjustDiff(Date2.Ticks - Date1.Ticks,
+										  TimeSpan.TicksPerDay * 7);
+
+					case DateInterval.Hour:
+						return AdjustDiff(Date2.Ticks - Date1.Ticks,
+										  TimeSpan.TicksPerHour);
+
+					case DateInterval.Minute:
+						return AdjustDiff(Date2.Ticks - Date1.Ticks,
+										  TimeSpan.TicksPerMinute);
+
+					case DateInterval.Second:
+						return AdjustDiff(Date2.Ticks - Date1.Ticks,
+										  TimeSpan.TicksPerSecond);
+				}
+				throw new ArgumentException
+					(S._("VB_InvalidInterval"), "Interval");
 			}
-	[TODO]
 	public static long DateDiff
 				(String Interval, Object Date1, Object Date2,
 				 [Optional] [DefaultValue(FirstDayOfWeek.Sunday)]
@@ -69,12 +183,25 @@ public sealed class DateAndTime
 				 [Optional] [DefaultValue(FirstWeekOfYear.Jan1)]
 				 	FirstWeekOfYear WeekOfYear)
 			{
-				// TODO
-				return 0;
+				return DateDiff(StringToInterval(Interval),
+								DateType.FromObject(Date1),
+								DateType.FromObject(Date2),
+								DayOfWeek, WeekOfYear);
+			}
+
+	// Get the system setting for the first day of week.
+	private static FirstDayOfWeek SystemFirstDay()
+			{
+			#if !ECMA_COMPAT
+				return (FirstDayOfWeek)
+					(((int)CultureInfo.CurrentCulture
+							.DateTimeFormat.FirstDayOfWeek) + 1);
+			#else
+				return FirstDayOfWeek.Sunday;
+			#endif
 			}
 
 	// Get a particular date part.
-	[TODO]
 	public static int DatePart
 				(DateInterval Interval, DateTime DateValue,
 				 [Optional] [DefaultValue(FirstDayOfWeek.Sunday)]
@@ -82,10 +209,91 @@ public sealed class DateAndTime
 				 [Optional] [DefaultValue(FirstWeekOfYear.Jan1)]
 				 	FirstWeekOfYear FirstWeekOfYearValue)
 			{
-				// TODO
-				return 0;
+				Calendar calendar = CultureInfo.CurrentCulture.Calendar;
+				switch(Interval)
+				{
+					case DateInterval.Year:
+						return calendar.GetYear(DateValue);
+
+					case DateInterval.Quarter:
+						return ((calendar.GetMonth(DateValue) - 1) % 3) + 1;
+
+					case DateInterval.Month:
+						return calendar.GetMonth(DateValue);
+
+					case DateInterval.DayOfYear:
+						return calendar.GetDayOfYear(DateValue);
+
+					case DateInterval.Day:
+						return calendar.GetDayOfMonth(DateValue);
+
+					case DateInterval.WeekOfYear:
+					{
+						if(FirstDayOfWeekValue == FirstDayOfWeek.System)
+						{
+							FirstDayOfWeekValue = SystemFirstDay();
+						}
+						CalendarWeekRule rule;
+						switch(FirstWeekOfYearValue)
+						{
+							case FirstWeekOfYear.System:
+							{
+							#if !ECMA_COMPAT
+								rule = CultureInfo.CurrentCulture
+									.DateTimeFormat.CalendarWeekRule;
+							#else
+								rule = CalendarWeekRule.FirstDay;
+							#endif
+							}
+							break;
+
+							case FirstWeekOfYear.Jan1:
+							{
+								rule = CalendarWeekRule.FirstDay;
+							}
+							break;
+
+							case FirstWeekOfYear.FirstFourDays:
+							{
+								rule = CalendarWeekRule.FirstFourDayWeek;
+							}
+							break;
+
+							case FirstWeekOfYear.FirstFullWeek:
+							{
+								rule = CalendarWeekRule.FirstFullWeek;
+							}
+							break;
+
+							default:
+							{
+								throw new ArgumentException
+									(S._("VB_InvalidWeekOfYear"),
+									 "FirstWeekOfYearValue");
+							}
+							// Not reached.
+						}
+						return calendar.GetWeekOfYear
+							(DateValue, rule,
+							 (DayOfWeek)(((int)FirstDayOfWeekValue) - 1));
+					}
+					// Not reached.
+
+					case DateInterval.Weekday:
+						return Weekday(DateValue, FirstDayOfWeekValue);
+
+					case DateInterval.Hour:
+						return DateValue.Hour;
+
+					case DateInterval.Minute:
+						return DateValue.Minute;
+
+					case DateInterval.Second:
+						return DateValue.Second;
+				}
+				throw new ArgumentException
+					(S._("VB_InvalidInterval"), "Interval");
 			}
-	[TODO]
 	public static int DatePart
 				(String Interval, Object DateValue,
 				 [Optional] [DefaultValue(FirstDayOfWeek.Sunday)]
@@ -93,8 +301,9 @@ public sealed class DateAndTime
 				 [Optional] [DefaultValue(FirstWeekOfYear.Jan1)]
 				 	FirstWeekOfYear FirstWeekOfYearValue)
 			{
-				// TODO
-				return 0;
+				return DatePart(StringToInterval(Interval),
+								DateType.FromObject(DateValue),
+								FirstDayOfWeekValue, FirstWeekOfYearValue);
 			}
 
 	// Build a date value.
@@ -169,15 +378,6 @@ public sealed class DateAndTime
 							.GetDayOfMonth(DateValue);
 			}
 
-	// Get the weekday from a date value.
-	[TODO]
-	public static int GetDayOfWeek
-				(DateTime DateValue, FirstDayOfWeek weekdayFirst)
-			{
-				// TODO
-				return 0;
-			}
-
 	// Get the hour from a date value.
 	public static int Hour(DateTime TimeValue)
 			{
@@ -197,12 +397,23 @@ public sealed class DateAndTime
 			}
 
 	// Get the name of a specific month.
-	[TODO]
 	public static String MonthName
 				(int Month, [Optional] [DefaultValue(false)] bool Abbreviate)
 			{
-				// TODO
-				return null;
+				if(Month < 1 || Month > 13)	// Some calendars have 13 months.
+				{
+					throw new ArgumentException(S._("VB_MonthRange"), "Month");
+				}
+				if(Abbreviate)
+				{
+					return CultureInfo.CurrentCulture.DateTimeFormat
+							.GetAbbreviatedMonthName(Month);
+				}
+				else
+				{
+					return CultureInfo.CurrentCulture.DateTimeFormat
+							.GetMonthName(Month);
+				}
 			}
 
 	// Get the second from a date value.
@@ -227,26 +438,58 @@ public sealed class DateAndTime
 			}
 
 	// Get the weekday from a date value.
-	[TODO]
 	public static int Weekday
 				(DateTime DateValue,
 				 [Optional] [DefaultValue(FirstDayOfWeek.Sunday)]
 				 	FirstDayOfWeek DayOfWeek)
 			{
-				// TODO
-				return 0;
+				if(DayOfWeek == FirstDayOfWeek.System)
+				{
+					DayOfWeek = SystemFirstDay();
+				}
+				if(((int)DayOfWeek) < 1 || ((int)DayOfWeek) > 7)
+				{
+					throw new ArgumentException
+						(S._("VB_InvalidWeekday"), "DayOfWeek");
+				}
+				int day = (int)(CultureInfo.CurrentCulture.Calendar
+									.GetDayOfWeek(DateValue)) + 1;
+				return ((day - (int)DayOfWeek + 7) % 7) + 1;
 			}
 
 	// Get the name of a specific weekday.
-	[TODO]
 	public static String WeekdayName
 				(int Weekday,
 				 [Optional] [DefaultValue(false)] bool Abbreviate,
 				 [Optional] [DefaultValue(FirstDayOfWeek.Sunday)]
 				 		FirstDayOfWeek FirstDayOfWeekValue)
 			{
-				// TODO
-				return null;
+				if(Weekday < 1 || Weekday > 7)
+				{
+					throw new ArgumentException
+						(S._("VB_InvalidWeekday"), "Weekday");
+				}
+				if(((int)FirstDayOfWeekValue) < 0 ||
+				   ((int)FirstDayOfWeekValue) > 7)
+				{
+					throw new ArgumentException
+						(S._("VB_InvalidWeekday"), "FirstDayOfWeekValue");
+				}
+				if(FirstDayOfWeekValue == FirstDayOfWeek.System)
+				{
+					FirstDayOfWeekValue = SystemFirstDay();
+				}
+				int day = (Weekday + (int)FirstDayOfWeekValue - 2) % 7;
+				if(Abbreviate)
+				{
+					return CultureInfo.CurrentCulture.DateTimeFormat
+							.GetAbbreviatedDayName((DayOfWeek)day);
+				}
+				else
+				{
+					return CultureInfo.CurrentCulture.DateTimeFormat
+							.GetDayName((DayOfWeek)day);
+				}
 			}
 
 	// Get the year from a date value.

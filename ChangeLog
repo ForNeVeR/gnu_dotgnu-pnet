@@ -15,6 +15,9 @@
 
 	* doc/pnet_faq.html: update the FAQ.
 
+	* samples/README.mscorlib: remove the reference to Microsoft's C#
+	compiler, because we don't need it any more.
+
 2002-11-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_arith.tc, cscc/csharp/cs_oper.tc: Move the reduction in

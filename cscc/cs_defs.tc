@@ -156,11 +156,6 @@ extern CSSemValue CSSemValueDefault;
 	char   *name;
 	ILNode *expr;
 }
-%node ILNode_Lock ILNode_Statement =
-{
-	ILNode *expr;
-	ILNode *stmt;
-}
 %node ILNode_Using ILNode_Statement =
 {
 	ILNode *resource;

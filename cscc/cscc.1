@@ -17,19 +17,15 @@
 .SH NAME
 cscc \- the C-Sharp code compiler
 .SH SYNOPSIS
-.ll +8
-.B cscc
-[ options ]
-.I input
-\&...
+\fBcscc\fR [ options ] \fIinput\fR ...
 .SH DESCRIPTION
-.B Cscc
-compiles input source files, typically in the C# (pronounced C-Sharp)
-programming language.
+\fBCscc\fR compiles input source files, typically in the C# (pronounced
+C-Sharp) programming language.
 .SH OPTIONS
 The command-line syntax of \fBcscc\fR has been deliberately designed
 to match that of C compilers such as \fBgcc\fR(1), to shorten the learning
-curve for new users.
+curve for new users. Use \fBcscc /help\fR to see the alternative syntax
+options available for compatibility with CSC. 
 .TP
 .hy 0
 .na
@@ -126,7 +122,7 @@ curve for new users.
 \-dumpversion
 \-\-help
 \-fplugin-\fIkey\fR-path=\fIpathname\fR
-.ad b
+.ad
 .hy 1
 .SH "OVERALL OPTIONS"
 .TP
@@ -489,6 +485,9 @@ Written by Southern Storm Software, Pty Ltd.
 http://www.southern-storm.com.au/
 .SH "SEE ALSO"
 ilasm(1), ildasm(1), gcc(1)
+.SH "HOMEPAGE"
+Portable.NET is part of the DotGNU project, see the homepage at
+http://dotgnu.org/.
 .SH "DIAGNOSTICS"
 Exit status is 1 if an error occurred while processing the input.
 Otherwise the exit status is 0.

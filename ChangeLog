@@ -1,4 +1,15 @@
 
+2004-10-29  Peter Lund <firefly@diku.dk>
+
+	* clrwrap/clrwrap.1, csant/csant.1, cscc/cscc.1, cscc/csdoc.1
+	cscc/cpp/cscc-cpp.1, csdoc/csdoc2hier.1, csdoc/csdoc2html.1,
+	csdoc/csdoc2texi.1, csdoc/cssrc2html.1, engine/ilrun.1, 
+	engine/ilverify.1, ilalink/ilalink.1, ilasm/ilasm.1, ildasm/ildasm.1,
+	ildd/ildd.1, ilfind/ilfind.1, ilgac/ilgac.1, ilheader/ilheader.1,
+	ilnative/ilnative.1, ilranlib/ilranlib.1, ilsize/ilsize.1, 
+	ilstrip/ilstrip.1, resgen/resgen.1:	fix manpage formatting issues. 
+	(patch attached to bug #10779, Gopal).
+
 2004-10-29  Gopal V  <gopalv82@yahoo.com>
 
 	* support/serial.c: Fix further issues with building on

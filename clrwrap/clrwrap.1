@@ -17,11 +17,7 @@
 .SH NAME
 clrwrap \- wrap a CLR-compatible executable
 .SH SYNOPSIS
-.ll +8
-.B clrwrap
-[ \-\-clr=\fICLRNAME\fR ]
-.I script
-\&...
+\fBclrwrap\fR [ \-\-clr=\fICLRNAME\fR ] \fIscript\fR ...
 .SH DESCRIPTION
 .B Clrwrap
 is used to make an IL program Unix-friendly by placing
@@ -44,7 +40,7 @@ in the wrapper script, beginning with `\fC#\fR'.  Empty lines are also
 comment lines.
 
 If the wrapper script does not specify a `.exe' file, then the IL program
-is assumed to be `\fCscript.exe\fR" where `\fCscript\fR' is the name
+is assumed to be `\fCscript.exe\fR' where `\fCscript\fR' is the name
 of the script.
 
 When the \fBclrwrap\fR program runs, it searches for an appropriate CLR as

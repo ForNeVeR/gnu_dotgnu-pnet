@@ -228,7 +228,14 @@ static void ReExecute(X86Unroll *unroll, unsigned char *pc,
 	}
 
 	/* Fix up the stack height */
-	FixStackHeight(unroll);
+	if(height > 0)
+	{
+		x86_alu_reg_imm(unroll->out, X86_ADD, REG_STACK, height);
+	}
+	else if(height < 0)
+	{
+		x86_alu_reg_imm(unroll->out, X86_SUB, REG_STACK, -height);
+	}
 
 	/* Restore the saved special registers */
 	if((unroll->regsSaved & REG_EBP_MASK) != 0)

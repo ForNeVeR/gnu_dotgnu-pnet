@@ -1,5 +1,10 @@
 
-2002-06-01	Gopal.V	<gopalv82@symonds.net>
+2002-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/unroll_x86.c (ReExecute): fix a bug in the stack height
+	adjustment.
+
+2002-06-01  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/lib_reflect.c: Internal call for Type[] Assembly.GetTypes(),
 	as a temporary solution until we support mutiple module assemblies.

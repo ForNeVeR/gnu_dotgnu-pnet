@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.6.10" release.
 
+	* configure.in: update working version to "0.6.11".
+
 2004-10-29  Peter Lund <firefly@diku.dk>
 
 	* clrwrap/clrwrap.1, csant/csant.1, cscc/cscc.1, cscc/csdoc.1

@@ -233,12 +233,9 @@ static ILEngineType TypeToEngineType(ILType *type)
 			case IL_TYPE_COMPLEX_METHOD:
 			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
 			{
-				/* Pass method pointers around the system as "I".  This is
-				   not strictly ECMA-compliant, but is useful nonetheless.
-				   Logic and functional languages pass method pointers
-				   around to implement continuations.  Normally this results
-				   in unverifiable code.  However, by treating method types
-				   in this way, we can create verifiable continuation code */
+				/* Pass method pointers around the system as "I".  Higher
+				   level code will also set the "typeInfo" field to reflect
+				   the signature so that method pointers become verifiable */
 				return ILEngineType_I;
 			}
 			/* Not reached */
@@ -287,8 +284,7 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 	if(item->engineType == ILEngineType_I &&
 	   item->typeInfo != 0 && ILType_IsComplex(item->typeInfo))
 	{
-		/* May be trying to assign a method pointer to a method type.
-		   See the comments in "TypeToEngineType" for further details */
+		/* May be trying to assign a method pointer to a method type */
 		if((item->typeInfo->kind & IL_TYPE_COMPLEX_METHOD) != 0)
 		{
 			return ILTypeIdentical(item->typeInfo, type);

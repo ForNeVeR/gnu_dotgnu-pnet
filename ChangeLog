@@ -1,4 +1,13 @@
 
+2004-07-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/image.h, image/meta_build.c, image/meta_index.c,
+	image/meta_writer.c, image/program.h, include/il_meta.h:
+	fix some problems with loading tokens related to Generics
+	that prevented Portable.NET from reading assemblies compiled
+	with .NET Framework SDK 2.0 (the SDK format is different
+	from that used by Gyro).
+
 2004-07-26  Gopal V  <gopalv82@yahoo.com>
 
 	* codegen/cg_lvalue.tc: fix indexer stores into structs to use

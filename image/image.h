@@ -854,6 +854,9 @@ void WriteJavaClass(ILWriter *writer, ILClass *class);
 #define	IL_OFFSET_METHODSPEC_INST			2
 #define	IL_OFFSET_METHODSPEC_INST_LEN		3
 
+#define	IL_OFFSET_GENERICCON_PARAM			0
+#define	IL_OFFSET_GENERICCON_CONSTRAINT		1
+
 /*
  * Get the raw data associated with a particular token.
  * Returns zero if the token does not exist.  The "values"

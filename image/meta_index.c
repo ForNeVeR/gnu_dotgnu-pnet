@@ -175,6 +175,7 @@ static ILUInt32 const GenericParOwner_Desc[] =
 #define	FIELD_FIELD			((ILUInt32 *)0x000B)
 #define	METHOD_FIELD		((ILUInt32 *)0x000D)
 #define	PARAM_FIELD			((ILUInt32 *)0x000F)
+#define	OPTGEN_FIELD		((ILUInt32 *)0x0011)
 #define	END_FIELD			((ILUInt32 *)0)
 #define	TKREF_FIELD(name)	((ILUInt32 *)(IL_META_TOKEN_##name | 0x00001001))
 
@@ -310,11 +311,14 @@ static const ILUInt32 * const Fields_NestedClass[] =
 
 static const ILUInt32 * const Fields_GenericPar[] =
 	{UINT16_FIELD, UINT16_FIELD, GenericParOwner_Desc, 
-	 STRREF_FIELD, TypeDefRefOrSpec_Desc, TypeDefRefOrSpec_Desc,
-	 END_FIELD};
+	 STRREF_FIELD, TypeDefRefOrSpec_Desc,
+	 OPTGEN_FIELD, TypeDefRefOrSpec_Desc, END_FIELD};
 
 static const ILUInt32 * const Fields_MethodSpec[] =
 	{MethodDefOrRef_Desc, BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_GenericConstraint[] =
+	{TKREF_FIELD(GENERIC_PAR), TypeDefRefOrSpec_Desc, END_FIELD};
 
 /*
  * Table of all field description types.
@@ -364,7 +368,7 @@ static const ILUInt32 * const * const FieldDescriptions[] = {
 	Fields_NestedClass,
 	Fields_GenericPar,
 	Fields_MethodSpec,
-	0,
+	Fields_GenericConstraint,
 	0,
 	0,
 	0,
@@ -434,9 +438,9 @@ static const char * const tokenNames[64] = {
 	"ExportedType",
 	"ManifestResource,"			/* 28 */
 	"NestedClass",
-	"Token_2A",
-	"Token_2B",
-	"Token_2C",
+	"GenericPar",
+	"MethodSpec",
+	"GenericConstraint",
 	"Token_2D",
 	"Token_2E",
 	"Token_2F",
@@ -551,6 +555,18 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 						else
 						{
 							size += 2;
+						}
+					}
+					break;
+
+					case (ILUInt32)(ILNativeUInt)OPTGEN_FIELD:
+					{
+						/* If this image has the GenericConstraint
+						   table, then skip the next field */
+						if(image->tokenCount
+								[IL_META_TOKEN_GENERIC_CONSTRAINT >> 24] > 0)
+						{
+							++desc;
 						}
 					}
 					break;
@@ -827,6 +843,19 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 						{
 							META_INDEX_ERROR("ParamDef");
 							return IL_LOADERR_BAD_META;
+						}
+					}
+					break;
+
+					case (ILUInt32)(ILNativeUInt)OPTGEN_FIELD:
+					{
+						/* If this image has the GenericConstraint
+						   table, then skip the next field */
+						if(image->tokenCount
+								[IL_META_TOKEN_GENERIC_CONSTRAINT >> 24] > 0)
+						{
+							values[index++] = 0;
+							++desc;
 						}
 					}
 					break;
@@ -1706,6 +1735,19 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 					{
 						WRITE16(ptr, val);
 						ptr += 2;
+					}
+				}
+				break;
+
+				case (ILUInt32)(ILNativeUInt)OPTGEN_FIELD:
+				{
+					/* If this image has the GenericConstraint
+					   table, then skip the next field */
+					if(image->tokenCount
+							[IL_META_TOKEN_GENERIC_CONSTRAINT >> 24] > 0)
+					{
+						++index;
+						++desc;
 					}
 				}
 				break;

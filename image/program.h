@@ -679,6 +679,18 @@ struct _tagILGenericPar
 };
 
 /*
+ * Information about a generic constraint.
+ */
+typedef struct _tagILGenericConstraint ILGenericConstraint;
+struct _tagILGenericConstraint
+{
+	ILOwnedItem		ownedItem;			/* Parent class fields */
+	ILProgramItem  *parameter;			/* Generic parameter to modify */
+	ILProgramItem  *constraint;			/* Constraint to apply */
+
+};
+
+/*
  * Information about a generic method specification.
  */
 struct _tagILMethodSpec

@@ -2048,12 +2048,14 @@ static int Load_InterfaceImpl(ILImage *image, ILUInt32 *values,
 		return IL_LOADERR_BAD_META;
 	}
 
+#if 0	/* TODO - properly recognise generic interfaces */
 	/* The second class must be an interface */
 	if(!ILClass_IsInterface(interface) && !ILClassIsRef(interface))
 	{
 		META_VAL_ERROR("interface type is not an interface");
 		return IL_LOADERR_BAD_META;
 	}
+#endif
 	
 	/* Add the "implements" clause to the class */
 	if(!ILClassAddImplements(info, interface, token))
@@ -3243,8 +3245,38 @@ static int Load_GenericPar(ILImage *image, ILUInt32 *values,
 	}
 	ILGenericParSetKind(genPar, ILProgramItem_FromToken
 			(image, values[IL_OFFSET_GENERICPAR_KIND]));
+
+	/* Note: in Gyro, the constraint is stored in the GenericPar
+	   table, but in the .NET Framework SDK 2.0 beta it is stored
+	   in a separate GenericConstraint table.  This code handles
+	   the Gyro case.  See "Load_GenericConstraint" for the other */
 	ILGenericParSetConstraint(genPar, ILProgramItem_FromToken
 			(image, values[IL_OFFSET_GENERICPAR_CONSTRAINT]));
+
+	/* Done */
+	return 0;
+}
+
+/*
+ * Load a generic constraint token (non-Gyro version).
+ */
+static int Load_GenericConstraint(ILImage *image, ILUInt32 *values,
+				   	 	          ILUInt32 *valuesNext, ILToken token,
+				   	 	          void *userData)
+{
+	ILGenericPar *genPar;
+
+	/* Get the generic parameter that this constraint applies to */
+	genPar = ILGenericPar_FromToken(image, values[IL_OFFSET_GENERICCON_PARAM]);
+	if(!genPar)
+	{
+		META_VAL_ERROR("invalid generic parameter");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Set the record's properties */
+	ILGenericParSetConstraint(genPar, ILProgramItem_FromToken
+			(image, values[IL_OFFSET_GENERICCON_CONSTRAINT]));
 
 	/* Done */
 	return 0;
@@ -3518,6 +3550,8 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	/* Load generic type parameters */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_GENERIC_PAR,
 							 Load_GenericPar, 0));
+	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_GENERIC_CONSTRAINT,
+							 Load_GenericConstraint, 0));
 
 	/* Done */
 	return 0;

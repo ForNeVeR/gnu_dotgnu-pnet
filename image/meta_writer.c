@@ -708,6 +708,19 @@ static void Format_GenericPar(ILWriter *writer, ILImage *image,
 }
 
 /*
+ * Format a GenericConstraint token.
+ */
+static void Format_GenericConstraint(ILWriter *writer, ILImage *image,
+	 		                         ILUInt32 *values,
+									 ILGenericConstraint *genCon)
+{
+	values[IL_OFFSET_GENERICCON_PARAM] =
+			(genCon->parameter ? genCon->parameter->token : 0);
+	values[IL_OFFSET_GENERICCON_CONSTRAINT] =
+			(genCon->constraint ? genCon->constraint->token : 0);
+}
+
+/*
  * Format a MethodSpec token.
  */
 static void Format_MethodSpec(ILWriter *writer, ILImage *image,
@@ -767,7 +780,7 @@ static ILFormatFunc const Formatters[64] = {
 	(ILFormatFunc)Format_NestedClass,
 	(ILFormatFunc)Format_GenericPar,
 	(ILFormatFunc)Format_MethodSpec,
-	0,
+	(ILFormatFunc)Format_GenericConstraint,
 	0,
 	0,
 	0,

@@ -1,4 +1,10 @@
 
+2003-01-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_lvalue.tc: work around erroneous enum definitions
+	that use the underlying type for the constants, instead of the
+	type itself.
+
 2003-01-07  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_reflect.c: Check the constant unpacking code back in,

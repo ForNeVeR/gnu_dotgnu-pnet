@@ -547,7 +547,17 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 					ILEvalValue evalValue;
 					*parent = constNode;
 					ILNode_EvalConst(constNode, info, &evalValue);
-					CSSemSetConstant(value, ILField_Type(field), evalValue);
+					thisType = ILClassToType(ILField_Owner(field));
+					type = ILField_Type(field);
+					if(ILTypeIsEnum(thisType) &&
+					   ILTypeIdentical(type, ILTypeGetEnumType(thisType)))
+					{
+						/* The enum definition erroneously used the
+						   underlying type for the constant, instead
+						   of using the enum type.  Work around it */
+						type = thisType;
+					}
+					CSSemSetConstant(value, type, evalValue);
 				}
 				else
 				{

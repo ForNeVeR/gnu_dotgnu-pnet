@@ -34,23 +34,34 @@ echo 'int main() { return 0; }'>>"$SRC"
 # Find the real location of the error codes, as they may
 # not necessarily be in <errno.h> itself.
 FILE=""
-ALL_LINES=`$* -E "$SRC" | grep '^# ' | \
-	sed -e '1,$s/^[^"]*"\([^"]*\)".*$/\1/g'`
-for f in $ALL_LINES; do
-	if test -n "$f"; then
-		if test -z "$FILE"; then
-			CHKLINE=`grep '#define.*EINVAL' "$f" 2>/dev/null`
-			if test -n "$CHKLINE"; then
-				FILE="$f"
-			else
-				CHKLINE=`grep '#define.*ENOSYS' "$f" 2>/dev/null`
+PROBE=`$* -dD -E "$SRC" 2>/dev/null | grep '#define.*EPERM'`
+if test -n "$PROBE" ; then
+	# The compiler understands -dD, which allows us to track
+	# errno definitions that occur in more than one file.
+	FILE=./gdef$$.h
+	$* -dD -E "$SRC" >$FILE
+	trap "rm -f $FILE" 0 1 2 15
+else
+	# Scan for the file that contains the definitions.  In this case,
+	# we assume that they are all in the same file.
+	ALL_LINES=`$* -E "$SRC" | grep '^# ' | \
+		sed -e '1,$s/^[^"]*"\([^"]*\)".*$/\1/g'`
+	for f in $ALL_LINES; do
+		if test -n "$f"; then
+			if test -z "$FILE"; then
+				CHKLINE=`grep '#define.*EINVAL' "$f" 2>/dev/null`
 				if test -n "$CHKLINE"; then
 					FILE="$f"
+				else
+					CHKLINE=`grep '#define.*ENOSYS' "$f" 2>/dev/null`
+					if test -n "$CHKLINE"; then
+						FILE="$f"
+					fi
 				fi
 			fi
 		fi
-	fi
-done
+	done
+fi
 rm -f "$SRC"
 
 # Generate the error number mapping tables.

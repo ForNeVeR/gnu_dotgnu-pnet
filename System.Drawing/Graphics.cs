@@ -42,8 +42,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	private GraphicsUnit pageUnit;
 	internal GraphicsContainer stackTop;
 	internal static Graphics defaultGraphics;
-	// the window this graphics represents overlying the IToolkitGraphics
+	// The window this graphics represents overlying the IToolkitGraphics
 	internal Rectangle baseWindow;
+	// The current clip in device coordinates - useful when deciding if something
+	// is out of bounds, limiting the need to call the toolkit.
+	private Rectangle deviceClipExtent;
 
 	// Default DPI for the screen.
 	internal const float DefaultScreenDpi = 96.0f;
@@ -88,12 +91,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				// Find out what the clip is with our new Origin
 				clip.Translate(-baseWindow.X, -baseWindow.Y);
 				this.baseWindow = baseWindow;
-				Clip = clip;
 				if (graphics.transform != null)
 					this.transform = new Matrix(graphics.transform);
 				this.pageScale = graphics.pageScale;
 				this.pageUnit = graphics.pageUnit;
 				this.stackTop = null;
+				Clip = clip;
 			}
 
 
@@ -828,6 +831,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				if (image.toolkitImage == null)
 					image.toolkitImage = ToolkitGraphics.Toolkit.CreateImage(image.dgImage, 0);
 				BaseOffsetPoints(dest);
+				// width and height must be 1 bigger.
 				dest[1].X += 1;
 				dest[2].Y += 1;
 				
@@ -1322,9 +1326,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				if (format == null)
 					format = new StringFormat();
 				Point[] rect = ConvertRectangle
-					(layoutRectangle.X, layoutRectangle.Y,
-					 layoutRectangle.Width, layoutRectangle.Height, pageUnit);
-				if (clip != null && !clip.GetBounds(this).IntersectsWith(new Rectangle(rect[0].X, rect[0].Y, rect[1].X - rect[0].X, rect[2].Y- rect[0].Y)))
+					(layoutRectangle.X + baseWindow.X, layoutRectangle.Y + baseWindow.Y,
+					 layoutRectangle.Width - 1, layoutRectangle.Height - 1, pageUnit);
+				Rectangle deviceLayout = new Rectangle(rect[0].X, rect[0].Y, rect[1].X - rect[0].X, rect[2].Y- rect[0].Y);
+							
+				if (clip != null && !deviceClipExtent.IntersectsWith(deviceLayout))
 					return;
 				lock(this)
 				{
@@ -1339,12 +1345,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							SetClip(layoutRectangle,CombineMode.Intersect);
 						}
 					}
-					SizeF size = MeasureString(s,font);
+					int charactersFitted, linesFilled;
+					Size size = ToolkitGraphics.MeasureString
+						(s, null, null, out charactersFitted, out linesFilled, false);
 					// If we need to wrap then do it the hard way.
 					if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
-						size.Width >= layoutRectangle.Width )
+						size.Width >= deviceLayout.Width )
 					{
-						StringDrawPositionCalculator calculator = new StringDrawPositionCalculator(s, this, font, layoutRectangle, format);
+						StringDrawPositionCalculator calculator = new StringDrawPositionCalculator(s, this, font, deviceLayout, format);
 						calculator.LayoutByWords();
 						calculator.Draw(brush);
 					}
@@ -1367,7 +1375,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								rect[0].Y = rect[2].Y - (int)size.Height - 1;
 						}
 
-						ToolkitGraphics.DrawString(s, rect[0].X + baseWindow.X, rect[0].Y + baseWindow.Y, format);
+						ToolkitGraphics.DrawString(s, rect[0].X, rect[0].Y, format);
 					}
 					if (clipTemp != null)
 						Clip = clipTemp;
@@ -1389,18 +1397,19 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				}
 				int dx, dy;
 				ConvertPoint(x, y, out dx, out dy, pageUnit);
+				dx += baseWindow.X;
+				dy += baseWindow.Y;
 				// Simple optimization
 				if (clip != null)
 				{
-					RectangleF bounds = clip.GetBounds(this);
-					if (dx > bounds.Right || dy > bounds.Bottom)
+					if (dx > deviceClipExtent.Right || dy > deviceClipExtent.Bottom)
 						return;
 				}
 				lock(this)
 				{
 					SelectFont(font);
 					SelectBrush(brush);
-					ToolkitGraphics.DrawString(s, dx + baseWindow.X, dy + baseWindow.Y, format);
+					ToolkitGraphics.DrawString(s, dx, dy, format);
 				}
 			}
 
@@ -2133,8 +2142,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								Array.Copy(words, newWords, words.Length);
 								words = newWords;
 							}
-							words[wordCount++] = new SplitWord(start, i - start);
 						}
+						words[wordCount++] = new SplitWord(start, i - start);
 					}	
 					Layout();
 				}
@@ -2157,7 +2166,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					int textLength = 0;
 						
 					SplitWord word = new SplitWord(0,0);
-					Rectangle baseWindow = graphics.baseWindow;
 					for (int i = 0; i <= wordCount; i++)
 					{
 						if (i != wordCount)
@@ -2176,9 +2184,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						if(linePosition.X <= layout.Right && linePosition.Y <= layout.Bottom)
 						{
 							String lineText = text.Substring(textStart, textLength);
-							int x = linePosition.X + baseWindow.X;
-							int y = linePosition.Y + baseWindow.Y;
-							graphics.ToolkitGraphics.DrawString(lineText, x, y, null);
+							graphics.ToolkitGraphics.DrawString(lineText, linePosition.X, linePosition.Y, null);
 						}
 						textStart = word.start;
 						textLength = word.length;
@@ -2186,6 +2192,67 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					}
 				}
 
+		public Size GetBounds(out int charactersFitted, out int linesFilled)
+				{
+					linesFilled = 0;
+					charactersFitted = 0;
+					if (linePositions.Length == 0)
+					{
+						return Size.Empty;
+					}
+					bool noPartialLines = (format.FormatFlags & StringFormatFlags.LineLimit) != 0;
+					int h = words[0].size.Height;
+					for (int i = 0; i < linePositions.Length; i++)
+					{
+						if (noPartialLines)
+						{
+							if (linePositions[i].Y + h > layout.Height)
+								break;
+						}
+						else if (linePositions[i].Y > layout.Height)
+							break;
+						linesFilled++;
+					}
+					if (linesFilled == 1)
+					{
+						// Find the width of the single line.
+						int width = 0;
+						for (int i = 0; i < wordCount; i++)
+						{
+							SplitWord word = words[i];
+							if (word.line != -1)
+								break;
+							width += word.size.Width;
+							charactersFitted += word.length;
+						}
+						return new Size(width, h);
+					}
+					else
+					{
+						// Find the characters fitted.
+						int width = (int)layout.Width;
+						for (int i = 0; i < wordCount; i++)
+						{
+							SplitWord word = words[i];
+							if (word.line != -1)
+								continue;
+							// if we are on the last line - check the width.
+							if (i == linesFilled - 1)
+							{
+								width -= word.size.Width;
+								if (width < 0)
+								{
+									// TODO: This is a guess and might be inaccurate!!
+									// We should measure each character.
+									charactersFitted += ((-width * word.length + word.size.Width/2) / word.size.Width);
+									break;
+								}
+							}
+							charactersFitted += word.length;
+						}
+						return new Size((int)layout.Width, h * linesFilled);
+					}
+				}
 		// Use the toolkit to measure all the words and spaces.
 		private void  MeasureStrings() 
 				{
@@ -2273,9 +2340,10 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						}			
 					}
 				}
-		// Calculate the Position of the wrapped lines, depending of the 
+		// Calculate the Position of the wrapped lines
 		private Point[] GetPositions(RectangleF layout, StringFormat format)
 				{
+					// Get the total number of lines by checking from the back.
 					int numLines = 0;
 					for(int i = wordCount-1; i >= 0; i--)
 					{
@@ -2564,22 +2632,32 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 		out int charactersFitted,
 		out int linesFilled)
 			{
-				//TODO
-				if(text == null || text == String.Empty)
+				if(text == null || text.Length == 0)
 				{
 					charactersFitted = 0;
 					linesFilled = 0;
 					return new SizeF(0.0f, 0.0f);
 				}
-				Point[] rect = ConvertRectangle
-					(0.0f, 0.0f, layoutArea.Width, layoutArea.Height, pageUnit);
-				lock(this)
+
+				if (format == null)
+					format = new StringFormat();
+				SelectFont(font);
+				Size size = ToolkitGraphics.MeasureString
+					(text, null, null, out charactersFitted, out linesFilled, false);
+				// If we need to wrap then do it the hard way.
+				if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
+					size.Width >= layoutArea.Width && layoutArea.Width != 0 )
 				{
-					SelectFont(font);
-					Size size = ToolkitGraphics.MeasureString
-						(text, rect, format,
-						out charactersFitted, out linesFilled, false);
-					return new SizeF(ConvertSizeBack(size.Width, size.Height));
+					Rectangle layout = new Rectangle(0,0, (int)layoutArea.Width - 1, (int)layoutArea.Height - 1);
+					StringDrawPositionCalculator calculator = new StringDrawPositionCalculator(text, this, font, layout , format);
+					calculator.LayoutByWords();
+					return calculator.GetBounds(out charactersFitted, out linesFilled);
+				}
+				else
+				{
+					charactersFitted = text.Length;
+					linesFilled = 1;
+					return size;
 				}
 			}
 
@@ -2628,6 +2706,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void ResetTransform()
 			{
 				transform = null;
+				Clip = clip;
 			}
 
 	// Restore to a previous save point.
@@ -3729,6 +3808,10 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	private void UpdateClip()
 			{
 				RectangleF[] rectsF = clip.GetRegionScans(Transform);
+				int left = int.MaxValue;
+				int top = int.MaxValue;
+				int right = int.MinValue;
+				int bottom = int.MinValue;
 				Rectangle[] rects = new Rectangle[rectsF.Length];
 				for(int i=0;i < rectsF.Length; i++)
 				{
@@ -3739,8 +3822,19 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						r.Intersect(baseWindow);
 					}
 					rects[i] = r;
+					if (left > r.Left)
+						left = r.Left;
+					if (right < r.Right)
+						right = r.Right;
+					if (top > r.Top)
+						top = r.Top;
+					if (bottom < r.Bottom)
+						bottom = r.Bottom;
 				}
-				graphics.SetClipRects(rects);
+				if (rects.Length > 0)
+					graphics.SetClipRects(rects);
+				deviceClipExtent = Rectangle.FromLTRB(left, top, right, bottom);
+
 			}
 
 	// Determine if this graphics object is using 1-to-1 pixel mappings.

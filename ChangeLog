@@ -1,3 +1,7 @@
+2003-11-14  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs: improvements to MeasureString and
+	DrawString. Fixed ResetTransform and transforms as they relate to clips.
 
 2003-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -28,6 +28,30 @@
 	runtime/System/Security/Principal/WindowsPrincipal.cs:
 	missing classes in "System.Security.Principal".
 
+	* resources/en_US/runtime/Arg.txt,
+	resources/en_US/runtime/Exception.txt,
+	resources/en_US/runtime/Format.txt,
+	runtime/System/Security/Policy/FileCodeGroup.cs,
+	runtime/System/Security/Policy/FirstMatchCodeGroup.cs,
+	runtime/System/Security/Policy/Hash.cs,
+	runtime/System/Security/Policy/HashMembershipCondition.cs,
+	runtime/System/Security/Policy/NetCodeGroup.cs,
+	runtime/System/Security/Policy/PermissionRequestEvidence.cs,
+	runtime/System/Security/Policy/PolicyException.cs,
+	runtime/System/Security/Policy/PolicyLevel.cs,
+	runtime/System/Security/Policy/Publisher.cs,
+	runtime/System/Security/Policy/PublisherMembershipCondition.cs,
+	runtime/System/Security/Policy/Site.cs,
+	runtime/System/Security/Policy/SiteMembershipCondition.cs,
+	runtime/System/Security/Policy/StrongName.cs,
+	runtime/System/Security/Policy/StrongNameMembershipCondition.cs,
+	runtime/System/Security/Policy/UnionCodeGroup.cs,
+	runtime/System/Security/Policy/Url.cs,
+	runtime/System/Security/Policy/UrlMembershipCondition.cs,
+	runtime/System/Security/Policy/Zone.cs,
+	runtime/System/Security/Policy/ZoneMembershipCondition.cs:
+	missing classes in "System.Security.Policy".
+
 2003-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

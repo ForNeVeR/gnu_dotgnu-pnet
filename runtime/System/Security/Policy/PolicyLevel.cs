@@ -24,11 +24,215 @@ namespace System.Security.Policy
 
 #if !ECMA_COMPAT
 
-[TODO]
-public class PolicyLevel
-{
+using System.Collections;
 
-// TODO
+[Serializable]
+public sealed class PolicyLevel
+{
+	// Internal state.
+	private ArrayList fullTrustAssemblies;
+	private String label;
+	private ArrayList namedPermissionSets;
+	private CodeGroup rootCodeGroup;
+	private String storeLocation;
+
+	// Constructor.
+	internal PolicyLevel(String label)
+			{
+				this.label = label;
+				fullTrustAssemblies = new ArrayList();
+				namedPermissionSets = new ArrayList();
+			}
+
+	// Properties.
+	public IList FullTrustAssemblies
+			{
+				get
+				{
+					return fullTrustAssemblies;
+				}
+			}
+	public String Label
+			{
+				get
+				{
+					return label;
+				}
+			}
+	public IList NamedPermissionSets
+			{
+				get
+				{
+					return namedPermissionSets;
+				}
+			}
+	public CodeGroup RootCodeGroup
+			{
+				get
+				{
+					return rootCodeGroup;
+				}
+				set
+				{
+					rootCodeGroup = value;
+				}
+			}
+	public String StoreLocation
+			{
+				get
+				{
+					return storeLocation;
+				}
+			}
+
+	// Add an entry to the "full trust assembly" list.
+	public void AddFullTrustAssembly(StrongName sn)
+			{
+				if(sn == null)
+				{
+					throw new ArgumentNullException("sn");
+				}
+				AddFullTrustAssembly
+					(new StrongNameMembershipCondition
+						(sn.PublicKey, sn.Name, sn.Version));
+			}
+	[TODO]
+	public void AddFullTrustAssembly(StrongNameMembershipCondition snMC)
+			{
+				// TODO
+			}
+
+	// Add an entry to the "named permission sets" list.
+	public void AddNamedPermissionSet(NamedPermissionSet permSet)
+			{
+				if(permSet == null)
+				{
+					throw new ArgumentNullException("permSet");
+				}
+				namedPermissionSets.Add(permSet);
+			}
+
+	// Change a named permission set.
+	[TODO]
+	public NamedPermissionSet ChangeNamedPermissionSet
+				(String name, PermissionSet pSet)
+			{
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				if(pSet == null)
+				{
+					throw new ArgumentNullException("pSet");
+				}
+				// TODO
+				return null;
+			}
+
+	// Create a policy level object for the current application domain.
+	public static PolicyLevel CreateAppDomainLevel()
+			{
+				return new PolicyLevel("AppDomain");
+			}
+
+	// Load policy information from an XML element.
+	[TODO]
+	public void FromXml(SecurityElement e)
+			{
+				// TODO
+			}
+
+	// Get a specific named permission set.
+	public NamedPermissionSet GetNamedPermissionSet(String name)
+			{
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				foreach(NamedPermissionSet set in namedPermissionSets)
+				{
+					if(set.Name == name)
+					{
+						return set;
+					}
+				}
+				return null;
+			}
+
+	// Recover the last backed-up policy configuration.
+	public void Recover()
+			{
+				// Nothing to do here: we don't support backups.
+			}
+
+	// Remove an entry from the "full trust assembly" list.
+	[TODO]
+	public void RemoveFullTrustAssembly(StrongName sn)
+			{
+				// TODO
+			}
+	[TODO]
+	public void RevoveFullTrustAssembly(StrongNameMembershipCondition snMC)
+			{
+				// TODO
+			}
+
+	// Remove a named permission set.
+	[TODO]
+	public void RemoveNamedPermissionSet(NamedPermissionSet permSet)
+			{
+				if(permSet == null)
+				{
+					throw new ArgumentNullException("permSet");
+				}
+				// TODO
+			}
+	[TODO]
+	public void RemoveNamedPermissionSet(String name)
+			{
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				// TODO
+			}
+
+	// Reset to the default state.
+	[TODO]
+	public void Reset()
+			{
+				// TODO
+			}
+
+	// Resolve policy information based on supplied evidence.
+	[TODO]
+	public PolicyStatement Resolve(Evidence evidence)
+			{
+				if(evidence == null)
+				{
+					throw new ArgumentNullException("evidence");
+				}
+				// TODO
+				return null;
+			}
+	[TODO]
+	public CodeGroup ResolveMatchingCodeGroups(Evidence evidence)
+			{
+				if(evidence == null)
+				{
+					throw new ArgumentNullException("evidence");
+				}
+				// TODO
+				return null;
+			}
+
+	// Convert this object into an XML element.
+	[TODO]
+	public SecurityElement ToXml()
+			{
+				// TODO
+				return null;
+			}
 
 }; // class PolicyLevel
 

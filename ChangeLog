@@ -46,6 +46,9 @@
 	re-implement "XmlReader" according to the ECMA specification,
 	and add lots more comments for greater code clarity.
 
+	* System.Xml/Xml.build: add "System.dll" to the references for
+	the "System.Xml.dll" assembly.
+
 2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.2.6" release.

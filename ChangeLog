@@ -1,3 +1,8 @@
+
+2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, NEWS: update version and news for the 0.5.10 release.
+
 2003-07-26  Thong Nguyen  <tum@veridicus.com>
 
 	* System/Net/Sockets/TcpListener.cs: Small fix for TcpListener.Start.

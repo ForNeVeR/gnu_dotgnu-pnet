@@ -1,4 +1,53 @@
 
+0.5.10 (26 July 2003)
+
+	System.Windows.Forms:
+
+	* Form, TextBoxBase, Menu (Rhys Weatherley).
+	* StatusBar, CheckBox (Simon Guindon).
+	* ProgressBar, Panel, MessageBox (Gopal V).
+	* ImageList, ImageListStreamer, ToolBar, ToolBarButton, ComboBox,
+	  CommonDialog, FileDialog, OpenFileDialog, PictureBox, ScrollBar
+	  (Richard Baumann).
+	* LinkLabel (Ian Fung).
+	* Binding, BindingManagerBase, BindingCollection, CurrencyManager,
+	  ListControl (Cecilio Pardo).
+	* System.Drawing.Win32, TabControl, TabPage, TextBox (Neil Cawse).
+	* Change WndProc from "public" to "protected" (Rhys Weatherley).
+	* Missing "*EventHandler" and "*EventArgs" classes (Rhys Weatherley).
+	* "Darker" and "Lighter" methods in "Control Paint" (Rhys Weatherley).
+	* Modify the event loop so that control always goes back to winforms
+	  after an event is processed (Rhys Weatherley).
+	* Key event dispatching (Rhys Weatherley).
+	* Timers (Rhys Weatherley).
+	* Popup windows in Xsharp and winforms (Rhys Weatherley).
+	* Move theme handling to "System.Windows.Forms.Themes" (Rhys Weatherley).
+	* Layout parents when children change size (Simon Guindon).
+	* Region handling (Neil Cawse).
+
+	Other:
+
+	* Implement "Environment.OSVersion" for better platform detection (Rhys).
+	* Command-line count bug in "Process" (Yannis Bres).
+	* Add "-flatin1-charset" to all build files, to speed things up (Gopal V).
+	* Threading changes to match the engine (Thong Nguyen).
+	* Wide string support in Crt0 (Rhys Weatherley).
+	* Make default console writers synchronized (Thong Nguyen).
+	* "Socket.SupportsIPv6" (Gopal V).
+	* Detect byte encodings in "StreamReader" better (Thong Nguyen).
+	* Bug fixes to "XmlTextReader" (Adam Ballai).
+	* DotGNU.Images support library (Rhys Weatherley).
+	* Re-sync "System.Text.RegularExpressions" with original (Gopal V).
+	* Dashed pens in Xsharp (Rhys Weatherley).
+	* Xft font support in Xsharp (Rhys Weatherley).
+	* Multi-digit format specifiers in "String" (Gopal V).
+	* Beginnings of a Postscript driver for System.Drawing (Rhys Weatherley).
+	* Number formatting fixes (Gopal V).
+	* System.Reflection.Emit (Richard Baumann).
+	* System.CodeDom (Rhys Weatherley).
+	* File-based registry implementation (Rhys Weatherley).
+	* Remaining formatting methods in DateTime (Rhys Weatherley).
+
 0.5.8 (17 June 2003)
 
 	* Add the "Xsharp" library.

@@ -803,8 +803,41 @@ ILObject *_IL_Assembly_GetManifestResourceStream(ILExecThread *thread,
  */
 System_Array *_IL_Assembly_GetTypes(ILExecThread *_thread, ILObject *_this)
 {
-	/* TODO */
-	return 0;
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	System_Array *array=NULL; 
+	ILObject **buffer=NULL;   
+	ILUInt32 num=0; 
+	ILClass *classInfo=NULL;
+
+	if(item && _ILClrCheckItemAccess(_thread, item)) 
+	{
+		num = ILImageNumTokens (image, IL_META_TOKEN_TYPE_DEF);
+		array = (System_Array *)ILExecThreadNew(_thread, "[oSystem.Object;",
+												"(Ti)V", (ILVaInt)num);
+		if(!array)
+		{
+			return 0;
+		}
+		buffer = (ILObject **)(ArrayToBuffer(array));
+  		while ((classInfo = (ILClass *) ILImageNextToken 
+							(image, IL_META_TOKEN_TYPE_DEF,classInfo)) != 0)
+		{
+			if (classInfo)
+			{
+				*buffer = _ILGetClrType(_thread,classInfo);
+				if(!(*buffer)) //error getting type
+				{
+					return 0;
+				}
+				++buffer;
+			}
+		}
+		return array;
+	}
+	/* Invalid item, or insufficient access: return a zero-element array */
+	return (System_Array *)ILExecThreadNew
+				(_thread, "[oSystem.Object;", "(Ti)V", (ILVaInt)0);
 }
 
 /*

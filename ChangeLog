@@ -23,6 +23,10 @@
 	* Xsharp/InputOnlyWidget.cs: wrong depth value supplied to
 	"XCreateWindow" when creating an input-only window.
 
+	* Xsharp/Graphics.cs (SetClipMask): clip origin was being set
+	to (x, x) instead of (x, y), which caused icons to be clipped
+	incorrectly if they weren't drawn at (0, 0).
+
 2003-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/Platform/FileMethods.cs,

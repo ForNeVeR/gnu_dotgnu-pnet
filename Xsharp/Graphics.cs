@@ -1152,7 +1152,7 @@ public sealed class Graphics : IDisposable
 				try
 				{
 					IntPtr display = Lock();
-					Xlib.XSetClipOrigin(display, gc, xorigin, xorigin);
+					Xlib.XSetClipOrigin(display, gc, xorigin, yorigin);
 					if(mask != null)
 					{
 						Xlib.XSetClipMask(display, gc, mask.GetPixmapHandle());

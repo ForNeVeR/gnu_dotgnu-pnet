@@ -36,7 +36,7 @@ namespace System.IO
 		public static readonly char DirectorySeparatorChar = p.dirSeparator;
 		public static readonly char AltDirectorySeparatorChar = p.altDirSeparator;
 		public static readonly char VolumeSeparatorChar = p.volumeSeparator;
-		public static readonly char PathSeparatorChar = p.pathSeparator;
+		public static readonly char PathSeparator = p.pathSeparator;
 		public static readonly char[] InvalidPathChars = p.invalidPathChars;
 		private static readonly char[] PathSeparatorChars = { DirectorySeparatorChar, AltDirectorySeparatorChar, VolumeSeparatorChar};
 			

@@ -335,8 +335,40 @@ internal class Api
 		public IntPtr hIcon;
 		public IntPtr hCursor;
 		public IntPtr hbrBackground;
-		public string lpszMenuName;
-		public string lpszClassName;
+		private IntPtr lpszMenuName__;
+		private IntPtr lpszClassName__;
+
+		// Hack - Portable.NET doesn't support structure marshaling yet.
+		public string lpszMenuName
+		{
+			set
+			{
+				if(value == null)
+				{
+					lpszMenuName__ = IntPtr.Zero;
+				}
+				else
+				{
+					lpszMenuName__ =
+						Marshal.StringToHGlobalAnsi(value);
+				}
+			}
+		}
+		public string lpszClassName
+		{
+			set
+			{
+				if(value == null)
+				{
+					lpszClassName__ = IntPtr.Zero;
+				}
+				else
+				{
+					lpszClassName__ =
+						Marshal.StringToHGlobalAnsi(value);
+				}
+			}
+		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -437,8 +469,91 @@ internal class Api
 		public byte lfClipPrecision;
 		public FontQuality lfQuality;
 		public byte lfPitchAndFamily;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst=32)]
-		public string lfFaceName;
+
+		// Hack - Portable.NET doesn't support structure marshaling yet.
+		private byte lfFaceName_0;
+		private byte lfFaceName_1;
+		private byte lfFaceName_2;
+		private byte lfFaceName_3;
+		private byte lfFaceName_4;
+		private byte lfFaceName_5;
+		private byte lfFaceName_6;
+		private byte lfFaceName_7;
+		private byte lfFaceName_8;
+		private byte lfFaceName_9;
+		private byte lfFaceName_10;
+		private byte lfFaceName_11;
+		private byte lfFaceName_12;
+		private byte lfFaceName_13;
+		private byte lfFaceName_14;
+		private byte lfFaceName_15;
+		private byte lfFaceName_16;
+		private byte lfFaceName_17;
+		private byte lfFaceName_18;
+		private byte lfFaceName_19;
+		private byte lfFaceName_20;
+		private byte lfFaceName_21;
+		private byte lfFaceName_22;
+		private byte lfFaceName_23;
+		private byte lfFaceName_24;
+		private byte lfFaceName_25;
+		private byte lfFaceName_26;
+		private byte lfFaceName_27;
+		private byte lfFaceName_28;
+		private byte lfFaceName_29;
+		private byte lfFaceName_30;
+		private byte lfFaceName_31;
+
+		private static void SetFaceName(out byte dest, string value, int index)
+		{
+			if(value == null || index >= value.Length)
+			{
+				dest = 0;
+			}
+			else
+			{
+				dest = (byte)(value[index]);
+			}
+		}
+
+		public string lfFaceName
+		{
+			set
+			{
+				SetFaceName(out lfFaceName_0, value, 0);
+				SetFaceName(out lfFaceName_1, value, 1);
+				SetFaceName(out lfFaceName_2, value, 2);
+				SetFaceName(out lfFaceName_3, value, 3);
+				SetFaceName(out lfFaceName_4, value, 4);
+				SetFaceName(out lfFaceName_5, value, 5);
+				SetFaceName(out lfFaceName_6, value, 6);
+				SetFaceName(out lfFaceName_7, value, 7);
+				SetFaceName(out lfFaceName_8, value, 8);
+				SetFaceName(out lfFaceName_9, value, 9);
+				SetFaceName(out lfFaceName_10, value, 10);
+				SetFaceName(out lfFaceName_11, value, 11);
+				SetFaceName(out lfFaceName_12, value, 12);
+				SetFaceName(out lfFaceName_13, value, 13);
+				SetFaceName(out lfFaceName_14, value, 14);
+				SetFaceName(out lfFaceName_15, value, 15);
+				SetFaceName(out lfFaceName_16, value, 16);
+				SetFaceName(out lfFaceName_17, value, 17);
+				SetFaceName(out lfFaceName_18, value, 18);
+				SetFaceName(out lfFaceName_19, value, 19);
+				SetFaceName(out lfFaceName_20, value, 20);
+				SetFaceName(out lfFaceName_21, value, 21);
+				SetFaceName(out lfFaceName_22, value, 22);
+				SetFaceName(out lfFaceName_23, value, 23);
+				SetFaceName(out lfFaceName_24, value, 24);
+				SetFaceName(out lfFaceName_25, value, 25);
+				SetFaceName(out lfFaceName_26, value, 26);
+				SetFaceName(out lfFaceName_27, value, 27);
+				SetFaceName(out lfFaceName_28, value, 28);
+				SetFaceName(out lfFaceName_29, value, 29);
+				SetFaceName(out lfFaceName_30, value, 30);
+				SetFaceName(out lfFaceName_31, value, 31);
+			}
+		}
 	}
 
 	[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi)]

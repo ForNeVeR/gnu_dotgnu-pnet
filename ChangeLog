@@ -14,6 +14,9 @@
 	* System.Drawing.Win32/System.Drawing.Win32.build: the "Win32"
 	backend should not depend upon "Xsharp.dll".
 
+	* System.Drawing.Win32/Win32.cs: work around pnet's lack of
+	structure marshaling.
+
 2003-06-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/Panel.cs: Stub out the Panel control

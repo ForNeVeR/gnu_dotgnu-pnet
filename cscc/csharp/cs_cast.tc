@@ -114,8 +114,8 @@ const char *CSTypeToName(ILType *type)
 			case IL_META_ELEMTYPE_R4:			return "float";
 			case IL_META_ELEMTYPE_R8:			return "double";
 			case IL_META_ELEMTYPE_R:			return "double";
-			case IL_META_ELEMTYPE_I:			return "void *";
-			case IL_META_ELEMTYPE_U:			return "void *";
+			case IL_META_ELEMTYPE_I:			return "System.IntPtr";
+			case IL_META_ELEMTYPE_U:			return "System.UIntPtr";
 			case IL_META_ELEMTYPE_STRING:		return "System.String";
 			case IL_META_ELEMTYPE_OBJECT:		return "System.Object";
 			case IL_META_ELEMTYPE_TYPEDBYREF:	return "System.TypedReference";

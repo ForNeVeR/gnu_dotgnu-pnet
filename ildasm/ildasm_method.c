@@ -104,6 +104,8 @@ static void DumpToken(ILImage *image, FILE *outstream,
 	ILMember *member;
 	ILMember *origMember;
 	ILTypeSpec *spec;
+	ILStandAloneSig *sig;
+	ILType *type;
 
 	switch(token & IL_META_TOKEN_MASK)
 	{
@@ -226,6 +228,29 @@ static void DumpToken(ILImage *image, FILE *outstream,
 			if(spec)
 			{
 				ILDumpType(outstream, image, ILTypeSpec_Type(spec), flags);
+			}
+			else
+			{
+				fprintf(outstream, "#%lx", token);
+			}
+		}
+		break;
+
+		case IL_META_TOKEN_STAND_ALONE_SIG:
+		{
+			/* A reference to a stand-alone signature */
+			sig = ILStandAloneSig_FromToken(image, token);
+			if(sig)
+			{
+				type = ILStandAloneSig_Type(sig);
+				if(ILType_IsMethod(type))
+				{
+					ILDumpMethodType(outstream, image, type, flags, 0, "", 0);
+				}
+				else
+				{
+					ILDumpType(outstream, image, type, flags);
+				}
 			}
 			else
 			{

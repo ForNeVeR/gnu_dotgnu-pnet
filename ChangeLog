@@ -10,6 +10,9 @@
 	* cscc/c/c_invoke.tc: problem with the detection of function
 	pointers during function invocation.
 
+	* ildasm/ildasm_method.c (DumpToken): dump stand-alone signatures
+	for methods correctly.
+
 2002-09-15  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): set the rvalues 

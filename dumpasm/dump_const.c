@@ -127,8 +127,8 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item)
 			if(blobLen > 7)
 			{
 				fprintf(stream, "int64(0x%08lX%08lX)",
-						(unsigned long)(IL_READ_UINT32(blob)),
-						(unsigned long)(IL_READ_UINT32(blob + 4)));
+						(unsigned long)(IL_READ_UINT32(blob + 4)),
+						(unsigned long)(IL_READ_UINT32(blob)));
 			}
 			else
 			{

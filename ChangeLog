@@ -38,6 +38,9 @@
 
 	* samples/mscorlib.dll: new version with rare code pages and KOI8-U.
 
+	* csant/csant_cscc.c (BuildCscCommandLine): split multiple resource
+	files into multiple "/resource" options to "csc".
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

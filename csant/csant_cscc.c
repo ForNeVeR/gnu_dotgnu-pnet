@@ -669,16 +669,10 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 
 	/* Add the resources to the command-line */
 	numFiles = CSAntFileSetSize(args->resources);
-	temp = 0;
 	for(file = 0; file < numFiles; ++file)
 	{
-		temp = SemiColonList(temp,
-					CSAntDirCombineWin32
-						(CSAntFileSetFile(args->resources, file), 0, 0));
-	}
-	if(temp != 0)
-	{
-		AddValueArg(&argv, &argc, "/resource:", temp);
+		AddValueArg(&argv, &argc, "/resource:",
+					CSAntFileSetFile(args->resources, file));
 	}
 
 	/* Add the references to the command-line */

@@ -662,14 +662,116 @@ ILObject *_IL_ClrType_GetElementType(ILExecThread *thread, ILObject *_this)
 }
 
 /*
+ * Determine if we have an interface name match for "GetInterface".
+ */
+static int InterfaceNameMatch(ILClass *interface, ILString *name,
+							  ILBool ignoreCase)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * Scan the implemented interfaces of a class for a particular name.
+ */
+static ILClass *GetInterface(ILExecThread *thread, ILClass *classInfo,
+							 ILString *name, ILBool ignoreCase)
+{
+	ILImplements *impl = 0;
+	ILClass *interface;
+	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+	{
+		interface = ILImplementsGetInterface(impl);
+		if(InterfaceNameMatch(interface, name, ignoreCase))
+		{
+			return interface;
+		}
+		interface = GetInterface(thread, interface, name, ignoreCase);
+		if(interface)
+		{
+			return interface;
+		}
+	}
+	return 0;
+}
+
+/*
  * public override Type GetInterface(String name, bool ignoreCase);
  */
 ILObject *_IL_ClrType_GetInterface(ILExecThread *thread,
 								   ILObject *_this, ILString *name,
 								   ILBool ignoreCase)
 {
-	/* TODO */
-	return 0;
+	ILClass *classInfo;
+
+	/* Bail out if "name" is NULL or the class is invalid in some way */
+	if(!name)
+	{
+		ILExecThreadThrowArgNull(thread, "name");
+		return 0;
+	}
+	classInfo = _ILGetClrClass(thread, _this);
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Scan all implemented interfaces for the name */
+	classInfo = GetInterface(thread, classInfo, name, ignoreCase);
+	if(classInfo)
+	{
+		return _ILGetClrType(thread, classInfo);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Get the maximum number of interfaces (including duplicates)
+ * that are implemented by a specific class.
+ */
+static ILInt32 GetMaxInterfaces(ILClass *classInfo)
+{
+	ILImplements *impl = 0;
+	ILInt32 count = 0;
+	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+	{
+		count += 1 + GetMaxInterfaces(ILImplementsGetInterface(impl));
+	}
+	return count;
+}
+
+/*
+ * Fill an array with interfaces, excluding duplicates.
+ * Returns the new position, or -1 if an exception occurred.
+ */
+static ILInt32 FillWithInterfaces(ILExecThread *thread, ILClass *classInfo,
+								  ILObject **array, ILInt32 posn)
+{
+	ILImplements *impl = 0;
+	ILClass *interface;
+	ILObject *clrType;
+	ILInt32 index;
+	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+	{
+		interface = ILImplementsGetInterface(impl);
+		clrType = _ILGetClrType(thread, interface);
+		for(index = 0; index < posn; ++index)
+		{
+			if(array[index] == clrType)
+			{
+				break;
+			}
+		}
+		if(index >= posn)
+		{
+			array[posn++] = clrType;
+			posn = FillWithInterfaces(thread, interface, array, posn);
+		}
+	}
+	return posn;
 }
 
 /*
@@ -678,8 +780,38 @@ ILObject *_IL_ClrType_GetInterface(ILExecThread *thread,
 System_Array *_IL_ClrType_GetInterfaces(ILExecThread *thread,
 										ILObject *_this)
 {
-	/* TODO */
-	return 0;
+	ILClass *classInfo;
+	System_Array *array;
+	ILInt32 count;
+
+	/* Bail out if the class is invalid in some way */
+	classInfo = _ILGetClrClass(thread, _this);
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Allocate an array big enough to hold all interfaces */
+	count = GetMaxInterfaces(classInfo);
+	array = (System_Array *)ILExecThreadNew(thread, "[oSystem.Type;",
+										    "(Ti)V", (ILVaInt)count);
+	if(!array)
+	{
+		return 0;
+	}
+
+	/* Fill the array, and check for duplicates */
+	count = FillWithInterfaces(thread, classInfo,
+							   (ILObject **)(ArrayToBuffer(array)), 0);
+	if(count < 0)
+	{
+		/* An exception occurred */
+		return 0;
+	}
+
+	/* Shorten the array to its final length and return */
+	array->length = count;
+	return array;
 }
 
 /*

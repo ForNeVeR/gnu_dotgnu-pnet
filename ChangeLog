@@ -4,6 +4,9 @@
 	* engine/cvm_conv.c, engine/lib_string.c, include/il_engine.h:
 	fix remaining ANSI vs UTF-8 issues in the engine's string handling.
 
+	* engine/lib_type.c: begin implementing "ClrType.GetInterface" and
+	"ClrType.GetInterfaces".
+
 2002-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/heap.c (InitializeClass): throw "TypeInitializationException"

@@ -86,6 +86,33 @@ static ILCmdLineOption const options[] = {
 		"--unregister",
 		"Unregister ilrun from the operating system."},
 #endif
+
+#ifndef IL_CONFIG_REDUCE_CODE
+	/* Special internal options that are used for debugging.
+	   Note: -I won't do anything unless IL_PROFILE_CVM_INSNS
+	   is defined in "cvm_config.h", and -V won't do anything
+	   unless IL_PROFILE_CVM_VAR_USAGE is defined in "cvm_config.h" */
+	{"-M", 'M', 0, 0, 0},
+	{"--method-profile", 'M', 0,
+		"--method-profile        or -M",
+		"Display how many times each method was called on exit."},
+	{"-T", 'T', 0, 0, 0},
+	{"--trace",	  'T', 0,
+		"--trace                 or -T",
+		"Trace every method call or return."},
+	{"-D", 'D', 0, 0, 0},
+	{"--dump-config", 'D', 0,
+		"--dump-config           or -D",
+		"Dump information about the engine configuration."},
+
+	{"-I", 'I', 0, 0, 0},
+	{"--insn-profile", 'I', 0, 0, 0},
+	{"-V", 'V', 0, 0, 0},
+	{"--var-profile", 'V', 0, 0, 0},
+	{"-P", 'P', 0, 0, 0},
+	{"--dump-params", 'P', 0, 0, 0},
+#endif
+
 	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
 		"--version               or -v",
@@ -93,28 +120,6 @@ static ILCmdLineOption const options[] = {
 	{"--help", 'h', 0,
 		"--help",
 		"Print this help message."},
-
-#ifndef IL_CONFIG_REDUCE_CODE
-	/* Special internal options that are used for debugging.
-	   Note: -I won't do anything unless IL_PROFILE_CVM_INSNS
-	   is defined in "cvm.c", -M won't do anything unless
-	   IL_PROFILE_CVM_METHODS is defined in "cvm.c", and -V
-	   won't do anything unless IL_PROFILE_CVM_VAR_USAGE is
-	   defined in "cvm.c" */
-	{"-I", 'I', 0, 0, 0},
-	{"--insn-profile", 'I', 0, 0, 0},
-	{"-M", 'M', 0, 0, 0},
-	{"--method-profile", 'M', 0, 0, 0},
-	{"-V", 'V', 0, 0, 0},
-	{"--var-profile", 'V', 0, 0, 0},
-	{"-P", 'P', 0, 0, 0},
-	{"--dump-params", 'P', 0, 0, 0},
-	{"-D", 'D', 0, 0, 0},
-	{"--dump-config", 'D', 0, 0, 0},
-	{"-T", 'T', 0, 0, 0},
-	{"--trace",	  'T', 0, 0, 0},
-#endif
-
 	{0, 0, 0, 0, 0}
 };
 

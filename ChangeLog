@@ -8,6 +8,9 @@
 	* cscc/common/cc_preproc.c: fix a problem with Russian characters
 	in single-line comments (bug #6190).
 
+	* engine/cvm_config.h, engine/ilrun.1, engine/ilrun.c:
+	document the dump and trace options better.
+
 2004-03-16  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,

@@ -40,7 +40,6 @@ extern	"C" {
  * Enable or disable profiling.
  */
 /*#define	IL_PROFILE_CVM_INSNS*/
-/*#define	IL_PROFILE_CVM_METHODS*/
 /*#define	IL_PROFILE_CVM_VAR_USAGE*/
 #ifdef IL_PROFILE_CVM_INSNS
 extern int _ILCVMInsnCount[];
@@ -185,7 +184,6 @@ extern int _ILCVMInsnCount[];
  */
 #if defined(IL_CVM_DIRECT) && defined(CVM_X86) && \
 	defined(__GNUC__) && !defined(IL_NO_ASM) && \
-	!defined(IL_CVM_PROFILE_CVM_METHODS) && \
 	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
 	defined(IL_CONFIG_UNROLL)
 #define	IL_CVM_DIRECT_UNROLLED
@@ -194,7 +192,6 @@ extern int _ILCVMInsnCount[];
 #endif
 #if defined(IL_CVM_DIRECT) && defined(CVM_ARM) && \
 	defined(__GNUC__) && !defined(IL_NO_ASM) && \
-	!defined(IL_CVM_PROFILE_CVM_METHODS) && \
 	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
 	defined(IL_CONFIG_UNROLL)
 #define	IL_CVM_DIRECT_UNROLLED
@@ -204,7 +201,6 @@ extern int _ILCVMInsnCount[];
 #if 0	/* remove this once ia64 unroller is finished */
 #if defined(IL_CVM_DIRECT) && defined(CVM_IA64) && \
 	defined(__GNUC__) && !defined(IL_NO_ASM) && \
-	!defined(IL_CVM_PROFILE_CVM_METHODS) && \
 	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
 	defined(IL_CONFIG_UNROLL)
 #define	IL_CVM_DIRECT_UNROLLED

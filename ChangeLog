@@ -1,4 +1,9 @@
 
+2004-08-31  Gopal.V  <gopalv82@yahoo.com>
+
+	* class/Npgsql/Npgsql.build: Add required references for Npgsql to
+	compile.
+
 2004-08-09  Gopal.V  <gopalv82@yahoo.com>
 
 	* README: The comment about needing mono sources is applicable only

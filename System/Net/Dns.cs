@@ -150,6 +150,9 @@ public sealed class Dns
 				}
 	}; // class DnsAsyncResult
 
+	// Cannot instantiate this class.
+	private Dns () {}
+
 	// Begin an asynchronous "get host by name" operation.
 	[TODO]
 	public static IAsyncResult BeginGetHostByName

@@ -27,3 +27,4 @@ Exception_Checkout=An error occurred while attempting to check out a file
 Exception_CheckoutCanceled=A checkout operation was canceled
 Exception_BufferOverflow=An internal buffer has overflowed
 Exception_License=Incorrect license information supplied
+Exception_Cookie=Could not add the specified cookie to the container

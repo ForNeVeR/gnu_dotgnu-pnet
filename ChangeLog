@@ -1,4 +1,15 @@
 
+2003-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/Cookie.cs, System/Net/CookieCollection.cs,
+	System/Net/CookieContainer.cs, System/Net/CookieException.cs,
+	System/Net/Dns.cs, System/Net/EndpointPermission.cs,
+	System/Net/ProtocolViolationException.cs,
+	System/Net/ServicePointManager.cs, System/Net/SocketPermission.cs,
+	System/Net/WebPermission.cs, System/Net/WebPermissionAttribute.cs,
+	resources/en_US/System/Arg.txt, resources/en_US/System/Exception.txt:
+	missing functionality in the "System.Net" namespace.
+
 2003-09-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/TypeConverter.cs: add support for instance

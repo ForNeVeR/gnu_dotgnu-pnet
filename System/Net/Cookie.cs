@@ -21,12 +21,12 @@
 namespace System.Net
 {
 
+#if !ECMA_COMPAT
+
 using System.Globalization;
 using System.Text;
 
-#if !ECMA_COMPAT
 [Serializable]
-#endif
 public sealed class Cookie
 {
 	// Internal state.
@@ -404,5 +404,7 @@ public sealed class Cookie
 			}
 
 }; // class Cookie
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Net

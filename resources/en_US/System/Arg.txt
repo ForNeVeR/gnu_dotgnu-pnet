@@ -57,3 +57,6 @@ ArgRange_InterfaceIndex=IPv6 interface index out of range
 Arg_ArraysSameSize=The two arrays must be the same size
 Arg_InvalidElement=Invalid element for this type of collection
 Arg_InvalidCultureName=Invalid culture name
+ArgRange_CookieCapacity=Cookie container capacity is out of range
+Arg_WebAcceptAlreadySet=Accept web permissions are already set
+Arg_WebConnectAlreadySet=Accept connect permissions are already set

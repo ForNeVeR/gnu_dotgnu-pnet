@@ -20,6 +20,7 @@
 
 #include "il_utils.h"
 #include "il_system.h"
+#include "il_align.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -31,12 +32,6 @@ extern	"C" {
 #ifndef	IL_MEMSTACK_BLOCK_SIZE
 #define	IL_MEMSTACK_BLOCK_SIZE	16384
 #endif
-
-/*
- * Alignment size for this system.
- */
-#define	ALIGNMENT_SIZE	((sizeof(long) > sizeof(void *))	\
-								? sizeof(long) : sizeof(void *))
 
 void ILMemStackInit(ILMemStack *stack, unsigned long maxSize)
 {
@@ -67,7 +62,7 @@ void *ILMemStackAllocItem(ILMemStack *stack, unsigned size)
 	void *ptr;
 
 	/* Round up the size to the nearest alignment boundary */
-	size = (size + ALIGNMENT_SIZE - 1) & ~(ALIGNMENT_SIZE - 1);
+	size = (size + IL_BEST_ALIGNMENT - 1) & ~(IL_BEST_ALIGNMENT - 1);
 
 	/* Do we need to allocate a new block? */
 	if((stack->posn + size) > stack->size)
@@ -85,7 +80,7 @@ void *ILMemStackAllocItem(ILMemStack *stack, unsigned size)
 		}
 		*((void **)ptr) = stack->blocks;
 		stack->blocks = ptr;
-		stack->posn = ALIGNMENT_SIZE;
+		stack->posn = IL_BEST_ALIGNMENT;
 		stack->currSize += stack->size;
 	}
 

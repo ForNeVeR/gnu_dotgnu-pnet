@@ -27,6 +27,7 @@ something fancier to improve allocation policy on particular systems.
 
 #include "il_system.h"
 #include "il_utils.h"
+#include "il_align.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -43,22 +44,16 @@ extern	"C" {
 #define	IL_POOL_BLOCK_SIZE	4080
 #endif
 
-/*
- * Alignment size for this system.
- */
-#define	ALIGNMENT_SIZE	((sizeof(long) > sizeof(void *))	\
-								? sizeof(long) : sizeof(void *))
-
 void ILMemPoolInit(ILMemPool *pool, unsigned size, unsigned nitems)
 {
 	unsigned maxitems;
 
 	/* Round the size to the nearest alignment boundary so that
 	   we always return aligned structures from the allocator */
-	pool->size = ((size + ALIGNMENT_SIZE - 1) & ~(ALIGNMENT_SIZE - 1));
+	pool->size = ((size + IL_BEST_ALIGNMENT - 1) & ~(IL_BEST_ALIGNMENT - 1));
 
 	/* Determine the number of items in each block */
-	maxitems = (IL_POOL_BLOCK_SIZE - ALIGNMENT_SIZE) / pool->size;
+	maxitems = (IL_POOL_BLOCK_SIZE - IL_BEST_ALIGNMENT) / pool->size;
 	if(nitems != 0 && nitems < maxitems)
 	{
 		pool->nitems = nitems;
@@ -125,14 +120,14 @@ void *ILMemPoolAllocItem(ILMemPool *pool)
 	/* Get the next item in the current block */
 	if(pool->index < pool->nitems)
 	{
-		item = (void *)(((char *)(pool->blocks)) + ALIGNMENT_SIZE +
+		item = (void *)(((char *)(pool->blocks)) + IL_BEST_ALIGNMENT +
 						pool->index * pool->size);
 		++(pool->index);
 		return item;
 	}
 
 	/* Allocate a new block from the system */
-	block = (void *)(ILMalloc(ALIGNMENT_SIZE + pool->size * pool->nitems));
+	block = (void *)(ILMalloc(IL_BEST_ALIGNMENT + pool->size * pool->nitems));
 	if(!block)
 	{
 		return 0;
@@ -142,7 +137,7 @@ void *ILMemPoolAllocItem(ILMemPool *pool)
 	pool->index = 1;
 
 	/* Return the first item in the new block */
-	return (void *)(((char *)block) + ALIGNMENT_SIZE);
+	return (void *)(((char *)block) + IL_BEST_ALIGNMENT);
 }
 
 void *ILMemPoolCallocItem(ILMemPool *pool)

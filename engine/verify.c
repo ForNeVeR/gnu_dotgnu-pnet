@@ -21,6 +21,7 @@
 #include "engine.h"
 #include "il_coder.h"
 #include "il_opcodes.h"
+#include "il_align.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -45,15 +46,7 @@ static void *TempAllocate(TempAllocator *allocator, unsigned long size)
 	void *ptr;
 
 	/* Round the size to a multiple of the machine word size */
-	if(sizeof(unsigned long) > sizeof(void *))
-	{
-		size = (size + sizeof(unsigned long) - 1) &
-				~(sizeof(unsigned long) - 1);
-	}
-	else
-	{
-		size = (size + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
-	}
+	size = (size + IL_BEST_ALIGNMENT - 1) & ~(IL_BEST_ALIGNMENT - 1);
 
 	/* Can we allocate from the primary buffer? */
 	if(size < 256 && (allocator->posn + (int)size) < 256)
@@ -64,14 +57,14 @@ static void *TempAllocate(TempAllocator *allocator, unsigned long size)
 	}
 
 	/* Allocate from the system heap */
-	ptr = ILMalloc(sizeof(void *) + size);
+	ptr = ILMalloc(IL_BEST_ALIGNMENT + size);
 	if(!ptr)
 	{
 		return 0;
 	}
 	*((void **)ptr) = allocator->overflow;
 	allocator->overflow = ptr;
-	return (void *)(((void **)ptr) + 1);
+	return (void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);
 }
 
 /*

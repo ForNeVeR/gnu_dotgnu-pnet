@@ -38,6 +38,10 @@ the and use helper functions "ILInt64MulOvf", "ILUInt64MulOvf", and
 engine/cvm_conv.c, codegen/cg_cast.tc: implement helper functions
 for difficult numeric conversions in "support".
 
+* include/il_align.h, support/mempool.c, support/memstack.c, engine/verify.c:
+detect the target platform's alignment better and then use it within various
+memory allocators in the code.
+
 2001-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/l10n.html: check in a proposal for a new resource system for C#.

@@ -40,9 +40,9 @@ namespace System.IO
 
 		public static void Copy(string source, string dest) 
 		{
-			Exception e = ValidatePath(source);
+			Exception e = ValidatePath(source, "source");
 			if (e != null) { throw e; }
-			e = ValidatePath(dest);
+			e = ValidatePath(dest, "dest");
 			if (e != null) { throw e; }
 			Copy(source, dest, false);
 		}
@@ -51,9 +51,9 @@ namespace System.IO
 		public static void Copy(string source, string dest, bool overwrite) 
 		{
 			
-			Exception e = ValidatePath(source);
+			Exception e = ValidatePath(source, "source");
 			if (e != null) { throw e; }
-			e = ValidatePath(dest);
+			e = ValidatePath(dest, "dest");
 			if (e != null) { throw e; }
 
 			Errno err = DirMethods.Copy(source, dest);
@@ -93,6 +93,8 @@ namespace System.IO
 				
 				case Errno.EACCES:
 					throw new SecurityException(_("IO_PathnameSecurity"));
+				case Errno.Success:
+					return;
 				
 				// TODO: Change to a more appropriate exception
 				// (Suggestions would be welcome)
@@ -119,7 +121,7 @@ namespace System.IO
 		
 		public static void Delete(string path) 
 		{
-			Exception e = ValidatePath(path);
+			Exception e = ValidatePath(path, "path");
 			if (e != null) { throw e; }
 		
 			Errno err = DirMethods.Delete(path);
@@ -154,7 +156,7 @@ namespace System.IO
 
 		public static bool Exists(string path) 
 		{
-			Exception e = ValidatePath(path);
+			Exception e = ValidatePath(path, "path");
 			if (e != null) { throw e; }
 			return FileMethods.Exists(path);	
 		}
@@ -164,7 +166,7 @@ namespace System.IO
 			// platform-enforced security is the only security here right now
 			// afaik, some System.Security stuff needs to be added here - Rich
 
-			Exception e = ValidatePath(path);
+			Exception e = ValidatePath(path, "path");
 			if (e != null) { throw e; }
 
 			long time;
@@ -179,7 +181,7 @@ namespace System.IO
 			// platform-enforced security is the only security here right now
 			// afaik, some System.Security stuff needs to be added here - Rich
 
-			Exception e = ValidatePath(path);
+			Exception e = ValidatePath(path, "path");
 			if (e != null) { throw e; }
 
 			long time;
@@ -194,7 +196,7 @@ namespace System.IO
 			// platform-enforced security is the only security here right now
 			// afaik, some System.Security stuff needs to be added here - Rich
 
-			Exception e = ValidatePath(path);
+			Exception e = ValidatePath(path, "path");
 			if (e != null) { throw e; }
 
 			long time;
@@ -206,9 +208,9 @@ namespace System.IO
 
 		public static void Move(string src, string dest)
 		{
-			Exception e = ValidatePath(src);
+			Exception e = ValidatePath(src, "src");
 			if (e != null) { throw e; }
-			e = ValidatePath(dest);
+			e = ValidatePath(dest, "dest");
 			if (e != null) { throw e; }
 
 			DirMethods.Rename(src, dest);
@@ -289,15 +291,18 @@ namespace System.IO
 				return new IOException(_("Exception_IO"));
 			}
 		}
-		private static Exception ValidatePath(string path)
+
+		private static Exception ValidatePath(string path, string argumentName)
 		{
 			if (path == null)
 			{
-				return new ArgumentNullException(_("Arg_NotNull"));
+				return new 
+					ArgumentNullException(_("Arg_NotNull"), argumentName);
 			}
 			if ((path.Trim() == "") || !(FileMethods.ValidatePathname(path)))
 			{
-				return new ArgumentException(_("IO_InvalidPathname"));
+				return new 
+					ArgumentException(_("IO_InvalidPathname"), argumentName);
 			}
 			return null;
 		}

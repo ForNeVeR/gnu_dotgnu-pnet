@@ -1,4 +1,9 @@
 
+2002-12-21  Aditya P. Bansod <abansod@fullenergy.com>
+	
+	* runtime/System/IO/File.cs: Improve the exception verbage on
+	the File.cs path verification.(Patch #875, Gopal).
+
 2002-12-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/Platform/FileMethods.cs, runtime/System/IO/File.cs:
@@ -13,7 +18,7 @@
 	* runtime/System/Text/Encoding.cs: make "InvokeI18N" more robust
 	against errors when loading "I18N".
 
-2002-12-17  Gopal.V  <gopalv82@symonds.net>
+2002-12-20  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/File.cs: Change some of the formatting of earlier
 	code to be compatible with pnetlib standards.

@@ -1,4 +1,10 @@
 
+2004-06-05  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/ImageList.cs,
+	System.Windows.Forms/ImageListStreamer.cs: Implement image list
+	stream deserialization .
+
 2004-06-04  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/ErrorProvider.cs,

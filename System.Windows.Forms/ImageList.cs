@@ -100,7 +100,11 @@ public sealed class ImageList
 		set
 		{
 			imageStream = value;
-			images = imageStream.Images;
+			images = new ImageCollection(this);
+			foreach(Image img in imageStream.Images)
+			{
+				images.Add(img);
+			}
 			OnRecreateHandle();
 		}
 	}
@@ -137,7 +141,6 @@ public sealed class ImageList
 #endif
 	private void OnRecreateHandle()
 	{
-		images = new ImageCollection(this);
 		EventHandler handler = (rhHandler as EventHandler);
 		if (handler != null)
 		{
@@ -167,30 +170,6 @@ public sealed class ImageList
 			rhHandler = Delegate.Remove(rhHandler,value);
 		}
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	[TODO]
 	public sealed class ImageCollection : IList

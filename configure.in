@@ -405,7 +405,7 @@ if test "x$no_recursion" != "xyes"; then
 			mkdir libffi
 		fi
 		cd "libffi"
-		${ffisrcdir}/configure --disable-multilib --disable-shared \
+		${ffisrcdir}/configure --disable-shared \
 			--host="${host}" --build="${build}" --target="${target}" \
 			--disable-fast-install --prefix="${prefix}" \
 			--exec-prefix="${exec_prefix}" --bindir="${bindir}" \

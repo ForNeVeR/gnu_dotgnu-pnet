@@ -448,7 +448,7 @@ uninstall-toolexeclibLTLIBRARIES:
 	$(COMPILE) -c `cygpath -w $<`
 
 mostlyclean-compile:
-	-rm -f *.o core *.core
+	-rm -f *.o core *.core src/*.o src/*/*.o
 	-rm -f *.$(OBJEXT)
 
 clean-compile:
@@ -459,7 +459,7 @@ distclean-compile:
 maintainer-clean-compile:
 
 mostlyclean-libtool:
-	-rm -f *.lo
+	-rm -f *.lo src/*.lo src/*/*.lo
 
 clean-libtool:
 	-rm -rf .libs _libs

@@ -6,8 +6,15 @@ all-local: mscorlib.dll
 mscorlib.dll:
 	"$(CSANT)" $(CSANT_FLAGS) -f runtime.build all
 
-CLEANFILES = mscorlib.dll mscorlib_ecma.dll
+install-data-local:
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
+	"$(CSANT)" $(CSANT_FLAGS) -f runtime.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -i all
 
-pnetassembliesdir = $(libdir)/cscc/lib
-pnetassemblies_DATA = mscorlib.dll \
-					  pnetlib.here
+uninstall-local:
+	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -f runtime.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -u all
+
+CLEANFILES = mscorlib.dll

@@ -8,5 +8,13 @@ System.Windows.Forms.dll:
 
 CLEANFILES = System.Windows.Forms.dll
 
-pnetassembliesdir = $(libdir)/cscc/lib
-pnetassemblies_DATA = System.Windows.Forms.dll
+install-data-local:
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
+	"$(CSANT)" $(CSANT_FLAGS) -f Forms.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -i all
+
+uninstall-local:
+	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -f Forms.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -u all

@@ -8,7 +8,9 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="${CONFIG_DEBUG_LINES}">
+				 debug="${CONFIG_DEBUG_LINES}"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<file name="VisualC.cs"/>
@@ -35,7 +37,9 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="${CONFIG_DEBUG_LINES}">
+				 debug="${CONFIG_DEBUG_LINES}"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<file name="CSharpCompiler.cs"/>
@@ -64,7 +68,9 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="${CONFIG_DEBUG_LINES}">
+				 debug="${CONFIG_DEBUG_LINES}"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<file name="Vsa.cs"/>
@@ -93,7 +99,9 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="${CONFIG_DEBUG_LINES}">
+				 debug="${CONFIG_DEBUG_LINES}"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<file name="Accessibility.cs"/>

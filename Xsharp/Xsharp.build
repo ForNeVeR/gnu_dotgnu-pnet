@@ -8,7 +8,9 @@
 				 unsafe="true"
 				 optimize="true"
 				 debug="${CONFIG_DEBUG_LINES}"
-				 sanewarnings="true">
+				 sanewarnings="true"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<!-- We add Xlib.cs to the list carefully because it may
 			     live in the build directory instead of the source -->

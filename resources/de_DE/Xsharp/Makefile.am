@@ -8,6 +8,7 @@ Xsharp.resources.dll:
 
 install-data-local:
 	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
 	"$(CSANT)" $(CSANT_FLAGS) -f resources.build \
 			-a $(DESTDIR)$(libdir)/cscc/lib -i all
 

@@ -18,7 +18,6 @@ System.dll: phase-one
 
 phase-one:
 	test -d first || mkdir first
-	test -f first/pnetlib.here || cp pnetlib.here first/pnetlib.here
 	"$(CSANT)" $(CSANT_FLAGS) -f System.build all
 
 phase-two:
@@ -26,5 +25,13 @@ phase-two:
 
 CLEANFILES = System.dll first/System.dll first/pnetlib.here
 
-pnetassembliesdir = $(libdir)/cscc/lib
-pnetassemblies_DATA = System.dll
+install-data-local:
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
+	"$(CSANT)" $(CSANT_FLAGS) -f System.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -i phase-two
+
+uninstall-local:
+	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -f System.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -u phase-two

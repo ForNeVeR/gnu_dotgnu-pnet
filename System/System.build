@@ -51,7 +51,9 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 optimize="true"
-				 debug="${CONFIG_DEBUG_LINES}">
+				 debug="${CONFIG_DEBUG_LINES}"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<define name="SECOND_PASS" value="true"/>
 

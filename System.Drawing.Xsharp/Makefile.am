@@ -8,5 +8,13 @@ System.Drawing.Xsharp.dll:
 
 CLEANFILES = System.Drawing.Xsharp.dll
 
-pnetassembliesdir = $(libdir)/cscc/lib
-pnetassemblies_DATA = System.Drawing.Xsharp.dll
+install-data-local:
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
+	"$(CSANT)" $(CSANT_FLAGS) -f System.Drawing.Xsharp.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -i all
+
+uninstall-local:
+	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -f System.Drawing.Xsharp.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -u all

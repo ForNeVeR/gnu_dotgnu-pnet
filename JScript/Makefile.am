@@ -15,16 +15,18 @@ Nodes/JNode.cs: $(TREECC_INPUTS)
 
 CLEANFILES = Microsoft.JScript.dll JScript.Test.dll Nodes/JNode.cs jsrun.exe
 
-pnetassembliesdir = $(libdir)/cscc/lib
-pnetassemblies_DATA = Microsoft.JScript.dll
-
 install-exec-local:
 	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
+	"$(CSANT)" $(CSANT_FLAGS) -f JScript.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -i all
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) jsrun.exe $(DESTDIR)$(bindir)/jsrun.exe
 	$(INSTALL_SCRIPT) $(srcdir)/jsrun.sh $(DESTDIR)$(bindir)/jsrun
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -f JScript.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -u all
 	rm -f $(DESTDIR)$(bindir)/jsrun.exe
 	rm -f $(DESTDIR)$(bindir)/jsrun

@@ -8,7 +8,9 @@
 				 unsafe="true"
 				 nostdlib="true"
 				 debug="${CONFIG_DEBUG_LINES}"
-				 optimize="true">
+				 optimize="true"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="**/*.cs"/>

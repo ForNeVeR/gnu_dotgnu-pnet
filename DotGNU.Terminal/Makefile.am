@@ -8,5 +8,13 @@ DotGNU.Terminal.dll:
 
 CLEANFILES = DotGNU.Terminal.dll
 
-pnetassembliesdir = $(libdir)/cscc/lib
-pnetassemblies_DATA = DotGNU.Terminal.dll
+install-data-local:
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
+	"$(CSANT)" $(CSANT_FLAGS) -f DotGNU.Terminal.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -i all
+
+uninstall-local:
+	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -f DotGNU.Terminal.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -u all

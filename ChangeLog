@@ -60,6 +60,10 @@
 	* Xsharp/XsharpSupport.c: re-enable the 24bpp-MSBFirst optimization
 	and fix the byte swapping.
 
+	* */*.am, */*.build, */pnetlib.here: change install/uninstall
+	for the core assemblies over to use the csant/ilgac mechanism,
+	and remove the now-unnecessary pnetlib.here files.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

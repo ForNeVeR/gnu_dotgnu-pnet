@@ -8,5 +8,13 @@ DotGNU.SSL.dll:
 
 CLEANFILES = DotGNU.SSL.dll
 
-pnetassembliesdir = $(libdir)/cscc/lib
-pnetassemblies_DATA = DotGNU.SSL.dll
+install-data-local:
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
+	"$(CSANT)" $(CSANT_FLAGS) -f SSL.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -i all
+
+uninstall-local:
+	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -f SSL.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -u all

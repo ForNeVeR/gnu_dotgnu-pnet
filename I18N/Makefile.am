@@ -20,22 +20,13 @@ $(HANDLER_FILE): first/I18N.dll $(REGION_ASSEMBLIES)
 
 CLEANFILES = $(REGION_ASSEMBLIES) $(HANDLER_FILE) I18N.dll first/I18N.dll
 
-install-exec-local:
+install-data-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
-	$(INSTALL_DATA) I18N.dll $(DESTDIR)$(libdir)/cscc/lib/I18N.dll
-	$(INSTALL_DATA) I18N.CJK.dll $(DESTDIR)$(libdir)/cscc/lib/I18N.CJK.dll
-	$(INSTALL_DATA) I18N.MidEast.dll $(DESTDIR)$(libdir)/cscc/lib/I18N.MidEast.dll
-	$(INSTALL_DATA) I18N.Other.dll $(DESTDIR)$(libdir)/cscc/lib/I18N.Other.dll
-	$(INSTALL_DATA) I18N.Rare.dll $(DESTDIR)$(libdir)/cscc/lib/I18N.Rare.dll
-	$(INSTALL_DATA) I18N.West.dll $(DESTDIR)$(libdir)/cscc/lib/I18N.West.dll
-	rm -f $(DESTDIR)$(libdir)/cscc/lib/I18N-handlers.def
+	"$(CSANT)" $(CSANT_FLAGS) -f I18N.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -i all phase-two
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
-	rm -f $(DESTDIR)$(libdir)/cscc/lib/I18N.dll
-	rm -f $(DESTDIR)$(libdir)/cscc/lib/I18N.CJK.dll
-	rm -f $(DESTDIR)$(libdir)/cscc/lib/I18N.MidEast.dll
-	rm -f $(DESTDIR)$(libdir)/cscc/lib/I18N.Other.dll
-	rm -f $(DESTDIR)$(libdir)/cscc/lib/I18N.Rare.dll
-	rm -f $(DESTDIR)$(libdir)/cscc/lib/I18N.West.dll
+	"$(CSANT)" $(CSANT_FLAGS) -f I18N.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -u all phase-two

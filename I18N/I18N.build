@@ -36,7 +36,9 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
-				 optimize="true">
+				 optimize="true"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<includes name="CJK/*.cs"/>
@@ -70,7 +72,9 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
-				 optimize="true">
+				 optimize="true"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<includes name="MidEast/*.cs"/>
@@ -96,7 +100,9 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
-				 optimize="true">
+				 optimize="true"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<includes name="Other/*.cs"/>
@@ -122,7 +128,9 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
-				 optimize="true">
+				 optimize="true"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<includes name="Rare/*.cs"/>
@@ -148,7 +156,9 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
-				 optimize="true">
+				 optimize="true"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<includes name="West/*.cs"/>
@@ -178,7 +188,9 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
-				 optimize="true">
+				 optimize="true"
+				 install="true"
+				 installasdefault="${INSTALL_AS_DEFAULT}">
 
 			<sources>
 				<includes name="Common/*.cs"/>

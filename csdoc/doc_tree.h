@@ -43,11 +43,13 @@ typedef struct _tagILDocText		ILDocText;
 /*
  * Information that is stored about an entire documentation tree.
  */
+#define	IL_DOC_HASH_SIZE			512
 struct _tagILDocTree
 {
 	ILDocLibrary   *libraries;		/* Libraries within the tree */
 	ILDocLibrary   *lastLibrary;	/* Last library within the tree */
 	ILDocNamespace *namespaces;		/* Namespaces within the tree */
+	ILDocType      *hash[IL_DOC_HASH_SIZE]; /* Type name hash table */
 
 };
 
@@ -109,6 +111,7 @@ struct _tagILDocType
 	ILDocMember    *members;		/* List of type members */
 	ILDocType	   *next;			/* Next type in the same library */
 	ILDocType	   *nextNamespace;	/* Next type in the same namespace */
+	ILDocType      *nextHash;		/* Next in type name hash table */
 
 };
 
@@ -213,6 +216,13 @@ int ILDocTreeSort(ILDocTree *tree);
  * Destroy a documentation tree.
  */
 void ILDocTreeDestroy(ILDocTree *tree);
+
+/*
+ * Find a type given its full name.  Returns NULL if
+ * the type is not defined in the tree, but may be
+ * defined externally.
+ */
+ILDocType *ILDocTypeFind(ILDocTree *tree, const char *name);
 
 /*
  * Get a particular parameter from a documentation tag node.

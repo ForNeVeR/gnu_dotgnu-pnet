@@ -20,6 +20,7 @@
 
 #include "doc_tree.h"
 #include "il_system.h"
+#include "il_utils.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -181,6 +182,67 @@ static int ParseDocs(ILDocText **doc, ILXMLReader *reader)
 
 	/* White space is no longer significant */
 	ILXMLWhiteSpace(reader, 0);
+	return 1;
+}
+
+/*
+ * Parse a list of interfaces.  The XML stream is positioned
+ * on the first item within the "Interfaces" element.
+ */
+static int ParseInterfaces(ILDocInterface **list, ILXMLReader *reader)
+{
+	ILDocInterface *last = 0;
+	ILDocInterface *interface;
+
+	while(ILXMLGetItem(reader) != ILXMLItem_EOF &&
+	      ILXMLGetItem(reader) != ILXMLItem_EndTag)
+	{
+		if(ILXMLIsStartTag(reader, "Interface"))
+		{
+			ILXMLReadNext(reader);
+			while(ILXMLGetItem(reader) != ILXMLItem_EOF &&
+			      ILXMLGetItem(reader) != ILXMLItem_EndTag)
+			{
+				if(ILXMLIsStartTag(reader, "InterfaceName"))
+				{
+					/* Allocate a new interface object */
+					interface = (ILDocInterface *)ILMalloc
+									(sizeof(ILDocInterface));
+					if(!interface)
+					{
+						return 0;
+					}
+					interface->next = 0;
+					if(last)
+					{
+						last->next = interface;
+					}
+					else
+					{
+						*list = interface;
+					}
+					last = interface;
+
+					/* Copy the contents of this element to the object */
+					interface->name = ILXMLGetContents(reader, 0);
+					if(!(interface->name))
+					{
+						return 0;
+					}
+				}
+				else
+				{
+					ILXMLSkip(reader);
+				}
+				ILXMLReadNext(reader);
+			}
+		}
+		else
+		{
+			ILXMLSkip(reader);
+		}
+		ILXMLReadNext(reader);
+	}
 	return 1;
 }
 
@@ -555,7 +617,11 @@ static int ParseTypeContents(ILDocTree *tree, ILDocType *type,
 		else if(ILXMLIsStartTag(reader, "Interfaces") && type->interfaces == 0)
 		{
 			/* Parse the interfaces */
-			ILXMLSkip(reader);
+			ILXMLReadNext(reader);
+			if(!ParseInterfaces(&(type->interfaces), reader))
+			{
+				return 0;
+			}
 		}
 		else if(ILXMLIsStartTag(reader, "Attributes") && type->attributes == 0)
 		{
@@ -656,6 +722,7 @@ static int ParseTypes(ILDocTree *tree, ILDocLibrary *library,
 	const char *name;
 	const char *fullName;
 	int len;
+	unsigned long hash;
 
 	while(ILXMLGetItem(reader) != ILXMLItem_EOF &&
 	      ILXMLGetItem(reader) != ILXMLItem_EndTag)
@@ -720,6 +787,12 @@ static int ParseTypes(ILDocTree *tree, ILDocLibrary *library,
 					return 0;
 				}
 			}
+
+			/* Add the type to the hash table */
+			hash = (ILHashString(0, type->fullName, strlen(type->fullName))
+						% IL_DOC_HASH_SIZE);
+			type->nextHash = tree->hash[hash];
+			tree->hash[hash] = type;
 
 			/* Parse the contents of the type */
 			if(ILXMLGetItem(reader) == ILXMLItem_StartTag)
@@ -817,6 +890,7 @@ static int ParseLibraries(ILDocTree *tree, ILXMLReader *reader)
 ILDocTree *ILDocTreeCreate()
 {
 	ILDocTree *tree;
+	int hash;
 	if((tree = (ILDocTree *)ILMalloc(sizeof(ILDocTree))) == 0)
 	{
 		return 0;
@@ -824,6 +898,10 @@ ILDocTree *ILDocTreeCreate()
 	tree->libraries = 0;
 	tree->lastLibrary = 0;
 	tree->namespaces = 0;
+	for(hash = 0; hash < IL_DOC_HASH_SIZE; ++hash)
+	{
+		tree->hash[hash] = 0;
+	}
 	return tree;
 }
 
@@ -849,6 +927,23 @@ int ILDocTreeLoad(ILDocTree *tree, ILXMLReader *reader)
 		}
 	}
 	return 1;
+}
+
+ILDocType *ILDocTypeFind(ILDocTree *tree, const char *name)
+{
+	unsigned long hash;
+	ILDocType *type;
+	hash = (ILHashString(0, name, strlen(name)) % IL_DOC_HASH_SIZE);
+	type = tree->hash[hash];
+	while(type != 0)
+	{
+		if(!strcmp(type->fullName, name))
+		{
+			return type;
+		}
+		type = type->nextHash;
+	}
+	return 0;
 }
 
 const char *ILDocTextGetParam(ILDocText *text, const char *name)

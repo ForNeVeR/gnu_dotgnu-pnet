@@ -388,10 +388,35 @@ JavaGenValue(ILNode_ToBool)
  */
 JavaGenValue(ILNode_This)
 {
-	/* We assume that "this" is in argument 0 */
+	ILType *type;
+	ILMachineType machineType;
+
+	/* Push the value of "this" onto the stack */
 	JavaGenSimple(info, JAVA_OP_ALOAD_0);
 	JavaGenAdjust(info, 1);
-	return ILMachineType_ObjectRef;
+
+	/* Determine the type of the class that we are in */
+	if(info->currentClass)
+	{
+		type = ILClassToType(((ILNode_ClassDefn *)(info->currentClass))
+								->classInfo);
+	}
+	else
+	{
+		type = ILFindSystemType(info, "Object");
+	}
+	machineType = ILTypeToMachineType(type);
+
+	/* Do we need to unpack a value type instance? */
+	if(ILTypeIsValue(type))
+	{
+		machineType = JavaUnboxValue(info, ILMachineType_ObjectRef,
+					         		 machineType, ILTypeIsEnum(type), 1,
+									 ILTypeToClass(info, type));
+	}
+
+	/* Done */
+	return machineType;
 }
 
 /*
@@ -528,17 +553,28 @@ JavaGenValue(ILNode_Error)
 	return ILMachineType_Void;
 }
 
+%decls %end %{
+
 /*
- * Generate value code for a "box" expression.
- *
- * Because the JVM doesn't have value types, boxing operations
- * can be a little weird.  The compiler generates special
- * static methods in each value type called "copyIn__" and
- * "copyOut__" to assist with boxing and unboxing.
+ * Box a value on the stack into an object.
  */
-JavaGenValue(ILNode_Box)
+void JavaBoxValue(ILGenInfo *info, ILMachineType type,
+				  int isEnumType, ILClass *classInfo);
+
+/*
+ * Unbox a value onto the stack.
+ */
+ILMachineType JavaUnboxValue(ILGenInfo *info, ILMachineType subExprType,
+					         ILMachineType type, int isEnumType,
+					         int isRightType, ILClass *classInfo);
+
+%}
+
+%{
+
+void JavaBoxValue(ILGenInfo *info, ILMachineType type,
+				  int isEnumType, ILClass *classInfo)
 {
-	ILMachineType type = JavaGenValue(node->expr, info);
 	char *javaName;
 	char *signature;
 
@@ -571,10 +607,10 @@ JavaGenValue(ILNode_Box)
 
 		case ILMachineType_Int8:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Boxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(B)L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";");
@@ -601,10 +637,10 @@ JavaGenValue(ILNode_Box)
 
 		case ILMachineType_UInt8:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Boxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(I)L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";");
@@ -631,10 +667,10 @@ JavaGenValue(ILNode_Box)
 
 		case ILMachineType_Int16:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Boxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(S)L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";");
@@ -661,10 +697,10 @@ JavaGenValue(ILNode_Box)
 
 		case ILMachineType_UInt16:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Boxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(I)L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";");
@@ -711,10 +747,10 @@ JavaGenValue(ILNode_Box)
 		case ILMachineType_Int32:
 		case ILMachineType_NativeInt:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Boxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(I)L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";");
@@ -742,10 +778,10 @@ JavaGenValue(ILNode_Box)
 		case ILMachineType_UInt32:
 		case ILMachineType_NativeUInt:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Boxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(I)L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";");
@@ -772,10 +808,10 @@ JavaGenValue(ILNode_Box)
 
 		case ILMachineType_Int64:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Boxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(J)L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";");
@@ -807,10 +843,10 @@ JavaGenValue(ILNode_Box)
 
 		case ILMachineType_UInt64:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Boxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(J)L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";");
@@ -912,7 +948,7 @@ JavaGenValue(ILNode_Box)
 		{
 			/* We have a managed pointer or value, so use the "copyIn__"
 			   method to make a complete copy of the value being boxed */
-			javaName = JavaGetClassName(info, node->classInfo);
+			javaName = JavaGetClassName(info, classInfo);
 			signature = JavaStrAppend(info, 0, "(L");
 			signature = JavaStrAppend(info, signature, javaName);
 			signature = JavaStrAppend(info, signature, ";)L");
@@ -924,25 +960,16 @@ JavaGenValue(ILNode_Box)
 		}
 		break;
 	}
-
-	return ILMachineType_ObjectRef;
 }
 
-/*
- * Generate value code for an "unbox" expression.
- */
-JavaGenValue(ILNode_Unbox)
+ILMachineType JavaUnboxValue(ILGenInfo *info, ILMachineType subExprType,
+					         ILMachineType type, int isEnumType,
+					         int isRightType, ILClass *classInfo)
 {
-	ILMachineType subExprType;
-	ILMachineType type;
 	char *javaName;
 	char *signature;
 
-	/* Evaluate the sub-expression to get the object pointer */
-	subExprType = JavaGenValue(node->expr, info);
-
 	/* Determine the destination type for the unbox operation */
-	type = node->machineType;
 	if(subExprType == type ||
 	   (subExprType != ILMachineType_ObjectRef &&
 	    subExprType != ILMachineType_ManagedPtr))
@@ -979,10 +1006,10 @@ JavaGenValue(ILNode_Unbox)
 
 		case ILMachineType_Int8:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Unboxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";)B");
@@ -1004,10 +1031,10 @@ JavaGenValue(ILNode_Unbox)
 
 		case ILMachineType_UInt8:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Unboxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";)I");
@@ -1030,10 +1057,10 @@ JavaGenValue(ILNode_Unbox)
 
 		case ILMachineType_Int16:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Unboxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";)S");
@@ -1056,10 +1083,10 @@ JavaGenValue(ILNode_Unbox)
 
 		case ILMachineType_UInt16:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Unboxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";)I");
@@ -1098,10 +1125,10 @@ JavaGenValue(ILNode_Unbox)
 		case ILMachineType_Int32:
 		case ILMachineType_NativeInt:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Unboxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";)I");
@@ -1125,10 +1152,10 @@ JavaGenValue(ILNode_Unbox)
 		case ILMachineType_UInt32:
 		case ILMachineType_NativeUInt:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Unboxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";)I");
@@ -1151,10 +1178,10 @@ JavaGenValue(ILNode_Unbox)
 
 		case ILMachineType_Int64:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Unboxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";)J");
@@ -1180,10 +1207,10 @@ JavaGenValue(ILNode_Unbox)
 
 		case ILMachineType_UInt64:
 		{
-			if(node->isEnumType)
+			if(isEnumType)
 			{
 				/* Unboxing an enumerated value */
-				javaName = JavaGetClassName(info, node->classInfo);
+				javaName = JavaGetClassName(info, classInfo);
 				signature = JavaStrAppend(info, 0, "(L");
 				signature = JavaStrAppend(info, signature, javaName);
 				signature = JavaStrAppend(info, signature, ";)J");
@@ -1245,7 +1272,10 @@ JavaGenValue(ILNode_Unbox)
 		{
 			/* The unboxed form of an object is also an object.
 			   We just do a cast to ensure it has the right type */
-			JavaGenClassRef(info, JAVA_OP_CHECKCAST, node->classInfo);
+			if(!isRightType)
+			{
+				JavaGenClassRef(info, JAVA_OP_CHECKCAST, classInfo);
+			}
 		}
 		break;
 
@@ -1273,7 +1303,7 @@ JavaGenValue(ILNode_Unbox)
 			   We don't use "copyOut__" because its implementation
 			   would be identical to "copyIn__", and so there is no
 			   reason to duplicate effort */
-			javaName = JavaGetClassName(info, node->classInfo);
+			javaName = JavaGetClassName(info, classInfo);
 			signature = JavaStrAppend(info, 0, "(L");
 			signature = JavaStrAppend(info, signature, javaName);
 			signature = JavaStrAppend(info, signature, ";)L");
@@ -1287,6 +1317,38 @@ JavaGenValue(ILNode_Unbox)
 	}
 
 	return type;
+}
+
+%}
+
+/*
+ * Generate value code for a "box" expression.
+ *
+ * Because the JVM doesn't have value types, boxing operations
+ * can be a little weird.  The compiler generates special
+ * static methods in each value type called "copyIn__" and
+ * "copyOut__" to assist with boxing and unboxing.
+ */
+JavaGenValue(ILNode_Box)
+{
+	JavaBoxValue(info, JavaGenValue(node->expr, info),
+				 node->isEnumType, node->classInfo);
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for an "unbox" expression.
+ */
+JavaGenValue(ILNode_Unbox)
+{
+	ILMachineType subExprType;
+
+	/* Evaluate the sub-expression to get the object pointer */
+	subExprType = JavaGenValue(node->expr, info);
+
+	/* Unbox the value */
+	return JavaUnboxValue(info, subExprType, node->machineType,
+						  node->isEnumType, 0, node->classInfo);
 }
 
 JavaGenValue(ILNode_NewExpression)
@@ -1446,12 +1508,46 @@ JavaGenValue(ILNode_DefaultConstructor)
 	return type;
 }
 
+%decls %end %{
+
+/*
+ * Prepare a "this" expression for use in a method invocation
+ * or field access expression.
+ */
+void JavaPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
+							  ILClass *classInfo);
+
+%}
+
+%{
+
+void JavaPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
+							  ILClass *classInfo)
+{
+	ILMachineType thisType;
+	if(yyisa(thisExpr, ILNode_This))
+	{
+		/* Just push the "this" pointer: we don't want to convert
+		   it into a value and then re-box it */
+		JavaGenSimple(info, JAVA_OP_ALOAD_0);
+		JavaGenAdjust(info, 1);
+	}
+	else
+	{
+		/* Box the value before calling the method */
+		thisType = JavaGenValue(thisExpr, info);
+		JavaBoxValue(info, thisType,
+					 ILTypeIsEnum(ILClassToType(classInfo)), classInfo);
+	}
+}
+
+%}
+
 /*
  * Generate value code for a method invocation expression.
  */
 JavaGenValue(ILNode_InvocationExpression)
 {
-	ILMachineType thisType;
 	ILMachineType resultType;
 	long saveStack;
 
@@ -1460,19 +1556,10 @@ JavaGenValue(ILNode_InvocationExpression)
 	saveStack = info->stackHeight;
 
 	/* Push the "this" expression if necessary */
-	if(node->thisExpr)
+	if(node->thisExpr && node->methodInfo)
 	{
-		thisType = ILNode_GetType(node->thisExpr, info);
-		if(thisType == ILMachineType_ManagedValue ||
-		   thisType == ILMachineType_ManagedPtr)
-		{
-			JavaGenValue(node->thisExpr, info);
-		}
-		else
-		{
-			JavaGenCast(info, JavaGenValue(node->thisExpr, info),
-						ILMachineType_ObjectRef);
-		}
+		JavaPrepareForThisAccess(info, node->thisExpr,
+								 ILMethod_Owner(node->methodInfo));
 	}
 
 	/* Push the argument expressions */

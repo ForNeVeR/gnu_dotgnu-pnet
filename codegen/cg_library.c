@@ -37,10 +37,44 @@ extern	"C" {
 			} while (0)
 
 /*
+ * Add an ordinary method to a class.
+ */
+static ILMethod *AddMethod(ILClass *classInfo, const char *name,
+					       ILType *returnType, ILType *argType,
+						   ILUInt32 attrs)
+{
+	ILMethod *method;
+	ILType *signature;
+	method = ILMethodCreate(classInfo, 0, name,
+					  	    IL_META_METHODDEF_PUBLIC |
+					  	    IL_META_METHODDEF_HIDE_BY_SIG | attrs);
+	if(!method)
+	{
+		return 0;
+	}
+	signature = ILTypeCreateMethod(ILClassToContext(classInfo), returnType);
+	if(!signature)
+	{
+		return 0;
+	}
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
+	if(argType != ILType_Void)
+	{
+		if(!ILTypeAddParam(ILClassToContext(classInfo), signature, argType))
+		{
+			return 0;
+		}
+	}
+	ILMemberSetSignature((ILMember *)method, signature);
+	return method;
+}
+
+/*
  * Make a value type.
  */
 static void MakeValueType(ILGenInfo *info, ILImage *image,
-						  const char *name, ILClass *parent)
+						  const char *name, ILClass *parent,
+						  ILClass *stringClass)
 {
 	ILClass *newClass;
 	ABORT_IF(newClass, ILClassCreate(ILClassGlobalScope(image),
@@ -52,6 +86,12 @@ static void MakeValueType(ILGenInfo *info, ILImage *image,
 				    IL_META_TYPEDEF_SERIALIZABLE |
 				    IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
+	if(!AddMethod(newClass, "ToString",
+				  ILType_FromClass(stringClass), ILType_Void,
+				  IL_META_METHODDEF_VIRTUAL))
+	{
+		ILGenOutOfMemory(info);
+	}
 }
 
 /*
@@ -222,6 +262,19 @@ void ILGenMakeLibrary(ILGenInfo *info)
 				    IL_META_TYPEDEF_ABSTRACT);
 	ABORT_IF(constructorOK, AddDefaultConstructor(typeClass));
 
+	/* Add the "ToString" and "GetType" methods to the "System.Object" class */
+	if(!AddMethod(objectClass, "ToString",
+				  ILType_FromClass(stringClass), ILType_Void,
+				  IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_NEW_SLOT))
+	{
+		ILGenOutOfMemory(info);
+	}
+	if(!AddMethod(objectClass, "GetType",
+				  ILType_FromClass(typeClass), ILType_Void, 0))
+	{
+		ILGenOutOfMemory(info);
+	}
+
 	/* Create the "System.ValueType" class */
 	ABORT_IF(valueTypeClass,
 			 ILClassCreate(scope, 0, "ValueType", "System", objectClass));
@@ -251,17 +304,17 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_SEALED);
 
 	/* Create the numeric value types */
-	MakeValueType(info, image, "SByte", valueTypeClass);
-	MakeValueType(info, image, "Byte", valueTypeClass);
-	MakeValueType(info, image, "Int16", valueTypeClass);
-	MakeValueType(info, image, "UInt16", valueTypeClass);
-	MakeValueType(info, image, "Int32", valueTypeClass);
-	MakeValueType(info, image, "UInt32", valueTypeClass);
-	MakeValueType(info, image, "Int64", valueTypeClass);
-	MakeValueType(info, image, "UInt64", valueTypeClass);
-	MakeValueType(info, image, "Single", valueTypeClass);
-	MakeValueType(info, image, "Double", valueTypeClass);
-	MakeValueType(info, image, "Decimal", valueTypeClass);
+	MakeValueType(info, image, "SByte", valueTypeClass, stringClass);
+	MakeValueType(info, image, "Byte", valueTypeClass, stringClass);
+	MakeValueType(info, image, "Int16", valueTypeClass, stringClass);
+	MakeValueType(info, image, "UInt16", valueTypeClass, stringClass);
+	MakeValueType(info, image, "Int32", valueTypeClass, stringClass);
+	MakeValueType(info, image, "UInt32", valueTypeClass, stringClass);
+	MakeValueType(info, image, "Int64", valueTypeClass, stringClass);
+	MakeValueType(info, image, "UInt64", valueTypeClass, stringClass);
+	MakeValueType(info, image, "Single", valueTypeClass, stringClass);
+	MakeValueType(info, image, "Double", valueTypeClass, stringClass);
+	MakeValueType(info, image, "Decimal", valueTypeClass, stringClass);
 
 	/* Create the "System.IntPtr" class */
 	ABORT_IF(intPtrClass,

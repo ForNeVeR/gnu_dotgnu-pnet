@@ -230,8 +230,7 @@ JavaGenValue(ILNode_StaticField)
 JavaGenValue(ILNode_MemberField)
 {
 	ILMachineType type = ILTypeToMachineType(ILField_Type(node->field));
-	JavaGenCast(info, JavaGenValue(node->expr, info),
-			    ILMachineType_ObjectRef);
+	JavaPrepareForThisAccess(info, node->expr, ILField_Owner(node->field));
 	JavaGenFieldRef(info, JAVA_OP_GETFIELD, node->field);
 	JavaGenAdjust(info, JavaGenTypeSize(type) - 1);
 	ValidateValueType(info, type, ILField_Type(node->field));
@@ -260,8 +259,8 @@ JavaGenValue(ILNode_MemberProperty)
 	ILType *signature = ILProperty_Signature(node->property);
 	ILMachineType type = ILTypeToMachineType(ILTypeGetReturn(signature));
 	long saveStack = info->stackHeight;
-	JavaGenCast(info, JavaGenValue(node->expr, info),
-			    ILMachineType_ObjectRef);
+	JavaPrepareForThisAccess(info, node->expr,
+							 ILProperty_Owner(node->property));
 	JavaGenCallMethod(info, getter, saveStack);
 	JavaGenAdjust(info, JavaGenTypeSize(type) - 1);
 	return type;
@@ -383,8 +382,7 @@ JavaPrepare(ILNode_StaticField)
  */
 JavaPrepare(ILNode_MemberField)
 {
-	JavaGenCast(info, JavaGenValue(node->expr, info),
-			    ILMachineType_ObjectRef);
+	JavaPrepareForThisAccess(info, node->expr, ILField_Owner(node->field));
 	return ILTypeToMachineType(ILField_Type(node->field));
 }
 
@@ -404,8 +402,8 @@ JavaPrepare(ILNode_StaticProperty)
 JavaPrepare(ILNode_MemberProperty)
 {
 	ILType *signature = ILProperty_Signature(node->property);
-	JavaGenCast(info, JavaGenValue(node->expr, info),
-			    ILMachineType_ObjectRef);
+	JavaPrepareForThisAccess(info, node->expr,
+							 ILProperty_Owner(node->property));
 	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
@@ -552,8 +550,7 @@ JavaGetAndPrepare(ILNode_MemberField)
 	int size = JavaGenTypeSize(type);
 
 	/* Generate the object reference */
-	JavaGenCast(info, JavaGenValue(node->expr, info),
-				ILMachineType_ObjectRef);
+	JavaPrepareForThisAccess(info, node->expr, ILField_Owner(node->field));
 
 	/* Duplicate it and get the current value */
 	JavaGenDup(info, type);
@@ -610,8 +607,8 @@ JavaGetAndPrepare(ILNode_MemberProperty)
 
 	/* Generate the object reference */
 	saveStack = info->stackHeight;
-	JavaGenCast(info, JavaGenValue(node->expr, info),
-			    ILMachineType_ObjectRef);
+	JavaPrepareForThisAccess(info, node->expr,
+							 ILProperty_Owner(node->property));
 
 	/* Duplicate the object reference and get the current value */
 	JavaGenSimple(info, JAVA_OP_DUP);

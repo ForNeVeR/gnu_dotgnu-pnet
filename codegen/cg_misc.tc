@@ -224,7 +224,16 @@ ILNode_GetType(ILNode_ToBool)
  */
 ILNode_GetType(ILNode_This)
 {
-	return ILMachineType_ObjectRef;
+	if(info->currentClass)
+	{
+		return ILTypeToMachineType
+			(ILClassToType(((ILNode_ClassDefn *)(info->currentClass))
+								->classInfo));
+	}
+	else
+	{
+		return ILMachineType_ObjectRef;
+	}
 }
 
 /*
@@ -738,10 +747,39 @@ ILNode_GenValue(ILNode_ToBool)
  */
 ILNode_GenValue(ILNode_This)
 {
-	/* We assume that "this" is in argument 0 */
-	ILGenSimple(info, IL_OP_LDARG_0);
-	ILGenAdjust(info, 1);
-	return ILMachineType_ObjectRef;
+	ILType *type;
+	ILMachineType machineType;
+
+	/* Determine the type of the class that we are in */
+	if(info->currentClass)
+	{
+		type = ILClassToType(((ILNode_ClassDefn *)(info->currentClass))
+								->classInfo);
+	}
+	else
+	{
+		type = ILFindSystemType(info, "Object");
+	}
+
+	/* Do we need to unpack a value type instance? */
+	if(ILTypeIsValue(type))
+	{
+		/* Push the managed pointer in "this" onto the stack */
+		ILGenSimple(info, IL_OP_LDARG_0);
+		ILGenAdjust(info, 1);
+
+		/* Load the value from the managed pointer */
+		machineType = ILTypeToMachineType(type);
+		ILGenLoadManaged(info, machineType, type);
+		return machineType;
+	}
+	else
+	{
+		/* We assume that "this" is an object reference in argument 0 */
+		ILGenSimple(info, IL_OP_LDARG_0);
+		ILGenAdjust(info, 1);
+		return ILMachineType_ObjectRef;
+	}
 }
 
 /*
@@ -1034,69 +1072,123 @@ ILNode_GenValue(ILNode_DefaultConstructor)
 	return type;
 }
 
-ILNode_GenValue(ILNode_InvocationExpression)
+%decls %end %{
+
+/*
+ * Prepare a "this" expression for use in a method invocation
+ * or field access expression.  Returns a temporary variable
+ * reference, which should be freed with "ILGenFreeThisVar".
+ */
+unsigned ILGenPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
+							       ILClass *classInfo, int isFieldLoad);
+
+/*
+ * Free the temporary variable used for "this" access.
+ */
+void ILGenFreeThisVar(ILGenInfo *info, unsigned tempVar);
+
+%}
+
+%{
+
+unsigned ILGenPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
+							       ILClass *classInfo, int isFieldLoad)
 {
 	ILMachineType thisType;
+	unsigned tempVar = ~((unsigned)0);
+
+	/* Bail out if no "this" expression */
+	if(!thisExpr)
+	{
+		return tempVar;
+	}
+
+	/* Is the method in a value type or a regular class? */
+	if(ILClassIsValueType(classInfo))
+	{
+		/* Get a managed pointer for the object */
+		if(yyisa(thisExpr, ILNode_This))
+		{
+			/* Just push the "this" pointer: we don't want to convert
+			   it into a value and then re-box it */
+			ILGenSimple(info, IL_OP_LDARG_0);
+			ILGenAdjust(info, 1);
+		}
+		else
+		{
+			thisType = ILNode_GetType(thisExpr, info);
+			if((thisType >= ILMachineType_Boolean &&
+			    thisType <= ILMachineType_NativeFloat) ||
+			   thisType == ILMachineType_ManagedValue)
+			{
+				/* Turn the value into a managed pointer */
+				if(yyisa(thisExpr, ILNode_LValue) &&
+				   !yyisa(thisExpr, ILNode_LValueNoRef))
+				{
+					/* Generate a reference for the supplied value instance */
+					ILNode_GenRef(thisExpr, info);
+				}
+				else if(isFieldLoad)
+				{
+					/* Don't bother storing the value into a temporary
+					   because we can access the field directly */
+					ILNode_GenValue(thisExpr, info);
+				}
+				else
+				{
+					/* Store the managed value into a temporary variable */
+					tempVar = ILGenTempTypedVar(info, ILClassToType(classInfo));
+					ILNode_GenValue(thisExpr, info);
+					ILGenStoreLocal(info, tempVar);
+					ILGenAdjust(info, -1);
+
+					/* Push the address of the temporary variable */
+					ILGenLoadLocalAddr(info, tempVar);
+					ILGenAdjust(info, 1);
+				}
+			}
+			else
+			{
+				/* Probably already a managed pointer */
+				ILNode_GenValue(thisExpr, info);
+			}
+		}
+	}
+	else
+	{
+		/* Box the value before calling the method */
+		ILGenCast(info, ILNode_GenValue(thisExpr, info),
+				  ILMachineType_ObjectRef);
+	}
+
+	/* Return the temporary variable reference to the caller */
+	return tempVar;
+}
+
+void ILGenFreeThisVar(ILGenInfo *info, unsigned tempVar)
+{
+	if(tempVar != ~((unsigned)0))
+	{
+		ILGenReleaseTempVar(info, tempVar);
+	}
+}
+
+%}
+
+ILNode_GenValue(ILNode_InvocationExpression)
+{
 	ILMachineType resultType;
 	long saveStack;
-	ILType *type;
-	unsigned thisTemp = ~((unsigned)0);
-	int isValueType = 0;
+	unsigned thisTemp;
 
 	/* Save the current stack height, so we know where to
 	   unwind to when popping the arguments */
 	saveStack = info->stackHeight;
 
 	/* Push the "this" expression if necessary */
-	if(node->thisExpr)
-	{
-		thisType = ILNode_GetType(node->thisExpr, info);
-		if((thisType >= ILMachineType_Boolean &&
-		    thisType <= ILMachineType_NativeFloat) ||
-		   thisType == ILMachineType_ManagedValue)
-		{
-			/* Turn the value into a managed pointer */
-			isValueType = 1;
-			if(yyisa(node->thisExpr, ILNode_LValue) &&
-			   !yyisa(node->thisExpr, ILNode_LValueNoRef))
-			{
-				/* Generate a reference for the supplied value instance */
-				ILNode_GenRef(node->thisExpr, info);
-			}
-			else
-			{
-				/* Store the managed value into a temporary variable */
-				if(node->methodInfo)
-				{
-					type = ILClassToType(ILMethod_Owner(node->methodInfo));
-				}
-				else
-				{
-					type = ILType_Int32;
-				}
-				thisTemp = ILGenTempTypedVar(info, type);
-				ILNode_GenValue(node->thisExpr, info);
-				ILGenStoreLocal(info, thisTemp);
-				ILGenAdjust(info, -1);
-
-				/* Push the address of the temporary variable */
-				ILGenLoadLocalAddr(info, thisTemp);
-				ILGenAdjust(info, 1);
-			}
-		}
-		else if(thisType == ILMachineType_ManagedPtr)
-		{
-			/* The "this" value is already a managed pointer */
-			isValueType = 1;
-			ILNode_GenValue(node->thisExpr, info);
-		}
-		else
-		{
-			/* Assume that everything else will be an object reference */
-			ILGenCast(info, ILNode_GenValue(node->thisExpr, info),
-					  ILMachineType_ObjectRef);
-		}
-	}
+	thisTemp = ILGenPrepareForThisAccess
+			(info, node->thisExpr,
+			 (node->methodInfo ? ILMethod_Owner(node->methodInfo) : 0), 0);
 
 	/* Push the argument expressions */
 	if(node->expr2)
@@ -1107,7 +1199,8 @@ ILNode_GenValue(ILNode_InvocationExpression)
 	/* Invoke the method */
 	if(node->methodInfo)
 	{
-		if(ILMethod_IsVirtual(node->methodInfo) && !isValueType)
+		if(ILMethod_IsVirtual(node->methodInfo) &&
+		   !ILClassIsValueType(ILMethod_Owner(node->methodInfo)))
 		{
 			ILGenCallVirtByMethodSig(info, node->methodInfo, node->callSiteSig);
 		}
@@ -1138,10 +1231,7 @@ ILNode_GenValue(ILNode_InvocationExpression)
 	}
 
 	/* Release the temporary local variable if necessary */
-	if(thisTemp != ~((unsigned)0))
-	{
-		ILGenReleaseTempVar(info, thisTemp);
-	}
+	ILGenFreeThisVar(info, thisTemp);
 
 	/* Done */
 	return resultType;

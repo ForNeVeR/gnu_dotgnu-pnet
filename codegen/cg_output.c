@@ -362,7 +362,8 @@ void ILGenCallVirtByMethodSig(ILGenInfo *info, ILMethod *method,
 
 void ILGenCallMethod(ILGenInfo *info, ILMethod *method)
 {
-	if(ILMethod_IsVirtual(method))
+	if(ILMethod_IsVirtual(method) &&
+	   !ILClassIsValueType(ILMethod_Owner(method)))
 	{
 		ILGenCallVirtByMethod(info, method);
 	}

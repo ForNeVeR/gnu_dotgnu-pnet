@@ -39,19 +39,58 @@ public sealed class LongType
 			}
 
 	// Convert an object into a long value.
-	[TODO]
 	public static long FromObject(Object Value)
 			{
-				// TODO
-				return 0;
+				if(Value != null)
+				{
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null)
+					{
+						if(ic.GetTypeCode() != TypeCode.String)
+						{
+							return ic.ToInt64(null);
+						}
+						else
+						{
+							return FromString(ic.ToString(null));
+						}
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "System.Int64"));
+					}
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
 	// Convert a string into a long value.
-	[TODO]
 	public static long FromString(String Value)
 			{
-				// TODO
-				return 0;
+				if(Value != null)
+				{
+					try
+					{
+						return Convert.ToInt64
+							(Math.Round(DoubleType.Parse(Value)));
+					}
+					catch(OverflowException)
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 "System.String", "System.Int64"));
+					}
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
 }; // class LongType

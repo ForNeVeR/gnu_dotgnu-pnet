@@ -44,12 +44,35 @@ public sealed class DoubleType
 			{
 				return FromObject(Value, null);
 			}
-	[TODO]
 	public static double FromObject
 				(Object Value, NumberFormatInfo NumberFormat)
 			{
-				// TODO
-				return 0.0;
+				if(Value != null)
+				{
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null)
+					{
+						if(ic.GetTypeCode() != TypeCode.String)
+						{
+							return ic.ToDouble(NumberFormat);
+						}
+						else
+						{
+							return FromString(ic.ToString(null), NumberFormat);
+						}
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "System.Double"));
+					}
+				}
+				else
+				{
+					return 0.0;
+				}
 			}
 
 	// Convert a string into a double value.

@@ -26,6 +26,7 @@ using System;
 using System.IO;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Microsoft.VisualBasic.CompilerServices;
 
 public sealed class ErrObject
 {
@@ -63,14 +64,27 @@ public sealed class ErrObject
 			}
 
 	// Raise a particular error.
-	[TODO]
 	public void Raise(int Number,
 					  [Optional] [DefaultValue(null)] Object Source,
 					  [Optional] [DefaultValue(null)] Object Description,
 					  [Optional] [DefaultValue(null)] Object HelpFile,
 					  [Optional] [DefaultValue(null)] Object HelpContext)
 			{
-				// TODO
+				if(Number == 0)
+				{
+					throw new ArgumentException
+						(S._("VB_InvalidErrorNumber"), "Number");
+				}
+				this.Number = Number;
+				this.Source = StringType.FromObject(Source);
+				this.Description = StringType.FromObject(Description);
+				this.HelpFile = StringType.FromObject(HelpFile);
+				this.HelpContext = IntegerType.FromObject(HelpContext);
+				this.exception = CreateExceptionFromNumber
+						(Number, this.Description);
+				this.exception.Source = this.Source;
+				this.exception.HelpLink = this.HelpFile;
+				throw this.exception;
 			}
 
 	// Get or set the error's description.
@@ -135,7 +149,7 @@ public sealed class ErrObject
 			}
 
 	// Get a standard number for an exception.
-	private static int GetNumberForException(Exception exception)
+	internal static int GetNumberForException(Exception exception)
 			{
 				if(exception is OverflowException)
 				{
@@ -146,7 +160,8 @@ public sealed class ErrObject
 					return 7;
 				}
 				if(exception is IndexOutOfRangeException ||
-				   exception is RankException)
+				   exception is RankException ||
+				   exception is ArrayTypeMismatchException)
 				{
 					return 9;
 				}
@@ -172,6 +187,10 @@ public sealed class ErrObject
 						return 11;
 					}
 				}
+				if(exception is StackOverflowException)
+				{
+					return 28;
+				}
 				if(exception is DllNotFoundException ||
 				   exception is FileNotFoundException)
 				{
@@ -180,6 +199,10 @@ public sealed class ErrObject
 				if(exception is IOException)
 				{
 					return 57;
+				}
+				if(exception is EndOfStreamException)
+				{
+					return 62;
 				}
 				if(exception is DirectoryNotFoundException)
 				{
@@ -201,6 +224,10 @@ public sealed class ErrObject
 				{
 					return 429;
 				}
+				if(exception is MissingFieldException)
+				{
+					return 422;
+				}
 				if(exception is MissingMemberException)
 				{
 					return 438;
@@ -215,6 +242,77 @@ public sealed class ErrObject
 				}
 				return 5;
 			}
+
+	// Convert a number into an exception.
+	internal static Exception CreateExceptionFromNumber
+				(int number, String message)
+			{
+				switch(number)
+				{
+					case 3: case 20: case 94: case 100:
+						return new InvalidOperationException(message);
+
+					case 5: case 446: case 448: case 449:
+						return new ArgumentException(message);
+
+					case 6:
+						return new OverflowException(message);
+
+					case 7: case 14:
+						return new OutOfMemoryException(message);
+
+					case 9:
+						return new IndexOutOfRangeException(message);
+
+					case 11:
+						return new DivideByZeroException(message);
+
+					case 13:
+						return new InvalidCastException(message);
+
+					case 28:
+						return new StackOverflowException(message);
+
+					case 48: case 429:
+						return new TypeLoadException(message);
+
+					case 52: case 54: case 55: case 57: case 58:
+					case 59: case 61: case 63: case 67: case 68:
+					case 70: case 71: case 74: case 75:
+						return new IOException(message);
+
+					case 53: case 432:
+						return new FileNotFoundException(message);
+
+					case 62:
+						return new EndOfStreamException(message);
+
+					case 76:
+						return new DirectoryNotFoundException(message);
+
+					case 91:
+						return new NullReferenceException(message);
+
+					case 99:
+						return new SEHException(message);
+
+					case 422:
+						return new MissingFieldException(message);
+
+					case 438:
+						return new MissingMemberException(message);
+
+					case 453:
+						return new EntryPointNotFoundException(message);
+
+					case 458:
+						return new InvalidOleVariantTypeException(message);
+
+					default:
+						return new Exception(message);
+				}
+			}
+
 
 	// Get or set the error's number.
 	public int Number

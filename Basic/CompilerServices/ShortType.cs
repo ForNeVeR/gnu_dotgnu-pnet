@@ -39,19 +39,58 @@ public sealed class ShortType
 			}
 
 	// Convert an object into a short value.
-	[TODO]
 	public static short FromObject(Object Value)
 			{
-				// TODO
-				return 0;
+				if(Value != null)
+				{
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null)
+					{
+						if(ic.GetTypeCode() != TypeCode.String)
+						{
+							return ic.ToInt16(null);
+						}
+						else
+						{
+							return FromString(ic.ToString(null));
+						}
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "System.Int16"));
+					}
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
 	// Convert a string into a short value.
-	[TODO]
 	public static short FromString(String Value)
 			{
-				// TODO
-				return 0;
+				if(Value != null)
+				{
+					try
+					{
+						return Convert.ToInt16
+							(Math.Round(DoubleType.Parse(Value)));
+					}
+					catch(OverflowException)
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 "System.String", "System.Int16"));
+					}
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
 }; // class ShortType

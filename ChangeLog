@@ -1,4 +1,23 @@
 
+2003-05-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Basic/ErrObject.cs, Basic/Information.cs,
+	Basic/CompilerServices/BooleanType.cs,
+	Basic/CompilerServices/ByteType.cs,
+	Basic/CompilerServices/CharArrayType.cs,
+	Basic/CompilerServices/CharType.cs,
+	Basic/CompilerServices/DateType.cs,
+	Basic/CompilerServices/DecimalType.cs,
+	Basic/CompilerServices/DoubleType.cs,
+	Basic/CompilerServices/IVbHost.cs,
+	Basic/CompilerServices/IntegerType.cs,
+	Basic/CompilerServices/LongType.cs,
+	Basic/CompilerServices/ShortType.cs,
+	Basic/CompilerServices/SingleType.cs,
+	Basic/CompilerServices/StringType.cs,
+	Basic/CompilerServices/Utils.cs: implement missing TODO's in the
+	VB support library, primarily in the CompilerServices namespace.
+
 2003-05-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Private/Regex.cs: Fix wildcard searches to match

@@ -39,19 +39,51 @@ public sealed class BooleanType
 			}
 
 	// Convert an object into a boolean value.
-	[TODO]
 	public static bool FromObject(Object Value)
 			{
-				// TODO
-				return false;
+				if(Value != null)
+				{
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null)
+					{
+						if(ic.GetTypeCode() != TypeCode.String)
+						{
+							return ic.ToBoolean(null);
+						}
+						else
+						{
+							return FromString(ic.ToString(null));
+						}
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "System.Boolean"));
+					}
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 	// Convert a string into a boolean value.
-	[TODO]
 	public static bool FromString(String Value)
 			{
-				// TODO
-				return false;
+				if(Value == null)
+				{
+					Value = String.Empty;
+				}
+				try
+				{
+					return Boolean.Parse(Value);
+				}
+				catch(FormatException)
+				{
+					return (DoubleType.Parse(Value) != 0.0);
+				}
 			}
 
 }; // class BooleanType

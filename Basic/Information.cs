@@ -23,8 +23,11 @@ namespace Microsoft.VisualBasic
 {
 
 using System;
+using System.Reflection;
+using System.Globalization;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.VisualBasic.CompilerServices;
 
 [StandardModule]
@@ -92,10 +95,37 @@ public sealed class Information
 			{
 				return (VarName == null);
 			}
-	[TODO]
 	public static bool IsNumeric(Object VarName)
 			{
-				// TODO
+				IConvertible ic = (VarName as IConvertible);
+				if(ic != null)
+				{
+					switch(ic.GetTypeCode())
+					{
+						case TypeCode.Boolean:
+						case TypeCode.Byte:
+						case TypeCode.Int16:
+						case TypeCode.Int32:
+						case TypeCode.Int64:
+						case TypeCode.Single:
+						case TypeCode.Double:
+						case TypeCode.Decimal:	return true;
+
+						case TypeCode.String:
+						{
+							try
+							{
+								DoubleType.Parse(ic.ToString(null));
+								return true;
+							}
+							catch(Exception e)
+							{
+								// If we cannot parse, then it isn't numeric.
+							}
+						}
+						break;
+					}
+				}
 				return false;
 			}
 	public static bool IsReference(Object VarName)
@@ -104,40 +134,104 @@ public sealed class Information
 			}
 
 	// Get the lower bound of an array.
-	[TODO]
 	public static int LBound
 				(Array Array, [Optional] [DefaultValue(1)] int Rank)
 			{
-				// TODO
-				return 1;
+				if(Array == null)
+				{
+					throw new ArgumentNullException("Array");
+				}
+				else if(Rank < 1 || Rank > Array.Rank)
+				{
+					throw new RankException(S._("VB_InvalidRank"));
+				}
+				else
+				{
+					return Array.GetLowerBound(Rank - 1);
+				}
 			}
 
-	// Convert a color value into a QB color value.
-	[TODO]
+	// Table that maps QB color indexes into RGB values.
+	private static int[] qbColors =
+			{0x000000, 0x800000, 0x008000, 0x808000,
+			 0x000080, 0x800080, 0x008080, 0xC0C0C0,
+			 0x808080, 0xFF0000, 0x00FF00, 0xFFFF00,
+			 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF};
+
+	// Convert a QB color index into an RGB value.
 	public static int QBColor(int Color)
 			{
-				// TODO
-				return Color;
+				if(Color < 0 || Color > 15)
+				{
+					throw new ArgumentException
+						(S._("VB_InvalidColorIndex"), "Color");
+				}
+				else
+				{
+					return qbColors[Color];
+				}
 			}
 
 	// Build a color value from RGB values.
-	[TODO]
 	public static int RGB(int Red, int Green, int Blue)
 			{
-				// TODO
-				return 0;
+				// Validate the parameters.
+				if(Red < 0)
+				{
+					throw new ArgumentException
+						(S._("VB_NonNegative"), "Red");
+				}
+				else if(Red > 255)
+				{
+					Red = 255;
+				}
+				if(Green < 0)
+				{
+					throw new ArgumentException
+						(S._("VB_NonNegative"), "Green");
+				}
+				else if(Green > 255)
+				{
+					Green = 255;
+				}
+				if(Blue < 0)
+				{
+					throw new ArgumentException
+						(S._("VB_NonNegative"), "Blue");
+				}
+				else if(Blue > 255)
+				{
+					Blue = 255;
+				}
+
+				// Build the final color value.
+				return (Blue << 16) | (Green << 8) | Red;
 			}
 
 	// Get the system type name from a VB type name.
-	[TODO]
 	public static String SystemTypeName(String VbName)
 			{
-				// TODO
-				return VbName;
+				VbName = (VbName.Trim()).ToLower
+					(CultureInfo.InvariantCulture);
+				switch(VbName)
+				{
+					case "boolean":		return "System.Boolean";
+					case "char":		return "System.Char";
+					case "byte":		return "System.Byte";
+					case "short":		return "System.Int16";
+					case "integer":		return "System.Int32";
+					case "long":		return "System.Int64";
+					case "single":		return "System.Single";
+					case "double":		return "System.Double";
+					case "date":		return "System.DateTime";
+					case "decimal":		return "System.Decimal";
+					case "string":		return "System.String";
+					case "object":		return "System.Object";
+				}
+				return null;
 			}
 
 	// Get the type name for an object.
-	[TODO]
 	public static String TypeName(Object VarName)
 			{
 				if(VarName == null)
@@ -146,34 +240,153 @@ public sealed class Information
 				}
 				else
 				{
-					// TODO
-					return null;
+					StringBuilder builder = new StringBuilder();
+					Utils.AppendType(builder, VarName.GetType());
+					return builder.ToString();
 				}
 			}
 
 	// Get the upper bound of an array.
-	[TODO]
 	public static int UBound
 				(Array Array, [Optional] [DefaultValue(1)] int Rank)
 			{
-				// TODO
-				return 1;
+				if(Array == null)
+				{
+					throw new ArgumentNullException("Array");
+				}
+				else if(Rank < 1 || Rank > Array.Rank)
+				{
+					throw new RankException(S._("VB_InvalidRank"));
+				}
+				else
+				{
+					return Array.GetUpperBound(Rank - 1);
+				}
 			}
 
 	// Get the variant type for an object.
-	[TODO]
+	private static VariantType VarTypeForType(Type type)
+			{
+				if(type.IsArray)
+				{
+					VariantType vtype = VarTypeForType(type.GetElementType());
+					if((vtype & VariantType.Array) != 0)
+					{
+						// Array of array is transformed into array of object.
+						return VariantType.Array | VariantType.Object;
+					}
+					else
+					{
+						return VariantType.Array | vtype;
+					}
+				}
+				else if(type.IsEnum)
+				{
+					// Report the underlying type for enumerations.
+					return VarTypeForType(Enum.GetUnderlyingType(type));
+				}
+				if(type == typeof(bool))
+				{
+					return VariantType.Boolean;
+				}
+				else if(type == typeof(char))
+				{
+					return VariantType.Char;
+				}
+				else if(type == typeof(byte))
+				{
+					return VariantType.Byte;
+				}
+				else if(type == typeof(short))
+				{
+					return VariantType.Short;
+				}
+				else if(type == typeof(int))
+				{
+					return VariantType.Integer;
+				}
+				else if(type == typeof(long))
+				{
+					return VariantType.Long;
+				}
+				else if(type == typeof(float))
+				{
+					return VariantType.Single;
+				}
+				else if(type == typeof(double))
+				{
+					return VariantType.Double;
+				}
+				else if(type == typeof(Decimal))
+				{
+					return VariantType.Decimal;
+				}
+				else if(type == typeof(String))
+				{
+					return VariantType.String;
+				}
+				else if(type == typeof(DateTime))
+				{
+					return VariantType.Date;
+				}
+				else if(type == typeof(DBNull))
+				{
+					return VariantType.Null;
+				}
+				else if(type == typeof(Missing) ||
+						typeof(Exception).IsAssignableFrom(type))
+				{
+					return VariantType.Error;
+				}
+				else if(type.IsValueType)
+				{
+					return VariantType.UserDefinedType;
+				}
+				else
+				{
+					return VariantType.Object;
+				}
+			}
 	public static VariantType VarType(Object VarName)
 			{
-				// TODO
-				return VariantType.Empty;
+				if(VarName == null)
+				{
+					return VariantType.Object;
+				}
+				else
+				{
+					return VarTypeForType(VarName.GetType());
+				}
 			}
 
 	// Convert a system type name into a VB type name.
-	[TODO]
 	public static String VbTypeName(String UrtName)
 			{
-				// TODO
-				return UrtName;
+				// Normalize the name.
+				UrtName = (UrtName.Trim()).ToLower
+					(CultureInfo.InvariantCulture);
+				if(UrtName.StartsWith("system."))
+				{
+					UrtName = UrtName.Substring(7);
+				}
+
+				// Check for known runtime engine types with VB equivalents.
+				switch(UrtName)
+				{
+					case "boolean":		return "Boolean";
+					case "char":		return "Char";
+					case "byte":		return "Byte";
+					case "int16":		return "Short";
+					case "int32":		return "Integer";
+					case "int64":		return "Long";
+					case "single":		return "Single";
+					case "double":		return "Double";
+					case "object":		return "Object";
+					case "string":		return "String";
+					case "datetime":	return "Date";
+					case "decimal":		return "Decimal";
+				}
+				return null;
 			}
 
 }; // class Information

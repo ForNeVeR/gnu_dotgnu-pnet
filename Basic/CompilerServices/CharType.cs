@@ -33,19 +33,47 @@ public sealed class CharType
 	private CharType() {}
 
 	// Convert an object into a char value.
-	[TODO]
 	public static char FromObject(Object Value)
 			{
-				// TODO
-				return '\0';
+				if(Value != null)
+				{
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null)
+					{
+						if(ic.GetTypeCode() != TypeCode.String)
+						{
+							return ic.ToChar(null);
+						}
+						else
+						{
+							return FromString(ic.ToString(null));
+						}
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "System.Char"));
+					}
+				}
+				else
+				{
+					return '\0';
+				}
 			}
 
 	// Convert a string into a char array value.
-	[TODO]
 	public static char FromString(String Value)
 			{
-				// TODO
-				return '\0';
+				if(Value != null && Value.Length != 0)
+				{
+					return Value[0];
+				}
+				else
+				{
+					return '\0';
+				}
 			}
 
 }; // class CharType

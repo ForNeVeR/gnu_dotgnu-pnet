@@ -44,12 +44,35 @@ public sealed class DecimalType
 			{
 				return FromObject(Value, null);
 			}
-	[TODO]
 	public static Decimal FromObject
 				(Object Value, NumberFormatInfo NumberFormat)
 			{
-				// TODO
-				return 0.0m;
+				if(Value != null)
+				{
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null)
+					{
+						if(ic.GetTypeCode() != TypeCode.String)
+						{
+							return ic.ToDecimal(NumberFormat);
+						}
+						else
+						{
+							return FromString(ic.ToString(null), NumberFormat);
+						}
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "System.Decimal"));
+					}
+				}
+				else
+				{
+					return 0.0m;
+				}
 			}
 
 	// Convert a string into a decimal value.

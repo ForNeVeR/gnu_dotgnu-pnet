@@ -34,11 +34,25 @@ public sealed class DateType
 	private DateType() {}
 
 	// Convert an object into a date value.
-	[TODO]
 	public static DateTime FromObject(Object Value)
 			{
-				// TODO
-				return DateTime.MinValue;
+				IConvertible ic = (Value as IConvertible);
+				if(ic != null)
+				{
+					if(ic.GetTypeCode() != TypeCode.String)
+					{
+						return ic.ToDateTime(null);
+					}
+					else
+					{
+						return FromString(ic.ToString(null));
+					}
+				}
+				throw new InvalidCastException
+					(String.Format
+						(S._("VB_InvalidCast"),
+						 (Value != null ? Value.GetType().ToString() : "null"),
+						 "System.DateTime"));
 			}
 
 	// Convert a string into a date value.
@@ -46,11 +60,23 @@ public sealed class DateType
 			{
 				return FromString(Value, CultureInfo.CurrentCulture);
 			}
-	[TODO]
 	public static DateTime FromString(String Value, CultureInfo culture)
 			{
-				// TODO
-				return DateTime.MinValue;
+				try
+				{
+					return DateTime.Parse(Utils.FixDigits(Value), culture,
+										  DateTimeStyles.AllowWhiteSpaces |
+										  DateTimeStyles.NoCurrentDateDefault);
+				}
+				catch(Exception)
+				{
+					throw new InvalidCastException
+						(String.Format
+							(S._("VB_InvalidCast"),
+						 	 (Value != null ? Value.GetType().ToString()
+							 				: "null"),
+							 "System.DateTime"));
+				}
 			}
 
 }; // class DateType

@@ -44,12 +44,35 @@ public sealed class SingleType
 			{
 				return FromObject(Value, null);
 			}
-	[TODO]
 	public static float FromObject
 				(Object Value, NumberFormatInfo NumberFormat)
 			{
-				// TODO
-				return 0.0f;
+				if(Value != null)
+				{
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null)
+					{
+						if(ic.GetTypeCode() != TypeCode.String)
+						{
+							return ic.ToSingle(NumberFormat);
+						}
+						else
+						{
+							return FromString(ic.ToString(null), NumberFormat);
+						}
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "System.Single"));
+					}
+				}
+				else
+				{
+					return 0.0f;
+				}
 			}
 
 	// Convert a string into a float value.

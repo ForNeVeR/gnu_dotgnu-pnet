@@ -29,7 +29,7 @@ using System.Windows.Forms;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IVbHost
 {
-	// Get the parent window.  Non-portable and TODO.
+	// Get the parent window.  Non-portable.
 	// IWin32Window GetParentWindow();
 
 	// Get the window title.

@@ -39,19 +39,58 @@ public sealed class ByteType
 			}
 
 	// Convert an object into a byte value.
-	[TODO]
 	public static byte FromObject(Object Value)
 			{
-				// TODO
-				return 0;
+				if(Value != null)
+				{
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null)
+					{
+						if(ic.GetTypeCode() != TypeCode.String)
+						{
+							return ic.ToByte(null);
+						}
+						else
+						{
+							return FromString(ic.ToString(null));
+						}
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "System.Byte"));
+					}
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
 	// Convert a string into a byte value.
-	[TODO]
 	public static byte FromString(String Value)
 			{
-				// TODO
-				return 0;
+				if(Value != null)
+				{
+					try
+					{
+						return Convert.ToByte
+							(Math.Round(DoubleType.Parse(Value)));
+					}
+					catch(OverflowException)
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 "System.String", "System.Byte"));
+					}
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
 }; // class ByteType

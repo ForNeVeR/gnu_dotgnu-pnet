@@ -33,19 +33,44 @@ public sealed class CharArrayType
 	private CharArrayType() {}
 
 	// Convert an object into a char array value.
-	[TODO]
 	public static char[] FromObject(Object Value)
 			{
-				// TODO
-				return null;
+				if(Value != null)
+				{
+					if(Value is char[])
+					{
+						return (char[])Value;
+					}
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null && ic.GetTypeCode() == TypeCode.String)
+					{
+						return ic.ToString(null).ToCharArray();
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "char[]"));
+					}
+				}
+				else
+				{
+					return new char [0];
+				}
 			}
 
 	// Convert a string into a char array value.
-	[TODO]
 	public static char[] FromString(String Value)
 			{
-				// TODO
-				return null;
+				if(Value != null)
+				{
+					return Value.ToCharArray();
+				}
+				else
+				{
+					return new char [0];
+				}
 			}
 
 }; // class CharArrayType

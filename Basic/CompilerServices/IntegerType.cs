@@ -39,19 +39,58 @@ public sealed class IntegerType
 			}
 
 	// Convert an object into an integer value.
-	[TODO]
 	public static int FromObject(Object Value)
 			{
-				// TODO
-				return 0;
+				if(Value != null)
+				{
+					IConvertible ic = (Value as IConvertible);
+					if(ic != null)
+					{
+						if(ic.GetTypeCode() != TypeCode.String)
+						{
+							return ic.ToInt32(null);
+						}
+						else
+						{
+							return FromString(ic.ToString(null));
+						}
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 Value.GetType(), "System.ToInt32"));
+					}
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
 	// Convert a string into an integer value.
-	[TODO]
 	public static int FromString(String Value)
 			{
-				// TODO
-				return 0;
+				if(Value != null)
+				{
+					try
+					{
+						return Convert.ToInt32
+							(Math.Round(DoubleType.Parse(Value)));
+					}
+					catch(OverflowException)
+					{
+						throw new InvalidCastException
+							(String.Format
+								(S._("VB_InvalidCast"),
+								 "System.String", "System.Int32"));
+					}
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
 }; // class IntegerType

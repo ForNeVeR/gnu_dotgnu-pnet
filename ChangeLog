@@ -8,6 +8,8 @@ the correct binding flags when searching for methods using reflection.
 csunit/TestVersion.cs.in: insert the pnetlib version into csunit during
 configuration.
 
+* csunit/TestMain.cs: report the correct string for unknown test names.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Invalid.txt,

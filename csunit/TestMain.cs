@@ -139,16 +139,17 @@ public sealed class TestMain
 						// List only the specified tests.
 						while(argNum < numArgs)
 						{
-							specificTest = test.Find(args[argNum++]);
+							specificTest = test.Find(args[argNum]);
 							if(specificTest == null)
 							{
 								Console.Error.WriteLine
-									(specificTest + ": unknown test name");
+									(args[argNum] + ": unknown test name");
 							}
 							else
 							{
 								specificTest.List(result);
 							}
+							++argNum;
 						}
 					}
 					else
@@ -164,16 +165,17 @@ public sealed class TestMain
 					{
 						while(argNum < numArgs)
 						{
-							specificTest = test.Find(args[argNum++]);
+							specificTest = test.Find(args[argNum]);
 							if(specificTest == null)
 							{
 								Console.Error.WriteLine
-									(specificTest + ": unknown test name");
+									(args[argNum] + ": unknown test name");
 							}
 							else
 							{
 								specificTest.Run(result);
 							}
+							++argNum;
 						}
 					}
 					catch(TestStop)

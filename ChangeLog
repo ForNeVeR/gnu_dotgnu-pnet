@@ -3,6 +3,9 @@
 
 	* cscc/csharp/cs_oper.tc: Coercion of constants in arithmetic
 	expressions. (ie 0 will match ulong in arithmetic operations).
+
+	* cscc/csharp/cs_oper.tc: Coercion of constants for equality
+	and inequality expressions.
 	
 2002-10-26  Richard Baumann <biochem333@nyc.rr.com>
 

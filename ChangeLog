@@ -1,4 +1,8 @@
+2003-07-07  Thong Nguyen <tum@veridicus.com>
 
+	tests/runtime/System/Threading/TestThread.cs: Put spin-locks
+	around non-atomic increments in TestStartJoin.
+	
 2003-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, DotGNU.Images/.cvsignore,

@@ -75,29 +75,45 @@ public class TestThread
 	{
 	}
 
-	int flag = 0;
-	bool failed = false;
+	volatile int flag = 0;
+	volatile bool failed = false;
 	
 	private void StartJoinRun()
 	{
-		flag += Convert.ToInt32(Thread.CurrentThread.Name);
+		int x, f;
 		
+		x = Convert.ToInt32(Thread.CurrentThread.Name);
+
+		// This makes sure the increment is atomic without
+		// using a monitor.
+				
+		for (;;)
+		{
+			f = flag;
+			
+			if (Interlocked.CompareExchange(ref flag, f + x, f) == f)
+			{
+				break;
+			}
+		}
+				
 		Thread.Sleep(200);
 	}
 	
 	public void TestStartJoin()
-	{
+	{		
+		int expected;
+		Thread thread;
+		Thread[] threads;
+
 		if (!IsThreadingSupported)
 		{
 			return;
 		}
-		
-		int expected;
-		Thread thread;
-		Thread[] threads = new Thread[10];
 	
 		flag = 0;
 		expected = 0;
+		threads = new Thread[10];
 			
 		for (int i = 0; i < 10; i++)
 		{

@@ -1,4 +1,10 @@
 
+2004-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_coerce.c (GetCoerceRules): don't strip prefixes
+	off "fromType" if it is a function pointer type; this allows
+	casts of the form "function pointer to void *".
+
 2004-02-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_grammar.y,

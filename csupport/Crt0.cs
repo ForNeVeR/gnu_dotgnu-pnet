@@ -220,7 +220,6 @@ public unsafe sealed class Crt0
 				Module mainModule;
 				Assembly assembly;
 				Type type;
-				MethodInfo method;
 				FieldInfo field;
 
 				// Bail out if we've already done the startup code.
@@ -287,25 +286,13 @@ public unsafe sealed class Crt0
 				FileTable.SetFileDescriptor(1, new ConsoleStream());
 				FileTable.SetFileDescriptor(2, new ConsoleStream());
 			#else
-				FileTable.SetFileDescriptor(0, Console.OpenStandardInput());
-				FileTable.SetFileDescriptor(1, Console.OpenStandardOutput());
-				FileTable.SetFileDescriptor(2, Console.OpenStandardError());
+				FileTable.SetFileDescriptor
+					(0, new FDStream(0, Console.OpenStandardInput()));
+				FileTable.SetFileDescriptor
+					(1, new FDStream(1, Console.OpenStandardOutput()));
+				FileTable.SetFileDescriptor
+					(2, new FDStream(2, Console.OpenStandardError()));
 			#endif
-
-				// Let "libc" apply additional wrapping to the standard
-				// file descriptors if it needs to.
-				if(libcModule != null)
-				{
-					type = libcModule.GetType("OpenSystem.C.LibCUnistd");
-					if(type != null)
-					{
-						method = type.GetMethod("__syscall_wrap_stdfds");
-						if(method != null)
-						{
-							method.Invoke(null, null);
-						}
-					}
-				}
 
 				// Invoke the application's ".init" function, if present.
 				if(mainModule != null)

@@ -6,6 +6,10 @@
 
 	* csupport/FileTable.cs: add the "FileTable.DupAfter" method.
 
+	* csupport/Crt0.cs, csupport/FDStream.cs, csupport/IFDOperations.cs:
+	move the fd wrapping into the OpenSystem.C assembly and remove
+	"__syscall_wrap_stdfds".
+
 2004-03-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/TabControl.cs: reimplement the

@@ -5,6 +5,9 @@
 	Windows.Forms , ADO.NET support and mention DGEE in connection with
 	ASP.NET.
 
+	* engine/verify_branch.c: Merge label and current stack by obtaining
+	the common type. (Bug #4430)
+
 2003-07-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/lib_attrs.c: begin adding support for converting security

@@ -115,6 +115,52 @@ static BranchLabel *FindLabel(BranchLabel *labelList, ILUInt32 address)
 	return 0;
 }
 
+/* 
+ * Find the nearest type in the type2 heirarchy that is assign 
+ * compatible to type1.
+ */
+static ILType* TryCommonType(ILImage* image, ILType * type1, ILType *type2)
+{
+	ILClass *classInfo;
+	
+	/* Note: boxing conversions are not allowed because both
+	 * types have to be reference types.
+	 */ 
+	if(ILTypeAssignCompatibleNonBoxing(image, type1,type2))
+	{
+		return type2;
+	}
+
+	classInfo=ILClassFromType(image, 0, type2, 0);
+	
+	if((classInfo=ILClassGetParent(classInfo))!=NULL)
+	{
+		return TryCommonType(image, type1, ILClassToType(classInfo));
+	}
+	
+	return type2;
+}
+
+/* 
+ * Obtain a common parent for 2 types 
+ * TODO: handle interfaces
+ */
+static ILType * CommonType(ILImage * image, ILType *type1, ILType *type2)
+{
+	ILType *ctype12=TryCommonType(image, type1, type2);
+	ILType *ctype21=TryCommonType(image, type2, type1);
+	
+	if(ILTypeAssignCompatibleNonBoxing(image, ctype12, ctype21))
+	{
+		return ctype12;
+	}
+	else if(ILTypeAssignCompatibleNonBoxing(image, ctype21, ctype12))
+	{
+		return ctype21;
+	}
+	return NULL;
+}
+
 /*
  * Validate the current contents of the stack against
  * information that was previously recorded.
@@ -124,6 +170,7 @@ static int ValidateStack(ILImage *image, BranchLabel *label,
 {
 	ILUInt32 posn;
 	ILEngineStackItem *labelStack;
+	ILType *commonType;
 	if(stackSize != label->stackSize)
 	{
 		return 0;
@@ -147,28 +194,15 @@ static int ValidateStack(ILImage *image, BranchLabel *label,
 		}
 		else if(stack[posn].engineType == ILEngineType_O)
 		{
-			/* Check the sub-class relationships */
-			if(ILTypeAssignCompatible(image, stack[posn].typeInfo,
-									  labelStack[posn].typeInfo))
+			commonType=CommonType(image,
+								  stack[posn].typeInfo,
+								  labelStack[posn].typeInfo);
+			if(commonType==NULL)
 			{
-				/* The current stack is a subclass of the label stack, so
-				   use the type from the label stack as the common type */
-				stack[posn].typeInfo = labelStack[posn].typeInfo;
-				return 1;
-			}
-			else if(ILTypeAssignCompatible(image, labelStack[posn].typeInfo,
-									  	   stack[posn].typeInfo))
-			{
-				/* The label stack is a subclass of the current stack, so
-				   update the label stack to reflect the new common type */
-				labelStack[posn].typeInfo = stack[posn].typeInfo;
-				return 1;
-			}
-			else
-			{
-				/* Incompatible types */
 				return 0;
 			}
+			labelStack[posn].typeInfo = commonType;
+			stack[posn].typeInfo = commonType;
 		}
 	}
 	return 1;

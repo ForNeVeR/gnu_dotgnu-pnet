@@ -28,6 +28,13 @@
 extern	"C" {
 #endif
 
+/*
+ * Default version data to embed in the metadata header.
+ * Must be padded to a multiple of 4 in size.
+ */
+#define	VERSION_STRING		"v1.1.4322\0\0\0"
+#define	VERSION_STRING_LEN	12
+
 void _ILWBufferListInit(ILWBufferList *list)
 {
 	list->firstBuffer = 0;
@@ -125,6 +132,7 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 	writer->backpatchSeek = 0;
 	writer->backpatchLen = 0;
 	writer->backpatchBuf = 0;
+	ILMemCpy(writer->versionString, VERSION_STRING, VERSION_STRING_LEN);
 
 	/* Initialize buffer lists */
 	_ILWBufferListInit(&(writer->streamBuffer));
@@ -160,6 +168,43 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 
 	/* Ready to go now */
 	return writer;
+}
+
+void ILWriterSetVersionString(ILWriter *writer, const char *version)
+{
+	int len;
+	if(!writer || !version)
+	{
+		return;
+	}
+	len = strlen(version);
+	if(len >= VERSION_STRING_LEN)
+	{
+		len = VERSION_STRING_LEN - 1;
+	}
+	ILMemZero(writer->versionString, VERSION_STRING_LEN);
+	ILMemCpy(writer->versionString, version, len);
+}
+
+void ILWriterInferVersionString(ILWriter *writer, ILImage *image)
+{
+	const char *version;
+	int len;
+	if(!writer || !image)
+	{
+		return;
+	}
+	version = ILImageMetaRuntimeVersion(image, &len);
+	if(!version || len <= 0)
+	{
+		return;
+	}
+	if(len >= VERSION_STRING_LEN)
+	{
+		len = VERSION_STRING_LEN - 1;
+	}
+	ILMemZero(writer->versionString, VERSION_STRING_LEN);
+	ILMemCpy(writer->versionString, version, len);
 }
 
 /*
@@ -317,13 +362,6 @@ static void SortClasses(ILImage *image)
 	}
 }
 
-/*
- * Version data to embed in the metadata header.
- * Must be padded to a multiple of 4 in size.
- */
-#define	VERSION_STRING		"v2.0.40607\0\0"
-#define	VERSION_STRING_LEN	12
-
 void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 {
 	unsigned long start;
@@ -437,7 +475,7 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 	IL_WRITE_UINT16(header + 6, 1);				/* Minor version */
 	IL_WRITE_UINT32(header + 8, 0);				/* Reserved */
 	IL_WRITE_UINT32(header + 12, VERSION_STRING_LEN);
-	ILMemCpy(header + 16, VERSION_STRING, VERSION_STRING_LEN);
+	ILMemCpy(header + 16, writer->versionString, VERSION_STRING_LEN);
 	size = 16 + VERSION_STRING_LEN;
 	IL_WRITE_UINT16(header + size, 0);			/* Flags */
 	IL_WRITE_UINT16(header + size + 2, numSections);

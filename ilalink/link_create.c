@@ -500,6 +500,20 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 	return 1;
 }
 
+void ILLinkerSetMetadataVersion(ILLinker *linker, const char *version,
+								const char *stdLibrary)
+{
+	ILLibrary *library;
+	if(version)
+	{
+		ILWriterSetVersionString(linker->writer, version);
+	}
+	else if((library = _ILLinkerFindLibrary(linker, stdLibrary)) != 0)
+	{
+		ILWriterInferVersionString(linker->writer, library->image);
+	}
+}
+
 int ILLinkerSetFlags(ILLinker *linker, int flags)
 {
 	int oldFlags = linker->linkerFlags;

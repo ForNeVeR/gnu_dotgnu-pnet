@@ -1,4 +1,13 @@
 
+2004-08-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csant/csant_cscc.c, doc/pnettools.texi, ilalink/ilalink.1,
+	ilalink/link_create.c, ilalink/link_main.c, image/image.h,
+	image/writer.c, include/il_linker.h, include/il_writer.h:
+	add the "-fmetadata-version" option to the linker, to set the
+	version string in the metadata header to something appropriate;
+	if not present, infer the version string from that on "mscorlib".
+
 2004-07-30  Gopal V  <gopalv82@yahoo.com>
 
 	* ilasm/Makefile.am, cscc/bf/Makefile.am, cscc/c/Makefile.am, 

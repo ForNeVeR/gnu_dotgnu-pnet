@@ -418,6 +418,9 @@ struct _tagILWriter
 	unsigned long	backpatchLen;	/* Length of back-patch cache */
 	unsigned char  *backpatchBuf;	/* Buffer containing back-patch data */
 
+	/* Version string for the runtime header (e.g. "v1.1.4322") */
+	unsigned char	versionString[12];
+
 };
 
 #endif /* IL_USE_WRITER */

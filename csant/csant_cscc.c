@@ -1516,6 +1516,7 @@ int CSAntTask_ResLink(CSAntTask *task)
 	char *output;
 	char *language;
 	char *version;
+	char *metadataVersion;
 	char *temp;
 	CSAntFileSet *resources;
 	const char *compiler;
@@ -1541,6 +1542,7 @@ int CSAntTask_ResLink(CSAntTask *task)
 		language = "en";
 	}
 	version = (char *)CSAntTaskParam(task, "version");
+	metadataVersion = (char *)CSAntTaskParam(task, "metadataVersion");
 	resources = CSAntFileSetLoad(task, "resources", CSAntBaseBuildDir);
 	temp = (char *)CSAntTaskParam(task, "install");
 	install = (temp && !ILStrICmp(temp, "true"));
@@ -1603,6 +1605,11 @@ int CSAntTask_ResLink(CSAntTask *task)
 			if(version && version[0] != '\0')
 			{
 				AddValueArg(&argv, &argc, "-fassembly-version=", version);
+			}
+			if(metadataVersion && metadataVersion[0] != '\0')
+			{
+				AddValueArg(&argv, &argc, "-fmetadata-version=",
+							metadataVersion);
 			}
 			AddArg(&argv, &argc, "-o");
 			AddArg(&argv, &argc, output);

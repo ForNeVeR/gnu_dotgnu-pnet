@@ -63,6 +63,14 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 									int hashAlgorithm);
 
 /*
+ * Set the metadata version string in the assembly's header.
+ * If the parameter is set to NULL, then infer the metadata
+ * version from the "mscorlib" library.
+ */
+void ILLinkerSetMetadataVersion(ILLinker *linker, const char *version,
+								const char *stdLibrary);
+
+/*
  * Add a directory to a linker context to search for libraries.
  * Returns zero on error.
  */

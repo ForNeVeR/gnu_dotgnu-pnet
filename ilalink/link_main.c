@@ -117,6 +117,9 @@ static ILCmdLineOption const options[] = {
 	{"-H", 'H', 1,
 		"-fhash-algorithm=name       or -H name",
 		"Specify the algorithm to use to hash files (SHA1 or MD5)"},
+	{"-V", 'V', 1,
+		"-fmetadata-version=version  or -V version",
+		"Specify the metadata version to embed in the assembly."},
 	{"-3", '3', 0,
 		"-m32bit-only                or -3",
 		"The resulting output file can only be used on 32-bit systems."},
@@ -204,6 +207,7 @@ int ILLinkerMain(int argc, char *argv[])
 	const char *publicKey = NULL;
 	char *entryPoint = NULL;
 	int hashAlgorithm = IL_META_HASHALG_SHA1;
+	char *metadataVersion = NULL;
 	int len;
 	char **libraries;
 	int numLibraries = 0;
@@ -352,6 +356,12 @@ int ILLinkerMain(int argc, char *argv[])
 							progname, param);
 					return 1;
 				}
+			}
+			break;
+
+			case 'V':
+			{
+				metadataVersion = param;
 			}
 			break;
 
@@ -544,6 +554,10 @@ int ILLinkerMain(int argc, char *argv[])
 				{
 					param += 15;
 					goto parseHashAlg;
+				}
+				else if(!strncmp(param, "metadata-version=", 17))
+				{
+					metadataVersion = param + 17;
 				}
 				else if(!strncmp(param, "win32res=", 9))
 				{
@@ -785,6 +799,9 @@ int ILLinkerMain(int argc, char *argv[])
 	{
 		errors |= addLibrary(linker, stdLibrary);
 	}
+
+	/* Set the metadata version in the assembly's header */
+	ILLinkerSetMetadataVersion(linker, metadataVersion, stdLibrary);
 
 	/* Process the input files that aren't libraries */
 	sawStdin = 0;

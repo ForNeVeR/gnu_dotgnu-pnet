@@ -104,6 +104,19 @@ void ILWriterSetStream(ILWriter *writer, FILE *stream, int seekable);
 int ILWriterResetTypeAndFlags(ILWriter *writer, int type, int flags);
 
 /*
+ * Set the runtime version string in the metadata header.
+ */
+void ILWriterSetVersionString(ILWriter *writer, const char *version);
+
+/*
+ * Infer the runtime version string from the specified image
+ * (which is usually the "mscorlib" assembly).  This ensures that
+ * any application linked against the core library will inherit the
+ * same runtime version as the core library.
+ */
+void ILWriterInferVersionString(ILWriter *writer, ILImage *image);
+
+/*
  * Output the metadata from an image structure into an
  * image writer's output stream.  This is typically called
  * just before "ILWriterDestroy".

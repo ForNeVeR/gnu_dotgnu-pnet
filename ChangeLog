@@ -26,6 +26,14 @@
 	* System.Windows.Forms/Themes/DefaultThemePainter.cs: draw the
 	drop shadow portion of disabled glyphs.
 
+	* resources/en_US/System.Windows.Forms/Makefile.am,
+	resources/en_US/System.Windows.Forms/small_application.ico,
+	resources/en_US/System.Windows.Forms/small_dll.ico,
+	resources/en_US/System.Windows.Forms/small_document.ico,
+	resources/en_US/System.Windows.Forms/small_folder.ico,
+	resources/en_US/System.Windows.Forms/small_text.ico:
+	add some small 16x16 icons for displaying in file dialog boxes.
+
 2003-11-20  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingGraphics.cs,

@@ -1668,18 +1668,29 @@ ILMethod *ILClassGetMethodImpl(ILClass *info, ILMethod *method)
 	}
 
 	/* Look for an override for the interface method */
-	over = 0;
-	while((over = (ILOverride *)ILClassNextMemberByKind
-						(info, (ILMember *)over,
-						 IL_META_MEMBERKIND_OVERRIDE)) != 0)
+	parent = info;
+	while(parent != 0)
 	{
-		if(ILMemberResolve((ILMember *)(ILOverrideGetDecl(over)))
-				== (ILMember *)method)
+		over = 0;
+		while((over = (ILOverride *)ILClassNextMemberByKind
+							(parent, (ILMember *)over,
+							 IL_META_MEMBERKIND_OVERRIDE)) != 0)
 		{
-			result = ILOverrideGetBody(over);
+			if(ILMemberResolve((ILMember *)(ILOverrideGetDecl(over)))
+					== (ILMember *)method)
+			{
+				result = ILOverrideGetBody(over);
+				goto done;
+			}
+		}
+		if(result && ILMethod_Owner(result) == parent)
+		{
+			/* We have a non-override method at this level */
 			break;
 		}
+		parent = ILClassGetParent(parent);
 	}
+done:
 
 	/* Return the method that we found to the caller */
 	return result;

@@ -315,15 +315,6 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	mainIsFinalizer = process->mainThread == process->finalizerThread;
 	mainSupportThread = process->mainThread->supportThread;
 
-	/* Destory the engine thread for the main thread if it isn't needed anymore.
-	    This isn't strictly necessary but may help remove stray pointers on the CVM stack */
-	/* If the main thread is the finalizer thread, then the engine thread will be automatically
-	    destroyed when main thread is destroyed */
-	if (!mainIsFinalizer)
-	{
-		ILThreadUnregisterForManagedExecution(process->mainThread->supportThread);
-	}
-	
 	/* Invoke the finalizers -- hopefully finalizes all objects left in the process being destroyed */
 	/* Any objects left lingering (because of a stray or fake pointer) are orphans */
 	ILGCCollect();

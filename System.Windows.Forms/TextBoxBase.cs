@@ -411,11 +411,18 @@ public abstract class TextBoxBase : Control
 				Console.WriteLine("TextBoxBase.Paste()");
 			}
 
-	// Process a dialog key.
-	[TODO]
 	protected override bool ProcessDialogKey(Keys keyData)
 			{
-				// TODO
+				if ((keyData & Keys.Alt) == 0 && (keyData & Keys.Control) != 0)
+				{
+					Keys key = keyData & Keys.KeyCode;
+					if (key == Keys.Tab)
+					{
+						bool forward = (key & Keys.Shift) == 0;
+						if (Parent.SelectNextControl(this, forward, true, true, true))
+							return true; 
+					}
+				}
 				return base.ProcessDialogKey(keyData);
 			}
 

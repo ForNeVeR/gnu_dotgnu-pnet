@@ -26,10 +26,16 @@ namespace System.Security.Cryptography
 
 using System;
 
-public class ToBase64Transform : ICryptoTransform
+public class ToBase64Transform : ICryptoTransform, IDisposable
 {
 	// Constructor.
 	public ToBase64Transform() {}
+
+	// Destructor.
+	~ToBase64Transform()
+			{
+				Dispose(false);
+			}
 
 	// Determine if this transformation can process multiple blocks.
 	public bool CanTransformMultipleBlocks
@@ -56,6 +62,23 @@ public class ToBase64Transform : ICryptoTransform
 				{
 					return 4;
 				}
+			}
+
+	// Clear the state of this object.
+	public void Clear()
+			{
+				((IDisposable)this).Dispose();
+			}
+
+	// Dispose the state of this object.
+	void IDisposable.Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+	protected virtual void Dispose(bool disposing)
+			{
+				// Nothing to do here.
 			}
 
 	// Transform a block of input data.

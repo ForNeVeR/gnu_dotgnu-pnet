@@ -25,6 +25,23 @@
 	System/Net/IPAddress.cs: rename "value__" to "value_" so that
 	MS'es "peverify" doesn't get confused.
 
+	* runtime/System/Security/Cryptography/AsymmetricAlgorithm.cs,
+	runtime/System/Security/Cryptography/CryptoAPITransform.cs,
+	runtime/System/Security/Cryptography/CryptoStream.cs,
+	runtime/System/Security/Cryptography/DSACryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/FromBase64Transform.cs,
+	runtime/System/Security/Cryptography/HashAlgorithm.cs,
+	runtime/System/Security/Cryptography/MD5CryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/RSACryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/SHA1CryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/SHA1Managed.cs,
+	runtime/System/Security/Cryptography/SHA256Managed.cs,
+	runtime/System/Security/Cryptography/SHA384Managed.cs,
+	runtime/System/Security/Cryptography/SHA512Managed.cs,
+	runtime/System/Security/Cryptography/SymmetricAlgorithm.cs,
+	runtime/System/Security/Cryptography/ToBase64Transform.cs:
+	add the "IDisposable" interface to cryptography classes that need it.
+
 2002-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* pnetlib.spec.in, configure.in : RPM builds for pnetlib

@@ -27,7 +27,7 @@ namespace System.Security.Cryptography
 using System;
 using System.Text;
 
-public abstract class AsymmetricAlgorithm
+public abstract class AsymmetricAlgorithm : IDisposable
 {
 	// Storage for values from subclasses.
 	protected int KeySizeValue;
@@ -77,6 +77,20 @@ public abstract class AsymmetricAlgorithm
 
 	// Get the name of the signature algorithm.
 	public abstract String SignatureAlgorithm { get; }
+
+	// Clear the state used by this algorithm.
+	public void Clear()
+			{
+				((IDisposable)this).Dispose();
+			}
+
+	// Dispose this algorithm instance.
+	protected abstract void Dispose(bool disposing);
+	void IDisposable.Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
 
 	// Reconstruct an asymmetric algorithm object from an XML string.
 	public abstract void FromXmlString(String xmlString);

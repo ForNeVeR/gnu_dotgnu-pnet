@@ -34,7 +34,7 @@ using Platform;
 // This class in turn calls out to classes such as "CBCEncrypt",
 // "ECBDecrypt", etc to handle each of the cipher modes.
 
-public sealed class CryptoAPITransform : ICryptoTransform
+public sealed class CryptoAPITransform : ICryptoTransform, IDisposable
 {
 	// Delegate types for the mode-specific processing routines.
 	private delegate int ProcessBlock(CryptoAPITransform transform,
@@ -197,11 +197,22 @@ public sealed class CryptoAPITransform : ICryptoTransform
 	// Destructor.
 	~CryptoAPITransform()
 			{
-				Clear();
+				Dispose(false);
 			}
 
 	// Clear sensitive state values.
-	private void Clear()
+	public void Clear()
+			{
+				((IDisposable)this).Dispose();
+			}
+
+	// Dispose this object.
+	void IDisposable.Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+	private void Dispose(bool disposing)
 			{
 				if(state != IntPtr.Zero)
 				{

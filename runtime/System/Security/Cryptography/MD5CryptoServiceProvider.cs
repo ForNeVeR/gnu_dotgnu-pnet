@@ -50,22 +50,39 @@ public class MD5CryptoServiceProvider : MD5
 	// Destructor.
 	~MD5CryptoServiceProvider()
 			{
-				if(state != IntPtr.Zero)
-				{
-					CryptoMethods.HashFree(state);
-					state = IntPtr.Zero;
-				}
+				Dispose(false);
 			}
 
 	// Initialize the hash algorithm.
 	public override void Initialize()
 			{
-				if(state != IntPtr.Zero)
+				lock(this)
 				{
-					lock(this)
+					if(state != IntPtr.Zero)
 					{
 						CryptoMethods.HashReset(state);
 					}
+				}
+			}
+
+	// Dispose this object.
+	protected override void Dispose(bool disposing)
+			{
+				if(disposing)
+				{
+					lock(this)
+					{
+						if(state != IntPtr.Zero)
+						{
+							CryptoMethods.HashFree(state);
+							state = IntPtr.Zero;
+						}
+					}
+				}
+				else if(state != IntPtr.Zero)
+				{
+					CryptoMethods.HashFree(state);
+					state = IntPtr.Zero;
 				}
 			}
 

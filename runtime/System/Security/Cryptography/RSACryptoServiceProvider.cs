@@ -93,6 +93,12 @@ public class RSACryptoServiceProvider : RSA
 	// Destructor.
 	~RSACryptoServiceProvider()
 			{
+				Dispose(false);
+			}
+
+	// Dispose this algorithm instance.
+	protected override void Dispose(bool disposing)
+			{
 				rsaParams.Clear();
 			}
 

@@ -27,7 +27,7 @@ namespace System.Security.Cryptography
 using System;
 using System.IO;
 
-public abstract class HashAlgorithm : ICryptoTransform
+public abstract class HashAlgorithm : ICryptoTransform, IDisposable
 {
 	// Internal state which is set by subclasses.
 	protected int HashSizeValue;
@@ -97,6 +97,28 @@ public abstract class HashAlgorithm : ICryptoTransform
 				{
 					return 1;
 				}
+			}
+
+	// Clear the state within this object.
+	public void Clear()
+			{
+				((IDisposable)this).Dispose();
+			}
+
+	// Dispose the state within this object.
+	void IDisposable.Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+	protected virtual void Dispose(bool disposing)
+			{
+				if(HashValue != null)
+				{
+					HashValue.Initialize();
+					HashValue = null;
+				}
+				State = 0;
 			}
 
 	// Compute the hash value for a specified byte array.

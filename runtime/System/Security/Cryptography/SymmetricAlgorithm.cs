@@ -26,7 +26,7 @@ namespace System.Security.Cryptography
 
 using System;
 
-public abstract class SymmetricAlgorithm
+public abstract class SymmetricAlgorithm : IDisposable
 {
 	// State that is accessible to subclasses.
 	protected int BlockSizeValue;
@@ -77,10 +77,7 @@ public abstract class SymmetricAlgorithm
 	// Destructor.
 	~SymmetricAlgorithm()
 			{
-				if(KeyValue != null)
-				{
-					KeyValue.Initialize();
-				}
+				Dispose(false);
 			}
 
 	// Get or set the block size.
@@ -233,6 +230,30 @@ public abstract class SymmetricAlgorithm
 							(_("Crypto_InvalidPaddingMode"));
 					}
 					PaddingValue = value;
+				}
+			}
+
+	// Clear the state of this object.
+	public void Clear()
+			{
+				((IDisposable)this).Dispose();
+			}
+
+	// Dispose the state of this object.
+	void IDisposable.Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+	protected virtual void Dispose(bool disposing)
+			{
+				if(KeyValue != null)
+				{
+					KeyValue.Initialize();
+				}
+				if(IVValue != null)
+				{
+					IVValue.Initialize();
 				}
 			}
 

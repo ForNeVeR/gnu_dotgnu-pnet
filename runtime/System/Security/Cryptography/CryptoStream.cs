@@ -27,7 +27,7 @@ namespace System.Security.Cryptography
 using System;
 using System.IO;
 
-public class CryptoStream : Stream
+public class CryptoStream : Stream, IDisposable
 {
 	// Internal state.
 	private Stream stream;
@@ -95,6 +95,12 @@ public class CryptoStream : Stream
 				sawEOF = false;
 			}
 
+	// Destructor.
+	~CryptoStream()
+			{
+				Dispose(false);
+			}
+
 	// Stream properties.
 	public override bool CanRead
 			{
@@ -134,6 +140,35 @@ public class CryptoStream : Stream
 				{
 					throw new NotSupportedException(_("IO_NotSupp_Seek"));
 				}
+			}
+
+	// Clear the resources used by this stream.
+	public void Clear()
+			{
+				((IDisposable)this).Dispose();
+			}
+
+	// Dispose this stream.
+	void IDisposable.Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+	new protected virtual void Dispose(bool disposing)
+			{
+				if(inBuffer != null)
+				{
+					inBuffer.Initialize();
+				}
+				if(outBuffer != null)
+				{
+					outBuffer.Initialize();
+				}
+				if(transform != null && transform is IDisposable)
+				{
+					((IDisposable)transform).Dispose();
+				}
+				transform = null;
 			}
 
 	// Flush the final block to the output stream.

@@ -26,7 +26,7 @@ namespace System.Security.Cryptography
 
 using System;
 
-public class FromBase64Transform : ICryptoTransform
+public class FromBase64Transform : ICryptoTransform, IDisposable
 {
 	// Internal state.
 	byte[] inBuffer;
@@ -43,6 +43,12 @@ public class FromBase64Transform : ICryptoTransform
 			{
 				// This class ignores white space and non-base64 characters,
 				// even if the constructor was called with "don't ignore".
+			}
+
+	// Destructor.
+	~FromBase64Transform()
+			{
+				Dispose(false);
 			}
 
 	// Determine if this transformation can process multiple blocks.
@@ -70,6 +76,27 @@ public class FromBase64Transform : ICryptoTransform
 				{
 					return 3;
 				}
+			}
+
+	// Clear the state of this object.
+	public void Clear()
+			{
+				((IDisposable)this).Dispose();
+			}
+
+	// Dispose the state of this object.
+	void IDisposable.Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+	protected virtual void Dispose(bool disposing)
+			{
+				if(inBuffer != null)
+				{
+					inBuffer.Initialize();
+				}
+				inBufPosn = 0;
 			}
 
 	// Transform a block of input data.

@@ -233,7 +233,7 @@ ILNativeFloat _ILReadDouble(const unsigned char *buf);
 				(buf)[0] = (unsigned char)(value); \
 				(buf)[1] = (unsigned char)((value) >> 8); \
 			} while (0)
-#define	IL_WRITE_INT16(buf, value)	(IL_WRITE_UINT16((buf), (ILUInt16)(value)))
+#define	IL_WRITE_INT16(buf, value)	IL_WRITE_UINT16((buf), (ILUInt16)(value))
 #define	IL_WRITE_UINT32(buf, value)	\
 			do { \
 				(buf)[0] = (unsigned char)(value); \
@@ -241,7 +241,7 @@ ILNativeFloat _ILReadDouble(const unsigned char *buf);
 				(buf)[2] = (unsigned char)((value) >> 16); \
 				(buf)[3] = (unsigned char)((value) >> 24); \
 			} while (0)
-#define	IL_WRITE_INT32(buf, value)	(IL_WRITE_UINT32((buf), (ILUInt32)(value)))
+#define	IL_WRITE_INT32(buf, value)	IL_WRITE_UINT32((buf), (ILUInt32)(value))
 #define	IL_WRITE_UINT64(buf, value)	\
 			do { \
 				(buf)[0] = (unsigned char)(value); \
@@ -253,7 +253,7 @@ ILNativeFloat _ILReadDouble(const unsigned char *buf);
 				(buf)[6] = (unsigned char)((value) >> 48); \
 				(buf)[7] = (unsigned char)((value) >> 56); \
 			} while (0)
-#define	IL_WRITE_INT64(buf, value)	(IL_WRITE_UINT64((buf), (ILUInt64)(value)))
+#define	IL_WRITE_INT64(buf, value)	IL_WRITE_UINT64((buf), (ILUInt64)(value))
 #endif
 void _ILWriteFloat(unsigned char *buf, ILFloat value);
 #define	IL_WRITE_FLOAT(buf,value)	(_ILWriteFloat((buf), (value)))

@@ -5,6 +5,9 @@
 	change "exceptHeight" into a pointer, to reduce the overhead
 	of exception handling slightly.
 
+	* include/il_values.h: remove parentheses that were causing
+	build breakages on MacOSX.
+
 2002-05-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/src/powerpc/ffi_darwin.c: rearrange declarations

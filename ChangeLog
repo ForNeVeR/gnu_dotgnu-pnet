@@ -1,3 +1,9 @@
+
+2004-06-18  Gopal V  <gopalv82@yahoo.com>
+
+	* System/Net/Dns.cs, System/Platform/DnsMethods.cs: Create a new
+	DnsMethods class and move all internal calls in Dns class .
+
 2004-06-17  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/runtime/System/Threading/SuiteThreading.cs, TestMutex.cs:

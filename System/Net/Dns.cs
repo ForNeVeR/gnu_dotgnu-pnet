@@ -213,7 +213,7 @@ public sealed class Dns
 				String [] h_aliases;
 				long [] h_addr_list;
 				
-				if(!InternalGetHostByAddr(address.Address, out h_name, 
+				if(!DnsMethods.InternalGetHostByAddr(address.Address, out h_name, 
 						out h_aliases, out h_addr_list))
 				{
 					throw new SocketException(); // Hm...	
@@ -232,7 +232,7 @@ public sealed class Dns
 				String [] h_aliases;
 				long [] h_addr_list;
 				
-				if(!InternalGetHostByName(hostName, out h_name, 
+				if(!DnsMethods.InternalGetHostByName(hostName, out h_name, 
 						out h_aliases, out h_addr_list))
 				{
 					throw new SocketException(); // Hm...	
@@ -268,15 +268,6 @@ public sealed class Dns
 		}
 		return entry;
 	}
-
-	//helper functions
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	private extern static bool InternalGetHostByName(String host,out String h_name,
-	out String[] h_aliases, out long[] h_addr_list);
-
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	private extern static bool InternalGetHostByAddr(long address,out String h_name,
-	out String[] h_aliases, out long[] h_addr_list);
 
 }; // class Dns
 

@@ -17,6 +17,15 @@
 	* runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs:
 	ECMA-compatibility fixes in the date/time formatting routines.
 
+	* tests/runtime/Testruntime.cs,
+	tests/runtime/System/ExceptionTester.cs,
+	tests/runtime/System/Runtime/InteropServices/Makefile,
+	tests/runtime/System/Runtime/InteropServices/SuiteInteropServices.cs,
+	tests/runtime/System/Runtime/InteropServices/TestGCHandle.cs,
+	tests/runtime/System/Runtime/InteropServices/TestInteropServices.cs,
+	tests/runtime/System/Runtime/InteropServices/code-review.txt:
+	test cases for most of the System.Runtime.InteropServices classes.
+
 2003-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlConvert.cs: implement "ToGuid" and "ToString(Guid)"

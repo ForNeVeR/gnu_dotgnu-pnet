@@ -1,4 +1,17 @@
 
+2004-07-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/InteropServices/_ConstructorInfo.cs,
+	runtime/System/Runtime/InteropServices/_EventInfo.cs,
+	runtime/System/Runtime/InteropServices/_Exception.cs,
+	runtime/System/Runtime/InteropServices/_FieldInfo.cs,
+	runtime/System/Runtime/InteropServices/_MemberInfo.cs,
+	runtime/System/Runtime/InteropServices/_MethodBase.cs,
+	runtime/System/Runtime/InteropServices/_MethodInfo.cs,
+	runtime/System/Runtime/InteropServices/_PropertyInfo.cs,
+	runtime/System/Runtime/InteropServices/_Type.cs:
+	Add COM-related reflection interfaces.
+
 2004-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt, runtime/Platform/Stdio.cs,

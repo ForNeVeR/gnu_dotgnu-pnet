@@ -924,44 +924,19 @@ ILNode_GenValue(ILNode_Box)
 		case ILMachineType_NativeFloat:
 		case ILMachineType_UnmanagedPtr:
 		case ILMachineType_TransientPtr:
+		case ILMachineType_ManagedValue:
+		case ILMachineType_Decimal:
 		{
-			/* We need a temporary local to do the conversion */
-			unsigned tempVar = ILGenTempVar(info, type);
-			ILGenStoreLocal(info, tempVar);
-			ILGenAdjust(info, -1);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenAdjust(info, 1);
+			/* Box an instance of a value type */
 			ILGenClassToken(info, IL_OP_BOX, node->classInfo);
-			ILGenReleaseTempVar(info, tempVar);
 		}
 		break;
 
 		case ILMachineType_ObjectRef:
 		case ILMachineType_String:
-		{
-			/* The value is already a boxed object */
-		}
-		break;
-
 		case ILMachineType_ManagedPtr:
 		{
-			/* We have a managed pointer, so box it directly */
-			ILGenClassToken(info, IL_OP_BOX, node->classInfo);
-		}
-		break;
-
-		case ILMachineType_ManagedValue:
-		case ILMachineType_Decimal:
-		{
-			/* We need a temporary local to do the conversion */
-			unsigned tempVar = ILGenTempTypedVar
-					(info, ILType_FromValueType(node->classInfo));
-			ILGenStoreLocal(info, tempVar);
-			ILGenAdjust(info, -1);
-			ILGenLoadLocalAddr(info, tempVar);
-			ILGenAdjust(info, 1);
-			ILGenClassToken(info, IL_OP_BOX, node->classInfo);
-			ILGenReleaseTempVar(info, tempVar);
+			/* Nothing to do here */
 		}
 		break;
 	}

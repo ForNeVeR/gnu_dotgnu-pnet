@@ -12,6 +12,9 @@
 	* codegen/cg_coerce.c, codegen/cg_coerce.h, cscc/cs_oper.tc:
 	implement semantic analysis for the "as" and "is" operators.
 
+	* codegen/cg_misc.tc (ILNode_Box): update the code generator for
+	"box" to conform with the ECMA specification.
+
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_coerce.h, include/il_types.h, image/types.c:

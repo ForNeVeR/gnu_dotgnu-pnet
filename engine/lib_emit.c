@@ -224,25 +224,102 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 	return (ILBool)1;
 }
 /*
- * private static int ClrWriteMethod(IntPtr assembly, IntPtr writer, byte[] code);
+ * private static int ClrWriteMethod(IntPtr assembly,
+ *                                   IntPtr writer,
+ *                                   byte[] header,
+ *                                   byte[] code,
+ *                                   IntPtr[] codeFixupPtrs,
+ *                                   int[] codeFixupOffsets,
+ *                                   byte[][] exceptionBlocks,
+ *                                   IntPtr[] exceptionBlockFixupPtrs,
+ *                                   int[] exceptionBlockFixupOffsets);
  */
 ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
                                            ILNativeInt _assembly,
                                            ILNativeInt _writer,
-                                           System_Array *_code)
+                                           System_Array *_header,
+                                           System_Array *_code,
+                                           System_Array *_codeFixupPtrs,
+                                           System_Array *_codeFixupOffsets,
+                                           System_Array *_exceptionBlocks,
+                                           System_Array *_exceptionBlockFixupPtrs,
+                                           System_Array *_exceptionBlockFixupOffsets)
 {
 	ILInt32 retval;
 	ILWriter *writer;
+	ILInt32 rva;
+	ILNativeInt *ptrs;
+	ILInt32 *offsets;
+	System_Array **eBlocks;
 	unsigned char *buf;
-	unsigned long len;
+	unsigned long i, len, length;
 
 	IL_METADATA_WRLOCK(_thread);
 
+	/* align to the next 4-byte boundary and get the starting rva */
 	writer = (ILWriter *)_writer;
-	buf = (unsigned char *)ArrayToBuffer(_code);
-	len = (unsigned long)_code->length;
+	ILWriterTextAlign(writer);
 	retval = (ILInt32)ILWriterGetTextRVA(writer);
-	ILWriterTextWrite(writer, buf, len);
+
+	/* write out the header */
+	buf = (unsigned char *)ArrayToBuffer(_header);
+	length = (unsigned long)_header->length;
+	ILWriterTextWrite(writer, buf, length);
+
+	/* get the rva of the code section */
+	rva = (ILInt32)ILWriterGetTextRVA(writer);
+
+	/* write out the code section */
+	buf = (unsigned char *)ArrayToBuffer(_code);
+	length = (unsigned long)_code->length;
+	ILWriterTextWrite(writer, buf, length);
+
+	/* register token fixups for the code section */
+	if (_codeFixupPtrs && _codeFixupOffsets)
+	{
+		ptrs = (ILNativeInt *)ArrayToBuffer(_codeFixupPtrs);
+		offsets = (ILInt32 *)ArrayToBuffer(_codeFixupOffsets);
+		length = (unsigned long)_codeFixupPtrs->length;
+		for (i = 0; i < length; ++i)
+		{
+			ILWriterSetFixup(writer, rva+offsets[i], (ILProgramItem *)ptrs[i]);
+		}
+	}
+
+	/* if there are no exception blocks, we're done */
+	if (!_exceptionBlocks)
+	{
+		IL_METADATA_UNLOCK(_thread);
+		return retval;
+	}
+
+	/* align to the next 4-byte boundary */
+	ILWriterTextAlign(writer);
+
+	/* get the rva of the exception block section */
+	rva = (ILInt32)ILWriterGetTextRVA(writer);
+
+	/* write out the exception block section */
+	eBlocks = (System_Array **)ArrayToBuffer(_exceptionBlocks);
+	len = (unsigned long)_exceptionBlocks->length;
+	for (i = 0; i < len; ++i)
+	{
+		buf = (unsigned char *)ArrayToBuffer(eBlocks[i]);
+		length = (unsigned long)eBlocks[i]->length;
+		ILWriterTextWrite(writer, buf, length);
+	}
+
+	/* register token fixups for the exception block section */
+	if (_exceptionBlockFixupPtrs && _exceptionBlockFixupOffsets)
+	{
+		ptrs = (ILNativeInt *)ArrayToBuffer(_exceptionBlockFixupPtrs);
+		offsets = (ILInt32 *)ArrayToBuffer(_exceptionBlockFixupOffsets);
+		length = (unsigned long)_exceptionBlockFixupPtrs->length;
+		for (i = 0; i < length; ++i)
+		{
+			ILWriterSetFixup(writer, rva+offsets[i], (ILProgramItem *)ptrs[i]);
+		}
+	}
 
 	IL_METADATA_UNLOCK(_thread);
 	return retval;
@@ -1805,6 +1882,35 @@ System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
 
 	IL_METADATA_UNLOCK(_thread);
 	return bytes;
+}
+/*
+ * private static int ClrStandAloneToken(IntPtr module, IntPtr sig);
+ */
+ILInt32 _IL_SignatureHelper_ClrStandAloneToken(ILExecThread *_thread,
+                                               ILNativeInt _module,
+                                               ILNativeInt _sig)
+{
+	ILInt32 retval;
+	ILProgramItem *module;
+	ILImage *image;
+	ILType *sig;
+	ILStandAloneSig *saSig;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	module = (ILProgramItem *)_module;
+	image = ILProgramItem_Image(module);
+	sig = (ILType *)_sig;
+	if (!(saSig = ILStandAloneSigCreate(image, 0, sig)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	retval = (ILInt32)ILProgramItem_Token(saSig);
+
+	IL_METADATA_UNLOCK(_thread);
+	return retval;
 }
 
 /*

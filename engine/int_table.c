@@ -1872,9 +1872,9 @@ static void marshal_bpjjpji(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_ipjjp(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_ipjjppppppp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((void * *)(avalue[3])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, ILNativeUInt, void *, void *, void *, void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])), *((void * *)(avalue[5])), *((void * *)(avalue[6])), *((void * *)(avalue[7])), *((void * *)(avalue[8])), *((void * *)(avalue[9])));
 }
 
 #endif
@@ -1884,7 +1884,7 @@ static void marshal_ipjjp(void (*fn)(), void *rvalue, void **avalue)
 IL_METHOD_BEGIN(AssemblyBuilder_Methods)
 	IL_METHOD("ClrAssemblyCreate", "(oSystem.String;iiiivSystem.Reflection.Emit.AssemblyBuilderAccess;&j)j", _IL_AssemblyBuilder_ClrAssemblyCreate, marshal_jppiiiiip)
 	IL_METHOD("ClrSave", "(jjoSystem.String;jvSystem.Reflection.Emit.PEFileKinds;)Z", _IL_AssemblyBuilder_ClrSave, marshal_bpjjpji)
-	IL_METHOD("ClrWriteMethod", "(jj[B)i", _IL_AssemblyBuilder_ClrWriteMethod, marshal_ipjjp)
+	IL_METHOD("ClrWriteMethod", "(jj[B[B[j[i[[B[j[i)i", _IL_AssemblyBuilder_ClrWriteMethod, marshal_ipjjppppppp)
 	IL_METHOD("ClrGetItemToken", "(j)i", _IL_AssemblyBuilder_ClrGetItemToken, marshal_ipj)
 	IL_METHOD("ClrGetItemFromToken", "(ji)j", _IL_AssemblyBuilder_ClrGetItemFromToken, marshal_jpji)
 IL_METHOD_END
@@ -2083,6 +2083,15 @@ static void marshal_bpjj(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_ipjj(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_lpjjb(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *, ILNativeUInt, ILNativeUInt, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((ILInt8 *)(avalue[3])));
@@ -2098,6 +2107,7 @@ IL_METHOD_BEGIN(SignatureHelper_Methods)
 	IL_METHOD("ClrSigAddArgument", "(jjj)Z", _IL_SignatureHelper_ClrSigAddArgument, marshal_bpjjj)
 	IL_METHOD("ClrSigCreateMethodCopy", "(jji)j", _IL_SignatureHelper_ClrSigCreateMethodCopy, marshal_jpjji)
 	IL_METHOD("ClrSigAddSentinel", "(jj)Z", _IL_SignatureHelper_ClrSigAddSentinel, marshal_bpjj)
+	IL_METHOD("ClrStandAloneToken", "(jj)i", _IL_SignatureHelper_ClrStandAloneToken, marshal_ipjj)
 	IL_METHOD("ClrSigCreateProperty", "(jj)j", _IL_SignatureHelper_ClrSigCreateProperty, marshal_jpjj)
 	IL_METHOD("ClrSigModuleToContext", "(j)j", _IL_SignatureHelper_ClrSigModuleToContext, marshal_jpj)
 	IL_METHOD("ClrSigCreatePrimitive", "(joSystem.Type;)j", _IL_SignatureHelper_ClrSigCreatePrimitive, marshal_jpjp)
@@ -2111,15 +2121,6 @@ IL_METHOD_BEGIN(SignatureHelper_Methods)
 	IL_METHOD("ClrSigFinalize", "(jjZ)l", _IL_SignatureHelper_ClrSigFinalize, marshal_lpjjb)
 	IL_METHOD("ClrSigGetBytes", "(jl)[B", _IL_SignatureHelper_ClrSigGetBytes, marshal_ppjl)
 IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ipjj(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])));
-}
 
 #endif
 

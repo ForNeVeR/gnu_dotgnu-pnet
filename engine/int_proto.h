@@ -375,7 +375,7 @@ extern ILBool _IL_Module_IsResource(ILExecThread * _thread, ILObject * _this);
 
 extern ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread * _thread, ILString * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, ILInt32 _p6, ILNativeInt * writer);
 extern ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, ILString * _p3, ILNativeInt _p4, ILInt32 _p5);
-extern ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, System_Array * _p3);
+extern ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, System_Array * _p3, System_Array * _p4, System_Array * _p5, System_Array * _p6, System_Array * _p7, System_Array * _p8, System_Array * _p9);
 extern ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread * _thread, ILNativeInt _p1);
 extern ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 
@@ -412,6 +412,7 @@ extern ILNativeInt _IL_SignatureHelper_ClrSigCreateLocal(ILExecThread * _thread,
 extern ILBool _IL_SignatureHelper_ClrSigAddArgument(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, ILNativeInt _p3);
 extern ILNativeInt _IL_SignatureHelper_ClrSigCreateMethodCopy(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, ILInt32 _p3);
 extern ILBool _IL_SignatureHelper_ClrSigAddSentinel(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
+extern ILInt32 _IL_SignatureHelper_ClrStandAloneToken(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
 extern ILNativeInt _IL_SignatureHelper_ClrSigCreateProperty(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
 extern ILNativeInt _IL_SignatureHelper_ClrSigModuleToContext(ILExecThread * _thread, ILNativeInt _p1);
 extern ILNativeInt _IL_SignatureHelper_ClrSigCreatePrimitive(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2);

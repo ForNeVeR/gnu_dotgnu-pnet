@@ -73,7 +73,7 @@ public sealed class SecurityElement
 				{
 					throw new ArgumentException(_("Arg_InvalidXMLTag"));
 				}
-				else if(text != null && !IsValidTag(text))
+				else if(text != null && !IsValidText(text))
 				{
 					throw new ArgumentException(_("Arg_InvalidXMLText"));
 				}
@@ -91,6 +91,14 @@ public sealed class SecurityElement
 		     '\u00A0', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005',
 		     '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u200B',
 		     '\u3000', '\uFEFF'};
+
+	// Invalid XML characters in text sections.  It is assumed that
+	// occurrences of '&' are correctly-formatted XML escapes.
+	private static readonly char[] InvalidTextChars = {'<', '>'};
+
+	// Invalid XML characters in attribute values.  It is assumed that
+	// occurrences of '&' are correctly-formatted XML escapes.
+	private static readonly char[] InvalidAttrChars = {'<', '>', '"'};
 
 	// Escape invalid XML characters in a string.
 	public static String Escape(String str)
@@ -227,7 +235,7 @@ public sealed class SecurityElement
 				}
 				else
 				{
-					return (name.IndexOfAny(InvalidNameChars) >= 0);
+					return (name.IndexOfAny(InvalidNameChars) < 0);
 				}
 			}
 
@@ -240,7 +248,7 @@ public sealed class SecurityElement
 				}
 				else
 				{
-					return true;
+					return (value.IndexOfAny(InvalidAttrChars) < 0);
 				}
 			}
 
@@ -253,7 +261,7 @@ public sealed class SecurityElement
 				}
 				else
 				{
-					return (name.IndexOfAny(InvalidNameChars) >= 0);
+					return (name.IndexOfAny(InvalidNameChars) < 0);
 				}
 			}
 
@@ -266,7 +274,7 @@ public sealed class SecurityElement
 				}
 				else
 				{
-					return true;
+					return (text.IndexOfAny(InvalidTextChars) < 0);
 				}
 			}
 
@@ -377,11 +385,11 @@ public sealed class SecurityElement
 			{
 				get
 				{
-					return text;
+					return Unescape(text);
 				}
 				set
 				{
-					if(!IsValidText(value))
+					if(value != null && !IsValidText(value))
 					{
 						throw new ArgumentException(_("Arg_InvalidXMLText"));
 					}

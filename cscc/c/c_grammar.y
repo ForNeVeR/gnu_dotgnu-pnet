@@ -2444,6 +2444,10 @@ ParameterDeclaration
 				$$ = ILNode_FormalParameter_create
 					(0, ILParamMod_empty, ILNode_MarkType_create(0, $1), 0);
 			}
+	| K_REGISTER TypeName							{
+				$$ = ILNode_FormalParameter_create
+					(0, ILParamMod_empty, ILNode_MarkType_create(0, $2), 0);
+			}
 	;
 
 TypeName

@@ -1,4 +1,9 @@
 
+2004-02-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_grammar.y (ParameterDeclaration): support parameters
+	declarations of the form "register <type>".
+
 2004-02-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

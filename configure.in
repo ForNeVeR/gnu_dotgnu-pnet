@@ -318,6 +318,8 @@ JScript/Makefile
 Basic/Makefile
 Xsharp/Makefile
 Xsharp/Xlib.cs
+System.Drawing/Makefile
+System.Drawing.Xsharp/Makefile
 tests/Makefile
 tests/System/Makefile
 tests/System.Xml/Makefile

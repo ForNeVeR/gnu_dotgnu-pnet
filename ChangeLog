@@ -10,6 +10,9 @@
 	samples/mscorlib.dll: update pnetlib and stub the extra internalcall's
 	that "Reflection.Emit" requires.
 
+	* engine/ilverify.c: resolve assembly references when verifying
+	an IL application.
+
 2002-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/HACKING: update the section on "internalcall" methods.

@@ -196,8 +196,7 @@ static int verify(const char *filename, ILContext *context, int allowUnsafe)
 
 	/* Attempt to load the image into memory */
 	if(ILImageLoadFromFile(filename, context, &image,
-						   IL_LOADFLAG_FORCE_32BIT |
-						   IL_LOADFLAG_NO_RESOLVE, 1) != 0)
+						   IL_LOADFLAG_FORCE_32BIT, 1) != 0)
 	{
 		return 0;
 	}

@@ -1087,6 +1087,86 @@ static void thread_counts(void *arg)
 }
 
 /*
+ * Test wait mutex creation.
+ */
+static void mutex_create(void *arg)
+{
+	ILWaitHandle *handle;
+	ILWaitHandle *handle2;
+	int gotOwn;
+
+	/* Create simple mutexes */
+	handle = ILWaitMutexCreate(0);
+	if(!handle)
+	{
+		ILUnitFailed("could not create a simple mutex");
+	}
+	ILWaitHandleClose(handle);
+	handle = ILWaitMutexCreate(1);
+	if(!handle)
+	{
+		ILUnitFailed("could not create a simple mutex that is owned");
+	}
+	ILWaitHandleClose(handle);
+
+	/* Create a named mutex */
+	gotOwn = -100;
+	handle = ILWaitMutexNamedCreate("aaa", 0, &gotOwn);
+	if(!handle)
+	{
+		ILUnitFailed("could not create a named mutex");
+	}
+	if(gotOwn == -100)
+	{
+		ILUnitFailed("gotOwnership was not changed");
+	}
+	if(gotOwn)
+	{
+		ILUnitFailed("gotOwnership was set when it should have been cleared");
+	}
+
+	/* Create the same named mutex and acquire it */
+	gotOwn = -100;
+	handle2 = ILWaitMutexNamedCreate("aaa", 1, &gotOwn);
+	if(!handle2)
+	{
+		ILUnitFailed("could not create a named mutex (2)");
+	}
+	if(handle != handle2)
+	{
+		ILUnitFailed("did not reacquire the same mutex");
+	}
+	if(gotOwn == -100)
+	{
+		ILUnitFailed("gotOwnership was not changed (2)");
+	}
+	if(!gotOwn)
+	{
+		ILUnitFailed("gotOwnership was cleared when it "
+					 "should have been set (2)");
+	}
+
+	/* Close the second copy of the named mutex */
+	ILWaitMutexRelease(handle2);
+	ILWaitHandleClose(handle2);
+
+	/* Create a named mutex with a different name */
+	handle2 = ILWaitMutexNamedCreate("bbb", 0, 0);
+	if(!handle2)
+	{
+		ILUnitFailed("could not create a named mutex (3)");
+	}
+	if(handle == handle2)
+	{
+		ILUnitFailed("mutexes with different names have the same handle");
+	}
+
+	/* Clean up */
+	ILWaitHandleClose(handle);
+	ILWaitHandleClose(handle2);
+}
+
+/*
  * Simple test registration macro.
  */
 #define	RegisterSimple(name)	(ILUnitRegister(#name, name, 0))
@@ -1157,6 +1237,12 @@ void ILUnitRegisterTests(void)
 	ILUnitRegisterSuite("Misc Thread Tests");
 	RegisterSimple(thread_other_object);
 	RegisterSimple(thread_counts);
+
+	/*
+	 * Test wait mutex behaviours.
+	 */
+	ILUnitRegisterSuite("Wait Mutex Tests");
+	RegisterSimple(mutex_create);
 }
 
 #ifdef	__cplusplus

@@ -1,4 +1,8 @@
 
+2002-06-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* tests/test_thread.c: simple tests for creating wait mutexes.
+
 2002-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_thread.h, support/Makefile.am, support/thr_defs.h,

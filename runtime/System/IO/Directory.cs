@@ -88,10 +88,34 @@ namespace System.IO
 			}
 		}
 
-		[TODO]
 		public static bool Exists(string path)
 		{
-			return false;
+			if(path.Length==0 || (path.Trim()).Length==0 || path.IndexOfAny(pathinfo.invalidPathChars)!= -1)
+			{	
+				throw new ArgumentException();
+			}
+			if (path == null)
+			{
+				return false;
+			}	
+			long ac;
+			Errno errno = DirMethods.GetLastAccessTime(path,ac);
+			switch(errno)
+			{
+				case Errno.Success:
+					return true;
+				case Errno.ENOENT:
+					throw new DirectoryNotFoundException(_("IO_DirNotFound"));
+				case Errno.ENOTDIR:
+					return false;
+				case Errno.EACCES:
+					return false;
+				case Errno.ENAMETOOLONG:
+					throw new PathTooLongException();
+				default:
+					return false;
+			}
+		
 		}
 
 		public static DateTime GetCreationTime(string path)

@@ -22,6 +22,9 @@
 
 	* engine/cvm.c: document the "unroll_method" instruction.
 
+	* support/allocate.c: implement true page allocation on
+	systems with mmap support.
+
 2002-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll_x86.c (ReExecute): fix a bug in the stack height

@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "thr_defs.h"
 #include "il_system.h"
 #ifdef HAVE_SYS_TYPES_H
 	#include <sys/types.h>
@@ -27,6 +28,9 @@
 #endif
 #ifdef HAVE_SYS_MMAN_H
 	#include <sys/mman.h>
+#endif
+#ifdef HAVE_FCNTL_H
+	#include <fcntl.h>
 #endif
 #ifdef _WIN32
 	#include <windows.h>
@@ -138,14 +142,92 @@ unsigned long ILPageMapSize(void)
 #endif
 }
 
+/*
+ * Determine if we should use the system's malloc heap.
+ */
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || \
+    !(defined(HAVE_MMAP) && defined(HAVE_MUNMAP) && defined(HAVE_OPEN))
+    #define IL_USE_MALLOC_FOR_PAGES
+#endif
+
+#ifndef IL_USE_MALLOC_FOR_PAGES
+
+/*
+ * Make sure that "MAP_ANON" is correctly defined, because it
+ * may not exist on some variants of Unix.
+ */
+#ifndef MAP_ANON
+    #ifndef MAP_ANONYMOUS
+        #define MAP_ANON        0
+    #else
+        #define MAP_ANON        MAP_ANONYMOUS
+    #endif
+#endif
+
+/*
+ * Control variables for page allocation.
+ */
+static int zero_fd = -1;
+
+/*
+ * Initialize the page allocation subsystem.  Only called once.
+ */
+static void PageInit(void)
+{
+	zero_fd = open("/dev/zero", O_RDWR, 0);
+	if(zero_fd != -1)
+	{
+		fcntl(zero_fd, F_SETFD, 1);
+	}
+}
+
+#endif
+
 void *ILPageAlloc(unsigned long size)
 {
+#ifdef IL_USE_MALLOC_FOR_PAGES
 	return ILCalloc(size, 1);
+#else
+	/* Initialize the page allocation routines */
+	_ILCallOnce(PageInit);
+
+	/* Determine if we can should mmap or calloc */
+	if(zero_fd != -1)
+	{
+		void *addr = mmap((void *)0, size,
+						  PROT_READ | PROT_WRITE | PROT_EXEC,
+						  MAP_SHARED | MAP_ANON, zero_fd, 0);
+		if(addr == (void *)(-1))
+		{
+			/* The allocation failed */
+			return 0;
+		}
+		else
+		{
+			return addr;
+		}
+	}
+	else
+	{
+		return ILCalloc(size, 1);
+	}
+#endif
 }
 
 void  ILPageFree(void *ptr, unsigned long size)
 {
+#ifdef IL_USE_MALLOC_FOR_PAGES
 	ILFree(ptr);
+#else
+	if(zero_fd != -1)
+	{
+		munmap(ptr, size);
+	}
+	else
+	{
+		ILFree(ptr);
+	}
+#endif
 }
 
 #ifdef	__cplusplus

@@ -32,7 +32,11 @@ static void CheckForNull(MDUnroll *unroll, int reg, unsigned char *pc,
 	/* Check the register's contents against NULL */
 	md_reg_is_null(unroll->out, reg);
 	patch = unroll->out;
+#ifdef CVM_X86
+	x86_branch8(unroll->out, X86_CC_NE, 0, 0);
+#else
 	md_branch_ne(unroll->out);
+#endif
 
 	/* Re-execute the current instruction in the interpreter */
 	if(popReg)
@@ -62,7 +66,11 @@ static void CheckArrayAccess(MDUnroll *unroll, int reg, int reg2,
 	/* Check the array reference against NULL */
 	md_reg_is_null(unroll->out, reg);
 	patch1 = unroll->out;
+#ifdef CVM_X86
+	x86_branch8(unroll->out, X86_CC_EQ, 0, 0);
+#else
 	md_branch_eq(unroll->out);
+#endif
 
 	/* Check the array bounds */
 	md_bounds_check(unroll->out, reg, reg2);

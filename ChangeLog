@@ -32,6 +32,9 @@
 	* engine/lib_emit.c: fixes for 64-bit platforms; use the correct
 	token value for the call to "ILClassCreate".
 
+	* engine/unroll_ptr.c: tune short branches a little for x86
+	to increase code density and hence CPU caching behaviour.
+
 2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeCreate

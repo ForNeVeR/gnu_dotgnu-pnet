@@ -1,3 +1,9 @@
+
+2004-06-23  Gopal V  <gopalv82@yahoo.com>
+
+	* samples/dcop/DcopBrowser.cs: Display error message box if KDE is not
+	present.
+
 2004-06-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlElement.cs: fixed IsEmpty behavior for non-empty

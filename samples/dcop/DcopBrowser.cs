@@ -104,7 +104,8 @@ public class DcopBrowser : Form
 		DcopRef dr = null ;
 		if(client == null)
 		{
-			Console.Error.WriteLine("Make sure that KDE is running");
+			MessageBox.Show("Make sure that KDE is running");
+			return;
 		}
 		db.BrowseDcop(client);
 		Application.Run(db);

@@ -57,7 +57,7 @@ static void *TempAllocate(TempAllocator *allocator, unsigned long size)
 	}
 
 	/* Allocate from the system heap */
-	ptr = ILMalloc(IL_BEST_ALIGNMENT + size);
+	ptr = ILCalloc(IL_BEST_ALIGNMENT + size, 1);
 	if(!ptr)
 	{
 		return 0;
@@ -87,8 +87,11 @@ static void TempAllocatorDestroy(TempAllocator *allocator)
  * 3 bits are allocated for each item: "instruction start",
  * "jump target", and "special jump target".
  */
+#define	WORDS_FOR_MASK(size)	\
+			(((size) * 3 + (sizeof(unsigned long) * 8) - 1) / \
+					(sizeof(unsigned long) * 8))
 #define	BYTES_FOR_MASK(size)	\
-			(((size) * 3 + (sizeof(unsigned long) * 8) - 1) / 8)
+			(WORDS_FOR_MASK((size)) * sizeof(unsigned long))
 
 /*
  * Mark an instruction starting point in a jump mask.

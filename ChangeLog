@@ -1,4 +1,9 @@
 
+2002-01-19 Charlie Carnow <carnow@gmx.net>
+
+	* runtime/System/IO/Path.cs: fixed some more errors reported
+	by C# Compiler
+
 2002-01-16 Charlie Carnow <carnow@gmx.net>
 
 	* runtime/System/IO/Path.cs: fix some errors in Path reported

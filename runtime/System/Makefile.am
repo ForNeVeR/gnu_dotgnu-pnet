@@ -179,6 +179,7 @@ CSSRC = Activator.cs \
 		IO/FileShare.cs \
 		IO/FileStream.cs \
 		IO/IOException.cs \
+		IO/Path.cs \
 		IO/PathTooLongException.cs \
 		IO/SeekOrigin.cs \
 		IO/Stream.cs \

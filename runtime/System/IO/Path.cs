@@ -25,18 +25,18 @@ namespace System.IO
 {
 	using System;
 	using Platform;
-	public class System.Path 
+	public sealed class Path 
 	{
 		// I know of the existence of System.Enviornment
-		// But I'm opting to just get the seperators
+		// But I'm opting to just get the separators
 		// from DirMethods.GetPathInfo()
 		private static PathInfo p = DirMethods.GetPathInfo();
-		public static readonly char DirectorySeperatorChar = p.dirSeperator;
-		public static readonly char AltDirectorySeperatorChar = p.AltDirSeparator;
-		public static readonly char VolumeSeparatorChar = p.volumeSeperator;
-		public static readonly char PathSeperatorChar = p.pathSeperator;
+		public static readonly char DirectorySeparatorChar = p.dirSeparator;
+		public static readonly char AltDirectorySeparatorChar = p.altDirSeparator;
+		public static readonly char VolumeSeparatorChar = p.volumeSeparator;
+		public static readonly char PathSeparatorChar = p.pathSeparator;
 		public static readonly char[] InvalidPathChars = p.invalidPathChars;
-		private static readonly char[] PathSeperatorChars = { DirectorySeperatorChar, AltDirectorySeperatorChar, VolumeSeperatorChar};
+		private static readonly char[] PathSeparatorChars = { DirectorySeparatorChar, AltDirectorySeparatorChar, VolumeSeparatorChar};
 		
 		/* counter is for the MkTempFile function; its static
 		 * so that the only time the MkTempFile function has 
@@ -51,13 +51,14 @@ namespace System.IO
 		public static String ChangeExtension(String path, String extension)
 		{
 			/* TODO: Figure out how to get the System-Dependant
-                         * Extension Seperator instead of just assuming it's
+                         * Extension Separator instead of just assuming it's
 			 * a '.'; Mail to the DotGnu Developers mailing
 			 * list or me (Charlie Carnow <carnow@gmx.net> 
 			 * and the DotGnu Mailing list
                          * on this topic would be nice
-                         */	
-			string[] patharray = path.Split('.');
+                         */
+			char[] separator = { '.' };	
+			string[] patharray = path.Split(separator);
 			string ext = extension;
 			return String.Concat(patharray[0], '.', extension);
 		}
@@ -83,12 +84,12 @@ namespace System.IO
 			 * chars
 			 */
 			
-			if (path1.EndsWith(new String(DirectorySeperatorChar, 1)) == false 
-			    && path2.EndsWith(new String(AltDirectorySeperatorChar,1))
+			if (path1.EndsWith(new String(DirectorySeparatorChar, 1)) == false 
+			    && path2.EndsWith(new String(AltDirectorySeparatorChar,1))
 				== false) 
 			{
 				 // Insert at starting at last element
-				 path1 = path1.Insert(path1.Length, new String(DirectorySeperatorChar, 1));
+				 path1 = path1.Insert(path1.Length, new String(DirectorySeparatorChar, 1));
 		        }
 
 	return String.Concat(path1, path2);
@@ -103,13 +104,17 @@ namespace System.IO
 		[TODO]
 		public static String GetFileName(String path)
 		{
-			/* TODO: Allow use of AltDirectorySeperator, etc. */
+			/* TODO: Allow use of AltDirectorySeparator, etc. */
 			/* Seperate Directories */
-		      string[] dirs = path.Split(DirectorySeperatorChar);
+		      string y;
+		      char[] separator = {DirectorySeparatorChar};
+		      string[] dirs = path.Split(separator);
+		      y = path;
 		      foreach (string x in dirs)
 			{
+				y = x;
 			} /* The last string should be the filename */
-			return x;
+			return y;
 		}
 		
 		[TODO]
@@ -119,9 +124,11 @@ namespace System.IO
 			/* Split at the dot..The first element
                          * of filename should now have the filename without
 		         * the extension */
+			string[] filename;
 			try 
 			{
-				string filename[] = GetFileName(path).split('.');
+				char[] separator = {'.'};
+				filename = GetFileName(path).Split(separator);
 			}
 			catch (ArgumentException e) 
 			{	
@@ -162,10 +169,13 @@ namespace System.IO
 				counter += 1;
 				/* cat the strings together */
 				file = dir + pre + NumToString(counter);
+
+			/* TODO: "File" does not exist yet
 				if (!File.exists(file))
 				{
 					return file;
 				}				 
+			*/
 			}
 				
 		}
@@ -187,17 +197,27 @@ namespace System.IO
 		[TODO]
 		public static bool HasExtension(String path)
 		{
-			/* TODO: See Note at ChangeExtension */ 
+			/* TODO: See Note at ChangeExtension */
+			char[] separator = {'.'}; 
 			return (path.Split('.').Length > 1);		
 		}
 		
 		
 		public static bool IsPathRooted(String path)
 		{
-			return path.StartsWith(new String(VolumeSeperatorChar, 1));
+			return path.StartsWith(new String(VolumeSeparatorChar, 1));
 		}
 
 	}
 
 }
+
+
+
+
+
+
+
+
+
 

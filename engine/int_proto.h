@@ -381,23 +381,42 @@ extern ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread * _thread,
 extern void _IL_AssemblyBuilder_ClrSetEntryPoint(ILExecThread * _thread, ILObject * _this, ILNativeInt _p1, ILInt32 _p2);
 extern ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 
-extern ILNativeInt _IL_EventBuilder_ClrEventCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILObject * _p3, ILInt32 _p4);
+extern ILNativeInt _IL_EventBuilder_ClrEventCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILNativeInt _p3, ILInt32 _p4);
 extern void _IL_EventBuilder_ClrEventAddSemantics(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, void * _p3);
 
-extern ILNativeInt _IL_FieldBuilder_ClrFieldCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILObject * _p3, ILInt32 _p4);
+extern ILNativeInt _IL_FieldBuilder_ClrFieldCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILNativeInt _p3, ILInt32 _p4);
 extern void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2);
 extern void _IL_FieldBuilder_ClrFieldSetMarshal(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2);
 extern void _IL_FieldBuilder_ClrFieldSetOffset(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 
-extern ILNativeInt _IL_MethodBuilder_ClrMethodCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILInt32 _p3, ILInt32 _p4, ILObject * _p5, System_Array * _p6);
+extern ILNativeInt _IL_MethodBuilder_ClrMethodCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILInt32 _p3, ILNativeInt _p4);
 extern void _IL_MethodBuilder_ClrMethodSetImplAttrs(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILInt32 _IL_MethodBuilder_ClrMethodCreateVarArgRef(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILNativeInt _p3);
 
 extern ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2);
 extern ILInt32 _IL_ModuleBuilder_ClrModuleCreateString(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2);
 
-extern ILNativeInt _IL_PropertyBuilder_ClrPropertyCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILInt32 _p3, ILObject * _p4, System_Array * _p5);
+extern ILNativeInt _IL_PropertyBuilder_ClrPropertyCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILInt32 _p3, ILNativeInt _p4);
 extern void _IL_PropertyBuilder_ClrPropertyAddSemantics(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, void * _p3);
 extern void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2);
+
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreateMethod(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILNativeInt _p3);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreateProperty(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
+extern ILNativeInt _IL_SignatureHelper_ClrSigModuleToContext(ILExecThread * _thread, ILNativeInt _p1);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreatePrimitive(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreateArray(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILNativeInt _p3);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreatePointer(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreateByRef(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreateValueType(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreateClass(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreateField(ILExecThread * _thread, ILNativeInt _p1);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreateLocal(ILExecThread * _thread, ILNativeInt _p1);
+extern ILBool _IL_SignatureHelper_ClrSigAddArgument(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, ILNativeInt _p3);
+extern ILNativeInt _IL_SignatureHelper_ClrSigCreateMethodCopy(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, ILInt32 _p3);
+extern ILBool _IL_SignatureHelper_ClrSigAddSentinel(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
+extern ILBool _IL_SignatureHelper_ClrSigIdentical(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
+extern ILInt32 _IL_SignatureHelper_ClrSigGetHashCode(ILExecThread * _thread, ILNativeInt _p1);
+extern System_Array * _IL_SignatureHelper_ClrSigGetBytes(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
 
 extern ILInt32 _IL_CultureInfo_InternalCultureID(ILExecThread * _thread);
 extern ILString * _IL_CultureInfo_InternalCultureName(ILExecThread * _thread);

@@ -27,6 +27,9 @@ extern	"C" {
 
 #ifdef IL_CONFIG_REFLECTION
 
+/* TODO: all of these methods must be synchronized with the metadata
+   lock to ensure that user-level apps cannot circumvent heap security */
+
 /*
  * private static IntPtr ClrAssemblyCreate(String name, int v1, int v2,
  *										   int v3, int v4,
@@ -90,11 +93,11 @@ ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread *_thread,
 
 /*
  * private static IntPtr ClrEventCreate(IntPtr classInfo, String name,
- *									    Type type, EventAttributes attrs);
+ *									    IntPtr type, EventAttributes attrs);
  */
 ILNativeInt _IL_EventBuilder_ClrEventCreate(ILExecThread *_thread,
 											ILNativeInt classInfo,
-											ILString *name, ILObject *type,
+											ILString *name, ILNativeInt type,
 											ILInt32 attrs)
 {
 	/* TODO */
@@ -115,11 +118,11 @@ void _IL_EventBuilder_ClrEventAddSemantics(ILExecThread *_thread,
 
 /*
  * private static IntPtr ClrFieldCreate(IntPtr classInfo, String name,
- *										Type type, FieldAttributes attrs);
+ *										IntPtr type, FieldAttributes attrs);
  */
 ILNativeInt _IL_FieldBuilder_ClrFieldCreate(ILExecThread *_thread,
 											ILNativeInt classInfo,
-											ILString *name, ILObject *type,
+											ILString *name, ILNativeInt type,
 											ILInt32 attrs)
 {
 	/* TODO */
@@ -182,15 +185,13 @@ ILInt32 _IL_ModuleBuilder_ClrModuleCreateString(ILExecThread *_thread,
 /*
  * private static IntPtr ClrPropertyCreate(IntPtr classInfo, String name,
  *										   PropertyAttributes attrs,
- *										   Type returnType,
- *										   Type[] paramTypes);
+ *										   IntPtr signature);
  */
 ILNativeInt _IL_PropertyBuilder_ClrPropertyCreate(ILExecThread *_thread,
 												  ILNativeInt classInfo,
 												  ILString *name,
 												  ILInt32 attrs,
-												  ILObject *returnType,
-												  System_Array *paramTypes)
+												  ILNativeInt signature)
 {
 	/* TODO */
 	return 0;
@@ -320,17 +321,13 @@ ILInt32 _IL_TypeBuilder_ClrTypeImportMember(ILExecThread *_thread,
 /*
  * internal static IntPtr ClrMethodCreate(IntPtr classInfo, String name,
  *										  MethodAttributes attributes,
- *										  CallingConventions callingConvention,
- *										  Type returnType,
- *										  Type[] parameterTypes);
+ *										  IntPtr signature);
  */
 ILNativeInt _IL_MethodBuilder_ClrMethodCreate(ILExecThread *_thread,
 											  ILNativeInt classInfo,
 											  ILString *name,
 											  ILInt32 attributes,
-											  ILInt32 callingConvention,
-											  ILObject *returnType,
-											  System_Array *parameterTypes)
+											  ILNativeInt signature)
 {
 	/* TODO */
 	return 0;
@@ -349,6 +346,230 @@ void _IL_MethodBuilder_ClrMethodSetImplAttrs(ILExecThread *_thread,
 		ILMethodSetImplAttrs((ILMethod *)item, ~((unsigned long)0),
 							 (unsigned long)(long)attributes);
 	}
+}
+
+/*
+ * internal static int ClrMethodCreateVarArgRef(IntPtr module,
+ *												int methodToken,
+ *												IntPtr signature);
+ */
+ILInt32 _IL_MethodBuilder_ClrMethodCreateVarArgRef(ILExecThread *_thread,
+												   ILNativeInt module,
+												   ILInt32 methodToken,
+												   ILNativeInt signature)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static IntPtr ClrSigCreateMethod(IntPtr context, int callConv,
+ *											IntPtr returnType);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreateMethod(ILExecThread *_thread,
+												   ILNativeInt context,
+												   ILInt32 callConv,
+												   ILNativeInt returnType)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static IntPtr ClrSigCreateMethod(IntPtr context, IntPtr returnType);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreateProperty(ILExecThread *_thread,
+													 ILNativeInt context,
+													 ILNativeInt returnType)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static IntPtr ClrSigModuleToContext(IntPtr module);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigModuleToContext(ILExecThread *_thread,
+													  ILNativeInt module)
+{
+	if(module)
+	{
+		return (ILNativeInt)ILImageToContext
+					(ILProgramItem_Image((ILModule *)module));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private static IntPtr ClrSigCreatePrimitive(IntPtrContext, Type type);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreatePrimitive(ILExecThread *_thread,
+													  ILNativeInt context,
+													  ILObject *type)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static IntPtr ClrSigCreateArray(IntPtr context, int rank,
+ *										   IntPtr elemType);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreateArray(ILExecThread *_thread,
+												  ILNativeInt context,
+												  ILInt32 rank,
+												  ILNativeInt elemType)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static IntPtr ClrSigCreatePointer(IntPtr context, IntPtr elemType);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreatePointer(ILExecThread *_thread,
+													ILNativeInt context,
+													ILNativeInt elemType)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static IntPtr ClrSigCreateByRef(IntPtr context, IntPtr elemType);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreateByRef(ILExecThread *_thread,
+												  ILNativeInt context,
+												  ILNativeInt elemType)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static IntPtr ClrSigCreateValueType(IntPtr module, int token);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreateValueType(ILExecThread *_thread,
+													  ILNativeInt module,
+													  ILInt32 token)
+{
+	if(module && token)
+	{
+		return (ILNativeInt)(ILType_FromValueType
+					(ILClass_FromToken(ILProgramItem_Image(module),
+									   (ILToken)(long)token)));
+	}
+	else
+	{
+		return (ILNativeInt)ILType_Invalid;
+	}
+}
+
+/*
+ * private static IntPtr ClrSigCreateClass(IntPtr module, int token);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreateClass(ILExecThread *_thread,
+												  ILNativeInt module,
+												  ILInt32 token)
+{
+	if(module && token)
+	{
+		return (ILNativeInt)(ILType_FromClass
+					(ILClass_FromToken(ILProgramItem_Image(module),
+									   (ILToken)(long)token)));
+	}
+	else
+	{
+		return (ILNativeInt)ILType_Invalid;
+	}
+}
+
+/*
+ * private static IntPtr ClrSigCreateField(IntPtr context);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreateField(ILExecThread *_thread,
+												  ILNativeInt context)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static IntPtr ClrSigCreateLocal(IntPtr context);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreateLocal(ILExecThread *_thread,
+												  ILNativeInt context)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static bool ClrSigAddArgument(IntPtr context, IntPtr sig,
+ *										 IntPtr arg);
+ */
+ILBool _IL_SignatureHelper_ClrSigAddArgument(ILExecThread *_thread,
+											 ILNativeInt context,
+											 ILNativeInt sig,
+											 ILNativeInt arg)
+{
+	/* TODO */
+	return 1;
+}
+
+/*
+ * private static bool ClrSigAddSentinel(IntPtr context, IntPtr sig);
+ */
+ILBool _IL_SignatureHelper_ClrSigAddSentinel(ILExecThread *_thread,
+											 ILNativeInt context,
+											 ILNativeInt sig)
+{
+	/* TODO */
+	return 1;
+}
+
+/*
+ * private static IntPtr ClrSigCreateMethodCopy(IntPtr context, IntPtr module,
+ *												int methodToken);
+ */
+ILNativeInt _IL_SignatureHelper_ClrSigCreateMethodCopy(ILExecThread *_thread,
+													   ILNativeInt context,
+													   ILNativeInt module,
+													   ILInt32 methodToken)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static bool ClrSigIdentical(IntPtr sig1, IntPtr sig2);
+ */
+ILBool _IL_SignatureHelper_ClrSigIdentical(ILExecThread *_thread,
+										   ILNativeInt sig1,
+										   ILNativeInt sig2)
+{
+	return (ILBool)(ILTypeIdentical((ILType *)sig1, (ILType *)sig2));
+}
+
+/*
+ * private static int ClrSigGetHashCode(IntPtr sig);
+ */
+ILInt32 _IL_SignatureHelper_ClrSigGetHashCode(ILExecThread *_thread,
+											  ILNativeInt sig)
+{
+	/* TODO */
+	return 0;
+}
+
+System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
+												 ILNativeInt module,
+												 ILNativeInt sig)
+{
+	/* TODO */
+	return 0;
 }
 
 #endif /* IL_CONFIG_REFLECTION */

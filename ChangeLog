@@ -8,6 +8,10 @@
 	* Generics/ArrayList.cs, Generics/Generics.html, Generics/RangeList.cs:
 	fix the implementation of ArrayList.IndexOf; add the RangeList class.
 
+	* Generics/Generics.html, Generics/LinkedList.cs,
+	Generics/SinglyLinkedList.cs: implement SinglyLinkedList; fix
+	a bug in the iterator for LinkedList.
+
 2003-02-28  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Reflection/Emit/MethodBuilder.cs,

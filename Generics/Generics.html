@@ -6,7 +6,7 @@
 <h1>DotGNU Portable.Net FAQ</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2003/03/01 07:58:33 $<p>
+Last Modified: $Date: 2003/03/01 10:49:19 $<p>
 
 Copyright &copy; 2003 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -218,6 +218,11 @@ are with respect to modifying <code>Current</code> and calling
 	<dd>Implementation of an <code>ISet&lt;T&gt;</code> on top of
 		an underlying <code>IList&lt;T&gt;</code> object.  By default,
 		a <code>LinkedList&lt;T&gt;</code> object is used.</dd>
+
+<dt><code>SinglyLinkedList&lt;T&gt;</code></dt>
+	<dd>Implementation of an <code>IList&lt;T&gt;</code>, organised
+		as a singly-linked list.  This class also implements
+		<code>IQueue&lt;T&gt;</code> and <code>IStack&lt;T&gt;</code>.</dd>
 
 <dt><code>TreeSet&lt;T&gt;</code></dt>
 	<dd>Implementation of an <code>ISet&lt;T&gt;</code> as a

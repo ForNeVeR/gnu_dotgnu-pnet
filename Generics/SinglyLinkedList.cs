@@ -1,5 +1,5 @@
 /*
- * LinkedList.cs - Generic doubly-linked list class.
+ * SinglyLinkedList.cs - Generic singly-linked list class.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,21 +27,19 @@ namespace Generics
 
 using System;
 
-public sealed class LinkedList<T>
-	: IDeque<T>, IQueue<T>, IStack<T>, IList<T>, ICloneable
+public sealed class SinglyLinkedList<T>
+		: IQueue<T>, IStack<T>, IList<T>, ICloneable
 {
 	// Structure of a list node.
 	private class Node<T>
 	{
 		public T       data;
 		public Node<T> next;
-		public Node<T> prev;
 
 		public Node(T data)
 				{
 					this.data = data;
 					this.next = null;
-					this.prev = null;
 				}
 
 	}; // class Node
@@ -52,7 +50,7 @@ public sealed class LinkedList<T>
 	private int     count;
 
 	// Constructor.
-	public LinkedList()
+	public SinglyLinkedList()
 			{
 				first = null;
 				last = null;
@@ -68,45 +66,46 @@ public sealed class LinkedList<T>
 					throw new ArgumentOutOfRangeException
 						("index", S._("ArgRange_Array"));
 				}
-				if(index <= (count / 2))
+				current = first;
+				while(index > 0)
 				{
-					// Search forwards from the start of the list.
-					current = first;
-					while(index > 0)
-					{
-						current = current.next;
-						--index;
-					}
-					return current;
+					current = current.next;
+					--index;
 				}
-				else
+				return current;
+			}
+
+	// Get the predecessor of a particular node in the list by index.
+	private Node<T> GetPrev(int index)
+			{
+				Node<T> current;
+				Node<T> prev;
+				if(index < 0 || index >= count)
 				{
-					// Search backwards from the end of the list.
-					current = last;
-					++index;
-					while(index < count)
-					{
-						current = current.prev;
-						++index;
-					}
-					return current;
+					throw new ArgumentOutOfRangeException
+						("index", S._("ArgRange_Array"));
 				}
+				current = first;
+				prev = null;
+				while(index > 0)
+				{
+					prev = current;
+					current = current.next;
+					--index;
+				}
+				return prev;
 			}
 
 	// Remove a node from this list.
-	private void Remove(Node<T> node)
+	private void Remove(Node<T> prev, Node<T> node)
 			{
-				if(node.next != null)
+				if(node.next == null)
 				{
-					node.next.prev = node.prev;
+					last = prev;
 				}
-				else
+				if(prev != null)
 				{
-					last = node.prev;
-				}
-				if(node.prev != null)
-				{
-					node.prev.next = node.next;
+					prev.next = node.next;
 				}
 				else
 				{
@@ -115,61 +114,25 @@ public sealed class LinkedList<T>
 				--count;
 			}
 
-	// Insert a data item before a specific node.
-	private void InsertBefore(Node<T> node, T value)
+	// Implement the IQueue<T> interface.
+	void IQueue<T>.Clear()
 			{
-				Node<T> newNode = new Node<T>(value);
-				newNode.next = node;
-				newNode.prev = node.prev;
-				node.prev = newNode;
-				if(newNode.prev == null)
-				{
-					first = newNode;
-				}
-				++count;
+				Clear();
 			}
-
-	// Implement the IDeque<T> interface.
-	public void PushFront(T value)
+	bool IQueue<T>.Contains(T value)
 			{
-				Node<T> node = new Node<T>(item);
-				node.next = first;
-				if(first != null)
-				{
-					first.prev = node;
-				}
-				else
-				{
-					last = node;
-				}
-				first = node;
-				++count;
+				return Contains(value);
 			}
-	public void PushBack(T value)
+	public void Enqueue(T value)
 			{
-				Node<T> node = new Node<T>(item);
-				node.prev = last;
-				if(last != null)
-				{
-					last.next = node;
-				}
-				else
-				{
-					first = node;
-				}
-				last = node;
-				++count;
+				Add(value);
 			}
-	public T PopFront()
+	public T Dequeue()
 			{
 				if(first != null)
 				{
 					Node<T> node = first;
-					if(node.next != null)
-					{
-						node.next.prev = null;
-					}
-					else
+					if(node.next == null)
 					{
 						last = null;
 					}
@@ -183,30 +146,7 @@ public sealed class LinkedList<T>
 						(S._("Invalid_EmptyList"));
 				}
 			}
-	public T PopBack()
-			{
-				if(last != null)
-				{
-					Node<T> node = last;
-					if(node.prev != null)
-					{
-						node.prev.next = null;
-					}
-					else
-					{
-						first = null;
-					}
-					last = node.prev;
-					--count;
-					return node.data;
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_EmptyList"));
-				}
-			}
-	public T PeekFront()
+	public T Peek()
 			{
 				if(first != null)
 				{
@@ -218,49 +158,11 @@ public sealed class LinkedList<T>
 						(S._("Invalid_EmptyList"));
 				}
 			}
-	public T PeekEnd()
-			{
-				if(last != null)
-				{
-					return last.data;
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_EmptyList"));
-				}
-			}
 	public T[] ToArray()
 			{
-				T[] array = new T [Count];
+				T[] array = new T [count];
 				CopyTo(array, 0);
 				return array;
-			}
-
-	// Implement the IQueue<T> interface privately.
-	void IQueue<T>.Clear()
-			{
-				Clear();
-			}
-	bool IQueue<T>.Contains(T value)
-			{
-				return Contains(value);
-			}
-	void IQueue<T>.Enqueue(T value)
-			{
-				PushBack(value);
-			}
-	T IQueue<T>.Dequeue()
-			{
-				return PopFront();
-			}
-	T IQueue<T>.Peek()
-			{
-				return PeekFront();
-			}
-	T[] IQueue<T>.ToArray()
-			{
-				return ToArray();
 			}
 
 	// Implement the IStack<T> interface privately.
@@ -274,15 +176,15 @@ public sealed class LinkedList<T>
 			}
 	void IStack<T>.Push(T value)
 			{
-				PushFront(value);
+				Insert(0, value);
 			}
 	T IStack<T>.Pop()
 			{
-				return PopFront();
+				return Dequeue();
 			}
 	T IStack<T>.Peek()
 			{
-				return PeekFront();
+				return Peek();
 			}
 	T[] IStack<T>.ToArray()
 			{
@@ -338,7 +240,16 @@ public sealed class LinkedList<T>
 	public int Add(T value)
 			{
 				int index = count;
-				PushBack(value);
+				Node<T> node = new Node<T>(value);
+				if(last != null)
+				{
+					last.next = node;
+				}
+				else
+				{
+					first = node;
+				}
+				last = node;
 				return index;
 			}
 	public void Clear()
@@ -445,26 +356,47 @@ public sealed class LinkedList<T>
 			{
 				if(index == count)
 				{
-					PushBack(value);
+					Add(value);
 				}
 				else
 				{
-					Node<T> current = Get(index);
-					InsertBefore(current, value);
+					Node<T> prev = GetPrev(index);
+					Node<T> node = new Node<T>(value);
+					if(prev != null)
+					{
+						if(prev.next == null)
+						{
+							last = node;
+						}
+						node.next = prev.next;
+						prev.next = node;
+					}
+					else if(first != null)
+					{
+						node.next = first;
+						first = node;
+					}
+					else
+					{
+						first = node;
+						last = node;
+					}
 				}
 			}
 	public void Remove(T value)
 			{
 				Node<T> current = first;
+				Node<T> prev = null;
 				if(typeof(T).IsValueType)
 				{
 					while(current != null)
 					{
 						if(value.Equals(current.data))
 						{
-							Remove(current);
+							Remove(prev, current);
 							return;
 						}
+						prev = current;
 						current = current.next;
 					}
 				}
@@ -476,9 +408,10 @@ public sealed class LinkedList<T>
 						{
 							if(value.Equals(current.data))
 							{
-								Remove(current);
+								Remove(prev, current);
 								return;
 							}
+							prev = current;
 							current = current.next;
 						}
 					}
@@ -488,9 +421,10 @@ public sealed class LinkedList<T>
 						{
 							if(((Object)(current.data)) == null)
 							{
-								Remove(current);
+								Remove(prev, current);
 								return;
 							}
+							prev = current;
 							current = current.next;
 						}
 					}
@@ -498,7 +432,15 @@ public sealed class LinkedList<T>
 			}
 	public void RemoveAt(int index)
 			{
-				Remove(Get(index));
+				Node<T> prev = GetPrev(index);
+				if(prev != null)
+				{
+					Remove(prev, prev.next);
+				}
+				else
+				{
+					Remove(null, first);
+				}
 			}
 	public bool IsRandomAccess
 			{
@@ -528,11 +470,11 @@ public sealed class LinkedList<T>
 	// Implement the ICloneable interface.
 	public Object Clone()
 			{
-				LinkedList<T> clone = new LinkedList<T>();
+				SinglyLinkedList<T> clone = new SinglyLinkedList<T>();
 				IIterator<T> e = GetIterator();
 				while(e.MoveNext())
 				{
-					clone.PushBack(e.Current);
+					clone.Add(e.Current);
 				}
 				return clone;
 			}
@@ -543,6 +485,7 @@ public sealed class LinkedList<T>
 		// Internal state, accessible to "LinkedList<T>".
 		public LinkedList<T> list;
 		public Node<T> posn;
+		public Node<T> prev;
 		public int     index;
 		public bool    reset;
 		public bool    removed;
@@ -552,6 +495,7 @@ public sealed class LinkedList<T>
 				{
 					this.list = list;
 					this.posn = null;
+					this.prev = null;
 					this.index = -1;
 					this.reset = true;
 					this.removed = false;
@@ -563,16 +507,26 @@ public sealed class LinkedList<T>
 					if(reset)
 					{
 						posn = list.first;
+						prev = null;
 						index = 0;
 						reset = false;
 					}
+					else if(removed)
+					{
+						if(prev != null)
+						{
+							posn = prev.next;
+						}
+						else
+						{
+							posn = list.first;
+						}
+					}
 					else if(posn != null)
 					{
+						prev = posn;
 						posn = posn.next;
-						if(!removed)
-						{
-							++index;
-						}
+						++index;
 					}
 					removed = false;
 					return (posn != null);
@@ -580,6 +534,7 @@ public sealed class LinkedList<T>
 		public void Reset()
 				{
 					posn = null;
+					prev = null;
 					index = -1;
 					reset = true;
 					removed = false;
@@ -591,7 +546,7 @@ public sealed class LinkedList<T>
 						throw new InvalidOperationException
 							(S._("Invalid_BadIteratorPosition"));
 					}
-					list.Remove(posn);
+					list.Remove(prev, posn);
 					removed = true;
 				}
 		T IIterator<T>.Current
@@ -614,12 +569,28 @@ public sealed class LinkedList<T>
 					{
 						posn = list.last;
 						index = list.count - 1;
+						if(index >= 0)
+						{
+							prev = list.GetPrev(index);
+						}
+						else
+						{
+							prev = null;
+						}
 						reset = false;
 					}
 					else if(posn != null)
 					{
-						posn = posn.prev;
+						posn = prev;
 						--index;
+						if(index >= 0)
+						{
+							prev = list.GetPrev(index);
+						}
+						else
+						{
+							prev = null;
+						}
 					}
 					removed = false;
 					return (posn != null);
@@ -660,6 +631,6 @@ public sealed class LinkedList<T>
 
 	}; // class ListIterator<T>
 
-}; // class LinkedList<T>
+}; // class SinglyLinkedList<T>
 
 }; // namespace Generics

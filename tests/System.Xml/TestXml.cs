@@ -32,6 +32,7 @@ public class TestXml
 				suite.AddTests(typeof(TestXmlException));
 				suite.AddTests(typeof(TestXmlNamespaceManager));
 				suite.AddTests(typeof(TestXmlParserContext));
+				suite.AddTests(typeof(TestXmlTextWriter));
 				return suite;
 			}
 

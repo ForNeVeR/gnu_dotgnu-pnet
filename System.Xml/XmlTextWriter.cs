@@ -89,7 +89,7 @@ public class XmlTextWriter : XmlWriter
 				namespaceManager = new XmlNamespaceManager(nameTable);
 				scope = null;
 				indentLevel = 0;
-				xmlSpace = XmlSpace.Default;
+				xmlSpace = XmlSpace.None;
 				xmlLang = null;
 				pseudoNSNumber = 1;
 				prevWasText = false;
@@ -100,8 +100,9 @@ public class XmlTextWriter : XmlWriter
 	private void PushScope(String prefix, String localName, bool scopeShown)
 			{
 				scope = new ElementScope(scope);
-				scope.prefix = nameTable.Add(prefix);
-				scope.localName = nameTable.Add(localName);
+				scope.prefix = (prefix != null ? nameTable.Add(prefix) : null);
+				scope.localName =
+					(localName != null ? nameTable.Add(localName) : null);
 				scope.scopeShown = scopeShown;
 				if(formatting == System.Xml.Formatting.Indented)
 				{
@@ -514,22 +515,18 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidName"), "name");
 				}
 
-				// Pretend that we are in attribute mode so that
-				// "WriteString" will apply the correct quoting.
-				writeState = System.Xml.WriteState.Attribute;
-
 				// Write out the document type information.
 				writer.Write("<!DOCTYPE ");
 				writer.Write(name);
 				writer.Write(" PUBLIC \"");
-				WriteString(pubid);
+				WriteQuotedString(pubid);
 				writer.Write("\" \"");
-				WriteString(sysid);
+				WriteQuotedString(sysid);
 				writer.Write('\"');
 				if(subset != null && subset.Length != 0)
 				{
 					writer.Write(" \"");
-					WriteString(subset);
+					WriteQuotedString(subset);
 					writer.Write('\"');
 				}
 				writer.WriteLine('>');
@@ -568,6 +565,7 @@ public class XmlTextWriter : XmlWriter
 				if(writeState == System.Xml.WriteState.Attribute)
 				{
 					// Terminate the attribute and the element start.
+					Console.WriteLine("hello");
 					writer.Write(quoteChar);
 					writer.Write(" />");
 					PopScope();
@@ -581,6 +579,10 @@ public class XmlTextWriter : XmlWriter
 					// Terminate the element start.
 					writer.Write(" />");
 					PopScope();
+					if(xmlSpace != System.Xml.XmlSpace.Preserve)
+					{
+						writer.WriteLine();
+					}
 				}
 				while(scope != null)
 				{
@@ -789,7 +791,7 @@ public class XmlTextWriter : XmlWriter
 						writer.Write(prefix);
 						writer.Write('=');
 						writer.Write(quoteChar);
-						WriteString(ns);
+						WriteQuotedString(ns);
 						writer.Write(quoteChar);
 						writer.Write(' ');
 						writer.Write(prefix);
@@ -817,7 +819,7 @@ public class XmlTextWriter : XmlWriter
 						writer.Write(prefix);
 						writer.Write('=');
 						writer.Write(quoteChar);
-						WriteString(ns);
+						WriteQuotedString(ns);
 						writer.Write(quoteChar);
 						writer.Write(' ');
 						writer.Write(prefix);
@@ -906,15 +908,10 @@ public class XmlTextWriter : XmlWriter
 				}
 
 				// We need to be in the Element or Content state.
-				if(writeState == System.Xml.WriteState.Element)
-				{
-					writer.Write('>');
-				}
-				else if(writeState != System.Xml.WriteState.Content)
-				{
-					throw new InvalidOperationException
-						(S._("Xml_InvalidWriteState"));
-				}
+				Sync(WriteStateFlag.ElementFlag |
+					 WriteStateFlag.AttributeFlag |
+					 WriteStateFlag.ContentFlag |
+					 WriteStateFlag.PrologFlag);
 
 				// Get the current scope prefix.
 				String currPrefix;
@@ -961,7 +958,7 @@ public class XmlTextWriter : XmlWriter
 						writer.Write(prefix);
 						writer.Write('=');
 						writer.Write(quoteChar);
-						WriteString(ns);
+						WriteQuotedString(ns);
 						writer.Write(quoteChar);
 						scopeShown = true;
 					}
@@ -993,7 +990,7 @@ public class XmlTextWriter : XmlWriter
 						writer.Write(prefix);
 						writer.Write('=');
 						writer.Write(quoteChar);
-						WriteString(ns);
+						WriteQuotedString(ns);
 						writer.Write(quoteChar);
 						scopeShown = true;
 					}
@@ -1024,63 +1021,14 @@ public class XmlTextWriter : XmlWriter
 					namespaceManager.AddNamespace(prefix, ns);
 				}
 
-				// We are now in the attribute state.
-				writeState = System.Xml.WriteState.Attribute;
+				// We are now in the element state.
+				writeState = System.Xml.WriteState.Element;
 				prevWasText = false;
 			}
 
-	// Write a string.
-	public override void WriteString(String text)
+	// Write a quoted string.
+	private void WriteQuotedString(String text)
 			{
-				// We must not be in the closed state.
-				if(writeState == System.Xml.WriteState.Closed)
-				{
-					if(text != null && text.Length != 0)
-					{
-						throw new InvalidOperationException
-							(S._("Xml_InvalidWriteState"));
-					}
-					return;
-				}
-
-				// If we are in the attribute state, then check
-				// for the "xml:lang" and "xml:space" attributes.
-				if(writeState == System.Xml.WriteState.Attribute)
-				{
-					if(special == Special.Lang)
-					{
-						xmlLang = text;
-						special = Special.None;
-					}
-					else if(special == Special.Space)
-					{
-						if(text == "default")
-						{
-							xmlSpace = System.Xml.XmlSpace.Default;
-						}
-						else if(text == "preserve")
-						{
-							xmlSpace = System.Xml.XmlSpace.Preserve;
-						}
-						else
-						{
-							xmlSpace = System.Xml.XmlSpace.None;
-						}
-						special = Special.None;
-					}
-				}
-
-				// If we are in the element state, then shift to content.
-				Sync(WriteStateFlag.ContentFlag |
-					 WriteStateFlag.AttributeFlag);
-
-				// Bail out if the text is empty.
-				if(((Object)text) == null || text.Length == 0)
-				{
-					return;
-				}
-
-				// Quote the string and output it.
 				int posn, prev, len;
 				char ch;
 				prev = 0;
@@ -1180,6 +1128,61 @@ public class XmlTextWriter : XmlWriter
 				{
 					writer.Write(text.Substring(prev, len - prev));
 				}
+			}
+
+	// Write a string.
+	public override void WriteString(String text)
+			{
+				// We must not be in the closed state.
+				if(writeState == System.Xml.WriteState.Closed)
+				{
+					if(text != null && text.Length != 0)
+					{
+						throw new InvalidOperationException
+							(S._("Xml_InvalidWriteState"));
+					}
+					return;
+				}
+
+				// If we are in the attribute state, then check
+				// for the "xml:lang" and "xml:space" attributes.
+				if(writeState == System.Xml.WriteState.Attribute)
+				{
+					if(special == Special.Lang)
+					{
+						xmlLang = text;
+						special = Special.None;
+					}
+					else if(special == Special.Space)
+					{
+						if(text == "default")
+						{
+							xmlSpace = System.Xml.XmlSpace.Default;
+						}
+						else if(text == "preserve")
+						{
+							xmlSpace = System.Xml.XmlSpace.Preserve;
+						}
+						else
+						{
+							xmlSpace = System.Xml.XmlSpace.None;
+						}
+						special = Special.None;
+					}
+				}
+
+				// If we are in the element state, then shift to content.
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag);
+
+				// Bail out if the text is empty.
+				if(((Object)text) == null || text.Length == 0)
+				{
+					return;
+				}
+
+				// Quote the string and output it.
+				WriteQuotedString(text);
 			}
 
 	// Write a surrogate character entity.
@@ -1298,7 +1301,7 @@ public class XmlTextWriter : XmlWriter
 						throw new InvalidOperationException
 							(S._("Xml_InvalidWriteState"));
 					}
-					namespaces = true;
+					namespaces = value;
 				}
 			}
 

@@ -7,6 +7,7 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
+				 debug="true"
 				 optimize="true">
 
 			<sources>

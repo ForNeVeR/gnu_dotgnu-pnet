@@ -420,43 +420,6 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	// Write this node and all of its contents to a specified XmlWriter.
 	public abstract void WriteTo(XmlWriter w);
 
-#if false
-	public XmlNode Parent = null; //Pointer to the parent node, NULL if no parent
-	public XmlNode Prev = null; //Pointer to the previous node, NULL if no previous
-	public XmlNode Next = null; //Pointer to the next node, NULL if no next
-	public ArrayList Children = null; //Pointer to the child nodes, NULL if no children
-
-	public XmlNodeType Type; //The type of this node
-	public String Text; //The text of this node, 
-						//for example the name of an element node
-	public int Depth = -1; //The Depth of the current node, 0 is the top layer,
-						   //1 the layer under top, etc. -1 Is error.
-	
-	
-	public XmlNode(XmlNode prev, XmlNode up, XmlNodeType type, String text, int depth)
-	{
-		if (prev != null)
-		{
-			prev.Next = this;
-			this.Prev = prev;
-		}
-		
-		if (up != null)
-		{
-			this.Parent = up;
-			if(up.Children == null)
-			{
-				up.Children = new ArrayList();
-			}
-			up.Children.Add(this);
-		}
-		
-		this.Type = type;
-		this.Text = text;
-		this.Depth = depth;
-	}
-#endif
-	
 }; // class XmlNode
 
 }; // namespace System.Xml

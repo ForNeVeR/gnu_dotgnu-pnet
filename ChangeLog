@@ -32,6 +32,12 @@
 	* csharp/expr/const1.il: modified output file for the "expr/const1"
 	test, including the "ldc.r8" -> "ldc.r4" optimization.
 
+	* csharp/expr/Makefile.am, csharp/expr/incdec1.cs,
+	csharp/expr/incdec1.il, csharp/expr/incdec1.jl,
+	csharp/expr/incdec2.cs, csharp/expr/incdec2.err,
+	csharp/expr/incdec2.jerr: add test cases for the increment and
+	decrement operators.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/field2.cs, csharp/class.field2.il,

@@ -1,1 +1,1 @@
-SUBDIRS = runtime System System.Xml
+SUBDIRS = runtime I18N System System.Xml

@@ -1,3 +1,10 @@
+
+2002-04-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/*, resources/en_US/I18N/*: move all of the code page support
+	into the "I18N" directory, as the first stage in making the i18n
+	routines in "runtime" dynamically loadable.
+
 2002-04-18  Stephen Compall <rushing@sigecom.net>
 
 	* System/Uri.cs: Wiped out some TODOs, including Parse().

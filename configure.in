@@ -11,6 +11,7 @@ AC_SUBST(CSCC_EXE_LIBS)
 AC_SUBST(RESGEN)
 AC_SUBST(RESGEN_FLAGS)
 AC_SUBST(ILRUN)
+AC_SUBST(ILFIND)
 AC_SUBST(PNET_PATH)
 
 dnl Checks for programs.
@@ -129,15 +130,27 @@ if test "$ILRUN" = "" ; then
 	exit 1
 fi
 
+dnl Find the Portable.NET ilfind program.
+AC_PATH_PROG(ILFIND, ilfind,, $PNET_PATH/ilfind:$PATH)
+if test "$ILFIND" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET's ilfind is required to build the system."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
+
 AC_OUTPUT([
 Makefile
 tools/Makefile
 runtime/Makefile
+I18N/Makefile
 System/Makefile
 System.Xml/Makefile
 resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile
+resources/en_US/I18N/Makefile
 resources/en_US/System/Makefile
 resources/en_US/System.Xml/Makefile
 tools/run_test.sh

@@ -28,7 +28,7 @@ public class SuiteCryptography
 	public static TestSuite Suite()
 			{
 				TestSuite suite = new TestSuite("Cryptography Tests");
-			#if !ECMA_COMPAT
+			#if CONFIG_CRYPTO
 				suite.AddTests(typeof(TestAES));
 				suite.AddTests(typeof(TestDES));
 				suite.AddTests(typeof(TestRC2));

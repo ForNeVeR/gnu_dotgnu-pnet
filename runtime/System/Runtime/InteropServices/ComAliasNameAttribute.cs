@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Property |
 				AttributeTargets.Field |
@@ -51,6 +51,6 @@ public sealed class ComAliasNameAttribute : Attribute
 
 }; // class ComAliasNameAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

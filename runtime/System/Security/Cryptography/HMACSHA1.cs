@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System;
 using Platform;
@@ -168,6 +168,6 @@ public class HMACSHA1 : KeyedHashAlgorithm
 
 }; // class HMACSHA1
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Cryptography

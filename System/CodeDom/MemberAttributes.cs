@@ -22,12 +22,14 @@
 namespace System.CodeDom
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.Runtime.InteropServices;
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ComVisible(true)]
+#endif
 public enum MemberAttributes
 {
 	Abstract          = 0x0001,
@@ -49,6 +51,6 @@ public enum MemberAttributes
 
 }; // enum MemberAttributes
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom

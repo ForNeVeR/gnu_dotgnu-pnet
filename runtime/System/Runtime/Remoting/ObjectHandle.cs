@@ -26,7 +26,9 @@ namespace System.Runtime.Remoting
 
 using System.Runtime.InteropServices;
 
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
 public class ObjectHandle : MarshalByRefObject, IObjectHandle
 {
 	// Internal state.

@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 public enum CryptoStreamMode
 {
@@ -31,6 +31,6 @@ public enum CryptoStreamMode
 
 }; // enum CryptoStreamMode
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Cryptography

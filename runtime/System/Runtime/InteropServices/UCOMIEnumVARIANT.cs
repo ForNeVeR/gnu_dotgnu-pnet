@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [Guid("00020404-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -36,6 +36,6 @@ public interface UCOMIEnumVARIANT
 
 }; // class UCOMIEnumVARIANT
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

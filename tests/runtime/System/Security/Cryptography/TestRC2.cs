@@ -22,7 +22,7 @@ using CSUnit;
 using System;
 using System.Security.Cryptography;
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 public class TestRC2 : CryptoTestCase
 {
@@ -102,4 +102,4 @@ public class TestRC2 : CryptoTestCase
 
 }; // TestRC2
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO

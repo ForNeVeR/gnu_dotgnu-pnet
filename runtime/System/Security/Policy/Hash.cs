@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -120,6 +120,6 @@ public sealed class Hash
 
 }; // class Hash
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Policy

@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [Serializable]
 [Flags]
@@ -45,6 +45,6 @@ public enum TypeLibTypeFlags
 
 }; // enum TypeLibTypeFlags
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_X509_CERTIFICATES
 
 using System.Security.Permissions;
 using System.Security.Cryptography.X509Certificates;
@@ -123,6 +123,6 @@ public sealed class PublisherMembershipCondition
 
 }; // class PublisherMembershipCondition
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_X509_CERTIFICATES
 
 }; // namespace System.Security.Policy

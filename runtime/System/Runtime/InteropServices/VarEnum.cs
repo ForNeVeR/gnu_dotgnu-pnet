@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [Serializable]
 public enum VarEnum
@@ -74,6 +74,6 @@ public enum VarEnum
 
 }; // enum VarEnum
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

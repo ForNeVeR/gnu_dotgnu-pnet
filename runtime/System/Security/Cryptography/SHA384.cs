@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System;
 
@@ -47,6 +47,6 @@ public abstract class SHA384 : HashAlgorithm
 
 }; // class SHA384
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Cryptography

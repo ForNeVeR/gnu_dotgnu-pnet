@@ -88,7 +88,7 @@ public interface IVsaItems : IEnumerable
 // Interface to a script code item.
 public interface IVsaCodeItem : IVsaItem
 {
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 	CodeObject CodeDOM { get; }
 #endif
 	String SourceText { get; set; }

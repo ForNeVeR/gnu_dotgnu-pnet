@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [Serializable]
 public enum ImporterEventKind
@@ -33,6 +33,6 @@ public enum ImporterEventKind
 
 }; // enum ImporterEventKind
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

@@ -36,7 +36,7 @@ using System.Threading;
 
 #if CONFIG_RUNTIME_INFRA
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.None)]
 #endif
 public sealed class AppDomain

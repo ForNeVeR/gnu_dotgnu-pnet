@@ -332,6 +332,8 @@ public sealed class Marshal
 				WriteIntPtr(ObjectToPtr(ptr), ofs, val);
 			}
 
+#if CONFIG_COM_INTEROP
+
 	// Stub out COM-related methods, which are not supported
 	// in this implementation.
 	public static int AddRef(IntPtr pUnk)
@@ -358,12 +360,10 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
-#if !ECMA_COMPAT
 	public static Guid GenerateGuidForType(Type type)
 			{
 				throw new NotImplementedException();
 			}
-#endif
 	public static String GenerateProgIdForType(Type type)
 			{
 				throw new NotImplementedException();
@@ -430,7 +430,6 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
-#if !ECMA_COMPAT
 	public static String GetTypeInfoName(UCOMITypeInfo pTI)
 			{
 				throw new NotImplementedException();
@@ -451,7 +450,6 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
-#endif
 	public static bool IsComObject(Object o)
 			{
 				return false;
@@ -460,12 +458,10 @@ public sealed class Marshal
 			{
 				return false;
 			}
-#if !ECMA_COMPAT
 	public static int QueryInterface(IntPtr pUnk, ref Guid iid, out IntPtr ppv)
 			{
 				throw new NotImplementedException();
 			}
-#endif
 	public static IntPtr ReAllocCoTaskMem(IntPtr pv, int cb)
 			{
 				throw new NotImplementedException();
@@ -506,6 +502,8 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
+
+#endif // CONFIG_COM_INTEROP
 
 	// Other methods that aren't relevant to this implementation.
 	public static void DestroyStructure(IntPtr ptr, Type structureType)

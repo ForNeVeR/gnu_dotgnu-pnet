@@ -24,11 +24,11 @@
 namespace Accessibility
 {
 
-#if !ECMA_COMPAT
-
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+
+#if CONFIG_COM_INTEROP
 
 [Guid("618736E0-3C3D-11CF-810C-00AA00389B71")]
 [TypeLibType(0x1050)]
@@ -219,7 +219,7 @@ public interface IAccessibleHandler
 
 }; // interface IAccessibleHandler
 
-#else // ECMA_COMPAT
+#else // !CONFIG_COM_INTEROP
 
 // The same as above, but without the horrible COM marker attributes.
 
@@ -281,6 +281,6 @@ public interface IAccessibleHandler
 
 }; // interface IAccessibleHandler
 
-#endif // ECMA_COMPAT
+#endif // !CONFIG_COM_INTEROP
 
 } // namespace Accessibility

@@ -21,7 +21,7 @@
 namespace Platform
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System;
 using System.Runtime.CompilerServices;
@@ -162,6 +162,6 @@ internal sealed class CryptoMethods
 
 }; // class CryptoMethods
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace Platform

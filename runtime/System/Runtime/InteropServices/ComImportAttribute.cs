@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Class |
 				AttributeTargets.Interface,
@@ -34,6 +34,6 @@ public sealed class ComImportAttribute : Attribute
 
 }; // class ComImportAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

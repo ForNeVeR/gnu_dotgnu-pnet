@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography.X509Certificates
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_X509_CERTIFICATES
 
 using System.Collections;
 
@@ -173,6 +173,6 @@ public class X509CertificateCollection : CollectionBase
 
 }; // class X509CertificateCollection
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_X509_CERTIFICATES
 
 }; // namespace System.Security.Cryptography.X509Certificates

@@ -26,7 +26,9 @@ namespace System
 using System.Runtime.InteropServices;
 
 [Guid("27FFF232-A7A8-40dd-8D4A-734AD59FCD41")]
+#if CONFIG_COM_INTEROP
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+#endif
 public interface IAppDomainSetup
 {
 

@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System.Security.Permissions;
 using System.Security.Cryptography;
@@ -166,6 +166,6 @@ public sealed class HashMembershipCondition
 
 }; // class HashMembershipCondition
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Policy

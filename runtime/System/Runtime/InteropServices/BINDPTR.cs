@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [ComVisible(false)]
 [StructLayout(LayoutKind.Explicit, CharSet=CharSet.Unicode)]
@@ -35,6 +35,6 @@ public struct BINDPTR
 
 }; // struct BINDPTR
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

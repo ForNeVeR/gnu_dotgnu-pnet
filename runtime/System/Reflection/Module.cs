@@ -205,12 +205,16 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public bool IsResource();
 
+#if CONFIG_X509_CERTIFICATES
+
 	// Get the signer certificate for this module.
 	public X509Certificate GetSignerCertificate()
 			{
 				// Not used in this implementation.
 				return null;
 			}
+
+#endif
 
 #if CONFIG_SERIALIZATION
 

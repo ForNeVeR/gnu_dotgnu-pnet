@@ -29,7 +29,7 @@ using System.Runtime.CompilerServices;
 using System.Globalization;
 using System.Diagnostics;
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
 #endif
 public abstract class FieldInfo : MemberInfo

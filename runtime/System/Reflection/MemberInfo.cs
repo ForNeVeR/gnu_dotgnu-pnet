@@ -25,7 +25,7 @@ namespace System.Reflection
 
 using System.Runtime.InteropServices;
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
 #endif
 public abstract class MemberInfo : ICustomAttributeProvider

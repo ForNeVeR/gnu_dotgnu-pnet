@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System;
 using Platform;
@@ -144,6 +144,6 @@ public class SHA512Managed : SHA512
 
 }; // class SHA512Managed
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Cryptography

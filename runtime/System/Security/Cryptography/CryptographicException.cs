@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System;
 using System.Runtime.Serialization;
@@ -67,6 +67,6 @@ public class CryptographicException : SystemException
 
 }; // class CryptographicException
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Cryptography

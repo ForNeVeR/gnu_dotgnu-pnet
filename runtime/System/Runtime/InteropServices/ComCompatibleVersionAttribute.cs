@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Assembly, Inherited=false)]
 public sealed class ComCompatibleVersionAttribute : Attribute
@@ -75,6 +75,6 @@ public sealed class ComCompatibleVersionAttribute : Attribute
 
 }; // class ComCompatibleVersionAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

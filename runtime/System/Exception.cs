@@ -52,7 +52,7 @@ applications that didn't expect them to be present.
 
 */
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
 #endif
 public class Exception

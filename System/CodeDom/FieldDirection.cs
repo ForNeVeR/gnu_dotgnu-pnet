@@ -22,12 +22,14 @@
 namespace System.CodeDom
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.Runtime.InteropServices;
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ComVisible(true)]
+#endif
 public enum FieldDirection
 {
 	In  = 0,
@@ -36,6 +38,6 @@ public enum FieldDirection
 
 }; // enum FieldDirection
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom

@@ -24,7 +24,7 @@ namespace Microsoft.JScript
 using System;
 using System.CodeDom.Compiler;
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 public class JScriptCodeProvider : CodeDomProvider
 {
@@ -59,6 +59,6 @@ public class JScriptCodeProvider : CodeDomProvider
 
 }; // class JScriptCodeProvider
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace Microsoft.JScript

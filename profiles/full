@@ -29,4 +29,16 @@
 <!-- Use serialization facilities -->
 <define name="CONFIG_REFLECTION_EMIT" value="true"/>
 
+<!-- Use COM interoperability marker classes -->
+<define name="CONFIG_COM_INTEROP" value="true"/>
+
+<!-- Use CodeDom facilities -->
+<define name="CONFIG_CODEDOM" value="true"/>
+
+<!-- Use cryptography facilities -->
+<define name="CONFIG_CRYPTO" value="true"/>
+
+<!-- Use X.509 certificate facilities -->
+<define name="CONFIG_X509_CERTIFICATES" value="true"/>
+
 </profile>

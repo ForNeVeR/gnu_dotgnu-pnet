@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Assembly |
 				AttributeTargets.Class |
@@ -50,6 +50,6 @@ public sealed class AutomationProxyAttribute : Attribute
 
 }; // class AutomationProxyAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

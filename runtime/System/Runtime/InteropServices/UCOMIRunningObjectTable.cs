@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [Guid("00000010-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -41,6 +41,6 @@ public interface UCOMIRunningObjectTable
 
 }; // class UCOMIRunningObjectTable
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

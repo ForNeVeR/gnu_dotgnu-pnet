@@ -26,7 +26,7 @@
 namespace Microsoft.VisualBasic
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System;
 using System.CodeDom;
@@ -83,6 +83,6 @@ public class VBCodeProvider : CodeDomProvider
 
 }; // class VBCodeProvider
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace Microsoft.VisualBasic

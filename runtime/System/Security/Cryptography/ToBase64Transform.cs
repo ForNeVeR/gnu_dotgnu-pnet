@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System;
 
@@ -173,6 +173,6 @@ public class ToBase64Transform : ICryptoTransform, IDisposable
 
 }; // class ToBase64Transform
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Cryptography

@@ -22,7 +22,7 @@
 namespace System.CodeDom
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.Runtime.InteropServices;
 using System.Collections;
@@ -32,8 +32,10 @@ using System.Collections.Specialized;
 // the "set" accessor for "CustomAttributes".
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeTypeMember : CodeObject
 {
 
@@ -112,6 +114,6 @@ public class CodeTypeMember : CodeObject
 
 }; // class CodeTypeMember
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom

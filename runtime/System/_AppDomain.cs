@@ -38,7 +38,9 @@ internal
 #else
 [CLSCompliant(false)]
 [Guid("05F696DC-2B29-3663-AD8B-C4389CF2A713")]
+#if CONFIG_COM_INTEROP
 [InterfaceType(ComInterfaceType.InterfaceIsDual)]
+#endif
 public
 #endif
 interface _AppDomain

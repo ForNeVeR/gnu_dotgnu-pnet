@@ -119,7 +119,7 @@ public class Compiler
 					throw new ArgumentOutOfRangeException("sourceTextNames");
 				}
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 				// Build the compiler parameter block.
 				CompilerParameters paramBlock;
 				paramBlock = new CompilerParameters
@@ -228,7 +228,7 @@ public class Compiler
 				}
 				return newErrors;
 #else
-				// We don't have the necessary API's in ECMA-compat mode.
+				// We don't have the necessary CodeDom API's.
 				throw new NotImplementedException();
 #endif
 			}

@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Method, Inherited=false)]
 public sealed class LCIDConversionAttribute : Attribute
@@ -47,6 +47,6 @@ public sealed class LCIDConversionAttribute : Attribute
 
 }; // class LCIDConversionAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

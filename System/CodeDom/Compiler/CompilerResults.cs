@@ -22,7 +22,7 @@
 namespace System.CodeDom.Compiler
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.Collections.Specialized;
 using System.Reflection;
@@ -126,6 +126,6 @@ public class CompilerResults
 
 }; // class CompilerResults
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom.Compiler

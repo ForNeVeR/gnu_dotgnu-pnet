@@ -22,7 +22,7 @@
 namespace System.CodeDom.Compiler
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 public sealed class Executor
 {
@@ -80,6 +80,6 @@ public sealed class Executor
 
 }; // class Executor
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom.Compiler

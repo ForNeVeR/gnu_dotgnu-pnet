@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System;
 using Platform;
@@ -89,6 +89,6 @@ public sealed class TripleDESCryptoServiceProvider : TripleDES
 
 }; // class TripleDESCryptoServiceProvider
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Cryptography

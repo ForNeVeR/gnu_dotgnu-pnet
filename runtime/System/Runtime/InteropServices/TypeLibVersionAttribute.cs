@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Assembly, Inherited=false)]
 public sealed class TypeLibVersionAttribute : Attribute
@@ -56,6 +56,6 @@ public sealed class TypeLibVersionAttribute : Attribute
 
 }; // class TypeLibVersionAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

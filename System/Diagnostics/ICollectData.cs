@@ -26,9 +26,11 @@ namespace System.Diagnostics
 
 using System.Runtime.InteropServices;
 
+#if CONFIG_COM_INTEROP
 [ComImport]
 [Guid("73386977-D6FD-11D2-BED5-00C04F79E3AE")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+#endif
 public interface ICollectData
 {
 	void CloseData();

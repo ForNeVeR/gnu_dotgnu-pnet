@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [ComVisible(false)]
 [Serializable]
@@ -40,6 +40,6 @@ public enum PARAMFLAG : short
 
 }; // enum PARAMFLAG
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

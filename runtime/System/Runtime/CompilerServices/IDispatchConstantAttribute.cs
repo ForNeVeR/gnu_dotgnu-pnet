@@ -22,7 +22,7 @@
 namespace System.Runtime.CompilerServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 using System.Runtime.InteropServices;
 
@@ -45,6 +45,6 @@ public sealed class IDispatchConstantAttribute : CustomConstantAttribute
 
 }; // class IDispatchConstantAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.CompilerServices

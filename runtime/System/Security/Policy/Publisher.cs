@@ -22,7 +22,7 @@
 namespace System.Security.Policy
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_X509_CERTIFICATES
 
 using System.Security.Permissions;
 using System.Security.Cryptography.X509Certificates;
@@ -94,6 +94,6 @@ public sealed class Publisher : IIdentityPermissionFactory
 
 }; // class Publisher
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_X509_CERTIFICATES
 
 }; // namespace System.Security.Policy

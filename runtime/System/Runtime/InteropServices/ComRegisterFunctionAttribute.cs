@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Method, Inherited=false)]
 public sealed class ComRegisterFunctionAttribute : Attribute
@@ -32,6 +32,6 @@ public sealed class ComRegisterFunctionAttribute : Attribute
 
 }; // class ComRegisterFunctionAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

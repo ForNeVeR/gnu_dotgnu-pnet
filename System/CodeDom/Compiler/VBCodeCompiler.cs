@@ -22,7 +22,7 @@
 namespace System.CodeDom.Compiler
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.IO;
 using System.Reflection;
@@ -453,6 +453,6 @@ internal class VBCodeCompiler : CodeCompiler
 
 }; // class VBCodeCompiler
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom.Compiler

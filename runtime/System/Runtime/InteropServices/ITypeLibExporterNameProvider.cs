@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 using System.Reflection;
 using System.Reflection.Emit;
@@ -37,6 +37,6 @@ public interface ITypeLibExporterNameProvider
 
 }; // interface ITypeLibExporterNameProvider
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

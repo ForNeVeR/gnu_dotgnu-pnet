@@ -23,6 +23,8 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
+// Needed for Compact .NET Framework compatibility, so not CONFIG_COM_INTEROP.
+
 using System.Runtime.Serialization;
 
 [Serializable]

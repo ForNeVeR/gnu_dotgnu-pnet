@@ -50,7 +50,7 @@ public sealed class MarshalAsAttribute : Attribute
 	public Type MarshalTypeRef;
 	public int SizeConst;
 	public short SizeParamIndex;
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 	public VarEnum SafeArraySubType;
 	public Type SafeArrayUserDefinedSubType;
 #endif

@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Assembly |
 				AttributeTargets.Class |
@@ -55,6 +55,6 @@ public sealed class BestFitMappingAttribute : Attribute
 
 }; // class BestFitMappingAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

@@ -41,7 +41,7 @@ internal sealed class VsaCodeItem : VsaItem, IVsaCodeItem
 			}
 
 	// Implement the "IVsaCodeItem" interface.
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 	public CodeObject CodeDOM
 			{
 				get

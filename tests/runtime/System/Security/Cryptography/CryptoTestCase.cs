@@ -25,7 +25,7 @@ using System.IO;
 using System.Text;
 using System.Security.Cryptography;
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 public class CryptoTestCase : TestCase
 {
@@ -799,4 +799,4 @@ public class CryptoTestCase : TestCase
 
 }; // CryptoTestCase
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO

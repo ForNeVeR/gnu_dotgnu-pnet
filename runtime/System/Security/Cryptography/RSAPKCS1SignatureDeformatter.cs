@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 using System;
 
@@ -78,6 +78,6 @@ public class RSAPKCS1SignatureDeformatter : AsymmetricSignatureDeformatter
 
 }; // class RSAPKCS1SignatureDeformatter
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Cryptography

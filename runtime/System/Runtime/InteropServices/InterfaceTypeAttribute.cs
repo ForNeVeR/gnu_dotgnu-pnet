@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Interface, Inherited=false)]
 public sealed class InterfaceTypeAttribute : Attribute
@@ -47,6 +47,7 @@ public sealed class InterfaceTypeAttribute : Attribute
 	}
 
 }; // class InterfaceTypeAttribute
-#endif
+
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

@@ -22,15 +22,17 @@
 namespace System.CodeDom
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Specialized;
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeNamespaceImportCollection : IList, ICollection, IEnumerable
 {
 
@@ -179,6 +181,6 @@ public class CodeNamespaceImportCollection : IList, ICollection, IEnumerable
 
 }; // class CodeNamespaceImportCollection
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom

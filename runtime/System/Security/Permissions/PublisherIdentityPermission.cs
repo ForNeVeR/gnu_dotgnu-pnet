@@ -22,7 +22,7 @@
 namespace System.Security.Permissions
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_X509_CERTIFICATES
 
 using System;
 using System.Security;
@@ -194,6 +194,6 @@ public sealed class PublisherIdentityPermission : CodeAccessPermission
 
 }; // class PublisherIdentityPermission
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_X509_CERTIFICATES
 
 }; // namespace System.Security.Permissions

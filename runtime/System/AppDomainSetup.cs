@@ -26,7 +26,9 @@ namespace System
 using System.Runtime.InteropServices;
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.None)]
+#endif
 public sealed class AppDomainSetup : IAppDomainSetup
 {
 	// Internal state.

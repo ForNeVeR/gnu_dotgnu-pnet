@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [ComVisible(false)]
 public struct BIND_OPTS
@@ -35,6 +35,6 @@ public struct BIND_OPTS
 
 }; // struct BIND_OPTS
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

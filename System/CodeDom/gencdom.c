@@ -1,7 +1,7 @@
 /*
  * gencdom.c - Generate System.CodeDom classes from rules.txt.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -437,8 +437,10 @@ static void generateCode(FILE *stream)
 
 	/* Output the class header */
 	fprintf(stream, "[Serializable]\n");
+	fprintf(stream, "#if CONFIG_COM_INTEROP\n");
 	fprintf(stream, "[ClassInterface(ClassInterfaceType.AutoDispatch)]\n");
 	fprintf(stream, "[ComVisible(true)]\n");
+	fprintf(stream, "#endif\n");
 	fprintf(stream, "public class %s : %s\n", name, parent);
 	fprintf(stream, "{\n");
 	fprintf(stream, "\n");
@@ -550,7 +552,7 @@ static char const COPYRIGHT_MSG[] =
 	"/*\n"
 	" * This file is generated from rules.txt using gencdom - do not edit.\n"
 	" *\n"
-	" * Copyright (C) 2002  Southern Storm Software, Pty Ltd.\n"
+	" * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.\n"
 	" *\n"
 	" * This program is free software; you can redistribute it and/or modify\n"
 	" * it under the terms of the GNU General Public License as published by\n"
@@ -575,7 +577,7 @@ static void generateHeader(FILE *stream)
 	fputs(COPYRIGHT_MSG, stream);
 	fprintf(stream, "namespace System.CodeDom\n{\n");
 	fprintf(stream, "\n");
-	fprintf(stream, "#if !ECMA_COMPAT\n");
+	fprintf(stream, "#if CONFIG_CODEDOM\n");
 	fprintf(stream, "\n");
 	fprintf(stream, "using System.Runtime.InteropServices;\n");
 	fprintf(stream, "using System.Collections;\n");
@@ -588,7 +590,7 @@ static void generateHeader(FILE *stream)
  */
 static void generateFooter(FILE *stream)
 {
-	fprintf(stream, "#endif // !ECMA_COMPAT\n");
+	fprintf(stream, "#endif // CONFIG_CODEDOM\n");
 	fprintf(stream, "\n");
 	fprintf(stream, "}; // namespace System.CodeDom\n");
 }

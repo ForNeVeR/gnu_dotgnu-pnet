@@ -22,12 +22,14 @@
 namespace System.CodeDom
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.Runtime.InteropServices;
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ComVisible(true)]
+#endif
 public enum CodeBinaryOperatorType
 {
 	Add                = 0,
@@ -50,6 +52,6 @@ public enum CodeBinaryOperatorType
 
 }; // enum CodeBinaryOperatorType
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom

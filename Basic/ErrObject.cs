@@ -223,6 +223,7 @@ public sealed class ErrObject
 				{
 					return 91;
 				}
+#if CONFIG_COM_INTEROP
 				if(exception is COMException)
 				{
 					return ((COMException)exception).ErrorCode;
@@ -231,6 +232,11 @@ public sealed class ErrObject
 				{
 					return 99;
 				}
+				if(exception is InvalidOleVariantTypeException)
+				{
+					return 458;
+				}
+#endif
 				if(exception is TypeLoadException)
 				{
 					return 429;
@@ -246,10 +252,6 @@ public sealed class ErrObject
 				if(exception is EntryPointNotFoundException)
 				{
 					return 453;
-				}
-				if(exception is InvalidOleVariantTypeException)
-				{
-					return 458;
 				}
 				return 5;
 			}
@@ -304,8 +306,13 @@ public sealed class ErrObject
 					case 91:
 						return new NullReferenceException(message);
 
+#if CONFIG_COM_INTEROP
 					case 99:
 						return new SEHException(message);
+
+					case 458:
+						return new InvalidOleVariantTypeException(message);
+#endif
 
 					case 422:
 						return new MissingFieldException(message);
@@ -315,9 +322,6 @@ public sealed class ErrObject
 
 					case 453:
 						return new EntryPointNotFoundException(message);
-
-					case 458:
-						return new InvalidOleVariantTypeException(message);
 
 					default:
 						return new Exception(message);

@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Assembly,
 			    Inherited=false)]
@@ -53,6 +53,6 @@ public sealed class ClassInterfaceAttribute : Attribute
 
 }; // class ClassInterfaceAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

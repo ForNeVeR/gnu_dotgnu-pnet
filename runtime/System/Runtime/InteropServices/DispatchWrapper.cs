@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 public sealed class DispatchWrapper
 {
@@ -46,6 +46,6 @@ public sealed class DispatchWrapper
 
 }; // class DispatchWrapper
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

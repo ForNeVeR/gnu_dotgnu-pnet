@@ -22,7 +22,7 @@
 namespace System.Security.Cryptography
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 public enum FromBase64TransformMode
 {
@@ -31,6 +31,6 @@ public enum FromBase64TransformMode
 
 }; // enum FromBase64TransformMode
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO
 
 }; // namespace System.Security.Cryptography

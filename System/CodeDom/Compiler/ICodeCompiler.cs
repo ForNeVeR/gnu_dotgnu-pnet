@@ -22,7 +22,7 @@
 namespace System.CodeDom.Compiler
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 public interface ICodeCompiler
 {
@@ -52,6 +52,6 @@ public interface ICodeCompiler
 
 }; // interface ICodeCompiler
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom.Compiler

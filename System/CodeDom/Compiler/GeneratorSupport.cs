@@ -22,7 +22,7 @@
 namespace System.CodeDom.Compiler
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 [Flags]
 public enum GeneratorSupport
@@ -51,6 +51,6 @@ public enum GeneratorSupport
 
 }; // enum GeneratorSupport
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom.Compiler

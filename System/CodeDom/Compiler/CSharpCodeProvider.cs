@@ -26,7 +26,7 @@
 namespace Microsoft.CSharp
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System;
 using System.CodeDom;
@@ -74,6 +74,6 @@ public class CSharpCodeProvider : CodeDomProvider
 
 }; // class CSharpCodeProvider
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace Microsoft.CSharp

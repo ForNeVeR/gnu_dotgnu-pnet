@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.Interface, Inherited=false)]
 public sealed class ComEventInterfaceAttribute : Attribute
@@ -56,6 +56,6 @@ public sealed class ComEventInterfaceAttribute : Attribute
 
 }; // class ComEventInterfaceAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

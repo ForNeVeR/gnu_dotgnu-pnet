@@ -22,7 +22,7 @@
 namespace System.CodeDom.Compiler
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.IO;
 using System.Text;
@@ -298,6 +298,6 @@ public class IndentedTextWriter : TextWriter
 
 }; // class IndentedTextWriter
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom.Compiler

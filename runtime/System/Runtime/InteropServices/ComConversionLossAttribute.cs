@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 
 [AttributeUsage(AttributeTargets.All, Inherited=false)]
 public sealed class ComConversionLossAttribute : Attribute
@@ -32,6 +32,6 @@ public sealed class ComConversionLossAttribute : Attribute
 
 }; // class ComConversionLossAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COM_INTEROP
 
 }; // namespace System.Runtime.InteropServices

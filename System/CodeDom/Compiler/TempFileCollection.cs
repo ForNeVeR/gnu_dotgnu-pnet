@@ -22,7 +22,7 @@
 namespace System.CodeDom.Compiler
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.Collections;
 
@@ -177,6 +177,6 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 
 }; // class TempFileCollection
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom.Compiler

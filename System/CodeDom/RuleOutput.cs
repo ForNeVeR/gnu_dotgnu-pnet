@@ -1,7 +1,7 @@
 /*
  * This file is generated from rules.txt using gencdom - do not edit.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,15 +21,17 @@
 namespace System.CodeDom
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_CODEDOM
 
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Specialized;
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeArgumentReferenceExpression : CodeExpression
 {
 
@@ -61,8 +63,10 @@ public class CodeArgumentReferenceExpression : CodeExpression
 }; // class CodeArgumentReferenceExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeArrayIndexerExpression : CodeExpression
 {
 
@@ -107,8 +111,10 @@ public class CodeArrayIndexerExpression : CodeExpression
 }; // class CodeArrayIndexerExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeAssignStatement : CodeStatement
 {
 
@@ -153,8 +159,10 @@ public class CodeAssignStatement : CodeStatement
 }; // class CodeAssignStatement
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeAttributeArgumentCollection : CollectionBase
 {
 
@@ -232,8 +240,10 @@ public class CodeAttributeArgumentCollection : CollectionBase
 }; // class CodeAttributeArgumentCollection
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeAttributeArgument : Object
 {
 
@@ -282,8 +292,10 @@ public class CodeAttributeArgument : Object
 }; // class CodeAttributeArgument
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeAttributeDeclarationCollection : CollectionBase
 {
 
@@ -361,8 +373,10 @@ public class CodeAttributeDeclarationCollection : CollectionBase
 }; // class CodeAttributeDeclarationCollection
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeAttributeDeclaration : Object
 {
 
@@ -411,8 +425,10 @@ public class CodeAttributeDeclaration : Object
 }; // class CodeAttributeDeclaration
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeBaseReferenceExpression : CodeExpression
 {
 
@@ -424,8 +440,10 @@ public class CodeBaseReferenceExpression : CodeExpression
 }; // class CodeBaseReferenceExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeBinaryOperatorExpression : CodeExpression
 {
 
@@ -483,8 +501,10 @@ public class CodeBinaryOperatorExpression : CodeExpression
 }; // class CodeBinaryOperatorExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeCatchClauseCollection : CollectionBase
 {
 
@@ -562,8 +582,10 @@ public class CodeCatchClauseCollection : CollectionBase
 }; // class CodeCatchClauseCollection
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeComment : CodeObject
 {
 
@@ -612,8 +634,10 @@ public class CodeComment : CodeObject
 }; // class CodeComment
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeCommentStatementCollection : CollectionBase
 {
 
@@ -691,8 +715,10 @@ public class CodeCommentStatementCollection : CollectionBase
 }; // class CodeCommentStatementCollection
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeCompileUnit : CodeObject
 {
 
@@ -744,8 +770,10 @@ public class CodeCompileUnit : CodeObject
 }; // class CodeCompileUnit
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeConstructor : CodeMemberMethod
 {
 
@@ -785,8 +813,10 @@ public class CodeConstructor : CodeMemberMethod
 }; // class CodeConstructor
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeDelegateCreateExpression : CodeExpression
 {
 
@@ -844,8 +874,10 @@ public class CodeDelegateCreateExpression : CodeExpression
 }; // class CodeDelegateCreateExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeDelegateInvokeExpression : CodeExpression
 {
 
@@ -894,8 +926,10 @@ public class CodeDelegateInvokeExpression : CodeExpression
 }; // class CodeDelegateInvokeExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeDirectionExpression : CodeExpression
 {
 
@@ -940,8 +974,10 @@ public class CodeDirectionExpression : CodeExpression
 }; // class CodeDirectionExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeEntryPointMethod : CodeMemberMethod
 {
 
@@ -953,8 +989,10 @@ public class CodeEntryPointMethod : CodeMemberMethod
 }; // class CodeEntryPointMethod
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeEventReferenceExpression : CodeExpression
 {
 
@@ -999,8 +1037,10 @@ public class CodeEventReferenceExpression : CodeExpression
 }; // class CodeEventReferenceExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeExpressionCollection : CollectionBase
 {
 
@@ -1078,8 +1118,10 @@ public class CodeExpressionCollection : CollectionBase
 }; // class CodeExpressionCollection
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeExpression : CodeObject
 {
 
@@ -1091,8 +1133,10 @@ public class CodeExpression : CodeObject
 }; // class CodeExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeExpressionStatement : CodeStatement
 {
 
@@ -1124,8 +1168,10 @@ public class CodeExpressionStatement : CodeStatement
 }; // class CodeExpressionStatement
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeFieldReferenceExpression : CodeExpression
 {
 
@@ -1170,8 +1216,10 @@ public class CodeFieldReferenceExpression : CodeExpression
 }; // class CodeFieldReferenceExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeIndexerExpression : CodeExpression
 {
 
@@ -1216,8 +1264,10 @@ public class CodeIndexerExpression : CodeExpression
 }; // class CodeIndexerExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeIterationStatement : CodeStatement
 {
 
@@ -1288,8 +1338,10 @@ public class CodeIterationStatement : CodeStatement
 }; // class CodeIterationStatement
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeLabeledStatement : CodeStatement
 {
 
@@ -1338,8 +1390,10 @@ public class CodeLabeledStatement : CodeStatement
 }; // class CodeLabeledStatement
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeMemberProperty : CodeTypeMember
 {
 
@@ -1451,8 +1505,10 @@ public class CodeMemberProperty : CodeTypeMember
 }; // class CodeMemberProperty
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeMethodReferenceExpression : CodeExpression
 {
 
@@ -1497,8 +1553,10 @@ public class CodeMethodReferenceExpression : CodeExpression
 }; // class CodeMethodReferenceExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeMethodReturnStatement : CodeStatement
 {
 
@@ -1530,8 +1588,10 @@ public class CodeMethodReturnStatement : CodeStatement
 }; // class CodeMethodReturnStatement
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeNamespaceCollection : CollectionBase
 {
 
@@ -1609,8 +1669,10 @@ public class CodeNamespaceCollection : CollectionBase
 }; // class CodeNamespaceCollection
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeParameterDeclarationExpressionCollection : CollectionBase
 {
 
@@ -1688,8 +1750,10 @@ public class CodeParameterDeclarationExpressionCollection : CollectionBase
 }; // class CodeParameterDeclarationExpressionCollection
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodePrimitiveExpression : CodeExpression
 {
 
@@ -1721,8 +1785,10 @@ public class CodePrimitiveExpression : CodeExpression
 }; // class CodePrimitiveExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodePropertyReferenceExpression : CodeExpression
 {
 
@@ -1767,8 +1833,10 @@ public class CodePropertyReferenceExpression : CodeExpression
 }; // class CodePropertyReferenceExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodePropertySetValueReferenceExpression : CodeExpression
 {
 
@@ -1780,8 +1848,10 @@ public class CodePropertySetValueReferenceExpression : CodeExpression
 }; // class CodePropertySetValueReferenceExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeSnippetExpression : CodeExpression
 {
 
@@ -1813,8 +1883,10 @@ public class CodeSnippetExpression : CodeExpression
 }; // class CodeSnippetExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeSnippetStatement : CodeStatement
 {
 
@@ -1846,8 +1918,10 @@ public class CodeSnippetStatement : CodeStatement
 }; // class CodeSnippetStatement
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeSnippetTypeMember : CodeTypeMember
 {
 
@@ -1879,8 +1953,10 @@ public class CodeSnippetTypeMember : CodeTypeMember
 }; // class CodeSnippetTypeMember
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeStatement : CodeObject
 {
 
@@ -1908,8 +1984,10 @@ public class CodeStatement : CodeObject
 }; // class CodeStatement
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeThisReferenceExpression : CodeExpression
 {
 
@@ -1921,8 +1999,10 @@ public class CodeThisReferenceExpression : CodeExpression
 }; // class CodeThisReferenceExpression
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeThrowExceptionStatement : CodeStatement
 {
 
@@ -1954,8 +2034,10 @@ public class CodeThrowExceptionStatement : CodeStatement
 }; // class CodeThrowExceptionStatement
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeTryCatchFinallyStatement : CodeStatement
 {
 
@@ -2018,8 +2100,10 @@ public class CodeTryCatchFinallyStatement : CodeStatement
 }; // class CodeTryCatchFinallyStatement
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeTypeConstructor : CodeMemberMethod
 {
 
@@ -2031,8 +2115,10 @@ public class CodeTypeConstructor : CodeMemberMethod
 }; // class CodeTypeConstructor
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeTypeDeclarationCollection : CollectionBase
 {
 
@@ -2110,8 +2196,10 @@ public class CodeTypeDeclarationCollection : CollectionBase
 }; // class CodeTypeDeclarationCollection
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeTypeMemberCollection : CollectionBase
 {
 
@@ -2189,8 +2277,10 @@ public class CodeTypeMemberCollection : CollectionBase
 }; // class CodeTypeMemberCollection
 
 [Serializable]
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
+#endif
 public class CodeVariableReferenceExpression : CodeExpression
 {
 
@@ -2221,6 +2311,6 @@ public class CodeVariableReferenceExpression : CodeExpression
 
 }; // class CodeVariableReferenceExpression
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CODEDOM
 
 }; // namespace System.CodeDom

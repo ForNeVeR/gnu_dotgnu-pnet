@@ -22,7 +22,7 @@ using CSUnit;
 using System;
 using System.Security.Cryptography;
 
-#if !ECMA_COMPAT
+#if CONFIG_CRYPTO
 
 public class TestTripleDES : CryptoTestCase
 {
@@ -321,4 +321,4 @@ public class TestTripleDES : CryptoTestCase
 
 }; // TestTripleDES
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_CRYPTO

@@ -33,7 +33,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Configuration.Assemblies;
 
-#if !ECMA_COMPAT
+#if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
 #endif
 public class Assembly : IClrProgramItem

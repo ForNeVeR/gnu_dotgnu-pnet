@@ -216,11 +216,11 @@ ILInt32 _IL_PortMethods_WaitForPinChange(ILExecThread *_thread,
 }
 
 /*
- * public static int WaitForInput(IntPtr handle);
+ * public static int WaitForInput(IntPtr handle, int timeout);
  */
-ILInt32 _IL_PortMethods_WaitForInput(ILExecThread *_thread, ILNativeInt handle)
+ILInt32 _IL_PortMethods_WaitForInput(ILExecThread *_thread, ILNativeInt handle, ILInt32 timeout)
 {
-	return ILSerialWaitForInput((ILSerial *)handle);
+	return ILSerialWaitForInput((ILSerial *)handle, timeout);
 }
 
 /*

@@ -1,4 +1,11 @@
 
+2004-10-15  Adam Gibson  <adam.gibson@gmail.com>
+
+	* engine/int_table.c, engine/int_proto.h, engine/lib_serial.c,
+	include/il_serial.h, support/serial.c: Implement timeouts for 
+	*nix version of serial reads , add timeout parameter to WaitForInput.
+	(patch #3448, Gopal).
+
 2004-10-13  Gopal V  <gopalv82@yahoo.com>
 
 	* ilasm/ilasm_grammar.y: Add missing intialization and fix segfault.

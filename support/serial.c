@@ -608,8 +608,14 @@ void ILSerialDrainOutBuffer(ILSerial *handle)
 
 ILInt32 ILSerialRead(ILSerial *handle, void *buffer, ILInt32 count)
 {
-	/* TODO: timeout support */
-	return (ILInt32)(read(handle->fd, buffer, (int)count));
+	ILInt32 retval;
+	retval = ILSerialWaitForInput(handle, handle->readTimeout);
+	if(retval)
+	{
+		retval = (ILInt32)(read(handle->fd, buffer, (int)count));
+	}
+
+	return retval;
 }
 
 void ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
@@ -647,13 +653,25 @@ int ILSerialWaitForPinChange(ILSerial *handle)
 #endif
 }
 
-int ILSerialWaitForInput(ILSerial *handle)
+int ILSerialWaitForInput(ILSerial *handle, ILInt32 timeout )
 {
+	struct timeval tv;
+	struct timeval *seltv = NULL;
 	fd_set readSet;
+
+	if( timeout > 0 )
+	{
+		// convert milliseconds to seconds and left over microseconds
+		tv.tv_sec = timeout / 1000;
+		tv.tv_usec = (timeout % 1000) * 1000;
+		seltv = &tv;
+	}
+	// else timeout is infinite if <= 0
+
 	FD_ZERO(&readSet);
 	FD_SET(handle->fd, &readSet);
 	if(select(handle->fd + 1, &readSet, (fd_set *)0, (fd_set *)0,
-			  (struct timeval *)0) == 1)
+			  seltv) == 1)
 	{
 		return 1;
 	}
@@ -941,7 +959,7 @@ int ILSerialWaitForPinChange(ILSerial *handle)
 	return -1;
 }
 
-int ILSerialWaitForInput(ILSerial *handle)
+int ILSerialWaitForInput(ILSerial *handle, ILInt32 timeout)
 {
 	/* TODO */
 	return -1;
@@ -1032,7 +1050,7 @@ int ILSerialWaitForPinChange(ILSerial *handle)
 	return -1;
 }
 
-int ILSerialWaitForInput(ILSerial *handle)
+int ILSerialWaitForInput(ILSerial *handle, ILInt32 timeout)
 {
 	return -1;
 }

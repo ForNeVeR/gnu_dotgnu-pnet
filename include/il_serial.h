@@ -178,7 +178,7 @@ int ILSerialWaitForPinChange(ILSerial *handle);
  * input, or zero if the thread was interrupted, and -1 if input
  * detection is not possible.
  */
-int ILSerialWaitForInput(ILSerial *handle);
+int ILSerialWaitForInput(ILSerial *handle, ILInt32 timeout);
 
 /*
  * Send an interrupt signal to a serial port pin-change/input wait thread.

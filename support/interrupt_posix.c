@@ -37,6 +37,35 @@ extern	"C" {
 
 #if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
 	#include <sys/ucontext.h>
+
+	/* older glibc's (<=2.1.2) have EAX instead of REG_EAX */
+	#if !defined(REG_EAX) && defined(EAX)
+		#define REG_EAX EAX
+	#endif
+	#if !defined(REG_EBX) && defined(EBX)
+		#define REG_EBX EBX
+	#endif
+	#if !defined(REG_ECX) && defined(ECX)
+		#define REG_ECX ECX
+	#endif
+	#if !defined(REG_EDX) && defined(EDX)
+		#define REG_EDX EDX
+	#endif
+	#if !defined(REG_EDI) && defined(EDI)
+		#define REG_EDI EDI
+	#endif
+	#if !defined(REG_ESI) && defined(ESI)
+		#define REG_ESI ESI
+	#endif
+	#if !defined(REG_EBP) && defined(EBP)
+		#define REG_EBP EBP
+	#endif
+	#if !defined(REG_EIP) && defined(EIP)
+		#define REG_EIP EIP
+	#endif
+	#if !defined(REG_ESP) && defined(ESP)
+		#define REG_ESP ESP
+	#endif
 #endif
 
 #if defined(IL_INTERRUPT_SUPPORTS)

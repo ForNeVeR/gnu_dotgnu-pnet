@@ -1,4 +1,9 @@
 
+2004-11-23  Gopal V  <gopalv82@yahoo.com>
+
+	* support/interrupt_posix.c: Fix bug #10906 by adding appropriate ifdefs
+	to detect older EAX defines instead of the REG_EAX .
+
 2004-11-22  Klaus Treichel  <ktreichel@web.de>
 
 	* include/il_utils.h, engine/lib_string.c, support/unicode.c: Fix case

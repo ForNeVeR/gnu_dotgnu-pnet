@@ -9,6 +9,7 @@ TESTS = arglist1.cs \
 		binary1.cs \
 		binary2.cs \
 		binary3.cs \
+		binary4.cs \
 		bitwise1.cs \
 		bitwise2.cs \
 		cast1.cs \
@@ -21,6 +22,7 @@ TESTS = arglist1.cs \
 		const1.cs \
 		delegate1.cs \
 		delegate2.cs \
+		delegate3.cs \
 		enum1.cs \
 		enum2.cs \
 		incdec1.cs \

@@ -12,6 +12,8 @@ generators to use these fields.
 * cscc/cs_gather.c: change the semantic analysis for types to use the
 new helper functions.
 
+* cscc/cs_errors.c: never allow unsafe constructs when the output is Java.
+
 2001-08-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c (main): turn on the "semAnalysis" flag during type

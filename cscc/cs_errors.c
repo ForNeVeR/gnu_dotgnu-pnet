@@ -208,7 +208,8 @@ void CSTypedWarningOnLine(char *filename, unsigned long linenum,
 void CSUnsafeMessage(ILGenInfo *info, ILNode *node, const char *format, ...)
 {
 	char newformat[BUFSIZ];
-	if(CSStringListContains(extension_flags, num_extension_flags, "unsafe"))
+	if(!(info->outputIsJava) &&
+	   CSStringListContains(extension_flags, num_extension_flags, "unsafe"))
 	{
 		if(info->unsafeLevel == 0)
 		{
@@ -238,6 +239,17 @@ void CSUnsafeMessage(ILGenInfo *info, ILNode *node, const char *format, ...)
 			}
 		}
 	}
+	else if(info->outputIsJava)
+	{
+		/* Unsafe constructs are never permitted in Java */
+		VA_START;
+		strcpy(newformat, format);
+		strcat(newformat, " not permitted with Java output");
+		PrintMessage(yygetfilename(node), yygetlinenum(node), 0,
+					 newformat, VA_GET_LIST);
+		VA_END;
+		CSHaveErrors = 1;
+	}
 	else
 	{
 		/* Unsafe constructs are not permitted */
@@ -259,7 +271,8 @@ void CSUnsafeTypeMessage(ILGenInfo *info, ILNode *node)
 void CSUnsafeEnter(ILGenInfo *info, ILNode *node, const char *format, ...)
 {
 	char newformat[BUFSIZ];
-	if(CSStringListContains(extension_flags, num_extension_flags, "unsafe"))
+	if(!(info->outputIsJava) &&
+	   CSStringListContains(extension_flags, num_extension_flags, "unsafe"))
 	{
 		/* Unsafe constructs are permitted, so just print a warning */
 		if(WarningEnabled("unsafe"))
@@ -274,6 +287,17 @@ void CSUnsafeEnter(ILGenInfo *info, ILNode *node, const char *format, ...)
 				CSHaveErrors = 1;
 			}
 		}
+	}
+	else if(info->outputIsJava)
+	{
+		/* Unsafe constructs are never permitted in Java */
+		VA_START;
+		strcpy(newformat, format);
+		strcat(newformat, " not permitted with Java output");
+		PrintMessage(yygetfilename(node), yygetlinenum(node), 0,
+					 newformat, VA_GET_LIST);
+		VA_END;
+		CSHaveErrors = 1;
 	}
 	else
 	{

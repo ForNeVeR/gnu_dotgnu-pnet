@@ -1,4 +1,8 @@
 
+2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/verify_call: bytecode verification for call-related opcodes.
+
 2001-10-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_obj.c: verification for the remainder of the object-related

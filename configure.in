@@ -32,7 +32,10 @@ AC_ARG_WITH(libffi,
 	withffi=no
 ],
 [
-	withffi=yes
+	case "$host" in
+    	*-*-hpux*)		withffi=no ;;
+		        *)		withffi=yes ;;
+	esac
 ])
 
 dnl This code was borrowed from "libgc" to test for the correct
@@ -258,7 +261,9 @@ if test "x$no_recursion" != "xyes"; then
 	if test x$withffi = xyes ; then
 		cd "${srcdir}/libffi"
 		./configure --disable-multilib --disable-shared
+		cd ../libgc
+	else
+		cd "${srcdir}/libgc"
 	fi
-	cd "${srcdir}/libgc"
 	./configure --enable-threads=$THREADS
 fi

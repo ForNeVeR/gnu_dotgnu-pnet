@@ -120,6 +120,9 @@
 /* Define if you have the cosh function.  */
 #undef HAVE_COSH
 
+/* Define if you have the cygwin_conv_to_win32_path function.  */
+#undef HAVE_CYGWIN_CONV_TO_WIN32_PATH
+
 /* Define if you have the dlopen function.  */
 #undef HAVE_DLOPEN
 
@@ -332,6 +335,9 @@
 
 /* Define if you have the <strings.h> header file.  */
 #undef HAVE_STRINGS_H
+
+/* Define if you have the <sys/cygwin.h> header file.  */
+#undef HAVE_SYS_CYGWIN_H
 
 /* Define if you have the <sys/mman.h> header file.  */
 #undef HAVE_SYS_MMAN_H

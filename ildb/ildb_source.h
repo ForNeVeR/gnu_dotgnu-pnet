@@ -87,7 +87,8 @@ void ILDbSourceRegisterItem(ILDbSourceFile *file, ILProgramItem *item,
  * Get the source file that contains a particular class or member.
  * Returns NULL if it was not possible to locate an approprate file.
  */
-ILDbSourceFile *ILDbSourceGet(ILDb *db, ILClass *classInfo, ILMember *member);
+ILDbSourceFile *ILDbSourceGet(ILDb *db, ILClass *classInfo,
+							  ILMember *member, long *line);
 
 /*
  * Destroy a list of cached source files.

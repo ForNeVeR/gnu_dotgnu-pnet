@@ -23,6 +23,11 @@
 
 	* csunit/Makefile.in: remove a file that shouldn't be in CVS.
 
+	* ildb/ildb_context.c, ildb/ildb_context.h, ildb/ildb_list.c,
+	ildb/ildb_search.c, ildb/ildb_source.c, ildb/ildb_source.h:
+	load source files correctly into the debugger; use EXINIT for
+	the tab stop specification in "list" commands.
+
 2002-11-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_arith.tc, cscc/csharp/cs_oper.tc: Move the reduction in

@@ -797,6 +797,7 @@ static void AddLines(ILDbSourceFile *file, const char *buf, unsigned long len)
 			++temp;
 			offset += (unsigned long)(temp - buf);
 			len -= (unsigned long)(temp - buf);
+			buf += (unsigned long)(temp - buf);
 			file->prevIsEOL = 1;
 		}
 		else
@@ -808,10 +809,57 @@ static void AddLines(ILDbSourceFile *file, const char *buf, unsigned long len)
 	}
 }
 
+/*
+ * Add a string buffer to a source file.
+ */
+static void AddBuffer(ILDbSourceFile *file, const char *str, unsigned long len)
+{
+	/* Expand the text buffer and add the new string */
+	if((file->textLen + len) > file->textMax)
+	{
+		char *newText;
+		unsigned long newLen = file->textLen + len;
+		newLen = (newLen + 1023) & ~1023;
+		newText = (char *)ILRealloc(file->text, newLen);
+		if(!newText)
+		{
+			ILDbOutOfMemory(file->owner);
+		}
+		file->text = newText;
+		file->textMax = newLen;
+	}
+	ILMemCpy(file->text + file->textLen, str, len);
+	file->textLen += len;
+
+	/* Add the lines within the string to the lines array */
+	AddLines(file, str, len);
+}
+
 ILDbSourceFile *ILDbSourceCreate(ILDb *db, const char *filename)
 {
-	/* TODO */
-	return 0;
+	ILDbSourceFile *file;
+	FILE *stream;
+	char buffer[BUFSIZ];
+	int size;
+
+	/* Create the source file block */
+	if(SourceCreate(db, filename, 0, &file))
+	{
+		return file;
+	}
+
+	/* Load the contents of the file into memory */
+	if((stream = fopen(filename, "r")) == NULL)
+	{
+		perror(filename);
+		return file;
+	}
+	while((size = (int)fread(buffer, 1, BUFSIZ, stream)) > 0)
+	{
+		AddBuffer(file, buffer, (unsigned long)size);
+	}
+	fclose(stream);
+	return file;
 }
 
 const char *ILDbSourceDiskFile(ILDbSourceFile *file)
@@ -886,26 +934,7 @@ void ILDbSourcePrint(ILDbSourceFile *file, const char *str)
 	{
 		return;
 	}
-
-	/* Expand the text buffer and add the new string */
-	if((file->textLen + len) > file->textMax)
-	{
-		char *newText;
-		unsigned long newLen = file->textLen + len;
-		newLen = (newLen + 1023) & ~1023;
-		newText = (char *)ILRealloc(file->text, newLen);
-		if(!newText)
-		{
-			ILDbOutOfMemory(file->owner);
-		}
-		file->text = newText;
-		file->textMax = newLen;
-	}
-	ILMemCpy(file->text + file->textLen, str, len);
-	file->textLen += len;
-
-	/* Add the lines within the string to the lines array */
-	AddLines(file, str, len);
+	AddBuffer(file, str, len);
 }
 
 void ILDbSourcePrintIndent(ILDbSourceFile *file, int indent, const char *str)
@@ -929,14 +958,20 @@ void ILDbSourceRegisterItem(ILDbSourceFile *file, ILProgramItem *item,
  * that is associated with an image.
  */
 static ILDbSourceFile *GetSourceFromDebug(ILDb *db, ILDebugContext *dbg,
-										  ILToken token, ILClass *classInfo)
+										  ILToken token, ILClass *classInfo,
+										  long *lineReturn)
 {
 	const char *filename;
 	ILUInt32 line, column;
 	char *fullName;
 	ILDbSourceFile *file;
 
-	filename = ILDebugGetLineInfo(dbg, token, IL_MAX_UINT32, &line, &column);
+	filename = ILDebugGetLineInfo(dbg, token, 0, &line, &column);
+	if(!filename)
+	{
+		filename = ILDebugGetLineInfo(dbg, token, IL_MAX_UINT32,
+									  &line, &column);
+	}
 	if(filename)
 	{
 		/* Search for the source file */
@@ -950,6 +985,10 @@ static ILDbSourceFile *GetSourceFromDebug(ILDb *db, ILDebugContext *dbg,
 		/* Load the contents of the source file into memory */
 		file = ILDbSourceCreate(db, fullName);
 		ILFree(fullName);
+		if(lineReturn)
+		{
+			*lineReturn = (long)line;
+		}
 		return file;
 	}
 	else
@@ -958,7 +997,8 @@ static ILDbSourceFile *GetSourceFromDebug(ILDb *db, ILDebugContext *dbg,
 	}
 }
 
-ILDbSourceFile *ILDbSourceGet(ILDb *db, ILClass *classInfo, ILMember *member)
+ILDbSourceFile *ILDbSourceGet(ILDb *db, ILClass *classInfo,
+							  ILMember *member, long *line)
 {
 	ILDebugContext *dbg;
 	ILDebugIter iter;
@@ -993,6 +1033,10 @@ ILDbSourceFile *ILDbSourceGet(ILDb *db, ILClass *classInfo, ILMember *member)
 	}
 
 	/* Look for debug blocks on the member or class */
+	if(line)
+	{
+		*line = 0;
+	}
 	if(dbg)
 	{
 		if(member)
@@ -1003,7 +1047,7 @@ ILDbSourceFile *ILDbSourceGet(ILDb *db, ILClass *classInfo, ILMember *member)
 			   iter.type <= IL_DEBUGTYPE_LINE_COL_OFFSETS)
 			{
 				return GetSourceFromDebug
-					(db, dbg, ILMember_Token(member), classInfo);
+					(db, dbg, ILMember_Token(member), classInfo, line);
 			}
 		}
 		if(classInfo)
@@ -1014,7 +1058,8 @@ ILDbSourceFile *ILDbSourceGet(ILDb *db, ILClass *classInfo, ILMember *member)
 			   iter.type <= IL_DEBUGTYPE_LINE_COL_OFFSETS)
 			{
 				return GetSourceFromDebug
-					(db, dbg, ILClass_Token(classInfo), classInfo);
+					(db, dbg, ILClass_Token(classInfo), classInfo,
+					 (member ? 0 : line));
 			}
 		}
 	}

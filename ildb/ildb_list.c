@@ -35,6 +35,7 @@ static void ShowLines(ILDb *db, ILDbSourceFile *file, long first, long last)
 {
 	char *line;
 	long len;
+	int posn;
 	while(first <= last)
 	{
 		len = ILDbSourceGetLine(file, first, &line);
@@ -43,7 +44,26 @@ static void ShowLines(ILDb *db, ILDbSourceFile *file, long first, long last)
 			break;
 		}
 		printf("%-7ld\t", first);
-		fwrite(line, 1, len, stdout);
+		posn = 0;
+		while(len > 0)
+		{
+			if(*line == '\t')
+			{
+				do
+				{
+					putc(' ', stdout);
+					++posn;
+				}
+				while((posn % db->tabStops) != 0);
+			}
+			else
+			{
+				putc(*line, stdout);
+				++posn;
+			}
+			++line;
+			--len;
+		}
 		putc('\n', stdout);
 		++first;
 	}
@@ -56,18 +76,33 @@ static void ShowLines(ILDb *db, ILDbSourceFile *file, long first, long last)
 static void List(ILDb *db, char *args)
 {
 	ILDbSourceFile *file;
+	long line, firstLine;
+
 	if(!strcmp(args, ",main"))
 	{
 		/* Used by xxgdb to request the source for the program entry point */
 		if(db->process && db->entryPoint)
 		{
 			file = ILDbSourceGet(db, (ILClass *)0,
-								 (ILMember *)(db->entryPoint));
+								 (ILMember *)(db->entryPoint), &line);
 			if(file)
 			{
-				ShowLines(db, file, 1, file->numLines);
-				db->currFile = file;
-				db->currLine = file->numLines;
+				if(line > 0)
+				{
+					firstLine = line - (long)(db->listSize) + 1;
+					if(firstLine < 1)
+					{
+						firstLine = 1;
+					}
+					ShowLines(db, file, firstLine, line);
+					db->currFile = file;
+					db->currLine = line;
+				}
+				else
+				{
+					db->currFile = file;
+					db->currLine = 1;
+				}
 				return;
 			}
 		}

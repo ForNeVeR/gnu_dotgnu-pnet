@@ -139,9 +139,145 @@ void ILDbSearchPrint(ILDb *db)
 	fflush(stdout);
 }
 
+/*
+ * Find a relative file within a specific directory.
+ */
+static char *FindInDirectory(ILDb *db, const char *dir, int dirlen,
+							 const char *filename, const char *basename)
+{
+	char *path;
+	char *result;
+
+	/* Try the full relative filename */
+	path = (char *)ILMalloc(dirlen + strlen(filename) + 2);
+	if(!path)
+	{
+		ILDbOutOfMemory(db);
+	}
+	strncpy(path, dir, dirlen);
+	path[dirlen] = '/';
+	strcpy(path + dirlen + 1, filename);
+	if(ILFileExists(path, (char **)0))
+	{
+		result = ILExpandFilename(path, (char *)0);
+		if(!result)
+		{
+			ILDbOutOfMemory(db);
+		}
+		ILFree(path);
+		return result;
+	}
+	ILFree(path);
+
+	/* Try the base name also */
+	if(basename != filename)
+	{
+		path = (char *)ILMalloc(dirlen + strlen(basename) + 2);
+		if(!path)
+		{
+			ILDbOutOfMemory(db);
+		}
+		strncpy(path, dir, dirlen);
+		path[dirlen] = '/';
+		strcpy(path + dirlen + 1, basename);
+		if(ILFileExists(path, (char **)0))
+		{
+			result = ILExpandFilename(path, (char *)0);
+			if(!result)
+			{
+				ILDbOutOfMemory(db);
+			}
+			ILFree(path);
+			return result;
+		}
+		ILFree(path);
+	}
+
+	/* We were unable to locate the file */
+	return 0;
+}
+
 char *ILDbSearchFind(ILDb *db, const char *filename)
 {
-	/* TODO */
+	int len, dir;
+	const char *basename;
+	char *result;
+
+	/* Strip the filename down to its base name */
+	len = strlen(filename);
+	while(len > 0 && filename[len - 1] != '/' && filename[len - 1] != '\\')
+	{
+		--len;
+	}
+	basename = filename + len;
+
+	/* If the filename is absolute, then try using it directly.
+	   Otherwise strip it down to its base name */
+	if(filename[0] == '/')
+	{
+		if(ILFileExists(filename, (char **)0))
+		{
+			result = ILExpandFilename(filename, (char *)0);
+			if(!result)
+			{
+				ILDbOutOfMemory(db);
+			}
+			return result;
+		}
+		filename = basename;
+	}
+
+	/* Search the specified path */
+	for(dir = db->dirSearchNum - 1; dir >= 0; --dir)
+	{
+		if(!strcmp(db->dirSearch[dir], "$cdir") && db->debugProgram)
+		{
+			/* Search the directory containing the executable */
+			len = strlen(db->debugProgram);
+			while(len > 0 && db->debugProgram[len - 1] != '/' &&
+			      db->debugProgram[len - 1] != '\\')
+			{
+				--len;
+			}
+			if(len > 0)
+			{
+				result = FindInDirectory(db, db->debugProgram, len - 1,
+										 filename, basename);
+				if(result)
+				{
+					return result;
+				}
+			}
+			else
+			{
+				result = FindInDirectory(db, ".", 1, filename, basename);
+				if(result)
+				{
+					return result;
+				}
+			}
+		}
+		else if(!strcmp(db->dirSearch[dir], "$cwd"))
+		{
+			/* Search the current working directory */
+			result = FindInDirectory(db, ".", 1, filename, basename);
+			if(result)
+			{
+				return result;
+			}
+		}
+		else
+		{
+			/* Search some other directory */
+			result = FindInDirectory(db, db->dirSearch[dir],
+									 strlen(db->dirSearch[dir]),
+									 filename, basename);
+			if(result)
+			{
+				return result;
+			}
+		}
+	}
 	return 0;
 }
 

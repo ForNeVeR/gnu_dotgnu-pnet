@@ -32,6 +32,7 @@ extern	"C" {
 ILDb *ILDbCreate(int argc, char **argv)
 {
 	ILDb *db;
+	char *env;
 
 	/* Initialize the runtime engine's global data */
 	ILExecInit(0);
@@ -57,6 +58,7 @@ ILDb *ILDbCreate(int argc, char **argv)
 	db->sourceFiles = 0;
 	db->currFile = 0;
 	db->currLine = 1;
+	db->tabStops = 8;
 
 	/* Set the initial source directory search path */
 	db->dirSearch = 0;
@@ -71,6 +73,18 @@ ILDb *ILDbCreate(int argc, char **argv)
 	ILDbRegisterCommands(db, ILDbSystemCommands, ILDbNumSystemCommands);
 	ILDbRegisterCommands(db, ILDbSetCommands, ILDbNumSetCommands);
 	ILDbRegisterCommands(db, ILDbHelpCommands, ILDbNumHelpCommands);
+
+	/* Change the tab stop setting if EXINIT has "ts=4" in it */
+	env = getenv("EXINIT");
+	while(env != 0 && *env != '\0')
+	{
+		if(!strncmp(env, "ts=4", 4) && (env[4] == '\0' || env[4] == ' '))
+		{
+			db->tabStops = 4;
+			break;
+		}
+		++env;
+	}
 
 	/* Return the context to the caller */
 	return db;

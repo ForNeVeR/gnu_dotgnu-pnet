@@ -59,6 +59,7 @@ typedef struct
 	struct _tagILDbSourceFile *sourceFiles; /* Cached source files */
 	struct _tagILDbSourceFile *currFile; /* Current source file */
 	long			currLine;			/* Current source line */
+	int				tabStops;			/* Size of tabs in file listings */
 
 } ILDb;
 

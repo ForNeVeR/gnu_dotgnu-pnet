@@ -6,7 +6,7 @@
 <h1>Application Binary Interface for C within CLI</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2002/08/19 23:56:28 $<p>
+Last Modified: $Date: 2002/08/21 06:01:15 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -836,7 +836,25 @@ fields and methods in the specially-defined "<code>&lt;Module&gt;</code>"
 type.  However, there are some "undefined" issues that we now
 deal with.<p>
 
-<h3>5.1. Dangling references</h3>
+<h3>5.1. Interoperability considerations</h3>
+
+Microsoft's CLR does not allow references to the "<code>&lt;Module&gt;</code>"
+type within a foreign assembly.  This appears to be a hard-wired constraint.
+Other CLR's (e.g. Portable.NET) make no distinction between the module type
+and all other types.<p>
+
+To achieve interoperability with Microsoft's CLR, library assemblies must
+use the "<code>$Module$</code>" type for their global field and method
+definitions instead of "<code>&lt;Module&gt;</code>".  The
+"<code>$Module$</code>" type must have the "<code>public</code>" and
+"<code>sealed</code>" flags.<p>
+
+Executables still use the "<code>&lt;Module&gt;</code>" type, as it appears
+to work in all CLR's that have been tested so far.  The
+"<code>&lt;Module&gt;</code>" type should have the "<code>public</code>"
+and "<code>abstract</code>" flags.<p>
+
+<h3>5.2. Dangling references</h3>
 
 When a C source file is compiled to an object file, there will normally
 be "dangling" references to fields and methods in other object files
@@ -863,7 +881,7 @@ When the linker loads this object file, it will resolve references to
 "<code>&lt;ModuleExtern&gt;</code>" by looking for a matching definition
 and changing the type reference appropriately.  The new reference
 may be to the linked executable's "<code>&lt;Module&gt;</code>" type,
-or to a foreign library's "<code>&lt;Module&gt;</code>" type.<p>
+or to a foreign library's "<code>$Module$</code>" type.<p>
 
 The "<code>&lt;ModuleExtern&gt;</code>" type will itself be dangling.
 The exact means by which this is accomplished is compiler-dependent, as the
@@ -877,7 +895,7 @@ with CIL metadata stored in the "<code>.text$il</code>" section.
 Portable.NET's linker fixes up dangling TypeRef's at link time.</font>
 </blockquote>
 
-<h3>5.2. Access permissions</h3>
+<h3>5.3. Access permissions</h3>
 
 Variables or functions that are declared "<code>static</code>" are converted
 into "<code>private</code>" fields or methods within the
@@ -889,7 +907,7 @@ members, then the class will also be declared "<code>public</code>".
 This ensures that a library will export its definitions correctly to
 applications that link against the library.<p>
 
-<h3>5.3. Renaming conflicting definitions</h3>
+<h3>5.4. Renaming conflicting definitions</h3>
 
 When two object files are linked together, it is possible that they
 both may have a "<code>private</code>" definition for the same function
@@ -953,7 +971,7 @@ difficult.  To alleviate this problem, the linker can add
 Normally this is only required if an object file contained debug
 symbol information prior to renaming.<p>
 
-<h3>5.4. Weak and strong aliases</h3>
+<h3>5.5. Weak and strong aliases</h3>
 
 C libraries such as "glibc" make heavy use of weak aliases to allow
 programs to replace certain functions with their own implementation.
@@ -1023,7 +1041,7 @@ At link time, the linker will insert an initializer which updates the
     .custom [OpenSystem.C.Initializer]
     .maxstack 1
     ldftn void getuid()
-    stsfld .method int32 * () [library]'&lt;Module&gt;'::'getuid-alias'
+    stsfld .method int32 * () [library]'$Module$'::'getuid-alias'
     ret
 }</pre></blockquote>
 
@@ -1072,7 +1090,7 @@ than programs that depend upon functions being weak aliases.<p>
 It is recommended that if the compiler sees a weak alias definition
 for a variable that it output a strong alias instead.<p>
 
-<h3>5.5. Initializers and finalizers</h3>
+<h3>5.6. Initializers and finalizers</h3>
 
 Initializers are compiled into static methods that have the
 "<code>specialname</code>" flag, have no parameters or return

@@ -22,7 +22,7 @@
 namespace System.Security
 {
 
-#if CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
+#if CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS || CONFIG_REMOTING
 
 using System;
 using System.Text;
@@ -694,8 +694,49 @@ public sealed class SecurityElement
 				return xml.Parse();
 			}
 
+	// Search for a child by tag path.
+	internal SecurityElement SearchForChildByPath(params String[] tags)
+			{
+				if(tags == null)
+				{
+					throw new ArgumentNullException("tags");
+				}
+				SecurityElement current = this;
+				foreach(String tag in tags)
+				{
+					current = current.SearchForChildByTag(tag);
+					if(current == null)
+					{
+						break;
+					}
+				}
+				return current;
+			}
+
+	// Get the value of an attribute by tag path.  The last string
+	// in the path is the attribute name.
+	internal String AttributeByPath(params String[] tags)
+			{
+				if(tags == null)
+				{
+					throw new ArgumentNullException("tags");
+				}
+				SecurityElement current = this;
+				int posn = 0;
+				while(posn < (tags.Length - 1))
+				{
+					current = current.SearchForChildByTag(tags[posn]);
+					if(current == null)
+					{
+						return null;
+					}
+					++posn;
+				}
+				return current.Attribute(tags[posn]);
+			}
+
 }; // class SecurityElement
 
-#endif // CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
+#endif // CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS || CONFIG_REMOTING
 
 }; // namespace System.Security

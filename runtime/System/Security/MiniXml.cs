@@ -21,7 +21,7 @@
 namespace System.Security
 {
 
-#if CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
+#if CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS || CONFIG_REMOTING
 
 using System;
 using System.IO;
@@ -406,8 +406,24 @@ internal sealed class MiniXml
 				return ParseElement();
 			}
 
+	// Load the contents of an XML file.
+	public static SecurityElement Load(String filename)
+			{
+				try
+				{
+					StreamReader reader = new StreamReader(filename);
+					SecurityElement e = (new MiniXml(reader)).Parse();
+					reader.Close();
+					return e;
+				}
+				catch(Exception)
+				{
+					return null;
+				}
+			}
+
 }; // class MiniXml
 
-#endif // CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS
+#endif // CONFIG_PERMISSIONS || CONFIG_POLICY_OBJECTS || CONFIG_REMOTING
 
 }; // namespace System.Security

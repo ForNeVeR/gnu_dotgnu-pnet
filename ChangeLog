@@ -10,6 +10,10 @@
 	* runtime/System/Security/MiniXml.cs: new constructors for
 	"MiniXml" to load from streams or text readers.
 
+	* runtime/System/Security/MiniXml.cs,
+	runtime/System/Security/SecurityElement.cs: add some utility
+	routines to "SecurityElement" and "MiniXml".
+
 2003-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Other/CP20838.cs, I18N/Other/ibm-838.ucm, I18N/Rare/CP20105.cs,

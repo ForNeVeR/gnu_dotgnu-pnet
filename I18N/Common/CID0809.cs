@@ -64,7 +64,6 @@ public class CID0809 : CID0009
 			dfi.ShortDatePattern = "dd/MM/yyyy";
 			dfi.ShortTimePattern = "HH:mm";
 			dfi.FullDateTimePattern = "dddd, d MMMM yyyy HH:mm:ss z";
-#if !ECMA_COMPAT
 			dfi.I18NSetDateTimePatterns(new String[] {
 				"d:dd/MM/yyyy",
 				"D:dddd, d MMMM yyyy",
@@ -93,7 +92,6 @@ public class CID0809 : CID0009
 				"y:yyyy MMMM",
 				"Y:yyyy MMMM",
 			});
-#endif // !ECMA_COMPAT
 			return dfi;
 		}
 		set

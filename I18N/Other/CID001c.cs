@@ -79,7 +79,6 @@ public class CID001c : RootCulture
 			dfi.ShortDatePattern = "yy-MM-dd";
 			dfi.ShortTimePattern = "h.mm.tt";
 			dfi.FullDateTimePattern = "dddd, dd MMMM yyyy h.mm.ss.tt z";
-#if !ECMA_COMPAT
 			dfi.I18NSetDateTimePatterns(new String[] {
 				"d:yy-MM-dd",
 				"D:dddd, dd MMMM yyyy",
@@ -108,7 +107,6 @@ public class CID001c : RootCulture
 				"y:yyyy MMMM",
 				"Y:yyyy MMMM",
 			});
-#endif // !ECMA_COMPAT
 			return dfi;
 		}
 		set

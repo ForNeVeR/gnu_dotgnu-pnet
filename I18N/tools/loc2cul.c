@@ -1005,7 +1005,6 @@ static void printDateTimeFormat(void)
 		printf("\t\t\tdfi.FullDateTimePattern = \"%s %s\";\n",
 			   modifyPattern(getNodeByIndex(patterns, DATE_PATTERN_FULL)),
 			   modifyPattern(getNodeByIndex(patterns, TIME_PATTERN_FULL)));
-		printf("#if !ECMA_COMPAT\n");
 		printf("\t\t\tdfi.I18NSetDateTimePatterns(new String[] {\n");
 		printf("\t\t\t\t\"d:%s\",\n",
 			   modifyPattern(getNodeByIndex(patterns, DATE_PATTERN_SHORT)));
@@ -1060,7 +1059,6 @@ static void printDateTimeFormat(void)
 		printf("\t\t\t\t\"y:yyyy MMMM\",\n");
 		printf("\t\t\t\t\"Y:yyyy MMMM\",\n");
 		printf("\t\t\t});\n");
-		printf("#endif // !ECMA_COMPAT\n");
 	}
 	printf("\t\t\treturn dfi;\n");
 	printf("\t\t}\n");

@@ -67,7 +67,6 @@ public class CID1404 : CID0004
 			dfi.ShortDatePattern = "yy'\u5d74'M'\u6708'd'\u65d5'";
 			dfi.ShortTimePattern = "tth:mm";
 			dfi.FullDateTimePattern = "yyyy'\u5d74'MM'\u6708'dd'\u65d5' dddd tthh'\u6642'mm'\u5206'ss'\u79D2' z";
-#if !ECMA_COMPAT
 			dfi.I18NSetDateTimePatterns(new String[] {
 				"d:yy'\u5d74'M'\u6708'd'\u65d5'",
 				"D:yyyy'\u5d74'MM'\u6708'dd'\u65d5' dddd",
@@ -96,7 +95,6 @@ public class CID1404 : CID0004
 				"y:yyyy MMMM",
 				"Y:yyyy MMMM",
 			});
-#endif // !ECMA_COMPAT
 			return dfi;
 		}
 		set

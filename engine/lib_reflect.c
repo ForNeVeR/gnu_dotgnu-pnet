@@ -403,13 +403,16 @@ System_Array *_IL_ClrHelpers_GetCustomAttributes
 	ILObject **buffer;
 	ILClass *classInfo;
 	ILAttribute *attr;
+	ILClass *attributeClass=ILExecThreadLookupClass(thread,"System.Attribute");
 
 	/* Check that we have reflection access to the item */
 	if(item && _ILClrCheckItemAccess(thread, item))
 	{
 		num = NumMatchingAttrs(thread, item, type, inherit);
-		array = (System_Array *)ILExecThreadNew(thread, "[oSystem.Object;",
-												"(Ti)V", (ILVaInt)num);
+		array = (System_Array*) _IL_Array_CreateArray_jiiii
+								(thread, (type ? (ILNativeInt)type 
+								: (ILNativeInt)attributeClass), 
+								 1, num, 0, 0);
 		if(!array)
 		{
 			return 0;
@@ -456,8 +459,10 @@ System_Array *_IL_ClrHelpers_GetCustomAttributes
 	}
 
 	/* Invalid item, or insufficient access: return a zero-element array */
-	return (System_Array *)ILExecThreadNew
-				(thread, "[oSystem.Object;", "(Ti)V", (ILVaInt)0);
+	return (System_Array*) _IL_Array_CreateArray_jiiii
+								(thread, (type ? (ILNativeInt)type 
+								: (ILNativeInt)attributeClass), 
+								 1, 0, 0, 0);
 }
 
 /*

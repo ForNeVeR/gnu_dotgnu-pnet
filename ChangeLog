@@ -1,3 +1,9 @@
+
+2003-07-09  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/lib_reflect.c: Generate arrays of the attribute type 
+	instead of generating Object[] arrays .
+
 2003-07-09  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/thread.c, engine/process.c: Fix bug that caused the

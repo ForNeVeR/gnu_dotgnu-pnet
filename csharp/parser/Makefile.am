@@ -6,6 +6,7 @@ TESTS = attrs1.cs \
 		error1.cs \
 		error2.cs \
 		error3.cs \
+		error4.cs \
 		member_access1.cs \
 		member_access2.cs \
 		member_access3.cs \

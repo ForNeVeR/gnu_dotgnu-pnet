@@ -417,8 +417,9 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 			return 0;
 		}
 		image = ILProgramItem_Image(method);
-		classInfo = ILClassFromType(image, 0, type, 0);
-		classInfo2 = ILClassFromType(image, 0, item->typeInfo, 0);
+		classInfo = ILClassResolve(ILClassFromType(image, 0, type, 0));
+		classInfo2 = ILClassResolve
+			(ILClassFromType(image, 0, item->typeInfo, 0));
 		if(classInfo && classInfo2)
 		{
 			/* Is the type a regular class or an interface? */

@@ -8,6 +8,10 @@
 	engine/verify_obj.c, include/il_engine.h: begin adding support
 	for metadata locks to the engine.
 
+	* engine/engine.h, engine/lib_thread.c, engine/process.c,
+	engine/thread.c: associate the "self" thread handle with the
+	main thread.
+
 2002-06-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvmc_branch.c: wrong offset for switch entries.

@@ -98,12 +98,14 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	}
 
 	/* Create the "main" thread */
-	process->mainThread = ILExecThreadCreate(process);
+	process->mainThread = _ILExecThreadCreate(process);
 	if(!(process->mainThread))
 	{
 		ILExecProcessDestroy(process);
 		return 0;
 	}
+	process->mainThread->osThread = ILThreadSelf();
+	ILThreadSetObject(process->mainThread->osThread, process->mainThread);
 
 	/* Return the process record to the caller */
 	return process;

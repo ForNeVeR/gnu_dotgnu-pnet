@@ -26,17 +26,6 @@ extern	"C" {
 #endif
 
 /*
- * Start and end atomic operations.  Single-threaded systems do nothing.
- */
-#define	ILThreadAtomicStart()
-#define	ILThreadAtomicEnd()
-
-/*
- * Process a memory barrier.  Single-threaded systems do nothing.
- */
-#define	ILThreadMemoryBarrier()
-
-/*
  * public static void Enter(Object obj);
  */
 void _IL_Monitor_Enter(ILExecThread *thread, ILObject *obj)

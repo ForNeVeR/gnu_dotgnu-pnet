@@ -149,6 +149,9 @@ struct _tagILExecThread
 	ILExecThread   *nextThread;
 	ILExecThread   *prevThread;
 
+	/* Operating system thread object */
+	ILThread       *osThread;
+
 	/* Extent of the execution stack */
 	CVMWord		   *stackBase;
 	CVMWord		   *stackLimit;
@@ -251,6 +254,12 @@ extern ILCoderClass const _ILCVMCoderClass;
  * a regular return, or non-zero if an exception was thrown.
  */
 int _ILCVMInterpreter(ILExecThread *thread);
+
+/*
+ * Inner version of "ILExecThreadCreate".  The caller is
+ * responsible for creating the OS-level thread.
+ */
+ILExecThread *_ILExecThreadCreate(ILExecProcess *process);
 
 /*
  * Lay out a class's fields, virtual methods, and interfaces.

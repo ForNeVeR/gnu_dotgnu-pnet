@@ -24,7 +24,7 @@
 extern	"C" {
 #endif
 
-ILExecThread *ILExecThreadCreate(ILExecProcess *process)
+ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 {
 	ILExecThread *thread;
 
@@ -57,6 +57,7 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 	thread->maxFrames = process->frameStackSize;
 
 	/* Initialize the thread state */
+	thread->osThread = 0;
 	thread->pc = 0;
 	thread->frame = thread->stackBase;
 	thread->stackTop = thread->stackBase;
@@ -77,6 +78,13 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 	ILMutexUnlock(process->lock);
 	
 	/* Return the thread block to the caller */
+	return thread;
+}
+
+ILExecThread *ILExecThreadCreate(ILExecProcess *process)
+{
+	ILExecThread *thread = _ILExecThreadCreate(process);
+	/* TODO: initialize underlying the OS thread */
 	return thread;
 }
 

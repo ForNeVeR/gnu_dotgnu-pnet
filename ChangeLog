@@ -1,4 +1,12 @@
 
+2002-12-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Array.cs, runtime/System/Collections/ArrayList.cs,
+	tests/runtime/System/Collections/TestArrayList.cs: temporarily
+	replace quicksort with a dumb sort, so that we have something
+	that works, until such time that we can figure out what is
+	wrong with the partitioning code.
+
 2002-12-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, resources/de_DE/I18N/Makefile.am,

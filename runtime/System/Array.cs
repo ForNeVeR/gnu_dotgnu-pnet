@@ -1030,6 +1030,41 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 						         int lower, int upper,
 						         IComparer comparer)
 	{
+		// Temporary hack - use a dumb sort until I can figure
+		// out what is wrong with the Quicksort code -- Rhys.
+		int i, j, cmp;
+		Object valuei;
+		Object valuej;
+		for(i = lower; i < upper; ++i)
+		{
+			for(j = i + 1; j <= upper; ++j)
+			{
+				valuei = keys.GetValue(i);
+				valuej = keys.GetValue(j);
+				if(comparer != null)
+				{
+					cmp = comparer.Compare(valuei, valuej);
+				}
+				else
+				{
+					cmp = ((IComparable)valuei).CompareTo(valuej);
+				}
+				if(cmp > 0)
+				{
+					keys.SetValue(valuej, i);
+					keys.SetValue(valuei, j);
+					if(items != null)
+					{
+						valuei = items.GetValue(i);
+						valuej = items.GetValue(j);
+						items.SetValue(valuej, i);
+						items.SetValue(valuei, j);
+					}
+				}
+			}
+		}
+
+#if false
 		int i, j, cmp;
 		Object testKey;
 		Object valuei;
@@ -1125,6 +1160,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			InnerSort(keys, items, lower, i - 1, comparer);
 			InnerSort(keys, items, i + 1, upper, comparer);
 		}
+#endif
 	}
 
 	// Sort an array of keys.

@@ -656,6 +656,33 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 	// described in R. Sedgewick, "Algorithms in C++", Addison-Wesley, 1992.
 	public void InnerSort(int lower, int upper, IComparer comparer)
 			{
+				// Temporary hack - use a dumb sort until I can figure
+				// out what is wrong with the Quicksort code -- Rhys.
+				int i, j, cmp;
+				Object valuei;
+				Object valuej;
+				for(i = lower; i < upper; ++i)
+				{
+					for(j = i + 1; j <= upper; ++j)
+					{
+						valuei = this[i];
+						valuej = this[j];
+						if(comparer != null)
+						{
+							cmp = comparer.Compare(valuei, valuej);
+						}
+						else
+						{
+							cmp = ((IComparable)valuei).CompareTo(valuej);
+						}
+						if(cmp > 0)
+						{
+							this[i] = valuej;
+							this[j] = valuei;
+						}
+					}
+				}
+#if false
 				int i, j, cmp;
 				Object testKey;
 				Object valuei;
@@ -686,7 +713,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					j = upper;
 					for(;;)
 					{
-						do
+						for(;;)
 						{
 							++i;
 							valuei = this[i];
@@ -698,9 +725,12 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 							{
 								cmp = ((IComparable)valuei).CompareTo(testKey);
 							}
+							if(cmp >= 0 || i == upper)
+							{
+								break;
+							}
 						}
-						while(cmp < 0);
-						do
+						for(;;)
 						{
 							--j;
 							valuej = this[j];
@@ -712,8 +742,11 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 							{
 								cmp = ((IComparable)valuej).CompareTo(testKey);
 							}
+							if(cmp <= 0 || j == lower)
+							{
+								break;
+							}
 						}
-						while(cmp > 0);
 						if(i >= j)
 						{
 							break;
@@ -730,6 +763,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					InnerSort(lower, i - 1, comparer);
 					InnerSort(i + 1, upper, comparer);
 				}
+#endif
 			}
 
 	// Sort the contents of this array list.

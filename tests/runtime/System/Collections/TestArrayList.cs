@@ -132,6 +132,15 @@ public class TestArrayList : TestCase
 				AssertEquals("Sort (3)",  0, list[0]);
 				AssertEquals("Sort (4)", 45, list[1]);
 				AssertEquals("Sort (5)", 98, list[2]);
+
+				list = new ArrayList();
+				list.Add(97);
+				list.Add(104);
+				list.Add(98);
+				list.Sort();
+				AssertEquals("Sort (6)", 97, list[0]);
+				AssertEquals("Sort (7)", 98, list[1]);
+				AssertEquals("Sort (8)", 104, list[2]);
 			}
 
 }; // class TestArrayList

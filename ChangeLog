@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.5.2" release.
 
+	* configure.in: update working version to "0.5.3".
+
 2003-02-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/ChangeLog, libffi/src/s390/ffi.c: more libffi updates

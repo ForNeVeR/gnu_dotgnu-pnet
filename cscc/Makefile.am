@@ -1,7 +1,7 @@
 
-SUBDIRS = common csharp
+SUBDIRS = common csharp c
 
-noinst_PROGRAMS = cscc-cs cscc csdoc
+noinst_PROGRAMS = cscc-cs cscc-c-s cscc csdoc
 man_MANS        = cscc.1 csdoc.1
 EXTRA_DIST      = $(man_MANS)
 
@@ -14,6 +14,11 @@ cscc_cs_SOURCES = cs_main.c
 cscc_cs_LDADD   = csharp/libILCSharp.a common/libILCCommon.a \
 				  ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
 				  ../image/libILImage.a ../support/libILSupport.a
+
+cscc_c_s_SOURCES = c_main.c
+cscc_c_s_LDADD   = c/libILCLang.a common/libILCCommon.a \
+				   ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
+				   ../image/libILImage.a ../support/libILSupport.a
 
 csdoc_SOURCES = csdoc.c
 csdoc_LDADD   = csharp/libILCSharp.a common/libILCCommon.a \
@@ -29,6 +34,7 @@ install-exec-local:
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/plugins
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) cscc-cs $(DESTDIR)$(libdir)/cscc/plugins/cscc-cs
+	$(INSTALL_PROGRAM) cscc-c-s $(DESTDIR)$(libdir)/cscc/plugins/cscc-c-s
 	$(INSTALL_PROGRAM) cscc $(DESTDIR)$(bindir)/cscc
 	$(INSTALL_PROGRAM) csdoc $(DESTDIR)$(bindir)/csdoc
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
@@ -37,5 +43,6 @@ install-exec-local:
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-cs
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-c-s
 	rm -f $(DESTDIR)$(bindir)/cscc
 	rm -f $(DESTDIR)$(bindir)/csdoc

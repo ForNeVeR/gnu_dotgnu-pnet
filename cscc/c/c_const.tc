@@ -1,0 +1,452 @@
+/*
+ * c_const.tc - Constant handling for C.
+ *
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+%decls %end %{
+
+/*
+ * Get the offset of a particular string within the string constant pool.
+ */
+ILUInt32 CGenStringOffset(ILGenInfo *info, const char *str, int len);
+
+/*
+ * Dump the contents of the string constant pool.
+ */
+void CGenStringPool(ILGenInfo *info);
+
+%}
+
+/*
+ * Semantic analysis for the "null" constant.
+ */
+ILNode_CSemAnalysis(ILNode_Null)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_ObjectRef;
+	evalValue.un.oValue = 0;
+	CSemSetConstant(value, ILType_Null, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for the "pointer null" constant.
+ */
+ILNode_CSemAnalysis(ILNode_NullPtr)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_UnmanagedPtr;
+	evalValue.un.i4Value = 0;
+	CSemSetConstant(value, CTypeCreateVoidPtr(info), evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for the "true" constant.
+ */
+ILNode_CSemAnalysis(ILNode_True)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Boolean;
+	evalValue.un.i4Value = 1;
+	CSemSetConstant(value, ILType_Boolean, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for the "false" constant.
+ */
+ILNode_CSemAnalysis(ILNode_False)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Boolean;
+	evalValue.un.i4Value = 0;
+	CSemSetConstant(value, ILType_Boolean, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "int8" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Int8)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Int8;
+	if(node->isneg)
+	{
+		evalValue.un.i4Value = -((ILInt32)(node->value));
+	}
+	else
+	{
+		evalValue.un.i4Value = (ILInt32)(node->value);
+	}
+	CSemSetConstant(value, ILType_Int8, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "uint8" constants.
+ */
+ILNode_CSemAnalysis(ILNode_UInt8)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_UInt8;
+	evalValue.un.i4Value = (ILInt32)(node->value);
+	CSemSetConstant(value, ILType_UInt8, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "int16" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Int16)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Int16;
+	if(node->isneg)
+	{
+		evalValue.un.i4Value = -((ILInt32)(node->value));
+	}
+	else
+	{
+		evalValue.un.i4Value = (ILInt32)(node->value);
+	}
+	CSemSetConstant(value, ILType_Int16, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "uint16" constants.
+ */
+ILNode_CSemAnalysis(ILNode_UInt16)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_UInt16;
+	evalValue.un.i4Value = (ILInt32)(node->value);
+	CSemSetConstant(value, ILType_UInt16, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "__wchar__" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Char)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Char;
+	evalValue.un.i4Value = (ILInt32)(node->value);
+	CSemSetConstant(value, ILType_Char, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "int32" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Int32)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Int32;
+	if(node->isneg)
+	{
+		evalValue.un.i4Value = -((ILInt32)(node->value));
+	}
+	else
+	{
+		evalValue.un.i4Value = (ILInt32)(node->value);
+	}
+	CSemSetConstant(value, ILType_Int32, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "uint32" constants.
+ */
+ILNode_CSemAnalysis(ILNode_UInt32)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_UInt32;
+	evalValue.un.i4Value = (ILInt32)(node->value);
+	CSemSetConstant(value, ILType_UInt32, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "int64" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Int64)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Int64;
+	if(node->isneg)
+	{
+		evalValue.un.i8Value = -((ILInt64)(node->value));
+	}
+	else
+	{
+		evalValue.un.i8Value = (ILInt64)(node->value);
+	}
+	CSemSetConstant(value, ILType_Int64, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "int64" constants.
+ */
+ILNode_CSemAnalysis(ILNode_UInt64)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_UInt64;
+	evalValue.un.i8Value = (ILInt64)(node->value);
+	CSemSetConstant(value, ILType_UInt64, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "native int" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Int)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	ILType *type;
+	if(node->isneg)
+	{
+		if(node->value > (((ILUInt64)IL_MAX_INT32) + 1))
+		{
+			/* The value may be too big for native integers
+			   on a 32-bit platform, so convert into int64 */
+			evalValue.valueType = ILMachineType_Int64;
+			evalValue.un.i8Value = -((ILInt64)(node->value));
+			type = ILType_Int64;
+		}
+		else
+		{
+			evalValue.valueType = ILMachineType_NativeInt;
+			evalValue.un.i4Value = -((ILInt32)(node->value));
+			type = ILType_Int;
+		}
+	}
+	else
+	{
+		if(node->value > (ILUInt64)IL_MAX_INT32)
+		{
+			/* The value may be too big for native integers
+			   on a 32-bit platform, so convert into int64 */
+			evalValue.valueType = ILMachineType_Int64;
+			evalValue.un.i8Value = (ILInt64)(node->value);
+			type = ILType_Int64;
+		}
+		else
+		{
+			evalValue.valueType = ILMachineType_NativeInt;
+			evalValue.un.i4Value = (ILInt32)(node->value);
+			type = ILType_Int;
+		}
+	}
+	CSemSetConstant(value, type, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "native uint" constants.
+ */
+ILNode_CSemAnalysis(ILNode_UInt)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	ILType *type;
+	if(node->value > (ILUInt64)IL_MAX_UINT32)
+	{
+		/* The value may be too big for native integers
+		   on a 32-bit platform, so convert into uint64 */
+		evalValue.valueType = ILMachineType_UInt64;
+		evalValue.un.i8Value = (ILInt64)(node->value);
+		type = ILType_UInt64;
+	}
+	else
+	{
+		evalValue.valueType = ILMachineType_NativeInt;
+		evalValue.un.i4Value = (ILInt32)(node->value);
+		type = ILType_UInt;
+	}
+	CSemSetConstant(value, type, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "float32" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Float32)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Float32;
+	evalValue.un.r4Value = (ILFloat)(node->value);
+	CSemSetConstant(value, ILType_Float32, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "float64" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Float64)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Float64;
+	evalValue.un.r8Value = node->value;
+	CSemSetConstant(value, ILType_Float64, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "native float" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Float)
+{
+	CSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_NativeFloat;
+	evalValue.un.r8Value = node->value;
+	CSemSetConstant(value, ILType_Float, evalValue);
+	return value;
+}
+
+/*
+ * Semantic analysis for "decimal" constants.
+ */
+ILNode_CSemAnalysis(ILNode_Decimal)
+{
+	/* Decimal constants are not used in C */
+	return CSemValueDefault;
+}
+
+/*
+ * Semantic analysis for "string" constants.
+ */
+ILNode_CSemAnalysis(ILNode_String)
+{
+	/* String object constants are not used in C */
+	return CSemValueDefault;
+}
+
+/*
+ * Semantic analysis for "C string" constants.
+ */
+ILNode_CSemAnalysis(ILNode_CString)
+{
+	CSemValue value;
+	CSemSetDynConstant(value, CTypeCreateCharPtr(info));
+	return value;
+}
+
+/*
+ * Generate value code for a "C string" constant.
+ */
+ILNode_GenValue(ILNode_CString)
+{
+	ILUInt32 offset;
+
+	/* Look for this string in the string pool */
+	offset = CGenStringOffset(info, node->str, node->len);
+
+	/* Get the address of the string pool start */
+	if(info->asmOutput)
+	{
+		fputs("\tldsflda\t'.strings'/'type' '.strings'::'pool'\n",
+			  info->asmOutput);
+	}
+	ILGenAdjust(info, 1);
+
+	/* Add the string offset to the address */
+	if(offset != 0)
+	{
+		ILGenUIntNative(info, offset);
+		ILGenSimple(info, IL_OP_ADD);
+		ILGenExtend(info, 1);
+	}
+
+	/* Strings are passed on the stack as unmanaged pointers (type I) */
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
+ * Evaluate a "C string" constant.
+ */
+ILNode_EvalConst(ILNode_CString)
+{
+	/* C string constants must be evaluated at runtime because
+	   we don't know what the address is yet */
+	return 0;
+}
+
+%end %{
+
+/*
+ * Temporary storage for the string constant pool.
+ */
+static unsigned long poolSize = 0;
+
+ILUInt32 CGenStringOffset(ILGenInfo *info, const char *str, int len)
+{
+	/* TODO */
+	return 0;
+}
+
+void CGenStringPool(ILGenInfo *info)
+{
+	FILE *stream = info->asmOutput;
+
+	/* Bail out if no assembly output stream or string pool */
+	if(!stream || !poolSize)
+	{
+		return;
+	}
+
+	/* Generate the type information for the pool */
+	fputs(".class private sealed '.strings' extends [.library]System.Object\n",
+		  stream);
+	fputs("{\n", stream);
+	fputs(".class nested public value sealed explicit 'type' extends "
+	      "[.library]System.ValueType\n", stream);
+	fprintf(stream, "{\n\t.pack 1\n\t.size %lu\n}\n", poolSize);
+
+	/* Dump the contents of the string pool to the ".sdata" section */
+	fputs(".data PoolData = bytearray(\n", stream);
+	/* TODO */
+	fputs(")\n", stream);
+
+	/* Declare the "pool" field and terminate the ".strings" class */
+	fputs(".field public static '.strings'/'type' pool at PoolData\n", stream);
+	fputs("}\n", stream);
+}
+
+%}

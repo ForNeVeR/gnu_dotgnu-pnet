@@ -1,0 +1,648 @@
+/*
+ * c_oper.tc - Operator handling for C.
+ *
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ * Perform semantic analysis for the logical NOT operator.
+ */
+ILNode_CSemAnalysis(ILNode_LogicalNot)
+{
+	/* TODO */
+	return CSemValueBool;
+}
+
+/*
+ * Perform semantic analysis for the logical AND operator.
+ */
+ILNode_CSemAnalysis(ILNode_LogicalAnd)
+{
+	/* TODO */
+	return CSemValueBool;
+}
+
+/*
+ * Perform semantic analysis for the logical OR operator.
+ */
+ILNode_CSemAnalysis(ILNode_LogicalOr)
+{
+	/* TODO */
+	return CSemValueBool;
+}
+
+/*
+ * Perform semantic analysis for the addition operator.
+ */
+ILNode_CSemAnalysis(ILNode_Add)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the subtraction operator.
+ */
+ILNode_CSemAnalysis(ILNode_Sub)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the multiplication operator.
+ */
+ILNode_CSemAnalysis(ILNode_Mul)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the division operator.
+ */
+ILNode_CSemAnalysis(ILNode_Div)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the remainder operator.
+ */
+ILNode_CSemAnalysis(ILNode_Rem)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the negation operator.
+ */
+ILNode_CSemAnalysis(ILNode_Neg)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the unary plus operator.
+ */
+ILNode_CSemAnalysis(ILNode_UnaryPlus)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the bitwise AND operator.
+ */
+ILNode_CSemAnalysis(ILNode_And)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the bitwise OR operator.
+ */
+ILNode_CSemAnalysis(ILNode_Or)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the bitwise XOR operator.
+ */
+ILNode_CSemAnalysis(ILNode_Xor)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the bitwise NOT operator.
+ */
+ILNode_CSemAnalysis(ILNode_Not)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the left shift operator.
+ */
+ILNode_CSemAnalysis(ILNode_Shl)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the right shift operator.
+ */
+ILNode_CSemAnalysis(ILNode_Shr),
+ILNode_CSemAnalysis(ILNode_UShr)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_Assign)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the addition assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignAdd)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the subtraction assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignSub)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the multiplication assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignMul)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the division assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignDiv)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the remainder assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignRem)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the bitwise AND assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignAnd)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the bitwise OR assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignOr)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the bitwise XOR assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignXor)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the left shift assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignShl)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the right shift assignment expression.
+ */
+ILNode_CSemAnalysis(ILNode_AssignShr),
+ILNode_CSemAnalysis(ILNode_AssignUShr)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the pre-increment expression.
+ */
+ILNode_CSemAnalysis(ILNode_PreInc)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the pre-decrement expression.
+ */
+ILNode_CSemAnalysis(ILNode_PreDec)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the post-increment expression.
+ */
+ILNode_CSemAnalysis(ILNode_PostInc)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the post-decrement expression.
+ */
+ILNode_CSemAnalysis(ILNode_PostDec)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the equality operator.
+ */
+ILNode_CSemAnalysis(ILNode_Eq)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the inequality operator.
+ */
+ILNode_CSemAnalysis(ILNode_Ne)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the less than operator.
+ */
+ILNode_CSemAnalysis(ILNode_Lt)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the less than or equal operator.
+ */
+ILNode_CSemAnalysis(ILNode_Le)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the greater than operator.
+ */
+ILNode_CSemAnalysis(ILNode_Gt)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the greater than or equal operator.
+ */
+ILNode_CSemAnalysis(ILNode_Ge)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the comma operator.
+ */
+ILNode_CSemAnalysis(ILNode_Comma)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for "as is" operators.
+ */
+ILNode_CSemAnalysis(ILNode_AsIs),
+ILNode_CSemAnalysis(ILNode_Overflow),
+ILNode_CSemAnalysis(ILNode_NoOverflow),
+ILNode_CSemAnalysis(ILNode_Pedantic),
+ILNode_CSemAnalysis(ILNode_NoPedantic)
+{
+	return ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+}
+
+/*
+ * Perform semantic analysis for the simple cast operator.
+ */
+ILNode_CSemAnalysis(ILNode_CastSimple)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the general-purpose cast operator.
+ */
+ILNode_CSemAnalysis(ILNode_CastType)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the conditional operator.
+ */
+ILNode_CSemAnalysis(ILNode_Conditional)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the two-place conditional operator.
+ */
+ILNode_CSemAnalysis(ILNode_TwoConditional)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Generate the type of a two-place conditional operator.
+ */
+ILNode_GetType(ILNode_TwoConditional)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+/*
+ * Generate discard code for the two-place conditional operator.
+ */
+ILNode_GenDiscard(ILNode_TwoConditional)
+{
+	/* TODO */
+}
+
+/*
+ * Generate value code for the two-place conditional operator.
+ */
+ILNode_GenValue(ILNode_TwoConditional)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+JavaGenValue(ILNode_TwoConditional)
+{
+	/* Never called: nothing to do here */
+	return ILMachineType_Void;
+}
+
+/*
+ * Perform semantic analysis for the pointer dereference operator.
+ */
+ILNode_CSemAnalysis(ILNode_Deref)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the "address of" operator.
+ */
+ILNode_CSemAnalysis(ILNode_AddressOf)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the "to boolean" operator.
+ */
+ILNode_CSemAnalysis(ILNode_ToBool)
+{
+	/* TODO */
+	return CSemValueBool;
+}
+
+/*
+ * Perform semantic analysis for the "to constant" operator.
+ */
+ILNode_CSemAnalysis(ILNode_ToConst)
+{
+	CSemValue value;
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(CSemIsRValue(value) && CSemIsConstant(value))
+	{
+		return value;
+	}
+	else if(!CSemIsError(value))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("constant value required"));
+	}
+	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the "type" expression, which is
+ * used by the compiler to wrap up IL types for later use.
+ */
+ILNode_CSemAnalysis(ILNode_Type)
+{
+	CSemValue value;
+	CSemSetType(value, node->type);
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "typeof" operator.
+ */
+ILNode_CSemAnalysis(ILNode_TypeOf)
+{
+	CSemValue value;
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(CSemIsType(value))
+	{
+		/* The supplied expression is already a type */
+		return value;
+	}
+	else if(CSemIsRValue(value) || CSemIsFunction(value))
+	{
+		/* Turn the semantic value into a type reference */
+		CSemToType(value);
+		return value;
+	}
+	else if(!CSemIsError(value))
+	{
+		/* Cannot determine the type of the underlying expression */
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("invalid operand to `typeof'"));
+	}
+	return CSemValueError;
+}
+
+/*
+ * Perform code generation operations for the "type" and "typeof" nodes.
+ */
+ILNode_GetType(ILNode_Type),
+ILNode_GenValue(ILNode_Type),
+JavaGenValue(ILNode_Type),
+ILNode_GetType(ILNode_TypeOf),
+ILNode_GenValue(ILNode_TypeOf),
+JavaGenValue(ILNode_TypeOf)
+{
+	/* Will never be called: nothing to do here */
+	return ILMachineType_Void;
+}
+
+/*
+ * Perform semantic analysis for the "sizeof expression" operator.
+ */
+ILNode_CSemAnalysis(ILNode_SizeOfExpr)
+{
+	ILUInt32 size;
+	CSemValue value;
+	ILEvalValue evalValue;
+
+	/* Perform semantic analysis on the expression */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid operand to `sizeof'"));
+		}
+		CSemSetDynConstant(value, ILType_UInt32);
+		return value;
+	}
+	node->type = CSemGetType(value);
+
+	/* Determine the size based on the type */
+	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
+	if(size != CTYPE_DYNAMIC)
+	{
+		/* We can replace this node with a compile-time constant */
+		evalValue.valueType = ILMachineType_UInt32;
+		evalValue.un.i4Value = (ILInt32)size;
+		CSemSetConstant(value, ILType_UInt32, evalValue);
+	}
+	else
+	{
+		/* We must compute this constant value dynamically at runtime */
+		CSemSetDynConstant(value, ILType_UInt32);
+	}
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "sizeof type" operator.
+ */
+ILNode_CSemAnalysis(ILNode_SizeOfType)
+{
+	ILUInt32 size;
+	CSemValue value;
+	ILEvalValue evalValue;
+
+	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
+	if(size != CTYPE_DYNAMIC)
+	{
+		/* We can replace this node with a compile-time constant */
+		evalValue.valueType = ILMachineType_UInt32;
+		evalValue.un.i4Value = (ILInt32)size;
+		CSemSetConstant(value, ILType_UInt32, evalValue);
+	}
+	else
+	{
+		/* We must compute this constant value dynamically at runtime */
+		CSemSetDynConstant(value, ILType_UInt32);
+	}
+	return value;
+}
+
+/*
+ * Perform code generation operations for the "sizeof" operator.
+ */
+ILNode_GetType(ILNode_SizeOfType),
+ILNode_GetType(ILNode_SizeOfExpr)
+{
+	return ILMachineType_UInt32;
+}
+ILNode_GenValue(ILNode_SizeOfType),
+ILNode_GenValue(ILNode_SizeOfExpr)
+{
+	ILUInt32 size;
+	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
+	if(size != CTYPE_DYNAMIC)
+	{
+		/* Expand the size to a constant */
+		ILGenUInt32(info, size);
+	}
+	else
+	{
+		/* Compute the value dynamically at runtime */
+		ILGenTypeToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF, node->type);
+	}
+	ILGenAdjust(info, 1);
+	return ILMachineType_UInt32;
+}
+JavaGenValue(ILNode_SizeOfType),
+JavaGenValue(ILNode_SizeOfExpr)
+{
+	/* Will never be called: nothing to do here */
+	return ILMachineType_UInt32;
+}
+
+/*
+ * Perform semantic analysis for error nodes.
+ */
+ILNode_CSemAnalysis(ILNode_Error)
+{
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("internal error - construct not yet implemented"));
+	return CSemValueError;
+}

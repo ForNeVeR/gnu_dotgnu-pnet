@@ -1,0 +1,278 @@
+/*
+ * c_stmt.tc - Statement handling for C.
+ *
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+%{
+
+/*
+ * Determine if a tree node corresponds to the empty statement.
+ */
+#define	IsEmpty(node) ((node) == 0 || yykind((node)) == yykindof(ILNode_Empty))
+
+/*
+ * Perform semantic analysis on a sub-statement.
+ */
+static CSemValue StmtSem(ILNode *node, ILGenInfo *info,
+					     ILNode **parent, int stmtLevel)
+{
+	CSemValue value = CSemValueDefault;
+	if(node)
+	{
+		value = ILNode_CSemAnalysis(node, info, parent, stmtLevel);
+		if(!CSemIsVoid(value) && !CSemIsRValue(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid statement"));
+		}
+	}
+	return value;
+}
+
+/*
+ * Statement context flags.
+ */
+#define	C_STMT_LOOP			1
+#define	C_STMT_SWITCH		2
+#define	C_STMT_TRY			4
+#define	C_STMT_CATCH		8
+#define	C_STMT_FINALLY		16
+
+#if 0
+
+/*
+ * Push a statement context.
+ */
+static void PushStmtContext(ILGenInfo *info, int context)
+{
+	if(info->contextStackSize >= info->contextStackMax)
+	{
+		/* Increase the size of the context stack */
+		int *newstack;
+		newstack = (int *)ILRealloc(info->contextStack,
+									sizeof(int) * (info->contextStackMax + 4));
+		if(!newstack)
+		{
+			ILGenOutOfMemory(info);
+		}
+		info->contextStack = newstack;
+		info->contextStackMax += 4;
+	}
+	info->contextStack[info->contextStackSize] = context;
+	++(info->contextStackSize);
+}
+
+/*
+ * Pop the top-most statement context.
+ */
+static void PopStmtContext(ILGenInfo *info)
+{
+	--(info->contextStackSize);
+}
+
+/*
+ * Determine if we are within a specific context, but not
+ * within a "stop" context.  e.g. "break" can be used
+ * within a loop, but not in the body of a "finally"
+ * within the loop.  "finally" is the "stop" context.
+ */
+static int StmtContextOK(ILGenInfo *info, int context, int stopContext)
+{
+	long posn = info->contextStackSize;
+	while(posn > 0)
+	{
+		--posn;
+		if((info->contextStack[posn] & stopContext) != 0)
+		{
+			return 0;
+		}
+		if((info->contextStack[posn] & context) != 0)
+		{
+			return 1;
+		}
+	}
+	if(!context)
+	{
+		/* We are checking a "return" statement */
+		return 1;
+	}
+	else
+	{
+		/* We are checking some other kind of statement */
+		return 0;
+	}
+}
+
+#endif
+
+%}
+
+/*
+ * Perform semantic analysis for the empty statement.
+ */
+ILNode_CSemAnalysis(ILNode_Empty)
+{
+	/* Nothing to do here, because there is nothing in the statement */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for compound statements.  We return the
+ * semantic value of the last statement in case it is an expression
+ * and the compound statement was used in the context of an expression
+ * statement: "({ ... })".
+ */
+ILNode_CSemAnalysis(ILNode_Compound),
+ILNode_CSemAnalysis(ILNode_List)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "if" statements.
+ */
+ILNode_CSemAnalysis(ILNode_If)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "while" statements.
+ */
+ILNode_CSemAnalysis(ILNode_While)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "do" statements.
+ */
+ILNode_CSemAnalysis(ILNode_Do)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "for" statements.
+ */
+ILNode_CSemAnalysis(ILNode_For)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "break" statements.
+ */
+ILNode_CSemAnalysis(ILNode_Break)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "continue" statements.
+ */
+ILNode_CSemAnalysis(ILNode_Continue)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "return" statements.
+ */
+ILNode_CSemAnalysis(ILNode_Return)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "return expression" statements.
+ */
+ILNode_CSemAnalysis(ILNode_ReturnExpr)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "goto" statements.
+ */
+ILNode_CSemAnalysis(ILNode_Goto)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "goto label" statements.
+ */
+ILNode_CSemAnalysis(ILNode_GotoLabel)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "new scope" statements.
+ */
+ILNode_CSemAnalysis(ILNode_NewScope)
+{
+	ILScope *savedScope = info->currentScope;
+	if(!(node->scope))
+	{
+		node->scope = ILScopeCreate(info, savedScope);
+	}
+	info->currentScope = node->scope;
+	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+	info->currentScope = savedScope;
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for "switch" statements.
+ */
+ILNode_CSemAnalysis(ILNode_Switch)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for local variable declarations.
+ */
+ILNode_CSemAnalysis(ILNode_LocalVarDeclaration)
+{
+	/* TODO */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for line number information blocks.
+ */
+ILNode_CSemAnalysis(ILNode_LineInfo)
+{
+	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+	return CSemValueDefault;
+}

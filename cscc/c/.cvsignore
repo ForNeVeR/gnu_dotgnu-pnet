@@ -1,0 +1,10 @@
+Makefile
+Makefile.in
+.deps
+stamp-treecc
+c_grammar.c
+c_grammar.h
+c_nodes.c
+c_scanner.c
+c_semantics.c
+c_defs.h

@@ -1,4 +1,16 @@
 
+2002-07-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, cscc/Makefile.am, cscc/c_main.c, cscc/c/.cvsignore,
+	cscc/c/Makefile.am, cscc/c/c_const.tc, cscc/c/c_defs.tc,
+	cscc/c/c_grammar.y, cscc/c/c_internal.c, cscc/c/c_internal.h,
+	cscc/c/c_invoke.tc, cscc/c/c_lexutils.c, cscc/c/c_lexutils.h,
+	cscc/c/c_lvalue.tc, cscc/c/c_oper.tc, cscc/c/c_rename.h,
+	cscc/c/c_scanner.l, cscc/c/c_stmt.tc, cscc/c/c_stubs.tc,
+	cscc/c/c_types.c, cscc/c/c_types.h: initial check-in of the C
+	language front-end for cscc (it doesn't work yet, so don't
+	get too excited).
+
 2002-07-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/writer.c (SortClasses): process types in order, even

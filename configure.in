@@ -321,6 +321,7 @@ codegen/Makefile
 cscc/Makefile
 cscc/common/Makefile
 cscc/csharp/Makefile
+cscc/c/Makefile
 resgen/Makefile
 ildb/Makefile
 csdoc/Makefile

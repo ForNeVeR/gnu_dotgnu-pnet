@@ -79,6 +79,10 @@ static ILCmdLineOption const options[] = {
 	{"--library-dir", 'L', 1,
 		"--library-dir dir       or -L dir",
 		"Specify a directory to search for libraries."},
+	{"-i", 'i', 0, 0, 0},
+	{"--ignore-load-errors", 'i', 0,
+		"--ignore-load-errors    or -i",
+		"Ignore metadata errors when loading (discouraged)."},
 #if defined(linux) || defined(__linux) || defined(__linux__)
 	{"--register", 'r', 0,
 		"--register [fullpath]",
@@ -175,6 +179,7 @@ int main(int argc, char *argv[])
 	ILExecValue execValue;
 	ILExecValue retValue;
 	int flags=0;
+	int loadFlags = 0;
 #ifndef IL_CONFIG_REDUCE_CODE
 	int dumpInsnProfile = 0;
 	int dumpVarProfile = 0;
@@ -245,6 +250,12 @@ int main(int argc, char *argv[])
 			case 'r': case 'u':
 			{
 				registerMode = opt;
+			}
+			break;
+
+			case 'i':
+			{
+				loadFlags |= IL_LOADFLAG_IGNORE_ERRORS;
 			}
 			break;
 
@@ -363,6 +374,7 @@ int main(int argc, char *argv[])
 	}
 
 	ILExecProcessSetCoderFlags(process,flags);
+	ILExecProcessSetLoadFlags(process, loadFlags, loadFlags);
 
 	/* Set the list of directories to use for path searching */
 	if(numLibraryDirs > 0)

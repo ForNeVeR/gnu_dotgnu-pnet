@@ -956,7 +956,7 @@ noRuntimeHeader:
 	if(--(context->redoLevel) == 0 && context->numRedoItems > 0)
 	{
 		/* We've exited all recursive loading levels, so redo queued items */
-		if(!error)
+		if(!error || (flags & IL_LOADFLAG_IGNORE_ERRORS) != 0)
 		{
 			error = _ILImageRedoReferences(context);
 		}
@@ -966,6 +966,11 @@ noRuntimeHeader:
 		context->redoItems = 0;
 		context->numRedoItems = 0;
 		context->maxRedoItems = 0;
+	}
+	if((flags & IL_LOADFLAG_IGNORE_ERRORS) != 0)
+	{
+		/* We don't care about metadata errors */
+		error = 0;
 	}
 
 	/* The image is loaded and ready to go */

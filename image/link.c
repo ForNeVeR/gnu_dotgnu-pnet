@@ -743,6 +743,7 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 	ILFileDecl *file;
 	char *pathname;
 	int error;
+	int result = 0;
 	ILImage *newImage;
 	int sameDir;
 	int loadFlags;
@@ -776,7 +777,8 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 					(unsigned)(assem->version[2]),
 					(unsigned)(assem->version[3]));
 		#endif
-			return IL_LOADERR_UNRESOLVED;
+			result = IL_LOADERR_UNRESOLVED;
+			continue;
 		}
 
 		/* If the assembly was loaded from a system directory, then we
@@ -798,11 +800,11 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 		{
 			if(error == -1)
 			{
-				return IL_LOADERR_UNRESOLVED;
+				result = IL_LOADERR_UNRESOLVED;
 			}
 			else
 			{
-				return error;
+				result = error;
 			}
 		}
 	}
@@ -811,7 +813,7 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 	   without attempting to load the module files */
 	if((flags & IL_LOADFLAG_INSECURE) != 0 || !filename)
 	{
-		return 0;
+		return result;
 	}
 
 	/* Strip the final component from the filename */
@@ -866,7 +868,8 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 		#if IL_DEBUG_META
 			fprintf(stderr, "could not locate the file %s\n", file->name);
 		#endif
-			return IL_LOADERR_UNRESOLVED;
+			result = IL_LOADERR_UNRESOLVED;
+			continue;
 		}
 
 		/* Load the image */
@@ -877,17 +880,17 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 		{
 			if(error == -1)
 			{
-				return IL_LOADERR_UNRESOLVED;
+				result = IL_LOADERR_UNRESOLVED;
 			}
 			else
 			{
-				return error;
+				result = error;
 			}
 		}
 	}
 
 	/* Done */
-	return 0;
+	return result;
 }
 
 int _ILImageDynamicLinkModule(ILImage *image, const char *filename,

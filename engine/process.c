@@ -108,6 +108,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->randomLastTime = 0;
 	process->randomCount = 0;
 	process->numThreadStaticSlots = 0;
+	process->loadFlags = IL_LOADFLAG_FORCE_32BIT;
 #ifdef IL_USE_IMTS
 	process->imtBase = 1;
 #endif
@@ -575,7 +576,7 @@ int ILExecProcessLoadImage(ILExecProcess *process, FILE *file)
 	int loadError;
 	ILRWLockWriteLock(process->metadataLock);
 	loadError = ILImageLoad(file, 0, process->context, &image,
-					   	    IL_LOADFLAG_FORCE_32BIT);
+					   	    process->loadFlags);
 	ILRWLockUnlock(process->metadataLock);
 	if(loadError == 0)
 	{
@@ -592,13 +593,19 @@ int ILExecProcessLoadFile(ILExecProcess *process, const char *filename)
 	ILImage *image;
 	ILRWLockWriteLock(process->metadataLock);
 	error = ILImageLoadFromFile(filename, process->context, &image,
-								IL_LOADFLAG_FORCE_32BIT, 0);
+								process->loadFlags, 0);
 	ILRWLockUnlock(process->metadataLock);
 	if(error == 0)
 	{
 		LoadStandard(process, image);
 	}
 	return error;
+}
+
+void ILExecProcessSetLoadFlags(ILExecProcess *process, int mask, int flags)
+{
+	process->loadFlags &= ~mask;
+	process->loadFlags |= flags;
 }
 
 int ILExecProcessGetStatus(ILExecProcess *process)

@@ -274,6 +274,11 @@ int ILExecProcessLoadImage(ILExecProcess *process, FILE *file);
 int ILExecProcessLoadFile(ILExecProcess *process, const char *filename);
 
 /*
+ * Set the load flags to use with "ILImageLoad".
+ */
+void ILExecProcessSetLoadFlags(ILExecProcess *process, int mask, int flags);
+
+/*
  * Get the exit status for a process.
  */
 int ILExecProcessGetStatus(ILExecProcess *process);

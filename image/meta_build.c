@@ -3495,7 +3495,10 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 		error = _ILImageDynamicLink(image, filename, loadFlags);
 		if(error != 0)
 		{
-			return error;
+			if((loadFlags & IL_LOADFLAG_IGNORE_ERRORS) == 0)
+			{
+				return error;
+			}
 		}
 	}
 
@@ -3503,7 +3506,10 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	error = ResolveTypeRefs(image, loadFlags);
 	if(error > 0)
 	{
-		return error;
+		if((loadFlags & IL_LOADFLAG_IGNORE_ERRORS) == 0)
+		{
+			return error;
+		}
 	}
 	needPhase2 = (error < 0);
 

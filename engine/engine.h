@@ -240,6 +240,9 @@ struct _tagILExecProcess
 	/* Size of the global thread-static allocation */
 	ILUInt32			numThreadStaticSlots;
 
+	/* Image loading flags */
+	int					loadFlags;
+
 #ifdef IL_USE_IMTS
 
 	/* Last-allocated base identifier for interface method tables */

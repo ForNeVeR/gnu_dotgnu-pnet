@@ -56,6 +56,7 @@ extern	"C" {
 #define	IL_LOADFLAG_INSECURE		16	/* Loaded from an insecure source */
 #define	IL_LOADFLAG_NO_MAP			32	/* Don't use mmap to load image */
 #define	IL_LOADFLAG_IN_PLACE		64	/* Memory load: execute in place */
+#define	IL_LOADFLAG_IGNORE_ERRORS	128	/* Ignore load errors (use wiseley) */
 
 /*
  * Image types.

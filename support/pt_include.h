@@ -26,6 +26,7 @@
 #ifdef IL_USE_PTHREADS
 
 #include <semaphore.h>
+#include <signal.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -45,6 +46,44 @@ extern	"C" {
 #define	IL_WAKEUP_ALL			2
 
 /*
+ * Determine the minimum and maximum real-time signal numbers.
+ */
+#if !defined(__SIGRTMIN) && defined(SIGRTMIN)
+#define	__SIGRTMIN			SIGRTMIN
+#endif
+#if !defined(__SIGRTMAX) && defined(SIGRTMAX)
+#define	__SIGRTMAX			SIGRTMAX
+#endif
+
+/*
+ * Signals that are used to bang threads on the head and notify
+ * them of various conditions.  Finding a free signal is a bit
+ * of a pain as most of the obvious candidates are already in
+ * use by pthreads or libgc.  Unix needs more signals!
+ */
+#if !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 14)
+#define	IL_SIG_SUSPEND		SIGALRM
+#define	IL_SIG_RESUME		SIGVTALRM
+#define	IL_SIG_INTERRUPT	SIGFPE
+#else
+#define	IL_SIG_SUSPEND		(__SIGRTMIN+10)
+#define	IL_SIG_RESUME		(__SIGRTMIN+11)
+#define	IL_SIG_INTERRUPT	(__SIGRTMIN+12)
+#endif
+
+/*
+ * Signals that are used inside pthreads itself.  This is a bit of
+ * a hack, but there isn't any easy way to get this information.
+ */
+#if !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 3)
+#define PTHREAD_SIG_RESTART	SIGUSR1
+#define PTHREAD_PSIG_CANCEL	SIGUSR2
+#else
+#define PTHREAD_SIG_RESTART	(__SIGRTMIN)
+#define PTHREAD_SIG_CANCEL	(__SIGRTMIN+1)
+#endif
+
+/*
  * Internal structure of a thread descriptor.
  */
 struct _tagILThread
@@ -52,7 +91,10 @@ struct _tagILThread
 	pthread_mutex_t				lock;
 	pthread_t					threadId;
 	unsigned short    volatile	state;
-	unsigned short    volatile	resumeRequested;
+	unsigned char     volatile	resumeRequested;
+	unsigned char     volatile	suspendRequested;
+	unsigned int	  volatile  numLocksHeld;
+	sem_t						suspendAck;
 	ILThreadStartFunc volatile	startFunc;
 	void *            volatile	objectArg;
 	pthread_mutex_t				wakeupMutex;
@@ -60,6 +102,100 @@ struct _tagILThread
 	sem_t						wakeup;
 
 };
+
+/*
+ * Thread-specific key that is used to store the thread object.
+ */
+extern pthread_key_t _ILThreadObjectKey;
+
+/*
+ * Safe mutex lock, that keeps track of how many locks
+ * are held by a thread.  Threads cannot be suspended if
+ * they are currently holding a lock.
+ */
+#define	MutexLockSafe(mutex)	\
+			do { \
+				ILThread *__self = \
+					(ILThread *)(pthread_getspecific(_ILThreadObjectKey)); \
+				++(__self->numLocksHeld); \
+				pthread_mutex_lock((mutex)); \
+			} while (0)
+
+/*
+ * Safe mutex unlock that will put the current thread
+ * to sleep if a suspend request is pending.
+ */
+#define	MutexUnlockSafe(mutex)	\
+			do { \
+				ILThread *__self = \
+					(ILThread *)(pthread_getspecific(_ILThreadObjectKey)); \
+				pthread_mutex_unlock((mutex)); \
+				if(--(__self->numLocksHeld) == 0) \
+				{ \
+					if(__self->suspendRequested) \
+					{ \
+						_ILThreadSuspendRequest(__self); \
+					} \
+				} \
+			} while (0)
+
+/*
+ * Safe read lock acquisition, similar to "MutexLockSafe".
+ */
+#define	ReadLockSafe(rwlock)	\
+			do { \
+				ILThread *__self = \
+					(ILThread *)(pthread_getspecific(_ILThreadObjectKey)); \
+				++(__self->numLocksHeld); \
+				pthread_rwlock_rdlock((rwlock)); \
+			} while (0)
+
+/*
+ * Safe write lock acquisition, similar to "MutexLockSafe".
+ */
+#define	WriteLockSafe(rwlock)	\
+			do { \
+				ILThread *__self = \
+					(ILThread *)(pthread_getspecific(_ILThreadObjectKey)); \
+				++(__self->numLocksHeld); \
+				pthread_rwlock_wrlock((rwlock)); \
+			} while (0)
+
+/*
+ * Safe read/write unlock, similar to "MutexUnlockSafe".
+ */
+#define	RWUnlockSafe(rwlock)	\
+			do { \
+				ILThread *__self = \
+					(ILThread *)(pthread_getspecific(_ILThreadObjectKey)); \
+				pthread_rwlock_unlock((rwlock)); \
+				if(--(__self->numLocksHeld) == 0) \
+				{ \
+					if(__self->suspendRequested) \
+					{ \
+						_ILThreadSuspendRequest(__self); \
+					} \
+				} \
+			} while (0)
+
+/*
+ * Safe way to suspend a thread, which will wait for the
+ * thread to give up ownership of all locks.  It is assumed
+ * that "thread" is not the current thread, and that the
+ * current thread holds "thread->lock".
+ *
+ * This function first does a "trial suspend" to stop the thread
+ * running.  Then it determines if the thread is in possession
+ * of one or more locks.  If it is, then it will mark the thread
+ * as needing to be suspended, resume it, and then wait for
+ * "MutexUnlockSafe" or "RWUnlockSafe" to do the real suspend.
+ */
+void _ILThreadSafeSuspend(ILThread *thread);
+
+/*
+ * Process a request to suspend the current thread.
+ */
+void _ILThreadSuspendRequest(ILThread *thread);
 
 /*
  * Internal structure of a FIFO wait queue.

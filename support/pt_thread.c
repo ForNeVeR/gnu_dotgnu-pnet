@@ -23,32 +23,9 @@
 #ifdef IL_USE_PTHREADS
 
 #include <private/gc_priv.h>	/* For SIG_SUSPEND */
-#include <signal.h>
 
 #ifdef	__cplusplus
 extern	"C" {
-#endif
-
-/*
- * Signals that are used to bang threads on the head and notify
- * them of various conditions.  Finding a free signal is a bit
- * of a pain as most of the obvious candidates are already in
- * use by pthreads or libgc.  Unix needs more signals!
- */
-#define	IL_SIG_SUSPEND		SIGALRM
-#define	IL_SIG_RESUME		SIGVTALRM
-#define	IL_SIG_INTERRUPT	SIGFPE
-
-/*
- * Signals that are used inside pthreads itself.  This is a bit of
- * a hack, but there isn't any easy way to get this information.
- */
-#if !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 3)
-#define PTHREAD_SIG_RESTART	SIGUSR1
-#define PTHREAD_PSIG_CANCEL	SIGUSR2
-#else
-#define PTHREAD_SIG_RESTART	(__SIGRTMIN)
-#define PTHREAD_SIG_CANCEL	(__SIGRTMIN+1)
 #endif
 
 /*
@@ -59,7 +36,7 @@ static pthread_once_t threadInitOnce = PTHREAD_ONCE_INIT;
 /*
  * Thread-specific key that is used to store the thread object.
  */
-static pthread_key_t threadObjectKey;
+pthread_key_t _ILThreadObjectKey;
 
 /*
  * Semaphores that are used to acknowledge thread suspension and resumption.
@@ -177,7 +154,7 @@ static void ThreadInit(void)
 	sigaction(IL_SIG_INTERRUPT, &action, (struct sigaction *)0);
 
 	/* We need a thread-specific key for storing thread objects */
-	pthread_key_create(&threadObjectKey, (void (*)(void *))0);
+	pthread_key_create(&_ILThreadObjectKey, (void (*)(void *))0);
 
 	/* Initialize the semaphores that we need */
 	sem_init(&suspendAck, 0, 0);
@@ -189,16 +166,19 @@ static void ThreadInit(void)
 	if(thread)
 	{
 		pthread_mutex_init(&(thread->lock), (pthread_mutexattr_t *)0);
-		thread->threadId        = pthread_self();
-		thread->state           = IL_TS_RUNNING;
-		thread->resumeRequested = 0;
-		thread->startFunc       = 0;
-		thread->objectArg       = 0;
+		thread->threadId         = pthread_self();
+		thread->state            = IL_TS_RUNNING;
+		thread->resumeRequested  = 0;
+		thread->suspendRequested = 0;
+		sem_init(&(thread->suspendAck), 0, 0);
+		thread->numLocksHeld     = 0;
+		thread->startFunc        = 0;
+		thread->objectArg        = 0;
 		pthread_mutex_init(&(thread->wakeupMutex), (pthread_mutexattr_t *)0);
-		thread->wakeupType      = IL_WAKEUP_NONE;
+		thread->wakeupType       = IL_WAKEUP_NONE;
 		sem_init(&(thread->wakeup), 0, 0);
 		++numThreads;
-		pthread_setspecific(threadObjectKey, thread);
+		pthread_setspecific(_ILThreadObjectKey, thread);
 	}
 
 	/* Block the IL_SIG_RESUME signal in the current thread.
@@ -233,7 +213,7 @@ static void *ThreadStart(void *arg)
 	thread->threadId = pthread_self();
 
 	/* Attach the thread object to the thread identifier */
-	pthread_setspecific(threadObjectKey, (void *)thread);
+	pthread_setspecific(_ILThreadObjectKey, (void *)thread);
 
 	/* Detach ourselves because we won't be using "pthread_join"
 	   to detect when the thread exits */
@@ -270,19 +250,19 @@ static void *ThreadStart(void *arg)
 	}
 
 	/* Mark the thread as stopped */
-	pthread_mutex_lock(&(thread->lock));
+	MutexLockSafe(&(thread->lock));
 	thread->state |= IL_TS_STOPPED;
 	isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
-	pthread_mutex_unlock(&(thread->lock));
+	MutexUnlockSafe(&(thread->lock));
 
 	/* Update the thread counts */
-	pthread_mutex_lock(&threadLockAll);
+	MutexLockSafe(&threadLockAll);
 	--numThreads;
 	if(isbg)
 	{
 		numBackgroundThreads -= 1;
 	}
-	pthread_mutex_unlock(&threadLockAll);
+	MutexUnlockSafe(&threadLockAll);
 
 	/* The thread has exited back through its start function */
 	return 0;
@@ -303,6 +283,9 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	ILMemZero(&(thread->threadId), sizeof(thread->threadId));
 	thread->state = IL_TS_UNSTARTED;
 	thread->resumeRequested = 0;
+	thread->suspendRequested = 0;
+	sem_init(&(thread->suspendAck), 0, 0);
+	thread->numLocksHeld = 0;
 	thread->startFunc = startFunc;
 	thread->objectArg = objectArg;
 	pthread_mutex_init(&(thread->wakeupMutex), (pthread_mutexattr_t *)0);
@@ -310,13 +293,13 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	sem_init(&(thread->wakeup), 0, 0);
 
 	/* Lock out the thread system */
-	pthread_mutex_lock(&threadLockAll);
+	MutexLockSafe(&threadLockAll);
 
 	/* Create the new thread */
 	if(pthread_create(&id, (pthread_attr_t *)0,
 					  ThreadStart, (void *)thread) != 0)
 	{
-		pthread_mutex_unlock(&threadLockAll);
+		MutexUnlockSafe(&threadLockAll);
 		ILFree(thread);
 		return 0;
 	}
@@ -329,7 +312,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	++numThreads;
 
 	/* Unlock the thread system and return */
-	pthread_mutex_unlock(&threadLockAll);
+	MutexUnlockSafe(&threadLockAll);
 	return thread;
 }
 
@@ -338,7 +321,7 @@ int ILThreadStart(ILThread *thread)
 	int result;
 
 	/* Lock down the thread object */
-	pthread_mutex_lock(&(thread->lock));
+	MutexLockSafe(&(thread->lock));
 
 	/* Are we in the correct state to start? */
 	if((thread->state & IL_TS_UNSTARTED) != 0)
@@ -357,7 +340,7 @@ int ILThreadStart(ILThread *thread)
 	}
 
 	/* Unlock the thread object and return */
-	pthread_mutex_unlock(&(thread->lock));
+	MutexUnlockSafe(&(thread->lock));
 	return result;
 }
 
@@ -373,7 +356,7 @@ void ILThreadDestroy(ILThread *thread)
 	}
 
 	/* Lock down the thread object */
-	pthread_mutex_lock(&(thread->lock));
+	MutexLockSafe(&(thread->lock));
 
 	/* Nothing to do if the thread is already stopped or aborted */
 	iscounted = 0;
@@ -387,11 +370,11 @@ void ILThreadDestroy(ILThread *thread)
 	}
 
 	/* Unlock the thread object and free it */
-	pthread_mutex_unlock(&(thread->lock));
+	MutexUnlockSafe(&(thread->lock));
 	ILFree(thread);
 
 	/* Adjust the thread counts */
-	pthread_mutex_lock(&threadLockAll);
+	MutexLockSafe(&threadLockAll);
 	if(iscounted)
 	{
 		--numThreads;
@@ -400,12 +383,12 @@ void ILThreadDestroy(ILThread *thread)
 	{
 		--numBackgroundThreads;
 	}
-	pthread_mutex_unlock(&threadLockAll);
+	MutexUnlockSafe(&threadLockAll);
 }
 
 ILThread *ILThreadSelf(void)
 {
-	return (ILThread *)(pthread_getspecific(threadObjectKey));
+	return (ILThread *)(pthread_getspecific(_ILThreadObjectKey));
 }
 
 void *ILThreadGetObject(ILThread *thread)
@@ -424,7 +407,7 @@ int ILThreadSuspend(ILThread *thread)
 	int result = 1;
 
 	/* Lock down the thread object */
-	pthread_mutex_lock(&(thread->lock));
+	MutexLockSafe(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
 	state = thread->state;
@@ -451,7 +434,7 @@ int ILThreadSuspend(ILThread *thread)
 		thread->resumeRequested = 0;
 		
 		/* Unlock the thread object prior to suspending */
-		pthread_mutex_unlock(&(thread->lock));
+		MutexUnlockSafe(&(thread->lock));
 
 		/* Suspend until we receive the IL_SIG_RESUME signal */
 		SuspendUntilResumed(thread);
@@ -466,15 +449,13 @@ int ILThreadSuspend(ILThread *thread)
 		thread->state |= IL_TS_SUSPENDED;
 		thread->resumeRequested = 0;
 
-		/* Suspend the thread by sending it the IL_SIG_SUSPEND signal */
-		pthread_kill(thread->threadId, IL_SIG_SUSPEND);
-
-		/* Wait for "SuspendSignal" to notify us that it has suspended */
-		sem_wait(&suspendAck);
+		/* Suspend the thread by sending it the IL_SIG_SUSPEND signal.
+		   This will wait until the thread gives up all of its locks */
+		_ILThreadSafeSuspend(thread);
 	}
 
 	/* Unlock the thread object and return */
-	pthread_mutex_unlock(&(thread->lock));
+	MutexUnlockSafe(&(thread->lock));
 	return result;
 }
 
@@ -483,7 +464,7 @@ void ILThreadResume(ILThread *thread)
 	unsigned int state;
 
 	/* Lock down the thread object */
-	pthread_mutex_lock(&(thread->lock));
+	MutexLockSafe(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
 	state = thread->state;
@@ -503,7 +484,7 @@ void ILThreadResume(ILThread *thread)
 	}
 
 	/* Unlock the thread object */
-	pthread_mutex_unlock(&(thread->lock));
+	MutexUnlockSafe(&(thread->lock));
 }
 
 void ILThreadInterrupt(ILThread *thread)
@@ -511,7 +492,7 @@ void ILThreadInterrupt(ILThread *thread)
 	unsigned int state;
 
 	/* Lock down the thread object */
-	pthread_mutex_lock(&(thread->lock));
+	MutexLockSafe(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
 	state = thread->state;
@@ -536,7 +517,7 @@ void ILThreadInterrupt(ILThread *thread)
 	}
 
 	/* Unlock the thread object */
-	pthread_mutex_unlock(&(thread->lock));
+	MutexUnlockSafe(&(thread->lock));
 }
 
 int ILThreadGetBackground(ILThread *thread)
@@ -544,13 +525,13 @@ int ILThreadGetBackground(ILThread *thread)
 	int flag;
 
 	/* Lock down the thread object */
-	pthread_mutex_lock(&(thread->lock));
+	MutexLockSafe(&(thread->lock));
 
 	/* Determine if this is a background thread */
 	flag = ((thread->state & IL_TS_BACKGROUND) != 0);
 
 	/* Unlock the thread object and return */
-	pthread_mutex_unlock(&(thread->lock));
+	MutexUnlockSafe(&(thread->lock));
 	return flag;
 }
 
@@ -559,7 +540,7 @@ void ILThreadSetBackground(ILThread *thread, int flag)
 	int change = 0;
 
 	/* Lock down the thread object */
-	pthread_mutex_lock(&(thread->lock));
+	MutexLockSafe(&(thread->lock));
 
 	/* Change the background state of the thread */
 	if(flag)
@@ -580,12 +561,12 @@ void ILThreadSetBackground(ILThread *thread, int flag)
 	}
 
 	/* Unlock the thread object */
-	pthread_mutex_unlock(&(thread->lock));
+	MutexUnlockSafe(&(thread->lock));
 
 	/* Adjust "numBackgroundThreads" */
-	pthread_mutex_lock(&threadLockAll);
+	MutexLockSafe(&threadLockAll);
 	numBackgroundThreads += change;
-	pthread_mutex_unlock(&threadLockAll);
+	MutexUnlockSafe(&threadLockAll);
 }
 
 int ILThreadGetState(ILThread *thread)
@@ -593,13 +574,13 @@ int ILThreadGetState(ILThread *thread)
 	unsigned int state;
 
 	/* Lock down the thread object */
-	pthread_mutex_lock(&(thread->lock));
+	MutexLockSafe(&(thread->lock));
 
 	/* Retrieve the current thread state */
 	state = thread->state;
 
 	/* Unlock the thread object */
-	pthread_mutex_unlock(&(thread->lock));
+	MutexUnlockSafe(&(thread->lock));
 
 	/* Return the publicly-interesting flags to the caller */
 	return (int)(state & IL_TS_PUBLIC_FLAGS);
@@ -612,12 +593,12 @@ static pthread_mutex_t atomicLock = PTHREAD_MUTEX_INITIALIZER;
 
 void ILThreadAtomicStart(void)
 {
-	pthread_mutex_lock(&atomicLock);
+	MutexLockSafe(&atomicLock);
 }
 
 void ILThreadAtomicEnd(void)
 {
-	pthread_mutex_unlock(&atomicLock);
+	MutexUnlockSafe(&atomicLock);
 }
 
 void ILThreadMemoryBarrier(void)
@@ -627,17 +608,61 @@ void ILThreadMemoryBarrier(void)
 	/* For now, we just acquire and release a mutex, under the
 	   assumption that pthreads will do data synchronisation
 	   for us as part of the mutex code */
-	pthread_mutex_lock(&atomicLock);
-	pthread_mutex_unlock(&atomicLock);
+	MutexLockSafe(&atomicLock);
+	MutexUnlockSafe(&atomicLock);
 }
 
 void ILThreadGetCounts(unsigned long *numForeground,
 					   unsigned long *numBackground)
 {
-	pthread_mutex_lock(&threadLockAll);
+	MutexLockSafe(&threadLockAll);
 	*numForeground = (unsigned long)(numThreads - numBackgroundThreads);
 	*numBackground = (unsigned long)(numBackgroundThreads);
-	pthread_mutex_unlock(&threadLockAll);
+	MutexUnlockSafe(&threadLockAll);
+}
+
+void _ILThreadSafeSuspend(ILThread *thread)
+{
+	/* Put the thread to sleep temporarily */
+	pthread_kill(thread->threadId, IL_SIG_SUSPEND);
+	sem_wait(&suspendAck);
+
+	/* If the thread does not hold any locks, then everything is OK */
+	if(!(thread->numLocksHeld))
+	{
+		return;
+	}
+
+	/* Notify the thread that we want it to suspend itself */
+	thread->suspendRequested = 1;
+
+	/* Resume the thread to allow it to give up all locks that it has */
+	thread->resumeRequested = 1;
+	pthread_kill(thread->threadId, IL_SIG_RESUME);
+	sem_wait(&resumeAck);
+
+	/* Give up the lock on the thread, but don't reduce "numLocksHeld" yet */
+	pthread_mutex_unlock(&(thread->lock));
+
+	/* Wait for the thread to signal us that it has put itself to sleep */
+	sem_wait(&(thread->suspendAck));
+
+	/* Re-acquire the lock on the thread object */
+	pthread_mutex_lock(&(thread->lock));
+}
+
+void _ILThreadSuspendRequest(ILThread *thread)
+{
+	/* Clear the "suspendRequested" and "resumeRequested" flags */
+	thread->suspendRequested = 0;
+	thread->resumeRequested = 0;
+
+	/* Signal the thread that wanted to make us suspend that we are */
+	sem_post(&(thread->suspendAck));
+
+	/* Suspend the current thread until we receive a resume signal */
+	SuspendUntilResumed(thread);
+	sem_post(&resumeAck);
 }
 
 #ifdef	__cplusplus

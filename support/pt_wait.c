@@ -108,7 +108,7 @@ int _ILWaitWakeupThread(ILThread *thread)
 	int result;
 
 	/* Acquire the thread's wakeup mutex */
-	pthread_mutex_lock(&(thread->wakeupMutex));
+	MutexLockSafe(&(thread->wakeupMutex));
 
 	/* Determine how to perform the wakeup */
 	if(thread->wakeupType == IL_WAKEUP_NONE)
@@ -131,7 +131,7 @@ int _ILWaitWakeupThread(ILThread *thread)
 	}
 
 	/* Release the thread's wakeup mutex and return */
-	pthread_mutex_unlock(&(thread->wakeupMutex));
+	MutexUnlockSafe(&(thread->wakeupMutex));
 	return result;
 }
 
@@ -159,7 +159,7 @@ static int MutexRegister(ILWaitMutex *mutex, ILThread *thread)
 	int result;
 
 	/* Lock down the mutex */
-	pthread_mutex_lock(&(mutex->parent.lock));
+	MutexLockSafe(&(mutex->parent.lock));
 
 	/* Determine what to do based on the mutex's current state */
 	if(mutex->owner == 0)
@@ -189,7 +189,7 @@ static int MutexRegister(ILWaitMutex *mutex, ILThread *thread)
 	}
 
 	/* Unlock the mutex and return */
-	pthread_mutex_unlock(&(mutex->parent.lock));
+	MutexUnlockSafe(&(mutex->parent.lock));
 	return result;
 }
 
@@ -199,13 +199,13 @@ static int MutexRegister(ILWaitMutex *mutex, ILThread *thread)
 static void MutexUnregister(ILWaitMutex *mutex, ILThread *thread)
 {
 	/* Lock down the mutex */
-	pthread_mutex_lock(&(mutex->parent.lock));
+	MutexLockSafe(&(mutex->parent.lock));
 
 	/* Remove ourselves from the wait queue if we are currently on it */
 	_ILWaitQueueRemove(&(mutex->queue), thread);
 
 	/* Unlock the mutex and return */
-	pthread_mutex_unlock(&(mutex->parent.lock));
+	MutexUnlockSafe(&(mutex->parent.lock));
 }
 
 ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
@@ -249,7 +249,7 @@ static int MutexRelease(ILWaitHandle *handle, int kind)
 	int result;
 
 	/* Lock down the mutex */
-	pthread_mutex_lock(&(mutex->parent.lock));
+	MutexLockSafe(&(mutex->parent.lock));
 
 	/* Determine what to do based on the mutex's state */
 	if(mutex->parent.kind != kind)
@@ -286,7 +286,7 @@ static int MutexRelease(ILWaitHandle *handle, int kind)
 	}
 
 	/* Unlock the mutex and return */
-	pthread_mutex_unlock(&(mutex->parent.lock));
+	MutexUnlockSafe(&(mutex->parent.lock));
 	return result;
 }
 

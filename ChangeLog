@@ -1,4 +1,10 @@
 
+2002-04-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,
+	support/pt_wait.c: implement "safe" thread suspends that will not
+	suspend a thread that is currently holding a mutex or a rwlock.
+
 2002-04-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/pt_thread.c: fix problems with "resumeRequested" flag.

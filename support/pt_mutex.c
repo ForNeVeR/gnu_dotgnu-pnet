@@ -46,12 +46,12 @@ void ILMutexDestroy(ILMutex *mutex)
 
 void ILMutexLock(ILMutex *mutex)
 {
-	pthread_mutex_lock((pthread_mutex_t *)mutex);
+	MutexLockSafe((pthread_mutex_t *)mutex);
 }
 
 void ILMutexUnlock(ILMutex *mutex)
 {
-	pthread_mutex_unlock((pthread_mutex_t *)mutex);
+	MutexUnlockSafe((pthread_mutex_t *)mutex);
 }
 
 /*
@@ -88,27 +88,27 @@ void ILRWLockDestroy(ILRWLock *rwlock)
 void ILRWLockReadLock(ILRWLock *rwlock)
 {
 #ifdef IL_HAVE_RWLOCKS
-	pthread_rwlock_rdlock((pthread_rwlock_t *)rwlock);
+	ReadLockSafe((pthread_rwlock_t *)rwlock);
 #else
-	pthread_mutex_lock((pthread_mutex_t *)rwlock);
+	MutexLockSafe((pthread_mutex_t *)rwlock);
 #endif
 }
 
 void ILRWLockWriteLock(ILRWLock *rwlock)
 {
 #ifdef IL_HAVE_RWLOCKS
-	pthread_rwlock_wrlock((pthread_rwlock_t *)rwlock);
+	WriteLockSafe((pthread_rwlock_t *)rwlock);
 #else
-	pthread_mutex_lock((pthread_mutex_t *)rwlock);
+	MutexLockSafe((pthread_mutex_t *)rwlock);
 #endif
 }
 
 void ILRWLockUnlock(ILRWLock *rwlock)
 {
 #ifdef IL_HAVE_RWLOCKS
-	pthread_rwlock_unlock((pthread_rwlock_t *)rwlock);
+	RWUnlockSafe((pthread_rwlock_t *)rwlock);
 #else
-	pthread_mutex_unlock((pthread_mutex_t *)rwlock);
+	MutexUnlockSafe((pthread_mutex_t *)rwlock);
 #endif
 }
 

@@ -919,12 +919,18 @@ ILRelational_ElseOp(ILNode_Lt, ILMachineType_ObjectRef),
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_UnmanagedPtr),
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_ManagedPtr),
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_TransientPtr),
-ILRelational_ElseOp(ILNode_Lt, ILMachineType_ManagedValue),
+ILRelational_ElseOp(ILNode_Lt, ILMachineType_ManagedValue)
+{
+	ILGenJump(info, IL_OP_BGE, label);
+}
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_Float32),
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_Float64),
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_NativeFloat)
 {
-	ILGenJump(info, IL_OP_BGE, label);
+	ILLabel label1 = ILLabel_Undefined;
+	ILGenJump(info, IL_OP_BLT, &label1);
+	ILGenJump(info, IL_OP_BR, label);
+	ILGenLabel(info, &label1);
 }
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_UInt8),
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_UInt16),
@@ -962,13 +968,21 @@ ILRelational_ElseOp(ILNode_Le, ILMachineType_ObjectRef),
 ILRelational_ElseOp(ILNode_Le, ILMachineType_UnmanagedPtr),
 ILRelational_ElseOp(ILNode_Le, ILMachineType_ManagedPtr),
 ILRelational_ElseOp(ILNode_Le, ILMachineType_TransientPtr),
-ILRelational_ElseOp(ILNode_Le, ILMachineType_ManagedValue),
+ILRelational_ElseOp(ILNode_Le, ILMachineType_ManagedValue)
+{
+	ILGenJump(info, IL_OP_BGT, label);
+}
+
 ILRelational_ElseOp(ILNode_Le, ILMachineType_Float32),
 ILRelational_ElseOp(ILNode_Le, ILMachineType_Float64),
 ILRelational_ElseOp(ILNode_Le, ILMachineType_NativeFloat)
 {
-	ILGenJump(info, IL_OP_BGT, label);
+	ILLabel label1 = ILLabel_Undefined;
+	ILGenJump(info, IL_OP_BLE, &label1);
+	ILGenJump(info, IL_OP_BR, label);
+	ILGenLabel(info, &label1);
 }
+
 ILRelational_ElseOp(ILNode_Le, ILMachineType_UInt8),
 ILRelational_ElseOp(ILNode_Le, ILMachineType_UInt16),
 ILRelational_ElseOp(ILNode_Le, ILMachineType_Char),
@@ -1005,12 +1019,18 @@ ILRelational_ElseOp(ILNode_Gt, ILMachineType_ObjectRef),
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_UnmanagedPtr),
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_ManagedPtr),
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_TransientPtr),
-ILRelational_ElseOp(ILNode_Gt, ILMachineType_ManagedValue),
+ILRelational_ElseOp(ILNode_Gt, ILMachineType_ManagedValue)
+{
+	ILGenJump(info, IL_OP_BLE, label);
+}
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_Float32),
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_Float64),
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_NativeFloat)
 {
-	ILGenJump(info, IL_OP_BLE, label);
+	ILLabel label1 = ILLabel_Undefined;
+	ILGenJump(info, IL_OP_BGT, &label1);
+	ILGenJump(info, IL_OP_BR, label);
+	ILGenLabel(info, &label1);
 }
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_UInt8),
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_UInt16),
@@ -1048,12 +1068,18 @@ ILRelational_ElseOp(ILNode_Ge, ILMachineType_ObjectRef),
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_UnmanagedPtr),
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_ManagedPtr),
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_TransientPtr),
-ILRelational_ElseOp(ILNode_Ge, ILMachineType_ManagedValue),
+ILRelational_ElseOp(ILNode_Ge, ILMachineType_ManagedValue)
+{
+	ILGenJump(info, IL_OP_BLT, label);
+}
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_Float32),
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_Float64),
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_NativeFloat)
 {
-	ILGenJump(info, IL_OP_BLT, label);
+	ILLabel label1 = ILLabel_Undefined;
+	ILGenJump(info, IL_OP_BGE, &label1);
+	ILGenJump(info, IL_OP_BR, label);
+	ILGenLabel(info, &label1);
 }
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_UInt8),
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_UInt16),

@@ -1,4 +1,9 @@
 
+2003-07-20  Gopal.V  <gopalv82@symonds.net>
+	
+	* codegen/cg_relop.tc: Special handling for float types to correctly
+	operate on NaN floats in <= , < , >= & > operations.
+
 2003-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll_arm.c, engine/unroll_arm_arith.c,

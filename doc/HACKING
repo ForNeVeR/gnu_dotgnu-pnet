@@ -135,6 +135,8 @@ The recommended steps for contributing code to "pnetC" are as follows:
       as the guide to what the header should contain.
     - Implement the functions, one per source file, in the appropriate
       sub-directory of "libc" or "libm" (or simply copy the glibc code).
+      More than one function can be in a single source if they are
+	  obviously in the same group or variants of each other.
     - Compile and test.
 
 Note: if you just want to contribute header files, then that is fine.

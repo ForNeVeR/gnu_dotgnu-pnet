@@ -23,7 +23,7 @@
 #include <errno.h>
 
 extern int __syscall_pread (int fd, __native__ int buf,
-                            unsigned int count, long offset);
+                            unsigned int count, long long offset);
 
 ssize_t
 __libc_pread (int fd, void *buf, size_t count, off_t offset)
@@ -42,3 +42,6 @@ __libc_pread (int fd, void *buf, size_t count, off_t offset)
 
 weak_alias(__libc_pread, __pread)
 weak_alias(__libc_pread, pread)
+weak_alias(__libc_pread, __pread64)
+weak_alias(__libc_pread, pread64)
+strong_alias(__libc_pread, __libc_pread64)

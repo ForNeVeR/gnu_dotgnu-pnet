@@ -21,11 +21,71 @@
 
 using System;
 using System.IO;
+using System.Security;
 using System.Runtime.InteropServices;
 using OpenSystem.C;
 
 __module
 {
+
+	// Open a file descriptor, based on a file.
+	public static int __syscall_open(IntPtr path, int mode, int access)
+			{
+				int fd;
+				Stream stream = null;
+
+				// Reserve a slot in the file descriptor table.
+				fd = FileTable.AllocFD();
+				if(fd == -1)
+				{
+					return -24;		/* EMFILE */
+				}
+
+				// Open the file stream.
+				try
+				{
+					stream = new FileStream
+					      (Marshal.PtrToStringAnsi(path),
+						   (FileMode)mode, (FileAccess)access);
+				}
+				catch(SecurityException)
+				{
+					return -13;		/* EACCES */
+				}
+				catch(FileNotFoundException)
+				{
+					return -2;		/* ENOENT */
+				}
+				catch(DirectoryNotFoundException)
+				{
+					return -20;		/* ENOTDIR */
+				}
+				catch(PathTooLongException)
+				{
+					return -36;		/* ENAMETOOLONG */
+				}
+				catch(UnauthorizedAccessException)
+				{
+					return -13;		/* EACCES */
+				}
+				catch(IOException)
+				{
+					// Could be anything, but EEXIST is most likely.
+					return -17;		/* EEXIST */
+				}
+				finally
+				{
+					if(stream == null)
+					{
+						FileTable.ReleaseFD(fd);
+					}
+				}
+
+				// Assign the stream to the "fd" slot in the file
+				// descriptor table.
+				FileTable.SetFileDescriptor(fd, stream);
+				return fd;
+			}
 
 	// Read data from a file descriptor.
 	public static int __syscall_read(int fd, IntPtr buf, uint count)

@@ -118,7 +118,11 @@ extern long pathconf(char *__path, int __name);
 extern int pause(void);
 extern int pipe(int __fd[2]);
 extern ssize_t pread(int __fd, void *__buf, size_t __count, off_t __offset);
+extern ssize_t pread64(int __fd, void *__buf, size_t __count,
+                       off64_t __offset);
 extern ssize_t pwrite(int __fd, void *__buf, size_t __count, off_t __offset);
+extern ssize_t pwrite64(int __fd, void *__buf, size_t __count,
+                        off64_t __offset);
 extern ssize_t read(int __fd, void *__buf, size_t __count);
 extern ssize_t readlink(const char * __restrict __path,
                         char * __restrict __buf, size_t __bufsiz);

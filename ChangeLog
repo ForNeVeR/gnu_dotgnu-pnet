@@ -7,6 +7,11 @@
 	libc/unistd/read.c, libc/unistd/unistd-glue.cs, libc/unistd/write.c:
 	implement some file descriptor related unistd functions.
 
+	* doc/HACKING, include/fcntl.h, include/unistd.h,
+	libc/unistd/Makefile.am, libc/unistd/lseek.c, libc/unistd/open.c,
+	libc/unistd/pread.c, libc/unistd/pwrite.c, libc/unistd/unistd-glue.cs:
+	continue implementation of the file descriptor functions in unistd.
+
 2002-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* all: initial check-in of the "pnetC" library.

@@ -166,7 +166,13 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 	// Implement the ICloneable interface.
 	public Object Clone()
 			{
+			#if !ECMA_COMPAT
+				DateTimeFormatInfo dateTimeFormat = (DateTimeFormatInfo)MemberwiseClone();
+				dateTimeFormat.readOnly = false;
+				return dateTimeFormat;
+			#else
 				return MemberwiseClone();
+			#endif
 			}
 
 	// Get the abbreviated name for a month.

@@ -711,7 +711,15 @@ public class CultureInfo : ICloneable, IFormatProvider
 	// Implementation of the ICloneable interface.
 	public virtual Object Clone()
 			{
+			#if !ECMA_COMPAT
+				CultureInfo culture = (CultureInfo)(MemberwiseClone());
+				culture.readOnly = false;
+				culture.DateTimeFormat = (DateTimeFormatInfo)dateTimeFormat.Clone();
+				culture.NumberFormat = (NumberFormatInfo)numberFormat.Clone();
+				return culture;
+			#else
 				return MemberwiseClone();
+			#endif
 			}
 
 	// Implementation of the IFormatProvider interface.

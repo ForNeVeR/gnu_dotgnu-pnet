@@ -486,6 +486,26 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name)
 	}
 	fileset->numFiles = outposn;
 
+	/* Add simple files that are named using the <file> tag */
+	node = node->taskChildren;
+	while(node != 0)
+	{
+		if(!strcmp(node->name, "file"))
+		{
+			arg = CSAntTaskParam(node, "name");
+			if(arg)
+			{
+				pathname = ILDupString(arg);
+				if(!pathname)
+				{
+					CSAntOutOfMemory();
+				}
+				AddToFileSet(fileset, pathname);
+			}
+		}
+		node = node->next;
+	}
+
 	/* Free the regular expression state */
 #ifdef HAVE_REGCOMP
 	regfree(&state);

@@ -1,4 +1,10 @@
 
+2003-11-13  Miroslaw Dobrzanski-Neumann  <mne@mosaic-ag.com>
+
+	* configure.in: detect cc options such as "-fno-gcse" with a
+	full compile and link because a compile on its own confuses
+	IBM's AIX C compiler, xlc.
+
 2003-11-12  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_stmt.tc: fix switch statement fall-through

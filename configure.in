@@ -348,8 +348,8 @@ fi
 
 dnl Check to see whether cc accepts "-no-cpp-precomp" or not.
 AC_CACHE_CHECK(whether ${CC-cc} accepts -no-cpp-precomp, ac_cv_prog_cc_precomp,
-[echo 'void f(){}' > conftest.c
-if test -z "`${CC-cc} -no-cpp-precomp -c conftest.c 2>&1`"; then
+[echo 'int main(){return 0;}' > conftest.c
+if test -z "`${CC-cc} -no-cpp-precomp -o conftest conftest.c 2>&1`"; then
   ac_cv_prog_cc_precomp=yes
 else
   ac_cv_prog_cc_precomp=no
@@ -364,8 +364,8 @@ fi
 dnl Check to see whether cc accepts "-fno-gcse" or not.
 AC_SUBST(NO_GCSE)
 AC_CACHE_CHECK(whether ${CC-cc} accepts -fno-gcse, ac_cv_prog_cc_no_gcse,
-[echo 'void f(){}' > conftest.c
-if test -z "`${CC-cc} -fno-gcse -c conftest.c 2>&1`"; then
+[echo 'int main(){return 0;}' > conftest.c
+if test -z "`${CC-cc} -fno-gcse -o conftest conftest.c 2>&1`"; then
   ac_cv_prog_cc_no_gcse=yes
 else
   ac_cv_prog_cc_no_gcse=no
@@ -381,8 +381,8 @@ fi
 dnl Check to see whether cc accepts "-fno-inline-functions" or not.
 AC_SUBST(NO_INLINE_FUNCTIONS)
 AC_CACHE_CHECK(whether ${CC-cc} accepts -fno-inline-functions, ac_cv_prog_cc_no_inline_functions,
-[echo 'void f(){}' > conftest.c
-if test -z "`${CC-cc} -fno-inline-functions -c conftest.c 2>&1`"; then
+[echo 'int main(){return 0;}' > conftest.c
+if test -z "`${CC-cc} -fno-inline-functions -o conftest conftest.c 2>&1`"; then
   ac_cv_prog_cc_no_inline_functions=yes
 else
   ac_cv_prog_cc_no_inline_functions=no

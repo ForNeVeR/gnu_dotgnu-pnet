@@ -1524,7 +1524,17 @@ void JavaPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
 void JavaPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
 							  ILClass *classInfo)
 {
+	ILType *fullType;
 	ILMachineType thisType;
+	if(yyisa(thisExpr, ILNode_MarkType))
+	{
+		fullType = ((ILNode_MarkType *)thisExpr)->type;
+		thisExpr = ((ILNode_MarkType *)thisExpr)->expr;
+	}
+	else
+	{
+		fullType = 0;
+	}
 	if(yyisa(thisExpr, ILNode_This))
 	{
 		/* Just push the "this" pointer: we don't want to convert
@@ -1532,12 +1542,18 @@ void JavaPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
 		JavaGenSimple(info, JAVA_OP_ALOAD_0);
 		JavaGenAdjust(info, 1);
 	}
-	else
+	else if(fullType && ILTypeIsValue(fullType))
 	{
 		/* Box the value before calling the method */
 		thisType = JavaGenValue(thisExpr, info);
-		JavaBoxValue(info, thisType,
-					 ILTypeIsEnum(ILClassToType(classInfo)), classInfo);
+		JavaBoxValue(info, thisType, ILTypeIsEnum(fullType),
+				     ILTypeToClass(info, fullType));
+	}
+	else
+	{
+		/* Assume that the "this" expression will be an object reference */
+		JavaGenCast(info, JavaGenValue(thisExpr, info),
+					ILMachineType_ObjectRef);
 	}
 }
 

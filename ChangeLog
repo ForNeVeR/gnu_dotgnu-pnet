@@ -8,6 +8,10 @@
 	codegen/cg_output.c, codegen/jv_lvalue.tc, codegen/jv_misc.tc:
 	continue implementation of method invocation for value types.
 
+	* codegen/cg_misc.tc, codegen/cg_nodes.tc, codegen/jv_misc.tc,
+	cscc/csharp/cs_invoke.tc, cscc/csharp/cs_lvalue.tc: box managed
+	values that are passed to ordinary class methods as "this".
+
 2002-05-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_misc.tc, codegen/cg_nodes.tc,

@@ -344,6 +344,10 @@ struct _tagILSwitchValue
  */
 %node ILNode_Comma ILNode_BinaryExpression
 %node ILNode_AsIs ILNode_LValueNoRefUnaryExpr
+%node ILNode_MarkType ILNode_AsIs =
+{
+	ILType *type;
+}
 %node ILNode_Overflow ILNode_LValueNoRefUnaryExpr
 %node ILNode_NoOverflow ILNode_LValueNoRefUnaryExpr
 %node ILNode_Pedantic ILNode_LValueNoRefUnaryExpr

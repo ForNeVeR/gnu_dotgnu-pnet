@@ -405,6 +405,30 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 }
 
 /*
+ * Get the type of the current class.  NULL if not possible.
+ */
+static ILType *CurrentClassType(ILGenInfo *info)
+{
+	if(info->currentClass)
+	{
+		ILClass *classInfo = ((ILNode_ClassDefn *)(info->currentClass))
+									->classInfo;
+		if(classInfo)
+		{
+			return ILClassToType(classInfo);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Convert a semantic value into an l-value or r-value if necessary.
  */
 static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
@@ -419,6 +443,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 	ILNode *constNode;
 	ILMethod *method;
 	int allowConst;
+	ILType *thisType;
 
 	switch(value.kind)
 	{
@@ -496,13 +521,24 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			}
 			else if(expr)
 			{
-				*parent = ILNode_MemberField_create(expr, field);
+				*parent = ILNode_MemberField_create
+						(ILNode_MarkType_create(expr, exprSem->type), field);
 			}
 			else
 			{
 				CheckForInstanceAccess(info, node);
-				*parent = ILNode_MemberField_create
+				thisType = CurrentClassType(info);
+				if(thisType)
+				{
+					*parent = ILNode_MemberField_create
+							(ILNode_MarkType_create
+								(ILNode_This_create(), thisType), field);
+				}
+				else
+				{
+					*parent = ILNode_MemberField_create
 							(ILNode_This_create(), field);
+				}
 			}
 		}
 		break;
@@ -525,27 +561,20 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			/* Replace the node with either the object expression or "this" */
 			if(expr)
 			{
-				if(CSIsSemValue(exprSem->kind) &&
-				   !ILTypeIsReference(exprSem->type))
-				{
-					if(ILTypeIsValue(exprSem->type))
-					{
-						*parent = expr;
-					}
-					else if(!ILCoerce(info, expr, parent, exprSem->type,
-								      ILFindSystemType(info, "Object")))
-					{
-						*parent = expr;
-					}
-				}
-				else
-				{
-					*parent = expr;
-				}
+				*parent = ILNode_MarkType_create(expr, exprSem->type);
 			}
 			else
 			{
-				*parent = ILNode_This_create();
+				thisType = CurrentClassType(info);
+				if(thisType)
+				{
+					*parent = ILNode_MarkType_create
+						(ILNode_This_create(), thisType);
+				}
+				else
+				{
+					*parent = ILNode_This_create();
+				}
 			}
 		}
 		break;
@@ -607,13 +636,24 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			}
 			else if(expr)
 			{
-				*parent = ILNode_MemberProperty_create(expr, property);
+				*parent = ILNode_MemberProperty_create
+					(ILNode_MarkType_create(expr, exprSem->type), property);
 			}
 			else
 			{
 				CheckForInstanceAccess(info, node);
-				*parent = ILNode_MemberProperty_create
-							(ILNode_This_create(), property);
+				thisType = CurrentClassType(info);
+				if(thisType)
+				{
+					*parent = ILNode_MemberProperty_create
+						(ILNode_This_create(), property);
+				}
+				else
+				{
+					*parent = ILNode_MemberProperty_create
+						(ILNode_MarkType_create
+							(ILNode_This_create(), thisType), property);
+				}
 			}
 		}
 		break;

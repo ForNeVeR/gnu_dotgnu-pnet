@@ -455,7 +455,9 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	if(!ILMethod_IsStatic(methodInfo))
 	{
 		node->thisExpr = node->expr1;
-		if(yyisa(node->thisExpr, ILNode_This))
+		if(yyisa(node->thisExpr, ILNode_This) ||
+		   (yyisa(node->thisExpr, ILNode_MarkType) &&
+		    yyisa(((ILNode_MarkType *)(node->thisExpr))->expr, ILNode_This)))
 		{
 			caller = (ILNode_MethodDeclaration *)(info->currentMethod);
 			if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)

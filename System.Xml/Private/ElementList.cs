@@ -159,22 +159,21 @@ namespace System.Xml.Private
 		// Get a particular item within this node list.
 		public override XmlNode Item(int i)
 		{
-			if(i >= this.Count)		
-			{
-				return null;
-			}	
+			// Checking for i >= Count is stupid here
+			// as Count does a full iteration anyway
 			XmlNode item = parent;
 			int a = -1;
+			if(i == 0 && NodeMatches(item))
+			{
+				return item;
+			}
 			while((item = GetFollowingNode(item)) != null)
 			{
-
 				if(NodeMatches(item))
 				{
 					a++;
 					if(i == a) return item;
 				}
-
-
 			}
 			return null;
 		}

@@ -316,8 +316,9 @@ ILInt32 _IL_FileMethods_SetCreationTime(ILExecThread *thread, ILString *path, IL
 ILInt32 _IL_FileMethods_GetAttributes(ILExecThread *_thread,
 									  ILString *path, ILInt32 *attrs)
 {
-	/* TODO */
-	return IL_ERRNO_EPERM;
+	char *path_ansi = ILStringToPathname(_thread, path);
+
+	return ILSysIOGetFileAttributes(path_ansi, attrs);
 }
 
 /*
@@ -326,8 +327,9 @@ ILInt32 _IL_FileMethods_GetAttributes(ILExecThread *_thread,
 ILInt32 _IL_FileMethods_SetAttributes(ILExecThread *_thread,
 									  ILString *path, ILInt32 attrs)
 {
-	/* TODO */
-	return IL_ERRNO_EPERM;
+	char *path_ansi = ILStringToPathname(_thread, path);
+
+	return ILSysIOSetFileAttributes(path_ansi, attrs);
 }
 
 /*
@@ -336,8 +338,9 @@ ILInt32 _IL_FileMethods_SetAttributes(ILExecThread *_thread,
 ILInt32 _IL_FileMethods_GetLength(ILExecThread *_thread,
 								  ILString *path, ILInt64 *length)
 {
-	/* TODO */
-	return IL_ERRNO_EPERM;
+	char *path_ansi = ILStringToPathname(_thread, path);
+
+	return ILSysIOGetFileLength(path_ansi, length);
 }
 
 /*

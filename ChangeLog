@@ -7,8 +7,13 @@
 	* cscc/c/c_grammar.y, doc/pnettools.texi: set the default
 	PInvoke calling conventions to "cdecl".
 
-	* pnet.spec.in: improve the RPM spec file (thanks to
-	Russell Stuart <russell@stuart.id.au>).
+2004-03-11  Russell Stuart  <russell@stuart.id.au>
+
+	* pnet.spec.in: improve the RPM spec file.
+
+	* configure.in, engine/lib_file.c, include/il_sysio.h,
+	support/file.c: implement internalcalls for file attributes
+	and file lengths.
 
 2004-03-11  Gopal.V  <gopalv82@symonds.net>
 

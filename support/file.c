@@ -664,6 +664,161 @@ int ILSysIOSetCreationTime(const char *path, ILInt64 time)
 	return IL_ERRNO_ENOSYS;
 }
 
+int ILSysIOGetFileLength(const char *path, ILInt64 *length)
+{
+#if defined(HAVE_STAT)
+	int retVal;
+	struct stat statbuf;
+
+	/* Clear errno */
+	errno = 0;
+
+	/* Read the file size */
+	retVal = stat(path, &statbuf);
+
+	if(retVal != 0)
+	{
+		/* Throw out the Errno */
+		return ILSysIOGetErrno();
+	}
+
+	/*
+	 * The MS docs for System.IO.FileInfo.Length say a file not
+	 * found exception should be thrown if the file is a
+	 * directory.  I will interpret that to mean "anything bar a
+	 * regular file".
+	 */
+	if ((statbuf.st_mode & S_IFMT) != S_IFREG)
+	{
+	  	errno = ENOENT;
+		return ILSysIOGetErrno();
+	}
+
+	/* Get the size */
+	*length = statbuf.st_size;
+
+	return IL_ERRNO_Success;
+#else
+	return IL_ERRNO_ENOSYS;
+#endif
+}
+
+int ILSysIOGetFileAttributes(const char *path, ILInt32 *attributes)
+{
+#if defined(HAVE_STAT)
+	int retVal;
+	struct stat statbuf;
+	int mode;
+
+	/* Clear errno */
+	errno = 0;
+
+	retVal = stat(path, &statbuf);
+
+	if(retVal != 0)
+	{
+		/* Throw out the Errno */
+		return ILSysIOGetErrno();
+	}
+
+	switch (statbuf.st_mode & S_IFMT)
+	{
+		case S_IFBLK:
+		case S_IFCHR:
+		  	mode = ILFileAttributes_Device;
+			break;
+	        case S_IFDIR:
+			mode = ILFileAttributes_Directory;
+			break;
+		default:
+			mode = 0;
+			break;
+	}
+
+	if (!(statbuf.st_mode & 0200))
+	  	mode |= ILFileAttributes_ReadOnly;
+
+	if (mode == 0)
+	  	mode = ILFileAttributes_Normal;
+
+	*attributes = mode;
+
+	return IL_ERRNO_Success;
+
+#else
+	return IL_ERRNO_ENOSYS;
+#endif
+}
+
+int ILSysIOSetFileAttributes(const char *path, ILInt32 attributes)
+{
+#if defined(HAVE_STAT) && defined(HAVE_CHMOD)
+  	int isReadOnly;
+	int retVal;
+	struct stat statbuf;
+	int uMask;
+
+	/* Clear errno */
+	errno = 0;
+
+	/* Grab the old attributes first */
+	retVal = stat(path, &statbuf);
+
+	if(retVal != 0)
+	{
+		/* Throw out the Errno */
+		return ILSysIOGetErrno();
+	}
+
+	/*
+	 * The only mode we can change is readonly.  If it already
+	 * matches ILSysIOGetFileAttributes definition of ReadOnly,
+	 * then don't change it.
+	 */
+	isReadOnly = (attributes & ILFileAttributes_ReadOnly) != 0;
+	if (((statbuf.st_mode & 0200) == 0) == isReadOnly)
+	  	return IL_ERRNO_Success;
+
+	/*
+	 * Set the write bits accordingly.
+	 */
+	if (isReadOnly)
+	  	statbuf.st_mode &= ~0222;
+	else
+	{
+	  	statbuf.st_mode |= 0222;
+		/*
+		* Don't set all write bits - that would be dangerous.
+		* Respect the umask if there is one.
+		*/
+#ifdef	HAVE_UMASK
+		uMask = umask(0);
+		umask(uMask);
+		/*
+		* Regardless of what umask() says we ill make GetAttributes()
+		* respect the new setting.
+		*/
+		uMask &= ~0200;
+		statbuf.st_mode &= ~uMask;
+#endif
+	}
+
+	retVal = chmod(path, statbuf.st_mode & 0xfff);
+
+	if(retVal != 0)
+	{
+		/* Throw out the errno */
+		return ILSysIOGetErrno();
+	}
+	else
+	{
+		return IL_ERRNO_Success;
+	}
+#else
+	return IL_ERRNO_ENOSYS;
+#endif
+}
+
 #else /* IL_NO_FILE_ROUTINES */
 
 int ILDeleteFile(const char *filename)

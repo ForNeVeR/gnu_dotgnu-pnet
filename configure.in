@@ -423,6 +423,7 @@ AC_CHECK_FUNCS(opendir readdir readdir_r closedir chdir access)
 AC_CHECK_FUNCS(cygwin_conv_to_win32_path snprintf rename utime)
 AC_CHECK_FUNCS(mkdir ioctl setsockopt getsockopt uname)
 AC_CHECK_FUNCS(tcgetattr readlink symlink rmdir strsignal)
+AC_CHECK_FUNCS(chmod umask)
 AC_FUNC_ALLOCA
 
 dnl check for F_SETLKW fcntl function.

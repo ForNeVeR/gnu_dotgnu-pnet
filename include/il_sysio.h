@@ -66,6 +66,24 @@ typedef void *ILSysIOHandle;
 #define	ILFileShare_Inheritable	0x10
 
 /*
+ * File Attibutes.
+ */
+#define	ILFileAttributes_ReadOnly		0x0001
+#define	ILFileAttributes_Hidden			0x0002
+#define	ILFileAttributes_System			0x0004
+#define	ILFileAttributes_Directory		0x0010
+#define	ILFileAttributes_Archive		0x0020
+#define	ILFileAttributes_Device			0x0040
+#define	ILFileAttributes_Normal			0x0080
+#define	ILFileAttributes_Temporary		0x0100
+#define	ILFileAttributes_SparseFile		0x0200
+#define	ILFileAttributes_ReparsePoint	0x0400
+#define	ILFileAttributes_Compressed		0x0800
+#define	ILFileAttributes_Offline		0x1000
+#define	ILFileAttributes_NotContentIndexed 0x2000
+#define	ILFileAttributes_Encrypted		0x4000
+
+/*
  * Get the platform-independent error number for the current thread.
  */
 int ILSysIOGetErrno(void);
@@ -420,6 +438,28 @@ ILInt32 ILChangeDir(const char *path);
  * "ILFileType_Unknown" if the file does not exist.
  */
 int ILGetFileType(const char *path);
+
+/*
+ * Get the length of a file in bytes.  Returns 0 on success,
+ * the errno otherwise.
+ */
+int ILSysIOGetFileLength(const char *path, ILInt64 *length);
+
+/*
+ * Get the file attributes.  Returns 0 on success, the errno
+ * otherwise.  The mapping of host OS attributes to .Net
+ * attributes can not be done exactly.
+ */
+int ILSysIOGetFileAttributes(const char *path, ILInt32 *attributes);
+
+/*
+ * Set the file attributes.  Returns 0 on success, the errno
+ * otherwise.  The function does nothing if the ReadOnly bit is
+ * not changed.  Setting ReadOnly removes all write bits from
+ * the files permissions, setting ReadOnly sets all bits that
+ * aren't in the umask().
+ */
+int ILSysIOSetFileAttributes(const char *path, ILInt32 attributes);
 
 #ifdef	__cplusplus 
 };

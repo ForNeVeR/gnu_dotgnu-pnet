@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH csdoc2texi 1 "24 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
+.TH csdoc2texi 1 "27 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 csdoc2texi \- convert C# documentation into texinfo
 .SH SYNOPSIS
@@ -33,7 +33,7 @@ Only one output file is created.  \fBCsdoc2texi\fR must be invoked multiple
 times to convert multiple input files into multiple output files.
 .SH OPTIONS
 .TP
-.\B -o \fIfile\fR, \-\-output \fIfile\fR
+.B \-o \fIfile\fR, \-\-output \fIfile\fR
 Specify the name of the file to write the texinfo output to.  The
 default is `input.texi'.  If there are multiple input files, then
 the name of the output file is based on the name of the first input file.
@@ -110,7 +110,7 @@ Written by Southern Storm Software, Pty Ltd.
 
 http://www.southern-storm.com.au/
 .SH "SEE ALSO"
-csdoc(1)
+csdoc(1), csdoc2html(1)
 .SH "DIAGNOSTICS"
 Exit status is 1 if an error occurred while processing the input.
 Otherwise the exit status is 0.

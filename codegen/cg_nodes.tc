@@ -82,6 +82,17 @@ typedef struct _tagILEvalValue ILEvalValue;
 }
 
 /*
+ * Parameter modifiers.
+ */
+%enum ILParameterModifier =
+{
+	ILParamMod_empty,
+	ILParamMod_ref,
+	ILParamMod_out,
+	ILParamMod_params,
+}
+
+/*
  * Definition of "ILEvalValue".
  */
 %decls %end %{
@@ -312,6 +323,11 @@ struct _tagILEvalValue
 %node ILNode_ToConst ILNode_UnaryExpression
 %node ILNode_This ILNode_Expression
 %node ILNode_ArgList ILNode_BinaryExpression
+%node ILNode_Argument ILNode_Expression =
+{
+	ILParameterModifier	modifier;
+	ILNode *expression;
+}
 %node ILNode_BoxingExpression ILNode_Expression %abstract =
 {
 	ILNode  *expr;
@@ -341,10 +357,10 @@ struct _tagILEvalValue
 	ILNode	   *argList;
 }
 
-%node ILNode_InvocationExpression ILNode_Expression =
+%node ILNode_InvocationExpression ILNode_BinaryExpression =
 {
-	ILNode	   *function;
-	ILNode	   *argList;
+	%nocreate ILNode   *thisExpr = {0};
+	%nocreate ILMethod *methodInfo = {0};
 }
 
 %node ILNode_BaseInit ILNode_Expression
@@ -646,14 +662,6 @@ struct _tagILEvalValue
 	ILNode	   *params; /* list of parameters */
 }
 
-%enum ILParameterModifier =
-{
-	ILParamMod_empty,
-	ILParamMod_ref,
-	ILParamMod_out,
-	ILParamMod_params,
-}
-
 %node ILNode_FormalParameter ILNode_Declaration =
 {
 	ILNode	   *attributes;
@@ -681,16 +689,6 @@ struct _tagILEvalValue
 {
 	ILNode	   *name;
 	ILNode	   *value;
-}
-
-/*
- * Argument
- */
-
-%node ILNode_Argument ILNode_Declaration =
-{
-	ILParameterModifier	modifier;
-	ILNode	   *expression;
 }
 
 /*

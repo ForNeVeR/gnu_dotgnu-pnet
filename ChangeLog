@@ -12,6 +12,9 @@ documentation elements.
 
 * cscc/cs_defs.tc, cscc/Makefile.am: add "cs_invoke.tc" to the build.
 
+* codegen/cg_nodes.tc: convert InvocationExpression into a subtype of
+BinaryExpression; convert Argument from a declaration into an expression.
+
 2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/csdoc.dtd: update the DTD for the XML documentation format.

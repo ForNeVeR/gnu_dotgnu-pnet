@@ -1,4 +1,72 @@
 
+0.3.2 (27 March 2002)
+
+	Runtime engine:
+
+	* InternalCall methods for "Platform.FileMethods" (Gopal.V, Charlie.C,
+	  and Rhys.W).
+	* Add binfmt registration and unregistration code.
+
+	C# Compiler:
+
+	* Remove a floating-point recognition case from the lexer because
+	  it was confusing the parser, and because it wasn't standard.
+	* Always favour non-params cases of methods when resolving candidates.
+	* Coerce the "this" parameter to method invocations properly.
+	* Rearrange the "cscc" directory to separate common code, plug-in
+	  handling, and the C#-specific pieces of the compiler.
+	* Implement Java-style labelled loops and switches in the code generator.
+	* Collect up static constructor fragments for each class.
+	* Add non-literal field initializers to static constructors.
+	* Array initializers.
+	* Detect duplicate definitions of methods and properties.
+	* Type gathering for nested types.
+	* Check for interface implementation errors in source programs.
+	* Set the "override" flag on finalizers.
+	* Modify name resultion so that a field declaration of the form
+	  "T T" will be treated propertly.
+	* Check for correct use of "abstract" and "extern".
+	* Fix line numbers on declaration nodes so that errors are reported
+	  for the first line of a declaration, not the last.
+	* Always look for declared types in the program before the libraries,
+	  just in case the program overrides a library type.
+	* Add the "-fmetadata-only" option to the compiler.
+	* Implement builtin operators for enumerated types.
+	* Pass "-ftarget-assembly-name" and "-fstdlib-name" to all tools.
+
+	Documentation:
+
+	* Updates to "engine/HACKING" (Gopal.V).
+	* Document the location of CVS snapshots in "HACKING".
+	* New "csdoc2stub" program to generate C# stub classes (Gopal.V).
+
+	Assembler:
+
+	* Syntax changes to support Java bytecode.
+	* Implement the ".data" directive to support array initializers.
+	* Handle classes with no explicit parent correctly.
+
+	Disassembler:
+
+	* Java method body support.
+
+	Linker:
+
+	* Add the missing "--no-stdlib" option.
+	* Bug fixes to attribute linking.
+
+	Loader and Metadata:
+
+	* Improve the Java class loader.
+	* New functions to support interface method searches.
+	* New functions for accessing user data on "ILClass" objects.
+
+	Other:
+
+	* Type comparison fixes in "ildiff" (Gopal.V).
+	* New "ilcheck" program for checking for missing InternalCalls (Gopal.V).
+	* Csant fixes to make it capable of building pnetlib.
+
 0.3.0 (11 February 2002)
 
 	Runtime engine:

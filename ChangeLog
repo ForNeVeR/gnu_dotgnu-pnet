@@ -9,6 +9,8 @@
 	codegen/jv_attrs.tc, codegen/jv_decls.tc, cscc/csharp/cs_decls.tc,
 	cscc/csharp/cs_grammar.y: rearrange the attribute node handling code.
 
+	* NEWS, configure.in: update version for the "0.3.2" release.
+
 2001-03-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/cscc.c,

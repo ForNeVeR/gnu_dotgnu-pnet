@@ -24,6 +24,7 @@ namespace System.Drawing.Toolkit
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.Threading;
 
 public interface IToolkit
 {
@@ -37,6 +38,10 @@ public interface IToolkit
 	// Send a quit message to the toolkit, which should cause
 	// it to exit from the "Run" method.
 	void Quit();
+
+	// Send a wakeup message to a thread's message queue to cause
+	// it to return back from "ProcessEvents".
+	void Wakeup(Thread thread);
 
 	// Resolve a system color to an RGB value.  Returns -1 if the
 	// system does not support the color and a default should be used.

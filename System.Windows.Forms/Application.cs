@@ -32,6 +32,8 @@ public sealed class Application
 {
 	// Internal state.
 	private static ApplicationContext context;
+	private static Request requests;
+	private static Request lastRequest;
 
 	// Cannot instantiate this class.
 	private Application() {}
@@ -282,17 +284,27 @@ public sealed class Application
 	// Process all events that are currently in the message queue.
 	public static void DoEvents()
 			{
-				// Make sure that this thread has a message loop running.
+				bool isMainThread;
+				Thread thread = Thread.CurrentThread;
+				Request request;
+
+				// Determine if we are the main thread.
 				lock(typeof(Application))
 				{
-					if(mainThread != Thread.CurrentThread)
-					{
-						return;
-					}
+					isMainThread = (mainThread == thread);
 				}
 
 				// Process pending events.
-				ToolkitManager.Toolkit.ProcessEvents(false);
+				if(isMainThread)
+				{
+					ToolkitManager.Toolkit.ProcessEvents(false);
+				}
+
+				// Process requests that were sent via "SendRequest".
+				while((request = NextRequest(thread, false)) != null)
+				{
+					request.Execute();
+				}
 			}
 
 	// Tell the application to exit.
@@ -324,6 +336,9 @@ public sealed class Application
 			{
 				Form mainForm = context.MainForm;
 				EventHandler handler;
+				Request request;
+				Thread thread = Thread.CurrentThread;
+				bool isMainThread;
 
 				// Connect the context's ThreadExit event to our "ExitThread".
 				handler = new EventHandler(ContextExit);
@@ -341,44 +356,66 @@ public sealed class Application
 				{
 					if(mainThread != null)
 					{
-						throw new InvalidOperationException
-							(S._("SWF_MessageLoopAlreadRunning"));
+						isMainThread = false;
 					}
-					mainThread = Thread.CurrentThread;
+					else
+					{
+						mainThread = thread;
+						isMainThread = true;
+					}
 				}
 
 				// Run the main message processing loop.
-				IToolkit toolkit = ToolkitManager.Toolkit;
-				try
+				if(isMainThread)
 				{
-					for(;;)
+					IToolkit toolkit = ToolkitManager.Toolkit;
+					try
 					{
-						// Process events in the queue.
-						if(!toolkit.ProcessEvents(false))
+						for(;;)
 						{
-						#if !CONFIG_COMPACT_FORMS
-							// There were no events, so raise "Idle".
-							if(Idle != null)
+							// Process events in the queue.
+							if(!toolkit.ProcessEvents(false))
 							{
-								Idle(null, EventArgs.Empty);
+							#if !CONFIG_COMPACT_FORMS
+								// There were no events, so raise "Idle".
+								if(Idle != null)
+								{
+									Idle(null, EventArgs.Empty);
+								}
+							#endif
+	
+								// Block until an event, or quit, arrives.
+								if(!toolkit.ProcessEvents(true))
+								{
+									break;
+								}
 							}
-						#endif
-
-							// Block until the next event, or quit, arrives.
-							if(!toolkit.ProcessEvents(true))
+	
+							// Process requests sent via "SendRequest".
+							while((request = NextRequest(thread, false))
+										!= null)
 							{
-								break;
+								request.Execute();
 							}
 						}
 					}
-				}
-				finally
-				{
-					// Reset the "mainThread" variable because there
-					// is no message loop any more.
-					lock(typeof(Application))
+					finally
 					{
-						mainThread = null;
+						// Reset the "mainThread" variable because there
+						// is no message loop any more.
+						lock(typeof(Application))
+						{
+							mainThread = null;
+						}
+					}
+				}
+				else
+				{
+					// This is not the main thread, so only process
+					// requests that were sent via "SendRequest".
+					while((request = NextRequest(thread, true)) != null)
+					{
+						request.Execute();
 					}
 				}
 
@@ -429,6 +466,97 @@ public sealed class Application
 			}
 
 #endif // !CONFIG_COMPACT_FORMS
+
+	// Information about a request to be executed in a specific thread.
+	// This is used to help implement the "Control.Invoke" method.
+	internal abstract class Request
+	{
+		public Request next;
+		public Thread thread;
+
+		// Execute the request.
+		public abstract void Execute();
+
+	}; // class Request
+
+	// Send a request to a particular thread's message queue.
+	internal static void SendRequest(Request request, Thread thread)
+			{
+				Object obj = typeof(Application);
+				request.thread = thread;
+				lock(obj)
+				{
+					// Add the request to the queue.
+					request.next = null;
+					if(requests != null)
+					{
+						lastRequest.next = request;
+					}
+					else
+					{
+						requests = request;
+					}
+					lastRequest = request;
+
+					// Wake up all threads that are blocking in "NextRequest".
+					Monitor.PulseAll(obj);
+
+					// Wake up the thread that will receive the request,
+					// as it may be blocking inside "ProcessEvents".
+					ToolkitManager.Toolkit.Wakeup(thread);
+				}
+			}
+
+	// Get the next pending request for a particular thread.
+	private static Request NextRequest(Thread thread, bool block)
+			{
+				Object obj = typeof(Application);
+				Request request, prev;
+				lock(obj)
+				{
+					for(;;)
+					{
+						// See if there is a request on the queue for us.
+						prev = null;
+						request = requests;
+						while(request != null)
+						{
+							if(request.thread == thread)
+							{
+								if(prev != null)
+								{
+									prev.next = request.next;
+								}
+								else
+								{
+									requests = request.next;
+								}
+								if(request.next == null)
+								{
+									lastRequest = prev;
+								}
+								else
+								{
+									request.next = null;
+								}
+								break;
+							}
+							prev = request;
+							request = request.next;
+						}
+
+						// Bail out if we got something or we aren't blocking.
+						if(request != null || !block)
+						{
+							break;
+						}
+
+						// Wait to be signalled by "SendRequest".
+						Monitor.Wait(obj);
+					}
+				}
+				return request;
+			}
 
 }; // class Application
 

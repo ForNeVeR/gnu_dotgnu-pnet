@@ -27,6 +27,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
 using System.Drawing.Text;
 using System.Drawing.Imaging;
+using System.Threading;
 using Xsharp;
 
 public sealed class DrawingToolkit : IToolkit
@@ -140,6 +141,13 @@ public sealed class DrawingToolkit : IToolkit
 	public void Quit()
 			{
 				app.Display.Quit();
+			}
+
+	// Send a wakeup message to a thread's message queue to cause
+	// it to return back from "ProcessEvents".
+	public void Wakeup(Thread thread)
+			{
+				// TODO
 			}
 
 	// Get lighter or darker versions of a color.

@@ -4,6 +4,13 @@
 	* System.Windows.Forms/ButtonBase.cs: make "Draw" "internal virtual"
 	so that it can be overridden in subclasses.
 
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Windows.Forms/Application.cs: put some infrastructure in
+	place to support multi-threaded Forms applications - sending
+	requests to another thread's message loop for execution.
+
 2003-07-07  Gopal.V  <gopalv82@symonds.net>
 
 	* System.Windows.Forms/Themes/DefaultThemePainter.cs: Clear up the

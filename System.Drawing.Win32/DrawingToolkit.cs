@@ -26,6 +26,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Drawing.Imaging;
 using System.Collections;
+using System.Threading;
 using d = System.Diagnostics.Debug;
 
 public class DrawingToolkit : IToolkit
@@ -61,6 +62,13 @@ public class DrawingToolkit : IToolkit
 	public void Quit()
 			{
 				Win32.Api.PostQuitMessage(0);
+			}
+
+	// Send a wakeup message to a thread's message queue to cause
+	// it to return back from "ProcessEvents".
+	public void Wakeup(Thread thread)
+			{
+				// TODO
 			}
 
 	// Resolve a system color to an RGB value.  Returns -1 if the

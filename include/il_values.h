@@ -42,7 +42,7 @@ extern	"C" {
 /*
  * Define the 8-bit and 16-bit numeric types.
  */
-typedef char						ILInt8;
+typedef signed char					ILInt8;
 typedef unsigned char				ILUInt8;
 typedef short						ILInt16;
 typedef unsigned short				ILUInt16;

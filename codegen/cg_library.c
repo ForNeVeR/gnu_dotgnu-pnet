@@ -80,6 +80,41 @@ static int AddDefaultConstructor(ILClass *classInfo)
 	return 1;
 }
 
+/*
+ * Add an abstract virtual method constructor to a class.
+ */
+static ILMethod *AddAbstractMethod(ILClass *classInfo, const char *name,
+							       ILType *returnType, ILType *argType)
+{
+	ILMethod *method;
+	ILType *signature;
+	method = ILMethodCreate(classInfo, 0, name,
+					  	    IL_META_METHODDEF_PUBLIC |
+					  	    IL_META_METHODDEF_HIDE_BY_SIG |
+							IL_META_METHODDEF_ABSTRACT |
+							IL_META_METHODDEF_VIRTUAL |
+							IL_META_METHODDEF_NEW_SLOT);
+	if(!method)
+	{
+		return 0;
+	}
+	signature = ILTypeCreateMethod(ILClassToContext(classInfo), returnType);
+	if(!signature)
+	{
+		return 0;
+	}
+	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	if(argType != ILType_Void)
+	{
+		if(!ILTypeAddParam(ILClassToContext(classInfo), signature, argType))
+		{
+			return 0;
+		}
+	}
+	ILMemberSetSignature((ILMember *)method, signature);
+	return method;
+}
+
 void ILGenMakeLibrary(ILGenInfo *info)
 {
 	ILImage *image = info->libImage;
@@ -96,7 +131,13 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *attributeClass;
 	ILClass *paramAttributeClass;
 	ILClass *exceptionClass;
+	ILClass *disposableInterface;
+	ILClass *collectionInterface;
+	ILClass *enumeratorInterface;
 	int constructorOK;
+	ILMethod *method;
+	ILProperty *property;
+	ILType *signature;
 
 	/* Create the "System.Object" class */
 	ABORT_IF(objectClass, ILClassCreate(scope, 0, "Object", "System", 0));
@@ -227,6 +268,56 @@ void ILGenMakeLibrary(ILGenInfo *info)
 				    IL_META_TYPEDEF_SERIALIZABLE |
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT);
 	ABORT_IF(constructorOK, AddDefaultConstructor(exceptionClass));
+
+	/* Create the "System.IDisposable" interface */
+	ABORT_IF(disposableInterface,
+			 ILClassCreate(scope, 0, "IDisposable", "System", 0));
+	ILClassSetAttrs(disposableInterface, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_INTERFACE |
+					IL_META_TYPEDEF_ABSTRACT);
+
+	/* Create the "System.Collections.ICollection" interface */
+	ABORT_IF(collectionInterface,
+			 ILClassCreate(scope, 0, "ICollection", "System.Collections", 0));
+	ILClassSetAttrs(collectionInterface, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_INTERFACE |
+					IL_META_TYPEDEF_ABSTRACT);
+
+	/* Create the "System.Collections.IEnumerator" interface */
+	ABORT_IF(enumeratorInterface,
+			 ILClassCreate(scope, 0, "IEnumerator", "System.Collections", 0));
+	ILClassSetAttrs(enumeratorInterface, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_INTERFACE |
+					IL_META_TYPEDEF_ABSTRACT);
+
+	/* Add the "GetEnumerator" method to the "ICollection" interface */
+	ABORT_IF(method, AddAbstractMethod(collectionInterface, "GetEnumerator",
+									   ILType_FromClass(enumeratorInterface),
+									   ILType_Void));
+
+	/* Add the "MoveNext" and "Reset" methods to "IEnumerator" */
+	ABORT_IF(method, AddAbstractMethod(enumeratorInterface, "MoveNext",
+									   ILType_Boolean, ILType_Void));
+	ABORT_IF(method, AddAbstractMethod(enumeratorInterface, "Reset",
+									   ILType_Void, ILType_Void));
+
+	/* Add the "Current" property to "IEnumerator" */
+	ABORT_IF(method, AddAbstractMethod(enumeratorInterface, "get_Current",
+									   ILType_FromClass(objectClass),
+									   ILType_Void));
+	ABORT_IF(signature, ILTypeCreateProperty(info->context,
+									 		 ILType_FromClass(objectClass)));
+	signature->kind |= (short)(IL_META_CALLCONV_HASTHIS << 8);
+	ABORT_IF(property, ILPropertyCreate(enumeratorInterface, 0, "Current",
+										0, signature));
+	if(!ILMethodSemCreate((ILProgramItem *)property, 0,
+				  		  IL_META_METHODSEM_GETTER, method))
+	{
+		ILGenOutOfMemory(info);
+	}
 }
 
 #ifdef	__cplusplus

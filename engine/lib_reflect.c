@@ -850,10 +850,18 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 							  System_Array *parameters, int isCtor)
 {
 	ILExecValue *args;
-	/*ILExecValue result;*/
+	ILExecValue result;
+	ILInt32 numParams;
+	ILInt32 paramNum;
+	ILInt32 argNum;
+	ILType *paramType;
+	ILObject *paramObject;
+	ILType *objectType;
+	ILImage *image = ILProgramItem_Image(method);
 
 	/* Check that the number of parameters is correct */
-	if(signature->num == 0)
+	numParams = (ILInt32)(signature->num);
+	if(numParams == 0)
 	{
 		if(parameters && parameters->length != 0)
 		{
@@ -863,7 +871,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 	}
 	else
 	{
-		if(!parameters || parameters->length != signature->num)
+		if(!parameters || parameters->length != numParams)
 		{
 			ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
 			return 0;
@@ -871,11 +879,10 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 	}
 
 	/* Allocate an argument array for the invocation */
-	if(signature->num != 0 || _this != 0)
+	if(numParams != 0 || _this != 0)
 	{
 		args = (ILExecValue *)ILGCAlloc(sizeof(ILExecValue) *
-									    ((ILUInt32)(signature->num)) +
-									    (_this ? 1 : 0));
+									    (numParams + (_this ? 1 : 0)));
 		if(!args)
 		{
 			ILExecThreadThrowOutOfMemory(thread);
@@ -888,13 +895,151 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 	}
 
 	/* Copy the parameter values into the array, and check their types */
+	if(_this != 0)
+	{
+		args[0].objValue = _this;
+		argNum = 1;
+	}
+	else
+	{
+		argNum = 0;
+	}
+	for(paramNum = 0; paramNum < numParams; ++paramNum)
+	{
+		paramType = ILTypeGetParam(signature, paramNum + 1);
+		paramObject = ((ILObject **)ArrayToBuffer(parameters))[paramNum];
+		if(paramObject)
+		{
+			/* Non-null object supplied */
+			objectType = ILClassToType(GetObjectClass(paramObject));
+			if(!ILTypeAssignCompatible(image, objectType, paramType))
+			{
+				ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
+				return 0;
+			}
+
+			/* Unbox the object into the argument structure */
+			paramType = ILTypeGetEnumType(paramType);
+			if(ILType_IsPrimitive(paramType))
+			{
+				/* Unbox primitive and enumerated types into the argument */
+				if(!ILExecThreadUnbox(thread, objectType, paramObject,
+									  &(args[argNum])))
+				{
+					ILExecThreadThrowSystem
+						(thread, "System.ArgumentException", 0);
+					return 0;
+				}
+			}
+			else if(ILType_IsValueType(paramType))
+			{
+				/* Pass non-enumerated value types as a pointer
+				   into the boxed object.  The "CallMethodV"
+				   function will copy the data onto the stack */
+				args[argNum].ptrValue = (void *)paramObject;
+			}
+			else if(ILType_IsClass(paramType))
+			{
+				/* Pass class types by value */
+				args[argNum].objValue = paramObject;
+			}
+			else if(paramType != 0 && ILType_IsComplex(paramType))
+			{
+				if(paramType->kind == IL_TYPE_COMPLEX_ARRAY ||
+				   paramType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+				{
+					/* Array object references are passed directly */
+					args[argNum].objValue = paramObject;
+				}
+				else
+				{
+					/* Don't know how to pass this kind of value yet */
+					ILExecThreadThrowSystem
+						(thread, "System.ArgumentException", 0);
+					return 0;
+				}
+			}
+			else
+			{
+				/* Don't know what this is, so raise an error */
+				ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
+				return 0;
+			}
+		}
+		else
+		{
+			/* Null object supplied: the parameter must be an object ref */
+			if(!ILTypeAssignCompatible(image, 0, paramType))
+			{
+				ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
+				return 0;
+			}
+			args[argNum].objValue = 0;
+		}
+		++argNum;
+	}
 
 	/* Allocate a boxing object for the result if it is a value type */
+	ILMemZero(&result, sizeof(result));
+	paramType = ILTypeGetEnumType(signature->un.method.retType);
+	if(ILType_IsValueType(paramType))
+	{
+		paramObject = (ILObject *)_ILEngineAllocObject
+			(thread, ILType_ToValueType(paramType));
+		if(!paramObject)
+		{
+			return 0;
+		}
+		result.ptrValue = (void *)paramObject;
+	}
+	else
+	{
+		paramObject = 0;
+	}
 
 	/* Invoke the method */
+	if(isCtor)
+	{
+		return ILExecThreadCallCtorV(thread, method, args);
+	}
+	else if(ILExecThreadCallV(thread, method, &result, args))
+	{
+		/* An exception was thrown by the method */
+		return 0;
+	}
 
 	/* Box the return value and exit */
-	return 0;
+	if(paramObject)
+	{
+		/* The value is already boxed */
+		return paramObject;
+	}
+	else if(ILType_IsPrimitive(paramType))
+	{
+		/* Box a primitive value */
+		if(paramType == ILType_Void)
+		{
+			return 0;
+		}
+		return ILExecThreadBox(thread, signature->un.method.retType, &result);
+	}
+	else if(ILType_IsClass(paramType))
+	{
+		/* Return object values directly */
+		return result.objValue;
+	}
+	else if(paramType != 0 && ILType_IsComplex(paramType) &&
+	        (paramType->kind == IL_TYPE_COMPLEX_ARRAY ||
+			 paramType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	{
+		/* Return array values directly */
+		return result.objValue;
+	}
+	else
+	{
+		/* Don't know how to box this type of value */
+		return 0;
+	}
 }
 
 /*

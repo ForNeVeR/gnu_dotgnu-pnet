@@ -222,6 +222,15 @@ int ILExecThreadCallV(ILExecThread *thread, ILMethod *method,
 					  ILExecValue *result, ILExecValue *args);
 
 /*
+ * Call a constructor within a thread's context, passing
+ * the parameter and return values from "ILExecValue"
+ * structures.  Returns the new object, or zero if an
+ * exception was thrown.
+ */
+ILObject *ILExecThreadCallCtorV(ILExecThread *thread, ILMethod *ctor,
+								ILExecValue *args);
+
+/*
  * Call a particular virtual method within a thread's context.
  * If the method isn't marked as virtual, then an ordinary
  * method call will be used instead.

@@ -630,7 +630,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	else if(isCtor)
 	{
 		/* Copy the returned object value */
-		*((void **)result) = thread->stackTop[-1].ptrValue;
+		result->objValue = (ILObject *)(thread->stackTop[-1].ptrValue);
 		--(thread->stackTop);
 	}
 	else
@@ -902,6 +902,21 @@ int ILExecThreadCallV(ILExecThread *thread, ILMethod *method,
 					  ILExecValue *result, ILExecValue *args)
 {
 	return CallMethodV(thread, method, result, 0, 0, args);
+}
+
+ILObject *ILExecThreadCallCtorV(ILExecThread *thread, ILMethod *ctor,
+                                ILExecValue *args)
+{
+	ILExecValue result;
+	result.objValue = 0;
+	if(CallMethodV(thread, ctor, &result, 1, 0, args))
+	{
+		return 0;
+	}
+	else
+	{
+		return result.objValue;
+	}
 }
 
 int ILExecThreadCallVirtual(ILExecThread *thread, ILMethod *method,

@@ -300,9 +300,9 @@ sealed class ThreadPool
 				WorkItem item = null;
 				for(;;)
 				{
-					while(item == null)
+					lock(typeof(ThreadPool))
 					{
-						lock(typeof(ThreadPool))
+						do
 						{
 							item = ItemToDispatch();
 							if(item == null)
@@ -310,6 +310,7 @@ sealed class ThreadPool
 								Monitor.Wait(typeof(ThreadPool));
 							}
 						}
+						while(item == null);
 					}
 									
 					try
@@ -338,9 +339,9 @@ sealed class ThreadPool
 				
 				for(;;)
 				{
-					while(item == null)
+					lock(completionWait)
 					{
-						lock (completionWait)
+						do
 						{
 							item = CompletionItemToDispatch();
 							if(item == null)
@@ -348,6 +349,7 @@ sealed class ThreadPool
 								Monitor.Wait(completionWait);
 							}
 						}
+						while (item == null);
 					}
 					
 					try
@@ -366,9 +368,9 @@ sealed class ThreadPool
 	// Add a work item to the worker queue.
 	private static void AddWorkItem(WorkItem item)
 			{
-				// Add the item to the end of the worker queue.
-				lock(typeof(ThreadPool))
+				if (!Thread.CanStartThreads())
 				{
+					// Add the item to the end of the worker queue.
 					if(lastWorkItem != null)
 					{
 						lastWorkItem.next = item;
@@ -378,9 +380,7 @@ sealed class ThreadPool
 						workItems = item;
 					}
 					lastWorkItem = item;
-				}
-				if(!Thread.CanStartThreads())
-				{
+			
 					// We don't have threads, so execute the items now.
 					WorkItem next = ItemToDispatch();
 					while(next != null)
@@ -391,20 +391,31 @@ sealed class ThreadPool
 				}
 				else
 				{
-					// Determine if we need to spawn a new worker thread.
 					lock(typeof(ThreadPool))
 					{
+						if(lastWorkItem != null)
+						{
+							lastWorkItem.next = item;
+						}
+						else
+						{
+							workItems = item;
+						}
+						lastWorkItem = item;
+					
+						// Determine if we need to spawn a new worker thread.
+
 						if(workItems != null &&
-						   numWorkerThreads < MaxWorkerThreads)
+							numWorkerThreads < MaxWorkerThreads)
 						{
 							if(workerThreads == null)
 							{
 								workerThreads = new Thread [MaxWorkerThreads];
 							}
 							Thread thread = new Thread(new ThreadStart(Work));
-						#if !ECMA_COMPAT
+							#if !ECMA_COMPAT
 							thread.inThreadPool = true;
-						#endif
+							#endif
 							workerThreads[numWorkerThreads++] = thread;
 							thread.IsBackground = true;
 							thread.Start();
@@ -416,10 +427,10 @@ sealed class ThreadPool
 
 	// Add a work item to the completion queue.
 	private static void AddCompletionItem(WorkItem item)
-			{
-				// Add the item to the end of the worker queue.
-				lock(completionWait)
+			{				
+				if (!Thread.CanStartThreads())
 				{
+					// Add the item to the end of the worker queue.
 					if(lastCompletionItem != null)
 					{
 						lastCompletionItem.next = item;
@@ -429,9 +440,7 @@ sealed class ThreadPool
 						completionItems = item;
 					}
 					lastCompletionItem = item;
-				}
-				if(!Thread.CanStartThreads())
-				{
+	
 					// We don't have threads, so execute the items now.
 					WorkItem next = CompletionItemToDispatch();
 					while(next != null)
@@ -442,11 +451,21 @@ sealed class ThreadPool
 				}
 				else
 				{
-					// Determine if we need to spawn a new completion thread.
 					lock(completionWait)
 					{
+						if(lastCompletionItem != null)
+						{
+							lastCompletionItem.next = item;
+						}
+						else
+						{
+							completionItems = item;
+						}
+						lastCompletionItem = item;
+
+						// Determine if we need to spawn a new completion thread.
 						if(completionItems != null &&
-						   numCompletionThreads < MaxCompletionThreads)
+							numCompletionThreads < MaxCompletionThreads)
 						{
 							if(completionThreads == null)
 							{

@@ -449,3 +449,5 @@ tools/run_test.sh
 tools/link_res.sh
 tools/wrapper.sh
 pnetlib.spec])
+
+chmod +x "${srcdir}/samples/ilrun.sh" 2>/dev/null

@@ -36,6 +36,8 @@
 	runtime/System/Security/Cryptography/Rfc2898DeriveBytes.cs:
 	add the framework 1.2 cryptography classes.
 
+	* configure.in: put back the "chmod +x" for "ilrun.sh".
+
 2003-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, JScript/JScript.build, JScript/Makefile.am,

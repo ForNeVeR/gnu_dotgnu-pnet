@@ -1,4 +1,8 @@
 
+2004-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* NEWS, configure.in: update version for the "0.6.8" release.
+
 2004-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant_cscc.c, cscc/cscc.1, cscc/common/cc_compat.c,

@@ -320,11 +320,12 @@ public sealed class SecurityElement
 								throw new ArgumentException
 									(_("Arg_InvalidXMLAttrName"));
 							}
-							if(!IsValidAttributeName(val))
+							if(!IsValidAttributeValue(val))
 							{
 								throw new ArgumentException
 									(_("Arg_InvalidXMLAttrValue"));
 							}
+							attributes.Add(new AttrNameValue(name, val));
 						}
 					}
 				}

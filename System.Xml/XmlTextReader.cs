@@ -979,47 +979,50 @@ public class XmlTextReader : XmlReader
 				
 			
 				
-				switch (nodeType)
+				// Handling, set flag to true if first char is <
+				if ((char)ch == '<')
 				{
-					case XmlNodeType.Attribute:
-						// Set structFlag to true so quoteChar will
-						// know it is the first quote
-						AnalyzeChar(ch,true);
-						return true;
-					default:
-						// Handling, set flag to true if first char is <
-						if ((char)ch == '<')
-						{
-							AnalyzeChar(ch, true);
-							tempName = name;
-							while(readAttribute == true)
-							{
-								ch = ReadChar();
-								AnalyzeChar(ch, false);
-								// set back to Element node type
-								// for proper implementation behavior
-								nodeType = XmlNodeType.Element;
-								name = tempName;
-								value = String.Empty;
-							}
-						}
-						else 
-						{
-							AnalyzeChar(ch, false);
-							tempName = name;
-							while(readAttribute == true)
-							{
-								ch = ReadChar();
-								AnalyzeChar(ch, false);
-								// set back to Element node type
-								// for proper implementation behavior
-								nodeType = XmlNodeType.Element;
-								name = tempName;
-								value = String.Empty;
-							}
-						}
-						return true;
+					AnalyzeChar(ch, true);
+					tempName = Name;
+					while(readAttribute == true)
+					{
+						ch = ReadChar();
+						// get AttributeName
+						AnalyzeChar(ch, false);
+						ch = ReadChar();
+						// get AttributeValue
+						AnalyzeChar(ch, true);
+						// set back to Element node type
+						// for proper implementation behavior
+						ClearNodeInfo();
+						nodeType = XmlNodeType.Element;
+						SetName(tempName);
+						value = String.Empty;
+					}
+					return true;
 				}
+				else 
+				{
+					AnalyzeChar(ch, false);
+					tempName = Name;
+					while(readAttribute == true)
+					{
+						ch = ReadChar();
+						// get AttributeName
+						AnalyzeChar(ch, false);
+						ch = ReadChar();
+						// get AttributeValue
+						AnalyzeChar(ch, true);
+						// set back to Element node type
+						// for proper implementation behavior
+						ClearNodeInfo();
+						nodeType = XmlNodeType.Element;
+						SetName(tempName);
+						value = String.Empty;
+					}
+					return true;
+				}
+			
 				return false;
 
 			}

@@ -126,6 +126,7 @@ long ILAnsiGetBytes(const unsigned short *chars, unsigned long charCount,
 		{
 			*bytes++ = (unsigned char)'?';
 		}
+		--len;
 	}
 	return charCount;
 #else
@@ -292,6 +293,7 @@ long ILAnsiGetChars(const unsigned char *bytes, unsigned long byteCount,
 	while(len > 0)
 	{
 		*chars++ = (unsigned short)(*bytes++);
+		--len;
 	}
 	return (long)byteCount;
 #else

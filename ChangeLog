@@ -11,6 +11,8 @@
 	add the "csdoc2hier" program to the system, which dumps a
 	tree hierarchy of the classes in an XML documentation file.
 
+	* support/ansi.c: bug fixes to Latin1 ANSI routines.
+
 2002-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/heap.c (InitializeClass): throw "TypeInitializationException"

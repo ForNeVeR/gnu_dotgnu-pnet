@@ -1110,9 +1110,13 @@ PrimaryExpression
 				$$ = ILNode_CString_create($1.string, $1.len);
 			}
 	| K_FUNC				{
-				/* Create a reference to the local "__func__" array */
-				/* TODO */
-				$$ = ILNode_Error_create();
+				/* Create a reference to the local "__func__" array.
+				   In this implementation, we create a reference to
+				   the string pool.  The pool implementation will take
+				   care of pointing all copies of the function name
+				   at the same memory location */
+				ILIntString str = ILInternString(functionName, -1);
+				$$ = ILNode_CString_create(str.string, str.len);
 			}
 	| '(' Expression ')'		{ $$ = $2; }
 	| '(' CompoundStatement ')'	{ $$ = $2; }
@@ -2257,17 +2261,23 @@ Statement2
 	;
 
 LabeledStatement
-	: IDENTIFIER ':' Statement		{
-				/* TODO */
-				$$ = $3;
+	: IDENTIFIER ':' {
+				$<node>$ = ILNode_GotoLabel_create($1);
 			}
-	| K_CASE ConstantExpression ':' Statement	{
-				/* TODO */
-				$$ = $4;
+	  Statement		{
+				$$ = ILNode_Compound_CreateFrom($<node>3, $4);
 			}
-	| K_DEFAULT ':' Statement	{
-				/* TODO */
-				$$ = $3;
+	| K_CASE ConstantExpression ':' {
+				$<node>$ = ILNode_CaseLabel_create($2);
+			}
+	  Statement	{
+				$$ = ILNode_Compound_CreateFrom($<node>4, $5);
+			}
+	| K_DEFAULT ':' {
+				$<node>$ = ILNode_DefaultLabel_create();
+			}
+	  Statement {
+				$$ = ILNode_Compound_CreateFrom($<node>3, $4);
 			}
 	;
 
@@ -2340,7 +2350,8 @@ SelectionStatement
 				$$ = ILNode_If_create($3, $5, $7);
 			}
 	| K_SWITCH '(' Expression ')' Statement	{
-				$$ = ILNode_Switch_create($3, $5);
+				$$ = ILNode_Switch_create($3, 0, $5);
+				CGenCloneLine($$, $3);
 			}
 	;
 

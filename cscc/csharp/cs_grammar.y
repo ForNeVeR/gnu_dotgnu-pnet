@@ -1902,7 +1902,7 @@ SelectionStatement
 				MakeTernary(If, ILNode_ToBool_create($2), $3, $5);
 			}
 	| SWITCH ParenExpression SwitchBlock	{
-				MakeBinary(Switch, $2, $3);
+				MakeTernary(Switch, $2, $3, 0);
 			}
 	;
 

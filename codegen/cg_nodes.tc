@@ -694,6 +694,7 @@ struct _tagILSwitchValue
 {
 	ILNode *expr;
 	ILNode *sections;
+	ILNode *body;
 	%nocreate ILNode *defaultSection = {0};
 	%nocreate ILSwitchValue *switchValues = {0};
 	%nocreate unsigned long numSwitchValues = {0};
@@ -710,8 +711,12 @@ struct _tagILSwitchValue
 %node ILNode_CaseLabel ILNode_Statement =
 {
 	ILNode *expr;
+	%nocreate ILNode_SwitchSection *section = {0};
 }
-%node ILNode_DefaultLabel ILNode_Statement
+%node ILNode_DefaultLabel ILNode_Statement =
+{
+	%nocreate ILNode_SwitchSection *section = {0};
+}
 %node ILNode_Throw ILNode_Statement
 %node ILNode_ThrowExpr ILNode_Statement =
 {

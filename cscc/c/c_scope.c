@@ -172,7 +172,7 @@ void CScopeUpdateFunction(void *data, int kind, ILNode *node, ILType *signature)
 
 void CScopeAddParam(const char *name, unsigned index, ILType *type)
 {
-	ILScopeDeclareItem(CGlobalScope, name,
+	ILScopeDeclareItem(CCurrentScope, name,
 					   C_SCDATA_PARAMETER_VAR, 0,
 					   (void *)(ILNativeUInt)index, type);
 }

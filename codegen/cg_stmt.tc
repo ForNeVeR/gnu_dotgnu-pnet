@@ -1611,6 +1611,7 @@ ILNode_GenDiscard(ILNode_Switch)
 	unsigned long numValues;
 	ILInt32 temp;
 	int needPop = 0;
+	int savePop;
 
 	/* Compute the switch expression's value */
 	ILNode_GenValue(node->expr, info);
@@ -1710,21 +1711,34 @@ ILNode_GenDiscard(ILNode_Switch)
 	}
 
 	/* Generate code for the switch sections */
-	ILNode_ListIter_Init(&iter, node->sections);
-	while((section = (ILNode_SwitchSection *)ILNode_ListIter_Next(&iter)) != 0)
+	savePop = info->needSwitchPop;
+	info->needSwitchPop = needPop;
+	if(node->body)
 	{
-		/* Output the section label */
-		ILGenLabel(info, &(section->label));
-
-		/* Pop the extra value copy if we were using "if" statements */
-		if(needPop)
-		{
-			ILGenSimple(info, IL_OP_POP);
-		}
-
-		/* Output the code for the section */
-		ILNode_GenDiscard(section->stmt, info);
+		/* C-style switch: output the code for the entire body */
+		ILNode_GenDiscard(node->body, info);
 	}
+	else
+	{
+		/* C#-style switch: output the code section by section */
+		ILNode_ListIter_Init(&iter, node->sections);
+		while((section = (ILNode_SwitchSection *)ILNode_ListIter_Next(&iter))
+					!= 0)
+		{
+			/* Output the section label */
+			ILGenLabel(info, &(section->label));
+	
+			/* Pop the extra value copy if we were using "if" statements */
+			if(needPop)
+			{
+				ILGenSimple(info, IL_OP_POP);
+			}
+	
+			/* Output the code for the section */
+			ILNode_GenDiscard(section->stmt, info);
+		}
+	}
+	info->needSwitchPop = savePop;
 
 	/* Pop from the switch context and set the default and break labels */
 	PopLoop(info);
@@ -1744,11 +1758,28 @@ ILNode_GenDiscard(ILNode_Switch)
  */
 ILNode_GenDiscard(ILNode_SwitchSectList),
 ILNode_GenDiscard(ILNode_SwitchSection),
-ILNode_GenDiscard(ILNode_CaseList),
+ILNode_GenDiscard(ILNode_CaseList)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate discard code for a case or default label.
+ */
 ILNode_GenDiscard(ILNode_CaseLabel),
 ILNode_GenDiscard(ILNode_DefaultLabel)
 {
-	/* Nothing to do here */
+	if(node->section)
+	{
+		/* Output the section label for a C-style switch */
+		ILGenLabel(info, &(node->section->label));
+	
+		/* Pop the extra value copy if we were using "if" statements */
+		if(info->needSwitchPop)
+		{
+			ILGenSimple(info, IL_OP_POP);
+		}
+	}
 }
 
 /*

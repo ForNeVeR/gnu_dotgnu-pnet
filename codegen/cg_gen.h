@@ -106,6 +106,7 @@ struct _tagILGenInfo
 	int				outputIsJava : 1;	/* Output Java bytecode */
 	int				debugFlag : 1;		/* Non-zero if debug is enabled */
 	int				hasUnsafe : 1;		/* Non-zero if unsafe code in source */
+	int				needSwitchPop : 1;	/* Non-zero to pop a switch value */
 	int             decimalRoundMode;	/* Rounding mode for ILDecimal */
 	long			stackHeight;		/* Current stack height */
 	long			maxStackHeight;		/* Maximum stack height */

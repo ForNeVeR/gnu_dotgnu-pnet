@@ -389,11 +389,26 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 			= {CAddressDefault}
 
 /*
+ * Collect up the case labels that exist within the body of
+ * a "switch" statement.
+ */
+%operation void ILNode_CollectCases([ILNode *node], ILGenInfo *info,
+                                    ILNode *list)
+
+/*
  * Stub out "ILNode_CGenAddress" for non-reference l-values.
  */
 ILNode_CGenAddress(ILNode_LValueNoRef)
 {
 	return CAddressDefault;
+}
+
+/*
+ * Stub out "CollectCases" for non-statement nodes.
+ */
+ILNode_CollectCases(ILNode)
+{
+	/* Nothing to do here */
 }
 
 /*

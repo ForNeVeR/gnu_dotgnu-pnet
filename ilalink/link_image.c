@@ -26,7 +26,14 @@ extern	"C" {
 
 int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename)
 {
-	return 0;
+	/* Convert the classes in the image */
+	if(!_ILLinkerConvertClasses(linker, image))
+	{
+		return 0;
+	}
+
+	/* Done */
+	return 1;
 }
 
 #ifdef	__cplusplus

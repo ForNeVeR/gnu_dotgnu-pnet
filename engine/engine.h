@@ -219,6 +219,10 @@ struct _tagILExecThread
 	/* System.Threading.Thread object */
 	ILObject *clrThread;
 
+	/* Marks this thread as a finalizer thread */
+	/* Finalizer threads are destroyed last */
+	int isFinalizerThread;
+
 	/* Free monitors list */
 	ILExecMonitor *freeMonitor;
 

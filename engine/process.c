@@ -147,17 +147,54 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 
 void ILExecProcessDestroy(ILExecProcess *process)
 {
-	/* Deinit should run the last garbage collector
-		and a finalizer pass */
+	ILExecThread *thread, *next;
+	ILExecThread *firstFinalizerThread;
 
-	/* Tell the GC we're history */
-	ILGCDeinit();
+	/* Note: All non-finalizer threads have to be destroyed *before* GCDeinit
+	    is called so the GC can reclaim & finalize everything on those threads'
+		stacks - Tum */
 
 	/* Wait for all foreground threads to finish */
-	if (process->firstThread != 0)
+	ILThreadWaitForForegroundThreads(-1);
+	
+	/* Delete all non-finalizer threads */
+
+	firstFinalizerThread = 0;
+	thread = process->firstThread;
+
+	while (thread)
 	{
-		ILThreadWaitForForegroundThreads(-1);
+		next = thread->nextThread;
+
+		/* Add the thread to the finalizer threads list if it is a finalizer thread */
+		if (thread->isFinalizerThread)
+		{
+			if (firstFinalizerThread)
+			{
+				firstFinalizerThread->nextThread = thread;
+			}
+			else
+			{
+				firstFinalizerThread = thread;
+			}
+		}
+		else
+		{
+			/* The thread isn't a finalizer thread so destroy it */
+
+			ILThreadDestroy(thread->supportThread);
+			_ILExecThreadDestroy(thread);
+		}
+
+		thread = next;
 	}
+
+	/* The only threads left in the process are finalizer threads */
+	process->firstThread = firstFinalizerThread;
+
+	/* Tell the GC we're history */	
+	/* This performs a final collect and finalizer run */
+	ILGCDeinit();
 	
 	/* Destroy the CVM coder instance */
 	ILCoderDestroy(process->coder);

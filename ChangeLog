@@ -1,4 +1,3 @@
-
 2003-07-08  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/common/cc_preproc.c: Modify to ignore escape sequences in
@@ -30,6 +29,24 @@
 	_ILMutexLock calls.  This race condition would cause 
 	ILThreadJoin to miss a signal and deadlock.
 	
+	* engine/engine.h: Added "isFinalizerThread" field to ILExecThread
+	so finalizer threads can be treated specially when the process
+	shutsdown.
+	
+	* engine/heap.c: Object finalizers are now responsible for
+	registering the finalizer thread with the engine.
+
+	* engine/process.c: On process shutdown, non-finalizer threads
+	(both foreground and background) are now destroyed before the
+	finalization thread performs its last run.
+	
+	* support/hb_gc: Improve startup time by delay-creating the
+	finalizer thread.  Decoupled the GC code from the engine so that
+	it needs to know nothing about the execution engine.  Added more
+	comments.
+	
+	* support/thread.c: Add support for thread cleanup handlers.
+
 2003-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/Makefile.am, image/image.h, image/pecoff_loader.c,

@@ -95,7 +95,7 @@ static void ThreadInit(void)
 
 void ThreadDeinit(void)
 {
-	if (foregroundThreadsFinished != 0)
+	if(foregroundThreadsFinished != 0)
 	{
 		ILWaitHandleClose(foregroundThreadsFinished);
 	}
@@ -114,6 +114,7 @@ void ILThreadDeinit(void)
 void _ILThreadRun(ILThread *thread)
 {
 	int isbg;
+	ILThreadCleanupEntry *entry, *next;
 
 	/* If we still have a startup function, then execute it.
 	   The field may have been replaced with NULL if the thread
@@ -129,6 +130,22 @@ void _ILThreadRun(ILThread *thread)
 	isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
 	_ILWakeupQueueWakeAll(&(thread->joinQueue));
 	_ILMutexUnlock(&(thread->lock));
+
+	/* Notify and remove the cleanup handlers */
+
+	entry = thread->firstCleanupEntry;
+
+	while (entry)
+	{
+		/* Call the cleanup function */
+		entry->cleanup(thread);
+		next = entry->next;
+
+		/* Free the entry */
+		ILFree(entry);
+
+		entry = next;
+	}
 
 	/* Update the thread counts */
 	_ILMutexLock(&threadLockAll);
@@ -168,6 +185,8 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	thread->resumeRequested = 0;
 	thread->suspendRequested = 0;
 	thread->numLocksHeld = 0;
+	thread->firstCleanupEntry = 0;
+	thread->lastCleanupEntry = 0;
 	_ILSemaphoreCreate(&(thread->resumeAck));
 	_ILSemaphoreCreate(&(thread->suspendAck));
 	thread->startFunc = startFunc;
@@ -213,7 +232,7 @@ int ILThreadStart(ILThread *thread)
 				threads won't unset the foregroundThreadsFinished event without ever 
 				setting it again (which normally happens at the end of _ILThreadRun) */
 
-			if (((thread->state & IL_TS_BACKGROUND) == 0))
+			if(((thread->state & IL_TS_BACKGROUND) == 0))
 			{
 				ILWaitEventReset(foregroundThreadsFinished);
 			}
@@ -253,7 +272,7 @@ void ILThreadDestroy(ILThread *thread)
 		thread->state |= IL_TS_STOPPED;
 
 		/* Only terminate the system thread if one was created */
-		if ((thread->state & IL_TS_UNSTARTED) == 0)
+		if((thread->state & IL_TS_UNSTARTED) == 0)
 		{
 			_ILThreadTerminate(thread);
 		}
@@ -266,7 +285,7 @@ void ILThreadDestroy(ILThread *thread)
 	_ILMutexUnlock(&(thread->lock));
 
 	/* Only destroy the system thread if one was created */
-	if ((thread->state & IL_TS_UNSTARTED) == 0)
+	if((thread->state & IL_TS_UNSTARTED) == 0)
 	{
 		_ILThreadDestroy(thread);
 	}
@@ -290,7 +309,7 @@ void ILThreadDestroy(ILThread *thread)
 
 	/* If there are no more foreground threads (except the main one) then set
 		the event that signals that state */
-	if (numThreads - numBackgroundThreads == 1)
+	if(numThreads - numBackgroundThreads == 1)
 	{
 		ILWaitEventSet(foregroundThreadsFinished);
 	}
@@ -704,7 +723,7 @@ void ILThreadSetBackground(ILThread *thread, int flag)
 
 	/* If there are no more foreground threads (except the main one) then set
 		the event that signals that state */
-	if (numThreads - numBackgroundThreads == 1)
+	if(numThreads - numBackgroundThreads == 1)
 	{
 		ILWaitEventSet(foregroundThreadsFinished);
 	}
@@ -833,6 +852,130 @@ void ILThreadWaitForForegroundThreads(int timeout)
 #else	
 	ILWaitOne(foregroundThreadsFinished, timeout);
 #endif
+}
+
+int ILThreadRegisterCleanup(ILThread *thread, ILThreadCleanupFunc func)
+{
+	ILThreadCleanupEntry *entry;
+
+	_ILMutexLock(&(thread->lock));
+
+	if((thread->state & IL_TS_STOPPED))
+	{
+		/* Thread has stopped */
+
+		_ILMutexUnlock(&(thread->lock));
+
+		return -1;
+	}
+
+	entry = thread->firstCleanupEntry;
+
+	while(entry)
+	{
+		if(entry->cleanup == func)
+		{
+			/* Function already registered */
+
+			_ILMutexUnlock(&(thread->lock));
+
+			return -1;
+		}
+	}
+
+	if((entry = (ILThreadCleanupEntry *)ILMalloc(sizeof(ILThreadCleanupEntry))) == 0)
+	{
+		/* Out of memory */
+
+		_ILMutexUnlock(&(thread->lock));
+
+		return -1;
+	}
+
+	entry->cleanup = func;
+	entry->next = 0;
+
+	/* Add the entry to the end up the cleanup list */
+
+	if(thread->lastCleanupEntry)
+	{
+		thread->lastCleanupEntry->next = entry;
+		thread->lastCleanupEntry = entry;
+	}
+	else
+	{
+		thread->firstCleanupEntry = thread->lastCleanupEntry = entry;
+	}
+
+	_ILMutexUnlock(&(thread->lock));
+	
+	return 0;
+}
+
+int ILThreadUnregisterCleanup(ILThread *thread, ILThreadCleanupFunc func)
+{
+	ILThreadCleanupEntry *entry, *prev;
+
+	_ILMutexLock(&(thread->lock));
+
+	if((thread->state & IL_TS_STOPPED))
+	{
+		/* Thread has stopped */
+
+		_ILMutexUnlock(&(thread->lock));
+
+		return -1;
+	}
+
+	/* Walk the list and remove the cleanup function */
+
+	prev = 0;
+	entry = thread->firstCleanupEntry;
+
+	while(entry)
+	{
+		if(entry->cleanup == func)
+		{
+			/* Remove the entry from the list */
+
+			if(prev)
+			{
+				/* Entry is in the tail of the list */
+
+				prev->next = entry->next;
+
+				if(prev->next == 0)
+				{
+					thread->lastCleanupEntry = prev;
+				}
+
+				ILFree(entry);
+			}
+			else
+			{
+				/* Entry is in the head of the list */
+
+				thread->firstCleanupEntry = entry->next;
+				
+				if(thread->firstCleanupEntry == 0)
+				{
+					thread->lastCleanupEntry = 0;
+				}
+			}
+
+			_ILMutexUnlock(&(thread->lock));
+
+			/* Found and removed */
+
+			return 0;
+		}
+	}
+
+	_ILMutexUnlock(&(thread->lock));
+
+	/* Not found */
+
+	return -1;
 }
 
 void _ILThreadSuspendRequest(ILThread *thread)

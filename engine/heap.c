@@ -25,11 +25,17 @@
 extern	"C" {
 #endif
 
+/* TODO: Design a better way to access the main executing process */
+static ILExecProcess *mainProcess;
+
 /*
  * Initialize a class.
  */
 static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 {
+	/* Cache the main process needed by finalizers */
+	mainProcess = thread->process;
+
 	/* Quick check to see if the class is already laid out,
 	   to avoid acquiring the metadata lock if possible */
 	if(_ILLayoutAlreadyDone(classInfo))
@@ -61,12 +67,22 @@ static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 	return 1;
 }
 
+/*
+ *	Cleanup handler that is attached to the finalizer thread so that it unregisters
+ * itself upon closing.
+ */
+static void DeregisterFinalizerThreadForManagedExecution(ILThread *thread)
+{
+	ILThreadUnregisterForManagedExecution(thread);
+}
+
 void _ILFinalizeObject(void *block, void *data)
 {
 	ILObject *object;
 	ILClass *classInfo;
 	ILMethod *method;
 	ILType *signature;
+	ILExecThread *execThread;
 	
 	/* Skip the object header within the block */
 	object = GetObjectFromGcBase(block);
@@ -74,17 +90,38 @@ void _ILFinalizeObject(void *block, void *data)
 	/* Get the object's class and locate the "Finalize" method */
 	classInfo = GetObjectClass(object);
 
-	if (ILExecThreadCurrent() == 0)
+	execThread = ILExecThreadCurrent();
+
+	if (execThread == 0)
 	{
-		/* The thread the finalizer is running on can't execute managed code */
+		ILThread *thread;
 
-		fprintf
-			(
-				stderr, "GC: Finalizer thread [0x%x] can't execute managed code.\n",
-				(int)ILThreadSelf()
-			);
+		/* The thread the finalizer isn't registered for managed execution */
+		/* Register the thread to execute managed code */
 
-		return;
+		thread = ILThreadSelf();
+
+		if (!mainProcess)
+		{
+			/* Impossible state */
+			/* Finalizer on an object called before an object was allocated */
+
+			return;
+		}
+
+		if ((execThread = ILThreadRegisterForManagedExecution(mainProcess, thread)) == 0)
+		{
+			/* Registering for managed execution failed */
+
+			return;
+		}
+
+		/* Register a cleanup handler that will deregister the thread from the engine
+		    when it finishes */
+		ILThreadRegisterCleanup(thread, DeregisterFinalizerThreadForManagedExecution);
+
+		/* Mark the thread as a finalizer thread */
+		execThread->isFinalizerThread = 1;
 	}
 	
 	while(classInfo != 0)

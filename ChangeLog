@@ -1,4 +1,15 @@
 
+2002-12-25  Gopal.V  <gopalv82@symonds.net>
+	
+	* resources/en_US/runtime/IO.txt,  resources/de_DE/runtime/IO.txt:
+	Fix the formatting parameter of IO_CopyFileExists resource.
+	
+2002-12-25  Aditya P. Bansod <abansod@fullenergy.com>
+	
+	* runtime/Platform/FileMethods.cs, runtime/System/IO/File.cs: 
+	re-implement File.Copy() with the a FileMethods.Copy() internal call.
+	(Patch #884,Gopal)
+
 2002-12-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlTextReader.cs: rearrange the XML reading code so

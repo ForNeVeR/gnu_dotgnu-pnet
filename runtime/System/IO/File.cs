@@ -56,12 +56,10 @@ namespace System.IO
 			e = ValidatePath(dest, "dest");
 			if (e != null) { throw e; }
 
-			Errno err = DirMethods.Copy(source, dest);
+			Errno err = FileMethods.Copy(source, dest);
 			
 			switch(err) 
 			{
-				
-				
 				// If Dest Exists
 				case Errno.EEXIST:
 					if (overwrite)
@@ -70,11 +68,10 @@ namespace System.IO
 					}
 					else
 					{
-						throw new IOException(_("IO_CopyFileExists"));
+						throw new IOException(String.Format(
+									_("IO_CopyFileExists"),dest));
 					}
 					break;
-                                
-
 
 				// Directory or File not found
 				case Errno.ENOENT:
@@ -257,11 +254,15 @@ namespace System.IO
 		[TODO]	
 		public static void SetCreationTime(string path, DateTime time) 
 		{
+			Exception e = ValidatePath(path, "path");
+			if(e != null) { throw e; }
 		}
 
 		[TODO]
 		public static void SetLastWriteTime(string path, DateTime time)
 		{
+			Exception e = ValidatePath(path, "path");
+			if(e != null) { throw e; }
 		}
 
 		private static Exception GetTimeExceptionHandler(Errno err)

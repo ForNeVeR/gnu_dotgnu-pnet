@@ -43,7 +43,7 @@ IO_DirNotFound=The specified directory could not be found
 IO_FileNotFound=Could not find file "{0}"
 IO_FileLoad=Could not load file "{0}"
 # For dest argument in File.Copy method
-IO_CopyFileExists=The file "{1}" already exists 
+IO_CopyFileExists=The file "{0}" already exists 
 IO_Error=IO Error
 IO_IsNotDir= "{0}" is not a directory
 

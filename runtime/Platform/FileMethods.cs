@@ -108,6 +108,11 @@ internal class FileMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String GetErrnoMessage(Errno errno);
 
+	// Copies a file from src to dest
+	// Returns an Errno for the call status
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno Copy(string src, string dest);
+	
 }; // class FileMethods
 
 }; // namespace Platform

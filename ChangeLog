@@ -1,3 +1,7 @@
+2003-08-23  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* libc/dirent/dirent-glue.cs: move implementation of
+	OpenSystem.C.Directory from pnetlib to pnetC.
 
 2003-08-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 

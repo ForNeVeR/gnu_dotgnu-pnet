@@ -23,6 +23,135 @@ using System;
 using System.Runtime.InteropServices;
 using OpenSystem.C;
 
+namespace OpenSystem.C
+{
+
+using System.IO;
+using System.Security;
+
+public class Directory
+{
+	// Internal state.
+	private long pos;
+	private String[] entries;
+	private String name;
+	private int nameMax;
+
+	// Constructor.
+	public Directory(IntPtr cname, IntPtr err, int nameMax)
+			{
+				this.pos = 0;
+				this.nameMax = nameMax;
+				try
+				{
+					name = Marshal.PtrToStringAnsi(cname);
+					name = Path.GetFullPath(name);
+					String[] tmp = name.Split(Path.DirectorySeparatorChar,
+					                          Path.AltDirectorySeparatorChar);
+					for(int i = 0; i < tmp.Length; ++i)
+					{
+						if(tmp[i].Length > nameMax)
+						{
+							Marshal.WriteInt32(err, 36); // ENAMETOOLONG
+							return;
+						}
+					}
+				}
+				catch(ArgumentException)
+				{
+					Marshal.WriteInt32(err, 2); // ENOENT
+					return;
+				}
+				catch(SecurityException)
+				{
+					Marshal.WriteInt32(err, 13); // EACCES
+					return;
+				}
+				catch(PathTooLongException)
+				{
+					Marshal.WriteInt32(err, 36); // ENAMETOOLONG
+					return;
+				}
+				Rewind(err);
+			}
+
+	// Property.
+	public long Pos
+			{
+				get { return pos; }
+				set { pos = value; }
+			}
+
+	// Methods.
+	public IntPtr Read(IntPtr err, IntPtr len)
+			{
+				if(pos == entries.Length)
+				{
+					return IntPtr.Zero;
+				}
+				if(pos >= 0 && pos < entries.Length)
+				{
+					String s = entries[pos++];
+					int length = s.Length;
+					if(length > nameMax)
+					{
+						Marshal.WriteInt32(err, 75); // EOVERFLOW
+						length = nameMax;
+					}
+					Marshal.WriteInt32(len, length);
+					return Marshal.StringToHGlobalAnsi(s);
+				}
+				Marshal.WriteInt32(err, 2); // ENOENT
+				return IntPtr.Zero;
+			}
+	public void Rewind(IntPtr err)
+			{
+				try
+				{
+					entries = System.IO.Directory.GetFileSystemEntries(name);
+				}
+				catch(ArgumentException)
+				{
+					Marshal.WriteInt32(err, 2); // ENOENT
+					return;
+				}
+				catch(SecurityException)
+				{
+					Marshal.WriteInt32(err, 13); // EACCES
+					return;
+				}
+				catch(DirectoryNotFoundException)
+				{
+					Marshal.WriteInt32(err, 2); // ENOENT
+					return;
+				}
+				catch(PathTooLongException)
+				{
+					Marshal.WriteInt32(err, 36); // ENAMETOOLONG
+					return;
+				}
+				catch(IOException)
+				{
+					Marshal.WriteInt32(err, 20); // ENOTDIR
+					return;
+				}
+
+				int nlen = name.Length;
+				if(name[nlen-1] != Path.DirectorySeparatorChar &&
+				   name[nlen-1] != Path.AltDirectorySeparatorChar)
+				{
+					++nlen;
+				}
+				for(int i = 0; i < entries.Length; ++i)
+				{
+					entries[i] = entries[i].Substring(0, nlen);
+				}
+			}
+
+}; // class Directory
+
+}; // namespace OpenSystem.C
+
 __module
 {
 	// Free the underlying managed object for a pnetC directory stream.

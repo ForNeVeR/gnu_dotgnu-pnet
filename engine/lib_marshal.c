@@ -458,6 +458,35 @@ void _IL_Marshal_WriteIntPtr(ILExecThread *_thread, ILNativeInt ptr,
 	}
 }
 
+/*
+ * public static void PtrToStructureInternal(IntPtr ptr, Object structure);
+ */
+void _IL_Marshal_PtrToStructureInternal(ILExecThread * _thread, 
+				ILNativeInt ptr,ILObject * structure)
+{
+	ILClass *classInfo;
+	ILInt32 size;
+	if(UnmanagedOK(_thread) && ptr)
+	{
+		/* Convert the "Object" into an "ILClass *" structure */
+		classInfo = GetObjectClass(structure);
+		if(!classInfo)
+		{
+			return;
+		}
+		
+		/* Get the size of the type */
+		size=(ILInt32)(ILSizeOfType
+					(_thread, ILType_FromValueType(classInfo)));
+		ILMemCpy(structure,(void*)ptr,size);
+		return;
+	}
+	else if(!ptr)
+	{
+		ILExecThreadThrowArgNull(_thread, "ptr");
+	}
+}
+
 #endif /* IL_CONFIG_PINVOKE */
 
 #ifdef	__cplusplus

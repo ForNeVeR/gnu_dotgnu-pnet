@@ -1,4 +1,9 @@
 
+2002-12-05  Gopal.V  <gopalv82@symonds.net>
+
+	* engine/lib_marshal.c, engine/int_proto.h, engine/int_table.c:
+	Add the internal calls to support Marshal.PtrToStruct()
+
 2002-12-04  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y: fix the handling of empty initializers

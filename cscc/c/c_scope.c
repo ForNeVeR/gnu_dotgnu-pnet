@@ -1,0 +1,140 @@
+/*
+ * c_scope.c - Scope handling for the C programming language.
+ *
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include <cscc/c/c_internal.h>
+
+#ifdef	__cplusplus
+extern	"C" {
+#endif
+
+ILScope *CCurrentScope;
+ILScope *CGlobalScope;
+
+/*
+ * Make a scope name for a struct or union.
+ */
+static char *StructScopeName(const char *name, int structKind)
+{
+	ILIntString str1;
+	ILIntString str2;
+	if(structKind == C_STKIND_STRUCT || structKind == C_STKIND_STRUCT_NATIVE)
+	{
+		str1.string = "struct ";
+		str1.len = 7;
+	}
+	else
+	{
+		str1.string = "union ";
+		str1.len = 6;
+	}
+	str2.string = (char *)name;
+	str2.len = strlen(name);
+	return (ILInternAppendedString(str1, str2)).string;
+}
+
+/*
+ * Make a scope name for an enum.
+ */
+static char *EnumScopeName(const char *name)
+{
+	ILIntString str1;
+	ILIntString str2;
+	str1.string = "enum ";
+	str1.len = 5;
+	str2.string = (char *)name;
+	str2.len = strlen(name);
+	return (ILInternAppendedString(str1, str2)).string;
+}
+
+void CScopeGlobalInit()
+{
+	CGlobalScope = CCurrentScope = ILScopeCreate(&CCCodeGen, 0);
+}
+
+void *CScopeLookup(const char *name)
+{
+	return (void *)ILScopeLookup(CCurrentScope, name, 1);
+}
+
+int CScopeIsTypedef(const char *name)
+{
+	ILScopeData *data = ILScopeLookup(CCurrentScope, name, 1);
+	if(data != 0)
+	{
+		return (ILScopeDataGetKind(data) == C_SCDATA_TYPEDEF);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void *CScopeLookupStructOrUnion(const char *name, int structKind)
+{
+	return (void *)ILScopeLookup
+		(CCurrentScope, StructScopeName(name, structKind), 1);
+}
+
+int CScopeHasStructOrUnion(const char *name, int structKind)
+{
+	return (ILScopeLookup
+				(CCurrentScope, StructScopeName(name, structKind), 0) != 0);
+}
+
+void CScopeAddStructOrUnion(const char *name, int structKind, ILType *type)
+{
+	ILScopeDeclareItem(CCurrentScope, name,
+					   C_SCDATA_STRUCT_OR_UNION, 0, 0, type);
+}
+
+void *CScopeLookupEnum(const char *name)
+{
+	return (void *)ILScopeLookup(CCurrentScope, EnumScopeName(name), 1);
+}
+
+int CScopeHasEnum(const char *name)
+{
+	return (ILScopeLookup(CCurrentScope, EnumScopeName(name), 0) != 0);
+}
+
+void CScopeAddEnum(const char *name, ILType *type)
+{
+	ILScopeDeclareItem(CCurrentScope, name, C_SCDATA_ENUM, 0, 0, type);
+}
+
+void CScopeAddTypedef(const char *name, ILType *type, ILNode *node)
+{
+	ILScopeDeclareItem(CCurrentScope, name,
+					   C_SCDATA_TYPEDEF, node, 0, type);
+}
+
+int CScopeGetKind(void *data)
+{
+	return ILScopeDataGetKind((ILScopeData *)data);
+}
+
+ILType *CScopeGetType(void *data)
+{
+	return (ILType *)(ILScopeDataGetData2((ILScopeData *)data));
+}
+
+#ifdef	__cplusplus
+};
+#endif

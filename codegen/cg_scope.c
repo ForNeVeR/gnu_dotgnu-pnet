@@ -35,6 +35,7 @@ struct _tagILScopeData
 	const char	       *name;		/* Name associated with the item */
 	ILNode			   *node;		/* Node associated with the item */
 	void			   *data;		/* Data associated with the item */
+	void			   *data2;		/* Data associated with the item */
 
 };
 
@@ -148,7 +149,8 @@ ILScope *ILScopeCreate(ILGenInfo *info, ILScope *parent)
  * Add an item to a particular scope.
  */
 static void AddToScope(ILScope *scope, const char *name,
-					   int kind, ILNode *node, void *data)
+					   int kind, ILNode *node, void *data,
+					   void *data2)
 {
 	ILScopeData *sdata;
 	sdata = ILMemPoolAlloc(&(scope->info->scopeDataPool), ILScopeData);
@@ -160,6 +162,7 @@ static void AddToScope(ILScope *scope, const char *name,
 	sdata->name = name;
 	sdata->node = node;
 	sdata->data = data;
+	sdata->data2 = data2;
 	ILRBTreeInsert(&(scope->nameTree), &(sdata->rbnode), (void *)name);
 }
 
@@ -211,7 +214,7 @@ static ILScope *FindNamespaceScope(ILScope *scope, const char *name)
 		else
 		{
 			newScope = ILScopeCreate(scope->info, scope);
-			AddToScope(scope, newName, IL_SCOPE_SUBSCOPE, 0, newScope);
+			AddToScope(scope, newName, IL_SCOPE_SUBSCOPE, 0, newScope, 0);
 			scope = newScope;
 		}
 		name += len;
@@ -246,7 +249,7 @@ static void ImportType(ILScope *scope, ILClass *info, const char *name)
 	newScope->classInfo = info;
 
 	/* Add the new scope to the original scope, attached to the type name */
-	AddToScope(scope, name, IL_SCOPE_IMPORTED_TYPE, 0, newScope);
+	AddToScope(scope, name, IL_SCOPE_IMPORTED_TYPE, 0, newScope, 0);
 
 	/* Add the nested children to sub-scopes */
 	nested = 0;
@@ -278,26 +281,27 @@ static void ImportType(ILScope *scope, ILClass *info, const char *name)
 		{
 			if(!ILScopeLookup(newScope, memberName, 0))
 			{
-				AddToScope(newScope, memberName, IL_SCOPE_FIELD, 0, member);
+				AddToScope(newScope, memberName, IL_SCOPE_FIELD, 0, member, 0);
 			}
 		}
 		else if(kind == IL_META_MEMBERKIND_METHOD)
 		{
 			/* Duplicates are OK for methods */
-			AddToScope(newScope, memberName, IL_SCOPE_METHOD, 0, member);
+			AddToScope(newScope, memberName, IL_SCOPE_METHOD, 0, member, 0);
 		}
 		else if(kind == IL_META_MEMBERKIND_PROPERTY)
 		{
 			if(!ILScopeLookup(newScope, memberName, 0))
 			{
-				AddToScope(newScope, memberName, IL_SCOPE_PROPERTY, 0, member);
+				AddToScope(newScope, memberName, IL_SCOPE_PROPERTY,
+						   0, member, 0);
 			}
 		}
 		else if(kind == IL_META_MEMBERKIND_EVENT)
 		{
 			if(!ILScopeLookup(newScope, memberName, 0))
 			{
-				AddToScope(newScope, memberName, IL_SCOPE_EVENT, 0, member);
+				AddToScope(newScope, memberName, IL_SCOPE_EVENT, 0, member, 0);
 			}
 		}
 	}
@@ -321,7 +325,7 @@ void ILScopeImport(ILScope *scope, ILImage *image)
 	{
 		return;
 	}
-	AddToScope(scope, dummyName, IL_SCOPE_DUMMY, 0, 0);
+	AddToScope(scope, dummyName, IL_SCOPE_DUMMY, 0, 0, 0);
 
 	/* Process imported assemblies first */
 	assem = 0;
@@ -387,7 +391,7 @@ int ILScopeUsing(ILScope *scope, const char *identifier, const char *alias)
 	if(alias)
 	{
 		/* Create a sub-scope that links across to the "using" namespace */
-		AddToScope(scope, alias, IL_SCOPE_SUBSCOPE, 0, namespaceScope);
+		AddToScope(scope, alias, IL_SCOPE_SUBSCOPE, 0, namespaceScope, 0);
 	}
 	else
 	{
@@ -461,6 +465,12 @@ ILScopeData *ILScopeLookupInNamespace(ILScope *globalScope,
 	return ILScopeLookup(scope, identifier, 0);
 }
 
+void ILScopeDeclareItem(ILScope *scope, const char *name, int kind,
+						ILNode *node, void *data1, void *data2)
+{
+	AddToScope(scope, name, kind, node, data1, data2);
+}
+
 ILScopeData *ILScopeNextItem(ILScopeData *data)
 {
 	return (ILScopeData *)(ILRBTreeNext(&(data->rbnode)));
@@ -532,7 +542,8 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 	typeScope = ILScopeCreate(scope->info, usingScope);
 
 	/* Add the type to the namespace scope */
-	AddToScope(namespaceScope, name, IL_SCOPE_DECLARED_TYPE, node, typeScope);
+	AddToScope(namespaceScope, name, IL_SCOPE_DECLARED_TYPE,
+			   node, typeScope, 0);
 
 	/* Done */
 	*resultScope = typeScope;
@@ -715,7 +726,7 @@ int ILScopeDeclareMember(ILScope *scope, const char *name,
 	}
 
 	/* Add the member to the scope */
-	AddToScope(scope, name, memberKind, node, member);
+	AddToScope(scope, name, memberKind, node, member, 0);
 
 	/* Done */
 	return IL_SCOPE_ERROR_OK;
@@ -753,7 +764,7 @@ int ILScopeDeclareLocal(ILScope *scope, const char *name,
 	}
 
 	/* Add the local to the scope */
-	AddToScope(scope, name, IL_SCOPE_LOCAL, node, (void *)index);
+	AddToScope(scope, name, IL_SCOPE_LOCAL, node, (void *)index, 0);
 
 	/* Done */
 	return IL_SCOPE_ERROR_OK;
@@ -791,7 +802,7 @@ int ILScopeDeclareLocalConst(ILScope *scope, const char *name,
 	}
 
 	/* Add the local to the scope */
-	AddToScope(scope, name, IL_SCOPE_LOCAL_CONST, node, (void *)guarded);
+	AddToScope(scope, name, IL_SCOPE_LOCAL_CONST, node, (void *)guarded, 0);
 
 	/* Done */
 	return IL_SCOPE_ERROR_OK;
@@ -839,9 +850,19 @@ unsigned long ILScopeDataGetIndex(ILScopeData *data)
 	return (unsigned long)(data->data);
 }
 
-ILNode* ILScopeDataGetDataNode(ILScopeData *data)
+ILNode *ILScopeDataGetDataNode(ILScopeData *data)
 {
-	return (ILNode*)(data->data);
+	return (ILNode *)(data->data);
+}
+
+void *ILScopeDataGetData1(ILScopeData *data)
+{
+	return data->data;
+}
+
+void *ILScopeDataGetData2(ILScopeData *data)
+{
+	return data->data2;
 }
 
 ILScope *ILScopeGetParent(ILScope *scope)

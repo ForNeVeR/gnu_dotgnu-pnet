@@ -25,7 +25,9 @@
 #include <cscc/c/c_defs.h>
 #include <cscc/c/c_lexutils.h>
 #include <cscc/c/c_types.h>
+#include <cscc/c/c_declspec.h>
 #include <codegen/cg_scope.h>
+#include <cscc/c/c_scope.h>
 
 #ifdef	__cplusplus
 extern	"C" {

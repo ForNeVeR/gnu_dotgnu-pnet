@@ -14,10 +14,12 @@ TREECC_SRCOUT = c_nodes.c c_semantics.c
 TREECC_OUTPUT = $(TREECC_SRCOUT) c_defs.h
 
 libILCLang_a_SOURCES = $(TREECC_SRCOUT) \
+					   c_declspec.c \
 					   c_grammar.y \
 					   c_internal.c \
 					   c_lexutils.c \
 					   c_scanner.l \
+					   c_scope.c \
 					   c_types.c
 
 YFLAGS = -d

@@ -488,58 +488,6 @@ ILNode_CSemAnalysis(ILNode_ToConst)
 }
 
 /*
- * Perform semantic analysis for the "type" expression, which is
- * used by the compiler to wrap up IL types for later use.
- */
-ILNode_CSemAnalysis(ILNode_Type)
-{
-	CSemValue value;
-	CSemSetType(value, node->type);
-	return value;
-}
-
-/*
- * Perform semantic analysis for the "typeof" operator.
- */
-ILNode_CSemAnalysis(ILNode_TypeOf)
-{
-	CSemValue value;
-	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
-	if(CSemIsType(value))
-	{
-		/* The supplied expression is already a type */
-		return value;
-	}
-	else if(CSemIsRValue(value) || CSemIsFunction(value))
-	{
-		/* Turn the semantic value into a type reference */
-		CSemToType(value);
-		return value;
-	}
-	else if(!CSemIsError(value))
-	{
-		/* Cannot determine the type of the underlying expression */
-		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  _("invalid operand to `typeof'"));
-	}
-	return CSemValueError;
-}
-
-/*
- * Perform code generation operations for the "type" and "typeof" nodes.
- */
-ILNode_GetType(ILNode_Type),
-ILNode_GenValue(ILNode_Type),
-JavaGenValue(ILNode_Type),
-ILNode_GetType(ILNode_TypeOf),
-ILNode_GenValue(ILNode_TypeOf),
-JavaGenValue(ILNode_TypeOf)
-{
-	/* Will never be called: nothing to do here */
-	return ILMachineType_Void;
-}
-
-/*
  * Perform semantic analysis for the "sizeof expression" operator.
  */
 ILNode_CSemAnalysis(ILNode_SizeOfExpr)

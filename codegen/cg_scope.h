@@ -105,6 +105,12 @@ ILScopeData *ILScopeLookupInNamespace(ILScope *globalScope,
 ILScopeData *ILScopeNextItem(ILScopeData *data);
 
 /*
+ * Declare an explicit item in a scope.
+ */
+void ILScopeDeclareItem(ILScope *scope, const char *name, int kind,
+						ILNode *node, void *data1, void *data2);
+
+/*
  * Declare a namespace within a scope.
  */
 void ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace);
@@ -180,7 +186,17 @@ unsigned long ILScopeDataGetIndex(ILScopeData *data);
 /*
  * Get the node of a local const scope item.
  */
-ILNode* ILScopeDataGetDataNode(ILScopeData *data);
+ILNode *ILScopeDataGetDataNode(ILScopeData *data);
+
+/*
+ * Get the "data1" value from a scope item.
+ */
+void *ILScopeDataGetData1(ILScopeData *data);
+
+/*
+ * Get the "data2" value from a scope item.
+ */
+void *ILScopeDataGetData2(ILScopeData *data);
 
 /*
  * Get the parent of a scope.

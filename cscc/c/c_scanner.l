@@ -31,8 +31,6 @@ extern YYSTYPE yylval;
 extern YYLTYPE yylloc;
 #endif
 
-extern ILScope *CCurrentScope;
-
 /*
  * Get the next line of input from the pre-processor.
  */
@@ -168,14 +166,13 @@ WHITE			[ \t\v\r\f]
 "__false__"				{ return K_FALSE; }
 
 "__FUNCTION__"			{ return K_FUNCTION; }
+"__PRETTY_FUNCTION__"	{ return K_FUNCTION; }
 "__func__"				{ return K_FUNC; }
 
 {IDALPHA}({DIGIT}|{IDALPHA})*	{
 			/* Use the scope to determine if this is a typedef'ed name */
-			ILScopeData *data;
 			yylval.name = ILInternString(yytext, strlen(yytext)).string;
-			data = ILScopeLookup(CCurrentScope, yylval.name, 1);
-			if(data && ILScopeDataGetKind(data) == IL_SCOPE_DECLARED_TYPE)
+			if(CScopeIsTypedef(yylval.name))
 			{
 				RETURNTOK(TYPE_NAME);
 			}

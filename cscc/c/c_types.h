@@ -26,22 +26,26 @@ extern	"C" {
 #endif
 
 /*
- * Create a C "struct" type with a specific name.  If the
- * "struct" type already exists, then return it as-is.
+ * Kinds of structs or unions that may be encountered by the C parser.
  */
-ILType *CTypeCreateStruct(ILGenInfo *info, const char *name);
+#define	C_STKIND_STRUCT			0
+#define	C_STKIND_STRUCT_NATIVE	1
+#define	C_STKIND_UNION			2
+#define	C_STKIND_UNION_NATIVE	3
 
 /*
- * Create a C "union" type with a specific name.  If the
- * "union" type already exists, then return it as-is.
+ * Create a struct or union type with a specific name.  If the
+ * type already exists, then return it as-is.
  */
-ILType *CTypeCreateUnion(ILGenInfo *info, const char *name);
+ILType *CTypeCreateStructOrUnion(ILGenInfo *info, const char *name,
+								 int kind, const char *funcName);
 
 /*
  * Create a C "enum" type with a specific name.  If the
  * "enum" type already exists, then return it as-is.
  */
-ILType *CTypeCreateEnum(ILGenInfo *info, const char *name);
+ILType *CTypeCreateEnum(ILGenInfo *info, const char *name,
+						const char *funcName);
 
 /*
  * Create a C array type.  If the array type already exists,
@@ -58,6 +62,11 @@ ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType, int nativePtr);
  * Create a C type reference for "builtin_va_list".
  */
 ILType *CTypeCreateVaList(ILGenInfo *info);
+
+/*
+ * Create a C type reference for "builtin_jmp_buf".
+ */
+ILType *CTypeCreateJmpBuf(ILGenInfo *info);
 
 /*
  * Create a C type reference for "void *".
@@ -87,34 +96,31 @@ ILType *CTypeAddVolatile(ILGenInfo *info, ILType *type);
 int CTypeAlreadyDefined(ILType *type);
 
 /*
- * Define a "struct" type with a specific name.  Returns NULL
+ * Define a struct or union type with a specific name.  Returns NULL
  * if the structure is already defined.
  */
-ILType *CTypeDefineStruct(ILGenInfo *info, const char *name, int nativeLayout);
+ILType *CTypeDefineStructOrUnion(ILGenInfo *info, const char *name,
+								 int kind, const char *funcName);
 
 /*
- * Define an anonymous "struct" type within a given parent and function.
+ * Define an anonymous "struct" or "union" type within a given parent
+ * and function.
  */
-ILType *CTypeDefineAnonStruct(ILGenInfo *info, ILType *parent,
-							  const char *funcName, int nativeLayout);
-
-/*
- * Define a "union" type with a specific name.  Returns NULL
- * if the union is already defined.
- */
-ILType *CTypeDefineUnion(ILGenInfo *info, const char *name, int nativeLayout);
-
-/*
- * Define an anonymous "union" type within a given parent and function.
- */
-ILType *CTypeDefineAnonUnion(ILGenInfo *info, ILType *parent,
-							 const char *funcName, int nativeLayout);
+ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
+							         const char *funcName, int kind);
 
 /*
  * Define an "enum" type with a specific name.  Returns NULL
  * if the enum is already defined.
  */
-ILType *CTypeDefineEnum(ILGenInfo *info, const char *name);
+ILType *CTypeDefineEnum(ILGenInfo *info, const char *name,
+						const char *funcName);
+
+/*
+ * Define an anonymous "enum" type at the global level or within
+ * a specified function.
+ */
+ILType *CTypeDefineAnonEnum(ILGenInfo *info, const char *funcName);
 
 /*
  * Define a new field within a "struct" or "union".
@@ -159,6 +165,11 @@ int CTypeIsStruct(ILType *type);
  * Determine if a C type is a union.
  */
 int CTypeIsUnion(ILType *type);
+
+/*
+ * Get the kind of a structure or union type.  -1 if not a struct or union.
+ */
+int CTypeGetStructKind(ILType *type);
 
 /*
  * Determine if a C type is an enumerated type.

@@ -31,6 +31,9 @@
  * Current context.
  */
 static char *functionName = "";
+static ILType *currentStruct = 0;
+static ILType *currentEnum = 0;
+static ILInt32 currentEnumValue = 0;
 
 /*
  * Imports from the lexical analyser.
@@ -60,6 +63,12 @@ static void yyerror(char *msg)
 	char	           *name;
 	ILNode             *node;
 	ILType			   *type;
+	CDeclSpec			declSpec;
+	int					kind;
+	struct {
+		ILType		   *type;
+		ILType		   *parent;
+	}					structInfo;
 
 }
 
@@ -181,7 +190,11 @@ static void yyerror(char *msg)
 
 %type <node>		FunctionBody
 
-%type <type>		TypeName
+%type <type>		TypeName StructOrUnionSpecifier EnumSpecifier
+
+%type <declSpec>	StorageClassSpecifier TypeSpecifier DeclarationSpecifiers
+
+%type <kind>		StructOrUnion
 
 %expect 1
 
@@ -539,14 +552,14 @@ Declaration
 	;
 
 DeclarationSpecifiers
-	: DeclarationSpecifiers2
-	;
-
-DeclarationSpecifiers2
 	: StorageClassSpecifier
-	| StorageClassSpecifier DeclarationSpecifiers
+	| StorageClassSpecifier DeclarationSpecifiers	{
+				$$ = CDeclSpecCombine($1, $2);
+			}
 	| TypeSpecifier
-	| TypeSpecifier DeclarationSpecifiers
+	| TypeSpecifier DeclarationSpecifiers	{
+				$$ = CDeclSpecCombine($1, $2);
+			}
 	;
 
 InitDeclaratorList
@@ -560,50 +573,136 @@ InitDeclarator
 	;
 
 StorageClassSpecifier
-	: K_TYPEDEF
-	| K_EXTERN
-	| K_STATIC
-	| K_AUTO
-	| K_REGISTER
-	| K_INLINE
+	: K_TYPEDEF			{ CDeclSpecSet($$, C_SPEC_TYPEDEF); }
+	| K_EXTERN			{ CDeclSpecSet($$, C_SPEC_EXTERN); }
+	| K_STATIC			{ CDeclSpecSet($$, C_SPEC_STATIC); }
+	| K_AUTO			{ CDeclSpecSet($$, C_SPEC_AUTO); }
+	| K_REGISTER		{ CDeclSpecSet($$, C_SPEC_REGISTER); }
+	| K_INLINE			{ CDeclSpecSet($$, C_SPEC_INLINE); }
 	;
 
 TypeSpecifier
-	: K_CHAR
-	| K_SHORT
-	| K_INT
-	| K_LONG
-	| K_SIGNED
-	| K_UNSIGNED
-	| K_FLOAT
-	| K_DOUBLE
-	| K_CONST
-	| K_VOLATILE
-	| K_NATIVE
-	| K_VOID
-	| K_BOOL
-	| K_WCHAR
-	| K_NINT
-	| K_VA_LIST
-	| K_JMP_BUF
-	| StructOrUnionSpecifier
-	| EnumSpecifier
-	| K_TYPEOF '(' Expression ')'
-	| K_TYPEOF '(' TypeName ')'
-	| TYPE_NAME						{ /* TODO */ }
+	: K_CHAR			{ CDeclSpecSetType($$, ILType_Int8); }
+	| K_SHORT			{ CDeclSpecSet($$, C_SPEC_SHORT); }
+	| K_INT				{ CDeclSpecSetType($$, ILType_Int32); }
+	| K_LONG			{ CDeclSpecSet($$, C_SPEC_LONG); }
+	| K_SIGNED			{ CDeclSpecSet($$, C_SPEC_SIGNED); }
+	| K_UNSIGNED		{ CDeclSpecSet($$, C_SPEC_UNSIGNED); }
+	| K_FLOAT			{ CDeclSpecSetType($$, ILType_Float32); }
+	| K_DOUBLE			{ CDeclSpecSetType($$, ILType_Float64); }
+	| K_CONST			{ CDeclSpecSet($$, C_SPEC_CONST); }
+	| K_VOLATILE		{ CDeclSpecSet($$, C_SPEC_VOLATILE); }
+	| K_NATIVE			{ CDeclSpecSet($$, C_SPEC_NATIVE); }
+	| K_VOID			{ CDeclSpecSetType($$, ILType_Void); }
+	| K_BOOL			{ CDeclSpecSetType($$, ILType_Boolean); }
+	| K_WCHAR			{ CDeclSpecSetType($$, ILType_Char); }
+	| K_NINT			{ CDeclSpecSetType($$, ILType_Int); }
+	| K_VA_LIST			{ CDeclSpecSetType($$, CTypeCreateVaList(&CCCodeGen)); }
+	| K_JMP_BUF			{ CDeclSpecSetType($$, CTypeCreateJmpBuf(&CCCodeGen)); }
+	| StructOrUnionSpecifier		{ CDeclSpecSetType($$, $1); }
+	| EnumSpecifier					{ CDeclSpecSetType($$, $1); }
+	| K_TYPEOF '(' Expression ')'	{
+				/* Perform inline semantic analysis on the expression */
+				CSemValue value = CSemInlineAnalysis
+						(&CCCodeGen, $3, CCurrentScope);
+
+				/* Use the type of the expression as our return value */
+				CDeclSpecSetType($$, CSemGetType(value));
+			}
+	| K_TYPEOF '(' TypeName ')'		{ CDeclSpecSetType($$, $3); }
+	| TYPE_NAME						{
+				/* Look up the type in the current scope.  We know that
+				   the typedef is present, because the lexer found it */
+				ILType *type = CScopeGetType(CScopeLookup($1));
+				CDeclSpecSetType($$, type);
+			}
 	;
 
 StructOrUnionSpecifier
-	: StructOrUnion AnyIdentifier '{' StructDeclarationList '}'
-	| StructOrUnion '{' StructDeclarationList '}'
-	| StructOrUnion AnyIdentifier
+	: StructOrUnion AnyIdentifier '{'	{
+				/* Look for a definition in the local scope */
+				if(!CScopeHasStructOrUnion($2, $1))
+				{
+					/* Define the struct or union type */
+					$<structInfo>$.type = CTypeDefineStructOrUnion
+							(&CCCodeGen, $2, $1, functionName);
+				}
+				else
+				{
+					/* We've already seen a definition for this type before */
+					if($1 == C_STKIND_STRUCT || $1 == C_STKIND_STRUCT_NATIVE)
+					{
+						CCError(_("redefinition of `struct %s'"), $2);
+					}
+					else
+					{
+						CCError(_("redefinition of `union %s'"), $2);
+					}
+
+					/* Create an anonymous type as a place-holder */
+					$<structInfo>$.type = CTypeDefineAnonStructOrUnion
+						(&CCCodeGen, currentStruct, functionName, $1);
+				}
+
+				/* Push in a scope level for the structure */
+				$<structInfo>$.parent = currentStruct;
+				currentStruct = $<structInfo>$.type;
+
+				/* Add the type to the current scope */
+				CScopeAddStructOrUnion($2, $1, $<structInfo>$.type);
+			}
+	  StructDeclarationList '}'	{
+	  			/* Pop the structure scope */
+				currentStruct = $<structInfo>4.parent;
+
+				/* Terminate the structure definition */
+				CTypeEndStruct(&CCCodeGen, $<structInfo>4.type);
+
+				/* Return the completed type to the next higher level */
+				$$ = $<structInfo>4.type;
+	  		}
+	| StructOrUnion '{' 	{
+				/* Define an anonymous struct or union type */
+				$<structInfo>$.type = CTypeDefineAnonStructOrUnion
+					(&CCCodeGen, currentStruct, functionName, $1);
+
+				/* Push in a scope level for the structure */
+				$<structInfo>$.parent = currentStruct;
+				currentStruct = $<structInfo>$.type;
+			}
+	  StructDeclarationList '}'		{
+	  			/* Pop the structure scope */
+				currentStruct = $<structInfo>3.parent;
+
+				/* Terminate the structure definition */
+				CTypeEndStruct(&CCCodeGen, $<structInfo>3.type);
+
+				/* Return the completed type to the next higher level */
+				$$ = $<structInfo>3.type;
+	  		}
+	| StructOrUnion AnyIdentifier	{
+				/* Look for an existing definition for this type */
+				void *data = CScopeLookupStructOrUnion($2, $1);
+				if(!data)
+				{
+					/* Create a reference to the named struct or union type,
+					   assuming that it is at the global level */
+					$$ = CTypeCreateStructOrUnion
+							(&CCCodeGen, $2, $1, 0);
+				}
+				else
+				{
+					/* Use the type that was registered in the scope */
+					$$ = CScopeGetType(data);
+				}
+			}
 	;
 
 StructOrUnion
-	: K_STRUCT
-	| K_STRUCT K_NATIVE
-	| K_UNION
-	| K_UNION K_NATIVE
+	: K_STRUCT					{ $$ = C_STKIND_STRUCT; }
+	| K_STRUCT K_NATIVE			{ $$ = C_STKIND_STRUCT_NATIVE; }
+	| K_UNION					{ $$ = C_STKIND_UNION; }
+	| K_UNION K_NATIVE			{ $$ = C_STKIND_UNION_NATIVE; }
 	;
 
 StructDeclarationList
@@ -631,9 +730,71 @@ StructDeclarator
 	;
 
 EnumSpecifier
-	: K_ENUM '{' EnumeratorList '}'
-	| K_ENUM IDENTIFIER '{' EnumeratorList '}'
-	| K_ENUM IDENTIFIER
+	: K_ENUM '{'	{
+				/* Define an anonymous enum type */
+				$<structInfo>$.type = CTypeDefineAnonEnum
+						(&CCCodeGen, functionName);
+
+				/* Push in a scope level for the enum */
+				$<structInfo>$.parent = currentEnum;
+				currentEnum = $<structInfo>$.type;
+				currentEnumValue = 0;
+			}
+	  EnumeratorList '}'	{
+	  			/* Pop the enum scope */
+				currentEnum = $<structInfo>3.parent;
+
+				/* Return the completed type to the next higher level */
+				$$ = $<structInfo>3.type;
+	  		}
+	| K_ENUM AnyIdentifier '{'	{
+				/* Look for a definition in the local scope */
+				if(!CScopeHasEnum($2))
+				{
+					/* Define the enum type */
+					$<structInfo>$.type = CTypeDefineEnum
+							(&CCCodeGen, $2, functionName);
+				}
+				else
+				{
+					/* We've already seen a definition for this type before */
+					CCError(_("redefinition of `enum %s'"), $2);
+
+					/* Create an anonymous type as a place-holder */
+					$<structInfo>$.type = CTypeDefineAnonEnum
+							(&CCCodeGen, functionName);
+				}
+
+				/* Push in a scope level for the enum */
+				$<structInfo>$.parent = currentEnum;
+				currentEnum = $<structInfo>$.type;
+				currentEnumValue = 0;
+
+				/* Add the type to the current scope */
+				CScopeAddEnum($2, $<structInfo>$.type);
+			}
+	  EnumeratorList '}'	{
+	  			/* Pop the enum scope */
+				currentEnum = $<structInfo>4.parent;
+
+				/* Return the completed type to the next higher level */
+				$$ = $<structInfo>4.type;
+			}
+	| K_ENUM AnyIdentifier		{
+				/* Look for an existing definition for this type */
+				void *data = CScopeLookupEnum($2);
+				if(!data)
+				{
+					/* Create a reference to the named enum type
+					   assuming that it is at the global level */
+					$$ = CTypeCreateEnum(&CCCodeGen, $2, 0);
+				}
+				else
+				{
+					/* Use the type that was registered in the scope */
+					$$ = CScopeGetType(data);
+				}
+			}
 	;
 
 EnumeratorList
@@ -714,8 +875,8 @@ TypeSpecifierList
 	;
 
 TypeSpecifierList2
-	: TypeSpecifier
-	| TypeSpecifierList2 TypeSpecifier
+	: TypeSpecifier						{}
+	| TypeSpecifierList2 TypeSpecifier	{}
 	;
 
 ParameterIdentifierList
@@ -822,8 +983,30 @@ LabeledStatement
 	;
 
 CompoundStatement
-	: '{' OptDeclarationList OptStatementList '}'	{
-				$$ = ILNode_Compound_CreateFrom($2, $3);
+	: '{'	{
+				/* Create a new scope */
+				CCurrentScope = ILScopeCreate(&CCCodeGen, CCurrentScope);
+			}
+	  OptDeclarationList OptStatementList '}'	{
+	  			/* Build the compound statement block if it isn't empty */
+				if($3 != 0 || $4 != 0)
+				{
+					$$ = ILNode_NewScope_create
+						(ILNode_Compound_CreateFrom($3, $4));
+					((ILNode_NewScope *)($$))->scope = CCurrentScope;
+				}
+				else
+				{
+					$$ = ILNode_Empty_create();
+				}
+
+				/* Fix up the line number on the compound statement node */
+			#ifdef YYBISON
+				yysetlinenum($$, @1.first_line);
+			#endif
+
+	  			/* Pop the scope */
+				CCurrentScope = ILScopeGetParent(CCurrentScope);
 			}
 	;
 
@@ -931,14 +1114,69 @@ File2
 	;
 
 ExternalDefinition
-	: FunctionDefinition
-	| Declaration					{}
+	: FunctionDefinition	{
+				/* Roll the treecc node heap back to the last check point */
+				yynodepop();
+			}
+	| Declaration			{
+				/* Roll the treecc node heap back to the last check point */
+				yynodepop();
+			}
 	;
 
 FunctionDefinition
-	: Declarator OptParamDeclarationList '{' FunctionBody '}'
-	| DeclarationSpecifiers Declarator OptParamDeclarationList
-			'{' FunctionBody '}'
+	: Declarator OptParamDeclarationList '{'	{
+				/* Create the function */
+				/* TODO */
+
+				/* Create a new scope to hold the function body */
+				CCurrentScope = ILScopeCreate(&CCCodeGen, CCurrentScope);
+
+				/* Declare the parameters into the new scope */
+				/* TODO */
+			}
+	  FunctionBody '}'		{
+	  			/* Wrap the function body in a new scope record */
+				ILNode *body = ILNode_NewScope_create($5);
+				((ILNode_NewScope *)body)->scope = CCurrentScope;
+
+				/* Fix up the line number on the function body */
+			#ifdef YYBISON
+				yysetlinenum(body, @3.first_line);
+			#endif
+
+				/* Pop the scope */
+				CCurrentScope = ILScopeGetParent(CCurrentScope);
+
+				/* Output the finished function */
+				/* TODO */
+	  		}
+	| DeclarationSpecifiers Declarator OptParamDeclarationList '{'	{
+				/* Create the function */
+				/* TODO */
+
+				/* Create a new scope to hold the function body */
+				CCurrentScope = ILScopeCreate(&CCCodeGen, CCurrentScope);
+
+				/* Declare the parameters into the new scope */
+				/* TODO */
+			}
+	  FunctionBody '}'		{
+	  			/* Wrap the function body in a new scope record */
+				ILNode *body = ILNode_NewScope_create($6);
+				((ILNode_NewScope *)body)->scope = CCurrentScope;
+
+				/* Fix up the line number on the function body */
+			#ifdef YYBISON
+				yysetlinenum(body, @4.first_line);
+			#endif
+
+				/* Pop the scope */
+				CCurrentScope = ILScopeGetParent(CCurrentScope);
+
+				/* Output the finished function */
+				/* TODO */
+	  		}
 	;
 
 OptParamDeclarationList
@@ -952,7 +1190,7 @@ ParamDeclarationList
 	;
 
 ParamDeclaration
-	: DeclarationSpecifiers ParamDeclaratorList ';'
+	: DeclarationSpecifiers ParamDeclaratorList ';'	{}
 	;
 
 ParamDeclaratorList
@@ -966,6 +1204,13 @@ ParamDeclarator
 
 FunctionBody
 	: OptDeclarationList OptStatementList	{
-				$$ = ILNode_Compound_CreateFrom($1, $2);
+				if($1 != 0 || $2 != 0)
+				{
+					$$ = ILNode_Compound_CreateFrom($1, $2);
+				}
+				else
+				{
+					$$ = ILNode_Empty_create();
+				}
 			}
 	;

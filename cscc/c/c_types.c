@@ -31,24 +31,50 @@ static ILUInt32 TypeSizeAndAlign(ILType *type, ILUInt32 *align, int force);
 static char *AppendThree(ILGenInfo *info, const char *prefix,
 						 char *str, const char *suffix);
 
-/*
- * Create a "struct" or "union" type given a name and prefix.
- */
-static ILType *CreateStructOrUnion(ILGenInfo *info, const char *name,
-								   const char *prefix)
+ILType *CTypeCreateStructOrUnion(ILGenInfo *info, const char *name,
+								 int kind, const char *funcName)
 {
-	int prefixLen = strlen(prefix);
+	const char *prefix;
+	int prefixLen;
+	int funcNameLen;
 	ILClass *classInfo;
 	char *newName;
 
-	/* Create a new name by prepending the prefix to the name */
-	newName = (char *)ILMalloc(strlen(name) + prefixLen + 1);
+	/* Determine which prefix to use */
+	if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
+	{
+		prefix = "struct ";
+		prefixLen = 7;
+	}
+	else
+	{
+		prefix = "union ";
+		prefixLen = 6;
+	}
+
+	/* Determine if we need to qualify the name using a function name */
+	if(!funcName || *funcName == '\0')
+	{
+		funcNameLen = 0;
+	}
+	else
+	{
+		funcNameLen = strlen(funcName) + 1;
+	}
+
+	/* Create a new name by prepending the prefix and function to the name */
+	newName = (char *)ILMalloc(strlen(name) + prefixLen + funcNameLen + 1);
 	if(!newName)
 	{
 		ILGenOutOfMemory(info);
 	}
 	strcpy(newName, prefix);
-	strcpy(newName + prefixLen, name);
+	if(funcNameLen > 0)
+	{
+		strcpy(newName + prefixLen, funcName);
+		newName[prefixLen + funcNameLen - 1] = '.';
+	}
+	strcpy(newName + prefixLen + funcNameLen, name);
 
 	/* Search for a class information block with the name */
 	classInfo = ILClassLookup(ILClassGlobalScope(info->image), newName, 0);
@@ -71,29 +97,36 @@ static ILType *CreateStructOrUnion(ILGenInfo *info, const char *name,
 	return ILType_FromValueType(classInfo);
 }
 
-ILType *CTypeCreateStruct(ILGenInfo *info, const char *name)
-{
-	return CreateStructOrUnion(info, name, "struct ");
-}
-
-ILType *CTypeCreateUnion(ILGenInfo *info, const char *name)
-{
-	return CreateStructOrUnion(info, name, "union ");
-}
-
-ILType *CTypeCreateEnum(ILGenInfo *info, const char *name)
+ILType *CTypeCreateEnum(ILGenInfo *info, const char *name,
+						const char *funcName)
 {
 	char *newName;
 	ILClass *classInfo;
+	int funcNameLen;
+
+	/* Determine if we need to qualify the name using a function name */
+	if(!funcName || *funcName == '\0')
+	{
+		funcNameLen = 0;
+	}
+	else
+	{
+		funcNameLen = strlen(funcName) + 1;
+	}
 
 	/* Create a new name by prepending "enum " to the name */
-	newName = (char *)ILMalloc(strlen(name) + 6);
+	newName = (char *)ILMalloc(strlen(name) + funcNameLen + 6);
 	if(!newName)
 	{
 		ILGenOutOfMemory(info);
 	}
 	strcpy(newName, "enum ");
-	strcpy(newName + 5, name);
+	if(funcNameLen > 0)
+	{
+		strcpy(newName + 5, funcName);
+		newName[5 + funcNameLen - 1] = '.';
+	}
+	strcpy(newName + funcNameLen + 5, name);
 
 	/* Search for a class information block with the name */
 	classInfo = ILClassLookup(ILClassGlobalScope(info->image), newName, 0);
@@ -262,6 +295,14 @@ ILType *CTypeCreateVaList(ILGenInfo *info)
 	return ILFindSystemType(info, "ArgIterator");
 }
 
+ILType *CTypeCreateJmpBuf(ILGenInfo *info)
+{
+	/* The "OpenSystem.Languages.C.JmpBuf" class is the
+	   underlying representation for "__builtin_jmp_buf" */
+	return ILFindNonSystemType(info, "JmpBuf",
+							   "OpenSystem.Languages.C");
+}
+
 ILType *CTypeCreateVoidPtr(ILGenInfo *info)
 {
 	static ILType *voidPtr = 0;
@@ -344,14 +385,59 @@ int CTypeAlreadyDefined(ILType *type)
 	}
 }
 
-ILType *CTypeDefineStruct(ILGenInfo *info, const char *name, int nativeLayout)
+/*
+ * Set the correct class attributes based on a structure kind.
+ */
+static void SetupStructAttrs(ILGenInfo *info, ILClass *classInfo, int kind)
+{
+	switch(kind)
+	{
+		case C_STKIND_STRUCT:
+		case C_STKIND_UNION:
+		case C_STKIND_UNION | C_STKIND_UNION_NATIVE:
+		{
+			/* Structure or union with explicit layout requirements */
+			ILClassSetAttrs(classInfo, ~((ILUInt32)0),
+							IL_META_TYPEDEF_PUBLIC |
+							IL_META_TYPEDEF_SERIALIZABLE |
+							IL_META_TYPEDEF_EXPLICIT_LAYOUT |
+							IL_META_TYPEDEF_SEALED |
+							IL_META_TYPEDEF_VALUE_TYPE);
+			if(kind != C_STKIND_UNION_NATIVE)
+			{
+				/* The type initially has a packing alignment of 1
+				   and a total size of 0 */
+				if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
+				{
+					ILGenOutOfMemory(info);
+				}
+			}
+		}
+		break;
+
+		case C_STKIND_STRUCT_NATIVE:
+		{
+			/* Let the runtime engine determine how to lay out the fields */
+			ILClassSetAttrs(classInfo, ~((ILUInt32)0),
+							IL_META_TYPEDEF_PUBLIC |
+							IL_META_TYPEDEF_SERIALIZABLE |
+							IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
+							IL_META_TYPEDEF_SEALED |
+							IL_META_TYPEDEF_VALUE_TYPE);
+		}
+		break;
+	}
+}
+
+ILType *CTypeDefineStructOrUnion(ILGenInfo *info, const char *name,
+								 int kind, const char *funcName)
 {
 	ILType *type;
 	ILClass *classInfo;
 	ILClass *parent;
 
-	/* Create the struct type reference, and bail out if already defined */
-	type = CTypeCreateStruct(info, name);
+	/* Create the type reference, and bail out if already defined */
+	type = CTypeCreateStructOrUnion(info, name, kind, funcName);
 	if(CTypeAlreadyDefined(type))
 	{
 		return 0;
@@ -366,44 +452,16 @@ ILType *CTypeDefineStruct(ILGenInfo *info, const char *name, int nativeLayout)
 	{
 		ILGenOutOfMemory(info);
 	}
+	SetupStructAttrs(info, classInfo, kind);
 
-	/* Set the correct class attributes based on the native layout flag */
-	if(nativeLayout)
-	{
-		/* Let the runtime engine determine how to lay out the fields */
-		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-						IL_META_TYPEDEF_PUBLIC |
-						IL_META_TYPEDEF_SERIALIZABLE |
-						IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
-						IL_META_TYPEDEF_SEALED |
-						IL_META_TYPEDEF_VALUE_TYPE);
-	}
-	else
-	{
-		/* We need to lay out the fields ourselves to ensure that
-		   the structure looks the same on all platforms */
-		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-						IL_META_TYPEDEF_PUBLIC |
-						IL_META_TYPEDEF_SERIALIZABLE |
-						IL_META_TYPEDEF_EXPLICIT_LAYOUT |
-						IL_META_TYPEDEF_SEALED |
-						IL_META_TYPEDEF_VALUE_TYPE);
-
-		/* The structure initially has a packing alignment of 1
-		   and a total size of 0 */
-		if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
-		{
-			ILGenOutOfMemory(info);
-		}
-	}
-
-	/* The struct definition is ready to go */
+	/* The type definition is ready to go */
 	return type;
 }
 
-ILType *CTypeDefineAnonStruct(ILGenInfo *info, ILType *parent,
-							  const char *funcName, int nativeLayout)
+ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
+							  		 const char *funcName, int kind)
 {
+	int parentKind;
 	long number;
 	ILNestedInfo *nested;
 	ILClass *parentInfo;
@@ -413,9 +471,25 @@ ILType *CTypeDefineAnonStruct(ILGenInfo *info, ILType *parent,
 	char *newName;
 	ILUInt32 attrs;
 
-	/* Get the number to assign to the anonymous structure */
+	/* Get the number to assign to the anonymous type */
 	if(parent)
 	{
+		/* If the parent is native, then the anonymous child should be too */
+		parentKind = CTypeGetStructKind(parent);
+		if(parentKind == C_STKIND_STRUCT_NATIVE ||
+		   parentKind == C_STKIND_UNION_NATIVE)
+		{
+			if(kind == C_STKIND_STRUCT)
+			{
+				kind = C_STKIND_STRUCT_NATIVE;
+			}
+			else if(kind == C_STKIND_UNION)
+			{
+				kind = C_STKIND_UNION_NATIVE;
+			}
+		}
+
+		/* Count the nested types to determine the number */
 		parentInfo = ILType_ToValueType(parent);
 		number = 1;
 		nested = 0;
@@ -428,14 +502,15 @@ ILType *CTypeDefineAnonStruct(ILGenInfo *info, ILType *parent,
 	}
 	else
 	{
+		/* Use the size of the TypeDef table to determine the number */
 		number = (long)(ILImageNumTokens(info->image,
 										 IL_META_TOKEN_TYPE_DEF) + 1);
 		scope = ILClassGlobalScope(info->image);
 		attrs = IL_META_TYPEDEF_NOT_PUBLIC;
 	}
 
-	/* Format the name of the structure type */
-	if(funcName)
+	/* Format the name of the type */
+	if(funcName && *funcName != '\0')
 	{
 		/* Format the name as "struct func(N)" */
 		sprintf(name, "(%ld)", number);
@@ -444,12 +519,26 @@ ILType *CTypeDefineAnonStruct(ILGenInfo *info, ILType *parent,
 		{
 			ILGenOutOfMemory(info);
 		}
-		newName = AppendThree(info, "struct ", newName, name);
+		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
+		{
+			newName = AppendThree(info, "struct ", newName, name);
+		}
+		else
+		{
+			newName = AppendThree(info, "union ", newName, name);
+		}
 	}
 	else
 	{
 		/* Format the name as "struct (N)" */
-		sprintf(name, "struct (%ld)", number);
+		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
+		{
+			sprintf(name, "struct (%ld)", number);
+		}
+		else
+		{
+			sprintf(name, "union (%ld)", number);
+		}
 		newName = ILDupString(name);
 		if(!newName)
 		{
@@ -457,179 +546,22 @@ ILType *CTypeDefineAnonStruct(ILGenInfo *info, ILType *parent,
 		}
 	}
 
-	/* Create the anonymous structure */
+	/* Create the anonymous type */
 	parentInfo = ILType_ToClass(ILFindSystemType(info, "ValueType"));
 	classInfo = ILClassCreate(scope, 0, newName, 0, parentInfo);
 	if(!classInfo)
 	{
 		ILGenOutOfMemory(info);
 	}
+	SetupStructAttrs(info, classInfo, kind);
 
-	/* Set the correct class attributes based on the native layout flag */
-	if(nativeLayout)
-	{
-		/* Let the runtime engine determine how to lay out the fields */
-		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-						attrs |
-						IL_META_TYPEDEF_SERIALIZABLE |
-						IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
-						IL_META_TYPEDEF_SEALED |
-						IL_META_TYPEDEF_VALUE_TYPE);
-	}
-	else
-	{
-		/* We need to lay out the fields ourselves to ensure that
-		   the structure looks the same on all platforms */
-		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-						attrs |
-						IL_META_TYPEDEF_SERIALIZABLE |
-						IL_META_TYPEDEF_EXPLICIT_LAYOUT |
-						IL_META_TYPEDEF_SEALED |
-						IL_META_TYPEDEF_VALUE_TYPE);
-
-		/* The structure initially has a packing alignment of 1
-		   and a total size of 0 */
-		if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
-		{
-			ILGenOutOfMemory(info);
-		}
-	}
-
-	/* The struct definition is ready to go */
+	/* The type definition is ready to go */
 	ILFree(newName);
 	return ILType_FromValueType(classInfo);
 }
 
-ILType *CTypeDefineUnion(ILGenInfo *info, const char *name, int nativeLayout)
-{
-	ILType *type;
-	ILClass *classInfo;
-	ILClass *parent;
-
-	/* Create the union type reference, and bail out if already defined */
-	type = CTypeCreateUnion(info, name);
-	if(CTypeAlreadyDefined(type))
-	{
-		return 0;
-	}
-
-	/* Convert the reference into an actual class definition */
-	classInfo = ILType_ToValueType(type);
-	parent = ILType_ToClass(ILFindSystemType(info, "ValueType"));
-	classInfo = ILClassCreate(ILClassGlobalScope(info->image), 0,
-							  ILClass_Name(classInfo), 0, parent);
-	if(!classInfo)
-	{
-		ILGenOutOfMemory(info);
-	}
-
-	/* Set the correct class attributes for the union */
-	ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-					IL_META_TYPEDEF_PUBLIC |
-					IL_META_TYPEDEF_SERIALIZABLE |
-					IL_META_TYPEDEF_EXPLICIT_LAYOUT |
-					IL_META_TYPEDEF_SEALED |
-					IL_META_TYPEDEF_VALUE_TYPE);
-	if(!nativeLayout)
-	{
-		/* The union initially has a packing alignment of 1
-		   and a total size of 0 */
-		if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
-		{
-			ILGenOutOfMemory(info);
-		}
-	}
-
-	/* The union definition is ready to go */
-	return type;
-}
-
-ILType *CTypeDefineAnonUnion(ILGenInfo *info, ILType *parent,
-							 const char *funcName, int nativeLayout)
-{
-	long number;
-	ILNestedInfo *nested;
-	ILClass *parentInfo;
-	ILClass *classInfo;
-	ILProgramItem *scope;
-	char name[64];
-	char *newName;
-	ILUInt32 attrs;
-
-	/* Get the number to assign to the anonymous union */
-	if(parent)
-	{
-		parentInfo = ILType_ToValueType(parent);
-		number = 1;
-		nested = 0;
-		while((nested = ILClassNextNested(parentInfo, nested)) != 0)
-		{
-			++number;
-		}
-		scope = ILToProgramItem(parentInfo);
-		attrs = IL_META_TYPEDEF_NESTED_PUBLIC;
-	}
-	else
-	{
-		number = (long)(ILImageNumTokens(info->image,
-										 IL_META_TOKEN_TYPE_DEF) + 1);
-		scope = ILClassGlobalScope(info->image);
-		attrs = IL_META_TYPEDEF_NOT_PUBLIC;
-	}
-
-	/* Format the name of the union type */
-	if(funcName)
-	{
-		/* Format the name as "union func(N)" */
-		sprintf(name, "(%ld)", number);
-		newName = ILDupString(funcName);
-		if(!newName)
-		{
-			ILGenOutOfMemory(info);
-		}
-		newName = AppendThree(info, "union ", newName, name);
-	}
-	else
-	{
-		/* Format the name as "union (N)" */
-		sprintf(name, "union (%ld)", number);
-		newName = ILDupString(name);
-		if(!newName)
-		{
-			ILGenOutOfMemory(info);
-		}
-	}
-
-	/* Create the anonymous union */
-	parentInfo = ILType_ToClass(ILFindSystemType(info, "ValueType"));
-	classInfo = ILClassCreate(scope, 0, name, 0, parentInfo);
-	if(!classInfo)
-	{
-		ILGenOutOfMemory(info);
-	}
-
-	/* Set the correct class attributes for the union */
-	ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-					attrs |
-					IL_META_TYPEDEF_SERIALIZABLE |
-					IL_META_TYPEDEF_EXPLICIT_LAYOUT |
-					IL_META_TYPEDEF_SEALED |
-					IL_META_TYPEDEF_VALUE_TYPE);
-	if(!nativeLayout)
-	{
-		/* The union initially has a packing alignment of 1
-		   and a total size of 0 */
-		if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
-		{
-			ILGenOutOfMemory(info);
-		}
-	}
-
-	/* The union definition is ready to go */
-	return ILType_FromValueType(classInfo);
-}
-
-ILType *CTypeDefineEnum(ILGenInfo *info, const char *name)
+ILType *CTypeDefineEnum(ILGenInfo *info, const char *name,
+						const char *funcName)
 {
 	ILType *type;
 	ILClass *classInfo;
@@ -637,7 +569,7 @@ ILType *CTypeDefineEnum(ILGenInfo *info, const char *name)
 	ILField *field;
 
 	/* Create the enum type reference, and bail out if already defined */
-	type = CTypeCreateEnum(info, name);
+	type = CTypeCreateEnum(info, name, funcName);
 	if(CTypeAlreadyDefined(type))
 	{
 		return 0;
@@ -672,6 +604,74 @@ ILType *CTypeDefineEnum(ILGenInfo *info, const char *name)
 
 	/* The enum definition is ready to go */
 	return type;
+}
+
+ILType *CTypeDefineAnonEnum(ILGenInfo *info, const char *funcName)
+{
+	int funcNameLen;
+	long number;
+	char name[64];
+	char *newName;
+	ILClass *classInfo;
+	ILClass *parent;
+	ILField *field;
+
+	/* Determine if we need to qualify the name using a function name */
+	if(!funcName)
+	{
+		funcNameLen = 0;
+	}
+	else
+	{
+		funcNameLen = strlen(funcName);
+	}
+
+	/* Get a unique number for the enumeration based on the TypeDef table */
+	number = (long)(ILImageNumTokens(info->image, IL_META_TOKEN_TYPE_DEF) + 1);
+	sprintf(name, "(%ld)", number);
+
+	/* Create a new name by prepending "enum " to the name */
+	newName = (char *)ILMalloc(strlen(name) + funcNameLen + 1);
+	if(!newName)
+	{
+		ILGenOutOfMemory(info);
+	}
+	strcpy(newName, "enum ");
+	if(funcNameLen > 0)
+	{
+		strcpy(newName + 5, funcName);
+	}
+	strcpy(newName + funcNameLen + 5, name);
+
+	/* Create the anonymous type */
+	parent = ILType_ToClass(ILFindSystemType(info, "Enum"));
+	classInfo = ILClassCreate(ILClassGlobalScope(info->image), 0,
+							  newName, 0, parent);
+	if(!classInfo)
+	{
+		ILGenOutOfMemory(info);
+	}
+
+	/* Set the attributes on the anonymous type correctly */
+	ILClassSetAttrs(classInfo, ~((ILUInt32)0),
+					IL_META_TYPEDEF_NOT_PUBLIC |
+					IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_SEALED);
+
+	/* Add the "value__" field to hold the enum's value */
+	field = ILFieldCreate(classInfo, 0, "value__",
+						  IL_META_FIELDDEF_PUBLIC |
+						  IL_META_FIELDDEF_SPECIAL_NAME |
+						  IL_META_FIELDDEF_RT_SPECIAL_NAME);
+	if(!field)
+	{
+		ILGenOutOfMemory(info);
+	}
+	ILMemberSetSignature((ILMember *)field, ILType_Int32);
+
+	/* The enum definition is ready to go */
+	ILFree(newName);
+	return ILType_FromValueType(classInfo);
 }
 
 ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
@@ -830,6 +830,37 @@ int CTypeIsUnion(ILType *type)
 	return 0;
 }
 
+int CTypeGetStructKind(ILType *type)
+{
+	type = ILTypeStripPrefixes(type);
+	if(ILType_IsValueType(type))
+	{
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "struct ", 7))
+		{
+			if(ILClass_IsExplicitLayout(ILType_ToValueType(type)))
+			{
+				return C_STKIND_STRUCT;
+			}
+			else
+			{
+				return C_STKIND_STRUCT_NATIVE;
+			}
+		}
+		else if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "union ", 6))
+		{
+			if(ILClassLayoutGetFromOwner(ILType_ToValueType(type)) != 0)
+			{
+				return C_STKIND_UNION;
+			}
+			else
+			{
+				return C_STKIND_UNION_NATIVE;
+			}
+		}
+	}
+	return -1;
+}
+
 int CTypeIsEnum(ILType *type)
 {
 	type = ILTypeStripPrefixes(type);
@@ -896,6 +927,16 @@ int CTypeIsForeign(ILType *type)
 			   "__builtin_va_list" type */
 			name = ILClass_Namespace(ILType_ToValueType(type));
 			if(name && !strcmp(name, "System"))
+			{
+				return 0;
+			}
+		}
+		else if(!strcmp(name, "JmpBuf"))
+		{
+			/* The "OpenSystem.Languages.C.JmpBuf" class corresponds
+			   to C's "__builtin_jmp_buf" type */
+			name = ILClass_Namespace(ILType_ToValueType(type));
+			if(name && !strcmp(name, "OpenSystem.Languages.C"))
 			{
 				return 0;
 			}
@@ -1405,6 +1446,21 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 			{
 				/* "System.ArgIterator" is known to C as "__builtin_va_list" */
 				name = ILDupString("__builtin_va_list");
+				if(!name)
+				{
+					ILGenOutOfMemory(info);
+				}
+				return name;
+			}
+		}
+		else if(!strcmp(cname, "JmpBuf"))
+		{
+			cname = ILClass_Namespace(ILType_ToValueType(type));
+			if(cname != 0 && !strcmp(cname, "OpenSystem.Languages.C"))
+			{
+				/* "OpenSystem.Languages.C.JmpBuf" is known to
+				   C as "__builtin_jmp_buf" */
+				name = ILDupString("__builtin_jmp_buf");
 				if(!name)
 				{
 					ILGenOutOfMemory(info);

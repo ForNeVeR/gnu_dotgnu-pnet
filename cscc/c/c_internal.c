@@ -25,7 +25,6 @@ extern	"C" {
 #endif
 
 int gen_32bit_only;
-ILScope *CCurrentScope;
 CSemValue CSemValueDefault = {C_SEMKIND_VOID, ILType_Void, 0};
 CSemValue CSemValueBool = {C_SEMKIND_RVALUE | C_SEMKIND_BOOLEAN,
 						   ILType_Boolean, 0};
@@ -37,6 +36,16 @@ void *CSemDupExtra(const void *buf, unsigned int len)
 	void *temp = yynodealloc(len);
 	ILMemCpy(temp, buf, len);
 	return temp;
+}
+
+CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope)
+{
+	ILScope *currentScope = info->currentScope;
+	CSemValue result;
+	info->currentScope = scope;
+	result = ILNode_CSemAnalysis(node, info, &node, 1);
+	info->currentScope = currentScope;
+	return result;
 }
 
 #ifdef	__cplusplus

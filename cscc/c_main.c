@@ -42,7 +42,6 @@ int const CCPluginSkipCodeGen = 0;
 
 int CCPluginInit(void)
 {
-
 	/* Read the state of the "-m32bit-only" flag, which affects the
 	   layout and definition of various types */
 	if(CCStringListContains(machine_flags, num_machine_flags,
@@ -80,6 +79,9 @@ int CCPluginInit(void)
 					"__cli");
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__cli__");
+
+	/* Initialize the global definition scope */
+	CScopeGlobalInit();
 
 	/* The plugin has been initialized */
 	return 1;

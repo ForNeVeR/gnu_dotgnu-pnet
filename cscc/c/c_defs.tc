@@ -214,12 +214,17 @@ extern CSemValue CSemValueError;
 /*
  * Set a semantic value to "error".
  */
-#define	CSemSetError(value,type)	\
+#define	CSemSetError(value)	\
 			do { \
 				(value).kind__ = C_SEMKIND_ERROR; \
 				(value).type__ = ILType_Void; \
 				(value).extra__ = 0; \
 			} while (0)
+
+/*
+ * Perform inline semantic analysis on a node, in a specific scope.
+ */
+CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 
 %}
 
@@ -233,11 +238,6 @@ extern CSemValue CSemValueError;
  * Define extra node types that are required by C.
  */
 %node ILNode_CString ILNode_String
-%node ILNode_Type ILNode_Expression =
-{
-	ILType *type;
-}
-%node ILNode_TypeOf ILNode_UnaryExpression
 %node ILNode_SizeOfExpr ILNode_UnaryExpression =
 {
 	%nocreate ILType *type = {0};

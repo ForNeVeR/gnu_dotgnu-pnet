@@ -94,7 +94,7 @@ public sealed class BitArray : ICollection, IEnumerable, ICloneable
 				{
 					throw new ArgumentNullException("values");
 				}
-				numBits = values.Length;
+				numBits = values.Length * 32;
 				bitArray = (int[])(values.Clone());
 				generation = 0;
 			}

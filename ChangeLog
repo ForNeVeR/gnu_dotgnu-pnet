@@ -4,6 +4,8 @@
 	* tests/System.Xml/TestXml.build: add the "System" assembly
 	to the link line.
 
+	* runtime/System/Collections/BitArray.cs: error in "int[]" constructor.
+
 2002-10-01  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* make_patch.sh : Adjust script to include .build files.

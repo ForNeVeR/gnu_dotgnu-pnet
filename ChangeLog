@@ -17,6 +17,9 @@
 
 	* samples/getenv.cs: updated sample that incorporates lookup fixes.
 
+	* samples/mscorlib.dll: new version with "N.00" fix in number
+	formatting; compiled version of "System.IO.Path" submission.
+
 2001-01-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_lvalue.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

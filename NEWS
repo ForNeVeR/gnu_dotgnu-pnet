@@ -1,4 +1,8 @@
 
+0.5.6 (3 May 2003)
+
+	* No change - re-released to match version numbers with pnet/pnetlib.
+
 0.5.4 (29 March 2003)
 
 	* Implement some of the ANSI C time routines.

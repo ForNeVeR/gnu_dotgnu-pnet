@@ -4,6 +4,9 @@
 	* engine/lib_crypt.c (_IL_CryptoMethods_SameKey): ignore the DES
 	parity bit when checking Triple-DES key components for equality.
 
+	* engine/pecoff_writer.c: output the correct relocation offset
+	in the ".reloc" section for the benefit of Windows systems.
+
 2002-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/context.c (ILContextGetAssembly): if "mscorlib" is not

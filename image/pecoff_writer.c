@@ -408,7 +408,7 @@ static void WritePECOFFHeader(ILWriter *writer)
 		IL_WRITE_UINT32(opthdr + 76, 4096);			/* Stack commit size */
 		IL_WRITE_UINT32(opthdr + 80, 1048576);		/* Heap reserve size */
 		IL_WRITE_UINT32(opthdr + 84, 4096);			/* Heap commit size */
-		IL_WRITE_UINT32(opthdr + 88, 1);			/* Loader flags */
+		IL_WRITE_UINT32(opthdr + 88, 0);			/* Loader flags */
 		IL_WRITE_UINT32(opthdr + 92, 16);			/* Number of data dirs */
 
 		/* Build data directories */
@@ -655,6 +655,7 @@ void _ILWriteFinal(ILWriter *writer)
 						 entryPoint - importTable - 3);
 
 		/* Create the ".reloc" section to relocate the entry point */
+		entryPoint += 2;	/* Relocate the operand, not the instruction */
 		offset = entryPoint & ~((unsigned long)4095);
 		entry[0] = (unsigned char)offset;			/* Page for relocation */
 		entry[1] = (unsigned char)(offset >> 8);

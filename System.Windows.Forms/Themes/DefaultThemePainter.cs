@@ -1463,12 +1463,19 @@ internal class DefaultThemePainter : IThemePainter
 						int spaceY = gridSpacing.Height;
 						using (Bitmap bmp = new Bitmap(spaceX+1,spaceY+1))
 						{
+							for (int y = 0; y < bmp.Height; y++)
+							{
+								for (int x = 0; x < bmp.Width; x++)
+								{
+									bmp.SetPixel(x, y, backColor);
+								}
+							}
 							bmp.SetPixel(0, 0, color);
 							gridBrush = new TextureBrush(bmp);
+							graphics.FillRectangle(gridBrush, area);
 						}
 					}
 				}
-				graphics.FillRectangle(gridBrush, area);
 			}
 
 	// Draw an image in its disabled state.
@@ -1539,6 +1546,7 @@ internal class DefaultThemePainter : IThemePainter
 								  Glyphs.menu_bullet_width,
 								  Glyphs.menu_bullet_height,
 								  SystemColors.MenuText);
+						
 					}
 					break;
 				}

@@ -10,8 +10,11 @@ install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/cli-unknown-ranlib
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-ar
 	$(LN_S) ilranlib $(DESTDIR)$(bindir)/cli-unknown-ranlib
+	$(LN_S) $(SYSTEM_AR) $(DESTDIR)$(bindir)/cli-unknown-ar
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
 	rm -f $(DESTDIR)$(bindir)/cli-unknown-ranlib
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-ar

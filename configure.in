@@ -25,6 +25,7 @@ if test -z "$TREECC" ; then
     echo "http://www.southern-storm.com.au"
     exit 1
 fi
+AC_PATH_PROG(SYSTEM_AR, ar)
 
 dnl Option to disable cygwin1.dll under Windows.
 AC_SUBST(SOCKETLIBS)

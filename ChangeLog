@@ -9,6 +9,9 @@
 	ilstrip/Makefile.am: add some symlinks to make the IL tools
 	look like a cross-compile toolchain with the prefix "cli-unknown".
 
+	* configure.in, ilranlib/Makefile.am: locate the system version
+	of "ar" and link it as "cli-unknown-ar".
+
 2003-07-05  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_thread.c: Implemented internal calls Thread.Abort

@@ -5,6 +5,8 @@
 	with "FindInRange" and do most of the "IndexOf" work in the engine.
 	Based on a suggestion by Gopal V.
 
+	* System/Uri.cs: semantic analysis fixes to previous check-in.
+
 2002-07-13  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs (MakeRelative): Applied Rich Baumann's new version

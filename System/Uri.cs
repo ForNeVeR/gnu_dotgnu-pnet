@@ -587,8 +587,8 @@ public class Uri : MarshalByRefObject
 
 			// this part assumes that blah/blah/ is never given as blah/blah and vice-versa
 			// if this assumption is in error, I don't see how to figure out how many ../ are needed
-			boolean thisFile = !(this.path.EndsWith('/')); // ends with a file...
-			boolean otherFile = !(toUri.path.EndsWith('/')); // ...or a path segment
+			bool thisFile = !(this.path.EndsWith("/")); // ends with a file...
+			bool otherFile = !(toUri.path.EndsWith("/")); // ...or a path segment
 
 			int tmp = thisUri.Length - currentItem - (thisFile ? 2 : 1); // calculate # of ../ needed
 			int tmp2 = otherUri.Length - currentItem - 1; // calculate # of tokens left in otherUri

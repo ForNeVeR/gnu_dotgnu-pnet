@@ -119,12 +119,14 @@ static ILCmdLineOption const options[] = {
 static void usage(const char *progname);
 static void version(void);
 static int getAssemblyVersion(const char *assembly, ILUInt16 *version,
-							  int reportErrors);
+							  int reportErrors, int *imageType);
 static int parseVersion(const char *str, ILUInt16 *version);
 static char *stripAssemblyName(char *assembly);
+static int imageTypeFromName(char *assembly);
 static int installAssembly(const char *filename, const char *assembly,
-						   const ILUInt16 *version);
-static int uninstallAssembly(const char *assembly, const ILUInt16 *version);
+						   const ILUInt16 *version, int imageType);
+static int uninstallAssembly(const char *assembly, const ILUInt16 *version,
+							 int imageType);
 static int listAssemblies(const char *assembly, const ILUInt16 *version);
 
 /*
@@ -146,6 +148,7 @@ int main(int argc, char *argv[])
 	char *assembly = 0;
 	char *sourceAssembly = 0;
 	ILUInt16 versionDetails[4] = {0, 0, 0, 0};
+	int type;
 	int state, opt;
 	char *param;
 	int result;
@@ -266,14 +269,15 @@ int main(int argc, char *argv[])
 		{
 			/* Get the name and version information for the assembly */
 			sourceAssembly = argv[1];
-			if(!getAssemblyVersion(sourceAssembly, versionDetails, 1))
+			if(!getAssemblyVersion(sourceAssembly, versionDetails, 1, &type))
 			{
 				return 1;
 			}
 			assembly = stripAssemblyName(sourceAssembly);
 
 			/* Install the specified assembly into the cache */
-			result = installAssembly(sourceAssembly, assembly, versionDetails);
+			result = installAssembly
+				(sourceAssembly, assembly, versionDetails, type);
 			if(!result)
 			{
 				break;
@@ -306,10 +310,11 @@ int main(int argc, char *argv[])
 			{
 				/* Assembly name and version supplied */
 				assembly = stripAssemblyName(argv[1]);
+				type = imageTypeFromName(argv[1]);
 				argv += 2;
 				argc -= 2;
 			}
-			else if(!getAssemblyVersion(argv[1], versionDetails, 1))
+			else if(!getAssemblyVersion(argv[1], versionDetails, 1, &type))
 			{
 				/* Invalid assembly supplied */
 				return 1;
@@ -321,7 +326,7 @@ int main(int argc, char *argv[])
 				++argv;
 				--argc;
 			}
-			result = uninstallAssembly(assembly, versionDetails);
+			result = uninstallAssembly(assembly, versionDetails, type);
 			if(!result)
 			{
 				break;
@@ -416,7 +421,7 @@ static void version(void)
  * if the assembly file does not have the correct format.
  */
 static int getAssemblyVersion(const char *assembly, ILUInt16 *version,
-							  int reportErrors)
+							  int reportErrors, int *imageType)
 {
 	ILContext *context;
 	ILImage *image;
@@ -436,12 +441,17 @@ static int getAssemblyVersion(const char *assembly, ILUInt16 *version,
 		return 0;
 	}
 
-	/* The assembly must be a DLL to be installed in the GAC */
-	if(ILImageType(image) != IL_IMAGETYPE_DLL)
+	/* The assembly must be a DLL or EXE to be installed in the GAC */
+	if(ILImageType(image) != IL_IMAGETYPE_DLL &&
+	   ILImageType(image) != IL_IMAGETYPE_EXE)
 	{
-		fprintf(stderr, "%s: Image is not a DLL\n", assembly);
+		fprintf(stderr, "%s: image is not a DLL or EXE\n", assembly);
 		ILContextDestroy(context);
 		return 0;
+	}
+	if(imageType)
+	{
+		*imageType = ILImageType(image);
 	}
 
 	/* Extract the version information from the assembly */
@@ -517,8 +527,34 @@ static char *stripAssemblyName(char *assembly)
 		{
 			assembly = ILDupNString(assembly, len - 4);
 		}
+		else if(len > 4 && assembly[len - 4] == '.' &&
+		        (assembly[len - 3] == 'e' || assembly[len - 3] == 'E') &&
+		        (assembly[len - 2] == 'x' || assembly[len - 2] == 'X') &&
+		        (assembly[len - 1] == 'e' || assembly[len - 1] == 'E'))
+		{
+			assembly = ILDupNString(assembly, len - 4);
+		}
 	}
 	return assembly;
+}
+
+/*
+ * Determine the image type (DLL or EXE) from an assembly name.
+ */
+static int imageTypeFromName(char *assembly)
+{
+	int len = strlen(assembly);
+	if(len > 4 && assembly[len - 4] == '.' &&
+	   (assembly[len - 3] == 'e' || assembly[len - 3] == 'E') &&
+	   (assembly[len - 2] == 'x' || assembly[len - 2] == 'X') &&
+	   (assembly[len - 1] == 'e' || assembly[len - 1] == 'E'))
+	{
+		return IL_IMAGETYPE_EXE;
+	}
+	else
+	{
+		return IL_IMAGETYPE_DLL;
+	}
 }
 
 /*
@@ -665,16 +701,27 @@ static int DeleteFile(const char *filename)
  * Install an assembly into the global cache.
  */
 static int installAssembly(const char *filename, const char *assembly,
-						   const ILUInt16 *version)
+						   const ILUInt16 *version, int imageType)
 {
 	char versionbuf[64];
 	char *path;
 	int error;
+	const char *extension;
 
 	/* Make sure that the top-level cache directory exists */
 	if(!CreateDirectory(cache, 0, 0))
 	{
 		return 0;
+	}
+
+	/* Determine the extension to use */
+	if(imageType == IL_IMAGETYPE_EXE)
+	{
+		extension = "exe";
+	}
+	else
+	{
+		extension = "dll";
 	}
 
 	/* Get the name of the version sub-directory */
@@ -712,7 +759,7 @@ static int installAssembly(const char *filename, const char *assembly,
 	}
 
 	/* Copy the assembly into place */
-	path = BuildPath(cache, versionbuf, subdir, assembly, "dll");
+	path = BuildPath(cache, versionbuf, subdir, assembly, extension);
 	if(!force && ILFileExists(path, (char **)0))
 	{
 		fprintf(stderr, "%s: Assembly already exists and `--force' "
@@ -784,14 +831,14 @@ static int installAssembly(const char *filename, const char *assembly,
 		char *link, *fullLink;
 		if(subdir)
 		{
-			link = BuildPath("..", versionbuf, subdir, assembly, "dll");
+			link = BuildPath("..", versionbuf, subdir, assembly, extension);
 		}
 		else
 		{
-			link = BuildPath(versionbuf, 0, 0, assembly, "dll");
+			link = BuildPath(versionbuf, 0, 0, assembly, extension);
 		}
-		fullLink = BuildPath(cache, versionbuf, subdir, assembly, "dll");
-		path = BuildPath(cache, subdir, 0, assembly, "dll");
+		fullLink = BuildPath(cache, versionbuf, subdir, assembly, extension);
+		path = BuildPath(cache, subdir, 0, assembly, extension);
 		if(!force && ILFileExists(path, (char **)0))
 		{
 			fprintf(stderr, "%s: Link already exists and `--force' "
@@ -835,11 +882,13 @@ static int installAssembly(const char *filename, const char *assembly,
 /*
  * Uninstall an assembly from the global cache.
  */
-static int uninstallAssembly(const char *assembly, const ILUInt16 *version)
+static int uninstallAssembly(const char *assembly, const ILUInt16 *version,
+							 int imageType)
 {
 	char versionbuf[64];
 	char *path;
 	int error;
+	const char *extension;
 
 	/* Get the name of the version sub-directory */
 	if(version[0] != 0 || version[1] != 0 || version[2] != 0 || version[3] != 0)
@@ -853,18 +902,28 @@ static int uninstallAssembly(const char *assembly, const ILUInt16 *version)
 		versionbuf[0] = '\0';
 	}
 
+	/* Determine the extension to use */
+	if(imageType == IL_IMAGETYPE_EXE)
+	{
+		extension = "exe";
+	}
+	else
+	{
+		extension = "dll";
+	}
+
 	/* Remove the main assembly instance */
-	path = BuildPath(cache, versionbuf, subdir, assembly, "dll");
+	path = BuildPath(cache, versionbuf, subdir, assembly, extension);
 #ifndef IL_USE_SYMLINKS
 	if(!ILFileExists(path, (char **)0) && versionbuf[0] != '\0')
 	{
 		/* The assembly may have been installed as the default, so we
 		   need to look at the default location and compare versions */
-		char *path2 = BuildPath(cache, subdir, 0, assembly, "dll");
+		char *path2 = BuildPath(cache, subdir, 0, assembly, extension);
 		if(ILFileExists(path2, (char **)0))
 		{
 			ILUInt32 assemblyVersion[4];
-			if(getAssemblyVersion(path2, assemblyVersion, 1))
+			if(getAssemblyVersion(path2, assemblyVersion, 1, 0))
 			{
 				if(version[0] == assemblyVersion[0] &&
 				   version[1] == assemblyVersion[1] &&
@@ -906,13 +965,13 @@ static int uninstallAssembly(const char *assembly, const ILUInt16 *version)
 		int len;
 		if(subdir)
 		{
-			link = BuildPath("..", versionbuf, subdir, assembly, "dll");
+			link = BuildPath("..", versionbuf, subdir, assembly, extension);
 		}
 		else
 		{
-			link = BuildPath(versionbuf, 0, 0, assembly, "dll");
+			link = BuildPath(versionbuf, 0, 0, assembly, extension);
 		}
-		path = BuildPath(cache, subdir, 0, assembly, "dll");
+		path = BuildPath(cache, subdir, 0, assembly, extension);
 		len = readlink(path, contents, sizeof(contents) - 1);
 		if(len >= 0)
 		{
@@ -1079,19 +1138,25 @@ static int scanDirectory(const char *directory, const char *assembly,
 		}
 		else
 		{
-			/* We are only interested in filenames that end in ".dll" */
+			/* We are only interested in files that end in ".dll" or ".exe" */
 			len = strlen(name);
 			if(!(len > 4 && name[len - 4] == '.' &&
 			     (name[len - 3] == 'd' || name[len - 3] == 'D') &&
 			     (name[len - 2] == 'l' || name[len - 2] == 'L') &&
 			     (name[len - 1] == 'l' || name[len - 1] == 'L')))
 			{
-				ILFree(combined);
-				continue;
+				if(!(len > 4 && name[len - 4] == '.' &&
+				     (name[len - 3] == 'e' || name[len - 3] == 'E') &&
+				     (name[len - 2] == 'x' || name[len - 2] == 'X') &&
+				     (name[len - 1] == 'e' || name[len - 1] == 'E')))
+				{
+					ILFree(combined);
+					continue;
+				}
 			}
 
 			/* Retrieve the actual assembly version from the image */
-			if(!getAssemblyVersion(combined, assemblyVersion, 0))
+			if(!getAssemblyVersion(combined, assemblyVersion, 0, 0))
 			{
 				ILFree(combined);
 				continue;

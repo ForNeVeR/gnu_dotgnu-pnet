@@ -4,6 +4,10 @@
 	* cscc/csharp/cs_lookup.c (ResolveSimpleName): when we move
 	out to a nested parent scope, filter out instance members (bug #7597).
 
+	* configure.in: explicitly invoke the shell on the libgc and libffi
+	configure scripts, just in case they are not set to executable
+	(bug #7406).
+
 2004-03-12  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/pinvoke.c (PackDelegateParams): process pointer values

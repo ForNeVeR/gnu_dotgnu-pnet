@@ -542,7 +542,8 @@ if test "x$no_recursion" != "xyes"; then
 			mkdir libffi
 		fi
 		cd "libffi"
-		${ffisrcdir}/configure --disable-shared --enable-multilib=no \
+		${CONFIG_SHELL-/bin/sh} ${ffisrcdir}/configure --disable-shared \
+			--enable-multilib=no \
 			--host="${host}" --build="${build}" --target="${target}" \
 			--disable-fast-install --prefix="${prefix}" \
 			--exec-prefix="${exec_prefix}" --bindir="${bindir}" \
@@ -561,7 +562,8 @@ if test "x$no_recursion" != "xyes"; then
 			mkdir libgc
 		fi
 		cd libgc
-		${gcsrcdir}/configure --enable-threads=$THREADS --host="${host}" \
+		${CONFIG_SHELL-/bin/sh} ${gcsrcdir}/configure \
+			--enable-threads=$THREADS --host="${host}" \
 			--build="${build}" --target="${target}" --disable-fast-install \
 			--prefix="${prefix}" \
 			--exec-prefix="${exec_prefix}" --bindir="${bindir}" \

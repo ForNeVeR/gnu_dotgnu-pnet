@@ -15,6 +15,9 @@
 	* tests/runtime/System/TestArgIterator.cs: disable the ArgIterator
 	tests because they are creating some strange problems under Cygwin.
 
+	* auto_gen.sh: back out previous change to auto_gen.sh as it causes
+	other problems.
+
 2003-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/PlaceholderWindow.cs, Xsharp/RootWindow.cs,

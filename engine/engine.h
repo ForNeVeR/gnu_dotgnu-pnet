@@ -24,6 +24,7 @@
 #include "il_engine.h"
 #include "il_system.h"
 #include "il_program.h"
+#include "il_coder.h"
 #include "heap.h"
 
 #ifdef	__cplusplus
@@ -162,6 +163,12 @@ int _ILLayoutClass(ILExecThread *thread, ILClass *info);
  * Perform a security check on a program item.
  */
 int _ILSecurityCheck(ILExecThread *thread, ILProgramItem *info, int type);
+
+/*
+ * Verify the contents of a method.
+ */
+int _ILVerify(ILCoder *coder, ILMethod *method,
+			  ILMethodCode *code, int unsafeAllowed);
 
 #ifdef	__cplusplus
 };

@@ -3,6 +3,11 @@
 
 * include/il_coder.h, engine/ilverify.c: new coder operations.
 
+* engine/verify.c, engine/verify_var.c, engine/verify_const.c,
+engine/verify_arith.c, engine/verify_branch.c, engine/verify_conv.c:
+split the bytecode verifier into multiple files to make it easier to
+maintain the code.
+
 2001-09-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_xml.h, support/xml.c: new functions to allow parameters to

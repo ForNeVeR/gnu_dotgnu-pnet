@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "thr_choose.h"
+#include "w32_include.h"
 
 #ifdef IL_USE_WIN32_THREADS
 
@@ -27,30 +27,9 @@ extern	"C" {
 #endif
 
 /*
- * Internal information for a thread.
- */
-struct _tagILThread
-{
-	CRITICAL_SECTION			lock;
-	HANDLE			  volatile	handle;
-	DWORD			  			identifier;
-	unsigned int	  volatile	state;
-	ILThreadStartFunc volatile	startFunc;
-	void *			  volatile	objectArg;
-	HANDLE			  volatile	resumeSemaphore;
-
-};
-
-/*
- * Thread states that are used internally.
- */
-#define	IL_TS_PUBLIC_FLAGS		0x01FF
-#define	IL_TS_SUSPENDED_SELF	0x0200
-
-/*
  * TLS key for associating "ILThread" objects with threads.
  */
-static DWORD threadObjectKey;
+DWORD _ILThreadObjectKey;
 
 /*
  * Thread object that is used for the "main" thread.
@@ -91,17 +70,27 @@ void ILThreadInit(void)
 	initialized = 1;
 
 	/* Allocate a TLS key for storing thread objects */
-	threadObjectKey = TlsAlloc();
+	_ILThreadObjectKey = TlsAlloc();
 
-	/* Initialize the "main" thread */
+	/* Initialize the "main" thread.  We have to duplicate the
+	   thread handle because "GetCurrentThread()" returns a
+	   pseudo-handle and not a real one.  We need the real one */
 	InitializeCriticalSection(&(mainThread.lock));
-	mainThread.handle = GetCurrentThread();
+	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(),
+					GetCurrentProcess(), (HANDLE *)(&(mainThread.handle)),
+					0, 0, DUPLICATE_SAME_ACCESS);
 	mainThread.identifier = GetCurrentThreadId();
 	mainThread.state = IL_TS_RUNNING;
 	mainThread.startFunc = 0;
 	mainThread.objectArg = 0;
 	mainThread.resumeSemaphore = CreateSemaphore(NULL, 0, 10, NULL);
-	TlsSetValue(threadObjectKey, &mainThread);
+	mainThread.suspendSemaphore = CreateSemaphore(NULL, 0, 10, NULL);
+	mainThread.numCriticalsHeld = 0;
+	TlsSetValue(_ILThreadObjectKey, &mainThread);
+
+	/* We have one foreground thread in the system at present */
+	numThreads = 1;
+	numBackgroundThreads = 0;
 
 	/* Allocate objects for controlling thread startup */
 	InitializeCriticalSection(&threadLockAll);
@@ -120,7 +109,7 @@ static DWORD WINAPI ThreadStart(LPVOID arg)
 	int isbg;
 
 	/* Attach the thread object to the thread */
-	TlsSetValue(threadObjectKey, thread);
+	TlsSetValue(_ILThreadObjectKey, thread);
 
 	/* The thread is ready and waiting to start */
 	SignalObjectAndWait(threadStartupDone, thread->resumeSemaphore,
@@ -133,19 +122,19 @@ static DWORD WINAPI ThreadStart(LPVOID arg)
 	}
 
 	/* Mark the thread as stopped */
-	EnterCriticalSection(&(thread->lock));
+	EnterCriticalSectionSafe(&(thread->lock));
 	thread->state |= IL_TS_STOPPED;
 	isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
-	LeaveCriticalSection(&(thread->lock));
+	LeaveCriticalSectionSafe(&(thread->lock));
 
 	/* Update the thread counts */
-	EnterCriticalSection(&threadLockAll);
+	EnterCriticalSectionSafe(&threadLockAll);
 	--numThreads;
 	if(isbg)
 	{
 		numBackgroundThreads -= 1;
 	}
-	LeaveCriticalSection(&threadLockAll);
+	LeaveCriticalSectionSafe(&threadLockAll);
 
 	/* Exit from the thread */
 	return 0;
@@ -156,13 +145,13 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	ILThread *thread;
 
 	/* Lock down the thread subsystem while we do this */
-	EnterCriticalSection(&threadLockAll);
+	EnterCriticalSectionSafe(&threadLockAll);
 
 	/* Create a new thread block and populate it */
 	thread = (ILThread *)ILMalloc(sizeof(ILThread));
 	if(!thread)
 	{
-		LeaveCriticalSection(&threadLockAll);
+		LeaveCriticalSectionSafe(&threadLockAll);
 		return 0;
 	}
 	InitializeCriticalSection(&(thread->lock));
@@ -176,19 +165,30 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	{
 		DeleteCriticalSection(&(thread->lock));
 		ILFree(thread);
-		LeaveCriticalSection(&threadLockAll);
+		LeaveCriticalSectionSafe(&threadLockAll);
 		return 0;
 	}
-
-	/* Attempt to create the thread */
-	thread->handle = CreateThread(NULL, 0, ThreadStart,
-								  thread, 0, &(thread->identifier));
-	if(!(thread->handle))
+	thread->suspendSemaphore = CreateSemaphore(NULL, 0, 10, NULL);
+	if(!(thread->suspendSemaphore))
 	{
 		CloseHandle(thread->resumeSemaphore);
 		DeleteCriticalSection(&(thread->lock));
 		ILFree(thread);
-		LeaveCriticalSection(&threadLockAll);
+		LeaveCriticalSectionSafe(&threadLockAll);
+		return 0;
+	}
+	thread->numCriticalsHeld = 0;
+
+	/* Attempt to create the thread */
+	thread->handle = CreateThread(NULL, 0, ThreadStart,
+								  thread, 0, (DWORD *)&(thread->identifier));
+	if(!(thread->handle))
+	{
+		CloseHandle(thread->suspendSemaphore);
+		CloseHandle(thread->resumeSemaphore);
+		DeleteCriticalSection(&(thread->lock));
+		ILFree(thread);
+		LeaveCriticalSectionSafe(&threadLockAll);
 		return 0;
 	}
 
@@ -199,7 +199,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	WaitForSingleObject(threadStartupDone, INFINITE);
 
 	/* The thread is ready to go */
-	LeaveCriticalSection(&threadLockAll);
+	LeaveCriticalSectionSafe(&threadLockAll);
 	return thread;
 }
 
@@ -208,7 +208,7 @@ int ILThreadStart(ILThread *thread)
 	int result;
 
 	/* Lock down the thread object */
-	EnterCriticalSection(&(thread->lock));
+	EnterCriticalSectionSafe(&(thread->lock));
 
 	/* Are we in the correct state to start? */
 	if((thread->state & IL_TS_UNSTARTED) != 0)
@@ -224,12 +224,15 @@ int ILThreadStart(ILThread *thread)
 	}
 
 	/* Unlock the thread object and return */
-	LeaveCriticalSection(&(thread->lock));
+	LeaveCriticalSectionSafe(&(thread->lock));
 	return result;
 }
 
 void ILThreadDestroy(ILThread *thread)
 {
+	int iscounted;
+	int isbg;
+
 	/* Bail out if this is the current thread */
 	if(thread == ILThreadSelf())
 	{
@@ -237,24 +240,45 @@ void ILThreadDestroy(ILThread *thread)
 	}
 
 	/* Lock down the thread object */
-	EnterCriticalSection(&(thread->lock));
+	EnterCriticalSectionSafe(&(thread->lock));
 
 	/* Nothing to do if the thread is already stopped or aborted */
+	iscounted = 0;
+	isbg = 0;
 	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
 	{
 		thread->state |= IL_TS_ABORTED;
 		TerminateThread(thread->handle, 0);
-		CloseHandle(thread->handle);
+		iscounted = 1;
+		isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
 	}
 
+	/* Free the system objects that are associated with the thread */
+	CloseHandle(thread->handle);
+	CloseHandle(thread->resumeSemaphore);
+	CloseHandle(thread->suspendSemaphore);
+
 	/* Unlock the thread object, free it, and return */
-	LeaveCriticalSection(&(thread->lock));
+	LeaveCriticalSectionSafe(&(thread->lock));
+	DeleteCriticalSection(&(thread->lock));
 	ILFree(thread);
+
+	/* Adjust the thread counts */
+	EnterCriticalSectionSafe(&threadLockAll);
+	if(iscounted)
+	{
+		--numThreads;
+	}
+	if(isbg)
+	{
+		--numBackgroundThreads;
+	}
+	LeaveCriticalSectionSafe(&threadLockAll);
 }
 
 ILThread *ILThreadSelf(void)
 {
-	return (ILThread *)TlsGetValue(threadObjectKey);
+	return (ILThread *)TlsGetValue(_ILThreadObjectKey);
 }
 
 void *ILThreadGetObject(ILThread *thread)
@@ -273,7 +297,7 @@ int ILThreadSuspend(ILThread *thread)
 	int result = 1;
 
 	/* Lock down the thread object */
-	EnterCriticalSection(&(thread->lock));
+	EnterCriticalSectionSafe(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
 	state = thread->state;
@@ -299,30 +323,32 @@ int ILThreadSuspend(ILThread *thread)
 		thread->state |= IL_TS_SUSPENDED;
 
 		/* Are we suspending ourselves? */
-		if(thread->handle == GetCurrentThread())
+		if(thread->identifier == GetCurrentThreadId())
 		{
 			/* Put ourselves to sleep until "resumeSemaphore" is posted */
 			thread->state |= IL_TS_SUSPENDED_SELF;
-			LeaveCriticalSection(&(thread->lock));
+			LeaveCriticalSectionSafe(&(thread->lock));
 			WaitForSingleObject(thread->resumeSemaphore, INFINITE);
 			return 1;
 		}
 		else
 		{
-			/* Suspend the foreign thread directly */
-			SuspendThread(thread->handle);
+			/* Suspend the foreign thread directly.  Use the "Safe"
+			   version to make sure that it isn't holding any critical
+			   sections when we finally shut it down */
+			SuspendThreadSafe(thread);
 		}
 	}
 
 	/* Unlock the thread object and return */
-	LeaveCriticalSection(&(thread->lock));
+	LeaveCriticalSectionSafe(&(thread->lock));
 	return result;
 }
 
 void ILThreadResume(ILThread *thread)
 {
 	/* Lock down the thread object */
-	EnterCriticalSection(&(thread->lock));
+	EnterCriticalSectionSafe(&(thread->lock));
 
 	/* How was the thread actually suspended? */
 	if((thread->state & IL_TS_SUSPENDED) != 0)
@@ -342,7 +368,7 @@ void ILThreadResume(ILThread *thread)
 	}
 
 	/* Unlock the thread object */
-	LeaveCriticalSection(&(thread->lock));
+	LeaveCriticalSectionSafe(&(thread->lock));
 }
 
 void ILThreadInterrupt(ILThread *thread)
@@ -355,13 +381,13 @@ int ILThreadGetBackground(ILThread *thread)
 	int flag;
 
 	/* Lock down the thread object */
-	EnterCriticalSection(&(thread->lock));
+	EnterCriticalSectionSafe(&(thread->lock));
 
 	/* Determine if this is a background thread */
 	flag = ((thread->state & IL_TS_BACKGROUND) != 0);
 
 	/* Unlock the thread object and return */
-	LeaveCriticalSection(&(thread->lock));
+	LeaveCriticalSectionSafe(&(thread->lock));
 	return flag;
 }
 
@@ -370,7 +396,7 @@ void ILThreadSetBackground(ILThread *thread, int flag)
 	int change = 0;
 
 	/* Lock down the thread object */
-	EnterCriticalSection(&(thread->lock));
+	EnterCriticalSectionSafe(&(thread->lock));
 
 	/* Change the background state of the thread */
 	if(flag)
@@ -391,12 +417,12 @@ void ILThreadSetBackground(ILThread *thread, int flag)
 	}
 
 	/* Unlock the thread object */
-	LeaveCriticalSection(&(thread->lock));
+	LeaveCriticalSectionSafe(&(thread->lock));
 
 	/* Adjust "numBackgroundThreads" */
-	EnterCriticalSection(&threadLockAll);
+	EnterCriticalSectionSafe(&threadLockAll);
 	numBackgroundThreads += change;
-	LeaveCriticalSection(&threadLockAll);
+	LeaveCriticalSectionSafe(&threadLockAll);
 }
 
 int ILThreadGetState(ILThread *thread)
@@ -404,13 +430,13 @@ int ILThreadGetState(ILThread *thread)
 	unsigned int state;
 
 	/* Lock down the thread object */
-	EnterCriticalSection(&(thread->lock));
+	EnterCriticalSectionSafe(&(thread->lock));
 
 	/* Retrieve the current thread state */
 	state = thread->state;
 
 	/* Unlock the thread object */
-	LeaveCriticalSection(&(thread->lock));
+	LeaveCriticalSectionSafe(&(thread->lock));
 
 	/* Return the publicly-interesting flags to the caller */
 	return (int)(state & IL_TS_PUBLIC_FLAGS);
@@ -418,12 +444,12 @@ int ILThreadGetState(ILThread *thread)
 
 void ILThreadAtomicStart(void)
 {
-	EnterCriticalSection(&atomicLock);
+	EnterCriticalSectionSafe(&atomicLock);
 }
 
 void ILThreadAtomicEnd(void)
 {
-	LeaveCriticalSection(&atomicLock);
+	LeaveCriticalSectionSafe(&atomicLock);
 }
 
 void ILThreadMemoryBarrier(void)
@@ -433,17 +459,52 @@ void ILThreadMemoryBarrier(void)
 	/* For now, we just acquire and release a mutex, under the
 	   assumption that pthreads will do data synchronisation
 	   for us as part of the mutex code */
-	EnterCriticalSection(&atomicLock);
-	LeaveCriticalSection(&atomicLock);
+	EnterCriticalSectionSafe(&atomicLock);
+	LeaveCriticalSectionSafe(&atomicLock);
 }
 
 void ILThreadGetCounts(unsigned long *numForeground,
 					   unsigned long *numBackground)
 {
-	EnterCriticalSection(&threadLockAll);
+	EnterCriticalSectionSafe(&threadLockAll);
 	*numForeground = (unsigned long)(numThreads - numBackgroundThreads);
 	*numBackground = (unsigned long)(numBackgroundThreads);
-	LeaveCriticalSection(&threadLockAll);
+	LeaveCriticalSectionSafe(&threadLockAll);
+}
+
+void _ILThreadSuspendRequest(ILThread *thread)
+{
+	/* Clear the "suspendRequested" flag */
+	InterlockedExchange((PLONG)&(thread->suspendRequested), 0);
+
+	/* Put ourselves to sleep until "resumeSemaphore" is posted */
+	SignalObjectAndWait(thread->suspendSemaphore, thread->resumeSemaphore,
+						INFINITE, FALSE);
+}
+
+void _ILThreadHardSuspend(ILThread *thread)
+{
+	/* Note: on entry to this function the thread has been temporarily
+	   suspended with "SuspendThread" */
+
+	/* Remember that the thread will be suspending itself */
+	thread->state |= IL_TS_SUSPENDED_SELF;
+
+	/* Notify the thread that we want it to suspend itself */
+	InterlockedExchange((PLONG)&(thread->suspendRequested), 1);
+
+	/* Resume the thread to allow it to give up all critical sections it has */
+	ResumeThread(thread->handle);
+
+	/* Give up the lock on the thread, but don't reduce our
+	   "numCriticalsHeld" value just yet */
+	LeaveCriticalSection(&(thread->lock));
+
+	/* Wait for the thread to signal us that it has put itself to sleep */
+	WaitForSingleObject(thread->suspendSemaphore, INFINITE);
+
+	/* Re-enter the critical section on the thread object */
+	EnterCriticalSection(&(thread->lock));
 }
 
 #ifdef	__cplusplus

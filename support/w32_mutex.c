@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "thr_choose.h"
+#include "w32_include.h"
 
 #ifdef IL_USE_WIN32_THREADS
 
@@ -45,12 +45,12 @@ void ILMutexDestroy(ILMutex *mutex)
 
 void ILMutexLock(ILMutex *mutex)
 {
-	EnterCriticalSection((CRITICAL_SECTION *)mutex);
+	EnterCriticalSectionSafe((CRITICAL_SECTION *)mutex);
 }
 
 void ILMutexUnlock(ILMutex *mutex)
 {
-	LeaveCriticalSection((CRITICAL_SECTION *)mutex);
+	LeaveCriticalSectionSafe((CRITICAL_SECTION *)mutex);
 }
 
 ILRWLock *ILRWLockCreate(void)
@@ -72,17 +72,17 @@ void ILRWLockDestroy(ILRWLock *rwlock)
 
 void ILRWLockReadLock(ILRWLock *rwlock)
 {
-	EnterCriticalSection((CRITICAL_SECTION *)rwlock);
+	EnterCriticalSectionSafe((CRITICAL_SECTION *)rwlock);
 }
 
 void ILRWLockWriteLock(ILRWLock *rwlock)
 {
-	EnterCriticalSection((CRITICAL_SECTION *)rwlock);
+	EnterCriticalSectionSafe((CRITICAL_SECTION *)rwlock);
 }
 
 void ILRWLockUnlock(ILRWLock *rwlock)
 {
-	LeaveCriticalSection((CRITICAL_SECTION *)rwlock);
+	LeaveCriticalSectionSafe((CRITICAL_SECTION *)rwlock);
 }
 
 #ifdef	__cplusplus

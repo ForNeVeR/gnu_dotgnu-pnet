@@ -27,6 +27,11 @@
 	support/w32_thread.c, tests/test_thread.c: bug fixes to threading
 	primitives.
 
+	* support/w32_include.h, support/w32_mutex.c, support/w32_thread.c:
+	fix bugs in the Win32 threading system that were exposed by the
+	test suite; implement "safe" thread suspension that ensures that
+	critical sections are not held by suspended Win32 threads.
+
 2002-04-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_thread.h, support/Makefile.am, support/no_thread.c,

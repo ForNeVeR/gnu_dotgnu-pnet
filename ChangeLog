@@ -4,6 +4,9 @@
 	* engine/throw.c: Set stack traces appropriately for the various
 	exception functions.
 
+	* engine/lib_emit.c: Fix Module creation to use a null token and
+	fix return value of ClrAssemblyCreate.
+
 2003-07-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_config.h, engine/dumpconfig.c: remove potentional

@@ -44,6 +44,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 	ILImage *image;
 	ILWriter *writer;
 	int createdContext;
+	ILAssembly *retval;
 
 	/* Convert the name into a UTF8 string */
 	utf8Name = ILStringToUTF8(_thread, name);
@@ -104,7 +105,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 	}
 
 	/* Create the initial ILAssembly structure in the image */
-	if(!ILAssemblyCreate(image, 0, utf8Name, 0))
+	if(!(retval=ILAssemblyCreate(image, 0, utf8Name, 0)))
 	{
 		ILWriterDestroy(writer);
 		ILImageDestroy(image);
@@ -120,7 +121,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread *_thread,
 	/* Unlock and return the information to the caller */
 	IL_METADATA_UNLOCK(_thread);
 	*writerReturn = (ILNativeInt)writer;
-	return (ILNativeInt)image;
+	return (ILNativeInt)retval;
 }
 
 /*
@@ -600,20 +601,18 @@ ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
 {
 	ILModule *retval;
 	ILImage *image;
-	ILToken token;
 	const char *str;
 
 	IL_METADATA_WRLOCK(_thread);
 
-	image = ILProgramItem_Image(assembly);
-	token = ILProgramItem_Token(assembly);
+	image = ILProgramItem_Image(assembly); 
 	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
 	{
 		IL_METADATA_UNLOCK(_thread);
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
-	if (!(retval = ILModuleCreate(image, token, str, NULL)))
+	if (!(retval = ILModuleCreate(image, 0, str, NULL)))
 	{
 		IL_METADATA_UNLOCK(_thread);
 		ILExecThreadThrowOutOfMemory(_thread);

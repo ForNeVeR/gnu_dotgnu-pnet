@@ -9,6 +9,12 @@
 	image/image.h, image/java_loader.c, image/program.h, image/writer.c,
 	include/il_writer.h: apply the Java assembler patches from Sylvain.
 
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll,
+	samples/System.Xml.dll, samples/System.dll,
+	samples/mscorlib.dll: new assemblies with latest pnetlib changes.
+
 2002-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_arith.tc, codegen/cg_library.c, codegen/cg_relop.tc,

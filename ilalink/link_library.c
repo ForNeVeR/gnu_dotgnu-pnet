@@ -260,14 +260,65 @@ static void LibraryDestroy(ILLibrary *library)
 	{
 		next = library->altNames;
 		ILFree(library->name);
-		if(library->hashTable)
-		{
-			ILFree(library->hashTable);
-		}
+		ILHashDestroy(library->hashTable);
 		ILMemPoolDestroy(&(library->classPool));
 		ILFree(library);
 		library = next;
 	}
+}
+
+/*
+ * Key that is used to index the library hash table.
+ */
+typedef struct
+{
+	const char *name;
+	const char *namespace;
+	ILLibraryClass *parent;
+
+} LibHashKey;
+
+/*
+ * Compute the hash value for an element.
+ */
+static unsigned long LibHash_Compute(const ILLibraryClass *libClass)
+{
+	return ILHashString(0, libClass->name, strlen(libClass->name));
+}
+
+/*
+ * Compute the hash value for a key.
+ */
+static unsigned long LibHash_KeyCompute(const LibHashKey *key)
+{
+	return ILHashString(0, key->name, strlen(key->name));
+}
+
+/*
+ * Match a key against an element.
+ */
+static int LibHash_Match(const ILLibraryClass *libClass, const LibHashKey *key)
+{
+	if(strcmp(libClass->name, key->name) != 0)
+	{
+		return 0;
+	}
+	if(libClass->namespace)
+	{
+		if(key->namespace)
+		{
+			return !strcmp(libClass->namespace, key->namespace);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return (key->namespace == 0);
+	}
+	return (key->parent == libClass->parent);
 }
 
 /*
@@ -315,8 +366,10 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILImage *image,
 		else
 		{
 			nextLibrary->hashTable =
-				(ILLibraryClass **)ILCalloc(IL_LINK_HASH_SIZE,
-											sizeof(ILLibraryClass *));
+				ILHashCreate(0, (ILHashComputeFunc)LibHash_Compute,
+								(ILHashKeyComputeFunc)LibHash_KeyCompute,
+								(ILHashMatchFunc)LibHash_Match,
+								(ILHashFreeFunc)0);
 			if(!(nextLibrary->hashTable))
 			{
 				ILFree(nextLibrary->name);
@@ -362,7 +415,6 @@ static int WalkTypeAndNested(ILLinker *linker, ILImage *image,
 	ILLibraryClass *libClass;
 	char *name;
 	char *namespace;
-	unsigned long hash;
 
 	/* Add the name of this type to the library's hash table */
 	name = (ILInternString((char *)(ILClass_Name(classInfo)), -1)).string;
@@ -376,13 +428,14 @@ static int WalkTypeAndNested(ILLinker *linker, ILImage *image,
 		_ILLinkerOutOfMemory(linker);
 		return 0;
 	}
-	hash = ILHashString(0, name, strlen(name));
-	hash &= ~(IL_LINK_HASH_SIZE - 1);
 	libClass->name = name;
 	libClass->namespace = namespace;
 	libClass->parent = parent;
-	libClass->next = library->hashTable[hash];
-	library->hashTable[hash] = libClass;
+	if(!ILHashAdd(library->hashTable, libClass))
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
 
 	/* Walk the visible nested types */
 	nestedInfo = 0;
@@ -512,61 +565,23 @@ void _ILLinkerFindInit(ILLibraryFind *find, ILLinker *linker,
 }
 
 /*
- * Find the next class with a specific name.
- */
-static ILLibraryClass *FindNextNamed(ILLibraryClass *libClass,
-									 char *name, char *namespace)
-{
-	while(libClass != 0)
-	{
-		if(libClass->name == name &&
-		   libClass->namespace == namespace)
-		{
-			return libClass;
-		}
-		libClass = libClass->next;
-	}
-	return 0;
-}
-
-/*
  * Find a class by name within a library.
  */
 static ILLibraryClass *FindClass(ILLibrary *library,
-								 char *name, char *namespace,
-								 int noParent)
+								 const char *name, const char *namespace,
+								 ILLibraryClass *parent)
 {
-	unsigned long hash;
-	ILLibraryClass *libClass;
-
-	/* Hash the class name */
-	hash = ILHashString(0, name, strlen(name));
-	hash &= ~(IL_LINK_HASH_SIZE - 1);
-
-	/* Search the hash for a matching name */
-	libClass = library->hashTable[hash];
-	while(libClass != 0)
-	{
-		if(libClass->name == name &&
-		   libClass->namespace == namespace)
-		{
-			if(!noParent || !(libClass->parent))
-			{
-				return libClass;
-			}
-		}
-		libClass = libClass->next;
-	}
-	return 0;
+	LibHashKey key;
+	key.name = name;
+	key.namespace = namespace;
+	key.parent = parent;
+	return ILHashFindType(library->hashTable, &key, ILLibraryClass);
 }
 
 int _ILLinkerFindClass(ILLibraryFind *find, const char *name,
 					   const char *namespace)
 {
 	ILLibraryClass *parent;
-	char *nameIntern = (ILInternString((char *)name, -1)).string;
-	char *namespaceIntern =
-		(namespace ? (ILInternString((char *)namespace, -1)).string : 0);
 	find->prevClass = find->libClass;
 	if(!(find->libClass))
 	{
@@ -575,7 +590,7 @@ int _ILLinkerFindClass(ILLibraryFind *find, const char *name,
 		{
 			/* We already know which library to look in */
 			find->libClass = FindClass(find->library,
-									   nameIntern, namespaceIntern, 1);
+									   name, namespace, 0);
 		}
 		else
 		{
@@ -584,8 +599,8 @@ int _ILLinkerFindClass(ILLibraryFind *find, const char *name,
 			while(find->library != 0)
 			{
 				find->libClass = FindClass(find->library,
-										   nameIntern, namespaceIntern, 1);
-				if(find->library)
+										   name, namespace, 0);
+				if(find->libClass)
 				{
 					break;
 				}
@@ -598,12 +613,7 @@ int _ILLinkerFindClass(ILLibraryFind *find, const char *name,
 		/* Look for a nested class within the last class found */
 		parent = find->libClass;
 		find->libClass = FindClass(find->library,
-								   nameIntern, namespaceIntern, 0);
-		while(find->libClass != 0 && find->libClass->parent != parent)
-		{
-			find->libClass = FindNextNamed(find->libClass->next,
-										   nameIntern, namespaceIntern);
-		}
+								   name, namespace, parent);
 	}
 	return (find->libClass != 0);
 }

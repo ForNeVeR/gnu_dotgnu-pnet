@@ -41,7 +41,6 @@ struct _tagILLibraryClass
 	char		   *name;			/* Intern'ed name of the class */
 	char		   *namespace;		/* Intern'ed namespace of the class */
 	ILLibraryClass *parent;			/* Parent for nesting purposes */
-	ILLibraryClass *next;			/* Next in the hash table */
 
 };
 
@@ -54,7 +53,7 @@ struct _tagILLibrary
 	char		   *name;			/* Name of the library's assembly */
 	ILUInt16		version[4];		/* Version of the library's assembly */
 	ILLibrary	   *altNames;		/* Alternative names for the library */
-	ILLibraryClass **hashTable;		/* Hash table for class name lookup */
+	ILHashTable    *hashTable;		/* Hash table for class name lookup */
 	ILMemPool		classPool;		/* Memory pool for class allocation */
 	ILLibrary	   *next;			/* Next library used by the linker */
 

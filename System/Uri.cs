@@ -147,65 +147,51 @@ public class Uri : MarshalByRefObject
 	{
 		// TODO: `replace' this with something more efficient, i.e.
 		// scan like Flex and output to a StringBuilder(path.Length)
-		this.path = this.path.Replace('\\', '/').Replace("//", "/")
-			.Replace("/.", "");
+		this.path = this.path.Replace('\\', '/');
+		while (this.path.IndexOf("//") >= 0) // double-slashes to strip
+		{
+			this.path = this.path.Replace("//", "/");
+		}
 
-		if (path.IndexOf("/../") > -1 || path.EndsWith("/..")) // .. dirs present
-			path = new AbsPathScanner(path).Parse();
+		if (path.IndexOf("/../") > -1 || path.EndsWith("/..")
+		    || path.IndexOf("/./") > -1 || path.EndsWith("/.")) // .. dirs present
+		{
+			path = StripMetaDirectories(path);
+		}
 	}
 
-	// the following parses a path that may have the .. special directory
-	// in it. It scans the folders backwards, looking for .., and if it finds it,
-	// it removes the previous directory from the path. If that is a .., it removes
-	// the previous 2 from the path, and so on.
-	private struct AbsPathScanner
+	// The following takes . or .. directories out of an absolute path.
+	// Throws UriFormatException if the ..s try to extend beyond the root dir.
+	private String StripMetaDirectories(String oldpath)
 	{
-		private int originalLength;
-		private String[] dirs;
-		private bool[] printthisdir;
-		public AbsPathScanner(String path)
+		int toBeRemoved = 0;
+		String[] dirs = oldpath.Split('/'); // in abspath, dirs[0] is ""
+		// the scanner will set not-shown to "" to make the tests at the end
+		// faster
+		for (int curDir = dirs.Length; --curDir >= 1;) // scan all but 0
 		{
-			originalLength = path.Length;
-			dirs = path.Split('/');
-			printthisdir = new bool[dirs.Length];
-			// TODO: find some sort of efficient SetAll
-			for (int i = printthisdir.Length; --i >= 0;)
-				printthisdir[i] = true;
-		}
-		public String Parse()
-		{
-			for (int curDir = dirs.Length; --curDir >= 1;)
+			if (dirs[curDir] == "..")
 			{
-				// Remove(ref int, int) will move curDir back to next one that matters
-				if (String.Equals(dirs[curDir], ".."))
-					Remove(ref --curDir, 0);
+				++toBeRemoved;
+				dirs[curdir] = ""; // always removed w/o affecting toBeRemoved
 			}
-			StringBuilder newpath = new StringBuilder(originalLength);
-			for (int i = 0; i < printthisdir.Length; ++i)
+			else if (dirs[curDir] == ".")
+				dirs[curDir] = ""; // doesn't affect anything
+			else if (toBeRemoved > 0) // remove this one
 			{
-				if (printthisdir[i] && dirs[i].Length > 0)
-				{
-					newpath.Append('/').Append(dirs[i]);
-				}
+				--toBeRemoved;
+				dirs[curDir] = "";
 			}
-			return newpath.ToString();
+			// if normal state (no .., normal dir) do nothing
 		}
-		// tbrCache signifies the number of .. instances that have built up besides
-		// the current one. If >0, it should call itself.
-		private void Remove(ref int toBeRemoved, int tbrCache)
-		{
-			if (toBeRemoved == 0)
-				throw new UriFormatException(S._("Arg_UriPathAbs"));
-			printthisdir[toBeRemoved] = false;
-			if (String.Equals(dirs[toBeRemoved], ".."))
-				Remove(ref --toBeRemoved, ++tbrCache);
-			else if (tbrCache > 0)
-				Remove(ref --toBeRemoved, --tbrCache);
-			// after recursion finishes, toBeRemoved will be the last one
-			// removed, and the test in the for loop will go back to a visible dir
-		}
+		if (toBeRemoved > 0) // wants to delete root
+			throw new UriFormatException(S._("Arg_UriPathAbs"));
+		StringBuilder newpath = new StringBuilder(oldpath.Length);
+		foreach (String dir in dirs)
+			if (dir.Length > 0) // visible?
+				newpath.Append('/').Append(dir);
+		return newpath.ToString();
 	}
-
 
 	[TODO]
 	public static UriHostNameType CheckHostName(String name)

@@ -107,6 +107,16 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 			{
 				isModule = 1;
 			}
+			else if(linker->memoryModel != 0)
+			{
+				/* Duplicate classes are valid in C objects, as they
+				   are normally definitions of the same struct type */
+				if(newName)
+				{
+					ILFree(newName);
+				}
+				return 1;
+			}
 			else
 			{
 				/* The class has already been defined */

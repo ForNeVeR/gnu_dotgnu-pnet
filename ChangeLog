@@ -1,4 +1,10 @@
 
+2002-12-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilalink/link_class.c: allow a class to be defined multiple times
+	in C object files, as such classes normally refer to duplicate
+	definitions of the same struct, union, or array type.
+
 2002-12-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_regex.h: remove references to "__restrict" because

@@ -88,11 +88,10 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	void *moduleHandle;
 	int result;
 
-	/* Is the method already converted and in the current generation? */
-	if(method->userData1 != 0 &&
-	   method->userData2 == (void *)(thread->process->coderGeneration))
+	/* Is the method already converted? */
+	if(method->userData != 0)
 	{
-		return (unsigned char *)(method->userData1);
+		return (unsigned char *)(method->userData);
 	}
 
 	/* Get the method code */
@@ -111,7 +110,6 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		{
 			return 0;
 		}
-		thread->process->coderGeneration = ILCoderGeneration(coder);
 	}
 	else
 	{
@@ -211,7 +209,6 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				/* TODO */
 				/* The coder ran out of memory, so flush it and retry */
 				ILCoderFlush(coder);
-				thread->process->coderGeneration = ILCoderGeneration(coder);
 				cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
 				if(!cif)
 				{
@@ -235,7 +232,6 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				/* TODO */
 				/* The coder ran out of memory, so flush it and retry */
 				ILCoderFlush(coder);
-				thread->process->coderGeneration = ILCoderGeneration(coder);
 				if(fn)
 				{
 					cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
@@ -270,7 +266,6 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					return 0;
 				}
-				thread->process->coderGeneration = ILCoderGeneration(coder);
 				cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
 				if(!ILCoderSetupExtern(coder, &start, method,
 									   fn, cif, (pinv == 0)))
@@ -295,7 +290,6 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					return 0;
 				}
-				thread->process->coderGeneration = ILCoderGeneration(coder);
 				if(fn)
 				{
 					cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
@@ -315,10 +309,9 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		}
 	}
 
-	/* The method is in the current generation now */
-	method->userData1 = (void *)start;
-	method->userData2 = (void *)(thread->process->coderGeneration);
-	return (unsigned char *)(method->userData1);
+	/* The method is converted now */
+	method->userData = (void *)start;
+	return start;
 }
 
 #ifdef	__cplusplus

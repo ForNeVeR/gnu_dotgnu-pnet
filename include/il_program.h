@@ -1048,14 +1048,13 @@ void ILMethodFreeExceptions(ILException *exceptions);
  * Set the user data for a method.  This can be used by
  * runtime engines to store engine-specific data.
  */
-void ILMethodSetUserData(ILMethod *method, void *userData1, void *userData2);
+void ILMethodSetUserData(ILMethod *method, void *userData);
 
 /*
  * Get the user data for a method from its information block.
  * Returns NULL if the user data value has not yet been set.
  */
-void *ILMethodGetUserData1(ILMethod *method);
-void *ILMethodGetUserData2(ILMethod *method);
+void *ILMethodGetUserData(ILMethod *method);
 
 /*
  * Determine if a method has the correct signature for
@@ -1082,8 +1081,7 @@ int ILMethodIsStaticConstructor(ILMethod *method);
 #define	ILMethod_ImplAttrs(method)		(ILMethodGetImplAttrs((method)))
 #define	ILMethod_CallConv(method)		(ILMethodGetCallConv((method)))
 #define	ILMethod_RVA(method)			(ILMethodGetRVA((method)))
-#define	ILMethod_UserData1(method)		(ILMethodGetUserData1((method)))
-#define	ILMethod_UserData2(method)		(ILMethodGetUserData2((method)))
+#define	ILMethod_UserData(method)		(ILMethodGetUserData((method)))
 #define	ILMethod_IsConstructor(method)	(ILMethodIsConstructor((method)))
 #define	ILMethod_IsStaticConstructor(method)	\
 			(ILMethodIsStaticConstructor((method)))

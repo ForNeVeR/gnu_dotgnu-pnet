@@ -253,8 +253,7 @@ struct _tagILMethod
 	ILUInt16		callingConventions;	/* Calling conventions for method */
 	ILUInt32		rva;				/* Address of the method's code */
 	ILParameter    *parameters;			/* Parameter definitions */
-	void           *userData1;			/* User data for the runtime engine */
-	void           *userData2;			/* User data for the runtime engine */
+	void           *userData;			/* User data for the runtime engine */
 	ILUInt32		index;				/* Data added by the runtime engine */
 
 };

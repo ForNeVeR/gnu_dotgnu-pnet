@@ -137,7 +137,7 @@ case COP_CALL:
 	callFrame->exceptHeight = thread->exceptHeight;
 
 	/* Pass control to the new method */
-	pc = (unsigned char *)(methodToCall->userData1);
+	pc = (unsigned char *)(methodToCall->userData);
 	thread->exceptHeight = 0;
 	method = methodToCall;
 }

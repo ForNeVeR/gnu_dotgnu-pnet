@@ -57,7 +57,6 @@ struct _tagILCVMCoder
 	unsigned char  *stackCheck;
 	int				needTry;
 	unsigned char  *tryHandler;
-	ILUInt32		generation;
 	long			height;
 	long			minHeight;
 	long			maxHeight;
@@ -234,7 +233,6 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	coder->stackCheck = 0;
 	coder->needTry = 0;
 	coder->tryHandler = 0;
-	coder->generation = 1;
 	coder->height = 0;
 	coder->minHeight = 0;
 	coder->maxHeight = 0;
@@ -247,14 +245,6 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	coder->labelOutOfMemory = 0;
 	coder->currentMethod = 0;
 	return &(coder->coder);
-}
-
-/*
- * Get the generation count for a CVM coder instance.
- */
-static ILUInt32 CVMCoder_Generation(ILCoder *coder)
-{
-	return ((ILCVMCoder *)coder)->generation;
 }
 
 /*
@@ -309,7 +299,6 @@ static void CVMCoder_Destroy(ILCoder *_coder)
 ILCoderClass const _ILCVMCoderClass =
 {
 	CVMCoder_Create,
-	CVMCoder_Generation,
 	CVMCoder_Alloc,
 	CVMCoder_Setup,
 	CVMCoder_SetupExtern,

@@ -112,12 +112,6 @@ struct _tagILCoderClass
 	ILCoder *(*create)(ILUInt32 size);
 	
 	/*
-	 * Get the current generation count for this coder instance.
-	 * The count changes whenever a cache flush occurs.
-	 */
-	ILUInt32 (*generation)(ILCoder *coder);
-
-	/*
 	 * Allocate a block of memory within this coder instance.
 	 * Returns NULL if cache overflow has occurred.
 	 */
@@ -627,8 +621,6 @@ struct _tagILCoderClass
  */
 #define	ILCoderCreate(classInfo,size)	\
 			((*((classInfo)->create))((size)))
-#define	ILCoderGeneration(coder)	\
-			((*((coder)->classInfo->generation))((coder)))
 #define	ILCoderAlloc(coder,size)	\
 			((*((coder)->classInfo->alloc))((coder), (size)))
 #define	ILCoderSetup(coder,start,method,code) \

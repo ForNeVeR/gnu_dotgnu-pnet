@@ -32,10 +32,6 @@ static ILCoder *Coder_Create(ILUInt32 size)
 {
 	return 0;
 }
-static ILUInt32 Coder_Generation(ILCoder *coder)
-{
-	return 1;
-}
 static void *Coder_Alloc(ILCoder *coder, ILUInt32 size)
 {
 	return 0;
@@ -336,7 +332,6 @@ static ILMethod *Coder_PCToMethod(ILCoder *coder, void *pc, int beyond)
  */
 ILCoderClass const _ILNullCoderClass = {
 	Coder_Create,
-	Coder_Generation,
 	Coder_Alloc,
 	Coder_Setup,
 	Coder_SetupExtern,

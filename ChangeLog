@@ -5,6 +5,14 @@
 	engine/cvmc_ptr.c: simplify the "call", "call_extern", and
 	"call_ctor" instructions to remove the unnecessary offset.
 
+	* engine/convert.c, engine/cvm_call.c, engine/cvm_except.c,
+	engine/cvmc.c, engine/cvmc_call.c, engine/engine.h,
+	engine/null_coder.c, engine/process.c, image/member.c,
+	image/program.h, image/test_macros.c, include/il_coder.h,
+	include/il_program.h: remove the "coder generation" and
+	"method userData2" from the source, because they are no
+	longer necessary with the new method cache.
+
 2002-04-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_branch.c, engine/cvm_except.c, engine/cvm_inline.c,

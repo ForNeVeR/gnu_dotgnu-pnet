@@ -110,7 +110,7 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 								ILMethod *methodInfo)
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 0);
-	if(ILMethodGetUserData1(methodInfo) != 0)
+	if(ILMethodGetUserData(methodInfo) != 0)
 	{
 		/* We already know that the method is translated,
 		   so we can take a shortcut at call time */

@@ -49,7 +49,6 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->context = 0;
 	process->exitStatus = 0;
 	process->coder = 0;
-	process->coderGeneration = 0;
 	process->stringClass = 0;
 	process->exceptionClass = 0;
 	process->clrTypeClass = 0;

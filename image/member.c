@@ -793,20 +793,14 @@ void ILMethodFreeExceptions(ILException *exceptions)
 	}
 }
 
-void ILMethodSetUserData(ILMethod *method, void *userData1, void *userData2)
+void ILMethodSetUserData(ILMethod *method, void *userData)
 {
-	method->userData1 = userData1;
-	method->userData2 = userData2;
+	method->userData = userData;
 }
 
-void *ILMethodGetUserData1(ILMethod *method)
+void *ILMethodGetUserData(ILMethod *method)
 {
-	return method->userData1;
-}
-
-void *ILMethodGetUserData2(ILMethod *method)
-{
-	return method->userData2;
+	return method->userData;
 }
 
 int ILMethodIsConstructor(ILMethod *method)

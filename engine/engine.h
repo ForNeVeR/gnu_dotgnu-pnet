@@ -87,7 +87,6 @@ struct _tagILExecProcess
 
 	/* The coder in use by this process */
 	ILCoder		   *coder;
-	ILUInt32		coderGeneration;
 
 	/* Useful builtin classes */
 	ILClass        *stringClass;

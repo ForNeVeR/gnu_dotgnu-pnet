@@ -185,7 +185,7 @@ case COP_PREFIX_THROW:
 
 	/* Search the exception handler table for an applicable handler */
 searchForHandler:
-	tempNum = (ILUInt32)(pc - (unsigned char *)(method->userData1));
+	tempNum = (ILUInt32)(pc - (unsigned char *)(method->userData));
 	pc = ILCoderPCToHandler(thread->process->coder, pc, 0);
 	while(tempNum < IL_READ_UINT32(pc) || tempNum >= IL_READ_UINT32(pc + 4))
 	{

@@ -66,7 +66,7 @@ public class DictionarySectionHandler : IConfigurationSectionHandler
 				// Create the name/value collection for the result.
 				if(parent != null)
 				{
-					coll = new Hashtable((Hashtable)parent);
+					coll = (Hashtable)(((Hashtable)parent).Clone());
 				}
 				else
 				{

@@ -26,6 +26,12 @@
 	* runtime/System/Reflection/Assembly.cs: deal with empty namespace
 	names in "GetManifestResourceStream(Type,String)".
 
+	* System/Configuration/ConfigurationSettings.cs,
+	System/Configuration/DictionarySectionHandler.cs,
+	System/Diagnostics/DiagnosticsConfigurationHandler.cs,
+	System/Diagnostics/Trace.cs: put some configuration infrastructure
+	in place for the "Debug" and "Trace" classes.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

@@ -122,6 +122,7 @@ public sealed class ConfigurationSettings
 							configError = e;
 							throw;
 						}
+						system = configSystem;
 					}
 				}
 

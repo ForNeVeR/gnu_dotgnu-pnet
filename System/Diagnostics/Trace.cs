@@ -26,16 +26,79 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
+using System.Configuration;
+using System.Collections;
+
 public sealed class Trace
 {
 	// Internal state.
+	private static bool initialized = false;
 	private static bool autoFlush;
 	private static int indentLevel;
 	private static int indentSize = 4;
 	private static TraceListenerCollection listeners;
+	private static Hashtable switches;
 
 	// This class cannot be instantiated.
 	private Trace() {}
+
+	// Make sure that the trace configuration is loaded.
+	private static void Initialize()
+			{
+				Object value;
+
+				// Bail out if already initialized, or called recursively.
+				if(initialized)
+				{
+					return;
+				}
+				initialized = true;
+
+				// Create the default trace listener.
+				DefaultTraceListener defListener =
+					new DefaultTraceListener();
+
+				// Create the initial listeners collection.
+				listeners = new TraceListenerCollection();
+				listeners.Add(defListener);
+
+#if false
+				// Get the diagnostics configuration options.
+				Hashtable options = (Hashtable)
+					ConfigurationSettings.GetConfig
+						("system.diagnostics",
+						 new DiagnosticsConfigurationHandler());
+				if(options == null)
+				{
+					options = new Hashtable();
+				}
+
+				// Process the options for the default trace listener.
+				value = options["assertuienabled"];
+				if(value != null)
+				{
+					defListener.AssertUiEnabled = (bool)value;
+				}
+				value = options["logfilename"];
+				if(value != null)
+				{
+					defListener.LogFileName = (String)value;
+				}
+
+				// Process the trace options.
+				value = options["autoflush"];
+				if(value != null)
+				{
+					autoFlush = (bool)value;
+				}
+				value = options["indentsize"];
+				if(value != null)
+				{
+					indentSize = (int)value;
+				}
+				switches = (Hashtable)(options["switches"]);
+#endif
+			}
 
 	// Global trace properties.
 	public static bool AutoFlush
@@ -44,6 +107,7 @@ public sealed class Trace
 				{
 					lock(typeof(Trace))
 					{
+						Initialize();
 						return autoFlush;
 					}
 				}
@@ -51,6 +115,7 @@ public sealed class Trace
 				{
 					lock(typeof(Trace))
 					{
+						Initialize();
 						autoFlush = value;
 					}
 				}
@@ -61,6 +126,7 @@ public sealed class Trace
 				{
 					lock(typeof(Trace))
 					{
+						Initialize();
 						return indentLevel;
 					}
 				}
@@ -68,6 +134,7 @@ public sealed class Trace
 				{
 					lock(typeof(Trace))
 					{
+						Initialize();
 						if(value < 0)
 						{
 							value = 0;
@@ -86,6 +153,7 @@ public sealed class Trace
 				{
 					lock(typeof(Trace))
 					{
+						Initialize();
 						return indentSize;
 					}
 				}
@@ -93,6 +161,7 @@ public sealed class Trace
 				{
 					lock(typeof(Trace))
 					{
+						Initialize();
 						if(value < 0)
 						{
 							value = 0;
@@ -111,11 +180,7 @@ public sealed class Trace
 				{
 					lock(typeof(Trace))
 					{
-						if(listeners == null)
-						{
-							listeners = new TraceListenerCollection();
-							listeners.Add(new DefaultTraceListener());
-						}
+						Initialize();
 						return listeners;
 					}
 				}

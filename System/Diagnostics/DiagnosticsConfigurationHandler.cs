@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if CONFIG_EXTENDED_DIAGNOSTICS
+#if !ECMA_COMPAT
 
 using System;
 using System.Collections;
@@ -48,6 +48,7 @@ Structure of the diagnostics configuration section:
 			<listeners>
 				<add [name="NAME"] type="TYPE" [initializeData="DATA"]/>
 				<remove name="NAME"/>
+				<clear/>
 				...
 			</listeners>
 		</trace>
@@ -112,9 +113,67 @@ public class DiagnosticsConfigurationHandler : IConfigurationSectionHandler
 			}
 
 	// Load a "listeners" tag from a diagnostic configuration element.
-	private static void LoadListeners(Hashtable coll, XmlNode node)
+	// This is the odd one out in that it does not return the settings via
+	// the return collection, but instead side-effects "Trace" directly.
+	private static void LoadListeners(XmlNode node)
 			{
-				// TODO
+				String name, type, data;
+				Type resolvedType;
+				TraceListener listener;
+				foreach(XmlNode child in node.ChildNodes)
+				{
+					if(child.NodeType != XmlNodeType.Element)
+					{
+						continue;
+					}
+					switch(child.Name)
+					{
+						case "add":
+						{
+							name = GetAttribute(child, "name");
+							type = GetAttribute(child, "type");
+							data = GetAttribute(child, "initializeData");
+							if(type == null ||
+							   (resolvedType = Type.GetType(type)) == null)
+							{
+								break;
+							}
+							if(data != null)
+							{
+								listener = (TraceListener)
+									Activator.CreateInstance
+										(resolvedType, new Object [] {data});
+							}
+							else
+							{
+								listener = (TraceListener)
+									Activator.CreateInstance(resolvedType);
+							}
+							if(name != null)
+							{
+								listener.Name = name;
+							}
+							Trace.Listeners.Add(listener);
+						}
+						break;
+
+						case "remove":
+						{
+							name = GetAttribute(child, "name");
+							if(name != null)
+							{
+								Trace.Listeners.Remove(name);
+							}
+						}
+						break;
+
+						case "clear":
+						{
+							Trace.Listeners.Clear();
+						}
+						break;
+					}
+				}
 			}
 
 	// Create a configuration object for a section.
@@ -188,7 +247,7 @@ public class DiagnosticsConfigurationHandler : IConfigurationSectionHandler
 								if(node2.NodeType == XmlNodeType.Element &&
 								   node2.Name == "listeners")
 								{
-									LoadListeners(coll, node2);
+									LoadListeners(node2);
 								}
 							}
 						}
@@ -221,6 +280,6 @@ public class DiagnosticsConfigurationHandler : IConfigurationSectionHandler
 
 }; // class DiagnosticsConfigurationHandler
 
-#endif // CONFIG_EXTENDED_DIAGNOSTICS
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Diagnostics

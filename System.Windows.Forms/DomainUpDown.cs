@@ -198,7 +198,6 @@ public class DomainUpDown : UpDownBase
 	[TODO]
 	protected override void UpdateEditText()
 	{
-		base.UpdateEditText();
 	}
 
 	public DomainUpDownItemCollection Items

@@ -1,3 +1,7 @@
+2004-06-09  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/DomainUpDown.cs: Fix call to abstract base
+	function in UpdateEditText.
 
 2004-06-07  Gopal V  <gopalv82@yahoo.com>
 

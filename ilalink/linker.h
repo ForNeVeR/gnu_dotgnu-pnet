@@ -150,6 +150,20 @@ ILClass *_ILLinkerConvertClassRef(ILLinker *linker, ILClass *classInfo);
  */
 ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type);
 
+/*
+ * Convert custom attributes from an old item in a link
+ * image, and attach them to a new item in the final image.
+ */
+int _ILLinkerConvertAttrs(ILLinker *linker, ILProgramItem *oldItem,
+						  ILProgramItem *newItem);
+
+/*
+ * Convert a method from a link image into a method underneath
+ * a specified new class in the final image.
+ */
+int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
+						   ILClass *newClass);
+
 #ifdef	__cplusplus
 };
 #endif

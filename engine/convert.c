@@ -31,7 +31,10 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	ILCoder *coder = thread->process->coder;
 	unsigned char *start;
 	void *fn;
+	void *ctorfn;
 	void *cif;
+	void *ctorcif;
+	int isConstructor;
 
 	/* Is the method already converted and in the current generation? */
 	if(method->userData1 != 0 &&
@@ -63,6 +66,8 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		/* This is a "PInvoke", "internalcall", or "runtime" method */
 		pinv = ILPInvokeFind(method);
 		fn = 0;
+		ctorfn = 0;
+		isConstructor = ILMethod_IsConstructor(method);
 		switch(method->implementAttrs &
 					(IL_META_METHODIMPL_CODE_TYPE_MASK |
 					 IL_META_METHODIMPL_INTERNAL_CALL |
@@ -89,6 +94,11 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					return 0;
 				}
+				fn = _ILFindInternalCall(method, 0);
+				if(isConstructor)
+				{
+					ctorfn = _ILFindInternalCall(method, 1);
+				}
 			}
 			break;
 
@@ -101,39 +111,61 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		}
 
 		/* Bail out if we did not find the underlying native method */
-		if(!fn)
+		if(!fn && !ctorfn)
 		{
 			return 0;
 		}
 
 		/* Generate a "cif" structure to handle the native call details */
-		cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
-		if(!cif)
+		if(fn)
 		{
-			/* The coder ran out of memory, so flush it and retry */
-			ILCoderFlush(coder);
-			thread->process->coderGeneration = ILCoderGeneration(coder);
+			/* Make the "cif" structure for the normal method entry */
 			cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
 			if(!cif)
 			{
-				return 0;
+				/* The coder ran out of memory, so flush it and retry */
+				ILCoderFlush(coder);
+				thread->process->coderGeneration = ILCoderGeneration(coder);
+				cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
+				if(!cif)
+				{
+					return 0;
+				}
 			}
+		}
+		else
+		{
+			cif = 0;
+		}
+		if(ctorfn)
+		{
+			/* Make the "cif" structure for the allocating constructor */
+			ctorcif = _ILMakeCifForConstructor(coder, method, (pinv == 0));
+			if(!ctorcif)
+			{
+				/* The coder ran out of memory, so flush it and retry */
+				ILCoderFlush(coder);
+				thread->process->coderGeneration = ILCoderGeneration(coder);
+				if(fn)
+				{
+					cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
+				}
+				ctorcif = _ILMakeCifForConstructor(coder, method, (pinv == 0));
+				if(!cif || !ctorcif)
+				{
+					return 0;
+				}
+			}
+		}
+		else
+		{
+			ctorcif = 0;
 		}
 
 		/* Generate the coder stub for marshalling the call */
-		if(!ILCoderSetupExtern(coder, &start, method, fn, cif, (pinv == 0)))
+		if(!isConstructor)
 		{
-			return 0;
-		}
-		if(!ILCoderFinish(coder))
-		{
-			/* Do we need a coder restart due to cache overflow? */
-			if(!ILCoderRestart(coder))
-			{
-				return 0;
-			}
-			thread->process->coderGeneration = ILCoderGeneration(coder);
-			cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
+			/* We only need the method entry point */
 			if(!ILCoderSetupExtern(coder, &start, method,
 								   fn, cif, (pinv == 0)))
 			{
@@ -141,7 +173,60 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			}
 			if(!ILCoderFinish(coder))
 			{
+				/* Do we need a coder restart due to cache overflow? */
+				if(!ILCoderRestart(coder))
+				{
+					return 0;
+				}
+				thread->process->coderGeneration = ILCoderGeneration(coder);
+				cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
+				if(!ILCoderSetupExtern(coder, &start, method,
+									   fn, cif, (pinv == 0)))
+				{
+					return 0;
+				}
+				if(!ILCoderFinish(coder))
+				{
+					return 0;
+				}
+			}
+		}
+		else
+		{
+			/* We need both the method and constructor entry points */
+			if(!ILCoderSetupExternCtor(coder, &start, method,
+								       fn, cif, ctorfn, ctorcif,
+									   (pinv == 0)))
+			{
 				return 0;
+			}
+			if(!ILCoderFinish(coder))
+			{
+				/* Do we need a coder restart due to cache overflow? */
+				if(!ILCoderRestart(coder))
+				{
+					return 0;
+				}
+				thread->process->coderGeneration = ILCoderGeneration(coder);
+				if(fn)
+				{
+					cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
+				}
+				if(ctorfn)
+				{
+					ctorcif = _ILMakeCifForConstructor
+									(coder, method, (pinv == 0));
+				}
+				if(!ILCoderSetupExternCtor(coder, &start, method,
+									       fn, cif, ctorfn, ctorcif,
+										   (pinv == 0)))
+				{
+					return 0;
+				}
+				if(!ILCoderFinish(coder))
+				{
+					return 0;
+				}
 			}
 		}
 	}

@@ -57,6 +57,8 @@ new coder API called "SetupExternCtor".
 
 * engine/Makefile.am: add new files to the engine build.
 
+* engine/convert.c: add conversion support for allocation constructors.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

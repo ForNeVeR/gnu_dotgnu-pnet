@@ -1,4 +1,9 @@
 
+2004-07-08  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/Form.cs: Add dummy implementation of 
+	protected method CenterToScreen().
+
 2004-07-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* profiles/compact, profiles/compact-fp, profiles/ecma,

@@ -1095,6 +1095,11 @@ public class Form : ContainerControl
 				}
 			}
 
+	protected void CenterToScreen()
+			{
+				// Nothing to do here -- Not to be used by App developers
+			}
+	
 	// Create a new control collection for this instance.
 	protected override Control.ControlCollection CreateControlsInstance()
 			{

@@ -31,6 +31,7 @@ extern ILMethodTableEntry const _ILSystemObjectMethods;
 extern ILMethodTableEntry const _ILSystemStringMethods;
 extern ILMethodTableEntry const _ILSystemArrayMethods;
 extern ILMethodTableEntry const _ILSystemDecimalMethods;
+extern ILMethodTableEntry const _ILPlatformStdioMethods;
 
 /*
  * Table that contains all classes that have "internalcall" methods.
@@ -43,10 +44,11 @@ typedef struct
 
 } InternalClassInfo;
 static InternalClassInfo const internalClassTable[] = {
-	{"System",	"Object",		&_ILSystemObjectMethods},
-	{"System",	"String",		&_ILSystemStringMethods},
-	{"System",	"Array",		&_ILSystemArrayMethods},
-	{"System",	"Decimal",		&_ILSystemDecimalMethods},
+	{"System",		"Object",		&_ILSystemObjectMethods},
+	{"System",		"String",		&_ILSystemStringMethods},
+	{"System",		"Array",		&_ILSystemArrayMethods},
+	{"System",		"Decimal",		&_ILSystemDecimalMethods},
+	{"Platform",	"Stdio",		&_ILPlatformStdioMethods},
 };
 #define	numInternalClasses	(sizeof(internalClassTable) / \
 							 sizeof(InternalClassInfo))

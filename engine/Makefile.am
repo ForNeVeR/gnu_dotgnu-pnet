@@ -11,6 +11,7 @@ libILEngine_a_SOURCES = call.c \
 						lib_array.c \
 						lib_decimal.c \
 						lib_object.c \
+						lib_stdio.c \
 						lib_string.c \
 						lookup.c \
 						pinvoke.c \

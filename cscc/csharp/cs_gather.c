@@ -400,10 +400,10 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
 	{
 		/* Scan the members of this class */
 		member = 0;
-		while((member = ILClassNextMember(classInfo, member)) != 0)
+		while((member = ILClassNextMemberMatch
+				(classInfo, member, 0, name, 0)) != 0)
 		{
-			if(!strcmp(ILMember_Name(member), name) &&
-			   ILMemberAccessible(member, scope))
+			if(ILMemberAccessible(member, scope))
 			{
 				return member;
 			}
@@ -446,10 +446,10 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 	{
 		/* Scan the members of this class */
 		member = 0;
-		while((member = ILClassNextMember(classInfo, member)) != 0)
+		while((member = ILClassNextMemberMatch
+				(classInfo, member, 0, name, 0)) != 0)
 		{
 			if(member != notThis &&
-			   !strcmp(ILMember_Name(member), name) &&
 			   ILMemberAccessible(member, scope) &&
 			   (!interfaceOverride || classInfo == scope))
 			{
@@ -624,12 +624,9 @@ static ILMember *FindInterfaceMatch(ILClass *interface,
 									int kind)
 {
 	ILMember *member = 0;
-	while((member = ILClassNextMemberByKind(interface, member, kind)) != 0)
+	while((member = ILClassNextMemberMatch
+			(interface, member, kind, name, 0)) != 0)
 	{
-		if(strcmp(ILMember_Name(member), name) != 0)
-		{
-			continue;
-		}
 		if(kind == IL_META_MEMBERKIND_METHOD ||
 		   kind == IL_META_MEMBERKIND_PROPERTY)
 		{
@@ -903,12 +900,11 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	   !strcmp(ILClass_Namespace(classInfo), "System"))
 	{
 		methodInfo = 0;
-		while((methodInfo = (ILMethod *)ILClassNextMemberByKind
+		while((methodInfo = (ILMethod *)ILClassNextMemberMatch
 					(classInfo, (ILMember *)methodInfo,
-					 IL_META_MEMBERKIND_METHOD)) != 0)
+					 IL_META_MEMBERKIND_METHOD, ".ctor", 0)) != 0)
 		{
-			if(!strcmp(ILMethod_Name(methodInfo), ".ctor") &&
-			   (ILMethod_Token(methodInfo) & IL_META_TOKEN_MASK) ==
+			if((ILMethod_Token(methodInfo) & IL_META_TOKEN_MASK) ==
 			   		IL_META_TOKEN_MEMBER_REF)
 			{
 				if(!ILMethodNewToken(methodInfo))

@@ -54,12 +54,12 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 	{
 		classInfo = ILClassResolve(classInfo);
 		member = 0;
-		while((member = ILClassNextMemberByKind
-					(classInfo, member, IL_META_MEMBERKIND_METHOD)) != 0)
+		while((member = ILClassNextMemberMatch
+					(classInfo, member,
+					 IL_META_MEMBERKIND_METHOD, name, 0)) != 0)
 		{
 			/* Filter out members that aren't interesting */
-			if(strcmp(ILMember_Name(member), name) != 0 ||
-			   (ILMember_Attrs(member) & METHOD_TYPE_ATTRS) != attrs)
+			if((ILMember_Attrs(member) & METHOD_TYPE_ATTRS) != attrs)
 			{
 				continue;
 			}
@@ -249,12 +249,12 @@ static ILProperty *ResolveProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		classInfo = ILClassResolve(classInfo);
 		member = 0;
-		while((member = ILClassNextMemberByKind
-					(classInfo, member, IL_META_MEMBERKIND_PROPERTY)) != 0)
+		while((member = ILClassNextMemberMatch
+					(classInfo, member,
+					 IL_META_MEMBERKIND_PROPERTY, name, 0)) != 0)
 		{
 			/* Filter out members that aren't interesting */
-			if(strcmp(ILMember_Name(member), name) != 0 ||
-			   (ILMember_Attrs(member) & PROPERTY_TYPE_ATTRS) != attrs)
+			if((ILMember_Attrs(member) & PROPERTY_TYPE_ATTRS) != attrs)
 			{
 				continue;
 			}

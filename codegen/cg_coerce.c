@@ -560,12 +560,12 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 	{
 		arg1Class= ILClassResolve(arg1Class);
 		member=0;
-		while((member = ILClassNextMemberByKind
-					(arg1Class, member, IL_META_MEMBERKIND_METHOD)) != 0)
+		while((member = ILClassNextMemberMatch
+					(arg1Class, member,
+					 IL_META_MEMBERKIND_METHOD, "op_Implicit", 0)) != 0)
 		{
 			/* Filter out members that aren't interesting */
-			if(strcmp(ILMember_Name(member), "op_Implicit") != 0 ||
-			   (ILMember_Attrs(member) & METHOD_TYPE_ATTRS) !=
+			if((ILMember_Attrs(member) & METHOD_TYPE_ATTRS) !=
    			(IL_META_METHODDEF_STATIC |IL_META_METHODDEF_SPECIAL_NAME))
 			{
 				continue;
@@ -602,12 +602,12 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 	{
 		arg2Class= ILClassResolve(arg2Class);
 		member=0;
-		while((member = ILClassNextMemberByKind
-					(arg2Class, member, IL_META_MEMBERKIND_METHOD)) != 0)
+		while((member = ILClassNextMemberMatch
+					(arg2Class, member,
+					 IL_META_MEMBERKIND_METHOD, "op_Implicit", 0)) != 0)
 		{
 			/* Filter out members that aren't interesting */
-			if(strcmp(ILMember_Name(member), "op_Implicit") != 0 ||
-			   (ILMember_Attrs(member) & METHOD_TYPE_ATTRS) !=
+			if((ILMember_Attrs(member) & METHOD_TYPE_ATTRS) !=
    			(IL_META_METHODDEF_STATIC |IL_META_METHODDEF_SPECIAL_NAME))
 			{
 				continue;
@@ -652,12 +652,12 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 	{
 		arg1Class= ILClassResolve(arg1Class);
 		member=0;
-		while((member = ILClassNextMemberByKind
-					(arg1Class, member, IL_META_MEMBERKIND_METHOD)) != 0)
+		while((member = ILClassNextMemberMatch
+					(arg1Class, member,
+					 IL_META_MEMBERKIND_METHOD, "op_Explicit", 0)) != 0)
 		{
 			/* Filter out members that aren't interesting */
-			if(strcmp(ILMember_Name(member), "op_Explicit") != 0 ||
-			   (ILMember_Attrs(member) & METHOD_TYPE_ATTRS) !=
+			if((ILMember_Attrs(member) & METHOD_TYPE_ATTRS) !=
    			(IL_META_METHODDEF_STATIC |IL_META_METHODDEF_SPECIAL_NAME))
 			{
 				continue;
@@ -694,12 +694,12 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 	{
 		arg2Class= ILClassResolve(arg2Class);
 		member=0;
-		while((member = ILClassNextMemberByKind
-					(arg2Class, member, IL_META_MEMBERKIND_METHOD)) != 0)
+		while((member = ILClassNextMemberMatch
+					(arg2Class, member,
+					 IL_META_MEMBERKIND_METHOD, "op_Explicit", 0)) != 0)
 		{
 			/* Filter out members that aren't interesting */
-			if(strcmp(ILMember_Name(member), "op_Explicit") != 0 ||
-			   (ILMember_Attrs(member) & METHOD_TYPE_ATTRS) !=
+			if((ILMember_Attrs(member) & METHOD_TYPE_ATTRS) !=
    			(IL_META_METHODDEF_STATIC |IL_META_METHODDEF_SPECIAL_NAME))
 			{
 				continue;

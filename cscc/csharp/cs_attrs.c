@@ -143,16 +143,11 @@ static ILProgramItem *LookupAttrField(ILGenInfo *info, ILType *type,
 	while(classInfo != 0)
 	{
 		member = 0;
-		while((member = ILClassNextMember(classInfo, member)) != 0)
+		while((member = ILClassNextMemberMatch
+				(classInfo, member, 0, name, 0)) != 0)
 		{
 			/* Skip members that aren't accessible to the module */
 			if(!ILMemberAccessible(member, scope))
-			{
-				continue;
-			}
-
-			/* Check the member name */
-			if(strcmp(ILMember_Name(member), name) != 0)
 			{
 				continue;
 			}

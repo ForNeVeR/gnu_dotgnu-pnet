@@ -15,6 +15,11 @@
 	ILClassNextMemberMatch and use it to speed up method/field
 	resolution in ilasm and ilalink.
 
+	* codegen/cg_coerce.c, codegen/cg_lvalue.tc, codegen/cg_resolve.c,
+	cscc/csharp/cs_attrs.c, cscc/csharp/cs_gather.c,
+	cscc/csharp/cs_lookup.c: use ILClassNextMemberMatch to speed
+	up member resolution in the C# compiler.
+
 2003-02-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_decls.tc: Re-order the static constructors so

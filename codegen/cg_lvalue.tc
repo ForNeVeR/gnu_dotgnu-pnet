@@ -345,15 +345,10 @@ static void CallMArrayMethod(ILGenInfo *info, ILType *arrayType,
 	}
 
 	/* Find the method called "name" */
-	method = 0;
-	while((method = (ILMethod *)ILClassNextMemberByKind
-		(classInfo, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+	if((method = (ILMethod *)ILClassNextMemberMatch
+		(classInfo, (ILMember *)0, IL_META_MEMBERKIND_METHOD, name, 0)) != 0)
 	{
-		if(!strcmp(ILMethod_Name(method), name))
-		{
-			ILGenCallByMethod(info, method);
-			return;
-		}
+		ILGenCallByMethod(info, method);
 	}
 }
 

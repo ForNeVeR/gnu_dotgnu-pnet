@@ -316,10 +316,10 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 		if(!(genInfo->inSemType))
 		{
 			member = 0;
-			while((member = ILClassNextMember(info, member)) != 0)
+			while((member = ILClassNextMemberMatch
+						(info, member, 0, name, 0)) != 0)
 			{
-				if(!strcmp(ILMember_Name(member), name) &&
-				   ILMemberAccessible(member, accessedFrom))
+				if(ILMemberAccessible(member, accessedFrom))
 				{
 					kind = ILMemberGetKind(member);
 					if(literalType && kind != CS_MEMBERKIND_TYPE)

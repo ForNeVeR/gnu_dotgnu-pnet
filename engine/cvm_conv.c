@@ -1846,9 +1846,8 @@ VMCASE(COP_PREFIX_UTF82STR):
 	/* Convert a UTF-8 character buffer into a string */
 	if(stacktop[-1].ptrValue)
 	{
-		/* TODO: this currently does "ANSI", but it should do "UTF-8" */
 		COPY_STATE_TO_THREAD();
-		stacktop[-1].ptrValue = (void *)ILStringCreate
+		stacktop[-1].ptrValue = (void *)ILStringCreateUTF8
 			(thread, (const char *)(stacktop[-1].ptrValue));
 		RESTORE_STATE_FROM_THREAD();
 	}

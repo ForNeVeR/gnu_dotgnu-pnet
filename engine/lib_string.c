@@ -275,35 +275,22 @@ System_String *_IL_String_ctor_pbiiEncoding(ILExecThread *thread,
 		return 0;
 	}
 
-	/* Find the default encoding object to use */
+	/* Should we use the default built-in encoding? */
 	if(!encoding)
 	{
-		/* Default encoding temporarily disabled */
-	#if 0
-		if(ILExecThreadCallNamed(thread, "System.Text.Encoding",
-								 "get_Default", "()oSystem.Text.Encoding;",
-								 &encoding))
+		posn = (ILInt32)ILAnsiGetCharCount
+			((unsigned char *)(value + startIndex),
+			 (unsigned long)length);
+		_this = AllocString(thread, posn);
+		if(!_this)
 		{
-			/* Return to the caller with the pending exception */
 			return 0;
 		}
-	#endif
-		if(!encoding)
-		{
-			/* System.Text.Encoding.get_Default() returned "null",
-			   so use a direct character-to-character copy */
-			_this = AllocString(thread, length);
-			if(!_this)
-			{
-				return 0;
-			}
-			for(posn = 0; posn < length; ++posn)
-			{
-				StringToBuffer(_this)[posn] =
-				   (ILUInt16)(((ILUInt16)(value[startIndex + posn])) & 0xFFFF);
-			}
-			return _this;
-		}
+		ILAnsiGetChars((unsigned char *)(value + startIndex),
+					   (unsigned long)length,
+					   StringToBuffer(_this),
+					   (unsigned long )posn);
+		return _this;
 	}
 
 	/* Construct an array that contains the bytes */
@@ -319,7 +306,7 @@ System_String *_IL_String_ctor_pbiiEncoding(ILExecThread *thread,
 	   to construct the final string that we need */
 	_this = 0;
 	if(ILExecThreadCallNamedVirtual(thread, "System.Text.Encoding",
-							        "GetChars", "(T[B)oSystem.String;",
+							        "GetString", "(T[B)oSystem.String;",
 							        &_this, encoding, array))
 	{
 		return 0;
@@ -1410,7 +1397,10 @@ ILString *ILStringCreate(ILExecThread *thread, const char *str)
 {
 	if(str)
 	{
-		return ILStringCreateLen(thread, str, strlen(str));
+		/* Call the "String(sbyte *, int, int, Encoding)" constructor */
+		return (ILString *)_IL_String_ctor_pbiiEncoding
+					(thread, (ILInt8 *)str, 0,
+					 (ILInt32)(strlen(str)), (void *)0);
 	}
 	else
 	{
@@ -1420,7 +1410,7 @@ ILString *ILStringCreate(ILExecThread *thread, const char *str)
 
 ILString *ILStringCreateLen(ILExecThread *thread, const char *str, int len)
 {
-	if(str && len >= 0)
+	if(str)
 	{
 		/* Call the "String(sbyte *, int, int, Encoding)" constructor */
 		return (ILString *)_IL_String_ctor_pbiiEncoding
@@ -1430,6 +1420,61 @@ ILString *ILStringCreateLen(ILExecThread *thread, const char *str, int len)
 	{
 		return (ILString *)0;
 	}
+}
+
+ILString *ILStringCreateUTF8(ILExecThread *thread, const char *str)
+{
+	if(str)
+	{
+		return ILStringCreateUTF8Len(thread, str, strlen(str));
+	}
+	else
+	{
+		return (ILString *)0;
+	}
+}
+
+ILString *ILStringCreateUTF8Len(ILExecThread *thread, const char *str, int len)
+{
+	ILInt32 newLen;
+	int posn;
+	unsigned long ch;
+	System_String *newStr;
+	unsigned short *buf;
+
+	/* Bail out if the string is NULL */
+	if(!str)
+	{
+		return (ILString *)0;
+	}
+
+	/* Determine the length of the UTF-8 string in UTF-16 characters */
+	newLen = 0;
+	posn = 0;
+	while(posn < len)
+	{
+		ch = ILUTF8ReadChar(str, len, &posn);
+		newLen += ILUTF16WriteChar((unsigned short *)0, ch);
+	}
+
+	/* Allocate a new string object */
+	newStr = AllocString(thread, newLen);
+	if(!newStr)
+	{
+		return (ILString *)0;
+	}
+
+	/* Copy the characters into the new string */
+	buf = StringToBuffer(newStr);
+	posn = 0;
+	while(posn < len)
+	{
+		ch = ILUTF8ReadChar(str, len, &posn);
+		buf += ILUTF16WriteChar(buf, ch);
+	}
+
+	/* Done */
+	return (ILString *)newStr;
 }
 
 ILString *ILStringWCreate(ILExecThread *thread, const ILUInt16 *str)
@@ -1871,7 +1916,26 @@ char *ILStringToUTF8(ILExecThread *thread, ILString *str)
 
 char *ILStringToAnsi(ILExecThread *thread, ILString *str)
 {
-	/* TODO */
+	if(str)
+	{
+		ILUInt16 *buf = StringToBuffer(str);
+		ILInt32 len = ((System_String *)str)->length;
+		unsigned long size = ILAnsiGetByteCount(buf, (unsigned long)len);
+		char *newStr = (char *)ILGCAllocAtomic(size + 1);
+		if(!newStr)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		ILAnsiGetBytes(buf, (unsigned long)len,
+					   (unsigned char *)newStr, size);
+		newStr[size] = '\0';
+		return newStr;
+	}
+	else
+	{
+		return 0;
+	}
 	return ILStringToUTF8(thread, str);
 }
 

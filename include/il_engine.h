@@ -397,6 +397,16 @@ ILString *ILStringCreate(ILExecThread *thread, const char *str);
 ILString *ILStringCreateLen(ILExecThread *thread, const char *str, int len);
 
 /*
+ * Create a string from a NUL-terminated UTF-8 string.
+ */
+ILString *ILStringCreateUTF8(ILExecThread *thread, const char *str);
+
+/*
+ * Create a string from a length-deliminated UTF-8 string.
+ */
+ILString *ILStringCreateUTF8Len(ILExecThread *thread, const char *str, int len);
+
+/*
  * Create a string from a zero-terminated wide character string.
  */
 ILString *ILStringWCreate(ILExecThread *thread, const ILUInt16 *str);

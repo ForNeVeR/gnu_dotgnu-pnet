@@ -27,6 +27,7 @@ public class SuiteSystem
 	public static TestSuite Suite()
 			{
 				TestSuite suite = new TestSuite("Core Class Tests");
+				suite.AddTests(typeof(TestArgIterator));
 				suite.AddTests(typeof(TestBoolean));
 				suite.AddTests(typeof(TestDecimal));
 				suite.AddTests(typeof(TestDouble));

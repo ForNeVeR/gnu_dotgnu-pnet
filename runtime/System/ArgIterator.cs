@@ -51,7 +51,7 @@ public struct ArgIterator
 	}
 	public override int GetHashCode()
 	{
-		return cookie1 ^ cookie2 ^ cookie3 ^ cookie4;
+		return cookie1;
 	}
 
 	// Get the next argument.

@@ -298,23 +298,25 @@ sealed class ThreadPool
 
 				// Wait for and dispatch work items.
 				WorkItem item;
-				lock(typeof(ThreadPool))
+				for(;;)
 				{
-					for(;;)
+					lock (typeof(ThreadPool))
 					{
 						item = ItemToDispatch();
 						if(item == null)
 						{
 							Monitor.Wait(typeof(ThreadPool));
 						}
-						else
-						{
-							++usedWorkerThreads;
-							Monitor.Exit(typeof(ThreadPool));
-							item.Execute();
-							Monitor.Enter(typeof(ThreadPool));
-							--usedWorkerThreads;
-						}
+					}
+									
+					try
+					{
+						Interlocked.Increment(ref usedWorkerThreads);
+						item.Execute();
+					}
+					finally
+					{
+						Interlocked.Decrement(ref usedWorkerThreads);
 					}
 				}
 			}
@@ -329,23 +331,26 @@ sealed class ThreadPool
 
 				// Wait for and dispatch completion items.
 				WorkItem item;
-				lock(completionWait)
+				
+				for(;;)
 				{
-					for(;;)
+					lock (completionWait)
 					{
 						item = CompletionItemToDispatch();
 						if(item == null)
 						{
 							Monitor.Wait(completionWait);
 						}
-						else
-						{
-							++usedCompletionThreads;
-							Monitor.Exit(completionWait);
-							item.Execute();
-							Monitor.Enter(completionWait);
-							--usedCompletionThreads;
-						}
+					}
+					
+					try
+					{
+						Interlocked.Increment(ref usedCompletionThreads);
+						item.Execute();
+					}
+					finally
+					{
+						Interlocked.Decrement(ref usedCompletionThreads);
 					}
 				}
 			}

@@ -3,6 +3,11 @@
 	* tests/runtime/System/Threading/TestMonitor.cs: Added sleep
 	at opportune moments to increase chances of failure.  Reduced
 	thrashing run times to 1 second from 4 seconds.
+	
+	* runtime/System/Threading/ThreadPool.cs: Changed ThreadPool.Work
+	and ThreadPool.Complete to not user Monitor.Exit/Enter because
+	it's not entirely safe if the thread gets interrupted or aborted
+	between both calls.
 
 2004-05-27  Klaus Treichel  <ktreichel@web.de>
 

@@ -1,3 +1,11 @@
+
+2005-02-26  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Drawing/Design/IToolboxService.cs,
+	System.Drawing/Design/ToolboxItemCollection.cs,
+	System.Drawing/Design/ToolboxItemCreatorCallback.cs: Initial
+	implementations.
+
 2005-02-25  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System/Net/Sockets/Socket.cs: change connected state as needed on

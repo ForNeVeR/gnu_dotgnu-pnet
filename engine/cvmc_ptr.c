@@ -24,7 +24,7 @@
  * Load elements from an array.
  */
 static void LoadArrayElem(ILCoder *coder, int opcode1, int opcode2,
-						  ILEngineType indexType, int shift, int stackSize)
+						  ILEngineType engineType, int shift, int stackSize)
 {
 #ifdef IL_NATIVE_INT64
 	if(indexType == ILEngineType_I4)

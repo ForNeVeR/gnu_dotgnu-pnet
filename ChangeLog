@@ -47,6 +47,9 @@
 	System.Windows.Forms/TextBoxBase.cs: stub out the "TextBoxBase"
 	class.
 
+	* System/Diagnostics/ProcessStartInfo.cs: fix bug #4055, where
+	the command-line count wasn't increasing (thanks to Yannis Bres).
+
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs, 

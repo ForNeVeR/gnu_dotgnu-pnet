@@ -415,6 +415,7 @@ public sealed class ProcessStartInfo
 						++posn;
 						continue;
 					}
+					++count;
 					if(ch == '"' || ch == '\'')
 					{
 						// Start of a quoted argument.

@@ -20,7 +20,6 @@
 
 #include "linker.h"
 #include "../image/program.h"
-#include "il_dumpasm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -308,6 +307,37 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 		}
 	}
 	return ILType_Invalid;
+}
+
+ILTypeSpec *_ILLinkerConvertTypeSpec(ILLinker *linker, ILType *type)
+{
+	ILTypeSpec *spec;
+
+	/* Map the type to the new image */
+	type = _ILLinkerConvertType(linker, type);
+	if(!type)
+	{
+		return 0;
+	}
+
+	/* Search for an existing TypeSpec with this signature */
+	spec = 0;
+	while((spec = (ILTypeSpec *)ILImageNextToken
+				(linker->image, IL_META_TOKEN_TYPE_SPEC, spec)) != 0)
+	{
+		if(ILTypeIdentical(ILTypeSpec_Type(spec), type))
+		{
+			return spec;
+		}
+	}
+
+	/* Create a new TypeSpec within the output image */
+	spec = ILTypeSpecCreate(linker->image, 0, type);
+	if(!spec)
+	{
+		_ILLinkerOutOfMemory(linker);
+	}
+	return spec;
 }
 
 #ifdef	__cplusplus

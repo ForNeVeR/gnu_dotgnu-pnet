@@ -14,6 +14,8 @@ ilalink/Makefile.am: new files.
 * ilalink/link_method.c: convert PInvoke, overrides, and parameter
 marshalling.
 
+* ilalink/link_type.c: convert TypeSpec tokens.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

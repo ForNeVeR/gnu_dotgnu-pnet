@@ -1,7 +1,7 @@
 /*
  * Timer.cs - Implementation of the "System.Threading.Timer" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,130 +25,305 @@ using System;
 
 public sealed class Timer : MarshalByRefObject, IDisposable
 {
-	//internal state
-	private int dueTime,period;
-	private Thread TimerThread;
+	// Internal state.
+	private Thread timerThread;
+	private DateTime nextDue;
+	private TimeSpan period;
 	private TimerCallback callback;
-	private object TimerObject;
-	private TimeSpan ts_dt,ts_p;
-	//Constructors
-	public Timer(TimerCallback callback, object state, int dueTime, int period)
-	{
-		if(callback==null){
-			throw new ArgumentNullException("callback");
-		}
-		if(dueTime < 0 && dueTime != Timeout.Infinite){
-			throw new ArgumentOutOfRangeException("dueTime");
-		}
-		if(period < 0 && period != Timeout.Infinite){
-			throw new ArgumentOutOfRangeException("period");
-		}
-		this.callback=callback;
-		this.dueTime=dueTime;
-		this.period=period;
-		ThreadStart TimerDelegate = new ThreadStart(TimerFunction);
-		this.TimerThread = new Thread(TimerDelegate);
-		if(dueTime!=Timeout.Infinite)
-			TimerThread.Start();
-	}
+	private Object state;
+	private bool shutdown;
+	private WaitHandle notifyObject;
 
-	public Timer(TimerCallback callback, object state, TimeSpan dueTime, TimeSpan period)
-	{
-		if(callback==null){
-			throw new ArgumentNullException("callback");
-		}
-		if((dueTime.Milliseconds < 0 && dueTime.Ticks != Timeout.Infinite) || (dueTime.Milliseconds > System.Int32.MaxValue)){
-			throw new ArgumentOutOfRangeException("dueTime");
-		}
-		if((period.Milliseconds < 0 && period.Ticks != Timeout.Infinite) || ( dueTime.Milliseconds > System.Int32.MaxValue)){
-			throw new ArgumentOutOfRangeException("period");
-		}
-		this.callback=callback;
-		this.dueTime=dueTime.Milliseconds;
-		this.period=period.Milliseconds;
-		this.ts_dt=dueTime;
-		this.ts_p=period;
-		ThreadStart TimerDelegate = new ThreadStart(TimerFunction);
-		this.TimerThread = new Thread(TimerDelegate);
-		if(dueTime.Ticks!=Timeout.Infinite)
-			TimerThread.Start();
+	// Constructor.
+	public Timer(TimerCallback callback, Object state, int dueTime, int period)
+			{
+				// Validate the parameters.
+				if(callback == null)
+				{
+					throw new ArgumentNullException("callback");
+				}
+				if(dueTime < -1)
+				{
+					throw new ArgumentOutOfRangeException
+						("dueTime", _("ArgRange_NonNegOrNegOne"));
+				}
+				if(period < -1)
+				{
+					throw new ArgumentOutOfRangeException
+						("period", _("ArgRange_NonNegOrNegOne"));
+				}
 
-	}
+				// Initialize the timer state.
+				if(dueTime == -1)
+				{
+					nextDue = DateTime.MaxValue;
+				}
+				else
+				{
+					nextDue = DateTime.UtcNow +
+						new TimeSpan(dueTime * TimeSpan.TicksPerMillisecond);
+				}
+				if(period <= 0)
+				{
+					this.period = TimeSpan.MaxValue;
+				}
+				else
+				{
+					this.period = new TimeSpan
+						(period * TimeSpan.TicksPerMillisecond);
+				}
+				this.callback = callback;
+				this.state = state;
+				this.shutdown = false;
 
-	[TODO]
-	// Destructor for Timer
+				// Start the timer thread.
+				timerThread = new Thread(new ThreadStart(Run));
+				timerThread.Start();
+			}
+	public Timer(TimerCallback callback, Object state,
+				 TimeSpan dueTime, TimeSpan period)
+			: this(callback, state,
+				   Monitor.TimeSpanToMS(dueTime),
+				   Monitor.TimeSpanToMS(period))
+			{
+				// Nothing to do here.
+			}
+#if !ECMA_COMPAT
+	[CLSCompliant(false)]
+	public Timer(TimerCallback callback, Object state,
+				 uint dueTime, uint period)
+			: this(callback, state, UIntToMS(dueTime), UIntToMS(period))
+			{
+				// Nothing to do here.
+			}
+	public Timer(TimerCallback callback, Object state,
+				 long dueTime, long period)
+			: this(callback, state, LongToMS(dueTime), LongToMS(period))
+			{
+				// Nothing to do here.
+			}
+#endif // !ECMA_COMPAT
+
+	// Destructor.
 	~Timer()
-	{
-	}
+			{
+				DisposeInternal(null);
+			}
 
-	[TODO]
-	// Changes the start time and interval between method invocations for a timer.
+	// Change the current timer parameters.
 	public bool Change(int dueTime, int period)
-	{
-		if(dueTime < 0 && dueTime != Timeout.Infinite){
-			throw new ArgumentOutOfRangeException("dueTime");
-		}
-		if(period < 0 && period != Timeout.Infinite){
-			throw new ArgumentOutOfRangeException("period");
-		}
-		this.dueTime=dueTime;
-		this.period=period;
-		return true;
-	}
+			{
+				// Validate the parameters.
+				if(callback == null)
+				{
+					throw new ArgumentNullException("callback");
+				}
+				if(dueTime < -1)
+				{
+					throw new ArgumentOutOfRangeException
+						("dueTime", _("ArgRange_NonNegOrNegOne"));
+				}
+				if(period < -1)
+				{
+					throw new ArgumentOutOfRangeException
+						("period", _("ArgRange_NonNegOrNegOne"));
+				}
 
-	[TODO]
-	//Changes the start time and interval between method invocations for a timer.
+				// We must lock down this object while we modify it.
+				lock(this)
+				{
+					if(timerThread != null)
+					{
+						// Change the timer state.
+						if(dueTime == -1)
+						{
+							nextDue = DateTime.MaxValue;
+						}
+						else
+						{
+							nextDue = DateTime.UtcNow +
+								new TimeSpan
+									(dueTime * TimeSpan.TicksPerMillisecond);
+						}
+						if(period <= 0)
+						{
+							this.period = TimeSpan.MaxValue;
+						}
+						else
+						{
+							this.period = new TimeSpan
+								(period * TimeSpan.TicksPerMillisecond);
+						}
+
+						// Signal the timer thread to make it wake up
+						// and start using the new timeout values.
+						Monitor.Pulse(this);
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+			}
 	public bool Change(TimeSpan dueTime, TimeSpan period)
-	{
-		if((dueTime.Milliseconds < 0 && dueTime.Ticks != Timeout.Infinite) || (dueTime.Milliseconds > System.Int32.MaxValue)){
-			throw new ArgumentOutOfRangeException("dueTime");
-		}
-		if((period.Milliseconds < 0 && period.Ticks != Timeout.Infinite) || ( dueTime.Milliseconds > System.Int32.MaxValue)){
-			throw new ArgumentOutOfRangeException("period");
-		}
-		return Change(dueTime.Milliseconds, period.Milliseconds);
-	}
+			{
+				return Change(Monitor.TimeSpanToMS(dueTime),
+							  Monitor.TimeSpanToMS(period));
+			}
+#if !ECMA_COMPAT
+	[CLSCompliant(false)]
+	public bool Change(uint dueTime, uint period)
+			{
+				return Change(UIntToMS(dueTime), UIntToMS(period));
+			}
+	public bool Change(long dueTime, long period)
+			{
+				return Change(LongToMS(dueTime), LongToMS(period));
+			}
+#endif // !ECMA_COMPAT
 
-	[TODO]
-	//Releases the resources held by the current instance.
+	// Dispose of this object.
 	public void Dispose()
-	{
-	}
+			{
+				DisposeInternal(null);
+				GC.SuppressFinalize(this);
+			}
 
-	// Call the functions of timer
-	private void callFunctions()
-	{
-		Delegate [] TimerFunctionList;
-		TimerFunctionList = callback.GetInvocationList();
-		TimerCallback TimerMethod;
-		for(int i=0;i<TimerFunctionList.Length;i++)
-		{
-			TimerMethod=(TimerCallback)TimerFunctionList[i];
-			TimerMethod(TimerObject);
-		}
-	}
-
-	// start function for the timer thread.
-	private static void TimerFunction()
-	{
-		// TODO: I had to comment this out because dueTime and callFunctions
-		// are not static - Rhys.
-		//if(dueTime!=0)
-		//	Thread.Sleep(dueTime);
-		//callFunctions();
-		//while(period!=0 && period !=Timeout.Infinite)
-		//{
-		//	Thread.Sleep(period);
-		//	callFunctions();
-		//}
-	}
-
-	[TODO]
-	//Releases the resources held by the current instance.
+	// Dispose of this object and signal a particular wait
+	// handle once the timer has been disposed.
 	public bool Dispose(WaitHandle notifyObject)
-	{
-		return true;
-	}
+			{
+				if(notifyObject == null)
+				{
+					throw new ArgumentNullException("notifyObject");
+				}
+				return DisposeInternal(notifyObject);
+			}
+
+	// Internal version of "Dispose".
+	private bool DisposeInternal(WaitHandle notifyObject)
+			{
+				lock(this)
+				{
+					if(timerThread != null)
+					{
+						this.notifyObject = notifyObject;
+						this.shutdown = true;
+						this.timerThread = null;
+						Monitor.Pulse(this);
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+			}
+
+#if !ECMA_COMPAT
+
+	// Convert an unsigned integer value into a milliseconds value.
+	private static int UIntToMS(uint value)
+			{
+				if(value > (uint)(Int32.MaxValue))
+				{
+					throw new ArgumentOutOfRangeException
+						("value", _("ArgRange_NonNegOrNegOne"));
+				}
+				return (int)value;
+			}
+
+	// Convert a long integer value into a milliseconds value.
+	private static int LongToMS(long value)
+			{
+				if(value < (-1L) || value > (long)(Int32.MaxValue))
+				{
+					throw new ArgumentOutOfRangeException
+						("value", _("ArgRange_NonNegOrNegOne"));
+				}
+				return (int)value;
+			}
+
+#endif // !ECMA_COMPAT
+
+	// Method that runs the timer thread.
+	private void Run()
+			{
+				long maxTime = DateTime.MaxValue.Ticks;
+				TimeSpan waitTime;
+				long longMS, ticks;
+				int ms;
+				lock(this)
+				{
+					while(!shutdown)
+					{
+						// Determine how long to wait until the next
+						// timeout is due.
+						waitTime = nextDue - DateTime.UtcNow;
+						longMS = waitTime.Ticks / TimeSpan.TicksPerMillisecond;
+						if(longMS < 0)
+						{
+							ms = 0;
+						}
+						else if(longMS > (long)(Int32.MaxValue))
+						{
+							ms = -1;
+						}
+						else
+						{
+							ms = (int)longMS;
+						}
+
+						// Wait until the monitor is signalled or times out.
+						// This will give up the lock while we are waiting.
+						// We will be signalled by the main thread when
+						// it wants us to change the timeout or shutdown.
+						if(!Monitor.Wait(this, ms))
+						{
+							// Set "nextDue" to the current time.  This is
+							// to prevent the thread from issuing multiple
+							// timeouts in quick succession because it has
+							// become backlogged, or because the user changed
+							// the system clock to warp us into the past.
+							nextDue = DateTime.UtcNow;
+
+							// Invoke the timer callback.
+							try
+							{
+								callback(state);
+							}
+							catch(Exception)
+							{
+								// Ignore exceptions, to prevent the
+								// timer thread from exiting prematurely.
+							}
+
+							// Determine when the next timeout should occur.
+							if(period == TimeSpan.MaxValue)
+							{
+								nextDue = DateTime.MaxValue;
+							}
+							else
+							{
+								ticks = nextDue.Ticks + period.Ticks;
+								if(((ulong)ticks) > ((ulong)maxTime))
+								{
+									nextDue = DateTime.MaxValue;
+								}
+								else
+								{
+									nextDue = new DateTime(ticks);
+								}
+							}
+						}
+					}
+					if(notifyObject != null)
+					{
+						// TODO: signal notifyObject that we are exiting.
+					}
+				}
+			}
 
 }; // class Timer
 

@@ -47,6 +47,8 @@
 	that permission values are properly escaped when adding them
 	to "SecurityElement" objects.
 
+	* runtime/System/Threading/Timer.cs: rewrite the "Timer" class.
+
 2003-03-31  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs,

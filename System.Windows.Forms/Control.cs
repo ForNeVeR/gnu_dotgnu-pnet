@@ -1825,24 +1825,25 @@ public class Control : IWin32Window, IDisposable
 	// Invalidate a region of the control and queue up a repaint request.
 	public void Invalidate()
 			{
-				if (toolkitWindow != null && Visible)
-					Invalidate(new Region(ClientRectangle), false);
+				Invalidate(ClientRectangle, false);
 			}
 
 	public void Invalidate(bool invalidateChildren)
 			{
-				if (toolkitWindow != null && Visible)
-						Invalidate(new Region(ClientRectangle), invalidateChildren);
+				Invalidate(ClientRectangle, invalidateChildren);
 			}
 
 	public void Invalidate(Rectangle rc)
 			{
-				Invalidate(new Region(rc), false);
+				Invalidate(rc, false);
 			}
 
 	public void Invalidate(Rectangle rc, bool invalidateChildren)
 			{
-				Invalidate(new Region(rc), invalidateChildren);
+				using (Region region = new Region(rc))
+				{
+					Invalidate(region, invalidateChildren);
+				}
 			}
 
 	public void Invalidate(Region region)
@@ -1853,13 +1854,18 @@ public class Control : IWin32Window, IDisposable
 	public void Invalidate(Region region, bool invalidateChildren)
 			{
 				if (toolkitWindow == null || !Visible)
-					return;
-				Region region1 = region.Clone();
-				InvalidateInternal(region1, invalidateChildren);
-				using (Graphics g = CreateGraphics())
 				{
-					Rectangle bounds = Rectangle.Truncate(region.GetBounds(g));
-					OnInvalidated(new InvalidateEventArgs(bounds));
+					return;
+				}
+
+				using (Region region1 = region.Clone())
+				{
+					InvalidateInternal(region1, invalidateChildren);
+					using (Graphics g = CreateGraphics())
+					{
+						Rectangle bounds = Rectangle.Truncate(region.GetBounds(g));
+						OnInvalidated(new InvalidateEventArgs(bounds));
+					}
 				}
 			}
 
@@ -1885,7 +1891,9 @@ public class Control : IWin32Window, IDisposable
 				{
 					Control child = children[i];
 					if (child.Visible)
+					{
 						region.Exclude(children[i].Bounds);
+					}
 				}
 
 				// TODO Inefficient
@@ -1901,7 +1909,9 @@ public class Control : IWin32Window, IDisposable
 					b.Offset(xOrigin, yOrigin);
 					b.Intersect(parentInvalidateBounds);
 					if (!b.IsEmpty)
+					{
 						toolkitWindow.Invalidate(b.X, b.Y, b.Width, b.Height);
+					}
 				}
 			}
 

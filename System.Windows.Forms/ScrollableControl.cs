@@ -450,14 +450,186 @@ public class ScrollableControl : Control
 			}
 
 	// Dock padding edge definitions.
-	[TODO]
-	public class DockPaddingEdges : ICloneable
+	public class DockPaddingEdges: ICloneable
+	{
+		private ScrollableControl owner;
+		internal bool all;
+		internal int top;
+		internal int left;
+		internal int right;
+		internal int bottom;
+
+		public int All
+		{
+			get
 			{
-				// TODO
+				if (all)
+				{
+					return top;
+				}
+				else
+				{
+					return 0;
+				}
+			}
 
-				public Object Clone() { return this; }
+			set
+			{
+				if (!all || top != value)
+				{
+					all = true;
+					top = left = right = bottom = value;
+					owner.PerformLayout();
+				}
+			}
+		}
 
-			}; // class DockPaddingEdges
+		public int Bottom
+		{
+			get
+			{
+				if (all)
+				{
+					return top;
+				}
+				else
+				{
+					return bottom;
+				}
+			}
+
+			set
+			{
+				if (all || bottom != value)
+				{
+					all = false;
+					bottom = value;
+					owner.PerformLayout();
+				}
+			}
+		}
+
+		public int Left
+		{
+			get
+			{
+				if (all)
+				{
+					return top;
+				}
+				else
+				{
+					return left;
+				}
+			}
+
+			set
+			{
+				if (all || left != value)
+				{
+					all = false;
+					left = value;
+					owner.PerformLayout();
+				}
+			}
+		}
+
+		public int Right
+		{
+			get
+			{
+				if (all)
+				{
+					return top;
+				}
+				else
+				{
+					return right;
+				}
+			}
+
+			set
+			{
+				if (all || right != value)
+				{
+					all = false;
+					right = value;
+					owner.PerformLayout();
+				}
+			}
+		}
+
+		public int Top
+		{
+			get
+			{
+				return top;
+			}
+
+			set
+			{
+				if (all || top != value)
+				{
+					all = false;
+					top = value;
+					owner.PerformLayout();
+				}
+			}
+		}
+
+		internal DockPaddingEdges(ScrollableControl owner)
+		{
+			this.owner = owner;
+			all = true;
+			top = left = right = bottom = 0;
+		}
+
+		public override bool Equals(object other)
+		{
+			DockPaddingEdges otherEdge = other as DockPaddingEdges;
+			if (otherEdge == null)
+			{
+				return false;
+			}
+			return (otherEdge.all == all && otherEdge.top == top && otherEdge.left == left && otherEdge.bottom == bottom && otherEdge.right == right);
+		}
+
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
+		}
+
+		public override string ToString()
+		{
+			return "";
+		}
+
+		object ICloneable.Clone()
+		{
+			DockPaddingEdges dockPaddingEdges = new DockPaddingEdges(owner);
+			dockPaddingEdges.all = all;
+			dockPaddingEdges.top = top;
+			dockPaddingEdges.right = right;
+			dockPaddingEdges.bottom = bottom;
+			dockPaddingEdges.left = left;
+			return dockPaddingEdges;
+		}
+	} // class DockPaddingEdges
+
+
+	public class DockPaddingEdgesConverter : TypeConverter
+	{
+
+		public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes)
+		{
+			return TypeDescriptor.GetProperties(typeof(DockPaddingEdges), attributes).Sort(new string[]{"All", "Left", "Top", "Right", "Bottom"});
+		}
+
+		public override bool GetPropertiesSupported(ITypeDescriptorContext context)
+		{
+			return true;
+		}
+	}
 
 #if !CONFIG_COMPACT_FORMS
 

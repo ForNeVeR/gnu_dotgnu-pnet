@@ -1092,6 +1092,10 @@ public class TextBox : TextBoxBase
 			}
 			break;
 		case CaretDirection.LineDown:
+			if (layout.Items.Length == 0)
+			{
+				return;
+			}
 			if (caretBounds.Top < layout.Items[layout.Items.Length - 1].bounds.Top)
 			{
 				newPos = ComputeLineOffset(newPos, 1);
@@ -1224,6 +1228,7 @@ public class TextBox : TextBoxBase
 					}
 				}
 				SelectInternal(GetSelectionStart(),0);
+				InvalidateDirty();
 				OnTextChanged(EventArgs.Empty);
 				break;
 			}

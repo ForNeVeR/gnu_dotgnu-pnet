@@ -71,6 +71,14 @@
 	.locals 6
 	.maxstack 4
 } // method m1
+.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
+{
+	aload_0
+	invokespecial	instance void ['.library']'System'.'Object'::'.ctor'()
+	return
+	.locals 1
+	.maxstack 1
+} // method .ctor
 } // class Test
 .class private auto ansi 'Test2' extends ['.library']'System'.'Object'
 {

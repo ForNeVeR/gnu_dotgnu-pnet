@@ -347,4 +347,11 @@
 	ret
 	.maxstack 2
 } // method m1
+.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
+{
+	ldarg.0
+	call	instance void ['.library']'System'.'Object'::'.ctor'()
+	ret
+	.maxstack 1
+} // method .ctor
 } // class Test

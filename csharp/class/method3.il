@@ -35,6 +35,13 @@
 	ret
 	.maxstack 1
 } // method m8
+.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
+{
+	ldarg.0
+	call	instance void ['.library']'System'.'Object'::'.ctor'()
+	ret
+	.maxstack 1
+} // method .ctor
 } // class Test1
 .class private auto ansi 'Test2' extends 'Test1'
 {
@@ -59,4 +66,11 @@
 	ret
 	.maxstack 1
 } // method m6
+.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
+{
+	ldarg.0
+	call	instance void 'Test1'::'.ctor'()
+	ret
+	.maxstack 1
+} // method .ctor
 } // class Test2

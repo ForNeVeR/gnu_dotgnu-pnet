@@ -1,4 +1,42 @@
 
+2001-01-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/const1.il, csharp/class/const1.jl,
+	csharp/class/const2.il, csharp/class/const2.jl,
+	csharp/class/field1.il, csharp/class/field1.jl,
+	csharp/class/field2.il, csharp/class/field2.jl,
+	csharp/class/method1.il, csharp/class/method1.jl,
+	csharp/class/method2.il, csharp/class/method3.il,
+	csharp/class/method3.jl, csharp/class/method4.il,
+	csharp/class/method4.jl, csharp/class/method5.il,
+	csharp/class/method5.jl, csharp/class/method6.il,
+	csharp/class/method6.jl, csharp/class/property1.il,
+	csharp/class/property1.jl, csharp/class/property2.il,
+	csharp/class/property2.jl, csharp/expr/as1.il,
+	csharp/expr/as1.jl, csharp/expr/binary1.il,
+	csharp/expr/binary1.jl, csharp/expr/bitwise1.il,
+	csharp/expr/bitwise1.jl, csharp/expr/cast1.il,
+	csharp/expr/cast1.jl, csharp/expr/cast3.il,
+	csharp/expr/cast3.jl, csharp/expr/cast4.il,
+	csharp/expr/cast4.jl, csharp/expr/cast6.il,
+	csharp/expr/cast6.jl, csharp/expr/const1.il,
+	csharp/expr/const1.jl, csharp/expr/incdec1.il,
+	csharp/expr/incdec1.jl, csharp/expr/is1.il,
+	csharp/expr/is1.jl, csharp/expr/new1.il,
+	csharp/expr/new1.jl, csharp/expr/relop1.il,
+	csharp/expr/relop1.jl, csharp/expr/shift1.il,
+	csharp/expr/shift1.jl, csharp/expr/sizeof1.il,
+	csharp/expr/typeof1.il, csharp/expr/typeof1.jl,
+	csharp/expr/unary1.il, csharp/expr/unary1.jl,
+	csharp/lexer/ident1.il, csharp/lexer/ident1.jl,
+	csharp/lexer/literal1.il, csharp/lexer/literal1.jl,
+	csharp/parser/attrs2.il, csharp/parser/attrs2.jl,
+	csharp/parser/member_access1.il, csharp/parser/member_access1.jl,
+	csharp/parser/member_access3.il, csharp/parser/type_access.err,
+	csharp/parser/type_access.jerr, csharp/stmt/lock1.il,
+	csharp/stmt/lock1.jl: update all output files to include default
+	constructors where appropriate.
+
 2001-01-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/typeof1.jl: new JVM output file for the "typeof1" test.

@@ -145,4 +145,11 @@
 .field public static literal class ['.library']'System'.'String' 's7' = "\uDBC4\uDE34"
 .field public static literal class ['.library']'System'.'Object' 'o1' = nullref
 .field public static literal class 'Test' 'o2' = nullref
+.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
+{
+	ldarg.0
+	call	instance void ['.library']'System'.'Object'::'.ctor'()
+	ret
+	.maxstack 1
+} // method .ctor
 } // class Test

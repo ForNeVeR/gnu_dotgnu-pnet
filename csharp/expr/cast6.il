@@ -135,10 +135,31 @@
 	ret
 	.maxstack 1
 } // method m1
+.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
+{
+	ldarg.0
+	call	instance void ['.library']'System'.'Object'::'.ctor'()
+	ret
+	.maxstack 1
+} // method .ctor
 } // class Test
 .class private auto ansi 'Test2' extends 'Test' implements 'I'
 {
+.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
+{
+	ldarg.0
+	call	instance void 'Test'::'.ctor'()
+	ret
+	.maxstack 1
+} // method .ctor
 } // class Test2
 .class private auto sealed ansi 'Test3' extends ['.library']'System'.'Object' implements 'J'
 {
+.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
+{
+	ldarg.0
+	call	instance void ['.library']'System'.'Object'::'.ctor'()
+	ret
+	.maxstack 1
+} // method .ctor
 } // class Test3

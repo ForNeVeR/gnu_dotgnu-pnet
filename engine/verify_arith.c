@@ -322,4 +322,18 @@ case IL_OP_NOT:
 }
 break;
 
+case IL_OP_CKFINITE:
+{
+	/* Check whether a floating point value is finite or not */
+	if(STK_UNARY == ILEngineType_F)
+	{
+		ILCoderUnary(coder, opcode, STK_UNARY);
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
 #endif /* IL_VERIFY_CODE */

@@ -1,4 +1,12 @@
 
+2004-12-15  Klaus Treichel  <ktreichel@web.de>
+
+	* class/Novell.Directory.Ldap/Novell.Directory.Ldap.build,
+	class/System.DirectoryServices/System.DirectoryServices.build: Add reference
+	to Mono.Security.
+
+	* tools/SqlSharp/SqlSharp.build: change source basedir to sqlsharp. 	
+
 2004-10-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	*  class/ByteFX.Data/ByteFX.Data.build, class/Npgsql/Npgsql.build,

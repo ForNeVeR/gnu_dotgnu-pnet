@@ -9,7 +9,7 @@
 				 install="true"
 				 installasdefault="true">
 
-			<sources basedir="${mono.sources}/tools/SqlSharp/">
+			<sources basedir="${mono.sources}/tools/sqlsharp/">
 				<includes name="SqlSharpCli.cs"/>
 			</sources>
 

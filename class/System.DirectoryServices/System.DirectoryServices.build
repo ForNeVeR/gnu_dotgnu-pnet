@@ -16,6 +16,7 @@
 
 			<references>
 				<file name="../Novell.Directory.Ldap/Novell.Directory.Ldap.dll"/>
+				<file name="../Mono.Security/Mono.Security.dll"/>
 				<file name="System.dll"/>
 			</references>
 

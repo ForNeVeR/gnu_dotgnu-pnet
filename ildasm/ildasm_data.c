@@ -40,7 +40,7 @@ static void DumpData(FILE *outstream, ILImage *image, const char *heading,
 			++fieldRVAs;
 			--numFieldRVAs;
 		}
-		if(*fieldRVAs >= (rva + len))
+		if(fieldRVAs && *fieldRVAs >= (rva + len))
 		{
 			numFieldRVAs = 0;
 		}

@@ -3,6 +3,9 @@
 
 	* csant/csant.c: wrong option flag for "--mono-corlib".
 
+	* ildasm/ildasm_data.c (DumpData): null pointer check to
+	avoid a segv.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

@@ -1780,7 +1780,14 @@ static void GenerateBinarySwitch(ILGenInfo *info,
 		/* Chop the table into two halves, and process each half */
 		chopLabel = ILLabel_Undefined;
 		chopPosn = numValues / 2;
-		ILGenSimple(info, IL_OP_DUP);
+		if(tempVar == ~((unsigned)0))
+		{
+			ILGenSimple(info, IL_OP_DUP);
+		}
+		else
+		{
+			ILGenLoadLocal(info, tempVar);
+		}
 		ILGenAdjust(info, 1);
 		CompareSwitchValue(info, &(values[chopPosn].value),
 						   IL_OP_BGE, IL_OP_BGE_UN, &chopLabel);

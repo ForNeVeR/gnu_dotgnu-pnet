@@ -439,6 +439,10 @@ public class Label : Control
 						ControlPaint.DrawBorder
 							(graphics, rect, ForeColor,
 							 ButtonBorderStyle.Solid);
+						rect.X += 1;
+						rect.Width -= 2;
+						rect.Y += 1;
+						rect.Height -= 2;
 					}
 					break;
 
@@ -447,8 +451,20 @@ public class Label : Control
 						ControlPaint.DrawBorder
 							(graphics, rect, BackColor,
 							 ButtonBorderStyle.Inset);
+						rect.X += 1;
+						rect.Width -= 2;
+						rect.Y += 1;
+						rect.Height -= 2;
 					}
 					break;
+				}
+
+				// Fill the background if we aren't transparent.
+				if(!RenderTransparent)
+				{
+					Brush brush = CreateBackgroundBrush();
+					graphics.FillRectangle(brush, rect);
+					brush.Dispose();
 				}
 
 				// Draw the text within the label.

@@ -981,15 +981,6 @@ static int IsSinglePlugin(const char *filename)
 }
 
 /*
- * Process an input file using the assembler.
- */
-static int ProcessWithAssembler(const char *filename, int jvmMode)
-{
-	FindILAsmProgram();
-	return 0;
-}
-
-/*
  * Add an argument to a list of command-line arguments.
  */
 static void AddArgument(char ***list, int *num, char *str)
@@ -1049,6 +1040,70 @@ static int ExecChild(char **argv, const char *filename)
 	{
 		return status;
 	}
+}
+
+/*
+ * Process an input file using the assembler.
+ */
+static int ProcessWithAssembler(const char *filename, int jvmMode)
+{
+	char **cmdline;
+	int cmdline_size;
+	int posn, status;
+	char *obj_output;
+
+	/* Build the assembler command-line */
+	cmdline = 0;
+	cmdline_size = 0;
+	FindILAsmProgram();
+	AddArgument(&cmdline, &cmdline_size, ilasm_program);
+	if(executable_flag)
+	{
+		obj_output = ChangeExtension((char *)filename, "objtmp");
+		CCAddLinkFile(obj_output, 1);
+	}
+	else if(compile_flag)
+	{
+		obj_output = output_filename;
+	}
+	else
+	{
+		obj_output = ChangeExtension((char *)filename, "obj");
+	}
+	AddArgument(&cmdline, &cmdline_size, "-o");
+	AddArgument(&cmdline, &cmdline_size, obj_output);
+	if(debug_flag)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-g");
+	}
+	for(posn = 0; posn < num_extension_flags; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-f");
+		AddArgument(&cmdline, &cmdline_size, extension_flags[posn]);
+	}
+	if(jvmMode)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-m");
+		AddArgument(&cmdline, &cmdline_size, "jvm");
+	}
+	for(posn = 0; posn < num_machine_flags; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-m");
+		AddArgument(&cmdline, &cmdline_size, machine_flags[posn]);
+	}
+	AddArgument(&cmdline, &cmdline_size, "--");
+	AddArgument(&cmdline, &cmdline_size, (char *)filename);
+	AddArgument(&cmdline, &cmdline_size, 0);
+
+	/* Execute the assembler */
+	status = ExecChild(cmdline, 0);
+	ILFree(cmdline);
+	if(status != 0)
+	{
+		ILDeleteFile(obj_output);
+		return status;
+	}
+	return 0;
 }
 
 /*

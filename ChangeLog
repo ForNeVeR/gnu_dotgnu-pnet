@@ -9,6 +9,8 @@ properly in the ILNode_Eq and ILNode_Ne node types.
 * cscc/cs_oper.tc: semantic analysis for relational, conditional, and
 boolean operators.
 
+* codegen/cg_output.h, codegen/cg_output.c (ILGenFieldRef): new function.
+
 2001-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_const.tc, codegen/jv_const.tc: bug in GenThen/GenElse for

@@ -349,6 +349,34 @@ void ILGenClassToken(ILGenInfo *info, int opcode, ILClass *classInfo)
 		}
 		putc('\t', info->asmOutput);
 		ILDumpClassName(info->asmOutput, 0, classInfo, IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+	}
+}
+
+void ILGenFieldRef(ILGenInfo *info, int opcode, ILField *field)
+{
+	if(info->asmOutput)
+	{
+		putc('\t', info->asmOutput);
+		if(opcode < IL_OP_PREFIX)
+		{
+			fputs(ILMainOpcodeTable[opcode].name, info->asmOutput);
+		}
+		else
+		{
+			fputs(ILPrefixOpcodeTable[opcode - IL_OP_PREFIX].name,
+				  info->asmOutput);
+		}
+		putc('\t', info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, ILField_Type(field),
+				   IL_DUMP_QUOTE_NAMES);
+		putc(' ', info->asmOutput);
+		ILDumpClassName(info->asmOutput, info->image, ILField_Owner(field),
+						IL_DUMP_QUOTE_NAMES);
+		fputs("::", info->asmOutput);
+		ILDumpIdentifier(info->asmOutput, ILField_Name(field), 0,
+						 IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
 	}
 }
 

@@ -121,6 +121,11 @@ void ILGenNewObj(ILGenInfo *info, const char *className,
 void ILGenClassToken(ILGenInfo *info, int opcode, ILClass *classInfo);
 
 /*
+ * Output an instruction that refers to a field.
+ */
+void ILGenFieldRef(ILGenInfo *info, int opcode, ILField *field);
+
+/*
  * Flush the peephole optimization queue.
  */
 void ILGenFlush(ILGenInfo *info);

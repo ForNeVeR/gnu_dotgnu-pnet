@@ -33,6 +33,7 @@ public class StringObject : JSObject
 			: base(prototype)
 			{
 				this.value = value;
+				Put("length", length); // thanks to immutable strings
 			}
 
 	// Get the length of this string.
@@ -43,7 +44,7 @@ public class StringObject : JSObject
 					return value.Length;
 				}
 			}
-
+	
 	// Determine if two string objects are equal.
 	public override bool Equals(Object obj)
 			{

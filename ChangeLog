@@ -19,6 +19,17 @@
 	runtime/System/PlatformNotSupportedException.cs: implement the
 	process start/management classes.
 
+	* System/Diagnostics/DefaultTraceListener.cs,
+	System/Diagnostics/EventLogPermission.cs,
+	System/Diagnostics/EventLogPermissionAttribute.cs,
+	System/Diagnostics/EventLogPermissionEntry.cs,
+	System/Diagnostics/EventLogPermissionEntryCollection.cs,
+	System/Security/Permissions/Makefile,
+	System/Security/Permissions/ResourcePermissionBase.cs,
+	System/Security/Permissions/ResourcePermissionBaseEntry.cs,
+	resources/en_US/System/Arg.txt, resources/en_US/System/Invalid.txt:
+	implement event log permission classes; exit when assertions fail.
+
 2003-04-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/runtime.build,

@@ -32,3 +32,6 @@ Invalid_Platform=Requested operation is not available on this platform
 Invalid_NotWaiting=The specified thread is not currently waiting
 Invalid_StandardStream=The standard stream is not defined or redirected
 Invalid_ProcessStartInfo=Invalid process start information
+Invalid_PermissionPresent=The specified permission is already present
+Invalid_PermissionNotPresent=The specified permission is not present
+Invalid_PathMismatch=Mismatch in the length of permission paths

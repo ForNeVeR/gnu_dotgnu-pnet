@@ -107,6 +107,9 @@ public class DefaultTraceListener : TraceListener
 				{
 					Write(trace);
 				}
+
+				// Exit from the application after reporting the failure.
+				Environment.Exit(1);
 			}
 
 	// Write data to this trace listener's output stream.

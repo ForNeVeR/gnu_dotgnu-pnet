@@ -8,10 +8,10 @@ Group: Development/Compilers
 BuildRequires: flex, bison, treecc
 Summary: The DotGNU Portable.NET platform
 %description
-The goal of this project is to build a suite of open source tools
+The goal of this project is to build a suite of Free Software tools
 to build and execute .NET applications, including a C# compiler,
 assembler, disassembler, and runtime engine.  The initial target
-platform is Linux, with other platforms to follow in the future.
+platform is GNU/Linux, with other platforms to follow in the future.
 
 %prep
 %setup -q

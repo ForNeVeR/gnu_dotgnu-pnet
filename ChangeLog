@@ -19,6 +19,8 @@
 	* engine/cvm_except.c: add some debug code to assist with the
 	analysis of exception problems in CVM.
 
+	* samples/mscorlib.dll: new version with fixes to "ClrType".
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

@@ -1,4 +1,10 @@
+2005-02-24  Marc Haisenko <marc@darkdust.net>
 
+	* System.Windows.Forms/Control.cs: Completely rewrote anchor layouting,
+	using a completely new scheme (remember the intended distances from the
+	edges instead of trying to keep track of size changes). Also, do
+	layouting even if no handle has been created yet.
+	
 2005-02-23  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/Private/SelectNodeList.cs: Initialize count to 0 rather

@@ -60,8 +60,9 @@ public class Control : IWin32Window, IDisposable
 	// Outside bounds of the control including windows decorations
 	// in the case of forms and non client areas
 	private int left, top, width, height;
-	// Previous control bounds
-	private int prevLeft, prevTop, prevWidth, prevHeight;
+	// Distances for anchors
+	private bool updateDistances;
+	private int distLeft, distRight, distTop, distBottom;
 	internal String text;
 	private String name;
 	private HookedEvent hookedEvents;
@@ -242,6 +243,8 @@ public class Control : IWin32Window, IDisposable
 				hoverTimer.Interval = 1000;
 				hoverTimer.Enabled = false;
 				hoverTimer.Tick += new EventHandler(this.ProcessHoverTimerEvent);
+				
+				updateDistances = true;
 			}
 	public Control(String text) : this()
 			{
@@ -2658,7 +2661,7 @@ public class Control : IWin32Window, IDisposable
 		(Control affectedControl, String affectedProperty)
 			{
 				// Bail out if layout was suspended.
-				if(layoutSuspended > 0 || !IsHandleCreated)
+				if(layoutSuspended > 0)
 				{
 					return;
 				}
@@ -2683,85 +2686,78 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 
-	private void PerformAnchorLayout (Control child)
+	// Perform anchoring layouting.
+	//
+	// Some comments about this: we save the distance to the left, right, top and bottom
+	// edge on each call to SetBoundsCore (except when we disabled this by setting the
+	// updateDistances bool to false, which we only do in this function).
+	//
+	// This function then computes the positions/sizes of a control using these distances.
+	// That's easier and more reliable way than trying to keep track of size changes and
+	// then applying deltas.
+	//
+	// When no Left or Right AnchorStyle is given we need to center horizontally, and when
+	// no Top or Bottom AnchorStyle is given we need to center vertically. This centering
+	// seems to work like this: first we assume that the control plus its distances form a
+	// a rectangle. Then we center /this/ rectangle and add distLeft or distTop to get the
+	// location of the control.
+	private void PerformAnchorLayout (Control child, Rectangle rect)
 			{
-				AnchorStyles anchor;
-				int left, right, top, bottom;
-				Rectangle rect;
-
-				// If the anchor style is top-left, then bail out as
-				// there will be no change to the child's position.
-				anchor = child.Anchor;
-				if(anchor == (AnchorStyles.Top | AnchorStyles.Left))
+				int x, y, w, h;
+				AnchorStyles anchor = child.Anchor;
+				
+				x = child.left;
+				y = child.top;
+				w = child.width;
+				h = child.height;
+			
+				if ((anchor & AnchorStyles.Right) != 0)
 				{
-					return;
-				}
-
-				// Get the previous distance from all edges.
-				left = child.left - rect.X;
-				top = child.top - rect.Y;
-				right = prevWidth - (left + child.width);
-				bottom = prevHeight - (top + child.height);
-
-				rect = DisplayRectangle;
-
-				// Anchor the child to each specified side.
-				if((anchor & AnchorStyles.Top) != 0)
-				{
-					if((anchor & AnchorStyles.Bottom) == 0)
+					if ((anchor & AnchorStyles.Left) != 0)
 					{
-						// Anchor to the top, but not the bottom.
-						bottom = rect.Height - (top + child.height);
+						x = child.distLeft;
+						w = rect.Width - x - child.distRight;
+					}
+					else
+					{
+						x = rect.Width - w - child.distRight;
 					}
 				}
-				else if((anchor & AnchorStyles.Bottom) != 0)
+				else if ((anchor & AnchorStyles.Left) != 0)
 				{
-					// Anchor to the bottom, but not the top.
-					top = rect.Height - (bottom + child.height);
+					x = child.distLeft;
 				}
 				else
 				{
-					// Center within the top and bottom edges.
-					top = (rect.Height - child.height) / 2;
-					bottom = rect.Height - (top + child.height);
+					x = ((rect.Width - (w + child.distLeft + child.distRight)) / 2) + child.distLeft;
 				}
-				if((anchor & AnchorStyles.Left) != 0)
+				
+				if ((anchor & AnchorStyles.Bottom) != 0)
 				{
-					if((anchor & AnchorStyles.Right) == 0)
+					if ((anchor & AnchorStyles.Top) != 0)
 					{
-						// Anchor to the left, but not the right.
-						right = rect.Width - (left + child.width);
+						y = child.distTop;
+						h = rect.Height - y - child.distBottom;
+					}
+					else
+					{
+						y = rect.Height - h - child.distBottom;
 					}
 				}
-				else if((anchor & AnchorStyles.Right) != 0)
+				else if ((anchor & AnchorStyles.Top) != 0)
 				{
-					// Anchor to the right, but not the left.
-					left = rect.Width - (right + child.width);
+					y = child.distTop;
 				}
 				else
 				{
-					// Center within the left and right edges.
-					left = (rect.Width - child.width) / 2;
-					right = rect.Width - (left + child.width);
+					y = ((rect.Height - (h + child.distTop + child.distBottom)) / 2) + child.distTop;
 				}
-
-				// Compute the final client rectangle and check it.
-				right = rect.Width - right;
-				bottom = rect.Height - bottom;
-				if(left > right)
-				{
-					right = left;
-				}
-				if(top > bottom)
-				{
-					bottom = top;
-				}
-
-				// Set the new bounds for the child.
-				child.SetBounds
-					(rect.X + left, rect.Y + top,
-					right - left, bottom - top);
+				
+				child.updateDistances = false;		
+				child.SetBounds (x, y, w, h);
+				child.updateDistances = true;
 			}
+	
 
 	// Perform actual layout on the control.  Called from "OnLayout".
 	private void PerformActualLayout()
@@ -2791,12 +2787,6 @@ public class Control : IWin32Window, IDisposable
 					child = children[posn];
 					switch(child.Dock)
 					{
-						case DockStyle.None:
-						{
-							PerformAnchorLayout (child);
-						}
-						break;
-
 						case DockStyle.Top:
 						{
 							child.SetBounds
@@ -2835,11 +2825,23 @@ public class Control : IWin32Window, IDisposable
 						{
 							child.SetBounds
 								(left, top, right - left, bottom - top);
+							right = left;
+							bottom = top;
 						}
 						break;
 					}
 				}
-			}
+				
+				for(posn = numChildren - 1; posn >= 0; --posn)
+				{
+					child = children[posn];
+					if (child.Dock == DockStyle.None)
+					{
+						// rect is still the DisplayRectangle
+						PerformAnchorLayout (child, rect);
+					}
+				}
+			} 
 
 	// Convert a screen point into client co-ordinates.
 	public Point PointToClient(Point p)
@@ -3499,6 +3501,35 @@ public class Control : IWin32Window, IDisposable
 				toolkitWindow.Update();
 			}
 
+	// Update the "distances" from the edges for anchor layouting.
+	private void UpdateDistances ()
+			{
+				// We temporarily disable this function from PerformAnchorLayout
+				// to not unnecessarily waste some cycles.
+				if (!updateDistances)
+					return;
+				
+				if (parent != null)
+				{
+					distLeft = this.left;
+					distRight = parent.ClientSize.Width - (this.left + this.width);
+					distTop = this.top;
+					distBottom = parent.ClientSize.Height - (this.top + this.height);
+					
+					if (distRight < 0)
+						distRight = 0;
+					if (distBottom < 0)
+						distBottom = 0;
+				}
+				else
+				{
+					distLeft = 0;
+					distRight = 0;
+					distTop = 0;
+					distBottom = 0;
+				}
+			}
+
 	// Update the bounds of the control.
 #if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
@@ -3516,16 +3547,13 @@ public class Control : IWin32Window, IDisposable
 				bool resized;
 				moved = (x != this.left || y != this.top);
 				resized = (width != this.width || height != this.height);
-
-				prevLeft = this.left;
-				prevTop = this.top;
-				prevWidth = this.width;
-				prevHeight = this.height;
-
+				
 				this.left = x;
 				this.top = y;
 				this.width = width;
 				this.height = height;
+
+				UpdateDistances ();
 
 				if(moved)
 				{
@@ -5062,6 +5090,8 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnParentChanged(EventArgs e)
 			{
+				UpdateDistances ();
+
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.ParentChanged));
 				if(handler != null)

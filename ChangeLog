@@ -1,3 +1,10 @@
+
+2002-07-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/String.cs: replace the "EqualRange" internalcall
+	with "FindInRange" and do most of the "IndexOf" work in the engine.
+	Based on a suggestion by Gopal V.
+
 2002-07-13  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs (MakeRelative): Applied Rich Baumann's new version

@@ -826,7 +826,6 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			}
 	public int IndexOf(String value, int startIndex, int count)
 			{
-				int valueLen, posn;
 				if(value == null)
 				{
 					throw new ArgumentNullException("value");
@@ -841,23 +840,14 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_StringRange"));
 				}
-				valueLen = value.length;
-				posn = startIndex;
-				while((posn + valueLen) <= (startIndex + count))
-				{
-					if(EqualRange(posn, valueLen, value, 0))
-					{
-						return posn;
-					}
-					++posn;
-				}
-				return -1;
+				return FindInRange
+					(startIndex, startIndex + count - value.Length, 1, value);
 			}
 
-	// Internal helper for string index testing.
+	// Internal helper for string range searching.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private bool EqualRange(int srcIndex, int count,
-								   String dest, int destIndex);
+	extern private int FindInRange(int srcFirst, int srcLast,
+								   int step, String dest);
 
 	// Get the index of any character within an array.
 	public int IndexOfAny(char[] anyOf)
@@ -1009,7 +999,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			}
 	public int LastIndexOf(String value, int startIndex, int count)
 			{
-				int valueLen, posn;
+				int posn;
 				if(value == null)
 				{
 					throw new ArgumentNullException("value");
@@ -1024,18 +1014,17 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_StringRange"));
 				}
-				valueLen = value.length;
-				posn = startIndex;
-				while((posn - valueLen + 1) >= (startIndex - count + 1))
+				posn = FindInRange
+					(startIndex - value.Length + 1,
+					 startIndex - count + 1, -1, value);
+				if(posn != -1)
 				{
-					if(EqualRange(posn - valueLen + 1,
-								  valueLen, value, 0))
-					{
-						return posn;
-					}
-					--posn;
+					return posn + value.Length - 1;
 				}
-				return -1;
+				else
+				{
+					return -1;
+				}
 			}
 
 	// Get the last index of any character within an array.

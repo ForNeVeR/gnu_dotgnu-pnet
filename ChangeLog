@@ -4,6 +4,9 @@
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition
 to "parse error" when providing improved error messages.
 
+* cscc/cs_main.c (main): bug fix to stop the compiler crashing when
+none of the input files exist.
+
 2001-08-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_relop.tc, codegen/jv_relop.tc: implement string equality

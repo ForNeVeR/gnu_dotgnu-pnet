@@ -100,6 +100,13 @@ int main(int argc, char *argv[])
 		return (CSHaveErrors != 0);
 	}
 
+	/* Bail out if nothing was parsed, and we have errors */
+	if(!CSParseTree && CSHaveErrors != 0)
+	{
+		CloseCodeGen();
+		return 1;
+	}
+
 	/* Inform the code generator that we are doing semantic analysis */
 	CSCodeGen.semAnalysis = 1;
 

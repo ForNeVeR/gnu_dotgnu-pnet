@@ -573,7 +573,11 @@ extern md_inst_ptr _md_x86_compare
  */
 #define	md_cmp_cc_reg_reg_word_32(inst,reg1,reg2)	\
 			x86_alu_reg_reg((inst), X86_CMP, (reg1), (reg2))
+#define	md_ucmp_cc_reg_reg_word_32(inst,reg1,reg2)	\
+			x86_alu_reg_reg((inst), X86_CMP, (reg1), (reg2))
 #define	md_cmp_cc_reg_reg_word_native(inst,reg1,reg2)	\
+			x86_alu_reg_reg((inst), X86_CMP, (reg1), (reg2))
+#define	md_ucmp_cc_reg_reg_word_native(inst,reg1,reg2)	\
 			x86_alu_reg_reg((inst), X86_CMP, (reg1), (reg2))
 
 /*

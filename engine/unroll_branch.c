@@ -152,7 +152,7 @@ case COP_BLT_UN:
 	UNROLL_BRANCH_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
 						   MD_REG1_32BIT | MD_REG2_32BIT);
-	md_cmp_cc_reg_reg_word_32(unroll.out, reg, reg2);
+	md_ucmp_cc_reg_reg_word_32(unroll.out, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	BranchOnCondition(&unroll, MD_CC_GE_UN,
@@ -184,7 +184,7 @@ case COP_BLE_UN:
 	UNROLL_BRANCH_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
 						   MD_REG1_32BIT | MD_REG2_32BIT);
-	md_cmp_cc_reg_reg_word_32(unroll.out, reg, reg2);
+	md_ucmp_cc_reg_reg_word_32(unroll.out, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	BranchOnCondition(&unroll, MD_CC_GT_UN,
@@ -216,7 +216,7 @@ case COP_BGT_UN:
 	UNROLL_BRANCH_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
 						   MD_REG1_32BIT | MD_REG2_32BIT);
-	md_cmp_cc_reg_reg_word_32(unroll.out, reg, reg2);
+	md_ucmp_cc_reg_reg_word_32(unroll.out, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	BranchOnCondition(&unroll, MD_CC_LE_UN,
@@ -248,7 +248,7 @@ case COP_BGE_UN:
 	UNROLL_BRANCH_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
 						   MD_REG1_32BIT | MD_REG2_32BIT);
-	md_cmp_cc_reg_reg_word_32(unroll.out, reg, reg2);
+	md_ucmp_cc_reg_reg_word_32(unroll.out, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	BranchOnCondition(&unroll, MD_CC_LT_UN,

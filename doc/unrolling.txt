@@ -456,7 +456,9 @@ md_ucmp_reg_reg_word_32(inst, reg1, reg2)
     upon the comparison.
 
 md_cmp_cc_reg_reg_word_32(inst, reg1, reg2)
+md_ucmp_cc_reg_reg_word_32(inst, reg1, reg2)
 md_cmp_cc_reg_reg_word_native(inst, reg1, reg2)
+md_ucmp_cc_reg_reg_word_native(inst, reg1, reg2)
 
     Compare two registers and set the condition codes based on the result.
 

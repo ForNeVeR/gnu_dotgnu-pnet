@@ -1,3 +1,12 @@
+
+2003-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* doc/unrolling.txt, engine/md_arm.h, engine/md_x86.h,
+	engine/unroll_branch.c: introduce some extra instructions for
+	unsigned comparisons because PPC cannot set the condition
+	codes for both signed and unsigned results at the same time
+	like x86 and ARM can.
+
 2003-07-12  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeAddInterface,

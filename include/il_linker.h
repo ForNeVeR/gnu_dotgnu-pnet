@@ -22,6 +22,7 @@
 #define	_IL_LINKER_H
 
 #include "il_image.h"
+#include "il_serialize.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -79,10 +80,22 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name);
 int ILLinkerAddLibrary(ILLinker *linker, ILImage *image, const char *filename);
 
 /*
+ * Determine if a linker context already has a specific library assembly.
+ */
+int ILLinkerHasLibrary(ILLinker *linker, const char *name);
+
+/*
  * Add an image to a linker context as one of the primary objects.
  * This must be done after all libraries have been added.
  */
 int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename);
+
+/*
+ * Add a C object file image to a linker context as one of the primary objects.
+ * This must be done after all libraries have been added.
+ */
+int ILLinkerAddCObject(ILLinker *linker, ILImage *image,
+					   const char *filename, int memoryModel);
 
 /*
  * Add a binary resource to a linker context.  Returns zero
@@ -101,6 +114,28 @@ int ILLinkerSetEntryPoint(ILLinker *linker, const char *name);
  * Determine if the final output image has an entry point.
  */
 int ILLinkerHasEntryPoint(ILLinker *linker);
+
+/*
+ * Find a particular attribute attached to a program item.
+ * Returns NULL if no such attribute.
+ */
+ILAttribute *ILLinkerFindAttribute(ILProgramItem *item,
+								   const char *name,
+								   const char *namespace,
+								   ILType *arg1Type,
+								   ILType *arg2Type);
+
+/*
+ * Begin reading the contents of an attribute data block.
+ * Returns NULL if the attribute cannot be read.
+ */
+ILSerializeReader *ILLinkerReadAttribute(ILAttribute *attr);
+
+/*
+ * Get the C memory model associated with an image.  Returns
+ * 32 or 64 for the memory model, or zero if not a C image.
+ */
+int ILLinkerCMemoryModel(ILImage *image);
 
 /*
  * Call the linker as if it were an executable with command-line

@@ -80,6 +80,7 @@ struct _tagILLinker
 	ILMethod       *entryPoint;		/* Current entry point that is set */
 	ILUInt32		dataLength;		/* Length of ".sdata" section */
 	ILUInt32		tlsLength;		/* Length of ".tls" section */
+	int				memoryModel;	/* Memory model of a C application */
 
 };
 

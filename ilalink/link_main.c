@@ -70,6 +70,9 @@ static ILCmdLineOption const options[] = {
 	{"-S", 'S', 1,
 		"-fstdlib-name=name          or -S name",
 		"Specify the name of the standard library (default is `mscorlib')."},
+	{"-C", 'C', 1,
+		"-flibc-name=name            or -C name",
+		"Specify the name of the standard C library."},
 	{"--shared", '1', 0,
 		"--shared",
 		"Link the output as a shared image (default)."},
@@ -130,7 +133,9 @@ static int addLibrary(ILLinker *linker, const char *filename);
 static int addResource(ILLinker *linker, const char *filename,
 					   FILE *stream, int privateResources, int isStdin);
 static int processFile(ILLinker *linker, const char *filename,
-					   FILE *stream, int isStdin);
+					   FILE *stream, int isStdin,
+					   const char *stdCLibrary, int useStdlib,
+					   int firstFile);
 
 int ILLinkerMain(int argc, char *argv[])
 {
@@ -156,12 +161,14 @@ int ILLinkerMain(int argc, char *argv[])
 	char **libraryDirs;
 	int numLibraryDirs = 0;
 	char *stdLibrary = "mscorlib";
+	char *stdCLibrary = 0;
 	char **resources;
 	int numResources = 0;
 	int jvmMode = 0;
 	int useStdlib = 1;
 	int isStatic = 0;
 	int privateResources = 0;
+	int firstFile;
 	int temp, temp2;
 	ILLinker *linker;
 
@@ -311,6 +318,12 @@ int ILLinkerMain(int argc, char *argv[])
 			}
 			break;
 
+			case 'C':
+			{
+				stdCLibrary = param;
+			}
+			break;
+
 			case '1':
 			{
 				isStatic = 0;
@@ -351,6 +364,10 @@ int ILLinkerMain(int argc, char *argv[])
 				if(!strncmp(param, "stdlib-name=", 12))
 				{
 					stdLibrary = param + 12;
+				}
+				else if(!strncmp(param, "libc-name=", 10))
+				{
+					stdCLibrary = param + 10;
 				}
 				else if(!strncmp(param, "assembly-name=", 14))
 				{
@@ -582,6 +599,7 @@ int ILLinkerMain(int argc, char *argv[])
 
 	/* Process the input files that aren't libraries */
 	sawStdin = 0;
+	firstFile = 1;
 	while(argc > 1)
 	{
 		if(!strcmp(argv[1], "-"))
@@ -596,7 +614,8 @@ int ILLinkerMain(int argc, char *argv[])
 				}
 				else
 				{
-					errors |= processFile(linker, "stdin", stdin, 1);
+					errors |= processFile(linker, "stdin", stdin, 1,
+										  stdCLibrary, useStdlib, firstFile);
 				}
 				sawStdin = 1;
 			}
@@ -623,11 +642,13 @@ int ILLinkerMain(int argc, char *argv[])
 			}
 			else
 			{
-				errors |= processFile(linker, argv[1], infile, 0);
+				errors |= processFile(linker, argv[1], infile, 0,
+									  stdCLibrary, useStdlib, firstFile);
 			}
 		}
 		++argv;
 		--argc;
+		firstFile = 0;
 	}
 
 	/* Add the explicit resource files to the linker context */
@@ -886,12 +907,18 @@ static int addResource(ILLinker *linker, const char *filename,
  * Returns non-zero on error.
  */
 static int processFile(ILLinker *linker, const char *filename,
-					   FILE *stream, int isStdin)
+					   FILE *stream, int isStdin,
+					   const char *stdCLibrary, int useStdlib,
+					   int isFirstFile)
 {
 	int errors = 0;
 	ILContext *context;
 	ILImage *image;
 	int loadError;
+	int model;
+#if 0
+	char libcName[64];
+#endif
 
 	/* Attempt to load the image into memory */
 	context = ILContextCreate();
@@ -913,9 +940,48 @@ static int processFile(ILLinker *linker, const char *filename,
 	else
 	{
 		/* Add the image to the linker context */
-		if(!ILLinkerAddImage(linker, image, filename))
+		model = ILLinkerCMemoryModel(image);
+		if(model != 0)
 		{
-			errors = 1;
+			/* Load the standard C libraries that we need for linking */
+			if(isFirstFile)
+			{
+				/* Make sure that we have the "OpenSystem.C" assembly */
+				if(!ILLinkerHasLibrary(linker, "OpenSystem.C"))
+				{
+					/* Load "OpenSystem.C" */
+					errors |= addLibrary(linker, "OpenSystem.C");
+				}
+
+				/* Make sure that we have the "libc" library */
+			#if 0	/* TODO: Temporarily disabled until we have a libc */
+				if(useStdlib)
+				{
+					if(!stdCLibrary)
+					{
+						sprintf(libcName, "libc%d", model);
+						stdCLibrary = libcName;
+					}
+					if(!ILLinkerHasLibrary(linker, stdCLibrary))
+					{
+						errors |= addLibrary(linker, stdCLibrary);
+					}
+				}
+			#endif
+			}
+
+			/* Add the C object file to the linker */
+			if(!ILLinkerAddCObject(linker, image, filename, model))
+			{
+				errors |= 1;
+			}
+		}
+		else 
+		{
+			if(!ILLinkerAddImage(linker, image, filename))
+			{
+				errors = 1;
+			}
 		}
 	}
 

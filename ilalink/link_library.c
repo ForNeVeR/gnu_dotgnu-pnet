@@ -405,6 +405,11 @@ int ILLinkerAddLibrary(ILLinker *linker, ILImage *image, const char *filename)
 	return 1;
 }
 
+int ILLinkerHasLibrary(ILLinker *linker, const char *name)
+{
+	return (_ILLinkerFindLibrary(linker, name) != 0);
+}
+
 void _ILLinkerDestroyLibraries(ILLinker *linker)
 {
 	ILLibrary *library;

@@ -45,15 +45,18 @@ int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename)
 	thisAssem = (ILAssembly *)ILImageTokenInfo(linker->image,
 											   (IL_META_TOKEN_ASSEMBLY | 1));
 
-	/* Copy module information from the image */
-	module = 0;
-	while((module = (ILModule *)ILImageNextToken
-				(image, IL_META_TOKEN_MODULE, module)) != 0)
+	/* Copy module information from the image if not a C object file */
+	if(ILLinkerCMemoryModel(image) == 0)
 	{
-		if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)module,
-								  (ILProgramItem *)thisModule))
+		module = 0;
+		while((module = (ILModule *)ILImageNextToken
+					(image, IL_META_TOKEN_MODULE, module)) != 0)
 		{
-			return 0;
+			if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)module,
+									  (ILProgramItem *)thisModule))
+			{
+				return 0;
+			}
 		}
 	}
 
@@ -162,6 +165,42 @@ int ILLinkerAddImage(ILLinker *linker, ILImage *image, const char *filename)
 
 	/* Done */
 	return 1;
+}
+
+int ILLinkerAddCObject(ILLinker *linker, ILImage *image,
+					   const char *filename, int memoryModel)
+{
+	ILProgramItem *oldItem;
+	ILProgramItem *newItem;
+
+	/* Check that the memory model is consistent with the
+	   values from previous object files that we linked */
+	if(linker->memoryModel != 0)
+	{
+		if(linker->memoryModel != memoryModel)
+		{
+			fprintf(stderr,
+					"%s: memory model is inconsistent with other objects\n",
+					filename);
+			linker->error = 1;
+		}
+	}
+	else
+	{
+		/* This is the first C object, so set the memory model
+		   locally and in the final image */
+		linker->memoryModel = memoryModel;
+		oldItem = ILProgramItem_FromToken(image, IL_META_TOKEN_MODULE | 1);
+		newItem = ILProgramItem_FromToken
+			(linker->image, IL_META_TOKEN_MODULE | 1);
+		if(oldItem && newItem)
+		{
+			_ILLinkerConvertAttrs(linker, oldItem, newItem);
+		}
+	}
+
+	/* Add the image to the linker */
+	return ILLinkerAddImage(linker, image, filename);
 }
 
 #ifdef	__cplusplus

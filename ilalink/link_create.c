@@ -71,6 +71,7 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	linker->entryPoint = 0;
 	linker->dataLength = 0;
 	linker->tlsLength = 0;
+	linker->memoryModel = 0;
 
 	/* Ready to go */
 	return linker;

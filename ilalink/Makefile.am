@@ -16,6 +16,7 @@ libILLink_a_SOURCES = link_attrs.c \
 					  link_main.c \
 					  link_method.c \
 					  link_misc.c \
+					  link_module.c \
 					  link_res.c \
 					  link_type.c
 

@@ -40,6 +40,9 @@
 	* image/synthetic.c: don't inherit synthetic generic types from
 	"System.ValueType".
 
+	* image/generic.c, include/il_types.h: implement ILTypeInstantiate
+	and ILTypeNeedsInstantiation to assist with generic type instantiation.
+
 2003-02-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* support/dir.c : fix build breaking on Mingw32 

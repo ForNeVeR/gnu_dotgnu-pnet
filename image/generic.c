@@ -246,6 +246,241 @@ void _ILMethodSpecSetTypeIndex(ILMethodSpec *spec, ILUInt32 index)
 	spec->typeBlob = index;
 }
 
+int ILTypeNeedsInstantiation(ILType *type)
+{
+	unsigned long num;
+	unsigned long posn;
+
+	if(type != 0 && ILType_IsComplex(type))
+	{
+		switch(ILType_Kind(type))
+		{
+			case IL_TYPE_COMPLEX_BYREF:
+			case IL_TYPE_COMPLEX_PTR:
+			case IL_TYPE_COMPLEX_PINNED:
+			{
+				return ILTypeNeedsInstantiation(ILType_Ref(type));
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_ARRAY:
+			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
+			{
+				return ILTypeNeedsInstantiation(ILTypeGetElemType(type));
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_CMOD_REQD:
+			case IL_TYPE_COMPLEX_CMOD_OPT:
+			{
+				return ILTypeNeedsInstantiation(type->un.modifier__.type__);
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_LOCALS:
+			{
+				num = ILTypeNumLocals(type);
+				for(posn = 0; posn < num; ++posn)
+				{
+					if(ILTypeNeedsInstantiation(ILTypeGetLocal(type, posn)))
+					{
+						return 1;
+					}
+				}
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_MVAR:
+			case IL_TYPE_COMPLEX_VAR:
+			{
+				return 1;
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_WITH:
+			case IL_TYPE_COMPLEX_PROPERTY:
+			case IL_TYPE_COMPLEX_METHOD:
+			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_SENTINEL:
+			{
+				if(ILTypeNeedsInstantiation(ILTypeGetReturn(type)))
+				{
+					return 1;
+				}
+				num = ILTypeNumParams(type);
+				for(posn = 1; posn <= num; ++posn)
+				{
+					if(ILTypeNeedsInstantiation(ILTypeGetParam(type, posn)))
+					{
+						return 1;
+					}
+				}
+			}
+			break;
+		}
+	}
+	return 0;
+}
+
+ILType *ILTypeInstantiate(ILContext *context, ILType *type,
+						  ILType *classParams, ILType *methodParams)
+{
+	ILType *inner;
+	ILType *newType;
+	unsigned long num;
+	unsigned long posn;
+
+	/* Bail out immediately if the type does not need to be instantiated */
+	if(!ILTypeNeedsInstantiation(type))
+	{
+		return type;
+	}
+
+	/* Re-construct the type with the instantiations in place */
+	switch(ILType_Kind(type))
+	{
+		case IL_TYPE_COMPLEX_BYREF:
+		case IL_TYPE_COMPLEX_PTR:
+		case IL_TYPE_COMPLEX_PINNED:
+		{
+			/* Instantiate a simple reference type */
+			inner = ILTypeInstantiate(context, ILType_Ref(type),
+									  classParams, methodParams);
+			if(inner)
+			{
+				type = ILTypeCreateRef(context, ILType_Kind(type), inner);
+			}
+			else
+			{
+				type = ILType_Invalid;
+			}
+		}
+		break;
+
+		case IL_TYPE_COMPLEX_ARRAY:
+		case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
+		{
+			/* Instantiate an array type */
+			inner = ILTypeInstantiate(context, ILTypeGetElemType(type),
+									  classParams, methodParams);
+			if(inner)
+			{
+				type = ILTypeCreateArray(context, ILTypeGetRank(type), inner);
+			}
+			else
+			{
+				type = ILType_Invalid;
+			}
+		}
+		break;
+
+		case IL_TYPE_COMPLEX_CMOD_REQD:
+		case IL_TYPE_COMPLEX_CMOD_OPT:
+		{
+			/* Instantiate a custom modifier reference */
+			inner = ILTypeInstantiate(context, type->un.modifier__.type__,
+									  classParams, methodParams);
+			type = ILTypeCreateModifier
+				(context, 0, ILType_Kind(type), type->un.modifier__.info__);
+			if(type)
+			{
+				type = ILTypeAddModifiers(context, type, inner);
+			}
+		}
+		break;
+
+		case IL_TYPE_COMPLEX_LOCALS:
+		{
+			/* Instantiate a local variable signature */
+			newType = ILTypeCreateLocalList(context);
+			if(!newType)
+			{
+				return ILType_Invalid;
+			}
+			num = ILTypeNumLocals(type);
+			for(posn = 0; posn < num; ++posn)
+			{
+				inner = ILTypeInstantiate(context, ILTypeGetLocalWithPrefixes
+														(type, posn),
+										  classParams, methodParams);
+				if(!inner || !ILTypeAddLocal(context, newType, inner))
+				{
+					return ILType_Invalid;
+				}
+			}
+			return newType;
+		}
+		/* Not reached */
+
+		case IL_TYPE_COMPLEX_MVAR:
+		{
+			/* Instantiate a generic method variable reference */
+			if(methodParams)
+			{
+				return ILTypeGetParamWithPrefixes
+					(methodParams, ILType_VarNum(type) + 1);
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		/* Not reached */
+
+		case IL_TYPE_COMPLEX_VAR:
+		{
+			/* Instantiate a generic class variable reference */
+			if(classParams)
+			{
+				return ILTypeGetWithParamWithPrefixes
+					(classParams, ILType_VarNum(type) + 1);
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		/* Not reached */
+
+		case IL_TYPE_COMPLEX_WITH:
+		case IL_TYPE_COMPLEX_PROPERTY:
+		case IL_TYPE_COMPLEX_METHOD:
+		case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_SENTINEL:
+		{
+			/* Instantiate a method signature */
+			inner = ILTypeGetReturnWithPrefixes(type);
+			if(inner)
+			{
+				inner = ILTypeInstantiate
+					(context, type, classParams, methodParams);
+				if(!inner)
+				{
+					return ILType_Invalid;
+				}
+			}
+			newType = ILTypeCreateMethod(context, inner);
+			if(!newType)
+			{
+				return ILType_Invalid;
+			}
+			newType->kind__ = type->kind__;
+			num = ILTypeNumParams(type);
+			for(posn = 0; posn < num; ++posn)
+			{
+				inner = ILTypeInstantiate(context, ILTypeGetParamWithPrefixes
+														(type, posn),
+										  classParams, methodParams);
+				if(!inner || !ILTypeAddParam(context, newType, inner))
+				{
+					return ILType_Invalid;
+				}
+			}
+			return newType;
+		}
+		/* Not reached */
+	}
+	return type;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -598,6 +598,20 @@ ILType *ILTypeGetWithMain(ILType *type);
  */
 ILType *ILTypeGetWithMainWithPrefixes(ILType *type);
 
+/*
+ * Determine if a type needs to be instantiated because it involves
+ * generic parameter references.
+ */
+int ILTypeNeedsInstantiation(ILType *type);
+
+/*
+ * Instantiate the generic parameters in a type.  "classParams" should be
+ * a "with" type, and "methodParams" should be a method spec instantiation.
+ * Returns NULL if out of memory.
+ */
+ILType *ILTypeInstantiate(ILContext *context, ILType *type,
+						  ILType *classParams, ILType *methodParams);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -1,4 +1,10 @@
 
+2002-05-21	Gopal.V	<gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_lvalue.tc,codegen/cg_lvalue.tc,codegen/cg_misc.tc
+	codegen/jv_lvalue.tc , codegen/jv_misc.tc: implement semantic
+	analysis and code generation of base references in cscc
+	
 2002-05-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.c, engine/cvm_arith.c, engine/cvm_branch.c,

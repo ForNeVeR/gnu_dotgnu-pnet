@@ -144,8 +144,9 @@ JavaGenValue(ILNode_MemberAccess)
  */
 JavaGenValue(ILNode_BaseAccess)
 {
-	/* TODO */
-	return node->machineType;
+	JavaGenSimple(info, JAVA_OP_ALOAD_0);
+	JavaGenAdjust(info, 1);
+ 	return ILMachineType_ObjectRef;
 }
 
 /*

@@ -226,7 +226,30 @@ ILNode_GenValue(ILNode_MemberAccess)
  */
 ILNode_GenValue(ILNode_BaseAccess)
 {
-	/* TODO */
+ 	ILClass *classInfo = ((ILNode_ClassDefn *)(info->currentClass))
+ 									->classInfo;
+ 	ILType *type =ILClassToType(ILClass_Parent(classInfo));
+ 	ILMachineType machineType;
+ 
+ 	/* Do we need to unpack a value type instance? */
+ 	if(ILTypeIsValue(type))
+ 	{
+ 		/* Push the managed pointer in "this" onto the stack */
+ 		ILGenSimple(info, IL_OP_LDARG_0);
+ 		ILGenAdjust(info, 1);
+ 
+ 		/* Load the value from the managed pointer */
+ 		machineType = ILTypeToMachineType(type);
+ 		ILGenLoadManaged(info, machineType, type);
+ 		return machineType;
+ 	}
+ 	else
+ 	{
+ 		/* We assume that "this" is an object reference in argument 0 */
+ 		ILGenSimple(info, IL_OP_LDARG_0);
+ 		ILGenAdjust(info, 1);
+ 		return ILMachineType_ObjectRef;
+ 	}
 	return node->machineType;
 }
 

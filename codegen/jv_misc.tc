@@ -1587,7 +1587,14 @@ JavaGenValue(ILNode_InvocationExpression)
 	/* Invoke the method */
 	if(node->methodInfo)
 	{
-		JavaGenCallMethod(info, node->methodInfo, saveStack);
+ 		if(node->thisExpr && IsBaseAccess(node->thisExpr))
+ 		{
+ 			JavaGenCallSpecialByMethod(info,node->methodInfo);
+ 		}
+ 		else
+ 		{
+ 			JavaGenCallMethod(info, node->methodInfo, saveStack);
+ 		}
 		resultType = ILTypeToMachineType
 			(ILTypeGetReturn(ILMethod_Signature(node->methodInfo)));
 	}
@@ -1816,6 +1823,12 @@ JavaGenElse(ILNode_NoPedantic)
 %output "cg_misc.c"
 
 %{
+
+/*
+ * Determine if a statement node is of base access.
+ */
+#define IsBaseAccess(node)	(!(node) || yykind((node)) == \
+ 			yykindof(ILNode_BaseAccess))
 
 /*
  * Generate a branch for a conditional expression.

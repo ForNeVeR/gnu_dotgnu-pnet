@@ -807,10 +807,19 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
  */
 ILNode_SemAnalysis(ILNode_BaseAccess)
 {
-	/* TODO */
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	ILNode_MethodDeclaration *caller;
+	caller = (ILNode_MethodDeclaration *)(info->currentMethod);
+	if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "cannot use base reference in a static method");
+		value.kind = CS_SEMKIND_TYPE;
+		value.type = ILType_Int32;
+		return value;
+	}
+	/*assume the class to be castable -- afterall it's the base class*/
+ 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 	return value;
 }
 

@@ -373,8 +373,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
  * Create a method definition.
  */
 static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
-						 ILNode_MethodDeclaration *method,
-						 ILUInt32 extraAttrs)
+						 ILNode_MethodDeclaration *method)
 {
 	char *name;
 	ILType *tempType;
@@ -400,7 +399,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 
 	/* Create the method information block */
 	methodInfo = ILMethodCreate(classInfo, 0, name,
-								((method->modifiers & 0xFFFF) | extraAttrs));
+								(method->modifiers & 0xFFFF));
 	if(!methodInfo)
 	{
 		CSOutOfMemory();
@@ -534,14 +533,12 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	if(property->getAccessor)
 	{
 		CreateMethod(info, classInfo,
-				     (ILNode_MethodDeclaration *)(property->getAccessor),
-					 IL_META_METHODDEF_SPECIAL_NAME);
+				     (ILNode_MethodDeclaration *)(property->getAccessor));
 	}
 	if(property->setAccessor)
 	{
 		CreateMethod(info, classInfo,
-				     (ILNode_MethodDeclaration *)(property->setAccessor),
-					 IL_META_METHODDEF_SPECIAL_NAME);
+				     (ILNode_MethodDeclaration *)(property->setAccessor));
 	}
 
 	/* Get the name of the property */
@@ -688,7 +685,7 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 		else if(yykind(member) == yykindof(ILNode_MethodDeclaration))
 		{
 			CreateMethod(info, classInfo,
-						 (ILNode_MethodDeclaration *)member, 0);
+						 (ILNode_MethodDeclaration *)member);
 		}
 		else if(yykind(member) == yykindof(ILNode_EnumMemberDeclaration))
 		{

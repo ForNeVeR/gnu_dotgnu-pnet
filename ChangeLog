@@ -11,6 +11,10 @@
 	* codegen/cg_lvalue.tc, codegen/cg_output.h, codegen/cg_output.c:
 	bug fix - virtual properties were being called incorrectly.
 
+	* cscc/cs_gather.c, cscc/cs_modifiers.c: centralise the handling
+	of "static", "virtual", "abstract", and "override" when processing
+	method-like constructs.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,

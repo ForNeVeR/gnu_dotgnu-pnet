@@ -146,6 +146,20 @@ typedef struct
 } DelegateInvokeParams;
 
 /*
+ * Read a double value from a stack position.
+ */
+static IL_INLINE ILDouble DelegateReadDouble(CVMWord *stack)
+{
+#ifdef CVM_DOUBLES_ALIGNED_WORD
+	return *((ILDouble *)stack);
+#else
+	ILDouble temp;
+	ILMemCpy(&temp, stack, sizeof(ILDouble));
+	return temp;
+#endif
+}
+
+/*
  * Pack the parameters for a delegate invocation.
  */
 static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
@@ -154,6 +168,13 @@ static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
 	DelegateInvokeParams *params = (DelegateInvokeParams *)userData;
 	ILType *signature = ILMethod_Signature(method);
 	CVMWord *stacktop = thread->stackTop;
+	ILType *type;
+	unsigned long numParams;
+	unsigned long paramNum;
+	ILNativeFloat nativeFloat;
+	CVMWord *words;
+	ILUInt32 size;
+	CVMWord *ptr;
 
 	/* Push the "this" pointer if necessary */
 	if(ILType_HasThis(signature))
@@ -175,8 +196,36 @@ static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
 			(thread, "System.StackOverflowException");
 		return 1;
 	}
-	ILMemCpy(stacktop, params->words, params->numWords * sizeof(CVMWord));
-	stacktop += params->numWords;
+
+	/* Expand "float" and "double" parameters, because the frame variables
+	   are in "fixed up" form, rather than native float form */
+	numParams = ILTypeNumParams(signature);
+	words = params->words;
+	for(paramNum = 1; paramNum <= numParams; ++paramNum)
+	{
+		type = ILTypeGetParam(signature, paramNum);
+		if(type == ILType_Float32)
+		{
+			nativeFloat = (ILNativeFloat)(*((ILFloat *)words));
+			ptr = (CVMWord *)&nativeFloat;
+			size = CVM_WORDS_PER_NATIVE_FLOAT;
+		}
+		else if(type == ILType_Float64)
+		{
+			nativeFloat = (ILNativeFloat)DelegateReadDouble(words);
+			ptr = (CVMWord *)&nativeFloat;
+			size = CVM_WORDS_PER_NATIVE_FLOAT;
+		}
+		else
+		{
+			ptr = words;
+			size = ((ILSizeOfType(thread, type) + sizeof(CVMWord) - 1)
+						/ sizeof(CVMWord));
+		}
+		ILMemCpy(stacktop, ptr, size * sizeof(CVMWord));
+		words += size;
+		stacktop += size;
+	}
 
 	/* Update the stack top */
 	thread->stackTop = stacktop;

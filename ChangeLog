@@ -4,6 +4,9 @@
 	* include/il_values.h: fix an ANSI C oddity in "IL_READ_INT64"
 	and "IL_READ_UINT64" (thanks to Miroslaw Dobrzanski-Neumann).
 
+	* engine/lib_delegate.c (PackDelegateInvokeParams): fix a bug
+	with the expansion of float and double parameters (bug #6891).
+
 2003-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvmc_setup.c: truncate or sign-extend 8-bit and 16-bit values

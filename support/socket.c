@@ -732,7 +732,7 @@ int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
 						   ILInt32 name, ILInt32 *value)
 {
 #ifdef HAVE_GETSOCKOPT
-	socklen_t len=sizeof(ILInt32);
+	int len=sizeof(ILInt32);
 	return (getsockopt((int)(ILNativeInt)sockfd,level,name,value,&len) == 0);
 #else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
@@ -762,7 +762,7 @@ int ILSysIOSocketGetLinger(ILSysIOHandle handle, int *enabled, int *seconds)
 {
 #if defined(HAVE_SETSOCKOPT) && defined(SO_LINGER)
 	struct linger _linger;
-	socklen_t size=sizeof(struct linger);
+	int size=sizeof(struct linger);
 	if(getsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,&(_linger),
 						&size) < 0)
 	{

@@ -1,4 +1,9 @@
 
+2003-06-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/socket.c: remove references to socklen_t, which isn't a
+	portable data type.
+
 2003-05-31  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_stmt.tc: Improve the Enumerator detection code

@@ -18,6 +18,10 @@
 
 	* doc/c_users_guide.html: clean up the C user's guide a little.
 
+	* doc/c_users_guide.html, ilalink/link_library.c:
+	recognise C# types that are tagged with "OpenSystem.C.GlobalScope"
+	as containing functions that are directly accessible from C.
+
 2004-02-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

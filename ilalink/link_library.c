@@ -632,6 +632,18 @@ static int WalkTypeDefs(ILLinker *linker, ILImage *image, ILLibrary *library)
 					return 0;
 				}
 			}
+
+			/* If this type is marked with "OpenSystem.C.GlobalScope", then
+			   it should also be inspected for global symbol definitions */
+			if(ILLinkerFindAttribute(ILToProgramItem(classInfo),
+									 "GlobalScopeAttribute",
+									 "OpenSystem.C", 0, 0))
+			{
+				if(!WalkGlobals(linker, image, library, classInfo))
+				{
+					return 0;
+				}
+			}
 		}
 	}
 	return 1;
@@ -1080,7 +1092,14 @@ static ILMember *CreateSymbolRef(ILLinker *linker, ILLibrary *library,
 	}
 
 	/* Make a "TypeRef" for the library's "<Module>" type */
-	if(library)
+	if(libSymbol->member &&
+	   !_ILLinkerIsModule(ILMember_Owner(libSymbol->member)))
+	{
+		/* The symbol is in a C# class marked with "GlobalScope" */
+		classInfo = _ILLinkerConvertClassRef
+			(linker, ILMember_Owner(libSymbol->member));
+	}
+	else if(library)
 	{
 		find.linker = linker;
 		find.library = library;

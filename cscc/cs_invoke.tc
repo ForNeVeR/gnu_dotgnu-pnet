@@ -222,6 +222,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	unsigned long itemNum;
 	char *itemName;
 	int candidateForm;
+	ILNode_MethodDeclaration *caller;
 
 	/* Get the method name for later error reporting */
 	if(ILIsQualIdent(node->expr1))
@@ -331,6 +332,17 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	if(!ILMethod_IsStatic(methodInfo))
 	{
 		node->thisExpr = node->expr1;
+		if(yyisa(node->thisExpr, ILNode_This))
+		{
+			caller = (ILNode_MethodDeclaration *)(info->currentMethod);
+			if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+			{
+				/* Attempt to call an instance method using "this"
+				   from within a static method */
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "cannot access instance members in static methods");
+			}
+		}
 	}
 
 	/* Coerce the arguments and build the final argument list */

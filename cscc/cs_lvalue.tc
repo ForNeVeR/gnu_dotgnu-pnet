@@ -18,6 +18,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+%{
+
+/*
+ * Check to see if we are permitted to use the "this" expression
+ * to access an instance member.
+ */
+static void CheckForInstanceAccess(ILGenInfo *info, ILNode *node)
+{
+	ILNode_MethodDeclaration *caller;
+	caller = (ILNode_MethodDeclaration *)(info->currentMethod);
+	if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "cannot access instance members in static methods");
+	}
+}
+
+%}
+
 /*
  * Perform semantic analysis for the "this" expression.
  */
@@ -443,6 +462,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			}
 			else
 			{
+				CheckForInstanceAccess(info, node);
 				*parent = ILNode_MemberField_create
 							(ILNode_This_create(), field);
 			}
@@ -537,6 +557,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			}
 			else
 			{
+				CheckForInstanceAccess(info, node);
 				*parent = ILNode_MemberProperty_create
 							(ILNode_This_create(), property);
 			}

@@ -16,6 +16,17 @@
 	runtime/System/Private/NumberFormatter.cs: apply the number formatting
 	patches to pnetlib.
 
+	* runtime/System/IO/Path.cs,
+	runtime/System/Private/CustomNumberFormatter.cs,
+	runtime/System/Private/FormatNumber.cs,
+	runtime/System/Private/NumberFormatter.cs,
+	tests/System/TestUri.cs,
+	tests/System/Net/TestIPAddress.cs,
+	tests/System.Xml/TestXmlConvert.cs,
+	tests/System.Xml/TestXmlException.cs,
+	tests/runtime/System/TestSByte.cs: fix semantic compile errors
+	discovered by csc.exe.
+
 2002-10-01  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* make_patch.sh : Adjust script to include .build files.

@@ -25,6 +25,7 @@
 namespace System.IO
 {
 	using System;
+	using System.Text;
 	using Platform;
 	public sealed class Path 
 	{
@@ -177,15 +178,12 @@ namespace System.IO
 			String dir = GetTempPath();
 			String pre = "pnet";
 			String file;
-			while(true)
+			do
 			{	
 				file = dir +DirectorySeparatorChar+ pre + UniqName();
-				if (!File.Exists(file))
-				{
-					return file;
-				}				 
 			}
-			return null;
+			while (File.Exists(file));
+			return file;
 		}
 
 		private static String UniqName()

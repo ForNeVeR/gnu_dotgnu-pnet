@@ -59,7 +59,7 @@ public class TestUri : TestCase
 		{
 			if (!constructorTested) // others depend on this one
 			{
-				String lasturi;
+				String lasturi = null;
 				try // good constructors
 				{
 					rmsUri = new Uri(lasturi = "ftp://rms@ftp.gnu.org:2538/pub/gnu/?freesoftware=good");

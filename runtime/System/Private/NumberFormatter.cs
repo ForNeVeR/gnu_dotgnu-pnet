@@ -409,7 +409,7 @@ internal sealed class NumberFormatter
 	private static String ExponentialFormat(FormatNumber num, int precision, NumberFormatInfo info, bool useLowerCase)
 	{
 		int exp;
-		num.SciForm(ref exp,false);
+		num.SciForm(out exp,false);
 		StringBuilder e = new StringBuilder(new FormatNumber(exp).Whole);
 		while (e.Length < 3) { e.Insert(0,"0"); }
 		if (exp < 0) { e.Insert(0,info.NegativeSign); }
@@ -534,7 +534,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 3; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -587,7 +587,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 5; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -640,7 +640,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 10; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -693,7 +693,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 19; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -746,7 +746,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 3; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -799,7 +799,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 5; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -852,7 +852,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 10; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -905,7 +905,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 19; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -955,7 +955,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 29; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -1005,7 +1005,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 7; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}
@@ -1055,7 +1055,7 @@ internal sealed class NumberFormatter
 			FormatNumber num = new FormatNumber(value);
 			if (precision < 0) { precision = 15; }
 			int exp;
-			num.SciForm(ref exp,true);
+			num.SciForm(out exp,true);
 			if (exp < precision && exp > -5) { return FixedPointFormat(num,precision,nfi); }
 			else { return ExponentialFormat(num,precision,nfi,type == 'g'); }
 		}

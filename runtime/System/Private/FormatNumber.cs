@@ -91,7 +91,7 @@ internal sealed class FormatNumber
 		if (sign != 0)
 		{
 			double w = Math.Floor(val);
-			double f = val - whole;
+			double f = val - w;
 			double tmp;
 			StringBuilder wh = new StringBuilder();
 			StringBuilder fr = new StringBuilder();
@@ -424,8 +424,8 @@ internal sealed class FormatNumber
 		return num;
 	}
 
-	internal FormatNumber SciForm(ref int exp) { return SciForm(ref exp,true); }
-	internal FormatNumber SciForm(ref int exp, bool copy)
+	internal FormatNumber SciForm(out int exp) { return SciForm(out exp,true); }
+	internal FormatNumber SciForm(out int exp, bool copy)
 	{
 		FormatNumber num;
 		if (copy)

@@ -199,7 +199,7 @@ internal sealed class CustomNumberFormatter
 		{
 			// return engineering_format();
 			int exp;
-			n = n.SciForm(ref exp,false);
+			n = n.SciForm(out exp,false);
 
 			if (sec.AfterDotMax < n.Fraction.Length)
 			{

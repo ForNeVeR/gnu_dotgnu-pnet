@@ -1,3 +1,8 @@
+
+2002-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* HACKING: document the location of the daily CVS snapshots.
+
 2002-03-16  Peter Minten  <silvernerd@users.sf.net>
 	* resources/en_US/System/Exception.txt: Added Exception_Disposed string.
 

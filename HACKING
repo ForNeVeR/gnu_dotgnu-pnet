@@ -31,8 +31,15 @@ working directory and use the following command:
 The "-d" is important.  You won't get newly created directories from the
 repository if you omit it.
 
-If CVS is inconvenient, then patches should be tested against the most
-recent .tar.gz version of pnetlib:
+If CVS is inconvenient, you can get a .tar.gz snapshot of the source
+from the following location:
+
+    http://snapshots.dotgnu.org/dotgnu-pnet/
+
+The snapshots are updated daily.
+
+The most recent release version of the source is on the Portable.NET
+Web site:
 
     http://www.southern-storm.com.au/portable_net.html
 

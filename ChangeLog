@@ -9,6 +9,9 @@
 
 	* System/Net/HttpWebRequest.cs: Implement SSL tunnelling for proxies.
 
+	* System.Drawing.Xsharp/DrawingSolidBrush.cs: Move graphics.set_Brush
+	call into if(graphics != null) code block.
+
 2004-05-21  Gopal V  <gopalv82@yahoo.com>
 
 	* Xsharp/Widget.cs: Checks for CaptionWidget are more proper

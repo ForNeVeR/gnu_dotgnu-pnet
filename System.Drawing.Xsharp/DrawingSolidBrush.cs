@@ -46,8 +46,8 @@ internal sealed class DrawingSolidBrush : ToolkitBrushBase
 					g.SubwindowMode = SubwindowMode.ClipByChildren;
 					g.SetFillSolid();
 					g.Foreground = DrawingToolkit.DrawingToXColor(Color);
+					graphics.Brush = this;
 				}
-				graphics.Brush = this;
 			}
 
 	// Dispose of this brush.

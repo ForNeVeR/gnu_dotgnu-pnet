@@ -1673,7 +1673,9 @@ ILNode_GenValue(ILNode_Unbox)
 ILNode_GenValue(ILNode_IsNull)
 {
 	ILMachineType type = ILNode_GenValue(node->expr, info);
-	if(type == ILMachineType_UnmanagedPtr)
+	if(type == ILMachineType_UnmanagedPtr ||
+	   type == ILMachineType_NativeInt ||
+	   type == ILMachineType_NativeUInt)
 	{
 		ILGenIntNative(info, 0);
 	}
@@ -1694,7 +1696,9 @@ ILNode_GenValue(ILNode_IsNull)
 ILNode_GenValue(ILNode_IsNonNull)
 {
 	ILMachineType type = ILNode_GenValue(node->expr, info);
-	if(type == ILMachineType_UnmanagedPtr)
+	if(type == ILMachineType_UnmanagedPtr ||
+	   type == ILMachineType_NativeInt ||
+	   type == ILMachineType_NativeUInt)
 	{
 		ILGenIntNative(info, 0);
 	}
@@ -2133,8 +2137,13 @@ ILNode_GenElse(ILNode_Is)
 ILNode_GenThen(ILNode_IsNull),
 ILNode_GenElse(ILNode_IsNonNull)
 {
-	ILGenCast(info, ILNode_GenValue(node->expr, info),
-			  ILMachineType_ObjectRef);
+	ILMachineType type = ILNode_GenValue(node->expr, info);
+	if(type != ILMachineType_UnmanagedPtr &&
+	   type != ILMachineType_NativeInt &&
+	   type != ILMachineType_NativeUInt)
+	{
+		ILGenCast(info, type, ILMachineType_ObjectRef);
+	}
 	ILGenJump(info, IL_OP_BRFALSE, label);
 	ILGenAdjust(info, -1);
 }
@@ -2145,8 +2154,13 @@ ILNode_GenElse(ILNode_IsNonNull)
 ILNode_GenElse(ILNode_IsNull),
 ILNode_GenThen(ILNode_IsNonNull)
 {
-	ILGenCast(info, ILNode_GenValue(node->expr, info),
-			  ILMachineType_ObjectRef);
+	ILMachineType type = ILNode_GenValue(node->expr, info);
+	if(type != ILMachineType_UnmanagedPtr &&
+	   type != ILMachineType_NativeInt &&
+	   type != ILMachineType_NativeUInt)
+	{
+		ILGenCast(info, type, ILMachineType_ObjectRef);
+	}
 	ILGenJump(info, IL_OP_BRTRUE, label);
 	ILGenAdjust(info, -1);
 }

@@ -52,7 +52,7 @@ public sealed class StringBuilder
 			}
 	public StringBuilder(String value)
 			{
-				if(value != null)
+				if(value == null)
 				{
 					buildString = String.NewBuilder(null, MinCapacity);
 				}

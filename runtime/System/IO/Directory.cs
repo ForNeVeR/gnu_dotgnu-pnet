@@ -1,0 +1,173 @@
+/*
+ * Directory.cs - Implementation of the "System.IO.Directory" class.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * Contribution from Abhaya Agarwal  <abhayag@iitk.ac.in>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+
+namespace System.IO
+{
+	using System;
+	using Platform;
+	public sealed class Directory 
+	{
+		
+		private static PathInfo pathinfo = DirMethods.GetPathInfo();
+
+		public static void Delete(string path)
+		{
+			Delete(path,false);	
+		}
+		
+		[TODO]
+		public static void Delete(string path, bool recursive)
+		{
+			if(path==null)
+			{
+				throw new ArgumentNullException();
+			}
+			if(path.Length==0 || (path.Trim()).Length==0 || path.IndexOfAny(pathinfo.invalidPathChars)!= -1)
+			{
+				throw new ArgumentException();
+			}
+
+			Errno errno = DirMethods.Delete(path);
+
+			switch(errno)
+			{
+				case ENOENT:
+					throw new DirectoryNotFoundException(_("IO_DirNotFound"));
+					break;
+
+				case ENOTEMPTY:
+					if(!recursive)
+						throw new IOException(_("IO_Error"));
+					else
+						[TODO]
+					break;
+
+				case EROFS:
+					throw new IOException(_("IO_Error"));
+					break;
+
+				case EACCES:
+					throw new SecurityException(_("IO_PathnameSecurity"));
+					break;
+
+				// Needs to be confirmed.
+				case ENAMETOOLONG:					
+					throw new PathTooLongException();
+					break;
+				// TODO
+				// Throw some appropriate exception.
+				default:
+					throw new ArgumentException();
+			}
+		}
+
+		[TODO]
+		public static bool Exists(string path)
+		{
+
+		}
+
+		public static DateTime GetCreationTime(string path)
+		{
+			File.GetCreationTime(path);
+		}
+
+		[TODO]
+		public static string GetCurrentDirectory()
+		{
+		}
+
+		[TODO]
+		public static string[] GetDirectories(string path)
+		{
+		}
+
+		[TODO]
+		public static string[] GetDirectories(string path, string searchPattern)
+		{
+		}
+
+		[TODO]
+		public static string GetDirectoryRoot(string path)
+		{
+		}
+
+		[TODO]
+		public static string[] GetFileSystemEntries(string path)
+		{
+		}
+
+		[TODO]
+		public static string[] GetFileSystemEntries(string path, string searchPattern)
+		{
+		}
+
+		[TODO]
+		public static string[] GetFiles(string path)
+		{
+		}
+
+		[TODO]
+		public static string[] GetFiles(string path, string searchPattern)
+		{
+		}
+
+		public static DateTime GetLastAccessTime(string path)
+		{
+			File.GetLastAccessTime(path);
+		}
+
+		public static DateTime GetLastWriteTime(string path)
+		{
+			File.GetLastWriteTime(path);
+		}
+
+		[TODO]
+		public static void Move(string sourceDirName, string destDirName)
+		{
+		}
+
+		[TODO]
+		public static void SetCreationTime(string path, DateTime creationTime)
+		{
+		}
+
+		[TODO]
+		public static void SetCurrentDirectory(string path)
+		{
+		}
+
+		[TODO]
+		public static void SetLastAccessTime(string path, DateTime lastAccessTime)
+		{
+		}
+
+		[TODO]
+		public static void SetLastWriteTime(string path, DateTime lastWriteTime)
+		{
+		}
+
+	}
+}
+
+

@@ -56,6 +56,11 @@ typedef struct
 } ILConversion;
 
 /*
+ * Special type code that is used to indicate "null"'s type.
+ */
+#define	ILType_Null		ILType_FromElement(IL_META_ELEMTYPE_OBJECT)
+
+/*
  * Find a standard conversion between two types.
  */
 const ILConversion *ILFindConversion(ILType *fromType, ILType *toType,

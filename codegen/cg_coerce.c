@@ -99,6 +99,12 @@ static int GetConvertRules(ILContext *context, ILType *fromType,
 		return 1;
 	}
 
+	/* If "fromType" is null, then "toType" must be a class type */
+	if(fromType == ILType_Null)
+	{
+		return ILType_IsClass(toType);
+	}
+
 	/* Look for a builtin conversion */
 	conv = ILFindConversion(fromType, toType, explicit);
 	if(conv)

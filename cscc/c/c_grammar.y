@@ -928,11 +928,11 @@ PostfixExpression
 				$$ = ILNode_ArrayAccess_create(FixIdentifierNode($1, 0), $3);
 			}
 	| PostfixExpression '(' ')'	{
-				$$ = ILNode_InvocationExpression_create
+				$$ = ILNode_CInvocationExpression_create
 						(FixIdentifierNode($1, 1), 0);
 			}
 	| PostfixExpression '(' ArgumentExpressionList ')'	{
-				$$ = ILNode_InvocationExpression_create
+				$$ = ILNode_CInvocationExpression_create
 						(FixIdentifierNode($1, 1), $3);
 			}
 	| PostfixExpression '.' AnyIdentifier	{
@@ -2111,10 +2111,10 @@ JumpStatement
 
 /* We currently only support simple __asm__ code forms as statements */
 AsmStatement
-	: K_ASM '(' StringLiteral ':' ':' ':' ')'	{
+	: K_ASM '(' StringLiteral ':' ':' ')'	{
 				$$ = ILNode_AsmStmt_create($3.string);
 			}
-	| K_ASM K_VOLATILE '(' StringLiteral ':' ':' ':' ')'	{
+	| K_ASM K_VOLATILE '(' StringLiteral ':' ':' ')'	{
 				$$ = ILNode_AsmStmt_create($4.string);
 			}
 	;

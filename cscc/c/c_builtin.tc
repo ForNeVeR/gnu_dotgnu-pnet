@@ -442,3 +442,35 @@ JavaGenDiscard(ILNode_AsmStmt)
 {
 	/* Never called: nothing to do here */
 }
+
+/*
+ * Perform semantic analysis for the "pack native float" expression.
+ */
+ILNode_CSemAnalysis(ILNode_NativeFloatPack)
+{
+	/* Nothing to do: this node is synthesised */
+	return CSemValueDefault;
+}
+
+/*
+ * Get the type of a "pack native float" expression.
+ */
+ILNode_GetType(ILNode_NativeFloatPack)
+{
+	return ILMachineType_ManagedValue;
+}
+
+/*
+ * Generate value code for the "pack native float" expression.
+ */
+ILNode_GenValue(ILNode_NativeFloatPack)
+{
+	ILNode_GenValue(node->expr, info);
+	ILGenNewObj(info, "OpenSystem.C.NativeFloat", "(native float)");
+	return ILMachineType_ManagedValue;
+}
+JavaGenValue(ILNode_NativeFloatPack)
+{
+	/* Never called: nothing to do here */
+	return ILMachineType_ManagedValue;
+}

@@ -166,6 +166,10 @@ ILNode_GetType(ILNode_InvocationExpression)
 		return ILTypeToMachineType
 			(ILTypeGetReturn(ILMethod_Signature(node->methodInfo)));
 	}
+	else if(node->callSiteSig)
+	{
+		return ILTypeToMachineType(ILTypeGetReturn(node->callSiteSig));
+	}
 	else
 	{
 		return ILMachineType_Void;

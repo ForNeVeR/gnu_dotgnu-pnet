@@ -308,6 +308,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 {
 	char *code;
 }
+%node ILNode_NativeFloatPack ILNode_UnaryExpression
 %node ILNode_CLocalVar ILNode_LocalVar =
 {
 	ILType *type;
@@ -327,6 +328,10 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 {
 	char *name;
 	ILType *signature;
+}
+%node ILNode_CInvocationExpression ILNode_InvocationExpression =
+{
+	%nocreate char *name = {0};
 }
 %node ILNode_CSharpInvocation ILNode_Dummy =
 {

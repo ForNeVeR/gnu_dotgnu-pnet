@@ -30,6 +30,8 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 	const char *name = ILField_Name(field);
 	ILType *type = ILFieldGetTypeWithPrefixes(field);
 	char *newName = 0;
+	ILPInvoke *pinvoke;
+	ILModule *module;
 
 	/* Rename the field if it is within the "<Module>" class and private */
 	if(ILField_IsPrivate(field) && ILField_IsStatic(field) &&
@@ -133,6 +135,29 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 								(ILProgramItem *)newField, 0))
 	{
 		return 0;
+	}
+
+	/* Convert the PInvoke information for the method */
+	pinvoke = ILPInvokeFindField(field);
+	if(pinvoke)
+	{
+		module = ILPInvoke_Module(pinvoke);
+		if(module)
+		{
+			module = ILModuleRefCreateUnique(linker->image,
+											 ILModule_Name(module));
+			if(!module)
+			{
+				_ILLinkerOutOfMemory(linker);
+				return 0;
+			}
+		}
+		if(!ILPInvokeFieldCreate(newField, 0, ILPInvoke_Attrs(pinvoke),
+							     module, ILPInvoke_Alias(pinvoke)))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
 	}
 
 	/* Done */

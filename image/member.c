@@ -1237,7 +1237,7 @@ ILPInvoke *ILPInvokeCreate(ILMethod *method, ILToken token,
 	}
 
 	/* Initialize the other PInvoke fields */
-	pinvoke->method = method;
+	pinvoke->memberInfo = (ILMember *)method;
 	pinvoke->module = module;
 	if(aliasName && aliasName[0] != '\0')
 	{
@@ -1256,9 +1256,22 @@ ILPInvoke *ILPInvokeCreate(ILMethod *method, ILToken token,
 	return pinvoke;
 }
 
+ILPInvoke *ILPInvokeFieldCreate(ILField *field, ILToken token,
+						        ILUInt32 attributes, ILModule *module,
+						        const char *aliasName)
+{
+	return ILPInvokeCreate((ILMethod *)field, token, attributes,
+						   module, aliasName);
+}
+
 ILMethod *ILPInvokeGetMethod(ILPInvoke *pinvoke)
 {
-	return pinvoke->method;
+	return ILProgramItemToMethod(ILToProgramItem(pinvoke->memberInfo));
+}
+
+ILField *ILPInvokeGetField(ILPInvoke *pinvoke)
+{
+	return ILProgramItemToField(ILToProgramItem(pinvoke->memberInfo));
 }
 
 ILModule *ILPInvokeGetModule(ILPInvoke *pinvoke)
@@ -1277,13 +1290,18 @@ ILPInvoke *ILPInvokeFind(ILMethod *method)
 	while(member != 0)
 	{
 		if(member->kind == IL_META_MEMBERKIND_PINVOKE &&
-		   ((ILPInvoke *)member)->method == method)
+		   ((ILPInvoke *)member)->memberInfo == (ILMember *)method)
 		{
 			return ((ILPInvoke *)member);
 		}
 		member = member->nextMember;
 	}
 	return 0;
+}
+
+ILPInvoke *ILPInvokeFindField(ILField *field)
+{
+	return ILPInvokeFind((ILMethod *)field);
 }
 
 ILOverride *ILOverrideCreate(ILClass *info, ILToken token,

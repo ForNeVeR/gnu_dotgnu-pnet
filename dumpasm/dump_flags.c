@@ -124,7 +124,7 @@ ILFlagInfo const ILFieldDefinitionFlags[] = {
 	{"literal", IL_META_FIELDDEF_LITERAL, 0},
 	{"notserialized", IL_META_FIELDDEF_NOT_SERIALIZED, 0},
 	{"specialname", IL_META_FIELDDEF_SPECIAL_NAME, 0},
-	{"*pinvokeimpl", IL_META_FIELDDEF_PINVOKE_IMPL, 0},
+	{"/pinvokeimpl", IL_META_FIELDDEF_PINVOKE_IMPL, 0},
 	{"/marshal", IL_META_FIELDDEF_HAS_FIELD_MARSHAL, 0},
 	{"rtspecialname", IL_META_FIELDDEF_RT_SPECIAL_NAME, 0},
 	{0, IL_META_FIELDDEF_RT_SPECIAL_NAME |

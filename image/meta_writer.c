@@ -537,7 +537,7 @@ static void Format_ImplMap(ILWriter *writer, ILImage *image,
 {
 	values[IL_OFFSET_IMPLMAP_ATTRS] = pinvoke->member.attributes;
 	values[IL_OFFSET_IMPLMAP_METHOD] =
-			pinvoke->method->member.programItem.token;
+			pinvoke->memberInfo->programItem.token;
 	values[IL_OFFSET_IMPLMAP_ALIAS] =
 			GetPersistString(image, pinvoke->aliasName);
 	values[IL_OFFSET_IMPLMAP_MODULE] = pinvoke->module->programItem.token;
@@ -1231,9 +1231,24 @@ static int Sort_MethodImpl(ILOverride **over1, ILOverride **over2)
  */
 static int Sort_ImplMap(ILPInvoke **pinvoke1, ILPInvoke **pinvoke2)
 {
-	ILToken token1 = (*pinvoke1)->method->member.programItem.token;
-	ILToken token2 = (*pinvoke2)->method->member.programItem.token;
-	if(token1 < token2)
+	ILToken token1 = (*pinvoke1)->memberInfo->programItem.token;
+	ILToken token2 = (*pinvoke2)->memberInfo->programItem.token;
+	ILToken tokenNum1 = (token1 & ~IL_META_TOKEN_MASK);
+	ILToken tokenNum2 = (token2 & ~IL_META_TOKEN_MASK);
+
+	/* Compare the bottom parts of the token first, because
+	   the table must be sorted on its encoded value, not
+	   on the original value.  Encoded values put the token
+	   type in the low order bits */
+	if(tokenNum1 < tokenNum2)
+	{
+		return -1;
+	}
+	else if(tokenNum1 > tokenNum2)
+	{
+		return 1;
+	}
+	else if(token1 < token2)
 	{
 		return -1;
 	}

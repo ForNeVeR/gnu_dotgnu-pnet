@@ -25,13 +25,39 @@ extern	"C" {
 #endif
 
 /*
+ * Dump a PInvoke definition.
+ */
+static void Dump_PInvoke(FILE *outstream, ILPInvoke *pinvoke, ILMember *member)
+{
+	if(pinvoke)
+	{
+		fputs("pinvokeimpl(", outstream);
+		ILDumpString(outstream,
+					 ILModule_Name(ILPInvoke_Module(pinvoke)));
+		putc(' ', outstream);
+		if(strcmp(ILPInvoke_Alias(pinvoke), ILMember_Name(member)) != 0)
+		{
+			fputs("as ", outstream);
+			ILDumpString(outstream, ILPInvoke_Alias(pinvoke));
+			putc(' ', outstream);
+		}
+		ILDumpFlags(outstream, ILPInvoke_Attrs(pinvoke),
+					ILPInvokeImplementationFlags, 0);
+		fputs(") ", outstream);
+	}
+	else
+	{
+		fputs("pinvokeimpl() ", outstream);
+	}
+}
+
+/*
  * Dump a method definition.
  */
 static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 						   ILMethod *method)
 {
 	ILUInt32 rva;
-	ILPInvoke *pinvoke;
 	ILOverride *over;
 	int haveContents;
 
@@ -52,27 +78,7 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 	ILDumpFlags(outstream, ILMethod_Attrs(method), ILMethodDefinitionFlags, 0);
 	if(ILMethod_HasPInvokeImpl(method))
 	{
-		pinvoke = ILPInvokeFind(method);
-		if(pinvoke)
-		{
-			fputs("pinvokeimpl(", outstream);
-			ILDumpString(outstream,
-						 ILModule_Name(ILPInvoke_Module(pinvoke)));
-			putc(' ', outstream);
-			if(strcmp(ILPInvoke_Alias(pinvoke), ILMethod_Name(method)) != 0)
-			{
-				fputs("as ", outstream);
-				ILDumpString(outstream, ILPInvoke_Alias(pinvoke));
-				putc(' ', outstream);
-			}
-			ILDumpFlags(outstream, ILPInvoke_Attrs(pinvoke),
-						ILPInvokeImplementationFlags, 0);
-			fputs(") ", outstream);
-		}
-		else
-		{
-			fputs("pinvokeimpl() ", outstream);
-		}
+		Dump_PInvoke(outstream, ILPInvokeFind(method), (ILMember *)method);
 	}
 	ILDumpMethodType(outstream, image, ILMethod_Signature(method),
 					 flags | IL_DUMP_GENERIC_PARAMS,
@@ -169,6 +175,10 @@ static void Dump_FieldDef(ILImage *image, FILE *outstream, int flags,
 				fputs(") ", outstream);
 			}
 		}
+	}
+	if(ILField_HasPInvokeImpl(field))
+	{
+		Dump_PInvoke(outstream, ILPInvokeFindField(field), (ILMember *)field);
 	}
 	ILDumpType(outstream, image, ILFieldGetTypeWithPrefixes(field), flags);
 	putc(' ', outstream);

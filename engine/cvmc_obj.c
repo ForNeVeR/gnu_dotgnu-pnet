@@ -323,11 +323,70 @@ static void CVMCoder_LoadThisField(ILCoder *coder, ILField *field,
 static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
 								  int isCtor);
 
+#ifdef IL_CONFIG_PINVOKE
+
+/*
+ * Load the address of a PInvoke-imported field onto the stack.
+ */
+static void LoadPInvokeFieldAddress(ILCoder *coder, ILField *field,
+									ILPInvoke *pinvoke)
+{
+	char *name;
+	void *handle;
+	void *symbol;
+	const char *symbolName;
+
+	/* Resolve the module */
+	name = ILPInvokeResolveModule(pinvoke);
+	if(!name)
+	{
+		CVM_OUT_NONE(COP_LDNULL);
+		CVM_OUT_NONE(COP_CKNULL);
+		CVM_ADJUST(1);
+		return;
+	}
+
+	/* Load the module into memory */
+	handle = ILDynLibraryOpen(name);
+	ILFree(name);
+	if(!handle)
+	{
+		CVM_OUT_NONE(COP_LDNULL);
+		CVM_OUT_NONE(COP_CKNULL);
+		CVM_ADJUST(1);
+		return;
+	}
+
+	/* Resolve the symbol and push its address */
+	symbolName = ILPInvoke_Alias(pinvoke);
+	if(!symbolName)
+	{
+		symbolName = ILField_Name(field);
+	}
+	symbol = ILDynLibraryGetSymbol(handle, symbolName);
+	CVM_OUT_PTR(COP_LDTOKEN, symbol);
+	CVM_OUT_NONE(COP_CKNULL);
+	CVM_ADJUST(1);
+}
+
+#endif /* IL_CONFIG_PINVOKE */
+
 static void CVMCoder_LoadStaticField(ILCoder *coder, ILField *field,
 							         ILType *fieldType)
 {
 	ILClass *classInfo;
 
+#ifdef IL_CONFIG_PINVOKE
+	ILPInvoke *pinvoke;
+	if((field->member.attributes & IL_META_FIELDDEF_PINVOKE_IMPL) != 0 &&
+	   (pinvoke = ILPInvokeFindField(field)) != 0)
+	{
+		/* Field that is imported via PInvoke */
+		LoadPInvokeFieldAddress(coder, field, pinvoke);
+		CVMLoadField(coder, ILEngineType_M, 0, field, fieldType, 0, 0);
+	}
+	else
+#endif
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
 	{
 		/* Call the static constructor if necessary */
@@ -401,6 +460,17 @@ static void CVMCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 							             ILType *fieldType)
 {
 	ILClass *classInfo;
+
+#ifdef IL_CONFIG_PINVOKE
+	ILPInvoke *pinvoke;
+	if((field->member.attributes & IL_META_FIELDDEF_PINVOKE_IMPL) != 0 &&
+	   (pinvoke = ILPInvokeFindField(field)) != 0)
+	{
+		/* Field that is imported via PInvoke */
+		LoadPInvokeFieldAddress(coder, field, pinvoke);
+		return;
+	}
+#endif
 
 	/* Call the static constructor if necessary */
 	classInfo = ILField_Owner(field);
@@ -740,12 +810,25 @@ static void CVMCoder_StoreStaticField(ILCoder *coder, ILField *field,
 {
 	ILUInt32 valueSize = GetStackTypeSize(fieldType);
 	ILClass *classInfo;
+#ifdef IL_CONFIG_PINVOKE
+	ILPInvoke *pinvoke;
+#endif
 
 	/* Call the static constructor if necessary */
 	classInfo = ILField_Owner(field);
 	CallStaticConstructor(coder, classInfo, 1);
 
 	/* Regular or RVA field? */
+#ifdef IL_CONFIG_PINVOKE
+	if((field->member.attributes & IL_META_FIELDDEF_PINVOKE_IMPL) != 0 &&
+	   (pinvoke = ILPInvokeFindField(field)) != 0)
+	{
+		/* Field that is imported via PInvoke */
+		LoadPInvokeFieldAddress(coder, field, pinvoke);
+		CVMStoreFieldReverse(coder, field, fieldType, 0, 0);
+	}
+	else
+#endif
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
 	{
 		/* Regular or thread-static field? */

@@ -334,11 +334,43 @@ ILNode_GenDiscard(ILNode_ScopeChange)
 %{
 
 /*
+ * Dump PInvoke information for a method or field.
+ */
+static void DumpPInvoke(ILGenInfo *info, FILE *outstream,
+						ILPInvoke *pinvoke, ILMember *member)
+{
+	fputs("pinvokeimpl(", outstream);
+	ILDumpString(outstream,
+				 ILModule_Name(ILPInvoke_Module(pinvoke)));
+	putc(' ', outstream);
+	if(strcmp(ILPInvoke_Alias(pinvoke), ILMember_Name(member)) != 0)
+	{
+		fputs("as ", outstream);
+		ILDumpString(outstream, ILPInvoke_Alias(pinvoke));
+		putc(' ', outstream);
+	}
+	ILDumpFlags(outstream, ILPInvoke_Attrs(pinvoke),
+				ILPInvokeImplementationFlags, 0);
+	fputs(") ", outstream);
+}
+
+/*
  * Dump information about a field to the output stream.
  */
 static void DumpField(ILGenInfo *info, ILField *field, ILNode *node)
 {
 	ILFieldLayout *layout;
+	ILPInvoke *pinvoke;
+
+	/* Does the field have PInvoke information associated with it? */
+	if(ILField_HasPInvokeImpl(field))
+	{
+		pinvoke = ILPInvokeFindField(field);
+	}
+	else
+	{
+		pinvoke = 0;
+	}
 
 	/* Dump the field signature and name */
 	fputs(".field ", info->asmOutput);
@@ -350,6 +382,10 @@ static void DumpField(ILGenInfo *info, ILField *field, ILNode *node)
 	}
 	ILDumpFlags(info->asmOutput, ILField_Attrs(field),
 			    ILFieldDefinitionFlags, 0);
+	if(pinvoke)
+	{
+		DumpPInvoke(info, info->asmOutput, pinvoke, (ILMember *)field);
+	}
 	ILDumpType(info->asmOutput, info->image, ILFieldGetTypeWithPrefixes(field),
 			   IL_DUMP_QUOTE_NAMES);
 	fputc(' ', info->asmOutput);
@@ -712,19 +748,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	if(pinvoke)
 	{
 		/* Dump PInvoke information for the method */
-		fputs("pinvokeimpl(", info->asmOutput);
-		ILDumpString(outstream,
-					 ILModule_Name(ILPInvoke_Module(pinvoke)));
-		putc(' ', outstream);
-		if(strcmp(ILPInvoke_Alias(pinvoke), ILMethod_Name(method)) != 0)
-		{
-			fputs("as ", outstream);
-			ILDumpString(outstream, ILPInvoke_Alias(pinvoke));
-			putc(' ', outstream);
-		}
-		ILDumpFlags(outstream, ILPInvoke_Attrs(pinvoke),
-					ILPInvokeImplementationFlags, 0);
-		fputs(") ", outstream);
+		DumpPInvoke(info, outstream, pinvoke, (ILMember *)method);
 	}
 	ILDumpMethodType(outstream, info->image,
 					 ILMethod_Signature(method),

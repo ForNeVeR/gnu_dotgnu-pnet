@@ -1,4 +1,13 @@
 
+2003-05-65  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_decls.tc, dumpasm/dump_flags.c, engine/cvmc_obj.c,
+	ilalink/link_field.c, ilasm/ilasm_grammar.y, ildasm/ildasm_class.c,
+	image/lib_attrs.c, image/link.c, image/member.c, image/meta_build.c,
+	image/meta_writer.c, image/program.h, include/il_program.h:
+	implement PInvoke lookups for fields so that global variables
+	within shared objects can be accessed.
+
 2003-05-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/arm_codegen.h, engine/cvm.c,

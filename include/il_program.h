@@ -1482,9 +1482,21 @@ ILPInvoke *ILPInvokeCreate(ILMethod *method, ILToken token,
 						   const char *aliasName);
 
 /*
+ * Create a new PInvoke member and attach it to a field.
+ */
+ILPInvoke *ILPInvokeFieldCreate(ILField *field, ILToken token,
+						        ILUInt32 attributes, ILModule *module,
+						        const char *aliasName);
+
+/*
  * Get the method associated with a PInvoke member.
  */
 ILMethod *ILPInvokeGetMethod(ILPInvoke *pinvoke);
+
+/*
+ * Get the field associated with a PInvoke member.
+ */
+ILField *ILPInvokeGetField(ILPInvoke *pinvoke);
 
 /*
  * Get the module associated with a PInvoke member.
@@ -1501,6 +1513,12 @@ const char *ILPInvokeGetAlias(ILPInvoke *pinvoke);
  * Returns NULL if no PInvoke member.
  */
 ILPInvoke *ILPInvokeFind(ILMethod *method);
+
+/*
+ * Find the PInvoke member for a particular field.
+ * Returns NULL if no PInvoke member.
+ */
+ILPInvoke *ILPInvokeFindField(ILField *field);
 
 /*
  * Get the marshal conversion type for a method parameter.
@@ -1527,6 +1545,7 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke);
 #define	ILPInvoke_Token(pinvoke)		(ILProgramItem_Token((pinvoke)))
 #define	ILPInvoke_Owner(pinvoke)		(ILMember_Owner((pinvoke)))
 #define	ILPInvoke_Method(pinvoke)		(ILPInvokeGetMethod((pinvoke)))
+#define	ILPInvoke_Field(pinvoke)		(ILPInvokeGetField((pinvoke)))
 #define	ILPInvoke_Module(pinvoke)		(ILPInvokeGetModule((pinvoke)))
 #define	ILPInvoke_Alias(pinvoke)		(ILPInvokeGetAlias((pinvoke)))
 #define	ILPInvoke_Attrs(pinvoke)		(ILMember_Attrs((pinvoke)))

@@ -468,7 +468,10 @@ static ILType *CreatePropertySig(ILInt64 callingConventions,
  */
 #define	SET_FIELD(name)		yyval.fieldAttrs.flags = IL_META_FIELDDEF_##name; \
 							yyval.fieldAttrs.nativeType.string = 0; \
-							yyval.fieldAttrs.nativeType.len = 0
+							yyval.fieldAttrs.nativeType.len = 0; \
+							yyval.fieldAttrs.pinvokeAttrs = 0; \
+							yyval.fieldAttrs.name1 = 0; \
+							yyval.fieldAttrs.name2 = 0
 #define	SET_METHOD(name)	yyval.methodAttrs.flags = \
 								IL_META_METHODDEF_##name; \
 							yyval.methodAttrs.pinvokeAttrs = 0; \
@@ -591,6 +594,9 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 	struct {
 		ILInt64		flags;
 		ILIntString	nativeType;
+		ILInt64		pinvokeAttrs;
+		char	   *name1;
+		char	   *name2;
 	}				fieldAttrs;
 	struct {
 		ILInt64		flags;
@@ -1476,6 +1482,7 @@ FieldDeclaration
 				ILField *field;
 				ILFieldMarshal *marshal;
 				ILConstant *constant;
+				ILModule *module;
 
 				field = ILAsmFieldCreate(ILAsmClass, $5.string, $3.flags, $4);
 				if(($3.flags & IL_META_FIELDDEF_HAS_FIELD_MARSHAL) != 0)
@@ -1490,6 +1497,16 @@ FieldDeclaration
 					if(!ILFieldMarshalSetType(marshal,
 											  $3.nativeType.string,
 											  $3.nativeType.len))
+					{
+						ILAsmOutOfMemory();
+					}
+				}
+				if(($3.flags & IL_META_FIELDDEF_PINVOKE_IMPL) != 0)
+				{
+					/* Add PInvoke information to the field */
+					module = FindModuleRef(ILAsmImage, $3.name1);
+					if(!ILPInvokeFieldCreate(field, 0, $3.pinvokeAttrs,
+										     module, $3.name2))
 					{
 						ILAsmOutOfMemory();
 					}
@@ -1624,6 +1641,28 @@ FieldAttributeList
 					$$.nativeType.string = 0;
 					$$.nativeType.len = 0;
 				}
+				if(($1.flags & IL_META_FIELDDEF_PINVOKE_IMPL) != 0)
+				{
+					$$.pinvokeAttrs = $1.pinvokeAttrs;
+					$$.name1 = $1.name1;
+					$$.name2 = $1.name2;
+					if(($2.flags & IL_META_FIELDDEF_PINVOKE_IMPL) != 0)
+					{
+						yyerror("duplicate `pinvokeimpl' attribute on field");
+					}
+				}
+				else if(($2.flags & IL_META_FIELDDEF_PINVOKE_IMPL) != 0)
+				{
+					$$.pinvokeAttrs = $2.pinvokeAttrs;
+					$$.name1 = $2.name1;
+					$$.name2 = $2.name2;
+				}
+				else
+				{
+					$$.pinvokeAttrs = 0;
+					$$.name1 = 0;
+					$$.name2 = 0;
+				}
 			}
 	;
 
@@ -1646,6 +1685,31 @@ FieldAttributeName
 	| K_COMPILERCONTROLLED	{ SET_FIELD(COMPILER_CONTROLLED); }
 	| K_LITERAL				{ SET_FIELD(LITERAL); }
 	| K_NOTSERIALIZED		{ SET_FIELD(NOT_SERIALIZED); }
+	| K_PINVOKEIMPL '(' ComposedString K_AS
+			ComposedString PInvokeAttributes ')'	{
+				$$.flags = IL_META_FIELDDEF_PINVOKE_IMPL;
+				$$.nativeType.string = 0;
+				$$.nativeType.len = 0;
+			    $$.pinvokeAttrs = $6;
+			    $$.name1 = $3.string;
+			    $$.name2 = $5.string;
+			}
+	| K_PINVOKEIMPL '(' ComposedString PInvokeAttributes ')'	{
+				$$.flags = IL_META_FIELDDEF_PINVOKE_IMPL;
+				$$.nativeType.string = 0;
+				$$.nativeType.len = 0;
+			    $$.pinvokeAttrs = $4;
+				$$.name1 = $3.string;
+				$$.name2 = 0;
+			}
+	| K_PINVOKEIMPL '(' PInvokeAttributes ')'	{
+				$$.flags = IL_META_FIELDDEF_PINVOKE_IMPL;
+				$$.nativeType.string = 0;
+				$$.nativeType.len = 0;
+			    $$.pinvokeAttrs = $3;
+				$$.name1 = 0;
+				$$.name2 = 0;
+			}
 	;
 
 FieldInitialization

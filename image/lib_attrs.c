@@ -81,6 +81,7 @@ static int NonSerializedAttribute(ILProgramItem *item,
 static int DllImportAttribute(ILProgramItem *item, ILSerializeReader *reader)
 {
 	ILMethod *method;
+	ILField *field;
 	const char *name;
 	int nameLen;
 	ILUInt32 attrs;
@@ -96,9 +97,19 @@ static int DllImportAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILModule *module;
 	int result;
 
-	/* We must use this on a method */
+	/* According to the ECMA spec, we must use this on a method.
+	   We have added an extension to also support PInvoke'ed fields.
+	   The metadata supports PInvoke information on fields, and it
+	   is necessary for importing variables from shared objects */
 	method = ILProgramItemToMethod(item);
-	if(!method)
+	field = ILProgramItemToField(item);
+	if(!method && !field)
+	{
+		return 0;
+	}
+
+	/* If it is a field, then it must be static and non-literal */
+	if(field && (!ILField_IsStatic(field) || ILField_IsLiteral(field)))
 	{
 		return 0;
 	}
@@ -223,13 +234,28 @@ static int DllImportAttribute(ILProgramItem *item, ILSerializeReader *reader)
 		}
 		return -1;
 	}
-	result = (ILPInvokeCreate(method, 0, attrs, module, aliasName) != 0);
-	if(result)
+	if(method)
 	{
-		/* Mark the method with the "pinvokeimpl" flag */
-		ILMemberSetAttrs((ILMember *)method,
-						 IL_META_METHODDEF_PINVOKE_IMPL,
-						 IL_META_METHODDEF_PINVOKE_IMPL);
+		result = (ILPInvokeCreate(method, 0, attrs, module, aliasName) != 0);
+		if(result)
+		{
+			/* Mark the method with the "pinvokeimpl" flag */
+			ILMemberSetAttrs((ILMember *)method,
+							 IL_META_METHODDEF_PINVOKE_IMPL,
+							 IL_META_METHODDEF_PINVOKE_IMPL);
+		}
+	}
+	else
+	{
+		result = (ILPInvokeFieldCreate
+						(field, 0, attrs, module, aliasName) != 0);
+		if(result)
+		{
+			/* Mark the field with the "pinvokeimpl" flag */
+			ILMemberSetAttrs((ILMember *)field,
+							 IL_META_FIELDDEF_PINVOKE_IMPL,
+							 IL_META_FIELDDEF_PINVOKE_IMPL);
+		}
 	}
 	ILFree(dllName);
 	if(aliasName)

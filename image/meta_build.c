@@ -1300,23 +1300,42 @@ static int Load_PInvoke(ILImage *image, ILUInt32 *values,
 						void *userData)
 {
 	ILMethod *method;
+	ILField *field;
 	ILModule *module;
 	ILPInvoke *pinvoke;
 
-	/* An early version supported PInvoke for fields.  That is now obsolete */
+	/* An early version supported PInvoke for fields.  That is now obsolete,
+	   but we have revived it so that variables can be imported from DLL's */
 	if((values[IL_OFFSET_IMPLMAP_METHOD] & IL_META_TOKEN_MASK)
-				!= IL_META_TOKEN_METHOD_DEF)
+				!= IL_META_TOKEN_METHOD_DEF &&
+	   (values[IL_OFFSET_IMPLMAP_METHOD] & IL_META_TOKEN_MASK)
+				!= IL_META_TOKEN_FIELD_DEF)
 	{
-		META_VAL_ERROR("pinvoke must be applied to a method");
+		META_VAL_ERROR("pinvoke must be applied to a method or field");
 		return IL_LOADERR_BAD_META;
 	}
 
-	/* Validate that the method is really PInvoke */
-	method = ILMethod_FromToken(image, values[IL_OFFSET_IMPLMAP_METHOD]);
-	if(!method || !ILMethod_HasPInvokeImpl(method))
+	/* Validate that the method or field is really PInvoke */
+	if((values[IL_OFFSET_IMPLMAP_METHOD] & IL_META_TOKEN_MASK)
+				== IL_META_TOKEN_METHOD_DEF)
 	{
-		META_VAL_ERROR("pinvoke token applied to a non-pinvoke method");
-		return IL_LOADERR_BAD_META;
+		method = ILMethod_FromToken(image, values[IL_OFFSET_IMPLMAP_METHOD]);
+		if(!method || !ILMethod_HasPInvokeImpl(method))
+		{
+			META_VAL_ERROR("pinvoke token applied to a non-pinvoke method");
+			return IL_LOADERR_BAD_META;
+		}
+		field = 0;
+	}
+	else
+	{
+		field = ILField_FromToken(image, values[IL_OFFSET_IMPLMAP_METHOD]);
+		if(!field || !ILField_HasPInvokeImpl(field))
+		{
+			META_VAL_ERROR("pinvoke token applied to a non-pinvoke field");
+			return IL_LOADERR_BAD_META;
+		}
+		method = 0;
 	}
 
 	/* Find the module that the function is being imported from */
@@ -1328,10 +1347,20 @@ static int Load_PInvoke(ILImage *image, ILUInt32 *values,
 	}
 
 	/* Create the PInvoke record */
-	pinvoke = ILPInvokeCreate(method, token,
-							  values[IL_OFFSET_IMPLMAP_ATTRS], module,
-							  ILImageGetString
-							  		(image, values[IL_OFFSET_IMPLMAP_ALIAS]));
+	if(method)
+	{
+		pinvoke = ILPInvokeCreate
+				(method, token,
+				 values[IL_OFFSET_IMPLMAP_ATTRS], module,
+				 ILImageGetString(image, values[IL_OFFSET_IMPLMAP_ALIAS]));
+	}
+	else
+	{
+		pinvoke = ILPInvokeFieldCreate
+				(field, token,
+				 values[IL_OFFSET_IMPLMAP_ATTRS], module,
+				 ILImageGetString(image, values[IL_OFFSET_IMPLMAP_ALIAS]));
+	}
 	if(!pinvoke)
 	{
 		return IL_LOADERR_MEMORY;

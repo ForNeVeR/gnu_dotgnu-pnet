@@ -931,11 +931,11 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 	}
 
 	/* Does the name need to be remapped for this platform? */
-	namelen = SearchForDllMap(&(pinvoke->method->member.programItem),
+	namelen = SearchForDllMap(&(pinvoke->memberInfo->programItem),
 							  name, &remapName);
 	if(namelen == -1)
 	{
-		namelen = SearchForDllMap(&(pinvoke->method->member.owner->programItem),
+		namelen = SearchForDllMap(&(pinvoke->memberInfo->owner->programItem),
 							  	  name, &remapName);
 		if(namelen == -1)
 		{

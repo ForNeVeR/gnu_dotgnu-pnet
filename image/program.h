@@ -395,7 +395,7 @@ struct _tagILProperty
 struct _tagILPInvoke
 {
 	ILMember		member;				/* Common member fields */
-	ILMethod	   *method;				/* Method PInvoke applies to */
+	ILMember	   *memberInfo;			/* Member PInvoke applies to */
 	ILModule	   *module;				/* Module function is imported from */
 	const char	   *aliasName;			/* Alias for the function */
 

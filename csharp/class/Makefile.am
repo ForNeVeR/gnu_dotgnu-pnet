@@ -8,6 +8,7 @@ TESTS = ainit1.cs \
 		enum1.cs \
 		enum2.cs \
 		enum3.cs \
+		enum4.cs \
 		event1.cs \
 		field1.cs \
 		field2.cs \

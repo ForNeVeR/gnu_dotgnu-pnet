@@ -25,6 +25,45 @@
 extern	"C" {
 #endif
 
+/*
+ * Create a basic image structure with an initial module,
+ * assembly, and "<Module>" type.
+ */
+static ILImage *CreateBasicImage(ILContext *context, const char *assemName)
+{
+	ILImage *image;
+
+	/* Create the image */
+	if((image = ILImageCreate(context)) == 0)
+	{
+		return 0;
+	}
+
+	/* Create the module definition */
+	if(!ILModuleCreate(image, 0, "<Module>", 0))
+	{
+		ILImageDestroy(image);
+		return 0;
+	}
+
+	/* Create the assembly definition */
+	if(!ILAssemblyCreate(image, 0, assemName, 0))
+	{
+		ILImageDestroy(image);
+		return 0;
+	}
+
+	/* Create the module type */
+	if(!ILClassCreate(ILClassGlobalScope(image), 0, "<Module>", 0, 0))
+	{
+		ILImageDestroy(image);
+		return 0;
+	}
+
+	/* Done */
+	return image;
+}
+
 void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 {
 	info->progname = progname;
@@ -33,15 +72,11 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	{
 		ILGenOutOfMemory(info);
 	}
-	if((info->image = ILImageCreate(info->context)) == 0)
+	if((info->image = CreateBasicImage(info->context, "<Assembly>")) == 0)
 	{
 		ILGenOutOfMemory(info);
 	}
-	if((info->libImage = ILImageCreate(info->context)) == 0)
-	{
-		ILGenOutOfMemory(info);
-	}
-	if(!ILModuleCreate(info->libImage, 0, "<library>", 0))
+	if((info->libImage = CreateBasicImage(info->context, "mscorlib")) == 0)
 	{
 		ILGenOutOfMemory(info);
 	}

@@ -1,4 +1,8 @@
 
+2004-09-17  Gopal V  <gopalv82@yahoo.com>
+	
+	* config/machine.default: Add settings needed for System.Web support.
+
 2004-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/Control.cs: fix bug #10392 - stack overflow

@@ -64,7 +64,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 		<section name="clientTarget"
 				 type="System.Web.Configuration.ClientTargetSectionHandler, System.Web"/>
 		<section name="compilation"
-				 type="System.Web.UI.CompilationConfigurationHandler, System.Web"/>
+				 type="System.Web.Configuration.CompilationConfigurationHandler, System.Web"/>
 		<section name="customErrors"
 				 type="System.Web.Configuration.CustomErrorsConfigHandler, System.Web"/>
 		<section name="deviceFilters"
@@ -84,8 +84,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 				 allowDefinition="MachineToApplication"/>
 		<section name="mobileControls"
 				 type="System.Web.UI.MobileControls.MobileControlsSectionHandler, System.Web.Mobile"/>
+		<!-- This is to changed from System.Web.UI to System.Web.Configuration to cater to ml-pnet quirks -->
 		<section name="pages"
-				 type="System.Web.UI.PagesConfigurationHandler, System.Web"/>
+				 type="System.Web.Configuration.PagesConfigurationHandler, System.Web"/>
 		<section name="processModel"
 				 type="System.Web.Configuration.ProcessModelConfigurationHandler, System.Web"
 				 allowDefinition="MachineOnly"/>
@@ -125,5 +126,89 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 			 allowLocation="false"/>
 
 </configSections>
+
+<!-- The following section should match the sources used for ml-pnet -->
+<system.web>
+	<httpHandlers>
+		<add verb="*" path="Trace.axd" type="System.Web.Handlers.TraceHandler, System.Web" />
+		<add verb="*" path="*.aspx" type="System.Web.UI.PageHandlerFactory, System.Web" />
+		<add verb="*" path="*.asmx" validate="false" type="System.Web.Services.Protocols.WebServiceHandlerFactory, System.Web.Services" />
+		<add verb="*" path="*.ashx" type="System.Web.UI.SimpleHandlerFactory, System.Web" />
+		<add verb="GET" path="WebResource.axd" type="System.Web.Handlers.AssemblyResourceLoader, System.Web" />
+		<add verb="*" path="*.asax" type="System.Web.HttpForbiddenHandler, System.Web" />
+		<add verb="*" path="*.ascx" type="System.Web.HttpForbiddenHandler, System.Web" />
+		<add verb="*" path="*.config" type="System.Web.HttpForbiddenHandler, System.Web" />
+		<add verb="*" path="*.cs" type="System.Web.HttpForbiddenHandler, System.Web" />
+		<add verb="*" path="*.rem" type="System.Runtime.Remoting.Channels.Http.HttpRemotingHandlerFactory, System.Runtime.Remoting" validate="false" />
+  		<add verb="*" path="*.soap" type="System.Runtime.Remoting.Channels.Http.HttpRemotingHandlerFactory, System.Runtime.Remoting" validate="false" />
+		<add verb="GET,HEAD" path="*" type="System.Web.StaticFileHandler, System.Web" />
+		<add verb="*" path="*" type="System.Web.HttpMethodNotAllowedHandler, System.Web" />
+	</httpHandlers>
+
+	<httpModules>
+		<add name="FormsAuthentication" type="System.Web.Security.FormsAuthenticationModule, System.Web" />
+		<add name="UrlAuthorization" type="System.Web.Security.UrlAuthorizationModule, System.Web" />
+		<add name="Session" type="System.Web.SessionState.SessionStateModule, System.Web" />
+		<add name="OutputCache" type="System.Web.Caching.OutputCacheModule, System.Web" />
+</httpModules>
+
+	<authentication mode="Forms">
+	</authentication>
+	
+	<machineKey validationKey="AutoGenerate" decryptionKey="AutoGenerate" validation="SHA1" />
+	<globalization  requestEncoding="utf-8"
+			responseEncoding="utf-8"
+			fileEncoding="utf-8"/>
+	<!--
+			culture="en-US"
+			uiculture="en-US" />
+	-->
+	<sessionState mode="InProc" />
+	
+	<webServices>
+		<protocols>
+			<add name="HttpSoap"/>
+			<add name="HttpPost"/>
+			<add name="HttpGet"/>
+			<add name="Documentation"/>
+		</protocols>
+		<wsdlHelpGenerator href="DefaultWsdlHelpGenerator.aspx" />
+	</webServices>
+
+	<webControls clientScriptsLocation="/web_scripts" />
+
+	<compilation debug="false" defaultLanguage="c#">
+		<compilers>
+		<compiler language="cs;c#;csharp" extension=".cs" warningLevel="1" compilerOptions=""
+			  type="Microsoft.CSharp.CSharpCodeProvider, System" />
+		<compiler language="vb;vbs;visualbasic;vbscript" extension=".vb"
+			  warningLevel="1" compilerOptions=""
+			  type="Microsoft.VisualBasic.VBCodeProvider, System" />
+		</compilers>
+		<assemblies>
+			<!--<add assembly="mscorlib" /> -->
+			<add assembly="System" />
+			<add assembly="System.Xml" />
+			<add assembly="System.Data" />
+			<add assembly="System.Web" />
+			<add assembly="System.Web.Services" />
+			<add assembly="System.Drawing" />
+			<add assembly="*" /> <!-- Add assemblies in bin directory -->
+		</assemblies>
+	</compilation>
+	
+	<httpRuntime executionTimeout="90"
+			 maxRequestLength="4096"
+			 useFullyQualifiedRedirectUrl="false"
+			 minFreeThreads="8"
+			 minLocalRequestFreeThreads="4"
+			 appRequestQueueLimit="100" />
+
+	<pages 	buffer="true"
+		enableSessionState="true"
+		autoEventWireup="true"
+		validateRequest="true" />
+
+</system.web>
 
 </configuration>

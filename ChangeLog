@@ -1,3 +1,6 @@
+2002-12-01  Stephen Compall  <rushing@sigecom.net>
+
+	* pnetlib.spec.in: Fixed requires, new & improved description.
 
 2002-12-01  Gopal.V  <gopalv82@symonds.net>
 

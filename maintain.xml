@@ -6,11 +6,6 @@
 
 <library name="pnetlib">
 	<namespace name="System">
-		<class name="Uri">
-			<maintainers>
-				<maintainer name="Stephen Compall" status="frozen"/>
-			</maintainers>
-		</class>
 		<class name="UriBuilder">
 			<maintainers>
 				<maintainer name="Stephen Compall" status="finished"/>

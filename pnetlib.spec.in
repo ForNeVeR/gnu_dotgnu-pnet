@@ -6,12 +6,14 @@ License: GPL
 Vendor: DotGNU
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Group: System/Emulators
-BuildRequires: pnet-interpreter
-Summary: The DotGNU Portable.NET library
+BuildRequires: pnet-interpreter, pnet-compiler, pnet-tools
+Requires: pnet-interpreter
+Summary: The DotGNU Portable .NET library
 BuildArch: noarch
 %description
-This is the standard library of the Portable.Net platform . It is 
-built according to the ECMA specification for BCL . (Ecma-334).
+The pnetlib is DotGNU's implementation of the CLI (".NET") standard
+Base Class Library.  It is designed to be used with programs targeted
+at the CLI and locally executed in the pnet-interpreter.
 
 %prep
 %setup -q
@@ -26,3 +28,12 @@ if test "/" != "${RPM_BUILD_ROOT}"; then rm -rf ${RPM_BUILD_ROOT}; fi
 %files
 %doc AUTHORS COPYING ChangeLog INSTALL NEWS README
 /usr/lib/cscc/lib/*
+
+%changelog
+* Wed Nov 27 2002 Stephen Compall <rushing@sigecom.net> 0.4.8-2
+- Corrected requires
+- Better description
+
+# Local variables:
+# mode: rpm-spec
+# end:

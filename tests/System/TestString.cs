@@ -259,7 +259,7 @@ public class TestString : TestCase
 		
 		AssertEquals ("String.Format(\"{0}\",\"FooBar\")", 
 		String.Format ("{0}","FooBar"),"FooBar");
-		
+
 		AssertEquals ("String.Format(\"{0}\",111)", 
 		String.Format ("{0}",111),"111");
 
@@ -510,25 +510,16 @@ public class TestString : TestCase
 
 	public void TestStringSubstring()
 	{
-		// some freaky behavior... with Substring(int), it throws
-		// if you pass Length, but with Substring(int, int), it doesn't
+		// if you pass Length, SHOULD NOT THROW!
 		// per ECMA spec
 		try
 		{
-			"x".Substring(0, 1);
-		}
-		catch (ArgumentOutOfRangeException aoore)
-		{
-			Fail("Substring(int, int) should not throw when passed Length as the int");
-		}
-		try
-		{
+			"x".Substring(1, 0);
 			"x".Substring(1);
-			Fail("Substring(int) should throw when passed Length");
 		}
 		catch (ArgumentOutOfRangeException)
 		{
-			// all's well S11 ;)
+			Fail("Substring should not throw when passed Length as the startIndex!");
 		}
 	}
 

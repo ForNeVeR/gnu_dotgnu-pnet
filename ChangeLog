@@ -15,6 +15,9 @@
 	samples/System.Xml.dll, samples/System.dll,
 	samples/mscorlib.dll: update all assemblies from pnetlib.
 
+	* image/link.c, support/dynlink.c: prepend "lib" to the name
+	of a shared object if the supplied name was not found.
+
 2002-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.4.0" release.

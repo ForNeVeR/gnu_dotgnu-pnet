@@ -37,6 +37,37 @@ void *ILDynLibraryOpen(const char *name)
 	handle = dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
 	if(!handle)
 	{
+		/* If the name does not start with "lib" and does not
+		   contain a path, then prepend "lib" and try again */
+		if(strncmp(name, "lib", 3) != 0)
+		{
+			error = name;
+			while(*error != '\0' && *error != '/' && *error != '\\')
+			{
+				++error;
+			}
+			if(*error == '\0')
+			{
+				/* Try adding "lib" to the start */
+				char *temp = (char *)ILMalloc(strlen(name) + 4);
+				if(temp)
+				{
+					strcpy(temp, "lib");
+					strcat(temp, name);
+					handle = dlopen(temp, RTLD_LAZY | RTLD_GLOBAL);
+					ILFree(temp);
+					if(handle)
+					{
+						return handle;
+					}
+				}
+
+				/* Reload the original error state */
+				handle = dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
+			}
+		}
+
+		/* Report the error */
 		error = dlerror();
 		fprintf(stderr, "%s: %s\n", name,
 				(error ? error : "could not load dynamic library"));

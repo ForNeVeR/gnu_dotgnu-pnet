@@ -61,7 +61,8 @@ extern	"C" {
  * Test a specific pathname for an assembly.
  */
 static char *TestAssemblyPath(const char *pathname, int pathlen,
-							  const char *name, int namelen, int needSuffix)
+							  const char *name, int namelen,
+							  int needSuffix, int insertLib)
 {
 	int nameStart;
 #ifndef IL_WIN32_PLATFORM
@@ -69,7 +70,7 @@ static char *TestAssemblyPath(const char *pathname, int pathlen,
 #endif
 
 	/* Build the full pathname */
-	char *path = (char *)ILMalloc(pathlen + namelen + 6);
+	char *path = (char *)ILMalloc(pathlen + namelen + 16);
 	if(!path)
 	{
 		return 0;
@@ -78,27 +79,45 @@ static char *TestAssemblyPath(const char *pathname, int pathlen,
 	{
 		ILMemCpy(path, pathname, pathlen);
 		path[pathlen] = '/';
-		ILMemCpy(path + pathlen + 1, name, namelen);
-		if(needSuffix)
+		if(insertLib)
 		{
-			strcpy(path + pathlen + 1 + namelen, ".dll");
+			ILMemCpy(path + pathlen + 1, "lib", 3);
+			nameStart = pathlen + 4;
 		}
 		else
 		{
-			path[pathlen + 1 + namelen] = '\0';
+			nameStart = pathlen + 1;
+		}
+		ILMemCpy(path + nameStart, name, namelen);
+		if(needSuffix)
+		{
+			strcpy(path + nameStart + namelen, ".dll");
+		}
+		else
+		{
+			path[nameStart + namelen] = '\0';
 		}
 		nameStart = pathlen + 1;
 	}
 	else
 	{
-		ILMemCpy(path, name, namelen);
-		if(needSuffix)
+		if(insertLib)
 		{
-			strcpy(path + namelen, ".dll");
+			ILMemCpy(path, "lib", 3);
+			nameStart = 3;
 		}
 		else
 		{
-			path[namelen] = '\0';
+			nameStart = 0;
+		}
+		ILMemCpy(path + nameStart, name, namelen);
+		if(needSuffix)
+		{
+			strcpy(path + nameStart + namelen, ".dll");
+		}
+		else
+		{
+			path[nameStart + namelen] = '\0';
 		}
 		nameStart = 0;
 	}
@@ -177,7 +196,7 @@ static char *SearchPathForAssembly(char *list, const char *name, int namelen,
 		}
 
 		/* Test for the assembly within this directory */
-		path = TestAssemblyPath(list, len, name, namelen, 1);
+		path = TestAssemblyPath(list, len, name, namelen, 1, 0);
 		if(path)
 		{
 			return path;
@@ -226,7 +245,7 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 	for(posn = 0; posn < numBeforePaths; ++posn)
 	{
 		path = TestAssemblyPath(beforePaths[posn], strlen(beforePaths[posn]),
-								name, namelen, 1);
+								name, namelen, 1, 0);
 		if(path)
 		{
 			return path;
@@ -276,7 +295,7 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 	for(posn = 0; posn < numAfterPaths; ++posn)
 	{
 		path = TestAssemblyPath(afterPaths[posn], strlen(afterPaths[posn]),
-								name, namelen, 1);
+								name, namelen, 1, 0);
 		if(path)
 		{
 			return path;
@@ -322,7 +341,7 @@ static char *LocateAssembly(ILContext *context, const char *name,
 		if(pathlen > 0)
 		{
 			path = TestAssemblyPath(parentAssemblyPath,
-									pathlen - 1, name, namelen, 1);
+									pathlen - 1, name, namelen, 1, 0);
 			if(path)
 			{
 				return path;
@@ -331,7 +350,7 @@ static char *LocateAssembly(ILContext *context, const char *name,
 		else
 		{
 			/* The parent assembly is in the current directory */
-			path = TestAssemblyPath(".", 0, name, namelen, 1);
+			path = TestAssemblyPath(".", 0, name, namelen, 1, 0);
 			if(path)
 			{
 				return path;
@@ -733,6 +752,7 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 		}
 		ILMemCpy(baseName, name, namelen);
 		strcpy(baseName + namelen, ".dll");
+		namelen += 4;
 	}
 	else
 	{
@@ -787,6 +807,23 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 			}
 			ILFree(fullName);
 		}
+		if(strncmp(baseName, "lib", 3) != 0)
+		{
+			/* Try again, after pre-pending "lib" to the base name */
+			fullName = (char *)ILMalloc(namelen + strlen(baseName) + 4);
+			if(fullName)
+			{
+				ILMemCpy(fullName, name, namelen);
+				strcpy(fullName + namelen, "lib");
+				strcpy(fullName + namelen + 3, baseName);
+				if(ILFileExists(fullName, (char **)0))
+				{
+					ILFree(baseName);
+					return fullName;
+				}
+				ILFree(fullName);
+			}
+		}
 	}
 
 	/* Look in the user-specified library search directories */
@@ -795,11 +832,23 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 	{
 		fullName = TestAssemblyPath(context->libraryDirs[posn],
 									strlen(context->libraryDirs[posn]),
-									baseName, strlen(baseName), 0);
+									baseName, strlen(baseName), 0, 0);
 		if(fullName)
 		{
 			ILFree(baseName);
 			return fullName;
+		}
+		if(strncmp(baseName, "lib", 3) != 0)
+		{
+			/* Try again, after pre-pending "lib" to the base name */
+			fullName = TestAssemblyPath(context->libraryDirs[posn],
+										strlen(context->libraryDirs[posn]),
+										baseName, strlen(baseName), 0, 1);
+			if(fullName)
+			{
+				ILFree(baseName);
+				return fullName;
+			}
 		}
 	}
 

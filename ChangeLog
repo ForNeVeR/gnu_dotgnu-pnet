@@ -12,6 +12,8 @@
 	* csupport/FileTable.cs: fine-tune the file descriptor table
 	API, to make it easier to use from the "open" system call.
 
+	* cscc/c/c_typesize.c: minor bugs in type sizes and alignments.
+
 2002-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_method.c, ilasm/ilasm_build.c, image/meta_build.c:

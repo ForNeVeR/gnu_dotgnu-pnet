@@ -69,9 +69,9 @@ static void TypeSizeDetect(int isNative, int is32BitOnly)
 		CTypeLongSize = sizeof(ILInt32);
 		CTypeLongAlign = _IL_ALIGN_FOR_TYPE(int);
 		CTypeLongLongSize = sizeof(ILInt64);
-		CTypeLongLongSize = _IL_ALIGN_FOR_TYPE(long);
+		CTypeLongLongAlign = _IL_ALIGN_FOR_TYPE(long);
 		CTypeFloatSize = sizeof(ILFloat);
-		CTypeFloatSize = _IL_ALIGN_FOR_TYPE(float);
+		CTypeFloatAlign = _IL_ALIGN_FOR_TYPE(float);
 		CTypeDoubleSize = sizeof(ILDouble);
 		CTypeDoubleAlign = _IL_ALIGN_FOR_TYPE(double);
 		CTypeLongDoubleSize = CTYPE_DYNAMIC;
@@ -176,9 +176,9 @@ static void TypeSizeDetect(int isNative, int is32BitOnly)
 		CTypeLongSize = 4;
 		CTypeLongAlign = 4;
 		CTypeLongLongSize = 8;
-		CTypeLongLongSize = 8;
+		CTypeLongLongAlign = 8;
 		CTypeFloatSize = 4;
-		CTypeFloatSize = 4;
+		CTypeFloatAlign = 4;
 		CTypeDoubleSize = 8;
 		CTypeDoubleAlign = 8;
 		CTypeLongDoubleSize = CTYPE_DYNAMIC;
@@ -200,9 +200,9 @@ static void TypeSizeDetect(int isNative, int is32BitOnly)
 		CTypeLongSize = 8;
 		CTypeLongAlign = 8;
 		CTypeLongLongSize = 8;
-		CTypeLongLongSize = 8;
+		CTypeLongLongAlign = 8;
 		CTypeFloatSize = 4;
-		CTypeFloatSize = 4;
+		CTypeFloatAlign = 4;
 		CTypeDoubleSize = 8;
 		CTypeDoubleAlign = 8;
 		CTypeLongDoubleSize = CTYPE_DYNAMIC;

@@ -173,7 +173,7 @@ ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
  	
 	save = info->inSemType;
 	info->inSemType = info->typeGather;
-	value = ILNode_SemAnalysis(type, info, parent);
+	value = ILNode_SemAnalysisType(type, info, parent);
 	info->inSemType = save;
 
 	return CSSemValidate(type, value);

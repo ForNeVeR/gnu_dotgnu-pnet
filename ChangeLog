@@ -4,6 +4,9 @@
 	* cscc/csharp/cs_oper.tc: Add a number of linenum & filename copies
 	for node replacements to restore sanity to error messages.
 
+	* cscc/csharp/cs_semantics.tc: Use ILNode_SemAnalysisType for the
+	CSSemType operation.
+
 2002-11-18  Robert Hwang <hwang_rob@yahoo.ca>
 
 	* image/member.c, image/class.c, include/il_program.h: a patch to allow

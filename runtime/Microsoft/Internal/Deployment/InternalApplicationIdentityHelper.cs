@@ -1,5 +1,6 @@
 /*
- * ActivationContext.cs - Implementation of "System.ActivationContext".
+ * InternalApplicationIdentityHelper.cs - Implementation of the
+ *	"Microsoft.Internal.Deployment.InternalApplicationIdentityHelper" class.
  *
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
@@ -18,23 +19,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace Microsoft.Internal.Deployment
 {
 
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
-[TODO]
-public sealed class ActivationContext
+using System;
+
+public abstract sealed class InternalApplicationIdentityHelper
 {
-	// TODO
+	// Constructor.
+	private InternalApplicationIdentityHelper() {}
 
-	internal Object componentManifest;
-	internal Object deploymentManifest;
+	// Get the internal application identity.
+	public static Object GetInternapAppId(ApplicationIdentity id)
+			{
+				return id.id;
+			}
 
-	internal void PrepareForExecution() {}
+}; // class InternalApplicationIdentityHelper
 
-}; // class ActivationContext
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
-#endif // CONFIG_FRAMEWORK_2_0
-
-}; // namespace System
+}; // namespace Microsoft.Internal.Deployment

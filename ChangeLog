@@ -32,6 +32,21 @@
 	add the COM-related interfaces to the corresponding reflection
 	classes; fix version numbers (1.2, not 2.0).
 
+	* runtime/Microsoft/Internal/Deployment/InternalActivationContextHelper.cs,
+	runtime/Microsoft/Internal/Deployment/InternalApplicationIdentityHelper.cs,
+	runtime/Microsoft/Win32/Registry.cs,
+	runtime/Microsoft/Win32/RegistryKey.cs,
+	runtime/Microsoft/Win32/RegistryValueKind.cs,
+	runtime/Microsoft/Win32/RegistryValueOptions.cs,
+	runtime/Microsoft/Win32/SafeHandles/CriticalHandleMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/CriticalHandleZeroOrMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeFileHandle.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeHandleMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeHandleZeroOrMinusOneIsInvalid.cs,
+	runtime/System/ActivationContext.cs,
+	runtime/System/ApplicationIdentity.cs: add some new classes underneath
+	the "Microsoft" namespace in mscorlib.
+
 2004-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt, runtime/Platform/Stdio.cs,

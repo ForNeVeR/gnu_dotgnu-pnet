@@ -1,5 +1,6 @@
 /*
- * ActivationContext.cs - Implementation of "System.ActivationContext".
+ * CriticalHandleMinusOneIsInvalid.cs - Implementation of the
+ *	"Microsoft.Win32.SafeHandles.CriticalHandleMinusOneIsInvalid" class.
  *
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
@@ -18,23 +19,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace Microsoft.Win32.SafeHandles
 {
 
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
 
-[TODO]
-public sealed class ActivationContext
+using System;
+using System.Runtime.InteropServices;
+
+public abstract class CriticalHandleMinusOneIsInvalid : CriticalHandle
 {
-	// TODO
+	// Constructor.
+	public CriticalHandleMinusOneIsInvalid()
+			: base(new IntPtr(-1L)) {}
 
-	internal Object componentManifest;
-	internal Object deploymentManifest;
+	// Determine if the handle is invalid.
+	public override bool IsInvalid
+			{
+				get
+				{
+					return (handle == new IntPtr(-1L));
+				}
+			}
 
-	internal void PrepareForExecution() {}
+}; // class CriticalHandleMinusOneIsInvalid
 
-}; // class ActivationContext
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
 
-#endif // CONFIG_FRAMEWORK_2_0
-
-}; // namespace System
+}; // namespace Microsoft.Win32.SafeHandles

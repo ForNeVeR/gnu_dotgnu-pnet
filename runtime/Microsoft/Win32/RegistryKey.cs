@@ -2,7 +2,7 @@
  * RegistryKey.cs - Implementation of the
  *			"Microsoft.Win32.RegistryKey" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ namespace Microsoft.Win32
 using System;
 using System.IO;
 using System.Security;
+using System.Security.AccessControl;
 
 public sealed class RegistryKey : MarshalByRefObject, IDisposable
 {
@@ -167,6 +168,13 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 				}
 				return new RegistryKey(key, true);
 			}
+#if CONFIG_ACCESS_CONTROL
+	public RegistryKey CreateSubKey
+				(String subkey, RegistrySecurity registrySecurity)
+			{
+				return CreateSubKey(subkey);
+			}
+#endif
 
 	// Delete a particular subkey.
 	public void DeleteSubKey(String subkey, bool throwOnMissingSubKey)
@@ -312,6 +320,35 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 				}
 			}
 
+#if CONFIG_ACCESS_CONTROL
+
+	// Get the access control information for this key.
+	[TODO]
+	public RegistrySecurity GetAccessControl()
+			{
+				// TODO
+				return null;
+			}
+	[TODO]
+	public RegistrySecurity GetAccessControl(AccessControlSections ruleInfo)
+			{
+				// TODO
+				return null;
+			}
+
+	// Set the access control information for this key.
+	[TODO]
+	public void SetAccessControl(RegistrySecurity registrySecurity)
+			{
+				if(registrySecurity == null)
+				{
+					throw new ArgumentNullException("registrySecurity");
+				}
+				// TODO
+			}
+
+#endif
+
 	// Get the names of all subkeys underneath this registry key.
 	public String[] GetSubKeyNames()
 			{
@@ -345,6 +382,38 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 			{
 				return GetValue(name, null);
 			}
+#if CONFIG_FRAMEWORK_1_2
+	[Obsolete("Use the RegisterValueOptions variant of GetValue instead")]
+	public Object GetValue(String name, Object defaultValue, bool doNotExpand)
+			{
+				if(doNotExpand)
+				{
+					return GetValue
+						(name, defaultValue,
+						 RegistryValueOptions.DoNotExpandedEnvironmentNames);
+				}
+				else
+				{
+					return GetValue
+						(name, defaultValue, RegistryValueOptions.None);
+				}
+			}
+	[TODO]
+	public Object GetValue(String name, Object defaultValue,
+						   RegistryValueOptions options)
+			{
+				// TODO
+				return GetValue(name, defaultValue);
+			}
+
+	// Get the kind associated with a value.
+	[TODO]
+	public RegistryValueKind GetValueKind(String name)
+			{
+				// TODO
+				return RegistryValueKind.String;
+			}
+#endif
 
 	// Get the names of all values underneath this registry key.
 	public String[] GetValueNames()
@@ -470,6 +539,14 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 					throw new IOException(_("IO_RegistryKeyClosed"));
 				}
 			}
+#if CONFIG_FRAMEWORK_1_2
+	public void SetValue
+				(String name, Object value, RegistryValueKind valueKind)
+			{
+				// TODO
+				SetValue(name, value);
+			}
+#endif
 
 	// Get the string form of this registry key.
 	public override String ToString()

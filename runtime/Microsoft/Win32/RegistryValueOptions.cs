@@ -1,5 +1,6 @@
 /*
- * ActivationContext.cs - Implementation of "System.ActivationContext".
+ * RegistryValueOptions.cs - Implementation of the
+ *			"Microsoft.Win32.RegistryValueOptions" class.
  *
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
@@ -18,23 +19,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace Microsoft.Win32
 {
 
-#if CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
 
-[TODO]
-public sealed class ActivationContext
+#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
+
+#if !ECMA_COMPAT
+[ComVisible(false)]
+#endif
+[Flags]
+public enum RegistryValueOptions
 {
-	// TODO
+	None						  = 0x0000,
+	DoNotExpandedEnvironmentNames = 0x0001
+	
+}; // enum RegistryValueOptions
 
-	internal Object componentManifest;
-	internal Object deploymentManifest;
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
 
-	internal void PrepareForExecution() {}
-
-}; // class ActivationContext
-
-#endif // CONFIG_FRAMEWORK_2_0
-
-}; // namespace System
+}; // namespace Microsoft.Win32

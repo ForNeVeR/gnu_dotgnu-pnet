@@ -1,5 +1,5 @@
 /*
- * ActivationContext.cs - Implementation of "System.ActivationContext".
+ * ApplicationIdentity.cs - Implementation of "System.ApplicationIdentity".
  *
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
@@ -24,16 +24,13 @@ namespace System
 #if CONFIG_FRAMEWORK_2_0
 
 [TODO]
-public sealed class ActivationContext
+public sealed class ApplicationIdentity
 {
 	// TODO
 
-	internal Object componentManifest;
-	internal Object deploymentManifest;
+	internal Object id;
 
-	internal void PrepareForExecution() {}
-
-}; // class ActivationContext
+}; // class ApplicationIdentity
 
 #endif // CONFIG_FRAMEWORK_2_0
 

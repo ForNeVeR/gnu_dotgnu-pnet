@@ -1,5 +1,6 @@
 /*
- * ActivationContext.cs - Implementation of "System.ActivationContext".
+ * RegistryValueKind.cs - Implementation of the
+ *			"Microsoft.Win32.RegistryValueKind" class.
  *
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
@@ -18,23 +19,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace Microsoft.Win32
 {
 
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
 
-[TODO]
-public sealed class ActivationContext
+public enum RegistryValueKind
 {
-	// TODO
+	Unknown			= -1,
+	String			= 1,
+	ExpandString	= 2,
+	Binary			= 3,
+	DWord			= 4,
+	MultiString		= 7,
+	QWord			= 11
 
-	internal Object componentManifest;
-	internal Object deploymentManifest;
+}; // enum RegistryValueKind
 
-	internal void PrepareForExecution() {}
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
 
-}; // class ActivationContext
-
-#endif // CONFIG_FRAMEWORK_2_0
-
-}; // namespace System
+}; // namespace Microsoft.Win32

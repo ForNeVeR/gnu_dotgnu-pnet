@@ -2,7 +2,7 @@
  * Registry.cs - Implementation of the
  *			"Microsoft.Win32.Registry" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,6 +108,107 @@ public sealed class Registry
 					return providers[index];
 				}
 			}
+
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get a registry key from a full path.
+	private static RegistryKey GetKey(String keyName, bool writable)
+			{
+				String rest;
+				RegistryKey key;
+				int index, index2;
+				index = keyName.IndexOf('\\');
+				index2 = keyName.IndexOf('/');
+				if(index == -1)
+				{
+					index = index2;
+				}
+				else if(index2 != -1 && index2 < index)
+				{
+					index = index2;
+				}
+				if(index != 1)
+				{
+					rest = keyName.Substring(index + 1);
+					keyName = keyName.Substring(0, index);
+				}
+				else
+				{
+					rest = String.Empty;
+				}
+				switch(keyName)
+				{
+					case "HKEY_CLASSES_ROOT":	key = ClassesRoot; break;
+					case "HKEY_CURRENT_USER":	key = CurrentUser; break;
+					case "HKEY_LOCAL_MACHINE":	key = LocalMachine; break;
+					case "HKEY_USERS":			key = Users; break;
+					case "HKEY_PERFORMANCE_DATA":
+						key = PerformanceData; break;
+					case "HKEY_CURRENT_CONFIG":	key = CurrentConfig; break;
+					case "HKEY_DYN_DATA":		key = DynData; break;
+
+					default:
+					{
+						throw new ArgumentException
+							(_("IO_RegistryKeyNotExist"));
+					}
+					// Not reached;
+				}
+				if(writable)
+				{
+					return key.CreateSubKey(rest);
+				}
+				else
+				{
+					return key.OpenSubKey(rest);
+				}
+			}
+
+	// Get a particular registry value.
+	public static Object GetValue
+				(String keyName, String valueName, Object defaultValue)
+			{
+				RegistryKey key = GetKey(keyName, false);
+				try
+				{
+					return key.GetValue(valueName, defaultValue);
+				}
+				finally
+				{
+					key.Close();
+				}
+			}
+
+	// Set a particular registry value.
+	public static void SetValue
+				(String keyName, String valueName, Object value,
+				 RegistryValueKind valueKind)
+			{
+				RegistryKey key = GetKey(keyName, true);
+				try
+				{
+					key.SetValue(valueName, value, valueKind);
+				}
+				finally
+				{
+					key.Close();
+				}
+			}
+	public static void SetValue
+				(String keyName, String valueName, Object value)
+			{
+				RegistryKey key = GetKey(keyName, true);
+				try
+				{
+					key.SetValue(valueName, value, RegistryValueKind.Unknown);
+				}
+				finally
+				{
+					key.Close();
+				}
+			}
+
+#endif // CONFIG_FRAMEWORK_1_2
 
 }; // class Registry
 

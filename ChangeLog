@@ -8,6 +8,9 @@
 	remove the "csccwrap.sh" script; make sure that $(SHELL) is
 	used when calling "link_res.sh".
 
+	* configure.in: use "cygpath" to convert the "cscc" and
+	"cscc-cs" pathnames into Windows form under Cygwin.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* runtime/System/IO/Directory.cs: Support recursive directory deletion,

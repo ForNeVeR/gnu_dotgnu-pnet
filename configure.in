@@ -7,6 +7,7 @@ dnl Extra substitution variables.
 AC_SUBST(CSANT)
 AC_SUBST(CSANT_FLAGS)
 AC_SUBST(CSHARP_COMPILER)
+AC_SUBST(CSHARP_COMPILER_CYGWIN)
 AC_SUBST(CSHARP_PLUGIN)
 AC_SUBST(CSCC_FLAGS)
 AC_SUBST(RESGEN)
@@ -21,6 +22,7 @@ AC_PROG_AWK
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_PATH_PROG(CYGPATH, cygpath)
 
 dnl The --with-pnet option can be used to specify the location of
 dnl Portable.NET, so that we know where to get the C# compiler, etc.
@@ -91,8 +93,18 @@ if test "$MSTOOLS" = "no"; then
 			exit 1
 		fi
 		CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
+		CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
 	else
 		AC_PATH_PROG(CSHARP_PLUGIN, cscc-cs,, $PNET_PATH/cscc:${prefix}/lib/cscc/plugins:${prefix}/bin:$PATH)
+		if test "x$CYGPATH" = "xno" ; then
+			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
+		else
+			# Convert the cscc and cscc-cs paths into their Windows
+			# forms, to ensure that spawns from csant work correctly.
+			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
+			CSHARP_COMPILER=`cygpath -w "$CSHARP_COMPILER"`
+			CSHARP_PLUGIN=`cygpath -w "$CSHARP_PLUGIN"`
+		fi
 		CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
 	fi
 else
@@ -104,6 +116,7 @@ else
 		exit 1
 	fi
 	CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
+	CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
 fi
 
 dnl Find the .NET resource generator to use.

@@ -1,7 +1,8 @@
 /*
- * NetworkCredential.cs - Implementation of the "System.Net.NetworkCredential" class.
+ * NetworkCredential.cs - Implementation of the
+ *			"System.Net.NetworkCredential" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,23 +22,68 @@
 namespace System.Net
 {
 
-[TODO]
 public class NetworkCredential : ICredentials
 {
-	public NetworkCredential() {}
-	
-	public NetworkCredential(String userName, String password) {}
-	
-	public NetworkCredential(String userName, String password, String domain) {}
-	
-	public NetworkCredential GetCredential(Uri uri, String authType)
-		{ return null; }
-	
-	public String Domain { get{ return null; } set{} }
-	
-	public String Password { get{ return null; } set{} }
-	
-	public String UserName { get{ return null; } set{} }
-}; //class NetworkCredential
+	// Internal state.
+	private String userName;
+	private String password;
+	private String domain;
 
-}; //namespace System.Net
+	// Constructors.
+	public NetworkCredential() {}
+	public NetworkCredential(String userName, String password)
+			{
+				this.userName = userName;
+				this.password = password;
+			}
+	public NetworkCredential(String userName, String password, String domain)
+			{
+				this.userName = userName;
+				this.password = password;
+				this.domain = domain;
+			}
+
+	// Get or set this object's properties.
+	public String Domain
+			{
+				get
+				{
+					return domain;
+				}
+				set
+				{
+					domain = value;
+				}
+			}
+	public String Password
+			{
+				get
+				{
+					return password;
+				}
+				set
+				{
+					password = value;
+				}
+			}
+	public String UserName
+			{
+				get
+				{
+					return userName;
+				}
+				set
+				{
+					userName = value;
+				}
+			}
+
+	// Get credential information for a URI and authentication type.
+	public NetworkCredential GetCredential(Uri uri, String authType)
+			{
+				return this;
+			}
+	
+}; // class NetworkCredential
+
+}; // namespace System.Net

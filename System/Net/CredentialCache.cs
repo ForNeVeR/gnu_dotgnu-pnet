@@ -1,8 +1,8 @@
 /*
- * CredentialCache.cs - Implementation of the "System.Net.CredentialCache" class.
+ * CredentialCache.cs - Implementation of the
+ *			"System.Net.CredentialCache" class.
  * 
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Contributions from Charlie Carnow <carnow@gmx.net>
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,97 +19,227 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-
 namespace System.Net
 {
-	using System.Net;
-	using System.Collections;
-	using System;
-	public class CredentialCache : ICredentials, IEnumerable
+
+using System.Collections;
+using System.Globalization;
+
+public class CredentialCache : ICredentials, IEnumerable
+{
+	// Internal state.
+	private static NetworkCredential defaultCredentials;
+	private CredentialInfo list;
+
+	// Information about a specific credential.
+	private class CredentialInfo
 	{
-		private Hashtable cache;
-		private static CredentialCache defaultCred;
-		public CredentialCache()
-		{
-			// TODO: Set defaultCred to Credentials of the current
-			// process
-			cache = new Hashtable();
-		}
-		
-		public void Add(Uri uriPrefix, string authtype, NetworkCredential cred)
-		{
-			if (uriPrefix == null || authtype == null) 
+		public Uri uriPrefix;
+		public String authType;
+		public NetworkCredential cred;
+		public CredentialInfo next;
+
+	}; // class CredentialInfo
+
+	// Constructor.
+	public CredentialCache()
 			{
-				throw new ArgumentNullException();
+				list = null;
 			}
 
-			if(cache.Contains(uriPrefix) == false) 
+	// Get the default system credentials.
+	public static ICredentials DefaultCredentials
 			{
-				cache[uriPrefix] = new Hashtable();
+				get
+				{
+					lock(typeof(CredentialCache))
+					{
+						if(defaultCredentials == null)
+						{
+							defaultCredentials = new NetworkCredential
+								(String.Empty, String.Empty, String.Empty);
+						}
+						return defaultCredentials;
+					}
+				}
 			}
-	
-			if(((Hashtable)(cache[uriPrefix])).Contains(authtype))		
-			{
-				throw new ArgumentException();
-			}
-			((Hashtable)(cache[uriPrefix]))[authtype] = cred;
-	}
 
-	public NetworkCredential GetCredential(Uri uriPrefix, string authType)
-	{
-		if (uriPrefix == null || authType == null) 
-		{
-			throw new ArgumentNullException();
-		}
-		
-		if (cache.Contains(uriPrefix))
-		{
-			if (((Hashtable)(cache[uriPrefix])).Contains(authType))
+	// Add credentials to this cache.
+	public void Add(Uri uriPrefix, String authType, NetworkCredential cred)
 			{
-				return (NetworkCredential)
-					(((Hashtable)(cache[uriPrefix]))[authType]);
+				if(uriPrefix == null)
+				{
+					throw new ArgumentNullException("uriPrefix");
+				}
+				if(authType == null)
+				{
+					throw new ArgumentNullException("authType");
+				}
+				CredentialInfo info = list;
+				CredentialInfo last = null;
+				while(info != null)
+				{
+					if(info.uriPrefix.Equals(uriPrefix) &&
+					   String.Compare(info.authType, authType, true,
+					   				  CultureInfo.InvariantCulture) == 0)
+					{
+						throw new ArgumentException
+							(S._("Arg_DuplicateCredentials"));
+					}
+					last = info;
+					info = info.next;
+				}
+				info = new CredentialInfo();
+				info.uriPrefix = uriPrefix;
+				info.authType = authType;
+				info.cred = cred;
+				info.next = null;
+				if(last != null)
+				{
+					last.next = info;
+				}
+				else
+				{
+					list = info;
+				}
 			}
-		}
-		// Didn't find credential
-		return null;
 
-	}
-	
+	// Determine if we have a credential match.
+	private static bool Matches(CredentialInfo info, Uri uriPrefix,
+								String authType)
+			{
+				if(String.Compare(info.authType, authType, true,
+				   				  CultureInfo.InvariantCulture) != 0)
+				{
+					return false;
+				}
+				return info.uriPrefix.IsPrefix(uriPrefix);
+			}
+
+	// Get the credentials for a specific uri/auth combination.
+	public NetworkCredential GetCredential(Uri uriPrefix, String authType)
+			{
+				if(uriPrefix == null)
+				{
+					throw new ArgumentNullException("uriPrefix");
+				}
+				if(authType == null)
+				{
+					throw new ArgumentNullException("authType");
+				}
+				CredentialInfo info = list;
+				CredentialInfo longest = null;
+				while(info != null)
+				{
+					if(Matches(info, uriPrefix, authType))
+					{
+						if(longest != null)
+						{
+							if(longest.uriPrefix.ToString().Length <
+									info.uriPrefix.ToString().Length)
+							{
+								longest = info;
+							}
+						}
+						else
+						{
+							longest = info;
+						}
+					}
+					info = info.next;
+				}
+				if(longest != null)
+				{
+					return longest.cred;
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Get an enumerator for this credential cache.
 	public IEnumerator GetEnumerator()
-	{
-		return cache.GetEnumerator();
-	}
-		
-	public void Remove(Uri uriPrefix, string authType) 
-	{
-		if (cache.Contains(uriPrefix))
-		{
-			if (((Hashtable)(cache[uriPrefix])).Contains(authType)) 
 			{
-				((Hashtable)(cache[uriPrefix])).Remove(authType);
+				return new CredentialEnumerator(this);
 			}
-		}
 
-	}
-	
-	public static ICredentials DefaultCredentials 
+	// Remove a specific uri/auth combination.
+	public void Remove(Uri uriPrefix, String authType)
+			{
+				CredentialInfo info = list;
+				CredentialInfo last = null;
+				while(info != null)
+				{
+					if(info.uriPrefix.Equals(uriPrefix) &&
+					   String.Compare(info.authType, authType, true,
+					   				  CultureInfo.InvariantCulture) == 0)
+					{
+						if(last != null)
+						{
+							last.next = info.next;
+						}
+						else
+						{
+							list = info.next;
+						}
+						return;
+					}
+					last = info;
+					info = info.next;
+				}
+			}
+
+	// Enumerator class for credential caches.
+	private sealed class CredentialEnumerator : IEnumerator
 	{
-		get
-		{
-			return defaultCred;
-		}
-	}
-   }
+		// Internal state.
+		private CredentialCache cache;
+		private CredentialInfo current;
+		private CredentialInfo next;
 
-}
+		// Constructor.
+		public CredentialEnumerator(CredentialCache cache)
+				{
+					this.cache = cache;
+					this.current = null;
+					this.next = cache.list;
+				}
 
+		// Implement the IEnumerator interface.
+		public bool MoveNext()
+				{
+					if(next != null)
+					{
+						current = next;
+						next = current.next;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+		public void Reset()
+				{
+					current = null;
+					next = cache.list;
+				}
+		public Object Current
+				{
+					get
+					{
+						if(current == null)
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadEnumeratorPosition"));
+						}
+						return current.cred;
+					}
+				}
 
+	}; // class CredentialEnumerator
 
+}; // class CredentialCache
 
-
-
-
-
-
-
-
+}; // namespace System.Net

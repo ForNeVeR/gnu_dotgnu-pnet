@@ -1017,5 +1017,13 @@ public class Uri : MarshalByRefObject
 		}
 		return "://";
 	}	
+
+	// Determine if this URI is a prefix of a specified URI.
+	[TODO]
+	internal bool IsPrefix(Uri uri)
+	{
+		// TODO
+		return false;
+	}
 }
 }//namespace

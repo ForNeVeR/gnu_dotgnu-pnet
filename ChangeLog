@@ -11,6 +11,11 @@
 	resources/en_US/System/Invalid.txt: clean up various classes in
 	"System.Net" and add some missing ones.
 
+	* System/Uri.cs, System/Net/CredentialCache.cs,
+	System/Net/GlobalProxySelection.cs, System/Net/NetworkCredential.cs,
+	System/Net/ServicePoint.cs, System/Net/WebProxy.cs,
+	resources/en_US/System/Arg.txt: missing functionality in "System.Net".
+
 2003-08-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Collections/Specialized/NameObjectCollectionBase.cs,

@@ -1,10 +1,9 @@
 /*
- * GlobalProxySelection.cs - Implementation of the "System.Net.GlobalProxySelection" class.
+ * GlobalProxySelection.cs - Implementation of the
+ *			"System.Net.GlobalProxySelection" class.
  *
- * Copyright (C) 2002  Free Software Foundation, Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
- * Contributed by Jason Lee <jason.lee@mac.com>
- * 
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -23,89 +22,83 @@
 namespace System.Net
 {
 
-using System;
-using System.Net;
-
 public class GlobalProxySelection 
 {
+	// Internal state.
+	private static IWebProxy select;
 
-	private static IWebProxy globalProxy = new EmptyProxy();
-
-	// Constructors
-
-#if !ECMA_COMPAT
-	public
-#else
-	protected 
-#endif
-	GlobalProxySelection()
-	{
-
-	}
-
-	// Methods
-
+	// Create a new empty proxy.
 	public static IWebProxy GetEmptyWebProxy()
-	{
-		return new EmptyProxy();
-	}
+			{
+				return new EmptyWebProxy();
+			}
 
-	// Properties
-
-	// TODO: Figure out security permissions (see spec)
+	// Get or set the selected global proxy object.
+	[TODO]
 	public static IWebProxy Select
-	{
-		get
-		{
-			return globalProxy;
-		}
-		
-		set
-		{
-			if(value == null)
 			{
-				globalProxy = GetEmptyWebProxy();
+				get
+				{
+					lock(typeof(GlobalProxySelection))
+					{
+						if(select == null)
+						{
+							// TODO: read the proxy information from
+							// the configuration settings.
+							select = new EmptyWebProxy();
+						}
+						return select;
+					}
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					lock(typeof(GlobalProxySelection))
+					{
+						select = value;
+					}
+				}
 			}
-			else
-			{
-				globalProxy= value;
-			}
-		}
-	}
 
-	// Internal Classes
-
-	// See IWebProxy.cs
-	internal class EmptyProxy : IWebProxy
+	// Dummy class that represents empty proxy settings.
+	private class EmptyWebProxy : IWebProxy
 	{
+		// Internal state.
+		private ICredentials credentials;
 
-		ICredentials credentials = null;
+		// Constructor.
+		public EmptyWebProxy() {}
 
-		internal EmptyProxy()	{}
-
+		// Get proxy information for a destination.
 		public Uri GetProxy(Uri destination)
-		{
-			return destination;
-		}
+				{
+					return destination;
+				}
 
+		// Determine if the proxy is bypassed for a host
 		public bool IsBypassed(Uri host)
-		{
-			return true;
-		}
+				{
+					return true;
+				}
 		
+		// Get or set the proxy credentials.
 		public ICredentials Credentials
-		{
-			get
-			{
-				return credentials;
-			}
-			set
-			{
-				credentials = value;
-			}
-		}
-	}
-	
-} // class GlobalProxySelection
+				{
+					get
+					{
+						return credentials;
+					}
+					set
+					{
+						credentials = value;
+					}
+				}
 
-} // namespace System.net
+	}; // class EmptyWebProxy
+	
+}; // class GlobalProxySelection
+
+}; // namespace System.Net

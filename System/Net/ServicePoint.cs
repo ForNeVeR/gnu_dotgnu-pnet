@@ -1,7 +1,7 @@
 /*
  * ServicePoint.cs - Implementation of the "System.Net.ServicePoint" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,27 +21,136 @@
 namespace System.Net
 {
 
+using System.Security.Cryptography.X509Certificates;
 
-[TODO]
 public class ServicePoint
 {
-	public override int GetHashCode() { return 0; }
-	
-	public Uri Address { get{ return null; } }
-	
-	public int ConnectionLimit { get{ return 0; } set{} }
-	
-	public String ConnectionName { get{ return null; } }
-	
-	public int CurrentConnections { get{ return 0; } }
-	
-	public DateTime IdleSince { get{ return DateTime.MinValue; } }
-	
-	public int MaxIdleTime { get{ return 0; } set{} }
-	
-	public virtual Version ProtocolVersion { get{ return new Version(0, 0); } }
-	
-	public bool SupportsPipelining { get{ return false; } }
-}; //class ServicePoint
+	// Internal state.
+	internal Uri address;
+#if CONFIG_X509_CERTIFICATES
+	internal X509Certificate certificate;
+	internal X509Certificate clientCertificate;
+#endif
+	internal int connectionLimit;
+	internal String connectionName;
+	internal int currentConnections;
+	internal DateTime idleSince;
+	internal int maxIdleTime;
+	internal Version version;
+	internal bool supportsPipelining;
+	internal bool useNagleAlgorithm;
 
-}; //namespace System.Net
+	// Constructor.
+	internal ServicePoint()
+			{
+				maxIdleTime = -1;
+			}
+
+	// Get this object's properties.
+	public Uri Address
+			{
+				get
+				{
+					return address;
+				}
+			}
+#if CONFIG_X509_CERTIFICATES
+	public X509Certificate Certificate
+			{
+				get
+				{
+					return certificate;
+				}
+			}
+	public X509Certificate ClientCertificate
+			{
+				get
+				{
+					return clientCertificate;
+				}
+			}
+#endif
+	public int ConnectionLimit
+			{
+				get
+				{
+					return connectionLimit;
+				}
+				set
+				{
+					if(value <= 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", S._("ArgRange_PositiveNonZero"));
+					}
+					connectionLimit = value;
+				}
+			}
+	public String ConnectionName
+			{
+				get
+				{
+					return connectionName;
+				}
+			}
+	public int CurrentConnections
+			{
+				get
+				{
+					return currentConnections;
+				}
+			}
+	public DateTime IdleSince
+			{
+				get
+				{
+					return idleSince;
+				}
+			}
+	public int MaxIdleTime
+			{
+				get
+				{
+					return maxIdleTime;
+				}
+				set
+				{
+					if(value < -1)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", S._("ArgRange_NonNegOrNegOne"));
+					}
+					maxIdleTime = value;
+				}
+			}
+	public virtual Version ProtocolVersion
+			{
+				get
+				{
+					return version;
+				}
+			}
+	public bool SupportsPipelining
+			{
+				get
+				{
+					return supportsPipelining;
+				}
+			}
+	public bool UseNagleAlgorithm
+			{
+				get
+				{
+					return useNagleAlgorithm;
+				}
+			}
+
+	// Get the hash code for this object.
+	public override int GetHashCode()
+			{
+				return base.GetHashCode();
+			}
+	
+}; // class ServicePoint
+
+}; // namespace System.Net

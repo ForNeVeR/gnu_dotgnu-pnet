@@ -322,14 +322,15 @@ extern	"C" {
 #define	COP_NEW						0xE5
 #define	COP_NEW_VALUE				0xE6
 #define	COP_LDSTR					0xE7
+#define	COP_LDTOKEN					0xE8
 
 /*
  * Memory-related opcodes.
  */
-#define	COP_MEMCPY					0xE8
-#define	COP_MEMMOVE					0xE9
-#define	COP_MEMZERO					0xEA
-#define	COP_MEMSET					0xEB
+#define	COP_MEMCPY					0xE9
+#define	COP_MEMMOVE					0xEA
+#define	COP_MEMZERO					0xEB
+#define	COP_MEMSET					0xEC
 
 /*
  * Make the next instruction wider.

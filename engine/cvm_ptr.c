@@ -769,6 +769,14 @@ case COP_LDSTR:
 }
 break;
 
+case COP_LDTOKEN:
+{
+	/* Load a token handle onto the stack */
+	stacktop[0].ptrValue = ReadPointer(pc + 1);
+	MODIFY_PC_AND_STACK(1 + sizeof(void *), 1);
+}
+break;
+
 case COP_MEMCPY:
 {
 	/* Copy a fixed-size memory block */

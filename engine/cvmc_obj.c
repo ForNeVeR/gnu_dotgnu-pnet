@@ -891,7 +891,9 @@ static void CVMCoder_RefAnyType(ILCoder *coder)
 
 static void CVMCoder_PushToken(ILCoder *coder, ILProgramItem *item)
 {
-	/* TODO */
+	CVM_BYTE(COP_LDTOKEN);
+	CVM_PTR(item);
+	CVM_ADJUST(1);
 }
 
 static void CVMCoder_SizeOf(ILCoder *coder, ILType *type)

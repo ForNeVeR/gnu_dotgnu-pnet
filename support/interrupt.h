@@ -67,20 +67,22 @@ struct _tagILInterruptContext
 
 	#include <setjmp.h>
 
-	#define IL_JMP_BUFFER jmp_buf
-
 	#if defined(HAVE_SIGSETJMP) && defined(HAVE_SIGLONGJMP)
 		#define IL_SETJMP(buf) \
-			sigsetjmp(buf)
+			sigsetjmp(buf, 1)
 
 		#define IL_LONGJMP(buf, arg) \
 			siglongjmp(buf, arg)
+
+		#define IL_JMP_BUFFER sigjmp_buf
 	#else
 		#define IL_SETJMP(buf) \
 			setjmp(buf)
 
 		#define IL_LONGJMP(buf, arg) \
 			longjmp(buf, arg)
+
+		#define IL_JMP_BUFFER sigjmp_buf
 	#endif
 
 	#if defined(WIN32) && !(defined(__CYGWIN32__) || defined(__CYGWIN))
@@ -95,7 +97,9 @@ struct _tagILInterruptContext
 			#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
 		#endif
 	#elif defined(linux) || defined(__linux) || defined(__linux__) \
-		&& (defined(HAVE_SIGNAL) || defined(HAVE_SIGACTION))
+		|| defined(__FreeBSD__) && (defined(HAVE_SIGNAL) \
+		|| defined(HAVE_SIGACTION))
+
 		#define IL_INTERRUPT_SUPPORTS 1
 		#define IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS 1
 		#define IL_INTERRUPT_SUPPORTS_ANY_ARITH 1

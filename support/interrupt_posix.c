@@ -55,21 +55,37 @@ static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
 	thread = ILThreadSelf();
 
 #if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
-	/* Integer registers */
-	context.Eax = uc->uc_mcontext.gregs[REG_EAX];
-	context.Ebx = uc->uc_mcontext.gregs[REG_EBX];
-	context.Ecx = uc->uc_mcontext.gregs[REG_ECX];
-	context.Edx = uc->uc_mcontext.gregs[REG_EDX];
-	context.Edi = uc->uc_mcontext.gregs[REG_EDI];
-	context.Esi = uc->uc_mcontext.gregs[REG_ESI];
 
-	/* Control registers */
-	context.Ebp = uc->uc_mcontext.gregs[REG_EBP];
-	context.Eip = uc->uc_mcontext.gregs[REG_EIP];
-	context.Esp = uc->uc_mcontext.gregs[REG_ESP];
+	#if defined(linux) || defined(__linux) || defined(__linux__)	
+		/* Integer registers */
+		context.Eax = uc->uc_mcontext.gregs[REG_EAX];
+		context.Ebx = uc->uc_mcontext.gregs[REG_EBX];
+		context.Ecx = uc->uc_mcontext.gregs[REG_ECX];
+		context.Edx = uc->uc_mcontext.gregs[REG_EDX];
+		context.Edi = uc->uc_mcontext.gregs[REG_EDI];
+		context.Esi = uc->uc_mcontext.gregs[REG_ESI];
 
+		/* Control registers */
+		context.Ebp = uc->uc_mcontext.gregs[REG_EBP];
+		context.Eip = uc->uc_mcontext.gregs[REG_EIP];
+		context.Esp = uc->uc_mcontext.gregs[REG_ESP];
+		
+	#elif defined(__FreeBSD__)
+		/* Integer registers */
+		context.Eax = uc->uc_mcontext.mc_eax;
+		context.Ebx = uc->uc_mcontext.mc_ebx;
+		context.Ecx = uc->uc_mcontext.mc_ecx;
+		context.Edx = uc->uc_mcontext.mc_edx;
+		context.Edi = uc->uc_mcontext.mc_edi;
+		context.Esi = uc->uc_mcontext.mc_esi;
+
+		/* Control registers */
+		context.Ebp = uc->uc_mcontext.mc_ebp;
+		context.Eip = uc->uc_mcontext.mc_eip;
+		context.Esp = uc->uc_mcontext.mc_esp;	
+	#endif
+	
 	context.instructionAddress = (void *)context.Eip;
-
 #else
 	context.instructionAddress = 0;
 #endif

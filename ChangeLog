@@ -1,4 +1,10 @@
 
+2002-12-21  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/Platform/FileMethods.cs, runtime/System/IO/File.cs:
+	Add an internal call 'Exists()' to check without opening the
+	file.
+
 2002-12-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/Encoding.cs: make "InvokeI18N" more robust

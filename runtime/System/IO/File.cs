@@ -171,21 +171,7 @@ namespace System.IO
 
 		public static bool Exists(string path) 
 		{
-			
-			FileStream test;
-
-			try
-			{
-				test = Open(path, FileMode.Open);   
-			}
-			catch (Exception e) 
-			{
-				return false;
-			} 
-			
-			test.Close();
-			
-			return true;
+			return FileMethods.Exists(path);	
 		}
 		
 		[TODO]

@@ -37,6 +37,9 @@ internal class FileMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool ValidatePathname(String path);
 
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool Exists(String path);
+
 	// Open a raw binary file.  Returns false if the file
 	// could not be opened.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -2972,7 +2972,7 @@ ILGenCastConst(ILMachineType_Int16, ILMachineType_Float64),
 ILGenCastConst(ILMachineType_Int32, ILMachineType_Float64),
 ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Float64)
 {
-	value->un.r4Value = (ILDouble)(value->un.i4Value);
+	value->un.r8Value = (ILDouble)(value->un.i4Value);
 	value->valueType = ILMachineType_Float64;
 	return 1;
 }

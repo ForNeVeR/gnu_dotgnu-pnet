@@ -1,4 +1,9 @@
 
+2002-11-03  Robert Hwang <hwang_rob@yahoo.ca>
+	
+	* codegen/cg_cast.tc: fix typo in ILGenCastConst for casts tp
+	Float64
+
 2002-11-03  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_nodes.tc, codegen/cg_lvalue.tc, cscc/csharp/cs_lvalue.tc:

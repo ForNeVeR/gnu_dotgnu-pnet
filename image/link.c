@@ -1153,22 +1153,37 @@ static int SearchForDllMap(ILProgramItem *item, const char *name,
 	}
 	else if(!strcmp(name, "libgobject-2.0-0.dll"))
 	{
-		*remapName = "libgobject-2.0.so";
+		*remapName = "libgobject-2.0.so.0";
 		return strlen(*remapName);
 	}
 	else if(!strcmp(name, "libglib-2.0-0.dll"))
 	{
-		*remapName = "libglib-2.0.so";
+		*remapName = "libglib-2.0.so.0";
 		return strlen(*remapName);
 	}
 	else if(!strcmp(name, "libpango-1.0-0.dll"))
 	{
-		*remapName = "libpango-1.0.so";
+		*remapName = "libpango-1.0.so.0";
 		return strlen(*remapName);
 	}
 	else if(!strcmp(name, "libatk-1.0-0.dll"))
 	{
-		*remapName = "libatk-1.0.so";
+		*remapName = "libatk-1.0.so.0";
+		return strlen(*remapName);
+	}
+	else if(!strcmp(name, "libgdk-win32-2.0-0.dll"))
+	{
+		*remapName = "libgdk-x11-2.0.so.0";
+		return strlen(*remapName);
+	}
+	else if(!strcmp(name, "libgdk_pixbuf-2.0-0.dll"))
+	{
+		*remapName = "libgdk_pixbuf-2.0.so.0";
+		return strlen(*remapName);
+	}
+	else if(!strcmp(name, "libglade-2.0-0.dll"))
+	{
+		*remapName = "libglade-2.0.so.0";
 		return strlen(*remapName);
 	}
 #endif

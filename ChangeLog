@@ -7,6 +7,9 @@
 
 	* libgc/mark.c: temporary fix to work around cygwin 1.3 problems.
 
+	* engine/unroll_x86_ptr.c: remove redundant "nop" instructions
+	that were left over from previous debugging efforts.
+
 2002-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c, ilalink/link_library.c,

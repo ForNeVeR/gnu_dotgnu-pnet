@@ -254,7 +254,6 @@ case COP_PWRITE_R:
 {
 	/* Write a word value to a pointer with reversed arguments */
 	UNROLL_START();
-	x86_nop(unroll.out);
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
 	x86_mov_membase_reg(unroll.out, reg2, 0, reg, 4);
 	FreeTopRegister(&unroll, -1);

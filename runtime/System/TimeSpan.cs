@@ -325,6 +325,7 @@ public struct TimeSpan : IComparable
 			}
 
 	// Parse a string into a TimeSpan value.
+	[TODO]
 	public static TimeSpan Parse(String s)
 			{
 				// TODO

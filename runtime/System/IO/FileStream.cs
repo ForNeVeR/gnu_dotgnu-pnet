@@ -236,6 +236,7 @@ public class FileStream : Stream
 			}
 
 	// Begin an asynchronous read operation.
+	[TODO]
 	public override IAsyncResult BeginRead
 				(byte[] buffer, int offset, int count,
 				 AsyncCallback callback, Object state)
@@ -246,6 +247,7 @@ public class FileStream : Stream
 			}
 
 	// Wait for an asynchronous read operation to end.
+	[TODO]
 	public override int EndRead(IAsyncResult asyncResult)
 			{
 				// TODO
@@ -253,6 +255,7 @@ public class FileStream : Stream
 			}
 
 	// Begin an asychronous write operation.
+	[TODO]
 	public override IAsyncResult BeginWrite
 				(byte[] buffer, int offset, int count,
 				 AsyncCallback callback, Object state)
@@ -263,6 +266,7 @@ public class FileStream : Stream
 			}
 
 	// Wait for an asynchronous write operation to end.
+	[TODO]
 	public override void EndWrite(IAsyncResult asyncResult)
 			{
 				// TODO
@@ -364,6 +368,7 @@ public class FileStream : Stream
 #endif	// !ECMA_COMPAT
 
 	// Create a wait handle for asynchronous operations.
+	[TODO]
 	protected override WaitHandle CreateWaitHandle()
 			{
 				// TODO

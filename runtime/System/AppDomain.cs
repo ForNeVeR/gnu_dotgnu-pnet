@@ -27,6 +27,7 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 	private String friendlyName;
 
 	// Construct a new AppDomain instance.
+	[TODO]
 	private AppDomain(String name)
 	{
 		friendlyName = name;
@@ -46,6 +47,7 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 
 #if !ECMA_COMPAT
 	// Load and execute a file containing an assembly.
+	[TODO]
 	public int ExecuteAssembly(String assemblyFile)
 	{
 		if(assemblyFile == null)
@@ -64,6 +66,7 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 	}
 
 	// Unload a specific application domain.
+	[TODO]
 	public static void Unload(AppDomain domain)
 	{
 		if(domain == null)

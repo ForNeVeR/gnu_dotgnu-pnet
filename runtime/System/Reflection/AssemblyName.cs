@@ -47,6 +47,7 @@ public class AssemblyName : ICloneable
 	public AssemblyName() {}
 
 	// Get the assembly name for a specific file.
+	[TODO]
 	public static AssemblyName GetAssemblyName(String assemblyFile)
 			{
 				// TODO
@@ -93,6 +94,7 @@ public class AssemblyName : ICloneable
 			}
 
 	// Get the full name of the assembly.
+	[TODO]
 	public virtual String FullName
 			{
 				get

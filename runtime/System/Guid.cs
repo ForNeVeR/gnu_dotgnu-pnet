@@ -41,6 +41,7 @@ public struct Guid : IFormattable, IComparable
 	extern public static Guid NewGuid();
 
 	// Constructors.
+	[TODO]
 	public Guid(String g)
 			{
 				// TODO

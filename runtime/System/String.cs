@@ -587,6 +587,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	// Format a string that contains a number of argument substitutions,
 	// and using a particular format provider.
+	[TODO]
 	public static String Format(IFormatProvider provider, String format,
 								params Object[] args)
 			{
@@ -1111,6 +1112,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				return ToLower(CultureInfo.CurrentCulture);
 			}
+	[TODO]
 	public String ToLower(CultureInfo culture)
 			{
 				// TODO
@@ -1122,6 +1124,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				return ToUpper(CultureInfo.CurrentCulture);
 			}
+	[TODO]
 	public String ToUpper(CultureInfo culture)
 			{
 				// TODO

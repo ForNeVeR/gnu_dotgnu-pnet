@@ -112,6 +112,7 @@ public class ResourceManager
 			}
 
 	// Create a resource manager from a file.
+	[TODO]
 	public static ResourceManager CreateFileBasedResourceManager
 				(String baseName, String resourceDir, Type usingResourceSet)
 			{
@@ -129,6 +130,7 @@ public class ResourceManager
 			}
 
 	// Initialize the resources for the main assembly.
+	[TODO]
 	private void InitAssemblyResources()
 			{
 				// TODO
@@ -171,6 +173,7 @@ public class ResourceManager
 			{
 				return GetObject(name, null);
 			}
+	[TODO]
 	public Object GetObject(String name, CultureInfo culture)
 			{
 				// TODO
@@ -198,6 +201,7 @@ public class ResourceManager
 			{
 				return GetString(name, null);
 			}
+	[TODO]
 	public String GetString(String name, CultureInfo culture)
 			{
 				// TODO
@@ -205,12 +209,14 @@ public class ResourceManager
 			}
 
 	// Release all cached resources.
+	[TODO]
 	public virtual void ReleaseAllResources()
 			{
 				// TODO
 			}
 
 	// Get the neutral culture to use, based on an assembly's attributes.
+	[TODO]
 	protected static CultureInfo GetNeutralResourcesLanguage(Assembly a)
 			{
 				// TODO
@@ -218,6 +224,7 @@ public class ResourceManager
 			}
 
 	// Get the satellite contract version from an assembly.
+	[TODO]
 	protected static Version GetSatelliteContractVersion(Assembly a)
 			{
 				// TODO
@@ -225,6 +232,7 @@ public class ResourceManager
 			}
 
 	// Get the name of a resource file for a particular culture.
+	[TODO]
 	protected virtual String GetResourceFileName(CultureInfo culture)
 			{
 				// TODO
@@ -232,6 +240,7 @@ public class ResourceManager
 			}
 
 	// Find a resource set for a particular culture.
+	[TODO]
 	protected virtual ResourceSet InternalGetResourceSet
 				(CultureInfo culture, bool createIfNotExists,
 				 bool tryParents)

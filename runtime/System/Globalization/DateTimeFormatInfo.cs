@@ -98,6 +98,7 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 			}
 
 	// Internal constructor for getting information from a culture.
+	[TODO]
 	internal DateTimeFormatInfo(CultureInfo culture)
 			: this()
 			{
@@ -153,6 +154,7 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 			}
 
 	// Get a value that represents an era name.
+	[TODO]
 	public int GetEra(String eraName)
 			{
 				// TODO
@@ -160,6 +162,7 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the name of a particular era.
+	[TODO]
 	public String GetEraName(int era)
 			{
 				// TODO
@@ -265,6 +268,7 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the abbreviated name of an era.
+	[TODO]
 	public String GetAbbreviatedEraName(int era)
 			{
 				// TODO
@@ -272,6 +276,7 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 			}
 
 	// Get all date time patterns.
+	[TODO]
 	public String[] GetAllDateTimePatterns()
 			{
 				// TODO
@@ -279,6 +284,7 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				array[0] = FullDateTimePattern;
 				return array;
 			}
+	[TODO]
 	public String[] GetAllDateTimePatterns(char format)
 			{
 				// TODO

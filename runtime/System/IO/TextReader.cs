@@ -149,6 +149,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 			}
 
 	// Read the next line from this reader.
+	[TODO]
 	public virtual String ReadLine()
 			{
 				// TODO: replace this with a StringBuilder later.
@@ -191,6 +192,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 			}
 
 	// Read until the end of the stream.
+	[TODO]
 	public virtual String ReadToEnd()
 			{
 				// TODO: replace this with a StringBuilder later.

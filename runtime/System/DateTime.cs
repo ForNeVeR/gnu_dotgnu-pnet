@@ -337,6 +337,7 @@ public struct DateTime : IComparable, IFormattable
 			{
 				return ToString(null, provider);
 			}
+	[TODO]
 	public String ToString(String format, IFormatProvider provider)
 			{
 				// TODO
@@ -344,28 +345,33 @@ public struct DateTime : IComparable, IFormattable
 			}
 
 	// Parsing methods.
+	[TODO]
 	public static DateTime Parse(String s)
 			{
 				// TODO.
 				return new DateTime(0);
 			}
+	[TODO]
 	public static DateTime Parse(String s, IFormatProvider provider)
 			{
 				// TODO.
 				return new DateTime(0);
 			}
+	[TODO]
 	public static DateTime Parse(String s, IFormatProvider provider,
 								 DateTimeStyles style)
 			{
 				// TODO.
 				return new DateTime(0);
 			}
+	[TODO]
 	public static DateTime ParseExact(String s, String format,
 									  IFormatProvider provider)
 			{
 				// TODO.
 				return new DateTime(0);
 			}
+	[TODO]
 	public static DateTime ParseExact(String s, String format,
 									  IFormatProvider provider,
 									  DateTimeStyles style)
@@ -373,6 +379,7 @@ public struct DateTime : IComparable, IFormattable
 				// TODO.
 				return new DateTime(0);
 			}
+	[TODO]
 	public static DateTime ParseExact(String s, String[] formats,
 									  IFormatProvider provider,
 									  DateTimeStyles style)
@@ -881,21 +888,25 @@ public struct DateTime : IComparable, IFormattable
 			}
 
 	// Get this DateTime value in a variety of formats.
+	[TODO]
 	public String[] GetDateTimeFormats()
 			{
 				// TODO
 				return null;
 			}
+	[TODO]
 	public String[] GetDateTimeFormats(char format)
 			{
 				// TODO
 				return null;
 			}
+	[TODO]
 	public String[] GetDateTimeFormats(IFormatProvider provider)
 			{
 				// TODO
 				return null;
 			}
+	[TODO]
 	public String[] GetDateTimeFormats(char format, IFormatProvider provider)
 			{
 				// TODO

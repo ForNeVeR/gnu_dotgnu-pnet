@@ -38,6 +38,7 @@ public sealed class Console
 			{
 				return OpenStandardInput(256);
 			}
+	[TODO]
 	public static Stream OpenStandardInput(int bufferSize)
 			{
 				// TODO
@@ -49,6 +50,7 @@ public sealed class Console
 			{
 				return OpenStandardOutput(256);
 			}
+	[TODO]
 	public static Stream OpenStandardOutput(int bufferSize)
 			{
 				// TODO
@@ -60,6 +62,7 @@ public sealed class Console
 			{
 				return OpenStandardError(256);
 			}
+	[TODO]
 	public static Stream OpenStandardError(int bufferSize)
 			{
 				// TODO.
@@ -157,6 +160,7 @@ public sealed class Console
 			}
 
 	// Read a character from the standard input stream.
+	[TODO]
 	public static int Read()
 			{
 				try
@@ -172,6 +176,7 @@ public sealed class Console
 			}
 
 	// Read a line from the standard input stream.
+	[TODO]
 	public static String ReadLine()
 			{
 				try

@@ -77,6 +77,7 @@ public sealed class Thread
 			}
 
 	// Get the application domain of the currently execution thread.
+	[TODO]
 	public static AppDomain GetDomain()
 			{
 				// TODO
@@ -310,6 +311,7 @@ public sealed class Thread
 	extern private System.Threading.ThreadState InternalGetState();
 
 	// Get the packed stack trace information for this thread.
+	[TODO]
 	internal PackedStackFrame[] GetPackedStackTrace()
 			{
 				// TODO

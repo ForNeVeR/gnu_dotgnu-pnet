@@ -140,6 +140,7 @@ sealed class Activator
 	// Create an object instance from a type in another assembly,
 	// a list of arguments, binding information, and a list of
 	// activation attributes.
+	[TODO]
 	public static ObjectHandle CreateInstance
 				(String assemblyName, String typeName, bool ignoreCase,
 				 BindingFlags bindingAttr, Binder binder,
@@ -182,6 +183,7 @@ sealed class Activator
 	// Create an object instance from a type in another assembly,
 	// using "LoadFrom" instead of "Load" to load the assembly.
 	// All relevant information is supplied.
+	[TODO]
 	public static ObjectHandle CreateInstanceFrom
 				(String assemblyName, String typeName, bool ignoreCase,
 				 BindingFlags bindingAttr, Binder binder,

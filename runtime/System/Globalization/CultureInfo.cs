@@ -155,6 +155,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the current culture object for the running thread.
+	[TODO]
 	public static CultureInfo CurrentCulture
 			{
 				get
@@ -165,6 +166,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the current UI culture object for the running thread.
+	[TODO]
 	public static CultureInfo CurrentUICulture
 			{
 				get
@@ -175,6 +177,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the installed UI culture object for the system.
+	[TODO]
 	public static CultureInfo InstalledUICulture
 			{
 				get
@@ -192,6 +195,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the list of all cultures supported by this system.
+	[TODO]
 	public static CultureInfo[] GetCultures(CultureTypes types)
 			{
 				// TODO
@@ -218,6 +222,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the default calendar that is used by the culture.
+	[TODO]
 	public virtual Calendar Calendar
 			{
 				get
@@ -236,6 +241,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the comparison rules that are used by the culture.
+	[TODO]
 	public virtual CompareInfo CompareInfo
 			{
 				get
@@ -381,6 +387,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the optional calendars for this instance.
+	[TODO]
 	public virtual Calendar[] OptionalCalendars
 			{
 				get
@@ -407,6 +414,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the text writing system associated with this culture.
+	[TODO]
 	public virtual TextInfo TextInfo
 			{
 				get
@@ -417,6 +425,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the 3-letter ISO language name for this culture.
+	[TODO]
 	public virtual String ThreeLetterISOLanguageName
 			{
 				get
@@ -427,6 +436,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the 3-letter Windows language name for this culture.
+	[TODO]
 	public virtual String ThreeLetterWindowsLanguageName
 			{
 				get
@@ -437,6 +447,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the 2-letter ISO language name for this culture.
+	[TODO]
 	public virtual String TwoLetterISOLanguageName
 			{
 				get
@@ -447,6 +458,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Determine if this culture is configured for user overrides.
+	[TODO]
 	public virtual bool UseUserOverride
 			{
 				get

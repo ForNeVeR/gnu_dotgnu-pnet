@@ -78,6 +78,7 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get the bytes that result from encoding a character buffer.
+	[TODO]
 	public override int GetBytes(char[] chars, int charIndex, int charCount,
 								 byte[] bytes, int byteIndex)
 			{
@@ -146,6 +147,7 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Convenience wrappers for "GetBytes".
+	[TODO]
 	public override int GetBytes(String s, int charIndex, int charCount,
 								 byte[] bytes, int byteIndex)
 			{
@@ -242,6 +244,7 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get the characters that result from decoding a byte buffer.
+	[TODO]
 	public override int GetChars(byte[] bytes, int byteIndex, int byteCount,
 								 char[] chars, int charIndex)
 			{
@@ -356,6 +359,7 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get a Unicode-specific decoder that is attached to this instance.
+	[TODO]
 	public override Decoder GetDecoder()
 			{
 				// TODO

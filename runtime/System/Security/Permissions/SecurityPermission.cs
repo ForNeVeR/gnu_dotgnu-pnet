@@ -107,16 +107,19 @@ public sealed class SecurityPermission : CodeAccessPermission
 					return new SecurityPermission(state);
 				}
 			}
+	[TODO]
 	public override IPermission Intersect(IPermission target)
 			{
 				// TODO
 				return null;
 			}
+	[TODO]
 	public override bool IsSubsetOf(IPermission target)
 			{
 				// TODO
 				return false;
 			}
+	[TODO]
 	public override IPermission Union(IPermission target)
 			{
 				// TODO

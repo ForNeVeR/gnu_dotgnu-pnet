@@ -34,6 +34,7 @@ public class UTF8Encoding : Encoding
 			: this(false, false) {}
 	public UTF8Encoding(bool encoderShouldEmitUTF8Identifier)
 			: this(encoderShouldEmitUTF8Identifier, false) {}
+	[TODO]
 	public UTF8Encoding(bool encoderShouldEmitUTF8Identifier,
 						bool throwOnInvalidBytes)
 			: base(UTF8_CODE_PAGE)
@@ -42,6 +43,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the number of bytes needed to encode a character buffer.
+	[TODO]
 	public override int GetByteCount(char[] chars, int index, int count)
 			{
 				if(chars == null)
@@ -63,6 +65,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Convenience wrappers for "GetByteCount".
+	[TODO]
 	public override int GetByteCount(String s)
 			{
 				if(s == null)
@@ -74,6 +77,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the bytes that result from encoding a character buffer.
+	[TODO]
 	public override int GetBytes(char[] chars, int charIndex, int charCount,
 								 byte[] bytes, int byteIndex)
 			{
@@ -105,6 +109,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Convenience wrappers for "GetBytes".
+	[TODO]
 	public override int GetBytes(String s, int charIndex, int charCount,
 								 byte[] bytes, int byteIndex)
 			{
@@ -136,6 +141,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the number of characters needed to decode a byte buffer.
+	[TODO]
 	public override int GetCharCount(byte[] bytes, int index, int count)
 			{
 				if(bytes == null)
@@ -157,6 +163,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the characters that result from decoding a byte buffer.
+	[TODO]
 	public override int GetChars(byte[] bytes, int byteIndex, int byteCount,
 								 char[] chars, int charIndex)
 			{
@@ -189,6 +196,7 @@ public class UTF8Encoding : Encoding
 
 	// Get the maximum number of bytes needed to encode a
 	// specified number of characters.
+	[TODO]
 	public override int GetMaxByteCount(int charCount)
 			{
 				if(charCount < 0)
@@ -202,6 +210,7 @@ public class UTF8Encoding : Encoding
 
 	// Get the maximum number of characters needed to decode a
 	// specified number of bytes.
+	[TODO]
 	public override int GetMaxCharCount(int byteCount)
 			{
 				if(byteCount < 0)
@@ -214,6 +223,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get a UTF8-specific decoder that is attached to this instance.
+	[TODO]
 	public override Decoder GetDecoder()
 			{
 				// TODO
@@ -221,6 +231,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get a UTF8-specific encoder that is attached to this instance.
+	[TODO]
 	public override Encoder GetEncoder()
 			{
 				// TODO
@@ -228,6 +239,7 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the UTF8 preamble.
+	[TODO]
 	public override byte[] GetPreamble()
 			{
 				// TODO

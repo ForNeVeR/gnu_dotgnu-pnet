@@ -22,6 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
+[TODO]
 public class ComImportAttribute : Attribute
 {
 

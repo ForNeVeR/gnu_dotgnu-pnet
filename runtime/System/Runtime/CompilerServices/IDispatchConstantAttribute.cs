@@ -31,6 +31,7 @@ public sealed class IDispatchConstantAttribute : CustomConstantAttribute
 	public IDispatchConstantAttribute() : base() {}
 
 	// Properties.
+	[TODO]
 	public override Object Value
 			{
 				get

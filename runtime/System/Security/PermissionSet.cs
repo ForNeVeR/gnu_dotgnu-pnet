@@ -159,12 +159,14 @@ public class PermissionSet : ICollection, IEnumerable
 			}
 
 	// Convert an XML security element into a permission set.
+	[TODO]
 	public virtual void FromXml(SecurityElement et)
 			{
 				// TODO
 			}
 
 	// Determine if this permission set is a subset of another.
+	[TODO]
 	public virtual bool IsSubsetOf(PermissionSet target)
 			{
 				// TODO
@@ -194,6 +196,7 @@ public class PermissionSet : ICollection, IEnumerable
 			}
 
 	// Convert this permission set into an XML security element.
+	[TODO]
 	public virtual SecurityElement ToXml()
 			{
 				// TODO
@@ -201,6 +204,7 @@ public class PermissionSet : ICollection, IEnumerable
 			}
 
 	// Form the union of this security set and another.
+	[TODO]
 	public virtual PermissionSet Union(PermissionSet other)
 			{
 				// TODO
@@ -282,6 +286,7 @@ public class PermissionSet : ICollection, IEnumerable
 			}
 
 	// Form the intersection of this permission set and another.
+	[TODO]
 	public virtual PermissionSet Intersect(PermissionSet other)
 			{
 				// TODO

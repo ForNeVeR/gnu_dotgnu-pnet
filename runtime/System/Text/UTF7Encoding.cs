@@ -30,12 +30,14 @@ public class UTF7Encoding : Encoding
 	internal const int UTF7_CODE_PAGE = 65000;
 
 	// Constructors.
+	[TODO]
 	public UTF7Encoding() : base(UTF7_CODE_PAGE)
 			{
 				// TODO
 			}
 
 	// Get the number of bytes needed to encode a character buffer.
+	[TODO]
 	public override int GetByteCount(char[] chars, int index, int count)
 			{
 				if(chars == null)
@@ -57,6 +59,7 @@ public class UTF7Encoding : Encoding
 			}
 
 	// Convenience wrappers for "GetByteCount".
+	[TODO]
 	public override int GetByteCount(String s)
 			{
 				if(s == null)
@@ -68,6 +71,7 @@ public class UTF7Encoding : Encoding
 			}
 
 	// Get the bytes that result from encoding a character buffer.
+	[TODO]
 	public override int GetBytes(char[] chars, int charIndex, int charCount,
 								 byte[] bytes, int byteIndex)
 			{
@@ -99,6 +103,7 @@ public class UTF7Encoding : Encoding
 			}
 
 	// Convenience wrappers for "GetBytes".
+	[TODO]
 	public override int GetBytes(String s, int charIndex, int charCount,
 								 byte[] bytes, int byteIndex)
 			{
@@ -130,6 +135,7 @@ public class UTF7Encoding : Encoding
 			}
 
 	// Get the number of characters needed to decode a byte buffer.
+	[TODO]
 	public override int GetCharCount(byte[] bytes, int index, int count)
 			{
 				if(bytes == null)
@@ -151,6 +157,7 @@ public class UTF7Encoding : Encoding
 			}
 
 	// Get the characters that result from decoding a byte buffer.
+	[TODO]
 	public override int GetChars(byte[] bytes, int byteIndex, int byteCount,
 								 char[] chars, int charIndex)
 			{
@@ -183,6 +190,7 @@ public class UTF7Encoding : Encoding
 
 	// Get the maximum number of bytes needed to encode a
 	// specified number of characters.
+	[TODO]
 	public override int GetMaxByteCount(int charCount)
 			{
 				if(charCount < 0)
@@ -196,6 +204,7 @@ public class UTF7Encoding : Encoding
 
 	// Get the maximum number of characters needed to decode a
 	// specified number of bytes.
+	[TODO]
 	public override int GetMaxCharCount(int byteCount)
 			{
 				if(byteCount < 0)
@@ -208,6 +217,7 @@ public class UTF7Encoding : Encoding
 			}
 
 	// Get a UTF7-specific decoder that is attached to this instance.
+	[TODO]
 	public override Decoder GetDecoder()
 			{
 				// TODO
@@ -215,6 +225,7 @@ public class UTF7Encoding : Encoding
 			}
 
 	// Get a UTF7-specific encoder that is attached to this instance.
+	[TODO]
 	public override Encoder GetEncoder()
 			{
 				// TODO

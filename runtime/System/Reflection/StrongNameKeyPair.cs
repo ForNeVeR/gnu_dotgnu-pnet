@@ -33,14 +33,17 @@ public class StrongNameKeyPair
 	private byte[] key;
 
 	// Constructors.
+	[TODO]
 	public StrongNameKeyPair(byte[] keyPairArray)
 			{
 				// TODO
 			}
+	[TODO]
 	public StrongNameKeyPair(FileStream keyPairFile)
 			{
 				// TODO
 			}
+	[TODO]
 	public StrongNameKeyPair(String keyPairContainer)
 			{
 				// TODO

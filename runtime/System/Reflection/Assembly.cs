@@ -171,6 +171,7 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	extern public virtual FileStream GetFile(String name);
 
 	// Get file streams for all public manifest resources.
+	[TODO]
 	public virtual FileStream[] GetFiles(bool getResourceModules)
 			{
 				// TODO

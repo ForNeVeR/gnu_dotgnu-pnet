@@ -22,6 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
+[TODO]
 public class ExposeHResultAttribute : Attribute
 {
 

@@ -71,6 +71,7 @@ public abstract class CodeAccessPermission : IPermission
 			}
 	public abstract IPermission Intersect(IPermission target);
 	public abstract bool IsSubsetOf(IPermission target);
+	[TODO]
 	public virtual IPermission Union(IPermission target)
 			{
 				// TODO

@@ -33,18 +33,22 @@ public class ResourceSet : IDisposable
 	protected Hashtable Table;
 
 	// Constructors.
+	[TODO]
 	protected ResourceSet()
 			{
 				// TODO
 			}
+	[TODO]
 	public ResourceSet(IResourceReader reader)
 			{
 				// TODO
 			}
+	[TODO]
 	public ResourceSet(Stream stream)
 			{
 				// TODO
 			}
+	[TODO]
 	public ResourceSet(String fileName)
 			{
 				// TODO
@@ -57,6 +61,7 @@ public class ResourceSet : IDisposable
 			}
 
 	// Dispose this resource set.
+	[TODO]
 	protected virtual void Dispose(bool disposing)
 			{
 				// TODO
@@ -69,6 +74,7 @@ public class ResourceSet : IDisposable
 			}
 
 	// Get the default reader type for this resource set.
+	[TODO]
 	public virtual Type GetDefaultReader()
 			{
 				// TODO
@@ -76,6 +82,7 @@ public class ResourceSet : IDisposable
 			}
 
 	// Get the default write type for this resource set.
+	[TODO]
 	public virtual Type GetDefaultWriter()
 			{
 				// TODO
@@ -83,11 +90,13 @@ public class ResourceSet : IDisposable
 			}
 
 	// Get an object from this resource set.
+	[TODO]
 	public virtual Object GetObject(String name)
 			{
 				// TODO
 				return null;
 			}
+	[TODO]
 	public virtual Object GetObject(String name, bool ignoreCase)
 			{
 				// TODO
@@ -95,11 +104,13 @@ public class ResourceSet : IDisposable
 			}
 
 	// Get a string from this resource set.
+	[TODO]
 	public virtual String GetString(String name)
 			{
 				// TODO
 				return null;
 			}
+	[TODO]
 	public virtual String GetString(String name, bool ignoreCase)
 			{
 				// TODO
@@ -107,6 +118,7 @@ public class ResourceSet : IDisposable
 			}
 
 	// Read all resources into the hash table.
+	[TODO]
 	public virtual void ReadResources()
 			{
 				// TODO

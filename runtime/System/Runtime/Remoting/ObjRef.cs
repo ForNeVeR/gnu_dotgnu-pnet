@@ -24,6 +24,7 @@ namespace System.Runtime.Remoting
 
 #if !ECMA_COMPAT
 
+[TODO]
 public class ObjRef
 {
 

@@ -22,6 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
+[TODO]
 public struct StreamingContext
 {
 

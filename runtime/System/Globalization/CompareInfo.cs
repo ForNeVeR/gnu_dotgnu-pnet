@@ -22,11 +22,13 @@
 namespace System.Globalization
 {
 
+[TODO]
 public class CompareInfo
 {
 
 // TODO
 
+	[TODO]
 	public int Compare(String string1, String string2, CompareOptions options)
 			{
 				// TODO

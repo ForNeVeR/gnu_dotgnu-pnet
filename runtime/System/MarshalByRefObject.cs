@@ -39,6 +39,7 @@ public abstract class MarshalByRefObject
 			}
 
 	// Get a lifetime service object for this object.
+	[TODO]
 	public Object GetLifetimeService()
 			{
 				// TODO
@@ -46,6 +47,7 @@ public abstract class MarshalByRefObject
 			}
 
 	// Initialize the lifetime service for this object.
+	[TODO]
 	public virtual Object InitializeLifetimeService()
 			{
 				// TODO

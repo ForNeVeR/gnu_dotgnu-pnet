@@ -103,6 +103,7 @@ CSSRC = Activator.cs \
 		String.cs \
 		SystemException.cs \
 		TimeSpan.cs \
+		TODOAttribute.cs \
 		Type.cs \
 		TypeCode.cs \
 		TypeInitializationException.cs \

@@ -620,6 +620,7 @@ public sealed class NumberFormatInfo : ICloneable, IFormatProvider
 
 	// Internal constructor that is used to load the contents
 	// of a culture-specific set of number formatting rules.
+	[TODO]
 	internal NumberFormatInfo(CultureInfo culture)
 			: this()
 			{

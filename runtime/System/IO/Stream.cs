@@ -43,6 +43,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			}
 
 	// Begin an asynchronous read operation.
+	[TODO]
 	public virtual IAsyncResult BeginRead
 				(byte[] buffer, int offset, int count,
 				 AsyncCallback callback, Object state)
@@ -53,6 +54,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			}
 
 	// Wait for an asynchronous read operation to end.
+	[TODO]
 	public virtual int EndRead(IAsyncResult asyncResult)
 			{
 				// TODO
@@ -60,6 +62,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			}
 
 	// Begin an asychronous write operation.
+	[TODO]
 	public virtual IAsyncResult BeginWrite
 				(byte[] buffer, int offset, int count,
 				 AsyncCallback callback, Object state)
@@ -70,6 +73,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			}
 
 	// Wait for an asynchronous write operation to end.
+	[TODO]
 	public virtual void EndWrite(IAsyncResult asyncResult)
 			{
 				// TODO
@@ -84,6 +88,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			}
 
 	// Create a wait handle for asynchronous operations.
+	[TODO]
 	protected virtual WaitHandle CreateWaitHandle()
 			{
 				// TODO

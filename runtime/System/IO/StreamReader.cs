@@ -249,6 +249,7 @@ public class StreamReader : TextReader
 			}
 
 	// Peek at the next character from this stream reader.
+	[TODO]
 	public override int Peek()
 			{
 				// TODO
@@ -256,6 +257,7 @@ public class StreamReader : TextReader
 			}
 
 	// Read a single character from this stream reader.
+	[TODO]
 	public override int Read()
 			{
 				// TODO
@@ -263,6 +265,7 @@ public class StreamReader : TextReader
 			}
 
 	// Read a buffer of characters from this stream reader.
+	[TODO]
 	public override int Read(char[] buffer, int index, int count)
 			{
 				if(buffer == null)
@@ -289,6 +292,7 @@ public class StreamReader : TextReader
 			}
 
 	// Read a line of characters from this stream reader.
+	[TODO]
 	public override String ReadLine()
 			{
 				// TODO
@@ -296,6 +300,7 @@ public class StreamReader : TextReader
 			}
 
 	// Read the entire contents of this stream reader until EOF.
+	[TODO]
 	public override String ReadToEnd()
 			{
 				// TODO

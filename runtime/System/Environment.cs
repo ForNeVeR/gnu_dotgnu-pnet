@@ -96,6 +96,7 @@ public sealed class Environment
 			}
 
 	// Determine if application shutdown has started.
+	[TODO]
 	public static bool HasShutdownStarted
 			{
 				get
@@ -134,6 +135,7 @@ public sealed class Environment
 			}
 
 	// Get the version of the runtime engine.
+	[TODO]
 	public static Version Version
 			{
 				get

@@ -17,6 +17,9 @@
 	* System.Xml/Private/ElementList.cs : Fix indexer to return the
 	first element if it is a match and disable checks for Count.
 
+	* System.Windows.Forms/ControlBindingsCollection.cs: Stub out
+	this class.
+
 2004-04-28  Gopal V <gopalv82@yahoo.com>
 
 	* System.Xml/XmlDocument.cs: Add CreateNavigator protected method to

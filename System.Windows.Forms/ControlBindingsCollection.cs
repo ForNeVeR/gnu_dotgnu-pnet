@@ -22,9 +22,84 @@
 namespace System.Windows.Forms
 {
 
-public class ControlBindingsCollection
+public class ControlBindingsCollection: BindingsCollection
 {
-	// TODO
+		[TODO]
+	protected internal ControlBindingsCollection()
+	{
+		//throw new NotImplementedException(".ctor");
+	}
+
+	[TODO]
+	new public void Add(Binding binding)
+	{
+		//throw new NotImplementedException("Add");
+	}
+
+	[TODO]
+	public Binding Add(String propertyName, Object dataSource, String dataMember)
+	{
+			return null;
+		//throw new NotImplementedException("Add");
+	}
+
+	[TODO]
+	protected override void AddCore(Binding dataBinding)
+	{
+		//throw new NotImplementedException("AddCore");
+	}
+
+	[TODO]
+	new public void Clear()
+	{
+		//throw new NotImplementedException("Clear");
+	}
+
+	[TODO]
+	protected override void ClearCore()
+	{
+		//throw new NotImplementedException("ClearCore");
+	}
+
+	[TODO]
+	new public void Remove(Binding binding)
+	{
+		//throw new NotImplementedException("Remove");
+	}
+
+	[TODO]
+	public void RemoveAt(int index)
+	{
+		//throw new NotImplementedException("RemoveAt");
+	}
+
+	[TODO]
+	protected override void RemoveCore(Binding dataBinding)
+	{
+		//throw new NotImplementedException("RemoveCore");
+	}
+
+	[TODO]
+	public Control Control 
+	{
+		get
+		{
+			return null;
+			//throw new NotImplementedException("Control");
+		}
+
+ 	}
+
+	[TODO]
+	public Binding this[String propertyName] 
+	{
+		get
+		{
+			return null;
+			//throw new NotImplementedException("Item");
+		}
+
+ 	}
 
 }; // class ControlBindingsCollection
 

@@ -121,10 +121,10 @@ static void Format_TypeRef(ILWriter *writer, ILImage *image,
 			values[IL_OFFSET_TYPEREF_SCOPE] = 0;
 		}
 	}
-	else if(info->scope)
+	else if(info->className->scope)
 	{
 		/* Refers to a type in a foreign scope */
-		values[IL_OFFSET_TYPEREF_SCOPE] = info->scope->token;
+		values[IL_OFFSET_TYPEREF_SCOPE] = info->className->scope->token;
 	}
 	else if(!ILClassIsRef(info))
 	{
@@ -136,9 +136,10 @@ static void Format_TypeRef(ILWriter *writer, ILImage *image,
 		/* Unknown scope */
 		values[IL_OFFSET_TYPEREF_SCOPE] = 0;
 	}
-	values[IL_OFFSET_TYPEREF_NAME] = GetPersistString(image, info->name);
+	values[IL_OFFSET_TYPEREF_NAME] =
+			GetPersistString(image, info->className->name);
 	values[IL_OFFSET_TYPEREF_NAMESPACE] =
-			GetPersistString(image, info->namespace);
+			GetPersistString(image, info->className->namespace);
 }
 
 /*
@@ -187,9 +188,10 @@ static void Format_TypeDef(ILWriter *writer, ILImage *image,
 	/* Set the easy fields */
 	values[IL_OFFSET_TYPEDEF_ATTRS] =
 		(info->attributes & ~IL_META_TYPEDEF_SYSTEM_MASK);
-	values[IL_OFFSET_TYPEDEF_NAME] = GetPersistString(image, info->name);
+	values[IL_OFFSET_TYPEDEF_NAME] =
+			GetPersistString(image, info->className->name);
 	values[IL_OFFSET_TYPEDEF_NAMESPACE] =
-			GetPersistString(image, info->namespace);
+			GetPersistString(image, info->className->namespace);
 	if(info->parent)
 	{
 		values[IL_OFFSET_TYPEDEF_PARENT] = ClassToToken(image, info->parent);
@@ -650,10 +652,10 @@ static void Format_ExportedType(ILWriter *writer, ILImage *image,
 	values[IL_OFFSET_EXPTYPE_ATTRS] = type->classItem.attributes;
 	values[IL_OFFSET_EXPTYPE_CLASS] = type->identifier;
 	values[IL_OFFSET_EXPTYPE_NAME] =
-			GetPersistString(image, type->classItem.name);
+			GetPersistString(image, type->classItem.className->name);
 	values[IL_OFFSET_EXPTYPE_NAMESPACE] =
-			GetPersistString(image, type->classItem.namespace);
-	values[IL_OFFSET_EXPTYPE_FILE] = type->classItem.scope->token;
+			GetPersistString(image, type->classItem.className->namespace);
+	values[IL_OFFSET_EXPTYPE_FILE] = type->classItem.className->scope->token;
 }
 
 /*

@@ -39,16 +39,16 @@ static unsigned long HashType(unsigned long start, ILType *type)
 	else if(ILType_IsValueType(type) || ILType_IsClass(type))
 	{
 		ILClass *classInfo = ILType_ToClass(type);
-		if(classInfo->namespace)
+		if(classInfo->className->namespace)
 		{
 			return ILHashString(ILHashString(ILHashString
-										(start, classInfo->namespace, -1),
-										".", 1),
-								classInfo->name, -1);
+								  (start, classInfo->className->namespace, -1),
+								   ".", 1),
+								classInfo->className->name, -1);
 		}
 		else
 		{
-			return ILHashString(start, classInfo->name, -1);
+			return ILHashString(start, classInfo->className->name, -1);
 		}
 	}
 	else if(type != 0 && ILType_IsComplex(type))

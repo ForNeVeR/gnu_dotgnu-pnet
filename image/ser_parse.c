@@ -109,19 +109,19 @@ int ILSerializeGetType(ILType *type)
 	{
 		/* Check for "System.String" and "System.Type" */
 		classInfo = ILType_ToClass(type);
-		if(!strcmp(classInfo->name, "String"))
+		if(!strcmp(classInfo->className->name, "String"))
 		{
-			if(classInfo->namespace &&
-			   !strcmp(classInfo->namespace, "System") &&
+			if(classInfo->className->namespace &&
+			   !strcmp(classInfo->className->namespace, "System") &&
 			   ILClassGetNestedParent(classInfo) == 0)
 			{
 				return IL_META_SERIALTYPE_STRING;
 			}
 		}
-		else if(!strcmp(classInfo->name, "Type"))
+		else if(!strcmp(classInfo->className->name, "Type"))
 		{
-			if(classInfo->namespace &&
-			   !strcmp(classInfo->namespace, "System") &&
+			if(classInfo->className->namespace &&
+			   !strcmp(classInfo->className->namespace, "System") &&
 			   ILClassGetNestedParent(classInfo) == 0)
 			{
 				return IL_META_SERIALTYPE_TYPE;

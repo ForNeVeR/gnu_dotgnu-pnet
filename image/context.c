@@ -51,7 +51,7 @@ static unsigned long HashIgnoreCase(unsigned long start,
 /*
  * Compute the hash value for a class.
  */
-static unsigned long ClassHash_Compute(const ILClass *classInfo)
+static unsigned long ClassHash_Compute(const ILClassName *classInfo)
 {
 	unsigned long hash;
 	if(classInfo->namespace)
@@ -88,7 +88,8 @@ static unsigned long ClassHash_KeyCompute(const ILClassKeyInfo *key)
 /*
  * Match a hash table element against a supplied key.
  */
-static int ClassHash_Match(const ILClass *classInfo, const ILClassKeyInfo *key)
+static int ClassHash_Match(const ILClassName *classInfo,
+						   const ILClassKeyInfo *key)
 {
 	/* Match the namespace */
 	if(classInfo->namespace)
@@ -119,7 +120,7 @@ static int ClassHash_Match(const ILClass *classInfo, const ILClassKeyInfo *key)
 	}
 
 	/* Match the image */
-	if(key->image && key->image != classInfo->programItem.image)
+	if(key->image && key->image != classInfo->image)
 	{
 		return 0;
 	}
@@ -141,7 +142,7 @@ static int ClassHash_Match(const ILClass *classInfo, const ILClassKeyInfo *key)
 /*
  * Compute the hash value for a namespace.
  */
-static unsigned long NamespaceHash_Compute(const ILClass *classInfo)
+static unsigned long NamespaceHash_Compute(const ILClassName *classInfo)
 {
 	if(classInfo->namespace)
 	{
@@ -172,7 +173,7 @@ static unsigned long NamespaceHash_KeyCompute(const char *key)
 /*
  * Match a hash table element against a supplied namespace key.
  */
-static int NamespaceHash_Match(const ILClass *classInfo, const char *key)
+static int NamespaceHash_Match(const ILClassName *classInfo, const char *key)
 {
 	int len;
 	if(classInfo->namespace)

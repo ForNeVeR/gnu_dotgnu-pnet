@@ -63,7 +63,8 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 		else if(result == CONVERT_REF_LIBRARY)
 		{
 			/* We have a library find context as the parent */
-			if(!_ILLinkerFindClass(find, classInfo->name, classInfo->namespace))
+			if(!_ILLinkerFindClass(find, ILClass_Name(classInfo),
+								   ILClass_Namespace(classInfo)))
 			{
 				return CONVERT_REF_FAILED;
 			}
@@ -73,15 +74,15 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 		{
 			/* We have an actual TypeDef or TypeRef as the parent */
 			scope = ILToProgramItem(*resultInfo);
-			newClass = ILClassLookup(scope, classInfo->name,
-									 classInfo->namespace);
+			newClass = ILClassLookup(scope, ILClass_Name(classInfo),
+									 ILClass_Namespace(classInfo));
 			if(newClass)
 			{
 				*resultInfo = newClass;
 				return CONVERT_REF_LOCAL;
 			}
-			newClass = ILClassCreateRef(scope, 0, classInfo->name,
-										classInfo->namespace);
+			newClass = ILClassCreateRef(scope, 0, ILClass_Name(classInfo),
+										ILClass_Namespace(classInfo));
 			if(!newClass)
 			{
 				_ILLinkerOutOfMemory(linker);
@@ -94,14 +95,15 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 	else if(ILClassIsRef(classInfo))
 	{
 		/* Converting a top-level class reference to outside the image */
-		scope = classInfo->scope;
+		scope = classInfo->className->scope;
 		assem = ILProgramItemToAssembly(scope);
 		if(assem && ILAssemblyIsRef(assem) &&
 		   (library = _ILLinkerFindLibrary(linker, assem->name)) != 0)
 		{
 			/* Resolved to a specific library */
 			_ILLinkerFindInit(find, linker, library);
-			if(_ILLinkerFindClass(find, classInfo->name, classInfo->namespace))
+			if(_ILLinkerFindClass(find, ILClass_Name(classInfo),
+								  ILClass_Namespace(classInfo)))
 			{
 				return CONVERT_REF_LIBRARY;
 			}
@@ -111,7 +113,8 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 			}
 		}
 		_ILLinkerFindInit(find, linker, 0);
-		if(_ILLinkerFindClass(find, classInfo->name, classInfo->namespace))
+		if(_ILLinkerFindClass(find, ILClass_Name(classInfo),
+							  ILClass_Namespace(classInfo)))
 		{
 			/* Resolved to one of the libraries */
 			return CONVERT_REF_LIBRARY;
@@ -127,8 +130,8 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 	   in the final image, and so we create a reference to it.  When
 	   the link completes, we will scan for dangling TypeRef's */
 	scope = ILClassGlobalScope(linker->image);
-	name = classInfo->name;
-	namespace = classInfo->namespace;
+	name = ILClass_Name(classInfo);
+	namespace = ILClass_Namespace(classInfo);
 	if(!strcmp(name, "<Module>") && !namespace)
 	{
 		name = _ILLinkerModuleName(linker);

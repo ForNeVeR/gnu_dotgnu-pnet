@@ -462,7 +462,7 @@ static int ResolveTypeRefsPhase2(ILImage *image, int loadFlags)
 	{
 		/* Skip this token if it does not have module scope */
 		info = (ILClass *)(table[(token & ~IL_META_TOKEN_MASK) - 1]);
-		scope = (info ? info->scope : 0);
+		scope = (info ? info->className->scope : 0);
 		if(!info || !ScopeIsModule(scope))
 		{
 			continue;
@@ -500,7 +500,8 @@ static int ResolveTypeRefsPhase2(ILImage *image, int loadFlags)
 		{
 			/* Global class: look in any image for the type */
 			importInfo = ILClassLookupGlobal(image->context,
-											 info->name, info->namespace);
+											 info->className->name,
+											 info->className->namespace);
 		}
 		else
 		{
@@ -508,7 +509,8 @@ static int ResolveTypeRefsPhase2(ILImage *image, int loadFlags)
 			scope = _ILProgramItemLinkedTo(scope);
 			if(scope)
 			{
-				importInfo = ILClassLookup(scope, info->name, info->namespace);
+				importInfo = ILClassLookup(scope, info->className->name,
+										   info->className->namespace);
 			}
 			else
 			{
@@ -528,7 +530,8 @@ static int ResolveTypeRefsPhase2(ILImage *image, int loadFlags)
 		else
 		{
 		#if IL_DEBUG_META
-			ReportResolveError(image, 0, info->name, info->namespace);
+			ReportResolveError(image, 0, info->className->name,
+							   info->className->namespace);
 		#endif
 			error = IL_LOADERR_UNRESOLVED;
 		}
@@ -1864,21 +1867,22 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 	#if IL_DEBUG_META
 		if(classInfo)
 		{
-			if(classInfo->namespace &&
-			   !strcmp(classInfo->namespace, "$Synthetic"))
+			if(classInfo->className->namespace &&
+			   !strcmp(classInfo->className->namespace, "$Synthetic"))
 			{
 				fprintf(stderr,
 						"token 0x%08lX: member `%s.%s' not found\n",
-						(unsigned long)token, classInfo->name, name);
+						(unsigned long)token, classInfo->className->name, name);
 			}
 			else
 			{
 				fprintf(stderr,
 						"token 0x%08lX: member `%s%s%s.%s' not found\n",
 						(unsigned long)token,
-						(classInfo->namespace ? classInfo->namespace : ""),
-						(classInfo->namespace ? "." : ""),
-						classInfo->name, name);
+						(classInfo->className->namespace
+								? classInfo->className->namespace : ""),
+						(classInfo->className->namespace ? "." : ""),
+						classInfo->className->name, name);
 			}
 		}
 		else

@@ -1973,14 +1973,14 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 					/* Filter the child based on its name */
 					if((bindingAttrs & (ILInt32)BF_IgnoreCase) == 0)
 					{
-						if(strcmp(child->name, nameUtf8) != 0)
+						if(strcmp(ILClass_Name(child), nameUtf8) != 0)
 						{
 							continue;
 						}
 					}
 					else
 					{
-						if(ILStrICmp(child->name, nameUtf8) != 0)
+						if(ILStrICmp(ILClass_Name(child), nameUtf8) != 0)
 						{
 							continue;
 						}
@@ -2195,14 +2195,14 @@ ILObject *_IL_ClrType_GetMembersImpl(ILExecThread *thread,
 					{
 						if((bindingAttrs & (ILInt32)BF_IgnoreCase) == 0)
 						{
-							if(strcmp(child->name, nameUtf8) != 0)
+							if(strcmp(ILClass_Name(child), nameUtf8) != 0)
 							{
 								continue;
 							}
 						}
 						else
 						{
-							if(ILStrICmp(child->name, nameUtf8) != 0)
+							if(ILStrICmp(ILClass_Name(child), nameUtf8) != 0)
 							{
 								continue;
 							}

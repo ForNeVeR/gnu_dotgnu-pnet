@@ -24,6 +24,76 @@
 extern	"C" {
 #endif
 
+ILClassName *_ILClassNameCreate(ILImage *image, ILToken token,
+								const char *name, const char *namespace,
+								ILProgramItem *scope)
+{
+	ILClassName *className;
+
+	/* Allocate memory for the name information */
+	className = ILMemStackAlloc(&(image->memStack), ILClassName);
+	if(!className)
+	{
+		return 0;
+	}
+
+	/* Populate the name information */
+	className->image = image;
+	className->token = token;
+	className->name = _ILContextPersistString(image, name);
+	if(!(className->name))
+	{
+		return 0;
+	}
+	if(namespace)
+	{
+		className->namespace = _ILContextPersistString(image, namespace);
+		if(!(className->namespace))
+		{
+			return 0;
+		}
+	}
+	className->scope = scope;
+
+	/* Add the class name to the class name hash */
+	if(!ILHashAdd(image->context->classHash, className))
+	{
+		return 0;
+	}
+
+	/* Add the namespace to the context's namespace table if not present */
+	if(namespace)
+	{
+		if(ILHashFind(image->context->namespaceHash, namespace) == 0)
+		{
+			if(!ILHashAdd(image->context->namespaceHash, className))
+			{
+				return 0;
+			}
+		}
+	}
+
+	/* Done */
+	return className;
+}
+
+void _ILClassNameUpdateToken(ILClass *info)
+{
+	info->className->token = info->programItem.token;
+}
+
+ILClass *_ILClassNameToClass(ILClassName *className)
+{
+	if(className)
+	{
+		return ILClass_FromToken(className->image, className->token);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 /*
  * Add a nesting relationship between two classes.
  */
@@ -143,8 +213,14 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 	/* Initialize the class fields */
 	info->programItem.image = image;
 	info->parent = parent;
-	info->scope = scope;
 	info->ext = 0;
+
+	/* Create the class name record */
+	info->className = _ILClassNameCreate(image, 0, name, namespace, scope);
+	if(!(info->className))
+	{
+		return 0;
+	}
 
 	/* Create a nesting relationship with the scope if necessary */
 	if(ILClassIsNestingScope(scope))
@@ -152,39 +228,6 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 		if(!AddNested((ILClass *)scope, info))
 		{
 			return 0;
-		}
-	}
-
-	/* Create persistent versions of the name and namespace */
-	info->name = _ILContextPersistString(image, name);
-	if(!(info->name))
-	{
-		return 0;
-	}
-	if(namespace)
-	{
-		info->namespace = _ILContextPersistString(image, namespace);
-		if(!(info->namespace))
-		{
-			return 0;
-		}
-	}
-
-	/* Add the class to the context's hash table */
-	if(!ILHashAdd(image->context->classHash, info))
-	{
-		return 0;
-	}
-
-	/* Add the namespace to the context's namespace table if not present */
-	if(namespace)
-	{
-		if(ILHashFind(image->context->namespaceHash, namespace) == 0)
-		{
-			if(!ILHashAdd(image->context->namespaceHash, info))
-			{
-				return 0;
-			}
 		}
 	}
 
@@ -229,14 +272,15 @@ ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
 			{
 				return 0;
 			}
+			_ILClassNameUpdateToken(info);
 
 			/* If this is a nested class, then move it to the
 			   end of the nesting list so that the fields and
 			   methods will appear in the correct order in the
 			   final output file */
-			if(ILClassIsNestingScope(info->scope))
+			if(ILClassIsNestingScope(info->className->scope))
 			{
-				MoveNestedToEnd((ILClass *)(info->scope), info);
+				MoveNestedToEnd((ILClass *)(info->className->scope), info);
 			}
 
 			/* Return the class to the caller */
@@ -259,6 +303,7 @@ ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
 		{
 			return 0;
 		}
+		_ILClassNameUpdateToken(info);
 	}
 	return info;
 }
@@ -286,6 +331,7 @@ ILClass *ILClassCreateRef(ILProgramItem *scope, ILToken token,
 		{
 			return 0;
 		}
+		_ILClassNameUpdateToken(info);
 	}
 
 	/* Ready to go */
@@ -327,6 +373,7 @@ int ILClassIsNestingScope(ILProgramItem *scope)
 
 ILClass *ILClassImport(ILImage *image, ILClass *info)
 {
+	ILClassName *newName;
 	ILClass *newInfo;
 	ILProgramItem *scope;
 	ILClassKeyInfo key;
@@ -338,10 +385,10 @@ ILClass *ILClassImport(ILImage *image, ILClass *info)
 	}
 
 	/* Determine the scope to use for the import */
-	if(ILClassIsNestingScope(info->scope))
+	if(ILClassIsNestingScope(info->className->scope))
 	{
 		/* Importing a nested class, so import its parent first */
-		newInfo = ILClassImport(image, (ILClass *)(info->scope));
+		newInfo = ILClassImport(image, (ILClass *)(info->className->scope));
 		if(!newInfo)
 		{
 			return 0;
@@ -360,16 +407,24 @@ ILClass *ILClassImport(ILImage *image, ILClass *info)
 	}
 
 	/* See if we already have a reference to this class */
-	key.name = info->name;
-	key.nameLen = strlen(info->name);
-	key.namespace = info->namespace;
-	key.namespaceLen = (info->namespace ? strlen(info->namespace) : 0);
+	key.name = info->className->name;
+	key.nameLen = strlen(info->className->name);
+	key.namespace = info->className->namespace;
+	key.namespaceLen = (info->className->namespace ?
+							strlen(info->className->namespace) : 0);
 	key.scope = scope;
 	key.image = image;
 	key.wantGlobal = 0;
-	newInfo = ILHashFindType(image->context->classHash, &key, ILClass);
-	if(newInfo != 0)
+	newName = ILHashFindType(image->context->classHash, &key, ILClassName);
+	if(newName != 0)
 	{
+		/* Resolve the named class */
+		newInfo = _ILClassNameToClass(newName);
+		if(!(newInfo))
+		{
+			return 0;
+		}
+
 		/* Link "newInfo" to "info" */
 		if(!_ILProgramItemLinkedTo(&(newInfo->programItem)))
 		{
@@ -383,7 +438,8 @@ ILClass *ILClassImport(ILImage *image, ILClass *info)
 	}
 
 	/* Create a new reference */
-	newInfo = ILClassCreateRef(scope, 0, info->name, info->namespace);
+	newInfo = ILClassCreateRef(scope, 0, info->className->name,
+							   info->className->namespace);
 	if(!newInfo)
 	{
 		return 0;
@@ -442,17 +498,17 @@ void ILClassSetAttrs(ILClass *info, ILUInt32 mask, ILUInt32 values)
 
 ILProgramItem *ILClassGetScope(ILClass *info)
 {
-	return info->scope;
+	return info->className->scope;
 }
 
 const char *ILClassGetName(ILClass *info)
 {
-	return info->name;
+	return info->className->name;
 }
 
 const char *ILClassGetNamespace(ILClass *info)
 {
-	return info->namespace;
+	return info->className->namespace;
 }
 
 ILType *ILClassGetSynType(ILClass *info)
@@ -473,9 +529,9 @@ ILContext *ILClassToContext(ILClass *info)
 /*
  * Matching function that is used by "_ILClassRemoveAllFromHash".
  */
-static int ClassRemove_Match(const ILClass *classInfo, ILImage *key)
+static int ClassRemove_Match(const ILClassName *className, ILImage *key)
 {
-	return (classInfo->programItem.image == key);
+	return (className->image == key);
 }
 
 void _ILClassRemoveAllFromHash(ILImage *image)
@@ -526,7 +582,8 @@ ILClass *ILClassLookup(ILProgramItem *scope,
 	key.image = 0;
 	key.wantGlobal = 0;
 	key.ignoreCase = 0;
-	return ILHashFindType(scope->image->context->classHash, &key, ILClass);
+	return _ILClassNameToClass
+		(ILHashFindType(scope->image->context->classHash, &key, ILClassName));
 }
 
 ILClass *ILClassLookupLen(ILProgramItem *scope,
@@ -542,7 +599,8 @@ ILClass *ILClassLookupLen(ILProgramItem *scope,
 	key.image = 0;
 	key.wantGlobal = 0;
 	key.ignoreCase = 0;
-	return ILHashFindType(scope->image->context->classHash, &key, ILClass);
+	return _ILClassNameToClass
+		(ILHashFindType(scope->image->context->classHash, &key, ILClassName));
 }
 
 /*
@@ -632,7 +690,8 @@ static int CompareUnicode(const char *str,
 /*
  * Match a hash table element against a supplied key.
  */
-static int UnicodeMatch(const ILClass *classInfo, const ILClassKeyInfo *key)
+static int UnicodeMatch(const ILClassName *classInfo,
+						const ILClassKeyInfo *key)
 {
 	/* Match the namespace */
 	if(classInfo->namespace)
@@ -663,7 +722,7 @@ static int UnicodeMatch(const ILClass *classInfo, const ILClassKeyInfo *key)
 	}
 
 	/* Match the image */
-	if(key->image && key->image != classInfo->programItem.image)
+	if(key->image && key->image != classInfo->image)
 	{
 		return 0;
 	}
@@ -696,9 +755,10 @@ ILClass *ILClassLookupUnicode(ILProgramItem *scope,
 	key.image = 0;
 	key.wantGlobal = 0;
 	key.ignoreCase = ignoreCase;
-	return ILHashFindAltType(scope->image->context->classHash, &key, ILClass,
-							 (ILHashKeyComputeFunc)UnicodeHashKey,
-							 (ILHashMatchFunc)UnicodeMatch);
+	return _ILClassNameToClass
+		(ILHashFindAltType(scope->image->context->classHash, &key, ILClassName,
+						   (ILHashKeyComputeFunc)UnicodeHashKey,
+						   (ILHashMatchFunc)UnicodeMatch));
 }
 
 ILClass *ILClassLookupGlobal(ILContext *context,
@@ -713,7 +773,8 @@ ILClass *ILClassLookupGlobal(ILContext *context,
 	key.image = 0;
 	key.wantGlobal = 1;
 	key.ignoreCase = 0;
-	return ILHashFindType(context->classHash, &key, ILClass);
+	return _ILClassNameToClass
+		(ILHashFindType(context->classHash, &key, ILClassName));
 }
 
 ILClass *ILClassLookupGlobalLen(ILContext *context,
@@ -729,7 +790,8 @@ ILClass *ILClassLookupGlobalLen(ILContext *context,
 	key.image = 0;
 	key.wantGlobal = 1;
 	key.ignoreCase = 0;
-	return ILHashFindType(context->classHash, &key, ILClass);
+	return _ILClassNameToClass
+		(ILHashFindType(context->classHash, &key, ILClassName));
 }
 
 ILClass *ILClassLookupGlobalUnicode(ILContext *context,
@@ -746,9 +808,10 @@ ILClass *ILClassLookupGlobalUnicode(ILContext *context,
 	key.image = 0;
 	key.wantGlobal = 1;
 	key.ignoreCase = ignoreCase;
-	return ILHashFindAltType(context->classHash, &key, ILClass,
-							 (ILHashKeyComputeFunc)UnicodeHashKey,
-							 (ILHashMatchFunc)UnicodeMatch);
+	return _ILClassNameToClass
+		(ILHashFindAltType(context->classHash, &key, ILClassName,
+						   (ILHashKeyComputeFunc)UnicodeHashKey,
+						   (ILHashMatchFunc)UnicodeMatch));
 }
 
 ILImplements *ILClassAddImplements(ILClass *info, ILClass *interface,
@@ -979,9 +1042,9 @@ int ILClassCanNest(ILClass *parent, ILClass *child)
 
 ILClass *ILClassGetNestedParent(ILClass *info)
 {
-	if(ILClassIsNestingScope(info->scope))
+	if(ILClassIsNestingScope(info->className->scope))
 	{
-		return (ILClass *)(info->scope);
+		return (ILClass *)(info->className->scope);
 	}
 	else
 	{
@@ -1017,7 +1080,7 @@ static int AccessibleNestedPrivate(ILClass *info, ILClass *scope)
 	{
 		return 0;
 	}
-	if(info->scope == (ILProgramItem *)scope)
+	if(info->className->scope == (ILProgramItem *)scope)
 	{
 		return 1;
 	}
@@ -1269,70 +1332,71 @@ ILType *ILClassToType(ILClass *info)
 	}
 
 	/* Check for system classes with primitive equivalents */
-	if(info->namespace && !strcmp(info->namespace, "System") &&
+	if(info->className->namespace &&
+	   !strcmp(info->className->namespace, "System") &&
 	   ILClassGetNestedParent(info) == 0)
 	{
-		if(!strcmp(info->name, "Boolean"))
+		if(!strcmp(info->className->name, "Boolean"))
 		{
 			return ILType_Boolean;
 		}
-		else if(!strcmp(info->name, "SByte"))
+		else if(!strcmp(info->className->name, "SByte"))
 		{
 			return ILType_Int8;
 		}
-		else if(!strcmp(info->name, "Byte"))
+		else if(!strcmp(info->className->name, "Byte"))
 		{
 			return ILType_UInt8;
 		}
-		else if(!strcmp(info->name, "Int16"))
+		else if(!strcmp(info->className->name, "Int16"))
 		{
 			return ILType_Int16;
 		}
-		else if(!strcmp(info->name, "UInt16"))
+		else if(!strcmp(info->className->name, "UInt16"))
 		{
 			return ILType_UInt16;
 		}
-		else if(!strcmp(info->name, "Char"))
+		else if(!strcmp(info->className->name, "Char"))
 		{
 			return ILType_Char;
 		}
-		else if(!strcmp(info->name, "Int32"))
+		else if(!strcmp(info->className->name, "Int32"))
 		{
 			return ILType_Int32;
 		}
-		else if(!strcmp(info->name, "UInt32"))
+		else if(!strcmp(info->className->name, "UInt32"))
 		{
 			return ILType_UInt32;
 		}
-		else if(!strcmp(info->name, "Int64"))
+		else if(!strcmp(info->className->name, "Int64"))
 		{
 			return ILType_Int64;
 		}
-		else if(!strcmp(info->name, "UInt64"))
+		else if(!strcmp(info->className->name, "UInt64"))
 		{
 			return ILType_UInt64;
 		}
-		else if(!strcmp(info->name, "Single"))
+		else if(!strcmp(info->className->name, "Single"))
 		{
 			return ILType_Float32;
 		}
-		else if(!strcmp(info->name, "Double"))
+		else if(!strcmp(info->className->name, "Double"))
 		{
 			return ILType_Float64;
 		}
-		else if(!strcmp(info->name, "IntPtr"))
+		else if(!strcmp(info->className->name, "IntPtr"))
 		{
 			return ILType_Int;
 		}
-		else if(!strcmp(info->name, "UIntPtr"))
+		else if(!strcmp(info->className->name, "UIntPtr"))
 		{
 			return ILType_UInt;
 		}
-		else if(!strcmp(info->name, "Void"))
+		else if(!strcmp(info->className->name, "Void"))
 		{
 			return ILType_Void;
 		}
-		else if(!strcmp(info->name, "TypedReference"))
+		else if(!strcmp(info->className->name, "TypedReference"))
 		{
 			return ILType_TypedRef;
 		}

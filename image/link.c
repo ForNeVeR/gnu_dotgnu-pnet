@@ -741,7 +741,7 @@ static int SearchForDllMap(ILProgramItem *item, const char *name,
 	while((attr = ILProgramItemNextAttribute(item, attr)) != 0)
 	{
 		method = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
-		if(method != 0 && !strcmp(method->member.owner->name,
+		if(method != 0 && !strcmp(method->member.owner->className->name,
 								  "DllImportMapAttribute"))
 		{
 			blob = ILAttributeGetValue(attr, &blobLen);

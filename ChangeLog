@@ -23,6 +23,14 @@
 	convert ILExportedType into a subclass of ILClass so that we
 	can treat exported types as a special kind of typeref.
 
+	* engine/lib_type.c, ilalink/link_type.c, image/class.c,
+	image/context.c, image/java_loader.c, image/link.c,
+	image/meta_build.c, image/meta_types.c, image/meta_writer.c,
+	image/misc_token.c, image/program.h, image/ser_parse.c,
+	image/synthetic.c: shift the name information out of ILClass
+	into a separate ILClassName record, so that we can eventually
+	load the names before loading the classes.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

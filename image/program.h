@@ -219,20 +219,49 @@ struct _tagJavaConstEntry
 };
 
 /*
+ * Information about a class name.
+ */
+typedef struct _tagILClassName ILClassName;
+struct _tagILClassName
+{
+	ILImage		   *image;				/* Image containing the class */
+	ILToken			token;				/* Token code for the class */
+	const char	   *name;				/* Name of the class */
+	const char	   *namespace;			/* Name of the class's namespace */
+	ILProgramItem  *scope;				/* Scope that the class is defined in */
+};
+
+/*
+ * Create a new class name.
+ */
+ILClassName *_ILClassNameCreate(ILImage *image, ILToken token,
+								const char *name, const char *namespace,
+								ILProgramItem *scope);
+
+/*
+ * Update class name token information for a class.
+ */
+void _ILClassNameUpdateToken(ILClass *info);
+
+/*
+ * Convert a class name into the actual class, performing dynamic
+ * token lookup as necessary.
+ */
+ILClass *_ILClassNameToClass(ILClassName *className);
+
+/*
  * Information about a class.
  */
 struct _tagILClass
 {
 	ILProgramItem	programItem;		/* Parent class fields */
 	ILUInt32		attributes;			/* IL_META_TYPEDEF_xxx flags */
-	const char	   *name;				/* Name of the class */
-	const char	   *namespace;			/* Name of the class's namespace */
+	ILClassName    *className;			/* Name information for the class */
 	ILClass		   *parent;				/* Parent class */
 	ILImplements   *implements;			/* List of implemented interfaces */
 	ILMember	   *firstMember;		/* First member owned by the class */
 	ILMember	   *lastMember;			/* Last member owned by the class */
 	ILNestedInfo   *nestedChildren;		/* List of nested children */
-	ILProgramItem  *scope;				/* Scope that the class is defined in */
 	ILType         *synthetic;			/* Synthetic type for this class */
 	ILClassExt     *ext;				/* Extension information */
 	void           *userData;			/* Data added by the runtime engine */

@@ -1161,8 +1161,8 @@ static int LoadJavaClass(ILImage *image, JavaReader *reader, int flags)
 	}
 
 	/* Convert the class from a reference into a definition */
-	ILClassCreate(ILClassGlobalScope(image), 0, classInfo->name,
-				  classInfo->namespace, otherClass);
+	ILClassCreate(ILClassGlobalScope(image), 0, classInfo->className->name,
+				  classInfo->className->namespace, otherClass);
 	ILClassSetAttrs(classInfo, IL_MAX_UINT32, accessFlags);
 
 	/* Add the interfaces to the class */

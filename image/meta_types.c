@@ -597,11 +597,11 @@ char *ILTypeToName(ILType *type)
 		{
 			len = 0;
 		}
-		if(info->namespace)
+		if(info->className->namespace)
 		{
-			len += strlen(info->namespace) + 1;
+			len += strlen(info->className->namespace) + 1;
 		}
-		len += strlen(info->name) + 1;
+		len += strlen(info->className->name) + 1;
 
 		/* Build the fully-qualified class name */
 		name = (char *)ILMalloc(len);
@@ -618,13 +618,13 @@ char *ILTypeToName(ILType *type)
 			{
 				len = 0;
 			}
-			if(info->namespace)
+			if(info->className->namespace)
 			{
-				strcpy(name + len, info->namespace);
-				len += strlen(info->namespace);
+				strcpy(name + len, info->className->namespace);
+				len += strlen(info->className->namespace);
 				name[len++] = '.';
 			}
-			strcpy(name + len, info->name);
+			strcpy(name + len, info->className->name);
 		}
 		return name;
 	}
@@ -911,8 +911,9 @@ int ILTypeIsStringClass(ILType *type)
 	{
 		/* Check the name against "System.String" */
 		info = ILClassResolve(ILType_ToClass(type));
-		if(!strcmp(info->name, "String") &&
-		   info->namespace && !strcmp(info->namespace, "System"))
+		if(!strcmp(info->className->name, "String") &&
+		   info->className->namespace &&
+		   !strcmp(info->className->namespace, "System"))
 		{
 			/* Check that it is within the system image, to prevent
 			   applications from fooling us into believing that their
@@ -936,8 +937,9 @@ int ILTypeIsObjectClass(ILType *type)
 	{
 		/* Check the name against "System.String" */
 		info = ILClassResolve(ILType_ToClass(type));
-		if(!strcmp(info->name, "Object") &&
-		   info->namespace && !strcmp(info->namespace, "System"))
+		if(!strcmp(info->className->name, "Object") &&
+		   info->className->namespace &&
+		   !strcmp(info->className->namespace, "System"))
 		{
 			/* Check that it is within the system image, to prevent
 			   applications from fooling us into believing that their

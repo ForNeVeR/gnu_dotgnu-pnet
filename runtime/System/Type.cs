@@ -24,6 +24,7 @@ namespace System
 using System.Private;
 using System.Reflection;
 using System.Globalization;
+using System.Collections;
 using System.Runtime.CompilerServices;
 
 public abstract class Type : MemberInfo
@@ -150,6 +151,89 @@ public abstract class Type : MemberInfo
 				// Find all members with the specified name.
 				return GetMember(attr.MemberName);
 			}
+
+#if !ECMA_COMPAT
+
+	/* convenience function wrapping over the other abstract stuff */
+	public virtual MemberInfo[]	FindMembers	(MemberTypes memberType,
+								 BindingFlags bindingAttr,
+								 MemberFilter filter,
+								 Object filterCriteria)
+			{
+				ArrayList list=new ArrayList(); 
+				if((memberType & MemberTypes.Constructor)!=0)
+				{
+					ConstructorInfo[] ctors = GetConstructors(bindingAttr);
+					foreach(MemberInfo minfo in ctors)
+					{
+						if(filter==null || filter(minfo,filterCriteria))
+						{
+							list.Add(minfo);
+						}
+					}
+				}
+				if((memberType & MemberTypes.Event)!=0)
+				{
+					EventInfo[] events = GetEvents(bindingAttr);
+					foreach(MemberInfo minfo in events)
+					{
+						if(filter==null || filter(minfo,filterCriteria))
+						{
+							list.Add(minfo);
+						}
+					}
+				}
+				if((memberType & MemberTypes.Field)!=0)
+				{
+					FieldInfo[] fields = GetFields(bindingAttr);
+					foreach(MemberInfo minfo in fields)
+					{
+						if(filter==null || filter(minfo,filterCriteria))
+						{
+							list.Add(minfo);
+						}
+					}
+				}
+				if((memberType & MemberTypes.Method)!=0)
+				{
+					MethodInfo[] mthds = GetMethods(bindingAttr);
+					foreach(MemberInfo minfo in mthds)
+					{
+						if(filter==null || filter(minfo,filterCriteria))
+						{
+							list.Add(minfo);
+						}
+					}
+				}
+				if((memberType & MemberTypes.Property)!=0)
+				{
+					PropertyInfo[] props= GetProperties(bindingAttr);
+					foreach(MemberInfo minfo in props)
+					{
+						if(filter==null || filter(minfo,filterCriteria))
+						{
+							list.Add(minfo);
+						}
+					}
+					
+				}
+				if((memberType & MemberTypes.NestedType)!=0)
+				{
+					Type[] types= GetNestedTypes(bindingAttr);
+					foreach(MemberInfo minfo in types)
+					{
+						if(filter==null || filter(minfo,filterCriteria))
+						{
+							list.Add(minfo);
+						}
+					}
+				}
+				
+				MemberInfo[] retval=new MemberInfo[list.Count];
+				list.CopyTo(retval);
+				return retval;				
+			}
+#endif
 
 	// Get the element type for this type.
 	public abstract Type GetElementType();

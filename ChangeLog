@@ -6,6 +6,8 @@
 	System/Text/RegularExpressions/regex.cs : synchronize the 
 	imported tree with the original.
 
+	* runtime/System/Type.cs: Implement Type.FindMembers() method.
+
 2003-02-14  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 	
 	* runtime/System/IO/Directory.cs: Directory.Exists() should not

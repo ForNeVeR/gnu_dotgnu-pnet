@@ -41,6 +41,7 @@ public class Testruntime
 				suite.AddTest(SuiteSerialization.Suite());
 				suite.AddTest(SuiteSecurity.Suite());
 				suite.AddTest(SuiteIO.Suite());
+				suite.AddTest(SuiteEmit.Suite());
 				return suite;
 			}
 

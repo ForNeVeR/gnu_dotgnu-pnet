@@ -1,4 +1,11 @@
 
+2004-05-07  Jonas Printzen  <jonas@printzen.net>
+
+	* tests/runtime/Testruntime.cs, 
+	tests/runtime/System/Reflection/Emit/SuiteEmit.cs,
+	tests/runtime/System/Reflection/Emit/TestEmit.cs : Add some test
+	cases for System.Reflection.Emit (patch #3015, Gopal)
+	
 2004-05-07  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Xml/XmlDocument.cs: modifier internal removed from 

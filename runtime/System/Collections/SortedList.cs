@@ -483,7 +483,7 @@ public class SortedList : IDictionary, ICollection, IEnumerable, ICloneable
 	// Trim the capacity of this sorted list to its actual size.
 	public virtual void TrimToSize()
 			{
-				if(count != keys.Length)
+				if(count != keys.Length && keys.Length > DefaultCapacity)
 				{
 					Object[] newKeys = new Object [count];
 					Object[] newValues = new Object [count];

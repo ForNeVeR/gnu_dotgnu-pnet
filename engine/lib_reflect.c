@@ -29,6 +29,14 @@ extern	"C" {
 #ifdef IL_CONFIG_REFLECTION
 
 /*
+ * Throw a target exception.
+ */
+static void ThrowTargetException(ILExecThread *thread)
+{
+	ILExecThreadThrowSystem(thread, "System.Reflection.TargetException", 0);
+}
+
+/*
  * Determine if we have an attribute type match.
  */
 static int AttrMatch(ILExecThread *thread, ILAttribute *attr, ILClass *type)
@@ -1351,64 +1359,59 @@ ILObject *_IL_FieldInfo_GetFieldFromHandle(ILExecThread *thread,
 ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
 								ILObject *obj)
 {
-	unsigned long len;
-	ILProgramItem *item;
 	ILField *field;
-	ILConstant *constant;
-	ILInt32 intValue;
-	ILUInt32 uintValue;
-	ILInt64 longValue;
-	ILUInt64 ulongValue;
-	ILFloat floatValue;
-	ILDouble doubleValue;
-	const char* strValue;
-	
-	item = (ILProgramItem *)_ILClrFromObject(thread, _this);
-	if(!item)return 0;
-	field = ILProgramItemToField(item);
-	if(!field)return 0;
-	constant = ILConstantGetFromOwner(item);
-		
-	if(!constant)return 0;
-	switch(ILConstantGetElemType(constant))
+	ILType *type;
+	void *ptr;
+
+	/* Get the program item for the field reference */
+	field = _ILClrFromObject(thread, _this);
+	if(!field)
 	{
-		case IL_META_ELEMTYPE_BOOLEAN:
-		case IL_META_ELEMTYPE_CHAR:
-		case IL_META_ELEMTYPE_I1:
-		case IL_META_ELEMTYPE_I2:	
-		case IL_META_ELEMTYPE_I4:
-			intValue = *((ILInt32*)(ILConstantGetValue(constant,&(len))));
-			return ILExecThreadBox(thread,ILField_Type(field),&(intValue));
-			break;
-		case IL_META_ELEMTYPE_U1:
-		case IL_META_ELEMTYPE_U2:
-		case IL_META_ELEMTYPE_U4:
-			uintValue = *((ILUInt32*)(ILConstantGetValue(constant,&(len))));
-			return ILExecThreadBox(thread,ILField_Type(field),&(uintValue));
-			break;
-		case IL_META_ELEMTYPE_I8:
-			longValue = *((ILInt64*)(ILConstantGetValue(constant,&(len))));
-			return ILExecThreadBox(thread,ILField_Type(field),&(longValue));
-			break;
-		case IL_META_ELEMTYPE_U8:
-			ulongValue = *((ILInt64*)(ILConstantGetValue(constant,&(len))));
-			return ILExecThreadBox(thread,ILField_Type(field),&(ulongValue));
-			break;
-		case IL_META_ELEMTYPE_R4:
-			floatValue =  *((ILFloat*)(ILConstantGetValue(constant,&(len))));
-			return ILExecThreadBox(thread,ILField_Type(field),&(floatValue));
-			break;
-		case IL_META_ELEMTYPE_R8:	
-			doubleValue =  *((ILDouble*)(ILConstantGetValue(constant,&(len))));
-			return ILExecThreadBox(thread,ILField_Type(field),&(doubleValue));
-			break;
-		case IL_META_ELEMTYPE_STRING:
-			strValue = (const char *)(ILConstantGetValue(constant, &len));
-			return (ILObject*)((System_String*)ILStringCreateLen(thread,
-									strValue,len));
-		/* TODO : implement the object cases for the GetValue */
+		return 0;
 	}
-	return 0;
+
+	/* Check that we have sufficient access credentials for the field */
+	if(!_ILClrCheckAccess(thread, 0, (ILMember *)field))
+	{
+		ILExecThreadThrowSystem
+			(thread, "System.Security.SecurityException", 0);
+		return 0;
+	}
+
+	/* Is the field literla, static or instance? */
+	if(ILField_IsLiteral(field))
+	{
+		/* TODO: unpack the constant and return it */
+		return 0;
+	}
+	else if(ILField_IsStatic(field))
+	{
+		/* TODO */
+		return 0;
+	}
+	else
+	{
+		/* We must have a target, and it must be of the right class */
+		if(!obj || !ILClassInheritsFrom(GetObjectClass(obj),
+									    ILClassResolve(ILField_Owner(obj))))
+		{
+			ThrowTargetException(thread);
+		}
+
+		/* Get the field's type and a pointer to it */
+		type = ILField_Type(field);
+		ptr = (void *)(((unsigned char *)obj) + field->offset);
+	}
+
+	/* Fetch the value, box it, and return */
+	if(ILTypeIsReference(type))
+	{
+		return *((ILObject **)ptr);
+	}
+	else
+	{
+		return ILExecThreadBox(thread, type, ptr);
+	}
 }
 
 /*
@@ -1421,7 +1424,59 @@ void _IL_ClrField_SetValue(ILExecThread *thread, ILObject *_this,
 						   ILInt32 invokeAttr, ILObject *binder,
 						   ILObject *culture)
 {
-	/* TODO */
+	ILField *field;
+	ILType *type;
+	void *ptr;
+
+	/* Get the program item for the field reference */
+	field = _ILClrFromObject(thread, _this);
+	if(!field)
+	{
+		return;
+	}
+
+	/* Check that we have sufficient access credentials for the field */
+	if(!_ILClrCheckAccess(thread, 0, (ILMember *)field))
+	{
+		ILExecThreadThrowSystem
+			(thread, "System.Security.SecurityException", 0);
+		return;
+	}
+
+	/* Is the field literla, static or instance? */
+	if(ILField_IsLiteral(field))
+	{
+		/* Cannot set literal fields */
+		return;
+	}
+	else if(ILField_IsStatic(field))
+	{
+		/* TODO */
+		return;
+	}
+	else
+	{
+		/* We must have a target, and it must be of the right class */
+		if(!obj || !ILClassInheritsFrom(GetObjectClass(obj),
+									    ILClassResolve(ILField_Owner(obj))))
+		{
+			ThrowTargetException(thread);
+		}
+
+		/* Get the field's type and a pointer to it */
+		type = ILField_Type(field);
+		ptr = (void *)(((unsigned char *)obj) + field->offset);
+	}
+
+	/* Fetch the value, box it, and return */
+	if(ILTypeIsReference(type))
+	{
+		*((ILObject **)ptr) = value;
+	}
+	else
+	{
+		ILExecThreadUnbox(thread, type, value, ptr);
+	}
 }
 
 /*
@@ -1766,14 +1821,6 @@ ILObject *_IL_ClrConstructor_Invoke(ILExecThread *thread,
 
 	/* Invoke the constructor method */
 	return InvokeMethod(thread, method, signature, 0, parameters, 1);
-}
-
-/*
- * Throw a target exception.
- */
-static void ThrowTargetException(ILExecThread *thread)
-{
-	ILExecThreadThrowSystem(thread, "System.Reflection.TargetException", 0);
 }
 
 /*

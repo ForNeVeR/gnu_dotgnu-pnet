@@ -24,16 +24,28 @@ namespace System.Text
 
 using System;
 
-public class UTF7Encoding : Encoding
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+class UTF7Encoding : Encoding
 {
 	// Magic number used by Windows for UTF-7.
 	internal const int UTF7_CODE_PAGE = 65000;
 
+	// Internal state.
+	private bool allowOptionals;
+
 	// Constructors.
-	[TODO]
-	public UTF7Encoding() : base(UTF7_CODE_PAGE)
+	public UTF7Encoding() : this(false)
 			{
-				// TODO
+				// Nothing to do here.
+			}
+	public UTF7Encoding(bool allowOptionals)
+			: base(UTF7_CODE_PAGE)
+			{
+				this.allowOptionals = allowOptionals;
 			}
 
 	// Get the number of bytes needed to encode a character buffer.
@@ -220,17 +232,136 @@ public class UTF7Encoding : Encoding
 	[TODO]
 	public override Decoder GetDecoder()
 			{
-				// TODO
-				return base.GetDecoder();
+				return new UTF7Decoder();
 			}
 
 	// Get a UTF7-specific encoder that is attached to this instance.
 	[TODO]
 	public override Encoder GetEncoder()
 			{
-				// TODO
-				return base.GetEncoder();
+				return new UTF7Encoder(allowOptionals);
 			}
+
+#if !ECMA_COMPAT
+
+	// Get the mail body name for this encoding.
+	public override String BodyName
+			{
+				get
+				{
+					return "utf-7";
+				}
+			}
+
+	// Get the human-readable name for this encoding.
+	public override String EncodingName
+			{
+				get
+				{
+					return "Unicode (UTF-7)";
+				}
+			}
+
+	// Get the mail agent header name for this encoding.
+	public override String HeaderName
+			{
+				get
+				{
+					return "utf-7";
+				}
+			}
+
+	// Determine if this encoding can be displayed in a mail/news agent.
+	public override bool IsMailNewsDisplay
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+	// Determine if this encoding can be saved from a mail/news agent.
+	public override bool IsMailNewsSave
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+	// Get the IANA-preferred Web name for this encoding.
+	public override String WebName
+			{
+				get
+				{
+					return "utf-7";
+				}
+			}
+
+	// Get the Windows code page represented by this object.
+	public override int WindowsCodePage
+			{
+				get
+				{
+					return UnicodeEncoding.UNICODE_CODE_PAGE;
+				}
+			}
+
+#endif // !ECMA_COMPAT
+
+	// UTF-7 decoder implementation.
+	private sealed class UTF7Decoder : Decoder
+	{
+		// Constructor.
+		public UTF7Decoder()
+				{
+					// TODO
+				}
+
+		// Override inherited methods.
+		public override int GetCharCount(byte[] bytes, int index, int count)
+				{
+					// TODO
+					return 0;
+				}
+		public override int GetChars(byte[] bytes, int byteIndex,
+									 int byteCount, char[] chars,
+									 int charIndex)
+				{
+					// TODO
+					return 0;
+				}
+
+	} // class UTF7Decoder
+
+	// UTF-7 encoder implementation.
+	private sealed class UTF7Encoder : Encoder
+	{
+		private bool allowOptionals;
+
+		// Constructor.
+		public UTF7Encoder(bool allowOptionals)
+				{
+					this.allowOptionals = allowOptionals;
+					// TODO
+				}
+
+		// Override inherited methods.
+		public override int GetByteCount(char[] chars, int index,
+										 int count, bool flush)
+				{
+					// TODO
+					return 0;
+				}
+		public override int GetBytes(char[] chars, int charIndex,
+									 int charCount, byte[] bytes,
+									 int byteCount, bool flush)
+				{
+					// TODO
+					return 0;
+				}
+
+	} // class UTF7Encoder
 
 }; // class UTF7Encoding
 

@@ -7,6 +7,18 @@
 	runtime/System/Text/UnicodeEncoding.cs: complete the implementations
 	of "UTF8Encoding" and "UnicodeEncoding".
 
+	* resources/en_US/runtime/NotSupp.txt,
+	runtime/System/Text/ASCIIEncoding.cs,
+	runtime/System/Text/DefaultEncoding.cs,
+	runtime/System/Text/Encoding.cs,
+	runtime/System/Text/Latin1Encoding.cs,
+	runtime/System/Text/Makefile,
+	runtime/System/Text/README,
+	runtime/System/Text/UTF7Encoding.cs,
+	runtime/System/Text/UTF8Encoding.cs,
+	runtime/System/Text/UnicodeEncoding.cs: add non-ECMA encoding
+	functionality and improve the code page support.
+
 2002-04-13  Gopal.V  <gopalv82@yahoo.com>
 
 	* doc/csunit_howto.html : added a doc on how to write tests

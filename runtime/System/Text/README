@@ -1,0 +1,69 @@
+This directory provides support for various character set encodings,
+based around the Windows "code page" concept.  The following is a short
+tour of the main encoding classes:
+
+	Encoding
+
+		The base class for all encoding handlers.
+
+	ASCIIEncoding
+
+		Handles the "us-ascii" encoding.
+
+	DefaultEncoding
+
+		Internal class that handles the default encoding.  The runtime
+		engine provides this encoding when it doesn't otherwise support
+		code pages.  Code page 0 can also be used to obtain an object
+		of this class.
+
+	Latin1Encoding
+
+		Internal class that handles the "iso-8859-1" and "Windows-1252"
+		encodings, corresponding to Latin1.
+
+	UTF7Encoding
+
+		Handles the "utf-7" encoding.
+
+	UTF8Encoding
+
+		Handles the "utf-8" encoding.
+
+	UnicodeEncoding
+
+		Handles the "utf-16" encoding in little-endian and big-endian forms.
+
+The method "DefaultEncoding.InternalCodePage()" is used to detect the
+default code page supported by the runtime engine.  This method may
+return 0 if there is no way for the engine to return a valid number.
+
+It is possible to create your own code page and encoding handlers to
+extend the set above.
+
+Create a "private" class called "System.Text.CPnnnn" that inherits from
+"Encoding" where "nnnn" is the code page number.  The lookup method
+"Encoding.GetEncoding(int)" function will detect this class and create
+an instance of it.
+
+Also create a "private" class called "System.Text.ENCname" that inherits
+from "System.Text.CPnnnn", where "name" is the lower-case version of the
+Web encoding name.  This will be returned by "Encoding.GetEncoding(String)".
+
+For example, to handle code page 20866 [Cyrillic (KOI8-R)], create the
+class "System.Text.CP20866" to handle the code page and the subclass
+"System.Text.ENCkoi8_r" to handle the web encoding:
+
+	namespace System.Text
+	{
+		internal class CP20866 : Encoding
+		{
+			...
+		}
+
+		internal class ENCkoi8_r : CP20866 {}
+	}
+
+The "ENCname" class will typically be empty: it exists purely as a naming
+convenience to redirect "Encoding.GetEncoding(String)" to the correct
+code page implementation.

@@ -20,15 +20,26 @@
 
 /*
 
-Note: code pages are not really handled by this class yet.  They are
-a very Windows-specific thing.  However, it is possible to create your
-own code page handlers if you wish.  Create a "private" class called
-"System.Text.CPnnnn" that inherits from "Encoding" where "nnnn" is
-the code page number.  The "Encoding.GetEncoding" function will detect
-this class and create an instance of it.
+Note: code pages are a very Windows-specific thing.  However, it is
+possible to create your own code page and encoding handlers if you wish.
+
+Create a "private" class called "System.Text.CPnnnn" that inherits from
+"Encoding" where "nnnn" is the code page number.  The lookup method
+"Encoding.GetEncoding(int)" function will detect this class and create
+an instance of it.
+
+Also create a "private" class called "System.Text.ENCname" that inherits
+from "System.Text.CPnnnn", where "name" is the lower-case version of the
+Web encoding name.  This will be returned by "Encoding.GetEncoding(String)".
+
+For example, to handle code page 20866 [Cyrillic (KOI8-R)], create the
+class "System.Text.CP20866" to handle the code page and the subclass
+"System.Text.ENCkoi8_r" to handle the web encoding.
 
 Code page "0" is used to represent the default encoding used by the
-underlying runtime engine.  Nothing more is known about it.
+underlying runtime engine.  Normally, nothing more is known about it.
+However, "DefaultEncoding.InternalCodePage()" can be used to return
+the engine's code page for creating a more specific encoding object.
 
 */
 
@@ -37,6 +48,7 @@ namespace System.Text
 
 using System;
 using System.Reflection;
+using System.Globalization;
 
 public abstract class Encoding
 {
@@ -48,7 +60,12 @@ public abstract class Encoding
 			{
 				codePage = 0;
 			}
-	protected Encoding(int codePage)
+#if ECMA_COMPAT
+	protected internal
+#else
+	protected
+#endif
+	Encoding(int codePage)
 			{
 				this.codePage = codePage;
 			}
@@ -235,7 +252,12 @@ public abstract class Encoding
 			}
 
 	// Get an encoder for a specific code page.
-	public static Encoding GetEncoding(int codePage)
+#if ECMA_COMPAT
+	private
+#else
+	public
+#endif
+	static Encoding GetEncoding(int codePage)
 			{
 				// Check for the builtin code pages first.
 				switch(codePage)
@@ -256,6 +278,12 @@ public abstract class Encoding
 
 					case UnicodeEncoding.BIG_UNICODE_CODE_PAGE:
 						return BigEndianUnicode;
+
+					case Latin1Encoding.WINLATIN_CODE_PAGE:
+						return WinLatin1;
+
+					case Latin1Encoding.ISOLATIN_CODE_PAGE:
+						return ISOLatin1;
 
 					default: break;
 				}
@@ -284,6 +312,69 @@ public abstract class Encoding
 					(String.Format
 						(_("NotSupp_CodePage"), codePage.ToString()));
 			}
+
+#if !ECMA_COMPAT
+
+	// Table of builtin web encoding names and the corresponding code pages.
+	private static readonly String[] encodingNames =
+		{"us-ascii", "utf-7", "utf-8", "utf-16", "unicodeFFFE",
+		 "Windows-1252", "iso-8859-1"};
+	private static readonly int[] encodingCodePages =
+		{ASCIIEncoding.ASCII_CODE_PAGE,
+		 UTF7Encoding.UTF7_CODE_PAGE,
+		 UTF8Encoding.UTF8_CODE_PAGE,
+		 UnicodeEncoding.UNICODE_CODE_PAGE,
+		 UnicodeEncoding.BIG_UNICODE_CODE_PAGE,
+		 Latin1Encoding.WINLATIN_CODE_PAGE,
+		 Latin1Encoding.ISOLATIN_CODE_PAGE};
+
+	// Get an encoding object for a specific web encoding name.
+	public static Encoding GetEncoding(String name)
+			{
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+
+				// Search the table for a name match.
+				int posn;
+				for(posn = 0; posn < encodingNames.Length; ++posn)
+				{
+					if(String.Compare(name, encodingNames[posn], true,
+									  CultureInfo.InvariantCulture) == 0)
+					{
+						return GetEncoding(encodingCodePages[posn]);
+					}
+				}
+
+				// Build a web encoding class name.
+				String encName = "System.Text.ENC" +
+								 name.ToLower(CultureInfo.InvariantCulture)
+								 	.Replace('-', '_');
+
+				// Look for a code page converter in this assembly.
+				Assembly assembly = Assembly.GetExecutingAssembly();
+				Type type = assembly.GetType(encName);
+				if(type != null)
+				{
+					return (Encoding)(Activator.CreateInstance(type));
+				}
+
+				// Look in any assembly, in case the application
+				// has provided its own code page handler.
+				type = Type.GetType(encName);
+				if(type != null)
+				{
+					return (Encoding)(Activator.CreateInstance(type));
+				}
+
+				// We have no idea how to handle this encoding name.
+				throw new NotSupportedException
+					(String.Format(_("NotSupp_EncodingName"), name));
+			}
+
+#endif // !ECMA_COMPAT
 
 	// Get a hash code for this instance.
 	public override int GetHashCode()
@@ -315,12 +406,86 @@ public abstract class Encoding
 				return new String(GetChars(bytes));
 			}
 
+#if !ECMA_COMPAT
+
+	// Get the mail body name for this encoding.
+	public virtual String BodyName
+			{
+				get
+				{
+					return null;
+				}
+			}
+
 	// Get the code page represented by this object.
 	public virtual int CodePage
 			{
 				get
 				{
 					return codePage;
+				}
+			}
+
+	// Get the human-readable name for this encoding.
+	public virtual String EncodingName
+			{
+				get
+				{
+					return null;
+				}
+			}
+
+	// Get the mail agent header name for this encoding.
+	public virtual String HeaderName
+			{
+				get
+				{
+					return null;
+				}
+			}
+
+	// Determine if this encoding can be displayed in a Web browser.
+	public virtual bool IsBrowserDisplay
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Determine if this encoding can be saved from a Web browser.
+	public virtual bool IsBrowserSave
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Determine if this encoding can be displayed in a mail/news agent.
+	public virtual bool IsMailNewsDisplay
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Determine if this encoding can be saved from a mail/news agent.
+	public virtual bool IsMailNewsSave
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Get the IANA-preferred Web name for this encoding.
+	public virtual String WebName
+			{
+				get
+				{
+					return null;
 				}
 			}
 
@@ -335,6 +500,8 @@ public abstract class Encoding
 				}
 			}
 
+#endif // !ECMA_COMPAT
+
 	// Storage for standard encoding objects.
 	private static Encoding asciiEncoding = null;
 	private static Encoding bigEndianEncoding = null;
@@ -342,6 +509,8 @@ public abstract class Encoding
 	private static Encoding utf7Encoding = null;
 	private static Encoding utf8Encoding = null;
 	private static Encoding unicodeEncoding = null;
+	private static Encoding winLatin1Encoding = null;
+	private static Encoding isoLatin1Encoding = null;
 
 	// Get the standard ASCII encoding object.
 	public static Encoding ASCII
@@ -384,15 +553,71 @@ public abstract class Encoding
 					{
 						if(defaultEncoding == null)
 						{
-							defaultEncoding = new DefaultEncoding();
+							// See if the underlying system knows what
+							// code page handler we should be using.
+							int codePage = DefaultEncoding.InternalCodePage();
+							if(codePage != 0)
+							{
+								try
+								{
+									defaultEncoding = GetEncoding(codePage);
+								}
+								catch(NotSupportedException)
+								{
+									defaultEncoding = new DefaultEncoding();
+								}
+							}
+							else
+							{
+								defaultEncoding = new DefaultEncoding();
+							}
 						}
 						return defaultEncoding;
 					}
 				}
 			}
 
+	// Get the Windows Latin1 encoding object.
+	private static Encoding WinLatin1
+			{
+				get
+				{
+					lock(typeof(Encoding))
+					{
+						if(winLatin1Encoding == null)
+						{
+							winLatin1Encoding = new Latin1Encoding
+								(Latin1Encoding.WINLATIN_CODE_PAGE);
+						}
+						return winLatin1Encoding;
+					}
+				}
+			}
+
+	// Get the ISO Latin1 encoding object.
+	private static Encoding ISOLatin1
+			{
+				get
+				{
+					lock(typeof(Encoding))
+					{
+						if(isoLatin1Encoding == null)
+						{
+							isoLatin1Encoding = new Latin1Encoding
+								(Latin1Encoding.ISOLATIN_CODE_PAGE);
+						}
+						return isoLatin1Encoding;
+					}
+				}
+			}
+
 	// Get the standard UTF-7 encoding object.
-	public static Encoding UTF7
+#if ECMA_COMPAT
+	private
+#else
+	public
+#endif
+	static Encoding UTF7
 			{
 				get
 				{

@@ -26,3 +26,5 @@ NotSupp_Remoting=Remoting is not supported
 NotSupp_Multicast=This delegate type does not support multicasting
 NotSupp_TypedRefEquals=Cannot test typed references for equality
 NotSupp_SetWaitHandle=Setting a wait handle is not supported
+NotSupp_CodePage=Code page {0} is not supported
+NotSupp_EncodingName=Encoding name `{0}' is not supported

@@ -875,6 +875,91 @@ public class UTF8Encoding : Encoding
 				return base.GetHashCode();
 			}
 
+#if !ECMA_COMPAT
+
+	// Get the mail body name for this encoding.
+	public override String BodyName
+			{
+				get
+				{
+					return "utf-8";
+				}
+			}
+
+	// Get the human-readable name for this encoding.
+	public override String EncodingName
+			{
+				get
+				{
+					return "Unicode (UTF-8)";
+				}
+			}
+
+	// Get the mail agent header name for this encoding.
+	public override String HeaderName
+			{
+				get
+				{
+					return "utf-8";
+				}
+			}
+
+	// Determine if this encoding can be displayed in a Web browser.
+	public override bool IsBrowserDisplay
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+	// Determine if this encoding can be saved from a Web browser.
+	public override bool IsBrowserSave
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+	// Determine if this encoding can be displayed in a mail/news agent.
+	public override bool IsMailNewsDisplay
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+	// Determine if this encoding can be saved from a mail/news agent.
+	public override bool IsMailNewsSave
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+	// Get the IANA-preferred Web name for this encoding.
+	public override String WebName
+			{
+				get
+				{
+					return "utf-8";
+				}
+			}
+
+	// Get the Windows code page represented by this object.
+	public override int WindowsCodePage
+			{
+				get
+				{
+					return UnicodeEncoding.UNICODE_CODE_PAGE;
+				}
+			}
+
+#endif // !ECMA_COMPAT
+
 	// UTF-8 decoder implementation.
 	private sealed class UTF8Decoder : Decoder
 	{

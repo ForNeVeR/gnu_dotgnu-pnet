@@ -294,6 +294,10 @@ internal sealed class DefaultEncoding : Encoding
 	extern private static String InternalGetString
 				(byte[] bytes, int index, int count);
 
+	// Get the default code page number.  Zero if unknown.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int InternalCodePage();
+
 }; // class DefaultEncoding
 
 }; // namespace System.Text

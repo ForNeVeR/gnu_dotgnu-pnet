@@ -1,7 +1,8 @@
 /*
- * ASCIIEncoding.cs - Implementation of the "System.Text.ASCIIEncoding" class.
+ * Latin1Encoding.cs - Implementation of the
+ *			"System.Text.Latin1Encoding" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,13 +24,18 @@ namespace System.Text
 
 using System;
 
-public class ASCIIEncoding : Encoding
+internal class Latin1Encoding : Encoding
 {
-	// Magic number used by Windows for "ASCII".
-	internal const int ASCII_CODE_PAGE = 20127;
+	// Magic number used by Windows for its Western European code pages.
+	internal const int WINLATIN_CODE_PAGE = 1252;
+	internal const int ISOLATIN_CODE_PAGE = 28591;
 
 	// Constructor.
-	public ASCIIEncoding() : base(ASCII_CODE_PAGE) {}
+	public Latin1Encoding(int codePage)
+			: base(codePage)
+			{
+				// Nothing to do here.
+			}
 
 	// Get the number of bytes needed to encode a character buffer.
 	public override int GetByteCount(char[] chars, int index, int count)
@@ -98,7 +104,7 @@ public class ASCIIEncoding : Encoding
 				while(count-- > 0)
 				{
 					ch = chars[charIndex++];
-					if(ch < (char)0x80)
+					if(ch < (char)0x0100)
 					{
 						bytes[byteIndex++] = (byte)ch;
 					}
@@ -146,7 +152,7 @@ public class ASCIIEncoding : Encoding
 				while(count-- > 0)
 				{
 					ch = s[charIndex++];
-					if(ch < (char)0x80)
+					if(ch < (char)0x0100)
 					{
 						bytes[byteIndex++] = (byte)ch;
 					}
@@ -290,7 +296,7 @@ public class ASCIIEncoding : Encoding
 			{
 				get
 				{
-					return "us-ascii";
+					return "iso-8859-1";
 				}
 			}
 
@@ -299,7 +305,14 @@ public class ASCIIEncoding : Encoding
 			{
 				get
 				{
-					return "US-ASCII";
+					if(codePage == WINLATIN_CODE_PAGE)
+					{
+						return "Western European (ISO)";
+					}
+					else
+					{
+						return "Western European (Windows)";
+					}
 				}
 			}
 
@@ -308,7 +321,32 @@ public class ASCIIEncoding : Encoding
 			{
 				get
 				{
-					return "us-ascii";
+					if(codePage == WINLATIN_CODE_PAGE)
+					{
+						return "Windows-1252";
+					}
+					else
+					{
+						return "iso-8859-1";
+					}
+				}
+			}
+
+	// Determine if this encoding can be displayed in a Web browser.
+	public override bool IsBrowserDisplay
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+	// Determine if this encoding can be saved from a Web browser.
+	public override bool IsBrowserSave
+			{
+				get
+				{
+					return true;
 				}
 			}
 
@@ -335,7 +373,14 @@ public class ASCIIEncoding : Encoding
 			{
 				get
 				{
-					return "us-ascii";
+					if(codePage == WINLATIN_CODE_PAGE)
+					{
+						return "Windows-1252";
+					}
+					else
+					{
+						return "iso-8859-1";
+					}
 				}
 			}
 

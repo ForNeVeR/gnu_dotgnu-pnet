@@ -399,6 +399,94 @@ public class UnicodeEncoding : Encoding
 				return base.GetHashCode();
 			}
 
+#if !ECMA_COMPAT
+
+	// Get the mail body name for this encoding.
+	public override String BodyName
+			{
+				get
+				{
+					if(bigEndian)
+					{
+						return "unicodeFFFE";
+					}
+					else
+					{
+						return "utf-16";
+					}
+				}
+			}
+
+	// Get the human-readable name for this encoding.
+	public override String EncodingName
+			{
+				get
+				{
+					if(bigEndian)
+					{
+						return "Unicode (Big-Endian)";
+					}
+					else
+					{
+						return "Unicode";
+					}
+				}
+			}
+
+	// Get the mail agent header name for this encoding.
+	public override String HeaderName
+			{
+				get
+				{
+					if(bigEndian)
+					{
+						return "unicodeFFFE";
+					}
+					else
+					{
+						return "utf-16";
+					}
+				}
+			}
+
+	// Determine if this encoding can be saved from a Web browser.
+	public override bool IsBrowserSave
+			{
+				get
+				{
+					return !bigEndian;
+				}
+			}
+
+	// Get the IANA-preferred Web name for this encoding.
+	public override String WebName
+			{
+				get
+				{
+					if(bigEndian)
+					{
+						return "unicodeFFFE";
+					}
+					else
+					{
+						return "utf-16";
+					}
+				}
+			}
+
+	// Get the Windows code page represented by this object.
+	public override int WindowsCodePage
+			{
+				get
+				{
+					// Windows reports the same code page number for
+					// both the little-endian and big-endian forms.
+					return UNICODE_CODE_PAGE;
+				}
+			}
+
+#endif // !ECMA_COMPAT
+
 	// Unicode decoder implementation.
 	private sealed class UnicodeDecoder : Decoder
 	{

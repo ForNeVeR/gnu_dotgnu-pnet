@@ -253,6 +253,12 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			ILNode_Identifier_create
 				(ILInternString("AttributeUsageAttribute", -1).string);
 	}
+	else if(!strcmp(ILQualIdentName(attr->name, 0), "System.Serializable"))
+	{
+		((ILNode_QualIdent *)(attr->name))->right =
+			ILNode_Identifier_create
+				(ILInternString("SerializableAttribute", -1).string);
+	}
 
 	/* Try the attribute name without "Attribute" first */
 	nameNode = attr->name;

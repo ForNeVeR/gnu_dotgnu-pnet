@@ -6,7 +6,7 @@
 	same name, and to avoid the instance method check on the property.
 
 	* cscc/csharp/cs_attrs.c (ProcessAttr): add a hack to recognise
-	"System.AttributeUsage" and "System.AttributeUsageAttribute".
+	"System.AttributeUsage" as "System.AttributeUsageAttribute".
 
 	* cscc/csharp/cs_lookup.c (AmbiguousError): report ambiguity cases
 	for properties and methods.
@@ -22,6 +22,9 @@
 	* codegen/cg_misc.tc, codegen/cg_nodes.tc, cscc/csharp/cs_grammar.y,
 	cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_oper.tc: implement
 	array access operations on pointer types.
+
+	* cscc/csharp/cs_attrs.c (ProcessAttr): add a hack to recognise
+	"System.Serializable" as "System.SerializableAttribute".
 
 2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -1271,7 +1271,7 @@ namespace System.Windows.Forms
 							bool allowEdit = false;
 							bool allowSelect = true;
 							// Clicking the image can be used to select.
-							if (!GetImageBounds(nodeFromTop, nodes.level).Contains(x, y))
+							if (imageList == null || !GetImageBounds(nodeFromTop, nodes.level).Contains(x, y))
 							{
 								// Clicking the text can be used to edit and select.
 								if (GetTextBounds(g, nodes.currentNode, nodeFromTop, nodes.level).Contains(x, y))

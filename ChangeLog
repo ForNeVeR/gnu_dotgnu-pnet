@@ -1,4 +1,9 @@
 
+2004-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/TreeView.cs (ProcessClick): don't call
+	"GetImageBounds" if there is no image list.
+
 2004-01-02  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs: minor fixes, pre-authenticate POST

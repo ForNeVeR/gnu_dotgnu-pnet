@@ -87,6 +87,7 @@ public abstract class Image
 				verticalResolution = Graphics.DefaultScreenDpi;
 				pixelFormat = (System.Drawing.Imaging.PixelFormat)
 					(dgImage.PixelFormat);
+				frameDimensionsList = new Guid[0];
 			}
 #if CONFIG_SERIALIZATION
 	[TODO]

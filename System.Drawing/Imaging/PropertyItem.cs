@@ -75,7 +75,7 @@ public sealed class PropertyItem
 				}
 				set
 				{
-					value = value;
+					this.value = value;
 				}
 			}
 

@@ -40,8 +40,6 @@ using System.Drawing.Toolkit;
 #endif
 public sealed class Bitmap : System.Drawing.Image
 {
-	// Internal state
-	IToolkitImage nativeImage;
 	// Constructors.
 	[TODO]
 	public Bitmap(Image original)

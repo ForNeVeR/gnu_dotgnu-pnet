@@ -97,8 +97,6 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	{
 		Region newRegion = new Region();
 		newRegion.rects = (RectangleF[])rects.Clone();
-		newRegion.rects = new RectangleF[rects.Length];
-		Array.Copy(rects,  newRegion.rects, rects.Length);
 		newRegion.extent = extent;
 		return newRegion;
 	}

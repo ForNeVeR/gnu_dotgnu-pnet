@@ -499,6 +499,29 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 		argType = info->args;
 		putc('\t', outstream);
 		putc('\t', outstream);
+		if((flags & ILDASM_INSTRUCTION_BYTES) != 0)
+		{
+			/* Dump the bytes of the instruction */
+			int posn;
+			putc('/', outstream);
+			putc('*', outstream);
+			putc(' ', outstream);
+			posn = 0;
+			while(posn < 6 && posn < isize)
+			{
+				fprintf(outstream, "%02X ", ((int)(temp[posn]) & 0xFF));
+				++posn;
+			}
+			while(posn < 6)
+			{
+				fputs("   ", outstream);
+				++posn;
+			}
+			putc(' ', outstream);
+			putc('*', outstream);
+			putc('/', outstream);
+			putc(' ', outstream);
+		}
 		fputs(info->name, outstream);
 		if(argType != IL_OPCODE_ARGS_INVALID &&
 		   argType != IL_OPCODE_ARGS_NONE)

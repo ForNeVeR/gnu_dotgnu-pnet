@@ -34,6 +34,8 @@ static ILCmdLineOption const options[] = {
 	{"-t", 't', 0, 0, 0},
 	{"-q", 'q', 0, 0, 0},
 	{"-w", 'w', 0, 0, 0},
+	{"-b", 'b', 0, 0, 0},
+	{"-n", 'n', 0, 0, 0},
 	{"-v", 'v', 0, 0, 0},
 	{"--output", 'o', 1,
 		"--output file    or    -o file",
@@ -53,12 +55,40 @@ static ILCmdLineOption const options[] = {
 	{"--whole-file", 'w', 0,
 		"--whole-file     or    -w",
 		"Dump the contents of the entire file in hexadecimal."},
+	{"--dump-bytes", 'w', 0,
+		"--dump-bytes     or    -b",
+		"Dump the bytes of each IL instruction in hexadecimal."},
+	{"--no-il", 'n', 0,
+		"--no-il          or    -n",
+		"Do not dump the IL instructions for the methods."},
 	{"--version", 'v', 0,
 		"--version        or    -v",
 		"Print the version of the program"},
 	{"--help", 'h', 0,
 		"--help",
 		"Print this help message."},
+
+	/* Options for compatibility with Microsoft's IL disassembler */
+	{"/all", 't', 0, 0, 0},		/* "/all" */
+	{"/byt*", 'b', 0, 0, 0},	/* "/bytes" */
+	{"/hea*", '?', 0, 0, 0},	/* "/header" */
+	{"/hel*", 'h', 0, 0, 0},	/* "/help */
+	{"/ite*", '?', 1, 0, 0},	/* "/item:XXX" */
+	{"/lin*", '?', 0, 0, 0},	/* "/linenum" */
+	{"/nob*", '?', 0, 0, 0},	/* "/nobar" */
+	{"/noi*", 'n', 0, 0, 0},	/* "/noil" */
+	{"/out*", 'o', 1, 0, 0},	/* "/output:filename" */
+	{"/pub*", '?', 0, 0, 0},	/* "/pubonly" */
+	{"/quo*", 'q', 0, 0, 0},	/* "/quoteallnames" */
+	{"/raw*", '?', 0, 0, 0},	/* "/raweh" */
+	{"/sou*", '?', 0, 0, 0},	/* "/source" */
+	{"/tex*", '?', 0, 0, 0},	/* "/text" */
+	{"/tok*", 't', 0, 0, 0},	/* "/tokens" */
+	{"/uni*", '?', 0, 0, 0},	/* "/unicode" */
+	{"/utf*", '?', 0, 0, 0},	/* "/utf8" */
+	{"/vis*", '?', 1, 0, 0},	/* "/visibility:vis" */
+	{"/?", 'h', 0, 0, 0},		/* "/?" */
+
 	{0, 0, 0, 0, 0}
 };
 
@@ -125,6 +155,24 @@ int main(int argc, char *argv[])
 			case 'w':
 			{
 				wholeFile = 1;
+			}
+			break;
+
+			case 'b':
+			{
+				flags |= ILDASM_INSTRUCTION_BYTES;
+			}
+			break;
+
+			case 'n':
+			{
+				flags |= ILDASM_NO_IL;
+			}
+			break;
+
+			case '?':
+			{
+				/* Ignore this compatilibity option that we don't support */
 			}
 			break;
 

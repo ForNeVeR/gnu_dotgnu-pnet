@@ -27,6 +27,10 @@
 	* ilalink/link_main.c: force "resourcesOnly" if there are only
 	"/embed" options on the linker command-line.
 
+	* doc/pnettools.texi, ildasm/ildasm.1, ildasm/ildasm_class.c,
+	ildasm/ildasm_internal.h, ildasm/ildasm_main.c, ildasm/ildasm_method.c:
+	implement '/' compatibility options for "ildasm".
+
 2002-12-12 Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_defs.tc, 

@@ -2299,6 +2299,18 @@ file is not otherwise recognized by ildasm as an IL binary,
 this may be the only way to inspect the contents to determine what
 the problem is.
 
+@cindex -b option (ildasm)
+@cindex --dump-bytes option (ildasm)
+@item -b
+@itemx --dump-bytes
+Dump the IL instructions in hexadecimal.
+
+@cindex -n option (ildasm)
+@cindex --no-il option (ildasm)
+@item -n
+@itemx --no-il
+Do not dump the IL instructions within the methods.
+
 @cindex --help option (ildasm)
 @item --help
 Print a usage message for the ildasm program.

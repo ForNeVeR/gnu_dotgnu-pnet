@@ -108,7 +108,7 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 	}
 
 	/* If we have an RVA, then we need to dump the method's contents */
-	if(rva)
+	if(rva && (flags & ILDASM_NO_IL) == 0)
 	{
 		if(ILMethod_IsJava(method))
 		{

@@ -33,6 +33,11 @@ public abstract class EndPoint
 				throw new NotSupportedException();
 			}
 	
+	public virtual SocketAddress Serialize()
+			{
+				throw new NotSupportedException();
+			}
+
 	public virtual AddressFamily AddressFamily 
 			{ 
 				get

@@ -1,8 +1,10 @@
 if HAS_REFLECTION
 SUBDIRS = tools resources runtime I18N System System.Xml . \
-		  csunit csupport compat JScript Basic tests samples
+		  System.Net.IrDA csunit csupport compat JScript Basic \
+		  tests samples
 else
-SUBDIRS = tools resources runtime System System.Xml .  samples
+SUBDIRS = tools resources runtime System System.Xml . \
+		  System.Net.IrDA samples
 endif
 
 ## System.dll is built in two phases, because it depends recursively

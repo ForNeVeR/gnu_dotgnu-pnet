@@ -44,6 +44,19 @@
 	* JScript/*, System/*, profiles/*, runtime/*: add the
 	CONFIG_REFLECTION_EMIT option to the profiles.
 
+	* Makefile.am, configure.in, System/Net/EndPoint.cs,
+	System.Net.IrDA/.cvsignore, System.Net.IrDA/IrDA.build,
+	System.Net.IrDA/IrDACharacterSet.cs, System.Net.IrDA/IrDAClient.cs,
+	System.Net.IrDA/IrDADeviceInfo.cs, System.Net.IrDA/IrDAEndPoint.cs,
+	System.Net.IrDA/IrDAHints.cs, System.Net.IrDA/IrDAListener.cs,
+	System.Net.IrDA/Makefile.am, System.Net.IrDA/S.cs,
+	resources/en_US/Makefile.am,
+	resources/en_US/System.Net.IrDA/.cvsignore,
+	resources/en_US/System.Net.IrDA/IrDA.txt,
+	resources/en_US/System.Net.IrDA/Makefile.am: implement the
+	"System.Net.IrDA" assembly, which is found in the .NET Compact
+	Framework.
+
 2003-05-25  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebClient.cs: Implement this non-ecma class partially for

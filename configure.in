@@ -192,6 +192,7 @@ runtime/Makefile
 I18N/Makefile
 System/Makefile
 System.Xml/Makefile
+System.Net.IrDA/Makefile
 csunit/Makefile
 csunit/TestVersion.cs
 csupport/Makefile
@@ -209,6 +210,7 @@ resources/en_US/runtime/Makefile
 resources/en_US/I18N/Makefile
 resources/en_US/System/Makefile
 resources/en_US/System.Xml/Makefile
+resources/en_US/System.Net.IrDA/Makefile
 resources/de_DE/Makefile
 resources/de_DE/runtime/Makefile
 resources/de_DE/I18N/Makefile

@@ -510,6 +510,9 @@ AC_SET_UNSIGNED_CSHARP_TYPE(mode_t, X_mode_t, mode_t, uint)
 AC_SET_UNSIGNED_CSHARP_TYPE(dev_t, X_dev_t, dev_t, uint)
 AC_SET_UNSIGNED_CSHARP_TYPE(nlink_t, X_nlink_t, nlink_t, uint)
 
+dnl Check for libc functions to convert multi-byte strings to Unicode
+AC_CHECK_FUNCS(mbstowcs)
+
 dnl List of libraries that need .so version mappings.
 so_imports="ICE X11 Xext ssl gnutls jpeg"
 

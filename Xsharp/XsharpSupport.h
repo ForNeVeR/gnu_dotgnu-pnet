@@ -29,6 +29,7 @@
 #endif
 #ifdef USE_XFT_EXTENSION
 	#include <X11/Xft/Xft.h>
+	#include <wchar.h>
 #endif
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>

@@ -3,6 +3,9 @@
 
 	* Xsharp/Font.cs: Disable font size rounding if Xft is 
 	enabled (patch #3561, Gopal)
+
+	* configure.in,Xsharp/XsharpSupport.c, Xsharp/XsharpSupport.h:
+	Add unicode support using 32bit XFT functions (patch #3562, Gopal).
 	
 2004-12-08  Gopal V  <gopalv82@yahoo.com>
 

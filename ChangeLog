@@ -7,6 +7,9 @@
 	* image/image.h, image/link.c, image/meta_build.c: dynamic
 	loading for images referred to via ModuleRef tokens.
 
+	* image/meta_build.c: link a dynamically loaded module to
+	the ModuleRef.
+
 2003-11-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/context.c, image/image.h, image/link.c, image/meta_build.c,

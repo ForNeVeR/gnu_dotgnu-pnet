@@ -564,7 +564,11 @@ static int ResolveTypeRefs(ILImage *image, int loadFlags)
 											  loadFlags, &importImage) &&
 				   importImage != 0)
 				{
-					goto moduleImport;
+					importImage = ILModuleToImage((ILModule *)scope);
+					if(importImage)
+					{
+						goto moduleImport;
+					}
 				}
 			}
 			break;

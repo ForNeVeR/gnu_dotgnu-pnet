@@ -45,7 +45,7 @@
 	.locals 1
 	.maxstack 1
 } // method System.Collections.IEnumerator.MoveNext
-.method public final virtual hidebysig newslot instance bool 'MoveNext'() cil managed java 
+.method public hidebysig instance bool 'MoveNext'() cil managed java 
 {
 	iconst_0
 	ireturn
@@ -59,7 +59,7 @@
 	.locals 1
 	.maxstack 0
 } // method System.Collections.IEnumerator.Reset
-.method public final virtual hidebysig newslot instance void 'Reset'() cil managed java 
+.method public hidebysig instance void 'Reset'() cil managed java 
 {
 	return
 	.locals 1
@@ -143,7 +143,7 @@
 	astore_2
 ?L1:
 	aload	4
-	invokevirtual	instance bool 'TestEnumerator'::'MoveNext'()
+	invokespecial	instance bool 'TestEnumerator'::'MoveNext'()
 	ifne	?L2
 ?L3:
 	jsr	?L4

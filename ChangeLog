@@ -1,3 +1,10 @@
+
+2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/stmt/foreach4.il, csharp/stmt/foreach4.jl,
+	csharp/stmt/foreach5.il, csharp/stmt/foreach5.jl:
+	change to match interface bug fix in cscc.
+
 2003-07-25  Andrew Mitchell  <ajmitch@gnu.org>
 
 	* tools/run_test.sh.in: Fix misspelling in variable which caused the 

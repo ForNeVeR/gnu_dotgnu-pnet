@@ -44,7 +44,7 @@
 	ret
 	.maxstack 1
 } // method System.Collections.IEnumerator.MoveNext
-.method public final virtual hidebysig newslot instance bool 'MoveNext'() cil managed 
+.method public hidebysig instance bool 'MoveNext'() cil managed 
 {
 	ldc.i4.0
 	ret
@@ -56,7 +56,7 @@
 	ret
 	.maxstack 0
 } // method System.Collections.IEnumerator.Reset
-.method public final virtual hidebysig newslot instance void 'Reset'() cil managed 
+.method public hidebysig instance void 'Reset'() cil managed 
 {
 	ret
 	.maxstack 0
@@ -134,7 +134,7 @@
 	stloc.0
 ?L1:
 	ldloc.2
-	callvirt	instance bool 'TestEnumerator'::'MoveNext'()
+	call	instance bool 'TestEnumerator'::'MoveNext'()
 	brtrue	?L2
 ?L3:
 	leave	?L4

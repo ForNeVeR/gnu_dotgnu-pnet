@@ -20,6 +20,7 @@
 
 #include "engine_private.h"
 #include "lib_defs.h"
+#include "il_serialize.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -83,12 +84,204 @@ static ILInt32 NumMatchingAttrs(ILExecThread *thread, ILProgramItem *item,
 }
 
 /*
+ * prototype for InvokeMethod
+ */
+
+static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
+							  ILType *signature, ILObject *_this,
+							  System_Array *parameters, int isCtor);
+
+/*
+ * General Deserialization method 
+ */
+static ILObject *DeserializeObject(ILExecThread *thread,
+				ILSerializeReader *reader,
+				ILType * type,int serialType)
+{
+	ILInt32 intValue;
+	ILUInt32 uintValue;
+	ILInt64 longValue;
+	ILUInt64 ulongValue;
+	ILFloat floatValue;
+	ILDouble doubleValue;
+	const char *strValue;
+	int strLen;
+	int arrayLen;
+	System_Array * arrayVal;
+	ILObject ** buf;
+	
+	if(serialType!=ILSerializeGetType(type))
+	{
+		ILExecThreadThrowSystem(thread, "System.Runtime.Serialization.SerializationException", 0);
+		return 0;
+	}
+	switch(serialType)
+	{
+			case IL_META_SERIALTYPE_BOOLEAN: 
+			case IL_META_SERIALTYPE_CHAR: 
+			case IL_META_SERIALTYPE_I1: 
+			case IL_META_SERIALTYPE_U1: 
+			case IL_META_SERIALTYPE_I2: 
+			case IL_META_SERIALTYPE_U2: 
+			case IL_META_SERIALTYPE_I4: 
+					intValue=ILSerializeReaderGetInt32(reader,serialType);
+					return ILExecThreadBox(thread,type,&(intValue));
+					break;
+			case IL_META_SERIALTYPE_U4: 
+					uintValue=ILSerializeReaderGetUInt32(reader,serialType);
+					return ILExecThreadBox(thread,type,&(uintValue));
+					break;
+			case IL_META_SERIALTYPE_I8:
+					longValue=ILSerializeReaderGetInt64(reader);
+					return ILExecThreadBox(thread,type,&(longValue));
+					break;
+			case IL_META_SERIALTYPE_U8:
+					ulongValue=ILSerializeReaderGetUInt64(reader);
+					return ILExecThreadBox(thread,type,&(ulongValue));
+					break;
+			case IL_META_SERIALTYPE_R4:
+					floatValue=ILSerializeReaderGetFloat32(reader);
+					return ILExecThreadBox(thread,type,&(floatValue));
+					break;
+			case IL_META_SERIALTYPE_R8:
+					doubleValue=ILSerializeReaderGetFloat64(reader);
+					return ILExecThreadBox(thread,type,&(doubleValue));
+					break;
+			case IL_META_SERIALTYPE_STRING:
+					strLen = ILSerializeReaderGetString(reader,&strValue);
+					if(strLen == -1) 
+					{
+						return NULL;
+					}
+					return (ILObject*)((System_String*)ILStringCreateLen(thread,
+									strValue,strLen));	
+			default:
+					if((serialType & IL_META_SERIALTYPE_ARRAYOF)!=0)
+					{
+						arrayLen = ILSerializeReaderGetArrayLen(reader);
+						arrayVal = (System_Array *)ILExecThreadNew
+								(thread, "[oSystem.Object;", "(Ti)V", 
+							 (ILVaInt)arrayLen);
+						buf = (ILObject**)(ArrayToBuffer(arrayVal));
+						while(arrayLen--)
+						{
+							buf[arrayLen]=DeserializeObject(thread,reader,
+										ILType_ElemType(type),
+								(serialType & ~IL_META_SERIALTYPE_ARRAYOF));
+							/* remove array prefix and reiterate */
+						}
+						return (ILObject*)arrayVal;
+					}
+					else
+					{
+						return NULL;
+					}
+					break;
+	}
+	return NULL;
+}
+
+/*
  * De-serialize a custom attribute and construct an object for it.
  */
 static ILObject *DeserializeAttribute(ILExecThread *thread,
 									  ILAttribute *attr)
 {
-	return 0;
+	ILProgramItem * item=ILAttribute_TypeAsItem(attr);
+	ILMethod *method;
+	System_Array *parameters;
+	ILInt32 numParams=0;
+	ILSerializeReader *reader;
+	void *blob;
+	unsigned long len;
+	ILObject **buf;
+	ILType *sig=NULL,*param=NULL;
+	ILObject *retval;
+	int serialType;
+	/* see below for named args */
+	ILMember *member=NULL;
+	char *name=NULL;
+	unsigned int nameLen;
+	ILObject *obj;
+
+	blob=(void*)ILAttributeGetValue(attr,&len); 
+	/* keep blob for cooking later */
+	
+	/* Is this a type member? */
+	method = ILProgramItemToMethod(item);
+	if(!method)
+	{
+		return 0;
+	}
+	method = (ILMethod*)ILMemberResolve((ILMember*)method);
+	if(!method)
+	{
+		return 0;
+	}
+	sig=ILMethod_Signature(method);
+	numParams=ILTypeNumParams(sig);
+
+	reader=ILSerializeReaderInit(method,blob,len);
+
+	parameters = (System_Array *)ILExecThreadNew
+				(thread, "[oSystem.Object;", "(Ti)V", (ILVaInt)numParams);
+	buf=(ILObject**)(ArrayToBuffer(parameters));
+	/* *
+	 * Note: Contructors have a `this' passed to it !!
+	 *       so numParams start from 1 to n-1 ?
+	 *       Also , I'm going the path of maximum safety
+	 *       here.. By going via method sigs first.
+	 * */
+	while(numParams--)
+	{
+		param=ILTypeGetParam(sig,numParams+1);
+		if((serialType=ILSerializeReaderGetParamType(reader))<=0)
+		{
+			ILExecThreadThrowSystem(thread, 
+			"System.Runtime.Serialization.SerializationException", 0);
+			return 0;
+		}
+		buf[numParams]=DeserializeObject(thread,reader,param,serialType);
+	}
+	retval=InvokeMethod(thread, method, sig, 0, 
+					parameters, 1);
+	/* numParams is reused again .. bad code :-) */
+	numParams=ILSerializeReaderGetNumExtra(reader);
+	while(numParams--)
+	{
+		/*
+		 * TODO : Named Arguments 
+		 */
+		serialType=ILSerializeReaderGetExtra(reader,&member,&name,&nameLen);
+		member = ILMemberResolve(member);
+		switch(ILMemberGetKind(member))
+		{
+			case IL_META_MEMBERKIND_FIELD:
+					/* TODO */
+					break;
+			case IL_META_MEMBERKIND_PROPERTY:
+					/* reusing `method' & 'sig' variable */
+					method = ILProperty_Setter((ILProperty*)member);
+					method = (ILMethod*)ILMemberResolve((ILMember*)method);
+					sig = ILMethod_Signature(method);
+					obj = DeserializeObject(thread,	reader,
+							ILTypeGetParam(sig,1)
+							,serialType);
+
+					parameters = (System_Array *)ILExecThreadNew
+						(thread, "[oSystem.Object;", "(Ti)V", (ILVaInt)1);
+			
+					buf=(ILObject**)(ArrayToBuffer(parameters));
+					buf[0] = obj;
+					
+					InvokeMethod(thread, method, sig, retval,
+					parameters, 0);
+					break;
+		}
+	}
+
+	ILSerializeReaderDestroy(reader);
+	return retval;
 }
 
 /*

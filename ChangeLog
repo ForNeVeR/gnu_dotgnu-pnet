@@ -1,5 +1,10 @@
 
-2001-10-12  Jonathan Springer <jonathan.springer@verizon.net>
+2002-10-15  Gopal.V  <gopalv82@symonds.net>
+
+	* engine/lib_reflect.c : Implement DeserialzeAttribute to
+	read CustomAttribute.
+
+2002-10-12  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* codegen/cg_coerce.c: Allow casting among unmanaged pointers
 	and basic integer types when in unsafe code blocks.

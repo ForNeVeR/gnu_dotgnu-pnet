@@ -458,6 +458,11 @@ static void ProcessFunctionAttributes(CDeclSpec spec, CDeclarator decl,
 		{
 			flags |= IL_META_PINVOKE_CALL_CONV_FASTCALL;
 		}
+		if((flags & IL_META_PINVOKE_CALL_CONV_MASK) == 0)
+		{
+			/* Default to a calling convention of "cdecl" */
+			flags |= IL_META_PINVOKE_CALL_CONV_CDECL;
+		}
 		CFunctionPInvoke(&CCCodeGen, decl.name, decl.node,
 						 signature, arg, name, flags, isPrivate);
 		return;

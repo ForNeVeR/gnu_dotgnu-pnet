@@ -1956,7 +1956,7 @@ Specify the string marshalling conventions.
 @itemx stdcall
 @itemx thiscall
 @itemx fastcall
-Specify the calling conventions.
+Specify the calling conventions.  The default is @code{cdecl}.
 
 @item nomangle
 Corresponds to the @code{ExactSpelling} property in

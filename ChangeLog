@@ -4,6 +4,9 @@
 	* cscc/c/c_declspec.c (CDeclCreatePrototype): deal with a bug
 	in the declaration of functions that return a function pointer.
 
+	* cscc/c/c_grammar.y, doc/pnettools.texi: set the default
+	PInvoke calling conventions to "cdecl".
+
 2004-03-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c: output the parameter types for

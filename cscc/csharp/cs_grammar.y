@@ -2963,11 +2963,16 @@ ConstructorDeclaration
 						ILNode_Compound_CreateFrom
 							(initializer, ((ILNode_NewScope *)body)->stmt);
 				}
-				else
+				else if($8 || (attrs & CS_SPECIALATTR_EXTERN) == 0)
 				{
 					/* Non-scoped body: create a new scoped body */
 					body = ILNode_NewScope_create
 								(ILNode_Compound_CreateFrom(initializer, $8));
+				}
+				else
+				{
+					/* Extern constructor with an empty body */
+					body = 0;
 				}
 				if((attrs & IL_META_METHODDEF_STATIC) != 0)
 				{

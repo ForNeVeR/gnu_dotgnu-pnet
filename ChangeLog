@@ -12,6 +12,8 @@
 	the C# compiler; defer semantic analysis of non-const initializers
 	to after type gathering.
 
+	* cscc/csharp/cs_grammar.y: bug fix for "extern" constructors.
+
 2001-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: handle interface overrides for properties.

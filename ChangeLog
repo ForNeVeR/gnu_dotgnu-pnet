@@ -1,3 +1,8 @@
+2004-06-11  Simon Guindon  <simon@nureality.ca>
+
+	* Xsharp/Graphics.cs: add methods to allow access to X display and
+	drawable objects which can be used for things like winforms theming.
+
 2004-06-11  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Security/Permissions/EnvironmentPermissionAttribute.cs,

@@ -250,9 +250,14 @@ public sealed class Graphics : IDisposable
 				}
 			}
 
-	// Lock this graphics' display and validate the parameters.
-	// Returns the display pointer.
-	private IntPtr Lock()
+	/// <summary>
+	/// <para>Lock this graphics' display and validate the parameters.</para>
+	/// </summary>
+	///
+	/// <returns>
+	/// <para>Returns the display pointer.</para>
+	/// </returns>
+	public IntPtr Lock()
 			{
 				IntPtr display = dpy.Lock();
 				if(drawable.handle != XDrawable.Zero && gc != IntPtr.Zero)
@@ -269,6 +274,27 @@ public sealed class Graphics : IDisposable
 					throw new XInvalidOperationException
 								(S._("X_GraphicsDestroyed"));
 				}
+			}
+
+	/// <summary>
+	/// <para>Unlock this graphics' display.</para>
+	/// </summary>
+	public void Unlock()
+			{
+				dpy.Unlock();
+			}
+
+
+	/// <summary>
+	/// <para>Get the X Drawable related to this graphics object.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The drawable handle <see cref="T:Xsharp.XDrawable"/> value.</para>
+	/// </value>
+	public XDrawable DrawableHandle
+			{
+				get { return drawableHandle; }
 			}
 
 	/// <summary>

@@ -34,6 +34,11 @@ public class FormsHello : Form
 		// Force the entire form to repaint when it is resized.
 		SetStyle(ControlStyles.ResizeRedraw, true);
 
+		// Set some initial form properties.
+		Width = 400;
+		Height = 270;
+		Text = "Forms Hello";
+
 		// Create a button control on the form.
 		button = new Button();
 		button.Text = "Click Me!";
@@ -41,9 +46,17 @@ public class FormsHello : Form
 		Controls.Add(button);
 		
 		// Create a progress bar control
-		progress=new ProgressBar();
+		progress = new ProgressBar();
 		progress.Location = new Point(30, 200);
+		progress.Anchor = AnchorStyles.Left | AnchorStyles.Right;
 		Controls.Add(progress);
+
+		// Create a label and dock it to the bottom.
+		Label label = new Label();
+		label.Text = "This is a label, docked to the bottom ...";
+		label.BackColor = Color.White;
+		label.Dock = DockStyle.Bottom;
+		Controls.Add(label);
 
 		// Hook up interesting events.
 		Paint += new PaintEventHandler(HandlePaint);
@@ -57,12 +70,12 @@ public class FormsHello : Form
 		Rectangle bounds = form.ClientRectangle;
 
 		Pen pen = new Pen(Color.Black, 1.0f);
-		graphics.DrawLine(pen, 0, 0, bounds.Width, bounds.Height);
+		graphics.DrawLine(pen, 0, 0, bounds.Width, bounds.Height - 23);
 		pen.Dispose();
 
 		pen = new Pen(Color.Red, 2.0f);
 		graphics.DrawRectangle
-			(pen, 10, 10, bounds.Width - 20, bounds.Height - 20);
+			(pen, 10, 10, bounds.Width - 20, bounds.Height - 40);
 		pen.Dispose();
 
 		Brush brush = new SolidBrush(Color.Yellow);
@@ -98,9 +111,6 @@ public class FormsHello : Form
 	public static void Main(String[] args)
 	{
 		FormsHello form = new FormsHello();
-		form.Width = 400;
-		form.Height = 250;
-		form.Text = "Forms Hello";
 		Application.Run(form);
 	}
 }

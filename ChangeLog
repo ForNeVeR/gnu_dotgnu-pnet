@@ -1,4 +1,9 @@
 
+2003-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/Control.cs, samples/FormsHello.cs:
+	implement docking and anchoring in the "Control" class.
+
 2003-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/FormsHello.cs: use the client rectangle to paint,

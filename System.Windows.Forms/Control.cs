@@ -39,6 +39,7 @@ public class Control : IWin32Window
 	internal IToolkitWindow toolkitWindow;
 	private Control parent;
 	private int left, top, width, height;
+	private int prevParentWidth, prevParentHeight;
 	private String text;
 	private String name;
 	private HookedEvent hookedEvents;
@@ -60,6 +61,8 @@ public class Control : IWin32Window
 	private int tabIndex;
 	private bool tabStop;
 	private bool disposed;
+	private bool performingLayout;
+	private int layoutSuspended;
 	private Object tag;
 	private ControlStyles styles;
 	private CreateParams createParams;
@@ -917,6 +920,12 @@ public class Control : IWin32Window
 					{
 						OnBindingContextChanged(EventArgs.Empty);
 					}
+
+					// Create the control if it will be visible.
+					if(Visible)
+					{
+						CreateControl();
+					}
 				}
 			}
 	[TODO]
@@ -1518,7 +1527,7 @@ public class Control : IWin32Window
 	// Determine if this is a top-level control.
 	protected bool GetTopLevel()
 			{
-				return (parent == null);
+				return IsTopLevel;
 			}
 
 	// Hide the control.
@@ -1528,10 +1537,16 @@ public class Control : IWin32Window
 			}
 
 	// Initialize layout as this control has just been added to a container.
-	[TODO]
 	protected virtual void InitLayout()
 			{
-				// TODO
+				if(Dock == DockStyle.None)
+				{
+					// Record the current width and height of the parent
+					// control so that we can reposition during layout later.
+					Rectangle rect = parent.DisplayRectangle;
+					prevParentWidth = rect.Width;
+					prevParentHeight = rect.Height;
+				}
 			}
 
 	// Invalidate a region of the control and queue up a repaint request.
@@ -1643,16 +1658,199 @@ public class Control : IWin32Window
 			}
 
 	// Force the child to perform layout.
-	[TODO]
 	public void PerformLayout()
 			{
-				// TODO
+				PerformLayout(null, null);
 			}
-	[TODO]
 	public void PerformLayout
 				(Control affectedControl, String affectedProperty)
 			{
-				// TODO
+				// Bail out if layout was suspended.
+				if(layoutSuspended > 0)
+				{
+					return;
+				}
+
+				// Mark this control as currently being laid out.
+				performingLayout = true;
+				++layoutSuspended;
+
+				// Lay out this control.  We use a try block to make
+				// sure that the layout control variables are reset
+				// if "OnLayout" throws an exception for some reason.
+				try
+				{
+					OnLayout(new LayoutEventArgs(affectedControl,
+												 affectedProperty));
+				}
+				finally
+				{
+					// We are finished laying out this control.
+					--layoutSuspended;
+					performingLayout = false;
+				}
+			}
+
+	// Perform actual layout on the control.  Called from "OnLayout".
+	private void PerformActualLayout()
+			{
+				Rectangle rect;
+				int left, right, top, bottom;
+				int posn, temp;
+				Control child;
+				AnchorStyles anchor;
+
+				// Start with the display rectangle.
+				rect = DisplayRectangle;
+				left = rect.Left;
+				right = rect.Right;
+				top = rect.Top;
+				bottom = rect.Bottom;
+
+				// Lay out the docked controls, from last to first.
+				for(posn = numChildren - 1; posn >= 0; --posn)
+				{
+					child = children[posn];
+					if(!(child.visible))
+					{
+						// This child is not visible, so skip it.
+						continue;
+					}
+					switch(child.Dock)
+					{
+						case DockStyle.None: break;
+
+						case DockStyle.Top:
+						{
+							child.SetBounds
+								(left, top, right - left, child.Height);
+							top += child.Height;
+						}
+						break;
+
+						case DockStyle.Bottom:
+						{
+							temp = child.Height;
+							child.SetBounds
+								(left, bottom - temp, right - left, temp);
+							bottom -= child.Height;
+						}
+						break;
+
+						case DockStyle.Left:
+						{
+							child.SetBounds
+								(left, top, child.Width, bottom - top);
+							left += child.Width;
+						}
+						break;
+
+						case DockStyle.Right:
+						{
+							temp = child.Width;
+							child.SetBounds
+								(right - temp, top, temp, bottom - top);
+							right -= child.Width;
+						}
+						break;
+
+						case DockStyle.Fill:
+						{
+							child.SetBounds
+								(left, top, right - left, bottom - top);
+						}
+						break;
+					}
+					if(child.Dock != DockStyle.None)
+					{
+						// Just in case we are switched to anchoring later.
+						child.prevParentWidth = rect.Width;
+						child.prevParentHeight = rect.Height;
+					}
+				}
+
+				// Lay out the anchored controls, from first to last.
+				for(posn = 0; posn < numChildren; ++posn)
+				{
+					child = children[posn];
+					if(child.Dock == DockStyle.None)
+					{
+						// If the anchor style is top-left, then bail out as
+						// there will be no change to the child's position.
+						anchor = child.Anchor;
+						if(anchor == (AnchorStyles.Top | AnchorStyles.Left))
+						{
+							child.prevParentWidth = rect.Width;
+							child.prevParentHeight = rect.Height;
+							continue;
+						}
+
+						// Get the previous distance from all edges.
+						left = child.left - rect.X;
+						top = child.top - rect.Y;
+						right = child.prevParentWidth - (left + child.width);
+						bottom = child.prevParentHeight - (top + child.height);
+
+						// Anchor the child to each specified side.
+						if((anchor & AnchorStyles.Top) != 0)
+						{
+							if((anchor & AnchorStyles.Bottom) == 0)
+							{
+								// Anchor to the top, but not the bottom.
+								bottom = rect.Height - (top + child.height);
+							}
+						}
+						else if((anchor & AnchorStyles.Bottom) != 0)
+						{
+							// Anchor to the bottom, but not the top.
+							top = rect.Height - (bottom + child.height);
+						}
+						else
+						{
+							// Don't anchor to either - default to top.
+							bottom = rect.Height - (top + child.height);
+						}
+						if((anchor & AnchorStyles.Left) != 0)
+						{
+							if((anchor & AnchorStyles.Right) == 0)
+							{
+								// Anchor to the left, but not the right.
+								right = rect.Width - (left + child.width);
+							}
+						}
+						else if((anchor & AnchorStyles.Right) != 0)
+						{
+							// Anchor to the right, but not the left.
+							left = rect.Width - (right + child.width);
+						}
+						else
+						{
+							// Don't anchor to either - default to left.
+							right = rect.Width - (left + child.width);
+						}
+
+						// Compute the final client rectangle and check it.
+						right = rect.Width - right;
+						bottom = rect.Height - bottom;
+						if(left > right)
+						{
+							right = left;
+						}
+						if(top > bottom)
+						{
+							bottom = top;
+						}
+
+						// Set the new bounds for the child.
+						child.SetBounds
+							(rect.X + left, rect.Y + top,
+							 right - left, bottom - top);
+
+						// Update the parent information for the next layout.
+						child.prevParentWidth = rect.Width;
+						child.prevParentHeight = rect.Height;
+					}
+				}
 			}
 
 	// Convert a screen point into client co-ordinates.
@@ -1813,10 +2011,15 @@ public class Control : IWin32Window
 			{
 				ResumeLayout(true);
 			}
-	[TODO]
 	public void ResumeLayout(bool performLayout)
 			{
-				// TODO
+				if(layoutSuspended <= 0 || (--layoutSuspended) == 0)
+				{
+					if(performLayout && !performingLayout)
+					{
+						PerformLayout();
+					}
+				}
 			}
 
 	// Translate an alignment value for right-to-left text.
@@ -2063,8 +2266,15 @@ public class Control : IWin32Window
 			{
 				if(visible != value)
 				{
+					// Update the visible state.
 					visible = value;
 					OnVisibleChanged(EventArgs.Empty);
+
+					// Perform layout on the parent.
+					if(parent != null)
+					{
+						parent.PerformLayout(this, "Visible");
+					}
 				}
 			}
 
@@ -2075,10 +2285,9 @@ public class Control : IWin32Window
 			}
 
 	// Suspend layout for this control.
-	[TODO]
 	public void SuspendLayout()
 			{
-				// TODO
+				++layoutSuspended;
 			}
 
 	// Update the invalidated regions in this control.
@@ -2105,11 +2314,11 @@ public class Control : IWin32Window
 				this.height = height;
 				if(moved)
 				{
-					OnMove(EventArgs.Empty);
+					OnLocationChanged(EventArgs.Empty);
 				}
 				if(resized)
 				{
-					OnResize(EventArgs.Empty);
+					OnSizeChanged(EventArgs.Empty);
 				}
 			}
 	protected void UpdateBounds(int x, int y, int width, int height,
@@ -3241,12 +3450,16 @@ public class Control : IWin32Window
 			}
 	protected virtual void OnLayout(LayoutEventArgs e)
 			{
+				// Invoke the event handler.
 				LayoutEventHandler handler;
 				handler = (LayoutEventHandler)(GetHandler(EventId.Layout));
 				if(handler != null)
 				{
 					handler(this, e);
 				}
+
+				// Perform layout on this control's contents.
+				PerformActualLayout();
 			}
 	protected virtual void OnLeave(EventArgs e)
 			{
@@ -3259,6 +3472,10 @@ public class Control : IWin32Window
 			}
 	protected virtual void OnLocationChanged(EventArgs e)
 			{
+				// Raise the "Move" event first.
+				OnMove(e);
+
+				// Invoke the event handler.
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.LocationChanged));
 				if(handler != null)
@@ -3340,11 +3557,18 @@ public class Control : IWin32Window
 			}
 	protected virtual void OnMove(EventArgs e)
 			{
+				// Raise the "Move" event.
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.Move));
 				if(handler != null)
 				{
 					handler(this, e);
+				}
+
+				// If the window is transparent, then invalidate.
+				if((styles & ControlStyles.SupportsTransparentBackColor) != 0)
+				{
+					Invalidate();
 				}
 			}
 	protected virtual void OnPaint(PaintEventArgs e)
@@ -3459,6 +3683,9 @@ public class Control : IWin32Window
 					Invalidate();
 				}
 
+				// Perform layout on this control.
+				PerformLayout(this, "Bounds");
+
 				// Invoke the event handler.
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.Resize));
@@ -3487,6 +3714,10 @@ public class Control : IWin32Window
 			}
 	protected virtual void OnSizeChanged(EventArgs e)
 			{
+				// Raise the "Resize" event first.
+				OnResize(e);
+
+				// Invoke the event handler.
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.SizeChanged));
 				if(handler != null)
@@ -3591,13 +3822,6 @@ public class Control : IWin32Window
 					children[posn].OnParentVisibleChanged(e);
 				}
 			}
-
-	// Begin a batch change operation, which suppresses updates until
-	// all controls in the batch have been changed.
-	internal virtual void BeginBatchChange() {}
-
-	// End a batch change operation.
-	internal virtual void EndBatchChange() {}
 
 	// Move a child to below another.  Does not update "children".
 	private static void MoveToBelow(Control after, Control child)
@@ -3716,7 +3940,20 @@ public class Control : IWin32Window
 				}
 		public virtual void Clear()
 				{
-					// TODO
+					owner.SuspendLayout();
+					try
+					{
+						int count = Count;
+						while(count > 0)
+						{
+							--count;
+							Remove(this[count]);
+						}
+					}
+					finally
+					{
+						owner.ResumeLayout();
+					}
 				}
 		bool IList.Contains(Object value)
 				{
@@ -3794,11 +4031,34 @@ public class Control : IWin32Window
 					{
 						if(value.Parent == owner)
 						{
+							// We are already under this owner, so merely
+							// send it to the back of its sibling stack.
 							value.SendToBack();
 						}
 						else
 						{
-							value.Parent = owner;
+							// Suspend layout on the parent while we do this.
+							owner.SuspendLayout();
+							try
+							{
+								// Change the parent to the new owner.
+								value.Parent = owner;
+
+								// Initialize layout within the new context.
+								value.InitLayout();
+							}
+							finally
+							{
+								// Resume layout, but don't perform it yet.
+								owner.ResumeLayout(false);
+							}
+
+							// Now perform layout on the control.
+							owner.PerformLayout(value, "Parent");
+
+							// Notify the owner that the control was added.
+							owner.OnControlAdded
+								(new ControlEventArgs(value));
 						}
 					}
 				}
@@ -3840,7 +4100,14 @@ public class Control : IWin32Window
 				{
 					if(value != null && value.Parent == owner)
 					{
+						// Update the parent.
 						value.Parent = null;
+
+						// Perform layout on the owner.
+						owner.PerformLayout(value, "Parent");
+
+						// Notify the owner that the control has been removed.
+						owner.OnControlRemoved(new ControlEventArgs(value));
 					}
 				}
 
@@ -3906,12 +4173,18 @@ public class Control : IWin32Window
 					{
 						throw new ArgumentNullException("controls");
 					}
-					owner.BeginBatchChange();
-					foreach(Control control in controls)
+					owner.SuspendLayout();
+					try
 					{
-						Add(control);
+						foreach(Control control in controls)
+						{
+							Add(control);
+						}
 					}
-					owner.EndBatchChange();
+					finally
+					{
+						owner.ResumeLayout();
+					}
 				}
 
 		// Determine whether two control collections are equal.

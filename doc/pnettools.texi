@@ -83,13 +83,13 @@ curve for new users.
 @section Invoking cscc
 @cindex cscc invocation
 
-The general form of the ildasm syntax is as follows:
+The general form of the cscc syntax is as follows:
 
 @example
 cscc [OPTIONS] input ...
 @end example
 
-Exit status is 1 if an error occurred while processing the input.
+The exit status is 1 if an error occurred while processing the input.
 Otherwise the exit status is 0.
 
 @c -----------------------------------------------------------------------
@@ -100,48 +100,68 @@ Otherwise the exit status is 0.
 
 @table @asis
 @item Overall Options
-@ref{Overall Options}@*
+@ref{Overall Options}
+@example
 -c -S -E -o FILE -pipe -v -vv -x LANGUAGE
+@end example
 
 @item Language Options
-@ref{Language Options}@*
+@ref{Language Options}
+@example
 -flatin1-charset -foctal-constants -fdecimal-constants
 -fchecked -funchecked -fsyntax-check -funsafe
+@end example
 
 @item Warning Options
-@ref{Warning Options}@*
+@ref{Warning Options}
+@example
 -Wall -Werror -w -W -Woctal-chars -Woctal-constants
 -Wunknown-escapes -Winvalid-utf8 -Wlarge-unicode-chars
 -Wmulti-char-constant -Wunsafe -Wempty-input
+@end example
 
 @item Debugging Options
-@ref{Debugging Options}@*
+@ref{Debugging Options}
+@example
 -g
+@end example
 
 @item Optimization Options
-@ref{Optimization Options}@*
+@ref{Optimization Options}
+@example
 -O -O2 -O3 -O0 -fno-peephole
+@end example
 
 @item Preprocessor Options
-@ref{Preprocessor Options}@*
+@ref{Preprocessor Options}
+@example
 -C -P -DSYMBOL -USYMBOL -undef -dM -dN
+@end example
 
 @item Assembler Options
-@ref{Assembler Options}@*
+@ref{Assembler Options}
+@example
 -fno-short-insns -filasm-path=PATHNAME -mjvm
+@end example
 
 @item Directory Options
-@ref{Directory Options}@*
+@ref{Directory Options}
+@example
 -IDIR -nostdinc -nostdinc++
+@end example
 
 @item Linker Options
-@ref{Linker Options}@*
+@ref{Linker Options}
+@example
 -e ENTRYPOINT -LDIR -nostdlib -lLIBRARY
 -shared -static -m32bit-only -fresources=RESFILE
+@end example
 
 @item Other Options
-@ref{Other Options}@*
+@ref{Other Options}
+@example
 -dumpversion --help -fplugin-KEY-path=PATHNAME
+@end example
 @end table
 
 @c -----------------------------------------------------------------------
@@ -151,6 +171,7 @@ Otherwise the exit status is 0.
 @cindex Overall options for cscc
 
 @table @code
+@cindex -c option (cscc)
 @item -c
 Compile or assemble the input source files to object files,
 but do not link.  The object file corresponding to the input
@@ -162,6 +183,7 @@ then there will be a single output file.  The name of the output
 file will be based on the name of the first input file unless
 the @code{-o} option is supplied.
 
+@cindex -S option (cscc)
 @item -S
 Compile the input source files to produce assembly language in
 the Intermediate Language format.  The assembly file corresponding
@@ -173,14 +195,16 @@ then there will be a single output file.  The name of the output
 file will be based on the name of the first input file unless
 the @code{-o} option is supplied.
 
+@cindex -E option (cscc)
 @item -E
 Preprocess the input files and write the preprocessed source
 to the output file.  If no output file is supplied, then
 the preprocessed source is written to standard output.
 
+@cindex -o option (cscc)
 @item -o FILE
 Specify the name of the file to write the output to.  The default
-depends upon how cscc is invoked.  Specifying FILE as @code{-}
+depends upon how cscc is invoked.  Specifying @code{FILE} as @code{-}
 indicates that the output should be set to standard output.
 Standard output can only be used for pre-processing.
 
@@ -188,18 +212,22 @@ If none of @code{-c}, @code{-S}, or @code{-E} are supplied,
 then the default output file is @code{a.out.exe} or @code{a.out.dll}.
 The latter is used when the @code{-shared} option is supplied.
 
+@cindex -pipe option (cscc)
 @item -pipe
 Not used at present.  Provided for compatibility with gcc(1).
 
+@cindex -v option (cscc)
 @item -v
 Print verbose debugging information about the files that are
 being compiled.
 
+@cindex -vv option (cscc)
 @item -vv
 Print the names of the command-lines that are executed by
 cscc to invoke external programs such as language plug-ins
 and the assembler, ilasm.
 
+@cindex -x option (cscc)
 @item -x language
 Specify the source language to use to compile all input files.
 This is typically not needed, because cscc can guess the
@@ -225,10 +253,11 @@ option can be used to override the defaults.
 @cindex Language options for cscc
 
 Every language supported by cscc has its own set of language,
-warning, and other options.  This section describes the options
-for C# only.
+warning, and other options.  The following sections describe
+the options for C# only.
 
 @table @code
+@cindex -flatin1-charset option (cscc)
 @item -flatin1-charset
 The input source file's character set is Latin-1, instead of
 the UTF-8 default.
@@ -237,21 +266,25 @@ If the source is in a character set other than Latin-1 or UTF-8,
 the programmer must arrange for it to be converted into UTF-8
 prior to invoking the compiler.
 
+@cindex -foctal-constants option (cscc)
 @item -foctal-constants
 The C# language standard does not support octal integer constants
 by default.  Selecting this option will enable them.
 
-If this option is not present, sequences such as `033' will be
+If this option is not present, sequences such as @code{\033} will be
 parsed as decimal, and a warning will be displayed.  The
 @code{-Wno-octal-constants} or @code{-fdecimal-constants} options
 will disable the warning.
 
+@cindex -fdecimal-constants option (cscc)
 @item -fdecimal-constants
 Parse character sequences that look like octal integers as
 decimal and suppress the warning.  If both @code{-foctal-constants}
 and @code{-fdecimal-constants} are supplied, then the former
 takes precedence.
 
+@cindex -fchecked option (cscc)
+@cindex -funchecked option (cscc)
 @item -fchecked
 @itemx -funchecked
 Compile arithmetic expressions so that overflow exceptions will
@@ -259,10 +292,12 @@ or will not be thrown, respectively.  The default is @code{-fchecked}.
 The @code{checked} and @code{unchecked} keywords can be used in
 source files to override this setting.
 
+@cindex -fsyntax-check option (cscc)
 @item -fsyntax-check
 Parse the input source file to check its syntax, but don't
 go any further with compilation.
 
+@cindex -funsafe option (cscc)
 @item -funsafe
 Permit the use of unsafe C# language constructs in the input
 source file.  If this option is not supplied, all unsafe
@@ -276,6 +311,8 @@ constructs will result in an error.
 @cindex Warning options for cscc
 
 @table @code
+@cindex -Wall option (cscc)
+@cindex -W option (cscc)
 @item -Wall
 @itemx -W
 Enable all warnings that are supported by the compiler.
@@ -283,40 +320,50 @@ Individual warnings can be disabled with @code{-Wno-XXX} options.
 For example, @code{-Wall -Wno-empty-input} will enable
 all warnings except the "empty input file" warning.
 
+@cindex -Werror option (cscc)
 @item -Werror
 Convert all warnings into errors.
 
+@cindex -w option (cscc)
 @item -w
 Suppress all warnings.
 
+@cindex -Woctal-chars option (cscc)
 @item -Woctal-chars
 Warn if the programmer uses the octal form of a character.
 The C# language standard only supports @code{\0}, but this
 compiler also supports sequences such as @code{\033}.
 
+@cindex -Woctal-constants option (cscc)
 @item -Woctal-constants
 Warn if the programmer uses a sequence that looks like an
 octal integer constant, but which is being parsed as decimal
 in accordance with the C# language standard.
 
+@cindex -Wunknown-escapes option (cscc)
 @item -Wunknown-escapes
 Warn if an unknown escape sequence is used in a string or
 character constant.
 
+@cindex -Winvalid-utf8 option (cscc)
 @item -Winvalid-utf8
 Warn if an invalid UTF-8 sequence is encountered in the
 input source file.
 
+@cindex -Wlarge-unicode-chars option (cscc)
 @item -Wlarge-unicode-chars
 Warn if a character constant uses a Unicode character with
 a codepoint value greater than 65535.
 
+@cindex -Wmulti-char-constant option (cscc)
 @item -Wmulti-char-constant
 Warn if a character constant contains more than one character.
 
+@cindex -Wunsafe option (cscc)
 @item -Wunsafe
 Warn when an unsafe construct is used in the program.
 
+@cindex -Wempty-input option (cscc)
 @item -Wempty-input
 Warn if the input source file does not contain any declarations.
 @end table
@@ -328,6 +375,7 @@ Warn if the input source file does not contain any declarations.
 @cindex Debugging options for cscc
 
 @table @code
+@cindex -g option (cscc)
 @item -g
 Enable the generation of debug symbol information in the output file.
 @end table
@@ -339,14 +387,19 @@ Enable the generation of debug symbol information in the output file.
 @cindex Optimization options for cscc
 
 @table @code
+@cindex -O option (cscc)
+@cindex -O2 option (cscc)
+@cindex -O3 option (cscc)
 @item -O
 @item -O2
 @item -O3
 Enable various levels of optimization.
 
+@cindex -O0 option (cscc)
 @item -O0
 Disable all optimizations.
 
+@cindex -fno-peephole option (cscc)
 @item -fno-peephole
 Disable peephole optimization of the code.
 @end table
@@ -358,32 +411,39 @@ Disable peephole optimization of the code.
 @cindex Preprocessor options for cscc
 
 @table @code
+@cindex -C option (cscc)
 @item -C
 Include comments in pre-processor output.  This option is not yet
 supported.
 
+@cindex -P option (cscc)
 @item -P
 Don't use @code{#line} directives in pre-processor output.
 
+@cindex -D option (cscc)
 @item -DSYMBOL
 Define the macro @code{SYMBOL} prior to pre-processing the input.
 
 C# does not support macros with values.  Supplying a command-line
-option of @code{-DSYMBOL} will result in a macro called
-@code{SYMBOL}, which cannot be tested effectively in C#
+option of @code{-DSYMBOL=value} will result in a macro called
+@code{SYMBOL=value}, which cannot be tested effectively in C#
 source code.
 
+@cindex -U option (cscc)
 @item -USYMBOL
 Undefine the macro @code{SYMBOL} prior to pre-processing the input.
 
+@cindex -undef option (cscc)
 @item -undef
 Undefine all standard macros prior to pre-processing the input.
 
+@cindex -dM option (cscc)
 @item -dM
 Dump the macros that were defined in the input source instead of
 dumping the pre-processor output.  This can only be used with the
 @code{-E} option.
 
+@cindex -dN option (cscc)
 @item -dN
 Dump both the pre-processor output and the macros that were defined.
 This can only be used with the @code{-E} option.
@@ -405,6 +465,7 @@ the output is JVM code instead of IL code.
 @cindex Assembler options for cscc
 
 @table @code
+@cindex -fno-short-insns option (cscc)
 @item -fno-short-insns
 Causes the @code{-no-short-insns} command-line option to be
 passed to the ilasm assembler.
@@ -412,10 +473,12 @@ passed to the ilasm assembler.
 This alters how the assembler generates the final object code.
 You typically don't need to use this option.
 
+@cindex -filasm-path option (cscc)
 @item -filasm-path=PATHNAME
 Specifies the full pathname of the ilasm assembler.  By default,
 cscc searches for ilasm along the PATH.
 
+@cindex -mjvm option (cscc)
 @item -mjvm
 Compile to JVM bytecode instead of IL bytecode.
 @end table
@@ -427,13 +490,16 @@ Compile to JVM bytecode instead of IL bytecode.
 @cindex Directory options for cscc
 
 @table @code
+@cindex -I option (cscc)
 @item -IDIR
 Specify the name of a directory in which the compiler should search
 for included files.
 
+@cindex -fnostdinc option (cscc)
 @item -fnostdinc
 Don't use standard include directories.
 
+@cindex -fnostdinc++ option (cscc)
 @item -fnostdinc++
 Don't use standard C++ include directories.
 @end table
@@ -448,6 +514,7 @@ provided for future language plug-ins that may use include files.
 @cindex Linker options for cscc
 
 @table @code
+@cindex -e option (cscc)
 @item -e ENTRYPOINT
 Specify the name of the entry point for the program.  This may
 either be a class name (e.g. @code{MainClass}) or a method
@@ -455,13 +522,16 @@ name (e.g. @code{MainClass.Main}).  If this option is not supplied,
 the linker will search for any class with a static method called
 @code{Main}.
 
+@cindex -L option (cscc)
 @item -LDIR
 Specify the name of a directory in which the compiler should search
 for libraries that the program will be linked against.
 
+@cindex -nostdlib option (cscc)
 @item -nostdlib
 Don't use standard library directories and libraries.
 
+@cindex -l option (cscc)
 @item -lLIBRARY
 Link against the specified library.  For example, specifying
 @code{-lSystem.XML} will search for the library @code{System.XML.dll}
@@ -474,9 +544,11 @@ Libraries can also be specified by listing their filenames explicitly
 on the command-line.  For example: @code{/usr/local/lib/cscc/System.XML.dll}
 would have the same effect as @code{-lSystem.XML}.
 
+@cindex -shared option (cscc)
 @item -shared
-Create a shared library (.dll) instead of an executable (.exe).
+Create a shared library (@code{.dll}) instead of an executable (@code{.exe}).
 
+@cindex -static option (cscc)
 @item -static
 Link statically against the supplied libraries.  This will incorporate
 the object file data for the libraries into the program being built.
@@ -489,11 +561,13 @@ This option will never statically link against a library that has
 native, internalcall, or PInvoke methods.  In particular, @code{mscorlib.dll}
 will never be linked statically.
 
+@cindex -m32bit-only option (cscc)
 @item -m32bit-only
 Mark the final output file as only suitable to be executed on 32-bit
 platforms.  Use of this option is severely discouraged as it makes
 the resultant program less portable.
 
+@cindex -fresources option (cscc)
 @item -fresources=RESFILE
 Specify the name of a resource file to be linked with the final
 library or executable.  Multiple @code{-fresources} options
@@ -507,12 +581,15 @@ may be used to specify multiple resource files.
 @cindex Other options for cscc
 
 @table @code
+@cindex -dumpversion option (cscc)
 @item -dumpversion
 Dump the version of cscc to standard error and then exit.
 
+@cindex --help option (cscc)
 @item --help
 Print a usage message about the supported options and then exit.
 
+@cindex -fplugin-KEY-path option (cscc)
 @item -fplugin-KEY-path=PATHNAME
 Specify the @code{PATHNAME} of a language plug-in to be used to compile
 the language identified by @code{KEY}.
@@ -586,7 +663,8 @@ of the compiler is used, even if a previous version is already installed.
 
 @item
 Look in the directories specified by the @code{CSCC_PLUGINS_PATH}
-environment variable for a file called @code{cscc-KEY}.
+environment variable for a file called @code{cscc-KEY} or
+@code{cscc-KEY-s}.
 
 @item
 Look in the installation @code{plugins} directory, which is normally
@@ -595,7 +673,7 @@ something like @code{/usr/local/lib/cscc/plugins} or
 
 @item
 Look in the same directory from which @code{cscc} was loaded, by
-inspecting the argv[0] value.
+inspecting the @code{argv[0]} value.
 
 @item
 Search the PATH for the name.
@@ -604,50 +682,65 @@ Search the PATH for the name.
 The cscc front-end passes the following options down to the plug-in:
 
 @table @code
+@cindex -E option (cscc plug-in)
 @item -E
 Preprocess instead of compiling.  If the plug-in's language does not support
-preprocessing, then it should print an error message to standard error
+preprocessing, then it should print a message to standard error
 and exit with a status of 1.
 
+@cindex -pipe option (cscc plug-in)
 @item -pipe
 If the plug-in invokes other tools during compilation, then attempt to
 use pipes rather than temporary files.  If it is difficult for the plug-in
 to conform with this option, then it can be safely ignored.
 
+@cindex -o option (cscc plug-in)
 @item -o NAME
 Specify the name of the output file.  The default is standard output.
 
 The plug-in should write preprocessed data to the output file if @code{-E}
 is supplied, or IL assembly code otherwise.
 
+@cindex -g option (cscc plug-in)
 @item -g
 Output debug information.
 
+@cindex -O option (cscc plug-in)
+@cindex -O2 option (cscc plug-in)
+@cindex -O3 option (cscc plug-in)
+@cindex -O0 option (cscc plug-in)
 @item -O
 @itemx -O2
 @itemx -O3
 @itemx -O0
 Set the optimization level to 1, 2, 3, and 0 respectively.
 
+@cindex -D option (cscc plug-in)
 @item -DSYMBOL
 @itemx -DSYMBOL=VALUE
 Define a symbol within the plug-in language's preprocessor.  The second
 form can be used if the language supports values for preprocessor symbols.
 C# itself does not support values for preprocessor symbols.
 
+@cindex -U option (cscc plug-in)
 @item -USYMBOL
-Undefine a symbol within the plug-in language's preprocess.
+Undefine a symbol within the plug-in language's preprocessor.
 
+@cindex -undef option (cscc plug-in)
 @item -undef
 Undefine all pre-defined preprocessor symbols that the language may support.
 
 The cscc front-end will always pass down pre-defined
 symbols such as @code{__CSCC__} and @code{DEBUG}, unless
-@code{-undef} was supplied on its command-line.
+@code{-undef} was supplied on its command-line.  Thus, the plug-in
+does not need to handle these standard macros itself.
 
+@cindex -I option (cscc plug-in)
 @item -IDIR
 Specify an include directory that originated on the cscc command-line.
 
+@cindex -J option (cscc plug-in)
+@cindex -K option (cscc plug-in)
 @item -JDIR
 @itemx -KDIR
 Specify a system include directory, or a C++ system include directory.
@@ -662,19 +755,28 @@ The @code{-J} options will not appear if the @code{-nostdinc} option
 is present.  The @code{-K} options will not appear if the
 @code{-nostdincpp} option is present.
 
+@cindex -nostdinc option (cscc plug-in)
+@cindex -nostdinc++ option (cscc plug-in)
 @item -nostdinc
-@itemx -nostdincpp
+@itemx -nostdinc++
 Don't use any system include directories, or C++ system include directories,
 that the plug-in is aware of.
 
+@cindex -L option (cscc plug-in)
 @item -LDIR
 Specify a library directory that originated on the cscc command-line.
 
+@cindex -M option (cscc plug-in)
 @item -MDIR
 Specify a system library directory.  The front-end adds @code{-M} options
 for each of the system library directories that it knows about.  This
 option will not appear if the @code{-nostdlib} option is present.
 
+@cindex -nostdlib option (cscc plug-in)
+@item -nostdlib
+Don't use any system library directories that the plug-in is aware of.
+
+@cindex -l option (cscc plug-in)
 @item -lLIBRARY
 Specify the name of a library that is being linked against.
 
@@ -690,21 +792,28 @@ the program is being compiled and linked in one step.  e.g.
 cscc -o testing.exe testing.sc -lSystem
 @end example
 
+@cindex -Wall option (cscc plug-in)
 @item -Wall
 Enable all warnings.
 
+@cindex -w option (cscc plug-in)
 @item -w
 Suppress the display of all warnings.
 
-@item -Werrror
+@cindex -Werror option (cscc plug-in)
+@item -Werror
 Treat warning messages as errors.
 
+@cindex -W* option (cscc plug-in)
+@cindex -Wno-* option (cscc plug-in)
 @item -WNAME, -Wno-NAME
 Enable or disable the warning called @code{NAME}.
 
+@cindex -f* option (cscc plug-in)
 @item -fNAME
 Activate or deactive that compiler extension feature called @code{NAME}.
 
+@cindex -m* option (cscc plug-in)
 @item -mNAME
 Activate or deactive that machine extension feature called @code{NAME}.
 
@@ -720,20 +829,26 @@ The cscc front-end does support some @code{-m} options for controlling
 the output of the assembler.  For example, @code{-m32bit-only} is used to
 force the generation of IL binaries that can only run on 32-bit systems.
 
+@cindex -dM option (cscc plug-in)
+@cindex -dN option (cscc plug-in)
 @item -dM
 @itemx -dN
 Debugging flags used with languages that support preprocessing.
 
+@cindex -P option (cscc plug-in)
 @item -P
 Don't output @code{#line} directives in preprocessor output.
 
+@cindex -C option (cscc plug-in)
 @item -C
 Include comments in the preprocessor output.
 
+@cindex -v option (cscc plug-in)
 @item -v
 Provide verbose messages for debugging purposes.  This can be safely
 ignored if the plug-in does not have a verbose mode.
 
+@cindex -mjvm option (cscc plug-in)
 @item -mjvm
 Compile to JVM assembly code instead of IL assembly code.  If the plug-in
 does not know how to compile to JVM assembly code, it should print a message
@@ -835,22 +950,209 @@ to be compiled differently.
 
 @c -----------------------------------------------------------------------
 
-@node Assembler, Disassembler, Compiling to the JVM, Top
+@node Assembler, ilasm invocation, Compiling to the JVM, Top
 @chapter Intermediate language assembler
 @cindex Assembler
 @cindex ilasm
 
-TO DO
+Ilasm converts Intermediate Language (IL) assembly code input
+into an IL object file (@code{.obj}), an IL executable (@code{.exe}),
+or an IL dynamic link library (@code{.dll}).
+
+You normally won't need to invoke ilasm directly, because it is
+invoked automatically by the cscc compiler.  However, if you
+are building your own compiler for the Portable.NET platform,
+then you may need to invoke this program.
+
+@menu
+* ilasm invocation::        Invoking ilasm
+* Assembler Syntax::        Introduction to the assembler syntax
+* Lexical Tokens::          Lexical tokens syntax
+* Helper Non-Terminals::    Non-terminals that help with syntax definition
+* Top-Level Declarations::  Top-level assembler declarations
+* Namespace Declarations::  Namespace declarations
+* Class Declarations::      Class declarations
+* Method Declarations::     Method declarations
+* Other Declarations::      Other declarations
+@end menu
 
 @c -----------------------------------------------------------------------
 
-@node Disassembler, ildasm invocation, Assembler, Top
+@node ilasm invocation, Assembler Syntax, Assembler, Assembler
+@section Invoking ilasm
+@cindex ilasm invocation
+
+The general form of the ilasm syntax is as follows:
+
+@example
+ilasm [OPTIONS] INPUT.il ...
+@end example
+
+Ilasm reads the supplied input files, assembles them, and writes
+the output to the file specified by the @code{-o} option, or to a default
+filename derived from the name of the first input file.  If any
+of the input filenames are @code{-}, then the standard input stream will
+be used.  If @code{-} is specified multiple times, then standard input
+will be parsed only once.
+
+Specifying multiple input files is exactly the same as specifying
+one input file which is the concatenation of all of the files.
+Only one output file is created.  Ilasm must be invoked multiple
+times to assemble multiple input files into multiple output files.
+
+@table @code
+@cindex -o option (ilasm)
+@cindex --output option (ilasm)
+@item -o FILE
+@itemx --output FILE
+Specify the name of the file to write the assembler output to.  The
+default is @code{INPUT.EXT} where @code{EXT} is one of @code{obj},
+@code{exe}, or @code{dll}, depending on the value of the
+@code{--format} option.  If there are multiple input files, then
+the name of the output file is based on the name of the first input file.
+If the first input file is @code{-}, then the output is written to
+standard output.  If @code{FILE} is @code{-}, then the output is
+written to standard output.
+
+@cindex -j option (ilasm)
+@cindex --format obj option (ilasm)
+@item -j
+@itemx --format obj
+Write a @code{.obj} file as output, instead of an executable or dynamic
+link library.  This is the default value.
+
+@cindex -e option (ilasm)
+@cindex --format exe option (ilasm)
+@item -e
+@itemx --format exe
+Write an executable file as output, instead of a @code{.obj} file or dynamic
+link library.
+
+@cindex -d option (ilasm)
+@cindex --format dll option (ilasm)
+@item -d
+@itemx --format dll
+Write a dynamic link library file as output, instead of a @code{.obj}
+file or executable.
+
+@cindex -g option (ilasm)
+@cindex --debug option (ilasm)
+@item -g
+@itemx --debug
+Enable the generation of debug symbol information to the output file.
+
+@cindex -n option (ilasm)
+@cindex --no-debug option (ilasm)
+@item -n
+@itemx --no-debug
+Disable the generation of debug symbol information to the output file.
+This is the default value.
+
+@cindex -s option (ilasm)
+@cindex --short-insns option (ilasm)
+@item -s
+@itemx --short-insns
+Always use the shortest version of an instruction when creating the
+output.  Some instructions have multiple versions.  e.g. @code{br}
+and @code{br.s} for long and short versions of the branch instruction.
+The assembler will attempt to "squash" the instructions to occupy as
+little space as possible.  This is the default value.
+
+When this option is in force, the compiler does not need to concern
+itself with choosing the most compact form of an instruction, because
+the assembler will do the work.  Long instructions will be converted
+into shorter versions whenever possible, and short instructions will
+be converted into longer versions if required.  Compiler code generators
+can therefore be much simpler.
+
+@cindex -l option (ilasm)
+@cindex --no-short-insns option (ilasm)
+@item -l
+@itemx --no-short-insns
+Always use the stated version of an instruction when creating the output.
+For example, @code{br} will always generate a 5-byte branch instruction,
+and @code{br.s} will always generate a 2-byte branch instruction.  If the
+branch is too long, then using @code{br.s} will result in an error.
+
+The only reason to use this is to ensure that the form of instruction
+that is output by the ildasm disassembler is the same as the
+form of instruction that was input to ilasm.  This may be helpful
+when attempting to diagnose compiler problems.
+
+@cindex -3 option (ilasm)
+@cindex --32bit-only option (ilasm)
+@item -3
+@itemx --32bit-only
+Tag the output file so that it can only be executed on 32-bit platforms.
+
+@cindex -c option (ilasm)
+@cindex --cui-subsystem option (ilasm)
+@item -c
+@itemx --cui-subsystem
+Tag the output file so that it can run within the command-line subsystem
+under Windows.  This is the default.
+
+@cindex -G option (ilasm)
+@cindex --gui-subsystem option (ilasm)
+@item -G
+@itemx --gui-subsystem
+Tag the output file so that it can run within the GUI subsystem
+under Windows.
+
+@cindex -m option (ilasm)
+@cindex --old-metadata option (ilasm)
+@item -m
+@itemx --old-metadata
+Output an older metadata format used by the Beta 1 and earlier releases
+of the Microsoft .NET Framework SDK.  This should only be used for
+debugging purposes.
+
+@cindex --help option (ilasm)
+@item --help
+Print a usage message for the ilasm program.
+
+@cindex -v option (ilasm)
+@cindex --version option (ilasm)
+@item -v
+@itemx --version
+Print the version of the ilasm program.
+
+@item --
+Marks the end of the command-line options, and the beginning of
+the input filenames.  You may need to use this if your filename
+begins with @code{-}.  e.g. @code{ilasm -- -input.il}.  This is not needed
+if the input is stdin: @code{ilasm -} is perfectly valid.
+@end table
+
+The exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.
+
+The parser is fairly unforgiving of errors and will bail out at the
+first sign of trouble.  This is not expected to be a problem because
+ilasm will normally be processing the output of a compiler
+such as cscc.  Compilers are presumed to be aware of how to
+generate correct IL assembly code.
+
+Ilasm uses the host's native C types @code{float} and @code{double} to
+handle floating point numbers.  If the host does not have a strict
+IEEE floating point implementation, then the values of floating point
+constants may not be exactly what was expected.  The problem can be
+avoided by using the raw bit forms, which are guaranteed to produce exact
+IEEE-compliant values.
+
+@c -----------------------------------------------------------------------
+
+@include pnetasm.texi
+
+@c -----------------------------------------------------------------------
+
+@node Disassembler, ildasm invocation, Other Declarations, Top
 @chapter Intermediate language disassembler
 @cindex Disassembler
 @cindex ildasm
 
-Ildasm converts IL object files (.obj), IL executables (.exe),
-and IL dynamic link libraries (.dll) into Intermediate Language (IL)
+Ildasm converts IL object files (@code{.obj}), IL executables (@code{.exe}),
+and IL dynamic link libraries (@code{.dll}) into Intermediate Language (IL)
 assembly code.  The output is suitable for input to ilasm.
 
 Ildasm is useful for diagnosing problems with compilers and other
@@ -873,18 +1175,24 @@ ildasm [OPTIONS] INPUT ...
 @end example
 
 @table @code
+@cindex -o option (ildasm)
+@cindex --output option (ildasm)
 @item -o FILE
 @itemx --output FILE
 Specify the name of the file to write the assembler output to.  The
-default is standard output.  Specifying FILE as @code{-} also indicates that
-the output should be set to standard output.
+default is standard output.  Specifying @code{FILE} as @code{-} also
+indicates that the output should be set to standard output.
 
+@cindex -d option (ildasm)
+@cindex --dump-sections option (ildasm)
 @item -d
 @itemx --dump-sections
 Dump the contents of the IL program sections in hexadecimal instead
 of as IL assembly code.  This may be useful for diagnosing problems
 with badly formatted IL binaries.
 
+@cindex -r option (ildasm)
+@cindex --real-offsets option (ildasm)
 @item -r
 @itemx --real-offsets
 By default, ildasm prints "relative virtual addresses", or RVA's,
@@ -893,16 +1201,22 @@ names of labels within methods.  The @code{-r} option informs ildasm
 to use real file offsets instead.  This may assist in locating data within
 the file with separate tools.
 
+@cindex -t option (ildasm)
+@cindex --show-tokens option (ildasm)
 @item -t
 @itemx --show-tokens
 Show the token codes of program elements within the disassembly output.
 
+@cindex -q option (ildasm)
+@cindex --quote-names option (ildasm)
 @item -q
 @itemx --quote-names
 Quote all identifiers within the disassembly output so that they are not
-confused with reserved words.  This is useful if the output will be fed
+confused with reserved words.  This is necessary if the output will be fed
 into ilasm.
 
+@cindex -w option (ildasm)
+@cindex --whole-file option (ildasm)
 @item -w
 @itemx --whole-file
 Dump the contents of the whole input file in hexadecimal.  If the
@@ -910,9 +1224,12 @@ file is not otherwise recognized by ildasm as an IL binary,
 this may be the only way to inspect the contents to determine what
 the problem is.
 
+@cindex --help option (ildasm)
 @item --help
 Print a usage message for the ildasm program.
 
+@cindex -v option (ildasm)
+@cindex --version option (ildasm)
 @item -v
 @itemx --version
 Print the version of the ildasm program.
@@ -924,7 +1241,7 @@ begins with @code{-}.  e.g. @code{ildasm -- -input.obj}.  This is
 not needed if the input is stdin: @code{ildasm -} is perfectly valid.
 @end table
 
-Exit status is 1 if an error occurred while processing the input.
+The exit status is 1 if an error occurred while processing the input.
 Otherwise the exit status is 0.  @xref{Load Errors}, for a
 complete list of errors that may occur when loading an IL image file.
 
@@ -936,8 +1253,8 @@ complete list of errors that may occur when loading an IL image file.
 @cindex ilsize
 
 Ilsize lists size information for each of the sections within an IL object
-file (.obj), an IL executable (.exe), or an IL dynamic link library (.dll).
-The output is similar to that produced by size(1).
+file (@code{.obj}), an IL executable (@code{.exe}), or an IL dynamic link
+library (@code{.dll}).  The output is similar to that produced by size(1).
 
 @menu
 * ilsize invocation::       Invoking ilsize
@@ -956,27 +1273,37 @@ ilsize [OPTIONS] input ...
 @end example
 
 @table @code
+@cindex --radix option (ilsize)
 @item --radix NUM
 Set the radix for displaying size values within the output.  The default
 value is 10.  Legal values are 8, 10, and 16.
 
+@cindex -d option (ilsize)
 @item -d
 Set the radix to 10.  Same as @code{--radix 10}.
 
+@cindex -o option (ilsize)
 @item -o
 Set the radix to 8.   Same as @code{--radix 8}.
 
+@cindex -x option (ilsize)
 @item -x
 Set the radix to 16.  Same as @code{--radix 16}.
 
+@cindex -D option (ilsize)
+@cindex --detailed option (ilsize)
 @item -D
 @itemx --detailed
 Use a more detailed output that also includes the number of classes,
 fields, methods, etc.
 
+@cindex --help option (ilsize)
 @item --help
 Print a usage message for the ilsize program.
 
+@cindex -v option (ilsize)
+@cindex -V option (ilsize)
+@cindex --version option (ilsize)
 @item -v
 @itemx -V
 @itemx --version
@@ -989,13 +1316,13 @@ begins with @code{-}.  e.g. @code{ilsize -- -input.obj}.  This is
 not needed if the input is stdin: @code{ilsize -} is perfectly valid.
 @end table
 
-Exit status is 1 if an error occurred while processing the input.
+The exit status is 1 if an error occurred while processing the input.
 Otherwise the exit status is 0.  @xref{Load Errors}, for a
 complete list of errors that may occur when loading an IL image file.
 
-Ilsize does not currently understand the format of ".a" or ".lib" archive
-libraries, so it cannot display information about archive contents like
-size(1) can.
+Ilsize does not currently understand the format of @code{.a} or
+@code{.lib} archive libraries, so it cannot display information about
+archive contents like size(1) can.
 
 @c -----------------------------------------------------------------------
 
@@ -1005,10 +1332,10 @@ size(1) can.
 @cindex ilnative
 
 Ilnative lists the native methods that are used within an IL object file
-(.obj), an IL executable (.exe), or an IL dynamic link library (.dll).
-This can aid developers who are building programs that use native methods,
-or developers who are attempting to discover which native methods a
-third party program requires.
+(@code{.obj}), an IL executable (@code{.exe}), or an IL dynamic link
+library (@code{.dll}).  This can aid developers who are building programs
+that use native methods, or developers who are attempting to discover which
+native methods a third party program requires.
 
 @menu
 * ilnative invocation::     Invoking ilnative
@@ -1027,13 +1354,18 @@ ilnative [OPTIONS] INPUT ...
 @end example
 
 @table @code
+@cindex -n option (ilnative)
+@cindex --names-only option (ilnative)
 @item -n
 @itemx --names-only
 Only print the names of the methods, and not the type information.
 
+@cindex --help option (ilnative)
 @item --help
 Print a usage message for the ilnative program.
 
+@cindex -v option (ilnative)
+@cindex --version option (ilnative)
 @item -v
 @itemx --version
 Print the version of the ilnative program.
@@ -1058,8 +1390,8 @@ complete list of errors that may occur when loading an IL image file.
 @cindex ilfind
 
 Ilfind searches for a pattern within the supplied input files.  Each input
-file must be an IL object file (.obj), an IL executable (.exe), or an
-IL dynamic link library (.dll).
+file must be an IL object file (@code{.obj}), an IL executable (@code{.exe}),
+or an IL dynamic link library (@code{.dll}).
 
 For each assembly, namespace, class, field, method, event, or property
 whose name matches the pattern, a line is written to standard output
@@ -1082,6 +1414,8 @@ ilfind [OPTIONS] PATTERN INPUT ...
 @end example
 
 @table @code
+@cindex -w option (ilfind)
+@cindex --whole-string option (ilfind)
 @item -w
 @itemx --whole-string
 Match the whole pattern string against names in the input files.
@@ -1089,12 +1423,16 @@ This is the default.  For example, the pattern @code{ABC} will match
 classes, fields, and methods called @code{ABC}, but will not match
 items called @code{ABCD}.
 
+@cindex -s option (ilfind)
+@cindex --sub-string option (ilfind)
 @item -s
 @itemx --sub-string
 Match the pattern against sub-strings of names in the input files.
 For example, the pattern @code{ABC} will match any item that contains
 @code{ABC} within its name.
 
+@cindex -f option (ilfind)
+@cindex --file-regex option (ilfind)
 @item -f
 @itemx --file-regex
 Use a file-like regular expression matching scheme.  This is the
@@ -1104,6 +1442,8 @@ to group a set of alternative characters.  This pattern syntax
 is similar to that used to match filenames in shells such as
 sh(1) and csh(1).
 
+@cindex -g option (ilfind)
+@cindex --grep-regex option (ilfind)
 @item -g
 @item --grep-regex
 Use a regular expression matching scheme similar to grep(1).
@@ -1111,19 +1451,26 @@ Note: the `^' and `$' characters will be implicitly prepended and
 appended to the pattern if whole string matching is enabled
 (@code{-w}).
 
+@cindex -n option (ilfind)
+@cindex --no-regex option (ilfind)
 @item -n
 @itemx --no-regex
 Do not use regular expression matching.  This will perform a simple
 identity check against names (@code{-w}) or a simple sub-string check
 (@code{-s}).
 
+@cindex -i option (ilfind)
+@cindex --ignore-case option (ilfind)
 @item -i
 @itemx --ignore-case
 Ignore case when matching names against the pattern.
 
+@cindex --help option (ilfind)
 @item --help
 Print a usage message for the ilfind program.
 
+@cindex -v option (ilfind)
+@cindex --version option (ilfind)
 @item -v
 @itemx --version
 Print the version of the ilfind program.
@@ -1148,16 +1495,231 @@ support POSIX regular expressions natively.
 
 @c -----------------------------------------------------------------------
 
-@node Resources, ECMA Extensions, ilfind invocation, Top
+@node Resources, resgen invocation, ilfind invocation, Top
 @chapter Resource generation and conversion
 @cindex Resources
 @cindex resgen
 
-TO DO
+Resgen converts strings between a number of resource formats that are used
+within the Portable.NET platform.  It is typically used to convert
+text resources (@code{.txt}) or XML resources (@code{.resx}) into binary
+resources (@code{.resources}) that can be attached to an IL executable
+or dynamic link library.
+
+@menu
+* resgen invocation::       Invoking resgen
+* Resource Format::         Text resource file format
+* Resource Examples::       Resource conversion examples
+@end menu
 
 @c -----------------------------------------------------------------------
 
-@node ECMA Extensions, Object Files, Resources, Top
+@node resgen invocation, Resource Format, Resources, Resources
+@section Invoking resgen
+@cindex resgen invocation
+
+The general form of the resgen syntax is as follows:
+
+@example
+resgen [OPTIONS] INPUT ... OUTPUT
+@end example
+
+Resgen can convert multiple input files into a single output file.
+A number of options are available to specify the format of the
+input files and the output file.  Alternatively, resgen can
+guess the format of a file from its extension:
+
+@table @code
+@item .txt
+@itemx .text
+Text resources.
+
+@item .resources
+Binary resources.
+
+@item .resx
+@itemx .xml
+XML resources.
+
+@item .exe
+@itemx .dll
+@itemx .obj
+@itemx .o
+Binary resources within an IL image (input only).
+@end table
+
+The input filename @code{-} may be used to specify standard input.  If an
+input format is not specified, standard input is assumed to contain
+text resources.
+
+The output filename @code{-} may be used to specify standard output.  If an
+output format is not specified, the format of standard output is
+assumed to be text.
+
+@table @code
+@cindex -t option (resgen)
+@cindex --text-input option (resgen)
+@item -t
+@itemx --text-input
+The input files are all assumed to be in text resource format.
+
+@cindex -r option (resgen)
+@cindex --res-input option (resgen)
+@item -r
+@itemx --res-input
+The input files are all assumed to be in binary resource format.
+
+@cindex -i option (resgen)
+@cindex --il-input option (resgen)
+@item -i
+@itemx --il-input
+The input files are all assumed to be IL image files (i.e. executables,
+dynamic link libraries, or object files).
+
+@cindex -x option (resgen)
+@cindex --xml-input option (resgen)
+@item -x
+@itemx --xml-input
+The input files are all assumed to be in XML resource format.
+This option is not supported yet.
+
+@cindex -T option (resgen)
+@cindex --text-output option (resgen)
+@item -T
+@itemx --text-output
+The output format is set to text resources.
+
+@cindex -R option (resgen)
+@cindex --res-output option (resgen)
+@item -R
+@itemx --res-output
+The output format is set to binary resources.
+
+@cindex -X option (resgen)
+@cindex --xml-output option (resgen)
+@item -X
+@itemx --xml-output
+The output format is set to XML resources.  This option is not supported yet.
+
+@cindex -s option (resgen)
+@cindex --sort-names option (resgen)
+@item -s
+@itemx --sort-names
+When writing text resources as output, sort the resources by name.
+This typically makes it easier for humans to read the output.
+
+This option is ignored if the output format is not text.
+
+@cindex --help option (resgen)
+@item --help
+Print a usage message for the resgen program.
+
+@cindex -v option (resgen)
+@cindex --version option (resgen)
+@item -v
+@itemx --version
+Print the version of the \fBresgen\fR program.
+
+@item --
+Marks the end of the command-line options, and the beginning of
+the input filenames.  You may need to use this if your filename
+begins with @code{-}.  e.g. @code{ilresgen -- -input.txt output.resources}.
+This is not needed if the input is stdin: @code{ilresgen - output.resources}
+is perfectly valid.
+@end table
+
+The exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.
+
+@c -----------------------------------------------------------------------
+
+@node Resource Format, Resource Examples, resgen invocation, Resources
+@section Text resource file format
+@cindex Resource Format
+
+Text resource files contain one line for each resource.  Each line
+has the form @code{name=value}, where @code{name} is the
+tag name associated with the resource, and @code{value} is the
+resource's string value.  For example:
+
+@example
+Arg_InvalidBase=Base must be 2, 8, 10, or 16
+Overflow_Byte=Valid Byte values are between 0 and 255, inclusive
+@end example
+
+Comments are lines that begin with a @code{#} character.  Blank lines
+are also considered comments.
+
+Resource string values are assumed to be in the UTF-8 text encoding.
+No other character sets are currently supported.  Values can contain
+one of the following escape sequences, which indicate special
+characters:
+
+@table @code
+@item \n
+Newline character, @code{\u000A}.
+
+@item \r
+Carriage return character, @code{\u000D}.
+
+@item \t
+TAB character, @code{\u0009}.
+
+@item \f
+Form feed character, @code{\u000C}.
+
+@item \v
+Vertical TAB character, @code{\u000B}.
+
+@item \0
+NUL character, @code{\u0000}.
+
+@item \NNN
+8-bit octal Unicode character.
+
+@item \xHH
+8-bit hexadecimal Unicode character.
+
+@item \uHHHH
+16-bit hexadecimal Unicode character.
+
+@item \UHHHHHHHH
+32-bit hexadecimal Unicode character.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Resource Examples, ECMA Extensions, Resource Format, Resources
+@section Resource conversion examples
+@cindex Resource Examples
+
+The following command-line converts three text resource input files
+into a binary resource output file:
+
+@example
+resgen file1.txt file2.txt file3.txt output.resources
+@end example
+
+If the files did not have extensions whose format can be guessed,
+then command-line options can be used specify the formats:
+
+@example
+resgen --text-input --res-output file1 file2 file3 output
+@end example
+
+The default resources within an executable can be extracted to text
+format on standard output as follows:
+
+@example
+resgen -s program.exe -
+@end example
+
+The @code{-s} option was used here to sort the output so that it is more
+easily digested by the user.
+
+@c -----------------------------------------------------------------------
+
+@node ECMA Extensions, Object Files, Resource Examples, Top
 @chapter ECMA file format extensions
 @cindex ECMA Extensions
 
@@ -1177,11 +1739,12 @@ between free software projects that manipulate IL binaries.
 @node Object Files, Debug Symbols, ECMA Extensions, ECMA Extensions
 @section Object file format extensions
 @cindex Object Files
+@cindex .text$il section
 
 The ECMA specifications on IL binaries do not define an object
 file format for incremental compilations.  Tools from other vendors
 typically take an entire set of source files and compile them to either
-a .exe or .dll in one hit.
+a @code{.exe} or @code{.dll} in one hit.
 
 Because we wish to support incremental compilation of programs and libraries
 through the cscc compiler, we have defined an object file format
@@ -1227,6 +1790,7 @@ use of @code{.text$il} to tag the file as containing IL data.
 @node Debug Symbols, Load Errors, Object Files, ECMA Extensions
 @section Debug symbol extensions
 @cindex Debug Symbols
+@cindex .ildebug section
 
 The assembler syntax defined in the ECMA specification allows for line
 number and local variable name information to be inserted into the
@@ -1302,7 +1866,7 @@ in little-endian order.
 
 @subsection Token index
 
-The token index consists of 8-byte entries of the following form:<p>
+The token index consists of 8-byte entries of the following form:
 
 @table @asis
 @item Token
@@ -1400,20 +1964,21 @@ The "Type" and "Length" values are encoded with the same multi-byte
 
 @table @asis
 @item 0-127
-Encode as the byte itself.
+Encode as the value itself in a single byte.
 
 @item 128-16383
-Encode as (0x80 | (value >> 8)), (value & 0xFF).
+Encode as @code{(0x80 | (value >> 8))}, @code{(value & 0xFF)}.
 Note: 16383 is (2^14 - 1).
 
 @item 16384-536870911
-Encode as (0xC0 | (value >> 24)), ((value >> 16) & 0xFF),
-((value >> 8) & 0xFF), (value & 0xFF).
+Encode as @code{(0xC0 | (value >> 24))}, @code{((value >> 16) & 0xFF)},
+@code{((value >> 8) & 0xFF)}, @code{(value & 0xFF)}.
 Note: 536870911 is (2^29 - 1).
 
 @item 536870912-4294967295
-Encode as 0xE0, ((value >> 24) & 0xFF),
-((value >> 16) & 0xFF), ((value >> 8) & 0xFF), (value & 0xFF).
+Encode as @code{0xE0}, @code{((value >> 24) & 0xFF)},
+@code{((value >> 16) & 0xFF)}, @code{((value >> 8) & 0xFF)},
+@code{(value & 0xFF)}.
 @end table
 
 The following debug types are supported, which are further
@@ -1462,7 +2027,7 @@ source file line corresponds to which offset within the method's code.
 
 This block consists of pairs of name and index values.  The name value
 is an offset into the string table and indicates the name of the local
-variable.  The index is the number assigned to the local variable with
+variable.  The index is the number assigned to the local variable within
 the method's code.
 
 This block type is typically used for method tokens whose local variables

@@ -1,0 +1,458 @@
+
+@c -----------------------------------------------------------------------
+
+@node Assembler Syntax, Lexical Tokens, ilasm invocation, Assembler
+@section Assembler Syntax
+@cindex Assembler Syntax
+
+The following sections describe the syntax of the assembly code that is input
+to ilasm.  The following BNF notations are used:
+
+@table @code
+@item A => B
+The non-terminal @code{A} can be expanded to the sequence @code{B}.
+
+@item @strong{name}
+A lexical terminal keyword called @code{name}.  e.g. @code{@strong{public}}.
+
+@item NAME
+A lexical terminal symbol called @code{NAME}, used to represent
+identifiers, numbers, strings, etc.
+
+@item @{A@}
+Zero or more occurrences of @code{A}.
+
+@item (A)+
+One or more occurrences of @code{A}.
+
+@item [A]
+Zero or one occurrences of @code{A}.  i.e. @code{A} is optional.
+
+@item A | B
+Either @code{A} or @code{B}.
+
+@item <abcd>
+One of the characters @code{a}, @code{b}, @code{c}, or @code{d}.
+This is normally written as @code{[abcd]} when used for
+grep(1) regular expressions.
+
+@item <^abcd>
+Any character except @code{a}, @code{b}, @code{c}, or @code{d}.
+
+@item <ANY>
+Any character.
+
+@item 'c'
+The character @code{c}.  This can also be expressed as @code{<c>}.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Lexical Tokens, Helper Non-Terminals, Assembler Syntax, Assembler
+@section Lexical tokens
+@cindex Lexical tokens
+
+The syntax uses lexical terminal symbols called @code{IDENT},
+@code{INT}, @code{FLOAT}, @code{SQSTRING}, @code{DQSTRING}, and
+@code{HEXBYTE}.  Their structure is defined as follows:
+
+@example
+IDENT    => IDALPHA @{ IDALPHA | DIGIT @}
+INT      => ['-'] (DIGIT)+
+          | ['-'] '0' <xX> (<0-9a-fA-F>)+
+          | ['-'] '0' @{<0-7>@}
+FLOAT    => [<+->] (DIGIT)+ EXPONENT
+          | [<+->] @{DIGIT@} '.' (DIGIT)+ [EXPONENT]
+          | [<+->] (DIGIT)+ '.' @{DIGIT@} [EXPONENT]
+SQSTRING => <'> @{ '\' <ANY> | <^'\> @} <'>
+DQSTRING => '"' @{ '\' <ANY> | <^"\> @} '"'
+HEXBYTE  => (<0-9a-fA-F>)+
+IDALPHA  => <a-zA-Z_$@?>
+DIGIT    => <0-9>
+EXPONENT => <eE> [<+->] (DIGIT)+
+@end example
+
+The syntax is very close to that used by C for identifiers, integer constants,
+floating point constants, single-quoted strings, and double-quoted strings.
+C-like escape sequences can be used for special characters in strings.
+Unlike C, single quotes are used for strings and not character constants.
+The @code{HEXBYTE} terminal is used for raw sequences of bytes in some of
+the declaration types.
+
+Strings are expected to be in the UTF-8 encoding, ready for translation into
+the Unicode strings used by IL binaries.  No other character sets are
+supported.  It is the responsibility of the tool that generates IL
+assembly code to perform any necessary character set conversions.
+
+Comments can be represented in two ways: single-line and multi-line.
+Single-line comments begin with @code{//} and continue to the end of
+the current line.  Multi-line comments begin with @code{/*} and continue
+until the next occurrence of @code{*/}.  Multi-line comments cannot
+be nested.
+
+White space in the input is ignored.  The allowable white space characters
+are Space (0x20), Tab (0x09), Vertical Tab (0x0B), Carriage Return (0x0D),
+Line Feed (0x0A), Form Feed (0x0C), and Ctrl-Z (0x1A).
+
+The assembly language has a large number of keywords and instruction names
+that begin with lower case letters.  If the program uses a keyword
+as an identifier for a class, field, method, etc, it must be quoted with
+single quotes.  For example, a program identifier called @code{managed}
+would need to be written as @code{'managed'} so that it does not conflict
+with the @code{managed} keyword.
+
+The easiest method to protect identifiers is to quote anything that begins
+with a lower case letter.  If new keywords are added to ilasm in the
+future, there will be no need to modify existing compilers that use this
+technique.  Compilers can quote only known keywords and instructions if
+they wish, but they will not be robust against future changes.
+
+The following is a list of the assembler keywords:
+
+@example
+@strong{abstract algorithm alignment ansi any array as assembly assert
+at auto autochar beforefieldinit blob blob_object bool boxed
+bstr bytearray byvalstr callmostderived carray catch cdecl
+cf char cil class clsid compilercontrolled currency custom
+date decimal default demand deny disablejitoptimizer
+enablejittracking error explicit extends extern false famandassem
+family famorassem fastcall fault field filetime filter final
+finally fixed float float32 float64 forwardref fromunmanaged
+fullorigin handler hidebysig hresult idispatch il implements
+implicitcom implicitres import in inf inheritcheck init initonly
+instance int int16 int32 int64 int8 interface internalcall
+iunknown lasterr lateinit lcid linkcheck literal lpstr lpstruct
+lptstr lpvoid lpwstr managed marshal method modopt modreq nan
+native nested newslot noappdomain noinlining nomachine nomangle
+nometadata noncasdemand noncasinheritance noncaslinkdemand
+noprocess not_in_gc_heap notserialized null object objectref ole
+opt optil out permitonly pinned pinvokeimpl prejitdeny prejitgrant
+preservesig private privatescope public publickey readonly record
+reqmin reqopt reqrefuse reqsecobj request retval rtspecialname
+runtime safearray sealed sequential serializable specialname
+static stdcall storage stored_object stream streamed_object string
+struct synchronized syschar sysstring tbstr thiscall tls to true
+typedref unicode unmanaged unmanagedexp unsigned userdefined value
+valuetype vararg variant vector virtual void wchar winapi with}
+@end example
+
+The following is a list of assembler directives:
+
+@example
+@strong{.addon .algorithm .assembly .backing .blob .capability .cctor
+.class .comtype .config .corflags .ctor .custom .data .emitbyte
+.entrypoint .event .exeloc .export .field .file .fire .get .hash
+.imagebase .implicitcom .line #line .locale .locals .manifestres
+.maxstack .method .mime .module .mresource .namespace .originator .os
+.other .override .pack .param .permission .permissionset .processor
+.property .publickey .publickeytoken .removeon .set .size .subsystem
+.title .try .ver .vtable .vtentry .vtfixup .zeroinit}
+@end example
+
+The following is a list of the instruction names:
+
+@example
+@strong{add add.ovf add.ovf.un and ann.call ann.catch ann.data ann.data.s
+ann.dead ann.def ann.hoisted ann.hoisted_call ann.lab ann.live
+ann.phi ann.ref ann.ref.s arglist beq beq.s bge bge.s bge.un bge.un.s
+bgt bgt.s bgt.un bgt.un.s ble ble.s ble.un ble.un.s blt blt.s blt.un
+blt.un.s bne.un bne.un.s box box_old br break brfalse brfalse.s
+brinst brinst.s brnull brnull.s br.s brtrue brtrue.s brzero brzero.s
+call calli callvirt castclass ceq cgt cgt.un ckfinite clt clt.un
+conv.i conv.i1 conv.i2 conv.i4 conv.i8 conv.ovf.i conv.ovf.i1
+conv.ovf.i1.un conv.ovf.i2 conv.ovf.i2.un conv.ovf.i4 conv.ovf.i4.un
+conv.ovf.i8 conv.ovf.i8.un conv.ovf.i.un conv.ovf.u conv.ovf.u1
+conv.ovf.u1.un conv.ovf.u2 conv.ovf.u2.un conv.ovf.u4 conv.ovf.u4.un
+conv.ovf.u8 conv.ovf.u8.un conv.ovf.u.un conv.r4 conv.r8 conv.r.un
+conv.u conv.u1 conv.u2 conv.u4 conv.u8 cpblk cpobj div div.un dup
+endfault endfilter endfinally initblk initobj isinst jmp jmpi ldarg
+ldarg.0 ldarg.1 ldarg.2 ldarg.3 ldarga ldarga.s ldarg.s ldc.i4 ldc.i4.0
+ldc.i4.1 ldc.i4.2 ldc.i4.3 ldc.i4.4 ldc.i4.5 ldc.i4.6 ldc.i4.7 ldc.i4.8
+ldc.i4.m1 ldc.i4.M1 ldc.i4.s ldc.i8 ldc.r4 ldc.r8 ldelema ldelem.i
+ldelem.i1 ldelem.i2 ldelem.i4 ldelem.i8 ldelem.r4 ldelem.r8 ldelem.ref
+ldelem.u1 ldelem.u2 ldelem.u4 ldelem.u8 ldfld ldflda ldftn ldind.i
+ldind.i1 ldind.i2 ldind.i4 ldind.i8 ldind.r4 ldind.r8 ldind.ref
+ldind.u1 ldind.u2 ldind.u4 ldind.u8 ldlen ldloc ldloc.0 ldloc.1 ldloc.2
+ldloc.3 ldloca ldloca.s ldloc.s ldnull ldobj ldptr ldsfld ldsflda
+ldstr ldtoken ldvirtftn leave leave.s localloc mkrefany mul mul.ovf
+mul.ovf.un mul.un neg newarr newobj nop not or pop refanytype
+refanyval rem rem.un ret rethrow shl shr shr.un sizeof starg starg.s
+stelem.i stelem.i1 stelem.i2 stelem.i4 stelem.i8 stelem.r4 stelem.r8
+stelem.ref stfld stind.i stind.i1 stind.i2 stind.i4 stind.i8 stind.r4
+stind.r8 stind.ref stloc stloc.0 stloc.1 stloc.2 stloc.3 stloc.s
+stobj stsfld sub sub.ovf sub.ovf.un switch tail tail. throw unbox
+volatile volatile. xor}
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Helper Non-Terminals, Top-Level Declarations, Lexical Tokens, Assembler
+@section Helper Non-Terminals
+@cindex Helper Non-Terminals
+
+In this section we define a number of non-terminals that will be used
+later in the BNF grammar.  They do not necessarily correspond to
+useful program constructs on their own.
+
+@example
+Identifier     => IDENT | SQSTRING
+Integer32      => INT      /* 32-bit integer */
+Integer64      => INT      /* 64-bit integer */
+Float64        => FLOAT
+                | @strong{float32} '(' Integer32 ')'
+                | @strong{float64} '(' Integer64 ')'
+                | @strong{float32} '[' Integer32 ']'
+                | @strong{float64} '[' Integer64 ']'
+                | @strong{nan}
+                | @strong{inf}
+                | '-' @strong{inf}
+ComposedString => DQSTRING
+                | ComposedString '+' DQSTRING
+QualifiedName  => Identifier
+                | QualifiedName '.' Identifier
+@end example
+
+The second and third forms of the Float64 non-terminal can be used to coerce
+integer values into floating-point values.
+
+The fourth and fifth forms of the Float64 non-terminal can be used to
+convert the raw bit representation of a floating-point number into
+a floating-point value.  The fourth form converts the big-endian, 32-bit,
+IEEE integer representation of a single-precision value into a 32-bit float.
+For example 0x3F800000 represents the value 1.0.  The fifth form does
+the same for 64-bit IEEE integer representations of double-precision values.
+
+The raw bit forms are mainly of use to compilers that wish to output
+the exact binary representation of a floating-point constant, rather than
+a rounded decimal value.
+
+The ComposedString non-terminal allows long strings to be built up by
+appending a sequence of shorter strings.
+
+@c -----------------------------------------------------------------------
+
+@node Top-Level Declarations, Namespace Declarations, Helper Non-Terminals, Assembler
+@section Top-Level Declarations
+@cindex Top-Level Declarations
+
+The top-most level of the assembly input stream consists of zero or
+more declarations:
+
+@example
+TopLevel => @{ Declaration @}
+@end example
+
+Declarations at the top-most level cover program items such as
+classes, namespaces, global methods, assembly information, manifest
+resources, etc:
+
+@example
+Declaration => NamespaceDeclaration
+             | ClassDeclaration
+             | MethodDeclaration
+             | DataDeclaration
+             | VtableDeclaration
+             | VtfixupDeclaration
+             | ExternalSourceSpecification
+             | FileDeclaration
+             | ExeLocationDeclaration
+             | AssemblyDeclaration
+             | AssemblyRefDeclaration
+             | ComTypeDeclaration
+             | ManifestResDeclaration
+             | ModuleDeclaration
+             | SecurityDeclaration
+             | CustomAttributeDeclaration
+             | SubsystemDeclaration
+             | CorFlagsDeclaration
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Namespace Declarations, Class Declarations, Top-Level Declarations, Assembler
+@section Namespace Declarations
+@cindex Namespace Declarations
+
+@example
+NamespaceDeclaration => @strong{.namespace} QualifiedName
+                        '@{' @{ Declaration @} '@}'
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Class Declarations, Method Declarations, Namespace Declarations, Assembler
+@section Class Declarations
+@cindex Class Declarations
+
+@example
+ClassDeclaration => @strong{.class} @{ ClassAttribute @} Identifier
+          [ @strong{extends} ClassName ]
+          [ @strong{implements} ClassName @{ ',' ClassName @} ]
+          '@{' @{ ClassMember @} '@}'
+ClassAttribute => @strong{public}
+                | @strong{private}
+                | @strong{value}
+                | @strong{unmanaged}
+                | @strong{not_in_gc_heap}
+                | @strong{interface}
+                | @strong{sealed}
+                | @strong{abstract}
+                | @strong{auto}
+                | @strong{sequential}
+                | @strong{explicit}
+                | @strong{ansi}
+                | @strong{unicode}
+                | @strong{autochar}
+                | @strong{import}
+                | @strong{serializable}
+                | @strong{nested public}
+                | @strong{nested private}
+                | @strong{nested family}
+                | @strong{nested assembly}
+                | @strong{nested famandassem}
+                | @strong{nested famorassem}
+                | @strong{lateinit}
+                | @strong{specialname}
+                | @strong{rtspecialname}
+ClassName      => [ '[' (QualifiedName |
+                         @strong{.module} QualifiedName) ']' ]
+                  QualifiedName @{ '/' QualifiedName @}
+@end example
+
+@example
+ClassMember => MethodDeclaration
+             | ClassDeclaration
+             | EventDeclaration
+             | PropertyDeclaration
+             | FieldDeclaration
+             | DataDeclaration
+             | SecurityDeclaration
+             | ExternalSourceSpecification
+             | CustomAttributeDeclaration
+             | @strong{.size} Integer32
+             | @strong{.pack} Integer32
+             | ComTypeDeclaration
+             | ExportDeclaration
+             | OverrideDeclaration
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Method Declarations, Other Declarations, Class Declarations, Assembler
+@section Method Declarations
+@cindex Method Declarations
+
+@example
+MethodDeclaration => @strong{.method} @{ MethodAttribute @}
+                     [ CallingConventions ]
+                     @{ ParameterAttribute @}
+                     MarshalledType MethodName
+                     '(' [ SignatureArguments ] ')'
+                     @{ ImplementationAttribute @}
+                     '@{' @{ MethodMember @} '@}@'
+MethodName => @strong{.ctor}
+            | @strong{.cctor}
+            | QualifiedName
+MethodAttribute => @strong{static}
+                 | @strong{public}
+                 | @strong{private}
+                 | @strong{family}
+                 | @strong{final}
+                 | @strong{specialname}
+                 | @strong{virtual}
+                 | @strong{abstract}
+                 | @strong{assembly}
+                 | @strong{famandassem}
+                 | @strong{famorassem}
+                 | @strong{privatescope}
+                 | @strong{hidebysig}
+                 | @strong{newslot}
+                 | @strong{rtspecialname}
+                 | @strong{unmanagedexp}
+                 | @strong{pinvokeimpl}
+                   '(' [ ComposedString
+                            [ @strong{as} ComposedString ] ]
+                       @{ PInvokeAttribute @} ')'
+PInvokeAttribute => @strong{nomangle}
+                  | @strong{ansi}
+                  | @strong{unicode}
+                  | @strong{autochar}
+                  | @strong{ole}
+                  | @strong{lasterr}
+                  | @strong{winapi}
+                  | @strong{cdecl}
+                  | @strong{stdcall}
+                  | @strong{thiscall}
+                  | @strong{fastcall}
+CallingConventions => @strong{instance} CallingConventions
+                    | @strong{explicit} CallingConventions
+                    | @strong{default}
+                    | @strong{vararg}
+                    | @strong{unmanaged cdecl}
+                    | @strong{unmanaged stdcall}
+                    | @strong{unmanaged thiscall}
+                    | @strong{unmanaged fastcall}
+MarshalledType => Type [ @strong{marshal} '(' NativeType ')' ]
+ImplementationAttributes => @strong{native}
+                          | @strong{il}
+                          | @strong{optil}
+                          | @strong{managed}
+                          | @strong{unmanaged}
+                          | @strong{forwardref}
+                          | @strong{ole}
+                          | @strong{runtime}
+                          | @strong{internalcall}
+                          | @strong{synchronized}
+                          | @strong{noinlining}
+SignatureArguments => SignatureArgument
+                      @{ ',' SignatureArgument @}
+SignatureArgument  => @strong{...}
+                    | @{ ParameterAttribute @}
+                      MarshalledType [ Identifier ]
+ParameterAttribute => '[' @strong{in} ']'
+                    | '[' @strong{out} ']'
+                    | '[' @strong{opt} ']'
+                    | '[' @strong{lcid} ']'
+                    | '[' @strong{retval} ']'
+                    | '[' Integer32 ']'
+MethodMember => @strong{.emitbyte} Integer32
+              | ExceptionBlock
+              | @strong{.maxstack} Integer32
+              | @strong{.locals} '(' [ SignatureArguments ] ')'
+              | @strong{.locals init}
+                '(' [ SignatureArguments ] ')'
+              | @strong{.entrypoint}
+              | @strong{.zeroinit}
+              | DataDeclaration
+              | Instruction
+              | Identifier ':'
+              | SecurityDeclaration
+              | ExternalSourceSpecification
+              | CustomAttributeSpecification
+              | @strong{.vtentry} Integer32 ':' Integer32
+              | @strong{.override} TypeSpecification
+                @strong{::} MethodName
+              | '@{' @{ MethodMember @} '@}'
+              | @strong{.param} '[' Integer32 ']'
+                [ '=' FieldInitialization ]
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Other Declarations, Disassembler, Method Declarations, Assembler
+@section Other Declarations
+@cindex Other Declarations
+
+This section defines the syntax for a number of other declaration kinds
+that provide miscellaneous information that does not fall into any of
+the above categories.
+
+@example
+VtableDeclaration  => @strong{.vtable} '=' '(' (HEXBYTE)+ ')'
+VtfixupDeclaration => @strong{.vtfixup} '[' Integer32 ']'
+                      @{ VtfixupAttribute @} @strong{at} Identifier
+VtfixupAttribute   => @strong{int32}
+                    | @strong{int64}
+                    | @strong{fromunmanaged}
+                    | @strong{callmostderived}
+@end example

@@ -28,6 +28,9 @@ scope information is output.
 
 * ilasm/ilasm.1: fixed doc bugs and moved syntax to texinfo documentation.
 
+* doc/pnettools.texi, doc/pnetasm.texi, doc/Makefile.am: completed
+translation of manpage documentation to texinfo format.
+
 2001-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * pnet.spec: applied patch submitted by mdaniel to create RPM spec file.

@@ -4,6 +4,9 @@
 	* csharp/class/field2.cs, csharp/class.field2.il,
 	csharp/class/field2.jl: add tests for "volatile" fields.
 
+	* csharp/stmt/return1.cs: bug in C# test case - cannot use
+	"abstract" and "virtual" together.
+
 2001-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Initial check-in of the test suite.

@@ -364,9 +364,8 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	// Make this region infinite.
 	public void MakeInfinite()
 	{
-		// TODO What happens when we convert RectangleF to Rectangle?
-		// What are the right values?
-		extent = new RectangleF(-float.MaxValue/2, -float.MaxValue/2, float.MaxValue, float.MaxValue);
+		const float maxCoord = 4194304; //Math.Pow(2, 22)
+		extent = new RectangleF(-maxCoord, -maxCoord, 2 * maxCoord, 2 * maxCoord);
 		rects = new RectangleF[1] { extent };
 	}
 

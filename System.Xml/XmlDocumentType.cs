@@ -54,6 +54,13 @@ class XmlDocumentType : XmlLinkedNode
 				notations = new XmlNamedNodeMap(this);
 				attributes = null;
 			}
+	protected internal XmlDocumentType(String name, String publicId,
+							 		   String systemId, String internalSubset,
+									   XmlDocument doc)
+			: this(doc, name, publicId, systemId, internalSubset)
+			{
+				// Nothing to do here.
+			}
 
 	// Get the entity list for this document type.
 	public XmlNamedNodeMap Entities

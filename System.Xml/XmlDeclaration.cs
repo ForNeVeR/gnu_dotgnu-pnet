@@ -53,6 +53,12 @@ class XmlDeclaration : XmlLinkedNode
 				this.version = version;
 				this.attributes = null;
 			}
+	protected internal XmlDeclaration(String version, String encoding,
+									  String standalone, XmlDocument doc)
+			: this(doc, version, encoding, standalone)
+			{
+				// Nothing to do here.
+			}
 
 	// Get or set the document encoding.
 	public String Encoding

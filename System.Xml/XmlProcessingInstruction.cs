@@ -43,6 +43,12 @@ class XmlProcessingInstruction : XmlLinkedNode
 				this.target = ((target != null) ? target : String.Empty);
 				this.data = data;
 			}
+	protected internal XmlProcessingInstruction(String target, String data,
+												XmlDocument doc)
+			: this(doc, target, data)
+			{
+				// Nothing to do here.
+			}
 
 	// Get or set the data associated with a processing instruction.
 	public String Data

@@ -42,6 +42,11 @@ class XmlWhitespace : XmlCharacterData
 					Value = text;
 				}
 			}
+	protected internal XmlWhitespace(String data, XmlDocument doc)
+			: this(doc, data)
+			{
+				// Nothing to do here.
+			}
 
 	// Get the local name of this node.
 	public override String LocalName

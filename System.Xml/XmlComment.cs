@@ -37,6 +37,11 @@ class XmlComment : XmlCharacterData
 			{
 				// Nothing to do here.
 			}
+	protected internal XmlComment(String data, XmlDocument doc)
+			: base(data, doc)
+			{
+				// Nothing to do here.
+			}
 
 	// Get the local name of this node.
 	public override String LocalName

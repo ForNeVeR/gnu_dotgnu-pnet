@@ -35,9 +35,14 @@ abstract class XmlCharacterData : XmlLinkedNode
 	// Internal state.  May be either "String" or "StringBuilder".
 	private Object data;
 
-	// Constructor.
+	// Constructors.
 	internal XmlCharacterData(XmlNode parent, String data)
 			: base(parent)
+			{
+				this.data = data;
+			}
+	protected internal XmlCharacterData(String data, XmlDocument doc)
+			: base(doc)
 			{
 				this.data = data;
 			}

@@ -29,6 +29,16 @@
 	System.Xml/Xml.build: implement a two-phase build process for
 	System.dll because of its circular dependency on System.Xml.
 
+	* System.Xml/XmlAttribute.cs, System.Xml/XmlCDataSection.cs,
+	System.Xml/XmlCharacterData.cs, System.Xml/XmlComment.cs,
+	System.Xml/XmlDeclaration.cs, System.Xml/XmlDocumentType.cs,
+	System.Xml/XmlElement.cs, System.Xml/XmlEntityReference.cs,
+	System.Xml/XmlProcessingInstruction.cs,
+	System.Xml/XmlSignificantWhitespace.cs,
+	System.Xml/XmlText.cs, System.Xml/XmlWhitespace.cs:
+	add extra "protected internal" constructors to the Xml node
+	types that are required for .NET SDK compatibility.
+
 2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/StreamWriter.cs: default UTF8 behaviour

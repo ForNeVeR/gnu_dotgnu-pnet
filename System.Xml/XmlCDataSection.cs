@@ -38,6 +38,11 @@ class XmlCDataSection : XmlCharacterData
 			{
 				// Nothing to do here.
 			}
+	protected internal XmlCDataSection(String data, XmlDocument doc)
+			: base(data, doc)
+			{
+				// Nothing to do here.
+			}
 
 	// Get the local name of this node.
 	public override String LocalName

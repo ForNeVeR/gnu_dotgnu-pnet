@@ -34,11 +34,17 @@ class XmlAttribute : XmlNode
 	// Internal state.
 	private NameCache.NameInfo name;
 
-	// Constructor.
+	// Constructors.
 	internal XmlAttribute(XmlNode parent, NameCache.NameInfo name)
 			: base(parent)
 			{
 				this.name = name;
+			}
+	protected internal XmlAttribute(String prefix, String localName,
+									String namespaceURI, XmlDocument doc)
+			: base(doc)
+			{
+				this.name = doc.nameCache.Add(localName, prefix, namespaceURI);
 			}
 
 	// Get the base URI for this document.

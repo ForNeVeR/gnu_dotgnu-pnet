@@ -31,9 +31,14 @@ public
 #endif
 class XmlText : XmlCharacterData
 {
-	// Constructor.
+	// Constructors.
 	internal XmlText(XmlNode parent, String text)
 			: base(parent, text)
+			{
+				// Nothing to do here.
+			}
+	protected internal XmlText(String data, XmlDocument doc)
+			: base(data, doc)
 			{
 				// Nothing to do here.
 			}

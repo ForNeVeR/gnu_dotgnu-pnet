@@ -43,6 +43,12 @@ class XmlElement : XmlLinkedNode
 				this.attributes = null;
 				this.isEmpty = true;
 			}
+	protected internal XmlElement(String prefix, String localName,
+								  String namespaceURI, XmlDocument doc)
+			: base(doc)
+			{
+				this.name = doc.nameCache.Add(localName, prefix, namespaceURI);
+			}
 
 	// Get a collection that contains all of the attributes for this node.
 	public override XmlAttributeCollection Attributes

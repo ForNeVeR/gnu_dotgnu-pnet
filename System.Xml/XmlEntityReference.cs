@@ -40,6 +40,11 @@ class XmlEntityReference : XmlLinkedNode
 			{
 				this.name = name;
 			}
+	protected internal XmlEntityReference(String name, XmlDocument doc)
+			: base(doc)
+			{
+				this.name = name;
+			}
 
 	// Get the base URI for this node.
 	public override String BaseURI

@@ -28,6 +28,7 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.ComponentModel.Design.Serialization;
 
 [ComVisible(true)]
 public class TypeConverter
@@ -46,7 +47,12 @@ public class TypeConverter
 	public virtual bool CanConvertFrom
 				(ITypeDescriptorContext context, Type sourceType)
 			{
+			#if CONFIG_COMPONENT_MODEL_DESIGN
+				// By default, we can always convert instance descriptors.
+				return (sourceType == typeof(InstanceDescriptor));
+			#else
 				return false;
+			#endif
 			}
 
 	// Determine if we can convert from this type to a specific type.
@@ -70,6 +76,12 @@ public class TypeConverter
 									  CultureInfo culture,
 									  Object value)
 			{
+			#if CONFIG_COMPONENT_MODEL_DESIGN
+				if(value is InstanceDescriptor)
+				{
+					return ((InstanceDescriptor)value).Invoke();
+				}
+			#endif
 				throw GetConvertFromException(value);
 			}
 

@@ -1,4 +1,9 @@
 
+2004-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_emit.c: use "wb" mode to save emitted images;
+	set +x on emitted exe's.
+
 2004-01-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_coerce.c (GetReferenceConvertRules): make sure

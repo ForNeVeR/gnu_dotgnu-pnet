@@ -20,6 +20,12 @@
 
 #include "engine_private.h"
 #include "lib_defs.h"
+#if HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+#endif
+#if HAVE_SYS_STAT_H
+	#include <sys/stat.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -142,6 +148,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 	const char *path;
 	FILE *stream;
 	int tmp;
+	int needChmod;
 
 	IL_METADATA_WRLOCK(_thread);
 
@@ -155,13 +162,17 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
-	if (!(stream = fopen(path, "w")))
+	if (!(stream = fopen(path, "wb")))
 	{
-		IL_METADATA_UNLOCK(_thread);
-		return 0;
+		if (!(stream = fopen(path, "w")))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			return 0;
+		}
 	}
 	ILWriterSetStream(writer, stream, 1);
 	/* this has to be kept in sync with PEFileKinds */
+	needChmod = 0;
 	switch (fileKind)
 	{
 		case 1: /* PEFileKinds.Dll */
@@ -177,6 +188,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 			ILWriterResetTypeAndFlags(writer,
 			                          IL_IMAGETYPE_EXE,
 			                          IL_WRITEFLAG_SUBSYS_CUI);
+			needChmod = 1;
 		}
 		break;
 
@@ -185,6 +197,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 			ILWriterResetTypeAndFlags(writer,
 			                          IL_IMAGETYPE_EXE,
 			                          IL_WRITEFLAG_SUBSYS_GUI);
+			needChmod = 1;
 		}
 		break;
 	}
@@ -219,6 +232,14 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 		IL_METADATA_UNLOCK(_thread);
 		return 0;
 	}
+#if !(defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__))
+	if(needChmod)
+	{
+		int mask = umask(0);
+		umask(mask);
+		chmod(path, 0777 & ~mask);
+	}
+#endif
 
 	IL_METADATA_UNLOCK(_thread);
 	return (ILBool)1;

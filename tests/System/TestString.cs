@@ -25,7 +25,6 @@ using System;
 
 public class TestString : TestCase
 {
-
 	// Constructor.
 	public TestString(String name)
 			: base(name)
@@ -49,10 +48,10 @@ public class TestString : TestCase
 	public void TestClone()
 	{
 		String fubar = "Foo Bar";
-		AssertEquals("fubar.Clone() as String",(String)fubar.Clone(),fubar);
-		AssertEquals("fubar.Clone() as Object",fubar.Clone(),(Object)fubar);
-		AssertEquals("((ICloneable) fubar).Clone() as String",(String)((ICloneable) fubar).Clone(),fubar);
-		AssertEquals("((ICloneable) fubar).Clone() as Object",((ICloneable) fubar).Clone(),(Object)fubar);
+		AssertEquals("fubar.Clone() as String",fubar,(String)fubar.Clone());
+		AssertEquals("fubar.Clone() as Object",(Object)fubar,fubar.Clone());
+		AssertEquals("((ICloneable) fubar).Clone() as String",fubar,(String)((ICloneable) fubar).Clone());
+		AssertEquals("((ICloneable) fubar).Clone() as Object",(Object)fubar,((ICloneable) fubar).Clone());
 	}
 	public void TestStringCompare()
 	{
@@ -177,6 +176,7 @@ public class TestString : TestCase
 		String str1="Foo";
 		String str2= String.Copy(str1);
 		AssertEquals("String.Copy(str1)==str1",str2,str1);
+		Assert("String.Copy(str1) as Object != str1 as Object",(Object)str2 != (Object)str1);
 		try
 		{
 			String s = String.Copy(null);
@@ -460,9 +460,9 @@ public class TestString : TestCase
 	public void TestStringInsert()
 	{
 		String fubar = "FooBar";
-		AssertEquals("fubar.Insert(3,\" \")",fubar.Insert(3," "),"Foo Bar");
-		AssertEquals("fubar.Insert(0,\" \")",fubar.Insert(0," ")," FooBar");
-		AssertEquals("fubar.Insert(fubar.Length,\" \")",fubar.Insert(fubar.Length," "),"FooBar ");
+		AssertEquals("fubar.Insert(3,\" \")","Foo Bar",fubar.Insert(3," "));
+		AssertEquals("fubar.Insert(0,\" \")"," FooBar",fubar.Insert(0," "));
+		AssertEquals("fubar.Insert(fubar.Length,\" \")","FooBar ",fubar.Insert(fubar.Length," "));
 		try
 		{
 			fubar.Insert(0,null);
@@ -526,31 +526,31 @@ public class TestString : TestCase
 		String[] foo = new String[6] { "foo","ofo","oof","FOO","OFO","OOF" };
 		String[] foo2 = new String[3] { "","","" };
 		String[] foo3 = new String[0] { };
-		AssertEquals("String.Join(fu,foo)",String.Join(fu,foo),"foo fu ofo fu oof fu FOO fu OFO fu OOF");
-		AssertEquals("String.Join(fu,foo,0,foo.Length)",String.Join(fu,foo,0,foo.Length),"foo fu ofo fu oof fu FOO fu OFO fu OOF");
-		AssertEquals("String.Join(fu,foo,0,1)",String.Join(fu,foo,0,1),"foo");
-		AssertEquals("String.Join(fu,foo,1,1)",String.Join(fu,foo,1,1),"ofo");
-		AssertEquals("String.Join(fu,foo,2,1)",String.Join(fu,foo,2,1),"oof");
-		AssertEquals("String.Join(fu,foo,3,1)",String.Join(fu,foo,3,1),"FOO");
-		AssertEquals("String.Join(fu,foo,4,1)",String.Join(fu,foo,4,1),"OFO");
-		AssertEquals("String.Join(fu,foo,5,1)",String.Join(fu,foo,5,1),"OOF");
-		AssertEquals("String.Join(fu,foo,0,2)",String.Join(fu,foo,0,2),"foo fu ofo");
-		AssertEquals("String.Join(fu,foo,1,2)",String.Join(fu,foo,1,2),"ofo fu oof");
-		AssertEquals("String.Join(fu,foo,2,2)",String.Join(fu,foo,2,2),"oof fu FOO");
-		AssertEquals("String.Join(fu,foo,3,2)",String.Join(fu,foo,3,2),"FOO fu OFO");
-		AssertEquals("String.Join(fu,foo,4,2)",String.Join(fu,foo,4,2),"OFO fu OOF");
-		AssertEquals("String.Join(fu,foo,0,3)",String.Join(fu,foo,0,3),"foo fu ofo fu oof");
-		AssertEquals("String.Join(fu,foo,1,3)",String.Join(fu,foo,1,3),"ofo fu oof fu FOO");
-		AssertEquals("String.Join(fu,foo,2,3)",String.Join(fu,foo,2,3),"oof fu FOO fu OFO");
-		AssertEquals("String.Join(fu,foo,3,3)",String.Join(fu,foo,3,3),"FOO fu OFO fu OOF");
-		AssertEquals("String.Join(fu,foo,0,4)",String.Join(fu,foo,0,4),"foo fu ofo fu oof fu FOO");
-		AssertEquals("String.Join(fu,foo,1,4)",String.Join(fu,foo,1,4),"ofo fu oof fu FOO fu OFO");
-		AssertEquals("String.Join(fu,foo,2,4)",String.Join(fu,foo,2,4),"oof fu FOO fu OFO fu OOF");
-		AssertEquals("String.Join(fu,foo,0,5)",String.Join(fu,foo,0,5),"foo fu ofo fu oof fu FOO fu OFO");
-		AssertEquals("String.Join(fu,foo,1,5)",String.Join(fu,foo,1,5),"ofo fu oof fu FOO fu OFO fu OOF");
-		AssertEquals("String.Join(fu,foo,0,0)",String.Join(fu,foo,0,0),"");
-		AssertEquals("String.Join(fu2,foo2,0,foo2.Length)",String.Join(fu2,foo2,0,foo2.Length),"");
-		AssertEquals("String.Join(fu,foo3,0,foo3.Length)",String.Join(fu,foo3,0,foo3.Length),"");
+		AssertEquals("String.Join(fu,foo)","foo fu ofo fu oof fu FOO fu OFO fu OOF",String.Join(fu,foo));
+		AssertEquals("String.Join(fu,foo,0,foo.Length)","foo fu ofo fu oof fu FOO fu OFO fu OOF",String.Join(fu,foo,0,foo.Length));
+		AssertEquals("String.Join(fu,foo,0,1)","foo",String.Join(fu,foo,0,1));
+		AssertEquals("String.Join(fu,foo,1,1)","ofo",String.Join(fu,foo,1,1));
+		AssertEquals("String.Join(fu,foo,2,1)","oof",String.Join(fu,foo,2,1));
+		AssertEquals("String.Join(fu,foo,3,1)","FOO",String.Join(fu,foo,3,1));
+		AssertEquals("String.Join(fu,foo,4,1)","OFO",String.Join(fu,foo,4,1));
+		AssertEquals("String.Join(fu,foo,5,1)","OOF",String.Join(fu,foo,5,1));
+		AssertEquals("String.Join(fu,foo,0,2)","foo fu ofo",String.Join(fu,foo,0,2));
+		AssertEquals("String.Join(fu,foo,1,2)","ofo fu oof",String.Join(fu,foo,1,2));
+		AssertEquals("String.Join(fu,foo,2,2)","oof fu FOO",String.Join(fu,foo,2,2));
+		AssertEquals("String.Join(fu,foo,3,2)","FOO fu OFO",String.Join(fu,foo,3,2));
+		AssertEquals("String.Join(fu,foo,4,2)","OFO fu OOF",String.Join(fu,foo,4,2));
+		AssertEquals("String.Join(fu,foo,0,3)","foo fu ofo fu oof",String.Join(fu,foo,0,3));
+		AssertEquals("String.Join(fu,foo,1,3)","ofo fu oof fu FOO",String.Join(fu,foo,1,3));
+		AssertEquals("String.Join(fu,foo,2,3)","oof fu FOO fu OFO",String.Join(fu,foo,2,3));
+		AssertEquals("String.Join(fu,foo,3,3)","FOO fu OFO fu OOF",String.Join(fu,foo,3,3));
+		AssertEquals("String.Join(fu,foo,0,4)","foo fu ofo fu oof fu FOO",String.Join(fu,foo,0,4));
+		AssertEquals("String.Join(fu,foo,1,4)","ofo fu oof fu FOO fu OFO",String.Join(fu,foo,1,4));
+		AssertEquals("String.Join(fu,foo,2,4)","oof fu FOO fu OFO fu OOF",String.Join(fu,foo,2,4));
+		AssertEquals("String.Join(fu,foo,0,5)","foo fu ofo fu oof fu FOO fu OFO",String.Join(fu,foo,0,5));
+		AssertEquals("String.Join(fu,foo,1,5)","ofo fu oof fu FOO fu OFO fu OOF",String.Join(fu,foo,1,5));
+		AssertEquals("String.Join(fu,foo,0,0)","",String.Join(fu,foo,0,0));
+		AssertEquals("String.Join(fu2,foo2,0,foo2.Length)","",String.Join(fu2,foo2,0,foo2.Length));
+		AssertEquals("String.Join(fu,foo3,0,foo3.Length)","",String.Join(fu,foo3,0,foo3.Length));
 		try
 		{
 			String.Join(fu,null);
@@ -576,29 +576,29 @@ public class TestString : TestCase
 		String foo = "Foo Bar foo bar fu bar Fu Bar";
 
 		/* String.LastIndexOf(char) */
-		AssertEquals("foo.LastIndexOf('r')",foo.LastIndexOf('r'),28);
-		AssertEquals("foo.LastIndexOf('a')",foo.LastIndexOf('a'),27);
-		AssertEquals("foo.LastIndexOf('B')",foo.LastIndexOf('B'),26);
-		AssertEquals("foo.LastIndexOf(' ')",foo.LastIndexOf(' '),25);
-		AssertEquals("foo.LastIndexOf('u')",foo.LastIndexOf('u'),24);
-		AssertEquals("foo.LastIndexOf('F')",foo.LastIndexOf('F'),23);
-		AssertEquals("foo.LastIndexOf('b')",foo.LastIndexOf('b'),19);
-		AssertEquals("foo.LastIndexOf('f')",foo.LastIndexOf('f'),16);
-		AssertEquals("foo.LastIndexOf('o')",foo.LastIndexOf('o'),10);
-		AssertEquals("foo.LastIndexOf('c')",foo.LastIndexOf('c'),-1);
+		AssertEquals("foo.LastIndexOf('r')",28,foo.LastIndexOf('r'));
+		AssertEquals("foo.LastIndexOf('a')",27,foo.LastIndexOf('a'));
+		AssertEquals("foo.LastIndexOf('B')",26,foo.LastIndexOf('B'));
+		AssertEquals("foo.LastIndexOf(' ')",25,foo.LastIndexOf(' '));
+		AssertEquals("foo.LastIndexOf('u')",24,foo.LastIndexOf('u'));
+		AssertEquals("foo.LastIndexOf('F')",23,foo.LastIndexOf('F'));
+		AssertEquals("foo.LastIndexOf('b')",19,foo.LastIndexOf('b'));
+		AssertEquals("foo.LastIndexOf('f')",16,foo.LastIndexOf('f'));
+		AssertEquals("foo.LastIndexOf('o')",10,foo.LastIndexOf('o'));
+		AssertEquals("foo.LastIndexOf('c')",-1,foo.LastIndexOf('c'));
 
 		/* String.LastIndexOf(char,int) */
-		AssertEquals("foo.LastIndexOf('f',16)",foo.LastIndexOf('f',16),16);
-		AssertEquals("foo.LastIndexOf('f',15)",foo.LastIndexOf('f',15),8);
-		AssertEquals("foo.LastIndexOf('f',7)",foo.LastIndexOf('f',7),-1);
-		AssertEquals("foo.LastIndexOf('f',foo.Length-1)",foo.LastIndexOf('f',foo.Length-1),16);
+		AssertEquals("foo.LastIndexOf('f',16)",16,foo.LastIndexOf('f',16));
+		AssertEquals("foo.LastIndexOf('f',15)",8,foo.LastIndexOf('f',15));
+		AssertEquals("foo.LastIndexOf('f',7)",-1,foo.LastIndexOf('f',7));
+		AssertEquals("foo.LastIndexOf('f',foo.Length-1)",16,foo.LastIndexOf('f',foo.Length-1));
 		try
 		{
-			AssertEquals("foo.LastIndexOf('f',foo.Length)",foo.LastIndexOf('f',foo.Length),16); // don't ask me
-			Fail("foo.LastIndexOf('f',foo.Length) should throw an ArgumentOutOfRangeException");
+			AssertEquals("foo.LastIndexOf('f',foo.Length)",16,foo.LastIndexOf('f',foo.Length)); // don't ask me
 		}
 		catch (ArgumentOutOfRangeException)
 		{
+			Fail("foo.LastIndexOf('f',foo.Length) should NOT throw an ArgumentOutOfRangeException");
 		}
 		try
 		{
@@ -620,17 +620,17 @@ public class TestString : TestCase
 		}
 
 		/* String.LastIndexOf(char,int,int) */
-		AssertEquals("foo.LastIndexOf('f',16,17)",foo.LastIndexOf('f',16,17),16);
-		AssertEquals("foo.LastIndexOf('f',15,16)",foo.LastIndexOf('f',15,16),8);
-		AssertEquals("foo.LastIndexOf('f',15,7)",foo.LastIndexOf('f',15,7),-1);
-		AssertEquals("foo.LastIndexOf('f',foo.Length-1,1)",foo.LastIndexOf('f',foo.Length-1,1),-1);
-		AssertEquals("foo.LastIndexOf('r',foo.Length-1,1)",foo.LastIndexOf('r',foo.Length-1,0),-1);
-		AssertEquals("foo.LastIndexOf('r',foo.Length-1,1)",foo.LastIndexOf('r',foo.Length-1,1),28);
-		AssertEquals("foo.LastIndexOf('F',0,1)",foo.LastIndexOf('F',0,1),0);
-		AssertEquals("foo.LastIndexOf('F',1,1)",foo.LastIndexOf('F',1,1),-1);
+		AssertEquals("foo.LastIndexOf('f',16,17)",16,foo.LastIndexOf('f',16,17));
+		AssertEquals("foo.LastIndexOf('f',15,16)",8,foo.LastIndexOf('f',15,16));
+		AssertEquals("foo.LastIndexOf('f',15,7)",-1,foo.LastIndexOf('f',15,7));
+		AssertEquals("foo.LastIndexOf('f',foo.Length-1,1)",-1,foo.LastIndexOf('f',foo.Length-1,1));
+		AssertEquals("foo.LastIndexOf('r',foo.Length-1,1)",-1,foo.LastIndexOf('r',foo.Length-1,0));
+		AssertEquals("foo.LastIndexOf('r',foo.Length-1,1)",28,foo.LastIndexOf('r',foo.Length-1,1));
+		AssertEquals("foo.LastIndexOf('F',0,1)",0,foo.LastIndexOf('F',0,1));
+		AssertEquals("foo.LastIndexOf('F',1,1)",-1,foo.LastIndexOf('F',1,1));
 		try
 		{
-			AssertEquals("foo.LastIndexOf('r',foo.Length,0)",foo.LastIndexOf('r',foo.Length,0),-1); // ask the ECMA
+			AssertEquals("foo.LastIndexOf('r',foo.Length,0)",-1,foo.LastIndexOf('r',foo.Length,0)); // ask the ECMA
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -638,7 +638,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf('r',foo.Length,1)",foo.LastIndexOf('r',foo.Length,1),-1); // b/c these are
+			AssertEquals("foo.LastIndexOf('r',foo.Length,1)",-1,foo.LastIndexOf('r',foo.Length,1)); // b/c these are
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -646,7 +646,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf('r',foo.Length,2)",foo.LastIndexOf('r',foo.Length,2),28); // all valid,
+			AssertEquals("foo.LastIndexOf('r',foo.Length,2)",28,foo.LastIndexOf('r',foo.Length,2)); // all valid,
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -654,7 +654,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf('f',foo.Length+10,0)",foo.LastIndexOf('f',foo.Length+10,0),-1); // believe
+			AssertEquals("foo.LastIndexOf('f',foo.Length+10,0)",-1,foo.LastIndexOf('f',foo.Length+10,0)); // believe
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -662,7 +662,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf('f',foo.Length+10,1)",foo.LastIndexOf('f',foo.Length+10,1),-1); // it or not.
+			AssertEquals("foo.LastIndexOf('f',foo.Length+10,1)",-1,foo.LastIndexOf('f',foo.Length+10,1)); // it or not.
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -670,7 +670,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf('f',foo.Length+10,11)",foo.LastIndexOf('f',foo.Length+10,11),-1); // amazing,
+			AssertEquals("foo.LastIndexOf('f',foo.Length+10,11)",-1,foo.LastIndexOf('f',foo.Length+10,11)); // amazing,
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -678,7 +678,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf('r',foo.Length+10,11)",foo.LastIndexOf('r',foo.Length+10,11),28); // isn't it?
+			AssertEquals("foo.LastIndexOf('r',foo.Length+10,11)",28,foo.LastIndexOf('r',foo.Length+10,11)); // isn't it?
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -713,14 +713,14 @@ public class TestString : TestCase
 		}
 
 		/* String.LastIndexOf(String) */
-		AssertEquals("foo.LastIndexOf(\"Bar\")",foo.LastIndexOf("Bar"),26);
-		AssertEquals("foo.LastIndexOf(\"Fu\")",foo.LastIndexOf("Fu"),23);
-		AssertEquals("foo.LastIndexOf(\"bar\")",foo.LastIndexOf("bar"),19);
-		AssertEquals("foo.LastIndexOf(\"fu\")",foo.LastIndexOf("fu"),16);
-		AssertEquals("foo.LastIndexOf(\"foo\")",foo.LastIndexOf("foo"),8);
-		AssertEquals("foo.LastIndexOf(\"Foo\")",foo.LastIndexOf("Foo"),0);
-		AssertEquals("foo.LastIndexOf(\"blah\")",foo.LastIndexOf("blah"),-1);
-		AssertEquals("foo.LastIndexOf(\"\")",foo.LastIndexOf(""),0);
+		AssertEquals("foo.LastIndexOf(\"Bar\")",26,foo.LastIndexOf("Bar"));
+		AssertEquals("foo.LastIndexOf(\"Fu\")",23,foo.LastIndexOf("Fu"));
+		AssertEquals("foo.LastIndexOf(\"bar\")",19,foo.LastIndexOf("bar"));
+		AssertEquals("foo.LastIndexOf(\"fu\")",16,foo.LastIndexOf("fu"));
+		AssertEquals("foo.LastIndexOf(\"foo\")",8,foo.LastIndexOf("foo"));
+		AssertEquals("foo.LastIndexOf(\"Foo\")",0,foo.LastIndexOf("Foo"));
+		AssertEquals("foo.LastIndexOf(\"blah\")",-1,foo.LastIndexOf("blah"));
+		AssertEquals("foo.LastIndexOf(\"\")",0,foo.LastIndexOf(""));
 		try
 		{
 			foo.LastIndexOf((String)null);
@@ -732,13 +732,13 @@ public class TestString : TestCase
 		}
 
 		/* String.LastIndexOf(String,int) */
-		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1)",foo.LastIndexOf("Bar",foo.Length-1),26);
-		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2)",foo.LastIndexOf("Bar",foo.Length-2),-1);
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-3)",foo.LastIndexOf("Fu",foo.Length-3),23);
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-6)",foo.LastIndexOf("Fu",foo.Length-6),-1);
+		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1)",26,foo.LastIndexOf("Bar",foo.Length-1));
+		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2)",-1,foo.LastIndexOf("Bar",foo.Length-2));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-3)",23,foo.LastIndexOf("Fu",foo.Length-3));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-6)",-1,foo.LastIndexOf("Fu",foo.Length-6));
 		try
 		{
-			AssertEquals("foo.LastIndexOf(\"\",0)",foo.LastIndexOf("",0),0); // this is absurd,
+			AssertEquals("foo.LastIndexOf(\"\",0)",0,foo.LastIndexOf("",0)); // this is absurd,
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -746,7 +746,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf(\"\",1)",foo.LastIndexOf("",1),0); // as is this
+			AssertEquals("foo.LastIndexOf(\"\",1)",0,foo.LastIndexOf("",1)); // as is this
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -790,19 +790,19 @@ public class TestString : TestCase
 		}
 
 		/* String.LastIndexOf(String,int,int) */
-		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1,foo.Length)",foo.LastIndexOf("Bar",foo.Length-1,foo.Length),26);
-		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2,foo.Length-1)",foo.LastIndexOf("Bar",foo.Length-2,foo.Length-1),-1);
-		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1,3)",foo.LastIndexOf("Bar",foo.Length-1,3),26);
-		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2,3)",foo.LastIndexOf("Bar",foo.Length-2,3),-1);
-		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1,2)",foo.LastIndexOf("Bar",foo.Length-1,2),-1);
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-3,foo.Length-2)",foo.LastIndexOf("Fu",foo.Length-3,foo.Length-2),23);
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-4,foo.Length-3)",foo.LastIndexOf("Fu",foo.Length-4,foo.Length-3),-1);
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-3,3)",foo.LastIndexOf("Fu",foo.Length-3,3),23);
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-4,3)",foo.LastIndexOf("Fu",foo.Length-4,3),-1);
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-6,foo.Length-5)",foo.LastIndexOf("Fu",foo.Length-6,foo.Length-5),-1);
+		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1,foo.Length)",26,foo.LastIndexOf("Bar",foo.Length-1,foo.Length));
+		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2,foo.Length-1)",-1,foo.LastIndexOf("Bar",foo.Length-2,foo.Length-1));
+		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1,3)",26,foo.LastIndexOf("Bar",foo.Length-1,3));
+		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2,3)",-1,foo.LastIndexOf("Bar",foo.Length-2,3));
+		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1,2)",-1,foo.LastIndexOf("Bar",foo.Length-1,2));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-3,foo.Length-2)",23,foo.LastIndexOf("Fu",foo.Length-3,foo.Length-2));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-4,foo.Length-3)",-1,foo.LastIndexOf("Fu",foo.Length-4,foo.Length-3));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-3,3)",23,foo.LastIndexOf("Fu",foo.Length-3,3));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-4,3)",-1,foo.LastIndexOf("Fu",foo.Length-4,3));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-6,foo.Length-5)",-1,foo.LastIndexOf("Fu",foo.Length-6,foo.Length-5));
 		try
 		{
-			AssertEquals("foo.LastIndexOf(\"\",0,0)",foo.LastIndexOf("",0,0),0); // and the absurdity continues
+			AssertEquals("foo.LastIndexOf(\"\",0,0)",0,foo.LastIndexOf("",0,0)); // and the absurdity continues
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -810,7 +810,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf(\"\",0,1)",foo.LastIndexOf("",0,1),0); // need I say more?
+			AssertEquals("foo.LastIndexOf(\"\",0,1)",0,foo.LastIndexOf("",0,1)); // need I say more?
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -818,7 +818,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf(\"\",1,0)",foo.LastIndexOf("",1,0),0); // ok, "more"
+			AssertEquals("foo.LastIndexOf(\"\",1,0)",0,foo.LastIndexOf("",1,0)); // ok, "more"
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -826,7 +826,7 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf(\"\",1,1)",foo.LastIndexOf("",1,1),0); // and more
+			AssertEquals("foo.LastIndexOf(\"\",1,1)",0,foo.LastIndexOf("",1,1)); // and more
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -882,7 +882,7 @@ public class TestString : TestCase
 		AssertEquals("foo.LastIndexOfAny(new char[] {'B','B'})",26,foo.LastIndexOfAny(new char[] {'B','B'}));
 		AssertEquals("foo.LastIndexOfAny(new char[] {'B','u'})",26,foo.LastIndexOfAny(new char[] {'B','u'}));
 		AssertEquals("foo.LastIndexOfAny(new char[] {'u','B'})",26,foo.LastIndexOfAny(new char[] {'u','B'}));
-		AssertEquals("foo.LastIndexOfAny(new char[] {'u','f'})",foo.LastIndexOfAny(new char[] {'u','f'}),24);
+		AssertEquals("foo.LastIndexOfAny(new char[] {'u','f'})",24,foo.LastIndexOfAny(new char[] {'u','f'}));
 		AssertEquals("foo.LastIndexOfAny(new char[] {'F','f'})",23,foo.LastIndexOfAny(new char[] {'F','f'}));
 		AssertEquals("foo.LastIndexOfAny(new char[] {'F','q'})",23,foo.LastIndexOfAny(new char[] {'F','q'}));
 		AssertEquals("foo.LastIndexOfAny(new char[] {'p','q'})",-1,foo.LastIndexOfAny(new char[] {'p','q'}));
@@ -943,10 +943,15 @@ public class TestString : TestCase
 		}
 
 		/* String.LastIndexOfAny(char[],int,int) */
-		AssertEquals("foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-1,1)",foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-1,1),28);
-		AssertEquals("foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-2,2)",foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-2,2),27);
-		AssertEquals("foo.LastIndexOfAny(new char[] {'B'},foo.Length-1,foo.Length)",foo.LastIndexOfAny(new char[] {'B'},foo.Length-1,foo.Length),26);
-		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-10)",foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-10),-1);
+		AssertEquals("foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-1,1)",28,foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-1,1));
+		AssertEquals("foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-2,2)",27,foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-2,2));
+		AssertEquals("foo.LastIndexOfAny(new char[] {'B'},foo.Length-1,foo.Length)",28,foo.LastIndexOfAny(new char[] {'B'},foo.Length-1,foo.Length));
+		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length,foo.Length)",23,foo.LastIndexOfAny(new char[] {'F'},foo.Length,foo.Length));
+		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-11)",0,foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-11));
+		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-10)",-1,foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-10));
+		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length+10,foo.Length)",23,foo.LastIndexOfAny(new char[] {'F'},foo.Length+10,foo.Length));
+		AssertEquals("foo.LastIndexOfAny(new char[] {'F','o','B','a','r','f','b','u'},foo.Length+10,10)",-1,
+		              foo.LastIndexOfAny(new char[] {'F','o','B','a','r','f','b','u'},foo.Length+10,10));
 		try
 		{
 			foo.LastIndexOfAny((char[])null,0,0);
@@ -983,24 +988,6 @@ public class TestString : TestCase
 		{
 			// and here as well
 		}
-		try
-		{
-			foo.LastIndexOfAny(new char[] {'F'},foo.Length,foo.Length);
-			Fail("foo.LastIndexOfAny(new char[] {'F'},foo.Length,foo.Length) should throw an ArgumentOutOfRangeException");
-		}
-		catch (ArgumentOutOfRangeException)
-		{
-			// and here as well
-		}
-		try
-		{
-			foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,10);
-			Fail ("foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,10) should thrown an ArgumentOutOfRangeException");
-		}
-		catch (ArgumentOutOfRangeException)
-		{
-			// and here as well
-		}
 	}
 
 	public void TestStringPadLeft()
@@ -1008,10 +995,10 @@ public class TestString : TestCase
 		String foo = "FooBar";
 
 		/* String.PadLeft(int) */
-		AssertEquals("foo.PadLeft(foo.Length)",foo.PadLeft(foo.Length),foo);
-		AssertEquals("foo.PadLeft(foo.Length+1)",foo.PadLeft(foo.Length+1),(" FooBar"));
-		AssertEquals("foo.PadLeft(foo.Length-1)",foo.PadLeft(foo.Length-1),foo);
-		AssertEquals("foo.PadLeft(0)",foo.PadLeft(0),foo);
+		AssertEquals("foo.PadLeft(foo.Length)",foo,foo.PadLeft(foo.Length));
+		AssertEquals("foo.PadLeft(foo.Length+1)",(" FooBar"),foo.PadLeft(foo.Length+1));
+		AssertEquals("foo.PadLeft(foo.Length-1)",foo,foo.PadLeft(foo.Length-1));
+		AssertEquals("foo.PadLeft(0)",foo,foo.PadLeft(0));
 		try
 		{
 			foo.PadLeft(-1);
@@ -1023,10 +1010,10 @@ public class TestString : TestCase
 		}
 
 		/* String.PadLeft(int,char) */
-		AssertEquals("foo.PadLeft(foo.Length,'_')",foo.PadLeft(foo.Length,'_'),foo);
-		AssertEquals("foo.PadLeft(foo.Length+1,'_')",foo.PadLeft(foo.Length+1,'_'),("_FooBar"));
-		AssertEquals("foo.PadLeft(foo.Length-1,'_')",foo.PadLeft(foo.Length-1,'_'),foo);
-		AssertEquals("foo.PadLeft(0,'_')",foo.PadLeft(0,'_'),foo);
+		AssertEquals("foo.PadLeft(foo.Length,'_')",foo,foo.PadLeft(foo.Length,'_'));
+		AssertEquals("foo.PadLeft(foo.Length+1,'_')",("_FooBar"),foo.PadLeft(foo.Length+1,'_'));
+		AssertEquals("foo.PadLeft(foo.Length-1,'_')",foo,foo.PadLeft(foo.Length-1,'_'));
+		AssertEquals("foo.PadLeft(0,'_')",foo,foo.PadLeft(0,'_'));
 		try
 		{
 			foo.PadLeft(-1,'_');
@@ -1043,10 +1030,10 @@ public class TestString : TestCase
 		String foo = "FooBar";
 
 		/* String.PadRight(int) */
-		AssertEquals("foo.PadRight(foo.Length)",foo.PadRight(foo.Length),foo);
-		AssertEquals("foo.PadRight(foo.Length+1)",foo.PadRight(foo.Length+1),("FooBar "));
-		AssertEquals("foo.PadRight(foo.Length-1)",foo.PadRight(foo.Length-1),foo);
-		AssertEquals("foo.PadRight(0)",foo.PadRight(0),foo);
+		AssertEquals("foo.PadRight(foo.Length)",foo,foo.PadRight(foo.Length));
+		AssertEquals("foo.PadRight(foo.Length+1)",("FooBar "),foo.PadRight(foo.Length+1));
+		AssertEquals("foo.PadRight(foo.Length-1)",foo,foo.PadRight(foo.Length-1));
+		AssertEquals("foo.PadRight(0)",foo,foo.PadRight(0));
 		try
 		{
 			foo.PadRight(-1);
@@ -1058,10 +1045,10 @@ public class TestString : TestCase
 		}
 
 		/* String.PadRight(int,char) */
-		AssertEquals("foo.PadRight(foo.Length,'_')",foo.PadRight(foo.Length,'_'),foo);
-		AssertEquals("foo.PadRight(foo.Length+1,'_')",foo.PadRight(foo.Length+1,'_'),("FooBar_"));
-		AssertEquals("foo.PadRight(foo.Length-1,'_')",foo.PadRight(foo.Length-1,'_'),foo);
-		AssertEquals("foo.PadRight(0,'_')",foo.PadRight(0,'_'),foo);
+		AssertEquals("foo.PadRight(foo.Length,'_')",foo,foo.PadRight(foo.Length,'_'));
+		AssertEquals("foo.PadRight(foo.Length+1,'_')",("FooBar_"),foo.PadRight(foo.Length+1,'_'));
+		AssertEquals("foo.PadRight(foo.Length-1,'_')",foo,foo.PadRight(foo.Length-1,'_'));
+		AssertEquals("foo.PadRight(0,'_')",foo,foo.PadRight(0,'_'));
 		try
 		{
 			foo.PadRight(-1,'_');
@@ -1076,13 +1063,13 @@ public class TestString : TestCase
 	public void TestStringRemove()
 	{
 		String foo = "Foo Bar";
-		AssertEquals("foo.Remove(0,foo.Length)",foo.Remove(0,foo.Length),"");
-		AssertEquals("foo.Remove(1,foo.Length-1)",foo.Remove(1,foo.Length-1),"F");
-		AssertEquals("foo.Remove(0,1)",foo.Remove(0,1),"oo Bar");
-		AssertEquals("foo.Remove(0,0)",foo.Remove(0,0),foo);
-		AssertEquals("foo.Remove(foo.Length,0)",foo.Remove(foo.Length,0),foo);
-		AssertEquals("foo.Remove(3,1)",foo.Remove(3,1),"FooBar");
-		AssertEquals("foo.Remove(foo.Length-1,1)",foo.Remove(foo.Length-1,1),"Foo Ba");
+		AssertEquals("foo.Remove(0,foo.Length)","",foo.Remove(0,foo.Length));
+		AssertEquals("foo.Remove(1,foo.Length-1)","F",foo.Remove(1,foo.Length-1));
+		AssertEquals("foo.Remove(0,1)","oo Bar",foo.Remove(0,1));
+		AssertEquals("foo.Remove(0,0)",foo,foo.Remove(0,0));
+		AssertEquals("foo.Remove(foo.Length,0)",foo,foo.Remove(foo.Length,0));
+		AssertEquals("foo.Remove(3,1)","FooBar",foo.Remove(3,1));
+		AssertEquals("foo.Remove(foo.Length-1,1)","Foo Ba",foo.Remove(foo.Length-1,1));
 		try
 		{
 			foo.Remove(-1,0);
@@ -1117,17 +1104,17 @@ public class TestString : TestCase
 		String foo = "Foo Bar";
 
 		/* String.Replace(char,char) */
-		AssertEquals("foo.Replace('F','f')",foo.Replace('F','f'),"foo Bar");
-		AssertEquals("foo.Replace(' ','_')",foo.Replace(' ','_'),"Foo_Bar");
-		AssertEquals("foo.Replace('r','R')",foo.Replace('r','R'),"Foo BaR");
-		AssertEquals("foo.Replace('_',' ')",foo.Replace('_',' '),foo);
+		AssertEquals("foo.Replace('F','f')","foo Bar",foo.Replace('F','f'));
+		AssertEquals("foo.Replace(' ','_')","Foo_Bar",foo.Replace(' ','_'));
+		AssertEquals("foo.Replace('r','R')","Foo BaR",foo.Replace('r','R'));
+		AssertEquals("foo.Replace('_',' ')",foo,foo.Replace('_',' '));
 
 		/* String.Replace(String,String) */
-		AssertEquals("foo.Replace(\"Foo\",\"Fu\")",foo.Replace("Foo","Fu"),"Fu Bar");
-		AssertEquals("foo.Replace(\"Fu\",\"Foo\")",foo.Replace("Fu","Foo"),foo);
-		AssertEquals("foo.Replace(\"Foo Bar\",\"\")",foo.Replace("Foo Bar",""),"");
-		AssertEquals("foo.Replace(\"Foo Bar\",null)",foo.Replace("Foo Bar",null),"");
-		AssertEquals("foo.Replace(null,\"Foo Bar\")",foo.Replace(null,"Foo Bar"),foo); // I'm beginning to hate the ECMA -- Rich
+		AssertEquals("foo.Replace(\"Foo\",\"Fu\")","Fu Bar",foo.Replace("Foo","Fu"));
+		AssertEquals("foo.Replace(\"Fu\",\"Foo\")",foo,foo.Replace("Fu","Foo"));
+		AssertEquals("foo.Replace(\"Foo Bar\",\"\")","",foo.Replace("Foo Bar",""));
+		AssertEquals("foo.Replace(\"Foo Bar\",null)","",foo.Replace("Foo Bar",null));
+		AssertEquals("foo.Replace(null,\"Foo Bar\")",foo,foo.Replace(null,"Foo Bar")); // I'm beginning to hate the ECMA -- Rich
 	}
 
 	public void TestStringSplit()

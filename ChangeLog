@@ -1,4 +1,11 @@
 
+2004-10-15  Adam Gibson  <adam.gibson@gmail.com>
+
+	* System/Platform/PortMethods.cs, System/IO/Ports/SerialPort.cs:
+	Add ReadLine() support for SerialPort, NewLine changed to "\n",
+	and add timeouts for WaitForInput internalcall.
+	(patch #3448, Gopal)
+
 2004-10-14  Carl-Adam Brengesjo <ca.brengesjo@telia.com>
 
 	* System.Windows.Forms/TextBox.cs: set_Lines had no affect, fixed.

@@ -134,7 +134,7 @@ internal class PortMethods
 	// when input is available, zero if the thread was interrupted,
 	// and -1 if input cannot be monitored.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int WaitForInput(IntPtr handle);
+	extern public static int WaitForInput(IntPtr handle, int timeout);
 
 	// Interrupt a thread that is waiting for pin changes or input.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -1,7 +1,7 @@
 /*
  * SerialPort.cs - Implementation of the "System.IO.Ports.SerialPort" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003-2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ public class SerialPort
 		 3000000, 3500000, 4000000};
 
 	// Timeout value that indicates an infinite timeout.
-	public static readonly int InfiniteTimeout = -1;
+	public static readonly int InfiniteTimeout = 0;
 
 	// Constructors.
 	public SerialPort()
@@ -78,7 +78,7 @@ public class SerialPort
 				parameters.readTimeout = InfiniteTimeout;
 				parameters.writeTimeout = InfiniteTimeout;
 				baseStream = null;
-				newLine = "\r\n";
+				newLine = "\n";  // MS defaults to \n
 				newLineBuffer = null;
 			}
 	[TODO]
@@ -877,6 +877,77 @@ public class SerialPort
 	[TODO]
 	public String ReadLine()
 			{
+				lock(this)
+				{
+					if(baseStream != null)
+					{
+						int[] backbuffer = new int[this.newLine.Length];
+						int bytesinbuffer = 0;
+						int outbufferpos = 0;
+						bool pendingeol = false;
+						bool eolfailed = false;
+						StringBuilder inLine = new StringBuilder();
+						while(true)
+						{
+							int retByte;
+							
+							// read the next byte
+							if(bytesinbuffer > 0 && eolfailed == true)
+							{
+								retByte = backbuffer[outbufferpos++];
+								if(--bytesinbuffer == 0)
+								{
+									// backbuffer is flushed. reset for next multibyte eol search
+									eolfailed = false;
+									outbufferpos = 0;
+								}
+							}
+							else
+							{
+								retByte = baseStream.ReadByte();
+							}
+							
+							// is this an eol byte?
+							if(retByte == this.newLine[bytesinbuffer])
+							{
+								backbuffer[bytesinbuffer++] = retByte;
+								if(this.newLine.Length == bytesinbuffer)
+								{
+									bytesinbuffer = 0;
+									return(inLine.ToString());
+								}
+								else
+								{
+									pendingeol = true;
+								}
+							}
+							else
+							{
+								if(bytesinbuffer > 0)
+								{
+									// eol search failed after finding at least one of a multi
+									// byte eol marker.  set eolfailed so that we flush the bytes
+									// that we stored during failed multi byte eol match
+									eolfailed = true;
+								}
+								
+							 	if(retByte == -1)
+								{
+									// FIXME need to store the inLine data so that we do not lose it
+									// if another ReadLine is issued after this timeout
+									return null;
+								}
+								
+								inLine.Append((char) retByte);						
+							}
+						}
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_PortNotOpen"));
+					}
+				}
 				// TODO
 				return null;
 			}

@@ -3115,15 +3115,18 @@ described in the following sections:
 
 @table @asis
 @item 1
-Line number block.
+Line number and column block.
 
 @item 2
 Line number and offsets block.
 
 @item 3
-Local variables block.
+Line number, column, and offsets block.
 
 @item 4
+Local variables block.
+
+@item 5
 Local variables and offsets block.
 @end table
 
@@ -3134,11 +3137,12 @@ of debug block types without affecting existing implementations
 All of the values described below are encoded using the above multi-byte
 compressed format.
 
-@subsection Line number block
+@subsection Line number and column block
 
 This block begins with an index into the string table that indicates
-the name of the file.  The rest of the block consists of line number
-values.
+the name of the file.  The rest of the block consists of pairs of
+line number and column values.  A value of zero indicates an
+unspecified line or column.
 
 This block type is typically used for metadata tokens, other than methods,
 to indicate the line in the source file where the token was declared.
@@ -3151,6 +3155,18 @@ of line number and offset values.
 
 This block type is typically used for method tokens, to indicate which
 source file line corresponds to which offset within the method's code.
+
+@subsection Line number, column, and offsets block
+
+This block begins with an index into the string table that indicates
+the name of the file.  The rest of the block consists of triples
+of line number, column, and offset values.  A value of zero for the
+line or column indicates that it is unspecified.
+
+This block type is typically used for method tokens, to indicate which
+source file line corresponds to which offset within the method's code.
+
+The previous type is more compact if column numbers are not available.
 
 @subsection Local variables block
 

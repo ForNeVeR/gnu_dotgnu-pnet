@@ -8,6 +8,7 @@ libILImage_a_SOURCES = assembly.c \
 					   compress.c \
 					   context.c \
 					   create.c \
+					   debug_reader.c \
 					   debug_writer.c \
 					   errors.c \
 					   image.c \

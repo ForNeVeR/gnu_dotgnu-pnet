@@ -82,14 +82,6 @@ typedef struct _tagILWriter ILWriter;
 #define	IL_WRITEFLAG_SUBSYS_GUI		2	/* GUI subsystem */
 
 /*
- * Debug information types.
- */
-#define	IL_DEBUGTYPE_LINE			1	/* Line numbers */
-#define	IL_DEBUGTYPE_LINE_OFFSETS	2	/* Line numbers and offsets */
-#define	IL_DEBUGTYPE_VARS			3	/* Local variables */
-#define	IL_DEBUGTYPE_VARS_OFFSETS	4	/* Local variables and offsets */
-
-/*
  * Create an image writer and attach it to a file stream.
  * If "seekable" is non-zero, then the stream is seekable.
  */

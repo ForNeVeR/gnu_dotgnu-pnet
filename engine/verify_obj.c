@@ -826,7 +826,7 @@ case IL_OP_LDTOKEN:
 		}
 		else if((methodInfo = ILProgramItemToMethod(item)) != 0)
 		{
-			methodInfo = GetMethodToken(method, pc);
+			methodInfo = GetMethodToken(method, pc, (ILType **)0);
 			if(methodInfo &&
 			   ILMemberAccessible((ILMember *)methodInfo,
 								  ILMethod_Owner(method)))

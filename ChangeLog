@@ -17,6 +17,10 @@
 	include/il_opcodes.h: remove the "IL_OPCODE_ARGS_UNSAFE" value,
 	because it is not strictly accurate.
 
+	* engine/cvmc.c, engine/cvmc_call.c, engine/null_coder.c,
+	engine/verify_call.c, engine/verify_obj.c, include/il_coder.h:
+	verification of vararg method calls.
+
 2002-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_except.c, engine/engine.h:

@@ -21,9 +21,12 @@
 #if defined(IL_VERIFY_GLOBALS)
 
 /*
- * Get a method token from within a method's code.
+ * Get a method token from within a method's code.  If "callSiteSig"
+ * is not NULL, then write the call site signature to it.  If it is
+ * NULL, then vararg method calls are disallowed.
  */
-static ILMethod *GetMethodToken(ILMethod *method, unsigned char *pc)
+static ILMethod *GetMethodToken(ILMethod *method, unsigned char *pc,
+								ILType **callSiteSig)
 {
 	ILUInt32 token;
 	ILMethod *methodInfo;
@@ -53,16 +56,31 @@ static ILMethod *GetMethodToken(ILMethod *method, unsigned char *pc)
 		return 0;
 	}
 
+	/* Process call site information */
+	if(callSiteSig)
+	{
+		*callSiteSig = ILMethod_Signature(methodInfo);
+		methodInfo = ILMethodResolveCallSite(methodInfo);
+	}
+	else if(ILType_Kind(ILMethod_Signature(methodInfo)) ==
+				(IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL))
+	{
+		return 0;
+	}
+
 	/* We have the requested method */
 	return methodInfo;
 }
 
 /*
- * Get a constructor token from within a method's code.
+ * Get a constructor token from within a method's code.  If "callSiteSig"
+ * is not NULL, then write the call site signature to it.  If it is
+ * NULL, then vararg method calls are disallowed.
  */
-static ILMethod *GetConstructorToken(ILMethod *method, unsigned char *pc)
+static ILMethod *GetConstructorToken(ILMethod *method, unsigned char *pc,
+									 ILType **callSiteSig)
 {
-	ILMethod *methodInfo = GetMethodToken(method, pc);
+	ILMethod *methodInfo = GetMethodToken(method, pc, callSiteSig);
 
 	/* Bail out if no method found */
 	if(!methodInfo)
@@ -96,8 +114,6 @@ static ILMethod *GetConstructorToken(ILMethod *method, unsigned char *pc)
  * Match a method signature against the contents of the stack.
  * Returns -1 if a type error has been detected, or the number
  * of parameters to be popped otherwise.
- *
- * TODO: handle vararg method calls.
  */
 static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						      ILUInt32 stackSize, ILType *signature,
@@ -105,19 +121,59 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 							  int suppressThis)
 {
 	ILClass *owner = (method ? ILMethod_Owner(method) : 0);
-	ILUInt32 numParams = ILTypeNumParams(signature);
+	ILUInt32 numParams;
+	ILUInt32 totalParams;
 	ILUInt32 param;
 	ILType *paramType;
 	ILEngineStackItem *item;
 	int hasThis;
 	int isValueThis;
+	int isVarArg;
 	ILType *thisType;
+
+	/* Check the vararg vs non-vararg conventions, and get the
+	   number of non-vararg parameters */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		if((ILMethodGetCallConv(method) & IL_META_CALLCONV_MASK) !=
+				IL_META_CALLCONV_VARARG)
+		{
+			/* The call site signature is vararg, but not the method */
+			return -1;
+		}
+		numParams = ILTypeNumParams(ILMethod_Signature(method));
+		if(ILType_Kind(signature) == IL_TYPE_COMPLEX_METHOD)
+		{
+			/* Calling the method using its own signature */
+			totalParams = ILTypeNumParams(signature);
+		}
+		else
+		{
+			/* Calling the method using a signature containing a sentinel */
+			totalParams = ILTypeNumParams(signature) - 1;
+		}
+		isVarArg = 1;
+	}
+	else
+	{
+		if((ILMethodGetCallConv(method) & IL_META_CALLCONV_MASK) ==
+				IL_META_CALLCONV_VARARG)
+		{
+			/* The method is vararg, but not the call site signature */
+			return -1;
+		}
+		numParams = ILTypeNumParams(signature);
+		totalParams = numParams;
+		isVarArg = 0;
+	}
 
 	/* Determine if the signature needs an extra "this" parameter */
 	hasThis = (ILType_HasThis(signature) && !suppressThis);
 	if(hasThis)
 	{
 		++numParams;
+		++totalParams;
 		if(!method)
 		{
 			/* Call site signatures need "explicit this" */
@@ -148,17 +204,17 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	}
 
 	/* Validate the stack size */
-	if(stackSize < numParams)
+	if(stackSize < totalParams)
 	{
 		/* Insufficient parameters to the call */
 		return -1;
 	}
 
-	/* Find the base of the parameters */
-	stack += (stackSize - numParams);
+	/* Find the base of the parameters on the stack */
+	stack += (stackSize - totalParams);
 
 	/* Match the argument signature */
-	for(param = 1; param <= numParams; ++param)
+	for(param = 1; param <= totalParams; ++param)
 	{
 		/* Get the stack item corresponding to the parameter */
 		item = &(stack[param - 1]);
@@ -200,14 +256,26 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				}
 				continue;
 			}
-			else
+			else if(param <= numParams)
 			{
+				/* Parameter passed before the vararg sentinel */
 				paramType = ILTypeGetParam(signature, param - 1);
 			}
+			else
+			{
+				/* Parameter passed after the vararg sentinel */
+				paramType = ILTypeGetParam(signature, param);
+			}
+		}
+		else if(param <= numParams)
+		{
+			/* Parameter passed before the vararg sentinel */
+			paramType = ILTypeGetParam(signature, param);
 		}
 		else
 		{
-			paramType = ILTypeGetParam(signature, param);
+			/* Parameter passed after the vararg sentinel */
+			paramType = ILTypeGetParam(signature, param + 1);
 		}
 		paramType = ILTypeGetEnumType(paramType);
 
@@ -236,7 +304,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						paramType == ILType_UInt)
 				{
 					/* We must up-convert from I4 to I */
-					ILCoderUpConvertArg(coder, stack, numParams,
+					ILCoderUpConvertArg(coder, stack, totalParams,
 										param, paramType);
 					item->engineType = ILEngineType_I;
 				}
@@ -244,7 +312,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						paramType == ILType_UInt64)
 				{
 					/* We must up-convert from I4 to I8 */
-					ILCoderUpConvertArg(coder, stack, numParams,
+					ILCoderUpConvertArg(coder, stack, totalParams,
 										param, paramType);
 					item->engineType = ILEngineType_I8;
 				}
@@ -269,7 +337,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				{
 					/* We must down-convert from I8 to I4.  The method
 					   itself will down-convert further if necessary */
-					ILCoderDownConvertArg(coder, stack, numParams,
+					ILCoderDownConvertArg(coder, stack, totalParams,
 										  param, ILType_Int32);
 					item->engineType = ILEngineType_I4;
 				}
@@ -277,7 +345,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						paramType == ILType_UInt)
 				{
 					/* We must down-convert from I8 to I */
-					ILCoderDownConvertArg(coder, stack, numParams,
+					ILCoderDownConvertArg(coder, stack, totalParams,
 										  param, ILType_Int);
 					item->engineType = ILEngineType_I;
 				}
@@ -307,7 +375,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				{
 					/* We must down-convert from I to I4.  The method
 					   itself will down-convert further if necessary */
-					ILCoderDownConvertArg(coder, stack, numParams,
+					ILCoderDownConvertArg(coder, stack, totalParams,
 										  param, ILType_Int32);
 					item->engineType = ILEngineType_I4;
 				}
@@ -320,7 +388,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						paramType == ILType_UInt64)
 				{
 					/* We must up-convert from I to I8 */
-					ILCoderUpConvertArg(coder, stack, numParams,
+					ILCoderUpConvertArg(coder, stack, totalParams,
 										param, paramType);
 					item->engineType = ILEngineType_I8;
 				}
@@ -440,8 +508,15 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 		}
 	}
 
+	/* Convert the vararg parameters into an "Object[]" array */
+	if(isVarArg)
+	{
+		ILCoderPackVarArgs(coder, signature, numParams + 1,
+						   stack + numParams, totalParams - numParams);
+	}
+
 	/* If we get here, then a match has occurred */
-	return (ILInt32)numParams;
+	return (ILInt32)totalParams;
 }
 
 /*
@@ -617,7 +692,7 @@ case IL_OP_JMP:
 	/* Jump to another method with exactly the same set of arguments */
 	if(unsafeAllowed)
 	{
-		methodInfo = GetMethodToken(method, pc);
+		methodInfo = GetMethodToken(method, pc, (ILType **)0);
 		if(methodInfo && !ILMethod_IsAbstract(methodInfo))
 		{
 			if(ILMemberAccessible((ILMember *)methodInfo,
@@ -654,12 +729,11 @@ break;
 case IL_OP_CALL:
 {
 	/* Call a particular method directly */
-	methodInfo = GetMethodToken(method, pc);
+	methodInfo = GetMethodToken(method, pc, &methodSignature);
 	if(methodInfo && !ILMethod_IsAbstract(methodInfo))
 	{
 		if(ILMemberAccessible((ILMember *)methodInfo, ILMethod_Owner(method)))
 		{
-			methodSignature = ILMethod_Signature(methodInfo);
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0);
@@ -758,13 +832,12 @@ break;
 case IL_OP_CALLVIRT:
 {
 	/* Call a virtual or interface method */
-	methodInfo = GetMethodToken(method, pc);
+	methodInfo = GetMethodToken(method, pc, &methodSignature);
 	if(methodInfo)
 	{
 		classInfo = ILMethod_Owner(method);
 		if(ILMemberAccessible((ILMember *)methodInfo, classInfo))
 		{
-			methodSignature = ILMethod_Signature(methodInfo);
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0);
@@ -841,12 +914,11 @@ break;
 case IL_OP_NEWOBJ:
 {
 	/* Create a new object and call its constructor */
-	methodInfo = GetConstructorToken(method, pc);
+	methodInfo = GetConstructorToken(method, pc, &methodSignature);
 	if(methodInfo)
 	{
 		/* The construction sequence is different for objects and values */
 		classInfo = ILMethod_Owner(methodInfo);
-		methodSignature = ILMethod_Signature(methodInfo);
 		if(!ILClassIsValueType(classInfo))
 		{
 			/* Match the signature for the allocation constructor */
@@ -922,7 +994,7 @@ break;
 case IL_OP_PREFIX + IL_PREFIX_OP_LDFTN:
 {
 	/* Load the address of a function onto the stack as "I" */
-	methodInfo = GetMethodToken(method, pc);
+	methodInfo = GetMethodToken(method, pc, (ILType **)0);
 	if(methodInfo && !ILMethod_IsAbstract(methodInfo))
 	{
 		if(ILMemberAccessible((ILMember *)methodInfo, ILMethod_Owner(method)))
@@ -947,7 +1019,7 @@ break;
 case IL_OP_PREFIX + IL_PREFIX_OP_LDVIRTFTN:
 {
 	/* Load the address of a virtual function onto the stack as "I" */
-	methodInfo = GetMethodToken(method, pc);
+	methodInfo = GetMethodToken(method, pc, (ILType **)0);
 	if(methodInfo && STK_UNARY == ILEngineType_O)
 	{
 		classInfo = ILMethod_Owner(method);
@@ -1029,8 +1101,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_TAIL:
 		{
 		case IL_OP_CALL:
 			/* Test that only the target method's arguments are on the stack */
-			methodInfo = GetMethodToken(method, &pc[2]);
-			methodSignature = ILMethod_Signature(methodInfo);
+			methodInfo = GetMethodToken(method, &pc[2], &methodSignature);
 			numParams = MatchSignature(coder, stack, stackSize,
 								   methodSignature, methodInfo,
 								   unsafeAllowed, 0);

@@ -34,6 +34,13 @@ static void CVMCoder_DownConvertArg(ILCoder *coder, ILEngineStackItem *args,
 	/* TODO */
 }
 
+static void CVMCoder_PackVarArgs(ILCoder *coder, ILType *callSiteSig,
+					             ILUInt32 firstParam, ILEngineStackItem *args,
+						         ILUInt32 numArgs)
+{
+	/* TODO */
+}
+
 static void CVMCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 								   ILEngineStackItem *args, ILUInt32 numArgs)
 {

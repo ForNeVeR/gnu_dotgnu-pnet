@@ -483,6 +483,16 @@ struct _tagILCoderClass
 						   ILType *paramType);
 
 	/*
+	 * Pack the top-most "num" items on the stack into an "Object[]"
+	 * array, for passing to a vararg method.  The "firstParam"
+	 * value is the first parameter in "callSiteSig" to use to
+	 * get the parameter type information.
+	 */
+	void (*packVarArgs)(ILCoder *coder, ILType *callSiteSig,
+					    ILUInt32 firstParam, ILEngineStackItem *args,
+						ILUInt32 numArgs);
+
+	/*
 	 * Insert two values into the stack for value type construction.
 	 * The first is a managed value, and the second is a pointer
 	 * to the managed value.
@@ -806,6 +816,10 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->downConvertArg))((coder), (stack), \
 												     (numParams), (param), \
 												     (paramType)))
+#define	ILCoderPackVarArgs(coder,callSiteSig,firstParam,args,numArgs) \
+			((*((coder)->classInfo->packVarArgs))((coder), (callSiteSig), \
+											      (firstParam), (args), \
+											      (numArgs)))
 #define	ILCoderValueCtorArgs(coder,_classInfo,args,numArgs) \
 			((*((coder)->classInfo->valueCtorArgs))((coder), (_classInfo), \
 												    (args), (numArgs)))

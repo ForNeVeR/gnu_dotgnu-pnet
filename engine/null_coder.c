@@ -253,6 +253,11 @@ static void Coder_DownConvertArg(ILCoder *coder, ILEngineStackItem *args,
 						         ILType *paramType)
 {
 }
+static void Coder_PackVarArgs(ILCoder *coder, ILType *callSiteSig,
+					          ILUInt32 firstParam, ILEngineStackItem *args,
+						      ILUInt32 numArgs)
+{
+}
 static void Coder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 								ILEngineStackItem *args, ILUInt32 numArgs)
 {
@@ -411,6 +416,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_ArgList,
 	Coder_UpConvertArg,
 	Coder_DownConvertArg,
+	Coder_PackVarArgs,
 	Coder_ValueCtorArgs,
 	Coder_CallMethod,
 	Coder_CallCtor,

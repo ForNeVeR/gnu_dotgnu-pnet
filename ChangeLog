@@ -1,4 +1,9 @@
 
+2004-12-22  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/Control.cs: More stubs for signature
+	compatibility.
+
 2004-12-19  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* System.Xml/XmlUrlResolver.cs: Corrected my last patch where
@@ -32,6 +37,7 @@
 	and being passed to DrawString. (patch #3578, applied by ptah).
 
 2004-12-16  Deryk Robosson  <deryk@0x0a.com>
+
 	* System.Drawing/System.Drawing.build,
 	System.Drawing/SystemIcons.cs,
 	System.Windows.Forms/MessageBox.cs,

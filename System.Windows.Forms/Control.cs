@@ -1525,6 +1525,10 @@ public class Control : IWin32Window, IDisposable
 					// TODO
 					return null;
 				}
+				set
+				{
+					// TODO
+				}
 			}
 	protected bool ResizeRedraw
 			{
@@ -3038,6 +3042,11 @@ public class Control : IWin32Window, IDisposable
 	public virtual void ResetRightToLeft()
 			{
 				RightToLeft = RightToLeft.Inherit;
+			}
+	
+	protected virtual void ResetMouseEventArgs()
+			{
+				// Nothing to do here ?.
 			}
 
 	// Reset the text property to its default value.

@@ -22,6 +22,9 @@
 	Mono project which remove unnecessary preambles from UTF-8 and
 	Unicode text streams.
 
+	* runtime/System/Encoding.cs: the UTF8 object should be created
+	with preambles by default.
+
 2002-11-27  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* runtime/System/Private/NumberFormat/CurrencyFormatter.cs,

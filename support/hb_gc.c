@@ -188,6 +188,8 @@ void ILGCDeinit()
 
 	if (g_FinalizerThread)
 	{
+		ILGCCollect();
+		
 		/* Notify the finalizer thread */
 		ILWaitEventSet(g_FinalizerSignal);
 

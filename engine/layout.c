@@ -233,6 +233,7 @@ static int ComputeInterfaceTable(ILClass *info, ILClass *interface)
 		return 0;
 	}
 	table = ILImplPrivate_Table(impl);
+	impl->interface = interface;
 	impl->next = ((ILClassPrivate *)(info->userData))->implements;
 	((ILClassPrivate *)(info->userData))->implements = impl;
 

@@ -304,6 +304,7 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 	int kind;
 	ILMethod *underlying;
 	ILNode *node;
+	ILType *objectType=ILFindSystemType(genInfo,"Object");
 
 	/* Scan up the parent hierarchy until we run out of parents */
 	while(info != 0)
@@ -382,6 +383,13 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 		/* If this is an interface, then scan its base interfaces */
 		if(ILClass_IsInterface(info))
 		{
+			/* also scan the 'Object' class , as all interface instances
+			 * have Objects behind them !!
+			 */
+			FindMembers(genInfo,ILTypeToClass(genInfo,objectType),
+					    name, accessedFrom, results,
+						0, baseAccess, literalType);
+
 			impl = 0;
 			while((impl = ILClassNextImplements(info, impl)) != 0)
 			{

@@ -1,4 +1,9 @@
 
+2002-10-27  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_lookup.c: Add members of 'Object' to all
+	lookups in interface instances.
+
 2002-10-27  Richard Baumann <biochem333@nyc.rr.com>
 
 	* support/time.c: fixed a bug in ILGetTimeZoneAdjust. An

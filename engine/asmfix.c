@@ -45,6 +45,13 @@ extern	"C" {
 #endif
 
 /*
+ * Make sure that we have a large value for this
+ * on all platforms, because some generate long
+ * .stab lines.
+ */
+#define	ASSEM_BUFSIZ		8192
+
+/*
  * There's no point doing this if the CPU is not x86.
  */
 #if defined(__i386) || defined(__i386__)
@@ -124,17 +131,19 @@ int main(int argc, char *argv[])
  */
 static int readInput(void)
 {
-	char buffer[BUFSIZ];
+	char buffer[ASSEM_BUFSIZ];
 	int len;
 	char *buf;
-	while(fgets(buffer, BUFSIZ, stdin))
+	while(fgets(buffer, ASSEM_BUFSIZ, stdin))
 	{
 		/* Skip the line if it contains debug information because
 		   the debug info will be useless after optimization */
 		if(!strncmp(buffer, ".stab", 5) ||
 		   !strncmp(buffer, "\t.stab", 6) ||
 		   !strncmp(buffer, ".LM", 3) ||
-		   !strncmp(buffer, ".LBB", 4))
+		   !strncmp(buffer, "LM", 2) ||
+		   !strncmp(buffer, ".LBB", 4) ||
+		   !strncmp(buffer, "LBB", 3))
 		{
 			continue;
 		}
@@ -207,6 +216,25 @@ static int readInput(void)
 				labels[numLabels++] = numLines - 1;
 			}
 		}
+		else if(buf[0] == 'L' && buf[strlen(buf) - 1] == '\n' &&
+		        buf[strlen(buf) - 2] == ':')
+		{
+			if(numLabels < maxLabels)
+			{
+				labels[numLabels++] = numLines - 1;
+			}
+			else
+			{
+				labels = (unsigned long*)ILRealloc
+					(labels, sizeof(unsigned long) * (maxLabels + 1024));
+				if(!labels)
+				{
+					return 0;
+				}
+				maxLabels += 1024;
+				labels[numLabels++] = numLines - 1;
+			}
+		}
 	}
 	return 1;
 }
@@ -259,30 +287,103 @@ static void sortLabels(void)
 }
 
 /*
+ * Determine if the start of a line looks like a label.
+ */
+#define	IsLabelStart(line)	(((line)[0] == '.' && (line)[1] == 'L') || \
+							 (line)[0] == 'L')
+
+/*
+ * Compare two strings, with TAB's allowed to be spaces,
+ * and spaces allowed to be optional.
+ */
+static int StrCmp(const char *str1, const char *str2)
+{
+	while(*str1 != '\0' && *str2 != '\0')
+	{
+		if(*str2 == '\t')
+		{
+			if(*str1 != ' ' && *str1 != '\t')
+			{
+				return 1;
+			}
+		}
+		else if(*str2 == ' ')
+		{
+			if(*str1 != ' ')
+			{
+				++str2;
+				continue;
+			}
+		}
+		else if(*str1 != *str2)
+		{
+			return (*str1 - *str2);
+		}
+		++str1;
+		++str2;
+	}
+	return (*str1 - *str2);
+}
+
+/*
+ * Compare two strings, with TAB's allowed to be spaces.
+ */
+static int StrNCmp(const char *str1, const char *str2, int n)
+{
+	while(n > 0)
+	{
+		if(*str2 == '\t')
+		{
+			if(*str1 != ' ' && *str1 != '\t')
+			{
+				return 1;
+			}
+		}
+		else if(*str2 == ' ')
+		{
+			if(*str1 != ' ')
+			{
+				++str2;
+				--n;
+				continue;
+			}
+		}
+		else if(*str1 != *str2)
+		{
+			return (*str1 - *str2);
+		}
+		++str1;
+		++str2;
+		--n;
+	}
+	return 0;
+}
+
+/*
  * Locate the top of the interpreter loop, where control
  * always returns after processing an instruction.
  */
 static int locateLoopTop(void)
 {
 	unsigned long line = 0;
-	while(line < (numLines - 5))
+	while(line < (numLines - 64))
 	{
-		if(lines[line][0] == '.' && lines[line][1] == 'L' &&
-		   !strcmp(lines[line + 1], "\tmovzbl\t(%esi), %eax\n") &&
-		   !strcmp(lines[line + 2], "\tcmpl\t$255, %eax\n") &&
-		   !strncmp(lines[line + 3], "\tja\t.L", 6) &&
-		   !strncmp(lines[line + 4], "\tjmp\t*.L", 8))
+		if(IsLabelStart(lines[line]) &&
+		   !StrCmp(lines[line + 1], "\tmovzbl\t(%esi), %eax\n") &&
+		   !StrCmp(lines[line + 2], "\tcmpl\t$255, %eax\n") &&
+		   !StrNCmp(lines[line + 3], "\tja\t", 4) &&
+		   !StrNCmp(lines[line + 4], "\tjmp\t*", 6))
 		{
 			/* We've found the top of the loop */
 			topLabel = ILDupString(lines[line]);
-			topLabelLen = 2;
+			topLabelLen = 0;
 			while(topLabel[topLabelLen] != ':')
 			{
 				++topLabelLen;
 			}
 			topLabel[topLabelLen] = '\0';
 			tableLabel = ILDupString(lines[line + 4] + 6);
-			tableLabelLen = 2;
+			tableLabelLen = 0;
 			while(tableLabel[tableLabelLen] != '(')
 			{
 				++tableLabelLen;
@@ -290,23 +391,23 @@ static int locateLoopTop(void)
 			tableLabel[tableLabelLen] = '\0';
 			return 1;
 		}
-		else if(lines[line][0] == '.' && lines[line][1] == 'L' &&
-		        !strcmp(lines[line + 1], "\txorl\t%eax, %eax\n") &&
-		        !strcmp(lines[line + 2], "\tmovb\t(%esi), %al\n") &&
-		        !strcmp(lines[line + 3], "\tcmpl\t$255, %eax\n") &&
-		        !strncmp(lines[line + 4], "\tja\t.L", 6) &&
-		        !strncmp(lines[line + 5], "\tjmp\t*.L", 8))
+		else if(IsLabelStart(lines[line]) &&
+		        !StrCmp(lines[line + 1], "\txorl\t%eax, %eax\n") &&
+		        !StrCmp(lines[line + 2], "\tmovb\t(%esi), %al\n") &&
+		        !StrCmp(lines[line + 3], "\tcmpl\t$255, %eax\n") &&
+		        !StrNCmp(lines[line + 4], "\tja\t", 4) &&
+		        !StrNCmp(lines[line + 5], "\tjmp\t*", 6))
 		{
 			/* We've found the top of the loop */
 			topLabel = ILDupString(lines[line]);
-			topLabelLen = 2;
+			topLabelLen = 0;
 			while(topLabel[topLabelLen] != ':')
 			{
 				++topLabelLen;
 			}
 			topLabel[topLabelLen] = '\0';
 			tableLabel = ILDupString(lines[line + 5] + 6);
-			tableLabelLen = 2;
+			tableLabelLen = 0;
 			while(tableLabel[tableLabelLen] != '(')
 			{
 				++tableLabelLen;
@@ -337,31 +438,31 @@ static void findInlineLabels(void)
 		ok = 1;
 		while(line < numLines && ok)
 		{
-			if(!strncmp(lines[line], "\tjmp\t", 5))
+			if(!StrNCmp(lines[line], "\tjmp\t", 5))
 			{
 				break;
 			}
-			if(!strcmp(lines[line], "\tincl\t%esi\n") ||
-			   !strcmp(lines[line], "\taddl\t$2, %esi\n") ||
-			   !strcmp(lines[line], "\taddl\t$3, %esi\n") ||
-			   !strcmp(lines[line], "\taddl\t$4, %esi\n") ||
-			   !strcmp(lines[line], "\taddl\t$5, %esi\n") ||
-			   !strcmp(lines[line], "\taddl\t$6, %esi\n") ||
-			   !strcmp(lines[line], "\taddl\t$7, %esi\n") ||
-			   !strcmp(lines[line], "\taddl\t$8, %esi\n") ||
-			   !strcmp(lines[line], "\taddl\t$9, %esi\n") ||
-			   !strcmp(lines[line], "\taddl\t$4, %edi\n") ||
-			   !strcmp(lines[line], "\taddl\t$8, %edi\n") ||
-			   !strcmp(lines[line], "\taddl\t$12, %edi\n") ||
-			   !strcmp(lines[line], "\taddl\t$16, %edi\n") ||
-			   !strcmp(lines[line], "\taddl\t$-4, %edi\n") ||
-			   !strcmp(lines[line], "\taddl\t$-8, %edi\n") ||
-			   !strcmp(lines[line], "\taddl\t$-12, %edi\n") ||
-			   !strcmp(lines[line], "\taddl\t$-16, %edi\n") ||
-			   !strcmp(lines[line], "\tsubl\t$4, %edi\n") ||
-			   !strcmp(lines[line], "\tsubl\t$8, %edi\n") ||
-			   !strcmp(lines[line], "\tsubl\t$12, %edi\n") ||
-			   !strcmp(lines[line], "\tsubl\t$16, %edi\n"))
+			if(!StrCmp(lines[line], "\tincl\t%esi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$2, %esi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$3, %esi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$4, %esi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$5, %esi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$6, %esi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$7, %esi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$8, %esi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$9, %esi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$4, %edi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$8, %edi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$12, %edi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$16, %edi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$-4, %edi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$-8, %edi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$-12, %edi\n") ||
+			   !StrCmp(lines[line], "\taddl\t$-16, %edi\n") ||
+			   !StrCmp(lines[line], "\tsubl\t$4, %edi\n") ||
+			   !StrCmp(lines[line], "\tsubl\t$8, %edi\n") ||
+			   !StrCmp(lines[line], "\tsubl\t$12, %edi\n") ||
+			   !StrCmp(lines[line], "\tsubl\t$16, %edi\n"))
 			{
 				ok = 1;
 				++line;
@@ -474,8 +575,9 @@ static void optimizeCode(void)
 	line = 0;
 	while(line < numLines)
 	{
-		if(!sawLoopTop && lines[line][0] == '.' && lines[line][1] == 'L' &&
-		   !strncmp(lines[line], topLabel, topLabelLen) &&
+		if(!sawLoopTop &&
+		   IsLabelStart(lines[line]) &&
+		   !StrNCmp(lines[line], topLabel, topLabelLen) &&
 		   lines[line][topLabelLen] == ':')
 		{
 			/* Output a more efficient table lookup at the loop top */
@@ -485,7 +587,7 @@ static void optimizeCode(void)
 
 			/* Skip code until we've passed the original "jmp*" */
 			while(line < numLines &&
-			      strncmp(lines[line], "\tjmp\t*.L", 8) != 0)
+			      StrNCmp(lines[line], "\tjmp\t*", 6) != 0)
 			{
 				++line;
 			}
@@ -494,10 +596,11 @@ static void optimizeCode(void)
 			/* We don't need to do this again */
 			sawLoopTop = 1;
 		}
-		else if(!strncmp(lines[line], "\tjmp\t.L", 7))
+		else if(!StrNCmp(lines[line], "\tjmp\t", 5) &&
+				(lines[line][5] == '.' || lines[line][5] == 'L'))
 		{
 			/* Unconditional jump */
-			if(!strncmp(lines[line] + 5, topLabel, topLabelLen) &&
+			if(!StrNCmp(lines[line] + 5, topLabel, topLabelLen) &&
 			   lines[line][5 + topLabelLen] == '\n')
 			{
 				/* Jump to the loop top: inline a table lookup here */
@@ -510,10 +613,12 @@ static void optimizeCode(void)
 				/* Inline the code at the jumped-to label */
 				for(;;)
 				{
-					if(!strncmp(lines[startLine], "\tjmp\t.L", 7))
+					if(!StrNCmp(lines[startLine], "\tjmp\t", 5) &&
+				       (lines[startLine][5] == '.' ||
+					    lines[startLine][5] == 'L'))
 					{
 						/* Unconditional jump to another block */
-						if(!strncmp(lines[startLine] + 5, topLabel,
+						if(!StrNCmp(lines[startLine] + 5, topLabel,
 									topLabelLen) &&
 						   lines[startLine][5 + topLabelLen] == '\n')
 						{
@@ -562,8 +667,8 @@ static void optimizeCode(void)
  */
 int main(int argc, char *argv[])
 {
-	char buffer[BUFSIZ];
-	while(fgets(buffer, BUFSIZ, stdin))
+	char buffer[ASSEM_BUFSIZ];
+	while(fgets(buffer, ASSEM_BUFSIZ, stdin))
 	{
 		fputs(buffer, stdout);
 	}

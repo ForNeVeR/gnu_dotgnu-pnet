@@ -22,6 +22,9 @@ both assemblies and PInvoke-based libraries.
 * config.guess, config.sub: new files to support "AC_CANONICAL_SYSTEM"
 in the configure.in file.
 
+* engine/asmfix.c: changes to accomodate assembler issues that are
+specific to cygwin.
+
 2001-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c,

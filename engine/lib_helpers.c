@@ -43,8 +43,6 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 	void *buffer;
 	ILUInt32 maxSize;
 	ILUInt32 elemSize;
-	System_MArray *marray;
-	ILInt32 dim;
 
 	/* Validate the parameters */
 	if(!array)
@@ -132,9 +130,11 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 		buffer = ArrayToBuffer(array);
 		maxSize = (ILUInt32)(array->length * elemSize);
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(array))
 	{
-		marray = (System_MArray *)array;
+		System_MArray *marray = (System_MArray *)array;
+		ILInt32 dim;
 		buffer = marray->data;
 		maxSize = elemSize;
 		for(dim = 0; dim < marray->rank; ++dim)
@@ -143,6 +143,7 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 		}
 	}
 	else
+#endif
 	{
 		return;
 	}

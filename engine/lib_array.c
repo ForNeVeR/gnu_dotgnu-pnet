@@ -133,6 +133,8 @@ static System_Array *System_SArray_ctor(ILExecThread *thread,
 	return array;
 }
 
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
+
 /*
  * Construct the header part of a multi-dimensional array.
  */
@@ -1553,6 +1555,32 @@ static void System_MArray_Address_marshal
 
 #endif	/* HAVE_LIBFFI */
 
+#else /* !IL_CONFIG_NON_VECTOR_ARRAYS */
+
+#if !defined(HAVE_LIBFFI)
+
+/*
+ * Marshal a single-dimensional array constructor for non-libffi systems.
+ */
+static void System_SArray_ctor_marshal
+	(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((System_Array **)rvalue) =
+		System_SArray_ctor(*((ILExecThread **)(avalue[0])),
+		                   *((ILUInt32 *)(avalue[1])));
+}
+
+#else	/* HAVE_LIBFFI */
+
+/*
+ * We don't need marshalling functions if we have libffi.
+ */
+#define	System_SArray_ctor_marshal					0
+
+#endif	/* HAVE_LIBFFI */
+
+#endif /* !IL_CONFIG_NON_VECTOR_ARRAYS */
+
 /*
  * Get the internal version of a synthetic "SArray" or "MArray" method.
  */
@@ -1561,7 +1589,9 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 	ILClass *classInfo;
 	const char *name;
 	ILType *type;
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	int rank;
+#endif
 
 	classInfo = ILMethod_Owner(method);
 	if(!classInfo)
@@ -1589,6 +1619,7 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 			return 0;
 		}
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	rank = ILTypeGetRank(type);
 	if(!strcmp(name, ".ctor"))
 	{
@@ -2087,6 +2118,7 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 		return 1;
 	}
 	else
+#endif /* IL_CONFIG_NON_VECTOR_ARRAYS */
 	{
 		return 0;
 	}
@@ -2117,6 +2149,8 @@ int _ILIsSArray(System_Array *array)
 	}
 }
 
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
+
 int _ILIsMArray(System_Array *array)
 {
 	if(array)
@@ -2128,6 +2162,8 @@ int _ILIsMArray(System_Array *array)
 		return 0;
 	}
 }
+
+#endif /* IL_CONFIG_NON_VECTOR_ARRAYS */
 
 /*
  * Get the element type for an array object.
@@ -2145,11 +2181,8 @@ void _IL_Array_Clear(ILExecThread *thread, ILObject *_array,
 				     ILInt32 index, ILInt32 length)
 {
 	System_Array *array = (System_Array *)_array;
-	System_MArray *marray;
 	ILType *elemType;
 	ILUInt32 elemSize;
-	ILInt32 dim;
-	ILInt32 totalLen;
 	void *start;
 
 	/* Bail out if the array is NULL */
@@ -2179,9 +2212,12 @@ void _IL_Array_Clear(ILExecThread *thread, ILObject *_array,
 		start = ((unsigned char *)ArrayToBuffer(array)) +
 					((ILUInt32)index) * elemSize;
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(array))
 	{
-		marray = (System_MArray *)array;
+		System_MArray *marray = (System_MArray *)array;
+		ILInt32 dim;
+		ILInt32 totalLen;
 		if(index < marray->bounds[0].lower)
 		{
 			ILExecThreadThrowArgRange(thread, "index", "Arg_InvalidArrayIndex");
@@ -2201,6 +2237,7 @@ void _IL_Array_Clear(ILExecThread *thread, ILObject *_array,
 		start = ((unsigned char *)(marray->data)) +
 					((ILUInt32)index) * elemSize;
 	}
+#endif /* IL_CONFIG_NON_VECTOR_ARRAYS */
 	else
 	{
 		return;
@@ -2219,10 +2256,8 @@ void _IL_Array_Clear(ILExecThread *thread, ILObject *_array,
 void _IL_Array_Initialize(ILExecThread *thread, ILObject *thisObj)
 {
 	System_Array *_this = (System_Array *)thisObj;
-	System_MArray *marray;
 	ILType *elemType;
 	ILUInt32 elemSize;
-	ILInt32 dim;
 	ILInt32 totalLen;
 	void *start;
 	ILMethod *method;
@@ -2258,9 +2293,11 @@ void _IL_Array_Initialize(ILExecThread *thread, ILObject *thisObj)
 		start = ArrayToBuffer(_this);
 		totalLen = _this->length;
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(_this))
 	{
-		marray = (System_MArray *)_this;
+		System_MArray *marray = (System_MArray *)_this;
+		ILInt32 dim;
 		totalLen = 1;
 		for(dim = 0; dim < marray->rank; ++dim)
 		{
@@ -2268,6 +2305,7 @@ void _IL_Array_Initialize(ILExecThread *thread, ILObject *thisObj)
 		}
 		start = marray->data;
 	}
+#endif
 	else
 	{
 		return;
@@ -2311,8 +2349,12 @@ void _IL_Array_InternalCopy(ILExecThread *thread,
 	}
 	else
 	{
+	#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 		src = ((System_MArray *)sourceArray)->data;
 		size = ((System_MArray *)sourceArray)->elemSize;
+	#else
+		return;
+	#endif
 	}
 	if(_ILIsSArray((System_Array *)destArray))
 	{
@@ -2320,7 +2362,11 @@ void _IL_Array_InternalCopy(ILExecThread *thread,
 	}
 	else
 	{
+	#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 		dest = ((System_MArray *)destArray)->data;
+	#else
+		return;
+	#endif
 	}
 
 	/* Copy the contents of the array */
@@ -2345,7 +2391,6 @@ ILObject *_IL_Array_CreateArray_jiiii(ILExecThread *thread,
 	ILUInt32 elemSize;
 	ILUInt64 totalSize;
 	System_Array *array;
-	System_MArray *marray;
 	int isPrimitive;
 
 	/* Create the array type and class structures */
@@ -2409,8 +2454,11 @@ ILObject *_IL_Array_CreateArray_jiiii(ILExecThread *thread,
 		}
 		return (ILObject *)array;
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(rank == 2)
 	{
+		System_MArray *marray;
+
 		/* Determine the total size of the array in bytes */
 		totalSize = ((ILUInt64)elemSize) * ((ILUInt64)length1);
 		if(totalSize > (ILUInt64)IL_MAX_INT32)
@@ -2464,6 +2512,8 @@ ILObject *_IL_Array_CreateArray_jiiii(ILExecThread *thread,
 	}
 	else
 	{
+		System_MArray *marray;
+
 		/* Determine the total size of the array in bytes */
 		totalSize = ((ILUInt64)elemSize) * ((ILUInt64)length1);
 		if(totalSize > (ILUInt64)IL_MAX_INT32)
@@ -2524,6 +2574,9 @@ ILObject *_IL_Array_CreateArray_jiiii(ILExecThread *thread,
 		/* Return the final array to the caller */
 		return (ILObject *)marray;
 	}
+#else /* !IL_CONFIG_NON_VECTOR_ARRAYS */
+	return (ILObject *)0;
+#endif /* !IL_CONFIG_NON_VECTOR_ARRAYS */
 }
 
 /*
@@ -2535,6 +2588,7 @@ ILObject *_IL_Array_CreateArray_jaiai(ILExecThread *thread,
 									  System_Array *lengths,
 									  System_Array *lowerBounds)
 {
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	ILClass *classInfo;
 	ILInt32 rank;
 	ILInt32 multiplier;
@@ -2544,6 +2598,7 @@ ILObject *_IL_Array_CreateArray_jaiai(ILExecThread *thread,
 	ILUInt64 totalSize;
 	System_MArray *marray;
 	ILInt32 dim;
+#endif
 
 	/* Handle the single-dimensional, zero lower bound, case specially */
 	if(lengths->length == 1 &&
@@ -2553,6 +2608,7 @@ ILObject *_IL_Array_CreateArray_jaiai(ILExecThread *thread,
 						((ILInt32 *)ArrayToBuffer(lengths))[0], 0, 0);
 	}
 
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	/* Create the array type and class structures */
 	rank = lengths->length;
 	elemType = ILClassToType((ILClass *)elementType);
@@ -2635,6 +2691,9 @@ ILObject *_IL_Array_CreateArray_jaiai(ILExecThread *thread,
 
 	/* Return the final array to the caller */
 	return (ILObject *)marray;
+#else /* !IL_CONFIG_NON_VECTOR_ARRAYS */
+	return (ILObject *)0;
+#endif /* !IL_CONFIG_NON_VECTOR_ARRAYS */
 }
 
 /*
@@ -2647,6 +2706,7 @@ ILInt32 _IL_Array_GetLength_(ILExecThread *thread, ILObject *thisObj)
 	{
 		return _this->length;
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(_this))
 	{
 		ILInt32 len = 1;
@@ -2657,6 +2717,7 @@ ILInt32 _IL_Array_GetLength_(ILExecThread *thread, ILObject *thisObj)
 		}
 		return len;
 	}
+#endif
 	else
 	{
 		return 0;
@@ -2678,6 +2739,7 @@ ILInt32 _IL_Array_GetLength_i(ILExecThread *thread,
 			return _this->length;
 		}
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(_this))
 	{
 		if(dimension >= 0 && dimension < ((System_MArray *)_this)->rank)
@@ -2685,6 +2747,7 @@ ILInt32 _IL_Array_GetLength_i(ILExecThread *thread,
 			return ((System_MArray *)_this)->bounds[dimension].size;
 		}
 	}
+#endif
 	ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
 							"Arg_InvalidArrayIndex");
 	return 0;
@@ -2705,6 +2768,7 @@ ILInt32 _IL_Array_GetLowerBound(ILExecThread *thread,
 			return 0;
 		}
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(_this))
 	{
 		if(dimension >= 0 && dimension < ((System_MArray *)_this)->rank)
@@ -2712,6 +2776,7 @@ ILInt32 _IL_Array_GetLowerBound(ILExecThread *thread,
 			return ((System_MArray *)_this)->bounds[dimension].lower;
 		}
 	}
+#endif
 	else
 	{
 		return 0;
@@ -2736,6 +2801,7 @@ ILInt32 _IL_Array_GetUpperBound(ILExecThread *thread,
 			return _this->length - 1;
 		}
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(_this))
 	{
 		if(dimension >= 0 && dimension < ((System_MArray *)_this)->rank)
@@ -2744,6 +2810,7 @@ ILInt32 _IL_Array_GetUpperBound(ILExecThread *thread,
 				   ((System_MArray *)_this)->bounds[dimension].size - 1;
 		}
 	}
+#endif
 	else
 	{
 		return 0;
@@ -2759,11 +2826,14 @@ ILInt32 _IL_Array_GetUpperBound(ILExecThread *thread,
 ILInt32 _IL_Array_GetRank(ILExecThread *thread, ILObject *thisObj)
 {
 	System_Array *_this = (System_Array *)thisObj;
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	if(_ILIsMArray(_this))
 	{
 		return ((System_MArray *)_this)->rank;
 	}
-	else if(_ILIsSArray(_this))
+	else
+#endif
+	if(_ILIsSArray(_this))
 	{
 		return 1;
 	}
@@ -2802,6 +2872,7 @@ ILObject *_IL_Array_Get_iii(ILExecThread *thread, ILObject *thisObj,
 			return ((ILObject **)ArrayToBuffer(_this))[index1];
 		}
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(_this))
 	{
 		System_MArray *marray = (System_MArray *)_this;
@@ -2886,6 +2957,7 @@ ILObject *_IL_Array_Get_iii(ILExecThread *thread, ILObject *thisObj,
 			return *((ILObject **)ptr);
 		}
 	}
+#endif /* IL_CONFIG_NON_VECTOR_ARRAYS */
 	else
 	{
 		return 0;
@@ -2898,15 +2970,17 @@ ILObject *_IL_Array_Get_iii(ILExecThread *thread, ILObject *thisObj,
 ILObject *_IL_Array_Get_ai(ILExecThread *thread, ILObject *thisObj,
 						   System_Array *indices)
 {
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	System_Array *_this = (System_Array *)thisObj;
 	System_MArray *marray;
 	ILType *elemType;
 	ILUInt32 elemSize;
-	ILInt32 *ind = (ILInt32 *)ArrayToBuffer(indices);
 	ILUInt32 offset;
 	ILInt32 dim;
 	ILInt32 index;
 	void *ptr;
+#endif
+	ILInt32 *ind = (ILInt32 *)ArrayToBuffer(indices);
 
 	/* Handle the single-dimensional case specially */
 	if(indices->length == 1)
@@ -2914,6 +2988,7 @@ ILObject *_IL_Array_Get_ai(ILExecThread *thread, ILObject *thisObj,
 		return _IL_Array_Get_iii(thread, thisObj, ind[0], 0, 0);
 	}
 
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	/* Get the element type and its size */
 	elemType = GetArrayElemType(_this);
 	elemSize = ILSizeOfType(thread, elemType);
@@ -2944,6 +3019,9 @@ ILObject *_IL_Array_Get_ai(ILExecThread *thread, ILObject *thisObj,
 	{
 		return *((ILObject **)ptr);
 	}
+#else /* !IL_CONFIG_NON_VECTOR_ARRAYS */
+	return (ILObject *)0;
+#endif /* !IL_CONFIG_NON_VECTOR_ARRAYS */
 }
 
 /*
@@ -2967,9 +3045,13 @@ ILObject *_IL_Array_GetRelative(ILExecThread *thread, ILObject *_this,
 	}
 	else
 	{
+	#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 		buf = ((System_MArray *)_this)->data;
 		size = ((System_MArray *)_this)->elemSize;
 		elemType = GetArrayElemType((System_Array *)_this);
+	#else
+		return (ILObject *)0;
+	#endif
 	}
 
 	/* Retrieve the value and return it */
@@ -3007,6 +3089,7 @@ void _IL_Array_Set_Objectiii(ILExecThread *thread, ILObject *thisObj,
 		ptr = ((unsigned char *)ArrayToBuffer(_this)) +
 			  ((ILUInt32)index1) * elemSize;
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(_this))
 	{
 		System_MArray *marray = (System_MArray *)_this;
@@ -3082,6 +3165,7 @@ void _IL_Array_Set_Objectiii(ILExecThread *thread, ILObject *thisObj,
 			ptr = ((unsigned char *)(marray->data)) + offset * elemSize;
 		}
 	}
+#endif /* IL_CONFIG_NON_VECTOR_ARRAYS */
 	else
 	{
 		ILExecThreadThrowSystem(thread, "System.ArgumentException",
@@ -3120,15 +3204,17 @@ void _IL_Array_Set_Objectiii(ILExecThread *thread, ILObject *thisObj,
 void _IL_Array_Set_Objectai(ILExecThread *thread, ILObject *thisObj,
 						    ILObject *value, System_Array *indices)
 {
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	System_Array *_this = (System_Array *)thisObj;
 	System_MArray *marray;
 	ILType *elemType;
 	ILUInt32 elemSize;
-	ILInt32 *ind = (ILInt32 *)ArrayToBuffer(indices);
 	ILUInt32 offset;
 	ILInt32 dim;
 	ILInt32 index;
 	void *ptr;
+#endif
+	ILInt32 *ind = (ILInt32 *)ArrayToBuffer(indices);
 
 	/* Handle the single-dimensional case specially */
 	if(indices->length == 1)
@@ -3137,6 +3223,7 @@ void _IL_Array_Set_Objectai(ILExecThread *thread, ILObject *thisObj,
 		return;
 	}
 
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	/* Get the element type and its size */
 	elemType = GetArrayElemType(_this);
 	elemSize = ILSizeOfType(thread, elemType);
@@ -3176,6 +3263,7 @@ void _IL_Array_Set_Objectai(ILExecThread *thread, ILObject *thisObj,
 		*((ILObject **)ptr) = value;
 	}
 	else
+#endif /* IL_CONFIG_NON_VECTOR_ARRAYS */
 	{
 		ILExecThreadThrowSystem
 				(thread, "System.ArgumentException",
@@ -3204,9 +3292,13 @@ void _IL_Array_SetRelative(ILExecThread *thread, ILObject *_this,
 	}
 	else
 	{
+	#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 		buf = ((System_MArray *)_this)->data;
 		size = ((System_MArray *)_this)->elemSize;
 		elemType = GetArrayElemType((System_Array *)_this);
+	#else
+		return;
+	#endif
 	}
 
 	/* Copy the value into position in the array */
@@ -3253,11 +3345,13 @@ void _IL_Buffer_Copy(ILExecThread *thread,
 	{
 		srcBuffer = ((unsigned char *)(ArrayToBuffer(src))) + srcOffset;
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(src))
 	{
 		srcBuffer = ((unsigned char *)(((System_MArray *)src)->data)) +
 					srcOffset;
 	}
+#endif
 	else
 	{
 		return;
@@ -3266,11 +3360,13 @@ void _IL_Buffer_Copy(ILExecThread *thread,
 	{
 		dstBuffer = ((unsigned char *)(ArrayToBuffer(dst))) + dstOffset;
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(dst))
 	{
 		dstBuffer = ((unsigned char *)(((System_MArray *)dst)->data)) +
 					dstOffset;
 	}
+#endif
 	else
 	{
 		return;
@@ -3294,11 +3390,13 @@ ILInt32 _IL_Buffer_GetLength(ILExecThread *thread, ILObject *_array)
 		ILType *synType = ILClassGetSynType(GetObjectClass(array));
 		return array->length * ILSizeOfType(thread, ILType_ElemType(synType));
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(array))
 	{
 		return _IL_Array_GetLength_(thread, _array) *
 			   ((System_MArray *)array)->elemSize;
 	}
+#endif
 	else
 	{
 		return 0;
@@ -3316,10 +3414,12 @@ ILUInt8 _IL_Buffer_GetElement(ILExecThread *thread,
 	{
 		return ((unsigned char *)(ArrayToBuffer(array)))[index];
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(array))
 	{
 		return ((unsigned char *)(((System_MArray *)array)->data))[index];
 	}
+#endif
 	else
 	{
 		return 0;
@@ -3338,10 +3438,12 @@ void _IL_Buffer_SetElement(ILExecThread *thread,
 	{
 		((unsigned char *)(ArrayToBuffer(array)))[index] = value;
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(array))
 	{
 		((unsigned char *)(((System_MArray *)array)->data))[index] = value;
 	}
+#endif
 }
 
 int ILExecThreadGetElem(ILExecThread *thread, void *value,
@@ -3541,6 +3643,8 @@ ILObject *_ILCloneSArray(ILExecThread *thread, System_Array *array)
 	return (ILObject *)newArray;
 }
 
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
+
 ILObject *_ILCloneMArray(ILExecThread *thread, System_MArray *array)
 {
 	System_MArray *newArray;
@@ -3593,6 +3697,8 @@ ILObject *_ILCloneMArray(ILExecThread *thread, System_MArray *array)
 		return 0;
 	}
 }
+
+#endif /* IL_CONFIG_NON_VECTOR_ARRAYS */
 
 #ifdef	__cplusplus
 };

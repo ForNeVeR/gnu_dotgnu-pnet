@@ -63,6 +63,18 @@ typedef struct
 #define	ArrayToBuffer(array)	((void *)(((System_Array *)(array)) + 1))
 
 /*
+ * Determine if an array inherits from "$Synthetic.SArray".
+ */
+int _ILIsSArray(System_Array *array);
+
+/*
+ * Clone a single-dimensional array.
+ */
+ILObject *_ILCloneSArray(ILExecThread *thread, System_Array *array);
+
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
+
+/*
  * Internal structure of a multi-dimensional array header.
  */
 typedef struct
@@ -82,24 +94,16 @@ typedef struct
 } System_MArray;
 
 /*
- * Determine if an array inherits from "$Synthetic.SArray".
- */
-int _ILIsSArray(System_Array *array);
-
-/*
  * Determine if an array inherits from "$Synthetic.MArray".
  */
 int _ILIsMArray(System_Array *array);
 
 /*
- * Clone a single-dimensional array.
- */
-ILObject *_ILCloneSArray(ILExecThread *thread, System_Array *array);
-
-/*
  * Clone a multi-dimensional array.
  */
 ILObject *_ILCloneMArray(ILExecThread *thread, System_MArray *array);
+
+#endif /* IL_CONFIG_NON_VECTOR_ARRAYS */
 
 /*
  * Internal structure of a reflection object.  Types, methods, fields, etc.

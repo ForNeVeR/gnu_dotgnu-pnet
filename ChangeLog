@@ -33,6 +33,10 @@
 	engine/pinvoke.c, image/link.c, image/marshal.c: #ifdef out
 	PInvoke support if disabled by the profile.
 
+	* engine/lib_array.c, engine/lib_defs.h, engine/lib_helpers.c,
+	engine/lib_object.c: #ifdef out support for multi-dimensional
+	arrays if disabled by the profile.
+
 2002-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, codegen/jv_stmt.tc: make sure that the

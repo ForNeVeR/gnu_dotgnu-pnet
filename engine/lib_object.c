@@ -71,10 +71,12 @@ ILObject *_IL_Object_MemberwiseClone(ILExecThread *thread, ILObject *_this)
 	{
 		return _ILCloneSArray(thread, (System_Array *)_this);
 	}
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray((System_Array *)_this))
 	{
 		return _ILCloneMArray(thread, (System_MArray *)_this);
 	}
+#endif
 
 	/* Allocate a new object of the same class */
 	obj = _ILEngineAllocObject(thread, GetObjectClass(_this));

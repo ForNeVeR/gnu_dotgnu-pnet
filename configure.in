@@ -585,6 +585,7 @@ System.Drawing.Postscript/Makefile
 System.EnterpriseServices/Makefile
 System.Windows.Forms/Makefile
 System.Design/Makefile
+System.Deployment/Makefile
 DotGNU.Terminal/Makefile
 DotGNU.XmlRpc/Makefile
 OpenSystem.Platform/Makefile
@@ -609,6 +610,7 @@ resources/en_US/System.Configuration.Install/Makefile
 resources/en_US/System.Drawing/Makefile
 resources/en_US/System.Windows.Forms/Makefile
 resources/en_US/Basic/Makefile
+resources/en_US/System.Deployment/Makefile
 resources/de_DE/Makefile
 resources/de_DE/Basic/Makefile 
 resources/de_DE/I18N/Makefile

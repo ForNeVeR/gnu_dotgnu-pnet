@@ -12,6 +12,10 @@
 	add the "CONFIG_FRAMEWORK_2_0" define and a small number of
 	.NET 2.0 support classes.
 
+	* Makefile.am, configure.in, System.Deployment/*,
+	resources/en_US/Makefile.am, resources/en_US/System.Deployment/*:
+	add an implementation of the .NET 2.0 "System.Deployment" assembly.
+
 2004-07-19  Neil Cawse  <neilcawse@geotab.com>
 
         * DotGNU.Images/BmpReformatter.cs,

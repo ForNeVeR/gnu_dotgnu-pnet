@@ -1,3 +1,23 @@
+2002-04-07  Peter Minten  <silvernerd@users.sf.net>	
+
+	* System/Net/IPEndPoint.cs: Created but not completed
+	
+	* System/Net/WebRequest.cs: Changed variable names and added using...
+	to fix bugs.
+	
+	* System/Net/WebHeaderCollection.cs, System/Net/WebResponse.cs,
+	System/Net/Authorization.cs, System/Net/ServicePoint.cs,
+	System/Net/NetworkCredential.cs
+	: Added fake (no implementation yet) classes.
+	
+	* System/Net/WebExceptionStatus.cs: Fixed my own namespace bug.
+	
+	* System/Net/HttpContinueDelegate.cs, System/UriHostNameType.cs,
+	System.UriPartial.cs: Created
+	
+	* System/Net/SocketAddress.cs,
+	System/Net/Sockets/NetworkStream.cs: Made some modifications.
+
 2002-04-06  Peter Minten  <silvernerd@users.sf.net>
 
 	* resources/en_US/System/Makefile.am: Added all resource text files to the resource file (some weren't in it yet).

@@ -26,35 +26,40 @@ using System.Net.Sockets;
 
 public class SocketAddress
 {
+	private byte[] myarray;
+	
+	//An ipaddress is stored as a long in the same way as in IPAddress
+	//the 2 bytes after the IPAddress are the port
+		
 	[TODO]
 	public SocketAddress(AddressFamily family)
-	{
+			{
 	
-	}
+			}
 	
 	[TODO]
 	public SocketAddress(AddressFamily family, int size)
-	{
+			{
 	
-	}
+			}
 	
 	[TODO]
 	public override bool Equals(object comparand)
-	{
+			{
 		
-	}
+			}		
 	
 	[TODO]
 	public override int GetHashCode()
-	{
+			{
 	
-	}
+			}
 	
 	[TODO]
 	public override String ToString()
-	{
-		return 0;
-	}
+			{
+				return 0;
+			}
 	
 	[TODO]
 	public AddressFamily Family 
@@ -62,9 +67,33 @@ public class SocketAddress
 				get
 				{
 					return 0;
-				}
-			
+				}			
 			}
+
+	[TODO]
+	public byte this[int offset]
+			{
+				get
+				{
+					return myarray[offset];				
+				}
+				set
+				{
+					if (offset < 0 || offset > this.Size())
+						throw new ArgumentOutOfRangeException("item");
+					myarray[offset] = value;
+				}
+			}
+	
+	[TODO]
+	public int Size
+			{
+				get
+				{
+					return myarray.Count;
+				}
+			}
+		
 }; //class SocketAddress
 
 }; //namespace System.Net

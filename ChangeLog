@@ -1,4 +1,9 @@
 
+2003-03-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilasm/ilasm_build.c, ilasm/ilasm_build.h, ilasm/ilasm_grammar.y:
+	add explicit custom attribute owner syntax to ilasm (Bug #2675).
+
 2003-02-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant.c: wrong option flag for "--mono-corlib".

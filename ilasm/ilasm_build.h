@@ -198,6 +198,12 @@ ILField *ILAsmFieldCreate(ILClass *classInfo, const char *name,
 						  ILUInt32 attributes, ILType *sig);
 
 /*
+ * Create a custom attribute and attach it to a particular item.
+ */
+void ILAsmAttributeCreateFor(ILToken token, ILProgramItem *type,
+							 ILIntString *value);
+
+/*
  * Create a custom attribute and attach it to the current item.
  */
 void ILAsmAttributeCreate(ILProgramItem *type, ILIntString *value);

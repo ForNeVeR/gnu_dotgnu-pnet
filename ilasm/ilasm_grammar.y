@@ -953,7 +953,7 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 %type <exception>	ExceptionClause ExceptionClauses
 %type <exception>	JavaExceptionClause JavaExceptionClauses
 %type <token>		MethodReference InstanceMethodReference
-%type <token>		GenericMethodReference
+%type <token>		GenericMethodReference CustomOwner
 %type <integer>		DataItemCount
 %type <params>		FormalGenericParamsOpt FormalGenericParams
 %type <params>		FormalGenericParam MethodRefGenericParamsOpt
@@ -3829,14 +3829,33 @@ CustomAttributeDeclaration
 	| D_CUSTOM CustomType '=' Bytes	{
 				ILAsmAttributeCreate($2, &($4));
 			}
+	| D_CUSTOM '(' CustomOwner ')' CustomType '=' Bytes	{
+				ILAsmAttributeCreateFor($3, $5, &($7));
+			}
+	| D_CUSTOM '(' CustomOwner ')' CustomType '=' ComposedString	{
+				ILAsmAttributeCreateFor($3, $5, &($7));
+			}
+	| D_CUSTOM '(' CustomOwner ')' CustomType {
+				ILAsmAttributeCreateFor($3, $5, 0);
+			}
 	;
 
-/* Note: the first case has been removed because it creates
-   too many shift/reduce conflicts.  Besides, that usage is
-   supposed to be obsolete in newer versions of the standard */
 CustomType
-	: /*TypeSpecification	{ $$ = $1.item; }
-	|*/ MethodReference   { $$ = ILProgramItem_FromToken(ILAsmImage, $1); }
+	: MethodReference   { $$ = ILProgramItem_FromToken(ILAsmImage, $1); }
+	;
+
+CustomOwner
+	: TypeSpecification				{ $$ = ILProgramItem_Token($1.item); }
+	| K_METHOD MethodReference		{ $$ = $2; }
+	| K_FIELD Type TypeSpecification COLON_COLON Identifier	{
+				$$ = ILAsmResolveMember($3.item, $5.string, $2,
+								        IL_META_MEMBERKIND_FIELD);
+			}
+	| K_FIELD Type Identifier	{
+				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmClass),
+										$3.string, $2,
+										IL_META_MEMBERKIND_FIELD);
+			}
 	;
 
 /*

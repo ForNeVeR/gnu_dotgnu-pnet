@@ -941,7 +941,8 @@ ILField *ILAsmFieldCreate(ILClass *classInfo, const char *name,
 	return field;
 }
 
-void ILAsmAttributeCreate(ILProgramItem *type, ILIntString *value)
+void ILAsmAttributeCreateFor(ILToken ownerToken, ILProgramItem *type,
+							 ILIntString *value)
 {
 	ILAttribute *attr;
 	ILProgramItem *owner;
@@ -1003,7 +1004,7 @@ void ILAsmAttributeCreate(ILProgramItem *type, ILIntString *value)
 	}
 
 	/* Attach the attribute to its owner */
-	owner = ILProgramItem_FromToken(ILAsmImage, ILAsmLastToken);
+	owner = ILProgramItem_FromToken(ILAsmImage, ownerToken);
 	if(!owner)
 	{
 		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
@@ -1014,6 +1015,11 @@ void ILAsmAttributeCreate(ILProgramItem *type, ILIntString *value)
 	{
 		ILProgramItemAddAttribute(owner, attr);
 	}
+}
+
+void ILAsmAttributeCreate(ILProgramItem *type, ILIntString *value)
+{
+	ILAsmAttributeCreateFor(ILAsmLastToken, type, value);
 }
 
 ILParameter *ILAsmFindParameter(ILMethod *method, ILUInt32 paramNum)

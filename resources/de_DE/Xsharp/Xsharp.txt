@@ -39,7 +39,6 @@ X_LineWidth=Ungueltiger Wert fuer die Linienbreite: {0}
 X_LineStyle=Ungueltiger Wert fuer den Linienstil: {0}
 X_CapStyle=Ungueltiger Wert fuer den Linienende Stil: {0}
 X_JoinStyle=Ungueltiger Wert fuer den Linierverbindungs Stil: {0}
-X_FillRule=Ungueltiger Wert fuer die Fuellregel: {0}
 X_ArcMode=Ungueltiger Wert fuer den Bogenmodus: {0}
 X_GraphicsIsOutputOnly=Graphics Objekte koennen nur fuer Ein-/Ausgabe Widgets erstellt werden
 X_NonRootParent=Das Parent Fenster darf nicht das Root Fenster sein

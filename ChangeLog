@@ -53,6 +53,10 @@
 	* profiles/mscompact: fix the version details for the "mscompat"
 	profile and remove unneeded 1.2 features from it.
 
+	* profiles/*, resources/ca_ES/*, resources/de_DE/*: modify
+	the build/install system for the German and Catalan resources
+	to use csant and ilgac.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

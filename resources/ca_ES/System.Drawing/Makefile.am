@@ -1,22 +1,20 @@
-SUFFIXES = .txt .resources
 
-RESOURCEBASE     = System.Drawing
-RESOURCELANGUAGE = ca
-RESOURCEPARENT   = System.Drawing
+.PHONY: System.Drawing.resources.dll
 
-RESOURCENAME = $(RESOURCEBASE).$(RESOURCELANGUAGE).resources
-RESOURCEDLL  = $(RESOURCEPARENT).resources.dll
+all-local: System.Drawing.resources.dll
 
-RESOURCEFILES = System.Drawing.txt
+System.Drawing.resources.dll:
+	"$(CSANT)" $(CSANT_FLAGS) -f resources.build all
 
-resassembliesdir = $(libdir)/cscc/lib/$(RESOURCELANGUAGE)
-resassemblies_DATA = $(RESOURCEDLL)
+install-data-local:
+	@$(NORMAL_INSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -f resources.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -i all
 
-$(RESOURCEDLL): $(RESOURCENAME)
-	$(SHELL) "$(top_srcdir)/tools/link_res.sh" $(RESOURCEDLL) $(RESOURCENAME) $(RESOURCELANGUAGE)
+uninstall-local:
+	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -f resources.build \
+			-a $(DESTDIR)$(libdir)/cscc/lib -u all
 
-CLEANFILES = $(RESOURCENAME) $(RESOURCEBASE).resources $(RESOURCEDLL) tempres.txt
-
-$(RESOURCENAME): $(RESOURCEFILES)
-	"$(RESGEN)" $(RESGEN_FLAGS) $(RESGEN_LATIN1) \
-			$(RESOURCEFILES) $(RESOURCENAME)
+CLEANFILES = System.Drawing.ca.resources \
+			 System.Drawing.resources.dll

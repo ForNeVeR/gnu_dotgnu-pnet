@@ -1349,21 +1349,21 @@ internal class DefaultThemePainter : IThemePainter
 					// draw inner border
 					using (Pen p = new Pen(darkdark))
 					{
-						graphics.DrawArc(p, x+2, y+2, width-2, width-2, 30, 190);
+						graphics.DrawArc(p, x+2, y+2, width-2, width-2, 140, 190);
 					}
 					using (Pen p = new Pen(light))
 					{
-						graphics.DrawArc(p, x+2, y+2, width-2, width-2, 220, 180);
+						graphics.DrawArc(p, x+2, y+2, width-2, width-2, 320, 180);
 					}
 
 					// draw outer border
 					using (Pen p = new Pen(dark))
 					{
-						graphics.DrawArc(p, x+1, y+1, width, width, 30, 190);
+						graphics.DrawArc(p, x+1, y+1, width, width, 140, 190);
 					}
 					using (Pen p = new Pen(lightlight))
 					{
-						graphics.DrawArc(p, x+1, y+1, width, width, 220, 180);
+						graphics.DrawArc(p, x+1, y+1, width, width, 320, 180);
 					}
 				}
 				else

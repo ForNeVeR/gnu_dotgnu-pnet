@@ -130,7 +130,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				int width = RestrictXY(rect[1].X) - x;
 				int height = RestrictXY(rect[2].Y) - y;
 				graphics.DrawArc(x, y, width, height,
-								 startAngle, sweepAngle);
+								 -startAngle, -sweepAngle);
 			}
 
 	// Draw a pie slice within a rectangle defined by four points.
@@ -144,7 +144,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				int width = RestrictXY(rect[1].X) - x;
 				int height = RestrictXY(rect[2].Y) - y;
 				graphics.DrawPie(x, y, width, height,
-								 startAngle, sweepAngle);
+								 -startAngle, -sweepAngle);
 			}
 
 	// Fill a pie slice within a rectangle defined by four points.
@@ -159,7 +159,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				int height = RestrictXY(rect[2].Y) - y;
 				graphics.ArcMode = ArcMode.ArcPieSlice;
 				graphics.FillArc(x, y, width, height,
-								 startAngle, sweepAngle);
+								 -startAngle, -sweepAngle);
 			}
 
 	// Draw a string using the current font and brush.

@@ -1,4 +1,85 @@
 
+0.4.0 (27 June 2002)
+
+	Runtime engine:
+
+	* Implement a profile system that allows the engine to be built in
+	  various configurations, with certain features enabled or disabled.
+	* Object finalization.
+	* Throw "NotImplementedException" if an internalcall method is missing,
+	  or if an unsupported instruction is executed.
+	* Throw "MissingMethodException" if a PInvoke method is missing.
+	* Build and throw exceptions that are inserted by the verifier.
+	* LookupClass: detect classes in the "System" namespace correctly.
+	* Split "lib_platform.c" into multiple files, one per class, to
+	  make it easier to subset the feature set in profiles.
+	* Internalcalls for "TaskMethods", "Stdio", "RuntimeHelpers", "GC",
+	  "GCHandle", "Delegate", "WaitHandle", "Mutex", "TypedReference".
+	* Check for correct "box" operations in the verifier when primitive
+	  types are involved.
+	* Corrected the type inferencing for shift operations in the verifier.
+	* New CVM instructions: "monitor_enter", "monitor_exit", "local_alloc".
+	* Managed pointers can be assigned to any pointer destination when
+	  verifying in unsafe mode.
+	* Synchronous delegate support.
+	* Hook in the engine to support breakpoint debugging.
+	* The IL "break" instruction should verify as "nop", not "invalid".
+
+	C# Compiler:
+
+	* Helper function to resolve property names (Gopal V).
+	* Implement semantic analysis and code generation for "foreach"
+	  when collections are involved (Gopal V).
+	* #ifdef around missing YYEOF on some systems (found by Sammy Mannaert
+	  <nstalkie@chello.be>).
+	* Handle forward declarations of constants properly.
+
+	Documentation and Samples:
+
+	* Document how the runtime engine can be stripped down to run
+	  on embedded systems.
+	* Bug fix to "FullNameSP" generation in "csdoc".
+	* New "csdoc2hier" program, for dumping class heirarchies.
+	* Report the library that a type/member is declared within.
+
+	Assembler:
+
+	* Apply fixups to class references in exception catch blocks.
+	* Set the default parent class to "System.Object" if unspecified.
+
+	Debugger:
+
+	* Loading and running of applications (no breakpoints yet).
+	* Synthesise source for classes that lack debug symbol information.
+
+	Loader and Metadata:
+
+	* Create a "small" opcode table for use in the verifier, which does
+	  not need the names of the opcodes.
+	* Fix back-patching of field RVA's.
+	* Never link program items to themselves.
+
+	Platform Support:
+
+	* Update libffi sources from the gcc CVS repository.
+	* Fix a pre-processor problem in libffi on Solaris.
+	* Work around versions of grep and sed that aren't fully GNU-ish.
+	* Replacement garbage collector for low-memory environments.
+	* Add some debug code to allow memory usage to be tracked.
+	* Use a temporary file in "gen_errno.sh" instead of stdin, because
+	  some C compilers cannot read source from standard input (e.g. hpux).
+	* Detect the "nsl" and "socket" libraries on platforms that need them.
+	* Centralise Ansi encoding routines into "support".
+
+	Other:
+
+	* Add "pnet_build.sh", for assisting people who wish to automate builds.
+	* Implemented the "clrwrap" program, which makes it easier to run
+	  IL-format binaries on Unix systems, by way of a small wrapper script.
+	* Add missing ".h" files to the install list for "include".
+	* Support definition profiles in "csant" to assist with subsetting pnetlib.
+	* Repurpose "ilcheck" for checking PInvoke calls (Gopal V).
+
 0.3.8 (10 June 2002)
 
 	Runtime engine:

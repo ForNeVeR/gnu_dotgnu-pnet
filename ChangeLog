@@ -1,4 +1,9 @@
 
+2003-10-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/Makefile.am, engine/ilrun.1, engine/ilverify.1:
+	add a man page for "ilverify"; minor edits to the "ilrun" man page.
+
 2003-10-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/pnet_faq.html: more updates to the FAQ.

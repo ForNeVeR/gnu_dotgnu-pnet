@@ -157,7 +157,7 @@ public class HebrewCalendar : Calendar
 				// TODO
 				return 0;
 			}
-	public override int GetDayOfWeek(DateTime time)
+	public override System.DayOfWeek GetDayOfWeek(DateTime time)
 			{
 				// The Gregorian and Hebrew weekdays are identical.
 				return time.DayOfWeek;

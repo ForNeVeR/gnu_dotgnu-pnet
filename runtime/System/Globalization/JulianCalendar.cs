@@ -154,7 +154,7 @@ public class JulianCalendar : Calendar
 				}
 				return day - DateTime.daysBeforeMonth[month - 1] + 1;
 			}
-	public override int GetDayOfWeek(DateTime time)
+	public override System.DayOfWeek GetDayOfWeek(DateTime time)
 			{
 				// The Gregorian and Julian calendars match on weekdays.
 				return time.DayOfWeek;

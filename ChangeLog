@@ -1,4 +1,13 @@
 
+2003-02-11  Yannis BRES <Yannis.BRES@sophia.inria.fr>
+	
+	* runtime/System/DateTime.cs, 
+	runtime/System/Globalization/GregorianCalendar.cs,
+	runtime/System/Globalization/HebrewCalendar.cs,
+	runtime/System/Globalization/JulianCalendar.cs : Fix the DayOfWeek
+	function to return System.DayOfWeek enum.
+	(Patch #1089, Gopal)
+
 2003-02-10  Marcus Urban  <mathpup@mylinuxisp.com>
 
 	* System/Collections/Specialized/NameValueCollection.cs:

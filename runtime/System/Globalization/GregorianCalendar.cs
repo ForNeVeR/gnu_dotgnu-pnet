@@ -112,7 +112,7 @@ public class GregorianCalendar : Calendar
 			{
 				return time.Day;
 			}
-	public override int GetDayOfWeek(DateTime time)
+	public override System.DayOfWeek GetDayOfWeek(DateTime time)
 			{
 				return time.DayOfWeek;
 			}

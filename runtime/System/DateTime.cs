@@ -714,13 +714,13 @@ public struct DateTime : IComparable, IFormattable
 					}
 				}
 			}
-	public int DayOfWeek
+	public System.DayOfWeek DayOfWeek
 			{
 				get
 				{
 					unchecked
 					{
-						return (int)(((value_ / ticksPerDay) + 1) % 7);
+						return (System.DayOfWeek)(((value_ / ticksPerDay) + 1) % 7);
 					}
 				}
 			}

@@ -48,7 +48,7 @@ public sealed class FontExtents
 				// Convert the extent information into values that make sense.
 				ascent = -(max_logical.y);
 				descent = max_logical.height + max_logical.y;
-				maxWidth = max_ink.width;
+				maxWidth = max_logical.width;
 
 				// Increase the descent to account for underlining.
 				// We always draw the underline two pixels below

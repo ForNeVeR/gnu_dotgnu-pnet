@@ -2268,9 +2268,9 @@ public sealed class Graphics : IDisposable
 				XRectangle overall_logical;
 				Xlib.XSharpTextExtents
 					(fontSet, str, out overall_ink, out overall_logical);
-				width = overall_ink.width;
-				ascent = -(overall_ink.y);
-				descent = overall_ink.height + overall_ink.y;
+				width = overall_logical.width;
+				ascent = -(overall_logical.y);
+				descent = overall_logical.height + overall_logical.y;
 
 				// Increase the descent to account for underlining.
 				// We always draw the underline two pixels below

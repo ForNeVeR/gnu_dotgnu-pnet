@@ -214,7 +214,7 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 				 	   &overall_ink_return, &overall_logical_return);
 		XSetLineAttributes(dpy, gc, 1, LineSolid, CapNotLast, JoinMiter);
 		XDrawLine(dpy, drawable, gc, x, y + 2,
-				  x + overall_ink_return.width, y + 2);
+				  x + overall_logical_return.width, y + 2);
 	}
 }
 

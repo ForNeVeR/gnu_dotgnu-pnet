@@ -31,6 +31,10 @@
 	Xsharp/Graphics.cs, Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c:
 	add font handling code to Xsharp.
 
+	* Xsharp/FontExtents.cs, Xsharp/Graphics.cs, Xsharp/XsharpSupport.c:
+	use the logical extents for text drawing/measuring, not the
+	ink extents.
+
 2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Application.cs, Xsharp/Graphics.cs, Xsharp/Xlib.cs.in:

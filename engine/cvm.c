@@ -21,6 +21,7 @@
 #include "engine_private.h"
 #include "lib_defs.h"
 #include "cvm.h"
+#include "cvm_config.h"
 #include "cvm_format.h"
 #if defined(HAVE_LIBFFI)
 #include "ffi.h"
@@ -42,45 +43,9 @@ extern	"C" {
 #endif
 
 /*
- * Enable or disable dumping of CVM instructions during execution.
+ * Note: the configuration macros that used to be here
+ * are now in "cvm_config.h".
  */
-/*#define	IL_DUMP_CVM*/
-#define	IL_DUMP_CVM_STREAM	stdout
-
-/*
- * Enable or disable profiling.
- */
-/*#define	IL_PROFILE_CVM_INSNS*/
-/*#define	IL_PROFILE_CVM_METHODS*/
-/*#define	IL_PROFILE_CVM_VAR_USAGE*/
-#ifdef IL_PROFILE_CVM_INSNS
-extern int _ILCVMInsnCount[];
-#endif
-
-/*
- * Determine what kind of instruction dumping to perform.
- */
-#if defined(IL_DUMP_CVM)
-	#define	CVM_DUMP()	\
-		_ILDumpCVMInsn(IL_DUMP_CVM_STREAM, method, pc)
-#elif defined(IL_PROFILE_CVM_INSNS)
-	#define	CVM_DUMP()	\
-		++(_ILCVMInsnCount[pc[0]]);
-#else
-	#define	CVM_DUMP()
-#endif
-
-/*
- * Determine what CPU we are compiling for, and any
- * additional optimizations we can use for that CPU.
- */
-#if defined(__i386) || defined(__i386__)
-	#define	CVM_X86
-	#define	CVM_LONGS_ALIGNED_WORD
-	#define	CVM_REALS_ALIGNED_WORD
-	#define	CVM_DOUBLES_ALIGNED_WORD
-	#define CVM_WORDS_AND_PTRS_SAME_SIZE
-#endif
 
 /*
  * Macros that can be used to bind important interpreter loop
@@ -503,8 +468,10 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			 *   information on their wide forms where appropriate.</notes>
 			 * </opcode>
 			 */
+#ifndef IL_CVM_DIRECT
 			VMCASE(COP_WIDE):
 			{
+				CVM_WIDE_DUMP();
 				switch(CVM_ARG_SUB_OPCODE)
 				{
 					/* Include the instruction categories for the wide switch */
@@ -531,6 +498,14 @@ int _ILCVMInterpreter(ILExecThread *thread)
 				}
 			}
 			VMBREAK(COP_WIDE);
+#else
+			VMCASE(COP_WIDE):
+			{
+				/* We don't need "wide" in direct mode, so just stub it out */
+				MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
+			}
+			VMBREAK(COP_WIDE);
+#endif
 
 			/**
 			 * <opcode name="prefix" group="Miscellaneous instructions">
@@ -550,8 +525,16 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			VMCASE(COP_PREFIX):
 			{
 				/* Execute a prefixed opcode */
+#ifndef IL_CVM_DIRECT
+				CVM_PREFIX_DUMP();
 				VMPREFIXSWITCH(CVM_ARG_SUB_OPCODE)
 				{
+#else
+				/* We don't need "prefix" in direct mode, so just stub it out */
+				MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
+			}
+			VMBREAK(COP_PREFIX);
+#endif
 					/* Include instruction categories for the prefix switch */
 					#define IL_CVM_PREFIX
 					#include "cvm_var.c"
@@ -567,6 +550,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					#include "cvm_inline.c"
 					#undef IL_CVM_PREFIX
 
+#ifndef IL_CVM_DIRECT
 					VMPREFIXDEFAULT:
 					{
 						/* Treat all other prefixed opcodes as NOP */
@@ -576,6 +560,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 				}
 			}
 			VMOUTERBREAK;
+#endif
 
 			VMDEFAULT:
 			{

@@ -688,6 +688,7 @@ VMBREAK(COP_BR_PNE);
  *   information on their long forms.</notes>
  * </opcode>
  */
+#ifndef IL_CVM_DIRECT
 VMCASE(COP_BR_LONG):
 {
 	/* Determine which type of long branch to use */
@@ -958,6 +959,14 @@ VMCASE(COP_BR_LONG):
 	}
 }
 VMBREAK(COP_BR_LONG);
+#else /* IL_CVM_DIRECT */
+VMCASE(COP_BR_LONG):
+{
+	/* We don't need "br_long" in direct mode, so just stub it out */
+	MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, 0);
+}
+VMBREAK(COP_BR_LONG);
+#endif /* IL_CVM_DIRECT */
 
 /**
  * <opcode name="switch" group="Branch instructions">

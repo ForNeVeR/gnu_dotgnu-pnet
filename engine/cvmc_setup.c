@@ -219,7 +219,8 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		offset = coder->argOffsets[argIndex++];
 		switch((unsigned long)type)
 		{
-		#ifndef CVM_X86		/* Not needed for 32-bit little-endian machines */
+			/* Not needed for little-endian machines */
+		#ifndef CVM_LITTLE_ENDIAN
 			case (unsigned long)ILType_Boolean:
 			case (unsigned long)ILType_Int8:
 			case (unsigned long)ILType_UInt8:

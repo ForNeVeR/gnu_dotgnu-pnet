@@ -1191,6 +1191,7 @@ COP_WADDR_NATIVE_WIDE(7, 7);
  *   semantics.</description>
  * </opcode>
  */
+#ifndef IL_CVM_DIRECT
 VMCASE(COP_PREFIX_TAIL):
 {
 	switch(CVM_ARG_TAIL_OPCODE)
@@ -1243,6 +1244,14 @@ VMCASE(COP_PREFIX_TAIL):
 	}
 }
 VMBREAK(COP_PREFIX_TAIL);
+#else /* IL_CVM_DIRECT */
+VMCASE(COP_PREFIX_TAIL):
+{
+	/* "tail" is not yet supported in direct mode */
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_TAIL);
+#endif /* IL_CVM_DIRECT */
 
 /**
  * <opcode name="ldftn" group="Call management instructions">

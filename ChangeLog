@@ -1,4 +1,12 @@
 
+2002-05-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/HACKING, engine/cvm.c, engine/cvm_branch.c,
+	engine/cvm_call.c, engine/cvm_config.h, engine/cvmc.c,
+	engine/cvmc_setup.c: alter the way that CVM is configured,
+	so that all configuration parameters are centralised into
+	"cvm_config.h".
+
 2002-05-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/locale.c: #ifdef for CODESET because it isn't defined

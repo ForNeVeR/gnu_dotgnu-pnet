@@ -119,7 +119,7 @@ ILNode_CSemAnalysis(ILNode_CMemberField)
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  			  _("invalid use of non-lvalue array"));
 		}
-		CSemSetRValue(value, CTypeDecay(info, fieldType));
+		CSemSetDecayedRValue(value, CTypeDecay(info, fieldType), fieldType);
 	}
 	else
 	{
@@ -387,7 +387,7 @@ ILNode_CSemAnalysis(ILNode_CDerefField)
 	}
 	else if(CTypeIsArray(fieldType))
 	{
-		CSemSetRValue(value, CTypeDecay(info, fieldType));
+		CSemSetDecayedRValue(value, CTypeDecay(info, fieldType), fieldType);
 	}
 	else
 	{
@@ -587,7 +587,7 @@ ILNode_CSemAnalysis(ILNode_CLocalVar)
 	if(node->type != node->decayedType)
 	{
 		/* This is an array that decays to an r-value pointer */
-		CSemSetRValue(value, node->decayedType);
+		CSemSetDecayedRValue(value, node->decayedType, node->type);
 	}
 	else
 	{
@@ -664,7 +664,7 @@ ILNode_CSemAnalysis(ILNode_CGlobalVar)
 	if(node->type != node->decayedType)
 	{
 		/* This is an array that decays to an r-value pointer */
-		CSemSetRValue(value, node->decayedType);
+		CSemSetDecayedRValue(value, node->decayedType, node->type);
 	}
 	else
 	{
@@ -896,7 +896,7 @@ ILNode_CSemAnalysis(ILNode_CArrayAccess)
 		else
 		{
 			/* The array element decays into a pointer, which is an r-value */
-			CSemSetRValue(value1, elemType);
+			CSemSetDecayedRValue(value1, elemType, rawElemType);
 		}
 		return value1;
 	}

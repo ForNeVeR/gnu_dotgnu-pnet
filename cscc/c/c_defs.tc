@@ -72,7 +72,8 @@ typedef struct
 #define	C_SEMKIND_TYPE			(1<<6)
 #define	C_SEMKIND_BOOLEAN		(1<<7)
 #define	C_SEMKIND_NO_REF		(1<<8)
-#define	C_SEMKIND_ERROR			(1<<9)
+#define	C_SEMKIND_DECAYED		(1<<9)
+#define	C_SEMKIND_ERROR			(1<<10)
 
 /*
  * The default semantic value, which is always "void".
@@ -103,12 +104,18 @@ extern CSemValue CSemValueError;
 #define	CSemIsType(value)		(((value).kind__ & C_SEMKIND_TYPE) != 0)
 #define	CSemIsBoolean(value)	(((value).kind__ & C_SEMKIND_BOOLEAN) != 0)
 #define	CSemIsNoRef(value)		(((value).kind__ & C_SEMKIND_NO_REF) != 0)
+#define	CSemIsDecayed(value)	(((value).kind__ & C_SEMKIND_DECAYED) != 0)
 #define	CSemIsError(value)		(((value).kind__ & C_SEMKIND_ERROR) != 0)
 
 /*
  * Get the type field from a semantic value.
  */
-#define	CSemGetType(value)		((value).type__)
+#define	CSemGetType(value)				((value).type__)
+
+/*
+ * Get the decayed type field from a semantic value.
+ */
+#define	CSemGetDecayedType(value)		((ILType *)((value).extra__))
 
 /*
  * Get the constant value associated with a semantic value.
@@ -162,6 +169,17 @@ extern CSemValue CSemValueError;
 				(value).kind__ = C_SEMKIND_RVALUE; \
 				(value).type__ = (type); \
 				(value).extra__ = 0; \
+			} while (0)
+
+/*
+ * Set a semantic value to an r-value reference that resulted
+ * from a decayed array l-value.
+ */
+#define	CSemSetDecayedRValue(value,type,origType)	\
+			do { \
+				(value).kind__ = C_SEMKIND_RVALUE | C_SEMKIND_DECAYED; \
+				(value).type__ = (type); \
+				(value).extra__ = (void *)(origType); \
 			} while (0)
 
 /*

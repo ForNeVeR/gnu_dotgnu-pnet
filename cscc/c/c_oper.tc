@@ -2116,7 +2116,15 @@ ILNode_CSemAnalysis(ILNode_AddressOf)
 
 	/* Perform semantic analysis on the argument */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
-	if(!CSemIsLValue(value) || CSemIsNoRef(value))
+	if(CSemIsDecayed(value))
+	{
+		/* The argument was an array that just decayed into a pointer.
+		   Convert it into a pointer to the entire array */
+		CSemSetRValue(value, CTypeCreatePointer
+				(info, CSemGetDecayedType(value)));
+		return value;
+	}
+	else if(!CSemIsLValue(value) || CSemIsNoRef(value))
 	{
 		if(!CSemIsError(value))
 		{

@@ -184,6 +184,71 @@ void ILSHA384Finalize(ILSHA384Context *sha,
 					  unsigned char hash[IL_SHA384_HASH_SIZE]);
 
 /*
+ * Define the structure of a DES encryption context.
+ */
+typedef struct _tagILDESContext
+{
+	ILUInt32	ks[32];
+
+} ILDESContext;
+
+/*
+ * Define the structure of a Triple-DES encryption context.
+ */
+typedef struct _tagILDES3Context
+{
+	ILDESContext k1;
+	ILDESContext k2;
+	ILDESContext k3;
+
+} ILDES3Context;
+
+/*
+ * Initialize a DES encryption context.
+ */
+void ILDESInit(ILDESContext *des, unsigned char *key, int decrypt);
+
+/*
+ * Process a single 64-bit block using DES.  The input and
+ * output buffers can overlap.
+ */
+void ILDESProcess(ILDESContext *des, unsigned char *input,
+				  unsigned char *output);
+
+/*
+ * Finalize a DES encryption context, clearing all sensitive values.
+ */
+void ILDESFinalize(ILDESContext *des);
+
+/*
+ * Initialize a Triple-DES encryption context.
+ */
+void ILDES3Init(ILDES3Context *des3, unsigned char *key,
+				int keyBits, int decrypt);
+
+/*
+ * Process a single 64-bit block using Triple-DES.  The input and
+ * output buffers can overlap.
+ */
+void ILDES3Process(ILDES3Context *des3, unsigned char *input,
+				   unsigned char *output);
+
+/*
+ * Finalize a Triple-DES encryption context, clearing all sensitive values.
+ */
+void ILDES3Finalize(ILDES3Context *des3);
+
+/*
+ * Determine if a DES key is weak.
+ */
+int ILDESIsWeakKey(unsigned char *key);
+
+/*
+ * Determine if a DES key is semi-weak.
+ */
+int ILDESIsSemiWeakKey(unsigned char *key);
+
+/*
  * Structure of an AES cipher context object.
  */
 typedef struct

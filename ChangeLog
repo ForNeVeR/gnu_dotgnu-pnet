@@ -1,4 +1,10 @@
 
+2002-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_crypt.c, include/il_crypt.h, support/Makefile.am,
+	support/des.c: implement the DES and Triple-DES symmetric
+	encryption algorithms.
+
 2002-07-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_crypt.c, include/il_crypt.h, support/Makefile.am,

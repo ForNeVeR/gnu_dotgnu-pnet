@@ -123,6 +123,26 @@ typedef struct
 } SHA512HashContext;
 
 /*
+ * Symmetric context for DES.
+ */
+typedef struct
+{
+	SymContext		sym;
+	ILDESContext	des;
+
+} DESContext;
+
+/*
+ * Symmetric context for Triple-DES.
+ */
+typedef struct
+{
+	SymContext		sym;
+	ILDES3Context	des3;
+
+} DES3Context;
+
+/*
  * Symmetric context for RC2.
  */
 typedef struct
@@ -155,6 +175,8 @@ ILBool _IL_CryptoMethods_AlgorithmSupported(ILExecThread *_thread,
 		case IL_ALG_SHA256:
 		case IL_ALG_SHA384:
 		case IL_ALG_SHA512:
+		case IL_ALG_DES:
+		case IL_ALG_TRIPLE_DES:
 		case IL_ALG_RC2:
 		case IL_ALG_RIJNDAEL: return 1;
 	}
@@ -306,8 +328,7 @@ void _IL_CryptoMethods_HashFree(ILExecThread *_thread, ILNativeInt state)
 ILBool _IL_CryptoMethods_IsSemiWeakKey(ILExecThread *_thread,
 									   System_Array *key, ILInt32 offset)
 {
-	/* TODO */
-	return 0;
+	return ILDESIsSemiWeakKey(((unsigned char *)ArrayToBuffer(key)) + offset);
 }
 
 /*
@@ -316,8 +337,7 @@ ILBool _IL_CryptoMethods_IsSemiWeakKey(ILExecThread *_thread,
 ILBool _IL_CryptoMethods_IsWeakKey(ILExecThread *_thread, System_Array *key,
 								   ILInt32 offset)
 {
-	/* TODO */
-	return 0;
+	return ILDESIsWeakKey(((unsigned char *)ArrayToBuffer(key)) + offset);
 }
 
 /*
@@ -352,6 +372,42 @@ ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread *_thread,
 	SymContext *context;
 	switch(algorithm)
 	{
+		case IL_ALG_DES:
+		{
+			/* Create and initialize a DES encryption context */
+			context = (SymContext *)ILMalloc(sizeof(DESContext));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (SymResetFunc)ILDESFinalize;
+			context->encrypt = (SymCryptFunc)ILDESProcess;
+			context->decrypt = (SymCryptFunc)ILDESProcess;
+			ILDESInit(&(((DESContext *)context)->des),
+					  ArrayToBuffer(key), 0);
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+
+		case IL_ALG_TRIPLE_DES:
+		{
+			/* Create and initialize a Triple-DES encryption context */
+			context = (SymContext *)ILMalloc(sizeof(DES3Context));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (SymResetFunc)ILDES3Finalize;
+			context->encrypt = (SymCryptFunc)ILDES3Process;
+			context->decrypt = (SymCryptFunc)ILDES3Process;
+			ILDES3Init(&(((DES3Context *)context)->des3),
+					   ArrayToBuffer(key), (int)(key->length * 8), 0);
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+
 		case IL_ALG_RC2:
 		{
 			/* Create and initialize an RC2 encryption context */
@@ -400,10 +456,52 @@ ILNativeInt _IL_CryptoMethods_DecryptCreate(ILExecThread *_thread,
 											ILInt32 algorithm,
 											System_Array *key)
 {
-	/* "EncryptCreate" and "DecryptCreate" are currently the same,
-	   but there may be algorithms in future that need to set up
-	   the key schedule differently for encryption and decryption */
-	return _IL_CryptoMethods_DecryptCreate(_thread, algorithm, key);
+	SymContext *context;
+
+	/* DES and Triple-DES need to set up the key schedule
+	   in a different manner for decryption */
+	switch(algorithm)
+	{
+		case IL_ALG_DES:
+		{
+			/* Create and initialize a DES encryption context */
+			context = (SymContext *)ILMalloc(sizeof(DESContext));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (SymResetFunc)ILDESFinalize;
+			context->encrypt = (SymCryptFunc)ILDESProcess;
+			context->decrypt = (SymCryptFunc)ILDESProcess;
+			ILDESInit(&(((DESContext *)context)->des),
+					  ArrayToBuffer(key), 1);
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+
+		case IL_ALG_TRIPLE_DES:
+		{
+			/* Create and initialize a Triple-DES encryption context */
+			context = (SymContext *)ILMalloc(sizeof(DES3Context));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (SymResetFunc)ILDES3Finalize;
+			context->encrypt = (SymCryptFunc)ILDES3Process;
+			context->decrypt = (SymCryptFunc)ILDES3Process;
+			ILDES3Init(&(((DES3Context *)context)->des3),
+					   ArrayToBuffer(key), (int)(key->length * 8), 1);
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+	}
+
+	/* The other algorithms use the same key schedule for
+	   encryption and decryption */
+	return _IL_CryptoMethods_EncryptCreate(_thread, algorithm, key);
 }
 
 /*

@@ -9,6 +9,7 @@ libILSupport_a_SOURCES = aes.c \
 						 cvt_float.c \
 						 decimal.c \
 						 def_gc.c \
+						 des.c \
 						 dynlib.c \
 						 errno_map.c \
 						 expand.c \

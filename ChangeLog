@@ -5,6 +5,11 @@
 	marshalling type in the case of an unspecified element type:
 	use "MAX" instead of "END" to indicate unspecified (Bug #1951).
 
+	* cscc/cscc.c, ilasm/Makefile.am: install a second copy of
+	"ilasm" into "${prefix}/lib/cscc/plugins" and use it by default,
+	to prevent problems with Mono installing its own "ilasm" over
+	the top of ours.
+
 2002-12-11  Dawkins, David  <david.dawkins@brooks-pri.com>
 
 	* make_patch.sh: warn the user if updates occurred during the

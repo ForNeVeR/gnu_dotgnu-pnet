@@ -13,3 +13,16 @@ AM_YFLAGS = -d
 CLEANFILES = ilasm_grammar.c ilasm_scanner.c ilasm_grammar.h
 
 AM_CFLAGS = -I$(top_srcdir)/include
+
+## Install a second copy of "ilasm" into the "${prefix}/lib/cscc/plugins"
+## directory, just in case some other package overwrites our primary
+## copy with its own "ilasm".
+
+install-exec-local:
+	@$(NORMALL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/plugins
+	$(INSTALL_PROGRAM) ilasm $(DESTDIR)$(libdir)/cscc/plugins/ilasm
+
+uninstall-local:
+	@$(NORMALL_UNINSTALL)
+	rm -f $(DESTDIR)$(libdir)/cscc/plugins/ilasm

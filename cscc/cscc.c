@@ -904,6 +904,14 @@ static void FindILAsmProgram(void)
 		return;
 	}
 
+	/* Search the contents of PLUGINS_PATH */
+	path = SearchPath(PLUGINS_PATH, "ilasm");
+	if(path)
+	{
+		ilasm_program = path;
+		return;
+	}
+
 	/* Search the contents of PATH */
 	path = SearchPath(getenv("PATH"), "ilasm");
 	if(path)

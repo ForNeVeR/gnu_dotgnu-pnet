@@ -151,16 +151,23 @@ void CScopeAddFunction(const char *name, ILNode *node, ILType *signature)
 					   C_SCDATA_FUNCTION, PersistNode(node), 0, signature);
 }
 
+void CScopeAddFunctionForward(const char *name, int kind,
+							  ILNode *node, ILType *signature)
+{
+	ILScopeDeclareItem(CGlobalScope, name, kind, PersistNode(node),
+					   0, signature);
+}
+
 void CScopeAddInferredFunction(const char *name, ILType *signature)
 {
 	ILScopeDeclareItem(CGlobalScope, name,
 					   C_SCDATA_FUNCTION_INFERRED, 0, 0, signature);
 }
 
-void CScopeUpdateFunction(void *data, ILNode *node, ILType *signature)
+void CScopeUpdateFunction(void *data, int kind, ILNode *node, ILType *signature)
 {
-	ILScopeDataModify((ILScopeData *)data,
-					  C_SCDATA_FUNCTION, PersistNode(node), 0, signature);
+	ILScopeDataModify((ILScopeData *)data, kind, PersistNode(node),
+					  0, signature);
 }
 
 void CScopeAddParam(const char *name, unsigned index, ILType *type)

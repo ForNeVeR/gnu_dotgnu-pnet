@@ -8,6 +8,9 @@
 	* csupport/Markers.cs, doc/c_language_abi.html: add the
 	"OriginalName" attribute and document it.
 
+	* cscc/c/c_function.c, cscc/c/c_grammar.y, cscc/c/c_scope.c,
+	cscc/c/c_scope.h: implement forward declarations for functions.
+
 2002-08-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify.c (AssignCompatible): resolve classes before

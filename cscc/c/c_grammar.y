@@ -312,7 +312,82 @@ static void ReportRedeclared(const char *name, ILNode *node, void *data)
 static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
 							   		   ILNode *init, ILNode **list)
 {
-	/* TODO */
+	ILType *signature;
+	void *data;
+
+	/* We cannot use initializers with function declarations */
+	if(init != 0)
+	{
+		CCErrorOnLine(yygetfilename(decl.node), yygetlinenum(decl.node),
+					  _("function `%s' is initialized like a variable"),
+					  decl.name);
+	}
+
+	/* Build the final function signature */
+	signature = CDeclFinalize(&CCCodeGen, spec, decl, 0, 0);
+
+	/* See if there is already something registered with this name */
+	data = CScopeLookup(decl.name);
+	if(data)
+	{
+		if(CScopeGetKind(data) == C_SCDATA_FUNCTION ||
+		   CScopeGetKind(data) == C_SCDATA_FUNCTION_FORWARD ||
+		   CScopeGetKind(data) == C_SCDATA_FUNCTION_INFERRED)
+		{
+			/* The previous definition was an ANSI prototype */
+			if(decl.isKR)
+			{
+				if(!CTypeIsIdentical
+						(ILTypeGetReturnWithPrefixes(signature),
+						 ILTypeGetReturnWithPrefixes
+						 	(CScopeGetType(data))))
+				{
+					ReportRedeclared(decl.name, decl.node, data);
+				}
+			}
+			else
+			{
+				if(!CTypeIsIdentical(signature, CScopeGetType(data)))
+				{
+					ReportRedeclared(decl.name, decl.node, data);
+				}
+			}
+		}
+		else if(CScopeGetKind(data) == C_SCDATA_FUNCTION_FORWARD_KR)
+		{
+			/* The previous definition was a K&R prototype */
+			if(!CTypeIsIdentical
+					(ILTypeGetReturnWithPrefixes(signature),
+					 ILTypeGetReturnWithPrefixes
+					 	(CScopeGetType(data))))
+			{
+				ReportRedeclared(decl.name, decl.node, data);
+			}
+			else if(!(decl.isKR))
+			{
+				/* Convert the K&R prototype into an ANSI prototype */
+				CScopeUpdateFunction(decl.name, C_SCDATA_FUNCTION_FORWARD,
+									 decl.node, signature);
+			}
+		}
+		else
+		{
+			ReportRedeclared(decl.name, decl.node, data);
+		}
+		return;
+	}
+
+	/* Add the function's forward definition to the global scope */
+	if(decl.isKR)
+	{
+		CScopeAddFunctionForward(decl.name, C_SCDATA_FUNCTION_FORWARD_KR,
+								 decl.node, signature);
+	}
+	else
+	{
+		CScopeAddFunctionForward(decl.name, C_SCDATA_FUNCTION_FORWARD,
+								 decl.node, signature);
+	}
 }
 
 /*
@@ -826,6 +901,7 @@ PrimaryExpression
 
 						case C_SCDATA_FUNCTION:
 						case C_SCDATA_FUNCTION_FORWARD:
+						case C_SCDATA_FUNCTION_FORWARD_KR:
 						case C_SCDATA_FUNCTION_INFERRED:
 						{
 							$$ = ILNode_FunctionRef_create

@@ -102,6 +102,35 @@ static void ReportInferError(ILGenInfo *info, ILNode *node,
 	fputs(")'\n", stderr);
 }
 
+/*
+ * Determine if two function signatures are identical.
+ */
+static int SameSignature(ILType *sig1, ILType *sig2, int forwardKind)
+{
+	if(forwardKind == C_SCDATA_FUNCTION_FORWARD_KR)
+	{
+		/* K&R forward definitions must have the same return type,
+		   and the new definition must not be "vararg" */
+		if(!CTypeIsIdentical(ILTypeGetReturnWithPrefixes(sig1),
+							 ILTypeGetReturnWithPrefixes(sig2)))
+		{
+			return 0;
+		}
+		return ((ILType_CallConv(sig1) & IL_META_CALLCONV_MASK)
+					!= IL_META_CALLCONV_VARARG);
+	}
+	else if(forwardKind == C_SCDATA_FUNCTION_INFERRED)
+	{
+		/* Ignore type prefixes, because we may have inferred incorrectly */
+		return ILTypeIdentical(sig1, sig2);
+	}
+	else
+	{
+		/* The ANSI prototype and the redefinition must be identical */
+		return CTypeIsIdentical(sig1, sig2);
+	}
+}
+
 ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 						  CDeclSpec spec, CDeclarator decl,
 						  ILNode *declaredParams)
@@ -112,6 +141,7 @@ ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 	char newName[64];
 	ILType *signature;
 	ILType *checkForward = 0;
+	int forwardKind = 0;
 	ILUInt32 attrs = IL_META_METHODDEF_STATIC | IL_META_METHODDEF_PUBLIC;
 
 	/* Set the "extern" vs "static" attributes for the method */
@@ -134,12 +164,21 @@ ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 			/* Process a forward declaration from an "extern" declaration */
 			checkForward = CScopeGetType(data);
 			prevNode = CScopeGetNode(data);
+			forwardKind = C_SCDATA_FUNCTION_FORWARD;
+		}
+		else if(CScopeGetKind(data) == C_SCDATA_FUNCTION_FORWARD_KR)
+		{
+			/* Process a forward declaration from a K&R prototype */
+			checkForward = CScopeGetType(data);
+			prevNode = CScopeGetNode(data);
+			forwardKind = C_SCDATA_FUNCTION_FORWARD_KR;
 		}
 		else if(CScopeGetKind(data) == C_SCDATA_FUNCTION_INFERRED)
 		{
 			/* Process a forward declaration from an inferred prototype */
 			checkForward = CScopeGetType(data);
 			prevNode = 0;
+			forwardKind = C_SCDATA_FUNCTION_INFERRED;
 		}
 		else
 		{
@@ -177,7 +216,7 @@ ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 	if(checkForward != 0)
 	{
 		/* Check that the re-declaration matches the forward declaration */
-		if(!ILTypeIdentical(signature, checkForward))
+		if(!SameSignature(signature, checkForward, forwardKind))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  _("conflicting types for `%s'"), name);
@@ -193,7 +232,7 @@ ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 		}
 
 		/* Update the scope data item with the actual information */
-		CScopeUpdateFunction(data, node, signature);
+		CScopeUpdateFunction(data, C_SCDATA_FUNCTION, node, signature);
 	}
 	else
 	{

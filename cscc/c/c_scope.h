@@ -38,8 +38,9 @@ extern	"C" {
 #define	C_SCDATA_GLOBAL_VAR_FORWARD		106
 #define	C_SCDATA_FUNCTION				107
 #define	C_SCDATA_FUNCTION_FORWARD		108
-#define	C_SCDATA_FUNCTION_INFERRED		109
-#define	C_SCDATA_UNDECLARED				110
+#define	C_SCDATA_FUNCTION_FORWARD_KR	109
+#define	C_SCDATA_FUNCTION_INFERRED		110
+#define	C_SCDATA_UNDECLARED				111
 
 /*
  * The current scope.
@@ -114,6 +115,12 @@ void CScopeAddTypedef(const char *name, ILType *type, ILNode *node);
 void CScopeAddFunction(const char *name, ILNode *node, ILType *signature);
 
 /*
+ * Add a forward function definition to the global scope.
+ */
+void CScopeAddFunctionForward(const char *name, int kind,
+							  ILNode *node, ILType *signature);
+
+/*
  * Add an inferred function definition to the global scope.
  */
 void CScopeAddInferredFunction(const char *name, ILType *signature);
@@ -121,7 +128,8 @@ void CScopeAddInferredFunction(const char *name, ILType *signature);
 /*
  * Update a forward reference to a function with actual information.
  */
-void CScopeUpdateFunction(void *data, ILNode *node, ILType *signature);
+void CScopeUpdateFunction(void *data, int kind,
+						  ILNode *node, ILType *signature);
 
 /*
  * Add information about a parameter to the current scope.

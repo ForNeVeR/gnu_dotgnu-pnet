@@ -33,7 +33,7 @@ using System.Diagnostics.SymbolStore;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
-public class ModuleBuilder : Module
+public class ModuleBuilder : Module, IDetachItem
 {
 	// Internal state.
 	internal AssemblyBuilder assembly;
@@ -52,8 +52,14 @@ public class ModuleBuilder : Module
 				this.transient = transient;
 				this.emitSymbolInfo = emitSymbolInfo;
 
+				// Register this object for detaching.
+				assembly.AddDetach(this);
+
 				// Create a new module within the assembly.
-				privateData = ClrModuleCreate(assembly.privateData, name);
+				lock(typeof(AssemblyBuilder))
+				{
+					privateData = ClrModuleCreate(assembly.privateData, name);
+				}
 
 				// Create the module type for this module.
 				moduleType = new TypeBuilder(this, "<Module>",
@@ -397,9 +403,12 @@ public class ModuleBuilder : Module
 				}
 				else if(con is ClrConstructor)
 				{
-					return new MethodToken
-						(TypeBuilder.ClrTypeImportMember
-							(privateData, ((ClrConstructor)con).ClrHandle));
+					lock(typeof(AssemblyBuilder))
+					{
+						return new MethodToken
+							(TypeBuilder.ClrTypeImportMember
+								(privateData, ((ClrConstructor)con).ClrHandle));
+					}
 				}
 				throw new InvalidOperationException(_("Emit_CannotImportItem"));
 			}
@@ -422,9 +431,12 @@ public class ModuleBuilder : Module
 				}
 				else if(field is ClrField)
 				{
-					return new FieldToken
-						(TypeBuilder.ClrTypeImportMember
-							(privateData, ((ClrField)field).ClrHandle));
+					lock(typeof(AssemblyBuilder))
+					{
+						return new FieldToken
+							(TypeBuilder.ClrTypeImportMember
+								(privateData, ((ClrField)field).ClrHandle));
+					}
 				}
 				throw new InvalidOperationException(_("Emit_CannotImportItem"));
 			}
@@ -447,9 +459,12 @@ public class ModuleBuilder : Module
 				}
 				else if(method is ClrMethod)
 				{
-					return new MethodToken
-						(TypeBuilder.ClrTypeImportMember
-							(privateData, ((ClrMethod)method).ClrHandle));
+					lock(typeof(AssemblyBuilder))
+					{
+						return new MethodToken
+							(TypeBuilder.ClrTypeImportMember
+								(privateData, ((ClrMethod)method).ClrHandle));
+					}
 				}
 				throw new InvalidOperationException(_("Emit_CannotImportItem"));
 			}
@@ -475,8 +490,11 @@ public class ModuleBuilder : Module
 				{
 					throw new ArgumentNullException("str");
 				}
-				return new StringToken
-					(ClrModuleCreateString(privateData, str));
+				lock(typeof(AssemblyBuilder))
+				{
+					return new StringToken
+						(ClrModuleCreateString(privateData, str));
+				}
 			}
 
 	// Get the symbol writer associated with this module.
@@ -583,9 +601,12 @@ public class ModuleBuilder : Module
 						throw new ArgumentException
 							(_("Emit_CannotImportRefType"));
 					}
-					return new TypeToken
-						(TypeBuilder.ClrTypeImport
-							(privateData, ((ClrType)type).ClrHandle));
+					lock(typeof(AssemblyBuilder))
+					{
+						return new TypeToken
+							(TypeBuilder.ClrTypeImport
+								(privateData, ((ClrType)type).ClrHandle));
+					}
 				}
 				throw new InvalidOperationException(_("Emit_CannotImportItem"));
 			}
@@ -653,6 +674,12 @@ public class ModuleBuilder : Module
 				{
 					EndSync();
 				}
+			}
+
+	// Detach this item.
+	void IDetachItem.Detach()
+			{
+				privateData = IntPtr.Zero;
 			}
 
 	// Create a module within an assembly.

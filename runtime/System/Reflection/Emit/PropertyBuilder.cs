@@ -29,7 +29,8 @@ using System.Reflection;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
+public sealed class PropertyBuilder
+	: PropertyInfo, IClrProgramItem, IDetachItem
 {
 	// Internal state.
 	private TypeBuilder type;
@@ -59,15 +60,21 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 				this.getMethod = null;
 				this.setMethod = null;
 
+				// Register this item to be detached later.
+				type.module.assembly.AddDetach(this);
+
 				// Create the property signature.
 				SignatureHelper helper =
 					SignatureHelper.GetPropertySigHelper
 						(type.module, returnType, parameterTypes);
 
 				// Create the property.
-				this.privateData = ClrPropertyCreate
-					(((IClrProgramItem)type).ClrHandle, name,
-					 attributes, helper.sig);
+				lock(typeof(AssemblyBuilder))
+				{
+					this.privateData = ClrPropertyCreate
+						(((IClrProgramItem)type).ClrHandle, name,
+						 attributes, helper.sig);
+				}
 			}
 
 	// Add an "other" method to this property.
@@ -80,9 +87,12 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 					{
 						throw new ArgumentNullException("mdBuilder");
 					}
-					ClrPropertyAddSemantics
-						(privateData, MethodSemanticsAttributes.Other,
-						 type.module.GetMethodToken(mdBuilder));
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrPropertyAddSemantics
+							(privateData, MethodSemanticsAttributes.Other,
+						 	type.module.GetMethodToken(mdBuilder));
+					}
 				}
 				finally
 				{
@@ -176,7 +186,10 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 				{
 					type.StartSync();
 					FieldBuilder.ValidateConstant(returnType, defaultValue);
-					ClrPropertySetConstant(privateData, defaultValue);
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrPropertySetConstant(privateData, defaultValue);
+					}
 				}
 				finally
 				{
@@ -227,9 +240,12 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 						throw new ArgumentException
 							(_("Emit_GetAlreadyDefined"));
 					}
-					ClrPropertyAddSemantics
-						(privateData, MethodSemanticsAttributes.Getter,
-						 type.module.GetMethodToken(mdBuilder));
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrPropertyAddSemantics
+							(privateData, MethodSemanticsAttributes.Getter,
+						 	type.module.GetMethodToken(mdBuilder));
+					}
 					getMethod = mdBuilder;
 				}
 				finally
@@ -253,9 +269,12 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 						throw new ArgumentException
 							(_("Emit_SetAlreadyDefined"));
 					}
-					ClrPropertyAddSemantics
-						(privateData, MethodSemanticsAttributes.Setter,
-						 type.module.GetMethodToken(mdBuilder));
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrPropertyAddSemantics
+							(privateData, MethodSemanticsAttributes.Setter,
+						 	type.module.GetMethodToken(mdBuilder));
+					}
 					setMethod = mdBuilder;
 				}
 				finally
@@ -282,8 +301,11 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 			{
 				get
 				{
-					return (PropertyAttributes)
-						ClrHelpers.GetMemberAttrs(privateData);
+					lock(typeof(AssemblyBuilder))
+					{
+						return (PropertyAttributes)
+							ClrHelpers.GetMemberAttrs(privateData);
+					}
 				}
 			}
 
@@ -319,7 +341,10 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 			{
 				get
 				{
-					return ClrHelpers.GetName(this);
+					lock(typeof(AssemblyBuilder))
+					{
+						return ClrHelpers.GetName(this);
+					}
 				}
 			}
 
@@ -328,8 +353,11 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 			{
 				get
 				{
-					return new PropertyToken
-						(AssemblyBuilder.ClrGetItemToken(privateData));
+					lock(typeof(AssemblyBuilder))
+					{
+						return new PropertyToken
+							(AssemblyBuilder.ClrGetItemToken(privateData));
+					}
 				}
 			}
 
@@ -358,6 +386,12 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 				{
 					return privateData;
 				}
+			}
+
+	// Detach this item.
+	void IDetachItem.Detach()
+			{
+				privateData = IntPtr.Zero;
 			}
 
 	// Create a new property and attach it to a particular class.

@@ -32,7 +32,8 @@ using System.Security.Permissions;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
-public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
+public sealed class ConstructorBuilder
+		: ConstructorInfo, IClrProgramItem, IDetachItem
 {
 	// Internal state.
 	internal TypeBuilder type;
@@ -55,6 +56,9 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 				this.ilGenerator = null;
 				this.initLocals = true;
 
+				// Register this item to be detached later.
+				type.module.assembly.AddDetach(this);
+
 				// Create the signature.
 				helper = SignatureHelper.GetMethodSigHelper
 						(type.module, callingConvention,
@@ -62,9 +66,12 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 						 typeof(void), parameterTypes);
 
 				// Create the constructor method.
-				this.privateData = MethodBuilder.ClrMethodCreate
-					(((IClrProgramItem)type).ClrHandle, name,
-					 attributes, helper.sig);
+				lock(typeof(AssemblyBuilder))
+				{
+					this.privateData = MethodBuilder.ClrMethodCreate
+						(((IClrProgramItem)type).ClrHandle, name,
+						 attributes, helper.sig);
+				}
 
 				// Add the constructor to the type for post-processing.
 				type.AddMethod(this);
@@ -132,7 +139,10 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 	// Get the implementation attributes for this constructor.
 	public override MethodImplAttributes GetMethodImplementationFlags()
 			{
-				return ClrHelpers.GetImplAttrs(privateData);
+				lock(typeof(AssemblyBuilder))
+				{
+					return ClrHelpers.GetImplAttrs(privateData);
+				}
 			}
 
 	// Get the method that contains this constructor.
@@ -144,21 +154,27 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 	// Get the parameter information for this constructor.
 	public override ParameterInfo[] GetParameters()
 			{
-				int param;
-				ParameterInfo[] parameters = new ParameterInfo [numParams];
-				for(param = 0; param < numParams; ++param)
+				lock(typeof(AssemblyBuilder))
 				{
-					parameters[param] =
-						ClrHelpers.GetParameterInfo(this, this, param + 1);
+					int param;
+					ParameterInfo[] parameters = new ParameterInfo [numParams];
+					for(param = 0; param < numParams; ++param)
+					{
+						parameters[param] =
+							ClrHelpers.GetParameterInfo(this, this, param + 1);
+					}
+					return parameters;
 				}
-				return parameters;
 			}
 
 	// Get the token for this constructor.
 	public MethodToken GetToken()
 			{
-				return new MethodToken
-					(AssemblyBuilder.ClrGetItemToken(privateData));
+				lock(typeof(AssemblyBuilder))
+				{
+					return new MethodToken
+						(AssemblyBuilder.ClrGetItemToken(privateData));
+				}
 			}
 
 	// Invoke this constructor.
@@ -215,8 +231,11 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 				try
 				{
 					type.StartSync();
-					MethodBuilder.ClrMethodSetImplAttrs
-						(privateData, attributes);
+					lock(typeof(AssemblyBuilder))
+					{
+						MethodBuilder.ClrMethodSetImplAttrs
+							(privateData, attributes);
+					}
 				}
 				finally
 				{
@@ -243,8 +262,11 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 			{
 				get
 				{
-					return (MethodAttributes)
-						ClrHelpers.GetMemberAttrs(privateData);
+					lock(typeof(AssemblyBuilder))
+					{
+						return (MethodAttributes)
+							ClrHelpers.GetMemberAttrs(privateData);
+					}
 				}
 			}
 
@@ -284,7 +306,10 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 			{
 				get
 				{
-					return ClrHelpers.GetName(this);
+					lock(typeof(AssemblyBuilder))
+					{
+						return ClrHelpers.GetName(this);
+					}
 				}
 			}
 
@@ -328,6 +353,12 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 	internal void FinalizeConstructor()
 			{
 				// TODO
+			}
+
+	// Detach this item.
+	void IDetachItem.Detach()
+			{
+				privateData = IntPtr.Zero;
 			}
 
 }; // class ConstructorBuilder

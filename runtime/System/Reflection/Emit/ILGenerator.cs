@@ -31,7 +31,7 @@ using System.IO;
 using System.Diagnostics.SymbolStore;
 using System.Runtime.InteropServices;
 
-public class ILGenerator
+public class ILGenerator : IDetachItem
 {
 	// Internal state.
 	private ModuleBuilder module;
@@ -123,6 +123,7 @@ public class ILGenerator
 				exceptionList = null;
 				exceptionListEnd = null;
 				tokenFixups = null;
+				module.assembly.AddDetach(this);
 			}
 
 	// Terminate the previous exception clause.
@@ -1215,6 +1216,12 @@ public class ILGenerator
 				{
 					throw new ArgumentException(_("Emit_NameEmpty"));
 				}
+			}
+
+	// Detach this item.
+	void IDetachItem.Detach()
+			{
+				tokenFixups = null;
 			}
 
 }; // class ILGenerator.cs

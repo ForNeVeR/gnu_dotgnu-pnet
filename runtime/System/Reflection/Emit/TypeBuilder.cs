@@ -33,7 +33,7 @@ using System.Runtime.CompilerServices;
 using System.Security;
 using System.Security.Permissions;
 
-public sealed class TypeBuilder : Type, IClrProgramItem
+public sealed class TypeBuilder : Type, IClrProgramItem, IDetachItem
 {
 	// Internal state.
 	private IntPtr privateData;			// Must be the first field.
@@ -89,19 +89,26 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				this.methods = new ArrayList();
 				this.needsDefaultConstructor = true;
 
+				// Register this item to be detached later.
+				module.assembly.AddDetach(this);
+
 				// Create the type.
-				privateData = ClrTypeCreate
-					(((IClrProgramItem)module).ClrHandle, name,
-					 (nspace == String.Empty ? null : nspace), attr,
-					 (parent == null ? new System.Reflection.Emit.TypeToken(0)
-					 				 : module.GetTypeToken(parent)));
-				if(packingSize != PackingSize.Unspecified)
+				lock(typeof(AssemblyBuilder))
 				{
-					ClrTypeSetPackingSize(privateData, (int)packingSize);
-				}
-				if(typeSize != UnspecifiedTypeSize)
-				{
-					ClrTypeSetClassSize(privateData, typeSize);
+					privateData = ClrTypeCreate
+						(((IClrProgramItem)module).ClrHandle, name,
+					 	(nspace == String.Empty ? null : nspace), attr,
+					 	(parent == null
+							? new System.Reflection.Emit.TypeToken(0)
+					 		: module.GetTypeToken(parent)));
+					if(packingSize != PackingSize.Unspecified)
+					{
+						ClrTypeSetPackingSize(privateData, (int)packingSize);
+					}
+					if(typeSize != UnspecifiedTypeSize)
+					{
+						ClrTypeSetClassSize(privateData, typeSize);
+					}
 				}
 
 				// Add the interfaces to the type.
@@ -218,7 +225,11 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			{
 				get
 				{
-					return (PackingSize)(ClrTypeGetPackingSize(privateData));
+					lock(typeof(AssemblyBuilder))
+					{
+						return (PackingSize)
+							(ClrTypeGetPackingSize(privateData));
+					}
 				}
 			}
 
@@ -236,7 +247,10 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			{
 				get
 				{
-					return ClrTypeGetClassSize(privateData);
+					lock(typeof(AssemblyBuilder))
+					{
+						return ClrTypeGetClassSize(privateData);
+					}
 				}
 			}
 
@@ -254,8 +268,11 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			{
 				get
 				{
-					return new System.Reflection.Emit.TypeToken
-						(AssemblyBuilder.ClrGetItemToken(privateData));
+					lock(typeof(AssemblyBuilder))
+					{
+						return new System.Reflection.Emit.TypeToken
+							(AssemblyBuilder.ClrGetItemToken(privateData));
+					}
 				}
 			}
 
@@ -397,7 +414,10 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 					interfaces = newInterfaces;
 
 					// Call the runtime engine to add the interface.
-					ClrTypeAddInterface(privateData, token);
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrTypeAddInterface(privateData, token);
+					}
 				}
 				finally
 				{
@@ -452,10 +472,18 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 					}
 
 					// Wrap "privateData" in a "ClrType" object and return it.
-					ClrType clrType = new ClrType();
-					clrType.privateData = privateData;
-					type = clrType;
-					return type;
+					lock(typeof(AssemblyBuilder))
+					{
+						if(privateData == IntPtr.Zero)
+						{
+							throw new InvalidOperationException
+								(_("Emit_TypeInvalid"));
+						}
+						ClrType clrType = new ClrType();
+						clrType.privateData = privateData;
+						type = clrType;
+						return type;
+					}
 				}
 				finally
 				{
@@ -1087,7 +1115,11 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				try
 				{
 					StartSync();
-					ClrTypeSetParent(privateData, module.GetTypeToken(parent));
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrTypeSetParent
+							(privateData, module.GetTypeToken(parent));
+					}
 					this.parent = parent;
 				}
 				finally
@@ -1122,6 +1154,12 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 	internal void AddMethod(MethodBase method)
 			{
 				methods.Add(method);
+			}
+
+	// Detach this item.
+	void IDetachItem.Detach()
+			{
+				privateData = IntPtr.Zero;
 			}
 
 	// Create a new type.

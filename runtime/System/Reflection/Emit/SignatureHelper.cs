@@ -31,7 +31,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
-public sealed class SignatureHelper
+public sealed class SignatureHelper : IDetachItem
 {
 	// Internal state.
 	private Module mod;
@@ -48,6 +48,8 @@ public sealed class SignatureHelper
 				this.sig = sig;
 				this.numArgs = 0;
 				this.callConv = (CallingConvention)0;
+				((ModuleBuilder)mod).assembly.AddDetach(this);
+
 			}
 	private SignatureHelper(Module mod, IntPtr context, IntPtr sig,
 							CallingConvention callConv)
@@ -57,6 +59,7 @@ public sealed class SignatureHelper
 				this.sig = sig;
 				this.numArgs = 0;
 				this.callConv = callConv;
+				((ModuleBuilder)mod).assembly.AddDetach(this);
 			}
 
 	// Convert a module into an ILContext value.
@@ -123,23 +126,32 @@ public sealed class SignatureHelper
 			}
 	internal static IntPtr CSToILType(Module mod, Type type)
 			{
-				return CSToILType(mod, ModuleToContext(mod), type);
+				lock(typeof(AssemblyBuilder))
+				{
+					return CSToILType(mod, ModuleToContext(mod), type);
+				}
 			}
 
 	// Create a signature helper for a field signature.
 	public static SignatureHelper GetFieldSigHelper(Module mod)
 			{
-				IntPtr context = ModuleToContext(mod);
-				return new SignatureHelper
-					(mod, context, ClrSigCreateField(context));
+				lock(typeof(AssemblyBuilder))
+				{
+					IntPtr context = ModuleToContext(mod);
+					return new SignatureHelper
+						(mod, context, ClrSigCreateField(context));
+				}
 			}
 
 	// Create a signature helper for a local variable signature.
 	public static SignatureHelper GetLocalVarSigHelper(Module mod)
 			{
-				IntPtr context = ModuleToContext(mod);
-				return new SignatureHelper
-					(mod, context, ClrSigCreateLocal(context));
+				lock(typeof(AssemblyBuilder))
+				{
+					IntPtr context = ModuleToContext(mod);
+					return new SignatureHelper
+						(mod, context, ClrSigCreateLocal(context));
+				}
 			}
 
 	// Create a signature helper for a method signature.
@@ -148,39 +160,42 @@ public sealed class SignatureHelper
 				 CallingConvention unmanagedCallConv, Type returnType,
 				 Type[] parameterTypes)
 			{
-				// Convert the module into a signature create context.
-				IntPtr context = ModuleToContext(mod);
+				lock(typeof(AssemblyBuilder))
+				{
+					// Convert the module into a signature create context.
+					IntPtr context = ModuleToContext(mod);
 
-				// Determine the calling convention flags to use.
-				int conv = 0;		/* default */
-				if((callConv & CallingConventions.VarArgs) != 0)
-				{
-					conv = 0x05;	/* vararg */
-				}
-				if((callConv & CallingConventions.HasThis) != 0)
-				{
-					conv |= 0x20;	/* hasthis */
-				}
-				if((callConv & CallingConventions.ExplicitThis) != 0)
-				{
-					conv |= 0x40;	/* explicitthis */
-				}
-
-				// Create the basic signature helper.
-				IntPtr sig = ClrSigCreateMethod
-					(context, conv, CSToILType(mod, context, returnType));
-				SignatureHelper helper = new SignatureHelper
-					(mod, context, sig, unmanagedCallConv);
-
-				// Add the parameters to the helper.
-				if(parameterTypes != null)
-				{
-					foreach(Type type in parameterTypes)
+					// Determine the calling convention flags to use.
+					int conv = 0;		/* default */
+					if((callConv & CallingConventions.VarArgs) != 0)
 					{
-						helper.AddArgument(type);
+						conv = 0x05;	/* vararg */
 					}
+					if((callConv & CallingConventions.HasThis) != 0)
+					{
+						conv |= 0x20;	/* hasthis */
+					}
+					if((callConv & CallingConventions.ExplicitThis) != 0)
+					{
+						conv |= 0x40;	/* explicitthis */
+					}
+
+					// Create the basic signature helper.
+					IntPtr sig = ClrSigCreateMethod
+						(context, conv, CSToILType(mod, context, returnType));
+					SignatureHelper helper = new SignatureHelper
+						(mod, context, sig, unmanagedCallConv);
+
+					// Add the parameters to the helper.
+					if(parameterTypes != null)
+					{
+						foreach(Type type in parameterTypes)
+						{
+							helper.AddArgument(type);
+						}
+					}
+					return helper;
 				}
-				return helper;
 			}
 	public static SignatureHelper GetMethodSigHelper
 				(Module mod, CallingConvention unmanagedCallConv,
@@ -208,86 +223,107 @@ public sealed class SignatureHelper
 	internal static SignatureHelper GetMethodSigHelper
 				(Module mod, MethodToken token)
 			{
-				IntPtr context = ModuleToContext(mod);
-				IntPtr sig = ClrSigCreateMethodCopy
-					(context, mod.privateData, token.Token);
-				return new SignatureHelper(mod, context, sig);
+				lock(typeof(AssemblyBuilder))
+				{
+					IntPtr context = ModuleToContext(mod);
+					IntPtr sig = ClrSigCreateMethodCopy
+						(context, mod.privateData, token.Token);
+					return new SignatureHelper(mod, context, sig);
+				}
 			}
 
 	// Create a signature helper for a property signature.
 	public static SignatureHelper GetPropertySigHelper
 				(Module mod, Type returnType, Type[] parameterTypes)
 			{
-				// Convert the module into a signature create context.
-				IntPtr context = ModuleToContext(mod);
-
-				// Create the basic signature helper.
-				IntPtr sig = ClrSigCreateProperty
-					(context, CSToILType(mod, context, returnType));
-				SignatureHelper helper = new SignatureHelper
-					(mod, context, sig);
-
-				// Add the parameters to the helper.
-				if(parameterTypes != null)
+				lock(typeof(AssemblyBuilder))
 				{
-					foreach(Type type in parameterTypes)
+					// Convert the module into a signature create context.
+					IntPtr context = ModuleToContext(mod);
+
+					// Create the basic signature helper.
+					IntPtr sig = ClrSigCreateProperty
+						(context, CSToILType(mod, context, returnType));
+					SignatureHelper helper = new SignatureHelper
+						(mod, context, sig);
+
+					// Add the parameters to the helper.
+					if(parameterTypes != null)
 					{
-						helper.AddArgument(type);
+						foreach(Type type in parameterTypes)
+						{
+							helper.AddArgument(type);
+						}
 					}
+					return helper;
 				}
-				return helper;
 			}
 
 	// Add an argument type to a signature.
 	public void AddArgument(Type clsArgument)
 			{
-				if(clsArgument == null)
+				lock(typeof(AssemblyBuilder))
 				{
-					throw new ArgumentNullException("clsArgument");
+					if(clsArgument == null)
+					{
+						throw new ArgumentNullException("clsArgument");
+					}
+					IntPtr type = CSToILType(mod, context, clsArgument);
+					if(!ClrSigAddArgument(context, sig, type))
+					{
+						throw new InvalidOperationException
+							(_("Emit_InvalidSigArgument"));
+					}
+					++numArgs;
 				}
-				IntPtr type = CSToILType(mod, context, clsArgument);
-				if(!ClrSigAddArgument(context, sig, type))
-				{
-					throw new InvalidOperationException
-						(_("Emit_InvalidSigArgument"));
-				}
-				++numArgs;
 			}
 
 	// Add a vararg sentinel to a signature.
 	public void AddSentinel()
 			{
-				if(!ClrSigAddSentinel(context, sig))
+				lock(typeof(AssemblyBuilder))
 				{
-					throw new InvalidOperationException
-						(_("Emit_InvalidSigArgument"));
+					if(!ClrSigAddSentinel(context, sig))
+					{
+						throw new InvalidOperationException
+							(_("Emit_InvalidSigArgument"));
+					}
 				}
 			}
 
 	// Determine if two signatures are equal.
 	public override bool Equals(Object obj)
 			{
-				SignatureHelper helper = (obj as SignatureHelper);
-				if(helper != null && helper.mod == mod)
+				lock(typeof(AssemblyBuilder))
 				{
-					return ClrSigIdentical(sig, helper.sig);
-				}
-				else
-				{
-					return false;
+					SignatureHelper helper = (obj as SignatureHelper);
+					if(helper != null && helper.mod == mod)
+					{
+						return ClrSigIdentical(sig, helper.sig);
+					}
+					else
+					{
+						return false;
+					}
 				}
 			}
 
 	// Get the hash code for a signature.
 	public override int GetHashCode()
 			{
-				return ClrSigGetHashCode(sig);
+				lock(typeof(AssemblyBuilder))
+				{
+					return ClrSigGetHashCode(sig);
+				}
 			}
 
 	// Convert the signature into an array of bytes.
 	public byte[] GetSignature()
 			{
-				return ClrSigGetBytes(mod.privateData, sig);
+				lock(typeof(AssemblyBuilder))
+				{
+					return ClrSigGetBytes(mod.privateData, sig);
+				}
 			}
 
 	// Convert this signature into a string.
@@ -313,6 +349,13 @@ public sealed class SignatureHelper
 				}
 				builder.Append(Environment.NewLine);
 				return builder.ToString();
+			}
+
+	// Detach this item.
+	void IDetachItem.Detach()
+			{
+				context = IntPtr.Zero;
+				sig = IntPtr.Zero;
 			}
 
 	// Internal version of "ModuleToContext".

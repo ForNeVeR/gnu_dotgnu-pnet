@@ -29,7 +29,7 @@ using System.Reflection;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-public sealed class EventBuilder : IClrProgramItem
+public sealed class EventBuilder : IClrProgramItem, IDetachItem
 {
 	// Internal state.
 	private TypeBuilder type;
@@ -49,12 +49,18 @@ public sealed class EventBuilder : IClrProgramItem
 					throw new ArgumentNullException("eventType");
 				}
 
+				// Register this item to be detached later.
+				type.module.assembly.AddDetach(this);
+
 				// Create the event.
-				this.type = type;
-				this.privateData = ClrEventCreate
-					(((IClrProgramItem)type).ClrHandle, name,
-					 SignatureHelper.CSToILType(type.module, eventType),
-					 attributes);
+				lock(typeof(AssemblyBuilder))
+				{
+					this.type = type;
+					this.privateData = ClrEventCreate
+						(((IClrProgramItem)type).ClrHandle, name,
+					 	SignatureHelper.CSToILType(type.module, eventType),
+					 	attributes);
+				}
 			}
 
 	// Add method semantics to this event.
@@ -68,9 +74,12 @@ public sealed class EventBuilder : IClrProgramItem
 					{
 						throw new ArgumentNullException("mdBuilder");
 					}
-					ClrEventAddSemantics
-						(privateData, attr,
-						 type.module.GetMethodToken(mdBuilder));
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrEventAddSemantics
+							(privateData, attr,
+						 	type.module.GetMethodToken(mdBuilder));
+					}
 				}
 				finally
 				{
@@ -87,8 +96,11 @@ public sealed class EventBuilder : IClrProgramItem
 	// Get the token code for this event.
 	public EventToken GetEventToken()
 			{
-				return new EventToken
-					(AssemblyBuilder.ClrGetItemToken(privateData));
+				lock(typeof(AssemblyBuilder))
+				{
+					return new EventToken
+						(AssemblyBuilder.ClrGetItemToken(privateData));
+				}
 			}
 
 	// Set the "add on" method for this event.
@@ -144,6 +156,12 @@ public sealed class EventBuilder : IClrProgramItem
 				{
 					return privateData;
 				}
+			}
+
+	// Detach this item.
+	void IDetachItem.Detach()
+			{
+				privateData = IntPtr.Zero;
 			}
 
 	// Create a new event and attach it to a particular class.

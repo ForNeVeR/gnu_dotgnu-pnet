@@ -26,6 +26,7 @@ namespace System.Reflection.Emit
 
 using System;
 using System.IO;
+using System.Collections;
 using System.Reflection;
 using System.Security;
 using System.Security.Policy;
@@ -43,6 +44,7 @@ public sealed class AssemblyBuilder : Assembly
 	private MethodInfo entryPoint;
 	private IntPtr writer;
 	private ModuleBuilder module;
+	private ArrayList detachList;
 
 	// Constructor.  Called from AppDomain.DefineDynamicAssembly.
 	internal AssemblyBuilder(AssemblyName name, AssemblyBuilderAccess access,
@@ -53,18 +55,22 @@ public sealed class AssemblyBuilder : Assembly
 				this.isSynchronized = isSynchronized;
 				this.saved = false;
 				this.entryPoint = null;
+				this.detachList = new ArrayList();
 				Version version = name.Version;
-				if(version != null)
+				lock(typeof(AssemblyBuilder))
 				{
-					this.privateData = ClrAssemblyCreate
-						(name.Name, version.Major, version.Minor,
-						 version.Build, version.Revision,
-						 access, out writer);
-				}
-				else
-				{
-					this.privateData = ClrAssemblyCreate
-						(name.Name, 0, 0, 0, 0, access, out writer);
+					if(version != null)
+					{
+						this.privateData = ClrAssemblyCreate
+							(name.Name, version.Major, version.Minor,
+							 version.Build, version.Revision,
+							 access, out writer);
+					}
+					else
+					{
+						this.privateData = ClrAssemblyCreate
+							(name.Name, 0, 0, 0, 0, access, out writer);
+					}
 				}
 				if(this.privateData == IntPtr.Zero)
 				{
@@ -335,10 +341,13 @@ public sealed class AssemblyBuilder : Assembly
 					throw new InvalidOperationException
 						(_("Invalid_EntryNotInAssembly"));
 				}
-			/* TODO
-				ClrSetEntryPoint(((MethodBuilder)entryMethod).ClrHandle,
+				lock(typeof(AssemblyBuilder))
+				{
+				/*	TODO
+					ClrSetEntryPoint(((MethodBuilder)entryMethod).ClrHandle,
 								 fileKind);
-			*/
+				*/
+				}
 				entryPoint = entryMethod;
 			}
 
@@ -364,6 +373,29 @@ public sealed class AssemblyBuilder : Assembly
 									     PermissionSet pset)
 			{
 		 		throw new NotImplementedException("AddDeclarativeSecurity");
+			}
+
+	// Add an item to this assembly's detach list.
+	internal void AddDetach(IDetachItem item)
+			{
+				lock(typeof(AssemblyBuilder))
+				{
+					detachList.Add(item);
+				}
+			}
+
+	// Detach everything used by this assembly, which ensures that
+	// all pointers to native structures are invalidated.
+	private void Detach()
+			{
+				lock(typeof(AssemblyBuilder))
+				{
+					foreach(IDetachItem item in detachList)
+					{
+						item.Detach();
+					}
+					privateData = IntPtr.Zero;
+				}
 			}
 
 	// Create a new assembly.

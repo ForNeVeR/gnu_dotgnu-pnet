@@ -27,6 +27,18 @@
 	field, event, method, and property creation to use the
 	signature building routines.
 
+	* runtime/System/Reflection/Emit/AssemblyBuilder.cs,
+	runtime/System/Reflection/Emit/ConstructorBuilder.cs,
+	runtime/System/Reflection/Emit/EventBuilder.cs,
+	runtime/System/Reflection/Emit/FieldBuilder.cs,
+	runtime/System/Reflection/Emit/ILGenerator.cs,
+	runtime/System/Reflection/Emit/MethodBuilder.cs,
+	runtime/System/Reflection/Emit/ModuleBuilder.cs,
+	runtime/System/Reflection/Emit/PropertyBuilder.cs,
+	runtime/System/Reflection/Emit/SignatureHelper.cs,
+	runtime/System/Reflection/Emit/TypeBuilder.cs: harden and secure
+	the Reflection.Emit API against multi-threaded access.
+
 2003-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/ClrField.cs,

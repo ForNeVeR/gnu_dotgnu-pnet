@@ -32,7 +32,7 @@ using System.Security.Permissions;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
-public sealed class MethodBuilder : MethodInfo, IClrProgramItem
+public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 {
 	// Internal state.
 	internal TypeBuilder type;
@@ -78,6 +78,9 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 				this.numParams = (parameterTypes != null
 									? parameterTypes.Length : 0);
 
+				// Register this item to be detached later.
+				type.module.assembly.AddDetach(this);
+
 				// Create the method signature.
 				helper = SignatureHelper.GetMethodSigHelper
 						(type.module, callingConvention,
@@ -85,9 +88,12 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 						 returnType, parameterTypes);
 
 				// Create the method.
-				this.privateData = ClrMethodCreate
-					(((IClrProgramItem)type).ClrHandle, name,
-					 attributes, helper.sig);
+				lock(typeof(AssemblyBuilder))
+				{
+					this.privateData = ClrMethodCreate
+						(((IClrProgramItem)type).ClrHandle, name,
+						 attributes, helper.sig);
+				}
 
 				// Add the method to the type for post-processing.
 				type.AddMethod(this);
@@ -208,7 +214,10 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 	// Get the method implementation attributes for this method.
 	public override MethodImplAttributes GetMethodImplementationFlags()
 			{
-				return ClrHelpers.GetImplAttrs(privateData);
+				lock(typeof(AssemblyBuilder))
+				{
+					return ClrHelpers.GetImplAttrs(privateData);
+				}
 			}
 
 	// Get the module that owns this method.
@@ -220,21 +229,27 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 	// Get the parameters for this method.
 	public override ParameterInfo[] GetParameters()
 			{
-				int param;
-				ParameterInfo[] parameters = new ParameterInfo [numParams];
-				for(param = 0; param < numParams; ++param)
+				lock(typeof(AssemblyBuilder))
 				{
-					parameters[param] =
-						ClrHelpers.GetParameterInfo(this, this, param + 1);
+					int param;
+					ParameterInfo[] parameters = new ParameterInfo [numParams];
+					for(param = 0; param < numParams; ++param)
+					{
+						parameters[param] =
+							ClrHelpers.GetParameterInfo(this, this, param + 1);
+					}
+					return parameters;
 				}
-				return parameters;
 			}
 
 	// Get the token code for this method.
 	public MethodToken GetToken()
 			{
-				return new MethodToken
-					(AssemblyBuilder.ClrGetItemToken(privateData));
+				lock(typeof(AssemblyBuilder))
+				{
+					return new MethodToken
+						(AssemblyBuilder.ClrGetItemToken(privateData));
+				}
 			}
 
 	// Invoke this method.
@@ -285,7 +300,10 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 				try
 				{
 					type.StartSync();
-					ClrMethodSetImplAttrs(privateData, attributes);
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrMethodSetImplAttrs(privateData, attributes);
+					}
 				}
 				finally
 				{
@@ -377,8 +395,11 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 			{
 				get
 				{
-					return (MethodAttributes)
-						ClrHelpers.GetMemberAttrs(privateData);
+					lock(typeof(AssemblyBuilder))
+					{
+						return (MethodAttributes)
+							ClrHelpers.GetMemberAttrs(privateData);
+					}
 				}
 			}
 
@@ -387,7 +408,10 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 			{
 				get
 				{
-					return ClrHelpers.GetCallConv(privateData);
+					lock(typeof(AssemblyBuilder))
+					{
+						return ClrHelpers.GetCallConv(privateData);
+					}
 				}
 			}
 
@@ -427,7 +451,10 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 			{
 				get
 				{
-					return ClrHelpers.GetName(this);
+					lock(typeof(AssemblyBuilder))
+					{
+						return ClrHelpers.GetName(this);
+					}
 				}
 			}
 
@@ -481,6 +508,12 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 	internal void FinalizeMethod()
 			{
 				// TODO
+			}
+
+	// Detach this item.
+	void IDetachItem.Detach()
+			{
+				privateData = IntPtr.Zero;
 			}
 
 	// Create a new method and attach it to a particular class.

@@ -29,7 +29,7 @@ using System.Reflection;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-public sealed class FieldBuilder : FieldInfo, IClrProgramItem
+public sealed class FieldBuilder : FieldInfo, IClrProgramItem, IDetachItem
 {
 	// Internal state.
 	internal TypeBuilder type;
@@ -39,11 +39,18 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 	internal FieldBuilder(TypeBuilder type, String name, Type fieldType,
 						  FieldAttributes attributes)
 			{
-				this.type = type;
-				this.privateData = ClrFieldCreate
-					(((IClrProgramItem)type).ClrHandle, name,
-					 SignatureHelper.CSToILType(type.module, fieldType),
-					 attributes);
+				// Register this item to be detached later.
+				type.module.assembly.AddDetach(this);
+
+				// Create the field.
+				lock(typeof(AssemblyBuilder))
+				{
+					this.type = type;
+					this.privateData = ClrFieldCreate
+						(((IClrProgramItem)type).ClrHandle, name,
+					 	SignatureHelper.CSToILType(type.module, fieldType),
+					 	attributes);
+				}
 			}
 
 	// Get the custom attributes associated with this field.
@@ -60,8 +67,11 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 	// Get the token code for this field.
 	public FieldToken GetToken()
 			{
-				return new FieldToken
-					(AssemblyBuilder.ClrGetItemToken(privateData));
+				lock(typeof(AssemblyBuilder))
+				{
+					return new FieldToken
+						(AssemblyBuilder.ClrGetItemToken(privateData));
+				}
 			}
 
 	// Get the value associated with this field on an object.
@@ -83,7 +93,10 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 				{
 					type.StartSync();
 					ValidateConstant(FieldType, defaultValue);
-					ClrFieldSetConstant(privateData, defaultValue);
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrFieldSetConstant(privateData, defaultValue);
+					}
 				}
 				finally
 				{
@@ -129,7 +142,11 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 					{
 						throw new ArgumentNullException("unmanagedMarshal");
 					}
-					ClrFieldSetMarshal(privateData, unmanagedMarshal.ToBytes());
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrFieldSetMarshal
+							(privateData, unmanagedMarshal.ToBytes());
+					}
 				}
 				finally
 				{
@@ -143,7 +160,10 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 				try
 				{
 					type.StartSync();
-					ClrFieldSetOffset(privateData, iOffset);
+					lock(typeof(AssemblyBuilder))
+					{
+						ClrFieldSetOffset(privateData, iOffset);
+					}
 				}
 				finally
 				{
@@ -165,8 +185,11 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 			{
 				get
 				{
-					return (FieldAttributes)
-						ClrHelpers.GetMemberAttrs(privateData);
+					lock(typeof(AssemblyBuilder))
+					{
+						return (FieldAttributes)
+							ClrHelpers.GetMemberAttrs(privateData);
+					}
 				}
 			}
 
@@ -193,7 +216,10 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 			{
 				get
 				{
-					return ClrField.GetFieldType(privateData);
+					lock(typeof(AssemblyBuilder))
+					{
+						return ClrField.GetFieldType(privateData);
+					}
 				}
 			}
 
@@ -202,7 +228,10 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 			{
 				get
 				{
-					return ClrHelpers.GetName(this);
+					lock(typeof(AssemblyBuilder))
+					{
+						return ClrHelpers.GetName(this);
+					}
 				}
 			}
 
@@ -265,6 +294,12 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 					// Not a useful constant value.
 					throw new ArgumentException(_("Emit_InvalidConstant"));
 				}
+			}
+
+	// Detach this item.
+	void IDetachItem.Detach()
+			{
+				privateData = IntPtr.Zero;
 			}
 
 	// Create a new field and attach it to a particular class.

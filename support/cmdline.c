@@ -145,6 +145,41 @@ static int RecognizeSlashOption(const ILCmdLineOption *options,
 	return 0;
 }
 
+/*
+ * Rearrange a command-line so that '/' options precede regular arguments.
+ */
+static void RearrangeSlashOptions(const ILCmdLineOption *options,
+								  int argc, char **argv)
+{
+	int posn = 1;
+	int slashInsert = 1;
+	int temp;
+	char *param, *param2;
+	while(posn < argc)
+	{
+		if(argv[posn][0] == '/' &&
+		   RecognizeSlashOption(options, argv[posn], &param) != 0)
+		{
+			/* Shift this option to the beginning of the command-line */
+			param = argv[posn];
+			for(temp = slashInsert; temp <= posn; ++temp)
+			{
+				param2 = argv[temp];
+				argv[temp] = param;
+				param = param2;
+			}
+			++slashInsert;
+		}
+		else if(!strcmp(argv[posn], "--"))
+		{
+			/* Stop when we see "--", as any arguments that follow
+			   starting with '/' are probably filenames, not options */
+			break;
+		}
+		++posn;
+	}
+}
+
 int ILCmdLineNextOption(int *argc, char ***argv, int *state,
 						const ILCmdLineOption *options, char **param)
 {
@@ -156,6 +191,16 @@ int ILCmdLineNextOption(int *argc, char ***argv, int *state,
 		/* This is the first time we have been called,
 		   so expand response files before we get going */
 		ILCmdLineExpand(argc, argv);
+
+		/* If this program supports '/' compatibility options,
+		   then rearrange the command-line so that those options
+		   are at the front, before all other arguments */
+		if(HasSlashOptions(options))
+		{
+			RearrangeSlashOptions(options, *argc, *argv);
+		}
+
+		/* Start parsing the first option */
 		*state = 1;
 	}
 

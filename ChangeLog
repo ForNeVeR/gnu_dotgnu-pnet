@@ -17,6 +17,9 @@
 	turn "ilasm" into a library that can be directly linked into
 	"cscc", and then link it into "cscc".
 
+	* support/cmdline.c: rearrange the command-line so that '/'
+	options always come first if the command supports them.
+
 2002-12-12 Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_defs.tc, 

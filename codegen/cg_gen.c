@@ -598,7 +598,14 @@ unsigned ILGenTempTypedVar(ILGenInfo *info, ILType *type)
 	info->tempVars[info->numTempVars].allocated = 1;
 
 	/* Generate assembly code to allocate the local */
-	ILGenAllocLocal(info, type, (const char *)0);
+	if(info->outputIsJava)
+	{
+		JavaGenAddFrameSlot(info, ILTypeToMachineType(type));
+	}
+	else
+	{
+		ILGenAllocLocal(info, type, (const char *)0);
+	}
 
 	/* Return the new variable index to the caller */
 	return (info->tempLocalBase + (info->numTempVars)++);

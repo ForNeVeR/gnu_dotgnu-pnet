@@ -18,6 +18,9 @@ classes, fields, and methods to JL assembly code.
 * codegen/jv_arith.tc: bug fix - change calls to ILNode_GenValue into
 JavaGenValue.
 
+* codegen/cg_gen.c (ILGenTempTypedVar): allocate a frame slot if the
+output is JVM.
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions

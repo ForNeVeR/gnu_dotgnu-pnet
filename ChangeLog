@@ -44,6 +44,8 @@ delegates.
 * runtime/System/Empty.cs: declare this class as "internal", because it
 is only important to the internal workings of the library.
 
+* runtime/System/Exception.cs: implement "Exception.GetPackedStackTrace".
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

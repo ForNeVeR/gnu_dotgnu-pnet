@@ -212,8 +212,7 @@ public class Exception
 	// Get the packed stack trace information from this exception.
 	internal PackedStackFrame[] GetPackedStackTrace()
 		{
-			// TODO
-			return null;
+			return stackTrace;
 		}
 
 	// Get the extra data to be inserted into the "ToString" representation.

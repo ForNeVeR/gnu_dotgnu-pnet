@@ -1,4 +1,11 @@
+2003-07-05  Thong Nguyen  <tum@veridicus.com>
 
+	* runtime/System/IO/StreamReader.cs: Changes to make the reader
+	only detect the byte encoding on the first call to read to
+	prevent unnecessary blocking in the constructor. Also, byte encoding
+	detection is cancelled as soon as an unrecognised marker byte is
+	encountered.
+	
 2003-07-03  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/MessageBox.cs: Stub out this control .

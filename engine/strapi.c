@@ -54,7 +54,7 @@ ILString *ILStringCreateLen(ILExecThread *thread, const char *str, int len)
 		/* Call the "String(sbyte *, int, int)" constructor */
 		return (ILString *)ILExecThreadNew
 					(thread, "System.String", "(T*bii)V",
-					 (ILInt8 *)str, 0, len);
+					 (ILInt8 *)str, (ILVaInt)0, (ILVaInt)len);
 	}
 	else
 	{
@@ -87,7 +87,7 @@ ILString *ILStringWCreateLen(ILExecThread *thread,
 		/* Call the "String(char *, int, int)" constructor */
 		return (ILString *)ILExecThreadNew
 					(thread, "System.String", "(T*cii)V",
-					 (ILUInt16 *)str, 0, len);
+					 (ILUInt16 *)str, (ILVaInt)0, (ILVaInt)len);
 	}
 	else
 	{

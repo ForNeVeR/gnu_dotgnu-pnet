@@ -306,7 +306,8 @@ static System_String *System_String_ctor_6(ILExecThread *thread,
 	}
 
 	/* Construct an array that contains the bytes */
-	array = (System_Array *)ILExecThreadNew(thread, "[B", "(Ti)V", length);
+	array = (System_Array *)ILExecThreadNew(thread, "[B", "(Ti)V",
+											(ILVaInt)length);
 	if(!array)
 	{
 		return 0;

@@ -769,6 +769,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	ILMachineType returnMachineType;
 	ILOverride *over;
 	ILMethod *decl;
+	ILConstant *constant;
 
 	/* Ignore the method if "suppressCodeGen" is set.  This can happen
 	   for "extern" methods within the "<Module>" class, which are
@@ -819,10 +820,14 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	param = 0;
 	while((param = ILMethodNextParam(method, param)) != 0)
 	{
-		if(ILProgramItemNextAttribute((ILProgramItem *)param, 0) != 0)
+		constant = ILConstantGetFromOwner((ILProgramItem *)param);
+		if(ILProgramItemNextAttribute((ILProgramItem *)param, 0) != 0 ||
+		   constant != 0)
 		{
-			fprintf(outstream, ".param[%lu]\n",
+			fprintf(outstream, ".param[%lu]",
 					(unsigned long)(ILParameter_Num(param)));
+			ILDumpConstant(outstream, (ILProgramItem *)param, 1);
+			putc('\n', outstream);
 			ILGenOutputAttributes(info, outstream, (ILProgramItem *)param);
 		}
 	}

@@ -808,6 +808,252 @@ static int IndexerNameAttribute(ILProgramItem *item, ILSerializeReader *reader)
 }
 
 /*
+ * Convert a string from UTF-8 to UTF-16.
+ */
+static void *StringToUTF16(const char *str, unsigned long *len, int slen)
+{
+	int posn = 0;
+	unsigned long ch;
+	unsigned long index;
+	char *utf16;
+
+	/* Determine the length of the UTF-16 string in bytes */
+	*len = 0;
+	while(posn < slen)
+	{
+		ch = ILUTF8ReadChar(str, slen, &posn);
+		*len += (unsigned long)ILUTF16WriteCharAsBytes(0, ch);
+	}
+
+	/* Allocate space for the UTF-16 string */
+	utf16 = (char *)ILMalloc(*len * 2);
+	if(!utf16)
+	{
+		return 0;
+	}
+
+	/* Convert the string from UTF-8 to UTF-16 */
+	index = 0;
+	posn = 0;
+	while(posn < slen)
+	{
+		ch = ILUTF8ReadChar(str, slen, &posn);
+		index += (unsigned long)ILUTF16WriteCharAsBytes(utf16 + index, ch);
+	}
+	return utf16;
+}
+
+/*
+ * Process "System.ComponentModel.DefaultValueAttribute" values
+ * that exist on parameters, turning them into metadata constants.
+ * This is used to support interoperation with VB.NET.
+ */
+static int DefaultValueAttribute(ILProgramItem *item, ILSerializeReader *reader)
+{
+	int type, elemType;
+	unsigned char blob[8];
+	unsigned long blobLen;
+	int len;
+	const char *str;
+	ILConstant *constant;
+	void *utf16;
+
+	/* We only convert the attribute if it is on a parameter */
+	if(!ILProgramItemToParameter(item))
+	{
+		return 0;
+	}
+
+	/* Get the value type, to determine how to convert it */
+	type = ILSerializeReaderGetParamType(reader);
+resolveType:
+	switch(type)
+	{
+		case IL_META_SERIALTYPE_BOOLEAN:
+		{
+			elemType = IL_META_ELEMTYPE_BOOLEAN;
+			blob[0] = (unsigned char)(ILSerializeReaderGetInt32(reader, type));
+			blobLen = 1;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_CHAR:
+		{
+			ILUInt16 value = (ILUInt16)
+				(ILSerializeReaderGetInt32(reader, type));
+			elemType = IL_META_ELEMTYPE_CHAR;
+			IL_WRITE_UINT16(blob, value);
+			blobLen = 2;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I1:
+		{
+			elemType = IL_META_ELEMTYPE_I1;
+			blob[0] = (unsigned char)(ILSerializeReaderGetInt32(reader, type));
+			blobLen = 1;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_U1:
+		{
+			elemType = IL_META_ELEMTYPE_U1;
+			blob[0] = (unsigned char)(ILSerializeReaderGetInt32(reader, type));
+			blobLen = 1;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I2:
+		{
+			ILInt16 value = (ILInt16)
+				(ILSerializeReaderGetInt32(reader, type));
+			elemType = IL_META_ELEMTYPE_I2;
+			IL_WRITE_INT16(blob, value);
+			blobLen = 2;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_U2:
+		{
+			ILUInt16 value = (ILUInt16)
+				(ILSerializeReaderGetInt32(reader, type));
+			elemType = IL_META_ELEMTYPE_U2;
+			IL_WRITE_UINT16(blob, value);
+			blobLen = 2;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I4:
+		{
+			ILInt32 value = (ILInt32)
+				(ILSerializeReaderGetInt32(reader, type));
+			elemType = IL_META_ELEMTYPE_I4;
+			IL_WRITE_INT32(blob, value);
+			blobLen = 4;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_U4:
+		{
+			ILUInt32 value = (ILUInt32)
+				(ILSerializeReaderGetInt32(reader, type));
+			elemType = IL_META_ELEMTYPE_U4;
+			IL_WRITE_UINT32(blob, value);
+			blobLen = 4;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I8:
+		{
+			ILInt64 value = ILSerializeReaderGetInt64(reader);
+			elemType = IL_META_ELEMTYPE_I8;
+			IL_WRITE_INT64(blob, value);
+			blobLen = 8;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_U8:
+		{
+			ILUInt64 value = ILSerializeReaderGetUInt64(reader);
+			elemType = IL_META_ELEMTYPE_U8;
+			IL_WRITE_UINT64(blob, value);
+			blobLen = 8;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_R4:
+		{
+			ILFloat value = ILSerializeReaderGetFloat32(reader);
+			elemType = IL_META_ELEMTYPE_R4;
+			IL_WRITE_FLOAT(blob, value);
+			blobLen = 4;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_R8:
+		{
+			ILDouble value = ILSerializeReaderGetFloat64(reader);
+			elemType = IL_META_ELEMTYPE_R8;
+			IL_WRITE_DOUBLE(blob, value);
+			blobLen = 8;
+		}
+		break;
+
+		case IL_META_SERIALTYPE_STRING:
+		{
+			len = ILSerializeReaderGetString(reader, &str);
+			if(len < 0 || !str)
+			{
+				/* Encode a null value for the string */
+				elemType = IL_META_ELEMTYPE_CLASS;
+				blob[0] = 0;
+				blob[1] = 0;
+				blob[2] = 0;
+				blob[3] = 0;
+				blobLen = 4;
+			}
+			else
+			{
+				/* Convert the string into UTF16 and create a constant */
+				utf16 = StringToUTF16(str, &blobLen, len);
+				if(!utf16)
+				{
+					return 0;
+				}
+				constant = ILConstantCreate
+					(ILProgramItem_Image(item), 0, item,
+					 IL_META_ELEMTYPE_STRING);
+				if(!constant)
+				{
+					ILFree(utf16);
+					return 0;
+				}
+				if(!ILConstantSetValue(constant, utf16, blobLen))
+				{
+					ILFree(utf16);
+					return 0;
+				}
+				ILFree(utf16);
+				return 1;
+			}
+		}
+		break;
+
+		case IL_META_SERIALTYPE_VARIANT:
+		{
+			type = ILSerializeReaderGetBoxedPrefix(reader);
+			goto resolveType;
+		}
+		/* Not reached */
+
+		case IL_META_SERIALTYPE_ENUM:
+		{
+			if(ILSerializeReaderGetString(reader, &str) < 0)
+			{
+				return 0;
+			}
+			type = IL_META_ELEMTYPE_I4;
+			goto resolveType;
+		}
+		/* Not reached */
+
+		default: return 0;
+	}
+
+	/* Create a constant node and attach it to the parameter */
+	constant = ILConstantCreate(ILProgramItem_Image(item), 0, item, elemType);
+	if(!constant)
+	{
+		return 0;
+	}
+	if(!ILConstantSetValue(constant, blob, blobLen))
+	{
+		return 0;
+	}
+	return 1;
+}
+
+/*
  * Concatenate two strings.
  */
 static char *ConcatStrings(char *str1, const char *str2)
@@ -854,43 +1100,6 @@ static char *ConcatFlag(ILInt32 flags, ILInt32 flag, char *str,
 		str = ConcatStrings(str, name);
 	}
 	return str;
-}
-
-/*
- * Convert a string from UTF-8 to UTF-16.
- */
-static void *StringToUTF16(const char *str, unsigned long *len)
-{
-	int slen = strlen(str);
-	int posn = 0;
-	unsigned long ch;
-	unsigned long index;
-	char *utf16;
-
-	/* Determine the length of the UTF-16 string in bytes */
-	*len = 0;
-	while(posn < slen)
-	{
-		ch = ILUTF8ReadChar(str, slen, &posn);
-		*len += (unsigned long)ILUTF16WriteCharAsBytes(0, ch);
-	}
-
-	/* Allocate space for the UTF-16 string */
-	utf16 = (char *)ILMalloc(*len * 2);
-	if(!utf16)
-	{
-		return 0;
-	}
-
-	/* Convert the string from UTF-8 to UTF-16 */
-	index = 0;
-	posn = 0;
-	while(posn < slen)
-	{
-		ch = ILUTF8ReadChar(str, slen, &posn);
-		index += (unsigned long)ILUTF16WriteCharAsBytes(utf16 + index, ch);
-	}
-	return utf16;
 }
 
 /*
@@ -1061,7 +1270,7 @@ static int SecurityPermissionAttribute(ILProgramItem *item,
 	}
 
 	/* Convert the string into UTF-16 */
-	utf16 = StringToUTF16(result, &utf16Len);
+	utf16 = StringToUTF16(result, &utf16Len, strlen(result));
 	if(!utf16)
 	{
 		ILFree(result);
@@ -1125,6 +1334,14 @@ static AttrConvertInfo const securityAttrs[] = {
 	{"SecurityPermissionAttribute", SecurityPermissionAttribute},
 	{0, 0}
 };
+static AttrConvertInfo const componentModelAttrs[] = {
+	{"DefaultValueAttribute", DefaultValueAttribute},
+	{0, 0}
+};
+static AttrConvertInfo const basicAttrs[] = {
+	{"DefaultValueAttribute", DefaultValueAttribute},
+	{0, 0}
+};
 
 /*
  * Convert an attribute into metadata information.
@@ -1171,6 +1388,10 @@ static int ConvertAttribute(ILProgramItem *item, ILAttribute *attr)
 	else if(!strcmp(namespace, "System.Security.Permissions"))
 	{
 		info = securityAttrs;
+	}
+	else if(!strcmp(namespace, "System.ComponentModel"))
+	{
+		info = componentModelAttrs;
 	}
 	else if(!strcmp(namespace, "System"))
 	{

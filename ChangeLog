@@ -1,4 +1,9 @@
 
+2004-06-08  Gopal V  <gopalv82@yahoo.com>
+
+	* codegen/cg_coerce.c: Coerce the arguments to the conversion methods
+	while creating UserConversion nodes.
+
 2004-06-07  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Fix type bug in constant field accesses 

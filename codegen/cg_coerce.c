@@ -865,7 +865,7 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
  */
 static void ApplyRules(ILGenInfo *info, ILNode *node,
 					   ILNode **parent, ConvertRules *rules,
-					   ILType *toType)
+					   ILType *fromType, ILType *toType)
 {
 	/* Box or unbox the input value if necessary */
 	if(rules->boxClass)
@@ -900,6 +900,13 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 		if(!method)
 		{
 			ILGenOutOfMemory(info);
+		}
+		if(ILCoerce(info, node, parent, 
+					fromType,
+					ILTypeGetParam(ILMethod_Signature(method),1),0))
+		{
+			/* should succeed always */
+			node = *parent;
 		}
 		*parent = ILNode_UserConversion_create
 						(node, ILTypeToMachineType(toType), method);
@@ -1110,7 +1117,7 @@ int ILCoerce(ILGenInfo *info, ILNode *node, ILNode **parent,
 	ILMachineType constType;
 	if(GetConvertRules(info, fromType, toType, 0, IL_CONVERT_ALL, &rules))
 	{
-		ApplyRules(info, node, parent, &rules, toType);
+		ApplyRules(info, node, parent, &rules, fromType, toType);
 		return 1;
 	}
 	else if((constType = CanCoerceConst(info, node, fromType, toType))
@@ -1141,7 +1148,7 @@ int ILCoerceKind(ILGenInfo *info, ILNode *node, ILNode **parent,
 	ILType *t1,*t2;
 	if(GetConvertRules(info, fromType, toType, 0, kinds, &rules))
 	{
-		ApplyRules(info, node, parent, &rules, toType);
+		ApplyRules(info, node, parent, &rules, fromType, toType);
 		return 1;
 	}
 	else if((kinds & IL_CONVERT_CONSTANT) != 0 &&
@@ -1203,7 +1210,7 @@ int ILCast(ILGenInfo *info, ILNode *node, ILNode **parent,
 	ILType *t1,*t2;
 	if(GetConvertRules(info, fromType, toType, 1, IL_CONVERT_ALL, &rules))
 	{
-		ApplyRules(info, node, parent, &rules, toType);
+		ApplyRules(info, node, parent, &rules, fromType, toType);
 		return 1;
 	}
 	else if(indirect && GetIndirectConvertRules(info,fromType,toType,1, 
@@ -1228,7 +1235,7 @@ int ILCastKind(ILGenInfo *info, ILNode *node, ILNode **parent,
 	ILType *t1,*t2;
 	if(GetConvertRules(info, fromType, toType, 1, kinds, &rules))
 	{
-		ApplyRules(info, node, parent, &rules, toType);
+		ApplyRules(info, node, parent, &rules, fromType, toType);
 		return 1;
 	}
 	else if(indirect && GetIndirectConvertRules(info,fromType,toType,1, 

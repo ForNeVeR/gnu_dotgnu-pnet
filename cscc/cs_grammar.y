@@ -364,9 +364,11 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 /*
  * The class name stack, which is used to verify the names
  * of constructors and destructors against the name of their
- * enclosing classes.
+ * enclosing classes.  Also used to check if a class has
+ * had a constructor defined for it.
  */
 static ILNode **classNameStack = 0;
+static int     *classNameCtorDefined = 0;
 static int		classNameStackSize = 0;
 static int		classNameStackMax = 0;
 
@@ -383,9 +385,16 @@ static void ClassNamePush(ILNode *name)
 		{
 			CSOutOfMemory();
 		}
+		classNameCtorDefined = (int *)ILRealloc
+			(classNameCtorDefined, sizeof(int) * (classNameStackMax + 4));
+		if(!classNameCtorDefined)
+		{
+			CSOutOfMemory();
+		}
 		classNameStackMax += 4;
 	}
-	classNameStack[classNameStackSize++] = name;
+	classNameStack[classNameStackSize] = name;
+	classNameCtorDefined[classNameStackSize++] = 0;
 }
 
 /*
@@ -394,6 +403,22 @@ static void ClassNamePush(ILNode *name)
 static void ClassNamePop(void)
 {
 	--classNameStackSize;
+}
+
+/*
+ * Record that a constructor was defined for the current class.
+ */
+static void ClassNameCtorDefined(void)
+{
+	classNameCtorDefined[classNameStackSize - 1] = 1;
+}
+
+/*
+ * Determine if a constructor was defined for the current class.
+ */
+static int ClassNameIsCtorDefined(void)
+{
+	return classNameCtorDefined[classNameStackSize - 1];
 }
 
 /*
@@ -2405,12 +2430,34 @@ ClassDeclaration
 				ClassNamePush($4);
 			}
 			ClassBody OptSemiColon	{
+				ILNode *classBody = ($7);
+
 				/* Validate the modifiers */
 				ILUInt32 attrs =
 					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
 
 				/* Exit the current nesting level */
 				--NestingLevel;
+
+				/* Determine if we need to add a default constructor */
+				if(!ClassNameIsCtorDefined())
+				{
+					ILNode *cname = ILQualIdentSimple
+							(ILInternString(".ctor", 5).string);
+					ILNode *body = ILNode_NewScope_create
+							(ILNode_InvocationExpression_create
+								(ILNode_BaseInit_create(), 0));
+					ILNode *ctor = ILNode_MethodDeclaration_create
+						  ($1, CSModifiersToConstructorAttrs
+						  			(cname, CS_MODIFIER_PUBLIC),
+						   0 /* "void" */, cname,
+						   ILNode_Empty_create(), body);
+					if(!classBody)
+					{
+						classBody = ILNode_List_create();
+					}
+					ILNode_List_Add(classBody, ctor);
+				}
 
 				/* Create the class definition */
 				InitGlobalNamespace();
@@ -2421,7 +2468,7 @@ ClassDeclaration
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 $5,					/* ClassBase */
-							 $7);					/* ClassBody */
+							 classBody);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -2990,6 +3037,7 @@ ConstructorDeclaration
 				{
 					cname = ILQualIdentSimple
 								(ILInternString(".ctor", 5).string);
+					ClassNameCtorDefined();
 				}
 				if(!ClassNameSame($3))
 				{

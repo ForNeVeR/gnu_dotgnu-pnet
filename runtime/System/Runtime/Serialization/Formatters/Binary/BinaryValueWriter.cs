@@ -92,8 +92,11 @@ internal abstract class BinaryValueWriter
 						}
 						else if(queue.Count > 0)
 						{
-							// Output a pending object.
-							formatter.WriteObject(this, queue.Dequeue());
+							Object obj = queue.Peek();
+							if(OutputAssembly(obj))
+							{
+	    	    				formatter.WriteObject(this, queue.Dequeue());
+							}
 						}
 						else
 						{
@@ -101,6 +104,23 @@ internal abstract class BinaryValueWriter
 						}
 					}
 				}
+
+        public bool OutputAssembly(Object obj)
+        {
+            bool firstTime;
+
+            Type tp = obj.GetType();
+            while(tp.IsArray)
+			{
+				tp = tp.GetElementType();
+			}
+            gen.GetId(tp.Assembly, out firstTime);
+            if(firstTime) 
+			{
+                assemblyQueue.Enqueue(tp.Assembly);
+            }
+            return !firstTime;
+        }
 
 	}; // class BinaryValueContext
 
@@ -1459,7 +1479,7 @@ internal abstract class BinaryValueWriter
 							if(firstTime)
 							{
 								// We need to output the assembly later.
-								context.assemblyQueue.Enqueue(type.Assembly);
+								context.assemblyQueue.Enqueue(type.GetElementType().Assembly);
 							}
 						}
 					}

@@ -1,4 +1,9 @@
 
+2004-10-18  Andre Seidelt <pnet-devel01@foobarquarium.de>
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	Patch attached to #10707 - proper serialization for object arrays.
+
 2004-10-18  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/Private/XmlDocumentNavigator.cs: Skip XmlDeclarations

@@ -3090,6 +3090,31 @@ ILObject *_IL_Array_GetRelative(ILExecThread *thread, ILObject *_this,
 	}
 }
 
+/* Helper function for all array stores */
+
+static int StoreObjectToArray(ILExecThread *thread, ILType * elemType,
+								ILObject *value, void* ptr,
+								ILObject **location)
+{
+	/* Copy the value into position at "ptr" */
+	if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+	{
+		if(ILExecThreadPromoteAndUnbox(thread, elemType, value, ptr))
+		{
+			return 1;
+		}
+	}
+	else if(ILTypeAssignCompatible
+					(ILProgramItem_Image(thread->method),
+				     (value ? ILClassToType(GetObjectClass(value)) : 0),
+				     elemType))
+	{
+		*(location) = value;
+		return 1;
+	}
+	return 0;
+}
+
 /*
  * private void Set(Object value, int index1, int index2, int index3);
  */
@@ -3197,28 +3222,12 @@ void _IL_Array_Set_Objectiii(ILExecThread *thread, ILObject *thisObj,
 		return;
 	}
 
-	/* Copy the value into position at "ptr" */
-	if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+	/* store to location and be done with it */
+	if(!StoreObjectToArray(thread, elemType, value, ptr, ptr))
 	{
-		if(!ILExecThreadUnbox(thread, elemType, value, ptr))
-		{
-			ILExecThreadThrowSystem
-					(thread, "System.ArgumentException",
-					 "Arg_ElementTypeMismatch");
-		}
-	}
-	else if(ILTypeAssignCompatible
-					(ILProgramItem_Image(thread->method),
-				     (value ? ILClassToType(GetObjectClass(value)) : 0),
-				     elemType))
-	{
-		*((ILObject **)ptr) = value;
-	}
-	else
-	{
-		ILExecThreadThrowSystem
-				(thread, "System.ArgumentException",
-				 "Arg_ElementTypeMismatch");
+		ILExecThreadThrowSystem(thread, "System.ArgumentException",
+					 		    "Arg_ElementTypeMismatch");
+		return;
 	}
 }
 
@@ -3268,25 +3277,12 @@ void _IL_Array_Set_Objectai(ILExecThread *thread, ILObject *thisObj,
 		offset += (ILUInt32)(index * marray->bounds[dim].multiplier);
 	}
 	ptr = ((unsigned char *)(marray->data)) + offset * elemSize;
-
-	/* Copy the value into position at "ptr" */
-	if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+	
+	if(StoreObjectToArray(thread, elemType, value, ptr, ptr))
 	{
-		if(!ILExecThreadUnbox(thread, elemType, value, ptr))
-		{
-			ILExecThreadThrowSystem
-					(thread, "System.ArgumentException",
-					 "Arg_ElementTypeMismatch");
-		}
+		return;
 	}
-	else if(ILTypeAssignCompatible
-					(ILProgramItem_Image(thread->method),
-				     (value ? ILClassToType(GetObjectClass(value)) : 0),
-				     elemType))
-	{
-		*((ILObject **)ptr) = value;
-	}
-	else
+	else	
 #endif /* IL_CONFIG_NON_VECTOR_ARRAYS */
 	{
 		ILExecThreadThrowSystem
@@ -3325,24 +3321,12 @@ void _IL_Array_SetRelative(ILExecThread *thread, ILObject *_this,
 	#endif
 	}
 
-	/* Copy the value into position in the array */
-	if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+	if(StoreObjectToArray(thread, elemType, value, 
+							((unsigned char *)buf) + index * size,
+							&(((ILObject **)buf)[index])))
 	{
-		if(!ILExecThreadUnbox(thread, elemType, value,
-							  ((unsigned char *)buf) + index * size))
-		{
-			ILExecThreadThrowSystem
-					(thread, "System.ArgumentException",
-					 "Arg_ElementTypeMismatch");
-		}
-	}
-	else if(ILTypeAssignCompatible
-					(ILProgramItem_Image(thread->method),
-				     (value ? ILClassToType(GetObjectClass(value)) : 0),
-				     elemType))
-	{
-		((ILObject **)buf)[index] = value;
-	}
+		return;
+	}		
 	else
 	{
 		ILExecThreadThrowSystem

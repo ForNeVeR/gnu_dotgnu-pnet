@@ -684,6 +684,14 @@ int ILExecThreadUnboxFloat(ILExecThread *thread, ILType *type,
 					       ILObject *object, void *ptr);
 
 /*
+ * Box the value at a pointer using specific primitive or subsequent 
+ * promotions. Handle the cases where an Int16 is being unboxed to an 
+ * Int32 or Int64.
+ */
+int ILExecThreadPromoteAndUnbox(ILExecThread *thread, ILType *type, 
+								ILObject *object, void *ptr);
+
+/*
  * Print the current exception object to standard error.
  */
 void ILExecThreadPrintException(ILExecThread *thread);

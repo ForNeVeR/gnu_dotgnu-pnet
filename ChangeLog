@@ -1,4 +1,13 @@
 
+2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial
+	lookup to handle properties and enumerated types that have the
+	same name, and to avoid the instance method check on the property.
+
+	* cscc/csharp/cs_attrs.c (ProcessAttr): add a hack to recognise
+	"System.AttributeUsage" and "System.AttributeUsageAttribute".
+
 2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (Load_MemberRef): report "unresolved external
@@ -27,10 +36,6 @@
 
 	* codegen/cg_coerce.c, cscc/csharp/cs_misc.tc, include/il_types.h:
 	correctly handle pointer types with the "sizeof" operator.
-
-	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial
-	lookup to handle properties and enumerated types that have the
-	same name, and to avoid the instance method check on the property.
 
 2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -243,6 +243,17 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	int retry;
 	int skipConst;
 
+	/* Hack: recognize "System.AttributeUsage" and add "Attribute".
+	   This doesn't solve all "ends in Attribute and lives in a namespace"
+	   problems, but gets rid of a particularly annoying one until a better
+	   solution can be devised */
+	if(!strcmp(ILQualIdentName(attr->name, 0), "System.AttributeUsage"))
+	{
+		((ILNode_QualIdent *)(attr->name))->right =
+			ILNode_Identifier_create
+				(ILInternString("AttributeUsageAttribute", -1).string);
+	}
+
 	/* Try the attribute name without "Attribute" first */
 	nameNode = attr->name;
 	retry = 1;

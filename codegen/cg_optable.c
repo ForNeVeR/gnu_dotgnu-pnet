@@ -134,6 +134,8 @@ static ILBuiltinType const ILUnmanagedPtr =
 	{&ILSystem##type, 0, 0},
 #define	IL_EXPLICIT_OPERATOR(type)	\
 	{&ILSystem##type, 1, 0},
+#define	IL_UNSAFE_OPERATOR_REVERSE	\
+	{&ILUnmanagedPtr, 1, 1},
 #define	IL_UNSAFE_OPERATOR(type)	\
 	{&ILSystem##type, 1, 1},
 #define	IL_END_CONVERT_TABLE	\
@@ -869,6 +871,7 @@ explicit operator ushort(int x);
 explicit operator uint(int x);
 explicit operator ulong(int x);
 explicit operator char(int x);
+explicit operator void *(int x);
 
 */
 
@@ -886,6 +889,7 @@ IL_BEGIN_CONVERT_TABLE(Int32)
 	IL_EXPLICIT_OPERATOR(UInt32)
 	IL_EXPLICIT_OPERATOR(UInt64)
 	IL_EXPLICIT_OPERATOR(Char)
+	IL_UNSAFE_OPERATOR_REVERSE
 IL_END_CONVERT_TABLE
 
 /*
@@ -903,6 +907,7 @@ explicit operator short(uint x);
 explicit operator ushort(uint x);
 explicit operator int(uint x);
 explicit operator char(uint x);
+explicit operator void *(uint x);
 
 */
 
@@ -920,6 +925,7 @@ IL_BEGIN_CONVERT_TABLE(UInt32)
 	IL_EXPLICIT_OPERATOR(UInt16)
 	IL_EXPLICIT_OPERATOR(Int32)
 	IL_EXPLICIT_OPERATOR(Char)
+	IL_UNSAFE_OPERATOR_REVERSE
 IL_END_CONVERT_TABLE
 
 /*
@@ -937,6 +943,7 @@ explicit operator int(long x);
 explicit operator uint(long x);
 explicit operator ulong(long x);
 explicit operator char(long x);
+explicit operator void *(long x);
 
 */
 
@@ -954,6 +961,7 @@ IL_BEGIN_CONVERT_TABLE(Int64)
 	IL_EXPLICIT_OPERATOR(UInt32)
 	IL_EXPLICIT_OPERATOR(UInt64)
 	IL_EXPLICIT_OPERATOR(Char)
+	IL_UNSAFE_OPERATOR_REVERSE
 IL_END_CONVERT_TABLE
 
 /*
@@ -971,6 +979,7 @@ explicit operator int(ulong x);
 explicit operator uint(ulong x);
 explicit operator long(ulong x);
 explicit operator char(ulong x);
+explicit operator void *(ulong x);
 
 */
 
@@ -988,6 +997,7 @@ IL_BEGIN_CONVERT_TABLE(UInt64)
 	IL_EXPLICIT_OPERATOR(UInt32)
 	IL_EXPLICIT_OPERATOR(Int64)
 	IL_EXPLICIT_OPERATOR(Char)
+	IL_UNSAFE_OPERATOR_REVERSE
 IL_END_CONVERT_TABLE
 
 /*

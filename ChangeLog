@@ -22,6 +22,9 @@
 
 	* codegen/cg_coerce.c: implement missing unsafe pointer coercions.
 
+	* codegen/cg_coerce.c, codegen/cg_optable.c: add explicit conversions
+	from numeric to pointer types.
+
 2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

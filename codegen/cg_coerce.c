@@ -379,7 +379,12 @@ static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 		/* Numberic to pointer conversion */
 		if(ILType_IsPointer(toType) && ILIsBuiltinNumeric(fromType))
 		{
-			return 1;
+			conv = ILFindConversion(fromType, toType, explicit, 1);
+			if(conv)
+			{
+				rules->builtin = conv;
+				return 1;
+			}
 		}
 	}
 

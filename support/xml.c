@@ -812,6 +812,54 @@ void ILXMLWhiteSpace(ILXMLReader *reader, int flag)
 	reader->whiteSpace = flag;
 }
 
+int ILXMLGetPackedSize(ILXMLReader *reader)
+{
+	return reader->textLen + 1;
+}
+
+void ILXMLGetPacked(ILXMLReader *reader, void *buffer)
+{
+	ILMemCpy(buffer, reader->text, reader->textLen + 1);
+}
+
+/*
+ * Find the next string in a packed text buffer.
+ */
+static char *NextPacked(char *buffer, int len, char *prev)
+{
+	int posn = (int)(prev - buffer);
+	while(posn < len && buffer[posn] != '\0')
+	{
+		++posn;
+	}
+	if(posn < len)
+	{
+		return buffer + posn + 1;
+	}
+	else
+	{
+		/* Return a pointer to the NUL at the end of the buffer */
+		return buffer + len;
+	}
+}
+
+const char *ILXMLGetPackedParam(void *buffer, int len, const char *name)
+{
+	char *str;
+	--len;	/* Remove trailing NUL before we start */
+	str = NextPacked((char *)buffer, len, (char *)buffer);
+	while(*str != '\0')
+	{
+		if(!strcmp(str, name))
+		{
+			return NextPacked((char *)buffer, len, str);
+		}
+		str = NextPacked((char *)buffer, len,
+						 NextPacked((char *)buffer, len, str));
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

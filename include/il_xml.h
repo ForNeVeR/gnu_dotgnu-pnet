@@ -138,6 +138,23 @@ void ILXMLSkip(ILXMLReader *reader);
  */
 void ILXMLWhiteSpace(ILXMLReader *reader, int flag);
 
+/*
+ * Get the size of the packed arguments for a tag.
+ */
+int ILXMLGetPackedSize(ILXMLReader *reader);
+
+/*
+ * Copy the packed arguments for a tag into a buffer.
+ */
+void ILXMLGetPacked(ILXMLReader *reader, void *buffer);
+
+/*
+ * Get the value of a parameter from within a packed
+ * argument buffer.  Returns NULL if the parameter
+ * is not present.
+ */
+const char *ILXMLGetPackedParam(void *buffer, int len, const char *name);
+
 #ifdef	__cplusplus
 };
 #endif

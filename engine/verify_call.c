@@ -706,13 +706,13 @@ static int SameSignature(ILType *ptrSig, ILType *callSiteSig)
 
 	/* The pointer signature must be a method
 	   (callSiteSig was already checked) */
-	if(ILType_IsMethod(ptrSig))
+	if(!ILType_IsMethod(ptrSig))
 	{
 		return 0;
 	}
 
 	/* Check the return types */
-	if(ILTypeIdentical(ILTypeGetReturn(ptrSig), ILTypeGetReturn(callSiteSig)))
+	if(!ILTypeIdentical(ILTypeGetReturn(ptrSig), ILTypeGetReturn(callSiteSig)))
 	{
 		return 0;
 	}

@@ -1,7 +1,7 @@
 /*
  * csant_build.c - Build all targets.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ extern	"C" {
 int   CSAntJustPrint   = 0;
 int   CSAntKeepGoing   = 0;
 int   CSAntSilent      = 0;
+int   CSAntDummyDoc    = 0;
 char *CSAntCompiler    = 0;
 
 /*

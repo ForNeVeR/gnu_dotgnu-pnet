@@ -1,7 +1,7 @@
 /*
  * csant_defs.h - Internal definitions for "csant".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ extern	"C" {
 extern int   CSAntJustPrint;
 extern int   CSAntKeepGoing;
 extern int   CSAntSilent;
+extern int   CSAntDummyDoc;
 extern char *CSAntCompiler;
 extern char *CSAntBaseDir;
 extern char *CSAntProjectName;
@@ -174,6 +175,11 @@ int CSAntTask_Mcs(CSAntTask *task);
  * Handle a "compile" task, which invokes the configured C# compiler.
  */
 int CSAntTask_Compile(CSAntTask *task);
+
+/*
+ * Handle a "csdoc" task, which invokes the documentation generator.
+ */
+int CSAntTask_Csdoc(CSAntTask *task);
 
 #ifdef	__cplusplus
 };

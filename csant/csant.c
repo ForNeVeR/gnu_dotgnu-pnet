@@ -1,7 +1,7 @@
 /*
  * csant.c - Build tool for C# program compilation.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,6 +70,10 @@ static ILCmdLineOption const options[] = {
 	{"--just-print", 'n', 0,
 		"--just-print     or -n",
 		"Print the names of the commands, but do not execute them."},
+	{"-d", 'd', 0, 0, 0},
+	{"--dummy-doc", 'd', 0,
+		"--dummy-doc      or -d",
+		"Output dummy documentation files."},
 	{"-k", 'k', 0, 0, 0},
 	{"--keep-going", 'k', 0,
 		"--keep-going     or -k",
@@ -155,6 +159,12 @@ int main(int argc, char *argv[])
 			case 'n':
 			{
 				CSAntJustPrint = 1;
+			}
+			break;
+
+			case 'd':
+			{
+				CSAntDummyDoc = 1;
 			}
 			break;
 

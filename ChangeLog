@@ -4,6 +4,10 @@
 	* engine/lib_thread.c: implement the "Thread.InternalSleep"
 	internalcall.
 
+	* csant/csant.c, csant/csant_build.c, csant/csant_cscc.c,
+	csant/csant_defs.h, csant/csant_task.c: add the "csdoc" task
+	type for csant, to process program documentation.
+
 2002-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_lvalue.tc, codegen/cg_utils.c:

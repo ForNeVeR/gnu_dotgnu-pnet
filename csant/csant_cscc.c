@@ -1,7 +1,7 @@
 /*
  * csant_cscc.c - Task dispatch for launching C# compilers.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,6 +98,31 @@ static char *FindMonoPath(void)
 
 	/* Assume that it is "mcs" somewhere on the path */
 	return "mcs";
+}
+
+/*
+ * Find the pathname for "csdoc".
+ */
+static char *FindCsdocPath(void)
+{
+	const char *value;
+
+	/* Check for the "csdoc" property */
+	value = CSAntGetProperty("csdoc", -1);
+	if(value)
+	{
+		return (char *)value;
+	}
+
+	/* Check for the "CSDOC" environment variable */
+	value = CSAntGetProperty("csant.env.CSDOC", -1);
+	if(value)
+	{
+		return (char *)value;
+	}
+
+	/* Assume that it is "csdoc" somewhere on the path */
+	return "csdoc";
 }
 
 /*
@@ -975,6 +1000,189 @@ int CSAntTask_Compile(CSAntTask *task)
 		fprintf(stderr, "%s: unknown compiler name\n", compiler);
 		return 0;
 	}
+}
+
+/*
+ * Handle a "csdoc" task, which invokes the documentation generator.
+ */
+int CSAntTask_Csdoc(CSAntTask *task)
+{
+	const char *value;
+	char *temp;
+	char *output;
+	char *library;
+	CSAntFileSet *sources;
+	CSAntFileSet *references;
+	int dumpPrivate = 0;
+	char **argv = 0;
+	int argc = 0;
+	unsigned long numFiles;
+	unsigned long file;
+	int len, result;
+	FILE *outfile;
+
+	/* Parse the parameters to the task */
+	output = (char *)CSAntTaskParam(task, "output");
+	library = (char *)CSAntTaskParam(task, "library");
+	sources = CSAntFileSetLoad(task, "sources");
+	references = CSAntFileSetLoad(task, "references");
+	value = CSAntTaskParam(task, "private");
+	if(value)
+	{
+		dumpPrivate = !ILStrICmp(value, "true");
+	}
+
+	/* Validate the parameters */
+	if(!output)
+	{
+		CSAntFileSetDestroy(sources);
+		CSAntFileSetDestroy(references);
+		fprintf(stderr, "%s: no output specified\n", task->name);
+		return 0;
+	}
+	if(!CSAntFileSetSize(sources))
+	{
+		CSAntFileSetDestroy(sources);
+		CSAntFileSetDestroy(references);
+		fprintf(stderr, "%s: no sources specified\n", task->name);
+		return 0;
+	}
+
+	/* If the sources are not newer than the output, then bail out */
+	if(!CSAntFileSetNewer(sources, output))
+	{
+		CSAntFileSetDestroy(sources);
+		CSAntFileSetDestroy(references);
+		return 1;
+	}
+
+	/* If the "--dummy-doc" flag was set on the csant command-line,
+	   then create a dummy output file.  This can happen if the
+	   system does not have "csdoc" installed */
+	if(CSAntDummyDoc)
+	{
+		CSAntFileSetDestroy(sources);
+		CSAntFileSetDestroy(references);
+		if(!CSAntSilent)
+		{
+			printf("Creating dummy documentation file: %s\n", output);
+		}
+		if(!CSAntJustPrint)
+		{
+			outfile = fopen(output, "w");
+			if(outfile)
+			{
+				/* Output the dummy XML */
+				fputs("<Libraries>\n<Types Library=\"Dummy\">\n", outfile);
+				fputs("</Types>\n</Libraries>\n", outfile);
+				fclose(outfile);
+				return 1;
+			}
+			else
+			{
+				/* The output file could not be created */
+				perror(output);
+				return 0;
+			}
+		}
+		else
+		{
+			return 1;
+		}
+	}
+
+	/* Add the program name */
+	AddArg(&argv, &argc, FindCsdocPath());
+
+	/* Set the output file */
+	AddArg(&argv, &argc, "-o");
+	AddArg(&argv, &argc, (char *)output);
+
+	/* Add the library name */
+	if(library && *library != '\0')
+	{
+		AddValueArg(&argv, &argc, "-flibrary-name=", library);
+	}
+
+	/* Dump the private definitions as well if requested */
+	if(dumpPrivate)
+	{
+		AddArg(&argv, &argc, "-fprivate");
+	}
+
+	/* Add the source files to the command-line */
+	numFiles = CSAntFileSetSize(sources);
+	for(file = 0; file < numFiles; ++file)
+	{
+		AddArg(&argv, &argc, CSAntFileSetFile(sources, file));
+	}
+
+	/* Add the library references to the command-line */
+	numFiles = CSAntFileSetSize(references);
+	for(file = 0; file < numFiles; ++file)
+	{
+		temp = CSAntFileSetFile(references, file);
+		len = strlen(temp);
+		while(len > 0 && temp[len - 1] != '/' && temp[len - 1] != '\\')
+		{
+			--len;
+		}
+		if(len > 0)
+		{
+			if(len == 1)
+			{
+				AddValueLenArg(&argv, &argc, "-L", temp, 1);
+			}
+			else
+			{
+				AddValueLenArg(&argv, &argc, "-L", temp, len - 1);
+			}
+		}
+		if(EndsIn(temp + len, ".dll"))
+		{
+			AddValueLenArg(&argv, &argc, "-l", temp + len,
+						   strlen(temp + len) - 4);
+		}
+		else
+		{
+			AddValueArg(&argv, &argc, "-l", temp + len);
+		}
+	}
+
+	/* Terminate the command-line */
+	AddArg(&argv, &argc, (char *)0);
+
+	/* Print the command to be executed */
+	if(!CSAntSilent)
+	{
+		argc = 0;
+		while(argv[argc] != 0)
+		{
+			fputs(argv[argc], stdout);
+			++argc;
+			if(argv[argc] != 0)
+			{
+				putc(' ', stdout);
+			}
+		}
+		putc('\n', stdout);
+	}
+
+	/* Execute the command */
+	if(!CSAntJustPrint)
+	{
+		result = (ILSpawnProcess(argv) == 0);
+	}
+	else
+	{
+		result = 1;
+	}
+
+	/* Clean up and exit */
+	ILFree(argv);
+	CSAntFileSetDestroy(sources);
+	CSAntFileSetDestroy(references);
+	return result;
 }
 
 #ifdef	__cplusplus

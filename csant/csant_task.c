@@ -1,7 +1,7 @@
 /*
  * csant_task.c - Dispatch functions for csant task elements.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -157,6 +157,7 @@ CSAntTaskInfo const CSAntTasks[] = {
 	{"cscc",			CSAntTask_Cscc},
 	{"csc",				CSAntTask_Csc},
 	{"mcs",				CSAntTask_Mcs},
+	{"csdoc",			CSAntTask_Csdoc},
 	{"property",		Task_Property},
 	{"echo",			Task_Echo},
 	{"fail",			Task_Fail},

@@ -1,4 +1,9 @@
 
+2002-11-08  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/IO/BinaryWriter.cs: Add missing byteCount for
+	Write(String).
+
 2002-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Collections/Specialized/Makefile,

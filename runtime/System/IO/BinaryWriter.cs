@@ -363,11 +363,14 @@ public class BinaryWriter : IDisposable
 	public virtual void Write(String value)
 			{
 				char[] chars;
+				int byteCount;
 				if(value == null)
 				{
 					throw new ArgumentNullException("value");
 				}
 				chars = value.ToCharArray();
+				byteCount = encoder.GetByteCount(chars, 0, chars.Length, true);
+				Write7BitEncodedInt(byteCount); /* byteCount no charCount */ 
 				Write(chars, 0, chars.Length);
 			}
 

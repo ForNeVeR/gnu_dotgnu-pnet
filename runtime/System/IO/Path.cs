@@ -25,11 +25,11 @@ namespace System.IO
 {
 	using System;
 	using Platform;
-	public class Path 
+	public class System.Path 
 	{
 		// I know of the existence of System.Enviornment
 		// But I'm opting to just get the seperators
-		// from DirMethods.getPathInfo()
+		// from DirMethods.GetPathInfo()
 		private static PathInfo p = DirMethods.GetPathInfo();
 		public static readonly char DirectorySeperatorChar = p.dirSeperator;
 		public static readonly char AltDirectorySeperatorChar = p.AltDirSeparator;
@@ -57,7 +57,7 @@ namespace System.IO
 			 * and the DotGnu Mailing list
                          * on this topic would be nice
                          */	
-			string[] patharray = path.split('.');
+			string[] patharray = path.Split('.');
 			string ext = extension;
 			return String.Concat(patharray[0], '.', extension);
 		}
@@ -83,12 +83,12 @@ namespace System.IO
 			 * chars
 			 */
 			
-			if (path1.EndsWith(DirectorySeperatorChar) == false 
-			    && path2.EndsWith(AltDirectorySeperatorChar)
+			if (path1.EndsWith(new String(DirectorySeperatorChar, 1)) == false 
+			    && path2.EndsWith(new String(AltDirectorySeperatorChar,1))
 				== false) 
 			{
 				 // Insert at starting at last element
-				 path1 = path1.Insert(path1.Length, DirectorySeperatorChar);
+				 path1 = path1.Insert(path1.Length, new String(DirectorySeperatorChar, 1));
 		        }
 
 	return String.Concat(path1, path2);
@@ -188,7 +188,7 @@ namespace System.IO
 		public static bool HasExtension(String path)
 		{
 			/* TODO: See Note at ChangeExtension */ 
-			return (path.split('.').Length > 1);		
+			return (path.Split('.').Length > 1);		
 		}
 		
 		

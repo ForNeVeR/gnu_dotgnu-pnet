@@ -437,6 +437,13 @@ internal sealed class Xlib
 			 @X_int@ x, @X_int@ y, @X_int@ width, @X_int@ height,
 			 @X_int@ angle1, @X_int@ angle2);
 
+	[DllImport("X11")]
+	extern public static @X_int@ XPutImage
+			(IntPtr display, Drawable drawable, IntPtr gc,
+			 IntPtr image, @X_int@ src_x, @X_int@ src_y,
+			 @X_int@ dest_x, @X_int@ dest_y,
+			 @X_int@ width, @X_int@ height);
+
 	// Declare window manager related external functions.
 
 	[DllImport("X11")]
@@ -553,6 +560,19 @@ internal sealed class Xlib
 	[DllImport("XsharpSupport")]
 	extern public static void XSharpGetRegionRect
 			(IntPtr region, @X_int@ index, out XRectangle rect);
+
+	[DllImport("XsharpSupport")]
+	extern public static IntPtr XSharpCreateImageFromDIB
+			(IntPtr screen, @X_int@ width, @X_int@ height,
+			 @X_int@ stride, @X_int@ pixelFormat, byte[] data,
+			 @X_int@ isMask, Xlib.Pixel[] palette);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpDestroyImage(IntPtr image);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpGetImageSize
+			(IntPtr image, out @X_int@ width, out @X_int@ height);
 
 	// Helper functions from "libImlib.so" for loading images.
 

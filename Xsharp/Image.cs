@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using DotGNU.Images;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Image"/> class manages an image
@@ -31,8 +32,11 @@ using System;
 public sealed class Image : IDisposable
 {
 	// Internal state.
+	private Screen screen;
 	private Xsharp.Pixmap pixmap;
 	private Bitmap mask;
+	private IntPtr pixmapXImage;
+	private IntPtr maskXImage;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.Image"/> instance
@@ -59,6 +63,7 @@ public sealed class Image : IDisposable
 	public Image(int width, int height, bool hasMask)
 			{
 				pixmap = new Pixmap(width, height);
+				screen = pixmap.screen;
 				if(hasMask)
 				{
 					mask = new Bitmap(width, height);
@@ -98,6 +103,7 @@ public sealed class Image : IDisposable
 	public Image(Screen screen, int width, int height, bool hasMask)
 			{
 				pixmap = new Xsharp.Pixmap(screen, width, height);
+				screen = pixmap.screen;
 				if(hasMask)
 				{
 					mask = new Bitmap(screen, width, height);
@@ -149,6 +155,7 @@ public sealed class Image : IDisposable
 					dpy = Application.Primary.Display;
 					screen = dpy.DefaultScreenOfDisplay;
 				}
+				this.screen = screen;
 				if(width < 1 || width > 32767 ||
 					height < 1 || height > 32767)
 				{
@@ -240,6 +247,7 @@ public sealed class Image : IDisposable
 					dpy = Application.Primary.Display;
 					screen = dpy.DefaultScreenOfDisplay;
 				}
+				this.screen = screen;
 				try
 				{
 					// Lock down the display while we do this.
@@ -286,6 +294,77 @@ public sealed class Image : IDisposable
 			}
 
 	/// <summary>
+	/// <para>Constructs a new <see cref="T:Xsharp.Image"/> instance
+	/// from a <see cref="T:DotGNU.Images.Frame"/> instance.
+	/// </summary>
+	///
+	/// <param name="frame">
+	/// <para>The frame to load the image from.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>The <paramref name="frame"/> parameter is
+	/// <see langword="null"/>.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XInvalidOperationException">
+	/// <para>Raised if <paramref name="filename"/> could not be
+	/// loaded for some reason.</para>
+	/// </exception>
+	public Image(Frame frame) : this(null, frame) {}
+
+	/// <summary>
+	/// <para>Constructs a new <see cref="T:Xsharp.Image"/> instance
+	/// from a <see cref="T:DotGNU.Images.Frame"/> instance.
+	/// </summary>
+	///
+	/// <param name="screen">
+	/// <para>The screen upon which to create the new image.</para>
+	/// </param>
+	///
+	/// <param name="frame">
+	/// <para>The frame to load the image from.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>The <paramref name="frame"/> parameter is
+	/// <see langword="null"/>.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XInvalidOperationException">
+	/// <para>Raised if <paramref name="filename"/> could not be
+	/// loaded for some reason.</para>
+	/// </exception>
+	public Image(Screen screen, Frame frame)
+			{
+				Display dpy;
+				if(frame == null)
+				{
+					throw new ArgumentNullException("frame");
+				}
+				if(screen != null)
+				{
+					dpy = screen.DisplayOfScreen;
+				}
+				else
+				{
+					dpy = Application.Primary.Display;
+					screen = dpy.DefaultScreenOfDisplay;
+				}
+				this.screen = screen;
+				try
+				{
+					dpy.Lock();
+					pixmapXImage = ConvertImage.FrameToXImage(screen, frame);
+					maskXImage = ConvertImage.MaskToXImage(screen, frame);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
 	/// <para>Retrieve the pixmap that is associated with this image.</para>
 	/// </summary>
 	///
@@ -297,6 +376,11 @@ public sealed class Image : IDisposable
 			{
 				get
 				{
+					if(pixmap == null && pixmapXImage != IntPtr.Zero)
+					{
+						pixmap = ConvertImage.XImageToPixmap
+							(screen, pixmapXImage);
+					}
 					return pixmap;
 				}
 			}
@@ -313,6 +397,11 @@ public sealed class Image : IDisposable
 			{
 				get
 				{
+					if(mask == null && maskXImage != IntPtr.Zero)
+					{
+						mask = ConvertImage.XImageMaskToBitmap
+							(screen, maskXImage);
+					}
 					return mask;
 				}
 			}
@@ -329,7 +418,21 @@ public sealed class Image : IDisposable
 			{
 				get
 				{
-					return pixmap.Width;
+					if(pixmap != null)
+					{
+						return pixmap.Width;
+					}
+					else if(pixmapXImage != IntPtr.Zero)
+					{
+						int width, height;
+						Xlib.XSharpGetImageSize
+							(pixmapXImage, out width, out height);
+						return width;
+					}
+					else
+					{
+						return 0;
+					}
 				}
 			}
 
@@ -345,7 +448,21 @@ public sealed class Image : IDisposable
 			{
 				get
 				{
-					return pixmap.Height;
+					if(pixmap != null)
+					{
+						return pixmap.Height;
+					}
+					else if(pixmapXImage != IntPtr.Zero)
+					{
+						int width, height;
+						Xlib.XSharpGetImageSize
+							(pixmapXImage, out width, out height);
+						return height;
+					}
+					else
+					{
+						return 0;
+					}
 				}
 			}
 
@@ -364,6 +481,16 @@ public sealed class Image : IDisposable
 					mask.Destroy();
 					mask = null;
 				}
+				if(pixmapXImage != IntPtr.Zero)
+				{
+					Xlib.XSharpDestroyImage(pixmapXImage);
+					pixmapXImage = IntPtr.Zero;
+				}
+				if(maskXImage != IntPtr.Zero)
+				{
+					Xlib.XSharpDestroyImage(maskXImage);
+					maskXImage = IntPtr.Zero;
+				}
 			}
 
 	/// <summary>
@@ -377,6 +504,44 @@ public sealed class Image : IDisposable
 	public void Dispose()
 			{
 				Destroy();
+			}
+
+	// Get the image as an XImage, if possible.
+	internal IntPtr XImage
+			{
+				get
+				{
+					return pixmapXImage;
+				}
+			}
+
+	// Determine if we should use the XImage.  If the image is small,
+	// we want to convert it into a "Pixmap", as it will probably be
+	// used over and over again (e.g. toolbar icons).
+	internal bool ShouldUseXImage
+			{
+				get
+				{
+					if(pixmap != null)
+					{
+						return false;
+					}
+					else if(pixmapXImage != IntPtr.Zero)
+					{
+						int width, height;
+						Xlib.XSharpGetImageSize
+							(pixmapXImage, out width, out height);
+						if(width > 32 || height > 32)
+						{
+							return true;
+						}
+						return false;
+					}
+					else
+					{
+						return false;
+					}
+				}
 			}
 
 } // class Image

@@ -19,6 +19,7 @@
 			</sources>
 
 			<references>
+				<file name="../DotGNU.Images/DotGNU.Images.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 

@@ -2113,11 +2113,28 @@ public sealed class Graphics : IDisposable
 					throw new ArgumentNullException("image");
 				}
 
-				// Set the context to "tiling" and fill the region.
-				SetFillTiled(image.Pixmap, x, y);
-				if (image.Mask != null)
-					SetClipMask(image.Mask, x, y);
-				FillRectangle(x, y, image.Pixmap.Width, image.Pixmap.Height);
+				// Can we take a short-cut using the XImage?
+				if(image.ShouldUseXImage)
+				{
+					// Use "PutXImage" to draw through the clip mask,
+					// to avoid having to create a Pixmap in the server.
+					int width, height;
+					SetFillSolid();
+					if (image.Mask != null)
+						SetClipMask(image.Mask, x, y);
+					Xlib.XSharpGetImageSize
+						(image.XImage, out width, out height);
+					PutXImage(image.XImage, 0, 0, x, y, width, height);
+				}
+				else
+				{
+					// Set the context to "tiling" and fill the region.
+					SetFillTiled(image.Pixmap, x, y);
+					if (image.Mask != null)
+						SetClipMask(image.Mask, x, y);
+					FillRectangle(x, y, image.Pixmap.Width,
+								  image.Pixmap.Height);
+				}
 
 				// Revert the context to a sane fill mode.
 				SetFillSolid();
@@ -2178,10 +2195,37 @@ public sealed class Graphics : IDisposable
 					throw new ArgumentNullException("image");
 				}
 
-				// Set the context to "tiling" and fill the region.
-				SetFillTiled(image.Pixmap, x - srcX, y - srcY);
-				SetClipMask(image.Mask, x - srcX, y - srcY);
-				FillRectangle(x, y, srcWidth, srcHeight);
+				// Bail out if the source co-ordinates are out of range.
+				int width, height;
+				width = image.Width;
+				height = image.Height;
+				if(srcX < 0 || srcX >= width ||
+				   srcY < 0 || srcY >= height ||
+				   srcWidth <= 0 || srcHeight <= 0 ||
+				   srcWidth > width || srcHeight > height ||
+				   srcX > (width - srcWidth) ||
+				   srcY > (height - srcHeight))
+				{
+					throw new XException(S._("X_RectCoordRange"));
+				}
+
+				// Can we take a short-cut using the XImage?
+				if(image.ShouldUseXImage)
+				{
+					// Use "PutXImage" to draw through the clip mask,
+					// to avoid having to create a Pixmap in the server.
+					SetFillSolid();
+					SetClipMask(image.Mask, x - srcX, y - srcY);
+					PutXImage(image.XImage, srcX, srcY, x, y,
+							  srcWidth, srcHeight);
+				}
+				else
+				{
+					// Set the context to "tiling" and fill the region.
+					SetFillTiled(image.Pixmap, x - srcX, y - srcY);
+					SetClipMask(image.Mask, x - srcX, y - srcY);
+					FillRectangle(x, y, srcWidth, srcHeight);
+				}
 
 				// Revert the context to a sane fill mode.
 				SetFillSolid();
@@ -2777,6 +2821,23 @@ public sealed class Graphics : IDisposable
 				{
 					dpy.Unlock();
 				}
+			}
+
+	// Put an XImage into this graphics context.
+	internal void PutXImage(IntPtr ximage, int srcX, int srcY,
+							int destX, int destY, int width, int height)
+			{
+				try
+				{
+					IntPtr display = Lock();
+					Xlib.XPutImage(display, drawableHandle, gc, ximage,
+								   srcX, srcY, destX, destY, width, height);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+
 			}
 
 } // class Graphics

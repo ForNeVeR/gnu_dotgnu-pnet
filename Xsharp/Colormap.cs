@@ -36,6 +36,7 @@ public sealed class Colormap
 	private Screen screen;
 	private Xlib.Colormap colormap;
 	private Hashtable cachedPixels;
+	private Xlib.Pixel[] standardPalette;
 
 	// Constructor that is called from the "Screen" class.
 	internal Colormap(Display dpy, Screen screen, Xlib.Colormap colormap)
@@ -99,6 +100,31 @@ public sealed class Colormap
 				{
 					dpy.Unlock();
 				}
+			}
+
+	// Get a standard 216-entry palette for mapping RGB images
+	// to indexed display hardware.
+	internal Xlib.Pixel[] GetStandardPalette()
+			{
+				if(standardPalette != null)
+				{
+					return standardPalette;
+				}
+				standardPalette = new Xlib.Pixel [216];
+				int red, green, blue, index;
+				index = 0;
+				for(red = 0x00; red <= 0xFF; red += 0x33)
+				{
+					for(green = 0x00; green <= 0xFF; green += 0x33)
+					{
+						for(blue = 0x00; blue <= 0xFF; blue += 0x33)
+						{
+							standardPalette[index++] =
+								RGBToPixel(new Color(red, green, blue));
+						}
+					}
+				}
+				return standardPalette;
 			}
 
 } // class Colormap

@@ -910,6 +910,23 @@ void XSharpDestroyImage(XImage *image)
 }
 
 /*
+ * Get the size of an image.
+ */
+void XSharpGetImageSize(XImage *image, int *width, int *height)
+{
+	if(image)
+	{
+		*width = (int)(image->width);
+		*height = (int)(image->height);
+	}
+	else
+	{
+		*width = 1;
+		*height = 1;
+	}
+}
+
+/*
  * Internal structure of X11 region objects.  We have to define
  * this here because there is no public header that contains it.
  */
@@ -1011,6 +1028,12 @@ void *XSharpCreateImageFromDIB(void *screen, int width, int height,
 void XSharpDestroyImage(void *image)
 {
 	/* Nothing to do here */
+}
+
+void XSharpGetImageSize(void *image, int *width, int *height)
+{
+	*width = 1;
+	*height = 1;
 }
 
 int XSharpGetRegionSize(void *region)

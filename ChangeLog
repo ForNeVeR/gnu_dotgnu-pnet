@@ -1,4 +1,10 @@
 
+2003-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Colormap.cs, Xsharp/ConvertImage.cs, Xsharp/Graphics.cs,
+	Xsharp/Image.cs, Xsharp/Xlib.cs.in, Xsharp/Xsharp.build,
+	Xsharp/XsharpSupport.c: hook DIB conversion into Xsharp.
+
 2003-09-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/NotSupp.txt,

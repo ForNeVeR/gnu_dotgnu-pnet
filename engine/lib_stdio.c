@@ -305,11 +305,11 @@ void _IL_Stdio_SetConsoleMode(ILExecThread *_thread, ILInt32 mode)
 }
 
 /*
- * public static void Beep();
+ * public static void Beep(int frequency, int duration);
  */
-void _IL_Stdio_Beep(ILExecThread *_thread)
+void _IL_Stdio_Beep(ILExecThread *_thread, ILInt32 frequency, ILInt32 duration)
 {
-	ILConsoleBeep();
+	ILConsoleBeep(frequency, duration);
 }
 
 /*
@@ -338,6 +338,14 @@ void _IL_Stdio_SetCursorPosition(ILExecThread *_thread, ILInt32 x, ILInt32 y)
 }
 
 /*
+ * public static int GetTextAttributes();
+ */
+ILInt32 _IL_Stdio_GetTextAttributes(ILExecThread *_thread)
+{
+	return ILConsoleGetAttributes();
+}
+
+/*
  * public static void SetTextAttributes(int attrs);
  */
 void _IL_Stdio_SetTextAttributes(ILExecThread *_thread, ILInt32 attrs)
@@ -352,6 +360,15 @@ void _IL_Stdio_GetBufferSize(ILExecThread *_thread, ILInt32 *width,
 							 ILInt32 *height)
 {
 	ILConsoleGetBufferSize(width, height);
+}
+
+/*
+ * public static void SetBufferSize(int width, int height);
+ */
+void _IL_Stdio_SetBufferSize(ILExecThread *_thread,
+							 ILInt32 width, ILInt32 height)
+{
+	ILConsoleSetBufferSize(width, height);
 }
 
 /*
@@ -392,6 +409,82 @@ void _IL_Stdio_GetWindowSize(ILExecThread *_thread,
 							 ILInt32 *width, ILInt32 *height)
 {
 	ILConsoleGetWindowSize(left, top, width, height);
+}
+
+/*
+ * public static void SetWindowSize(int left, int top,
+ *									int width, int height);
+ */
+void _IL_Stdio_SetWindowSize(ILExecThread *_thread,
+							 ILInt32 left, ILInt32 top,
+							 ILInt32 width, ILInt32 height)
+{
+	ILConsoleSetWindowSize(left, top, width, height);
+}
+
+/*
+ * public static void GetLargestWindowSize(out int width, out int height);
+ */
+void _IL_Stdio_GetLargestWindowSize(ILExecThread *_thread,
+									ILInt32 *width, ILInt32 *height)
+{
+	ILConsoleGetLargestWindowSize(width, height);
+}
+
+/*
+ * public static void MoveBufferArea(int sourceLeft, int sourceTop,
+ *									 int sourceWidth, int sourceHeight,
+ *									 int targetLeft, int targetTop,
+ *									 char sourceChar, int attributes);
+ */
+void _IL_Stdio_MoveBufferArea(ILExecThread *_thread,
+							  ILInt32 sourceLeft, ILInt32 sourceTop,
+							  ILInt32 sourceWidth, ILInt32 sourceHeight,
+							  ILInt32 targetLeft, ILInt32 targetTop,
+							  ILUInt16 sourceChar, ILInt32 attributes)
+{
+	ILConsoleMoveBufferArea(sourceLeft, sourceTop, sourceWidth, sourceHeight,
+							targetLeft, targetTop, sourceChar, attributes);
+}
+
+/*
+ * public static int GetLockState();
+ */
+ILInt32 _IL_Stdio_GetLockState(ILExecThread *_thread)
+{
+	return ILConsoleGetLockState();
+}
+
+/*
+ * public static int GetCursorSize();
+ */
+ILInt32 _IL_Stdio_GetCursorSize(ILExecThread *_thread)
+{
+	return ILConsoleGetCursorSize();
+}
+
+/*
+ * public static void SetCursorSize(int size);
+ */
+void _IL_Stdio_SetCursorSize(ILExecThread *_thread, ILInt32 size)
+{
+	ILConsoleSetCursorSize(size);
+}
+
+/*
+ * public static bool GetCursorVisible();
+ */
+ILBool _IL_Stdio_GetCursorVisible(ILExecThread *_thread)
+{
+	return ILConsoleGetCursorVisible();
+}
+
+/*
+ * public static void SetCursorVisible(bool flag);
+ */
+void _IL_Stdio_SetCursorVisible(ILExecThread *_thread, ILBool flag)
+{
+	ILConsoleSetCursorVisible(flag);
 }
 
 #ifdef	__cplusplus

@@ -37,6 +37,12 @@ extern	"C" {
 #define	IL_CONSOLE_RAW_ALT		4
 
 /*
+ * Flags for "ILConsoleGetLockState".
+ */
+#define	IL_CONSOLE_CAPS_LOCK	0x01
+#define	IL_CONSOLE_NUM_LOCK		0x02
+
+/*
  * Set the current console mode.
  */
 void ILConsoleSetMode(ILInt32 mode);
@@ -49,7 +55,7 @@ ILInt32 ILConsoleGetMode(void);
 /*
  * Emit a beep on the console.
  */
-void ILConsoleBeep(void);
+void ILConsoleBeep(ILInt32 frequency, ILInt32 duration);
 
 /*
  * Clear the console to the current foreground and background colors.
@@ -82,15 +88,36 @@ void ILConsoleGetPosition(ILInt32 *x, ILInt32 *y);
 void ILConsoleGetBufferSize(ILInt32 *width, ILInt32 *height);
 
 /*
+ * Set the size of the scrollback buffer.
+ */
+void ILConsoleSetBufferSize(ILInt32 width, ILInt32 height);
+
+/*
  * Get the size and position of the visible window area.
  */
 void ILConsoleGetWindowSize(ILInt32 *left, ILInt32 *top,
 							ILInt32 *width, ILInt32 *height);
 
 /*
+ * Set the size and position of the visible window area.
+ */
+void ILConsoleSetWindowSize(ILInt32 left, ILInt32 top,
+							ILInt32 width, ILInt32 height);
+
+/*
+ * Get the largest possible size for the visible window area.
+ */
+void ILConsoleGetLargestWindowSize(ILInt32 *width, ILInt32 *height);
+
+/*
  * Set the title on the console window.
  */
 void ILConsoleSetTitle(const char *title);
+
+/*
+ * Get the foreground and background attributes.
+ */
+ILInt32 ILConsoleGetAttributes(void);
 
 /*
  * Set the foreground and background attributes.
@@ -101,6 +128,39 @@ void ILConsoleSetAttributes(ILInt32 attrs);
  * Write a character to the console.
  */
 void ILConsoleWriteChar(ILInt32 ch);
+
+/*
+ * Move an area of the screen buffer elsewhere, effecting a scroll.
+ */
+void ILConsoleMoveBufferArea(ILInt32 sourceLeft, ILInt32 sourceTop,
+							 ILInt32 sourceWidth, ILInt32 sourceHeight,
+							 ILInt32 targetLeft, ILInt32 targetTop,
+							 ILUInt16 sourceChar, ILInt32 attributes);
+
+/*
+ * Get the current caps/num lock state.
+ */
+ILInt32 ILConsoleGetLockState(void);
+
+/*
+ * Get the current size of the blinking cursor.
+ */
+ILInt32 ILConsoleGetCursorSize(void);
+
+/*
+ * Set the current size of the blinking cursor.
+ */
+void ILConsoleSetCursorSize(ILInt32 size);
+
+/*
+ * Get the current cursor visibility.
+ */
+ILBool ILConsoleGetCursorVisible(void);
+
+/*
+ * Set the current cursor visibility.
+ */
+void ILConsoleSetCursorVisible(ILBool flag);
 
 #ifdef	__cplusplus 
 };

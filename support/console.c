@@ -100,7 +100,7 @@ extern	"C" {
  */
 typedef enum
 {
-	Key_Back				= 0x08,
+	Key_BackSpace			= 0x08,
 	Key_Tab					= 0x09,
 	Key_Clear				= 0x0C,
 	Key_Enter				= 0x0D,
@@ -324,7 +324,7 @@ static SpecialKeyCap const SpecialKeys[] = {
 	{"K3",			"ka3",		Key_PageUp,			0},
 	{"K4",			"kc1",		Key_End,			0},
 	{"K5",			"kc3",		Key_PageDown,		0},
-	{"kb",			"kbs",		Key_Back,			0},
+	{"kb",			"kbs",		Key_BackSpace,		0},
 	{"kB",			"kcbt",		Key_Tab,			Mod_Shift},
 	{"kd",			"kcud1",	Key_DownArrow,		0},
 	{"kD",			"kdch1",	Key_Delete,			0},
@@ -464,10 +464,14 @@ static char keyBuffer[KEY_BUFFER_SIZE];
 static int keyBufferLen = 0;
 static char *enterAltMode = 0;
 static char *leaveAltMode = 0;
+static char *makeCursorVisible = 0;
 #ifdef USE_TERMIOS
 static struct termios savedNormal;
 static struct termios currentAttrs;
 #endif
+static int consoleAttrs = 0x07;
+static int cursorVisible = 1;
+static int cursorSize = 25;
 
 /*
  * Output a character to the console.
@@ -697,6 +701,24 @@ static int InitTermcapDriver(void)
 			}
 		}
 
+		/* Get the string to use to make the cursor normal on exit */
+		str = GetStringCap("ve", "cnorm");
+		if(str && *str != '\0')
+		{
+			makeCursorVisible = ILDupString(str);
+		}
+
+		/* Assume that the attributes are currently set to the default */
+		consoleAttrs = 0x07;
+
+		/* Make the cursor initially visible and normal */
+		cursorVisible = 1;
+		cursorSize = 25;
+		if(makeCursorVisible)
+		{
+			tputs(makeCursorVisible, 1, ConsolePutchar);
+		}
+
 		/* The console is a known tty */
 		consoleIsTty = 1;
 	}
@@ -762,6 +784,12 @@ static void WindowSizeChanged(int sig)
  */
 static void StopProcess(int sig)
 {
+	/* Restore the cursor */
+	if(makeCursorVisible)
+	{
+		write(1, makeCursorVisible, strlen(makeCursorVisible));
+	}
+
 	/* Leave "alternative" mode */
 	if(leaveAltMode)
 	{
@@ -888,6 +916,13 @@ void ILConsoleSetMode(ILInt32 mode)
 	tcsetattr(0, TCSANOW, &currentAttrs);
 #endif
 
+	/* Make the cursor visible again */
+	if(makeCursorVisible)
+	{
+		write(1, makeCursorVisible, strlen(makeCursorVisible));
+	}
+	makeCursorVisible = 0;
+
 	/* Leave "alternative" mode if we were previously in it */
 	if(leaveAltMode)
 	{
@@ -924,7 +959,7 @@ ILInt32 ILConsoleGetMode(void)
 	return consoleMode;
 }
 
-void ILConsoleBeep(void)
+void ILConsoleBeep(ILInt32 frequency, ILInt32 duration)
 {
 	if(InitTermcapDriver())
 	{
@@ -1204,6 +1239,11 @@ void ILConsoleGetBufferSize(ILInt32 *width, ILInt32 *height)
 	*height = screenHeight;
 }
 
+void ILConsoleSetBufferSize(ILInt32 width, ILInt32 height)
+{
+	/* We cannot change the buffer size with termcap */
+}
+
 void ILConsoleGetWindowSize(ILInt32 *left, ILInt32 *top,
 							ILInt32 *width, ILInt32 *height)
 {
@@ -1215,6 +1255,18 @@ void ILConsoleGetWindowSize(ILInt32 *left, ILInt32 *top,
 	*top = 0;
 	*width = screenWidth;
 	*height = screenHeight;
+}
+
+void ILConsoleSetWindowSize(ILInt32 left, ILInt32 top,
+							ILInt32 width, ILInt32 height)
+{
+	/* We cannot change the window size with termcap */
+}
+
+void ILConsoleGetLargestWindowSize(ILInt32 *width, ILInt32 *height)
+{
+	ILInt32 left, top;
+	ILConsoleGetWindowSize(&left, &top, width, height);
 }
 
 void ILConsoleSetTitle(const char *title)
@@ -1242,10 +1294,23 @@ void ILConsoleSetTitle(const char *title)
 	}
 }
 
+ILInt32 ILConsoleGetAttributes(void)
+{
+	if(InitTermcapDriver())
+	{
+		return consoleAttrs;
+	}
+	else
+	{
+		return 0x07;
+	}
+}
+
 void ILConsoleSetAttributes(ILInt32 attrs)
 {
 	if(InitTermcapDriver())
 	{
+		consoleAttrs = attrs;
 		if(terminalHasColor)
 		{
 			/* Use ANSI escapes to set the color.  If the foreground is gray,
@@ -1384,6 +1449,61 @@ void ILConsoleWriteChar(ILInt32 ch)
 	}
 }
 
+void ILConsoleMoveBufferArea(ILInt32 sourceLeft, ILInt32 sourceTop,
+							 ILInt32 sourceWidth, ILInt32 sourceHeight,
+							 ILInt32 targetLeft, ILInt32 targetTop,
+							 ILUInt16 sourceChar, ILInt32 attributes)
+{
+	/* TODO */
+}
+
+ILInt32 ILConsoleGetLockState(void)
+{
+	/* We cannot detect the lock state on this platform, so we just
+	   assume that neither CAPS nor NUM has been depressed */
+	return 0;
+}
+
+ILInt32 ILConsoleGetCursorSize(void)
+{
+	InitTermcapDriver();
+	return cursorSize;
+}
+
+void ILConsoleSetCursorSize(ILInt32 size)
+{
+	if(InitTermcapDriver())
+	{
+		cursorSize = size;
+		if(cursorVisible && size >= 50)
+			OutputStringCap("vs", "cvvis");
+		else if(cursorVisible)
+			OutputStringCap("ve", "cnorm");
+		else
+			OutputStringCap("vi", "civis");
+	}
+}
+
+ILBool ILConsoleGetCursorVisible(void)
+{
+	InitTermcapDriver();
+	return cursorVisible;
+}
+
+void ILConsoleSetCursorVisible(ILBool flag)
+{
+	if(InitTermcapDriver())
+	{
+		cursorVisible = (flag != 0);
+		if(flag && cursorSize >= 50)
+			OutputStringCap("vs", "cvvis");
+		else if(flag)
+			OutputStringCap("ve", "cnorm");
+		else
+			OutputStringCap("vi", "civis");
+	}
+}
+
 #elif defined(IL_WIN32_PLATFORM)
 
 /*
@@ -1462,7 +1582,7 @@ ILInt32 ILConsoleGetMode(void)
 	return consoleMode;
 }
 
-void ILConsoleBeep(void)
+void ILConsoleBeep(ILInt32 frequency, ILInt32 duration)
 {
 	if(consoleOutput != INVALID_HANDLE_VALUE)
 	{
@@ -1652,6 +1772,11 @@ void ILConsoleGetBufferSize(ILInt32 *width, ILInt32 *height)
 	*height = 25;
 }
 
+void ILConsoleSetBufferSize(ILInt32 width, ILInt32 height)
+{
+	/* TODO */
+}
+
 void ILConsoleGetWindowSize(ILInt32 *left, ILInt32 *top,
 							ILInt32 *width, ILInt32 *height)
 {
@@ -1673,6 +1798,19 @@ void ILConsoleGetWindowSize(ILInt32 *left, ILInt32 *top,
 	*height = 25;
 }
 
+void ILConsoleSetWindowSize(ILInt32 left, ILInt32 top,
+							ILInt32 width, ILInt32 height)
+{
+	/* TODO */
+}
+
+void ILConsoleGetLargestWindowSize(ILInt32 *width, ILInt32 *height)
+{
+	/* TODO */
+	ILInt32 left, top;
+	ILConsoleGetWindowSize(&left, &top, width, height);
+}
+
 void ILConsoleSetTitle(const char *title)
 {
 	if(title)
@@ -1683,6 +1821,12 @@ void ILConsoleSetTitle(const char *title)
 	{
 		SetConsoleTitle("");
 	}
+}
+
+ILInt32 ILConsoleGetAttributes(void)
+{
+	/* TODO */
+	return 0x07;
 }
 
 void ILConsoleSetAttributes(ILInt32 attrs)
@@ -1708,6 +1852,42 @@ void ILConsoleWriteChar(ILInt32 ch)
 	}
 }
 
+void ILConsoleMoveBufferArea(ILInt32 sourceLeft, ILInt32 sourceTop,
+							 ILInt32 sourceWidth, ILInt32 sourceHeight,
+							 ILInt32 targetLeft, ILInt32 targetTop,
+							 ILUInt16 sourceChar, ILInt32 attributes)
+{
+	/* TODO */
+}
+
+ILInt32 ILConsoleGetLockState(void)
+{
+	/* TODO */
+	return 0;
+}
+
+ILInt32 ILConsoleGetCursorSize(void)
+{
+	/* TODO */
+	return 25;
+}
+
+void ILConsoleSetCursorSize(ILInt32 size)
+{
+	/* TODO */
+}
+
+ILBool ILConsoleGetCursorVisible(void)
+{
+	/* TODO */
+	return 1;
+}
+
+void ILConsoleSetCursorVisible(ILBool flag)
+{
+	/* TODO */
+}
+
 #else /* No console */
 
 /*
@@ -1726,7 +1906,7 @@ ILInt32 ILConsoleGetMode(void)
 	return IL_CONSOLE_NORMAL;
 }
 
-void ILConsoleBeep(void)
+void ILConsoleBeep(ILInt32 frequency, ILInt32 duration)
 {
 	/* Nothing to do here */
 }
@@ -1766,6 +1946,11 @@ void ILConsoleGetBufferSize(ILInt32 *width, ILInt32 *height)
 	*height = 24;
 }
 
+void ILConsoleSetBufferSize(ILInt32 width, ILInt32 height)
+{
+	/* Ignored in this version */
+}
+
 void ILConsoleGetWindowSize(ILInt32 *left, ILInt32 *top,
 							ILInt32 *width, ILInt32 *height)
 {
@@ -1775,9 +1960,26 @@ void ILConsoleGetWindowSize(ILInt32 *left, ILInt32 *top,
 	*height = 24;
 }
 
+void ILConsoleSetWindowSize(ILInt32 left, ILInt32 top,
+							ILInt32 width, ILInt32 height)
+{
+	/* Ignored in this version */
+}
+
+void ILConsoleGetLargestWindowSize(ILInt32 *width, ILInt32 *height)
+{
+	ILInt32 left, top;
+	ILConsoleGetWindowSize(&left, &top, width, height);
+}
+
 void ILConsoleSetTitle(const char *title)
 {
 	/* Nothing to do here */
+}
+
+ILInt32 ILConsoleGetAttributes(void)
+{
+	return 0x07;
 }
 
 void ILConsoleSetAttributes(ILInt32 attrs)
@@ -1788,6 +1990,41 @@ void ILConsoleSetAttributes(ILInt32 attrs)
 void ILConsoleWriteChar(ILInt32 ch)
 {
 	putc(ch & 0xFF, stdout);
+}
+
+void ILConsoleMoveBufferArea(ILInt32 sourceLeft, ILInt32 sourceTop,
+							 ILInt32 sourceWidth, ILInt32 sourceHeight,
+							 ILInt32 targetLeft, ILInt32 targetTop,
+							 ILUInt16 sourceChar, ILInt32 attributes)
+{
+	/* Nothing to do here */
+}
+
+ILInt32 ILConsoleGetLockState(void)
+{
+	/* We cannot detect the lock state on this platform, so we just
+	   assume that neither CAPS nor NUM has been depressed */
+	return 0;
+}
+
+ILInt32 ILConsoleGetCursorSize(void)
+{
+	return 25;
+}
+
+void ILConsoleSetCursorSize(ILInt32 size)
+{
+	/* Nothing to do here */
+}
+
+ILBool ILConsoleGetCursorVisible(void)
+{
+	return 1;
+}
+
+void ILConsoleSetCursorVisible(ILBool flag)
+{
+	/* Nothing to do here */
 }
 
 #endif /* No console */
@@ -1813,7 +2050,7 @@ static MapKeyInfo const MapKeys[128] = {
 	{Key_E,			Mod_Control},
 	{Key_F,			Mod_Control},
 	{Key_G,			Mod_Control},
-	{Key_Back,		0},
+	{Key_BackSpace,	0},
 	{Key_Tab,		0},
 	{Key_J,			Mod_Control},
 	{Key_K,			Mod_Control},
@@ -1945,7 +2182,7 @@ static void MapCharToKey(int ch, ILInt32 *key, ILInt32 *modifiers)
 	   instead of the delete key */
 	if(ch == 0x7F && eraseIsDel)
 	{
-		*key = Key_Back;
+		*key = Key_BackSpace;
 		*modifiers = 0;
 	}
 	else

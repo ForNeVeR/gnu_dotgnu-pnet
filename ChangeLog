@@ -1,11 +1,17 @@
 
+2004-05-13  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/TextBox.cs: Reapply last patch
+	as it was not applied properly.
+
 2004-05-14  Russell Stuart  <russell-savannah@stuart.id.au>
-	* runtime/System/Threading/Timer.cs:
-	Re-Wrote - number of bugs fixed.  [patch #2912]
+
+	* runtime/System/Threading/Timer.cs: Re-Wrote - number of bugs 
+	fixed.  [patch #2912]
 
 	* tests/runtime/System/Threading/TestTimer.cs,
-	tests/runtime/System/Threading/SuitThreading.cs:
-	Added Timer Test Cases.
+	tests/runtime/System/Threading/SuiteThreading.cs: Added Timer Test 
+	cases.
 
 2004-05-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 

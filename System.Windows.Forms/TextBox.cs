@@ -542,13 +542,13 @@ public class TextBox : TextBoxBase
 		}
 	}
 
-	protected void OnKeyPress(Object sender, KeyPressEventArgs e)
+	protected override void OnKeyPress(KeyPressEventArgs e)
 	{
 		base.OnKeyPress(e);
 		
 		if(e.Handled == false)
 		{
-			HandleKeyPress(sender, e);
+			HandleKeyPress(this, e);
 		}
 	}
 

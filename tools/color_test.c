@@ -117,5 +117,6 @@ int main(int argc, char *argv[])
 	printf("\n");
 
 	/* Close the display and exit */
+	XCloseDisplay(dpy);
 	return 0;
 }

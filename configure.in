@@ -140,6 +140,7 @@ class/System.Runtime.Serialization.Formatters.Soap/Makefile
 class/PEAPI/Makefile
 class/ICSharpCode.SharpZipLib/Makefile
 class/Mono.Data.Tds/Makefile
+class/System.Data/Makefile
 class/Mono.Directory.LDAP/Makefile
 class/Mono.GetOptions/Makefile
 class/Mono.Posix/Makefile

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+
+<project name="System.Data" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="System.Data.dll"
+				 debug="${debug.flag}"
+				 unsafe="true">
+
+			<sources basedir="${mono.sources}/class/System.Data/">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+				<excludes name="System.Data.OleDb/TestGDA.cs"/>
+				<excludes name="System.Data.OleDb/TestOleDb.cs"/>
+			</sources>
+
+			<references>
+				<file name="System.dll"/>
+				<file name="System.Xml.dll"/>
+				<file name="../Mono.Data.Tds/Mono.Data.Tds.dll"/>
+				<file name="../System.EnterpriseServices/System.EnterpriseServices.dll"/>
+			</references>
+
+		</compile>
+	</target>
+</project>

@@ -1,4 +1,10 @@
 
+2003-05-30  Gopal.V  <gopalv82@symonds.net>
+	
+	* configure.in, class/Makefile.am, class/System.Data/Makefile.am,
+	class/System.Data/System.Data.build: Add the build for System.Data
+	assembly
+
 2003-05-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, class/Makefile.am, class/System.Messaging/.cvsignore,

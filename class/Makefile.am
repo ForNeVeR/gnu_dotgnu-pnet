@@ -9,6 +9,7 @@ SUBDIRS = Custommarshalers \
 		  PEAPI \
 		  ICSharpCode.SharpZipLib \
 		  Mono.Data.Tds \
+		  System.Data \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix

@@ -49,6 +49,13 @@ namespace System.Xml.XPath.Private
 			inOperator = false;
 		}
 
+		private static void Assert(bool condition)
+		{
+#if !ECMA_COMPAT
+			Debug.Assert(condition);
+#endif
+		}
+
 		/* <Prefix>-<Suffix> format detection */
 		private static bool IsSpecialTokenPrefix(String text)
 		{
@@ -284,7 +291,7 @@ namespace System.Xml.XPath.Private
 			// skip whitespace
 			while(Char.IsWhiteSpace((char)ch))
 			{
-				Debug.Assert(Read() == ch);
+				Assert(Read() == ch);
 				ch = Peek();
 			}
 
@@ -309,18 +316,18 @@ namespace System.Xml.XPath.Private
 				case ')':
 				case ']':
 				{
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					return (int)ch;
 				}
 				break;
 
 				case ':':
 				{
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					if(Peek() == ch)
 					{
 						inOperator = true;
-						Debug.Assert(Read() == ch);
+						Assert(Read() == ch);
 						return Token.AXIS_SUFFIX;
 					}
 					return Token.ERROR;
@@ -329,10 +336,10 @@ namespace System.Xml.XPath.Private
 				
 				case '.':
 				{
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					if(Peek() == ch)
 					{
-						Debug.Assert(Read() == ch);
+						Assert(Read() == ch);
 						return Token.PARENT_NODE;
 					}
 					else if (Char.IsDigit((char)Peek()))
@@ -348,13 +355,13 @@ namespace System.Xml.XPath.Private
 				case '\'':
 				{
 					StringBuilder sb = new StringBuilder();
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					while(Peek() != ch)
 					{
 						// read till end quote
 						sb.Append((char)Read());
 					}
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					Value = sb.ToString();
 					return Token.LITERAL;
 				}
@@ -363,7 +370,7 @@ namespace System.Xml.XPath.Private
 				case '+':
 				{
 					inOperator = true;
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					return Token.OP_PLUS;
 				}
 				break;
@@ -371,14 +378,14 @@ namespace System.Xml.XPath.Private
 				case '-':
 				{
 					inOperator = true;
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					return Token.OP_MINUS;
 				}
 				break;
 				
 				case '=':
 				{
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					inOperator = true;
 					return Token.OP_EQ;
 				}
@@ -386,11 +393,11 @@ namespace System.Xml.XPath.Private
 
 				case '!':
 				{
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					if(Peek() == '=')
 					{						
 						inOperator = true;
-						Debug.Assert(Read() == '=');
+						Assert(Read() == '=');
 						return Token.OP_NE;
 					}
 					return Token.ERROR;
@@ -401,10 +408,10 @@ namespace System.Xml.XPath.Private
 				case '>':
 				{
 					inOperator = true;
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					if(Peek() == '=')
 					{
-						Debug.Assert(Read() == ch);
+						Assert(Read() == ch);
 						return (ch == '>') ? Token.OP_GE : Token.OP_LE;
 					}
 					else
@@ -417,10 +424,10 @@ namespace System.Xml.XPath.Private
 				case '/':
 				{
 					inOperator = true;
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					if(Peek() == '/')
 					{
-						Debug.Assert(Read() == '/');
+						Assert(Read() == '/');
 						return Token.RECURSIVE_DESCENT;
 					}
 					return (int)ch;
@@ -429,7 +436,7 @@ namespace System.Xml.XPath.Private
 
 				case '*':
 				{
-					Debug.Assert(Read() == ch);
+					Assert(Read() == ch);
 					if(currIndex != 0 && !prevOperator)
 					{
 						inOperator = true;
@@ -444,12 +451,12 @@ namespace System.Xml.XPath.Private
 				{
 					if(Char.IsDigit((char)ch))
 					{
-						Debug.Assert(Read() == ch);
+						Assert(Read() == ch);
 						return ReadNumber(ch);
 					}
 					else if(Char.IsLetter((char)ch) || ch == '_')
 					{
-						Debug.Assert(Read() == ch);
+						Assert(Read() == ch);
 						return ReadName(ch);
 					}
 				}
@@ -473,7 +480,7 @@ namespace System.Xml.XPath.Private
 				{
 					return Token.ERROR;
 				}
-				Debug.Assert(Read() == '.');
+				Assert(Read() == '.');
 				while(Char.IsDigit((char)Peek()))
 				{
 					sb.Append(Read());
@@ -493,7 +500,7 @@ namespace System.Xml.XPath.Private
 					|| ch == '_' || 
 					(ch == '-' && IsSpecialTokenPrefix(sb.ToString())))
 			{
-				Debug.Assert(Read() == ch);
+				Assert(Read() == ch);
 				sb.Append((char)ch);
 				ch = Peek();
 			}
@@ -530,7 +537,7 @@ namespace System.Xml.XPath.Private
 			if(Peek() == ':')
 			{
 				// QNAME | WILDCARD_NAME 
-				Debug.Assert(Read() == ':');
+				Assert(Read() == ':');
 				ch = Peek(); 
 				if(Char.IsLetter((Char)ch) || Char.IsDigit((Char)ch) 
 					|| ch == '_')
@@ -541,7 +548,7 @@ namespace System.Xml.XPath.Private
 					sb.Append(':');
 					do
 					{
-						Debug.Assert(Read() == ch);
+						Assert(Read() == ch);
 						sb.Append((char)ch);
 						ch = Peek();
 					}while(Char.IsLetter((Char)ch) || Char.IsDigit((Char)ch)

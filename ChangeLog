@@ -1,4 +1,9 @@
 
+2004-10-20  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XPath/Private/XPathTokenizer.cs: fix compilation in ECMA
+	compatibility mode.
+
 2004-10-18  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:

@@ -1,3 +1,9 @@
+
+2005-02-23  Gopal V  <gopalv82@yahoo.com>
+
+	* cscc/csharp/cs_stmt.tc: Fix overflow bug in determining type of
+	switch to use. (fix bug #12048).
+
 2005-02-21  Doru Budai  <doru.budai@gmail.com>
 
 	* include/il_sysio.h, support/socket.c: Enable UDP broadcast. (patch

@@ -12,6 +12,8 @@
 
 	* samples/mscorlib.dll: new version with security changes.
 
+	* samples/mscorlib.dll: another version with some culture work-arounds.
+
 2001-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with the latest pnetlib changes.

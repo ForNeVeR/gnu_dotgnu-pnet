@@ -414,7 +414,32 @@ int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn)
 
 int ILSysIOLock(ILSysIOHandle handle, ILInt64 position, ILInt64 length)
 {
-#if defined(HAVE_FCNTL) && defined(HAVE_F_SETLKW)
+#if defined(IL_WIN32_PLATFORM)
+	/* Bypass the system library and call LockFile directly under Win32 */
+#ifdef IL_WIN32_CYGWIN
+	HANDLE osHandle = (HANDLE)get_osfhandle((int)(ILNativeInt)handle);
+#else
+	HANDLE osHandle = (HANDLE)_get_osfhandle((int)(ILNativeInt)handle);
+#endif
+	if(osHandle == (HANDLE)INVALID_HANDLE_VALUE)
+	{
+		ILSysIOSetErrno(IL_ERRNO_EBADF);
+		return 0;
+	}
+	if(LockFile(osHandle,
+				(DWORD)(position & IL_MAX_UINT32),
+			 	(DWORD)((position >> 32) & IL_MAX_UINT32),
+			 	(DWORD)(length & IL_MAX_UINT32),
+			 	(DWORD)((length >> 32) & IL_MAX_UINT32)))
+	{
+		return 1;
+	}
+	else
+	{
+		ILSysIOSetErrno(IL_ERRNO_ENOLCK);
+		return 0;
+	}
+#elif defined(HAVE_FCNTL) && defined(HAVE_F_SETLKW)
 	struct flock cntl_data;
 	/* set fields individually...who knows what extras are there? */
 	cntl_data.l_type = F_WRLCK;
@@ -435,7 +460,32 @@ int ILSysIOLock(ILSysIOHandle handle, ILInt64 position, ILInt64 length)
 
 int ILSysIOUnlock(ILSysIOHandle handle, ILInt64 position, ILInt64 length)
 {
-#if defined(HAVE_FCNTL) && defined(HAVE_F_SETLKW)
+#if defined(IL_WIN32_PLATFORM)
+	/* Bypass the system library and call UnlockFile directly under Win32 */
+#ifdef IL_WIN32_CYGWIN
+	HANDLE osHandle = (HANDLE)get_osfhandle((int)(ILNativeInt)handle);
+#else
+	HANDLE osHandle = (HANDLE)_get_osfhandle((int)(ILNativeInt)handle);
+#endif
+	if(osHandle == (HANDLE)INVALID_HANDLE_VALUE)
+	{
+		ILSysIOSetErrno(IL_ERRNO_EBADF);
+		return 0;
+	}
+	if(UnlockFile(osHandle,
+				  (DWORD)(position & IL_MAX_UINT32),
+			 	  (DWORD)((position >> 32) & IL_MAX_UINT32),
+			 	  (DWORD)(length & IL_MAX_UINT32),
+			 	  (DWORD)((length >> 32) & IL_MAX_UINT32)))
+	{
+		return 1;
+	}
+	else
+	{
+		ILSysIOSetErrno(IL_ERRNO_ENOLCK);
+		return 0;
+	}
+#elif defined(HAVE_FCNTL) && defined(HAVE_F_SETLKW)
 	struct flock cntl_data;
 	/* set fields individually...who knows what extras are there? */
 	cntl_data.l_type = F_UNLCK;

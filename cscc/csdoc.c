@@ -1101,6 +1101,86 @@ static void GenerateDocsForProperty(FILE *stream,
 }
 
 /*
+ * Generate documentation for a specific event definition.
+ */
+static void GenerateDocsForEvent(FILE *stream, ILNode_EventDeclaration *decl,
+								 int indent)
+{
+	ILNode_ListIter iterator;
+	ILNode *eventDecl;
+	ILEvent *event;
+
+	/* Bail out if the field is private, and "-fprivate" is not supplied */
+	if(IsMemberPrivate(decl->modifiers))
+	{
+		if(!CCStringListContains(extension_flags, num_extension_flags,
+								 "private"))
+		{
+			return;
+		}
+	}
+
+	/* Scan all event declarators that are attached to the event definition */
+	ILNode_ListIter_Init(&iterator, decl->eventDeclarators);
+	while((eventDecl = ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		/* Get the event descriptor */
+		event = ((ILNode_EventDeclarator *)eventDecl)->eventInfo;
+		if(!event)
+		{
+			continue;
+		}
+
+		/* Output the member header */
+		Indent(stream, indent);
+		fputs("<Member MemberName=\"", stream);
+		fputs(ILEvent_Name(event), stream);
+		fputs("\">\n", stream);
+
+		/* Output the signature in ILASM form */
+		Indent(stream, indent + 2);
+		fputs("<MemberSignature Language=\"ILASM\" Value=\".event ", stream);
+		ILDumpFlags(stream, decl->modifiers, ILMethodDefinitionFlags, 0);
+		fputs("event ", stream);
+		fputs(ILEvent_Name(event), stream);
+		/* TODO: add/remove methods */
+		fputs("\"/>\n", stream);
+
+		/* Output the signature in C# form */
+		Indent(stream, indent + 2);
+		fputs("<MemberSignature Language=\"C#\" Value=\"", stream);
+		ILDumpFlags(stream, decl->modifiers, CSharpMethodFlags, 0);
+		fputs(CSTypeToName(ILEvent_Type(event)), stream);
+		putc(' ', stream);
+		fputs(ILEvent_Name(event), stream);
+		/* TODO: add/remove methods */
+		fputs("\"/>\n", stream);
+
+		/* Output the member kind */
+		Indent(stream, indent + 2);
+		fputs("<MemberType>Event</MemberType>\n", stream);
+
+		/* Dump the attributes for the event */
+		DumpAttributes(stream, ILToProgramItem(event), indent + 2);
+
+		/* Events don't have return types or parameters */
+		Indent(stream, indent + 2);
+		fputs("<ReturnValue/>\n", stream);
+		Indent(stream, indent + 2);
+		fputs("<Parameters/>\n", stream);
+
+		/* Dump the doc comments for the event */
+		DumpDocComments(stream, decl->attributes, indent + 2);
+
+		/* Output the member footer */
+		Indent(stream, indent + 2);
+		fputs("<Excluded>0</Excluded>\n", stream);
+		Indent(stream, indent);
+		fputs("</Member>\n", stream);
+	}
+}
+
+/*
  * Generate documentation for a specific class definition and its members.
  */
 static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
@@ -1336,12 +1416,12 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 								    (ILNode_PropertyDeclaration *)member,
 								    indent);
 		}
-#if 0
 		else if(yykind(member) == yykindof(ILNode_EventDeclaration))
 		{
-			/* TODO: document an event */
+			GenerateDocsForEvent(stream,
+								 (ILNode_EventDeclaration *)member,
+								 indent);
 		}
-#endif
 		else if(yykind(member) == yykindof(ILNode_ClassDefn))
 		{
 			GenerateDocsForClass(stream, (ILNode_ClassDefn *)member,

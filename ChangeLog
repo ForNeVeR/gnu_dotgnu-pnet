@@ -10,6 +10,8 @@
 
 	* cscc/csdoc.c: dump attribute names in the XML documentation output.
 
+	* cscc/csdoc.c: dump XML documentation for events.
+
 2003-03-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilasm/ilasm_build.c, ilasm/ilasm_build.h, ilasm/ilasm_grammar.y:

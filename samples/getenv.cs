@@ -18,7 +18,7 @@ public class getenv
 		String value;
 		IDictionary vars;
 
-		if(args.Length == 2 && args[0].Equals("-d"))
+		if(args.Length == 2 && args[0] == "-d")
 		{
 			// Access the value through a dictionary indexer.
 			vars = Environment.GetEnvironmentVariables();

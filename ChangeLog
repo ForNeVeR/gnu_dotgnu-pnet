@@ -12,6 +12,9 @@
 	* codegen/cg_relop.tc, cscc/cs_oper.tc: bug fixes to string
 	equality and inequality testing.
 
+	* samples/getenv.cs: updated the "getenv" sample to correspond
+	to the string equality fixes.
+
 2001-01-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_method.c (_ILLinkerConvertMethod): when a method

@@ -295,7 +295,7 @@ static ILNode *FindNestedClass(ILClass *info, ILNode_ClassDefn *defn,
 static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 						const char *name, ILClass *accessedFrom,
 					    CSMemberLookupInfo *results,
-						int lookInParents)
+						int lookInParents, int baseAccess)
 {
 	ILImplements *impl;
 	ILMember *member;
@@ -334,8 +334,12 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 					   ILMethod_IsVirtual(underlying) &&
 					   !ILMethod_IsNewSlot(underlying))
 					{
-						/* This is a virtual override, so skip it */
-						continue;
+						/* This is a virtual override: skip it if we
+						   aren't looking for a "base" member */
+						if(!baseAccess)
+						{
+							continue;
+						}
 					}
 					if(kind == IL_META_MEMBERKIND_PROPERTY &&
 					   ILTypeNumParams(ILMember_Signature(member)) != 0)
@@ -377,7 +381,8 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 			while((impl = ILClassNextImplements(info, impl)) != 0)
 			{
 				FindMembers(genInfo, ILImplementsGetInterface(impl),
-						    name, accessedFrom, results, lookInParents);
+						    name, accessedFrom, results,
+							lookInParents, baseAccess);
 			}
 		}
 
@@ -623,7 +628,7 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
  */
 static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 				        ILClass *accessedFrom, CSMemberLookupInfo *results,
-						int lookInParents)
+						int lookInParents, int baseAccess)
 {
 	/* Initialize the results */
 	InitMembers(results);
@@ -631,7 +636,8 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 	/* Collect up all members with the specified name */
 	if(info)
 	{
-		FindMembers(genInfo, info, name, accessedFrom, results, lookInParents);
+		FindMembers(genInfo, info, name, accessedFrom, results,
+					lookInParents, baseAccess);
 	}
 
 	/* Trim the list and determine the kind for the result */
@@ -986,7 +992,7 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 
 		/* Look for members */
 		result = MemberLookup(genInfo, startType, name,
-							  accessedFrom, &results, 1);
+							  accessedFrom, &results, 1, 0);
 		if(result != CS_SEMKIND_VOID)
 		{
 			return LookupToSem(node, name, &results, result);
@@ -1275,7 +1281,8 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			/* Convert the type into a class and perform a lookup */
 			result = MemberLookup(genInfo, ILTypeToClass
 										(genInfo, CSSemGetType(value)),
-								  name, accessedFrom, &results, 1);
+								  name, accessedFrom, &results, 1,
+								  CSSemIsBase(value));
 			if(result != CS_SEMKIND_VOID)
 			{
 				/* Filter the result to only include static definitions */
@@ -1297,7 +1304,8 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			/* Perform a member lookup based on the expression's type */
 			result = MemberLookup(genInfo, ILTypeToClass
 												(genInfo, CSSemGetType(value)),
-								  name, accessedFrom, &results, 1);
+								  name, accessedFrom, &results, 1,
+								  CSSemIsBase(value));
 			if(result != CS_SEMKIND_VOID)
 			{
 				/* Check for instance accesses to enumerated types.
@@ -1347,7 +1355,7 @@ CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
 
 	/* Perform a member lookup based on the expression's type */
 	result = MemberLookup(genInfo, ILTypeToClass(genInfo, objectType),
-						  ".ctor", accessedFrom, &results, 0);
+						  ".ctor", accessedFrom, &results, 0, 0);
 	if(result != CS_SEMKIND_VOID)
 	{
 		/* Filter the result to remove static definitions */

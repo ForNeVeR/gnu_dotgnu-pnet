@@ -25,6 +25,9 @@
 	* codegen/cg_misc.tc (ILGenPrepareForThisAcces): recognise "Decimal"
 	as a valid managed value type.
 
+	* cscc/csharp/cs_lookup.c: do not ignore virtual overrides when
+	searching for "base" members.
+
 2002-09-26  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* engine/ilverify.c: add full method signatures to ilverify

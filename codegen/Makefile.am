@@ -63,6 +63,7 @@ libILCodeGen_a_SOURCES = $(TREECC_SRCOUT) \
 						 cg_resolve.c \
 						 cg_scope.c \
 						 cg_utils.c \
+						 cg_varusage.c \
 						 jv_output.c
 
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include

@@ -49,19 +49,51 @@ public abstract class XmlReader
 	
 	public abstract String GetAttribute(String name);
 	
-	[TODO]
-	public static bool IsName(String str) 
+	public static bool IsName(string str) 
 			{
-				// TODO
-				return false;
+				if (Char.IsLetter(str, 0) ||str.StartsWith('_') || str.StartsWith(':'))
+				{ 
+					return true;
+				}
+				else
+				{ 
+					// Dosen't start with the right chars
+					return false;
+				}
+				return true;
 			}
-	
-	[TODO]
+		
 	public static bool IsNameToken(String str)
 			{
-				// TODO
-				return false;
-			}
+				CharEnumerator e = str.GetEnumerator();
+				Char c;
+				int x, num = 0;
+				while (e.Next() && x < 1)
+				{	
+					c = e.Current;
+					num = Char.ToNumericValue(c);
+					if(Char.IsLetterOrDigit(c) ||
+					         c == '.' || c == '_' || 
+						 c == '-' || c == ':' || c.GetUnicodeCategory(c) == UnicodeCategory.ConnectorPunctuation || num == 0x00B7 ||
+num == 0x02D0 || num == 0x02D1 || num == 0x0387 || num == 0x0640 || 
+num == 0x0E46 || num == 0x0EC6 || num == 0x3005 || 
+(num >= 0x3031 && num <= 0x3035) || (num >= 0x309D && num <= 0x309E) || 
+(num >= 0x30FC && num <= 0x30FE))
+					{
+						++x;
+					}
+				}
+				if (x < 1) 
+				{
+					return false;
+				}
+				else
+				{
+					return true;
+				}	
+			
+        		}                		
+	
 	
 	[TODO]
 	public virtual bool IsStartElement(String localname, String ns)

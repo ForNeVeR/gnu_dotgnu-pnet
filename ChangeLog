@@ -23,6 +23,9 @@
 
 	* engine/lib_misc.c: implement "ClrMakeTypedReference" internalcall.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_misc.c,
+	samples/mscorlib.dll: implement "ClrSetTypedReference" internalcall.
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/convert.c, engine/cvm_arith.c, engine/cvm_var.c,

@@ -389,14 +389,40 @@ ILTypedRef _IL_TypedReference_ClrMakeTypedReference(ILExecThread *_thread,
 }
 
 /*
- * public static void SetTypedReference(TypedReference target,
- *										Object value);
+ * public static bool ClrSetTypedReference(TypedReference target,
+ *										   Object value);
  */
-void _IL_TypedReference_SetTypedReference(ILExecThread *_thread,
-										  ILTypedRef target,
-										  ILObject *value)
+ILBool _IL_TypedReference_ClrSetTypedReference(ILExecThread *_thread,
+										       ILTypedRef target,
+										       ILObject *value)
 {
-	/* TODO */
+	ILType *type;
+	if(target.type == 0 || target.value == 0)
+	{
+		/* This is an invalid typed reference */
+		return 0;
+	}
+	type = ILClassToType(target.type);
+	if(ILType_IsPrimitive(type) || ILType_IsValueType(type))
+	{
+		if(!ILExecThreadUnbox(_thread, type, value, target.value))
+		{
+			return 0;
+		}
+		return 1;
+	}
+	else if(ILTypeAssignCompatible
+				(ILProgramItem_Image(_thread->method),
+			     (value ? ILClassToType(GetObjectClass(value)) : 0),
+			     type))
+	{
+		*((ILObject **)(target.value)) = value;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*

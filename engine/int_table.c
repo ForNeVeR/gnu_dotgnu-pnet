@@ -766,9 +766,9 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_vprp(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_bprp(void (*fn)(), void *rvalue, void **avalue)
 {
-	(*(void (*)(void *, ILTypedRef, void *))fn)(*((void * *)(avalue[0])), *((ILTypedRef *)(avalue[1])), *((void * *)(avalue[2])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILTypedRef, void *))fn)(*((void * *)(avalue[0])), *((ILTypedRef *)(avalue[1])), *((void * *)(avalue[2])));
 }
 
 #endif
@@ -786,7 +786,7 @@ static void marshal_ppr(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(TypedReference_Methods)
 	IL_METHOD("ClrMakeTypedReference", "(oSystem.Object;[oSystem.Reflection.FieldInfo;)r", _IL_TypedReference_ClrMakeTypedReference, marshal_rppp)
-	IL_METHOD("SetTypedReference", "(roSystem.Object;)V", _IL_TypedReference_SetTypedReference, marshal_vprp)
+	IL_METHOD("ClrSetTypedReference", "(roSystem.Object;)Z", _IL_TypedReference_ClrSetTypedReference, marshal_bprp)
 	IL_METHOD("ToObject", "(r)oSystem.Object;", _IL_TypedReference_ToObject, marshal_ppr)
 IL_METHOD_END
 

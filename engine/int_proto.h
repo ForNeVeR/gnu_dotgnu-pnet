@@ -147,7 +147,7 @@ extern void _IL_Type_GetTypeHandle(ILExecThread * _thread, void * _result, ILObj
 extern ILObject * _IL_Type_GetTypeFromHandle(ILExecThread * _thread, void * handle);
 
 extern ILTypedRef _IL_TypedReference_ClrMakeTypedReference(ILExecThread * _thread, ILObject * target, System_Array * flds);
-extern void _IL_TypedReference_SetTypedReference(ILExecThread * _thread, ILTypedRef target, ILObject * value);
+extern ILBool _IL_TypedReference_ClrSetTypedReference(ILExecThread * _thread, ILTypedRef target, ILObject * value);
 extern ILObject * _IL_TypedReference_ToObject(ILExecThread * _thread, ILTypedRef value);
 
 extern ILInt32 _IL_Interlocked_CompareExchange_Riii(ILExecThread * _thread, ILInt32 * location1, ILInt32 value, ILInt32 comparand);

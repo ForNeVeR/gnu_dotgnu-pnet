@@ -98,6 +98,10 @@ from "System.Exception".
 
 * runtime/System/Version.cs: implement the "System.Version" class.
 
+* runtime/System/Resources/ResourceManager.cs,
+runtime/System/Resources/ResourceSet.cs: implement two more classes in
+"System.Resources".
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for the "0.1.0" release.

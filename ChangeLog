@@ -5,6 +5,9 @@
 	ilalink/link_method.c, ilalink/linker.h: begin adding support
 	for C-style module linking to "ilalink".
 
+	* ilalink/link_method.c: resolve global symbol references
+	into libraries.
+
 2002-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_main.c, image/errors.c, image/pecoff_loader.c,

@@ -807,6 +807,10 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	ILType *signature;
 	ILMethod *method;
 	ILField *field;
+	char *findAliasFor;
+	ILLibrary *findLibrary;
+	int findFlags;
+	ILMember *findMember;
 
 	/* Convert the member's owner reference */
 	owner = ILMember_Owner(member);
@@ -834,7 +838,13 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	else if(IsModuleExtern(owner))
 	{
 		/* Look for a global definition of this member */
-		/* TODO */
+		findFlags = _ILLinkerFindSymbol(linker, ILMember_Name(member),
+										&findAliasFor, &findLibrary,
+										&findMember);
+		if(findFlags != 0)
+		{
+			return findMember;
+		}
 
 		/* Create a reference to the current image's "<Module>" type */
 		owner = ILClassLookup(ILClassGlobalScope(linker->image),

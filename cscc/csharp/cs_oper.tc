@@ -676,13 +676,18 @@ static void CoerceArrayInit(ILGenInfo *info, ILNode *expr,
 	}
 	else
 	{
-		/* This is a normal array element */
+		/* This is a normal array element */ 
+
+		/*  Do semantic analysis on expr. Note expr and *parent
+			are equivalent at this point, but *parent may be
+			updated during semantic analysis.  Therefore, we must 
+			subsequently coerce *parent instead of expr. */
 		if(!CSSemExpectValue(expr, info, parent, &value))
 		{
 			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
 						  _("invalid array initializer element"));
 		}
-		else if(!ILCanCoerceNode(info, expr, CSSemGetType(value), type))
+		else if(!ILCanCoerceNode(info, *parent, CSSemGetType(value), type))
 		{
 			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
 			  _("incompatible types in initializer: no conversion "
@@ -691,7 +696,7 @@ static void CoerceArrayInit(ILGenInfo *info, ILNode *expr,
 		}
 		else
 		{
-			ILCoerce(info, expr, parent, CSSemGetType(value), type);
+			ILCoerce(info, *parent, parent, CSSemGetType(value), type);
 		}
 	}
 }

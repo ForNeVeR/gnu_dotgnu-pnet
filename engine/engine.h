@@ -304,6 +304,11 @@ ILInt32 _ILStringToBuffer(ILExecThread *thread, ILString *str, ILUInt16 **buf);
  */
 int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc);
 
+/*
+ * Get the element type of an array.
+ */
+ILType *_ILGetElementType(ILType *array);
+
 #ifdef	__cplusplus
 };
 #endif

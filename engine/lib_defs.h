@@ -73,6 +73,16 @@ typedef struct
 } System_MArray;
 
 /*
+ * Determine if an array inherits from "$Synthetic.SArray".
+ */
+int _ILIsSArray(System_Array *array);
+
+/*
+ * Determine if an array inherits from "$Synthetic.MArray".
+ */
+int _ILIsMArray(System_Array *array);
+
+/*
  * Internal structure of "System.RuntimeType".
  */
 typedef struct

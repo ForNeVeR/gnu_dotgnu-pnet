@@ -914,10 +914,7 @@ static int IsMArrayClass(ILClass *classInfo)
 	return (name != 0 && !strcmp(name, "$Synthetic"));
 }
 
-/*
- * Get the element type of an array.
- */
-static ILType *GetElementType(ILType *array)
+ILType *_ILGetElementType(ILType *array)
 {
 	while(array != 0 && ILType_IsComplex(array) &&
 	      array->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
@@ -991,7 +988,7 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 	if(!strcmp(name, "Get"))
 	{
 		/* Determine which get function to use based on the element type */
-		type = ILTypeGetEnumType(GetElementType(type));
+		type = ILTypeGetEnumType(_ILGetElementType(type));
 		if(ILType_IsPrimitive(type))
 		{
 			switch(ILType_ToElement(type))
@@ -1096,7 +1093,7 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 	else if(!strcmp(name, "Set"))
 	{
 		/* Determine which set function to use based on the element type */
-		type = ILTypeGetEnumType(GetElementType(type));
+		type = ILTypeGetEnumType(_ILGetElementType(type));
 		if(ILType_IsPrimitive(type))
 		{
 			switch(ILType_ToElement(type))
@@ -1183,10 +1180,7 @@ void *_ILGetInternalArray(ILMethod *method, int *isCtor)
 	}
 }
 
-/*
- * Determine if an array inherits from "$Synthetic.SArray".
- */
-static int IsSArray(System_Array *array)
+int _ILIsSArray(System_Array *array)
 {
 	if(array)
 	{
@@ -1211,10 +1205,7 @@ static int IsSArray(System_Array *array)
 	}
 }
 
-/*
- * Determine if an array inherits from "$Synthetic.MArray".
- */
-static int IsMArray(System_Array *array)
+int _ILIsMArray(System_Array *array)
 {
 	if(array)
 	{
@@ -1232,11 +1223,11 @@ static int IsMArray(System_Array *array)
 static ILInt32 System_Array_GetRankNative(ILExecThread *thread,
 										  System_Array *_this)
 {
-	if(IsMArray(_this))
+	if(_ILIsMArray(_this))
 	{
 		return ((System_MArray *)_this)->rank;
 	}
-	else if(IsSArray(_this))
+	else if(_ILIsSArray(_this))
 	{
 		return 1;
 	}
@@ -1252,11 +1243,11 @@ static ILInt32 System_Array_GetRankNative(ILExecThread *thread,
 static ILInt32 System_Array_GetLengthNative(ILExecThread *thread,
 										    System_Array *_this)
 {
-	if(IsSArray(_this))
+	if(_ILIsSArray(_this))
 	{
 		return _this->length;
 	}
-	else if(IsMArray(_this))
+	else if(_ILIsMArray(_this))
 	{
 		ILInt32 len = 1;
 		ILInt32 dim;
@@ -1279,14 +1270,14 @@ static ILInt32 System_Array_GetLength(ILExecThread *thread,
 									  System_Array *_this,
 									  ILInt32 dimension)
 {
-	if(IsSArray(_this))
+	if(_ILIsSArray(_this))
 	{
 		if(dimension == 0)
 		{
 			return _this->length;
 		}
 	}
-	else if(IsMArray(_this))
+	else if(_ILIsMArray(_this))
 	{
 		if(dimension >= 0 && dimension < ((System_MArray *)_this)->rank)
 		{
@@ -1311,7 +1302,7 @@ IL_METHOD_END
 int ILExecThreadGetElem(ILExecThread *thread, void *value,
 						ILObject *_array, ILInt32 index)
 {
-	if(IsSArray((System_Array *)_array))
+	if(_ILIsSArray((System_Array *)_array))
 	{
 		/* Validate the index */
 		System_Array *array = (System_Array *)_array;
@@ -1352,7 +1343,7 @@ int ILExecThreadGetElem(ILExecThread *thread, void *value,
 int ILExecThreadSetElem(ILExecThread *thread, ILObject *_array,
 						ILInt32 index, ...)
 {
-	if(IsSArray((System_Array *)_array))
+	if(_ILIsSArray((System_Array *)_array))
 	{
 		/* Validate the index */
 		System_Array *array = (System_Array *)_array;

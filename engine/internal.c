@@ -43,6 +43,7 @@ extern ILMethodTableEntry const _ILPlatformStdioMethods;
 extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
 extern ILMethodTableEntry const _ILPlatformPtrSizesMethods;
 extern ILMethodTableEntry const _ILPlatformTimeMethods;
+extern ILMethodTableEntry const _ILRuntimeHelpersMethods;
 
 /*
  * Table that contains all classes that have "internalcall" methods.
@@ -64,6 +65,8 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Monitor",		"System.Threading", &_ILSystemThreadingMonitorMethods},
 	{"Object",		"System",		&_ILSystemObjectMethods},
 	{"PtrSizes",	"Platform",		&_ILPlatformPtrSizesMethods},
+	{"RuntimeHelpers", "System.Runtime.CompilerServices",
+			&_ILRuntimeHelpersMethods},
 	{"RuntimeType",	"System",		&_ILSystemRuntimeTypeMethods},
 	{"Single",		"System",		&_ILSystemSingleMethods},
 	{"Stdio",		"Platform",		&_ILPlatformStdioMethods},

@@ -11,6 +11,7 @@ libILEngine_a_SOURCES = call.c \
 						layout.c \
 						lib_array.c \
 						lib_decimal.c \
+						lib_helpers.c \
 						lib_math.c \
 						lib_object.c \
 						lib_platform.c \

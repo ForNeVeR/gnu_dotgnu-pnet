@@ -26,7 +26,7 @@ CSCC_SYSTEM_FLAGS="@CSCC_SYSTEM_FLAGS@"
 CSCC_INVOKE="${CSCC} ${CSCC_SYSTEM_FLAGS}"
 
 # Options to pass to "cscc".
-CSCC_FLAGS='-Wall -funsafe -nostdlib'
+CSCC_FLAGS='-Wall -funsafe -nostdlib -fbuiltin-library'
 
 # Check the command-line arguments.
 if test -z "$1" ; then

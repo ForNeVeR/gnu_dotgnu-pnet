@@ -26,7 +26,7 @@ CSCC_SYSTEM_FLAGS="@CSCC_SYSTEM_FLAGS@"
 CSCC_INVOKE="${CSCC} ${CSCC_SYSTM_FLAGS}"
 
 # Options to pass to "cscc".
-CSCC_FLAGS='-Wall -funsafe -nostdlib'
+CSCC_FLAGS='-Wall -funsafe -nostdlib -fbuiltin-library'
 
 TMPFILE=/tmp/test$$
 TMPFILEB=/tmp/test2$$

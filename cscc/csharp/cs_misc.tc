@@ -612,4 +612,28 @@ ILNode_SemAnalysis(ILNode_RefValue)
 	CSSemSetRValue(value, node->type);
 	return value;
 }
+ILNode_SemAnalysis(ILNode_BaseDestructor)
+{
+	ILNode_MethodDeclaration *caller;
+	ILType *type;
+	
+	caller= info->currentMethod;
 
+	if(!caller)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "cannot call base destructors outside a method ");
+		return CSSemValueDefault;
+	}
+	
+	type = ILType_FromClass(ILMethod_Owner(caller->methodInfo));
+	if(ILTypeIsObjectClass(type))
+	{
+		return CSSemValueDefault;
+	}
+	return ILNode_SemAnalysis(node->destructor,info,&(node->destructor));
+}
+ILNode_GenDiscard(ILNode_BaseDestructor)
+{
+	ILNode_GenDiscard(node->destructor,info);
+}

@@ -145,6 +145,10 @@
 {
 	ILNode *stmt;
 }
+%node ILNode_BaseDestructor ILNode_Dummy =
+{
+	ILNode *destructor;
+}
 
 /*
  * Documentation comments.

@@ -1,4 +1,10 @@
 
+2002-12-12 Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_defs.tc, 
+	cscc/csharp/cs_misc.tc: Filter out base destructor calls
+	when compiling System.Object.
+
 2002-12-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/lib_attrs.c (MarshalAsAttribute): fix the "LPArray"

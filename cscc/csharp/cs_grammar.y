@@ -3273,8 +3273,11 @@ DestructorDeclaration
 				   even if an exception occurs.  We force this to happen
 				   by wrapping the method body with a try block whose
 				   finally clause always calls its parent */
-				body = ILNode_InvocationExpression_create
-							(ILNode_BaseAccess_create(name), 0);
+				/* Note: BaseDestructor filters out these calls for 
+						 System.Object class */
+				body = ILNode_BaseDestructor_create(
+							ILNode_InvocationExpression_create
+							(ILNode_BaseAccess_create(name), 0));
 				body = ILNode_Try_create
 							($6, 0, ILNode_FinallyClause_create(body));
 

@@ -293,20 +293,22 @@ extern	"C" {
 #define	COP_CALL					0xCB
 #define	COP_CALL_EXTERN				0xCC
 #define	COP_CALL_NATIVE				0xCD
-#define	COP_CALL_VIRTUAL			0xCE
-#define	COP_RETURN					0xCF
-#define	COP_RETURN_1				0xD0
-#define	COP_RETURN_2				0xD1
-#define	COP_RETURN_N				0xD2
-#define	COP_JSR						0xD3
-#define	COP_RET_JSR					0xD4
+#define	COP_CALL_NATIVE_VOID		0xCE
+#define	COP_CALL_VIRTUAL			0xCF
+#define	COP_RETURN					0xD0
+#define	COP_RETURN_1				0xD1
+#define	COP_RETURN_2				0xD2
+#define	COP_RETURN_N				0xD3
+#define	COP_JSR						0xD4
+#define	COP_RET_JSR					0xD5
+#define	COP_PUSH_THREAD				0xD6
 
 /*
  * Class-related opcodes.
  */
-#define	COP_CASTCLASS				0xD5
-#define	COP_ISINST					0xD6
-#define	COP_GET_STATIC				0xD7
+#define	COP_CASTCLASS				0xD7
+#define	COP_ISINST					0xD8
+#define	COP_GET_STATIC				0xD9
 
 /*
  * Make the next instruction wider.
@@ -349,14 +351,13 @@ extern	"C" {
  * Prefixed call management opcodes.
  */
 #define	COP_PREFIX_TAIL				0x16
-#define	COP_PREFIX_CALL_NON_IL		0x17
 
 /*
  * Prefixed exception handling opcodes.
  */
-#define	COP_PREFIX_ENTER_TRY		0x18
-#define	COP_PREFIX_EXIT_TRY			0x19
-#define	COP_PREFIX_THROW			0x1A
+#define	COP_PREFIX_ENTER_TRY		0x17
+#define	COP_PREFIX_EXIT_TRY			0x18
+#define	COP_PREFIX_THROW			0x19
 
 /*
  * Prefixed conversion opcodes.

@@ -42,6 +42,10 @@ and "_ILConvertMethod"; add an extra parameter to "_ILVerify".
 * engine/verify.c: hook the extra parameter for "_ILVerify" through
 to the call to "ILCoderSetup".
 
+* engine/cvmc_setup.c, engine/cvmc.c, engine/cvm.h, engine/cvmc_call.c,
+engine/cvm_call.c, engine/call.c: support for calling external PInvoke
+and internalcall methods.
+
 2001-10-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/Makefile.am: remove "interpreter.c" from the engine build;

@@ -147,14 +147,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 			#endif
 				{
 					CHECK_SPACE(1);
-					if(sizeof(int) >= sizeof(ILInt32))
-					{
-						stacktop->intValue = (ILInt32)(VA_ARG(va, int));
-					}
-					else
-					{
-						stacktop->intValue = VA_ARG(va, ILInt32);
-					}
+					stacktop->intValue = (ILInt32)(VA_ARG(va, ILVaInt));
 					++stacktop;
 				}
 				break;
@@ -165,15 +158,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 			#endif
 				{
 					CHECK_SPACE(1);
-					if(sizeof(unsigned int) >= sizeof(ILUInt32))
-					{
-						stacktop->uintValue =
-							(ILUInt32)(VA_ARG(va, unsigned int));
-					}
-					else
-					{
-						stacktop->uintValue = VA_ARG(va, ILUInt32);
-					}
+					stacktop->uintValue = (ILUInt32)(VA_ARG(va, ILVaUInt));
 					++stacktop;
 				}
 				break;
@@ -197,7 +182,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 				case IL_META_ELEMTYPE_R:
 				{
 					CHECK_SPACE(CVM_WORDS_PER_NATIVE_FLOAT);
-					fValue = (ILNativeFloat)(VA_ARG(va, double));
+					fValue = (ILNativeFloat)(VA_ARG(va, ILVaDouble));
 					ILMemCpy(stacktop, &fValue, sizeof(fValue));
 					stacktop += CVM_WORDS_PER_NATIVE_FLOAT;
 				}

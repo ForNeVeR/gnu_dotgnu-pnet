@@ -29,11 +29,6 @@ extern	"C" {
 #endif
 
 /*
- * Forward declaration.
- */
-extern ILCoderClass const ILCVMCoderClass;
-
-/*
  * Define the structure of a CVM label.
  */
 typedef struct _tagILCVMLabel ILCVMLabel;
@@ -56,14 +51,17 @@ struct _tagILCVMCoder
 	ILCoder			coder;
 	unsigned char  *buffer;
 	unsigned long	posn;
-	unsigned long	len;
 	unsigned long	start;
+	unsigned long	len;
 	unsigned long	stackCheck;
+	ILUInt32		generation;
 	long			height;
 	long			minHeight;
 	long			maxHeight;
 	ILUInt32	   *argOffsets;
+	ILUInt32		maxArgs;
 	ILUInt32	   *localOffsets;
+	ILUInt32		maxLocals;
 	ILMemPool		labelPool;
 	ILCVMLabel     *labelList;
 	int				labelOutOfMemory;
@@ -94,6 +92,31 @@ struct _tagILCVMCoder
 				CVM_BYTE((value) >> 16); \
 				CVM_BYTE((value) >> 24); \
 			} while (0)
+
+/*
+ * Output a pointer value to the CVM coder buffer.
+ */
+#ifdef IL_NATIVE_INT32
+#define	CVM_PTR(value)	\
+			do { \
+				CVM_BYTE(((ILUInt32)(value))); \
+				CVM_BYTE(((ILUInt32)(value)) >> 8); \
+				CVM_BYTE(((ILUInt32)(value)) >> 16); \
+				CVM_BYTE(((ILUInt32)(value)) >> 24); \
+			} while (0)
+#else
+#define	CVM_PTR(value)	\
+			do { \
+				CVM_BYTE(((ILUInt64)(value))); \
+				CVM_BYTE(((ILUInt64)(value)) >> 8); \
+				CVM_BYTE(((ILUInt64)(value)) >> 16); \
+				CVM_BYTE(((ILUInt64)(value)) >> 24); \
+				CVM_BYTE(((ILUInt64)(value)) >> 32); \
+				CVM_BYTE(((ILUInt64)(value)) >> 40); \
+				CVM_BYTE(((ILUInt64)(value)) >> 48); \
+				CVM_BYTE(((ILUInt64)(value)) >> 56); \
+			} while (0)
+#endif
 
 /*
  * Output a wide instruction to the CVM coder buffer.
@@ -134,6 +157,26 @@ struct _tagILCVMCoder
 			} while (0)
 
 /*
+ * Output a return instruction.
+ */
+#define	CVM_RETURN(size)	\
+			do { \
+				if((size) == 1) \
+				{ \
+					CVM_BYTE(COP_RETURN_1); \
+				} \
+				else if((size) == 2) \
+				{ \
+					CVM_BYTE(COP_RETURN_2); \
+				} \
+				else \
+				{ \
+					CVM_BYTE(COP_RETURN_N); \
+					CVM_WORD((size)); \
+				} \
+			} while (0)
+
+/*
  * Adjust the height of the CVM operand stack.
  */
 #define	CVM_ADJUST(num)	\
@@ -166,7 +209,7 @@ static ILCoder *CVMCoder_Create(ILExecThread *thread, ILUInt32 size)
 	{
 		return 0;
 	}
-	coder->coder.classInfo = &ILCVMCoderClass;
+	coder->coder.classInfo = &_ILCVMCoderClass;
 	coder->coder.thread = thread;
 	coder->buffer = (unsigned char *)ILMalloc(size);
 	if(!(coder->buffer))
@@ -175,18 +218,59 @@ static ILCoder *CVMCoder_Create(ILExecThread *thread, ILUInt32 size)
 		return 0;
 	}
 	coder->posn = 0;
-	coder->len = size;
 	coder->start = 0;
+	coder->len = size;
 	coder->stackCheck = 0;
+	coder->generation = 1;
 	coder->height = 0;
 	coder->minHeight = 0;
 	coder->maxHeight = 0;
 	coder->argOffsets = 0;
+	coder->maxArgs = 0;
 	coder->localOffsets = 0;
+	coder->maxLocals = 0;
 	ILMemPoolInit(&(coder->labelPool), sizeof(ILCVMLabel), 8);
 	coder->labelList = 0;
 	coder->labelOutOfMemory = 0;
 	return &(coder->coder);
+}
+
+/*
+ * Get the generation count for a CVM coder instance.
+ */
+static ILUInt32 CVMCoder_Generation(ILCoder *coder)
+{
+	return ((ILCVMCoder *)coder)->generation;
+}
+
+/*
+ * Allocate memory within a CVM coder instance.
+ */
+static void *CVMCoder_Alloc(ILCoder *_coder, ILUInt32 size)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	void *ptr;
+	if((coder->posn % sizeof(unsigned long)) != 0)
+	{
+		/* Align the buffer before we allocate from it */
+		coder->posn += sizeof(unsigned long) -
+					   (coder->posn % sizeof(unsigned long));
+		if(coder->posn > coder->len)
+		{
+			coder->posn = coder->len;
+			return 0;
+		}
+	}
+	if((coder->posn + size) <= coder->len)
+	{
+		ptr = coder->buffer + coder->posn;
+		coder->posn += size;
+		return ptr;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*
@@ -206,6 +290,20 @@ static void CVMCoder_Destroy(ILCoder *_coder)
 	}
 	ILMemPoolDestroy(&(coder->labelPool));
 	ILFree(coder);
+}
+
+/*
+ * Flush a CVM coder instance.
+ */
+static void CVMCoder_Flush(ILCoder *_coder)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	coder->posn = 0;
+	coder->start = 0;
+	ILMemPoolClear(&(coder->labelPool));
+	coder->labelList = 0;
+	coder->labelOutOfMemory = 0;
+	++(coder->generation);
 }
 
 /*
@@ -244,11 +342,15 @@ static int CVMCoder_Restart(ILCoder *_coder)
 /*
  * Define the CVM coder class.
  */
-ILCoderClass const ILCVMCoderClass =
+ILCoderClass const _ILCVMCoderClass =
 {
 	CVMCoder_Create,
+	CVMCoder_Generation,
+	CVMCoder_Alloc,
 	CVMCoder_Setup,
+	CVMCoder_SetupExtern,
 	CVMCoder_Destroy,
+	CVMCoder_Flush,
 	CVMCoder_Finish,
 	CVMCoder_Restart,
 	CVMCoder_Label,

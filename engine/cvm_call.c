@@ -134,6 +134,37 @@ case COP_CALL_NATIVE:
 }
 break;
 
+case COP_CALL_NATIVE_VOID:
+{
+	/* Call a native method that has no return value */
+#if 0
+	/* Push the call frame */
+	ALLOC_CALL_FRAME();
+	callFrame->method = method;
+	callFrame->pc = (ILUInt32)(pc - pcstart + 5);
+	callFrame->frame = (ILUInt32)(frame - stackbottom);
+
+	/* Determine which native method to call */
+	method = ILMethod_FromToken(ILProgramItem_Image(method),
+								IL_READ_UINT32(pc + 1));
+
+	/* Save the state to the thread object */
+	SAVE_STATE();
+
+	/* Call the native method.  We assume that native
+	   methods can never throw exceptions */
+	CVMCallNative(thread, method);
+
+	/* Restore the state from the thread object */
+	RESTORE_STATE();
+
+	/* Pop the call frame */
+	goto popFrame;
+#endif
+	MODIFY_PC_AND_STACK(1, 0);
+}
+break;
+
 case COP_CALL_VIRTUAL:
 {
 	MODIFY_PC_AND_STACK(1, 0);
@@ -150,15 +181,15 @@ popFrame:
 	if(callFrame->pc != IL_MAX_UINT32)
 	{
 		/* We are returning to a CVM method that called us */
-		if(((ILCallInfo *)(method->userData))->generation !=
-		   ((ILCallInfo *)(methodToCall->userData))->generation)
+		if(methodToCall->userData1 == 0 ||
+		   method->userData2 != methodToCall->userData2)
 		{
 			/* We need to re-convert the method because it has been flushed */
 			/* TODO */
 		}
 
 		/* The CVM code is now valid, so return to the previous level */
-		pcstart = ((ILCallInfo *)(methodToCall->userData))->pcstart;
+		pcstart = (unsigned char *)(methodToCall->userData1);
 		pc = pcstart + callFrame->pc;
 		frame = stackbottom + callFrame->frame;
 		method = methodToCall;
@@ -212,13 +243,6 @@ case COP_RETURN_N:
 case COP_PREFIX_TAIL:
 {
 	/* Perform a tail call to another method */
-	MODIFY_PC_AND_STACK(2, 0);
-}
-break;
-
-case COP_PREFIX_CALL_NON_IL:
-{
-	/* Perform a call to a method that is not IL */
 	MODIFY_PC_AND_STACK(2, 0);
 }
 break;

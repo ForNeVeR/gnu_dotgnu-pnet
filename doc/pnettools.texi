@@ -1081,17 +1081,20 @@ Note that types that are sometimes problematic must be converted
 if any of the other types are problematic.  The mangled code for
 an array type is the mangled code for the element type.
 
-Any field or method that is mangled should also have the Java
-attribute @code{pnet.NameMangle}, which indicates that mangling
-has been applied to the name.
+Any field or method that is mangled must also have the Java
+attribute @code{CLI.NameMangle}, which indicates that mangling
+has been applied to the name.  The attribute's value is a non-zero
+unsigned 32-bit integer that indicates how many bytes at
+the end of the UTF-8 name make up the name mangling information.
+This length does not include the "__" separator.
 
 Properties are compiled to get and set methods, as in C#.  Then
-the Java attribute @code{pnet.Properties} is added to the class.
+the Java attribute @code{CLI.Properties} is added to the class.
 The contents of this attribute is a list of property names, plus
 the methods that implement each property.
 
 Events are compiled in a similar fashion, with the Java attribute
-@code{pnet.Events} indicating which methods correspond to events.
+@code{CLI.Events} indicating which methods correspond to events.
 
 The above mangled codes and attributes can be used to recover the
 type information when a @code{.class} file is loaded by a C#-aware

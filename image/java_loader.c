@@ -26,28 +26,6 @@ extern	"C" {
 #endif
 
 /*
- * Read big-endian quantities of various sizes.
- */
-#define	IL_BREAD_INT16(buf)	((ILInt16)(_IL_READ_BYTE((buf), 1) | \
-									   _IL_READ_BYTE_SHIFT((buf), 0, 8)))
-#define	IL_BREAD_UINT16(buf) ((ILUInt16)(_IL_READ_BYTE((buf), 1) | \
-									     _IL_READ_BYTE_SHIFT((buf), 0, 8)))
-#define	IL_BREAD_INT32(buf)	((ILInt32)(_IL_READ_BYTE((buf), 3) | \
-									   _IL_READ_BYTE_SHIFT((buf), 2, 8) | \
-									   _IL_READ_BYTE_SHIFT((buf), 1, 16) | \
-									   _IL_READ_BYTE_SHIFT((buf), 0, 24)))
-#define	IL_BREAD_UINT32(buf)	((ILUInt32)(_IL_READ_BYTE((buf), 3) | \
-									    _IL_READ_BYTE_SHIFT((buf), 2, 8) | \
-									    _IL_READ_BYTE_SHIFT((buf), 1, 16) | \
-									    _IL_READ_BYTE_SHIFT((buf), 0, 24)))
-#define	IL_BREAD_INT64(buf)	\
-			(((ILInt64)(IL_BREAD_UINT32((buf) + 4))) | \
-			 (((ILInt64)(IL_BREAD_INT32((buf)))) << 32))
-#define	IL_BREAD_UINT64(buf)	\
-			(((ILUInt64)(IL_BREAD_UINT32((buf) + 4))) | \
-			 (((ILUInt64)(IL_BREAD_UINT32((buf)))) << 32))
-
-/*
  * Fake RVA to use for the base of a .class or .jar file in memory.
  * RVA's don't mean anything to Java, but it keeps the rest of the
  * image library happy if we attempt to simulate them.
@@ -631,6 +609,15 @@ static int ParseJavaType(ILImage *image, int flags,
 }
 
 /*
+ * Determine if we have a string match in the constant pool.
+ */
+#define	JAVA_IS_STRING(value,name,len)	\
+			((value) < constPoolEntries && \
+			 constPool[(value)].type == JAVA_CONST_UTF8 && \
+			 constPool[(value)].length == (len) && \
+			 !ILMemCmp(constPool[(value)].un.utf8String, (name), (len)))
+
+/*
  * Parse a field or method member, and convert
  * it into IL conventions.  Returns a load error.
  */
@@ -640,6 +627,7 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 						   int isMethod)
 {
 	ILUInt32 value;
+	ILUInt32 length;
 	ILUInt32 numAttrs;
 	char *name;
 	ILUInt32 nameLen;
@@ -650,6 +638,8 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 	JavaReader sigReader;
 	ILType *signature;
 	ILType *argType;
+	JavaReader mangled;
+	ILUInt32 rva;
 
 	/* Parse the name and signature descriptor */
 	JAVA_READ_UINT16(reader, value);
@@ -675,12 +665,38 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 	sigReader.len = constPool[value].length;
 
 	/* Parse the attributes at the end of the definition */
+	mangled.data = 0;
+	mangled.len = 0;
+	rva = 0;
 	JAVA_READ_UINT16(reader, numAttrs);
 	while(numAttrs > 0)
 	{
 		JAVA_READ_UINT16(reader, value);
-		JAVA_READ_UINT32(reader, value);
-		JAVA_SKIP_BYTES(reader, value);
+		JAVA_READ_UINT32(reader, length);
+		if(JAVA_IS_STRING(value, "CLI.NameMangle", 14))
+		{
+			/* The name of the field or method has been mangled to
+			   include extension type information */
+			if(length == 4)
+			{
+				JAVA_READ_UINT32(reader, mangled.len);
+				length -= 4;
+			}
+			else
+			{
+				META_ERROR("name mangling attribute is incorrect");
+				error = IL_LOADERR_BAD_META;
+				goto cleanup;
+			}
+		}
+		else if(JAVA_IS_STRING(value, "Code", 4))
+		{
+			/* This is the method's code */
+			rva = IL_JAVA_BASE_RVA +
+						(ILUInt32)((reader->data - 4) -
+								   (unsigned char *)(image->data));
+		}
+		JAVA_SKIP_BYTES(reader, length);
 		--numAttrs;
 	}
 
@@ -692,6 +708,22 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 	}
 	ILMemCpy(copiedName, name, nameLen);
 	copiedName[nameLen] = '\0';
+
+	/* If the name was mangled, then we must extract the type information */
+	if(mangled.len)
+	{
+		if(mangled.len > (ILUInt32)0x80000000 ||
+		   (mangled.len + 2) >= nameLen ||
+		   copiedName[nameLen - mangled.len - 2] != '_' ||
+		   copiedName[nameLen - mangled.len - 1] != '_')
+		{
+			META_ERROR("name mangling length is incorrect");
+			error = IL_LOADERR_BAD_META;
+			goto cleanup;
+		}
+		mangled.data = (unsigned char *)(copiedName + nameLen - mangled.len);
+		copiedName[nameLen - mangled.len - 2] = '\0';
+	}
 
 	/* Create the method or field block */
 	if(isMethod)
@@ -728,6 +760,9 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 			ILMethodSetCallConv(method, IL_META_CALLCONV_DEFAULT);
 		}
 
+		/* Set the method's RVA */
+		ILMethodSetRVA(method, rva);
+
 		/* Create the method signature */
 		signature = ILTypeCreateMethod(image->context, ILType_Void);
 		if(!signature)
@@ -751,7 +786,8 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 			while(sigReader.len > 0 &&
 			      sigReader.data[0] != (unsigned char)')')
 			{
-				error = ParseJavaType(image, flags, &sigReader, 0, &argType);
+				error = ParseJavaType(image, flags, &sigReader,
+									  &mangled, &argType);
 				if(error != 0)
 				{
 					goto cleanup;
@@ -783,7 +819,8 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 			}
 			else
 			{
-				error = ParseJavaType(image, flags, &sigReader, 0, &argType);
+				error = ParseJavaType(image, flags, &sigReader,
+									  &mangled, &argType);
 				if(error != 0)
 				{
 					goto cleanup;
@@ -806,7 +843,7 @@ static int ParseJavaMember(ILImage *image, JavaReader *reader, int flags,
 			error = IL_LOADERR_MEMORY;
 			goto cleanup;
 		}
-		error = ParseJavaType(image, flags, &sigReader, 0, &signature);
+		error = ParseJavaType(image, flags, &sigReader, &mangled, &signature);
 		if(error == 0)
 		{
 			ILMemberSetSignature((ILMember *)field, signature);

@@ -5,6 +5,11 @@
 
 	* configure.in: update the working version to "0.3.1".
 
+	* doc/pnettools.texi, image/image.h, image/java_loader.c,
+	image/member.c, include/il_program.h: handle mangled types
+	in field and method signatures; implement "ILMethodGetCode"
+	for Java methods.
+
 2001-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: add a "Standards" section with links to the ECMA

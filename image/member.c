@@ -417,6 +417,7 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 	unsigned char *addr;
 	unsigned long len;
 	ILToken localVars;
+	ILUInt32 temp;
 
 	/* Bail out if the method does not have any IL code */
 	if(!(method->rva) ||
@@ -434,6 +435,62 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 		return 0;
 	}
 
+	/* If this is a Java method, we need to use a different technique */
+	if((method->implementAttrs & IL_META_METHODIMPL_JAVA) != 0)
+	{
+		/* Validate the length of the "Code" attribute */
+		if(len < 4)
+		{
+			return 0;
+		}
+		temp = IL_BREAD_UINT32(addr);
+		if(((unsigned long)temp) > (len - 4))
+		{
+			return 0;
+		}
+		addr += 4;
+		len = temp;
+
+		/* Check for the minimum code header size */
+		if(len < 8)
+		{
+			return 0;
+		}
+		code->codeLen = IL_BREAD_UINT32(addr + 4);
+		code->maxStack = (ILUInt32)(IL_BREAD_UINT16(addr));
+		code->javaLocals = (int)(IL_BREAD_UINT16(addr + 2));
+		code->headerSize = 12;
+		code->localVarSig = 0;
+		code->initLocals = 1;
+		code->moreSections = 0;
+		addr += 8;
+		len -= 8;
+
+		/* Extract the code area */
+		if(len < ((unsigned long)(code->codeLen)))
+		{
+			return 0;
+		}
+		code->code = (void *)addr;
+		code->remaining = len - code->codeLen;
+		addr += code->codeLen;
+		len -= code->codeLen;
+
+		/* Determine if we have Java exception blocks */
+		if(len < 2)
+		{
+			return 0;
+		}
+		temp = (ILUInt32)(IL_BREAD_UINT16(addr));
+		if(temp != 0)
+		{
+			code->moreSections = 1;
+		}
+
+		/* Ready to go */
+		return 1;
+	}
+
 	/* Determine whether the method header is tiny or fat format */
 	if((*addr & 0x03) == 0x02)
 	{
@@ -444,6 +501,7 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 		code->localVarSig = 0;
 		code->initLocals = 0;
 		code->moreSections = 0;
+		code->javaLocals = 0;
 	}
 	else if((*addr & 0x07) == 0x03)
 	{
@@ -481,6 +539,7 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 		{
 			return 0;
 		}
+		code->javaLocals = 0;
 	}
 	else
 	{

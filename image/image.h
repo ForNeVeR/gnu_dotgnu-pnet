@@ -32,6 +32,28 @@ extern	"C" {
 #endif
 
 /*
+ * Read big-endian quantities of various sizes.
+ */
+#define	IL_BREAD_INT16(buf)	((ILInt16)(_IL_READ_BYTE((buf), 1) | \
+									   _IL_READ_BYTE_SHIFT((buf), 0, 8)))
+#define	IL_BREAD_UINT16(buf) ((ILUInt16)(_IL_READ_BYTE((buf), 1) | \
+									     _IL_READ_BYTE_SHIFT((buf), 0, 8)))
+#define	IL_BREAD_INT32(buf)	((ILInt32)(_IL_READ_BYTE((buf), 3) | \
+									   _IL_READ_BYTE_SHIFT((buf), 2, 8) | \
+									   _IL_READ_BYTE_SHIFT((buf), 1, 16) | \
+									   _IL_READ_BYTE_SHIFT((buf), 0, 24)))
+#define	IL_BREAD_UINT32(buf)	((ILUInt32)(_IL_READ_BYTE((buf), 3) | \
+									    _IL_READ_BYTE_SHIFT((buf), 2, 8) | \
+									    _IL_READ_BYTE_SHIFT((buf), 1, 16) | \
+									    _IL_READ_BYTE_SHIFT((buf), 0, 24)))
+#define	IL_BREAD_INT64(buf)	\
+			(((ILInt64)(IL_BREAD_UINT32((buf) + 4))) | \
+			 (((ILInt64)(IL_BREAD_INT32((buf)))) << 32))
+#define	IL_BREAD_UINT64(buf)	\
+			(((ILUInt64)(IL_BREAD_UINT32((buf) + 4))) | \
+			 (((ILUInt64)(IL_BREAD_UINT32((buf)))) << 32))
+
+/*
  * Structure of a context, which holds multiple loaded images,
  * and the information about the classes, methods, etc, in them.
  */

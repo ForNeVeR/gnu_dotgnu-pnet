@@ -983,6 +983,7 @@ typedef struct
 	ILStandAloneSig	*localVarSig;		/* Local variable signature */
 	int				initLocals : 1;		/* Non-zero to initialize locals */
 	int				moreSections : 1;	/* Non-zero if more sections */
+	int				javaLocals : 30;	/* Maximum number of Java locals */
 	ILUInt32		remaining;			/* Remaining space in code section */
 
 } ILMethodCode;

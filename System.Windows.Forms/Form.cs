@@ -58,6 +58,7 @@ public class Form : ContainerControl
 	internal static Form activeForm;
 	private bool showInTaskbar;
 	private bool controlBox;
+	private bool loaded; /* whether we have sent OnLoad or not */
 	private MdiClient mdiClient;
 	
 	// Constructor.
@@ -66,6 +67,7 @@ public class Form : ContainerControl
 				visible = false;
 				autoScale = true;
 				topLevel = true;
+				loaded=false;
 				borderStyle = FormBorderStyle.Sizable;
 				mdiChildren = new Form [0];
 				ownedForms = new Form [0];
@@ -1189,7 +1191,11 @@ public class Form : ContainerControl
 	protected override void OnCreateControl()
 			{
 				base.OnCreateControl();
-				OnLoad(EventArgs.Empty);
+				if(loaded == false && toolkitWindow.IsMapped)
+				{
+					loaded = true;
+					OnLoad(EventArgs.Empty);
+				}
 			}
 
 	// Emit the "Deactivate" event.
@@ -1377,6 +1383,11 @@ public class Form : ContainerControl
 	protected override void OnVisibleChanged(EventArgs e)
 			{
 				base.OnVisibleChanged(e);
+				if(loaded == false && toolkitWindow.IsMapped)
+				{
+					loaded = true;
+					OnLoad(EventArgs.Empty);
+				}
 			}
 
 	// Process a command key.

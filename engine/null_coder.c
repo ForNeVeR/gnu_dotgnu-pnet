@@ -345,6 +345,12 @@ static void Coder_Catch(ILCoder *coder, ILException *exception,
 					    ILClass *classInfo, int hasRethrow)
 {
 }
+static void Coder_EndCatchFinally(ILCoder *coder, ILException *exception)
+{
+}
+static void Coder_Finally(ILCoder *coder, ILException *exception, int dest)
+{
+}
 static void *Coder_PCToHandler(ILCoder *coder, void *pc, int beyond)
 {
 	return 0;
@@ -497,6 +503,8 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_TryHandlerStart,
 	Coder_TryHandlerEnd,
 	Coder_Catch,
+	Coder_EndCatchFinally,
+	Coder_Finally,
 	Coder_PCToHandler,
 	Coder_PCToMethod,
 	Coder_GetILOffset,

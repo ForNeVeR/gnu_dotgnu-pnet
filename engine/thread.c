@@ -21,51 +21,57 @@
  */
 
 #include "engine_private.h"
+#include "lib_defs.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
+/*
+ * Gets the currently ILExecThread.
+ */
 ILExecThread *ILExecThreadCurrent(void)
 {
-	return (ILExecThread *)(ILThreadGetObject(ILThreadSelf()));
+	return ILExecThreadFromThread(ILThreadSelf());
 }
 
 /*
- *	Gets the current CLR thread.
+ * Get an ILExecThread from the given thread.
  */
-ILObject *_ILGetCurrentClrThread(ILExecThread *thread)
+ILExecThread *ILExecThreadFromThread(ILThread *thread)
+{
+	return (ILExecThread *)(ILThreadGetObject(thread));
+}
+
+/*
+ * Gets the managed thread object from an engine thread.
+ */
+ILObject *ILExecThreadGetClrThread(ILExecThread *thread)
 {
 	ILClass *classInfo;
-	ILObject *clrThread;
+	System_Thread *clrThread;
 
-	if (thread->clrThread == NULL)
+	if (thread->clrThread == 0)
 	{
-		/*
-		* Main thread or another thread created from inside the engine.
-		*/
-
+		/* Main thread or another thread created from inside the engine. */
+	
 		/* Get the CLR thread class */
 
 		classInfo = ILExecThreadLookupClass(thread, "System.Threading.Thread");		
 
 		/* Allocate a new CLR thread object */
 
-		clrThread = _ILEngineAllocObject(thread, classInfo);
+		clrThread = (System_Thread *)_ILEngineAllocObject(thread, classInfo);
 
 		/* Associate the CLR thread object with the OS thread */
 
-		*((ILThread **)clrThread) = ILThreadSelf();
+		clrThread->privateData = ILThreadSelf();
 
 		/* Associate the executing thread with the CLR thread */
-		thread->clrThread = clrThread;
+		thread->clrThread = (ILObject *)clrThread;
+	}
 
-		return clrThread;
-	}
-	else
-	{
-		return thread->clrThread;
-	}
+	return thread->clrThread;
 }
 
 /*
@@ -206,7 +212,13 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 	thread->thrownException = 0;	
 	thread->threadStaticSlots = 0;
 	thread->threadStaticSlotsUsed = 0;
-
+	thread->currentException = 0;
+	thread->abortRequested = 0;	
+	thread->runningManagedCode = 0;	
+	thread->abortHandlerEndPC = 0;
+	thread->threadAbortException = 0;
+	thread->abortHandlerFrame = 0;
+	
 	/* Attach the thread to the process */
 	ILMutexLock(process->lock);
 	thread->process = process;

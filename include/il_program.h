@@ -1088,11 +1088,11 @@ struct _tagILException
 	ILUInt32		tryOffset;			/* Offset of try region */
 	ILUInt32		tryLength;			/* Length of try region */
 	ILUInt32		handlerOffset;		/* Offset of handler region */
-	ILUInt32		handlerLength;		/* Length of handler region */
+	ILUInt32		handlerLength;		/* Length of handler region */	
 	ILUInt32		extraArg;			/* Extra argument for the block */
-	ILUInt32		userData;			/* Data for users of this structure */
+	ILUInt32		userData;			/* Data for users of this structure */	
+	void			*ptrUserData;		/* Additional data for users of this structure */
 	ILException    *next;				/* Next exception block */
-
 };
 
 /*

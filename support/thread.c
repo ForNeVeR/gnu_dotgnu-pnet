@@ -562,6 +562,22 @@ int ILThreadIsAborting(void)
 	return aborting;
 }
 
+int ILThreadIsAbortRequested(void)
+{
+	ILThread *thread = _ILThreadGetSelf();
+	int abortRequested;
+
+	/* Lock down the thread object */
+	_ILMutexLock(&(thread->lock));
+
+	/* Determine if an abort is in progress on this thread */
+	abortRequested = ((thread->state & (IL_TS_ABORT_REQUESTED)) != 0);
+
+	/* Unlock the thread object and return */
+	_ILMutexUnlock(&(thread->lock));
+	return abortRequested;
+}
+
 int ILThreadAbortReset(void)
 {
 	ILThread *thread = _ILThreadGetSelf();

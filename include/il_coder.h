@@ -661,6 +661,15 @@ struct _tagILCoderClass
 	 */
 	void (*catchClause)(ILCoder *coder, ILException *exception,
 						ILClass *classInfo, int hasRethrow);
+	
+	/*
+	 * End a catch or finally clause.  Finally clauses are usually always a
+	 * potential exit point while catch clauses are a potential exit point
+	 * if there are no finally clauses in the try/catch region.
+	 */
+	void (*endCatchFinallyClause)(ILCoder *coder, ILException *exception);
+
+	void (*finallyClause)(ILCoder *coder, ILException *exception, int dest);
 
 	/*
 	 * Convert a program counter into an exception handler address.
@@ -997,6 +1006,11 @@ struct _tagILCoderClass
 #define	ILCoderCatch(coder,exception,info,hasRethrow) \
 			((*((coder)->classInfo->catchClause))((coder), (exception), \
 												  (info), (hasRethrow)))
+#define ILCoderEndCatchFinally(coder, exception) \
+			((*((coder)->classInfo->endCatchFinallyClause))((coder), \
+												  (exception)))
+#define ILCoderFinally(coder, exception, dest) \
+			((*((coder)->classInfo->finallyClause))((coder), (exception), (dest)))
 #define	ILCoderPCToHandler(coder,pc,beyond) \
 			((*((coder)->classInfo->pcToHandler))((coder), (pc), (beyond)))
 #define	ILCoderPCToMethod(coder,pc,beyond) \

@@ -48,6 +48,14 @@ void ILExecThreadSetException(ILExecThread *thread, ILObject *obj)
 
 void _ILSetExceptionStackTrace(ILExecThread *thread, ILObject *object);
 
+void ILExecThreadThrow(ILExecThread *thread, ILObject *object)
+{
+	if(!ILExecThreadHasException(thread))
+	{
+		ILExecThreadSetException(thread, object);
+	}
+}
+
 void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 							 const char *resourceName)
 {
@@ -56,7 +64,7 @@ void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 	ILObject *object;
 
 	/* Bail out if there already is a pending exception or if the thread is aborting */
-	if(ILExecThreadHasException(thread) || thread->aborting)
+	if(ILExecThreadHasException(thread))
 	{
 		return;
 	}
@@ -109,7 +117,7 @@ void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
 	ILObject *object;
 
 	/* Bail out if there already is a pending exception or if the thread is aborting */
-	if(ILExecThreadHasException(thread) || thread->aborting)
+	if(ILExecThreadHasException(thread))
 	{
 		return;
 	}
@@ -170,7 +178,7 @@ void ILExecThreadThrowArgNull(ILExecThread *thread, const char *paramName)
 	ILObject *object;
 
 	/* Bail out if there already is a pending exception or if the thread is aborting */
-	if(ILExecThreadHasException(thread) || thread->aborting)
+	if(ILExecThreadHasException(thread))
 	{
 		return;
 	}
@@ -203,7 +211,7 @@ void ILExecThreadThrowOutOfMemory(ILExecThread *thread)
 	}
 }
 
-void _ILExecThreadThrowThreadAbortException(ILExecThread *thread, ILObject *stateInfo)
+ILObject *_ILExecThreadNewThreadAbortException(ILExecThread *thread, ILObject *stateInfo)
 {
 	ILObject *object;
 
@@ -212,10 +220,13 @@ void _ILExecThreadThrowThreadAbortException(ILExecThread *thread, ILObject *stat
 						"(ToSystem.Object;)V", stateInfo);
 	
 	_ILSetExceptionStackTrace(thread, object);
-	if(!ILExecThreadHasException(thread))
-	{
-		ILExecThreadSetException(thread, object);
-	}
+	
+	return object;
+}
+
+int _ILExecThreadIsThreadAbortException(ILExecThread *thread, ILObject *object)
+{
+	return GetObjectClass(object) == thread->process->threadAbortClass;
 }
 
 void ILExecThreadPrintException(ILExecThread *thread)

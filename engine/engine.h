@@ -250,6 +250,8 @@ struct _tagILExecThread
 
 	/* Flag that indicates whether a thread is aborting */
 	volatile int	aborting;
+	/* Flag that indicates whether an abort has been requested */
+	volatile int	abortRequested;
 
 	/* System.Threading.Thread object */
 	ILObject *clrThread;
@@ -261,6 +263,7 @@ struct _tagILExecThread
 	/* Free monitors list */
 	ILExecMonitor *freeMonitor;
 
+	/* Number of monitors in the free monitor list */
 	int freeMonitorCount;
 
 	/* Stack of call frames in use */
@@ -272,6 +275,21 @@ struct _tagILExecThread
 	void		  **threadStaticSlots;
 	ILUInt32		threadStaticSlotsUsed;
 
+	/* Flagged if the thread is running managed code */
+	int		runningManagedCode;
+
+	/* The last exception that was thrown (as seen from the CVM)
+	   This always stores the last exception thrown and is never reset */
+	ILObject	*currentException;
+
+	/* The ThreadAbortException instance of the thread is being aborted */
+	ILObject	*threadAbortException;
+
+	/* The PC where the ThreadAbortException should be rethrown */
+	unsigned char	*abortHandlerEndPC;
+
+	/* The frame where the ThreadAbortException was first noticed */
+	ILUInt32		abortHandlerFrame;
 };
 
 /*
@@ -672,10 +690,9 @@ ILObject *_ILCustomToObject(ILExecThread *thread, void *ptr,
 							const char *customCookie, int customCookieLen);
 
 /*
- *	Gets the current managed thread object from an engine thread.
+ *	Gets the managed thread object from an engine thread.
  */
-ILObject *_ILGetCurrentClrThread(ILExecThread *thread);
-
+ILObject *ILExecThreadGetClrThread(ILExecThread *thread);
 
 /*
  * Associates a support thread with an engine thread and the engine
@@ -692,11 +709,10 @@ void _ILThreadExecuteOn(ILThread *thread, ILExecThread *execThread);
  */
 void _ILThreadUnexecuteOn(ILThread *thread, ILExecThread *execThread);
 
-
 /*
- *	Throws a thread abort exception on the given thread.
+ *	Constructs and returns a new ThreadAbortException for the given thread.
  */
-void _ILExecThreadThrowThreadAbortException(ILExecThread *thread, ILObject *stateInfo);
+ILObject *_ILExecThreadNewThreadAbortException(ILExecThread *thread, ILObject *stateInfo);
 
 /*
  * Returns 1 if the current exception is a ThreadAbortException.
@@ -707,6 +723,11 @@ int _ILExecThreadCurrentExceptionThreadIsAbortException(ILExecThread *thread);
  *	Aborts the current thread.
  */
 void _ILAbortThread(ILExecThread *thread);
+
+/*
+ * Checks if the given object is a ThreadAbortException.
+ */
+int _ILExecThreadIsThreadAbortException(ILExecThread *thread, ILObject *object);
 
 /*
  *	Handles thread aborts & interruption.

@@ -437,6 +437,8 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_TryHandlerStart,
 	CVMCoder_TryHandlerEnd,
 	CVMCoder_Catch,
+	CVMCoder_EndCatchFinally,
+	CVMCoder_Finally,
 	CVMCoder_PCToHandler,
 	CVMCoder_PCToMethod,
 	CVMCoder_GetILOffset,

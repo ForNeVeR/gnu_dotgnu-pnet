@@ -230,7 +230,7 @@ VMBREAK(COP_RET_JSR);
 VMCASE(COP_PREFIX_ENTER_TRY):
 {
 	/* Enter a try context for this method */
-	thread->exceptHeight = stacktop;
+	thread->exceptHeight = stacktop;	
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_ENTER_TRY);
@@ -274,8 +274,10 @@ throwException:
  */
 VMCASE(COP_PREFIX_THROW):
 {
+prefixThrowException:
 	/* Move the exception object down the stack to just above the locals */
 	thread->exceptHeight->ptrValue = stacktop[-1].ptrValue;
+	thread->currentException = stacktop[-1].ptrValue;
 	stacktop = thread->exceptHeight + 1;
 
 	/* Search the exception handler table for an applicable handler */
@@ -284,8 +286,10 @@ searchForHandler:
 	fputs("Throw ", IL_DUMP_CVM_STREAM);
 	DUMP_STACK();
 #endif
+	
 	tempNum = (ILUInt32)(pc - (unsigned char *)(method->userData));
 	pc = ILCoderPCToHandler(thread->process->coder, pc, 0);
+	
 	while(tempNum < CVM_ARG_TRY_START || tempNum >= CVM_ARG_TRY_END)
 	{
 		pc += CVM_ARG_TRY_LENGTH;
@@ -327,6 +331,7 @@ throwCaller:
 	DUMP_STACK();
 #endif
 	tempptr = stacktop[-1].ptrValue;
+	thread->currentException = tempptr;
 	if(!tempptr)
 	{
 		--stacktop;
@@ -411,5 +416,81 @@ VMCASE(COP_PREFIX_SET_STACK_TRACE):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_SET_STACK_TRACE);
+
+VMCASE(COP_PREFIX_START_CATCH):
+{
+	if (thread->aborting)
+	{
+		if (thread->currentException
+			&& _ILExecThreadIsThreadAbortException(thread, thread->currentException)
+			&& !thread->threadAbortException)
+		{			
+			thread->threadAbortException = thread->currentException;
+			thread->abortHandlerEndPC = CVMP_ARG_PTR(unsigned char *);
+			thread->abortHandlerFrame = thread->numFrames;
+		}
+		else
+		{
+			/* A non-thread abort exception has been caught so restore
+			   the "current exception" to be the ThreadAbortException */
+			thread->currentException = thread->threadAbortException;
+		}
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_PTR, 0);
+}
+VMBREAK(COP_PREFIX_START_CATCH);
+
+VMCASE(COP_PREFIX_START_FINALLY):
+{
+	if (thread->aborting)
+	{
+		if (thread->currentException
+			&& _ILExecThreadIsThreadAbortException(thread, thread->currentException)
+			&& !thread->threadAbortException)
+		{			
+			thread->threadAbortException = thread->currentException;
+			thread->abortHandlerEndPC = CVMP_ARG_PTR(unsigned char *);
+			thread->abortHandlerFrame = thread->numFrames;
+		}
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_PTR, 0);
+}
+VMBREAK(COP_PREFIX_START_FINALLY);
+
+VMCASE(COP_PREFIX_PROPAGATE_ABORT):
+{	
+	if (thread->aborting)
+	{
+		if (thread->currentException
+			&& _ILExecThreadIsThreadAbortException(thread, thread->currentException)
+			&& 			
+			((pc >= thread->abortHandlerEndPC && thread->numFrames == thread->abortHandlerFrame)
+			|| 
+			(thread->numFrames < thread->abortHandlerFrame)))
+		{
+			stacktop[0].ptrValue = thread->threadAbortException;						
+			
+			thread->threadAbortException = 0;
+			thread->abortHandlerEndPC = 0;
+			thread->abortHandlerFrame = 0;			
+
+			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1);
+
+			if(!ILCoderPCToHandler(thread->process->coder, pc, 0))
+			{				
+				goto throwCaller;
+			}
+			else
+			{
+				goto prefixThrowException;
+			}
+		}
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_PROPAGATE_ABORT);
 
 #endif /* IL_CVM_PREFIX */

@@ -1,3 +1,63 @@
+2004-05-26  Thong Nguyen <tum@veridicus.com>
+
+	* Most changes are for supporting Thread.Abort.
+
+	* include/il_program.h, image/member.c: Added ptrUserData
+	field to ILException structure.
+	
+	* include/il_coder.h: Added endCatchFinallyClause and
+	finally clause to ILCoder structure.
+	
+	* include/il_engine.h: Added prototypes for
+	ILExecThreadFromThread, ILExecThreadGetClrThread
+	and ILExecThreadThrow.
+	
+	* include/il_thread.h, support/thread.c: Added prototype
+	and implementation of ILThreadIsAbortRequested.
+
+	* engine/cvm.h: Added COP_PREFIX_START_CATCH,
+	COP_PREFIX_START_FINALLY and COP_PREFIX_PROPAGATE_ABORT.
+	
+	* engine/cvm_call.c: Added CHECK_ABORT, BEGIN_NATIVE_CALL
+	and END_NATIVE_CALL macros.  The *NATIVE_CALL functions
+	configurestate to allow the runtime to figure out if it is
+	running managed or unamnaged code.  CHECK_ABORT is used to
+	check for aborts after a function call.
+	
+	* engine/cvm_except.c: Added cases for COP_PREFIX_START_CATCH,
+	COP_PREFIX_START_FINALLY and COP_PREFIX_PROPAGATE_ABORT.
+	
+	* engine/cvmc.c, engine/cvmc_except.c: Added
+	CVMCoder_EndCatchFinally and CVMCoder_Finally function entries
+	and implementation.  Added generation of new COP_PREFIX_*
+	instructions.	 
+	
+	* engine/engine.h: Added abortRequested, runningManagedCode,
+	currentException, threadAbortException, abortHandlerPC and
+	abortHandlerNumFrames fields to ILExecThread.
+	
+	* engine/engine.h, engine/thread.c, engine/throw.c: Removed
+	_ILGetCurrentClrThread and added ILExecThreadGetClrThread.
+	Removed ILEXecThreadThrowThreadAbortException and added
+	_ILExecThreadNewThreadAbortExceptio
+	and _ILExecThreadIsThreadAbortException.
+	
+	* engine/ilrun.c, engine/lib_thread.c: Allow threads to display
+	exceptions even if the thread is aborting but only if it isn't a
+	ThreadAbortException.
+	
+	* engine/lib_defs.h: Added createdFromManagedCode field
+	to System_Thread.
+	
+	* engine/lib_thread.c: Changed CLR thread object finalization
+	to not free up the underlying thread unless the thread
+	was created from within managed code.
+	Reimplemented Thread.Abort internal call -- made thread safe
+	to aborts to be safely called on dead/dying threads.
+	
+	* engine/null_coder: Added null definitions for Coder_Finally
+	and Coder_EndCatchFinally.
+	
 2004-05-24  Norbert Bollow  <nb@SoftwareEconomics.biz>
 
 	* configure.in, engine/Makefile.am, engine/cvm.c: fixes to

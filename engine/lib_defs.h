@@ -313,6 +313,7 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
 typedef struct
 {
 	ILThread   *privateData;
+	ILBool		createdFromManagedCode;
 	ILObject   *stateInfo;
 	ILObject   *start;
 	ILString   *name;

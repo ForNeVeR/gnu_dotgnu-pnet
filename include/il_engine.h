@@ -346,10 +346,19 @@ int ILExecProcessAddInternalCallTable(ILExecProcess* process,
 					const ILEngineInternalClassInfo* internalClassTable,
 					int internalClassCount);
 /*
- * Get the current thread from a PInvoke'd method.  The behaviour
- * is undefined if used anywhere else.
+ * Get the current ILExecThread.
  */
 ILExecThread *ILExecThreadCurrent(void);
+
+/*
+ * Get an ILExecThread from the given thread.
+ */
+ILExecThread *ILExecThreadFromThread(ILThread *thread);
+
+/*
+ *	Gets the managed thread object from an engine thread.
+ */
+ILObject *ILExecThreadGetClrThread(ILExecThread *thread);
 
 /*
  * Get the process that corresponds to a thread.
@@ -524,6 +533,11 @@ void ILExecThreadSetException(ILExecThread *thread, ILObject *obj);
  * current method.
  */
 void ILExecThreadClearException(ILExecThread *thread);
+
+/*
+ * Throws the given exception.
+ */
+void ILExecThreadThrow(ILExecThread *thread, ILObject *obj);
 
 /*
  * Throw a system exception with a particular type and

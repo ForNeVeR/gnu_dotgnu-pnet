@@ -157,6 +157,39 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				} \
 			} while (0)
 
+#define CHECK_ABORT()	\
+	if (thread->abortRequested && ILThreadIsAbortRequested())	\
+	{	\
+		thread->abortRequested = 0;	\
+		/* Mark the thread as aborted if it hasn't already been aborted	*/ \
+		if (ILThreadSelfAborting(thread->supportThread))	\
+		{	\
+			/* Great, thread hasn't aborted itself yet so throw a ThreadAbortException. */ \
+			stacktop[0].ptrValue = _ILExecThreadNewThreadAbortException(thread, 0); \
+			thread->aborting = 1; \
+			thread->abortHandlerEndPC = 0; \
+			thread->abortHandlerFrame = 0; \
+			thread->threadAbortException = 0; \
+			stacktop += 1; \
+			thread->runningManagedCode = 1;	\
+			if (!ILCoderPCToHandler(thread->process->coder, pc, 0)) \
+			{ \
+				goto throwException; \
+			} \
+			else \
+			{ \
+				goto prefixThrowException; \
+			} \
+		}	\
+	}
+
+#define BEGIN_NATIVE_CALL()	\
+	thread->runningManagedCode = 0;
+
+#define END_NATIVE_CALL() \
+	CHECK_ABORT(); \
+	thread->runningManagedCode = 1;
+
 /*
  * Determine the number of stack words that are occupied
  * by a specific type.
@@ -726,6 +759,8 @@ VMBREAK(COP_CALL_CTOR);
  */
 VMCASE(COP_CALL_NATIVE):
 {
+	BEGIN_NATIVE_CALL();
+
 	/* Call a native method */
 	COPY_STATE_TO_THREAD();
 	FFI_CALL(CVM_ARG_PTR2(void *), CVM_ARG_PTR(void *),
@@ -733,6 +768,8 @@ VMCASE(COP_CALL_NATIVE):
 	RESTORE_STATE_FROM_THREAD();
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, -1);
+
+	END_NATIVE_CALL();
 }
 VMBREAK(COP_CALL_NATIVE);
 
@@ -752,12 +789,16 @@ VMBREAK(COP_CALL_NATIVE);
  */
 VMCASE(COP_CALL_NATIVE_VOID):
 {
+	BEGIN_NATIVE_CALL();
+
 	/* Call a native method that has no return value */
 	COPY_STATE_TO_THREAD();
 	FFI_CALL(CVM_ARG_PTR2(void *), CVM_ARG_PTR(void *), 0, nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, 0);
+
+	END_NATIVE_CALL();
 }
 VMBREAK(COP_CALL_NATIVE_VOID);
 
@@ -789,6 +830,8 @@ VMBREAK(COP_CALL_NATIVE_VOID);
  */
 VMCASE(COP_CALL_NATIVE_RAW):
 {
+	BEGIN_NATIVE_CALL();
+
 	/* Call a native method using the raw API */
 	COPY_STATE_TO_THREAD();
 	FFI_RAW_CALL(CVM_ARG_PTR2(void *), CVM_ARG_PTR(void *),
@@ -796,6 +839,8 @@ VMCASE(COP_CALL_NATIVE_RAW):
 	RESTORE_STATE_FROM_THREAD();
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, -2);
+
+	END_NATIVE_CALL();
 }
 VMBREAK(COP_CALL_NATIVE_RAW);
 
@@ -819,6 +864,8 @@ VMBREAK(COP_CALL_NATIVE_RAW);
  */
 VMCASE(COP_CALL_NATIVE_VOID_RAW):
 {
+	BEGIN_NATIVE_CALL();
+
 	/* Call a native method that has no return value using the raw API */
 	COPY_STATE_TO_THREAD();
 	FFI_RAW_CALL(CVM_ARG_PTR2(void *), CVM_ARG_PTR(void *),
@@ -826,6 +873,8 @@ VMCASE(COP_CALL_NATIVE_VOID_RAW):
 	RESTORE_STATE_FROM_THREAD();
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, -1);
+
+	END_NATIVE_CALL();
 }
 VMBREAK(COP_CALL_NATIVE_VOID_RAW);
 
@@ -1104,6 +1153,9 @@ VMCASE(COP_RETURN):
 	/* Return from a method with no return value */
 	stacktop = frame;
 popFrame:
+
+	CHECK_ABORT();
+
 	callFrame = &(thread->frameStack[--(thread->numFrames)]);
 	methodToCall = callFrame->method;
 	pc = callFrame->pc;

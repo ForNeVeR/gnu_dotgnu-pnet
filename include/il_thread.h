@@ -172,6 +172,11 @@ int ILThreadSelfAborting();
 int ILThreadIsAborting(void);
 
 /*
+ * Returns 1 if an abort has been requested.
+ */
+int ILThreadIsAbortRequested(void);
+
+/*
  * Reset a pending abort on the current thread.  Returns
  * zero if an abort is not pending.
  */

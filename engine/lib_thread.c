@@ -229,7 +229,8 @@ static void __PrivateThreadStart(void *objectArg)
 	ILExecThreadCall(thread, method, &result, ((System_Thread *)thread->clrThread)->start);
 
 	/* Print out any uncaught exceptions */
-	if (ILExecThreadHasException(thread) && !ILThreadIsAborting())
+	if (ILExecThreadHasException(thread)
+		&& !_ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
 	{				
 		ILExecThreadPrintException(thread);
 	}
@@ -283,12 +284,18 @@ void _IL_Thread_InitializeThread(ILExecThread *thread, ILObject *_this)
 void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
 {
 	ILThread *supportThread;
+	System_Thread *clrThread;
+
+	clrThread = (System_Thread *)_this;
+	supportThread = clrThread->privateData;
 	
-	supportThread = ((System_Thread *)_this)->privateData;
-	
-	if (supportThread)
+	/* Only threads created from managed code should destroy the underlying
+	   support thread.  Threads created outside of managed code but which
+	   enter managed code are the reponsibility of the unmanaged code that
+	   created them. */
+	if (supportThread && clrThread->createdFromManagedCode)
 	{
-		((System_Thread *)_this)->privateData = 0;
+		clrThread->privateData = 0;
 
 		ILThreadDestroy(supportThread);		
 	}
@@ -299,12 +306,37 @@ void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
  */
 void _IL_Thread_Abort(ILExecThread *thread, ILObject *_this)
 {
-	ILThreadAbort(((System_Thread *)_this)->privateData);	
+	ILThread *supportThread;
+	ILExecThread *execThread;
+
+	supportThread = ((System_Thread *)_this)->privateData;
+
+	/* Lock the process to prevent the ILExecThread from being destroyed
+	   while we are accessing it (This could happen if Abort is called on a
+	   thread that has finished and is in the process of cleaning up itself) */
+	
+	ILMutexLock(thread->process->lock);
+
+	execThread = ILExecThreadFromThread(supportThread);
+
+	if (execThread == 0)
+	{		
+		ILMutexUnlock(thread->process->lock);
+		return;
+	}
+	else
+	{
+		execThread->abortRequested = 1;
+	}
+
+	ILMutexUnlock(thread->process->lock);
+
+	ILThreadAbort(supportThread);
 
 	/* If the current thread is aborting itself then abort immediately */
-	if (((System_Thread *)_this)->privateData == thread->supportThread)
+	if (supportThread == thread->supportThread)
 	{
-		_ILAbortThread(thread);
+		_ILAbortThread(thread);		
 	}
 }
 
@@ -450,6 +482,10 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
 	if (ILThreadAbortReset())
 	{
 		thread->aborting = 0;
+		thread->abortRequested = 0;
+		thread->abortHandlerEndPC = 0;
+		thread->abortHandlerFrame = 0;
+		thread->threadAbortException = 0;
 	}
 }
 
@@ -547,7 +583,7 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
  */
 ILObject *_IL_Thread_InternalCurrentThread(ILExecThread *thread)
 {
-	return _ILGetCurrentClrThread(thread);
+	return ILExecThreadGetClrThread(thread);
 }
 
 /*
@@ -953,11 +989,18 @@ void _ILAbortThread(ILExecThread *thread)
 	{
 		if(ILThreadSelfAborting())
 		{
-			thread->aborting = 1;
-
 			/* Allocate an instance of "ThreadAbortException" and throw */
 
-			_ILExecThreadThrowThreadAbortException(thread, 0);
+			ILObject *exception;
+
+			exception = _ILExecThreadNewThreadAbortException(thread, 0);
+			thread->aborting = 1;
+			thread->abortRequested = 0;
+			thread->abortHandlerEndPC = 0;
+			thread->threadAbortException = 0;
+			thread->abortHandlerFrame = 0;
+
+			ILExecThreadThrow(thread, exception);
 		}
 	}
 }

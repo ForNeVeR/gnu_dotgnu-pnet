@@ -530,6 +530,14 @@ extern	"C" {
 #define COP_PREFIX_TRACE_OUT		0x61
 
 /*
+ * More prefixed exception handling opcodes.
+ */
+#define COP_PREFIX_START_CATCH			0x62
+#define COP_PREFIX_START_FINALLY		0x63
+#define	COP_PREFIX_PROPAGATE_ABORT		0x64
+
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

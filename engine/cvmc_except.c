@@ -17,6 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#include "cvm_format.h"
 
 #ifdef IL_CVMC_CODE
 
@@ -29,7 +30,7 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
 	ILUInt32 extraLocals;
 
-	/* If the method uses "rethrow", then we need to allocate local
+/* If the method uses "rethrow", then we need to allocate local
 	   variables for each of the "catch" blocks, to hold the exception
 	   object temporarily prior to the "rethrow" */
 	if(hasRethrow)
@@ -42,6 +43,7 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 									 IL_META_EXCEPTION_FILTER)) == 0)
 			{
 				exceptions->userData = extraLocals + coder->minHeight;
+
 				++extraLocals;
 			}
 			exceptions = exceptions->next;
@@ -80,9 +82,9 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
  */
 static void CVMCoder_Throw(ILCoder *coder, int inCurrentMethod)
 {
-	if(inCurrentMethod)
+	if(inCurrentMethod == 1)
 	{
-		CVMP_OUT_NONE(COP_PREFIX_THROW);
+		CVMP_OUT_WORD(COP_PREFIX_THROW, 1);
 	}
 	else
 	{
@@ -137,7 +139,7 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
 	ILCVMLabel *label;
-
+	
 	/* End the exception region if this is the first try block */
 	if(coder->needTry)
 	{
@@ -185,8 +187,8 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
  */
 static void CVMCoder_TryHandlerEnd(ILCoder *coder)
 {
-	/* Back-patch the length value for the handler */
-	CVM_BACKPATCH_TRY(((ILCVMCoder *)coder)->tryHandler);
+	/* Back-patch the length value for the handler */	
+	CVM_BACKPATCH_TRY(((ILCVMCoder *)coder)->tryHandler);	
 }
 
 /*
@@ -217,6 +219,8 @@ static void CVMCoder_Catch(ILCoder *_coder, ILException *exception,
 		CVM_OUT_WIDE(COP_PSTORE, exception->userData);
 	}
 
+	CVMP_OUT_PTR(COP_PREFIX_START_CATCH, exception->ptrUserData);
+	
 	/* Branch to the start of the "catch" clause */
 	OutputBranch(_coder, COP_BR, exception->handlerOffset);
 
@@ -225,6 +229,18 @@ static void CVMCoder_Catch(ILCoder *_coder, ILException *exception,
 
 	/* Adjust the stack back to its original height */
 	CVM_ADJUST(-1);
+}
+
+static void CVMCoder_EndCatchFinally(ILCoder *coder, ILException *exception)
+{
+	exception->ptrUserData = CVM_POSN();	
+	CVMP_OUT_NONE(COP_PREFIX_PROPAGATE_ABORT);
+}
+
+static void CVMCoder_Finally(ILCoder *coder, ILException *exception, int dest)
+{
+	CVMP_OUT_PTR(COP_PREFIX_START_FINALLY, exception->ptrUserData);
+	OutputBranch(coder, COP_JSR, dest);
 }
 
 /*

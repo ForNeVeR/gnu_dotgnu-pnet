@@ -480,7 +480,8 @@ int main(int argc, char *argv[])
 	}
 
 	/* Print the top-level exception that occurred */
-	if(sawException && !ILThreadIsAborting())
+	if(sawException && 
+		!_ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
 	{
 		ILExecThreadPrintException(thread);
 	}

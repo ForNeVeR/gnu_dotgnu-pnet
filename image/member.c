@@ -718,7 +718,7 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 			newException->handlerOffset =
 				(ILUInt32)(IL_BREAD_UINT16(addr + 4));
 			newException->handlerLength = 0;
-			newException->extraArg = 0;
+			newException->extraArg = 0;			
 			if(index != 0)
 			{
 				classInfo = ILJavaGetClass(ILMethod_Owner(method), index, 1);
@@ -728,6 +728,7 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 				}
 			}
 			newException->userData = 0;
+			newException->ptrUserData = 0;
 			newException->next = 0;
 			if(lastException)
 			{
@@ -822,7 +823,9 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 						(((ILUInt32)(addr[posn + 7])) & (ILUInt32)0xFF);
 					newException->extraArg = IL_READ_UINT32(addr + posn + 8);
 					newException->userData = 0;
+					newException->ptrUserData = 0;
 					newException->next = 0;
+
 					if(lastException)
 					{
 						lastException->next = newException;
@@ -831,7 +834,7 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 					{
 						*exceptions = newException;
 					}
-					lastException = newException;
+					lastException = newException;					
 				}
 			}
 			else if(kind == 0x01 && !isTiny)
@@ -856,6 +859,7 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 					newException->extraArg = IL_READ_UINT32(addr + posn + 20);
 					newException->userData = 0;
 					newException->next = 0;
+
 					if(lastException)
 					{
 						lastException->next = newException;

@@ -92,6 +92,7 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 		linker->moduleName = IL_LINKER_EXE_MODULE_NAME;
 	}
 	linker->moduleClass = 0;
+	linker->initTempFile = 0;
 
 	/* Ready to go */
 	return linker;
@@ -266,6 +267,12 @@ int ILLinkerDestroy(ILLinker *linker)
 		ILContextDestroy(image->context);
 		ILFree(image);
 		image = nextImage;
+	}
+
+	/* Destroy the temporary init/fini file */
+	if(linker->initTempFile)
+	{
+		ILDeleteFile(linker->initTempFile);
 	}
 
 	/* Destroy the libraries */

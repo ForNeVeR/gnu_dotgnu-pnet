@@ -262,7 +262,10 @@ int ILLinkerAddCObject(ILLinker *linker, ILContext *context,
 int ILLinkerPerformLink(ILLinker *linker)
 {
 	ILLinkImage *image = linker->images;
+	ILImage *initImage;
 	int ok = 1;
+
+	/* Process the main images */
 	linker->imageNum = 1;
 	while(image != 0)
 	{
@@ -273,6 +276,18 @@ int ILLinkerPerformLink(ILLinker *linker)
 		++(linker->imageNum);
 		image = image->next;
 	}
+
+	/* Create the initializers and finalizers for C applications */
+	initImage = _ILLinkerCreateInitFini(linker);
+	if(initImage)
+	{
+		if(!ProcessImage(linker, initImage, "init-link"))
+		{
+			ok = 0;
+		}
+	}
+
+	/* Finished the link process */
 	return ok;
 }
 

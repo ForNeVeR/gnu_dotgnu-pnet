@@ -4,6 +4,10 @@
 	* cscc/c/c_function.c, cscc/c/c_grammar.y: implement global
 	initializer flushing in the C compiler.
 
+	* cscc/c/c_grammar.y, ilalink/Makefile.am, ilalink/link_create.c,
+	ilalink/link_image.c, ilalink/link_init.c, ilalink/link_library.c,
+	ilalink/linker.h: link initializers and finalizers in C applications.
+
 2003-06-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/java/.cvsignore, cscc/bf/.cvsignore : add generated

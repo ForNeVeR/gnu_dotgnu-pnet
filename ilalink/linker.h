@@ -1,7 +1,7 @@
 /*
  * linker.h - Internal definitions for image linking.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,6 +91,8 @@ struct _tagILLibrary
 	ILUInt32		publicKeyLen;	/* Length of the public key value */
 	ILHashTable    *classHash;		/* Hash table for class name lookup */
 	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
+	int				memoryModel;	/* Memory model for the library */
+	int				modelFlags;		/* Memory model flags for the library */
 	ILMemPool		pool;			/* Memory pool for symbol allocation */
 	ILContext      *context;		/* Context containing the library image */
 	ILImage        *image;			/* Image that corresponds to the library */
@@ -139,6 +141,7 @@ struct _tagILLinker
 	ILMemPool		pool;			/* Memory pool for symbol allocation */
 	const char     *moduleName;		/* Name of the "<Module>" class */
 	ILClass        *moduleClass;	/* Reference to the "<Module>" class */
+	char		   *initTempFile;	/* Temporary object file for init/fini */
 
 };
 
@@ -343,6 +346,13 @@ char *_ILLinkerNewMemberName(ILLinker *linker, ILMember *member);
  */
 int _ILLinkerLibraryReplacement(ILLinker *linker, ILLibraryFind *find,
 								ILClass *classInfo);
+
+/*
+ * Create the global initializer and finalizer methods for C applications.
+ * Returns a new image to be linked into the application, or NULL if
+ * the application does not need initializers or finalizers.
+ */
+ILImage *_ILLinkerCreateInitFini(ILLinker *linker);
 
 #ifdef	__cplusplus
 };

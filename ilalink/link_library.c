@@ -1,7 +1,7 @@
 /*
  * link_library.c - Process libraries within a linker context.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -332,9 +332,13 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 		{
 			nextLibrary->classHash = 0;
 			nextLibrary->symbolHash = 0;
+			nextLibrary->memoryModel = library->memoryModel;
+			nextLibrary->modelFlags = library->modelFlags;
 		}
 		else
 		{
+			nextLibrary->memoryModel =
+				ILLinkerCMemoryModel(image, &(nextLibrary->modelFlags));
 			originator = ILAssemblyGetOriginator(assem, &originatorLen);
 			if(originator && originatorLen)
 			{

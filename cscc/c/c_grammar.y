@@ -297,6 +297,12 @@ static void AddInitializer(char *name, ILNode *node, ILType *type, ILNode *init)
 {
 	ILNode *stmt;
 
+	/* TODO: this is a hack for missing array assignment - fix later */
+	if(yyisa(init, ILNode_ArrayInit))
+	{
+		return;
+	}
+
 	/* Build the initialization statement */
 	stmt = ILNode_CGlobalVar_create(name, type, CTypeDecay(&CCCodeGen, type));
 	CGenCloneLine(stmt, node);

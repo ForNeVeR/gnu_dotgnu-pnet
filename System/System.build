@@ -30,7 +30,7 @@
 		</compile>
 
 		<!-- Build the strict ECMA System_ecma.dll library -->
-		<compile output="System.dll"
+		<compile output="System_ecma.dll"
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"

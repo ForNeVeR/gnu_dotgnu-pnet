@@ -11,6 +11,9 @@
 	* runtime/runtime.build: minor fix to cause the build script to
 	pass the correct resource information to csc.
 
+	* System/System.build, System.Xml/Xml.build: use the correct names
+	for the ECMA-compatible output assemblies.
+
 2002-04-07  Gopal.V <gopalv82@yahoo.com>
 
 	* System/Net/HttpWebRequest.cs: Added property get,set methods

@@ -132,77 +132,77 @@ public class OpCodes
 		 			OpCodeType.Primitive, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushref);
 
-	public static readonly OpCode ldc_I4_M1 =
+	public static readonly OpCode Ldc_I4_M1 =
 		 new OpCode("ldc.i4.m1", 0x15, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_0 =
+	public static readonly OpCode Ldc_I4_0 =
 		 new OpCode("ldc.i4.0", 0x16, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_1 =
+	public static readonly OpCode Ldc_I4_1 =
 		 new OpCode("ldc.i4.1", 0x17, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_2 =
+	public static readonly OpCode Ldc_I4_2 =
 		 new OpCode("ldc.i4.2", 0x18, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_3 =
+	public static readonly OpCode Ldc_I4_3 =
 		 new OpCode("ldc.i4.3", 0x19, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_4 =
+	public static readonly OpCode Ldc_I4_4 =
 		 new OpCode("ldc.i4.4", 0x1A, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_5 =
+	public static readonly OpCode Ldc_I4_5 =
 		 new OpCode("ldc.i4.5", 0x1B, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_6 =
+	public static readonly OpCode Ldc_I4_6 =
 		 new OpCode("ldc.i4.6", 0x1C, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_7 =
+	public static readonly OpCode Ldc_I4_7 =
 		 new OpCode("ldc.i4.7", 0x1D, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_8 =
+	public static readonly OpCode Ldc_I4_8 =
 		 new OpCode("ldc.i4.8", 0x1E, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4_S =
+	public static readonly OpCode Ldc_I4_S =
 		 new OpCode("ldc.i4.s", 0x1F, FlowControl.Next,
 		 			OpCodeType.Macro, OperandType.ShortInlineI,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I4 =
+	public static readonly OpCode Ldc_I4 =
 		 new OpCode("ldc.i4", 0x20, FlowControl.Next,
 		 			OpCodeType.Primitive, OperandType.InlineI,
 					StackBehaviour.Pop0, StackBehaviour.Pushi);
 
-	public static readonly OpCode ldc_I8 =
+	public static readonly OpCode Ldc_I8 =
 		 new OpCode("ldc.i8", 0x21, FlowControl.Next,
 		 			OpCodeType.Primitive, OperandType.InlineI8,
 					StackBehaviour.Pop0, StackBehaviour.Pushi8);
 
-	public static readonly OpCode ldc_R4 =
+	public static readonly OpCode Ldc_R4 =
 		 new OpCode("ldc.r4", 0x22, FlowControl.Next,
 		 			OpCodeType.Primitive, OperandType.ShortInlineR,
 					StackBehaviour.Pop0, StackBehaviour.Pushr4);
 
-	public static readonly OpCode ldc_R8 =
+	public static readonly OpCode Ldc_R8 =
 		 new OpCode("ldc.r8", 0x23, FlowControl.Next,
 		 			OpCodeType.Primitive, OperandType.InlineR,
 					StackBehaviour.Pop0, StackBehaviour.Pushr8);

@@ -10,6 +10,12 @@
 	* runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs: fix
 	the format exception to use the builtin resource string.
 
+	* runtime/System/IO/FileNotFoundException.cs: Add a non-ECMA property
+	for compatibility.
+
+	* runtime/System/Reflection/Emit/OpCodes.cs: correct case of the
+	opcode names.
+
 2003-02-07  Michael Moore <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs: Add 

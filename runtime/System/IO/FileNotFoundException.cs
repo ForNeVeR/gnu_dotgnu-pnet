@@ -118,6 +118,15 @@ public class FileNotFoundException : IOException
 					}
 				}
 			}
+#if !ECMA_COMPAT
+	public String FusionLog
+	{
+		get
+		{
+			throw NotImplementedException("FusionLog");
+		}
+	}
+#endif
 
 }; // class FileNotFoundException
 

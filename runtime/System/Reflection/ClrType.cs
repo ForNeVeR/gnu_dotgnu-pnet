@@ -374,6 +374,38 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				}
 			}
 
+	// Convert a list of arguments into a list of types.
+	private static Type[] ArgsToTypes(Object[] args)
+			{
+				Type[] types;
+				int posn;
+				Object value;
+
+				// The test is easy if there are no arguments.
+				if(args == null)
+				{
+					return new Type [0];
+				}
+
+				// Convert the object types into a type array.
+				types = new Type [args.Length];
+				for(posn = 0; posn < args.Length; ++posn)
+				{
+					value = args[posn];
+					if(value == null)
+					{
+						types[posn] = null;
+					}
+					else
+					{
+						types[posn] = value.GetType();
+					}
+				}
+
+				// Done.
+				return types;
+			}
+
 	// Invoke a member.
 	public override Object InvokeMember
 						(String name, BindingFlags invokeAttr,
@@ -383,6 +415,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			{
 				MemberInfo member;
 				MemberTypes types;
+				Type[] argTypes;
 
 				// Validate the parameters against the invocation type.
 				if(name == null)
@@ -407,6 +440,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					{
 						throw new TargetException(_("Reflection_CtorTarget"));
 					}
+					argTypes = ArgsToTypes(args);
 				}
 				else if((invokeAttr & BindingFlags.InvokeMethod) != 0)
 				{
@@ -417,6 +451,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 							(_("Reflection_InvokeAttr"));
 					}
 					types = MemberTypes.Method;
+					argTypes = ArgsToTypes(args);
 				}
 				else if((invokeAttr & BindingFlags.GetField) != 0)
 				{
@@ -431,6 +466,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 						throw new ArgumentException
 							(_("Reflection_GetField"));
 					}
+					argTypes = null;
 				}
 				else if((invokeAttr & BindingFlags.SetField) != 0)
 				{
@@ -445,6 +481,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 						throw new ArgumentException
 							(_("Reflection_SetField"));
 					}
+					argTypes = null;
 				}
 				else if((invokeAttr & BindingFlags.GetProperty) != 0)
 				{
@@ -454,6 +491,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 							(_("Reflection_InvokeAttr"));
 					}
 					types = MemberTypes.Property;
+					argTypes = ArgsToTypes(args);
 				}
 				else if((invokeAttr & BindingFlags.SetProperty) != 0)
 				{
@@ -463,6 +501,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 							(_("Reflection_InvokeAttr"));
 					}
 					types = MemberTypes.Property;
+					argTypes = ArgsToTypes(args);
 				}
 				else
 				{
@@ -484,7 +523,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				// Get the member from the type.
 				member = GetMemberImpl(name, types, invokeAttr, binder,
 									   CallingConventions.Any,
-									   null, modifiers);
+									   argTypes, modifiers);
 				if(member == null)
 				{
 					if(types == MemberTypes.Field)

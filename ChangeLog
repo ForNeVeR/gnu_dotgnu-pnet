@@ -20,6 +20,10 @@
 	* runtime/System/Text/*: remove obselete files that have since
 	been moved to the I18N directory.
 
+	* runtime/System/Reflection/ClrType.cs (InvokeMember): collect up
+	the types of the arguments to method and property invocations to
+	assist in locating the correct override.
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

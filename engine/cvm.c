@@ -222,6 +222,21 @@ extern int _ILCVMInsnCount[];
 			} while (0)
 
 /*
+ * Throw a verification failed exception.  This is called when
+ * "_ILConvertMethod" fails, when the state is already copied
+ * into the thread.
+ */
+#define	VERIFY_FAILED_EXCEPTION()	\
+			do { \
+				RESTORE_STATE_FROM_THREAD(); \
+				stacktop[0].ptrValue = \
+					_ILSystemException \
+						(thread, "System.Security.VerificationException"); \
+				stacktop += 1; \
+				goto throwException; \
+			} while (0)
+
+/*
  * Throw an invalid cast exception.
  */
 #define	INVALID_CAST_EXCEPTION()	\

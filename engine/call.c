@@ -260,8 +260,9 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	pcstart = _ILConvertMethod(thread, method);
 	if(!pcstart)
 	{
-		/* Throw a "MissingMethodException" */
-		ILExecThreadThrowSystem(thread, "System.MissingMethodException", 0);
+		/* Throw a "VerificationException" */
+		ILExecThreadThrowSystem
+			(thread, "System.Security.VerificationException", 0);
 		return 1;
 	}
 
@@ -600,8 +601,9 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	pcstart = _ILConvertMethod(thread, method);
 	if(!pcstart)
 	{
-		/* Throw a "MissingMethodException" */
-		ILExecThreadThrowSystem(thread, "System.MissingMethodException", 0);
+		/* Throw a "VerificationException" */
+		ILExecThreadThrowSystem
+			(thread, "System.Security.VerificationException", 0);
 		return 1;
 	}
 

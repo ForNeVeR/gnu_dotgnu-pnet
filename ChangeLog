@@ -32,6 +32,9 @@
 	* support/test_float.c, engine/cvm_arith.c: add #ifdef's for hpux,
 	which uses "isfinite" instead of "finite".
 
+	* engine/call.c, engine/cvm.c, engine/cvm_call.c: throw
+	"System.Security.VerificationException" when the verifier fails.
+
 2002-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_except.c, engine/engine.h:

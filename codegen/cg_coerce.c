@@ -31,8 +31,10 @@ extern	"C" {
  */
 typedef struct
 {
-	/* Class to use to box the value prior to conversion */
+	/* Class to use to box or unbox the value */
 	ILClass		*boxClass;
+	ILClass		*unboxClass;
+	int			 boxIsEnum;
 
 	/* Method to call to perform the conversion */
 	ILMethod	*method;
@@ -80,87 +82,23 @@ static int FindConversion(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
- * Get the rules to be used to convert from one type to another.
+ * Forward declaration.
  */
 static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 						   ILType *toType, int explicit,
-						   ConvertRules *rules)
+						   int kinds, ConvertRules *rules);
+
+/*
+ * Get the rules to be used to convert from one reference type to another.
+ */
+static int GetReferenceConvertRules(ILGenInfo *info, ILType *fromType,
+						   		    ILType *toType, int explicit,
+						   		    ConvertRules *rules)
 {
-	const ILConversion *conv;
 	ILClass *classFrom;
 	ILClass *classTo;
 
-	/* Clear the rules */
-	rules->boxClass = 0;
-	rules->method = 0;
-	rules->castType = 0;
-	rules->builtin = 0;
-
-	/* Strip type prefixes before we start */
-	fromType = ILTypeStripPrefixes(fromType);
-	toType = ILTypeStripPrefixes(toType);
-
-	/* If the types are identical at this point, then we are done */
-	if(ILTypeIdentical(fromType, toType))
-	{
-		return 1;
-	}
-
-	/* We can never convert to the "null" type */
-	if(toType == ILType_Null)
-	{
-		return 0;
-	}
-
-	/* If "fromType" is null, then "toType" must be a reference type */
-	if(fromType == ILType_Null)
-	{
-		return ILTypeIsReference(toType);
-	}
-
-	/* Look for a builtin conversion */
-	conv = ILFindConversion(fromType, toType, explicit);
-	if(conv)
-	{
-		rules->builtin = conv;
-		return 1;
-	}
-
-	/* Look for a user-defined conversion */
-	if(ILType_IsClass(fromType))
-	{
-		if(FindConversion(info, ILType_ToClass(fromType),
-					  	  fromType, toType, explicit, rules))
-		{
-			return 1;
-		}
-	}
-	else if(ILType_IsValueType(fromType))
-	{
-		if(FindConversion(info, ILType_ToValueType(fromType),
-					  	  fromType, toType, explicit, rules))
-		{
-			return 1;
-		}
-	}
-	if(ILType_IsClass(toType))
-	{
-		if(FindConversion(info, ILType_ToClass(toType),
-					  	  fromType, toType, explicit, rules))
-		{
-			return 1;
-		}
-	}
-	else if(ILType_IsValueType(toType))
-	{
-		if(FindConversion(info, ILType_ToValueType(toType),
-					  	  fromType, toType, explicit, rules))
-		{
-			return 1;
-		}
-	}
-
-	/* We need reference types for the remainder of this function */
+	/* Both types must be reference types */
 	if(!ILTypeIsReference(fromType) || !ILTypeIsReference(toType))
 	{
 		return 0;
@@ -254,13 +192,285 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 			ILType *elemTo = ILTypeGetElemType(toType);
 			if(ILTypeIsReference(elemFrom) && ILTypeIsReference(elemTo))
 			{
-				if(GetConvertRules(info, elemFrom, elemTo, explicit, rules))
+				if(GetConvertRules(info, elemFrom, elemTo,
+								   explicit, IL_CONVERT_REFERENCE, rules))
 				{
 					if(rules->castType)
 					{
 						/* Move the explicit cast up to the array level */
 						rules->castType = toType;
 					}
+					return 1;
+				}
+			}
+		}
+	}
+
+	/* This is not a valid reference conversion */
+	return 0;
+}
+
+/*
+ * Get the rules to be used to box or unbox a value type.
+ */
+static int GetBoxingConvertRules(ILGenInfo *info, ILType *fromType,
+						   		 ILType *toType, int explicit,
+						   		 ConvertRules *rules)
+{
+	ILClass *classFrom;
+	ILClass *classTo;
+
+	if(ILTypeIsValue(fromType))
+	{
+		/* Convert the source type into a class */
+		classFrom = ILTypeToClass(info, fromType);
+		if(!classFrom)
+		{
+			return 0;
+		}
+
+		/* Value types can always be boxed as "Object" */
+		if(ILTypeIsObjectClass(toType))
+		{
+			rules->boxClass = classFrom;
+			rules->boxIsEnum = ILTypeIsEnum(fromType);
+			return 1;
+		}
+
+		/* If "toType" is not a reference type, then boxing is impossible */
+		if(!ILTypeIsReference(toType))
+		{
+			return 0;
+		}
+
+		/* Convert the destination type into a class */
+		classTo = ILTypeToClass(info, toType);
+		if(!classTo)
+		{
+			return 0;
+		}
+
+		/* We can box the value if its class inherits from "toType",
+		   or "toType" is an interface that the value type implements */
+		if(ILClass_IsInterface(classTo))
+		{
+			if(!ILClassImplements(classFrom, classTo))
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			if(!ILClassInheritsFrom(classFrom, classTo))
+			{
+				return 0;
+			}
+		}
+
+		/* Box the value */
+		rules->boxClass = classFrom;
+		rules->boxIsEnum = ILTypeIsEnum(fromType);
+		return 1;
+	}
+	else if(explicit && ILTypeIsReference(fromType) && ILTypeIsValue(toType))
+	{
+		/* Convert the two types into classes */
+		classFrom = ILTypeToClass(info, fromType);
+		if(!classFrom)
+		{
+			return 0;
+		}
+		classTo = ILTypeToClass(info, toType);
+		if(!classTo)
+		{
+			return 0;
+		}
+
+		/* If the source type is "Object", then unboxing is always possible */
+		if(ILTypeIsObjectClass(fromType))
+		{
+			rules->unboxClass = classTo;
+			rules->boxIsEnum = ILTypeIsEnum(toType);
+			return 1;
+		}
+
+		/* We can unbox the object if the value type inherits from the
+		   object's type, or if the object is an interface that the
+		   value type implements */
+		if(ILClass_IsInterface(classFrom))
+		{
+			if(!ILClassImplements(classTo, classFrom))
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			if(!ILClassInheritsFrom(classTo, classFrom))
+			{
+				return 0;
+			}
+		}
+
+		/* Unbox the value */
+		rules->unboxClass = classTo;
+		rules->boxIsEnum = ILTypeIsEnum(toType);
+		return 1;
+	}
+	else
+	{
+		/* No relevant boxing or unboxing conversion */
+		return 0;
+	}
+}
+
+/*
+ * Get the rules to be used to convert from one type to another.
+ */
+static int GetConvertRules(ILGenInfo *info, ILType *fromType,
+						   ILType *toType, int explicit,
+						   int kinds, ConvertRules *rules)
+{
+	const ILConversion *conv;
+
+	/* Clear the rules */
+	rules->boxClass = 0;
+	rules->unboxClass = 0;
+	rules->boxIsEnum = 0;
+	rules->method = 0;
+	rules->castType = 0;
+	rules->builtin = 0;
+
+	/* Strip type prefixes before we start */
+	fromType = ILTypeStripPrefixes(fromType);
+	toType = ILTypeStripPrefixes(toType);
+
+	/* If the types are identical at this point, then we are done */
+	if(ILTypeIdentical(fromType, toType))
+	{
+		return 1;
+	}
+
+	/* We can never convert to the "null" type */
+	if(toType == ILType_Null)
+	{
+		return 0;
+	}
+
+	/* If "fromType" is null, then "toType" must be a reference type */
+	if(fromType == ILType_Null)
+	{
+		if((kinds & IL_CONVERT_REFERENCE) != 0)
+		{
+			return ILTypeIsReference(toType);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	/* Look for a builtin numeric conversion */
+	if((kinds & IL_CONVERT_NUMERIC) != 0)
+	{
+		conv = ILFindConversion(fromType, toType, explicit);
+		if(conv)
+		{
+			rules->builtin = conv;
+			return 1;
+		}
+	}
+
+	/* Look for a user-defined conversion */
+	if((kinds & IL_CONVERT_USER_DEFINED) != 0)
+	{
+		if(ILType_IsClass(fromType))
+		{
+			if(FindConversion(info, ILType_ToClass(fromType),
+						  	  fromType, toType, explicit, rules))
+			{
+				return 1;
+			}
+		}
+		else if(ILType_IsValueType(fromType))
+		{
+			if(FindConversion(info, ILType_ToValueType(fromType),
+						  	  fromType, toType, explicit, rules))
+			{
+				return 1;
+			}
+		}
+		if(ILType_IsClass(toType))
+		{
+			if(FindConversion(info, ILType_ToClass(toType),
+						  	  fromType, toType, explicit, rules))
+			{
+				return 1;
+			}
+		}
+		else if(ILType_IsValueType(toType))
+		{
+			if(FindConversion(info, ILType_ToValueType(toType),
+						  	  fromType, toType, explicit, rules))
+			{
+				return 1;
+			}
+		}
+	}
+
+	/* Check for reference conversions */
+	if((kinds & IL_CONVERT_REFERENCE) != 0)
+	{
+		if(GetReferenceConvertRules(info, fromType, toType,
+									explicit, rules))
+		{
+			return 1;
+		}
+	}
+
+	/* Check for boxing and unboxing conversions */
+	if((kinds & IL_CONVERT_BOXING) != 0)
+	{
+		if(GetBoxingConvertRules(info, fromType, toType,
+								 explicit, rules))
+		{
+			return 1;
+		}
+	}
+
+	/* Check for explicit enumeration conversions */
+	if((kinds & IL_CONVERT_ENUM) != 0 && explicit)
+	{
+		if(ILTypeIsEnum(fromType))
+		{
+			if(ILTypeIsEnum(toType))
+			{
+				/* Both are enumerated types */
+				if(GetConvertRules(info, ILTypeGetEnumType(fromType),
+								   ILTypeGetEnumType(toType), explicit,
+								   IL_CONVERT_NUMERIC, rules))
+				{
+					return 1;
+				}
+			}
+			else if(ILIsBuiltinNumeric(toType))
+			{
+				/* Converting from an enumerated type to a numeric type */
+				if(GetConvertRules(info, ILTypeGetEnumType(fromType), toType,
+								   explicit, IL_CONVERT_NUMERIC, rules))
+				{
+					return 1;
+				}
+			}
+		}
+		else if(ILTypeIsEnum(toType))
+		{
+			if(ILIsBuiltinNumeric(fromType))
+			{
+				/* Converting from a numeric type to an enumerated type */
+				if(GetConvertRules(info, fromType, ILTypeGetEnumType(toType),
+								   explicit, IL_CONVERT_NUMERIC, rules))
+				{
 					return 1;
 				}
 			}
@@ -278,10 +488,19 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 					   ILNode **parent, ConvertRules *rules,
 					   ILType *toType)
 {
-	/* Box the input value if necessary */
+	/* Box or unbox the input value if necessary */
 	if(rules->boxClass)
 	{
-		*parent = ILNode_Box_create(node, rules->boxClass, 0);
+		*parent = ILNode_Box_create(node, rules->boxClass, rules->boxIsEnum);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		node = *parent;
+	}
+	else if(rules->unboxClass)
+	{
+		*parent = ILNode_Unbox_create(node, rules->unboxClass,
+									  rules->boxIsEnum,
+									  ILTypeToMachineType(toType));
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		node = *parent;
@@ -420,18 +639,44 @@ static ILMachineType CanCoerceConst(ILGenInfo *info, ILNode *node,
 int ILCanCoerce(ILGenInfo *info, ILType *fromType, ILType *toType)
 {
 	ConvertRules rules;
-	return GetConvertRules(info, fromType, toType, 0, &rules);
+	return GetConvertRules(info, fromType, toType, 0, IL_CONVERT_ALL, &rules);
+}
+
+int ILCanCoerceKind(ILGenInfo *info, ILType *fromType,
+					ILType *toType, int kinds)
+{
+	ConvertRules rules;
+	return GetConvertRules(info, fromType, toType, 0, kinds, &rules);
 }
 
 int ILCanCoerceNode(ILGenInfo *info, ILNode *node,
 				    ILType *fromType, ILType *toType)
 {
 	ConvertRules rules;
-	if(GetConvertRules(info, fromType, toType, 0, &rules))
+	if(GetConvertRules(info, fromType, toType, 0, IL_CONVERT_ALL, &rules))
 	{
 		return 1;
 	}
 	else if(CanCoerceConst(info, node, fromType, toType) != ILMachineType_Void)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int ILCanCoerceNodeKind(ILGenInfo *info, ILNode *node,
+				        ILType *fromType, ILType *toType, int kinds)
+{
+	ConvertRules rules;
+	if(GetConvertRules(info, fromType, toType, 0, kinds, &rules))
+	{
+		return 1;
+	}
+	else if((kinds & IL_CONVERT_CONSTANT) != 0 &&
+	        CanCoerceConst(info, node, fromType, toType) != ILMachineType_Void)
 	{
 		return 1;
 	}
@@ -446,7 +691,7 @@ int ILCoerce(ILGenInfo *info, ILNode *node, ILNode **parent,
 {
 	ConvertRules rules;
 	ILMachineType constType;
-	if(GetConvertRules(info, fromType, toType, 0, &rules))
+	if(GetConvertRules(info, fromType, toType, 0, IL_CONVERT_ALL, &rules))
 	{
 		ApplyRules(info, node, parent, &rules, toType);
 		return 1;
@@ -463,11 +708,62 @@ int ILCoerce(ILGenInfo *info, ILNode *node, ILNode **parent,
 	}
 }
 
+int ILCoerceKind(ILGenInfo *info, ILNode *node, ILNode **parent,
+			     ILType *fromType, ILType *toType, int kinds)
+{
+	ConvertRules rules;
+	ILMachineType constType;
+	if(GetConvertRules(info, fromType, toType, 0, kinds, &rules))
+	{
+		ApplyRules(info, node, parent, &rules, toType);
+		return 1;
+	}
+	else if((kinds & IL_CONVERT_CONSTANT) != 0 &&
+			(constType = CanCoerceConst(info, node, fromType, toType))
+					!= ILMachineType_Void)
+	{
+		*parent = ILNode_CastSimple_create(node, constType);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int ILCanCast(ILGenInfo *info, ILType *fromType, ILType *toType)
+{
+	ConvertRules rules;
+	return GetConvertRules(info, fromType, toType, 1, IL_CONVERT_ALL, &rules);
+}
+
+int ILCanCastKind(ILGenInfo *info, ILType *fromType,
+				  ILType *toType, int kinds)
+{
+	ConvertRules rules;
+	return GetConvertRules(info, fromType, toType, 1, kinds, &rules);
+}
+
 int ILCast(ILGenInfo *info, ILNode *node, ILNode **parent,
 		   ILType *fromType, ILType *toType)
 {
 	ConvertRules rules;
-	if(GetConvertRules(info, fromType, toType, 1, &rules))
+	if(GetConvertRules(info, fromType, toType, 1, IL_CONVERT_ALL, &rules))
+	{
+		ApplyRules(info, node, parent, &rules, toType);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int ILCastKind(ILGenInfo *info, ILNode *node, ILNode **parent,
+		       ILType *fromType, ILType *toType, int kinds)
+{
+	ConvertRules rules;
+	if(GetConvertRules(info, fromType, toType, 1, kinds, &rules))
 	{
 		ApplyRules(info, node, parent, &rules, toType);
 		return 1;

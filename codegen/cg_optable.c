@@ -1241,6 +1241,11 @@ void ILApplyBinaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
 	InsertPrimitive(info, node, parent, oper->outtype->valueType);
 }
 
+int ILIsBuiltinNumeric(ILType *type)
+{
+	return (GetBuiltinType(type) != 0 && type != ILType_Boolean);
+}
+
 #ifdef	__cplusplus
 };
 #endif

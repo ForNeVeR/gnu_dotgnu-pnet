@@ -22,6 +22,10 @@
 	codegen/jv_output.h, cscc/cs_oper.tc: continue the implementation
 	of casts and coercions, particularly explicit casts.
 
+	* codegen/cg_coerce.c, codegen/cg_coerce.h, codegen/cg_optable.c:
+	add extra coerce/cast API's; implement boxing and enumeration
+	conversions.
+
 2001-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_nodes.tc, codegen/jv_decls.tc,

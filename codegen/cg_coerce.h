@@ -90,10 +90,38 @@ void ILApplyBinaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
 					       const ILOperator *oper);
 
 /*
+ * Determine if a type is a builtin numeric type.
+ */
+int ILIsBuiltinNumeric(ILType *type);
+
+/*
+ * Conversion kinds.
+ */
+#define	IL_CONVERT_NUMERIC				(1<<0)
+#define	IL_CONVERT_ENUM					(1<<1)
+#define	IL_CONVERT_REFERENCE			(1<<2)
+#define	IL_CONVERT_BOXING				(1<<3)
+#define	IL_CONVERT_UNBOXING				IL_CONVERT_BOXING
+#define	IL_CONVERT_CONSTANT				(1<<4)
+#define	IL_CONVERT_USER_DEFINED			(1<<5)
+#define	IL_CONVERT_ALL					0xFFFF
+#define	IL_CONVERT_STANDARD		\
+			(IL_CONVERT_NUMERIC | IL_CONVERT_REFERENCE | \
+			 IL_CONVERT_BOXING | IL_CONVERT_CONSTANT)
+
+/*
  * Determine if it is possible to coerce implicitly
  * from one type to another.
  */
 int ILCanCoerce(ILGenInfo *info, ILType *fromType, ILType *toType);
+
+/*
+ * Determine if it is possible to coerce implicitly
+ * from one type to another, while using a subset of
+ * the possible implicit conversion methods.
+ */
+int ILCanCoerceKind(ILGenInfo *info, ILType *fromType,
+					ILType *toType, int kinds);
 
 /*
  * Determine if it is possible to coerce a node implicitly
@@ -103,6 +131,14 @@ int ILCanCoerceNode(ILGenInfo *info, ILNode *node,
 				    ILType *fromType, ILType *toType);
 
 /*
+ * Determine if it is possible to coerce a node implicitly
+ * from one type to another, while using a subset of the.
+ * possible implicit conversion methods.
+ */
+int ILCanCoerceNodeKind(ILGenInfo *info, ILNode *node,
+				        ILType *fromType, ILType *toType, int kinds);
+
+/*
  * Coerce a node from one type to another.  Returns zero if
  * the coercion is not possible.
  */
@@ -110,11 +146,41 @@ int ILCoerce(ILGenInfo *info, ILNode *node, ILNode **parent,
 			 ILType *fromType, ILType *toType);
 
 /*
+ * Coerce a node from one type to another.  Returns zero if
+ * the coercion is not possible, which using a subset of the
+ * possible implicit conversion methods.
+ */
+int ILCoerceKind(ILGenInfo *info, ILNode *node, ILNode **parent,
+			     ILType *fromType, ILType *toType, int kinds);
+
+/*
+ * Determine if it is possible to cast explicitly
+ * from one type to another.
+ */
+int ILCanCast(ILGenInfo *info, ILType *fromType, ILType *toType);
+
+/*
+ * Determine if it is possible to cast explicitly
+ * from one type to another, while using a subset of
+ * the possible explicit conversion methods.
+ */
+int ILCanCastKind(ILGenInfo *info, ILType *fromType,
+				  ILType *toType, int kinds);
+
+/*
  * Cast a node from one type to another.  Returns zero if the
  * cast is not possible.
  */
 int ILCast(ILGenInfo *info, ILNode *node, ILNode **parent,
 		   ILType *fromType, ILType *toType);
+
+/*
+ * Cast a node from one type to another, which using a
+ * subset of the possible explicit conversion methods.
+ * Returns zero if the cast is not possible.
+ */
+int ILCastKind(ILGenInfo *info, ILNode *node, ILNode **parent,
+		       ILType *fromType, ILType *toType, int kinds);
 
 /*
  * Determine which of T1 and T2 results in a better conversion

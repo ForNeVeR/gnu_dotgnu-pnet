@@ -1,4 +1,9 @@
 
+2003-04-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_thread.c:
+	add the "Thread.CanStartThreads" internalcall.
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c_main.c: remove the quoting in the "-D" options that

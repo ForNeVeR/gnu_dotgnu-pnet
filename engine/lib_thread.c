@@ -372,6 +372,15 @@ ILInt32 _IL_Thread_InternalGetState(ILExecThread *thread, ILObject *_this)
 }
 
 /*
+ * internal static bool CanStartThreads();
+ */
+ILBool _IL_Thread_CanStartThreads(ILExecThread *_thread)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
  * public static sbyte VolatileRead(ref sbyte address);
  */
 ILInt8 _IL_Thread_VolatileRead_Rb(ILExecThread *thread, ILInt8 *address)

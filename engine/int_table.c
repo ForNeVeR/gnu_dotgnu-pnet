@@ -1164,6 +1164,7 @@ IL_METHOD_BEGIN(Thread_Methods)
 	IL_METHOD("InternalSetBackground", "(TZ)V", _IL_Thread_InternalSetBackground, marshal_vppb)
 	IL_METHOD("InternalGetPriority", "(T)vSystem.Threading.ThreadPriority;", _IL_Thread_InternalGetPriority, marshal_ipp)
 	IL_METHOD("InternalSetPriority", "(TvSystem.Threading.ThreadPriority;)V", _IL_Thread_InternalSetPriority, marshal_vppi)
+	IL_METHOD("CanStartThreads", "()Z", _IL_Thread_CanStartThreads, marshal_bp)
 IL_METHOD_END
 
 #endif

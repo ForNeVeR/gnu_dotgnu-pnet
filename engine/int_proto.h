@@ -216,6 +216,7 @@ extern ILInt32 _IL_Thread_InternalGetState(ILExecThread * _thread, ILObject * _t
 extern void _IL_Thread_InternalSetBackground(ILExecThread * _thread, ILObject * _this, ILBool _p1);
 extern ILInt32 _IL_Thread_InternalGetPriority(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Thread_InternalSetPriority(ILExecThread * _thread, ILObject * _this, ILInt32 _p1);
+extern ILBool _IL_Thread_CanStartThreads(ILExecThread * _thread);
 
 extern ILNativeInt _IL_WaitEvent_InternalCreateEvent(ILExecThread * _thread, ILBool _p1, ILBool _p2);
 extern ILBool _IL_WaitEvent_InternalSetEvent(ILExecThread * _thread, ILNativeInt _p1);

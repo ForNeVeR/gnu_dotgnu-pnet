@@ -161,7 +161,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
  * Determine the number of stack words that are occupied
  * by a specific type.
  */
-static ILUInt32 StackWordsForType(ILExecThread *thread, ILType *type)
+ILUInt32 _ILStackWordsForType(ILExecThread *thread, ILType *type)
 {
 	if(type == ILType_Float32 || type == ILType_Float64)
 	{
@@ -212,7 +212,7 @@ ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	height = 0;
 	for(param = 0; param < numArgs; ++param)
 	{
-		height += StackWordsForType
+		height += _ILStackWordsForType
 			(thread, ILTypeGetParam(callSiteSig, firstParam + param));
 	}
 	stacktop -= height;
@@ -256,7 +256,7 @@ ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 				case IL_META_ELEMTYPE_R8:
 				case IL_META_ELEMTYPE_R:
 				{
-					boxDouble = (ILDouble)(ReadFloat(stacktop));
+					boxDouble = (ILDouble)(ReadDouble(stacktop));
 					ptr = &boxDouble;
 				}
 				break;
@@ -336,7 +336,7 @@ ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 				return 0;
 			}
 		}
-		stacktop += StackWordsForType(thread, paramType);
+		stacktop += _ILStackWordsForType(thread, paramType);
 		++posn;
 	}
 
@@ -367,7 +367,7 @@ ILUInt32 _ILGetMethodParamCount(ILExecThread *thread, ILMethod *method,
 	numParams = ILTypeNumParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
-		num += StackWordsForType(thread, ILTypeGetParam(signature, param));
+		num += _ILStackWordsForType(thread, ILTypeGetParam(signature, param));
 	}
 
 	/* Account for the vararg array parameter */

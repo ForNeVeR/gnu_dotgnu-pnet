@@ -1,3 +1,26 @@
+2004-05-15  Thong Nguyen  <tum@veridicus.com>
+
+	* include/il_engine.h: Added prototype for ILExecProcessUnload.
+	Documented semantics for ILExecProcessDestroy and
+	ILExecProcessUnload.
+	
+	* engine/cvm_call.c: Renamed StackWordsForType to
+	_ILStackWordsForType and made it public.
+	
+	* engine/engine.h: Added prototype for _ILStackWordsForType.
+	
+	* engine/lib_delegate.c: Added more error checking and removed
+	assumptions about stack placement that prevented async method
+	calls from working with non-word sized values.
+	
+	* engine/process.c: Modified ILExecProcessDestroy() to destroy
+	all threads including the main thread (if it isn't the finalizer
+	thread) before calling finalizers so that all references on the 
+	CVM stack will be removed.  On systems where a user thread
+	can't be destroyed because it's shared with the finalizer thread,
+	the CVM stack is cleared instead.
+	Added null implementation for ILExecProcessUnload().
+		
 2004-05-14  Thong Nguyen  <tum@veridicus.com>
 
 	* image/meta_types.c: Added ILTypeGetDelegateBeginInvokeMethod
@@ -16,6 +39,7 @@
 	of Delegate.BeginInvoke and Delegate.EndInvoke.  Refactored
 	some code and added InternalFuncs table to reduce code
 	duplication between Delegate.Invoke and Delegate.Begin/EndInvoke.
+	UPDATE: Fixed incorrect unboxing of reference return values/
 	
 2004-05-12  Thong Nguyen  <tum@veridicus.com>
 

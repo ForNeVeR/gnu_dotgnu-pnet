@@ -739,6 +739,12 @@ ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 							ILUInt32 firstParam, ILUInt32 numArgs,
 							ILType *callSiteSig, void **array);
 
+/*
+ * Determine the number of stack words that are occupied
+ * by a specific type.
+ */
+ILUInt32 _ILStackWordsForType(ILExecThread *thread, ILType *type);
+
 #ifdef	__cplusplus
 };
 #endif

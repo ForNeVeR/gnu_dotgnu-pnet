@@ -278,22 +278,31 @@ static void Delegate_Invoke(ILExecThread *thread,
 }
 
 static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
-{
-	int argcount;
-	ILMethod *method, *async_ctor;
-	ILObject *array;
-	ILType *signature;
+{	
+	void *array;		
 	ILClass *classInfo;
 	ILObject *obj;
 	ILObject *result = 0;
+	ILType *beginInvokeMethodSignature;
+	ILMethod *beginInvokeMethodInfo, *async_ctor;	
 	CVMWord *stackTop = thread->stackTop;
+	int paramWords, paramCount;
 
+	/* Get the AsyncResult classs */
 	classInfo = ILExecThreadLookupClass
 		(
 			thread,
 			"System.Runtime.Remoting.Messaging.AsyncResult"
 		);
 
+	if (classInfo == 0)
+	{
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", (const char *)0);
+
+		return 0;
+	}
+
+	/* Get the constructor for AsyncResult */
 	async_ctor = ILExecThreadLookupMethod
 		(
 			thread,
@@ -302,12 +311,20 @@ static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
 			"(ToSystem.Delegate;[oSystem.Object;oSystem.AsyncCallback;oSystem.Object;)V"
 		);
 
-	method = (ILMethod *)ILTypeGetDelegateBeginInvokeMethod
+	if (async_ctor == 0)
+	{
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", (const char *)0);
+
+		return 0;
+	}
+
+	/* Get the BeginInvoke method for the delegate */
+	beginInvokeMethodInfo = (ILMethod *)ILTypeGetDelegateBeginInvokeMethod
 		(
 			ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)
 		);
 
-	if(!method)
+	if(!beginInvokeMethodInfo)
 	{
 		ILExecThreadThrowSystem(thread, "System.MissingMethodException",
 			(const char *)0);
@@ -315,17 +332,37 @@ static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
 		return 0;
 	}
 
-	argcount = _ILGetMethodParamCount(thread, method, 1);
-	signature = ILMethod_Signature(method);
+	/* Get the signature for the BeginInvoke method */
+	beginInvokeMethodSignature = ILMethod_Signature(beginInvokeMethodInfo);
 
+
+	/*  the number of paramters for the BeginInvoke method */
+	paramCount = ILTypeNumParams(beginInvokeMethodSignature);
+
+	/* Get the number of CVM words the delegate method requires 
+	   (we use the delegate method and not the BeginInvoke method
+	      cause we only want the delegate parameters and not the
+		  AsyncCallback or state parameters) */
+	paramWords = _ILGetMethodParamCount
+		(
+			thread,
+			ILTypeGetDelegateMethod(ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)),
+			0
+		);
+
+	/* Pack the parameters into a managed object array */
 	_ILPackVarArgs
 		(
 			thread,
-			thread->stackTop - 4,
-			1 /* 0 is return param */,
-			argcount - 2,
-			signature,
-			(void **)&array
+			 /* stackTop is the part "just above" the delegate parameters */
+			thread->frame + paramWords,
+			/* 0 is return param */
+			1,
+			/* Number of parameters in BeginInvoke not including the AsyncResult & state */
+			paramCount - 2,
+			/* Can use BeginInvoke signature because the first parameters are the same */
+			beginInvokeMethodSignature,
+			&array
 		); 
 
 	obj = _ILEngineAllocObject(thread, classInfo);
@@ -338,8 +375,8 @@ static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
 			obj,
 			(System_Delegate *)_this,
 			array /* Delegate method arguments */,
-			(thread->stackTop - 4)->ptrValue /* AsyncCallback */,
-			(thread->stackTop - 3)->ptrValue /* AsyncState */
+			(thread->frame + paramWords)->ptrValue /* AsyncCallback */,
+			(thread->frame + paramWords + 1)->ptrValue /* AsyncState */
 		);
 
 	thread->stackTop = stackTop;
@@ -354,26 +391,45 @@ static void Delegate_EndInvoke(ILExecThread *thread,
 	ILObject *retValue;
 	ILObject *array;
 	ILClass *classInfo;
-	ILType *retType;
-	int i, outparamcount;
+	ILType *retType;	
 	ILMethod *endInvokeMethodInfo;
+	ILType *endInvokeMethodSignature;
 	ILMethod *asyncEndInvokeMethodInfo;	
 	CVMWord *stackTop = thread->stackTop;
+	int paramWords, paramCount;
 
 	classInfo = GetObjectClass(_this);
 
+	/* Get the "EndInvoke" method */
 	endInvokeMethodInfo = (ILMethod *)ILTypeGetDelegateEndInvokeMethod
 		(
 			ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)
 		);
 
-	
-	/* 
-	 * Number of out params is one less than the number of params in the
-	 * EndInvoke method.  The last param is the AsyncResult reference
-	 */
-	outparamcount = _ILGetMethodParamCount(thread, endInvokeMethodInfo, 1) - 1;
+	if (endInvokeMethodInfo == 0)
+	{
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", (const char *)0);		
 
+		return;
+	}
+
+	/* Get the return type of the delegate */
+	retType = ILTypeGetReturn(ILMethod_Signature(endInvokeMethodInfo));
+	
+	endInvokeMethodSignature = ILMethod_Signature(endInvokeMethodInfo);
+
+	/* Number of parameters for the EndInvoke method */
+	paramCount = ILTypeNumParams(endInvokeMethodSignature);
+
+	/* Get the number of CVM words the parameters take up */
+	paramWords = _ILGetMethodParamCount
+		(
+			thread,
+			ILTypeGetDelegateEndInvokeMethod(ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)),
+			0
+		);
+
+	/* Get the AsyncResult.EndInvoke method */
 	asyncEndInvokeMethodInfo = ILExecThreadLookupMethod
 		(
 			thread,
@@ -382,12 +438,22 @@ static void Delegate_EndInvoke(ILExecThread *thread,
 			"(T[oSystem.Object;)oSystem.Object;"
 		);
 
+	if (asyncEndInvokeMethodInfo == 0)
+	{
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", (const char *)0);		
+
+		return;
+	}
+
+	/* Create an array to store the out params */
 	array = ILExecThreadNew(thread, "[oSystem.Object;", "(Ti)V",
-		(ILVaUInt)outparamcount);
+		(ILVaUInt)paramCount - 1 /* Number of out-params is (number of params) - (1 for AsyncResult) */);
 
 	if (array == 0)
 	{
 		ILExecThreadThrowOutOfMemory(thread);
+
+		return;
 	}
 
 	ILExecThreadCall
@@ -395,20 +461,17 @@ static void Delegate_EndInvoke(ILExecThread *thread,
 			thread,
 			asyncEndInvokeMethodInfo,
 			&retValue,
-			(thread->stackTop - 3)->ptrValue /* asyncResult */,
+			/* Async Result */
+			(thread->frame + paramWords - 1)->ptrValue,
+			/* Array for out-params */
 			array			
 		);
 
-	retType = ILClassToType(GetObjectClass(retValue));
-
-	for (i = 0; i < outparamcount; i++)
-	{
-		/*
-		 * TODO: Unpack the "out" values into the argument pointers
-		 * currently on the stack.
-		 */
-	}
-
+	/*
+	 * TODO: Unpack the "out" values into the argument pointers
+	 * currently on the stack.
+	 */
+	
 	/* I suspect there may be type alignment issues ? :-\ */
 
 	if (ILTypeIsValue(retType))
@@ -418,7 +481,7 @@ static void Delegate_EndInvoke(ILExecThread *thread,
 	else
 	{
 		*((ILObject **)result) = retValue;
-	}
+	}	
 
 	thread->stackTop = stackTop;
 }

@@ -180,18 +180,71 @@ struct _tagThreadListEntry
 	ThreadListEntry *next;
 };
 
+/*
+ * Unloads a process and all threads associated with it.
+ * The process may not unload immediately (or even ever).
+ * If the current thread exists inside the process, a
+ * new thread will be created to unload & destroy the
+ * process.  When this function exits, the thread that
+ * calls this method will still be able to execute managed
+ * code even if it resides within the process it tried to
+ * destroy.  The process will eventually be destroyed
+ * when the thread (and all other process-owned threads)
+ * exit.
+ */
+void ILExecProcessUnload(ILExecProcess *process)
+{
+	/* TODO: Implement same semantics as AppDomain.Unload
+	   for embedders */
+}
+
+/*
+ * Destroy a process.
+ *
+ * DO NOT call this function from a thread that expects to be
+ * alive after the function returns.  This is *NOT* an implementation
+ * of AppDomain.Unload.  A thread that calls this function but exists
+ * inside the process will be *unusable* from managed code when this
+ * function exits.
+ *
+ * In the implementation of AppDomain.Unload, this method should
+ * not be called by a thread that runs inside the domain it is trying
+ * to destroy otherwise the thread will return dead & to a dead domain.
+ * A new domain-less thread should be created to destroy the domain.
+ * On single threaded systems, this method can be called directly
+ * by AppDomain.Unload unless the current thread is living in the
+ * domain it is trying to unload in which case AppDomain.Unload *MUST*
+ * just return without doing anything.
+ *
+ * Thong Nguyen (tum@veridicus.com)
+ */
 void ILExecProcessDestroy(ILExecProcess *process)
 {
 	int result;
 	int mainIsFinalizer = 0;
-	ILThread *mainSupportThread;
 	ILExecThread *thread, *nextThread;	
 	ThreadListEntry *firstEntry, *entry, *next;
 
+	/* Determine if this is a single-threaded system where the main
+	   thread is the finalizer thread */
+	mainIsFinalizer = process->mainThread == process->finalizerThread;
+
 	if (process->mainThread)
 	{
-		/* TODO: Stack still contains last frame */
-		ILMemZero(process->mainThread->stackBase, sizeof(int));
+		if (mainIsFinalizer)
+		{
+			/* If the main thread is the finalizer thread then
+			   we have to zero the memory of the CVM stack so that
+			   stray pointers are erased. */
+			ILMemZero(process->mainThread->stackBase, process->stackSize);
+			ILMemZero(process->mainThread->frameStack, process->frameStackSize);
+		}
+		else
+		{
+			/* If the main thread isn't the finalizer then it's
+			   possible to simply destroy the main thread before
+			   calling the finalizers */
+		}
 	}
 
 	/* Delete all managed threads so the objects they used can be finalizerd */
@@ -304,10 +357,16 @@ void ILExecProcessDestroy(ILExecProcess *process)
 			break;
 		}
 	}
-	
-	mainIsFinalizer = process->mainThread == process->finalizerThread;
-	mainSupportThread = process->mainThread->supportThread;
 
+	/* Unregister (and destroy) the current thread if it isn't needed
+	   for finalization and if it belongs to this domain. */
+	if (!mainIsFinalizer 
+		&& ILExecThreadCurrent() != process->finalizerThread
+		&& ILExecThreadCurrent()->process == process)
+	{
+		ILThreadUnregisterForManagedExecution(ILThreadSelf());
+	}	
+	
 	/* Invoke the finalizers -- hopefully finalizes all objects left in the process being destroyed */
 	/* Any objects left lingering (because of a stray or fake pointer) are orphans */
 	ILGCCollect();
@@ -327,19 +386,15 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	/* Reenable finalizers */
 	ILGCEnableFinalizers();	
 
-	/* Abort the main thread if we aren't the main thread or the finalizer thread*/
-	if (!mainIsFinalizer && ILThreadSelf() != mainSupportThread)
+	/* Unregister (and destroy) the current thread if it 
+	   wasn't destroyed above and if it belongs to this domain */
+	if (mainIsFinalizer
+		&& ILExecThreadCurrent() != process->finalizerThread
+		&& ILExecThreadCurrent()->process == process)
 	{
-		/* Abort the thread */
-		ILThreadAbort(mainSupportThread);		
+		ILThreadUnregisterForManagedExecution(ILThreadSelf());
 	}
 
-	/* Unregister the main thread since its engine thread is now gone */
-	if (ILThreadSelf() == mainSupportThread)
-	{
-		ILThreadUnregisterForManagedExecution(mainSupportThread);
-	}
-	
 	/* Destroy the finalizer thread */
 	if (process->finalizerThread)
 	{
@@ -443,6 +498,9 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	/* Free the process block itself */
 	ILGCFreePersistent(process);
+
+	ILGCCollect();
+	ILGCInvokeFinalizers();
 
 	/* Reset the console to the "normal" mode */
 	ILConsoleSetMode(IL_CONSOLE_NORMAL);

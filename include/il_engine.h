@@ -204,8 +204,26 @@ ILExecProcess *ILExecProcessCreate(unsigned long frameStackSize, unsigned long c
 
 /*
  * Destroy a process and all threads associated with it.
+ * If the thread that calls this method belongs to the process
+ * the thread will no longer be able to execute managed code
+ * when the function exits.  For a safer version that can
+ * be called from managed code, see ILExecProcessUnload.
  */
 void ILExecProcessDestroy(ILExecProcess *process);
+
+/*
+ * Unloads a process and all threads associated with it.
+ * The process may not unload immediately (or even ever).
+ * If the current thread exists inside the process, a
+ * new thread will be created to unload & destroy the
+ * process.  When this function exits, the thread that
+ * calls this method will still be able to execute managed
+ * code even if it resides within the process it tried to
+ * destroy.  The process will eventually be destroyed
+ * when the thread (and all other process-owned threads)
+ * exit.
+ */
+void ILExecProcessUnload(ILExecProcess *process);
 
 /*
  * Set the list of directories to be used for library path

@@ -17,6 +17,15 @@
 	remove the contents of "csunit" and "csupport", because they
 	are now a part of "pnetlib".
 
+	* samples/.cvsignore, samples/I18N-handlers.def, samples/I18N.CJK.dll,
+	samples/I18N.MidEast.dll, samples/I18N.Other.dll,
+	samples/I18N.Rare.dll, samples/I18N.West.dll, samples/I18N.dll,
+	samples/Makefile.am, samples/README, samples/README.mscorlib,
+	samples/System.Xml.dll, samples/System.dll, samples/codepage.cs,
+	samples/except.cs, samples/fib.cs, samples/getenv.cs,
+	samples/httpsrv.cs, samples/mscorlib.dll, samples/pnetlib.here:
+	remove the C# samples and pre-compiled assemblies from pnet.
+
 2002-12-08  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h,cscc/common/cc_main.c: add noStdlibFlag and 

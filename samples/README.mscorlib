@@ -1,8 +1,0 @@
-
-What is "mscorlib.dll"?
-
-It is the "Mondo Source Core Library", which provides the core classes
-that are needed by C# programs.
-
-It is generated from the source code for "pnetlib" using Portable.NET's
-C# compiler, "cscc".

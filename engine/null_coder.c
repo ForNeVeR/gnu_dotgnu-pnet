@@ -369,6 +369,9 @@ static void Coder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 static void Coder_MarkEnd(ILCoder *coder)
 {
 }
+static void Coder_SetFlags(ILCoder *coder, int flags)
+{
+}
 
 /*
  * Null coder class and instance.
@@ -465,6 +468,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_GetNativeOffset,
 	Coder_MarkBytecode,
 	Coder_MarkEnd,
+	Coder_SetFlags,
 	"sentinel"
 };
 ILCoder _ILNullCoder = {&_ILNullCoderClass};

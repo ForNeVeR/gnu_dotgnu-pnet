@@ -10,6 +10,11 @@
 	csharp/expr/binary3.il, csharp/expr/binary3.jl:
 	test user-defined operator resolution.
 
+	* csharp/stmt/Makefile.am, csharp/stmt/foreach1.cs,
+	csharp/stmt/foreach1.il, csharp/stmt/foreach1.jl,
+	csharp/stmt/foreach2.cs, csharp/stmt/foreach2.err,
+	csharp/stmt/foreach2.jerr: test cases for "foreach".
+
 2002-05-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/typedref1.cs,

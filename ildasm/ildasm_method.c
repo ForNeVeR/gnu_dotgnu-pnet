@@ -151,14 +151,6 @@ static void DumpToken(ILImage *image, FILE *outstream,
 				ILDumpType(outstream, image, ILField_Type(field), flags);
 				putc(' ', outstream);
 				info = ILField_Owner(field);
-				if(ILClassIsValueType(info))
-				{
-					fputs("valuetype ", outstream);
-				}
-				else
-				{
-					fputs("class ", outstream);
-				}
 				ILDumpClassName(outstream, image, info, flags);
 				fputs("::", outstream);
 				ILDumpIdentifier(outstream, ILField_Name(field), 0, flags);

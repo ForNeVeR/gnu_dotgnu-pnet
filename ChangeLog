@@ -7,6 +7,9 @@
 	* ildasm/ildasm_class.c: put the ".overflow" directive for a method
 	inside the ".method" block on internalcall methods (bug #2163).
 
+	* ildasm/ildasm_method.c (DumpToken): don't put the class prefix
+	on the name of class in a field reference.
+
 2003-01-09  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_file.c,

@@ -39,9 +39,9 @@ extern	"C" {
 static int volatile FinalizersDisabled = 0;
 
 static volatile int g_Deinit = 0;
-static ILThread *g_FinalizerThread;
-static ILWaitHandle *g_FinalizerSignal;
-static ILWaitHandle *g_FinalizerResponse;
+static ILThread *g_FinalizerThread = 0;
+static ILWaitHandle *g_FinalizerSignal = 0;
+static ILWaitHandle *g_FinalizerResponse = 0;
 
 #ifdef GC_TRACE_ENABLE
 	#define GC_TRACE(a, b)		printf(a, b)
@@ -97,42 +97,45 @@ static int PrivateGCNotifyFinalize(void)
 {
 	ILExecThread *thread;
 
+	if (FinalizersDisabled || g_FinalizerThread == 0)
+	{
+		return 0;
+	}
+	
 	if (!ILHasThreads())
 	{
 		GC_invoke_finalizers();
 
-		return 0;
-	}
-
-	if(!FinalizersDisabled)
-	{
-		/* Register the finalizer thread for managed code execution */
-
-		ILThreadAtomicStart();
-
-		if (ILThreadGetObject(g_FinalizerThread) == 0)
-		{			
-			/* Make sure the the finalizer thread is registered for managed execution. */
-
-			/* This can't be done in ILGCInit cause the runtime isn't fully initialized in that function */
-
-			thread = (ILExecThread *)ILThreadGetObject(ILThreadSelf());
-
-			ILThreadRegisterForManagedExecution(ILExecThreadGetProcess(thread), g_FinalizerThread, 0);
-		}
-
-		ILThreadAtomicEnd();
-
-		/* Signal the finalizer thread */
-
-		ILWaitEventSet(g_FinalizerSignal);
-
 		return 1;
 	}
-	else
-	{
-		return 0;
+
+	/* Register the finalizer thread for managed code execution */
+	ILThreadAtomicStart();
+
+	if (ILThreadGetObject(g_FinalizerThread) == 0)
+	{			
+		/* Make sure the the finalizer thread is registered for managed execution. */
+		/* This can't be done in ILGCInit cause the runtime isn't fully initialized in that function */
+
+		thread = (ILExecThread *)ILThreadGetObject(ILThreadSelf());
+
+		ILThreadRegisterForManagedExecution(ILExecThreadGetProcess(thread), g_FinalizerThread, 0);
 	}
+
+	ILThreadAtomicEnd();
+
+	/* Signal the finalizer thread */
+
+	ILWaitEventSet(g_FinalizerSignal);
+
+	GC_TRACE("ILGCInvokeFinalizers: Invoked finalizers and waiting [thread: %d]\n", (int)ILThreadSelf());
+		
+	/* Wait until finalizers have finished */
+	ILWaitOne(g_FinalizerResponse, -1);
+
+	GC_TRACE("ILGCInvokeFinalizers: Finalizers finished[thread: %d]\n", (int)ILThreadSelf());
+
+	return 1;
 }
 
 static void GCNotifyFinalize(void)
@@ -229,26 +232,7 @@ void ILGCCollect(void)
 
 void ILGCInvokeFinalizers(void)
 {
-	if (!ILHasThreads())
-	{
-		PrivateGCNotifyFinalize();
-
-		return;
-	}
-
-	if(!FinalizersDisabled)
-	{
-		/* Signal the finalizers to run (returns 1 if successful) */
-		if (PrivateGCNotifyFinalize())
-		{
-			GC_TRACE("ILGCInvokeFinalizers: Invoked finalizers and waiting [thread: %d]\n", (int)ILThreadSelf());
-			
-			/* Wait until finalizers have finished */
-			ILWaitOne(g_FinalizerResponse, -1);
-
-			GC_TRACE("ILGCInvokeFinalizers: Finalizers finished[thread: %d]\n", (int)ILThreadSelf());
-		}
-	}
+	PrivateGCNotifyFinalize();
 }
 
 void ILGCDisableFinalizers(void)

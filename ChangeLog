@@ -16,6 +16,9 @@
 	to GC_CreateThread under all Win32 environments, because the
 	static library won't properly attach otherwise.
 
+	* support/hb_gc.h: Refactored some code.  Finalizers now always halt
+	the current thread.
+
 2003-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: add "mingw" to the set of detected platforms

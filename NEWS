@@ -1,4 +1,59 @@
 
+0.6.0 (15 October 2003)
+
+	Runtime engine:
+
+	* Make the autoconf target string available to pnetlib so that
+	  the platform can be detected using "Environment.OSVersion".
+	* Marshal structures that contain delegate fields, for Win32 winforms.
+	* Internalcall for the zero-argument case of constructing value types.
+	* Add delegates to the GC handle table when they are marshalled, to
+	  prevent the object from being disposed while the closure is in use.
+
+	Common Compiler Issues:
+
+	* Be careful not to treat absolute pathnames as options in the
+	  csc/mcs-compatibility mode.
+	* Fixed a bug in "foreach" loops containing "break" in their body.
+
+	C Compiler:
+
+	* Improve the handling of boolean constant values.
+	* Constant coercions where the machine type does not change.
+	* Allow function pointer types to be coerced if they have the
+	  same basic "shape", differing only in pointer types.
+
+	Loader and Metadata:
+
+	* Don't add parameter name information to debug symbol data because
+	  it duplicates information already available in metadata.
+	* Put some infrastructure in place to support on-demand type loading.
+	* Fix a bug with debug overflow blocks that caused the wrong filename
+	  data to be written, causing odd names in stack traces.
+	* Add the link directory to the debug symbol table so that the
+	  full pathname of source files can be recovered by a debugger.
+	* Search for owned items in a way that avoids loading an item if
+	  it isn't actually the one that was sought.
+
+	Documentation:
+
+	* Ignore classes with "NonStandardExtra" in "csdocvalil".
+	* Document the "csant" XML file syntax in the texinfo documentation.
+	* Updates to the FAQ.
+	* Man page for "ilverify".
+
+	Platform Support:
+
+	* Socket support under "mingw32".
+	* Fixed a bug in "libffi" that caused it to generate invalid closures
+	  on some x86 platforms.
+
+	Other:
+
+	* Pass missing options to "mcs" from "csant".
+	* Fixes for building in non-full profiles.
+	* Remove some obsolete programs (ildiff, ildb, test_verify).
+
 0.5.12 (6 September 2003)
 
 	Runtime engine:

@@ -27,6 +27,9 @@
 	* runtime/System/IO/FileStream.cs, runtime/System/IO/StreamReader.cs:
 	bugs in stream buffer processing.
 
+	* runtime/runtime.build: remove "jis.table" from the assembly
+	manifest for "mscorlib.dll"; it is now in "I18N.CJK.dll".
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

@@ -111,6 +111,15 @@ internal enum EventId
 	MenuStart,
 	MinimumSizeChanged,
 
+	// "TextBoxBase" events.
+	AcceptsTabChanged,
+	BorderStyleChanged,
+	TextBoxClick,
+	HideSelectionChanged,
+	ModifiedChanged,
+	MultilineChanged,
+	ReadOnlyChanged,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

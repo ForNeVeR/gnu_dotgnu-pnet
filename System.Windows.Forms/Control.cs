@@ -50,8 +50,8 @@ public class Control : IWin32Window
 	internal bool visible;
 	private bool allowDrop;
 	private bool causesValidation;
-	private Color backColor;
-	private Color foreColor;
+	internal Color backColor;
+	internal Color foreColor;
 	private Font font;
 	private Image backgroundImage;
 	private byte anchorStyles;

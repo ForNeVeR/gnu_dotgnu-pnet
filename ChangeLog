@@ -43,6 +43,9 @@
 	* System.Drawing/Toolkit/ToolkitManager.cs: better detection
 	code for Win32 systems.
 
+	* System.Windows.Forms/TextBoxBase.cs: stub out the "TextBoxBase"
+	class.
+
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs, 

@@ -323,7 +323,7 @@ J. There are classes in Microsoft's .NET Framework SDK that do not exist
    The pnetlib build system creates two assemblies: "mscorlib.dll" and
    "mscorlib_ecma.dll".  The later only contains ECMA definitions.
 
-K. Avoid source tags like "$Date: 2002/01/07 03:58:41 $" and "$Log$".  They tend to make the
+K. Avoid RCS source tags like "Date" and "Log".  They tend to make the
    code look ugly, and are difficult to keep consistent when code is
    copied from one source repository to another.  Change information
    should instead be placed in the ChangeLog file:

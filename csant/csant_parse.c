@@ -389,6 +389,23 @@ CSAntTarget *CSAntFindTarget(const char *target)
 const char *CSAntTaskParam(CSAntTask *task, const char *name)
 {
 	const char *value;
+	char *buffer;
+	int bufLen;
+	int bufMax;
+	int nameLen;
+	const char *propValue;
+#define	ADD_BUFFER_CH(ch)	\
+		do { \
+			if(bufLen >= bufMax) \
+			{ \
+				if((buffer = (char *)ILRealloc(buffer, bufMax + 32)) == 0) \
+				{ \
+					CSAntOutOfMemory(); \
+				} \
+				bufMax += 32; \
+			} \
+			buffer[bufLen++] = (char)(ch); \
+		} while (0)
 
 	/* Get the parameter value */
 	value = ILXMLGetPackedParam(task->params, task->paramLen, name);
@@ -400,7 +417,53 @@ const char *CSAntTaskParam(CSAntTask *task, const char *name)
 	}
 
 	/* Perform property substitution on the value */
-	return value;
+	bufLen = 0;
+	bufMax = strlen(value) + 1;
+	if((buffer = (char *)ILMalloc(bufMax)) == 0)
+	{
+		CSAntOutOfMemory();
+	}
+	while(*value != '\0')
+	{
+		if(*value =='$' && value[1] == '{')
+		{
+			value += 2;
+			nameLen = 0;
+			while(value[nameLen] != '\0' && value[nameLen] != '}')
+			{
+				++nameLen;
+			}
+			propValue = CSAntGetProperty(value, nameLen);
+			if(propValue)
+			{
+				while(*propValue != '\0')
+				{
+					ADD_BUFFER_CH(*propValue);
+					++propValue;
+				}
+			}
+			if(value[nameLen] == '}')
+			{
+				value += nameLen + 1;
+			}
+			else
+			{
+				value += nameLen;
+			}
+		}
+		else if(*value =='$' && value[1] == '$')
+		{
+			ADD_BUFFER_CH('$');
+			value += 2;
+		}
+		else
+		{
+			ADD_BUFFER_CH(*value);
+			++value;
+		}
+	}
+	ADD_BUFFER_CH('\0');
+	return buffer;
 }
 
 int CSAntParseProfileFile(ILXMLReader *reader, const char *filename)

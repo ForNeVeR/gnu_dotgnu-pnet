@@ -14,6 +14,9 @@
 	directories for source and build locations, to support "out of tree"
 	builds when csant is combined with automake/autoconf.
 
+	* csant/csant_parse.c: implement property substitution in csant
+	task parameters.
+
 2002-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_lvalue.tc, codegen/cg_utils.c:

@@ -119,15 +119,16 @@ namespace System.Windows.Forms
 
 		protected virtual void OnSelectedIndexChanged(EventArgs e)
 		{
+			SuspendLayout();
 			if (prevSelectedIndex > -1)
 			{
 				GetChildByIndex( prevSelectedIndex ).Visible = false;
 			}
 			GetChildByIndex( selectedIndex ).Visible = true;
 			
-			DrawTabs();
 			if (SelectedIndexChanged != null)
 				SelectedIndexChanged( this, EventArgs.Empty );
+			ResumeLayout();
 		}
 
 		protected void RemoveAll()
@@ -348,16 +349,22 @@ namespace System.Windows.Forms
 
 			Region clip = g.Clip.Clone();
 
+			using ( Brush background = new SolidBrush(BackColor) )
+			{
+				// Clear out the space behind the tabs
+				g.FillRectangle( background, GetTabsBounds());
+				// Clear the padding area around the tab page
+				Region paint = new Region(ClientRectangle);
+				paint.Exclude(DisplayRectangle);
+				g.FillRegion(background, paint);
+			}
+
 			Rectangle newClient = GetTabBaseBounds();
 			// Draw the tab edging
 			ControlPaint.DrawBorder3D(g, newClient, Border3DStyle.RaisedInner, Border3DSide.Left);
 			ControlPaint.DrawBorder3D(g, newClient, Border3DStyle.Raised, Border3DSide.Bottom);
 			ControlPaint.DrawBorder3D(g, newClient, Border3DStyle.Raised, Border3DSide.Right);
 			ControlPaint.DrawBorder3D(g, newClient, Border3DStyle.RaisedInner, Border3DSide.Top);
-			
-			// Clear out the space behind the tabs
-			using ( Brush background = new SolidBrush(BackColor) )
-				g.FillRectangle( background, GetTabsBounds());
 
 			// Draw each tab in the tabControl row 0 first, bottom row last, selected item very last
 			for( int row = 0; row < PositionInfo.totalRows; row++ )
@@ -1076,7 +1083,9 @@ namespace System.Windows.Forms
 			// This forces the correct Bounds for all TabPages and is automatically called whenever the bounds could change eg. adding new tab
 			foreach( TabPage tabPage in tabPageCollection)
 				tabPage.Bounds = Rectangle.Empty;
-			
+			// Redraw
+			using (Graphics g = CreateGraphics())
+				Draw(g);
 		}
 
 	}

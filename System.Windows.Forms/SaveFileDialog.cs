@@ -1,6 +1,6 @@
 /*
- * OpenFileDialog.cs - Implementation of the
- *			"System.Windows.Forms.OpenFileDialog" class.
+ * SaveFileDialog.cs - Implementation of the
+ *			"System.Windows.Forms.SaveFileDialog" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,61 +24,36 @@ namespace System.Windows.Forms
 
 using System.IO;
 
-public sealed class OpenFileDialog : FileDialog
+public sealed class SaveFileDialog : FileDialog
 {
 	// Internal state.
-	private bool multiselect;
-	private bool readOnlyChecked;
-	private bool showReadOnly;
+	private bool createPrompt;
+	private bool overwritePrompt;
 
 	// Constructor
-	public OpenFileDialog() {}
+	public SaveFileDialog() {}
 
 	// Get or set this object's properties.
-	public override bool CheckFileExists
+	public bool CreatePrompt
 			{
 				get
 				{
-					return base.CheckFileExists;
+					return createPrompt;
 				}
 				set
 				{
-					base.CheckFileExists = value;
+					createPrompt = value;
 				}
 			}
-	public bool Multiselect
+	public bool OverwritePrompt
 			{
 				get
 				{
-					return multiselect;
+					return overwritePrompt;
 				}
 				set
 				{
-					multiselect = value;
-				}
-			}
-	[TODO]
-	public bool ReadOnlyChecked
-			{
-				get
-				{
-					return readOnlyChecked;
-				}
-				set
-				{
-					// TODO: update the dialog box to match.
-					readOnlyChecked = value;
-				}
-			}
-	public bool ShowReadOnly
-			{
-				get
-				{
-					return showReadOnly;
-				}
-				set
-				{
-					showReadOnly = value;
+					overwritePrompt = value;
 				}
 			}
 	[TODO]
@@ -87,7 +62,7 @@ public sealed class OpenFileDialog : FileDialog
 				get
 				{
 					// TODO: make this translatable.
-					return "Open";
+					return "Save As";
 				}
 			}
 
@@ -99,20 +74,18 @@ public sealed class OpenFileDialog : FileDialog
 				{
 					throw new ArgumentNullException("FileName");
 				}
-				return new FileStream(filename, FileMode.Open,
-									  FileAccess.Read, FileShare.Read);
+				return new FileStream(filename, FileMode.Create,
+									  FileAccess.ReadWrite);
 			}
 
 	// Reset the contents of the dialog box.
 	public override void Reset()
 			{
 				base.Reset();
-				checkFileExists = true;
-				multiselect = false;
-				readOnlyChecked = false;
-				showReadOnly = false;
+				createPrompt = false;
+				overwritePrompt = true;
 			}
 
-}; // class OpenFileDialog
+}; // class SaveFileDialog
 
 }; // namespace System.Windows.Forms

@@ -15,6 +15,12 @@
 	work in a basic fashion; add "HBoxLayout" and "VBoxLayout"
 	helper classes to do the hard work of automatic dialog box layout.
 
+	* System.Windows.Forms/CommonDialog.cs,
+	System.Windows.Forms/FileDialog.cs,
+	System.Windows.Forms/OpenFileDialog.cs,
+	System.Windows.Forms/SaveFileDialog.cs: flesh out some of the
+	file dialog classes (not finished yet).
+
 2003-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

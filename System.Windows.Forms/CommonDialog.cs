@@ -1,8 +1,8 @@
 /*
- * CommonDialog.cs - Implementation of the "System.Windows.Forms.CommonDialog" class.
+ * CommonDialog.cs - Implementation of the
+ *		"System.Windows.Forms.CommonDialog" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2003  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,63 +24,62 @@ namespace System.Windows.Forms
 
 using System.ComponentModel;
 
-[TODO]
 public abstract class CommonDialog
 #if CONFIG_COMPONENT_MODEL
 	: Component
 #endif
 {
-	[TODO]
-	public CommonDialog()
-	{
-		throw new NotImplementedException(".ctor");
-	}
+	// Constructor.
+	public CommonDialog() {}
 
-	[TODO]
-	protected virtual IntPtr HookProc(IntPtr hWnd, int msg, IntPtr wparam, IntPtr lparam)
-	{
-		throw new NotImplementedException("HookProc");
-	}
-
-	[TODO]
-	protected virtual void OnHelpRequest(EventArgs e)
-	{
-		throw new NotImplementedException("OnHelpRequest");
-	}
-
-	[TODO]
-	protected virtual IntPtr OwnerWndProc(IntPtr hWnd, int msg, IntPtr wparam, IntPtr lparam)
-	{
-		throw new NotImplementedException("OwnerWndProc");
-	}
-
+	// Reset the dialog box controls to their default values.
 	public abstract void Reset();
+
+	// Run the dialog box, with a particular parent owner.
+	// This method is not used in this implementation.
 	protected abstract bool RunDialog(IntPtr hwndOwner);
 
-	[TODO]
+	// Run the dialog box - internal version.
+	internal virtual DialogResult RunDialog(IWin32Window owner)
+			{
+				return DialogResult.Cancel;
+			}
+
+	// Show the dialog box and wait for the answer.
 	public DialogResult ShowDialog()
-	{
-		throw new NotImplementedException("ShowDialog");
-	}
-
-	[TODO]
+			{
+				return RunDialog((IWin32Window)null);
+			}
 	public DialogResult ShowDialog(IWin32Window owner)
-	{
-		throw new NotImplementedException("ShowDialog");
-	}
+			{
+				return RunDialog(owner);
+			}
 
-	[TODO]
-	public event EventHandler HelpRequest
-	{
-		add
-		{
-			throw new NotImplementedException("HelpRequest");
-		}
-		remove
-		{
-			throw new NotImplementedException("HelpRequest");
-		}
-	}
+	// Emit the help request event.
+	protected virtual void OnHelpRequest(EventArgs e)
+			{
+				if(HelpRequest != null)
+				{
+					HelpRequest(this, e);
+				}
+			}
+
+	// Event that is emitted when the help button is pressed in the dialog.
+	public event EventHandler HelpRequest;
+
+	// Hook procedure - not used in this implementation.
+	protected virtual IntPtr HookProc(IntPtr hWnd, int msg,
+									  IntPtr wparam, IntPtr lparam)
+			{
+				return IntPtr.Zero;
+			}
+
+	// Owner window procedure - not used in this implementation.
+	protected virtual IntPtr OwnerWndProc(IntPtr hWnd, int msg,
+										  IntPtr wparam, IntPtr lparam)
+			{
+				return IntPtr.Zero;
+			}
 
 }; // class CommonDialog
 

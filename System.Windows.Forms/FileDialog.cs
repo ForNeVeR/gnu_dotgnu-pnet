@@ -1,8 +1,8 @@
 /*
- * FileDialog.cs - Implementation of the "System.Windows.Forms.FileDialog" class.
+ * FileDialog.cs - Implementation of the
+ *			"System.Windows.Forms.FileDialog" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2003  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,251 +24,299 @@ namespace System.Windows.Forms
 
 using System.ComponentModel;
 
-[TODO]
 public abstract class FileDialog : CommonDialog
 {
+	// Internal state.
+	private bool addExtension;
+	internal bool checkFileExists;
+	private bool checkPathExists;
+	private bool dereferenceLinks;
+	private String defaultExt;
+	private String fileName;
+	private String[] fileNames;
+	private String filter;
+	private int filterIndex;
+	private String initialDirectory;
+	private bool restoreDirectory;
+	private bool showHelp;
+	private bool validateNames;
+	private String title;
 
-	[TODO]
-	protected static readonly object EventFileOk = null;
+	// Event identifier for the "FileOk" event.
+	protected static readonly object EventFileOk = new Object();
 
-	[TODO]
+	// Constructor.
+	internal FileDialog()
+			{
+				// Make sure that the dialog fields have their default values.
+				Reset();
+			}
+
+	// Get or set this object's properties.
 	public bool AddExtension
-	{
-		get
-		{
-			throw new NotImplementedException("AddExtension");
-		}
-		set
-		{
-			throw new NotImplementedException("AddExtension");
-		}
-	}
-
-	[TODO]
+			{
+				get
+				{
+					return addExtension;
+				}
+				set
+				{
+					addExtension = value;
+				}
+			}
 	public virtual bool CheckFileExists
-	{
-		get
-		{
-			throw new NotImplementedException("CheckFileExists");
-		}
-		set
-		{
-			throw new NotImplementedException("CheckFileExists");
-		}
-	}
-
-	[TODO]
+			{
+				get
+				{
+					return checkFileExists;
+				}
+				set
+				{
+					checkFileExists = value;
+				}
+			}
 	public bool CheckPathExists
-	{
-		get
-		{
-			throw new NotImplementedException("CheckPathExists");
-		}
-		set
-		{
-			throw new NotImplementedException("CheckPathExists");
-		}
-	}
-
-	[TODO]
-	public string DefaultExt
-	{
-		get
-		{
-			throw new NotImplementedException("DefaultExt");
-		}
-		set
-		{
-			throw new NotImplementedException("DefaultExt");
-		}
-	}
-
-	[TODO]
+			{
+				get
+				{
+					return checkPathExists;
+				}
+				set
+				{
+					checkPathExists = value;
+				}
+			}
+	public String DefaultExt
+			{
+				get
+				{
+					return defaultExt;
+				}
+				set
+				{
+					defaultExt = value;
+				}
+			}
 	public bool DereferenceLinks
-	{
-		get
-		{
-			throw new NotImplementedException("DereferenceLinks");
-		}
-		set
-		{
-			throw new NotImplementedException("DereferenceLinks");
-		}
-	}
-
+			{
+				get
+				{
+					return dereferenceLinks;
+				}
+				set
+				{
+					dereferenceLinks = value;
+				}
+			}
 	[TODO]
-	public string FileName
-	{
-		get
-		{
-			throw new NotImplementedException("FileName");
-		}
-		set
-		{
-			throw new NotImplementedException("FileName");
-		}
-	}
-
+	public String FileName
+			{
+				get
+				{
+					return fileName;
+				}
+				set
+				{
+					// TODO: update the dialog box to match.
+					fileName = value;
+					fileNames = null;
+				}
+			}
+	public String[] FileNames
+			{
+				get
+				{
+					if(fileNames == null)
+					{
+						if(fileName != null && fileName.Length > 0)
+						{
+							fileNames = new String [] {fileName};
+							return fileNames;
+						}
+						else
+						{
+							return new String [0];
+						}
+					}
+					else
+					{
+						return fileNames;
+					}
+				}
+			}
 	[TODO]
-	public string[] FileNames
-	{
-		get
-		{
-			throw new NotImplementedException("FileNames");
-		}
-	}
-
-	[TODO]
-	public string Filter
-	{
-		get
-		{
-			throw new NotImplementedException("Filter");
-		}
-		set
-		{
-			throw new NotImplementedException("Filter");
-		}
-	}
-
+	public String Filter
+			{
+				get
+				{
+					return filter;
+				}
+				set
+				{
+					// TODO: validate the filter string.
+					// TODO: update the dialog box to match.
+					filter = value;
+				}
+			}
 	[TODO]
 	public int FilterIndex
-	{
-		get
-		{
-			throw new NotImplementedException("FilterIndex");
-		}
-		set
-		{
-			throw new NotImplementedException("FilterIndex");
-		}
-	}
-
-	[TODO]
-	public string InitialDirectory
-	{
-		get
-		{
-			throw new NotImplementedException("InitialDirectory");
-		}
-		set
-		{
-			throw new NotImplementedException("InitialDirectory");
-		}
-	}
-
-	[TODO]
+			{
+				get
+				{
+					return filterIndex;
+				}
+				set
+				{
+					// TODO: validate the filter index.
+					// TODO: update the dialog box to match.
+					filterIndex = value;
+				}
+			}
+	public String InitialDirectory
+			{
+				get
+				{
+					return initialDirectory;
+				}
+				set
+				{
+					initialDirectory = value;
+				}
+			}
 	protected virtual IntPtr Instance
-	{
-		get
-		{
-			throw new NotImplementedException("Instance");
-		}
-	}
-
-	[TODO]
+			{
+				get
+				{
+					// Not used in this implementation.
+					return IntPtr.Zero;
+				}
+			}
 	protected int Options
-	{
-		get
-		{
-			throw new NotImplementedException("Options");
-		}
-	}
-
-	[TODO]
+			{
+				get
+				{
+					// Not used in this implementation.
+					return 0;
+				}
+			}
 	public bool RestoreDirectory
-	{
-		get
-		{
-			throw new NotImplementedException("RestoreDirectory");
-		}
-		set
-		{
-			throw new NotImplementedException("RestoreDirectory");
-		}
-	}
-
-	[TODO]
+			{
+				get
+				{
+					return restoreDirectory;
+				}
+				set
+				{
+					restoreDirectory = value;
+				}
+			}
 	public bool ShowHelp
-	{
-		get
-		{
-			throw new NotImplementedException("ShowHelp");
-		}
-		set
-		{
-			throw new NotImplementedException("ShowHelp");
-		}
-	}
-
+			{
+				get
+				{
+					return showHelp;
+				}
+				set
+				{
+					showHelp = value;
+				}
+			}
 	[TODO]
-	public string Title
-	{
-		get
-		{
-			throw new NotImplementedException("Title");
-		}
-		set
-		{
-			throw new NotImplementedException("Title");
-		}
-	}
-
-	[TODO]
+	public String Title
+			{
+				get
+				{
+					if(title == null || title == String.Empty)
+					{
+						return DefaultTitle;
+					}
+					return title;
+				}
+				set
+				{
+					// TODO: update the dialog box to match.
+					title = value;
+				}
+			}
+	internal virtual String DefaultTitle
+			{
+				get
+				{
+					// Overridden by subclasses to supply "Open" or "Save As".
+					return String.Empty;
+				}
+			}
 	public bool ValidateNames
-	{
-		get
-		{
-			throw new NotImplementedException("ValidateNames");
-		}
-		set
-		{
-			throw new NotImplementedException("ValidateNames");
-		}
-	}
+			{
+				get
+				{
+					return validateNames;
+				}
+				set
+				{
+					validateNames = value;
+				}
+			}
 
-	[TODO]
-	protected override IntPtr HookProc(IntPtr hWnd, int msg, IntPtr wparam, IntPtr lparam)
-	{
-		throw new NotImplementedException("HookProc");
-	}
+	// Hook procedure - not used in this implementation.
+	protected override IntPtr HookProc(IntPtr hWnd, int msg,
+									   IntPtr wparam, IntPtr lparam)
+			{
+				return IntPtr.Zero;
+			}
 
-	[TODO]
+	// Raise the "FileOk" event.
 	protected void OnFileOk(CancelEventArgs e)
-	{
-		throw new NotImplementedException("OnFileOk");
-	}
+			{
+				if(FileOk != null)
+				{
+					FileOk(this, e);
+				}
+			}
 
+	// Reset the dialog box controls to their default values.
 	[TODO]
 	public override void Reset()
-	{
-		throw new NotImplementedException("Reset");
-	}
+			{
+				addExtension = true;
+				checkFileExists = false;
+				checkPathExists = true;
+				dereferenceLinks = true;
+				defaultExt = String.Empty;
+				fileName = String.Empty;
+				fileNames = null;
+				filter = "All files (*.*)|*.*";
+				filterIndex = 1;
+				initialDirectory = String.Empty;
+				restoreDirectory = false;
+				showHelp = false;
+				validateNames = true;
+				title = String.Empty;
+				// TODO: update an active dialog box form to match.
+			}
 
-	[TODO]
+	// Run the dialog box.
 	protected override bool RunDialog(IntPtr hWndOwner)
-	{
-		throw new NotImplementedException("RunDialog");
-	}
-
+			{
+				// This version is not used in this implementation.
+				return false;
+			}
 	[TODO]
+	internal override DialogResult RunDialog(IWin32Window owner)
+			{
+				// TODO
+				return DialogResult.None;
+			}
+
+	// Convert this object into a string.
 	public override string ToString()
-	{
-		throw new NotImplementedException("ToString");
-	}
+			{
+				return base.ToString() + ": Title: " + Title +
+					   ", FileName: " + FileName;
+			}
 
-	[TODO]
-	public event CancelEventHandler FileOk
-	{
-		add
-		{
-			throw new NotImplementedException("FileOk");
-		}
-		remove
-		{
-			throw new NotImplementedException("FileOk");
-		}
-	}
+	// Event that is raised to check that a file is OK.
+	public event CancelEventHandler FileOk;
 
 }; // class FileDialog
 

@@ -258,12 +258,11 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	ILScope *scope;
 	ILNode_MethodDeclaration *method;
 	ILType *type;
-//ForeachCollection
+	/* ForeachCollection */
 	ILMethod *getEnumerator=NULL;
 	ILProperty *property=NULL;
 	ILMethod *getCurrent=NULL;
 	ILMethod *moveNext=NULL;
-	ILType * const args[1]={ILType_Void};
 	ILType *retType;
 	ILType *enumerator;
 	ILNode *castNode;
@@ -361,23 +360,22 @@ ILNode_SemAnalysis(ILNode_Foreach)
 			getEnumerator = ILResolveInstanceMethod(info, arrayClass,
 													GetDefaultScope(info),
 													"GetEnumerator",
-													(ILType**)args, 0);
+													NULL, 0);
 		}
-		else if(ILTypeImplements(info, node->arrayType,
-				ILFindNonSystemType(info,"IEnumerable","System.Collections")))
+		if(getEnumerator==NULL &&
+			ILTypeImplements(info, node->arrayType,
+			ILFindNonSystemType(info,"IEnumerable","System.Collections")))
 		{
-			getEnumerator = ILResolveInstanceMethod(info, arrayClass,
+			ILClass * enumerable = ILTypeToClass(info,
+									ILFindNonSystemType(info,"IEnumerable",
+													"System.Collections"));
+			enumerable = ILClassResolve(enumerable);
+
+			getEnumerator = ILResolveInstanceMethod(info, enumerable,
 													GetDefaultScope(info),
-													"IEnumerable.GetEnumerator",
-													(ILType**)args, 0);
+													"GetEnumerator",
+													NULL, 0);
 		}	
-		else
-		{
-			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-		 "'%s' does not have a 'GetEnumerator' or 'IEnumerable.GetEnumerator'"
-			 ,CSTypeToName(node->arrayType));
-			getEnumerator = 0;
-		}
 		if(getEnumerator)
 		{
 			enumerator=ILTypeGetReturn(ILMethod_Signature(getEnumerator));
@@ -385,35 +383,19 @@ ILNode_SemAnalysis(ILNode_Foreach)
 							ILType_ToClass(enumerator),
 							GetDefaultScope(info),
 							"Current");
-			if(!property)
-			{
-				property=ILResolveProperty(info,
-							ILType_ToClass(enumerator),
-							GetDefaultScope(info),
-							"IEnumerator.Current");
-			}
 			
 			getCurrent=(property ? ILProperty_Getter(property) : 0);
+
 			moveNext=ILResolveInstanceMethod(info,
 						ILType_ToClass(enumerator),
 						GetDefaultScope(info),
-						"MoveNext",
-						(ILType**)args,
-					 0);
-			if(!moveNext)
-			{
-				moveNext=ILResolveInstanceMethod(info,
-						ILType_ToClass(enumerator),
-						GetDefaultScope(info),
-						"IEnumerator.MoveNext",
-						(ILType**)args,
-					 0);
-			}
+						"MoveNext",	NULL, 0);
+
 			if(!property) 
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-		  "Cannot locate 'Current' or 'IEnumerator.Current' property in '%s'",
-					  CSTypeToName(enumerator));
+						"Could not locate 'Current' or 'IEnumerator.Current'"
+						"property in '%s'", CSTypeToName(enumerator));
 			}
 			else if(!getCurrent)
 			{
@@ -470,6 +452,13 @@ ILNode_SemAnalysis(ILNode_Foreach)
 						moveNext,
 						getCurrent);
 			}
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			 "Could not locate a 'GetEnumerator' or "
+			 "'IEnumerable.GetEnumerator' in '%s'"
+			 ,CSTypeToName(node->arrayType));
 		}
 	}
 	/* Done */

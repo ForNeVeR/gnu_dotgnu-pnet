@@ -1,4 +1,9 @@
 
+2003-05-31  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_stmt.tc: Improve the Enumerator detection code
+	to resolve the interface instead of the local implementation.
+
 2003-05-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_attrs.c, cscc/csharp/cs_defs.tc,

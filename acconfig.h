@@ -26,3 +26,6 @@
 
 /* Define if you have libgc */
 #undef HAVE_LIBGC
+
+/* Define if the C pre-processor does pre-compiled headers */
+#undef HAVE_CPP_PRECOMP

@@ -7,6 +7,9 @@
 	* engine/lib_reflect.c (GetExecutingAssembly, GetCallingAssembly):
 	wrong frame numbers when looking up the call stack.
 
+	* engine/throw.c: insert 'T' into the signatures of constructors
+	when creating exception objects with "ILExecThreadNew".
+
 2001-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with the latest pnetlib changes.

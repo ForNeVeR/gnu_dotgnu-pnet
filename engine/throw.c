@@ -82,12 +82,12 @@ void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 	/* Create the new exception object and throw it */
 	if(resourceString)
 	{
-		object = ILExecThreadNew(thread, typeName, "(oSystem.String;)V",
+		object = ILExecThreadNew(thread, typeName, "(ToSystem.String;)V",
 								 resourceString);
 	}
 	else
 	{
-		object = ILExecThreadNew(thread, typeName, "()V");
+		object = ILExecThreadNew(thread, typeName, "(T)V");
 	}
 	if(!ILExecThreadHasException(thread))
 	{
@@ -143,13 +143,13 @@ void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
 	if(resourceString)
 	{
 		object = ILExecThreadNew(thread, "System.ArgumentOutOfRangeException",
-								 "(oSystem.String;oSystem.String;)V",
+								 "(ToSystem.String;oSystem.String;)V",
 								 paramString, resourceString);
 	}
 	else
 	{
 		object = ILExecThreadNew(thread, "System.ArgumentOutOfRangeException",
-								 "(oSystem.String;)V",
+								 "(ToSystem.String;)V",
 								 paramString);
 	}
 	if(!ILExecThreadHasException(thread))
@@ -179,7 +179,7 @@ void ILExecThreadThrowArgNull(ILExecThread *thread, const char *paramName)
 
 	/* Create the new exception object and throw it */
 	object = ILExecThreadNew(thread, "System.ArgumentNullException",
-							 "(oSystem.String;)V", paramString);
+							 "(ToSystem.String;)V", paramString);
 	if(!ILExecThreadHasException(thread))
 	{
 		ILExecThreadSetException(thread, object);

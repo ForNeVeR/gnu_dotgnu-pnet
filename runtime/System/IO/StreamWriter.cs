@@ -168,6 +168,12 @@ public class StreamWriter : TextWriter
 	// Close this stream writer.
 	public override void Close()
 			{
+				// Mimic MS behavior
+				if(stream is System.Private.StdStream)
+				{
+					return;
+				}
+
 				// Explicit close 
 				if(stream != null)
 				{

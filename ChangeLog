@@ -20,6 +20,10 @@ offset for failed instructions.
 * engine/verify_branch.c: reduce the stack size for "switch" instructions
 prior to validating stack heights.
 
+* engine/lib_string.c, engine/strapi.c: move the external string API's
+out of "strapi.c" and into "lib_string.c"; then implement them efficiently
+in terms of the existing "internalcall" representation.
+
 2001-11-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm_dasm.c: dump the correct signature for constructors when

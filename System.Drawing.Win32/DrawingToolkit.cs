@@ -674,6 +674,7 @@ WindowText				= 26,*/
 				}
 				break;
 			case Win32.Api.WindowsMessages.WM_CHAR:
+			case Win32.Api.WindowsMessages.WM_SYSCHAR:
 				if (!DrawingWindow(hwnd).Char( wParam, lParam ))
 				{
 					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);

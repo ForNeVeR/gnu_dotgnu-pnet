@@ -76,7 +76,7 @@ static ffi_type *StructToFFI(ILClass *classInfo);
 /*
  * Populate a list of "ffi" type descriptors with information
  * about the non-static fields of a class.  Returns zero if
- * one of the fields is a structure that cannot be marshalled.
+ * out of memory.
  */
 static int PopulateStructFFI(ILClass *classInfo, ffi_type **fieldTypes,
 							 unsigned *posn)
@@ -130,7 +130,7 @@ static int PopulateStructFFI(ILClass *classInfo, ffi_type **fieldTypes,
 
 /*
  * Convert a "struct" class into a "ffi" type descriptor.
- * Returns zero if the structure cannot be marshalled.
+ * Returns zero if out of memory.
  */
 static ffi_type *StructToFFI(ILClass *classInfo)
 {
@@ -140,38 +140,34 @@ static ffi_type *StructToFFI(ILClass *classInfo)
 	unsigned numFields;
 	ffi_type *descr;
 	ffi_type **fieldTypes;
-
-	/* We cannot pass "explicit" structures by value because we
-	   have no way to inform libffi about the layout rules */
-	if(ILClass_IsExplicitLayout(classInfo))
-	{
-#endif /* !FFI_NO_STRUCTS */
-		char *name = ILTypeToName(ILType_FromValueType(classInfo));
-		if(name)
-		{
-			fprintf(stderr, "Cannot pass structures of type `%s' by value to "
-							"PInvoke methods\n", name);
-			ILFree(name);
-		}
-		return 0;
-#if !FFI_NO_STRUCTS
-	}
+	ILUInt32 explicitSize;
+	ILUInt32 explicitAlignment;
 
 	/* Count the number of non-static fields in the class */
 	numFields = 0;
-	current = classInfo;
-	while(current != 0)
+	if(!ILClass_IsExplicitLayout(classInfo))
 	{
-		field = 0;
-		while((field = (ILField *)ILClassNextMemberByKind
-				(current, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+		current = classInfo;
+		while(current != 0)
 		{
-			if(!ILField_IsStatic(field))
+			field = 0;
+			while((field = (ILField *)ILClassNextMemberByKind
+				(current, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
 			{
-				++numFields;
+				if(!ILField_IsStatic(field))
+				{
+					++numFields;
+				}
 			}
+			current = ILClassGetParent(current);
 		}
-		current = ILClassGetParent(current);
+		explicitSize = 0;
+		explicitAlignment = 0;
+	}
+	else
+	{
+		/* Use the explicit layout information from "layout.c" */
+		explicitSize = _ILLayoutClassReturn(classInfo, &explicitAlignment);
 	}
 
 	/* Allocate space for the struct's type descriptor */
@@ -184,22 +180,34 @@ static ffi_type *StructToFFI(ILClass *classInfo)
 	fieldTypes = (ffi_type **)(descr + 1);
 
 	/* Initialize the main descriptor's fields */
-	descr->size = 0;
-	descr->alignment = 0;
+	descr->size = (size_t)explicitSize;
+	descr->alignment = (unsigned short)explicitAlignment;
 	descr->type = FFI_TYPE_STRUCT;
 	descr->elements = fieldTypes;
 
 	/* Populate the "fieldTypes" table with the "ffi" type descriptors */
 	fieldTypes[numFields] = 0;
-	numFields = 0;
-	if(!PopulateStructFFI(classInfo, fieldTypes, &numFields))
+	if(!ILClass_IsExplicitLayout(classInfo))
 	{
-		ILFree(descr);
-		return 0;
+		numFields = 0;
+		if(!PopulateStructFFI(classInfo, fieldTypes, &numFields))
+		{
+			ILFree(descr);
+			return 0;
+		}
 	}
 
 	/* Return the descriptor to the caller */
 	return descr;
+#else
+	char *name = ILTypeToName(ILType_FromValueType(classInfo));
+	if(name)
+	{
+		fprintf(stderr, "Cannot pass structures of type `%s' by value to "
+						"PInvoke methods\n", name);
+		ILFree(name);
+	}
+	return 0;
 #endif /* !FFI_NO_STRUCTS */
 }
 
@@ -331,7 +339,12 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 	}
 
 	/* Prepare the "ffi_cif" structure for the call */
-	ffi_prep_cif(cif, FFI_DEFAULT_ABI, numArgs, rtype, args);
+	if(ffi_prep_cif(cif, FFI_DEFAULT_ABI, numArgs, rtype, args) != FFI_OK)
+	{
+		fprintf(stderr, "Cannot marshal a type in the definition of %s::%s\n",
+				ILClass_Name(ILMethod_Owner(method)), ILMethod_Name(method));
+		return 0;
+	}
 
 	/* Ready to go */
 	return (void *)cif;
@@ -392,7 +405,12 @@ void *_ILMakeCifForConstructor(ILMethod *method, int isInternal)
 	}
 
 	/* Prepare the "ffi_cif" structure for the call */
-	ffi_prep_cif(cif, FFI_DEFAULT_ABI, numArgs, rtype, args);
+	if(ffi_prep_cif(cif, FFI_DEFAULT_ABI, numArgs, rtype, args) != FFI_OK)
+	{
+		fprintf(stderr, "Cannot marshal a type in the definition of %s::%s\n",
+				ILClass_Name(ILMethod_Owner(method)), ILMethod_Name(method));
+		return 0;
+	}
 
 	/* Ready to go */
 	return (void *)cif;

@@ -781,6 +781,21 @@ int _ILLayoutClass(ILClass *info)
 	return LayoutClass(info, &layout);
 }
 
+ILUInt32 _ILLayoutClassReturn(ILClass *info, ILUInt32 *alignment)
+{
+	LayoutInfo layout;
+	if(LayoutClass(info, &layout))
+	{
+		*alignment = layout.alignment;
+		return layout.size;
+	}
+	else
+	{
+		*alignment = 0;
+		return 0;
+	}
+}
+
 ILUInt32 ILSizeOfType(ILType *type)
 {
 	LayoutInfo layout;

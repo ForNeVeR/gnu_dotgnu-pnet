@@ -252,6 +252,11 @@ int _ILCVMInterpreter(ILExecThread *thread);
 int _ILLayoutClass(ILClass *info);
 
 /*
+ * Lay out a class and return its size and alignment.
+ */
+ILUInt32 _ILLayoutClassReturn(ILClass *info, ILUInt32 *alignment);
+
+/*
  * Verify the contents of a method.
  */
 int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,

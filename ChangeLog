@@ -1,4 +1,9 @@
 
+2004-09-08  Gopal V  <gopalv82@yahoo.com>
+
+	* image/member.c: Included nested class checks for FAMORASSEM members.
+	(bug #10311).
+
 2004-09-07  Russell Stuart <russell-savannah@stuart.id.au>
 
 	* build-debian-packages.conf,

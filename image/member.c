@@ -150,7 +150,8 @@ int ILMemberAccessible(ILMember *member, ILClass *scope)
 			case IL_META_METHODDEF_FAM_OR_ASSEM:
 			{
 				/* Scope must be in the same family or the same assembly */
-				if(ILClassInheritsFrom(scope, info))
+				if(ILClassInheritsFrom(scope, info) || 
+					ILClassIsNestedInheritsFrom(scope, info))
 				{
 					return 1;
 				}

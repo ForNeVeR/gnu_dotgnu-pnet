@@ -6,6 +6,8 @@
 	count from 8 to 32 when used in non-raw libffi modes;
 	needed to run Xsharp on non-x86 platforms.
 
+	* image/link.c: use ".dylib" instead of ".so" for MacOS X.
+
 2003-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/dynlib.c: try using NSAddImage to load dynamic

@@ -994,7 +994,11 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 		}
 		if(needSuffix)
 		{
+		#if defined(__APPLE__) && defined(__MACH__)
+			suffix = ".dylib";
+		#else
 			suffix = ".so";
+		#endif
 		}
 	}
 #else

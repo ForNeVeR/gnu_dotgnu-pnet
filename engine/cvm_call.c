@@ -117,7 +117,10 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 			ILThreadAtomicStart(); \
 			thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND; \
 			ILThreadAtomicEnd(); \
-			_ILExecThreadSuspendThread(thread, thread->supportThread); \
+			if (ILThreadGetState(thread->supportThread) & IL_TS_SUSPEND_REQUESTED) \
+			{ \
+				_ILExecThreadSuspendThread(thread, thread->supportThread); \
+			} \
 		} \
 	}
 

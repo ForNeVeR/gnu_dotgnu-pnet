@@ -149,12 +149,27 @@ void *ILThreadGetObject(ILThread *thread);
  */
 void ILThreadSetObject(ILThread *thread, void *userObject);
 
+#define IL_SUSPEND_FAILED				(0)
+#define IL_SUSPEND_OK					(1)
+#define IL_SUSPEND_REQUESTED		(2)
+
 /*
  * Suspend a thread.  Does nothing if the thread is already
  * suspended.  Returns non-zero if OK, or zero if the thread
- * is not in an appropriate state.
+ * is not in an appropriate state.  Returns 2 if the thread
+ * is in a wait/sleep/join state and has been flagged into a
+ * a suspend_requested state.
  */
 int ILThreadSuspend(ILThread *thread);
+
+/*
+ * Suspend or request a thread to suspend. If requestOnly is
+ * 1 then the thread will only be flagged as suspend_requested
+ * and will be suspended the next time it enters and comes out
+ * of a wait/sleep/join state (even if it currently isn't in a 
+ * wait/sleep/join state).
+ */
+int ILThreadSuspendRequest(ILThread *thread, int requestOnly);
 
 /*
  * Resume a suspended thread.  Does nothing if the thread
@@ -244,7 +259,7 @@ int ILThreadGetPriority(ILThread *thread);
 #define	IL_JOIN_INTERRUPTED	2	/* Join was interrupted */
 #define	IL_JOIN_ABORTED		3	/* Thread doing the join was aborted */
 #define	IL_JOIN_SELF		4	/* Tried to join with ourselves */
-#define IL_JOIN_UNSTARTED   5   /* Tried to join a thread that hasn't started */
+#define	IL_JOIN_UNSTARTED   5   /* Tried to join a thread that hasn't started */
 #define	IL_JOIN_MEMORY		6	/* Out of memory */
 
 /*

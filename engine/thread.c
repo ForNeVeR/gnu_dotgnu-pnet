@@ -257,8 +257,6 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread)
 
 		/* Destroy the engine thread */
 		_ILExecThreadDestroy(execThread);
-
-		ILWaitMonitorPulseAll(monitor);
 	}
 	ILWaitMonitorLeave(monitor);
 }
@@ -299,8 +297,57 @@ int _ILExecThreadSelfAborting(ILExecThread *thread)
 	return -1;
 }
 
+ILInt32 _ILExecThreadGetState(ILExecThread *thread, ILThread* supportThread)
+{
+	return ILThreadGetState(supportThread);
+}
+
+void _ILExecThreadResumeThread(ILExecThread *thread, ILThread *supportThread)
+{
+	ILWaitHandle *monitor;
+	ILExecThread *execThread;
+
+	monitor = ILThreadGetMonitor(supportThread);
+
+	/* Locking the monitor prevents the associated engine thread from being destroyed */
+	ILWaitMonitorEnter(monitor);
+
+	execThread = _ILExecThreadFromThread(supportThread);
+
+	if (execThread == 0)
+	{
+		/* The thread has finished running */
+
+		ILWaitMonitorLeave(monitor);
+
+		ILExecThreadThrowSystem
+			(
+				thread,
+				"System.Threading.ThreadStateException",
+				(const char *)0
+			);
+
+		return;
+	}
+
+	/* Remove the _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND flag */
+	ILThreadAtomicStart();			
+	execThread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND;
+	ILThreadAtomicEnd();
+
+	/* Call the threading subsystem's resume */
+	ILThreadResume(supportThread);
+
+	ILWaitMonitorLeave(monitor);
+}
+
 /*
  * Suspend the given thread.
+ * If the thread is a in wait/sleep/join state or the thread is executing non-managed code
+ * then a suspend request will be made and the method will exit immediately.  The suspend
+ * request will be processed either by the thread subsystem (when the thread next enters
+ * and exits a wait/sleep/join state) or by the engine (when the thread next enters a 
+ * managed safepoint).
  */
 void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 {
@@ -313,13 +360,9 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 	/* If the thread being suspended is the current thread then suspend now */
 	if (thread->supportThread == supportThread)
 	{
+		/* Suspend the current thread */
 		result = ILThreadSuspend(supportThread);
-
-		/* Notify any threads waiting for us to suspend */
-		ILWaitMonitorEnter(monitor);
-		ILWaitMonitorPulseAll(monitor);
-		ILWaitMonitorLeave(monitor);
-
+	
 		if (result == 0)
 		{
 			ILExecThreadThrowSystem
@@ -334,35 +377,12 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 		else if (result < 0)
 		{
 			if (_ILExecThreadHandleWaitResult(thread, result) != 0)
-			{
+			{				
 				return;
 			}
 		}
 
 		return;
-	}
-
-	/* Suspend the thread.  It isn't safe to do this for long but we verify
-	   that later on... */
-	result = ILThreadSuspend(supportThread);
-
-	if (result == 0)
-	{
-		ILExecThreadThrowSystem
-			(
-				thread,
-				"System.Threading.ThreadStateException",
-				(const char *)0
-			);
-
-		return;
-	}
-	else if (result < 0)
-	{
-		if (_ILExecThreadHandleWaitResult(thread, result) != 0)
-		{
-			return;
-		}
 	}
 
 	/* Entering the monitor keeps the execThread from being destroyed */
@@ -371,31 +391,51 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 	execThread = _ILExecThreadFromThread(supportThread);
 
 	if (execThread == 0)
-	{	
-		/* The thread has already finished */
-		ILWaitMonitorLeave(monitor);
+	{
+		/* The thread has finished */
+		result = IL_SUSPEND_FAILED;
 	}
 	else
 	{
-		if (!execThread->runningManagedCode)
-		{
-			/* The thread isn't running managed code so it is unsafe to
-			   keep the thread suspended like this cause we might hold
-			   a CRT or some other important OS lock */
+		result = ILThreadSuspendRequest(supportThread, execThread->runningManagedCode);
+	}
 
-			/* Set the flag so the thread will abort itself at the next safe point */
-			ILThreadAtomicStart();			
-			execThread->managedSafePointFlags |= _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND;
-			ILThreadAtomicEnd();
-
-			/* Resume the thread */
-			ILThreadResume(supportThread);
-
-			/* Wait until the thread suspends itself */
-			ILWaitMonitorWait(monitor, -1);
-		}		
+	if (result == IL_SUSPEND_FAILED)
+	{
+		ILExecThreadThrowSystem
+			(
+				thread,
+				"System.Threading.ThreadStateException",
+				(const char *)0
+			);
 
 		ILWaitMonitorLeave(monitor);
+
+		return;
+	}
+	else if (result == IL_SUSPEND_REQUESTED)
+	{		
+		/* In order to prevent a suspend_request from being processed twice (once by
+		    the threading subsystem and twice by the engine when it detects the safepoint
+		    flags, the engine needs to check the ThreadState after checking the safepoint
+		    flags (see cvm_call.c) */
+
+		ILThreadAtomicStart();			
+		execThread->managedSafePointFlags |= _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND;
+		ILThreadAtomicEnd();
+
+		ILWaitMonitorLeave(monitor);
+
+		return;
+	}
+	else if (result < 0)
+	{
+		if (_ILExecThreadHandleWaitResult(thread, result) != 0)
+		{
+			ILWaitMonitorLeave(monitor);
+
+			return;
+		}
 	}
 }
 

@@ -812,6 +812,16 @@ int _ILExecThreadSelfAborting(ILExecThread *thread);
 int _ILExecThreadHandleWaitResult(ILExecThread *thread, int result);
 
 /*
+ * Gets the state of the thread.
+ */
+ILInt32 _ILExecThreadGetState(ILExecThread *thread, ILThread* supportThread);
+
+/*
+ * Resumes a thread.
+ */
+void _ILExecThreadResumeThread(ILExecThread *thread, ILThread *supportThread);
+
+/*
  * Creates a monitor used by the execution engine.
  * The monitor is created on the GC heap and will be automatically
  * collected.

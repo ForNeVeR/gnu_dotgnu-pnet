@@ -329,7 +329,7 @@ void _IL_Thread_Suspend(ILExecThread *thread, ILObject *_this)
  */
 void _IL_Thread_Resume(ILExecThread *thread, ILObject *_this)
 {	
-	ILThreadResume(((System_Thread *)_this)->privateData);
+	_ILExecThreadResumeThread(thread, ((System_Thread *)_this)->privateData);
 }
 
 /*
@@ -611,7 +611,7 @@ void _IL_Thread_InternalSetPriority(ILExecThread *thread, ILObject *_this,
  */
 ILInt32 _IL_Thread_InternalGetState(ILExecThread *thread, ILObject *_this)
 {
-	return ILThreadGetState(((System_Thread *)_this)->privateData);
+	return _ILExecThreadGetState(thread, ((System_Thread *)_this)->privateData);
 }
 
 /*

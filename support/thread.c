@@ -400,8 +400,13 @@ void ILThreadSetObject(ILThread *thread, void *userObject)
 
 int ILThreadSuspend(ILThread *thread)
 {
+	return ILThreadSuspendRequest(thread, 0);
+}
+
+int ILThreadSuspendRequest(ILThread *thread, int requestOnly)
+{
 	unsigned int state;
-	int result = 1;
+	int result = IL_SUSPEND_OK;
 
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
@@ -416,16 +421,18 @@ int ILThreadSuspend(ILThread *thread)
 	{
 		/* Nothing to do here - it is already suspended */
 	}
-	else if((state & IL_TS_WAIT_SLEEP_JOIN) != 0)
-	{
-		/* Request a suspend, but otherwise ignore the request */
-		thread->state |= IL_TS_SUSPEND_REQUESTED;
-	}
 	else if((state & (IL_TS_UNSTARTED | IL_TS_STOPPED)) != 0)
 	{
 		/* We cannot suspend a thread that was never started
 		   in the first place, or is stopped */
-		result = 0;
+		result = IL_SUSPEND_FAILED;
+	}
+	else if(((state & IL_TS_WAIT_SLEEP_JOIN) != 0) || requestOnly)
+	{
+		/* Request a suspend, but otherwise ignore the request */
+		thread->state |= IL_TS_SUSPEND_REQUESTED;
+
+		result = IL_SUSPEND_REQUESTED;
 	}
 	else if(_ILThreadIsSelf(thread))
 	{
@@ -440,7 +447,7 @@ int ILThreadSuspend(ILThread *thread)
 		_ILThreadSuspendSelf(thread);
 
 		/* We are resumed, and the thread object is already unlocked */
-		return 1;
+		return IL_SUSPEND_OK;
 	}
 	else
 	{
@@ -455,7 +462,7 @@ int ILThreadSuspend(ILThread *thread)
 		if(!(thread->numLocksHeld))
 		{
 			_ILMutexUnlock(&(thread->lock));
-			return 1;
+			return IL_SUSPEND_OK;
 		}
 
 		/* Notify the thread that we want it to suspend itself */
@@ -768,13 +775,36 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 					result = IL_JOIN_INTERRUPTED;
 				}
 				self->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
-				_ILMutexUnlock(&(self->lock));
+				
+				/* Check and process any pending suspend request */
+				if ((thread->state & IL_TS_SUSPEND_REQUESTED) != 0)
+				{
+					thread->state &= ~IL_TS_SUSPEND_REQUESTED;
+					thread->state |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
+					thread->resumeRequested = 0;
 
-				/* Lock down the foreign thread again */
-				_ILMutexLock(&(thread->lock));
+					/* Unlock the thread object prior to suspending */
+					_ILMutexUnlock(&(self->lock));
 
-				/* Remove ourselves from the foreign thread's join queue */
-				_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
+					/* Lock down the foreign thread again */
+					_ILMutexLock(&(thread->lock));
+
+					/* Remove ourselves from the foreign thread's join queue */
+					_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
+
+					/* Suspend until we receive notification from another thread */
+					_ILThreadSuspendSelf(thread);
+				}
+				else
+				{
+					_ILMutexUnlock(&(self->lock));
+
+					/* Lock down the foreign thread again */
+					_ILMutexLock(&(thread->lock));
+
+					/* Remove ourselves from the foreign thread's join queue */
+					_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
+				}
 			}
 		}
 	}

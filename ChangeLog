@@ -1,4 +1,30 @@
+2004-08-22  Thong Nguyen  <tum@veridicus.com>
 
+	* include/il_thread.h: Added ILThreadSuspendRequest and IL_SUSPEND_*
+	return value constants.
+	
+	* support/thread.c: Added implementaton of ILThreadSuspendRequest.
+	Added suspend support to ILThreadJoin (made it suspend after it
+	exits the wait/sleep/join state if there is a suspend request pending).
+	
+	* support/wait.c: Added suspend support to the wait functions.
+	
+	* engine/cvm_call.c: Added ThreadState check to the
+	_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND check.
+	
+	* engine/engine.h: Added _ILExecThreadGetState and
+	_ILExecThreadResumeThread prototypes.
+	
+	* engine/lib_thread.c: Changed Thread.Resume and Thread.ThreadState
+	implementatons to use the new engine level versions.
+	
+	* engine/thread.c: added _ILExecThreadGetState and 
+	_ILExecThreadResumeThread implementations.
+	Changed ILExecThreadSuspendThread implementation to remove a race
+	condition and not require the suspend requesting thread to wait
+	on the thread being suspended even if the thread being suspended is
+	running managed code and not in a wait/sleep/join state.	
+		
 2004-08-17  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/lib_reflect.c: Perform promotions for integer types to floats

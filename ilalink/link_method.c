@@ -210,7 +210,17 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 		{
 			return 0;
 		}
-		owner = ILTypeSpecGetClass(spec);
+
+		/* Import the synthetic class and assign a TypeRef token
+		   to it.  We give this TypeRef the same token as the
+		   TypeSpec, which will cause it to be removed from the
+		   final table during metadata compaction */
+		owner = ILTypeSpecGetClassRef(spec);
+		if(!owner)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
 	}
 	else
 	{

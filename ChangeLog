@@ -1,4 +1,10 @@
 
+2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/meta_build.c (ResolveTypeRefs): if a TypeRef to a foreign
+	assembly/module remains unresolvable and there are redo items,
+	then queue the TypeRef for redo also.
+
 2003-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c: "redo" processing for nested and exported

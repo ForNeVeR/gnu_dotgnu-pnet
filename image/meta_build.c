@@ -587,12 +587,18 @@ static int ResolveTypeRefs(ILImage *image, int loadFlags)
 						{
 							importInfo = ILClassLookup
 								(importScope, name, namespace);
+							if(!importInfo && image->context->numRedoItems != 0)
+							{
+								/* This reference may need to be redone */
+								goto redo;
+							}
 						}
 					}
 					else
 					{
 						/* We cannot resolve this TypeRef yet.  We queue it
 						   on the "redo" list to be redone later */
+					redo:
 						if(!AddToRedoList(image->context, &(info->programItem)))
 						{
 							return IL_LOADERR_MEMORY;

@@ -27,6 +27,9 @@ namespace System.Runtime.InteropServices
 [Guid("0000000f-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [ComImport]
+#if CONFIG_FRAMEWORK_1_2
+[Obsolete("Use the class in System.Runtime.InteropServices.ComTypes instead")]
+#endif
 public interface UCOMIMoniker
 {
 	void BindToObject(UCOMIBindCtx pbc, UCOMIMoniker pmkToLeft,

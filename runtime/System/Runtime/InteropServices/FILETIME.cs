@@ -25,6 +25,9 @@ namespace System.Runtime.InteropServices
 #if CONFIG_COM_INTEROP
 
 [ComVisible(false)]
+#if CONFIG_FRAMEWORK_1_2
+[Obsolete("Use the class in System.Runtime.InteropServices.ComTypes instead")]
+#endif
 public struct FILETIME
 {
 	// Accessible state.

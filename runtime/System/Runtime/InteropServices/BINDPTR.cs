@@ -26,6 +26,9 @@ namespace System.Runtime.InteropServices
 
 [ComVisible(false)]
 [StructLayout(LayoutKind.Explicit, CharSet=CharSet.Unicode)]
+#if CONFIG_FRAMEWORK_1_2
+[Obsolete("Use the class in System.Runtime.InteropServices.ComTypes instead")]
+#endif
 public struct BINDPTR
 {
 	// Accessible state.

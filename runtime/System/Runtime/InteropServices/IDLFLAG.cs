@@ -27,6 +27,9 @@ namespace System.Runtime.InteropServices
 [ComVisible(false)]
 [Serializable]
 [Flags]
+#if CONFIG_FRAMEWORK_1_2
+[Obsolete("Use the class in System.Runtime.InteropServices.ComTypes instead")]
+#endif
 public enum IDLFLAG : short
 {
 	IDLFLAG_NONE    = 0x0000,

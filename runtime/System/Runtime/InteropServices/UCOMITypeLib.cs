@@ -27,6 +27,9 @@ namespace System.Runtime.InteropServices
 [Guid("00020402-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [ComImport]
+#if CONFIG_FRAMEWORK_1_2
+[Obsolete("Use the class in System.Runtime.InteropServices.ComTypes instead")]
+#endif
 public interface UCOMITypeLib
 {
 	void FindName(String szNameBuf, int lHashVal, UCOMITypeInfo[] ppTInfo,

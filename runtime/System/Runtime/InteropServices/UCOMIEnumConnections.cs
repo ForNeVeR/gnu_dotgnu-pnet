@@ -27,6 +27,9 @@ namespace System.Runtime.InteropServices
 [Guid("B196B287-BAB4-101A-B69C-00AA00341D07")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [ComImport]
+#if CONFIG_FRAMEWORK_1_2
+[Obsolete("Use the class in System.Runtime.InteropServices.ComTypes instead")]
+#endif
 public interface UCOMIEnumConnections
 {
 	void Clone(out UCOMIEnumConnections ppenum);

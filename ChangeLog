@@ -44,6 +44,11 @@
 	add .NET SDK 1.2 and 2.0 classes in "System.Runtime.CompilerServices",
 	"System.Runtime.ConstrainedExecution", and "System.Runtime.Reliability".
 
+	* runtime/System/Runtime/InteropServices/*,
+	runtime/System/Runtime/InteropServices/ComTypes/*: copy a number of
+	COM-related types into the "ComTypes" namespace and mark the originals
+	as obsolete, as per .NET SDK 1.2.
+
 2004-07-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/IO/Compression/Adler32.cs,

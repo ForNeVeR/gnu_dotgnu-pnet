@@ -26,6 +26,9 @@ namespace System.Runtime.InteropServices
 
 [ComVisible(false)]
 [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+#if CONFIG_FRAMEWORK_1_2
+[Obsolete("Use the class in System.Runtime.InteropServices.ComTypes instead")]
+#endif
 public struct ELEMDESC
 {
 	[StructLayout(LayoutKind.Explicit)]

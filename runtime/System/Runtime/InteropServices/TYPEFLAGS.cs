@@ -27,6 +27,9 @@ namespace System.Runtime.InteropServices
 [ComVisible(false)]
 [Serializable]
 [Flags]
+#if CONFIG_FRAMEWORK_1_2
+[Obsolete("Use the class in System.Runtime.InteropServices.ComTypes instead")]
+#endif
 public enum TYPEFLAGS : short
 {
 	TYPEFLAG_FAPPOBJECT     = 0x0001,

@@ -4,6 +4,9 @@
 	* engine/lib_reflect.c: Fix array creations to use System.Type[] 
 	arrays instead of System.Object[] .
 
+	* engine/lib_reflect.c: Throw a FieldAccessException when SetValue
+	is attempted at a const or readonly field.
+
 2004-08-08  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/lib_emit.c: Allow NULL parameters for ClrParameter names

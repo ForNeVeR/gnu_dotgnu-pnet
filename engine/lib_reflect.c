@@ -2468,9 +2468,11 @@ void _IL_ClrField_SetValueInternal(ILExecThread *thread, ILObject *_this,
 	}
 
 	/* Is the field literla, static or instance? */
-	if(ILField_IsLiteral(field))
+	if(ILField_IsLiteral(field) || ILField_IsInitOnly(field))
 	{
 		/* Cannot set literal fields */
+		ILExecThreadThrowSystem
+			(thread, "System.FieldAccessException", 0);
 		return;
 	}
 	else if(ILField_IsStatic(field))

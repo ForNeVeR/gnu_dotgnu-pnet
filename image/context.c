@@ -277,7 +277,13 @@ ILImage *ILContextGetModule(ILContext *context, const char *name)
 
 ILImage *ILContextGetAssembly(ILContext *context, const char *name)
 {
-	return GetImageByName(context, name, IL_META_TOKEN_ASSEMBLY);
+	ILImage *image = GetImageByName(context, name, IL_META_TOKEN_ASSEMBLY);
+	if(!image && !strcmp(name, "mscorlib"))
+	{
+		/* Handle systems that use "corlib.dll" instead of "mscorlib.dll" */
+		image = GetImageByName(context, "corlib", IL_META_TOKEN_ASSEMBLY);
+	}
+	return image;
 }
 
 ILImage *ILContextNextImage(ILContext *context, ILImage *image)

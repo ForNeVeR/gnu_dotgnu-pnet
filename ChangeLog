@@ -1,4 +1,9 @@
 
+2002-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/context.c (ILContextGetAssembly): if "mscorlib" is not
+	found, then search for "corlib" instead.
+
 2002-11-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* pnet.spec, pnet.spec.in, configure.in: remove old pnet.spec and

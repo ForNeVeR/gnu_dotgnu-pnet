@@ -33,6 +33,10 @@ static ILBuiltinType const ILSystemDecimal =
 	{ILType_Invalid	/* Decimal is represented as a struct */,
 	 ILMachineType_Decimal, 0};
 
+static ILBuiltinType const ILSystemLongDouble =
+	{ILType_Float,
+	 ILMachineType_NativeFloat, 0};
+
 static ILBuiltinType const ILSystemDouble =
 	{ILType_Float64,
 	 ILMachineType_Float64, 0};
@@ -137,6 +141,7 @@ long operator+(long x);
 ulong operator+(ulong x);
 float operator+(float x);
 double operator+(double x);
+long double operator+(long double x);
 decimal operator+(decimal x);
 
 */
@@ -148,6 +153,7 @@ IL_BEGIN_OPERATOR_TABLE(UnaryPlus)
 	IL_UNARY_OPERATOR(UInt64, UInt64)
 	IL_UNARY_OPERATOR(Single, Single)
 	IL_UNARY_OPERATOR(Double, Double)
+	IL_UNARY_OPERATOR(LongDouble, LongDouble)
 	IL_UNARY_OPERATOR(Decimal, Decimal)
 IL_END_OPERATOR_TABLE
 
@@ -157,6 +163,7 @@ int operator-(int x);
 long operator-(long x);
 float operator-(float x);
 double operator-(double x);
+long double operator-(long double x);
 decimal operator-(decimal x);
 
 */
@@ -166,6 +173,7 @@ IL_BEGIN_OPERATOR_TABLE(Neg)
 	IL_UNARY_OPERATOR(Int64, Int64)
 	IL_UNARY_OPERATOR(Single, Single)
 	IL_UNARY_OPERATOR(Double, Double)
+	IL_UNARY_OPERATOR(LongDouble, LongDouble)
 	IL_UNARY_OPERATOR(Decimal, Decimal)
 IL_END_OPERATOR_TABLE
 
@@ -212,6 +220,7 @@ long operator*(long x, long y);
 ulong operator*(ulong x, ulong y);
 float operator*(float x, float y);
 double operator*(double x, double y);
+long double operator*(long double x, long double y);
 decimal operator*(decimal x, decimal y);
 
 */
@@ -223,6 +232,7 @@ IL_BEGIN_OPERATOR_TABLE(Mul)
 	IL_BINARY_OPERATOR(UInt64, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Single, Single, Single)
 	IL_BINARY_OPERATOR(Double, Double, Double)
+	IL_BINARY_OPERATOR(LongDouble, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Decimal, Decimal, Decimal)
 IL_END_OPERATOR_TABLE
 
@@ -234,6 +244,7 @@ long operator/(long x, long y);
 ulong operator/(ulong x, ulong y);
 float operator/(float x, float y);
 double operator/(double x, double y);
+long double operator/(long double x, long double y);
 decimal operator/(decimal x, decimal y);
 
 */
@@ -245,6 +256,7 @@ IL_BEGIN_OPERATOR_TABLE(Div)
 	IL_BINARY_OPERATOR(UInt64, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Single, Single, Single)
 	IL_BINARY_OPERATOR(Double, Double, Double)
+	IL_BINARY_OPERATOR(LongDouble, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Decimal, Decimal, Decimal)
 IL_END_OPERATOR_TABLE
 
@@ -256,6 +268,7 @@ long operator%(long x, long y);
 ulong operator%(ulong x, ulong y);
 float operator%(float x, float y);
 double operator%(double x, double y);
+long double operator%(long double x, long double y);
 decimal operator%(decimal x, decimal y);
 
 */
@@ -267,6 +280,7 @@ IL_BEGIN_OPERATOR_TABLE(Rem)
 	IL_BINARY_OPERATOR(UInt64, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Single, Single, Single)
 	IL_BINARY_OPERATOR(Double, Double, Double)
+	IL_BINARY_OPERATOR(LongDouble, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Decimal, Decimal, Decimal)
 IL_END_OPERATOR_TABLE
 
@@ -278,6 +292,7 @@ long operator+(long x, long y);
 ulong operator+(ulong x, ulong y);
 float operator+(float x, float y);
 double operator+(double x, double y);
+long double operator+(long double x, long double y);
 decimal operator+(decimal x, decimal y);
 string operator+(string x, string y);
 string operator+(string x, object y);
@@ -294,6 +309,7 @@ IL_BEGIN_OPERATOR_TABLE(Add)
 	IL_BINARY_OPERATOR(UInt64, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Single, Single, Single)
 	IL_BINARY_OPERATOR(Double, Double, Double)
+	IL_BINARY_OPERATOR(LongDouble, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Decimal, Decimal, Decimal)
 	{&ILEnumByte, &ILEnumByte, &ILSystemByte},
 	{&ILEnumByte, &ILSystemByte, &ILEnumByte},
@@ -321,6 +337,7 @@ long operator-(long x, long y);
 ulong operator-(ulong x, ulong y);
 float operator-(float x, float y);
 double operator-(double x, double y);
+long double operator-(long double x, long double y);
 decimal operator-(decimal x, decimal y);
 E operator-(E x, U y)
 U operator-(E x, E y)
@@ -334,6 +351,7 @@ IL_BEGIN_OPERATOR_TABLE(Sub)
 	IL_BINARY_OPERATOR(UInt64, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Single, Single, Single)
 	IL_BINARY_OPERATOR(Double, Double, Double)
+	IL_BINARY_OPERATOR(LongDouble, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Decimal, Decimal, Decimal)
 	{&ILEnumByte, &ILEnumByte, &ILSystemByte},
 	{&ILSystemByte, &ILEnumByte, &ILEnumByte},
@@ -393,6 +411,7 @@ bool operator==(long x, long y);
 bool operator==(ulong x, ulong y);
 bool operator==(float x, float y);
 bool operator==(double x, double y);
+bool operator==(long double x, long double y);
 bool operator==(decimal x, decimal y);
 bool operator==(bool x, bool y);
 bool operator==(object x, object y);
@@ -408,6 +427,7 @@ IL_BEGIN_OPERATOR_TABLE(Eq)
 	IL_BINARY_OPERATOR(Boolean, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
+	IL_BINARY_OPERATOR(Boolean, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
 	IL_BINARY_OPERATOR(Boolean, Boolean, Boolean)
 	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
@@ -428,6 +448,7 @@ bool operator!=(long x, long y);
 bool operator!=(ulong x, ulong y);
 bool operator!=(float x, float y);
 bool operator!=(double x, double y);
+bool operator!=(long double x, long double y);
 bool operator!=(decimal x, decimal y);
 bool operator!=(bool x, bool y);
 bool operator!=(object x, object y);
@@ -443,6 +464,7 @@ IL_BEGIN_OPERATOR_TABLE(Ne)
 	IL_BINARY_OPERATOR(Boolean, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
+	IL_BINARY_OPERATOR(Boolean, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
 	IL_BINARY_OPERATOR(Boolean, Boolean, Boolean)
 	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
@@ -463,6 +485,7 @@ bool operator<(long x, long y);
 bool operator<(ulong x, ulong y);
 bool operator<(float x, float y);
 bool operator<(double x, double y);
+bool operator<(long double x, long double y);
 bool operator<(decimal x, decimal y);
 bool operator<(E x, E y);
 
@@ -475,6 +498,7 @@ IL_BEGIN_OPERATOR_TABLE(Lt)
 	IL_BINARY_OPERATOR(Boolean, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
+	IL_BINARY_OPERATOR(Boolean, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
 	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
 	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
@@ -494,6 +518,7 @@ bool operator>(long x, long y);
 bool operator>(ulong x, ulong y);
 bool operator>(float x, float y);
 bool operator>(double x, double y);
+bool operator>(long double x, long double y);
 bool operator>(decimal x, decimal y);
 bool operator>(E x, E y);
 
@@ -506,6 +531,7 @@ IL_BEGIN_OPERATOR_TABLE(Gt)
 	IL_BINARY_OPERATOR(Boolean, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
+	IL_BINARY_OPERATOR(Boolean, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
 	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
 	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
@@ -525,6 +551,7 @@ bool operator<=(long x, long y);
 bool operator<=(ulong x, ulong y);
 bool operator<=(float x, float y);
 bool operator<=(double x, double y);
+bool operator<=(long double x, long double y);
 bool operator<=(decimal x, decimal y);
 bool operator<=(E x, E y);
 
@@ -537,6 +564,7 @@ IL_BEGIN_OPERATOR_TABLE(Le)
 	IL_BINARY_OPERATOR(Boolean, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
+	IL_BINARY_OPERATOR(Boolean, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
 	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
 	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
@@ -556,6 +584,7 @@ bool operator>=(long x, long y);
 bool operator>=(ulong x, ulong y);
 bool operator>=(float x, float y);
 bool operator>=(double x, double y);
+bool operator>=(long double x, long double y);
 bool operator>=(decimal x, decimal y);
 bool operator>=(E x, E y);
 
@@ -568,6 +597,7 @@ IL_BEGIN_OPERATOR_TABLE(Ge)
 	IL_BINARY_OPERATOR(Boolean, UInt64, UInt64)
 	IL_BINARY_OPERATOR(Boolean, Single, Single)
 	IL_BINARY_OPERATOR(Boolean, Double, Double)
+	IL_BINARY_OPERATOR(Boolean, LongDouble, LongDouble)
 	IL_BINARY_OPERATOR(Boolean, Decimal, Decimal)
 	{&ILSystemBoolean, &ILEnumByte, &ILEnumByte},
 	{&ILSystemBoolean, &ILEnumSByte, &ILEnumSByte},
@@ -667,6 +697,7 @@ implicit operator int(sbyte x);
 implicit operator long(sbyte x);
 implicit operator float(sbyte x);
 implicit operator double(sbyte x);
+implicit operator long double(sbyte x);
 implicit operator decimal(sbyte x);
 
 explicit operator byte(sbyte x);
@@ -683,6 +714,7 @@ IL_BEGIN_CONVERT_TABLE(SByte)
 	IL_IMPLICIT_OPERATOR(Int64)
 	IL_IMPLICIT_OPERATOR(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 	IL_IMPLICIT_OPERATOR(Decimal)
 
 	IL_EXPLICIT_OPERATOR(Byte)
@@ -702,6 +734,7 @@ implicit operator long(byte x);
 implicit operator ulong(byte x);
 implicit operator float(byte x);
 implicit operator double(byte x);
+implicit operator long double(byte x);
 implicit operator decimal(byte x);
 
 explicit operator sbyte(byte x);
@@ -718,6 +751,7 @@ IL_BEGIN_CONVERT_TABLE(Byte)
 	IL_IMPLICIT_OPERATOR(UInt64)
 	IL_IMPLICIT_OPERATOR(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 	IL_IMPLICIT_OPERATOR(Decimal)
 
 	IL_EXPLICIT_OPERATOR(SByte)
@@ -730,6 +764,7 @@ implicit operator int(short x);
 implicit operator long(short x);
 implicit operator float(short x);
 implicit operator double(short x);
+implicit operator long double(short x);
 implicit operator decimal(short x);
 
 explicit operator sbyte(short x);
@@ -746,6 +781,7 @@ IL_BEGIN_CONVERT_TABLE(Int16)
 	IL_IMPLICIT_OPERATOR(Int64)
 	IL_IMPLICIT_OPERATOR(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 	IL_IMPLICIT_OPERATOR(Decimal)
 
 	IL_EXPLICIT_OPERATOR(SByte)
@@ -764,6 +800,7 @@ implicit operator long(ushort x);
 implicit operator ulong(ushort x);
 implicit operator float(ushort x);
 implicit operator double(ushort x);
+implicit operator long double(ushort x);
 implicit operator decimal(ushort x);
 
 explicit operator sbyte(ushort x);
@@ -780,6 +817,7 @@ IL_BEGIN_CONVERT_TABLE(UInt16)
 	IL_IMPLICIT_OPERATOR(UInt64)
 	IL_IMPLICIT_OPERATOR(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 	IL_IMPLICIT_OPERATOR(Decimal)
 
 	IL_EXPLICIT_OPERATOR(SByte)
@@ -793,6 +831,7 @@ IL_END_CONVERT_TABLE
 implicit operator long(int x);
 implicit operator float(int x);
 implicit operator double(int x);
+implicit operator long double(int x);
 implicit operator decimal(int x);
 
 explicit operator sbyte(int x);
@@ -809,6 +848,7 @@ IL_BEGIN_CONVERT_TABLE(Int32)
 	IL_IMPLICIT_OPERATOR(Int64)
 	IL_IMPLICIT_OPERATOR(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 	IL_IMPLICIT_OPERATOR(Decimal)
 
 	IL_EXPLICIT_OPERATOR(SByte)
@@ -826,6 +866,7 @@ implicit operator long(uint x);
 implicit operator ulong(uint x);
 implicit operator float(uint x);
 implicit operator double(uint x);
+implicit operator long double(uint x);
 implicit operator decimal(uint x);
 
 explicit operator sbyte(uint x);
@@ -842,6 +883,7 @@ IL_BEGIN_CONVERT_TABLE(UInt32)
 	IL_IMPLICIT_OPERATOR(UInt64)
 	IL_IMPLICIT_OPERATOR(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 	IL_IMPLICIT_OPERATOR(Decimal)
 
 	IL_EXPLICIT_OPERATOR(SByte)
@@ -856,6 +898,7 @@ IL_END_CONVERT_TABLE
 
 implicit operator float(long x);
 implicit operator double(long x);
+implicit operator long double(long x);
 implicit operator decimal(long x);
 
 explicit operator sbyte(long x);
@@ -872,6 +915,7 @@ explicit operator char(long x);
 IL_BEGIN_CONVERT_TABLE(Int64)
 	IL_IMPLICIT_OPERATOR(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 	IL_IMPLICIT_OPERATOR(Decimal)
 
 	IL_EXPLICIT_OPERATOR(SByte)
@@ -888,6 +932,7 @@ IL_END_CONVERT_TABLE
 
 implicit operator float(ulong x);
 implicit operator double(ulong x);
+implicit operator long double(ulong x);
 implicit operator decimal(ulong x);
 
 explicit operator sbyte(ulong x);
@@ -904,6 +949,7 @@ explicit operator char(ulong x);
 IL_BEGIN_CONVERT_TABLE(UInt64)
 	IL_IMPLICIT_OPERATOR(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 	IL_IMPLICIT_OPERATOR(Decimal)
 
 	IL_EXPLICIT_OPERATOR(SByte)
@@ -925,6 +971,7 @@ implicit operator long(char x);
 implicit operator ulong(char x);
 implicit operator float(char x);
 implicit operator double(char x);
+implicit operator long double(char x);
 implicit operator decimal(char x);
 
 explicit operator sbyte(char x);
@@ -941,6 +988,7 @@ IL_BEGIN_CONVERT_TABLE(Char)
 	IL_IMPLICIT_OPERATOR(UInt64)
 	IL_IMPLICIT_OPERATOR(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 	IL_IMPLICIT_OPERATOR(Decimal)
 
 	IL_EXPLICIT_OPERATOR(SByte)
@@ -951,6 +999,7 @@ IL_END_CONVERT_TABLE
 /*
 
 implicit operator double(float x);
+implicit operator long double(float x);
 
 explicit operator sbyte(float x);
 explicit operator byte(float x);
@@ -967,6 +1016,7 @@ explicit operator decimal(float x);
 
 IL_BEGIN_CONVERT_TABLE(Single)
 	IL_IMPLICIT_OPERATOR(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
 
 	IL_EXPLICIT_OPERATOR(SByte)
 	IL_EXPLICIT_OPERATOR(Byte)
@@ -981,6 +1031,8 @@ IL_BEGIN_CONVERT_TABLE(Single)
 IL_END_CONVERT_TABLE
 
 /*
+
+implicit operator long double(double x);
 
 explicit operator sbyte(double x);
 explicit operator byte(double x);
@@ -997,6 +1049,8 @@ explicit operator decimal(double x);
 */
 
 IL_BEGIN_CONVERT_TABLE(Double)
+	IL_IMPLICIT_OPERATOR(LongDouble)
+
 	IL_EXPLICIT_OPERATOR(SByte)
 	IL_EXPLICIT_OPERATOR(Byte)
 	IL_EXPLICIT_OPERATOR(Int16)
@@ -1007,6 +1061,38 @@ IL_BEGIN_CONVERT_TABLE(Double)
 	IL_EXPLICIT_OPERATOR(UInt64)
 	IL_EXPLICIT_OPERATOR(Char)
 	IL_EXPLICIT_OPERATOR(Single)
+	IL_EXPLICIT_OPERATOR(Decimal)
+IL_END_CONVERT_TABLE
+
+/*
+
+explicit operator sbyte(long double x);
+explicit operator byte(long double x);
+explicit operator short(long double x);
+explicit operator ushort(long double x);
+explicit operator int(long double x);
+explicit operator uint(long double x);
+explicit operator long(long double x);
+explicit operator ulong(long double x);
+explicit operator char(long double x);
+explicit operator float(long double x);
+implicit operator double(long double x);
+explicit operator decimal(long double x);
+
+*/
+
+IL_BEGIN_CONVERT_TABLE(LongDouble)
+	IL_EXPLICIT_OPERATOR(SByte)
+	IL_EXPLICIT_OPERATOR(Byte)
+	IL_EXPLICIT_OPERATOR(Int16)
+	IL_EXPLICIT_OPERATOR(UInt16)
+	IL_EXPLICIT_OPERATOR(Int32)
+	IL_EXPLICIT_OPERATOR(UInt32)
+	IL_EXPLICIT_OPERATOR(Int64)
+	IL_EXPLICIT_OPERATOR(UInt64)
+	IL_EXPLICIT_OPERATOR(Char)
+	IL_EXPLICIT_OPERATOR(Single)
+	IL_EXPLICIT_OPERATOR(Double)
 	IL_EXPLICIT_OPERATOR(Decimal)
 IL_END_CONVERT_TABLE
 
@@ -1023,6 +1109,7 @@ explicit operator ulong(decimal x);
 explicit operator char(decimal x);
 explicit operator float(decimal x);
 explicit operator double(decimal x);
+explicit operator long double(decimal x);
 
 */
 
@@ -1038,6 +1125,7 @@ IL_BEGIN_CONVERT_TABLE(Decimal)
 	IL_EXPLICIT_OPERATOR(Char)
 	IL_EXPLICIT_OPERATOR(Single)
 	IL_EXPLICIT_OPERATOR(Double)
+	IL_EXPLICIT_OPERATOR(LongDouble)
 IL_END_CONVERT_TABLE
 
 /*
@@ -1049,18 +1137,19 @@ static struct
 	const ILConversion  *table;
 
 } const ConvertIndex[] = {
-		{&ILSystemSByte,   ILConvert_SByte},
-		{&ILSystemByte,    ILConvert_Byte},
-		{&ILSystemInt16,   ILConvert_Int16},
-		{&ILSystemUInt16,  ILConvert_UInt16},
-		{&ILSystemInt32,   ILConvert_Int32},
-		{&ILSystemUInt32,  ILConvert_UInt32},
-		{&ILSystemInt64,   ILConvert_Int64},
-		{&ILSystemUInt64,  ILConvert_UInt64},
-		{&ILSystemChar,    ILConvert_Char},
-		{&ILSystemSingle,  ILConvert_Single},
-		{&ILSystemDouble,  ILConvert_Double},
-		{&ILSystemDecimal, ILConvert_Decimal},
+		{&ILSystemSByte,      ILConvert_SByte},
+		{&ILSystemByte,       ILConvert_Byte},
+		{&ILSystemInt16,      ILConvert_Int16},
+		{&ILSystemUInt16,     ILConvert_UInt16},
+		{&ILSystemInt32,      ILConvert_Int32},
+		{&ILSystemUInt32,     ILConvert_UInt32},
+		{&ILSystemInt64,      ILConvert_Int64},
+		{&ILSystemUInt64,     ILConvert_UInt64},
+		{&ILSystemChar,       ILConvert_Char},
+		{&ILSystemSingle,     ILConvert_Single},
+		{&ILSystemDouble,     ILConvert_Double},
+		{&ILSystemLongDouble, ILConvert_LongDouble},
+		{&ILSystemDecimal,    ILConvert_Decimal},
 		{0, 0}
 };
 
@@ -1115,6 +1204,10 @@ static const ILBuiltinType *GetBuiltinType(ILType *type, ILType *otherType)
 	else if(type == ILType_Float64)
 	{
 		return &ILSystemDouble;
+	}
+	else if(type == ILType_Float)
+	{
+		return &ILSystemLongDouble;
 	}
 	else if(type == ILType_Char)
 	{
@@ -1325,6 +1418,14 @@ const ILOperator *ILFindBinaryOperator(const ILOperator *table,
 					return 0;
 				}
 				type1 = &ILSystemDecimal;
+			}
+			else if(type1 == &ILSystemLongDouble)
+			{
+				type2 = &ILSystemLongDouble;
+			}
+			else if(type2 == &ILSystemLongDouble)
+			{
+				type1 = &ILSystemLongDouble;
 			}
 			else if(type1 == &ILSystemDouble)
 			{

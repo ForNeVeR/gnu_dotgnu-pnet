@@ -2157,6 +2157,72 @@ ILExportedType *ILExportedTypeFind(ILImage *image,
 #define	ILExportedType_Namespace(type)	(ILExportedTypeGetNamespace((type)))
 #define	ILExportedType_Scope(type)		(ILExportedTypeGetScope((type)))
 
+/*
+ * Get the type of a Java constant pool entry for a class.
+ * Returns zero if the constant index is invalid.
+ */
+int ILJavaGetConstType(ILClass *info, ILUInt32 index);
+
+/*
+ * Get a UTF-8 string from a Java constant pool entry for a class.
+ * Returns NULL if the constant index is invalid.
+ */
+const char *ILJavaGetUTF8String(ILClass *info, ILUInt32 index, ILUInt32 *len);
+
+/*
+ * Get a string object from a Java constant pool entry for a class.
+ * Returns NULL if the constant index is invalid.
+ */
+const char *ILJavaGetString(ILClass *info, ILUInt32 index, ILUInt32 *len);
+
+/*
+ * Get an integer value from a Java constant pool entry.
+ * Returns zero if the constant index is invalid.
+ */
+int ILJavaGetInteger(ILClass *info, ILUInt32 index, ILInt32 *value);
+
+/*
+ * Get a long integer value from a Java constant pool entry.
+ * Returns zero if the constant index is invalid.
+ */
+int ILJavaGetLong(ILClass *info, ILUInt32 index, ILInt64 *value);
+
+/*
+ * Get a float value from a Java constant pool entry.
+ * Returns zero if the constant index is invalid.
+ */
+int ILJavaGetFloat(ILClass *info, ILUInt32 index, ILFloat *value);
+
+/*
+ * Get a double value from a Java constant pool entry.
+ * Returns zero if the constant index is invalid.
+ */
+int ILJavaGetDouble(ILClass *info, ILUInt32 index, ILDouble *value);
+
+/*
+ * Resolve a class reference from a constant pool entry.
+ * Returns NULL if the constant index is invalid, or the
+ * class could not be resolved.  If the "refOnly" flag
+ * is zero, then the class must be present.
+ */
+ILClass *ILJavaGetClass(ILClass *info, ILUInt32 index, int refOnly);
+
+/*
+ * Resolve a method reference from a constant pool entry.
+ * Returns NULL if the constant index is invalid, or the
+ * method could not be resolved.  If the "refOnly" flag
+ * is zero, then the method must be present.
+ */
+ILMethod *ILJavaGetMethod(ILClass *info, ILUInt32 index, int refOnly);
+
+/*
+ * Resolve a field reference from a constant pool entry.
+ * Returns NULL if the constant index is invalid, or the
+ * field could not be resolved.  If the "refOnly" flag
+ * is zero, then the field must be present.
+ */
+ILField *ILJavaGetField(ILClass *info, ILUInt32 index, int refOnly);
+
 #ifdef	__cplusplus
 };
 #endif

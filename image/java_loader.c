@@ -237,7 +237,7 @@ typedef struct
 /*
  * Structure of a constant pool entry.
  */
-typedef struct
+struct _tagJavaConstEntry
 {
 	ILUInt16		type;
 	ILUInt16		length;
@@ -257,8 +257,9 @@ typedef struct
 		} classValue;
 		struct
 		{
-			ILUInt32 classIndex;
-			ILUInt32 nameAndType;
+			ILUInt16 classIndex;
+			ILUInt16 nameAndType;
+			ILProgramItem *item;
 
 		} refValue;
 		struct
@@ -270,7 +271,7 @@ typedef struct
 
 	} un;
 
-} JavaConstEntry;
+};
 
 /*
  * Convert a Java-style slashed name into an IL-style
@@ -385,7 +386,6 @@ static ILClass *ResolveJavaClass(ILImage *image, JavaConstEntry *constPool,
 	if(index >= constPoolEntries ||
 	   constPool[index].type != JAVA_CONST_CLASS)
 	{
-		META_ERROR("invalid class index");
 		*error = IL_LOADERR_BAD_META;
 		return 0;
 	}
@@ -423,18 +423,35 @@ static ILClass *ResolveJavaClass(ILImage *image, JavaConstEntry *constPool,
 }
 
 /*
- * Helper macro for resolving class references.
+ * Resolve a class reference at load time.
+ */
+static ILClass *ResolveJavaClassLoad(ILImage *image, JavaConstEntry *constPool,
+								     ILUInt32 constPoolEntries, ILUInt32 index,
+								     int *error, int flags)
+{
+	ILClass *classInfo;
+	classInfo = ResolveJavaClass(image, constPool, constPoolEntries,
+								 index, error, flags);
+	if(!classInfo && *error == IL_LOADERR_BAD_META)
+	{
+		META_ERROR("invalid class index");
+	}
+	return classInfo;
+}
+
+/*
+ * Helper macro for resolving class references during loading.
  */
 #define	ResolveJavaClassRef(index)	\
-			(ResolveJavaClass(image, constPool, constPoolEntries, \
-							  (index), &error, flags))
+			(ResolveJavaClassLoad(image, constPool, constPoolEntries, \
+							      (index), &error, flags))
 
 /*
  * Helper macro for resolving class definitions.
  */
 #define	ResolveJavaClassDefn(index)	\
-			(ResolveJavaClass(image, constPool, constPoolEntries, \
-							  (index), &error, IL_LOADFLAG_NO_RESOLVE))
+			(ResolveJavaClassLoad(image, constPool, constPoolEntries, \
+							      (index), &error, IL_LOADFLAG_NO_RESOLVE))
 
 /*
  * Parse a Java type specification.  Returns
@@ -892,9 +909,10 @@ static int LoadJavaClass(ILImage *image, JavaReader *reader, int flags)
 		return IL_LOADERR_BAD_META;
 	}
 
-	/* Allocate an array to temporarily hold the constants */
-	if((constPool = (JavaConstEntry *)ILCalloc(constPoolEntries,
-											   sizeof(JavaConstEntry))) == 0)
+	/* Allocate an array to hold the constant pool */
+	if((constPool = (JavaConstEntry *)ILMemStackAllocItem
+			(&(image->memStack),
+			 constPoolEntries * sizeof(JavaConstEntry))) == 0)
 	{
 		return IL_LOADERR_MEMORY;
 	}
@@ -1006,6 +1024,7 @@ static int LoadJavaClass(ILImage *image, JavaReader *reader, int flags)
 				constPool[index].un.refValue.classIndex = value;
 				JAVA_READ_UINT16(reader, value);
 				constPool[index].un.refValue.nameAndType = value;
+				constPool[index].un.refValue.item = 0;
 			}
 			break;
 
@@ -1312,12 +1331,17 @@ static int LoadJavaClass(ILImage *image, JavaReader *reader, int flags)
 		--index;
 	}
 
+	/* Attach the constant pool to the class */
+	if((classInfo->ext = ILMemStackAlloc(&(image->memStack), ILClassExt)) == 0)
+	{
+		error = IL_LOADERR_MEMORY;
+		goto cleanup;
+	}
+	classInfo->ext->constPoolSize = constPoolEntries;
+	classInfo->ext->constPool = constPool;
+
 	/* Clean up and exit */
 cleanup:
-	if(constPool)
-	{
-		ILFree(constPool);
-	}
 	return error;
 }
 
@@ -1617,6 +1641,107 @@ int _ILImageJavaLoad(FILE *file, const char *filename, ILContext *context,
 		/* This is neither a .class file nor a .jar file */
 		return IL_LOADERR_NOT_IL;
 	}
+}
+
+int ILJavaGetConstType(ILClass *info, ILUInt32 index)
+{
+	if(info && info->ext && index < info->ext->constPoolSize)
+	{
+		return info->ext->constPool[index].type;
+	}
+	return 0;
+}
+
+const char *ILJavaGetUTF8String(ILClass *info, ILUInt32 index, ILUInt32 *len)
+{
+	if(ILJavaGetConstType(info, index) != JAVA_CONST_UTF8)
+	{
+		return 0;
+	}
+	*len = info->ext->constPool[index].length;
+	return info->ext->constPool[index].un.utf8String;
+}
+
+const char *ILJavaGetString(ILClass *info, ILUInt32 index, ILUInt32 *len)
+{
+	if(ILJavaGetConstType(info, index) != JAVA_CONST_STRING)
+	{
+		return 0;
+	}
+	index = info->ext->constPool[index].un.strValue;
+	return ILJavaGetUTF8String(info, index, len);
+}
+
+int ILJavaGetInteger(ILClass *info, ILUInt32 index, ILInt32 *value)
+{
+	if(ILJavaGetConstType(info, index) != JAVA_CONST_INTEGER)
+	{
+		return 0;
+	}
+	*value = info->ext->constPool[index].un.intValue;
+	return 1;
+}
+
+int ILJavaGetLong(ILClass *info, ILUInt32 index, ILInt64 *value)
+{
+	if(ILJavaGetConstType(info, index) != JAVA_CONST_LONG)
+	{
+		return 0;
+	}
+	*value = info->ext->constPool[index].un.longValue;
+	return 1;
+}
+
+int ILJavaGetFloat(ILClass *info, ILUInt32 index, ILFloat *value)
+{
+	if(ILJavaGetConstType(info, index) != JAVA_CONST_FLOAT)
+	{
+		return 0;
+	}
+	*value = info->ext->constPool[index].un.floatValue;
+	return 1;
+}
+
+int ILJavaGetDouble(ILClass *info, ILUInt32 index, ILDouble *value)
+{
+	if(ILJavaGetConstType(info, index) != JAVA_CONST_DOUBLE)
+	{
+		return 0;
+	}
+	*value = info->ext->constPool[index].un.doubleValue;
+	return 1;
+}
+
+ILClass *ILJavaGetClass(ILClass *info, ILUInt32 index, int refOnly)
+{
+	ILClass *classInfo;
+	int error;
+	if(!info || !(info->ext))
+	{
+		return 0;
+	}
+	classInfo = ResolveJavaClass(info->programItem.image,
+								 info->ext->constPool,
+								 info->ext->constPoolSize,
+								 index, &error,
+								 (refOnly ? IL_LOADFLAG_NO_RESOLVE : 0));
+	if(classInfo && !refOnly && ILClassIsRef(classInfo))
+	{
+		return 0;
+	}
+	return classInfo;
+}
+
+ILMethod *ILJavaGetMethod(ILClass *info, ILUInt32 index, int refOnly)
+{
+	/* TODO */
+	return 0;
+}
+
+ILField *ILJavaGetField(ILClass *info, ILUInt32 index, int refOnly)
+{
+	/* TODO */
+	return 0;
 }
 
 #ifdef	__cplusplus

@@ -155,6 +155,18 @@ void _ILAssemblySetOrigIndex(ILAssembly *assem, ILUInt32 index);
 void _ILAssemblySetHashIndex(ILAssembly *assem, ILUInt32 index);
 
 /*
+ * Extension information that is only present in some circumstances
+ * (e.g. Java classes).
+ */
+typedef struct _tagILClassExt ILClassExt;
+typedef struct _tagJavaConstEntry JavaConstEntry;
+struct _tagILClassExt
+{
+	ILUInt32		constPoolSize;		/* Java constant pool size */
+	JavaConstEntry *constPool;			/* Constant pool entries */
+};
+
+/*
  * Information about a class.
  */
 struct _tagILClass
@@ -170,6 +182,7 @@ struct _tagILClass
 	ILNestedInfo   *nestedChildren;		/* List of nested children */
 	ILProgramItem  *scope;				/* Scope that the class is defined in */
 	ILType         *synthetic;			/* Synthetic type for this class */
+	ILClassExt     *ext;				/* Extension information */
 	void           *userData;			/* Data added by the runtime engine */
 
 };

@@ -25,6 +25,7 @@ libILImage_a_SOURCES = assembly.c \
 					   opcodes.c \
 					   pecoff_loader.c \
 					   pecoff_writer.c \
+					   ser_parse.c \
 					   sig_parse.c \
 					   sig_writer.c \
 					   synthetic.c \

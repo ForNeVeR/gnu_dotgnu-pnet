@@ -9,6 +9,7 @@ libILinclude_HEADERS = il_coder.h \
 					   il_meta.h \
 					   il_opcodes.h \
 					   il_program.h \
+					   il_serialize.h \
 					   il_system.h \
 					   il_types.h \
 					   il_utils.h \

@@ -37,7 +37,7 @@
 #ifdef HAVE_FCNTL_H
         #include <fcntl.h>
 #endif
-#ifdef _WIN32
+#ifdef IL_WIN32_PLATFORM
 	#include <windows.h>
 	#include <io.h>
 #endif

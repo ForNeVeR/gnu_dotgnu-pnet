@@ -15,7 +15,8 @@
 			</sources>
 
 			<resources>
-				<file name="../resources/en_US/runtime/runtime.resources"/>
+				<includes if="${CONFIG_RUNTIME_INFRA}"
+						  name="../resources/en_US/runtime/runtime.resources"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>

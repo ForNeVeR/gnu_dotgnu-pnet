@@ -45,6 +45,10 @@
 	profiles/tiny, profiles/tiny-fp: clean up the profile files and
 	add some additional profiles for floating-point variants.
 
+	* System/System.build, System.Xml/Xml.build, runtime/runtime.build:
+	don't bind the string resources to the assemblies if we don't
+	have "RuntimeInfrastructure" to enable loading them.
+
 2003-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Convert.cs,

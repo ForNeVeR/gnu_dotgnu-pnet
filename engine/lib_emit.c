@@ -939,7 +939,16 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 	{
 		nameSpace = 0;
 	}
-	if (!(baseClass = ILClass_FromToken(image, token)))
+	if(!token && typeName &&
+		((!strcmp("<Module>", typeName) && nameSpace==NULL) 
+		|| (!strcmp("Object", typeName) && nameSpace && 
+					 !strcmp("System", nameSpace)) 
+		|| (attr & IL_META_TYPEDEF_INTERFACE)))	
+	{
+		/* interfaces , <Module> and System.Object */
+		baseClass=NULL;
+	}
+	else if (!(baseClass = ILClass_FromToken(image, token)))
 	{
 		IL_METADATA_UNLOCK(_thread);
 		ILExecThreadThrowOutOfMemory(_thread);

@@ -18,7 +18,7 @@
 	hexadecimal.
 
 	* cscc/cs_scanner.l, cscc/cscc.1, doc/pnettools.texi: improve
-	the handle of hexadecimal and octal character constants.
+	the handling of hexadecimal and octal character constants.
 
 	* cscc/cs_scanner.l: bug fix to parse verbatim string literals
 	correctly.

@@ -490,6 +490,7 @@ static int ParseEncodedChar(const char *text, ILUInt32 *value)
 		/* Two-byte UTF-8 character */
 		*value = ((((ILUInt32)(*text)) & 0x1F) << 6) |
 		          (((ILUInt32)(text[1])) & 0x3F);
+		text += 2;
 	}
 	else if((*text & (char)0xF0) == (char)0xE0 &&
 	        (text[1] & (char)0xC0) == (char)0x80 &&
@@ -499,6 +500,7 @@ static int ParseEncodedChar(const char *text, ILUInt32 *value)
 		*value = ((((ILUInt32)(*text)) & 0x0F) << 12) |
 		         ((((ILUInt32)(text[1])) & 0x3F) << 6) |
 		          (((ILUInt32)(text[2])) & 0x3F);
+		text += 3;
 	}
 	else if((*text & (char)0xF8) == (char)0xF0 &&
 	        (text[1] & (char)0xC0) == (char)0x80 &&
@@ -510,6 +512,7 @@ static int ParseEncodedChar(const char *text, ILUInt32 *value)
 		         ((((ILUInt32)(text[1])) & 0x3F) << 12) |
 		         ((((ILUInt32)(text[2])) & 0x3F) << 6) |
 		          (((ILUInt32)(text[3])) & 0x3F);
+		text += 4;
 	}
 	else if((*text & (char)0xFC) == (char)0xF8 &&
 	        (text[1] & (char)0xC0) == (char)0x80 &&
@@ -523,6 +526,7 @@ static int ParseEncodedChar(const char *text, ILUInt32 *value)
 		         ((((ILUInt32)(text[2])) & 0x3F) << 12) |
 		         ((((ILUInt32)(text[3])) & 0x3F) << 6) |
 		          (((ILUInt32)(text[4])) & 0x3F);
+		text += 5;
 	}
 	else if((*text & (char)0xFC) == (char)0xFC &&
 	        (text[1] & (char)0xC0) == (char)0x80 &&
@@ -537,6 +541,7 @@ static int ParseEncodedChar(const char *text, ILUInt32 *value)
 		         ((((ILUInt32)(text[3])) & 0x3F) << 12) |
 		         ((((ILUInt32)(text[4])) & 0x3F) << 6) |
 		          (((ILUInt32)(text[5])) & 0x3F);
+		text += 6;
 	}
 	else
 	{

@@ -1281,7 +1281,14 @@ ILNode_Store(ILNode_MemberProperty)
 	else
 	{
 		/* Store the value into the property */
-		ILGenCallMethod(info, setter);
+		if(node->baseCall)
+		{
+			ILGenCallByMethod(info, setter);
+		}
+		else
+		{
+			ILGenCallMethod(info, setter);
+		}
 		ILGenAdjust(info, -2);
 
 		/* Do we need to restore a previous value to the stack top? */

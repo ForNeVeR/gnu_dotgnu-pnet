@@ -1,3 +1,9 @@
+2004-06-16  David Logan  <djlogan2@comcast.net>
+
+	* runtime/System/Threading/Timer.cs: Minimize number of
+	started threads to handle completion items.
+	(patch #3114 tum)
+	
 2004-06-15  Thong Nguyen  <tum@veridicus.com>
 
 	* System/Text/RegularExpressions/interpreter.cs: Fix

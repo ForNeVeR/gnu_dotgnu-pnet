@@ -42,6 +42,7 @@ sealed class ThreadPool
 	// Internal state.
 	private static int usedWorkerThreads;
 	private static int usedCompletionThreads;
+	private static int queuedCompletionItems;
 	private static WorkItem workItems, lastWorkItem;
 	private static WorkItem completionItems, lastCompletionItem;
 	private static Thread[] workerThreads;
@@ -350,17 +351,19 @@ sealed class ThreadPool
 							}
 						}
 						while (item == null);
+						usedCompletionThreads++;
+						queuedCompletionItems--;
 					}
 					
 					try
 					{
-						Interlocked.Increment(ref usedCompletionThreads);
 						item.Execute();
 					}
 					finally
 					{
 						item = null;
-						Interlocked.Decrement(ref usedCompletionThreads);
+						lock(completionWait)
+							usedCompletionThreads--;
 					}
 				}
 			}
@@ -440,7 +443,7 @@ sealed class ThreadPool
 						completionItems = item;
 					}
 					lastCompletionItem = item;
-	
+
 					// We don't have threads, so execute the items now.
 					WorkItem next = CompletionItemToDispatch();
 					while(next != null)
@@ -462,15 +465,32 @@ sealed class ThreadPool
 							completionItems = item;
 						}
 						lastCompletionItem = item;
+						queuedCompletionItems++;
 
-						// Determine if we need to spawn a new completion thread.
-						if(completionItems != null &&
-							numCompletionThreads < MaxCompletionThreads)
-						{
-							if(completionThreads == null)
-							{
+						if( completionThreads == null )
 								completionThreads =
 									new Thread [MaxCompletionThreads];
+
+						//
+						// We need to make sure that there are enough threads to
+						// handle the entire queue.
+						//
+						// There is a small possibility here that there is a thread
+						// about to end that could take this work unit, but we have no
+						// way of knowing that.
+						//
+						int needThreads = usedCompletionThreads + queuedCompletionItems;
+
+						// Determine if we need to spawn a new completion thread.
+						if( needThreads > numCompletionThreads )
+						{
+							if( needThreads > MaxCompletionThreads )
+//								throw new SystemException("Number of completion threads required exceeds maximum");
+							{
+								// Don't throw. Leave on the queue and pulse the lock if there are any waiting threads
+								if( usedCompletionThreads < numCompletionThreads )
+									Monitor.Pulse(completionWait);
+								return;
 							}
 							Thread thread =
 								new Thread(new ThreadStart(Complete));
@@ -481,7 +501,11 @@ sealed class ThreadPool
 							thread.IsBackground = true;
 							thread.Start();
 						}
-						Monitor.Pulse(completionWait);
+						else
+						{
+							// Signal one of our waiting threads
+							Monitor.Pulse(completionWait);
+						}
 					}
 				}
 			}

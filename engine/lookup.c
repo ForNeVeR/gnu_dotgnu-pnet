@@ -150,6 +150,15 @@ ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 									 name, nameLen, 0, 0);
 	}
 
+	/* Make sure that the class has been laid out */
+	if(classInfo != 0)
+	{
+		if(!_ILLayoutClass(classInfo))
+		{
+			return 0;
+		}
+	}
+
 	/* Return the final class structure to the caller */
 	return classInfo;
 }

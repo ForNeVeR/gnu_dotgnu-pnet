@@ -4,6 +4,9 @@
 	* cscc/cs_invoke.tc, cscc/cs_lvalue.tc: report errors when instance
 	members within a class are accessed from static methods.
 
+	* cscc/cs_grammar.y: ignore the base class initializer when declaring
+	a static constructor.
+
 2001-01-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_branch.c, engine/cvmc_branch.c: bugs in the encoding

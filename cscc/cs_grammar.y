@@ -3031,11 +3031,13 @@ ConstructorDeclaration
 			ConstructorInitializer MethodBody	{
 				ILUInt32 attrs = CSModifiersToConstructorAttrs($3, $2);
 				ILNode *cname;
+				ILNode *initializer = $7;
 				ILNode *body;
 				if((attrs & IL_META_METHODDEF_STATIC) != 0)
 				{
 					cname = ILQualIdentSimple
 								(ILInternString(".cctor", 6).string);
+					initializer = 0;
 				}
 				else
 				{
@@ -3054,13 +3056,13 @@ ConstructorDeclaration
 					body = $8;
 					((ILNode_NewScope *)body)->stmt =
 						ILNode_Compound_CreateFrom
-							($7, ((ILNode_NewScope *)body)->stmt);
+							(initializer, ((ILNode_NewScope *)body)->stmt);
 				}
 				else
 				{
 					/* Non-scoped body: create a new scoped body */
 					body = ILNode_NewScope_create
-								(ILNode_Compound_CreateFrom($7, $8));
+								(ILNode_Compound_CreateFrom(initializer, $8));
 				}
 				$$ = ILNode_MethodDeclaration_create
 					  ($1, attrs, 0 /* "void" */, cname, $5, body);

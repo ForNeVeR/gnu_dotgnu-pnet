@@ -17,6 +17,8 @@
 	* image/meta_types.c (ILTypeGetEnumType, ILTypeGetDelegateMethod):
 	resolve the class before searching it for fields or methods.
 
+	* samples/System.dll, samples/mscorlib.dll: updated assemblies.
+
 2002-04-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,

@@ -1,24 +1,29 @@
 
-noinst_DATA = csunit.exe
+noinst_DATA = cstest.dll csunit.exe
 
-CSSRC = Test.cs \
-		TestArray.cs \
-		TestAssertFailed.cs \
-		TestCase.cs \
-		TestException.cs \
-		TestFailure.cs \
-		TestMain.cs \
-		TestResult.cs \
-		TestStop.cs \
-		TestSuite.cs \
-		TestVersion.cs \
-		TestWriterResult.cs
+cstest_CSSRC = Test.cs \
+		       TestArray.cs \
+		       TestAssertFailed.cs \
+		       TestCase.cs \
+		       TestException.cs \
+		       TestFailure.cs \
+		       TestResult.cs \
+		       TestStop.cs \
+		       TestSuite.cs \
+		       TestWriterResult.cs
+
+csunit_CSSRC = TestMain.cs \
+			   TestVersion.cs
 
 CSCC_WARNINGS = -Wno-silly-warnings
 
-CSCC_FLAGS = $(CSCC_WARNINGS) -funsafe $(CSCC_EXE_LIBS)
+CSCC_FLAGS = $(CSCC_WARNINGS) -funsafe
+
+cstest.dll: $(cstest_CSSRC)
+	$(CSCC_COMPILE) -o $@ $(cstest_CSSRC)
 
 csunit.exe: $(CSSRC) $(DEFRESOURCES)
-	$(CSCC_COMPILE) -o $@ $(CSSRC)
+	$(CSCC_COMPILE) $(CSCC_EXE_LIBS) -L. -lcstest -o $@ $(csunit_CSSRC)
 
-CLEANFILES = csunit.exe TestVersion.cs
+CLEANFILES = cstest.dll csunit.exe
+DISTCLEANFILES = TestVersion.cs

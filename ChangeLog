@@ -10,6 +10,9 @@ configuration.
 
 * csunit/TestMain.cs: report the correct string for unknown test names.
 
+* csunit/Makefile.am, csunit/.cvsignore: split the "csunit" program into
+"cstest.dll" and "csunit.exe".
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Invalid.txt,

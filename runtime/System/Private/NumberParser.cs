@@ -1029,68 +1029,70 @@ internal sealed class NumberParser
 		bool negative = StripSign(sb, nfi);
 		decimal work = 0.0m;
 
+		string str = sb.ToString();
+		int stridx = 0;
+
 		//  Parse up to the decimal
-		while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
+		while (stridx < str.Length 
+				&& str[stridx] >= '0' && str[stridx] <= '9')
 		{
-			work *= 10;
-			work += (uint)(sb[0] - '0');
-			sb.Remove(0, 1);
+			work = 10 * work + (str[stridx++] - '0');
 		}
 
 		//  Parse after the decimal
-		if (sb.Length > 0 
-				&& sb.ToString().StartsWith(nfi.NumberDecimalSeparator))
+		if (stridx < str.Length && 
+				str.Substring(stridx).StartsWith(nfi.NumberDecimalSeparator))
 		{
-			sb.Remove(0, nfi.NumberDecimalSeparator.Length);
+			stridx += nfi.NumberDecimalSeparator.Length;
 
 			decimal temp;
 			int i, j;
 			for (i = -1; 
-					sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9' ; 
+					stridx < str.Length && 
+					str[stridx] >= '0' && str[stridx] <= '9' ; 
 					i--)
 			{
-				temp = (decimal)((uint)(sb[0] - '0'));
+				temp = (decimal)((uint)(str[stridx++] - '0'));
 				for (j = 0; j > i; j--) temp *= 0.1m;
 				work += temp;
-				sb.Remove(0, 1);
 			}	
 		}
 
 		//  Parse after the exponent
-		if (sb.Length > 0 && (sb[0] == 'e' || sb[0] == 'E') ) 
+		if (stridx < str.Length 
+				&& (str[stridx] == 'e' || str[stridx] == 'E') ) 
 		{
 			uint exp = 0;
 			bool negExponent = false;
 			decimal mult;
 
-			sb.Remove(0, 1);
+			stridx++;
 
-			if (sb.ToString().StartsWith(nfi.PositiveSign)) 
+			if (str.Substring(stridx).StartsWith(nfi.PositiveSign)) 
 			{
 				mult = 10.0m;
-				sb.Remove(0, nfi.PositiveSign.Length);
+				stridx++;
 			} 
-			else if (sb.ToString().StartsWith(nfi.NegativeSign)) 
+			else if (str.Substring(stridx).StartsWith(nfi.NegativeSign)) 
 			{
 				mult = 0.1m;
-				sb.Remove(0, nfi.NegativeSign.Length);
+				stridx++;
 			} 
 			else
 			{
 				mult = 10.0m;
 			}
 
-		    while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
+		    while (stridx < str.Length 
+					&& str[stridx] >= '0' && str[stridx] <= '9')
 			{
-				exp *= 10;
-				exp += (uint)(sb[0] - '0');
-				sb.Remove(0, 1);
+				exp = 10 * exp + (uint)(str[stridx++] - '0');
 			}
 
 			for (int i=0; i<exp; i++) work *= mult;
 		}
 
-		if (sb.Length > 0)
+		if (stridx < str.Length)
 		{
 			//  Oops.  Throw a "junk found" exception.
 			throw new FormatException();
@@ -1119,43 +1121,47 @@ internal sealed class NumberParser
 
 		bool negative = StripSign(sb, nfi);
 
+		string str = sb.ToString();
+		int stridx = 0;
+
 		//  Parse up to the decimal
 		double work = 0.0d;
-		while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
+
+		while (stridx < str.Length 
+				&& str[stridx] >= '0' && str[stridx] <= '9')
 		{
-			work *= 10;
-			work += (uint)(sb[0] - '0');
-			sb.Remove(0, 1);
+			work = work * 10.0d + (uint)(str[stridx++] - '0');
 		}
 
 		//  Parse after the decimal
-		if (sb.Length > 0 
-				&& sb.ToString().StartsWith(nfi.NumberDecimalSeparator))
+		if (stridx < str.Length && 
+				str.Substring(stridx).StartsWith(nfi.NumberDecimalSeparator))
 		{
-			sb.Remove(0, nfi.NumberDecimalSeparator.Length);
-			for (int i = -1; 
-					sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9' ; 
-					i--)
+			stridx += nfi.NumberDecimalSeparator.Length;
+			for (double mult = 0.1d;
+					stridx < str.Length && 
+					str[stridx] >= '0' && str[stridx] <= '9';
+					mult /= 10.0d)
 			{
-				work += (uint)(sb[0] - '0') * Math.Pow(10, i);
-				sb.Remove(0, 1);
+				work += (uint)(str[stridx++] - '0') * mult;
 			}	
 		}
 
 		//  Parse after the exponent
-		if (sb.Length > 0 && (sb[0] == 'e' || sb[0] == 'E') ) 
+		if (stridx < str.Length 
+				&& (str[stridx] == 'e' || str[stridx] == 'E') ) 
 		{
 			uint exponent = 0;
 			bool negExponent = false;
-			sb.Remove(0, 1);
-			if (sb.ToString().StartsWith(nfi.PositiveSign)) 
+			stridx++;
+			if (str.Substring(stridx).StartsWith(nfi.PositiveSign)) 
 			{
-				sb.Remove(0, nfi.PositiveSign.Length);
+				stridx++;
 			} 
-			else if (sb.ToString().StartsWith(nfi.NegativeSign)) 
+			else if (str.Substring(stridx).StartsWith(nfi.NegativeSign)) 
 			{
 				negExponent = true;
-				sb.Remove(0, nfi.NegativeSign.Length);
+				stridx++;
 			} 
 			/*  --- Removed in response to bug #2222
 			else 
@@ -1165,17 +1171,16 @@ internal sealed class NumberParser
 			}
 			*/
 
-		    while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
+		    while (stridx < str.Length && 
+					str[stridx] >= '0' && str[stridx] <= '9')
 			{
-				exponent *= 10;
-				exponent += (uint)(sb[0] - '0');
-				sb.Remove(0, 1);
+				exponent = 10 * exponent + (uint)(str[stridx++] - '0');
 			}
 
 			work *= Math.Pow(10, exponent * (negExponent ? -1 : 1));
 		}
 
-		if (sb.Length > 0)
+		if (stridx < str.Length)
 		{
 			//  Oops.  Throw a "junk found" exception.
 			throw new FormatException();

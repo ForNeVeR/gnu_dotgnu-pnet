@@ -1151,6 +1151,21 @@ static CSSemValue AssignSem(ILGenInfo *info,
 		CSSemSetRValue(value1, CSSemGetType(value1));
 		return value1;
 	}
+	else if(ILTypeIsStringClass(CSSemGetType(value2)) && yyisa(node, ILNode_Add))
+	{
+		if(!ILTypeIsStringClass(CSSemGetType(value1)))
+		{
+			/* Convert the first argument into "ObjectRef" */
+			/* Note: this will be an EmptyExpr , but will cast properly */
+			ILCast(info, node->expr1, &(node->expr1), CSSemGetType(value1),
+				   ILFindSystemType(info, "Object"),1);
+		}
+		*parent = ILNode_Concat_create(node->expr1, node->expr2);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		CSSemSetRValue(value1, CSSemGetType(value1));
+		return value1;
+	}
 
 	/* Should we be performing delegate combination or removal? */
 	if(ILTypeIsDelegate(CSSemGetType(value1)))

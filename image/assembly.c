@@ -48,11 +48,14 @@ ILAssembly *ILAssemblyCreate(ILImage *image, ILToken token,
 	}
 
 	/* Assign a token code to the assembly */
-	if(!_ILImageSetToken(image, &(assem->programItem),
-						 token, (isRef ? IL_META_TOKEN_ASSEMBLY_REF
-						               : IL_META_TOKEN_ASSEMBLY)))
+	if(token != 0 || image->type == IL_IMAGETYPE_BUILDING)
 	{
-		return 0;
+		if(!_ILImageSetToken(image, &(assem->programItem),
+							 token, (isRef ? IL_META_TOKEN_ASSEMBLY_REF
+							               : IL_META_TOKEN_ASSEMBLY)))
+		{
+			return 0;
+		}
 	}
 
 	/* Return the assembly to the caller */

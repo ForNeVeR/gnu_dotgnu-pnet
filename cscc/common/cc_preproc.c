@@ -53,6 +53,9 @@ void CCPreProcInit(CCPreProc *preproc, FILE *stream, const char *filename,
 	preproc->lineNumber = 1;
 	preproc->filename =
 		(filename ? (ILInternString((char *)filename, -1)).string : 0);
+	preproc->defaultLinenumber = 1;
+	preproc->defaultFilename =
+		(filename ? (ILInternString((char *)filename, -1)).string : 0);
 	preproc->currentScope = 0;
 	preproc->reportedUnmatched = 0;
 	preproc->lexerLineNumber = 1;
@@ -1084,6 +1087,7 @@ static int RefillLineBuffer(CCPreProc *preproc)
 		/* Set the line number information for this line */
 		lines[line].number = (preproc->lineNumber)++;
 		lines[line].filename = preproc->filename;
+		preproc->defaultLinenumber++;
 
 		/* Is this a directive? */
 		if(lines[line].directive &&
@@ -1296,6 +1300,13 @@ static int RefillLineBuffer(CCPreProc *preproc)
 							++dirname;
 						}
 					}
+					CheckAtEnd(preproc, &(lines[line]), &dirname);
+				}
+				else if(!strncmp(dirname,"default",7))
+				{
+					preproc->lineNumber = preproc->defaultLinenumber;
+					preproc->filename = preproc->defaultFilename;
+					dirname+=7;
 					CheckAtEnd(preproc, &(lines[line]), &dirname);
 				}
 				else

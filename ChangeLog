@@ -7,6 +7,9 @@
 	* cscc/csharp/cs_oper.tc : fix info->inAttrArg to be cleared up for
 	all cases of the semantic analysis.
 
+	* cscc/common/cc_preproc.c, cscc/common/cc_preproc.h: implement the
+	"#line default" directive for cscc.
+
 2003-05-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: replace the reference to the "Tech Support Manager" with

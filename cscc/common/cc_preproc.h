@@ -98,6 +98,10 @@ typedef struct _tagCCPreProc
 	unsigned long		lineNumber;
 	char			   *filename;
 
+	/* Default Line number information for the next line of input */
+	unsigned long		defaultLinenumber;
+	char			   *defaultFilename;
+
 	/* Pre-processor scope information for conditional inclusions */
 	CCPreProcScope	   *currentScope;
 	int					reportedUnmatched;

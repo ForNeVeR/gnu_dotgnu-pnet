@@ -68,7 +68,7 @@ static ILType *ParseArrayShape(ILContext *context,
 	for(dim = 0; dim < numSizes; ++dim)
 	{
 		value = ILMetaUncompressInt(reader);
-		if(value <= 0)
+		if(value < 0)
 		{
 			return ILType_Invalid;
 		}

@@ -21,6 +21,9 @@ array ranks properly.
 
 * image/synthetic.c: build synthetic array types properly for multiple ranks.
 
+* image/sig_parse.c (ParseArrayShape): allow zero sizes in multi-rank
+array signatures.
+
 2001-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c: fix a bug that caused GetBuiltinType to treat

@@ -6,6 +6,9 @@
 	image/marshal.c, include/il_engine.h, include/il_meta.h:
 	implement marshalling for the LPWSTR type.
 
+	* image/meta_buid.c (Load_TypeDef): deal with the case of
+	forwardly referencing parent types recursively.
+
 2003-01-26  Stephen Compall  <s11@member.fsf.org>
 
 	* doc/pnettools.texi: Added info dir entries.

@@ -943,8 +943,7 @@ static int Load_TypeDef(ILImage *image, ILUInt32 *values,
 			parent = ILProgramItemToClass((ILProgramItem *)parent);
 		}
 		else if((values[IL_OFFSET_TYPEDEF_PARENT] & IL_META_TOKEN_MASK)
-					== IL_META_TOKEN_TYPE_DEF &&
-			    values[IL_OFFSET_TYPEDEF_PARENT] > token)
+					== IL_META_TOKEN_TYPE_DEF)
 		{
 			/* The class inherits from a TypeDef we haven't seen yet */
 			error = LoadForwardTypeDef(image, values[IL_OFFSET_TYPEDEF_PARENT]);

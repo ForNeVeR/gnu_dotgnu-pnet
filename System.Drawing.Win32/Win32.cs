@@ -859,6 +859,9 @@ internal class Api
 	public static extern bool Pie( IntPtr hdc, int nLeftRect,int nTopRect, int nRightRect, int nBottomRect, int nXRadial1, int nYRadial1, int nXRadial2, int nYRadial2 );
 
 	[DllImport("gdi32")]
+	public static extern bool Ellipse( IntPtr hdc, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect );
+
+	[DllImport("gdi32")]
 	public static extern IntPtr SetTextColor( IntPtr hdc, int crColor);
 
 	[DllImport("gdi32")]

@@ -632,6 +632,7 @@ samples/simple/Makefile
 samples/xsharp/Makefile
 samples/dcop/Makefile
 samples/forms/Makefile
+samples/developers/Makefile
 tools/run_test.sh
 tools/link_res.sh
 tools/wrapper.sh

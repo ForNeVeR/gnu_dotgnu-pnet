@@ -33,9 +33,10 @@ extern	"C" {
  * arguments when using the error reporting functions.
  */
 #if defined(__GNUC__)
-	#define	CC_PRINTF(str) __attribute__((__format__ (__printf__, str, str+1)))
+	#define	CC_PRINTF(str,arg) \
+		__attribute__((__format__ (__printf__, str, arg)))
 #else
-	#define	CC_PRINTF(str)
+	#define	CC_PRINTF(str,arg)
 #endif
 
 /*
@@ -47,30 +48,30 @@ extern int CCHaveWarnings;
 /*
  * Report an error on the current line.
  */
-void CCError(const char *format, ...) CC_PRINTF(1);
+void CCError(const char *format, ...) CC_PRINTF(1, 2);
 
 /*
  * Report an error on a specific line.
  */
 void CCErrorOnLine(char *filename, unsigned long linenum,
-				   const char *format, ...) CC_PRINTF(3);
+				   const char *format, ...) CC_PRINTF(3, 4);
 
 /*
  * Report a warning on the current line.
  */
-void CCWarning(const char *format, ...) CC_PRINTF(1);
+void CCWarning(const char *format, ...) CC_PRINTF(1, 2);
 
 /*
  * Report a typed warning on the current line.  The warning
  * will only be reported if the "type" is enabled.
  */
-void CCTypedWarning(const char *type, const char *format, ...) CC_PRINTF(2);
+void CCTypedWarning(const char *type, const char *format, ...) CC_PRINTF(2, 3);
 
 /*
  * Report a warning on a specific line.
  */
 void CCWarningOnLine(char *filename, unsigned long linenum,
-				     const char *format, ...) CC_PRINTF(3);
+				     const char *format, ...) CC_PRINTF(3, 4);
 
 /*
  * Report a typed warning on a specific line.  The warning
@@ -78,7 +79,7 @@ void CCWarningOnLine(char *filename, unsigned long linenum,
  */
 void CCTypedWarningOnLine(char *filename, unsigned long linenum,
 				     	  const char *type, const char *format, ...)
-						  CC_PRINTF(4);
+						  CC_PRINTF(4, 5);
 
 /*
  * Report either a warning or an error about unsafe constructs.

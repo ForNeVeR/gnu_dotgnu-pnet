@@ -18,6 +18,9 @@
 	handle the libffi expansion that occurs when native return types
 	are 32-bits or less in size.
 
+	* cscc/common/cc_errors.h: add an extra argument to the "CC_PRINTF"
+	macro to work around problems in MacOSX's preprocessor.
+
 2002-05-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc,codegen/cg_lvalue.tc,codegen/cg_misc.tc

@@ -72,6 +72,7 @@ static System_Array *System_SArray_ctor(ILExecThread *thread,
 	ILType *type;
 	ILUInt32 elemSize;
 	ILUInt64 totalSize;
+	System_Array *array;
 
 	/* Get the synthetic class and type for the array */
 	classInfo = ILMethod_Owner(thread->method);
@@ -88,9 +89,14 @@ static System_Array *System_SArray_ctor(ILExecThread *thread,
 		return 0;
 	}
 
-	/* Allocate the array and return it */
-	return (System_Array *)_ILEngineAlloc
+	/* Allocate the array, initialize, and return it */
+	array = (System_Array *)_ILEngineAlloc
 			(thread, classInfo, sizeof(System_Array) + (ILUInt32)totalSize);
+	if(array)
+	{
+		array->length = (ILInt32)length;
+	}
+	return array;
 }
 
 /*

@@ -139,12 +139,12 @@ static int ReduceOperator(ILGenInfo *info, ILNode *node,
 									ILNode_Int32_create(bitpos,0,0));
 						return 1;
 					}
-				}
-				else if(yyisa(node,ILNode_Div))
-				{
-					*parent=ILNode_Shr_create(expr->expr1,
-								ILNode_Int32_create(bitpos,0,0));
-					return 1;
+					else if(yyisa(node,ILNode_Div))
+					{
+						*parent=ILNode_Shr_create(expr->expr1,
+									ILNode_Int32_create(bitpos,0,0));
+						return 1;
+					}
 				}
 			}
 		}

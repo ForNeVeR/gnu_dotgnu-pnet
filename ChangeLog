@@ -4,6 +4,10 @@
 	* codegen/cg_arith.tc: Fix the optimize bug to fix the issue of
 	long truncation.
 
+	* codegen/cg_arith.tc: Fix another small bug in division reduction.
+
+	* cscc/csharp/cs_lvalue.tc: Fix function calls on enum members.
+
 2002-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* pnet.spec: remove from the CVS server, as it is auto-generated.

@@ -2,7 +2,7 @@
 
 #include "private/gc_priv.h"
 
-#ifdef CYGWIN32
+#if defined(CYGWIN32) && !defined(GC_DISABLE_CYGWIN_PTHREADS)
 # include <errno.h>
 
  /* Cygwin-specific forward decls */
@@ -37,7 +37,7 @@ struct thread_entry {
   CONTEXT context;
   GC_bool suspended;
 
-# ifdef CYGWIN32
+# if  defined(CYGWIN32) && !defined(GC_DISABLE_CYGWIN_PTHREADS)
     void *status; /* hold exit value until join in case it's a pointer */
     pthread_t pthread_id;
 # endif
@@ -53,7 +53,7 @@ void GC_push_thread_structures GC_PROTO((void))
     /* Unlike the other threads implementations, the thread table here	*/
     /* contains no pointers to the collectable heap.  Thus we have	*/
     /* no private structures we need to preserve.			*/
-# ifdef CYGWIN32
+# if defined(CYGWIN32) && !defined(GC_DISABLE_CYGWIN_PTHREADS)
   { int i; /* pthreads may keep a pointer in the thread exit value */
     for (i = 0; i < MAX_THREADS; i++)
       if (thread_table[i].in_use) GC_push_all((ptr_t)&(thread_table[i].status),(ptr_t)(&(thread_table[i].status)+1));
@@ -66,7 +66,7 @@ void GC_stop_world()
   DWORD thread_id = GetCurrentThreadId();
   int i;
 
-#ifdef CYGWIN32
+#if defined(CYGWIN32) && !defined(GC_DISABLE_CYGWIN_PTHREADS)
   if (!GC_thr_initialized) ABORT("GC_stop_world() called before GC_thr_init()");
 #endif
 
@@ -88,7 +88,7 @@ void GC_stop_world()
 	if (GetExitCodeThread(thread_table[i].handle,&exitCode) &&
             exitCode != STILL_ACTIVE) {
             thread_table[i].stack = 0; /* prevent stack from being pushed */
-#       ifndef CYGWIN32
+#       if !(!defined(CYGWIN32) && !defined(GC_DISABLE_CYGWIN_PTHREADS))
           /* this breaks pthread_join on Cygwin, which is guaranteed to only see user pthreads */
 	    thread_table[i].in_use = FALSE;
 	    CloseHandle(thread_table[i].handle);
@@ -593,7 +593,7 @@ void threadAttach() {
       ABORT("too many threads");
   }
   thread_table[i].id = GetCurrentThreadId();
-# ifdef CYGWIN32
+# if defined(CYGWIN32) && !defined(GC_DISABLE_CYGWIN_PTHREADS)
     thread_table[i].pthread_id = pthread_self();
 # endif
   if (!DuplicateHandle(GetCurrentProcess(),
@@ -637,7 +637,7 @@ void threadDetach(DWORD thread_id) {
   UNLOCK();
 }
 
-#ifdef CYGWIN32
+#if defined(CYGWIN32) && !defined(GC_DISABLE_CYGWIN_PTHREADS)
 
 /* Called by GC_init() - we hold the allocation lock.	*/
 void GC_thr_init() {
@@ -807,6 +807,8 @@ int GC_pthread_detach(pthread_t thread) {
 }
 #else
 
+#ifdef _DLL
+
 /*
  * We avoid acquiring locks here, since this doesn't seem to be preemptable.
  * Pontus Rydin suggests wrapping the thread start routine instead.
@@ -851,6 +853,9 @@ BOOL WINAPI DllMain(HINSTANCE inst, ULONG reason, LPVOID reserved)
   }
   return TRUE;
 }
+
+#endif /* _DLL */
+
 #endif /* CYGWIN32 */
 
 # endif /* !MSWINCE */

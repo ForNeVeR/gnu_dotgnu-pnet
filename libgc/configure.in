@@ -135,6 +135,7 @@ case "$THREADS" in
 	;;
      *-*-cygwin*)
 	AC_DEFINE(GC_WIN32_THREADS)
+	AC_DEFINE(GC_DISABLE_CYGWIN_PTHREADS)
 	;;
      *-*-osf*)
 	AC_DEFINE(GC_OSF1_THREADS)

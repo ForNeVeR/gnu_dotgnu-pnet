@@ -239,6 +239,8 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 	if(!haveCase)
 	{
 		REGEX_CHAR('^');
+		REGEX_CHAR('(');
+		REGEX_CHAR(')');
 		REGEX_CHAR('$');
 	}
 

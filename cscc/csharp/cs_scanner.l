@@ -143,7 +143,8 @@ static void ParseInt(char *text)
 			++text;
 		}
 	}
-	else if(*text == '0' && text[1] != '\0')
+	else if(*text == '0' && text[1] != '\0' && text[1] != 'u' &&
+	        text[1] != 'U' && text[1] != 'l' && text[1] != 'L')
 	{
 		/* The C# standard does not support octal integer constants,
 		   but we have provided an option to turn them back on */
@@ -177,17 +178,7 @@ static void ParseInt(char *text)
 		}
 		else
 		{
-			/* Parse as a decimal constant, but warn the user first */
-			if(!CCStringListContains(extension_flags, num_extension_flags,
-									 "decimal-constants"))
-			{
-				CCTypedWarning("-octal-constants",
-							   "parsing decimal constant, but it may be octal");
-				CCTypedWarning("-octal-constants",
-							   "(use -foctal-constants to parse as octal, or");
-				CCTypedWarning("-octal-constants",
-					   "-fdecimal-constants to force the use of decimal)");
-			}
+			/* Parse as a decimal constant */
 			goto decimal;
 		}
 	}

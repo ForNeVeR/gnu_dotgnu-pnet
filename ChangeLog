@@ -12,6 +12,9 @@
 	* engine/cvmc_setup.c, engine/pinvoke.c, image/marshal.c,
 	include/il_program.h: parse custom marshaling cookies.
 
+	* cscc/csharp/cs_scanner.l: don't warn for decimal constants
+	that start with 0 any more.
+
 2003-01-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* dumpasm/dump_flags.c, ilasm/ilasm_grammar.y, ildasm/ildasm_global.c:

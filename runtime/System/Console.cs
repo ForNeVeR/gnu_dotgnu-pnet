@@ -548,6 +548,172 @@ public sealed class Console
 
 #endif // CONFIG_SMALL_CONSOLE
 
+#if CONFIG_EXTENDED_CONSOLE
+
+	// Output a beep on the console.
+	[TODO]
+	public static void Beep()
+			{
+				// TODO
+			}
+
+	// Clear the display to the current foreground and background color.
+	[TODO]
+	public static void Clear()
+			{
+				// TODO
+			}
+
+	// Read a key from the console.  If "intercept" is "false",
+	// then the key is echoed to the console.
+	[TODO]
+	public static ConsoleKeyInfo ReadKey()
+			{
+				return ReadKey(false);
+			}
+	[TODO]
+	public static ConsoleKeyInfo ReadKey(bool intercept)
+			{
+				// TODO
+				return new ConsoleKeyInfo('\0', (ConsoleKey)0,
+										  (ConsoleModifiers)0);
+			}
+
+	// Set the cursor position.
+	// This is a guess - fix later.
+	[TODO]
+	public static void SetCursorPosition(int x, int y)
+			{
+				// TODO
+			}
+
+	// Set the current text foreground and background attributes.
+	// This is a guess - fix later.
+	[TODO]
+	public static void SetTextAttribute(ConsoleColor foreground,
+										ConsoleColor background)
+			{
+				// TODO
+			}
+
+	// Console properties.
+	[TODO]
+	public static int BufferHeight
+			{
+				get
+				{
+					// TODO
+					return 25;
+				}
+			}
+	[TODO]
+	public static int BufferWidth
+			{
+				get
+				{
+					// TODO
+					return 80;
+				}
+			}
+	[TODO]
+	public static int CursorLeft
+			{
+				get
+				{
+					// TODO
+					return 0;
+				}
+			}
+	[TODO]
+	public static int CursorTop
+			{
+				get
+				{
+					// TODO
+					return 0;
+				}
+			}
+	[TODO]
+	public static bool KeyAvailable
+			{
+				get
+				{
+					// TODO
+					return false;
+				}
+			}
+	[TODO]
+	public static String Title
+			{
+				get
+				{
+					// TODO
+					return String.Empty;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					// TODO
+				}
+			}
+	[TODO]
+	public static bool TreatControlCAsInput
+			{
+				get
+				{
+					// TODO
+					return false;
+				}
+				set
+				{
+					// TODO
+				}
+			}
+	[TODO]
+	public static int WindowHeight
+			{
+				get
+				{
+					// TODO
+					return 25;
+				}
+			}
+	[TODO]
+	public static int WindowLeft
+			{
+				get
+				{
+					// TODO
+					return 0;
+				}
+			}
+	[TODO]
+	public static int WindowTop
+			{
+				get
+				{
+					// TODO
+					return 0;
+				}
+			}
+	[TODO]
+	public static int WindowWidth
+			{
+				get
+				{
+					// TODO
+					return 80;
+				}
+			}
+
+	// Event that is emitted for cancel keycodes like CTRL+C.
+	public static event ConsoleCancelEventHandler CancelKeyPress;
+
+#endif // CONFIG_EXTENDED_CONSOLE
+
 }; // class Console
 
 }; // namespace System

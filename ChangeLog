@@ -15,6 +15,16 @@
 	samples/XClockEmbed.cs: make the shutdown process on embedded
 	applications more predictable, to avoid X server crashes.
 
+	* runtime/System/Console.cs,
+	runtime/System/ConsoleCancelEventArgs.cs,
+	runtime/System/ConsoleCancelEventHandler.cs,
+	runtime/System/ConsoleColor.cs,
+	runtime/System/ConsoleKey.cs,
+	runtime/System/ConsoleKeyInfo.cs,
+	runtime/System/ConsoleModifiers.cs,
+	runtime/System/ConsoleSpecialKeys.cs: add classes for the
+	extended console routines upcoming in .NET Framework 1.2.
+
 2003-10-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Display.cs, Xsharp/EmbeddedApplication.cs,

@@ -65,7 +65,11 @@ for dir in Custommarshalers \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix \
-		  Mono.Cairo ; do
+		  Mono.Cairo \
+		  Novell.Directory.Ldap \
+		  Mono.Security \
+		  Mono.Security.Win32 \
+		  System.Security ; do
 
 	cp -pr "$MCS_SOURCES/class/$dir" "mcs-sources/class/$dir"
 

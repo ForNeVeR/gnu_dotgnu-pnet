@@ -23,6 +23,20 @@
 	scripts for "Mono.Cairo", "System.Data.SqlXml", and
 	"System.Data.ObjectSpaces".
 
+	* configure.in, copy-mcs.sh, class/Makefile.am,
+	class/Mono.Security/.cvsignore, class/Mono.Security/Makefile.am,
+	class/Mono.Security/Mono.Security.build,
+	class/Mono.Security.Win32/.cvsignore,
+	class/Mono.Security.Win32/Makefile.am,
+	class/Mono.Security.Win32/Mono.Security.Win32.build,
+	class/Novell.Directory.Ldap/.cvsignore,
+	class/Novell.Directory.Ldap/Makefile.am,
+	class/Novell.Directory.Ldap/Novell.Directory.Ldap.build,
+	class/System.Security/.cvsignore, class/System.Security/Makefile.am,
+	class/System.Security/System.Security.build: add build scripts for
+	"Mono.Security", "Mono.Security.Win32", "Novell.Directory.Ldap",
+	and "System.Security".
+
 2003-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.0" release.

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<project name="Novell.Directory.Ldap" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="Novell.Directory.Ldap.dll"
+				 debug="${debug.flag}"
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
+
+			<sources basedir="${mono.sources}/class/Novell.Directory.Ldap">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+			</sources>
+
+			<references>
+				<file name="System.dll"/>
+			</references>
+
+		</compile>
+	</target>
+</project>

@@ -16,6 +16,10 @@ SUBDIRS = Custommarshalers \
 		  Mono.Posix \
 		  Mono.Cairo \
 		  System.Data.SqlXml \
-		  System.Data.ObjectSpaces
+		  System.Data.ObjectSpaces \
+		  Novell.Directory.Ldap \
+		  Mono.Security \
+		  Mono.Security.Win32 \
+		  System.Security
 
 ##		  Npgsql

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<project name="System.Security" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="System.Security.dll"
+				 debug="${debug.flag}"
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
+
+			<define name="NET_1_2" value="true"/>
+
+			<sources basedir="${mono.sources}/class/System.Security">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+				<!-- TODO -->
+				<excludes name="System.Security.Cryptography.X509Certificates/*.cs"/>
+				<excludes name="System.Security.Cryptography.Pkcs/*.cs"/>
+			</sources>
+
+			<references>
+				<file name="../Mono.Security/Mono.Security.dll"/>
+				<file name="System.Xml.dll"/>
+				<file name="System.dll"/>
+			</references>
+
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-fassembly-key=ms"/>
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-flatin1-charset"/>
+
+		</compile>
+	</target>
+</project>

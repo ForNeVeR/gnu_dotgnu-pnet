@@ -80,6 +80,7 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
  */
 static void CVMCoder_Throw(ILCoder *coder, int inCurrentMethod)
 {
+	CVMP_OUT_NONE(COP_PREFIX_SET_STACK_TRACE);
 	if(inCurrentMethod)
 	{
 		CVMP_OUT_NONE(COP_PREFIX_THROW);

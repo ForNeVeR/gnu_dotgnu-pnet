@@ -412,6 +412,7 @@ extern	"C" {
 #define	COP_PREFIX_ENTER_TRY		0x1B
 #define	COP_PREFIX_THROW			0x1C
 #define	COP_PREFIX_THROW_CALLER		0x1D
+#define	COP_PREFIX_SET_STACK_TRACE	0x1E
 
 /*
  * Prefixed typedref handling opcodes.

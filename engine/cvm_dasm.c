@@ -467,11 +467,7 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"enter_try",		CVM_OPER_NONE},
 	{"throw",			CVM_OPER_NONE},
 	{"throw_caller",	CVM_OPER_NONE},
-
-	/*
-	 * Reserved opcodes.
-	 */
-	{"preserved_1e",	CVM_OPER_NONE},
+	{"set_stack_trace",	CVM_OPER_NONE},
 
 	/*
 	 * Prefixed typedref handling opcodes.

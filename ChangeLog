@@ -4,6 +4,11 @@
 	* ilasm/ilasm_main.c: change the permissions to +x if writing
 	an executable.
 
+	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_except.c,
+	engine/cvm_lengths.c, engine/cvmc_except.c: add the "set_stack_trace"
+	instruction to CVM, to initialize exception stack traces at the
+	point of throw.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_misc.c: rewrite "GetNextArg(RuntimeTypeHandle)"

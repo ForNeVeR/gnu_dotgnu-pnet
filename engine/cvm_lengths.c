@@ -425,11 +425,7 @@ unsigned char const _ILCVMLengths[512] = {
 	/* enter_try */			CVMP_LEN_NONE,
 	/* throw */				CVMP_LEN_NONE,
 	/* throw_caller */		CVMP_LEN_NONE,
-
-	/*
-	 * Reserved opcodes.
-	 */
-	/* preserved_1e */		CVMP_LEN_NONE,
+	/* set_stack_trace */	CVMP_LEN_NONE,
 
 	/*
 	 * Prefixed typedref handling opcodes.

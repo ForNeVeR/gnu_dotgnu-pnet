@@ -20,6 +20,84 @@
 
 #if defined(IL_CVM_GLOBALS)
 
+#if defined(IL_CONFIG_REFLECTION) && defined(IL_CONFIG_DEBUG_LINES)
+
+/*
+ * Find the "stackTrace" field within "System.Exception" and then set.
+ */
+static int FindAndSetStackTrace(ILExecThread *thread, ILObject *object)
+{
+	ILObject *trace;
+	ILCallFrame *callFrame;
+	ILField *field;
+
+	/* Find the "stackTrace" field within the "Exception" class */
+	field = ILExecThreadLookupField
+			(thread, "System.Exception", "stackTrace",
+			 "[vSystem.Diagnostics.PackedStackFrame;");
+	if(field)
+	{
+		/* Push the current frame data onto the stack temporarily
+		   so that "GetExceptionStackTrace" can find it */
+		if(thread->numFrames < thread->maxFrames)
+		{
+			callFrame = &(thread->frameStack[(thread->numFrames)++]);
+		}
+		else if((callFrame = _ILAllocCallFrame(thread)) == 0)
+		{
+			/* We ran out of memory trying to push the frame */
+			return 0;
+		}
+		callFrame->method = thread->method;
+		callFrame->pc = thread->pc;
+		callFrame->frame = thread->frame;
+		callFrame->exceptHeight = thread->exceptHeight;
+		callFrame->permissions = 0;
+
+		/* Get the stack trace and pop the frame */
+		trace = (ILObject *)_IL_StackFrame_GetExceptionStackTrace(thread);
+		--(thread->numFrames);
+		if(!trace)
+		{
+			/* We ran out of memory obtaining the stack trace */
+			return 0;
+		}
+
+		/* Write the stack trace into the object */
+		*((ILObject **)(((unsigned char *)object) + field->offset)) = trace;
+	}
+	return 1;
+}
+
+/*
+ * Set the stack trace for an exception to the current call context.
+ */
+static void SetExceptionStackTrace(ILExecThread *thread, ILObject *object)
+{
+	ILClass *classInfo;
+	if(!object)
+	{
+		return;
+	}
+	classInfo = ILExecThreadLookupClass(thread, "System.Exception");
+	if(!classInfo)
+	{
+		return;
+	}
+	if(!ILClassInheritsFrom(GetObjectClass(object), classInfo))
+	{
+		return;
+	}
+	if(!FindAndSetStackTrace(thread, object))
+	{
+		/* We ran out of memory while allocating the stack trace,
+		   but it isn't serious: we can just throw without the trace */
+		thread->thrownException = 0;
+	}
+}
+
+#endif /* IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES */
+
 void *_ILSystemException(ILExecThread *thread, const char *className)
 {
 	ILObject *object;
@@ -35,49 +113,11 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
 	if(object)
 	{
 	#if defined(IL_CONFIG_REFLECTION) && defined(IL_CONFIG_DEBUG_LINES)
-		ILObject *trace;
-		ILCallFrame *callFrame;
-		ILField *field;
-
-		/* Find the "stackTrace" field within the "Exception" class */
-		field = ILExecThreadLookupField
-				(thread, "System.Exception", "stackTrace",
-				 "[vSystem.Diagnostics.PackedStackFrame;");
-		if(field)
+		if(!FindAndSetStackTrace(thread, object))
 		{
-			/* Push the current frame data onto the stack temporarily
-			   so that "GetExceptionStackTrace" can find it */
-			if(thread->numFrames < thread->maxFrames)
-			{
-				callFrame = &(thread->frameStack[(thread->numFrames)++]);
-			}
-			else if((callFrame = _ILAllocCallFrame(thread)) == 0)
-			{
-				/* We ran out of memory trying to push the frame */
-				object = thread->thrownException;
-				thread->thrownException = 0;
-				return object;
-			}
-			callFrame->method = thread->method;
-			callFrame->pc = thread->pc;
-			callFrame->frame = thread->frame;
-			callFrame->exceptHeight = thread->exceptHeight;
-			callFrame->permissions = 0;
-
-			/* Get the stack trace and pop the frame */
-			trace = (ILObject *)_IL_StackFrame_GetExceptionStackTrace(thread);
-			--(thread->numFrames);
-			if(!trace)
-			{
-				/* We ran out of memory obtaining the stack trace */
-				object = thread->thrownException;
-				thread->thrownException = 0;
-				return object;
-			}
-
-			/* Write the stack trace into the object */
-			*((ILObject **)(((unsigned char *)object) + field->offset))
-					= trace;
+			/* We ran out of memory: pick up the "OutOfMemoryException" */
+			object = thread->thrownException;
+			thread->thrownException = 0;
 		}
 	#endif /* IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES */
 	}
@@ -324,5 +364,40 @@ throwCaller:
 	goto searchForHandler;
 }
 /* Not reached */
+
+/**
+ * <opcode name="set_stack_trace" group="Exception handling instructions">
+ *   <operation>Set the stack trace in an exception object at
+ *              the throw point</operation>
+ *
+ *   <format>prefix<fsep/>set_stack_trace</format>
+ *   <dformat>{set_stack_trace}</dformat>
+ *
+ *   <form name="set_stack_trace" code="COP_PREFIX_SET_STACK_TRACE"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., object</after>
+ *
+ *   <description>The <i>object</i> is popped from the stack as
+ *   type <code>ptr</code>; information about the current method's
+ *   stack calling context is written into <i>object</i>; and then
+ *   <i>object</i> is pushed back onto the stack.</description>
+ *
+ *   <notes>This opcode will have no effect if <i>object</i> is
+ *   <code>null</code>, or if its class does not inherit from
+ *   <code>System.Exception</code>.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_SET_STACK_TRACE):
+{
+	/* Set the stack trace within an exception object */
+#if defined(IL_CONFIG_REFLECTION) && defined(IL_CONFIG_DEBUG_LINES)
+	COPY_STATE_TO_THREAD();
+	SetExceptionStackTrace(thread, stacktop[-1].ptrValue);
+	RESTORE_STATE_FROM_THREAD();
+#endif
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_SET_STACK_TRACE);
 
 #endif /* IL_CVM_PREFIX */

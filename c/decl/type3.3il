@@ -23,14 +23,14 @@
 .field public static int8 modopt(['OpenSystem.C']'OpenSystem.C'.'IsConst') * 'p3'
 .field public static int8 * modopt(['OpenSystem.C']'OpenSystem.C'.'IsConst') 'p4'
 .field public static char * modreq(['.library']'System.Runtime.CompilerServices'.'IsVolatile') 'p5'
-.field public static method int32 *() 'f'
-.field public static method int32 *(int32, int8 *) * 'f2'
-.method public static void 'f3'(method int32 *(int8 *)) cil managed 
+.field public static method int32 *() modopt(['OpenSystem.C']'OpenSystem.C'.'IsFunctionPointer') 'f'
+.field public static method int32 *(int32, int8 *) modopt(['OpenSystem.C']'OpenSystem.C'.'IsFunctionPointer') * 'f2'
+.method public static void 'f3'(method int32 *(int8 *) modopt(['OpenSystem.C']'OpenSystem.C'.'IsFunctionPointer')) cil managed 
 {
 	ret
 	.maxstack 0
 } // method f3
-.method public static void 'f4'(method int32 *(int8 *) * 'x') cil managed 
+.method public static void 'f4'(method int32 *(int8 *) modopt(['OpenSystem.C']'OpenSystem.C'.'IsFunctionPointer') * 'x') cil managed 
 {
 	ret
 	.maxstack 0

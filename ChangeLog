@@ -1,4 +1,10 @@
 
+2002-08-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* c/decl/Makefile.am, c/decl/type3.3il, c/decl/type3.il,
+	c/decl/typeof1.3il, c/decl/typeof1.c, c/decl/typeof1.il:
+	new tests for type specifiers and function aliases.
+
 2002-08-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/decl/type3.il, c/decl/type3.3il: modified output files that

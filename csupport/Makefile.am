@@ -2,7 +2,8 @@
 clangdir   = $(libdir)/cscc/lib
 clang_DATA = OpenSystem.C.dll
 
-CSSRC = $(srcdir)/Crt0.cs \
+CSSRC = $(srcdir)/Complex.cs \
+		$(srcdir)/Crt0.cs \
 		$(srcdir)/FileTable.cs \
 		$(srcdir)/LongDouble.cs \
 		$(srcdir)/LongJmp.cs \

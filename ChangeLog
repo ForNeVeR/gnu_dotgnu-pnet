@@ -20,6 +20,9 @@
 	* codegen/cg_optable.c: add builtin operator definitions for
 	the "__long_double" type.
 
+	* csupport/Complex.cs, csupport/Makefile.am: add complex number
+	types to support ISO C complex number arithmetic.
+
 2002-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/common/cc_main.c, ilalink/link_create.c, ilalink/link_library.c,

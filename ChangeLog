@@ -1,3 +1,17 @@
+2003-11-07  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs,
+	System.Drawing/Toolkit/IToolkitGraphics.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Windows.Forms/Menu.cs, System.Windows.Forms/TabControl.cs,
+	System.Windows.Forms/TreeView.cs: implement VisibleClipBounds,
+	TransformPoints, DrawString now supports StringFormat alignment with
+	thanks to Thomas Fritzsche <tf@noto.de>.
+	DrawString & MeasureString moved into separate classes.
+	
+	* samples/FormsTest.cs: new DrawString tests, new Transform tests.
+
+	* Xsharp/Graphics.cs: correct coordinate minimum and maximums. 
 
 2003-11-07  Joe Boese  <joseph_boese@hotmail.com>
 

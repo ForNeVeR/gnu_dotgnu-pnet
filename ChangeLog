@@ -7,6 +7,10 @@ into the main image.
 * codegen/cg_nodes.tc, codegen/cg_decls.tc, codegen/jv_decls.tc:
 remove ILNode_TypeSuffix and ILNode_LocalVariableType.
 
+* cscc/cs_defs.tc: add ILNode_PrimitiveType, ILNode_ObjectType,
+ILNode_StringType, ILNode_DecimalType, and rearrange the text a
+little for clarity.
+
 2001-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h: add the IL_INLINE helper macro.

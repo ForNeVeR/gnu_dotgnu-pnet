@@ -77,6 +77,10 @@ extern CSSemValue CSSemValueDefault;
 /*
  * Node types that are specific to C#.
  */
+
+/*
+ * Types.
+ */
 %node ILNode_ArrayType ILNode_Dummy =
 {
 	ILNode  *type;
@@ -88,6 +92,26 @@ extern CSSemValue CSSemValueDefault;
 }
 %node ILNode_VoidPtrType ILNode_Dummy
 %node ILNode_VoidType ILNode_Dummy
+%node ILNode_PrimitiveType ILNode_Dummy =
+{
+	ILUInt32 elementType;
+}
+%node ILNode_ObjectType ILNode_Dummy
+%node ILNode_StringType ILNode_Dummy
+%node ILNode_DecimalType ILNode_Dummy
+%node ILNode_TypeSuffix ILNode_Dummy =
+{
+	ILUInt32 count;		/* 0 for '*', 1 + for dimension separators */
+}
+%node ILNode_LocalVariableType ILNode_Dummy =
+{
+	ILNode *type;
+	ILNode *suffixes;
+}
+
+/*
+ * Misc nodes.
+ */
 %node ILNode_TypeOf ILNode_DummyUnaryExpr
 %node ILNode_SizeOf ILNode_UnaryExpression =
 {
@@ -97,6 +121,10 @@ extern CSSemValue CSSemValueDefault;
 %node ILNode_UserCast ILNode_DummyBinaryExpr
 %node ILNode_IsUntyped ILNode_DummyBinaryExpr
 %node ILNode_AsUntyped ILNode_DummyBinaryExpr
+
+/*
+ * Statements.
+ */
 %node ILNode_Fixed ILNode_Statement =
 {
 	ILNode *type;

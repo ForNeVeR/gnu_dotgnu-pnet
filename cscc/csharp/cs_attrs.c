@@ -298,15 +298,11 @@ static void WriteSerializedEntry(ILGenInfo *info,
 		}
 		break;
 
-		default:
+		case IL_META_SERIALTYPE_VARIANT:
 		{
 			/* Note : We assume the values are castable and
 			 * do not provide any checks here */
-			if(ILType_IsArray(paramType))
-			{
-				/* TODO: arrays */
-			}
-			else if(ILType_IsPrimitive(argType))
+			if(ILType_IsPrimitive(argType))
 			{
 				switch(argValue->valueType)
 				{	
@@ -367,6 +363,15 @@ static void WriteSerializedEntry(ILGenInfo *info,
 				WriteSerializedEntry(info, writer, paramType,
 										argValue, argType,
 										serialType);	
+			}
+		}
+		break;
+
+		default:
+		{
+			if(ILType_IsArray(paramType))
+			{
+				/* TODO: arrays */
 			}
 		}
 		break;
@@ -788,21 +793,16 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 		if(evalValues[argNum].valueType != ILMachineType_Void)
 		{
 			if(!ILGenCastConst(info, &(evalValues[argNum]),
-							   evalValues[argNum].valueType,
-							   ILTypeToMachineType(paramType)))
+				   evalValues[argNum].valueType,ILTypeToMachineType(paramType))
+			   && !ILCanCastKind(info, evalArgs[argNum].type,
+								paramType, IL_CONVERT_STANDARD,0))
 			{
-				if(!ILCanCastKind(info, evalArgs[argNum].type,
-							paramType,
-							IL_CONVERT_STANDARD,
-							0))
-				{
 								
-					CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
-								  yygetlinenum(evalArgs[argNum].node),
-								  _("could not coerce constant argument %d"),
-								  argNum + 1);
-					haveErrors = 1;
-				}
+				CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
+							  yygetlinenum(evalArgs[argNum].node),
+							  _("could not coerce constant argument %d"),
+							  argNum + 1);
+				haveErrors = 1;
 			}
 			else if(ILSerializeGetType(paramType) == -1)
 			{

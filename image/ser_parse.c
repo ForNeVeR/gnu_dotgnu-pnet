@@ -127,6 +127,15 @@ int ILSerializeGetType(ILType *type)
 				return IL_META_SERIALTYPE_TYPE;
 			}
 		}
+		else if(!strcmp(classInfo->className->name, "Object"))
+		{
+			if(classInfo->className->namespace &&
+			   !strcmp(classInfo->className->namespace, "System") &&
+			   ILClassGetNestedParent(classInfo) == 0)
+			{
+				return IL_META_SERIALTYPE_VARIANT;
+			}
+		}
 	}
 	else if(ILType_IsSimpleArray(type))
 	{
@@ -185,6 +194,7 @@ static int HasSufficientSpace(ILSerializeReader *reader, int type)
 
 		case IL_META_SERIALTYPE_STRING:
 		case IL_META_SERIALTYPE_TYPE:
+		case IL_META_SERIALTYPE_VARIANT:
 		{
 			/* Assume that space is sufficient, and check for real later */
 			return 1;

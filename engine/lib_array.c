@@ -1766,6 +1766,7 @@ static ILInt32 System_Array_GetLowerBound(ILExecThread *thread,
 	}
 	ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
 							"Arg_InvalidDimension");
+	return 0;
 }
 
 /*
@@ -1796,6 +1797,7 @@ static ILInt32 System_Array_GetUpperBound(ILExecThread *thread,
 	}
 	ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
 							"Arg_InvalidDimension");
+	return 0;
 }
 
 /*

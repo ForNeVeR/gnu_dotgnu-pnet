@@ -9,6 +9,8 @@
 
 	* csant/csant_fileset.c: regular expression and directory fixes.
 
+	* engine/lib_array.c: missing return values.
+
 2001-03-21 Gopal.V <gopalv82@yahoo.com>
 	* csdoc/doc_stub.c : Added the Csdoc to C# stub generation.
 

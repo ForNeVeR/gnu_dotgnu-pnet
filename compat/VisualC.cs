@@ -38,7 +38,11 @@ using System;
 public sealed class DebugInfoInPDBAttribute : Attribute {}
 
 // Indicate that a name is decorated.
-public sealed class DecoratedNameAttribute : Attribute {}
+public sealed class DecoratedNameAttribute : Attribute
+{
+	public DecoratedNameAttribute() {}
+	public DecoratedNameAttribute(String pszDecoratedName) {}
+}
 
 // Modifier that is used to indicate C++ reference types.
 public sealed class IsCXXReferenceModifier {}

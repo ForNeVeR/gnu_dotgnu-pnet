@@ -38,6 +38,8 @@
 	fix some of the build files to point at "System/first/System.dll"
 	so that pnetlib can be built on a clean system.
 
+	* compat/VisualC.cs: missing constructor on "DecoratedNameAttribute".
+
 2003-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/GlobalProxySelection.cs, System/Net/HttpWebRequest.cs:

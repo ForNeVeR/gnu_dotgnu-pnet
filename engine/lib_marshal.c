@@ -108,10 +108,10 @@ void _IL_Marshal_FreeHGlobal(ILExecThread *_thread, ILNativeInt hglobal)
 }
 
 /*
- * public static IntPtr OffsetOf(Type t, String fieldName);
+ * private static IntPtr OffsetOfInternal(Type t, String fieldName);
  */
-ILNativeInt _IL_Marshal_OffsetOf(ILExecThread *_thread, ILObject *t,
-								 ILString *fieldName)
+ILNativeInt _IL_Marshal_OffsetOfInternal(ILExecThread *_thread, ILObject *t,
+								 		 ILString *fieldName)
 {
 	char *name;
 	ILClass *classInfo;
@@ -124,14 +124,14 @@ ILNativeInt _IL_Marshal_OffsetOf(ILExecThread *_thread, ILObject *t,
 		classInfo = _ILGetClrClass(_thread, t);
 		if(!classInfo)
 		{
-			return 0;
+			return -1;
 		}
 
 		/* Get the field name in UTF-8 */
 		name = ILStringToUTF8(_thread, fieldName);
 		if(!name)
 		{
-			return 0;
+			return -1;
 		}
 
 		/* Make sure that the class has been laid out */
@@ -139,7 +139,7 @@ ILNativeInt _IL_Marshal_OffsetOf(ILExecThread *_thread, ILObject *t,
 		if(!_ILLayoutClass(classInfo))
 		{
 			IL_METADATA_UNLOCK(_thread);
-			return 0;
+			return -1;
 		}
 
 		/* Look for the field within the class */
@@ -162,48 +162,73 @@ ILNativeInt _IL_Marshal_OffsetOf(ILExecThread *_thread, ILObject *t,
 		}
 		IL_METADATA_UNLOCK(_thread);
 	}
-	return 0;
+	return -1;
 }
 
 /*
- * public static String PtrToStringAnsi(IntPtr ptr);
+ * private static String PtrToStringAnsiInternal(IntPtr ptr, int len);
  */
-ILString *_IL_Marshal_PtrToStringAnsi_j(ILExecThread *_thread, ILNativeInt ptr)
+ILString *_IL_Marshal_PtrToStringAnsiInternal(ILExecThread *_thread,
+											  ILNativeInt ptr, ILInt32 len)
 {
 	if(UnmanagedOK(_thread))
 	{
 		if(ptr)
 		{
-			return ILStringCreate(_thread, (const char *)ptr);
+			if(len < 0)
+			{
+				return ILStringCreate(_thread, (const char *)ptr);
+			}
+			else
+			{
+				return ILStringCreateLen(_thread, (const char *)ptr, len);
+			}
 		}
-		ILExecThreadThrowArgNull(_thread, "ptr");
 	}
 	return 0;
 }
 
 /*
- * public static String PtrToStringAnsi(IntPtr ptr, int len);
+ * private static String PtrToStringAutoInternal(IntPtr ptr, int len);
  */
-ILString *_IL_Marshal_PtrToStringAnsi_ji(ILExecThread *_thread,
-										 ILNativeInt ptr, ILInt32 len)
+ILString *_IL_Marshal_PtrToStringAutoInternal(ILExecThread *_thread,
+											  ILNativeInt ptr, ILInt32 len)
 {
 	if(UnmanagedOK(_thread))
 	{
 		if(ptr)
 		{
-			if(len >= 0)
+			if(len < 0)
 			{
-				return ILStringCreateLen(_thread, (const char *)ptr, len);
+				return ILStringCreateUTF8(_thread, (const char *)ptr);
 			}
 			else
 			{
-				ILExecThreadThrowSystem
-					(_thread, "System.ArgumentException", 0);
+				return ILStringCreateUTF8Len(_thread, (const char *)ptr, len);
 			}
 		}
-		else
+	}
+	return 0;
+}
+
+/*
+ * private static String PtrToStringUniInternal(IntPtr ptr, int len);
+ */
+ILString *_IL_Marshal_PtrToStringUniInternal(ILExecThread *_thread,
+											 ILNativeInt ptr, ILInt32 len)
+{
+	if(UnmanagedOK(_thread))
+	{
+		if(ptr)
 		{
-			ILExecThreadThrowArgNull(_thread, "ptr");
+			if(len < 0)
+			{
+				return ILStringWCreate(_thread, (const ILUInt16 *)ptr);
+			}
+			else
+			{
+				return ILStringWCreateLen(_thread, (const ILUInt16 *)ptr, len);
+			}
 		}
 	}
 	return 0;
@@ -316,9 +341,9 @@ ILNativeInt _IL_Marshal_ReAllocHGlobal(ILExecThread *_thread,
 }
 
 /*
- * public static int SizeOf(Type t);
+ * private static int SizeOfInternal(Type t);
  */
-ILInt32 _IL_Marshal_SizeOf(ILExecThread * _thread, ILObject *t)
+ILInt32 _IL_Marshal_SizeOfInternal(ILExecThread * _thread, ILObject *t)
 {
 	ILClass *classInfo;
 
@@ -332,6 +357,7 @@ ILInt32 _IL_Marshal_SizeOf(ILExecThread * _thread, ILObject *t)
 		}
 
 		/* Get the size of the type and return it */
+		/* TODO: this should return the native size, not the managed size */
 		return (ILInt32)(ILSizeOfType
 					(_thread, ILType_FromValueType(classInfo)));
 	}
@@ -360,6 +386,85 @@ ILNativeInt _IL_Marshal_StringToHGlobalAnsi(ILExecThread *_thread, ILString *s)
 		ILAnsiGetBytes(buf, (unsigned long)len,
 					   (unsigned char *)newStr, size);
 		newStr[size] = '\0';
+		return (ILNativeInt)newStr;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public static IntPtr StringToHGlobalAuto(String s);
+ */
+ILNativeInt _IL_Marshal_StringToHGlobalAuto(ILExecThread *_thread, ILString *s)
+{
+	ILUInt16 *buffer;
+	ILInt32 length;
+	ILInt32 utf8Len;
+	char *newStr;
+	char *temp;
+	int posn;
+
+	/* Bail out immediately if the string is NULL */
+	if(!UnmanagedOK(_thread) || !s)
+	{
+		return 0;
+	}
+
+	/* Determine the length of the string in UTF-8 characters */
+	buffer = StringToBuffer(s);
+	length = ((System_String *)s)->length;
+	posn = 0;
+	utf8Len = 0;
+	while(posn < (int)length)
+	{
+		utf8Len += ILUTF8WriteChar
+			(0, ILUTF16ReadChar(buffer, (int)length, &posn));
+	}
+
+	/* Allocate space within the garbage-collected heap */
+	newStr = (char *)malloc(utf8Len + 1);
+	if(!newStr)
+	{
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+
+	/* Copy the characters into the allocated buffer */
+	temp = newStr;
+	posn = 0;
+	while(posn < (int)length)
+	{
+		temp += ILUTF8WriteChar
+			(temp, ILUTF16ReadChar(buffer, (int)length, &posn));
+	}
+	*temp = '\0';
+
+	/* Done */
+	return (ILNativeInt)newStr;
+}
+
+/*
+ * public static IntPtr StringToHGlobalUni(String s);
+ */
+ILNativeInt _IL_Marshal_StringToHGlobalUni(ILExecThread *_thread, ILString *s)
+{
+	if(UnmanagedOK(_thread) && s)
+	{
+		ILUInt16 *buf = StringToBuffer(s);
+		ILInt32 len = ((System_String *)s)->length;
+		ILUInt16 *newStr = (ILUInt16 *)malloc((len + 1) * sizeof(ILUInt16));
+		if(!newStr)
+		{
+			ILExecThreadThrowOutOfMemory(_thread);
+			return 0;
+		}
+		if(len > 0)
+		{
+			ILMemCpy(newStr, buf, len * sizeof(ILUInt16));
+		}
+		newStr[len] = (ILUInt16)0;
 		return (ILNativeInt)newStr;
 	}
 	else
@@ -458,12 +563,12 @@ void _IL_Marshal_WriteIntPtr(ILExecThread *_thread, ILNativeInt ptr,
 	}
 }
 
-/*
- * public static void PtrToStructureInternal(IntPtr ptr, Object structure);
- */
-void _IL_Marshal_PtrToStructureInternal(ILExecThread * _thread, 
-				ILNativeInt ptr,ILObject * structure)
+ILBool _IL_Marshal_PtrToStructureInternal(ILExecThread *_thread,
+										  ILNativeInt ptr,
+										  ILObject *structure,
+										  ILBool allowValueTypes)
 {
+	/* TODO: this isn't correct */
 	ILClass *classInfo;
 	ILInt32 size;
 	if(UnmanagedOK(_thread) && ptr)
@@ -472,19 +577,32 @@ void _IL_Marshal_PtrToStructureInternal(ILExecThread * _thread,
 		classInfo = GetObjectClass(structure);
 		if(!classInfo)
 		{
-			return;
+			return 0;
 		}
 		
 		/* Get the size of the type */
-		size=(ILInt32)(ILSizeOfType
-					(_thread, ILType_FromValueType(classInfo)));
+		size = (ILInt32)(ILSizeOfType
+				(_thread, ILType_FromValueType(classInfo)));
 		ILMemCpy(structure,(void*)ptr,size);
-		return;
+		return 1;
 	}
-	else if(!ptr)
-	{
-		ILExecThreadThrowArgNull(_thread, "ptr");
-	}
+	return 0;
+}
+
+ILBool _IL_Marshal_DestroyStructureInternal(ILExecThread *_thread,
+											ILNativeInt ptr,
+											ILObject *structureType)
+{
+	/* TODO */
+	return 0;
+}
+
+ILBool _IL_Marshal_StructureToPtrInternal(ILExecThread *_thread,
+										  ILObject *structure,
+										  ILNativeInt ptr)
+{
+	/* TODO */
+	return 0;
 }
 
 #endif /* IL_CONFIG_PINVOKE */

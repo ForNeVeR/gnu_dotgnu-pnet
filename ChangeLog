@@ -5,6 +5,9 @@
 	into ILEngineType_I when constructing an instance of IntPtr
 	or UIntPtr.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_marshal.c:
+	new internalcall interface for System.Runtime.InteropServices.Marshal.
+
 2003-06-03  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc: Allow enum initializers to add non-identical

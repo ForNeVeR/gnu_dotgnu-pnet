@@ -251,9 +251,13 @@ extern ILNativeInt _IL_Marshal_AllocHGlobal(ILExecThread * _thread, ILNativeInt 
 extern void _IL_Marshal_CopyMU(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2, ILNativeInt _p3, ILInt32 _p4);
 extern void _IL_Marshal_CopyUM(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2, ILInt32 _p3, ILInt32 _p4);
 extern void _IL_Marshal_FreeHGlobal(ILExecThread * _thread, ILNativeInt _p1);
-extern ILNativeInt _IL_Marshal_OffsetOf(ILExecThread * _thread, ILObject * _p1, ILString * _p2);
-extern ILString * _IL_Marshal_PtrToStringAnsi_j(ILExecThread * _thread, ILNativeInt _p1);
-extern ILString * _IL_Marshal_PtrToStringAnsi_ji(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILNativeInt _IL_Marshal_OffsetOfInternal(ILExecThread * _thread, ILObject * _p1, ILString * _p2);
+extern ILString * _IL_Marshal_PtrToStringAnsiInternal(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILString * _IL_Marshal_PtrToStringAutoInternal(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILString * _IL_Marshal_PtrToStringUniInternal(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILBool _IL_Marshal_PtrToStructureInternal(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2, ILBool _p3);
+extern ILBool _IL_Marshal_DestroyStructureInternal(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2);
+extern ILBool _IL_Marshal_StructureToPtrInternal(ILExecThread * _thread, ILObject * _p1, ILNativeInt _p2);
 extern ILNativeInt _IL_Marshal_ObjectToPtr(ILExecThread * _thread, ILObject * _p1);
 extern ILUInt8 _IL_Marshal_ReadByte(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 extern ILInt16 _IL_Marshal_ReadInt16(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
@@ -261,15 +265,16 @@ extern ILInt32 _IL_Marshal_ReadInt32(ILExecThread * _thread, ILNativeInt _p1, IL
 extern ILInt64 _IL_Marshal_ReadInt64(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 extern ILNativeInt _IL_Marshal_ReadIntPtr(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 extern ILNativeInt _IL_Marshal_ReAllocHGlobal(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
-extern ILInt32 _IL_Marshal_SizeOf(ILExecThread * _thread, ILObject * _p1);
+extern ILInt32 _IL_Marshal_SizeOfInternal(ILExecThread * _thread, ILObject * _p1);
 extern ILNativeInt _IL_Marshal_StringToHGlobalAnsi(ILExecThread * _thread, ILString * _p1);
+extern ILNativeInt _IL_Marshal_StringToHGlobalAuto(ILExecThread * _thread, ILString * _p1);
+extern ILNativeInt _IL_Marshal_StringToHGlobalUni(ILExecThread * _thread, ILString * _p1);
 extern ILNativeInt _IL_Marshal_UnsafeAddrOfPinnedArrayElement(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
 extern void _IL_Marshal_WriteByte(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILUInt8 _p3);
 extern void _IL_Marshal_WriteInt16(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt16 _p3);
 extern void _IL_Marshal_WriteInt32(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3);
 extern void _IL_Marshal_WriteInt64(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt64 _p3);
 extern void _IL_Marshal_WriteIntPtr(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILNativeInt _p3);
-extern void _IL_Marshal_PtrToStructureInternal(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2);
 
 extern void _IL_RuntimeHelpers_InitializeArray(ILExecThread * _thread, ILObject * _p1, void * _p2);
 extern void _IL_RuntimeHelpers_RunClassConstructor(ILExecThread * _thread, void * _p1);

@@ -179,6 +179,11 @@ int ILLinkerPerformLink(ILLinker *linker);
 int ILLinkerSetFlags(ILLinker *linker, int flags);
 
 /*
+ * Parse an assembly version string.
+ */
+int ILLinkerParseVersion(ILUInt16 *version, const char *str);
+
+/*
  * Call the linker as if it were an executable with command-line
  * options.  It is really linked into the calling program.
  */

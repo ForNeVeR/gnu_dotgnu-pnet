@@ -507,6 +507,43 @@ int ILLinkerSetFlags(ILLinker *linker, int flags)
 	return oldFlags;
 }
 
+int ILLinkerParseVersion(ILUInt16 *version, const char *str)
+{
+	int posn;
+	ILUInt32 value;
+	version[0] = 0;
+	version[1] = 0;
+	version[2] = 0;
+	version[3] = 0;
+	for(posn = 0; posn < 4; ++posn)
+	{
+		if(*str < '0' || *str > '9')
+		{
+			return 0;
+		}
+		value = (ILUInt32)(*str++ - '0');
+		while(*str >= '0' && *str <= '9')
+		{
+			value = value * ((ILUInt32)10) + (ILUInt32)(*str++ - '0');
+			if(value >= (ILUInt32)0x10000)
+			{
+				return 0;
+			}
+		}
+		version[posn] = (ILUInt16)value;
+		if(posn == 3)
+		{
+			break;
+		}
+		if(*str != ':' && *str != '.')
+		{
+			return 0;
+		}
+		++str;
+	}
+	return (*str == '\0');
+}
+
 #ifdef	__cplusplus
 };
 #endif

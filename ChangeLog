@@ -8,6 +8,10 @@
 	generation on standalone attributes that aren't attached
 	to a class.
 
+	* ilalink/link_create.c, ilalink/link_image.c, ilalink/link_main.c,
+	include/il_linker.h: use the version number in the "AssemblyVersion"
+	attribute if the user did not supply "-fassembly-version".
+
 2004-07-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_gc.c: fix _IL_GCHandle_GCAddrOfPinnedObject behavior

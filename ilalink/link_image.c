@@ -57,6 +57,8 @@ static int ProcessImage(ILLinker *linker, ILImage *image,
 	ILUInt32 compat;
 	void *dataSection;
 	unsigned long dataLen;
+	char *attrVersionString;
+	ILUInt16 attrVersion[4];
 
 	/* Get the module and assembly for the final output image */
 	thisModule = (ILModule *)ILImageTokenInfo(linker->image,
@@ -104,6 +106,18 @@ static int ProcessImage(ILLinker *linker, ILImage *image,
 		   version[2] == 0 && version[3] == 0)
 		{
 			ILAssemblySetVersion(thisAssem, ILAssemblyGetVersion(assem));
+			attrVersionString = ILLinkerGetStringAttribute
+				(ILToProgramItem(assem), "AssemblyVersionAttribute",
+				 "System.Reflection");
+			if(attrVersionString)
+			{
+				/* The assembly contains an "AssemblyVersion" attribute */
+				if(ILLinkerParseVersion(attrVersion, attrVersionString))
+				{
+					ILAssemblySetVersion(thisAssem, attrVersion);
+				}
+				ILFree(attrVersionString);
+			}
 		}
 
 		/* Copy the locale information */

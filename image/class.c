@@ -1136,14 +1136,27 @@ ILMember *ILClassNextMember(ILClass *info, ILMember *last)
 
 ILMember *ILClassNextMemberByKind(ILClass *info, ILMember *last, int kind)
 {
-	while((last = ILClassNextMember(info, last)) != 0)
+	if(last)
+	{
+		last = last->nextMember;
+	}
+	else if(info)
+	{
+		last = info->firstMember;
+	}
+	else
+	{
+		return 0;
+	}
+	while(last != 0)
 	{
 		if(((int)(last->kind)) == kind)
 		{
-			break;
+			return last;
 		}
+		last = last->nextMember;
 	}
-	return last;
+	return 0;
 }
 
 void ILClassMarkComplete(ILClass *info)

@@ -6,6 +6,10 @@
 	by filtering out tokens that obviously won't have an attached
 	information block.
 
+	* image/class.c (ILClassNextMemberByKind): unroll the call
+	to ILClassNextMember to make this commonly-used function
+	more efficient.
+
 2003-02-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_decls.tc: Re-order the static constructors so

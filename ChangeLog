@@ -7,6 +7,8 @@
 	* runtime/System/LocalDataStoreSlot.cs: Fix minor typo bug , which
 	was preventing an empty slot from being filled.
 
+	* System/Net/HttpWebRequest.cs: Implement SSL tunnelling for proxies.
+
 2004-05-21  Gopal V  <gopalv82@yahoo.com>
 
 	* Xsharp/Widget.cs: Checks for CaptionWidget are more proper

@@ -940,8 +940,119 @@ public class HttpWebRequest : WebRequest
 					Socket(ip.AddressFamily, SocketType.Stream,
 							ProtocolType.Tcp);
 			server.Connect(ep);
-			/* TODO: Tunnel via Proxy before starting SSL */
+			if(req.isSecured)
+			{
+				ProxyConnect(server, req);
+			}
 			return server;
+		}
+
+		private static void ProxyConnect(Socket sock, HttpWebRequest req)
+		{
+			// This should send an HTTP CONNECT + auth + KeepAlive 
+			// read the response 200 header , wait for blank line
+			// and jump back out
+			SendConnect(sock, req);
+			if(!GetConnection(sock, req))
+			{
+				throw new WebException("Proxy refused connection"); 
+			}
+		}
+
+		private static void SendConnect(Socket sock, HttpWebRequest req)
+		{
+			// This stream does not own the socket
+			Stream stream = new NetworkStream(sock, false);
+			StreamWriter writer = new StreamWriter(stream);
+			String connectString = null;
+			String authHeader = null;
+			
+			if(req.Proxy.Credentials != null)
+			{
+				// TODO : remove this from the SSL req
+				req.AddProxyAuthHeaders("Basic");
+			}		
+						
+			connectString= 	"CONNECT "+	req.Address.Host + 
+							":" + req.Address.Port +
+							" HTTP/"+req.protocolVersion.Major+
+							"."+req.protocolVersion.Minor+"\r\n";
+
+			authHeader = 	"Proxy-Authorization: " + 
+							req.Headers["Proxy-Authorization"] + "\r\n"; 
+
+			writer.Write(connectString);
+			writer.Write(authHeader);
+			writer.Write("\r\n");// terminating CRLF
+			writer.Flush();
+			writer.Close();
+			// stream is automatically closed , but the socket is
+			// still alive
+		}
+
+		private static bool GetConnection(Socket sock, HttpWebRequest req)
+		{
+			NetworkStream stream = new NetworkStream(sock, false);
+			String response = ReadLine(stream);
+			if(response != null && 	
+				response.Substring("HTTP/1.0 ".Length,3) == "200")
+			{
+				while((response = ReadLine(stream)) != null && 
+						response != String.Empty)
+				{
+					// eat up any headers...
+				}
+				stream.Close(); // close stream, don't kill socket
+				return true;
+			}
+			else
+			{
+				stream.Close(); // close stream, don't kill socket
+				return false;
+			}
+		}
+
+		
+		private static String ReadLine(Stream stream)
+		{
+			StringBuilder builder = new StringBuilder();
+			int ch;
+			for(;;)
+			{
+				// Process characters until we reach a line terminator.
+				ch=stream.ReadByte();
+				if(ch==-1)
+				{
+					break;
+				}
+				else if(ch == 13)
+				{
+					if((ch=stream.ReadByte())==10)
+					{
+						return builder.ToString();
+					}
+					else if(ch==-1)
+					{
+						break;
+					}
+					else
+					{
+						builder.Append("\r"+(byte)ch);
+						/* that "\r" is added to the stuff */
+					}
+				}
+				else if(ch == 10)
+				{
+					// This is an LF line terminator.
+					return builder.ToString();
+				}
+				else
+				{
+					builder.Append((char)ch);
+				}
+			}
+			if(builder.Length!=0) return builder.ToString(); 
+			else return null;
 		}
 
 		private static Stream OpenStream(HttpWebRequest req)
@@ -970,7 +1081,7 @@ public class HttpWebRequest : WebRequest
 			request.headerSent=true; 
 			/* fake it before sending to allow for atomicity */
 			String requestString= null;
-			if(request.Proxy!=null)
+			if(request.Proxy!=null && !request.isSecured)
 			{
 				if(request.Proxy.Credentials != null &&
 					request.Method != "GET" && 

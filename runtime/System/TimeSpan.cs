@@ -559,7 +559,7 @@ public struct TimeSpan : IComparable
 			{
 				get
 				{
-					double temp = ((double)value_) / 1000.0;
+					double temp = ((double)value_) / ((double)TicksPerMillisecond);
 					if(temp > 922337203685477.0)
 					{
 						return 922337203685477.0;

@@ -1,4 +1,8 @@
 
+2004-03-27  Gopal V <gopalv82@symonds.net>
+
+	* runtime/System/TimeSpan.cs: Fix minor bug #8291
+
 2004-03-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csupport/Crt0.cs: call "__syscall_wrap_stdfds" in libc to

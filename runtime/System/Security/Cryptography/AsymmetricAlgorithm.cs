@@ -25,6 +25,7 @@ namespace System.Security.Cryptography
 #if !ECMA_COMPAT
 
 using System;
+using System.Text;
 
 public abstract class AsymmetricAlgorithm
 {
@@ -82,6 +83,20 @@ public abstract class AsymmetricAlgorithm
 
 	// Get the XML string representation of an asymmetric algorithm object.
 	public abstract String ToXmlString(bool includePrivateParameters);
+
+	// Convert a big integer value into a base64 string and
+	// add it to an XML builder.
+	internal void BigIntToXml(StringBuilder builder, String name, byte[] value)
+			{
+				builder.Append('<');
+				builder.Append(name);
+				builder.Append('>');
+				builder.Append(Convert.ToBase64String(value));
+				builder.Append('<');
+				builder.Append('/');
+				builder.Append(name);
+				builder.Append('>');
+			}
 
 }; // class AsymmetricAlgorithm
 

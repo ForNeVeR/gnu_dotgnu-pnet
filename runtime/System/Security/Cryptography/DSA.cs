@@ -25,6 +25,7 @@ namespace System.Security.Cryptography
 #if !ECMA_COMPAT
 
 using System;
+using System.Text;
 
 public abstract class DSA : AsymmetricAlgorithm
 {
@@ -56,18 +57,134 @@ public abstract class DSA : AsymmetricAlgorithm
 	public abstract bool VerifySignature(byte[] rgbHash, byte[] rgbSignature);
 
 	// Reconstruct an asymmetric algorithm object from an XML string.
-	[TODO]
 	public override void FromXmlString(String xmlString)
 			{
-				// TODO
+				SecurityElement elem;
+				DSAParameters dsaParams = new DSAParameters();
+				String tag;
+				if(xmlString == null)
+				{
+					throw new ArgumentNullException("xmlString");
+				}
+				try
+				{
+					elem = SecurityElement.Parse(xmlString);
+					if(elem == null || elem.Tag != "DSAKeyValue")
+					{
+						throw new CryptographicException
+							(_("Crypto_InvalidDSAParams"));
+					}
+					foreach(SecurityElement child in elem.Children)
+					{
+						tag = child.Tag;
+						if(tag == "P")
+						{
+							dsaParams.P = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "Q")
+						{
+							dsaParams.Q = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "G")
+						{
+							dsaParams.G = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "Y")
+						{
+							dsaParams.Y = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "J")
+						{
+							dsaParams.J = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "Seed")
+						{
+							dsaParams.Seed = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "X")
+						{
+							dsaParams.X = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "PgenCounter")
+						{
+							byte[] count = Convert.FromBase64String
+								(child.Text);
+							dsaParams.Counter = 0;
+							foreach(byte b in count)
+							{
+								dsaParams.Counter =
+									(dsaParams.Counter << 8) + (int)b;
+							}
+						}
+					}
+				}
+				catch(FormatException)
+				{
+					throw new CryptographicException
+						(_("Crypto_InvalidDSAParams"));
+				}
+				catch(ArgumentNullException)
+				{
+					throw new CryptographicException
+						(_("Crypto_InvalidDSAParams"));
+				}
+				ImportParameters(dsaParams);
 			}
 
 	// Get the XML string representation of an asymmetric algorithm object.
-	[TODO]
 	public override String ToXmlString(bool includePrivateParameters)
 			{
-				// TODO
-				return null;
+				DSAParameters dsaParams =
+					ExportParameters(includePrivateParameters);
+				byte[] countArray;
+				StringBuilder builder = new StringBuilder();
+				builder.Append("<DSAKeyValue>");
+				BigIntToXml(builder, "P", dsaParams.P);
+				BigIntToXml(builder, "Q", dsaParams.Q);
+				BigIntToXml(builder, "G", dsaParams.G);
+				BigIntToXml(builder, "Y", dsaParams.Y);
+				BigIntToXml(builder, "J", dsaParams.J);
+				BigIntToXml(builder, "Seed", dsaParams.Seed);
+				if(dsaParams.Counter < 0x100)
+				{
+					countArray = new byte [1];
+					countArray[0] = (byte)(dsaParams.Counter);
+				}
+				else if(dsaParams.Counter < 0x10000)
+				{
+					countArray = new byte [2];
+					countArray[0] = (byte)(dsaParams.Counter >> 8);
+					countArray[1] = (byte)(dsaParams.Counter);
+				}
+				else if(dsaParams.Counter < 0x1000000)
+				{
+					countArray = new byte [3];
+					countArray[0] = (byte)(dsaParams.Counter >> 16);
+					countArray[1] = (byte)(dsaParams.Counter >> 8);
+					countArray[2] = (byte)(dsaParams.Counter);
+				}
+				else
+				{
+					countArray = new byte [4];
+					countArray[0] = (byte)(dsaParams.Counter >> 24);
+					countArray[1] = (byte)(dsaParams.Counter >> 16);
+					countArray[2] = (byte)(dsaParams.Counter >> 8);
+					countArray[3] = (byte)(dsaParams.Counter);
+				}
+				BigIntToXml(builder, "PgenCounter", dsaParams.X);
+				if(includePrivateParameters)
+				{
+					BigIntToXml(builder, "X", dsaParams.X);
+				}
+				builder.Append("</DSAKeyValue>");
+				return builder.ToString();
 			}
 
 }; // class DSA

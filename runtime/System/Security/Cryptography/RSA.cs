@@ -25,6 +25,8 @@ namespace System.Security.Cryptography
 #if !ECMA_COMPAT
 
 using System;
+using System.Text;
+using System.Security;
 
 public abstract class RSA : AsymmetricAlgorithm
 {
@@ -58,18 +60,102 @@ public abstract class RSA : AsymmetricAlgorithm
 	public abstract void ImportParameters(RSAParameters parameters);
 
 	// Reconstruct an asymmetric algorithm object from an XML string.
-	[TODO]
 	public override void FromXmlString(String xmlString)
 			{
-				// TODO
+				SecurityElement elem;
+				RSAParameters rsaParams = new RSAParameters();
+				String tag;
+				if(xmlString == null)
+				{
+					throw new ArgumentNullException("xmlString");
+				}
+				try
+				{
+					elem = SecurityElement.Parse(xmlString);
+					if(elem == null || elem.Tag != "RSAKeyValue")
+					{
+						throw new CryptographicException
+							(_("Crypto_InvalidRSAParams"));
+					}
+					foreach(SecurityElement child in elem.Children)
+					{
+						tag = child.Tag;
+						if(tag == "Modulus")
+						{
+							rsaParams.Modulus = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "Exponent")
+						{
+							rsaParams.Exponent = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "D")
+						{
+							rsaParams.D = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "DP")
+						{
+							rsaParams.DP = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "DQ")
+						{
+							rsaParams.DQ = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "InverseQ")
+						{
+							rsaParams.InverseQ = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "P")
+						{
+							rsaParams.P = Convert.FromBase64String
+								(child.Text);
+						}
+						else if(tag == "Q")
+						{
+							rsaParams.Q = Convert.FromBase64String
+								(child.Text);
+						}
+					}
+				}
+				catch(FormatException)
+				{
+					throw new CryptographicException
+						(_("Crypto_InvalidRSAParams"));
+				}
+				catch(ArgumentNullException)
+				{
+					throw new CryptographicException
+						(_("Crypto_InvalidRSAParams"));
+				}
+				ImportParameters(rsaParams);
 			}
 
 	// Get the XML string representation of an asymmetric algorithm object.
-	[TODO]
 	public override String ToXmlString(bool includePrivateParameters)
 			{
-				// TODO
-				return null;
+				RSAParameters rsaParams =
+					ExportParameters(includePrivateParameters);
+				StringBuilder builder = new StringBuilder();
+				builder.Append("<RSAKeyValue>");
+				BigIntToXml(builder, "Modulus", rsaParams.Modulus);
+				BigIntToXml(builder, "Exponent", rsaParams.Exponent);
+				if(includePrivateParameters)
+				{
+					BigIntToXml(builder, "D", rsaParams.D);
+					BigIntToXml(builder, "DP", rsaParams.DP);
+					BigIntToXml(builder, "DQ", rsaParams.DQ);
+					BigIntToXml(builder, "DP", rsaParams.DP);
+					BigIntToXml(builder, "InverseQ", rsaParams.InverseQ);
+					BigIntToXml(builder, "P", rsaParams.P);
+					BigIntToXml(builder, "Q", rsaParams.Q);
+				}
+				builder.Append("</RSAKeyValue>");
+				return builder.ToString();
 			}
 
 }; // class RSA

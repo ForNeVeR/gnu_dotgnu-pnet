@@ -29,14 +29,14 @@ using System;
 public abstract class AsymmetricKeyExchangeFormatter
 {
 
-	// Get or set the key exchange parameters.
-	public abstract String Parameters { get; set; }
+	// Get the key exchange parameters.
+	public abstract String Parameters { get; }
 
 	// Create key exchange material from key data.
 	public abstract byte[] CreateKeyExchange(byte[] data);
 	public abstract byte[] CreateKeyExchange(byte[] data, Type symAlgType);
 
-	// Set the private key to use for decryption.
+	// Set the private key to use for encryption.
 	public abstract void SetKey(AsymmetricAlgorithm key);
 
 }; // class AsymmetricKeyExchangeFormatter

@@ -569,6 +569,13 @@ public sealed class SecurityElement
 				return result;
 			}
 
+	// Parse an XML string into a tree of "SecurityElement" values.
+	internal static SecurityElement Parse(String xmlString)
+			{
+				// TODO
+				return null;
+			}
+
 }; // class SecurityElement
 
 }; // namespace System.Security

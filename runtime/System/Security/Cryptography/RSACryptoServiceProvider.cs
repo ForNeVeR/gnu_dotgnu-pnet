@@ -155,6 +155,20 @@ public class RSACryptoServiceProvider : RSA
 				return Decrypt(rgb, false);
 			}
 
+	// Encrypt a value using a specified OAEP padding array.
+	internal byte[] EncryptOAEP(byte[] rgb, byte[] padding)
+			{
+				// TODO
+				return null;
+			}
+
+	// Encrypt a value using the RSA private key and the PKCS1 encoding.
+	internal byte[] EncryptPKCS1(byte[] rgb, RandomNumberGenerator rng)
+			{
+				// TODO
+				return null;
+			}
+
 	// Encrypt a value using the RSA private key and optional OAEP padding.
 	public byte[] Encrypt(byte[] rgb, bool fOAEP)
 			{

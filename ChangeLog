@@ -10,6 +10,9 @@
 	* engine/cvm_dasm.c: fix the debug disassembly code for the CVM
 	"switch" instruction.
 
+	* engine/cvmc_var.c (LoadLocal, StoreLocal): bug fix - use the
+	underlying type of an enumeration to load and store enum locals.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

@@ -134,7 +134,7 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 	else if(ILType_IsValueType(type))
 	{
 		ILType *enumType = ILTypeGetEnumType(type);
-		if(ILType_IsValueType(type))
+		if(ILType_IsValueType(enumType))
 		{
 			/* Managed value type */
 			ILUInt32 size = GetTypeSize(type);
@@ -277,7 +277,7 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 	else if(ILType_IsValueType(type))
 	{
 		ILType *enumType = ILTypeGetEnumType(type);
-		if(ILType_IsValueType(type))
+		if(ILType_IsValueType(enumType))
 		{
 			/* Managed value type */
 			ILUInt32 size = GetTypeSize(type);

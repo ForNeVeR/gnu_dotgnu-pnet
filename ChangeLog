@@ -1,3 +1,9 @@
+
+2004-06-07  Gopal V  <gopalv82@yahoo.com>
+
+	* cscc/csharp/cs_lvalue.tc: Fix type bug in constant field accesses 
+	from enums.
+
 2004-06-02  Thong Nguyen  <tum@veridicus.com>
 
 	* image/class.c: Change ILClassImplements to return true

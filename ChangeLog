@@ -1,4 +1,8 @@
 
+2002-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* samples/mscorlib.dll: new version with delegate comparison fix.
+
 2002-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,

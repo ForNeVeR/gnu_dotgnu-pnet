@@ -12,6 +12,9 @@
 	* dumpasm/dump_flags.c: don't complain about the "has security"
 	bit on method definitions, as it is a standard flag.
 
+	* image/meta_build.c (LoadTokens): report all metadata token errors,
+	not just the first one.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

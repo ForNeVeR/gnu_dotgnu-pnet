@@ -51,7 +51,8 @@ static int LoadTokens(ILImage *image, ILToken tokenType,
 	ILUInt32 *currValues;
 	ILUInt32 *nextValues;
 	ILUInt32 *tempValues;
-	int error;
+	int error = 0;
+	int newError;
 
 	/* How many tokens of this type are there? */
 	maxToken = (ILToken)(ILImageNumTokens(image, tokenType));
@@ -77,10 +78,13 @@ static int LoadTokens(ILImage *image, ILToken tokenType,
 			{
 				return IL_LOADERR_BAD_META;
 			}
-			error = (*func)(image, currValues, nextValues, token, userData);
-			if(error != 0)
+			newError = (*func)(image, currValues, nextValues, token, userData);
+			if(newError != 0)
 			{
-				return error;
+				if(error == 0)
+				{
+					error = newError;
+				}
 			}
 			tempValues = currValues;
 			currValues = nextValues;
@@ -88,16 +92,19 @@ static int LoadTokens(ILImage *image, ILToken tokenType,
 		}
 		else
 		{
-			error = (*func)(image, currValues, 0, token, userData);
-			if(error != 0)
+			newError = (*func)(image, currValues, 0, token, userData);
+			if(newError != 0)
 			{
-				return error;
+				if(error == 0)
+				{
+					error = newError;
+				}
 			}
 		}
 	}
 
 	/* Done */
-	return 0;
+	return error;
 }
 
 /*

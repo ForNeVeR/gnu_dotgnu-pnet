@@ -27,6 +27,12 @@
 	* System/IO/Compression/*.cs, profiles/*: use "CONFIG_COMPRESSION"
 	instead of "CONFIG_FRAMEWORK_2_0" to mark the compression classes.
 
+	* DotGNU.Terminal/Readline.cs, runtime/System/Console.cs,
+	runtime/System/ConsoleCancelEventArgs.cs,
+	runtime/System/ConsoleKey.cs, runtime/System/ConsoleSpecialKey.cs,
+	runtime/System/ConsoleSpecialKeys.cs, samples/simple/snake.cs:
+	bring the extended console API's into line with .NET SDK 2.0.
+
 2004-07-20  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/Serialization/ChangeLog, System.Xml/Serialization/*.cs:

@@ -1,6 +1,6 @@
 /*
- * ConsoleSpecialKeys.cs - Implementation of the
- *			"System.ConsoleSpecialKeys" class.
+ * ConsoleSpecialKey.cs - Implementation of the
+ *			"System.ConsoleSpecialKey" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,14 +24,18 @@ namespace System
 
 #if CONFIG_EXTENDED_CONSOLE
 
+using System.Runtime.InteropServices;
+
 [Flags]
-[Obsolete("Use ConsoleSpecialKey instead")]
-public enum ConsoleSpecialKeys
+#if !ECMA_COMPAT
+[ComVisible(false)]
+#endif
+public enum ConsoleSpecialKey
 {
 	ControlC			= 0,
 	ControlBreak		= 1
 
-}; // enum ConsoleSpecialKeys
+}; // enum ConsoleSpecialKey
 
 #endif // CONFIG_EXTENDED_CONSOLE
 

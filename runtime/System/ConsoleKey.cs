@@ -25,7 +25,7 @@ namespace System
 
 public enum ConsoleKey
 {
-	Back				= 0x08,
+	BackSpace			= 0x08,
 	Tab					= 0x09,
 	Clear				= 0x0C,
 	Enter				= 0x0D,

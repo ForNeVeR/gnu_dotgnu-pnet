@@ -71,6 +71,14 @@ public class Snake
 				NewGame();
 			}
 
+	// Set the current text attributes.
+	private static void SetTextAttribute(ConsoleColor foreground,
+								         ConsoleColor background)
+			{
+				Console.ForegroundColor = foreground;
+				Console.BackgroundColor = background;
+			}
+
 	// Set the cursor position, using window-relative co-ordinates.
 	private void SetCursorPosition(int x, int y)
 			{
@@ -111,7 +119,7 @@ public class Snake
 				snake.ShutdownTimers();
 
 				// Clear the screen to the default attributes before exiting.
-				Console.SetTextAttribute(ConsoleColor.Gray, ConsoleColor.Black);
+				SetTextAttribute(ConsoleColor.Gray, ConsoleColor.Black);
 				Console.Clear();
 			}
 
@@ -157,8 +165,7 @@ public class Snake
 				int temp;
 
 				// Clear the screen to the default attributes.
-				Console.SetTextAttribute
-					(ConsoleColor.Gray, ConsoleColor.Black);
+				SetTextAttribute(ConsoleColor.Gray, ConsoleColor.Black);
 				Console.Clear();
 
 				// Set the text attributes so that we get a solid rectangle
@@ -166,7 +173,7 @@ public class Snake
 				// on monochrome terminals.
 				if(!monochrome)
 				{
-					Console.SetTextAttribute
+					SetTextAttribute
 						(ConsoleColor.DarkRed, ConsoleColor.DarkRed);
 				}
 
@@ -209,7 +216,7 @@ public class Snake
 							SetCursorPosition(left + x, top + y);
 							if(!monochrome)
 							{
-								Console.SetTextAttribute
+								SetTextAttribute
 									(ConsoleColor.DarkYellow,
 									 ConsoleColor.Black);
 							}
@@ -220,7 +227,7 @@ public class Snake
 							SetCursorPosition(left + x, top + y);
 							if(!monochrome)
 							{
-								Console.SetTextAttribute
+								SetTextAttribute
 									(ConsoleColor.DarkRed,
 									 ConsoleColor.DarkRed);
 							}
@@ -231,7 +238,7 @@ public class Snake
 							SetCursorPosition(left + x, top + y);
 							if(!monochrome)
 							{
-								Console.SetTextAttribute
+								SetTextAttribute
 									(ConsoleColor.DarkGreen,
 									 ConsoleColor.DarkGreen);
 							}
@@ -269,7 +276,7 @@ public class Snake
 							SetCursorPosition(left + x, top + y);
 							if(!monochrome)
 							{
-								Console.SetTextAttribute
+								SetTextAttribute
 									(ConsoleColor.DarkYellow,
 									 ConsoleColor.Black);
 							}
@@ -286,7 +293,7 @@ public class Snake
 				SetCursorPosition(width - 14, height + 2);
 				if(!monochrome)
 				{
-					Console.SetTextAttribute
+					SetTextAttribute
 						(ConsoleColor.Gray, ConsoleColor.Black);
 				}
 				Console.Write("Score: {0}   ", score);
@@ -307,7 +314,7 @@ public class Snake
 				// Set the color information for the border.
 				if(!monochrome)
 				{
-					Console.SetTextAttribute
+					SetTextAttribute
 						(ConsoleColor.DarkBlue, ConsoleColor.DarkBlue);
 				}
 
@@ -336,7 +343,7 @@ public class Snake
 					Console.Write('|');
 					if(!monochrome)
 					{
-						Console.SetTextAttribute
+						SetTextAttribute
 							(ConsoleColor.Gray, ConsoleColor.Black);
 					}
 					for(temp2 = 2; temp2 < width; ++temp2)
@@ -345,7 +352,7 @@ public class Snake
 					}
 					if(!monochrome)
 					{
-						Console.SetTextAttribute
+						SetTextAttribute
 							(ConsoleColor.DarkBlue, ConsoleColor.DarkBlue);
 					}
 					Console.Write('|');
@@ -354,7 +361,7 @@ public class Snake
 				// Draw the text in the dialog box.
 				if(!monochrome)
 				{
-					Console.SetTextAttribute
+					SetTextAttribute
 						(ConsoleColor.Gray, ConsoleColor.Black);
 				}
 				SetCursorPosition(left + 4, top + 2);
@@ -477,7 +484,7 @@ public class Snake
 				// Draw a new block at the head of the snake.
 				if(!monochrome)
 				{
-					Console.SetTextAttribute
+					SetTextAttribute
 						(ConsoleColor.DarkGreen, ConsoleColor.DarkGreen);
 				}
 				SetCursorPosition(newX + left, newY + top);
@@ -492,7 +499,7 @@ public class Snake
 				{
 					if(!monochrome)
 					{
-						Console.SetTextAttribute
+						SetTextAttribute
 							(ConsoleColor.Gray, ConsoleColor.Black);
 					}
 					SetCursorPosition(tailX + left, tailY + top);

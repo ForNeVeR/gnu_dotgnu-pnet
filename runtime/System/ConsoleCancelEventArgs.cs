@@ -28,13 +28,13 @@ public class ConsoleCancelEventArgs : EventArgs
 {
 	// Internal state.
 	private bool cancel;
-	private ConsoleSpecialKeys specialKeys;
+	private ConsoleSpecialKey specialKey;
 
 	// Constructor.
-	internal ConsoleCancelEventArgs(ConsoleSpecialKeys specialKeys)
+	internal ConsoleCancelEventArgs(ConsoleSpecialKey specialKey)
 			{
 				this.cancel = false;
-				this.specialKeys = specialKeys;
+				this.specialKey = specialKey;
 			}
 
 	// Get or set this object's properties.
@@ -49,11 +49,19 @@ public class ConsoleCancelEventArgs : EventArgs
 					cancel = value;
 				}
 			}
+	public ConsoleSpecialKey SpecialKey
+			{
+				get
+				{
+					return specialKey;
+				}
+			}
 	public ConsoleSpecialKeys SpecialKeys
 			{
 				get
 				{
-					return specialKeys;
+					// This property is obsolete - do not use.
+					return (ConsoleSpecialKeys)specialKey;
 				}
 			}
 

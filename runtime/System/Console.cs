@@ -147,6 +147,40 @@ public sealed class Console
 				}
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+
+	// Get or set the input stream's encoding.
+	[TODO]
+	public static Encoding InputEncoding
+			{
+				get
+				{
+					// TODO
+					return Encoding.Default;
+				}
+				set
+				{
+					// TODO
+				}
+			}
+
+	// Get or set the output stream's encoding.
+	[TODO]
+	public static Encoding OutputEncoding
+			{
+				get
+				{
+					// TODO
+					return Encoding.Default;
+				}
+				set
+				{
+					// TODO
+				}
+			}
+
+#endif
+
 	// Set the standard input stream.
 	public static void SetIn(TextReader newIn)
 			{
@@ -558,6 +592,8 @@ public sealed class Console
 	private static bool specialMode = false;
 	private static bool treatControlCAsInput = false;
 	private static Object readLock = new Object();
+	private static int defaultAttrs = 0x07;
+	private static int currentAttrs = 0x07;
 
 	// Enable the "normal" input mode on the console.
 	private static void NormalMode()
@@ -573,6 +609,7 @@ public sealed class Console
 			}
 
 	// Enable the "special" character-at-a-time input mode on the console.
+	[TODO]
 	private static void SpecialMode()
 			{
 				lock(typeof(Console))
@@ -588,6 +625,7 @@ public sealed class Console
 						{
 							Stdio.SetConsoleMode(Stdio.MODE_CBREAK);
 						}
+						// TODO: fetch the default attribute values.
 					}
 				}
 			}
@@ -595,6 +633,12 @@ public sealed class Console
 	// Output a beep on the console.
 	public static void Beep()
 			{
+				Beep(800, 200);
+			}
+	[TODO]
+	public static void Beep(int frequency, int duration)
+			{
+				// TODO: pass the frequency and duration to the engine.
 				lock(typeof(Console))
 				{
 					SpecialMode();
@@ -627,6 +671,27 @@ public sealed class Console
 				}
 			}
 
+	// Move an area of the screen buffer to a new location.
+	public static void MoveBufferArea(int sourceLeft, int sourceTop,
+									  int sourceWidth, int sourceHeight,
+									  int targetLeft, int targetTop)
+			{
+				MoveBufferArea(sourceLeft, sourceTop,
+							   sourceWidth, sourceHeight,
+							   targetLeft, targetTop, ' ',
+							   ForegroundColor, BackgroundColor);
+			}
+	[TODO]
+	public static void MoveBufferArea(int sourceLeft, int sourceTop,
+									  int sourceWidth, int sourceHeight,
+									  int targetLeft, int targetTop,
+									  char sourceChar,
+									  ConsoleColor sourceForeColor,
+									  ConsoleColor sourceBackColor)
+			{
+				// TODO
+			}
+
 	// Read a key from the console.  If "intercept" is "false",
 	// then the key is echoed to the console.
 	public static ConsoleKeyInfo ReadKey()
@@ -648,12 +713,12 @@ public sealed class Console
 						Stdio.ReadKey(out ch, out key, out modifiers);
 						if(key == 0x1202)		// Interrupt
 						{
-							HandleCancel(ConsoleSpecialKeys.ControlC);
+							HandleCancel(ConsoleSpecialKey.ControlC);
 							continue;
 						}
 						else if(key == 0x1203)	// CtrlBreak
 						{
-							HandleCancel(ConsoleSpecialKeys.ControlBreak);
+							HandleCancel(ConsoleSpecialKey.ControlBreak);
 							continue;
 						}
 						if(!intercept && ch != '\0')
@@ -666,8 +731,25 @@ public sealed class Console
 				}
 			}
 
+	// Reset the foreground and background colors to the defaults.
+	public static void ResetColor()
+			{
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					currentAttrs = defaultAttrs;
+					Stdio.SetTextAttributes(defaultAttrs);
+				}
+			}
+
+	// Set the buffer size.
+	[TODO]
+	public static void SetBufferSize(int width, int height)
+			{
+				// TODO
+			}
+
 	// Set the cursor position.
-	// This is a guess - fix later.
 	public static void SetCursorPosition(int x, int y)
 			{
 				lock(typeof(Console))
@@ -677,20 +759,43 @@ public sealed class Console
 				}
 			}
 
-	// Set the current text foreground and background attributes.
-	// This is a guess - fix later.
-	public static void SetTextAttribute(ConsoleColor foreground,
-										ConsoleColor background)
+	// Set the window position.
+	[TODO]
+	public static void SetWindowPosition(int left, int top)
 			{
-				lock(typeof(Console))
-				{
-					SpecialMode();
-					Stdio.SetTextAttributes
-						(((int)foreground) | (((int)background) << 4));
-				}
+				// TODO
+			}
+
+	// Set the window size.
+	[TODO]
+	public static void SetWindowSize(int width, int height)
+			{
+				// TODO
 			}
 
 	// Console properties.
+	[TODO]
+	public static ConsoleColor BackgroundColor
+			{
+				get
+				{
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						return (ConsoleColor)((currentAttrs >> 4) & 0x0F);
+					}
+				}
+				set
+				{
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						currentAttrs = (currentAttrs & 0x0F) |
+									   (((int)value) << 4);
+						Stdio.SetTextAttributes(currentAttrs);
+					}
+				}
+			}
 	public static int BufferHeight
 			{
 				get
@@ -717,6 +822,15 @@ public sealed class Console
 					}
 				}
 			}
+	[TODO]
+	public static bool CapsLock
+			{
+				get
+				{
+					// TODO
+					return false;
+				}
+			}
 	public static int CursorLeft
 			{
 				get
@@ -729,6 +843,23 @@ public sealed class Console
 						return x;
 					}
 				}
+				set
+				{
+					SetCursorPosition(value, CursorTop);
+				}
+			}
+	[TODO]
+	public static int CursorSize
+			{
+				get
+				{
+					// TODO
+					return 1;
+				}
+				set
+				{
+					// TODO
+				}
 			}
 	public static int CursorTop
 			{
@@ -740,6 +871,43 @@ public sealed class Console
 						int x, y;
 						Stdio.GetCursorPosition(out x, out y);
 						return y;
+					}
+				}
+				set
+				{
+					SetCursorPosition(CursorLeft, value);
+				}
+			}
+	[TODO]
+	public static bool CursorVisible
+			{
+				get
+				{
+					// TODO
+					return true;
+				}
+				set
+				{
+					// TODO
+				}
+			}
+	public static ConsoleColor ForegroundColor
+			{
+				get
+				{
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						return (ConsoleColor)(currentAttrs & 0x0F);
+					}
+				}
+				set
+				{
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						currentAttrs = (currentAttrs & 0xF0) | ((int)value);
+						Stdio.SetTextAttributes(currentAttrs);
 					}
 				}
 			}
@@ -755,6 +923,33 @@ public sealed class Console
 					{
 						return Stdio.KeyAvailable();
 					}
+				}
+			}
+	[TODO]
+	public static int LargestWindowHeight
+			{
+				get
+				{
+					// TODO
+					return WindowWidth;
+				}
+			}
+	[TODO]
+	public static int LargestWindowWidth
+			{
+				get
+				{
+					// TODO
+					return WindowHeight;
+				}
+			}
+	[TODO]
+	public static bool NumberLock
+			{
+				get
+				{
+					// TODO
+					return false;
 				}
 			}
 	public static String Title
@@ -866,7 +1061,7 @@ public sealed class Console
 	public static event ConsoleCancelEventHandler CancelKeyPress;
 
 	// Method that is called to handle "cancel" events.
-	private static void HandleCancel(ConsoleSpecialKeys specialKeys)
+	private static void HandleCancel(ConsoleSpecialKey specialKeys)
 			{
 				ConsoleCancelEventArgs args;
 				args = new ConsoleCancelEventArgs(specialKeys);

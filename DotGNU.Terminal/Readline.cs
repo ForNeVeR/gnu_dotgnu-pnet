@@ -852,7 +852,7 @@ public sealed class Readline
 					{
 						switch(key.Key)
 						{
-							case ConsoleKey.Back:
+							case ConsoleKey.BackSpace:
 							{
 								// Delete the character before the cursor.
 								Backspace();
@@ -963,7 +963,7 @@ public sealed class Readline
 							}
 							break;
 
-							case ConsoleKey.Back:
+							case ConsoleKey.BackSpace:
 							case ConsoleKey.Delete:
 							{
 								// ALT-DEL: erase until the start of the word.

@@ -415,44 +415,22 @@ ILNode_GenDiscard(ILNode_MethodDeclaration)
  */
 ILNode_GenDiscard(ILNode_PropertyDeclaration)
 {
-	ILNode *body;
 	FILE *outstream = info->asmOutput;
+	ILMethod *methodInfo;
 
 	if(outstream && node->propertyInfo)
 	{
-#if 0
 		/* Generate the code for the get method */
-		if(node->getMethodInfo)
+		if(node->getAccessor)
 		{
-			if(node->getAccessor)
-			{
-				 body = ((ILNode_AccessorDeclaration *)(node->getAccessor))
-				 			->body;
-			}
-			else
-			{
-				body = 0;
-			}
-			MethodGenDiscard
-				(info, info->asmOutput, node->getMethodInfo, 0, body);
+			ILNode_GenDiscard(node->getAccessor, info);
 		}
 
 		/* Generate the code for the set method */
-		if(node->setMethodInfo)
+		if(node->setAccessor)
 		{
-			if(node->setAccessor)
-			{
-				 body = ((ILNode_AccessorDeclaration *)(node->setAccessor))
-				 			->body;
-			}
-			else
-			{
-				body = 0;
-			}
-			MethodGenDiscard
-				(info, info->asmOutput, node->setMethodInfo, 0, body);
+			ILNode_GenDiscard(node->setAccessor, info);
 		}
-#endif
 
 		/* Output the property declaration */
 		fputs(".property ", outstream);
@@ -463,22 +441,26 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 					     IL_DUMP_QUOTE_NAMES, 0,
 						 ILProperty_Name(node->propertyInfo), 0);
 		fputs("\n{\n", outstream);
-		if(node->getMethodInfo)
+		if(node->getAccessor)
 		{
+			methodInfo = ((ILNode_MethodDeclaration *)(node->getAccessor))
+								->methodInfo;
 			fputs("\t.get ", outstream);
 			ILDumpMethodType(outstream, info->image,
-						     ILMethod_Signature(node->getMethodInfo),
+						     ILMethod_Signature(methodInfo),
 						     IL_DUMP_QUOTE_NAMES, 0,
-							 ILMethod_Name(node->getMethodInfo), 0);
+							 ILMethod_Name(methodInfo), 0);
 			putc('\n', outstream);
 		}
-		if(node->setMethodInfo)
+		if(node->setAccessor)
 		{
+			methodInfo = ((ILNode_MethodDeclaration *)(node->setAccessor))
+								->methodInfo;
 			fputs("\t.set ", outstream);
 			ILDumpMethodType(outstream, info->image,
-						     ILMethod_Signature(node->setMethodInfo),
+						     ILMethod_Signature(methodInfo),
 						     IL_DUMP_QUOTE_NAMES, 0,
-							 ILMethod_Name(node->setMethodInfo), 0);
+							 ILMethod_Name(methodInfo), 0);
 			putc('\n', outstream);
 		}
 		fputs("} // property ", outstream);

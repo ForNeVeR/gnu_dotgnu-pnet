@@ -36,7 +36,7 @@ extern	"C" {
  */
 typedef struct
 {
-	ILInt32		arrayLength;
+	ILInt32		capacity;
 	ILInt32		length;
 
 } System_String;

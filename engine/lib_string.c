@@ -38,7 +38,7 @@ static System_String *AllocString(ILExecThread *thread, ILInt32 length)
 						 				  		roundLen * sizeof(ILUInt16));
 	if(str)
 	{
-		str->arrayLength = roundLen;
+		str->capacity = roundLen;
 		str->length = length;
 		return str;
 	}
@@ -628,7 +628,7 @@ static ILBool System_String_Equals(ILExecThread *thread,
 }
 
 /*
- * private static String FastAllocateString(int length);
+ * internal static String FastAllocateString(int length);
  */
 static System_String *System_String_FastAllocateString
 							(ILExecThread *thread, ILInt32 length)
@@ -637,7 +637,59 @@ static System_String *System_String_FastAllocateString
 }
 
 /*
- * private static void FillString(String dest, int destPos, String src);
+ * internal static String FastAllocateBuilder(String value, int length);
+ */
+static System_String *System_String_FastAllocateBuilder
+							(ILExecThread *thread,
+							 System_String *value,
+							 ILInt32 length)
+{
+	System_String *str;
+	ILInt32 roundLen;
+	if(length == -1)
+	{
+		roundLen = value->length;
+	}
+	else
+	{
+		roundLen = length;
+	}
+	roundLen = ((length + 7) & ~7);	/* Round to a multiple of 8 */
+	str = (System_String *)_ILEngineAllocAtomic(thread,
+												thread->process->stringClass,
+						 				  		sizeof(System_String) +
+						 				  		roundLen * sizeof(ILUInt16));
+	if(str)
+	{
+		str->capacity = roundLen;
+		if(value != 0)
+		{
+			if(value->length <= roundLen)
+			{
+				ILMemCpy(StringToBuffer(str), StringToBuffer(value),
+						 value->length);
+				str->length = value->length;
+			}
+			else
+			{
+				ILMemCpy(StringToBuffer(str), StringToBuffer(value), roundLen);
+				str->length = roundLen;
+			}
+		}
+		else
+		{
+			str->length = 0;
+		}
+		return str;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * internal static void FillString(String dest, int destPos, String src);
  */
 static void System_String_FillString(ILExecThread *thread,
 									 System_String *dest,
@@ -649,9 +701,9 @@ static void System_String_FillString(ILExecThread *thread,
 }
 
 /*
- * private static void FillSubstring(String dest, int destPos,
- *									 String src, int srcPos,
- *                                   int length);
+ * internal static void FillSubstring(String dest, int destPos,
+ *									  String src, int srcPos,
+ *                                    int length);
  */
 static void System_String_FillSubstring(ILExecThread *thread,
 									 	System_String *dest,
@@ -662,6 +714,31 @@ static void System_String_FillSubstring(ILExecThread *thread,
 {
 	ILMemCpy(StringToBuffer(dest) + destPos,
 			 StringToBuffer(src) + srcPos, length * sizeof(ILUInt16));
+}
+
+/*
+ * internal void InsertSpace(String dest, int srcPos, int destPos)
+ */
+static void System_String_InsertSpace(ILExecThread *thread,
+									  System_String *dest,
+									  ILInt32 srcPos, ILInt32 destPos)
+{
+	ILMemMove(StringToBuffer(dest) + destPos,
+			  StringToBuffer(dest) + srcPos, dest->length - srcPos);
+	dest->length += (destPos - srcPos);
+}
+
+/*
+ * internal void RemoveSpace(String dest, int index, int length)
+ */
+static void System_String_RemoveSpace(ILExecThread *thread,
+									  System_String *dest,
+									  ILInt32 index, ILInt32 length)
+{
+	ILMemMove(StringToBuffer(dest) + index,
+			  StringToBuffer(dest) + index + length,
+			  dest->length - (index + length));
+	dest->length -= length;
 }
 
 /*
@@ -1036,7 +1113,7 @@ static System_String *System_String_IsInterned(ILExecThread *thread,
 }
 
 /*
- * private static void FillChar(String str, int start, int count, char ch);
+ * internal static void FillChar(String str, int start, int count, char ch);
  */
 static void System_String_FillChar(ILExecThread *thread,
 							 	   System_String *str,
@@ -1049,6 +1126,27 @@ static void System_String_FillChar(ILExecThread *thread,
 		StringToBuffer(str)[start] = ch;
 		--count;
 		++start;
+	}
+}
+
+/*
+ * internal static void FillWithChars(String str, int start,
+ *									  char[] chars, int index,
+ 									  int count);
+ */
+static void System_String_FillWithChars(ILExecThread *thread,
+							 	   	 	System_String *str,
+								   		ILInt32 start,
+							 	   	 	System_Array *chars,
+								   		ILInt32 index,
+								   		ILInt32 count)
+{
+	ILUInt16 *src = ArrayToBuffer(chars) + index;
+	ILUInt16 *dest = StringToBuffer(str) + start;
+	while(count > 0)
+	{
+		*dest++ = *src++;
+		--count;
 	}
 }
 
@@ -1257,7 +1355,7 @@ static System_String *System_String_TrimHelper(ILExecThread *thread,
 }
 
 /*
- * private char InternalGetChar(int posn);
+ * internal char InternalGetChar(int posn);
  */
 static ILUInt16 System_String_InternalGetChar(ILExecThread *thread,
 							 	    	      System_String *_this,
@@ -1272,6 +1370,24 @@ static ILUInt16 System_String_InternalGetChar(ILExecThread *thread,
 		ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
 								"ArgRange_StringIndex");
 		return 0;
+	}
+}
+
+/*
+ * internal void InternalSetChar(int posn, char value);
+ */
+static void System_String_InternalSetChar(ILExecThread *thread,
+							     	      System_String *_this,
+							    	 	  ILInt32 posn, ILUInt16 value)
+{
+	if(posn >= 0 && posn < _this->length)
+	{
+		StringToBuffer(_this)[posn] = value;
+	}
+	else
+	{
+		ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+								"ArgRange_StringIndex");
 	}
 }
 
@@ -1301,10 +1417,16 @@ IL_METHOD_BEGIN(_ILSystemStringMethods)
 					System_String_Equals)
 	IL_METHOD("FastAllocateString", "(i)oSystem.String;",
 					System_String_FastAllocateString)
+	IL_METHOD("FastAllocateBuilder", "(oSystem.String;i)oSystem.String;",
+					System_String_FastAllocateBuilder)
 	IL_METHOD("FillString",	"(oSystem.String;ioSystem.String;)V",
 					System_String_FillString)
 	IL_METHOD("FillSubstring", "(oSystem.String;ioSystem.String;ii)V",
 				   	System_String_FillSubstring)
+	IL_METHOD("InsertSpace", "(oSystem.String;ii)V",
+					System_String_InsertSpace)
+	IL_METHOD("RemoveSpace", "(oSystem.String;ii)V",
+					System_String_RemoveSpace)
 	IL_METHOD("InternalCopyTo", "(Ti[cii)V",
 					System_String_InternalCopyTo)
 	IL_METHOD("GetHashCode", "(T)i",	System_String_GetHashCode)
@@ -1317,11 +1439,14 @@ IL_METHOD_BEGIN(_ILSystemStringMethods)
 	IL_METHOD("LastIndexOf", "(Tcii)i", System_String_LastIndexOf)
 	IL_METHOD("LastIndexOfAny", "(T[cii)i", System_String_LastIndexOfAny)
 	IL_METHOD("FillChar",	 "(oSystem.String;iic)V", System_String_FillChar)
+	IL_METHOD("FillWithChars", "(oSystem.String;i[cii)V",
+					System_String_FillWithChars)
 	IL_METHOD("Replace",	 "(Tcc)oSystem.String;", System_String_Replace_1)
 	IL_METHOD("Replace",	 "(ToSystem.String;oSystem.String;)oSystem.String;",
 					System_String_Replace_2)
 	IL_METHOD("TrimHelper",	 "(T[ci)oSystem.String;", System_String_TrimHelper)
 	IL_METHOD("InternalGetChar", "(Ti)c", System_String_InternalGetChar)
+	IL_METHOD("InternalSetChar", "(Tic)V", System_String_InternalSetChar)
 IL_METHOD_END
 
 ILString *ILStringCreate(ILExecThread *thread, const char *str)

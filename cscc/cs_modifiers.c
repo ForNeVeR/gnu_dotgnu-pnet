@@ -336,7 +336,6 @@ ILUInt32 CSModifiersToFieldAttrs(ILUInt32 modifiers)
 	}
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
-		CSTypedWarning("unsafe", "unsafe field declaration");
 		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
 
@@ -399,7 +398,6 @@ ILUInt32 CSModifiersToMethodAttrs(ILUInt32 modifiers)
 	}
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
-		CSTypedWarning("unsafe", "unsafe method declaration");
 		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
 
@@ -456,7 +454,6 @@ ILUInt32 CSModifiersToEventAttrs(ILUInt32 modifiers)
 	}
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
-		CSTypedWarning("unsafe", "unsafe event declaration");
 		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
 
@@ -513,7 +510,6 @@ ILUInt32 CSModifiersToPropertyAttrs(ILUInt32 modifiers)
 	}
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
-		CSTypedWarning("unsafe", "unsafe property declaration");
 		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
 
@@ -537,7 +533,6 @@ ILUInt32 CSModifiersToOperatorAttrs(ILUInt32 modifiers)
 	}
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
-		CSTypedWarning("unsafe", "unsafe operator declaration");
 		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
 	BadModifiers(modifiers & ~(CS_MODIFIER_PUBLIC | CS_MODIFIER_STATIC |
@@ -574,7 +569,6 @@ ILUInt32 CSModifiersToConstructorAttrs(ILUInt32 modifiers)
 	/* Process the "unsafe" modifier */
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
-		CSTypedWarning("unsafe", "unsafe constructor declaration");
 		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
 

@@ -16,6 +16,9 @@ unnecessary node types.
 * cscc/cs_grammar.y: fix nesting level bug introduced by the new unsafe
 testing code, convert interfaces into classes, and indexers into properties.
 
+* cscc/cs_modifiers.c: remove warnings about unsafe constructs, which
+are now handled in semantic analysis.
+
 2001-08-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.c (ILFindSystemType): import system library classes

@@ -1,4 +1,9 @@
 
+2003-07-18  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/lib_type.c: enable GetType of array expressions like
+	"System.Int32[]".
+
 2003-07-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: centralize the extraction of method,

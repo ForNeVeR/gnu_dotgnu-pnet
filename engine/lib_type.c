@@ -316,8 +316,10 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
 	ILInt32 nameEnd;
 	ILInt32 nameSpecial;
 	int brackets;
+	int rank;
 	ILProgramItem *scope;
 	ILClass *classInfo;
+	ILType *typeInfo;
 
 	/* Validate the parameters */
 	if(!name)
@@ -546,19 +548,68 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
 		return 0;
 	}
 
+	typeInfo = ILClassToType(classInfo);
+
 	/* Resolve special suffixes for array and pointer designations */
 	if(nameSpecial < nameEnd)
 	{
-		/* TODO */
-		if(throwOnError)
+		posn=nameSpecial;
+		brackets=0;
+		rank=0;
+		while(posn < nameEnd)
 		{
-			ThrowTypeLoad(thread, name);
+			switch(buf[posn])
+			{
+				case '[':
+				{
+					rank=1;
+					brackets++;
+				}
+				break;
+				
+				case ']':
+				{
+					if(brackets==0)
+					{
+						if(throwOnError)
+						{
+							ThrowTypeLoad(thread, name);
+						}
+						return 0;
+					}
+					typeInfo = ILTypeFindOrCreateArray(
+									thread->process->context,
+									(unsigned long) rank,
+									typeInfo);
+					rank=0;
+					brackets--;
+				}
+				break;
+
+				case ',':
+				{
+					rank++;
+				}
+				break;
+
+				case '*': /* TODO */
+				case '&': /* TODO */
+				default:
+				{
+					if(throwOnError)
+					{
+						ThrowTypeLoad(thread, name);
+					}
+					return 0;
+				}
+				break;
+			}
+			posn++;
 		}
-		return 0;
 	}
 
 	/* Convert the class information block into a "ClrType" instance */
-	return _ILGetClrType(thread, classInfo);
+	return _ILGetClrTypeForILType(thread, typeInfo);
 }
 
 void _ILClrNotImplemented(ILExecThread *thread)

@@ -28,5 +28,5 @@ ASSEMBLY_LINKER="@ASSEMBLY_LINKER@"
 if test "x$ASSEMBLY_LINKER" = "xpnet" ; then
 	exec "$CSCC" -nostdlib -o "$1" "-fresources=$2"
 else
-	exec "$ASSEMBLY_LINKER" "/out:$1" "/c:$3" "/embed:$2"
+	exec "$ASSEMBLY_LINKER" /nologo "/out:$1" "/c:$3" "/embed:$2"
 fi

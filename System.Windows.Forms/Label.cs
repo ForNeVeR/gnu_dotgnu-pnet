@@ -203,8 +203,12 @@ public class Label : Control
 					String text = Text;
 					if(text == null || text == String.Empty)
 					{
-						preferredWidth = 0;
-						return 0;
+						preferredWidth = 1;
+						if(BorderStyle != BorderStyle.None)
+						{
+							preferredWidth += 4;
+						}
+						return preferredWidth;
 					}
 
 					// Get a graphics object and measure the text.
@@ -213,12 +217,15 @@ public class Label : Control
 						size = graphics.MeasureString
 							(text, Font, new SizeF(0.0f, 0.0f), GetStringFormat());
 
-					// Return the ceiling of the width.
+					// Return the ceiling of the width.  We add one to
+					// account for a small discrepancy between the behaviour
+					// of MeasureString and DrawString.
 				#if CONFIG_EXTENDED_NUMERICS
 					preferredWidth = (int)(Math.Ceiling(size.Width));
 				#else
 					preferredWidth = (int)(size.Width + 0.99f);
 				#endif
+					++preferredWidth;
 					if(BorderStyle != BorderStyle.None)
 					{
 						preferredWidth += 4;

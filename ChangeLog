@@ -1,4 +1,10 @@
 
+2003-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/Label.cs: account for a small discrepancy
+	between the defined behaviour of MeasureString and DrawString
+	by adding 1 to the preferred label width.
+
 2003-11-14  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/AuthenticationManager.cs, System/Net/BasicClient.cs,

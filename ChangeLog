@@ -1,4 +1,9 @@
 
+2004-05-02  Gopal V <gopalv82@yahoo.com>
+
+	* runtime/System/Reflection/Assembly.cs: Make LoadFrom a bit more
+	intelligent and allow partial names to be directly used in LoadFrom.
+
 2004-05-02  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/Runtime/Serialization/ObjectManager.cs: Work around

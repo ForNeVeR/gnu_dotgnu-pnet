@@ -358,13 +358,30 @@ public class Assembly : IClrProgramItem
 			}
 	internal static Assembly LoadFrom(String assemblyFile, Assembly caller)
 			{
+				char [] pathChars = new char[] {
+										Path.DirectorySeparatorChar,
+										Path.VolumeSeparatorChar,
+										Path.AltDirectorySeparatorChar };
+						
 				if(assemblyFile == null)
 				{
 					throw new ArgumentNullException("assemblyFile");
 				}
 				int error;
-				Assembly assembly = LoadFromFile(assemblyFile, out error,
+				Assembly assembly;
+				
+				if(assemblyFile.EndsWith(".dll") || 
+					assemblyFile.EndsWith(".DLL") ||
+					(assemblyFile.IndexOfAny(pathChars) != -1))
+				{
+					assembly = LoadFromFile(assemblyFile, out error,
 											     caller);
+				}
+				else
+				{
+					assembly = LoadFromName(assemblyFile, out error,
+												 caller);
+				}
 				if(error == LoadError_OK)
 				{
 					return assembly;

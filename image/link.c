@@ -57,7 +57,7 @@ extern	"C" {
  * Test a specific pathname for an assembly.
  */
 static char *TestAssemblyPath(const char *pathname, int pathlen,
-							  const char *name, int namelen)
+							  const char *name, int namelen, int needSuffix)
 {
 	int nameStart;
 #ifndef _WIN32
@@ -75,13 +75,27 @@ static char *TestAssemblyPath(const char *pathname, int pathlen,
 		ILMemCpy(path, pathname, pathlen);
 		path[pathlen] = '/';
 		ILMemCpy(path + pathlen + 1, name, namelen);
-		strcpy(path + pathlen + 1 + namelen, ".dll");
+		if(needSuffix)
+		{
+			strcpy(path + pathlen + 1 + namelen, ".dll");
+		}
+		else
+		{
+			path[pathlen + 1 + namelen] = '\0';
+		}
 		nameStart = pathlen + 1;
 	}
 	else
 	{
 		ILMemCpy(path, name, namelen);
-		strcpy(path + namelen, ".dll");
+		if(needSuffix)
+		{
+			strcpy(path + namelen, ".dll");
+		}
+		else
+		{
+			path[namelen] = '\0';
+		}
 		nameStart = 0;
 	}
 
@@ -159,7 +173,7 @@ static char *SearchPathForAssembly(char *list, const char *name, int namelen,
 		}
 
 		/* Test for the assembly within this directory */
-		path = TestAssemblyPath(list, len, name, namelen);
+		path = TestAssemblyPath(list, len, name, namelen, 1);
 		if(path)
 		{
 			return path;
@@ -208,7 +222,7 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 	for(posn = 0; posn < numBeforePaths; ++posn)
 	{
 		path = TestAssemblyPath(beforePaths[posn], strlen(beforePaths[posn]),
-								name, namelen);
+								name, namelen, 1);
 		if(path)
 		{
 			return path;
@@ -258,7 +272,7 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 	for(posn = 0; posn < numAfterPaths; ++posn)
 	{
 		path = TestAssemblyPath(afterPaths[posn], strlen(afterPaths[posn]),
-								name, namelen);
+								name, namelen, 1);
 		if(path)
 		{
 			return path;
@@ -273,10 +287,9 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
  * Locate an assembly given its name and version.
  * Returns the malloc'ed path, or NULL if not found.
  */
-static char *LocateAssembly(const char *name, ILUInt16 *version,
-							const char *parentAssemblyPath)
+static char *LocateAssembly(ILContext *context, const char *name,
+							ILUInt16 *version, const char *parentAssemblyPath)
 {
-	char *env;
 	int namelen;
 	int pathlen;
 	char *path;
@@ -303,7 +316,7 @@ static char *LocateAssembly(const char *name, ILUInt16 *version,
 		if(pathlen > 0)
 		{
 			path = TestAssemblyPath(parentAssemblyPath,
-									pathlen - 1, name, namelen);
+									pathlen - 1, name, namelen, 1);
 			if(path)
 			{
 				return path;
@@ -312,7 +325,7 @@ static char *LocateAssembly(const char *name, ILUInt16 *version,
 		else
 		{
 			/* The parent assembly is in the current directory */
-			path = TestAssemblyPath(".", 0, name, namelen);
+			path = TestAssemblyPath(".", 0, name, namelen, 1);
 			if(path)
 			{
 				return path;
@@ -320,30 +333,10 @@ static char *LocateAssembly(const char *name, ILUInt16 *version,
 		}
 	}
 
-	/* Try looking in IL_LIBRARY_PATH for a version-specific assembly */
-	env = getenv("IL_LIBRARY_PATH");
-	if(env && *env != '\0')
-	{
-		path = SearchPathForAssembly(env, name, namelen, version);
-		if(path)
-		{
-			return path;
-		}
-	}
-
-	/* Try looking in CSCC_LIB_PATH for any assembly */
-	env = getenv("CSCC_LIB_PATH");
-	if(env && *env != '\0')
-	{
-		path = SearchPathForAssembly(env, name, namelen, 0);
-		if(path)
-		{
-			return path;
-		}
-	}
-
-	/* Could not locate the assembly */
-	return 0;
+	/* Use the standard search order */
+	return ILImageSearchPath(name, version,
+							 (const char **)(context->libraryDirs),
+							 context->numLibraryDirs, 0, 0, 0);
 }
 
 int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
@@ -366,7 +359,8 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 		}
 
 		/* Locate the assembly */
-		pathname = LocateAssembly(assem->name, assem->version, filename);
+		pathname = LocateAssembly(image->context, assem->name,
+								  assem->version, filename);
 		if(!pathname)
 		{
 		#if IL_DEBUG_META
@@ -580,8 +574,10 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 	const char *name;
 	const char *remapName;
 	int namelen;
+	int posn;
 	char *baseName;
 	char *fullName;
+	ILContext *context;
 
 	/* Validate the module name that was provided */
 	if(!pinvoke || !(pinvoke->module) || !(pinvoke->module->name) ||
@@ -721,6 +717,20 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 				return fullName;
 			}
 			ILFree(fullName);
+		}
+	}
+
+	/* Look in the user-specified library search directories */
+	context = pinvoke->member.programItem.image->context;
+	for(posn = 0; posn < context->numLibraryDirs; ++posn)
+	{
+		fullName = TestAssemblyPath(context->libraryDirs[posn],
+									strlen(context->libraryDirs[posn]),
+									baseName, strlen(baseName), 0);
+		if(fullName)
+		{
+			ILFree(baseName);
+			return fullName;
 		}
 	}
 

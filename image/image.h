@@ -54,6 +54,10 @@ struct _tagILContext
 	/* Memory pool that holds ILType records */
 	ILMemPool		typePool;
 
+	/* Library directories for pathname searching */
+	char		  **libraryDirs;
+	int				numLibraryDirs;
+
 };
 
 /*

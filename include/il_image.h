@@ -142,6 +142,16 @@ void ILContextSetSystem(ILContext *context, ILImage *image);
 ILImage *ILContextGetSystem(ILContext *context);
 
 /*
+ * Set the list of directories to be used for library path
+ * searching, before inspecting the standard directories.
+ * It is assumed that the list will persist for the lifetime
+ * of the context.
+ */
+void ILContextSetLibraryDirs(ILContext *context,
+							 char **libraryDirs,
+							 int numLibraryDirs);
+
+/*
  * Create an IL image.  This is typically used by compilers
  * when building an image in-memory in preparation for writing
  * it to an object file or executable.  Loaders should use

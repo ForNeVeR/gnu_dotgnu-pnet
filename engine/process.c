@@ -125,6 +125,13 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	ILGCFreePersistent(process);
 }
 
+void ILExecProcessSetLibraryDirs(ILExecProcess *process,
+								 char **libraryDirs,
+								 int numLibraryDirs)
+{
+	ILContextSetLibraryDirs(process->context, libraryDirs, numLibraryDirs);
+}
+
 ILExecThread *ILExecProcessGetMain(ILExecProcess *process)
 {
 	return process->mainThread;

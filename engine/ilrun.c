@@ -19,6 +19,7 @@
  */
 
 #include "il_engine.h"
+#include "il_system.h"
 #include "il_image.h"
 #include "il_utils.h"
 
@@ -34,6 +35,10 @@ static ILCmdLineOption const options[] = {
 	{"--heap-size", 'H', 1,
 		"--heap-size value  or -H value",
 		"Set the maximum size of the heap to `value' kilobytes."},
+	{"-L", 'L', 1, 0, 0},
+	{"--library-dir", 'L', 1,
+		"--library-dir dir  or -L dir",
+		"Specify a directory to search for libraries."},
 	{"--version", 'v', 0,
 		"--version          or -v",
 		"Print the version of the program"},
@@ -50,6 +55,8 @@ int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
 	unsigned long heapSize = 0;
+	char **libraryDirs;
+	int numLibraryDirs;
 	int state, opt;
 	char *param;
 	ILExecProcess *process;
@@ -59,6 +66,10 @@ int main(int argc, char *argv[])
 	ILExecThread *thread;
 	ILObject *args;
 	ILString *argString;
+
+	/* Allocate space for the library list */
+	libraryDirs = (char **)ILMalloc(sizeof(char *) * argc);
+	numLibraryDirs = 0;
 
 	/* Parse the command-line arguments */
 	state = 0;
@@ -76,6 +87,15 @@ int main(int argc, char *argv[])
 					++param;
 				}
 				heapSize *= 1024;
+			}
+			break;
+
+			case 'L':
+			{
+				if(libraryDirs != 0)
+				{
+					libraryDirs[numLibraryDirs++] = param;
+				}
 			}
 			break;
 
@@ -111,6 +131,12 @@ int main(int argc, char *argv[])
 	{
 		fprintf(stderr, "%s: could not create process\n", progname);
 		return 1;
+	}
+
+	/* Set the list of directories to use for path searching */
+	if(numLibraryDirs > 0)
+	{
+		ILExecProcessSetLibraryDirs(process, libraryDirs, numLibraryDirs);
 	}
 
 	/* Attempt to load the program into the process */

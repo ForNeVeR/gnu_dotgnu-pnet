@@ -8,6 +8,10 @@ dump stream to be adjusted.
 should be used instead of "ILType_FromValueType" to ensure that primitive
 value types are converted properly.
 
+* engine/ilrun.c, engine/process.c, image/context.c, image/image.h,
+image/link.c, include/il_engine.h, include/il_image.h: add user-specified
+library search paths to the runtime engine and the image library.
+
 2001-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/Makefile.am, image/marshal.c, image/types.c, include/il_meta.h,

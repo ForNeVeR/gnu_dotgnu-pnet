@@ -103,6 +103,16 @@ ILExecProcess *ILExecProcessCreate(void);
 void ILExecProcessDestroy(ILExecProcess *process);
 
 /*
+ * Set the list of directories to be used for library path
+ * searching, before inspecting the standard directories.
+ * It is assumed that the list will persist for the lifetime
+ * of the process.
+ */
+void ILExecProcessSetLibraryDirs(ILExecProcess *process,
+								 char **libraryDirs,
+								 int numLibraryDirs);
+
+/*
  * Get the "main" thread for a process.
  */
 ILExecThread *ILExecProcessGetMain(ILExecProcess *process);

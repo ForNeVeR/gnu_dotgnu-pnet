@@ -339,6 +339,14 @@ ILImage *ILContextGetSystem(ILContext *context)
 	return context->systemImage;
 }
 
+void ILContextSetLibraryDirs(ILContext *context,
+							 char **libraryDirs,
+							 int numLibraryDirs)
+{
+	context->libraryDirs = libraryDirs;
+	context->numLibraryDirs = numLibraryDirs;
+}
+
 #ifdef	__cplusplus
 };
 #endif

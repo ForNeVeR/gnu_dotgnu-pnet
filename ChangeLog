@@ -30,6 +30,9 @@ for verifying "sub" and "sub.ovf.un".
 * engine/verify_branch.c: "clt", "clt.un", and "cgt" are not valid on
 pointer arguments.
 
+* tests/test_verify.c: implement verification test cases for arithmetic,
+conversion, comparison, and illegal opcodes.
+
 2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,

@@ -1,4 +1,10 @@
 
+0.6.0 (15 October 2003)
+
+	* Remove "System.EnterpriseServices" and "ICSharpCode.SharpZipLib"
+	  because pnetlib has its own versions now.
+	* Disable "ByteFX.Data" because of missing dependencies.
+
 0.5.12 (6 September 2003)
 
 	* Add "System.dll" to the dependencies for "System.ServiceProcess".

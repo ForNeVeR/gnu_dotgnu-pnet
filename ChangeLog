@@ -1,4 +1,9 @@
 
+2004-03-12  Gopal.V  <gopalv82@symonds.net>
+
+	* engine/pinvoke.c (PackDelegateParams): process pointer values
+	the same as byref values.
+
 2004-03-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_declspec.c (CDeclCreatePrototype): deal with a bug

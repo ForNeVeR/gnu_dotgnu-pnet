@@ -696,7 +696,8 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 			stacktop += sizeInWords;
 		}
 		else if(paramType != 0 && ILType_IsComplex(paramType) &&
-				ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF)
+				(ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF || 
+				 ILType_Kind(paramType) == IL_TYPE_COMPLEX_PTR))
 		{
 			/* Process a value that is being passed by reference */
 			CHECK_SPACE(1);

@@ -5,6 +5,9 @@
 	cscc/common/cc_options.h: look for plugins in install-relative
 	locations.
 
+	* cscc/common/cc_options.c (CCAddPathStrings): bail out if the
+	path specification is NULL.
+
 2002-12-16 Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c: Prevent infinite lookups in conversion

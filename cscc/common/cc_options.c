@@ -152,6 +152,12 @@ void CCAddPathStrings(char ***list, int *num, char *path,
 		}
 	}
 
+	/* Bail out if no main path */
+	if(!path)
+	{
+		return;
+	}
+
 	/* Attempt to discover the correct path separator to use */
 #ifdef IL_WIN32_PLATFORM
 	if(strchr(path, ';') != 0)

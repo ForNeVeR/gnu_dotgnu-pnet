@@ -1,3 +1,9 @@
+
+2004-05-21  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/process.c: Ensure that mis-compiled libraries cannot 
+	divert the entry point , has to be in an .exe not a .dll.
+
 2004-05-19  Thong Nguyen <tum@veridicus.com
 
 	* support/def_gc.c: Fixed function def for ILGCCreateTypeDescriptor.

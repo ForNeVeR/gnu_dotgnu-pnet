@@ -635,6 +635,10 @@ ILMethod *ILExecProcessGetEntry(ILExecProcess *process)
 	ILRWLockReadLock(process->metadataLock);
 	while((image = ILContextNextImage(process->context, image)) != 0)
 	{
+		if(ILImageType(image) != IL_IMAGETYPE_EXE)
+		{
+			continue;
+		}
 		token = ILImageGetEntryPoint(image);
 		if(token && (token & IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_DEF)
 		{

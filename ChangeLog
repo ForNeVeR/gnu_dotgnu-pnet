@@ -1,4 +1,9 @@
 
+2002-06-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/pinvoke.c (_ILMakeCifForMethod): bug in the generation
+	of ffi types when the return type is a structure.
+
 2002-05-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/cvm_lengths.c, engine/unroll_x86.c,

@@ -267,6 +267,7 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILType *returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
+	ILType *modReturnType = returnType;
 	ILUInt32 numArgs;
 	ILUInt32 numParams;
 	ffi_cif *cif;
@@ -291,7 +292,7 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 			/* We need an extra argument to pass a pointer to
 			   the buffer to use to return the result */
 			++numArgs;
-			returnType = ILType_Void;
+			modReturnType = ILType_Void;
 		}
 	}
 
@@ -305,7 +306,7 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 	args = ((ffi_type **)(cif + 1));
 
 	/* Convert the return type */
-	rtype = TypeToFFI(returnType, isInternal);
+	rtype = TypeToFFI(modReturnType, isInternal);
 
 	/* Convert the argument types */
 	arg = 0;

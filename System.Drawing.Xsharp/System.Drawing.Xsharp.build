@@ -19,6 +19,7 @@
 				<file name="../Xsharp/Xsharp.dll"/>
 				<file name="../System/first/System.dll"/>
 				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
+				<file name="../DotGNU.Images/DotGNU.Images.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 

@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 using System.Drawing.Imaging;
 using System.Drawing.Design;
 using System.ComponentModel;
+using DotGNU.Images;
 
 #if !ECMA_COMPAT
 [Serializable]
@@ -36,7 +37,7 @@ using System.ComponentModel;
 [Editor("System.Drawing.Design.BitmapEditor, System.Drawing.Design",
 		typeof(UITypeEditor))]
 #endif
-public sealed class Bitmap : Image
+public sealed class Bitmap : System.Drawing.Image
 {
 	// Constructors.
 	[TODO]
@@ -64,7 +65,8 @@ public sealed class Bitmap : Image
 	public Bitmap(int width, int height)
 			: this(width, height, PixelFormat.Format32bppArgb) {}
 	[TODO]
-	public Bitmap(int width, int height, PixelFormat format)
+	public Bitmap(int width, int height,
+				  System.Drawing.Imaging.PixelFormat format)
 			{
 				// TODO
 			}
@@ -85,10 +87,11 @@ public sealed class Bitmap : Image
 			}
 	[TODO]
 	public Bitmap(int width, int height, int stride,
-				  PixelFormat format, IntPtr scan0)
+				  System.Drawing.Imaging.PixelFormat format, IntPtr scan0)
 			{
 				// TODO
 			}
+	internal Bitmap(DotGNU.Images.Image image) : base(image) {}
 #if CONFIG_SERIALIZATION
 	internal Bitmap(SerializationInfo info, StreamingContext context)
 			: base(info, context) {}
@@ -96,13 +99,15 @@ public sealed class Bitmap : Image
 
 	// Clone this bitmap and transform it into a new pixel format
 	[TODO]
-	public Bitmap Clone(Rectangle rect, PixelFormat format)
+	public Bitmap Clone
+				(Rectangle rect, System.Drawing.Imaging.PixelFormat format)
 			{
 				// TODO
 				return null;
 			}
 	[TODO]
-	public Bitmap Clone(RectangleF rect, PixelFormat format)
+	public Bitmap Clone
+				(RectangleF rect, System.Drawing.Imaging.PixelFormat format)
 			{
 				// TODO
 				return null;
@@ -164,7 +169,7 @@ public sealed class Bitmap : Image
 	// Lock a region of this bitmap.
 	[TODO]
 	public BitmapData LockBits(Rectangle rect, ImageLockMode flags,
-							   PixelFormat format)
+							   System.Drawing.Imaging.PixelFormat format)
 			{
 				// TODO
 				return null;

@@ -10,6 +10,14 @@
 	DotGNU.Images/Image.cs: add Windows icon and cursor support
 	to the "DotGNU.Images" library.
 
+	* DotGNU.Images/Image.cs, System.Drawing/Bitmap.cs,
+	System.Drawing/Image.cs, System.Drawing/System.Drawing.build,
+	System.Drawing.Win32/System.Drawing.Win32.build,
+	System.Drawing.Xsharp/System.Drawing.Xsharp.build,
+	System.Windows.Forms/Forms.build, samples/ilrun.sh.in,
+	samples/samples.build: begin integrating "DotGNU.Images" into
+	the "System.Drawing" library.
+
 2003-07-09  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebHeaderCollection.cs, resources/en_US/System/Arg.txt:

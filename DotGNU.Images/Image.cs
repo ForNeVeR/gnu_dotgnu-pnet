@@ -37,13 +37,13 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	private int transparentPixel;
 
 	// Standard image formats.
-	public static readonly String Png = "png";
-	public static readonly String Jpeg = "jpeg";
-	public static readonly String Gif = "gif";
-	public static readonly String Tiff = "tiff";
-	public static readonly String Bmp = "bmp";
-	public static readonly String Icon = "icon";
-	public static readonly String Cursor = "cursor";
+	public const String Png = "png";
+	public const String Jpeg = "jpeg";
+	public const String Gif = "gif";
+	public const String Tiff = "tiff";
+	public const String Bmp = "bmp";
+	public const String Icon = "icon";
+	public const String Cursor = "cursor";
 
 	// Constructors.
 	public Image()

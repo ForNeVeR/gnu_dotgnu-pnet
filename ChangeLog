@@ -31,6 +31,10 @@
 	ildasm/ildasm_internal.h, ildasm/ildasm_main.c, ildasm/ildasm_method.c:
 	implement '/' compatibility options for "ildasm".
 
+	* engine/int_proto.h, ilnative/ilinternal.c: rename "errno" to
+	"error", to prevent problems on platforms that define "errno"
+	as a macro.
+
 2002-12-12 Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_defs.tc, 

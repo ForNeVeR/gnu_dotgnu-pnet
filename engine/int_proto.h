@@ -420,7 +420,7 @@ extern ILInt64 _IL_TimeMethods_GetCurrentUtcTime(ILExecThread * _thread);
 extern ILInt32 _IL_TimeMethods_GetTimeZoneAdjust(ILExecThread * _thread);
 extern ILInt32 _IL_TimeMethods_GetUpTime(ILExecThread * _thread);
 
-extern ILString * _IL_FileMethods_GetErrnoMessage(ILExecThread * _thread, ILInt32 errno);
+extern ILString * _IL_FileMethods_GetErrnoMessage(ILExecThread * _thread, ILInt32 error);
 extern ILBool _IL_FileMethods_ValidatePathname(ILExecThread * _thread, ILString * path);
 extern ILBool _IL_FileMethods_Open(ILExecThread * _thread, ILString * path, ILInt32 mode, ILInt32 access, ILInt32 share, ILNativeInt * handle);
 extern ILInt32 _IL_FileMethods_GetErrno(ILExecThread * _thread);
@@ -493,7 +493,7 @@ extern ILInt32 _IL_SocketMethods_SendTo(ILExecThread * _thread, ILNativeInt hand
 extern ILBool _IL_SocketMethods_Close(ILExecThread * _thread, ILNativeInt handle);
 extern ILInt32 _IL_SocketMethods_Select(ILExecThread * _thread, System_Array * readarray, System_Array * writearray, System_Array * errorarray, ILInt64 timeout);
 extern ILInt32 _IL_SocketMethods_GetErrno(ILExecThread * _thread);
-extern ILString * _IL_SocketMethods_GetErrnoMessage(ILExecThread * _thread, ILInt32 errno);
+extern ILString * _IL_SocketMethods_GetErrnoMessage(ILExecThread * _thread, ILInt32 error);
 
 extern ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread * _thread, ILInt32 host);
 extern ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread * _thread, ILInt64 host);

@@ -645,7 +645,14 @@ static void dumpMethodPrototype(FILE *outfile, const char *prefix,
 		if(paramName)
 		{
 			putc(' ', outfile);
-			fputs(paramName, outfile);
+			if(!strcmp(paramName, "errno"))
+			{
+				fputs("error", outfile);
+			}
+			else
+			{
+				fputs(paramName, outfile);
+			}
 		}
 		else
 		{

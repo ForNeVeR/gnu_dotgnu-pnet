@@ -26,7 +26,7 @@ SUBDIRS = Custommarshalers \
 		  System.Data.ObjectSpaces \
 		  Novell.Directory.Ldap \
 		  System.DirectoryServices \
-		  Mono.Security.Win32 \
 		  Mono.Http 
 
+#		  Mono.Security.Win32
 #		  Mono.Posix

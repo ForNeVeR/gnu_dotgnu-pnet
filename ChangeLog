@@ -1,5 +1,13 @@
 2004-09-12  Klaus Treichel  <ktreichel@web.de>
 
+	* class/Makefile.am: exclude Mono.Security.Win32 from builid because of
+	problem with Assembly/AssemblyInfo.cs
+
+	* nunit20/util/nunit.util.build: remove resource Transform.resources
+	because the file does not exist. 
+
+2004-09-12  Klaus Treichel  <ktreichel@web.de>
+
 	* class/Custommarshalers/Custommarshalers.build: remove obsolete reference
 	to the missing TODOAttribute
 

@@ -4,6 +4,11 @@
 	* Xsharp/Font.cs: remove a public constructor that is no longer
 	required.
 
+	* System.Windows.Forms/FileDialog.cs,
+	System.Windows.Forms/HBoxLayout.cs,
+	System.Windows.Forms/VBoxLayout.cs: fix some bugs in the layout
+	management classes and the file dialog.
+
 2003-11-30  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/TabControl.cs:

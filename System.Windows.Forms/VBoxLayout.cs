@@ -247,7 +247,7 @@ internal class VBoxLayout : Control, IRecommendedSize
 					{
 						childSize = HBoxLayout.GetRecommendedSize(child);
 						child.SetBounds
-							(margin, posn, childSize.Width - 2 * margin,
+							(margin, posn, clientSize.Width - 2 * margin,
 							 childSize.Height);
 						posn += childSize.Height + spacing;
 					}
@@ -257,7 +257,7 @@ internal class VBoxLayout : Control, IRecommendedSize
 				// Lay out the children after the stretched control.
 				posn2 = clientSize.Height - margin;
 				index = count - 1;
-				while(index > 0)
+				while(index >= 0)
 				{
 					child = controls[index];
 					if(child == stretch)

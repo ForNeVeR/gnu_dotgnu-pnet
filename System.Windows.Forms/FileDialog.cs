@@ -403,6 +403,7 @@ public abstract class FileDialog : CommonDialog
 		private FileIconListBox listBox;
 		private ComboBox directory;
 		private Button upButton;
+		private Button newDirButton;
 		private Label nameLabel;
 		private TextBox name;
 		private Label typeLabel;
@@ -436,9 +437,13 @@ public abstract class FileDialog : CommonDialog
 					upButton = new Button();
 					upButton.FlatStyle = FlatStyle.Popup;
 					upButton.Text = "Up";	// TODO: change to an image.
+					newDirButton = new Button();
+					newDirButton.FlatStyle = FlatStyle.Popup;
+					newDirButton.Text = "New";	// TODO: change to an image.
 					hbox.StretchControl = directory;
 					hbox.Controls.Add(directory);
 					hbox.Controls.Add(upButton);
+					hbox.Controls.Add(newDirButton);
 
 					// The second line is "listBox", already created above.
 
@@ -474,6 +479,7 @@ public abstract class FileDialog : CommonDialog
 						size.Height = 300;
 					}
 					ClientSize = size;
+					MinimumSize = size;
 				}
 
 		// Dispose of this dialog.

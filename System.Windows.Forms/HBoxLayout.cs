@@ -106,7 +106,7 @@ internal class HBoxLayout : Control, IRecommendedSize
 				}
 				else if(control is Label)
 				{
-					return new Size(((Label)control).PreferredWidth,
+					return new Size(((Label)control).PreferredWidth + 1,
 									((Label)control).PreferredHeight);
 				}
 				else
@@ -275,7 +275,7 @@ internal class HBoxLayout : Control, IRecommendedSize
 				// Lay out the children after the stretched control.
 				posn2 = clientSize.Width - margin;
 				index = count - 1;
-				while(index > 0)
+				while(index >= 0)
 				{
 					child = controls[index];
 					if(child == stretch)

@@ -116,12 +116,49 @@ static ILCmdLineOption const options[] = {
 		"Link for the GUI subsystem."},
 	{"-f", 'f', 1, 0, 0},
 	{"-m", 'm', 1, 0, 0},
+	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
 		"--version                   or -v",
 		"Print the version of the program"},
+	{"-h", 'h', 0, 0, 0},
 	{"--help", 'h', 0,
 		"--help",
 		"Print this help message."},
+
+	/* Options for compatibility with Microsoft's IL linker, "al" */
+	{"/algid", 'H', 1, 0, 0},		/* "/algid:id" */
+	{"/base*", '?', 1, 0, 0},		/* "/baseaddress:addr" */
+	{"/bugreport", '?', 1, 0, 0},	/* "/bugreport:filename" */
+	{"/comp*", '?', 1, 0, 0},		/* "/company:text" */
+	{"/comp*", '?', 1, 0, 0},		/* "/company:text" */
+	{"/config*", '?', 1, 0, 0},		/* "/configuration:text" */
+	{"/copy*", '?', 1, 0, 0},		/* "/copyright:text" */
+	{"/c*", '?', 1, 0, 0},			/* "/culture:text" */
+	{"/delay*", '?', 0, 0, 0},		/* "/delaysign[+|-]" */
+	{"/descr*", '?', 1, 0, 0},		/* "/description:text" */
+	{"/embed*", 'Q', 1, 0, 0},		/* "/embedresource:filename" */
+	{"/e*", '?', 1, 0, 0},			/* "/evidence:text" */
+	{"/fileversion", '?', 1, 0, 0},	/* "/fileversion:version" */
+	{"/flags", '?', 1, 0, 0},		/* "/flags:flags" */
+	{"/fullpaths", '?', 0, 0, 0},	/* "/fullpaths" */
+	{"/help", 'h', 0, 0, 0},		/* "/help" */
+	{"/keyf*", '?', 1, 0, 0},		/* "/keyfile:filename" */
+	{"/keyn*", '?', 1, 0, 0},		/* "/keyname:name" */
+	{"/link*", '?', 1, 0, 0},		/* "/linkresource:filename" */
+	{"/main", 'E', 1, 0, 0},		/* "/main:method" */
+	{"/nologo", '?', 0, 0, 0},		/* "/nologo" */
+	{"/out", 'o', 1, 0, 0},			/* "/out:filename" */
+	{"/productv*", '?', 1, 0, 0},	/* "/productversion:text" */
+	{"/prod*", '?', 1, 0, 0},		/* "/product:text" */
+	{"/template", '?', 1, 0, 0},	/* "/template:filename" */
+	{"/title", '?', 1, 0, 0},		/* "/title:text" */
+	{"/trade*", '?', 1, 0, 0},		/* "/trademark:text" */
+	{"/t*", 'F', 1, 0, 0},			/* "/target:lib|exe|win" */
+	{"/v*", 'A', 1, 0, 0},			/* "/version:version" */
+	{"/win32icon", '?', 1, 0, 0},	/* "/win32icon:filename" */
+	{"/win32res", '?', 1, 0, 0},	/* "/win32res:filename" */
+	{"/?", 'h', 0, 0, 0},			/* "/?" */
+
 	{0, 0, 0, 0, 0}
 };
 
@@ -163,11 +200,14 @@ int ILLinkerMain(int argc, char *argv[])
 	char *stdLibrary = "mscorlib";
 	char *stdCLibrary = 0;
 	char **resources;
+	char **resourceNames;
+	int *resourcePrivate;
 	int numResources = 0;
 	int jvmMode = 0;
 	int useStdlib = 1;
 	int isStatic = 0;
 	int privateResources = 0;
+	int defaultIsLib = 0;
 	int firstFile;
 	int temp, temp2;
 	ILLinker *linker;
@@ -187,8 +227,18 @@ int ILLinkerMain(int argc, char *argv[])
 	}
 
 	/* Allocate an array to hold the resource files to link against */
-	resources = (char **)ILCalloc(argc, sizeof(char **));
+	resources = (char **)ILCalloc(argc, sizeof(char *));
 	if(!resources)
+	{
+		outOfMemory();
+	}
+	resourceNames = (char **)ILCalloc(argc, sizeof(char *));
+	if(!resourceNames)
+	{
+		outOfMemory();
+	}
+	resourcePrivate = (int *)ILCalloc(argc, sizeof(int));
+	if(!resourcePrivate)
 	{
 		outOfMemory();
 	}
@@ -226,11 +276,18 @@ int ILLinkerMain(int argc, char *argv[])
 
 			case 'F':
 			{
+				/* Note: "exe", "dll", and "obj" are standard, while
+				   "win" and "lib" exist for compatibility only */
 				if(!strcmp(param, "exe"))
 				{
 					format = IL_IMAGETYPE_EXE;
 				}
-				else if(!strcmp(param, "dll"))
+				else if(!strcmp(param, "win"))
+				{
+					format = IL_IMAGETYPE_EXE;
+					flags |= IL_WRITEFLAG_SUBSYS_GUI;
+				}
+				else if(!strcmp(param, "dll") || !strcmp(param, "lib"))
 				{
 					format = IL_IMAGETYPE_DLL;
 				}
@@ -296,7 +353,51 @@ int ILLinkerMain(int argc, char *argv[])
 
 			case 'r':
 			{
-				resources[numResources++] = param;
+				resources[numResources] = param;
+				resourceNames[numResources] = param;
+				resourcePrivate[numResources] = -1;
+				++numResources;
+			}
+			break;
+
+			case 'Q':
+			{
+				/* Parse an "/embedresource:file[,name[,private]]" option */
+				int len = 0;
+				char *filename = param;
+				char *name;
+				int filenamelen;
+				int namelen;
+				int isPrivate = 0;
+				while(param[len] != '\0' && param[len] != ',')
+				{
+					++len;
+				}
+				filenamelen = len;
+				param += len;
+				if(*param == ',')
+				{
+					*param++ = '\0';
+				}
+				len = 0;
+				name = param;
+				while(param[len] != '\0' && param[len] != ',')
+				{
+					++len;
+				}
+				namelen = len;
+				if(!ILStrICmp(param + len, ",private"))
+				{
+					isPrivate = 1;
+				}
+				if(*param == ',')
+				{
+					*param = '\0';
+				}
+				resources[numResources] = filename;
+				resourceNames[numResources] = (namelen > 0 ? name : filename);
+				resourcePrivate[numResources] = isPrivate;
+				++numResources;
 			}
 			break;
 
@@ -389,7 +490,10 @@ int ILLinkerMain(int argc, char *argv[])
 				}
 				else if(!strncmp(param, "resources=", 10))
 				{
-					resources[numResources++] = param + 10;
+					resources[numResources] = param + 10;
+					resourceNames[numResources] = param + 10;
+					resourcePrivate[numResources] = -1;
+					++numResources;
 				}
 				else if(!strncmp(param, "hash-algorithm=", 15))
 				{
@@ -453,6 +557,15 @@ int ILLinkerMain(int argc, char *argv[])
 			}
 			break;
 
+			case '?':
+			{
+				/* Ignore this compatibility option that we don't support.
+				   "/nologo" or a similar innocuous option is also used
+				   to flip the default output format to "dll" from "exe" */
+				defaultIsLib = 1;
+			}
+			break;
+
 			case 'v':
 			{
 				version();
@@ -480,7 +593,14 @@ int ILLinkerMain(int argc, char *argv[])
 	   extension on the output file */
 	if(format == -1)
 	{
-		format = IL_IMAGETYPE_EXE;
+		if(defaultIsLib)
+		{
+			format = IL_IMAGETYPE_DLL;
+		}
+		else
+		{
+			format = IL_IMAGETYPE_EXE;
+		}
 		if(outputFile)
 		{
 			len = strlen(outputFile);
@@ -499,6 +619,10 @@ int ILLinkerMain(int argc, char *argv[])
 				else if(!ILStrICmp(outputFile + len, "obj"))
 				{
 					format = IL_IMAGETYPE_OBJ;
+				}
+				else if(!ILStrICmp(outputFile + len, "exe"))
+				{
+					format = IL_IMAGETYPE_EXE;
 				}
 			}
 		}
@@ -679,8 +803,17 @@ int ILLinkerMain(int argc, char *argv[])
 			}
 			if(infile != NULL)
 			{
-				errors |= addResource(linker, resources[temp], infile,
-									  privateResources, 0);
+				int isPrivate;
+				if(resourcePrivate[temp] != -1)
+				{
+					isPrivate = resourcePrivate[temp];
+				}
+				else
+				{
+					isPrivate = privateResources;
+				}
+				errors |= addResource(linker, resourceNames[temp], infile,
+									  isPrivate, 0);
 			}
 		}
 	}

@@ -390,6 +390,10 @@ int ILAsmMain(int argc, char *argv[])
 				{
 					format = IL_IMAGETYPE_DLL;
 				}
+				else if(!ILStrICmp(outputFile + len, "obj"))
+				{
+					format = IL_IMAGETYPE_OBJ;
+				}
 			}
 		}
 	}

@@ -20,6 +20,10 @@
 	* support/cmdline.c: rearrange the command-line so that '/'
 	options always come first if the command supports them.
 
+	* ilalink/Makefile.am, ilalink/link_main.c, ilasm/ilasm_main.c:
+	implement options for "ilalink" that make it compatible with "al";
+	hard link "al" to point to "ilalink".
+
 2002-12-12 Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_defs.tc, 

@@ -59,6 +59,9 @@
 	System/ComponentModel/Design/ServiceCreatorCallback.cs: Some 
 	Stubs of ComponentModel.Design namespace.
 
+	* System/ComponentModel/TypeConvertor.cs: Add the StandardValuesCollection
+	nested class .
+
 2002-12-25  Gopal.V  <gopalv82@symonds.net>
 	
 	* resources/en_US/runtime/IO.txt,  resources/de_DE/runtime/IO.txt:

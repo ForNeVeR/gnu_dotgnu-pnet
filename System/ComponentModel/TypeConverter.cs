@@ -280,6 +280,68 @@ public class TypeConverter
 				return props;
 			}
 
+	// nested class
+	public class StandardValuesCollection : ICollection, IEnumerable
+	{
+	
+		private ICollection values;
+		
+		public StandardValuesCollection (ICollection values)
+		{
+			this.values = values;
+		}
+
+		public void CopyTo (Array array, int index)
+		{
+			values.CopyTo (array, index);
+		}
+
+		public IEnumerator GetEnumerator ()
+		{
+			return values.GetEnumerator ();
+		}
+
+		bool ICollection.IsSynchronized
+		{
+			get 
+			{
+				return false; 
+			}
+		}
+
+		object ICollection.SyncRoot
+		{
+			get 
+			{ 
+				return null;
+			}
+		}
+
+		int ICollection.Count
+		{
+			get 
+			{
+				return this.Count;
+			}
+		}
+
+		public int Count
+		{
+			get
+			{
+				return values.Count;
+			}
+		}
+
+		public object this [int index]
+		{
+			get 
+			{
+				return (values as IList) [index]; 
+			}
+		}
+	}
+
 }; // class TypeConverter
 
 #endif // !ECMA_COMPAT

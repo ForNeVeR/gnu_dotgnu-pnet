@@ -12,6 +12,9 @@
 	* engine/verify_call.c, image/synthetic.c: fix verification of
 	"newobj" when single-dimensional classes are used.
 
+	* ilasm/ilasm_output.c: set the "maxStack" value to 8 by default,
+	instead of 0, to handle compilers that don't output ".maxstack".
+
 2003-01-12  Gopal.V  <gopalv82@symonds.net>
 
 	* ilasm/ilasm_grammar.y: force all constructor references to be 

@@ -54,7 +54,7 @@ static ILUInt32		  length = 0;
  * Other information for the current method.
  */
 static ILType        *localVars = 0;
-static ILUInt32		  maxStack = 0;
+static ILUInt32		  maxStack = 8;
 static int			  initLocals = 0;
 static ILUInt32		  localIndex = 0;
 typedef struct _tagLocalInfo
@@ -287,7 +287,7 @@ void ILAsmOutReset(void)
 	buffer = 0;
 	length = 0;
 	localVars = 0;
-	maxStack = 0;
+	maxStack = 8;
 	initLocals = 0;
 	localIndex = 0;
 	localNames = 0;
@@ -2035,7 +2035,7 @@ void ILAsmOutFinalizeMethod(ILMethod *method)
 cleanup:
 	offset = 0;
 	localVars = 0;
-	maxStack = 0;
+	maxStack = 8;
 	initLocals = 0;
 	localIndex = 0;
 	local = localNames;

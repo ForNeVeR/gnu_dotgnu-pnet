@@ -1,4 +1,11 @@
 
+2003-06-22  Simon Guindon  <simon@nureality.ca>
+
+	* System.Windows.Forms/StatusBar.cs,
+	System.Windows.Forms/StatusBarPanel.cs,
+	System.Windows.Forms/StatusBarPanelCollection.cs:
+	begin the implementation of the StatusBar class.
+
 2003-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing.Xsharp/DrawingPen.cs, Xsharp/Graphics.cs,

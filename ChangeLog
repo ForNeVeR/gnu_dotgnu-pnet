@@ -1,3 +1,12 @@
+2003-06-21  Neil Cawse  <neilc@geotab.ca>
+
+	* System.Drawing.Win32/DrawingBrush.cs,
+	System.Drawing.Win32/DrawingFont.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingPen.cs,
+	System.Drawing.Win32/Win32.cs:
+	Implemented fonts, changed DrawingGraphics to select pens,
+	brushes & fonts to prevent gdi leak on 95/98
 
 2003-06-21  Neil Cawse  <neilc@geotab.ca>
 

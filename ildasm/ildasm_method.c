@@ -102,6 +102,7 @@ static void DumpToken(ILImage *image, FILE *outstream,
 	ILField *field;
 	ILMethod *method;
 	ILMember *member;
+	ILMember *origMember;
 	ILTypeSpec *spec;
 
 	switch(token & IL_META_TOKEN_MASK)
@@ -168,7 +169,6 @@ static void DumpToken(ILImage *image, FILE *outstream,
 			method = ILMethod_FromToken(image, token);
 			if(method)
 			{
-			dumpMethod:
 				ILDumpMethodType(outstream, image,
 								 ILMethod_Signature(method), flags,
 								 ILMethod_Owner(method),
@@ -186,13 +186,21 @@ static void DumpToken(ILImage *image, FILE *outstream,
 		{
 			/* A reference to an external method or field */
 			member = ILMember_FromToken(image, token);
+			origMember = member;
 			member = (member ? ILMemberResolveRef(member) : 0);
 			if(member)
 			{
 				if(ILMember_IsMethod(member))
 				{
+					/* Use the signature from the original member,
+					   because this may be a "vararg" call that has
+					   type information supplied in the call site */
 					method = (ILMethod *)member;
-					goto dumpMethod;
+					ILDumpMethodType(outstream, image,
+									 ILMember_Signature(origMember), flags,
+									 ILMethod_Owner(method),
+									 ILMethod_Name(method),
+									 method);
 				}
 				else if(ILMember_IsField(member))
 				{
@@ -777,6 +785,9 @@ void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
 	/* Read the method code and exception information */
 	if(!ILMethodGetCode(method, &code))
 	{
+		/* If we get here, then probably the method had an RVA,
+		   but the code was not IL */
+		fputs("\t\t// Cannot dump the code for native methods\n", outstream);
 		return;
 	}
 	if(!ILMethodGetExceptions(method, &code, &clauses))

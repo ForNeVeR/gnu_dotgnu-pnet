@@ -43,6 +43,9 @@ a MemberRef points at a method.
 
 * dumpasm/dump_type.c: print "..." for sentinels.
 
+* ildasm/ildasm_method.c: dump the proper call site signature for
+"vararg" calls; print a message when native code is encountered.
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

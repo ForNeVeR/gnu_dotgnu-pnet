@@ -1,4 +1,8 @@
+2004-10-19  Thong Nguyen  <tum@veridicus.com>
 
+	* engine/lib_reflect.c: Fixed null dereference when using
+	ClrField.SetValue with a null value (bug #10706 by Andre Seidelt).
+	
 2004-10-15  Adam Gibson  <adam.gibson@gmail.com>
 
 	* engine/int_table.c, engine/int_proto.h, engine/lib_serial.c,

@@ -2515,6 +2515,28 @@ void _IL_ClrField_SetValueInternal(ILExecThread *thread, ILObject *_this,
 		ptr = (void *)(((unsigned char *)obj) + field->offset);
 	}
 
+	/* Handle null value (null has no type) */
+	if (value == 0)
+	{
+		if (ILTypeIsReference(type))
+		{
+			/* Set null value on a reference field */
+			
+			*((ILObject **)ptr) = 0;
+			
+			return;
+		}
+		else
+		{
+			/* Null on a value type field is equivalent to setting
+			   the field to the value type default value */
+			
+			ILMemZero(ptr, ILSizeOfType(thread, type));
+			
+			return;
+		}
+	}
+		
 	objectType = ILClassToType(GetObjectClass(value));
 				
 	if(!ILTypeAssignCompatible(ILProgramItem_Image(field), objectType, type))

@@ -254,7 +254,7 @@ public abstract class Encoding
 							{
 								i18nAssembly = Assembly.Load("I18N");
 							}
-							catch(NotSupportedException)
+							catch(NotImplementedException)
 							{
 								// Assembly loading unsupported by the engine.
 								i18nDisabled = true;
@@ -278,7 +278,7 @@ public abstract class Encoding
 						managerClass =
 							i18nAssembly.GetType("I18N.Common.Manager");
 					}
-					catch(NotSupportedException)
+					catch(NotImplementedException)
 					{
 						// "GetType" is not supported by the engine.
 						i18nDisabled = true;
@@ -312,7 +312,7 @@ public abstract class Encoding
 					{
 						return null;
 					}
-					catch(NotSupportedException)
+					catch(NotImplementedException)
 					{
 						// "InvokeMember" is not supported by the engine.
 						i18nDisabled = true;

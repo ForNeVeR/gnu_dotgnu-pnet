@@ -46,7 +46,7 @@ public sealed class Environment
 				{
 					newLine = SysCharInfo.GetNewLine();
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					// The runtime engine does not have "SysCharInfo".
 					newLine = "\n";
@@ -62,7 +62,7 @@ public sealed class Environment
 					PathSeparatorChar = pathInfo.pathSeparator;
 					InvalidPathChars = pathInfo.invalidPathChars;
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					// The runtime engine does not have directory support.
 					DirectorySeparatorChar = '/';

@@ -69,7 +69,7 @@ public class Exception
 			{
 				stackTrace = StackFrame.GetExceptionStackTrace();
 			}
-			catch(NotSupportedException)
+			catch(NotImplementedException)
 			{
 				// The runtime engine does not have "GetExceptionStackTrace".
 				stackTrace = null;
@@ -88,7 +88,7 @@ public class Exception
 				{
 					stackTrace = StackFrame.GetExceptionStackTrace();
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					stackTrace = null;
 				}
@@ -125,7 +125,7 @@ public class Exception
 			{
 				className = GetType().ToString();
 			}
-			catch(NotSupportedException)
+			catch(NotImplementedException)
 			{
 				// The runtime engine does not have reflection support.
 				className = String.Empty;
@@ -203,7 +203,7 @@ public class Exception
 						return String.Format
 							(_("Exception_WasThrown"), GetType().ToString());
 					}
-					catch(NotSupportedException)
+					catch(NotImplementedException)
 					{
 						return String.Empty;
 					}

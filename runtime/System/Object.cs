@@ -99,7 +99,7 @@ public class Object
 							}
 							return resources.GetString(tag, null);
 						}
-						catch(NotSupportedException)
+						catch(NotImplementedException)
 						{
 							reflectionMissing = true;
 							return tag;

@@ -100,7 +100,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					loadFactor = 1.0f;
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					// The runtime engine does not support floating point,
 					// but we still need hash tables when no FP.
@@ -124,7 +124,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					loadFactor = 1.0f;
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					// The runtime engine does not support floating point,
 					// but we still need hash tables when no FP.
@@ -150,7 +150,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					loadFactor = 1.0f;
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					// The runtime engine does not support floating point,
 					// but we still need hash tables when no FP.
@@ -174,7 +174,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					loadFactor = 1.0f;
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					// The runtime engine does not support floating point,
 					// but we still need hash tables when no FP.
@@ -204,7 +204,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					loadFactor = 1.0f;
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					// The runtime engine does not support floating point,
 					// but we still need hash tables when no FP.
@@ -235,7 +235,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					loadFactor = 1.0f;
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					// The runtime engine does not support floating point,
 					// but we still need hash tables when no FP.
@@ -475,7 +475,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					capacityLimit = (int)(capacity * loadFactor);
 				}
-				catch(NotSupportedException)
+				catch(NotImplementedException)
 				{
 					// The runtime engine does not support floating point,
 					// so assume a load factor of 1.

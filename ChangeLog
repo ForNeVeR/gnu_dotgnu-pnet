@@ -1,4 +1,14 @@
 
+2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/NotImplementedException.cs: add the exception
+	class "NotImplementedException".
+
+	* runtime/System/Environment.cs, runtime/System/Exception.cs,
+	runtime/System/Object.cs, runtime/System/Collections/Hashtable.cs,
+	runtime/System/Text/Encoding.cs: change "NotSupportedException"
+	into "NotImplementedException" to be ECMA-compatible.
+
 2002-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Environment.cs: harden the static constructor
@@ -12,9 +22,6 @@
 
 	* runtime/System/Resources/ResourceManager.cs: harden "AttemptLoad"
 	against the runtime engine missing reflection support.
-
-	* runtime/System/NotImplementedException.cs: add the exception
-	class "NotImplementedException".
 
 2002-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -857,6 +857,14 @@ internal class Api
 	[DllImport("user32")]
 	public static extern IntPtr SetFocus( IntPtr hWnd );
 
+	[DllImport("user32")]
+	public static extern IntPtr SetCapture( IntPtr hWnd );
+
+	[DllImport("user32")]
+	public static extern IntPtr GetCapture();
+
+	[DllImport("user32")]
+	public static extern IntPtr ReleaseCapture();
 
 }//Api
 

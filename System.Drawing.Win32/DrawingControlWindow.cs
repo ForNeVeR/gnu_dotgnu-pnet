@@ -21,35 +21,33 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
-using d = System.Diagnostics.Debug;
 
 internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 {
 	//for a unique class name
 	protected static uint createCount;
 
-	public DrawingControlWindow(IToolkit toolkit, string name, DrawingWindow parent, int x, int y, int width, int height) : base (toolkit)
+	public DrawingControlWindow(IToolkit toolkit, string name, DrawingWindow parent, int x, int y, int width, int height, IToolkitEventSink sink) : base (toolkit)
 	{
-		d.WriteLine("DrawingControlWindow");
+		this.sink = sink;
+		//Console.WriteLine("DrawingControlWindow");
 		this.parent = parent;
 		dimensions = new Rectangle( x, y, width, height );
 		//At the moment we create a unique class name for EVERY window. SWF does it for each window type
-		className = "DrawingControlWindow" + createCount;
+		className = "DrawingControlWindow" + createCount++;
 		//Register the windows class
 		windowsClass = new Win32.Api.WNDCLASS();
 		windowsClass.style = Win32.Api.WindowClassStyle.CS_DBLCLKS;
-		windowsClass.lpfnWndProc = new Win32.Api.WNDPROC(WindowsLoop);
+		windowsClass.lpfnWndProc = new Win32.Api.WNDPROC((toolkit as DrawingToolkit).WindowsLoop);
 		windowsClass.hbrBackground = IntPtr.Zero; //(IntPtr)(Win32.Api.COLOR_WINDOW + 1);
 		windowsClass.lpszClassName = className ;
 		if (Win32.Api.RegisterClassA( ref windowsClass)==0) 
 		{
 			throw new Exception("Failed to register Windows class " + className);
 		}
-		createCount++;
 		//Set default windows settings
 		style = Win32.Api.WindowStyle.WS_CHILD | Win32.Api.WindowStyle.WS_TABSTOP;
 		extendedStyle = 0;
-		CreateWindow();
 	}
 
 	// Reparent this window to underneath a new parent. If there is no parent then the parent is the desktop and the control is not visible.
@@ -63,23 +61,28 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 			bool parented = this.parent != null && this.parent.hwnd != IntPtr.Zero;
 			this.parent = (DrawingWindow)parent;
 			
+			suspendExternalMoveResizeNotify = true;
 			Win32.Api.SetParent( hwnd, parentHwnd);
+			suspendExternalMoveResizeNotify = false;
+			// Reposition this window on the client
+			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, x, y, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOSENDCHANGING | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
 			
 			if (visible && !parented)
 				setVisible();
 		}
-		d.WriteLine("DrawingWindow.Reparent, hwnd="+hwnd);
+		//Console.WriteLine("DrawingWindow.Reparent, hwnd="+hwnd);
 	}
 	
-	protected void CreateWindow()
+	internal override void CreateWindow()
 	{
 		hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, string.Empty, style, dimensions.X, dimensions.Y, dimensions.Width, dimensions.Height, parentHwnd, IntPtr.Zero,Win32.Api.GetModuleHandleA(null),IntPtr.Zero );
-		//setVisible();
-		d.WriteLine("DrawingControlWindow.CreateWindow hwnd="+hwnd + ",parent hwnd="+parentHwnd+",["+dimensions.X+","+dimensions.Y+","+dimensions.Width+","+dimensions.Height+"]");
+		//Console.WriteLine("DrawingControlWindow.CreateWindow hwnd="+hwnd + ",parent hwnd="+parentHwnd+",["+dimensions.X+","+dimensions.Y+","+dimensions.Width+","+dimensions.Height+"]");
 		if (hwnd==IntPtr.Zero) 
 		{
 			throw new Exception("Failed to create new Window");
 		}
+		sink.ToolkitExternalMove( dimensions.X, dimensions.Y );
+		sink.ToolkitExternalResize( dimensions.Width, dimensions.Height );
 	}
 
 	protected IntPtr parentHwnd 

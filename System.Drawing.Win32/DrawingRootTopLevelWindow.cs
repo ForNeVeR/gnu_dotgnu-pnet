@@ -21,12 +21,11 @@ namespace System.Drawing.Toolkit
 {
 
 	using System;
-	using d=System.Diagnostics.Debug;
 
 	internal class DrawingRootTopLevelWindow : DrawingTopLevelWindow
 	{
 		public DrawingRootTopLevelWindow(IToolkit toolkit, String name,
-			int width, int height) : base (toolkit, name, width, height) {}
+			int width, int height, IToolkitEventSink sink) : base (toolkit, name, width, height, sink) {}
 
 		//TODO
 		/*wParam 
@@ -38,7 +37,7 @@ namespace System.Drawing.Toolkit
 	When an application sends this message, this parameter must be NULL.
 	*/
 		//TODO
-		protected override void SettingsChange(int wParam)
+		internal override void SettingsChange(int wParam)
 		{
 			
 		}

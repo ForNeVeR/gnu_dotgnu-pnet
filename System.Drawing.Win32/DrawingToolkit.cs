@@ -27,12 +27,11 @@ using System.Drawing.Text;
 using System.Drawing.Imaging;
 using System.Collections;
 using System.Threading;
-using d = System.Diagnostics.Debug;
 
 public class DrawingToolkit : IToolkit
 {
-	private DrawingRootTopLevelWindow drawingRootTopLevelWindow;
 	private ArrayList timers = new ArrayList();
+	private ArrayList windows = new ArrayList();
 
 	// Process events in the event queue.  If "waitForEvent" is true,
 	// then wait for the next event and return "false" if "Quit" was
@@ -181,26 +180,23 @@ public class DrawingToolkit : IToolkit
 			}
 
 	// Create a form.
-	public IToolkitWindow CreateTopLevelWindow(int width, int height)
+	public IToolkitWindow CreateTopLevelWindow(int width, int height, IToolkitEventSink sink)
 			{
-				//for now..
-				if ( drawingRootTopLevelWindow == null)
-				{
-					return drawingRootTopLevelWindow = new DrawingRootTopLevelWindow(this, string.Empty, width, height);
-				}
-					
-				return new DrawingTopLevelWindow(this, string.Empty, width, height);
+				DrawingWindow window = new DrawingTopLevelWindow(this, string.Empty, width, height, sink);
+				windows.Add(window);
+				window.CreateWindow();
+				return window;
 			}
 
 	// Create a top-level dialog shell.
 	//TODO
 	public IToolkitWindow CreateTopLevelDialog
 				(int width, int height, bool modal, bool resizable,
-				 IToolkitWindow dialogParent)
+				 IToolkitWindow dialogParent, IToolkitEventSink sink)
 			{
 				DrawingTopLevelWindow window;
 				window = new DrawingTopLevelWindow
-					(this, String.Empty, width, height);
+					(this, String.Empty, width, height, sink);
 				/*if(dialogParent is TopLevelWindow)
 				{
 					window.TransientFor = (TopLevelWindow)dialogParent;
@@ -221,6 +217,8 @@ public class DrawingToolkit : IToolkit
 					window.Functions = MotifFunctions.Move |
 									   MotifFunctions.Close;
 				}*/
+				windows.Add(window);
+				window.CreateWindow();
 				return window;
 			}
 
@@ -228,17 +226,20 @@ public class DrawingToolkit : IToolkit
 	// any borders and grab the mouse and keyboard when they are mapped
 	// to the screen.  They are used for menus, drop-down lists, etc.
 	public IToolkitWindow CreatePopupWindow
-				(int x, int y, int width, int height)
+				(int x, int y, int width, int height, IToolkitEventSink sink)
 			{
-				// TODO
-				return null;
+				DrawingWindow window = new DrawingPopupWindow(this, x, y, width, height, sink);
+				windows.Add(window);
+				window.CreateWindow();
+				return window;
 			}
 
 
 	// Create a child window.  If "parent" is null, then the child
 	// does not yet have a "real" parent - it will be reparented later.
 	public IToolkitWindow CreateChildWindow
-				(IToolkitWindow parent, int x, int y, int width, int height)
+				(IToolkitWindow parent, int x, int y, int width, int height,
+				 IToolkitEventSink sink)
 			{
 				DrawingWindow dparent;
 				if(parent is DrawingWindow)
@@ -249,7 +250,10 @@ public class DrawingToolkit : IToolkit
 				{
 					dparent = null;
 				}
-				return new DrawingControlWindow(this, "", dparent, x, y, width, height);
+				DrawingWindow window = new DrawingControlWindow(this, "", dparent, x, y, width, height, sink);
+				windows.Add(window);
+				window.CreateWindow();
+				return window;
 			}
 
 	// Get a list of all font families on this system, or all font
@@ -335,7 +339,7 @@ public class DrawingToolkit : IToolkit
 	// Get the default IToolkitGraphics object to measure screen sizes.
 	public IToolkitGraphics GetDefaultGraphics()
 			{
-				d.WriteLine("DrawingToolkit.GetDefaultGraphics");
+				//Console.WriteLine("DrawingToolkit.GetDefaultGraphics");
 				return new DrawingGraphics(this, Win32.Api.GetDC(Win32.Api.GetDesktopWindow()));
 			}
 
@@ -363,11 +367,68 @@ public class DrawingToolkit : IToolkit
 						        out int rightAdjust, out int bottomAdjust,
 								ToolkitWindowFlags flags)
 	{
-		// TODO
-		leftAdjust = 0;
-		topAdjust = 0;
-		rightAdjust = 0;
-		bottomAdjust = 0;
+		Win32.Api.WindowStyle style;
+		Win32.Api.WindowsExtendedStyle extendedStyle;
+		GetWin32StylesFromFlags( flags, out style, out extendedStyle);
+		Win32.Api.RECT rect = new System.Drawing.Win32.Api.RECT(0,0,0,0);
+		Win32.Api.AdjustWindowRectEx( ref rect, style, false, extendedStyle );
+
+		leftAdjust = -rect.left;
+		topAdjust = -rect.top;
+		rightAdjust = rect.right;
+		bottomAdjust = rect.bottom;
+	}
+
+	internal void GetWin32StylesFromFlags( ToolkitWindowFlags flags, out Win32.Api.WindowStyle style, out Win32.Api.WindowsExtendedStyle extendedStyle)
+	{
+		style = Win32.Api.WindowStyle.WS_POPUP | Win32.Api.WindowStyle.WS_CLIPCHILDREN;
+		extendedStyle = 0;
+		
+		//to remove the popup style
+		Win32.Api.WindowStyle overlapped = ~Win32.Api.WindowStyle.WS_POPUP;
+				
+		if((flags & ToolkitWindowFlags.Close) > 0)
+			style |= Win32.Api.WindowStyle.WS_SYSMENU;
+
+		if((flags & ToolkitWindowFlags.Minimize) > 0)
+			style = style & overlapped | Win32.Api.WindowStyle.WS_MINIMIZEBOX;
+
+		if((flags & ToolkitWindowFlags.Maximize) > 0)
+			style = style & overlapped | Win32.Api.WindowStyle.WS_MAXIMIZEBOX;
+
+		if((flags & ToolkitWindowFlags.Caption) > 0)
+			style |= Win32.Api.WindowStyle.WS_CAPTION;
+
+		if((flags & ToolkitWindowFlags.Border) > 0)
+			style |= Win32.Api.WindowStyle.WS_BORDER;
+
+		if((flags & ToolkitWindowFlags.ResizeHandles) > 0)
+			style |= Win32.Api.WindowStyle.WS_THICKFRAME;
+
+		if((flags & ToolkitWindowFlags.Menu) > 0)
+			style = style | Win32.Api.WindowStyle.WS_SYSMENU;
+
+		if((flags & ToolkitWindowFlags.Resize) > 0)
+			style |= Win32.Api.WindowStyle.WS_THICKFRAME;
+
+		//We dont handle the Move flag in Win32
+
+		//TODO: NOT SURE HERE
+		if((flags & ToolkitWindowFlags.Modal) > 0)
+			style |= Win32.Api.WindowStyle.WS_POPUP | Win32.Api.WindowStyle.WS_DLGFRAME;
+
+		//TODO: Need a hidden window
+		if((flags & ToolkitWindowFlags.ShowInTaskBar)>0)
+			;
+		else
+			;			
+
+		if((flags & ToolkitWindowFlags.TopMost)>0)
+			extendedStyle |= Win32.Api.WindowsExtendedStyle.WS_EX_TOPMOST;
+
+		if((flags & ToolkitWindowFlags.ToolWindow) > 0)
+			extendedStyle |= Win32.Api.WindowsExtendedStyle.WS_EX_TOOLWINDOW;		
+
 	}
 
 	// Register a timer that should fire every "interval" milliseconds.
@@ -434,6 +495,148 @@ public class DrawingToolkit : IToolkit
 			expire( owner, EventArgs.Empty );
 		}
 
+	}
+
+	//The main windows loop. Messages are handed off
+	internal int WindowsLoop(IntPtr hwnd, int msg, int wParam, int lParam)  
+	{
+		int retval = 0;
+		switch((Win32.Api.WindowsMessages)msg) 
+		{
+
+			case Win32.Api.WindowsMessages.WM_CREATE:
+				DrawingWindow(IntPtr.Zero).hwnd = hwnd;
+				break;
+
+			case Win32.Api.WindowsMessages.WM_SETFOCUS:
+				DrawingWindow(hwnd).SetFocus();
+				break;
+			case Win32.Api.WindowsMessages.WM_KILLFOCUS:
+				DrawingWindow(hwnd).KillFocus();
+				break;
+
+			case Win32.Api.WindowsMessages.WM_WINDOWPOSCHANGING:
+				DrawingWindow(hwnd).WindowPosChanging(lParam);
+				break;
+
+			case Win32.Api.WindowsMessages.WM_SYSCOMMAND:
+			switch((Win32.Api.SystemCommand)wParam) 
+			{
+				case(Win32.Api.SystemCommand.SC_RESTORE):
+					//TODO
+					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
+					break;
+				case(Win32.Api.SystemCommand.SC_MAXIMIZE):
+					//TODO
+					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
+					break;
+				case(Win32.Api.SystemCommand.SC_MINIMIZE):
+					//TODO
+					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
+					break;
+				case(Win32.Api.SystemCommand.SC_CLOSE):
+					//TODO
+					DrawingWindow(hwnd).Close();
+					break;
+				default:
+					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
+					break;
+			}
+				break;	
+
+			case Win32.Api.WindowsMessages.WM_DESTROY:
+				DrawingWindow(hwnd).Destroyed();
+				break;
+
+			case Win32.Api.WindowsMessages.WM_PAINT:
+				DrawingWindow(hwnd).Paint();
+				break;
+			case Win32.Api.WindowsMessages.WM_ERASEBKGND:
+				DrawingWindow(hwnd).EraseBackground( new IntPtr(wParam) );
+				retval=1;
+				break;
+
+			case Win32.Api.WindowsMessages.WM_SETCURSOR:
+				//TEMP
+				Win32.Api.SetCursor(Win32.Api.LoadCursorA(IntPtr.Zero, Win32.Api.CursorName.IDC_ARROW));
+				retval =1;
+				break;
+
+			case Win32.Api.WindowsMessages.WM_MOUSEMOVE:
+				DrawingWindow(hwnd).MouseMove( wParam, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_MOUSEWHEEL:
+				DrawingWindow(hwnd).MouseMove( wParam, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_LBUTTONDOWN:
+				DrawingWindow(hwnd).ButtonDown( wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_RBUTTONDOWN:
+				DrawingWindow(hwnd).ButtonDown( wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_MBUTTONDOWN:
+				DrawingWindow(hwnd).ButtonDown( wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_XBUTTONDOWN:
+				DrawingWindow(hwnd).ButtonDown( wParam, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_LBUTTONUP:
+				DrawingWindow(hwnd).ButtonUp( wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_RBUTTONUP:
+				DrawingWindow(hwnd).ButtonUp( wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_MBUTTONUP:
+				DrawingWindow(hwnd).ButtonUp( wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_XBUTTONUP:
+				DrawingWindow(hwnd).ButtonUp( wParam, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_LBUTTONDBLCLK:
+				DrawingWindow(hwnd).DoubleClick( wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_RBUTTONDBLCLK:
+				DrawingWindow(hwnd).DoubleClick( wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_MBUTTONDBLCLK:
+				DrawingWindow(hwnd).DoubleClick( wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_XBUTTONDBLCLK:
+				DrawingWindow(hwnd).DoubleClick( wParam, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_MOUSELEAVE:
+				DrawingWindow(hwnd).MouseLeave();
+				break;
+
+			case Win32.Api.WindowsMessages.WM_KEYDOWN:
+			case Win32.Api.WindowsMessages.WM_SYSKEYDOWN:
+				DrawingWindow(hwnd).KeyDown( wParam, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_CHAR:
+				DrawingWindow(hwnd).Char( wParam, lParam );
+				break;
+			case Win32.Api.WindowsMessages.WM_KEYUP:
+			case Win32.Api.WindowsMessages.WM_SYSKEYUP:
+				DrawingWindow(hwnd).KeyUp( wParam, lParam );
+				break;
+
+			case Win32.Api.WindowsMessages.WM_SETTINGCHANGE:
+				DrawingWindow(hwnd).SettingsChange( wParam );
+				break;
+
+			default:
+				retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
+				break;
+		}
+		return retval;
+	}
+
+	private DrawingWindow DrawingWindow(IntPtr hwnd)
+	{
+		foreach(DrawingWindow window in windows)
+			if (window.hwnd == hwnd)
+				return window;
+		return null;
 	}
 
 }; // class DrawingToolkit

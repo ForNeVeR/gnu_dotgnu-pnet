@@ -64,6 +64,328 @@ ILNode_SemAnalysis(ILNode_NewScope)
 %{
 
 /*
+ * Convert a field into a literal constant node if possible.
+ * Returns NULL if not possible.
+ */
+static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
+{
+	ILConstant *constValue;
+	if(ILField_IsLiteral(field))
+	{
+		if((constValue = ILConstantGetFromOwner(ILToProgramItem(field))) != 0)
+		{
+			/* Convert the constant into an appropriate node */
+			ILType *baseType = ILTypeGetEnumType(ILField_Type(field));
+			const unsigned char *value;
+			unsigned long valueLen;
+			value = ILConstantGetValue(constValue, &valueLen);
+			switch(ILConstantGetElemType(constValue))
+			{
+				case IL_META_ELEMTYPE_BOOLEAN:
+				{
+					/* Create a boolean constant */
+					if(value && valueLen > 0 && baseType == ILType_Boolean)
+					{
+						if(value[0])
+						{
+							return ILNode_True_create();
+						}
+						else
+						{
+							return ILNode_False_create();
+						}
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_U1:
+				{
+					/* Create an 8-bit constant */
+					if(value && valueLen > 0)
+					{
+						if(baseType == ILType_Int8)
+						{
+							ILInt8 val = (ILInt8)(value[0]);
+							if(val >= 0)
+							{
+								return ILNode_Int8_create
+									((ILUInt64)(-((ILInt32)val)), 1, 0);
+							}
+							else
+							{
+								return ILNode_Int8_create
+									((ILUInt64)val, 0, 0);
+							}
+						}
+						else if(baseType == ILType_UInt8)
+						{
+							return ILNode_UInt8_create
+								((ILUInt64)(value[0]), 0, 0);
+						}
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_U2:
+				{
+					/* Create a 16-bit constant */
+					if(value && valueLen > 1)
+					{
+						if(baseType == ILType_Int16)
+						{
+							ILInt16 val = (ILInt16)(IL_READ_INT16(value));
+							if(val >= 0)
+							{
+								return ILNode_Int16_create
+									((ILUInt64)(-((ILInt32)val)), 1, 0);
+							}
+							else
+							{
+								return ILNode_Int16_create
+									((ILUInt64)val, 0, 0);
+							}
+						}
+						else if(baseType == ILType_UInt16)
+						{
+							return ILNode_UInt16_create
+								((ILUInt64)(IL_READ_UINT16(value)), 0, 0);
+						}
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_CHAR:
+				{
+					/* Create a character constant */
+					if(value && valueLen > 1)
+					{
+						if(baseType == ILType_Char)
+						{
+							return ILNode_Char_create
+								((ILUInt64)(IL_READ_UINT16(value)), 0, 0);
+						}
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I4:
+				case IL_META_ELEMTYPE_U4:
+				{
+					/* Create a 32-bit constant */
+					if(value && valueLen > 3)
+					{
+						if(baseType == ILType_Int32)
+						{
+							ILInt32 val = IL_READ_INT32(value);
+							if(val >= 0)
+							{
+								return ILNode_Int32_create
+									((ILUInt64)(ILUInt32)(-val), 1, 0);
+							}
+							else
+							{
+								return ILNode_Int32_create
+									((ILUInt64)val, 0, 0);
+							}
+						}
+						else if(baseType == ILType_UInt32)
+						{
+							return ILNode_UInt32_create
+								((ILUInt64)(IL_READ_UINT32(value)), 0, 0);
+						}
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I8:
+				case IL_META_ELEMTYPE_U8:
+				{
+					/* Create a 64-bit constant */
+					if(value && valueLen > 7)
+					{
+						if(baseType == ILType_Int64)
+						{
+							ILInt64 val = IL_READ_INT64(value);
+							if(val >= 0)
+							{
+								return ILNode_Int64_create
+									((ILUInt64)(-val), 1, 0);
+							}
+							else
+							{
+								return ILNode_Int64_create
+									((ILUInt64)val, 0, 0);
+							}
+						}
+						else if(baseType == ILType_UInt64)
+						{
+							return ILNode_UInt64_create
+								(IL_READ_UINT64(value), 0, 0);
+						}
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				{
+					/* Create a 32-bit floating-point constant */
+					if(value && valueLen > 3)
+					{
+						if(baseType == ILType_Float32)
+						{
+							return ILNode_Float32_create
+								(IL_READ_FLOAT(value));
+						}
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R8:
+				{
+					/* Create a 64-bit floating-point constant */
+					if(value && valueLen > 7)
+					{
+						if(baseType == ILType_Float64)
+						{
+							return ILNode_Float64_create
+								(IL_READ_DOUBLE(value));
+						}
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_STRING:
+				{
+					/* Create a string constant */
+					if(value && ILTypeIsStringClass(baseType))
+					{
+						int posn = 0;
+						int len = 0;
+						char *newStr;
+						ILIntString interned;
+						while(posn < (int)valueLen)
+						{
+							len += ILUTF8WriteChar
+							  (0, ILUTF16ReadCharAsBytes
+								((const char *)value, (int)valueLen, &posn));
+						}
+						newStr = (char *)ILMalloc(len + 1);
+						if(!newStr)
+						{
+							CSOutOfMemory();
+						}
+						posn = 0;
+						len = 0;
+						while(posn < (int)valueLen)
+						{
+							len += ILUTF8WriteChar
+							  (newStr + len, ILUTF16ReadCharAsBytes
+								((const char *)value, (int)valueLen, &posn));
+						}
+						interned = ILInternString(newStr, len);
+						ILFree(newStr);
+						return ILNode_String_create(interned.string,
+													interned.len);
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_CLASS:
+				{
+					/* Create a "null" constant */
+					if(value &&
+					   ((valueLen == 4 && IL_READ_UINT32(value) == 0) ||
+					    (valueLen == 8 && IL_READ_UINT64(value) == 0)))
+					{
+						if(ILTypeAssignCompatible(info->image, 0, baseType))
+						{
+							return ILNode_Null_create();
+						}
+					}
+				}
+				break;
+			}
+
+			/* If we get here, then the constant is not compatible
+			   with the type of the field */
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "literal field has an incorrect constant value");
+			return 0;
+		}
+		else if(ILConstantGetElemType(constValue) == IL_META_ELEMTYPE_STRING &&
+		        ILTypeIsStringClass(ILField_Type(field)))
+		{
+			/* Sometimes the empty string constant is stored as a literal
+			   field with no value associated with it */
+			return ILNode_String_create(ILInternString("", 0).string, 0);
+		}
+		else
+		{
+			/* This is a literal without an actual constant value */
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "literal field does not have a constant value");
+			return 0;
+		}
+	}
+	else if(ILField_IsInitOnly(field))
+	{
+		/* Check for "DecimalConstantAttribute" values, which are
+		   attached to "readonly" fields of type "System.Decimal" */
+		ILType *decimalType = ILFindSystemType(info, "Decimal");
+		if(ILTypeIdentical(decimalType, ILField_Type(field)))
+		{
+			ILAttribute *attr = 0;
+			ILMethod *ctor;
+			const char *namespace;
+			const unsigned char *value;
+			unsigned long valueLen;
+			ILDecimal decValue;
+
+			while((attr = ILProgramItemNextAttribute(ILToProgramItem(field),
+													 attr)) != 0)
+			{
+				ctor = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
+				if(ctor && !strcmp(ILMethod_Name(ctor), ".ctor") &&
+				   !strcmp(ILClass_Name(ILMethod_Owner(ctor)),
+				   		   "DecimalConstantAttribute"))
+				{
+					namespace = ILClass_Namespace(ILMethod_Owner(ctor));
+					if(namespace &&
+					   !strcmp(namespace, "System.Runtime.CompilerServices"))
+					{
+						value = (const unsigned char *)
+							ILAttributeGetValue(attr, &valueLen);
+						if(value && valueLen == 18 &&
+						   value[0] == 0x01 && value[1] == 0x00 &&
+						   value[2] < 29 && (value[3] == 0x00 ||
+						   					 value[3] == 0x80))
+						{
+							decValue.flags =
+								(((ILUInt32)(value[2])) << 16) |
+								(((ILUInt32)(value[3])) << 24);
+							decValue.high = IL_READ_UINT32(value + 4);
+							decValue.middle = IL_READ_UINT32(value + 8);
+							decValue.low = IL_READ_UINT32(value + 12);
+							return ILNode_Decimal_create(decValue);
+						}
+					}
+				}
+			}
+		}
+
+		/* Load the contents of the read-only field using regular techniques */
+		return 0;
+	}
+	else
+	{
+		/* Regular static field */
+		return 0;
+	}
+}
+
+/*
  * Convert a semantic value into an l-value or r-value if necessary.
  */
 static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
@@ -74,6 +396,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 	ILType *signature;
 	ILMethod *getter;
 	ILMethod *setter;
+	ILNode *constNode;
 
 	switch(value.kind)
 	{
@@ -102,7 +425,16 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			/* Replace this identifier with a field access node */
 			if(ILField_IsStatic(field))
 			{
-				*parent = ILNode_StaticField_create(field);
+				/* Convert the field into a constant node if possible */
+				if((constNode = FieldToConstant(info, node, field)) != 0)
+				{
+					*parent = constNode;
+					value.kind = CS_SEMKIND_RVALUE;
+				}
+				else
+				{
+					*parent = ILNode_StaticField_create(field);
+				}
 			}
 			else if(expr)
 			{

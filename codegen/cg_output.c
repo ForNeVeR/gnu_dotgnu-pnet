@@ -125,7 +125,7 @@ void ILGenLoadFloat32(ILGenInfo *info, ILFloat value)
 		unsigned char bytes[4];
 		IL_WRITE_FLOAT(bytes, value);
 		fprintf(info->asmOutput, "\tldc.r4\tfloat32(0x%02X%02X%02X%02X)\n",
-				bytes[0], bytes[1], bytes[2], bytes[3]);
+				bytes[3], bytes[2], bytes[1], bytes[0]);
 	}
 }
 
@@ -137,8 +137,8 @@ void ILGenLoadFloat64(ILGenInfo *info, ILDouble value)
 		IL_WRITE_DOUBLE(bytes, value);
 		fprintf(info->asmOutput,
 				"\tldc.r8\tfloat64(0x%02X%02X%02X%02X%02X%02X%02X%02X)\n",
-				bytes[0], bytes[1], bytes[2], bytes[3],
-				bytes[4], bytes[5], bytes[6], bytes[7]);
+				bytes[7], bytes[6], bytes[5], bytes[4],
+				bytes[3], bytes[2], bytes[1], bytes[0]);
 	}
 }
 

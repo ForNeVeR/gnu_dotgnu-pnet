@@ -20,6 +20,9 @@
 	resolve the class type before testing it, to handle cross-image
 	links correctly.
 
+	* codegen/cg_output.c, codegen/jv_output.c, cscc/cs_lvalue.tc:
+	expand constant fields inline into method code.
+
 2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_decls.tc (AddConstantValue): decimal attribute values

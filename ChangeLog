@@ -1,4 +1,16 @@
 
+2002-03-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/method2.jerr, csharp/class/method8.err,
+	csharp/class/method8.jerr, csharp/class/property5.err,
+	csharp/class/property5.jerr, csharp/expr/array3.jerr,
+	csharp/expr/sizeof1.err, csharp/expr/sizeof1.jerr,
+	csharp/expr/sizeof2.err, csharp/expr/sizeof2.jerr,
+	csharp/stmt/return1.err, csharp/stmt/return1.jerr:
+	new error output files after adjustments to the grammar
+	to report errors on the first line of a declaration
+	instead of the last.
+
 2002-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/type1.cs,

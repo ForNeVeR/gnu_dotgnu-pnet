@@ -1,4 +1,9 @@
 
+2003-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/TopLevelWindow.cs: redirect Alt+F4 to close top-level
+	windows if the window manager doesn't do it for us.
+
 2003-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/XsharpSupport.c: implement a special case for Latin1

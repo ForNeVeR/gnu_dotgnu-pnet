@@ -920,6 +920,27 @@ public class TopLevelWindow : InputOutputWidget
 							str = null;
 						}
 
+						// Special case: check for Alt+F4 to close the window.
+						// Some window managers trap Alt+F4 themselves, but not
+						// all.  People who are used to System.Windows.Forms
+						// under Windows expect Alt+F4 to close the window,
+						// irrespective of what key the window manager uses.
+						//
+						// Note: this check is not foolproof.  The window
+						// manager or the kernel may have redirected Alt+F4
+						// for some other purpose (e.g. switching between
+						// virtual consoles).  On such systems, there is
+						// nothing that we can do to get the key event and
+						// this code will never be called.
+						//
+						if((((KeyName)keysym) == KeyName.XK_F4 ||
+						    ((KeyName)keysym) == KeyName.XK_KP_F4) &&
+						   (xevent.xkey.state & ModifierMask.Mod1Mask) != 0)
+						{
+							Close();
+							break;
+						}
+
 						// Dispatch the event.
 						widget = focusWidget;
 						while(widget != null)

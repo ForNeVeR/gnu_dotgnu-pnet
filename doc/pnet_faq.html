@@ -6,7 +6,7 @@
 <h1>DotGNU Portable.Net FAQ</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/08/13 05:22:08 $<p>
+Last Modified: $Date: 2001/08/14 02:04:24 $<p>
 
 Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -19,8 +19,8 @@ to build a suite of free software tools to build and execute Common
 Language Infrastructure (CLI) applications.  The initial target platform
 is GNU/Linux, with other platforms to follow in the future.<p>
 
-DotGNU Portable.NET is a GNU project, built in accordance with the
-requirements of the <a href="http://www.gnu.org">Free Software Foundation</a>
+DotGNU Portable.NET is built in accordance with the requirements of
+the <a href="http://www.gnu.org">GNU Project</a>
 and <a href="http://www.freedevelopers.net">FreeDevelopers</a>.<p>
 
 DotGNU Portable.NET is focused on compatibility with the ECMA
@@ -87,15 +87,15 @@ tree creation and manipulation.<p>
 Treecc performs most of the housekeeping within the core of the compiler,
 allowing the programmer to concentrate on the specifics of language
 implementation.  A fuller account of how treecc works can be found
-at its <a href="http://www.southern-storm.com.au/treecc.html">Web site</a>.<p>
+at its Web site, <a href="http://www.southern-storm.com.au/treecc.html">http://www.southern-storm.com.au/treecc.html</a>.<p>
 
 <h2>6. Using gcc as a compiler</h2>
 
 A common question that arises is why we aren't using gcc to compile
 C# code to IL.  Strategically, we would like to be able to reuse all
 of the good work that has gone into gcc.  The DotGNU Project currently
-has an <a href="http://www.dotgnu.org/helpwanted/gcc.htm">open request</a>
-for someone to volunteer to modify gcc to generate IL bytecode.<p>
+has an open request for someone to volunteer to modify gcc to generate
+IL bytecode.<p>
 
 However it isn't quite as easy as it looks.  The following sections
 provide a blow by blow account of why this is so hard.<p>
@@ -268,6 +268,154 @@ Other than that, if you find an interesting problem to work on
 in the DotGNU Portable.NET codebase, then work on it for a bit, and
 send us the patches.  If it is the kind of code we're looking for,
 we'll discuss further collaboration.<p>
+
+<h2>9. CVS, versions, patches, etc</h2>
+
+<h3>9.1. How do I access the source via CVS?</h3>
+
+All of the DotGNU Portable.NET code is available via CVS from
+Savannah, <a href="http://savannah.gnu.org/">http://savannah.gnu.org/</a>.
+See that site for details on accessing the repository
+via anonymous CVS, or via the Web interface.<p>
+
+The repository name for DotGNU Portable.NET is "<code>dotgnu-pnet</code>",
+and it contains three modules: "<code>pnet</code>", "<code>pnetlib</code>",
+and "<code>treecc</code>".<p>
+
+<h3>9.2. What is with the version numbers?</h3>
+
+Versions 0.1.2 and prior used a version numbering scheme that Rhys
+Weatherley concocted out of thin air.  After the move to the Savannah
+CVS repository, the following conventions were adopted:<p>
+
+The working CVS version will always end in an odd number, and the
+released version will always end in an even number.  For example,
+"0.1.3" is the working version that will lead up to the "0.1.4"
+release version.<p>
+
+When a major component is judged to be complete, the version numbers
+will advance at the next-higher level.  For example, the numbers
+jumped from "0.0.6" to "0.1.0" when the disassembler was completed.
+The primary maintainer, Rhys Weatherley, decides when a major
+version jump is to occur.<p>
+
+This convention will be adopted across all DotGNU Portable.NET components:
+"<code>pnet</code>", "<code>pnetlib</code>", and "<code>treecc</code>".<p>
+
+Starting from version "0.1.4" of DotGNU Portable.NET, tags will be added
+to the CVS tree whenever a release version is cut.  The tag for version
+"0.1.4" will be "r_0_1_4".  Working versions will never have a tag.<p>
+
+<h3>9.3. I have a patch.  What should I do now?</h3>
+
+The best way to submit the patch is through the patch manager on
+Savannah.  That will allows us to track it.<p>
+
+Please include comments with your patch that explain what it is
+for.  Also include your full e-mail address, and any information
+related to Copyright assignment (see below).<p>
+
+The maintainers will decide on a case by case basis whether to
+accept a patch.  Submitting it does not guarantee inclusion.<p>
+
+<h3>9.4. Who owns the Copyright on patches?</h3>
+
+The <a href="http://www.dotgnu.org/">DotGNU Project</a> is working
+on guidelines for explicit Copyright assignment.  When they have
+been finalised, they will replace the guidelines below.<p>
+
+For small patches, Copyright will automatically revert to the primary
+maintainer for the files or directories being patched.  If you don't
+want this to happen, then don't submit the patch.<p>
+
+For larger patches, you should explicitly assign the Copyright
+to the primary maintainer, or to FreeDevelopers.  We prefer that
+you assign the Copyright to the maintainer of the files you are
+patching, to prevent dilution of the Copyright on those files.
+Should problems arise in the future, it is easier to replace
+an entire file than edit the contents of a single file.<p>
+
+To assign the Copyright, include a notice in the patch comments as to
+how you want the Copyright assigned.  If you don't include such a
+comment, we will need to contact you via e-mail to get your
+permission.<p>
+
+The <a href="http://www.gnu.org/">GNU Project</a> has strict
+guidelines about Copyright assignment.  The goal is to have
+a predictable Copyright on each GNU package, should legal action
+ever need to be taken to defend the GPL.  If you don't agree
+to these guidelines, then don't submit the patch.<p>
+
+<h3>9.5. Coding conventions</h3>
+
+The DotGNU Portable.NET code currently using the following
+coding conventions:
+
+<ul>
+	<li>TAB's are set at 4, not 8.</li>
+	<li>The opening brace for a block is on the next line:
+<blockquote><code>if(condition)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+}<br></code></blockquote></li>
+	<li>Comments that describe a function are in the .h file, not the
+		.c file.  Do not put an extra copy in the .c file, because then
+		the two copies will get out of sync in the future.</li>
+</ul>
+
+If you are submitting patches to an existing file, then use the
+same conventions as currently exist in that file.  If you are
+writing a completely new source file, then you may use your own
+coding conventions, but we would prefer consistency with the above.<p>
+
+<h2>10. Why isn't the C# library LGPL?</h2>
+
+The license on the C# library, "<code>pnetlib</code>", is distributed
+under a modified GPL license:
+
+<blockquote>
+The source code for the library is distributed under the terms of the
+GNU General Public License, with the following exception: if you link
+this library against your own program, then you do not need to release
+the source code for that program.  However, any changes that you make
+to the library itself, or to any native methods upon which the library
+relies, must be re-distributed in accordance with the terms of the GPL.
+</blockquote>
+
+We call this the "GPL plus linking exception", which is also used by
+the GNU Classpath project.<p>
+
+An obvious licensing question that many people have is why use the GPL
+instead of the LGPL for this library?  We aren't trying to restrict its
+use by commercial entities.<p>
+
+However, there is a small catch with the LGPL and native methods.
+A commercial entity could produce their own proprietry runtime engine
+that has "enhanced" native method support of some kind.  Under the
+terms of the LGPL, they would be obligated to release the declaration
+of the native method in the C# system library.  For example:<p>
+
+	<blockquote>
+	<code>extern int enhanced_method(string arg1, int arg2);</code>
+	</blockquote>
+
+But would they be obligated to release the source code to the native
+method's implementation under the terms of the LGPL?  Because it is in
+a separate program (their runtime engine), it isn't strictly part of
+the library.  The result would be a C# library that is useless without
+their proprietry native method implementation.  This state of affairs
+is undesirable.<p>
+
+Under the terms of the GPL, we can require that the source code to
+native methods must also be available, or the library modification
+is disallowed.<p>
+
+This is why we have decided to use the GPL with the linking exception
+described above.<p>
+
+[Aside: by "native method" we mean any method that is implemented in
+something other than IL bytecode.  This includes PInvoke functions and
+"internalcall" methods, among others.]<p>
 
 </body>
 </html>

@@ -62,7 +62,6 @@ An example of a signature:
 	}
 
 	"System.Decimal" "ToString" "(T)OSystem.String;"
-
 */
 
 #include "engine.h"
@@ -79,6 +78,7 @@ ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 	const char *namespace;
 	int namespaceLen;
 	ILClass *classInfo;
+	ILImage *image;
 
 	/* Sanity-check the arguments */
 	if(!thread || !typeName)
@@ -115,8 +115,25 @@ ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 	}
 
 	/* Look for the global type within the process's context */
-	classInfo = ILClassLookupGlobalLen(thread->process->context,
-									   name, nameLen, namespace, namespaceLen);
+	classInfo = 0;
+	if(nameLen > 7 && !strncmp(name, "System.", 7))
+	{
+		/* Try looking in the system image first, to prevent the
+		   application from redirecting system types elsewhere */
+		image = ILContextGetSystem(thread->process->context);
+		if(image)
+		{
+			classInfo = ILClassLookupLen(ILClassGlobalScope(image),
+										 name, nameLen,
+										 namespace, namespaceLen);
+		}
+	}
+	if(!classInfo)
+	{
+		classInfo = ILClassLookupGlobalLen(thread->process->context,
+									   	   name, nameLen,
+										   namespace, namespaceLen);
+	}
 
 	/* Resolve nested type names */
 	while(classInfo != 0 && typeName[len] == '/')
@@ -434,6 +451,7 @@ static int MatchSignatureName(ILType *signature, const char *name)
 	ILUInt32 param, numParams;
 	ILType *paramType;
 	int nameLen;
+	int matchLen;
 
 	/* Match the parameters */
 	numParams = signature->num;
@@ -453,7 +471,15 @@ static int MatchSignatureName(ILType *signature, const char *name)
 	{
 		return 0;
 	}
-	return (MatchTypeName(signature->un.method.retType, name + 1) != 0);
+	matchLen = MatchTypeName(signature->un.method.retType, name + 1);
+	if(matchLen == 0 || name[matchLen + 1] != '\0')
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
 }
 
 ILMethod *ILExecThreadLookupMethod(ILExecThread *thread,
@@ -486,10 +512,7 @@ ILMethod *ILExecThreadLookupMethod(ILExecThread *thread,
 			if(!strcmp(ILMethod_Name(method), methodName))
 			{
 				methodSignature = ILMethod_Signature(method);
-				if((methodSignature->kind &
-						(IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-				   (methodSignature->kind &
-				   		(IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+				if(ILType_HasThis(methodSignature))
 				{
 					/* The method has a "this" parameter */
 					if(signature[1] != 'T')
@@ -526,6 +549,7 @@ ILField *ILExecThreadLookupField(ILExecThread *thread,
 	ILClass *classInfo;
 	ILField *field;
 	ILType *fieldType;
+	int matchCount;
 
 	/* Sanity-check the arguments */
 	if(!fieldName || !signature)
@@ -548,7 +572,8 @@ ILField *ILExecThreadLookupField(ILExecThread *thread,
 			if(!strcmp(ILField_Name(field), fieldName))
 			{
 				fieldType = ILField_Type(field);
-				if(MatchSignatureName(fieldType, signature))
+				matchCount = MatchTypeName(fieldType, signature);
+				if(matchCount != 0 && signature[matchCount] == '\0')
 				{
 					return field;
 				}
@@ -558,6 +583,50 @@ ILField *ILExecThreadLookupField(ILExecThread *thread,
 	}
 
 	/* Could not find the field */
+	return 0;
+}
+
+int _ILLookupTypeMatch(ILType *type, const char *signature)
+{
+	int matchCount;
+	if(*signature == '(')
+	{
+		/* Match a method signature */
+		if(type == 0 || !ILType_IsComplex(type) ||
+		   (type->kind & 0xFF) != IL_TYPE_COMPLEX_METHOD)
+		{
+			return 0;
+		}
+		if(ILType_HasThis(type))
+		{
+			/* The method has a "this" parameter */
+			if(signature[1] != 'T')
+			{
+				return 0;
+			}
+			if(MatchSignatureName(type, signature + 2))
+			{
+				return 1;
+			}
+		}
+		else
+		{
+			/* The method does not have a "this" parameter */
+			if(MatchSignatureName(type, signature + 1))
+			{
+				return 1;
+			}
+		}
+	}
+	else
+	{
+		/* Match a field signature */
+		matchCount = MatchTypeName(type, signature);
+		if(matchCount != 0 && signature[matchCount] == '\0')
+		{
+			return 1;
+		}
+	}
 	return 0;
 }
 

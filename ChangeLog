@@ -9,6 +9,12 @@ use "ILType_HasThis" and "ILType_IsConstructor" where appropriate.
 "_ILEngineAlloc", "_ILEngineAllocObject", "_ILLookupTypeMatch",
 "_ILMakeCifForConstructor"; add "outOfMemoryObject" to the process.
 
+* engine/lookup.c: look for "System" types in the system library image
+first to prevent redirection by the application; implement the helper
+function "_ILLookupTypeMatch"; bug fix for field lookups: use MatchTypeName
+instead of MatchSignatureName; check for '\0' in MatchSignatureName;
+use "ILType_HasThis" where appropriate.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

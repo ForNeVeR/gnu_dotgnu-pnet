@@ -62,7 +62,7 @@ internal sealed class PngReader
 				int filterMethod = 0;
 				int interlaceMethod = 0;
 				Frame frame = null;
-				PixelFormat format;
+				PixelFormat format = 0;
 				int index;
 				int significant = 0;
 				ZlibDecompressor decompress = null;
@@ -1389,8 +1389,8 @@ internal sealed class PngReader
 							for(posn = bpp; posn < size; ++posn)
 							{
 								scanline[posn] +=
-									(byte)(scanline[posn - bpp] +
-									       prevScanline[posn]) / 2;
+									(byte)((scanline[posn - bpp] +
+									       prevScanline[posn]) / 2);
 							}
 						}
 						break;

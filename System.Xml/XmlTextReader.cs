@@ -2143,10 +2143,10 @@ public class XmlTextReader : XmlReader
 						otherType = XmlNodeType.EntityReference;
 						return true;
 					}
-					int start = valuePosition;
+					int start1 = valuePosition;
 					valuePosition = refs[refsPosition];
-					int end = valuePosition - 1;
-					other.SetNodeInfo("", value.Substring(start, end));
+					int end1 = valuePosition - 1;
+					other.SetNodeInfo("", value.Substring(start1, end1));
 					otherType = XmlNodeType.Text;
 					return true;
 				}

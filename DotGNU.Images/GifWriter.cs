@@ -176,7 +176,7 @@ internal sealed class GifWriter
 				int codeSize, offset, clearCode, codeMax;
 				int x, y, width, height, output, minCodeSize;
 				int accum, accumSize, endCode, nextCode;
-				int pixel;
+				int pixel = 0;
 				PixelFormat format;
 				byte[] data;
 

@@ -36,6 +36,9 @@
 	* runtime/System/Collections/Stack.cs: bug in Stack.Push() - the
 	new item was not pushed when the stack was reallocated.
 
+	* Generics/ArrayQueue.cs, Generics/IQueue.cs, Generics/Queue.cs:
+	rename Queue<T> to ArrayQueue<T> and add the IQueue<T> interface.
+
 2003-02-21  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 	
 	* runtime/System/Version.cs: == and != operator overloading for 

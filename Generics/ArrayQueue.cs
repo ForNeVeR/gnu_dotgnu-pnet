@@ -1,5 +1,5 @@
 /*
- * Queue.cs - Generic queue class.
+ * ArrayQueue.cs - Generic queue class, implemented as an array.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
+public class ArrayQueue<T> : IQueue<T>
 {
 	// Internal state.
 	private T[]   items;
@@ -39,7 +39,7 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 	private const int DefaultCapacity = 32;
 
 	// Constructors.
-	public Queue()
+	public ArrayQueue()
 			{
 				items = new Object [DefaultCapacity];
 				add = 0;
@@ -48,7 +48,7 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 				growFactor = 2.0f;
 				generation = 0;
 			}
-	public Queue(int capacity)
+	public ArrayQueue(int capacity)
 			{
 				if(capacity < 0)
 				{
@@ -62,7 +62,7 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 				growFactor = 2.0f;
 				generation = 0;
 			}
-	public Queue(int capacity, float growFactor)
+	public ArrayQueue(int capacity, float growFactor)
 			{
 				if(capacity < 0)
 				{
@@ -81,7 +81,7 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 				this.growFactor = growFactor;
 				generation = 0;
 			}
-	public Queue(ICollection<T> col)
+	public ArrayQueue(ICollection<T> col)
 			{
 				if(col == null)
 				{
@@ -152,7 +152,7 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 	// Implement the ICloneable<T> interface.
 	public virtual Object Clone()
 			{
-				Queue<T> queue = (Queue<T>)MemberwiseClone();
+				ArrayQueue<T> queue = (ArrayQueue<T>)MemberwiseClone();
 				queue.items = (T[])items.Clone();
 				return queue;
 			}
@@ -161,6 +161,12 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 	public virtual IEnumerator<T> GetEnumerator()
 			{
 				return new QueueEnumerator<T>(this);
+			}
+
+	// Implement the IIterable<T> interface.
+	public virtual IIterable<T> GetIterator()
+			{
+				return new QueueIterator<T>(this);
 			}
 
 	// Determine if this queue is read-only.
@@ -221,31 +227,13 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 				return false;
 			}
 
-	// Dequeue an item.
-	public virtual T Dequeue()
-			{
-				if(size > 0)
-				{
-					T value = items[remove];
-					remove = (remove + 1) % items.Length;
-					--size;
-					++generation;
-					return value;
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_EmptyQueue"));
-				}
-			}
-
-	// Enqueue an item.
-	public virtual void Enqueue(T obj)
+	// Implement the IQueue<T> interface.
+	public virtual void Enqueue(T value)
 			{
 				if(size < items.Length)
 				{
 					// The queue is big enough to hold the new item.
-					items[add] = obj;
+					items[add] = value;
 					add = (add + 1) % items.Length;
 					++size;
 				}
@@ -269,11 +257,28 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 					items = newItems;
 					add = size;
 					remove = 0;
+					items[add] = value;
+					add = (add + 1) % items.Length;
+					++size;
 				}
 				++generation;
 			}
-
-	// Peek at the first item without dequeuing it.
+	public virtual T Dequeue()
+			{
+				if(size > 0)
+				{
+					T value = items[remove];
+					remove = (remove + 1) % items.Length;
+					--size;
+					++generation;
+					return value;
+				}
+				else
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_EmptyQueue"));
+				}
+			}
 	public virtual T Peek()
 			{
 				if(size > 0)
@@ -286,8 +291,6 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 						(S._("Invalid_EmptyQueue"));
 				}
 			}
-
-	// Convert the contents of this queue into an array.
 	public virtual T[] ToArray()
 			{
 				T[] array = new T [size];
@@ -309,7 +312,7 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 			}
 
 	// Convert this queue into a synchronized queue.
-	public static Queue<T> Synchronized(Queue<T> queue)
+	public static ArrayQueue<T> Synchronized(ArrayQueue<T> queue)
 			{
 				if(queue == null)
 				{
@@ -329,10 +332,10 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 	private class SynchronizedQueue : Queue
 	{
 		// Internal state.
-		private Queue<T> queue;
+		private ArrayQueue<T> queue;
 
 		// Constructor.
-		public SynchronizedQueue(Queue<T> queue)
+		public SynchronizedQueue(ArrayQueue<T> queue)
 				{
 					this.queue = queue;
 				}
@@ -373,7 +376,8 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 		// Implement the ICloneable interface.
 		public override Object Clone()
 				{
-					return new SynchronizedQueue<T>((Queue<T>)(queue.Clone()));
+					return new SynchronizedQueue<T>
+						((ArrayQueue<T>)(queue.Clone()));
 				}
 
 		// Implement the IEnumerable<T> interface.
@@ -443,22 +447,22 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 	}; // class SynchronizedQueue
 
 	// Private class for implementing queue enumeration.
-	private class QueueEnumerator<T> : IEnumerator
+	private class QueueEnumerator<T> : IEnumerator<T>
 	{
 		// Internal state.
-		private Queue<T> queue;
-		private int      generation;
-		private int      position;
+		private ArrayQueue<T> queue;
+		private int generation;
+		private int position;
 
 		// Constructor.
-		public QueueEnumerator(Queue<T> queue)
+		public QueueEnumerator(ArrayQueue<T> queue)
 				{
 					this.queue = queue;
 					generation = queue.generation;
 					position   = -1;
 				}
 
-		// Implement the IEnumerator interface.
+		// Implement the IEnumerator<T> interface.
 		public bool MoveNext()
 				{
 					if(generation != queue.generation)
@@ -504,6 +508,95 @@ public class Queue<T> : ICollection<T>, IEnumerable<T>, ICloneable
 
 	}; // class QueueEnumerator<T>
 
-}; // class Queue<T>
+	// Private class for implementing queue iteration.
+	private class QueueIterator<T> : IIterator<T>
+	{
+		// Internal state.
+		private ArrayQueue<T> queue;
+		private int position;
+		private bool reset;
+
+		// Constructor.
+		public QueueIterator(ArrayQueue<T> queue)
+				{
+					this.queue = queue;
+					position = -1;
+					reset = true;
+				}
+
+		// Implement the IEnumerator<T> interface.
+		public bool MoveNext()
+				{
+					if(reset)
+					{
+						position = 0;
+						reset = false;
+					}
+					else
+					{
+						++position;
+					}
+					return (position < queue.size);
+				}
+		public void Reset()
+				{
+					position = -1;
+					reset = true;
+				}
+		T IEnumerator<T>.Current
+				{
+					get
+					{
+						if(position < 0 || position >= queue.size)
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+						return queue.items
+							[(queue.remove + position) % queue.size];
+					}
+				}
+
+		// Implement the IIterator<T> interface.
+		public bool MovePrev()
+				{
+					if(reset)
+					{
+						position = queue.size - 1;
+						reset = false;
+					}
+					else
+					{
+						--position;
+					}
+					return (position >= 0);
+				}
+		public T Current
+				{
+					get
+					{
+						if(position < 0 || position >= queue.size)
+						{
+							throw new InvalidIteratorPosition
+								(S._("Invalid_BadEnumeratorPosition"));
+						}
+						return queue.items
+							[(queue.remove + position) % queue.size];
+					}
+					set
+					{
+						if(position < 0 || position >= queue.size)
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+						queue.items[(queue.remove + position) % queue.size]
+							= value;
+					}
+				}
+
+	}; // class QueueIterator<T>
+
+}; // class ArrayQueue<T>
 
 }; // namespace Generics

@@ -649,8 +649,19 @@ ILNode_GenValue(ILNode_ArgList)
  */
 ILNode_GenValue(ILNode_Argument)
 {
-	/* TODO: reference and out parameters */
-	return ILNode_GenValue(node->expression, info);
+	if(node->modifier == ILParamMod_ref ||
+	   node->modifier == ILParamMod_out)
+	{
+		if(yyisa(node->expression, ILNode_LValue))
+		{
+			ILNode_GenRef((ILNode_LValue *)(node->expression), info);
+		}
+		return ILMachineType_ManagedPtr;
+	}
+	else
+	{
+		return ILNode_GenValue(node->expression, info);
+	}
 }
 
 %{
@@ -684,10 +695,19 @@ ILNode_GenValue(ILNode_ArgArray)
 {
 	ILMachineType machineType;
 	ILUInt32 posn;
+	ILClass *classType;
 
 	/* Create a new array of the desired size */
 	ILGenUInt32(info, node->numElems);
-	ILGenTypeToken(info, IL_OP_NEWARR, node->elemType);
+	classType = ILTypeToClass(info, node->elemType);
+	if(classType)
+	{
+		ILGenTypeToken(info, IL_OP_NEWARR, ILType_FromClass(classType));
+	}
+	else
+	{
+		ILGenTypeToken(info, IL_OP_NEWARR, node->elemType);
+	}
 	ILGenAdjust(info, 1);
 
 	/* Populate the members of the array */

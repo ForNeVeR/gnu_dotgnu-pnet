@@ -6,6 +6,9 @@ l-values are really capable of referencing; output an error when "ref" and
 "out" parameters are used with JVM output; fix return type formatting
 in "CSMethodToName".
 
+* codegen/cg_misc.tc: use the class form of primitive types when creating
+parameter arrays; handle "ref" and "out" parameters.
+
 2001-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.h, codegen/cg_gen.c: new functions "ILGenItemHasAttribute",

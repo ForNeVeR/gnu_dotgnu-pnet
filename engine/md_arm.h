@@ -483,19 +483,21 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
  */
 #define	md_cmp_reg_reg_word_32(inst,reg1,reg2)	\
 			do { \
-				arm_test_reg_reg((inst), ARM_CMP, reg1, reg2); \
-				arm_alu_reg_imm8_cond((inst), ARM_MOV, reg1, 0, 1, ARM_CC_GT); \
-				arm_alu_reg_imm8_cond((inst), ARM_MOV, reg1, 0, 0, ARM_CC_LE); \
-				arm_alu_reg_cond((inst), ARM_MVN, reg1, reg1, ARM_CC_LT); \
+				arm_test_reg_reg((inst), ARM_CMP, (reg1), (reg2)); \
+				arm_alu_reg_imm8_cond((inst), ARM_MOV, (reg1), 0, 1, \
+									  ARM_CC_GT); \
+				arm_alu_reg_imm8_cond((inst), ARM_MOV, (reg1), 0, 0, \
+									  ARM_CC_LE); \
+				arm_alu_reg_cond((inst), ARM_MVN, (reg1), (reg1), ARM_CC_LT); \
 			} while (0)
 #define	md_ucmp_reg_reg_word_32(inst,reg1,reg2)	\
 			do { \
-				arm_test_reg_reg((inst), ARM_CMP, reg1, reg2); \
-				arm_alu_reg_imm8_cond((inst), ARM_MOV, reg1, 0, 1, \
+				arm_test_reg_reg((inst), ARM_CMP, (reg1), (reg2)); \
+				arm_alu_reg_imm8_cond((inst), ARM_MOV, (reg1), 0, 1, \
 									  ARM_CC_GT_UN); \
-				arm_alu_reg_imm8_cond((inst), ARM_MOV, reg1, 0, 0, \
+				arm_alu_reg_imm8_cond((inst), ARM_MOV, (reg1), 0, 0, \
 									  ARM_CC_LE_UN); \
-				arm_alu_reg_cond((inst), ARM_MVN, reg1, reg1, \
+				arm_alu_reg_cond((inst), ARM_MVN, (reg1), (reg1), \
 								 ARM_CC_LT_UN); \
 			} while (0)
 

@@ -6,6 +6,8 @@
 	* engine/unroll.c, engine/unroll_ptr.c, engine/unroll_var.c:
 	fix some ARM-related bugs in the generic unroller.
 
+	* engine/md_arm.h, engine/arm_codegen.h: minor tweaks to ARM macros.
+
 2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeCreate

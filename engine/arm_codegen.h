@@ -602,7 +602,7 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 				arm_store_membase_either((inst), (reg), (basereg), (imm), \
 										 0x00400000); \
 			} while (0)
-#define	arm_store_membase_ubyte(inst,reg,basereg,imm)	\
+#define	arm_store_membase_sbyte(inst,reg,basereg,imm)	\
 			do { \
 				arm_store_membase_byte((inst), (reg), (basereg), (imm)); \
 			} while (0)
@@ -695,7 +695,7 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 				arm_store_memindex_either((inst), (reg), (basereg), \
 										  (indexreg), 0, 0x00400000); \
 			} while (0)
-#define	arm_store_memindex_ubyte(inst,reg,basereg,indexreg)	\
+#define	arm_store_memindex_sbyte(inst,reg,basereg,indexreg)	\
 			do { \
 				arm_store_memindex_byte((inst), (reg), (basereg), \
 										(indexreg)); \

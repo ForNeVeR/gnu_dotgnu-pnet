@@ -1,4 +1,9 @@
 
+2003-06-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/TextBox.cs, System.Windows.Forms/TextBoxBase.cs:
+	stub out the "TextBox" control.
+
 2003-06-25  Ian Fung  <if26@cornell.edu>
 	
 	* System.Windows.Forms/LinkLabel.cs: Stubs for the LinkLabel

@@ -402,10 +402,38 @@ public abstract class TextBoxBase : Control
 			}
 
 	// Determine if a key is recognized by a control as an input key.
-	[TODO]
 	protected override bool IsInputKey(Keys keyData)
 			{
-				// TODO
+				if((keyData & Keys.Alt) == 0)
+				{
+					Keys code = (keyData & Keys.KeyCode);
+					if(code == Keys.Tab)
+					{
+						if(!Multiline || !acceptsTab)
+						{
+							return false;
+						}
+						if((keyData & Keys.Control) != 0)
+						{
+							return false;
+						}
+						else
+						{
+							return true;
+						}
+					}
+					else if(code == Keys.Escape)
+					{
+						if(Multiline)
+						{
+							return false;
+						}
+					}
+					else if(code >= Keys.Prior && code <= Keys.Home)
+					{
+						return true;
+					}
+				}
 				return base.IsInputKey(keyData);
 			}
 

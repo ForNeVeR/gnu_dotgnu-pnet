@@ -117,6 +117,11 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	method = FindUserBinaryOperator(name, value1.type, value2.type);
 	if(method)
 	{
+		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
+		if(!method)
+		{
+			CSOutOfMemory();
+		}
 		returnType = ILMethod_Signature(method)->un.method.retType;
 		*parent = ILNode_UserBinaryOp_create
 						(node->expr1, node->expr2,
@@ -209,6 +214,11 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	method = FindUserUnaryOperator(name, value.type);
 	if(method)
 	{
+		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
+		if(!method)
+		{
+			CSOutOfMemory();
+		}
 		returnType = ILMethod_Signature(method)->un.method.retType;
 		*parent = ILNode_UserUnaryOp_create
 						(node->expr, ILTypeToValueType(returnType), method);
@@ -782,6 +792,26 @@ ILNode_SemAnalysis(ILNode_ToBool)
 		return value;
 	}
 
+	/* Import the "true" and "false" operators into this image */
+	if(trueMethod)
+	{
+		trueMethod = (ILMethod *)ILMemberImport
+							(info->image, (ILMember *)trueMethod);
+		if(!trueMethod)
+		{
+			CSOutOfMemory();
+		}
+	}
+	if(falseMethod)
+	{
+		falseMethod = (ILMethod *)ILMemberImport
+							(info->image, (ILMember *)falseMethod);
+		if(!falseMethod)
+		{
+			CSOutOfMemory();
+		}
+	}
+
 	/* Set the methods within the node for the code generator to use later */
 	node->trueMethod = trueMethod;
 	node->falseMethod = falseMethod;
@@ -899,6 +929,30 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 					 ILType_Boolean);
 		if(method1 && (method2 || method3))
 		{
+			method1 = (ILMethod *)ILMemberImport
+						(info->image, (ILMember *)method1);
+			if(!method1)
+			{
+				CSOutOfMemory();
+			}
+			if(method2)
+			{
+				method2 = (ILMethod *)ILMemberImport
+							(info->image, (ILMember *)method2);
+				if(!method2)
+				{
+					CSOutOfMemory();
+				}
+			}
+			if(method3)
+			{
+				method3 = (ILMethod *)ILMemberImport
+							(info->image, (ILMember *)method3);
+				if(!method3)
+				{
+					CSOutOfMemory();
+				}
+			}
 			*parent = ILNode_UserLogicalAnd_create
 						(node->expr1, node->expr2, method1, method2, method3);
 			yysetfilename(*parent, yygetfilename(node));
@@ -966,6 +1020,30 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 					 ILType_Boolean);
 		if(method1 && (method2 || method3))
 		{
+			method1 = (ILMethod *)ILMemberImport
+						(info->image, (ILMember *)method1);
+			if(!method1)
+			{
+				CSOutOfMemory();
+			}
+			if(method2)
+			{
+				method2 = (ILMethod *)ILMemberImport
+							(info->image, (ILMember *)method2);
+				if(!method2)
+				{
+					CSOutOfMemory();
+				}
+			}
+			if(method3)
+			{
+				method3 = (ILMethod *)ILMemberImport
+							(info->image, (ILMember *)method3);
+				if(!method3)
+				{
+					CSOutOfMemory();
+				}
+			}
 			*parent = ILNode_UserLogicalOr_create
 						(node->expr1, node->expr2, method1, method2, method3);
 			yysetfilename(*parent, yygetfilename(node));

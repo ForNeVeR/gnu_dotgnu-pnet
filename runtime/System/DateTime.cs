@@ -388,6 +388,22 @@ public struct DateTime : IComparable, IFormattable
 				return new DateTime(0);
 			}
 
+	public static int Compare(DateTime t1, DateTime t2)
+			{
+				if(t1.value__ < t2.value__)
+				{
+					return -1;
+				}
+				else if(t1.value__ > t2.value__)
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
 	// Implementation of the IComparable interface.
 	public int CompareTo(Object value)
 			{

@@ -1,4 +1,8 @@
 
+2002-01-26  Abhaya Agarwal  <abhayag@cse.iitk.ac.in>
+
+	* runtime/System/DateTime.cs: implementation of "DateTime.Compare".
+
 2002-01-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/DirMethods.cs: misspelled "InternalCall" in

@@ -66,6 +66,13 @@ typedef struct
 } ILTypedRef;
 
 /*
+ * Initialize the engine and set a default maximum heap size.
+ * If the size is zero, then use all of memory for the heap.
+ * This should be called only once per application.
+ */
+void ILExecInit(unsigned long maxSize);
+
+/*
  * Create a new process, including the "main" thread.
  */
 ILExecProcess *ILExecProcessCreate(void);

@@ -26,7 +26,7 @@
 #include "il_program.h"
 #include "il_coder.h"
 #include "il_align.h"
-#include "heap.h"
+#include "il_gc.h"
 #include "cvm.h"
 
 #ifdef	__cplusplus
@@ -57,9 +57,6 @@ extern	"C" {
  */
 struct _tagILExecProcess
 {
-	/* The heap that is shared between all threads in this process */
-	ILHeap			heap;
-
 	/* List of threads that are active within this process */
 	ILExecThread   *firstThread;
 

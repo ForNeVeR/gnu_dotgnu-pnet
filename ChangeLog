@@ -24,6 +24,10 @@ collection library, version 6.0.
 * include/il_gc.h, include/Makefile.am, support/hb_gc.c, support/Makefile.am:
 implement the garbage collection API in terms of the Hans-Boehm collector.
 
+* include/il_engine.h, engine/engine.h, engine/heap.h, engine/heap.c,
+engine/process.c, engine/Makefile.am: modify the engine to use the garbage
+collector instead of the dummy heap implementation.
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

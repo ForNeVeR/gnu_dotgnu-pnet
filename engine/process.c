@@ -24,6 +24,12 @@
 extern	"C" {
 #endif
 
+void ILExecInit(unsigned long maxSize)
+{
+	/* Initialize the global garbage collector */
+	ILGCInit(maxSize);
+}
+
 ILExecProcess *ILExecProcessCreate(void)
 {
 	ILExecProcess *process;
@@ -35,7 +41,6 @@ ILExecProcess *ILExecProcessCreate(void)
 	}
 
 	/* Initialize the fields */
-	_ILHeapCreate(&(process->heap));
 	process->firstThread = 0;
 	process->mainThread = 0;
 	process->stackSize = IL_ENGINE_STACK_SIZE;
@@ -91,9 +96,6 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	{
 		ILContextDestroy(process->context);
 	}
-
-	/* Destroy the contents of the heap */
-	_ILHeapDestroy(&(process->heap));
 
 	/* Free the process block itself */
 	ILFree(process);

@@ -29,7 +29,7 @@ libILEngine_a_SOURCES = call.c \
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
-			  ../libffi/libffi.a
+			  ../libffi/libffi.a ../libgc/.libs/libgc.a
 
 ilverify_SOURCES = ilverify.c
 ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \

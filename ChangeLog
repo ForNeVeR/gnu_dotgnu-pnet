@@ -9,6 +9,9 @@
 	* csant/csant_parse.c: Expand variables using the profile parameters
 	as well.
 
+	* csdoc/doc_stub.c: Improve csdoc2stub to generate better formatted
+	code from .csdoc files.
+
 2003-01-04  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	*  configure.in, engine/int_proto.h, engine/int_table.c,

@@ -102,9 +102,40 @@ void ILDocPrintMember(FILE *fp,ILDocType *type,ILDocMember *foo)
 		sig[strlen(sig)-1]='\0';
 		fprintf(fp,"\t\t[TODO]\n");
 		fprintf(fp,"\t\t%s\n",sig);
-		fprintf(fp,"\t\t{\n\t\t/*TODO*/\n\t\t}\n\n");
+		fprintf(fp,"\t\t{\n\t\t\t throw new NotImplementedException(\"%s\");\n"
+						"\t\t}\n\n",foo->name);
 	}
-	else fprintf(fp,"\t\t%s\n\n",sig);
+	else if(foo->memberType==ILDocMemberType_Property)
+	{
+		fprintf(fp,"\t\t");
+		while(*sig)
+		{
+			if(!strncmp(sig,"get;",4))
+			{
+				fprintf(fp,
+			"\n\t\tget { throw new NotImplementedException(\"%s\");}\n\t\t",
+					foo->name
+				);
+				sig=sig+4;
+			}
+			if(!strncmp(sig,"set;",4))
+			{
+				fprintf(fp,
+			"\n\t\tset { throw new NotImplementedException(\"%s\");}\n\t\t",
+					foo->name
+				);
+				sig=sig+4;
+			}
+			else
+			{
+				fputc(*sig,fp);
+				sig++;
+			}
+		}
+		fputc('\n',fp);
+			
+	}
+	else fprintf(fp,"\t\t%s;\n\n",sig);
 }
 
 void ILDocPrintType(ILDocNamespace *ns, ILDocType *type,char *name)

@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.5.12 release.
 
+	* configure.in: update working version to "0.5.13".
+
 2003-09-05  Neil Cawse  <neilcawse@geotab.com>
 
 	* Xsharp/Display.cs : improved handling of 0 length timer.

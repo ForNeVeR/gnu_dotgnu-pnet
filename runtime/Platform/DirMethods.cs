@@ -56,8 +56,13 @@ internal class DirMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Errno Rename(string old_name, string new_name);
 	
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetCurrentDirectory();
 
-	
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno GetFilesInDirectory(string path, out string 
+	Files);
+
 	
 
 }; // class DirMethods

@@ -114,7 +114,7 @@ namespace System.Windows.Forms
 			else
 			{
 				owner.SizeChildrenArray();
-				node.treeView = owner.TreeView;
+				SetNodeOwner(node);
 				node.parent = owner;
 				int pos = owner.childCount++;
 				node.index = pos;
@@ -219,6 +219,15 @@ namespace System.Windows.Forms
 		public void Remove(TreeNode node)
 		{
 			node.Remove();
+		}
+
+		private void SetNodeOwner(TreeNode node)
+		{
+			node.treeView = owner.TreeView;
+			foreach(TreeNode tn in node.Nodes)
+			{
+				SetNodeOwner(tn);
+			}
 		}
 
 		private class ArraySubsetEnumerator : IEnumerator

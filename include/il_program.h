@@ -78,9 +78,22 @@ ILAttribute *ILProgramItemNextAttribute(ILProgramItem *item,
 void ILProgramItemAddAttribute(ILProgramItem *item, ILAttribute *attr);
 
 /*
+ * Remove an attribute from the list associated with a program item.
+ * Returns the following attribute in the list.
+ */
+ILAttribute *ILProgramItemRemoveAttribute(ILProgramItem *item,
+										  ILAttribute *attr);
+
+/*
  * Get the number of attributes associated with a program item.
  */
 unsigned long ILProgramItemNumAttributes(ILProgramItem *item);
+
+/*
+ * Convert the builtin attributes on a program item into their
+ * correct metadata representations.  Returns zero if out of memory.
+ */
+int ILProgramItemConvertAttrs(ILProgramItem *item);
 
 /*
  * Get the image with which a program item is associated.

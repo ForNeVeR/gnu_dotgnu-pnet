@@ -83,6 +83,44 @@ void ILProgramItemAddAttribute(ILProgramItem *item, ILAttribute *attr)
 	}
 }
 
+ILAttribute *ILProgramItemRemoveAttribute(ILProgramItem *item,
+										  ILAttribute *attr)
+{
+	ILAttribute **start;
+	ILAttribute *current;
+
+	/* Find the start of the attribute list */
+	if(item->linked)
+	{
+		start = &(((ILProgramItemLink *)(item->attrsOrLink))->customAttrs);
+	}
+	else
+	{
+		start = (ILAttribute **)(&(item->attrsOrLink));
+	}
+
+	/* Find the attribute and remove it from the list */
+	if(*start == attr)
+	{
+		*start = attr->next;
+	}
+	else if(*start != 0)
+	{
+		current = *start;
+		while(current->next != 0 && current->next != attr)
+		{
+			current = current->next;
+		}
+		if(current->next == attr)
+		{
+			current->next = attr->next;
+		}
+	}
+
+	/* Return the next attribute to the caller */
+	return attr->next;
+}
+
 unsigned long ILProgramItemNumAttributes(ILProgramItem *item)
 {
 	unsigned long count = 0;

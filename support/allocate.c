@@ -74,6 +74,20 @@ char *ILDupString(const char *str)
 	}
 }
 
+char *ILDupNString(const char *str, int len)
+{
+	char *newstr = (char *)ILMalloc(len + 1);
+	if(newstr)
+	{
+		if(len > 0)
+		{
+			ILMemCpy(newstr, str, len);
+		}
+		newstr[len] = '\0';
+	}
+	return newstr;
+}
+
 unsigned long ILPageAllocSize(void)
 {
 #ifndef _WIN32

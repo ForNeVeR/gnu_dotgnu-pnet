@@ -48,6 +48,7 @@ void *ILRealloc(void *ptr, unsigned long size);
 void *ILCalloc(unsigned long nelems, unsigned long size);
 void  ILFree(void *ptr);
 char *ILDupString(const char *str);
+char *ILDupNString(const char *str, int len);
 
 /* Page-based system allocation routines */
 unsigned long ILPageAllocSize(void);	/* For memory allocations */

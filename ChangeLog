@@ -4,9 +4,14 @@
 	* image/ser_parse.c (ILSerializeReaderGetExtra): reversed the parse
 	order of an extra field's name and type.
 
+	* image/Makefile.am, image/item.c, image/lib_attrs.c,
+	include/il_program.h, include/il_system.h, support/allocate.c:
+	implement routines to convert C# attribute values into metadata
+	for builtins like "MethodImpl", "DllImport", "MarshalAs", etc.
+
 2002-05-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-       	* support/spawn.c: report signals from spawned child processes.
+	* support/spawn.c: report signals from spawned child processes.
 
 	* codegen/cg_optable.c: do not insert primitive type coercions
 	into the result of an operator, as the type is already final.
@@ -23,7 +28,6 @@
 
 	* support/socket.c, engine/lib_socket.c: Implementation of
 	Select
-	
 
 2002-04-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 

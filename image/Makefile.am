@@ -15,6 +15,7 @@ libILImage_a_SOURCES = assembly.c \
 					   item.c \
 					   java_loader.c \
 					   jopcodes.c \
+					   lib_attrs.c \
 					   link.c \
 					   marshal.c \
 					   member.c \

@@ -30,6 +30,12 @@ extern	"C" {
 #endif
 
 /*
+ * Separator to use for nested class names.
+ */
+#define	ILASM_NESTED_CLASS_SEP		'\377'
+#define	ILASM_NESTED_CLASS_SEP_STR	"\377"
+
+/*
  * Parsed parameter information.
  */
 typedef struct _tagILAsmParamInfo ILAsmParamInfo;

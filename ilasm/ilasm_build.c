@@ -340,9 +340,10 @@ ILClass *ILAsmClassLookup(const char *name, ILProgramItem *scope)
 	int namelen;
 	for(;;)
 	{
-		/* Find the next occurrence of '/' */
+		/* Find the next occurrence of the nested class separator */
 		namelen = 0;
-		while(name[namelen] != '\0' && name[namelen] != '/')
+		while(name[namelen] != '\0' &&
+		      name[namelen] != ILASM_NESTED_CLASS_SEP)
 		{
 			++namelen;
 		}
@@ -401,7 +402,7 @@ ILClass *ILAsmClassLookup(const char *name, ILProgramItem *scope)
 
 		/* Move on to the next component */
 		name += namelen;
-		if(*name == '/')
+		if(*name == ILASM_NESTED_CLASS_SEP)
 		{
 			++name;
 		}

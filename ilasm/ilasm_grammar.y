@@ -2456,7 +2456,7 @@ SlashedName
 	: QualifiedName						{ $$ = $1; }
 	| SlashedName '/' QualifiedName		{
 				ILIntString slash;
-				slash.string = "/";
+				slash.string = ILASM_NESTED_CLASS_SEP_STR;
 				slash.len = 1;
 				$$ = ILInternAppendedString
 						($1, ILInternAppendedString(slash, $3));

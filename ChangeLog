@@ -1,8 +1,11 @@
 
 2004-08-17  Gopal V  <gopalv82@yahoo.com>
 
-	* JScript/Parsers/JSParser.cs: Fix LogicalAnd operation and 
+	* JScript/Parser/JSParser.cs: Fix LogicalAnd operation and 
 	Try-Catch expression parsing.
+
+	* JScript/Builtins/StringObject.cs, JScript/Builtins/StringProtoype.cs:
+	Implement charAt , charCodeAt and connect "length" property .
 
 2004-08-16  Gopal V  <gopalv82@yahoo.com>
 

@@ -60,8 +60,7 @@ public class StringPrototype : StringObject
 				JSBuiltin.String_charAt)]
 	public static String charAt(Object thisob, double pos)
 			{
-				// TODO
-				return null;
+				return new String(Convert.ToString(thisob)[(int)pos],1);
 			}
 
 	// Get the character code at a particular position in a string.
@@ -69,8 +68,7 @@ public class StringPrototype : StringObject
 				JSBuiltin.String_charCodeAt)]
 	public static Object charCodeAt(Object thisob, double pos)
 			{
-				// TODO
-				return null;
+				return (int)(Convert.ToString(thisob))[(int)pos];
 			}
 
 	// Concatenate strings.

@@ -1,4 +1,10 @@
 
+0.6.6 (29 May 2004)
+
+	* Mono.Security and System.Data libs that depend on it (Klaus Treichel).
+	* Import jay and use it to help build System.Data (Gopal V).
+	* System.Web, System.Web.Services (Gopal V).
+
 0.6.2 (3 January 2004)
 
 	* Use "ilgac" to install assemblies correctly into the cache.

@@ -13,6 +13,8 @@
 	class/System.Web.Services/.cvsignore: add some auto-generated
 	files to .cvsignore.
 
+	* NEWS, configure.in: update version for the "0.6.6" release.
+
 2004-05-24  Gopal.V  <gopalv82@yahoo.com>
 
 	* copy-mcs.sh: Add the new directories to copy-mcs.sh.

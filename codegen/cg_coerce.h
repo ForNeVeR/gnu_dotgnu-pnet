@@ -29,8 +29,6 @@ typedef struct _tagILBuiltinType ILBuiltinType;
 
 struct _tagILBuiltinType
 {
-	const char	   *namespace;			/* Namespace for the type */
-	const char	   *name;				/* Name of the type */
 	ILType		   *type;				/* Built-in element type */
 	ILMachineType	valueType;			/* Value type used by runtime */
 

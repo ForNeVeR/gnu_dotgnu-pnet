@@ -23,6 +23,9 @@
 	* cscc/csharp/cs_decls.tc: temporarily comment out the check
 	for non-static initializers, to make "metadata-only" compiles work.
 
+	* codegen/cg_coerce.h, codegen/cg_optable.c: remove unnecessary
+	fields from "ILBuiltinType".
+
 2001-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: handle interface overrides for properties.

@@ -26,68 +26,55 @@ extern	"C" {
 #endif
 
 static ILBuiltinType const ILSystemBoolean =
-	{"System", "Boolean",
-	 ILType_Boolean,
+	{ILType_Boolean,
 	 ILMachineType_Boolean};
 
 static ILBuiltinType const ILSystemDecimal =
-	{"System", "Decimal",
-	 ILType_Invalid	/* Decimal is represented as a struct */,
+	{ILType_Invalid	/* Decimal is represented as a struct */,
 	 ILMachineType_Decimal};
 
 static ILBuiltinType const ILSystemDouble =
-	{"System", "Double",
-	 ILType_Float64,
+	{ILType_Float64,
 	 ILMachineType_Float64};
 
 static ILBuiltinType const ILSystemSingle =
-	{"System", "Single",
-	 ILType_Float32,
+	{ILType_Float32,
 	 ILMachineType_Float32};
 
 static ILBuiltinType const ILSystemInt64 =
-	{"System", "Int64",
-	 ILType_Int64,
+	{ILType_Int64,
 	 ILMachineType_Int64};
 
 static ILBuiltinType const ILSystemUInt64 =
-	{"System", "UInt64",
-	 ILType_UInt64,
+	{ILType_UInt64,
 	 ILMachineType_UInt64};
 
 static ILBuiltinType const ILSystemInt32 =
-	{"System", "Int32",
-	 ILType_Int32,
+	{ILType_Int32,
 	 ILMachineType_Int32};
 
 static ILBuiltinType const ILSystemUInt32 =
-	{"System", "UInt32",
-	 ILType_UInt32,
+	{ILType_UInt32,
 	 ILMachineType_UInt32};
 
 static ILBuiltinType const ILSystemInt16 =
-	{"System", "Int16",
-	 ILType_Int16,
+	{ILType_Int16,
 	 ILMachineType_Int16};
 
 static ILBuiltinType const ILSystemUInt16 =
-	{"System", "UInt16",
-	 ILType_UInt16,
+	{ILType_UInt16,
 	 ILMachineType_UInt16};
 
 static ILBuiltinType const ILSystemSByte =
-	{"System", "SByte",
-	 ILType_Int8,
+	{ILType_Int8,
 	 ILMachineType_Int8};
 
 static ILBuiltinType const ILSystemByte =
-	{"System", "Byte",
-	 ILType_UInt8,
+	{ILType_UInt8,
 	 ILMachineType_UInt8};
 
 static ILBuiltinType const ILSystemChar =
-	{"System", "Char",
-	 ILType_Char,
+	{ILType_Char,
 	 ILMachineType_Char};
 
 #define	IL_BEGIN_OPERATOR_TABLE(op)	\

@@ -2,6 +2,9 @@
 
 	* support/interrupt.h, support/interrupt_posix.c: Added interrupt
 	and interrupt context support for FreeBSD.
+
+	* support/time.c: Added ILGetSinceRebootTime implementation for
+	FreeBSD.
 	
 2004-06-18  Thong Nguyen  <tum@veridicus.com>
 

@@ -10,6 +10,6 @@ ildasm_SOURCES = ildasm_attrs.c \
 				 ildasm_method.c \
 				 ildasm_utils.c
 ildasm_LDADD   = ../dumpasm/libILDumpAsm.a ../image/libILImage.a \
-				 ../support/libILSupport.a
+				 ../support/libILSupport.a $(GCLIBS)
 
 AM_CFLAGS = -I$(top_srcdir)/include

@@ -5,7 +5,7 @@ EXTRA_DIST      = $(man_MANS)
 
 ilalink_SOURCES = ilalink.c
 ilalink_LDADD   = libILLink.a ../ilasm/libILAsm.a ../dumpasm/libILDumpAsm.a \
-				  ../image/libILImage.a ../support/libILSupport.a
+				  ../image/libILImage.a ../support/libILSupport.a $(GCLIBS)
 
 libILLink_a_SOURCES = link_attrs.c \
 					  link_class.c \

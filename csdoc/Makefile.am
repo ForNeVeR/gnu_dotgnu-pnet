@@ -9,7 +9,7 @@ CSDOC_COMMON       = doc_destroy.c \
 					 doc_sort.c
 
 CSDOC_LIBS         = ../dumpasm/libILDumpAsm.a ../image/libILImage.a \
-					 ../support/libILSupport.a
+					 ../support/libILSupport.a $(GCLIBS)
 
 csdoc2texi_SOURCES = doc_texi.c $(CSDOC_COMMON)
 csdoc2texi_LDADD   = $(CSDOC_LIBS)

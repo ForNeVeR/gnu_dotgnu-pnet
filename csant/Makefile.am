@@ -9,6 +9,6 @@ csant_SOURCES  = csant.c \
 				 csant_parse.c \
 				 csant_prop.c \
 				 csant_task.c
-csant_LDADD    = ../support/libILSupport.a
+csant_LDADD    = ../support/libILSupport.a $(GCLIBS)
 
 AM_CFLAGS = -I$(top_srcdir)/include

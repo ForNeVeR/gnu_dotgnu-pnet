@@ -9,37 +9,40 @@ cscc_SOURCES = cscc.c
 cscc_LDADD   = common/libILCCommon.a ../ilasm/libILAsm.a \
 			   ../ilalink/libILLink.a \
 			   ../dumpasm/libILDumpAsm.a ../image/libILImage.a \
-			   ../support/libILSupport.a
+			   ../support/libILSupport.a $(GCLIBS)
 
 cscc_cs_SOURCES = cs_main.c
 cscc_cs_LDADD   = csharp/libILCSharp.a common/libILCCommon.a \
 				  ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
-				  ../image/libILImage.a ../support/libILSupport.a
+				  ../image/libILImage.a ../support/libILSupport.a \
+				  $(GCLIBS)	
 
 cscc_c_s_SOURCES = c_main.c
 cscc_c_s_LDADD   = c/libILCLang.a common/libILCCommon.a \
 				   ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
-				   ../image/libILImage.a ../support/libILSupport.a
+				   ../image/libILImage.a ../support/libILSupport.a \
+				   $(GCLIBS)
 
 cscc_vb_SOURCES = vb_main.c
 cscc_vb_LDADD   = vb/libILVB.a csharp/libILCSharp.a common/libILCCommon.a \
 				  ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
-				  ../image/libILImage.a ../support/libILSupport.a
+				  ../image/libILImage.a ../support/libILSupport.a \
+				  $(GCLIBS)
 
 cscc_java_SOURCES = java_main.c
 cscc_java_LDADD   = java/libILJava.a common/libILCCommon.a \
 				  ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
-				  ../image/libILImage.a ../support/libILSupport.a
+				  ../image/libILImage.a ../support/libILSupport.a $(GCLIBS)
 
 csdoc_SOURCES = csdoc.c
 csdoc_LDADD   = csharp/libILCSharp.a common/libILCCommon.a \
 				../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
-				../image/libILImage.a ../support/libILSupport.a
+				../image/libILImage.a ../support/libILSupport.a $(GCLIBS)
 
 cscc_bf_SOURCES = bf_main.c
 cscc_bf_LDADD   = bf/libILBf.a common/libILCCommon.a \
 				  ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
-				  ../image/libILImage.a ../support/libILSupport.a
+				  ../image/libILImage.a ../support/libILSupport.a $(GCLIBS)
 
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 

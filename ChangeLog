@@ -1,3 +1,12 @@
+2004-06-18  Klaus Treichel  <ktreichel@web.de>
+
+	* clrwrap/Makefile.am, csant/Makefile.am, csant/Makefile.am,
+	cscc/Makefile.am, csdoc/Makefile.am, ilalink/Makefile.am,
+	ilasm/Makefile.am, ildasm/Makefile.am, ildd/Makefile.am,
+	ilfind/Makefile.am, ilgac/Makefile.am, ilheader/Makefile.am,
+	ilnative/Makefile.am, ilsize/Makefile.am, resgen/Makefile.am,
+	tests/Makefile.am: add missing library $(GCLIBS) to LDADD
+
 2004-06-18  Thong Nguyen  <tum@veridicus.com>
 
 	* configure.in: Added check for sys/sysinfo.h and sys/sysctl.h.

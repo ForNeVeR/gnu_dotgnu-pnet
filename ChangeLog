@@ -7,6 +7,11 @@
 	* codegen/cg_stmt.tc (EndsInReturn): recognise ILNode_LineInfo
 	nodes when checking for "return" statements.
 
+	* engine/cvm.c, engine/cvm_except.c, engine/engine.h,
+	samples/except.cs: insert stack traces into exception objects
+	that are created by the engine; expose "SystemException" as
+	"_ILSystemException" so it can be reused elsewhere.
+
 2002-05-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y (OuterDeclaration): don't call "yyerrok"

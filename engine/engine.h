@@ -344,6 +344,14 @@ ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n);
  */
 ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame);
 
+/*
+ * Create a system exception object of a particular class.
+ * We do this very carefully, to avoid re-entering the engine.
+ * We cannot call the exception's constructor, so we do the
+ * equivalent work here instead.
+ */
+void *_ILSystemException(ILExecThread *thread, const char *className);
+
 #ifdef	__cplusplus
 };
 #endif

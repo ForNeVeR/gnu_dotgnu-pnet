@@ -136,7 +136,7 @@ extern int _ILCVMInsnCount[];
 			do { \
 				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "System.OverflowException"); \
+					_ILSystemException(thread, "System.OverflowException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -148,7 +148,7 @@ extern int _ILCVMInsnCount[];
 			do { \
 				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "System.ArithmeticException"); \
+					_ILSystemException(thread, "System.ArithmeticException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -160,7 +160,8 @@ extern int _ILCVMInsnCount[];
 			do { \
 				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "System.DivideByZeroException"); \
+					_ILSystemException(thread, \
+									   "System.DivideByZeroException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -172,7 +173,8 @@ extern int _ILCVMInsnCount[];
 			do { \
 				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "System.NullReferenceException"); \
+					_ILSystemException(thread, \
+									   "System.NullReferenceException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -184,7 +186,8 @@ extern int _ILCVMInsnCount[];
 			do { \
 				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "System.StackOverflowException"); \
+					_ILSystemException(thread, \
+									   "System.StackOverflowException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -196,7 +199,8 @@ extern int _ILCVMInsnCount[];
 			do { \
 				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "System.MissingMethodException"); \
+					_ILSystemException(thread, \
+									   "System.MissingMethodException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -208,7 +212,7 @@ extern int _ILCVMInsnCount[];
 			do { \
 				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "System.InvalidCastException"); \
+					_ILSystemException(thread, "System.InvalidCastException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -220,8 +224,8 @@ extern int _ILCVMInsnCount[];
 			do { \
 				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, \
-									"System.IndexOutOfRangeException"); \
+					_ILSystemException(thread, \
+									   "System.IndexOutOfRangeException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)

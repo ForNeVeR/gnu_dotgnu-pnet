@@ -20,15 +20,11 @@
 
 #if defined(IL_CVM_GLOBALS)
 
-/*
- * Create a system exception object of a particular class.
- * We do this very carefully, to avoid re-entering the engine.
- * We cannot call the exception's constructor, so we do the
- * equivalent work here instead.
- */
-static void *SystemException(ILExecThread *thread, const char *className)
+void *_ILSystemException(ILExecThread *thread, const char *className)
 {
 	ILObject *object;
+	ILObject *trace;
+	ILCallFrame *callFrame;
 	ILClass *classInfo = ILExecThreadLookupClass(thread, className);
 	if(!classInfo)
 	{
@@ -40,7 +36,45 @@ static void *SystemException(ILExecThread *thread, const char *className)
 	object = _ILEngineAllocObject(thread, classInfo);
 	if(object)
 	{
-		/* TODO: initialize the stack trace within the exception object */
+		/* Find the "stackTrace" field within the "Exception" class */
+		ILField *field = ILExecThreadLookupField
+				(thread, "System.Exception", "stackTrace",
+				 "[vSystem.Diagnostics.PackedStackFrame;");
+		if(field)
+		{
+			/* Push the current frame data onto the stack temporarily
+			   so that "GetExceptionStackTrace" can find it */
+			if(thread->numFrames < thread->maxFrames)
+			{
+				callFrame = &(thread->frameStack[(thread->numFrames)++]);
+			}
+			else if((callFrame = AllocCallFrame(thread)) == 0)
+			{
+				/* We ran out of memory trying to push the frame */
+				object = thread->thrownException;
+				thread->thrownException = 0;
+				return object;
+			}
+			callFrame->method = thread->method;
+			callFrame->pc = thread->pc;
+			callFrame->frame = thread->frame;
+			callFrame->exceptHeight = thread->exceptHeight;
+
+			/* Get the stack trace and pop the frame */
+			trace = (ILObject *)_IL_StackFrame_GetExceptionStackTrace(thread);
+			--(thread->numFrames);
+			if(!trace)
+			{
+				/* We ran out of memory obtaining the stack trace */
+				object = thread->thrownException;
+				thread->thrownException = 0;
+				return object;
+			}
+
+			/* Write the stack trace into the object */
+			*((ILObject **)(((unsigned char *)object) + field->offset))
+					= trace;
+		}
 	}
 	else
 	{

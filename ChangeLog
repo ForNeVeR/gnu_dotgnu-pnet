@@ -1,3 +1,6 @@
+2002-04-20  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Compile fixes.
 
 2002-04-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 

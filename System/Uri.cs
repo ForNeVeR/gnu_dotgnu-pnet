@@ -135,7 +135,7 @@ public class Uri : MarshalByRefObject
 		; // empty body
 	myBaseUri = myBaseUri.Substring(0, newlastchar + 1);
 
-	for (newlastchar = -1; myRelativeUri[++newlastchar] == '/')
+	for (newlastchar = -1; myRelativeUri[++newlastchar] == '/';)
 		; // empty body
 	myRelativeUri = myRelativeUri.Substring(newlastchar);
 
@@ -208,7 +208,7 @@ public class Uri : MarshalByRefObject
 	public override bool Equals(Object comparand)
 	{
 		Uri rurib;
-		if (comparand == null || (comparand is not String && comparand is not Uri))
+		if (comparand == null || (!comparand is String && !comparand is Uri))
 			return false;
 		else if (comparand is String)
 			rurib = new Uri((String)comparand);
@@ -290,7 +290,8 @@ public class Uri : MarshalByRefObject
 		if (String.Equals(this.scheme, "mailto"))
 			return ":";
 		else
-			return "://"
+			return "://";
+	}
 
 	public static String HexEscape(char character)
 	{
@@ -383,9 +384,12 @@ public class Uri : MarshalByRefObject
 
 	public static bool IsHexEncoding(String pattern, int index)
 	{
-		return ((pattern[index] == '%') &&
-		    IsHexDigit(pattern[index+1]) &&
-		    IsHexDigit(pattern[index+2]));
+		if (pattern.Length - index >= 3)
+			return ((pattern[index] == '%') &&
+			    IsHexDigit(pattern[index+1]) &&
+			    IsHexDigit(pattern[index+2]));
+		else
+			return false;
 	}
 
 	protected virtual bool IsReservedCharacter(char character)
@@ -398,15 +402,15 @@ public class Uri : MarshalByRefObject
 	{
 		if (String.Equals(toUri.host, this.host))
 		{
-			String thisUri[] = this.path.Split('/');
-			String otherUri[] = toUri.path.Split('/');
+			String[] thisUri = this.path.Split('/');
+			String[] otherUri = toUri.path.Split('/');
 			int currentItem = 0;
 			StringBuilder myStringBuilder = new StringBuilder();
 
 			while ((thisUri.Length >= currentItem) &&
 				 (otherUri.Length >= currentItem))
 			{
-				if (String.Compare(thisUri[currentItem], otherUri[currentItem) == 0)
+				if (String.Equals(thisUri[currentItem], otherUri[currentItem]))
 				{
 					myStringBuilder.Append(otherUri[currentItem]);
 					myStringBuilder.Append('/');
@@ -507,7 +511,7 @@ public class Uri : MarshalByRefObject
 				if (needsEscaping(query))
 					query = EscapeString(query);
 				if (needsEscaping(fragment))
-					fragment = EscapeString(fragment)
+					fragment = EscapeString(fragment);
 			}
 		}
 	}
@@ -583,15 +587,9 @@ public class Uri : MarshalByRefObject
 			myStringBuilder.Append(this.userinfo);
 		}
 
-		myStringBuilder.Append(AbsolutePath);
+		myStringBuilder.Append(PathAndQuery);
 
-		if (this.query.Length > 0)
-		{
-			myStringBuilder.Append('?');
-			myStringBuilder.Append(this.query);
-		}
-
-		if (this.fragment.Length) > 0)
+		if (this.fragment.Length > 0)
 		{
 			myStringBuilder.Append('#');
 			myStringBuilder.Append(this.fragment);
@@ -600,7 +598,7 @@ public class Uri : MarshalByRefObject
 		return Unescape(myStringBuilder.ToString());
 	}
 
-	protected virtual String Unescape(String path) // beware, explicitly do this.path
+	protected virtual String Unescape(String path)
 	{
 		StringBuilder retStr = new StringBuilder(path.Length);
 		int afterPrevPcntSignIndex = 0;
@@ -612,63 +610,64 @@ public class Uri : MarshalByRefObject
 		{
 			// append string up to % sign
 			retStr.Append(path, afterPrevPcntSignIndex, lastPcntSignIndex-afterPrevPcntSignIndex);
-
-			if (IsHexEncoding(path, lastPcntSignIndex))
-			{
-				char c1 = HexUnescape(path, lastPcntSignIndex); // changes lastPcntSignIndex
-
-				switch (c1)
-				{
-				case 2:
-					if (path.Length - lastPcntSignIndex >= 3 && IsHexEncoding(path, lastPcntSignIndex)) // 2nd byte is Hex encoding
-					{
-						int lpsiCopy = lastPcntSignIndex; // save in case not 2-byte UTF8
-						char c2 = HexUnescape(path, lpsiCopy);
-						if ((c2 & 0xC0) == 0x80) // is UTF8 2-byte?
-						{
-							retStr.Append(((c1 & 0x1F) << 6) | (c2 & 0x3F)); // build
-							lastPcntSignIndex = lpsiCopy;
-							break;
-						}
-						else
-							goto default;
-					}
-					else
-						goto default;
-				case 3:
-					if (path.Length - lastPcntSignIndex >= 6 && IsHexEncoding(path, lastPcntSignIndex)
-						&& IsHexEncoding(path, lastPcntSignIndex+3)) // 2nd and 3rd bytes are hex encoded
-					{
-						int lpsiCopy = lastPcntSignIndex; // save again
-						// lpsiCopy will change to compensate
-						char c2 = HexUnescape(path, lpsiCopy), c3 = HexUnescape(path, lpsiCopy);
-						if ((c2 & 0xC0) == 0x80 && (c3 & 0xC0) == 0x80) // is UTF8 3-byte?
-						{
-							retStr.Append(((c1 & 0x0F) << 12) | ((c2 & 0x3F) << 6)
-								| (c3 & 0x3F); // build
-							lastPcntSignIndex = lpsiCopy;
-							break;
-						}
-						else
-							goto default;
-					}
-					else
-						goto default;
-				default:
-					retStr.Append(c1);
-					break;
-				} // switch
-			}
-			else // following % sign is not hex
-				++lastPcntSignIndex; // don't catch the last-found % sign
+			// get the hex character, or just %, and append
+			retStr.Append(HexUnescapeWithUTF8(path, lastPcntSignIndex));
 			afterPrevPcntSignIndex = lastPcntSignIndex;
 		}
 		// then push on the rest of the string
-		return retStr.Append(path, lastPcntSignIndex).ToString();
+		return retStr.Append(path, afterPrevPcntSignIndex).ToString();
 		// and return it
 	}
 
-	private int UTF8SizeFor1stByte(char c)
+	private static char HexUnescapeWithUTF8(String path, ref int pcntSignIndex)
+	{
+		if (IsHexEncoding(path, pcntSignIndex))
+		{
+			char c1 = HexUnescape(path, pcntSignIndex); // changes pcntSignIndex
+
+			switch (UTF8SizeFor1stByte(c1))
+			{
+			case 2:
+				if (IsHexEncoding(path, pcntSignIndex)) // 2nd byte is Hex encoding
+				{
+					int psiCopy = pcntSignIndex; // save in case not 2-byte UTF8
+					char c2 = HexUnescape(path, psiCopy);
+					if ((c2 & 0xC0) == 0x80) // is UTF8 2-byte?
+					{
+						pcntSignIndex = psiCopy;
+						return ((c1 & 0x1F) << 6) | (c2 & 0x3F); // build
+					}
+				}
+				// else all
+				goto default;
+			case 3:
+				if (path.Length - pcntSignIndex >= 6 && IsHexEncoding(path, pcntSignIndex)
+					&& IsHexEncoding(path, pcntSignIndex+3)) // 2nd and 3rd bytes are hex encoded
+				{
+					int psiCopy = pcntSignIndex; // save again
+					// psiCopy will change to compensate
+					char c2 = HexUnescape(path, psiCopy), c3 = HexUnescape(path, psiCopy);
+					if ((c2 & 0xC0) == 0x80 && (c3 & 0xC0) == 0x80) // is UTF8 3-byte?
+					{
+						pcntSignIndex = psiCopy;
+						return ((c1 & 0x0F) << 12) | ((c2 & 0x3F) << 6)
+							| (c3 & 0x3F); // build
+					}
+				}
+				// else all
+				goto default;
+			default:
+				return c1;
+			} // switch
+		}
+		else // following % sign is not hex
+		{
+			++pcntSignIndex; // don't reread the character
+			return path[pcntSignIndex];
+		}
+	}
+
+	private static int UTF8SizeFor1stByte(char c)
 	{
 		if ((c & 0x80) == 0)
 			return 1;
@@ -685,10 +684,7 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
-			if (this.path[0] == '/')
-				return this.path;
-			else
-				return String.Concat("/", this.path);
+			return this.path;
 		}
 	}
 

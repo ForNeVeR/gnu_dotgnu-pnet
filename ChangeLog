@@ -1,3 +1,8 @@
+2004-12-29  Stephen Compall  <s11@member.fsf.org>
+
+	* System/Uri.cs (LocalPath): Use IsFile.  Unescape the return
+	value first if IsFile answers true.
+
 2004-12-29  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/MainMenu.cs: Fill remaining menu to right owner

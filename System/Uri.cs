@@ -904,11 +904,14 @@ public class Uri : MarshalByRefObject
 	{
  		get
 		{
-			if (String.Equals(this.scheme, Uri.UriSchemeFile) &&
-			    Path.DirectorySeparatorChar != '/')
-				return this.path.Replace('/', Path.DirectorySeparatorChar);
-			else
-				return this.path;
+			String retval = this.AbsolutePath;
+			if (this.IsFile)
+			{
+			    if (Path.DirectorySeparatorChar != '/')
+					retval = retval.Replace('/', Path.DirectorySeparatorChar);
+				retval = this.Unescape(retval);
+			}
+			return retval;
 		}
 	}
 

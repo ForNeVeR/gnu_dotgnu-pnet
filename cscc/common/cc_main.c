@@ -20,6 +20,31 @@
 
 #include "cc_main.h"
 #include "cc_preproc.h"
+#ifdef HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+#endif
+#ifdef HAVE_UNISTD_H
+	#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_WAIT_H
+	#include <sys/wait.h>
+#endif
+#ifndef WEXITSTATUS
+	#define	WEXITSTATUS(status)		((unsigned)(status) >> 8)
+#endif
+#ifndef WIFEXITED
+	#define	WIFEXITED(status)		(((status) & 255) == 0)
+#endif
+#ifndef WTERMSIG
+	#define	WTERMSIG(status)		(((unsigned)(status)) & 0x7F)
+#endif
+#ifndef WIFSIGNALLED
+	#define	WIFSIGNALLED(status)	(((status) & 255) != 0)
+#endif
+#ifndef WCOREDUMP
+	#define	WCOREDUMP(status)		(((status) & 0x80) != 0)
+#endif
+#include <signal.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -39,7 +64,7 @@ ILScope *CCGlobalScope;
 static void PreprocessClose(void);
 static int InitCodeGen(void);
 static void CloseCodeGen(void);
-static void ParseFile(FILE *file, const char *filename, int is_stdin);
+static void ParseFile(const char *filename, int is_stdin);
 
 /*
  * State for the pre-processor.
@@ -51,7 +76,6 @@ static const char *preproc_filename = 0;
 
 int CCMain(int argc, char *argv[])
 {
-	FILE *infile;
 	int saw_stdin;
 	int posn;
 	int status;
@@ -76,7 +100,7 @@ int CCMain(int argc, char *argv[])
 			return status;
 		}
 	}
-	else if(!CCPluginUsesPreproc)
+	else if(CCPluginUsesPreproc == CC_PREPROC_NONE)
 	{
 		/* We can't use a pre-processor for this language */
 		fprintf(stderr, _("%s: pre-processing is not supported\n"), progname);
@@ -93,21 +117,13 @@ int CCMain(int argc, char *argv[])
 		{
 			if(!saw_stdin)
 			{
-				ParseFile(stdin, "stdin", 1);
+				ParseFile("stdin", 1);
 				saw_stdin = 1;
 			}
 		}
 		else
 		{
-			if((infile = fopen(input_files[posn], "r")) == NULL)
-			{
-				perror(input_files[posn]);
-				CCHaveErrors |= 1;
-			}
-			else
-			{
-				ParseFile(infile, input_files[posn], 0);
-			}
+			ParseFile(input_files[posn], 0);
 		}
 	}
 
@@ -216,6 +232,20 @@ static int Preprocess(void)
 	{
 		outfile = preproc_outfile;
 		filename = preproc_filename;
+	}
+
+	/* If the pre-processor is in C mode, then copy what it gave us */
+	if(CCPluginUsesPreproc == CC_PREPROC_C)
+	{
+		while((size = fread(buffer, 1, sizeof(buffer),
+							CCPreProcessorStream.stream)) > 0)
+		{
+			if(fwrite(buffer, 1, size, outfile) != (unsigned)size)
+			{
+				goto truncated;
+			}
+		}
+		return 0;
 	}
 
 	/* Warn about the -C option, which we don't support yet */
@@ -530,15 +560,243 @@ static void CloseCodeGen(void)
 }
 
 /*
+ * Find the C pre-processor along a reasonable search path.
+ */
+static char *FindCpp(void)
+{
+	char *newPath = 0;
+	if(ILFileExists("/usr/bin/cpp", &newPath))
+	{
+		return newPath;
+	}
+	else if(ILFileExists("/bin/cpp", &newPath))
+	{
+		return newPath;
+	}
+	else if(ILFileExists("/usr/local/bin/cpp", &newPath))
+	{
+		return newPath;
+	}
+	else if(ILFileExists("/usr/lib/cpp", &newPath))
+	{
+		return newPath;
+	}
+	else if(ILFileExists("/lib/cpp", &newPath))
+	{
+		return newPath;
+	}
+	else
+	{
+		return "cpp";
+	}
+}
+
+/*
+ * Spawn a child process and redirect its stdout to a readable pipe.
+ */
+static FILE *SpawnOnPipe(char **argv, int *pid)
+{
+#if defined(HAVE_FORK) && defined(HAVE_EXECV) && (defined(HAVE_WAITPID) || defined(HAVE_WAIT))
+	int pipefds[2];
+	FILE *file;
+
+	/* Create a pipe to use to communicate with the child */
+	if(pipe(pipefds) < 0)
+	{
+		perror("pipe");
+		return 0;
+	}
+
+	/* Fork and create the child process */
+	*pid = fork();
+	if(*pid < 0)
+	{
+		/* We weren't able to fork the process */
+		perror("fork");
+		return 0;
+	}
+	else if(*pid == 0)
+	{
+		/* We are in the child */
+		dup2(pipefds[1], 1);
+		close(pipefds[0]);
+		close(pipefds[1]);
+		execvp(argv[0], argv);
+		perror("execvp");
+		exit(1);
+	}
+	else
+	{
+		/* We are in the parent */
+		close(pipefds[1]);
+		file = fdopen(pipefds[0], "r");
+		if(!file)
+		{
+			perror("fdopen");
+		}
+		return file;
+	}
+
+#else
+	fputs("Don't know how to spawn child processes on this system\n", stderr);
+	return 0;
+#endif
+}
+
+/*
+ * Close the pipe that was created by "SpawnOnPipe".
+ */
+static int ClosePipe(FILE *file, int pid)
+{
+#if defined(HAVE_FORK) && defined(HAVE_EXECV) && (defined(HAVE_WAITPID) || defined(HAVE_WAIT))
+	int status = 1;
+	fclose(file);
+#ifdef HAVE_WAITPID
+	waitpid(pid, &status, 0);
+#else
+	{
+		int result;
+		while((result = wait(&status)) != pid && result != -1)
+		{
+			/* Some other child fell: not the one we are interested in */
+		}
+	}
+#endif
+	if(WIFEXITED(status))
+	{
+		return (WEXITSTATUS(status) == 0);
+	}
+	else
+	{
+		return 0;
+	}
+#else
+	return 0;
+#endif
+}
+
+/*
  * Parse a single input file.
  */
-static void ParseFile(FILE *file, const char *filename, int is_stdin)
+static void ParseFile(const char *filename, int is_stdin)
 {
+	char **argv = 0;
+	int argc = 0;
+	FILE *file;
 	int posn;
+	int fileIsPipe = 0;
+	int pid = 0;
+	char *env;
+
+	/* Open the input */
+	if(CCPluginUsesPreproc == CC_PREPROC_C)
+	{
+		/* Try opening the file first, just to make sure that it is there */
+		if(!is_stdin)
+		{
+			if((file = fopen(filename, "r")) == NULL)
+			{
+				perror(filename);
+				CCHaveErrors |= 1;
+				return;
+			}
+			fclose(file);
+		}
+
+		/* Build the command-line for the C pre-processor.  We assume that
+		   it is the GNU pre-processor.  If it isn't, then tough luck */
+		env = getenv("CPP");
+		if(env && *env != '\0')
+		{
+			CCStringListAdd(&argv, &argc, env);
+		}
+		else
+		{
+			CCStringListAdd(&argv, &argc, FindCpp());
+		}
+		if(preprocess_flag)
+		{
+			if(no_preproc_lines_flag)
+			{
+				CCStringListAdd(&argv, &argc, "-P");
+			}
+			if(preproc_comments_flag)
+			{
+				CCStringListAdd(&argv, &argc, "-C");
+			}
+		}
+		CCStringListAdd(&argv, &argc, "-Wall");
+		CCStringListAdd(&argv, &argc, "-nostdinc");
+		CCStringListAdd(&argv, &argc, "-nostdinc++");
+		CCStringListAdd(&argv, &argc, "-undef");
+		if(dump_output_format == DUMP_MACROS_ONLY)
+		{
+			CCStringListAdd(&argv, &argc, "-dM");
+		}
+		else if(dump_output_format == DUMP_MACROS_AND_OUTPUT)
+		{
+			CCStringListAdd(&argv, &argc, "-dN");
+		}
+		for(posn = 0; posn < num_include_dirs; ++posn)
+		{
+			CCStringListAdd(&argv, &argc, "-I");
+			CCStringListAdd(&argv, &argc, include_dirs[posn]);
+		}
+		for(posn = 0; posn < num_sys_include_dirs; ++posn)
+		{
+			CCStringListAdd(&argv, &argc, "-I");
+			CCStringListAdd(&argv, &argc, sys_include_dirs[posn]);
+		}
+		for(posn = 0; posn < num_pre_defined_symbols; ++posn)
+		{
+			CCStringListAdd(&argv, &argc, "-D");
+			CCStringListAdd(&argv, &argc, pre_defined_symbols[posn]);
+		}
+		for(posn = 0; posn < num_user_defined_symbols; ++posn)
+		{
+			CCStringListAdd(&argv, &argc, "-D");
+			CCStringListAdd(&argv, &argc, user_defined_symbols[posn]);
+		}
+		for(posn = 0; posn < num_undefined_symbols; ++posn)
+		{
+			CCStringListAdd(&argv, &argc, "-U");
+			CCStringListAdd(&argv, &argc, undefined_symbols[posn]);
+		}
+		if(is_stdin)
+		{
+			CCStringListAdd(&argv, &argc, "-");
+		}
+		else
+		{
+			CCStringListAdd(&argv, &argc, (char *)filename);
+		}
+		CCStringListAdd(&argv, &argc, "-");
+		CCStringListAdd(&argv, &argc, 0);
+
+		/* Open a pipe to the command and run it */
+		file = SpawnOnPipe(argv, &pid);
+		if(!file)
+		{
+			CCHaveErrors |= 1;
+			return;
+		}
+		fileIsPipe = 1;
+	}
+	else if(is_stdin)
+	{
+		file = stdin;
+	}
+	else if((file = fopen(filename, "r")) == NULL)
+	{
+		perror(filename);
+		CCHaveErrors |= 1;
+		return;
+	}
 
 	/* Set up the pre-processor or the simple file reader */
-	if(CCPluginUsesPreproc)
+	if(CCPluginUsesPreproc == CC_PREPROC_CSHARP)
 	{
+		/* Use the C# pre-processor */
 		CCPreProcInit(&CCPreProcessorStream, file, filename, !is_stdin);
 		if(CCStringListContains(extension_flags, num_extension_flags,
 								"latin1-charset"))
@@ -563,8 +821,30 @@ static void ParseFile(FILE *file, const char *filename, int is_stdin)
 			return;
 		}
 	}
+	else if(CCPluginUsesPreproc == CC_PREPROC_C)
+	{
+		/* Use the C pre-processor */
+		CCPreProcessorStream.stream = file;
+		CCPreProcessorStream.lineNumber = 1;
+		CCPreProcessorStream.filename =
+			ILInternString((char *)filename, -1).string;
+		CCPreProcessorStream.lexerLineNumber = 1;
+		CCPreProcessorStream.lexerFileName = CCPreProcessorStream.filename;
+
+		/* If we are only pre-processing, then do that now */
+		if(preprocess_flag)
+		{
+			CCHaveErrors |= Preprocess();
+			if(!ClosePipe(file, pid))
+			{
+				CCHaveErrors |= 1;
+			}
+			return;
+		}
+	}
 	else
 	{
+		/* Don't perform any pre-processing */
 		CCPreProcessorStream.stream = file;
 		CCPreProcessorStream.lineNumber = 1;
 		CCPreProcessorStream.filename =
@@ -586,10 +866,17 @@ static void ParseFile(FILE *file, const char *filename, int is_stdin)
 	CCHaveErrors |= CCPluginParse();
 
 	/* Destroy the pre-processor stream */
-	if(CCPluginUsesPreproc)
+	if(CCPluginUsesPreproc == CC_PREPROC_CSHARP)
 	{
 		CCHaveErrors |= CCPreProcessorStream.error;
 		CCPreProcDestroy(&CCPreProcessorStream);
+	}
+	else if(fileIsPipe)
+	{
+		if(!ClosePipe(file, pid))
+		{
+			CCHaveErrors |= 1;
+		}
 	}
 	else if(!is_stdin)
 	{
@@ -599,7 +886,7 @@ static void ParseFile(FILE *file, const char *filename, int is_stdin)
 
 int CCPluginInput(char *buf, int maxSize)
 {
-	if(CCPluginUsesPreproc)
+	if(CCPluginUsesPreproc == CC_PREPROC_CSHARP)
 	{
 		return CCPreProcGetBuffer(&CCPreProcessorStream, buf, maxSize);
 	}

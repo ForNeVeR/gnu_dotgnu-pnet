@@ -57,7 +57,7 @@ static void GenerateDocs(ILNode *tree, FILE *stream);
  */
 char const CCPluginName[] = "csdoc";
 int const CCPluginOptionParseMode = CMDLINE_PARSE_CSCC;
-int const CCPluginUsesPreproc = 1;
+int const CCPluginUsesPreproc = CC_PREPROC_CSHARP;
 int const CCPluginJVMSupported = 0;
 int const CCPluginSkipCodeGen = 1;
 

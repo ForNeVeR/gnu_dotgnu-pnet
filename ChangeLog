@@ -11,6 +11,10 @@
 	language front-end for cscc (it doesn't work yet, so don't
 	get too excited).
 
+	* cscc/c_main.c, cscc/cs_main.c, cscc/csdoc.c, cscc/common/cc_main.c,
+	cscc/common/cc_main.h: add a new mode to "cc_main.c" that can use
+	the C pre-processor instead of the C# pre-processor.
+
 2002-07-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/writer.c (SortClasses): process types in order, even

@@ -36,7 +36,7 @@ extern void cs_restart(FILE *infile);
  */
 char const CCPluginName[] = "cscc-cs";
 int const CCPluginOptionParseMode = CMDLINE_PARSE_PLUGIN;
-int const CCPluginUsesPreproc = 1;
+int const CCPluginUsesPreproc = CC_PREPROC_CSHARP;
 int const CCPluginJVMSupported = 1;
 int const CCPluginSkipCodeGen = 0;
 

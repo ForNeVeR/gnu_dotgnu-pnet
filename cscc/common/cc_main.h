@@ -44,7 +44,14 @@ extern char const CCPluginName[];
 extern int const CCPluginOptionParseMode;
 
 /*
- * Set to non-zero if we should use the C# pre-processor.
+ * Values for "CCPluginUsesPreproc".
+ */
+#define	CC_PREPROC_NONE		0
+#define	CC_PREPROC_CSHARP	1
+#define	CC_PREPROC_C		2
+
+/*
+ * The pre-processor to use.  One of the values above.
  */
 extern int const CCPluginUsesPreproc;
 

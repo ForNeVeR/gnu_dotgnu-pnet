@@ -4,6 +4,7 @@ TREECC_INPUTS = cg_ainit.tc \
 				cg_all.tc \
 				cg_arith.tc \
 				cg_assign.tc \
+				cg_attrs.tc \
 				cg_cast.tc \
 				cg_const.tc \
 				cg_decls.tc \
@@ -16,6 +17,7 @@ TREECC_INPUTS = cg_ainit.tc \
 				jv_ainit.tc \
 				jv_arith.tc \
 				jv_assign.tc \
+				jv_attrs.tc \
 				jv_cast.tc \
 				jv_const.tc \
 				jv_decls.tc \
@@ -29,6 +31,7 @@ TREECC_INPUTS = cg_ainit.tc \
 TREECC_SRCOUT = cg_ainit.c \
 				cg_arith.c \
 				cg_assign.c \
+				cg_attrs.c \
 				cg_cast.c \
 				cg_const.c \
 				cg_decls.c \

@@ -898,6 +898,18 @@ ILNode_SemAnalysis(ILNode_FormalParameter)
 	return CSSemValueDefault;
 }
 
+ILNode_SemAnalysis(ILNode_AttributeTree)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_AttributeSection)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
 ILNode_SemAnalysis(ILNode_Attribute)
 {
 	/* TODO */

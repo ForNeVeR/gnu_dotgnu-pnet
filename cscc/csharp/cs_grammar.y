@@ -586,6 +586,12 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 		ILNode		   *staticCtors;
 
 	} member;
+	struct
+	{
+		ILAttrTargetType targetType;
+		ILNode		   *target;
+
+	} target;
 }
 
 /*
@@ -805,6 +811,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		OptVariableInitializerList VariableInitializerList
 %type <indexer>		IndexerDeclarator
 %type <catchinfo>	CatchNameInfo
+%type <target>		AttributeTarget
 
 %expect 17
 
@@ -2155,20 +2162,20 @@ FixedPointerDeclarator
 
 OptAttributes
 	: /* empty */ 		{ $$ = 0; }
-	| AttributeSections	{ $$ = $1; CSValidateDocs($1); }
+	| AttributeSections	{ CSValidateDocs($1); MakeUnary(AttributeTree, $1); }
 	;
 
 AttributeSections
 	: AttributeSection	{
 				$$ = ILNode_List_create();
-				if ($1)
+				if($1)
 				{
 					ILNode_List_Add($$, $1);
 				}
 			}
 	| AttributeSections AttributeSection	{
 				$$ = $1;
-				if ($2)
+				if($2)
 				{
 					ILNode_List_Add($1, $2);
 				}
@@ -2176,8 +2183,12 @@ AttributeSections
 	;
 
 AttributeSection
-	: '[' AttributeList OptComma ']'					{ $$ = $2; }
-	| '[' AttributeTarget AttributeList OptComma ']'	{ $$ = $3; }
+	: '[' AttributeList OptComma ']'					{
+				MakeTernary(AttributeSection, ILAttrTargetType_None, 0, $2);
+			}
+	| '[' AttributeTarget AttributeList OptComma ']'	{
+				MakeTernary(AttributeSection, $2.targetType, $2.target, $3);
+			}
 	| DOC_COMMENT		{ MakeBinary(DocComment, $1.string, $1.len); }
 	| '[' error ']'		{
 				/*
@@ -2189,9 +2200,18 @@ AttributeSection
 	;
 
 AttributeTarget
-	: QualifiedIdentifier ':'	{}
-	| EVENT ':'					{}
-	| RETURN ':'				{}
+	: QualifiedIdentifier ':'	{
+				$$.targetType = ILAttrTargetType_Named;
+				$$.target = $1;
+			}
+	| EVENT ':'					{
+				$$.targetType = ILAttrTargetType_Event;
+				$$.target = 0;
+			}
+	| RETURN ':'				{
+				$$.targetType = ILAttrTargetType_Return;
+				$$.target = 0;
+			}
 	;
 
 AttributeList
@@ -2259,7 +2279,7 @@ NamedArgument
 	;
 
 AttributeArgumentExpression
-	: Expression			{ $$ = $1; }
+	: ConstantExpression			{ $$ = $1; }
 	;
 
 /*

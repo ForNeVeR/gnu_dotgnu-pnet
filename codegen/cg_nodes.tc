@@ -795,21 +795,45 @@ struct _tagILSwitchValue
 	ILNode	   *name;
 }
 
+%output "cg_attrs.c"
+
 /*
  * Attributes and sub types
  */
+%enum ILAttrTargetType =
+{
+	ILAttrTargetType_None,
+	ILAttrTargetType_Named,
+	ILAttrTargetType_Event,
+	ILAttrTargetType_Return
+}
+%enum ILAttrMode =
+{
+	ILAttrMode_NotVisited,
+	ILAttrMode_Processing,
+	ILAttrMode_Done
+}
+%node ILNode_AttributeTree ILNode_Declaration =
+{
+	ILNode	   *sections;
+	%nocreate ILAttrMode mode = {ILAttrMode_NotVisited};
+}
+%node ILNode_AttributeSection ILNode_Declaration =
+{
+	ILAttrTargetType type;
+	ILNode	   *target;
+	ILNode     *attrs;
+}
 %node ILNode_Attribute ILNode_Declaration =
 {
 	ILNode	   *name;
 	ILNode	   *args;
 }
-
 %node ILNode_AttrArgs ILNode_Declaration =
 {
 	ILNode	   *positionalArgs;
 	ILNode	   *namedArgs;
 }
-
 %node ILNode_NamedArg ILNode_Declaration =
 {
 	ILNode	   *name;

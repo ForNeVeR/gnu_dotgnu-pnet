@@ -112,18 +112,3 @@ JavaGenDiscard(ILNode_FormalParameter)
 {
 	/* TODO */
 }
-
-JavaGenDiscard(ILNode_Attribute)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_AttrArgs)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_NamedArg)
-{
-	/* TODO */
-}

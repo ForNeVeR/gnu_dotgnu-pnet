@@ -10,6 +10,9 @@ dimensional arrays to match the recent change to "sig_parse.c".
 we are loading an image and the supplied token code is zero.  This is
 used to create pseudo assembly imports for synthetic types.
 
+* image/assembly.c: bug in previous check-in; we need to be careful
+not to create a real AssemblyRef for "$Synthetic" when images are built.
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_var.c, engine/verify_call.c: handle value type "this"

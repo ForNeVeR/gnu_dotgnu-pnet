@@ -48,7 +48,8 @@ ILAssembly *ILAssemblyCreate(ILImage *image, ILToken token,
 	}
 
 	/* Assign a token code to the assembly */
-	if(token != 0 || image->type == IL_IMAGETYPE_BUILDING)
+	if(token != IL_MAX_UINT32 &&
+	   (token != 0 || image->type == IL_IMAGETYPE_BUILDING))
 	{
 		if(!_ILImageSetToken(image, &(assem->programItem),
 							 token, (isRef ? IL_META_TOKEN_ASSEMBLY_REF
@@ -90,7 +91,14 @@ ILAssembly *ILAssemblyCreateImport(ILImage *image, ILImage *fromImage)
 	}
 
 	/* Create a new assembly reference locally */
-	newAssem = ILAssemblyCreate(image, 0, assem->name, 1);
+	if(fromImage != image->context->syntheticImage)
+	{
+		newAssem = ILAssemblyCreate(image, 0, assem->name, 1);
+	}
+	else
+	{
+		newAssem = ILAssemblyCreate(image, IL_MAX_UINT32, assem->name, 1);
+	}
 	if(!newAssem)
 	{
 		return 0;

@@ -247,7 +247,7 @@ public class HttpWebRequest : WebRequest
 		set
 		{
 			CheckHeadersSent();
-			String str;
+			String str=null;
 			if(value!=null)str=value.ToLower().Trim();
 			if(str==null || str.Length==0)
 			{

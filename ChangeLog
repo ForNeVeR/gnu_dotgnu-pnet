@@ -1,4 +1,16 @@
 
+2002-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Collections/Specialized/BitVector32.cs,
+	System/Collections/Specialized/CollectionsUtil.cs,
+	System/Collections/Specialized/HybridDictionary.cs,
+	System/Collections/Specialized/NameObjectCollectionBase.cs,
+	resources/en_US/System/Arg.txt: complete the implementation of
+	the "System.Collections.Specialized" namespace.
+
+	* System/Net/HttpWebRequest.cs: minor semantic problem shown
+	up by MS'es compiler.
+
 2002-11-19  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/Sockets/NetworkStream.cs, System/Uri.cs: Fix minor bugs 

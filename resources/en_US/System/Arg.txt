@@ -28,4 +28,5 @@ Arg_UriHostName=URI host names must be specified in DNS or IPv4 format
 Arg_UriNotEscaped=You told the constructor that the Uri was properly escaped, but it wasn't
 Arg_InvalidIdentifier=Invalid identifier specified
 Arg_InvalidCodeDom=Invalid CodeDom node in this context
+Arg_MaskDone=CreateMask has created all masks
 ArgRange_NonNegative=Value must not be negative

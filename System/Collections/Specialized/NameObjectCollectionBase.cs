@@ -95,8 +95,7 @@ abstract class NameObjectCollectionBase
 			{
 				get
 				{
-					// TODO
-					return null;
+					return new KeysCollection(this);
 				}
 			}
 	protected virtual bool IsReadOnly

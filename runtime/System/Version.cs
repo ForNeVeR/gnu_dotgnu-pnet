@@ -167,7 +167,7 @@ public sealed class Version : ICloneable, IComparable
 				}
 				else
 				{
-					throw new ArgumentNullException("version");
+					return 1;
 				}
 			}
 

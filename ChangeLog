@@ -26,6 +26,8 @@ runtime/System/Reflection/ClrTypeCategory.cs,
 runtime/System/Reflection/IClrProgramItem.cs: modify the reflection
 interface to the runtime engine.
 
+* runtime/System/Version.cs: minor bug in "CompareTo".
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/Platform/Errno.cs: list of Unix-style errno codes for interfacing

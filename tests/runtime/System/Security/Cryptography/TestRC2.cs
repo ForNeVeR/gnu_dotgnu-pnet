@@ -70,4 +70,10 @@ public class TestRC2 : CryptoTestCase
 				}
 			}
 
+	// Test the properties of the default algorithm instance.
+	public void TestRC2Properties()
+			{
+				SymmetricPropertyTest(RC2.Create(), 128, 64);
+			}
+
 }; // TestRC2

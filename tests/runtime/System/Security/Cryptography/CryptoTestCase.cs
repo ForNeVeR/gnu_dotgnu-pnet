@@ -203,4 +203,50 @@ public class CryptoTestCase : TestCase
 				}
 			}
 
+	// Check that a size value is in a size list.
+	private void CheckSize(String msg, KeySizes[] sizes, int value)
+			{
+				foreach(KeySizes size in sizes)
+				{
+					if(value >= size.MinSize && value <= size.MaxSize &&
+					   ((value - size.MinSize) % size.SkipSize) == 0)
+					{
+						return;
+					}
+				}
+				Fail(msg);
+			}
+
+	// Test the properties on a symmetric algorithm instance.
+	protected void SymmetricPropertyTest(SymmetricAlgorithm alg,
+										 int expectedKeySize,
+										 int expectedBlockSize)
+			{
+				// Check the initial property values.
+				AssertEquals("initial key size is incorrect",
+							 alg.KeySize, expectedKeySize);
+				AssertEquals("initial block size is incorrect",
+							 alg.BlockSize, expectedBlockSize);
+				AssertEquals("initial feedback block size is incorrect",
+							 alg.FeedbackSize, expectedBlockSize);
+				AssertEquals("initial cipher mode is incorrect",
+							 alg.Mode, CipherMode.CBC);
+				AssertEquals("initial padding mode is incorrect",
+							 alg.Padding, PaddingMode.PKCS7);
+				AssertNotNull("legal key size array is null",
+							  alg.LegalKeySizes);
+				AssertNotNull("legal block size array is null",
+							  alg.LegalBlockSizes);
+
+				// Check that the size values are initially valid.
+				CheckSize("initial key size is not legal",
+						  alg.LegalKeySizes, alg.KeySize);
+				CheckSize("initial block size is not legal",
+						  alg.LegalBlockSizes, alg.BlockSize);
+
+				// Try setting the key size to all legal values.
+
+				// TODO: check automatic key and IV generation
+			}
+
 }; // CryptoTestCase

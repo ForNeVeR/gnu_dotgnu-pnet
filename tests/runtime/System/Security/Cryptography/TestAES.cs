@@ -111,4 +111,10 @@ public class TestAES : CryptoTestCase
 				}
 			}
 
+	// Test the properties of the default algorithm instance.
+	public void TestAESProperties()
+			{
+				SymmetricPropertyTest(Rijndael.Create(), 128, 128);
+			}
+
 }; // TestAES

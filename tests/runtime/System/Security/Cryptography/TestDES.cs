@@ -224,6 +224,26 @@ public class TestDES : CryptoTestCase
 	// Test for weak and semi-weak keys.
 	public void TestDESWeak()
 			{
+				// Test exception behaviour of "DES.IsWeakKey".
+				try
+				{
+					DES.IsWeakKey(null);
+					Fail("null");
+				}
+				catch(CryptographicException)
+				{
+					// success
+				}
+				try
+				{
+					DES.IsWeakKey(new byte [0]);
+					Fail("wrong size");
+				}
+				catch(CryptographicException)
+				{
+					// success
+				}
+
 				// These keys are weak.
 				CheckWeak("weak1", new byte[]
 					{0x01, 0x01, 0x01, 0x01,  0x01, 0x01, 0x01, 0x01});
@@ -244,6 +264,26 @@ public class TestDES : CryptoTestCase
 			}
 	public void TestDESSemiWeak()
 			{
+				// Test exception behaviour of "DES.IsSemiWeakKey".
+				try
+				{
+					DES.IsSemiWeakKey(null);
+					Fail("null");
+				}
+				catch(CryptographicException)
+				{
+					// success
+				}
+				try
+				{
+					DES.IsSemiWeakKey(new byte [0]);
+					Fail("wrong size");
+				}
+				catch(CryptographicException)
+				{
+					// success
+				}
+
 				// These keys are semi-weak.
 				CheckSemiWeak("semi1", new byte[]
 					{0x01, 0xFE, 0x01, 0xFE,  0x01, 0xFE, 0x01, 0xFE});
@@ -277,6 +317,12 @@ public class TestDES : CryptoTestCase
 				// Test a normal key.
 				CheckNonSemiWeak("semi14", new byte[]
 					{0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef});
+			}
+
+	// Test the properties of the default algorithm instance.
+	public void TestDESProperties()
+			{
+				SymmetricPropertyTest(DES.Create(), 64, 64);
 			}
 
 }; // TestDES

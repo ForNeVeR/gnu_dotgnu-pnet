@@ -7,6 +7,10 @@
 	* Xsharp/Xlib.cs.in, Xsharp/Image.cs: remove references to
 	"Imlib" from "Xsharp", because it isn't used any more.
 
+	* csupport/csupport.build: use the framework version for
+	"OpenSystem.C", to match up with the version of "mscorlib"
+	that it is built against.
+
 2003-11-22  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpReformatter.cs, DotGNU.Images/Frame.cs,

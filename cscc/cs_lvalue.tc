@@ -222,7 +222,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 				else
 				{
 					value.type = ILTypeGetParam
-						(ILMethod_Signature(method->methodInfo), index - 1);
+						(ILMethod_Signature(method->methodInfo), index + 1);
 				}
 				*parent = ILNode_ArgumentVar_create
 							(index, ILTypeToMachineType(value.type));
@@ -249,8 +249,44 @@ ILNode_SemAnalysis(ILNode_Identifier)
 ILNode_SemAnalysis(ILNode_QualIdent)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	char *name;
+
+	/* Get the semantic value for the left part of the identifier */
+	value = ILNode_SemAnalysis(node->left, info, &(node->left));
+
+	/* Determine how to resolve the right part of the identifier */
+	name = ILQualIdentName(node->right, 0);
+	switch(value.kind)
+	{
+		case CS_SEMKIND_LVALUE:
+		case CS_SEMKIND_RVALUE:
+		{
+			/* Looking for an instance member of an object's type */
+		}
+		break;
+
+		case CS_SEMKIND_TYPE:
+		{
+			/* Looking for a static member of a type */
+		}
+		break;
+
+		case CS_SEMKIND_SCOPE:
+		{
+			/* Look in the scope for the name */
+		}
+		break;
+
+		default:
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "invalid left operand to `.'");
+			value = CSSemValueDefault;
+		}
+		break;
+	}
+
+	/* Done */
 	return value;
 }
 

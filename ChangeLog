@@ -12,6 +12,10 @@ the new support for XML resources in resgen.
 * codegen/cg_scope.h, codegen/cg_scope.c: improve the importing of
 library images into the compiler.
 
+* cscc/cs_lvalue.tc: fix a bug that caused the wrong type to be
+returned for arguments in a static method; begin semantic analysis
+of qualified identifiers.
+
 2001-09-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_xml.h, include/Makefile.am, support/xml.c, support/Makefile.am:

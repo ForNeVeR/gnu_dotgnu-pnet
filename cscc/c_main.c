@@ -72,16 +72,18 @@ int CCPluginInit(void)
 					"__SIZE_TYPE__=\"unsigned int\"");
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__WINT_TYPE__=\"unsigned int\"");
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__VERSION__=\"" VERSION "-cscc\"");
 #else
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__SIZE_TYPE__=unsigned int");
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__WINT_TYPE__=unsigned int");
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__VERSION__=\"" VERSION " (cscc)\"");
 #endif
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__WCHAR_TYPE__=__wchar__");
-	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
-					"__VERSION__=\"" VERSION " (cscc)\"");
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__STDC__=1");
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,

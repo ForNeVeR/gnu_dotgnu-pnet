@@ -520,11 +520,11 @@ struct _tagILEvalValue
 	ILNode	   *type;
 	ILNode	   *varDeclarators;
 }
-%node ILNode_VarDeclarators ILNode_List
 %node ILNode_VarDeclarator ILNode_Declaration =
 {
 	ILNode		*name;
 	ILNode		*initializer;
+	%nocreate ILField *fieldInfo = {0};
 }
 %node ILNode_EventFieldDeclaration ILNode_Declaration =
 {
@@ -571,6 +571,7 @@ struct _tagILEvalValue
 	ILNode	   *getAccessor;
 	ILNode	   *setAccessor;
 	ILUInt32	getsetFlags; /* 1 = get, 2 = set */
+	%nocreate ILProperty *propertyInfo = {0};
 }
 
 /*

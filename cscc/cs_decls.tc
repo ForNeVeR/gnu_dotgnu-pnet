@@ -147,10 +147,6 @@ ILNode_SemAnalysis(ILNode_VarDeclaration)
  */
 ILNode_SemAnalysis(ILNode_FieldDeclaration)
 {
-	CSSemValue value, valueChild;
-	ILNode_ListIter iter;
-	ILNode *child;
-
 	/* Enter an unsafe context for the field if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
@@ -163,18 +159,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		CSUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
-	/* FIXME: optional attributes ? */
-	/* modifier already done in parser */
-	value = ILNode_SemAnalysis(node->type, info, &(node->type));
-	ILNode_ListIter_Init(&iter, node->fieldDeclarators);
-	while ((child = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		valueChild = ILNode_SemAnalysis(child, info, &(child));
-		/*
-		 * FIXME: need to verify that the optional initializers 
-		 * of the fields are consistent with the type declaration
-		 */
-	}
+	/* TODO: verify the initializers and check that there are no duplicates */
 
 	/* Leave the unsafe context for the field */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
@@ -182,7 +167,8 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		CSUnsafeLeave(info);
 	}
 
-	return value;
+	/* Fields don't really have a semantic value, so return the default */
+	return CSSemValueDefault;
 }
 
 ILNode_SemAnalysis(ILNode_VarDeclarator)
@@ -278,8 +264,6 @@ ILNode_SemAnalysis(ILNode_EventPropertyDeclaration)
 
 ILNode_SemAnalysis(ILNode_MethodDeclaration)
 {
-	CSSemValue value;
-
 	/* Enter an unsafe context for the method if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
@@ -292,12 +276,20 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		CSUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
+#if 0
 	/* FIXME: optional attributes ? */
 	/* modifier already done in parser */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
 	/* FIXME: name, do we need to do anything */
 	/* FIXME: I don't think we'll need to iterate over params here */
 	value = ILNode_SemAnalysis(node->params, info, &(node->params));
+#endif
+
+	/* Perform semantic analysis on the method body */
+	if(node->body)
+	{
+		ILNode_SemAnalysis(node->body, info, &(node->body));
+	}
 
 	/* Leave the unsafe context for the method */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
@@ -305,13 +297,8 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		CSUnsafeLeave(info);
 	}
 
-	/* Perform semantic analysis on the method body */
-	if(node->body)
-	{
-		value = ILNode_SemAnalysis(node->body, info, &(node->body));
-	}
-
-	return value;
+	/* Methods don't really have a semantic value, so return the default */
+	return CSSemValueDefault;
 }
 
 ILNode_SemAnalysis(ILNode_PropertyDeclaration)

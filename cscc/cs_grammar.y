@@ -1348,7 +1348,7 @@ LocalVariableDeclaration
 
 VariableDeclarators
 	: VariableDeclarator						{
-				$$ = ILNode_VarDeclarators_create ();
+				$$ = ILNode_List_create();
 				ILNode_List_Add($$, $1);
 			}	
 	| VariableDeclarators ',' VariableDeclarator{
@@ -1897,9 +1897,13 @@ OptClassMemberDeclarations
 	;
 
 ClassMemberDeclarations
-	: ClassMemberDeclaration		{ $$ = $1; }
+	: ClassMemberDeclaration		{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}
 	| ClassMemberDeclarations ClassMemberDeclaration	{
-				$$ = ILNode_Compound_CreateFrom($1, $2);
+				ILNode_List_Add($1, $2);
+				$$ = $1;
 			}
 	;
 
@@ -2568,9 +2572,13 @@ OptInterfaceMemberDeclarations
 	;
 
 InterfaceMemberDeclarations
-	: InterfaceMemberDeclaration		{ $$ = $1; }
+	: InterfaceMemberDeclaration		{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}
 	| InterfaceMemberDeclarations InterfaceMemberDeclaration	{
-				$$ = ILNode_Compound_CreateFrom($1, $2);
+				ILNode_List_Add($1, $2);
+				$$ = $1;
 			}
 	;
 

@@ -26,15 +26,20 @@ extern	"C" {
 
 /*
 
-Type gathering is a two-phase pass that happens just before semantic
+Type gathering is a three-phase pass that happens just before semantic
 analysis.
 
 The first phase collects up the names of all of the types that are
 declared in the program, as opposed to types declared in libraries.
 
-The second phase creates the type structures (ILClass, ILMethod, etc)
-to represent the entire type hierarchy of the program.  During this
-process, we check that everything has been declared correctly.
+The second phase creates the ILClass type structures to represent the
+entire type hierarchy of the program.  During this process, we check
+that all types have been declared correctly.
+
+The third phase creates the fields, methods, etc that appear within
+each class.  The types of parameters and return values are checked,
+but duplicates and access permissions are not.  That is left until
+semantic analysis.
 
 */
 
@@ -244,6 +249,255 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	ILNode_List_Add(list, type);
 }
 
+/*
+ * Add a class member to a scope and report errors.
+ */
+static void AddMemberToScope(ILScope *scope, int memberKind,
+							 const char *name, ILMember *member,
+							 ILNode *errorNode)
+{
+	int error = ILScopeDeclareMember(scope, name, memberKind, member);
+	if(error != IL_SCOPE_ERROR_OK)
+	{
+		CSErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
+					  "member conflicts with a type name in the same scope");
+	}
+}
+
+/*
+ * Create a field definition.
+ */
+static void CreateField(ILGenInfo *info, ILClass *classInfo,
+						ILNode_FieldDeclaration *field)
+{
+	ILNode_ListIter iterator;
+	ILNode_VarDeclarator *decl;
+	ILField *fieldInfo;
+	char *name;
+	CSSemValue value;
+	ILType *tempType;
+
+	/* Get the field's type */
+	value = ILNode_SemAnalysis(field->type, info, &(field->type));
+	if(value.kind != CS_SEMKIND_TYPE)
+	{
+		CSErrorOnLine(yygetfilename(field->type), yygetlinenum(field->type),
+					  "invalid type for field");
+		tempType = ILType_Int32;
+	}
+	else
+	{
+		tempType = value.type;
+	}
+
+	/* Iterator over the field declarators and create each field in turn */
+	ILNode_ListIter_Init(&iterator, field->fieldDeclarators);
+	while((decl = (ILNode_VarDeclarator *)ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		/* Get the name of the field */
+		name = ILQualIdentName(decl->name, 0);
+
+		/* Create the field information block */
+		fieldInfo = ILFieldCreate(classInfo, 0, name,
+								  (field->modifiers & 0xFFFF));
+		if(!fieldInfo)
+		{
+			CSOutOfMemory();
+		}
+		decl->fieldInfo = fieldInfo;
+		ILMemberSetSignature((ILMember *)fieldInfo, tempType);
+
+		/* Add the field to the current scope */
+		AddMemberToScope(info->currentScope, IL_SCOPE_FIELD,
+						 name, (ILMember *)fieldInfo, decl->name);
+	}
+}
+
+/*
+ * Create a method definition.
+ */
+static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
+						 ILNode_MethodDeclaration *method)
+{
+	char *name;
+	CSSemValue value;
+	ILType *tempType;
+	ILMethod *methodInfo;
+	ILType *signature;
+	ILNode_ListIter iterator;
+	ILNode *param;
+	ILNode_FormalParameter *fparam;
+	ILUInt32 paramNum;
+	
+	/* Get the name of the method */
+	if(yykind(method->name) == yykindof(ILNode_Identifier))
+	{
+		/* Simple method name */
+		name = ILQualIdentName(method->name, 0);
+	}
+	else
+	{
+		/* Qualified method name that overrides some interface method (TODO) */
+		name = ILQualIdentName(method->name, 0);
+	}
+
+	/* Create the method information block */
+	methodInfo = ILMethodCreate(classInfo, 0, name,
+								(method->modifiers & 0xFFFF));
+	if(!methodInfo)
+	{
+		CSOutOfMemory();
+	}
+	method->methodInfo = methodInfo;
+
+	/* Get the return type */
+	value = ILNode_SemAnalysis(method->type, info, &(method->type));
+	if(value.kind != CS_SEMKIND_TYPE)
+	{
+		CSErrorOnLine(yygetfilename(method->type), yygetlinenum(method->type),
+					  "invalid return type for method");
+		tempType = ILType_Void;
+	}
+	else
+	{
+		tempType = value.type;
+	}
+
+	/* Create the method signature type */
+	signature = ILTypeCreateMethod(info->context, tempType);
+	if(!signature)
+	{
+		CSOutOfMemory();
+	}
+	if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
+	{
+		signature->kind |= (short)(IL_META_CALLCONV_HASTHIS << 8);
+		ILMethodSetCallConv(methodInfo, IL_META_CALLCONV_HASTHIS);
+	}
+
+	/* Create the parameters for the method */
+	paramNum = 1;
+	ILNode_ListIter_Init(&iterator, method->params);
+	while((param = ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		/* TODO: parameter modifiers */
+
+		/* Get the type of the parameter */
+		fparam = (ILNode_FormalParameter *)param;
+		value = ILNode_SemAnalysis(fparam->type, info, &(fparam->type));
+		if(value.kind != CS_SEMKIND_TYPE)
+		{
+			CSErrorOnLine(yygetfilename(fparam->type),
+						  yygetlinenum(fparam->type),
+						  "invalid parameter type for method");
+			tempType = ILType_Int32;
+		}
+		else
+		{
+			tempType = value.type;
+		}
+
+		/* Add the parameter type to the method signature */
+		if(!ILTypeAddParam(info->context, signature, tempType))
+		{
+			CSOutOfMemory();
+		}
+
+		/* Create a parameter definition in the metadata to record the name */
+		if(!ILParameterCreate(methodInfo, 0, ILQualIdentName(fparam->name, 0),
+							  0, paramNum))
+		{
+			CSOutOfMemory();
+		}
+	}
+
+	/* Set the signature for the method */
+	ILMemberSetSignature((ILMember *)methodInfo, signature);
+
+	/* Add the method to the current scope */
+	AddMemberToScope(info->currentScope, IL_SCOPE_METHOD,
+					 name, (ILMember *)methodInfo, method->name);
+}
+
+/*
+ * Create a property definition.
+ */
+static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
+						   ILNode_PropertyDeclaration *property)
+{
+}
+
+/*
+ * Create the members of a class node.
+ */
+static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
+						  ILNode *classNode)
+{
+	ILClass *classInfo;
+	ILNode *body;
+	ILScope *scope;
+	ILScope *savedScope;
+	ILNode_ListIter iterator;
+	ILNode *member;
+
+	/* Get the class information block, and bail out if not defined */
+	classInfo = ((ILNode_ClassDefn *)classNode)->classInfo;
+	if(!classInfo || classInfo == ((ILClass *)1) ||
+	   classInfo == ((ILClass *)2))
+	{
+		return;
+	}
+
+	/* Get the class body and the scope it is declared within */
+	body = ((ILNode_ClassDefn *)classNode)->body;
+	if(body && yykind(body) == yykindof(ILNode_ScopeChange))
+	{
+		scope = ((ILNode_ScopeChange *)body)->scope;
+		body = ((ILNode_ScopeChange *)body)->body;
+	}
+	else
+	{
+		scope = globalScope;
+	}
+
+	/* Set the new scope for use by the semantic analysis routines */
+	savedScope = info->currentScope;
+	info->currentScope = scope;
+
+	/* Iterate over the member definitions in the class body */
+	ILNode_ListIter_Init(&iterator, body);
+	while((member = ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		if(yykind(member) == yykindof(ILNode_FieldDeclaration))
+		{
+			CreateField(info, classInfo, (ILNode_FieldDeclaration *)member);
+		}
+		else if(yykind(member) == yykindof(ILNode_MethodDeclaration))
+		{
+			CreateMethod(info, classInfo, (ILNode_MethodDeclaration *)member);
+		}
+		else if(yykind(member) == yykindof(ILNode_PropertyDeclaration))
+		{
+			CreateProperty(info, classInfo,
+						   (ILNode_PropertyDeclaration *)member);
+		}
+#if 0
+		else if(yykind(member) == yykindof(ILNode_EventDeclaration))
+		{
+			/* TODO: Create an event */
+		}
+#endif
+		else if(yykind(member) != yykindof(ILNode_ClassDefn))
+		{
+			CSErrorOnLine(yygetfilename(member), yygetlinenum(member),
+				  "internal error - do not know how to declare this member");
+		}
+	}
+
+	/* Return to the original scope */
+	info->currentScope = savedScope;
+}
+
 ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 {
 	ILNode_ListIter iterator;
@@ -365,6 +619,13 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 	while((child = ILNode_ListIter_Next(&iterator)) != 0)
 	{
 		CreateType(info, globalScope, list, systemObject, child);
+	}
+
+	/* Create the class members within each type */
+	ILNode_ListIter_Init(&iterator, list);
+	while((child = ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		CreateMembers(info, globalScope, child);
 	}
 
 	/* Return the new top-level list to the caller */

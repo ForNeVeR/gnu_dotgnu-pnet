@@ -24,35 +24,6 @@
 #include "cg_nodes.h"
 #include "il_dumpasm.h"
 
-/*FIXME: where should this really go */
-static void DumpTypeName(FILE *stream, ILNode *node)
-{
-	if (stream && node)
-	{
-		if (yykind(node) == yykindof(ILNode_QualIdent))
-		{
-			/* FIXME. Is this the correct name? */
-			fputs (ILQualIdentName (node, 1), stream);
-		}
-#if 0
-		else if (yykind(node) == yykindof(ILNode_ArrayType))
-		{
-			/*FIXME*/
-		}
-		else if (yykind(node) == yykindof(ILNode_PtrType))
-		{
-			ILNode_PtrType *n = (ILNode_PtrType)node;
-			DumpTypeName(stream, n->type);
-			fputs (" *", stream);
-		}
-		else if (yykind(node) == yykindof(ILNode_VoidPtrType))
-		{
-			fputs ("void *", stream);
-		}
-#endif
-	}
-}
-
 %}
 
 /*
@@ -183,29 +154,36 @@ ILNode_GenDiscard(ILNode_VarDeclaration)
 }
 
 /*
- * Generate discard code for field declaration 
+ * Generate discard code for a field declaration .
  */
-
 ILNode_GenDiscard(ILNode_FieldDeclaration)
 {
 	ILNode_ListIter	iter;
-	ILNode *child;
+	ILNode_VarDeclarator *decl;
+	ILField *field;
 
-	if (node->fieldDeclarators)
+	if(node->fieldDeclarators && info->asmOutput)
 	{
-		if (info->asmOutput)
+		ILNode_ListIter_Init(&iter, node->fieldDeclarators);
+		while((decl = (ILNode_VarDeclarator *)ILNode_ListIter_Next(&iter)) != 0)
 		{
-			ILNode_ListIter_Init (&iter, node->fieldDeclarators);
-			while ((child = ILNode_ListIter_Next(&iter)) != 0)
+			field = decl->fieldInfo;
+			if(field)
 			{
-				fputs (".field ", info->asmOutput);
-				ILDumpFlags (info->asmOutput, (unsigned long)(node->modifiers),
-							 ILFieldDefinitionFlags, 0);
-				DumpTypeName(info->asmOutput, node->type);
-				fputc (' ', info->asmOutput);
-				/* FIXME: is this unchanged for all VarDeclarators */
-				ILNode_GenDiscard (child, info);
-				fputs("\n", info->asmOutput);
+				/* Dump the field signature and name */
+				fputs(".field ", info->asmOutput);
+				ILDumpFlags(info->asmOutput, ILField_Attrs(field),
+						    ILFieldDefinitionFlags, 0);
+				ILDumpType(info->asmOutput, info->image, ILField_Type(field),
+						   IL_DUMP_QUOTE_NAMES);
+				fputc(' ', info->asmOutput);
+				ILDumpIdentifier(info->asmOutput, ILField_Name(field), 0,
+								 IL_DUMP_QUOTE_NAMES);
+
+				/* Dump the field initializer */
+
+				/* Terminate the field definition */
+				putc('\n', info->asmOutput);
 			}
 		}
 	}
@@ -216,6 +194,7 @@ ILNode_GenDiscard(ILNode_FieldDeclaration)
  */
 ILNode_GenDiscard(ILNode_VarDeclarator)
 {
+#if 0
 	if (info->asmOutput)
 	{
 		fputs (ILQualIdentName (node->name, 1), info->asmOutput);
@@ -258,6 +237,7 @@ ILNode_GenDiscard(ILNode_VarDeclarator)
 			}
 		}
 	}
+#endif
 }
 
 /*
@@ -265,6 +245,7 @@ ILNode_GenDiscard(ILNode_VarDeclarator)
  */
 ILNode_GenDiscard(ILNode_EventFieldDeclaration)
 {
+#if 0
 	/* FIXME: just pass it down? */
 	if (node->attributes)
 	{
@@ -272,6 +253,7 @@ ILNode_GenDiscard(ILNode_EventFieldDeclaration)
 	}
 	DumpTypeName(info->asmOutput, node->type);
 	ILNode_GenDiscard(node->varDeclarators, info);
+#endif
 }
 
 /*
@@ -279,6 +261,7 @@ ILNode_GenDiscard(ILNode_EventFieldDeclaration)
  */
 ILNode_GenDiscard(ILNode_EventPropertyDeclaration)
 {
+#if 0
 	/* FIXME: just pass it down? */
 	if (node->attributes)
 	{
@@ -288,64 +271,148 @@ ILNode_GenDiscard(ILNode_EventPropertyDeclaration)
 	ILNode_GenDiscard(node->name, info);
 	ILNode_GenDiscard(node->addAccessor, info);
 	ILNode_GenDiscard(node->removeAccessor, info);
+#endif
 }
+
+%{
+
+/*
+ * Generate discard code for the body of a method.
+ */
+static void MethodGenDiscard(ILGenInfo *info, ILMethod *method,
+							 ILNode *initCode, ILNode *body)
+{
+	ILGotoEntry *gotoEntry, *nextGoto;
+
+	/* Set up the return type so that "return" statements
+	   know what to cast the return value to upon exit */
+	info->returnType =
+		ILTypeToMachineType(ILMethod_Signature(method)->un.method.retType);
+
+	/* Dump the code within the body of the method */
+	if(initCode)
+	{
+		ILNode_GenDiscard(initCode, info);
+	}
+	if(body)
+	{
+		ILNode_GenDiscard(body, info);
+	}
+
+	/* Add an explicit return instruction if the body didn't */
+	if(!body || !ILNodeEndsInReturn(body))
+	{
+		ILGenCast(info, ILMachineType_Void, info->returnType);
+		ILGenSimple(info, IL_OP_RET);
+		if(info->returnType != ILMachineType_Void)
+		{
+			ILGenAdjust(info, -1);
+		}
+	}
+
+	/* Output the maximum stack height to the method */
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "\t.maxstack %ld\n", info->maxStackHeight);
+	}
+
+	/* Clear the stack heights */
+	info->stackHeight = 0;
+	info->maxStackHeight = 0;
+
+	/* Clear the return type information */
+	info->returnType = ILMachineType_Void;
+	info->returnVar = -1;
+	info->returnLabel = ILLabel_Undefined;
+
+	/* Clear the temporary throw variable */
+	info->throwVariable = -1;
+
+	/* Clear the "goto" list */
+	gotoEntry = info->gotoList;
+	while(gotoEntry != 0)
+	{
+		nextGoto = gotoEntry->next;
+		ILFree(gotoEntry);
+		gotoEntry = nextGoto;
+	}
+	info->gotoList = 0;
+
+	/* Clear the list of local variables */
+	info->numLocalVars = 0;
+}
+
+%}
 
 /* 
  * Generate discard code for method declarations.
  */
 ILNode_GenDiscard(ILNode_MethodDeclaration)
 {
-	if (info->asmOutput)
+	if(info->asmOutput && node->methodInfo)
 	{
-		fputs (".method ", info->asmOutput);
-		ILDumpFlags (info->asmOutput, (unsigned long)(node->modifiers),
-					 ILMethodDefinitionFlags, 0);
-		/* FIXME calling convention */
-		/* FIXME parameter attributes */
-		if (node->type)
+		FILE *outstream = info->asmOutput;
+		ILMethod *method;
+		ILPInvoke *pinvoke;
+
+		/* Get the method information block to be dumped */
+		method = node->methodInfo;
+
+		/* Does the method have PInvoke information associated with it? */
+		if(ILMethod_HasPInvokeImpl(method))
 		{
-			DumpTypeName(info->asmOutput, node->type);
+			pinvoke = ILPInvokeFind(method);
+			if(pinvoke)
+			{
+				/* Declare the external module containing the function */
+				fputs(".module extern ", outstream);
+				ILDumpIdentifier(outstream,
+						ILModule_Name(ILPInvoke_Module(pinvoke)), 0,
+						IL_DUMP_QUOTE_NAMES);
+			}
 		}
 		else
 		{
-			fputs("void", info->asmOutput);
+			pinvoke = 0;
 		}
-		fputc (' ', info->asmOutput);
-		fputs (ILQualIdentName (node->name, 1), info->asmOutput);
-		fputc ('(', info->asmOutput);
-		if (node->params)
-		{
-			ILNode_ListIter	iter;
-			ILNode *child;
-			int first = 1;
 
-			ILNode_ListIter_Init (&iter, node->params);
-			while ((child = ILNode_ListIter_Next(&iter)) != 0)
+		/* Dump the method heading */
+		fputs(".method ", outstream);
+		ILDumpFlags(outstream, ILMethod_Attrs(method),
+					ILMethodDefinitionFlags, 0);
+		if(pinvoke)
+		{
+			/* Dump PInvoke information for the method */
+			fputs("pinvokeimpl(", info->asmOutput);
+			ILDumpString(outstream,
+						 ILModule_Name(ILPInvoke_Module(pinvoke)));
+			putc(' ', outstream);
+			if(strcmp(ILPInvoke_Alias(pinvoke), ILMethod_Name(method)) != 0)
 			{
-				if (first)
-				{
-					first = 0;
-				}
-				else
-				{
-					fputs (", ", info->asmOutput);
-				}
-				ILNode_GenDiscard(child, info);
+				fputs("as ", outstream);
+				ILDumpString(outstream, ILPInvoke_Alias(pinvoke));
+				putc(' ', outstream);
 			}
+			ILDumpFlags(outstream, ILPInvoke_Attrs(pinvoke),
+						ILPInvokeImplementationFlags, 0);
+			fputs(") ", outstream);
 		}
-		fputc (')', info->asmOutput);
-		/* FIXME implementation attributes */
-		fputc ('\n', info->asmOutput);
-		fputs ("{\n", info->asmOutput);
-		if(node->initCode)
-		{
-			ILNode_GenDiscard(node->initCode, info);
-		}
-		if(node->body)
-		{
-			ILNode_GenDiscard(node->body, info);
-		}
-		fputs ("}\n", info->asmOutput);
+		ILDumpMethodType(outstream, info->image,
+						 ILMethod_Signature(method),
+						 IL_DUMP_QUOTE_NAMES, 0,
+						 ILMethod_Name(method), method);
+		putc(' ', outstream);
+		ILDumpFlags(outstream, ILMethod_ImplAttrs(method),
+					ILMethodImplementationFlags, 0);
+		fputs("\n{\n", outstream);
+
+		/* Dump the code within the body of the method */
+		MethodGenDiscard(info, method, node->initCode, node->body);
+
+		/* Dump the method terminator */
+		fputs ("} // method ", outstream);
+		ILDumpIdentifier(outstream, ILMethod_Name(method), 0, 0);
+		putc('\n', outstream);
 	}
 }
 
@@ -354,6 +421,7 @@ ILNode_GenDiscard(ILNode_MethodDeclaration)
  */
 ILNode_GenDiscard(ILNode_PropertyDeclaration)
 {
+#if 0
 	/* FIXME: just pass it down? */
 	if (node->attributes)
 	{
@@ -363,6 +431,7 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 	ILNode_GenDiscard(node->name, info);
 	ILNode_GenDiscard(node->getAccessor, info);
 	ILNode_GenDiscard(node->setAccessor, info);
+#endif
 }
 
 ILNode_GenDiscard(ILNode_AccessorDeclaration)
@@ -387,6 +456,7 @@ ILNode_GenDiscard(ILNode_DelegateDeclaration)
 
 ILNode_GenDiscard(ILNode_FormalParameter)
 {
+#if 0
 	if (info->asmOutput)
 	{
 		/*FIXME attributes, parameter modifier */
@@ -395,6 +465,7 @@ ILNode_GenDiscard(ILNode_FormalParameter)
 		fputc(' ', info->asmOutput);
 		fputs (ILQualIdentName (node->name, 1), info->asmOutput);
 	}
+#endif
 }
 
 ILNode_GenDiscard(ILNode_Attribute)

@@ -1,4 +1,13 @@
 
+2001-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* tests/Makefile.am, tests/ilunit.c, tests/test_varith.c,
+tests/test_vbranch.c, tests/test_vcompare.c, tests/test_vconst.c,
+tests/test_vconv.c, tests/test_verify.c, tests/test_verify.h:
+implement many tests for arithmetic, conversion, branch, constant,
+and comparison instructions in the verifier; rearrange the test code
+a little to make it easier to maintain.
+
 2001-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * support/filemap.c: modify the #ifdef's according to suggestions from

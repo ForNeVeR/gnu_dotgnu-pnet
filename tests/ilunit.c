@@ -247,6 +247,7 @@ static void listAllTests(void)
 {
 	ILUnitTest *test = testList;
 	ILUnitTest *prevTest = 0;
+	int numTests = 0;
 	while(test != 0)
 	{
 		if(!(test->func))
@@ -263,10 +264,12 @@ static void listAllTests(void)
 			/* This is a particular test within the current suite */
 			fputs(test->name, stdout);
 			putc('\n', stdout);
+			++numTests;
 		}
 		prevTest = test;
 		test = test->next;
 	}
+	printf("\n%d tests total\n", numTests);
 }
 
 void ILUnitRegisterSuite(const char *name)

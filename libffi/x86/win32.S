@@ -25,6 +25,7 @@
  
 #define LIBFFI_ASM
 #include <ffi.h>
+#include <ffi_private.h>
  
 .text
  

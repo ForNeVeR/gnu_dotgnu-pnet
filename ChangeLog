@@ -19,6 +19,9 @@ allow verifiable method pointers after all.
 * engine/cvm.h, engine/cvm_dasm.c, engine/cvm_call.c, engine/cvmc_call.c:
 implement the CVM parts of "ldftn", "ldvirtfn", and "ldinterfftn".
 
+* libffi/x86/win32.S: include <ffi_private.h> to define constants such
+as "FFI_TYPE_FLOAT", etc.
+
 2001-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ChangeLog, doc/ChangeLog-1: move the contents of "ChangeLog" to

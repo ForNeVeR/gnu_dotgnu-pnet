@@ -20,6 +20,14 @@
 	System.Xml/XmlTokenizedType.cs: improve coding standards in the
 	XML library and add some .NET Framework classes.
 
+	* System.Xml/NodeList.cs, System.Xml/XmlAttribute.cs,
+	System.Xml/XmlAttributeCollection.cs, System.Xml/XmlDocument.cs,
+	System.Xml/XmlElement.cs, System.Xml/XmlLinkedNode.cs,
+	System.Xml/XmlNode.cs, System.Xml/XmlNodeList.cs,
+	System.Xml/XmlTextReader.cs, System.Xml/XPath/IXPathNavigable.cs,
+	System.Xml/XPath/XPathNavigator.cs: begin to implement the new
+	representation for the DOM node tree.
+
 2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Exception.txt,

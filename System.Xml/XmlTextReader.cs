@@ -166,6 +166,9 @@ public class XmlTextReader : XmlReader
 	//method is called for the first time
 	public override bool Read()
 	{
+		return false;
+		// Commented out -- doesn't work with new node structures -- Rhys.
+	#if false
 		if (simplemode)
 		{
 			if (readstate == ReadState.Initial)
@@ -223,6 +226,7 @@ public class XmlTextReader : XmlReader
 
 		// TODO - fix all code paths to return the correct value.
 		return false;
+	#endif
 	}
 	
 	[TODO]
@@ -270,7 +274,9 @@ public class XmlTextReader : XmlReader
 	{ 
 		get
 		{
-			return current.Depth;
+			// TODO -- XmlNode has changed -- Rhys.
+			//return current.Depth;
+			return 0;
 		} 
 	}
 	
@@ -278,9 +284,10 @@ public class XmlTextReader : XmlReader
 	public override bool EOF { 
 		get
 		{
-			if (current.Next == null)
-				return true;
-			else
+			// TODO -- XmlNode has changed -- Rhys.
+			//if (current.Next == null)
+				//return true;
+			//else
 				return false;
 		} 
 	}
@@ -301,6 +308,9 @@ public class XmlTextReader : XmlReader
 	{ 
 		get
 		{
+			// TODO -- XmlNode has changed -- Rhys.
+			return null;
+		#if false
 			if (current.Type == XmlNodeType.Element
 				|| current.Type == XmlNodeType.XmlDeclaration
 				/*|| current.Type == XmlNodeType.Declaration -- ??? */)
@@ -324,6 +334,7 @@ public class XmlTextReader : XmlReader
 			{
 				return null;
 			}
+		#endif
 		} 
 	}
 	
@@ -332,6 +343,9 @@ public class XmlTextReader : XmlReader
 	{ 
 		get
 		{
+			// TODO -- XmlNode has changed -- Rhys.
+			return null;
+		#if false
 			if (current.Type == XmlNodeType.Element
 				|| current.Type == XmlNodeType.XmlDeclaration
 				/*|| current.Type == XmlNodeType.Declaration -- ??? */)
@@ -360,6 +374,7 @@ public class XmlTextReader : XmlReader
 			{
 				return null;
 			}
+		#endif
 		} 
 	}
 	
@@ -407,7 +422,9 @@ public class XmlTextReader : XmlReader
 	{ 
 		get
 		{
-			return current.Type;
+			// TODO -- XmlNode has changed -- Rhys.
+			return XmlNodeType.None;
+			//return current.Type;
 		} 
 	}
 	
@@ -431,6 +448,9 @@ public class XmlTextReader : XmlReader
 	{ 
 		get
 		{
+			// TODO -- XmlNode has changed -- Rhys.
+			return null;
+		#if false
 			switch (current.Type)
 			{
 				case XmlNodeType.Attribute:
@@ -462,6 +482,7 @@ public class XmlTextReader : XmlReader
 			}
 
 			return String.Empty;
+		#endif
 		} 
 	}
 	
@@ -498,6 +519,9 @@ public class XmlTextReader : XmlReader
 	}
 
 #endif
+
+// TODO -- XmlNode has changed -- Rhys.
+#if false
 
 	//---------------------------------------------------------------------
 	//Internal parsing code starts here
@@ -911,6 +935,8 @@ public class XmlTextReader : XmlReader
 	 '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u200B',
 	 '\u3000', '\uFEFF'};
 	
+#endif
+
 }; // class XmlTextReader
 
 }; // namespace System.Xml

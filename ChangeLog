@@ -8,6 +8,11 @@
 	runtime/System/Threading/Thread.cs: add new 1.2 and 2.0 definitions
 	to "CultureInfo" and "RegionInfo"; implement more of "sysglobl.dll".
 
+	* System.Deployment/ApplicationDeployment.cs,
+	System.Deployment/BindCompletedEventArgs.cs,
+	System.Deployment/BindCompletedEventHandler.cs,
+	System.Deployment/DeploymentManager.cs: fix some profile build issues.
+
 2004-07-23  Gopal V  <gopalv82@yahoo.com>
 
 	* DotGNU.Image/Frame.cs: Fix transparency mask calculations for 

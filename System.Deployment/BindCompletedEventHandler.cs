@@ -22,9 +22,13 @@
 namespace System.Deployment
 {
 
+#if CONFIG_FRAMEWORK_2_0
+
 using System;
 
 public delegate void BindCompletedEventHandler
 		(Object sender, BindCompletedEventArgs e);
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Deployment

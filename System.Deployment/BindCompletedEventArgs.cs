@@ -22,6 +22,8 @@
 namespace System.Deployment
 {
 
+#if CONFIG_FRAMEWORK_2_0
+
 using System;
 using System.ComponentModel;
 
@@ -68,5 +70,7 @@ public class BindCompletedEventArgs : AsyncCompletedEventArgs
 			}
 
 }; // class BindCompletedEventArgs
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Deployment

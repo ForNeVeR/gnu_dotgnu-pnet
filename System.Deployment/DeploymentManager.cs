@@ -58,11 +58,15 @@ public class DeploymentManager : IDisposable
 	// Stub out the update API's.  Because the constructor always throws
 	// an exception, there is no way for the user to call these methods.
 
+#if CONFIG_FRAMEWORK_2_0
+
 	// Bind to a deployment and returns its activation context.
 	public ActivationContext Bind()
 			{
 				throw new NotImplementedException();
 			}
+
+#endif
 
 	// Bind to a deployment asynchronously.
 	public void BindAsync()
@@ -151,10 +155,12 @@ public class DeploymentManager : IDisposable
 			}
 
 	// Events that may be emitted by this manager.
+#if CONFIG_FRAMEWORK_2_0
 	public event BindCompletedEventHandler BindCompleted;
 	public event AsyncCompletedEventHandler
 					DeterminePlatformRequirementsCompleted;
 	public event AsyncCompletedEventHandler DetermineTrustCompleted;
+#endif
 	public event DeploymentProgressChangedEventHandler ProgressChanged;
 	public event SynchronizeCompletedEventHandler SynchronizeCompleted;
 

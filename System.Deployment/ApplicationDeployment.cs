@@ -193,7 +193,9 @@ public class ApplicationDeployment
 	public event CheckForUpdateCompletedEventHandler CheckForUpdateCompleted;
 	public event DownloadFilesCompletedEventHandler DownloadFilesCompleted;
 	public event DeploymentProgressChangedEventHandler ProgressChanged;
+#if CONFIG_FRAMEWORK_2_0
 	public event AsyncCompletedEventHandler UpdateCompleted;
+#endif
 
 }; // class ApplicationDeployment
 

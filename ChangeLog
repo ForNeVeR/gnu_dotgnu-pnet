@@ -28,6 +28,9 @@ builtin library types.
 * codegen/cg_scope.h, codegen/cg_scope.c: implement "ILScopeDataGet*"
 to get information about scope items.
 
+* cscc/cs_defs.tc: add new semantic kinds and change CS_SEMKIND_METHOD
+into CS_SEMKIND_MEMBER.
+
 2001-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h: add the IL_INLINE helper macro.

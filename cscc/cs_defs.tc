@@ -58,7 +58,8 @@ extern CSSemValue CSSemValueDefault;
 #define	CS_SEMKIND_RVALUE			1
 #define	CS_SEMKIND_LVALUE			2
 #define	CS_SEMKIND_TYPE				3
-#define	CS_SEMKIND_METHOD			4
+#define	CS_SEMKIND_MEMBER			4
+#define	CS_SEMKIND_SCOPE			5
 
 /*
  * Determine if a semantic analysis kind is usable as a value.

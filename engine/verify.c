@@ -379,7 +379,8 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 				fprintf(stderr, "%s::%s [%lX] - %s\n", \
 						ILClass_Name(ILMethod_Owner(method)), \
 						ILMethod_Name(method), \
-						(unsigned long)(offset + ILMethod_RVA(method)), \
+						(unsigned long)(offset + ILMethod_RVA(method) + \
+										code->headerSize), \
 						insn->name); \
 			} while (0)
 #else

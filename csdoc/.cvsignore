@@ -2,3 +2,7 @@ Makefile
 Makefile.in
 .deps
 csdoc2texi
+csdoc2html
+csdoc2stub
+csdocvalil
+src2xml

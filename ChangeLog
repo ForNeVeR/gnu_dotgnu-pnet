@@ -5,6 +5,10 @@
 	engine/cvm_call.c, engine/cvmc_branch.c: add XML documentation
 	for the CVM arithmetic, branch, and call instructions.
 
+	* csdoc/.cvsignore, csdoc/Makefile.am, csdoc/src2xml.c:
+	utility program for extracting XML documentation from C
+	source files.
+
 2002-04-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/method_cache.c, engine/method_cache.h:

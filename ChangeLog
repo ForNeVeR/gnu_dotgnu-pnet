@@ -7,6 +7,13 @@
 	* System/Net/WebRequest.cs, System/Net/WebHeaderCollection.cs,
 	System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:
 	Start implementing the Http access classes.
+
+	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs,
+	System/Net/WebHeaderCollection.cs, System/Uri.cs, System/UriBuilder.cs:
+	Fill in some more methods of HttpWebResponse and fix some related
+	bugs as well.
+
+	* System/System.build: Enable debug builds by default
 	
 2002-11-18  Gopal.V  <gopalv82@symonds.net>
 

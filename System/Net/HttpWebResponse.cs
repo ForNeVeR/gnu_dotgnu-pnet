@@ -23,29 +23,61 @@ namespace System.Net
 {
 
 using System;
-using System.Text;
 using System.IO;
+using System.Text;
+using System.Globalization;
 
-[TODO]
 public class HttpWebResponse : WebResponse
 {
-	HttpWebRequest req=null;
-	Stream stream=null;
+	private HttpWebRequest req=null;
+	private Stream stream=null;
+	private WebHeaderCollection headers=new WebHeaderCollection();
+	private Version version=null;
+	private HttpStatusCode code=0;
+	private String desc=null;
+	private long contentLength; /* FIXME: Remove when headers work */
 	internal HttpWebResponse(HttpWebRequest request,Stream dataStream)
 	{
 		req=request;
 		stream=dataStream;
 		ProcessRequest();
+		headers.SetStrict(false); /* none of the restrictions of Request */
+		ProcessHeaders();
 	}
 	private void ProcessRequest()
 	{
-		String request=ReadLine();
+		String response=ReadLine();
+		int i=response.IndexOfAny(new char[]{' ','\t'});
+		if(i==-1) throw new WebException("Invalid Response");
+		switch(response.Substring(0,i))
+		{
+			case "HTTP/1.0":
+				version=HttpVersion.Version10;
+				break;
+			case "HTTP/1.1":
+				version=HttpVersion.Version11;
+				break;
+			default:
+				throw new WebException("Unknown Protocol version");
+		}
+		response=response.Substring(i+1);
+		i=response.IndexOfAny(new char[]{' ','\t'});
+		if(i==-1) throw new WebException("Invalid Response");
+		code=(HttpStatusCode) Int32.Parse(response.Substring(0,i));
+		response=response.Substring(i+1);
+		desc=response;
 	}
 	private void ProcessHeaders()
 	{
-		String s;
-		if((s=ReadLine())!="\r\n")
+		/* sometimes servers tend to send plain "\n"s */
+		for(String s=ReadLine();s.Trim()!="";s=ReadLine())
 		{
+			// headers.Add(s); // FIXME: after arraylist is fixed
+			if(s.StartsWith("Content-Length: "))
+			{
+				this.contentLength=
+				Int64.Parse((s.Substring("Content-Length: ".Length)).Trim());
+			}
 		}
 	}
 	private String ReadLine()
@@ -89,11 +121,9 @@ public class HttpWebResponse : WebResponse
 		if(builder.Length!=0) return builder.ToString(); 
 		else return null;
 	}
-	[TODO]
 	public override void Close()
 	{
-	/*TODO*/
-		throw new NotImplementedException();
+		this.req.Close();
 	}
 
 	[TODO]
@@ -110,125 +140,117 @@ public class HttpWebResponse : WebResponse
 		throw new NotImplementedException();
 	}
 
-	[TODO]
 	public string GetResponseHeader(string headerName)
 	{
-	/*TODO*/
-		throw new NotImplementedException();
+		return headers[headerName];
 	}
 
-	[TODO]
 	public override Stream GetResponseStream()
 	{
-	/*TODO*/
-		throw new NotImplementedException();
+		return stream;  
 	}
 
-	[TODO]
 	public string CharacterSet 
 	{ 
 		get
 		{
-			throw new NotImplementedException();
+			return "ISO-8859-1";
+			/*
+				TODO: figure out how to get correct CharacterSet,
+				all headers don't have charsets
+			*/
 		}
 	}
 
-	[TODO]
 	public string ContentEncoding 
 	{ 
 		get
 		{
-			throw new NotImplementedException();
+			return headers["Content-Encoding"];
 		}
 	}
 
-	[TODO]
 	public override long ContentLength 
 	{ 
 		get
 		{
-			throw new NotImplementedException();
+			return contentLength;
+			//return Int64.Parse(headers["Content-Length"]); // FIXME
 		}
 	}
 
-	[TODO]
 	public override string ContentType 
 	{ 
 		get
 		{
-			throw new NotImplementedException();
+			return headers["Content-Type"];
 		}
 	}
 
-	[TODO]
 	public override WebHeaderCollection Headers 
 	{
 		get
 		{
-			throw new NotImplementedException();
+			return headers;
 		}
 	}
 
-	[TODO]
 	public DateTime LastModified 
 	{ 
 		get 
 		{
-			throw new NotImplementedException();
+			String format="ddd, dd MMM yyyy HH*:mm:ss GMTzz";//convert to GMT
+			return DateTime.ParseExact(headers["Last-Modified"],format,null,
+						DateTimeStyles.None);
 		}
 	}
 
-	[TODO]
 	public string Method 
 	{ 
 		get
 		{
-			throw new NotImplementedException();
+			return req.Method;
 		}
 	}
 
-	[TODO]
 	public Version ProtocolVersion 
 	{ 
 		get
 		{
-			throw new NotImplementedException();
+			return version;
 		}
 	}
 
-	[TODO]
+	/* TODO : clarify how redirects work */
 	public override Uri ResponseUri 
 	{ 
 		get
 		{
-			throw new NotImplementedException();
+			return req.Address;
 		}
 	}
 
-	[TODO]
 	public string Server 
 	{
 		get
 		{
-			throw new NotImplementedException();
+			return headers["Server"];
 		}
 	}
 
-	[TODO]
 	public HttpStatusCode StatusCode 
 	{ 
 		get
 		{
-			throw new NotImplementedException();
+			return code;
 		}
 	}
 
-	[TODO]
 	public string StatusDescription 
 	{ 
 		get
 		{
-			throw new NotImplementedException();
+			return desc;
 		}
 	}
 }; // class HttpWebResponse

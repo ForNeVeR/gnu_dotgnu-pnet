@@ -166,20 +166,29 @@ public class HttpWebRequest : WebRequest
 		return outStream;
 	}
 	
-	[TODO]
-	//needs some clarification on the implementation
-	//really need some doubts cleared
+	//need some doubts cleared
 	public override WebResponse GetResponse()
 	{
 		if(response!=null) return response;
 		if(outStream==null)
 		{
 			outStream=new HttpStream(this);
-			/* which is the response stream as well */
+			// which is the response stream as well 
 		}
 		this.response=new HttpWebResponse(this,this.outStream);
+		this.haveResponse=true; // I hope this is correct
 		return this.response; 
 	}
+
+	public void Close()
+	{
+		if(outStream!=null) 
+		{
+			outStream.Close();
+			outStream=null;
+		}
+	}
+
 /*
  * Implement the Checks for Setting values
  */
@@ -622,12 +631,13 @@ public class HttpWebRequest : WebRequest
 			request.headerSent=true; 
 			/* fake it before sending to allow for atomicity */
 			String requestString= request.Method+" "+
-			//		request.Address.PathAndQuery+
-					"/"+
+					request.Address.PathAndQuery+
 					" HTTP/"+request.protocolVersion.Major+
 					"."+request.protocolVersion.Minor+"\r\n";
 			writer.Write(requestString);
 			writer.Write(request.Headers.ToString());
+			/* FIXME: remove when headers work */
+			writer.Write("Host: localhost\r\n");
 			writer.Write("\r\n");// terminating CRLF
 			writer.Flush();
 		}

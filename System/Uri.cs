@@ -781,19 +781,19 @@ public class Uri : MarshalByRefObject
 
 		if (!userEscaped)
 		{
-			if (needsEscaping(path))
+			if (needsEscaping(path,false))
 				// Escape() only affects path
 				this.Escape();
-			if (needsEscaping(query))
+			if (needsEscaping(query,true))
 				query = EscapeString(query);
-			if (needsEscaping(fragment))
+			if (needsEscaping(fragment,true))
 				fragment = EscapeString(fragment);
 		}
 		else // user should have escaped
 		{
-			if (needsEscaping(path)
-			    || needsEscaping(query)
-			    || needsEscaping(fragment))
+			if (needsEscaping(path,false)
+			    || needsEscaping(query,true)
+			    || needsEscaping(fragment,true))
 				throw new UriFormatException(S._("Arg_UriNotEscaped"));
 		}
 
@@ -1198,13 +1198,14 @@ public class Uri : MarshalByRefObject
 		return EscapeString(str);
 	}
 
-	internal static bool needsEscaping(String instr)
+	/* do not escape reserved chars for paths */
+	internal static bool needsEscaping(String instr,bool reservedCheck)
 	{
 		char c;
 		for (int i = 0; i < instr.Length; i++)
 		{
 			c = instr[i];
-			if (IsExcludedCharacter(c) || IsReserved(c))
+			if (IsExcludedCharacter(c) || (IsReserved(c) && reservedCheck))
 				return true;
 		}
 		return false;

@@ -48,9 +48,14 @@ public class WebHeaderCollection : NameValueCollection
 					     '/', '[', ']', '?', '=',
 					     '{', '}', ' ', '\t'};
 	
+	private bool strict=true;
 	public WebHeaderCollection() 
 	{	
 		/* nothing here ? */	
+	}
+	internal void SetStrict(bool strict)
+	{
+		this.strict=strict;
 	}
 	
 	public void Add(string header) 
@@ -73,7 +78,7 @@ public class WebHeaderCollection : NameValueCollection
 		{
 			throw new ArgumentNullException("name");
 		}
-		if(IsRestricted(name))
+		if(strict && IsRestricted(name))
 		{
 			throw new ArgumentException("restricted header");/* TODO: I18n */
 		}
@@ -123,7 +128,7 @@ public class WebHeaderCollection : NameValueCollection
 		{
 			throw new ArgumentException("invalid header"); /* TODO: I18n */
 		}
-		if(IsRestricted(name))
+		if(strict && IsRestricted(name))
 		{
 			throw new ArgumentException("restricted header");/* TODO:I18N */
 		}
@@ -145,7 +150,7 @@ public class WebHeaderCollection : NameValueCollection
 		{
 			throw new ArgumentException("invalid header name");/*TODO: I18n*/
 		}
-		if(IsRestricted(name))
+		if(strict && IsRestricted(name))
 		{
 			throw new ArgumentException("restricted header");/* TODO: I18n */
 		}

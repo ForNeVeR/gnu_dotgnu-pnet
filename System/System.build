@@ -7,7 +7,8 @@
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
-				 optimize="true">
+				 optimize="true"
+				 debug="true">
 
 			<sources>
 				<includes name="**/*.cs"/>

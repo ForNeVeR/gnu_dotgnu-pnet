@@ -1,11 +1,14 @@
-2003-01-11  Adam Ballai  <minddog@cannibutter.com>
 
-	* System.Xml/XmlTextReader.cs: more fixes in Read method
+2003-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, NEWS: update version and news for the 0.5.0 release.
 
 2003-01-11  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs: fixed bugs in logic
 	and implemented ReadOuterXml ReadInnerXml.
+
+	* System.Xml/XmlTextReader.cs: more fixes in Read method
 
 2003-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 

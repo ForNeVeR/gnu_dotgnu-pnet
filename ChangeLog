@@ -30,8 +30,23 @@
 	runtime/System/Reflection/Emit/MethodRental.cs: add various
 	missing classes.
 
-	* resources/en_US/runtime/Arg.txt, runtime/System/Remoting/*:
-	stub the remainder of the "System.Remoting" namespace.
+	* resources/en_US/runtime/Arg.txt, runtime/System/Runtime/Remoting/*:
+	stub the remainder of the "System.Runtime.Remoting" namespace.
+
+	* runtime/System/Runtime/Serialization/SurrogateSelector.cs,
+	runtime/System/Runtime/Serialization/Formatters/FormatterAssemblyStyle.cs,
+	runtime/System/Runtime/Serialization/Formatters/FormatterTypeStyle.cs,
+	runtime/System/Runtime/Serialization/Formatters/IFieldInfo.cs,
+	runtime/System/Runtime/Serialization/Formatters/ISoapMessage.cs,
+	runtime/System/Runtime/Serialization/Formatters/InternalRM.cs,
+	runtime/System/Runtime/Serialization/Formatters/InternalST.cs,
+	runtime/System/Runtime/Serialization/Formatters/Makefile,
+	runtime/System/Runtime/Serialization/Formatters/ServerFault.cs,
+	runtime/System/Runtime/Serialization/Formatters/SoapFault.cs,
+	runtime/System/Runtime/Serialization/Formatters/SoapMessage.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/Makefile:
+	stub out missing classes under "System.Runtime.Serialization".
 
 2003-04-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 

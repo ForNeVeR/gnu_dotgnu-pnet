@@ -1337,12 +1337,12 @@ void XSharpGetRegionRect(void *region, int index, void *rect)
 	/* Nothing to do here */
 }
 
-void XSharpSendClose(Display *dpy, Window window)
+void XSharpSendClose(void *dpy, unsigned long window)
 {
 	/* Nothing to do here */
 }
 
-void XSharpSendWakeup(Display *dpy, Window window)
+void XSharpSendWakeup(void *dpy, unsigned long window)
 {
 	/* Nothing to do here */
 }

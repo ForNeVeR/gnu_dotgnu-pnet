@@ -64,6 +64,9 @@
 	for the core assemblies over to use the csant/ilgac mechanism,
 	and remove the now-unnecessary pnetlib.here files.
 
+	* Xsharp/XsharpSupport.c: fix the non-X version which should
+	not refer to the "Display" or "Window" types.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

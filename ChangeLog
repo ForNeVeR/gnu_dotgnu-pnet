@@ -15,6 +15,8 @@ handle method overloading better; support for "params" argument arrays.
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc:
 declare and implement the helper node "ILNode_ArgArray".
 
+* codegen/jv_output.h, codegen/jv_output.c (JavaGenNewArray): new function.
+
 2001-09-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h, csdoc/doc_load.c: add the types to a hash table as

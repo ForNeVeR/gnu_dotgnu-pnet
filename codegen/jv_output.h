@@ -192,6 +192,11 @@ void JavaGenCallCtorIntrinsic(ILGenInfo *info, const char *className,
 void JavaGenClassRef(ILGenInfo *info, int opcode, ILClass *classInfo);
 
 /*
+ * Output a "new array" instruction.
+ */
+void JavaGenNewArray(ILGenInfo *info, ILType *elemType);
+
+/*
  * Output the correct form of return instruction based on a machine type.
  */
 void JavaGenReturnInsn(ILGenInfo *info, ILMachineType type);

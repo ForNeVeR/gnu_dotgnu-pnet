@@ -610,6 +610,12 @@ void JavaGenCallCtorIntrinsic(ILGenInfo *info, const char *className,
 
 void JavaGenClassRef(ILGenInfo *info, int opcode, ILClass *classInfo)
 {
+	/* TODO */
+}
+
+void JavaGenNewArray(ILGenInfo *info, ILType *elemType)
+{
+	/* TODO */
 }
 
 void JavaGenReturnInsn(ILGenInfo *info, ILMachineType type)

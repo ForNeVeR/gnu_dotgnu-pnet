@@ -132,7 +132,7 @@ void ILGenLoadFloat32(ILGenInfo *info, ILFloat value)
 		{
 			/* Little-endian host CPU */
 			convert.value = value;
-			fprintf(info->asmOutput, "\tldc.r4\t(%02X %02X %02X %02X)\n",
+			fprintf(info->asmOutput, "\tldc.r4\tfloat32(0x%02X%02X%02X%02X)\n",
 					convert.bytes[0], convert.bytes[1],
 					convert.bytes[2], convert.bytes[3]);
 		}
@@ -140,7 +140,7 @@ void ILGenLoadFloat32(ILGenInfo *info, ILFloat value)
 		{
 			/* Big-endian host CPU */
 			convert.value = value;
-			fprintf(info->asmOutput, "\tldc.r4\t(%02X %02X %02X %02X)\n",
+			fprintf(info->asmOutput, "\tldc.r4\tfloat32(0x%02X%02X%02X%02X)\n",
 					convert.bytes[3], convert.bytes[2],
 					convert.bytes[1], convert.bytes[0]);
 		}
@@ -165,7 +165,7 @@ void ILGenLoadFloat64(ILGenInfo *info, ILDouble value)
 			/* Little-endian host CPU */
 			convert.value = value;
 			fprintf(info->asmOutput,
-					"\tldc.r8\t(%02X %02X %02X %02X %02X %02X %02X %02X)\n",
+					"\tldc.r8\tfloat64(0x%02X%02X%02X%02X%02X%02X%02X%02X)\n",
 					convert.bytes[0], convert.bytes[1],
 					convert.bytes[2], convert.bytes[3],
 					convert.bytes[4], convert.bytes[5],
@@ -176,7 +176,7 @@ void ILGenLoadFloat64(ILGenInfo *info, ILDouble value)
 			/* Big-endian host CPU */
 			convert.value = value;
 			fprintf(info->asmOutput,
-					"\tldc.r8\t(%02X %02X %02X %02X %02X %02X %02X %02X)\n",
+					"\tldc.r8\tfloat64(0x%02X%02X%02X%02X%02X%02X%02X%02X)\n",
 					convert.bytes[7], convert.bytes[6],
 					convert.bytes[5], convert.bytes[4],
 					convert.bytes[3], convert.bytes[2],

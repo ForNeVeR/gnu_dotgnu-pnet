@@ -24,6 +24,9 @@ class prefix when dumping names in catch clauses.
 * doc/pnetasm.texi: update assembly syntax doc to remove references
 to the '[' form of floating point constants.
 
+* codegen/cg_output.c: change floating point constants output code
+to use the '(' form.
+
 2001-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: implement a Java class file to IL converter.

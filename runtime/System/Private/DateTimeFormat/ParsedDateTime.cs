@@ -37,7 +37,6 @@ namespace System.Private.DateTimeFormat
 		bool hasSecond = false;
 		bool hasAMPM = false;
 		bool hasFractionalSecond = false;
-		bool hasStyle = false;
 		bool hasTicks = false;
 		bool hasUTC = false;
 		int day;
@@ -52,17 +51,23 @@ namespace System.Private.DateTimeFormat
 		internal DateTime storeInDateTime(DateTimeStyles style)
 		{	
 			bool hasDate = hasDay && hasMonth && hasYear;
-			bool hasTime = (hasTwentyfourHour || hasTwelveHour) && 
-				hasMinute;
+			bool hasTime = (hasTwentyfourHour || hasTwelveHour) && hasMinute;
+			DateTime newDate;
+
+			DateTime baseDate;
 			
-			DateTime new_dt;
-			if( (style == DateTimeStyles.NoCurrentDateDefault) && !hasDate)
+			if((style == DateTimeStyles.NoCurrentDateDefault) && !hasDate)
 			{
-				hasStyle=true;
+				baseDate = new DateTime(0);
+			}
+			else
+			{
+				baseDate = DateTime.Now;
 			}
 	
-			if( hasUTC && (hasDate || hasTime ) )
-				throw new FormatException("Cannot set UTC and other time value");
+			/* TODO : Figure out if the latter case is right */
+			/*	if( hasUTC && (hasDate || hasTime ) )
+				throw new FormatException("Cannot set UTC and other time value");			*/
 			
 			if( hasAMPM && hasTwelveHour)
 			{
@@ -72,65 +77,49 @@ namespace System.Private.DateTimeFormat
 			}
 
 			// begin picking which items to construct datetime object with
-			if( hasUTC )	
-			{
-				if( hasStyle )
-					return new_dt = new DateTime(1, 1, 1, hr, this.Minute, 0 );
-					return new_dt = new DateTime(this.Year, this.Month, this.Day, 
-						hr, this.Minute, this.Second);
-			}
-			else if( hasDate && !hasTime )
+			if( hasDate && !hasTime )
 			{
 				// set date of object, time is 00:00:00
-				new_dt = new DateTime(this.Year, this.Month, this.Day);
+				newDate = new DateTime(this.Year, this.Month, this.Day);
 			}
 			else if( hasTime && !hasDate )
 			{
-				if( hasStyle )
-				{
-					this.Year=1;
-					this.Month=1;
-					this.Day=1;
-					new_dt = new DateTime(this.Year, this.Month, this.Day, hr,
-						this.Minute, this.Second);
-				}
-				else
-				{
-					new_dt = new DateTime((DateTime.Now).Year, (DateTime.Now).Month,
-						(DateTime.Now).Day, hr, this.Minute, this.Second);
-				}
+				newDate = new DateTime((baseDate).Year, (baseDate).Month,
+						(baseDate).Day, hr, this.Minute, this.Second);
 			}
 			else if( hasDate && hasTime )
 			{
-				new_dt = new DateTime(this.Year, this.Month, this.Day, hr, 
+				newDate = new DateTime(this.Year, this.Month, this.Day, hr, 
 					this.Minute, this.Second);
 			}
 			else if( hasDay && hasMonth )
 			{
-				new_dt = new DateTime((DateTime.Now).Year, this.Month, this.Day);
+				newDate = new DateTime((baseDate).Year, this.Month, this.Day);
 			}
 			else if( hasTwentyfourHour && hasMinute )
 			{
-				new_dt = new DateTime((DateTime.Now).Year, (DateTime.Now).Month,
-					(DateTime.Now).Day, hr, this.Minute, (DateTime.Now).Second);
+				newDate = new DateTime((baseDate).Year, (baseDate).Month,
+					(baseDate).Day, hr, this.Minute, (baseDate).Second);
 			}		
 			else if( hasTwentyfourHour && hasMinute )
 			{
-				new_dt = new DateTime((DateTime.Now).Year, (DateTime.Now).Month,
-					(DateTime.Now).Day, hr, this.Minute, (DateTime.Now).Second);
+				newDate = new DateTime((baseDate).Year, (baseDate).Month,
+					(baseDate).Day, hr, this.Minute, (baseDate).Second);
 			}
 			else if( hasYear && hasMonth )
 			{
-				new_dt = new DateTime(this.Year, this.Month, (DateTime.Now).Day);
+				newDate = new DateTime(this.Year, this.Month, (baseDate).Day);
 			}
 			else
 			{
 				throw new FormatException("Could not store parsed date");
 			}
-				if( hasFractionalSecond )
-					new_dt = new_dt.Add(new TimeSpan(fs) );
-				return new_dt;
+			if( hasFractionalSecond )
+					newDate = newDate.Add(new TimeSpan(fs) );
+
+			return newDate;
 		}
+
 		internal int Day
 		{
 			set

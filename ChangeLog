@@ -11,6 +11,9 @@
 	runtime/System/Private/DateTimeFormat/DateTimeFormatTemplate.cs: Fix
 	some bugs in datetime parsing routines.
 
+	* runtime/System/Private/DateTimeFormat/ParsedDateTime.cs: Cleanup a 
+	bit and refactor various conditions.
+
 2003-05-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: replace the reference to the "Tech Support Manager" with

@@ -35,8 +35,8 @@ using System.Text;
 public abstract class XmlReader
 {
 	//Variables
-	internal protected XmlNode root; //The root node, it can be used to access all other nodes
-	internal protected XmlNode current; //The pointer node
+	internal XmlNode root; //The root node, it can be used to access all other nodes
+	internal XmlNode current; //The pointer node
 
 	//Methods
 	protected XmlReader() {}
@@ -52,13 +52,15 @@ public abstract class XmlReader
 	[TODO]
 	public static bool IsName(String str) 
 			{
-			
+				// TODO
+				return false;
 			}
 	
 	[TODO]
 	public static bool IsNameToken(String str)
 			{
-
+				// TODO
+				return false;
 			}
 	
 	[TODO]

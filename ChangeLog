@@ -1,3 +1,11 @@
+
+2002-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/CredentialCache.cs, System/Net/Sockets/Socket.cs,
+	System.Xml/XmlNode.cs, System.Xml/XmlReader.cs,
+	System.Xml/XmlTextReader.cs, runtime/System/IO/MemoryStream.cs:
+	fix semantic errors.
+
 2002-06-01  Peter Minten  <silvernerd@users.sf.net>
         * runtime/Platform/DnsMethods.cs: Created
         * System.Xml/XmlReader.cs: got rid of useless internal methods

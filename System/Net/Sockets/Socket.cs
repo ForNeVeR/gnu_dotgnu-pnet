@@ -372,16 +372,16 @@ public class Socket : IDisposable
 				if (((int)socketFlags > 0x3) || ((int)socketFlags < 0x0))
 					throw new SocketException();
 					
-				if ((socketFlags && SocketFlags.OutOfBand) != 0 &&
+				if ((socketFlags & SocketFlags.OutOfBand) != 0 &&
 					(mysockettype != SocketType.Stream))
 				{
 					throw new SocketException();
 				}
 				
-				if ((socketFlags && SocketFlags.Partial) != 0)
+				if ((socketFlags & SocketFlags.Partial) != 0)
 					throw new SocketException();
 				
-				if ((socketFlags && SocketFlags.DontRoute) != 0)
+				if ((socketFlags & SocketFlags.DontRoute) != 0)
 					throw new SocketException(); 
 
 				if (mylocalendpoint == null)
@@ -425,14 +425,14 @@ public class Socket : IDisposable
 				if (((int)socketFlags > 0x3) || ((int)socketFlags < 0x0))
 					throw new SocketException();
 					
-				if ((socketFlags && SocketFlags.OutOfBand) != 0 &&
+				if ((socketFlags & SocketFlags.OutOfBand) != 0 &&
 				    (mysockettype != SocketType.Stream))
 					throw new SocketException();
 				
-				if ((socketFlags && SocketFlags.Partial) != 0)
+				if ((socketFlags & SocketFlags.Partial) != 0)
 					throw new SocketException();
 				
-				if ((socketFlags && SocketFlags.DontRoute) != 0)
+				if ((socketFlags & SocketFlags.DontRoute) != 0)
 					throw new SocketException(); 
 
 				if (mylocalendpoint == null)
@@ -444,11 +444,13 @@ public class Socket : IDisposable
 				*/
 
 				// TODO: allow for more than IPv4
-				IPEndPoint ipend;
-				remoteEP = ipend;
-				
-				if ((sizevalue = SocketMethods.ReceiveFrom(myhandle, buffer, offset, size, (int)socketFlags, out ipend.Address, out ipend.Port)) == -1)
+				long ipaddr;
+				int ipport;
+
+				if ((sizevalue = SocketMethods.ReceiveFrom(myhandle, buffer, offset, size, (int)socketFlags, out ipaddr, out ipport)) == -1)
 					throw new SocketException(SocketMethods.GetErrno(), "ReceiveFrom");
+
+				remoteEP = new IPEndPoint(ipaddr, ipport);
 				
 				return sizevalue;																						
 			}
@@ -559,8 +561,8 @@ public class Socket : IDisposable
 				if (pending != 0) //This function blocks
 					throw new InvalidOperationException(S._("Invalid_AsyncAndBlocking"));
 					
-				if ( (socketFlags && SocketFlags.Peek) != 0 ||
-				     (socketFlags && SocketFlags.Partial) != 0)
+				if ( (socketFlags & SocketFlags.Peek) != 0 ||
+				     (socketFlags & SocketFlags.Partial) != 0)
 				{
 					throw new SocketException();				
 				}
@@ -592,18 +594,20 @@ public class Socket : IDisposable
 				if (pending != 0) //This function blocks
 					throw new InvalidOperationException(S._("Invalid_AsyncAndBlocking"));
 					
-				if ( (socketFlags && SocketFlags.Peek) != 0 ||
-				     (socketFlags && SocketFlags.Partial) != 0)
+				if ( (socketFlags & SocketFlags.Peek) != 0 ||
+				     (socketFlags & SocketFlags.Partial) != 0)
 				{
 					throw new SocketException();				
 				}
 
 				//TODO: Change this into something better when more than
 				//IPv4 gets supported
+				long address;
+				int port;
 				if (remoteEP is IPEndPoint)
 				{
-					address = remoteEP.Address;
-					port = remoteEP.Port;
+					address = (((IPEndPoint)(remoteEP)).Address).Address;
+					port = ((IPEndPoint)(remoteEP)).Port;
 				}				
 				else
 				{

@@ -48,7 +48,7 @@ using System.Text;
 // this[String] methods if the node is on an element, declaration or xmldeclaration
 
 [TODO]
-public class XmlTextReader
+public class XmlTextReader : XmlReader
 {
 	//Variables inherited from XmlReader (DO NOT UNCOMMENT):
 	//internal protected XmlNode root;  The root node, it can be used to access all other nodes
@@ -60,6 +60,7 @@ public class XmlTextReader
 	private String error;
 	private String name;
 	private String[] attributes;
+	private int attributecount;
 	private Stream stream;
 	private bool fromstream = false;
 
@@ -127,37 +128,37 @@ public class XmlTextReader
 	public override void Close(){}
 	
 	[TODO]
-	public override String GetAttribute(int i){}
+	public override String GetAttribute(int i){ return null; }
 	
 	[TODO]
-	public override String GetAttribute(String localName, String namespaceURI){}
+	public override String GetAttribute(String localName, String namespaceURI){ return null; }
 
 	[TODO]
-	public override String GetAttribute(String name){}
+	public override String GetAttribute(String name){ return null; }
 	
 	[TODO]
-	public TextReader GetRemainder(){}
+	public TextReader GetRemainder(){ return null; }
 	
 	[TODO]
-	public override String LookupNamespace(String prefix){}
+	public override String LookupNamespace(String prefix){ return null; }
 	
 	[TODO]
 	public override void MoveToAttribute(int i){}
 	
 	[TODO]
-	public override bool MoveToAttribute(String localName, String namespaceURI){}
+	public override bool MoveToAttribute(String localName, String namespaceURI){ return false; }
 	
 	[TODO]
-	public override bool MoveToAttribute(String name){}
+	public override bool MoveToAttribute(String name){ return false; }
 	
 	[TODO]
-	public override bool MoveToElement(){}
+	public override bool MoveToElement(){ return false; }
 	
 	[TODO]
-	public override bool MoveToFirstAttribute(){}
+	public override bool MoveToFirstAttribute(){ return false; }
 	
 	[TODO]
-	public override bool MoveToNextAttribute(){}
+	public override bool MoveToNextAttribute(){ return false; }
 
 	//All data must be in the receiving end of the stream before this
 	//method is called for the first time
@@ -217,28 +218,31 @@ public class XmlTextReader
 				throw new XmlException("Read");
 			}
 		}
+
+		// TODO - fix all code paths to return the correct value.
+		return false;
 	}
 	
 	[TODO]
-	public override bool ReadAttributeValue(){}
+	public override bool ReadAttributeValue(){ return false; }
 	
 	[TODO]
-	public int ReadBase64(byte[] array, int offset, int len){}
+	public int ReadBase64(byte[] array, int offset, int len){ return -1; }
 	
 	[TODO]
-	public int ReadBinHex(byte[] array, int offset, int len){}
+	public int ReadBinHex(byte[] array, int offset, int len){ return -1; }
 	
 	[TODO]
-	public int ReadChars(char[] buffer, int index, int count){}
+	public int ReadChars(char[] buffer, int index, int count){ return -1; }
 	
 	[TODO]
-	public override String ReadInnerXml(){}
+	public override String ReadInnerXml(){ return null; }
 	
 	[TODO]
-	public override String ReadOuterXml(){}
+	public override String ReadOuterXml(){ return null; }
 	
 	[TODO]
-	public override String ReadString(){}
+	public override String ReadString(){ return null; }
 	
 	[TODO]
 	public void ResetState(){}
@@ -257,7 +261,7 @@ public class XmlTextReader
 	}
 	
 	[TODO]
-	public override String BaseURI { get{} }
+	public override String BaseURI { get{ return null; } }
 	
 	[TODO]
 	public override int Depth
@@ -280,16 +284,16 @@ public class XmlTextReader
 	}
 	
 	[TODO]
-	public Encoding Encoding { get{} }
+	public Encoding Encoding { get{ return null; } }
 	
 	[TODO]
-	public override bool HasValue { get{} }
+	public override bool HasValue { get{ return false; } }
 	
 	[TODO]
-	public override bool IsDefault { get{} }
+	public override bool IsDefault { get{ return false; } }
 	
 	[TODO]
-	public override bool IsEmptyElement { get{} }
+	public override bool IsEmptyElement { get{ return false; } }
 	
 	public override String this[int i]
 	{ 
@@ -297,7 +301,7 @@ public class XmlTextReader
 		{
 			if (current.Type == XmlNodeType.Element
 				|| current.Type == XmlNodeType.XmlDeclaration
-				|| current.Type == XmlNodeType.Declaration)
+				/*|| current.Type == XmlNodeType.Declaration -- ??? */)
 			{
 				if (i < 0 || i > attributecount || attributecount == 0)
 				{
@@ -305,7 +309,14 @@ public class XmlTextReader
 					throw new ArgumentOutOfRangeException("this[int 1]");
 				}
 				//Looks complex, doesn't it :-)
-				return attributes[i].Split("--*--DIVIDE--*--")[1];
+
+				//TODO: Rhys changed this from the "DIVIDE" string to a
+				//special Unicode character because "Split" doesn't allow
+				//strings as arguments.  The attributes should be changed
+				//into real arrays or lists or something, rather than using
+				//a hacky solution like this.
+
+				return attributes[i].Split('\uFFFE')[1];
 			}
 			else
 			{
@@ -321,19 +332,22 @@ public class XmlTextReader
 		{
 			if (current.Type == XmlNodeType.Element
 				|| current.Type == XmlNodeType.XmlDeclaration
-				|| current.Type == XmlNodeType.Declaration)
+				/*|| current.Type == XmlNodeType.Declaration -- ??? */)
 			{
 				String[] names;
 				String[] values;
 				int y;
 				int z;
 					
-				for (int x = 0; x == attributes.Length; x++)
+				//TODO: Change this!  It is a really bad structure! -- Rhys
+				names = new String [attributes.Length];
+				values = new String [attributes.Length];
+				for (int x = 0; x < attributes.Length; x++)
 				{
-					names = attributes[x].Split("--*--DIVIDE--*--")[0];
-					values = attributes[x].Split("--*--DIVIDE--*--")[1];
+					names[x] = attributes[x].Split('\uFFFE')[0];
+					values[x] = attributes[x].Split('\uFFFE')[1];
 				}
-				if (z = Array.IndexOf(names, name) == -1)
+				if ((z = Array.IndexOf(names, name)) == -1)
 				{
 					return null;
 				}
@@ -348,16 +362,16 @@ public class XmlTextReader
 	}
 	
 	[TODO]
-	public override String this[String name, String namespaceURI] { get{} }
+	public override String this[String name, String namespaceURI] { get{ return null; } }
 	
 	[TODO]
-	public int LineNumber { get{} }
+	public int LineNumber { get{ return -1; } }
 	
 	[TODO]
-	public int LinePosition { get{} }
+	public int LinePosition { get{ return -1; } }
 	
 	[TODO]
-	public override String LocalName { get{} }
+	public override String LocalName { get{ return null; } }
 	
 	[TODO] //Get this working on other things then elements
 	public override String Name 
@@ -369,10 +383,10 @@ public class XmlTextReader
 	}
 	
 	[TODO]
-	public override XmlNameTable NameTable { get{} }
+	public override XmlNameTable NameTable { get{ return null; } }
 	
 	[TODO]
-	public override String NamespaceURI { get{} }
+	public override String NamespaceURI { get{ return null; } }
 	
 	[TODO]
 	public bool Namespaces 
@@ -396,13 +410,13 @@ public class XmlTextReader
 	}
 	
 	[TODO]
-	public bool Normalization { get{} set{} }
+	public bool Normalization { get{ return false; } set{} }
 	
 	[TODO]
-	public override String Prefix { get{} }
+	public override String Prefix { get{ return null; } }
 	
 	[TODO]
-	public override char QuoteChar { get{} }
+	public override char QuoteChar { get{ return '\u0000'; } }
 	
 	public override ReadState ReadState { 
 		get
@@ -422,48 +436,44 @@ public class XmlTextReader
 				
 				case XmlNodeType.CDATA:
 					return current.Text;
-					break;
 				
 				case XmlNodeType.Comment:
 					return current.Text;
-					break;
 
 				case XmlNodeType.DocumentType:
 					return current.Text;
-					break;					
 					
 				case XmlNodeType.SignificantWhitespace:
 					break; //Not supported yet
 				
 				case XmlNodeType.Text:
 					return current.Text;
-					break;
 				
 				case XmlNodeType.Whitespace:
 					return current.Text;
-					break;
 				
 				case XmlNodeType.XmlDeclaration:
 					return current.Text;
-					break;
 				
 				default:
 					return String.Empty;
 			}
+
+			return String.Empty;
 		} 
 	}
 	
 	[TODO]
-	public WhitespaceHandling WhitespaceHandling { get{} set{} }
+	public WhitespaceHandling WhitespaceHandling { get{ return WhitespaceHandling.All; } set{} }
 	
 	[TODO]
-	public override String XmlLang { get{} }
+	public override String XmlLang { get{ return null; } }
 	
 	[TODO]
 	public XmlResolver XmlResolver { set{} }
 	
 	[TODO]
-	public override XmlSpace XmlSpace { get{} }
+	public override XmlSpace XmlSpace { get{ return XmlSpace.None; } }
 	
 #if !ECMA_COMPAT
 
@@ -499,24 +509,32 @@ public class XmlTextReader
 		int equalpos;
 		String[] rawstuff;
 		String[] cookedstuff;
+		int x;
 
 		if (cutoff)
 		{
 			//Cut of the start
-			int x = data.IndexOfAny(WhitespaceChars);
+			x = data.IndexOfAny(WhitespaceChars);
+		}
+		else
+		{
+			x = 0;
 		}
 
 		if (x == -1)
 			return null;
 			
-		data = data.SubString(x);
+		data = data.Substring(x);
 		
 		//Every second " marks the end of one attribute
 		//so divide on that, THIS CODE DOESN'T WORK WITH ' !!
 
 		rawstuff = data.Split('"');
 
-		for (int x = 0; x == (rawstuff.Length / 2); x++)
+		names = new ArrayList ();
+		values = new ArrayList ();
+
+		for (x = 0; x < (rawstuff.Length / 2); x++)
 		{
 			//Process names
 			if ((equalpos = rawstuff[2*x].IndexOf('=')) == -1)
@@ -525,7 +543,7 @@ public class XmlTextReader
 				throw new XmlException();
 			}
 
-			rawstuff[2*x] = rawstuff[2*x].SubString(0, equalpos - 1);
+			rawstuff[2*x] = rawstuff[2*x].Substring(0, equalpos - 1);
 			rawstuff[2*x] = rawstuff[2*x].Trim();
 			
 			names.Add(rawstuff[2*x]);		
@@ -534,12 +552,12 @@ public class XmlTextReader
 			values.Add(rawstuff[2*x+1]);			
 		}
 
-		cookedstuff = new String[values.Length]();
+		cookedstuff = new String[values.Count];
 
 		//Put it together
-		for (int x = 0; x==values.Length; x++)
+		for (x = 0; x < values.Count; x++)
 		{
-			cookedstuff[x] = names[x] + "--*--DIVIDE--*--" + values[x];
+			cookedstuff[x] = names[x] + "\uFFFE" + values[x];
 		}		
 
 		return cookedstuff;
@@ -551,7 +569,7 @@ public class XmlTextReader
 		if (x == -1)
 			return data;
 		
-		return data.SubString(0,x);
+		return data.Substring(0,x);
 	}
 	
 	//Returns the root XmlNode of document raw. Can handle incomplete pieces.
@@ -560,8 +578,9 @@ public class XmlTextReader
 	private XmlNode Parse(String raw)
 	{
 		XmlNode myroot;
-		XmlNode mycurrent;
+		XmlNode mycurrentnode;
 		XmlNode myparent;
+		XmlNode newnode;
 		
 		int s; //The start position of the current node
 		int e; //The end position of the current node
@@ -580,12 +599,12 @@ public class XmlTextReader
 		//Every Xml document or piece starts with an element like node.
 		//So cut of everything before it
 		//Only a comment is also valid according to this method
-		if ((s = raw.IndexOf('<')) == -1);
+		if ((s = raw.IndexOf('<')) == -1)
 			throw new XmlException("No < in document"); 
 		
 		//First create the document (root) node"
 		myroot = new XmlNode(null,null,XmlNodeType.Document, String.Empty, 0);
-		mycurrent = myroot;
+		mycurrentnode = myroot;
 		myparent = myroot;
 		
 		//Now go into the main parsing routines
@@ -607,10 +626,10 @@ public class XmlTextReader
 				//Cut of the beginning into a text node
 				if (elc > 0)
 				{						
-					data = raw.SubString(s, e-s);
+					data = raw.Substring(s, e-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.Text, depth);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.Text, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;	
@@ -628,13 +647,13 @@ public class XmlTextReader
 					{
 						error = "Unmatched CDATA start";
 						readstate = ReadState.Error;
-						return;
+						return null;	// TODO - ???
 					}
 					
-					data = raw.SubString(s + 8, e-3-8-s);
+					data = raw.Substring(s + 8, e-3-8-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.CDATA, depth);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.CDATA, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;								
@@ -649,12 +668,12 @@ public class XmlTextReader
 					{
 						error="Unmatched comment start";
 						readstate = ReadState.Error;
-						return;
+						return null;	// TODO - ???
 					}
-					data = raw.SubString(s + 4, e-3-4-s);
+					data = raw.Substring(s + 4, e-3-4-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.Comment, depth);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.Comment, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;								
@@ -669,12 +688,12 @@ public class XmlTextReader
 					{
 						error="Unmatched DOCTYPE start";
 						readstate = ReadState.Error;
-						return;
+						return null;	// TODO - ???
 					}
-					data = raw.SubString(s+9, e-1-9-s);
+					data = raw.Substring(s+9, e-1-9-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.DocumentType, depth);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.DocumentType, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;								
@@ -691,12 +710,12 @@ public class XmlTextReader
 					{
 						error="Unmatched EndElement start";
 						readstate = ReadState.Error;
-						return;
+						return null;	// TODO - ???
 					}					
-					data = raw.SubString(s+2, e-1-2-s);
+					data = raw.Substring(s+2, e-1-2-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.EndElement, depth - 1);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.EndElement, data, depth - 1);
 					
 					//Change current pointer
 					mycurrentnode = newnode;
@@ -718,12 +737,12 @@ public class XmlTextReader
 					{
 						error="Unmatched Entity start";
 						readstate = ReadState.Error;
-						return;
+						return null;	// TODO - ???
 					}					
-					data = raw.SubString(s+8, e-1-8-s);
+					data = raw.Substring(s+8, e-1-8-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.Entity, depth);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.Entity, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;
@@ -740,13 +759,13 @@ public class XmlTextReader
 					{
 						error="Unmatched Notation start";
 						readstate = ReadState.Error;
-						return;
+						return null;	// TODO - ???
 					}
 					
-					data = raw.SubString(s+10, e-1-10-s);
+					data = raw.Substring(s+10, e-1-10-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.Notation, depth);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.Notation, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;						
@@ -761,13 +780,13 @@ public class XmlTextReader
 					{
 						error="Unmatched XmlDeclaration start";
 						readstate = ReadState.Error;
-						return;
+						return null;	// TODO - ???
 					}
 										
-					data = raw.SubString(s+5, e-2-5-s);
+					data = raw.Substring(s+5, e-2-5-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.XmlDeclaration, depth);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.XmlDeclaration, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;						
@@ -782,12 +801,12 @@ public class XmlTextReader
 					{
 						error="Unmatched ProcessingInstruction start";
 						readstate = ReadState.Error;
-						return;
+						return null;	// TODO - ???
 					}					
-					data = raw.SubString(s+2, e-2-2-s);
+					data = raw.Substring(s+2, e-2-2-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.ProcessingInstruction, depth);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.ProcessingInstruction, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;						
@@ -801,13 +820,13 @@ public class XmlTextReader
 					{
 						error="Unmatched Element start";
 						readstate = ReadState.Error;
-						return;
+						return null;	// TODO - ???
 					}
 					
-					data = raw.SubString(s+1, e-1-1-s);
+					data = raw.Substring(s+1, e-1-1-s);
 					
-					XmlNode newnode = 
-						new XmlNode(mycurrentnode, myparent, XmlNodeType.Element, depth);
+					newnode = 
+						new XmlNode(mycurrentnode, myparent, XmlNodeType.Element, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;
@@ -832,10 +851,10 @@ public class XmlTextReader
 				//Cut of the beginning into a text node
 				if (enc > 0)
 				{						
-					data = raw.SubString(s, e-s);
+					data = raw.Substring(s, e-s);
 					
-					XmlNode newnode = 
-						new XmlNode(null, mycurrentnode, XmlNodeType.Text, depth);
+					newnode = 
+						new XmlNode(null, mycurrentnode, XmlNodeType.Text, data, depth);
 					
 					//Change current pointer
 					mycurrentnode = newnode;	
@@ -843,17 +862,17 @@ public class XmlTextReader
 
 				//Search for ;
 				s = e; 			
-				if ((e = IndexOf(';', s)) == -1)
+				if ((e = raw.IndexOf(';', s)) == -1)
 				{
 					error="; Missing in entity reference";
 					readstate = ReadState.Error;
-					return;
+					return null;	// TODO - ???
 				}
 				
-				data = raw.SubString(s, e-s);
+				data = raw.Substring(s, e-s);
 					
-				XmlNode newnode = 
-					new XmlNode(null, mycurrentnode, XmlNodeType.EntityReference, depth);
+				newnode = 
+					new XmlNode(null, mycurrentnode, XmlNodeType.EntityReference, data, depth);
 					
 				//Change current pointer
 				mycurrentnode = newnode;					
@@ -862,14 +881,18 @@ public class XmlTextReader
 			}
 		}
 
+#if false
+		// TODO - csc says that this code is unreachable - Rhys.
+
 		//Finished
 		readstate = ReadState.Interactive;
-		return myrootnode;		
+		return myroot;		
+#endif
 	}
 	
 	private void HandleWhitespace(XmlNode mynode)
 	{
-		for (int x = 0; x == mynode.Text.Length; x++)
+		for (int x = 0; x < mynode.Text.Length; x++)
 		{
 			if (mynode.Text.IndexOfAny(WhitespaceChars, x, 1) == 0)
 				return;

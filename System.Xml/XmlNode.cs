@@ -50,7 +50,11 @@ internal class XmlNode
 		if (up != null)
 		{
 			this.Parent = up;
-			up.Children = up.Children.Add(this);
+			if(up.Children == null)
+			{
+				up.Children = new ArrayList();
+			}
+			up.Children.Add(this);
 		}
 		
 		this.Type = type;

@@ -22,24 +22,23 @@
 
 namespace System.Net
 {
-	using System.Collections.ICredentials;
-	using System.Collections.Hashtable;
-	using System.Collections.IEnumerable;
+	using System.Net;
+	using System.Collections;
 	using System;
 	public class CredentialCache : ICredentials, IEnumerable
 	{
 		private Hashtable cache;
-		private static CredentialCache default;
+		private static CredentialCache defaultCred;
 		public CredentialCache()
 		{
-			// TODO: Set default to Credentials of the current
+			// TODO: Set defaultCred to Credentials of the current
 			// process
 			cache = new Hashtable();
 		}
 		
 		public void Add(Uri uriPrefix, string authtype, NetworkCredential cred)
 		{
-			if (uriPrefix == null || authType == null) 
+			if (uriPrefix == null || authtype == null) 
 			{
 				throw new ArgumentNullException();
 			}
@@ -49,11 +48,11 @@ namespace System.Net
 				cache[uriPrefix] = new Hashtable();
 			}
 	
-			if(cache[uriPrefix].Contains(authtype))		
+			if(((Hashtable)(cache[uriPrefix])).Contains(authtype))		
 			{
 				throw new ArgumentException();
 			}
-			cache[uriPrefix][authType] = cred;
+			((Hashtable)(cache[uriPrefix]))[authtype] = cred;
 	}
 
 	public NetworkCredential GetCredential(Uri uriPrefix, string authType)
@@ -65,9 +64,10 @@ namespace System.Net
 		
 		if (cache.Contains(uriPrefix))
 		{
-			if (cache[uriPrefix].Contains(authType))
+			if (((Hashtable)(cache[uriPrefix])).Contains(authType))
 			{
-				return cache[uriPrefix][authType];
+				return (NetworkCredential)
+					(((Hashtable)(cache[uriPrefix]))[authType]);
 			}
 		}
 		// Didn't find credential
@@ -84,9 +84,9 @@ namespace System.Net
 	{
 		if (cache.Contains(uriPrefix))
 		{
-			if (cache[uriPrefix].Contains(authType)) 
+			if (((Hashtable)(cache[uriPrefix])).Contains(authType)) 
 			{
-				cache[uriPrefix].Remove(authType);
+				((Hashtable)(cache[uriPrefix])).Remove(authType);
 			}
 		}
 
@@ -96,7 +96,7 @@ namespace System.Net
 	{
 		get
 		{
-			return default;
+			return defaultCred;
 		}
 	}
    }

@@ -452,7 +452,7 @@ public class MemoryStream : Stream
 		}
 		catch (NotSupportedException)
 		{
-			position = newpos;
+			position = (int)newpos;
 		}
 		catch (ArgumentOutOfRangeException)
 		{

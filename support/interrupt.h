@@ -62,6 +62,7 @@ struct _tagILInterruptContext
 
 #endif
 
+#if defined(USE_INTERRUPT_BASED_CHECKS)
 #if (defined(HAVE_SETJMP) || defined(HAVE_SETJMP_H)) \
 	&& defined(HAVE_LONGJMP)
 
@@ -117,6 +118,7 @@ struct _tagILInterruptContext
 		#endif
 	#endif
 
+#endif
 #endif
 
 #endif /* _INTERRUPT_H */

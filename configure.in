@@ -63,6 +63,19 @@ else
   esac
 fi
 
+dnl Disable interrupt based checks by default
+def_interrupts=false
+AC_ARG_ENABLE(interrupts,
+[  --enable-interrupts     Enable interrupt based NullReference and other checks],
+[case "${enableval}" in
+  yes)	interrupts=true ;;
+  no)	interrupts=false ;;
+  *)	AC_MSG_ERROR(bad value ${enableval} for --enable-interrupts) ;;
+esac],[interrupts=$def_interrupts])
+if test x$interrupts = xtrue ; then
+  AC_DEFINE(USE_INTERRUPT_BASED_CHECKS, 1, [Use interrupt based NullReference and other checks])
+fi
+
 dnl Check for file extensions.
 AC_EXEEXT
 AC_OBJEXT

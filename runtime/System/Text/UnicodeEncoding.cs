@@ -363,18 +363,25 @@ public class UnicodeEncoding : Encoding
 	// Get the Unicode preamble.
 	public override byte[] GetPreamble()
 			{
-				byte[] preamble = new byte[2];
-				if(bigEndian)
+				if(byteOrderMark)
 				{
-					preamble[0] = (byte)0xFE;
-					preamble[1] = (byte)0xFF;
+					byte[] preamble = new byte[2];
+					if(bigEndian)
+					{
+						preamble[0] = (byte)0xFE;
+						preamble[1] = (byte)0xFF;
+					}
+					else
+					{
+						preamble[0] = (byte)0xFF;
+						preamble[1] = (byte)0xFE;
+					}
+					return preamble;
 				}
 				else
 				{
-					preamble[0] = (byte)0xFF;
-					preamble[1] = (byte)0xFE;
+					return new byte [0];
 				}
-				return preamble;
 			}
 
 	// Determine if this object is equal to another.

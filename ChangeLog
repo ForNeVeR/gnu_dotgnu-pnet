@@ -15,6 +15,9 @@
 
 	* runtime/System/Text/README: document the newer classes.
 
+	* runtime/System/Text/UnicodeEncoding.cs: bug fix - the preamble
+	for "UnicodeEncoding" should be zero if byte order marks are disabled.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/.cvsignore, runtime/System/Text/ByteEncoding.cs,

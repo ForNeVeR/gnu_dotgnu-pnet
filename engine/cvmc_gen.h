@@ -270,6 +270,19 @@ extern	"C" {
 			} while (0)
 
 /*
+ * Output an instruction that has two word arguments and two pointer arguments.
+ */
+#define	CVMP_OUT_WORD2_PTR2(opcode,value1,value2,value3,value4)	\
+			do { \
+				_CVM_BYTE(COP_PREFIX); \
+				_CVM_BYTE((opcode)); \
+				_CVM_WORD((value1)); \
+				_CVM_WORD((value2)); \
+				_CVM_PTR((value3)); \
+				_CVM_PTR((value4)); \
+			} while (0)
+
+/*
  * Output an instruction that has a wide argument and a pointer argument.
  */
 #define	CVM_OUT_WIDE_PTR(opcode,value1,value2)	\
@@ -755,6 +768,18 @@ extern	"C" {
 				_CVM_WORD((value1)); \
 				_CVM_WORD((value2)); \
 				_CVM_PTR((value3)); \
+			} while (0)
+
+/*
+ * Output an instruction that has two word arguments and two pointer arguments.
+ */
+#define	CVMP_OUT_WORD2_PTR2(opcode,value1,value2,value3,value4)	\
+			do { \
+				_CVMP_OPCODE((opcode)); \
+				_CVM_WORD((value1)); \
+				_CVM_WORD((value2)); \
+				_CVM_PTR((value3)); \
+				_CVM_PTR((value4)); \
 			} while (0)
 
 /*

@@ -61,6 +61,7 @@ extern	"C" {
 #define	CVMP_LEN_PTR					(2 + sizeof(void *))
 #define	CVMP_LEN_WORD_PTR				(6 + sizeof(void *))
 #define	CVMP_LEN_WORD2_PTR				(10 + sizeof(void *))
+#define	CVMP_LEN_WORD2_PTR2				(10 + 2 * sizeof(void *))
 
 /*
  * Extract particular arguments from CVM instructions.
@@ -112,6 +113,7 @@ extern	"C" {
 #define	CVMP_ARG_PTR(type)				((type)(ReadPointer(pc + 2)))
 #define	CVMP_ARG_WORD_PTR(type)			((type)(ReadPointer(pc + 6)))
 #define	CVMP_ARG_WORD2_PTR(type)		((type)(ReadPointer(pc + 10)))
+#define	CVMP_ARG_WORD2_PTR2(type)		((type)(ReadPointer(pc + 10 + sizeof(void *))))
 
 #else /* IL_CVM_DIRECT */
 
@@ -152,6 +154,7 @@ extern	"C" {
 #define	CVMP_LEN_PTR					_CVM_LEN_FROM_WORDS(2)
 #define	CVMP_LEN_WORD_PTR				_CVM_LEN_FROM_WORDS(3)
 #define	CVMP_LEN_WORD2_PTR				_CVM_LEN_FROM_WORDS(4)
+#define	CVMP_LEN_WORD2_PTR2				_CVM_LEN_FROM_WORDS(5)
 
 /*
  * Extract particular arguments from CVM instructions.
@@ -204,6 +207,7 @@ extern	"C" {
 #define	CVMP_ARG_PTR(type)		CVM_ARG_PTR(type)
 #define	CVMP_ARG_WORD_PTR(type)			((type)(_CVM_ARG(2)))
 #define	CVMP_ARG_WORD2_PTR(type)		((type)(_CVM_ARG(3)))
+#define	CVMP_ARG_WORD2_PTR2(type)		((type)(_CVM_ARG(4)))
 
 #endif /* IL_CVM_DIRECT */
 

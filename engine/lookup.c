@@ -699,6 +699,16 @@ ILMethod *ILExecThreadLookupMethod(ILExecThread *thread,
 								   const char *signature)
 {
 	ILClass *classInfo;
+	classInfo = ILExecThreadLookupClass(thread, typeName);
+	return ILExecThreadLookupMethodInClass
+			(thread, classInfo, methodName, signature);
+}
+
+ILMethod *ILExecThreadLookupMethodInClass(ILExecThread *thread,
+										  ILClass *classInfo,
+								   		  const char *methodName,
+								   		  const char *signature)
+{
 	ILMethod *method;
 	ILType *methodSignature;
 
@@ -707,9 +717,6 @@ ILMethod *ILExecThreadLookupMethod(ILExecThread *thread,
 	{
 		return 0;
 	}
-
-	/* Look up the type */
-	classInfo = ILExecThreadLookupClass(thread, typeName);
 
 	/* Resolve the method within the type or any of its ancestors */
 	while(classInfo != 0)

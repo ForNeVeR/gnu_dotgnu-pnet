@@ -2130,8 +2130,8 @@ VMBREAK(COP_PREFIX_REFARRAY2UTF8);
  *   <operation>Convert an object reference into a custom native
  *				pointer</operation>
  *
- *   <format>prefix<fsep/>tocustom<fsep/>len[4]<fsep/>name</format>
- *   <dformat>{tocustom}<fsep/>len<fsep/>name</dformat>
+ *   <format>prefix<fsep/>tocustom<fsep/>len1[4]<fsep/>len2[4]<fsep/>name1<fsep/>name2</format>
+ *   <dformat>{tocustom}<fsep/>len1<fsep/>len2<fsep/>name1<fsep/>name2</dformat>
  *
  *   <form name="tocustom" code="COP_PREFIX_TOCUSTOM"/>
  *
@@ -2139,9 +2139,10 @@ VMBREAK(COP_PREFIX_REFARRAY2UTF8);
  *   <after>..., result</after>
  *
  *   <description>The <i>value</i> is popped from the stack as
- *   type <code>ptr</code>.  The custom marshaler called <i>name</i>
- *   is used to convert <i>value</i> into a native pointer <i>result</i>.
- *   The value <i>len</i> is the length of the <i>name</i>.
+ *   type <code>ptr</code>.  The custom marshaler called <i>name1</i>,
+ *   with cookie <i>name2</i> is used to convert <i>value</i> into a
+ *   native pointer <i>result</i>.  The values <i>len1</i> and <i>len2</i>
+ *   are the lengths of <i>name1</i> and <i>name2</i>.
  *   </description>
  *
  *   <notes>This instruction is used to perform custom marshaling
@@ -2154,9 +2155,10 @@ VMCASE(COP_PREFIX_TOCUSTOM):
 	COPY_STATE_TO_THREAD();
 	stacktop[-1].ptrValue = _ILObjectToCustom
 		(thread, (ILObject *)(stacktop[-1].ptrValue),
-		 CVMP_ARG_WORD_PTR(const char *), CVMP_ARG_WORD);
+		 CVMP_ARG_WORD2_PTR(const char *), CVMP_ARG_WORD,
+		 CVMP_ARG_WORD2_PTR2(const char *), CVMP_ARG_WORD2);
 	RESTORE_STATE_FROM_THREAD();
-	MODIFY_PC_AND_STACK(CVMP_LEN_WORD_PTR, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD2_PTR2, 0);
 }
 VMBREAK(COP_PREFIX_TOCUSTOM);
 
@@ -2165,8 +2167,8 @@ VMBREAK(COP_PREFIX_TOCUSTOM);
  *   <operation>Convert a custom native pointer into an object
  *				reference</operation>
  *
- *   <format>prefix<fsep/>fromcustom<fsep/>len[4]<fsep/>name</format>
- *   <dformat>{fromcustom}<fsep/>len<fsep/>name</dformat>
+ *   <format>prefix<fsep/>fromcustom<fsep/>len1[4]<fsep/>len2[4]<fsep/>name1<fsep/>name2</format>
+ *   <dformat>{fromcustom}<fsep/>len1<fsep/>len2<fsep/>name1<fsep/>name2</dformat>
  *
  *   <form name="fromcustom" code="COP_PREFIX_FROMCUSTOM"/>
  *
@@ -2174,9 +2176,10 @@ VMBREAK(COP_PREFIX_TOCUSTOM);
  *   <after>..., result</after>
  *
  *   <description>The <i>value</i> is popped from the stack as
- *   type <code>ptr</code>.  The custom marshaler called <i>name</i>
- *   is used to convert <i>value</i> into an object refernce <i>result</i>.
- *   The value <i>len</i> is the length of the <i>name</i>.
+ *   type <code>ptr</code>.  The custom marshaler called <i>name1</i>,
+ *   with cookie <i>name2</i>, is used to convert <i>value</i> into an
+ *   object reference <i>result</i>.  The values <i>len1</i> and <i>len2</i>
+ *   are the lengths of <i>name1</i> and <i>name2</i>.
  *   </description>
  *
  *   <notes>This instruction is used to perform custom marshaling
@@ -2189,9 +2192,10 @@ VMCASE(COP_PREFIX_FROMCUSTOM):
 	COPY_STATE_TO_THREAD();
 	stacktop[-1].ptrValue = _ILCustomToObject
 		(thread, stacktop[-1].ptrValue,
-		 CVMP_ARG_WORD_PTR(const char *), CVMP_ARG_WORD);
+		 CVMP_ARG_WORD2_PTR(const char *), CVMP_ARG_WORD,
+		 CVMP_ARG_WORD2_PTR2(const char *), CVMP_ARG_WORD2);
 	RESTORE_STATE_FROM_THREAD();
-	MODIFY_PC_AND_STACK(CVMP_LEN_WORD_PTR, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD2_PTR2, 0);
 }
 VMBREAK(COP_PREFIX_FROMCUSTOM);
 

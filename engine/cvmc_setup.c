@@ -636,9 +636,11 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 
 				case IL_META_MARSHAL_CUSTOM:
 				{
-					CVMP_OUT_WORD_PTR(COP_PREFIX_TOCUSTOM,
-									  (ILUInt32)(ILInt32)customNameLen,
-									  (void *)customName);
+					CVMP_OUT_WORD2_PTR2(COP_PREFIX_TOCUSTOM,
+									    (ILUInt32)(ILInt32)customNameLen,
+									    (ILUInt32)(ILInt32)customCookieLen,
+									    (void *)customName,
+									    (void *)customCookie);
 				}
 				break;
 			}
@@ -1054,9 +1056,11 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 
 				case IL_META_MARSHAL_CUSTOM:
 				{
-					CVMP_OUT_WORD_PTR(COP_PREFIX_FROMCUSTOM,
-									  (ILUInt32)(ILInt32)customNameLen,
-									  (void *)customName);
+					CVMP_OUT_WORD2_PTR2(COP_PREFIX_FROMCUSTOM,
+									    (ILUInt32)(ILInt32)customNameLen,
+									    (ILUInt32)(ILInt32)customCookieLen,
+									    (void *)customName,
+									    (void *)customCookie);
 				}
 				break;
 			}

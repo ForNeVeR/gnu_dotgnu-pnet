@@ -354,6 +354,15 @@ ILMethod *ILExecThreadLookupMethod(ILExecThread *thread,
 								   const char *signature);
 
 /*
+ * Look up a method in a particular class.  Returns NULL if
+ * the method could not be found.
+ */
+ILMethod *ILExecThreadLookupMethodInClass(ILExecThread *thread,
+										  ILClass *classInfo,
+								   		  const char *methodName,
+								   		  const char *signature);
+
+/*
  * Look up a field by type name, field name, and signature.
  * Returns NULL if the field could not be found.  This function
  * will search ancestor classes if the field is not found in

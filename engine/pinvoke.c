@@ -558,7 +558,8 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 					CHECK_SPACE(1);
 					stacktop->ptrValue = _ILCustomToObject
 						(thread, *((void **)(*args)),
-						 customName, customNameLen);
+						 customName, customNameLen,
+						 customCookie, customCookieLen);
 					if(ILExecThreadHasException(thread))
 					{
 						return 1;
@@ -776,7 +777,7 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 				/* Marshal a custom value to the native world */
 				*((void **)result) = _ILObjectToCustom
 					(thread, (ILObject *)(thread->stackTop[-1].ptrValue),
-					 customName, customNameLen);
+					 customName, customNameLen, customCookie, customCookieLen);
 				--(thread->stackTop);
 			}
 			return;

@@ -479,10 +479,14 @@ unsigned char const _ILCVMLengths[512] = {
 	/* str2utf8 */			CVMP_LEN_NONE,
 	/* ansi2str */			CVMP_LEN_NONE,
 	/* utf82str */			CVMP_LEN_NONE,
+	/* str2utf16 */			CVMP_LEN_NONE,
+	/* utf162str */			CVMP_LEN_NONE,
 	/* delegate2fnptr */	CVMP_LEN_NONE,
 	/* array2ptr */			CVMP_LEN_NONE,
 	/* refarray2ansi */		CVMP_LEN_NONE,
 	/* refarray2utf8 */		CVMP_LEN_NONE,
+	/* tocustom */			CVMP_LEN_WORD2_PTR2,
+	/* fromcustom */		CVMP_LEN_WORD2_PTR2,
 
 	/*
 	 * Inline method replacements.
@@ -516,10 +520,6 @@ unsigned char const _ILCVMLengths[512] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	/* preserved_51 */		CVMP_LEN_NONE,
-	/* preserved_52 */		CVMP_LEN_NONE,
-	/* preserved_53 */		CVMP_LEN_NONE,
-	/* preserved_54 */		CVMP_LEN_NONE,
 	/* preserved_55 */		CVMP_LEN_NONE,
 	/* preserved_56 */		CVMP_LEN_NONE,
 	/* preserved_57 */		CVMP_LEN_NONE,

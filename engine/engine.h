@@ -546,14 +546,16 @@ void _ILBreak(ILExecThread *thread, int type);
  * into a native pointer.
  */
 void *_ILObjectToCustom(ILExecThread *thread, ILObject *obj,
-						const char *customName, int customNameLen);
+						const char *customName, int customNameLen,
+						const char *customCookie, int customCookieLen);
 
 /*
  * Perform custom marshalling to convert a native pointer
  * into an object reference.
  */
 ILObject *_ILCustomToObject(ILExecThread *thread, void *ptr,
-							const char *customName, int customNameLen);
+							const char *customName, int customNameLen,
+							const char *customCookie, int customCookieLen);
 
 #ifdef	__cplusplus
 };

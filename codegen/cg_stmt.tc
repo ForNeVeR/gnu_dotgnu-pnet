@@ -1891,7 +1891,10 @@ ILNode_GenDiscard(ILNode_Switch)
 					--numValues;
 				}
 				ILGenJump(info, IL_OP_BR, defaultLabel);
-				ILGenAdjust(info, -1);
+				if(needPop)
+				{
+					ILGenAdjust(info, -1);
+				}
 			}
 			break;
 	

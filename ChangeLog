@@ -9,6 +9,9 @@
 	* cscc/c/c_lvalue.tc: move some ILGenAdjust calls in the bit field
 	code that were in the wrong position.
 
+	* codegen/cg_stmt.tc: fix a stack underflow problem in the
+	code generator for switch statements.
+
 2004-03-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.1, cscc/cscc.c, cscc/common/cc_main.c,

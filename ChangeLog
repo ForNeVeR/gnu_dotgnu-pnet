@@ -13,6 +13,8 @@ are inherited from "Binder".
 it can be accessed from the reflection classes; implement methods and
 properties that are inherited from "MemberInfo".
 
+* runtime/System/Makefile.am: add the new classes to the build.
+
 2001-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs: Use "InternalGetFullName" for the "ToString"

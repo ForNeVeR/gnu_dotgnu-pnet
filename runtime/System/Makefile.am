@@ -15,6 +15,7 @@ CSSRC = Activator.cs \
 		ArithmeticException.cs \
 		ArrayTypeMismatchException.cs \
 		AssemblyLoadEventArgs.cs \
+		AssemblyLoadEventHandler.cs \
 		AsyncCallback.cs \
 		Array.cs \
 		Attribute.cs \
@@ -115,6 +116,7 @@ CSSRC = Activator.cs \
 		UIntPtr.cs \
 		UnauthorizedAccessException.cs \
 		UnhandledExceptionEventArgs.cs \
+		UnhandledExceptionEventHandler.cs \
 		ValueType.cs \
 		Variant.cs \
 		Void.cs \
@@ -144,23 +146,43 @@ CSSRC = Activator.cs \
 		IO/TextWriter.cs \
 		Private/NumberFormatter.cs \
 		Private/NumberParser.cs \
+		Reflection/AmbiguousMatchException.cs \
 		Reflection/Assembly.cs \
 		Reflection/Binder.cs \
 		Reflection/BindingFlags.cs \
 		Reflection/CallingConventions.cs \
 		Reflection/ConstructorInfo.cs \
 		Reflection/DefaultMemberAttribute.cs \
+		Reflection/EventAttributes.cs \
 		Reflection/EventInfo.cs \
+		Reflection/FieldAttributes.cs \
 		Reflection/FieldInfo.cs \
 		Reflection/IReflect.cs \
 		Reflection/MemberInfo.cs \
+		Reflection/MemberTypes.cs \
+		Reflection/MethodAttributes.cs \
 		Reflection/MethodBase.cs \
+		Reflection/MethodImplAttributes.cs \
 		Reflection/MethodInfo.cs \
+		Reflection/MethodSemanticsAttributes.cs \
 		Reflection/Missing.cs \
 		Reflection/Module.cs \
+		Reflection/ParameterAttributes.cs \
 		Reflection/ParameterInfo.cs \
 		Reflection/ParameterModifier.cs \
+		Reflection/PropertyAttributes.cs \
 		Reflection/PropertyInfo.cs \
+		Reflection/ResourceAttributes.cs \
+		Reflection/ResourceLocation.cs \
+		Reflection/RuntimeConstructorInfo.cs \
+		Reflection/RuntimeEventInfo.cs \
+		Reflection/RuntimeFieldInfo.cs \
+		Reflection/RuntimeHelpers.cs \
+		Reflection/RuntimeMethodInfo.cs \
+		Reflection/RuntimePropertyInfo.cs \
+		Reflection/TargetException.cs \
+		Reflection/TargetInvocationException.cs \
+		Reflection/TargetParameterCountException.cs \
 		Reflection/TypeAttributes.cs \
 		Runtime/CompilerServices/RuntimeHelpers.cs \
 		Runtime/CompilerServices/CSharp/DecimalConstantAttribute.cs \

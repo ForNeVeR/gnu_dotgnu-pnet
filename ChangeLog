@@ -21,6 +21,11 @@
 	libpthread/pthread_barrier.c, libpthread/pthread_rwlock.c:
 	implement barriers and read-write locks.
 
+	* include/Makefile.am, include/semaphore.h, libpthread/Makefile.am,
+	libpthread/pthread_cond.c, libpthread/pthread_mutex.c,
+	libpthread/pthread_sem.c: implement POSIX semaphores; shift the
+	abstime to tick conversion into a central location.
+
 2004-02-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/time.h, include/sys/Makefile.am, include/sys/select.h,

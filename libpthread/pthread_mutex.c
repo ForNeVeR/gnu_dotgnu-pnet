@@ -58,9 +58,8 @@ pthread_mutex_lock (pthread_mutex_t *mutex)
   return 0;
 }
 
-int
-pthread_mutex_timedlock (pthread_mutex_t *__restrict mutex,
-			 const struct timespec *__restrict abstime)
+long long
+__pt_convert_time (const struct timespec *abstime)
 {
   long long timeout;
   if (!abstime)
@@ -86,6 +85,14 @@ pthread_mutex_timedlock (pthread_mutex_t *__restrict mutex,
 	  timeout += (abstime->tv_sec - current.tv_sec - 1) * 10000000LL;
 	}
     }
+  return timeout;
+}
+
+int
+pthread_mutex_timedlock (pthread_mutex_t *__restrict mutex,
+			 const struct timespec *__restrict abstime)
+{
+  long long timeout = __pt_convert_time (abstime);
   if (__libc_monitor_trylock (&(mutex->__m_monitor), timeout))
     return 0;
   errno = ETIMEDOUT;

@@ -23,6 +23,8 @@
 #include <pthread-support.h>
 #include <errno.h>
 
+extern long long __pt_convert_time (const struct timespec *abstime);
+
 int
 pthread_cond_init (pthread_cond_t *__restrict cond,
                    const pthread_condattr_t *__restrict cond_attr)
@@ -103,29 +105,7 @@ pthread_cond_timedwait (pthread_cond_t *__restrict cond,
   pthread_spin_unlock (&(cond->__lock));
 
   /* Wait until the timeout expires */
-  if (!abstime)
-    timeout = 0;
-  else
-    {
-      struct timespec current;
-      clock_gettime (CLOCK_REALTIME, &current);
-      if (current.tv_sec > abstime->tv_sec ||
-          (current.tv_sec == abstime->tv_sec &&
-	   current.tv_nsec >= abstime->tv_nsec))
-        {
-	  timeout = 0;
-	}
-      else if (current.tv_sec == abstime->tv_sec)
-        {
-	  timeout = (abstime->tv_nsec - current.tv_nsec) / 100LL;
-	}
-      else
-        {
-	  timeout = (1000000000LL - current.tv_nsec) / 100LL;
-	  timeout += abstime->tv_nsec / 100LL;
-	  timeout += (abstime->tv_sec - current.tv_sec - 1) * 10000000LL;
-	}
-    }
+  timeout = __pt_convert_time (abstime);
   if (__libc_monitor_wait (&(mutex->__m_monitor), timeout))
     {
       pthread_testcancel();

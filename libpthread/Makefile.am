@@ -16,6 +16,7 @@ libPthread_a_SOURCES = \
 			pthread_once.c \
 			pthread_other.c \
 			pthread_rwlock.c \
+			pthread_sem.c \
 			pthread_thread.c
 
 AM_CFLAGS = -I$(top_srcdir)/include \

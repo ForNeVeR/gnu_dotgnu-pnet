@@ -19,6 +19,7 @@ libinclude_HEADERS = \
 	math.h \
 	pthread.h \
 	pwd.h \
+	semaphore.h \
 	setjmp.h \
 	signal.h \
 	stdarg.h \

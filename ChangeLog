@@ -13,6 +13,10 @@
 	* runtime/System/Collections/BitArray.cs: Fix byte[] constructor to
 	generate the right bitset pattern.
 
+	* runtime/System/Collections/ArrayList.cs: Increment generations before
+	adding or inserting elements and fix insertrange from becoming a self
+	modifying addition.
+
 2004-06-02  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Threading/Monitor.cs: Changed TryEnter()

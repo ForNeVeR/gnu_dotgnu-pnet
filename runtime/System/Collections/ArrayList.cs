@@ -251,11 +251,16 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					Realloc(cCount, count);
 				}
 				enumerator = c.GetEnumerator();
-				while(enumerator.MoveNext())
+				
+				if(enumerator.MoveNext())
 				{
-					store[count++] = enumerator.Current;
+					++generation;
+					do
+					{
+						store[count++] = enumerator.Current;
+					}
+					while(enumerator.MoveNext())
 				}
-				++generation;
 			}
 
 	// Insert the contents of a collection as a range.
@@ -275,12 +280,22 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				cCount = c.Count;
 				Realloc(cCount, index);
 				enumerator = c.GetEnumerator();
-				while(enumerator.MoveNext())
+				
+				if(c.SyncRoot == this && (c is ICloneable))
 				{
-					store[index++] = enumerator.Current;
+					c = (ICollection)((ICloneable)c).Clone();
+				}
+				
+				if(enumerator.MoveNext())
+				{
+					++generation;
+					do
+					{
+						store[index++] = enumerator.Current;
+					}
+					while(enumerator.MoveNext())
 				}
 				count += cCount;
-				++generation;
 			}
 
 	// Remove a range of elements from an array list.

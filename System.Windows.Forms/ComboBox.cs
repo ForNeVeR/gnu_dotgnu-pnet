@@ -506,13 +506,13 @@ public class ComboBox : ListControl
 	}
 
 	[TODO]
-	protected void SetItemCore(int index, object value)
+	protected override void SetItemCore(int index, object value)
 	{
 		throw new NotImplementedException("SetItemCore");
 	}
 
 	[TODO]
-	protected void SetItemsCore(IList value)
+	protected override void SetItemsCore(IList value)
 	{
 		throw new NotImplementedException("SetItemsCore");
 	}

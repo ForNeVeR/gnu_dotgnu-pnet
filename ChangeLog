@@ -1,3 +1,9 @@
+
+2003-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/CheckBox.cs, System.Windows.Forms/ComboBox.cs:
+	missing "override" declarations.
+
 2003-07-12  Neil Cawse  <neilc@geotab.ca>
 
 	* System.Windows.Forms/TabControl.cs, TabPage : 

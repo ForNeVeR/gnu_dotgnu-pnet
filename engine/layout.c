@@ -176,7 +176,16 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 	{
 		/* Lay out a value type by getting the full size and alignment
 		   of the class that underlies the value type */
-		return LayoutClass(ILClassResolve(ILType_ToValueType(type)), layout);
+		ILClass *classInfo = ILClassResolve(ILType_ToValueType(type));
+		ILType *synType = ILClassGetSynType(classInfo);
+		if(synType == 0)
+		{
+			return LayoutClass(classInfo, layout);
+		}
+		else
+		{
+			return LayoutType(ILTypeStripPrefixes(synType), layout);
+		}
 	}
 	else
 	{

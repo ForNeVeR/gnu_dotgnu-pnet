@@ -16,6 +16,9 @@
 	* support/dynlib.c, image/link.c: improve dynamic library support
 	under MacOS X.
 
+	* engine/layout.c (LayoutType): check for synthetic pointer types,
+	so that "sizeof(X *) != 0" (Bug #3979).
+
 2003-06-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y: Wrap all 'using' blocks in a new local

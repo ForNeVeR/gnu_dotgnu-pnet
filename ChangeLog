@@ -4,6 +4,9 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_thread.c:
 	add the "Thread.CanStartThreads" internalcall.
 
+	* tests/test_thread.c: use the Win32-specific "Sleep" function,
+	because "sleep" is flaky (Bug #2568).
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c_main.c: remove the quoting in the "-D" options that

@@ -23,6 +23,9 @@
 #if HAVE_UNISTD_H
 	#include <unistd.h>
 #endif
+#ifdef IL_WIN32_NATIVE
+	#include <windows.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -38,9 +41,15 @@ static void sleepFor(int steps)
 	usleep(steps * 100000);
 #define	STEPS_TO_MS(steps)	(steps * 100)
 #else
+#ifdef IL_WIN32_NATIVE
+	/* Time steps are 100ms in length */
+	Sleep(steps * 100);
+#define	STEPS_TO_MS(steps)	(steps * 100)
+#else
 	/* Time steps are 1s in length */
 	sleep(steps);
 #define	STEPS_TO_MS(steps)	(steps * 1000)
+#endif
 #endif
 }
 

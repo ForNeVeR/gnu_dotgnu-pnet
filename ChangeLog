@@ -17,6 +17,9 @@ IO streams to implement Console instead of a direct call to "Stdio".
 * engine/lib_string.c: implement most of the remaining "internalcall"
 methods for "System.String" except "Intern" and "IsInterned".
 
+* samples/mscorlib.dll: check in a new version with an updated version
+of "System.String".
+
 2001-10-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h, engine/cvm_ptr.c: implement the CVM instructions

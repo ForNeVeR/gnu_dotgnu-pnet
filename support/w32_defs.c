@@ -19,9 +19,10 @@
  */
 
 #include "thr_defs.h"
-#include <windows.h>
 
-#ifdef	 IL_USE_WIN32_THREADS
+#ifdef IL_USE_WIN32_THREADS
+
+#include <windows.h>
 
 #ifdef	__cplusplus
 extern	"C" {

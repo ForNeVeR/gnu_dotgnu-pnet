@@ -443,7 +443,7 @@ typedef union
 	   words are always aligned on the best boundary.  On 32-bit platforms,
 	   the size of this array will normally evaluate to zero.  We only do
 	   this for gcc because other compilers may not support zero-size arrays */
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(_WIN32)
 	char		padding[IL_BEST_ALIGNMENT -
 					    _IL_ALIGN_MAX(sizeof(ILInt32), sizeof(void *))];
 #endif

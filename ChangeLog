@@ -19,6 +19,10 @@ use "ILType_HasThis" where appropriate.
 
 * include/il_values.h: declare "ILBool" as a builtin type.
 
+* engine/lib_object.c, engine/lib_string.c, engine/lib_array.c,
+engine/lib_decimal.c, engine/lib_defs.h: implement parts of the
+internal system library.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

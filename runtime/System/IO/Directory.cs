@@ -99,7 +99,7 @@ namespace System.IO
 				return false;
 			}	
 			long ac;
-			Errno errno = DirMethods.GetLastAccessTime(path,ac);
+			Errno errno = DirMethods.GetLastAccess(path, out ac);
 			switch(errno)
 			{
 				case Errno.Success:

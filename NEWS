@@ -1,4 +1,41 @@
 
+0.5.0 (11 January 2003)
+
+	* Move "csunit", "csupport", and "samples" out of pnet into pnetlib.
+	* Make "csunit" more robust when running against the ECMA libraries.
+	* Prevent double-reporting of failures in "csunit".
+	* Update RPM spec files (Gopal V, Stephen Compall).
+	* Test cases and bug fixes for "System.Security.Cryptography".
+	* Remove files from the repository that are created by "auto_gen.sh".
+	* Allow zero-length copies in "Array.Copy".
+	* Number formatting and parsing (Jonathan Springer).
+	* Complete implementation of "System.Environment".
+	* Remove unnecessary preambles from UTF-8 and Unicode streams.
+	* Use "StreamReader" and "StreamWriter" for console streams.
+	* Implement missing functionality in "System.Activator".
+	* Date time formatting (Michael Moore).
+	* Fixes for "NameValueCollection" (Jeff Post).
+	* System.IO (Gopal V, Aditya P. Bansod, Craig Altenburg).
+	* System.Xml (Rhys Weatherley, Adam Ballai, others).
+	* System.ComponentModel (Rhys Weatherley, Gopal V).
+	* Marshal.PtrToStructure (Gopal V).
+	* Wait handles (Thong Nguyen).
+	* Various ECMA-compatibility fixes.
+	* Implement minor compatbility assemblies in "compat".
+	* Return an exit status of 1 when "csunit" fails.
+	* German resource translations (Rainer Groesslinger).
+	* Satellite assembly support for foreign language translations.
+	* Custom marshalling classes.
+	* Array and ArrayList sorting.
+	* Fixes for building with the mingw32 version of pnet.
+	* Integrate Mono's regular expression library (Gopal V).
+	* System.Net.WebRequest, WebResponse (Jason Lee).
+	* Make the I18N system robust against missing handler libraries.
+	* Stub out some Reflection.Emit classes (Gopal V).
+	* Various attributes and minor classes (Gopal V, Ian Fung, others).
+	* Enum formatting and conversion fixes (Jeff Post).
+	* Inhibit UTF-8 preambles on Console streams.
+
 0.4.8 (23 November 2002)
 
 	* Bring version numbers into sync with "pnet".

@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if CONFIG_EXTENDED_NUMERICS
+
 using System.Private;
 using System.Private.NumberFormat;
 using System.Globalization;
@@ -276,5 +278,7 @@ public struct Double : IComparable, IFormattable
 #endif // !ECMA_COMPAT
 
 }; // class Double
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 }; // namespace System

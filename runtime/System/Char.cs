@@ -182,6 +182,7 @@ public struct Char : IComparable
 
 #endif // !ECMA_COMPAT
 
+#if CONFIG_EXTENDED_NUMERICS
 	// Get the numeric value associated with a character.
 	public static double GetNumericValue(char c)
 			{
@@ -202,6 +203,7 @@ public struct Char : IComparable
 				}
 				return GetNumericValue(s[index]);
 			}
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	// Get the Unicode category for a character.
 	public static UnicodeCategory GetUnicodeCategory(char c)

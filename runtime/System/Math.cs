@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if CONFIG_EXTENDED_NUMERICS
+
 using System.Runtime.CompilerServices;
 
 public sealed class Math
@@ -437,5 +439,7 @@ public sealed class Math
 	extern public static double Tanh(double value);
 
 }; // class Math
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 }; // namespace System

@@ -43,6 +43,8 @@ public class TestDouble : TestCase
 	{
 		// Nothing to do here.
 	}
+
+#if CONFIG_EXTENDED_NUMERICS
 	public void TestDoubleCompareTo()
 	{
 	/*TODO*/
@@ -121,4 +123,5 @@ public class TestDouble : TestCase
 		//d = -1.13d;
 		//AssertEquals("-1.13", "-1.13", d.ToString());
 	}
+#endif // CONFIG_EXTENDED_NUMERICS
 }

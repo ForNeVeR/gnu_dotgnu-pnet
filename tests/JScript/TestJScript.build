@@ -11,7 +11,9 @@
 				 optimize="true">
 
 			<sources>
-				<includes name="**/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="**/*.cs"/>
+				<excludes if="${CONFIG_EXTENDED_NUMERICS}" name="TestJScript.cs"/>
+				<file name="TestJScript.cs"/>
 			</sources>
 
 			<references>

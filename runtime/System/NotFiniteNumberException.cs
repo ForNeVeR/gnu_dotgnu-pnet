@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_EXTENDED_NUMERICS
+
 using System.Runtime.Serialization;
 
 public class NotFiniteNumberException : ArithmeticException
@@ -90,5 +92,7 @@ public class NotFiniteNumberException : ArithmeticException
 #endif
 
 }; // class NotFiniteNumberException
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 }; // namespace System

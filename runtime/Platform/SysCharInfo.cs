@@ -31,9 +31,11 @@ internal class SysCharInfo
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static UnicodeCategory GetUnicodeCategory(char ch);
 
+#if CONFIG_EXTENDED_NUMERICS
 	// Get the Unicode numeric value for a specific character.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static double GetNumericValue(char ch);
+#endif
 
 	// Get the newline string for this platform.
 	[MethodImpl(MethodImplOptions.InternalCall)]

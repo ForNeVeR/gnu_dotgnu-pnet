@@ -322,6 +322,7 @@ internal class CustomFormatter : Formatter
 		return ret.ToString();
 	}
 
+#if CONFIG_EXTENDED_NUMERICS
 	private string FormatScientific(double d, string format, int sign,
 													IFormatProvider provider)
 	{
@@ -369,6 +370,7 @@ internal class CustomFormatter : Formatter
 
 		return ret.ToString();
 	}
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	private string FormatInteger(ulong value, string format, int sign,
 												IFormatProvider provider)
@@ -378,6 +380,7 @@ internal class CustomFormatter : Formatter
 	}
 
 
+#if CONFIG_EXTENDED_NUMERICS
 	private string FormatFloat(double d, string format, int sign,
 												IFormatProvider provider)
 	{
@@ -418,6 +421,7 @@ internal class CustomFormatter : Formatter
 					format, sign, provider);
 		}
 	}
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	//
 	//  Public access method.
@@ -427,23 +431,40 @@ internal class CustomFormatter : Formatter
 		if (IsSignedInt(o))
 		{
 			long val = OToLong(o);
-			string format = FormatFromSign(Math.Sign(val));
-			if (ScientificStart(format) == -1)
+			int sign;
+			if(val < 0)
 			{
-				return FormatInteger((ulong)Math.Abs(val),
-						format, Math.Sign(val), provider);
+				sign = -1;
+				val = -val;
+			}
+			else if(val > 0)
+			{
+				sign = 1;
 			}
 			else
 			{
-				return FormatScientific((double)Math.Abs(val),
-						format, Math.Sign(val), provider);
+				sign = 0;
 			}
+			string format = FormatFromSign(sign);
+		#if CONFIG_EXTENDED_NUMERICS
+			if (ScientificStart(format) == -1)
+			{
+				return FormatInteger((ulong)val, format, sign, provider);
+			}
+			else
+			{
+				return FormatScientific((double)val, format, sign, provider);
+			}
+		#else
+			return FormatInteger((ulong)val, format, sign, provider);
+		#endif
 		}
 		else if (IsUnsignedInt(o))
 		{
 			ulong val = OToUlong(o);
 			string format = ( (val==0) ? zeroFormat : positiveFormat);
 
+		#if CONFIG_EXTENDED_NUMERICS
 			if (ScientificStart(format) == -1)
 			{
 				return FormatInteger(val, format, val == 0 ? 0 : 1, provider);
@@ -453,7 +474,11 @@ internal class CustomFormatter : Formatter
 				return FormatScientific( (double)val,
 						format, val == 0 ? 0 : 1, provider);
 			}
+		#else
+			return FormatInteger(val, format, val == 0 ? 0 : 1, provider);
+		#endif
 		}
+#if CONFIG_EXTENDED_NUMERICS
 		else if (IsFloat(o))
 		{
 			double val = OToDouble(o);
@@ -484,6 +509,7 @@ internal class CustomFormatter : Formatter
 						format, Math.Sign(val), provider);
 			}
 		}
+#endif // CONFIG_EXTENDED_NUMERICS
 		else if (o is IFormattable)
 		{
 			return ((IFormattable)o).ToString(originalFormat, provider);

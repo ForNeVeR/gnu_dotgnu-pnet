@@ -92,6 +92,32 @@
 	runtime/System/Threading/Thread.cs: mark up members of the
 	"RuntimeInfrastructure" subset of ECMA with CONFIG_RUNTIME_INFRA.
 
+	* JScript/JScript.build, JScript/jsrun.cs, JScript/jsstub.cs,
+	System.Xml/XmlConvert.cs, csunit/TestCase.cs,
+	runtime/Platform/SysCharInfo.cs, runtime/System/Char.cs,
+	runtime/System/Console.cs, runtime/System/Convert.cs,
+	runtime/System/DateTime.cs, runtime/System/Decimal.cs,
+	runtime/System/Double.cs, runtime/System/Math.cs,
+	runtime/System/NotFiniteNumberException.cs,
+	runtime/System/Random.cs, runtime/System/Single.cs,
+	runtime/System/TimeSpan.cs, runtime/System/IO/TextWriter.cs,
+	runtime/System/Private/NumberParser.cs,
+	runtime/System/Private/NumberFormat/CustomFormatter.cs,
+	runtime/System/Private/NumberFormat/Formatter.cs,
+	runtime/System/Private/NumberFormat/GeneralFormatter.cs,
+	runtime/System/Private/NumberFormat/RoundTripFormatter.cs,
+	runtime/System/Private/NumberFormat/ScientificFormatter.cs,
+	runtime/System/Runtime/CompilerServices/DecimalConstantAttribute.cs,
+	runtime/System/Text/StringBuilder.cs,
+	runtime/System/Threading/Interlocked.cs,
+	runtime/System/Threading/Monitor.cs,
+	tests/JScript/TestJScript.build, tests/JScript/TestJScript.cs,
+	tests/System.Xml/TestXmlConvert.cs,
+	tests/runtime/System/TestDecimal.cs,
+	tests/runtime/System/TestDouble.cs, tests/runtime/System/TestString.cs:
+	mark up members of the "ExtendedNumerics" subset of ECMA with
+	CONFIG_EXTENDED_NUMERICS.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ArgIterator.cs: make "ArgIterator.GetHashCode"

@@ -30,6 +30,7 @@ public sealed class JSRun
 	// Main entry point for the application.
 	public static int Main(String[] args)
 			{
+#if CONFIG_EXTENDED_NUMERICS && CONFIG_REFLECTION
 				StreamReader reader;
 				StringBuilder builder;
 				String script;
@@ -84,6 +85,13 @@ public sealed class JSRun
 				// Shut down the engine and exit.
 				engine.Close();
 				return 0;
+#else
+				Console.WriteLine
+					("JScript is not available in this configuration " +
+					 "because the library does\n" +
+					 "not have sufficient features to support JScript.");
+				return 0;
+#endif
 			}
 
 }; // class JSRun

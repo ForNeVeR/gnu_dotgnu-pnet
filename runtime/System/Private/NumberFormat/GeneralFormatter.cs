@@ -54,9 +54,11 @@ internal class GeneralFormatter : Formatter
 		if (o is Int32 || o is UInt32) return 10;
 		if (o is Int64 || o is UInt64) return 19;
 		if (o is Byte || o is SByte) return 3;
+#if CONFIG_EXTENDED_NUMERICS
 		if (o is Single) return 7;
 		if (o is Double) return 15;
 		if (o is Decimal) return 29;
+#endif
 		throw new FormatException(_("Format_TypeException"));
 	}
 
@@ -91,6 +93,7 @@ internal class GeneralFormatter : Formatter
 			precision = this.precision;
 		}
 
+#if CONFIG_EXTENDED_NUMERICS
 		if (OToDouble(o) == 0.0d) 
 		{
 			exponent = 0;
@@ -99,6 +102,37 @@ internal class GeneralFormatter : Formatter
 		{
 			exponent = (int) Math.Floor(Math.Log10(Math.Abs(OToDouble(o))));
 		}
+#else
+		// Determine the exponent without using floating-point.
+		if (IsSignedInt(o))
+		{
+			long lvalue = OToLong(o);
+			if (lvalue < 0)
+			{
+				lvalue = -lvalue;
+			}
+			exponent = 0;
+			while(lvalue >= 10)
+			{
+				++exponent;
+				lvalue /= 10;
+			}
+		}
+		else if (IsUnsignedInt(o))
+		{
+			ulong ulvalue = OToUlong(o);
+			exponent = 0;
+			while(ulvalue >= 10)
+			{
+				++exponent;
+				ulvalue /= 10;
+			}
+		}
+		else
+		{
+			exponent = 0;
+		}
+#endif
 
 		if (IsSignedInt(o) || IsUnsignedInt(o))
 		{

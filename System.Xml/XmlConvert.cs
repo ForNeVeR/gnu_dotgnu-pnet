@@ -417,6 +417,7 @@ public class XmlConvert
 										   DateTimeStyles.AllowTrailingWhite);
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
 	// Convert a string to a decimal value.
 	public static Decimal ToDecimal(String s)
 			{
@@ -446,6 +447,7 @@ public class XmlConvert
 									   NumberStyles.AllowTrailingWhite,
 								    NumberFormatInfo.InvariantInfo);
 			}
+#endif
 
 	// Convert a string to an Int16 value.
 	public static short ToInt16(String s)
@@ -511,6 +513,7 @@ public class XmlConvert
 								   NumberFormatInfo.InvariantInfo);
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
 	// Convert a string to a single-precision value.
 	public static float ToSingle(String s)
 			{
@@ -530,6 +533,7 @@ public class XmlConvert
 									   NumberStyles.AllowTrailingWhite,
 								    NumberFormatInfo.InvariantInfo);
 			}
+#endif
 
 	// Convert a string to a TimeSpan value.
 	public static TimeSpan ToTimeSpan(String s)
@@ -549,11 +553,13 @@ public class XmlConvert
 				return value.ToString(null);
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
 	// Convert a decimal value into a string.
 	public static String ToString(Decimal value)
 			{
 				return value.ToString(null, NumberFormatInfo.InvariantInfo);
 			}
+#endif
 
 	// Convert a byte value into a string.
 	public static String ToString(byte value)
@@ -607,6 +613,7 @@ public class XmlConvert
 				return value.ToString(null, NumberFormatInfo.InvariantInfo);
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
 	// Convert a single-precision value into a string.
 	public static String ToString(float value)
 			{
@@ -634,6 +641,7 @@ public class XmlConvert
 				}
 				return value.ToString("R", NumberFormatInfo.InvariantInfo);
 			}
+#endif
 
 	// Convert a TimeSpan value into a string.
 	public static String ToString(TimeSpan value)

@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if CONFIG_EXTENDED_NUMERICS
+
 [CLSCompliant(false)]
 [AttributeUsage(AttributeTargets.Field |
 				AttributeTargets.Parameter,
@@ -53,5 +55,7 @@ public sealed class DecimalConstantAttribute : Attribute
 			}
 
 }; // class DecimalConstantAttribute
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 }; // namespace System.Runtime.CompilerServices

@@ -301,6 +301,8 @@ public class TestXmlConvert : TestCase
 				// TODO - waiting for DateTime parsing routines to be finished
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Test the "XmlConvert.ToDecimal" method.
 	public void TestXmlConvertToDecimal()
 			{
@@ -361,6 +363,8 @@ public class TestXmlConvert : TestCase
 				Assert("ToDouble (5)", Double.IsNegativeInfinity
 							(XmlConvert.ToDouble("-INF")));
 			}
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	// Test the "XmlConvert.ToInt16" method.
 	public void TestXmlConvertToInt16()
@@ -707,6 +711,8 @@ public class TestXmlConvert : TestCase
 				}
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Test the "XmlConvert.ToSingle" method.
 	public void TestXmlConvertToSingle()
 			{
@@ -721,6 +727,8 @@ public class TestXmlConvert : TestCase
 				Assert("ToSingle (5)", Single.IsNegativeInfinity
 							(XmlConvert.ToSingle("-INF")));
 			}
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	// Test the "XmlConvert.ToTimeSpan" method.
 	public void TestXmlConvertToTimeSpan()

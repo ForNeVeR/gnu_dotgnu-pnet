@@ -82,6 +82,7 @@ internal abstract class Formatter
 		return (o is Byte || o is UInt16 || o is UInt32 || o is UInt64);
 	}
 	
+#if CONFIG_EXTENDED_NUMERICS
 	static protected bool IsFloat(Object o)
 	{
 		return (o is Single || o is Double);
@@ -156,6 +157,7 @@ internal abstract class Formatter
 		}
 		return ret;
 	}
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	static protected ulong OToUlong(Object o)
 	{
@@ -200,6 +202,7 @@ internal abstract class Formatter
 		{
 			ret = (ulong)o;
 		}
+#if CONFIG_EXTENDED_NUMERICS
 		else if (o is Single)
 		{
 			Single n = (Single)o;
@@ -215,6 +218,7 @@ internal abstract class Formatter
 			Decimal n = (Decimal)o;
 			ret = (ulong)n;
 		}
+#endif
 		else
 		{
 			throw new FormatException(_("Format_TypeException"));
@@ -265,6 +269,7 @@ internal abstract class Formatter
 			UInt64 n = (UInt64)o;
 			ret = (long)n;
 		}
+#if CONFIG_EXTENDED_NUMERICS
 		else if (o is Single)
 		{
 			Single n = (Single)o;
@@ -280,6 +285,7 @@ internal abstract class Formatter
 			Decimal n = (Decimal)o;
 			ret = (long)n;
 		}
+#endif
 		else
 		{
 			throw new FormatException(_("Format_TypeException"));
@@ -301,6 +307,7 @@ internal abstract class Formatter
 		{
 			ret = Formatter.FormatInteger(OToUlong(o));
 		}
+#if CONFIG_EXTENDED_NUMERICS
 		else if (IsDecimal(o))
 		{
 			// Rounding code
@@ -357,6 +364,7 @@ internal abstract class Formatter
 						,precision);
 			}
 		}
+#endif
 		else
 		{
 			//  This is a bad place to be.
@@ -383,6 +391,7 @@ internal abstract class Formatter
 		return ret.ToString();
 	}
 
+#if CONFIG_EXTENDED_NUMERICS
 	static protected string FormatDecimal(decimal value)
 	{
 		//  Guard clause(s)
@@ -465,6 +474,7 @@ internal abstract class Formatter
 
 		return sb.ToString();
 	}
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	static protected string GroupInteger(string value, int[] groupSizes,
 											string separator)

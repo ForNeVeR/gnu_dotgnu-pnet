@@ -54,15 +54,17 @@ public sealed class Convert
 	public static bool ToBoolean(long value) { return (value != 0); }
 	[CLSCompliant(false)]
 	public static bool ToBoolean(ulong value) { return (value != 0); }
+#if CONFIG_EXTENDED_NUMERICS
 	public static bool ToBoolean(float value) { return (value != 0.0); }
 	public static bool ToBoolean(double value) { return (value != 0.0); }
-	public static bool ToBoolean(String value)
-			{
-				return Boolean.Parse(value);
-			}
 	public static bool ToBoolean(Decimal value)
 			{
 				return (value != 0.0m);
+			}
+#endif
+	public static bool ToBoolean(String value)
+			{
+				return Boolean.Parse(value);
 			}
 #if !ECMA_COMPAT
 	public static bool ToBoolean(char value)
@@ -143,6 +145,7 @@ public sealed class Convert
 				{
 					return ToBoolean((ulong)value);
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToBoolean((float)value);
@@ -155,6 +158,7 @@ public sealed class Convert
 				{
 					return ToBoolean((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToBoolean((String)value);
@@ -268,6 +272,7 @@ public sealed class Convert
 					throw new OverflowException(_("Overflow_Byte"));
 				}
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public static byte ToByte(float value)
 			{
 				return ToByte((double)value);
@@ -280,6 +285,7 @@ public sealed class Convert
 			{
 				return Decimal.ToByte(Decimal.Round(value, 0));
 			}
+#endif
 	public static byte ToByte(String value)
 			{
 				return Byte.Parse(value);
@@ -368,6 +374,7 @@ public sealed class Convert
 				{
 					return ToByte((ulong)value);
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToByte((float)value);
@@ -380,6 +387,7 @@ public sealed class Convert
 				{
 					return ToByte((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToByte((String)value);
@@ -499,6 +507,7 @@ public sealed class Convert
 					throw new OverflowException(_("Overflow_SByte"));
 				}
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	[CLSCompliant(false)]
 	public static sbyte ToSByte(float value)
 			{
@@ -514,6 +523,7 @@ public sealed class Convert
 			{
 				return Decimal.ToSByte(Decimal.Round(value, 0));
 			}
+#endif
 	[CLSCompliant(false)]
 	public static sbyte ToSByte(String value)
 			{
@@ -607,6 +617,7 @@ public sealed class Convert
 				{
 					return ToSByte((ulong)value);
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToSByte((float)value);
@@ -619,6 +630,7 @@ public sealed class Convert
 				{
 					return ToSByte((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToSByte((String)value);
@@ -718,6 +730,7 @@ public sealed class Convert
 					throw new OverflowException(_("Overflow_Int16"));
 				}
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public static short ToInt16(float value)
 			{
 				return ToInt16((double)value);
@@ -730,6 +743,7 @@ public sealed class Convert
 			{
 				return Decimal.ToInt16(Decimal.Round(value, 0));
 			}
+#endif
 	public static short ToInt16(String value)
 			{
 				return Int16.Parse(value);
@@ -818,6 +832,7 @@ public sealed class Convert
 				{
 					return ToInt16((ulong)value);
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToInt16((float)value);
@@ -830,6 +845,7 @@ public sealed class Convert
 				{
 					return ToInt16((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToInt16((String)value);
@@ -938,6 +954,7 @@ public sealed class Convert
 			{
 				return unchecked((ushort)value);
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	[CLSCompliant(false)]
 	public static ushort ToUInt16(float value)
 			{
@@ -953,6 +970,7 @@ public sealed class Convert
 			{
 				return Decimal.ToUInt16(Decimal.Round(value, 0));
 			}
+#endif
 	[CLSCompliant(false)]
 	public static ushort ToUInt16(String value)
 			{
@@ -1046,6 +1064,7 @@ public sealed class Convert
 				{
 					return ToUInt16((ulong)value);
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToUInt16((float)value);
@@ -1058,6 +1077,7 @@ public sealed class Convert
 				{
 					return ToUInt16((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToUInt16((String)value);
@@ -1136,6 +1156,7 @@ public sealed class Convert
 			{
 				return unchecked((int)value);
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public static int ToInt32(float value)
 			{
 				return ToInt32((double)value);
@@ -1159,6 +1180,7 @@ public sealed class Convert
 			{
 				return Decimal.ToInt32(Decimal.Round(value, 0));
 			}
+#endif
 	public static int ToInt32(String value)
 			{
 				return Int32.Parse(value);
@@ -1246,6 +1268,7 @@ public sealed class Convert
 				{
 					return ToInt32((ulong)value);
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToInt32((float)value);
@@ -1258,6 +1281,7 @@ public sealed class Convert
 				{
 					return ToInt32((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToInt32((String)value);
@@ -1356,6 +1380,7 @@ public sealed class Convert
 			{
 				return unchecked((uint)value);
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	[CLSCompliant(false)]
 	public static uint ToUInt32(float value)
 			{
@@ -1382,6 +1407,7 @@ public sealed class Convert
 			{
 				return Decimal.ToUInt32(Decimal.Round(value, 0));
 			}
+#endif
 	[CLSCompliant(false)]
 	public static uint ToUInt32(String value)
 			{
@@ -1474,6 +1500,7 @@ public sealed class Convert
 				{
 					return ToUInt32((ulong)value);
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToUInt32((float)value);
@@ -1486,6 +1513,7 @@ public sealed class Convert
 				{
 					return ToUInt32((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToUInt32((String)value);
@@ -1550,6 +1578,7 @@ public sealed class Convert
 			{
 				return unchecked((long)value);
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public static long ToInt64(float value)
 			{
 				return ToInt64((double)value);
@@ -1573,6 +1602,7 @@ public sealed class Convert
 			{
 				return Decimal.ToInt64(Decimal.Round(value, 0));
 			}
+#endif
 	public static long ToInt64(String value)
 			{
 				return Int64.Parse(value);
@@ -1660,6 +1690,7 @@ public sealed class Convert
 				{
 					return ToInt64((ulong)value);
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToInt64((float)value);
@@ -1672,6 +1703,7 @@ public sealed class Convert
 				{
 					return ToInt64((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToInt64((String)value);
@@ -1763,6 +1795,7 @@ public sealed class Convert
 			{
 				return unchecked((ulong)value);
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	[CLSCompliant(false)]
 	public static ulong ToUInt64(float value)
 			{
@@ -1789,6 +1822,7 @@ public sealed class Convert
 			{
 				return Decimal.ToUInt64(Decimal.Round(value, 0));
 			}
+#endif
 	[CLSCompliant(false)]
 	public static ulong ToUInt64(String value)
 			{
@@ -1881,6 +1915,7 @@ public sealed class Convert
 				{
 					return (ulong)value;
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToUInt64((float)value);
@@ -1893,6 +1928,7 @@ public sealed class Convert
 				{
 					return ToUInt64((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToUInt64((String)value);
@@ -2010,6 +2046,7 @@ public sealed class Convert
 				}
 			}
 #if !ECMA_COMPAT
+#if CONFIG_EXTENDED_NUMERICS
 	public static char ToChar(float value)
 			{
 				return ((IConvertible)value).ToChar(null);
@@ -2022,6 +2059,7 @@ public sealed class Convert
 			{
 				return ((IConvertible)value).ToChar(null);
 			}
+#endif
 	public static char ToChar(Object value)
 			{
 				if(value != null)
@@ -2092,6 +2130,7 @@ public sealed class Convert
 				{
 					return ToChar((ulong)value);
 				}
+#if CONFIG_EXTENDED_NUMERICS
 				else if(type == typeof(float))
 				{
 					return ToChar((float)value);
@@ -2104,6 +2143,7 @@ public sealed class Convert
 				{
 					return ToChar((Decimal)value);
 				}
+#endif
 				else if(type == typeof(String))
 				{
 					return ToChar((String)value);
@@ -2121,6 +2161,8 @@ public sealed class Convert
 				}
 			}
 #endif // ECMA_COMPAT
+
+#if CONFIG_EXTENDED_NUMERICS
 
 	// Convert various types into Single.
 	public static float ToSingle(bool value) { return (value ? 1.0f : 0.0f); }
@@ -2434,6 +2476,8 @@ public sealed class Convert
 			}
 #endif // ECMA_COMPAT
 
+#endif // CONFIG_EXTENDED_NUMERICS
+
 	// Convert various types into String.
 	public static String ToString(bool value)
 			{
@@ -2515,6 +2559,7 @@ public sealed class Convert
 			{
 				return value.ToString();
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public static String ToString(float value)
 			{
 				return value.ToString();
@@ -2539,6 +2584,7 @@ public sealed class Convert
 			{
 				return value.ToString(provider);
 			}
+#endif
 	public static String ToString(DateTime value)
 			{
 				return value.ToString();
@@ -2761,6 +2807,8 @@ public sealed class Convert
 			}
 #endif // !ECMA_COMPAT
 
+#if CONFIG_EXTENDED_NUMERICS
+
 	// Convert various types into Decimal.
 	public static Decimal ToDecimal(bool value)
 			{
@@ -2908,6 +2956,8 @@ public sealed class Convert
 				}
 			}
 #endif // !ECMA_COMPAT
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 #if !ECMA_COMPAT
 
@@ -3643,7 +3693,11 @@ public sealed class Convert
 			#else // ECMA_COMPAT
 				// Perform primitive type conversions the hard way
 				// because we don't have support for IConvertible.
+			#if CONFIG_EXTENDED_NUMERICS
 				if(objType != typeof(String) && objType != typeof(Decimal))
+			#else
+				if(objType != typeof(String))
+			#endif
 				{
 					try
 					{
@@ -3683,6 +3737,7 @@ public sealed class Convert
 						{
 							return ToUInt64(obj);
 						}
+#if CONFIG_EXTENDED_NUMERICS
 						else if(toType == typeof(float))
 						{
 							return ToSingle(obj);
@@ -3695,6 +3750,7 @@ public sealed class Convert
 						{
 							return ToDecimal(obj);
 						}
+#endif
 					}
 					catch(OverflowException)
 					{
@@ -3724,9 +3780,14 @@ public sealed class Convert
 							to == typeof(int) ||
 							to == typeof(uint) ||
 							to == typeof(long) ||
-							to == typeof(ulong) ||
+							to == typeof(ulong)
+						#if CONFIG_EXTENDED_NUMERICS
+							||
 							to == typeof(float) ||
 							to == typeof(double));
+						#else
+							);
+						#endif
 				}
 				else if(from == typeof(byte))
 				{
@@ -3737,26 +3798,41 @@ public sealed class Convert
 							to == typeof(int) ||
 							to == typeof(uint) ||
 							to == typeof(long) ||
-							to == typeof(ulong) ||
+							to == typeof(ulong)
+						#if CONFIG_EXTENDED_NUMERICS
+							||
 							to == typeof(float) ||
 							to == typeof(double));
+						#else
+							);
+						#endif
 				}
 				else if(from == typeof(sbyte))
 				{
 					return (to == typeof(sbyte) ||
 							to == typeof(short) ||
 							to == typeof(int) ||
-							to == typeof(long) ||
+							to == typeof(long)
+						#if CONFIG_EXTENDED_NUMERICS
+							||
 							to == typeof(float) ||
 							to == typeof(double));
+						#else
+							);
+						#endif
 				}
 				else if(from == typeof(short))
 				{
 					return (to == typeof(short) ||
 							to == typeof(int) ||
-							to == typeof(long) ||
+							to == typeof(long)
+						#if CONFIG_EXTENDED_NUMERICS
+							||
 							to == typeof(float) ||
 							to == typeof(double));
+						#else
+							);
+						#endif
 				}
 				else if(from == typeof(ushort) || from == typeof(char))
 				{
@@ -3765,36 +3841,62 @@ public sealed class Convert
 							to == typeof(int) ||
 							to == typeof(uint) ||
 							to == typeof(long) ||
-							to == typeof(ulong) ||
+							to == typeof(ulong)
+						#if CONFIG_EXTENDED_NUMERICS
+							||
 							to == typeof(float) ||
 							to == typeof(double));
+						#else
+							);
+						#endif
 				}
 				else if(from == typeof(int))
 				{
 					return (to == typeof(int) ||
-							to == typeof(long) ||
+							to == typeof(long)
+						#if CONFIG_EXTENDED_NUMERICS
+							||
 							to == typeof(float) ||
 							to == typeof(double));
+						#else
+							);
+						#endif
 				}
 				else if(from == typeof(uint))
 				{
 					return (to == typeof(uint) ||
-							to == typeof(ulong) ||
+							to == typeof(ulong)
+						#if CONFIG_EXTENDED_NUMERICS
+							||
 							to == typeof(float) ||
 							to == typeof(double));
+						#else
+							);
+						#endif
 				}
 				else if(from == typeof(long))
 				{
-					return (to == typeof(long) ||
+					return (to == typeof(long)
+						#if CONFIG_EXTENDED_NUMERICS
+							||
 							to == typeof(float) ||
 							to == typeof(double));
+						#else
+							);
+						#endif
 				}
 				else if(from == typeof(ulong))
 				{
-					return (to == typeof(ulong) ||
+					return (to == typeof(ulong)
+						#if CONFIG_EXTENDED_NUMERICS
+							||
 							to == typeof(float) ||
 							to == typeof(double));
+						#else
+							);
+						#endif
 				}
+			#if CONFIG_EXTENDED_NUMERICS
 				else if(from == typeof(float))
 				{
 					return (to == typeof(float) ||
@@ -3804,6 +3906,7 @@ public sealed class Convert
 				{
 					return (to == typeof(double));
 				}
+			#endif
 				return false;
 			}
 

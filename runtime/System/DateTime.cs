@@ -800,6 +800,7 @@ public struct DateTime : IComparable, IFormattable
 	public TimeSpan Subtract(DateTime d)
 			{ return new TimeSpan(value_ - d.value_); }
 
+#if CONFIG_EXTENDED_NUMERICS
 	// Internal version of the "Add*" methods.
 	private DateTime DoAdd(double value, long multiplier)
 			{
@@ -836,6 +837,11 @@ public struct DateTime : IComparable, IFormattable
 			{
 				return DoAdd(value, TimeSpan.TicksPerMinute);
 			}
+	public DateTime AddSeconds(double value)
+			{
+				return DoAdd(value, TimeSpan.TicksPerSecond);
+			}
+#endif // CONFIG_EXTENDED_NUMERICS
 	public DateTime AddMonths(int months)
 			{
 				// Crack open this DateTime value.
@@ -872,10 +878,6 @@ public struct DateTime : IComparable, IFormattable
 				}
 				return new DateTime(year, month, day,
 									hour, minute, second, fractions);
-			}
-	public DateTime AddSeconds(double value)
-			{
-				return DoAdd(value, TimeSpan.TicksPerSecond);
 			}
 	public DateTime AddTicks(long value)
 			{

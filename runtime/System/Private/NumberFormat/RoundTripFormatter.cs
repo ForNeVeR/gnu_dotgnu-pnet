@@ -35,6 +35,7 @@ internal class RoundTripFormatter : Formatter
 
 	public override string Format(Object o, IFormatProvider provider)
 	{
+#if CONFIG_EXTENDED_NUMERICS
 		//  Calculate precision
 		int precision;
 		if (o is Single) precision = 7;
@@ -64,6 +65,9 @@ internal class RoundTripFormatter : Formatter
 								Math.Min(rawnumber.Length-decpt, precision)));
 
 		return ret.ToString();
+#else
+		throw new FormatException(_("Format_TypeException"));
+#endif
 	}		
 } // class RoundTripFormatter
 

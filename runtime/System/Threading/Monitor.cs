@@ -125,7 +125,12 @@ public sealed class Monitor
 	// Convert a TimeSpan timeout into a number of milliseconds.
 	internal static int TimeSpanToMS(TimeSpan timeout)
 			{
-				long ms = (long)(timeout.TotalMilliseconds);
+				long ms = timeout.Ticks;
+				if(ms == -1L)
+				{
+					return -1;
+				}
+				ms /= TimeSpan.TicksPerMillisecond;
 				if(ms < -1L || ms > (long)Int32.MaxValue)
 				{
 					throw new ArgumentOutOfRangeException

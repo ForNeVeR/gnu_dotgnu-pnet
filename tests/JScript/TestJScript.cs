@@ -29,6 +29,7 @@ public class TestJScript
 				TestSuite fullSuite, suite;
 				fullSuite = new TestSuite("JScript Tests");
 
+#if CONFIG_EXTENDED_NUMERICS && CONFIG_REFLECTION
 				suite = new TestSuite("Parser Tests");
 				suite.AddTests(typeof(TestScanner));
 				suite.AddTests(typeof(TestParser));
@@ -42,6 +43,7 @@ public class TestJScript
 				suite.AddTests(typeof(TestGlobal));
 				fullSuite.AddTest(suite);
 
+#endif
 				return fullSuite;
 			}
 

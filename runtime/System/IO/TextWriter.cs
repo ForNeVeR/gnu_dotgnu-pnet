@@ -149,6 +149,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 					--count;
 				}
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public virtual void Write(double value)
 			{
 				Write(value.ToString(null, FormatProvider));
@@ -161,6 +162,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 			{
 				Write(value.ToString(null, FormatProvider));
 			}
+#endif
 	public virtual void Write(int value)
 			{
 				Write(value.ToString(null, FormatProvider));
@@ -237,6 +239,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 				Write(value, index, count);
 				WriteLine();
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public virtual void WriteLine(double value)
 			{
 				Write(value);
@@ -252,6 +255,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 				Write(value);
 				WriteLine();
 			}
+#endif
 	public virtual void WriteLine(int value)
 			{
 				Write(value);
@@ -446,6 +450,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 						writer.Write(value, index, count);
 					}
 				}
+#if CONFIG_EXTENDED_NUMERICS
 		public override void Write(double value)
 				{
 					lock(this)
@@ -467,6 +472,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 						writer.Write(value);
 					}
 				}
+#endif
 		public override void Write(int value)
 				{
 					lock(this)
@@ -579,6 +585,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 						writer.WriteLine(value, index, count);
 					}
 				}
+#if CONFIG_EXTENDED_NUMERICS
 		public override void WriteLine(double value)
 				{
 					lock(this)
@@ -600,6 +607,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 						writer.WriteLine(value);
 					}
 				}
+#endif
 		public override void WriteLine(int value)
 				{
 					lock(this)

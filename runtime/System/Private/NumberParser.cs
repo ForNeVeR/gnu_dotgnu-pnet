@@ -1018,6 +1018,7 @@ internal sealed class NumberParser
 		return work;
 	}
 
+#if CONFIG_EXTENDED_NUMERICS
 	public static Decimal ParseDecimal(String s, NumberStyles style,
 								       NumberFormatInfo nfi)
 	{
@@ -1223,6 +1224,8 @@ internal sealed class NumberParser
 
 		return work;
 	}
+#endif // CONFIG_EXTENDED_NUMERICS
+
 }; // class NumberParser
 
 }; // namespace System.Private

@@ -311,6 +311,7 @@ public sealed class StringBuilder
 			{
 				return Append(value.ToString());
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public StringBuilder Append(float value)
 			{
 				return Append(value.ToString());
@@ -323,6 +324,7 @@ public sealed class StringBuilder
 			{
 				return Append(value.ToString());
 			}
+#endif
 	public StringBuilder Append(Object value)
 			{
 				if(value != null)
@@ -582,6 +584,7 @@ public sealed class StringBuilder
 			{
 				return Insert(index, value.ToString());
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public StringBuilder Insert(int index, float value)
 			{
 				return Insert(index, value.ToString());
@@ -594,6 +597,7 @@ public sealed class StringBuilder
 			{
 				return Insert(index, value.ToString());
 			}
+#endif
 	public StringBuilder Insert(int index, Object value)
 			{
 				if(value != null)

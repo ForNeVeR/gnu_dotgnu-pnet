@@ -223,6 +223,7 @@ public sealed class Console
 			{
 				Out.Write(value, index, count);
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public static void Write(double value)
 			{
 				Out.Write(value);
@@ -235,6 +236,7 @@ public sealed class Console
 			{
 				Out.Write(value);
 			}
+#endif
 	public static void Write(int value)
 			{
 				Out.Write(value);
@@ -304,6 +306,7 @@ public sealed class Console
 			{
 				Out.WriteLine(value, index, count);
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public static void WriteLine(double value)
 			{
 				Out.WriteLine(value);
@@ -316,6 +319,7 @@ public sealed class Console
 			{
 				Out.WriteLine(value);
 			}
+#endif
 	public static void WriteLine(int value)
 			{
 				Out.WriteLine(value);

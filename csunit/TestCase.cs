@@ -208,6 +208,7 @@ public abstract class TestCase : Test
 					EqFail(null, expected, actual);
 				}
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public static void AssertEquals(double expected, double actual,
 								    double delta)
 			{
@@ -218,6 +219,7 @@ public abstract class TestCase : Test
 			{
 				AssertEquals(null, expected, actual, delta);
 			}
+#endif
 	public static void AssertEquals(String expected, String actual)
 			{
 				if(expected != actual)
@@ -256,6 +258,7 @@ public abstract class TestCase : Test
 					EqFail(msg, expected, actual);
 				}
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public static void AssertEquals(String msg, double expected,
 									double actual, double delta)
 			{
@@ -272,6 +275,7 @@ public abstract class TestCase : Test
 					EqFail(msg, expected, actual);
 				}
 			}
+#endif
 	public static void AssertEquals(String msg, String expected, String actual)
 			{
 				if(expected != actual)

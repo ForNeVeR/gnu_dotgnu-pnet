@@ -40,6 +40,7 @@ internal class ScientificFormatter : Formatter
 
 	public override string Format(Object o, IFormatProvider provider)
 	{
+#if CONFIG_EXTENDED_NUMERICS
 		bool isNegative = false;
 
 		double value;
@@ -116,6 +117,9 @@ internal class ScientificFormatter : Formatter
 													.PadLeft(3,'0'));
 
 		return ret.ToString();
+#else // !CONFIG_EXTENDED_NUMERICS
+		return String.Empty;
+#endif // !CONFIG_EXTENDED_NUMERICS
 	}		
 } // class ScientificFormatter
 

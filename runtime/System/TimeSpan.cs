@@ -49,15 +49,16 @@ public struct TimeSpan : IComparable
 	public TimeSpan(int days, int hours, int minutes, int seconds,
 					int milliseconds)
 			{
-				Decimal result;
 				try
 				{
-					result = ((Decimal)days) * ((Decimal)TicksPerDay) +
-							 ((Decimal)hours) * ((Decimal)TicksPerHour) +
-							 ((Decimal)minutes) * ((Decimal)TicksPerMinute) +
-							 ((Decimal)seconds) * ((Decimal)TicksPerSecond) +
-							 ((Decimal)milliseconds) * 10000.0m;
-					value_ = Decimal.ToInt64(result);
+					checked
+					{
+						value_ = ((long)days) * TicksPerDay +
+								 ((long)hours) * TicksPerHour +
+								 ((long)minutes) * TicksPerMinute +
+								 ((long)seconds) * TicksPerSecond +
+								 ((long)milliseconds) * TicksPerMillisecond;
+					}
 				}
 				catch(OverflowException)
 				{
@@ -168,7 +169,14 @@ public struct TimeSpan : IComparable
 	// Return the absolute duration of a TimeSpan value.
 	public TimeSpan Duration()
 			{
-				return new TimeSpan(Math.Abs(value_));
+				if(value_ < 0)
+				{
+					return new TimeSpan(-value_);
+				}
+				else
+				{
+					return this;
+				}
 			}
 
 	// Determine if this TimeSpan object is equal to another Object.
@@ -190,6 +198,7 @@ public struct TimeSpan : IComparable
 				return (t1.value_ == t2.value_);
 			}
 
+#if CONFIG_EXTENDED_NUMERICS
 	// Convert a floating point number of days into a TimeSpan.
 	public static TimeSpan FromDays(double value)
 			{
@@ -297,6 +306,7 @@ public struct TimeSpan : IComparable
 							((long)(value * (double)TicksPerSecond));
 				}
 			}
+#endif // CONFIG_EXTENDED_NUMERICS
 
 	// Convert a number of ticks into a TimeSpan.
 	public static TimeSpan FromTicks(long ticks)
@@ -328,8 +338,8 @@ public struct TimeSpan : IComparable
 	public static TimeSpan Parse (String s)
 			{
 				long numberofticks = 0;
-				int days = 0, hours, minutes, seconds, fractions;
-				double fractionsinseconds;
+				int days = 0, hours, minutes, seconds;
+				long fractions;
 				int fractionslength = 0;
 				String fractionss = String.Empty;
 				String[] tempstringarray;
@@ -387,15 +397,26 @@ public struct TimeSpan : IComparable
 				}
 
 				//Calculate the fractions expressed in a second
-				fractions = Int32.Parse(fractionss);
-				fractionsinseconds = fractions / (Math.Pow(10,fractionslength));
+				if(fractionss != String.Empty)
+				{
+					fractions = Int32.Parse(fractionss) * TicksPerSecond;
+					while(fractionslength > 0)
+					{
+						fractions /= 10;
+						--fractionslength;
+					}
+				}
+				else
+				{
+					fractions = 0;
+				}
 
 				//Calculate the numberofticks
 				numberofticks += (days * TicksPerDay);
 				numberofticks += (hours * TicksPerHour);
 				numberofticks += (minutes * TicksPerMinute);
 				numberofticks += (seconds * TicksPerSecond);
-				numberofticks += (fractions * TicksPerSecond);
+				numberofticks += fractions;
 
 				//Apply the minus specifier
 				if (minus == true) numberofticks = 0 - numberofticks;
@@ -505,6 +526,7 @@ public struct TimeSpan : IComparable
 					return value_;
 				}
 			}
+#if CONFIG_EXTENDED_NUMERICS
 	public double TotalDays
 			{
 				get
@@ -552,6 +574,7 @@ public struct TimeSpan : IComparable
 					}
 				}
 			}
+#endif // CONFIG_EXTENDED_NUMERICS
 
 }; // class TimeSpan
 

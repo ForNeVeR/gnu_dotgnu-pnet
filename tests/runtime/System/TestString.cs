@@ -359,6 +359,7 @@ public class TestString : TestCase
 		AssertEquals ("String.Format (\"{0:D2}\", 9)",
 				"09", String.Format("{0:D2}", 9));
 
+#if CONFIG_EXTENDED_NUMERICS
 		AssertEquals ("String.Format (\"{0:F2}\", 1234567.89)",
 				"1234567.89", String.Format("{0:F2}", 1234567.89));
 
@@ -383,7 +384,7 @@ public class TestString : TestCase
 
 		AssertEquals("String.Format(\"{0:###0.0#}\", 0)",
 				"0.0", String.Format("{0:###0.0#}", 0));
-
+#endif
 	}
 
 	public void TestStringGetEnumerator()

@@ -43,6 +43,8 @@ public class TestDecimal : TestCase
 	{
 		// Nothing to do here.
 	}
+#if CONFIG_EXTENDED_NUMERICS
+
 	public void TestConstructor()
 	{
 	/*TODO*/
@@ -245,5 +247,5 @@ public class TestDecimal : TestCase
 	{
 	/*TODO*/
 	}
-
+#endif // CONFIG_EXTENDED_NUMERICS
 }

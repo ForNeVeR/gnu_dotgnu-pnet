@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if CONFIG_EXTENDED_NUMERICS
+
 using System.Private;
 using System.Private.NumberFormat;
 using System.Globalization;
@@ -705,5 +707,7 @@ public struct Decimal : IComparable, IFormattable
 			}
 
 }; // class Decimal
+
+#endif // CONFIG_EXTENDED_NUMERICS
 
 }; // namespace System

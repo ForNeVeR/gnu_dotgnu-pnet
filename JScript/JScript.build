@@ -11,8 +11,14 @@
 				 optimize="true">
 
 			<sources>
-				<includes name="**/*.cs"/>
-				<excludes name="jsrun.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Builtins/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="CodeDom/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Execute/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Jsc/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Nodes/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Parser/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Vsa/*.cs"/>
+				<file name="jsstub.cs"/>
 			</sources>
 
 			<references>
@@ -42,8 +48,14 @@
 			<define name="TEST" value="true"/>
 
 			<sources>
-				<includes name="**/*.cs"/>
-				<excludes name="jsrun.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Builtins/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="CodeDom/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Execute/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Jsc/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Nodes/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Parser/*.cs"/>
+				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Vsa/*.cs"/>
+				<file name="jsstub.cs"/>
 			</sources>
 
 			<references>

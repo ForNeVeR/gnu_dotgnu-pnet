@@ -33,9 +33,11 @@ public sealed class Interlocked
 	extern public static int CompareExchange(ref int location1,
 										     int value, int comparand);
 
+#if CONFIG_EXTENDED_NUMERICS
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static float CompareExchange(ref float location1,
 											   float value, float comparand);
+#endif
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Object CompareExchange(ref Object location1,
@@ -53,8 +55,10 @@ public sealed class Interlocked
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int Exchange(ref int location, int value);
 
+#if CONFIG_EXTENDED_NUMERICS
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static float Exchange(ref float location, float value);
+#endif
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Object Exchange(ref Object location, Object value);

@@ -26,6 +26,9 @@
 
 	* engine/lib_emit.c: fix switch on PEFileKinds in ClrSave.
 
+	* engine/lib_emit.c: add some null pointer checks and metadata locking
+	to ClrModuleCreate.
+
 2003-07-22  Gopal.V  <gopalv82@symonds.net>
 
 	* configure.in, engine/dumpconfig.c, engine/Makefile.am,

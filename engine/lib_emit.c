@@ -598,10 +598,30 @@ ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
                                               ILNativeInt assembly,
                                               ILString *name)
 {
-	ILImage *image = ILProgramItem_Image(assembly);
-	ILToken token = ILProgramItem_Token(assembly);
-	const char *str = (const char *)ILStringToAnsi(_thread, name);
-	return (ILNativeInt)ILModuleCreate(image, token, str, NULL);
+	ILModule *retval;
+	ILImage *image;
+	ILToken token;
+	const char *str;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	image = ILProgramItem_Image(assembly);
+	token = ILProgramItem_Token(assembly);
+	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (!(retval = ILModuleCreate(image, token, str, NULL)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILNativeInt)retval;
 }
 
 /*

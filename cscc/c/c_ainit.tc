@@ -248,8 +248,29 @@ static void InitializerSemAnalysis(ILGenInfo *info, ILType *type,
 			}
 			if(!ILField_IsStatic(field))
 			{
-				InitializerSemAnalysis
-					(info, ILFieldGetTypeWithPrefixes(field), init, iter);
+				elemType = ILFieldGetTypeWithPrefixes(field);
+				if(yyisa(node, ILNode_CArrayInit) &&
+				   (CTypeIsStruct(elemType) || CTypeIsUnion(elemType) ||
+				    CTypeIsArray(elemType)))
+				{
+					/* The initializer is specified as a nested scope */
+					ILNode_ListIter_Init
+						(&inner, ((ILNode_CArrayInit *)node)->expr);
+					InitializerSemAnalysis
+						(info, elemType,
+						 ((ILNode_CArrayInit *)node)->expr, &inner);
+					if(ILNode_ListIter_Next(&inner) != 0)
+					{
+						CCWarningOnLine
+							(yygetfilename(init), yygetlinenum(init),
+							 _("excess elements in structure initializer"));
+					}
+					ILNode_ListIter_Next(iter);
+				}
+				else
+				{
+					InitializerSemAnalysis(info, elemType, init, iter);
+				}
 			}
 			node = IterLookAhead(iter);
 		}
@@ -650,7 +671,15 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 		/* Write the elements of a structure */
 		if(field)
 		{
-			ILGenFieldRef(info, IL_OP_LDFLDA, field);
+			if(CTypeIsComplex(ILClassToType(ILField_Owner(field))))
+			{
+				CAddComplexFieldOffset
+					(info, ILClassToType(ILField_Owner(field)), field);
+			}
+			else
+			{
+				ILGenFieldRef(info, IL_OP_LDFLDA, field);
+			}
 		}
 		classInfo = ILType_ToValueType(ILTypeStripPrefixes(type));
 		field = 0;
@@ -661,6 +690,10 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 			if(!node)
 			{
 				break;
+			}
+			if(ILField_IsStatic(field))
+			{
+				continue;
 			}
 			nextField = field;
 			while((nextField = (ILField *)ILClassNextMemberByKind
@@ -681,11 +714,21 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 				/* We are on the last field, so don't dup the pointer */
 				popped = 1;
 			}
-			if(!ILField_IsStatic(field))
+			elemType = ILFieldGetTypeWithPrefixes(field);
+			if(yyisa(node, ILNode_CArrayInit) &&
+			   (CTypeIsStruct(elemType) || CTypeIsUnion(elemType) ||
+			    CTypeIsArray(elemType)))
 			{
-				WriteInitializer
-					(info, ILFieldGetTypeWithPrefixes(field),
-					 iter, field);
+				/* The element is specified as a nested array init scope */
+				ILNode_ListIter_Init
+					(&inner, ((ILNode_CArrayInit *)node)->expr);
+				WriteInitializer(info, elemType, &inner, field);
+				ILNode_ListIter_Next(iter);
+			}
+			else
+			{
+				/* The element is specified inline within the parent */
+				WriteInitializer(info, elemType, iter, field);
 			}
 			node = IterLookAhead(iter);
 		}
@@ -699,13 +742,25 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 	{
 		/* Write an ordinary initializer value */
 		node = ILNode_ListIter_Next(iter);
-		ILNode_GenValue(node, info);
 		if(field)
 		{
-			ILGenFieldRef(info, IL_OP_STFLD, field);
+			if(CTypeIsComplex(ILClassToType(ILField_Owner(field))))
+			{
+				CAddComplexFieldOffset
+					(info, ILClassToType(ILField_Owner(field)), field);
+				ILNode_GenValue(node, info);
+				ILGenStoreManaged(info, ILTypeToMachineType(type),
+							  	  ILTypeStripPrefixes(type));
+			}
+			else
+			{
+				ILNode_GenValue(node, info);
+				ILGenFieldRef(info, IL_OP_STFLD, field);
+			}
 		}
 		else
 		{
+			ILNode_GenValue(node, info);
 			ILGenStoreManaged(info, ILTypeToMachineType(type),
 							  ILTypeStripPrefixes(type));
 		}

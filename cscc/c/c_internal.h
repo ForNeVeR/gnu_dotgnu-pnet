@@ -111,6 +111,11 @@ ILUInt32 CArrayInitializerSize(ILType *type, ILNode *init);
  */
 void CInhibitNodeRollback(void);
 
+/*
+ * Add the offset of a field within a complex type to the value on the stack.
+ */
+void CAddComplexFieldOffset(ILGenInfo *info, ILType *type, ILField *field);
+
 #ifdef	__cplusplus
 };
 #endif

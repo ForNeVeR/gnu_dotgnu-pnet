@@ -1,7 +1,9 @@
 /*
- * Testruntime.cs - Tests for the "System" namespace.
+ * SuiteThreading.cs - Tests for the "System.Threading" namespace.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Free Software Foundation
+ * 
+ * Authors:  Thong Nguyen (tum@veridicus.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,22 +23,16 @@
 using CSUnit;
 using System;
 
-public class Testruntime
+public class SuiteThreading
 {
-
 	public static TestSuite Suite()
-			{
-				// Each namespace has a "SuiteXXX" class that defines
-				// the tests in that namespace.  See the subdirectories
-				// for these classes when adding new tests.
-				TestSuite suite = new TestSuite("Runtime Tests");
-				suite.AddTest(SuiteSystem.Suite());
-				suite.AddTest(SuiteCollections.Suite());
-				suite.AddTest(SuiteText.Suite());
-				suite.AddTest(SuiteCryptography.Suite());
-				suite.AddTest(SuiteThreading.Suite());
-				return suite;
-			}
-
-}; // class Testruntime
-
+	{
+		TestSuite suite = new TestSuite("Threading Tests");
+		
+		suite.AddTests(typeof(TestWaitHandle));
+		suite.AddTests(typeof(TestManualResetEvent));
+		suite.AddTests(typeof(TestAutoResetEvent));
+		
+		return suite;
+	}
+}

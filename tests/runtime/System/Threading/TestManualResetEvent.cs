@@ -1,7 +1,9 @@
 /*
- * Testruntime.cs - Tests for the "System" namespace.
+ * TestBoolean.cs - Tests for the "Boolean" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Free Software Foundation.
+ *
+ * Authors: Thong Nguyen (tum@veridicus.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,23 +22,46 @@
 
 using CSUnit;
 using System;
+using System.Threading;
 
-public class Testruntime
+public class TestManualResetEvent
+	: TestCase
 {
+	private ManualResetEvent e1;
 
-	public static TestSuite Suite()
-			{
-				// Each namespace has a "SuiteXXX" class that defines
-				// the tests in that namespace.  See the subdirectories
-				// for these classes when adding new tests.
-				TestSuite suite = new TestSuite("Runtime Tests");
-				suite.AddTest(SuiteSystem.Suite());
-				suite.AddTest(SuiteCollections.Suite());
-				suite.AddTest(SuiteText.Suite());
-				suite.AddTest(SuiteCryptography.Suite());
-				suite.AddTest(SuiteThreading.Suite());
-				return suite;
-			}
+	public TestManualResetEvent(String name)
+		: base(name)
+	{
+	}
 
-}; // class Testruntime
+	protected override void Setup()
+	{
+	}
 
+	protected override void Cleanup()
+	{
+	}
+
+	public void TestWaitOne()
+	{
+		bool x;
+
+		e1 = new ManualResetEvent(false);
+
+		x = e1.WaitOne(10);
+
+		AssertEquals("WaitOne(unset)", x, false);
+
+		e1.Set();
+
+		x = e1.WaitOne(10);
+
+		AssertEquals("WaitOne(set)", x, true);
+
+		// It should still be set.
+
+		x = e1.WaitOne(10);
+
+		AssertEquals("WaitOne(set)", x, true);
+	}
+}

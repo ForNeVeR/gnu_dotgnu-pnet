@@ -387,6 +387,7 @@ static int ParseMember(ILDocTree *tree, ILDocType *type,
 	member->ilasmSignature = 0;
 	member->csSignature = 0;
 	member->returnType = 0;
+	member->libraryName = 0;
 	member->memberAttrs = ILDocInvalidAttrs;
 	member->parameters = 0;
 	member->attributes = 0;
@@ -597,6 +598,16 @@ static int ParseMember(ILDocTree *tree, ILDocType *type,
 				}
 				ILXMLSkip(reader);
 				ILXMLReadNext(reader);
+			}
+		}
+		else if(ILXMLIsStartTag(reader, "ExcludedLibrary") ||
+		        ILXMLIsStartTag(reader, "ExcludedLibraryName"))
+		{
+			/* Parse the library name that overrides the default */
+			member->libraryName = ILXMLGetContents(reader, 0);
+			if(!(member->libraryName))
+			{
+				return 0;
 			}
 		}
 		else

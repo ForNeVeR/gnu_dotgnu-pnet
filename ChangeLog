@@ -6,6 +6,9 @@
 	change "NotSupportedException" into "NotImplementedException",
 	to be ECMA-compatible.
 
+	* csdoc/doc_html.c, csdoc/doc_load.c, csdoc/doc_tree.h:
+	report the library that a type or member resides in.
+
 2002-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_conv.c, engine/lib_string.c, include/il_engine.h:

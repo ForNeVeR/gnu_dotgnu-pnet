@@ -170,6 +170,7 @@ struct _tagILDocMember
 	char		   *ilasmSignature;	/* ILASM signature for the type */
 	char		   *csSignature;	/* C# signature for the type */
 	char		   *returnType;		/* Return type (NULL for "void") */
+	char		   *libraryName;	/* Name of the containing library */
 	unsigned long	memberAttrs;	/* Metadata attribute flags */
 	ILDocParameter *parameters;		/* List of member parameters */
 	ILDocAttribute *attributes;		/* Attributes attached to the type */

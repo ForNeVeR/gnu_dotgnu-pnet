@@ -1506,6 +1506,19 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 		fputs("\n</BLOCKQUOTE>\n\n", stream);
 	}
 
+	/* Print the library for the member, if different from the type's */
+	if(member && member->libraryName)
+	{
+		if(!(member->type->library->name) ||
+		   strcmp(member->type->library->name, member->libraryName) != 0)
+		{
+			fputs("<H4>Library</H4>\n\n", stream);
+			fputs("<BLOCKQUOTE>\n", stream);
+			PrintString(stream, member->libraryName);
+			fputs("\n</BLOCKQUOTE>\n\n", stream);
+		}
+	}
+
 	/* Print the "See Also" section */
 	fputs("<H4>See Also</H4>\n\n", stream);
 	fputs("<BLOCKQUOTE>\n", stream);
@@ -1729,6 +1742,15 @@ static void ConvertType(FILE *stream, ILDocType *type,
 		fputs("<H4>Assembly</H4>\n\n", stream);
 		fputs("<BLOCKQUOTE>\n", stream);
 		PrintString(stream, type->assembly);
+		fputs("\n</BLOCKQUOTE>\n\n", stream);
+	}
+
+	/* Print the library information for the type */
+	if(type->library->name)
+	{
+		fputs("<H4>Library</H4>\n\n", stream);
+		fputs("<BLOCKQUOTE>\n", stream);
+		PrintString(stream, type->library->name);
 		fputs("\n</BLOCKQUOTE>\n\n", stream);
 	}
 

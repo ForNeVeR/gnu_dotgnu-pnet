@@ -113,14 +113,13 @@ public sealed class ImageList
 #endif
 
 	// Methods
-	[TODO]
 #if CONFIG_COMPONENT_MODEL
 	protected override void Dispose(bool disposing)
 #else
 	public void Dispose(bool disposing)
 #endif
 	{
-		/* TODO */
+		images.Dispose();
 	}
 #if !CONFIG_COMPACT_FORMS
 	public void Draw(Graphics g, Point pt, int index)
@@ -439,6 +438,14 @@ public sealed class ImageList
 		void ICollection.CopyTo(Array array, int index)
 		{
 			images.CopyTo(array,index);
+		}
+
+		internal void Dispose()
+		{
+			if (images == null)
+				return;
+			for (int i = 0; i < images.Count; i++)
+				(images[i] as Image).Dispose();
 		}
 
 	}; // class ImageList.ImageCollection

@@ -1,3 +1,9 @@
+2004-08-31  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Drawing.Xsharp/DrawingFont.cs: add a point size modifier
+	based on DPI because X treats point sizes correctly, while windows
+	appears to draw/measure them the same across different DPI settings.
+
 2004-08-25  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Drawing.Xsharp/DrawingFont.cs: remove the point size modifier

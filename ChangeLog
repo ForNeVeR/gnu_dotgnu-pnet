@@ -3,6 +3,11 @@
 
 	* engine/cvmc_branch.c: wrong offset for switch entries.
 
+	* engine/unroll_x86.c, engine/unroll_x86_arith.c,
+	engine/unroll_x86_branch.c, engine/unroll_x86_ptr.c,
+	engine/unroll_x86_var.c: implement code unrolling for CVM
+	object access instructions.
+
 2002-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll_x86.c (ReExecute): fix a bug in the stack height

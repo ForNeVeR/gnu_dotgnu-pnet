@@ -51,10 +51,10 @@ static void Divide(X86Unroll *unroll, int isSigned, int wantRemainder,
 	x86_branch8(unroll->out, X86_CC_EQ, 0, 0);
 	x86_alu_reg_imm(unroll->out, X86_CMP, X86_ECX, -1);
 	patch2 = unroll->out;
-	x86_branch8(unroll->out, X86_CC_NE, 0, 0);
+	x86_branch32(unroll->out, X86_CC_NE, 0, 0);
 	x86_alu_reg_imm(unroll->out, X86_CMP, X86_EAX, (int)0x80000000);
 	patch3 = unroll->out;
-	x86_branch8(unroll->out, X86_CC_NE, 0, 0);
+	x86_branch32(unroll->out, X86_CC_NE, 0, 0);
 	x86_patch(patch1, unroll->out);
 
 	/* Re-execute the division instruction to throw the exception */
@@ -464,9 +464,37 @@ case 0x100 + COP_PREFIX_FCMPG:
 }
 break;
 
-case 0x100 + COP_PREFIX_PCMP:
+case 0x100 + COP_PREFIX_ICMP:
 {
-	/* Compare pointer values with -1, 0, or 1 result */
+	/* Compare integer values with -1, 0, or 1 result */
+	unsigned char *patch1, *patch2, *patch3;
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
+	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
+	patch1 = unroll.out;
+	x86_branch8(unroll.out, X86_CC_GE, 0, 1);
+	x86_mov_reg_imm(unroll.out, reg, -1);
+	patch2 = unroll.out;
+	x86_jump8(unroll.out, 0);
+	x86_patch(patch1, unroll.out);
+	patch1 = unroll.out;
+	x86_branch8(unroll.out, X86_CC_EQ, 0, 0);
+	x86_mov_reg_imm(unroll.out, reg, 1);
+	patch3 = unroll.out;
+	x86_jump8(unroll.out, 0);
+	x86_patch(patch1, unroll.out);
+	x86_clear_reg(unroll.out, reg);
+	x86_patch(patch2, unroll.out);
+	x86_patch(patch3, unroll.out);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_PCMP:
+case 0x100 + COP_PREFIX_ICMP_UN:
+{
+	/* Compare unsigned word values with -1, 0, or 1 result */
 	unsigned char *patch1, *patch2, *patch3;
 	UNROLL_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2);

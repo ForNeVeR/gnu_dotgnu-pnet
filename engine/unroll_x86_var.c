@@ -113,6 +113,11 @@ case COP_PSTORE_0:
 	reg = GetTopWordRegister(&unroll);
 	x86_mov_membase_reg(unroll.out, REG_FRAME, 0, reg, 4);
 	FreeTopRegister(&unroll, 0);
+	if(unroll.thisValidated > 0)
+	{
+		/* The "this" variable must be re-validated */
+		unroll.thisValidated = 0;
+	}
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
@@ -162,6 +167,11 @@ case COP_PSTORE:
 	reg = GetTopWordRegister(&unroll);
 	x86_mov_membase_reg(unroll.out, REG_FRAME, temp * 4, reg, 4);
 	FreeTopRegister(&unroll, temp);
+	if(temp == 0 && unroll.thisValidated > 0)
+	{
+		/* The "this" variable must be re-validated */
+		unroll.thisValidated = 0;
+	}
 	MODIFY_UNROLL_PC(CVM_LEN_WIDE_SMALL);
 }
 break;
@@ -191,6 +201,13 @@ case COP_WADDR:
 	else
 	{
 		x86_lea_membase(unroll.out, reg, REG_FRAME, temp * 4);
+	}
+	if(temp == 0)
+	{
+		/* We don't know if someone might write to this address,
+		   so we have to assume that "this" will need to be
+		   validated always from now on */
+		unroll.thisValidated = -1;
 	}
 	MODIFY_UNROLL_PC(CVM_LEN_WIDE_SMALL);
 }
@@ -232,8 +249,6 @@ case COP_MK_LOCAL_3:
 }
 break;
 
-#if 0	/* TODO: doesn't work - not sure why just yet */
-
 case COP_DUP:
 {
 	/* Duplicate the top word on the stack */
@@ -268,8 +283,6 @@ case COP_DUP:
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
-
-#endif
 
 case COP_POP:
 {

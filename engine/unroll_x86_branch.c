@@ -267,10 +267,14 @@ case COP_SWITCH:
 	x86_branch8(unroll.out, X86_CC_GE, 0, 0);
 	x86_mov_reg_memindex(unroll.out, REG_PC, X86_NOBASEREG,
 						 (int)(pc + 12), reg, 2, 4);
+	FixStackHeight(&unroll);
+	if((unroll.regsSaved & REG_EBP_MASK) != 0)
+	{
+		x86_pop_reg(unroll.out, X86_EBP);
+	}
 	x86_jump_membase(unroll.out, REG_PC, 0);
 	x86_patch(patch, unroll.out);
-	x86_mov_reg_imm(unroll.out, REG_PC, (int)CVM_ARG_SWITCH_DEFAULT);
-	x86_jump_membase(unroll.out, REG_PC, 0);
+	BranchToPC(&unroll, CVM_ARG_SWITCH_DEFAULT);
 	pc = CVM_ARG_SWITCH_DEFAULT;
 	UNROLL_FLUSH();
 }

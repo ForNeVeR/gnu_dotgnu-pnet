@@ -98,6 +98,10 @@ static void FlushRegisterStack(X86Unroll *unroll)
 {
 	int index, reg, height;
 
+	/* Clear the cached local information */
+	unroll->cachedLocal = -1;
+	unroll->cachedReg = -1;
+
 	/* Flush the word registers from bottom-most to top-most */
 	for(index = 0; index < unroll->pseudoStackSize; ++index)
 	{
@@ -676,6 +680,8 @@ static int PeekTopWordRegister(X86Unroll *unroll)
 		int reg = unroll->pseudoStack[unroll->pseudoStackSize - 1];
 		if(reg != REG_FPU)
 		{
+			unroll->cachedLocal = -1;
+			unroll->cachedReg = -1;
 			return reg;
 		}
 	}

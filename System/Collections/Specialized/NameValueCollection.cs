@@ -24,196 +24,241 @@ namespace System.Collections.Specialized
 
 using System;
 using System.Collections;
+using System.Runtime.Serialization;
+using System.Text;
 
-public class NameValueCollection : ICollection, IEnumerable
+public class NameValueCollection : NameObjectCollectionBase
 {
+	// Internal state.
+	private String[] allKeysResult;
+	private String[] copyToResult;
 
 	// Constructors.
-	public NameValueCollection() : this(0) {}
-	public NameValueCollection(NameValueCollection col) : this(0, col) {}
+	public NameValueCollection()
+			: base(0, null, null)
+			{
+				// Nothing to do here.
+			}
+	public NameValueCollection(NameValueCollection col)
+			: base(0, null, null) 
+			{
+				Add(col);
+			}
 	public NameValueCollection(IHashCodeProvider hashProvider,
 							   IComparer comparer)
-			: this(0, hashProvider, comparer) {}
-	[TODO]
+			: base(0, hashProvider, comparer)
+			{
+				// Nothing to do here.
+			}
 	public NameValueCollection(int capacity)
+			: base(capacity, null, null)
 			{
-				if(capacity < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("capacity", S._("ArgRange_NonNegative"));
-				}
-				// TODO
+				// Nothing to do here.
 			}
-	[TODO]
 	public NameValueCollection(int capacity, NameValueCollection col)
+			: base(capacity, null, null)
 			{
-				if(capacity < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("capacity", S._("ArgRange_NonNegative"));
-				}
-				if(col == null)
-				{
-					throw new ArgumentNullException("col");
-				}
-				// TODO
+				Add(col);
 			}
-	[TODO]
 	public NameValueCollection(int capacity, IHashCodeProvider hashProvider,
 							   IComparer comparer)
+			: base(capacity, hashProvider, comparer)
 			{
-				if(capacity < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("capacity", S._("ArgRange_NonNegative"));
-				}
-				// TODO
+				// Nothing to do here.
 			}
+#if !ECMA_COMPAT
+	protected NameValueCollection(SerializationInfo info,
+								  StreamingContext context)
+			: base(info, context)
+			{
+				// TODO: serialization support.
+			}
+#endif
 
 	// Add a name/value pair to this collection.
-	[TODO]
 	public virtual void Add(String name, String value)
 			{
-				// TODO
+				if(IsReadOnly)
+				{
+					throw new NotSupportedException(S._("NotSupp_ReadOnly"));
+				}
+				InvalidateCachedArrays();
+				ArrayList strings = (ArrayList)(BaseGet(name));
+				if(strings == null)
+				{
+					strings = new ArrayList(1);
+					if(value != null)
+					{
+						strings.Add(value);
+					}
+					BaseAdd(name, strings);
+				}
+				else if(value != null)
+				{
+					strings.Add(value);
+				}
 			}
 
 	// Add the contents of another name/value collection to this collection.
-	[TODO]
 	public void Add(NameValueCollection c)
 			{
 				if(c == null)
 				{
 					throw new ArgumentNullException("c");
 				}
-				// TODO
+				int count = c.Count;
+				int posn;
+				String name;
+				ArrayList strings;
+				for(posn = 0; posn < count; ++posn)
+				{
+					name = c.BaseGetKey(posn);
+					strings = (ArrayList)(c.BaseGet(posn));
+					foreach(String value in strings)
+					{
+						Add(name, value);
+					}
+				}
 			}
 
-	// Implement the ICollection interface.
-	[TODO]
+	// Copy the strings in this collection to an array.
 	public void CopyTo(Array array, int index)
 			{
-				// TODO
-			}
-	int ICollection.Count
-			{
-				[TODO]
-				get
+				if(copyToResult == null)
 				{
-					// TODO
-					return 0;
+					int count = Count;
+					int posn;
+					copyToResult = new String [count];
+					for(posn = 0; posn < count; ++posn)
+					{
+						copyToResult[posn] = Get(posn);
+					}
 				}
-			}
-	bool ICollection.IsSynchronized
-			{
-				[TODO]
-				get
-				{
-					// TODO
-					return false;
-				}
-			}
-	Object ICollection.SyncRoot
-			{
-				[TODO]
-				get
-				{
-					// TODO
-					return this;
-				}
-			}
-
-	// Implement the IEnumerable interface.
-	[TODO]
-	IEnumerator IEnumerable.GetEnumerator()
-			{
-				// TODO
-				return null;
+				copyToResult.CopyTo(array, index);
 			}
 
 	// Clear the contents of this collection.
-	[TODO]
 	public void Clear()
 			{
-				// TODO
+				if(!IsReadOnly)
+				{
+					InvalidateCachedArrays();
+				}
+				BaseClear();
 			}
 
 	// Get a key at a particular index within this collection.
-	[TODO]
 	public virtual String GetKey(int index)
 			{
-				// TODO
-				return null;
+				return BaseGetKey(index);
+			}
+
+	// Collapse an array list of strings into a comma-separated value.
+	private static String CollapseToString(ArrayList strings)
+			{
+				int count = strings.Count;
+				if(count == 0)
+				{
+					return null;
+				}
+				else if(count == 1)
+				{
+					return (String)(strings[0]);
+				}
+				else
+				{
+					StringBuilder builder = new StringBuilder();
+					builder.Append((String)(strings[0]));
+					int posn;
+					for(posn = 1; posn < count; ++posn)
+					{
+						builder.Append(',');
+						builder.Append((String)(strings[posn]));
+					}
+					return builder.ToString();
+				}
+			}
+
+	// Collapse an array list of strings into an array.
+	private static String[] CollapseToArray(ArrayList strings)
+			{
+				String[] result = new String [strings.Count];
+				strings.CopyTo(result, 0);
+				return result;
 			}
 
 	// Get a value at a particular index within this collection.
-	[TODO]
 	public virtual String Get(int index)
 			{
-				// TODO
-				return null;
+				return CollapseToString((ArrayList)(BaseGet(index)));
 			}
 
 	// Get an array of values at a particular index within this collection.
-	[TODO]
 	public virtual String[] GetValues(int index)
 			{
-				// TODO
-				return null;
+				return CollapseToArray((ArrayList)(BaseGet(index)));
 			}
 
 	// Get the value associcated with a particular name.
-	[TODO]
 	public virtual String Get(String name)
 			{
-				// TODO
-				return null;
+				return CollapseToString((ArrayList)(BaseGet(name)));
 			}
 
 	// Get the array of values associcated with a particular name.
-	[TODO]
 	public virtual String[] GetValues(String name)
 			{
-				// TODO
-				return null;
+				return CollapseToArray((ArrayList)(BaseGet(name)));
 			}
 
 	// Determine if the collection has keys that are not null.
-	[TODO]
 	public bool HasKeys()
 			{
-				// TODO
-				return false;
+				return BaseHasKeys();
 			}
 
 	// Invalidate cached arrays within this collection.
-	[TODO]
 	protected void InvalidateCachedArrays()
 			{
-				// TODO
+				allKeysResult = null;
+				copyToResult = null;
 			}
 
 	// Remove an entry with a specified name from this collection.
-	[TODO]
 	public virtual void Remove(String name)
 			{
-				// TODO
+				if(!IsReadOnly)
+				{
+					InvalidateCachedArrays();
+				}
+				BaseRemove(name);
 			}
 
 	// Set the value associated with a specified name in this collection.
-	[TODO]
 	public virtual void Set(String name, String value)
 			{
-				// TODO
+				if(!IsReadOnly)
+				{
+					InvalidateCachedArrays();
+				}
+				ArrayList strings = new ArrayList(1);
+				if(value != null)
+				{
+					strings.Add(value);
+				}
+				BaseSet(name, strings);
 			}
 
 	// Get a list of all keys in this collection.
-	[TODO]
 	public virtual String[] AllKeys
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(allKeysResult == null)
+					{
+						allKeysResult = BaseGetAllKeys();
+					}
+					return allKeysResult;
 				}
 			}
 

@@ -1,4 +1,10 @@
 
+2002-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Collections/Specialized/NameObjectCollectionBase.cs,
+	System/Collections/Specialized/NameValueCollection.cs: implement
+	the "NameValueCollection" class and its supporting structures.
+
 2002-11-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Collections/ArrayList.cs: reverse the order

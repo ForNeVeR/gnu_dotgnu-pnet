@@ -1,4 +1,9 @@
 
+2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/call.c (_ILLookupInterfaceMethod): fix a segv when
+	falling off the top of the interface search heirarchy.
+
 2003-06-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_attrs.c, cscc/csharp/cs_cast.tc: include the

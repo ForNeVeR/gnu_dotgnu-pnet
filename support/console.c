@@ -970,13 +970,22 @@ void ILConsoleReadKey(ILUInt16 *ch, ILInt32 *key, ILInt32 *modifiers)
 						   !ILMemCmp(keyBuffer, SpecialKeyStrings[posn], len))
 						{
 							/* Found a special key */
+							if(len == 1)
+							{
+								/* Return the underlying character if the
+								   key only has one associated with it */
+								*ch = (ILUInt16)(keyBuffer[0] & 0xFF);
+							}
+							else
+							{
+								*ch = 0;
+							}
 							if(keyBufferLen > len)
 							{
 								ILMemMove(keyBuffer, keyBuffer + len,
 										  keyBufferLen - len);
 							}
 							keyBufferLen -= len;
-							*ch = 0;
 							*key = SpecialKeys[posn].key;
 							*modifiers = SpecialKeys[posn].modifiers;
 							return;

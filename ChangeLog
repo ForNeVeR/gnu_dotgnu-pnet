@@ -7,6 +7,9 @@ engine/verify_branch.c, engine/verify_conv.c: make sure that the
 This is needed to prevent confusion between "I" used as numeric,
 pointer, and delegate types.
 
+* engine/verify.c: modify "TypeToEngineType" and "AssignCompatible"
+to pass method pointers around the system as type "I".
+
 2001-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ChangeLog, doc/ChangeLog-1: move the contents of "ChangeLog" to

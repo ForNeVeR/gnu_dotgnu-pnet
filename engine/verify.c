@@ -199,7 +199,7 @@ static ILEngineType TypeToEngineType(ILType *type)
 	}
 	else if(ILType_IsComplex(type) && type != 0)
 	{
-		switch(type->kind)
+		switch(type->kind & 0xFF)
 		{
 			case IL_TYPE_COMPLEX_PTR:
 			{
@@ -227,6 +227,19 @@ static ILEngineType TypeToEngineType(ILType *type)
 			{
 				/* Strip the modifier and inspect the underlying type */
 				return TypeToEngineType(type->un.modifier.type);
+			}
+			/* Not reached */
+
+			case IL_TYPE_COMPLEX_METHOD:
+			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
+			{
+				/* Pass method pointers around the system as "I".  This is
+				   not strictly ECMA-compliant, but is useful nonetheless.
+				   Logic and functional languages pass method pointers
+				   around to implement continuations.  Normally this results
+				   in unverifiable code.  However, by treating method types
+				   in this way, we can create verifiable continuation code */
+				return ILEngineType_I;
 			}
 			/* Not reached */
 		}
@@ -271,8 +284,22 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 	ILClass *classInfo;
 	ILClass *classInfo2;
 
-	if(item->engineType == ILEngineType_I4 ||
-	   item->engineType == ILEngineType_I)
+	if(item->engineType == ILEngineType_I &&
+	   item->typeInfo != 0 && ILType_IsComplex(item->typeInfo))
+	{
+		/* May be trying to assign a method pointer to a method type.
+		   See the comments in "TypeToEngineType" for further details */
+		if((item->typeInfo->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+		{
+			return ILTypeIdentical(item->typeInfo, type);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else if(item->engineType == ILEngineType_I4 ||
+	        item->engineType == ILEngineType_I)
 	{
 		type = ILTypeGetEnumType(type);
 		switch((unsigned long)type)

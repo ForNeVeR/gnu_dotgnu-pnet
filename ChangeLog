@@ -1,4 +1,8 @@
 
+2001-12-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* csdoc/doc_valil.c: validate custom attributes.
+
 2001-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/Makefile.am, csdoc/doc_load.c, csdoc/doc_tree.h, csdoc/doc_valil.c:

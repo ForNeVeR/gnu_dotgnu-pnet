@@ -23,6 +23,7 @@
 #include "il_utils.h"
 #include "il_program.h"
 #include "il_dumpasm.h"
+#include "il_serialize.h"
 #include "doc_tree.h"
 #include "doc_backend.h"
 
@@ -588,6 +589,308 @@ static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 }
 
 /*
+ * Append two strings.
+ */
+static char *AppendString(char *str1, const char *str2)
+{
+	str1 = (char *)ILRealloc(str1, strlen(str1) + strlen(str2) + 1);
+	if(!str1)
+	{
+		ILDocOutOfMemory(0);
+	}
+	strcat(str1, str2);
+	return str1;
+}
+
+/*
+ * Append an attribute value to a name.  Returns NULL
+ * if the value is invalid.
+ */
+static char *AppendAttrValue(char *name, ILSerializeReader *reader, int type)
+{
+	ILInt32 intValue;
+	ILUInt32 uintValue;
+	ILInt64 longValue;
+	ILUInt64 ulongValue;
+	ILFloat floatValue;
+	ILDouble doubleValue;
+	const char *strValue;
+	int strLen, len;
+	char buffer[64];
+
+	switch(type)
+	{
+		case IL_META_SERIALTYPE_BOOLEAN:
+		{
+			intValue = ILSerializeReaderGetInt32(reader, type);
+			if(intValue)
+			{
+				strcpy(buffer, "true");
+			}
+			else
+			{
+				strcpy(buffer, "false");
+			}
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I1:
+		case IL_META_SERIALTYPE_U1:
+		case IL_META_SERIALTYPE_I2:
+		case IL_META_SERIALTYPE_U2:
+		case IL_META_SERIALTYPE_CHAR:
+		case IL_META_SERIALTYPE_I4:
+		{
+			intValue = ILSerializeReaderGetInt32(reader, type);
+			sprintf(buffer, "%ld", (long)intValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_U4:
+		{
+			uintValue = ILSerializeReaderGetUInt32(reader, type);
+			sprintf(buffer, "%lu", (unsigned long)uintValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I8:
+		{
+			longValue = ILSerializeReaderGetInt64(reader);
+			sprintf(buffer, "0x%08lX%08lX",
+					(unsigned long)((longValue >> 32) & IL_MAX_UINT32),
+					(unsigned long)(longValue & IL_MAX_UINT32));
+		}
+		break;
+
+		case IL_META_SERIALTYPE_U8:
+		{
+			ulongValue = ILSerializeReaderGetUInt64(reader);
+			sprintf(buffer, "0x%08lX%08lX",
+					(unsigned long)((ulongValue >> 32) & IL_MAX_UINT32),
+					(unsigned long)(ulongValue & IL_MAX_UINT32));
+		}
+		break;
+
+		case IL_META_SERIALTYPE_R4:
+		{
+			floatValue = ILSerializeReaderGetFloat32(reader);
+			sprintf(buffer, "%.30e", (double)floatValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_R8:
+		{
+			doubleValue = ILSerializeReaderGetFloat64(reader);
+			sprintf(buffer, "%.30e", (double)doubleValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_STRING:
+		{
+			strLen = ILSerializeReaderGetString(reader, &strValue);
+			if(strLen == -1)
+			{
+				ILFree(name);
+				return 0;
+			}
+			len = strlen(name);
+			name = (char *)ILRealloc(name, len + strLen + 3);
+			if(!name)
+			{
+				ILDocOutOfMemory(0);
+			}
+			name[len++] = '"';
+			ILMemCpy(name + len, strValue, strLen);
+			name[len + strLen] = '"';
+			name[len + strLen + 1] = '\0';
+			return name;
+		}
+		/* Not reached */
+
+		case IL_META_SERIALTYPE_TYPE:
+		{
+			strLen = ILSerializeReaderGetString(reader, &strValue);
+			if(strLen == -1)
+			{
+				ILFree(name);
+				return 0;
+			}
+			len = strlen(name);
+			name = (char *)ILRealloc(name, len + strLen + 9);
+			if(!name)
+			{
+				ILDocOutOfMemory(0);
+			}
+			strcpy(name + len, "typeof(");
+			len += 7;
+			ILMemCpy(name + len, strValue, strLen);
+			name[len + strLen] = ')';
+			name[len + strLen + 1] = '\0';
+			return name;
+		}
+		/* Not reached */
+
+		default:
+		{
+			if((type & IL_META_SERIALTYPE_ARRAYOF) != 0)
+			{
+				intValue = ILSerializeReaderGetArrayLen(reader);
+				name = AppendString(name, "{");
+				while(intValue > 0)
+				{
+					name = AppendAttrValue(name, reader,
+									       type & ~IL_META_SERIALTYPE_ARRAYOF);
+					if(!name)
+					{
+						return 0;
+					}
+					--intValue;
+					if(intValue > 0)
+					{
+						name = AppendString(name, ", ");
+					}
+				}
+				return AppendString(name, "}");
+			}
+			else
+			{
+				ILFree(name);
+				return 0;
+			}
+		}
+		/* Not reached */
+	}
+
+	/* Append the buffer to the name and return */
+	return AppendString(name, buffer);
+}
+
+/*
+ * Convert a program item attribute into a string-form name.
+ * Returns NULL if the attribute is private or invalid.
+ */
+static char *AttributeToName(ILAttribute *attr)
+{
+	ILMethod *method;
+	char *name;
+	const void *value;
+	unsigned long len;
+	ILSerializeReader *reader;
+	ILUInt32 numParams;
+	ILUInt32 numExtras;
+	int needComma;
+	int type;
+	ILMember *member;
+	const char *memberName;
+	int memberNameLen;
+
+	/* Get the attribute constructor and validate it */
+	method = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
+	if(!method)
+	{
+		return 0;
+	}
+	if(ILClass_IsPrivate(ILMethod_Owner(method)))
+	{
+		return 0;
+	}
+
+	/* Get the attribute name */
+	name = ILDupString(ILClass_Name(ILMethod_Owner(method)));
+	if(!name)
+	{
+		ILDocOutOfMemory(0);
+	}
+
+	/* Get the attribute value and prepare to parse it */
+	value = ILAttributeGetValue(attr, &len);
+	if(!value)
+	{
+		return 0;
+	}
+	reader = ILSerializeReaderInit(method, value, len);
+	if(!reader)
+	{
+		ILDocOutOfMemory(0);
+	}
+
+	/* Get the attribute arguments */
+	numParams = ILMethod_Signature(method)->num;
+	needComma = 0;
+	while(numParams > 0)
+	{
+		if(!needComma)
+		{
+			name = AppendString(name, "(");
+			needComma = 1;
+		}
+		else
+		{
+			name = AppendString(name, ", ");
+		}
+		type = ILSerializeReaderGetParamType(reader);
+		if(type == -1)
+		{
+			ILFree(name);
+			return 0;
+		}
+		name = AppendAttrValue(name, reader, type);
+		if(!name)
+		{
+			return 0;
+		}
+		--numParams;
+	}
+
+	/* Get the extra field and property values */
+	numExtras = ILSerializeReaderGetNumExtra(reader);
+	while(numExtras > 0)
+	{
+		if(!needComma)
+		{
+			name = AppendString(name, "(");
+			needComma = 1;
+		}
+		else
+		{
+			name = AppendString(name, ", ");
+		}
+		type = ILSerializeReaderGetExtra(reader, &member, &memberName,
+										 &memberNameLen);
+		if(type == -1)
+		{
+			ILFree(name);
+			return 0;
+		}
+		name = (char *)ILRealloc(name, strlen(name) + memberNameLen + 2);
+		if(!name)
+		{
+			ILDocOutOfMemory(0);
+		}
+		ILMemCpy(name + strlen(name), memberName, memberNameLen);
+		strcpy(name + strlen(name) + memberNameLen, "=");
+		name = AppendAttrValue(name, reader, type);
+		if(!name)
+		{
+			return 0;
+		}
+		--numExtras;
+	}
+
+	/* Add the closing parenthesis if necessary */
+	if(needComma)
+	{
+		name = AppendString(name, ")");
+	}
+
+	/* Cleanup */
+	ILSerializeReaderDestroy(reader);
+
+	/* Return the name to the caller */
+	return name;
+}
+
+/*
  * Validate the attributes on a program item.
  * Returns zero if a validation error occurred.
  */
@@ -595,7 +898,67 @@ static int ValidateAttributes(FILE *stream, ILDocType *type,
 							  ILDocMember *member, ILDocAttribute *attrs,
 							  ILProgramItem *item)
 {
-	return 1;
+	int valid = 1;
+	ILDocAttribute *docAttr;
+	ILAttribute *itemAttr;
+	char *name;
+
+	/* Scan through the documentation's attributes */
+	docAttr = attrs;
+	while(docAttr != 0)
+	{
+		itemAttr = 0;
+		while((itemAttr = ILProgramItemNextAttribute(item, itemAttr)) != 0)
+		{
+			name = AttributeToName(itemAttr);
+			if(name)
+			{
+				if(!strcmp(name, docAttr->name))
+				{
+					ILFree(name);
+					break;
+				}
+				ILFree(name);
+			}
+		}
+		if(!itemAttr)
+		{
+			PrintName(stream, type, member);
+			fprintf(stream, "should have custom attribute %s\n", docAttr->name);
+			valid = 0;
+		}
+		docAttr = docAttr->next;
+	}
+
+	/* Scan through the actual attributes */
+	itemAttr = 0;
+	while((itemAttr = ILProgramItemNextAttribute(item, itemAttr)) != 0)
+	{
+		name = AttributeToName(itemAttr);
+		if(!name)
+		{
+			continue;
+		}
+		docAttr = attrs;
+		while(docAttr != 0)
+		{
+			if(!strcmp(name, docAttr->name))
+			{
+				break;
+			}
+			docAttr = docAttr->next;
+		}
+		if(!docAttr)
+		{
+			PrintName(stream, type, member);
+			fprintf(stream, "has extra custom attribute %s\n", name);
+			valid = 0;
+		}
+		ILFree(name);
+	}
+
+	/* Done */
+	return valid;
 }
 
 /*

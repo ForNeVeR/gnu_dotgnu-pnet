@@ -871,6 +871,11 @@ void CCAddLinkFile(char *filename, int isTemp)
 	files_to_link_temp[num_files_to_link - 1] = isTemp;
 }
 
+void CCStringListAdd(char ***list, int *num, char *str)
+{
+	AddString(list, num, str);
+}
+
 #ifdef	__cplusplus
 };
 #endif

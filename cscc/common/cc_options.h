@@ -154,6 +154,11 @@ char *CCStringListGetValue(char **list, int num, const char *name);
  */
 void CCAddLinkFile(char *filename, int isTemp);
 
+/*
+ * Add a string to a list of strings.
+ */
+void CCStringListAdd(char ***list, int *num, char *str);
+
 #ifdef	__cplusplus
 };
 #endif

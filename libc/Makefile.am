@@ -13,8 +13,7 @@ SUBDIRS = ctype \
 		  time \
 		  unistd
 
-libcdir = $(libdir)/cscc/lib
-libc_DATA = libc$(LIBRARY_SUFFIX).dll
+all-local: libc$(LIBRARY_SUFFIX).dll
 
 LIBC_COMPONENTS = ctype/libCType.a \
 				  dirent/libCDirent.a \
@@ -37,3 +36,14 @@ CLEANFILES = libc$(LIBRARY_SUFFIX).dll
 ## correct definition for the "LINK" variable into "Makefile".
 noinst_LIBRARIES = libCDummy.a
 libCDummy_a_SOURCES = dummy.c
+
+install-data-local:
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(CYG_CACHE)
+	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
+			-i libc$(LIBRARY_SUFFIX).dll
+
+uninstall-local:
+	@$(NORMAL_UNINSTALL)
+	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
+			-u libc$(LIBRARY_SUFFIX) $(MSCORLIB_VERSION)

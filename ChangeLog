@@ -1,4 +1,9 @@
 
+2003-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, libc/Makefile.am, libm/Makefile.am: update the
+	pnetC build system to use the assembly cache.
+
 2003-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.0" release.

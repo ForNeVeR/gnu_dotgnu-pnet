@@ -106,6 +106,15 @@ esac
 dnl Find the location of the "ilrun" runtime engine.
 AC_PATH_PROG(ILRUN, ilrun,, ${PNET_PATH}/engine:${prefix}/bin:$PATH)
 
+dnl Find the location of the "ilgac" program.
+AC_PATH_PROG(ILGAC, ilgac,, ${PNET_PATH}/ilgac:${prefix}/bin:$PATH)
+
+dnl Find the location of the "ildd" program.
+AC_PATH_PROG(ILDD, ildd,, ${PNET_PATH}/ildd:${prefix}/bin:$PATH)
+
+dnl Find the location of the "cygpath" program.
+AC_PATH_PROG(CYGPATH, cygpath)
+
 dnl Determine additional flags that we need to force "cscc" to act sane.
 dnl We use slightly different paths than the final to prevent strange
 dnl problems with spaces in pathnames under Cygwin.
@@ -152,7 +161,33 @@ dnl Check for file extensions.
 AC_EXEEXT
 AC_OBJEXT
 
-dnl Set up the final CC, CSCC, and CFLAGS values for the Makefile's.
+dnl Get the version number of "mscorlib.dll" to use on the libraries.
+AC_SUBST(MSCORLIB_VERSION)
+AC_MSG_CHECKING(for version of pnetlib)
+MSCORLIB=""
+if test -f "$PNETLIB_PATH/runtime/mscorlib.dll" ; then
+	MSCORLIB="$PNETLIB_PATH/runtime/mscorlib.dll"
+else
+	if test -f "${prefix}/lib/cscc/lib/mscorlib.dll" ; then
+		MSCORLIB="${prefix}/lib/cscc/lib/mscorlib.dll"
+	fi
+fi
+if test "x$MSCORLIB" = "x" ; then
+	# Use "ilgac" to get the default version number from the cache.
+	MSCORLIB_VERSION=`"$ILGAC" -ld mscorlib`
+else
+	# Use "ildd" to get the version number from the actual library file.
+	MSCORLIB_VERSION=`"$ILDD" -f "$MSCORLIB"`
+fi
+MSCORLIB_VERSION=`echo "$MSCORLIB_VERSION" | grep ' (version=' | \
+				  sed -e '1,$s/^.* (version=//g' | \
+				  sed -e '1,$s/).*$//g'`
+if test "x$MSCORLIB_VERSION" = "x" ; then
+	MSCORLIB_VERSION="0.0.0.0"
+fi
+AC_MSG_RESULT($MSCORLIB_VERSION)
+
+dnl Set up the final CC, CSCC, CFLAGS, and LDFLAGS values for the Makefile's.
 CC="\"$CSCC_REAL\""
 CSCC="\"$CSCC_REAL\""
 CFLAGS="-x c $EXTRA_CFLAGS"
@@ -167,6 +202,18 @@ if test -f "$PNETLIB_PATH/csupport/OpenSystem.C.dll" ; then
 fi
 if test -f "$PNETLIB_PATH/runtime/mscorlib.dll" ; then
 	CFLAGS="$CFLAGS \"-L$PNETLIB_PATH/runtime\""
+fi
+LDFLAGS="-fassembly-version=$MSCORLIB_VERSION $LDFLAGS"
+
+dnl Find the location of the assembly cache, and adjust for Cygwin.
+AC_SUBST(CYG_CACHE)
+if test "x$prefix" = "xNONE" ; then
+	CYG_CACHE="${ac_default_prefix}/lib/cscc/lib"
+else
+	CYG_CACHE="${prefix}/lib/cscc/lib"
+fi
+if test "x$CYGPATH" != "x" ; then
+	CYG_CACHE=`"$CYGPATH" -w "${CYG_CACHE}"`
 fi
 
 AC_OUTPUT([
@@ -191,4 +238,4 @@ libm/Makefile
 samples/Makefile
 samples/ilrun.sh])
 
-chmod +x "${srcdir}/samples/ilrun.sh"
+chmod +x "${srcdir}/samples/ilrun.sh" 2>/dev/null

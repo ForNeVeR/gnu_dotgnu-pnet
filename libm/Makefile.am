@@ -1,7 +1,6 @@
 AUTOMAKE_OPTIONS = no-dependencies
 
-libmdir = $(libdir)/cscc/lib
-libm_DATA = libm$(LIBRARY_SUFFIX).dll
+all-local: libm$(LIBRARY_SUFFIX).dll
 
 noinst_LIBRARIES = libMath.a
 
@@ -18,3 +17,14 @@ libm$(LIBRARY_SUFFIX).dll: libMath.a
 	$(LINK) libMath.a -L../libc -llibc$(LIBRARY_SUFFIX)
 
 CLEANFILES = libm$(LIBRARY_SUFFIX).dll
+
+install-data-local:
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(CYG_CACHE)
+	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
+			-i libm$(LIBRARY_SUFFIX).dll
+
+uninstall-local:
+	@$(NORMAL_UNINSTALL)
+	$(ILGAC) -c "$(DESTDIR)$(CYG_CACHE)" -f -d \
+			-u libm$(LIBRARY_SUFFIX) $(MSCORLIB_VERSION)

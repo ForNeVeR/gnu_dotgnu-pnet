@@ -26,6 +26,8 @@ using System.Xml;
 using System.Xml.XPath;
 using System.Diagnostics;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath.Private
 {
 	internal class XPathParser
@@ -1235,3 +1237,5 @@ namespace yydebug {
   }
  }
 } // close outermost namespace, that MUST HAVE BEEN opened in the prolog
+
+#endif /* CONFIG_XPATH */

@@ -599,13 +599,15 @@ class XmlDocument : XmlNode
 				return new XmlDeclaration
 					(placeholder, version, encoding, standalone);
 			}
-	
+
+#if CONFIG_XPATH
 	// NOTE: should be protected internal virtual 
 	// but for ml-pnet's System.Data the internal modifier has to be removed
 	protected virtual XPathNavigator CreateNavigator(XmlNode node)
 			{
 				return node.CreateNavigator();
 			}
+#endif
 
 	// Get an element by identifier.
 	[TODO]

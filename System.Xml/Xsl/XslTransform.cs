@@ -21,6 +21,9 @@
  */
 
 #if !ECMA_COMPAT
+
+#if CONFIG_XPATH && CONFIG_XSL
+
 using System;
 using System.IO;
 using System.Xml;
@@ -245,4 +248,5 @@ namespace System.Xml.Xsl
  		}
 	}
 }//namespace
-#endif
+#endif /* CONFIG_XPATH && CONFIG_XSL */
+#endif /* !ECMA_COMPAT */

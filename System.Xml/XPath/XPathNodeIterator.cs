@@ -23,6 +23,8 @@
 
 using System;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath
 {
 #if ECMA_COMPAT
@@ -62,3 +64,5 @@ abstract class XPathNodeIterator : ICloneable
 
 }
 }//namespace
+
+#endif /* CONFIG_XPATH */

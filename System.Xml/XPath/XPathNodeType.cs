@@ -22,6 +22,8 @@
 
 using System;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath
 {
 #if ECMA_COMPAT
@@ -43,3 +45,5 @@ enum XPathNodeType
 	All = 0x09
 }
 }//namespace
+
+#endif /* CONFIG_XPATH */

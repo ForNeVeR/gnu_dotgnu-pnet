@@ -26,14 +26,20 @@ using System;
 using System.Collections;
 using System.Text;
 using System.Xml.Private;
+
+#if CONFIG_XPATH
 using System.Xml.XPath;
+#endif
 
 #if ECMA_COMPAT
 internal
 #else
 public
 #endif
-abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
+abstract class XmlNode : ICloneable, IEnumerable
+#if CONFIG_XPATH
+, IXPathNavigable
+#endif
 {
 	// Internal state.
 	internal XmlNode  parent;
@@ -502,13 +508,13 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	// Clone this node in either shallow or deep mode.
 	public abstract XmlNode CloneNode(bool deep);
 
+#if CONFIG_XPATH
 	// Implement the IXPathNavigator interface.
-	[TODO]
 	public virtual XPathNavigator CreateNavigator()
 			{
-				// TODO
 				return new XmlDocumentNavigator(this);
 			}
+#endif /* CONFIG_XPATH */
 
 	// Implement the IEnumerable interface,
 	public IEnumerator GetEnumerator()
@@ -1006,6 +1012,8 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				return oldChild;
 			}
 
+#if CONFIG_XPATH
+
 	// Select a list of nodes matching a particular XPath expression.
 	public XmlNodeList SelectNodes(String xpath)
 			{
@@ -1042,6 +1050,8 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				SelectNodeList list = new SelectNodeList(nav.Select(expr));
 				return list[0];
 			}
+
+#endif /* CONFIG_XPATH */
 
 	// Test if this implementation supports a particular DOM feature.
 	public virtual bool Supports(String feature, String version)

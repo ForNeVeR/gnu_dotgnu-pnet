@@ -24,6 +24,8 @@ using System.Xml;
 using System.Xml.XPath;
 using System.Diagnostics;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath.Private
 {
 	internal class XPathParser
@@ -646,3 +648,5 @@ UnaryExpr
 	
 %%
 }
+
+#endif /* CONFIG_XPATH */

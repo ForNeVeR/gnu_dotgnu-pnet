@@ -22,6 +22,8 @@
 namespace System.Xml.Private
 {
 
+#if CONFIG_XPATH
+
 using System;
 using System.Xml;
 using System.Xml.XPath;
@@ -111,5 +113,7 @@ internal sealed class SelectNodeList : XmlNodeList
 				}
 			}
 }; // class SelectNodeList
+
+#endif /* CONFIG_XPATH */
 
 }; // namespace System.Xml.Private

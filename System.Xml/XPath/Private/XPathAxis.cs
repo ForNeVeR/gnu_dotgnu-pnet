@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath.Private
 {
 
@@ -39,3 +41,5 @@ namespace System.Xml.XPath.Private
 		Self,
 	};
 }
+
+#endif /* CONFIG_XPATH */

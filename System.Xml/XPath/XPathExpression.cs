@@ -24,6 +24,8 @@ using System;
 using System.Xml;
 using System.Collections;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath
 {
 #if ECMA_COMPAT
@@ -55,3 +57,5 @@ abstract class XPathExpression
 
 }
 }//namespace
+
+#endif /* CONFIG_XPATH */

@@ -22,6 +22,8 @@
 
 using System;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath
 {
 #if ECMA_COMPAT
@@ -36,3 +38,5 @@ class XPathException : SystemException
 		: base(message, innerException) {}
 }
 }//namespace
+
+#endif /* CONFIG_XPATH */

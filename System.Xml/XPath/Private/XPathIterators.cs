@@ -23,6 +23,8 @@ using System.Xml;
 using System.Xml.XPath;
 using System.Collections;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath.Private
 {
 	internal abstract class XPathBaseIterator : XPathNodeIterator
@@ -676,3 +678,5 @@ namespace System.Xml.XPath.Private
 	}					
 
 }
+
+#endif /* CONFIG_XPATH */

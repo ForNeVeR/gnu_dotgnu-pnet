@@ -24,6 +24,8 @@ using System;
 using System.IO;
 using System.Xml;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath
 {
 #if ECMA_COMPAT
@@ -76,3 +78,5 @@ class XPathDocument : Object, IXPathNavigable
 	}
 }
 }//namespace
+
+#endif /* CONFIG_XPATH */

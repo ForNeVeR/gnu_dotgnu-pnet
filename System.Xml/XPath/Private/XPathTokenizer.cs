@@ -25,6 +25,8 @@ using System.Diagnostics;
 using System.Xml.XPath;
 using System.Xml.XPath.Private;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath.Private
 {
 	public class XPathTokenizer : System.Xml.XPath.Private.yyParser.yyInput
@@ -571,3 +573,5 @@ namespace System.Xml.XPath.Private
 
 	}
 }
+
+#endif /* CONFIG_XPATH */

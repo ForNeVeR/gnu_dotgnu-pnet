@@ -22,6 +22,8 @@
 namespace System.Xml.Private
 {
 
+#if CONFIG_XPATH
+
 using System;
 using System.Xml;
 using System.Xml.XPath;
@@ -482,5 +484,7 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 		return this.node;
 	}
 }
+
+#endif /* CONFIG_XPATH */
 
 }

@@ -31,6 +31,9 @@ using System.IO;
 using System.Xml;
 using System.Xml.XPath;
 using System.Collections;
+
+#if CONFIG_XPATH
+
 %}
 
 %node Expression %abstract %typedef
@@ -216,3 +219,7 @@ String Functions
 
 %include "XPathCompile.tc"
 %include "XPathEvaluate.tc"
+
+%end %{
+#endif /* CONFIG_XPATH */
+%}

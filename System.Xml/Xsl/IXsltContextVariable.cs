@@ -22,6 +22,8 @@
  */
 
 #if !ECMA_COMPAT
+#if CONFIG_XSL
+
 using System;
 using System.Xml.XPath;
 
@@ -39,4 +41,5 @@ namespace System.Xml.Xsl
 
 	}
 }//namespace
-#endif
+#endif /* CONFIG_XSL */
+#endif /* !ECMA_COMPAT */

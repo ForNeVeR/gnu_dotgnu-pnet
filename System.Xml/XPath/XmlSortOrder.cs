@@ -22,6 +22,8 @@
 
 using System;
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath
 {
 #if ECMA_COMPAT
@@ -35,3 +37,5 @@ enum XmlSortOrder
 	Descending = 0x02
 }
 }//namespace
+
+#endif /* CONFIG_XPATH */

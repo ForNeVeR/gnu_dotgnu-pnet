@@ -21,6 +21,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#if CONFIG_XPATH
+
 namespace System.Xml.XPath
 {
 #if ECMA_COMPAT
@@ -39,3 +41,5 @@ enum XPathResultType
 	Error = 0x06
 }
 }//namespace
+
+#endif /* CONFIG_XPATH */

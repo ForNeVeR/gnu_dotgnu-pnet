@@ -26,6 +26,8 @@ using System.Xml.XPath.Private;
 namespace System.Xml.XPath
 {
 
+#if CONFIG_XPATH
+
 [TODO]
 #if ECMA_COMPAT
 internal
@@ -270,5 +272,7 @@ abstract class XPathNavigator : ICloneable
 
 
 }; // class XPathNavigator
+
+#endif /* CONFIG_XPATH */
 
 }; // namespace System.Xml.XPath

@@ -22,6 +22,8 @@
 namespace System.Xml.XPath
 {
 
+#if CONFIG_XPATH
+
 #if ECMA_COMPAT
 internal
 #else
@@ -33,5 +35,7 @@ interface IXPathNavigable
 	XPathNavigator CreateNavigator();
 
 }; // interface IXPathNavigable
+
+#endif /* CONFIG_XPATH */
 
 }; // namespace System.Xml.XPath

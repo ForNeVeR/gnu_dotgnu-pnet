@@ -1,4 +1,39 @@
 
+2005-02-23  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XmlNode.cs,
+	System.Xml/XmlAttribute.cs,
+	System.Xml/XmlDocument.cs,
+	System.Xml/Private/SelectNodeList.cs,
+	System.Xml/Private/XmlDocumentNavigator.cs,
+	System.Xml/XPath/IXPathNavigable.cs,
+	System.Xml/XPath/Private/XPathAxis.cs,
+	System.Xml/XPath/Private/XPathExpressionBase.cs,
+	System.Xml/XPath/Private/XPathIterators.cs,
+	System.Xml/XPath/Private/XPathNodes.tc,
+	System.Xml/XPath/Private/XPathParser.cs,
+	System.Xml/XPath/Private/XPathParser.jay,
+	System.Xml/XPath/Private/XPathTokenizer.cs,
+	System.Xml/XPath/XPathDocument.cs,
+	System.Xml/XPath/XPathException.cs,
+	System.Xml/XPath/XPathExpression.cs,
+	System.Xml/XPath/XPathNamespaceScope.cs,
+	System.Xml/XPath/XPathNavigator.cs,
+	System.Xml/XPath/XPathNodeIterator.cs,
+	System.Xml/XPath/XPathNodeType.cs,
+	System.Xml/XPath/XPathResultType.cs,
+	System.Xml/XPath/XmlCaseOrder.cs,
+	System.Xml/XPath/XmlDataType.cs,
+	System.Xml/XPath/XmlSortOrder.cs,
+	System.Xml/Xsl/IXsltContextFunction.cs,
+	System.Xml/Xsl/IXsltContextVariable.cs,
+	System.Xml/Xsl/XslTransform.cs,
+	System.Xml/Xsl/XsltCompileException.cs,
+	System.Xml/Xsl/XsltContext.cs,
+	System.Xml/Xsl/XsltException.cs,
+	profiles/*: Add CONFIG_XPATH and CONFIG_XSL 
+	profile options to enable Xpath/Xsl.
+	
 2005-02-21  Doru Budai  <doru.budai@gmail.com>
 
 	* System/Net/Sockets/Sockets.cs: Enable broadcast option. (patch

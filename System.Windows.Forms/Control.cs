@@ -1295,6 +1295,9 @@ public class Control : IWin32Window
 	// Force the control to be created.
 	public void CreateControl()
 			{
+				// Only create if needed
+				if (toolkitWindow != null)
+					return;
 				// Cannot create the control if it has been disposed.
 				if(disposed)
 				{

@@ -518,7 +518,7 @@ public class LinkLabel : Label, IButtonControl
 		}
 
 		[TODO]
-		public override object this[int index]
+		object IList.this[int index]
 		{
 			get
 			{

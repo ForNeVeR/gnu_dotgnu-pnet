@@ -34,7 +34,10 @@ using Accessibility;
 #if !ECMA_COMPAT
 [ComVisible(true)]
 #endif
-public class AccessibleObject : MarshalByRefObject, IAccessible
+public class AccessibleObject : MarshalByRefObject
+#if __CSCC__
+	, IAccessible
+#endif
 #if !ECMA_COMPAT
 	, IReflect
 #endif
@@ -220,6 +223,7 @@ public class AccessibleObject : MarshalByRefObject, IAccessible
 				return -1;
 			}
 
+#if __CSCC__
 	// Get the accessible object for the focused control.
 	public virtual AccessibleObject GetFocused()
 			{
@@ -422,6 +426,7 @@ public class AccessibleObject : MarshalByRefObject, IAccessible
 					throw new NotImplementedException();
 				}
 			}
+#endif
 
 #if !ECMA_COMPAT
 

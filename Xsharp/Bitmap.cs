@@ -124,6 +124,134 @@ public sealed class Bitmap : Drawable
 				}
 			}
 
+	/// <summary>
+	/// <para>Constructs a new <see cref="T:Xsharp.Bitmap"/> instance
+	/// that represents an off-screen bitmap.  The bitmap is created
+	/// on the default screen of the primary display, using the
+	/// supplied bitmap data.</para>
+	/// </summary>
+	///
+	/// <param name="width">
+	/// <para>The width of the new bitmap.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The height of the new bitmap.</para>
+	/// </param>
+	///
+	/// <param name="bits">
+	/// <para>The bits that make up the data.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="bits"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>The <paramref name="width"/> or <paramref name="height"/>
+	/// values are out of range, or <paramref name="bits"/> is invalid
+	/// in some way.</para>
+	/// </exception>
+	public Bitmap(int width, int height, byte[] bits)
+			: base(Xsharp.Application.Primary.Display,
+				   Xsharp.Application.Primary.Display.DefaultScreenOfDisplay,
+				   DrawableKind.Bitmap)
+			{
+				if(width < 1 || width > 32767 ||
+				   height < 1 || height > 32767)
+				{
+					throw new XException(S._("X_InvalidBitmapSize"));
+				}
+				if(bits == null)
+				{
+					throw new ArgumentNullException("bits");
+				}
+				if(((((width + 15) & ~15) * height) / 8) > bits.Length)
+				{
+					throw new XException(S._("X_InvalidBitmapBits"));
+				}
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.Drawable drawable = (Xlib.Drawable)
+							Xlib.XRootWindowOfScreen(screen.screen);
+					SetPixmapHandle(Xlib.XCreateBitmapFromData
+						(display, drawable, bits, (uint)width, (uint)height));
+					this.width = width;
+					this.height = height;
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Constructs a new <see cref="T:Xsharp.Bitmap"/> instance
+	/// that represents an off-screen bitmap.  The bitmap is created
+	/// on the specified <paramref name="screen"/>, using the
+	/// supplied bitmap data.</para>
+	/// </summary>
+	///
+	/// <param name="screen">
+	/// <para>The screen upon which to create the new bitmap.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The width of the new bitmap.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The height of the new bitmap.</para>
+	/// </param>
+	///
+	/// <param name="bits">
+	/// <para>The bits that make up the data.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="bits"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>The <paramref name="width"/> or <paramref name="height"/>
+	/// values are out of range, or <paramref name="bits"/> is invalid
+	/// in some way.</para>
+	/// </exception>
+	public Bitmap(Screen screen, int width, int height, byte[] bits)
+			: base(GetDisplay(screen), screen, DrawableKind.Bitmap)
+			{
+				if(width < 1 || width > 32767 ||
+				   height < 1 || height > 32767)
+				{
+					throw new XException(S._("X_InvalidBitmapSize"));
+				}
+				if(bits == null)
+				{
+					throw new ArgumentNullException("bits");
+				}
+				if(((((width + 15) & ~15) * height) / 8) > bits.Length)
+				{
+					throw new XException(S._("X_InvalidBitmapBits"));
+				}
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.Drawable drawable = (Xlib.Drawable)
+							Xlib.XRootWindowOfScreen(screen.screen);
+					SetPixmapHandle(Xlib.XCreateBitmapFromData
+						(display, drawable, bits, (uint)width, (uint)height));
+					this.width = width;
+					this.height = height;
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
 	// Internal constructor that wraps a bitmap XID.
 	internal Bitmap(Display dpy, Screen screen, Xlib.Pixmap pixmap)
 			: base(dpy, screen, DrawableKind.Bitmap)

@@ -4,6 +4,10 @@
 	* Makefile.am, configure.in, System.Drawing/*, System.Drawing.Xsharp/*:
 	add the "System.Drawing" and "System.Drawing.Xsharp" assemblies.
 
+	* Xsharp/Bitmap.cs, resources/en_US/Xsharp/Xsharp.txt: add new
+	constructors to "Xsharp.Bitmap" which allow bitmaps to be built
+	from xbm data in a "byte[]" buffer.
+
 2003-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/PlaceholderWindow.cs, Xsharp/RootWindow.cs,

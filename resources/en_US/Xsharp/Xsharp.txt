@@ -49,6 +49,7 @@ X_NonPlaceholderOperation=The requested operation cannot be performed on placeho
 X_BadEnumeratorPosition=The enumerator is not positioned on an element
 X_InvalidPixmapSize=Invalid pixmap size specified
 X_InvalidBitmapSize=Invalid bitmap size specified
+X_InvalidBitmapBits=Invalid bitmap bits specified
 X_Need2Points=Need at least 2 points in the specified array
 X_Need1Point=Need at least 1 point in the specified array
 X_MaxReqSizeExceeded=The specified array exceeds the X server's request size

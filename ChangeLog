@@ -1,4 +1,12 @@
 
+2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/IO/Directory.cs, runtime/System/IO/Path.cs,
+	tests/runtime/Testruntime.cs, tests/runtime/System/IO/Makefile,
+	tests/runtime/System/IO/SuiteIO.cs,
+	tests/runtime/System/IO/TestPath.cs: rewrite the "System.IO.Path"
+	class and add a large number of test cases for it.
+
 2003-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Rare/CP20261.cs: add the T.61 encoding to the I18N routines.

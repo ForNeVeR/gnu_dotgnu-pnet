@@ -40,6 +40,7 @@ public class Testruntime
 				suite.AddTest(SuiteCompilerServices.Suite());
 				suite.AddTest(SuiteSerialization.Suite());
 				suite.AddTest(SuiteSecurity.Suite());
+				suite.AddTest(SuiteIO.Suite());
 				return suite;
 			}
 

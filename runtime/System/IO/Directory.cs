@@ -212,6 +212,30 @@ public sealed class Directory
 				return dir;
 			}
 
+	// Get the current working directory for a particular drive.
+	internal static String GetCurrentDirectory(char drive)
+			{
+				if(drive >= 'a' && drive <= 'z')
+				{
+					drive = (char)(drive - 'a' + 'A');
+				}
+				String current = GetCurrentDirectory();
+				if(current.Length >= 2 && Path.IsVolumeSeparator(current[1]))
+				{
+					char d = current[0];
+					if(d >= 'a' && d <= 'z')
+					{
+						d = (char)(d - 'a' + 'A');
+					}
+					if(d == drive)
+					{
+						return current;
+					}
+				}
+				return drive.ToString() + ":" +
+					   Path.DirectorySeparatorChar.ToString();
+			}
+
 	// Directory scan types.
 	internal enum ScanType
 	{

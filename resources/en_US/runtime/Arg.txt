@@ -69,3 +69,7 @@ ArgRange_StringIndex=String index is out of range
 ArgRange_StringRange=String range is out of range
 ArgRange_RoundDigits=Rounding digit count must be between 0 and 15, inclusive
 ArgRange_MinValueGtMaxValue=minValue is greater than maxValue
+ArgRange_StringNonEmpty=String value must not be empty
+ArgRange_MaxStrCapacity=Maximum string capacity must be 1 or greater
+ArgRange_StrCapacity=Invalid string capacity
+ArgRange_StrBuilderLength=Invalid string builder length

@@ -31,9 +31,9 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 
 	// Internal string state.
 	[NonSerialized]
-	private int arrayLength;		// Total size of the underlying array.
+	internal int capacity;			// Total capacity of the string buffer.
 	[NonSerialized]
-	private int length;				// Actual length of the string.
+	internal int length;			// Actual length of the string.
 	[NonSerialized]
 	private char firstChar;			// First character in the string.
 
@@ -305,13 +305,23 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 
 	// Methods that are supplied by the runtime to assist with string building.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static String FastAllocateString(int length);
+	extern internal static String FastAllocateString(int length);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void FillString(String dest, int destPos, String src);
+	extern internal static String FastAllocateBuilder
+			(String value, int length);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void FillSubstring(String dest, int destPos,
-									         String src, int srcPos,
-											 int length);
+	extern internal static void FillString
+			(String dest, int destPos, String src);
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static void FillSubstring(String dest, int destPos,
+									          String src, int srcPos,
+											  int length);
+
+	// Insert or remove space from a string that is being used as a builder.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static void InsertSpace(String str, int index, int length);
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static void RemoveSpace(String str, int index, int length);
 
 	// Internal helper routines for string concatenation.
 	private static String ConcatInternal2(String str1, String str2)
@@ -945,8 +955,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 
 	// Fill the contents of a sub-string with a particular character.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void FillChar(String str, int start,
-										int count, char ch);
+	extern internal static void FillChar(String str, int start,
+										 int count, char ch);
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static void FillWithChars(String str, int start,
+										 	  char[] chars,
+											  int index, int count);
 
 	// Pad a string on the left with spaces to a total width.
 	public String PadLeft(int totalWidth)
@@ -1302,7 +1316,9 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 
 	// Internal version of "this[n]".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private char InternalGetChar(int posn);
+	extern internal char InternalGetChar(int posn);
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal void InternalSetChar(int posn, char value);
 
 	// Get a specific character from the current string.
 	public char this[int posn]

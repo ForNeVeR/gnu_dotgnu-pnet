@@ -244,6 +244,7 @@ CSSRC = Activator.cs \
 		Security/Permissions/SecurityPermissionAttribute.cs \
 		Security/Policy/Evidence.cs \
 		Text/Encoding.cs \
+		Text/StringBuilder.cs \
 		Threading/Interlocked.cs \
 		Threading/Monitor.cs \
 		Threading/Mutex.cs \

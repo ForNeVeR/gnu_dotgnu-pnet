@@ -1,4 +1,10 @@
 
+2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/String.cs, runtime/System/Text/StringBuilder.cs,
+runtime/System/Makefile.am, resources/en_US/runtime/Arg.txt: implement
+the "System.Text.StringBuilder" class.
+
 2001-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/DateTime.cs: bug in the "UtcNow" property - use the

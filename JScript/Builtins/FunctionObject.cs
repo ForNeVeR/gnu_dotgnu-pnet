@@ -75,6 +75,10 @@ public sealed class FunctionObject : ScriptFunction
 						defn.body.Eval(engine);
 					}
 				}
+				catch(ReturnJumpOut r)
+				{
+					return r.value;
+				}
 				finally
 				{
 					engine.PopScriptObject();

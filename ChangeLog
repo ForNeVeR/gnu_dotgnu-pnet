@@ -7,6 +7,9 @@
 	* System.Xml/UCS4Encoding.cs: implement the UCS-4 encoding for
 	use by the System.Xml library.
 
+	* JScript/Builtins/FunctionObject.cs: properly handle the
+	"return" statement in script evaluations.
+
 2003-03-05  Adam Ballai <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextWriter.cs: filestream in 

@@ -14,6 +14,8 @@
 			<sources basedir="${mono.sources}/class/System.Web/">
 				<includes name="**/*.cs"/> 
 				<excludes name="Test/**"/>
+				<excludes name="System.Web.Util/ICalls.cs"/>
+				<file basedir="." name="ICalls.cs"/>
 			</sources>
 
 			<references>

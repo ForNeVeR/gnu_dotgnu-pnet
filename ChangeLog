@@ -4,6 +4,9 @@
 	* class/System.Web.Services/System.Web.Services.build: Add references
 	to System.Data and its dependencies to support a clean build.
 
+	* class/System.Web/System.Web.build, class/System.Web/ICall.cs: Add
+	stubs to replace the mono internal calls.
+
 2003-05-20  Gopal.V  <gopalv82@yahoo.com>
 
 	* configure.in, class/Makefile.am, 

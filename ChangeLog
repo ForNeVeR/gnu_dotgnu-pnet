@@ -45,6 +45,9 @@
 	runtime/System/Security/Policy/Evidence.cs: more fixes for
 	build profiles, particularly those lacking floating point.
 
+	* runtime/System/IO/FileStream.cs: positioning bug, when seeking
+	within the already-read FileStream buffer contents.
+
 2003-09-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/ScrollBar.cs, System.Windows.Forms/ListBox.cs

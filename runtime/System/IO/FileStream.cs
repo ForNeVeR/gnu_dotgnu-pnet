@@ -531,7 +531,7 @@ public class FileStream : Stream
 									(newPosn + bufferLen))
 							{
 								bufferPosn = (int)(offset - newPosn);
-								position = newPosn;
+								position = offset;
 								return position;
 							}
 						}

@@ -1,4 +1,8 @@
 
+2002-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/HACKING: update the section on "internalcall" methods.
+
 2002-05-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/ser_parse.c (ILSerializeReaderGetExtra): reversed the parse

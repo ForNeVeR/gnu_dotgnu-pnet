@@ -1,4 +1,8 @@
 
+2004-09-25  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/lib_emit.c: Fix compiler warning with gcc.
+
 2004-09-24  Gopal V  <gopalv82@yahoo.com>
 
 	* image/sig_writer.c: Import classes before writing class tokens.

@@ -391,9 +391,9 @@ ILNativeInt _IL_AssemblyBuilder_ClrAttributeCreate
 	if(assembly && blob)
 	{
 		ILMember * member = ILProgramItemToMember((ILProgramItem*)ctor);
-		member = ILMemberImport(ILProgramItem_Image((ILAssembly *) assembly), member);
 		ILAttribute *attr = ILAttributeCreate
 			(ILProgramItem_Image((ILAssembly *)assembly), 0);
+		member = ILMemberImport(ILProgramItem_Image((ILAssembly *) assembly), member);
 		if(!attr)
 		{
 			return 0;

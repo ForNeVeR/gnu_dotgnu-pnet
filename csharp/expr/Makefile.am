@@ -1,5 +1,7 @@
 
-TESTS = array1.cs \
+TESTS = arglist1.cs \
+		arglist2.cs \
+		array1.cs \
 		array2.cs \
 		array3.cs \
 		as1.cs \

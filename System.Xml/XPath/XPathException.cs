@@ -24,10 +24,10 @@ using System;
 
 namespace System.Xml.XPath
 {
-[Serializable]
 #if ECMA_COMPAT
 internal
 #else
+[Serializable]
 public 
 #endif
 class XPathException : SystemException

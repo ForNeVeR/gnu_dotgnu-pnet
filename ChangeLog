@@ -17,6 +17,10 @@
 	resources/en_US/Xsharp/.cvsignore, resources/en_US/Xsharp/Makefile.am,
 	resources/en_US/Xsharp/Xsharp.txt: add the Xsharp resources.
 
+	* System/Uri.cs, System.Xml/XPath/XPathException.cs, Xsharp/S.cs,
+	runtime/System/IO/MemoryStream.cs, samples/XHello.cs,
+	samples/samples.build: minor fixes to build in non-full profiles.
+
 2003-05-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/EndPoint.cs, System/Net/IPAddress.cs,

@@ -23,6 +23,9 @@ using Xsharp;
 
 public class XHello
 {
+
+#if CONFIG_REFLECTION
+
 	// Main entry point.
 	public static void Main(String[] args)
 	{
@@ -40,5 +43,12 @@ public class XHello
 		graphics.DrawLine(0, 0, widget.Width, widget.Height);
 		graphics.DrawLine(0, widget.Height, widget.Width, 0);
 	}
+
+#else
+
+	// Stubbed out on platforms without Xsharp.
+	public static void Main(String[] args) {}
+
+#endif
 
 } // class XHello

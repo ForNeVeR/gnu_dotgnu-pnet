@@ -27,8 +27,14 @@ using System.Reflection;
 
 internal sealed class S
 {
-	// Cached copy of the resources for this assembly.
+#if CONFIG_RUNTIME_INFRA
+
+	// Cached copy of the resources for this assembly and mscorlib.
+#if ECMA_COMPAT
+	private static ECMAResourceManager stringResources = null;
+#else
 	private static ResourceManager stringResources = null;
+#endif
 
 	// Helper for obtaining string resources for this assembly.
 	public static String _(String tag)
@@ -37,12 +43,27 @@ internal sealed class S
 				{
 					if(stringResources == null)
 					{
+					#if ECMA_COMPAT
+						stringResources = new ECMAResourceManager
+							("Xsharp", (typeof(S)).Assembly);
+					#else
 						stringResources = new ResourceManager
 							("Xsharp", (typeof(S)).Assembly);
+					#endif
 					}
 					return stringResources.GetString(tag, null);
 				}
 			}
+
+#else // !CONFIG_RUNTIME_INFRA
+
+	// We don't have sufficient runtime infrastructure to load resources.
+	public static String _(String tag)
+			{
+				return tag;
+			}
+
+#endif // !CONFIG_RUNTIME_INFRA
 
 } // class S
 

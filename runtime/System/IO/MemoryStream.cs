@@ -481,7 +481,9 @@ public class MemoryStream : Stream
 	{
 		if (minNewLength > impl_buffer.Length)
 		{
-			int realNewLength = Math.Max(impl_buffer.Length, 1024);
+			int realNewLength = impl_buffer.Length;
+			if (realNewLength < 1024)
+				realNewLength = 1024;
 			while (minNewLength > realNewLength)
 				realNewLength = realNewLength * 2; // double the buffer size.
 			byte[] new_buffer = new byte[(int)realNewLength];

@@ -596,7 +596,10 @@ public class Uri : MarshalByRefObject
 		String []seg2 = toUri.Segments;
 
 		int k;	
-		for(k=0;k < Math.Min(seg1.Length , seg2.Length) ; k++)
+		int min = seg1.Length;
+		if(min > seg2.Length)
+			min = seg2.Length;
+		for(k=0;k < min ; k++)
 		{
 			if(seg1[k] != seg2[k])
 			{

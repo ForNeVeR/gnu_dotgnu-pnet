@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH resgen 1 "11 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
+.TH resgen 1 "27 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 resgen \- resource generation and conversion utility
 .SH SYNOPSIS
@@ -27,9 +27,9 @@ resgen \- resource generation and conversion utility
 .B Resgen
 converts strings between a number of resource formats that are used
 within the Portable.NET platform.  It is typically used to convert
-text resources (.txt) or XML resources (.resx) into binary resources
-(.resources) that can be attached to an IL executable or dynamic
-link library.
+text resources (.txt), XML resources (.resx), or GNU gettext
+resources (.po) into binary resources (.resources) that can be
+attached to an IL executable or dynamic link library.
 
 .B Resgen
 can convert multiple input files into a single output file.
@@ -45,6 +45,9 @@ Binary resources.
 .TP
 .B .resx, .xml
 XML resources.
+.TP
+.B .po
+GNU gettext resources.
 .TP
 .B .exe, .dll, .obj, .o
 Binary resources within an IL image (input only).
@@ -71,6 +74,9 @@ dynamic link libraries, or object files).
 .B \-x, \-\-xml\-input
 The input files are all assumed to be in XML resource format.
 .TP
+.B \-p, \-\-po\-input
+The input files are all assumed to be in GNU gettext .po resource format.
+.TP
 .B \-T, \-\-text\-output
 The output format is set to text resources.
 .TP
@@ -79,6 +85,9 @@ The output format is set to binary resources.
 .TP
 .B \-X, \-\-xml\-output
 The output format is set to XML resources.
+.TP
+.B \-P, \-\-po\-output
+The output format is set to GNU gettext .po resources.
 .TP
 .B \-s, \-\-sort\-names
 When writing text resources as output, sort the resources by name.

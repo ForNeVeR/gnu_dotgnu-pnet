@@ -477,12 +477,13 @@ ILNode_SemAnalysis(ILNode_Assign)
 		return value1;
 	}
 
-	/* Perform semantic analysis on the rvalue */
+	/* Perform semantic analysis and coercion on the rvalue */
 	if(!CSSemExpectValue(node->expr2, info, &(node->expr2), &value2) ||
-	   !ILCanCoerce(info->context, value2.type, value1.type))
+	   !ILCanCoerceNode(info, node->expr2, value2.type, value1.type))
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "incompatible types in assignment");
+		  "incompatible types in assignment: no conversion from `%s' to `%s'",
+		  CSTypeToName(value2.type), CSTypeToName(value1.type));
 		value1.kind = CS_SEMKIND_RVALUE;
 		return value1;
 	}
@@ -761,7 +762,8 @@ ILNode_SemAnalysis(ILNode_ToBool)
 	if(!ILType_IsValueType(value.type) && !ILType_IsClass(value.type))
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "no conversion to `bool'");
+					  "no conversion from `%s' to `bool'",
+					  CSTypeToName(value.type));
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILType_Boolean;
 		return value;
@@ -780,7 +782,8 @@ ILNode_SemAnalysis(ILNode_ToBool)
 	if(!trueMethod && !falseMethod)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "no conversion to `bool'");
+					  "no conversion from `%s' to `bool'",
+					  CSTypeToName(value.type));
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILType_Boolean;
 		return value;
@@ -914,8 +917,8 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 	}
 
 	/* We must have boolean arguments at this point */
-	if(!ILCanCoerce(info->context, value1.type, ILType_Boolean) ||
-	   !ILCanCoerce(info->context, value2.type, ILType_Boolean))
+	if(!ILCanCoerceNode(info, node->expr1, value1.type, ILType_Boolean) ||
+	   !ILCanCoerceNode(info, node->expr2, value2.type, ILType_Boolean))
 	{
 		goto error;
 	}
@@ -981,8 +984,8 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 	}
 
 	/* We must have boolean arguments at this point */
-	if(!ILCanCoerce(info->context, value1.type, ILType_Boolean) ||
-	   !ILCanCoerce(info->context, value2.type, ILType_Boolean))
+	if(!ILCanCoerceNode(info, node->expr1, value1.type, ILType_Boolean) ||
+	   !ILCanCoerceNode(info, node->expr2, value2.type, ILType_Boolean))
 	{
 		goto error;
 	}
@@ -1183,15 +1186,15 @@ ILNode_SemAnalysis(ILNode_Conditional)
 	}
 
 	/* Determine which of the types is the result type */
-	if(ILCanCoerce(info->context, value1.type, value2.type) &&
-	   !ILCanCoerce(info->context, value2.type, value1.type))
+	if(ILCanCoerceNode(info, node->expr1, value1.type, value2.type) &&
+	   !ILCanCoerceNode(info, node->expr2, value2.type, value1.type))
 	{
 		ILCoerce(info, node->expr2, &(node->expr2), value1.type, value2.type);
 		value2.kind = CS_SEMKIND_RVALUE;
 		return value2;
 	}
-	else if(ILCanCoerce(info->context, value2.type, value1.type) &&
-	        !ILCanCoerce(info->context, value1.type, value2.type))
+	else if(ILCanCoerceNode(info, node->expr1, value2.type, value1.type) &&
+	        !ILCanCoerceNode(info, node->expr2, value1.type, value2.type))
 	{
 		ILCoerce(info, node->expr3, &(node->expr3), value2.type, value1.type);
 		value1.kind = CS_SEMKIND_RVALUE;

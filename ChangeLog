@@ -24,6 +24,10 @@ the system library.
 base types, and explicit casts to descendent types; implement implicit
 constant coercions
 
+* cscc/cs_oper.tc: better error reporting for incompatible types in
+assignment, coercions, and casts; use ILCanCoerceNode instead of ILCanCoerce
+so that constant coercions work;
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

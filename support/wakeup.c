@@ -49,6 +49,12 @@ void _ILWakeupDestroy(_ILWakeup *wakeup)
 	_ILCondMutexDestroy(&(wakeup->lock));
 }
 
+/*
+ * A thread must set its wakeup limit before it adds itself to a
+ * wakeup queue and before it waits on its wakeup.  Failing to do
+ * so will mean missing signals that are sent after being added to
+ * a wait queue but before calling wait.
+ */
 int _ILWakeupSetLimit(_ILWakeup *wakeup, ILUInt32 limit)
 {
 	int result;

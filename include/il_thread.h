@@ -422,9 +422,16 @@ int ILWaitMonitorCanClose(ILWaitHandle *handle);
 int ILWaitMonitorSpeculativeLeave(ILWaitHandle *handle);
 
 /*
- *	Signals waiting moniters when call after ILWaitMonitorSpeculativeLeave.
+ *	Signals waiting monitors when call after ILWaitMonitorSpeculativeLeave.
  */
 int ILWaitMonitorCompleteLeave(ILWaitHandle *handle);
+
+/*
+ * Fast way to "enter" or "claim" a monitor if you know for sure that no other thread
+ * can contest the claim.  For example, A newly created monitor that is only known by
+ * one thread can be safely fast-claimed.
+ */
+int ILWaitMonitorFastClaim(ILWaitHandle *handle);
 
 /*
  * Syntactic sugar.

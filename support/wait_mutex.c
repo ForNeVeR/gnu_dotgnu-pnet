@@ -128,6 +128,17 @@ static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 	return IL_WAITCLOSE_FREE;
 }
 
+int ILWaitMonitorFastClaim(ILWaitHandle *handle)
+{
+	ILWaitMutex *mutex = (ILWaitMutex *)handle;
+	_ILWakeup *wakeup = &(ILThreadSelf()->wakeup);
+
+	mutex->owner = wakeup;
+	mutex->count = 1;
+
+	return 0;
+}
+
 /*
  * Register a wakeup object with a wait mutex.
  */
@@ -502,24 +513,30 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 		monitor->parent.owner = 0;
 		monitor->parent.count = 0;
 
-		/* Add ourselves to the signal wakeup queue */
-		_ILWakeupQueueAdd(&(monitor->signalQueue), wakeup, monitor);
-
-		/* Wakeup any threads waiting to enter */
-		monitor->parent.owner = _ILWakeupQueueWake(&(monitor->parent.queue));
-
-		if(monitor->parent.owner != 0)
+		/*
+		 * Must set the limit before we add ourselves to the wakeup queue 't
+		 * otherwise we might miss any signal between now and the call to 
+		 * _ILWakeupWait.
+		 */
+		if (_ILWakeupSetLimit(wakeup, 1))
 		{			
-			monitor->parent.count = 1;
-		}
+			/* Add ourselves to the signal wakeup queue */
+			_ILWakeupQueueAdd(&(monitor->signalQueue), wakeup, monitor);
 
-		/* Unlock the monitor */
-		_ILMutexUnlock(&(monitor->parent.parent.lock));
+			/* Wakeup any threads waiting to enter */
+			monitor->parent.owner = _ILWakeupQueueWake(&(monitor->parent.queue));
 
-		/* Wait until we are signalled */
-		if(_ILWakeupSetLimit(wakeup, 1))
-		{
+			if(monitor->parent.owner != 0)
+			{			
+				monitor->parent.count = 1;
+			}
+
+			/* Unlock the monitor */
+			_ILMutexUnlock(&(monitor->parent.parent.lock));
+
+			/* Wait until we are signalled */			
 			result = _ILWakeupWait(wakeup, timeout, 0);
+			
 			if(result < 0)
 			{
 				result = IL_WAIT_INTERRUPTED;
@@ -531,6 +548,9 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 		}
 		else
 		{
+			/* Unlock the monitor */
+			_ILMutexUnlock(&(monitor->parent.parent.lock));
+
 			result = IL_WAIT_INTERRUPTED;
 		}
 

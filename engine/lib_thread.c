@@ -22,6 +22,7 @@
 
 #include "engine.h"
 #include "lib_defs.h"
+#include "locks.h"
 #if HAVE_SYS_TYPES_H
 	#include <sys/types.h>
 #endif
@@ -75,7 +76,7 @@ static IL_INLINE void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, volat
 		{
 			break;
 		}
-		
+
 		ILThreadSleep(0);
 	}
 }
@@ -205,10 +206,13 @@ retry:
 				lockword
 			) == lockword)
 		{
-			/* Succesfully installed the new monitor */
+			/*
+			 * Succesfully installed the new monitor.
+			 * Calling FastClaim is faster than calling Enter cause we know that
+			 * no other thread can enter this monitor.
+		     */
 
-			/* Let the support monitor know we've entered */
-			result = ILWaitMonitorEnter(monitor->supportMonitor);
+			result = ILWaitMonitorFastClaim(monitor->supportMonitor);
 
 			if (result != 0)
 			{
@@ -321,7 +325,7 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 	volatile ILObject *obj;
 
 	obj = objnv;
-	
+
 	/* Make sure obj isn't null */
 	if(obj == 0)
 	{
@@ -354,7 +358,7 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 
 		return;
 	}
-
+	
 	if ((result = ILWaitMonitorSpeculativeLeave(monitor->supportMonitor)) > 0
 		/* Note: No need to check for aborts on call to leave */)
 	{
@@ -364,15 +368,7 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 		_IL_ObjectLockword_Unmark(thread, obj);		
 
 		/* Notify waiting monitors */
-		ILWaitMonitorCompleteLeave(monitor->supportMonitor);		
-
-		if (result != IL_WAIT_LEAVE_STILL_OWNS)
-		{
-			/* If we no longer own the monitor then give up some CPU time to prevent
-			    monitor hogging */
-
-			ILThreadSleep(0);
-		}
+		ILWaitMonitorCompleteLeave(monitor->supportMonitor);
 	}
 	else
 	{
@@ -687,6 +683,7 @@ ILFloat _IL_Interlocked_CompareExchange_Rfff
 		*location1 = value;
 	}
 	ILThreadAtomicEnd();
+
 	return orig;
 }
 

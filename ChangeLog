@@ -1,5 +1,20 @@
 2004-05-03  Thong Nguyen <tum@veridicus.com>
 
+	* support/wait_mutex.c: Fixed bug in ILWaitMonitorWait
+	which caused it to sometimes miss Pulse signals.
+	Added support for ILWaitMonitorFastClaim.
+	
+	* support/wakeup.c: Added comment about how/when to set
+	wakeup limits.
+	
+	* include/il_thread.h: Added definition for
+	ILWaitMonitorFastClaim.
+	
+	* engine/lib_thread.c: Added optimisations for monitor.enter
+	and monitor.leave.
+	
+2004-05-03  Thong Nguyen <tum@veridicus.com>
+
 	* support/thr_defs.h: Added waiters field to ILMonitor.
 	
 	* support/wait_mutex.c: Made ILWaitMonitorWait notify

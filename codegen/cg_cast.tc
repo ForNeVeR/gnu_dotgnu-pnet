@@ -27,15 +27,15 @@
 /*
  * Declare the general-purpose machine type cast operation.
  */
-%operation %inline void ILGenCast(ILGenInfo *info, [ILMachineType fromType],
-						  		  [ILMachineType toType])
+%operation %inline %split void ILGenCast
+		(ILGenInfo *info, [ILMachineType fromType], [ILMachineType toType])
 
 /*
  * Declare the constant cast operation.
  */
-%operation %inline int ILGenCastConst(ILGenInfo *info, ILEvalValue *value,
-							[ILMachineType fromType], [ILMachineType toType])
-					= {0}
+%operation %inline %split int ILGenCastConst
+		(ILGenInfo *info, ILEvalValue *value, [ILMachineType fromType],
+		 [ILMachineType toType]) = {0}
 
 /*
  * Declare "ILGenConstToBoolean" for constants.

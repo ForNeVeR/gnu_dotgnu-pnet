@@ -27,8 +27,8 @@
 /*
  * Declare the general-purpose machine type cast operation.
  */
-%operation %inline void JavaGenCast(ILGenInfo *info, [ILMachineType fromType],
-						  		    [ILMachineType toType])
+%operation %inline %split void JavaGenCast
+		(ILGenInfo *info, [ILMachineType fromType], [ILMachineType toType])
 
 %{
 

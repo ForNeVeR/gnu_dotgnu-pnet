@@ -39,6 +39,7 @@ namespace FormsTest
 		private TabPage tabPage24;
 		private TabPage tabPage25;
 		private TabPage tabPage26;
+		private TabPage tabPage27;
 		
 		// Tab1 Labels Test
 		private Label label;
@@ -310,6 +311,19 @@ namespace FormsTest
 		private Button dialog1Button;
 		private OpenFileDialog openFileDialog1;
 
+		// Tab27 UpDown Test
+		private DomainUpDown upDown1;
+		private DomainUpDown upDown2;
+		private DomainUpDown upDown1ro;
+		private DomainUpDown upDown2ro;
+		private string upDownString1 = "Test 1";
+		private string upDownString2 = "Test 2";
+		private string upDownString3 = "Test 3";
+		private string upDownString4 = "Test 4";
+		private NumericUpDown upDown3;
+		private NumericUpDown upDown4;
+		private NumericUpDown upDown3ro;
+		private NumericUpDown upDown4ro;
 		#endregion
 		
 		public static void Main(String[] args)
@@ -412,6 +426,9 @@ namespace FormsTest
 			tabPage9 = new TabPage();
 			tabPage9.Text = "ContextMenu";
 			tabControl1.Controls.Add(tabPage9);
+			tabPage27 = new TabPage();
+			tabPage27.Text = "UpDown";
+			tabControl1.Controls.Add(tabPage27);
 			
 			Controls.Add(tabControl1);
 
@@ -443,6 +460,7 @@ namespace FormsTest
 			AddResXTest(tabPage24);
 			AddImageListTest(tabPage25);
 			AddMessageBoxTest(tabPage26);
+			AddUpDownTest(tabPage27);
 
 			ResumeLayout(false);
 			MinimumSize = new Size(300, 300);
@@ -3683,5 +3701,53 @@ namespace FormsTest
 			MessageBox.Show(this, "This is a help message.", "Help");
 		}
 
+		private void AddUpDownTest(Control c)
+		{
+			upDown1 = new DomainUpDown();	
+			upDown1.Location = new Point(10, 10);
+			// upDown1.Size = new Size(80, 30);
+			upDown2 = new DomainUpDown();	
+			upDown2.Location = new Point(10, 50);
+			// upDown2.Size = new Size(80, 30);
+			upDown2.UpDownAlign = LeftRightAlignment.Left;
+			upDown3 = new NumericUpDown();	
+			upDown3.Location = new Point(10, 90);
+			upDown4 = new NumericUpDown();	
+			upDown4.Location = new Point(10, 130);
+			upDown4.UpDownAlign = LeftRightAlignment.Left;
+			upDown1ro = new DomainUpDown();	
+			upDown1ro.Location = new Point(150, 10);
+			upDown1ro.ReadOnly = true;
+			upDown2ro = new DomainUpDown();	
+			upDown2ro.Location = new Point(150, 50);
+			upDown2ro.UpDownAlign = LeftRightAlignment.Left;
+			upDown2ro.ReadOnly = true;
+			upDown3ro = new NumericUpDown();	
+			upDown3ro.Location = new Point(150, 90);
+			upDown3ro.ReadOnly = true;
+			upDown4ro = new NumericUpDown();	
+			upDown4ro.Location = new Point(150, 130);
+			upDown4ro.UpDownAlign = LeftRightAlignment.Left;
+			upDown4ro.ReadOnly = true;
+			c.Controls.AddRange(new Control[] {upDown1, upDown1ro, upDown2, upDown2ro
+						, upDown3, upDown3ro, upDown4, upDown4ro});
+			upDown1.Items.Add(upDownString1);
+			upDown1.Items.Add(upDownString2);
+			upDown1.Items.Add(upDownString3);
+			upDown1.Items.Add(upDownString4);
+			upDown2.Items.Add(upDownString1);
+			upDown2.Items.Add(upDownString2);
+			upDown2.Items.Add(upDownString3);
+			upDown2.Items.Add(upDownString4);
+			upDown1ro.Items.Add(upDownString1);
+			upDown1ro.Items.Add(upDownString2);
+			upDown1ro.Items.Add(upDownString3);
+			upDown1ro.Items.Add(upDownString4);
+			upDown2ro.Items.Add(upDownString1);
+			upDown2ro.Items.Add(upDownString2);
+			upDown2ro.Items.Add(upDownString3);
+			upDown2ro.Items.Add(upDownString4);
+
+		}
 	}
 }

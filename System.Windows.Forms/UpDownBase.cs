@@ -20,6 +20,7 @@
  */
 
 using System.Drawing;
+using System.ComponentModel;
 using System.Windows.Forms.Themes;
 using System.Diagnostics;
 
@@ -40,80 +41,185 @@ public abstract class UpDownBase : ContainerControl
 	internal class UpDownButtons : Control
 	{
 		private UpDownBase parent;
+		private Rectangle upButton = Rectangle.Empty;
+		private Rectangle downButton = Rectangle.Empty;
+		private bool upDown = false;
+		private bool downDown = false;
+		private Timer timer;
+		private int mouseX;
+		private int mouseY;
 
-		[TODO]
+		private const int repeatDelay = 50;
+		private const int startDelay = 300;
+
 		internal UpDownButtons(UpDownBase parent) : base()
 		{
 			this.parent = parent;
+			timer = new Timer();
 		}
  		
-		[TODO]
 		private void BeginButtonPress(MouseEventArgs e)
 		{
-			throw new NotImplementedException("BeginButtonPress");
+			Capture = true;
+			int x = e.X;
+			int y = e.Y;
+
+			mouseX = x;
+			mouseY = y;
+
+			if (upButton.Contains(x,y))
+			{
+				upDown = true;
+				downDown = false;
+			}
+			else 
+			{
+				if (downButton.Contains(x,y))
+				{
+					upDown = false;
+					downDown = true;
+				}
+				else
+				{
+					upDown = false;
+					downDown = false;
+				}
+			}
+			base.OnMouseDown(e);
+			if (upDown || downDown)
+			{
+				Invalidate();
+				// OnUpDown(new UpDownEventArgs((int)(upDown ? ButtonID.up : 
+				// 				(downDown ?  ButtonID.Down : ButtonID.None))));
+				if (upDown)
+				{
+					OnUpDown(new UpDownEventArgs((int)ButtonID.Up));
+				}
+				else
+				{
+					if (downDown)
+					{
+						OnUpDown(new UpDownEventArgs((int)ButtonID.Down));
+					}
+					else
+					{
+						OnUpDown(new UpDownEventArgs((int)ButtonID.None));
+					}
+				}
+				StartTimer();
+			}
 		}
 
-		[TODO]
 		protected override AccessibleObject CreateAccessibilityInstance()
 		{
 			return base.CreateAccessibilityInstance();
 		}
 			
-		[TODO]
 		private void EndButtonPress()
 		{
-			throw new NotImplementedException("EndButtonPress");
+			StopTimer();
+			if (upDown || downDown)
+			{
+				upDown = false;
+				downDown = false;
+				Invalidate();
+			}
 		}
 
-		[TODO]
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
-			base.OnMouseDown(e);
+			if (e.Button != MouseButtons.Left)
+				return;		
+			BeginButtonPress(e);
 		}
 
-		[TODO]
 		protected override void OnMouseMove(MouseEventArgs e)
 		{
+			mouseX = e.X;
+			mouseY = e.Y;
 			base.OnMouseMove(e);
 		}
 
-		[TODO]
 		protected override void OnMouseUp(MouseEventArgs e)
 		{
 			base.OnMouseUp(e);
+			EndButtonPress();
 		}
 
-		[TODO]
 		protected override void OnPaint(PaintEventArgs e)
 		{
+			Draw(e.Graphics, e.ClipRectangle);
 			base.OnPaint(e);
 		}
 
-		[TODO]
 		protected virtual void OnUpDown(UpDownEventArgs e)
 		{
-			throw new NotImplementedException("OnUpDown");
+			if (UpDown != null)
+			{
+				UpDown(this, e);
+			}
 		}
 
-		[TODO]
 		protected void StartTimer()
 		{
-			throw new NotImplementedException("StartTimer");
+			timer.Tick += new EventHandler(TimerHandler);
+			timer.Interval = startDelay;
+			timer.Start();
 		}
 
-		[TODO]
 		protected void StopTimer()
 		{
-			throw new NotImplementedException("StopTimer");
+			timer.Stop();
+			timer.Tick -= new EventHandler(TimerHandler);
 		}
 
-		[TODO]
 		private void TimerHandler(object source, EventArgs e)
 		{
-			throw new NotImplementedException("TimerHandler");
+			timer.Stop();
+			timer.Interval = repeatDelay;
+			// OnUpDown(new UpDownEventArgs((int)(upDown ? ButtonID.up : 
+			// 				(downDown ?  ButtonID.Down : ButtonID.None))));
+			if (upDown)
+			{
+				OnUpDown(new UpDownEventArgs((int)ButtonID.Up));
+			}
+			else
+			{
+				if (downDown)
+				{
+					OnUpDown(new UpDownEventArgs((int)ButtonID.Down));
+				}
+				else
+				{
+					OnUpDown(new UpDownEventArgs((int)ButtonID.None));
+				}
+			}
+			timer.Start();
 		}
 		
 		public event UpDownEventHandler UpDown;
+	
+		// Draw if visible and created
+		private void Draw(Graphics g, Rectangle drawBounds)
+		{
+			if (!Visible || !IsHandleCreated) { return; }
+			LayoutButtons();
+			ThemeManager.MainPainter.DrawScrollBar(g,  ClientRectangle,
+								   drawBounds,
+								   ForeColor, BackColor,
+								   true, Enabled,
+								   Rectangle.Empty, Rectangle.Empty,
+								   upButton, upDown,
+								   downButton, downDown);
+		}
+
+		private void LayoutButtons()
+		{
+			Size s = ClientSize;
+
+			upButton = new Rectangle(0, 0, s.Width, s.Height / 2);
+			downButton = new Rectangle(0, s.Height - (s.Height / 2), s.Width, s.Height / 2);
+		}
 
 	}; // class UpDownButtons
 
@@ -157,23 +263,88 @@ public abstract class UpDownBase : ContainerControl
 		{
 			base.OnMouseUp(e);
 		}
+
+		protected override bool ProcessDialogKey(Keys keyData)
+		{
+			if (parent.InterceptArrowKeys)
+			{
+				if ((keyData & Keys.Alt) == 0)
+				{
+					Keys key = keyData & Keys.KeyCode;
+
+					switch (key)
+					{
+						case Keys.Up:
+							parent.UpButton();
+							return true;
+						case Keys.Down:
+							parent.DownButton();
+							return true;
+					}
+	
+				}
+			}
+			return base.ProcessDialogKey(keyData);
+		}
 	}; // class UpDownEdit
 
+	private const System.Windows.Forms.BorderStyle DefaultBorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+	private const int DefaultButtonsWidth = 20;
+	private LeftRightAlignment upDownAlign;
 	private UpDownButtons upDownButtons;
 	private UpDownEdit upDownEdit;
 	private bool userEdit;
+	private bool interceptArrowKeys;
 
 	[TODO]
 	public UpDownBase() : base()
 	{
+		base.BorderStyleInternal = DefaultBorderStyle;
 		upDownEdit = new UpDownEdit(this);
+		upDownEdit.AutoSize = true;
+		upDownEdit.ReadOnly = false;
+		upDownEdit.BorderStyle = BorderStyle.None;
+		upDownEdit.KeyDown += new KeyEventHandler(OnTextBoxKeyDown);
+		upDownEdit.KeyPress += new KeyPressEventHandler(OnTextBoxKeyPress);
+		upDownEdit.LostFocus += new EventHandler(OnTextBoxLostFocus);
+		upDownEdit.Resize += new EventHandler(OnTextBoxResize);
+		upDownEdit.TextChanged += new EventHandler(OnTextBoxTextChanged);
 		upDownButtons = new UpDownButtons(this);
+		upDownButtons.TabStop = false;
+		upDownButtons.UpDown += new UpDownEventHandler(upDownButtons_UpDown);
+		upDownAlign = LeftRightAlignment.Right;
+		interceptArrowKeys = true;
+		base.Size = ClientToBounds(new Size(upDownEdit.Width + DefaultButtonsWidth, upDownEdit.Height));
+		Controls.AddRange(new Control[] {upDownButtons, upDownEdit});
 	}
 
-	[TODO]
-	public virtual void DownButton()
+	public BorderStyle BorderStyle
 	{
-		throw new NotImplementedException("DownButton");
+		get
+		{
+			return base.BorderStyleInternal;
+		}
+		set
+		{
+			if (base.BorderStyleInternal != value)
+			{
+				base.BorderStyleInternal = value;
+			}
+		}
+	}
+
+	public abstract void DownButton();
+
+	public bool InterceptArrowKeys
+	{
+		get
+		{
+			return interceptArrowKeys;
+		}
+		set
+		{
+			interceptArrowKeys = value;
+		}
 	}
 
 	[TODO]
@@ -185,7 +356,12 @@ public abstract class UpDownBase : ContainerControl
 	[TODO]
 	protected override void OnFontChanged(EventArgs e)
 	{
+		Size s;
+
 		base.OnFontChanged(e);
+		upDownEdit.Font = Font;
+		s = upDownEdit.Size;
+		Height = ClientToBounds(new Size(0, s.Height)).Height;
 	}
 
 	[TODO]
@@ -198,6 +374,7 @@ public abstract class UpDownBase : ContainerControl
 	protected override void OnLayout(LayoutEventArgs e)
 	{
 		base.OnLayout(e);
+		doLayout();
 	}
 
 	[TODO]
@@ -209,55 +386,92 @@ public abstract class UpDownBase : ContainerControl
 	[TODO]
 	protected virtual void OnTextBoxKeyDown(object source, KeyEventArgs e)
 	{
-		throw new NotImplementedException("OnTextBoxKeyDown");
 	}
 
 	[TODO]
 	protected virtual void OnTextBoxKeyPress(object source, KeyPressEventArgs e)
 	{
-		throw new NotImplementedException("OnTextBoxKeyPress");
 	}
 
 	[TODO]
 	protected virtual void OnTextBoxLostFocus(object source, EventArgs e)
 	{
-		throw new NotImplementedException("OnTextBoxLostFocus");
 	}
 
 	[TODO]
 	protected virtual void OnTextBoxResize(object source, EventArgs e)
 	{
-		throw new NotImplementedException("OnTextBoxResize");
+		Size s;
+
+		s = upDownEdit.Size;
+		s = ClientToBounds(new Size(s.Width + DefaultButtonsWidth, s.Height));
+		this.Size = s;
 	}
 
 	[TODO]
 	protected virtual void OnTextBoxTextChanged(object source, EventArgs e)
 	{
-		throw new NotImplementedException("OnTextBoxTextChanged");
+		userEdit = true;
+	}
+
+	[DefaultValue(false)]	
+	public bool ReadOnly
+	{
+		get
+		{
+			return upDownEdit.ReadOnly;
+		}
+		set
+		{
+			upDownEdit.ReadOnly = value;
+		}
 	}
 
 	[TODO]
 	public void Select(int start, int length)
 	{
-		throw new NotImplementedException("Select");
+		upDownEdit.Select(start, length);
 	}
 
 	[TODO]
 	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 	{
 		base.SetBoundsCore(x, y, width, height, specified);
+		doLayout();
 	}
 
 	[TODO]
-	public virtual void UpButton()
+	public override string Text
 	{
-		throw new NotImplementedException("UpButton");
+		get
+		{
+			return upDownEdit.Text;
+		}
+		set
+		{
+			upDownEdit.Text = value;
+		}	
 	}
 
-	[TODO]
-	protected virtual void UpdateEditText()
+	public abstract void UpButton();
+
+	protected abstract void UpdateEditText();
+
+	public LeftRightAlignment UpDownAlign
 	{
-		throw new NotImplementedException("UpdateEditText");
+		get
+		{
+			return upDownAlign;
+		}
+		set
+		{
+			if (upDownAlign != value)
+			{
+				upDownAlign = value;
+				doLayout();
+				Invalidate();
+			}
+		}
 	}
 
 	internal UpDownButtons UpDownButtonsInternal
@@ -268,7 +482,6 @@ public abstract class UpDownBase : ContainerControl
 		}
 	}
 
-	[TODO]
 	protected bool UserEdit
 	{
 		get
@@ -289,7 +502,7 @@ public abstract class UpDownBase : ContainerControl
 			upDownEdit.Dispose();
 			upDownButtons.Dispose();
 		}
-		
+		base.Dispose(disposing);		
 	}
 
 	public new event EventHandler BackgroundImageChanged;
@@ -302,10 +515,49 @@ public abstract class UpDownBase : ContainerControl
 
 	public new event MouseEventHandler MouseMove;
 
-	public event UpDownEventHandler UpDown
+	public event UpDownEventHandler UpDown;
+
+	private void upDownButtons_UpDown(Object source, UpDownEventArgs e)
 	{
-		add { AddHandler(EventId.Scroll,value); }
-		remove { RemoveHandler(EventId.Scroll,value); }
+		if (e.ButtonID == (int)(ButtonID.Up))
+		{
+			UpButton();
+		}
+		else
+		{
+			if (e.ButtonID == (int)(ButtonID.Down))
+			{
+				DownButton();
+			}
+		}
+	}
+
+	private void doLayout()
+	{
+		Size s = base.ClientSize;
+
+		if (s.Width > DefaultButtonsWidth)
+		{
+			upDownButtons.Size = new Size(DefaultButtonsWidth, s.Height);
+			upDownEdit.Size = new Size(s.Width - DefaultButtonsWidth, s.Height);
+			if (upDownAlign == LeftRightAlignment.Left)
+			{
+				upDownButtons.Location = new Point(0, 0); 
+				upDownEdit.Location = new Point(DefaultButtonsWidth, 0); 
+			}
+			else
+			{
+				upDownButtons.Location = new Point(s.Width - DefaultButtonsWidth, 0); 
+				upDownEdit.Location = new Point(0, 0); 
+			}
+		}
+		else
+		{
+			upDownButtons.Size = new Size(DefaultButtonsWidth, s.Height);
+			upDownButtons.Location = new Point(0, 0); 
+			upDownEdit.Size = new Size(0, 0); 
+			upDownEdit.Location = new Point(0, 0); 
+		}
 	}
 
 }; // class UpDownBase

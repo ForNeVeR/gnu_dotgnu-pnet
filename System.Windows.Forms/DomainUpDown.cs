@@ -35,7 +35,6 @@ public class DomainUpDown : UpDownBase
 	private int domainIndex;
 	private bool sorted;
 	private bool wrap;
-	private DomainUpDown parent;
 
 	[TODO]
 	[DefaultMember("Item")]
@@ -43,7 +42,7 @@ public class DomainUpDown : UpDownBase
  	{
 		private DomainUpDown owner;
 
-		internal void DomainUpDownItemCollection(DomainUpDown owner)
+		internal DomainUpDownItemCollection(DomainUpDown owner)
 		{
 			this.owner = owner;
 		}
@@ -51,13 +50,18 @@ public class DomainUpDown : UpDownBase
 		[TODO]
 		public override int Add(object item)
 		{
-			return base.Add(item);
+			int i = base.Add(item);
+			return i;
 		}
 
 		[TODO]
 		public override void Insert(int index, object item)
-		{
+		{			
 			base.Insert(index, item);
+			if (index <= owner.SelectedIndex)
+			{
+				owner.SelectedIndex++;
+			}
 		}
 
 		[TODO]
@@ -70,6 +74,17 @@ public class DomainUpDown : UpDownBase
 		public override void RemoveAt(int item)
 		{
 			base.RemoveAt(item);
+			if (item == owner.SelectedIndex)
+			{
+				if (Count > item)
+				{
+					owner.SelectedIndex = item;
+				}
+				else
+				{				
+					owner.SelectedIndex = Count - 1;
+				}
+			}
 		}
 
 		[TODO]
@@ -84,12 +99,21 @@ public class DomainUpDown : UpDownBase
 			set
 			{
 				base[index] = value;
+				if (index == owner.SelectedIndex)
+				{
+					// just to update text
+					owner.SelectedIndex = index;
+				}
 			}
 		}
 	}; // class  DomainUpDownItemCollection
 
 	private class DomainUpDownCompare : IComparer
 	{
+		internal DomainUpDownCompare()
+		{
+		}
+
 		public int Compare(object a, object b)
 		{
 			return a.ToString().CompareTo(b.ToString());
@@ -97,58 +121,84 @@ public class DomainUpDown : UpDownBase
 	}; // class  DomainUpDownCompare
 		
 
-	public void DomainUpDown()
+	public DomainUpDown() : base()
 	{
-		domainItems = new DomainUpDownItemCollection();
+		domainItems = new DomainUpDownItemCollection(this);
 		domainIndex = -1;
 	}
 
 	[TODO]
 	protected override AccessibleObject CreateAccessibilityInstance()
 	{
-		throw new NotImplementedException("CreateAccessibilityInstance");
+		return base.CreateAccessibilityInstance();
 	}
 
 	[TODO]
 	public override void DownButton()
 	{
-		throw new NotImplementedException("DownButton");
+		if (domainIndex >= (domainItems.Count - 1))
+		{
+			if (!wrap)
+			{
+				return;
+			}
+			domainIndex = -1;
+		}
+		if (domainItems.Count > 0)
+		{
+			domainIndex++;
+			SetText();
+			OnSelectedItemChanged(this, new EventArgs());
+		}
 	}
 
 	[TODO]
 	protected override void OnChanged(object source, EventArgs e)
 	{
-		throw new NotImplementedException("OnChanged");
+		base.OnChanged(source, e);
 	}
 
 	[TODO]
-	protected void OnSelectesItemChanged(object source, EventArgs e)
+	protected void OnSelectedItemChanged(object source, EventArgs e)
 	{
-		throw new NotImplementedException("OnSelectedItemChanged");
+		if (SelectedItemChanged != null)
+		{
+			SelectedItemChanged(this, e);
+		}
 	}
 	
 	[TODO]
 	protected override void OnTextBoxKeyDown(object source, KeyEventArgs e)
 	{
-		throw new NotImplementedException("OnTextBoxKeyDown");
+		base.OnTextBoxKeyDown(source, e);
 	}
 
-	[TODO]
 	public override string ToString()
 	{
-		throw new NotImplementedException("ToString");
+		return "System.Windows.Forms.DomainUpDown, Items.count: " + domainItems.Count.ToString() +
+			", SelectedIndex: " + domainIndex.ToString();
 	}
 
 	[TODO]
 	public override void UpButton()
 	{
-		throw new NotImplementedException("UpButton");
+		if (domainIndex <= 0)
+		{
+			if (!wrap)
+			{
+				return;
+			}
+			domainIndex = domainItems.Count;
+		}
+		domainIndex--;
+		SetText();
+		OnSelectedItemChanged(this, new EventArgs());
 	}
 
 	[TODO]
 	protected override void UpdateEditText()
 	{
-		throw new NotImplementedException("UpdateEditText");
+		base.UpdateEditText();
 	}
 
 	public DomainUpDownItemCollection Items
@@ -173,7 +223,8 @@ public class DomainUpDown : UpDownBase
 			if ((value < -1) || (value >= domainItems.Count))
 				throw new ArgumentException("value", value.ToString());
 			domainIndex = value;
-			// FIXME Update display
+			SetText();
+			OnSelectedItemChanged(this, new EventArgs());
 		}
 	}
 
@@ -192,6 +243,14 @@ public class DomainUpDown : UpDownBase
 		}
 		set
 		{
+			// FIXME
+			if (domainIndex == -1)
+			{
+				throw new  NullReferenceException("No item Selected");
+			}
+			domainItems[domainIndex] = value;
+			SetText();
+			OnSelectedItemChanged(this, new EventArgs());
 		}
 	}
 
@@ -206,6 +265,10 @@ public class DomainUpDown : UpDownBase
 		set
 		{
 			// sorting must be implemented
+			if (value)
+			{
+				domainItems.Sort(new DomainUpDownCompare());
+			}
 			sorted = value;
 		}
 	}
@@ -226,7 +289,17 @@ public class DomainUpDown : UpDownBase
 
 	public event EventHandler SelectedItemChanged;
 
-
+	private void SetText()
+	{
+		if (domainIndex >= 0)
+		{
+			base.Text = domainItems[domainIndex].ToString();
+		}
+		else
+		{
+			base.Text = string.Empty;
+		}
+	}
 }; // class DomainUpDown
 	
 }; // namespace System.Windows.Forms

@@ -35,6 +35,9 @@ current class or method that is being processed.
 * codegen/cg_utils.h, codegen/cg_utils.c: implement utility functions
 for accessing method arguments.
 
+* cscc/cs_decls.tc (ILNode_MethodDeclaration): declare parameters into
+the method's local variable scope.
+
 2001-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc: add the

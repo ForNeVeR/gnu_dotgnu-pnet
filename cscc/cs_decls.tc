@@ -233,6 +233,15 @@ ILNode_SemAnalysis(ILNode_EventPropertyDeclaration)
 ILNode_SemAnalysis(ILNode_MethodDeclaration)
 {
 	ILNode *savedMethod;
+	ILNode_NewScope *newScope;
+	ILScope *scope;
+	ILScope *savedScope;
+	unsigned long argNum;
+	ILNode_ListIter iter;
+	ILNode_FormalParameter *param;
+	ILScopeData *data;
+	char *name;
+	ILNode *errorNode;
 
 	/* Record the current method that we are in */
 	savedMethod = info->currentMethod;
@@ -250,19 +259,65 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		CSUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
-#if 0
-	/* FIXME: optional attributes ? */
-	/* modifier already done in parser */
-	value = ILNode_SemAnalysis(node->type, info, &(node->type));
-	/* FIXME: name, do we need to do anything */
-	/* FIXME: I don't think we'll need to iterate over params here */
-	value = ILNode_SemAnalysis(node->params, info, &(node->params));
-#endif
+	/* Get the method's local variable scope */
+	if(node->body && yykind(node->body) == yykindof(ILNode_NewScope))
+	{
+		newScope = (ILNode_NewScope *)(node->body);
+		if(!(newScope->scope))
+		{
+			newScope->scope = ILScopeCreate(info, info->currentScope);
+		}
+		scope = newScope->scope;
+	}
+	else
+	{
+		scope = ILScopeCreate(info, info->currentScope);
+	}
+
+	/* Declare the parameters into the method's local variable scope */
+	if((node->modifiers & IL_META_METHODDEF_STATIC) == 0)
+	{
+		/* Non-static parameters start at argument 1 */
+		argNum = 1;
+	}
+	else
+	{
+		/* Static parameters start at argument 0 */
+		argNum = 0;
+	}
+	ILNode_ListIter_Init(&iter, node->params);
+	while((param = (ILNode_FormalParameter *)ILNode_ListIter_Next(&iter)) != 0)
+	{
+		name = ILQualIdentName(param->name, 0);
+		data = ILScopeLookup(scope, name, 0);
+		if(data)
+		{
+			CSErrorOnLine(yygetfilename(param->name),
+						  yygetlinenum(param->name),
+						  "`%s' is already declared in this scope", name);
+			errorNode = ILScopeDataGetNode(data);
+			if(errorNode)
+			{
+				CSErrorOnLine(yygetfilename(errorNode),
+							  yygetlinenum(errorNode),
+							  "previous declaration here");
+			}
+		}
+		else
+		{
+			ILScopeDeclareLocal(scope, name, argNum | CS_LOCAL_IS_ARG,
+								param->name);
+		}
+		++argNum;
+	}
 
 	/* Perform semantic analysis on the method body */
 	if(node->body)
 	{
+		savedScope = info->currentScope;
+		info->currentScope = scope;
 		ILNode_SemAnalysis(node->body, info, &(node->body));
+		info->currentScope = savedScope;
 	}
 
 	/* Leave the unsafe context for the method */

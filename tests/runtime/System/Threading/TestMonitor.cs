@@ -1,5 +1,5 @@
 /*
- * TestBoolean.cs - Tests for the "Boolean" class.
+ * TestMonitor.cs - Tests for the "Monitor" class.
  *
  * Copyright (C) 2002  Free Software Foundation.
  *

@@ -34,6 +34,7 @@ public class SuiteThreading
 		suite.AddTests(typeof(TestManualResetEvent));
 		suite.AddTests(typeof(TestAutoResetEvent));
 		suite.AddTests(typeof(TestTimer));
+		suite.AddTests(typeof(TestMutex));
 	#endif
 	
 		suite.AddTests(typeof(TestThread));

@@ -1,4 +1,12 @@
-2006-06-17  Richard Baumann  <biochem333@nyc.rr.com>
+2004-06-17  Thong Nguyen  <tum@veridicus.com>
+
+	* tests/runtime/System/Threading/SuiteThreading.cs, TestMutex.cs:
+	Added mutex tests.
+	
+	* tests/runtime/System/Threading/TestMonitor.cs: Fixed source header
+	comments.
+	
+2004-06-17  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Drawing.Xsharp/DrawingFont.cs, Xsharp/Font.cs: move
 	fallback font family code, for typical windows fonts, to Xsharp

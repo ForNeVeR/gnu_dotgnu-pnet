@@ -94,7 +94,7 @@ public abstract class DES : SymmetricAlgorithm
 					{
 						throw new ArgumentNullException("value");
 					}
-					else if(value.Length != KeySizeValue)
+					else if((value.Length * 8) != KeySizeValue)
 					{
 						throw new ArgumentException
 							(String.Format(_("Crypto_InvalidKeySize"),

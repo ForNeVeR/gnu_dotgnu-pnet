@@ -1,4 +1,24 @@
 
+2002-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Security/Cryptography/DES.cs,
+	runtime/System/Security/Cryptography/ECBDecrypt.cs,
+	runtime/System/Security/Cryptography/SymmetricAlgorithm.cs,
+	tests/runtime/Testruntime.cs,
+	tests/runtime/System/Security/Cryptography/CryptoTestCase.cs,
+	tests/runtime/System/Security/Cryptography/Makefile,
+	tests/runtime/System/Security/Cryptography/TestAES.cs,
+	tests/runtime/System/Security/Cryptography/TestCryptography.cs,
+	tests/runtime/System/Security/Cryptography/TestDES.cs,
+	tests/runtime/System/Security/Cryptography/TestMD5.cs,
+	tests/runtime/System/Security/Cryptography/TestRC2.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA1.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA256.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA384.cs,
+	tests/runtime/System/Security/Cryptography/TestSHA512.cs,
+	tests/runtime/System/Security/Cryptography/TestTripleDES.cs:
+	test the behaviour of some of the cryptographic algorithms.
+
 2002-11-22  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/Platform/RegexpMethods.cs, runtime/System/Private/Regexp.cs:

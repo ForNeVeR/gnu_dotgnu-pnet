@@ -1,7 +1,7 @@
 /*
- * Testruntime.cs - Tests for the "System" namespace.
+ * TestCryptography.cs - Tests for the "System.Security.Cryptography" namespace.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,20 +21,22 @@
 using CSUnit;
 using System;
 
-public class Testruntime
+public class TestCryptography
 {
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("Basic Runtime Tests");
-				suite.AddTests(typeof(TestBoolean));
-				suite.AddTests(typeof(TestSByte));
-				suite.AddTests(typeof(TestString));
-				suite.AddTests(typeof(TestStringBuilder));
-				suite.AddTests(typeof(TestArrayList));
-				suite.AddTest(TestCryptography.Suite());
+				TestSuite suite = new TestSuite("Cryptography Tests");
+				suite.AddTests(typeof(TestAES));
+				suite.AddTests(typeof(TestDES));
+				suite.AddTests(typeof(TestRC2));
+				suite.AddTests(typeof(TestTripleDES));
+				suite.AddTests(typeof(TestMD5));
+				suite.AddTests(typeof(TestSHA1));
+				suite.AddTests(typeof(TestSHA256));
+				suite.AddTests(typeof(TestSHA384));
+				suite.AddTests(typeof(TestSHA512));
 				return suite;
 			}
 
-}; // class Testruntime
-
+}; // class TestCryptography

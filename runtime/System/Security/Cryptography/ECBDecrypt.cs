@@ -162,7 +162,10 @@ internal sealed class ECBDecrypt
 				if(offset != outputBuffer.Length)
 				{
 					byte[] newout = new byte [offset];
-					Array.Copy(outputBuffer, 0, newout, 0, offset);
+					if(offset != 0)
+					{
+						Array.Copy(outputBuffer, 0, newout, 0, offset);
+					}
 					outputBuffer.Initialize();
 					outputBuffer = newout;
 				}

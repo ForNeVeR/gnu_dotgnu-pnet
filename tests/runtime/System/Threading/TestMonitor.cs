@@ -22,6 +22,7 @@
 
 using CSUnit;
 using System;
+using System.Collections;
 using System.Threading;
 
 public class TestMonitor
@@ -290,5 +291,157 @@ public class TestMonitor
 		}
 		
 		AssertEquals("Monitor locking", failed, false);
+	}
+	
+	public void TestMonitorWaitWithoutLock()
+	{
+		object o = new object();
+		
+		try
+		{
+			Monitor.Wait(o);
+		}
+		catch (SynchronizationLockException)
+		{
+			return;
+		}
+		
+		Fail("Monitor.Wait() without a lock should throw a synchronization lock exception");
+	}
+		
+	public void TestMonitorWaitWithLockTimeout()
+	{
+		object o = new object();
+		
+		try
+		{
+			lock (o)
+			{
+				Monitor.Wait(o, 100);
+			}
+		}
+		catch (SynchronizationLockException)
+		{
+			Fail("Monitor.Wait() without a lock should throw a synchronization lock exception");
+			
+			return;
+		}	
+	}
+	
+	private class TestEnterFalseLeave
+	{
+		bool e = false;
+		public object o = new object();
+		
+		public void Run()
+		{
+			try
+			{
+				Monitor.Exit(o);
+			}
+			catch (SynchronizationLockException)
+			{
+				e = true;
+			}
+		}
+		
+		public bool Test()
+		{
+			Thread thread = new Thread(new ThreadStart(Run));
+			
+			Monitor.Enter(o);
+						
+			thread.Start();
+			thread.Join();
+			
+			return e;
+		}
+	}
+	
+	public void TestMonitorEnterFalseLeave()
+	{
+		Assert("Monitor.Exit should throw an exception if the thread doesn't own the lock", new TestEnterFalseLeave().Test());
+	}
+	
+	public class TestWaitThenPulse
+	{
+		private object o = new object();
+		private ArrayList results = new ArrayList();
+		
+		private void AddResult(int value)
+		{
+			lock (this)
+			{
+				results.Add(value);
+			}
+		}
+		
+		public void Run1()
+		{
+			AddResult(1);
+			
+			lock (o)
+			{
+				AddResult(2);
+				
+				Monitor.Wait(o);
+				
+				AddResult(6);
+			}
+		}
+		
+		public void Run2()
+		{
+			Console.Write("Waiting 3 seconds before pulse ... ");
+
+			Thread.Sleep(3000);
+
+			AddResult(3);
+			
+			lock (o)
+			{
+				AddResult(4);
+				
+				Monitor.Pulse(o);
+				
+				AddResult(5);
+			}		
+		}
+		
+		public bool Test()
+		{
+			bool success = true;
+			Thread thread = new Thread(new ThreadStart(Run2));
+			
+			thread.Start();
+			Run1();
+			
+			if (results.Count == 6)
+			{
+				for (int i = 0; i < results.Count; i++)
+				{
+					if ((int)results[i] != i + 1)
+					{
+						success = false;
+					}
+				}
+			}
+			else
+			{
+				success = false;
+			}
+			
+			return success;
+		}
+	}
+	
+	public void TestMonitorWaitThenPulse()
+	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+		
+		Assert("Monitor.Wait doesn't work", new TestWaitThenPulse().Test());
 	}
 }

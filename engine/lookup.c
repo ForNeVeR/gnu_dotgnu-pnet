@@ -767,6 +767,16 @@ ILField *ILExecThreadLookupField(ILExecThread *thread,
 								 const char *signature)
 {
 	ILClass *classInfo;
+	classInfo = ILExecThreadLookupClass(thread, typeName);
+	return ILExecThreadLookupFieldInClass
+		(thread, classInfo, fieldName, signature);	
+}
+
+ILField *ILExecThreadLookupFieldInClass(ILExecThread *thread,
+										ILClass *classInfo,
+										const char *fieldName,
+										const char *signature)
+{
 	ILField *field;
 	ILType *fieldType;
 	int matchCount;
@@ -777,17 +787,14 @@ ILField *ILExecThreadLookupField(ILExecThread *thread,
 		return 0;
 	}
 
-	/* Look up the type */
-	classInfo = ILExecThreadLookupClass(thread, typeName);
-
 	/* Resolve the field within the type or any of its ancestors */
 	while(classInfo != 0)
 	{
 		classInfo = ILClassResolve(classInfo);
 		field = 0;
 		while((field = (ILField *)ILClassNextMemberByKind
-					(classInfo, (ILMember *)field,
-					 IL_META_MEMBERKIND_FIELD)) != 0)
+			(classInfo, (ILMember *)field,
+			IL_META_MEMBERKIND_FIELD)) != 0)
 		{
 			if(!strcmp(ILField_Name(field), fieldName))
 			{

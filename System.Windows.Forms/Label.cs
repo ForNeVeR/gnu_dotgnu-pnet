@@ -46,7 +46,7 @@ public class Label : Control
 				SetStyle(ControlStyles.ResizeRedraw, true);
 				this.useMnemonic = true;
 				this.flatStyle = FlatStyle.Standard;
-				this.alignment = ContentAlignment.MiddleLeft;
+				this.alignment = ContentAlignment.TopLeft;
 				this.preferredWidth = -1;
 			}
 

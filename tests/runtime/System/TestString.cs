@@ -241,9 +241,9 @@ public class TestString : TestCase
 		try
 		{
 			bool q=bad.Equals("nothing");
-			Fail("bad.Equals(\"nothing\") should have thrown a ArgumentNullException");
+			Fail("bad.Equals(\"nothing\") should have thrown a NullReferenceException");
 		}
-		catch(ArgumentNullException err)
+		catch(NullReferenceException err)
 		{
 			//great !
 		}
@@ -261,18 +261,26 @@ public class TestString : TestCase
 	public void TestStringFormat()
 	{
 	/*TODO*/
-		AssertEquals ("String.Format(\"\",0)", String.Format ("", 0),"");
+		AssertEquals ("String.Format(\"\",0)", "", String.Format ("", 0));
 		
 		AssertEquals ("String.Format(\"{0}\",\"FooBar\")", 
-		String.Format ("{0}","FooBar"),"FooBar");
+				"FooBar", String.Format ("{0}","FooBar"));
 
 		AssertEquals ("String.Format(\"{0}\",111)", 
-		String.Format ("{0}",111),"111");
+				"111", String.Format ("{0}",111));
 
 		try
 		{
 			String.Format(null,12);
 			Fail("String.Format(null,12) should throw an ArgumentNullException");
+		}
+		catch(ArgumentNullException err)
+		{
+			// all's well 
+		}
+
+		try
+		{
 			String.Format("Er..",null);
 			Fail("String.Format(\"Er...\",null) should throw an ArgumentNullException");
 		}
@@ -285,8 +293,24 @@ public class TestString : TestCase
 		{
 			String.Format("{-1}",12);
 			Fail("String.Format(\"{-1}\",12) should throw an FormatException");
+		}
+		catch(FormatException err)
+		{
+			// all's well 
+		}
+
+		try
+		{
 			String.Format("{3}",12);
 			Fail("String.Format(\"{3}\",12) should throw an FormatException");
+		}
+		catch(FormatException err)
+		{
+			// all's well 
+		}
+
+		try
+		{
 			String.Format("{}",12);
 			Fail("String.Format(\"{}\",12) should throw an FormatException");
 		}
@@ -294,31 +318,35 @@ public class TestString : TestCase
 		{
 			// all's well 
 		}
+
 		AssertEquals("String.Format (\"<{0,5}>\", 12)",
-			String.Format ("<{0,5}>", 12),"<   12>");
+			"<   12>",String.Format ("<{0,5}>", 12));
 		
 		AssertEquals("String.Format (\"<{0,5}>\", 12)",
-			String.Format ("<{0,-5}>", 12),"<12   >");
+			"<12   >",String.Format ("<{0,-5}>", 12));
 
 		AssertEquals ("String.Format(\"The {0} of {1}\",\"Church\",\"Emacs\")",
-			String.Format ("The {0} of {1}","Church", "Emacs"),
-			"The Church of Emacs");
+			"The Church of Emacs",
+			String.Format ("The {0} of {1}", "Church", "Emacs"));
 		
-		AssertEquals("String.Format(\"G{0} N{1} U{2}\",\"nu's\",\"ot\",\"nix\")"
-			,String.Format ("G{0} N{1} U{2}","nu's", "ot", "nix"),
-			"Gnu's Not Unix");
+		AssertEquals("String.Format(\"G{0} N{1} U{2}\",\"nu's\",\"ot\",\"nix\")",
+			"Gnu's Not Unix", 
+			String.Format ("G{0} N{1} U{2}", "nu's", "ot", "nix"));
 
 		AssertEquals ("String.Format (\"{0:x8}\", 0xcafebabe),\"cafebabe\")",
-			String.Format ("{0:x8}", 0xcafebabe),"cafebabe");
+			"cafebabe", String.Format ("{0:x8}", 0xcafebabe));
+
+		AssertEquals ("String.Format (\"{0:x8}\", 0xcafebabe),\"cafebabe\")",
+			"CAFEBABE", String.Format ("{0:X8}", 0xcafebabe));
 
 		AssertEquals ("String.Format (\"<{0,5:x3}>\", 0x55)",
-			String.Format ("<{0,5:x3}>", 0x55),"<  055>");
+			"<  055>", String.Format ("<{0,5:x3}>", 0x55));
 	
 		AssertEquals ("String.Format (\"<{0,-5:x3}>\", 0x55)",
-			String.Format ("<{0,-5:x3}>", 0x55),"<055  >");
+			"<055  >", String.Format ("<{0,-5:x3}>", 0x55));
 			
 		AssertEquals ("String.Format (\"if({0}==0){{ .... }}\",\"i\")",
-		String.Format ("if({0}==0){{ .... }}","i"),"if(i==0){ .... }");
+			"if(i==0){ .... }", String.Format ("if({0}==0){{ .... }}", "i"));
 	}
 
 	public void TestStringGetEnumerator()
@@ -598,6 +626,7 @@ public class TestString : TestCase
 		}
 		catch (ArgumentOutOfRangeException)
 		{
+			// This looks like brain damage in the spec, but it's easy enough to implement.
 			Fail("foo.LastIndexOf('f',foo.Length) should NOT throw an ArgumentOutOfRangeException");
 		}
 		try
@@ -678,11 +707,11 @@ public class TestString : TestCase
 		}
 		try
 		{
-			AssertEquals("foo.LastIndexOf('r',foo.Length+10,11)",28,foo.LastIndexOf('r',foo.Length+10,11)); // isn't it?
+			AssertEquals("foo.LastIndexOf('r',foo.Length+10,12)",28,foo.LastIndexOf('r',foo.Length+10,12)); // isn't it?
 		}
 		catch (ArgumentOutOfRangeException)
 		{
-			Fail("foo.LastIndexOf('r',foo.Length+10,11) should NOT throw an ArgumentOutOfRangeException");
+			Fail("foo.LastIndexOf('r',foo.Length+10,12) should NOT throw an ArgumentOutOfRangeException");
 		}	
 		try
 		{
@@ -733,7 +762,7 @@ public class TestString : TestCase
 
 		/* String.LastIndexOf(String,int) */
 		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1)",26,foo.LastIndexOf("Bar",foo.Length-1));
-		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2)",-1,foo.LastIndexOf("Bar",foo.Length-2));
+		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2)",4,foo.LastIndexOf("Bar",foo.Length-2));
 		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-3)",23,foo.LastIndexOf("Fu",foo.Length-3));
 		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-6)",-1,foo.LastIndexOf("Fu",foo.Length-6));
 		try
@@ -791,15 +820,14 @@ public class TestString : TestCase
 
 		/* String.LastIndexOf(String,int,int) */
 		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1,foo.Length)",26,foo.LastIndexOf("Bar",foo.Length-1,foo.Length));
-		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2,foo.Length-1)",-1,foo.LastIndexOf("Bar",foo.Length-2,foo.Length-1));
+		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2,foo.Length-1)",4,foo.LastIndexOf("Bar",foo.Length-2,foo.Length-1));
 		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1,3)",26,foo.LastIndexOf("Bar",foo.Length-1,3));
 		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-2,3)",-1,foo.LastIndexOf("Bar",foo.Length-2,3));
 		AssertEquals("foo.LastIndexOf(\"Bar\",foo.Length-1,2)",-1,foo.LastIndexOf("Bar",foo.Length-1,2));
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-3,foo.Length-2)",23,foo.LastIndexOf("Fu",foo.Length-3,foo.Length-2));
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-4,foo.Length-3)",-1,foo.LastIndexOf("Fu",foo.Length-4,foo.Length-3));
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-3,3)",23,foo.LastIndexOf("Fu",foo.Length-3,3));
-		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-4,3)",-1,foo.LastIndexOf("Fu",foo.Length-4,3));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-4,foo.Length-3)",23,foo.LastIndexOf("Fu",foo.Length-4,foo.Length-3));
 		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-6,foo.Length-5)",-1,foo.LastIndexOf("Fu",foo.Length-6,foo.Length-5));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-4,3)",23,foo.LastIndexOf("Fu",foo.Length-4,3));
+		AssertEquals("foo.LastIndexOf(\"Fu\",foo.Length-6,3)",-1,foo.LastIndexOf("Fu",foo.Length-6,3));
 		try
 		{
 			AssertEquals("foo.LastIndexOf(\"\",0,0)",0,foo.LastIndexOf("",0,0)); // and the absurdity continues
@@ -872,6 +900,8 @@ public class TestString : TestCase
 
 	public void TestStringLastIndexOfAny()
 	{
+		//            00000000001111111111222222222
+		//            01234567890123456789012345678
 		String foo = "Foo Bar foo bar fu bar Fu Bar";
 
 		/* String.LastIndexOfAny(char[]) */
@@ -945,9 +975,17 @@ public class TestString : TestCase
 		/* String.LastIndexOfAny(char[],int,int) */
 		AssertEquals("foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-1,1)",28,foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-1,1));
 		AssertEquals("foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-2,2)",27,foo.LastIndexOfAny(new char[] {'r','a','B'},foo.Length-2,2));
-		AssertEquals("foo.LastIndexOfAny(new char[] {'B'},foo.Length-1,foo.Length)",28,foo.LastIndexOfAny(new char[] {'B'},foo.Length-1,foo.Length));
-		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length,foo.Length)",23,foo.LastIndexOfAny(new char[] {'F'},foo.Length,foo.Length));
-		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-11)",0,foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-11));
+		AssertEquals("foo.LastIndexOfAny(new char[] {'B'},foo.Length-1,foo.Length)",26,foo.LastIndexOfAny(new char[] {'B'},foo.Length-1,foo.Length));
+		try
+		{
+			AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length,foo.Length)",23, foo.LastIndexOfAny(new char[] {'F'},foo.Length,foo.Length));
+		}
+		catch (ArgumentOutOfRangeException)
+		{
+			Fail("foo.LastIndexOfAny(new char[] {'F'},foo.Length,foo.Length) should NOT throw an ArgumentOutOfRangeException");
+			// flashing some leather
+		}
+		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length-11,foo.Length-10)",0,foo.LastIndexOfAny(new char[] {'F'},foo.Length-11,foo.Length-10));
 		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-10)",-1,foo.LastIndexOfAny(new char[] {'F'},foo.Length-10,foo.Length-10));
 		AssertEquals("foo.LastIndexOfAny(new char[] {'F'},foo.Length+10,foo.Length)",23,foo.LastIndexOfAny(new char[] {'F'},foo.Length+10,foo.Length));
 		AssertEquals("foo.LastIndexOfAny(new char[] {'F','o','B','a','r','f','b','u'},foo.Length+10,10)",-1,

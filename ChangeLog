@@ -1,4 +1,14 @@
 
+2002-11-11  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* runtime/System/String.cs, tests/runtime/System/TestString.cs:
+	fixed several small test failures related to exceptions and
+	LastIndexOf/LastIndexOfAny processing.
+
+	* tests/System/TestSystem.build, tests/System.Xml/TestXml.build,
+	tests/runtime/Testruntime.builds:  Added '-g' for cscc compiles for
+	those of us who like to know from where exceptions originate :-).
+
 2002-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/Directory.cs: correct a small problem

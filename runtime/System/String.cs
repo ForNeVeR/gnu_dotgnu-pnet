@@ -540,6 +540,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Override the inherited Equals method.
 	public override bool Equals(Object obj)
 			{
+				if(this == null)
+				{
+					throw new NullReferenceException();
+				}
+
 				if(obj is String)
 				{
 					return Equals(this, (String)obj);
@@ -555,10 +560,10 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	extern public static bool Equals(String a, String b);
 
 	// Determine if this string is the same as another.
-	public bool Equals(String value)
-			{
-				return Equals(this, value);
-			}
+	//public bool Equals(String value)
+	//		{
+	//			return Equals(this, value);
+	//		}
 
 	// Format a single-argument string.
 	public static String Format(String format, Object arg0)
@@ -983,6 +988,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			}
 	public int LastIndexOf(char value, int startIndex)
 			{
+				if (startIndex > length)
+				{
+					throw new ArgumentOutOfRangeException(
+								"startIndex", _("ArgRange_StringIndex"));
+				}
 				return LastIndexOf(value, startIndex, startIndex + 1);
 			}
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -995,16 +1005,20 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			}
 	public int LastIndexOf(String value, int startIndex)
 			{
+				if (startIndex >= length)
+				{
+					throw new ArgumentOutOfRangeException
+								("startIndex", _("ArgRange_StringIndex"));
+				}
 				return LastIndexOf(value, startIndex, startIndex + 1);
 			}
 	public int LastIndexOf(String value, int startIndex, int count)
 			{
-				int posn;
 				if(value == null)
 				{
 					throw new ArgumentNullException("value");
 				}
-				if(startIndex < 0 || startIndex >= length)
+				if(startIndex < 0)
 				{
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
@@ -1014,17 +1028,12 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_StringRange"));
 				}
-				posn = FindInRange
+
+				if (value.length == 0) return 0;
+
+				return FindInRange
 					(startIndex - value.Length + 1,
 					 startIndex - count + 1, -1, value);
-				if(posn != -1)
-				{
-					return posn + value.Length - 1;
-				}
-				else
-				{
-					return -1;
-				}
 			}
 
 	// Get the last index of any character within an array.
@@ -1034,6 +1043,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			}
 	public int LastIndexOfAny(char[] anyOf, int startIndex)
 			{
+				if (startIndex >= length)
+				{
+					throw new ArgumentOutOfRangeException
+								("startIndex", _("ArgRange_StringIndex"));
+				}
 				return LastIndexOfAny(anyOf, startIndex, startIndex + 1);
 			}
 	[MethodImpl(MethodImplOptions.InternalCall)]

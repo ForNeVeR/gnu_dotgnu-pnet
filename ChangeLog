@@ -4,6 +4,9 @@
 * include/il_types.h: mark array ranks explicitly with "ARRAY_CONTINUE",
 and remove parameter information which is obsolete.
 
+* include/il_program.h: shift forward declaration of "ILParameter" from
+"il_types.h" to "il_program.h".
+
 2001-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c: fix a bug that caused GetBuiltinType to treat

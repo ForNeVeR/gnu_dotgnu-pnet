@@ -31,6 +31,9 @@
 	resources/en_US/System/Arg.txt: implement socket permission
 	classes; add "SocketAddress.GetHashCode()".
 
+	* System/Net/DnsPermission.cs: implement the missing functionality
+	in "System.Net.DnsPermission".
+
 2003-03-31  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs,

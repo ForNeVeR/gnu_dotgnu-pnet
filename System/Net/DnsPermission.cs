@@ -28,6 +28,9 @@ using System.Security;
 using System.Security.Permissions;
 
 public class DnsPermission : CodeAccessPermission
+#if !ECMA_COMPAT
+	, IUnrestrictedPermission
+#endif
 {
 
 	bool restrictedState = true;
@@ -57,10 +60,26 @@ public class DnsPermission : CodeAccessPermission
 		return this;
 	}
 
-	[TODO]
-	//Once System XML is fully implemented
-	public override void FromXml(SecurityElement securityElement)
+	public override void FromXml(SecurityElement esd)
 	{
+		String value;
+		if(esd == null)
+		{
+			throw new ArgumentNullException("esd");
+		}
+		if(esd.Attribute("version") != "1")
+		{
+			throw new ArgumentException(S._("Arg_PermissionVersion"));
+		}
+		value = esd.Attribute("Unrestricted");
+		if(value != null && Boolean.Parse(value))
+		{
+			restrictedState = false;
+		}
+		else
+		{
+			restrictedState = true;
+		}
 	}
 
 
@@ -122,11 +141,20 @@ public class DnsPermission : CodeAccessPermission
 		
 	}
 
-	[TODO]
-	// Once System XML is fully implemented
 	public override SecurityElement ToXml()
 	{
-		return null;
+		SecurityElement element;
+		element = new SecurityElement("IPermission");
+		element.AddAttribute
+			("class",
+			 SecurityElement.Escape(typeof(DnsPermission).
+			 						AssemblyQualifiedName));
+		element.AddAttribute("version", "1");
+		if(!restrictedState)
+		{
+			element.AddAttribute("Unrestricted", "true");
+		}
+		return element;
 	}
 
 	public override IPermission Union(IPermission target)
@@ -152,6 +180,14 @@ public class DnsPermission : CodeAccessPermission
 		
 		return null;
 	}
+
+#if !ECMA_COMPAT
+	// Determine if this permission object is unrestricted.
+	public bool IsUnrestricted()
+	{
+		return !restrictedState;
+	}
+#endif
 
 } // class DnsPermission
 

@@ -24,9 +24,10 @@ case "$host" in
     *-*-linux* )
     gc_cflags=-fexceptions
     ;;
-    *-*-hpux* )
-    gc_cflags=+ESdbgasm
-    ;;
+## - commented out by Rhys Weatherley as it caused problems for hpux users.
+##    *-*-hpux* )
+##    gc_cflags=+ESdbgasm
+##    ;;
 esac
 
 case "${target_optspace}:${host}" in

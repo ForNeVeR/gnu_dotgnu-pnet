@@ -26,7 +26,11 @@
 	engine/pinvoke.c, ilnative/ilcheck.c: modify the engine to handle
 	both libffi and non-libffi internalcall marshalling.
 
-	* configure.in: directory cd error for "libgc" configuration.
+	* configure.in: directory cd error for "libgc" configuration;
+	turn off libffi by default on hpux.
+
+	* libgc/configure.host: remove "+ESdbgasm" option on hpux builds
+	as it causes problems on hpux/gcc systems.
 
 2002-05-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -22,7 +22,9 @@
 #include "il_coder.h"
 #include "il_opcodes.h"
 #include "il_utils.h"
+#ifndef IL_WITHOUT_TOOLS
 #include "il_dumpasm.h"
+#endif
 #include "cvm.h"
 #include "lib_defs.h"
 #include "method_cache.h"

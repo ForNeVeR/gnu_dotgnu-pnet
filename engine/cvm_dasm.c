@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef IL_WITHOUT_TOOLS
+
 #include "il_dumpasm.h"
 #include "engine.h"
 
@@ -1141,3 +1143,6 @@ int _ILDumpVarProfile(FILE *stream)
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_WITHOUT_TOOLS */
+

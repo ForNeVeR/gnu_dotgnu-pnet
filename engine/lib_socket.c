@@ -38,6 +38,8 @@
 	#include <winsock.h>
 #endif
 
+#ifdef IL_CONFIG_NETWORKING
+
 /*
  * public static IntPtr GetInvalidHandle();
  */
@@ -631,3 +633,5 @@ ILBool _IL_Dns_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address,
 
 	return ToIPHostEntry(_thread,h_ent,h_name,h_aliases,h_addr_list);
 }
+
+#endif /* IL_CONFIG_NETWORKING */

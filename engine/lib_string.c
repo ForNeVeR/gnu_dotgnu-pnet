@@ -788,11 +788,11 @@ ILInt32 _IL_String_GetHashCode(ILExecThread *thread, System_String *_this)
 /*
  * public int IndexOf(char value, int startIndex, int count);
  */
-int _IL_String_IndexOf(ILExecThread *thread,
-			 	       System_String *_this,
-					   ILUInt16 value,
-					   ILInt32 startIndex,
-					   ILInt32 count)
+ILInt32 _IL_String_IndexOf(ILExecThread *thread,
+			 	           System_String *_this,
+					       ILUInt16 value,
+					       ILInt32 startIndex,
+					       ILInt32 count)
 {
 	ILUInt16 *buf;
 
@@ -827,11 +827,11 @@ int _IL_String_IndexOf(ILExecThread *thread,
 /*
  * public int IndexOfAny(char[] anyOf, int startIndex, int count);
  */
-int _IL_String_IndexOfAny(ILExecThread *thread,
-				 	      System_String *_this,
-					      System_Array *anyOf,
-					      ILInt32 startIndex,
-					      ILInt32 count)
+ILInt32 _IL_String_IndexOfAny(ILExecThread *thread,
+				 	          System_String *_this,
+					          System_Array *anyOf,
+					          ILInt32 startIndex,
+					          ILInt32 count)
 {
 	ILUInt16 *buf;
 	ILUInt16 *anyBuf;
@@ -887,11 +887,11 @@ int _IL_String_IndexOfAny(ILExecThread *thread,
 /*
  * public int LastIndexOf(char value, int startIndex, int count);
  */
-int _IL_String_LastIndexOf(ILExecThread *thread,
-				 	 	   System_String *_this,
-					 	   ILUInt16 value,
-					 	   ILInt32 startIndex,
-					 	   ILInt32 count)
+ILInt32 _IL_String_LastIndexOf(ILExecThread *thread,
+				 	 	       System_String *_this,
+					 	       ILUInt16 value,
+					 	       ILInt32 startIndex,
+					 	       ILInt32 count)
 {
 	ILUInt16 *buf;
 
@@ -933,11 +933,11 @@ int _IL_String_LastIndexOf(ILExecThread *thread,
 /*
  * public int LastIndexOfAny(char[] anyOf, int startIndex, int count);
  */
-int _IL_String_LastIndexOfAny(ILExecThread *thread,
-							  System_String *_this,
-							  System_Array *anyOf,
-							  ILInt32 startIndex,
-							  ILInt32 count)
+ILInt32 _IL_String_LastIndexOfAny(ILExecThread *thread,
+							      System_String *_this,
+							      System_Array *anyOf,
+							      ILInt32 startIndex,
+							      ILInt32 count)
 {
 	ILUInt16 *buf;
 	ILUInt16 *anyBuf;

@@ -84,6 +84,7 @@ ILBool _IL_InfoMethods_IsUserInteractive(ILExecThread * _thread)
  */
 ILString *_IL_InfoMethods_GetUserName(ILExecThread *thread)
 {
+#if !defined(__palmos__)
 	if(!ILImageIsSecure(_ILClrCallerImage(thread)))
 	{
 		/* We don't trust the caller, so don't tell them who the user is */
@@ -106,6 +107,9 @@ ILString *_IL_InfoMethods_GetUserName(ILExecThread *thread)
 		}
 		return ILStringCreate(thread, "nobody");
 	}
+#else
+	return ILStringCreate(thread, "nobody");
+#endif
 }
 
 /*

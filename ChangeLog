@@ -35,6 +35,13 @@
 	just the runtime engine to pull the size of the m68k-palmos CVM
 	interpreter below the 32k code section threshold.
 
+	* engine/cvm_dasm.c, engine/cvmc.c, engine/cvmc_gen.h, engine/ilrun.c,
+	engine/ilverify.c, engine/lib_info.c, engine/lib_socket.c,
+	engine/lib_stdio.c, engine/lib_string.c, engine/lib_task.c,
+	engine/process.c, engine/register.c, engine/throw.c,
+	engine/unroll_arm.c, engine/unroll_x86.c: port the rest of
+	the "engine" directory to m68k-palmos.
+
 2003-05-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csdoc.c: avoid semantic analysis of method bodies with

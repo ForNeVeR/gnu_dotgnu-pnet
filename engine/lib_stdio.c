@@ -52,12 +52,14 @@ void _IL_Stdio_StdClose(ILExecThread *thread, ILInt32 fd)
  */
 void _IL_Stdio_StdFlush(ILExecThread *thread, ILInt32 fd)
 {
+#ifndef REDUCED_STDIO
 	switch(fd)
 	{
 		case 0:		fflush(stdin); break;
 		case 1:		fflush(stdout); break;
 		case 2:		fflush(stderr); break;
 	}
+#endif
 }
 
 /*
@@ -65,11 +67,15 @@ void _IL_Stdio_StdFlush(ILExecThread *thread, ILInt32 fd)
  */
 void _IL_Stdio_StdWrite_ic(ILExecThread *thread, ILInt32 fd, ILUInt16 value)
 {
+#ifndef REDUCED_STDIO
 	switch(fd)
 	{
 		case 1:		putc((value & 0xFF), stdout); break;
 		case 2:		putc((value & 0xFF), stderr); break;
 	}
+#else
+	putchar(value);
+#endif
 }
 
 /*
@@ -77,6 +83,7 @@ void _IL_Stdio_StdWrite_ic(ILExecThread *thread, ILInt32 fd, ILUInt16 value)
  */
 static void StdWrite(ILInt32 fd, ILUInt16 *buf, ILInt32 length)
 {
+#ifndef REDUCED_STDIO
 	if(fd == 1)
 	{
 		while(length > 0)
@@ -95,6 +102,14 @@ static void StdWrite(ILInt32 fd, ILUInt16 *buf, ILInt32 length)
 			--length;
 		}
 	}
+#else
+	while(length > 0)
+	{
+		putchar((*buf & 0xFF));
+		++buf;
+		--length;
+	}
+#endif
 }
 
 /*
@@ -114,6 +129,7 @@ void _IL_Stdio_StdWrite_iaBii(ILExecThread *thread, ILInt32 fd,
 							  System_Array *value, ILInt32 index,
 							  ILInt32 count)
 {
+#ifndef REDUCED_STDIO
 	if(fd == 1)
 	{
 		fwrite(((ILUInt8 *)ArrayToBuffer(value)) + index, 1, count, stdout);
@@ -122,6 +138,16 @@ void _IL_Stdio_StdWrite_iaBii(ILExecThread *thread, ILInt32 fd,
 	{
 		fwrite(((ILUInt8 *)ArrayToBuffer(value)) + index, 1, count, stderr);
 	}
+#else
+	unsigned char *buf;
+	buf = ((unsigned char *)(ArrayToBuffer(value))) + index;
+	while(count > 0)
+	{
+		putchar((*buf & 0xFF));
+		++buf;
+		--count;
+	}
+#endif
 }
 
 /*
@@ -143,6 +169,7 @@ void _IL_Stdio_StdWrite_iString(ILExecThread *thread, ILInt32 fd,
  */
 ILInt32 _IL_Stdio_StdRead_i(ILExecThread *thread, ILInt32 fd)
 {
+#ifndef REDUCED_STDIO
 	if(fd == 0)
 	{
 		return (ILInt32)(getc(stdin));
@@ -151,6 +178,9 @@ ILInt32 _IL_Stdio_StdRead_i(ILExecThread *thread, ILInt32 fd)
 	{
 		return -1;
 	}
+#else
+	return -1;
+#endif
 }
 
 /*
@@ -160,6 +190,7 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 								System_Array *value, ILInt32 index,
 								ILInt32 count)
 {
+#ifndef REDUCED_STDIO
 	ILUInt16 *buf = ((ILUInt16 *)(ArrayToBuffer(value))) + index;
 	ILInt32 result = 0;
 	int ch;
@@ -178,6 +209,9 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 		--count;
 	}
 	return result;
+#else
+	return -1;
+#endif
 }
 
 /*
@@ -187,12 +221,16 @@ ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread *thread, ILInt32 fd,
 								System_Array *value, ILInt32 index,
 								ILInt32 count)
 {
+#ifndef REDUCED_STDIO
 	if(fd != 0)
 	{
 		return -1;
 	}
 	return (ILInt32)(fread(((ILUInt8 *)ArrayToBuffer(value)) + index,
 						   1, count, stdin));
+#else
+	return -1;
+#endif
 }
 
 /*
@@ -200,6 +238,7 @@ ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread *thread, ILInt32 fd,
  */
 ILInt32 _IL_Stdio_StdPeek(ILExecThread *thread, ILInt32 fd)
 {
+#ifndef REDUCED_STDIO
 	if(fd == 0)
 	{
 		int ch = getc(stdin);
@@ -213,6 +252,9 @@ ILInt32 _IL_Stdio_StdPeek(ILExecThread *thread, ILInt32 fd)
 	{
 		return -1;
 	}
+#else
+	return -1;
+#endif
 }
 
 #ifdef	__cplusplus

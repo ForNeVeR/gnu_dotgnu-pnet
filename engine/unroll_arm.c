@@ -23,14 +23,15 @@
 #include "method_cache.h"
 #include "cvm_config.h"
 #include "cvm_format.h"
-#include "arm_codegen.h"
-#include "il_dumpasm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
 #ifdef IL_CVM_DIRECT_UNROLLED_ARM
+
+#include "arm_codegen.h"
+#include "il_dumpasm.h"
 
 /*
  * Registers that have a special meaning while executing code.

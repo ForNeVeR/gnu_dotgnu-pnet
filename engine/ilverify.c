@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#if !defined(__palmos__)
+
 #include <stdio.h>
 #include "engine.h"
 #include "il_utils.h"
@@ -238,3 +240,12 @@ static int verify(const char *filename, ILContext *context, int allowUnsafe)
 #ifdef	__cplusplus
 };
 #endif
+
+#else	/* __palmos__ */
+
+int main(int argc, char *argv[])
+{
+	return 0;
+}
+
+#endif	/* __palmos__ */

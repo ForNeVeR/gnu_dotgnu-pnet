@@ -23,14 +23,15 @@
 #include "method_cache.h"
 #include "cvm_config.h"
 #include "cvm_format.h"
-#include "x86_codegen.h"
-#include "il_dumpasm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
 #ifdef IL_CVM_DIRECT_UNROLLED_X86
+
+#include "x86_codegen.h"
+#include "il_dumpasm.h"
 
 /*
  * Registers that have a fixed meaning assigned by the CVM interpreter.

@@ -161,10 +161,12 @@ int _ILUnregisterFromKernel(void)
 
 int _ILRegisterWithKernel(const char *progname)
 {
+#ifndef REDUCED_STDIO
 	/* We normally won't get here because of the #ifdef's in "ilrun.c",
 	   but if we do, then print an error message */
 	fprintf(stderr, "%s: the operating system does not support registration\n",
 			progname);
+#endif
 	return 1;
 }
 

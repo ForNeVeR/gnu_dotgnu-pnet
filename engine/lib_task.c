@@ -31,7 +31,9 @@ extern	"C" {
  */
 void _IL_TaskMethods_Exit(ILExecThread *thread, ILInt32 exitCode)
 {
+#if !defined(__palmos__)
 	exit((int)(exitCode & 0xFF));
+#endif
 }
 
 /*
@@ -56,6 +58,7 @@ System_Array *_IL_TaskMethods_GetCommandLineArgs(ILExecThread *thread)
 ILString *_IL_TaskMethods_GetEnvironmentVariable
 				(ILExecThread *thread, ILString *name)
 {
+#if !defined(__palmos__)
 	char *nameAnsi = ILStringToAnsi(thread, name);
 	char *env;
 	if(nameAnsi)
@@ -66,6 +69,7 @@ ILString *_IL_TaskMethods_GetEnvironmentVariable
 			return ILStringCreate(thread, env);
 		}
 	}
+#endif
 	return 0;
 }
 

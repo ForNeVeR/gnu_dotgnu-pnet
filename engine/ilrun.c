@@ -36,6 +36,8 @@ extern	"C" {
 int _ILRegisterWithKernel(const char *progname);
 int _ILUnregisterFromKernel(void);
 
+#ifndef IL_WITHOUT_TOOLS
+
 /*
  * Imports from "cvm_dasm.c".
  */
@@ -47,6 +49,7 @@ int _ILDumpVarProfile(FILE *stream);
  */
 int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process);
 
+#endif
 
 /*
  * Table of command-line options.
@@ -262,7 +265,9 @@ int main(int argc, char *argv[])
 	process = ILExecProcessCreate(stackSize);
 	if(!process)
 	{
+	#ifndef REDUCED_STDIO
 		fprintf(stderr, "%s: could not create process\n", progname);
+	#endif
 		return 1;
 	}
 
@@ -297,9 +302,14 @@ int main(int argc, char *argv[])
 	error = ILExecProcessLoadFile(process, ilprogram);
 	if(error < 0)
 	{
+	#ifndef REDUCED_STDIO
 		perror(ilprogram);
+	#else
+		printf("%s: could not open file", ilprogram);
+	#endif
 		return 1;
 	}
+#if !defined(__palmos__)
 	else if(error == IL_LOADERR_NOT_IL)
 	{
 		/* This is a regular Windows executable */
@@ -319,9 +329,14 @@ int main(int argc, char *argv[])
 		return ILSpawnProcess(argv + 1);
 	#endif
 	}
+#endif
 	else if(error > 0)
 	{
+	#ifndef REDUCED_STDIO
 		fprintf(stderr, "%s: %s\n", ilprogram, ILImageLoadError(error));
+	#else
+		printf("%s: %s\n", ilprogram, ILImageLoadError(error));
+	#endif
 		return 1;
 	}
 
@@ -329,7 +344,11 @@ int main(int argc, char *argv[])
 	method = ILExecProcessGetEntry(process);
 	if(!method)
 	{
+	#ifndef REDUCED_STDIO
 		fprintf(stderr, "%s: no program entry point\n", ilprogram);
+	#else
+		printf("%s: no program entry point\n", ilprogram);
+	#endif
 		ILExecProcessDestroy(process);
 		return 1;
 	}
@@ -337,7 +356,11 @@ int main(int argc, char *argv[])
 	/* Validate the entry point */
 	if(ILExecProcessEntryType(method) == IL_ENTRY_INVALID)
 	{
+	#ifndef REDUCED_STDIO
 		fprintf(stderr, "%s: invalid entry point\n", ilprogram);
+	#else
+		printf("%s: invalid entry point\n", ilprogram);
+	#endif
 		ILExecProcessDestroy(process);
 		return 1;
 	}
@@ -419,11 +442,11 @@ int main(int argc, char *argv[])
 
 static void usage(const char *progname)
 {
-	fprintf(stdout, "ILRUN " VERSION " - IL Program Runtime\n");
-	fprintf(stdout, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
-	fprintf(stdout, "\n");
-	fprintf(stdout, "Usage: %s [options] program [args]\n", progname);
-	fprintf(stdout, "\n");
+	printf("ILRUN " VERSION " - IL Program Runtime\n");
+	printf("Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	printf("\n");
+	printf("Usage: %s [options] program [args]\n", progname);
+	printf("\n");
 	ILCmdLineHelp(options);
 }
 

@@ -198,6 +198,7 @@ void ILExecThreadThrowOutOfMemory(ILExecThread *thread)
 
 void ILExecThreadPrintException(ILExecThread *thread)
 {
+#ifndef REDUCED_STDIO
 	ILObject *exception;
 	ILString *str;
 	char *ansistr;
@@ -309,6 +310,7 @@ void ILExecThreadPrintException(ILExecThread *thread)
 			}
 		}
 	}
+#endif
 }
 
 #ifdef	__cplusplus

@@ -287,6 +287,8 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 	}
 }
 
+#ifndef REDUCED_STDIO
+
 int ILExecProcessLoadImage(ILExecProcess *process, FILE *file)
 {
 	ILImage *image;
@@ -301,6 +303,8 @@ int ILExecProcessLoadImage(ILExecProcess *process, FILE *file)
 	}
 	return loadError;
 }
+
+#endif
 
 int ILExecProcessLoadFile(ILExecProcess *process, const char *filename)
 {

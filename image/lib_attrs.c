@@ -362,6 +362,33 @@ static int OutAttribute(ILProgramItem *item, ILSerializeReader *reader)
 }
 
 /*
+ * Process an "optional" attribute on a parameter.
+ */
+static int OptionalAttribute(ILProgramItem *item, ILSerializeReader *reader)
+{
+	ILParameter *param;
+
+	/* We must use this on a parameter */
+	param = ILProgramItemToParameter(item);
+	if(!param)
+	{
+		return 0;
+	}
+
+	/* There should be no parameters or extra information */
+	if(ILSerializeReaderGetParamType(reader) != 0 ||
+	   ILSerializeReaderGetNumExtra(reader) != 0)
+	{
+		return 0;
+	}
+
+	/* Set the "out" flag on the parameter */
+	ILParameterSetAttrs(param, IL_META_PARAMDEF_OPTIONAL,
+						IL_META_PARAMDEF_OPTIONAL);
+	return 1;
+}
+
+/*
  * Process a structure layout attribute.
  */
 static int StructLayoutAttribute(ILProgramItem *item, ILSerializeReader *reader)
@@ -1079,6 +1106,7 @@ static AttrConvertInfo const interopAttrs[] = {
 	{"FieldOffsetAttribute", FieldOffsetAttribute},
 	{"InAttribute", InAttribute},
 	{"OutAttribute", OutAttribute},
+	{"OptionalAttribute", OptionalAttribute},
 	{"StructLayoutAttribute", StructLayoutAttribute},
 	{"MarshalAsAttribute", MarshalAsAttribute},
 	{"ComImportAttribute", ComImportAttribute},

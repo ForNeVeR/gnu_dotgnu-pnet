@@ -1,4 +1,9 @@
 
+2004-07-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/lib_attrs.c: recognise "OptionalAttribute" and turn it
+	into the "[opt]" flag on parameters.
+
 2004-07-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.h, codegen/cg_output.c,

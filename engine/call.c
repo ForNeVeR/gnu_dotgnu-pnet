@@ -116,8 +116,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	stacklimit = thread->stackLimit;
 
 	/* Push the arguments onto the evaluation stack */
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	if(ILType_HasThis(signature))
 	{
 		/* Push the "this" argument */
 		CHECK_SPACE(1);
@@ -362,24 +361,39 @@ int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 	return threwException;
 }
 
-int ILExecThreadHasException(ILExecThread *thread)
+ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
+						  const char *signature, ...)
 {
-	return (thread->thrownException != 0);
-}
+	ILMethod *ctor;
+	ILClass *classInfo;
+	ILObject *result;
 
-ILObject *ILExecThreadGetException(ILExecThread *thread)
-{
-	return thread->thrownException;
-}
+	/* TODO: array types */
 
-void ILExecThreadClearException(ILExecThread *thread)
-{
-	thread->thrownException = 0;
-}
+	/* Find the constructor */
+	ctor = ILExecThreadLookupMethod(thread, typeName, ".ctor", signature);
+	if(!ctor)
+	{
+		/* TODO: Throw a "MissingMethodException" */
+		return 0;
+	}
 
-void ILExecThreadSetException(ILExecThread *thread, ILObject *obj)
-{
-	thread->thrownException = obj;
+	/* Make sure that the class has been initialized */
+	classInfo = ILMethod_Owner(ctor);
+	if(!_ILLayoutClass(thread, classInfo))
+	{
+		/* TODO: Throw a "TypeLoadException" */
+		return 0;
+	}
+
+	/* Does the method have IL code associated with it? */
+	if(ILMethod_RVA(ctor))
+	{
+	}
+
+	/* Done */
+	result = 0;
+	return result;
 }
 
 #ifdef	__cplusplus

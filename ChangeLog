@@ -28,6 +28,9 @@ internal system library.
 * include/il_engine.h: declare "ILExecThreadNew"; functions for
 throwing standard exceptions; functions for manipulating strings.
 
+* engine/call.c: implement "ILExecThreadNew"; move exception-related
+functions to "throw.c".
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

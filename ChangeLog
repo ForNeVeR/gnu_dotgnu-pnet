@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.6.8" release.
 
+	* configure.in: update working version to "0.6.9".
+
 2004-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: detect the path for "cscc-cpp" correctly

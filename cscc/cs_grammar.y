@@ -3276,7 +3276,8 @@ InterfaceMethodDeclaration
 								 IL_META_METHODDEF_PUBLIC |
 								 IL_META_METHODDEF_VIRTUAL |
 								 IL_META_METHODDEF_ABSTRACT |
-								 IL_META_METHODDEF_HIDE_BY_SIG;
+								 IL_META_METHODDEF_HIDE_BY_SIG |
+								 IL_META_METHODDEF_NEW_SLOT;
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3, $4, $6, 0);
 			}
@@ -3294,7 +3295,8 @@ InterfacePropertyDeclaration
 								 IL_META_METHODDEF_PUBLIC |
 								 IL_META_METHODDEF_VIRTUAL |
 								 IL_META_METHODDEF_ABSTRACT |
-								 IL_META_METHODDEF_HIDE_BY_SIG;
+								 IL_META_METHODDEF_HIDE_BY_SIG |
+								 IL_META_METHODDEF_NEW_SLOT;
 				$$ = ILNode_PropertyDeclaration_create
 								($1, attrs, $3, $4, 0, 0, 0, $6);
 
@@ -3336,7 +3338,8 @@ InterfaceEventDeclaration
 								 IL_META_METHODDEF_PUBLIC |
 								 IL_META_METHODDEF_VIRTUAL |
 								 IL_META_METHODDEF_ABSTRACT |
-								 IL_META_METHODDEF_HIDE_BY_SIG;
+								 IL_META_METHODDEF_HIDE_BY_SIG |
+								 IL_META_METHODDEF_NEW_SLOT;
 				$$ = ILNode_EventDeclaration_create
 							($1, attrs, $4,
 							 ILNode_EventDeclarator_create
@@ -3352,7 +3355,8 @@ InterfaceIndexerDeclaration
 								 IL_META_METHODDEF_PUBLIC |
 								 IL_META_METHODDEF_VIRTUAL |
 								 IL_META_METHODDEF_ABSTRACT |
-								 IL_META_METHODDEF_HIDE_BY_SIG;
+								 IL_META_METHODDEF_HIDE_BY_SIG |
+								 IL_META_METHODDEF_NEW_SLOT;
 				ILNode *name = ILQualIdentSimple
 									(ILInternString("Item", 4).string);
 				$$ = ILNode_PropertyDeclaration_create

@@ -1,4 +1,10 @@
 
+2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Application.cs, Xsharp/Graphics.cs, Xsharp/Xlib.cs.in:
+	add some more drawing primitives to Xsharp.Graphics; use the
+	correct parameters for "LastIndexOf" in the "Appliction" constructor.
+
 2003-06-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/Serialization/ObjectManager.cs,

@@ -97,10 +97,10 @@ public sealed class Application : IDisposable
 				{
 					// Strip the path from the program name to
 					// get the default resource name to use.
-					int index = programName.LastIndexOf(programName, '/');
+					int index = programName.LastIndexOf('/');
 					if(index == -1)
 					{
-						index = programName.LastIndexOf(programName, '\\');
+						index = programName.LastIndexOf('\\');
 					}
 					if(index != -1)
 					{

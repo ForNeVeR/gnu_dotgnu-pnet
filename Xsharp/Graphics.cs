@@ -357,6 +357,58 @@ public sealed class Graphics : IDisposable
 			}
 
 	/// <summary>
+	/// <para>Get or set the line width.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The width of the lines to draw.</para>
+	/// </value>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>Raised if set to an invalid value.</para>
+	/// </exception>
+	public int LineWidth
+			{
+				get
+				{
+					try
+					{
+						IntPtr display = Lock();
+						XGCValues values;
+						Xlib.XGetGCValues(display, gc,
+										  (uint)(GCValueMask.GCLineWidth),
+										  out values);
+						return values.line_width;
+					}
+					finally
+					{
+						dpy.Unlock();
+					}
+				}
+				set
+				{
+					if(value < 0)
+					{
+						throw new XException
+							(String.Format(S._("X_LineWidth"), (int)value));
+					}
+					try
+					{
+						IntPtr display = Lock();
+						XGCValues values = new XGCValues();
+						values.line_width = value;
+						Xlib.XChangeGC(display, gc,
+									   (uint)(GCValueMask.GCLineWidth),
+									   ref values);
+					}
+					finally
+					{
+						dpy.Unlock();
+					}
+				}
+			}
+
+	/// <summary>
 	/// <para>Get or set the line style mode.</para>
 	/// </summary>
 	///
@@ -1340,6 +1392,64 @@ public sealed class Graphics : IDisposable
 			}
 
 	/// <summary>
+	/// <para>Draw a filled polygon.</para>
+	/// </summary>
+	///
+	/// <param name="points">
+	/// <para>An array of points that define the polygon.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="points"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate values is out of range, or
+	/// <paramref name="points"/> has less than 2 elements.</para>
+	/// </exception>
+	public void FillPolygon(Point[] points)
+			{
+				int len;
+
+				// Validate the parameter.
+				if(points == null)
+				{
+					throw new ArgumentNullException("points");
+				}
+				len = points.Length;
+				if(len < 2)
+				{
+					throw new XException(S._("X_Need2Points"));
+				}
+				else if(len > ((dpy.MaxRequestSize() - 3) / 2))
+				{
+					throw new XException(S._("X_MaxReqSizeExceeded"));
+				}
+
+				// Convert the "Point" array into an "XPoint" array.
+				XPoint[] xpoints = new XPoint [len];
+				int pt;
+				for(pt = 0; pt < len; ++pt)
+				{
+					xpoints[pt] = new XPoint(points[pt].x, points[pt].y);
+				}
+
+				// Fill the polygon.
+				try
+				{
+					IntPtr display = Lock();
+					Xlib.XFillPolygon(display, drawableHandle, gc, xpoints,
+									  len, 0 /* Complex */,
+									  0 /* CoordModeOrigin */);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
 	/// <para>Draw a single point.</para>
 	/// </summary>
 	///
@@ -1513,6 +1623,69 @@ public sealed class Graphics : IDisposable
 			}
 
 	/// <summary>
+	/// <para>Fill a rectangle.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the top-left point.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the top-left point.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The width of the rectangle.  The pixel at
+	/// <i>x + width - 1</i> is the right-most side of the rectangle.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The height of the rectangle.  The pixel at
+	/// <i>y + height - 1</i> is the bottom-most side of the rectangle.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate or size values is out of range.</para>
+	/// </exception>
+	public void FillRectangle(int x, int y, int width, int height)
+			{
+				if(x < -32768 || x > 32767 || width < 0 || width > 65535 ||
+				   y < -32768 || y > 32767 || height < 0 || height > 65535)
+				{
+					throw new XException(S._("X_RectCoordRange"));
+				}
+				if(width > 0 && height > 0)
+				{
+					try
+					{
+						IntPtr display = Lock();
+						Xlib.XFillRectangle(display, drawableHandle, gc,
+									        x, y, width, height);
+					}
+					finally
+					{
+						dpy.Unlock();
+					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Fill a rectangle.</para>
+	/// </summary>
+	///
+	/// <param name="rect">
+	/// <para>The position and size of the rectangle.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate or size values is out of range.</para>
+	/// </exception>
+	public void FillRectangle(Rectangle rect)
+			{
+				FillRectangle(rect.x, rect.y, rect.width, rect.height);
+			}
+
+	/// <summary>
 	/// <para>Draw a list of rectangles.</para>
 	/// </summary>
 	///
@@ -1568,6 +1741,268 @@ public sealed class Graphics : IDisposable
 				finally
 				{
 					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Fill a list of rectangles.</para>
+	/// </summary>
+	///
+	/// <param name="rects">
+	/// <para>The list of rectangles to be drawn.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="rects"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate or size values is out of range, or
+	/// <paramref name="rects"/> has less than 1 element.</para>
+	/// </exception>
+	public void FillRectangles(Rectangle[] rects)
+			{
+				int len;
+
+				// Validate the parameter.
+				if(rects == null)
+				{
+					throw new ArgumentNullException("rects");
+				}
+				len = rects.Length;
+				if(len < 1)
+				{
+					throw new XException(S._("X_Need1Rect"));
+				}
+				else if(len > ((dpy.MaxRequestSize() - 3) / 2))
+				{
+					throw new XException(S._("X_MaxReqSizeExceeded"));
+				}
+
+				// Convert the "Rectangle" array into an "XRectangle" array.
+				XRectangle[] xrects = new XRectangle [len];
+				int r;
+				for(r = 0; r < len; ++r)
+				{
+					xrects[r] = new XRectangle(rects[r].x, rects[r].y,
+											   rects[r].width,
+											   rects[r].height);
+				}
+
+				// Draw the rectangles.
+				try
+				{
+					IntPtr display = Lock();
+					Xlib.XFillRectangles(display, drawableHandle, gc,
+										 xrects, len);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Draw an arc.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the top-left point of
+	/// the arc's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the top-left point of
+	/// the arc's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The width of the arc's bounding rectangle.  The pixel at
+	/// <i>x + width - 1</i> is the right-most side of the rectangle.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The height of the arc's bounding rectangle.  The pixel at
+	/// <i>y + height - 1</i> is the bottom-most side of the rectangle.</para>
+	/// </param>
+	///
+	/// <param name="startAngle">
+	/// <para>The starting angle for the arc, in degrees.</para>
+	/// </param>
+	///
+	/// <param name="sweepAngle">
+	/// <para>The sweep angle for the arc, in degrees.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate or size values is out of range.</para>
+	/// </exception>
+	public void DrawArc(int x, int y, int width, int height,
+						float startAngle, float sweepAngle)
+			{
+				if(x < -32768 || x > 32767 || width < 0 || width > 65535 ||
+				   y < -32768 || y > 32767 || height < 0 || height > 65535)
+				{
+					throw new XException(S._("X_RectCoordRange"));
+				}
+				if(width > 0 && height > 0)
+				{
+					try
+					{
+						IntPtr display = Lock();
+						Xlib.XDrawArc(display, drawableHandle, gc,
+									  x, y, width, height,
+									  (int)(startAngle * 64.0f),
+									  (int)(sweepAngle * 64.0f));
+					}
+					finally
+					{
+						dpy.Unlock();
+					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Draw an arc, with lines joining to the center.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the top-left point of
+	/// the arc's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the top-left point of
+	/// the arc's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The width of the arc's bounding rectangle.  The pixel at
+	/// <i>x + width - 1</i> is the right-most side of the rectangle.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The height of the arc's bounding rectangle.  The pixel at
+	/// <i>y + height - 1</i> is the bottom-most side of the rectangle.</para>
+	/// </param>
+	///
+	/// <param name="startAngle">
+	/// <para>The starting angle for the arc, in degrees.</para>
+	/// </param>
+	///
+	/// <param name="sweepAngle">
+	/// <para>The sweep angle for the arc, in degrees.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate or size values is out of range.</para>
+	/// </exception>
+	public void DrawPie(int x, int y, int width, int height,
+						float startAngle, float sweepAngle)
+			{
+				if(x < -32768 || x > 32767 || width < 0 || width > 65535 ||
+				   y < -32768 || y > 32767 || height < 0 || height > 65535)
+				{
+					throw new XException(S._("X_RectCoordRange"));
+				}
+				if(width > 0 && height > 0)
+				{
+					try
+					{
+						// Draw the arc portion.
+						IntPtr display = Lock();
+						Xlib.XDrawArc(display, drawableHandle, gc,
+									  x, y, width, height,
+									  (int)(startAngle * 64.0f),
+									  (int)(sweepAngle * 64.0f));
+
+						// Calculate the location of the arc end-points
+						// and then draw the connecting arc pie lines.
+						XPoint[] xpoints = new XPoint [3];
+						int xaxis = width / 2;
+						int yaxis = height / 2;
+						int xmiddle = x + xaxis;
+						int ymiddle = y + yaxis;
+						double radians = startAngle * Math.PI / 180.0;
+						xpoints[0].x =
+							(short)(xmiddle + Math.Cos(radians) * xaxis);
+						xpoints[0].y =
+							(short)(ymiddle - Math.Sin(radians) * yaxis);
+						xpoints[1].x = (short)xmiddle;
+						xpoints[1].y = (short)ymiddle;
+						radians = (startAngle + sweepAngle) * Math.PI / 180.0;
+						xpoints[2].x =
+							(short)(xmiddle + Math.Cos(radians) * xaxis);
+						xpoints[2].y =
+							(short)(ymiddle - Math.Sin(radians) * yaxis);
+						Xlib.XDrawLines(display, drawableHandle, gc, xpoints,
+										3, 0 /* CoordModeOrigin */);
+					}
+					finally
+					{
+						dpy.Unlock();
+					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Fill an arc.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the top-left point of
+	/// the arc's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the top-left point of
+	/// the arc's bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The width of the arc's bounding rectangle.  The pixel at
+	/// <i>x + width - 1</i> is the right-most side of the rectangle.</para>
+	/// </param>
+	///
+	/// <param name="height">
+	/// <para>The height of the arc's bounding rectangle.  The pixel at
+	/// <i>y + height - 1</i> is the bottom-most side of the rectangle.</para>
+	/// </param>
+	///
+	/// <param name="startAngle">
+	/// <para>The starting angle for the arc, in degrees.</para>
+	/// </param>
+	///
+	/// <param name="sweepAngle">
+	/// <para>The sweep angle for the arc, in degrees.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate or size values is out of range.</para>
+	/// </exception>
+	public void FillArc(int x, int y, int width, int height,
+						float startAngle, float sweepAngle)
+			{
+				if(x < -32768 || x > 32767 || width < 0 || width > 65535 ||
+				   y < -32768 || y > 32767 || height < 0 || height > 65535)
+				{
+					throw new XException(S._("X_RectCoordRange"));
+				}
+				if(width > 0 && height > 0)
+				{
+					try
+					{
+						IntPtr display = Lock();
+						Xlib.XFillArc(display, drawableHandle, gc,
+									  x, y, width, height,
+									  (int)(startAngle * 64.0f),
+									  (int)(sweepAngle * 64.0f));
+					}
+					finally
+					{
+						dpy.Unlock();
+					}
 				}
 			}
 

@@ -377,6 +377,12 @@ internal sealed class Xlib
 			 XRectangle[] rectangles, @X_int@ nrectangles);
 
 	[DllImport("X11")]
+	extern public static @X_int@ XDrawArc
+			(IntPtr display, Drawable drawable, IntPtr gc,
+			 @X_int@ x, @X_int@ y, @X_int@ width, @X_int@ height,
+			 @X_int@ angle1, @X_int@ angle2);
+
+	[DllImport("X11")]
 	extern public static @X_int@ XFillRectangle
 			(IntPtr display, Drawable drawable, IntPtr gc,
 			 @X_int@ x, @X_int@ y, @X_int@ width, @X_int@ height);
@@ -385,6 +391,18 @@ internal sealed class Xlib
 	extern public static @X_int@ XFillRectangles
 			(IntPtr display, Drawable drawable, IntPtr gc,
 			 XRectangle[] rectangles, @X_int@ nrectangles);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XFillPolygon
+			(IntPtr display, Drawable drawable, IntPtr gc,
+			 XPoint[] points, @X_int@ npoints,
+			 @X_int@ shape, @X_int@ mode);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XFillArc
+			(IntPtr display, Drawable drawable, IntPtr gc,
+			 @X_int@ x, @X_int@ y, @X_int@ width, @X_int@ height,
+			 @X_int@ angle1, @X_int@ angle2);
 
 	// Declare window manager related external functions.
 

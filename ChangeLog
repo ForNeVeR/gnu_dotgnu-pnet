@@ -33,6 +33,11 @@
 	* System/Uri.cs (LocalPath): Use IsFile.  Unescape the return
 	value first if IsFile answers true.
 
+2004-12-28  Marco Bosatta  <mboss@xp-obj.ch>
+
+	* System.Drawing/Drawing2D/Matrix.cs: Implement 2 missing constructors
+	for Matrix class. (patch #3602, applied by drobosson)
+
 2004-12-29  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/MainMenu.cs: Fill remaining menu to right owner

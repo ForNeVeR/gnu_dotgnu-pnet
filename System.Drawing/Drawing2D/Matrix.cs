@@ -36,15 +36,58 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 				dx  = 0.0f;
 				dy  = 0.0f;
 			}
-	[TODO]
 	public Matrix(Rectangle rect, Point[] plgpts)
 			{
-				// TODO
+                                RectangleF rectF = new RectangleF (
+                                                (float)rect.X, 
+                                                (float)rect.Y, 
+                                                (float)rect.Width, 
+                                                (float)rect.Height 
+                                                );
+                                PointF[] plgptsF = null;
+                                if ( plgpts != null ) 
+                                {
+                                        plgptsF = new PointF[plgpts.Length];
+                                        for ( int i=0; i<plgpts.Length; i++ )
+                                        {
+                                                plgptsF[i] = new PointF( 
+                                                                (float)(plgpts[i].X), 
+                                                                (float)(plgpts[i].Y) 
+                                                                );
+                                        }
+
+
+                                }
+                                TransfRect2Poly( rectF, plgptsF );
 			}
-	[TODO]
 	public Matrix(RectangleF rect, PointF[] plgpts)
+                        {
+                                TransfRect2Poly( rect, plgpts );
+                        }
+        // helper method, computes transformation from rectangle rect to polygon  plgpts
+	private void TransfRect2Poly(RectangleF rect, PointF[] plgpts)
 			{
-				// TODO
+                                // check if plgpts defines a polygon with 3 points
+                                if ( (plgpts == null) || (plgpts.Length != 3) )
+                                        throw new ArgumentException("plgpts");
+                                // check if rect is degenerated
+                                if ( (rect.Width == 0.0f) || (rect.Height == 0.0f) )
+                                        throw new ArgumentOutOfRangeException("rect");
+                                // compute transformation of rect to plgpts
+                                PointF v1 = new PointF( 
+                                                plgpts[1].X - plgpts[0].X,
+                                                plgpts[1].Y - plgpts[0].Y
+                                                ); 
+                                PointF v2 = new PointF( 
+                                                plgpts[2].X - plgpts[0].X,
+                                                plgpts[2].Y - plgpts[0].Y
+                                                ); 
+                                this.dx = plgpts[0].X-rect.X/rect.Width*v1.X-rect.Y/rect.Height*v2.X;
+                                this.dy = plgpts[0].Y-rect.X/rect.Width*v1.Y-rect.Y/rect.Height*v2.Y;
+                                this.m11 = v1.X / rect.Width ;
+                                this.m12 = v1.Y / rect.Width ;
+                                this.m21 = v2.X / rect.Height ;
+                                this.m22 = v2.Y / rect.Height ;
 			}
 			
 	public Matrix Clone()

@@ -140,9 +140,9 @@ Otherwise the exit status is 0.
 @item Language Options
 @ref{Language Options}
 @example
--flatin1-charset -foctal-constants -fdecimal-constants
--fchecked -funchecked -fsyntax-check -fsemantic-check
--funsafe
+-flatin1-charset -foctal-chars -foctal-constants
+-fdecimal-constants -fchecked -funchecked -fsyntax-check
+-fsemantic-check -funsafe
 @end example
 
 @item Warning Options
@@ -300,6 +300,16 @@ the UTF-8 default.
 If the source is in a character set other than Latin-1 or UTF-8,
 the programmer must arrange for it to be converted into UTF-8
 prior to invoking the compiler.
+
+@cindex -foctal-chars option (cscc)
+@item -foctal-chars
+The C# language standard does not support octal characters constants
+by default.  This option is enabled by default.
+
+If this option is enabled, sequences such as @code{`\033'} will be
+processed as in C, with a warning.  The @code{-Wno-octal-chars}
+option can be used to disable the warning.  Use the @code{-fno-octal-chars}
+option to disable the use of octal character constants.
 
 @cindex -foctal-constants option (cscc)
 @item -foctal-constants

@@ -45,6 +45,7 @@ curve for new users.
 .TP
 .B Language Options
 \-flatin1\-charset
+\-foctal\-chars
 \-foctal\-constants
 \-fdecimal\-constants
 \-fchecked
@@ -195,6 +196,15 @@ the UTF-8 default.
 If the source is in a character set other than Latin-1 or UTF-8,
 the programmer must arrange for it to be converted into UTF-8
 prior to invoking the compiler.
+.TP
+.B \-foctal\-chars
+The C# language standard does not support octal characters constants
+by default.  This option is enabled by default.
+
+If this option is enabled, sequences such as `\fB\\033\fR' will be
+processed as in C, with a warning.  The `\fB\-Wno\-octal\-chars\fR'
+option can be used to disable the warning.  Use the `\fB\-fno\-octal\-chars\fR'
+option to disable the use of octal character constants.
 .TP
 .B \-foctal\-constants
 The C# language standard does not support octal integer constants

@@ -17,6 +17,9 @@
 	include a "hexFloats" argument to dump floating point values in
 	hexadecimal.
 
+	* cscc/cs_scanner.l, cscc/cscc.1, doc/pnettools.texi: improve
+	the handle of hexadecimal and octal character constants.
+
 2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,

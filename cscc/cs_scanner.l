@@ -334,7 +334,7 @@ static void ParseInt(char *text)
 /*
  * Parse a single hex digit.
  */
-#define	PARSE_HEX_DIGIT		\
+#define	PARSE_HEX_DIGIT(need)		\
 			do { \
 				if(*temp >= '0' && *temp <= '9') \
 				{ \
@@ -351,6 +351,10 @@ static void ParseInt(char *text)
 					*value = *value * 16 + (ILUInt32)(*temp - 'a' + 10); \
 					++temp; \
 				} \
+				else if((need)) \
+				{ \
+					goto invalidHex; \
+				} \
 			} while (0)
 
 /*
@@ -364,35 +368,37 @@ static int ParseEscape(const char *temp, ILUInt32 *value)
 
 	if(*temp == 'x')
 	{
-		/* Simple Latin-1 hex character */
+		/* Hex character: the C# specification allows 1-4 hex chars */
 		++temp;
 		*value = 0;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(0);
+		PARSE_HEX_DIGIT(0);
+		PARSE_HEX_DIGIT(0);
 	}
 	else if(*temp == 'u')
 	{
 		/* 16-bit Unicode character */
 		++temp;
 		*value = 0;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
 	}
 	else if(*temp == 'U')
 	{
 		/* 32-bit Unicode character */
 		++temp;
 		*value = 0;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
-		PARSE_HEX_DIGIT;
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
+		PARSE_HEX_DIGIT(1);
 	}
 	else if(*temp >= 'a' && *temp <= 'z')
 	{
@@ -408,21 +414,53 @@ static int ParseEscape(const char *temp, ILUInt32 *value)
 	{
 		/* Octal character constant.  The C# standard only supports
 		   '\0', but we allow others to be used also, with a warning */
-		if(*temp != '0' || (temp[1] >= '0' && temp[1] <= '7'))
+		if(*temp == '0' && (temp[1] < '0' || temp[1] > '7'))
 		{
-			CSTypedWarning("-octal-chars",
-			               "non-standard octal character escape used");
-		}
-		*value = 0;
-		do
-		{
-			*value = *value * 8 + (ILUInt32)(*temp - '0');
+			/* Unambiguous "\0" escape sequence */
+			*value = 0;
 			++temp;
 		}
-		while(*temp >= '0' && *temp <= '7');
+		else
+		{
+			/* The programmer can supply "-fno-octal-chars" to disable
+			   the use of octal character constants */
+			if(CSStringListContainsInv(extension_flags, num_extension_flags,
+									   "octal-chars"))
+			{
+				if(*temp == '0')
+				{
+					*value = 0;
+					++temp;
+				}
+				else
+				{
+					goto unknown;
+				}
+			}
+			else
+			{
+				if(*temp != '0' || (temp[1] >= '0' && temp[1] <= '7'))
+				{
+					CSTypedWarning("-octal-chars",
+					               "non-standard octal character escape used");
+					CSTypedWarning("-octal-chars",
+							   	   "(use -fno-octal-chars to disable the use");
+					CSTypedWarning("-octal-chars",
+							   	   "(of non-standard octal character escapes)");
+				}
+				*value = 0;
+				do
+				{
+					*value = *value * 8 + (ILUInt32)(*temp - '0');
+					++temp;
+				}
+				while(*temp >= '0' && *temp <= '7');
+			}
+		}
 	}
 	else
 	{
+	unknown:
 		if(*temp != '\'' && *temp != '"' && *temp != '\\')
 		{
 			CSTypedWarning("-unknown-escapes",
@@ -432,6 +470,14 @@ static int ParseEscape(const char *temp, ILUInt32 *value)
 		++temp;
 	}
 	return (int)(temp - begin);
+invalidHex:
+	{
+		char save = *temp;
+		*((char *)temp) = '\0';
+		CSError("invalid hexadecimal escape sequence `%s'", begin - 1);
+		*((char *)temp) = save;
+		return (int)(temp - begin);
+	}
 }
 
 /*

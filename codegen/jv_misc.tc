@@ -329,7 +329,37 @@ JavaGenValue(ILNode_Conditional)
  */
 JavaGenValue(ILNode_ToBool)
 {
-	JavaGenCast(info, JavaGenValue(node->expr, info), ILMachineType_Boolean);
+	ILMachineType type;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+
+	if(node->trueMethod)
+	{
+		/* Use a user-supplied "op_True" operator */
+		type = JavaGenValue(node->expr, info);
+		JavaGenCallByMethod(info, node->trueMethod);
+		JavaGenAdjust(info, -(JavaGenTypeSize(type) - 1));
+	}
+	else if(node->falseMethod)
+	{
+		/* Use a user-supplied "op_False" operator */
+		type = JavaGenValue(node->expr, info);
+		JavaGenCallByMethod(info, node->falseMethod);
+		JavaGenAdjust(info, -(JavaGenTypeSize(type) - 1));
+		JavaGenJump(info, JAVA_OP_IFNE, &label1);
+		JavaGenSimple(info, JAVA_OP_ICONST_1);
+		JavaGenJump(info, JAVA_OP_GOTO, &label2);
+		JavaGenLabel(info, &label1);
+		JavaGenSimple(info, JAVA_OP_ICONST_0);
+		JavaGenLabel(info, &label2);
+	}
+	else
+	{
+		/* Use a built-in boolean conversion */
+		JavaGenCast(info, JavaGenValue(node->expr, info),
+					ILMachineType_Boolean);
+	}
+
 	return ILMachineType_Boolean;
 }
 
@@ -1421,7 +1451,28 @@ JavaGenElse(ILNode_Conditional)
  */
 JavaGenThen(ILNode_ToBool)
 {
-	JavaGenThen(node->expr, info, label);
+	ILMachineType type;
+	if(node->trueMethod)
+	{
+		/* Use a user-supplied "op_True" operator */
+		type = JavaGenValue(node->expr, info);
+		JavaGenCallByMethod(info, node->trueMethod);
+		JavaGenJump(info, JAVA_OP_IFNE, label);
+		JavaGenAdjust(info, -JavaGenTypeSize(type));
+	}
+	else if(node->falseMethod)
+	{
+		/* Use a user-supplied "op_False" operator */
+		type = JavaGenValue(node->expr, info);
+		JavaGenCallByMethod(info, node->falseMethod);
+		JavaGenJump(info, JAVA_OP_IFEQ, label);
+		JavaGenAdjust(info, -JavaGenTypeSize(type));
+	}
+	else
+	{
+		/* Use a built-in boolean conversion */
+		JavaGenThen(node->expr, info, label);
+	}
 }
 
 /*
@@ -1429,7 +1480,28 @@ JavaGenThen(ILNode_ToBool)
  */
 JavaGenElse(ILNode_ToBool)
 {
-	JavaGenElse(node->expr, info, label);
+	ILMachineType type;
+	if(node->trueMethod)
+	{
+		/* Use a user-supplied "op_True" operator */
+		type = JavaGenValue(node->expr, info);
+		JavaGenCallByMethod(info, node->trueMethod);
+		JavaGenJump(info, JAVA_OP_IFEQ, label);
+		JavaGenAdjust(info, -JavaGenTypeSize(type));
+	}
+	else if(node->falseMethod)
+	{
+		/* Use a user-supplied "op_False" operator */
+		type = JavaGenValue(node->expr, info);
+		JavaGenCallByMethod(info, node->falseMethod);
+		JavaGenJump(info, JAVA_OP_IFNE, label);
+		JavaGenAdjust(info, -JavaGenTypeSize(type));
+	}
+	else
+	{
+		/* Use a built-in boolean conversion */
+		JavaGenElse(node->expr, info, label);
+	}
 }
 
 /*

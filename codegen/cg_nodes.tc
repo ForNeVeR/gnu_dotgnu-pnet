@@ -296,7 +296,11 @@ struct _tagILEvalValue
 	ILNode *expr;
 }
 %node ILNode_AddressOf ILNode_UnaryExpression
-%node ILNode_ToBool ILNode_UnaryExpression
+%node ILNode_ToBool ILNode_UnaryExpression =
+{
+	%nocreate ILMethod *trueMethod = {0};
+	%nocreate ILMethod *falseMethod = {0};
+}
 %node ILNode_ToConst ILNode_UnaryExpression
 %node ILNode_This ILNode_Expression
 %node ILNode_ArgList ILNode_BinaryExpression

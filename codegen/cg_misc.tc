@@ -568,7 +568,27 @@ ILNode_GenValue(ILNode_Conditional)
  */
 ILNode_GenValue(ILNode_ToBool)
 {
-	ILGenCast(info, ILNode_GenValue(node->expr, info), ILMachineType_Boolean);
+	if(node->trueMethod)
+	{
+		/* Use a user-supplied "op_True" operator */
+		ILNode_GenValue(node->expr, info);
+		ILGenCallByMethod(info, node->trueMethod);
+	}
+	else if(node->falseMethod)
+	{
+		/* Use a user-supplied "op_False" operator */
+		ILNode_GenValue(node->expr, info);
+		ILGenCallByMethod(info, node->falseMethod);
+		ILGenSimple(info, IL_OP_LDC_I4_0);
+		ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CEQ);
+		ILGenExtend(info, 1);
+	}
+	else
+	{
+		/* Use a built-in boolean conversion */
+		ILGenCast(info, ILNode_GenValue(node->expr, info),
+				  ILMachineType_Boolean);
+	}
 	return ILMachineType_Boolean;
 }
 
@@ -1248,7 +1268,27 @@ ILNode_GenElse(ILNode_Conditional)
  */
 ILNode_GenThen(ILNode_ToBool)
 {
-	ILNode_GenThen(node->expr, info, label);
+	if(node->trueMethod)
+	{
+		/* Use a user-supplied "op_True" operator */
+		ILNode_GenValue(node->expr, info);
+		ILGenCallByMethod(info, node->trueMethod);
+		ILGenJump(info, IL_OP_BRTRUE, label);
+		ILGenAdjust(info, -1);
+	}
+	else if(node->falseMethod)
+	{
+		/* Use a user-supplied "op_False" operator */
+		ILNode_GenValue(node->expr, info);
+		ILGenCallByMethod(info, node->falseMethod);
+		ILGenJump(info, IL_OP_BRFALSE, label);
+		ILGenAdjust(info, -1);
+	}
+	else
+	{
+		/* Use a built-in boolean conversion */
+		ILNode_GenThen(node->expr, info, label);
+	}
 }
 
 /*
@@ -1256,7 +1296,27 @@ ILNode_GenThen(ILNode_ToBool)
  */
 ILNode_GenElse(ILNode_ToBool)
 {
-	ILNode_GenElse(node->expr, info, label);
+	if(node->trueMethod)
+	{
+		/* Use a user-supplied "op_True" operator */
+		ILNode_GenValue(node->expr, info);
+		ILGenCallByMethod(info, node->trueMethod);
+		ILGenJump(info, IL_OP_BRFALSE, label);
+		ILGenAdjust(info, -1);
+	}
+	else if(node->falseMethod)
+	{
+		/* Use a user-supplied "op_False" operator */
+		ILNode_GenValue(node->expr, info);
+		ILGenCallByMethod(info, node->falseMethod);
+		ILGenJump(info, IL_OP_BRTRUE, label);
+		ILGenAdjust(info, -1);
+	}
+	else
+	{
+		/* Use a built-in boolean conversion */
+		ILNode_GenElse(node->expr, info, label);
+	}
 }
 
 /*
@@ -1669,6 +1729,14 @@ ILNode_EvalConst(ILNode_Conditional)
  */
 ILNode_EvalConst(ILNode_ToBool)
 {
-	return (ILNode_EvalConst(node->expr, info, value) &&
-	        ILGenConstToBoolean(info, value));
+	if(node->trueMethod || node->falseMethod)
+	{
+		/* Cannot evaluate the use of run-time operators */
+		return 0;
+	}
+	else
+	{
+		return (ILNode_EvalConst(node->expr, info, value) &&
+		        ILGenConstToBoolean(info, value));
+	}
 }

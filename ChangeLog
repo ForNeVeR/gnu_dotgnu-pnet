@@ -5,6 +5,10 @@
 	suppress finalization during "ConvertMethod" to prevent it from
 	being recursively re-entered from "ILGCAllocPersistent".
 
+	* cscc/c/c_oper.tc (ILNode_AddressOf): remove the "&" operator
+	from an expression that involves a function reference, as it is
+	redundant.
+
 2002-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,

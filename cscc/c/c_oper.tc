@@ -2080,6 +2080,13 @@ ILNode_CSemAnalysis(ILNode_AddressOf)
 {
 	CSemValue value;
 
+	/* If the argument is a function reference, then remove this operator */
+	if(yyisa(node->expr, ILNode_FunctionRef))
+	{
+		*parent = node->expr;
+		return ILNode_CSemAnalysis(node->expr, info, parent, stmtLevel);
+	}
+
 	/* Perform semantic analysis on the argument */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
 	if(!CSemIsLValue(value) || CSemIsNoRef(value))

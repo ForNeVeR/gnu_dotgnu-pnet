@@ -1,4 +1,12 @@
 
+2002-06-28  Charlie Carnow   <carnow@gmx.net>
+
+	* System.Xml/XmlReader.cs: Implemented 
+	ReadElementString(System.String), ReadElementString(),
+	ReadEndElement(), ReadStartElement(System.String, System.String),
+	ReadStartElement(System.String), ReadStartElement(), and 
+	the HasAttributes property
+
 2002-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlReader.cs: fix semantic compile errors.

@@ -366,6 +366,8 @@ dnl some issues with different versions of autotools, and so that
 dnl we can pass specific options to the packages.
 if test "x$no_recursion" != "xyes"; then
 
+	export CC
+
 	dnl Figure out how to find the source directory for directories
 	dnl under $srcdir from a subdirectory of the build tree.  This is
 	dnl	different depending on whether $srcdir is absolute or relative.

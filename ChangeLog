@@ -11,6 +11,10 @@
 	* image/link.c, image/Makefile.am: modify the assembly search
 	paths to use the routines in "support/path.c".
 
+	* configure.in: export the CC variable to the configure scripts
+	for libffi and libgc, to ensure that the "-mno-cygwin" flag
+	is passed down correctly.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

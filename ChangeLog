@@ -12,6 +12,9 @@
 	* System.Xml/XmlElement.cs: Set the parent for all SetAttribute
 	operations.
 
+	* System.Xml/Private/XmlDocumentNavigator.cs: Fix MoveToNextAttribute
+	operation.
+
 2004-10-18  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListBox.cs: implement ItemHeight property.

@@ -201,6 +201,7 @@ internal class XmlDocumentNavigator : XPathNavigator
 				// This should be a lot faster
 				if(((Object)list[i]) == ((Object)node))
 				{
+					i++; /* Move to Next */
 					break;
 				}
 			}

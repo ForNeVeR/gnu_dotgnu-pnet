@@ -34,244 +34,275 @@
 	dup
 	ldc.i4.2
 	beq	?L3
+	dup
 	ldc.i4.3
 	beq	?L4
 	br	?L5
 ?L1:
+	pop
 	ldc.i4.0
 	stloc.0
-	br	?L5
+	br	?L6
 ?L2:
+	pop
 	ldc.i4.1
 	stloc.0
-	br	?L5
+	br	?L6
 ?L3:
+	pop
 	ldc.i4.2
 	stloc.0
-	br	?L5
+	br	?L6
 ?L4:
+	pop
 	ldc.i4.3
 	stloc.0
-	br	?L5
+	br	?L6
 ?L5:
+	pop
+?L6:
 	ldarg.1
 	switch (
-		?L6,
 		?L7,
 		?L8,
 		?L9,
 		?L10,
 		?L11,
 		?L12,
-		?L13
+		?L13,
+		?L14
 	)
-	br	?L14
-?L6:
+	br	?L15
+?L7:
 	ldc.i4.0
 	stloc.0
-	br	?L14
-?L7:
+	br	?L16
+?L8:
 	ldc.i4.1
 	stloc.0
-	br	?L14
-?L8:
+	br	?L16
+?L9:
 	ldc.i4.2
 	stloc.0
-	br	?L14
-?L9:
+	br	?L16
+?L10:
 	ldc.i4.3
 	stloc.0
-	br	?L14
-?L10:
+	br	?L16
+?L11:
 	ldc.i4.4
 	stloc.0
-	br	?L14
-?L11:
+	br	?L16
+?L12:
 	ldc.i4.5
 	stloc.0
-	br	?L14
-?L12:
+	br	?L16
+?L13:
 	ldc.i4.6
 	stloc.0
-	br	?L14
-?L13:
+	br	?L16
+?L14:
 	ldc.i4.7
 	stloc.0
-	br	?L14
-?L14:
+	br	?L16
+?L15:
+?L16:
 	ldarg.1
 	ldc.i4.1
 	sub
 	switch (
-		?L15,
-		?L16,
 		?L17,
 		?L18,
 		?L19,
 		?L20,
 		?L21,
-		?L22
+		?L22,
+		?L23,
+		?L24
 	)
-	br	?L23
-?L15:
+	br	?L25
+?L17:
 	ldc.i4.1
 	stloc.0
-	br	?L23
-?L16:
+	br	?L26
+?L18:
 	ldc.i4.2
 	stloc.0
-	br	?L23
-?L17:
+	br	?L26
+?L19:
 	ldc.i4.3
 	stloc.0
-	br	?L23
-?L18:
+	br	?L26
+?L20:
 	ldc.i4.4
 	stloc.0
-	br	?L23
-?L19:
+	br	?L26
+?L21:
 	ldc.i4.5
 	stloc.0
-	br	?L23
-?L20:
+	br	?L26
+?L22:
 	ldc.i4.6
 	stloc.0
-	br	?L23
-?L21:
+	br	?L26
+?L23:
 	ldc.i4.7
 	stloc.0
-	br	?L23
-?L22:
+	br	?L26
+?L24:
 	ldc.i4.8
 	stloc.0
-	br	?L23
-?L23:
+	br	?L26
+?L25:
+?L26:
 	ldarg.1
 	dup
 	ldc.i4	900
-	bge	?L24
+	bge	?L27
 	dup
 	ldc.i4	500
-	bge	?L25
+	bge	?L28
 	dup
 	ldc.i4.s	100
-	beq	?L26
+	beq	?L29
 	dup
 	ldc.i4	200
-	beq	?L27
+	beq	?L30
 	dup
 	ldc.i4	300
-	beq	?L28
-	ldc.i4	400
-	beq	?L29
-	br	?L30
-?L25:
-	dup
-	ldc.i4	500
 	beq	?L31
 	dup
-	ldc.i4	600
+	ldc.i4	400
 	beq	?L32
+	br	?L33
+?L28:
+	dup
+	ldc.i4	500
+	beq	?L34
+	dup
+	ldc.i4	600
+	beq	?L35
 	dup
 	ldc.i4	700
-	beq	?L33
-	ldc.i4	800
-	beq	?L34
-	br	?L30
-?L24:
-	dup
-	ldc.i4	1300
-	bge	?L35
-	dup
-	ldc.i4	900
 	beq	?L36
 	dup
-	ldc.i4	1000
+	ldc.i4	800
 	beq	?L37
-	dup
-	ldc.i4	1100
-	beq	?L38
-	ldc.i4	1200
-	beq	?L39
-	br	?L30
-?L35:
+	br	?L33
+?L27:
 	dup
 	ldc.i4	1300
+	bge	?L38
+	dup
+	ldc.i4	900
+	beq	?L39
+	dup
+	ldc.i4	1000
 	beq	?L40
 	dup
-	ldc.i4	1400
+	ldc.i4	1100
 	beq	?L41
 	dup
-	ldc.i4	1500
+	ldc.i4	1200
 	beq	?L42
-	ldc.i4	1600
+	br	?L33
+?L38:
+	dup
+	ldc.i4	1300
 	beq	?L43
-	br	?L30
-?L43:
+	dup
+	ldc.i4	1400
+	beq	?L44
+	dup
+	ldc.i4	1500
+	beq	?L45
+	dup
+	ldc.i4	1600
+	beq	?L46
+	br	?L33
+?L46:
+	pop
 	ldc.i4	1600
 	stloc.0
-	br	?L30
-?L42:
+	br	?L47
+?L45:
+	pop
 	ldc.i4	1500
 	stloc.0
-	br	?L30
-?L41:
+	br	?L47
+?L44:
+	pop
 	ldc.i4	1400
 	stloc.0
-	br	?L30
-?L40:
+	br	?L47
+?L43:
+	pop
 	ldc.i4	1300
 	stloc.0
-	br	?L30
-?L39:
+	br	?L47
+?L42:
+	pop
 	ldc.i4	1200
 	stloc.0
-	br	?L30
-?L38:
+	br	?L47
+?L41:
+	pop
 	ldc.i4	1100
 	stloc.0
-	br	?L30
-?L37:
+	br	?L47
+?L40:
+	pop
 	ldc.i4	1000
 	stloc.0
-	br	?L30
-?L36:
+	br	?L47
+?L39:
+	pop
 	ldc.i4	900
 	stloc.0
-	br	?L30
-?L34:
+	br	?L47
+?L37:
+	pop
 	ldc.i4	800
 	stloc.0
-	br	?L30
-?L33:
+	br	?L47
+?L36:
+	pop
 	ldc.i4	700
 	stloc.0
-	br	?L30
-?L32:
+	br	?L47
+?L35:
+	pop
 	ldc.i4	600
 	stloc.0
-	br	?L30
-?L31:
+	br	?L47
+?L34:
+	pop
 	ldc.i4	500
 	stloc.0
-	br	?L30
-?L29:
+	br	?L47
+?L32:
+	pop
 	ldc.i4	400
 	stloc.0
-	br	?L30
-?L28:
+	br	?L47
+?L31:
+	pop
 	ldc.i4	300
 	stloc.0
-	br	?L30
-?L27:
+	br	?L47
+?L30:
+	pop
 	ldc.i4	200
 	stloc.0
-	br	?L30
-?L26:
+	br	?L47
+?L29:
+	pop
 	ldc.i4.s	100
 	stloc.0
-	br	?L30
-?L30:
+	br	?L47
+?L33:
+	pop
+?L47:
 	ret
 	.maxstack 3
 } // method m1
@@ -282,107 +313,126 @@
 	dup
 	ldc.i4.0
 	conv.i8
-	beq	?L44
+	beq	?L48
 	dup
 	ldc.i4.1
 	conv.i8
-	beq	?L45
+	beq	?L49
 	dup
 	ldc.i4.2
 	conv.i8
-	beq	?L46
+	beq	?L50
+	dup
 	ldc.i4.3
 	conv.i8
-	beq	?L47
-	br	?L48
-?L44:
+	beq	?L51
+	br	?L52
+?L48:
+	pop
 	ldc.i4.0
 	stloc.0
-	br	?L48
-?L45:
+	br	?L53
+?L49:
+	pop
 	ldc.i4.1
 	stloc.0
-	br	?L48
-?L46:
+	br	?L53
+?L50:
+	pop
 	ldc.i4.2
 	stloc.0
-	br	?L48
-?L47:
+	br	?L53
+?L51:
+	pop
 	ldc.i4.3
 	stloc.0
-	br	?L48
-?L48:
+	br	?L53
+?L52:
+	pop
+?L53:
 	ldarg.1
 	dup
 	ldc.i4.4
 	conv.i8
-	bge	?L49
+	bge	?L54
 	dup
 	ldc.i4.0
-	conv.i8
-	beq	?L50
-	dup
-	ldc.i4.1
-	conv.i8
-	beq	?L51
-	dup
-	ldc.i4.2
-	conv.i8
-	beq	?L52
-	ldc.i4.3
-	conv.i8
-	beq	?L53
-	br	?L54
-?L49:
-	dup
-	ldc.i4.4
 	conv.i8
 	beq	?L55
 	dup
-	ldc.i4.5
+	ldc.i4.1
 	conv.i8
 	beq	?L56
 	dup
-	ldc.i4.6
+	ldc.i4.2
 	conv.i8
 	beq	?L57
-	ldc.i4.7
+	dup
+	ldc.i4.3
 	conv.i8
 	beq	?L58
-	br	?L54
-?L50:
+	br	?L59
+?L54:
+	dup
+	ldc.i4.4
+	conv.i8
+	beq	?L60
+	dup
+	ldc.i4.5
+	conv.i8
+	beq	?L61
+	dup
+	ldc.i4.6
+	conv.i8
+	beq	?L62
+	dup
+	ldc.i4.7
+	conv.i8
+	beq	?L63
+	br	?L59
+?L55:
+	pop
 	ldc.i4.0
 	stloc.0
-	br	?L54
-?L51:
+	br	?L64
+?L56:
+	pop
 	ldc.i4.1
 	stloc.0
-	br	?L54
-?L52:
+	br	?L64
+?L57:
+	pop
 	ldc.i4.2
 	stloc.0
-	br	?L54
-?L53:
+	br	?L64
+?L58:
+	pop
 	ldc.i4.3
 	stloc.0
-	br	?L54
-?L55:
+	br	?L64
+?L60:
+	pop
 	ldc.i4.4
 	stloc.0
-	br	?L54
-?L56:
+	br	?L64
+?L61:
+	pop
 	ldc.i4.5
 	stloc.0
-	br	?L54
-?L57:
+	br	?L64
+?L62:
+	pop
 	ldc.i4.6
 	stloc.0
-	br	?L54
-?L58:
+	br	?L64
+?L63:
+	pop
 	ldc.i4.7
 	stloc.0
-	br	?L54
-?L54:
+	br	?L64
+?L59:
+	pop
+?L64:
 	ret
 	.maxstack 3
 } // method m2
@@ -390,43 +440,6 @@
 {
 	.locals	(int32)
 	ldarg.1
-	dup
-	brfalse	?L59
-	dup
-	ldstr	"1"
-	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
-	brtrue	?L60
-	dup
-	ldstr	"2"
-	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
-	brtrue	?L61
-	ldstr	"3"
-	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
-	brtrue	?L62
-	br	?L63
-?L59:
-	ldc.i4.0
-	stloc.0
-	br	?L63
-?L60:
-	ldc.i4.1
-	stloc.0
-	br	?L63
-?L61:
-	ldc.i4.2
-	stloc.0
-	br	?L63
-?L62:
-	ldc.i4.3
-	stloc.0
-	br	?L63
-?L63:
-	ldarg.1
-	dup
-	ldstr	"4"
-	call	int32 [.library]System.String::CompareOrdinal(class [.library]System.String, class [.library]System.String)
-	ldc.i4.0
-	bge	?L64
 	dup
 	brfalse	?L65
 	dup
@@ -437,60 +450,116 @@
 	ldstr	"2"
 	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
 	brtrue	?L67
+	dup
 	ldstr	"3"
 	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
 	brtrue	?L68
 	br	?L69
-?L64:
+?L65:
+	pop
+	ldc.i4.0
+	stloc.0
+	br	?L70
+?L66:
+	pop
+	ldc.i4.1
+	stloc.0
+	br	?L70
+?L67:
+	pop
+	ldc.i4.2
+	stloc.0
+	br	?L70
+?L68:
+	pop
+	ldc.i4.3
+	stloc.0
+	br	?L70
+?L69:
+	pop
+?L70:
+	ldarg.1
+	dup
+	ldstr	"4"
+	call	int32 [.library]System.String::CompareOrdinal(class [.library]System.String, class [.library]System.String)
+	ldc.i4.0
+	bge	?L71
+	dup
+	brfalse	?L72
+	dup
+	ldstr	"1"
+	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
+	brtrue	?L73
+	dup
+	ldstr	"2"
+	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
+	brtrue	?L74
+	dup
+	ldstr	"3"
+	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
+	brtrue	?L75
+	br	?L76
+?L71:
 	dup
 	ldstr	"4"
 	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
-	brtrue	?L70
+	brtrue	?L77
 	dup
 	ldstr	"5"
 	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
-	brtrue	?L71
+	brtrue	?L78
 	dup
 	ldstr	"6"
 	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
-	brtrue	?L72
+	brtrue	?L79
+	dup
 	ldstr	"7"
 	call	bool [.library]System.String::op_Equality(class [.library]System.String, class [.library]System.String)
-	brtrue	?L73
-	br	?L69
-?L73:
+	brtrue	?L80
+	br	?L76
+?L80:
+	pop
 	ldc.i4.7
 	stloc.0
-	br	?L69
-?L72:
+	br	?L81
+?L79:
+	pop
 	ldc.i4.6
 	stloc.0
-	br	?L69
-?L71:
+	br	?L81
+?L78:
+	pop
 	ldc.i4.5
 	stloc.0
-	br	?L69
-?L70:
+	br	?L81
+?L77:
+	pop
 	ldc.i4.4
 	stloc.0
-	br	?L69
-?L68:
+	br	?L81
+?L75:
+	pop
 	ldc.i4.3
 	stloc.0
-	br	?L69
-?L67:
+	br	?L81
+?L74:
+	pop
 	ldc.i4.2
 	stloc.0
-	br	?L69
-?L66:
+	br	?L81
+?L73:
+	pop
 	ldc.i4.1
 	stloc.0
-	br	?L69
-?L65:
+	br	?L81
+?L72:
+	pop
 	ldc.i4.0
 	stloc.0
-	br	?L69
-?L69:
+	br	?L81
+?L76:
+	pop
+?L81:
 	ret
 	.maxstack 3
 } // method m3
@@ -500,78 +569,86 @@
 	ldarg.1
 	dup
 	ldc.i4.0
-	beq	?L74
+	beq	?L82
 	dup
 	ldc.i4.1
-	beq	?L75
+	beq	?L83
 	dup
 	ldc.i4.2
-	beq	?L76
+	beq	?L84
+	dup
 	ldc.i4.3
-	beq	?L77
-	br	?L78
-?L74:
-	ldc.i4.0
-	stloc.0
-	br	?L78
-?L75:
-	ldc.i4.1
-	stloc.0
-	br	?L78
-?L76:
-	ldc.i4.2
-	stloc.0
-	br	?L78
-?L77:
-	ldc.i4.3
-	stloc.0
-	br	?L78
-?L78:
-	ldarg.1
-	switch (
-		?L79,
-		?L80,
-		?L81,
-		?L82,
-		?L83,
-		?L84,
-		?L85,
-		?L86
-	)
-	br	?L87
-?L79:
-	ldc.i4.0
-	stloc.0
-	br	?L87
-?L80:
-	ldc.i4.1
-	stloc.0
-	br	?L87
-?L81:
-	ldc.i4.2
-	stloc.0
-	br	?L87
+	beq	?L85
+	br	?L86
 ?L82:
-	ldc.i4.3
+	pop
+	ldc.i4.0
 	stloc.0
 	br	?L87
 ?L83:
-	ldc.i4.4
+	pop
+	ldc.i4.1
 	stloc.0
 	br	?L87
 ?L84:
-	ldc.i4.5
+	pop
+	ldc.i4.2
 	stloc.0
 	br	?L87
 ?L85:
-	ldc.i4.6
+	pop
+	ldc.i4.3
 	stloc.0
 	br	?L87
 ?L86:
+	pop
+?L87:
+	ldarg.1
+	switch (
+		?L88,
+		?L89,
+		?L90,
+		?L91,
+		?L92,
+		?L93,
+		?L94,
+		?L95
+	)
+	br	?L96
+?L88:
+	ldc.i4.0
+	stloc.0
+	br	?L97
+?L89:
+	ldc.i4.1
+	stloc.0
+	br	?L97
+?L90:
+	ldc.i4.2
+	stloc.0
+	br	?L97
+?L91:
+	ldc.i4.3
+	stloc.0
+	br	?L97
+?L92:
+	ldc.i4.4
+	stloc.0
+	br	?L97
+?L93:
+	ldc.i4.5
+	stloc.0
+	br	?L97
+?L94:
+	ldc.i4.6
+	stloc.0
+	br	?L97
+?L95:
 	ldc.i4.7
 	stloc.0
-	br	?L87
-?L87:
+	br	?L97
+?L96:
+?L97:
 	ret
 	.maxstack 3
 } // method m4

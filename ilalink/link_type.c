@@ -44,6 +44,8 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 	ILProgramItem *scope;
 	ILAssembly *assem;
 	ILLibrary *library;
+	const char *name;
+	const char *namespace;
 	int result;
 
 	/* Is the class nested? */
@@ -119,14 +121,19 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 	   in the final image, and so we create a reference to it.  When
 	   the link completes, we will scan for dangling TypeRef's */
 	scope = ILClassGlobalScope(linker->image);
-	newClass = ILClassLookup(scope, classInfo->name, classInfo->namespace);
+	name = classInfo->name;
+	namespace = classInfo->namespace;
+	if(!strcmp(name, "<Module>") && !namespace)
+	{
+		name = _ILLinkerModuleName(linker);
+	}
+	newClass = ILClassLookup(scope, name, namespace);
 	if(newClass)
 	{
 		*resultInfo = newClass;
 		return CONVERT_REF_LOCAL;
 	}
-	newClass = ILClassCreateRef(scope, 0, classInfo->name,
-								classInfo->namespace);
+	newClass = ILClassCreateRef(scope, 0, name, namespace);
 	if(!newClass)
 	{
 		_ILLinkerOutOfMemory(linker);

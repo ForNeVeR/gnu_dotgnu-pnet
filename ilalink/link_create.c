@@ -80,6 +80,15 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 		ILFree(linker);
 		return 0;
 	}
+	if(type == IL_IMAGETYPE_DLL)
+	{
+		linker->moduleName = IL_LINKER_DLL_MODULE_NAME;
+	}
+	else
+	{
+		linker->moduleName = IL_LINKER_EXE_MODULE_NAME;
+	}
+	linker->moduleClass = 0;
 
 	/* Ready to go */
 	return linker;

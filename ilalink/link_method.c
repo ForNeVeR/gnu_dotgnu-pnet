@@ -859,8 +859,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 		else
 		{
 			/* Create a reference to the current image's "<Module>" type */
-			owner = ILClassLookup(ILClassGlobalScope(linker->image),
-								  "<Module>", 0);
+			owner = _ILLinkerModuleClass(linker);
 		}
 	}
 	else

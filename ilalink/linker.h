@@ -119,8 +119,16 @@ struct _tagILLinker
 	int				modelFlags;		/* Alignment flags for the memory model */
 	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
 	ILMemPool		pool;			/* Memory pool for symbol allocation */
+	const char     *moduleName;		/* Name of the "<Module>" class */
+	ILClass        *moduleClass;	/* Reference to the "<Module>" class */
 
 };
+
+/*
+ * Name of the "<Module>" class for executables and libraries.
+ */
+#define	IL_LINKER_EXE_MODULE_NAME	"<Module>"
+#define	IL_LINKER_DLL_MODULE_NAME	"$Module$"
 
 /*
  * Context that is used to find a class within the libraries.
@@ -161,6 +169,13 @@ void _ILLinkerFindInit(ILLibraryFind *find, ILLinker *linker,
  */
 int _ILLinkerFindClass(ILLibraryFind *find, const char *name,
 					   const char *namespace);
+
+/*
+ * Find a class within one of the libraries and convert it
+ * into a TypeRef in the current image.
+ */
+ILClass *_ILLinkerFindByName(ILLinker *linker, const char *name,
+							 const char *namespace);
 
 /*
  * Print the name of a class that could not be found.
@@ -278,6 +293,16 @@ int _ILLinkerConvertProperty(ILLinker *linker, ILProperty *property,
  */
 int _ILLinkerConvertEvent(ILLinker *linker, ILEvent *event,
 						  ILClass *newClass);
+
+/*
+ * Get the name of the module class for the current image.
+ */
+const char *_ILLinkerModuleName(ILLinker *linker);
+
+/*
+ * Get the module class information record for the current image.
+ */
+ILClass *_ILLinkerModuleClass(ILLinker *linker);
 
 #ifdef	__cplusplus
 };

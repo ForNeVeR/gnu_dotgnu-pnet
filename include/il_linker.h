@@ -130,6 +130,11 @@ ILSerializeReader *ILLinkerReadAttribute(ILAttribute *attr);
 int ILLinkerCMemoryModel(ILImage *image, int *alignFlags);
 
 /*
+ * Create the module class for a C application.
+ */
+void ILLinkerModuleCreate(ILLinker *linker);
+
+/*
  * Call the linker as if it were an executable with command-line
  * options.  It is really linked into the calling program.
  */

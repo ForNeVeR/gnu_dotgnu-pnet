@@ -169,8 +169,65 @@ int ILLinkerCMemoryModel(ILImage *image, int *alignFlags)
 	return model;
 }
 
-void _ILLinkerTagAsC(ILLinker *linker, int model)
+const char *_ILLinkerModuleName(ILLinker *linker)
 {
+	if(linker->moduleClass)
+	{
+		return linker->moduleName;
+	}
+	else
+	{
+		return "<Module>";
+	}
+}
+
+ILClass *_ILLinkerModuleClass(ILLinker *linker)
+{
+	if(linker->moduleClass)
+	{
+		return linker->moduleClass;
+	}
+	else
+	{
+		return ILClassLookup(ILClassGlobalScope(linker->image), "<Module>", 0);
+	}
+}
+
+void ILLinkerModuleCreate(ILLinker *linker)
+{
+	ILClass *parent;
+	if(!(linker->moduleClass))
+	{
+		if(!strcmp(linker->moduleName, IL_LINKER_EXE_MODULE_NAME))
+		{
+			/* Creating a module class for an executable */
+			linker->moduleClass = ILClassLookup
+				(ILClassGlobalScope(linker->image), "<Module>", 0);
+			ILClassSetAttrs(linker->moduleClass, ~((ILUInt32)0),
+							IL_META_TYPEDEF_PUBLIC |
+							IL_META_TYPEDEF_ABSTRACT);
+		}
+		else
+		{
+			/* Creating a module class for a library */
+			parent = _ILLinkerFindByName(linker, "Object", "System");
+			if(!parent)
+			{
+				return;
+			}
+			linker->moduleClass = ILClassCreate
+				(ILClassGlobalScope(linker->image), 0,
+				 linker->moduleName, 0, parent);
+			if(!(linker->moduleClass))
+			{
+				_ILLinkerOutOfMemory(linker);
+				return;
+			}
+			ILClassSetAttrs(linker->moduleClass, ~((ILUInt32)0),
+							IL_META_TYPEDEF_PUBLIC |
+							IL_META_TYPEDEF_SEALED);
+		}
+	}
 }
 
 #ifdef	__cplusplus

@@ -539,7 +539,8 @@ static int WalkTypeDefs(ILLinker *linker, ILImage *image, ILLibrary *library)
 			}
 
 			/* If this is the "<Module>" type, then walk the global symbols */
-			if(!strcmp(ILClass_Name(classInfo), "<Module>") &&
+			if((!strcmp(ILClass_Name(classInfo), IL_LINKER_EXE_MODULE_NAME) ||
+			    !strcmp(ILClass_Name(classInfo), IL_LINKER_DLL_MODULE_NAME)) &&
 			   ILClass_Namespace(classInfo) == 0)
 			{
 				if(!WalkGlobals(linker, image, library, classInfo))
@@ -801,6 +802,21 @@ int _ILLinkerFindClass(ILLibraryFind *find, const char *name,
 	return (find->libClass != 0);
 }
 
+ILClass *_ILLinkerFindByName(ILLinker *linker, const char *name,
+							 const char *namespace)
+{
+	ILLibraryFind find;
+	_ILLinkerFindInit(&find, linker, 0);
+	if(_ILLinkerFindClass(&find, name, namespace))
+	{
+		return _ILLinkerMakeTypeRef(&find, linker->image);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 static void PrintParentClass(ILLibraryClass *classInfo)
 {
 	if(classInfo)
@@ -947,7 +963,7 @@ static ILMember *CreateSymbolRef(ILLinker *linker, ILLibrary *library,
 	/* Make a "TypeRef" for the library's "<Module>" type */
 	find.linker = linker;
 	find.library = library;
-	libClass.name = "<Module>";
+	libClass.name = IL_LINKER_DLL_MODULE_NAME;
 	libClass.namespace = 0;
 	libClass.parent = 0;
 	classInfo = MakeTypeRef(&find, &libClass, linker->image);

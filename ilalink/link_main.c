@@ -871,6 +871,9 @@ static int processImage(ILLinker *linker, const char *filename,
 			/* Make sure that we have the "OpenSystem.C" assembly */
 			errors |= addLibrary(linker, "OpenSystem.C");
 
+			/* Create the correctly-named module class */
+			ILLinkerModuleCreate(linker);
+
 			/* Make sure that we have the "libc" library */
 			if(useStdlib)
 			{

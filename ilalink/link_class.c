@@ -64,6 +64,11 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 	}
 	name = ILClass_Name(classInfo);
 	namespace = ILClass_Namespace(classInfo);
+	if(!strcmp(name, "<Module>") && !namespace)
+	{
+		/* Map the "<Module>" class to its final name */
+		name = _ILLinkerModuleName(linker);
+	}
 	newClass = ILClassLookup(scope, name, namespace);
 	if(newClass)
 	{
@@ -81,7 +86,8 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		else
 		{
 			/* Only proceed if this is the "<Module>" class */
-			if(!nestedParent && !strcmp(name, "<Module>") && namespace == 0)
+			if(!nestedParent && !strcmp(name, _ILLinkerModuleName(linker)) &&
+			   namespace == 0)
 			{
 				isModule = 1;
 			}
@@ -107,8 +113,11 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		}
 	}
 
-	/* Copy the class attributes */
-	ILClassSetAttrs(newClass, ~((ILUInt32)0), ILClass_Attrs(classInfo));
+	/* Copy the class attributes if this isn't the "<Module>" type */
+	if(strcmp(name, _ILLinkerModuleName(linker)) != 0 || namespace != 0)
+	{
+		ILClassSetAttrs(newClass, ~((ILUInt32)0), ILClass_Attrs(classInfo));
+	}
 
 	/* Convert the custom attributes */
 	if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)classInfo,

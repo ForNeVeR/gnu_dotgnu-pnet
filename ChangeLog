@@ -21,6 +21,13 @@
 	* cscc/c/c_function.c: output a dummy method body in strong aliases
 	for vararg functions, for better interoperability with other CLR's.
 
+	* ilalink/link_class.c, ilalink/link_create.c, ilalink/link_library.c,
+	ilalink/link_main.c, ilalink/link_method.c, ilalink/link_module.c,
+	ilalink/link_type.c, ilalink/linker.h, include/il_linker.h:
+	use "$Module$" instead of "<Module>" when linking a library, to
+	improve interoperability with other CLR's that cannot directly
+	reference "<Module>" in another assembly.
+
 2002-08-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c, cscc/c/c_function.h, doc/c_language_abi.html:

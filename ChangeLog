@@ -7,6 +7,9 @@
 	* engine/lib_reflect.c: Throw a FieldAccessException when SetValue
 	is attempted at a const or readonly field.
 
+	* engine/lib_reflect.c: Throw an ArgumentException when the wrong
+	type is passed to SetValue.
+
 2004-08-08  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/lib_emit.c: Allow NULL parameters for ClrParameter names

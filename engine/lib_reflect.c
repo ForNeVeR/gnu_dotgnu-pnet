@@ -2450,6 +2450,7 @@ void _IL_ClrField_SetValueInternal(ILExecThread *thread, ILObject *_this,
 {
 	ILField *field;
 	ILType *type;
+	ILType *objectType;
 	void *ptr;
 
 	/* Get the program item for the field reference */
@@ -2502,6 +2503,14 @@ void _IL_ClrField_SetValueInternal(ILExecThread *thread, ILObject *_this,
 		/* Get the field's type and a pointer to it */
 		type = ILField_Type(field);
 		ptr = (void *)(((unsigned char *)obj) + field->offset);
+	}
+
+	objectType = ILClassToType(GetObjectClass(value));
+				
+	if(!ILTypeAssignCompatible(ILProgramItem_Image(field), objectType, type))
+	{
+		ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
+		return;
 	}
 
 	/* Fetch the value, box it, and return */

@@ -25,6 +25,8 @@
 extern	"C" {
 #endif
 
+#ifdef IL_CONFIG_REFLECTION
+
 /*
  * private static IntPtr ClrAssemblyCreate(String name, int v1, int v2,
  *										   int v3, int v4,
@@ -53,6 +55,89 @@ void _IL_AssemblyBuilder_ClrSetEntryPoint(ILExecThread *thread,
 }
 
 /*
+ * internal static int ClrGetItemToken(IntPtr item);
+ */
+ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread *_thread,
+											ILNativeInt item)
+{
+	if(item)
+	{
+		return ILProgramItem_Token((ILProgramItem *)item);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private static IntPtr ClrEventCreate(IntPtr classInfo, String name,
+ *									    Type type, EventAttributes attrs);
+ */
+ILNativeInt _IL_EventBuilder_ClrEventCreate(ILExecThread *_thread,
+											ILNativeInt classInfo,
+											ILString *name, ILObject *type,
+											ILInt32 attrs)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static ClrEventAddSemantics(IntPtr eventInfo,
+ *									   MethodSemanticsAttributes attr,
+ *									   MethodToken token);
+ */
+void _IL_EventBuilder_ClrEventAddSemantics(ILExecThread *_thread,
+										   ILNativeInt eventInfo,
+										   ILInt32 attr, void *token)
+{
+	/* TODO */
+}
+
+/*
+ * private static IntPtr ClrFieldCreate(IntPtr classInfo, String name,
+ *										Type type, FieldAttributes attrs);
+ */
+ILNativeInt _IL_FieldBuilder_ClrFieldCreate(ILExecThread *_thread,
+											ILNativeInt classInfo,
+											ILString *name, ILObject *type,
+											ILInt32 attrs)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static void ClrFieldSetConstant(IntPtr item, Object value);
+ */
+void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread *_thread,
+										  ILNativeInt item,
+										  ILObject *value)
+{
+	/* TODO */
+}
+
+/*
+ * private static void ClrFieldSetMarshal(IntPtr item, byte[] data);
+ */
+void _IL_FieldBuilder_ClrFieldSetMarshal(ILExecThread *_thread,
+										 ILNativeInt item,
+										 System_Array *data)
+{
+	/* TODO */
+}
+
+/*
+ * private static void ClrFieldSetOffset(IntPtr item, int offset);
+ */
+void _IL_FieldBuilder_ClrFieldSetOffset(ILExecThread *_thread,
+										ILNativeInt item, ILInt32 offset)
+{
+	/* TODO */
+}
+
+/*
  * private IntPtr ClrModuleCreate(IntPtr assembly, String name);
  */
 ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
@@ -64,6 +149,48 @@ ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
 	const char *str = (const char *)ILStringToAnsi(_thread, name);
 	return (ILNativeInt)ILModuleCreate(image, token, str, NULL);
 }
+
+/*
+ * private static IntPtr ClrPropertyCreate(IntPtr classInfo, String name,
+ *										   PropertyAttributes attrs,
+ *										   Type returnType,
+ *										   Type[] paramTypes);
+ */
+ILNativeInt _IL_PropertyBuilder_ClrPropertyCreate(ILExecThread *_thread,
+												  ILNativeInt classInfo,
+												  ILString *name,
+												  ILInt32 attrs,
+												  ILObject *returnType,
+												  System_Array *paramTypes)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static void ClrPropertyAddSemantics(IntPtr item,
+ *											   MethodSemanticsAttributes attr,
+ *											   MethodToken token);
+ */
+void _IL_PropertyBuilder_ClrPropertyAddSemantics(ILExecThread *_thread,
+												 ILNativeInt item,
+												 ILInt32 attr,
+												 void *token)
+{
+	/* TODO */
+}
+
+/*
+ * private static void ClrPropertySetConstant(IntPtr item, Object value);
+ */
+void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
+												ILNativeInt item,
+												ILObject *value)
+{
+	/* TODO */
+}
+
+#endif /* IL_CONFIG_REFLECTION */
 
 #ifdef	__cplusplus
 };

@@ -1,4 +1,10 @@
 
+2003-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_emit.c:
+	stub out internalcalls for EventBuilder, PropertyBuilder,
+	and FieldBuilder.
+
 2003-03-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_emit.c:

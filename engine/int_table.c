@@ -1850,6 +1850,54 @@ static void marshal_vppji(void (*fn)(), void *rvalue, void **avalue)
 IL_METHOD_BEGIN(AssemblyBuilder_Methods)
 	IL_METHOD("ClrAssemblyCreate", "(oSystem.String;iiiivSystem.Reflection.Emit.AssemblyBuilderAccess;&j)j", _IL_AssemblyBuilder_ClrAssemblyCreate, marshal_jppiiiiip)
 	IL_METHOD("ClrSetEntryPoint", "(TjvSystem.Reflection.Emit.PEFileKinds;)V", _IL_AssemblyBuilder_ClrSetEntryPoint, marshal_vppji)
+	IL_METHOD("ClrGetItemToken", "(j)i", _IL_AssemblyBuilder_ClrGetItemToken, marshal_ipj)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_jpjppi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpjip(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])));
+}
+
+#endif
+
+#ifndef _IL_EventBuilder_suppressed
+
+IL_METHOD_BEGIN(EventBuilder_Methods)
+	IL_METHOD("ClrEventCreate", "(joSystem.String;oSystem.Type;vSystem.Reflection.EventAttributes;)j", _IL_EventBuilder_ClrEventCreate, marshal_jpjppi)
+	IL_METHOD("ClrEventAddSemantics", "(jvSystem.Reflection.MethodSemanticsAttributes;vSystem.Reflection.Emit.MethodToken;)V", _IL_EventBuilder_ClrEventAddSemantics, marshal_vpjip)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpji(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+}
+
+#endif
+
+#ifndef _IL_FieldBuilder_suppressed
+
+IL_METHOD_BEGIN(FieldBuilder_Methods)
+	IL_METHOD("ClrFieldCreate", "(joSystem.String;oSystem.Type;vSystem.Reflection.FieldAttributes;)j", _IL_FieldBuilder_ClrFieldCreate, marshal_jpjppi)
+	IL_METHOD("ClrFieldSetConstant", "(joSystem.Object;)V", _IL_FieldBuilder_ClrFieldSetConstant, marshal_vpjp)
+	IL_METHOD("ClrFieldSetMarshal", "(j[B)V", _IL_FieldBuilder_ClrFieldSetMarshal, marshal_vpjp)
+	IL_METHOD("ClrFieldSetOffset", "(ji)V", _IL_FieldBuilder_ClrFieldSetOffset, marshal_vpji)
 IL_METHOD_END
 
 #endif
@@ -1867,6 +1915,25 @@ static void marshal_jpjp(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(ModuleBuilder_Methods)
 	IL_METHOD("ClrModuleCreate", "(joSystem.String;)j", _IL_ModuleBuilder_ClrModuleCreate, marshal_jpjp)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_jpjpipp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, void *, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((void * *)(avalue[5])));
+}
+
+#endif
+
+#ifndef _IL_PropertyBuilder_suppressed
+
+IL_METHOD_BEGIN(PropertyBuilder_Methods)
+	IL_METHOD("ClrPropertyCreate", "(joSystem.String;vSystem.Reflection.PropertyAttributes;oSystem.Type;[oSystem.Type;)j", _IL_PropertyBuilder_ClrPropertyCreate, marshal_jpjpipp)
+	IL_METHOD("ClrPropertyAddSemantics", "(jvSystem.Reflection.MethodSemanticsAttributes;vSystem.Reflection.Emit.MethodToken;)V", _IL_PropertyBuilder_ClrPropertyAddSemantics, marshal_vpjip)
+	IL_METHOD("ClrPropertySetConstant", "(joSystem.Object;)V", _IL_PropertyBuilder_ClrPropertySetConstant, marshal_vpjp)
 IL_METHOD_END
 
 #endif
@@ -2504,6 +2571,12 @@ static InternalClassInfo const internalClassTable[] = {
 #ifndef _IL_Enum_suppressed
 	{"Enum", "System", Enum_Methods},
 #endif
+#ifndef _IL_EventBuilder_suppressed
+	{"EventBuilder", "System.Reflection.Emit", EventBuilder_Methods},
+#endif
+#ifndef _IL_FieldBuilder_suppressed
+	{"FieldBuilder", "System.Reflection.Emit", FieldBuilder_Methods},
+#endif
 #ifndef _IL_FieldInfo_suppressed
 	{"FieldInfo", "System.Reflection", FieldInfo_Methods},
 #endif
@@ -2551,6 +2624,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_Object_suppressed
 	{"Object", "System", Object_Methods},
+#endif
+#ifndef _IL_PropertyBuilder_suppressed
+	{"PropertyBuilder", "System.Reflection.Emit", PropertyBuilder_Methods},
 #endif
 #ifndef _IL_RegexpMethods_suppressed
 	{"RegexpMethods", "Platform", RegexpMethods_Methods},

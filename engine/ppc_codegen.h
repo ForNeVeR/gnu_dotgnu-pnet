@@ -21,6 +21,7 @@
 #ifndef	_PPC_CODEGEN_H
 #define	_PPC_CODEGEN_H
 
+#include <stdio.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -286,42 +287,42 @@ typedef unsigned int *ppc_inst_ptr;
  */
 #define	ppc_add_reg_imm(inst,dreg,sreg,imm)	\
 			do { \
-				int __value = (int)(imm); \
-				if(__value >= -0x8000 && __value <= 0x7FFF) \
+				int __add_value = (int)(imm); \
+				if(__add_value >= -0x8000 && __add_value <= 0x7FFF) \
 				{ \
 					*(inst)++ = ((14 << 26) | \
 								 (((unsigned int)(dreg)) << 21) | \
 								 (((unsigned int)(sreg)) << 16) | \
-								 (((unsigned int)(__value)) & 0xFFFF)); \
+								 (((unsigned int)(__add_value)) & 0xFFFF)); \
 				} \
-				else if((__value & 0xFFFF) == 0) \
+				else if((__add_value & 0xFFFF) == 0) \
 				{ \
 					*(inst)++ = ((15 << 26) | \
 								 (((unsigned int)(dreg)) << 21) | \
 								 (((unsigned int)(sreg)) << 16) | \
-								 (((unsigned int)(__value >> 16)) & 0xFFFF)); \
+								 (((unsigned int)(__add_value >> 16)) & 0xFFFF)); \
 				} \
-				else if((__value & 0x8000) == 0) \
+				else if((__add_value & 0x8000) == 0) \
 				{ \
 					*(inst)++ = ((14 << 26) | \
 								 (((unsigned int)PPC_WORK) << 21) | \
 								 (((unsigned int)(sreg)) << 16) | \
-								 (((unsigned int)(__value)) & 0xFFFF)); \
+								 (((unsigned int)(__add_value)) & 0xFFFF)); \
 					*(inst)++ = ((15 << 26) | \
 								 (((unsigned int)(dreg)) << 21) | \
 								 (((unsigned int)PPC_WORK) << 16) | \
-								 (((unsigned int)(__value >> 16)) & 0xFFFF)); \
+								 (((unsigned int)(__add_value >> 16)) & 0xFFFF)); \
 				} \
 				else \
 				{ \
 					*(inst)++ = ((14 << 26) | \
 								 (((unsigned int)PPC_WORK) << 21) | \
 								 (((unsigned int)(sreg)) << 16) | \
-								 (((unsigned int)(__value)) & 0xFFFF)); \
+								 (((unsigned int)(__add_value)) & 0xFFFF)); \
 					*(inst)++ = ((15 << 26) | \
 								 (((unsigned int)(dreg)) << 21) | \
 								 (((unsigned int)PPC_WORK) << 16) | \
-								 (((unsigned int)((__value >> 16) + 1)) \
+								 (((unsigned int)((__add_value >> 16) + 1)) \
 								 		& 0xFFFF)); \
 				} \
 			} while (0)
@@ -397,32 +398,32 @@ typedef unsigned int *ppc_inst_ptr;
  */
 #define	ppc_cmp_reg_imm(inst,opc,reg,imm)	\
 			do { \
-				int __value = (int)(imm); \
+				int __cmp_value = (int)(imm); \
 				if((opc) == PPC_CMP) \
 				{ \
-					if(__value >= -0x8000 && __value <= 0x7FFF) \
+					if(__cmp_value >= -0x8000 && __cmp_value <= 0x7FFF) \
 					{ \
 						*(inst)++ = ((11 << 26) | \
 									 (((unsigned int)(reg)) << 16) | \
-									 (((unsigned int)(__value)) & 0xFFFF)); \
+									 (((unsigned int)(__cmp_value)) & 0xFFFF)); \
 					} \
 					else \
 					{ \
-						ppc_mov_reg_imm((inst), PPC_WORK, __value); \
+						ppc_mov_reg_imm((inst), PPC_WORK, __cmp_value); \
 						ppc_cmp_reg_reg((inst), PPC_CMP, (reg), PPC_WORK); \
 					} \
 				} \
 				else \
 				{ \
-					if(__value >= 0 && __value <= 0xFFFF) \
+					if(__cmp_value >= 0 && __cmp_value <= 0xFFFF) \
 					{ \
 						*(inst)++ = ((10 << 26) | \
 									 (((unsigned int)(reg)) << 16) | \
-									  ((unsigned int)(__value))); \
+									  ((unsigned int)(__cmp_value))); \
 					} \
 					else \
 					{ \
-						ppc_mov_reg_imm((inst), PPC_WORK, __value); \
+						ppc_mov_reg_imm((inst), PPC_WORK, __cmp_value); \
 						ppc_cmp_reg_reg((inst), PPC_CMPL, (reg), PPC_WORK); \
 					} \
 				} \

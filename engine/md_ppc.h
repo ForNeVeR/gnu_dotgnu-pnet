@@ -132,7 +132,7 @@ extern	"C" {
  * Set it to zero if integer division is too hard to be performed
  * inline using a simple opcode.
  */
-#define	MD_HAS_INT_DIVISION			0	/* TODO */
+#define	MD_HAS_INT_DIVISION			1
 
 /*
  * Set to 1 if 64-bit register pairs are stored in little-endian order.
@@ -340,13 +340,21 @@ typedef ppc_inst_ptr	md_inst_ptr;
 #define	md_mul_reg_reg_word_32(inst,reg1,reg2)	\
 			ppc_alu_reg_dss((inst), PPC_MUL, (reg1), (reg1), (reg2))
 #define	md_div_reg_reg_word_32(inst,reg1,reg2)	\
-			do { ; } while (0)
+				ppc_alu_reg_dss((inst), PPC_DIV, (reg1), (reg1), (reg2))
 #define	md_udiv_reg_reg_word_32(inst,reg1,reg2)	\
-			do { ; } while (0)
+				ppc_alu_reg_dss((inst), PPC_DIV_UN , (reg1), (reg1), (reg2))
 #define	md_rem_reg_reg_word_32(inst,reg1,reg2)	\
-			do { ; } while (0)
+			do {\
+				ppc_alu_reg_dss((inst), PPC_DIV, PPC_WORK, (reg1), (reg2));\
+				ppc_alu_reg_dss((inst), PPC_MUL, PPC_WORK, PPC_WORK, (reg2));\
+				ppc_alu_reg_dss((inst), PPC_SUBF, (reg1), PPC_WORK, (reg1));\
+			} while (0)
 #define	md_urem_reg_reg_word_32(inst,reg1,reg2)	\
-			do { ; } while (0)
+			do {\
+				ppc_alu_reg_dss((inst), PPC_DIV_UN, PPC_WORK, (reg1), (reg2));\
+				ppc_alu_reg_dss((inst), PPC_MUL, PPC_WORK, PPC_WORK, (reg2));\
+				ppc_alu_reg_dss((inst), PPC_SUBF, (reg1), PPC_WORK, (reg1));\
+			} while (0)
 #define	md_neg_reg_word_32(inst,reg)	\
 			ppc_alu_reg_ds((inst), PPC_NEG, (reg), (reg))
 #define	md_and_reg_reg_word_32(inst,reg1,reg2)	\
@@ -443,12 +451,12 @@ typedef ppc_inst_ptr	md_inst_ptr;
 				{ \
 					/* Jump to the contents of the specified PC */  \
 					ppc_load_membase(inst, PPC_WORK, MD_REG_PC, 0); \
-					ppc_jump_reg(inst, PPC_WORK); \
 				} \
 				else \
 				{ \
-					ppc_jump(inst, label);\
+					ppc_mov_reg_imm(inst, PPC_WORK, (label));\
 				} \
+				ppc_jump_reg(inst, PPC_WORK); \
 			} while (0)
 
 /*

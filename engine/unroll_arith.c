@@ -25,7 +25,7 @@
 /*
  * Perform an integer division or remainder.
  */
-static void X86Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
+static void Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
 				      unsigned char *pc, unsigned char *label)
 {
 #if !defined(IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS)
@@ -110,6 +110,70 @@ static void X86Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
 
 #endif /* CVM_X86 */
 
+#if defined(CVM_PPC) && (MD_HAS_INT_DIVISION == 1)
+static void Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
+				      unsigned char *pc, unsigned char *label)
+{
+#if !defined(IL_USE_INTERRUPT_BASED_INT_DIVIDE_BY_ZERO_CHECKS)
+	#define IL_NEED_DIVIDE_REEXECUTE 1
+#endif
+	int reg, reg2;	
+#ifdef IL_NEED_DIVIDE_REEXECUTE
+	md_inst_ptr patch1 = NULL;
+	md_inst_ptr patch2 = NULL;
+	md_inst_ptr patch3 = NULL;
+#endif
+	GetTopTwoWordRegisters(unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+
+#ifdef IL_NEED_DIVIDE_REEXECUTE
+	md_reg_is_zero(unroll->out, reg2);
+	patch1 = unroll->out;
+	md_branch_eq(unroll->out);
+	if(isSigned)
+	{
+		md_cmp_reg_imm_word_32(unroll->out, MD_CC_EQ, reg2, -1);
+		patch2 = unroll->out;
+		md_branch_ne(unroll->out);
+		md_cmp_reg_imm_word_32(unroll->out, MD_CC_EQ, reg, IL_MIN_INT32);
+		patch3 = unroll->out;
+		md_branch_ne(unroll->out);
+	}
+	md_patch(patch1, unroll->out);	
+	ReExecute(unroll, pc, label);
+	if(isSigned)
+	{
+		md_patch(patch2, unroll->out);	
+		md_patch(patch3, unroll->out);	
+	}
+#endif
+
+	if(wantRemainder)
+	{
+		if(isSigned)
+		{
+			md_rem_reg_reg_word_32(unroll->out, reg, reg2);
+		}
+		else
+		{
+			md_urem_reg_reg_word_32(unroll->out, reg, reg2);
+		}
+	}
+	else
+	{
+		if(isSigned)
+		{
+			md_div_reg_reg_word_32(unroll->out, reg, reg2);
+		}
+		else
+		{
+			md_udiv_reg_reg_word_32(unroll->out, reg, reg2);
+		}
+	}
+	FreeTopRegister(unroll, -1);
+}
+
+#endif /* CVM_PPC */
+
 #elif defined(IL_UNROLL_CASES)
 
 case COP_IADD:
@@ -145,13 +209,13 @@ case COP_IMUL:
 }
 break;
 
-#ifdef CVM_X86
+#if (MD_HAS_INT_DIVISION == 1)
 
 case COP_IDIV:
 {
 	/* Divide integers */
 	UNROLL_START();
-	X86Divide(&unroll, 1, 0, pc, (unsigned char *)inst);
+	Divide(&unroll, 1, 0, pc, (unsigned char *)inst);
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
@@ -160,7 +224,7 @@ case COP_IDIV_UN:
 {
 	/* Divide unsigned integers */
 	UNROLL_START();
-	X86Divide(&unroll, 0, 0, pc, (unsigned char *)inst);
+	Divide(&unroll, 0, 0, pc, (unsigned char *)inst);
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
@@ -169,7 +233,7 @@ case COP_IREM:
 {
 	/* Remainder integers */
 	UNROLL_START();
-	X86Divide(&unroll, 1, 1, pc, (unsigned char *)inst);
+	Divide(&unroll, 1, 1, pc, (unsigned char *)inst);
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
@@ -178,12 +242,12 @@ case COP_IREM_UN:
 {
 	/* Remainder unsigned integers */
 	UNROLL_START();
-	X86Divide(&unroll, 0, 1, pc, (unsigned char *)inst);
+	Divide(&unroll, 0, 1, pc, (unsigned char *)inst);
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
 
-#endif /* CVM_X86 */
+#endif /* MD_HAS_INT_DIVISION */
 
 case COP_INEG:
 {

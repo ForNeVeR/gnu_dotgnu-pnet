@@ -37,14 +37,14 @@
 } // namespace System.Collections
 .class private auto ansi 'TestEnumerator' extends ['.library']'System'.'Object' implements 'System.Collections'.'IEnumerator'
 {
-.method private final virtual hidebysig newslot instance bool 'IEnumerator.MoveNext'() cil managed java 
+.method private final virtual hidebysig newslot instance bool 'System.Collections.IEnumerator.MoveNext'() cil managed java 
 {
 	.override	'System.Collections'.'IEnumerator'::'MoveNext'
 	iconst_0
 	ireturn
 	.locals 1
 	.maxstack 1
-} // method IEnumerator.MoveNext
+} // method System.Collections.IEnumerator.MoveNext
 .method public final virtual hidebysig newslot instance bool 'MoveNext'() cil managed java 
 {
 	iconst_0
@@ -52,20 +52,20 @@
 	.locals 1
 	.maxstack 1
 } // method MoveNext
-.method private final virtual hidebysig newslot instance void 'IEnumerator.Reset'() cil managed java 
+.method private final virtual hidebysig newslot instance void 'System.Collections.IEnumerator.Reset'() cil managed java 
 {
 	.override	'System.Collections'.'IEnumerator'::'Reset'
 	return
 	.locals 1
 	.maxstack 0
-} // method IEnumerator.Reset
+} // method System.Collections.IEnumerator.Reset
 .method public final virtual hidebysig newslot instance void 'Reset'() cil managed java 
 {
 	return
 	.locals 1
 	.maxstack 0
 } // method Reset
-.method private final virtual hidebysig newslot specialname instance class ['.library']'System'.'Object' 'IEnumerator.get_Current'() cil managed java 
+.method private final virtual hidebysig newslot specialname instance class ['.library']'System'.'Object' 'System.Collections.IEnumerator.get_Current'() cil managed java 
 {
 	.override	'System.Collections'.'IEnumerator'::'get_Current'
 	iconst_0
@@ -73,11 +73,11 @@
 	areturn
 	.locals 1
 	.maxstack 1
-} // method IEnumerator.get_Current
-.property instance class ['.library']'System'.'Object' 'IEnumerator.Current'()
+} // method System.Collections.IEnumerator.get_Current
+.property instance class ['.library']'System'.'Object' 'System.Collections.IEnumerator.Current'()
 {
-	.get instance class ['.library']'System'.'Object' 'TestEnumerator'::'IEnumerator.get_Current'()
-} // property IEnumerator.Current
+	.get instance class ['.library']'System'.'Object' 'TestEnumerator'::'System.Collections.IEnumerator.get_Current'()
+} // property System.Collections.IEnumerator.Current
 .method public hidebysig specialname instance unsigned int8 'get_Current'() cil managed java 
 {
 	iconst_0
@@ -102,14 +102,14 @@
 } // class TestEnumerator
 .class private sequential sealed serializable ansi 'TestEnumerable' extends ['.library']'System'.'ValueType' implements 'System.Collections'.'IEnumerable'
 {
-.method private final virtual hidebysig newslot instance class 'System.Collections'.'IEnumerator' 'IEnumerable.GetEnumerator'() cil managed java 
+.method private final virtual hidebysig newslot instance class 'System.Collections'.'IEnumerator' 'System.Collections.IEnumerable.GetEnumerator'() cil managed java 
 {
 	.override	'System.Collections'.'IEnumerable'::'GetEnumerator'
 	aconst_null
 	areturn
 	.locals 1
 	.maxstack 1
-} // method IEnumerable.GetEnumerator
+} // method System.Collections.IEnumerable.GetEnumerator
 .method public hidebysig instance class 'TestEnumerator' 'GetEnumerator'() cil managed java 
 {
 	aconst_null

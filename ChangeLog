@@ -1,4 +1,9 @@
 
+2003-11-24  Gopal.V  <gopalv82@symonds.net>
+
+	* System/Net/GlobalProxySelection.cs, System/Net/HttpWebRequest.cs:
+	add proxy configuration via the "PNET_PROXY" environment variable.
+
 2003-11-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/System.build: add "System.Xml" to the dependencies

@@ -45,7 +45,33 @@ public class GlobalProxySelection
 						{
 							// TODO: read the proxy information from
 							// the configuration settings.
-							select = new EmptyWebProxy();
+							String proxy = Environment.GetEnvironmentVariable("PNET_PROXY");
+							try
+							{	
+								if(proxy != null)
+								{
+									Uri proxyUri = new Uri(proxy);
+									select = new WebProxy(proxyUri);
+									String userinfo=proxyUri.UserInfo;
+									if(userinfo != null && userinfo != "" &&
+													userinfo.IndexOf(":")!=-1)
+									{
+										String [] auth=userinfo.Split(':');
+										select.Credentials = 
+												new NetworkCredential(auth[0],auth[1]);
+									}
+									
+								}
+							}
+							catch(UriFormatException)
+							{
+								//System.Diagnostics.Debug.WriteLine("Invalid proxy");
+							}
+
+							if(select == null)
+							{
+								select = new EmptyWebProxy();
+							}
 						}
 						return select;
 					}

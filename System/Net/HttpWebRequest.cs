@@ -516,6 +516,10 @@ public class HttpWebRequest : WebRequest
 	{
 		get
 		{
+			if(this.proxy==null)
+			{
+				this.proxy=GlobalProxySelection.Select;
+			}
 			return this.proxy;
 		} 
 		set

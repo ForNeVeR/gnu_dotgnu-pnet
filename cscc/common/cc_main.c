@@ -676,11 +676,15 @@ int CCPluginInput(char *buf, int maxSize)
 
 void CCPluginParseError(char *msg, char *text)
 {
+	char *newmsg;
+	int posn, outposn;
+
 	if(!strcmp(msg, "parse error") || !strcmp(msg, "syntax error"))
 	{
 		/* This error is pretty much useless at telling the user
 		   what is happening.  Try to print a better message
 		   based on the current input token */
+	simpleError:
 		if(text && *text != '\0')
 		{
 			CCError(_("parse error at or near `%s'"), text);
@@ -697,8 +701,8 @@ void CCPluginParseError(char *msg, char *text)
 		   But the quoting causes Bison to output quote characters in
 		   error messages which look awful.  This code attempts to fix
 		   things up */
-		char *newmsg = ILDupString(msg);
-		int posn, outposn;
+		newmsg = ILDupString(msg);
+	expectingError:
 		if(newmsg)
 		{
 			posn = 0;
@@ -783,10 +787,34 @@ void CCPluginParseError(char *msg, char *text)
 			}
 		}
 	}
+	else if(!strncmp(msg, "parse error, unexpected ", 24))
+	{
+		/* The error probably has the form "parse error, unexpected ...,
+		   expecting ..." - strip out the "unexpected" part */
+		posn = 24;
+		while(msg[posn] != '\0' &&
+			  strncmp(msg + posn, ", expecting ", 12) != 0)
+		{
+			++posn;
+		}
+		if(msg[posn] == '\0')
+		{
+			goto simpleError;
+		}
+		newmsg = (char *)ILMalloc(strlen(msg) + 1);
+		if(!newmsg)
+		{
+			goto defaultError;
+		}
+		strcpy(newmsg, "parse error, expecting ");
+		strcat(newmsg, msg + posn + 12);
+		goto expectingError;
+	}
 	else
 	{
 		/* The parser has probably included information as to what
 		   is expected in this context, so report that */
+	defaultError:
 		if(text && *text != '\0')
 		{
 			CCError(_("%s at or near `%s'"), msg, text);

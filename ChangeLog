@@ -21,6 +21,9 @@
 	* cscc/common/cc_errors.h: add an extra argument to the "CC_PRINTF"
 	macro to work around problems in MacOSX's preprocessor.
 
+	* cscc/common/cc_main.c (CCPluginParseError): recognise error
+	message forms from Bison 1.29 and higher.
+
 2002-05-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc,codegen/cg_lvalue.tc,codegen/cg_misc.tc

@@ -1,4 +1,10 @@
 
+2002-12-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* tools/run_test.sh.in: remove "./" from the start of test output
+	files to deal with newer GNU cpp's that strip "./" during C
+	pre-processing.
+
 2002-12-11  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/class/property6.cs, csharp/class/property6.il, 

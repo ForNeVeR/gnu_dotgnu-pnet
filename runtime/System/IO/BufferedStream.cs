@@ -268,7 +268,7 @@ namespace System.IO
 			}
 
 			int spaceInBuffer=bufferSize-outBufferLen;
-			int dataLen = offset - count;
+			int dataLen = array.Length-offset;
 			/* simple cases first ;) */
 			if(spaceInBuffer > dataLen)
 			{

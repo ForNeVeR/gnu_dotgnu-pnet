@@ -241,8 +241,10 @@ static ILType *BuildVarargCallSite(ILGenInfo *info,
 		type = CFunctionNaturalType(info, CSemGetType(args[paramNum].value), 1);
 		if(type != ILType_Float)
 		{
-			CCoerceNode(info, args[paramNum].node, args[paramNum].parent,
-						args[paramNum].value, type);
+			/* Use "CCastNode" to prevent "pointer->integer" warnings
+			   that are not important in this context */
+			CCastNode(info, args[paramNum].node, args[paramNum].parent,
+					  args[paramNum].value, type);
 		}
 		else
 		{
@@ -318,7 +320,7 @@ ILNode_CSemAnalysis(ILNode_CInvocationExpression)
 	numArgs = CountArgs(node->expr2);
 	if(numArgs != 0)
 	{
-		argTypes = (CEvalArg *)ILMalloc(numArgs * sizeof(ILUInt32));
+		argTypes = (CEvalArg *)ILMalloc(numArgs * sizeof(CEvalArg));
 		if(!argTypes)
 		{
 			CCOutOfMemory();

@@ -14,6 +14,11 @@
 	events that caused it to confuse ConfigureNotify's that arose
 	from application-requested and window manager-requested resizes.
 
+	* System.Drawing.Xsharp/DrawingGraphics.cs, Xsharp/Font.cs,
+	Xsharp/Graphics.cs: shift "MeasureString", "DrawString", and
+	"GetFontExtents" into the "Xsharp.Font" class so that we can
+	subclass it for different font rendering systems.
+
 2003-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/XsharpSupport.c: implement a special case for Latin1

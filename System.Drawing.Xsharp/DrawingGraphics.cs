@@ -166,8 +166,10 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				(String s, int x, int y, StringFormat format)
 			{
 				Xsharp.Font xfont = (font as DrawingFont).xfont;
-				FontExtents extents = graphics.GetFontExtents(xfont);
-				graphics.DrawString(RestrictXY(x), RestrictXY(y) + extents.Ascent, s, xfont);
+				FontExtents extents = xfont.GetFontExtents(graphics);
+				xfont.DrawString(graphics, RestrictXY(x),
+								 RestrictXY(y) + extents.Ascent,
+								 s, 0, s.Length);
 			}
 
 	// Measure a string using the current font and a given layout rectangle.
@@ -181,8 +183,9 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				charactersFitted = 0;
 				linesFilled = 0;
 				Xsharp.Font xfont = (font as DrawingFont).xfont;
-				graphics.MeasureString
-					(s, xfont, out width, out ascent, out descent);
+				xfont.MeasureString
+					(graphics, s, 0, s.Length,
+					 out width, out ascent, out descent);
 				if(!ascentOnly)
 				{
 					return new Size(width, ascent + descent);
@@ -265,7 +268,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	public override int GetLineSpacing()
 			{
 				Xsharp.Font xfont = (font as DrawingFont).xfont;
-				FontExtents extents = graphics.GetFontExtents(xfont);
+				FontExtents extents = xfont.GetFontExtents(graphics);
 				return extents.Ascent + extents.Descent;
 			}
 

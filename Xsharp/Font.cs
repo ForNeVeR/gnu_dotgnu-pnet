@@ -22,12 +22,13 @@ namespace Xsharp
 {
 
 using System;
+using Xsharp.Types;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Font"/> class encapsulates
 /// the operations on an X font.</para>
 /// </summary>
-public sealed class Font
+public class Font
 {
 	// Internal class that keeps track of displays and fontsets.
 	private class FontInfo
@@ -270,6 +271,218 @@ public sealed class Font
 				{
 					return new Font(name, true);
 				}
+			}
+
+	/// <summary>
+	/// <para>Measure the width, ascent, and descent of a string,
+	/// to calculate its extents when drawn on a graphics context
+	/// using this font.</para>
+	/// </summary>
+	///
+	/// <param name="graphics">
+	/// <para>The graphics context to measure with.</para>
+	/// </param>
+	///
+	/// <param name="str">
+	/// <para>The string to be measured.</para>
+	/// </param>
+	///
+	/// <param name="index">
+	/// <para>The starting index in <paramref name="str"/> of the first
+	/// character to be measured.</para>
+	/// </param>
+	///
+	/// <param name="count">
+	/// <para>The number of characters <paramref name="str"/>
+	/// to be measured.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The width of the string, in pixels.</para>
+	/// </param>
+	///
+	/// <param name="ascent">
+	/// <para>The ascent of the string, in pixels.</para>
+	/// </param>
+	///
+	/// <param name="descent">
+	/// <para>The descent of the string, in pixels.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="graphics"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	public virtual void MeasureString
+				(Graphics graphics, String str, int index, int count,
+				 out int width, out int ascent, out int descent)
+			{
+				// Validate the parameters.
+				if(graphics == null)
+				{
+					throw new ArgumentNullException("graphics");
+				}
+				if(str == null || count == 0)
+				{
+					width = 0;
+					ascent = 0;
+					descent = 0;
+					return;
+				}
+
+				// Extract the substring to be measured.
+				// TODO: make this more efficient by avoiding the data copy.
+				str = str.Substring(index, count);
+
+				// Get the font set to use to measure the string.
+				IntPtr fontSet = GetFontSet(graphics.dpy);
+				if(fontSet == IntPtr.Zero)
+				{
+					width = 0;
+					ascent = 0;
+					descent = 0;
+					return;
+				}
+
+				// Get the text extents and decode them into useful values.
+				XRectangle overall_ink;
+				XRectangle overall_logical;
+				try
+				{
+					IntPtr display = graphics.dpy.Lock();
+					Xlib.XSharpTextExtents
+						(display, fontSet, str,
+						 out overall_ink, out overall_logical);
+				}
+				finally
+				{
+					graphics.dpy.Unlock();
+				}
+				width = overall_logical.width;
+				ascent = -(overall_logical.y);
+				descent = overall_logical.height + overall_logical.y;
+
+				// Increase the descent to account for underlining.
+				// We always draw the underline two pixels below
+				// the font base line.
+				if((style & FontStyle.Underlined) != 0)
+				{
+					if(descent < 3)
+					{
+						descent = 3;
+					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Draw a string at a particular position on a
+	/// specified graphics context.</para>
+	/// </summary>
+	///
+	/// <param name="graphics">
+	/// <para>The graphics context to draw on.</para>
+	/// </param>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the position to start drawing text.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the position to start drawing text.</para>
+	/// </param>
+	///
+	/// <param name="str">
+	/// <para>The string to be drawn.</para>
+	/// </param>
+	///
+	/// <param name="index">
+	/// <para>The starting index in <paramref name="str"/> of the first
+	/// character to be measured.</para>
+	/// </param>
+	///
+	/// <param name="count">
+	/// <para>The number of characters <paramref name="str"/>
+	/// to be measured.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate values is out of range.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="graphics"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	public virtual void DrawString
+				(Graphics graphics, int x, int y,
+				 String str, int index, int count)
+			{
+				// Validate the parameters.
+				if(x < -32768 || x > 32767 || y < -32768 || y > 32767)
+				{
+					throw new XException(S._("X_PointCoordRange"));
+				}
+				if(graphics == null)
+				{
+					throw new ArgumentNullException("graphics");
+				}
+				if(str == null || count == 0)
+				{
+					return;
+				}
+
+				// Extract the substring to be measured.
+				// TODO: make this more efficient by avoiding the data copy.
+				str = str.Substring(index, count);
+
+				// Get the font set to use for the font.
+				IntPtr fontSet = GetFontSet(graphics.dpy);
+				if(fontSet == IntPtr.Zero)
+				{
+					return;
+				}
+
+				// Draw the string using the specified font set.
+				try
+				{
+					IntPtr display = graphics.dpy.Lock();
+					Xlib.XSharpDrawString
+							(display, graphics.drawableHandle, graphics.gc,
+							 fontSet, x, y, str, (int)style,
+							 IntPtr.Zero, graphics.Foreground.value);
+				}
+				finally
+				{
+					graphics.dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Get extent information for this font, when drawing
+	/// onto a particular graphics context.</para>
+	/// </summary>
+	///
+	/// <param name="graphics">
+	/// <para>The graphics context to get the extent information for.</para>
+	/// </param>
+	///
+	/// <returns>
+	/// <para>Returns the extent information.</para>
+	/// </returns>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="graphics"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	public virtual FontExtents GetFontExtents(Graphics graphics)
+			{
+				if(graphics == null)
+				{
+					throw new ArgumentNullException("graphics");
+				}
+				FontExtents extents = null;
+				GetFontSet(graphics.dpy, out extents);
+				return extents;
 			}
 
 	// Get the XFontSet structure for this font on a particular display.

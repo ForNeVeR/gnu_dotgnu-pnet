@@ -56,10 +56,10 @@ using Xsharp.Types;
 public sealed class Graphics : IDisposable
 {
 	// Internal state.
-	private Display dpy;
+	internal Display dpy;
 	private Drawable drawable;
-	private Xlib.Drawable drawableHandle;
-	private IntPtr gc;
+	internal Xlib.Drawable drawableHandle;
+	internal IntPtr gc;
 	private Color foreground;
 	private Color background;
 	private Pixmap tile;
@@ -2263,11 +2263,6 @@ public sealed class Graphics : IDisposable
 	/// </exception>
 	public void DrawString(int x, int y, String str, Font font)
 			{
-				// Validate the parameters.
-				if(x < -32768 || x > 32767 || y < -32768 || y > 32767)
-				{
-					throw new XException(S._("X_PointCoordRange"));
-				}
 				if(font == null)
 				{
 					throw new ArgumentNullException("font");
@@ -2276,27 +2271,7 @@ public sealed class Graphics : IDisposable
 				{
 					return;
 				}
-
-				// Get the font set to use for the font.
-				IntPtr fontSet = font.GetFontSet(dpy);
-				if(fontSet == IntPtr.Zero)
-				{
-					return;
-				}
-
-				// Draw the string using the specified font set.
-				try
-				{
-					IntPtr display = dpy.Lock();
-					Xlib.XSharpDrawString
-							(display, drawableHandle, gc,
-							 fontSet, x, y, str, (int)(font.Style),
-							 IntPtr.Zero, foreground.value);
-				}
-				finally
-				{
-					dpy.Unlock();
-				}
+				font.DrawString(this, x, y, str, 0, str.Length);
 			}
 
 	/// <summary>
@@ -2322,9 +2297,7 @@ public sealed class Graphics : IDisposable
 				{
 					throw new ArgumentNullException("font");
 				}
-				FontExtents extents = null;
-				font.GetFontSet(dpy, out extents);
-				return extents;
+				return font.GetFontExtents(this);
 			}
 
 	/// <summary>
@@ -2360,7 +2333,6 @@ public sealed class Graphics : IDisposable
 	public void MeasureString(String str, Font font, out int width,
 							  out int ascent, out int descent)
 			{
-				// Validate the parameters.
 				if(font == null)
 				{
 					throw new ArgumentNullException("font");
@@ -2372,45 +2344,8 @@ public sealed class Graphics : IDisposable
 					descent = 0;
 					return;
 				}
-
-				// Get the font set to use to measure the string.
-				IntPtr fontSet = font.GetFontSet(dpy);
-				if(fontSet == IntPtr.Zero)
-				{
-					width = 0;
-					ascent = 0;
-					descent = 0;
-					return;
-				}
-
-				// Get the text extents and decode them into useful values.
-				XRectangle overall_ink;
-				XRectangle overall_logical;
-				try
-				{
-					IntPtr display = dpy.Lock();
-					Xlib.XSharpTextExtents
-						(display, fontSet, str,
-						 out overall_ink, out overall_logical);
-				}
-				finally
-				{
-					dpy.Unlock();
-				}
-				width = overall_logical.width;
-				ascent = -(overall_logical.y);
-				descent = overall_logical.height + overall_logical.y;
-
-				// Increase the descent to account for underlining.
-				// We always draw the underline two pixels below
-				// the font base line.
-				if((font.Style & FontStyle.Underlined) != 0)
-				{
-					if(descent < 3)
-					{
-						descent = 3;
-					}
-				}
+				font.MeasureString(this, str, 0, str.Length,
+								   out width, out ascent, out descent);
 			}
 
 	// Draw a radio button.

@@ -140,6 +140,7 @@ int
 pthread_condattr_init (pthread_condattr_t *attr)
 {
   attr->__pshared = 0;
+  attr->__clock_id = 0;
   return 0;
 }
 
@@ -162,5 +163,20 @@ int
 pthread_condattr_setpshared (pthread_condattr_t *attr, int pshared)
 {
   attr->__pshared = pshared;
+  return 0;
+}
+
+int
+pthread_condattr_getclock (const pthread_condattr_t * __restrict attr,
+                           clockid_t *__restrict clock_id)
+{
+  *clock_id = attr->__clock_id;
+  return 0;
+}
+
+int
+pthread_condattr_setclock (pthread_condattr_t *attr, clockid_t clock_id)
+{
+  attr->__clock_id = clock_id;
   return 0;
 }

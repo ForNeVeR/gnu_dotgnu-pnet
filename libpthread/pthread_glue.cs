@@ -71,12 +71,12 @@ internal unsafe class ThreadStartup
 				}
 				finally
 				{
+					__module.__pt_destroy_keys();
 					exited = true;
 					if(detached)
 					{
 						__module.__libc_thread_unregister(id);
 					}
-					__module.__pt_thread_cleanup();
 				}
 			}
 
@@ -173,10 +173,10 @@ internal struct SpinLock
 __module
 {
 
-	// Import functions from "pthread_thread.c".
+	// Import functions from "pthread_thread.c" and "pthread_key.c".
 	extern public static unsafe void *__pt_thread_run(void *start, void *arg);
 	extern public static unsafe void pthread_exit(void *exitval);
-	extern public static unsafe void __pt_thread_cleanup();
+	extern public static unsafe void __pt_destroy_keys();
 
 	// Import the thread management functions from "libc".
 	extern public static long __pthread_self();

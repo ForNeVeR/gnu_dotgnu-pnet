@@ -26,13 +26,14 @@
 #include <pthread-support.h>
 
 /*
- * Thread-specific information that is used to exit from a thread.
+ * Thread-specific information that is used by a thread.
  */
 static __thread_specific__ jmp_buf exit_buf;
 static __thread_specific__ void *exit_retval;
+static __thread_specific__ struct _pthread_cleanup_buffer *cleanup_handlers;
 
 /*
- * Imports from "pthread_glue.cs".
+ * Imports from "pthread_glue.cs" and "pthread_key.c".
  */
 extern pthread_t __pt_thread_create (void *start, void *arg);
 extern int __pt_thread_is_detached (long long thread);
@@ -75,6 +76,16 @@ pthread_equal (pthread_t thread1, pthread_t thread2)
 void
 pthread_exit (void *retval)
 {
+  /* Run the cleanup handlers in reverse order before we unwind the stack */
+  while (cleanup_handlers != 0)
+    {
+      if (cleanup_handlers->__canceltype == -1)
+        _pthread_cleanup_pop (cleanup_handlers, 1);
+      else
+        _pthread_cleanup_pop_restore (cleanup_handlers, 1);
+    }
+
+  /* Unwind the stack and exit from the thread */
   exit_retval = retval;
   longjmp (exit_buf, 1);
 }
@@ -84,12 +95,6 @@ pthread_yield (void)
 {
   /* Nothing to do here as C# does not support yielding */
   return 0;
-}
-
-void
-__pt_thread_cleanup (void)
-{
-  /* TODO: Run the cleanup routines for the current thread */
 }
 
 int
@@ -119,6 +124,13 @@ pthread_getschedparam (pthread_t target_thread,
   *policy = SCHED_OTHER;
   param->__sched_priority = 0;
   return 0;
+}
+
+int
+pthread_setschedprio (pthread_t thread, int prio)
+{
+  errno = EPERM;
+  return -1;
 }
 
 int
@@ -288,4 +300,49 @@ pthread_getattr_np (pthread_t th, pthread_attr_t *attr)
   attr->__detachstate = (result ? PTHREAD_CREATE_DETACHED
                                 : PTHREAD_CREATE_JOINABLE);
   return 0;
+}
+
+void
+_pthread_cleanup_push (struct _pthread_cleanup_buffer *buffer,
+		       void (*routine) (void *), void *arg)
+{
+  buffer->__routine = routine;
+  buffer->__arg = arg;
+  buffer->__canceltype = 0;
+  buffer->__prev = cleanup_handlers;
+  cleanup_handlers = buffer;
+}
+
+void
+_pthread_cleanup_push_defer (struct _pthread_cleanup_buffer *buffer,
+                             void (*routine) (void *), void *arg)
+{
+  buffer->__routine = routine;
+  buffer->__arg = arg;
+  buffer->__canceltype = -1;
+  buffer->__prev = cleanup_handlers;
+  cleanup_handlers = buffer;
+  pthread_setcanceltype (PTHREAD_CANCEL_DEFERRED, &(buffer->__canceltype));
+}
+
+void
+_pthread_cleanup_pop (struct _pthread_cleanup_buffer *buffer, int execute)
+{
+  cleanup_handlers = buffer->__prev;
+  if (execute && buffer->__routine)
+    {
+      (*(buffer->__routine)) (buffer->__arg);
+    }
+}
+
+void
+_pthread_cleanup_pop_restore (struct _pthread_cleanup_buffer *buffer,
+                              int execute)
+{
+  cleanup_handlers = buffer->__prev;
+  if (execute && buffer->__routine)
+    {
+      (*(buffer->__routine)) (buffer->__arg);
+    }
+  pthread_setcanceltype (buffer->__canceltype, 0);
 }

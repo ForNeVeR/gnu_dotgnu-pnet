@@ -186,7 +186,24 @@ typedef struct
 typedef struct
   {
     int __pshared;
+    clockid_t __clock_id;
   } pthread_condattr_t;
+
+/*
+ * Cleanup buffers.
+ */
+struct _pthread_cleanup_buffer
+  {
+    void (*__routine) (void *);
+    void *__arg;
+    int __canceltype;
+    struct _pthread_cleanup_buffer *__prev;
+  };
+
+/*
+ * Thread-specific storage key.
+ */
+typedef long long pthread_key_t;
 
 /*
  * Thread functions.
@@ -210,6 +227,7 @@ extern int pthread_setschedparam (pthread_t __target_thread, int __policy,
 extern int pthread_getschedparam (pthread_t __target_thread,
 				  int *__restrict __policy,
 				  struct sched_param *__restrict __param);
+extern int pthread_setschedprio (pthread_t __thread, int __prio);
 
 /*
  * Thread attribute functions.
@@ -308,6 +326,11 @@ extern int pthread_condattr_getpshared (__const pthread_condattr_t *
 					int *__restrict __pshared);
 extern int pthread_condattr_setpshared (pthread_condattr_t *__attr,
 					int __pshared);
+extern int pthread_condattr_getclock (__const pthread_condattr_t *
+				      __restrict __attr,
+				      clockid_t *__restrict __clock_id);
+extern int pthread_condattr_setclock (pthread_condattr_t *__attr,
+				      clockid_t __clock_id);
 
 /*
  * Spin lock functions.
@@ -323,6 +346,48 @@ extern int pthread_spin_unlock (pthread_spinlock_t *__lock);
  */
 extern int pthread_once (pthread_once_t *__once_control,
                          void (*__init_routine) (void));
+
+/*
+ * Cleanup handlers.
+ */
+extern void _pthread_cleanup_push (struct _pthread_cleanup_buffer *__buffer,
+				   void (*__routine) (void *), void *__arg);
+extern void _pthread_cleanup_push_defer (struct _pthread_cleanup_buffer *
+                                         __buffer, void (*__routine) (void *),
+					 void *__arg);
+extern void _pthread_cleanup_pop (struct _pthread_cleanup_buffer *__buffer,
+                  		  int __execute);
+extern void _pthread_cleanup_pop_restore (struct _pthread_cleanup_buffer *
+                                          __buffer, int __execute);
+#define pthread_cleanup_push(routine,arg)	\
+		{ struct _pthread_cleanup_buffer _buffer;	\
+		  _pthread_cleanup_push (&_buffer, (routine), (arg));
+#define pthread_cleanup_pop(execute)	\
+		_pthread_cleanup_pop (&_buffer, (execute)); }
+#define pthread_cleanup_push_defer_np(routine,arg)	\
+		{ struct _pthread_cleanup_buffer _buffer;	\
+		  _pthread_cleanup_push_defer (&_buffer, (routine), (arg));
+#define pthread_cleanup_pop_restore_np(execute)	\
+		_pthread_cleanup_pop_restore (&_buffer, (execute)); }
+
+/*
+ * Thread-specific storage functions.
+ */
+int pthread_key_create (pthread_key_t *__key,
+                        void (*__destr_function) (void *));
+int pthread_key_delete (pthread_key_t __key);
+int pthread_setspecific (pthread_key_t __key, __const void *__pointer);
+void *pthread_getspecific (pthread_key_t __key);
+
+/*
+ * Other functions.
+ */
+extern int pthread_getconcurrency (void);
+extern int pthread_setconcurrency (int __new_level);
+extern int pthread_getcpuclockid (pthread_t __thread, clockid_t *__clock_id);
+extern int pthread_atfork (void (*__prepare) (void), void (*__parent) (void),
+			   void (*__child) (void));
+extern void pthread_kill_other_threads_np (void);
 
 __END_DECLS
 

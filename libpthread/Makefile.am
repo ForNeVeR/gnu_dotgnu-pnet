@@ -9,9 +9,11 @@ noinst_LIBRARIES = libPthread.a
 libPthread_a_SOURCES = \
 			pthread_cond.c \
 			pthread_glue.cs \
+			pthread_key.c \
 			pthread_kill.c \
 			pthread_mutex.c \
 			pthread_once.c \
+			pthread_other.c \
 			pthread_thread.c
 
 AM_CFLAGS = -I$(top_srcdir)/include \

@@ -12,6 +12,9 @@
 	* doc/pnettools.texi, cscc/cscc.1: document the "-gtk" and
 	"-gnome" options.
 
+	* doc/gtk-sharp.HOWTO: add some documentation for how to use
+	Gtk# with Portable.NET.
+
 2002-07-02  Gopal.V  <gopalv82@symonds.net>
 
 	* doc/Doxyfile: Add Doxygen configuration file (contributed

@@ -1,4 +1,11 @@
 
+2005-01-15  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/Test.build: exclude dir DataProviderTests from tests for the
+	System.Data assembly.
+
+	* copy-mcs.sh: rename SqlSharp to sqlsharp.
+
 2004-12-15  Klaus Treichel  <ktreichel@web.de>
 
 	* class/Novell.Directory.Ldap/Novell.Directory.Ldap.build,

@@ -555,6 +555,7 @@
 				<excludes name="System.Data.Common/**.cs"/>
 				<excludes name="System.Data.Odbc/**.cs"/>
 				<excludes name="System.Data.SqlClient/**.cs"/>
+				<excludes name="DataProviderTests/**.cs"/>
 				<excludes name="*.cs"/>
 			</sources>
 

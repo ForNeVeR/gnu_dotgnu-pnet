@@ -99,6 +99,15 @@ internal class FileMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool SetLength(IntPtr handle, long value);
 
+	// Lock a region of a file.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool Lock(IntPtr handle, long position, long length);
+
+	// Unlock a region of a file.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool Unlock
+			(IntPtr handle, long position, long length);
+
 	// Get the last-occurring system error code for the current thread.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Errno GetErrno();

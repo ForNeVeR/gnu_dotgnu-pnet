@@ -4,6 +4,9 @@
 	* resources/en_US/runtime/IO.txt, runtime/System/IO/MemoryStream.cs:
 	rewrite the "System.IO.MemoryStream" class.
 
+	* runtime/Platform/FileMethods.cs, runtime/System/IO/FileStream.cs:
+	add internalcalls to support "FileStream.Lock" and "FileStream.Unlock".
+
 2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/Directory.cs, runtime/System/IO/Path.cs,

@@ -839,7 +839,6 @@ public class FileStream : Stream
 			}
 
 	// Lock a region of the file stream.
-	[TODO]
 	public virtual void Lock(long position, long length)
 			{
 				if(position < 0)
@@ -858,12 +857,15 @@ public class FileStream : Stream
 					{
 						throw new ObjectDisposedException(_("IO_StreamClosed"));
 					}
-					// TODO
+					if(!FileMethods.Lock(handle, position, length))
+					{
+						throw new IOException
+							(FileMethods.GetErrno(), _("IO_LockFailed"));
+					}
 				}
 			}
 
 	// Unlock a region of the file stream.
-	[TODO]
 	public virtual void Unlock(long position, long length)
 			{
 				if(position < 0)
@@ -882,7 +884,11 @@ public class FileStream : Stream
 					{
 						throw new ObjectDisposedException(_("IO_StreamClosed"));
 					}
-					// TODO
+					if(!FileMethods.Unlock(handle, position, length))
+					{
+						throw new IOException
+							(FileMethods.GetErrno(), _("IO_UnlockFailed"));
+					}
 				}
 			}
 

@@ -51,7 +51,7 @@ extern	"C" {
 #define	C_ALIGNMOD_PTR_1		(1<<16)		/* Pointer is byte-aligned */
 #define	C_ALIGNMOD_PTR_2		(1<<17)		/* Pointer is short-aligned */
 #define	C_ALIGNMOD_PTR_4		(1<<18)		/* Pointer is int-aligned */
-#define	C_ALIGNMOD_PTR_8		(1<<19)		/* Pointer is long-aligned */
+#define	C_ALIGNMOD_BITFLD_BIG	(1<<19)		/* Bit fields are big endian */
 
 /*
  * Size and alignment values for the standard C types.
@@ -79,6 +79,11 @@ extern ILUInt32 CTypePtrAlign;
  * Detected alignment modifiers.
  */
 extern ILUInt32 CTypeAlignModifiers;
+
+/*
+ * Flag that is set to indicate if native layout rules are being used.
+ */
+extern int CTypeNativeLayout;
 
 /*
  * Detect the size and alignment of the standard C types.

@@ -44,11 +44,21 @@ ILUInt32 CTypeNativeIntAlign;
 ILUInt32 CTypePtrSize;
 ILUInt32 CTypePtrAlign;
 ILUInt32 CTypeAlignModifiers;
+int CTypeNativeLayout;
 
 _IL_ALIGN_CHECK_TYPE(short, short);
 
+typedef union
+{
+	int	value;
+	int bit : 1;
+
+} BitFieldTest;
+
 static void TypeSizeDetect(int isNative, int is32BitOnly)
 {
+	BitFieldTest test;
+
 	if(isNative)
 	{
 		/* Detect the memory model from the machine that we are running on */
@@ -64,12 +74,13 @@ static void TypeSizeDetect(int isNative, int is32BitOnly)
 		CTypeFloatSize = _IL_ALIGN_FOR_TYPE(float);
 		CTypeDoubleSize = sizeof(ILDouble);
 		CTypeDoubleAlign = _IL_ALIGN_FOR_TYPE(double);
-		CTypeLongDoubleSize = sizeof(ILNativeFloat);
+		CTypeLongDoubleSize = CTYPE_DYNAMIC;
 		CTypeLongDoubleAlign = _IL_ALIGN_FOR_TYPE(long_double);
 		CTypeNativeIntSize = sizeof(void *);
 		CTypeNativeIntAlign = _IL_ALIGN_FOR_TYPE(void_p);
 		CTypePtrSize = sizeof(void *);
 		CTypePtrAlign = _IL_ALIGN_FOR_TYPE(void_p);
+		CTypeNativeLayout = 1;
 
 		/* Determine the modifier flags */
 		CTypeAlignModifiers = 0;
@@ -149,9 +160,10 @@ static void TypeSizeDetect(int isNative, int is32BitOnly)
 		{
 			CTypeAlignModifiers |= C_ALIGNMOD_PTR_4;
 		}
-		else if(CTypePtrAlign == 8 && is32BitOnly)
+		test.value = 1;
+		if(!(test.bit))
 		{
-			CTypeAlignModifiers |= C_ALIGNMOD_PTR_8;
+			CTypeAlignModifiers |= C_ALIGNMOD_BITFLD_BIG;
 		}
 	}
 	else if(is32BitOnly)
@@ -176,6 +188,7 @@ static void TypeSizeDetect(int isNative, int is32BitOnly)
 		CTypePtrSize = 4;
 		CTypePtrAlign = 4;
 		CTypeAlignModifiers = 0;
+		CTypeNativeLayout = 0;
 	}
 	else
 	{
@@ -199,6 +212,7 @@ static void TypeSizeDetect(int isNative, int is32BitOnly)
 		CTypePtrSize = 8;
 		CTypePtrAlign = 8;
 		CTypeAlignModifiers = 0;
+		CTypeNativeLayout = 0;
 	}
 }
 

@@ -112,6 +112,23 @@ ILEngineType _ILTypeToEngineType(ILType *type);
 	ILType *type;
 }
 %node ILM_ReturnCtor ILM_Unary
+%node ILM_Convert ILM_Unary =
+{
+	int opcode;
+}
+%node ILM_ConvertCustom ILM_Unary =
+{
+	int opcode;
+	ILUInt32 customNameLen;
+	ILUInt32 customCookieLen;
+	void *customName;
+	void *customCookie;
+}
+%node ILM_AddressOf ILM_Unary =
+{
+	ILType *type;
+	%nocreate ILUInt32 localNum = {IL_MAX_UINT32};
+}
 
 /*
  * Push an argument value onto the stack in a form ready for "libffi".
@@ -233,6 +250,14 @@ ILM_AllocLocals(ILM_Binary)
 	ILM_AllocLocals(node->expr1, context);
 	ILM_AllocLocals(node->expr2, context);
 }
+ILM_AllocLocals(ILM_AddressOf)
+{
+	ILM_AllocLocals(node->expr, context);
+	if(!ILM_isa(node->expr, ILM_LValue))
+	{
+		node->localNum = ILCoderAllocExtraLocal(context->coder, node->type);
+	}
+}
 ILM_AllocLocals(ILM_FfiArgument)
 {
 	ILM_AllocLocals(node->expr, context);
@@ -311,6 +336,11 @@ ILM_ClearLocals(ILM_Binary)
 {
 	ILM_ClearLocals(node->expr1, context);
 	ILM_ClearLocals(node->expr2, context);
+}
+ILM_ClearLocals(ILM_AddressOf)
+{
+	ILM_ClearLocals(node->expr, context);
+	node->localNum = IL_MAX_UINT32;
 }
 ILM_ClearLocals(ILM_FfiArgument)
 {
@@ -667,6 +697,45 @@ ILM_GenValue(ILM_ReturnCtor)
 }
 
 /*
+ * Generate value code for a CVM conversion opcode.
+ */
+ILM_GenValue(ILM_Convert)
+{
+	ILM_GenValue(node->expr, context);
+	ILCoderConvert(context->coder, node->opcode);
+}
+
+/*
+ * Generate value code for a custom marshalling conversion.
+ */
+ILM_GenValue(ILM_ConvertCustom)
+{
+	ILM_GenValue(node->expr, context);
+	ILCoderConvertCustom(context->coder, node->opcode,
+						 node->customNameLen, node->customCookieLen,
+						 node->customName, node->customCookie);
+}
+
+/*
+ * Generate value code for an "address of" operator.
+ */
+ILM_GenValue(ILM_AddressOf)
+{
+	if(ILM_isa(node->expr, ILM_LValue))
+	{
+		ILM_GenRef((ILM_LValue *)(node->expr), context);
+	}
+	else
+	{
+		/* Store the value in a local variable before taking its address */
+		ILM_GenValue(node->expr, context);
+		ILCoderStoreLocal(context->coder, node->localNum,
+						  _ILTypeToEngineType(node->type), node->type);
+		ILCoderAddrOfLocal(context->coder, node->localNum);
+	}
+}
+
+/*
  * Generate code for a "try ... finally ..." block.
  */
 ILM_GenValue(ILM_TryFinally)
@@ -842,9 +911,112 @@ static void ShutdownNativeMethod(ILM_State *state)
 static ILM_Node *MarshalNativeParameter(ILM_Context *context, ILM_State *state,
 										unsigned long paramNum,
 										ILType *argType, ILM_Node *node,
-										ILM_Node *cleanup)
+										ILM_Node *cleanup, ILPInvoke *pinv)
 {
-	/* TODO */
+#ifdef IL_CONFIG_PINVOKE
+	ILUInt32 marshalType;
+	char *customName;
+	int customNameLen;
+	char *customCookie;
+	int customCookieLen;
+#endif
+
+	/* Resolve enumerated type references first */
+	argType = ILTypeGetEnumType(argType);
+
+	/* Value types are passed by reference to internalcalls */
+	if(context->isInternal && ILType_IsValueType(argType))
+	{
+		node = ILM_AddressOf_create(state, node, argType);
+	}
+
+#ifdef IL_CONFIG_PINVOKE
+
+	/* Process the PInvoke marshalling information */
+	if(!(context->isInternal) &&
+	   (marshalType = ILPInvokeGetMarshalType(pinv, context->method, paramNum,
+	   										  &customName, &customNameLen,
+											  &customCookie,
+											  &customCookieLen))
+			!= IL_META_MARSHAL_DIRECT)
+	{
+		switch(marshalType)
+		{
+			case IL_META_MARSHAL_ANSI_STRING:
+			{
+				node = ILM_Convert_create(state, node, COP_PREFIX_STR2ANSI);
+			}
+			break;
+
+			case IL_META_MARSHAL_UTF8_STRING:
+			{
+				node = ILM_Convert_create(state, node, COP_PREFIX_STR2UTF8);
+			}
+			break;
+
+			case IL_META_MARSHAL_UTF16_STRING:
+			{
+				node = ILM_Convert_create(state, node, COP_PREFIX_STR2UTF16);
+			}
+			break;
+
+			case IL_META_MARSHAL_FNPTR:
+			{
+				node = ILM_Convert_create
+					(state, node, COP_PREFIX_DELEGATE2FNPTR);
+			}
+			break;
+
+			case IL_META_MARSHAL_ARRAY:
+			{
+				node = ILM_Convert_create(state, node, COP_PREFIX_ARRAY2PTR);
+			}
+			break;
+
+			case IL_META_MARSHAL_REF_ANSI_ARRAY:
+			{
+				node = ILM_Convert_create
+					(state, node, COP_PREFIX_REFARRAY2ANSI);
+			}
+			break;
+
+			case IL_META_MARSHAL_REF_UTF8_ARRAY:
+			{
+				node = ILM_Convert_create
+					(state, node, COP_PREFIX_REFARRAY2UTF8);
+			}
+			break;
+
+			case IL_META_MARSHAL_CUSTOM:
+			{
+				node = ILM_ConvertCustom_create
+					(state, node, COP_PREFIX_TOCUSTOM,
+				     (ILUInt32)(ILInt32)customNameLen,
+				     (ILUInt32)(ILInt32)customCookieLen,
+				     (void *)customName,
+				     (void *)customCookie);
+			}
+			break;
+
+			case IL_META_MARSHAL_ANSI_ARRAY:
+			{
+				node = ILM_Convert_create
+					(state, node, COP_PREFIX_ARRAY2ANSI);
+			}
+			break;
+
+			case IL_META_MARSHAL_UTF8_ARRAY:
+			{
+				node = ILM_Convert_create
+					(state, node, COP_PREFIX_ARRAY2UTF8);
+			}
+			break;
+		}
+	}
+
+#endif /* IL_CONFIG_PINVOKE */
+
+	/* Return the adjusted node to the caller */
 	return node;
 }
 
@@ -877,6 +1049,7 @@ static ILM_Node *CompileNativeMethod(ILM_Context *context, ILM_State *state,
 	ILUInt32 argNum;
 	ILType *argType;
 	ILM_Node *argNode;
+	ILPInvoke *pinv;
 
 	/* Create the main compound statement for the method */
 	compound = ILM_Compound_create(state);
@@ -889,6 +1062,16 @@ static ILM_Node *CompileNativeMethod(ILM_Context *context, ILM_State *state,
 
 	/* Push the "this" information next */
 	ILM_Compound_Add(state, compound, ILM_FfiThis_create(state));
+
+	/* Get the PInvoke information for the method */
+	if(context->isInternal)
+	{
+		pinv = 0;
+	}
+	else
+	{
+		pinv = ILPInvokeFind(context->method);
+	}
 
 	/* Create a local variable to hold the return value */
 	/* TODO: the type may be different if it is structure-marshalled */
@@ -927,7 +1110,7 @@ static ILM_Node *CompileNativeMethod(ILM_Context *context, ILM_State *state,
 			argNode = ILM_Argument_create(state, argType, argNum);
 		}
 		argNode = MarshalNativeParameter
-			(context, state, paramNum, argType, argNode, cleanup);
+			(context, state, paramNum, argType, argNode, cleanup, pinv);
 		ILM_Compound_Add(state, compound, argNode);
 		++argNum;
 	}

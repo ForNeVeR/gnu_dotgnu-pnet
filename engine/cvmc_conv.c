@@ -671,4 +671,27 @@ static void CVMCoder_ToPointer(ILCoder *coder, ILEngineType type1,
 #endif
 }
 
+/*
+ * Output an instruction to convert the top of stack according
+ * to a PInvoke marshalling rule.
+ */
+static void CVMCoder_Convert(ILCoder *coder, int opcode)
+{
+	CVMP_OUT_NONE(opcode);
+}
+
+/*
+ * Output an instruction to convert the top of stack according
+ * to a custom marshalling rule.
+ */
+static void CVMCoder_ConvertCustom(ILCoder *coder, int opcode,
+						    	   ILUInt32 customNameLen,
+								   ILUInt32 customCookieLen,
+						    	   void *customName, void *customCookie)
+{
+	CVMP_OUT_WORD2_PTR2(COP_PREFIX_TOCUSTOM,
+					    customNameLen, customCookieLen,
+					    customName, customCookie);
+}
+
 #endif	/* IL_CVMC_CODE */

@@ -752,6 +752,20 @@ struct _tagILCoderClass
 	void (*checkNull)(ILCoder *coder);
 
 	/*
+	 * Output an instruction to convert the top of stack according
+	 * to a PInvoke marshalling rule.
+	 */
+	void (*convert)(ILCoder *coder, int opcode);
+
+	/*
+	 * Output an instruction to convert the top of stack according
+	 * to a custom marshalling rule.
+	 */
+	void (*convertCustom)(ILCoder *coder, int opcode,
+						  ILUInt32 customNameLen, ILUInt32 customCookieLen,
+						  void *customName, void *customCookie);
+
+	/*
 	 * Sentinel string to catch missing methods in class tables.
 	 */
 	const char *sentinel;
@@ -1013,6 +1027,14 @@ struct _tagILCoderClass
 											  (useRawCalls), (hasReturn)))
 #define	ILCoderCheckNull(coder) \
 			((*((coder)->classInfo->checkNull))((coder)))
+#define	ILCoderConvert(coder,opcode) \
+			((*((coder)->classInfo->convert))((coder), (opcode)))
+#define	ILCoderConvertCustom(coder,opcode,customNameLen,customCookieLen,customName,customCookie) \
+			((*((coder)->classInfo->convertCustom))((coder), (opcode), \
+													(customNameLen), \
+													(customCookieLen), \
+													(customName), \
+													(customCookie)))
 #define	ILCoderMarkEnd(coder) \
 			((*((coder)->classInfo->markEnd))((coder)))
 

@@ -10,6 +10,9 @@
 	start adding support for a treecc-based marshalling system,
 	to eventually replace the "CVMCoder_SetupExtern" mess.
 
+	* engine/cvmc.c, engine/cvmc_conv.c, engine/gen_marshal.tc,
+	engine/null_coder.c, include/il_coder.h: parameter marshalling.
+
 2003-07-27  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_type.c: Avoid boxing conversions when dealing with

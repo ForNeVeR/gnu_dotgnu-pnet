@@ -398,6 +398,15 @@ static void Coder_CallFfi(ILCoder *coder, void *fn, void *cif,
 static void Coder_CheckNull(ILCoder *coder)
 {
 }
+static void Coder_Convert(ILCoder *coder, int opcode)
+{
+}
+static void Coder_ConvertCustom(ILCoder *coder, int opcode,
+						    	ILUInt32 customNameLen,
+								ILUInt32 customCookieLen,
+						    	void *customName, void *customCookie)
+{
+}
 
 /*
  * Null coder class and instance.
@@ -503,6 +512,8 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_PushRawArgPointer,
 	Coder_CallFfi,
 	Coder_CheckNull,
+	Coder_Convert,
+	Coder_ConvertCustom,
 	"sentinel"
 };
 ILCoder _ILNullCoder = {&_ILNullCoderClass};

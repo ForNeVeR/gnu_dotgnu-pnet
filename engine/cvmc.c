@@ -452,6 +452,8 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_PushRawArgPointer,
 	CVMCoder_CallFfi,
 	CVMCoder_CheckNull,
+	CVMCoder_Convert,
+	CVMCoder_ConvertCustom,
 	"sentinel"
 };
 

@@ -1,3 +1,14 @@
+
+2003-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/Other/CP20838.cs, I18N/Other/ibm-838.ucm, I18N/Rare/CP20105.cs,
+	I18N/Rare/CP20106.cs, I18N/Rare/CP20107.cs, I18N/Rare/CP20108.cs,
+	I18N/Rare/CP20423.cs, I18N/Rare/CP20880.cs, I18N/Rare/CP20905.cs,
+	I18N/Rare/CP20924.cs, I18N/Rare/ia5-20105.ucm, I18N/Rare/ia5-20106.ucm,
+	I18N/Rare/ia5-20107.ucm, I18N/Rare/ia5-20108.ucm,
+	I18N/Rare/ibm-1154.ucm, I18N/Rare/ibm-20924.ucm, I18N/tools/cvt.sh:
+	new EBCDIC and IA5 code pages.
+
 2003-08-29  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Xsharp/DrawingGraphics.cs : maximum internal coord is

@@ -405,6 +405,34 @@ ${UCM2CP} --region West --page 10082 --wpage 1252 \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save West/mac-10082.ucm >West/CP10082.cs
 
+${UCM2CP} --region Rare --page 20105 --wpage 1252 \
+	--name 'IA5 IRV International Alphabet No. 5 (7-bit)' \
+	--webname windows-20105 --bodyname windows-20105 \
+	--headername windows-20105 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Rare/ia5-20105.ucm >Rare/CP20105.cs
+
+${UCM2CP} --region Rare --page 20106 --wpage 1252 \
+	--name 'IA5 German (7-bit)' \
+	--webname windows-20106 --bodyname windows-20106 \
+	--headername windows-20106 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Rare/ia5-20106.ucm >Rare/CP20106.cs
+
+${UCM2CP} --region Rare --page 20107 --wpage 1252 \
+	--name 'IA5 Swedish (7-bit)' \
+	--webname windows-20107 --bodyname windows-20107 \
+	--headername windows-20107 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Rare/ia5-20107.ucm >Rare/CP20107.cs
+
+${UCM2CP} --region Rare --page 20108 --wpage 1252 \
+	--name 'IA5 Norwegian (7-bit)' \
+	--webname windows-20108 --bodyname windows-20108 \
+	--headername windows-20108 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Rare/ia5-20108.ucm >Rare/CP20108.cs
+
 ${UCM2CP} --region Rare --page 20273 --wpage 1252 \
 	--name 'IBM EBCDIC (Germany)' \
 	--webname IBM273 --bodyname IBM273 \
@@ -468,12 +496,26 @@ ${UCM2CP} --region Rare --page 20420 --wpage 1256 \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save Rare/ibm-420.ucm >Rare/CP20420.cs
 
+${UCM2CP} --region Rare --page 20423 --wpage 1253 \
+	--name 'IBM EBCDIC (Greek)' \
+	--webname IBM423 --bodyname IBM423 \
+	--headername IBM423 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Rare/ibm-875.ucm >Rare/CP20423.cs
+
 ${UCM2CP} --region Rare --page 20424 --wpage 1255 \
 	--name 'IBM EBCDIC (Hebrew)' \
 	--webname IBM424 --bodyname IBM424 \
 	--headername IBM424 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save Rare/ibm-424.ucm >Rare/CP20424.cs
+
+${UCM2CP} --region Other --page 20838 --wpage 874 \
+	--name 'IBM EBCDIC (Thai)' \
+	--webname IBM838 --bodyname IBM838 \
+	--headername IBM838 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Other/ibm-838.ucm >Other/CP20838.cs
 
 ${UCM2CP} --region Other --page 20866 --wpage 1251 \
 	--name 'Cyrillic (KOI8-R)' \
@@ -486,6 +528,27 @@ ${UCM2CP} --region Rare --page 20871 --wpage 1252 \
 	--headername IBM871 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save Rare/ibm-871.ucm >Rare/CP20871.cs
+
+${UCM2CP} --region Rare --page 20880 --wpage 1257 \
+	--name 'IBM EBCDIC (Cyrillic)' \
+	--webname IBM1154 --bodyname IBM1154 \
+	--headername IBM1154 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Rare/ibm-1154.ucm >Rare/CP20880.cs
+
+${UCM2CP} --region Rare --page 20905 --wpage 1254 \
+	--name 'IBM EBCDIC (Turkish)' \
+	--webname IBM905 --bodyname IBM905 \
+	--headername IBM905 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Rare/ibm-1026.ucm >Rare/CP20905.cs
+
+${UCM2CP} --region Rare --page 20924 --wpage 1252 \
+	--name 'IBM EBCDIC (Open Systems Latin 1 with Euro)' \
+	--webname IBM20924 --bodyname IBM20924 \
+	--headername IBM20924 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Rare/ibm-20924.ucm >Rare/CP20924.cs
 
 ${UCM2CP} --region Rare --page 21025 --wpage 1257 \
 	--name 'IBM EBCDIC (Cyrillic - Serbian, Bulgarian)' \
@@ -576,18 +639,8 @@ exit 0
 #  20003 IBM5550 - Taiwan
 #  20004 TeleText - Taiwan
 #  20005 Wang - Taiwan
-#  20105 IA5 IRV International Alphabet No. 5 (7-bit)
-#  20106 IA5 German (7-bit)
-#  20107 IA5 Swedish (7-bit)
-#  20108 IA5 Norwegian (7-bit)
-#  20261 T.61
 #  20269 ISO 6937 Non-Spacing Accent
-#  20423 IBM EBCDIC - Greek
 #  20833 IBM EBCDIC - Korean Extended
-#  20838 IBM EBCDIC - Thai
-#  20880 IBM EBCDIC - Cyrillic (Russian)
-#  20905 IBM EBCDIC - Turkish
-#  20924 IBM EBCDIC - Latin-1/Open System (1047 + Euro symbol)
 #  20932 JIX X 0208-1990 & 0212-1990
 #  20936 Simplified Chinese (GB2312)
 #  21027 Extended Alpha Lowercase

@@ -622,12 +622,12 @@ ILObject *_ILGetCurrentClrThread(ILExecThread *thread);
 /*
  *	Creates a monitor used by the execution engine.
  */
-ILExecMonitor *ILExecMonitorCreate();
+ILExecMonitor *ILExecMonitorCreate(void);
 
 /*
  *	Destroys a monitor used by the execution engine.
  */
-void ILExecMonitorDestory(ILExecMonitor *monitor);
+void ILExecMonitorDestroy(ILExecMonitor *monitor);
 
 #ifdef	__cplusplus
 };

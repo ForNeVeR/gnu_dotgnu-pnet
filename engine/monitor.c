@@ -27,7 +27,7 @@
 extern	"C" {
 #endif
 
-ILExecMonitor *ILExecMonitorCreate()
+ILExecMonitor *ILExecMonitorCreate(void)
 {
 	ILExecMonitor *monitor;
 

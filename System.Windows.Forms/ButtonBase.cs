@@ -366,8 +366,6 @@ public abstract class ButtonBase : Control
 					(graphics, x, y, width, height, state,
 					 ForeColor, BackColor, isDefault);
 
-				// TODO: draw the image.
-
 				// Draw the focus rectangle.
 				if(hasFocus)
 				{
@@ -375,6 +373,90 @@ public abstract class ButtonBase : Control
 						(graphics, new Rectangle(x + 4, y + 4,
 												 width - 8, height - 8),
 						 ForeColor, BackColor);
+				}
+
+				// Draw the button image.
+				Image image = this.image;
+				if(image == null && imageList != null)
+				{
+					image = imageList.Images[imageIndex];
+				}
+				if(image != null)
+				{
+					int imageX = x;
+					int imageY = y;
+					int imageWidth = image.Width;
+					int imageHeight = image.Height;
+					switch(imageAlign)
+					{
+						case ContentAlignment.TopLeft: break;
+
+						case ContentAlignment.TopCenter:
+						{
+							imageX += (width - imageWidth) / 2;
+						}
+						break;
+
+						case ContentAlignment.TopRight:
+						{
+							imageX += width - imageWidth;
+						}
+						break;
+
+						case ContentAlignment.MiddleLeft:
+						{
+							imageY += (height - imageHeight) / 2;
+						}
+						break;
+
+						case ContentAlignment.MiddleCenter:
+						{
+							imageX += (width - imageWidth) / 2;
+							imageY += (height - imageHeight) / 2;
+						}
+						break;
+
+						case ContentAlignment.MiddleRight:
+						{
+							imageX += width - imageWidth;
+							imageY += (height - imageHeight) / 2;
+						}
+						break;
+
+						case ContentAlignment.BottomLeft:
+						{
+							imageY += height - imageHeight;
+						}
+						break;
+
+						case ContentAlignment.BottomCenter:
+						{
+							imageX += (width - imageWidth) / 2;
+							imageY += height - imageHeight;
+						}
+						break;
+
+						case ContentAlignment.BottomRight:
+						{
+							imageX += width - imageWidth;
+							imageY += height - imageHeight;
+						}
+						break;
+					}
+					if(pressed)
+					{
+						++imageX;
+						++imageY;
+					}
+					if(Enabled)
+					{
+						graphics.DrawImage(image, imageX, imageY);
+					}
+					else
+					{
+						ControlPaint.DrawImageDisabled
+							(graphics, image, imageX, imageY, BackColor);
+					}
 				}
 
 				// Get the text layout rectangle.
@@ -453,17 +535,20 @@ public abstract class ButtonBase : Control
 				RedrawIfChanged();
 				base.OnLeave (e);
 			}
-
-	[TODO]
 	protected override void OnKeyDown(KeyEventArgs e)
 			{
-				// TODO
+				if(e.KeyData == Keys.Enter || e.KeyData == Keys.Space)
+				{
+					if(Enabled)
+					{
+						OnClick(EventArgs.Empty);
+						e.Handled = true;
+					}
+				}
 				base.OnKeyDown(e);
 			}
-	[TODO]
 	protected override void OnKeyUp(KeyEventArgs e)
 			{
-				// TODO
 				base.OnKeyUp(e);
 			}
 

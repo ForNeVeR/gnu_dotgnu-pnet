@@ -1543,7 +1543,8 @@ internal class DefaultThemePainter : IThemePainter
 				(Graphics graphics, Image image,
 				 int x, int y, Color background)
 			{
-				// TODO
+				// TODO: create the greyed version of the image.
+				graphics.DrawImage(image, x, y);
 			}
 
 	// Draw a locked selection frame.

@@ -1,6 +1,6 @@
 /*
  * InstallUtil.cs - Implementation of the
- *	    "System.Configuration.Install.InstallUtil" class.
+ *	    "System.Configuration.InstallUtil" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,8 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Configuration.Install
+namespace System.Configuration
 {
+
+using System.Configuration.Install;
 
 // This class implements the .NET assembly installation utility,
 // which is typically called "InstallUtil.exe".  We call it
@@ -51,4 +53,4 @@ public class InstallUtil
 
 }; // class InstallUtil
 
-}; // namespace System.Configuration.Install
+}; // namespace System.Configuration

@@ -8,6 +8,9 @@
 	System/Configuration/Provider/ProviderCollection.cs: add 1.2
 	features to "System.Configuration" and "System.Configuration.Provider".
 
+	* System.Configuration.Install/InstallUtil.cs: "InstallUtil" should
+	be in the "System.Configuration" namespace.
+
 2003-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, JScript/JScript.build, JScript/Makefile.am,

@@ -317,9 +317,13 @@ public sealed class DrawingToolkit : IToolkit
 	// Create the default system font on this platform.
 	public System.Drawing.Font CreateDefaultFont()
 			{
+				return new System.Drawing.Font
+					(new FontFamily(GenericFontFamilies.SansSerif), 8.25f);
+			#if false
 				// X applications typically use a 12pt font by default.
 				return new System.Drawing.Font
 					(new FontFamily(GenericFontFamilies.SansSerif), 12.0f);
+			#endif
 			}
 
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.

@@ -261,6 +261,10 @@ public class Font
 	public static Font CreateFont
 				(String family, int pointSize, FontStyle style)
 			{
+				// Determine if we are running in a Latin1 locale.
+				bool latin1 = IsLatin1();
+
+#if false
 				// Do we have a registered font for this name, size, and style?
 				RegisteredFont font;
 				lock(typeof(Font))
@@ -278,9 +282,29 @@ public class Font
 						font = font.next;
 					}
 				}
-				if(font != null)
+				if(latin1 && font != null)
 				{
-					// TODO: create a font based on a registered font image.
+					// Create the font image if necessary.
+					if(font.loadedData == IntPtr.Zero)
+					{
+						font.loadedData = Xlib.XSharpPCFCreateImage
+							(font.data, (uint)(font.data.Length));
+					}
+
+					// Create a PCF font based on a registered font image.
+					if(font.loadedData != IntPtr.Zero)
+					{
+						return new PCFFont
+							(family, pointSize, style, font.loadedData);
+					}
+				}
+#endif
+
+				// Re-adjust point sizes for Windows vs X differences.
+				// "Microsoft Sans Serif 8.25" is approx "Helvetica 12".
+				if(pointSize == 82)
+				{
+					pointSize = 120;
 				}
 
 				// Search for a regular X font that matches the conditions.
@@ -292,7 +316,7 @@ public class Font
 				{
 					return new XftFont(family, pointSize, style);
 				}
-				else if(IsLatin1())
+				else if(latin1)
 				{
 					return new FontStructFont(family, pointSize, style);
 				}
@@ -591,13 +615,13 @@ public class Font
 				descent = overall_logical.height + overall_logical.y;
 
 				// Increase the descent to account for underlining.
-				// We always draw the underline two pixels below
+				// We always draw the underline on pixel below
 				// the font base line.
 				if((style & FontStyle.Underlined) != 0)
 				{
-					if(descent < 3)
+					if(descent < 2)
 					{
-						descent = 3;
+						descent = 2;
 					}
 				}
 			}
@@ -770,13 +794,13 @@ public class Font
 				maxWidth = max_logical.width;
 
 				// Increase the descent to account for underlining.
-				// We always draw the underline two pixels below
+				// We always draw the underline one pixel below
 				// the font base line.
 				if((style & FontStyle.Underlined) != 0)
 				{
-					if(descent < 3)
+					if(descent < 2)
 					{
-						descent = 3;
+						descent = 2;
 					}
 				}
 
@@ -913,13 +937,13 @@ public class Font
 					maxWidth = max_logical.width;
 
 					// Increase the descent to account for underlining.
-					// We always draw the underline two pixels below
+					// We always draw the underline one pixel below
 					// the font base line.
 					if((style & FontStyle.Underlined) != 0)
 					{
-						if(descent < 3)
+						if(descent < 2)
 						{
-							descent = 3;
+							descent = 2;
 						}
 					}
 
@@ -988,13 +1012,13 @@ public class Font
 					descent = overall_logical.height + overall_logical.y;
 
 					// Increase the descent to account for underlining.
-					// We always draw the underline two pixels below
+					// We always draw the underline one pixel below
 					// the font base line.
 					if((style & FontStyle.Underlined) != 0)
 					{
-						if(descent < 3)
+						if(descent < 2)
 						{
-							descent = 3;
+							descent = 2;
 						}
 					}
 				}
@@ -1075,13 +1099,13 @@ public class Font
 					maxWidth = max_logical.width;
 
 					// Increase the descent to account for underlining.
-					// We always draw the underline two pixels below
+					// We always draw the underline one pixel below
 					// the font base line.
 					if((style & FontStyle.Underlined) != 0)
 					{
-						if(descent < 3)
+						if(descent < 2)
 						{
-							descent = 3;
+							descent = 2;
 						}
 					}
 
@@ -1146,13 +1170,13 @@ public class Font
 					descent = overall_logical.height + overall_logical.y;
 
 					// Increase the descent to account for underlining.
-					// We always draw the underline two pixels below
+					// We always draw the underline one pixel below
 					// the font base line.
 					if((style & FontStyle.Underlined) != 0)
 					{
-						if(descent < 3)
+						if(descent < 2)
 						{
-							descent = 3;
+							descent = 2;
 						}
 					}
 				}
@@ -1201,6 +1225,174 @@ public class Font
 				}
 
 	} // class XftFont
+
+	// Font class that uses a client-side PCF font renderer.
+	private class PCFFont : Font
+	{
+		// Internal state.
+		private IntPtr loadedData;
+
+		// Constructor.
+		public PCFFont(String family, int pointSize, FontStyle style,
+					   IntPtr loadedData)
+				: base(family, pointSize, style)
+				{
+					this.loadedData = loadedData;
+				}
+
+		// Create a native "font set" structure.
+		internal override IntPtr CreateFontSet
+					(IntPtr display, out int ascent, out int descent,
+					 out int maxWidth)
+				{
+					XRectangle max_ink;
+					XRectangle max_logical;
+					IntPtr fontSet;
+
+					// Create the raw X font set structure.
+					fontSet = Xlib.XSharpPCFCreate(display, loadedData);
+
+					// Get the extent information for the font.
+					Xlib.XSharpFontExtentsPCF
+						(fontSet, out max_ink, out max_logical);
+
+					// Convert the extent info into values that make sense.
+					ascent = -(max_logical.y);
+					descent = max_logical.height + max_logical.y;
+					maxWidth = max_logical.width;
+
+					// Increase the descent to account for underlining.
+					// We always draw the underline one pixel below
+					// the font base line.
+					if((style & FontStyle.Underlined) != 0)
+					{
+						if(descent < 2)
+						{
+							descent = 2;
+						}
+					}
+
+					// Return the font set structure to the caller.
+					return fontSet;
+				}
+
+		// Free a native "font set" structure.
+		internal override void FreeFontSet(IntPtr display, IntPtr fontSet)
+				{
+					Xlib.XSharpPCFDestroy(display, fontSet);
+				}
+
+		// Override the font drawing primitives.
+		public override void MeasureString
+					(Graphics graphics, String str, int index, int count,
+					 out int width, out int ascent, out int descent)
+				{
+					// Validate the parameters.
+					if(graphics == null)
+					{
+						throw new ArgumentNullException("graphics");
+					}
+					if(str == null || count <= 0)
+					{
+						width = 0;
+						ascent = 0;
+						descent = 0;
+						return;
+					}
+					if(index < 0 || index >= str.Length ||
+					   count > (str.Length - index))
+					{
+						width = 0;
+						ascent = 0;
+						descent = 0;
+						return;
+					}
+
+					// Get the font set to use to measure the string.
+					IntPtr fontSet = GetFontSet(graphics.dpy);
+					if(fontSet == IntPtr.Zero)
+					{
+						width = 0;
+						ascent = 0;
+						descent = 0;
+						return;
+					}
+
+					// Get the text extents and decode them into useful values.
+					XRectangle overall_ink;
+					XRectangle overall_logical;
+					try
+					{
+						IntPtr display = graphics.dpy.Lock();
+						Xlib.XSharpTextExtentsPCF
+							(display, fontSet, str, index, count,
+							 out overall_ink, out overall_logical);
+					}
+					finally
+					{
+						graphics.dpy.Unlock();
+					}
+					width = overall_logical.width;
+					ascent = -(overall_logical.y);
+					descent = overall_logical.height + overall_logical.y;
+
+					// Increase the descent to account for underlining.
+					// We always draw the underline one pixel below
+					// the font base line.
+					if((style & FontStyle.Underlined) != 0)
+					{
+						if(descent < 2)
+						{
+							descent = 2;
+						}
+					}
+				}
+		public override void DrawString
+					(Graphics graphics, int x, int y,
+					 String str, int index, int count)
+				{
+					// Validate the parameters.
+					if(x < -32768 || x > 32767 || y < -32768 || y > 32767)
+					{
+						throw new XException(S._("X_PointCoordRange"));
+					}
+					if(graphics == null)
+					{
+						throw new ArgumentNullException("graphics");
+					}
+					if(str == null || count <= 0)
+					{
+						return;
+					}
+					if(index < 0 || index >= str.Length ||
+					   count > (str.Length - index))
+					{
+						return;
+					}
+
+					// Get the font set to use for the font.
+					IntPtr fontSet = GetFontSet(graphics.dpy);
+					if(fontSet == IntPtr.Zero)
+					{
+						return;
+					}
+
+					// Draw the string using the specified font set.
+					try
+					{
+						IntPtr display = graphics.dpy.Lock();
+						Xlib.XSharpDrawStringPCF
+								(display, graphics.drawableHandle, graphics.gc,
+								 fontSet, x, y, str, index, count,
+								 (int)style);
+					}
+					finally
+					{
+						graphics.dpy.Unlock();
+					}
+				}
+
+	} // class PCFFont
 
 } // class Font
 

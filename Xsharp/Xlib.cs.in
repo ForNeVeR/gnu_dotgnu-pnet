@@ -619,6 +619,40 @@ internal sealed unsafe class Xlib
 			 out XRectangle max_logical_return);
 
 	[DllImport("XsharpSupport")]
+	extern public static IntPtr XSharpPCFCreateImage
+			(byte[] data, @X_ulong@ length);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpPCFDestroyImage(IntPtr fontImage);
+
+	[DllImport("XsharpSupport")]
+	extern public static IntPtr XSharpPCFCreate(IntPtr dpy, IntPtr fontImage);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpPCFDestroy(IntPtr dpy, IntPtr renderer);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpDrawStringPCF
+			(IntPtr display, Drawable drawable, IntPtr gc,
+			 IntPtr fontSet, @X_int@ x, @X_int@ y,
+			 [MarshalAs(UnmanagedType.Interface)] String str,
+			 @X_long@ offset, @X_long@ count, @X_int@ style);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpTextExtentsPCF
+			(IntPtr display, IntPtr fontSet,
+			 [MarshalAs(UnmanagedType.Interface)] String str,
+			 @X_long@ offset, @X_long@ count,
+			 out XRectangle overall_ink_return,
+			 out XRectangle overall_logical_return);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpFontExtentsPCF
+			(IntPtr fontSet,
+			 out XRectangle max_ink_return,
+			 out XRectangle max_logical_return);
+
+	[DllImport("XsharpSupport")]
 	extern public static IntPtr XSharpGetResources(IntPtr dpy, Window w);
 
 	[DllImport("XsharpSupport")]

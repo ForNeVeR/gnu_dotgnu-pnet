@@ -31,6 +31,8 @@
 #define PCF_COMPRESSED_METRICS		0x00000100
 #define	PCF_BYTEORDER_MSBFIRST		0x00000004
 #define	PCF_BITORDER_MSBFIRST		0x00000008
+#define	PCF_GLYPH_PADDING_MASK		0x00000003
+#define	PCF_SCAN_PADDING_MASK		0x00000030
 
 /*
  * Table types for PCF files.
@@ -250,6 +252,7 @@ void *XSharpPCFCreateImage(unsigned char *data, unsigned long length)
 		PCFSkipBytes(image, 1);
 		image->fs.ascent = PCFReadInt32(image);
 		image->fs.descent = PCFReadInt32(image);
+		PCFSkipBytes(image, 4);
 		PCFReadFullMetrics(image, &(image->fs.min_bounds));
 		PCFReadFullMetrics(image, &(image->fs.max_bounds));
 	}
@@ -277,7 +280,7 @@ void *XSharpPCFCreateImage(unsigned char *data, unsigned long length)
 				PCFFontFree(image);
 				return 0;
 			}
-			for(temp = 0; temp < image->numGlyphs; ++image)
+			for(temp = 0; temp < image->numGlyphs; ++temp)
 			{
 				PCFReadFullMetrics(image, &(image->fs.per_char[temp]));
 			}
@@ -292,7 +295,7 @@ void *XSharpPCFCreateImage(unsigned char *data, unsigned long length)
 				PCFFontFree(image);
 				return 0;
 			}
-			for(temp = 0; temp < image->numGlyphs; ++image)
+			for(temp = 0; temp < image->numGlyphs; ++temp)
 			{
 				PCFReadCompressedMetrics(image, &(image->fs.per_char[temp]));
 			}
@@ -330,6 +333,17 @@ void *XSharpPCFCreateImage(unsigned char *data, unsigned long length)
 				 (image->fs.max_byte1 - image->fs.min_byte1 + 1));
 	if(!(image->numGlyphs) || image->numGlyphs != temp)
 	{
+		PCFFontFree(image);
+		return 0;
+	}
+	if((image->glyphFormat & (PCF_BITORDER_MSBFIRST |
+							  PCF_GLYPH_PADDING_MASK |
+							  PCF_SCAN_PADDING_MASK))
+				!= PCF_BITORDER_MSBFIRST)
+	{
+		fprintf(stderr, "XSharpPCFCreateImage: currently, we only support "
+						"PCF fonts built with\n");
+		fprintf(stderr, "the command-line `bdftopcf -p1 -u1 -m font.bdf'\n");
 		PCFFontFree(image);
 		return 0;
 	}
@@ -395,9 +409,10 @@ void *XSharpPCFCreate(Display *dpy, PCFFontImage *image)
 	/* Create an XImage that can be used to hold string bitmaps
 	   prior to being sent to the X server */
 	width = image->fs.max_bounds.width * 33;
+	width = (width + 31) & ~31;
 	height = image->fs.ascent + image->fs.descent;
 	renderer->ximage = XCreateImage
-			(dpy, DefaultVisual(dpy, DefaultScreen(dpy)), 1, XYBitmap,
+			(dpy, DefaultVisual(dpy, DefaultScreen(dpy)), 1, ZPixmap,
 			 0, 0, width, height, 8, 0);
 	if(!(renderer->ximage))
 	{
@@ -463,16 +478,22 @@ void XSharpDrawStringPCF(Display *dpy, Drawable drawable, GC gc,
 	PCFFontRenderer *renderer = (PCFFontRenderer *)fontSet;
 	PCFFontImage *image = renderer->image;
 	XImage *ximage = renderer->ximage;
-	int posn;
+	int posn, num;
 	int width, height, line;
 	XGCValues values;
 	ILChar *buffer = ILStringToBuffer(str) + offset;
+	unsigned ch;
 	XRectangle overall_ink;
 	XRectangle overall_logical;
 	int line1, line2;
 	long origOffset = offset;
 	long origLength = length;
 	int origX = x;
+	int xposn;
+	unsigned char *glyph;
+	XCharStruct *cs;
+	int gx, gy, gwidth, gheight;
+	int bytesPerLine, xrel;
 
 	/* Save the current GC fill settings */
 	XGetGCValues(dpy, gc,
@@ -502,8 +523,57 @@ void XSharpDrawStringPCF(Display *dpy, Drawable drawable, GC gc,
 			memset(ximage->data + line * ximage->bytes_per_line, 0, width / 8);
 		}
 
+		printf("%c %d\n", buffer[0], overall_ink.x);
 		/* Render the bitmaps for the characters into the XImage */
-		/* TODO */
+		xposn = -(overall_ink.x);
+		num = posn;
+		while(num > 0)
+		{
+			/* Fetch the next character from the string and convert
+			   into into a glyph index */
+			ch = *buffer++;
+			--num;
+			if(ch >= 0x0100)
+			{
+				ch = '?';
+			}
+			if(ch < image->fs.min_char_or_byte2 ||
+			   ch > image->fs.max_char_or_byte2)
+			{
+				ch = image->fs.default_char;
+			}
+			else
+			{
+				ch -= image->fs.min_char_or_byte2;
+			}
+
+			/* Get the bitmap and the dimensions for the glyph */
+			glyph = image->glyphs[ch];
+			cs = &(image->fs.per_char[ch]);
+			gx = xposn + cs->lbearing;
+			gy = image->fs.ascent - cs->ascent;
+			gwidth = cs->rbearing - cs->lbearing;
+			gheight = cs->ascent + cs->descent;
+
+			/* Render the glyph into the XImage (TODO: make this faster) */
+			bytesPerLine = (gwidth + 7) / 8;
+			while(gheight > 0)
+			{
+				for(xrel = 0; xrel < gwidth; ++xrel)
+				{
+					if((glyph[xrel / 8] & (0x80 >> (xrel % 8))) != 0)
+					{
+						XPutPixel(ximage, gx + xrel, gy, 1);
+					}
+				}
+				glyph += bytesPerLine;
+				++gy;
+				--gheight;
+			}
+
+			/* Move on to the next character */
+			xposn += cs->width;
+		}
 
 		/* Write the XImage into the stipple pixmap */
 		XPutImage(dpy, renderer->stipple, renderer->stippleGC, ximage,

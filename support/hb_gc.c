@@ -36,6 +36,8 @@ extern	"C" {
 
 /*#define GC_TRACE_ENABLE*/
 
+#define GC_TRY_INVOKE_SYNCHRONOUSLY 1
+
 /*
  * Set to non-zero if finalization has been temporarily disabled.
  */
@@ -76,6 +78,11 @@ static ILWaitHandle *_FinalizerSignal = 0;
  *	WaitEvent that wakes up threads waiting on finalizers.
  */
 static ILWaitHandle *_FinalizerResponse = 0;
+
+/*
+ * Set while finalizers are running synchronously.
+ */
+static volatile int _FinalizersRunningSynchronously = 0;
 
 /*
  *	Tracing macros for the GC.
@@ -155,6 +162,12 @@ static int _InvokeFinalizersSynchronously()
 	{
 		return 0;
 	}
+	
+	/* Prevent recursive finalization */
+	if (_FinalizersRunningSynchronously)
+	{
+		return 0;
+	}
 
 	if (fg + bg > 1)
 	{
@@ -169,10 +182,12 @@ static int _InvokeFinalizersSynchronously()
 		   invoke finalizers synchronously */
 
 		_FinalizersRunning = 1;
+		_FinalizersRunningSynchronously = 1;
 
 		GC_invoke_finalizers();
 
 		_FinalizersRunning = 0;
+		_FinalizersRunningSynchronously = 0;
 
 		return 0;
 	}
@@ -191,16 +206,20 @@ static int PrivateGCNotifyFinalize(int timeout, int ignoreDisabled)
 	}
 
 	/* Prevent recursive finalization */
-	if (ILThreadSelf() == _FinalizerThread)
+	if (_FinalizersRunningSynchronously || ILThreadSelf() == _FinalizerThread)
 	{	
 		return 0;
 	}
+
+#ifdef GC_TRY_INVOKE_SYNCHRONOUSLY
 
 	/* Try to invoke synchronously (for performance & single threaded systems) */
 	if (_InvokeFinalizersSynchronously() == 0)
 	{
 		return 0;
 	}
+	
+#endif
 
 	/* There is no finalizer thread!
 	   We've already attempted to invoke synchronously (above) so just exit. */
@@ -226,8 +245,6 @@ static int PrivateGCNotifyFinalize(int timeout, int ignoreDisabled)
 						 (int)ILThreadSelf());
 				
 				_ILMutexUnlock(&_FinalizerLock);
-
-				_InvokeFinalizersSynchronously();
 
 				return 0;
 			}

@@ -43,6 +43,27 @@ public class ArrayObject : JSObject
 				array = null;
 				arrayLen = len;
 			}
+			
+	// Determines wether `name' is an array index.
+	internal static bool IsArrayIndex(String name)
+		{
+			if(name != null && name.Length > 0)
+			{
+				for(int i=0; i < name.Length; i++)
+				{
+					if(!Char.IsNumber(name, i))
+					{
+						return false;
+					}
+				}
+				// TODO : improve this operation ?
+				return !Convert.ToUInt32(name).ToString().Equals(name);
+			}
+			else
+			{
+				return false;
+			}
+		}
 
 	// Get or set the length of the array.
 	public virtual Object length
@@ -97,19 +118,18 @@ public class ArrayObject : JSObject
 	// Get a property from this object.  Null if not present.
 	internal override Object Get(String name)
 			{
-				if(name == "length")
+				if(name == null || name.Length == 0)
+				{
+					return null;
+				}
+				else if(name == "length")
 				{
 					return length;
 				}
-				else
+				else if(IsArrayIndex(name))
 				{
-					double num = Convert.ToNumber(name);
 					uint inum = Convert.ToUInt32(name);
-					if(num != (double)inum)
-					{
-						return base.Get(name);
-					}
-					else if(inum < arrayLen && array != null &&
+					if(inum < arrayLen && array != null &&
 							inum < (uint)(array.Length))
 					{
 						return array.GetValue((int)inum);
@@ -118,6 +138,10 @@ public class ArrayObject : JSObject
 					{
 						return null;
 					}
+				}
+				else
+				{
+					return base.Get(name);
 				}
 			}
 
@@ -142,9 +166,13 @@ public class ArrayObject : JSObject
 				{
 					length = value;
 				}
+				else if(IsArrayIndex(name))
+				{
+					PutIndex(Convert.ToInt32(name), value);
+				}
 				else if(CanPut(name))
 				{
-					// TODO
+					base.Put(name, value);
 				}
 			}
 
@@ -180,15 +208,46 @@ public class ArrayObject : JSObject
 	// Determine if this object has a specific property.
 	internal override bool HasOwnProperty(String name)
 			{
-				// TODO
-				return false;
+				if(name != null && name == "length")
+				{
+					return true;
+				}
+				else if(IsArrayIndex(name))
+				{
+					int index = Convert.ToInt32(name);
+					return (index >= 0 && (uint)index < arrayLen &&
+						array != null && index < array.Length && array[index] != null);
+				}
+				else
+				{
+					return base.HasOwnProperty(name);
+				}
 			}
 
 	// Delete a property from this object.
 	internal override bool Delete(String name)
 			{
-				// TODO
-				return true;
+				if(name == null || name.Length == 0 || name == "length")
+				{
+					return false;
+				}
+				else if(IsArrayIndex(name))
+				{
+					int index = Convert.ToInt32(name);
+					if(array != null && array[index] != null)
+					{
+						array.SetValue(null, Convert.ToInt32(name));
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return base.Delete(name);
+				}
 			}
 
 	// Get the default value for this object.
@@ -201,8 +260,15 @@ public class ArrayObject : JSObject
 	// Get an enumerator for the properties in this object.
 	internal override IEnumerator GetPropertyEnumerator()
 			{
-				// TODO
-				return null;
+				if(array != null)
+				{
+					return new JoinedEnumerator
+						(new ArrayKeyEnumerator(array), base.GetPropertyEnumerator());
+				}
+				else
+				{
+					return base.GetPropertyEnumerator();
+				}
 			}
 
 	// Wrapper class for wrapping up a native array.
@@ -276,6 +342,140 @@ public class ArrayObject : JSObject
 				}
 
 	}; // class Wrapper
+	
+	// Enumerates the index positions of an array instead of it's values.
+	internal sealed class ArrayKeyEnumerator : IEnumerator
+	{
+		internal Array array;
+		internal int current;
+		
+		public ArrayKeyEnumerator(Array array)
+		{
+			if(array == null)
+			{
+				throw new ArgumentNullException("array");
+			}
+			this.array = array;
+			this.current = -1;
+		}
+		
+		// Advance to the next element
+		public bool MoveNext()
+		{
+			if(current >= -1 && current < array.Length)
+			{
+				for(; current < array.Length - 1;)
+				{
+					if(array[++current] != null)
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+	
+		// Reset the enumerator to it's inital state
+		public void Reset()
+		{
+			current = -1;
+		}
+	
+		// Get the current index position
+		public Object Current
+		{
+			get
+			{
+				if(current >= 0 && current < array.Length)
+				{
+					return current;
+				}
+				else
+				{	
+					throw new InvalidOperationException();
+				}
+			}
+		}
+	}; // class ArrayKeyEnumerator
+	
+	// An enumerator that enumerates other enumerators... :-)
+	internal sealed class JoinedEnumerator : IEnumerator
+	{
+		internal IEnumerator[] enumerators;
+		internal int current;
+		
+		public JoinedEnumerator(params IEnumerator[] enumerators)
+		{
+			if(enumerators == null)
+			{
+				throw new ArgumentNullException("enumerators");
+			}
+			else if(enumerators.Length == 0)
+			{
+				throw new ArgumentException
+					("No enumerators given. At least one required.", "enumerators");
+			}
+			
+			this.enumerators = enumerators;
+			this.current = -1;
+		}
+		
+		// Advance to next element contained in the enumerators
+		public bool MoveNext()
+		{
+			if(current == -1)
+			{
+				return enumerators[++current].MoveNext();
+			}
+			else if(current < enumerators.Length)
+			{	
+				// if we cant advance in the current enumerator,
+				// advance amongst the other enumerators 'til we 
+				// have the next element
+				if(!enumerators[current].MoveNext())
+				{
+					for(;current < enumerators.Length; current++)
+					{
+						if(enumerators[current].MoveNext())
+						{
+							return true;
+						}
+					}
+				}
+				else
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		// Resets the enumerator to it's initial state
+		public void Reset()
+		{
+			for(;current >= 0;current--)
+			{
+				enumerators[current].Reset();
+			}
+		}
+		
+		// Get the current element from the current enumerator
+		public Object Current
+		{
+			get
+			{
+				if(current >= 0 && current < enumerators.Length)
+				{
+					return enumerators[current].Current;
+				}
+				else
+				{
+					throw new InvalidOperationException();
+				}
+			}
+		}
+		
+	}; // class JoinedEnumerator
 
 }; // class ArrayObject
 

@@ -1,4 +1,12 @@
 
+2004-08-14  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* JScript/Builtins/ArrayObject.cs: Implement enumerators for ArrayObject
+	base class. (patch #3037, Gopal)
+
+	* JScript/Builtins/ArrayObject.cs: Implement associative array support.
+	(patch #3287, Gopal).
+
 2004-08-14  David Logan  <djlogan2@comcast.net>
 
 	* runtime/System/Private/DateTimeFormat/DateTimeParser.cs: Fill in the 

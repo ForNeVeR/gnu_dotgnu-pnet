@@ -84,8 +84,13 @@ public class TestXmlTextWriter : TestCase
 				String text = "href=\"test.xsl\"";
 				xml.WriteStartDocument();
 				xml.WriteProcessingInstruction(name, text);
+#if !ECMA_COMPAT
 				Check("ProcessingInstruction (1)",
 						"<?xml version=\"1.0\" encoding=\"utf-16\"?>\n<?xsl-stylesheet href=\"test.xsl\"?>\n");
+#else
+				Check("ProcessingInstruction (1)",
+						"<?xml version=\"1.0\"?>\n<?xsl-stylesheet href=\"test.xsl\"?>\n");
+#endif
 			}
 	
 	// Test the property values on the writer.

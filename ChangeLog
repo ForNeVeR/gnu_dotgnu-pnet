@@ -1,4 +1,8 @@
 
+2003-03-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* tests/System.Xml/TestXmlTextWriter.cs: ECMA fix for test case.
+
 2003-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs,

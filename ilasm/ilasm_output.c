@@ -1096,6 +1096,10 @@ static void Squash(LabelRef *ref)
 			{
 				tempRef->posn -= removed;
 			}
+			if(tempRef->switchStart > ref->posn)
+			{
+				tempRef->switchStart -= removed;
+			}
 			tempRef = tempRef->next;
 		}
 		labelInfo = labelInfo->next;

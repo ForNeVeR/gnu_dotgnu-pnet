@@ -564,6 +564,8 @@ static CmdLineOpt const options[] = {
 			"-v", N_("Print names of source files as they are compiled")},
 	{"-vv",			0,	&verbose_mode,			VERBOSE_CMDLINES,	0,
 			"-vv", N_("Print command-lines of tools as they are executed")},
+	{"--version",0,	0,							0,	vOption,
+			"--version", N_("output version information and exit")},
 	{"--help",		0,	0,						0,	helpOption,
 			"--help", N_("Display this information")},
 

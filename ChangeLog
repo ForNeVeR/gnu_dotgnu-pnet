@@ -3,6 +3,9 @@
 	
 	* engine/Makefile.a: Add monitor.c to the list of files
 
+	* cscc/common/cc_options.c: Add a "--version" command line 
+	option to cscc.
+
 2003-06-26  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_thread.c:  New monitor implementation.  Uses 

@@ -1,7 +1,6 @@
 
 all-local:
-	"$(CSANT)" $(CSANT_FLAGS) -Dpnet.cstest.library="$(CSTEST_LIBRARY)" \
-			-f Testruntime.build all
+	"$(CSANT)" $(CSANT_FLAGS) -f Testruntime.build all
 
 CLEANFILES = Testruntime.dll
 

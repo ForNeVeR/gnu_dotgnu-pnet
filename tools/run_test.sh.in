@@ -20,7 +20,6 @@
 
 # Get the incoming configuration variables.
 ILRUN="@ILRUN@"
-CSUNIT="@CSUNIT@"
 
 # Get the top-most build directory, so that we can add the right
 # paths to the "ilrun" command-line.
@@ -32,4 +31,5 @@ exec "$ILRUN" -L"$TOP_BUILDDIR"/runtime \
 	-L"$TOP_BUILDDIR"/I18N \
 	-L"$TOP_BUILDDIR"/System \
 	-L"$TOP_BUILDDIR"/System.Xml \
-	"$CSUNIT" $*
+	-L"$TOP_BUILDDIR"/csunit \
+	"$TOP_BUILDDIR/csunit/csunit.exe" $*

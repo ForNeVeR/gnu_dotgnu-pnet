@@ -1,3 +1,18 @@
+
+2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, csunit/Makefile.am,
+	csunit/NUnitEmulation.cs, csunit/README, csunit/Test.cs,
+	csunit/TestArray.cs, csunit/TestAssertFailed.cs, csunit/TestCase.cs,
+	csunit/TestException.cs, csunit/TestFailure.cs, csunit/TestMain.cs,
+	csunit/TestResult.cs, csunit/TestStop.cs, csunit/TestSuite.cs,
+	csunit/TestVersion.cs.in, csunit/TestWriterResult.cs,
+	csunit/csunit-run.sh, csunit/csunit.build, tests/System/Makefile.am,
+	tests/System/TestSystem.build, tests/System.Xml/Makefile.am,
+	tests/runtime/Makefile.am, tests/runtime/Testruntime.build:
+	copy "csunit" back into pnetlib so that we can eventually remove
+	all C# code from "pnet".
+
 2002-12-07  Nguyen, Thong  <tum@veridicus.com>
 
 	* runtime/System/Threading/WaitHandle.cs: Added WaitTimeout const.

@@ -212,7 +212,12 @@ public class DoubleBuffer : Drawable
 				// We don't have to do this with Xdbe buffers because the
 				// X server should have already taken care of it for us
 				// during the last expose operation on the widget.
-				if(!usesXdbe)
+				
+				// [Marc Haisenko] I'm experiencing a strange bug if double
+				// buffering is enabled and certain widgets use a transparent
+				// background color... this is fixed by clearing the buffer.
+				// But I don't think this is the cause...
+				if ((!usesXdbe) || (widget.Background.Index == StandardColor.Inherit))
 				{
 					graphics.Clear();
 				}

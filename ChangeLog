@@ -1,4 +1,11 @@
 
+2005-03-10  Marc Haisenko <marc@darkdust.net>
+
+	* Xsharp/DoubleBuffer.cs: clear the background either when we don't
+	use Xdbe (old behaviour) or when we do use Xdbe but the background
+	is transparent. Fixes a strange bug in the Trumpf LaserPrototyp but
+	I'm not quite sure if this the "real" fix.
+
 2005-03-06  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/runtime/System/TestApplicationId.cs,

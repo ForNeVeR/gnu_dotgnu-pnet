@@ -3,6 +3,8 @@
 	
 	* System/Uri.cs: Re-write Canonicalize() and finish normalization
 	of Uris .
+	
+	* System/Uri.cs: Implement MakeRelative() for Uris.
 
 2003-05-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -597,10 +597,43 @@ public class Uri : MarshalByRefObject
 		return (";/:@&=+$,".IndexOf(character) != -1);
 	}
 	
-	[TODO]
 	public String MakeRelative(Uri toUri)
 	{
-		 throw new NotImplementedException("MakeRelative");
+		if((this.Scheme != toUri.Scheme) ||
+			(this.Authority != this.Authority))
+		{
+			return toUri.ToString();
+		}
+		if(this.path == toUri.path) 
+		{
+			return String.Empty;
+		}
+		String []seg1 = this.Segments;
+		String []seg2 = toUri.Segments;
+
+		int k;	
+		for(k=0;k < Math.Min(seg1.Length , seg2.Length) ; k++)
+		{
+			if(seg1[k] != seg2[k])
+			{
+				break;
+			}
+		}
+		bool lastWasDir = false;
+
+		StringBuilder sb = new StringBuilder();
+		for(int i = k ; i < seg1.Length ; i++)
+		{
+			if(seg1[i].EndsWith("/"))
+			{
+				sb.Append("../");
+			}
+		}
+		for(int i = k ; i < seg2.Length ; i++)
+		{
+			sb.Append(seg2[i]);
+		}
+		return sb.ToString();
 	}
 
 	protected virtual void Parse()
@@ -625,6 +658,7 @@ public class Uri : MarshalByRefObject
 
 	private void CheckParsed()
 	{
+		this.hostNameType = CheckHostName(this.host);
 		if(hostNameType==UriHostNameType.Unknown)
 		{
 			throw new UriFormatException(S._("Arg_UriHostName"));
@@ -689,7 +723,6 @@ public class Uri : MarshalByRefObject
 		this.delim = ":"+MatchToString(uriString, matches, 4);
 		this.userinfo = MatchToString(uriString, matches, 6);
 		this.host = MatchToString(uriString, matches,7);
-		this.hostNameType = CheckHostName(this.host);
 		this.portString = MatchToString(uriString, matches,9);
 		this.path = MatchToString(uriString, matches, 10);
 		this.query = MatchToString(uriString, matches, 11);
@@ -714,18 +747,25 @@ public class Uri : MarshalByRefObject
 		sb.Append(PathAndQuery);
 
 		sb.Append(this.fragment);
-
-		return Unescape(sb.ToString());
+		
+		if(this.userEscaped)
+		{
+			return sb.ToString();
+		}
+		else
+		{
+			return Unescape(sb.ToString());
+		}
 	}
 
-	protected virtual String Unescape(String path)
+	protected virtual String Unescape(String str)
 	{
-		if(path == null || path.Length==0) return String.Empty;
-		StringBuilder sb = new StringBuilder(path.Length);
+		if(str == null || str.Length==0) return String.Empty;
+		StringBuilder sb = new StringBuilder(str.Length);
 			
-		for(int i=0; i < path.Length;)
+		for(int i=0; i < str.Length;)
 		{
-			sb.Append(HexUnescape(path, ref i)); 
+			sb.Append(HexUnescape(str, ref i)); 
 		}
 		return sb.ToString();
 	}
@@ -891,6 +931,36 @@ public class Uri : MarshalByRefObject
 			return this.scheme;
 		}
 	}
+
+#if !ECMA_COMPAT
+	public
+#else
+	private
+#endif 
+	String [] Segments
+	{
+		get
+		{
+			if(path == null || path == String.Empty)
+			{
+				return new String[0];
+			}
+			if(path == "/")
+			{
+				return new String[]{"/"};
+			}
+			String [] toks = path.Split('/');
+			bool endSlash = path.EndsWith("/");
+			for(int i=0;i<toks.Length-1; i++)
+			{
+				toks[i]+="/";
+			}
+			String [] segments = new String[toks.Length - (endSlash ? 1 : 0)]; 
+			Array.Copy(toks, segments, toks.Length - (endSlash ? 1 :0));
+			return segments;
+		}
+	}
+
 
 	public bool UserEscaped 
 	{

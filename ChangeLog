@@ -1,4 +1,14 @@
 
+2003-05-23  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Platform/RegexpMethods.cs, System/Private/Regex.cs
+	System/Private/RegexMatch.cs, System/Private/RegexMatchOptions.cs
+	System/Private/RegexSyntax.cs : Regular expression support for
+	the System assembly.
+ 
+	* System/Uri.cs, System/UriBuilder.cs: Start a total rewrite of
+	the Uri class and related parts of UriBuilder.
+
 2003-05-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Basic/File.cs, Basic/FileSystem.cs,

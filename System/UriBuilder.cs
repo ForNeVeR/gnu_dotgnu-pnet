@@ -193,8 +193,7 @@ public class UriBuilder
 		}
 
 		String esc_path = Path;
-		if (Uri.needsEscaping(esc_path,false))
-			esc_path = Uri.impl_EscapeString(esc_path);
+		esc_path = Uri.EscapeStringInternal(esc_path,true,true);
 		maybeuri.Append(esc_path);
 
 		if (Query.Length > 0)

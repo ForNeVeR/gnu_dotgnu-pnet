@@ -1,4 +1,10 @@
 
+2004-09-28  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* support/socket.c: Fix socket flags for Solaris and other OSes 
+	which do not match with CLR socket flag enums. (patch #3392 originally
+	from Adam J. Tybor)
+
 2004-09-25  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/lib_emit.c: Fix compiler warning with gcc.

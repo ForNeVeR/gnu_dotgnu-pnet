@@ -98,6 +98,17 @@ extern	"C" {
 #define	IL_AF_IRDA			26
 
 /*
+ * Socket type at the C# level, which may not be the same
+ * as those at the operating system level.
+ */
+#define IL_SOCK_UNKNOWN                 -1
+#define IL_SOCK_STREAM                   1
+#define IL_SOCK_DGRAM                    2
+#define IL_SOCK_RAW                      3
+#define IL_SOCK_RDM                      4
+#define IL_SOCK_SEQPACKET                5 
+
+/*
  * Combined socket address structure.
  */
 typedef union
@@ -367,6 +378,36 @@ ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
 		domain = AF_IRDA;
 	}
 #endif
+	
+	switch(type)
+	{
+		case IL_SOCK_STREAM:	
+		{
+			type = SOCK_STREAM; 
+		}
+		break;
+		case IL_SOCK_DGRAM:		
+		{
+			type = SOCK_DGRAM; 
+		}
+		break;
+		case IL_SOCK_RAW:
+		{
+			type = SOCK_RAW; 
+		}
+		break;
+		case IL_SOCK_SEQPACKET:	
+		{
+			type = SOCK_SEQPACKET; 
+		}
+		break;
+		default:
+		{
+			type = -1; /* Unknown */
+		}
+		break;
+	}
+	
 	return (ILSysIOHandle)(ILNativeInt)(socket(domain, type, protocol));
 }
 

@@ -346,7 +346,7 @@ static struct
 	{"security decls",		IL_META_TOKEN_DECL_SECURITY},
 	{"class layout decls",	IL_META_TOKEN_CLASS_LAYOUT},
 	{"field layout decls",	IL_META_TOKEN_FIELD_LAYOUT},
-	{"stand along sigs",	IL_META_TOKEN_STAND_ALONE_SIG},
+	{"stand alone sigs",	IL_META_TOKEN_STAND_ALONE_SIG},
 	{"event mappings",		IL_META_TOKEN_EVENT_MAP},
 	{"events",				IL_META_TOKEN_EVENT},
 	{"property mappings",	IL_META_TOKEN_PROPERTY_MAP},

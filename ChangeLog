@@ -12,6 +12,10 @@ if the method body is empty.
 * codegen/cg_library.c: add "System.Type" to the set of builtin library
 types.
 
+* codegen/cg_gen.c (ILFindSystemType): return the value type forms of
+a type if necessary; handle value types correctly when imported from
+the system library.
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

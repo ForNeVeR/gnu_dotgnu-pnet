@@ -169,6 +169,7 @@ ILType *ILFindSystemType(ILGenInfo *info, const char *name)
 {
 	ILClass *classInfo;
 	ILProgramItem *scope;
+	int sysValueType;
 
 	/* Look in the program itself first */
 	scope = ILClassGlobalScope(info->image);
@@ -177,7 +178,15 @@ ILType *ILFindSystemType(ILGenInfo *info, const char *name)
 		classInfo = ILClassLookup(scope, name, "System");
 		if(classInfo)
 		{
-			return ILType_FromClass(classInfo);
+			if(ILClass_IsValueType(classInfo) ||
+			   ILClass_IsUnmanagedValueType(classInfo))
+			{
+				return ILType_FromValueType(classInfo);
+			}
+			else
+			{
+				return ILType_FromClass(classInfo);
+			}
 		}
 	}
 
@@ -186,10 +195,26 @@ ILType *ILFindSystemType(ILGenInfo *info, const char *name)
 	if(scope)
 	{
 		classInfo = ILClassLookup(scope, name, "System");
+		if(classInfo)
+		{
+			sysValueType = (ILClass_IsValueType(classInfo) ||
+				   			ILClass_IsUnmanagedValueType(classInfo));
+		}
+		else
+		{
+			sysValueType = 0;
+		}
 		classInfo = ILClassImport(info->image, classInfo);
 		if(classInfo)
 		{
-			return ILType_FromClass(classInfo);
+			if(sysValueType)
+			{
+				return ILType_FromValueType(classInfo);
+			}
+			else
+			{
+				return ILType_FromClass(classInfo);
+			}
 		}
 		else
 		{

@@ -14,6 +14,8 @@ new helper functions.
 
 * cscc/cs_errors.c: never allow unsafe constructs when the output is Java.
 
+* cscc/cs_oper.tc: implement semantic analysis for "ILNode_ToBool".
+
 2001-08-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c (main): turn on the "semAnalysis" flag during type

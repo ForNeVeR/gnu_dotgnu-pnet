@@ -630,8 +630,62 @@ ILNode_SemAnalysis(ILNode_PostDec)
 ILNode_SemAnalysis(ILNode_ToBool)
 {
 	CSSemValue value;
+	ILClass *classInfo;
+	ILMethod *trueMethod;
+	ILMethod *falseMethod;
+
+	/* Perform semantic analysis on the value */
+	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid boolean expression");
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILType_Boolean;
+		return value;
+	}
+
+	/* If the type is boolean, then we are done */
+	if(value.type == ILType_Boolean)
+	{
+		return value;
+	}
+
+	/* We need a class or a value type if not boolean */
+	if(!ILType_IsValueType(value.type) && !ILType_IsClass(value.type))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "no conversion to `bool'");
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILType_Boolean;
+		return value;
+	}
+
+	/* See if we have the "true" and "false" operators.  The C#
+	   standard requires that both operators be present in the
+	   class, but we are a little more forgiving than that: if
+	   only one of the operators is present, we can synthesise
+	   the other one */
+	classInfo = ILType_ToClass(value.type);
+	trueMethod = ILResolveConversionOperator
+					(classInfo, "op_True", value.type, ILType_Boolean);
+	falseMethod = ILResolveConversionOperator
+					(classInfo, "op_False", value.type, ILType_Boolean);
+	if(!trueMethod && !falseMethod)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "no conversion to `bool'");
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILType_Boolean;
+		return value;
+	}
+
+	/* Set the methods within the node for the code generator to use later */
+	node->trueMethod = trueMethod;
+	node->falseMethod = falseMethod;
+
+	/* Return the final value to the caller */
 	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	value.type = ILType_Boolean;
 	return value;
 }
 

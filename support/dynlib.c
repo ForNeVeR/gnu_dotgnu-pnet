@@ -113,6 +113,36 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 	return 0;
 }
 
+#elif defined(IL_WIN32_NATIVE)	/* Native Win32 */
+
+void *ILDynLibraryOpen(const char *name)
+{
+	void *libHandle = (void *)LoadLibrary(name);
+	if(libHandle == 0)
+	{
+		fprintf(stderr, "%s: could not load dynamic library\n", name);
+		return 0;
+	}
+	return libHandle;
+}
+
+void ILDynLibraryClose(void *handle)
+{
+	FreeLibrary((HINSTANCE)handle);
+}
+
+void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
+{
+	void *procAddr;
+	procAddr = (void *)GetProcAddress((HINSTANCE)handle, symbol);
+	if(procAddr == 0)
+	{
+		fprintf(stderr, "%s: could not resolve symbol", symbol);
+		return 0;
+	}
+	return procAddr;
+}
+
 #else	/* No dynamic library support */
 
 void *ILDynLibraryOpen(const char *name)

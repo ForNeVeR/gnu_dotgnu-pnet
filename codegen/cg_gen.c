@@ -395,6 +395,18 @@ ILClass *ILTypeToClass(ILGenInfo *info, ILType *type)
 			}
 			break;
 
+			case IL_META_ELEMTYPE_STRING:
+			{
+				newType = ILFindSystemType(info, "String");
+			}
+			break;
+
+			case IL_META_ELEMTYPE_OBJECT:
+			{
+				newType = ILFindSystemType(info, "Object");
+			}
+			break;
+
 			default: break;
 		}
 		if(newType)
@@ -440,6 +452,8 @@ ILMachineType ILTypeToMachineType(ILType *type)
 			case IL_META_ELEMTYPE_R:		return ILMachineType_NativeFloat;
 			case IL_META_ELEMTYPE_TYPEDBYREF:
 					return ILMachineType_ManagedValue;
+			case IL_META_ELEMTYPE_STRING:
+			case IL_META_ELEMTYPE_OBJECT:	return ILMachineType_ObjectRef;
 			default: break;
 		}
 		return ILMachineType_Void;

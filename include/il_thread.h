@@ -55,18 +55,35 @@ typedef struct _tagILWaitHandle ILWaitHandle;
  */
 typedef void (*ILThreadStartFunc)(void *startArg);
 
+#define IL_INTERRUPT_TYPE_ILLEGAL_MEMORY_ACCESS (1)
+#define IL_INTERRUPT_TYPE_INT_DIVIDE_BY_ZERO	(2)
+#define IL_INTERRUPT_TYPE_INT_OVERFLOW			(4)
+
 /*
- *	Cleanup function for ILThread.
+ * Cleanup function for ILThread.
  */
 typedef void (*ILThreadCleanupFunc)(ILThread *thread);
 
+/*
+ * Interrupt context
+ * (see support/interrupt.h for platform specific definitioons)
+ */
 typedef struct _tagILInterruptContext ILInterruptContext;
 
-typedef void (*ILIllegalMemoryAccessHandler)(ILInterruptContext *context);
+/*
+ * Function that handles an interrupt.
+ */
+typedef void (*ILInterruptHandler)(ILInterruptContext *context);
 
-int ILThreadRegisterIllegalMemoryAccessHandler(ILThread *thread, ILIllegalMemoryAccessHandler handler);
+/*
+ * Set the interrupt handler for the given thread.
+ */
+int ILThreadRegisterInterruptHandler(ILThread *thread, ILInterruptHandler handler);
 
-int ILThreadUnregisterIllegalMemoryAccessHandler(ILThread *thread, ILIllegalMemoryAccessHandler handler);
+/*
+ * Unset the interrupt handler for the given thread.
+ */
+int ILThreadUnregisterInterruptHandler(ILThread *thread, ILInterruptHandler handler);
 
 /*
  * Get the monitor for the thread.

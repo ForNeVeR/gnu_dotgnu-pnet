@@ -29,6 +29,7 @@
  */
 #include "thr_choose.h"
 #include "il_utils.h"
+#include "interrupt.h"
 
 /*
  * Include the package-specific definitions.
@@ -119,7 +120,9 @@ struct _tagILThread
 	ILThreadCleanupEntry			*lastCleanupEntry;
 	int								destroyOnExit;
 	ILWaitHandle					*monitor;
-	ILIllegalMemoryAccessHandler	illegalMemoryAccessHandler;	
+#if defined(IL_INTERRUPT_SUPPORTS)
+	ILInterruptHandler				interruptHandler;
+#endif
 };
 
 /*

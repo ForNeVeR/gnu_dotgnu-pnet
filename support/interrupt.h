@@ -25,11 +25,16 @@
 
 #include "il_config.h"
 #include "il_values.h"
+#include "il_thread.h"
 
 #if defined(__i386) || defined(__i386__)
+
 struct _tagILInterruptContext
 {
-	void *address;
+	int type;
+	
+	void *memoryAddress;
+	void *instructionAddress;
 	
 	/* Integer registers */
 	unsigned int Eax;
@@ -44,11 +49,17 @@ struct _tagILInterruptContext
 	unsigned int Eip;
 	unsigned int Esp;
 };
+
 #else
+
 struct _tagILInterruptContext
 {
-	void *address;
+	int type;
+
+	void *memoryAddress;
+	void *instructionAddress;
 };
+
 #endif
 
 #if (defined(HAVE_SETJMP) || defined(HAVE_SETJMP_H)) \
@@ -75,6 +86,10 @@ struct _tagILInterruptContext
 	#if defined(WIN32) && !(defined(__CYGWIN32__) || defined(__CYGWIN))
 		#define IL_INTERRUPT_SUPPORTS 1
 		#define IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS 1
+		#define IL_INTERRUPT_SUPPORTS_INT_DIVIDE_BY_ZERO 1
+		#define IL_INTERRUPT_SUPPORTS_INT_OVERFLOW 1
+		#define IL_INTERRUPT_SUPPORTS_ANY_ARITH 1
+
 		#define IL_INTERRUPT_WIN32 1
 		#if defined(__i386) || defined(__i386__)
 			#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
@@ -83,7 +98,14 @@ struct _tagILInterruptContext
 		&& (defined(HAVE_SIGNAL) || defined(HAVE_SIGACTION))
 		#define IL_INTERRUPT_SUPPORTS 1
 		#define IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS 1
+		#define IL_INTERRUPT_SUPPORTS_ANY_ARITH 1
+
 		#define IL_INTERRUPT_POSIX 1
+
+		#ifdef HAVE_SIGACTION
+			#define IL_INTERRUPT_SUPPORTS_INT_DIVIDE_BY_ZERO
+			#define IL_INTERRUPT_SUPPORTS_INT_OVERFLOW 1
+		#endif
 
 		#if (defined(__i386) || defined(__i386__)) \
 			&& defined(HAVE_SIGACTION) && defined(HAVE_SYS_UCONTEXT_H)

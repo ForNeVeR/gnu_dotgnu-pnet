@@ -27,6 +27,7 @@
 #include "thr_defs.h"
 #include "il_thread.h"
 #include <windows.h>
+#include "interlocked.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -34,57 +35,77 @@ extern	"C" {
 
 static LPTOP_LEVEL_EXCEPTION_FILTER __previousFilter;
 
-#ifdef IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS
-
 static LONG CALLBACK __UnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 {
 	ILThread *thread = ILThreadSelf();
 	ILInterruptContext context;
 
+	context.instructionAddress = ExceptionInfo->ExceptionRecord->ExceptionAddress;
+
+#ifdef IL_INTERRUPT_HAVE_X86_CONTEXT
+
+	/* Integer registers */
+	context.Eax = ExceptionInfo->ContextRecord->Eax;
+	context.Ebx = ExceptionInfo->ContextRecord->Ebx;
+	context.Ecx = ExceptionInfo->ContextRecord->Ecx;
+	context.Edx = ExceptionInfo->ContextRecord->Edx;
+	context.Edi = ExceptionInfo->ContextRecord->Edi;
+	context.Esi = ExceptionInfo->ContextRecord->Esi;
+
+	/* Control registers */
+	context.Ebp = ExceptionInfo->ContextRecord->Ebp;
+	context.Eip = ExceptionInfo->ContextRecord->Eip;
+	context.Esp = ExceptionInfo->ContextRecord->Esp;
+
+#endif
+
+	if (thread->interruptHandler == 0)
+	{
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
 	switch (ExceptionInfo->ExceptionRecord->ExceptionCode)
 	{
-	case EXCEPTION_ACCESS_VIOLATION:
-		context.address = ExceptionInfo->ExceptionRecord->ExceptionAddress;
+		case EXCEPTION_ACCESS_VIOLATION:
+		
+			/* Store the address of the memory the thread was trying to access */
+			context.type = IL_INTERRUPT_TYPE_ILLEGAL_MEMORY_ACCESS;
+			context.memoryAddress = (void *)ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
+			thread->interruptHandler(&context);
 
-		#ifdef IL_INTERRUPT_HAVE_X86_CONTEXT
+			break;
 
-		/* Integer registers */
-		context.Eax = ExceptionInfo->ContextRecord->Eax;
-		context.Ebx = ExceptionInfo->ContextRecord->Ebx;
-		context.Ecx = ExceptionInfo->ContextRecord->Ecx;
-		context.Edx = ExceptionInfo->ContextRecord->Edx;
-		context.Edi = ExceptionInfo->ContextRecord->Edi;
-		context.Esi = ExceptionInfo->ContextRecord->Esi;
+		case EXCEPTION_INT_DIVIDE_BY_ZERO:
 
-		/* Control registers */
-		context.Ebp = ExceptionInfo->ContextRecord->Ebp;
-		context.Eip = ExceptionInfo->ContextRecord->Eip;
-		context.Esp = ExceptionInfo->ContextRecord->Esp;
+			context.type = IL_INTERRUPT_TYPE_INT_DIVIDE_BY_ZERO;
+			thread->interruptHandler(&context);
 
-		#endif
+			break;
 
-		thread->illegalMemoryAccessHandler(&context);
+		case EXCEPTION_INT_OVERFLOW:
 
-		break;
+			context.type = IL_INTERRUPT_TYPE_INT_OVERFLOW;
+			thread->interruptHandler(&context);
+
+			break;
+			
+		default:
+		
+			printf("FUUUUUUUUUUUUUUUUUUUUUUUU %d\n", 
+				ExceptionInfo->ExceptionRecord->ExceptionCode);
 	}
 
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
-#endif
-
 void _ILInterruptInit()
 {
-#ifdef IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS
 	__previousFilter = SetUnhandledExceptionFilter(__UnhandledExceptionFilter);
-#endif
 }
 
 void _ILInterruptDeinit()
 {
-#ifdef IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS
 	SetUnhandledExceptionFilter(__previousFilter);
-#endif
 }
 
 #ifdef	__cplusplus

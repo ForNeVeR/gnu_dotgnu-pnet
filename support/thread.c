@@ -29,7 +29,8 @@ You normally won't need to modify or replace this file when porting.
 */
 
 #include "thr_defs.h"
-#include "signal.h"
+#include "interlocked.h"
+#include "interrupt.h"
 
 #ifdef HAVE_ALLOCA_H
 #include <alloca.h>
@@ -94,6 +95,10 @@ static void _ILThreadInit(void)
 	mainThread.startArg			= 0;
 	mainThread.destroyOnExit	= 0;
 	mainThread.monitor = ILWaitMonitorCreate();
+	#ifdef IL_INTERRUPT_SUPPORTS
+		mainThread.interruptHandler = 0;
+	#endif
+
 	_ILWakeupCreate(&(mainThread.wakeup));
 	_ILWakeupQueueCreate(&(mainThread.joinQueue));
 
@@ -319,6 +324,9 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *startArg)
 	_ILWakeupQueueCreate(&(thread->joinQueue));
 	thread->handle = 0;
 	thread->destroyOnExit = 0;
+	#ifdef IL_INTERRUPT_SUPPORTS
+		thread->interruptHandler = 0;
+	#endif
 
 	/* Lock out the thread system */
 	_ILMutexLock(&threadLockAll);
@@ -854,11 +862,7 @@ void ILThreadAtomicEnd(void)
 
 void ILThreadMemoryBarrier(void)
 {
-	/* For now, we just acquire and release a mutex, under the
-	   assumption that the underlying thread package will do
-	   data synchronisation for us as part of the mutex code */
-	_ILMutexLock(&atomicLock);
-	_ILMutexUnlock(&atomicLock);
+	ILInterlockedMemoryBarrier();
 }
 
 void ILThreadGetCounts(unsigned long *numForeground,

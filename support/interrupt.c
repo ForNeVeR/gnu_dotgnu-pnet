@@ -29,7 +29,7 @@
 extern	"C" {
 #endif
 
-#ifndef IL_INTERRUPT_SUPPORTS
+#if !defined(IL_INTERRUPT_SUPPORTS)
 
 void _ILInterruptInit()
 {
@@ -39,22 +39,20 @@ void _ILInterruptDeinit()
 {
 }
 
-#endif
+#elif defined(IL_INTERRUPT_SUPPORTS)
 
-#ifdef IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS
-
-int ILThreadRegisterIllegalMemoryAccessHandler(ILThread *thread, ILIllegalMemoryAccessHandler handler)
+int ILThreadRegisterInterruptHandler(ILThread *thread, ILInterruptHandler handler)
 {
-	thread->illegalMemoryAccessHandler = handler;
+	thread->interruptHandler = handler;
 
 	return 0;
 }
 
-int ILThreadUnregisterIllegalMemoryAccessHandler(ILThread *thread, ILIllegalMemoryAccessHandler handler)
+int ILThreadUnregisterInterruptHandler(ILThread *thread, ILInterruptHandler handler)
 {
-	if (thread->illegalMemoryAccessHandler == handler)
+	if (thread->interruptHandler == handler)
 	{
-		thread->illegalMemoryAccessHandler = 0;
+		thread->interruptHandler = 0;
 	}
 
 	return 0;

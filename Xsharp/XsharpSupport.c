@@ -521,6 +521,189 @@ void XSharpFreeResources(char *value)
 #define PF_Format64bppArgb			0x0034400D
 
 /*
+ * Read the contents of a scan line as ARGB values.  The alpha component
+ * can be omitted if the format does not include "PF_Alpha".
+ */
+static void Read_16bppRgb555(unsigned char *input,
+							 unsigned long *output, int num)
+{
+	unsigned short value;
+	while(num > 0)
+	{
+		value = *((unsigned short *)input);
+		*output++ = (((unsigned long)(value & 0x7C00)) << 9) |
+					(((unsigned long)(value & 0x03E0)) << 6) |
+					(((unsigned long)(value & 0x001F)) << 3);
+		input += 2;
+		--num;
+	}
+}
+static void Read_16bppRgb565(unsigned char *input,
+							 unsigned long *output, int num)
+{
+	unsigned short value;
+	while(num > 0)
+	{
+		value = *((unsigned short *)input);
+		*output++ = (((unsigned long)(value & 0xF800)) << 8) |
+					(((unsigned long)(value & 0x07E0)) << 5) |
+					(((unsigned long)(value & 0x001F)) << 3);
+		input += 2;
+		--num;
+	}
+}
+static void Read_16bppArgb1555(unsigned char *input,
+							   unsigned long *output, int num)
+{
+	unsigned short value;
+	while(num > 0)
+	{
+		value = *((unsigned short *)input);
+		*output = (((unsigned long)(value & 0x7C00)) << 9) |
+				  (((unsigned long)(value & 0x03E0)) << 6) |
+				  (((unsigned long)(value & 0x001F)) << 3);
+		if((value & 0x8000) != 0)
+		{
+			*output |= (unsigned long)0xFF000000;
+		}
+		input += 2;
+		--num;
+	}
+}
+static void Read_16bppGrayScale(unsigned char *input,
+							    unsigned long *output, int num)
+{
+	unsigned short value;
+	while(num > 0)
+	{
+		value = (*((unsigned short *)input) >> 8);
+		*output++ = (((unsigned long)value) << 16) |
+					(((unsigned long)value) << 8) |
+					 ((unsigned long)value);
+		input += 2;
+		--num;
+	}
+}
+static void Read_24bppRgb(unsigned char *input,
+					      unsigned long *output, int num)
+{
+	while(num > 0)
+	{
+		*output++ = ((unsigned long)(input[0])) |
+					(((unsigned long)(input[1])) << 8) |
+					(((unsigned long)(input[2])) << 16);
+		input += 3;
+		--num;
+	}
+}
+static void Read_32bppRgb(unsigned char *input,
+					      unsigned long *output, int num)
+{
+	while(num > 0)
+	{
+		*output++ = ((unsigned long)(input[0])) |
+					(((unsigned long)(input[1])) << 8) |
+					(((unsigned long)(input[2])) << 16);
+		input += 4;
+		--num;
+	}
+}
+static void Read_32bppArgb(unsigned char *input,
+					       unsigned long *output, int num)
+{
+	while(num > 0)
+	{
+		*output++ = ((unsigned long)(input[0])) |
+					(((unsigned long)(input[1])) << 8) |
+					(((unsigned long)(input[2])) << 16) |
+					(((unsigned long)(input[3])) << 24);
+		input += 4;
+		--num;
+	}
+}
+static void Read_48bppRgb(unsigned char *input,
+					      unsigned long *output, int num)
+{
+	while(num > 0)
+	{
+		*output++ = ((unsigned long)(input[1])) |
+					(((unsigned long)(input[3])) << 8) |
+					(((unsigned long)(input[5])) << 16);
+		input += 6;
+		--num;
+	}
+}
+static void Read_64bppArgb(unsigned char *input,
+					       unsigned long *output, int num)
+{
+	while(num > 0)
+	{
+		*output++ = ((unsigned long)(input[1])) |
+					(((unsigned long)(input[3])) << 8) |
+					(((unsigned long)(input[5])) << 16) |
+					(((unsigned long)(input[7])) << 24);
+		input += 8;
+		--num;
+	}
+}
+
+/*
+ * Get the read function for a format.
+ */
+typedef void (*ReadFunc)(unsigned char *input, unsigned long *output, int num);
+static ReadFunc GetReadFunc(int pixelFormat)
+{
+	switch(pixelFormat)
+	{
+		case PF_Format16bppRgb555:		return Read_16bppRgb555;
+		case PF_Format16bppRgb565:		return Read_16bppRgb565;
+		case PF_Format24bppRgb:			return Read_24bppRgb;
+		case PF_Format32bppRgb:			return Read_32bppRgb;
+		case PF_Format16bppArgb1555:	return Read_16bppArgb1555;
+		case PF_Format32bppPArgb:		return Read_32bppArgb;
+		case PF_Format16bppGrayScale:	return Read_16bppGrayScale;
+		case PF_Format48bppRgb:			return Read_48bppRgb;
+		case PF_Format64bppPArgb:		return Read_64bppArgb;
+		case PF_Format32bppArgb:		return Read_32bppArgb;
+		case PF_Format64bppArgb:		return Read_64bppArgb;
+		default:						return 0;
+	}
+}
+
+/*
+ * Write RGB data to an indexed XImage structure.
+ */
+static void Write_Indexed(XImage *image, int line, unsigned long *input,
+						  int num, unsigned long *palette)
+{
+	int column;
+	unsigned long pixel;
+	for(column = 0; column < num; ++column)
+	{
+		pixel = *input++;
+		pixel = (((pixel & 0x00FF0000) >> 16) * 5 / 255) * 36 +
+		        (((pixel & 0x0000FF00) >> 8) * 5 / 255) * 6 +
+		        ((pixel & 0x000000FF) * 5 / 255);
+		XPutPixel(image, column, line, palette[pixel]);
+	}
+}
+
+/*
+ * Get the write function for an image.
+ */
+typedef void (*WriteFunc)(unsigned char *output, unsigned long *input, int num);
+static WriteFunc GetWriteFunc(XImage *image)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * Forward declaration.
+ */
+void XSharpDestroyImage(XImage *image);
+
+/*
  * Create an XImage structure from a device-independent bitmap.
  *
  * If the input image is indexed, then "palette" indicates the
@@ -544,6 +727,9 @@ XImage *XSharpCreateImageFromDIB(Screen *screen, int width, int height,
 	unsigned char *temp1;
 	unsigned char *temp2;
 	int line, column;
+	unsigned long *tempLine;
+	ReadFunc readFunc;
+	WriteFunc writeFunc;
 
 	/* Get the depth, format, and pad values */
 	if(isMask)
@@ -620,11 +806,11 @@ XImage *XSharpCreateImageFromDIB(Screen *screen, int width, int height,
 				{
 					if((temp1[column / 8] & (0x80 >> (column % 8))) != 0)
 					{
-						XPutPixel(image, column, line, 1);
+						XPutPixel(image, column, line, palette[1]);
 					}
 					else
 					{
-						XPutPixel(image, column, line, 0);
+						XPutPixel(image, column, line, palette[0]);
 					}
 				}
 			}
@@ -657,12 +843,50 @@ XImage *XSharpCreateImageFromDIB(Screen *screen, int width, int height,
 	else if(visual->class == TrueColor || visual->class == DirectColor)
 	{
 		/* Map an RGB image to an RGB-capable display */
-		/* TODO */
+		tempLine = (unsigned long *)(malloc(sizeof(unsigned long) * width));
+		if(!tempLine)
+		{
+			XSharpDestroyImage(image);
+			return 0;
+		}
+		readFunc = GetReadFunc(pixelFormat);
+		writeFunc = GetWriteFunc(image);
+		if(!readFunc || !writeFunc)
+		{
+			free(tempLine);
+			XSharpDestroyImage(image);
+			return 0;
+		}
+		for(line = 0; line < height; ++line)
+		{
+			(*readFunc)(data + line * stride, tempLine, width);
+			(*writeFunc)(imageData + line * image->bytes_per_line,
+						 tempLine, width);
+		}
+		free(tempLine);
 	}
 	else
 	{
 		/* Map an RGB image to an indexed display (usually 8-bit) */
-		/* TODO */
+		tempLine = (unsigned long *)(malloc(sizeof(unsigned long) * width));
+		if(!tempLine)
+		{
+			XSharpDestroyImage(image);
+			return 0;
+		}
+		readFunc = GetReadFunc(pixelFormat);
+		if(!readFunc)
+		{
+			free(tempLine);
+			XSharpDestroyImage(image);
+			return 0;
+		}
+		for(line = 0; line < height; ++line)
+		{
+			(*readFunc)(data + line * stride, tempLine, width);
+			Write_Indexed(image, line, tempLine, width, palette);
+		}
+		free(tempLine);
 	}
 
 	/* Return the final image structure to the caller */

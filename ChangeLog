@@ -4,6 +4,9 @@
 	* Xsharp/Display.cs, Xsharp/Timer.cs: release the display lock
 	when events are dispatched.
 
+	* Xsharp/XSharpSupport.c: implement more of the code necessary
+	to convert DIB's into XImage structures.
+
 2003-07-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Xml/XPath/XmlSortOrder.cs: Fix visibility based on

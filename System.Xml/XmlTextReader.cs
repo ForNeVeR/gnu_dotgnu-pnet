@@ -847,9 +847,8 @@ public class XmlTextReader : XmlReader
 						}
 						break;
 					case '=':
-						ClearNodeInfo();
-						//name = builder.ToString();
-						//SetName(name);
+						name = builder.ToString();
+						SetName(name);
 						nodeType = XmlNodeType.Attribute;
 						attr = new XmlAttributeToken(nameTable,builder.ToString(),null);
 						attributeIndex++;
@@ -873,7 +872,7 @@ public class XmlTextReader : XmlReader
 								attr.Value = builder.ToString();
 								attributes.Append(attr);
 								nodeType = XmlNodeType.Text;
-
+								
 								// go to next char
 								SkipWhite();
 								
@@ -994,7 +993,6 @@ public class XmlTextReader : XmlReader
 						AnalyzeChar(ch, true);
 						// set back to Element node type
 						// for proper implementation behavior
-						ClearNodeInfo();
 						nodeType = XmlNodeType.Element;
 						SetName(tempName);
 						value = String.Empty;
@@ -1015,7 +1013,6 @@ public class XmlTextReader : XmlReader
 						AnalyzeChar(ch, true);
 						// set back to Element node type
 						// for proper implementation behavior
-						ClearNodeInfo();
 						nodeType = XmlNodeType.Element;
 						SetName(tempName);
 						value = String.Empty;
@@ -1248,15 +1245,17 @@ public class XmlTextReader : XmlReader
 				if(NodeType == XmlNodeType.Element)
 				{
 					builder.Append("<"+Name);
-					ch = reader.Peek();
-					if((char)ch == '<')
+					if(attributes.Count >= 0)
 					{
-						builder.Append(">");
+						for (int a=0; a < attributes.Count; a++)
+						{
+							attr = attributes[a];
+							builder.Append(" " + attr.Name + "=" 
+									+ QuoteChar + attr.Value + QuoteChar);
+						}
 					}
-					else
-					{
-						builder.Append(" ");
-					}
+					builder.Append(">");
+						
 				}
 				else if(NodeType == XmlNodeType.Attribute)
 				{
@@ -1737,7 +1736,7 @@ public class XmlTextReader : XmlReader
 	internal class XmlAttributeToken : XmlAttribute
 	{ 
 		private String value = null;
-
+		
 		public XmlAttributeToken(XmlNameTable nt,String name,String ns):
 			base(null,GetNameInfo(nt,name,null,null))
 		{
@@ -1748,7 +1747,7 @@ public class XmlTextReader : XmlReader
 				String prefix,
 				String ns)
 		{
-			String name;
+			string name;
 
 			if(localName == null)
 			{
@@ -1796,6 +1795,7 @@ public class XmlTextReader : XmlReader
 				this.value = value;
 			}
 		}
+				
 	}
 
 }; // class XmlTextReader

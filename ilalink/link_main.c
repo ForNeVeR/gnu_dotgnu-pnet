@@ -670,15 +670,19 @@ int ILLinkerMain(int argc, char *argv[])
 	{
 		if(format == IL_IMAGETYPE_EXE)
 		{
-			outputFile = "a.out.exe";
+		#ifdef IL_WIN32_PLATFORM
+			outputFile = "a.exe";
+		#else
+			outputFile = "a.out";
+		#endif
 		}
 		else if(format == IL_IMAGETYPE_DLL)
 		{
-			outputFile = "a.out.dll";
+			outputFile = "a.dll";
 		}
 		else
 		{
-			outputFile = "a.out.obj";
+			outputFile = "a.obj";
 		}
 	}
 

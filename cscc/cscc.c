@@ -469,14 +469,18 @@ static void ParseCommandLine(int argc, char *argv[])
 	{
 		if(executable_flag)
 		{
-			/* The default output filename is "a.out.dll" or "a.out.exe" */
+			/* The default output filename is "a.dll" or "a.exe/a.out" */
 			if(shared_flag)
 			{
-				output_filename = "a.out.dll";
+				output_filename = "a.dll";
 			}
 			else
 			{
-				output_filename = "a.out.exe";
+			#ifdef IL_WIN32_PLATFORM
+				output_filename = "a.exe";
+			#else
+				output_filename = "a.out";
+			#endif
 			}
 		}
 		else if(compile_flag)

@@ -15,6 +15,10 @@
 	* cscc/c/c_ainit.tc, cscc/c/c_grammar.y: treat "union" initializers
 	the same as "struct" initializers.
 
+	* cscc/cscc.c, ilalink/link_main.c: change the default output
+	file from "a.out.exe" to "a.exe" (Win32) or "a.out" (non-Win32),
+	to be consistent with gcc.
+
 2007-07-03  Thong Nguyen  <tum@veridicus.com>
 
 	* support/hb_gc.c: ILGCDeinit now performs a garbage collection

@@ -1,4 +1,8 @@
 
+2004-09-22  Gopal V  <gopalv82@yahoo.com>
+
+	* cscc/cpp/Makefile.am: Add rm -f for cli-unknown-cpp man page.
+
 2004-09-20  Gopal V  <gopalv82@yahoo.com>
 
 	* image/context.c: Allow ILContextGetFile to lookup full paths as well.

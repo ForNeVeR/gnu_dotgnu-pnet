@@ -61,6 +61,7 @@ AM_CFLAGS = -I. -I$(srcdir) -I$(top_srcdir)/include \
 
 install-data-local:
 	@$(NORMALL_INSTALL)
+	rm -f $(DESTDIR)$(man1dir)/cli-unknown-cpp.1.gz
 	$(LN_S) cscc-cpp.1.gz $(DESTDIR)$(man1dir)/cli-unknown-cpp.1.gz
 
 install-exec-local:

@@ -1106,7 +1106,13 @@ internal sealed class NumberParser
 		bool negative = StripSign(sb, nfi);
 
 		//  Parse up to the decimal
-		double work = (double)EatDigits(sb);
+		double work;
+		while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
+		{
+			work *= 10;
+			work += (uint)(sb[0] - '0');
+			sb.Remove(0, 1);
+		}
 
 		//  Parse after the decimal
 		if (sb.Length > 0 
@@ -1114,18 +1120,19 @@ internal sealed class NumberParser
 		{
 			uint fracDigits;
 			sb.Remove(0, nfi.NumberDecimalSeparator.Length);
-			fracDigits = EatDigits(sb);
-			if (fracDigits != 0) 
+			for (int i = -1; 
+					sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9' ; 
+					i--)
 			{
-				work += (double)fracDigits * 
-						Math.Pow(10, -Math.Floor(Math.Log10(fracDigits)) -1) ;
+				work += (uint)(sb[0] - '0') * Math.Pow(10, i);
+				sb.Remove(0, 1);
 			}	
 		}
 
 		//  Parse after the exponent
 		if (sb.Length > 0 && (sb[0] == 'e' || sb[0] == 'E') ) 
 		{
-			uint exponent;
+			uint exponent = 0;
 			bool negExponent = false;
 			sb.Remove(0, 1);
 			if (sb.ToString().StartsWith(nfi.PositiveSign)) 
@@ -1142,11 +1149,15 @@ internal sealed class NumberParser
 				//  Darn it, we're supposed to have a sign.
 				throw new FormatException(_("Format_ExponentRequiresSign"));
 			}
-			exponent = EatDigits(sb);
-			if (exponent != 0) 
+
+		    while (sb.Length > 0 && sb[0] >= '0' && sb[0] <= '9')
 			{
-				work *= Math.Pow(10, exponent * (negExponent ? -1 : 1));
+				exponent *= 10;
+				exponent += (uint)(sb[0] - '0');
+				sb.Remove(0, 1);
 			}
+
+			work *= Math.Pow(10, exponent * (negExponent ? -1 : 1));
 		}
 
 		if (sb.Length > 0)

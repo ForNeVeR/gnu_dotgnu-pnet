@@ -58,10 +58,19 @@ internal class ScientificFormatter : Formatter
 		}
 
 		//  Calculate exponent and mantissa
-		exponent = (int) Math.Floor(Math.Log10(value));
-		mantissa = value / Math.Pow(10, exponent);
+		if (value == 0.0d)
+		{
+			exponent = 0;
+			mantissa = 0.0d;
+		}
+		else
+		{
+			exponent = (int) Math.Floor(Math.Log10(value));
+			mantissa = value / Math.Pow(10, exponent);
+		}
 
 		rawnumber = FormatFloat(mantissa, precision);
+		if (rawnumber.Length == 0) rawnumber = "0";
 
 		ret = new StringBuilder( 
 				rawnumber.Substring(0, rawnumber.IndexOf('.')));

@@ -1,3 +1,13 @@
+2003-01-16  Jonathan Springer  <jonathan.springer@verizon.net>
+
+	* runtime/System/Private/NumberParser.cs,
+	runtime/System/Private/NumberFormat/GeneralFormatter.cs, 
+	runtime/System/Private/NumberFormat/ScientificFormatter.cs:
+	Fix several bugs related to floating point parsing and formatting (#2222).
+
+	* tests/runtime/System/TestDouble.cs:  Update test cases to include
+	conditions identified in bug report #2222.
+
 2003-01-16  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs: Fixed '/' bug(2230) reported by gopal.

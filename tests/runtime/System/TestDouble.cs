@@ -81,15 +81,50 @@ public class TestDouble : TestCase
 	public void TestDoubleParse()
 	{
 		AssertEquals("Double.Parse(\"1.0\")",
-				1.0d, Double.Parse("1.0"));
+				1.0d, Double.Parse("1.0"), 0.00000001d);
 		AssertEquals("Double.Parse(\"-1.0\")",
-				-1.0d, Double.Parse("-1.0"));
+				-1.0d, Double.Parse("-1.0"), 0.00000001d);
 		AssertEquals("Double.Parse(\"1.0E+2\")",
-				100d, Double.Parse("1.0E+2"));
+				100d, Double.Parse("1.0E+2"), 0.00000001d);
+		AssertEquals("Double.Parse(\"0.0\")",
+				0.0d, Double.Parse("0.0"), 0.00000001d);
+		AssertEquals("Double.Parse(\"0.5\")",
+				0.5d, Double.Parse("0.5"), 0.00000001d);
+		AssertEquals("Double.Parse(\"0.500000000000000\")",
+				0.5d, Double.Parse("0.500000000000000"), 0.00000001d);
+		AssertEquals("Double.Parse(\"1.13\")",
+				1.13d, Double.Parse("1.13"), 0.00000001d);
+		AssertEquals("Double.Parse(\"1.130000000000000\")",
+				1.13d, Double.Parse("1.130000000000000"), 0.00000001d);
+		AssertEquals("Double.Parse(\"1e+2\")",
+				100d, Double.Parse("1e+2"), 0.00000001d);
+		AssertEquals("Double.Parse(\"1e-2\")",
+				0.01d, Double.Parse("1e-2"), 0.00000001d);
+		try 
+		{
+			Double.Parse("1e2");
+			Fail("Double.Parse(\"1e2\") did not throw exception");
+		}
+		catch (FormatException e)
+		{
+			// OK
+		}
 	}
 
 	public void TestDoubleToString()
 	{
-	/*TODO*/
+		double d;
+
+		d = 0.0d;
+		AssertEquals("0", "0", d.ToString());
+
+		d = 1.0d;
+		AssertEquals("1", "1", d.ToString());
+
+		d = 1.13d;
+		AssertEquals("1.13", "1.13", d.ToString());
+
+		//d = -1.13d;
+		//AssertEquals("-1.13", "-1.13", d.ToString());
 	}
 }

@@ -59,6 +59,24 @@ internal class GeneralFormatter : Formatter
 		throw new FormatException(_("Format_TypeException"));
 	}
 
+	private string StripTrail(string s, IFormatProvider provider)
+	{
+		StringBuilder sb = new StringBuilder(s);
+		String ds = NumberFormatInfo(provider).NumberDecimalSeparator;
+
+		// Strip unnecessary trailing zeroes and point
+		if (sb.ToString().IndexOf(ds) >= 0)
+		{
+			while (sb[sb.Length - 1] == '0') sb.Remove(sb.Length-1,1);
+			if (sb.ToString().IndexOf(ds) == sb.Length - ds.Length)
+			{
+				sb.Remove(sb.Length-ds.Length, ds.Length);
+			}
+		}
+
+		return sb.ToString();
+	}
+
 	public override string Format(Object o, IFormatProvider provider)
 	{
 		int precision, exponent;
@@ -72,13 +90,23 @@ internal class GeneralFormatter : Formatter
 			precision = this.precision;
 		}
 
-		exponent = (int) Math.Floor(Math.Log10(OToDouble(o)));
+		if (OToDouble(o) == 0.0d) 
+		{
+			exponent = 0;
+		}
+		else
+		{
+			exponent = (int) Math.Floor(Math.Log10(OToDouble(o)));
+		}
 
 		if (IsSignedInt(o) || IsUnsignedInt(o))
 		{
 			if (exponent < precision)
 			{
-				return new FixedPointFormatter(0).Format(o, provider);
+				return StripTrail(
+							new FixedPointFormatter(0).Format(o, provider),
+							provider);
+
 			}
 			else
 			{
@@ -89,7 +117,9 @@ internal class GeneralFormatter : Formatter
 
 		if (exponent >= -4 && exponent < precision)
 		{
-			return new FixedPointFormatter(precision).Format(o, provider);
+			return StripTrail(
+					new FixedPointFormatter(precision).Format(o, provider),
+					provider);
 		}
 		else
 		{

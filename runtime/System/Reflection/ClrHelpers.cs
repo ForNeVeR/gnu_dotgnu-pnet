@@ -92,6 +92,38 @@ internal sealed class ClrHelpers
 
 #endif // CONFIG_REFLECTION
 
+#if CONFIG_REFLECTION_EMIT
+
+	// Compress an integer as decided in Partition II 22.2.
+	// Note that no error checking is done, and attempts
+	// to pass numbers < 0 or >0x1FFF FFFF will silently
+	// produce strange results.
+	public static byte[] ToPackedLen(long value)
+	{
+		unchecked
+		{
+			if (value <= 0x7F)
+			{
+				return new byte[] {(byte) value};
+			}
+			else if (value <= 0x3FFF)
+			{
+				return new byte[]
+					{(byte) (0x80 | (value >> 8)),
+					(byte) value};
+			}
+			else
+			{
+				return new byte[]
+					{(byte) (0xC0 | (value >> 24)),
+					(byte) (value >> 16),
+					(byte) (value >> 8),
+					(byte) value};
+			}
+		}
+	}
+#endif // CONFIG_REFLECTION_EMIT
+
 	// Convert a type into a CLR handle value, after validating
 	// that it is indeed a CLR type.
 	public static IntPtr TypeToClrHandle(Type type, String name)

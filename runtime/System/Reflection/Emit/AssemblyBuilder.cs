@@ -127,7 +127,7 @@ public sealed class AssemblyBuilder : Assembly
 					return entryPoint;
 				}
 			}
-	
+
 	// Get the runtime image version that will be embedded in the assembly.
 	public override String ImageRuntimeVersion
 			{
@@ -203,7 +203,7 @@ public sealed class AssemblyBuilder : Assembly
 			{
 		 		return DefineDynamicModule(name, fileName, false);
 			}
-	public ModuleBuilder DefineDynamicModule(String name, String fileName, 
+	public ModuleBuilder DefineDynamicModule(String name, String fileName,
 											 bool emitSymbolInfo)
 			{
 				// We don't support modules in external files.
@@ -211,15 +211,15 @@ public sealed class AssemblyBuilder : Assembly
 			}
 
 	[TODO]
-	public IResourceWriter DefineResource(String name, String description, 
+	public IResourceWriter DefineResource(String name, String description,
 										  String fileName)
 			{
 		 		throw new NotImplementedException("DefineResource");
 			}
 
 	[TODO]
-	public IResourceWriter DefineResource(String name, String description, 
-										  String fileName, 
+	public IResourceWriter DefineResource(String name, String description,
+										  String fileName,
 										  ResourceAttributes attribute)
 			{
 		 		throw new NotImplementedException("DefineResource");
@@ -245,7 +245,7 @@ public sealed class AssemblyBuilder : Assembly
 
 	[TODO]
 	public void DefineVersionInfoResource(String product, String productVersion
-										 ,String company, String copyright, 
+										 ,String company, String copyright,
 										  String trademark)
 			{
 		 		throw new NotImplementedException("DefineVersionInfoResource");
@@ -409,13 +409,22 @@ public sealed class AssemblyBuilder : Assembly
 				this.fileKind = fileKind;
 			}
 
+	// SetCustomAttribute():
+	// All other XXXBuilder classes invoke call the public method
+	// AssemblyBuilder.SetCustomAttribute(), which invokes one of the
+	// internal SetCustomAttribute() methods that follow.
+
 	// Set custom attributes on a program item in this assembly.
-	[TODO]
 	internal void SetCustomAttribute
 				(IClrProgramItem item, CustomAttributeBuilder customBuilder)
 			{
-		 		throw new NotImplementedException("SetCustomAttribute");
+				byte[] blob = customBuilder.ToBytes();
+				IntPtr attribute = ClrAttributeCreate
+					(base.privateData,
+					 ((IClrProgramItem)(customBuilder.con)).ClrHandle, blob);
+				ClrAttributeAddToItem(item.ClrHandle, attribute);
 			}
+
 	[TODO]
 	internal void SetCustomAttribute
 				(IClrProgramItem item, ConstructorInfo con,
@@ -509,6 +518,16 @@ public sealed class AssemblyBuilder : Assembly
 	                                         byte[][] exceptionBlocks,
 	                                         IntPtr[] exceptionBlockFixupPtrs,
 	                                         int[] exceptionBlockFixupOffsets);
+
+	// Add a new attribute to an assembly image.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static IntPtr ClrAttributeCreate
+			(IntPtr assembly, IntPtr ctor, byte[] blob);
+
+	// Add an attribute to a program item and convert special attributes.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrAttributeAddToItem
+			(IntPtr item, IntPtr attribute);
 
 }; // class AssemblyBuilder
 

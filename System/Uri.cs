@@ -8,6 +8,7 @@
  * Contributed by Stephen Compall <rushing@sigecom.net>
  * Contributions by Gerard Toonstra <toonstra@ntlworld.com>
  * Contributions by Rich Baumann <biochem333@nyc.rr.com>
+ * Contributions by Gopal V <gopalv82@symonds.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +28,10 @@
 namespace System
 {
 
-using System.Text;
 using System.IO;
+using System.Net;
+using System.Text;
+using System.Net.Sockets;
 
 /*
 global TODO:
@@ -209,16 +212,21 @@ public class Uri : MarshalByRefObject
 			{
 				++toBeRemoved;
 				// removed w/o affecting toBeRemoved
-				dirs[curDir] = "";
+				dirs[curDir] = null;
 			}
 			else if (dirs[curDir] == ".")
-				dirs[curDir] = ""; // doesn't affect anything
+				dirs[curDir] = null; // doesn't affect anything
 			else if (toBeRemoved > 0) // remove this one
 			{
 				--toBeRemoved;
-				dirs[curDir] = "";
+				dirs[curDir] = null;
 			}
 			// if normal state (no .., normal dir) do nothing
+		}
+		
+		if(dirs[0].Length==0) // leading slash
+		{
+			dirs[0]=null;
 		}
 
 		if (toBeRemoved > 0) // wants to delete root
@@ -227,7 +235,7 @@ public class Uri : MarshalByRefObject
 
 		StringBuilder newpath = new StringBuilder(oldpath.Length);
 		foreach (String dir in dirs)
-			if (dir.Length > 0) // visible?
+			if (dir!=null) // visible?
 				newpath.Append('/').Append(dir);
 
 		// we always must have at least a slash
@@ -248,7 +256,12 @@ public class Uri : MarshalByRefObject
 		bool isDns = true;
 		foreach (String tok in name.Split('.'))
 		{
-			if (!Char.IsLetterOrDigit(tok, 0)
+			if(tok.Length==0) // ".." case
+			{
+				isDns = false;
+				break;
+			}
+			if (!Char.IsLetter(tok, 0)
 			    || !Char.IsLetterOrDigit(tok, tok.Length - 1)
 			    || !CharsAreAlnumDash(tok, 1, tok.Length - 2))
 			{
@@ -377,13 +390,14 @@ public class Uri : MarshalByRefObject
 	private static ushort parseHexWord(String src, ref int index)
 	{
 		int buildretval = 0;
-		int stop;
-		for (stop = index + 4; index < stop; ++index)
+		int stop= (index+4 <=src.Length) ? (index+4) : src.Length;
+		while(index < stop)
 		{
 			if (!IsHexDigit(src[index]))
 				break;
 			buildretval <<= 4;
 			buildretval |= FromHex(src[index]);
+			index++;
 		}
 		if (stop != index)
 			throw new FormatException(S._("Arg_HexDigit"));
@@ -395,9 +409,7 @@ public class Uri : MarshalByRefObject
 		if (schemeName == null || schemeName.Length == 0)
 			return false;
 
-		char charloc = schemeName[0];
-		if (charloc < 'a' && charloc > 'z' &&
-		    charloc < 'A' && charloc > 'Z')
+		if (!Char.IsLetter(schemeName[0]))
 			return false;
 		for (int i = 0; ++i < schemeName.Length;) // starts with 1
 		{
@@ -614,7 +626,7 @@ public class Uri : MarshalByRefObject
 
 	public static bool IsHexEncoding(String pattern, int index)
 	{
-		if (pattern.Length - index >= 3)
+		if (index >= 0 && pattern.Length - index >= 3)
 			return ((pattern[index] == '%') &&
 			    IsHexDigit(pattern[index+1]) &&
 			    IsHexDigit(pattern[index+2]));
@@ -784,9 +796,9 @@ public class Uri : MarshalByRefObject
 			if (needsEscaping(path,false))
 				// Escape() only affects path
 				this.Escape();
-			if (needsEscaping(query,true))
+			if (needsEscaping(query,false)) //query  = *( uchar | reserved )
 				query = EscapeString(query);
-			if (needsEscaping(fragment,true))
+			if (needsEscaping(fragment,false)) //fragment = *(uchar|reserved)
 				fragment = EscapeString(fragment);
 		}
 		else // user should have escaped
@@ -998,11 +1010,27 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
-			return (String.Equals(this.host, "localhost")
-				// according to System.Net.IPAddress,
-				// anything in 127.X.Y.Z
-				// is loopback. Maybe change this to comply.
-				|| String.Equals(this.host, "127.0.0.1"));
+			try
+			{
+				IPAddress ip=IPAddress.Parse(this.host);
+				return IPAddress.IsLoopback(ip);
+			}
+			catch(FormatException) //must be a name
+			{
+				try
+				{
+					IPHostEntry iph = Dns.GetHostByName(this.host);
+					foreach(IPAddress ip in iph.AddressList)
+					{
+						if(IPAddress.IsLoopback(ip))return true;
+					}
+				}
+				catch(SocketException) // cannot resolve name either
+				{
+					return false;
+				}
+			}
+			return false; // no way out now 
 		}
 	}
 
@@ -1108,7 +1136,7 @@ public class Uri : MarshalByRefObject
 			if (interimpos1 > 0)
 			{
 				this.userinfo = authority.Substring
-				  (0, interimpos1 - 1);
+				  (0, interimpos1);
 
 				interimpos2 = interimpos1 + 1;
 			}

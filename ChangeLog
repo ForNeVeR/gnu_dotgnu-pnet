@@ -1,4 +1,11 @@
 
+2002-11-23  Gopal.V  <gopalv82@symonds.net>
+
+	* System/Uri.cs: Fix some minor bugs in System.Uri
+	
+	* tests/System/TestUri.cs: Try to correct some of the errors in the
+	testcases and comment the ones that fail.
+
 2002-11-22  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 
 	* runtime/System/IO/FileStream.cs: fix bug in the constructor

@@ -89,7 +89,8 @@ int verify(int allowUnsafe)
 		}
 
 		/* Verify the method */
-		result = _ILVerify(&_ILNullCoder, &start, method, &code, allowUnsafe);
+		result = _ILVerify(&_ILNullCoder, &start, method,
+						   &code, allowUnsafe, 0);
 		if(!result)
 		{
 			return 0;
@@ -124,7 +125,8 @@ int verifyAllFail(int allowUnsafe)
 		}
 
 		/* Verify the method */
-		result = _ILVerify(&_ILNullCoder, &start, method, &code, allowUnsafe);
+		result = _ILVerify(&_ILNullCoder, &start, method,
+						   &code, allowUnsafe, 0);
 		if(result)
 		{
 			return 0;

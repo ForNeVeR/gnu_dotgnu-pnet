@@ -1,4 +1,9 @@
 
+2002-12-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* tests/test_verify.c: fix calls to "_ILVerify" to add the
+	extra parameter.
+
 2002-12-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am: put the libffi and libgc logic back because we

@@ -303,10 +303,12 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 			/* Get the native offset from the method start */
 			data->nativeOffset = (ILInt32)(frame->pc - start);
 
-			/* Get the IL offset from the coder */
+			/* Get the IL offset from the coder.  We use the native
+			   offset minus 1 because we want the IL offset for the
+			   instruction just before the return address, not after */
 			data->offset = (ILInt32)ILCoderGetILOffset
 				(thread->process->coder, (void *)start,
-				 (ILUInt32)(data->nativeOffset), 0);
+				 (ILUInt32)(data->nativeOffset - 1), 0);
 		}
 		else
 		{

@@ -31,6 +31,10 @@
 	line number for an IL offset just in case multiple nested blocks
 	start at the same code offset.
 
+	* engine/lib_diag.c (_IL_StackFrame_GetExceptionStackTrace):
+	return the IL offset for the instruction just before the return
+	address on the stack so that the correct line number is reported.
+
 2002-04-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,

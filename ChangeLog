@@ -3,6 +3,11 @@
 
 	* include/Makefile.am: add mising .h files to the install.
 
+	* Makefile.am, configure.in, clrwrap/.cvsignore, clrwrap/Makefile.am,
+	clrwrap/clrwrap.1, clrwrap/clrwrap.c: add the "clrwrap" program
+	to the system, which is designed to make it easier to launch
+	IL programs on Unix systems.
+
 2002-06-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_stmt.tc: fix SEGFAULT during -nostdlib

@@ -324,6 +324,7 @@ resgen/Makefile
 ildb/Makefile
 csdoc/Makefile
 csant/Makefile
+clrwrap/Makefile
 samples/Makefile
 doc/Makefile
 tests/Makefile])

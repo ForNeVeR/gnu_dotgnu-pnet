@@ -146,6 +146,73 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 	return procAddr;
 }
 
+#elif defined(__APPLE__) && defined(__MACH__)	/* MacOS X */
+
+#include <mach-o/dyld.h>
+
+void *ILDynLibraryOpen(const char *name)
+{
+	NSObjectFileImage file;
+	NSObjectFileImageReturnCode result;
+	NSModule module;
+
+	/* Attempt to open the dylib file */
+	result = NSCreateObjectFileImageFromFile(name, &file);
+	if (result != NSObjectFileImageSuccess)
+	{
+		return 0;
+	}
+
+	/* Link the module dependencies */
+	module = NSLinkModule(file, name,
+						  NSLINKMODULE_OPTION_BINDNOW |
+						  NSLINKMODULE_OPTION_PRIVATE |
+						  NSLINKMODULE_OPTION_RETURN_ON_ERROR);
+	return (void *)module;
+}
+
+void  ILDynLibraryClose(void *handle)
+{
+	NSUnLinkModule((NSModule)handle, NSUNLINKMODULE_OPTION_NONE);
+}
+
+static void *GetSymbol(void *handle, const char *symbol)
+{
+	NSSymbol sym;
+	sym = NSLookupSymbolInModule((NSModule)handle, symbol);
+	if(sym == 0)
+	{
+		return 0;
+	}
+	return (void *)NSAddressOfSymbol(sym);
+}
+
+void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
+{
+	void *value = GetSymbol(handle, (char *)symbol);
+	char *newName;
+	if(value)
+	{
+		return value;
+	}
+	newName = (char *)ILMalloc(strlen(symbol) + 2);
+	if(newName)
+	{
+		/* Try again with '_' prepended to the name */
+		newName[0] = '_';
+		strcpy(newName + 1, symbol);
+		value = GetSymbol(handle, newName);
+		if(value)
+		{
+			ILFree(newName);
+			return value;
+		}
+		ILFree(newName);
+	}
+	fprintf(stderr, "%s: could not find the specified symbol\n", symbol);
+	return 0;
+}
+
 #else	/* No dynamic library support */
 
 void *ILDynLibraryOpen(const char *name)

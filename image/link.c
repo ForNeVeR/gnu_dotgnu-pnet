@@ -31,7 +31,7 @@ extern	"C" {
 #define	CSCC_LIB_PATH_DEFAULT	\
 			"/usr/local/lib/cscc/lib:/usr/lib/cscc/lib"
 #define	LD_LIBRARY_PATH_DEFAULT	\
-			"/usr/local/lib:/usr/lib"
+			"/usr/local/lib:/usr/X11R6/lib:/usr/lib"
 
 /*
  * The cached system path, loaded from the environment.

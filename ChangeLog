@@ -13,6 +13,9 @@
 	image/meta_index.c, image/misc_token.c, image/program.h: load the
 	class names before the TypeRef and TypeDef tables.
 
+	* support/dynlib.c, image/link.c: improve dynamic library support
+	under MacOS X.
+
 2003-06-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y: Wrap all 'using' blocks in a new local

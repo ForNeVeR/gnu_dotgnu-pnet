@@ -29,6 +29,10 @@ namespace Y {} }"; convert enumerated types into class definition
 nodes; remove a shift/reduce conflict related to the handling of
 trailing commas in enum declarations.
 
+* codegen/cg_nodes.tc: remove obsolete "ILNode_EnumDeclaration";
+add "fieldInfo" to "ILNode_EnumMemberDeclaration"; add "nextEnum"
+to "ILNode_ClassDefn".
+
 2001-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.h, codegen/cg_gen.c: new functions "ILGenItemHasAttribute",

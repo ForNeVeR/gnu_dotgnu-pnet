@@ -568,6 +568,7 @@ struct _tagILEvalValue
 	ILNode     *baseClass;
 	ILNode     *body;
 	%nocreate ILClass *classInfo = {0};
+	%nocreate ILUInt64 nextEnum = {0};
 
 }
 %node ILNode_ScopeChange ILNode_Declaration =
@@ -645,20 +646,12 @@ struct _tagILEvalValue
 	ILNode	   *body;
 }
 
-%node ILNode_EnumDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	ILUInt32	modifiers;
-	ILNode	   *name;
-	ILNode	   *base;
-	ILNode	   *body; /* list of member declarations */
-}
-
 %node ILNode_EnumMemberDeclaration ILNode_Declaration =
 {
 	ILNode	   *attributes;
 	ILNode	   *name;
 	ILNode	   *value; /* optional */
+	%nocreate ILField *fieldInfo = {0};
 }
 	
 %node ILNode_DelegateDeclaration ILNode_Declaration =

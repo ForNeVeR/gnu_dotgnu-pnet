@@ -8,6 +8,10 @@
 	of the word "namespace" into "nspace" in the headers to better
 	integrate with modern C++ compilers.
 
+	* profiles/mkprofile.sh: remove the "older than" test from the
+	mkprofile.sh script because it was interfering with some very
+	old versions of "test".
+
 2002-07-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: latest version with cryptography classes.

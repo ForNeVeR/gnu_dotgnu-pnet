@@ -31,10 +31,10 @@ if test -z "$HEADER" ; then
 fi
 
 # Don't do anything if "il_profile.h" is more recent than "profile",
-# to avoid causing unnecessary recompiles.
-if test "$PROFILE" -ot "$HEADER" ; then
-	exit 0
-fi
+# to avoid causing unnecessary recompiles.  (Now done in include/Makefile.am).
+# if test "$PROFILE" -ot "$HEADER" ; then
+# 	exit 0
+# fi
 
 # Process the profile to create the header file.
 echo '#ifndef _IL_CONFIG_OPTIONS' >"$HEADER"

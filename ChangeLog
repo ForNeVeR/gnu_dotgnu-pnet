@@ -35,6 +35,9 @@
 	string-based switch statement into a set of nested if's because
 	csc generates unverifiable code for the switch.
 
+	* csunit/TestMain.cs: be more precise about how to locate
+	"Assembly.LoadFrom".
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, csunit/Makefile.am,

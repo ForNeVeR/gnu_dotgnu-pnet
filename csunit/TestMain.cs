@@ -127,8 +127,7 @@ public sealed class TestMain
 				// so we have to be careful how we invoke it).
 				MethodInfo loadFrom =
 					typeof(Assembly).GetMethod
-						("LoadFrom",
-						 BindingFlags.Static | BindingFlags.Public);
+							("LoadFrom", new Type [] {typeof(String)});
 				if(loadFrom != null)
 				{
 					Object[] invokeArgs = new Object [1];

@@ -398,22 +398,25 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		{
 			case IL_CONVERT_VERIFY_FAILED:
 			{
-				ILExecThreadThrowSystem
-					(thread, "System.Security.VerificationException", 0);
+				ILExecThreadSetException
+					(thread, _ILSystemException(thread, 
+						"System.Security.VerificationException"));
 			}
 			break;
 
 			case IL_CONVERT_MISSING_METHOD:
 			{
-				ILExecThreadThrowSystem
-					(thread, "System.MissingMethodException", 0);
+				ILExecThreadSetException
+					(thread, _ILSystemException(thread, 
+						"System.MissingMethodException"));
 			}
 			break;
 
 			case IL_CONVERT_NOT_SUPPORTED:
 			{
-				ILExecThreadThrowSystem
-					(thread, "System.NotSupportedException", 0);
+				ILExecThreadSetException
+					(thread, _ILSystemException(thread, 
+						"System.NotSupportedException"));
 			}
 			break;
 

@@ -20,9 +20,6 @@
 
 #if !defined(X_DISPLAY_MISSING) && HAVE_SELECT
 
-/* XFT support doesn't work yet */
-/*#define	USE_XFT_EXTENSION	1*/
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>

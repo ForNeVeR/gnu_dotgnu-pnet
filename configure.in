@@ -17,6 +17,7 @@ AC_SUBST(ILFIND)
 AC_SUBST(ASSEMBLY_LINKER)
 AC_SUBST(PNET_PATH)
 AC_SUBST(X11_LIB)
+AC_SUBST(XFT_LIB)
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -33,6 +34,15 @@ if test -z "$TREECC" ; then
     exit 1
 fi
 
+dnl Option to enable the Xft library for Freetype font support.
+AC_ARG_ENABLE(xft,
+[  --enable-xft            Enable Xft for Freetype font support],
+[case "${enableval}" in
+  yes) xft=true ;;
+  no)  xft=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-xft) ;;
+esac],[xft=false])
+
 dnl Check for file extensions.
 AC_EXEEXT
 AC_OBJEXT
@@ -44,12 +54,22 @@ AC_HEADER_TIME
 AC_CHECK_HEADERS(time.h sys/time.h sys/types.h sys/select.h unistd.h)
 AC_CHECK_FUNCS(select)
 
-dnl Determine if we should add -lX11 to the link line of "libXsharpSupport.so".
+dnl Determine if we should add -lX11 and -lXft to the link line
+dnl of "libXsharpSupport.so".
 if test "x$no_x" = "xyes" ; then
 	X11_LIB=
+	XFT_LIB=
 else
 	X11_LIB=-lX11
+	if test x$xft = xtrue ; then
+		XFT_LIB=-lXft
+		AC_DEFINE(USE_XFT_EXTENSION)
+	else
+		XFT_LIB=
+	fi
 fi
+
+dnl Determine if we should add -lXft to the link line of "libXsharpSupport.so".
 
 dnl The --with-pnet option can be used to specify the location of
 dnl Portable.NET, so that we know where to get the C# compiler, etc.

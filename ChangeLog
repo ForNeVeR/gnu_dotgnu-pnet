@@ -4,6 +4,10 @@
 	* image/Makefile.am, image/ser_writer.c, include/il_serialize.h:
 	add library code to "image" to write serialized attribute values.
 
+	* cscc/csharp/cs_attrs.c, cscc/csharp/cs_decls.tc, image/lib_attrs.c:
+	turn on real compilation of attributes and implement the serialization
+	functionality.
+
 2002-09-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/convert.c, include/il_gc.h, support/def_gc.c, support/hb_gc.c:

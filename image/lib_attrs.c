@@ -77,7 +77,7 @@ static int DllImportAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	}
 
 	/* Collect up extra information from the attribute blob */
-	attrs = 0;
+	attrs = IL_META_PINVOKE_CALL_CONV_CDECL;
 	entryPoint = 0;
 	entryPointLen = -1;
 	numExtra = ILSerializeReaderGetNumExtra(reader);

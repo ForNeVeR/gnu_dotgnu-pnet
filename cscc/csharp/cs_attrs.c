@@ -20,10 +20,13 @@
 
 #include "cs_internal.h"
 #include <codegen/cg_nodemap.h>
+#include "il_serialize.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
+
+#if 0
 
 static void AddDllImport(ILProgramItem *item, const char *dllName)
 {
@@ -42,6 +45,8 @@ static void AddDllImport(ILProgramItem *item, const char *dllName)
 					 IL_META_METHODDEF_PINVOKE_IMPL,
 					 IL_META_METHODDEF_PINVOKE_IMPL);
 }
+
+#endif
 
 /*
  * Get the "field" target for a program item.
@@ -112,8 +117,6 @@ static ILProgramItem *GetParamTarget(ILGenInfo *info, ILMethod *method,
 	return ILToProgramItem(param);
 }
 
-#if 0
-
 /*
  * Determine if a class is "AttributeUsageAttribute".
  */
@@ -132,7 +135,20 @@ static int IsAttributeUsage(ILClass *classInfo)
 	return (ILClass_NestedParent(classInfo) == 0);
 }
 
-#endif
+/*
+ * Modify an attribute name so that it ends in "Attribute".
+ */
+static void ModifyAttrName(ILNode_Identifier *ident)
+{
+	char *name = ident->name;
+	int namelen = strlen(name);
+	if(namelen < 9 || strcmp(name + namelen - 9, "Attribute") != 0)
+	{
+		ident->name = ILInternAppendedString
+			(ILInternString(name, namelen),
+			 ILInternString("Attribute", 9)).string;
+	}
+}
 
 /*
  * Process a single attribute in a section.
@@ -140,7 +156,6 @@ static int IsAttributeUsage(ILClass *classInfo)
 static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 						int target, ILNode_Attribute *attr)
 {
-#if 0
 	ILType *type;
 	ILClass *classInfo;
 	ILNode *argList;
@@ -160,6 +175,23 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	ILType *paramType;
 	int allowMultiple;
 	int inherited;
+	ILSerializeWriter *writer = 0;
+	ILEvalValue *argValue;
+	int serialType;
+	const void *blob;
+	unsigned long blobLen;
+	ILAttribute *attribute;
+
+	/* Make sure that the attribute type name ends in "Attribute" */
+	if(yyisa(attr->name, ILNode_Identifier))
+	{
+		ModifyAttrName((ILNode_Identifier *)(attr->name));
+	}
+	else if(yyisa(attr->name, ILNode_QualIdent))
+	{
+		ModifyAttrName
+		  ((ILNode_Identifier *)(((ILNode_QualIdent *)(attr->name))->right));
+	}
 
 	/* Perform semantic analysis on the attribute type */
 	type = CSSemType(attr->name, info, &(attr->name));
@@ -246,9 +278,12 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			if(!CSSemExpectValue(arg, info, iter.last, &value))
 			{
 				haveErrors = 1;
-				value.type = ILType_Int32;
+				evalArgs[argNum].type = ILType_Int32;
 			}
-			evalArgs[argNum].type = value.type;
+			else
+			{
+				evalArgs[argNum].type = CSSemGetType(value);
+			}
 			evalArgs[argNum].node = *(iter.last);
 			evalArgs[argNum].parent = iter.last;
 			evalArgs[argNum].modifier = ILParamMod_empty;
@@ -281,7 +316,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 
 	/* Resolve the constructors in the attribute type */
 	method = CSResolveConstructor(info, (ILNode *)attr, type);
-	if(method.kind != CS_SEMKIND_METHOD_GROUP)
+	if(!CSSemIsMethodGroup(method))
 	{
 		CCErrorOnLine(yygetfilename(attr), yygetlinenum(attr),
 					  "`%s' does not have an accessible constructor",
@@ -291,41 +326,41 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 
 	/* Find the set of candidate methods */
 	itemNum = 0;
-	while((itemInfo = CSGetGroupMember((void *)(method.type), itemNum)) != 0)
+	while((itemInfo = CSGetGroupMember(CSSemGetGroup(method), itemNum)) != 0)
 	{
 		candidateForm = CSItemIsCandidate(info, itemInfo, evalArgs, numArgs);
 		if(candidateForm)
 		{
-			CSSetGroupMemberForm((void *)(method.type), itemNum,
+			CSSetGroupMemberForm(CSSemGetGroup(method), itemNum,
 								 candidateForm);
 			++itemNum;
 		}
 		else
 		{
-			method.type = (ILType *)CSRemoveGroupMember
-								((void *)(method.type), itemNum);
+			CSSemModifyGroup
+				(method, CSRemoveGroupMember(CSSemGetGroup(method), itemNum));
 		}
 	}
 
 	/* If there are no candidates left, then bail out */
 	itemNum = 0;
-	itemInfo = CSGetGroupMember((void *)(method.type), itemNum);
+	itemInfo = CSGetGroupMember(CSSemGetGroup(method), itemNum);
 	if(!itemInfo)
 	{
 		CSItemCandidateError((ILNode *)attr, 0, 1,
-						     (void *)(method.type), evalArgs, numArgs);
+						     CSSemGetGroup(method), evalArgs, numArgs);
 		goto cleanup;
 	}
 
 	/* There are two or more candidates, then try to find the best one */
-	if(CSGetGroupMember((void *)(method.type), 1) != 0)
+	if(CSGetGroupMember(CSSemGetGroup(method), 1) != 0)
 	{
-		itemInfo = CSBestCandidate(info, (void *)(method.type),
+		itemInfo = CSBestCandidate(info, CSSemGetGroup(method),
 								   evalArgs, numArgs);
 		if(!itemInfo)
 		{
 			CSItemCandidateError((ILNode *)attr, 0, 1,
-							     (void *)(method.type), evalArgs, numArgs);
+							     CSSemGetGroup(method), evalArgs, numArgs);
 			goto cleanup;
 		}
 	}
@@ -354,6 +389,14 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 						  argNum + 1);
 			haveErrors = 1;
 		}
+		else if(ILSerializeGetType(paramType) == -1)
+		{
+			CCErrorOnLine(yygetfilename(evalArgs[argNum].node),
+						  yygetlinenum(evalArgs[argNum].node),
+						  _("attribute argument %d is not serializable"),
+						  argNum + 1);
+			haveErrors = 1;
+		}
 	}
 	if(haveErrors)
 	{
@@ -361,7 +404,85 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	}
 
 	/* Build the serialized attribute value */
-	/* TODO */
+	writer = ILSerializeWriterInit();
+	if(!writer)
+	{
+		CCOutOfMemory();
+	}
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		paramType = ILTypeGetParam(signature, argNum + 1);
+		serialType = ILSerializeGetType(paramType);
+		argValue = &(evalValues[argNum]);
+		switch(serialType)
+		{
+			case IL_META_SERIALTYPE_BOOLEAN:
+			case IL_META_SERIALTYPE_I1:
+			case IL_META_SERIALTYPE_U1:
+			case IL_META_SERIALTYPE_I2:
+			case IL_META_SERIALTYPE_U2:
+			case IL_META_SERIALTYPE_CHAR:
+			case IL_META_SERIALTYPE_I4:
+			case IL_META_SERIALTYPE_U4:
+			{
+				ILSerializeWriterSetInt32(writer, argValue->un.i4Value,
+										  serialType);
+			}
+			break;
+
+			case IL_META_SERIALTYPE_I8:
+			case IL_META_SERIALTYPE_U8:
+			{
+				ILSerializeWriterSetInt64(writer, argValue->un.i8Value);
+			}
+			break;
+
+			case IL_META_SERIALTYPE_R4:
+			{
+				ILSerializeWriterSetFloat32(writer, argValue->un.r4Value);
+			}
+			break;
+
+			case IL_META_SERIALTYPE_R8:
+			{
+				ILSerializeWriterSetFloat64(writer, argValue->un.r8Value);
+			}
+			break;
+
+			case IL_META_SERIALTYPE_STRING:
+			{
+				ILSerializeWriterSetString(writer, argValue->un.strValue.str,
+										   argValue->un.strValue.len);
+			}
+			break;
+
+			default:
+			{
+				/* TODO: types and arrays */
+			}
+			break;
+		}
+	}
+	ILSerializeWriterSetNumExtra(writer, 0);
+	/* TODO: serialize named arguments */
+	blob = ILSerializeWriterGetBlob(writer, &blobLen);
+	if(!blob)
+	{
+		CCOutOfMemory();
+	}
+
+	/* Add the attribute value to the program item */
+	attribute = ILAttributeCreate(info->image, 0);
+	if(!attribute)
+	{
+		CCOutOfMemory();
+	}
+	ILAttributeSetType(attribute, ILToProgramItem(methodInfo));
+	if(!ILAttributeSetValue(attribute, blob, blobLen))
+	{
+		CCOutOfMemory();
+	}
+	ILProgramItemAddAttribute(item, attribute);
 
 cleanup:
 	if(evalArgs)
@@ -372,8 +493,12 @@ cleanup:
 	{
 		ILFree(evalValues);
 	}
-#endif
+	if(writer)
+	{
+		ILSerializeWriterDestroy(writer);
+	}
 
+#if 0
 	/* Quick and dirty hack: recognise the "DllImport" attribute */
 	if(target == CS_ATTR_METHOD)
 	{
@@ -408,6 +533,7 @@ cleanup:
 			}
 		}
 	}
+#endif
 }
 
 void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,

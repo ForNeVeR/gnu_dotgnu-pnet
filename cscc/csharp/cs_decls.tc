@@ -79,8 +79,17 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	{
 		target = CS_ATTR_CLASS;
 	}
-	CSProcessAttrs(info, ILToProgramItem(node->classInfo),
-				   node->attributes, target);
+	if(node->attributes)
+	{
+		savedClass = info->currentClass;
+		savedNamespace = info->currentNamespace;
+		info->currentClass = (ILNode *)node;
+		info->currentNamespace = node->namespaceNode;
+		CSProcessAttrs(info, ILToProgramItem(node->classInfo),
+					   node->attributes, target);
+		info->currentClass = savedClass;
+		info->currentNamespace = savedNamespace;
+	}
 
 	/* Perform semantic analysis on the node */
 	hadStaticCtorsBefore = (node->staticCtors != 0);

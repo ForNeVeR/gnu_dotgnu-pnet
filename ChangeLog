@@ -39,6 +39,8 @@ resources/en_US/runtime/IO.txt,
 resources/en_US/runtime/Exception.txt: new resource strings for the
 new classes.
 
+* resources/en_US/runtime/IO.txt: remove duplicate strings.
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for the "0.1.0" release.

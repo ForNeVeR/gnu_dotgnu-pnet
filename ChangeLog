@@ -1,3 +1,6 @@
+2002-04-21  Stephen Compall  <rushing@sigecom.net>
+
+	* runtime/System/IO/StringReader.cs: added implementation.
 
 2002-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -66,7 +66,8 @@
  */
 static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 						 ILMethod *method, ILStandAloneSig *localVarSig,
-						 ILType *returnType)
+						 ILType *returnType, int isConstructor,
+						 int suppressThis)
 {
 	ILUInt32 offset;
 	ILUInt32 maxArgOffset;
@@ -75,6 +76,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	ILUInt32 argIndex;
 	ILType *signature;
 	ILType *type;
+	unsigned long pushDown;
 
 	/* Clear the label pool */
 	ILMemPoolClear(&(coder->labelPool));
@@ -94,14 +96,28 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		coder->start = coder->posn;
 	}
 
+	/* If this method is a constructor, then we need to output
+	   some extra entry point code just before the main entry */
+	if(isConstructor)
+	{
+		CVM_BYTE(COP_NEW);
+		CVM_BYTE(COP_PUSHDOWN);
+		pushDown = coder->posn;
+		CVM_WORD(0);
+		coder->start = coder->posn;
+	}
+	else
+	{
+		pushDown = 0;
+	}
+
 	/* Return the start of the method code to the caller */
 	*start = coder->buffer + coder->start;
 
 	/* Allocate offsets for the arguments */
 	signature = ILMethod_Signature(method);
 	num = (ILUInt32)(signature->num);
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	if(ILType_HasThis(signature) && !suppressThis)
 	{
 		/* Allocate an argument slot for the "this" parameter */
 		coder->argOffsets[0] = 0;
@@ -110,7 +126,9 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	}
 	else
 	{
-		/* No "this" parameter, or it is explicitly provided in the signature */
+		/* No "this" parameter, or it is explicitly provided in the
+		   signature, or this is an allocating constructor which must
+		   create its own "this" parameter during execution */
 		argIndex = 0;
 		offset = 0;
 	}
@@ -133,9 +151,20 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	/* Set the number of arguments, which initialize's the method's frame */
 	CVM_WIDE(COP_SET_NUM_ARGS, offset);
 
+	/* If this is a constructor, then back-patch the push down size,
+	   which is one less than the number of argument words */
+	if(isConstructor)
+	{
+		--offset;
+		coder->buffer[pushDown]     = (unsigned char)(offset);
+		coder->buffer[pushDown + 1] = (unsigned char)(offset >> 8);
+		coder->buffer[pushDown + 2] = (unsigned char)(offset >> 16);
+		coder->buffer[pushDown + 3] = (unsigned char)(offset >> 24);
+		++offset;
+	}
+
 	/* Fix up any arguments that are larger than their true types */
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	if(ILType_HasThis(signature) && !suppressThis)
 	{
 		/* Allocate an argument slot for the "this" parameter */
 		argIndex = 1;
@@ -251,7 +280,8 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 						  ILMethod *method, ILMethodCode *code)
 {
 	return CVMEntryPoint((ILCVMCoder *)_coder, start, method,
-						 code->localVarSig, 0);
+						 code->localVarSig, 0,
+						 ILMethod_IsConstructor(method), 0);
 }
 
 /*
@@ -273,7 +303,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	{
 		returnType = 0;
 	}
-	if(!CVMEntryPoint(coder, start, method, 0, returnType))
+	if(!CVMEntryPoint(coder, start, method, 0, returnType, 0, 0))
 	{
 		return 0;
 	}
@@ -294,10 +324,20 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 		CVM_ADJUST(1);
 		++numArgs;
 	}
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	if(ILType_HasThis(signature))
 	{
-		/* This method has a "this" pointer */
+		if(!ILMethod_IsVirtual(method))
+		{
+			/* This is a non-virtual instance method.  We need to check the
+			   "this" argument for null before we push the pointer args.
+			   This takes the burden off the underlying code to check for
+			   null.  Virtual method calls check for null elsewhere */
+			CVM_BYTE(COP_PLOAD_0);
+			CVM_ADJUST(1);
+			CVM_BYTE(COP_CKNULL);
+			CVM_BYTE(COP_POP);
+			CVM_ADJUST(-1);
+		}
 		for(param = 0; param <= signature->num; ++param)
 		{
 			CVM_WIDE(COP_WADDR, coder->argOffsets[param]);
@@ -420,6 +460,89 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	{
 		CVM_BYTE(COP_RETURN);
 	}
+
+	/* Done */
+	return 1;
+}
+
+/*
+ * Set up a CVM coder instance to process a specific external constructor.
+ */
+static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
+								    ILMethod *method, void *fn, void *cif,
+								    void *ctorfn, void *ctorcif,
+									int isInternal)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	ILType *signature = ILMethod_Signature(method);
+	ILUInt32 numArgs;
+	ILUInt32 param;
+	ILInt32 dest;
+	unsigned char *start2;
+
+	/* Output the code for the main method entry point, which will
+	   include the prefix code for allocating fixed-sized objects */
+	if(!CVMCoder_SetupExtern(_coder, start, method, fn, cif, isInternal))
+	{
+		return 0;
+	}
+
+	/* If we don't have an allocating constructor, then we are done */
+	if(!ctorfn)
+	{
+		return 0;
+	}
+
+	/* If the coder buffer is full, then don't go any further.
+	   The "Finish" code will cause a cache flush and restart */
+	if(coder->posn >= coder->len)
+	{
+		return 1;
+	}
+
+	/* Output the entry point code for the allocating constructor */
+	if(!CVMEntryPoint(coder, &start2, method, 0,
+					  ILType_FromClass(ILMethod_Owner(method)), 0, 1))
+	{
+		return 0;
+	}
+
+	/* Back-patch the prefix code to jump to the allocating constructor */
+	dest = (ILInt32)(start2 - (*start - 6));
+	(*start)[-6] = COP_BR_LONG;
+	(*start)[-5] = COP_BR;
+	(*start)[-4] = (unsigned char)(dest);
+	(*start)[-3] = (unsigned char)(dest >> 8);
+	(*start)[-2] = (unsigned char)(dest >> 16);
+	(*start)[-1] = (unsigned char)(dest >> 24);
+
+	/* Push the arguments for the call onto the stack */
+	numArgs = 0;
+	if(isInternal)
+	{
+		/* Push a pointer to the thread value */
+		CVM_BYTE(COP_PUSH_THREAD);
+		CVM_ADJUST(1);
+		++numArgs;
+	}
+	for(param = 0; param < signature->num; ++param)
+	{
+		CVM_WIDE(COP_WADDR, coder->argOffsets[param]);
+		CVM_ADJUST(1);
+		++numArgs;
+	}
+	CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
+	CVM_ADJUST(1);
+	++numArgs;
+
+	/* Output the call to the external method */
+	CVM_WIDE(COP_CALL_NATIVE, numArgs);
+	CVM_PTR(ctorfn);
+	CVM_PTR(ctorcif);
+	CVM_ADJUST(-((ILInt32)numArgs));
+
+	/* Return the contents of the local, which is the allocated object */
+	CVM_RETURN(1);
 
 	/* Done */
 	return 1;

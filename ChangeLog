@@ -1,4 +1,10 @@
 
+2001-10-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/cvmc_setup.c: check the "this" parameter of instance methods
+for null before passing control to an "internalcall" or "PInvoke" function;
+use "ILType_HasThis" and "ILType_IsConstructor" where appropriate.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

@@ -182,7 +182,7 @@ CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
  * value is an indexer group, or "void".
  */
 CSSemValue CSResolveIndexers(ILGenInfo *genInfo, ILNode *node,
-							 ILClass *classInfo);
+							 ILClass *classInfo, int baseAccess);
 
 /*
  * Create a method group that contains a single method.

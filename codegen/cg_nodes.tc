@@ -588,6 +588,7 @@ struct _tagILSwitchValue
 	ILType *objectType;
 	ILType *elemType;
 	ILMachineType machineType;
+	int baseAccess;
 	%nocreate long saveStack = {0};
 }
 

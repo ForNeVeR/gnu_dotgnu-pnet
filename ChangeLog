@@ -1,4 +1,10 @@
 
+2003-05-29  Gopal.V  <gopalv82@symonds.net>
+	
+	* codegen/cg_nodes.tc, codegen/cg_lvalue.tc, cscc/csharp/cs_lvalue.tc,
+	cscc/csharp/cs_internal.h, cscc/csharp/cs_lookup.c: Implement semantic
+	analysis and code generation for base element access.
+
 2003-05-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_socket.c,

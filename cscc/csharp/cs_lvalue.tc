@@ -1245,9 +1245,162 @@ ILNode_SemAnalysis(ILNode_BaseAccess)
  */
 ILNode_SemAnalysis(ILNode_BaseElement)
 {
-	/* TODO */
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Int32);
+	ILNode_MethodDeclaration *caller;
+	ILClass *classInfo;
+	ILNode *thisExpr;
+	CSSemValue indexers;
+	CSEvalArg *args;
+	int numArgs, argNum;
+	unsigned long itemNum;
+	ILProgramItem *itemInfo;
+	int candidateForm, kind;
+	ILMethod *getMethod;
+	ILMethod *setMethod;
+	ILType *objectType;
+	ILNode *tempNode;
+	
+	/* Bail out if "base" is used within a static method */
+	caller = (ILNode_MethodDeclaration *)(info->currentMethod);
+	if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "cannot use base reference in a static method");
+		CSSemSetType(value, ILType_Int32);
+		return value;
+	}
+
+	/* Find the parent class to start searching from */
+	classInfo = ILClass_Parent(ILMethod_Owner(caller->methodInfo));
+	if(!classInfo)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "cannot use base reference in `System.Object'");
+		CSSemSetType(value, ILType_Int32);
+		return value;
+	}
+
+	/* Construct a dummy "this" expression to represent the object */
+	thisExpr = ILNode_This_create();
+
+	/* Perform semantic analysis on the index argument list */
+	numArgs = CSEvalArguments(info, node->expr, &(node->expr), &args);
+	if(numArgs < 0)
+	{
+		CSSemSetLValue(value, ILType_Int32);
+		return value;
+	}
+
+	/* Resolve the indexer for this type */
+	objectType = ILClassToType(classInfo);
+
+	indexers = CSResolveIndexers(info, (ILNode *)node,
+								 ILType_ToClass(objectType),1);
+	
+	if(CSSemIsIndexerGroup(indexers))
+	{
+		/* Scan through the indexer group looking for something
+		   that is applicable to the expression list */
+		itemNum = 0;
+		while((itemInfo = CSGetGroupMember
+					(CSSemGetGroup(indexers), itemNum)) != 0)
+		{
+			candidateForm = CSItemIsCandidate
+					(info, itemInfo, args, numArgs);
+			if(candidateForm)
+			{
+				CSSetGroupMemberForm(CSSemGetGroup(indexers), itemNum,
+									 candidateForm);
+				++itemNum;
+			}
+			else
+			{
+				CSSemModifyGroup(indexers, (ILType *)CSRemoveGroupMember
+									(CSSemGetGroup(indexers), itemNum));
+			}
+		}
+
+		/* If there are no candidates left, then bail out */
+		itemNum = 0;
+		itemInfo = CSGetGroupMember(CSSemGetGroup(indexers), itemNum);
+		if(!itemInfo)
+		{
+			CSItemCandidateError((ILNode *)node, 0, 0,
+							     CSSemGetGroup(indexers), args, numArgs);
+			CSEvalFreeArguments(args);
+			return value;
+		}
+
+		/* If there are two or more candidates, then try to
+		   find the best one */
+		if(CSGetGroupMember(CSSemGetGroup(indexers), 1) != 0)
+		{
+			itemInfo = CSBestCandidate(info, CSSemGetGroup(indexers),
+									   args, numArgs);
+			if(!itemInfo)
+			{
+				CSItemCandidateError((ILNode *)node, 0, 0,
+								     CSSemGetGroup(indexers),
+									 args, numArgs);
+				CSEvalFreeArguments(args);
+				return value;
+			}
+		}
+
+		/* Locate the "get" and "set" methods for the indexer */
+		getMethod = ILProperty_Getter((ILProperty *)itemInfo);
+		setMethod = ILProperty_Setter((ILProperty *)itemInfo);
+
+		/* Determine the semantic kind for the value */
+		if(getMethod && setMethod)
+		{
+			kind = CS_SEMKIND_LVALUE;
+		}
+		else if(getMethod)
+		{
+			kind = CS_SEMKIND_RVALUE;
+		}
+		else if(setMethod)
+		{
+			kind = CS_SEMKIND_SVALUE;
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "indexer does not have `get' or `set' accessors");
+			kind = CS_SEMKIND_LVALUE;
+		}
+
+		/* Import the methods into this image */
+		if(getMethod)
+		{
+			getMethod = (ILMethod *)ILMemberImport
+					(info->image, (ILMember *)getMethod);
+		}
+		if(setMethod)
+		{
+			setMethod = (ILMethod *)ILMemberImport
+					(info->image, (ILMember *)setMethod);
+		}
+
+		/* Coerce the arguments and build the final argument list */
+		CSSemSetValueKind(value, kind, CSItemCoerceArgs
+					(info, ILToProgramItem(itemInfo),
+					 args, numArgs, &(node->expr)));
+
+		/* Replace this node with an indexer access node */
+		*parent = ILNode_IndexerAccess_create
+				(thisExpr, node->expr, getMethod, setMethod,
+				 objectType, CSSemGetType(value),
+				 ILTypeToMachineType(CSSemGetType(value)),1);
+	}
+	else
+	{
+		/* No indexers are defined for this type */
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "array or indexed value expected");
+		CSSemSetLValue(value, ILType_Int32);
+	}
 	return value;
 }
 
@@ -1447,7 +1600,7 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 		/* Resolve the indexer for this type */
 		objectType = CSSemGetType(value);
 		indexers = CSResolveIndexers(info, (ILNode *)node,
-									 ILType_ToClass(objectType));
+									 ILType_ToClass(objectType),0);
 		if(CSSemIsIndexerGroup(indexers))
 		{
 			/* Scan through the indexer group looking for something
@@ -1543,7 +1696,7 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 			*parent = ILNode_IndexerAccess_create
 					(node->array, node->indices, getMethod, setMethod,
 					 objectType, CSSemGetType(value),
-					 ILTypeToMachineType(CSSemGetType(value)));
+					 ILTypeToMachineType(CSSemGetType(value)),0);
 		}
 		else
 		{

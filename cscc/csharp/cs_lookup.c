@@ -676,7 +676,7 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info,
  * Process a class and add all indexers to a set of member lookup results.
  */
 static void FindIndexers(ILClass *info, ILClass *accessedFrom,
-					     CSMemberLookupInfo *results)
+					     CSMemberLookupInfo *results, int baseAccess)
 {
 	ILImplements *impl;
 	ILMember *member;
@@ -707,7 +707,8 @@ static void FindIndexers(ILClass *info, ILClass *accessedFrom,
 					/* Static indexers are not legal, so skip them */
 					continue;
 				}
-				if(ILMethod_IsVirtual(method) && !ILMethod_IsNewSlot(method))
+				if((!baseAccess) && 
+					ILMethod_IsVirtual(method) && !ILMethod_IsNewSlot(method))
 				{
 					/* This is a virtual override, so skip it */
 					continue;
@@ -737,7 +738,7 @@ static void FindIndexers(ILClass *info, ILClass *accessedFrom,
 		while((impl = ILClassNextImplements(info, impl)) != 0)
 		{
 			FindIndexers(ILImplementsGetInterface(impl),
-					     accessedFrom, results);
+					     accessedFrom, results, baseAccess);
 		}
 
 		/* Move up to the parent */
@@ -749,7 +750,8 @@ static void FindIndexers(ILClass *info, ILClass *accessedFrom,
  * Perform an indexer lookup on a type.
  */
 static int IndexerLookup(ILGenInfo *genInfo, ILClass *info,
-				         ILClass *accessedFrom, CSMemberLookupInfo *results)
+				         ILClass *accessedFrom, CSMemberLookupInfo *results,
+						 int baseAccess)
 {
 	/* Initialize the results */
 	InitMembers(results);
@@ -757,7 +759,7 @@ static int IndexerLookup(ILGenInfo *genInfo, ILClass *info,
 	/* Collect up all indexers */
 	if(info)
 	{
-		FindIndexers(info, accessedFrom, results);
+		FindIndexers(info, accessedFrom, results, baseAccess);
 	}
 
 	/* Trim the list and determine the kind for the result */
@@ -1656,7 +1658,7 @@ CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
 }
 
 CSSemValue CSResolveIndexers(ILGenInfo *genInfo, ILNode *node,
-							 ILClass *classInfo)
+							 ILClass *classInfo, int baseAccess)
 {
 	CSSemValue value;
 	ILClass *accessedFrom;
@@ -1667,7 +1669,8 @@ CSSemValue CSResolveIndexers(ILGenInfo *genInfo, ILNode *node,
 	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
 
 	/* Perform a member lookup based on the class */
-	result = IndexerLookup(genInfo, classInfo, accessedFrom, &results);
+	result = IndexerLookup(genInfo, classInfo, accessedFrom, &results, 
+							baseAccess);
 	if(result != CS_SEMKIND_VOID)
 	{
 		CSSemSetKind(value, result, results.members);

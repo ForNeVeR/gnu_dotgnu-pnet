@@ -258,7 +258,7 @@ ILNode_GenValue(ILNode_BaseAccess)
  */
 ILNode_GenValue(ILNode_BaseElement)
 {
-	/* TODO */
+	/* Should be handled by IndexerAccess */
 	return node->machineType;
 }
 
@@ -389,7 +389,14 @@ ILNode_GenValue(ILNode_IndexerAccess)
 	long saveStack = info->stackHeight;
 	ILNode_GenValue(node->object, info);
 	ILNode_GenValue(node->indices, info);
-	ILGenCallMethod(info, node->getMethod);
+	if(node->baseAccess)
+	{
+		ILGenCallByMethod(info, node->getMethod);
+	}
+	else
+	{
+		ILGenCallMethod(info, node->getMethod);
+	}
 	info->stackHeight = saveStack + 1;
 	return node->machineType;
 }
@@ -438,7 +445,7 @@ ILNode_Prepare(ILNode_BaseAccess)
  */
 ILNode_Prepare(ILNode_BaseElement)
 {
-	/* TODO */
+	/* Should be handled by IndexerAccess */
 	return node->machineType;
 }
 
@@ -614,7 +621,7 @@ ILNode_GetAndPrepare(ILNode_BaseAccess)
  */
 ILNode_GetAndPrepare(ILNode_BaseElement)
 {
-	/* TODO */
+	/* Should be handled by IndexerAccess */
 	return node->machineType;
 }
 
@@ -1016,7 +1023,14 @@ ILNode_GetAndPrepare(ILNode_IndexerAccess)
 	{
 		/* Get the indexer element and save it */
 		tempValueVar = ILGenTempTypedVar(info, node->elemType);
-		ILGenCallMethod(info, node->getMethod);
+		if(node->baseAccess)
+		{
+			ILGenCallByMethod(info, node->getMethod);
+		}
+		else
+		{
+			ILGenCallMethod(info, node->getMethod);
+		}
 		ILGenAdjust(info, -numArgs);
 		ILGenSimple(info, IL_OP_DUP);
 		ILGenAdjust(info, 1);
@@ -1050,7 +1064,14 @@ ILNode_GetAndPrepare(ILNode_IndexerAccess)
 			ILGenLoadLocal(info, tempIndexVars[argNum]);
 			ILGenAdjust(info, 1);
 		}
-		ILGenCallMethod(info, node->getMethod);
+		if(node->baseAccess)
+		{
+			ILGenCallByMethod(info, node->getMethod);
+		}
+		else
+		{
+			ILGenCallMethod(info, node->getMethod);
+		}
 		ILGenAdjust(info, -numArgs);
 	}
 
@@ -1140,7 +1161,7 @@ ILNode_Store(ILNode_MemberAccess)
  */
 ILNode_Store(ILNode_BaseAccess)
 {
-	/* TODO */
+	/* Should be handled by IndexerAccess */
 }
 
 /*
@@ -1148,7 +1169,7 @@ ILNode_Store(ILNode_BaseAccess)
  */
 ILNode_Store(ILNode_BaseElement)
 {
-	/* TODO */
+	/* Should be handled by IndexerAccess */
 }
 
 /*
@@ -1354,7 +1375,14 @@ ILNode_Store(ILNode_IndexerAccess)
 		ILGenAdjust(info, 1);
 		ILGenStoreLocal(info, tempVar);
 		ILGenAdjust(info, -1);
-		ILGenCallMethod(info, node->setMethod);
+		if(node->baseAccess)
+		{
+			ILGenCallByMethod(info, node->setMethod);
+		}
+		else
+		{
+			ILGenCallMethod(info, node->setMethod);
+		}
 		info->stackHeight = node->saveStack;
 		ILGenLoadLocal(info, tempVar);
 		ILGenAdjust(info, 1);
@@ -1362,7 +1390,14 @@ ILNode_Store(ILNode_IndexerAccess)
 	}
 	else
 	{
-		ILGenCallMethod(info, node->setMethod);
+		if(node->baseAccess)
+		{
+			ILGenCallByMethod(info, node->setMethod);
+		}
+		else
+		{
+			ILGenCallMethod(info, node->setMethod);
+		}
 		info->stackHeight = node->saveStack;
 	}
 }
@@ -1435,7 +1470,7 @@ ILNode_GenRef(ILNode_BaseAccess)
  */
 ILNode_GenRef(ILNode_BaseElement)
 {
-	/* TODO */
+	/* Should be handled by IndexerAccess */
 }
 
 /*

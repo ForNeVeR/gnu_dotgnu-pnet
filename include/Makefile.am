@@ -17,6 +17,7 @@ libILinclude_HEADERS = il_align.h \
 					   il_opcodes.h \
 					   il_profile.h \
 					   il_program.h \
+					   il_regex.h \
 					   il_serialize.h \
 					   il_sysio.h \
 					   il_system.h \

@@ -5,6 +5,10 @@
 	'/' compatibility options when "ilasm" and "ilalink" are called
 	from "cscc".
 
+	* include/il_regex.h, include/Makefile.am, support/Makefile.am,
+	support/regex.c: check in the glibc regex routines so that we
+	have consistent regex support across all platforms.
+
 2002-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ildb/ildb.1, ildb/Makefile.am: add the manpage for ildb.

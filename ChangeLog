@@ -1,4 +1,9 @@
 
+2003-02-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_values.h: rearrange the detection of ILInt64 a little
+	so that detection of Win32's "__int64" precedes "long long".
+
 2003-02-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c, image/misc_token.c: reduce the number of

@@ -66,7 +66,12 @@ typedef ILInt8 						ILBool;
 /*
  * Determine which types should be used for 64-bit numeric values.
  */
-#ifdef SIZEOF_LONG_LONG
+#ifdef IL_WIN32_NATIVE
+	typedef __int64					ILInt64;
+	typedef unsigned __int64		ILUInt64;
+	#define	IL_HAVE_INT64
+#endif
+#if (!defined(IL_HAVE_INT64)) && defined(SIZEOF_LONG_LONG)
 	#if SIZEOF_LONG_LONG == 8
 		typedef long long			ILInt64;
 		typedef unsigned long long	ILUInt64;
@@ -79,11 +84,6 @@ typedef ILInt8 						ILBool;
 		typedef unsigned long		ILUInt64;
 		#define	IL_HAVE_INT64
 	#endif
-#endif
-#if (!defined(IL_HAVE_INT64)) && defined(IL_WIN32_NATIVE)
-	typedef __int64					ILInt64;
-	typedef unsigned __int64		ILUInt64;
-	#define IL_HAVE_INT64
 #endif
 #ifndef IL_HAVE_INT64
 	#error "Could not detect the 64-bit integer type on this compiler"

@@ -26,24 +26,25 @@ using System.Net.Sockets;
 
 public abstract class EndPoint
 {
-	[TODO]
 	protected EndPoint() {}
 	
-	[TODO]
 	public virtual EndPoint Create(SocketAddress socketAddress) 
 			{
-				return null;
+				throw new NotSupportedException();
 			}
 	
-	[TODO]
 	public virtual AddressFamily AddressFamily 
 			{ 
 				get
 				{
-					return 0; 
+					throw new NotSupportedException(); 
 				}	
 			}
 	
 }; //class EndPoint
 
 }; //namespace System.Net
+
+
+
+

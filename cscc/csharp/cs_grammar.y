@@ -847,7 +847,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		ParenBooleanExpression LiteralExpression
 %type <node>		InvocationExpression ExpressionList
 %type <node>		ObjectCreationExpression OptArgumentList ArgumentList
-%type <node>		Argument PrefixedUnaryExpression
+%type <node>		Argument PrefixedUnaryExpression GenericReference
 
 %type <node>		Statement EmbeddedStatement Block OptStatementList
 %type <node>		StatementList ExpressionStatement SelectionStatement
@@ -1666,7 +1666,16 @@ RelationalExpression
 	| RelationalExpression AS Type					{
 				MakeBinary(AsUntyped, $1, $3);
 			}
-	| RelationalExpression '<' ShiftExpression '>'		{
+	| GenericReference								{
+				$$ = $1;
+			}
+	| GenericReference '(' OptArgumentList ')'		{
+				MakeBinary(InvocationExpression, $1, $3); 
+			}
+	;
+
+GenericReference
+	: RelationalExpression '<' ShiftExpression '>'		{
 				/* TODO: generic type reference */
 				$$ = $1;
 			}

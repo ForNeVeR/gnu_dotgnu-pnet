@@ -115,7 +115,6 @@ CSSRC = Activator.cs \
 		UnhandledExceptionEventArgs.cs \
 		UnhandledExceptionEventHandler.cs \
 		ValueType.cs \
-		Variant.cs \
 		Version.cs \
 		Void.cs \
 		Collections/Comparer.cs \

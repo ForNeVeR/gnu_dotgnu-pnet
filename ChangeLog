@@ -52,6 +52,9 @@ is only important to the internal workings of the library.
 * resources/en_US/runtime/Arg.txt, resources/en_US/runtime/NotSupp.txt,
 runtime/System/TypedReference.cs: implement "System.TypedReference".
 
+* runtime/System/Variant.cs, runtime/System/Makefile.am: remove the
+obsolete "System.Variant" type.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

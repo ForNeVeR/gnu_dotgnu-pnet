@@ -412,7 +412,7 @@ ILCache *_ILCacheCreate(long limit)
 	cache->freeEnd = 0;
 	cache->outOfMemory = 0;
 	cache->needRestart = 0;
-	if(limit >= 0)
+	if(limit > 0)
 	{
 		cache->pagesLeft = limit / size;
 		if(cache->pagesLeft < 1)

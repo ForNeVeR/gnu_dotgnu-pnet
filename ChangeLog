@@ -1,4 +1,18 @@
 
+2002-11-03  Richard Baumann <biochem333@nyc.rr.com>
+	
+	* support/numformat.c, support/Makefile.am, include/il_utils.h: Add an
+	ILFormatReal for number formatting.
+
+	* configure.in, include/il_config.h.in: Checks for `sprintf' used in
+	number formatting.
+	
+	* engine/lib_numformat.c, engine/Makefile.am: Add icalls needed for
+	System.Private.NumberFormatter.
+
+	* engine/internal.c, engine/int_table.c, engine/int_proto.h: Entries
+	into the correct tables for internal calls.
+
 2002-11-03  Robert Hwang <hwang_rob@yahoo.ca>
 	
 	* codegen/cg_cast.tc: fix typo in ILGenCastConst for casts tp

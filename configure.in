@@ -279,7 +279,7 @@ AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh)
 AC_CHECK_FUNCS(wctomb wcrtomb mbtowc mbrtowc nl_langinfo setlocale)
 AC_CHECK_FUNCS(usleep gethostbyname gethostbyaddr)
 AC_CHECK_FUNCS(opendir readdir readdir_r closedir)
-AC_CHECK_FUNCS(cygwin_conv_to_win32_path)
+AC_CHECK_FUNCS(cygwin_conv_to_win32_path snprintf)
 AC_FUNC_ALLOCA
 
 dnl Add the thread libraries to the end of the link line.

@@ -485,6 +485,12 @@ int ILQueueAdd(ILQueueEntry **listRoot, void *newData);
 
 /* Remove entry and Free entry , but not data . return NULL on fail */
 void *ILQueueRemove(ILQueueEntry **listRoot);
+
+/* Formats a real as a string using a printf style format string
+ * and the specified buffer size for the return string.
+ */
+char *ILFormatReal(double value, char *format, int buflen);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -33,6 +33,7 @@ extern	"C" {
 	#define	_IL_Single_suppressed
 	#define	_IL_Double_suppressed
 	#define	_IL_Decimal_suppressed
+ 	#define _IL_NumberFormatter_suppressed
 #endif
 #if !defined(IL_CONFIG_VARARGS)
 	#define _IL_ArgIterator_suppressed

@@ -168,6 +168,8 @@ extern ILBool _IL_Monitor_InternalWait(ILExecThread * _thread, ILObject * obj, I
 extern void _IL_Monitor_Pulse(ILExecThread * _thread, ILObject * obj);
 extern void _IL_Monitor_PulseAll(ILExecThread * _thread, ILObject * obj);
 
+extern ILString * _IL_NumberFormatter_FormatReal(ILExecThread * _thread, ILDouble d, ILString * format, ILInt32 buflen);
+
 extern void _IL_WaitHandle_InternalClose(ILExecThread * _thread, ILNativeInt privateData);
 extern ILBool _IL_WaitHandle_InternalWaitAll(ILExecThread * _thread, System_Array * waitHandles, ILInt32 timeout, ILBool exitContext);
 extern ILInt32 _IL_WaitHandle_InternalWaitAny(ILExecThread * _thread, System_Array * waitHandles, ILInt32 timeout, ILBool exitContext);

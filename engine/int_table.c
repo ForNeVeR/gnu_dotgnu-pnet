@@ -934,6 +934,24 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_ppdpi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILDouble, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])));
+}
+
+#endif
+
+#ifndef _IL_NumberFormatter_suppressed
+
+IL_METHOD_BEGIN(NumberFormatter_Methods)
+	IL_METHOD("FormatReal", "(doSystem.String;i)oSystem.String;", _IL_NumberFormatter_FormatReal, marshal_ppdpi)
+IL_METHOD_END
+
+#endif
+
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_vpi(void (*fn)(), void *rvalue, void **avalue)
 {
 	(*(void (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
@@ -2426,6 +2444,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_Mutex_suppressed
 	{"Mutex", "System.Threading", Mutex_Methods},
+#endif
+#ifndef _IL_NumberFormatter_suppressed
+	{"NumberFormatter", "System.Private", NumberFormatter_Methods},
 #endif
 #ifndef _IL_Object_suppressed
 	{"Object", "System", Object_Methods},

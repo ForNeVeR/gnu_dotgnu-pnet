@@ -167,7 +167,7 @@ void ILGCRegisterFinalizer(void *block, ILGCFinalizer func, void *data)
 }
 
 
-ILNativeInt ILGCCreateTypeDescriptor(ILNativeUInt[] bitmap, ILNativeUInt len)
+ILNativeInt ILGCCreateTypeDescriptor(ILNativeUInt bitmap[], ILNativeUInt len)
 {
 	/* Type descriptors aren't supported */
 	return 0;

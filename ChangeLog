@@ -1,4 +1,7 @@
+2004-05-19  Thong Nguyen <tum@veridicus.com
 
+	* support/def_gc.c: Fixed function def for ILGCCreateTypeDescriptor.
+	
 2004-05-18  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/lib_type.c: Include interfaces inherited by a type in

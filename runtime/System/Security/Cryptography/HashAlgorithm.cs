@@ -115,7 +115,7 @@ public abstract class HashAlgorithm : ICryptoTransform, IDisposable
 			{
 				if(HashValue != null)
 				{
-					HashValue.Initialize();
+					Array.Clear(HashValue, 0, HashValue.Length);
 					HashValue = null;
 				}
 				State = 0;

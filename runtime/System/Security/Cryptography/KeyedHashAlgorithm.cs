@@ -45,7 +45,7 @@ public abstract class KeyedHashAlgorithm : HashAlgorithm
 			{
 				if(KeyValue != null)
 				{
-					KeyValue.Initialize();
+					Array.Clear(KeyValue, 0, KeyValue.Length);
 				}
 				base.Dispose(disposing);
 			}

@@ -40,14 +40,46 @@ public struct RSAParameters
 	// Clear the contents of this structure.
 	internal void Clear()
 			{
-				if(Exponent != null) { Exponent.Initialize(); Exponent = null; }
-				if(Modulus != null) { Modulus.Initialize(); Modulus = null; }
-				if(D != null) { D.Initialize(); D = null; }
-				if(DP != null) { DP.Initialize(); DP = null; }
-				if(DQ != null) { DQ.Initialize(); DQ = null; }
-				if(InverseQ != null) { InverseQ.Initialize(); InverseQ = null; }
-				if(P != null) { P.Initialize(); P = null; }
-				if(Q != null) { Q.Initialize(); Q = null; }
+				if(Exponent != null)
+				{
+					Array.Clear(Exponent, 0, Exponent.Length);
+					Exponent = null;
+				}
+				if(Modulus != null)
+				{
+					Array.Clear(Modulus, 0, Modulus.Length);
+					Modulus = null;
+				}
+				if(D != null)
+				{
+					Array.Clear(D, 0, D.Length);
+					D = null;
+				}
+				if(DP != null)
+				{
+					Array.Clear(DP, 0, DP.Length);
+					DP = null;
+				}
+				if(DQ != null)
+				{
+					Array.Clear(DQ, 0, DQ.Length);
+					DQ = null;
+				}
+				if(InverseQ != null)
+				{
+					Array.Clear(InverseQ, 0, InverseQ.Length);
+					InverseQ = null;
+				}
+				if(P != null)
+				{
+					Array.Clear(P, 0, P.Length);
+					P = null;
+				}
+				if(Q != null)
+				{
+					Array.Clear(Q, 0, Q.Length);
+					Q = null;
+				}
 			}
 
 	// Clone the public parameters in this structure.

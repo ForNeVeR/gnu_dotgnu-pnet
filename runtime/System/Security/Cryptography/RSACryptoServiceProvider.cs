@@ -67,7 +67,7 @@ public class RSACryptoServiceProvider : RSA
 						// The "ASN1ToPublic" method will determine if
 						// the key is X.509, bare public, or private.
 						rsaParams.ASN1ToPublic(key, 0, key.Length);
-						key.Initialize();
+						Array.Clear(key, 0, key.Length);
 						persistKey = true;
 					}
 					else if(result == CryptoMethods.UnknownKey)
@@ -178,11 +178,11 @@ public class RSACryptoServiceProvider : RSA
 					byte[] m    = CryptoMethods.NumAdd(m2, prod, null);
 
 					// Clear all temporary values.
-					m1.Initialize();
-					m2.Initialize();
-					diff.Initialize();
-					h.Initialize();
-					prod.Initialize();
+					Array.Clear(m1, 0, m1.Length);
+					Array.Clear(m2, 0, m2.Length);
+					Array.Clear(diff, 0, diff.Length);
+					Array.Clear(h, 0, h.Length);
+					Array.Clear(prod, 0, prod.Length);
 					
 					// Return the decrypted message.
 					return m;
@@ -231,7 +231,7 @@ public class RSACryptoServiceProvider : RSA
 				byte[] decrypted = ApplyPrivate(rgb);
 				if(decrypted.Length > k)
 				{
-					decrypted.Initialize();
+					Array.Clear(decrypted, 0, decrypted.Length);
 					throw new CryptographicException
 						(_("Crypto_RSAInvalidCiphertext"));
 				}
@@ -283,12 +283,12 @@ public class RSACryptoServiceProvider : RSA
 				if(error != 0)
 				{
 					// Something is wrong with the decrypted padding data.
-					decrypted.Initialize();
-					msg.Initialize();
-					maskedMsg.Initialize();
-					seedMask.Initialize();
-					seed.Initialize();
-					msgMask.Initialize();
+					Array.Clear(decrypted, 0, decrypted.Length);
+					Array.Clear(msg, 0, msg.Length);
+					Array.Clear(maskedMsg, 0, maskedMsg.Length);
+					Array.Clear(seedMask, 0, seedMask.Length);
+					Array.Clear(seed, 0, seed.Length);
+					Array.Clear(msgMask, 0, msgMask.Length);
 					throw new CryptographicException
 						(_("Crypto_RSAInvalidCiphertext"));
 				}
@@ -300,12 +300,12 @@ public class RSACryptoServiceProvider : RSA
 						   maskedMsg.Length - index);
 
 				// Destroy sensitive values.
-				decrypted.Initialize();
-				msg.Initialize();
-				maskedMsg.Initialize();
-				seedMask.Initialize();
-				seed.Initialize();
-				msgMask.Initialize();
+				Array.Clear(decrypted, 0, decrypted.Length);
+				Array.Clear(msg, 0, msg.Length);
+				Array.Clear(maskedMsg, 0, maskedMsg.Length);
+				Array.Clear(seedMask, 0, seedMask.Length);
+				Array.Clear(seed, 0, seed.Length);
+				Array.Clear(msgMask, 0, msgMask.Length);
 
 				// Done.
 				return finalMsg;
@@ -341,7 +341,7 @@ public class RSACryptoServiceProvider : RSA
 				byte[] decrypted = ApplyPrivate(rgb);
 				if(decrypted.Length > k)
 				{
-					decrypted.Initialize();
+					Array.Clear(decrypted, 0, decrypted.Length);
 					throw new CryptographicException
 						(_("Crypto_RSAInvalidCiphertext"));
 				}
@@ -362,8 +362,8 @@ public class RSACryptoServiceProvider : RSA
 				error |= msg[index];
 				if(error != 0)
 				{
-					decrypted.Initialize();
-					msg.Initialize();
+					Array.Clear(decrypted, 0, decrypted.Length);
+					Array.Clear(msg, 0, msg.Length);
 					throw new CryptographicException
 						(_("Crypto_RSAInvalidCiphertext"));
 				}
@@ -374,8 +374,8 @@ public class RSACryptoServiceProvider : RSA
 				Array.Copy(msg, index, finalMsg, 0, finalMsg.Length);
 
 				// Destroy sensitive values.
-				decrypted.Initialize();
-				msg.Initialize();
+				Array.Clear(decrypted, 0, decrypted.Length);
+				Array.Clear(msg, 0, msg.Length);
 
 				// Done.
 				return finalMsg;
@@ -483,11 +483,11 @@ public class RSACryptoServiceProvider : RSA
 				byte[] encrypted = ApplyPublic(value);
 
 				// Destroy sensitive data.
-				msg.Initialize();
-				seed.Initialize();
-				mask.Initialize();
-				seedMask.Initialize();
-				value.Initialize();
+				Array.Clear(msg, 0, msg.Length);
+				Array.Clear(seed, 0, seed.Length);
+				Array.Clear(mask, 0, mask.Length);
+				Array.Clear(seedMask, 0, seedMask.Length);
+				Array.Clear(value, 0, value.Length);
 
 				// Done.
 				return encrypted;
@@ -527,8 +527,8 @@ public class RSACryptoServiceProvider : RSA
 				byte[] encrypted = ApplyPublic(msg);
 
 				// Destroy sensitive data.
-				msg.Initialize();
-				padding.Initialize();
+				Array.Clear(msg, 0, msg.Length);
+				Array.Clear(padding, 0, padding.Length);
 
 				// Done.
 				return encrypted;
@@ -758,12 +758,12 @@ public class RSACryptoServiceProvider : RSA
 					byte[] zextend = new byte [k];
 					Array.Copy(signedValue, 0, zextend, k - signedValue.Length,
 							   signedValue.Length);
-					signedValue.Initialize();
+					Array.Clear(signedValue, 0, signedValue.Length);
 					signedValue = zextend;
 				}
 
 				// Destroy sensitive values.
-				msg.Initialize();
+				Array.Clear(msg, 0, msg.Length);
 
 				// Done.
 				return signedValue;
@@ -840,7 +840,7 @@ public class RSACryptoServiceProvider : RSA
 					byte[] zextend = new byte [k];
 					Array.Copy(msg, 0, zextend, k - msg.Length,
 							   msg.Length);
-					msg.Initialize();
+					Array.Clear(msg, 0, msg.Length);
 					msg = zextend;
 				}
 
@@ -868,7 +868,7 @@ public class RSACryptoServiceProvider : RSA
 				}
 
 				// Destroy sensitive values.
-				msg.Initialize();
+				Array.Clear(msg, 0, msg.Length);
 
 				// Done.
 				return ok;

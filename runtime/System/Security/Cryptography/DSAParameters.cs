@@ -41,13 +41,41 @@ public struct DSAParameters
 	internal void Clear()
 			{
 				Counter = 0;
-				if(G != null) { G.Initialize(); G = null; }
-				if(J != null) { J.Initialize(); J = null; }
-				if(P != null) { P.Initialize(); P = null; }
-				if(Q != null) { Q.Initialize(); Q = null; }
-				if(Seed != null) { Seed.Initialize(); Seed = null; }
-				if(X != null) { X.Initialize(); X = null; }
-				if(Y != null) { Y.Initialize(); Y = null; }
+				if(G != null)
+				{
+					Array.Clear(G, 0, G.Length);
+					G = null;
+				}
+				if(J != null)
+				{
+					Array.Clear(J, 0, J.Length);
+					J = null;
+				}
+				if(P != null)
+				{
+					Array.Clear(P, 0, P.Length);
+					P = null;
+				}
+				if(Q != null)
+				{
+					Array.Clear(Q, 0, Q.Length);
+					Q = null;
+				}
+				if(Seed != null)
+				{
+					Array.Clear(Seed, 0, Seed.Length);
+					Seed = null;
+				}
+				if(X != null)
+				{
+					Array.Clear(X, 0, X.Length);
+					X = null;
+				}
+				if(Y != null)
+				{
+					Array.Clear(Y, 0, Y.Length);
+					Y = null;
+				}
 			}
 
 	// Clone the public parameters in this structure.

@@ -158,11 +158,11 @@ public class CryptoStream : Stream, IDisposable
 			{
 				if(inBuffer != null)
 				{
-					inBuffer.Initialize();
+					Array.Clear(inBuffer, 0, inBuffer.Length);
 				}
 				if(outBuffer != null)
 				{
-					outBuffer.Initialize();
+					Array.Clear(outBuffer, 0, outBuffer.Length);
 				}
 				if(transform != null && transform is IDisposable)
 				{
@@ -188,7 +188,7 @@ public class CryptoStream : Stream, IDisposable
 				if(buf != null)
 				{
 					stream.Write(buf, 0, buf.Length);
-					buf.Initialize();
+					Array.Clear(buf, 0, buf.Length);
 				}
 				flushFinal = true;
 			}
@@ -223,8 +223,8 @@ public class CryptoStream : Stream, IDisposable
 				stream = null;
 
 				// Clear the buffers, in case they contained plaintext data.
-				inBuffer.Initialize();
-				outBuffer.Initialize();
+				Array.Clear(inBuffer, 0, inBuffer.Length);
+				Array.Clear(outBuffer, 0, outBuffer.Length);
 			}
 
 	// Flush the stream.
@@ -324,7 +324,7 @@ public class CryptoStream : Stream, IDisposable
 							buf = transform.TransformFinalBlock
 									(inBuffer, 0, inBufferPosn);
 							inBufferPosn = 0;
-							outBuffer.Initialize();
+							Array.Clear(outBuffer, 0, outBuffer.Length);
 							outBuffer = buf;
 							outBufferPosn = 0;
 							outBufferSize = buf.Length;

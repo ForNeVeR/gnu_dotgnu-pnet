@@ -80,7 +80,7 @@ public class MACTripleDES : KeyedHashAlgorithm
 				}
 				if(block != null)
 				{
-					block.Initialize();
+					Array.Clear(block, 0, block.Length);
 				}
 				if(alg != null)
 				{
@@ -115,7 +115,7 @@ public class MACTripleDES : KeyedHashAlgorithm
 				{
 					stream.Close();
 					stream = null;
-					block.Initialize();
+					Array.Clear(block, 0, block.Length);
 				}
 			}
 
@@ -145,7 +145,7 @@ public class MACTripleDES : KeyedHashAlgorithm
 				stream.Close();
 				stream = null;
 				byte[] hash = (byte[])(block.Clone());
-				block.Initialize();
+				Array.Clear(block, 0, block.Length);
 				return hash;
 			}
 

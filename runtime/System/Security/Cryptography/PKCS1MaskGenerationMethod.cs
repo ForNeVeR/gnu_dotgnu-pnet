@@ -106,12 +106,12 @@ public class PKCS1MaskGenerationMethod : MaskGenerationMethod
 					{
 						Array.Copy(hash, 0, mask, index, cbReturn - index);
 					}
-					hash.Initialize();
+					Array.Clear(hash, 0, hash.Length);
 					alg.Initialize();
 					++count;
 					index += hashSize;
 				}
-				numbuf.Initialize();
+				Array.Clear(numbuf, 0, numbuf.Length);
 
 				// The mask has been generated.
 				return null;

@@ -81,7 +81,7 @@ public class DSACryptoServiceProvider : DSA
 						// The "ASN1ToPublic" method will determine if
 						// the key is X.509, bare public, or private.
 						dsaParams.ASN1ToPublic(key, 0, key.Length);
-						key.Initialize();
+						Array.Clear(key, 0, key.Length);
 						persistKey = true;
 					}
 					else if(result == CryptoMethods.UnknownKey)
@@ -218,7 +218,7 @@ public class DSACryptoServiceProvider : DSA
 				byte[] temp1 = CryptoMethods.NumPow
 					(dsaParams.G, K, dsaParams.P);
 				byte[] R = CryptoMethods.NumMod(temp1, dsaParams.Q);
-				temp1.Initialize();
+				Array.Clear(temp1, 0, temp1.Length);
 
 				// Compute S = ((K^-1 * (hash + X * R)) mod Q)
 				temp1 = CryptoMethods.NumInv(K, dsaParams.Q);
@@ -227,18 +227,18 @@ public class DSACryptoServiceProvider : DSA
 				byte[] temp3 = CryptoMethods.NumAdd
 					(rgbHash, temp2, dsaParams.Q);
 				byte[] S = CryptoMethods.NumMul(temp1, temp3, dsaParams.Q);
-				temp1.Initialize();
-				temp2.Initialize();
-				temp3.Initialize();
-				K.Initialize();
+				Array.Clear(temp1, 0, temp1.Length);
+				Array.Clear(temp2, 0, temp2.Length);
+				Array.Clear(temp3, 0, temp3.Length);
+				Array.Clear(K, 0, K.Length);
 
 				// Pack R and S into a signature blob and return it.
 				ASN1Builder builder = new ASN1Builder();
 				builder.AddBigInt(R);
 				builder.AddBigInt(S);
 				byte[] sig = builder.ToByteArray();
-				R.Initialize();
-				S.Initialize();
+				Array.Clear(R, 0, R.Length);
+				Array.Clear(S, 0, S.Length);
 				return sig;
 			}
 
@@ -324,15 +324,15 @@ public class DSACryptoServiceProvider : DSA
 				bool result = CryptoMethods.NumEq(V, R);
 
 				// Clear sensitive values.
-				R.Initialize();
-				S.Initialize();
-				W.Initialize();
-				U1.Initialize();
-				U2.Initialize();
-				temp1.Initialize();
-				temp2.Initialize();
-				temp3.Initialize();
-				V.Initialize();
+				Array.Clear(R, 0, R.Length);
+				Array.Clear(S, 0, S.Length);
+				Array.Clear(W, 0, W.Length);
+				Array.Clear(U1, 0, U1.Length);
+				Array.Clear(U2, 0, U2.Length);
+				Array.Clear(temp1, 0, temp1.Length);
+				Array.Clear(temp2, 0, temp2.Length);
+				Array.Clear(temp3, 0, temp3.Length);
+				Array.Clear(V, 0, V.Length);
 
 				// Done.
 				return result;
@@ -344,7 +344,7 @@ public class DSACryptoServiceProvider : DSA
 				byte[] hash = (new SHA1CryptoServiceProvider())
 					.ComputeHash(buffer);
 				byte[] signature = CreateSignature(hash);
-				hash.Initialize();
+				Array.Clear(hash, 0, hash.Length);
 				return signature;
 			}
 
@@ -354,7 +354,7 @@ public class DSACryptoServiceProvider : DSA
 				byte[] hash = (new SHA1CryptoServiceProvider())
 					.ComputeHash(inputStream);
 				byte[] signature = CreateSignature(hash);
-				hash.Initialize();
+				Array.Clear(hash, 0, hash.Length);
 				return signature;
 			}
 
@@ -364,7 +364,7 @@ public class DSACryptoServiceProvider : DSA
 				byte[] hash = (new SHA1CryptoServiceProvider())
 					.ComputeHash(buffer, offset, count);
 				byte[] signature = CreateSignature(hash);
-				hash.Initialize();
+				Array.Clear(hash, 0, hash.Length);
 				return signature;
 			}
 
@@ -389,7 +389,7 @@ public class DSACryptoServiceProvider : DSA
 				byte[] hash = (new SHA1CryptoServiceProvider())
 					.ComputeHash(rgbData);
 				bool result = VerifySignature(hash, rgbSignature);
-				hash.Initialize();
+				Array.Clear(hash, 0, hash.Length);
 				return result;
 			}
 

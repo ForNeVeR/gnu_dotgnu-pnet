@@ -36,6 +36,29 @@
 	* runtime/System/Array.cs (InnerSort): indicate IComparer
 	failures with InvalidOperationException, not ArgumentException.
 
+	* runtime/System/Security/Cryptography/CBCDecrypt.cs,
+	runtime/System/Security/Cryptography/CryptoAPITransform.cs,
+	runtime/System/Security/Cryptography/CryptoStream.cs,
+	runtime/System/Security/Cryptography/DESCryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/DSACryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/DSAParameters.cs,
+	runtime/System/Security/Cryptography/ECBDecrypt.cs,
+	runtime/System/Security/Cryptography/FromBase64Transform.cs,
+	runtime/System/Security/Cryptography/HMACSHA1.cs,
+	runtime/System/Security/Cryptography/HashAlgorithm.cs,
+	runtime/System/Security/Cryptography/KeyedHashAlgorithm.cs,
+	runtime/System/Security/Cryptography/MACTripleDES.cs,
+	runtime/System/Security/Cryptography/PKCS1MaskGenerationMethod.cs,
+	runtime/System/Security/Cryptography/PasswordDeriveBytes.cs,
+	runtime/System/Security/Cryptography/RC2CryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/RSACryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/RSAParameters.cs,
+	runtime/System/Security/Cryptography/RijndaelManaged.cs,
+	runtime/System/Security/Cryptography/SymmetricAlgorithm.cs,
+	runtime/System/Security/Cryptography/TripleDESCryptoServiceProvider.cs:
+	use "Array.Clear" instead of "Array.Initialize" to clear sensitive
+	values in the cryptographic routines.
+
 2003-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/System.build,

@@ -65,7 +65,7 @@ public class PasswordDeriveBytes : DeriveBytes
 				blockNum = 0;
 				if(block != null)
 				{
-					block.Initialize();
+					Array.Clear(block, 0, block.Length);
 				}
 			}
 
@@ -145,7 +145,7 @@ public class PasswordDeriveBytes : DeriveBytes
 					{
 						byte[] pwd = Encoding.UTF8.GetBytes(strPassword);
 						md5.InternalHashCore(pwd, 0, pwd.Length);
-						pwd.Initialize();
+						Array.Clear(pwd, 0, pwd.Length);
 					}
 					if(rgbSalt != null)
 					{
@@ -157,7 +157,7 @@ public class PasswordDeriveBytes : DeriveBytes
 					while(count > 1)
 					{
 						md5.InternalHashCore(tempHash, 0, tempHash.Length);
-						tempHash.Initialize();
+						Array.Clear(tempHash, 0, tempHash.Length);
 						tempHash = md5.InternalHashFinal();
 						md5.Initialize();
 						--count;
@@ -168,7 +168,7 @@ public class PasswordDeriveBytes : DeriveBytes
 					{
 						Array.Copy(tempHash, 8, rgbIV, 0, 8);
 					}
-					tempHash.Initialize();
+					Array.Clear(tempHash, 0, tempHash.Length);
 					return key;
 				}
 				else
@@ -184,7 +184,7 @@ public class PasswordDeriveBytes : DeriveBytes
 					{
 						byte[] iv = GetBytes(rgbIV.Length);
 						Array.Copy(iv, 0, rgbIV, 0, rgbIV.Length);
-						iv.Initialize();
+						Array.Clear(iv, 0, iv.Length);
 					}
 					return result;
 				}
@@ -235,7 +235,7 @@ public class PasswordDeriveBytes : DeriveBytes
 					{
 						byte[] pwd = Encoding.UTF8.GetBytes(strPassword);
 						hashAlgorithm.InternalHashCore(pwd, 0, pwd.Length);
-						pwd.Initialize();
+						Array.Clear(pwd, 0, pwd.Length);
 					}
 					if(rgbSalt != null)
 					{
@@ -248,7 +248,7 @@ public class PasswordDeriveBytes : DeriveBytes
 					numbuf[2] = (byte)(blockNum >> 8);
 					numbuf[3] = (byte)blockNum;
 					hashAlgorithm.InternalHashCore(numbuf, 0, 4);
-					numbuf.Initialize();
+					Array.Clear(numbuf, 0, numbuf.Length);
 					byte[] lastHash = hashAlgorithm.InternalHashFinal();
 					hashAlgorithm.Initialize();
 					templen = iterations;
@@ -264,12 +264,12 @@ public class PasswordDeriveBytes : DeriveBytes
 						{
 							lastHash[tempindex] ^= temphash[tempindex];
 						}
-						temphash.Initialize();
+						Array.Clear(temphash, 0, temphash.Length);
 						--templen;
 					}
 					if(block != null)
 					{
-						block.Initialize();
+						Array.Clear(block, 0, block.Length);
 					}
 					block = lastHash;
 					++blockNum;
@@ -287,7 +287,7 @@ public class PasswordDeriveBytes : DeriveBytes
 				blockNum = 0;
 				if(block != null)
 				{
-					block.Initialize();
+					Array.Clear(block, 0, block.Length);
 				}
 			}
 

@@ -249,11 +249,11 @@ public abstract class SymmetricAlgorithm : IDisposable
 			{
 				if(KeyValue != null)
 				{
-					KeyValue.Initialize();
+					Array.Clear(KeyValue, 0, KeyValue.Length);
 				}
 				if(IVValue != null)
 				{
-					IVValue.Initialize();
+					Array.Clear(IVValue, 0, IVValue.Length);
 				}
 			}
 

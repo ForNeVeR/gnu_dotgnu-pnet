@@ -196,7 +196,7 @@ internal sealed class CBCDecrypt
 				{
 					byte[] newout = new byte [offset];
 					Array.Copy(outputBuffer, 0, newout, 0, offset);
-					outputBuffer.Initialize();
+					Array.Clear(outputBuffer, 0, outputBuffer.Length);
 					outputBuffer = newout;
 				}
 

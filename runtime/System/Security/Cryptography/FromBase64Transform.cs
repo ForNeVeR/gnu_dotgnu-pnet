@@ -94,7 +94,7 @@ public class FromBase64Transform : ICryptoTransform, IDisposable
 			{
 				if(inBuffer != null)
 				{
-					inBuffer.Initialize();
+					Array.Clear(inBuffer, 0, inBuffer.Length);
 				}
 				inBufPosn = 0;
 			}
@@ -186,7 +186,7 @@ public class FromBase64Transform : ICryptoTransform, IDisposable
 				{
 					byte[] newout = new byte [offset];
 					Array.Copy(outputBuffer, 0, newout, 0, offset);
-					outputBuffer.Initialize();
+					Array.Clear(outputBuffer, 0, outputBuffer.Length);
 					return newout;
 				}
 				else

@@ -226,13 +226,13 @@ public sealed class CryptoAPITransform : ICryptoTransform, IDisposable
 				}
 				if(tempBuffer != null)
 				{
-					tempBuffer.Initialize();
+					Array.Clear(tempBuffer, 0, tempBuffer.Length);
 				}
 				tempSize = 0;
 				if(iv != null)
 				{
 					// Usually not sensitive, but let's be paranoid anyway.
-					iv.Initialize();
+					Array.Clear(iv, 0, iv.Length);
 				}
 			}
 

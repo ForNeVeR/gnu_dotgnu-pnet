@@ -82,7 +82,7 @@ public sealed class TripleDESCryptoServiceProvider : TripleDES
 				if(KeyValue != null)
 				{
 					// Clear the previous key value.
-					KeyValue.Initialize();
+					Array.Clear(KeyValue, 0, KeyValue.Length);
 				}
 				KeyValue = key;
 			}

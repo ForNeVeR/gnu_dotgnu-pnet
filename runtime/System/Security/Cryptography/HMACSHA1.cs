@@ -162,7 +162,7 @@ public class HMACSHA1 : KeyedHashAlgorithm
 					alg.InternalHashCore(KeyValue, 0, KeyValue.Length);
 				}
 				alg.InternalHashCore(inner, 0, inner.Length);
-				inner.Initialize();
+				Array.Clear(inner, 0, inner.Length);
 				return alg.InternalHashFinal();
 			}
 

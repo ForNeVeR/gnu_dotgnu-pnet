@@ -58,6 +58,7 @@ public sealed class Display : IDisposable
 	internal ButtonName menuButton;
 	internal Hashtable fonts;
 	internal BuiltinBitmaps bitmaps;
+	internal Timer timerQueue;
 
 	// Constructor.
 	private Display(IntPtr dpy, String displayName, Application app)
@@ -476,10 +477,18 @@ public sealed class Display : IDisposable
 				{
 					IntPtr dpy = Lock();
 					XEvent xevent;
+					int timeout;
+
 					Xlib.XFlush(dpy);
 					inMainLoop = true;
 					while(!quit)
 					{
+						// Flush any requests that are in the outgoing queue.
+						Xlib.XFlush(dpy);
+
+						// Process timers that need to be activated.
+						Timer.ActivateTimers(this);
+
 						// Do we have pending expose events to process?
 						if(pendingExposes)
 						{
@@ -508,8 +517,20 @@ public sealed class Display : IDisposable
 						else
 						{
 							// Wait for the next event.
-							Xlib.XNextEvent(dpy, out xevent);
-							DispatchEvent(ref xevent);
+							timeout = Timer.GetNextTimeout(this);
+							if(timeout < 0)
+							{
+								Xlib.XNextEvent(dpy, out xevent);
+								DispatchEvent(ref xevent);
+							}
+							else
+							{
+								if(Xlib.XNextEventWithTimeout
+									(dpy, out xevent, timeout) > 0)
+								{
+									DispatchEvent(ref xevent);
+								}
+							}
 						}
 					}
 				}

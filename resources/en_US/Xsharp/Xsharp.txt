@@ -56,3 +56,4 @@ X_Need1Rect=Need at least 1 rectangle in the specified array
 X_InvalidIcon=Invalid format for icon resource
 X_InvalidFocusChild=Child widget cannot be set as the focus for this top-level window
 X_InvalidReparent=Reparent would create a circularity in the widget tree
+X_NonNegative=Negative values are not permitted in this context

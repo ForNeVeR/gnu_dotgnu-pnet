@@ -16,6 +16,10 @@
 	* Xsharp/Makefile.in: remove a file from the CVS server which
 	should not be there.
 
+	* Xsharp/Display.cs, Xsharp/Timer.cs, Xsharp/TimerCallback.cs,
+	Xsharp/Xlib.cs.in, resources/en_US/Xsharp/Xsharp.txt: add
+	timeout support to Xsharp.
+
 2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Application.cs, Xsharp/Graphics.cs, Xsharp/Xlib.cs.in:

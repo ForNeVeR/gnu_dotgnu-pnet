@@ -481,6 +481,12 @@ internal sealed class Xlib
 	extern public static @X_int@ XDeleteProperty
 			(IntPtr display, Window w, Atom property);
 
+	// Helper functions from "libXsharpSupport.so".
+
+	[DllImport("XsharpSupport")]
+	extern public static @X_int@ XNextEventWithTimeout
+			(IntPtr display, out XEvent xevent, @X_int@ timeout);
+
 } // class Xlib
 
 } // namespace Xsharp

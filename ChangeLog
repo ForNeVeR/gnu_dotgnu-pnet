@@ -52,6 +52,9 @@ behaviour of the "padd_offset_n" instruction and fix some bugs with it.
 * engine/cvmc_obj.c: optimization - don't add an offset of 0 when loading
 value fields in "CVMLoadValueField".
 
+* engine/verify_obj.c: bug fix - "ldfld" was verifying fields within
+value types incorrectly.
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

@@ -294,6 +294,8 @@ public class CompareInfo : IDeserializationCallback
 				return LCID;
 			}
 
+#if !ECMA_COMPAT
+
 	// Get the sort key for a string.
 	public virtual SortKey GetSortKey(String source)
 			{
@@ -319,6 +321,8 @@ public class CompareInfo : IDeserializationCallback
 					return null;
 				}
 			}
+
+#endif // !ECMA_COMPAT
 
 	// Search for a specific character in a string.
 	public virtual int IndexOf(String source, char value)

@@ -23,6 +23,14 @@
 	tests/runtime/Testruntime.cs, tests/runtime/System/TestGuid.cs:
 	test cases and bug fixes for "System.Guid".
 
+	* System/Collections/Specialized/NameObjectCollectionBase.cs,
+	runtime/System/Collections/Queue.cs,
+	runtime/System/Globalization/CompareInfo.cs,
+	runtime/System/Globalization/DateTimeFormatInfo.cs,
+	runtime/System/Reflection/Assembly.cs,
+	runtime/System/Runtime/Serialization/IDeserializationCallback.cs:
+	modifications to support the ECMA-compatible compilation mode.
+
 2002-11-28  Michael Moore  <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormatter.cs: implement

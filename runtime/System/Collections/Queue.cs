@@ -21,12 +21,15 @@
 namespace System.Collections
 {
 
-#if !ECMA_COMPAT
-
 using System;
 using System.Private;
 
-public class Queue : ICollection, IEnumerable, ICloneable
+#if !ECMA_COMPAT
+public
+#else
+internal
+#endif
+class Queue : ICollection, IEnumerable, ICloneable
 {
 	// Internal state.
 	private Object[] items;
@@ -493,7 +496,5 @@ public class Queue : ICollection, IEnumerable, ICloneable
 	}; // class QueueEnumerator
 
 }; // class Queue
-
-#endif // !ECMA_COMPAT
 
 }; // namespace System.Collections

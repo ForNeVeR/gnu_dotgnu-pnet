@@ -225,8 +225,6 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				}
 			}
 
-#if !ECMA_COMPAT
-
 	// Get the abbreviated name of a week day.
 	public String GetAbbreviatedDayName(DayOfWeek dayOfWeek)
 			{
@@ -256,6 +254,8 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 						("dayOfWeek", _("Arg_DayOfWeek"));
 				}
 			}
+
+#if !ECMA_COMPAT
 
 	// Get the abbreviated name of an era.
 	[TODO]

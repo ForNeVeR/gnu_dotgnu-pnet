@@ -225,8 +225,8 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 							   bool ignoreCase);
 #else
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private Type GetType(String typeName, bool throwOnError,
-							    bool ignoreCase);
+	extern internal Type GetType(String typeName, bool throwOnError,
+							     bool ignoreCase);
 #endif
 
 	// Get an array of all types in an assembly.

@@ -23,14 +23,15 @@ namespace System.Runtime.Serialization
 {
 
 #if !ECMA_COMPAT
-
-public interface IDeserializationCallback
+public
+#else
+internal
+#endif
+interface IDeserializationCallback
 {
 
 	void OnDeserialization(Object sender);
 
 }; // interface IDeserializationCallback
-
-#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.Serialization

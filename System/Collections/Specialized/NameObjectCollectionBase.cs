@@ -23,6 +23,7 @@ namespace System.Collections.Specialized
 {
 
 using System;
+using System.Globalization;
 using System.Collections;
 using System.Runtime.Serialization;
 
@@ -528,6 +529,115 @@ abstract class NameObjectCollectionBase
 				}
 
 	}; // class KeysEnumerator
+
+#if ECMA_COMPAT
+
+	// Local copy of "System.Collections.CaseInsenstiveHashCodeProvider"
+	// for use in ECMA-compatbile systems.
+	private class CaseInsensitiveHashCodeProvider : IHashCodeProvider
+	{
+		private static readonly CaseInsensitiveHashCodeProvider
+			defaultProvider = new CaseInsensitiveHashCodeProvider();
+
+		// Internal state.
+		private TextInfo info;
+
+		// Get the default comparer instance.
+		public static CaseInsensitiveHashCodeProvider Default
+				{
+					get
+					{
+						return defaultProvider;
+					}
+				}
+
+		// Constructors.
+		public CaseInsensitiveHashCodeProvider()
+				{
+					info = CultureInfo.CurrentCulture.TextInfo;
+				}
+		public CaseInsensitiveHashCodeProvider(CultureInfo culture)
+				{
+					if(culture == null)
+					{
+						throw new ArgumentNullException("culture");
+					}
+					info = culture.TextInfo;
+				}
+
+		// Implement the IHashCodeProvider interface.
+		public int GetHashCode(Object obj)
+				{
+					String str = (obj as String);
+					if(str != null)
+					{
+						return info.ToLower(str).GetHashCode();
+					}
+					else if(obj != null)
+					{
+						return obj.GetHashCode();
+					}
+					else
+					{
+						throw new ArgumentNullException("obj");
+					}
+				}
+
+	}; // class CaseInsensitiveHashCodeProvider
+
+	// Local copy of "System.Collections.CaseInsenstiveComparer"
+	// for use in ECMA-compatbile systems.
+	private class CaseInsensitiveComparer : IComparer
+	{
+		// The default case insensitive comparer instance.
+		private static readonly CaseInsensitiveComparer defaultComparer =
+			new CaseInsensitiveComparer();
+	
+		// Internal state.
+		private CompareInfo compare;
+
+		// Get the default comparer instance.
+		public static CaseInsensitiveComparer Default
+				{
+					get
+					{
+						return defaultComparer;
+					}
+				}
+
+		// Constructors.
+		public CaseInsensitiveComparer()
+				{
+					compare = CultureInfo.CurrentCulture.CompareInfo;
+				}
+		public CaseInsensitiveComparer(CultureInfo culture)
+				{
+					if(culture == null)
+					{
+						throw new ArgumentNullException("culture");
+					}
+					compare = culture.CompareInfo;
+				}
+
+		// Implement the IComparer interface.
+		public int Compare(Object a, Object b)
+				{
+					String stra = (a as String);
+					String strb = (b as String);
+					if(stra != null && strb != null)
+					{
+						return compare.Compare
+							(stra, strb, CompareOptions.IgnoreCase);
+					}
+					else
+					{
+						return Comparer.Default.Compare(a, b);
+					}
+				}
+
+	}; // class CaseInsensitiveComparer
+
+#endif // ECMA_COMPAT
 
 }; // class NameObjectCollectionBase
 

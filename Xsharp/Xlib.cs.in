@@ -520,6 +520,12 @@ internal sealed class Xlib
 			 out XRectangle max_ink_return,
 			 out XRectangle max_logical_return);
 
+	[DllImport("XsharpSupport")]
+	extern public static IntPtr XSharpGetResources(IntPtr dpy, Window w);
+
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpFreeResources(IntPtr value);
+
 	// Helper functions from "libImlib.so" for loading images.
 
 	[DllImport("Imlib")]

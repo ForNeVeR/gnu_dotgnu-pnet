@@ -21,6 +21,7 @@
 #if !defined(X_DISPLAY_MISSING) && HAVE_SELECT
 
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
 #ifdef WIN32
 	#include <X11/Xwinsock.h>
 #endif
@@ -286,6 +287,55 @@ void XSharpFontExtents(XFontSet fontSet,
 	}
 }
 
+/*
+ * Get the contents of the RESOURCE_MANAGER property on the root window.
+ */
+char *XSharpGetResources(Display *dpy, Window root)
+{
+	Atom resourceManager;
+	Atom actualTypeReturn;
+	int actualFormatReturn;
+	unsigned long nitemsReturn;
+	unsigned long bytesAfterReturn;
+	unsigned char *propReturn;
+
+	/* Register the RESOURCE_MANAGER atom with the X server */
+	resourceManager = XInternAtom(dpy, "RESOURCE_MANAGER", False);
+
+	/* Get the property, stopping at 1k characters */
+	propReturn = 0;
+	nitemsReturn = 0;
+	bytesAfterReturn = 0;
+	XGetWindowProperty(dpy, root, resourceManager, 0, 1024, False,
+					   XA_STRING, &actualTypeReturn, &actualFormatReturn,
+					   &nitemsReturn, &bytesAfterReturn, &propReturn);
+	if(bytesAfterReturn > 0)
+	{
+		/* We now know the real size, so fetch it properly this time */
+		if(propReturn)
+		{
+			XFree((void *)propReturn);
+		}
+		propReturn = 0;
+		XGetWindowProperty(dpy, root, resourceManager, 0,
+						   (long)(1024 + bytesAfterReturn), False,
+						   XA_STRING, &actualTypeReturn, &actualFormatReturn,
+						   &nitemsReturn, &bytesAfterReturn, &propReturn);
+	}
+	return (char *)propReturn;
+}
+
+/*
+ * Free a return value from "XSharpGetResources".
+ */
+void XSharpFreeResources(char *value)
+{
+	if(value)
+	{
+		XFree((void *)value);
+	}
+}
+
 #else /* X_DISPLAY_MISSING || !HAVE_SELECT */
 
 int XNextEventWithTimeout(void *dpy, void *event, int timeout)
@@ -317,6 +367,17 @@ void XSharpTextExtents(void *fontSet, const char *str,
 void XSharpFontExtents(void *fontSet,
 					   void *max_ink_return,
 					   void *max_logical_return)
+{
+	/* Nothing to do here */
+}
+
+char *XSharpGetResources(void *dpy, unsigned long root)
+{
+	/* Nothing to do here */
+	return 0;
+}
+
+void XSharpFreeResources(char *value)
 {
 	/* Nothing to do here */
 }

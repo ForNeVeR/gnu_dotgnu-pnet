@@ -21,8 +21,10 @@
 namespace Xsharp
 {
 
+using Xsharp.Events;
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.RootWindow"/> class manages the
@@ -33,6 +35,10 @@ using System.Collections;
 /// </summary>
 public sealed class RootWindow : Widget
 {
+	// Internal state.
+	private Xlib.Atom resourceManager;
+	private String resources;
+
 	// Constructor.  Called from the "Screen" class.
 	internal RootWindow(Display dpy, Screen screen, Xlib.Window handle)
 			: base(dpy, screen, DrawableKind.Widget, null)
@@ -50,6 +56,21 @@ public sealed class RootWindow : Widget
 				height = (int)(Xlib.XHeightOfScreen(screen.screen));
 				mapped = true;
 				autoMapChildren = false;
+
+				// Get the current state of the RESOURCE_MANAGER property.
+				// We extract color theme information from it.
+				resourceManager = Xlib.XInternAtom
+					(dpy.dpy, "RESOURCE_MANAGER", Xlib.Bool.False);
+				IntPtr resptr = Xlib.XSharpGetResources(dpy.dpy, handle);
+				if(resptr != IntPtr.Zero)
+				{
+					resources = Marshal.PtrToStringAnsi(resptr);
+					Xlib.XSharpFreeResources(resptr);
+				}
+
+				// Select for property notifications so that we can
+				// track changes to the RESOURCE_MANAGER property.
+				SelectInput(EventMask.PropertyChangeMask);
 			}
 
 	/// <summary>
@@ -159,6 +180,109 @@ public sealed class RootWindow : Widget
 					// Cannot change the mouse cursor on the root window.
 					throw new XInvalidOperationException
 						(S._("X_NonRootOperation"));
+				}
+			}
+
+	/// <summary>
+	/// <para>Get the X resources on the root window.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The X resource string from the <c>RESOURCE_MANAGER</c>
+	/// property, or <see langword="null"/> if the property
+	/// is not currently set.</para>
+	/// </value>
+	///
+	/// <remarks>
+	/// <para>The <c>ResourcesChanged</c> event will be emitted whenever
+	/// the X resource string changes.</para>
+	/// </remarks>
+	public String Resources
+			{
+				get
+				{
+					return resources;
+				}
+			}
+
+	/// <summary>
+	/// <para>Event that is emitted when the X resources change.</para>
+	/// </summary>
+	public event EventHandler ResourcesChanged;
+
+	/// <summary>
+	/// <para>Get a named X resource value.</para>
+	/// </summary>
+	///
+	/// <param name="name">
+	/// <para>The name of the resource value to retrieve.</para>
+	/// </param>
+	///
+	/// <returns>
+	/// <para>The resource value, or <see langword="null"/> if there
+	/// is no resource called <paramref name="name"/>.</para>
+	/// </returns>
+	public String GetResource(String name)
+			{
+				if(resources == null)
+				{
+					return null;
+				}
+				int posn = 0;
+				int end;
+				String value;
+				while(posn != -1 && posn < resources.Length)
+				{
+					if(resources[posn] == '\n')
+					{
+						++posn;
+						continue;
+					}
+					if((posn + name.Length) >= resources.Length)
+					{
+						break;
+					}
+					if(String.CompareOrdinal(resources, posn, name, 0,
+											 name.Length) == 0 &&
+					   resources[posn + name.Length] == ':')
+					{
+						end = resources.IndexOf('\n', posn);
+						if(end == -1)
+						{
+							end = resources.Length;
+						}
+						value = resources.Substring
+							(posn + name.Length + 1,
+							 end - (posn + name.Length + 1));
+						return value.Trim();
+					}
+					posn = resources.IndexOf('\n', posn);
+				}
+				return null;
+			}
+
+	/// Dispatch an event to this widget.
+	internal override void DispatchEvent(ref XEvent xevent)
+			{
+				if(xevent.type == EventType.PropertyNotify &&
+				   xevent.xproperty.atom == resourceManager)
+				{
+					// The "RESOURCE_MANAGER" property has changed.
+					IntPtr resptr = Xlib.XSharpGetResources
+							(dpy.dpy, GetWidgetHandle());
+					if(resptr != IntPtr.Zero)
+					{
+						resources = Marshal.PtrToStringAnsi(resptr);
+						Xlib.XSharpFreeResources(resptr);
+					}
+					else
+					{
+						resources = null;
+					}
+					if(ResourcesChanged != null)
+					{
+						ResourcesChanged(this, EventArgs.Empty);
+					}
 				}
 			}
 

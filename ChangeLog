@@ -6,6 +6,8 @@
 	inline because the va_list packing code doesn't work on
 	PPC GNU/Linux.
 
+	* engine/ilrun.c: modify "ilrun" to avoid va_list's also.
+
 2003-07-08  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_thread.c: Monitor speed improvements.  Prevent

@@ -151,6 +151,8 @@ int main(int argc, char *argv[])
 	int registerMode = 0;
 	char *ilprogram;
 	int ilprogramLen;
+	ILExecValue execValue;
+	ILExecValue retValue;
 	int flags=0;
 #ifndef IL_CONFIG_REDUCE_CODE
 	int dumpInsnProfile = 0;
@@ -413,12 +415,18 @@ int main(int argc, char *argv[])
 	{
 		retval = CallStaticConstructor(thread, method);
 		sawException = retval;
-		
-		if(!sawException && ILExecThreadCall(thread, method, &retval, args))
+		execValue.ptrValue = args;
+		ILMemZero(&retValue, sizeof(retValue));
+		if(!sawException && ILExecThreadCallV
+				(thread, method, &retValue, &execValue))
 		{
 			/* An exception was thrown while executing the program */
 			sawException = 1;
 			retval = 1;
+		}
+		else if(!sawException)
+		{
+			retval = retValue.int32Value;
 		}
 	}
 	else

@@ -358,7 +358,7 @@ public unsafe class CP932 : Encoding
 					byteval = bytes[index++];
 					--count;
 					++length;
-					if(byteval < 0x80)
+					if(byteval <= 0x80)
 					{
 						// Ordinary ASCII/Latin1 character, or the
 						// single-byte Yen or overline signs.
@@ -435,19 +435,7 @@ public unsafe class CP932 : Encoding
 							(Strings.GetString("Arg_InsufficientSpace"),
 							 "chars");
 					}
-					if(byteval == 0x5C)
-					{
-						// Yen sign.
-						chars[posn++] = '\u00A5';
-						continue;
-					}
-					else if(byteval == 0x7E)
-					{
-						// Overline symbol.
-						chars[posn++] = '\u203E';
-						continue;
-					}
-					else if(byteval < 0x80)
+					if(byteval <= 0x80)
 					{
 						// Ordinary ASCII/Latin1 character.
 						chars[posn++] = (char)byteval;
@@ -467,16 +455,26 @@ public unsafe class CP932 : Encoding
 					{
 						value = (byteval - 0xE0 + (0xA0 - 0x81)) * 0xBC;
 					}
+					else if(byteval == 0xA0)
+					{
+						chars[posn++] = '\uF8F0';
+						continue;
+					}
+					else if(byteval >= 0xFD && byteval <= 0xFF)
+					{
+						chars[posn++] = (char)(byteval - 0xFD + 0xF8F1);
+						continue;
+					}
 					else
 					{
 						// Invalid first byte.
-						chars[posn++] = '?';
+						chars[posn++] = '\0';
 						continue;
 					}
 					if(byteCount == 0)
 					{
 						// Missing second byte.
-						chars[posn++] = '?';
+						chars[posn++] = '\0';
 						continue;
 					}
 					byteval = bytes[byteIndex++];
@@ -492,7 +490,7 @@ public unsafe class CP932 : Encoding
 					else
 					{
 						// Invalid second byte.
-						chars[posn++] = '?';
+						chars[posn++] = '\0';
 						continue;
 					}
 					value *= 2;
@@ -504,7 +502,7 @@ public unsafe class CP932 : Encoding
 					}
 					else
 					{
-						chars[posn++] = '?';
+						chars[posn++] = '\0';
 					}
 				}
 
@@ -742,17 +740,7 @@ public unsafe class CP932 : Encoding
 								// First byte in a double-byte sequence.
 								last = byteval;
 							}
-							else if(byteval == 0x5C)
-							{
-								// Yen sign.
-								chars[posn++] ='\u00A5';
-							}
-							else if(byteval == 0x7E)
-							{
-								// Overline symbol.
-								chars[posn++] ='\u203E';
-							}
-							else if(byteval < 0x80)
+							else if(byteval <= 0x80)
 							{
 								// Ordinary ASCII/Latin1 character.
 								chars[posn++] = (char)byteval;
@@ -762,10 +750,18 @@ public unsafe class CP932 : Encoding
 								// Half-width katakana character.
 								chars[posn++] = (char)(byteval - 0xA1 + 0xFF61);
 							}
+							else if(byteval == 0xA0)
+							{
+								chars[posn++] = '\uF8F0';
+							}
+							else if(byteval >= 0xFD && byteval <= 0xFF)
+							{
+								chars[posn++] = (char)(byteval - 0xFD + 0xF8F1);
+							}
 							else
 							{
 								// Invalid first byte.
-								chars[posn++] = '?';
+								chars[posn++] = '\0';
 							}
 						}
 						else
@@ -791,7 +787,7 @@ public unsafe class CP932 : Encoding
 							else
 							{
 								// Invalid second byte.
-								chars[posn++] = '?';
+								chars[posn++] = '\0';
 								continue;
 							}
 							value *= 2;
@@ -803,7 +799,7 @@ public unsafe class CP932 : Encoding
 							}
 							else
 							{
-								chars[posn++] = '?';
+								chars[posn++] = '\0';
 							}
 						}
 					}

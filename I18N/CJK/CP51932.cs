@@ -352,7 +352,7 @@ public unsafe class CP51932 : Encoding
 					byteval = bytes[index++];
 					--count;
 					++length;
-					if(byteval < 0x80)
+					if(byteval <= 0x80)
 					{
 						// Ordinary ASCII/Latin1 character, or the
 						// single-byte Yen or overline signs.
@@ -363,6 +363,7 @@ public unsafe class CP51932 : Encoding
 						// Two-byte JIS X 0208 character.
 						if(count == 0)
 						{
+							--length;
 							continue;
 						}
 						--count;
@@ -373,6 +374,7 @@ public unsafe class CP51932 : Encoding
 						// Two-byte half-width katakana.
 						if(count == 0)
 						{
+							--length;
 							continue;
 						}
 						--count;
@@ -383,6 +385,7 @@ public unsafe class CP51932 : Encoding
 						// Three-byte JIS X 0212 character.
 						if(count <= 1)
 						{
+							--length;
 							count = 0;
 							continue;
 						}
@@ -391,7 +394,7 @@ public unsafe class CP51932 : Encoding
 					}
 					else
 					{
-						// Invalid first byte.
+						// Invalid first byte: map to NUL.
 						continue;
 					}
 				}
@@ -447,17 +450,7 @@ public unsafe class CP51932 : Encoding
 							(Strings.GetString("Arg_InsufficientSpace"),
 							 "chars");
 					}
-					if(byteval == 0x5C)
-					{
-						// Yen sign.
-						chars[posn++] = '\u00A5';
-					}
-					else if(byteval == 0x7E)
-					{
-						// Overline symbol.
-						chars[posn++] = '\u203E';
-					}
-					else if(byteval < 0x80)
+					if(byteval <= 0x80)
 					{
 						// Ordinary ASCII/Latin1 character.
 						chars[posn++] = (char)byteval;
@@ -473,7 +466,7 @@ public unsafe class CP51932 : Encoding
 						}
 						else
 						{
-							byteval = 0;
+							break;
 						}
 						if(byteval >= 0xA1 && byteval <= 0xFE)
 						{
@@ -487,13 +480,13 @@ public unsafe class CP51932 : Encoding
 							}
 							else
 							{
-								chars[posn++] = '?';
+								chars[posn++] = '\0';
 							}
 						}
 						else
 						{
 							// Invalid second byte.
-							chars[posn++] = '?';
+							chars[posn++] = '\0';
 						}
 					}
 					else if(byteval == 0x8E)
@@ -506,7 +499,7 @@ public unsafe class CP51932 : Encoding
 						}
 						else
 						{
-							byteval = 0;
+							break;
 						}
 						if(byteval >= 0xA1 && byteval <= 0xFE)
 						{
@@ -515,7 +508,7 @@ public unsafe class CP51932 : Encoding
 						else
 						{
 							// Invalid second byte.
-							chars[posn++] = '?';
+							chars[posn++] = '\0';
 						}
 					}
 					else if(byteval == 0x8F)
@@ -528,7 +521,7 @@ public unsafe class CP51932 : Encoding
 						}
 						else
 						{
-							byteval = 0;
+							break;
 						}
 						if(byteval >= 0xA1 && byteval <= 0xFE)
 						{
@@ -540,7 +533,7 @@ public unsafe class CP51932 : Encoding
 							}
 							else
 							{
-								byteval = 0;
+								break;
 							}
 							if(byteval >= 0xA1 && byteval <= 0xFE)
 							{
@@ -554,25 +547,33 @@ public unsafe class CP51932 : Encoding
 								}
 								else
 								{
-									chars[posn++] = '?';
+									chars[posn++] = '\0';
 								}
 							}
 							else
 							{
 								// Invalid third byte.
-								chars[posn++] = '?';
+								chars[posn++] = '\0';
 							}
 						}
 						else
 						{
 							// Invalid second byte.
-							chars[posn++] = '?';
+							chars[posn++] = '\0';
 						}
+					}
+					else if(byteval == 0xA0)
+					{
+						chars[posn++] = '\uF8F0';
+					}
+					else if(byteval == 0xFF)
+					{
+						chars[posn++] = '\uF8F3';
 					}
 					else
 					{
 						// Invalid first byte.
-						chars[posn++] = '?';
+						chars[posn++] = '\0';
 					}
 				}
 
@@ -748,7 +749,10 @@ public unsafe class CP51932 : Encoding
 								// First byte in a double-byte sequence.
 								last1 = byteval;
 							}
-							++length;
+							else
+							{
+								++length;
+							}
 						}
 						else if(last1 == 0x8F)
 						{
@@ -769,6 +773,7 @@ public unsafe class CP51932 : Encoding
 								// Third byte in a triple-byte sequence.
 								last1 = 0;
 								last2 = 0;
+								++length;
 							}
 						}
 						else
@@ -776,6 +781,7 @@ public unsafe class CP51932 : Encoding
 							// Second byte in a double-byte sequence.
 							last1 = 0;
 							last2 = 0;
+							++length;
 						}
 					}
 	
@@ -837,25 +843,23 @@ public unsafe class CP51932 : Encoding
 								// First byte in a double-byte sequence.
 								last1 = byteval;
 							}
-							else if(byteval == 0x5C)
-							{
-								// Yen sign.
-								chars[posn++] ='\u00A5';
-							}
-							else if(byteval == 0x7E)
-							{
-								// Overline symbol.
-								chars[posn++] ='\u203E';
-							}
-							else if(byteval < 0x80)
+							else if(byteval <= 0x80)
 							{
 								// Ordinary ASCII/Latin1 character.
 								chars[posn++] = (char)byteval;
 							}
+							else if(byteval == 0xA0)
+							{
+								chars[posn++] = '\uF8F0';
+							}
+							else if(byteval == 0xFF)
+							{
+								chars[posn++] = '\uF8F3';
+							}
 							else
 							{
 								// Invalid first byte.
-								chars[posn++] = '?';
+								chars[posn++] = '\0';
 							}
 						}
 						else if(last1 == 0x8F)
@@ -863,22 +867,30 @@ public unsafe class CP51932 : Encoding
 							if(last2 == 0)
 							{
 								// Second byte in a triple-byte sequence.
-								if(byteval < 0xA1 || byteval > 0xFE)
+								if(byteval != 0)
 								{
-									// Invalid second byte.
-									chars[posn++] = '?';
-									last1 = 0;
-									continue;
+									last2 = byteval;
 								}
-								last2 = byteval;
+								else
+								{
+									last2 = 1;
+								}
 							}
 							else
 							{
 								// Third byte in a triple-byte sequence.
-								if(byteval < 0xA1 || byteval > 0xFE)
+								if(last2 < 0xA1 || last2 > 0xFE)
 								{
 									// Invalid second byte.
-									chars[posn++] = '?';
+									chars[posn++] = '\0';
+									last1 = 0;
+									last2 = 0;
+									continue;
+								}
+								if(byteval < 0xA1 || byteval > 0xFE)
+								{
+									// Invalid third byte.
+									chars[posn++] = '\0';
 									last1 = 0;
 									last2 = 0;
 									continue;
@@ -893,7 +905,7 @@ public unsafe class CP51932 : Encoding
 								}
 								else
 								{
-									chars[posn++] = '?';
+									chars[posn++] = '\0';
 								}
 								last1 = 0;
 								last2 = 0;
@@ -909,7 +921,7 @@ public unsafe class CP51932 : Encoding
 							else
 							{
 								// Invalid second byte.
-								chars[posn++] = '?';
+								chars[posn++] = '\0';
 							}
 							last1 = 0;
 						}
@@ -919,7 +931,7 @@ public unsafe class CP51932 : Encoding
 							if(byteval < 0xA1 || byteval > 0xFE)
 							{
 								// Invalid second byte.
-								chars[posn++] = '?';
+								chars[posn++] = '\0';
 								last1 = 0;
 								continue;
 							}
@@ -933,7 +945,7 @@ public unsafe class CP51932 : Encoding
 							}
 							else
 							{
-								chars[posn++] = '?';
+								chars[posn++] = '\0';
 							}
 							last1 = 0;
 						}

@@ -26,3 +26,4 @@ Exception_InvalidEnumValue=Invalid enumerated value `{0}' for argument `{1}' of 
 Exception_Checkout=An error occurred while attempting to check out a file
 Exception_CheckoutCanceled=A checkout operation was canceled
 Exception_BufferOverflow=An internal buffer has overflowed
+Exception_License=Incorrect license information supplied

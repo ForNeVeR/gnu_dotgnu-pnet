@@ -7,6 +7,21 @@
 	runtime/System/Runtime/Remoting/Lifetime/LifetimeServices.cs:
 	missing functionality in "System.Runtime.Remoting".
 
+	* System/ComponentModel/LicFileLicenseProvider.cs,
+	System/ComponentModel/License.cs,
+	System/ComponentModel/LicenseException.cs,
+	System/ComponentModel/LicenseManager.cs,
+	System/ComponentModel/LicenseProvider.cs,
+	System/ComponentModel/LicenseProviderAttribute.cs,
+	System/ComponentModel/PropertyTabAttribute.cs,
+	System/ComponentModel/ProvidePropertyAttribute.cs,
+	System/ComponentModel/TypeConverter.cs,
+	System/ComponentModel/Win32Exception.cs,
+	resources/en_US/System/Arg.txt,
+	resources/en_US/System/Exception.txt,
+	resources/en_US/System/Invalid.txt: missing classes in
+	"System.ComponentModel".
+
 2003-09-11  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Region.cs: added in correct copyright notice.

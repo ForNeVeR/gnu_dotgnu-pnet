@@ -217,7 +217,7 @@ public class TypeConverter
 			}
 
 	// Return a collection of standard values for this data type.
-	public StandardValuesCollection GetStandardValues()
+	public ICollection GetStandardValues()
 			{
 				return GetStandardValues(null);
 			}

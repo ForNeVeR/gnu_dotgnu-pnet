@@ -20,12 +20,15 @@
  */
 
 using System;
+using System.Security;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
 namespace System.ComponentModel
 {
 #if !ECMA_COMPAT
+	[Serializable]
+	[SuppressUnmanagedCodeSecurity]
 	public class Win32Exception: ExternalException
 	{
 		private int nativeErrorCode;

@@ -36,3 +36,4 @@ Invalid_PermissionPresent=The specified permission is already present
 Invalid_PermissionNotPresent=The specified permission is not present
 Invalid_PathMismatch=Mismatch in the length of permission paths
 Invalid_AuthModuleNotRegistered=The specified authentication module is not registered
+Invalid_LicenseContextChange=The license context cannot be changed

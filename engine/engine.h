@@ -332,7 +332,7 @@ int _ILLayoutAlreadyDone(ILClass *info);
  * Verify the contents of a method.
  */
 int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
-			  ILMethodCode *code, int unsafeAllowed);
+			  ILMethodCode *code, int unsafeAllowed, ILExecThread *thread);
 
 /*
  * Construct the "ffi_cif" structure that is needed to

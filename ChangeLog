@@ -8,6 +8,13 @@
 	* engine/lib_string.c: use the correct length when comparing
 	strings in the intern'ed string table.
 
+	* engine/convert.c, engine/cvmc_const.c, engine/engine.h,
+	engine/ilverify.c, engine/lib_string.c, engine/null_coder.c,
+	engine/verify.c, engine/verify_const.c, include/il_coder.h:
+	make sure that string constants are intern'ed at verification
+	time, so that they are already intern'ed before the method
+	executes (needed to fix problems with csc-compiled switch'es).
+
 2002-12-29  Gopal.V  <gopalv82@symonds.net>
 	
 	* Makefile.am: Include libgc and libffi directories while doing 

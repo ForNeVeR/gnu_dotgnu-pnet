@@ -65,10 +65,19 @@ static void CVMCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 /*
  * Handle a string constant opcode.
  */
-static void CVMCoder_StringConstant(ILCoder *coder, ILToken token)
+static void CVMCoder_StringConstant(ILCoder *coder, ILToken token, void *object)
 {
-	CVM_OUT_WORD(COP_LDSTR, token);
-	CVM_ADJUST(1);
+	if(object)
+	{
+		/* Push the object pointer directly, to save time at runtime */
+		CVM_OUT_WORD(COP_LDTOKEN, object);
+		CVM_ADJUST(1);
+	}
+	else
+	{
+		CVM_OUT_WORD(COP_LDSTR, token);
+		CVM_ADJUST(1);
+	}
 }
 
 #endif	/* IL_CVMC_CODE */

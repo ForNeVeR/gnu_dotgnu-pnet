@@ -109,7 +109,16 @@ case IL_OP_LDSTR:
 	{
 		VERIFY_INSN_ERROR();
 	}
-	ILCoderStringConstant(coder, (ILToken)argNum);
+	if(thread)
+	{
+		ILCoderStringConstant(coder, (ILToken)argNum,
+				_ILStringInternFromImage(thread, ILProgramItem_Image(method),
+										 (ILToken)argNum));
+	}
+	else
+	{
+		ILCoderStringConstant(coder, (ILToken)argNum, 0);
+	}
 	stack[stackSize].engineType = ILEngineType_O;
 	stack[stackSize].typeInfo = ILType_FromClass(stringClass);
 	++stackSize;

@@ -604,7 +604,7 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 #undef IL_VERIFY_GLOBALS
 
 int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
-			  ILMethodCode *code, int unsafeAllowed)
+			  ILMethodCode *code, int unsafeAllowed, ILExecThread *thread)
 {
 	TempAllocator allocator;
 	unsigned long *jumpMask;

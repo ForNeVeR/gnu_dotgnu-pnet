@@ -1094,14 +1094,7 @@ static System_String *InternString(ILExecThread *thread,
 		    !ILMemCmp(StringToBuffer(entry->value), StringToBuffer(str),
 					  entry->value->length * 2)))
 		{
-			if(add || entry->value == str)
-			{
-				return entry->value;
-			}
-			else
-			{
-				return 0;
-			}
+			return entry->value;
 		}
 		entry = entry->next;
 	}

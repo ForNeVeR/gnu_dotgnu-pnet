@@ -167,7 +167,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	{
 		/* Use the bytecode verifier and coder to convert the method */
 		if(!_ILVerify(coder, &start, method, &code,
-					  ILImageIsSecure(ILProgramItem_Image(method))))
+					  ILImageIsSecure(ILProgramItem_Image(method)), thread))
 		{
 			METADATA_UNLOCK(thread);
 			*errorCode = IL_CONVERT_VERIFY_FAILED;

@@ -81,7 +81,7 @@ static void Coder_StackRefresh(ILCoder *coder, ILEngineStackItem *stack,
 static void Coder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 {
 }
-static void Coder_StringConstant(ILCoder *coder, ILToken token)
+static void Coder_StringConstant(ILCoder *coder, ILToken token, void *object)
 {
 }
 static void Coder_Binary(ILCoder *coder, int opcode, ILEngineType type1,

@@ -216,7 +216,8 @@ static int verify(const char *filename, ILContext *context, int allowUnsafe)
 		}
 
 		/* Verify the method */
-		result = _ILVerify(&_ILNullCoder, &start, method, &code, allowUnsafe);
+		result = _ILVerify(&_ILNullCoder, &start, method,
+						   &code, allowUnsafe, 0);
 		if(!result)
 		{
 			printError(image, method, "could not verify code");

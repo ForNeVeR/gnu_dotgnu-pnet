@@ -4,6 +4,11 @@
 	* engine/int_table.c, engine/int_proto.h, engine/lib_socket.c:
 	Changes to reflect the change of internal calls from Dns to DnsMethods.
 
+	* engine/int_table.c, engine/int_proto.h, engine/lib_socket.c,
+	support/dns.c, include/il_sysio.h, configure.in : Wrap gethostname() 
+	in a support ILGetHostName() wrapper, add detection code and implement
+	InternalGetHostName() internal call.
+
 2004-06-18  Klaus Treichel  <ktreichel@web.de>
 
 	* clrwrap/Makefile.am, csant/Makefile.am, csant/Makefile.am,

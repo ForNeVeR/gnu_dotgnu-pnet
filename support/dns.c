@@ -31,6 +31,9 @@
 #if HAVE_NETDB_H
 #include <netdb.h>
 #endif 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #endif 
 
 #ifdef	__cplusplus
@@ -70,3 +73,15 @@ struct hostent* ILGetHostByAddr(const void* addr, unsigned int len,int type)
 #ifdef	__cplusplus
 };
 #endif
+
+int ILGetHostName(char * name, unsigned int size)
+{
+#ifdef HAVE_GETHOSTNAME
+#ifdef IL_WIN32_NATIVE
+	_ILWinSockInit();
+#endif
+	return gethostname(name, size);
+#else
+	return -1;
+#endif
+}

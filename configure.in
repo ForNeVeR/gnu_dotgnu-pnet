@@ -461,6 +461,7 @@ AC_CHECK_FUNCS(mkdir ioctl setsockopt getsockopt uname)
 AC_CHECK_FUNCS(tcgetattr readlink symlink rmdir strsignal)
 AC_CHECK_FUNCS(chmod umask)
 AC_CHECK_FUNCS(setjmp longjmp signal sigaction abort exit _exit siglongjmp sigsetjmp)
+AC_CHECK_FUNCS(gethostname)
 AC_FUNC_ALLOCA
 
 dnl check for F_SETLKW fcntl function.

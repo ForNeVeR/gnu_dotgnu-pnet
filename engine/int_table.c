@@ -2870,6 +2870,7 @@ static void marshal_bplppp(void (*fn)(), void *rvalue, void **avalue)
 IL_METHOD_BEGIN(DnsMethods_Methods)
 	IL_METHOD("InternalGetHostByName", "(oSystem.String;&oSystem.String;&[oSystem.String;&[l)Z", _IL_DnsMethods_InternalGetHostByName, marshal_bppppp)
 	IL_METHOD("InternalGetHostByAddr", "(l&oSystem.String;&[oSystem.String;&[l)Z", _IL_DnsMethods_InternalGetHostByAddr, marshal_bplppp)
+	IL_METHOD("InternalGetHostName", "()oSystem.String;", _IL_DnsMethods_InternalGetHostName, marshal_pp)
 IL_METHOD_END
 
 #endif

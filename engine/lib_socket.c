@@ -562,7 +562,7 @@ ILBool ToIPHostEntry (ILExecThread *_thread,
 }
 
 /*
- * public static bool InternalGetHostByName(String host, out String h_name ,
+ * static bool InternalGetHostByName(String host, out String h_name ,
  * 							out String [] h_aliases, out long[] h_addr_list);
  */
 
@@ -583,7 +583,7 @@ ILBool _IL_DnsMethods_InternalGetHostByName(ILExecThread * _thread,
 }
 
 /*
- * public static bool InternalGetHostByAddr(long address, out String h_name ,
+ * static bool InternalGetHostByAddr(long address, out String h_name ,
  * 							out String [] h_aliases, out long[] h_addr_list);
  */
 
@@ -602,6 +602,19 @@ ILBool _IL_DnsMethods_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 addr
 	}
 
 	return ToIPHostEntry(_thread,h_ent,h_name,h_aliases,h_addr_list);
+}
+
+/*
+ *	static System.String InternalGetHostName(void);
+ */
+extern ILString * _IL_DnsMethods_InternalGetHostName(ILExecThread * _thread)
+{
+	char hostName[1024+1]; /* hmm... stack .. */
+	if(ILGetHostName(hostName,1024*sizeof(char)) == -1)
+	{
+		return 0; /* error */
+	}
+	return ILStringCreate(_thread, hostName);
 }
 
 #endif /* IL_CONFIG_NETWORKING */

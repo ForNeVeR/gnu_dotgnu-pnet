@@ -662,6 +662,7 @@ extern void _IL_SocketMethods_WaitHandleSet(ILExecThread * _thread, ILObject * w
 
 extern ILBool _IL_DnsMethods_InternalGetHostByName(ILExecThread * _thread, ILString * host, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
 extern ILBool _IL_DnsMethods_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
+extern ILString * _IL_DnsMethods_InternalGetHostName(ILExecThread * _thread);
 
 extern ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread * _thread, ILInt32 host);
 extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 network);

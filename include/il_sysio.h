@@ -378,6 +378,11 @@ int ILSysIODiscoverIrDADevices(ILSysIOHandle handle, unsigned char *buf,
 /* dns.c */
 struct hostent* ILGetHostByName(const char *name);
 struct hostent* ILGetHostByAddr(const void *addr, unsigned int len, int type);
+
+/*
+ * Platform wrapper over gethostname
+ */
+int ILGetHostName(const char *name, unsigned int size);
 	
 /*
  * Obtains the last access time of 'path' and stores that information in 'time'.

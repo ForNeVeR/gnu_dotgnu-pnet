@@ -11,6 +11,12 @@
 	* engine/lib_string.c: bug in string construction and CharFill
 	that caused it to use the wrong pointer in "char[]" arrays.
 
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll,
+	samples/System.Xml.dll, samples/System.dll,
+	samples/mscorlib.dll: update all assemblies from pnetlib.
+
 2002-12-01  Stephen Compall  <rushing@sigecom.net>
 
 	* pnet.spec.in: Fixed man page filespecs to support multiple

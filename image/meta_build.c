@@ -108,6 +108,7 @@ static int LoadTokenRange(ILImage *image, unsigned long tokenType,
 						  TokenLoadFunc func, void *userData)
 {
 	unsigned long maxToken;
+	unsigned long tableMaxToken;
 	unsigned long token;
 	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
 	ILUInt32 valuesNext[IL_IMAGE_TOKEN_COLUMNS];
@@ -124,6 +125,7 @@ static int LoadTokenRange(ILImage *image, unsigned long tokenType,
 
 	/* Parse and load the tokens */
 	maxToken = firstToken + num - 1;
+	tableMaxToken = image->tokenCount[tokenType >> 24] | tokenType;
 	if(!_ILImageRawTokenData(image, firstToken, values))
 	{
 		return IL_LOADERR_BAD_META;
@@ -132,7 +134,7 @@ static int LoadTokenRange(ILImage *image, unsigned long tokenType,
 	nextValues = valuesNext;
 	for(token = firstToken; token <= maxToken; ++token)
 	{
-		if((token + 1) <= maxToken)
+		if((token + 1) <= tableMaxToken)
 		{
 			if(!_ILImageRawTokenData(image, token + 1, nextValues))
 			{
@@ -1092,6 +1094,35 @@ static int Load_ParamDef(ILImage *image, ILUInt32 *values,
 }
 
 /*
+ * Determine the number of items in a token range.
+ */
+static int SizeOfRange(ILImage *image, unsigned long tokenKind,
+					   ILUInt32 *values, ILUInt32 *valuesNext,
+					   int index, ILUInt32 *num)
+{
+	if(!(values[index]))
+	{
+		*num = 0;
+		return 1;
+	}
+	else if(valuesNext && valuesNext[index] != 0)
+	{
+		if(valuesNext[index] < values[index])
+		{
+			return 0;
+		}
+		*num = valuesNext[index] - values[index];
+		return 1;
+	}
+	else
+	{
+		*num = (image->tokenCount[tokenKind >> 24] + 1) -
+			   (values[index] & ~IL_META_TOKEN_MASK);
+		return 1;
+	}
+}
+
+/*
  * Load a method definition token.
  */
 static int Load_MethodDef(ILImage *image, ILUInt32 *values,
@@ -1101,7 +1132,6 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 	ILMethod *method;
 	ILUInt32 num;
 	int error;
-	unsigned char *temp;
 	ILType *signature;
 
 	/* Create the method and attach it to the class */
@@ -1144,31 +1174,11 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 	ILMethodSetRVA(method, values[IL_OFFSET_METHODDEF_RVA]);
 
 	/* Parse the parameter definitions */
-	if(!(values[IL_OFFSET_METHODDEF_FIRST_PARAM]) ||
-	   (values[IL_OFFSET_METHODDEF_FIRST_PARAM] &
-	   			~IL_META_TOKEN_MASK) >
-						image->tokenCount[IL_META_TOKEN_PARAM_DEF >> 24])
+	if(!SizeOfRange(image, IL_META_TOKEN_PARAM_DEF,
+					values, valuesNext, IL_OFFSET_METHODDEF_FIRST_PARAM, &num))
 	{
-		num = 0;
-	}
-	else
-	{
-		/* Get the number of real parameters from the signature */
-		num = ILTypeNumParams(signature);
-		if((ILType_Kind(signature) & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
-		{
-			--num;
-		}
-
-		/* Add 1 if the return value has a parameter definition */
-		temp = image->tokenStart[IL_META_TOKEN_PARAM_DEF >> 24];
-		temp += image->tokenSize[IL_META_TOKEN_PARAM_DEF >> 24] *
-					((values[IL_OFFSET_METHODDEF_FIRST_PARAM] - 1) &
-								~IL_META_TOKEN_MASK);
-		if((IL_READ_UINT16(temp) & IL_META_PARAMDEF_RETVAL) != 0)
-		{
-			++num;
-		}
+		META_VAL_ERROR("invalid parameter count");
+		return IL_LOADERR_BAD_META;
 	}
 	EXIT_IF_ERROR(LoadTokenRange(image, IL_META_TOKEN_PARAM_DEF,
 								 values[IL_OFFSET_METHODDEF_FIRST_PARAM], num,
@@ -1176,35 +1186,6 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 
 	/* Done */
 	return 0;
-}
-
-/*
- * Determine the number of items in a token range.
- */
-static int SizeOfRange(ILImage *image, unsigned long tokenKind,
-					   ILUInt32 *values, ILUInt32 *valuesNext,
-					   int index, ILUInt32 *num)
-{
-	if(!(values[index]))
-	{
-		*num = 0;
-		return 1;
-	}
-	else if(valuesNext && valuesNext[index] != 0)
-	{
-		if(valuesNext[index] < values[index])
-		{
-			return 0;
-		}
-		*num = valuesNext[index] - values[index];
-		return 1;
-	}
-	else
-	{
-		*num = (image->tokenCount[tokenKind >> 24] + 1) -
-			   (values[index] & ~IL_META_TOKEN_MASK);
-		return 1;
-	}
 }
 
 /*

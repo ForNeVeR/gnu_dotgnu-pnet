@@ -1,4 +1,10 @@
 
+2003-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/meta_build.c (Load_MethodDef): use "LoadTokenRange" to
+	load the parameter information because it is possible that not
+	all method parameters will have ParamDef blocks.
+
 2003-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, coremul/.cvsignore, coremul/Makefile.am,

@@ -8,6 +8,9 @@
 	update output files that were affected by the latest cscc
 	fixes to convert Errors to Warnings for missing 'new' and 'override'.
 
+	* csharp/stmt/switch3.cs,csharp/stmt/switch3.il,csharp/stmt/switch3.jl:
+	tests for switch on string governing expressions.
+
 2002-10-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/stmt/switch1.jl: change output file to reflect Java patches.

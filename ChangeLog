@@ -25,6 +25,13 @@
 	"Stream" and "FileStream"; protect "FileStream" operations with a
 	lock to prevent invalid states in threaded applications.
 
+	* runtime/System/Threading/AutoResetEvent.cs,
+	runtime/System/Threading/ISignal.cs,
+	runtime/System/Threading/ManualResetEvent.cs,
+	runtime/System/Threading/Timer.cs: add the internal "ISignal"
+	interface to mark wait handles that implement signalling;
+	use "ISignal" to perform dispose notifies in "Timer".
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

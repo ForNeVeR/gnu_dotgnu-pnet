@@ -329,9 +329,12 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 							}
 						}
 					}
-					if(notifyObject != null)
+
+					// Signal the "notifyObject" to indicate "disposed".
+					ISignal signal = (notifyObject as ISignal);
+					if(signal != null)
 					{
-						// TODO: signal notifyObject that we are exiting.
+						signal.Signal();
 					}
 				}
 			}

@@ -31,7 +31,7 @@ namespace System.Threading
 #else
 	public
 #endif
-	sealed class ManualResetEvent : WaitHandle
+	sealed class ManualResetEvent : WaitHandle, ISignal
 	{
 		/// <summary>
 		/// See ECMA specs.
@@ -59,6 +59,12 @@ namespace System.Threading
 		public bool Reset()
 		{
 			return WaitEvent.InternalResetEvent(Handle);
+		}
+
+		// Implement the ISignal interface.
+		void ISignal.Signal()
+		{
+			Set();
 		}
 	}
 

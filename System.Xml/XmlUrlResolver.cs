@@ -88,17 +88,10 @@ public class XmlUrlResolver : XmlResolver
 						// Uri to work with, I belive it's safe to assume
 						// we're looking for a file on the local filesystem.
 						//  - "ptah"
-						if (File.Exists(relativeUri))
-						{
-							return new Uri(Path.Combine(
-								Directory.GetCurrentDirectory(),
-								relativeUri
-							));
-						}
-						else
-						{
-							return new Uri(relativeUri);
-						}
+						return new Uri(Path.Combine(
+							Directory.GetCurrentDirectory(),
+							relativeUri
+						));
 					}
 					else if(relativeUri == null)
 					{

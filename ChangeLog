@@ -1,4 +1,11 @@
 
+2003-01-04  Aditya P. Bansod <abansod@fullenergy.com>
+	
+	* runtime/Platform/FileMethods.cs, runtime/System/IO/File.cs: Add
+	internal calls and implement the File.SetLastWriteTime and 
+	SetLastAccessTime.
+	(Patch #917,Gopal)
+	
 2003-01-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/Encoding.cs: back out the UTF8 change because

@@ -112,6 +112,16 @@ internal class FileMethods
 	// Returns an Errno for the call status
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Errno Copy(string src, string dest);
+
+	// Sets the last write time of a file
+	// Returns an Errno for the call status
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno SetLastWriteTime(string path, long ticks);
+
+	// Sets the last access time for a file
+	// Returns an Errno for the call status
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno SetLastAccessTime(string path, long ticks);
 	
 }; // class FileMethods
 

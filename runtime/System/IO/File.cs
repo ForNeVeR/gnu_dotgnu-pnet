@@ -252,17 +252,32 @@ namespace System.IO
 		}
 		
 		[TODO]	
-		public static void SetCreationTime(string path, DateTime time) 
+		public static void SetCreationTime(string path, DateTime creationTime) 
 		{
 			Exception e = ValidatePath(path, "path");
 			if(e != null) { throw e; }
 		}
-
-		[TODO]
-		public static void SetLastWriteTime(string path, DateTime time)
+		
+		[TODO]	
+		public static void SetLastAccessTime(string path, DateTime lastAccessTime) 
 		{
 			Exception e = ValidatePath(path, "path");
 			if(e != null) { throw e; }
+
+			Errno err = FileMethods.SetLastAccessTime(path, lastAccessTime.ToUniversalTime().Ticks);
+			e = GetTimeExceptionHandler(err);
+			if(e != null) { throw e; }
+		}
+
+		public static void SetLastWriteTime(string path, DateTime lastWriteTime)
+		{
+			Exception e = ValidatePath(path, "path");
+			if(e != null) { throw e; }
+
+			Errno err = FileMethods.SetLastWriteTime(path, lastWriteTime.ToUniversalTime().Ticks);
+			e = GetTimeExceptionHandler(err);
+			if(e != null) { throw e; }
+
 		}
 
 		private static Exception GetTimeExceptionHandler(Errno err)

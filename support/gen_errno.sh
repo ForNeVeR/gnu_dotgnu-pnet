@@ -24,7 +24,7 @@
 ILERRNO="$1"
 shift
 
-SRC=/tmp/gerr$$.c
+SRC=./gerr$$.c
 trap "rm -f $SRC; exit 1" 1 2 15
 
 # Create a dummy program that includes <errno.h> for us.

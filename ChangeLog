@@ -10,6 +10,9 @@
 	* include/il_values.h: back out part of the previous change
 	because mingw32 is having problems.
 
+	* support/gen_errno.sh: remove the dependency on /tmp as it
+	has some problems on certain win32 systems.
+
 2003-02-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c, image/misc_token.c: reduce the number of

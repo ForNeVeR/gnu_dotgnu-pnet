@@ -566,7 +566,7 @@ ILBool ToIPHostEntry (ILExecThread *_thread,
  * 							out String [] h_aliases, out long[] h_addr_list);
  */
 
-ILBool _IL_Dns_InternalGetHostByName(ILExecThread * _thread, 
+ILBool _IL_DnsMethods_InternalGetHostByName(ILExecThread * _thread, 
 				ILString * host, ILString * * h_name, 
 				System_Array * * h_aliases, System_Array * * h_addr_list)
 {
@@ -587,7 +587,7 @@ ILBool _IL_Dns_InternalGetHostByName(ILExecThread * _thread,
  * 							out String [] h_aliases, out long[] h_addr_list);
  */
 
-ILBool _IL_Dns_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address, 
+ILBool _IL_DnsMethods_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address, 
 				ILString * * h_name, System_Array * * h_aliases, 
 				System_Array * * h_addr_list)
 {

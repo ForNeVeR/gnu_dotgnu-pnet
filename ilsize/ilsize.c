@@ -348,6 +348,17 @@ static void print(const char *name, int radix, unsigned long value)
 }
 
 /*
+ * Print an assembly's version.
+ */
+static void printVersion(const ILUInt16 *version)
+{
+	char buffer[64];
+	sprintf(buffer, "%d.%d.%d.%d", (int)(version[0]), (int)(version[1]),
+			(int)(version[2]), (int)(version[3]));
+	printf("version %20s\n", buffer);
+}
+
+/*
  * Token tables and their names.
  */
 static struct
@@ -421,6 +432,8 @@ static int printDetailed(const char *filename, ILContext *context, int radix)
 
 	/* Print the general information on the file */
 	printf("%s  :\n", filename);
+	printVersion(ILAssemblyGetVersion((ILAssembly *)
+					ILImageTokenInfo(image, IL_META_TOKEN_ASSEMBLY | 1)));
 	print("code", radix, code);
 	print("meta", radix, meta);
 	print("res", radix, res);

@@ -5,6 +5,9 @@
 	preserve the full profile values, not just true/false, so that
 	non-boolean values can be defined.
 
+	* ilsize/ilsize.c: dump the assembly version in the detailed
+	output mode of "ilsize".
+
 2003-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, support/console.c: use a better detection mechanism

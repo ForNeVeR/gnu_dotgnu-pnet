@@ -1053,7 +1053,7 @@ namespace System.Windows.Forms
 
 		protected internal virtual void OnAfterCheck(TreeViewEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.AfterCheck) as EventHandler;
+			TreeViewEventHandler handler = (TreeViewEventHandler)GetHandler(EventId.AfterCheck);
 			if (handler != null)
 			{
 				handler(this,e);
@@ -1062,7 +1062,7 @@ namespace System.Windows.Forms
 
 		protected internal virtual void OnAfterCollapse(TreeViewEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.AfterCollapse) as EventHandler;
+			TreeViewEventHandler handler = (TreeViewEventHandler)GetHandler(EventId.AfterCollapse);
 			if (handler != null)
 			{
 				handler(this,e);
@@ -1071,7 +1071,7 @@ namespace System.Windows.Forms
 		
 		protected virtual void OnAfterExpand(TreeViewEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.AfterExpand) as EventHandler;
+			TreeViewEventHandler handler = (TreeViewEventHandler)GetHandler(EventId.AfterExpand);
 			if (handler != null)
 			{
 				handler(this,e);
@@ -1089,7 +1089,7 @@ namespace System.Windows.Forms
 
 		protected virtual void OnAfterSelect(TreeViewEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.AfterSelect) as EventHandler;
+			TreeViewEventHandler handler = (TreeViewEventHandler)GetHandler(EventId.AfterSelect);
 			if (handler != null)
 			{
 				handler(this,e);

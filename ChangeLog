@@ -8,6 +8,9 @@
 	that it only outputs the type definitions, because the
 	methods, fields, etc, can be accessed via other means.
 
+	* cscc/c/c_grammar.y, cscc/c/c_scanner.l: remove the "__invoke__"
+	keyword from the C compiler, because it is no longer required.
+
 2003-07-01  Thong Nguyen  <tum@veridicus.com>
 	
 	* engine/heap.c:  Make ILExecAllocAtomic registers finalizers.

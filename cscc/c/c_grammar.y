@@ -1066,7 +1066,6 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_WCHAR			"`__wchar__'"
 %token K_NATIVE			"`__native__'"
 %token K_CSHARP			"`__csharp__'"
-%token K_INVOKE			"`__invoke__'"
 %token K_FUNCTION		"`__FUNCTION__'"
 %token K_FUNC			"`__func__'"
 
@@ -1361,14 +1360,6 @@ PostfixExpression
 	| PostfixExpression '.' AnyIdentifier	{
 				$$ = ILNode_CMemberField_create
 						(FixIdentifierNode($1, 0), $3);
-			}
-	| K_INVOKE TYPE_NAME '.' AnyIdentifier '(' ')'	{
-				$$ = ILNode_CSharpInvocation_create
-						(CScopeGetType(CScopeLookup($2)), $4, 0);
-			}
-	| K_INVOKE TYPE_NAME '.' AnyIdentifier '(' ArgumentExpressionList ')'	{
-				$$ = ILNode_CSharpInvocation_create
-						(CScopeGetType(CScopeLookup($2)), $4, $6);
 			}
 	| TYPE_NAME COLON_COLON_OP AnyIdentifier '(' ')'	{
 				$$ = ILNode_CSharpInvocation_create

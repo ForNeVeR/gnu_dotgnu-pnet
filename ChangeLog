@@ -30,6 +30,8 @@ entire stack item as "type2".
 
 * engine/cvm.h, engine/cvm_conv.c: implement the "i2p_lower" instruction.
 
+* engine/cvmc_conv.c: implement the "Conv" and "ToPointer" coder API's.
+
 2001-10-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_branch.c: verification for "switch" instructions; process

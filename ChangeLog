@@ -9,6 +9,9 @@
 	cscc/cs_decls.tc, dumpasm/dump_const.c: implement string and
 	object constants in the compiler.
 
+	* ilasm/ilasm_grammar.y, ilasm/ilasm_scanner.l: add the "nullref"
+	keyword to the assembler.
+
 2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,

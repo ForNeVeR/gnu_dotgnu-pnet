@@ -501,6 +501,7 @@ SIGN			[+-]
 <INITIAL,JAVAMODE>"true"				{ return K_TRUE; }
 <INITIAL,JAVAMODE>"false"				{ return K_FALSE; }
 <INITIAL,JAVAMODE>"java"				{ return K_JAVA; }
+<INITIAL,JAVAMODE>"nullref"				{ return K_NULLREF; }
 
 <INITIAL,JAVAMODE>"::"					{ return COLON_COLON; }
 <INITIAL,JAVAMODE>"..."					{ return DOT_DOT_DOT; }

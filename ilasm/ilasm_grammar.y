@@ -810,6 +810,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %token K_TRUE				"`true'"
 %token K_FALSE				"`false'"
 %token K_JAVA				"`java'"
+%token K_NULLREF			"`nullref'"
 
 /*
  * Instruction types.
@@ -1669,6 +1670,15 @@ FieldInitialization
 	| K_BYTEARRAY Bytes	{
 				$$.type = IL_META_ELEMTYPE_STRING;
 				$$.valueBlob = $2;
+			}
+	| K_NULLREF	{
+				unsigned char bytes[4];
+				bytes[0] = 0;
+				bytes[1] = 0;
+				bytes[2] = 0;
+				bytes[3] = 0;
+				$$.type = IL_META_ELEMTYPE_CLASS;
+				$$.valueBlob = ILInternString((char *)bytes, 4);
 			}
 	;
 

@@ -225,7 +225,7 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
 		/* Convert the milliseconds value into an absolute timeout */
 		gettimeofday(&tv, 0);
 		ts.tv_sec = tv.tv_sec + (long)(ms / 1000);
-		ts.tv_nsec = tv.tv_usec + (long)((ms % 1000) * 1000);
+		ts.tv_nsec = (tv.tv_usec + (long)((ms % 1000) * 1000)) * 1000L;
 		if(ts.tv_nsec >= 1000000000L)
 		{
 			++(ts.tv_sec);

@@ -5,6 +5,9 @@
 	recognise invalid program entry points and refuse to run
 	the program if one is supplied.
 
+	* support/pt_defs.c (_ILCondVarTimedWait): mismatch between
+	microseconds and nanoseconds.
+
 2002-04-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/Makefile.am, support/mutex.c, support/no_defs.c,

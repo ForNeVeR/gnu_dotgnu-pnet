@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "engine.h"
+#include "engine_private.h"
 #include "il_coder.h"
 #include "il_opcodes.h"
 #include "il_utils.h"
@@ -350,6 +350,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_Setup,
 	CVMCoder_SetupExtern,
 	CVMCoder_SetupExternCtor,
+	CVMCoder_CtorOffset,
 	CVMCoder_Destroy,
 	CVMCoder_Flush,
 	CVMCoder_Finish,
@@ -404,10 +405,9 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_ArgList,
 	CVMCoder_UpConvertArg,
 	CVMCoder_DownConvertArg,
-	CVMCoder_NewObj,
-	CVMCoder_CtorArgs,
 	CVMCoder_ValueCtorArgs,
 	CVMCoder_CallMethod,
+	CVMCoder_CallCtor,
 	CVMCoder_CallVirtual,
 	CVMCoder_CallInterface,
 	CVMCoder_JumpMethod,

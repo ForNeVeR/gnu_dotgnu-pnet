@@ -85,6 +85,11 @@ extern ILClass *ILAsmClass;
 extern ILAssembly *ILAsmCurrAssemblyRef;
 
 /*
+ * The "<Module>" class in the current assembly.
+ */
+extern ILClass *ILAsmModuleClass;
+
+/*
  * Debug information.
  */
 extern int ILAsmDebugMode;

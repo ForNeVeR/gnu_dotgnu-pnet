@@ -49,6 +49,7 @@ ILUInt32 ILAsmLastToken;
 ILProgramItem *ILAsmCurrScope;
 ILClass *ILAsmClass;
 ILAssembly *ILAsmCurrAssemblyRef;
+ILClass *ILAsmModuleClass;
 int ILAsmDebugMode;
 char *ILAsmDebugLastFile = "";
 char *ILAsmLibraryName = "mscorlib";
@@ -105,6 +106,7 @@ void ILAsmBuildInit(const char *outputFilename)
 	{
 		ILAsmOutOfMemory();
 	}
+	ILAsmModuleClass = ILAsmClass;
 
 	/* Initialize other globals */
 	ILAsmCurrAssemblyRef = 0;

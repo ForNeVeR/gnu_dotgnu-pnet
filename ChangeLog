@@ -12,6 +12,11 @@
 	each top-level class.  This allows us to mix global fields and
 	methods with ordinary classes more easily.
 
+	* ilasm/ilasm_build.c, ilasm/ilasm_build.h, ilasm/ilasm_grammar.y:
+	allow global fields and methods to be mixed with ordinary classes;
+	use the global module class as the default when the class is not
+	specified in a field or method reference.
+
 2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, cscc/csharp/cs_attrs.c: begin to put the

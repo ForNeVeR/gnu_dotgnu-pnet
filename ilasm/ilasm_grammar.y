@@ -908,35 +908,14 @@ Declaration
 			} '{' Declarations '}'	{
 				ILAsmBuildPopNamespace($2.len);
 			}
-	| MethodHeading '{'		{
-				if(ILImageNumTokens(ILAsmImage, IL_META_TOKEN_TYPE_DEF) > 1)
-				{
-					ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
-					  "global methods must be declared prior to all classes");
-					ILAsmErrors = 1;
-				}
-			}
-		MethodDeclarations '}'
+	| MethodHeading '{' MethodDeclarations '}'
 	| MethodHeading K_JAVA '{'		{
-				if(ILImageNumTokens(ILAsmImage, IL_META_TOKEN_TYPE_DEF) > 1)
-				{
-					ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
-					  "global methods must be declared prior to all classes");
-					ILAsmErrors = 1;
-				}
 				ILAsmParseJava = 1;
 			}
 		JavaMethodDeclarations '}'	{
 				ILAsmParseJava = 0;
 			}
-	| FieldDeclaration	{
-				if(ILImageNumTokens(ILAsmImage, IL_META_TOKEN_TYPE_DEF) > 1)
-				{
-					ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
-					  "global fields must be declared prior to all classes");
-					ILAsmErrors = 1;
-				}
-			}
+	| FieldDeclaration	{}
 	| DataDeclaration
 	| VtableDeclaration
 	| VtfixupDeclaration
@@ -2255,8 +2234,9 @@ MethodReference
 								        IL_META_MEMBERKIND_METHOD);
 			}
 	| CallingConventions Type MethodName '(' OptSignatureArguments ')' {
+				/* Reference a method in the global module class */
 				ILType *sig = CreateMethodSig($1, $2, $5.paramFirst, 1);
-				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmClass),
+				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmModuleClass),
 									    $3.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
 			}
@@ -3548,10 +3528,11 @@ Instruction
 				ILAsmOutToken($1, token);
 			}
 	| I_FIELD Type Identifier	{
-				/* Refer to a field in the current class */
-				ILToken token = ILAsmResolveMember(ILToProgramItem(ILAsmClass),
-												   $3.string, $2,
-											       IL_META_MEMBERKIND_FIELD);
+				/* Refer to a field in the global module class */
+				ILToken token = ILAsmResolveMember
+						(ILToProgramItem(ILAsmModuleClass),
+					     $3.string, $2,
+					     IL_META_MEMBERKIND_FIELD);
 				ILAsmOutToken($1, token);
 			}
 	| I_TYPE TypeSpecification	{

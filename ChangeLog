@@ -1,3 +1,29 @@
+
+2003-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/Remoting/Messaging/Header.cs,
+	runtime/System/Runtime/Remoting/Messaging/HeaderHandler.cs,
+	runtime/System/Runtime/Remoting/Messaging/IMessage.cs,
+	runtime/System/Runtime/Remoting/Messaging/IMethodCallMessage.cs,
+	runtime/System/Runtime/Remoting/Messaging/IMethodMessage.cs,
+	runtime/System/Runtime/Remoting/Messaging/IMethodReturnMessage.cs,
+	runtime/System/Runtime/Remoting/Messaging/IRemotingFormatter.cs,
+	runtime/System/Runtime/Remoting/Messaging/ISerializationRootObject.cs,
+	runtime/System/Runtime/Remoting/Messaging/LogicalCallContext.cs,
+	runtime/System/Runtime/Serialization/Formatters/FormatterAssemblyStyle.cs,
+	runtime/System/Runtime/Serialization/Formatters/FormatterTypeStyle.cs,
+	runtime/System/Runtime/Serialization/Formatters/IFieldInfo.cs,
+	runtime/System/Runtime/Serialization/Formatters/ISoapMessage.cs,
+	runtime/System/Runtime/Serialization/Formatters/TypeFilterLevel.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryElementType.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryPrimitiveTypeCode.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryTypeTag.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	shift some classes from CONFIG_REMOTING to CONFIG_SERIALIZATION
+	so that we can build profiles with object serialization support,
+	but not remoting support.
+
 2003-08-04  Neil Cawse   <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: Small changes to match ms behaviour.

@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Messaging
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 using System.Reflection;
 
@@ -63,6 +63,6 @@ public interface IMethodMessage : IMessage
 
 }; // interface IMethodMessage
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Messaging

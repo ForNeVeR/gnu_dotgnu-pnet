@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Messaging
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 public interface IMethodCallMessage : IMethodMessage, IMessage
 {
@@ -40,6 +40,6 @@ public interface IMethodCallMessage : IMethodMessage, IMessage
 
 }; // interface IMethodCallMessage
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Messaging

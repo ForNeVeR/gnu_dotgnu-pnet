@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization.Formatters.Binary
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 using System.IO;
 using System.Reflection;
@@ -293,6 +293,6 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 
 }; // class BinaryFormatter
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization.Formatters.Binary

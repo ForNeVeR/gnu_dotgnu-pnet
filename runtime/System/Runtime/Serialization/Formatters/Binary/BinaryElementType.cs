@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization.Formatters.Binary
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 // Type codes for individual elements within a binary stream.
 
@@ -49,6 +49,6 @@ internal enum BinaryElementType
 
 }; // enum BinaryElementType
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization.Formatters.Binary

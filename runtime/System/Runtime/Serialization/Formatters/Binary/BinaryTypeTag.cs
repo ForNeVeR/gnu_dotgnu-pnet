@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization.Formatters.Binary
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 // Type tags for describing the type of a serialized value.
 
@@ -39,6 +39,6 @@ internal enum BinaryTypeTag
 
 }; // enum BinaryTypeTag
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization.Formatters.Binary

@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Messaging
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 [Serializable]
 public class Header
@@ -56,6 +56,6 @@ public class Header
 
 }; // class Header
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Messaging

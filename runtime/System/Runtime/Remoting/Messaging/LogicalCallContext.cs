@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Messaging
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 using System.Collections;
 using System.Runtime.Serialization;
@@ -113,6 +113,6 @@ public sealed class LogicalCallContext : ISerializable, ICloneable
 
 }; // class LogicalCallContext
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Messaging

@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Messaging
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 using System.IO;
 using System.Runtime.Serialization;
@@ -37,6 +37,6 @@ public interface IRemotingFormatter : IFormatter
 
 }; // interface IRemotingFormatter
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Messaging

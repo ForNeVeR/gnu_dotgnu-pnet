@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization.Formatters
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 using System.Runtime.Remoting.Messaging;
 
@@ -37,6 +37,6 @@ public interface ISoapMessage
 
 }; // interface ISoapMessage
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization.Formatters

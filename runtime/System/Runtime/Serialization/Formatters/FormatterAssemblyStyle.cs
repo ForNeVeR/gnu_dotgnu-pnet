@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization.Formatters
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 [Serializable]
 public enum FormatterAssemblyStyle
@@ -32,6 +32,6 @@ public enum FormatterAssemblyStyle
 
 }; // enum FormatterAssemblyStyle
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization.Formatters

@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization.Formatters.Binary
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 // Type codes for primitive types.
 
@@ -47,6 +47,6 @@ internal enum BinaryPrimitiveTypeCode
 
 }; // enum BinaryPrimitiveTypeCode
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization.Formatters.Binary

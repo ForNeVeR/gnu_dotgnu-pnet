@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization.Formatters
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 public interface IFieldInfo
 {
@@ -31,6 +31,6 @@ public interface IFieldInfo
 
 }; // interface IFieldInfo
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization.Formatters

@@ -267,6 +267,35 @@ static int OwnedItemCompare(void *item, void *userData)
 
 ILConstant *ILConstantGetFromOwner(ILProgramItem *owner)
 {
+	ILField *field;
+	ILParameter *param;
+	ILProperty *property;
+
+	/* Filter out program items that obviously don't have a value,
+	   to avoid searching the constant table unnecessarily */
+	if((field = ILProgramItemToField(owner)) != 0)
+	{
+		if((field->member.attributes & IL_META_FIELDDEF_HAS_DEFAULT) == 0)
+		{
+			return 0;
+		}
+	}
+	else if((param = ILProgramItemToParameter(owner)) != 0)
+	{
+		if((param->attributes & IL_META_PARAMDEF_HAS_DEFAULT) == 0)
+		{
+			return 0;
+		}
+	}
+	else if((property = ILProgramItemToProperty(owner)) != 0)
+	{
+		if((property->member.attributes & IL_META_PROPDEF_HAS_DEFAULT) == 0)
+		{
+			return 0;
+		}
+	}
+
+	/* Search for the constant token */
 	return (ILConstant *)ILImageSearchForToken
 				(owner->image, IL_META_TOKEN_CONSTANT,
 				 OwnedItemCompare, (void *)owner);
@@ -317,6 +346,10 @@ ILUInt32 ILFieldRVAGetRVA(ILFieldRVA *rva)
 
 ILFieldRVA *ILFieldRVAGetFromOwner(ILField *owner)
 {
+	if((owner->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
+	{
+		return 0;
+	}
 	return (ILFieldRVA *)ILImageSearchForToken
 				(owner->member.programItem.image,
 				 IL_META_TOKEN_FIELD_RVA,
@@ -363,6 +396,14 @@ ILUInt32 ILFieldLayoutGetOffset(ILFieldLayout *layout)
 
 ILFieldLayout *ILFieldLayoutGetFromOwner(ILField *owner)
 {
+	/* Field layout information can only exist on explicit-layout classes,
+	   so bail out early if we have some other kind of class */
+	if(!ILClass_IsExplicitLayout(owner->member.owner))
+	{
+		return 0;
+	}
+
+	/* Search for the layout token */
 	return (ILFieldLayout *)ILImageSearchForToken
 				(owner->member.programItem.image,
 				 IL_META_TOKEN_FIELD_LAYOUT,
@@ -446,6 +487,26 @@ const void *ILFieldMarshalGetType(ILFieldMarshal *marshal, unsigned long *len)
 
 ILFieldMarshal *ILFieldMarshalGetFromOwner(ILProgramItem *owner)
 {
+	ILField *field;
+	ILParameter *param;
+
+	/* Filter out members that obviously don't have marshal information */
+	if((field = ILProgramItemToField(owner)) != 0)
+	{
+		if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_MARSHAL) == 0)
+		{
+			return 0;
+		}
+	}
+	else if((param = ILProgramItemToParameter(owner)) != 0)
+	{
+		if((param->attributes & IL_META_PARAMDEF_HAS_FIELD_MARSHAL) == 0)
+		{
+			return 0;
+		}
+	}
+
+	/* Search for the token */
 	return (ILFieldMarshal *)ILImageSearchForToken
 				(owner->image, IL_META_TOKEN_FIELD_MARSHAL,
 				 OwnedItemCompare, (void *)owner);
@@ -509,6 +570,13 @@ void ILClassLayoutSetClassSize(ILClassLayout *layout, ILUInt32 size)
 
 ILClassLayout *ILClassLayoutGetFromOwner(ILClass *owner)
 {
+	/* Class layout information cannot exist on auto-layout classes */
+	if(ILClass_IsAutoLayout(owner))
+	{
+		return 0;
+	}
+
+	/* Search for the layout token */
 	return (ILClassLayout *)ILImageSearchForToken
 				(owner->programItem.image, IL_META_TOKEN_CLASS_LAYOUT,
 				 OwnedItemCompare, (void *)owner);

@@ -985,8 +985,7 @@ static int Load_TypeDef(ILImage *image, ILUInt32 *values,
 	}
 
 	/* Set the attributes for the class */
-	ILClassSetAttrs(info, ~0, values[IL_OFFSET_TYPEDEF_ATTRS] &
-								~(IL_META_TYPEDEF_HAS_SECURITY));
+	ILClassSetAttrs(info, ~0, values[IL_OFFSET_TYPEDEF_ATTRS]);
 
 	/* Done: we'll get the members later */
 	return 0;
@@ -1038,11 +1037,7 @@ static int Load_FieldDef(ILImage *image, ILUInt32 *values,
 	/* Create the field and attach it to the class */
 	field = ILFieldCreate((ILClass *)userData, token,
 				  ILImageGetString(image, values[IL_OFFSET_FIELDDEF_NAME]),
-				  values[IL_OFFSET_FIELDDEF_ATTRS] &
-				  	~(IL_META_FIELDDEF_HAS_FIELD_MARSHAL |
-					  IL_META_FIELDDEF_HAS_SECURITY |
-					  IL_META_FIELDDEF_HAS_DEFAULT |
-					  IL_META_FIELDDEF_HAS_FIELD_RVA));
+				  values[IL_OFFSET_FIELDDEF_ATTRS]);
 	if(!field)
 	{
 		return IL_LOADERR_MEMORY;
@@ -1080,9 +1075,7 @@ static int Load_ParamDef(ILImage *image, ILUInt32 *values,
 {
 	const char *name = ILImageGetString(image, values[IL_OFFSET_PARAMDEF_NAME]);
 	if(!ILParameterCreate((ILMethod *)userData, token, name,
-						  values[IL_OFFSET_PARAMDEF_ATTRS] &
-						  	~(IL_META_PARAMDEF_HAS_DEFAULT |
-							  IL_META_PARAMDEF_HAS_FIELD_MARSHAL),
+						  values[IL_OFFSET_PARAMDEF_ATTRS],
 						  values[IL_OFFSET_PARAMDEF_NUMBER]))
 	{
 		return IL_LOADERR_MEMORY;
@@ -1137,8 +1130,7 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 	/* Create the method and attach it to the class */
 	method = ILMethodCreate((ILClass *)userData, token,
 				  ILImageGetString(image, values[IL_OFFSET_METHODDEF_NAME]),
-				  values[IL_OFFSET_METHODDEF_ATTRS] &
-				  	~(IL_META_METHODDEF_HAS_SECURITY));
+				  values[IL_OFFSET_METHODDEF_ATTRS]);
 	if(!method)
 	{
 		return IL_LOADERR_MEMORY;
@@ -1489,8 +1481,7 @@ static int Load_Property(ILImage *image, ILUInt32 *values,
 	property = ILPropertyCreate((ILClass *)userData, token,
 					     ILImageGetString
 					  		(image, values[IL_OFFSET_PROPERTY_NAME]),
-					     values[IL_OFFSET_PROPERTY_ATTRS] &
-						 	~(IL_META_PROPDEF_HAS_DEFAULT),
+					     values[IL_OFFSET_PROPERTY_ATTRS],
 						 signature);
 	if(!signature)
 	{

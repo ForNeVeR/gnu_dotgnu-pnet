@@ -1,4 +1,11 @@
 
+2003-02-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/meta_build.c, image/misc_token.c: reduce the number of
+	times that ILImageSearchForToken is called in IL???GetFromOwner,
+	by filtering out tokens that obviously won't have an attached
+	information block.
+
 2003-02-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_decls.tc: Re-order the static constructors so

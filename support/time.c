@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
+ * Contributions from Thong Nguyen (tum@veridicus.com)
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,6 +21,7 @@
  */
 
 #include "il_system.h"
+#include "il_thread.h"
 #if defined(__palmos__)
 	#include <PalmTypes.h>
 	#include <TimeMgr.h>
@@ -38,6 +41,10 @@
 #ifdef IL_WIN32_PLATFORM
 #include <windows.h>
 #define timezone _timezone
+#endif
+
+#ifdef HAVE_SYS_SYSINFO_H
+#include <sys/sysinfo.h>
 #endif
 
 #ifdef	__cplusplus
@@ -92,6 +99,11 @@ void ILGetCurrTime(ILCurrTime *timeValue)
 #endif
 }
 
+#if defined(HAVE_SYS_SYSINFO_H) && (defined(linux) \
+	|| defined(__linux) || defined(__linux__))
+static ILCurrTime startupTime;
+#endif
+
 int ILGetSinceRebootTime(ILCurrTime *timeValue)
 {
 #ifdef IL_WIN32_PLATFORM
@@ -103,6 +115,52 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue)
 	timeValue->nsecs = (tick % 1000) * 1000000;
 
 	return 1;
+#elif defined(HAVE_SYS_SYSINFO_H) && (defined(linux) \
+	|| defined(__linux) || defined(__linux__))
+
+	struct sysinfo si;
+	
+	ILGetCurrTime(timeValue);
+
+	if (startupTime.secs == 0 && startupTime.nsecs == 0)
+	{
+		if (sysinfo(&si) != 0)
+		{
+			return 0;
+		}
+		
+		ILThreadAtomicStart();		
+		startupTime.secs = timeValue->secs - si.uptime;
+
+		/* sysinfo() is only accurate to the second so
+		   use the nsec value from the curren time.
+		   This allows subsequent calls to this function
+		   to get nsec time-differential precision  */
+
+		startupTime.nsecs = timeValue->nsecs;
+		ILThreadAtomicEnd();
+	}
+	
+	/* Subtract the current time from the time since the system
+	   was started */
+
+	if(timeValue->nsecs < startupTime.nsecs)
+	{
+		timeValue->nsecs = 
+			timeValue->nsecs - startupTime.nsecs + 1000000000;
+		timeValue->secs =
+			timeValue->secs - startupTime.secs;
+	}
+	else
+	{
+		timeValue->nsecs =
+			timeValue->nsecs - startupTime.nsecs;			
+		timeValue->secs =
+			timeValue->secs - startupTime.secs;
+	}	
+
+	return 1;
+	
 #else
 	return 0;
 #endif

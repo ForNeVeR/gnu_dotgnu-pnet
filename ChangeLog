@@ -6,6 +6,9 @@
 	to the library, to support getting symbolic link information in the
 	file dialog classes.
 
+	* System.Windows.Forms/FileDialog.cs: add directory scanning routines
+	to the "FileDialog" class.
+
 2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Font.cs: remove a public constructor that is no longer

@@ -22,6 +22,7 @@
 namespace System.Windows.Forms
 {
 
+using System.IO;
 using System.Drawing;
 using System.ComponentModel;
 
@@ -353,6 +354,238 @@ public abstract class FileDialog : CommonDialog
 
 	// Event that is raised to check that a file is OK.
 	public event CancelEventHandler FileOk;
+
+	// Icon codes.
+	private const short IconCode_Directory = 0;
+	private const short IconCode_Drive     = 1;
+	private const short IconCode_File      = 2;
+	private const short IconCode_Link      = 3;
+
+	// Information that is stored for a filesystem entry.
+	private sealed class FilesystemEntry : IComparable
+	{
+		public String name;				// Name to display in dialog box.
+		public String fullName;			// Full pathname of the entry.
+		public bool isDirectory;		// True if a directory.
+		public bool isSymlink;			// True if a symbolic link.
+		public short iconCode;			// Icon to display with the item.
+
+		// Compare two entries.  Directories always sort before files.
+		public int CompareTo(Object obj)
+				{
+					FilesystemEntry other = (obj as FilesystemEntry);
+					if(other != null)
+					{
+						if(isDirectory)
+						{
+							if(!(other.isDirectory))
+							{
+								return -1;
+							}
+						}
+						else if(other.isDirectory)
+						{
+							return 1;
+						}
+						return String.Compare(name, other.name, true);
+					}
+					else
+					{
+						return 1;
+					}
+				}
+
+		// Resolve this entry as a symbolic link.
+		public void ResolveSymlinks()
+				{
+				#if __CSCC__
+					int count = 20;
+					String path = fullName;
+					String link;
+					do
+					{
+						try
+						{
+							link = SymbolicLinks.ReadLink(path);
+							if(link == null)
+							{
+								// We've found the link destination.
+								fullName = path;
+								if(Directory.Exists(path))
+								{
+									isDirectory = true;
+									iconCode = IconCode_Directory;
+								}
+								else
+								{
+									iconCode = IconCode_File;
+								}
+								return;
+							}
+							else
+							{
+								path = Path.Combine(path, link);
+							}
+						}
+						catch(Exception)
+						{
+							// The path doesn't exist, so the link is
+							// pointing at nothing.  Bail out without
+							// resolving it.
+							return;
+						}
+					}
+					while(--count > 0);
+				#endif
+				}
+
+	}; // class FilesystemEntry
+
+	// Determine if we appear to be running on Windows.
+	private static bool IsWindows()
+			{
+			#if !ECMA_COMPAT
+				return (Environment.OSVersion.Platform != (PlatformID)128);
+			#else
+				return (Path.DirectorySeparatorChar == '\\');
+			#endif
+			}
+
+	// Determine if a pathname ends in ".lnk".
+	private static bool EndsInLnk(String pathname)
+			{
+				int len = pathname.Length;
+				if(len < 4)
+				{
+					return false;
+				}
+				if(pathname[len - 4] == '.' &&
+				   (pathname[len - 3] == 'l' || pathname[len - 3] == 'L') &&
+				   (pathname[len - 2] == 'n' || pathname[len - 2] == 'N') &&
+				   (pathname[len - 1] == 'k' || pathname[len - 1] == 'K'))
+				{
+					return true;
+				}
+				return false;
+			}
+
+	// Scan a directory and collect up all of the filesystem entries.
+	private static FilesystemEntry[] ScanDirectory
+				(String directory, String pattern, bool derefLinks)
+			{
+				String[] dirs;
+				String[] files;
+				String[] links;
+				FilesystemEntry[] entries;
+
+				// Convert the directory name into a full pathname.
+				directory = Path.GetFullPath(directory);
+
+				// Get all sub-directories in the specified directory,
+				// irrespective of whether they match the pattern or not.
+				try
+				{
+					dirs = Directory.GetDirectories(directory);
+				}
+				catch(Exception)
+				{
+					// An error occurred while trying to scan the directory,
+					// so return an empty list of entries.
+					return new FilesystemEntry [0];
+				}
+
+				// Get all files and Windows shortcut link files that match
+				// the pattern in the directory.
+				if(pattern == null || pattern == "*" || pattern == "*.*")
+				{
+					files = Directory.GetFiles(directory);
+					links = null;
+				}
+				else if(!EndsInLnk(pattern) && IsWindows())
+				{
+					files = Directory.GetFiles(directory, pattern);
+					links = Directory.GetFiles(directory, pattern + ".lnk");
+				}
+				else
+				{
+					files = Directory.GetFiles(directory, pattern);
+					links = null;
+				}
+
+				// Combine the three lists and populate the information.
+				entries = new FilesystemEntry
+					[dirs.Length + files.Length +
+					 (links != null ? links.Length : 0)];
+				int posn = 0;
+				FilesystemEntry entry;
+				bool resolveSymlinks = false;
+				foreach(String dir in dirs)
+				{
+					entry = new FilesystemEntry();
+					entry.name = Path.GetFileName(dir);
+					entry.fullName = dir;
+					entry.isDirectory = true;
+					entry.isSymlink = false;
+					entry.iconCode = IconCode_Directory;
+					entries[posn++] = entry;
+				}
+				foreach(String file in files)
+				{
+					entry = new FilesystemEntry();
+					entry.name = Path.GetFileName(file);
+					entry.fullName = file;
+					entry.isDirectory = false;
+					entry.iconCode = IconCode_File;
+				#if __CSCC__
+					entry.isSymlink = SymbolicLinks.IsSymbolicLink(file);
+					if(entry.isSymlink)
+					{
+						resolveSymlinks = true;
+						entry.iconCode = IconCode_Link;
+						if(EndsInLnk(file) && IsWindows())
+						{
+							// Strip ".lnk" from the end of the filename.
+							entry.name = Path.GetFileNameWithoutExtension(file);
+						}
+					}
+				#else
+					entry.isSymlink = false;
+				#endif
+					entries[posn++] = entry;
+				}
+				if(links != null)
+				{
+					// We have an extra list of files that end in ".lnk".
+					foreach(String link in links)
+					{
+						entry = new FilesystemEntry();
+						entry.name = Path.GetFileNameWithoutExtension(link);
+						entry.fullName = link;
+						entry.isDirectory = false;
+						entry.isSymlink = true;
+						entry.iconCode = IconCode_Link;
+						entries[posn++] = entry;
+						resolveSymlinks = true;
+					}
+				}
+
+				// Resolve symbolic links to the underlying file or directory.
+				if(resolveSymlinks && derefLinks)
+				{
+					for(posn = 0; posn < entries.Length; ++posn)
+					{
+						entry = entries[posn];
+						if(entry.isSymlink)
+						{
+							entry.ResolveSymlinks();
+						}
+					}
+				}
+
+				// Sort the entry list and return it.
+				Array.Sort(entries);
+				return entries;
+			}
 
 	// List box like control that manages a group of file icons.
 	private sealed class FileIconListBox : Control

@@ -168,7 +168,6 @@ JavaRelational_ApplyOp(ILNode_Eq, ILMachineType_UInt64)
 	JavaGenLabel(info, &label2);
 	JavaGenAdjust(info, -3);
 }
-JavaRelational_ApplyOp(ILNode_Eq, ILMachineType_String),
 JavaRelational_ApplyOp(ILNode_Eq, ILMachineType_ObjectRef),
 JavaRelational_ApplyOp(ILNode_Eq, ILMachineType_UnmanagedPtr),
 JavaRelational_ApplyOp(ILNode_Eq, ILMachineType_ManagedPtr),
@@ -227,6 +226,21 @@ JavaRelational_ApplyOp(ILNode_Eq, ILMachineType_Decimal)
 		JavaGenAdjust(info, -1);
 	}
 }
+JavaRelational_ApplyOp(ILNode_Eq, ILMachineType_String)
+{
+	if(info->useJavaLib)
+	{
+		JavaGenCallVirtual(info, "java/lang/String", "equals",
+						   "(Ljava/lang/Object;)Z");
+		JavaGenAdjust(info, -1);
+	}
+	else
+	{
+		JavaGenCallByName(info, "System/String", "op_Equality",
+						  "(LSystem/String;LSystem/String;)Z");
+		JavaGenAdjust(info, -1);
+	}
+}
 
 /*
  * Apply the inequality operator to two values on the stack.
@@ -270,7 +284,6 @@ JavaRelational_ApplyOp(ILNode_Ne, ILMachineType_UInt64)
 	JavaGenLabel(info, &label2);
 	JavaGenAdjust(info, -3);
 }
-JavaRelational_ApplyOp(ILNode_Ne, ILMachineType_String),
 JavaRelational_ApplyOp(ILNode_Ne, ILMachineType_ObjectRef),
 JavaRelational_ApplyOp(ILNode_Ne, ILMachineType_UnmanagedPtr),
 JavaRelational_ApplyOp(ILNode_Ne, ILMachineType_ManagedPtr),
@@ -334,6 +347,29 @@ JavaRelational_ApplyOp(ILNode_Ne, ILMachineType_Decimal)
 	{
 		JavaGenCallByName(info, "System/Decimal", "op_Inequality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
+		JavaGenAdjust(info, -1);
+	}
+}
+JavaRelational_ApplyOp(ILNode_Ne, ILMachineType_String)
+{
+	if(info->useJavaLib)
+	{
+		ILLabel label1 = ILLabel_Undefined;
+		ILLabel label2 = ILLabel_Undefined;
+		JavaGenCallVirtual(info, "java/lang/String", "equals",
+						   "(Ljava/lang/Object;)Z");
+		JavaGenJump(info, JAVA_OP_IFNE, &label1);
+		JavaGenSimple(info, JAVA_OP_ICONST_1);
+		JavaGenJump(info, JAVA_OP_GOTO, &label2);
+		JavaGenLabel(info, &label1);
+		JavaGenSimple(info, JAVA_OP_ICONST_0);
+		JavaGenLabel(info, &label2);
+		JavaGenAdjust(info, -1);
+	}
+	else
+	{
+		JavaGenCallByName(info, "System/String", "op_Inequality",
+						  "(LSystem/String;LSystem/String;)Z");
 		JavaGenAdjust(info, -1);
 	}
 }
@@ -870,7 +906,6 @@ JavaRelational_ThenOp(ILNode_Eq, ILMachineType_UInt64)
 	JavaGenJump(info, JAVA_OP_IFEQ, label);
 	JavaGenAdjust(info, -4);
 }
-JavaRelational_ThenOp(ILNode_Eq, ILMachineType_String),
 JavaRelational_ThenOp(ILNode_Eq, ILMachineType_ObjectRef),
 JavaRelational_ThenOp(ILNode_Eq, ILMachineType_UnmanagedPtr),
 JavaRelational_ThenOp(ILNode_Eq, ILMachineType_ManagedPtr),
@@ -910,6 +945,23 @@ JavaRelational_ThenOp(ILNode_Eq, ILMachineType_Decimal)
 		JavaGenAdjust(info, -2);
 	}
 }
+JavaRelational_ThenOp(ILNode_Eq, ILMachineType_String)
+{
+	if(info->useJavaLib)
+	{
+		JavaGenCallVirtual(info, "java/lang/String", "equals",
+						   "(Ljava/lang/Object;)Z");
+		JavaGenJump(info, JAVA_OP_IFNE, label);
+		JavaGenAdjust(info, -2);
+	}
+	else
+	{
+		JavaGenCallByName(info, "System/String", "op_Equality",
+						  "(LSystem/String;LSystem/String;)Z");
+		JavaGenJump(info, JAVA_OP_IFNE, label);
+		JavaGenAdjust(info, -2);
+	}
+}
 
 /*
  * Generate "then" code for the inequality operator.
@@ -939,7 +991,6 @@ JavaRelational_ThenOp(ILNode_Ne, ILMachineType_UInt64)
 	JavaGenJump(info, JAVA_OP_IFNE, label);
 	JavaGenAdjust(info, -4);
 }
-JavaRelational_ThenOp(ILNode_Ne, ILMachineType_String),
 JavaRelational_ThenOp(ILNode_Ne, ILMachineType_ObjectRef),
 JavaRelational_ThenOp(ILNode_Ne, ILMachineType_UnmanagedPtr),
 JavaRelational_ThenOp(ILNode_Ne, ILMachineType_ManagedPtr),
@@ -975,6 +1026,23 @@ JavaRelational_ThenOp(ILNode_Ne, ILMachineType_Decimal)
 	{
 		JavaGenCallByName(info, "System/Decimal", "op_Inequality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
+		JavaGenJump(info, JAVA_OP_IFNE, label);
+		JavaGenAdjust(info, -2);
+	}
+}
+JavaRelational_ThenOp(ILNode_Ne, ILMachineType_String)
+{
+	if(info->useJavaLib)
+	{
+		JavaGenCallVirtual(info, "java/lang/String", "equals",
+						   "(Ljava/lang/Object;)Z");
+		JavaGenJump(info, JAVA_OP_IFEQ, label);
+		JavaGenAdjust(info, -2);
+	}
+	else
+	{
+		JavaGenCallByName(info, "System/String", "op_Inequality",
+						  "(LSystem/String;LSystem/String;)Z");
 		JavaGenJump(info, JAVA_OP_IFNE, label);
 		JavaGenAdjust(info, -2);
 	}
@@ -1320,7 +1388,6 @@ JavaRelational_ElseOp(ILNode_Eq, ILMachineType_UInt64)
 	JavaGenJump(info, JAVA_OP_IFNE, label);
 	JavaGenAdjust(info, -4);
 }
-JavaRelational_ElseOp(ILNode_Eq, ILMachineType_String),
 JavaRelational_ElseOp(ILNode_Eq, ILMachineType_ObjectRef),
 JavaRelational_ElseOp(ILNode_Eq, ILMachineType_UnmanagedPtr),
 JavaRelational_ElseOp(ILNode_Eq, ILMachineType_ManagedPtr),
@@ -1360,6 +1427,23 @@ JavaRelational_ElseOp(ILNode_Eq, ILMachineType_Decimal)
 		JavaGenAdjust(info, -2);
 	}
 }
+JavaRelational_ElseOp(ILNode_Eq, ILMachineType_String)
+{
+	if(info->useJavaLib)
+	{
+		JavaGenCallVirtual(info, "java/lang/String", "equals",
+						   "(Ljava/lang/Object;)Z");
+		JavaGenJump(info, JAVA_OP_IFEQ, label);
+		JavaGenAdjust(info, -2);
+	}
+	else
+	{
+		JavaGenCallByName(info, "System/String", "op_Equality",
+						  "(LSystem/String;LSystem/String;)Z");
+		JavaGenJump(info, JAVA_OP_IFEQ, label);
+		JavaGenAdjust(info, -2);
+	}
+}
 
 /*
  * Generate "else" code for the inequality operator.
@@ -1389,7 +1473,6 @@ JavaRelational_ElseOp(ILNode_Ne, ILMachineType_UInt64)
 	JavaGenJump(info, JAVA_OP_IFEQ, label);
 	JavaGenAdjust(info, -4);
 }
-JavaRelational_ElseOp(ILNode_Ne, ILMachineType_String),
 JavaRelational_ElseOp(ILNode_Ne, ILMachineType_ObjectRef),
 JavaRelational_ElseOp(ILNode_Ne, ILMachineType_UnmanagedPtr),
 JavaRelational_ElseOp(ILNode_Ne, ILMachineType_ManagedPtr),
@@ -1425,6 +1508,23 @@ JavaRelational_ElseOp(ILNode_Ne, ILMachineType_Decimal)
 	{
 		JavaGenCallByName(info, "System/Decimal", "op_Inequality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
+		JavaGenJump(info, JAVA_OP_IFEQ, label);
+		JavaGenAdjust(info, -2);
+	}
+}
+JavaRelational_ElseOp(ILNode_Ne, ILMachineType_String)
+{
+	if(info->useJavaLib)
+	{
+		JavaGenCallVirtual(info, "java/lang/String", "equals",
+						   "(Ljava/lang/Object;)Z");
+		JavaGenJump(info, JAVA_OP_IFNE, label);
+		JavaGenAdjust(info, -2);
+	}
+	else
+	{
+		JavaGenCallByName(info, "System/String", "op_Inequality",
+						  "(LSystem/String;LSystem/String;)Z");
 		JavaGenJump(info, JAVA_OP_IFEQ, label);
 		JavaGenAdjust(info, -2);
 	}

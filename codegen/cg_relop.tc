@@ -225,7 +225,6 @@ ILRelational_ApplyOp(ILNode_Eq, ILMachineType_Int64),
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_UInt64),
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_NativeInt),
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_NativeUInt),
-ILRelational_ApplyOp(ILNode_Eq, ILMachineType_String),
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_ObjectRef),
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_UnmanagedPtr),
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_ManagedPtr),
@@ -255,6 +254,12 @@ ILRelational_ApplyOp(ILNode_Eq, ILMachineType_Decimal)
 		"bool System.Decimal::op_Equality"
 			"(value class System.Decimal, value class System.Decimal)");
 }
+ILRelational_ApplyOp(ILNode_Eq, ILMachineType_String)
+{
+	ILGenCallByName(info,
+		"bool System.String::op_Equality"
+			"(class System.String, class System.String)");
+}
 
 /*
  * Apply the inequality operator to two values on the stack.
@@ -275,7 +280,6 @@ ILRelational_ApplyOp(ILNode_Ne, ILMachineType_Int64),
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_UInt64),
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_NativeInt),
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_NativeUInt),
-ILRelational_ApplyOp(ILNode_Ne, ILMachineType_String),
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_ObjectRef),
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_UnmanagedPtr),
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_ManagedPtr),
@@ -306,6 +310,12 @@ ILRelational_ApplyOp(ILNode_Ne, ILMachineType_Decimal)
 	ILGenCallByName(info,
 		"bool System.Decimal::op_Inequality"
 			"(value class System.Decimal, value class System.Decimal)");
+}
+ILRelational_ApplyOp(ILNode_Ne, ILMachineType_String)
+{
+	ILGenCallByName(info,
+		"bool System.String::op_Inequality"
+			"(class System.String, class System.String)");
 }
 
 /*
@@ -547,7 +557,6 @@ ILRelational_ThenOp(ILNode_Eq, ILMachineType_Int64),
 ILRelational_ThenOp(ILNode_Eq, ILMachineType_UInt64),
 ILRelational_ThenOp(ILNode_Eq, ILMachineType_NativeInt),
 ILRelational_ThenOp(ILNode_Eq, ILMachineType_NativeUInt),
-ILRelational_ThenOp(ILNode_Eq, ILMachineType_String),
 ILRelational_ThenOp(ILNode_Eq, ILMachineType_ObjectRef),
 ILRelational_ThenOp(ILNode_Eq, ILMachineType_UnmanagedPtr),
 ILRelational_ThenOp(ILNode_Eq, ILMachineType_ManagedPtr),
@@ -564,6 +573,13 @@ ILRelational_ThenOp(ILNode_Eq, ILMachineType_Decimal)
 	ILGenCallByName(info,
 		"bool System.Decimal::op_Equality"
 			"(value class System.Decimal, value class System.Decimal)");
+	ILGenJump(info, IL_OP_BRTRUE, label);
+}
+ILRelational_ThenOp(ILNode_Eq, ILMachineType_String)
+{
+	ILGenCallByName(info,
+		"bool System.String::op_Equality"
+			"(class System.String, class System.String)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 
@@ -586,7 +602,6 @@ ILRelational_ThenOp(ILNode_Ne, ILMachineType_Int64),
 ILRelational_ThenOp(ILNode_Ne, ILMachineType_UInt64),
 ILRelational_ThenOp(ILNode_Ne, ILMachineType_NativeInt),
 ILRelational_ThenOp(ILNode_Ne, ILMachineType_NativeUInt),
-ILRelational_ThenOp(ILNode_Ne, ILMachineType_String),
 ILRelational_ThenOp(ILNode_Ne, ILMachineType_ObjectRef),
 ILRelational_ThenOp(ILNode_Ne, ILMachineType_UnmanagedPtr),
 ILRelational_ThenOp(ILNode_Ne, ILMachineType_ManagedPtr),
@@ -603,6 +618,13 @@ ILRelational_ThenOp(ILNode_Ne, ILMachineType_Decimal)
 	ILGenCallByName(info,
 		"bool System.Decimal::op_Inequality"
 			"(value class System.Decimal, value class System.Decimal)");
+	ILGenJump(info, IL_OP_BRTRUE, label);
+}
+ILRelational_ThenOp(ILNode_Ne, ILMachineType_String)
+{
+	ILGenCallByName(info,
+		"bool System.String::op_Inequality"
+			"(class System.String, class System.String)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 
@@ -793,7 +815,6 @@ ILRelational_ElseOp(ILNode_Eq, ILMachineType_Int64),
 ILRelational_ElseOp(ILNode_Eq, ILMachineType_UInt64),
 ILRelational_ElseOp(ILNode_Eq, ILMachineType_NativeInt),
 ILRelational_ElseOp(ILNode_Eq, ILMachineType_NativeUInt),
-ILRelational_ElseOp(ILNode_Eq, ILMachineType_String),
 ILRelational_ElseOp(ILNode_Eq, ILMachineType_ObjectRef),
 ILRelational_ElseOp(ILNode_Eq, ILMachineType_UnmanagedPtr),
 ILRelational_ElseOp(ILNode_Eq, ILMachineType_ManagedPtr),
@@ -810,6 +831,13 @@ ILRelational_ElseOp(ILNode_Eq, ILMachineType_Decimal)
 	ILGenCallByName(info,
 		"bool System.Decimal::op_Equality"
 			"(value class System.Decimal, value class System.Decimal)");
+	ILGenJump(info, IL_OP_BRFALSE, label);
+}
+ILRelational_ElseOp(ILNode_Eq, ILMachineType_String)
+{
+	ILGenCallByName(info,
+		"bool System.String::op_Equality"
+			"(class System.String, class System.String)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 
@@ -832,7 +860,6 @@ ILRelational_ElseOp(ILNode_Ne, ILMachineType_Int64),
 ILRelational_ElseOp(ILNode_Ne, ILMachineType_UInt64),
 ILRelational_ElseOp(ILNode_Ne, ILMachineType_NativeInt),
 ILRelational_ElseOp(ILNode_Ne, ILMachineType_NativeUInt),
-ILRelational_ElseOp(ILNode_Ne, ILMachineType_String),
 ILRelational_ElseOp(ILNode_Ne, ILMachineType_ObjectRef),
 ILRelational_ElseOp(ILNode_Ne, ILMachineType_UnmanagedPtr),
 ILRelational_ElseOp(ILNode_Ne, ILMachineType_ManagedPtr),
@@ -849,6 +876,13 @@ ILRelational_ElseOp(ILNode_Ne, ILMachineType_Decimal)
 	ILGenCallByName(info,
 		"bool System.Decimal::op_Inequality"
 			"(value class System.Decimal, value class System.Decimal)");
+	ILGenJump(info, IL_OP_BRFALSE, label);
+}
+ILRelational_ElseOp(ILNode_Ne, ILMachineType_String)
+{
+	ILGenCallByName(info,
+		"bool System.String::op_Inequality"
+			"(class System.String, class System.String)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 

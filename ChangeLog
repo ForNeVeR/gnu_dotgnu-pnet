@@ -4,6 +4,10 @@
 	* engine/int_proto.h, engine/int_table.c: regenerate the
 	internalcall table to include "CodeTable.GetAddress".
 
+	* cscc/c/c_types.c (CTypeDefineAnonEnum): incorrect length
+	used in ILMalloc call, leading to segv in anoymous enum's
+	inside functions (bug #4732).
+
 2003-08-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_defs.tc, cscc/c/c_oper.tc: constant evaluation

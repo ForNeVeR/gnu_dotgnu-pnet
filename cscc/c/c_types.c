@@ -691,7 +691,7 @@ ILType *CTypeDefineAnonEnum(ILGenInfo *info, const char *funcName)
 	sprintf(name, "(%ld)", number);
 
 	/* Create a new name by prepending "enum " to the name */
-	newName = (char *)ILMalloc(strlen(name) + funcNameLen + 1);
+	newName = (char *)ILMalloc(strlen(name) + funcNameLen + 6);
 	if(!newName)
 	{
 		ILGenOutOfMemory(info);

@@ -317,7 +317,11 @@ public abstract class TextBoxBase : Control
 				}
 				set
 				{
+					if (wordWrap == value)
+						return;
 					wordWrap = value;
+					if (WordWrapChanged != null)
+						WordWrapChanged(this, EventArgs.Empty);
 				}
 			}
 
@@ -546,6 +550,8 @@ public abstract class TextBoxBase : Control
 					RemoveHandler(EventId.ReadOnlyChanged, value);
 				}
 			}
+
+	internal event EventHandler WordWrapChanged;
 
 	// Caret Navigation
 	protected enum CaretDirection

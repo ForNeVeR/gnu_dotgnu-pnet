@@ -1147,6 +1147,7 @@ public class SortedList : IDictionary, ICollection, IEnumerable, ICloneable
 				{
 					this.list  = list;
 					generation = list.generation;
+					position = -1;
 				}
 
 		// Implement the IEnumerator interface.

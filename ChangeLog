@@ -1,4 +1,9 @@
 
+2004-09-09  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+	
+	* runtime/System/Collections/SortedList.cs: Initialize position flag
+	to -1 for SortedListEnumerator (fix bug #10335, patch# 3355, Gopal).
+
 2004-09-09  Marcus Urban <mathpup@mylinuxisp.com>
 
 	* resources/en_US/runtime/Emit.txt: English text resources for

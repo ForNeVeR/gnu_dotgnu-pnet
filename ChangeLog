@@ -1,4 +1,10 @@
 
+2004-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/ListViewItemConverter.cs,
+	System.Windows.Forms/ListViewSubItemConverter.cs: apply
+	patch #2798, to fix some Mac OS X compile problems.
+
 2004-03-29  Gopal V <gopalv82@symonds.net>
 
 	* System.Windows.Forms/HelpProvider.cs: Commit patch #2830 with minor

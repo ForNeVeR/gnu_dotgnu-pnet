@@ -67,7 +67,7 @@ using System.Drawing;
 							ListViewItem.ListViewSubItem[] listViewSubItems = new ListViewItem.ListViewSubItem[item.SubItems.Count];
 							(item.SubItems as ICollection).CopyTo(listViewSubItems, 0);
 							arguments = new object[]{listViewSubItems, item.ImageIndex};
-							return new InstanceDescriptor(constructorInfo, arguments, false);
+							return new InstanceDescriptor(constructorInfo, (ICollection) arguments, false);
 						}
 						break;
 					}
@@ -100,7 +100,7 @@ using System.Drawing;
 							font = item.Font;
 						}
 						arguments = new object[]{strs, item.ImageIndex, foreColor, backColor, font};
-						return new InstanceDescriptor(constructorInfo, arguments, false);
+						return new InstanceDescriptor(constructorInfo, (ICollection) arguments, false);
 					}
 				}
 				if (item.SubItems.Count <= 1)
@@ -112,7 +112,7 @@ using System.Drawing;
 						if (constructorInfo != null)
 						{
 							arguments = new object[]{item.Text};
-							return new InstanceDescriptor(constructorInfo, arguments, false);
+							return new InstanceDescriptor(constructorInfo, (ICollection) arguments, false);
 						}
 					}
 					else
@@ -122,7 +122,7 @@ using System.Drawing;
 						if (constructorInfo != null)
 						{
 							arguments = new object[]{item.Text, item.ImageIndex};
-							return new InstanceDescriptor(constructorInfo, arguments, false);
+							return new InstanceDescriptor(constructorInfo, (ICollection) arguments, false);
 						}
 					}
 				}
@@ -131,7 +131,7 @@ using System.Drawing;
 				if (constructorInfo != null)
 				{
 					arguments = new object[]{strs, item.ImageIndex};
-					return new InstanceDescriptor(constructorInfo, arguments, false);
+					return new InstanceDescriptor(constructorInfo, (ICollection) arguments, false);
 				}
 			}
 			return base.ConvertTo(context, culture, value, destinationType);

@@ -57,6 +57,56 @@ void ILDumpStringLen(FILE *stream, const char *str, int len)
 	putc('"', stream);
 }
 
+void ILDumpUnicodeString(FILE *stream, const char *str,
+						 unsigned long numChars)
+{
+	ILUInt16 ch;
+	putc('"', stream);
+	while(numChars > 0)
+	{
+		ch = IL_READ_UINT16(str);
+		if(ch < 32)
+		{
+			if(ch == (ILUInt32)'\n')
+			{
+				fputs("\\n", stream);
+			}
+			else if(ch == (ILUInt32)'\r')
+			{
+				fputs("\\r", stream);
+			}
+			else if(ch == (ILUInt32)'\t')
+			{
+				fputs("\\t", stream);
+			}
+			else
+			{
+				fprintf(stream, "\\x%02X", (int)ch);
+			}
+		}
+		else if(ch == '"' || ch == '\\')
+		{
+			putc('\\', stream);
+			putc((int)ch, stream);
+		}
+		else if(ch < 0x80)
+		{
+			putc((int)ch, stream);
+		}
+		else if(ch < 0x100)
+		{
+			fprintf(stream, "\\x%02X", (int)ch);
+		}
+		else
+		{
+			fprintf(stream, "\\u%04X", (int)ch);
+		}
+		str += 2;
+		--numChars;
+	}
+	putc('"', stream);
+}
+
 #ifdef	__cplusplus
 };
 #endif

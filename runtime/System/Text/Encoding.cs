@@ -230,6 +230,7 @@ public abstract class Encoding
 	// Loaded copy of the "I18N" assembly.  We need to move
 	// this into a class in "System.Private" eventually.
 	private static Assembly i18nAssembly;
+	private static bool i18nDisabled;
 
 	// Invoke a specific method on the "I18N" manager object.
 	// Returns NULL if the method failed.
@@ -237,12 +238,28 @@ public abstract class Encoding
 			{
 				lock(typeof(Encoding))
 				{
+					// Bail out if we previously detected that there
+					// is insufficent engine support for I18N handling.
+					if(i18nDisabled)
+					{
+						return null;
+					}
+
 					// Find or load the "I18N" assembly.
 					if(i18nAssembly == null)
 					{
 						try
 						{
-							i18nAssembly = Assembly.Load("I18N");
+							try
+							{
+								i18nAssembly = Assembly.Load("I18N");
+							}
+							catch(NotSupportedException)
+							{
+								// Assembly loading unsupported by the engine.
+								i18nDisabled = true;
+								return null;
+							}
 							if(i18nAssembly == null)
 							{
 								return null;
@@ -255,8 +272,18 @@ public abstract class Encoding
 					}
 
 					// Find the "I18N.Common.Manager" class.
-					Type managerClass =
-						i18nAssembly.GetType("I18N.Common.Manager");
+					Type managerClass;
+					try
+					{
+						managerClass =
+							i18nAssembly.GetType("I18N.Common.Manager");
+					}
+					catch(NotSupportedException)
+					{
+						// "GetType" is not supported by the engine.
+						i18nDisabled = true;
+						return null;
+					}
 					if(managerClass == null)
 					{
 						return null;
@@ -283,6 +310,12 @@ public abstract class Encoding
 					}
 					catch(SecurityException)
 					{
+						return null;
+					}
+					catch(NotSupportedException)
+					{
+						// "InvokeMember" is not supported by the engine.
+						i18nDisabled = true;
 						return null;
 					}
 

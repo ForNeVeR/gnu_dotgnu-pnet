@@ -76,18 +76,35 @@ public class Object
 
 	// Cached copy of the resources for this assembly.
 	private static ResourceManager resources = null;
+	private static bool reflectionMissing = false;
 
 	// Helper for obtaining string resources for this assembly.
 	internal static String _(String tag)
 			{
 				lock(typeof(Object))
 				{
-					if(resources == null)
+					if(reflectionMissing)
 					{
-						resources = new ResourceManager
-							("runtime", Assembly.GetExecutingAssembly());
+						return tag;
 					}
-					return resources.GetString(tag, null);
+					else
+					{
+						try
+						{
+							if(resources == null)
+							{
+								resources = new ResourceManager
+									("runtime",
+									 Assembly.GetExecutingAssembly());
+							}
+							return resources.GetString(tag, null);
+						}
+						catch(NotSupportedException)
+						{
+							reflectionMissing = true;
+							return tag;
+						}
+					}
 				}
 			}
 

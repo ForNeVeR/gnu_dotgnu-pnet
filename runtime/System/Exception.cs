@@ -59,23 +59,21 @@ public class Exception
 	private PackedStackFrame[] stackTrace;
 
 	// Constructors.
-	public Exception()
-		{
-			message = null;
-			innerException = null;
-			stackTrace = StackFrame.GetExceptionStackTrace();
-		}
-	public Exception(String msg)
-		{
-			message = msg;
-			innerException = null;
-			stackTrace = StackFrame.GetExceptionStackTrace();
-		}
+	public Exception() : this(null, null) {}
+	public Exception(String msg) : this(msg, null) {}
 	public Exception(String msg, Exception inner)
 		{
 			message = msg;
 			innerException = inner;
-			stackTrace = StackFrame.GetExceptionStackTrace();
+			try
+			{
+				stackTrace = StackFrame.GetExceptionStackTrace();
+			}
+			catch(NotSupportedException)
+			{
+				// The runtime engine does not have "GetExceptionStackTrace".
+				stackTrace = null;
+			}
 		}
 
 	// Private constructor that is used for subclasses that
@@ -86,7 +84,14 @@ public class Exception
 			innerException = inner;
 			if(wantTrace)
 			{
-				stackTrace = StackFrame.GetExceptionStackTrace();
+				try
+				{
+					stackTrace = StackFrame.GetExceptionStackTrace();
+				}
+				catch(NotSupportedException)
+				{
+					stackTrace = null;
+				}
 			}
 		}
 
@@ -112,17 +117,39 @@ public class Exception
 	// Convert the exception into a string.
 	public override String ToString()
 		{
-			String className = GetType().ToString();
+			String className;
 			String result;
 			String temp;
 			String message = Message;
+			try
+			{
+				className = GetType().ToString();
+			}
+			catch(NotSupportedException)
+			{
+				// The runtime engine does not have reflection support.
+				className = String.Empty;
+			}
 			if(message != null && message.Length > 0)
 			{
-				result = className + ": " + message;
+				if(className != null && className.Length > 0)
+				{
+					result = className + ": " + message;
+				}
+				else
+				{
+					result = message;
+				}
+			}
+			else if(className != null && className.Length > 0)
+			{
+				result = className;
 			}
 			else
 			{
-				result = className;
+				// Default message if we cannot get a message from
+				// the underlying resource sub-system.
+				result = "Exception was thrown";
 			}
 			temp = MessageExtra;
 			if(temp != null)
@@ -170,8 +197,16 @@ public class Exception
 				}
 				else
 				{
-					return String.Format
-						(_("Exception_WasThrown"), GetType().ToString());
+					String typeName;
+					try
+					{
+						return String.Format
+							(_("Exception_WasThrown"), GetType().ToString());
+					}
+					catch(NotSupportedException)
+					{
+						return String.Empty;
+					}
 				}
 			}
 		}
@@ -190,14 +225,21 @@ public class Exception
 		{
 			get
 			{
-				return (new StackTrace(this, true)).ToString();
+				if(stackTrace != null)
+				{
+					return (new StackTrace(this, true)).ToString();
+				}
+				else
+				{
+					return String.Empty;
+				}
 			}
 		}
 	public virtual MethodBase TargetSite
 		{
 			get
 			{
-				if(stackTrace.Length > 0)
+				if(stackTrace != null && stackTrace.Length > 0)
 				{
 					return MethodBase.GetMethodFromHandle
 								(stackTrace[0].method);

@@ -9,13 +9,14 @@ AM_CFLAGS = -I$(top_srcdir)/include
 
 install-data-local:
 	@$(NORMALL_INSTALL)
-	$(LN_S) ilsize.1.gz $(DESTDIR)$(mandir)/man1/cli-unknown-size.1.gz
+	rm -f $(DESTDIR)$(mandir)/man1/cli-unknown-size.1.gz
+	$(LN_S) -f ilsize.1.gz $(DESTDIR)$(mandir)/man1/cli-unknown-size.1.gz
 
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/cli-unknown-size$(EXEEXT)
-	$(LN_S) ilsize$(EXEEXT) $(DESTDIR)$(bindir)/cli-unknown-size$(EXEEXT)
+	$(LN_S) -f ilsize$(EXEEXT) $(DESTDIR)$(bindir)/cli-unknown-size$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)

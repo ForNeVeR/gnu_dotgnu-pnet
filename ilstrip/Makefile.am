@@ -8,13 +8,14 @@ AM_CFLAGS = -I$(top_srcdir)/include
 
 install-data-local:
 	@$(NORMALL_INSTALL)
-	$(LN_S) ilstrip.1.gz $(DESTDIR)$(man1dir)/cli-unknown-strip.1.gz
+	rm -f $(DESTDIR)$(man1dir)/cli-unknown-strip.1.gz
+	$(LN_S) -f ilstrip.1.gz $(DESTDIR)$(man1dir)/cli-unknown-strip.1.gz
 
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/cli-unknown-strip$(EXEEXT)
-	$(LN_S) ilstrip$(EXEEXT) $(DESTDIR)$(bindir)/cli-unknown-strip$(EXEEXT)
+	$(LN_S) -f ilstrip$(EXEEXT) $(DESTDIR)$(bindir)/cli-unknown-strip$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)

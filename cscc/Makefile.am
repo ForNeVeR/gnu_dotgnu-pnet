@@ -52,6 +52,7 @@ AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 
 install-data-local:
 	@$(NORMALL_INSTALL)
+	rm -f $(DESTDIR)$(man1dir)/cli-unknown-gcc.1.gz
 	$(LN_S) cscc.1.gz $(DESTDIR)$(man1dir)/cli-unknown-gcc.1.gz
 
 install-exec-local:

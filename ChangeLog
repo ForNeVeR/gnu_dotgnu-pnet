@@ -1,6 +1,11 @@
 
 2004-09-22  Russell Stuart <russell-savannah@stuart.id.au>
 
+	* */Makefile.am: Change all "$(LN_S) -f ... X" to
+	"rm -f X; $(LN_S) -f ... X"
+
+2004-09-22  Russell Stuart <russell-savannah@stuart.id.au>
+
 	* ilasm/Makefile.am: Added -f to "ln -s ... man/man1/al.1.gz"
 
 2004-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>

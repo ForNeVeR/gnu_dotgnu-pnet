@@ -146,7 +146,7 @@ ILClass *_ILLinkerConvertClassRef(ILLinker *linker, ILClass *classInfo)
 	{
 		/* Report that we couldn't resolve the class */
 		ILDumpClassName(stderr, ILClassToImage(classInfo), classInfo, 0);
-		fputs(": unresolved type reference\n", stderr);
+		fputs(" : unresolved type reference\n", stderr);
 		linker->error = 1;
 		return 0;
 	}

@@ -109,9 +109,10 @@
  */
 ILNode_GetType(ILNode_BinaryArith)
 {
-	return ILCommonType(ILNode_GetType(node->expr1, info),
+	return ILCommonType(info,
+						ILNode_GetType(node->expr1, info),
 						ILNode_GetType(node->expr2, info),
-						0, info->pedanticArith);
+						0);
 }
 
 /*
@@ -119,9 +120,10 @@ ILNode_GetType(ILNode_BinaryArith)
  */
 ILNode_GetType(ILNode_BinaryBitwise)
 {
-	return ILCommonType(ILNode_GetType(node->expr1, info),
+	return ILCommonType(info,
+						ILNode_GetType(node->expr1, info),
 						ILNode_GetType(node->expr2, info),
-						1, info->pedanticArith);
+						1);
 }
 
 /*
@@ -130,7 +132,7 @@ ILNode_GetType(ILNode_BinaryBitwise)
 ILNode_GetType(ILNode_BinaryShift)
 {
 	ILMachineType type = ILNode_GetType(node->expr1, info);
-	return ILCommonType(type, type, 1, info->pedanticArith);
+	return ILCommonType(info, type, type, 1);
 }
 
 /*
@@ -140,7 +142,7 @@ ILNode_GetType(ILNode_Neg),
 ILNode_GetType(ILNode_UnaryPlus)
 {
 	ILMachineType type = ILNode_GetType(node->expr, info);
-	return ILCommonType(type, type, 0, info->pedanticArith);
+	return ILCommonType(info, type, type, 0);
 }
 
 /*
@@ -149,7 +151,7 @@ ILNode_GetType(ILNode_UnaryPlus)
 ILNode_GetType(ILNode_Not)
 {
 	ILMachineType type = ILNode_GetType(node->expr, info);
-	return ILCommonType(type, type, 1, info->pedanticArith);
+	return ILCommonType(info, type, type, 1);
 }
 
 /*
@@ -210,7 +212,7 @@ ILNode_GenValue(ILNode_BinaryArith)
 	type2 = ILNode_GetType(node->expr2, info);
 
 	/* Determine the common type */
-	commonType = ILCommonType(type1, type2, 0, info->pedanticArith);
+	commonType = ILCommonType(info, type1, type2, 0);
 
 	/* Evaluate the sub-expressions and cast to the common type */
 	ILGenCast(info, ILNode_GenValue(node->expr1, info), commonType);
@@ -246,7 +248,7 @@ ILNode_GenValue(ILNode_Add)
 	else
 	{
 		/* Numeric addition operator */
-		commonType = ILCommonType(type1, type2, 0, info->pedanticArith);
+		commonType = ILCommonType(info, type1, type2, 0);
 	}
 
 	/* Evaluate the sub-expressions and cast to the common type */
@@ -275,7 +277,7 @@ ILNode_GenValue(ILNode_BinaryBitwise)
 	type2 = ILNode_GetType(node->expr2, info);
 
 	/* Determine the common type */
-	commonType = ILCommonType(type1, type2, 1, info->pedanticArith);
+	commonType = ILCommonType(info, type1, type2, 1);
 
 	/* Evaluate the sub-expressions and cast to the common type */
 	ILGenCast(info, ILNode_GenValue(node->expr1, info), commonType);
@@ -299,7 +301,7 @@ ILNode_GenValue(ILNode_BinaryShift)
 
 	/* Determine the common type */
 	type = ILNode_GetType(node->expr1, info);
-	commonType = ILCommonType(type, type, 1, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 1);
 
 	/* Evaluate the first sub-expression and cast to the common type */
 	ILGenCast(info, ILNode_GenValue(node->expr1, info), commonType);
@@ -339,7 +341,7 @@ ILNode_GenValue(ILNode_Neg)
 
 	/* Determine the common type to use */
 	type = ILNode_GetType(node->expr, info);
-	commonType = ILCommonType(type, type, 0, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 0);
 
 	/* Apply the operator */
 	ILNegate_ApplyOp(info, node, commonType);
@@ -358,7 +360,7 @@ ILNode_GenValue(ILNode_UnaryPlus)
 
 	/* Determine the common type to use */
 	type = ILNode_GetType(node->expr, info);
-	commonType = ILCommonType(type, type, 0, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 0);
 
 	/* Generate code for the sub-expression and cast to the common type */
 	ILGenCast(info, ILNode_GenValue(node->expr, info), commonType);
@@ -377,7 +379,7 @@ ILNode_GenValue(ILNode_Not)
 
 	/* Determine the common type to use */
 	type = ILNode_GetType(node->expr, info);
-	commonType = ILCommonType(type, type, 1, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 1);
 
 	/* Generate code for the sub-expression and cast to the common type */
 	ILGenCast(info, ILNode_GenValue(node->expr, info), commonType);
@@ -480,7 +482,7 @@ ILNode_EvalConst(ILNode_BinaryArith)
 	type2 = ILNode_GetType(node->expr2, info);
 
 	/* Determine the common type */
-	commonType = ILCommonType(type1, type2, 0, info->pedanticArith);
+	commonType = ILCommonType(info, type1, type2, 0);
 
 	/* Evaluate the sub-expressions and cast to the common type */
 	if(!ILNode_EvalConst(node->expr1, info, value) ||
@@ -513,7 +515,7 @@ ILNode_EvalConst(ILNode_BinaryBitwise)
 	type2 = ILNode_GetType(node->expr2, info);
 
 	/* Determine the common type */
-	commonType = ILCommonType(type1, type2, 1, info->pedanticArith);
+	commonType = ILCommonType(info, type1, type2, 1);
 
 	/* Evaluate the sub-expressions and cast to the common type */
 	if(!ILNode_EvalConst(node->expr1, info, value) ||
@@ -542,7 +544,7 @@ ILNode_EvalConst(ILNode_BinaryShift)
 
 	/* Determine the common type */
 	type = ILNode_GetType(node->expr1, info);
-	commonType = ILCommonType(type, type, 1, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 1);
 
 	/* Evaluate the first sub-expression and cast to the common type */
 	if(!ILNode_EvalConst(node->expr1, info, value) ||
@@ -586,7 +588,7 @@ ILNode_EvalConst(ILNode_Neg)
 
 	/* Determine the common type to use */
 	type = ILNode_GetType(node->expr, info);
-	commonType = ILCommonType(type, type, 0, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 0);
 
 	/* Evaluate the argument and cast to the common type */
 	if(!ILNode_EvalConst(node->expr, info, value) ||
@@ -609,7 +611,7 @@ ILNode_EvalConst(ILNode_UnaryPlus)
 
 	/* Determine the common type to use */
 	type = ILNode_GetType(node->expr, info);
-	commonType = ILCommonType(type, type, 0, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 0);
 
 	/* Generate code for the sub-expression and cast to the common type */
 	if(!ILNode_EvalConst(node->expr, info, value) ||
@@ -630,7 +632,7 @@ ILNode_EvalConst(ILNode_Not)
 
 	/* Determine the common type to use */
 	type = ILNode_GetType(node->expr, info);
-	commonType = ILCommonType(type, type, 1, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 1);
 
 	/* Evaluate the sub-expression and cast to the common type */
 	if(!ILNode_EvalConst(node->expr, info, value) ||
@@ -3045,8 +3047,8 @@ ILNot_EvalOp(ILMachineType)
 
 %end %{
 
-ILMachineType ILCommonType(ILMachineType type1, ILMachineType type2,
-						   int intonly, int pedanticArith)
+ILMachineType ILCommonType(ILGenInfo *info, ILMachineType type1,
+						   ILMachineType type2, int intonly)
 {
 	if(type1 == ILMachineType_Decimal || type2 == ILMachineType_Decimal)
 	{
@@ -3066,7 +3068,7 @@ ILMachineType ILCommonType(ILMachineType type1, ILMachineType type2,
 	{
 		if(intonly)
 			return ILMachineType_Int32;
-		else if(pedanticArith)
+		else if(info->pedanticArith || info->outputIsJava)
 			return ILMachineType_Float64;
 		else
 			return ILMachineType_NativeFloat;
@@ -3075,7 +3077,7 @@ ILMachineType ILCommonType(ILMachineType type1, ILMachineType type2,
 	{
 		if(intonly)
 			return ILMachineType_Int32;
-		else if(pedanticArith)
+		else if(info->pedanticArith || info->outputIsJava)
 			return ILMachineType_Float32;
 		else
 			return ILMachineType_NativeFloat;

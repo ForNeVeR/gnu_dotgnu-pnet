@@ -26,9 +26,9 @@
 /*
  * Determine a common type for relational operators.
  */
-static ILMachineType Relational_CommonType(ILMachineType type1,
-										   ILMachineType type2,
-										   int pedanticArith)
+static ILMachineType Relational_CommonType(ILGenInfo *info,
+										   ILMachineType type1,
+										   ILMachineType type2)
 {
 	if(type1 == ILMachineType_ObjectRef || type2 == ILMachineType_ObjectRef)
 	{
@@ -36,7 +36,7 @@ static ILMachineType Relational_CommonType(ILMachineType type1,
 	}
 	else
 	{
-		return ILCommonType(type1, type2, 0, pedanticArith);
+		return ILCommonType(info, type1, type2, 0);
 	}
 }
 
@@ -108,7 +108,7 @@ ILNode_GenValue(ILNode_Relational)
 	/* Determine the common type to use */
 	type1 = ILNode_GetType(node->expr1, info);
 	type2 = ILNode_GetType(node->expr2, info);
-	commonType = Relational_CommonType(type1, type2, info->pedanticArith);
+	commonType = Relational_CommonType(info, type1, type2);
 
 	/* Generate code for the sub-expressions */
 	ILGenCast(info, ILNode_GenValue(node->expr1, info), commonType);
@@ -134,7 +134,7 @@ ILNode_GenThen(ILNode_Relational)
 	/* Determine the common type to use */
 	type1 = ILNode_GetType(node->expr1, info);
 	type2 = ILNode_GetType(node->expr2, info);
-	commonType = Relational_CommonType(type1, type2, info->pedanticArith);
+	commonType = Relational_CommonType(info, type1, type2);
 
 	/* Generate code for the sub-expressions */
 	ILGenCast(info, ILNode_GenValue(node->expr1, info), commonType);
@@ -157,7 +157,7 @@ ILNode_GenElse(ILNode_Relational)
 	/* Determine the common type to use */
 	type1 = ILNode_GetType(node->expr1, info);
 	type2 = ILNode_GetType(node->expr2, info);
-	commonType = Relational_CommonType(type1, type2, info->pedanticArith);
+	commonType = Relational_CommonType(info, type1, type2);
 
 	/* Generate code for the sub-expressions */
 	ILGenCast(info, ILNode_GenValue(node->expr1, info), commonType);
@@ -181,7 +181,7 @@ ILNode_EvalConst(ILNode_Relational)
 	/* Determine the common type to use */
 	type1 = ILNode_GetType(node->expr1, info);
 	type2 = ILNode_GetType(node->expr2, info);
-	commonType = Relational_CommonType(type1, type2, info->pedanticArith);
+	commonType = Relational_CommonType(info, type1, type2);
 
 	/* Evaluate the sub-expressions and cast to the common type */
 	if(!ILNode_EvalConst(node->expr1, info, value) ||

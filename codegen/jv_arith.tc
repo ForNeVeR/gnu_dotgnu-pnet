@@ -94,7 +94,7 @@ JavaGenValue(ILNode_BinaryArith)
 	type2 = ILNode_GetType(node->expr2, info);
 
 	/* Determine the common type */
-	commonType = ILCommonType(type1, type2, 0, info->pedanticArith);
+	commonType = ILCommonType(info, type1, type2, 0);
 
 	/* Evaluate the sub-expressions and cast to the common type */
 	JavaGenCast(info, JavaGenValue(node->expr1, info), commonType);
@@ -129,7 +129,7 @@ JavaGenValue(ILNode_Add)
 	else
 	{
 		/* Numeric addition operator */
-		commonType = ILCommonType(type1, type2, 0, info->pedanticArith);
+		commonType = ILCommonType(info, type1, type2, 0);
 	}
 
 	/* Evaluate the sub-expressions and cast to the common type */
@@ -157,7 +157,7 @@ JavaGenValue(ILNode_BinaryBitwise)
 	type2 = ILNode_GetType(node->expr2, info);
 
 	/* Determine the common type */
-	commonType = ILCommonType(type1, type2, 1, info->pedanticArith);
+	commonType = ILCommonType(info, type1, type2, 1);
 
 	/* Evaluate the sub-expressions and cast to the common type */
 	JavaGenCast(info, JavaGenValue(node->expr1, info), commonType);
@@ -180,7 +180,7 @@ JavaGenValue(ILNode_BinaryShift)
 
 	/* Determine the common type */
 	type = ILNode_GetType(node->expr1, info);
-	commonType = ILCommonType(type, type, 1, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 1);
 
 	/* Evaluate the first sub-expression and cast to the common type */
 	JavaGenCast(info, JavaGenValue(node->expr1, info), commonType);
@@ -221,7 +221,7 @@ JavaGenValue(ILNode_Neg)
 
 	/* Determine the common type to use */
 	type = ILNode_GetType(node->expr, info);
-	commonType = ILCommonType(type, type, 0, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 0);
 
 	/* Evaluate the sub-expression and cast to the common type */
 	JavaGenCast(info, JavaGenValue(node->expr, info), commonType);
@@ -243,7 +243,7 @@ JavaGenValue(ILNode_UnaryPlus)
 
 	/* Determine the common type to use */
 	type = ILNode_GetType(node->expr, info);
-	commonType = ILCommonType(type, type, 0, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 0);
 
 	/* Generate code for the sub-expression and cast to the common type */
 	JavaGenCast(info, JavaGenValue(node->expr, info), commonType);
@@ -262,7 +262,7 @@ JavaGenValue(ILNode_Not)
 
 	/* Determine the common type to use */
 	type = ILNode_GetType(node->expr, info);
-	commonType = ILCommonType(type, type, 1, info->pedanticArith);
+	commonType = ILCommonType(info, type, type, 1);
 
 	/* Generate code for the sub-expression and cast to the common type */
 	JavaGenCast(info, JavaGenValue(node->expr, info), commonType);
@@ -657,13 +657,13 @@ JavaBinary_ApplyOp(ILNode_Sub, ILMachineType_UInt64)
 JavaBinary_ApplyOp(ILNode_Sub, ILMachineType_Float32)
 {
 	JavaGenSimple(info, JAVA_OP_FSUB);
-	JavaGenSimple(info, -1);
+	JavaGenAdjust(info, -1);
 }
 JavaBinary_ApplyOp(ILNode_Sub, ILMachineType_Float64),
 JavaBinary_ApplyOp(ILNode_Sub, ILMachineType_NativeFloat)
 {
 	JavaGenSimple(info, JAVA_OP_DSUB);
-	JavaGenSimple(info, -2);
+	JavaGenAdjust(info, -2);
 }
 JavaBinary_ApplyOp(ILNode_Sub, ILMachineType_Decimal)
 {

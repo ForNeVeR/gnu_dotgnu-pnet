@@ -69,7 +69,7 @@ JavaGenValue(ILNode_Relational)
 	/* Determine the common type to use */
 	type1 = ILNode_GetType(node->expr1, info);
 	type2 = ILNode_GetType(node->expr2, info);
-	commonType = Relational_CommonType(type1, type2, info->pedanticArith);
+	commonType = Relational_CommonType(info, type1, type2);
 
 	/* Generate code for the sub-expressions */
 	JavaGenCast(info, JavaGenValue(node->expr1, info), commonType);
@@ -94,7 +94,7 @@ JavaGenThen(ILNode_Relational)
 	/* Determine the common type to use */
 	type1 = ILNode_GetType(node->expr1, info);
 	type2 = ILNode_GetType(node->expr2, info);
-	commonType = Relational_CommonType(type1, type2, info->pedanticArith);
+	commonType = Relational_CommonType(info, type1, type2);
 
 	/* Generate code for the sub-expressions */
 	JavaGenCast(info, JavaGenValue(node->expr1, info), commonType);
@@ -116,7 +116,7 @@ JavaGenElse(ILNode_Relational)
 	/* Determine the common type to use */
 	type1 = ILNode_GetType(node->expr1, info);
 	type2 = ILNode_GetType(node->expr2, info);
-	commonType = Relational_CommonType(type1, type2, info->pedanticArith);
+	commonType = Relational_CommonType(info, type1, type2);
 
 	/* Generate code for the sub-expressions */
 	JavaGenCast(info, JavaGenValue(node->expr1, info), commonType);

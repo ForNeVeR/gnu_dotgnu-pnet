@@ -70,7 +70,7 @@ JavaGenDiscard(ILNode_AssignExpression)
 
 	/* Determine the common type for the operation */
 	secondType = ILNode_GetType(bnode->expr2, info);
-	commonType = ILCommonType(finalType, secondType, 0, info->pedanticArith);
+	commonType = ILCommonType(info, finalType, secondType, 0);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);
@@ -136,7 +136,7 @@ JavaGenValue(ILNode_AssignExpression)
 
 	/* Determine the common type for the operation */
 	secondType = ILNode_GetType(bnode->expr2, info);
-	commonType = ILCommonType(finalType, secondType, 0, info->pedanticArith);
+	commonType = ILCommonType(info, finalType, secondType, 0);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);
@@ -183,8 +183,7 @@ JavaGenDiscard(ILNode_PostInc)
 
 	/* Determine the common type for the operation.  We use
 	   "int8" as the type of the "1" constant to be added */
-	commonType = ILCommonType(finalType, ILMachineType_Int8,
-							  0, info->pedanticArith);
+	commonType = ILCommonType(info, finalType, ILMachineType_Int8, 0);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);
@@ -214,8 +213,7 @@ JavaGenDiscard(ILNode_PostDec)
 
 	/* Determine the common type for the operation.  We use
 	   "int8" as the type of the "1" constant to be subtracted */
-	commonType = ILCommonType(finalType, ILMachineType_Int8,
-							  0, info->pedanticArith);
+	commonType = ILCommonType(info, finalType, ILMachineType_Int8, 0);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);
@@ -244,8 +242,7 @@ JavaGenValue(ILNode_PreInc)
 
 	/* Determine the common type for the operation.  We use
 	   "int8" as the type of the "1" constant to be added */
-	commonType = ILCommonType(finalType, ILMachineType_Int8,
-							  0, info->pedanticArith);
+	commonType = ILCommonType(info, finalType, ILMachineType_Int8, 0);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);
@@ -277,8 +274,7 @@ JavaGenValue(ILNode_PostInc)
 
 	/* Determine the common type for the operation.  We use
 	   "int8" as the type of the "1" constant to be added */
-	commonType = ILCommonType(finalType, ILMachineType_Int8,
-							  0, info->pedanticArith);
+	commonType = ILCommonType(info, finalType, ILMachineType_Int8, 0);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);
@@ -310,8 +306,7 @@ JavaGenValue(ILNode_PreDec)
 
 	/* Determine the common type for the operation.  We use
 	   "int8" as the type of the "1" constant to be subtracted */
-	commonType = ILCommonType(finalType, ILMachineType_Int8,
-							  0, info->pedanticArith);
+	commonType = ILCommonType(info, finalType, ILMachineType_Int8, 0);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);
@@ -343,8 +338,7 @@ JavaGenValue(ILNode_PostDec)
 
 	/* Determine the common type for the operation.  We use
 	   "int8" as the type of the "1" constant to be subtracted */
-	commonType = ILCommonType(finalType, ILMachineType_Int8,
-							  0, info->pedanticArith);
+	commonType = ILCommonType(info, finalType, ILMachineType_Int8, 0);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);

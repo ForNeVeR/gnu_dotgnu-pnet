@@ -158,7 +158,7 @@ static ILMachineType Conditional_Type(ILNode_Conditional *node,
 	}
 	else
 	{
-		return ILCommonType(*type1, *type2, 0, info->pedanticArith);
+		return ILCommonType(info, *type1, *type2, 0);
 	}
 }
 

@@ -204,8 +204,8 @@ void ILGenReleaseTempVar(ILGenInfo *info, unsigned localNum);
 /*
  * Determine the common type to use for a binary operator.
  */
-ILMachineType ILCommonType(ILMachineType type1, ILMachineType type2,
-						   int intonly, int pedanticArith);
+ILMachineType ILCommonType(ILGenInfo *info, ILMachineType type1,
+						   ILMachineType type2, int intonly);
 
 /*
  * Make the system library in "info->libImage".

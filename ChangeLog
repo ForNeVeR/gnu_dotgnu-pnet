@@ -1,4 +1,12 @@
 
+2001-09-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* codegen/cg_gen.h, codegen/cg_arith.tc, codegen/jv_arith.tc,
+codegen/cg_assign.tc, codegen/cg_misc.tc, codegen/cg_relop.tc,
+codegen/jv_assign.tc, codegen/jv_relop.tc: change the calling
+conventions for ILCommonType so that it can access the
+ILGenInfo object.
+
 2001-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/jopcodes.c, image/Makefile.am: new file, containing a list of

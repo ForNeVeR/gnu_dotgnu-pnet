@@ -468,7 +468,10 @@ static int InitCodeGen(void)
 	}
 
 	/* Initialize the code generator */
-	ILGenInfoInit(&CCCodeGen, progname, outfile, nostdlib_flag);
+	ILGenInfoInit(&CCCodeGen, progname,
+				  CCStringListGetValue(extension_flags, num_extension_flags,
+				  					   "target-assembly-name"),
+				  outfile, nostdlib_flag);
 
 	/* Set the default "checked" state */
 	if(CCStringListContains(extension_flags, num_extension_flags, "checked"))

@@ -160,6 +160,7 @@ struct _tagILGenInfo
  * Initialize an ILGenInfo structure.
  */
 void ILGenInfoInit(ILGenInfo *info, char *progname,
+				   const char *assemName,
 				   FILE *asmOutput, int nostdlib);
 
 /*

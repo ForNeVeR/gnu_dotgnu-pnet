@@ -1,4 +1,10 @@
 
+2001-03-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/cscc.c,
+	cscc/common/cc_main.c: pass the correct assembly name information
+	to the plugin and linker for "-nostdlib" compiles.
+
 2001-03-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, engine/lib_file.c, include/Makefile.am,

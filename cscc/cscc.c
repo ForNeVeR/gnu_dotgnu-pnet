@@ -1036,6 +1036,8 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	int posn, status;
 	char *asm_output;
 	char *obj_output;
+	char *outname, *temp;
+	int len;
 
 	/* If we are compiling to ".obj" or an executable, then
 	   get the location of "ilasm" now.  There's no point
@@ -1183,6 +1185,51 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		AddArgument(&cmdline, &cmdline_size, "-v");
 	}
 
+	/* Set the "-ftarget-assembly-name" and "-fstdlib-name" options
+	   if doing a compile and link */
+	if(!compile_flag && !assemble_flag && !preprocess_flag)
+	{
+		outname = output_filename;
+		len = strlen(outname);
+		while(len > 0 && outname[len - 1] != '/' && outname[len - 1] != '\\')
+		{
+			--len;
+		}
+		outname += len;
+		len = strlen(outname);
+		if(len >= 4 && !ILStrICmp(outname + len - 4, ".dll"))
+		{
+			len -= 4;
+		}
+		else if(len >= 4 && !ILStrICmp(outname + len - 4, ".exe"))
+		{
+			len -= 4;
+		}
+		temp = (char *)ILMalloc(len + 22);
+		if(!temp)
+		{
+			CCOutOfMemory();
+		}
+		strcpy(temp, "target-assembly-name=");
+		ILMemCpy(temp + 21, outname, len);
+		temp[len + 21] = '\0';
+		AddArgument(&cmdline, &cmdline_size, "-f");
+		AddArgument(&cmdline, &cmdline_size, temp);
+		if(nostdlib_flag)
+		{
+			temp = (char *)ILMalloc(len + 13);
+			if(!temp)
+			{
+				CCOutOfMemory();
+			}
+			strcpy(temp, "stdlib-name=");
+			ILMemCpy(temp + 12, outname, len);
+			temp[len + 12] = '\0';
+			AddArgument(&cmdline, &cmdline_size, "-f");
+			AddArgument(&cmdline, &cmdline_size, temp);
+		}
+	}
+
 	/* Add the output filename to the command-line */
 	AddArgument(&cmdline, &cmdline_size, "-o");
 	if(assemble_flag)
@@ -1325,6 +1372,8 @@ static int LinkExecutable(void)
 	char **cmdline;
 	int cmdline_size;
 	int posn, status;
+	char *outname, *temp;
+	int len;
 
 	/* Find the linker executable */
 	FindILALinkProgram();
@@ -1381,6 +1430,36 @@ static int LinkExecutable(void)
 		AddArgument(&cmdline, &cmdline_size, "-l");
 		AddArgument(&cmdline, &cmdline_size, libraries[posn]);
 	}
+	if(!compile_flag && !assemble_flag && !preprocess_flag && nostdlib_flag)
+	{
+		outname = output_filename;
+		len = strlen(outname);
+		while(len > 0 && outname[len - 1] != '/' && outname[len - 1] != '\\')
+		{
+			--len;
+		}
+		outname += len;
+		len = strlen(outname);
+		if(len >= 4 && !ILStrICmp(outname + len - 4, ".dll"))
+		{
+			len -= 4;
+		}
+		else if(len >= 4 && !ILStrICmp(outname + len - 4, ".exe"))
+		{
+			len -= 4;
+		}
+		temp = (char *)ILMalloc(len + 13);
+		if(!temp)
+		{
+			CCOutOfMemory();
+		}
+		strcpy(temp, "stdlib-name=");
+		ILMemCpy(temp + 12, outname, len);
+		temp[len + 12] = '\0';
+		AddArgument(&cmdline, &cmdline_size, "-f");
+		AddArgument(&cmdline, &cmdline_size, temp);
+	}
+
 	AddArgument(&cmdline, &cmdline_size, "--");
 	for(posn = 0; posn < num_files_to_link; ++posn)
 	{

@@ -66,6 +66,7 @@ static ILImage *CreateBasicImage(ILContext *context, const char *assemName)
 }
 
 void ILGenInfoInit(ILGenInfo *info, char *progname,
+				   const char *assemName,
 				   FILE *asmOutput, int nostdlib)
 {
 	info->progname = progname;
@@ -74,7 +75,11 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	{
 		ILGenOutOfMemory(info);
 	}
-	if((info->image = CreateBasicImage(info->context, "<Assembly>")) == 0)
+	if(!assemName)
+	{
+		assemName = "<Assembly>";
+	}
+	if((info->image = CreateBasicImage(info->context, assemName)) == 0)
 	{
 		ILGenOutOfMemory(info);
 	}

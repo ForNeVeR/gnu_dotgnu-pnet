@@ -12,6 +12,8 @@
 	* configure.in, aclocal.m4: enable maintainer mode support in the
 	autoconf system.
 
+	* configure.in, NEWS: update version for the "0.3.4" release.
+
 2002-04-19  Gopal.V  <gopalv82@symonds.net>
 	
 	* csdoc/doc_stub.c : Implement the -fclass , -fnamespace

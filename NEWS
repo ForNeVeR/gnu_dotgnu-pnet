@@ -1,4 +1,81 @@
 
+0.3.4 (20 April 2002)
+
+	Runtime engine:
+
+	* Auto-generate the "internalcall" tables using "ilinternal".
+	* Complete "binfmt" kernel registration code.
+	* New method cache.
+	* Modify call and exception instructions to accomodate
+	  the method cache changes.
+	* Integrate debug line number support into the engine.
+	* Pass debug offset and line number information to pnetlib
+	  for use in stack traces.
+	* Implemented internalcall's for "ClrResourceStream", "SocketMethods",
+	  "DefaultEncoding", "Array", "Assembly", "Type".
+	* Manifest resources and files.
+	* Properly initialize the locale on entry to "ilrun".
+	* Detect the code page that corresponds to libc's locale.
+	* Verifier fixes to "switch" and "newobj".
+	* Additional CVM and verifier debug code.
+	* Use the underlying type of an enumeration to load and store locals
+	  with CVM instructions.
+	* Fix the stack arrangement when internal exceptions are thrown.
+	* Implement a better policy for deciding whether an assembly is allowed
+	  to use security-senstivie features such as internalcall, PInvoke,
+	  manifest files, etc.
+	* Fix the interface lookup code in "call.c" when the interface is
+	  implemented by a parent of the current class.
+	* Add the new CVM instruction "type_from_handle" to inline calls
+	  to "Type.GetTypeFromHandle".
+	* Implement CVM instruction profiling to help study engine performance.
+
+	C# Compiler:
+
+	* Additional debug line number information.
+	* Fixes to operator overloading for "IntPtr" and "UIntPtr".
+	* Remove a shift/reduce conflict in "ArrayInitializer" related
+	  to trailing commas.
+
+	Documentation and Samples:
+
+	* Updated FAQ.
+	* Embed XML documentation into the CVM interpreter for all
+	  CVM instructions.
+	* Add a Python script to convert the CVM XML into HTML (Gopal V).
+	* Added "samples/except.cs" to demonstrate exception stack traces.
+	* Added "samples/codepage.cs" to demonstrate code page handling.
+	* Changes to the documentation stub generator (Gopal V).
+
+	Assembler:
+
+	* Handle debug line number information.
+
+	Debugger:
+
+	* Help system works.
+	* Simple gdb-like commands for xxgdb integration.
+
+	Linker:
+
+	* Align RVA's during exception block linking.
+
+	Loader and Metadata:
+
+	* Debug reading and writing support.
+	* Manifest file support.
+	* On-demand loading of images by assembly name.
+
+	Other:
+
+	* Integrated sources for libgc version 6.1alpha4.
+	* Minor tweaks to the automake/autoconf build system.
+	* Added an "init.d" script to "doc" - contributed by Gopal V.
+	* Fixes to "csant" to handle multiple resource files with "csc".
+	* Added a "--public-only" option to "ilfind" to assist pnetlib builds.
+	* Add maintainer mode to the autoconf system to work around
+	  autotools version problems.
+
 0.3.2 (27 March 2002)
 
 	Runtime engine:

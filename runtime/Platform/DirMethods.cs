@@ -1,7 +1,7 @@
 /*
  * DirMethods.cs - Implementation of the "Platform.DirMethods" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,37 @@ internal class DirMethods
 	// Get the location of the "System" directory.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String GetSystemDirectory();
+	
+	// Gets the last access time and date
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno GetLastAccess(string path, out long lastac);
+	
+	// Gets Last Modification(writes, etc.)  time and date
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno GetLastModification(string path, out long last_mod);
+	
+	// Gets Creation Time and Date
+	[MethodImpl(MethodImplOptions.InternallCall)]
+	extern public static Errno GetCreationTime(string path, out long create_time);
+	
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno Copy(string src, string dest);
+	
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno Delete(string path);
+	
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno Rename(string old_name, string new_name);
+	
+
+	
+	
 
 }; // class DirMethods
 
 }; // namespace Platform
+
+
+
+
+

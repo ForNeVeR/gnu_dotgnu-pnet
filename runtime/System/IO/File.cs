@@ -1,5 +1,5 @@
 /*
- * Path.cs - Implementation of the "System.IO.File" class.
+ * File.cs - Implementation of the "System.IO.File" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2002  FreeDevelopers.net
@@ -35,12 +35,73 @@ namespace System.IO
 		[TODO]
 		public static void Copy(string source, string dest) 
 		{
+			return Copy(source, dest, false);
 		}
+
+				
+			
+			
+		
+			
 	
 		[TODO]
 		public static void Copy(string src, string dest, bool overwrite) 
 		{
+			
+			if (source == null || dest == null) 
+			{
+				throw new ArgumentNullException();
+			}
+			
+			if (!FileMethods.ValidatePathname(source) || !FileMethods.ValidatePathname(dest)) 
+			{
+				throw new ArgumentException();
+			}
+
+
+			Errno err = DirMethods.Copy(source, dest);
+			
+			switch(err) 
+			{
+				
+				
+				// If Dest Exists
+				case Errno.EEXIST
+				{
+					if (overwrite)
+					{
+						Move(src, dest);
+					}
+					else
+					{
+						throw new IOException(_("IO_CopyFileExists"));
+					}
+                                }
+
+
+				// Directory or File not found
+				case Errno.ENOENT
+				{
+					if (Exists(source)) 
+					{
+						throw new DirectoryNotFoundException(_("IO_DirNotFound"));
+					}
+					else
+					{
+						throw new FileNotFoundExceptio(_("IO_FileNotFound"));		       
+					}
+
+				}
+				
+				case Errno.EIO:
+					throw new IOException(_("IO_Error"));
+				
+				case Errno.EACCES:
+					throw new SecurityException(_("IO_PathnameSecurity");
+				
+			
 		}
+}
 	
 		public static FileStream Create(string path) 
 		{
@@ -70,7 +131,7 @@ namespace System.IO
 				throw new ArgumentException();
 			}
 		
-			/* TODO: Deleting stuff */			
+			Errno err = DirMethods.Delete(path);			
 		}
 
 		public static bool Exists(string path) 
@@ -80,6 +141,7 @@ namespace System.IO
 			{
 				FileStream test = Open(path, FileMode.Open);   
 			}
+			
 			catch (Exception e) 
 			{
 				return false;
@@ -93,32 +155,27 @@ namespace System.IO
 		[TODO]
 		public static DateTime GetCreationTime(string path)
 		{
-			return null;
+			long time;
+			DirMethods.GetCreationTime(path, time);
+			return new DateTime(time);  
 		}	
 			
 		[TODO]
 		public static DateTime GetLastAccessTime(string path) 
 		{
-			return null;
+			return new DateTime(0);
 		}	
 
 		[TODO]
 		public static DateTime GetLastWriteTime(string path) 
 		{
-			return null;
+			return new DateTime(null);
 		}	
 
 	
 		public static void Move(string src, string dest)
 		{
-			// TODO: Add Exception catching
-			FileStream read = new FileStream(src, FileAccess.Read);
-			FileStream write = new FileStream(dest, FileAccess.Write);
-			new byte[read.Length] writer;
-			read.Read(writer, 0, read.Length);
-			write.Write(writer, 0, read.Length);
-			read.Close();
-			write.Close();
+			DirMethods.Rename(src, dest);
 		}
 		
 		

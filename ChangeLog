@@ -1,5 +1,18 @@
 
-2002-01-22 Charlie Carnow <carnow@gmx.net>
+2002-01-23  Charlie Carnow <carnow@gmx.net> 
+
+	* runtime/Platform/DirMethods.cs: Added internal methods for
+	copying, renaming, etc.
+
+	* doc/native.html: Changed to fit DirMethods.cs
+
+	* runtime/System/IO/File.cs: Implemented Copy method to use 
+	DirMethods.Copy
+
+	* resources/en_US/runtime/IO.txt: Added new error messages used
+	in System.IO.File
+	
+2002-01-22  Charlie Carnow <carnow@gmx.net>
 
 	* runtime/System/IO/File.cs: Partial Implementation of System.IO.File
 

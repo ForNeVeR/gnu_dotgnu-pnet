@@ -6,9 +6,9 @@
 <h1>Internalcall methods for pnetlib</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/12/07 05:08:39 $<p>
+Last Modified: $Date: 2002/01/24 23:10:38 $<p>
 
-Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
+Copyright &copy; 2001, 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
 
 <h2>1. Introduction</h2>
@@ -425,6 +425,15 @@ that use the library.<p>
 	<ul>
 		<li><a href="#Platform_DirMethods_GetPathInfo">GetPathInfo</a></li>
 		<li><a href="#Platform_DirMethods_GetSystemDirectory">GetSystemDirectory</a></li>
+		<li> <a href="#Platform_DirMethods_GetLastAccess">GetLastAccess</a></li>
+		<li> <a href="#Platform_DirMethods_GetLastModification">GetLastModification</a></li>
+		<li> <a href="#Platform_DirMethods_GetCreationTime">GetCreationTime</a></li>
+		<li> <a href="#Platform_DirMethods_Copy">Copy</a></li>
+		<li> <a href="#Platform_DirMethods_Delete">Delete</a></li> 
+		
+		<li> <a href="#Platform_DirMethods_Rename">Rename</a></li> 
+		
+		
 	</ul>
 <li><a href="#Platform_FileMethods">Platform.FileMethods</a></li>
 	<ul>
@@ -2629,7 +2638,6 @@ at the start of the object in the specified order.<p>
 
 <a name="Threading_Thread_FinalizeThread">
 <pre>private void FinalizeThread();</pre>
-
 <blockquote>
 This method is called when the <code>Thread</code> object is collected
 by the garbage collector.  If the thread is still active, it should
@@ -2892,6 +2900,50 @@ Get the full pathname of the "System" directory on this machine.
 This is highly Windows-specific.  If the platform does not have
 such a directory, this method should return <code>null</code>.
 </blockquote>
+
+<a name="Platform_DirMethods_GetLastAccess">
+<pre>public static Errno GetLastAccess(string path, out long lastac);</pre>
+
+<blockquote>
+Gets the most recent access of <code>path</code> and stores it in 
+<code> lastac </code>; The correct errno value is returned
+corresponding to the type of error.
+On Unix this call and all similar calls could be implemented with a 
+<code>stat</code> call
+</blockquote>
+
+<a name="Platform_DirMethods_GetLastModification">
+<pre>public static Errno GetLastModification(string path, out long lastac);</pre>
+<blockquote>
+Gets the time of most recent modification(writes, etc.) to <code> path </code> and puts it in <code> lastac </code>
+</blockquote>
+
+<a name="Platform_DirMethods_GetCreationTime">
+<pre>public static Errno GetCreationTime(string path, out long ctime);</pre>
+<blockquote>
+Gets the time of the creation of <code> path </code>, and puts it in 
+<code> lastac </code> returns the approiate Platform.Errno value if there are errors.
+</blockquote>
+
+<a name="Platform_DirMethods_Copy"> 
+<pre>public static Errno Copy(string src, string dest);</pre>
+<blockquote>
+Copies <code>src</code> to <code>dest</code> returns appropriate
+Platform.Errno value.
+</blockquote>
+
+<a name="Platform_DirMethods_Delete">
+<pre>public static Errno Delete(string path);</pre>
+<blockquote> 
+Deletes <code>path</code> returns appropriate Errno value.
+</blockquote> 
+
+<a name="Platform_DirMethods_Rename"> 
+<pre>public static Errno Rename(string old, string new);</pre> 
+<blockquote> 
+Renames(or moves) <code>old</code> to <code>new</code>. Returns
+appropriate Errno value.
+</blockquote> 
 
 <a name="Platform_FileMethods"><h3>Platform.FileMethods</h3>
 

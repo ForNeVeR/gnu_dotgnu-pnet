@@ -1,6 +1,6 @@
 /*
- * SoapDate.cs - Implementation of the
- *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapDate" class.
+ * SoapNormalizedString.cs - Implementation of the
+ *	"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapNormalizedString" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,32 +24,23 @@ namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 
 #if CONFIG_REMOTING
 
+using System.Text;
+
 [Serializable]
-public sealed class SoapDate : ISoapXsd
+public sealed class SoapNormalizedString : ISoapXsd
 {
 	// Internal state.
-	private DateTime value;
-	private int sign;
+	private String value;
 
 	// Constructors.
-	public SoapDate()
+	public SoapNormalizedString() {}
+	public SoapNormalizedString(String value)
 			{
-				this.value = DateTime.MinValue;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value)
-			{
-				this.value = value;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value, int sign)
-			{
-				this.value = value;
-				this.sign = sign;
+				this.Value = value;
 			}
 
 	// Get or set this object's value.
-	public DateTime Value
+	public String Value
 			{
 				get
 				{
@@ -57,20 +48,16 @@ public sealed class SoapDate : ISoapXsd
 				}
 				set
 				{
+					if(value != null)
+					{
+						if(value.IndexOfAny(new char [] {'\n', '\r', '\t'})
+								!= -1)
+						{
+							throw new RemotingException
+								(_("Arg_InvalidSoapValue"));
+						}
+					}
 					this.value = value;
-				}
-			}
-
-	// Get or set this object's sign.
-	public int Sign
-			{
-				get
-				{
-					return sign;
-				}
-				set
-				{
-					sign = value;
 				}
 			}
 
@@ -79,7 +66,7 @@ public sealed class SoapDate : ISoapXsd
 			{
 				get
 				{
-					return "date";
+					return "normalizedString";
 				}
 			}
 
@@ -90,22 +77,54 @@ public sealed class SoapDate : ISoapXsd
 			}
 
 	// Parse a value into an instance of this class.
-	[TODO]
-	public static SoapDate Parse(String value)
+	public static SoapNormalizedString Parse(String value)
 			{
-				// TODO
-				return null;
+				return new SoapNormalizedString(value);
+			}
+
+	// Escape problematic characters in a string.
+	internal static String Escape(String str)
+			{
+				if(str == null)
+				{
+					return String.Empty;
+				}
+				StringBuilder builder = new StringBuilder();
+				foreach(char ch in str)
+				{
+					switch(ch)
+					{
+						case '<':
+						case '>':
+						case '&':
+						case '\'':
+						case '"':
+						case '\0':
+						{
+							builder.Append('&');
+							builder.Append('#');
+							builder.Append(((int)ch).ToString());
+							builder.Append(';');
+						}
+						break;
+
+						default:
+						{
+							builder.Append(ch);
+						}
+						break;
+					}
+				}
+				return builder.ToString();
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return Escape(value);
 			}
 
-}; // class SoapDate
+}; // class SoapNormalizedString
 
 #endif // CONFIG_REMOTING
 

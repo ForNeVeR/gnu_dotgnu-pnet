@@ -1,6 +1,6 @@
 /*
- * SoapDate.cs - Implementation of the
- *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapDate" class.
+ * SoapYear.cs - Implementation of the
+ *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapYear" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,24 +25,24 @@ namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 #if CONFIG_REMOTING
 
 [Serializable]
-public sealed class SoapDate : ISoapXsd
+public sealed class SoapYear : ISoapXsd
 {
 	// Internal state.
 	private DateTime value;
 	private int sign;
 
 	// Constructors.
-	public SoapDate()
+	public SoapYear()
 			{
 				this.value = DateTime.MinValue;
 				this.sign = 0;
 			}
-	public SoapDate(DateTime value)
+	public SoapYear(DateTime value)
 			{
 				this.value = value;
 				this.sign = 0;
 			}
-	public SoapDate(DateTime value, int sign)
+	public SoapYear(DateTime value, int sign)
 			{
 				this.value = value;
 				this.sign = sign;
@@ -79,7 +79,7 @@ public sealed class SoapDate : ISoapXsd
 			{
 				get
 				{
-					return "date";
+					return "gYear";
 				}
 			}
 
@@ -91,7 +91,7 @@ public sealed class SoapDate : ISoapXsd
 
 	// Parse a value into an instance of this class.
 	[TODO]
-	public static SoapDate Parse(String value)
+	public static SoapYear Parse(String value)
 			{
 				// TODO
 				return null;
@@ -105,7 +105,7 @@ public sealed class SoapDate : ISoapXsd
 				return null;
 			}
 
-}; // class SoapDate
+}; // class SoapYear
 
 #endif // CONFIG_REMOTING
 

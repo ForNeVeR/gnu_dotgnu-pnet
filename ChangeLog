@@ -30,6 +30,9 @@
 	runtime/System/Reflection/Emit/MethodRental.cs: add various
 	missing classes.
 
+	* resources/en_US/runtime/Arg.txt, runtime/System/Remoting/*:
+	stub the remainder of the "System.Remoting" namespace.
+
 2003-04-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ThreadStaticAttribute.cs: add the class

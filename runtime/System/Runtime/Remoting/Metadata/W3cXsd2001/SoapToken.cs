@@ -1,6 +1,6 @@
 /*
- * SoapDate.cs - Implementation of the
- *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapDate" class.
+ * SoapToken.cs - Implementation of the
+ *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapToken" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,31 +25,20 @@ namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 #if CONFIG_REMOTING
 
 [Serializable]
-public sealed class SoapDate : ISoapXsd
+public sealed class SoapToken : ISoapXsd
 {
 	// Internal state.
-	private DateTime value;
-	private int sign;
+	private String value;
 
 	// Constructors.
-	public SoapDate()
+	public SoapToken() {}
+	public SoapToken(String value)
 			{
-				this.value = DateTime.MinValue;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value)
-			{
-				this.value = value;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value, int sign)
-			{
-				this.value = value;
-				this.sign = sign;
+				this.Value = value;
 			}
 
 	// Get or set this object's value.
-	public DateTime Value
+	public String Value
 			{
 				get
 				{
@@ -57,20 +46,22 @@ public sealed class SoapDate : ISoapXsd
 				}
 				set
 				{
+					if(value != null)
+					{
+						if(value.IndexOfAny(new char [] {'\r', '\t'}) != -1)
+						{
+							throw new RemotingException
+								(_("Arg_InvalidSoapValue"));
+						}
+						if(value.Length > 0 &&
+						   (Char.IsWhiteSpace(value[0]) ||
+						    Char.IsWhiteSpace(value[value.Length - 1])))
+						{
+							throw new RemotingException
+								(_("Arg_InvalidSoapValue"));
+						}
+					}
 					this.value = value;
-				}
-			}
-
-	// Get or set this object's sign.
-	public int Sign
-			{
-				get
-				{
-					return sign;
-				}
-				set
-				{
-					sign = value;
 				}
 			}
 
@@ -79,7 +70,7 @@ public sealed class SoapDate : ISoapXsd
 			{
 				get
 				{
-					return "date";
+					return "token";
 				}
 			}
 
@@ -90,22 +81,18 @@ public sealed class SoapDate : ISoapXsd
 			}
 
 	// Parse a value into an instance of this class.
-	[TODO]
-	public static SoapDate Parse(String value)
+	public static SoapToken Parse(String value)
 			{
-				// TODO
-				return null;
+				return new SoapToken(value);
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return SoapNormalizedString.Escape(value);
 			}
 
-}; // class SoapDate
+}; // class SoapToken
 
 #endif // CONFIG_REMOTING
 

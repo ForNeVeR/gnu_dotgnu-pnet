@@ -1,6 +1,6 @@
 /*
- * SoapDate.cs - Implementation of the
- *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapDate" class.
+ * SoapNonNegativeInteger.cs - Implementation of the
+ *	"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapNonNegativeInteger" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,32 +24,23 @@ namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 
 #if CONFIG_REMOTING
 
+using System.Globalization;
+
 [Serializable]
-public sealed class SoapDate : ISoapXsd
+public sealed class SoapNonNegativeInteger : ISoapXsd
 {
 	// Internal state.
-	private DateTime value;
-	private int sign;
+	private Decimal value;
 
 	// Constructors.
-	public SoapDate()
+	public SoapNonNegativeInteger() {}
+	public SoapNonNegativeInteger(Decimal value)
 			{
-				this.value = DateTime.MinValue;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value)
-			{
-				this.value = value;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value, int sign)
-			{
-				this.value = value;
-				this.sign = sign;
+				Value = value;
 			}
 
 	// Get or set this object's value.
-	public DateTime Value
+	public Decimal Value
 			{
 				get
 				{
@@ -57,20 +48,12 @@ public sealed class SoapDate : ISoapXsd
 				}
 				set
 				{
-					this.value = value;
-				}
-			}
-
-	// Get or set this object's sign.
-	public int Sign
-			{
-				get
-				{
-					return sign;
-				}
-				set
-				{
-					sign = value;
+					if(value < Decimal.Zero)
+					{
+						throw new RemotingException
+							(_("ArgRange_NonNegative"));
+					}
+					this.value = Decimal.Truncate(value);
 				}
 			}
 
@@ -79,7 +62,7 @@ public sealed class SoapDate : ISoapXsd
 			{
 				get
 				{
-					return "date";
+					return "nonNegativeInteger";
 				}
 			}
 
@@ -90,22 +73,20 @@ public sealed class SoapDate : ISoapXsd
 			}
 
 	// Parse a value into an instance of this class.
-	[TODO]
-	public static SoapDate Parse(String value)
+	public static SoapNonNegativeInteger Parse(String value)
 			{
-				// TODO
-				return null;
+				return new SoapNonNegativeInteger
+					(Decimal.Parse(value, NumberStyles.Integer,
+								   CultureInfo.InvariantCulture));
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return value.ToString(CultureInfo.InvariantCulture);
 			}
 
-}; // class SoapDate
+}; // class SoapNonNegativeInteger
 
 #endif // CONFIG_REMOTING
 

@@ -1,6 +1,6 @@
 /*
- * SoapDate.cs - Implementation of the
- *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapDate" class.
+ * SoapMonthDay.cs - Implementation of the
+ *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapMonthDay" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,27 +25,16 @@ namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 #if CONFIG_REMOTING
 
 [Serializable]
-public sealed class SoapDate : ISoapXsd
+public sealed class SoapMonthDay : ISoapXsd
 {
 	// Internal state.
 	private DateTime value;
-	private int sign;
 
 	// Constructors.
-	public SoapDate()
-			{
-				this.value = DateTime.MinValue;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value)
+	public SoapMonthDay() {}
+	public SoapMonthDay(DateTime value)
 			{
 				this.value = value;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value, int sign)
-			{
-				this.value = value;
-				this.sign = sign;
 			}
 
 	// Get or set this object's value.
@@ -61,25 +50,12 @@ public sealed class SoapDate : ISoapXsd
 				}
 			}
 
-	// Get or set this object's sign.
-	public int Sign
-			{
-				get
-				{
-					return sign;
-				}
-				set
-				{
-					sign = value;
-				}
-			}
-
 	// Get the schema type for this class.
 	public static String XsdType
 			{
 				get
 				{
-					return "date";
+					return "gMonthDay";
 				}
 			}
 
@@ -91,7 +67,7 @@ public sealed class SoapDate : ISoapXsd
 
 	// Parse a value into an instance of this class.
 	[TODO]
-	public static SoapDate Parse(String value)
+	public static SoapMonthDay Parse(String value)
 			{
 				// TODO
 				return null;
@@ -105,7 +81,7 @@ public sealed class SoapDate : ISoapXsd
 				return null;
 			}
 
-}; // class SoapDate
+}; // class SoapMonthDay
 
 #endif // CONFIG_REMOTING
 

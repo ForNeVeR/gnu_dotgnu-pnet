@@ -1,6 +1,6 @@
 /*
- * SoapDate.cs - Implementation of the
- *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapDate" class.
+ * SoapDuration.cs - Implementation of the
+ *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapDuration" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,88 +24,34 @@ namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 
 #if CONFIG_REMOTING
 
-[Serializable]
-public sealed class SoapDate : ISoapXsd
+public sealed class SoapDuration
 {
-	// Internal state.
-	private DateTime value;
-	private int sign;
-
-	// Constructors.
-	public SoapDate()
-			{
-				this.value = DateTime.MinValue;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value)
-			{
-				this.value = value;
-				this.sign = 0;
-			}
-	public SoapDate(DateTime value, int sign)
-			{
-				this.value = value;
-				this.sign = sign;
-			}
-
-	// Get or set this object's value.
-	public DateTime Value
-			{
-				get
-				{
-					return value;
-				}
-				set
-				{
-					this.value = value;
-				}
-			}
-
-	// Get or set this object's sign.
-	public int Sign
-			{
-				get
-				{
-					return sign;
-				}
-				set
-				{
-					sign = value;
-				}
-			}
-
 	// Get the schema type for this class.
 	public static String XsdType
 			{
 				get
 				{
-					return "date";
+					return "duration";
 				}
 			}
 
-	// Implement the ISoapXsd interface.
-	public String GetXsdType()
+	// Parse a value into a TimeSpan instance.
+	[TODO]
+	public static TimeSpan Parse(String value)
 			{
-				return XsdType;
+				// TODO
+				return new TimeSpan(0);
 			}
 
-	// Parse a value into an instance of this class.
+	// Convert a time span into a string.
 	[TODO]
-	public static SoapDate Parse(String value)
+	public static String ToString(TimeSpan value)
 			{
 				// TODO
 				return null;
 			}
 
-	// Convert this object into a string.
-	[TODO]
-	public override String ToString()
-			{
-				// TODO
-				return null;
-			}
-
-}; // class SoapDate
+}; // class SoapDuration
 
 #endif // CONFIG_REMOTING
 

@@ -1,6 +1,6 @@
 /*
- * SoapDate.cs - Implementation of the
- *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapDate" class.
+ * SoapQName.cs - Implementation of the
+ *		"System.Runtime.Remoting.Metadata.W3cXsd2001.SoapQName" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,52 +25,63 @@ namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 #if CONFIG_REMOTING
 
 [Serializable]
-public sealed class SoapDate : ISoapXsd
+public sealed class SoapQName : ISoapXsd
 {
 	// Internal state.
-	private DateTime value;
-	private int sign;
+	private String key;
+	private String name;
+	private String namespaceValue;
 
 	// Constructors.
-	public SoapDate()
+	public SoapQName() {}
+	public SoapQName(String value)
 			{
-				this.value = DateTime.MinValue;
-				this.sign = 0;
+				this.name = value;
 			}
-	public SoapDate(DateTime value)
+	public SoapQName(String key, String name)
 			{
-				this.value = value;
-				this.sign = 0;
+				this.key = key;
+				this.name = name;
 			}
-	public SoapDate(DateTime value, int sign)
+	public SoapQName(String key, String name, String namespaceValue)
 			{
-				this.value = value;
-				this.sign = sign;
+				this.key = key;
+				this.name = name;
+				this.namespaceValue = namespaceValue;
 			}
 
 	// Get or set this object's value.
-	public DateTime Value
+	public String Key
 			{
 				get
 				{
-					return value;
+					return key;
 				}
 				set
 				{
-					this.value = value;
+					this.key = value;
 				}
 			}
-
-	// Get or set this object's sign.
-	public int Sign
+	public String Name
 			{
 				get
 				{
-					return sign;
+					return name;
 				}
 				set
 				{
-					sign = value;
+					this.name = value;
+				}
+			}
+	public String Namespace
+			{
+				get
+				{
+					return namespaceValue;
+				}
+				set
+				{
+					this.namespaceValue = value;
 				}
 			}
 
@@ -79,7 +90,7 @@ public sealed class SoapDate : ISoapXsd
 			{
 				get
 				{
-					return "date";
+					return "SoapQName";
 				}
 			}
 
@@ -90,22 +101,42 @@ public sealed class SoapDate : ISoapXsd
 			}
 
 	// Parse a value into an instance of this class.
-	[TODO]
-	public static SoapDate Parse(String value)
+	public static SoapQName Parse(String value)
 			{
-				// TODO
-				return null;
+				if(value == null)
+				{
+					return new SoapQName();
+				}
+				else
+				{
+					int index = value.IndexOf(':');
+					if(index != -1)
+					{
+						return new SoapQName
+							(value.Substring(0, index),
+							 value.Substring(index + 1));
+					}
+					else
+					{
+						return new SoapQName(String.Empty, value);
+					}
+				}
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				if(key == null || key == String.Empty)
+				{
+					return name;
+				}
+				else
+				{
+					return key + ":" + name;
+				}
 			}
 
-}; // class SoapDate
+}; // class SoapQName
 
 #endif // CONFIG_REMOTING
 

@@ -1,4 +1,8 @@
 
+0.5.10 (26 July 2003)
+
+	* Updates to match changes to Mono build system (Gopal V).
+
 0.5.8 (17 June 2003)
 
 	* First release version - version numbers sync'ed to pnet.

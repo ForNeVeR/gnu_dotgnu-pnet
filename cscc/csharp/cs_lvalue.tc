@@ -44,6 +44,7 @@ ILNode_SemAnalysis(ILNode_This)
 {
 	CSSemValue value;
 	ILNode_MethodDeclaration *method;
+	ILType *type;
 
 	/* Find the method declaration */
 	method = (ILNode_MethodDeclaration *)(info->currentMethod);
@@ -56,7 +57,15 @@ ILNode_SemAnalysis(ILNode_This)
 	}
 
 	/* Get the type from the method's class and return */
-	CSSemSetRValue(value, ILClassToType(ILMethod_Owner(method->methodInfo)));
+	type = ILClassToType(ILMethod_Owner(method->methodInfo));
+	if(ILTypeIsValue(type) && !(info->outputIsJava))
+	{
+		CSSemSetLValue(value, type);
+	}
+	else
+	{
+		CSSemSetRValue(value, type);
+	}
 	return value;
 }
 

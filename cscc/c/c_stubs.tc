@@ -134,7 +134,8 @@ ILNode_CGenAddress(ILNode_StaticField),
 ILNode_CGenAddress(ILNode_MemberField),
 ILNode_CGenAddress(ILNode_ArrayAccess),
 ILNode_CGenAddress(ILNode_DerefField),
-ILNode_CGenAddress(ILNode_MemberAccess)
+ILNode_CGenAddress(ILNode_MemberAccess),
+ILNode_CGenAddress(ILNode_This)
 {
 	/* Nothing to do here */
 	return CAddressDefault;

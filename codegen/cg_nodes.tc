@@ -412,7 +412,7 @@ struct _tagILSwitchValue
 	%nocreate ILMethod *falseMethod = {0};
 }
 %node ILNode_ToConst ILNode_UnaryExpression
-%node ILNode_This ILNode_Expression
+%node ILNode_This ILNode_LValue
 %node ILNode_ArgList ILNode_BinaryExpression
 %node ILNode_VarArgList ILNode_Expression
 %node ILNode_VarArgExpand ILNode_UnaryExpression =

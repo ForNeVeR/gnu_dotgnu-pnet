@@ -803,6 +803,113 @@ ILNode_GenValue(ILNode_This)
 }
 
 /*
+ * Prepare a "this" expression for a store.
+ */
+ILNode_Prepare(ILNode_This)
+{
+	ILMachineType type = ILNode_GetType((ILNode *)node, info);
+	ILGenSimple(info, IL_OP_LDARG_0);
+	ILGenAdjust(info, 1);
+	return type;
+}
+
+/*
+ * Prepare a "this" expression for a store and get the current value.
+ */
+ILNode_GetAndPrepare(ILNode_This)
+{
+	ILType *type;
+	ILMachineType machineType;
+	unsigned tempVar;
+
+	/* Determine the type of the class that we are in */
+	if(info->currentClass)
+	{
+		type = ILClassToType(((ILNode_ClassDefn *)(info->currentClass))
+								->classInfo);
+	}
+	else
+	{
+		type = ILFindSystemType(info, "Object");
+	}
+	machineType = ILTypeToMachineType(type);
+
+	/* The code to be generated is different for leave and non-leave cases */
+	if(leave)
+	{
+		tempVar = ILGenTempTypedVar(info, type);
+		ILGenSimple(info, IL_OP_LDARG_0);
+		ILGenAdjust(info, 1);
+		ILGenLoadManaged(info, machineType, type);
+		ILGenStoreLocal(info, tempVar);
+		ILGenLoadLocal(info, tempVar);
+		ILGenSimple(info, IL_OP_LDARG_0);
+		ILGenLoadLocal(info, tempVar);
+		ILGenAdjust(info, 2);
+		ILGenReleaseTempVar(info, tempVar);
+	}
+	else
+	{
+		ILGenSimple(info, IL_OP_LDARG_0);
+		ILGenAdjust(info, 1);
+		ILGenSimple(info, IL_OP_LDARG_0);
+		ILGenAdjust(info, 1);
+		ILGenLoadManaged(info, machineType, type);
+	}
+	return machineType;
+}
+
+/*
+ * Store into a "this" expression.
+ */
+ILNode_Store(ILNode_This)
+{
+	ILType *type;
+	ILMachineType machineType;
+	unsigned tempVar;
+
+	/* Determine the type of the class that we are in */
+	if(info->currentClass)
+	{
+		type = ILClassToType(((ILNode_ClassDefn *)(info->currentClass))
+								->classInfo);
+	}
+	else
+	{
+		type = ILFindSystemType(info, "Object");
+	}
+	machineType = ILTypeToMachineType(type);
+
+	/* The code to be generated is different for leave and non-leave cases */
+	if(leave)
+	{
+		tempVar = ILGenTempTypedVar(info, type);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenStoreLocal(info, tempVar);
+		ILGenExtend(info, 1);
+		ILGenStoreManaged(info, machineType, type);
+		ILGenAdjust(info, -2);
+		ILGenLoadLocal(info, tempVar);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, tempVar);
+	}
+	else
+	{
+		ILGenStoreManaged(info, machineType, type);
+		ILGenAdjust(info, -2);
+	}
+}
+
+/*
+ * Generate reference code for a "this" expression.
+ */
+ILNode_GenRef(ILNode_This)
+{
+	ILGenSimple(info, IL_OP_LDARG_0);
+	ILGenAdjust(info, 1);
+}
+
+/*
  * Generate value code for an argument list expression.
  */
 ILNode_GenValue(ILNode_ArgList)

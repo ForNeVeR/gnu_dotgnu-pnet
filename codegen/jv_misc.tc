@@ -420,6 +420,18 @@ JavaGenValue(ILNode_This)
 }
 
 /*
+ * L-value processing for "this", which isn't used under JVM.
+ */
+JavaPrepare(ILNode_This),
+JavaGetAndPrepare(ILNode_This)
+{
+	return ILMachineType_Void;
+}
+JavaStore(ILNode_This)
+{
+}
+
+/*
  * Generate value code for an argument list expression.
  */
 JavaGenValue(ILNode_ArgList)

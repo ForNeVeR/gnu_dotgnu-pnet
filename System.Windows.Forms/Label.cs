@@ -461,9 +461,9 @@ public class Label : Control
 	private void Draw(Graphics g)
 			{
 				// Fill the background if we aren't transparent.
-				if(!RenderTransparent)
+				if(!renderTransparent)
 				{
-					using( Brush brush = CreateBackgroundBrush())
+					using(Brush brush = CreateBackgroundBrush())
 					{
 						g.FillRectangle(brush, ClientRectangle);
 					}

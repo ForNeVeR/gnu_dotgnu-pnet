@@ -1335,7 +1335,7 @@ public class Font
 					{
 						graphics.dpy.Unlock();
 					}
-					width = overall_logical.width;
+					width = overall_logical.x + overall_logical.width;
 					ascent = -(overall_logical.y);
 					descent = overall_logical.height + overall_logical.y;
 

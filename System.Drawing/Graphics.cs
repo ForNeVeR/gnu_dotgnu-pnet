@@ -1360,136 +1360,231 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawString(String s, Font font, Brush brush,
 						   RectangleF layoutRectangle, StringFormat format)
 			{
-				if(s == null || s.Length == 0)
-					return;
-				if (format == null)
-					format = new StringFormat();
+				// get the text length
+				int len = ((((Object)s) == null) ? 0 : s.Length);
 
-				if(format.HotkeyPrefix == Text.HotkeyPrefix.Hide)
+				// bail out now if there's nothing to draw
+				if(len == 0) { return; }
+
+				// convert the layout into device coordinates
+				Point[] rect = ConvertRectangle
+					((layoutRectangle.X + baseWindow.X),
+					 (layoutRectangle.Y + baseWindow.Y),
+					 (layoutRectangle.Width - 1),
+					 (layoutRectangle.Height - 1),
+					 pageUnit);
+
+				// create a layout rectangle from the device coordinates
+				Rectangle deviceLayout = new Rectangle
+					(rect[0].X, rect[0].Y,
+					 (rect[1].X - rect[0].X),
+					 (rect[2].Y - rect[0].Y));
+
+				// bail out now if there's nothing to draw
+				if(clip != null &&
+				   !deviceClipExtent.IntersectsWith(deviceLayout))
 				{
-					int HotKeyIdx = s.IndexOf('&');
+					return;
+				}
 
-					if(HotKeyIdx != -1 && (HotKeyIdx >= s.Length-1 || 
-							Char.IsControl(s[HotKeyIdx])))
+				// ensure we have a format and handle hotkey prefix hiding
+				if(format == null)
+				{
+					format = new StringFormat();
+				}
+				else if(format.HotkeyPrefix == HotkeyPrefix.Hide)
+				{
+					// get the index of the prefix
+					int hotkeyIndex = s.IndexOf('&');
+
+					// strip the hotkey prefix if present
+					if(hotkeyIndex != -1 && hotkeyIndex < (len - 1))
 					{
-						HotKeyIdx = -1;
-					}
-					
-					if(HotKeyIdx != -1)
-					{
-						s = s.Substring(0,HotKeyIdx) + s.Substring(HotKeyIdx+1);
+						// strip the hotkey prefix
+						s = s.Substring(0, hotkeyIndex) +
+						    s.Substring(hotkeyIndex + 1);
+
+						// update the length
+						len -= 1;
 					}
 				}
 
-				Point[] rect = ConvertRectangle
-					(layoutRectangle.X + baseWindow.X, layoutRectangle.Y + baseWindow.Y,
-					 layoutRectangle.Width - 1, layoutRectangle.Height - 1, pageUnit);
-				Rectangle deviceLayout = new Rectangle(rect[0].X, rect[0].Y, rect[1].X - rect[0].X, rect[2].Y- rect[0].Y);
-							
-				if (clip != null && !deviceClipExtent.IntersectsWith(deviceLayout))
-					return;
+				// lock this graphics context while drawing
 				lock(this)
 				{
+					// select the font into this graphics context
 					SelectFont(font);
+
+					// select the brush into this graphics context
 					SelectBrush(brush);
+
+					// set the default clipping region
 					Region clipTemp = null;
+
+					// get the clipping region, if needed
 					if((format.FormatFlags & StringFormatFlags.NoClip) == 0)
 					{
-						if (clip != null)
+						// get the clipping region, if there is one
+						if(clip != null)
 						{
+							// get a copy of the current clipping region
 							clipTemp = clip.Clone();
-							SetClip(layoutRectangle,CombineMode.Intersect);
+
+							// interset the clipping region with the layout
+							SetClip(layoutRectangle, CombineMode.Intersect);
 						}
 					}
+
+					// declare the characters fitted and lines filled
 					int charactersFitted, linesFilled;
+
+					// measure the text to be drawn
 					Size size = ToolkitGraphics.MeasureString
-						(s, null, null, out charactersFitted, out linesFilled, false);
+						(s, null, null, out charactersFitted, out linesFilled,
+						 false);
+
+					// determine if the text contains any new lines
 					bool containsNL =  (s.IndexOf('\n') >= 0);
-					// If we need to wrap then do it the hard way.
+
+					// draw the text based on wrapping requirements
 					if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
-						(size.Width >= deviceLayout.Width || containsNL) )
+					   (size.Width >= deviceLayout.Width || containsNL))
 					{
-						StringDrawPositionCalculator calculator = new StringDrawPositionCalculator(s, this, font, deviceLayout, format);
+						// declare our drawing position calculator
+						StringDrawPositionCalculator calculator;
+
+						// create our drawing position calculator
+						calculator = new StringDrawPositionCalculator
+							(s, this, font, deviceLayout, format);
+
+						// layout the text, wrapping on word boundaries
 						calculator.LayoutByWords();
+
+						// draw the text with the given brush
 						calculator.Draw(brush);
 					}
 					else
 					{
-						if(format.Alignment != StringAlignment.Near || format.LineAlignment != StringAlignment.Near)
+						// get the x position for text layout
+						int x = rect[0].X;
+
+						// get the y position for text layout
+						int y = rect[0].Y;
+
+						// get the text alignment from the string format
+						StringAlignment alignment = format.Alignment;
+
+						// perform text alignment adjustments, if needed
+						if(alignment == StringAlignment.Center)
 						{
-							// Adjust the rectangle for the alignment values.
-
-							if(format.Alignment == StringAlignment.Center)
-								rect[0].X += (rect[1].X - rect[0].X - (int)size.Width - 1) / 2;
-							
-							else if(format.Alignment == StringAlignment.Far)
-								rect[0].X = rect[1].X - (int)size.Width - 1;
-							
-							if(format.LineAlignment == StringAlignment.Center)
-								rect[0].Y += (rect[2].Y - rect[0].Y - (int)size.Height - 1) / 2;
-
-							else if(format.LineAlignment == StringAlignment.Far)
-								rect[0].Y = rect[2].Y - (int)size.Height - 1;
+							x += ((rect[1].X - x - (int)size.Width - 1) / 2);
+						}
+						else if(alignment == StringAlignment.Far)
+						{
+							x = rect[1].X - (int)size.Width - 1;
 						}
 
-						if (format.HotkeyPrefix == HotkeyPrefix.Show)
+						// get the line alignment from the string format
+						alignment = format.LineAlignment;
+
+						// perform line alignment adjustments, if needed
+						if(alignment == StringAlignment.Center)
 						{
-							int HotKeyIdx = s.IndexOf('&');
-							if(HotKeyIdx != -1 &&  (s.Length < HotKeyIdx + 1 || 
-									Char.IsControl(s[HotKeyIdx])))
+							y += ((rect[2].Y - y - (int)size.Height - 1) / 2);
+						}
+						else if(alignment == StringAlignment.Far)
+						{
+							y = rect[2].Y - (int)size.Height - 1;
+						}
+
+						// draw the text based on hotkey prefix showing
+						if(format.HotkeyPrefix == HotkeyPrefix.Show)
+						{
+							// get the index of the prefix
+							int hotkeyIndex = s.IndexOf('&');
+
+							// set the default before hotkey string
+							String before = null;
+
+							// set the default after hotkey string
+							String after = null;
+
+							// set the default hotkey string
+							String hotkey = null;
+
+							// set the strings based on hotkey position
+							if(hotkeyIndex != -1 && hotkeyIndex < (len - 1))
 							{
-								HotKeyIdx = -1;
-							}
-							String startString = "";
-							String endString = "";
-							String hotkey = "";
-							
-							if(HotKeyIdx != -1)
-							{
-								startString = s.Substring(0 , HotKeyIdx);
-								if(HotKeyIdx + 2 < s.Length) 
+								// get the before hotkey string
+								before = s.Substring(0, hotkeyIndex);
+
+								// get the after hotkey string, if needed
+								if(hotkeyIndex < (len - 2))
 								{
-									endString = s.Substring(HotKeyIdx+2);
+									after = s.Substring(hotkeyIndex + 2);
 								}
-								hotkey = s.Substring(HotKeyIdx+1,1);
-							} 
+
+								// get the hotkey string
+								hotkey = s[hotkeyIndex+1].ToString();
+							}
 							else
 							{
-								startString = s;
+								// get the before hotkey string
+								before = s;
 							}
 
-							if(startString.Length != 0)
+							// draw the before hotkey string, if needed
+							if(before.Length != 0)
 							{
-							
-								ToolkitGraphics.DrawString(startString, rect[0].X, rect[0].Y, format);
+								// draw the before hotkey string
+								ToolkitGraphics.DrawString
+									(before, x, y, format);
 							}
-							if(hotkey.Length != 0)
+
+							// draw the hotkey string, if needed
+							if(((Object)hotkey) != null)
 							{
-								// .Length != 0 is faster than == ""
-								// floating point operations are costly
-								// do them only if you have to :)
+								// create the underline font
+								Font underline = new Font
+									(font, font.Style | FontStyle.Underline);
 
-								Font underlineFont = new Font (font, 
-											font.Style | FontStyle.Underline);
+								// get the width of the before hotkey string
+								float beforeWidth =
+										MeasureString(before, font).Width;
 
-								float startWidth = 
-										MeasureString(startString, font).Width;
-								float hotkeyWidth = 
-										MeasureString(hotkey,underlineFont).Width;
-								SelectFont(font);
-								ToolkitGraphics.DrawString(endString,rect[0].X+(int)(startWidth+hotkeyWidth), rect[0].Y, format);
-							
-								SelectFont(underlineFont);
-								ToolkitGraphics.DrawString(hotkey,rect[0].X+(int)startWidth, rect[0].Y, format);
+								// draw the after hotkey string, if needed
+								if(((Object)after) != null)
+								{
+									// get the width of the hotkey string
+									float hotkeyWidth = 
+											MeasureString
+												(hotkey, underline).Width;
+
+									// draw the after hotkey string
+									ToolkitGraphics.DrawString
+										(after,
+										 (x + (int)(beforeWidth + hotkeyWidth)),
+										 y, format);
+								}
+
+								// select the underline font
+								SelectFont(underline);
+
+								// draw the hotkey string
+								ToolkitGraphics.DrawString
+									(hotkey, (x + (int)beforeWidth), y, format);
 							}
 						}
-						else 
+						else
 						{
-							ToolkitGraphics.DrawString(s, rect[0].X, rect[0].Y, format);
+							// draw the given text string
+							ToolkitGraphics.DrawString
+								(s, x, y, format);
 						}
 					}
-					if (clipTemp != null)
-						Clip = clipTemp;
+
+					// restore the clipping region
+					if(clipTemp != null) { Clip = clipTemp; }
 				}
 			}
 
@@ -2229,14 +2324,15 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					wordCount = 0;
 					words = new SplitWord[16];
 					int start = 0;
-					for(int i=0; i < text.Length;)
+					int len = text.Length;
+					for(int i = 0; i < len;)
 					{
 						start = i;
 						char c = text[i];
 						// Look for \r on its own, \n on its own or \r\n.
 						if(c == '\r')
 						{
-							if (i < text.Length-1 && text[i+1]=='\n')
+							if(i < (len - 1) && text[i+1]=='\n')
 							{
 								i += 2;
 							}
@@ -2252,21 +2348,27 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						else
 						{
 							// Skip over the whitespace.
-							while(i < text.Length && Char.IsWhiteSpace(text[i]))
+							while(i < len && Char.IsWhiteSpace(text[i]))
 							{
 								i++;
 							}
 							// We are at the start of text so skip over the text.
-							if (i == start)
+							if(i == start)
 							{
-								while(i < text.Length && !Char.IsWhiteSpace(text[i]) && text[i] != '\n' && text[i] != '\r')
+								while(i < len)
 								{
+									c = text[i];
+									if(Char.IsWhiteSpace(c) ||
+									   c == '\n' || c == '\r')
+									{
+										break;
+									}
 									i++;
 								}
 							}
 						}
 						// Dynamically allocate the array if we need more space.
-						if (wordCount >= words.Length)
+						if(wordCount >= words.Length)
 						{
 							SplitWord[] newWords = new SplitWord[words.Length * 2];
 							Array.Copy(words, newWords, words.Length);
@@ -2274,7 +2376,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						}
 						// Add the word.
 						words[wordCount++] = new SplitWord(start, i - start);
-					}	
+					}
 					Layout();
 				}
 
@@ -2555,20 +2657,30 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					}
 					return linePositions;
 				}
-			}
+	}; // class StringDrawPositionCalculator
 
 	private class StringMeasurePositionCalculator
 	{
-		Graphics graphics;
-		String text;
-		Font font;
-		Rectangle layout;
-		StringFormat format;
+		// Internal state.
+		private Graphics graphics;
+		private String text;
+		private Font font;
+		private Rectangle layout;
+		private StringFormat format;
 		private int[] lines = new int[16];
 		private int count = 0;
 		private int currentLine = 0;
 
-		public StringMeasurePositionCalculator(Graphics graphics, String text, Font font, Rectangle layout, StringFormat format)
+		// NOTE: this needs to be rewritten as stateless in order to avoid
+		//       excess allocations... this also needs to be fixed so that
+		//       it actually handles horizontal text layout (currently only
+		//       handles vertical) for character range measurements
+
+
+		// Constructor.
+		public StringMeasurePositionCalculator
+					(Graphics graphics, String text, Font font,
+					 Rectangle layout, StringFormat format)
 				{
 					this.graphics = graphics;
 					this.text = text;
@@ -2577,6 +2689,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					this.format = format;
 				}
 
+
+		// Get the regions for the character ranges of the string format.
 		public Region[] GetRegions()
 				{
 					Rectangle[] bounds = GetCharBounds();
@@ -2598,91 +2712,184 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return regions;
 				}
 
+		// Get the rectangles bounding each character.
 		public Rectangle[] GetCharBounds()
 				{
+					// create the bounds
 					Rectangle[] bounds = new Rectangle[text.Length];
+
+					// set the default maximum x
 					int xMax = 0;
+
+					// set the default maximum y
 					int yMax = 0;
+
+					// get the font height
 					int fontHeight = (int)font.GetHeight(graphics);
-					bool vertical = (format.FormatFlags & StringFormatFlags.DirectionVertical) != 0;
-					if (vertical)
+
+					// get the vertical flag
+					bool vertical = ((format.FormatFlags &
+					                  StringFormatFlags.DirectionVertical) != 0);
+
+					// set the maximum x and y based on the vertical flag
+					if(vertical)
 					{
-						xMax = layout.Height - 1;
-						yMax = layout.Width - 1;
+						// set the maximum x to the maximum height
+						xMax = (layout.Height - 1);
+
+						// set the maximum y to the maximum width
+						yMax = (layout.Width - 1);
 					}
 					else
 					{
-						xMax = layout.Width - 1;
-						yMax = layout.Height - 1;
+						// set the maximum x to the maximum width
+						xMax = (layout.Width - 1);
+
+						// set the maximum y to the maximum height
+						yMax = (layout.Height - 1);
 					}
-					bool noWrap = (format.FormatFlags & StringFormatFlags.NoWrap) != 0;
+
+					// get the wrapping flag
+					bool noWrap = ((format.FormatFlags &
+					                StringFormatFlags.NoWrap) != 0);
+
+					// set the line size to the maximum y
 					int lineSizeRemaining = yMax;
-					// First line starts at 0
+
+					// add the first line
 					AddLine(0);
+
+					// set the current position
 					int currentPos = 0;
+
+					// add the lines of text
 					do
 					{
-						MeasureLine (ref bounds, ref currentPos, ref text, xMax, graphics, font, vertical, noWrap);
+						// measure the line
+						MeasureLine
+							(ref bounds, ref currentPos, ref text, xMax,
+							 graphics, font, vertical, noWrap);
+
+						// add the current line
 						AddLine(currentPos);
+
+						// update the remaining line height
 						lineSizeRemaining -= fontHeight;
 					}
-					while (currentPos < text.Length && lineSizeRemaining >= 0 && !noWrap);
-						
+					while(currentPos < text.Length && lineSizeRemaining >= 0 && !noWrap);
+
+					// set the default y offset
 					int yOffset = 0;
-					if (format.LineAlignment == StringAlignment.Center)
-						yOffset = lineSizeRemaining/2;
-					else if (format.LineAlignment == StringAlignment.Far)
+
+					// adjust the y offset for the line alignment
+					if(format.LineAlignment == StringAlignment.Center)
+					{
+						yOffset = (lineSizeRemaining / 2);
+					}
+					else if(format.LineAlignment == StringAlignment.Far)
+					{
 						yOffset = lineSizeRemaining;
+					}
+
+					// set the default x offset
 					int xOffset = 0;
 
-					for (int i = 0; i < text.Length;)
+					// ??
+					for(int i = 0; i < text.Length;)
 					{
-						if (CurrentLine == i)
+						// ??
+						if(CurrentLine == i)
 						{
+							// ??
 							currentLine++;
+
+							// ??
 							xOffset = 0;
-							if (format.Alignment == StringAlignment.Far)
+
+							// ??
+							if(format.Alignment == StringAlignment.Far)
 							{
 								// Go back and find the right point of the last visible character
+
+								// ??
 								int back = CurrentLine - 1;
-								if (back > -1)
+
+								// ??
+								if(back > -1)
 								{
-									for (; back >= 0; back--)
-										if (bounds[back]!= Rectangle.Empty)
+									// ??
+									for(; back >= 0; back--)
+									{
+										// ??
+										if(bounds[back] != Rectangle.Empty)
+										{
 											break;
+										}
+									}
+
+									// ??
 									xOffset = xMax + 1 - bounds[back].Right;
 								}
 								else
+								{
+									// ??
 									xOffset = xMax + 1;
+								}
 							}
-							else if (format.Alignment == StringAlignment.Center)
+							else if(format.Alignment == StringAlignment.Center)
 							{
-								for (int j = i; j < CurrentLine; j++)
+								// ??
+								for(int j = i; j < CurrentLine; j++)
+								{
+									// ??
 									xOffset += bounds[j].Width;
+								}
+
+								// ??
 								xOffset = (xMax + 1 - xOffset)/2;
 							}
 						}
 						else 
 						{
-							if (bounds[i] != Rectangle.Empty)
+							// ??
+							if(bounds[i] != Rectangle.Empty)
 							{
+								// ??
 								Rectangle rect = bounds[i];
-								bounds[i] = new Rectangle( rect.Left + xOffset + layout.Left, rect.Top + (currentLine - 1) * fontHeight + layout.Top + 1, rect.Width, rect.Height);
+
+								// ??
+								bounds[i] = new Rectangle
+									((rect.Left + xOffset + layout.Left),
+									 (rect.Top + ((currentLine - 1) *
+									  fontHeight) + layout.Top + 1),
+									 rect.Width, rect.Height);
 							}
+
+							// ??
 							i++;
 						}
 					}
+
+					// ??
 					return bounds;
 				}
-				
+
 		private void AddLine(int value)
 				{
-					if (count == lines.Length)
+					// ensure the capacity of the lines array
+					if(count == lines.Length)
 					{
-						int[] newLines = new int[lines.Length*2];
+						// create the new lines array
+						int[] newLines = new int[lines.Length * 2];
+
+						// copy the line data to the new array
 						Array.Copy(lines, newLines, lines.Length);
+
+						// reset the lines array to the new array
 						lines = newLines;
 					}
+
+					// add the line
 					lines[count++] = value;
 				}
 
@@ -2690,74 +2897,124 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					get
 					{
-						if (currentLine > count)
-							return -1;
-						else
-							return lines[currentLine];
+						// return minus one if past the last line
+						if(currentLine > count) { return -1; }
+
+						// return the current line
+						return lines[currentLine];
 					}
 				}
 
 		// Measures one full line. Updates the positions of the characters in that line relative to 0,0
-		private void MeasureLine(ref Rectangle[] bounds, ref int currentPos,
-			ref string text, float maxX, Graphics g, Font f, bool vertical, bool noWrap)
+		private void MeasureLine
+					(ref Rectangle[] bounds, ref int currentPos,
+					 ref string text, float maxX, Graphics g, Font f,
+					 bool vertical, bool noWrap)
 				{
+					// set the initial position
 					int initialPos = currentPos;
+
+					// set the default x position
 					int x = 0;
+
+					// set the default y position
 					int y = 0;
+
+					// ??
 					do
 					{
+						// get the current character
 						char c = text[currentPos];
-						if (c == '\n')
+
+						// check for the end of the line
+						if(c == '\n')
 						{
+							// move past the end of the line
 							currentPos++;
+
+							// we're done
 							return;
 						}
+
 						// Ignore returns
-						if (c!= '\r')
+						if(c != '\r')
 						{
 							//TODO use Platform specific measure function & take into account kerning
-							Size s = g.MeasureString( c.ToString(), f).ToSize();
+
+							// get the size of the current character
+							Size s = g.MeasureString(c.ToString(), f).ToSize();
+
+							// ??
 							int newX = x;
+
+							// ??
 							int newY = y;
-							if (vertical)
-								newX += s.Height;
-							else
-								newX += s.Width;
-							if (newX > maxX)
+
+							// ??
+							if(vertical)
 							{
-								if (noWrap)
-									return;
-								else
+								newX += s.Height;
+							}
+							else
+							{
+								newX += s.Width;
+							}
+
+							// ??
+							if(newX > maxX)
+							{
+								// ??
+								if(noWrap) { return; }
+
+								// Backtrack to wrap the word
+
+								// ??
+								for(int i = currentPos; i > initialPos; i--)
 								{
-									// Backtrack to wrap the word
-									for (int i = currentPos; i > initialPos; i--)
+									// ??
+									if(text[i] == ' ')
 									{
-										if (text[i] == ' ')
-										{
-											// Swallow the space
-											bounds[i++] = Rectangle.Empty;
-											currentPos = i;
-											return;
-										}
+										// Swallow the space
+
+										// ??
+										bounds[i++] = Rectangle.Empty;
+
+										// ??
+										currentPos = i;
+
+										// ??
+										return;
 									}
-									return;
 								}
 
+								// ??
+								return;
 							}
 							else
 							{
-								if (vertical)
-									bounds[currentPos] = new Rectangle( y, x, s.Height, s.Width - 1 );
+								// ??
+								if(vertical)
+								{
+									bounds[currentPos] = new Rectangle
+										(y, x, s.Height, s.Width - 1);
+								}
 								else
-									bounds[currentPos] = new Rectangle( x, y, s.Width, s.Height - 1 );
+								{
+									bounds[currentPos] = new Rectangle
+										(x, y, s.Width, s.Height - 1);
+								}
 							}
+
+							// ??
 							x = newX;
 						}
+
+						// ??
 						currentPos++;
 					}
 					while (currentPos < text.Length);
 				}
-			}
+	}; // class StringMeasurePositionCalculator
 
 	// Measure the character ranges for a string.
 	public Region[] MeasureCharacterRanges(String text, Font font, RectangleF layoutRect, StringFormat stringFormat)
@@ -2806,39 +3063,78 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				return MeasureString(text, font, layoutArea, format,
 									 out charactersFitted, out linesFilled);
 			}
-	public SizeF MeasureString(String text, Font font,
-		SizeF layoutArea, StringFormat format,
-		out int charactersFitted,
-		out int linesFilled)
+	public SizeF MeasureString(String text, Font font, SizeF layoutArea,
+	                           StringFormat format, out int charactersFitted,
+	                           out int linesFilled)
 			{
-				if(text == null || text.Length == 0)
+				// bail out now if there's nothing to measure
+				if(((Object)text) == null || text.Length == 0)
 				{
 					charactersFitted = 0;
 					linesFilled = 0;
 					return new SizeF(0.0f, 0.0f);
 				}
 
-				if (format == null)
-					format = new StringFormat();
-				SelectFont(font);
-				Size size = ToolkitGraphics.MeasureString
-					(text, null, null, out charactersFitted, out linesFilled, false);
-				bool containsNL =  (text.IndexOf('\n') >= 0);
-					
-				// If we need to wrap then do it the hard way.
-				if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
-					(size.Width >= layoutArea.Width && layoutArea.Width != 0 || containsNL) )
+				// ensure we have a string format
+				if(format == null)
 				{
-					Rectangle layout = new Rectangle(0,0, (int)layoutArea.Width, (int)layoutArea.Height);
-					StringDrawPositionCalculator calculator = new StringDrawPositionCalculator(text, this, font, layout , format);
+					format = new StringFormat();
+				}
+
+				// select the font
+				SelectFont(font);
+
+				// measure the string
+				Size size = ToolkitGraphics.MeasureString
+					(text, null, null, out charactersFitted,
+					 out linesFilled, false);
+
+				// determine if the string contains a new line
+				bool containsNL =
+					(text.IndexOfAny(new char[] { '\r', '\n' }) >= 0);
+
+				// get the layout width
+				float width = layoutArea.Width;
+
+				// return the size information based on wrapping behavior
+				if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
+				   ((size.Width >= width && width != 0.0f) || containsNL))
+				{
+					// create the layout rectangle
+					Rectangle layout = new Rectangle
+						(0, 0, (int)width, (int)layoutArea.Height);
+
+					// declare the drawing position calculator
+					StringDrawPositionCalculator calculator;
+
+					// create the drawing position calculator
+					calculator = new StringDrawPositionCalculator
+						(text, this, font, layout , format);
+
+					// calculate the layout of the text
 					calculator.LayoutByWords();
-					return calculator.GetBounds(out charactersFitted, out linesFilled);
+
+					// calculate and return the bounds of the text
+					return calculator.GetBounds
+						(out charactersFitted, out linesFilled);
 				}
 				else
 				{
+					// NOTE: we use the font height here, rather than
+					//       the height returned by the toolkit, since
+					//       the toolkit returns the actual height of
+					//       the text but the expected behavior is that
+					//       the height be the font height and the width
+					//       is all that is actually measured
+
+					// set the number of characters fitted
 					charactersFitted = text.Length;
+
+					// set the number of lines filled
 					linesFilled = 1;
-					return size;
+
+					// return the size of the text
+					return new SizeF(size.Width, font.Height);
 				}
 			}
 

@@ -56,9 +56,9 @@ public sealed class StringFormat
 				this.hotkeyPrefix = format.hotkeyPrefix;
 				this.lineAlignment = format.lineAlignment;
 				this.trimming = format.trimming;
-				this.ranges = ranges;
+				this.ranges = format.ranges;
 				this.firstTabOffset = format.firstTabOffset;
-				this.tabStops = tabStops;
+				this.tabStops = format.tabStops;
 			}
 	public StringFormat(StringFormatFlags options)
 			{

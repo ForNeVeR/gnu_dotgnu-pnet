@@ -1,3 +1,19 @@
+2004-08-05  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Drawing/Graphics.cs: reformat and comment the string drawing
+	and string measuring code, fix height measurements for MS-compatible
+	string measurement, optimize string measurement and drawing, and
+	fix some other small problems with string handling (e.g. newline
+	handling).
+
+	* Xsharp/Font.cs: fix width calculation for xft measured strings.
+
+	* System.Drawing/StringFormat.cs: eliminate self-assignment of the
+	character range and tab stop fields in the StringFormat(StringFormat)
+	constructor.
+
+	* System.Windows.Forms/Label.cs: eliminate a needless method call for
+	checking the transparency flag on drawing.
 
 2004-08-04  Gopal V  <gopalv82@yahoo.com>
 

@@ -39,8 +39,6 @@ public class CheckBox : ButtonBase
 	private CheckState state;
 	private ImeMode defaultImeMode;
 	private Size defaultSize;
-	private int checkX;
-	private int checkY;
 	private int checkSize = 13;
 
 	// Contructor.
@@ -126,10 +124,10 @@ public class CheckBox : ButtonBase
 				switch (checkAlign)
 				{
 					case ContentAlignment.BottomCenter:
-						height = checkY + 2;
+						height = 2;
 						break;
 					case ContentAlignment.BottomLeft:
-						x = checkX + checkSize + 3;
+						x = checkSize + 3;
 						width -= x;
 						break;
 					case ContentAlignment.BottomRight:
@@ -138,19 +136,19 @@ public class CheckBox : ButtonBase
 					case ContentAlignment.MiddleCenter:
 						break;
 					case ContentAlignment.MiddleLeft:
-						x = checkX + checkSize + 3;
+						x = checkSize + 3;
 						width -= x;
 						break;
 					case ContentAlignment.MiddleRight:
-						x = checkX + checkSize + 3;
+						x = checkSize + 3;
 						width -= x;
 						break;
 					case ContentAlignment.TopCenter:
-						y = checkY + checkSize + 3;
+						y = checkSize + 3;
 						height -= y - 2;
 						break;
 					case ContentAlignment.TopLeft:
-						x = checkX + checkSize + 3;
+						x = checkSize + 3;
 						width -= x;
 						break;
 					case ContentAlignment.TopRight:
@@ -413,6 +411,18 @@ public class CheckBox : ButtonBase
 				base.OnHandleCreated(e);
 			}
 
+	protected override void OnMouseDown(MouseEventArgs e)
+			{
+				if(button == MouseButtons.None)
+				{
+					button = e.Button;
+					pressed = true;
+					using (Graphics graphics = CreateGraphics())
+						DrawBox(graphics);
+				}
+			}
+
+
 	// Raises the MouseUp event.
 	protected override void OnMouseUp(MouseEventArgs mevent)
 			{
@@ -424,11 +434,17 @@ public class CheckBox : ButtonBase
 				{
 					state = CheckState.Unchecked;
 				}
-				Invalidate();
 				
 				this.OnCheckedChanged(mevent);
 				this.OnCheckStateChanged(mevent);
-				base.OnMouseUp(mevent);
+				if(button == mevent.Button)
+				{
+					button = MouseButtons.None;
+					pressed = false;
+				}
+				using (Graphics graphics = CreateGraphics())
+					DrawBox(graphics);
+				
 			}
 
 	// Processes a mnemonic character.

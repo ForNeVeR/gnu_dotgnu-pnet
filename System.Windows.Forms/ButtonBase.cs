@@ -38,7 +38,7 @@ public abstract class ButtonBase : Control
 	internal bool entered;
 	internal bool pressed;
 	private bool hasFocus;
-	private MouseButtons button;
+	internal MouseButtons button;
 	private StringFormat format;
 
 	// Contructor.
@@ -396,9 +396,8 @@ public abstract class ButtonBase : Control
 				}
 
 				// Redraw the button.
-				Graphics graphics = CreateGraphics();
-				Draw(graphics);
-				graphics.Dispose();
+				using(Graphics graphics = CreateGraphics())
+					Draw(graphics);
 			}
 
 	// Override events from the "Control" class.
@@ -410,7 +409,8 @@ public abstract class ButtonBase : Control
 	protected override void OnGotFocus(EventArgs e)
 			{
 				hasFocus = true;
-				Redraw();
+				if (flatStyle == FlatStyle.Popup)
+					Redraw();
 				base.OnGotFocus(e);
 			}
 	[TODO]
@@ -429,7 +429,8 @@ public abstract class ButtonBase : Control
 	protected override void OnLostFocus(EventArgs e)
 			{
 				hasFocus = false;
-				Redraw();
+				if (flatStyle == FlatStyle.Popup)
+					Redraw();
 				base.OnLostFocus(e);
 			}
 	protected override void OnMouseDown(MouseEventArgs e)
@@ -445,13 +446,15 @@ public abstract class ButtonBase : Control
 	protected override void OnMouseEnter(EventArgs e)
 			{
 				entered = true;
-				Redraw();
+				if (flatStyle == FlatStyle.Popup)
+					Redraw();
 				base.OnMouseEnter(e);
 			}
 	protected override void OnMouseLeave(EventArgs e)
 			{
 				entered = false;
-				Redraw();
+				if (flatStyle == FlatStyle.Popup)
+					Redraw();
 				base.OnMouseLeave(e);
 			}
 	protected override void OnMouseMove(MouseEventArgs e)

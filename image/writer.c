@@ -184,7 +184,6 @@ static void AssignMemberTokens(ILClass *info, ILToken *nextField,
 							   ILToken *nextMethod, ILToken *nextParam)
 {
 	ILMember *member;
-	ILNestedInfo *nested;
 	ILParameter *param;
 
 	/* Scan the members of this class */
@@ -226,14 +225,6 @@ static void AssignMemberTokens(ILClass *info, ILToken *nextField,
 		}
 		member = member->nextMember;
 	}
-
-	/* Scan the nested classes for token codes */
-	nested = info->nestedChildren;
-	while(nested != 0)
-	{
-		AssignMemberTokens(nested->child, nextField, nextMethod, nextParam);
-		nested = nested->next;
-	}
 }
 
 /*
@@ -255,15 +246,12 @@ static void SortClasses(ILImage *image)
 	nextMethod = IL_META_TOKEN_METHOD_DEF | 1;
 	nextParam = IL_META_TOKEN_PARAM_DEF | 1;
 
-	/* Assign token codes to all top-level classes in the correct order */
+	/* Assign token codes to all classes in the correct order */
 	info = 0;
 	while((info = (ILClass *)ILImageNextToken
 				(image, IL_META_TOKEN_TYPE_DEF, info)) != 0)
 	{
-		if(ILClass_NestedParent(info) == 0)
-		{
-			AssignMemberTokens(info, &nextField, &nextMethod, &nextParam);
-		}
+		AssignMemberTokens(info, &nextField, &nextMethod, &nextParam);
 	}
 }
 

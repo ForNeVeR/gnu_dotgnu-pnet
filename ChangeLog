@@ -1,4 +1,9 @@
 
+2002-07-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/writer.c (SortClasses): process types in order, even
+	if they are nested.
+
 2002-07-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c, ilalink/link_field.c, ilalink/link_image.c,

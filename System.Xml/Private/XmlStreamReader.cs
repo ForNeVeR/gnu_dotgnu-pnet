@@ -531,6 +531,10 @@ internal class XmlStreamReader : TextReader
 
 					// Copy data to the result buffer.
 					len = outBufferLen - outBufferPosn;
+					if(len > count)
+					{
+						len = count;
+					}
 					Array.Copy(outBuffer, outBufferPosn,
 							   buffer, index, len);
 					outBufferPosn += len;

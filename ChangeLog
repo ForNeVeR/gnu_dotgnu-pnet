@@ -6,6 +6,9 @@
 	System/ComponentModel/MarshalByValueComponent.cs: Stubs of non-ECMA
 	classes to support external libraries.
 
+	* System/ComponentModel/ICustomTypeDescriptor: Uncomment some of
+	the interface which was dependent on EventDescriptor classes.
+
 2003-04-27  Adam Ballai  <minddog@cannibutter.com>
 	
 	* System.Xml/ElementList.cs: Implement GetEnumerator and Item(int). 

@@ -35,16 +35,15 @@ namespace System.ComponentModel
 
 		TypeConverter GetConverter();
 
-//		EventDescriptor GetDefaultEvent();
+		EventDescriptor GetDefaultEvent();
 
 		PropertyDescriptor GetDefaultProperty();
 
 		Object GetEditor(System.Type editorBaseType);
 
-/*
 		EventDescriptorCollection GetEvents();
 		
-		EventDescriptorCollection GetEvents(Attribute[] arr);*/
+		EventDescriptorCollection GetEvents(Attribute[] arr);
 
 		PropertyDescriptorCollection GetProperties();
 		

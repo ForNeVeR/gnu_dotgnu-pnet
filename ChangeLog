@@ -1,4 +1,9 @@
 
+2003-04-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_regexp.c:
+	modify the regex internalcalls to export more functionality.
+
 2003-04-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_invoke.tc (VarArgElemSem): handle empty

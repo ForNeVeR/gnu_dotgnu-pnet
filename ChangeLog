@@ -1,3 +1,8 @@
+2004-08-25  Thong Nguyen  <tum@veridicus.com>
+
+	* engine/thread.c: Added constructor call to new CLR thread
+	objects created by the engine (ILExecThreadCurrentClrThread).
+
 2004-08-24  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_defs.h: Changed System_Thread start field

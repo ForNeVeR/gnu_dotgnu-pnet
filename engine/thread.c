@@ -49,6 +49,8 @@ ILExecThread *ILExecThreadCurrent()
  */
 ILObject *ILExecThreadCurrentClrThread()
 {
+	ILExecValue result;
+	ILMethod* method;
 	ILClass *classInfo;
 	System_Thread *clrThread;
 	ILExecThread *thread = ILExecThreadCurrent();
@@ -76,6 +78,29 @@ ILObject *ILExecThreadCurrentClrThread()
 
 		/* Associate the executing thread with the CLR thread */
 		thread->clrThread = (ILObject *)clrThread;
+		
+		/* Execute the private constructor */
+
+		method = ILExecThreadLookupMethod(thread, "System.Threading.Thread", ".ctor", "(T)V");
+
+		if (method == 0)
+		{
+			ILExecThreadThrowSystem(thread, "System.NotImplementedException", "System.Threading.Thread..ctor()");
+
+			return 0;
+		}
+
+		_ILCallMethod
+		(
+			thread,
+			method,
+			_ILCallUnpackDirectResult,
+			&result,
+			0,
+			clrThread,
+			_ILCallPackVParams,
+			0
+		);
 	}
 
 	return thread->clrThread;

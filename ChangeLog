@@ -3,6 +3,8 @@
 	
 	* engine/lib_type.c: Avoid boxing conversions when dealing with
 	parameter checks.
+
+	* csant/csant.1: Add a minimal man page for csant .
 	
 2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

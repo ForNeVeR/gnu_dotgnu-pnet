@@ -1,0 +1,78 @@
+.\" Copyright (c) 2003 Southern Storm Software, Pty Ltd.
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+.TH csant 1 "27 July 2003" "Southern Storm Software" "Portable.NET Development Tools"
+.SH NAME
+csant \- the C-Sharp compilation build tool
+.SH SYNOPSIS
+.ll +8
+.B csant
+[ options ]
+.I target
+\&...
+.SH DESCRIPTION
+.B Csant
+is an xml based build tool used mainly to compile C# (pronounced C-Sharp)
+projects. Csant supports multiple compilers and generates appropriate 
+command line specifications for each compiler.
+.SH OPTIONS
+.TP
+.B \-\-file \fIname\fR , \-f \fIname\fR
+Specify the \fIname\fR of the build file to use.
+.TP
+.B \-\-base\-src\-dir \fIname\fR , \-b \fIname\fR
+Specify the base source directory f , the build tree.
+.TP
+.B \-\-base\-build\-dir \fIname\fR , \-B \fIname\fR
+Specify the base build directory f , the build tree.
+.TP
+.B \-D\fIname\fR=\fIvalue\fR , \-\-define \fIname\fR=\fIvalue\fR
+Define the property `name' and set it to `value'.
+.TP
+.B \-\-profile \fIname\fR , \-p \fIname\fR
+Specify the definition profile to use.
+.TP
+.B \-\-just\-print , \-n
+Print the names of the commands, but do not execute them.
+.TP
+.B \-\-dummy\-doc , \-d
+Output dummy documentation files.
+.TP
+.B \-\-keep\-going , \-k
+Keep processing even after an error.
+.TP
+.B \-\-silent , \-s
+Do not print the names of commands as they are executed.
+.TP
+.B \-\-csc\-redirect , \-c
+Treat <csc> tags as <compile> tags (f , NAnt compatibility).
+.TP
+.B \-\-mono\-corlib , \-m
+Use Mono's corlib instead of mscorlib during C# compiles.
+.TP
+.B \-\-compiler name , \-C name
+Specify which compiler to use [`cscc' (default), `csc', , `mcs'].
+.TP
+.B \-\-version , \-v
+Print the version of the program.
+.TP
+.B \-\-help
+Print this help message.
+.SH "Nant Compatibility"
+Csant is compatible with a subset of NAnt build files . The "-c" command 
+line option turns on NAnt compatibility.
+.SH "Compiler Compatibility"
+Csant works with all other C# compilers currently in distribution. The
+choice of compiler is using the "-C" option.

@@ -522,6 +522,29 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 					++stacktop;
 				}
 				continue;
+
+				case IL_META_MARSHAL_UTF16_STRING:
+				{
+					/* Marshal a UTF-16 string from the native world */
+					CHECK_SPACE(1);
+					strValue = *((char **)(*args));
+					if(strValue)
+					{
+						stacktop->ptrValue =
+							ILStringWCreate(thread, (ILUInt16 *)strValue);
+						if(!(stacktop->ptrValue))
+						{
+							return 1;
+						}
+					}
+					else
+					{
+						stacktop->ptrValue = 0;
+					}
+					++args;
+					++stacktop;
+				}
+				continue;
 			}
 		}
 
@@ -681,6 +704,15 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 			{
 				/* Marshal a UTF-8 string back to the native world */
 				*((char **)result) = ILStringToUTF8
+					(thread, (ILString *)(thread->stackTop[-1].ptrValue));
+				--(thread->stackTop);
+			}
+			return;
+
+			case IL_META_MARSHAL_UTF16_STRING:
+			{
+				/* Marshal a UTF-16 string back to the native world */
+				*((ILUInt16 **)result) = ILStringToUTF16
 					(thread, (ILString *)(thread->stackTop[-1].ptrValue));
 				--(thread->stackTop);
 			}

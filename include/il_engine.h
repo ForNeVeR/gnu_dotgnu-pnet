@@ -595,6 +595,13 @@ ILString *ILStringIntern(ILExecThread *thread, ILString *str);
 char *ILStringToUTF8(ILExecThread *thread, ILString *str);
 
 /*
+ * Convert a string into a NUL-terminated UTF-16 buffer,
+ * allocated within the garbage collected heap.  If "str"
+ * is NULL, then NULL will be returned.
+ */
+ILUInt16 *ILStringToUTF16(ILExecThread *thread, ILString *str);
+
+/*
  * Convert a string into an "ANSI" string in the local
  * character set, allocated within the garbage collected heap.
  * If "str" is NULL, then NULL will be returned.

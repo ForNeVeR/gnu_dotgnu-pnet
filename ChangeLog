@@ -1,3 +1,11 @@
+
+2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,
+	engine/cvmc_setup.c, engine/lib_string.c, engine/pinvoke.c,
+	image/marshal.c, include/il_engine.h, include/il_meta.h:
+	implement marshalling for the LPWSTR type.
+
 2003-01-26  Stephen Compall  <s11@member.fsf.org>
 
 	* doc/pnettools.texi: Added info dir entries.

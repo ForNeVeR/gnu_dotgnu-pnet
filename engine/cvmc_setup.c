@@ -597,6 +597,12 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 				}
 				break;
 
+				case IL_META_MARSHAL_UTF16_STRING:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_STR2UTF16);
+				}
+				break;
+
 				case IL_META_MARSHAL_FNPTR:
 				{
 					CVMP_OUT_NONE(COP_PREFIX_DELEGATE2FNPTR);
@@ -1017,6 +1023,12 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 				case IL_META_MARSHAL_UTF8_STRING:
 				{
 					CVMP_OUT_NONE(COP_PREFIX_UTF82STR);
+				}
+				break;
+
+				case IL_META_MARSHAL_UTF16_STRING:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_UTF162STR);
 				}
 				break;
 			}

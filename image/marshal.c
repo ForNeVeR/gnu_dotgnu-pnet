@@ -111,7 +111,14 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 	if(ILTypeIsStringClass(type))
 	{
 		/* Value string type */
-		return StringCharSet(pinvoke, method);
+		if(nativeTypeCode == IL_META_NATIVETYPE_LPWSTR)
+		{
+			return IL_META_MARSHAL_UTF16_STRING;
+		}
+		else
+		{
+			return StringCharSet(pinvoke, method);
+		}
 	}
 	else if(ILTypeIsDelegateSubClass(type))
 	{

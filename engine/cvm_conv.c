@@ -1911,6 +1911,80 @@ VMCASE(COP_PREFIX_UTF82STR):
 VMBREAK(COP_PREFIX_UTF82STR);
 
 /**
+ * <opcode name="str2utf16" group="Conversion operators">
+ *   <operation>Convert <code>string</code> to <code>utf16 char *</code>
+ *              </operation>
+ *
+ *   <format>prefix<fsep/>str2utf16</format>
+ *   <dformat>{str2utf16}</dformat>
+ *
+ *   <form name="str2utf16" code="COP_PREFIX_STR2UTF16"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>string</code>.  The string is converted into a
+ *   <i>result</i> wide character buffer using the UTF-16 encoding.
+ *   A pointer to the buffer is pushed onto the stack as type
+ *   <code>ptr</code>.</description>
+ *
+ *   <notes>This instruction is used to convert C# strings into wide
+ *   character buffers during "PInvoke" marshalling operations.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_STR2UTF16):
+{
+	/* Convert a string object into a UTF-16 character buffer */
+	if(stacktop[-1].ptrValue)
+	{
+		COPY_STATE_TO_THREAD();
+		stacktop[-1].ptrValue =
+			(void *)ILStringToUTF16
+				(thread, (ILString *)(stacktop[-1].ptrValue));
+		RESTORE_STATE_FROM_THREAD();
+	}
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_STR2UTF16);
+
+/**
+ * <opcode name="utf162str" group="Conversion operators">
+ *   <operation>Convert <code>utf16 char *</code> to <code>string</code>
+ *              </operation>
+ *
+ *   <format>prefix<fsep/>utf162str</format>
+ *   <dformat>{utf162str}</dformat>
+ *
+ *   <form name="utf162str" code="COP_PREFIX_UTF162STR"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>utf16 char *</code>.  The wide character buffer
+ *   is converted into a <i>result</i> of type <code>string</code>,
+ *   which is pushed onto the stack.</description>
+ *
+ *   <notes>This instruction is used to convert wide character buffers
+ *   into C# strings during "PInvoke" marshalling operations.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_UTF162STR):
+{
+	/* Convert a UTF-16 character buffer into a string */
+	if(stacktop[-1].ptrValue)
+	{
+		COPY_STATE_TO_THREAD();
+		stacktop[-1].ptrValue = (void *)ILStringWCreate
+			(thread, (const ILUInt16 *)(stacktop[-1].ptrValue));
+		RESTORE_STATE_FROM_THREAD();
+	}
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_UTF162STR);
+
+/**
  * <opcode name="delegate2fnptr" group="Conversion operators">
  *   <operation>Convert a delegate into a function pointer</operation>
  *

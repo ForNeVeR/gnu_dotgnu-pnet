@@ -1973,6 +1973,39 @@ char *ILStringToUTF8(ILExecThread *thread, ILString *str)
 	return newStr;
 }
 
+ILUInt16 *ILStringToUTF16(ILExecThread *thread, ILString *str)
+{
+	ILUInt16 *buffer;
+	ILInt32 length;
+	ILUInt16 *newStr;
+
+	/* Bail out immediately if the string is NULL */
+	if(!str)
+	{
+		return 0;
+	}
+
+	/* Determine the length of the string in UTF-16 characters */
+	buffer = StringToBuffer(str);
+	length = ((System_String *)str)->length;
+
+	/* Allocate space within the garbage-collected heap */
+	newStr = (ILUInt16 *)ILGCAllocAtomic((length + 1) * sizeof(ILUInt16));
+	if(!newStr)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+
+	/* Copy the characters into the allocated buffer */
+	if(length > 0)
+	{
+		ILMemCpy(newStr, buffer, length * sizeof(ILUInt16));
+	}
+	newStr[length] = 0;
+	return newStr;
+}
+
 char *ILStringToAnsi(ILExecThread *thread, ILString *str)
 {
 	if(str)

@@ -519,6 +519,8 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"str2utf8",		CVM_OPER_NONE},
 	{"ansi2str",		CVM_OPER_NONE},
 	{"utf82str",		CVM_OPER_NONE},
+	{"str2utf16",		CVM_OPER_NONE},
+	{"utf162str",		CVM_OPER_NONE},
 	{"delegate2fnptr",	CVM_OPER_NONE},
 	{"array2ptr",		CVM_OPER_NONE},
 	{"refarray2ansi",	CVM_OPER_NONE},
@@ -556,8 +558,6 @@ static CVMOpcode const prefixOpcodes[96] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_51",	CVM_OPER_NONE},
-	{"preserved_52",	CVM_OPER_NONE},
 	{"preserved_53",	CVM_OPER_NONE},
 	{"preserved_54",	CVM_OPER_NONE},
 	{"preserved_55",	CVM_OPER_NONE},

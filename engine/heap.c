@@ -297,7 +297,7 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 	}
 
 	/* Allocate memory from the heap */
-	ptr = _ILHeapAlloc(&(thread->process->heap), size + sizeof(ILClass *));
+	ptr = _ILHeapAlloc(&(thread->process->heap), size + IL_BEST_ALIGNMENT);
 	if(!ptr)
 	{
 		/* Throw an "OutOfMemoryException" */
@@ -309,7 +309,7 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 	*((ILClass **)ptr) = classInfo;
 
 	/* Return a pointer to the data just after the class information */
-	return (void *)(((ILClass **)ptr) + 1);
+	return (void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);
 }
 
 ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo)

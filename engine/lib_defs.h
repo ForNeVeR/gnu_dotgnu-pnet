@@ -26,19 +26,10 @@ extern	"C" {
 #endif
 
 /*
- * Structure of the "before object" header, which appears
- * in memory just before the start of the object data.
- */
-typedef struct
-{
-	ILClass	   *classInfo;
-
-} System_Object;
-
-/*
  * Get the class that is associated with a non-null object.
  */
-#define	GetObjectClass(obj)	((((System_Object *)(obj)) - 1)->classInfo)
+#define	GetObjectClass(obj)	\
+			(*((ILClass **)(((unsigned char *)(obj)) - IL_BEST_ALIGNMENT)))
 
 /*
  * Internal structure of a string object header.

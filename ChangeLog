@@ -15,6 +15,9 @@ requirements.
 * engine/cvm.h, engine/engine.h: pad CVM stack words to a multiple of
 the best alignment so that 64-bit platforms always have an aligned stack.
 
+* engine/lib_defs.h, engine/heap.c: change the definition of the object
+header so that it is aligned on the machine's best alignment boundary.
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

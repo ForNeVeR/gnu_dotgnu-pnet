@@ -108,6 +108,7 @@ struct _tagILGenInfo
 	int				hasUnsafe : 1;		/* Non-zero if unsafe code in source */
 	int				needSwitchPop : 1;	/* Non-zero to pop a switch value */
 	int				hasGotoScopes : 1;	/* Non-zero if goto scopes used */
+	int				literalType : 1;	/* Identifiers should only be types */
 	int             decimalRoundMode;	/* Rounding mode for ILDecimal */
 	long			stackHeight;		/* Current stack height */
 	long			maxStackHeight;		/* Maximum stack height */

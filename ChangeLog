@@ -1,4 +1,13 @@
 
+2002-10-26  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/csharp/cs_internal.h,
+	cscc/csharp/cs_invoke.tc, cscc/csharp/cs_lookup.c,
+	cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_semantics.tc,
+	cscc/csharp/cs_stmt.tc:  Add a state to the compiler so it knows
+	when the identifiers being parsed should resolve to a type and
+	acts appropriately.
+
 2002-10-27  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_oper.tc: Coercion of constants in arithmetic

@@ -295,7 +295,7 @@ static ILNode *FindNestedClass(ILClass *info, ILNode_ClassDefn *defn,
 static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 						const char *name, ILClass *accessedFrom,
 					    CSMemberLookupInfo *results,
-						int lookInParents, int baseAccess)
+						int lookInParents, int baseAccess, int literalType)
 {
 	ILImplements *impl;
 	ILMember *member;
@@ -321,6 +321,11 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 				   ILMemberAccessible(member, accessedFrom))
 				{
 					kind = ILMemberGetKind(member);
+					if(literalType && kind != CS_MEMBERKIND_TYPE)
+					{
+						/* In literal type mode, want only types */
+						continue;
+					}
 					if(kind != IL_META_MEMBERKIND_METHOD &&
 					   kind != IL_META_MEMBERKIND_FIELD &&
 					   kind != IL_META_MEMBERKIND_PROPERTY &&
@@ -382,7 +387,7 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 			{
 				FindMembers(genInfo, ILImplementsGetInterface(impl),
 						    name, accessedFrom, results,
-							lookInParents, baseAccess);
+							lookInParents, baseAccess, literalType);
 			}
 		}
 
@@ -626,9 +631,11 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 /*
  * Perform a member lookup on a type.
  */
-static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
+
+static int MemberLookup(ILGenInfo *genInfo, ILClass *info, 
+						const char *name,
 				        ILClass *accessedFrom, CSMemberLookupInfo *results,
-						int lookInParents, int baseAccess)
+						int lookInParents, int baseAccess, int literalType)
 {
 	/* Initialize the results */
 	InitMembers(results);
@@ -637,7 +644,7 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 	if(info)
 	{
 		FindMembers(genInfo, info, name, accessedFrom, results,
-					lookInParents, baseAccess);
+					lookInParents, baseAccess, literalType);
 	}
 
 	/* Trim the list and determine the kind for the result */
@@ -949,7 +956,7 @@ ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule)
 }
 
 CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
-							   const char *name)
+										const char *name, int literalType)
 {
 	ILClass *startType;
 	ILClass *accessedFrom;
@@ -992,7 +999,7 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 
 		/* Look for members */
 		result = MemberLookup(genInfo, startType, name,
-							  accessedFrom, &results, 1, 0);
+							  accessedFrom, &results, 1, 0, literalType);
 		if(result != CS_SEMKIND_VOID)
 		{
 			return LookupToSem(node, name, &results, result);
@@ -1076,7 +1083,16 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	/* Could not resolve the name */
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "`%s' is not declared in the current scope", name);
-	return CSSemValueDefault;
+
+	if (literalType)
+	{
+		/* Resolve it cleanly if a type was not found */
+		return CSResolveSimpleName(genInfo, node, name, 0);
+	}
+	else
+	{
+		return CSSemValueDefault;
+	}
 }
 
 /*
@@ -1243,7 +1259,8 @@ static int FilterNonStatic(CSMemberLookupInfo *results, int kind)
 }
 
 CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
-							   CSSemValue value, const char *name)
+							   CSSemValue value, const char *name,
+							   int literalType)
 {
 	char *fullName;
 	CSMemberLookupInfo results;
@@ -1270,9 +1287,11 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			}
 
 			/* Could not find the member within the namespace */
-			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			if (!literalType) {
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not a member of the namespace `%s'",
 						  name, fullName);
+			}
 		}
 		break;
 
@@ -1282,7 +1301,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			result = MemberLookup(genInfo, ILTypeToClass
 										(genInfo, CSSemGetType(value)),
 								  name, accessedFrom, &results, 1,
-								  CSSemIsBase(value));
+								  CSSemIsBase(value), literalType);
 			if(result != CS_SEMKIND_VOID)
 			{
 				/* Filter the result to only include static definitions */
@@ -1292,9 +1311,12 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			{
 				return LookupToSem(node, name, &results, result);
 			}
-			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+
+			if (!literalType) {
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not a member of the type `%s'",
 						  name, CSTypeToName(CSSemGetType(value)));
+			}
 		}
 		break;
 
@@ -1302,10 +1324,10 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 		case CS_SEMKIND_RVALUE:
 		{
 			/* Perform a member lookup based on the expression's type */
-			result = MemberLookup(genInfo, ILTypeToClass
-												(genInfo, CSSemGetType(value)),
-								  name, accessedFrom, &results, 1,
-								  CSSemIsBase(value));
+			result = MemberLookup(genInfo, 
+								ILTypeToClass(genInfo, CSSemGetType(value)),
+								name, accessedFrom, &results, 1,
+								CSSemIsBase(value), literalType);
 			if(result != CS_SEMKIND_VOID)
 			{
 				/* Check for instance accesses to enumerated types.
@@ -1323,23 +1345,36 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			{
 				return LookupToSem(node, name, &results, result);
 			}
-			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			if (!literalType) {
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not an instance member of the type `%s'",
 						  name, CSTypeToName(CSSemGetType(value)));
+			}
 		}
 		break;
 
 		default:
 		{
-			/* This kind of semantic value does not have members */
-			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			if (!literalType) {
+				/* This kind of semantic value does not have members */
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "invalid left operand to `.'");
+			}
 		}
 		break;
 	}
 
-	/* If we get here, then something went wrong */
-	return CSSemValueDefault;
+	if (literalType) {
+		/* Try again without the type restrictions - inefficient, but 
+		 * only happens in error cases 
+		 * The errors will be printed this second time around  */
+		return CSResolveMemberName(genInfo, node, value, name, 0);
+	}
+	else
+	{
+		/* If we get here, then something went wrong */
+		return CSSemValueDefault;
+	}
 }
 
 CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
@@ -1355,7 +1390,7 @@ CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
 
 	/* Perform a member lookup based on the expression's type */
 	result = MemberLookup(genInfo, ILTypeToClass(genInfo, objectType),
-						  ".ctor", accessedFrom, &results, 0, 0);
+						  ".ctor", accessedFrom, &results, 0, 0, 0);
 	if(result != CS_SEMKIND_VOID)
 	{
 		/* Filter the result to remove static definitions */

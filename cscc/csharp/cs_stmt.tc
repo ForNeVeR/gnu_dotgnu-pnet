@@ -1585,7 +1585,7 @@ ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
 	method = (ILNode_MethodDeclaration *)(info->currentMethod);
 
 	/* Perform semantic analysis on the local variable type */
-	type = CSSemType(node->type, info, &(node->type));
+	type = CSSemTypeLiteral(node->type, info, &(node->type));
 
 	/* Scan through the variable names and declare them in the current scope */
 	ILNode_ListIter_Init(&iter, node->varNames);

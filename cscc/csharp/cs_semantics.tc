@@ -59,6 +59,13 @@ ILType *CSCreateValueType(CSSemContext *sctx, const char *namespace,
 ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent);
 
 /*
+ * Perform semantic analysis on a literal type identifier.
+ * This function changes the compiler state and then calls
+ * CSSemType;
+ */
+ILType *CSSemTypeLiteral(ILNode *type, ILGenInfo *info, ILNode **parent);
+
+/*
  * Perform semantic analysis on a type that can also
  * include the "void" type.
  */
@@ -107,16 +114,29 @@ ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent)
 	return resultType;
 }
 
+ILType *CSSemTypeLiteral(ILNode *type, ILGenInfo *info, ILNode **parent)
+{
+	int save;
+	ILType *returnType;
+
+	save = info->literalType;
+	info->literalType = 1;
+	returnType = CSSemType(type, info, parent);
+	info->literalType = save;
+	return returnType;
+}
+	
 ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
 {
 	CSSemValue value;
 	int save;
 	if(type)
-	{
+ 	{
 		save = info->inSemType;
 		info->inSemType = info->typeGather;
 		value = ILNode_SemAnalysis(type, info, parent);
 		info->inSemType = save;
+
 		if(!CSSemIsType(value))
 		{
 			if(!CSSemIsError(value))

@@ -764,6 +764,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
   	ILNode_SemGuard *constVar;
 	ILType *type;
 
+	if (!info->literalType) {
 	/* Look for local variables in the current scope */
 	data = ILScopeLookup(info->currentScope, node->name, 1);
 	if(data && ILScopeDataGetKind(data) == IL_SCOPE_LOCAL)
@@ -840,12 +841,22 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		CSSemSetRValue(value, CSSemGetType(constVar->value));
 		return value;
 	}
+	}
 
 	/* Resolve the simple name */
-	value = CSResolveSimpleName(info, (ILNode *)node, node->name);
+	value = CSResolveSimpleName(info, (ILNode *)node, node->name,
+									info->literalType);
 
-	/* Convert the result into an l-value or r-value and return it */
-	return SemToLRValue((ILNode *)node, info, parent, value, node->name, 0, 0);
+	if (info->literalType && CSSemGetKind(value) != CS_SEMKIND_TYPE)
+	{
+		return CSSemValueDefault;
+	}
+	else
+	{
+		/* Convert the result into an l-value or r-value and return it */
+		return SemToLRValue((ILNode *)node, info, parent, 
+							value, node->name, 0, 0);
+	}
 }
 
 /*
@@ -862,11 +873,19 @@ ILNode_SemAnalysis(ILNode_QualIdent)
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->right, 0);
-	value2 = CSResolveMemberName(info, (ILNode *)node, value, name);
+	value2 = CSResolveMemberName(info, (ILNode *)node, value, name,
+								info->literalType);
 
-	/* Convert the result into an l-value or r-value and return it */
-	return SemToLRValue((ILNode *)node, info, parent, value2,
+	if (info->literalType && CSSemGetKind(value2) != CS_SEMKIND_TYPE)
+	{
+		return CSSemValueDefault;
+	}
+	else
+	{
+		/* Convert the result into an l-value or r-value and return it */
+		return SemToLRValue((ILNode *)node, info, parent, value2,
 						name, node->left, &value);
+	}
 }
 
 /*
@@ -907,7 +926,7 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->expr2, 0);
-	value2 = CSResolveMemberName(info, (ILNode *)node, value, name);
+	value2 = CSResolveMemberName(info, (ILNode *)node, value, name, 0);
 
 	/* Convert the result into an l-value or r-value and return it */
 	return SemToLRValue((ILNode *)node, info, parent, value2,
@@ -955,7 +974,7 @@ ILNode_SemAnalysis(ILNode_BaseAccess)
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->expr, 0);
-	value2 = CSResolveMemberName(info, (ILNode *)node, value, name);
+	value2 = CSResolveMemberName(info, (ILNode *)node, value, name, 0);
 
 	/* Convert the result into an l-value or r-value and return it */
 	return SemToLRValue((ILNode *)node, info, parent, value2,

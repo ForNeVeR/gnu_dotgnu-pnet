@@ -1,4 +1,10 @@
 
+2003-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/dynlib.c: put the MacOS X version of dynamic loading
+	before the generic "dlopen" version, as some MacOS X systems
+	have "dlopen", but it doesn't do the right thing.
+
 2003-06-17  James Michael DuPont  <mdupont777@yahoo.com>
 
 	* doc/cvm.dtd: DTD file for the CVM opcode definitions.

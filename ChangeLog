@@ -1,4 +1,9 @@
 
+2003-07-18  Aditya P. Bansod  <abansod@fullenergy.com>
+	
+	* engine/lib_info.c: Hack for GetNetBIOSName .
+	(Patch #1464, Gopal)
+
 2003-07-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_type.c: Fix minor bug in Type.ToString() for arrays

@@ -45,8 +45,14 @@ ILString *_IL_InfoMethods_GetRuntimeVersion(ILExecThread *thread)
  */
 ILString *_IL_InfoMethods_GetNetBIOSMachineName(ILExecThread *thread)
 {
-	/* TODO */
-	return 0;
+	/* TODO: figure out a better way to do this */
+	char *env;
+	env = getenv("COMPUTERNAME");
+	if(env && *env != '\0')
+	{
+		return ILStringCreate(thread, env);
+	}
+	return ILStringCreate(thread, "");
 }
 
 /*

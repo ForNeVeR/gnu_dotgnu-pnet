@@ -93,6 +93,12 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 	unsigned char *newStr;
 	unsigned char *tempStr;
 
+	/* Bail out if the field wasn't created properly */
+	if(!field)
+	{
+		return;
+	}
+
 	switch(evalValue->valueType)
 	{
 		case ILMachineType_Boolean:

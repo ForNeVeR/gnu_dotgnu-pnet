@@ -21,6 +21,9 @@
 	* cscc/cs_modifiers.c: "volatile" is not allowed on operator
 	declarations.
 
+	* cscc/cs_decls.tc (AddConstantValue): bail out if the field
+	information block is invalid, just in case.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,

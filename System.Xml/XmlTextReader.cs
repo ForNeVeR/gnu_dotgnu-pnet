@@ -53,11 +53,12 @@ public class XmlTextReader : XmlReader
 	private String localName;
 	private String namespaceURI;
 	private String value;
-	internal XmlAttribute attr;
+	private XmlAttribute attr;
 	private XmlAttributeCollection attributes;
 	private int attributeIndex;
 	private int depth;
 	private bool isEmpty;
+	internal bool readAttribute;
 	internal bool contextSupport;
 	internal StringBuilder builder;
 	internal String	name;
@@ -94,13 +95,14 @@ public class XmlTextReader : XmlReader
 				localName = String.Empty;
 				namespaceURI = String.Empty;
 				value = String.Empty;
-				attr = null;
+				attr = new XmlAttributeToken(nameTable,null,null);
 				attributes = new XmlAttributeCollection(attr); 
 				attributeIndex = -1;
 				depth = 1;
 				isEmpty = false;
 				contextSupport = false;
 				name = String.Empty;
+				readAttribute = false;
 			}
 	public XmlTextReader(Stream input)
 			: this(String.Empty, input, new NameTable())
@@ -460,7 +462,8 @@ public class XmlTextReader : XmlReader
 				localName = String.Empty;
 				namespaceURI = String.Empty;
 				value = String.Empty;
-				attributes = null;
+				attr = new XmlAttributeToken(nameTable,null,null);
+				attributes = new XmlAttributeCollection(attr);
 				attributeIndex = -1;
 				isEmpty = false;
 			}
@@ -491,24 +494,47 @@ public class XmlTextReader : XmlReader
 				while((ch = ReadChar()) != -1)
 				{
 					builder.Append((char)ch);
-					linePosition++;
 					if((char)ch == '/')
 					{
 						SkipWhite();
 						Expect('>');
 						nodeType = XmlNodeType.EndElement;
 						isEmpty = true;
+						readAttribute = false;
 						return builder.ToString(0, builder.Length -1);
 					}
 					else if((char)ch == '>')
 					{
 						nodeType = XmlNodeType.Element;
+						readAttribute = false;
 						return builder.ToString(0, builder.Length -1);
 					}
-					else if(Char.IsWhiteSpace((char)ch))
+					else if (Char.IsWhiteSpace((char)ch))
 					{
-						nodeType = XmlNodeType.Element;
-						return builder.ToString(0, builder.Length -1);
+						SkipWhite();
+						// more error checking
+						if((char)ch != '>' && (char)ch != '/')
+						{
+							nodeType = XmlNodeType.Element;
+							readAttribute = true;
+							
+							return builder.ToString(0, builder.Length -1);
+						}
+						else if((char)ch == '>')
+						{
+							nodeType = XmlNodeType.Element;
+							readAttribute = false;
+							return builder.ToString(0, builder.Length -1);
+						}
+						else if((char)ch == '/')
+						{
+							SkipWhite();
+							Expect('>');
+							nodeType = XmlNodeType.EndElement;
+							isEmpty = true;
+							readAttribute = false;
+							return builder.ToString(0, builder.Length -1);
+						}
 					}
 
 				}
@@ -827,19 +853,18 @@ public class XmlTextReader : XmlReader
 						break;
 					case '=':
 						ClearNodeInfo();
-						name = builder.ToString();
-						SetName(name);
+						//name = builder.ToString();
+						//SetName(name);
 						nodeType = XmlNodeType.Attribute;
+						attr = new XmlAttributeToken(nameTable,builder.ToString(),null);
 						attributeIndex++;
 						// reset buffer
 						builder = new StringBuilder();
 						break;
 					case '\'':	
 					case '"':
-
 						// get quote
 						quoteChar = (char)ch;
-						
 						if(nodeType != XmlNodeType.Attribute)
 						{
 							throw new XmlException
@@ -850,7 +875,8 @@ public class XmlTextReader : XmlReader
 						{
 							if((char)ch == QuoteChar)
 							{
-								value = builder.ToString();
+								attr.Value = builder.ToString();
+								attributes.Append(attr);
 								nodeType = XmlNodeType.Text;
 
 								// go to next char
@@ -861,11 +887,13 @@ public class XmlTextReader : XmlReader
 								ch = ReadChar();
 								if((char)ch == '/')
 								{
+									readAttribute = false;
 									Expect('>');
 									break;
 								}
 								else if ((char)ch == '>')
 								{
+									readAttribute = false;
 									break;
 								}
 								ungetch = ch;
@@ -912,7 +940,7 @@ public class XmlTextReader : XmlReader
 			}// end AnalyzeChar
 		
 
-	// Read the next node in the input stream.
+	// Read the next node in the input stream. -- This should mimic mono's interpretation of Read()
 	public override bool Read()
 			{
 				int ch;
@@ -932,8 +960,83 @@ public class XmlTextReader : XmlReader
 					throw new XmlException(S._("Xml_ReaderError"));
 				}
 				
-				// Skip white space in the input stream.  TODO: collect
-				// up significant white space.
+				// Skip white space in the input stream.
+				SkipWhite();
+
+				ch = ReadChar();
+
+				if(ch == -1)
+				{
+					// We've reached the end of the stream.  Throw
+					// an error if we haven't closed all elements.
+					if(linePosition > 1)
+					{
+						--linePosition;
+					}
+					readState = ReadState.EndOfFile;
+					ClearNodeInfo();
+					return false;
+				}
+				
+				readState = ReadState.Interactive;	
+				// Determine what to do based on the next character.
+				
+			
+				
+				switch (nodeType)
+				{
+					case XmlNodeType.Attribute:
+						// Set structFlag to true so quoteChar will
+						// know it is the first quote
+						AnalyzeChar(ch,true);
+						return true;
+					default:
+						// Handling, set flag to true if first char is <
+						if ((char)ch == '<')
+						{
+							AnalyzeChar(ch, true);
+							while(readAttribute == true)
+							{
+								ch = ReadChar();
+								AnalyzeChar(ch, false);
+							}
+						}
+						else 
+						{
+							AnalyzeChar(ch, false);
+							while(readAttribute == true)
+							{
+								ch = ReadChar();
+								AnalyzeChar(ch, false);
+							}
+						}
+						return true;
+				}
+				return false;
+
+			}
+
+	// Reads A Document Object Node at a time.  
+	internal bool ReadNode()
+			{
+				int ch;
+				builder = new StringBuilder();
+
+				// Validate the current state of the stream.
+				if(readState == ReadState.EndOfFile)
+				{
+					return false;
+				}
+				else if(reader == null)
+				{
+					throw new XmlException(S._("Xml_ReaderClosed"));
+				}
+				else if(readState == ReadState.Error)
+				{
+					throw new XmlException(S._("Xml_ReaderError"));
+				}
+				
+				// Skip white space in the input stream. 
 				SkipWhite();
 
 				ch = ReadChar();
@@ -1614,6 +1717,75 @@ public class XmlTextReader : XmlReader
 					return xmlSpace;
 				}
 			}
+
+
+	// Note: this is a hack to implement XmlTextReader without
+	// building an XmlDocument along with it.
+	// Do *not* use this elsewhere as a substitute for XmlAttribute
+	// Also, the use is restricted to a minimum here as well
+	internal class XmlAttributeToken : XmlAttribute
+	{ 
+		private String value = null;
+
+		public XmlAttributeToken(XmlNameTable nt,String name,String ns):
+			base(null,GetNameInfo(nt,name,null,null))
+		{
+		}
+		
+		private static NameCache.NameInfo GetNameInfo(XmlNameTable nt,
+				String localName,
+				String prefix,
+				String ns)
+		{
+			String name;
+
+			if(localName == null)
+			{
+				localName = String.Empty;
+			}
+			else
+			{
+				localName = nt.Add(localName);
+			}
+			if(prefix == null)
+			{
+				prefix = String.Empty;
+			}
+			else
+			{
+				prefix = nt.Add(prefix);
+			}
+			if(ns == null)
+			{
+				prefix = String.Empty;
+			}
+			else
+			{
+				ns=nt.Add(ns);
+			}
+			if(prefix.Length > 0)
+			{
+				name = nt.Add(prefix + ":" + localName);
+			}
+			else
+			{
+				name = localName;
+			}
+			return new 
+				NameCache.NameInfo(localName, prefix, name, ns, null);
+		}
+		public override String Value
+		{
+			get
+			{
+				return this.value;
+			}
+			set
+			{
+				this.value = value;
+			}
+		}
+	}
 
 }; // class XmlTextReader
 

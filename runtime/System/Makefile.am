@@ -189,10 +189,27 @@ CSSRC = Activator.cs \
 		Resources/MissingManifestResourceException.cs \
 		Resources/NeutralResourcesLanguageAttribute.cs \
 		Resources/SatelliteContractVersionAttribute.cs \
+		Runtime/CompilerServices/AccessedThroughPropertyAttribute.cs \
+		Runtime/CompilerServices/CallConvCdecl.cs \
+		Runtime/CompilerServices/CallConvFastcall.cs \
+		Runtime/CompilerServices/CallConvStdcall.cs \
+		Runtime/CompilerServices/CallConvThiscall.cs \
+		Runtime/CompilerServices/CompilationRelaxationsAttribute.cs \
+		Runtime/CompilerServices/CompilerGlobalScopeAttribute.cs \
+		Runtime/CompilerServices/CustomConstantAttribute.cs \
+		Runtime/CompilerServices/DateTimeConstantAttribute.cs \
+		Runtime/CompilerServices/DecimalConstantAttribute.cs \
+		Runtime/CompilerServices/DiscardableAttribute.cs \
+		Runtime/CompilerServices/IDispatchConstantAttribute.cs \
+		Runtime/CompilerServices/IUnknownConstantAttribute.cs \
+		Runtime/CompilerServices/IndexerNameAttribute.cs \
+		Runtime/CompilerServices/IsVolatile.cs \
+		Runtime/CompilerServices/MethodCodeType.cs \
+		Runtime/CompilerServices/MethodImplAttribute.cs \
+		Runtime/CompilerServices/MethodImplOptions.cs \
+		Runtime/CompilerServices/RequiredAttributeAttribute.cs \
 		Runtime/CompilerServices/RuntimeHelpers.cs \
-		Runtime/CompilerServices/CSharp/DecimalConstantAttribute.cs \
 		Runtime/CompilerServices/CSharp/IndexerNameAttribute.cs \
-		Runtime/CompilerServices/CSharp/OutParameter.cs \
 		Runtime/InteropServices/ComImportAttribute.cs \
 		Runtime/InteropServices/DllImportAttribute.cs \
 		Runtime/InteropServices/DispIdAttribute.cs \

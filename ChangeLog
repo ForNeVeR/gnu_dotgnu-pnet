@@ -6,6 +6,11 @@ runtime/System/Runtime/CompilerServices/CSharp/IndexerNameAttribute.cs,
 runtime/System/Makefile.am: implement the "System.Runtime.CompilerServices"
 namespace.
 
+* runtime/System/IServiceObjectProvider.cs,
+runtime/System/Runtime/CompilerServices/CSharp/DecimalConstantAttribute.cs,
+runtime/System/Runtime/CompilerServices/CSharp/OutParameter.cs:
+remove obsolete classes.
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/String.cs: implement string comparison methods.

@@ -19,6 +19,9 @@
 	* csant/csant_fileset.c: look for <file> tags during fileset
 	construction to allow explicit files to be added one at a time.
 
+	* csant/csant_cscc.c (AddValueLenArg): incorrect string concatenation
+	code.
+
 2001-03-21 Gopal.V <gopalv82@yahoo.com>
 	* csdoc/doc_stub.c : Added the Csdoc to C# stub generation.
 

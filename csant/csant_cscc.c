@@ -168,7 +168,7 @@ static void AddValueLenArg(char ***argv, int *argc, char *name,
 		CSAntOutOfMemory();
 	}
 	strcpy(str, name);
-	ILMemCpy(str, value, len);
+	ILMemCpy(str + strlen(name), value, len);
 	str[strlen(name) + len] = '\0';
 	AddArg(argv, argc, str);
 }

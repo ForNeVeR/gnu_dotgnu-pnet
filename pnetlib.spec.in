@@ -17,12 +17,12 @@ BuildRequires:  XFree86-devel
 Requires:       pnet-interpreter >= 0:@VERSION@
 Requires:       pnet-tools >= 0:@VERSION@
 
-Summary: The DotGNU Portable .NET library
+Summary: The CLR base class library for DotGNU Portable .NET
 
 %description
-The pnetlib is DotGNU's implementation of the CLI (".NET") standard
-Base Class Library.  It is designed to be used with programs targeted
-at the CLI and locally executed in the pnet-interpreter.
+This is DotGNU's implementation of the CLR (".NET") standard base
+class library.  It is designed to be used with programs targeted
+at the CLR and locally executed in the pnet-interpreter.
 
 %prep
 %setup -q

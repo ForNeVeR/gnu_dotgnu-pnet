@@ -8,7 +8,7 @@ compat:
 			-f "$(srcdir)/compat.build" all
 
 CLEANFILES = Microsoft.VisualC.dll Microsoft.Vsa.dll cscompmgd.dll \
-			 Accessibility.dll
+			 Accessibility.dll sysglobl.dll
 
 install-data-local:
 	@$(NORMAL_INSTALL)

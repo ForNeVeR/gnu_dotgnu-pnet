@@ -1,4 +1,17 @@
 
+2004-09-07  Russell Stuart <russell-savannah@stuart.id.au>
+
+	* build-debian-packages.conf,
+	  build-debian-packages.sh,
+	  config.guess,
+	  config.sub,
+	  compat/Makefile.am,
+	  debian/changelog,
+	  debian/README.Debian,
+	  debian/rules,
+	  pnetlib.spec.in:
+	  Cleaned up debian packaging.
+
 2004-09-05  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/VisualStyles/BackgroundType.cs,

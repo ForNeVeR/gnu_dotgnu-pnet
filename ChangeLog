@@ -36,6 +36,8 @@
 	* engine/lib_encoding.c: retrieve the system code page with
 	"ILGetCodePage()".
 
+	* samples/mscorlib.dll: new version with rare code pages and KOI8-U.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

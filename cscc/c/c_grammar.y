@@ -190,14 +190,32 @@ static void ProcessBitField(CDeclSpec spec, CDeclarator decl, ILUInt32 size)
 {
 	ILType *type;
 	ILType *baseType;
+	ILType *nonEnumType;
 	ILUInt32 maxSize;
 	int typeInvalid;
 
 	/* Get the final type for the declarator */
 	type = CDeclFinalize(&CCCodeGen, spec, decl, 0, 0);
 
-	/* Make sure that the type is integer and that the size is in range */
+	/* Get the base type, removing prefixes and enum wrappers */
 	baseType = ILTypeStripPrefixes(type);
+	nonEnumType = ILTypeGetEnumType(baseType);
+	if(nonEnumType != baseType)
+	{
+		baseType = nonEnumType;
+		if(CTypeIsConst(type))
+		{
+			baseType = CTypeAddConst(&CCCodeGen, baseType);
+		}
+		if(CTypeIsVolatile(type))
+		{
+			baseType = CTypeAddVolatile(&CCCodeGen, baseType);
+		}
+		type = baseType;
+		baseType = ILTypeStripPrefixes(type);
+	}
+
+	/* Make sure that the type is integer and that the size is in range */
 	typeInvalid = 0;
 	if(ILType_IsPrimitive(baseType))
 	{

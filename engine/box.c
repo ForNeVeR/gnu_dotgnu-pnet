@@ -25,6 +25,36 @@
 extern	"C" {
 #endif
 
+ILObject *ILExecThreadBoxNoValue(ILExecThread *thread, ILType *type)
+{
+	ILClass *classInfo;
+	ILObject *object;
+	ILUInt32 typeSize;
+	if(ILType_IsPrimitive(type) || ILType_IsValueType(type))
+	{
+		classInfo = ILClassFromType
+			(ILContextNextImage(thread->process->context, 0),
+			 0, type, 0);
+		if(!classInfo)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		classInfo = ILClassResolve(classInfo);
+		typeSize = ILSizeOfType(thread, type);
+		object = (ILObject *)_ILEngineAlloc(thread, classInfo, typeSize);
+		if(!object)
+		{
+			return 0;
+		}
+		return object;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 ILObject *ILExecThreadBox(ILExecThread *thread, ILType *type, void *ptr)
 {
 	ILClass *classInfo;
@@ -46,6 +76,10 @@ ILObject *ILExecThreadBox(ILExecThread *thread, ILType *type, void *ptr)
 		if(object)
 		{
 			ILMemCpy(object, ptr, typeSize);
+		}
+		else
+		{
+			return 0;
 		}
 		return object;
 	}

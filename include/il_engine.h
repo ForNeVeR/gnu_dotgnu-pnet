@@ -675,6 +675,11 @@ int ILExecThreadSetElem(ILExecThread *thread, ILObject *array,
 						ILInt32 index, ...);
 
 /*
+ * Create a box for a type and initialize the box with no value.
+ */
+ILObject *ILExecThreadBoxNoValue(ILExecThread *thread, ILType *type);
+
+/*
  * Box the value at a pointer using a specific primitive or value type.
  */
 ILObject *ILExecThreadBox(ILExecThread *thread, ILType *type, void *ptr);

@@ -47,6 +47,9 @@
 	runtime/System/Globalization/_I18NCultureHandler.cs:
 	pass the user override flag to I18N when creating cultures.
 
+	* I18N/Common/Manager.cs: implement the "GetCultures" API in
+	the I18N manager.
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs: Fix minor bug in ArrayEnumerator1

@@ -113,7 +113,7 @@ public class Manager
 
 	// Get a specific culture by identifier.  Returns NULL
 	// if the culture information is not available.
-	public CultureInfo GetCulture(int culture, bool useUserOverride)
+	public _I18NCultureHandler GetCulture(int culture, bool useUserOverride)
 			{
 				// Create the hex version of the culture identifier.
 				StringBuilder builder = new StringBuilder();
@@ -129,17 +129,17 @@ public class Manager
 					Object obj = Instantiate("CIDO" + name);
 					if(obj != null)
 					{
-						return (obj as CultureInfo);
+						return (obj as _I18NCultureHandler);
 					}
 				}
 
 				// Look for the generic non-override culture.
-				return (Instantiate("CID" + name) as CultureInfo);
+				return (Instantiate("CID" + name) as _I18NCultureHandler);
 			}
 
 	// Get a specific culture by name.  Returns NULL if the
 	// culture informaion is not available.
-	public CultureInfo GetCulture(String name, bool useUserOverride)
+	public _I18NCultureHandler GetCulture(String name, bool useUserOverride)
 			{
 				// Validate the parameter.
 				if(name == null)
@@ -156,12 +156,108 @@ public class Manager
 					Object obj = Instantiate("CNO" + name.ToString());
 					if(obj != null)
 					{
-						return (obj as CultureInfo);
+						return (obj as _I18NCultureHandler);
 					}
 				}
 
 				// Look for the generic non-override culture.
-				return (Instantiate("CN" + name.ToString()) as CultureInfo);
+				return (Instantiate("CN" + name.ToString())
+							as _I18NCultureHandler);
+			}
+
+	// Convert a culture identifier from hex.
+	private static int FromHex(String name, int index)
+			{
+				int num = 0;
+				char ch;
+				while(index < name.Length)
+				{
+					ch = name[index++];
+					if(ch >= '0' && ch <= '9')
+					{
+						num = num * 16 + (int)(ch - '0');
+					}
+					else if(ch >= 'A' && ch <= 'F')
+					{
+						num = num * 16 + (int)(ch - 'A' + 10);
+					}
+					else if(ch >= 'a' && ch <= 'f')
+					{
+						num = num * 16 + (int)(ch - 'a' + 10);
+					}
+				}
+				return num;
+			}
+
+	// Determine if a handler name matches the "GetCultures" requirements.
+	private static bool CultureMatch(String name, CultureTypes types)
+			{
+				if(name.Length > 3 &&
+				   name[0] == 'C' && name[1] == 'I' &&
+				   name[2] == 'D' && name[3] != 'O')
+				{
+					int num = FromHex(name, 3);
+					if((num & 0x03FF) == 0)
+					{
+						// This is a neutral culture.
+						if((types & CultureTypes.NeutralCultures) != 0)
+						{
+							return true;
+						}
+					}
+					else
+					{
+						// This is a specific culture.
+						if((types & CultureTypes.SpecificCultures) != 0)
+						{
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+
+	// Get an array of all cultures in the system.
+	public CultureInfo[] GetCultures(CultureTypes types)
+			{
+				// Count the number of culture handlers in the system.
+				int count = 0;
+				if((types & CultureTypes.NeutralCultures) != 0)
+				{
+					++count;
+				}
+				IDictionaryEnumerator e = handlers.GetEnumerator();
+				String name;
+				int num;
+				while(e.MoveNext())
+				{
+					name = (String)(e.Key);
+					if(CultureMatch(name, types))
+					{
+						++count;
+					}
+				}
+
+				// Build the list of cultures.
+				CultureInfo[] cultures = new CultureInfo [count];
+				count = 0;
+				if((types & CultureTypes.NeutralCultures) != 0)
+				{
+					cultures[count++] = CultureInfo.InvariantCulture;
+				}
+				e.Reset();
+				while(e.MoveNext())
+				{
+					name = (String)(e.Key);
+					if(CultureMatch(name, types))
+					{
+						cultures[count++] =
+							new CultureInfo(FromHex(name, 3));
+					}
+				}
+
+				// Return the culture list to the caller.
+				return cultures;
 			}
 
 	// Instantiate a handler class.  Returns null if it is not

@@ -1,4 +1,9 @@
 
+2003-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/md_ppc.h, engine/ppc_codegen.h: check in the early
+	stages of the PPC unroller macros.
+
 2003-08-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* ildasm/ildasm_internal.h, ildasm/ildasm_main.c, ildasm/ildasm.1: 

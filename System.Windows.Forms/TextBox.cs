@@ -35,6 +35,8 @@ public class TextBox : TextBoxBase
 	private bool mouseDown;
 	private Brush selectedForeBrush, selectedBackBrush;
 	private Brush foreBrush, backBrush;
+	private Pen backPen;
+
 	// The position and drawing information for each item
 	protected LayoutInfo layout;
 	// Start of a selection
@@ -49,10 +51,13 @@ public class TextBox : TextBoxBase
 	private Rectangle caretBounds;
 	private Timer caretFlash;
 	private Pen caretPen;
-	private Pen caretPenHiding;
 
 	// Maximum possible X/Y for a region
 	private const int maxXY = 4194304;
+
+	// XY offset of the view for text bigger than the text area
+	private int xViewOffset;
+	private int yViewOffset;
 
 	public TextBox()
 	{
@@ -69,16 +74,16 @@ public class TextBox : TextBoxBase
 		textAlign = HorizontalAlignment.Left;
 
 		BackColor = SystemColors.Window;
+		// TODO Get this value from SystemInformation
 		caretFlash = new Timer();
-		//TODO Get this value from SystemInformation
 		// Handle when System information changes for interval & system colors
 		caretFlash.Interval = 500;
 		caretFlash.Tick += new EventHandler(CaretFlash_Tick);
 		caretFlash.Enabled = true;
+
+		// Cache the Pen - check what color this should be
 		caretPen = new Pen(SystemColors.Highlight);
-		caretPenHiding = new Pen(BackColor);
-		
-		Text = string.Empty;
+
 	}
 
 	// Gets or sets a value indicating whether pressing ENTER in a multiline TextBox control creates a new line of text in the control or activates the default button for the form.
@@ -108,6 +113,7 @@ public class TextBox : TextBoxBase
 		}
 	}
 
+	// TODO Handle this
 	protected override ImeMode DefaultImeMode
 	{
 		get
@@ -123,7 +129,6 @@ public class TextBox : TextBoxBase
 		}
 	}
 
-	// TODO Handle this
 	public char PasswordChar
 	{
 		get
@@ -165,7 +170,11 @@ public class TextBox : TextBoxBase
 	{
 		get
 		{
-			return base.Text;
+			string text = base.Text;
+			if (text == null)
+				return string.Empty;
+			else
+				return text;
 		}
 		set
 		{
@@ -174,6 +183,7 @@ public class TextBox : TextBoxBase
 		}
 	}
 
+	// TODO
 	public override bool CanUndo
 	{
 		get
@@ -182,6 +192,7 @@ public class TextBox : TextBoxBase
 		}
 	}
 
+	// TODO
 	public override String[] Lines
 	{
 		get
@@ -204,8 +215,21 @@ public class TextBox : TextBoxBase
 			if(textAlign != value)
 			{
 				textAlign = value;
-				// Caret will change position
-				CaretSetEndSelection();
+				// Layout changes
+				LayoutFromText();
+				
+				// TODO
+				if (!Multiline && textAlign == HorizontalAlignment.Center)
+					xViewOffset = maxXY - ClientSize.Width/2;
+				else
+				{
+					// We set the caret to the end of the text
+					// And then we make sure the view can see the caret
+					// This behaviour is different in MS, they make sure
+					// the beginning of the text if visible
+					CaretSetEndSelection();
+					ScrollToCaretNoInvalidate();
+				}
 				OnTextAlignChanged(EventArgs.Empty);
 			}
 		}
@@ -240,6 +264,10 @@ public class TextBox : TextBoxBase
 				}
 			}
 		}
+		// If not multline then we dont recognise "Enter"
+		else if ((keyData & Keys.Alt) == 0 && (keyData & Keys.KeyCode) == Keys.Enter)
+			return false;
+
 		return base.IsInputKey(keyData);
 	}
 
@@ -260,14 +288,16 @@ public class TextBox : TextBoxBase
 		for (int i = 0; i < Text.Length; i++)
 			if (layout.Items[i].charVisibility == LayoutInfo.Item.CharVisibility.Visible)
 				invalidRegion.Union(new Region(layout.Items[i].bounds));
+		invalidRegion.Translate(BorderOffset.X - xViewOffset, BorderOffset.Y - yViewOffset);
 		Invalidate( invalidRegion);
+		mouseDown = false;
 	}
 
 	protected override void OnFontChanged(EventArgs e)
 	{
 		base.OnFontChanged (e);
 		if (!Multiline && AutoSize)
-			Height = BorderOffset.Y * 2 + Font.Height;
+			Height = ClientToBounds(Size.Empty).Height + Font.Height;
 	}
 
 	// Raise the "TextAlignChanged" event.
@@ -285,11 +315,22 @@ public class TextBox : TextBoxBase
 	private void HandleKeyDown(Object sender, KeyEventArgs e)
 	{
 		if (e.KeyCode == Keys.Left && GetSelectionStart()>0)
+		{
 			SelectInternal( GetSelectionStart() - 1, 0);
+			CaretSetEndSelection();
+			ScrollToCaret();
+		}
 		else if (e.KeyCode == Keys.Right && GetSelectionStart() < Text.Length)
+		{
 			SelectInternal( GetSelectionStart() + 1, 0);
+			CaretSetEndSelection();
+			ScrollToCaret();
+		
+		}
 		else if (e.KeyCode == Keys.Back && (GetSelectionStart() + GetSelectionLength())>0)
 		{
+			int widthText = layout.Items[layout.Items.Length - 1].bounds.Right;
+			int bottomCaret = caretBounds.Bottom;
 			if (GetSelectionLength() > 0)
 			{
 				SetSelectionText("");
@@ -300,6 +341,38 @@ public class TextBox : TextBoxBase
 				SetTextInternal(Text.Substring(0, GetSelectionStart() -1) + Text.Substring(GetSelectionStart()));
 				SelectInternal(GetSelectionStart()-1, 0);
 			}
+			// In the case of multiline we ensure that we recover any blank lines created by backspacing at the bottom (if the text is bigger than the view area).
+			// In the case of non multiline, we recover any character space that is now there after deleting
+			if (!Multiline)
+			{
+				if (textAlign == HorizontalAlignment.Center && xViewOffset > maxXY - ClientSize.Width/2)
+				{
+					xViewOffset -= widthText - layout.Items[layout.Items.Length - 1].bounds.Right;
+					xViewOffset = Math.Max(xViewOffset, maxXY - ClientSize.Width/2);
+					InvalidateClientArea();
+				}
+				else if (textAlign == HorizontalAlignment.Left && xViewOffset > 0)
+				{
+					xViewOffset -= widthText - layout.Items[layout.Items.Length - 1].bounds.Right;
+					xViewOffset = Math.Max(xViewOffset, 0);
+					InvalidateClientArea();
+				}
+				//Move the caret
+				CaretSetEndSelection();				
+			}
+			else
+			{
+				//Move the caret first
+				CaretSetEndSelection();
+				if (bottomCaret != caretBounds.Bottom)
+				{
+					yViewOffset -= bottomCaret - caretBounds.Bottom;
+					if (yViewOffset < 0)
+						yViewOffset = 0;
+					InvalidateClientArea();
+				}
+			}
+
 		}
 		else if (e.KeyCode == Keys.Delete && GetSelectionStart() < Text.Length)
 		{
@@ -308,30 +381,42 @@ public class TextBox : TextBoxBase
 			else
 				SetTextInternal(Text.Substring(0, GetSelectionStart()) + Text.Substring(GetSelectionStart() + 1));
 			SelectInternal(GetSelectionStart(),0);
+			CaretSetEndSelection();
 		}
 		else
 			return;
 		// If processed
-		CaretSetEndSelection();
-		// Force repaint
+		// Force repaint now
 		Update();
 		e.Handled = true;
 
+	}
+
+	// Invalidate the whole client area
+	private void InvalidateClientArea()
+	{
+		Invalidate(new Rectangle(0, 0, ClientSize.Width, ClientSize.Height));
 	}
 
 	// Handle "KeyPress" events for the text box.
 	private void HandleKeyPress(Object sender, KeyPressEventArgs e)
 	{
 		char c = e.KeyChar;
-		if (c != (char)Keys.Delete && c != (char)Keys.Back)
-		{
-			if (c==(char)Keys.Enter)
-				c = (char)Keys.LineFeed;
-			SetSelectionText( c.ToString() );
-			SelectInternal( SelectionStart + 1, 0);
-			CaretSetPosition(SelectionStart);
-			Update();
-		}
+		// Discard enter if not multiline
+		if (c == (char)Keys.Enter && !Multiline)
+			return;
+		// These are handled on key down
+		if (c == (char)Keys.Delete || c == (char)Keys.Back)
+			return;
+			
+		if (c==(char)Keys.Enter)
+			c = (char)Keys.LineFeed;
+		SetSelectionText( c.ToString() );
+		SelectInternal( SelectionStart + 1, 0);
+		CaretSetPosition(SelectionStart);
+		ScrollToCaretInternal();
+		// Force a repaint now
+		Update();
 	}
 
 	// Handle "MouseDown" events for the text box.
@@ -352,10 +437,12 @@ public class TextBox : TextBoxBase
 	{
 		e.Graphics.FillRectangle(BackBrush, new Rectangle(0,0,Width, Height));
 		if (BorderStyle != BorderStyle.None)
-			ControlPaint.DrawBorder3D( e.Graphics, new Rectangle(0,0, Width, Height), Border3DStyle.Sunken);
-		DrawText( e );
+			ControlPaint.DrawBorder3D( e.Graphics, new Rectangle(0,0,Width, Height), Border3DStyle.Sunken);
+		// Clip to text area
+		e.Graphics.SetClip(new Rectangle(BorderOffset.X, BorderOffset.Y, ClientSize.Width, ClientSize.Height));
+		DrawText(e);
 		if (Focused)
-			CaretDraw( e );
+			CaretDraw(e);
 	}
 
 	// Handle the event when multiline is changed.
@@ -419,7 +506,18 @@ public class TextBox : TextBoxBase
 		}
 	}
 
+	private Pen BackPen
+	{
+		get
+		{
+			if (backPen == null)
+				backPen = new Pen(BackColor);
+			return backPen;
+		}
+	}
+
 	// Create the drawLayout from the text
+	// All rendered in client coordinates.
 	protected void LayoutFromText()
 	{
 		using (Graphics g = CreateGraphics())
@@ -447,19 +545,21 @@ public class TextBox : TextBoxBase
 			format.SetMeasurableCharacterRanges(range);
 			if (range.Length > 0)
 			{
-				// We are infinite in one direction
+				// We leave 1 pixel on the left and right for the caret
+				// Multiline textboxes are inifinite in the y direction
+				// non multiline are infinite in the x direction and we scroll when needed
 				Rectangle measureBounds;
 				if (Multiline)
-					measureBounds = new Rectangle(BorderOffset.X, BorderOffset.Y, Width-BorderOffset.X * 2, maxXY * 2);
+					measureBounds = new Rectangle(1, 0, ClientSize.Width - 2, maxXY * 2);
 				else
-					measureBounds = new Rectangle(BorderOffset.X, BorderOffset.Y, maxXY * 2, Height-BorderOffset.Y*2);
+					measureBounds = new Rectangle(1, 0, maxXY * 2, ClientSize.Height);
 				Region[] bounds = g.MeasureCharacterRanges(Text, Font, measureBounds, format);
 
 				// Convert the MeasureCharacterRanges to LayoutInfo
 				// MeasureCharacterRanges will return an empty rectangle for all characters
 				// that are not visible. We need to figure out the positions of LF and spaces
 				// that are swallowed
-				Rectangle prevBounds = new Rectangle(CaretXFromAlign, BorderOffset.Y, 0, Font.Height);
+				Rectangle prevBounds = new Rectangle(CaretXFromAlign, 0, 0, Font.Height);
 				LayoutInfo.Item.CharVisibility prevVisibility = LayoutInfo.Item.CharVisibility.Visible;
 				for (int i=0; i<Text.Length;i++)
 				{
@@ -472,19 +572,19 @@ public class TextBox : TextBoxBase
 						// Linefeed. The bounds is to the right of the previous character.
 						// If the previous character was also a linefeed, we move down a line
 						// from the previous bounds.
-						if (i > 0 && Text[i-1] == 10)
+						if (i > 0 && Text[i-1] == (char)Keys.LineFeed)
 							rect = new Rectangle(CaretXFromAlign, prevBounds.Top + Font.Height, 0, Font.Height);
 						else
 							rect = new Rectangle(prevBounds.Right, prevBounds.Top, 0, prevBounds.Height);
 					}
-					else // c != 10
+					else // c != linefeed
 						item.charVisibility = LayoutInfo.Item.CharVisibility.Visible;
 					
 					if (rect.IsEmpty)
 					{
 						item.charVisibility = LayoutInfo.Item.CharVisibility.OutOfBounds;
 						// Look for spaces that are swallowed
-						if (c == (char)32 && prevVisibility == LayoutInfo.Item.CharVisibility.Visible)
+						if (c == (char)Keys.Space && prevVisibility == LayoutInfo.Item.CharVisibility.Visible)
 							rect = new Rectangle(prevBounds.Right, prevBounds.Top, 0, prevBounds.Height);
 					}
 					item.bounds = prevBounds = rect;
@@ -493,6 +593,40 @@ public class TextBox : TextBoxBase
 				}
 			}
 		}
+	}
+
+	// Make sure the caret is visible
+	protected override void ScrollToCaretInternal()
+	{
+		if (ScrollToCaretNoInvalidate())
+			Invalidate(new Rectangle(Point.Empty, ClientSize));
+	}
+
+	// Called to recalculate the offsets if make sure bounds is visible. Returns true if offsets have changed
+	private bool ScrollToCaretNoInvalidate()
+	{
+		bool changed = false;
+		if (caretBounds.Bottom - yViewOffset < ClientRectangle.Top)
+		{
+			changed = true;
+			yViewOffset = caretBounds.Top;
+		}
+		else if (caretBounds.Bottom - yViewOffset > ClientRectangle.Bottom)
+		{
+			changed = true;
+			yViewOffset = caretBounds.Bottom - ClientRectangle.Bottom;
+		}
+		if (caretBounds.Right - xViewOffset < ClientRectangle.Left)
+		{
+			changed = true;
+			xViewOffset = caretBounds.Left;
+		}
+		else if (caretBounds.Left - xViewOffset > ClientRectangle.Right - 1)
+		{
+			changed = true;
+			xViewOffset = caretBounds.Right - ClientRectangle.Right + 1;
+		}
+		return changed;
 	}
 
 	protected class LayoutInfo : ICloneable
@@ -540,10 +674,7 @@ public class TextBox : TextBoxBase
 		{
 			Region invalidRegion = newRegion.Clone();
 			invalidRegion.Xor(selectedRegion);
-			using (Graphics g = CreateGraphics())
-			{
-				invalidRegion.GetBounds(g);
-			}
+			invalidRegion.Translate(BorderOffset.X - xViewOffset, BorderOffset.Y - yViewOffset);
 			Invalidate(invalidRegion);				
 		}
 		selectedRegion = newRegion;
@@ -558,7 +689,7 @@ public class TextBox : TextBoxBase
 		LayoutInfo oldLayout = null;
 		if (prevLayout)
 			oldLayout = (LayoutInfo)layout.Clone();
-		string oldText = base.Text;
+		string oldText = Text;
 		base.Text = text;
 		LayoutFromText();
 		if (prevLayout)
@@ -577,6 +708,7 @@ public class TextBox : TextBoxBase
 					invalid.Union( oldLayout.Items[i].bounds);
 				}
 			}
+			invalid.Translate(BorderOffset.X - xViewOffset, BorderOffset.Y - yViewOffset);
 			Invalidate(invalid);
 		}
 	}
@@ -615,6 +747,7 @@ public class TextBox : TextBoxBase
 	}
 
 	// Convert a client size into a window bounds size.
+	// This is used to calculate all offsets
 	internal override Size ClientToBounds(Size size)
 	{
 		return new Size(size.Width + BorderOffset.X * 2, size.Height + BorderOffset.Y * 2);
@@ -624,11 +757,13 @@ public class TextBox : TextBoxBase
 	{
 		// If not Multiline then the control height is the font height
 		if (!Multiline)
-			height = BorderOffset.Y * 2 + Font.Height;
+			height = ClientToBounds(Size.Empty).Height + Font.Height;
 		// If the height or width changes then relayout the text
 		if ((specified & BoundsSpecified.Height) != 0 | (specified & BoundsSpecified.Width) != 0)
 			LayoutFromText();
 		base.SetBoundsCore (x, y, width, height, specified);
+		//TODO
+		ScrollToCaretNoInvalidate();
 	}
 
 
@@ -638,6 +773,8 @@ public class TextBox : TextBoxBase
 		for (int i=0; i<Text.Length;i++) 
 		{
 			LayoutInfo.Item item = layout.Items[i];
+			Rectangle bounds = item.bounds;
+			bounds.Offset(-xViewOffset + ClientToBounds(Size.Empty).Width/2, -yViewOffset + ClientToBounds(Size.Empty).Height/2);
 			if (item.charVisibility == LayoutInfo.Item.CharVisibility.Visible)
 			{
 				Brush back, fore;
@@ -651,8 +788,14 @@ public class TextBox : TextBoxBase
 					back = BackBrush;
 					fore = ForeBrush;
 				}
-				e.Graphics.FillRectangle(back, item.bounds);
-				e.Graphics.DrawString(Text.Substring(i,1),Font, fore, item.bounds.Location);
+				e.Graphics.FillRectangle(back, bounds);
+				char c = Text[i];
+				if (passwordChar != 0)
+					c = passwordChar;
+				if (Enabled)
+					e.Graphics.DrawString(c.ToString(), Font, fore, bounds.Location);
+				else
+					ControlPaint.DrawStringDisabled(e.Graphics, c.ToString(), Font, ForeColor, bounds, StringFormat.GenericDefault);
 			}
 		}
 	}
@@ -667,8 +810,13 @@ public class TextBox : TextBoxBase
 				if (e.Button == MouseButtons.Left)
 				{
 					int closest = CaretGetPosition(new Point(e.X,e.Y));
-					SelectInternal(selectionStartActual, closest - selectionStartActual);
-					CaretSetEndSelection();
+					if (closest >= 0)
+					{
+						// We need to select some text
+						SelectInternal(selectionStartActual, closest - selectionStartActual);
+						// Caret is always at the end
+						CaretSetEndSelection();
+					}
 				}
 				else 
 				{
@@ -681,12 +829,18 @@ public class TextBox : TextBoxBase
 			{
 				if (e.Button == MouseButtons.Left) 
 				{
+					// We are clicking to move the caret
 					int closest = CaretGetPosition(new Point(e.X,e.Y));
-					SelectInternal( closest,0);
-					CaretSetEndSelection();
-					CaretTimerReset();
-					mouseDown = true;
-					Capture = true;
+					if (closest >= 0)
+					{
+						SelectInternal( closest,0);
+						CaretSetEndSelection();
+						// If you click right at the end/beginning, make sure the caret is in view
+						ScrollToCaret();
+						CaretTimerReset();
+						mouseDown = true;
+						Capture = true;
+					}
 				}
 				Cursor = Cursors.IBeam;
 			}
@@ -695,16 +849,16 @@ public class TextBox : TextBoxBase
 			mouseDown = false;
 	}
 
-	// Called when painting the caret
+	// Takes into account client offset and view offsets
 	private void CaretDraw( PaintEventArgs e ) 
 	{
-		if (caretHiding)
-			e.Graphics.DrawLine(caretPenHiding, caretBounds.Left, caretBounds.Top, caretBounds.Left, caretBounds.Bottom - 1);
-		else
-			e.Graphics.DrawLine(caretPen, caretBounds.Left, caretBounds.Top, caretBounds.Left, caretBounds.Bottom - 1);
+		Pen pen = caretHiding? BackPen : caretPen;
+		Point p1 = new Point(caretBounds.Left + ClientToBounds(Size.Empty).Width / 2 - xViewOffset, caretBounds.Top + ClientToBounds(Size.Empty).Width / 2 - yViewOffset);
+		Point p2 = p1 + new Size(0, caretBounds.Height - 1);
+		e.Graphics.DrawLine(pen, p1, p2);
 	}
 
-	// Get the X Position of Caret based on alignment
+	// Get the default X Position of Caret based on alignment
 	private int CaretXFromAlign
 	{
 		get
@@ -712,11 +866,17 @@ public class TextBox : TextBoxBase
 			switch (TextAlign)
 			{
 				case(HorizontalAlignment.Left):
-					return BorderOffset.X;
+					return 0;
 				case(HorizontalAlignment.Center):
-					return (Width-1)/2 - BorderOffset.X;
+					if (Multiline)
+						return ClientSize.Width/2;
+					else
+						return maxXY;
 				default: /*Right*/
-					return Width - BorderOffset.X - 1;
+					if (Multiline)
+						return ClientSize.Width;
+					else
+						return maxXY * 2;
 			}
 		}
 	}
@@ -728,7 +888,7 @@ public class TextBox : TextBoxBase
 		Rectangle newBounds = Rectangle.Empty;
 		if (Text.Length == 0)
 		{
-			newBounds = new Rectangle(CaretXFromAlign, BorderOffset.Y, 0, Font.Height);
+			newBounds = new Rectangle(CaretXFromAlign, 0, 0, Font.Height);
 		}
 		else
 		{
@@ -740,7 +900,7 @@ public class TextBox : TextBoxBase
 				LayoutInfo.Item item = layout.Items[position -1];
 				newBounds = item.bounds;
 				if (item.charVisibility == LayoutInfo.Item.CharVisibility.LineFeed)
-					newBounds = new Rectangle(CaretXFromAlign, newBounds.Top + Font.Height, 0, Font.Height);
+					newBounds = new Rectangle(CaretXFromAlign, newBounds.Top + Font.Height -1, 0, Font.Height);
 				else
 					newBounds = new Rectangle(newBounds.Right, newBounds.Top, 0, newBounds.Height);			
 			}
@@ -756,6 +916,7 @@ public class TextBox : TextBoxBase
 		{
 			Region region = new Region(newBounds);
 			region.Xor(caretBounds);
+			region.Translate(ClientToBounds(Size.Empty).Width / 2 - xViewOffset, ClientToBounds(Size.Empty).Height / 2 - yViewOffset);
 			Invalidate(region);
 			CaretTimerReset();
 		}
@@ -765,9 +926,11 @@ public class TextBox : TextBoxBase
 	// Get the caret position of the nearest point relative to pt
 	private int CaretGetPosition(Point pt)
 	{
+		pt = PointToClient(pt);
+		pt.Offset(xViewOffset, yViewOffset);
 		int prevY = 0;
 		int caretPosition = 0;
-		Rectangle bounds = new Rectangle(BorderOffset.X, BorderOffset.Y, 0, Font.Height);
+		Rectangle bounds = new Rectangle(0, 0, 0, Font.Height);
 		Rectangle prevBounds = bounds;
 		int i=0;
 		for (; i<Text.Length;i++) 
@@ -815,7 +978,7 @@ public class TextBox : TextBoxBase
 		if (Focused)
 		{
 			caretHiding = !caretHiding;
-			Invalidate(caretBounds);
+			Invalidate(new Rectangle(caretBounds.Left + ClientToBounds(Size.Empty).Width / 2 - xViewOffset, caretBounds.Top + ClientToBounds(Size.Empty).Height / 2 - yViewOffset, caretBounds.Width, caretBounds.Height));
 		}
 	}
 
@@ -849,6 +1012,7 @@ public class TextBox : TextBoxBase
 	{
 		// Even if we select backwards, the Caret will be at the end
 		CaretSetPosition(GetSelectionStart()+ GetSelectionLength());
+		
 	}
 
 #if !CONFIG_COMPACT_FORMS

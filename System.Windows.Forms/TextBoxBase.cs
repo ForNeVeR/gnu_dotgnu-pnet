@@ -398,10 +398,9 @@ public abstract class TextBoxBase : Control
 			}
 
 	// Scroll the text box to make the caret visible.
-	[TODO]
 	public void ScrollToCaret()
 			{
-				// TODO
+				ScrollToCaretInternal();
 			}
 
 	// Move the selection.
@@ -671,6 +670,9 @@ public abstract class TextBoxBase : Control
 	abstract internal void SelectInternal( int start, int length);
 
 	abstract protected void SetTextInternal( string text);
+
+	// Make sure the caret is visible
+	abstract protected void ScrollToCaretInternal();
 
 #if !CONFIG_COMPACT_FORMS
 

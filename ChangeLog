@@ -13,6 +13,9 @@ unnecessary node types.
 
 * cscc/cs_decls.tc: remove semantic analysis for unnecessary node types.
 
+* cscc/cs_grammar.y: fix nesting level bug introduced by the new unsafe
+testing code, convert interfaces into classes, and indexers into properties.
+
 2001-08-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.c (ILFindSystemType): import system library classes

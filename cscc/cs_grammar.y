@@ -291,6 +291,13 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 		char           *unary;
 
 	} opName;
+	struct
+	{
+		ILNode		   *type;
+		ILNode		   *ident;
+		ILNode		   *params;
+
+	} indexer;
 }
 
 /*
@@ -478,7 +485,7 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 %type <node>		AccessorBody
 %type <node>		OptAddAccessorDeclaration AddAccessorDeclaration
 %type <node>		OptRemoveAccessorDeclaration RemoveAccessorDeclaration
-%type <node>		IndexerDeclaration IndexerDeclarator
+%type <node>		IndexerDeclaration
 %type <node>		FormalIndexParameters FormalIndexParameter
 %type <node>		FormalIndexParameterList
 %type <node>		InterfaceDeclaration InterfaceBase InterfaceBody
@@ -505,6 +512,7 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 %type <node>		RankSpecifiers RankSpecifierList 
 %type <node>		OptArrayInitializer ArrayInitializer
 %type <node>		OptVariableInitializerList VariableInitializerList
+%type <indexer>		IndexerDeclarator
 
 %type <catchinfo>	CatchNameInfo
 %expect 24
@@ -1798,7 +1806,7 @@ ClassDeclaration
 			ClassBody OptSemiColon	{
 				/* Validate the modifiers */
 				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($2, (NestingLevel > 0));
+					CSModifiersToTypeAttrs($2, (NestingLevel > 1));
 
 				/* Exit the current nesting level */
 				--NestingLevel;
@@ -1913,12 +1921,13 @@ MethodHeader
 	: OptAttributes OptModifiers Type QualifiedIdentifier
 			'(' OptFormalParameterList ')'	{
 				ILUInt32 attrs = CSModifiersToMethodAttrs($2);
-				$$ = ILNode_MethodHeader_create ($1, attrs, $3, $4, $6);
+				$$ = ILNode_MethodHeader_create($1, attrs, $3, $4, $6);
 			}
 	| OptAttributes OptModifiers VOID QualifiedIdentifier
 			'(' OptFormalParameterList ')'	{
 				ILUInt32 attrs = CSModifiersToMethodAttrs($2);
-				$$ = ILNode_MethodHeader_create ($1, attrs, 0, $4, $6);
+				$$ = ILNode_MethodHeader_create($1, attrs,
+							ILNode_VoidType_create(), $4, $6);
 			}
 	;
 
@@ -1970,7 +1979,9 @@ PropertyDeclaration
 			StartAccessorBlock AccessorBlock	{
 				ILUInt32 attrs = CSModifiersToPropertyAttrs($2);
 				$$ = ILNode_PropertyDeclaration_create($1,
-								   attrs, $3, $4, $6.item1, $6.item2);
+								   attrs, $3, $4, 0, $6.item1, $6.item2,
+								   (($6.item1 ? 1 : 0) |
+								    ($6.item2 ? 2 : 0)));
 			}
 	;
 
@@ -2117,22 +2128,30 @@ RemoveAccessorDeclaration
  */
 
 IndexerDeclaration
-	: OptAttributes OptModifiers IndexerDeclarator	{
-				ILUInt32 attrs = CSModifiersToPropertyAttrs($2);
-				$2 = attrs;
-			}
+	: OptAttributes OptModifiers IndexerDeclarator
 			StartAccessorBlock AccessorBlock		{
-				$$ = ILNode_IndexerDeclaration_create($1,
-						   $2, $3, $6.item1, $6.item2);
+				ILUInt32 attrs = CSModifiersToPropertyAttrs($2);
+				$$ = ILNode_PropertyDeclaration_create($1,
+								   attrs, $3.type, $3.ident, $3.params,
+								   $5.item1, $5.item2,
+								   (($5.item1 ? 1 : 0) |
+								    ($5.item2 ? 2 : 0)));
 			}
 	;
 
 IndexerDeclarator
 	: Type THIS FormalIndexParameters		{
-				$$ = ILNode_IndexerDeclarator_create($1, 0, $3);
+				$$.type = $1;
+				$$.ident = ILQualIdentSimple
+								(ILInternString("Item", 4).string);
+				$$.params = $3;
 			}
 	| Type QualifiedIdentifier '.' THIS FormalIndexParameters	{
-				$$ = ILNode_IndexerDeclarator_create($1, $2, $5);
+				$$.type = $1;
+				$$.ident = ILNode_QualIdent_create($2,
+							ILQualIdentSimple
+								(ILInternString("Item", 4).string));
+				$$.params = $5;
 			}
 	;
 
@@ -2357,7 +2376,7 @@ StructDeclaration
 				ILUInt32 attrs;
 
 				/* Validate the modifiers */
-				attrs = CSModifiersToTypeAttrs($2, (NestingLevel > 0));
+				attrs = CSModifiersToTypeAttrs($2, (NestingLevel > 1));
 
 				/* Add extra attributes that structs need */
 				attrs |= IL_META_TYPEDEF_VALUE_TYPE |
@@ -2410,19 +2429,36 @@ StructBody
 
 InterfaceDeclaration
 	: OptAttributes OptModifiers INTERFACE Identifier InterfaceBase	{
-				ILUInt32 attrs = CSModifiersToTypeAttrs($2, (NestingLevel > 0));
-				$2 = attrs;
+				/* Increase the nesting level */
+				++NestingLevel;
 			}
 			InterfaceBody OptSemiColon	{
+				/* Validate the modifiers */
+				ILUInt32 attrs = CSModifiersToTypeAttrs($2, (NestingLevel > 1));
+
+				/* Add extra attributes that interfaces need */
+				attrs |= IL_META_TYPEDEF_INTERFACE;
+
+				/* Exit from the current nesting level */
+				--NestingLevel;
+
+				/* Create the interface definition */
+				$$ = ILNode_ClassDefn_create
+							($1,					/* OptAttributes */
+							 attrs,					/* OptModifiers */
+							 ILQualIdentName($4, 0),/* Identifier */
+							 CurrNamespace.string,	/* Namespace */
+							 $5,					/* ClassBase */
+							 $7);					/* ClassBody */
+
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
-				$$ = ILNode_InterfaceDeclaration_create($1, $2, $4, $5, $7);
 			}
 	;
 
 InterfaceBase
-	: /* empty */  {$$ = 0;}
-	| ':' TypeList {$$ = $2;}
+	: /* empty */	{ $$ = 0; }
+	| ':' TypeList	{ $$ = $2; }
 	;
 
 InterfaceBody
@@ -2442,13 +2478,9 @@ OptInterfaceMemberDeclarations
 	;
 
 InterfaceMemberDeclarations
-	: InterfaceMemberDeclaration		{ 
-				$$ = ILNode_List_create ();
-				ILNode_List_Add($$, $1);
-			}
+	: InterfaceMemberDeclaration		{ $$ = $1; }
 	| InterfaceMemberDeclarations InterfaceMemberDeclaration	{
-				ILNode_List_Add($1, $2);
-				$$ = $1;
+				$$ = ILNode_Compound_CreateFrom($1, $2);
 			}
 	;
 
@@ -2461,25 +2493,39 @@ InterfaceMemberDeclaration
 
 InterfaceMethodDeclaration
 	: OptAttributes OptNew Type Identifier '(' OptFormalParameterList ')' ';' {
-				$$ = ILNode_InterfaceMethodDeclaration_create ($1, 
-									$2, $3, $4, $6);
+				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
+								 IL_META_METHODDEF_PUBLIC |
+								 IL_META_METHODDEF_VIRTUAL |
+								 IL_META_METHODDEF_ABSTRACT |
+								 IL_META_METHODDEF_HIDE_BY_SIG;
+				$$ = ILNode_MethodHeader_create($1, attrs, $3, $4, $6);
 			}
 	| OptAttributes OptNew VOID Identifier '(' OptFormalParameterList ')' ';' {
-				$$ = ILNode_InterfaceMethodDeclaration_create ($1, 
-									$2, 0, $4, $6);
+				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
+								 IL_META_METHODDEF_PUBLIC |
+								 IL_META_METHODDEF_VIRTUAL |
+								 IL_META_METHODDEF_ABSTRACT |
+								 IL_META_METHODDEF_HIDE_BY_SIG;
+				$$ = ILNode_MethodHeader_create($1, attrs,
+							ILNode_VoidType_create(), $4, $6);
 			}
 	;
 
 OptNew
-	: /* empty */	{$$ = 0;}
-	| NEW 			{$$ = 1;}
+	: /* empty */	{ $$ = 0; }
+	| NEW 			{ $$ = 1; }
 	;
 
 InterfacePropertyDeclaration
 	: OptAttributes OptNew Type Identifier
-				StartInterfaceAccessorBody InterfaceAccessorBody		{ 
-				$$ = ILNode_InterfacePropertyDeclaration_create ($1,
-									$2, $3, $4, $6);
+			StartInterfaceAccessorBody InterfaceAccessorBody	{
+				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
+								 IL_META_METHODDEF_PUBLIC |
+								 IL_META_METHODDEF_VIRTUAL |
+								 IL_META_METHODDEF_ABSTRACT |
+								 IL_META_METHODDEF_HIDE_BY_SIG;
+				$$ = ILNode_PropertyDeclaration_create
+								($1, attrs, $3, 0, $4, 0, 0, $6);
 			}
 	;
 
@@ -2511,16 +2557,28 @@ InterfaceAccessors
 
 InterfaceEventDeclaration
 	: OptAttributes OptNew EVENT Type Identifier ';'		{
-				$$ = ILNode_InterfaceEventDeclaration_create
-					($1, $2, $4, $5);
+				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
+								 IL_META_METHODDEF_PUBLIC |
+								 IL_META_METHODDEF_VIRTUAL |
+								 IL_META_METHODDEF_ABSTRACT |
+								 IL_META_METHODDEF_HIDE_BY_SIG;
+				$$ = ILNode_EventPropertyDeclaration_create
+							($1, attrs, $4, $5, 0, 0);
 			}
 	;
 
 InterfaceIndexerDeclaration
 	: OptAttributes OptNew Type THIS FormalIndexParameters
-				StartInterfaceAccessorBody InterfaceAccessorBody		{
-				$$ = ILNode_InterfaceIndexerDeclaration_create
-					($1, $2, $3, $5, $7);
+			StartInterfaceAccessorBody InterfaceAccessorBody	{
+				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
+								 IL_META_METHODDEF_PUBLIC |
+								 IL_META_METHODDEF_VIRTUAL |
+								 IL_META_METHODDEF_ABSTRACT |
+								 IL_META_METHODDEF_HIDE_BY_SIG;
+				ILNode *name = ILQualIdentSimple
+									(ILInternString("Item", 4).string);
+				$$ = ILNode_PropertyDeclaration_create
+								($1, attrs, $3, name, $5, 0, 0, $7);
 			}
 	;
 

@@ -139,6 +139,13 @@ void CScopeAddEnum(const char *name, ILType *type)
 	ILScopeDeclareItem(CCurrentScope, name, C_SCDATA_ENUM, 0, 0, type);
 }
 
+void CScopeAddEnumConst(const char *name, ILNode *node,
+						ILInt32 value, ILType *type)
+{
+	ILScopeDeclareItem(CCurrentScope, name, C_SCDATA_ENUM_CONSTANT,
+					   PersistNode(node), (void *)(ILNativeInt)value, type);
+}
+
 void CScopeAddTypedef(const char *name, ILType *type, ILNode *node)
 {
 	ILScopeDeclareItem(CCurrentScope, name,
@@ -227,6 +234,11 @@ ILNode *CScopeGetNode(void *data)
 unsigned CScopeGetIndex(void *data)
 {
 	return (unsigned)(ILNativeUInt)(ILScopeDataGetData1((ILScopeData *)data));
+}
+
+ILInt32 CScopeGetEnumConst(void *data)
+{
+	return (ILInt32)(ILNativeInt)(ILScopeDataGetData1((ILScopeData *)data));
 }
 
 #ifdef	__cplusplus

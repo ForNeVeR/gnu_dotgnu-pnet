@@ -790,6 +790,40 @@ static ILUInt32 EvaluateSize(ILNode *expr)
 	return size;
 }
 
+/*
+ * Evaluate a constant expression to an "int" value.
+ * Used for enumerated constant values.
+ */
+static ILInt32 EvaluateIntConstant(ILNode *expr)
+{
+	CSemValue value;
+	ILEvalValue *evalValue;
+
+	/* Perform inline semantic analysis on the expression */
+	value = CSemInlineAnalysis(&CCCodeGen, expr, CCurrentScope);
+	if(!CSemIsConstant(value))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+						  _("constant value required"));
+		}
+		return 0;
+	}
+
+	/* Convert the constant value into an "int" value */
+	evalValue = CSemGetConstant(value);
+	if(!evalValue || !ILGenCastConst(&CCCodeGen, evalValue,
+									 evalValue->valueType,
+									 ILMachineType_Int32))
+	{
+		CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+					  _("compile-time constant value required"));
+		return 0;
+	}
+	return evalValue->un.i4Value;
+}
+
 %}
 
 /*
@@ -1025,6 +1059,22 @@ PrimaryExpression
 						{
 							$$ = ILNode_FunctionRef_create
 									($1, CScopeGetType(data));
+						}
+						break;
+
+						case C_SCDATA_ENUM_CONSTANT:
+						{
+							ILInt32 value = CScopeGetEnumConst(data);
+							if(value >= 0)
+							{
+								$$ = ILNode_Int32_create
+									((ILUInt64)value, 0, 1);
+							}
+							else
+							{
+								$$ = ILNode_Int32_create
+									((ILUInt64)(ILUInt32)(-value), 1, 1);
+							}
 						}
 						break;
 
@@ -1822,8 +1872,57 @@ EnumeratorListNoComma
 	;
 
 Enumerator
-	: IDENTIFIER							{ /* TODO */ }
-	| IDENTIFIER '=' ConstantExpression		{ /* TODO */ }
+	: IDENTIFIER		{
+				/* See if we already have a definition with this name */
+				void *data = CScopeLookupCurrent($1);
+				ILNode *node;
+				if(data)
+				{
+					CCError(_("redeclaration of `%s'"), $1);
+					node = CScopeGetNode(data);
+					if(node)
+					{
+						CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  				  _("`%s' previously declared here"), $1);
+					}
+				}
+				else
+				{
+					CTypeDefineEnumConst(&CCCodeGen, currentEnum,
+										 $1, currentEnumValue);
+					CScopeAddEnumConst($1, ILQualIdentSimple($1),
+									   currentEnumValue, currentEnum);
+				}
+				++currentEnumValue;
+			}
+	| IDENTIFIER '=' ConstantExpression		{
+				void *data;
+				ILNode *node;
+
+				/* Update the current enumeration value */
+				currentEnumValue = EvaluateIntConstant($3);
+
+				/* See if we already have a definition with this name */
+				data = CScopeLookupCurrent($1);
+				if(data)
+				{
+					CCError(_("redeclaration of `%s'"), $1);
+					node = CScopeGetNode(data);
+					if(node)
+					{
+						CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  				  _("`%s' previously declared here"), $1);
+					}
+				}
+				else
+				{
+					CTypeDefineEnumConst(&CCCodeGen, currentEnum,
+										 $1, currentEnumValue);
+					CScopeAddEnumConst($1, ILQualIdentSimple($1),
+									   currentEnumValue, currentEnum);
+				}
+				++currentEnumValue;
+			}
 	;
 
 CSharpSpecifier

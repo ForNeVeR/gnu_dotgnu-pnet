@@ -32,15 +32,16 @@ extern	"C" {
 #define	C_SCDATA_TYPEDEF				100
 #define	C_SCDATA_STRUCT_OR_UNION		101
 #define	C_SCDATA_ENUM					102
-#define	C_SCDATA_LOCAL_VAR				103
-#define	C_SCDATA_PARAMETER_VAR			104
-#define	C_SCDATA_GLOBAL_VAR				105
-#define	C_SCDATA_GLOBAL_VAR_FORWARD		106
-#define	C_SCDATA_FUNCTION				107
-#define	C_SCDATA_FUNCTION_FORWARD		108
-#define	C_SCDATA_FUNCTION_FORWARD_KR	109
-#define	C_SCDATA_FUNCTION_INFERRED		110
-#define	C_SCDATA_UNDECLARED				111
+#define	C_SCDATA_ENUM_CONSTANT			103
+#define	C_SCDATA_LOCAL_VAR				104
+#define	C_SCDATA_PARAMETER_VAR			105
+#define	C_SCDATA_GLOBAL_VAR				106
+#define	C_SCDATA_GLOBAL_VAR_FORWARD		107
+#define	C_SCDATA_FUNCTION				108
+#define	C_SCDATA_FUNCTION_FORWARD		109
+#define	C_SCDATA_FUNCTION_FORWARD_KR	110
+#define	C_SCDATA_FUNCTION_INFERRED		111
+#define	C_SCDATA_UNDECLARED				112
 
 /*
  * The current scope.
@@ -103,6 +104,12 @@ int CScopeHasEnum(const char *name);
  * Add a type reference for an enum to the current scope.
  */
 void CScopeAddEnum(const char *name, ILType *type);
+
+/*
+ * Add an enum constant to the current scope.
+ */
+void CScopeAddEnumConst(const char *name, ILNode *node,
+						ILInt32 value, ILType *type);
 
 /*
  * Add a type definition to the current scope.
@@ -183,6 +190,11 @@ ILNode *CScopeGetNode(void *data);
  * Get the local variable index associated with a scope data item.
  */
 unsigned CScopeGetIndex(void *data);
+
+/*
+ * Get the value of an "enum" constant.
+ */
+ILInt32 CScopeGetEnumConst(void *data);
 
 #ifdef	__cplusplus
 };

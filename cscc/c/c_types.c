@@ -1215,6 +1215,39 @@ ILField *CTypeLookupField(ILGenInfo *info, ILType *structType,
 	return 0;
 }
 
+void CTypeDefineEnumConst(ILGenInfo *info, ILType *enumType,
+					 	  const char *constName, ILInt32 constValue)
+{
+	ILClass *classInfo = ILType_ToValueType(enumType);
+	ILField *field;
+	ILConstant *constant;
+	unsigned char buf[4];
+
+	/* Create the new literal constant field */
+	field = ILFieldCreate(classInfo, 0, constName,
+						  IL_META_FIELDDEF_PUBLIC |
+						  IL_META_FIELDDEF_STATIC |
+						  IL_META_FIELDDEF_LITERAL);
+	if(!field)
+	{
+		ILGenOutOfMemory(info);
+	}
+	ILMemberSetSignature((ILMember *)field, enumType);
+
+	/* Create a constant block and attach it to the field */
+	constant = ILConstantCreate(info->image, 0, ILToProgramItem(field),
+								IL_META_ELEMTYPE_I4);
+	if(!constant)
+	{
+		ILGenOutOfMemory(info);
+	}
+	IL_WRITE_INT32(buf, constValue);
+	if(!ILConstantSetValue(constant, buf, 4))
+	{
+		ILGenOutOfMemory(info);
+	}
+}
+
 ILType *CTypeWithoutQuals(ILType *type)
 {
 	/* Qualifiers are stored in the IL type as custom modifiers */

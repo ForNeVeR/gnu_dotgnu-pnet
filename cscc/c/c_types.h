@@ -161,6 +161,12 @@ ILField *CTypeLookupField(ILGenInfo *info, ILType *structType,
 						  ILUInt32 *bitFieldSize);
 
 /*
+ * Define a new enumerated constant within an "enum" type.
+ */
+void CTypeDefineEnumConst(ILGenInfo *info, ILType *enumType,
+					 	  const char *constName, ILInt32 constValue);
+
+/*
  * Remove qualifiers from a C type.
  */
 ILType *CTypeWithoutQuals(ILType *type);

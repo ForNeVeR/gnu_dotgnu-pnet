@@ -442,9 +442,11 @@ case IL_OP_STOBJ:
 	classInfo = GetValueTypeToken(method, pc);
 	if(STK_BINARY_1 == ILEngineType_M || STK_BINARY_1 == ILEngineType_T)
 	{
-		if(STK_BINARY_2 == ILEngineType_MV && classInfo &&
-		   ILTypeIdentical(stack[stackSize - 1].typeInfo,
-		   				   ILType_FromValueType(classInfo)))
+		/* NOTE: ILTypeIdentical(stack[stackSize - 1].typeInfo,
+		   				    ILType_FromValueType(classInfo))
+		   was removed as ECMA spec leaves that check as unspecified. */
+		if((STK_BINARY_2 == ILEngineType_MV || STK_BINARY_2 == ILEngineType_I)
+			&& classInfo)
 		{
 			ILCoderPtrAccessManaged(coder, opcode, classInfo);
 			stackSize -= 2;

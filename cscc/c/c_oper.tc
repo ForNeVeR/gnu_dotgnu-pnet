@@ -2081,11 +2081,23 @@ static ILType *CommonCondType(ILGenInfo *info, ILType *type1, ILType *type2)
 	{
 		return type1;
 	}
+	else if(CTypeIsFunctionPtr(type1) && CTypeIsFunctionPtr(type2))
+	{
+		return type1;
+	}
 	else if(CTypeIsPointer(type1) && IsIntegerMachineType(mtype2))
 	{
 		return type1;
 	}
+	else if(CTypeIsFunctionPtr(type1) && IsIntegerMachineType(mtype2))
+	{
+		return type1;
+	}
 	else if(CTypeIsPointer(type2) && IsIntegerMachineType(mtype1))
+	{
+		return type2;
+	}
+	else if(CTypeIsFunctionPtr(type2) && IsIntegerMachineType(mtype1))
 	{
 		return type2;
 	}
@@ -2121,6 +2133,18 @@ ILNode_CSemAnalysis(ILNode_Conditional)
 	   (!CSemIsRValue(value2) && !CSemIsVoid(value2)))
 	{
 		goto error;
+	}
+
+	/* Convert function references into function pointers */
+	if(CTypeIsFunction(CSemGetType(value1)) &&
+	   yyisa(node->expr2, ILNode_FunctionRef))
+	{
+		CSemSetRValue(value1, CTypeAddFunctionPtr(info, CSemGetType(value1)));
+	}
+	if(CTypeIsFunction(CSemGetType(value2)) &&
+	   yyisa(node->expr3, ILNode_FunctionRef))
+	{
+		CSemSetRValue(value2, CTypeAddFunctionPtr(info, CSemGetType(value2)));
 	}
 
 	/* Determine the common type and then coerce the arguments */

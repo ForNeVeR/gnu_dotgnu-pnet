@@ -6,6 +6,9 @@
 	between an assembly and the ECMA specification, suitable for
 	automated processing by other tools.
 
+	* samples/README.mscorlib: add an explaination of where the
+	"mscorlib.dll" file came from.
+
 2001-12-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c (CallMethod, CallMethodV): throw a "missing method"

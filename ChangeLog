@@ -1,4 +1,10 @@
 
+2002-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/method_cache.c (_ILCacheSetCookie): check "method"
+	for NULL before trying to set the cookie, just in case the
+	system is out of memory.
+
 2002-10-18  Gopal.V  <gopalv82@symonds.net>
 
 	* ilasm/ilasm_grammar.y: approve & commit Sasa Jovanic's (sasa_j@mail.ru)

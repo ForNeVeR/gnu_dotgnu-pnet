@@ -743,7 +743,10 @@ void _ILCacheNewRegion(ILCachePosn *posn, void *cookie)
 
 void _ILCacheSetCookie(ILCachePosn *posn, void *cookie)
 {
-	posn->cache->method->cookie = cookie;
+	if(posn->cache->method)
+	{
+		posn->cache->method->cookie = cookie;
+	}
 }
 
 void *_ILCacheGetMethod(ILCache *cache, void *pc, void **cookie)

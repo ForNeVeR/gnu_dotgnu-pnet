@@ -46,6 +46,7 @@ public class TopLevelWindow : InputOutputWidget
 	private MotifInputType inputType;
 	private TopLevelWindow transientFor;
 	private Timer resizeTimer;
+	private int expectedWidth, expectedHeight;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.TopLevelWindow"/>
@@ -126,6 +127,9 @@ public class TopLevelWindow : InputOutputWidget
 				this.functions = MotifFunctions.All;
 				this.inputType = MotifInputType.Normal;
 				this.transientFor = null;
+				this.resizeTimer = null;
+				this.expectedWidth = -1;
+				this.expectedHeight = -1;
 
 				// Set the initial WM properties.
 				try
@@ -212,6 +216,11 @@ public class TopLevelWindow : InputOutputWidget
 					hints.width = newWidth;
 					hints.height = newHeight;
 					Xlib.XSetWMNormalHints(display, handle, ref hints);
+					if(newWidth != width || newHeight != height)
+					{
+						expectedWidth = newWidth;
+						expectedHeight = newHeight;
+					}
 					base.PerformMoveResize
 						(display, newX, newY, newWidth, newHeight);
 					return;
@@ -226,6 +235,8 @@ public class TopLevelWindow : InputOutputWidget
 						changes.y = newY;
 						changes.width = newWidth;
 						changes.height = newHeight;
+						expectedWidth = newWidth;
+						expectedHeight = newHeight;
 						mask = ConfigureWindowMask.CWX |
 							   ConfigureWindowMask.CWY |
 							   ConfigureWindowMask.CWWidth |
@@ -243,6 +254,8 @@ public class TopLevelWindow : InputOutputWidget
 				{
 					changes.width = newWidth;
 					changes.height = newHeight;
+					expectedWidth = newWidth;
+					expectedHeight = newHeight;
 					mask = ConfigureWindowMask.CWWidth |
 						   ConfigureWindowMask.CWHeight;
 				}
@@ -845,6 +858,8 @@ public class TopLevelWindow : InputOutputWidget
 					resizeTimer.Stop();
 					resizeTimer = null;
 				}
+				expectedWidth = -1;
+				expectedHeight = -1;
 				OnResize(width, height);
 			}
 
@@ -1006,11 +1021,25 @@ public class TopLevelWindow : InputOutputWidget
 							break;
 						}
 						if(xevent.xconfigure.width != width ||
-						   xevent.xconfigure.height != height)
+						   xevent.xconfigure.height != height ||
+						   expectedWidth != -1)
 						{
 							// The size has been changed by the window manager.
-							width = xevent.xconfigure.width;
-							height = xevent.xconfigure.height;
+							if(expectedWidth == -1)
+							{
+								// Resize from the window manager, not us.
+								width = xevent.xconfigure.width;
+								height = xevent.xconfigure.height;
+							}
+							else if(expectedWidth == xevent.xconfigure.width &&
+									expectedHeight == xevent.xconfigure.height)
+							{
+								// This is the size that we were expecting.
+								// Further ConfigureNotify's will be from
+								// the window manager instead of from us.
+								expectedWidth = -1;
+								expectedHeight = -1;
+							}
 							if(resizeTimer == null)
 							{
 								resizeTimer = new Timer

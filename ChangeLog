@@ -10,6 +10,10 @@
 	System.Windows.Forms/VBoxLayout.cs: disable "TabStop" on layout
 	and message box controls that should not be tab stops.
 
+	* Xsharp/TopLevelWindow.cs: fix a bug in the handling of resize
+	events that caused it to confuse ConfigureNotify's that arose
+	from application-requested and window manager-requested resizes.
+
 2003-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/XsharpSupport.c: implement a special case for Latin1

@@ -47,40 +47,38 @@ static ILCmdLineOption const options[] = {
 		"Set the output format to object file."},
 	{"-g", 'g', 0, 0, 0},
 	{"-n", 'n', 0, 0, 0},
-	{"-s", 's', 0, 0, 0},
-	{"-l", 'l', 0, 0, 0},
-	{"-3", '3', 0, 0, 0},
-	{"-c", 'c', 0, 0, 0},
-	{"-G", 'G', 0, 0, 0},
-	{"-m", 'm', 0, 0, 0},
-	{"-L", 'L', 1, 0, 0},
-	{"-v", 'v', 0, 0, 0},
-	{"--output", 'o', 1, 0, 0},
-	{"--format", 'f', 1, 0, 0},
 	{"--debug", 'g', 0,
 		"--debug            or    -g",
 		"Write debug information to the output file."},
 	{"--no-debug", 'n', 0,
 		"--no-debug         or    -n",
 		"Suppress debug information in the output file."},
-	{"--short-insns", 's', 0,
-		"--short-insns      or    -s",
+	{"-s", 's', 0,
+		"-fshort-insns      or    -s",
 		"Use shorter instructions if possible (default)."},
-	{"--no-short-insns", 'l', 0,
-		"--no-short-insns   or    -l",
+	{"-l", 'l', 0,
+		"-fno-short-insns   or    -l",
 		"Use the stated version of an instruction."},
-	{"--32bit-only", '3', 0,
-		"--32bit-only       or    -3",
-		"The resulting output file can only be used on 32-bit systems."},
-	{"--cui-subsystem", 'c', 0,
-		"--cui-subsystem    or    -c",
-		"Compile for the command-line subsystem (default)."},
-	{"--gui-subsystem", 'G', 0,
-		"--gui-subsystem    or    -G",
-		"Compile for the GUI subsystem."},
-	{"--stdlib-name", 'L', 0,
-		"--stdlib-name name or    -L name",
+	{"-L", 'L', 1,
+		"-fstdlib-name=name or    -L name",
 		"Specify the name of the standard library (default is `mscorlib')."},
+	{"-J", 'J', 0,
+		"-mjvm              or    -J",
+		"Assemble to JVM bytecode instead of IL."},
+	{"-3", '3', 0,
+		"-m32bit-only       or    -3",
+		"The resulting output file can only be used on 32-bit systems."},
+	{"-c", 'c', 0,
+		"-mcui-subsystem    or    -c",
+		"Compile for the command-line subsystem (default)."},
+	{"-G", 'G', 0,
+		"-mgui-subsystem    or    -G",
+		"Compile for the GUI subsystem."},
+	{"-v", 'v', 0, 0, 0},
+	{"--output", 'o', 1, 0, 0},
+	{"--format", 'F', 1, 0, 0},
+	{"-f", 'f', 1, 0, 0},
+	{"-m", 'm', 1, 0, 0},
 	{"-D", 'D', 0, 0, 0},		/* Enable debugging of yacc parser */
 	{"--version", 'v', 0,
 		"--version          or    -v",
@@ -119,6 +117,7 @@ int main(int argc, char *argv[])
 	char *progname = argv[0];
 	char *outputFile = 0;
 	int format = -1;
+	int jvmMode = 0;
 	int debug = 0;
 	int sawStdin;
 	int state, opt, len;
@@ -140,7 +139,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 
-			case 'f':
+			case 'F':
 			{
 				if(!strcmp(param, "exe"))
 				{
@@ -228,9 +227,65 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'J':
+			{
+				jvmMode = 1;
+			}
+			break;
+
 			case 'D':
 			{
 				ilasm_debug = 1;
+			}
+			break;
+
+			case 'f':
+			{
+				/* Parse a flag passed down from the compiler */
+				if(!strncmp(param, "stdlib-name=", 12))
+				{
+					ILAsmLibraryName = param + 12;
+				}
+				else if(!strcmp(param, "short-insns"))
+				{
+					ILAsmShortInsns = 1;
+				}
+				else if(!strcmp(param, "no-short-insns"))
+				{
+					ILAsmShortInsns = 0;
+				}
+				else
+				{
+					/* All other flags are ignored, because they may
+					   be for other parts of the compiler chain */
+				}
+			}
+			break;
+
+			case 'm':
+			{
+				/* Parse a machine flag passed down from the compiler */
+				if(!strcmp(param, "32bit-only"))
+				{
+					flags |= IL_WRITEFLAG_32BIT_ONLY;
+				}
+				else if(!strcmp(param, "cui-subsystem"))
+				{
+					flags &= ~IL_WRITEFLAG_SUBSYS_GUI;
+				}
+				else if(!strcmp(param, "gui-subsystem"))
+				{
+					flags |= IL_WRITEFLAG_SUBSYS_GUI;
+				}
+				else if(!strcmp(param, "jvm"))
+				{
+					jvmMode = 1;
+				}
+				else
+				{
+					/* All other flags are ignored, because they may
+					   be for other parts of the compiler chain */
+				}
 			}
 			break;
 

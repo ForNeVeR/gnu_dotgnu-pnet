@@ -10,6 +10,9 @@ ILGenInfo object.
 * ilasm/ilasm_grammar.y, ilasm/ilasm_scanner.l: add syntax to
 ilasm's parser and lexer to support Java method bodies.
 
+* ilasm/ilasm_main.c: convert some of the options into "-f" and "-m"
+flags to make it easier to pass them down from the cscc compiler.
+
 2001-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/jopcodes.c, image/Makefile.am: new file, containing a list of

@@ -776,7 +776,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					if (Focused)
+					if (toolkitWindow != null && toolkitWindow.Focused)
 					{
 						return true;
 					}

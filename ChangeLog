@@ -1,4 +1,9 @@
 
+2004-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/Control.cs: fix bug #10392 - stack overflow
+	in "ContainsFocus" when overriding "Control.Focused".
+
 2004-09-15  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Private/NumberParser.cs: fix not raised overflowexception

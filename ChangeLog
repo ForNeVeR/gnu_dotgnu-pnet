@@ -18,6 +18,9 @@
 	* cscc/csharp/cs_stmt.tc (ILNode_FixExpr): handle assignment
 	of an array to a pointer variable in a "fixed" expression.
 
+	* cscc/csharp/cs_oper.tc: implement pointer comparison,
+	addition, and subtraction.
+
 2004-03-12  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/pinvoke.c (PackDelegateParams): process pointer values

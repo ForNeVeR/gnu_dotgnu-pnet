@@ -1,4 +1,84 @@
 
+0.6.4 (13 March 2004)
+
+	Runtime engine:
+
+	* Write Reflection.Emit binaries in "wb" mode.
+	* Set the execute bit on binaries written by Reflection.Emit.
+	* Fixes to unsafe-mode verification rules regarding pointers.
+	* Verification fixes for storing managed pointers via "stind.i".
+	* Modify internalcalls for "WaitAll" and "WaitAny" to work
+	  around "MarshalByRefObject" adding a new field.
+	* Internalcalls for file lengths and attributes (Russell Stuart).
+	* Pass pointer parameters to delegates correctly (Gopal V).
+
+	C# Compiler:
+
+	* Fixes to reference type coercion.
+	* "params" array matching only on the last parameter (Gopal V).
+	* Filter out instance members when searching nested parent scopes.
+	* Assignment of arrays to pointer variables in "fixed" statements.
+	* Implement pointer comparison, addition, and subtraction.
+
+	C Compiler:
+
+	* Rewrite the type system to use native layout.
+	* Thread-specific variables.
+	* Fix casts from function pointer types to "void *".
+	* Computed goto support.
+	* Register parameters of the form "register type".
+	* Fix semantic analysis for expression statements.
+	* Add C#-style casts and coercions.
+	* Make "long double" an alias for "double" because MS runtime engines
+	  don't handle the "native float" IL type correctly.
+	* Improve the visibility of C definitions to C# applications.
+	* Add some C# and Managed C++ syntax to aid with interoperation.
+	* Allow C# strings to be defined with S"foo".
+	* "using" and "using namespace" to import C# types into C programs.
+	* Output the parameter types for PInvoke declarations.
+	* Bug in the declaration of functions returning function pointers.
+	* Set the default PInvoke calling convention to "cdecl".
+	* Handle string initializations of the form {"foo"}.
+	* Convert constants of the form 123L into native ints, not int64.
+
+	Linker:
+
+	* Improve detection of unresolved references in C applications.
+	* Use C type names in error messages where appropriate.
+	* Use "OpenSystem.C.GlobalScopeAttribute" to export C# definitions
+	  into the global C scope.
+	* Use ordinary names like "libc" for C modules instead of "$Module$".
+	* Remove C "memory models", which aren't needed any more.
+
+	Loader and Metadata:
+
+	* Allow custom modifiers within a "byref" type.
+	* Look for "pinvoke.map" files when resolving PInvoke libraries.
+
+	Csant:
+
+	* Missing options for mcs compiles (Ilyak Kasnacheev).
+
+	Documentation:
+
+	* Rewrite the C user's guide and move it into "pnettools.texi".
+	* Update the C ABI specification to reflect changes to the C compiler.
+
+	Platform Support:
+
+	* Enable FreeBSD pthreads support (Adam Ballai).
+	* Use the tm_gmtoff field for timezones (Ole Guldberg Jensen).
+	* Explicitly invoke the shell when configuring libgc and libffi.
+	* Work around bugs with read-write locks on systems with NPTL.
+	* Use $(EXEEXT) on install lines that need it, for mingw32.
+	* Fixup SOCKETLIBS and suppress libm under mingw32 environments.
+
+	Other:
+
+	* Check in a copy of gcc's cpp so that we can avoid system cpp bugs.
+	* Add the "#using#" directive to cpp.
+	* Update the "pnet.spec.in" file (Russell Stuart).
+
 0.6.2 (3 January 2004)
 
 	Runtime engine:

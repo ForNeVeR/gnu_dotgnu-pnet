@@ -7,6 +7,8 @@
 	* configure.in: use the correct SOCKETLIBS and -lm settings
 	for mingw32 builds.
 
+	* NEWS, configure.in: update version for the "0.6.4" release.
+
 2004-03-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lookup.c (ResolveSimpleName): when we move

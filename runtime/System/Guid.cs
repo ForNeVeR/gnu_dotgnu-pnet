@@ -76,6 +76,7 @@ public struct Guid : IFormattable, IComparable
 			{
 				int value = 0;
 				char ch;
+				bool sawDigit = false;
 				if((length - posn) <= 2 || g[posn] != '0' ||
 				   (g[posn + 1] != 'x' && g[posn + 1] != 'X'))
 				{
@@ -106,11 +107,16 @@ public struct Guid : IFormattable, IComparable
 						--posn;
 						break;
 					}
+					sawDigit = true;
 					--digits;
 					if(digits < 0)
 					{
 						throw new FormatException(_("Format_GuidValue"));
 					}
+				}
+				if(!sawDigit)
+				{
+					throw new FormatException(_("Format_GuidValue"));
 				}
 				return value;
 			}
@@ -151,35 +157,58 @@ public struct Guid : IFormattable, IComparable
 					GetChar(g, ref posn, length, ',');
 					GetChar(g, ref posn, length, '{');
 					d__ = (byte)GetVarHex(g, ref posn, length, 2);
-					GetChar(g, ref posn, length, '}');
-					GetChar(g, ref posn, length, ',');
-					GetChar(g, ref posn, length, '{');
-					e__ = (byte)GetVarHex(g, ref posn, length, 2);
-					GetChar(g, ref posn, length, '}');
-					GetChar(g, ref posn, length, ',');
-					GetChar(g, ref posn, length, '{');
-					f__ = (byte)GetVarHex(g, ref posn, length, 2);
-					GetChar(g, ref posn, length, '}');
-					GetChar(g, ref posn, length, ',');
-					GetChar(g, ref posn, length, '{');
-					g__ = (byte)GetVarHex(g, ref posn, length, 2);
-					GetChar(g, ref posn, length, '}');
-					GetChar(g, ref posn, length, ',');
-					GetChar(g, ref posn, length, '{');
-					h__ = (byte)GetVarHex(g, ref posn, length, 2);
-					GetChar(g, ref posn, length, '}');
-					GetChar(g, ref posn, length, ',');
-					GetChar(g, ref posn, length, '{');
-					i__ = (byte)GetVarHex(g, ref posn, length, 2);
-					GetChar(g, ref posn, length, '}');
-					GetChar(g, ref posn, length, ',');
-					GetChar(g, ref posn, length, '{');
-					j__ = (byte)GetVarHex(g, ref posn, length, 2);
-					GetChar(g, ref posn, length, '}');
-					GetChar(g, ref posn, length, ',');
-					GetChar(g, ref posn, length, '{');
-					k__ = (byte)GetVarHex(g, ref posn, length, 2);
-					GetChar(g, ref posn, length, '}');
+					if(posn < length && g[posn] == '}')
+					{
+						// The byte values must be individually bracketed.
+						GetChar(g, ref posn, length, '}');
+						GetChar(g, ref posn, length, ',');
+						GetChar(g, ref posn, length, '{');
+						e__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, '}');
+						GetChar(g, ref posn, length, ',');
+						GetChar(g, ref posn, length, '{');
+						f__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, '}');
+						GetChar(g, ref posn, length, ',');
+						GetChar(g, ref posn, length, '{');
+						g__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, '}');
+						GetChar(g, ref posn, length, ',');
+						GetChar(g, ref posn, length, '{');
+						h__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, '}');
+						GetChar(g, ref posn, length, ',');
+						GetChar(g, ref posn, length, '{');
+						i__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, '}');
+						GetChar(g, ref posn, length, ',');
+						GetChar(g, ref posn, length, '{');
+						j__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, '}');
+						GetChar(g, ref posn, length, ',');
+						GetChar(g, ref posn, length, '{');
+						k__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, '}');
+					}
+					else
+					{
+						// The byte values are not individually bracketed.
+						GetChar(g, ref posn, length, ',');
+						e__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, ',');
+						f__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, ',');
+						g__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, ',');
+						h__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, ',');
+						i__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, ',');
+						j__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, ',');
+						k__ = (byte)GetVarHex(g, ref posn, length, 2);
+						GetChar(g, ref posn, length, '}');
+					}
 				}
 				else
 				{

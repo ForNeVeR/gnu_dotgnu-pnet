@@ -16,6 +16,8 @@
 	* libgc/*: libgc sources updated to version 6.1alpha4.  Downloaded
 	from "http://www.hpl.hp.com/personal/Hans_Boehm/gc/gc_source/".
 
+	* config.guess, config.sub: updated files from Autoconf 2.53.
+
 2002-04-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_branch.c, engine/cvm_except.c, engine/cvm_inline.c,

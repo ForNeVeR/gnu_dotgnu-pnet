@@ -1,4 +1,9 @@
 
+2002-11-30  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Globalization/DateTimeFormatInfo.cs: Temporary fix
+	for GetEraName()
+
 2002-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Security/Cryptography/CryptoAPITransform.cs,

@@ -155,8 +155,8 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 	[TODO]
 	public String GetEraName(int era)
 			{
-				// TODO
-				return null;
+				// TODO: support other Calendars as well
+				return "AD";
 			}
 
 	// Implement the IFormatProvider interface.

@@ -34,7 +34,7 @@
 	samples/ilrun.sh.in, samples/samples.build: copy the C# samples from
 	pnet to pnetlib.
 
-	* configure.in: look in $PREFIX/bin for important binaries.
+	* configure.in: look in ${prefix}/bin for important binaries.
 
 2002-12-07  Nguyen, Thong  <tum@veridicus.com>
 

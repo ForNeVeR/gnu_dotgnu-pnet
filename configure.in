@@ -67,7 +67,7 @@ AC_ARG_WITH(profile,
 ])
 
 dnl Find the Portable.NET "csant" program.
-AC_PATH_PROG(CSANT, csant,, $PNET_PATH/csant:$PREFIX/bin:$PATH)
+AC_PATH_PROG(CSANT, csant,, $PNET_PATH/csant:${prefix}/bin:$PATH)
 if test "$CSANT" = "" ; then
 	echo '**************************************************************'
 	echo "Portable.NET's csant tool is required to build the system."
@@ -78,7 +78,7 @@ fi
 
 dnl Find the C# compiler to use.
 if test "$MSTOOLS" = "no"; then
-	AC_PATH_PROG(CSHARP_COMPILER, cscc,, $PNET_PATH/cscc:$PREFIX/bin:$PATH)
+	AC_PATH_PROG(CSHARP_COMPILER, cscc,, $PNET_PATH/cscc:${prefix}/bin:$PATH)
 	if test "$CSHARP_COMPILER" = "" ; then
 		AC_PATH_PROG(CSHARP_COMPILER, csc)
 		if test "$CSHARP_COMPILER" = ""; then
@@ -110,7 +110,7 @@ fi
 
 dnl Find the .NET resource generator to use.
 if test "$MSTOOLS" = "no"; then
-	AC_PATH_PROG(RESGEN, resgen,, $PNET_PATH/resgen:$PREFIX/bin:$PATH)
+	AC_PATH_PROG(RESGEN, resgen,, $PNET_PATH/resgen:${prefix}/bin:$PATH)
 	if test "$RESGEN" = "" ; then
 		echo '**************************************************************'
 		echo "Portable.NET's or Microsoft's resgen is required to build."
@@ -137,7 +137,7 @@ esac
 AM_CONDITIONAL(PNET_RESGEN, test "$RESGEN_FLAGS" != "")
 
 dnl Find the Portable.NET runtime engine.
-AC_PATH_PROG(ILRUN, ilrun,, $PNET_PATH/engine:$PREFIX/bin:$PATH)
+AC_PATH_PROG(ILRUN, ilrun,, $PNET_PATH/engine:${prefix}/bin:$PATH)
 if test "$ILRUN" = "" ; then
 	echo '**************************************************************'
 	echo "Portable.NET is required to run the test suite."
@@ -147,7 +147,7 @@ if test "$ILRUN" = "" ; then
 fi
 
 dnl Find the Portable.NET ilfind program.
-AC_PATH_PROG(ILFIND, ilfind,, $PNET_PATH/ilfind:$PREFIX/bin:$PATH)
+AC_PATH_PROG(ILFIND, ilfind,, $PNET_PATH/ilfind:${prefix}/bin:$PATH)
 if test "$ILFIND" = "" ; then
 	echo '**************************************************************'
 	echo "Portable.NET's ilfind is required to build the system."

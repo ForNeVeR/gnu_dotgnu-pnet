@@ -1,5 +1,6 @@
 /*
- * ParameterModifier.cs - Implementation of the "System.Reflection.ParameterModifier" class.
+ * ParameterModifier.cs - Implementation of the
+ *		"System.Reflection.ParameterModifier" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -23,8 +24,31 @@ namespace System.Reflection
 
 public struct ParameterModifier
 {
+	// Internal state.
+	private bool[] flags;
 
-// TO DO
+	// Constructor.
+	public ParameterModifier(int parameterCount)
+			{
+				if(parameterCount < 0)
+				{
+					throw new ArgumentException(_("ArgRange_NonNegative"));
+				}
+				flags = new bool [parameterCount];
+			}
+
+	// Get or set a parameter modifier flag.
+	public bool this [int index]
+			{
+				get
+				{
+					return flags[index];
+				}
+				set
+				{
+					flags[index] = value;
+				}
+			}
 
 }; // class ParameterModifier
 

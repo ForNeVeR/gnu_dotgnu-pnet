@@ -23,12 +23,17 @@ namespace System.Reflection
 {
 
 using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 internal sealed class ClrMethod : MethodInfo, IClrProgramItem
 {
 
-	// Private data used by the runtime engine.
+	// Private data used by the runtime engine.  This must be the first field.
 	private IntPtr privateData;
+
+	// Cached copy of the parameters.
+	private ParameterInfo[] parameters;
 
 	// Implement the IClrProgramItem interface.
 	public IntPtr ClrHandle
@@ -55,6 +60,40 @@ internal sealed class ClrMethod : MethodInfo, IClrProgramItem
 				return ClrHelpers.IsDefined(this, type, inherit);
 			}
 
+	// Get the parameters for this method.
+	public override ParameterInfo[] GetParameters()
+			{
+				if(parameters != null)
+				{
+					return parameters;
+				}
+				int numParams = ClrHelpers.GetNumParameters(privateData);
+				int param;
+				parameters = new ParameterInfo [numParams];
+				for(param = 0; param < numParams; ++param)
+				{
+					parameters[param] =
+						ClrHelpers.GetParameterInfo(this, this, param + 1);
+				}
+				return parameters;
+			}
+
+	// Invoke this method.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override Object Invoke
+				(Object obj, BindingFlags invokeAttr, Binder binder,
+				 Object[] parameters, CultureInfo culture);
+
+	// Get the method attributes.
+	public override MethodAttributes Attributes
+			{
+				get
+				{
+					return (MethodAttributes)
+						ClrHelpers.GetMemberAttrs(privateData);
+				}
+			}
+
 	// Override inherited properties.
 	public override Type DeclaringType
 			{
@@ -77,6 +116,60 @@ internal sealed class ClrMethod : MethodInfo, IClrProgramItem
 					return ClrHelpers.GetName(this);
 				}
 			}
+	public override Type ReturnType
+			{
+				get
+				{
+					return ClrHelpers.GetParameterType(privateData, 0);
+				}
+			}
+
+	// Get the base definition for this method.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override MethodInfo GetBaseDefinition();
+
+	// Get the runtime method handle associated with this method.
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	override RuntimeMethodHandle MethodHandle
+			{
+				get
+				{
+					return new RuntimeMethodHandle(privateData);
+				}
+			}
+
+#if !ECMA_COMPAT
+
+	// Get the custom attribute provider for the return type.
+	public override ICustomAttributeProvider
+				ReturnTypeCustomAttributes
+			{
+				get
+				{
+					return ClrHelpers.GetParameterInfo(this, this, 0);
+				}
+			}
+
+	// Get the calling conventions for this method.
+	public override CallingConventions CallingConvention
+			{
+				get
+				{
+					return ClrHelpers.GetCallConv(privateData);
+				}
+			}
+
+	// Get the method implementation flags.
+	public override MethodImplAttributes GetMethodImplementationFlags()
+			{
+				return ClrHelpers.GetImplAttrs(privateData);
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class ClrMethod
 

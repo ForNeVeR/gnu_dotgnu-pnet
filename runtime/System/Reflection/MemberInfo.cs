@@ -30,14 +30,23 @@ public abstract class MemberInfo : ICustomAttributeProvider
 	// Get the type that declares this member.
 	public abstract Type DeclaringType { get; }
 
-	// Get the type of member that this is.
-	public abstract MemberTypes MemberType { get; }
-
 	// Get the name of this member.
 	public abstract String Name { get; }
 
 	// Get the reflected type that was used to locate this member.
 	public abstract Type ReflectedType { get; }
+
+	// Note: the following methods are not ECMA-compatible, but so
+	// many other ECMA facilities depend upon them that it is a pain
+	// to #if these definitions in all of the inheriting classes.
+	//
+	// If you are writing ECMA-compatible code, you should use
+	// "obj is TypeName" instead of "MemberType", and the methods
+	// in "System.Attribute" instead of "GetCustomAttributes" and
+	// "IsDefined".
+
+	// Get the type of member that this is.
+	public abstract MemberTypes MemberType { get; }
 
 	// Get the custom attributes that are associated with this member.
 	public abstract Object[] GetCustomAttributes(bool inherit);

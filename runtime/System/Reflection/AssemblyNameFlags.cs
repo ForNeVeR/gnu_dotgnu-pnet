@@ -1,6 +1,6 @@
 /*
- * RuntimeFieldHandle.cs - Implementation of the
- *			"System.RuntimeFieldHandle" class.
+ * AssemblyNameFlags.cs - Implementation of the
+ *			"System.Reflection.AssemblyNameFlags" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,29 +19,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Reflection
 {
 
-public struct RuntimeFieldHandle
+#if !ECMA_COMPAT
+
+[Flags]
+public enum AssemblyNameFlags
 {
-	// Internal state.
-	private IntPtr value__;
+	None      = 0x0000,
+	PublicKey = 0x0001
 
-	// Internal constructor.
-	internal RuntimeFieldHandle(IntPtr value)
-			{
-				value__ = value;
-			}
+}; // enum AssemblyNameFlags
 
-	// Properties.
-	public IntPtr Value
-			{
-				get
-				{
-					return value__;
-				}
-			}
+#endif // ECMA_COMPAT
 
-}; // class RuntimeFieldHandle
-
-}; // namespace System
+}; // namespace System.Reflection

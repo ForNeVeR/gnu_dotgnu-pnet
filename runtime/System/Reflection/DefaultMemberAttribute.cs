@@ -1,6 +1,6 @@
 /*
  * DefaultMemberAttribute.cs - Implementation of the
- *			"System.DefaultMemberAttribute" class.
+ *			"System.Reflection.DefaultMemberAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *

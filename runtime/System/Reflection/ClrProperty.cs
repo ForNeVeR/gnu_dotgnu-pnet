@@ -23,6 +23,8 @@ namespace System.Reflection
 {
 
 using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 internal sealed class ClrProperty : PropertyInfo, IClrProgramItem
 {
@@ -77,6 +79,206 @@ internal sealed class ClrProperty : PropertyInfo, IClrProgramItem
 					return ClrHelpers.GetName(this);
 				}
 			}
+	public override PropertyAttributes Attributes
+			{
+				get
+				{
+					return (PropertyAttributes)
+						ClrHelpers.GetMemberAttrs(privateData);
+				}
+			}
+	public override bool CanRead
+			{
+				get
+				{
+					return ClrHelpers.HasSemantics
+						(privateData, MethodSemanticsAttributes.Getter, true);
+				}
+			}
+	public override bool CanWrite
+			{
+				get
+				{
+					return ClrHelpers.HasSemantics
+						(privateData, MethodSemanticsAttributes.Setter, true);
+				}
+			}
+	public override Type PropertyType
+			{
+				get
+				{
+					return GetPropertyType(privateData);
+				}
+			}
+
+	// Get an array of all accessor methods on this property.
+	public override MethodInfo[] GetAccessors(bool nonPublic)
+			{
+				MethodInfo getter =
+					ClrHelpers.GetSemantics(privateData,
+											MethodSemanticsAttributes.Getter,
+											nonPublic);
+				MethodInfo setter =
+					ClrHelpers.GetSemantics(privateData,
+											MethodSemanticsAttributes.Setter,
+											nonPublic);
+				MethodInfo other =
+					ClrHelpers.GetSemantics(privateData,
+											MethodSemanticsAttributes.Other,
+											nonPublic);
+				int size = ((getter != null) ? 1 : 0) +
+						   ((setter != null) ? 1 : 0) +
+						   ((other != null) ? 1 : 0);
+				MethodInfo[] array = new MethodInfo [size];
+				int posn = 0;
+				if(getter != null)
+				{
+					array[posn++] = getter;
+				}
+				if(setter != null)
+				{
+					array[posn++] = setter;
+				}
+				if(other != null)
+				{
+					array[posn++] = other;
+				}
+				return array;
+			}
+
+	// Get the "get" accessor method on this property.
+	public override MethodInfo GetGetMethod(bool nonPublic)
+			{
+				return ClrHelpers.GetSemantics
+					(privateData, MethodSemanticsAttributes.Getter, nonPublic);
+			}
+
+	// Get the index parameters for this property.
+	public override ParameterInfo[] GetIndexParameters()
+			{
+				MethodInfo method =
+					ClrHelpers.GetSemantics(privateData,
+											MethodSemanticsAttributes.Getter,
+											true);
+				if(method != null)
+				{
+					return method.GetParameters();
+				}
+				method =
+					ClrHelpers.GetSemantics(privateData,
+											MethodSemanticsAttributes.Setter,
+											true);
+				if(method != null)
+				{
+					ParameterInfo[] parameters = method.GetParameters();
+					ParameterInfo[] newParams;
+					if(parameters != null && parameters.Length >= 1)
+					{
+						newParams = new ParameterInfo [parameters.Length - 1];
+						Array.Copy(parameters, newParams, newParams.Length);
+						return newParams;
+					}
+				}
+				throw new MethodAccessException
+					(_("Reflection_NoPropertyAccess"));
+			}
+
+	// Get the "set" accessor method on this property.
+	public override MethodInfo GetSetMethod(bool nonPublic)
+			{
+				return ClrHelpers.GetSemantics
+					(privateData, MethodSemanticsAttributes.Setter, nonPublic);
+			}
+
+	// Get the value associated with this property on an object.
+	public override Object GetValue(Object obj, BindingFlags invokeAttr,
+									Binder binder, Object[] index,
+									CultureInfo culture)
+			{
+				MethodInfo getter =
+					ClrHelpers.GetSemantics(privateData,
+											MethodSemanticsAttributes.Getter,
+											true);
+				if(getter == null)
+				{
+					throw new ArgumentException
+						(_("Reflection_NoPropertyGet"));
+				}
+				return getter.Invoke(obj, invokeAttr, binder, index, culture);
+			}
+	public override Object GetValue(Object obj, Object[] index)
+			{
+				MethodInfo getter =
+					ClrHelpers.GetSemantics(privateData,
+											MethodSemanticsAttributes.Getter,
+											true);
+				if(getter == null)
+				{
+					throw new ArgumentException
+						(_("Reflection_NoPropertyGet"));
+				}
+				return getter.Invoke(obj, BindingFlags.Default,
+									 Type.DefaultBinder, index, null);
+			}
+
+	// Set the value associated with this property on an object.
+	public override void SetValue(Object obj, Object value,
+								  BindingFlags invokeAttr, Binder binder,
+								  Object[] index, CultureInfo culture)
+			{
+				MethodInfo setter =
+					ClrHelpers.GetSemantics(privateData,
+											MethodSemanticsAttributes.Setter,
+											true);
+				if(setter == null)
+				{
+					throw new ArgumentException
+						(_("Reflection_NoPropertySet"));
+				}
+				Object[] parameters;
+				if(index == null)
+				{
+					parameters = new Object [1];
+					parameters[0] = value;
+				}
+				else
+				{
+					parameters = new Object [index.Length + 1];
+					Array.Copy(index, parameters, index.Length);
+					parameters[index.Length] = value;
+				}
+				setter.Invoke(obj, invokeAttr, binder, parameters, culture);
+			}
+	public override void SetValue(Object obj, Object value, Object[] index)
+			{
+				MethodInfo setter =
+					ClrHelpers.GetSemantics(privateData,
+											MethodSemanticsAttributes.Setter,
+											true);
+				if(setter == null)
+				{
+					throw new ArgumentException
+						(_("Reflection_NoPropertySet"));
+				}
+				Object[] parameters;
+				if(index == null)
+				{
+					parameters = new Object [1];
+					parameters[0] = value;
+				}
+				else
+				{
+					parameters = new Object [index.Length + 1];
+					Array.Copy(index, parameters, index.Length);
+					parameters[index.Length] = value;
+				}
+				setter.Invoke(obj, BindingFlags.Default,
+							  Type.DefaultBinder, parameters, null);
+			}
+
+	// Get the type associated with this property item.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Type GetPropertyType(IntPtr item);
 
 }; // class RuntimePropertyInfo
 

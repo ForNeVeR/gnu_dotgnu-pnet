@@ -23,12 +23,17 @@ namespace System.Reflection
 {
 
 using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 internal sealed class ClrConstructor : ConstructorInfo, IClrProgramItem
 {
 
 	// Private data used by the runtime engine.
 	private IntPtr privateData;
+
+	// Cached copy of the parameters.
+	private ParameterInfo[] parameters;
 
 	// Implement the IClrProgramItem interface.
 	public IntPtr ClrHandle
@@ -77,7 +82,58 @@ internal sealed class ClrConstructor : ConstructorInfo, IClrProgramItem
 					return ClrHelpers.GetName(this);
 				}
 			}
-	public override RuntimeMethodHandle MethodHandle
+
+	// Get the parameters for this constructor.
+	public override ParameterInfo[] GetParameters()
+			{
+				if(parameters != null)
+				{
+					return parameters;
+				}
+				int numParams = ClrHelpers.GetNumParameters(privateData);
+				int param;
+				parameters = new ParameterInfo [numParams];
+				for(param = 0; param < numParams; ++param)
+				{
+					parameters[param] =
+						ClrHelpers.GetParameterInfo(this, this, param + 1);
+				}
+				return parameters;
+			}
+
+	// Get the method attributes.
+	public override MethodAttributes Attributes
+			{
+				get
+				{
+					return (MethodAttributes)
+						ClrHelpers.GetMemberAttrs(privateData);
+				}
+			}
+
+	// Invoke this constructor.
+	public override Object Invoke(Object obj, BindingFlags invokeAttr,
+								  Binder binder, Object[] parameters,
+								  CultureInfo culture)
+			{
+				if(obj != null)
+				{
+					throw new TargetException(_("Reflection_CtorTarget"));
+				}
+				return Invoke(invokeAttr, binder, parameters, culture);
+			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override Object Invoke
+				(BindingFlags invokeAttr, Binder binder,
+				 Object[] parameters, CultureInfo culture);
+
+	// Get the runtime method handle associated with this method.
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	override RuntimeMethodHandle MethodHandle
 			{
 				get
 				{
@@ -85,11 +141,24 @@ internal sealed class ClrConstructor : ConstructorInfo, IClrProgramItem
 				}
 			}
 
-	public override ParameterInfo[] GetParameters()
+#if !ECMA_COMPAT
+
+	// Get the calling conventions for this method.
+	public override CallingConventions CallingConvention
 			{
-				// TODO
-				return null;
+				get
+				{
+					return ClrHelpers.GetCallConv(privateData);
+				}
 			}
+
+	// Get the method implementation flags.
+	public override MethodImplAttributes GetMethodImplementationFlags()
+			{
+				return ClrHelpers.GetImplAttrs(privateData);
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class ClrConstructor
 

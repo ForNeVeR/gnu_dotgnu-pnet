@@ -21,7 +21,7 @@
 namespace System.Reflection
 {
 
-public abstract class MethodInfo : MemberInfo
+public abstract class MethodInfo : MethodBase
 {
 
 	// Constructor.
@@ -35,6 +35,20 @@ public abstract class MethodInfo : MemberInfo
 					return MemberTypes.Method;
 				}
 			}
+
+	// Get the return type for this method.
+	public abstract Type ReturnType { get; }
+
+	// Get the base definition for this method.
+	public abstract MethodInfo GetBaseDefinition();
+
+#if !ECMA_COMPAT
+
+	// Get the custom attribute provider for the return type.
+	public abstract ICustomAttributeProvider
+				ReturnTypeCustomAttributes { get; }
+
+#endif // !ECMA_COMPAT
 
 }; // class MethodInfo
 

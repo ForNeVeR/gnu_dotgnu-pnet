@@ -1,5 +1,5 @@
 
-noinst_DATA = mscorlib.dll
+noinst_DATA = mscorlib.dll mscorlib_ecma.dll
 
 DEFRESOURCES = $(top_srcdir)/resources/en_US/runtime/runtime.resources
 
@@ -129,6 +129,9 @@ CSSRC = Activator.cs \
 		Collections/IEnumerator.cs \
 		Collections/IHashCodeProvider.cs \
 		Collections/IList.cs \
+		Configuration/Assemblies/AssemblyHash.cs \
+		Configuration/Assemblies/AssemblyHashAlgorithm.cs \
+		Configuration/Assemblies/AssemblyVersionCompatibility.cs \
 		Diagnostics/ConditionalAttribute.cs \
 		Diagnostics/DebuggableAttribute.cs \
 		Diagnostics/Debugger.cs \
@@ -164,6 +167,9 @@ CSSRC = Activator.cs \
 		Private/NumberParser.cs \
 		Reflection/AmbiguousMatchException.cs \
 		Reflection/Assembly.cs \
+		Reflection/AssemblyName.cs \
+		Reflection/AssemblyNameFlags.cs \
+		Reflection/AssemblyAlgorithmIdAttribute.cs \
 		Reflection/Binder.cs \
 		Reflection/BindingFlags.cs \
 		Reflection/CallingConventions.cs \
@@ -173,6 +179,7 @@ CSSRC = Activator.cs \
 		Reflection/ClrField.cs \
 		Reflection/ClrHelpers.cs \
 		Reflection/ClrMethod.cs \
+		Reflection/ClrParameter.cs \
 		Reflection/ClrProperty.cs \
 		Reflection/ClrType.cs \
 		Reflection/ClrTypeCategory.cs \
@@ -200,6 +207,7 @@ CSSRC = Activator.cs \
 		Reflection/PropertyInfo.cs \
 		Reflection/ResourceAttributes.cs \
 		Reflection/ResourceLocation.cs \
+		Reflection/StrongNameKeyPair.cs \
 		Reflection/TargetException.cs \
 		Reflection/TargetInvocationException.cs \
 		Reflection/TargetParameterCountException.cs \
@@ -320,3 +328,8 @@ CSCC_FLAGS = $(CSCC_WARNINGS) -funsafe -nostdlib -fresources=$(DEFRESOURCES)
 
 mscorlib.dll: $(CSSRC) $(DEFRESOURCES)
 	$(CSCC_COMPILE) -o $@ $(CSSRC)
+
+mscorlib_ecma.dll: $(CSSRC) $(DEFRESOURCES)
+	$(CSCC_COMPILE) -DECMA_COMPAT -Wno-empty-input -o $@ $(CSSRC)
+
+CLEANFILES = mscorlib.dll mscorlib_ecma.dll

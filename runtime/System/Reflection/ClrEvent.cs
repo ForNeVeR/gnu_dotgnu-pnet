@@ -23,6 +23,7 @@ namespace System.Reflection
 {
 
 using System;
+using System.Runtime.CompilerServices;
 
 internal sealed class ClrEvent : EventInfo, IClrProgramItem
 {
@@ -77,6 +78,52 @@ internal sealed class ClrEvent : EventInfo, IClrProgramItem
 					return ClrHelpers.GetName(this);
 				}
 			}
+	public override EventAttributes Attributes
+			{
+				get
+				{
+					return (EventAttributes)
+						ClrHelpers.GetMemberAttrs(privateData);
+				}
+			}
+	public override Type EventHandlerType
+			{
+				get
+				{
+					return GetEventType(privateData);
+				}
+			}
+
+	// Get the add method for this event.
+	public override MethodInfo GetAddMethod(bool nonPublic)
+			{
+				return ClrHelpers.GetSemantics
+							(privateData,
+						 	 MethodSemanticsAttributes.AddOn,
+							 nonPublic);
+			}
+
+	// Get the raise method for this event.
+	public override MethodInfo GetRaiseMethod(bool nonPublic)
+			{
+				return ClrHelpers.GetSemantics
+							(privateData,
+						 	 MethodSemanticsAttributes.Fire,
+							 nonPublic);
+			}
+
+	// Get the remove method for this event.
+	public override MethodInfo GetRemoveMethod(bool nonPublic)
+			{
+				return ClrHelpers.GetSemantics
+							(privateData,
+						 	 MethodSemanticsAttributes.RemoveOn,
+							 nonPublic);
+			}
+
+	// Get the type associated with this event item.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Type GetEventType(IntPtr item);
 
 }; // class ClrEvent
 

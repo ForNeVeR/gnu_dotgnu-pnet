@@ -21,10 +21,12 @@
 namespace System.Reflection
 {
 
+using System;
+using System.Runtime.CompilerServices;
+using System.Globalization;
+
 public abstract class FieldInfo : MemberInfo
 {
-
-// TO DO
 
 	// Constructor.
 	protected FieldInfo() : base() {}
@@ -38,9 +40,142 @@ public abstract class FieldInfo : MemberInfo
 				}
 			}
 
-	public Type FieldType { get { return null; } }
-	public Object GetValue(Object obj) { return null; }
-	public void SetValue(Object obj, Object value) {}
+	// Get the attributes that are associated with this field.
+	public abstract FieldAttributes Attributes { get; }
+
+	// Get the type that is associated with this field.
+	public abstract Type FieldType { get; }
+
+	// Get the value associated with this field on an object.
+	public abstract Object GetValue(Object obj);
+
+	// Set the value associated with this field on an object.
+	public void SetValue(Object obj, Object value)
+			{
+				SetValue(obj, value, BindingFlags.Default,
+						 Type.DefaultBinder, null);
+			}
+	public abstract void SetValue(Object obj, Object value,
+								  BindingFlags invokeAttr,
+								  Binder binder, CultureInfo culture);
+
+#if !ECMA_COMPAT
+
+	// Get a field given its handle.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static FieldInfo GetFieldFromHandle
+				(RuntimeFieldHandle handle);
+
+	// Get the handle that is associated with this field.
+	public abstract RuntimeFieldHandle FieldHandle { get; }
+
+	// Check for various field attributes.
+	public bool IsAssembly
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.FieldAccessMask)
+									== FieldAttributes.Assembly);
+				}
+			}
+	public bool IsFamily
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.FieldAccessMask)
+									== FieldAttributes.Family);
+				}
+			}
+	public bool IsFamilyAndAssembly
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.FieldAccessMask)
+									== FieldAttributes.FamANDAssem);
+				}
+			}
+	public bool IsFamilyOrAssembly
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.FieldAccessMask)
+									== FieldAttributes.FamORAssem);
+				}
+			}
+	public bool IsInitOnly
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.InitOnly) != 0);
+				}
+			}
+	public bool IsLiteral
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.Literal) != 0);
+				}
+			}
+	public bool IsNotSerialized
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.NotSerialized) != 0);
+				}
+			}
+	public bool IsPinvokeImpl
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.PinvokeImpl) != 0);
+				}
+			}
+	public bool IsPrivate
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.FieldAccessMask)
+									== FieldAttributes.Private);
+				}
+			}
+	public bool IsPublic
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.FieldAccessMask)
+									== FieldAttributes.Public);
+				}
+			}
+	public bool IsSpecialName
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.SpecialName) != 0);
+				}
+			}
+	public bool IsStatic
+			{
+				get
+				{
+					return ((Attributes & FieldAttributes.Static) != 0);
+				}
+			}
+
+	// Get the value directly from a typed reference.
+	[CLSCompliant(false)]
+	public virtual Object GetValueDirect(TypedReference obj)
+			{
+				throw new NotSupportedException(_("NotSupp_GetValueDirect"));
+			}
+
+	// Set the value directly to a typed reference.
+	[CLSCompliant(false)]
+	public virtual void SetValueDirect(TypedReference obj, Object value)
+			{
+				throw new NotSupportedException(_("NotSupp_SetValueDirect"));
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class FieldInfo
 

@@ -23,6 +23,8 @@ namespace System.Reflection
 {
 
 using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 internal sealed class ClrField : FieldInfo, IClrProgramItem
 {
@@ -77,6 +79,59 @@ internal sealed class ClrField : FieldInfo, IClrProgramItem
 					return ClrHelpers.GetName(this);
 				}
 			}
+	public override FieldAttributes Attributes
+			{
+				get
+				{
+					return (FieldAttributes)
+						ClrHelpers.GetMemberAttrs(privateData);
+				}
+			}
+	public override Type FieldType
+			{
+				get
+				{
+					return GetFieldType(privateData);
+				}
+			}
+
+	// Get the value associated with this field on an object.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override Object GetValue(Object obj);
+
+	// Set the value associated with this field on an object.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override void SetValue(Object obj, Object value,
+								  		 BindingFlags invokeAttr,
+								  		 Binder binder, CultureInfo culture);
+
+	// Get the type of this field item.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Type GetFieldType(IntPtr item);
+
+#if !ECMA_COMPAT
+
+	// Get the handle that is associated with this field.
+	public override RuntimeFieldHandle FieldHandle
+			{
+				get
+				{
+					return new RuntimeFieldHandle(privateData);
+				}
+			}
+
+	// Get the value directly from a typed reference.
+	[CLSCompliant(false)]
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override object GetValueDirect(TypedReference obj);
+
+	// Set the value directly to a typed reference.
+	[CLSCompliant(false)]
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override void SetValueDirect
+			(TypedReference obj, Object value);
+
+#endif // !ECMA_COMPAT
 
 }; // class ClrField
 

@@ -1,6 +1,6 @@
 /*
- * ConstructorInfo.cs - Implementation of the
- *		"System.Reflection.ConstructorInfo" class.
+ * AssemblyAlgorithmIdAttribute.cs - Implementation of the
+ *			"System.Reflection.AssemblyAlgorithmIdAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -22,37 +22,36 @@
 namespace System.Reflection
 {
 
-using System;
-using System.Globalization;
+#if !ECMA_COMPAT
 
-public abstract class ConstructorInfo : MethodBase
+using System;
+using System.Configuration.Assemblies;
+
+[AttributeUsage(AttributeTargets.Assembly)]
+public sealed class AssemblyAlgorithmIdAttribute : Attribute
 {
 
-	// Name of constructor methods.
-	public static readonly String ConstructorName = ".ctor";
-	public static readonly String TypeConstructorName = ".cctor";
+	// Internal state.
+	private uint hashAlg;
 
-	// Constructor.
-	protected ConstructorInfo() : base() {}
+	// Constructors.
+	public AssemblyAlgorithmIdAttribute(AssemblyHashAlgorithm algorithmId)
+		: base() { hashAlg = (uint)algorithmId; }
+	[CLSCompliant(false)]
+	public AssemblyAlgorithmIdAttribute(uint algorithmId)
+		: base() { hashAlg = algorithmId; }
 
-	// Get the member type for this item.
-	public override MemberTypes MemberType
+	// Properties.
+	public uint AlgorithmId
+		{
+			get
 			{
-				get
-				{
-					return MemberTypes.Constructor;
-				}
+				return hashAlg;
 			}
+		}
 
-	// Invoke this constructor.
-	public Object Invoke(Object[] parameters)
-			{
-				return Invoke(BindingFlags.Default, null, parameters, null);
-			}
-	public abstract Object Invoke(BindingFlags invokeAttr,
-								  Binder binder, Object[] parameters,
-								  CultureInfo culture);
+}; // class AssemblyAlgorithmIdAttribute
 
-}; // class ConstructorInfo
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Reflection

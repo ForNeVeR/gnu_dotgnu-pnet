@@ -258,6 +258,100 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				return (IsArray || IsPointer || IsByRef);
 			}
 
+	// Search a parameter list for a particular name.
+	private static int GetParamByName(ParameterInfo[] parameters,
+									  String name)
+			{
+				int param;
+				for(param = 0; param < parameters.Length; ++param)
+				{
+					if(parameters[param].Name == name)
+					{
+						return param;
+					}
+				}
+				return -1;
+			}
+
+	// Repack a set of arguments based on a named parameter list.
+	private static Object[] RepackArgs(Object[] args, String[] namedParameters,
+									   ParameterInfo[] parameters)
+			{
+				if(args == null || args.Length == 0)
+				{
+					if(namedParameters.Length != 0 || parameters.Length != 0)
+					{
+						throw new ArgumentException
+							(_("Reflection_InvalidArgs"));
+					}
+					return args;
+				}
+				else if(namedParameters.Length > args.Length)
+				{
+					throw new ArgumentException
+						(_("Reflection_InvalidArgs"));
+				}
+				else if(args.Length != parameters.Length)
+				{
+					throw new ArgumentException
+						(_("Reflection_InvalidArgs"));
+				}
+				else
+				{
+					// Construct an array of remapping indices.
+					int numArgs = args.Length;
+					int[] remapArgs = new int [numArgs];
+					int arg, param;
+					String name;
+					for(arg = 0; arg < numArgs; ++arg)
+					{
+						remapArgs[arg] = -1;
+					}
+					for(arg = 0; arg < numArgs; ++arg)
+					{
+						if(arg < namedParameters.Length)
+						{
+							// Search for the parameter by name.
+							name = namedParameters[arg];
+							if(name == null)
+							{
+								throw new ArgumentNullException
+								  ("namedParameters[" + arg.ToString() + "]");
+							}
+							param = GetParamByName(parameters, name);
+							if(param == -1)
+							{
+								throw new ArgumentException
+									(_("Reflection_ParamName"));
+							}
+							remapArgs[param] = arg;
+						}
+						else
+						{
+							// Allocate this argument to first unnamed slot.
+							for(param = 0; param < numArgs; ++param)
+							{
+								if(remapArgs[param] == -1)
+								{
+									remapArgs[param] = arg;
+									break;
+								}
+							}
+						}
+					}
+
+					// Construct the new argument array.
+					Object[] newArgs = new Object [numArgs];
+					for(arg = 0; arg < numArgs; ++arg)
+					{
+						newArgs[arg] = args[remapArgs[arg]];
+					}
+
+					// Return the new argument array.
+					return newArgs;
+				}
+			}
+
 	// Invoke a member.
 	public override Object InvokeMember
 						(String name, BindingFlags invokeAttr,
@@ -265,8 +359,201 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					     ParameterModifier[] modifiers,
 					     CultureInfo culture, String[] namedParameters)
 			{
-				// TODO
-				return null;
+				MemberInfo member;
+				MemberTypes types;
+
+				// Validate the parameters against the invocation type.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				if((invokeAttr & BindingFlags.CreateInstance) != 0)
+				{
+					if((invokeAttr & (BindingFlags.InvokeMethod |
+									  BindingFlags.GetField |
+									  BindingFlags.SetField |
+									  BindingFlags.GetProperty |
+									  BindingFlags.SetProperty)) != 0)
+					{
+						throw new ArgumentException
+							(_("Reflection_InvokeAttr"));
+					}
+					types = MemberTypes.Constructor;
+					name = ".ctor";
+					if(target != null)
+					{
+						throw new TargetException(_("Reflection_CtorTarget"));
+					}
+				}
+				else if((invokeAttr & BindingFlags.InvokeMethod) != 0)
+				{
+					if((invokeAttr & (BindingFlags.SetField |
+									  BindingFlags.SetProperty)) != 0)
+					{
+						throw new ArgumentException
+							(_("Reflection_InvokeAttr"));
+					}
+					types = MemberTypes.Method;
+				}
+				else if((invokeAttr & BindingFlags.GetField) != 0)
+				{
+					if((invokeAttr & BindingFlags.SetField) != 0)
+					{
+						throw new ArgumentException
+							(_("Reflection_InvokeAttr"));
+					}
+					types = MemberTypes.Field;
+					if(args != null && args.Length != 0)
+					{
+						throw new ArgumentException
+							(_("Reflection_GetField"));
+					}
+				}
+				else if((invokeAttr & BindingFlags.SetField) != 0)
+				{
+					if((invokeAttr & BindingFlags.GetField) != 0)
+					{
+						throw new ArgumentException
+							(_("Reflection_InvokeAttr"));
+					}
+					types = MemberTypes.Field;
+					if(args == null || args.Length != 1)
+					{
+						throw new ArgumentException
+							(_("Reflection_SetField"));
+					}
+				}
+				else if((invokeAttr & BindingFlags.GetProperty) != 0)
+				{
+					if((invokeAttr & BindingFlags.SetProperty) != 0)
+					{
+						throw new ArgumentException
+							(_("Reflection_InvokeAttr"));
+					}
+					types = MemberTypes.Property;
+				}
+				else if((invokeAttr & BindingFlags.SetProperty) != 0)
+				{
+					if((invokeAttr & BindingFlags.GetProperty) != 0)
+					{
+						throw new ArgumentException
+							(_("Reflection_InvokeAttr"));
+					}
+					types = MemberTypes.Property;
+				}
+				else
+				{
+					throw new ArgumentException
+						(_("Reflection_InvokeAttr"));
+				}
+
+				// Get the default member name if necessary.
+				if(name == String.Empty &&
+				   Attribute.IsDefined(this, typeof(DefaultMemberAttribute)))
+				{
+					DefaultMemberAttribute attr =
+						(DefaultMemberAttribute)
+							Attribute.GetCustomAttribute
+								(this, typeof(DefaultMemberAttribute));
+					name = attr.MemberName;
+				}
+
+				// Get the member from the type.
+				member = GetMemberImpl(name, types, invokeAttr, binder,
+									   CallingConventions.Any,
+									   null, modifiers);
+				if(member == null)
+				{
+					if(types == MemberTypes.Field)
+					{
+						throw new MissingFieldException
+							(_("Reflection_MissingField"));
+					}
+					else if(types == MemberTypes.Property)
+					{
+						throw new MissingFieldException
+							(_("Reflection_MissingProperty"));
+					}
+					else
+					{
+						throw new MissingMethodException
+							(_("Reflection_MissingMethod"));
+					}
+				}
+
+				// Invoke the member.
+				if(types == MemberTypes.Constructor)
+				{
+					// Invoke a constructor.
+					if(namedParameters != null)
+					{
+						args = RepackArgs(args, namedParameters,
+								  ((ConstructorInfo)member).GetParameters());
+					}
+					return ((ConstructorInfo)member).Invoke
+								(invokeAttr, binder, args, culture);
+				}
+				else if(types == MemberTypes.Method)
+				{
+					// Invoke a method.
+					if(namedParameters != null)
+					{
+						args = RepackArgs(args, namedParameters,
+								  ((MethodInfo)member).GetParameters());
+					}
+					return ((MethodInfo)member).Invoke
+								(target, invokeAttr, binder, args, culture);
+				}
+				else if(types == MemberTypes.Field)
+				{
+					// Invoke a field.
+					if((invokeAttr & BindingFlags.GetField) != 0)
+					{
+						// Get the value of a field.
+						return ((FieldInfo)member).GetValue(target);
+					}
+					else
+					{
+						// Set the value of a field.
+						((FieldInfo)member).SetValue(target, args[0],
+													 invokeAttr, binder,
+													 culture);
+						return null;
+					}
+				}
+				else
+				{
+					// Invoke a property.
+					if((invokeAttr & BindingFlags.GetProperty) != 0)
+					{
+						// Get the value of a property.
+						if(namedParameters != null)
+						{
+							args = RepackArgs(args, namedParameters,
+							  ((PropertyInfo)member).GetIndexParameters());
+						}
+						return ((PropertyInfo)member).GetValue
+							(target, invokeAttr, binder, args, culture);
+					}
+					else
+					{
+						// Set the value of a property.
+						MethodInfo setter;
+						setter = ((PropertyInfo)member).GetSetMethod();
+						if(setter == null)
+						{
+							throw new MissingMethodException
+								(_("Reflection_NoPropertySet"));
+						}
+						if(namedParameters != null)
+						{
+							args = RepackArgs(args, namedParameters,
+											  setter.GetParameters());
+						}
+						return setter.Invoke(target, invokeAttr, binder,
+											 args, culture);
+					}
+				}
 			}
 
 	// Get the category of this type.  Array, pointer, byref, primitive, etc.

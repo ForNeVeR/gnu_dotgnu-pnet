@@ -29,7 +29,7 @@ internal sealed class ClrHelpers
 
 	///////////////////////////////////////////////////////////////////
 	//
-	// Public Interface
+	// Useful wrappers
 	//
 	///////////////////////////////////////////////////////////////////
 
@@ -80,11 +80,18 @@ internal sealed class ClrHelpers
 				return GetName(item.ClrHandle);
 			}
 
-	///////////////////////////////////////////////////////////////////
-	//
-	// Other useful methods
-	//
-	///////////////////////////////////////////////////////////////////
+	// Get a ParameterInfo block for a specific method parameter.
+	// Zero indicates the return type.
+	public static ParameterInfo GetParameterInfo(MemberInfo member,
+												 IClrProgramItem item,
+												 int num)
+			{
+				IntPtr param;
+				Type type;
+				param = GetParameter(item.ClrHandle, num);
+				type = GetParameterType(item.ClrHandle, num);
+				return new ClrParameter(member, param, num, type);
+			}
 
 	// Convert a type into a CLR handle value, after validating
 	// that it is indeed a CLR type.
@@ -116,18 +123,18 @@ internal sealed class ClrHelpers
 
 	///////////////////////////////////////////////////////////////////
 	//
-	// Primitive facilities provided by the CLR
+	// Primitive facilities provided directly by the CLR
 	//
 	///////////////////////////////////////////////////////////////////
 
 	// Get the custom attributes for a program item.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Object[] GetCustomAttributes
+	extern public static Object[] GetCustomAttributes
 					(IntPtr item, IntPtr type, bool inherit);
 
 	// Determine if custom attributes exist on a program item.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static bool IsDefined
+	extern public static bool IsDefined
 					(IntPtr item, IntPtr type, bool inherit);
 
 	// Get the declaring type for a program item.
@@ -141,6 +148,43 @@ internal sealed class ClrHelpers
 	// Get the name that is associated with a program item.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String GetName(IntPtr item);
+
+	// Get the parameter block that is associated with a method item.
+	// If "num" is zero, then get the return type parameter block.
+	// Returns 0 if there is no underlying parameter information.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static IntPtr GetParameter(IntPtr item, int num);
+
+	// Get the type of a method parameter.  If "num" is zero, then
+	// get the method's return type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Type GetParameterType(IntPtr item, int num);
+
+	// Get the number of parameters for a method program item.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int GetNumParameters(IntPtr item);
+
+	// Get the attributes for a member program item.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int GetMemberAttrs(IntPtr item);
+
+	// Get the calling conventions for a method program item.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static CallingConventions GetCallConv(IntPtr item);
+
+	// Get the implementation attributes for a method program item.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static MethodImplAttributes GetImplAttrs(IntPtr item);
+
+	// Get a particular method semantics value from an event or property.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static MethodInfo GetSemantics
+			(IntPtr item, MethodSemanticsAttributes type, bool nonPublic);
+
+	// Determine if an event or property has a particular method semantics.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool HasSemantics
+			(IntPtr item, MethodSemanticsAttributes type, bool nonPublic);
 
 }; // class ClrHelpers
 

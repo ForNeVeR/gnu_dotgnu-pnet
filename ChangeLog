@@ -1,4 +1,39 @@
 
+2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* resources/en_US/runtime/NotSupp.txt,
+resources/en_US/runtime/Reflection.txt,
+runtime/System/Makefile.am,
+runtime/System/RuntimeFieldHandle.cs,
+runtime/System/Type.cs,
+runtime/System/Configuration/Assemblies/AssemblyHash.cs,
+runtime/System/Configuration/Assemblies/AssemblyHashAlgorithm.cs,
+runtime/System/Configuration/Assemblies/AssemblyVersionCompatibility.cs,
+runtime/System/Reflection/AssemblyAlgorithmIdAttribute.cs,
+runtime/System/Reflection/AssemblyName.cs,
+runtime/System/Reflection/AssemblyNameFlags.cs,
+runtime/System/Reflection/ClrConstructor.cs,
+runtime/System/Reflection/ClrEvent.cs,
+runtime/System/Reflection/ClrField.cs,
+runtime/System/Reflection/ClrHelpers.cs,
+runtime/System/Reflection/ClrMethod.cs,
+runtime/System/Reflection/ClrParameter.cs,
+runtime/System/Reflection/ClrProperty.cs,
+runtime/System/Reflection/ClrType.cs,
+runtime/System/Reflection/ConstructorInfo.cs,
+runtime/System/Reflection/DefaultMemberAttribute.cs,
+runtime/System/Reflection/EventInfo.cs,
+runtime/System/Reflection/FieldInfo.cs,
+runtime/System/Reflection/MemberInfo.cs,
+runtime/System/Reflection/MethodBase.cs,
+runtime/System/Reflection/MethodInfo.cs,
+runtime/System/Reflection/Module.cs,
+runtime/System/Reflection/ParameterInfo.cs,
+runtime/System/Reflection/ParameterModifier.cs,
+runtime/System/Reflection/PropertyInfo.cs,
+runtime/System/Reflection/StrongNameKeyPair.cs: implement most of the
+remaining ECMA functionality in "System.Reflection".
+
 2001-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Makefile.am,

@@ -21,20 +21,177 @@
 namespace System.Reflection
 {
 
+using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+
 public abstract class MethodBase : MemberInfo
 {
 
-// TODO
+	// Constructor.
+	protected MethodBase() : base() {}
 
-	public static MethodBase GetMethodFromHandle(RuntimeMethodHandle handle)
+	// Get a method from the runtime engine given its handle.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static MethodBase GetMethodFromHandle
+				(RuntimeMethodHandle handle);
+
+	// Get the parameters for this method.
+	public abstract ParameterInfo[] GetParameters();
+
+	// Invoke this method.
+	public Object Invoke(Object obj, Object[] parameters)
 			{
-				// TODO
-				return null;
+				return Invoke(obj, BindingFlags.Default,
+							  null, parameters, null);
 			}
+	public abstract Object Invoke(Object obj, BindingFlags invokeAttr,
+								  Binder binder, Object[] parameters,
+								  CultureInfo culture);
 
+	// Get the method attributes.
+	public abstract MethodAttributes Attributes { get; }
+
+#if !ECMA_COMPAT
+
+	// Get the runtime method handle associated with this method.
 	public abstract RuntimeMethodHandle MethodHandle { get; }
 
-	public abstract ParameterInfo[] GetParameters();
+#else  // ECMA_COMPAT
+
+	// Get the runtime method handle associated with this method.
+	internal virtual RuntimeMethodHandle MethodHandle
+			{
+				get
+				{
+					return new RuntimeMethodHandle(IntPtr.Zero);
+				}
+			}
+
+#endif // ECMA_COMPAT
+
+#if !ECMA_COMPAT
+
+	// Get the calling conventions for this method.
+	public virtual CallingConventions CallingConvention
+			{
+				get
+				{
+					return CallingConventions.Standard;
+				}
+			}
+
+	// Check for various method attributes.
+	public bool IsAbstract
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.Abstract) != 0);
+				}
+			}
+	public bool IsAssembly
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.MemberAccessMask)
+									== MethodAttributes.Assembly);
+				}
+			}
+	public bool IsConstructor
+			{
+				get 
+				{
+					if((Attributes & MethodAttributes.RTSpecialName) == 0)
+					{
+						return false;
+					}
+					return (Name == ConstructorInfo.ConstructorName);
+				}
+			}
+	public bool IsFamily
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.MemberAccessMask)
+									== MethodAttributes.Family);
+				}
+			}
+	public bool IsFamilyAndAssembly
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.MemberAccessMask)
+									== MethodAttributes.FamANDAssem);
+				}
+			}
+	public bool IsFamilyOrAssembly
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.MemberAccessMask)
+									== MethodAttributes.FamORAssem);
+				}
+			}
+	public bool IsFinal
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.Final) != 0);
+				}
+			}
+	public bool IsHideBySig
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.HideBySig) != 0);
+				}
+			}
+	public bool IsPrivate
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.MemberAccessMask)
+									== MethodAttributes.Private);
+				}
+			}
+	public bool IsPublic
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.MemberAccessMask)
+									== MethodAttributes.Public);
+				}
+			}
+	public bool IsSpecialName
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.SpecialName) != 0);
+				}
+			}
+	public bool IsStatic
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.Static) != 0);
+				}
+			}
+	public bool IsVirtual
+			{
+				get 
+				{
+					return ((Attributes & MethodAttributes.Virtual) != 0);
+				}
+			}
+
+	// Get the currently executing method.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static MethodBase GetCurrentMethod();
+
+	// Get the method implementation flags.
+	public abstract MethodImplAttributes GetMethodImplementationFlags();
+
+#endif // !ECMA_COMPAT
 
 }; // class MethodBase
 

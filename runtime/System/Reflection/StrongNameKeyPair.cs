@@ -1,6 +1,6 @@
 /*
- * ConstructorInfo.cs - Implementation of the
- *		"System.Reflection.ConstructorInfo" class.
+ * StrongNameKeyPair.cs - Implementation of the
+ *		"System.Reflection.StrongNameKeyPair" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -22,37 +22,41 @@
 namespace System.Reflection
 {
 
+#if !ECMA_COMPAT
+
 using System;
-using System.Globalization;
+using System.IO;
 
-public abstract class ConstructorInfo : MethodBase
+public class StrongNameKeyPair
 {
+	// Internal state.
+	private byte[] key;
 
-	// Name of constructor methods.
-	public static readonly String ConstructorName = ".ctor";
-	public static readonly String TypeConstructorName = ".cctor";
+	// Constructors.
+	public StrongNameKeyPair(byte[] keyPairArray)
+			{
+				// TODO
+			}
+	public StrongNameKeyPair(FileStream keyPairFile)
+			{
+				// TODO
+			}
+	public StrongNameKeyPair(String keyPairContainer)
+			{
+				// TODO
+			}
 
-	// Constructor.
-	protected ConstructorInfo() : base() {}
-
-	// Get the member type for this item.
-	public override MemberTypes MemberType
+	// Get the public key.
+	public byte[] PublicKey
 			{
 				get
 				{
-					return MemberTypes.Constructor;
+					return key;
 				}
 			}
 
-	// Invoke this constructor.
-	public Object Invoke(Object[] parameters)
-			{
-				return Invoke(BindingFlags.Default, null, parameters, null);
-			}
-	public abstract Object Invoke(BindingFlags invokeAttr,
-								  Binder binder, Object[] parameters,
-								  CultureInfo culture);
+}; // class StrongNameKeyPair
 
-}; // class ConstructorInfo
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Reflection

@@ -22,10 +22,11 @@
 namespace System.Reflection
 {
 
+using System;
+using System.Globalization;
+
 public abstract class PropertyInfo : MemberInfo
 {
-
-// TO DO
 
 	// Constructor.
 	protected PropertyInfo() : base() {}
@@ -38,6 +39,75 @@ public abstract class PropertyInfo : MemberInfo
 					return MemberTypes.Property;
 				}
 			}
+
+	// Get an array of all accessor methods on this property.
+	public abstract MethodInfo[] GetAccessors(bool nonPublic);
+	public MethodInfo[] GetAccessors()
+			{
+				return GetAccessors(false);
+			}
+
+	// Get the "get" accessor method on this property.
+	public abstract MethodInfo GetGetMethod(bool nonPublic);
+	public MethodInfo GetGetMethod()
+			{
+				return GetGetMethod(false);
+			}
+
+	// Get the index parameters for this property.
+	public abstract ParameterInfo[] GetIndexParameters();
+
+	// Get the "set" accessor method on this property.
+	public abstract MethodInfo GetSetMethod(bool nonPublic);
+	public MethodInfo GetSetMethod()
+			{
+				return GetSetMethod(false);
+			}
+
+	// Get the value associated with this property on an object.
+	public abstract Object GetValue(Object obj, BindingFlags invokeAttr,
+									Binder binder, Object[] index,
+									CultureInfo culture);
+	public virtual Object GetValue(Object obj, Object[] index)
+			{
+				return GetValue(obj, BindingFlags.Default,
+								Type.DefaultBinder, index, null);
+			}
+
+	// Set the value associated with this property on an object.
+	public abstract void SetValue(Object obj, Object value,
+								  BindingFlags invokeAttr, Binder binder,
+								  Object[] index, CultureInfo culture);
+	public virtual void SetValue(Object obj, Object value, Object[] index)
+			{
+				SetValue(obj, value, BindingFlags.Default,
+						 Type.DefaultBinder, index, null);
+			}
+
+	// Get the attributes associated with this property.
+	public abstract PropertyAttributes Attributes { get; }
+
+	// Determine if it is possible to read from this property.
+	public abstract bool CanRead { get; }
+
+	// Determine if it is possible to write to this property.
+	public abstract bool CanWrite { get; }
+
+	// Get the type of this property.
+	public abstract Type PropertyType { get; }
+
+#if !ECMA_COMPAT
+
+	// Determine if this property has a special name.
+	public bool IsSpecialName
+			{
+				get
+				{
+					return ((Attributes & PropertyAttributes.SpecialName) != 0);
+				}
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class PropertyInfo
 

@@ -868,7 +868,7 @@ public abstract class Type : MemberInfo
 	private static Binder defaultBinder;
 
 	// Get the default binder in use by the system.
-	public Binder DefaultBinder
+	public static Binder DefaultBinder
 			{
 				get
 				{

@@ -21,13 +21,13 @@
 namespace System.Reflection
 {
 
+using System;
+
 public abstract class EventInfo : MemberInfo
 {
 
 	// Constructor.
 	protected EventInfo() : base() {}
-
-// TODO
 
 	// Get the member type.
 	public override MemberTypes MemberType
@@ -37,6 +37,96 @@ public abstract class EventInfo : MemberInfo
 					return MemberTypes.Event;
 				}
 			}
+
+	// Add a new handler to this event.
+	public void AddEventHandler(Object target, Delegate handler)
+			{
+				MethodInfo add = GetAddMethod(true);
+				if(add == null)
+				{
+					throw new MemberAccessException
+						(_("Reflection_NoEventAdd"));
+				}
+				if(handler == null ||
+				   !EventHandlerType.IsAssignableFrom(handler.GetType()))
+				{
+					throw new ArgumentException
+						(_("Reflection_InvalidEventHandler"));
+				}
+				Object[] parameters = new Object [1];
+				parameters[0] = handler;
+				add.Invoke(target, parameters);
+			}
+
+	// Get the add method for this event.
+	public abstract MethodInfo GetAddMethod(bool nonPublic);
+	public MethodInfo GetAddMethod()
+			{
+				return GetAddMethod(false);
+			}
+
+	// Get the raise method for this event.
+	public abstract MethodInfo GetRaiseMethod(bool nonPublic);
+	public MethodInfo GetRaiseMethod()
+			{
+				return GetRaiseMethod(false);
+			}
+
+	// Get the remove method for this event.
+	public abstract MethodInfo GetRemoveMethod(bool nonPublic);
+	public MethodInfo GetRemoveMethod()
+			{
+				return GetRemoveMethod(false);
+			}
+
+	// Remove an event handler from this event.
+	public void RemoveEventHandler(Object target, Delegate handler)
+			{
+				MethodInfo remove = GetRemoveMethod(true);
+				if(remove == null)
+				{
+					throw new MemberAccessException
+						(_("Reflection_NoEventRemove"));
+				}
+				if(handler == null ||
+				   !EventHandlerType.IsAssignableFrom(handler.GetType()))
+				{
+					throw new ArgumentException
+						(_("Reflection_InvalidEventHandler"));
+				}
+				Object[] parameters = new Object [1];
+				parameters[0] = handler;
+				remove.Invoke(target, parameters);
+			}
+
+	// Get the attributes for this event.
+	public abstract EventAttributes Attributes { get; }
+
+	// Get the handler type for this event.
+	public abstract Type EventHandlerType { get; }
+
+#if !ECMA_COMPAT
+
+	// Determine if this event is multicast.
+	public bool IsMulticast
+			{
+				get
+				{
+					return typeof(MulticastDelegate).IsAssignableFrom
+								(EventHandlerType);
+				}
+			}
+
+	// Determine if this event has a special name.
+	public bool IsSpecialName
+			{
+				get
+				{
+					return ((Attributes & EventAttributes.SpecialName) != 0);
+				}
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class EventInfo
 

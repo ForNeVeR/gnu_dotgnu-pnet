@@ -1,6 +1,6 @@
 /*
- * RuntimeFieldHandle.cs - Implementation of the
- *			"System.RuntimeFieldHandle" class.
+ * AssemblyVersionCompatibility.cs - Implementation of the
+ *		"System.Configuration.Assemblies.AssemblyVersionCompatibility" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,29 +19,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Configuration.Assemblies
 {
 
-public struct RuntimeFieldHandle
+#if !ECMA_COMPAT
+
+public enum AssemblyVersionCompatibility
 {
-	// Internal state.
-	private IntPtr value__;
 
-	// Internal constructor.
-	internal RuntimeFieldHandle(IntPtr value)
-			{
-				value__ = value;
-			}
+	SameMachine = 1,
+	SameProcess = 2,
+	SameDomain  = 3
 
-	// Properties.
-	public IntPtr Value
-			{
-				get
-				{
-					return value__;
-				}
-			}
+}; // enum AssemblyVersionCompatibility
 
-}; // class RuntimeFieldHandle
+#endif // !ECMA_COMPAT
 
-}; // namespace System
+}; // namespace System.Configuration.Assemblies

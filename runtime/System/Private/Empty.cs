@@ -1,7 +1,7 @@
 /*
  * Empty.cs - Implementation of the "System.Private.Empty" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,13 @@
 namespace System.Private
 {
 
+using System.Runtime.Serialization;
+
 // This class is used internally as a tag for null references.
 internal sealed class Empty
+#if CONFIG_SERIALIZATION
+	: ISerializable
+#endif
 {
 
 	// The only empty object in the system.
@@ -36,6 +41,18 @@ internal sealed class Empty
 			{
 				return String.Empty;
 			}
+
+#if CONFIG_SERIALIZATION
+
+	// Get the serialization data for this object.
+	public void GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				UnitySerializationHolder.Serialize
+					(info, UnitySerializationHolder.UnityType.Empty,
+					 null, null);
+			}
+
+#endif
 
 }; // class Empty
 

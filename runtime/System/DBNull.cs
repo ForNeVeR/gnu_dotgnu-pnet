@@ -110,10 +110,11 @@ public sealed class DBNull : IConvertible
 #if CONFIG_SERIALIZATION
 
 	// Get the serialization data for this object.
-	[TODO]
 	public void GetObjectData(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				UnitySerializationHolder.Serialize
+					(info, UnitySerializationHolder.UnityType.DBNull,
+					 null, null);
 			}
 
 #endif

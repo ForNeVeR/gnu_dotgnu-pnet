@@ -334,9 +334,38 @@ static int ClassNameSame(ILNode *name)
 	   			== 0);
 }
 
+/*
+ * Modify an attribute name so that it ends in "Attribute".
+ */
+static void ModifyAttrName(ILNode *node,int force)
+{
+	char *name;
+	int namelen;
+	ILNode_Identifier *ident;
+	
+	if(yyisa(node,ILNode_QualIdent))
+	{
+		ModifyAttrName(((ILNode_QualIdent*)node)->right, force);
+		return;
+	}
+	
+	ident = (ILNode_Identifier*) node;
+	
+	name = ident->name;
+	namelen = strlen(name);
+	if(force || (namelen < 9 || strcmp(name + namelen - 9, "Attribute") != 0))
+	{
+		ident->name = ILInternAppendedString
+			(ILInternString(name, namelen),
+			 ILInternString("Attribute", 9)).string;
+	}
+}
+
 /* A hack to rename the indexer during parsing , damn the C# designers,
  * they had to make the variable names resolved later using an attribute
- * public int <name>[int posn] would have been a cleaner design 
+ * public int <name>[int posn] would have been a cleaner design. But
+ * This is an UGLY hack and should be removed as soon as someone figures
+ * out how .
  */
 static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 								ILNode* prefixName)
@@ -348,6 +377,13 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 	ILNode_List *args;
 	ILEvalValue evalValue;
 	char* prefix=(prefixName) ? ILQualIdentName(prefixName,0) : NULL;
+	int i;
+
+	const char* possibleWays[] = {"IndexerName", "IndexerNameAttribute",
+					"System.Runtime.CompilerServices.IndexerNameAttribute",
+					"System.Runtime.CompilerServices.IndexerName"};
+	int isIndexerName=0;
+	
 	if(attrTree && attrTree->sections)
 	{
 		ILNode_ListIter_Init(&iter, attrTree->sections);
@@ -358,9 +394,21 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 				((ILNode_AttributeSection*)(temp))->attrs);
 			while((attr = ILNode_ListIter_Next(&iter2))!=0)
 			{
-				if(!strcmp(ILQualIdentName(((ILNode_Attribute*)attr)->name,0)
-							,"IndexerName"))
+				for(i=0;i<sizeof(possibleWays)/sizeof(char*); i++)
 				{
+					isIndexerName |= !strcmp(
+							ILQualIdentName(((ILNode_Attribute*)attr)->name,0)
+							,possibleWays[i]);
+				}
+				if(isIndexerName)
+				{
+					/* NOTE: we make it 
+					[System.Runtime.CompilerServices.IndexerNameAttribute]
+					for the sake of resolution...This too is too ugly a 
+					hack.
+					*/
+					ModifyAttrName(((ILNode_Attribute*)attr)->name,0);
+
 					args=(ILNode_List*)((ILNode_AttrArgs*)
 						(((ILNode_Attribute*)attr)->args))->positionalArgs;	
 					if(yyisa(args->item1, ILNode_ToConst))

@@ -1172,7 +1172,6 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 ILNode_SemAnalysisType(ILNode_MemberAccess)
 {
 	CSSemValue value;
-	CSSemValue value2;
 	int savedState = info->inSemType;
 	char *name;
 	
@@ -1251,14 +1250,13 @@ ILNode_SemAnalysis(ILNode_BaseElement)
 	ILNode *thisExpr;
 	CSSemValue indexers;
 	CSEvalArg *args;
-	int numArgs, argNum;
+	int numArgs;
 	unsigned long itemNum;
 	ILProgramItem *itemInfo;
 	int candidateForm, kind;
 	ILMethod *getMethod;
 	ILMethod *setMethod;
 	ILType *objectType;
-	ILNode *tempNode;
 	
 	/* Bail out if "base" is used within a static method */
 	caller = (ILNode_MethodDeclaration *)(info->currentMethod);

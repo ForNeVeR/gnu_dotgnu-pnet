@@ -5,6 +5,11 @@
 	cscc/csharp/cs_internal.h, cscc/csharp/cs_lookup.c: Implement semantic
 	analysis and code generation for base element access.
 
+	* cscc/csharp/cs_lvalue.tc: Remove a couple of compile-time warnings.
+
+	* cscc/csharp/cs_grammar.y: Modify the IndexerName hack to recognize
+	fully qualified [IndexerName] as well.
+
 2003-05-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_socket.c,

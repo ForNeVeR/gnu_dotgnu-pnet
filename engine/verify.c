@@ -1035,7 +1035,11 @@ restart:
 		lastWasJump = 0;
 		switch(opcode)
 		{
-			case IL_OP_NOP: break;
+			case IL_OP_NOP:   break;
+
+			/* IL breakpoints are ignored - the coder inserts its
+			   own breakpoint handlers where required */
+			case IL_OP_BREAK: break;
 
 #define	IL_VERIFY_CODE
 #include "verify_var.c"

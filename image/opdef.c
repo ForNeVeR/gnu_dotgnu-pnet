@@ -21,7 +21,7 @@
 #ifdef IL_MAIN_OPDEF
 
 OPDEF("nop",				0, 0, IL_OPCODE_ARGS_NONE, 1)
-OPDEF("break",				0, 0, IL_OPCODE_ARGS_INVALID, 1)
+OPDEF("break",				0, 0, IL_OPCODE_ARGS_NONE, 1)
 
 OPDEF("ldarg.0",			0, 1, IL_OPCODE_ARGS_NONE, 1)
 OPDEF("ldarg.1",			0, 1, IL_OPCODE_ARGS_NONE, 1)

@@ -1,6 +1,6 @@
 bin_PROGRAMS       = csdoc2texi
-#man_MANS           = csdoc2texi.1
-#EXTRA_DIST         = $(man_MANS)
+man_MANS           = csdoc2texi.1
+EXTRA_DIST         = $(man_MANS)
 CSDOC_COMMON       = doc_destroy.c \
 					 doc_load.c \
 					 doc_main.c \

@@ -47,11 +47,12 @@ extern	"C" {
 #define	CVM_OPER_CALL_NATIVE		16
 #define	CVM_OPER_CALL_INTERFACE		17
 #define	CVM_OPER_CLASS				18
-#define	CVM_OPER_ITEM				19
-#define	CVM_OPER_STRING				20
-#define	CVM_OPER_WIDE				21
-#define	CVM_OPER_PREFIX				22
-#define	CVM_OPER_ENTER_TRY			23
+#define	CVM_OPER_UINT_AND_CLASS		19
+#define	CVM_OPER_ITEM				20
+#define	CVM_OPER_STRING				21
+#define	CVM_OPER_WIDE				22
+#define	CVM_OPER_PREFIX				23
+#define	CVM_OPER_ENTER_TRY			24
 
 /*
  * Table of CVM opcodes.  This must be kept in sync with "cvm.h".
@@ -368,6 +369,8 @@ static CVMOpcode const opcodes[256] = {
 	{"new_value",		CVM_OPER_WIDE_TWO_UINT},
 	{"ldstr",			CVM_OPER_STRING},
 	{"ldtoken",			CVM_OPER_ITEM},
+	{"box",				CVM_OPER_UINT_AND_CLASS},
+	{"box_ptr",			CVM_OPER_UINT_AND_CLASS},
 
 	/*
 	 * Memory-related opcodes.
@@ -380,8 +383,6 @@ static CVMOpcode const opcodes[256] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"reserved_ed",		CVM_OPER_NONE},
-	{"reserved_ee",		CVM_OPER_NONE},
 	{"reserved_ef",		CVM_OPER_NONE},
 	{"reserved_f0",		CVM_OPER_NONE},
 	{"reserved_f1",		CVM_OPER_NONE},
@@ -497,6 +498,10 @@ static CVMOpcode const prefixOpcodes[64] = {
 	{"f2iu_ovf",		CVM_OPER_NONE},
 	{"f2l_ovf",			CVM_OPER_NONE},
 	{"f2lu_ovf",		CVM_OPER_NONE},
+	{"i2b_aligned",		CVM_OPER_NONE},
+	{"i2s_aligned",		CVM_OPER_NONE},
+	{"f2f_aligned",		CVM_OPER_NONE},
+	{"f2d_aligned",		CVM_OPER_NONE},
 
 	/*
 	 * Prefixed arithmetic opcodes.
@@ -506,10 +511,6 @@ static CVMOpcode const prefixOpcodes[64] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_36",	CVM_OPER_NONE},
-	{"preserved_37",	CVM_OPER_NONE},
-	{"preserved_38",	CVM_OPER_NONE},
-	{"preserved_39",	CVM_OPER_NONE},
 	{"preserved_3a",	CVM_OPER_NONE},
 	{"preserved_3b",	CVM_OPER_NONE},
 	{"preserved_3c",	CVM_OPER_NONE},
@@ -705,6 +706,16 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 		}
 		break;
 
+		case CVM_OPER_UINT_AND_CLASS:
+		{
+			classInfo = (ILClass *)CVMReadPointer(pc + 2);
+			ILDumpClassName(stream, ILProgramItem_Image(currMethod),
+							classInfo, 0);
+			fprintf(stream, ", %d", (int)(pc[1]));
+			size = 2 + sizeof(void *);
+		}
+		break;
+
 		case CVM_OPER_ITEM:
 		{
 			item = (ILProgramItem *)CVMReadPointer(pc + 1);
@@ -777,6 +788,17 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 									classInfo, 0);
 					fprintf(stream, ", %lu",
 							(unsigned long)IL_READ_UINT32(pc + 2));
+					size = 6 + sizeof(void *);
+				}
+				break;
+
+				case CVM_OPER_UINT_AND_CLASS:
+				{
+					classInfo = (ILClass *)CVMReadPointer(pc + 6);
+					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
+									classInfo, 0);
+					fprintf(stream, ", %lu",
+							(unsigned long)(IL_READ_UINT32(pc + 2)));
 					size = 6 + sizeof(void *);
 				}
 				break;

@@ -26,6 +26,7 @@
 
 void *tempptr;
 ILClass *classInfo;
+ILUInt32 tempSize;
 
 #elif defined(IL_CVM_MAIN)
 
@@ -777,6 +778,33 @@ case COP_LDTOKEN:
 }
 break;
 
+case COP_BOX:
+{
+	/* Box a managed value */
+	classInfo = (ILClass *)ReadPointer(pc + 2);
+	tempNum = (((ILUInt32)(pc[1])) + sizeof(CVMWord) - 1) / sizeof(CVMWord);
+	COPY_STATE_TO_THREAD();
+	tempptr = (void *)_ILEngineAlloc(thread, classInfo, (ILUInt32)(pc[1]));
+	RESTORE_STATE_FROM_THREAD();
+	IL_MEMCPY(tempptr, stacktop - tempNum, (ILUInt32)(pc[1]));
+	stacktop[-((ILInt32)tempNum)].ptrValue = tempptr;
+	MODIFY_PC_AND_STACK(2 + sizeof(void *), -((ILInt32)(tempNum - 1)));
+}
+break;
+
+case COP_BOX_PTR:
+{
+	/* Box a managed pointer */
+	classInfo = (ILClass *)ReadPointer(pc + 2);
+	COPY_STATE_TO_THREAD();
+	tempptr = (void *)_ILEngineAlloc(thread, classInfo, (ILUInt32)(pc[1]));
+	RESTORE_STATE_FROM_THREAD();
+	IL_MEMCPY(tempptr, stacktop[-1].ptrValue, (ILUInt32)(pc[1]));
+	stacktop[-1].ptrValue = tempptr;
+	MODIFY_PC_AND_STACK(2 + sizeof(void *), 0);
+}
+break;
+
 case COP_MEMCPY:
 {
 	/* Copy a fixed-size memory block */
@@ -863,6 +891,35 @@ case COP_NEW_VALUE:
 	/* Wide version of "new_value" */
 	/* TODO */
 	MODIFY_PC_AND_STACK(2, 2);
+}
+break;
+
+case COP_BOX:
+{
+	/* Wide version of "box" */
+	classInfo = (ILClass *)ReadPointer(pc + 6);
+	tempSize = IL_READ_UINT32(pc + 2);
+	tempNum = (tempSize + sizeof(CVMWord) - 1) / sizeof(CVMWord);
+	COPY_STATE_TO_THREAD();
+	tempptr = (void *)_ILEngineAlloc(thread, classInfo, tempSize);
+	RESTORE_STATE_FROM_THREAD();
+	IL_MEMCPY(tempptr, stacktop - tempNum, tempSize);
+	stacktop[-((ILInt32)tempNum)].ptrValue = tempptr;
+	MODIFY_PC_AND_STACK(6 + sizeof(void *), -((ILInt32)(tempNum - 1)));
+}
+break;
+
+case COP_BOX_PTR:
+{
+	/* Wide version of "box_ptr" */
+	classInfo = (ILClass *)ReadPointer(pc + 6);
+	tempSize = IL_READ_UINT32(pc + 2);
+	COPY_STATE_TO_THREAD();
+	tempptr = (void *)_ILEngineAlloc(thread, classInfo, tempSize);
+	RESTORE_STATE_FROM_THREAD();
+	IL_MEMCPY(tempptr, stacktop[-1].ptrValue, tempSize);
+	stacktop[-1].ptrValue = tempptr;
+	MODIFY_PC_AND_STACK(6 + sizeof(void *), 0);
 }
 break;
 

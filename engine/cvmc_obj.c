@@ -858,13 +858,69 @@ static void CVMCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
 static void CVMCoder_Box(ILCoder *coder, ILClass *boxClass,
 					     ILEngineType valueType, ILUInt32 size)
 {
-	/* TODO */
+	ILUInt32 sizeInWords;
+
+	if(valueType != ILEngineType_TypedRef)
+	{
+		/* Box a managed value */
+		sizeInWords = (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
+		CVM_WIDE(COP_BOX, size);
+		CVM_PTR(boxClass);
+		CVM_ADJUST(-((ILInt32)sizeInWords));
+		CVM_ADJUST(1);
+	}
+	else
+	{
+		/* Box a typed reference after we unpack it */
+		CVM_BYTE(COP_PREFIX);
+		CVM_BYTE(COP_PREFIX_REFANYVAL);
+		CVM_PTR(boxClass);
+		CVM_ADJUST(-1);
+		CVM_WIDE(COP_BOX_PTR, size);
+		CVM_PTR(boxClass);
+	}
 }
 
 static void CVMCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 					   		    ILEngineType valueType, ILType *smallerType)
 {
-	/* TODO */
+	/* Align the value on the proper stack word boundary and then box it */
+	switch(ILType_ToElement(smallerType))
+	{
+		case ILType_Int8:
+		{
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_I2B_ALIGNED);
+			CVMCoder_Box(coder, boxClass, valueType, 1);
+		}
+		break;
+
+		case ILType_Int16:
+		{
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_I2S_ALIGNED);
+			CVMCoder_Box(coder, boxClass, valueType, 2);
+		}
+		break;
+
+		case ILType_Float32:
+		{
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_F2F_ALIGNED);
+			CVM_ADJUST(CVM_WORDS_PER_FLOAT - CVM_WORDS_PER_NATIVE_FLOAT);
+			CVMCoder_Box(coder, boxClass, valueType, sizeof(ILFloat));
+		}
+		break;
+
+		case ILType_Float64:
+		{
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_F2D_ALIGNED);
+			CVM_ADJUST(CVM_WORDS_PER_DOUBLE - CVM_WORDS_PER_NATIVE_FLOAT);
+			CVMCoder_Box(coder, boxClass, valueType, sizeof(ILDouble));
+		}
+		break;
+	}
 }
 
 static void CVMCoder_Unbox(ILCoder *coder, ILClass *boxClass)

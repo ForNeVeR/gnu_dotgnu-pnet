@@ -323,14 +323,16 @@ extern	"C" {
 #define	COP_NEW_VALUE				0xE6
 #define	COP_LDSTR					0xE7
 #define	COP_LDTOKEN					0xE8
+#define	COP_BOX						0xE9
+#define	COP_BOX_PTR					0xEA
 
 /*
  * Memory-related opcodes.
  */
-#define	COP_MEMCPY					0xE9
-#define	COP_MEMMOVE					0xEA
-#define	COP_MEMZERO					0xEB
-#define	COP_MEMSET					0xEC
+#define	COP_MEMCPY					0xEB
+#define	COP_MEMMOVE					0xEC
+#define	COP_MEMZERO					0xED
+#define	COP_MEMSET					0xEE
 
 /*
  * Make the next instruction wider.
@@ -411,11 +413,15 @@ extern	"C" {
 #define	COP_PREFIX_F2IU_OVF			0x32
 #define	COP_PREFIX_F2L_OVF			0x33
 #define	COP_PREFIX_F2LU_OVF			0x34
+#define	COP_PREFIX_I2B_ALIGNED		0x35
+#define	COP_PREFIX_I2S_ALIGNED		0x36
+#define	COP_PREFIX_F2F_ALIGNED		0x37
+#define	COP_PREFIX_F2D_ALIGNED		0x38
 
 /*
  * Prefixed arithmetic opcodes.
  */
-#define	COP_PREFIX_CKFINITE			0x35
+#define	COP_PREFIX_CKFINITE			0x39
 
 /*
  * Definition of a CVM stack word which can hold

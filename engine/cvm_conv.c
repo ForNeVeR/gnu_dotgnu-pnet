@@ -446,4 +446,38 @@ case COP_PREFIX_F2LU_OVF:
 }
 break;
 
+case COP_PREFIX_I2B_ALIGNED:
+{
+	/* Convert a 32-bit value into a byte and align it on a word boundary */
+	*((ILInt8 *)(stacktop - 1)) = (ILInt8)(stacktop[-1].intValue);
+	MODIFY_PC_AND_STACK(2, 0);
+}
+break;
+
+case COP_PREFIX_I2S_ALIGNED:
+{
+	/* Convert a 32-bit value into a short and align it on a word boundary */
+	*((ILInt16 *)(stacktop - 1)) = (ILInt16)(stacktop[-1].intValue);
+	MODIFY_PC_AND_STACK(2, 0);
+}
+break;
+
+case COP_PREFIX_F2F_ALIGNED:
+{
+	/* Convert a native float into a float32 and align it on a word boundary */
+	*((ILFloat *)(stacktop - CVM_WORDS_PER_NATIVE_FLOAT)) =
+			   ReadFloat(stacktop - CVM_WORDS_PER_NATIVE_FLOAT);
+	MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_FLOAT - CVM_WORDS_PER_NATIVE_FLOAT);
+}
+break;
+
+case COP_PREFIX_F2D_ALIGNED:
+{
+	/* Convert a native float into a float64 and align it on a word boundary */
+	WriteDouble(stacktop - CVM_WORDS_PER_NATIVE_FLOAT,
+			    ReadFloat(stacktop - CVM_WORDS_PER_NATIVE_FLOAT));
+	MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_DOUBLE - CVM_WORDS_PER_NATIVE_FLOAT);
+}
+break;
+
 #endif /* IL_CVM_PREFIX */

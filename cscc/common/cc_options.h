@@ -69,6 +69,7 @@ extern int static_flag;
 extern int executable_flag;
 extern int optimize_flag;
 extern int disable_optimizations;
+extern int resources_only;
 extern char **pre_defined_symbols;
 extern int num_pre_defined_symbols;
 extern char **user_defined_symbols;

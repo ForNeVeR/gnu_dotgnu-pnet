@@ -1471,8 +1471,12 @@ static int LinkExecutable(void)
 	}
 	for(posn = 0; posn < num_extension_flags; ++posn)
 	{
-		AddArgument(&cmdline, &cmdline_size, "-f");
-		AddArgument(&cmdline, &cmdline_size, extension_flags[posn]);
+		if(!resources_only ||
+		   strncmp(extension_flags[posn], "resources=", 10) != 0)
+		{
+			AddArgument(&cmdline, &cmdline_size, "-f");
+			AddArgument(&cmdline, &cmdline_size, extension_flags[posn]);
+		}
 	}
 	for(posn = 0; posn < num_machine_flags; ++posn)
 	{
@@ -1494,11 +1498,26 @@ static int LinkExecutable(void)
 		AddArgument(&cmdline, &cmdline_size, "-l");
 		AddArgument(&cmdline, &cmdline_size, libraries[posn]);
 	}
+	if(resources_only)
+	{
+		AddArgument(&cmdline, &cmdline_size, "--resources-only");
+	}
 
 	AddArgument(&cmdline, &cmdline_size, "--");
 	for(posn = 0; posn < num_files_to_link; ++posn)
 	{
 		AddArgument(&cmdline, &cmdline_size, files_to_link[posn]);
+	}
+	if(resources_only)
+	{
+		for(posn = 0; posn < num_extension_flags; ++posn)
+		{
+			if(!strncmp(extension_flags[posn], "resources=", 10))
+			{
+				AddArgument(&cmdline, &cmdline_size,
+							extension_flags[posn] + 10);
+			}
+		}
 	}
 	AddArgument(&cmdline, &cmdline_size, 0);
 

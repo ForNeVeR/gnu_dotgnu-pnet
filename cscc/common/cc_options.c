@@ -54,6 +54,7 @@ int static_flag = 0;
 int executable_flag = 0;
 int optimize_flag = 0;
 int disable_optimizations = 0;
+int resources_only = 0;
 char **pre_defined_symbols = 0;
 int num_pre_defined_symbols = 0;
 char **user_defined_symbols = 0;
@@ -719,7 +720,13 @@ void CCParseCommandLine(int argc, char *argv[], int mode, char *versname)
 	}
 
 	/* Do we have any input files? */
-	if(!num_input_files)
+	if(CCStringListGetValue(extension_flags, num_extension_flags,
+							"resources"))
+	{
+		resources_only = (!compile_flag && !assemble_flag &&
+						  !preprocess_flag && !num_input_files);
+	}
+	if(!num_input_files && !resources_only)
 	{
 		fprintf(stderr, _("%s: No input files\n"), progname);
 		exit(1);

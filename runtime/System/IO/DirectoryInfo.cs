@@ -24,6 +24,7 @@ namespace System.IO
 #if !ECMA_COMPAT
 
 using System;
+using System.Runtime.Serialization;
 
 [Serializable]
 public sealed class DirectoryInfo : FileSystemInfo
@@ -43,6 +44,11 @@ public sealed class DirectoryInfo : FileSystemInfo
 				OriginalPath = path;
 				FullPath = Path.GetFullPath(path);
 			}
+	internal DirectoryInfo(SerializationInfo info, StreamingContext context)
+			: base(info, context)
+			{
+				// Nothing to do here.
+			}
 
 	// Properties.
 	public DirectoryInfo Parent
@@ -52,13 +58,11 @@ public sealed class DirectoryInfo : FileSystemInfo
 					return new DirectoryInfo(Path.GetDirectoryName(FullPath));
 				}
 			}
-	[TODO]
 	public override bool Exists
 			{
 				get
 				{
-					// TODO - make sure that the path is a directory.
-					return File.Exists(FullPath);
+					return Directory.Exists(FullPath);
 				}
 			}
 	public override String Name
@@ -77,18 +81,14 @@ public sealed class DirectoryInfo : FileSystemInfo
 			}
 
 	// Create a directory.
-	[TODO]
 	public void Create()
 			{
 				Directory.CreateDirectory(FullPath);
-				// TODO : refresh() ?
 			}
-	[TODO]
 	public DirectoryInfo CreateSubdirectory(String name)
 			{
 				String dir = Path.Combine(FullPath, Path.GetFileName(name));
 				Directory.CreateDirectory(dir);
-				// TODO : refresh() ?
 				return new DirectoryInfo(dir);
 			}
 
@@ -111,33 +111,51 @@ public sealed class DirectoryInfo : FileSystemInfo
 	// Get the contents of this directory.
 	public FileInfo[] GetFiles()
 			{
-				return GetFiles("*");
+				return (FileInfo[])(Directory.ScanDirectoryForInfos
+					(FullPath, null, Directory.ScanType.Files,
+					 typeof(FileInfo)));
 			}
-	[TODO]
 	public FileInfo[] GetFiles(String pattern)
 			{
-				// TODO
-				return null;
+				if(pattern == null)
+				{
+					throw new ArgumentNullException("pattern");
+				}
+				return (FileInfo[])(Directory.ScanDirectoryForInfos
+					(FullPath, pattern, Directory.ScanType.Files,
+					 typeof(FileInfo)));
 			}
 	public DirectoryInfo[] GetDirectories()
 			{
-				return GetDirectories("*");
+				return (DirectoryInfo[])(Directory.ScanDirectoryForInfos
+					(FullPath, null, Directory.ScanType.Directories,
+					 typeof(DirectoryInfo)));
 			}
-	[TODO]
 	public DirectoryInfo[] GetDirectories(String pattern)
 			{
-				// TODO
-				return null;
+				if(pattern == null)
+				{
+					throw new ArgumentNullException("pattern");
+				}
+				return (DirectoryInfo[])(Directory.ScanDirectoryForInfos
+					(FullPath, pattern, Directory.ScanType.Directories,
+					 typeof(DirectoryInfo)));
 			}
 	public FileSystemInfo[] GetFileSystemInfos()
 			{
-				return GetFileSystemInfos("*");
+				return (FileSystemInfo[])(Directory.ScanDirectoryForInfos
+					(FullPath, null, Directory.ScanType.DirectoriesAndFiles,
+					 typeof(FileSystemInfo)));
 			}
-	[TODO]
 	public FileSystemInfo[] GetFileSystemInfos(String pattern)
 			{
-				// TODO
-				return null;
+				if(pattern == null)
+				{
+					throw new ArgumentNullException("pattern");
+				}
+				return (FileSystemInfo[])(Directory.ScanDirectoryForInfos
+					(FullPath, null, Directory.ScanType.DirectoriesAndFiles,
+					 typeof(FileSystemInfo)));
 			}
 
 	// Convert this object into a string.
@@ -146,7 +164,7 @@ public sealed class DirectoryInfo : FileSystemInfo
 				return OriginalPath;
 			}
 
-}; // class FileInfo
+}; // class DirectoryInfo
 
 #endif // !ECMA_COMPAT
 

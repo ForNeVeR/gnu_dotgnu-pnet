@@ -24,6 +24,7 @@ namespace System.IO
 #if !ECMA_COMPAT
 
 using System;
+using System.Runtime.Serialization;
 
 [Serializable]
 public sealed class FileInfo : FileSystemInfo
@@ -43,6 +44,11 @@ public sealed class FileInfo : FileSystemInfo
 				OriginalPath = path;
 				FullPath = Path.GetFullPath(path);
 			}
+	internal FileInfo(SerializationInfo info, StreamingContext context)
+			: base(info, context)
+			{
+				// Nothing to do here.
+			}
 
 	// Properties.
 	public String DirectoryName
@@ -59,22 +65,18 @@ public sealed class FileInfo : FileSystemInfo
 					return new DirectoryInfo(DirectoryName);
 				}
 			}
-	[TODO]
 	public override bool Exists
 			{
 				get
 				{
-					// TODO - make sure that the path is not a directory.
 					return File.Exists(FullPath);
 				}
 			}
-	[TODO]
 	public long Length
 			{
 				get
 				{
-					// TODO
-					return 0;
+					return File.GetLength(FullPath);
 				}
 			}
 	public override String Name

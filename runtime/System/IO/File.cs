@@ -1,9 +1,7 @@
 /*
  * File.cs - Implementation of the "System.IO.File" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  FreeDevelopers.net
- * Contributions from Charlie Carnow <carnow@gmx.net>
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,307 +20,307 @@
 
 namespace System.IO
 {
-	using Platform;
-	using System;
-	using System.Security;
 
-	public sealed class File
-	{
-		private File()
-		{
-			// private constructor... do nothing
-		}
-		public static StreamWriter AppendText(string path) 
-		{
-			return new StreamWriter(path, true);
-		}	
-	
+using System;
+using Platform;
 
-		public static void Copy(string source, string dest) 
-		{
-			Exception e = ValidatePath(source, "source");
-			if (e != null) { throw e; }
-			e = ValidatePath(dest, "dest");
-			if (e != null) { throw e; }
-			Copy(source, dest, false);
-		}
+public sealed class File
+{
+	// Cannot instantiate this class.
+	private File() {}
 
-
-		public static void Copy(string source, string dest, bool overwrite) 
-		{
-			
-			Exception e = ValidatePath(source, "source");
-			if (e != null) { throw e; }
-			e = ValidatePath(dest, "dest");
-			if (e != null) { throw e; }
-
-			Errno err = FileMethods.Copy(source, dest);
-			
-			switch(err) 
+	// Open a file for text appending.
+	public static StreamWriter AppendText(String path)
 			{
-				// If Dest Exists
-				case Errno.EEXIST:
-					if (overwrite)
+				return new StreamWriter(path, true);
+			}
+
+	// Make a copy of a file.
+	public static void Copy(String sourceFileName, String destFileName)
+			{
+				Copy(sourceFileName, destFileName, false);
+			}
+	public static void Copy(String sourceFileName, String destFileName,
+							bool overwrite)
+			{
+				// Open the source to be copied.
+				FileStream src = new FileStream
+					(sourceFileName, FileMode.Open, FileAccess.Read);
+
+				// Open the destination to be copied to.
+				FileStream dest;
+				try
+				{
+					if(overwrite)
 					{
-						Move(source, dest);
+						dest = new FileStream
+							(destFileName, FileMode.Create,
+							 FileAccess.Write);
 					}
 					else
 					{
-						throw new IOException(String.Format(
-									_("IO_CopyFileExists"),dest));
+						dest = new FileStream
+							(destFileName, FileMode.CreateNew,
+							 FileAccess.Write);
 					}
-					break;
+				}
+				catch
+				{
+					// Could not open the destination, so close the source.
+					src.Close();
+					throw;
+				}
 
-				// Directory or File not found
-				case Errno.ENOENT:
-					if (Exists(source)) 
+				// Copy the contents of the file.
+				try
+				{
+					byte[] buffer = new byte [FileStream.BUFSIZ];
+					int len;
+					while((len = src.Read(buffer, 0, FileStream.BUFSIZ)) > 0)
 					{
-						throw new DirectoryNotFoundException(_("IO_DirNotFound"));
+						dest.Write(buffer, 0, len);
 					}
-					else
-					{
-						throw new FileNotFoundException(_("IO_FileNotFound"));		       
-					}
-					
-				
-				case Errno.EIO:
-					throw new IOException(_("IO_Error"));
-				
-				case Errno.EACCES:
-					throw new SecurityException(_("IO_PathnameSecurity"));
-				case Errno.Success:
-					return;
-				
-				// TODO: Change to a more appropriate exception
-				// (Suggestions would be welcome)
-				default:
-					throw new ArgumentException();	
+				}
+				finally
+				{
+					src.Close();
+					dest.Close();
+				}
 			}
-		}
-	
-		public static FileStream Create(string path) 
-		{
-			return new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-		}
 
-		public static FileStream Create(string path, int buffersize) 
-		{	
-			return new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None, buffersize);
-		}
-	
-		public static StreamWriter CreateText(string path) 
-		{
-			return new StreamWriter(path, false);
-		}
-
-		
-		public static void Delete(string path) 
-		{
-			Exception e = ValidatePath(path, "path");
-			if (e != null) { throw e; }
-		
-			Errno err = DirMethods.Delete(path);
-			
-			switch(err) 
+	// Create a stream for a file.
+	public static FileStream Create(String path)
 			{
-				case Errno.Success:
-					/* Nothing */
-					break;
-				case Errno.EIO:
-					throw new IOException(_("IO_Error"));
-				case Errno.ENOENT:
-					// Exists checks files
-					if (Exists(path)) 
-					{
-						throw new DirectoryNotFoundException(_("IO_DirNotFound"));
-					}
-					else
-					{
-						throw new FileNotFoundException(_("IO_FileNotFound"));
-					} 
-				case Errno.EACCES:
-					throw new SecurityException(_("IO_PathnameSecurity"));
-
-				// TODO: Change to a more appropriate exception
-				// (Suggestions would be welcome)
-				default:
-					throw new ArgumentException();
-				
+				return Create(path, FileStream.BUFSIZ);
 			}
-		}
-
-		public static bool Exists(string path) 
-		{
-			Exception e = ValidatePath(path, "path");
-			if (e != null) { throw e; }
-			return FileMethods.Exists(path);	
-		}
-		
-		public static DateTime GetCreationTime(string path)
-		{
-			// platform-enforced security is the only security here right now
-			// afaik, some System.Security stuff needs to be added here - Rich
-
-			Exception e = ValidatePath(path, "path");
-			if (e != null) { throw e; }
-
-			long time;
-			e = GetTimeExceptionHandler(DirMethods.GetCreationTime(path, out time));
-			if (e != null) { throw e; }
-
-			return new DateTime(time);
-		}
-
-		public static DateTime GetLastAccessTime(string path)
-		{
-			// platform-enforced security is the only security here right now
-			// afaik, some System.Security stuff needs to be added here - Rich
-
-			Exception e = ValidatePath(path, "path");
-			if (e != null) { throw e; }
-
-			long time;
-			e = GetTimeExceptionHandler(DirMethods.GetLastAccess(path, out time));
-			if (e != null) { throw e; }
-
-			return new DateTime(time);
-		}
-
-		public static DateTime GetLastWriteTime(string path)
-		{
-			// platform-enforced security is the only security here right now
-			// afaik, some System.Security stuff needs to be added here - Rich
-
-			Exception e = ValidatePath(path, "path");
-			if (e != null) { throw e; }
-
-			long time;
-			e = GetTimeExceptionHandler(DirMethods.GetLastModification(path, out time));
-			if (e != null) { throw e; }
-
-			return new DateTime(time);
-		}
-
-		public static void Move(string src, string dest)
-		{
-			Exception e = ValidatePath(src, "src");
-			if (e != null) { throw e; }
-			e = ValidatePath(dest, "dest");
-			if (e != null) { throw e; }
-
-			DirMethods.Rename(src, dest);
-		}
-		
-		
-		public static FileStream Open(string path, FileMode mode) 
-		{
-			return new FileStream(path, mode, FileAccess.ReadWrite, FileShare.None);
-		}
-		
-		public static FileStream Open(string path, FileMode mode,
-					      FileAccess access)
-		{
-			return new FileStream(path, mode, access, 
-						FileShare.None);		
-	
-		}
-
-
-		public static FileStream Open(string path, FileMode mode,
-					      FileAccess access, FileShare s) 
-		{
-			return new FileStream(path, mode, access, s);
-		}
-		
-		public static FileStream OpenRead(string path) 
-		{
-			return new FileStream(path, FileMode.Open, 
-					      FileAccess.Read, FileShare.Read);
-		}
-
-		public static StreamReader OpenText(string path) 
-		{
-			return new StreamReader(path);
-		}
-
-		public static FileStream OpenWrite(string path) 
-		{
-			return new FileStream(path, FileMode.OpenOrCreate,
-					      FileAccess.Write, FileShare.None);
-		}
-		
-		public static void SetCreationTime(string path, DateTime creationTime) 
-		{
-			Exception e = ValidatePath(path, "path");
-			if(e != null) { throw e; }
-
-			Errno err = FileMethods.SetCreationTime(path, creationTime.ToUniversalTime().Ticks);
-			e = GetTimeExceptionHandler(err);
-			if(e != null) { throw e; }
-		}
-		
-		public static void SetLastAccessTime(string path, DateTime lastAccessTime) 
-		{
-			Exception e = ValidatePath(path, "path");
-			if(e != null) { throw e; }
-
-			Errno err = FileMethods.SetLastAccessTime(path, lastAccessTime.ToUniversalTime().Ticks);
-			e = GetTimeExceptionHandler(err);
-			if(e != null) { throw e; }
-		}
-
-		public static void SetLastWriteTime(string path, DateTime lastWriteTime)
-		{
-			Exception e = ValidatePath(path, "path");
-			if(e != null) { throw e; }
-
-			Errno err = FileMethods.SetLastWriteTime(path, lastWriteTime.ToUniversalTime().Ticks);
-			e = GetTimeExceptionHandler(err);
-			if(e != null) { throw e; }
-
-		}
-
-		private static Exception GetTimeExceptionHandler(Errno err)
-		{
-			if (err == Errno.Success)
+	public static FileStream Create(String path, int bufferSize)
 			{
-				return null;
+				return new FileStream
+					(path, FileMode.Create, FileAccess.ReadWrite,
+					 FileShare.None, bufferSize);
 			}
-			else if (err == Errno.ENOENT)
-			{
-				return new IOException(_("IO_PathNotFound"));
-			}
-			else if (err == Errno.ENAMETOOLONG)
-			{
-				return new PathTooLongException(_("Exception_PathTooLong"));
-			}
-			else if (err == Errno.EACCES)
-			{
-				return new SecurityException(_("IO_PathnameSecurity"));
-			}
-			else if (err == Errno.ENOMEM)
-			{
-				return new OutOfMemoryException();
-			}
-			else
-			{
-				return new IOException(_("Exception_IO"));
-			}
-		}
 
-		private static Exception ValidatePath(string path, string argumentName)
-		{
-			if (path == null)
+	// Create a file for text writing.
+	public static StreamWriter CreateText(String path)
 			{
-				return new 
-					ArgumentNullException(_("Arg_NotNull"), argumentName);
+				return new StreamWriter(path, false);
 			}
-			if ((path.Trim() == "") || !(FileMethods.ValidatePathname(path)))
+
+	// Delete a file.
+	public static void Delete(String path)
 			{
-				return new 
-					ArgumentException(_("IO_InvalidPathname"), argumentName);
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile(DirMethods.Delete(path));
 			}
-			return null;
-		}
-	}
-}
+
+	// Determine whether a file exists.
+	public static bool Exists(String path)
+			{
+				try
+				{
+					Directory.ValidatePath(path);
+				}
+				catch(Exception)
+				{
+					return false;
+				}
+				FileType type = FileMethods.GetFileType(path);
+				return (type != FileType.directory &&
+						type != FileType.unknown);
+			}
+
+	// Get a file's creation time.
+	public static DateTime GetCreationTime(String path)
+			{
+				long ticks;
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(DirMethods.GetCreationTime(path, out ticks));
+				return (new DateTime(ticks)).ToLocalTime();
+			}
+
+	// Get a file's last access time.
+	public static DateTime GetLastAccessTime(String path)
+			{
+				long ticks;
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(DirMethods.GetLastAccess(path, out ticks));
+				return (new DateTime(ticks)).ToLocalTime();
+			}
+
+	// Get a file's last modification time.
+	public static DateTime GetLastWriteTime(String path)
+			{
+				long ticks;
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(DirMethods.GetLastModification(path, out ticks));
+				return (new DateTime(ticks)).ToLocalTime();
+			}
+
+	// Move a file to a new location.
+	public static void Move(String sourceFileName, String destFileName)
+			{
+				Directory.Move(sourceFileName, destFileName);
+			}
+
+	// Open a file stream.
+	public static FileStream Open(String path, FileMode mode)
+			{
+				return new FileStream
+					(path, mode, FileAccess.ReadWrite, FileShare.None);
+			}
+	public static FileStream Open
+				(String path, FileMode mode, FileAccess access)
+			{
+				return new FileStream(path, mode, access, FileShare.None);
+			}
+	public static FileStream Open
+				(String path, FileMode mode,
+				 FileAccess access, FileShare share)
+			{
+				return new FileStream(path, mode, access, share);
+			}
+
+	// Open a file for reading.
+	public static FileStream OpenRead(String path)
+			{
+				return new FileStream
+					(path, FileMode.Open, FileAccess.Read, FileShare.None);
+			}
+
+	// Open a text file for reading.
+	public static StreamReader OpenText(String path)
+			{
+				return new StreamReader(path);
+			}
+
+	// Open a file for writing.
+	public static FileStream OpenWrite(String path)
+			{
+				return new FileStream
+					(path, FileMode.OpenOrCreate,
+					 FileAccess.Write, FileShare.None);
+			}
+
+	// Set the creation time on a file.
+	public static void SetCreationTime(String path, DateTime creationTime)
+			{
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(FileMethods.SetCreationTime
+						(path, creationTime.ToUniversalTime().Ticks));
+			}
+
+	// Set the last access time on a file.
+	public static void SetLastAccessTime(String path, DateTime lastAccessTime)
+			{
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(FileMethods.SetLastAccessTime
+						(path, lastAccessTime.ToUniversalTime().Ticks));
+			}
+
+	// Set the last modification time on a file.
+	public static void SetLastWriteTime(String path, DateTime lastWriteTime)
+			{
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(FileMethods.SetLastWriteTime
+						(path, lastWriteTime.ToUniversalTime().Ticks));
+			}
+
+#if !ECMA_COMPAT
+
+	// Get the attributes for a file.
+	public static FileAttributes GetAttributes(String path)
+			{
+				int attrs;
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(FileMethods.GetAttributes(path, out attrs));
+				return (FileAttributes)attrs;
+			}
+
+	// Get a file's UTC creation time.
+	public static DateTime GetCreationTimeUtc(String path)
+			{
+				long ticks;
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(DirMethods.GetCreationTime(path, out ticks));
+				return new DateTime(ticks);
+			}
+
+	// Get a file's UTC last access time.
+	public static DateTime GetLastAccessTimeUtc(String path)
+			{
+				long ticks;
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(DirMethods.GetLastAccess(path, out ticks));
+				return new DateTime(ticks);
+			}
+
+	// Get a file's UTC last modification time.
+	public static DateTime GetLastWriteTimeUtc(String path)
+			{
+				long ticks;
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(DirMethods.GetLastModification(path, out ticks));
+				return new DateTime(ticks);
+			}
+
+	// Set the attributes on a file.
+	public static void SetAttributes
+				(String path, FileAttributes fileAttributes)
+			{
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(FileMethods.SetAttributes(path, (int)fileAttributes));
+			}
+
+	// Set the UTC creation time on a file.
+	public static void SetCreationTimeUtc(String path, DateTime creationTime)
+			{
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(FileMethods.SetCreationTime(path, creationTime.Ticks));
+			}
+
+	// Set the UTC last access time on a file.
+	public static void SetLastAccessTimeUtc
+				(String path, DateTime lastAccessTime)
+			{
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(FileMethods.SetLastAccessTime
+						(path, lastAccessTime.Ticks));
+			}
+
+	// Set the UTC last modification time on a file.
+	public static void SetLastWriteTimeUtc(String path, DateTime lastWriteTime)
+			{
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(FileMethods.SetLastWriteTime
+						(path, lastWriteTime.Ticks));
+			}
+
+	// Get the length of a file.
+	internal static long GetLength(String path)
+			{
+				long length;
+				Directory.ValidatePath(path);
+				Directory.HandleErrorsFile
+					(FileMethods.GetLength(path, out length));
+				return length;
+			}
+
+#endif // !ECMA_COMPAT
+
+}; // class File
+
+}; // namespace System.IO

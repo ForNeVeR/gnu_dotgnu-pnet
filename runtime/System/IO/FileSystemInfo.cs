@@ -24,9 +24,11 @@ namespace System.IO
 #if !ECMA_COMPAT
 
 using System;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
 [Serializable]
-public abstract class FileSystemInfo : MarshalByRefObject
+public abstract class FileSystemInfo : MarshalByRefObject, ISerializable
 {
 	// Internal state.
 	protected String FullPath;
@@ -38,19 +40,26 @@ public abstract class FileSystemInfo : MarshalByRefObject
 				FullPath = null;
 				OriginalPath = null;
 			}
+	protected FileSystemInfo(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				OriginalPath = info.GetString("OriginalPath");
+				FullPath = info.GetString("FullPath");
+			}
 
 	// Properties.
-	[TODO]
 	public FileAttributes Attributes
 			{
 				get
 				{
-					// TODO
-					return 0;
+					return File.GetAttributes(FullPath);
 				}
 				set
 				{
-					// TODO
+					File.SetAttributes(FullPath, value);
 				}
 			}
 	public DateTime CreationTime
@@ -62,6 +71,18 @@ public abstract class FileSystemInfo : MarshalByRefObject
 				set
 				{
 					File.SetCreationTime(FullPath, value);
+				}
+			}
+	[ComVisible(false)]
+	public DateTime CreationTimeUtc
+			{
+				get
+				{
+					return File.GetCreationTimeUtc(FullPath);
+				}
+				set
+				{
+					File.SetCreationTimeUtc(FullPath, value);
 				}
 			}
 	public abstract bool Exists { get; }
@@ -90,6 +111,18 @@ public abstract class FileSystemInfo : MarshalByRefObject
 					File.SetLastAccessTime(FullPath, value);
 				}
 			}
+	[ComVisible(false)]
+	public DateTime LastAccessTimeUtc
+			{
+				get
+				{
+					return File.GetLastAccessTimeUtc(FullPath);
+				}
+				set
+				{
+					File.SetLastAccessTimeUtc(FullPath, value);
+				}
+			}
 	public DateTime LastWriteTime
 			{
 				get
@@ -101,6 +134,18 @@ public abstract class FileSystemInfo : MarshalByRefObject
 					File.SetLastWriteTime(FullPath, value);
 				}
 			}
+	[ComVisible(false)]
+	public DateTime LastWriteTimeUtc
+			{
+				get
+				{
+					return File.GetLastWriteTimeUtc(FullPath);
+				}
+				set
+				{
+					File.SetLastWriteTimeUtc(FullPath, value);
+				}
+			}
 	public abstract String Name { get; }
 
 	// Delete the file represented by this object.
@@ -110,6 +155,19 @@ public abstract class FileSystemInfo : MarshalByRefObject
 	public void Refresh()
 			{
 				// Nothing to do here - we don't cache values.
+			}
+
+	// Get the serialization data for this instance.
+	[ComVisible(false)]
+	public virtual void GetObjectData(SerializationInfo info,
+									  StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				info.AddValue("OriginalPath", OriginalPath);
+				info.AddValue("FullPath", FullPath);
 			}
 
 }; // class FileSystemInfo

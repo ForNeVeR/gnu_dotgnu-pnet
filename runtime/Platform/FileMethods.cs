@@ -38,7 +38,7 @@ internal class FileMethods
 	extern public static bool ValidatePathname(String path);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Exists(String path);
+	extern public static FileType GetFileType(String path);
 
 	// Open a raw binary file.  Returns false if the file
 	// could not be opened.
@@ -128,6 +128,18 @@ internal class FileMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Errno SetCreationTime(string path, long ticks);
 	
+	// Get the attributes on a file.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno GetAttributes(string path, out int attrs);
+
+	// Set the attributes on a file.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno SetAttributes(string path, int attrs);
+
+	// Get the length of a file.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno GetLength(string path, out long length);
+
 }; // class FileMethods
 
 }; // namespace Platform

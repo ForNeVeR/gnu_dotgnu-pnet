@@ -17,6 +17,13 @@
 	runtime/System/IO/BinaryWriter.cs,
 	runtime/System/Reflection/IReflect.cs: signature-compatibility fixes.
 
+	* resources/en_US/runtime/IO.txt, runtime/Platform/DirMethods.cs,
+	runtime/Platform/FileMethods.cs, runtime/System/IO/Directory.cs,
+	runtime/System/IO/DirectoryInfo.cs, runtime/System/IO/File.cs,
+	runtime/System/IO/FileInfo.cs, runtime/System/IO/FileSystemInfo.cs,
+	runtime/System/IO/IOException.cs, runtime/System/IO/TextWriter.cs:
+	rewrite and/or improve various classes in "System.IO".
+
 2003-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/BestFitMappingAttribute.cs,

@@ -47,6 +47,12 @@ public class IOException : SystemException
 			errno = Errno.EIO;
 		}
 #if !ECMA_COMPAT
+	public IOException(String msg, int hresult)
+		: base(msg)
+		{
+			errno = Errno.EIO;
+			HResult = hresult;
+		}
 	protected IOException(SerializationInfo info, StreamingContext context)
 		: base(info, context) {}
 #endif

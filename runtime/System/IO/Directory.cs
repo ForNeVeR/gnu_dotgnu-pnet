@@ -1,9 +1,7 @@
 /*
  * Directory.cs - Implementation of the "System.IO.Directory" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
- *
- * Contribution from Abhaya Agarwal  <abhayag@iitk.ac.in>
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,389 +18,593 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-
 namespace System.IO
 {
-	using System;
-	using System.Text;
-	using System.Private;
-	using System.Collections;
-	using System.Security;
-	using Platform;
 
-	public sealed class Directory 
-	{
-		
-		private static PathInfo pathinfo = DirMethods.GetPathInfo();
+using System;
+using System.Private;
+using System.Collections;
+using Platform;
 
-		private Directory()
-		{
-			// private constructor... do nothing
-		}
+public sealed class Directory
+{
+	// Cannot instantiate this class.
+	private Directory() {}
 
-#if !ECMA_COMPAT	
-		
-		public static Exception InternalCreateDirectory(String path)
-		{
-			if(!File.Exists(Path.GetDirectoryName(path)))
+	// Validate a pathname.
+	internal static void ValidatePath(String path)
 			{
-				InternalCreateDirectory(Path.GetDirectoryName(path));
+				if(path == null)
+				{
+					throw new ArgumentNullException("path");
+				}
+				else if(path.Length == 0)
+				{
+					throw new ArgumentException(_("IO_InvalidPathname"));
+				}
+				else if(!FileMethods.ValidatePathname(path))
+				{
+					throw new ArgumentException(_("IO_InvalidPathname"));
+				}
 			}
-		
-			Errno err = DirMethods.CreateDirectory(path);
 
-			/* TODO: protect against stuff like 
-			CreateDirectory("a.out.exe/mydir"); which currently throw
-			a SecurityException without any clue of the error */
-
-			if(err != Errno.Success)
+	// Handle errors reported by the runtime engine.
+	private static void HandleErrorsDir(Errno error)
 			{
-				return GetErrnoExceptions(err,path);
-			}
-			return null;
-		}
+				switch(error)
+				{
+					case Errno.Success: break;
 
-		public static DirectoryInfo CreateDirectory(String path)
-		{
-			Exception e=ValidatePath(path, "path");
-			if(e != null) throw e;
-			
-			e = InternalCreateDirectory(path);
-			if(e != null) throw e;
-
-			return new DirectoryInfo(path);
-		}
-#endif
-
-		public static void Delete(string path)
-		{
-			Delete(path,false);	
-		}
-		
-		public static void Delete(string path, bool recursive)
-		{
-			Exception e=ValidatePath(path,"path");
-			if(e != null) throw e;
-	
-			// remove any trailing directory sep characters
-			if(path.GetChar(path.Length-1) == Path.DirectorySeparatorChar)
-				path = path.Substring(0, path.Length - 1);
-			Errno errno = DirMethods.Delete(path);
-
-			switch(errno)
-			{
-				case Errno.ENOENT:
-					throw new DirectoryNotFoundException(_("IO_DirNotFound"));
-
-				case Errno.ENOTEMPTY:
-					if(!recursive)
+					case Errno.ENOENT:
+					case Errno.ENOTDIR:
 					{
-						throw new IOException(_("IO_Error"));
+						throw new DirectoryNotFoundException
+							(_("IO_DirNotFound"));
 					}
-					else
-					{
-						foreach(string subFile in GetFiles(path))
-						{
-							File.Delete(path + 
-							Path.DirectorySeparatorChar.ToString() + subFile);
-						}
+					// Not reached.
 
-						foreach(string subDir in GetDirectories(path))
-						{
-							if(subDir == "." || subDir == "..")
-								continue;
-							Delete(path +Path.DirectorySeparatorChar.ToString() 
-									+ subDir, recursive);
-						}
-						// now delete this dir
-						Delete(path);
+					case Errno.EACCES:
+					{
+						throw new UnauthorizedAccessException
+							(_("IO_AccessDenied"));
 					}
 					break;
 
-				case Errno.EROFS:
-					throw new IOException(_("IO_Error"));
+					case Errno.ENAMETOOLONG:
+					{
+						throw new PathTooLongException
+							(_("Exception_PathTooLong"));
+					}
+					break;
 
-				case Errno.EACCES:
-					throw new SecurityException(_("IO_PathnameSecurity"));
-
-				// Needs to be confirmed.
-				case Errno.ENAMETOOLONG:					
-					throw new PathTooLongException();
-
-				case Errno.Success:
-					return;
-				// TODO
-				// Throw some appropriate exception.
-				default:
-					throw new ArgumentException();
-			}
-		}
-
-		public static bool Exists(string path)
-		{
-			Exception e=ValidatePath(path,"path");
-			if(e != null) throw e;
-			long ac;
-			Errno errno = DirMethods.GetLastAccess(path, out ac);
-			switch(errno)
-			{
-				case Errno.Success:
-					return true;
-				case Errno.ENOENT:
-					return false;
-				case Errno.ENOTDIR:
-					return false;
-				case Errno.EACCES:
-					return false;
-				case Errno.ENAMETOOLONG:
-					throw new PathTooLongException();
-				default:
-					return false;
-			}
-		
-		}
-
-		public static DateTime GetCreationTime(string path)
-		{
-			return File.GetCreationTime(path);
-		}
-
-		private static Exception GetErrnoExceptions(Errno errno,String path)
-		{
-			switch(errno)
-			{
-				case Errno.ENOENT:
-					return new DirectoryNotFoundException(_("IO_DirNotFound"));
-				case Errno.ENOTDIR:
-					return new IOException(String.Format(_("IO_IsNotDir"),
-											path));
-				case Errno.EACCES:
-					return new SecurityException(_("IO_PathnameSecurity"));
-				case Errno.ENAMETOOLONG:
-					return new PathTooLongException();
-				case Errno.EPERM:
-					return new SecurityException(_("IO_PathnameSecurity"));
-			}
-			return null;
-		}
-
-		public static string GetCurrentDirectory()
-		{
-			// TODO: security ?
-			return DirMethods.GetCurrentDirectory();
-		}
-
-		public static string[] GetDirectories(string path)
-		{
-			try
-			{
-				return InternalGetDirectoryEntries(path,"*",
-										FileType.directory);
-			}
-			catch(Exception e)
-			{
-				throw e; // re-source exception to be like ECMA
-			}
-		}
-
-		public static string[] GetDirectories(string path, string searchPattern)
-		{
-			try
-			{
-				return InternalGetDirectoryEntries(path,searchPattern,
-										FileType.directory);
-			}
-			catch(Exception e)
-			{
-				throw e;
-			}
-		}
-
-		public static string GetDirectoryRoot(string path)
-		{
-			// no difference except for "\\ecmatest"
-			// in Directory shoud give "C:\\" and in Path should give "\\"
-			return Path.GetPathRoot(path); 
-		}
-
-		public static string[] GetFileSystemEntries(string path)
-		{
-			try
-			{
-				return InternalGetDirectoryEntries(path,"*",
-												(FileType)(-1)); // all types
-			}
-			catch(Exception e)
-			{
-				throw e;
-			}
-		}
-
-		public static string[] GetFileSystemEntries(string path, 
-													string searchPattern)
-		{
-			try
-			{
-				return InternalGetDirectoryEntries(path,searchPattern,
-														(FileType)(-1));
-			}
-			catch(Exception e)
-			{
-				throw e;
-			}
-		}
-
-
-		public static string[] GetFiles(string path)
-		{
-			try
-			{
-				return InternalGetDirectoryEntries(path,"*",
-										FileType.regularFile);
-			}
-			catch(Exception e)
-			{
-				throw e;
-			}
-		}
-
-		public static string[] GetFiles(string path, string searchPattern)
-		{
-			try
-			{
-				return InternalGetDirectoryEntries(path,searchPattern,
-										FileType.regularFile);
-			}
-			catch(Exception e)
-			{
-				throw e;
-			}
-		}
-	
-		private static String[] InternalGetDirectoryEntries(String path,
-														String searchPattern,
-														FileType type)
-		{
-			Exception e=ValidatePath(path,"path");
-			if(e != null) throw e;
-
-			InternalFileInfo []dirEnts;
-			Errno errno=DirMethods.GetFilesInDirectory(path,out dirEnts);
-			
-			e=GetErrnoExceptions(errno,path);
-			if(e != null) throw e;
-			
-			GlobMatch fnmatch = new GlobMatch(searchPattern);
-			
-			ArrayList list=new ArrayList(dirEnts.Length);
-			foreach(InternalFileInfo info in dirEnts)
-			{
-				if(fnmatch.Match(info.fileName) 
-						&& 	(type == (FileType)(-1) || info.fileType == type ))
-				{
-					list.Add(info.fileName);
+					default:
+					{
+						throw new IOException(error);
+					}
+					// Not reached.
 				}
 			}
-			String[] retval=new String[list.Count];
-			list.CopyTo(retval);
-			return retval;
-		}
-
-		public static DateTime GetLastAccessTime(string path)
-		{
-			return File.GetLastAccessTime(path);
-		}
-
-		public static DateTime GetLastWriteTime(string path)
-		{
-			return File.GetLastWriteTime(path);
-		}
-
-		public static void Move(string sourceDirName, string destDirName)
-		{
-			Exception e=ValidatePath(sourceDirName,"sourceDirName");
-			if(e != null) throw e;
-
-			e=ValidatePath(destDirName,"destDirName");
-			if(e != null) throw e;
-			
-			Errno errno = DirMethods.Rename(sourceDirName, destDirName);
-			e=GetErrnoExceptions(errno, sourceDirName);
-			if(e != null) throw e;
-		}
-
-		public static void SetCreationTime(string path, DateTime creationTime)
-		{
-			File.SetCreationTime(path, creationTime);
-		}
-
-		public static void SetCurrentDirectory(string path)
-		{
-			Exception e=ValidatePath(path,"path");
-			if(e != null) throw e;
-			
-			Errno errno=DirMethods.ChangeDirectory(path);
-
-			e=GetErrnoExceptions(errno,path);
-			if(e != null) throw e;
-		}
-
-		public static void SetLastAccessTime(string path, DateTime lastAccessTime)
-		{
-			File.SetLastAccessTime(path, lastAccessTime);
-		}
-
-		public static void SetLastWriteTime(string path, DateTime lastWriteTime)
-		{
-			File.SetLastWriteTime(path, lastWriteTime);
-		}
-		
-		/* internal class to convert Glob expression to Regex */
-		private class GlobMatch : IDisposable
-		{
-			Regex expr;
-			String pattern;
-			bool disposed=false;
-			
-			internal GlobMatch(String glob) 
+	internal static void HandleErrorsFile(Errno error)
 			{
-				StringBuilder builder=new StringBuilder();
-				pattern=glob;
-				expr=new Regex(glob, RegexSyntax.Wildcard);
+				switch(error)
+				{
+					case Errno.Success: break;
+
+					case Errno.ENOENT:
+					{
+						throw new FileNotFoundException
+							(_("IO_PathNotFound"));
+					}
+					// Not reached.
+
+					case Errno.ENOTDIR:
+					{
+						throw new DirectoryNotFoundException
+							(_("IO_DirNotFound"));
+					}
+					// Not reached.
+
+					case Errno.EACCES:
+					{
+						throw new UnauthorizedAccessException
+							(_("IO_AccessDenied"));
+					}
+					break;
+
+					case Errno.ENAMETOOLONG:
+					{
+						throw new PathTooLongException
+							(_("Exception_PathTooLong"));
+					}
+					break;
+
+					default:
+					{
+						throw new IOException(error);
+					}
+					// Not reached.
+				}
 			}
 
-			public bool Match(String input)
+	// Delete a directory.
+	public static void Delete(String path)
 			{
-				if(input==null)
-					throw new ArgumentNullException("input");
-				return expr.Match(input);
+				Delete(path, false);
+			}
+	public static void Delete(String path, bool recursive)
+			{
+				// Remove trailing directory separators.
+				if(path != null)
+				{
+					int len = path.Length - 1;
+					if(len > 0)
+					{
+						if(path[len] == Path.DirectorySeparatorChar ||
+						   path[len] == Path.AltDirectorySeparatorChar)
+						{
+							path = path.Substring(0, len);
+						}
+					}
+				}
+
+				// Validate the pathname.
+				ValidatePath(path);
+
+				// Recursively delete the directory's contents if necessary.
+				if(recursive)
+				{
+					InternalFileInfo[] entries;
+					int posn;
+					String filename;
+					if(DirMethods.GetFilesInDirectory(path, out entries)
+							== Errno.Success && entries != null)
+					{
+						for(posn = 0; posn < entries.Length; ++posn)
+						{
+							filename = entries[posn].fileName;
+							if(filename == "." || filename == "..")
+							{
+								continue;
+							}
+							filename = path + Path.DirectorySeparatorChar +
+									   filename;
+							if(entries[posn].fileType == FileType.directory)
+							{
+								Delete(filename, true);
+							}
+							else
+							{
+								File.Delete(filename);
+							}
+						}
+					}
+				}
+
+				// Delete the directory itself.
+				HandleErrorsDir(DirMethods.Delete(path));
 			}
 
-			public void Dispose()
+	// Determine if a directory with a specific path exists.
+	public static bool Exists(String path)
 			{
-				if(!disposed)expr.Dispose();
-				disposed=true;
+				ValidatePath(path);
+				return (FileMethods.GetFileType(path) == FileType.directory);
 			}
 
-			void IDisposable.Dispose()
+	// Get the creation time of a directory.
+	public static DateTime GetCreationTime(String path)
 			{
-				this.Dispose();
+				long time;
+				ValidatePath(path);
+				HandleErrorsDir(DirMethods.GetCreationTime(path, out time));
+				return (new DateTime(time)).ToLocalTime();
 			}
 
-		} // class GlobMatch
+	// Get the current working directory.
+	public static String GetCurrentDirectory()
+			{
+				String dir = DirMethods.GetCurrentDirectory();
+				if(dir == null)
+				{
+					throw new UnauthorizedAccessException
+						(_("IO_AccessDenied"));
+				}
+				return dir;
+			}
 
-		private static Exception ValidatePath(string path,string name)
-		{
-			if (path == null)
+	// Directory scan types.
+	internal enum ScanType
+	{
+		Directories			= 0,
+		Files				= 1,
+		DirectoriesAndFiles = 2
+	};
+
+	// Scan a directory to collect up all entries that match
+	// the specified search criteria.
+	private static String[] ScanDirectory
+				(String path, String searchPattern, ScanType scanType)
 			{
-				return new ArgumentNullException(_("Arg_NotNull"),name);
+				Regex regex;
+				ArrayList list;
+				InternalFileInfo[] entries;
+				Errno error;
+				int posn;
+				String filename;
+				FileType type;
+
+				// Get all files in the directory.
+				error = DirMethods.GetFilesInDirectory(path, out entries);
+				if(error != Errno.Success)
+				{
+					HandleErrorsDir(error);
+				}
+				if(entries == null)
+				{
+					return new String [0];
+				}
+
+				// Convert the search pattern into a regular expression.
+				if(searchPattern == null)
+				{
+					regex = null;
+				}
+				else
+				{
+					regex = new Regex(searchPattern, RegexSyntax.Wildcard);
+				}
+
+				// Scan the file list and collect up matching entries.
+				list = new ArrayList (entries.Length);
+				for(posn = 0; posn < entries.Length; ++posn)
+				{
+					filename = entries[posn].fileName;
+					if(filename == "." || filename == "..")
+					{
+						continue;
+					}
+					type = entries[posn].fileType;
+					switch(scanType)
+					{
+						case ScanType.Directories:
+						{
+							if(type != FileType.directory)
+							{
+								continue;
+							}
+						}
+						break;
+
+						case ScanType.Files:
+						{
+							if(type == FileType.directory)
+							{
+								continue;
+							}
+						}
+						break;
+
+						default: break;
+					}
+					if(regex != null && !regex.Match(filename))
+					{
+						continue;
+					}
+					list.Add(filename);
+				}
+
+				// Dispose of the regular expression.
+				if(regex != null)
+				{
+					regex.Dispose();
+				}
+
+				// Return the list of strings to the caller.
+				return (String[])(list.ToArray(typeof(String)));
 			}
-			if ((path.Trim() == "") || !(FileMethods.ValidatePathname(path))
-				|| path.IndexOfAny(Path.InvalidPathChars)!=-1)
+
+#if !ECMA_COMPAT
+
+	// Scan a directory to collect up all entries that match
+	// the specified search criteria, returning FileSystemInfo's.
+	internal static Object ScanDirectoryForInfos
+				(String path, String searchPattern,
+				 ScanType scanType, Type arrayType)
 			{
-				return new ArgumentException(_("IO_InvalidPathname"),name);
+				Regex regex;
+				ArrayList list;
+				InternalFileInfo[] entries;
+				Errno error;
+				int posn;
+				String filename;
+				FileType type;
+
+				// Get all files in the directory.
+				error = DirMethods.GetFilesInDirectory(path, out entries);
+				if(error != Errno.Success)
+				{
+					HandleErrorsDir(error);
+				}
+				if(entries == null)
+				{
+					return new String [0];
+				}
+
+				// Convert the search pattern into a regular expression.
+				if(searchPattern == null)
+				{
+					regex = null;
+				}
+				else
+				{
+					regex = new Regex(searchPattern, RegexSyntax.Wildcard);
+				}
+
+				// Scan the file list and collect up matching entries.
+				list = new ArrayList (entries.Length);
+				for(posn = 0; posn < entries.Length; ++posn)
+				{
+					filename = entries[posn].fileName;
+					if(filename == "." || filename == "..")
+					{
+						continue;
+					}
+					type = entries[posn].fileType;
+					switch(scanType)
+					{
+						case ScanType.Directories:
+						{
+							if(type != FileType.directory)
+							{
+								continue;
+							}
+						}
+						break;
+
+						case ScanType.Files:
+						{
+							if(type == FileType.directory)
+							{
+								continue;
+							}
+						}
+						break;
+
+						default: break;
+					}
+					if(regex != null && !regex.Match(filename))
+					{
+						continue;
+					}
+					if(type == FileType.directory)
+					{
+						list.Add(new DirectoryInfo(filename));
+					}
+					else
+					{
+						list.Add(new FileInfo(filename));
+					}
+				}
+
+				// Dispose of the regular expression.
+				if(regex != null)
+				{
+					regex.Dispose();
+				}
+
+				// Return the list of strings to the caller.
+				return list.ToArray(arrayType);
 			}
-			return null;
-		}
-	} // class Directory 
-} // namespace System.IO
+
+#endif // !ECMA_COMPAT
+
+	// Get the sub-directories under a specific directory.
+	public static String[] GetDirectories(String path)
+			{
+				ValidatePath(path);
+				return ScanDirectory(path, null, ScanType.Directories);
+			}
+	public static String[] GetDirectories(String path, String searchPattern)
+			{
+				ValidatePath(path);
+				if(searchPattern == null)
+				{
+					throw new ArgumentNullException("searchPattern");
+				}
+				return ScanDirectory(path, searchPattern,
+									 ScanType.Directories);
+			}
+
+	// Get the root directory for a specific path.
+	public static String GetDirectoryRoot(String path)
+			{
+				return Path.GetPathRoot(path);
+			}
+
+	// Get the files under a specific directory.
+	public static String[] GetFiles(String path)
+			{
+				ValidatePath(path);
+				return ScanDirectory(path, null, ScanType.Files);
+			}
+	public static String[] GetFiles(String path, String searchPattern)
+			{
+				ValidatePath(path);
+				if(searchPattern == null)
+				{
+					throw new ArgumentNullException("searchPattern");
+				}
+				return ScanDirectory(path, searchPattern,
+									 ScanType.Files);
+			}
+
+	// Get all filesystem entries under a specific directory.
+	public static String[] GetFileSystemEntries(String path)
+			{
+				ValidatePath(path);
+				return ScanDirectory(path, null, ScanType.DirectoriesAndFiles);
+			}
+	public static String[] GetFileSystemEntries
+					(String path, String searchPattern)
+			{
+				ValidatePath(path);
+				if(searchPattern == null)
+				{
+					throw new ArgumentNullException("searchPattern");
+				}
+				return ScanDirectory(path, searchPattern,
+									 ScanType.DirectoriesAndFiles);
+			}
+
+	// Get the last access time of a directory.
+	public static DateTime GetLastAccessTime(String path)
+			{
+				long time;
+				ValidatePath(path);
+				HandleErrorsDir(DirMethods.GetLastAccess(path, out time));
+				return (new DateTime(time)).ToLocalTime();
+			}
+
+	// Get the last modification time of a directory.
+	public static DateTime GetLastWriteTime(String path)
+			{
+				long time;
+				ValidatePath(path);
+				HandleErrorsDir(DirMethods.GetLastModification(path, out time));
+				return (new DateTime(time)).ToLocalTime();
+			}
+
+	// Move a file or directory to a new location.
+	public static void Move(String sourceDirName, String destDirName)
+			{
+				ValidatePath(sourceDirName);
+				ValidatePath(destDirName);
+				HandleErrorsFile(DirMethods.Rename(sourceDirName, destDirName));
+			}
+
+	// Set a directory's creation time.
+	public static void SetCreationTime(String path, DateTime creationTime)
+			{
+				ValidatePath(path);
+				long ticks = creationTime.ToUniversalTime().Ticks;
+				HandleErrorsDir(FileMethods.SetCreationTime(path, ticks));
+			}
+
+	// Set the current directory.
+	public static void SetCurrentDirectory(String path)
+			{
+				ValidatePath(path);
+				HandleErrorsDir(DirMethods.ChangeDirectory(path));
+			}
+
+	// Set a directory's last access time.
+	public static void SetLastAccessTime(String path, DateTime lastAccessTime)
+			{
+				ValidatePath(path);
+				long ticks = lastAccessTime.ToUniversalTime().Ticks;
+				HandleErrorsDir(FileMethods.SetLastAccessTime(path, ticks));
+			}
+
+	// Set a directory's last write time.
+	public static void SetLastWriteTime(String path, DateTime lastWriteTime)
+			{
+				ValidatePath(path);
+				long ticks = lastWriteTime.ToUniversalTime().Ticks;
+				HandleErrorsDir(FileMethods.SetLastWriteTime(path, ticks));
+			}
+
+#if !ECMA_COMPAT
+
+	// Create a directory, including parent directories.
+	public static DirectoryInfo CreateDirectory(String path)
+			{
+				ValidatePath(path);
+				HandleErrorsDir(DirMethods.CreateDirectory(path));
+				return new DirectoryInfo(path);
+			}
+
+	// Get the UTC creation time of a directory.
+	public static DateTime GetCreationTimeUtc(String path)
+			{
+				long time;
+				ValidatePath(path);
+				HandleErrorsDir(DirMethods.GetCreationTime(path, out time));
+				return new DateTime(time);
+			}
+
+	// Get the UTC last access time of a directory.
+	public static DateTime GetLastAccessTimeUtc(String path)
+			{
+				long time;
+				ValidatePath(path);
+				HandleErrorsDir(DirMethods.GetLastAccess(path, out time));
+				return new DateTime(time);
+			}
+
+	// Get the UTC last modification time of a directory.
+	public static DateTime GetLastWriteTimeUtc(String path)
+			{
+				long time;
+				ValidatePath(path);
+				HandleErrorsDir(DirMethods.GetLastModification(path, out time));
+				return new DateTime(time);
+			}
+
+	// Get the logical drive letters.
+	public static String[] GetLogicalDrives()
+			{
+				return DirMethods.GetLogicalDrives();
+			}
+
+	// Get the parent of a specific directory.
+	public static DirectoryInfo GetParent(String path)
+			{
+				int index, index2;
+				if(path == null)
+				{
+					throw new ArgumentNullException("path");
+				}
+				path = Path.GetFullPath(path);
+				index = path.LastIndexOf(Path.DirectorySeparatorChar);
+				index2 = path.LastIndexOf(Path.AltDirectorySeparatorChar);
+				if(index2 > index)
+				{
+					index = index2;
+				}
+				if(index <= 0)
+				{
+					return null;
+				}
+				return new DirectoryInfo(path.Substring(0, index));
+			}
+
+	// Set a directory's UTC creation time.
+	public static void SetCreationTimeUtc(String path, DateTime creationTime)
+			{
+				ValidatePath(path);
+				long ticks = creationTime.Ticks;
+				HandleErrorsDir(FileMethods.SetCreationTime(path, ticks));
+			}
+
+	// Set a directory's UTC last access time.
+	public static void SetLastAccessTimeUtc
+				(String path, DateTime lastAccessTime)
+			{
+				ValidatePath(path);
+				long ticks = lastAccessTime.Ticks;
+				HandleErrorsDir(FileMethods.SetLastAccessTime(path, ticks));
+			}
+
+	// Set a directory's UTC last write time.
+	public static void SetLastWriteTimeUtc(String path, DateTime lastWriteTime)
+			{
+				ValidatePath(path);
+				long ticks = lastWriteTime.Ticks;
+				HandleErrorsDir(FileMethods.SetLastWriteTime(path, ticks));
+			}
+
+#endif // !ECMA_COMPAT
+
+}; // class Directory
+
+}; // namespace System.IO

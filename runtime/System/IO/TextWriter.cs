@@ -323,9 +323,11 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 					}
 					else
 					{
-						//TODO
-						//return CultureInfo.CurrentCulture;
+					#if CONFIG_REFLECTION
+						return CultureInfo.CurrentCulture;
+					#else
 						return null;
+					#endif
 					}
 				}
 			}

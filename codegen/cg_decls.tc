@@ -131,28 +131,6 @@ ILNode_GenDiscard(ILNode_ScopeChange)
 }
 
 /*
- * Generate discard code for a constant declaration.
- */
-ILNode_GenDiscard(ILNode_ConstDeclaration)
-{
-	/* FIXME: just pass it down? */
-	if (node->attributes != NULL)
-	{
-		ILNode_GenDiscard(node->attributes, info);
-	}
-	ILNode_GenDiscard(node->type, info);
-	ILNode_GenDiscard(node->constDeclarators, info);
-}
-
-/*
- * Generate discard code for a constant declarator.
- */
-ILNode_GenDiscard(ILNode_ConstDeclarator)
-{
-	/* TODO */
-}
-
-/*
  * Generate discard code for a field declaration .
  */
 ILNode_GenDiscard(ILNode_FieldDeclaration)
@@ -181,6 +159,7 @@ ILNode_GenDiscard(ILNode_FieldDeclaration)
 								 IL_DUMP_QUOTE_NAMES);
 
 				/* Dump the field initializer */
+				ILDumpConstant(info->asmOutput, (ILProgramItem *)field);
 
 				/* Terminate the field definition */
 				putc('\n', info->asmOutput);

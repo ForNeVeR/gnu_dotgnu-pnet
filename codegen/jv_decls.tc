@@ -44,22 +44,6 @@ JavaGenDiscard(ILNode_ScopeChange)
 }
 
 /*
- * Generate discard code for a constant declaration.
- */
-JavaGenDiscard(ILNode_ConstDeclaration)
-{
-	/* TODO */
-}
-
-/*
- * Generate discard code for a constant declarator.
- */
-JavaGenDiscard(ILNode_ConstDeclarator)
-{
-	/* TODO */
-}
-
-/*
  * Generate discard code for a field declaration.
  */
 JavaGenDiscard(ILNode_FieldDeclaration)

@@ -518,6 +518,11 @@ struct _tagILEvalValue
 	ILNode	   *type;
 	ILNode	   *varNames;
 }
+%node ILNode_LocalConstDeclaration ILNode_Statement =
+{
+	ILNode	   *type;
+	ILNode	   *decls;
+}
 %node ILNode_LineInfo ILNode_Statement =
 {
 	ILNode	   *stmt;
@@ -545,19 +550,6 @@ struct _tagILEvalValue
 {
 	ILScope *scope;
 	ILNode  *body;
-}
-%node ILNode_ConstDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	ILUInt32	modifiers;
-	ILNode	   *type;
-	ILNode	   *constDeclarators;
-}
-%node ILNode_ConstDeclarators ILNode_List
-%node ILNode_ConstDeclarator ILNode_Declaration =
-{
-	ILNode	   *name;
-	ILNode	   *expr;
 }
 %node ILNode_FieldDeclaration ILNode_Declaration =
 {

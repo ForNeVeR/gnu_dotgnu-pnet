@@ -549,3 +549,67 @@ ILNode_SemAnalysis(ILNode_FixExpr)
 	value.type = 0;
 	return value;
 }
+
+/*
+ * Perform semantic analysis for local variable declarations.
+ */
+ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
+{
+	ILType *type;
+	ILNode_ListIter iter;
+	ILNode *nameNode;
+	char *name;
+	ILScopeData *data;
+	ILNode_MethodDeclaration *method;
+	ILNode *errorNode;
+
+	/* Locate the method that this local is declared within */
+	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+	/* Perform semantic analysis on the local variable type */
+	type = CSSemType(node->type, info, &(node->type));
+
+	/* Scan through the variable names and declare them in the current scope */
+	ILNode_ListIter_Init(&iter, node->varNames);
+	while((nameNode = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		name = ILQualIdentName(nameNode, 0);
+		data = ILScopeLookup(info->currentScope, name, 0);
+		if(data)
+		{
+			/* The name is already declared in this scope */
+			CSErrorOnLine(yygetfilename(nameNode), yygetlinenum(nameNode),
+						  "`%s' is already declared in this scope", name);
+			errorNode = ILScopeDataGetNode(data);
+			if(errorNode)
+			{
+				CSErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
+							  "previous declaration here");
+			}
+		}
+		else
+		{
+			/* Add the type to the local variable signature for this method */
+			if(!(method->localVarSig))
+			{
+				method->localVarSig = ILTypeCreateLocalList(info->context);
+				if(!(method->localVarSig))
+				{
+					CSOutOfMemory();
+				}
+			}
+			if(!ILTypeAddLocal(info->context, method->localVarSig, type))
+			{
+				CSOutOfMemory();
+			}
+
+			/* Create a local variable entry in the current scope */
+			ILScopeDeclareLocal(info->currentScope, name,
+								ILTypeNumLocals(method->localVarSig) - 1,
+								nameNode);
+		}
+	}
+
+	/* Return the default value to the caller */
+	return CSSemValueDefault;
+}

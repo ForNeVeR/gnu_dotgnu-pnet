@@ -597,14 +597,6 @@ ILBool _IL_Marshal_DestroyStructureInternal(ILExecThread *_thread,
 	return 0;
 }
 
-ILBool _IL_Marshal_StructureToPtrInternal(ILExecThread *_thread,
-										  ILObject *structure,
-										  ILNativeInt ptr)
-{
-	/* TODO */
-	return 0;
-}
-
 void _ILStructToNative(ILExecThread *thread, void *value, ILType *type)
 {
 	ILClass *classInfo;
@@ -654,6 +646,22 @@ void _ILStructToNative(ILExecThread *thread, void *value, ILType *type)
 				(thread, *((ILObject **)ptr));
 		}
 	}
+}
+
+ILBool _IL_Marshal_StructureToPtrInternal(ILExecThread *_thread,
+										  ILObject *structure,
+										  ILNativeInt ptr)
+{
+	if(UnmanagedOK(_thread) && structure && ptr)
+	{
+		ILClass *classInfo = GetObjectClass(structure);
+		ILType *type = ILClassToType(classInfo);
+		ILUInt32 size = ILSizeOfType(_thread, type);
+		ILMemCpy((void *)ptr, structure, size);
+		_ILStructToNative(_thread, (void *)ptr, type);
+		return 1;
+	}
+	return 0;
 }
 
 #endif /* IL_CONFIG_PINVOKE */

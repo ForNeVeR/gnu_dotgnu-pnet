@@ -456,6 +456,7 @@ ILNode_Prepare(ILNode_BaseElement)
 ILNode_Prepare(ILNode_DerefField)
 {
 	ILNode_GenValue(node->expr1, info);
+	node->tempVar = IL_MAX_UINT32;
 	return node->machineType;
 }
 

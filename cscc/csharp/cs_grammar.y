@@ -970,7 +970,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 33
+%expect 35
 
 %start CompilationUnit
 %%
@@ -1329,6 +1329,11 @@ NonExpressionType
 				MakeUnary(PtrType, $1);
 			}
 	| Expression '*'		{ 
+				MakeUnary(PtrType, $1);
+			}
+	| MultiplicativeExpression '*'		{ 
+				/* Needed becuase of shift issues that won't be picked
+				   up by the "Expression *" case above */
 				MakeUnary(PtrType, $1);
 			}
 	| NonExpressionType '<' TypeActuals '>'	{

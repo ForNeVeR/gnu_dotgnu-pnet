@@ -1,4 +1,48 @@
 
+2003-12-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resgen/resgen.c: add the "--extract" option to help with
+	extracting resource files from an assembly.
+
+2003-12-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/locale.c: check for "LC_ALL" before "LANG".
+
+	* resgen/resgen_po.c, resgen/resgen_text.c: add the ".po" charset
+	header and fix some Latin1 to UTF-8 conversion bugs.
+
+	* resgen/resgen_po.c: improve escape sequence handling for ".po" files.
+
+	* resgen/resgen_po.c: process "fuzzy" markers in ".po" files.
+
+	* cscc/csharp/cs_grammar.y: rearrange the grammar to handle
+	casts of the form "(X *)y" where X is an expression type.
+
+	* codegen/cg_lvalue.tc (ILNode_DerefField): clear "tempVar"
+	if performing a regular assignment, to prevent "Store" from
+	pushing a "leave" value onto the stack when it shouldn't do so.
+
+2003-12-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_marshal.c: implement "StructureToPtrInternal".
+
+2003-12-21  Tony Garnock-Jones  <tonyg@kcbbs.gen.nz>
+
+	* engine/lib_type.c: handle '*' and '&' in "Type.GetType".
+
+2003-12-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ildasm/ildasm_main.c, image/winres_reader.c: dump the
+	"VS_VERSION_INFO" Win32 resource block in "ildasm".
+
+	* image/image.h, image/winres_reader.c, image/winres_writer.c:
+	add support code for writing Win32 resources to the ".rsrc" section.
+
+2003-12-16  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_grammar.y: make line numbers work on versions
+	of yacc that define YYLTYPE_IS_DECLARED but not YYLTYPE.
+
 2003-12-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, support/regex.c: add <inttypes.h> to configure.in

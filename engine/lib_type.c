@@ -592,8 +592,22 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
 				}
 				break;
 
-				case '*': /* TODO */
-				case '&': /* TODO */
+				case '*':
+				{
+					typeInfo = ILTypeCreateRef
+						(thread->process->context,
+						 IL_TYPE_COMPLEX_PTR, typeInfo);
+				}
+				break;
+
+				case '&':
+				{
+					typeInfo = ILTypeCreateRef
+						(thread->process->context,
+						 IL_TYPE_COMPLEX_BYREF, typeInfo);
+				}
+				break;
+
 				default:
 				{
 					if(throwOnError)

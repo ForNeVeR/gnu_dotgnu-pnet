@@ -253,11 +253,15 @@ char *ILGetCultureName(void)
 	char *env;
 	char name[8];
 
-	/* Get the culture information from the LANG environment variable */
-	env = getenv("LANG");
+	/* Get the culture information from LC_ALL or LANG environment variable */
+	env = getenv("LC_ALL");
 	if(!env || *env == '\0')
 	{
-		return 0;
+		env = getenv("LANG");
+		if(!env || *env == '\0')
+		{
+			return 0;
+		}
 	}
 
 	/* Convert the LANG value into an ECMA culture identifier */

@@ -27,7 +27,7 @@
 #include "cs_grammar.h"
 
 extern YYSTYPE yylval;
-#ifdef YYLTYPE
+#if YYLTYPE_IS_DECLARED || defined(YYLTYPE)
 extern YYLTYPE yylloc;
 #endif
 
@@ -45,7 +45,7 @@ int       CSLatin1Charset = 0;
 /*
  * Update the line number information and return a token code.
  */
-#ifdef YYLTYPE
+#if YYLTYPE_IS_DECLARED || defined(YYLTYPE)
 #define	RETURNTOK(x)		\
 			do { \
 				yylloc.first_line = yycurrlinenum(); \

@@ -22,6 +22,7 @@
 #include "resgen.h"
 #include "il_system.h"
 #include "il_image.h"
+#include "il_program.h"
 #include "il_utils.h"
 
 #ifdef	__cplusplus
@@ -44,6 +45,7 @@ static ILCmdLineOption const options[] = {
 	{"-s", 's', 0, 0, 0},
 	{"-l", 'l', 0, 0, 0},
 	{"-v", 'v', 0, 0, 0},
+	{"-e", 'e', 0, 0, 0},
 	{"--text-input", 't', 0,
 		"--text-input  or -t",
 		"Input files contain text resources."},
@@ -77,6 +79,9 @@ static ILCmdLineOption const options[] = {
 	{"--sort-names", 's', 0,
 		"--sort-names  or -s",
 		"Sort the resources by name before writing text or .po output."},
+	{"--extract", 'e', 0,
+		"--extract     or -X",
+		"Extract binary resources without converting them."},
 	{"--version", 'v', 0,
 		"--version     or -v",
 		"Print the version of the program"},
@@ -102,6 +107,7 @@ static void version(void);
 static int guessFormat(const char *filename, int isOutput);
 static int loadResources(const char *filename, FILE *stream,
 						 ILContext *context, int format, int latin1);
+static int extractResource(const char *filename, const char *resourceName);
 
 int main(int argc, char *argv[])
 {
@@ -110,6 +116,7 @@ int main(int argc, char *argv[])
 	int outputFormat = FORMAT_GUESS;
 	int latin1 = 0;
 	int sortNames = 0;
+	int extract = 0;
 	char *outputFile = 0;
 	int currFormat;
 	int sawStdin;
@@ -198,6 +205,12 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'e':
+			{
+				extract = 1;
+			}
+			break;
+
 			case 'v':
 			{
 				version();
@@ -227,6 +240,17 @@ int main(int argc, char *argv[])
 	{
 		usage(progname);
 		return 1;
+	}
+
+	/* Handle the "--extract" case, which is different from usual */
+	if(extract)
+	{
+		if(argc != 3)
+		{
+			usage(progname);
+			return 1;
+		}
+		return extractResource(argv[1], argv[2]);
 	}
 
 	/* Strip the output file from the command-line */
@@ -772,6 +796,111 @@ ILResHashEntry **ILResCreateSortedArray(void)
 
 	/* Return the sorted table to the caller */
 	return table;
+}
+
+/*
+ * Extract a resource from an IL binary.
+ */
+static int extractResource(const char *filename, const char *resourceName)
+{
+	ILContext *context;
+	ILImage *image;
+	ILManifestRes *res;
+	ILUInt32 posn;
+	void *address;
+	unsigned char *addr;
+	unsigned long size;
+	ILUInt32 reslen;
+	int gotres;
+	FILE *file;
+
+	/* Create a context and load the image */
+	context = ILContextCreate();
+	if(!context)
+	{
+		return 1;
+	}
+	if(ILImageLoadFromFile(filename, context, &image,
+						   IL_LOADFLAG_FORCE_32BIT |
+						   IL_LOADFLAG_NO_RESOLVE, 1) != 0)
+	{
+		ILContextDestroy(context);
+		return 1;
+	}
+
+	/* Search the manifest resource table for the resource name */
+	res = 0;
+	posn = 0;
+	while((res = (ILManifestRes *)ILImageNextToken
+				(image, IL_META_TOKEN_MANIFEST_RESOURCE, (void *)res)) != 0)
+	{
+		if(ILManifestRes_OwnerFile(res) || ILManifestRes_OwnerAssembly(res))
+		{
+			continue;
+		}
+		if(!strcmp(ILManifestRes_Name(res), resourceName))
+		{
+			break;
+		}
+		++posn;
+	}
+	if(!res)
+	{
+		fprintf(stderr, "%s: could not find the resource `%s'\n",
+				filename, resourceName);
+		ILContextDestroy(context);
+		return 1;
+	}
+
+	/* Search for the entry at position "posn" in the resource section */
+	gotres = 0;
+	if(ILImageGetSection(image, IL_SECTION_RESOURCES, &address, &size))
+	{
+		addr = (unsigned char *)address;
+		while(size >= 4)
+		{
+			reslen = IL_READ_UINT32(addr);
+			if(reslen > (size - 4))
+			{
+				break;
+			}
+			if(posn == 0)
+			{
+				/* We've found the resource that we were looking for */
+				addr += 4;
+				if((file = fopen(resourceName, "wb")) == NULL)
+				{
+					if((file = fopen(resourceName, "w")) == NULL)
+					{
+						perror(resourceName);
+						ILContextDestroy(context);
+						return 1;
+					}
+				}
+				fwrite(addr, 1, (size_t)reslen, file);
+				fclose(file);
+				gotres = 1;
+				break;
+			}
+			else
+			{
+				addr += reslen + 4;
+				size -= reslen + 4;
+				--posn;
+			}
+		}
+	}
+	if(!gotres)
+	{
+		fprintf(stderr, "%s: could not find the resource `%s'\n",
+				filename, resourceName);
+		ILContextDestroy(context);
+		return 1;
+	}
+
+	/* Clean up and exit */
+	ILContextDestroy(context);
+	return 0;
 }
 
 #ifdef	__cplusplus

@@ -240,8 +240,8 @@ static int ConvertEscapes(const char *inbuf, int inlen,
 		{
 			/* Convert a Latin-1 character into UTF-8 */
 			int tempch = ((*inbuf++) & 0xFF);
-			*outbuf++ = (char)(0xE0 | ((tempch >> 6) & 0x3F));
-			*outbuf++ = (char)(0xC0 | (tempch & 0x3F));
+			*outbuf++ = (char)(0xC0 | ((tempch >> 6) & 0x3F));
+			*outbuf++ = (char)(0x80 | (tempch & 0x3F));
 			outlen += 2;
 			--inlen;
 		}

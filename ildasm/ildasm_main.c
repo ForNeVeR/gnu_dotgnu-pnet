@@ -463,10 +463,266 @@ static void dumpSectionData(ILImage *image, int realOffsets)
 }
 
 /*
+ * Dump a Win32 version value block.
+ */
+static unsigned long dumpWin32VersionBlock
+				(unsigned char *data, unsigned long length, FILE *outstream)
+{
+	unsigned long origLen = length;
+	unsigned long blockLen;
+	unsigned long valueLen;
+	unsigned long type;
+	unsigned long nameSize;
+	unsigned char *nextData;
+	char name[64];
+	int nameLen;
+	while(length >= 6)
+	{
+		/* Read the contents of the block header */
+		blockLen = (unsigned long)IL_READ_UINT16(data);
+		valueLen = (unsigned long)IL_READ_UINT16(data + 2);
+		type = (unsigned long)IL_READ_UINT16(data + 4);
+		if(blockLen < 6 || blockLen > length)
+		{
+			return 0;
+		}
+
+		/* Round up the block length to the next 32-bit boundary */
+		if((blockLen % 4) != 0)
+		{
+			blockLen += 4 - (blockLen % 4);
+		}
+
+		/* Extract the name of the block */
+		nextData = data + blockLen;
+		data += 6;
+		length -= blockLen;
+		blockLen -= 6;
+		nameLen = 0;
+		nameSize = 0;
+		while(blockLen >= 2)
+		{
+			nameSize += 2;
+			if(data[0] == 0x00 && data[1] == 0x00)
+			{
+				if((nameSize % 4) == 0)
+				{
+					if(blockLen < 2)
+					{
+						return 0;
+					}
+					data += 4;
+					blockLen -= 4;
+				}	
+				else
+				{
+					data += 2;
+					blockLen -= 2;
+				}
+				break;
+			}
+			else if(nameLen < (sizeof(name) - 1))
+			{
+				name[nameLen++] = (char)(data[0]);
+				data += 2;
+				blockLen -= 2;
+			}
+			else
+			{
+				data += 2;
+				blockLen -= 2;
+			}
+		}
+		name[nameLen] = '\0';
+
+		/* Dump the value, if present */
+		if(valueLen != 0)
+		{
+			if(type)
+			{
+				/* Convert string length in words into bytes */
+				valueLen *= 2;
+			}
+			if(valueLen > blockLen)
+			{
+				return 0;
+			}
+			fprintf(outstream, "//    %-25s : ", name);
+			if(type)
+			{
+				/* Dump string information */
+				putc('"', outstream);
+				nameSize = 0;
+				while(nameSize < valueLen)
+				{
+					if(data[nameSize] != 0)
+					{
+						putc(((int)(data[nameSize]) & 0xFF), outstream);
+					}
+					nameSize += 2;
+				}
+				putc('"', outstream);
+			}
+			else
+			{
+				/* Dump binary information */
+				nameSize = 0;
+				while((nameSize + 3) < valueLen)
+				{
+					if(nameSize != 0)
+					{
+						fprintf(outstream, ", ");
+					}
+					fprintf(outstream, "0x%08lX",
+							(unsigned long)IL_READ_UINT32(data + nameSize));
+					nameSize += 4;
+				}
+			}
+			putc('\n', outstream);
+			if((valueLen % 4) != 0)
+			{
+				valueLen += 4 - (valueLen % 4);
+				if(valueLen > blockLen)
+				{
+					return 0;
+				}
+			}
+			data += valueLen;
+			blockLen -= valueLen;
+		}
+
+		/* Dump sub-blocks */
+		while(blockLen >= 6)
+		{
+			nameSize = dumpWin32VersionBlock(data, blockLen, outstream);
+			if(!nameSize)
+			{
+				return 0;
+			}
+			data += nameSize;
+			blockLen -= nameSize;
+		}
+		data = nextData;
+	}
+	return origLen - length;
+}
+
+/*
+ * Dump Win32 version resource information within an image.
+ */
+static void dumpWin32Version(ILImage *image, FILE *outstream)
+{
+	ILResourceSection *section;
+	unsigned char *data;
+	unsigned long length;
+	unsigned long valueLen;
+
+	/* Load the Win32 resource section */
+	section = ILResourceSectionCreate(image);
+	if(!section)
+	{
+		return;
+	}
+
+	/* Get the first resource of type 16 (RT_VERSION) */
+	data = (unsigned char *)ILResourceSectionGetFirstEntry
+			(section, "16", &length);
+	if(!data)
+	{
+		ILResourceSectionDestroy(section);
+		return;
+	}
+
+	/* Check the overall length */
+	if(length < 2 || length < (unsigned long)(IL_READ_UINT16(data)))
+	{
+		ILResourceSectionDestroy(section);
+		return;
+	}
+
+	/* Extract the header fields */
+	length = (unsigned long)(IL_READ_UINT16(data));
+	if(length < 40)
+	{
+		ILResourceSectionDestroy(section);
+		return;
+	}
+	valueLen = (unsigned long)(IL_READ_UINT16(data + 2));
+
+	/* Check the magic number and skip past the header */
+	if(ILMemCmp(data + 6,
+				"V\0S\0_\0V\0E\0R\0S\0I\0O\0N\0_\0I\0N\0F\0O\0\0\0\0\0", 34)
+			!= 0)
+	{
+		ILResourceSectionDestroy(section);
+		return;
+	}
+	data += 40;
+	length -= 40;
+
+	/* Dump the contents of the VS_FIXEDFILEINFO structure */
+	fprintf(outstream, "// VS_VERSION_INFO:\n");
+	if(valueLen != 0)
+	{
+		if((valueLen % 4) != 0)
+		{
+			valueLen += 4 - (valueLen % 4);
+		}
+		if(valueLen < 52 || length < valueLen ||
+		   IL_READ_UINT32(data) != (ILUInt32)0xFEEF04BD)
+		{
+			fprintf(outstream, "\n");
+			ILResourceSectionDestroy(section);
+			return;
+		}
+		fprintf(outstream, "//    dwStrucVersion            : %ld.%ld\n",
+				(unsigned long)IL_READ_UINT16(data + 6),
+				(unsigned long)IL_READ_UINT16(data + 4));
+		fprintf(outstream,
+			    "//    dwFileVersion             : %ld.%ld.%ld.%ld\n",
+				(unsigned long)IL_READ_UINT16(data + 10),
+				(unsigned long)IL_READ_UINT16(data + 8),
+				(unsigned long)IL_READ_UINT16(data + 14),
+				(unsigned long)IL_READ_UINT16(data + 12));
+		fprintf(outstream,
+				"//    dwProductVersion          : %ld.%ld.%ld.%ld\n",
+				(unsigned long)IL_READ_UINT16(data + 18),
+				(unsigned long)IL_READ_UINT16(data + 16),
+				(unsigned long)IL_READ_UINT16(data + 22),
+				(unsigned long)IL_READ_UINT16(data + 20));
+		fprintf(outstream, "//    dwFileFlagsMask           : 0x%08lX\n",
+				(unsigned long)IL_READ_UINT32(data + 24));
+		fprintf(outstream, "//    dwFileFlags               : 0x%08lX\n",
+				(unsigned long)IL_READ_UINT32(data + 28));
+		fprintf(outstream, "//    dwFileOS                  : 0x%08lX\n",
+				(unsigned long)IL_READ_UINT32(data + 32));
+		fprintf(outstream, "//    dwFileType                : 0x%08lX\n",
+				(unsigned long)IL_READ_UINT32(data + 36));
+		fprintf(outstream, "//    dwFileSubtype             : 0x%08lX\n",
+				(unsigned long)IL_READ_UINT32(data + 40));
+		fprintf(outstream, "//    dwFileDate                : 0x%08lX%08lX\n",
+				(unsigned long)IL_READ_UINT32(data + 44),
+				(unsigned long)IL_READ_UINT32(data + 48));
+		data += valueLen;
+		length -= valueLen;
+	}
+
+	/* The rest of VS_VERSION_INFO is a recursive list of value blocks */
+	dumpWin32VersionBlock(data, length, outstream);
+
+	/* Clean up and exit */
+	fprintf(outstream, "\n");
+	ILResourceSectionDestroy(section);
+}
+
+/*
  * Dump the assembly version of an image.
  */
 static void dumpAssembly(ILImage *image, int flags)
 {
+	/* Dump Win32 version resource information */
+	dumpWin32Version(image, outstream);
+
 	/* Dump global definitions */
 	ILDAsmDumpGlobal(image, outstream, flags);
 

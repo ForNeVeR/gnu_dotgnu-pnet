@@ -259,6 +259,7 @@ struct _tagILResourceEntry
 	ILResourceEntry	   *next;
 	unsigned char	   *data;
 	unsigned long		length;
+	unsigned long		rva;
 
 };
 

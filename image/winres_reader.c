@@ -103,6 +103,8 @@ static ILResourceEntry *ParseResourceEntry
 	ILResourceEntry *entry;
 	unsigned long rva;
 	unsigned long length;
+	void *data;
+	unsigned long leftOver;
 
 	/* Allocate a structure to hold the entry's contents */
 	if((entry = (ILResourceEntry *)ILMalloc(sizeof(ILResourceEntry))) == 0)
@@ -122,6 +124,7 @@ static ILResourceEntry *ParseResourceEntry
 	entry->next = 0;
 	entry->data = 0;
 	entry->length = 0;
+	entry->rva = offset;
 
 	/* Parse the resource data entry */
 	if(offset >= section->length || (offset + 16) >= section->length)
@@ -131,15 +134,15 @@ static ILResourceEntry *ParseResourceEntry
 	rva = IL_READ_UINT32(section->data + offset);
 	length = IL_READ_UINT32(section->data + offset + 4);
 
-	/* Validate the entry information */
-	if(rva >= section->length || length > section->length ||
-	   rva > (section->length - length))
+	/* Map the RVA to an actual address */
+	data = ILImageMapRVA(section->image, rva, &leftOver);
+	if(!data || length > leftOver)
 	{
 		return entry;
 	}
 
 	/* Record the location of the resource's data */
-	entry->data = section->data + rva;
+	entry->data = (unsigned char *)data;
 	entry->length = length;
 	return entry;
 }
@@ -170,10 +173,12 @@ static ILResourceEntry *ParseResourceDirectory
 	dir->isMallocData = 0;
 	dir->isNumeric = 0;
 	dir->name = name;
+	dir->nameLen = (name ? strlen(name) : 0);
 	dir->children = 0;
 	dir->next = 0;
 	dir->data = 0;
 	dir->length = 0;
+	dir->rva = offset;
 
 	/* Parse the header for the resource directory table */
 	if(offset >= section->length || (offset + 16) >= section->length)

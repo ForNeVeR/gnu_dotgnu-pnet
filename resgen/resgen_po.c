@@ -36,6 +36,7 @@ extern	"C" {
 #define	PO_TOKEN_MSGSTR		3
 #define	PO_TOKEN_STRING		4
 #define	PO_TOKEN_START		5
+#define	PO_TOKEN_FUZZY		6
 typedef struct
 {
 	FILE       *stream;
@@ -167,7 +168,7 @@ static int parsePOHex(POTokenInfo *tokenInfo, int hexlen)
  */
 static void nextPOToken(POTokenInfo *tokenInfo, int latin1)
 {
-	int ch;
+	int ch, fuzzy;
 	unsigned long octalch;
 
 	/* We stop reading if we have already seen EOF or an error */
@@ -192,13 +193,48 @@ static void nextPOToken(POTokenInfo *tokenInfo, int latin1)
 		}
 		if(ch == '#')
 		{
-			while((ch = getc(tokenInfo->stream)) != EOF && ch != '\n')
+			ch = getc(tokenInfo->stream);
+			fuzzy = 0;
+			if(ch == ',')
 			{
-				/* Nothing to do here */
+				/* This is an option line.  We search for the "fuzzy"
+				   option because that indicates that we should ignore
+				   the message string that follows as it isn't properly
+				   translated yet */
+				char options[256];
+				int posn = 0;
+				ch = getc(tokenInfo->stream);
+				while(ch != EOF && ch != '\n')
+				{
+					if(posn < sizeof(options))
+					{
+						options[posn++] = (char)ch;
+					}
+					ch = getc(tokenInfo->stream);
+				}
+				while(posn >= 5)
+				{
+					if(!ILMemCmp(options + posn - 5, "fuzzy", 5))
+					{
+						fuzzy = 1;
+						break;
+					}
+					--posn;
+				}
+			}
+			while(ch != EOF && ch != '\n')
+			{
+				ch = getc(tokenInfo->stream);
 			}
 			if(ch == EOF)
 			{
 				break;
+			}
+			if(fuzzy)
+			{
+				tokenInfo->posn = 0;
+				tokenInfo->token = PO_TOKEN_FUZZY;
+				return;
 			}
 		}
 		else
@@ -235,22 +271,6 @@ static void nextPOToken(POTokenInfo *tokenInfo, int latin1)
 					case 'x': case 'X':
 					{
 						/* Hexadecimal character */
-						ch = parsePOHex(tokenInfo, 2);
-						continue;
-					}
-					/* Not reached */
-
-					case 'u':
-					{
-						/* 16-bit Unicode character */
-						ch = parsePOHex(tokenInfo, 4);
-						continue;
-					}
-					/* Not reached */
-
-					case 'U':
-					{
-						/* 32-bit Unicode character */
 						ch = parsePOHex(tokenInfo, 8);
 						continue;
 					}
@@ -308,7 +328,7 @@ static void nextPOToken(POTokenInfo *tokenInfo, int latin1)
 				}
 				else
 				{
-					PO_ADD_CH(0xE0 | ((ch >> 6) & 0x3F));
+					PO_ADD_CH(0xC0 | ((ch >> 6) & 0x3F));
 					PO_ADD_CH(0x80 | (ch & 0x3F));
 				}
 			}
@@ -425,6 +445,7 @@ int ILResLoadPO(const char *filename, FILE *stream, int latin1)
 	int msgstrLen;
 	long linenum;
 	int haveAddError;
+	int fuzzy;
 
 	/* Initialize the token information block and read the first token */
 	tokenInfo.stream = stream;
@@ -439,8 +460,18 @@ int ILResLoadPO(const char *filename, FILE *stream, int latin1)
 
 	/* Parse strings from the input stream */
 	haveAddError = 0;
-	while(tokenInfo.token == PO_TOKEN_MSGID)
+	fuzzy = 0;
+	while(tokenInfo.token == PO_TOKEN_MSGID ||
+	      tokenInfo.token == PO_TOKEN_FUZZY)
 	{
+		/* Process "fuzzy" markers */
+		if(tokenInfo.token == PO_TOKEN_FUZZY)
+		{
+			fuzzy = 1;
+			nextPOToken(&tokenInfo, latin1);
+			continue;
+		}
+
 		/* Get the message identifier */
 		nextPOToken(&tokenInfo, latin1);
 		if(tokenInfo.token != PO_TOKEN_STRING)
@@ -485,10 +516,18 @@ int ILResLoadPO(const char *filename, FILE *stream, int latin1)
 		msgstr = getPOString(&tokenInfo, &msgstrLen, latin1);
 
 		/* Add a new resource to the global hash table */
-		if(ILResAddResource(filename, linenum,
-							msgid, msgidLen, msgstr, msgstrLen))
+		if(!fuzzy)
 		{
-			haveAddError = 1;
+			if(ILResAddResource(filename, linenum,
+								msgid, msgidLen, msgstr, msgstrLen))
+			{
+				haveAddError = 1;
+			}
+		}
+		else
+		{
+			/* This string is ignored because it is "fuzzy" */
+			fuzzy = 0;
 		}
 
 		/* Free the temporary strings */
@@ -588,18 +627,18 @@ static void writePOString(FILE *stream, const char *str, int len, int latin1)
 			}
 			break;
 
-			case '\\':
+			case '"':
 			{
-				fputs("\\\\", stream);
+				fputs("\\\"", stream);
 				needEscape = 0;
 				lineLen += 2;
 			}
 			break;
 
-			case '\0':
+			case '\\':
 			{
-				fputs("\\0", stream);
-				needEscape = 1;
+				fputs("\\\\", stream);
+				needEscape = 0;
 				lineLen += 2;
 			}
 			break;
@@ -609,23 +648,26 @@ static void writePOString(FILE *stream, const char *str, int len, int latin1)
 				if(ch < 0x20 || (ch >= 0x7F && ch <= 0xFF))
 				{
 					fprintf(stream, "\\x%02lX", ch);
-					needEscape = 0;
+					needEscape = 1;
 					lineLen += 4;
 				}
 				else if(ch < 0x80)
 				{
-					if(needEscape && ch >= '0' && ch <= '7')
+					if(needEscape &&
+					   ((ch >= '0' && ch <= '9') ||
+					    (ch >= 'A' && ch <= 'F') ||
+						(ch >= 'a' && ch <= 'f')))
 					{
-						fputs("\\06", stream);
-						putc(ch, stream);
+						fprintf(stream, "\\x%02lX", ch);
 						lineLen += 4;
+						needEscape = 1;
 					}
 					else
 					{
 						putc((int)ch, stream);
 						++lineLen;
+						needEscape = 0;
 					}
-					needEscape = 0;
 				}
 				else if(latin1 && ch < 0x0100)
 				{
@@ -635,14 +677,14 @@ static void writePOString(FILE *stream, const char *str, int len, int latin1)
 				}
 				else if(ch < (unsigned long)0x10000)
 				{
-					fprintf(stream, "\\u%04lX", ch);
-					needEscape = 0;
+					fprintf(stream, "\\x%04lX", ch);
+					needEscape = 1;
 					lineLen += 6;
 				}
 				else
 				{
-					fprintf(stream, "\\U%08lX", ch);
-					needEscape = 0;
+					fprintf(stream, "\\x%08lX", ch);
+					needEscape = 1;
 					lineLen += 10;
 				}
 			}
@@ -671,11 +713,34 @@ static void writePOEntry(FILE *stream, ILResHashEntry *entry, int latin1)
 				  entry->valueLen, latin1);
 }
 
+/*
+ * Write the ".po" header.
+ */
+static void writePOHeader(FILE *stream, int latin1)
+{
+	fputs("msgid \"\"\n", stream);
+	fputs("msgstr \"\"\n", stream);
+	fputs("\"MIME-Version: 1.0\\n\"\n", stream);
+	fputs("\"Content-Type: text/plain; charset=", stream);
+	if(latin1)
+	{
+		fputs("ISO-8859-1", stream);
+	}
+	else
+	{
+		fputs("UTF-8", stream);
+	}
+	fputs("\\n\"\n", stream);
+	fputs("\"Content-Transfer-Encoding: 8bit\\n\"\n", stream);
+	fputs("\n", stream);
+}
+
 void ILResWritePO(FILE *stream, int latin1)
 {
 	int hash;
 	ILResHashEntry *entry;
 	int first = 1;
+	writePOHeader(stream, latin1);
 	for(hash = 0; hash < IL_RES_HASH_TABLE_SIZE; ++hash)
 	{
 		entry = ILResHashTable[hash];
@@ -699,6 +764,9 @@ void ILResWriteSortedPO(FILE *stream, int latin1)
 {
 	ILResHashEntry **table;
 	unsigned long posn;
+
+	/* Write the PO header */
+	writePOHeader(stream, latin1);
 
 	/* Sort the hash table */
 	table = ILResCreateSortedArray();

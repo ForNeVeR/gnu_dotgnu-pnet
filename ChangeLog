@@ -1,4 +1,19 @@
+2003-08-04  Neil Cawse   <neilcawse@geotab.com>
 
+	* System.Drawing/Graphics.cs: small changes to MeasureCharacterRanges.
+	
+	* System.Drawing.Win32/DrawingWindow.cs: add in modifiers on keydown
+	and keyup. Support for double clicking added.
+
+	* System.Windows.Forms/Control.cs: support for double clicking added.
+
+	* System.Windows.Forms/TextBox.cs, System.Windows.Forms/TextBoxBase.cs:
+	insert / overwrite mode, left, right, up, down, page down up, begin, end,
+	Lines[] property, keyboard selection, for Mohan Embar
+	<gnustuff@thisiscool.com>. Speed improvements and optimization.
+
+	* samples/TextBoxTest.cs: add a test for Lines property of TextBox.
+	
 2003-08-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs,
@@ -107,9 +122,9 @@
 
 2003-08-04  Neil Cawse   <neilcawse@geotab.com>
 
-	* System.Drawing/Graphics.cs: Small changes to match ms behaviour.
+	* System.Drawing/Graphics.cs: small changes to match ms behaviour.
 	
-	* System.Drawing.Win32/DrawingGraphics.cs: Changes to match ms behaviour.
+	* System.Drawing.Win32/DrawingGraphics.cs: changes to match ms behaviour.
 	
 	* System.Windows.Forms/TextBox.cs: remove flashing caret. Optimization to
 	minimize X round trips. Implemented more functionality and checked against MS.

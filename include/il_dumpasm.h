@@ -137,8 +137,10 @@ void ILDumpNativeType(FILE *stream, const void *type, unsigned long len);
 
 /*
  * Dump the constant value associated with a program item.
+ * If "hexFloats" is non-zero, then dump floating-point
+ * values in hexadecimal.
  */
-void ILDumpConstant(FILE *stream, ILProgramItem *item);
+void ILDumpConstant(FILE *stream, ILProgramItem *item, int hexFloats);
 
 #ifdef	__cplusplus
 };

@@ -12,6 +12,11 @@
 	* ilasm/ilasm_grammar.y, ilasm/ilasm_scanner.l: add the "nullref"
 	keyword to the assembler.
 
+	* codegen/cg_decls.tc, dumpasm/dump_const.c, ildasm/ildasm_class.c,
+	include/il_dumpasm.h: modify "ILDumpConstant" and its callers to
+	include a "hexFloats" argument to dump floating point values in
+	hexadecimal.
+
 2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,

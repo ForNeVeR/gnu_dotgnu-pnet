@@ -194,7 +194,7 @@ static void DumpField(ILGenInfo *info, ILField *field)
 					 IL_DUMP_QUOTE_NAMES);
 
 	/* Dump the field initializer */
-	ILDumpConstant(info->asmOutput, (ILProgramItem *)field);
+	ILDumpConstant(info->asmOutput, (ILProgramItem *)field, 1);
 
 	/* Terminate the field definition */
 	putc('\n', info->asmOutput);

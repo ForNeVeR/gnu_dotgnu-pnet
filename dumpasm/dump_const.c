@@ -24,7 +24,7 @@
 extern	"C" {
 #endif
 
-void ILDumpConstant(FILE *stream, ILProgramItem *item)
+void ILDumpConstant(FILE *stream, ILProgramItem *item, int hexFloats)
 {
 	ILConstant *constant;
 	const unsigned char *blob;
@@ -142,8 +142,16 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item)
 		{
 			if(blobLen > 3)
 			{
-				fprintf(stream, "float32(%.30e)",
-						(double)(IL_READ_FLOAT(blob)));
+				if(hexFloats)
+				{
+					fprintf(stream, "float32(0x%08lX)",
+							(unsigned long)(IL_READ_UINT32(blob)));
+				}
+				else
+				{
+					fprintf(stream, "float32(%.30e)",
+							(double)(IL_READ_FLOAT(blob)));
+				}
 			}
 			else
 			{
@@ -156,8 +164,17 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item)
 		{
 			if(blobLen > 7)
 			{
-				fprintf(stream, "float64(%.30e)",
-						(double)(IL_READ_DOUBLE(blob)));
+				if(hexFloats)
+				{
+					fprintf(stream, "float64(0x%08lX%08lX)",
+							(unsigned long)(IL_READ_UINT32(blob + 4)),
+							(unsigned long)(IL_READ_UINT32(blob)));
+				}
+				else
+				{
+					fprintf(stream, "float64(%.30e)",
+							(double)(IL_READ_DOUBLE(blob)));
+				}
 			}
 			else
 			{

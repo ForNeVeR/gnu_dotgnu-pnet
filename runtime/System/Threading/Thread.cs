@@ -416,18 +416,12 @@ public sealed class Thread
 			}
 
 	// Interrupt this thread.
-	[TODO]
-	public void Interrupt()
-			{
-				// TODO
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public void Interrupt();
 
 	// Resume execution of this thread.
-	[TODO]
-	public void Resume()
-			{
-				// TODO
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public void Resume();
 
 	// Set the compressed stack for a thread.
 	public void SetCompressedStack(CompressedStack stack)
@@ -445,18 +439,12 @@ public sealed class Thread
 			}
 
 	// Perform a spin wait for a given number of iterations.
-	[TODO]
-	public static void SpinWait(int iterations)
-			{
-				// TODO
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void SpinWait(int iterations);
 
 	// Suspend execution of this thread.
-	[TODO]
-	public void Suspend()
-			{
-				// TODO
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public void Suspend();
 
 	// Get or set this thread's apartment state.
 	public ApartmentState ApartmentState

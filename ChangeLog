@@ -21,6 +21,9 @@
 	runtime/System/Runtime/Remoting/Contexts/ContextAttribute.cs,
 	runtime/System/Threading/Thread.cs: support code for remoting contexts.
 
+	* runtime/System/Threading/Thread.cs: add the remaining internalcalls
+	to the "Thread" class.
+
 2003-08-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* csupport/Directory.cs: add and implement the underlying C# object for

@@ -118,12 +118,45 @@ ILFloat _IL_BitConverter_Int32BitsToFloat(ILExecThread *thread,
 }
 
 /*
+ * Structure of an "ArgIterator" object.  Variable arguments
+ * are packed into "Object[]" arrays by the caller, from where
+ * they can be accessed using this iterator type.
+ */
+typedef struct
+{
+	union
+	{
+		/* Fields of interest to us internally */
+		struct
+		{
+			System_Array *args;
+			ILInt32       posn;
+
+		} argIter;
+
+		/* Pad the structure to its declared length in the C# library */
+		struct
+		{
+			ILInt32 cookie1;
+			ILInt32 cookie2;
+			ILInt32 cookie3;
+			ILInt32 cookie4;
+
+		} dummy;
+
+	} un;
+
+} ArgIterator;
+
+/*
  * public ArgIterator(RuntimeArgumentHandle argList);
  */
 void _IL_ArgIterator_ctor_RuntimeArgumentHandle(ILExecThread *_thread,
 												void *_this, void *argList)
 {
-	/* TODO */
+	ArgIterator *iter = (ArgIterator *)_this;
+	iter->un.argIter.args = (System_Array *)(*((ILObject **)argList));
+	iter->un.argIter.posn = 0;
 }
 
 /*
@@ -133,7 +166,21 @@ void _IL_ArgIterator_ctor_RuntimeArgumentHandlepV(ILExecThread *_thread,
 												  void *_this, void *argList,
 												  void *ptr)
 {
-	/* TODO */
+	/* We don't use the pointer form in this implementation,
+	   because it is extremely dangerous */
+	_IL_ArgIterator_ctor_RuntimeArgumentHandle(_thread, _this, argList);
+}
+
+/*
+ * public void End();
+ */
+void _IL_ArgIterator_End(ILExecThread *_thread, void *_this)
+{
+	ArgIterator *iter = (ArgIterator *)_this;
+	if(iter->un.argIter.args)
+	{
+		iter->un.argIter.posn = iter->un.argIter.args->length;
+	}
 }
 
 /*
@@ -141,10 +188,49 @@ void _IL_ArgIterator_ctor_RuntimeArgumentHandlepV(ILExecThread *_thread,
  */
 ILTypedRef _IL_ArgIterator_GetNextArg_(ILExecThread *_thread, void *_this)
 {
-	/* TODO */
+	ArgIterator *iter = (ArgIterator *)_this;
 	ILTypedRef ref;
-	ref.type = 0;
-	ref.value = 0;
+	ILObject **object;
+	ILClass *classInfo;
+
+	if(iter->un.argIter.args &&
+	   iter->un.argIter.posn < iter->un.argIter.args->length)
+	{
+		/* Extract the next object and unpack it */
+		object = &(((ILObject **)ArrayToBuffer(iter->un.argIter.args))
+						[(iter->un.argIter.posn)++]);
+		if(*object)
+		{
+			/* Determine if this is an object or a value type */
+			classInfo = GetObjectClass(*object);
+			if(!ILClassIsValueType(classInfo))
+			{
+				/* Object reference */
+				ref.type = classInfo;
+				ref.value = (void *)object;
+			}
+			else
+			{
+				/* Value type reference */
+				ref.type = classInfo;
+				ref.value = (void *)(*object);
+			}
+		}
+		else
+		{
+			/* Points at a "null" object reference */
+			ref.type = _thread->process->objectClass;
+			ref.value = (void *)object;
+		}
+	}
+	else
+	{
+		/* We've reached the end of the argument list */
+		ILExecThreadThrowSystem(_thread, "System.InvalidOperationException",
+								"Invalid_BadEnumeratorPosition");
+		ref.type = 0;
+		ref.value = 0;
+	}
 	return ref;
 }
 
@@ -155,10 +241,24 @@ ILTypedRef _IL_ArgIterator_GetNextArg_RuntimeTypeHandle(ILExecThread *_thread,
 														void *_this,
 														void *type)
 {
-	/* TODO */
+	void *actualType = *((void **)type);
 	ILTypedRef ref;
-	ref.type = 0;
-	ref.value = 0;
+	for(;;)
+	{
+		/* Get the next reference from the argument list */
+		ref = _IL_ArgIterator_GetNextArg_(_thread, _this);
+		if(!(ref.type))
+		{
+			/* An exception was thrown at the end of the list */
+			break;
+		}
+
+		/* Is this the type that we are looking for? */
+		if(ref.type == actualType)
+		{
+			break;
+		}
+	}
 	return ref;
 }
 
@@ -168,17 +268,49 @@ ILTypedRef _IL_ArgIterator_GetNextArg_RuntimeTypeHandle(ILExecThread *_thread,
 void _IL_ArgIterator_GetNextArgType(ILExecThread *_thread,
 									void *_result, void *_this)
 {
-	/* TODO */
+	ArgIterator *iter = (ArgIterator *)_this;
+	ILObject *object;
+
+	if(iter->un.argIter.args &&
+	   iter->un.argIter.posn < iter->un.argIter.args->length)
+	{
+		/* Extract the next object and determine its type */
+		object = ((ILObject **)ArrayToBuffer(iter->un.argIter.args))
+						[iter->un.argIter.posn];
+		if(object)
+		{
+			*((ILClass **)_result) = GetObjectClass(object);
+		}
+		else
+		{
+			/* Points at a "null" object reference */
+			*((ILClass **)_result) = _thread->process->objectClass;
+		}
+	}
+	else
+	{
+		/* We've reached the end of the argument list */
+		ILExecThreadThrowSystem(_thread, "System.InvalidOperationException",
+								"Invalid_BadEnumeratorPosition");
+		*((ILClass **)_result) = _thread->process->objectClass;
+	}
 }
 
 /*
- * public int GetNextArgType();
+ * public int GetRemainingCount();
  */
 ILInt32 _IL_ArgIterator_GetRemainingCount(ILExecThread *_thread,
 										  void *_this)
 {
-	/* TODO */
-	return 0;
+	ArgIterator *iter = (ArgIterator *)_this;
+	if(iter->un.argIter.args)
+	{
+		return iter->un.argIter.args->length - iter->un.argIter.posn;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*
@@ -223,8 +355,24 @@ void _IL_TypedReference_SetTypedReference(ILExecThread *_thread,
  */
 ILObject *_IL_TypedReference_ToObject(ILExecThread *_thread, ILTypedRef value)
 {
-	/* TODO */
-	return 0;
+	if(value.type && value.value)
+	{
+		if(!ILClassIsValueType((ILClass *)(value.type)))
+		{
+			/* Refers to an object reference which is returned as-is */
+			return *((ILObject **)(value.value));
+		}
+		else
+		{
+			/* Refers to a value type instance which should be boxed */
+			return ILExecThreadBox
+				(_thread, ILClassToType((ILClass *)(value.type)), value.value);
+		}
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 #ifdef	__cplusplus

@@ -7,6 +7,7 @@ extern ILObject * _IL_Object_MemberwiseClone(ILExecThread * _thread, ILObject * 
 
 extern void _IL_ArgIterator_ctor_RuntimeArgumentHandle(ILExecThread * _thread, void * _this, void * argList);
 extern void _IL_ArgIterator_ctor_RuntimeArgumentHandlepV(ILExecThread * _thread, void * _this, void * argList, void * ptr);
+extern void _IL_ArgIterator_End(ILExecThread * _thread, void * _this);
 extern ILTypedRef _IL_ArgIterator_GetNextArg_(ILExecThread * _thread, void * _this);
 extern ILTypedRef _IL_ArgIterator_GetNextArg_RuntimeTypeHandle(ILExecThread * _thread, void * _this, void * type);
 extern void _IL_ArgIterator_GetNextArgType(ILExecThread * _thread, void * _result, void * _this);

@@ -10,6 +10,7 @@ IL_METHOD_END
 IL_METHOD_BEGIN(ArgIterator_Methods)
 	IL_CONSTRUCTOR(".ctor", "(TvSystem.RuntimeArgumentHandle;)V", _IL_ArgIterator_ctor_RuntimeArgumentHandle, 0)
 	IL_CONSTRUCTOR(".ctor", "(TvSystem.RuntimeArgumentHandle;*V)V", _IL_ArgIterator_ctor_RuntimeArgumentHandlepV, 0)
+	IL_METHOD("End", "(T)V", _IL_ArgIterator_End)
 	IL_METHOD("GetNextArg", "(T)r", _IL_ArgIterator_GetNextArg_)
 	IL_METHOD("GetNextArg", "(TvSystem.RuntimeTypeHandle;)r", _IL_ArgIterator_GetNextArg_RuntimeTypeHandle)
 	IL_METHOD("GetNextArgType", "(T)vSystem.RuntimeTypeHandle;", _IL_ArgIterator_GetNextArgType)

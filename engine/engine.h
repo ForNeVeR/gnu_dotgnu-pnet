@@ -89,6 +89,7 @@ struct _tagILExecProcess
 	ILCoder		   *coder;
 
 	/* Useful builtin classes */
+	ILClass        *objectClass;
 	ILClass        *stringClass;
 	ILClass        *exceptionClass;
 	ILClass        *clrTypeClass;

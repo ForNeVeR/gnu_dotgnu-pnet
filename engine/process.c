@@ -50,6 +50,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	process->context = 0;
 	process->exitStatus = 0;
 	process->coder = 0;
+	process->objectClass = 0;
 	process->stringClass = 0;
 	process->exceptionClass = 0;
 	process->clrTypeClass = 0;
@@ -178,6 +179,13 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 			process->outOfMemoryObject =
 				_ILEngineAllocObject(process->mainThread, classInfo);
 		}
+	}
+
+	/* Look for "System.Object" */
+	if(!(process->objectClass))
+	{
+		process->objectClass = ILClassLookupGlobal(ILImageToContext(image),
+							        			   "Object", "System");
 	}
 
 	/* Look for "System.String" */

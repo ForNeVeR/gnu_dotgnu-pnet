@@ -14,6 +14,12 @@
 	codegen/cg_utils.h, codegen/jv_lvalue.tc, cscc/csharp/cs_lvalue.tc:
 	implement code generation for "ref" and "out" argument variables.
 
+	* engine/engine.h, engine/int_proto.h, engine/int_table.c,
+	engine/lib_misc.c, engine/process.c, engine/verify_obj.c,
+	samples/mscorlib.dll: implement internalcall's for "ArgIterator"
+	and "TypedReference.ToObject"; bug fix to verification of "arglist";
+	update "mscorlib.dll" with new declaration of "ArgIterator.End".
+
 2002-05-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/cvm_call.c, engine/engine.h,

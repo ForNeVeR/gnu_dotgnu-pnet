@@ -877,9 +877,10 @@ case IL_OP_PREFIX + IL_PREFIX_OP_ARGLIST:
 				& IL_META_CALLCONV_VARARG) != 0)
 	{
 		ILCoderArgList(coder);
-		stack[stackSize - 1].engineType = ILEngineType_MV;
-		stack[stackSize - 1].typeInfo =
+		stack[stackSize].engineType = ILEngineType_MV;
+		stack[stackSize].typeInfo =
 				GetSystemValueType(method, "RuntimeArgumentHandle");
+		++stackSize;
 	}
 	else
 	{

@@ -10,3 +10,5 @@ part of the ECMA standard.
 re-implement "System.Math" and "System.Random".
 
 * runtime/System/Environment.cs: declare "TickCount" as "static".
+
+* resources/en_US/runtime/Arg.txt: new error messages for "Math" and "Random".

@@ -8,7 +8,7 @@
 	System.Drawing.Win32/DrawingToolkit.cs,
 	System.Drawing.Win32/DrawingWindow.cs,
 	System.Drawing.Win32/Win32.cs,
-	System.Drawing.Xsharp/IToolkitWindowBuffer.cs,
+	System.Drawing.Xsharp/DrawingWindowBuffer.cs,
 	System.Drawing.Xsharp/DrawingToolkit.cs,
 	System.Windows.Forms/Control.cs, 
 	System.Windows.Forms/MonthCalendar.cs, 
@@ -20,6 +20,9 @@
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/TabControl.cs:
 	fall back to not double buffering if not available in the toolkit.
 	Add double buffering to the TabControl.
+
+	* System.Drawing.Win32/DrawingWindowBuffer.cs: forgot to add, part of
+	double buffering infrastructure.
 
 2004-01-18  Richard Baumann  <biochem333@nyc.rr.com>
 

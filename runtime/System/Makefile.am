@@ -33,6 +33,7 @@ CSSRC = Activator.cs \
 		Convert.cs \
 		DBNull.cs \
 		DateTime.cs \
+		DayOfWeek.cs \
 		Decimal.cs \
 		DefaultBinder.cs \
 		Delegate.cs \
@@ -140,7 +141,14 @@ CSSRC = Activator.cs \
 		Diagnostics/PackedStackFrame.cs \
 		Diagnostics/StackFrame.cs \
 		Diagnostics/StackTrace.cs \
+		Globalization/Calendar.cs \
+		Globalization/CalendarWeekRule.cs \
+		Globalization/CompareOptions.cs \
 		Globalization/CultureInfo.cs \
+		Globalization/CultureTypes.cs \
+		Globalization/DateTimeStyles.cs \
+		Globalization/GregorianCalendar.cs \
+		Globalization/GregorianCalendarTypes.cs \
 		Globalization/NumberFormatInfo.cs \
 		Globalization/NumberStyles.cs \
 		Globalization/TextInfo.cs \

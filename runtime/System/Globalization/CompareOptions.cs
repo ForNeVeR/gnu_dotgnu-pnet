@@ -1,5 +1,6 @@
 /*
- * NumberStyles.cs - Implementation of "System.Globalization.NumberStyles".
+ * CompareOptions.cs - Implementation of
+ *		"System.Globalization.CompareOptions".
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -24,26 +25,18 @@ namespace System.Globalization
 using System;
 
 [Flags]
-public enum NumberStyles
+public enum CompareOptions
 {
-	None                    = 0x0000,
-	AllowLeadingWhite		= 0x0001,
-	AllowTrailingWhite      = 0x0002,
-	AllowLeadingSign        = 0x0004,
-	Integer                 = 0x0007,
-	AllowTrailingSign       = 0x0008,
-	AllowParentheses        = 0x0010,
-	AllowDecimalPoint       = 0x0020,
-	AllowThousands          = 0x0040,
-	Number                  = 0x006F,
-	AllowExponent           = 0x0080,
-	Float                   = 0x00A7,
-	AllowCurrencySymbol     = 0x0100,
-	Any                     = 0x01FF,
-	Currency                = 0x017F,
-	AllowHexSpecifier       = 0x0200,
-	HexNumber               = 0x0203
 
-}; // enum NumberStyles
+	None           = 0x00000000,
+	IgnoreCase     = 0x00000001,
+	IgnoreNonSpace = 0x00000002,
+	IgnoreSymbols  = 0x00000004,
+	IgnoreKanaType = 0x00000008,
+	IgnoreWidth    = 0x00000010,
+	StringSort     = 0x20000000,
+	Ordinal        = 0x40000000
+
+}; // enum CompareOptions
 
 }; // namespace System.Globalization

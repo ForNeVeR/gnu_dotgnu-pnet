@@ -1,5 +1,6 @@
 /*
- * NumberStyles.cs - Implementation of "System.Globalization.NumberStyles".
+ * CalendarWeekRule.cs - Implementation of
+ *		"System.Globalization.CalendarWeekRule".
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,29 +22,13 @@
 namespace System.Globalization
 {
 
-using System;
-
-[Flags]
-public enum NumberStyles
+public enum CalendarWeekRule
 {
-	None                    = 0x0000,
-	AllowLeadingWhite		= 0x0001,
-	AllowTrailingWhite      = 0x0002,
-	AllowLeadingSign        = 0x0004,
-	Integer                 = 0x0007,
-	AllowTrailingSign       = 0x0008,
-	AllowParentheses        = 0x0010,
-	AllowDecimalPoint       = 0x0020,
-	AllowThousands          = 0x0040,
-	Number                  = 0x006F,
-	AllowExponent           = 0x0080,
-	Float                   = 0x00A7,
-	AllowCurrencySymbol     = 0x0100,
-	Any                     = 0x01FF,
-	Currency                = 0x017F,
-	AllowHexSpecifier       = 0x0200,
-	HexNumber               = 0x0203
 
-}; // enum NumberStyles
+	FirstDay         = 0,
+	FirstFullWeek    = 1,
+	FirstFourDayWeek = 2
+
+}; // enum CalendarWeekRule
 
 }; // namespace System.Globalization

@@ -1,5 +1,6 @@
 /*
- * NumberStyles.cs - Implementation of "System.Globalization.NumberStyles".
+ * CultureTypes.cs - Implementation of
+ *		"System.Globalization.CultureTypes".
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -24,26 +25,14 @@ namespace System.Globalization
 using System;
 
 [Flags]
-public enum NumberStyles
+public enum CultureTypes
 {
-	None                    = 0x0000,
-	AllowLeadingWhite		= 0x0001,
-	AllowTrailingWhite      = 0x0002,
-	AllowLeadingSign        = 0x0004,
-	Integer                 = 0x0007,
-	AllowTrailingSign       = 0x0008,
-	AllowParentheses        = 0x0010,
-	AllowDecimalPoint       = 0x0020,
-	AllowThousands          = 0x0040,
-	Number                  = 0x006F,
-	AllowExponent           = 0x0080,
-	Float                   = 0x00A7,
-	AllowCurrencySymbol     = 0x0100,
-	Any                     = 0x01FF,
-	Currency                = 0x017F,
-	AllowHexSpecifier       = 0x0200,
-	HexNumber               = 0x0203
 
-}; // enum NumberStyles
+	AllCultures            = 0x0007,
+	NeutralCultures        = 0x0001,
+	SpecificCultures       = 0x0002,
+	InstalledWin32Cultures = 0x0004
+
+}; // enum CultureTypes
 
 }; // namespace System.Globalization

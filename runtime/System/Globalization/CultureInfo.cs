@@ -21,10 +21,14 @@
 namespace System.Globalization
 {
 
-public class CultureInfo : IFormatProvider
+public class CultureInfo : ICloneable, IFormatProvider
 {
 
 // TODO
+	public Object Clone()
+			{
+				return MemberwiseClone();
+			}
 
 	public static CultureInfo InvariantCulture
 			{

@@ -75,6 +75,29 @@ static ILDocText *AllocTextNode(ILXMLReader *reader, ILDocText *parent)
 }
 
 /*
+ * Duplicate a string after stripping white space from the
+ * start and end of it.
+ */
+static char *DupStrippedString(const char *str)
+{
+	int len;
+	if(!str)
+	{
+		return 0;
+	}
+	while(*str != '\0' && *str == ' ')
+	{
+		++str;
+	}
+	len = strlen(str);
+	while(len > 0 && str[len - 1] == ' ')
+	{
+		--len;
+	}
+	return ILDupNString(str, len);
+}
+
+/*
  * Parse a documentation element.  The XML stream is positioned
  * on the "Docs" element itself.
  */
@@ -408,7 +431,7 @@ static int ParseMember(ILDocTree *tree, ILDocType *type,
 	name = ILXMLGetParam(reader, "MemberName");
 	if(name)
 	{
-		if((member->name = ILDupString(name)) == 0)
+		if((member->name = DupStrippedString(name)) == 0)
 		{
 			return 0;
 		}

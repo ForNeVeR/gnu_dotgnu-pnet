@@ -611,7 +611,7 @@ void CGenStringPool(ILGenInfo *info)
 		{
 			continue;
 		}
-		fprintf(stream, ".class nested public value sealed explicit "
+		fprintf(stream, ".class nested public sealed explicit "
 						"'type%d' extends [.library]System.ValueType\n",
 				lengths[len]);
 		fprintf(stream, "{\n\t.pack 1\n\t.size %d\n}\n", lengths[len]);

@@ -1,4 +1,9 @@
 
+2003-04-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/rc2.c: use 32-bit arithmetic for RC2 under ARM because
+	it seems to be having problems with unsigned 16-bit arithmetic.
+
 2003-04-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c,

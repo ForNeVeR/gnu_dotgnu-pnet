@@ -35,8 +35,11 @@ extern	"C" {
  * which causes gcc to lock-up.  We work around this using "ILUInt32".
  * This isn't terribly elegant - any suggestions as to what is really
  * happening are welcome.
+ *
+ * ARM machines also seem to have problems with unsigned short arithmetic,
+ * so we apply the same technique and it appears to address the problem.
  */
-#if defined(__alpha__)
+#if defined(__alpha__) || defined(__arm__)
 typedef	ILUInt32	RWorkType;
 #define	NORM(x)		((x) &= 0xFFFF)
 #else

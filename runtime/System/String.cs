@@ -559,11 +559,15 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool Equals(String a, String b);
 
+#if !ECMA_COMPAT
+
 	// Determine if this string is the same as another.
-	//public bool Equals(String value)
-	//		{
-	//			return Equals(this, value);
-	//		}
+	public bool Equals(String value)
+			{
+				return Equals(this, value);
+			}
+
+#endif // !ECMA_COMPAT
 
 	// Format a single-argument string.
 	public static String Format(String format, Object arg0)

@@ -50,6 +50,9 @@
 	* I18N/Common/Manager.cs: implement the "GetCultures" API in
 	the I18N manager.
 
+	* runtime/System/String.cs: uncomment "String.Equals(String)",
+	which is non-ECMA, but required by .NET SDK compatibility.
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs: Fix minor bug in ArrayEnumerator1

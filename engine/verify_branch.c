@@ -268,6 +268,71 @@ case IL_OP_BLT_UN:
 case IL_OP_SWITCH:
 {
 	/* Switch statement */
+	/* TODO */
+}
+break;
+
+
+case IL_OP_PREFIX + IL_PREFIX_OP_CEQ:
+{
+	/* Binary equality comparison */
+	if(unsafeAllowed)
+	{
+		commonType = unsafeCompareMatrix[STK_BINARY_1][STK_BINARY_2];
+	}
+	else
+	{
+		commonType = binaryEqualityMatrix[STK_BINARY_1][STK_BINARY_2];
+	}
+	if(commonType == ILEngineType_M || commonType == ILEngineType_T)
+	{
+		ILCoderComparePtr(coder, opcode, STK_BINARY_1, STK_BINARY_2);
+		STK_BINARY_1 = ILEngineType_I4;
+		--stackSize;
+	}
+	else if(commonType != ILEngineType_Invalid)
+	{
+		ILCoderCompare(coder, opcode, STK_BINARY_1, STK_BINARY_2);
+		STK_BINARY_1 = ILEngineType_I4;
+		--stackSize;
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
+case IL_OP_PREFIX + IL_PREFIX_OP_CGT:
+case IL_OP_PREFIX + IL_PREFIX_OP_CGT_UN:
+case IL_OP_PREFIX + IL_PREFIX_OP_CLT:
+case IL_OP_PREFIX + IL_PREFIX_OP_CLT_UN:
+{
+	/* Binary conditional comparison */
+	if(unsafeAllowed)
+	{
+		commonType = unsafeCompareMatrix[STK_BINARY_1][STK_BINARY_2];
+	}
+	else
+	{
+		commonType = binaryCompareMatrix[STK_BINARY_1][STK_BINARY_2];
+	}
+	if(commonType == ILEngineType_M || commonType == ILEngineType_T)
+	{
+		ILCoderComparePtr(coder, opcode, STK_BINARY_1, STK_BINARY_2);
+		STK_BINARY_1 = ILEngineType_I4;
+		--stackSize;
+	}
+	else if(commonType != ILEngineType_Invalid)
+	{
+		ILCoderCompare(coder, opcode, STK_BINARY_1, STK_BINARY_2);
+		STK_BINARY_1 = ILEngineType_I4;
+		--stackSize;
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 

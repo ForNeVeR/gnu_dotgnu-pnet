@@ -4,6 +4,8 @@
 	* csharp/stmt/foreach1.jl, csharp/stmt/foreach3.il: minor update
 	to support change in the syntax of iinc instruction
 
+	* csharp/expr/binary1.il: fix .ovf instructions for the float operations
+
 2002-10-30  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/class/enum4.cs, csharp/class/enum4.il, csharp/class/enum4.jl:

@@ -116,13 +116,13 @@
 	ldloc.0
 	conv.r4
 	ldloc.s	21
-	add.ovf
+	add
 	conv.r4
 	stloc.s	33
 	ldloc.0
 	conv.r8
 	ldloc.s	22
-	add.ovf
+	add
 	conv.r8
 	stloc.s	34
 	ldloc.0
@@ -171,13 +171,13 @@
 	ldloc.1
 	conv.r.un
 	ldloc.s	21
-	sub.ovf
+	sub
 	conv.r4
 	stloc.s	33
 	ldloc.1
 	conv.r.un
 	ldloc.s	22
-	sub.ovf
+	sub
 	conv.r8
 	stloc.s	34
 	ldloc.1
@@ -223,13 +223,13 @@
 	ldloc.2
 	conv.r4
 	ldloc.s	21
-	mul.ovf
+	mul
 	conv.r4
 	stloc.s	33
 	ldloc.2
 	conv.r8
 	ldloc.s	22
-	mul.ovf
+	mul
 	conv.r8
 	stloc.s	34
 	ldloc.2
@@ -392,13 +392,13 @@
 	conv.r.un
 	conv.r4
 	ldloc.s	21
-	add.ovf
+	add
 	conv.r4
 	stloc.s	33
 	ldloc.s	5
 	conv.r.un
 	ldloc.s	22
-	add.ovf
+	add
 	conv.r8
 	stloc.s	34
 	ldloc.s	5
@@ -448,13 +448,13 @@
 	ldloc.s	6
 	conv.r4
 	ldloc.s	21
-	sub.ovf
+	sub
 	conv.r4
 	stloc.s	33
 	ldloc.s	6
 	conv.r8
 	ldloc.s	22
-	sub.ovf
+	sub
 	conv.r8
 	stloc.s	34
 	ldloc.s	6
@@ -490,14 +490,14 @@
 	conv.r.un
 	conv.r4
 	ldloc.s	21
-	mul.ovf
+	mul
 	conv.r4
 	stloc.s	33
 	ldloc.s	7
 	conv.r.un
 	conv.r8
 	ldloc.s	22
-	mul.ovf
+	mul
 	conv.r8
 	stloc.s	34
 	ldloc.s	7

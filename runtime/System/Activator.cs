@@ -102,8 +102,13 @@ sealed class Activator
 										CultureInfo culture,
 										Object[] activationAttributes)
 	{
-		// TODO
-		return null;
+		ConstructorInfo ctor;
+		if(type == null)
+		{
+			throw new ArgumentNullException("type");
+		}
+		return type.InvokeMember(String.Empty, bindingAttr, binder,
+								 null, args, null, culture, null);
 	}
 
 	// Create an object instance from a type in another assembly.

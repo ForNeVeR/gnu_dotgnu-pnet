@@ -10,6 +10,10 @@
 	libc/pwd/grent.c, libc/pwd/grent.h, libc/pwd/pwpersist.c,
 	libc/pwd/setgrent.c: implement the group file functions.
 
+	* libc/misc/*, libc/unistd/Makefile.am, libc/unistd/mman-stub.c:
+	shift mmap and friends into "libc/unistd/mman-stub.c" to clean
+	things up a bit.
+
 2004-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, include/pthread-support.h,

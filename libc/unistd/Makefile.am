@@ -12,6 +12,7 @@ libCUnistd_a_SOURCES = chown-stub.c \
 					   guid-stub.c \
 					   isatty.c \
 					   lseek.c \
+					   mman-stub.c \
 					   open.c \
 					   pid-stub.c \
 					   pread.c \

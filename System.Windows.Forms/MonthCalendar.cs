@@ -287,7 +287,7 @@ public class MonthCalendar : Control
 		get
 		{
 			IToolkitGraphics toolkitGraphics = ToolkitManager.Toolkit.GetDefaultGraphics();
-			return new Graphics(toolkitGraphics,Rectangle.Empty);
+			return ToolkitManager.CreateGraphics(toolkitGraphics,Rectangle.Empty);
 		}
 	}
 

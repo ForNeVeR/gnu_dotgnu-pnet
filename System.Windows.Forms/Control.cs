@@ -87,6 +87,7 @@ public class Control : IWin32Window, IDisposable
 	private bool notifyClick = false;
 	private bool notifyDoubleClick = false;
 	private bool validationCancelled = false;
+	private IToolkitWindowBuffer buffer;
 
 	// Constructors.
 	public Control()
@@ -1502,7 +1503,7 @@ public class Control : IWin32Window, IDisposable
 				CreateControl();
 				if(toolkitWindow != null)
 				{
-					return new Graphics(
+					return ToolkitManager.CreateGraphics(
 						toolkitWindow.GetGraphics(),
 						new Rectangle( ClientOrigin - new Size(ToolkitDrawOrigin), ClientSize));
 				}
@@ -1587,6 +1588,11 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void Dispose(bool disposing)
 #endif
 			{
+				if (buffer != null)
+				{
+					buffer.Dispose();
+					buffer = null;
+				}
 				DestroyHandle();
 				disposed = true;
 			}
@@ -4274,6 +4280,12 @@ public class Control : IWin32Window, IDisposable
 				if(toolkitWindow != null)
 				{
 					toolkitWindow.IsMapped = visible;
+					// May as well release the double buffer resource if its being used.
+					if (!visible && buffer != null)
+					{
+						buffer.Dispose();
+						buffer = null;
+					}
 				}
 				else if(visible && !disposed && (parent == null || parent.IsHandleCreated) )
 				{
@@ -4765,45 +4777,83 @@ public class Control : IWin32Window, IDisposable
 	// Toolkit event that is emitted for an expose on this window.
 	void IToolkitEventSink.ToolkitExpose(Graphics graphics)
 			{
-
-				// PaintEventArgs has the client
-				// Graphics and bounds
-				// Use CreateNonClientGraphics for access to the whole
-				// control including border and menus.
-
+				// Must we double buffer?
 				bool doubleBuffer = GetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint);
-				if (!GetStyle(ControlStyles.Opaque) & !doubleBuffer)
-				{
-					// We must erase the background.
-					using (Brush brush = CreateBackgroundBrush())
-					{
-						graphics.FillRectangle(brush, 0, 0, width, height);
-					}
-				}
 
-				// Draw border if needed
-				switch (borderStyle)
-				{
-					case(BorderStyle.Fixed3D):
-						ControlPaint.DrawBorder3D( graphics, new Rectangle(0,0,width, height), Border3DStyle.Sunken);
-						break;
-					case (BorderStyle.FixedSingle):
-						using (Pen p = new Pen(ForeColor))
-							graphics.DrawRectangle(p, 0, 0, width - 1, height - 1);
-						break;
-				}
 				// The paint only allows drawing in the client area.
 				Rectangle clientRectangle = new Rectangle(ClientOrigin - new Size(ToolkitDrawOrigin), ClientSize);
+				Rectangle clipBounds = Rectangle.Truncate(graphics.ClipBounds);
+				clipBounds.Offset(clientRectangle.Location);
+
+				// Create or destroy the buffer as needed.
+				if (doubleBuffer)
+				{
+					if (buffer == null)
+					{
+						buffer = ToolkitManager.Toolkit.CreateWindowBuffer(toolkitWindow);
+					}
+				}
+				else if (buffer != null)
+				{
+					buffer.Dispose();
+					buffer = null;
+				}
 
 				// If we are double buffering, we need to create a Graphics of a bitmap, do all the drawing on that and then write that to the screen in one go.
 				if (doubleBuffer)
 				{
-					Rectangle clipBounds = Rectangle.Truncate(graphics.ClipBounds);
-					clipBounds.Offset(clientRectangle.Location);
-					// TODO Get the actual color depth of the screen holding the control.
-					// TODO:
-					using (Graphics g = CreateGraphics())
+					Graphics gFull = null;
+					Graphics g = null;
+					IToolkitGraphics toolkitGraphics = buffer.BeginDoubleBuffer();
+					try
 					{
+						if (borderStyle != BorderStyle.None)
+						{
+							gFull = ToolkitManager.CreateGraphics(toolkitGraphics);
+							DrawBorders(gFull);
+						}
+					
+						g = ToolkitManager.CreateGraphics(toolkitGraphics, clientRectangle);
+
+						PaintEventArgs e = new PaintEventArgs(g, clipBounds);
+						if (GetStyle(ControlStyles.AllPaintingInWmPaint))
+						{
+							GraphicsState state = graphics.Save();
+							OnPaintBackground(e);
+							g.Restore(state);
+						}
+						OnPaint(e);
+						buffer.EndDoubleBuffer();
+					}
+					finally
+					{
+						if (gFull != null)
+						{
+							gFull.Dispose();
+						}
+						if (g != null)
+						{
+							g.Dispose();
+						}
+					}
+
+				}
+				else //!doubleBuffer
+				{
+					if (!GetStyle(ControlStyles.Opaque))
+					{
+						// We must erase the background.
+						using (Brush brush = CreateBackgroundBrush())
+						{
+							graphics.FillRectangle(brush, 0, 0, width, height);
+						}
+					}
+
+					DrawBorders(graphics);
+					// Create the graphics of the client area.
+					using (Graphics g = ToolkitManager.CreateGraphics(graphics, clientRectangle))
+					{
+				
 						PaintEventArgs e = new PaintEventArgs(g, clipBounds);
 						if (GetStyle(ControlStyles.AllPaintingInWmPaint))
 						{
@@ -4814,22 +4864,22 @@ public class Control : IWin32Window, IDisposable
 						OnPaint(e);
 					}
 				}
-				else
+			}
+
+	private void DrawBorders(Graphics graphics)
+			{
+				// Draw border if necessary
+				switch (borderStyle)
 				{
-					// Create the graphics of the client area.
-					using (Graphics g = new Graphics(graphics, clientRectangle))
-					{
-					
-						PaintEventArgs e = new PaintEventArgs(
-							g, Rectangle.Truncate(g.ClipBounds));
-						if (GetStyle(ControlStyles.AllPaintingInWmPaint))
+					case(BorderStyle.Fixed3D):
+						ControlPaint.DrawBorder3D( graphics, new Rectangle(0,0,width, height), Border3DStyle.Sunken);
+						break;
+					case (BorderStyle.FixedSingle):
+						using (Pen p = new Pen(ForeColor))
 						{
-							GraphicsState state = g.Save();
-							OnPaintBackground(e);
-							g.Restore(state);
+							graphics.DrawRectangle(p, 0, 0, width - 1, height - 1);
 						}
-						OnPaint(e);
-					}
+						break;
 				}
 			}
 

@@ -298,6 +298,12 @@ public class NullToolkit : IToolkit
 				return null;
 			}
 
+	// Create window buffer for use in double buffering window paints.
+	public IToolkitWindowBuffer CreateWindowBuffer(IToolkitWindow window)
+			{
+				return null;
+			}
+
 }; // class NullToolkit
 
 }; // namespace System.Drawing.Toolkit

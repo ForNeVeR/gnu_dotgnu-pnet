@@ -89,6 +89,8 @@ public class TextBox : TextBoxBase
 		Cursor = Cursors.IBeam;
 		// We will erase the background.
 		SetStyle(ControlStyles.Opaque, true);
+		// Switch on double buffering.
+		SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 	}
 
 	// Gets or sets a value indicating whether pressing ENTER in a multiline TextBox control creates a new line of text in the control or activates the default button for the form.

@@ -301,7 +301,7 @@ public override void FillPie ( System.Drawing.Point[] rect, float startAngle, fl
 	// This leads to a leak. So, if a dc is disposed, select out all the object types so when the objects are actually disposed, they will actually dispose.
 	private void DeleteDC()
 	{
-		Win32.Api.DeleteObject(hdc);
+		Win32.Api.DeleteDC(hdc);
 		hdc = IntPtr.Zero;
 	}
 

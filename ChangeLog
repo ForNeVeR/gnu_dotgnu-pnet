@@ -1,3 +1,22 @@
+2004-01-18  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs, System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/IToolkitWindowBuffer.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Win32/Win32.cs,
+	System.Drawing.Xsharp/IToolkitWindowBuffer.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Windows.Forms/Control.cs, 
+	System.Windows.Forms/MonthCalendar.cs, 
+	System.Windows.Forms/TabControl.cs, System.Windows.Forms/TextBox.cs,
+	System.Windows.Forms/TreeView.cs: add double buffering framework and
+	toolkit interfaces. Implement for win32. Set TextBox and TreeView to
+	double buffer.
+
 2004-01-18  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs: fix

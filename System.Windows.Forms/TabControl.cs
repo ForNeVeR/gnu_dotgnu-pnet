@@ -81,7 +81,7 @@ namespace System.Windows.Forms
 		// Tab events
 		public event DrawItemEventHandler DrawItem;
 		public event EventHandler SelectedIndexChanged;
-		public TabControl() : base()
+		public TabControl()
 		{
 			selectedIndex = -1;
 
@@ -358,6 +358,16 @@ namespace System.Windows.Forms
 			// Draw the visible TabPage (child controls)
 			base.OnPaint (e);
 		}
+
+		protected override void OnPaintBackground(PaintEventArgs e)
+		{
+			base.OnPaintBackground (e);
+			using (Brush back = new SolidBrush(BackColor))
+			{
+				e.Graphics.FillRectangle(back, 0, 0, Width, Height);
+			}
+		}
+
 
 		private void Draw(Graphics g)
 		{

@@ -1025,6 +1025,9 @@ internal class Api
 	[DllImport("user32")]
 	public static extern IntPtr CreateIconIndirect(ref ICONINFO piconinfo);
 
+	[DllImport("gdi32")]
+	public static extern bool DeleteDC(IntPtr hdc);
+
 }//Api
 
 }

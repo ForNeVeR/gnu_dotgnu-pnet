@@ -67,7 +67,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Graphics that has an origin of baseWindow.Location and is always clipped
 	// to baseWindow
 
-	public Graphics(IToolkitGraphics graphics, Rectangle baseWindow)
+	internal Graphics(IToolkitGraphics graphics, Rectangle baseWindow)
 		: this(graphics)
 			{
 				this.baseWindow = baseWindow;
@@ -77,7 +77,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 
 	// Create a Graphics that is internally offset to baseWindow
-	public Graphics(Graphics graphics, Rectangle baseWindow)
+	internal Graphics(Graphics graphics, Rectangle baseWindow)
 			{
 				// Use the same toolkit
 				this.graphics = graphics.graphics;

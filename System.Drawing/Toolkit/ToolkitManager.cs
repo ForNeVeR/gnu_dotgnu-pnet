@@ -148,17 +148,37 @@ public sealed class ToolkitManager
 			}
 
 	// Create a "Graphics" object from an "IToolkitGraphics" handler.
+	public static Graphics CreateGraphics(IToolkitGraphics graphics, Rectangle baseWindow)
+			{
+				if(graphics == null)
+				{
+					throw new ArgumentNullException("graphics");
+				}
+				return new Graphics(graphics, baseWindow);
+			}
+	
+	// Create a "Graphics" object from an "IToolkitGraphics" handler.
+	public static Graphics CreateGraphics(Graphics graphics, Rectangle baseWindow)
+			{
+				if(graphics == null)
+				{
+					throw new ArgumentNullException("graphics");
+				}
+				return new Graphics(graphics, baseWindow);
+			}
+
+	// Create a "Graphics" object from an "IToolkitGraphics" handler.
 	// Start with a clip that has already been set in the underlying IToolkitGraphics.
 	public static Graphics CreateGraphics(IToolkitGraphics graphics, Region clip)
-	{
-		if(graphics == null)
-		{
-			throw new ArgumentNullException("graphics");
-		}
-		Graphics createdGraphics = new Graphics(graphics);
-		createdGraphics.SetClipInternal(clip);
-		return createdGraphics;
-	}
+			{
+				if(graphics == null)
+				{
+					throw new ArgumentNullException("graphics");
+				}
+				Graphics createdGraphics = new Graphics(graphics);
+				createdGraphics.SetClipInternal(clip);
+				return createdGraphics;
+			}
 
 	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
 	// in the form of an xbm bitmap.

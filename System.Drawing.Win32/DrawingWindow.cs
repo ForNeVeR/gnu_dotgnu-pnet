@@ -29,7 +29,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	protected DrawingToolkit toolkit;
 	protected IToolkitEventSink sink;
 	protected internal IntPtr hwnd;
-	protected IntPtr hdc;
+	protected internal IntPtr hdc;
 	protected internal DrawingWindow parent;
 	// The window at the top of the hierarchy
 	protected internal DrawingWindow topOfhierarchy;
@@ -645,7 +645,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 			}
 			//Console.WriteLine( "DrawingWindow.Paint "+ sink +","+gr.ClipBounds.ToString());
 		}
-
 	}
 
 	//WM_SETFOCUS occurs when either mouse or keyboard sets focus

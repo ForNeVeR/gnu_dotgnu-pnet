@@ -759,6 +759,10 @@ WindowText				= 26,*/
 		return null;
 	}
 
+	public IToolkitWindowBuffer CreateWindowBuffer(IToolkitWindow window)
+	{
+		return new DrawingWindowBuffer(window);
+	}
 
 }; // class DrawingToolkit
 

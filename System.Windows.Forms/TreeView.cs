@@ -1814,6 +1814,8 @@ namespace System.Windows.Forms
 			BackColor = SystemColors.Window;
 			ForeColor = SystemColors.WindowText;
 			SetStyle(ControlStyles.StandardClick, false);
+			// Switch on double buffering.
+			SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 		}
 
 		protected internal override void ToolkitMouseDown(MouseButtons buttons, Keys modifiers, int clicks, int x, int y, int delta)

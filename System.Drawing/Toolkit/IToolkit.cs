@@ -180,6 +180,9 @@ public interface IToolkit
 	// Get the clipboard handler for this toolkit, or null if no clipboard.
 	IToolkitClipboard GetClipboard();
 
+	// Create window buffer for use in double buffering window paints.
+	IToolkitWindowBuffer CreateWindowBuffer(IToolkitWindow window);
+
 }; // interface IToolkit
 
 }; // namespace System.Drawing.Toolkit

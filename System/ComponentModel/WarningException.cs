@@ -36,18 +36,18 @@ public class WarningException : SystemException
 	public WarningException(String message)
 			: base(message)
 			{
-				HResult = (int)0x80131501;
+				HResult = unchecked((int)0x80131501);
 			}
 	public WarningException(String message, String helpUrl)
 			: base(message)
 			{
-				HResult = (int)0x80131501;
+				HResult = unchecked((int)0x80131501);
 				this.helpUrl = helpUrl;
 			}
 	public WarningException(String message, String helpUrl, String helpTopic)
 			: base(message)
 			{
-				HResult = (int)0x80131501;
+				HResult = unchecked((int)0x80131501);
 				this.helpUrl = helpUrl;
 				this.helpTopic = helpTopic;
 				this.helpUrl = helpUrl;

@@ -38,22 +38,22 @@ public class ConfigurationException : SystemException
 	// Constructors.
 	public ConfigurationException()
 			{
-				HResult = (int)0x80131902;
+				HResult = unchecked((int)0x80131902);
 			}
 	public ConfigurationException(String message)
 			: base(message)
 			{
-				HResult = (int)0x80131902;
+				HResult = unchecked((int)0x80131902);
 			}
 	public ConfigurationException(String message, Exception inner)
 			: base(message, inner)
 			{
-				HResult = (int)0x80131902;
+				HResult = unchecked((int)0x80131902);
 			}
 	public ConfigurationException(String message, String filename, int line)
 			: base(message)
 			{
-				HResult = (int)0x80131902;
+				HResult = unchecked((int)0x80131902);
 				this.filename = filename;
 				this.line = line;
 			}
@@ -61,7 +61,7 @@ public class ConfigurationException : SystemException
 								  String filename, int line)
 			: base(message, inner)
 			{
-				HResult = (int)0x80131902;
+				HResult = unchecked((int)0x80131902);
 				this.filename = filename;
 				this.line = line;
 			}
@@ -70,7 +70,7 @@ public class ConfigurationException : SystemException
 									 StreamingContext context)
 			: base(info, context)
 			{
-				HResult = (int)0x80131902;
+				HResult = unchecked((int)0x80131902);
 				this.filename = info.GetString("filename");
 				this.line = info.GetInt32("line");
 			}

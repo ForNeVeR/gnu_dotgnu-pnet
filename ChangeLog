@@ -5,6 +5,15 @@
 	runtime/System/Private/StdStream.cs: "override" methods without
 	corresponding "virtual"'s.
 
+	* System/UriFormatException.cs,
+	System/ComponentModel/InvalidEnumArgumentException.cs,
+	System/ComponentModel/WarningException.cs,
+	System/ComponentModel/Win32Exception.cs,
+	System/Configuration/ConfigurationException.cs,
+	System/Net/WebException.cs, System.Xml/XmlException.cs,
+	System.Xml/Schema/XmlSchemaException.cs: add explicit "unchecked"
+	contexts around constants that need it.
+
 2003-07-05  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/IO/StreamReader.cs: Changes to make the reader

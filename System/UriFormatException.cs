@@ -37,14 +37,14 @@ public class UriFormatException : FormatException
 		: base(S._("Exception_UriFormat"))
 		{
 		#if !ECMA_COMPAT
-			HResult = (int)0x80131537;
+			HResult = unchecked((int)0x80131537);
 		#endif
 		}
 	public UriFormatException(String msg)
 		: base(msg)
 		{
 		#if !ECMA_COMPAT
-			HResult = (int)0x80131537;
+			HResult = unchecked((int)0x80131537);
 		#endif
 		}
 

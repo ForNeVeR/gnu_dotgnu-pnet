@@ -37,19 +37,19 @@ public class InvalidEnumArgumentException : ArgumentException
 	public InvalidEnumArgumentException()
 			: base(S._("Exception_InvalidEnum"))
 			{
-				HResult = (int)0x80070057;
+				HResult = unchecked((int)0x80070057);
 			}
 	public InvalidEnumArgumentException(String message)
 			: base(message)
 			{
-				HResult = (int)0x80070057;
+				HResult = unchecked((int)0x80070057);
 			}
 	public InvalidEnumArgumentException(String argumentName,
 										int invalidValue,
 										Type enumClass)
 			: base(null, argumentName)
 			{
-				HResult = (int)0x80070057;
+				HResult = unchecked((int)0x80070057);
 				this.invalidValue = invalidValue;
 				this.enumClass = enumClass;
 			}

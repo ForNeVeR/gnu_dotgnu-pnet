@@ -41,21 +41,21 @@ public class WebException : InvalidOperationException
 		: base(S._("Exception_Web"))
 		{
 		#if !ECMA_COMPAT
-			HResult = (int)0x80131509;
+			HResult = unchecked((int)0x80131509);
 		#endif
 		}
 	public WebException(String msg)
 		: base(msg)
 		{
 		#if !ECMA_COMPAT
-			HResult = (int)0x80131509;
+			HResult = unchecked((int)0x80131509);
 		#endif
 		}
 	public WebException(String msg, Exception inner)
 		: base(msg, inner)
 		{
 		#if !ECMA_COMPAT
-			HResult = (int)0x80131509;
+			HResult = unchecked((int)0x80131509);
 		#endif
 		}
 	public WebException(String msg, WebExceptionStatus status)
@@ -64,7 +64,7 @@ public class WebException : InvalidOperationException
 				myresponse = null;
 				mystatus = status;
 			#if !ECMA_COMPAT
-				HResult = (int)0x80131509;
+				HResult = unchecked((int)0x80131509);
 			#endif
 			}
 	public WebException(String msg, Exception inner, 

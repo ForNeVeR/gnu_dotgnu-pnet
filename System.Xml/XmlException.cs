@@ -36,21 +36,21 @@ public class XmlException : SystemException
 		: base(S._("Xml_Default"))
 		{
 		#if !ECMA_COMPAT
-			HResult = (int)0x80131940;
+			HResult = unchecked((int)0x80131940);
 		#endif
 		}
 	public XmlException(String message)
 		: base(message)
 		{
 		#if !ECMA_COMPAT
-			HResult = (int)0x80131940;
+			HResult = unchecked((int)0x80131940);
 		#endif
 		}
 	public XmlException(String message, Exception innerException)
 		: base(message, innerException)
 		{
 		#if !ECMA_COMPAT
-			HResult = (int)0x80131940;
+			HResult = unchecked((int)0x80131940);
 		#endif
 		}
 	public XmlException(String message, Exception innerException,
@@ -58,7 +58,7 @@ public class XmlException : SystemException
 		: base(message, innerException)
 		{
 		#if !ECMA_COMPAT
-			HResult = (int)0x80131940;
+			HResult = unchecked((int)0x80131940);
 		#endif
 			this.lineNumber = lineNumber;
 			this.linePosition = linePosition;
@@ -67,7 +67,7 @@ public class XmlException : SystemException
 	protected XmlException(SerializationInfo info, StreamingContext context)
 		: base(info, context)
 		{
-			HResult = (int)0x80131940;
+			HResult = unchecked((int)0x80131940);
 			lineNumber = info.GetInt32("lineNumber");
 			linePosition = info.GetInt32("linePosition");
 		}

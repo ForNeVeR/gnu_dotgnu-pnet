@@ -32,6 +32,8 @@ public interface ICollection<T> : IIterable<T>
 
 	void CopyTo(T[] array, int index);
 	int Count { get; }
+	bool IsFixedSize { get; }
+	bool IsReadOnly { get; }
 	bool IsSynchronized { get; }
 	Object SyncRoot { get; }
 

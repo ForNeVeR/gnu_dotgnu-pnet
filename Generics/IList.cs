@@ -38,8 +38,6 @@ public interface IList<T> : ICollection<T>
 	void Insert(int index, T value);
 	void Remove(T value);
 	void RemoveAt(int index);
-	bool IsFixedSize { get; }
-	bool IsReadOnly { get; }
 	bool IsRandomAccess { get; }
 	T this[int index] { get; set; }
 

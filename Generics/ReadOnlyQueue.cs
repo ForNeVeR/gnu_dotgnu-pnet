@@ -63,20 +63,6 @@ public class ReadOnlyQueue<T> : ReadOnlyCollection<T>, IQueue<T>
 			{
 				return queue.ToArray();
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return queue.IsFixedSize;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return true;
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

@@ -71,20 +71,6 @@ public class FixedSizeDeque<T> : FixedSizeCollection<T>, IDeque<T>
 			{
 				return deque.ToArray();
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return true;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return deque.IsReadOnly;
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

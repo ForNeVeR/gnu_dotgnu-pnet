@@ -96,26 +96,6 @@ public class SynchronizedList<T> : SynchronizedCollection<T>, IList<T>
 					list.RemoveAt(index);
 				}
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return list.IsFixedSize;
-					}
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return list.IsReadOnly;
-					}
-				}
-			}
 	public bool IsRandomAccess
 			{
 				get

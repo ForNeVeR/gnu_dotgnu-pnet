@@ -62,20 +62,6 @@ public class ReadOnlyDictionary<KeyT, ValueT>
 			{
 				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return dict.IsFixedSize;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return true;
-				}
-			}
 	public ValueT this[KeyT key]
 			{
 				get

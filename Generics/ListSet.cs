@@ -66,6 +66,19 @@ public sealed class ListSet<T> : ISet<T>
 			{
 				list.Remove(value);
 			}
+
+	// Implement the ICollection<T> interface.
+	public void CopyTo(T[] array, int index)
+			{
+				list.CopyTo(array, index);
+			}
+	public int Count
+			{
+				get
+				{
+					return list.Count;
+				}
+			}
 	public bool IsFixedSize
 			{
 				get
@@ -78,19 +91,6 @@ public sealed class ListSet<T> : ISet<T>
 				get
 				{
 					return list.IsReadOnly;
-				}
-			}
-
-	// Implement the ICollection<T> interface.
-	public void CopyTo(T[] array, int index)
-			{
-				list.CopyTo(array, index);
-			}
-	public int Count
-			{
-				get
-				{
-					return list.Count;
 				}
 			}
 	public bool IsSynchronized

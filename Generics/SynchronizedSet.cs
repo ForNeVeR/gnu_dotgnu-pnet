@@ -67,26 +67,6 @@ public class SynchronizedSet<T> : SynchronizedCollection<T>, ISet<T>
 					set.Remove(value);
 				}
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return set.IsFixedSize;
-					}
-				}
-			}
-	public bool IsReadOnly
-			{ 
-				get
-				{
-					lock(SyncRoot)
-					{
-						return set.IsReadOnly;
-					}
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

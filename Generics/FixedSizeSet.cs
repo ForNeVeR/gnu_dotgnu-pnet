@@ -58,20 +58,6 @@ public class FixedSizeSet<T> : FixedSizeCollection<T>, ISet<T>
 				throw new InvalidOperationException
 					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return true;
-				}
-			}
-	public bool IsReadOnly
-			{ 
-				get
-				{
-					return set.IsReadOnly;
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

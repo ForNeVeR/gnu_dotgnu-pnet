@@ -76,20 +76,6 @@ public sealed class ListWrapper<T> : IList<T>, ICollection<T>
 			{
 				list.RemoveAt(index);
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return list.IsFixedSize;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return list.IsReadOnly;
-				}
-			}
 	public bool IsRandomAccess
 			{
 				get
@@ -120,6 +106,20 @@ public sealed class ListWrapper<T> : IList<T>, ICollection<T>
 				get
 				{
 					return list.Count;
+				}
+			}
+	public bool IsFixedSize
+			{
+				get
+				{
+					return list.IsFixedSize;
+				}
+			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					return list.IsReadOnly;
 				}
 			}
 	public bool IsSynchronized

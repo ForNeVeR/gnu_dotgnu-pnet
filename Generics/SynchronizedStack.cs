@@ -81,26 +81,6 @@ public class SynchronizedStack<T> : SynchronizedCollection<T>, IStack<T>
 					return stack.ToArray();
 				}
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return stack.IsFixedSize;
-					}
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return stack.IsReadOnly;
-					}
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

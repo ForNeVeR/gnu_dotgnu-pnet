@@ -76,20 +76,6 @@ public class FixedSizeList<T> : FixedSizeCollection<T>, IList<T>, IRandomAccess
 				throw new InvalidOperationException
 					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return true;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return list.IsReadOnly;
-				}
-			}
 	public bool IsRandomAccess
 			{
 				get

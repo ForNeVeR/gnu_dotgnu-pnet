@@ -71,20 +71,6 @@ public class ReadOnlyList<T> : ReadOnlyCollection<T>, IList<T>
 			{
 				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return list.IsFixedSize;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return true;
-				}
-			}
 	public bool IsRandomAccess
 			{
 				get

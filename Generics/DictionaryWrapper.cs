@@ -64,20 +64,6 @@ public sealed class DictionaryWrapper<KeyT, ValueT> : IDictionary<KeyT, ValueT>
 			{
 				dict.Remove(key);
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return dict.IsFixedSize;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return dict.IsReadOnly;
-				}
-			}
 	public ValueT this[KeyT key]
 			{
 				get
@@ -114,6 +100,20 @@ public sealed class DictionaryWrapper<KeyT, ValueT> : IDictionary<KeyT, ValueT>
 				get
 				{
 					return dict.Count;
+				}
+			}
+	public bool IsFixedSize
+			{
+				get
+				{
+					return dict.IsFixedSize;
+				}
+			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					return dict.IsReadOnly;
 				}
 			}
 	public bool IsSynchronized

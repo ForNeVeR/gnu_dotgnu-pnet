@@ -54,6 +54,38 @@ public sealed class CollectionWrapper<T> : ICollection<T>
 					return coll.Count;
 				}
 			}
+	public bool IsFixedSize
+			{
+				get
+				{
+					if(coll is System.Collections.IDictionary)
+					{
+						return ((System.Collections.IDictionary)coll)
+							.IsFixedSize;
+					}
+					else if(coll is IList)
+					{
+						return ((System.Collections.IList)coll).IsFixedSize;
+					}
+					return false;
+				}
+			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					if(coll is System.Collections.IDictionary)
+					{
+						return ((System.Collections.IDictionary)coll)
+							.IsReadOnly;
+					}
+					else if(coll is IList)
+					{
+						return ((System.Collections.IList)coll).IsReadOnly;
+					}
+					return false;
+				}
+			}
 	public bool IsSynchronized
 			{
 				get

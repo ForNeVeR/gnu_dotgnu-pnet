@@ -54,6 +54,20 @@ public class FixedSizeCollection<T> : ICollection<T>, ICloneable
 					return coll.Count;
 				}
 			}
+	public bool IsFixedSize
+			{
+				get
+				{
+					return true;
+				}
+			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					return coll.IsReadOnly;
+				}
+			}
 	public bool IsSynchronized
 			{
 				get

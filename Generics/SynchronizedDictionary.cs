@@ -77,26 +77,6 @@ public class SynchronizedDictionary<KeyT, ValueT>
 					dict.Remove(key);
 				}
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return dict.IsFixedSize;
-					}
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return dict.IsReadOnly;
-					}
-				}
-			}
 	public ValueT this[KeyT key]
 			{
 				get

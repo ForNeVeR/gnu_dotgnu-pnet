@@ -88,26 +88,6 @@ public class SynchronizedDeque<T> : SynchronizedCollection<T>, IDeque<T>
 					return deque.ToArray();
 				}
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return deque.IsFixedSize;
-					}
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return deque.IsReadOnly;
-					}
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

@@ -36,8 +36,6 @@ public interface IDictionary<KeyT, ValueT>
 	bool Contains(KeyT key);
 	new IDictionaryIterator<KeyT, ValueT> GetIterator();
 	void Remove(KeyT key);
-	bool IsFixedSize { get; }
-	bool IsReadOnly { get; }
 	ValueT this[KeyT key] { get; set; }
 	ICollection<KeyT> Keys { get; }
 	ICollection<ValueT> Values { get; }

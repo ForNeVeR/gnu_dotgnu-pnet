@@ -35,8 +35,6 @@ public interface IStack<T> : ICollection<T>
 	T Pop();
 	T Peek();
 	T[] ToArray();
-	bool IsFixedSize { get; }
-	bool IsReadOnly { get; }
 
 }; // interface IStack<T>
 

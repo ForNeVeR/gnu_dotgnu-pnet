@@ -236,20 +236,6 @@ public sealed class LinkedList<T>
 				CopyTo(array, 0);
 				return array;
 			}
-	bool IDeque<T>.IsFixedSize
-			{
-				get
-				{
-					return IsFixedSize;
-				}
-			}
-	bool IDeque<T>.IsReadOnly
-			{
-				get
-				{
-					return IsReadOnly;
-				}
-			}
 
 	// Implement the IQueue<T> interface privately.
 	void IQueue<T>.Clear()
@@ -275,20 +261,6 @@ public sealed class LinkedList<T>
 	T[] IQueue<T>.ToArray()
 			{
 				return ToArray();
-			}
-	bool IQueue<T>.IsFixedSize
-			{
-				get
-				{
-					return IsFixedSize;
-				}
-			}
-	bool IQueue<T>.IsReadOnly
-			{
-				get
-				{
-					return IsReadOnly;
-				}
 			}
 
 	// Implement the IStack<T> interface privately.
@@ -316,20 +288,6 @@ public sealed class LinkedList<T>
 			{
 				return ToArray();
 			}
-	bool IStack<T>.IsFixedSize
-			{
-				get
-				{
-					return IsFixedSize;
-				}
-			}
-	bool IStack<T>.IsReadOnly
-			{
-				get
-				{
-					return IsReadOnly;
-				}
-			}
 
 	// Implement the ICollection<T> interface.
 	public void CopyTo(T[] array, int index)
@@ -345,6 +303,20 @@ public sealed class LinkedList<T>
 				get
 				{
 					return count;
+				}
+			}
+	public bool IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					return false;
 				}
 			}
 	public bool IsSynchronized
@@ -527,20 +499,6 @@ public sealed class LinkedList<T>
 	public void RemoveAt(int index)
 			{
 				Remove(Get(index));
-			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return false;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return false;
-				}
 			}
 	public bool IsRandomAccess
 			{

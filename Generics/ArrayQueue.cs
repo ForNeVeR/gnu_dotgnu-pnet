@@ -116,6 +116,20 @@ public sealed class ArrayQueue<T> : IQueue<T>, ICloneable
 					return size;
 				}
 			}
+	public bool IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
 	public bool IsSynchronized
 			{
 				get
@@ -269,20 +283,6 @@ public sealed class ArrayQueue<T> : IQueue<T>, ICloneable
 					}
 				}
 				return array;
-			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return false;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return false;
-				}
 			}
 
 	// Private class for implementing queue enumeration.

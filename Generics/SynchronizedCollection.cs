@@ -60,6 +60,26 @@ public class SynchronizedCollection<T> : ICollection<T>, ICloneable
 					}
 				}
 			}
+	public bool IsFixedSize
+			{
+				get
+				{
+					lock(SyncRoot)
+					{
+						return coll.IsFixedSize;
+					}
+				}
+			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					lock(SyncRoot)
+					{
+						return coll.IsReadOnly;
+					}
+				}
+			}
 	public bool IsSynchronized
 			{
 				get

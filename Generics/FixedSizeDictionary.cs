@@ -65,20 +65,6 @@ public class FixedSizeDictionary<KeyT, ValueT>
 				throw new InvalidOperationException
 					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return true;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return dict.IsReadOnly;
-				}
-			}
 	public ValueT this[KeyT key]
 			{
 				get

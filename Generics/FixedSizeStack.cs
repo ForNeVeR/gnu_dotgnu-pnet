@@ -66,20 +66,6 @@ public class FixedSizeStack<T> : FixedSizeCollection<T>, IStack<T>
 			{
 				return stack.ToArray();
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return true;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return stack.IsReadOnly;
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

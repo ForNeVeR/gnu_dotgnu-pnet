@@ -81,26 +81,6 @@ public class SynchronizedQueue<T> : SynchronizedCollection<T>, IQueue<T>
 					return queue.ToArray();
 				}
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return queue.IsFixedSize;
-					}
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					lock(SyncRoot)
-					{
-						return queue.IsReadOnly;
-					}
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

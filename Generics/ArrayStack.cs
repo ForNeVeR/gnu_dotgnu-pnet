@@ -84,6 +84,20 @@ public sealed class ArrayStack<T> : IStack<T>, ICloneable
 					return size;
 				}
 			}
+	public bool IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
 	public bool IsSynchronized
 			{
 				get
@@ -203,20 +217,6 @@ public sealed class ArrayStack<T> : IStack<T>, ICloneable
 					array[index] = items[size - index - 1];
 				}
 				return array;
-			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return false;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return false;
-				}
 			}
 
 	// Private class for implementing stack iteration.

@@ -25,6 +25,27 @@
 	Generics/SynchronizedQueue.cs, Generics/SynchronizedSet.cs,
 	Generics/SynchronizedStack.cs: lock the SyncRoot when cloning.
 
+	* Generics/ArrayList.cs, Generics/ArrayQueue.cs,
+	Generics/ArrayStack.cs, Generics/CollectionWrapper.cs,
+	Generics/DictionaryWrapper.cs, Generics/FixedSizeCollection.cs,
+	Generics/FixedSizeDeque.cs, Generics/FixedSizeDictionary.cs,
+	Generics/FixedSizeList.cs, Generics/FixedSizeQueue.cs,
+	Generics/FixedSizeSet.cs, Generics/FixedSizeStack.cs,
+	Generics/Hashtable.cs, Generics/ICollection.cs,
+	Generics/IDeque.cs, Generics/IDictionary.cs,
+	Generics/IList.cs, Generics/IQueue.cs,
+	Generics/ISet.cs, Generics/IStack.cs,
+	Generics/LinkedList.cs, Generics/ListSet.cs,
+	Generics/ListWrapper.cs, Generics/ReadOnlyCollection.cs,
+	Generics/ReadOnlyDeque.cs, Generics/ReadOnlyDictionary.cs,
+	Generics/ReadOnlyList.cs, Generics/ReadOnlyQueue.cs,
+	Generics/ReadOnlySet.cs, Generics/ReadOnlyStack.cs,
+	Generics/SynchronizedCollection.cs, Generics/SynchronizedDeque.cs,
+	Generics/SynchronizedDictionary.cs, Generics/SynchronizedList.cs,
+	Generics/SynchronizedQueue.cs, Generics/SynchronizedSet.cs,
+	Generics/SynchronizedStack.cs: move "IsReadOnly" and "IsFixedSize"
+	into "ICollection<T>" because they are common collection traits.
+	
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlTextReader (ReadIdentifier): append the character

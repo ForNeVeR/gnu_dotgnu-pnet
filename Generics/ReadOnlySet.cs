@@ -55,20 +55,6 @@ public class ReadOnlySet<T> : ReadOnlyCollection<T>, ISet<T>
 			{
 				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return set.IsFixedSize;
-				}
-			}
-	public bool IsReadOnly
-			{ 
-				get
-				{
-					return true;
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

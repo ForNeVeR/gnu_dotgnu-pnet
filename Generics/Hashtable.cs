@@ -529,6 +529,20 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					return num;
 				}
 			}
+	public virtual bool IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+	public virtual bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
 	public virtual bool IsSynchronized
 			{
 				get
@@ -626,20 +640,6 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 					}
 					hash = (hash + 1) % capacity;
 					--count;
-				}
-			}
-	public virtual bool IsFixedSize
-			{
-				get
-				{
-					return false;
-				}
-			}
-	public virtual bool IsReadOnly
-			{
-				get
-				{
-					return false;
 				}
 			}
 	[IndexerName("Item")]

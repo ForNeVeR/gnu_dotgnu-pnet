@@ -63,20 +63,6 @@ public class ReadOnlyStack<T> : ReadOnlyCollection<T>, IStack<T>
 			{
 				return stack.ToArray();
 			}
-	public bool IsFixedSize
-			{
-				get
-				{
-					return stack.IsFixedSize;
-				}
-			}
-	public bool IsReadOnly
-			{
-				get
-				{
-					return true;
-				}
-			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()

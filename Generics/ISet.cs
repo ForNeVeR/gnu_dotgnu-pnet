@@ -34,8 +34,6 @@ public interface ISet<T> : ICollection<T>
 	void Clear();
 	bool Contains(T value);
 	void Remove(T value);
-	bool IsFixedSize { get; }
-	bool IsReadOnly { get; }
 
 }; // interface ISet<T>
 

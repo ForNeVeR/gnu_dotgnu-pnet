@@ -234,7 +234,7 @@ void ILThreadDestroy(ILThread *thread)
 	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
 	{
 		thread->state |= IL_TS_ABORTED;
-		TerminateThread(thread->handle);
+		TerminateThread(thread->handle, 0);
 		CloseHandle(thread->handle);
 	}
 

@@ -49,9 +49,9 @@ ILExecThread *ILExecThreadCurrent()
  */
 ILObject *ILExecThreadCurrentClrThread()
 {
-	ILExecValue result;
 	ILMethod* method;
 	ILClass *classInfo;
+	ILExecValue result, arg;
 	System_Thread *clrThread;
 	ILExecThread *thread = ILExecThreadCurrent();
 
@@ -72,16 +72,12 @@ ILObject *ILExecThreadCurrentClrThread()
 
 		clrThread = (System_Thread *)_ILEngineAllocObject(thread, classInfo);
 
-		/* Associate the CLR thread object with the OS thread */
-
-		clrThread->privateData = ILThreadSelf();
-
 		/* Associate the executing thread with the CLR thread */
 		thread->clrThread = (ILObject *)clrThread;
 		
 		/* Execute the private constructor */
 
-		method = ILExecThreadLookupMethod(thread, "System.Threading.Thread", ".ctor", "(T)V");
+		method = ILExecThreadLookupMethod(thread, "System.Threading.Thread", ".ctor", "(Tj)V");
 
 		if (method == 0)
 		{
@@ -89,6 +85,9 @@ ILObject *ILExecThreadCurrentClrThread()
 
 			return 0;
 		}
+		
+		/* Pass the OS thread as an argument to the CLR thread's constructor */
+		arg.ptrValue = ILThreadSelf();
 
 		_ILCallMethod
 		(
@@ -99,7 +98,7 @@ ILObject *ILExecThreadCurrentClrThread()
 			0,
 			clrThread,
 			_ILCallPackVParams,
-			0
+			&arg
 		);
 	}
 

@@ -1,4 +1,11 @@
+2004-09-11  Thong Nguyen  <tum@veridicus.com>
 
+	* Never forget.
+	
+	* engine/thread.c: Updated ILExecThreadCurrent's call to
+	System.Threading.Thread's constructor with the ILThread
+	pointer as an argument.
+	
 2004-09-09  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Treat enum members as underlying types inside

@@ -57,12 +57,11 @@ void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 		return;
 	}
 
-	/* Look for the "System.Environment.GetResourceString" method,
-	   which allows us to look up localised error messages */
+	/* Look for the "System.Object._" method, which allows us to
+	   look up localised error messages */
 	if(resourceName)
 	{
-		method = ILExecThreadLookupMethod(thread, "System.Environment",
-										  "GetResourceString",
+		method = ILExecThreadLookupMethod(thread, "System.Object", "_",
 										  "(oSystem.String;)oSystem.String;");
 		if(method)
 		{
@@ -110,12 +109,11 @@ void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
 		return;
 	}
 
-	/* Look for the "System.Environment.GetResourceString" method,
-	   which allows us to look up localised error messages */
+	/* Look for the "System.Object._" method, which allows us to
+	   look up localised error messages */
 	if(resourceName)
 	{
-		method = ILExecThreadLookupMethod(thread, "System.Environment",
-										  "GetResourceString",
+		method = ILExecThreadLookupMethod(thread, "System.Object", "_",
 										  "(oSystem.String;)oSystem.String;");
 		if(method)
 		{

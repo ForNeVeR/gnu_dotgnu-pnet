@@ -432,6 +432,19 @@ int ILExecThreadGetElem(ILExecThread *thread, void *value,
 int ILExecThreadSetElem(ILExecThread *thread, ILObject *array,
 						ILInt32 index, ...);
 
+/*
+ * Box the value at a pointer using a specific primitive or value type.
+ */
+ILObject *ILExecThreadBox(ILExecThread *thread, ILType *type, void *ptr);
+
+/*
+ * Unbox an object using a specific primitive or value type and
+ * write the contents to a pointer.  Returns zero if the object
+ * is NULL or is not of the correct type.
+ */
+int ILExecThreadUnbox(ILExecThread *thread, ILType *type,
+					  ILObject *object, void *ptr);
+
 #ifdef	__cplusplus
 };
 #endif

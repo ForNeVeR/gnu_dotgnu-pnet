@@ -139,7 +139,7 @@ static void RuntimeHelpers_InitializeArray(ILExecThread *thread,
 		maxSize = elemSize;
 		for(dim = 0; dim < marray->rank; ++dim)
 		{
-			maxSize *= (ILUInt32)(marray->bounds[dim * 2 + 1]);
+			maxSize *= (ILUInt32)(marray->bounds[dim].size);
 		}
 	}
 	else

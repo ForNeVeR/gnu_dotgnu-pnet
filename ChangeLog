@@ -1,3 +1,11 @@
+
+2001-12-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/Makefile.am, engine/lib_array.c, engine/lib_defs.h,
+engine/lib_helpers.c, engine/throw.c, image/types.c, include/il_engine.h,
+include/il_types.h: implement all of the "System.Array" internalcall
+methods except "Copy".
+
 2001-12-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/internal.c, engine/lib_array.c, engine/lib_decimal.c,

@@ -174,7 +174,7 @@ static System_MArray *ConstructMArrayHeader(ILExecThread *thread,
 	_this = (System_MArray *)_ILEngineAlloc
 					(thread, classInfo,
 					 sizeof(System_MArray) +
-					 (rank - 1) * sizeof(ILInt32) * 2);
+					 (rank - 1) * sizeof(MArrayBounds));
 	if(!_this)
 	{
 		return 0;
@@ -202,13 +202,13 @@ static System_MArray *ConstructMArrayData(ILExecThread *thread,
 	sizeInBytes = 1;
 	for(dim = 0; dim < array->rank; ++dim)
 	{
-		if(array->bounds[dim * 2 + 1] < 0)
+		if(array->bounds[dim].size < 0)
 		{
 			sprintf(name, "length%d", dim);
 			ILExecThreadThrowArgRange(thread, name, "ArgRange_NonNegative");
 			return 0;
 		}
-		sizeInBytes *= (ILUInt64)(array->bounds[dim * 2 + 1]);
+		sizeInBytes *= (ILUInt64)(array->bounds[dim].size);
 		if(sizeInBytes > (ILUInt64)IL_MAX_INT32)
 		{
 			ILExecThreadThrowOutOfMemory(thread);
@@ -253,24 +253,21 @@ static void *GetElemAddress(ILExecThread *thread,
 							ArgWalker *args)
 {
 	ILInt32 offset;
-	ILInt32 multiplier;
 	ILInt32 dim;
 	ILInt32 index;
 
 	/* Find the offset of the element */
 	offset = 0;
-	multiplier = 1;
 	for(dim = 0; dim < _this->rank; ++dim)
 	{
-		index = ArgWalkerGetInt(args) - _this->bounds[dim * 2];
-		if(((ILUInt32)index) >= ((ILUInt32)(_this->bounds[dim * 2 + 1])))
+		index = ArgWalkerGetInt(args) - _this->bounds[dim].lower;
+		if(((ILUInt32)index) >= ((ILUInt32)(_this->bounds[dim].size)))
 		{
 			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
 									"Arg_InvalidArrayIndex");
 			return 0;
 		}
-		offset += index * multiplier;
-		multiplier *= _this->bounds[dim * 2 + 1];
+		offset += index * _this->bounds[dim].multiplier;
 	}
 
 	/* Compute the element address */
@@ -287,25 +284,22 @@ static void SetElement(ILExecThread *thread, System_MArray *_this,
 					   int valueType, ArgWalker *args)
 {
 	ILInt32 offset;
-	ILInt32 multiplier;
 	ILInt32 dim;
 	ILInt32 index;
 	void *address;
 
 	/* Find the offset of the element */
 	offset = 0;
-	multiplier = 1;
 	for(dim = 0; dim < _this->rank; ++dim)
 	{
-		index = ArgWalkerGetInt(args) - _this->bounds[dim * 2];
-		if(((ILUInt32)index) >= ((ILUInt32)(_this->bounds[dim * 2 + 1])))
+		index = ArgWalkerGetInt(args) - _this->bounds[dim].lower;
+		if(((ILUInt32)index) >= ((ILUInt32)(_this->bounds[dim].size)))
 		{
 			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
 									"Arg_InvalidArrayIndex");
 			return;
 		}
-		offset += index * multiplier;
-		multiplier *= _this->bounds[dim * 2 + 1];
+		offset += index * _this->bounds[dim].multiplier;
 	}
 
 	/* Compute the element address */
@@ -386,6 +380,7 @@ static System_MArray *System_MArray_ctor_1(ILExecThread *thread)
 {
 	System_MArray *_this;
 	ILInt32 dim;
+	ILInt32 multiplier;
 	ArgWalker args;
 	int elemIsPrimitive;
 
@@ -401,8 +396,16 @@ static System_MArray *System_MArray_ctor_1(ILExecThread *thread)
 	ArgWalkerInit(&args);
 	for(dim = 0; dim < _this->rank; ++dim)
 	{
-		_this->bounds[dim * 2]     = 0;		/* Lower bound */
-		_this->bounds[dim * 2 + 1] = ArgWalkerGetInt(&args);
+		_this->bounds[dim].lower = 0;
+		_this->bounds[dim].size  = ArgWalkerGetInt(&args);
+	}
+
+	/* Fill in the array header with the multiplier values */
+	multiplier = 1;
+	for(dim = _this->rank - 1; dim >= 0; --dim)
+	{
+		_this->bounds[dim].multiplier = multiplier;
+		multiplier *= _this->bounds[dim].size;
 	}
 
 	/* Construct the data part of the array */
@@ -418,6 +421,7 @@ static System_MArray *System_MArray_ctor_2(ILExecThread *thread)
 {
 	System_MArray *_this;
 	ILInt32 dim;
+	ILInt32 multiplier;
 	ArgWalker args;
 	int elemIsPrimitive;
 
@@ -433,8 +437,16 @@ static System_MArray *System_MArray_ctor_2(ILExecThread *thread)
 	ArgWalkerInit(&args);
 	for(dim = 0; dim < _this->rank; ++dim)
 	{
-		_this->bounds[dim * 2]     = ArgWalkerGetInt(&args);
-		_this->bounds[dim * 2 + 1] = ArgWalkerGetInt(&args);
+		_this->bounds[dim].lower = ArgWalkerGetInt(&args);
+		_this->bounds[dim].size  = ArgWalkerGetInt(&args);
+	}
+
+	/* Fill in the array header with the multiplier values */
+	multiplier = 1;
+	for(dim = _this->rank - 1; dim >= 0; --dim)
+	{
+		_this->bounds[dim].multiplier = multiplier;
+		multiplier *= _this->bounds[dim].size;
 	}
 
 	/* Construct the data part of the array */
@@ -1218,22 +1230,483 @@ int _ILIsMArray(System_Array *array)
 }
 
 /*
- * private int GetRank();
+ * Get the element type for an array object.
  */
-static ILInt32 System_Array_GetRank(ILExecThread *thread, System_Array *_this)
+static ILType *GetArrayElemType(System_Array *array)
 {
-	if(_ILIsMArray(_this))
+	ILType *type = ILClassGetSynType(GetObjectClass(array));
+	return _ILGetElementType(type);
+}
+
+/*
+ * public static void Clear(Array array, int index, int length);
+ */
+static void System_Array_Clear(ILExecThread *thread, System_Array *array,
+							   ILInt32 index, ILInt32 length)
+{
+	System_MArray *marray;
+	ILType *elemType;
+	ILUInt32 elemSize;
+	ILInt32 dim;
+	ILInt32 totalLen;
+	void *start;
+
+	/* Bail out if the array is NULL */
+	if(!array)
 	{
-		return ((System_MArray *)_this)->rank;
+		ILExecThreadThrowArgNull(thread, "array");
 	}
-	else if(_ILIsSArray(_this))
+
+	/* Get the element type and size */
+	elemType = GetArrayElemType(array);
+	elemSize = ILSizeOfType(elemType);
+
+	/* Determine the start address of the clear */
+	if(_ILIsSArray(array))
 	{
-		return 1;
+		if(index < 0 || index >= array->length)
+		{
+			ILExecThreadThrowArgRange(thread, "index", "Arg_InvalidArrayIndex");
+			return;
+		}
+		else if(length < 0 ||
+		        (array->length - index) < length)
+		{
+			ILExecThreadThrowArgRange(thread, "index", "Arg_InvalidArrayRange");
+			return;
+		}
+		start = ((unsigned char *)ArrayToBuffer(array)) +
+					((ILUInt32)index) * elemSize;
+	}
+	else if(_ILIsMArray(array))
+	{
+		marray = (System_MArray *)array;
+		if(index < marray->bounds[0].lower)
+		{
+			ILExecThreadThrowArgRange(thread, "index", "Arg_InvalidArrayIndex");
+			return;
+		}
+		index -= marray->bounds[0].lower;
+		totalLen = 1;
+		for(dim = 0; dim < marray->rank; ++dim)
+		{
+			totalLen *= marray->bounds[dim].size;
+		}
+		if(length < 0 || (totalLen - index) < length)
+		{
+			ILExecThreadThrowArgRange(thread, "index", "Arg_InvalidArrayRange");
+			return;
+		}
+		start = ((unsigned char *)(marray->data)) +
+					((ILUInt32)index) * elemSize;
 	}
 	else
 	{
+		return;
+	}
+
+	/* Clear the array contents within the specified range */
+	if(length > 0)
+	{
+		ILMemZero(start, length * elemSize);
+	}
+}
+
+/*
+ * public static void Initialize();
+ */
+static void System_Array_Initialize(ILExecThread *thread, System_Array *_this)
+{
+	System_MArray *marray;
+	ILType *elemType;
+	ILUInt32 elemSize;
+	ILInt32 dim;
+	ILInt32 totalLen;
+	void *start;
+	ILMethod *method;
+
+	/* Get the element type and size */
+	elemType = GetArrayElemType(_this);
+	elemSize = ILSizeOfType(elemType);
+
+	/* Bail out if this is not a value type with a default constructor */
+	if(!ILType_IsValueType(elemType))
+	{
+		return;
+	}
+	method = 0;
+	while((method = (ILMethod *)ILClassNextMemberByKind
+				(ILType_ToValueType(elemType), (ILMember *)method,
+				 IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		if(ILMethod_IsConstructor(method) &&
+		   ILMethod_Signature(method)->num == 0)
+		{
+			break;
+		}
+	}
+	if(method == 0)
+	{
+		return;
+	}
+
+	/* Determine the start address and length of the clear */
+	if(_ILIsSArray(_this))
+	{
+		start = ArrayToBuffer(_this);
+		totalLen = _this->length;
+	}
+	else if(_ILIsMArray(_this))
+	{
+		marray = (System_MArray *)_this;
+		totalLen = 1;
+		for(dim = 0; dim < marray->rank; ++dim)
+		{
+			totalLen *= marray->bounds[dim].size;
+		}
+		start = marray->data;
+	}
+	else
+	{
+		return;
+	}
+
+	/* Initialize the array contents within the specified range */
+	while(totalLen > 0)
+	{
+		if(ILExecThreadCall(thread, method, (void *)0, start))
+		{
+			/* An exception occurred during the constructor */
+			break;
+		}
+		start = (void *)(((unsigned char *)start) + elemSize);
+		--totalLen;
+	}
+}
+
+/*
+ * public static void Copy(Array sourceArray, int sourceIndex,
+ *                         Array destArray, int destIndex,
+ *                         int length);
+ */
+static void System_Array_Copy(ILExecThread *thread,
+							  System_Array *sourceArray,
+							  ILInt32 sourceIndex,
+							  System_Array *destArray,
+							  ILInt32 destIndex,
+							  ILInt32 length)
+{
+	/* TODO */
+}
+
+/*
+ * private static Array CreateArray(IntPtr elementType,
+ *                                  int rank, int length1,
+ *                                  int length2, int length3);
+ */
+static ILObject *System_Array_CreateArray(ILExecThread *thread,
+										  ILNativeInt elementType,
+										  ILInt32 rank, ILInt32 length1,
+										  ILInt32 length2, ILInt32 length3)
+{
+	ILClass *classInfo;
+	ILType *type;
+	ILType *elemType;
+	ILUInt32 elemSize;
+	ILUInt64 totalSize;
+	System_Array *array;
+	System_MArray *marray;
+	int isPrimitive;
+
+	/* Create the array type and class structures */
+	elemType = ILClassToType((ILClass *)elementType);
+	type = ILTypeCreateArray(thread->process->context, (unsigned long)rank,
+							 elemType);
+	if(!type)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
 		return 0;
 	}
+	classInfo = ILClassFromType(ILProgramItem_Image(thread->method),
+								0, type, 0);
+	if(!classInfo)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+
+	/* Compute the element size */
+	elemSize = ILSizeOfType(elemType);
+
+	/* Determine if the element type is primitive */
+	if(ILType_IsPrimitive(type->un.array.elemType) &&
+	   type->un.array.elemType != ILType_TypedRef)
+	{
+		isPrimitive = 1;
+	}
+	else
+	{
+		isPrimitive = 0;
+	}
+
+	/* Determine the type of array to create */
+	if(rank == 1)
+	{
+		/* Determine the total size of the array in bytes */
+		totalSize = ((ILUInt64)elemSize) * ((ILUInt64)length1);
+		if(totalSize > (ILUInt64)IL_MAX_INT32)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+
+		/* Allocate the array, initialize, and return it */
+		if(isPrimitive)
+		{
+			/* The array will never contain pointers,
+			   so use atomic allocation */
+			array = (System_Array *)_ILEngineAllocAtomic
+				(thread, classInfo, sizeof(System_Array) + (ILUInt32)totalSize);
+		}
+		else
+		{
+			/* The array might contain pointers, so play it safe */
+			array = (System_Array *)_ILEngineAlloc
+				(thread, classInfo, sizeof(System_Array) + (ILUInt32)totalSize);
+		}
+		if(array)
+		{
+			array->length = (ILInt32)length1;
+		}
+		return (ILObject *)array;
+	}
+	else if(rank == 2)
+	{
+		/* Determine the total size of the array in bytes */
+		totalSize = ((ILUInt64)elemSize) * ((ILUInt64)length1);
+		if(totalSize > (ILUInt64)IL_MAX_INT32)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		totalSize *= ((ILUInt64)length2);
+		if(totalSize > (ILUInt64)IL_MAX_INT32)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+
+		/* Allocate the multi-dimensional array header */
+		marray = (System_MArray *)_ILEngineAlloc
+				(thread, classInfo, sizeof(System_MArray) +
+				 sizeof(MArrayBounds));
+		if(!marray)
+		{
+			return 0;
+		}
+		marray->rank = 2;
+		marray->elemSize = elemSize;
+		marray->bounds[0].lower      = 0;
+		marray->bounds[0].size       = length1;
+		marray->bounds[0].multiplier = length2;
+		marray->bounds[1].lower      = 0;
+		marray->bounds[1].size       = length2;
+		marray->bounds[1].multiplier = 1;
+
+		/* Allocate the data portion of the array */
+		if(isPrimitive)
+		{
+			/* The array will never contain pointers,
+			   so use atomic allocation */
+			marray->data = _ILEngineAllocAtomic(thread, 0, (ILUInt32)totalSize);
+		}
+		else
+		{
+			/* The array might contain pointers, so play it safe */
+			marray->data = _ILEngineAlloc(thread, 0, (ILUInt32)totalSize);
+		}
+		if(!(marray->data))
+		{
+			return 0;
+		}
+
+		/* Return the final array to the caller */
+		return (ILObject *)marray;
+	}
+	else
+	{
+		/* Determine the total size of the array in bytes */
+		totalSize = ((ILUInt64)elemSize) * ((ILUInt64)length1);
+		if(totalSize > (ILUInt64)IL_MAX_INT32)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		totalSize *= ((ILUInt64)length2);
+		if(totalSize > (ILUInt64)IL_MAX_INT32)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		totalSize *= ((ILUInt64)length3);
+		if(totalSize > (ILUInt64)IL_MAX_INT32)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+
+		/* Allocate the multi-dimensional array header */
+		marray = (System_MArray *)_ILEngineAlloc
+				(thread, classInfo, sizeof(System_MArray) +
+				 sizeof(MArrayBounds) * 2);
+		if(!marray)
+		{
+			return 0;
+		}
+		marray->rank = 3;
+		marray->elemSize = elemSize;
+		marray->bounds[0].lower      = 0;
+		marray->bounds[0].size       = length1;
+		marray->bounds[0].multiplier = length2 * length3;
+		marray->bounds[1].lower      = 0;
+		marray->bounds[1].size       = length2;
+		marray->bounds[1].multiplier = length3;
+		marray->bounds[2].lower      = 0;
+		marray->bounds[2].size       = length3;
+		marray->bounds[2].multiplier = 1;
+
+		/* Allocate the data portion of the array */
+		if(isPrimitive)
+		{
+			/* The array will never contain pointers,
+			   so use atomic allocation */
+			marray->data = _ILEngineAllocAtomic(thread, 0, (ILUInt32)totalSize);
+		}
+		else
+		{
+			/* The array might contain pointers, so play it safe */
+			marray->data = _ILEngineAlloc(thread, 0, (ILUInt32)totalSize);
+		}
+		if(!(marray->data))
+		{
+			return 0;
+		}
+
+		/* Return the final array to the caller */
+		return (ILObject *)marray;
+	}
+}
+
+/*
+ * private static Array CreateArray(IntPtr elementType,
+ *                                  int[] lengths, int[] lowerBounds);
+ */
+static ILObject *System_Array_CreateArray_2(ILExecThread *thread,
+										    ILNativeInt elementType,
+										    System_Array *lengths,
+										    System_Array *lowerBounds)
+{
+	ILClass *classInfo;
+	ILInt32 rank;
+	ILInt32 multiplier;
+	ILType *type;
+	ILType *elemType;
+	ILUInt32 elemSize;
+	ILUInt64 totalSize;
+	System_MArray *marray;
+	ILInt32 dim;
+
+	/* Handle the single-dimensional, zero lower bound, case specially */
+	if(lengths->length == 1 &&
+	   (!lowerBounds || ((ILInt32 *)ArrayToBuffer(lowerBounds))[0] == 0))
+	{
+		return System_Array_CreateArray(thread, elementType, 1,
+						((ILInt32 *)ArrayToBuffer(lengths))[0], 0, 0);
+	}
+
+	/* Create the array type and class structures */
+	rank = lengths->length;
+	elemType = ILClassToType((ILClass *)elementType);
+	type = ILTypeCreateArray(thread->process->context, (unsigned long)rank,
+							 elemType);
+	if(!type)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+	classInfo = ILClassFromType(ILProgramItem_Image(thread->method),
+								0, type, 0);
+	if(!classInfo)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+
+	/* Compute the element size */
+	elemSize = ILSizeOfType(elemType);
+
+	/* Determine the total size of the array in bytes */
+	totalSize = ((ILUInt64)elemSize);
+	for(dim = 0; dim < rank; ++dim)
+	{
+		totalSize *= (ILUInt64)(((ILInt32 *)ArrayToBuffer(lengths))[dim]);
+		if(totalSize > (ILUInt64)IL_MAX_INT32)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+	}
+
+	/* Allocate the multi-dimensional array header */
+	marray = (System_MArray *)_ILEngineAlloc
+			(thread, classInfo, sizeof(System_MArray) +
+			 sizeof(MArrayBounds) * (rank - 1));
+	if(!marray)
+	{
+		return 0;
+	}
+	marray->rank = rank;
+	marray->elemSize = elemSize;
+	for(dim = 0; dim < rank; ++dim)
+	{
+		if(lowerBounds)
+		{
+			marray->bounds[dim].lower =
+				((ILInt32 *)ArrayToBuffer(lowerBounds))[dim];
+		}
+		else
+		{
+			marray->bounds[dim].lower = 0;
+		}
+		marray->bounds[dim].size = ((ILInt32 *)ArrayToBuffer(lengths))[dim];
+	}
+	multiplier = 1;
+	for(dim = rank - 1; dim >= 0; --dim)
+	{
+		marray->bounds[dim].multiplier = multiplier;
+		multiplier *= marray->bounds[dim].size;
+	}
+
+	/* Allocate the data portion of the array */
+	if(ILType_IsPrimitive(type->un.array.elemType) &&
+	   type->un.array.elemType != ILType_TypedRef)
+	{
+		/* The array will never contain pointers,
+		   so use atomic allocation */
+		marray->data = _ILEngineAllocAtomic(thread, 0, (ILUInt32)totalSize);
+	}
+	else
+	{
+		/* The array might contain pointers, so play it safe */
+		marray->data = _ILEngineAlloc(thread, 0, (ILUInt32)totalSize);
+	}
+	if(!(marray->data))
+	{
+		return 0;
+	}
+
+	/* Return the final array to the caller */
+	return (ILObject *)marray;
 }
 
 /*
@@ -1252,7 +1725,7 @@ static ILInt32 System_Array_GetLength(ILExecThread *thread,
 		ILInt32 dim;
 		for(dim = 0; dim < ((System_MArray *)_this)->rank; ++dim)
 		{
-			len *= ((System_MArray *)_this)->bounds[dim * 2 + 1];
+			len *= ((System_MArray *)_this)->bounds[dim].size;
 		}
 		return len;
 	}
@@ -1280,7 +1753,7 @@ static ILInt32 System_Array_GetLength_2(ILExecThread *thread,
 	{
 		if(dimension >= 0 && dimension < ((System_MArray *)_this)->rank)
 		{
-			return ((System_MArray *)_this)->bounds[dimension * 2 + 1];
+			return ((System_MArray *)_this)->bounds[dimension].size;
 		}
 	}
 	ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
@@ -1289,12 +1762,486 @@ static ILInt32 System_Array_GetLength_2(ILExecThread *thread,
 }
 
 /*
+ * public int GetLowerBound(int dimension);
+ */
+static ILInt32 System_Array_GetLowerBound(ILExecThread *thread,
+										  System_Array *_this,
+										  ILInt32 dimension)
+{
+	if(_ILIsSArray(_this))
+	{
+		if(dimension == 0)
+		{
+			return 0;
+		}
+	}
+	else if(_ILIsMArray(_this))
+	{
+		if(dimension >= 0 && dimension < ((System_MArray *)_this)->rank)
+		{
+			return ((System_MArray *)_this)->bounds[dimension].lower;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+	ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+							"Arg_InvalidDimension");
+}
+
+/*
+ * public int GetUpperBound(int dimension);
+ */
+static ILInt32 System_Array_GetUpperBound(ILExecThread *thread,
+										  System_Array *_this,
+										  ILInt32 dimension)
+{
+	if(_ILIsSArray(_this))
+	{
+		if(dimension == 0)
+		{
+			return _this->length - 1;
+		}
+	}
+	else if(_ILIsMArray(_this))
+	{
+		if(dimension >= 0 && dimension < ((System_MArray *)_this)->rank)
+		{
+			return ((System_MArray *)_this)->bounds[dimension].lower +
+				   ((System_MArray *)_this)->bounds[dimension].size - 1;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+	ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+							"Arg_InvalidDimension");
+}
+
+/*
+ * private int GetRank();
+ */
+static ILInt32 System_Array_GetRank(ILExecThread *thread, System_Array *_this)
+{
+	if(_ILIsMArray(_this))
+	{
+		return ((System_MArray *)_this)->rank;
+	}
+	else if(_ILIsSArray(_this))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private Object Get(int index1, int index2, int index3);
+ */
+static ILObject *System_Array_Get(ILExecThread *thread, System_Array *_this,
+								  ILInt32 index1, ILInt32 index2,
+								  ILInt32 index3)
+{
+	ILType *elemType = GetArrayElemType(_this);
+	ILUInt32 elemSize = ILSizeOfType(elemType);
+	if(_ILIsSArray(_this))
+	{
+		if(index1 >= 0 && index1 < _this->length)
+		{
+			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+									"Arg_InvalidArrayIndex");
+			return 0;
+		}
+		if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+		{
+			return ILExecThreadBox(thread, elemType,
+						((unsigned char *)ArrayToBuffer(_this)) +
+						((ILUInt32)index1) * elemSize);
+		}
+		else
+		{
+			return ((ILObject **)ArrayToBuffer(_this))[index1];
+		}
+	}
+	else if(_ILIsMArray(_this))
+	{
+		System_MArray *marray = (System_MArray *)_this;
+		ILUInt32 offset;
+		ILInt32 index;
+		void *ptr;
+		if(marray->rank == 1)
+		{
+			/* Single-dimensional array */
+			index = index1 - marray->bounds[0].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[0].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return 0;
+			}
+			ptr = ((unsigned char *)(marray->data)) +
+				  ((ILUInt32)index) * elemSize;
+		}
+		else if(marray->rank == 2)
+		{
+			/* Double-dimensional array */
+			index = index1 - marray->bounds[0].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[0].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return 0;
+			}
+			offset = index * marray->bounds[0].multiplier;
+			index = index2 - marray->bounds[1].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[1].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return 0;
+			}
+			offset += (ILUInt32)index;
+			ptr = ((unsigned char *)(marray->data)) + offset * elemSize;
+		}
+		else
+		{
+			/* Triple-dimensional array */
+			index = index1 - marray->bounds[0].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[0].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return 0;
+			}
+			offset = index * marray->bounds[0].multiplier;
+			index = index2 - marray->bounds[1].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[1].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return 0;
+			}
+			offset = index * marray->bounds[1].multiplier;
+			index = index3 - marray->bounds[2].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[2].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return 0;
+			}
+			offset += (ILUInt32)index;
+			ptr = ((unsigned char *)(marray->data)) + offset * elemSize;
+		}
+		if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+		{
+			return ILExecThreadBox(thread, elemType, ptr);
+		}
+		else
+		{
+			return *((ILObject **)ptr);
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private Object Get(int[] indices);
+ */
+static ILObject *System_Array_Get_2(ILExecThread *thread, System_Array *_this,
+								    System_Array *indices)
+{
+	System_MArray *marray;
+	ILType *elemType;
+	ILUInt32 elemSize;
+	ILInt32 *ind = (ILInt32 *)ArrayToBuffer(indices);
+	ILUInt32 offset;
+	ILInt32 dim;
+	ILInt32 index;
+	void *ptr;
+
+	/* Handle the single-dimensional case specially */
+	if(indices->length == 1)
+	{
+		return System_Array_Get(thread, _this, ind[0], 0, 0);
+	}
+
+	/* Get the element type and its size */
+	elemType = GetArrayElemType(_this);
+	elemSize = ILSizeOfType(elemType);
+
+	/* Find the specific element position within the array */
+	marray = (System_MArray *)_this;
+	offset = 0;
+	for(dim = 0; dim < marray->rank; ++dim)
+	{
+		index = ind[dim] - marray->bounds[dim].lower;
+		if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[dim].size)))
+		{
+			ILExecThreadThrowSystem(thread,
+									"System.IndexOutOfRangeException",
+									"Arg_InvalidArrayIndex");
+			return 0;
+		}
+		offset += (ILUInt32)(index * marray->bounds[dim].multiplier);
+	}
+	ptr = ((unsigned char *)(marray->data)) + offset * elemSize;
+
+	/* Box and return the array element */
+	if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+	{
+		return ILExecThreadBox(thread, elemType, ptr);
+	}
+	else
+	{
+		return *((ILObject **)ptr);
+	}
+}
+
+/*
+ * private void Set(Object value, int index1, int index2, int index3);
+ */
+static void System_Array_Set(ILExecThread *thread, System_Array *_this,
+						     ILObject *value, ILInt32 index1,
+							 ILInt32 index2, ILInt32 index3)
+{
+	ILType *elemType = GetArrayElemType(_this);
+	ILUInt32 elemSize = ILSizeOfType(elemType);
+	void *ptr;
+
+	if(_ILIsSArray(_this))
+	{
+		if(index1 >= 0 && index1 < _this->length)
+		{
+			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+									"Arg_InvalidArrayIndex");
+			return;
+		}
+		ptr = ((unsigned char *)ArrayToBuffer(_this)) +
+			  ((ILUInt32)index1) * elemSize;
+	}
+	else if(_ILIsMArray(_this))
+	{
+		System_MArray *marray = (System_MArray *)_this;
+		ILUInt32 offset;
+		ILInt32 index;
+		if(marray->rank == 1)
+		{
+			/* Single-dimensional array */
+			index = index1 - marray->bounds[0].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[0].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return;
+			}
+			ptr = ((unsigned char *)(marray->data)) +
+				  ((ILUInt32)index) * elemSize;
+		}
+		else if(marray->rank == 2)
+		{
+			/* Double-dimensional array */
+			index = index1 - marray->bounds[0].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[0].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return;
+			}
+			offset = index * marray->bounds[0].multiplier;
+			index = index2 - marray->bounds[1].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[1].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return;
+			}
+			offset += (ILUInt32)index;
+			ptr = ((unsigned char *)(marray->data)) + offset * elemSize;
+		}
+		else
+		{
+			/* Triple-dimensional array */
+			index = index1 - marray->bounds[0].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[0].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return;
+			}
+			offset = index * marray->bounds[0].multiplier;
+			index = index2 - marray->bounds[1].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[1].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return;
+			}
+			offset = index * marray->bounds[1].multiplier;
+			index = index3 - marray->bounds[2].lower;
+			if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[2].size)))
+			{
+				ILExecThreadThrowSystem(thread,
+										"System.IndexOutOfRangeException",
+										"Arg_InvalidArrayIndex");
+				return;
+			}
+			offset += (ILUInt32)index;
+			ptr = ((unsigned char *)(marray->data)) + offset * elemSize;
+		}
+	}
+	else
+	{
+		ILExecThreadThrowSystem(thread, "System.ArgumentException",
+					 		    "Arg_ElementTypeMismatch");
+		return;
+	}
+
+	/* Copy the value into position at "ptr" */
+	if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+	{
+		if(!ILExecThreadUnbox(thread, elemType, value, ptr))
+		{
+			ILExecThreadThrowSystem
+					(thread, "System.ArgumentException",
+					 "Arg_ElementTypeMismatch");
+		}
+	}
+	else if(ILTypeAssignCompatible
+					(ILProgramItem_Image(thread->method),
+				     (value ? ILClassToType(GetObjectClass(value)) : 0),
+				     elemType))
+	{
+		*((ILObject **)ptr) = value;
+	}
+	else
+	{
+		ILExecThreadThrowSystem
+				(thread, "System.ArgumentException",
+				 "Arg_ElementTypeMismatch");
+	}
+}
+
+/*
+ * private void Set(Object value, int[] indices);
+ */
+static void System_Array_Set_2(ILExecThread *thread, System_Array *_this,
+						       ILObject *value, System_Array *indices)
+{
+	System_MArray *marray;
+	ILType *elemType;
+	ILUInt32 elemSize;
+	ILInt32 *ind = (ILInt32 *)ArrayToBuffer(indices);
+	ILUInt32 offset;
+	ILInt32 dim;
+	ILInt32 index;
+	void *ptr;
+
+	/* Handle the single-dimensional case specially */
+	if(indices->length == 1)
+	{
+		System_Array_Set(thread, _this, value, ind[0], 0, 0);
+		return;
+	}
+
+	/* Get the element type and its size */
+	elemType = GetArrayElemType(_this);
+	elemSize = ILSizeOfType(elemType);
+
+	/* Find the specific element position within the array */
+	marray = (System_MArray *)_this;
+	offset = 0;
+	for(dim = 0; dim < marray->rank; ++dim)
+	{
+		index = ind[dim] - marray->bounds[dim].lower;
+		if(((ILUInt32)index) >= ((ILUInt32)(marray->bounds[dim].size)))
+		{
+			ILExecThreadThrowSystem(thread,
+									"System.IndexOutOfRangeException",
+									"Arg_InvalidArrayIndex");
+			return;
+		}
+		offset += (ILUInt32)(index * marray->bounds[dim].multiplier);
+	}
+	ptr = ((unsigned char *)(marray->data)) + offset * elemSize;
+
+	/* Copy the value into position at "ptr" */
+	if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+	{
+		if(!ILExecThreadUnbox(thread, elemType, value, ptr))
+		{
+			ILExecThreadThrowSystem
+					(thread, "System.ArgumentException",
+					 "Arg_ElementTypeMismatch");
+		}
+	}
+	else if(ILTypeAssignCompatible
+					(ILProgramItem_Image(thread->method),
+				     (value ? ILClassToType(GetObjectClass(value)) : 0),
+				     elemType))
+	{
+		*((ILObject **)ptr) = value;
+	}
+	else
+	{
+		ILExecThreadThrowSystem
+				(thread, "System.ArgumentException",
+				 "Arg_ElementTypeMismatch");
+	}
+}
+
+/*
  * Method table for the "System.Array" class.
  */
 IL_METHOD_BEGIN(_ILSystemArrayMethods)
-	IL_METHOD("GetRank", 	 "(T)i",  System_Array_GetRank)
+	IL_METHOD("Clear",		 "(oSystem.Array;ii)V",
+					System_Array_Clear)
+	IL_METHOD("Initialize",	 "(T)V",  System_Array_Initialize)
+	IL_METHOD("Copy",
+					"(oSystem.Array;ioSystem.Array;ii)V",
+					System_Array_Copy)
+	IL_METHOD("CreateArray", "(jiiii)oSystem.Array;",
+					System_Array_CreateArray)
+	IL_METHOD("CreateArray", "(ji[i[i)oSystem.Array;",
+					System_Array_CreateArray_2)
 	IL_METHOD("GetLength",	 "(T)i",  System_Array_GetLength)
 	IL_METHOD("GetLength",	 "(Ti)i", System_Array_GetLength_2)
+	IL_METHOD("GetLowerBound",
+					"(Ti)i",
+					System_Array_GetLowerBound)
+	IL_METHOD("GetUpperBound",
+					"(Ti)i",
+					System_Array_GetUpperBound)
+	IL_METHOD("GetRank", 	 "(T)i",  System_Array_GetRank)
+	IL_METHOD("Get",
+					"(Tiii)oSystem.Object;",
+					System_Array_Get)
+	IL_METHOD("Get",
+					"(T[i)oSystem.Object;",
+					System_Array_Get_2)
+	IL_METHOD("Set",
+					"(ToSystem.Object;iii)V",
+					System_Array_Set)
+	IL_METHOD("Set",
+					"(ToSystem.Object;[i)V",
+					System_Array_Set_2)
 IL_METHOD_END
 
 /*

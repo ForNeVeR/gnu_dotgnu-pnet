@@ -727,6 +727,95 @@ int ILTypeIsStringClass(ILType *type)
 	return 0;
 }
 
+/*
+ * Determine if a type is represented as an object reference.
+ */
+static int IsObjectRef(ILType *type)
+{
+	if(type == 0)
+	{
+		/* This is the "null" type, which is always an object reference */
+		return 1;
+	}
+	else if(ILType_IsClass(type))
+	{
+		return 1;
+	}
+	else if(ILType_IsComplex(type) &&
+	        (type->kind == IL_TYPE_COMPLEX_ARRAY ||
+			 type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
+{
+	ILClass *classInfo;
+	ILClass *classInfo2;
+
+	/* Strip unnecessary prefixes, and resolve enumerated
+	   types to their underlying type */
+	src = ILTypeGetEnumType(ILTypeStripPrefixes(src));
+	dest = ILTypeGetEnumType(ILTypeStripPrefixes(dest));
+
+	/* Determine how to compare the types based on their kind */
+	if(ILType_IsPrimitive(src))
+	{
+		/* Primitive type assignments must be identical */
+		return (src == dest);
+	}
+	else if(src == 0)
+	{
+		/* A "null" constant is being assigned, which is
+		   compatible with any object reference type */
+		return IsObjectRef(dest);
+	}
+	else if(dest == 0)
+	{
+		/* Cannot assign to "null" */
+		return 0;
+	}
+	else if(IsObjectRef(src))
+	{
+		if(!IsObjectRef(dest))
+		{
+			/* Both types must be object references */
+			return 0;
+		}
+		classInfo = ILClassFromType(image, 0, dest, 0);
+		classInfo2 = ILClassFromType(image, 0, src, 0);
+		if(classInfo && classInfo2)
+		{
+			/* Is the type a regular class or an interface? */
+			if(!ILClass_IsInterface(classInfo))
+			{
+				/* Regular class: the value must inherit from the type */
+				return ILClassInheritsFrom(classInfo2, classInfo);
+			}
+			else
+			{
+				/* Interface which the value must implement or inherit from */
+				return ILClassImplements(classInfo2, classInfo) ||
+				       ILClassInheritsFrom(classInfo2, classInfo);
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		/* Everything else must have type identity to be assignable */
+		return ILTypeIdentical(src, dest);
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

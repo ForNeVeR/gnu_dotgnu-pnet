@@ -354,6 +354,14 @@ unsigned long ILTypeToOtherSig(ILImage *image, ILType *type);
  */
 int ILTypeIsStringClass(ILType *type);
 
+/*
+ * Determine if two types are assignment-compatible within
+ * the context of a particular image when assigning a value
+ * of type "src" to a location of type "dest".  If "src" is
+ * NULL, it indicates an assignment of "null" to "dest".
+ */
+int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest);
+
 #ifdef	__cplusplus
 };
 #endif

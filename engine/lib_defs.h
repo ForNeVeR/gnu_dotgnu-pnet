@@ -65,10 +65,17 @@ typedef struct
  */
 typedef struct
 {
-	ILInt32		rank;
-	ILInt32		elemSize;
-	void       *data;
-	ILInt32		bounds[2];
+	ILInt32		lower;
+	ILInt32		size;
+	ILInt32		multiplier;
+
+} MArrayBounds;
+typedef struct
+{
+	ILInt32			rank;
+	ILInt32			elemSize;
+	void	       *data;
+	MArrayBounds	bounds[1];
 
 } System_MArray;
 

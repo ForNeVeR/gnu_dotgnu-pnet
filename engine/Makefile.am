@@ -4,7 +4,8 @@ lib_LIBRARIES = libILEngine.a
 noinst_PROGRAMS = ilrun_opt
 noinst_LIBRARIES = libILEngineOpt.a
 
-COMMON_ENGINE_SOURCES = call.c \
+COMMON_ENGINE_SOURCES = box.c \
+						call.c \
 						convert.c \
 						cvm_dasm.c \
 						cvmc.c \

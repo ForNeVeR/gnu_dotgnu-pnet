@@ -22,7 +22,7 @@
 namespace System.Reflection.Emit
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 public struct MethodToken
 {
@@ -68,6 +68,6 @@ public struct MethodToken
 
 }; // struct MethodToken
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REFLECTION_EMIT
 
 }; // namespace System.Reflection.Emit

@@ -22,7 +22,7 @@
 namespace System.Reflection.Emit
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 using System;
 using System.Text;
@@ -438,6 +438,6 @@ public sealed class SignatureHelper : IDetachItem
 
 }; // class SignatureHelper
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REFLECTION_EMIT
 
 }; // namespace System.Reflection.Emit

@@ -81,6 +81,8 @@ interface _AppDomain
 	// Clear the shadow copy path.
 	void ClearShadowCopyPath();
 
+#if CONFIG_REFLECTION_EMIT
+
 	// Define a dynamic assembly within this application domain.
 	AssemblyBuilder DefineDynamicAssembly
 				(AssemblyName name, AssemblyBuilderAccess access);
@@ -121,6 +123,8 @@ interface _AppDomain
 				 PermissionSet optionalPermissions,
 				 PermissionSet refusedPersmissions,
 				 bool isSynchronized);
+
+#endif // CONFIG_REFLECTION_EMIT
 
 	// Execute a particular assembly within this application domain.
 	int ExecuteAssembly(String assemblyFile);

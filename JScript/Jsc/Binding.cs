@@ -50,14 +50,14 @@ public abstract class Binding : AST
 				// Never used.
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 	// Translate this binding object into IL.
 	protected abstract void TranslateToILObject
 			(ILGenerator il, Type obtype, bool noValue);
 	protected abstract void TranslateToILWithDupOfThisOb(ILGenerator il);
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REFLECTION_EMIT
 
 }; // class Binding
 

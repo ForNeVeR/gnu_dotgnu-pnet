@@ -46,6 +46,8 @@ public sealed class TypeLibConverter : ITypeLibConverter
 				throw new NotImplementedException();
 			}
 
+#if CONFIG_REFLECTION_EMIT
+
 	// Convert a type library into an emitted assembly.
 	public AssemblyBuilder ConvertTypeLibToAssembly
 				(Object typeLib, String asmFileName,
@@ -64,6 +66,8 @@ public sealed class TypeLibConverter : ITypeLibConverter
 			{
 				throw new NotImplementedException();
 			}
+
+#endif // CONFIG_REFLECTION_EMIT
 
 	// Get a primary interoperability assembly.
 	public bool GetPrimaryInteropAssembly

@@ -24,7 +24,7 @@
 namespace System.Reflection.Emit
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 using System;
 using System.Runtime.CompilerServices;
@@ -253,6 +253,6 @@ public class ParameterBuilder : IClrProgramItem, IDetachItem
 
 }; // class ParameterBuilder
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REFLECTION_EMIT
 
 }; // namespace System.Reflection.Emit

@@ -397,7 +397,7 @@ public sealed class AppDomain
 
 #endif // CONFIG_REMOTING
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 	// Define a dynamic assembly builder within this domain.
 	public AssemblyBuilder DefineDynamicAssembly
@@ -497,6 +497,10 @@ public sealed class AppDomain
 				}
 				return new AssemblyBuilder(name, access, dir, isSynchronized);
 			}
+
+#endif // CONFIG_REFLECTION_EMIT
+
+#if !ECMA_COMPAT
 
 	// Execute a particular assembly within this application domain.
 	public int ExecuteAssembly(String assemblyFile)

@@ -22,7 +22,7 @@
 namespace System.Reflection.Emit
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 using System;
 using System.Security;
@@ -604,6 +604,6 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem, IDetachItem
 
 }; // class MethodBuilder
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REFLECTION_EMIT
 
 }; // namespace System.Reflection.Emit

@@ -45,6 +45,8 @@ namespace System.Text.RegularExpressions {
 			throw new Exception ("Not implemented.");
 		}
 
+#if CONFIG_REFLECTION_EMIT
+
 		public static void CompileToAssembly
 			(RegexCompilationInfo[] regexes, AssemblyName aname,
 			 CustomAttributeBuilder[] attribs)
@@ -59,6 +61,8 @@ namespace System.Text.RegularExpressions {
 			throw new Exception ("Not implemented.");
 		}
 		
+#endif // CONFIG_REFLECTION_EMIT
+
 		public static string Escape (string str) {
 			return Parser.Escape (str);
 		}

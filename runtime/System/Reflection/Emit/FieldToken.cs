@@ -22,7 +22,7 @@
 namespace System.Reflection.Emit
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 public struct FieldToken
 {
@@ -68,6 +68,6 @@ public struct FieldToken
 
 }; // struct FieldToken
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REFLECTION_EMIT
 
 }; // namespace System.Reflection.Emit

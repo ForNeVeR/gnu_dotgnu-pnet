@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 namespace System.Reflection.Emit
 {
@@ -1264,4 +1264,4 @@ public class ILGenerator : IDetachItem
 
 }; // namespace System.Reflection.Emit
 
-#endif
+#endif // CONFIG_REFLECTION_EMIT

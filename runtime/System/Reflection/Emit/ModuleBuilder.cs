@@ -22,7 +22,7 @@
 namespace System.Reflection.Emit
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 using System;
 using System.Security;
@@ -700,6 +700,6 @@ public class ModuleBuilder : Module, IDetachItem
 
 }; // class ModuleBuilder
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REFLECTION_EMIT
 
 }; // namespace System.Reflection.Emit

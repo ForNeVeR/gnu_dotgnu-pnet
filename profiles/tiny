@@ -23,4 +23,7 @@
 <!-- Use serialization facilities -->
 <define name="CONFIG_SERIALIZATION" value="false"/>
 
+<!-- Use serialization facilities -->
+<define name="CONFIG_REFLECTION_EMIT" value="false"/>
+
 </profile>

@@ -23,7 +23,7 @@
 
 using System;
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 namespace System.Reflection.Emit
 {
@@ -67,4 +67,4 @@ public sealed class LocalBuilder
 
 }; // namespace System.Reflection.Emit
 
-#endif
+#endif // CONFIG_REFLECTION_EMIT

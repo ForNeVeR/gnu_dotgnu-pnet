@@ -38,6 +38,7 @@ public interface ITypeLibConverter
 				 TypeLibExporterFlags flags,
 				 ITypeLibExporterNotifySink notifySink);
 
+#if CONFIG_REFLECTION_EMIT
 	// Convert a type library into an emitted assembly.
 	AssemblyBuilder ConvertTypeLibToAssembly
 				(Object typeLib, String asmFileName,
@@ -50,6 +51,7 @@ public interface ITypeLibConverter
 				 ITypeLibImporterNotifySink notifySink,
 				 byte[] publicKey, StrongNameKeyPair keyPair,
 				 String asmNamespace, Version asmVersion);
+#endif
 
 	// Get a primary interoperability assembly.
 	bool GetPrimaryInteropAssembly

@@ -22,7 +22,7 @@
 namespace System.Reflection.Emit
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION_EMIT
 
 using System;
 using System.Reflection;
@@ -178,6 +178,6 @@ public sealed class EventBuilder : IClrProgramItem, IDetachItem
 
 }; // class EventBuilder
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REFLECTION_EMIT
 
 }; // namespace System.Reflection.Emit

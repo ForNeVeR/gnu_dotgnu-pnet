@@ -36,6 +36,9 @@
 	* runtime/*, System/*, System.Xml/*, JScript/*, profiles/*:
 	add the CONFIG_SERIALIZATION option to the profiles.
 
+	* JScript/*, System/*, profiles/*, runtime/*: add the
+	CONFIG_REFLECTION_EMIT option to the profiles.
+
 2003-05-25  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebClient.cs: Implement this non-ecma class partially for

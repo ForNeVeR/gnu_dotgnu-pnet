@@ -1,3 +1,32 @@
+2003-10-10  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs: measureCharacterRanges now complies with
+	ms. Clip not set in one constructor, alignment fix to DrawString.
+	Simple optimizations in drawString.
+
+	* System.Drawing/RectangleF.cs: Contains had typo.
+
+	* System.Drawing.Win32/DrawingFont.cs
+	System.Drawing.Win32/DrawingGraphics.cs
+	System.Drawing.Win32/Win32.cs : some speed optimization.
+
+	* System.Windows.Forms/Control.cs : reparent origins not correct.
+
+	* System.Windows.Forms/ControlPaint.cs : FromHSB incorrect.
+
+	* System.Windows.Forms/Form.cs : maintain the ClientSize after adding
+	a menu to a form.
+
+	* System.Windows.Forms/Label.cs : use BorderStyleInternal from Control,
+	redraw control instead of invalidating.
+
+	* System.Windows.Forms/ScrollBar.cs : handle boundary cases better.
+
+	* System.Windows.Forms/TextBox.cs, System.Windows.Forms/TextBoxBase.cs
+	: numerous small bug fixes. Big speed up when drawing text. Begin
+	implementing scroll bar support.
+
+	* samples/FormsTest.cs : cases changed for label & textbox.
 
 2003-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -916,6 +916,8 @@ void ILConsoleClear(void)
 			OutputStringCap("ho", "home");
 			OutputStringCap("cd", "ed");
 		}
+		screenX = 0;
+		screenY = 0;
 	}
 }
 

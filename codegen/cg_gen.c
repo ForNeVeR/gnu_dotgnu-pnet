@@ -106,6 +106,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->useJavaLib = 0;
 	info->outputIsJava = 0;
 	info->debugFlag = 0;
+	info->hasUnsafe = 0;
 	info->decimalRoundMode = IL_DECIMAL_ROUND_HALF_EVEN;
 	info->stackHeight = 0;
 	info->maxStackHeight = 0;

@@ -582,6 +582,16 @@ void ILGenModulesAndAssemblies(ILGenInfo *info)
 		fprintf(info->asmOutput, "\t.ver %lu:%lu:%lu:%lu\n",
 				(unsigned long)(version[0]), (unsigned long)(version[1]),
 				(unsigned long)(version[2]), (unsigned long)(version[3]));
+		if(info->hasUnsafe)
+		{
+			/* Output the "SkipVerification" permissions block */
+			fputs("\t.custom instance void [.library]"
+			 "System.Security.Permissions.SecurityPermissionAttribute::"
+			 ".ctor(valuetype "
+			 	"[.library]System.Security.Permissions.SecurityAction) =\n"
+			 "\t\t(01 00 08 00 00 00 01 00 54 02 10 53 6B 69 70 56\n"
+			 "\t\t 65 72 69 66 69 63 61 74 69 6F 6E 01)\n", info->asmOutput);
+		}
 		fputs("}\n", info->asmOutput);
 	}
 
@@ -594,6 +604,13 @@ void ILGenModulesAndAssemblies(ILGenInfo *info)
 		ILDumpIdentifier(info->asmOutput, ILModule_Name(module), 0,
 						 IL_DUMP_QUOTE_NAMES);
 		putc('\n', info->asmOutput);
+		if(info->hasUnsafe)
+		{
+			/* Output the "UnverifiableCode" attribute */
+			fputs(".custom instance void "
+					"[.library]System.Security.UnverifiableCodeAttribute"
+					"::.ctor() = (01 00 00 00)\n", info->asmOutput);
+		}
 	}
 }
 

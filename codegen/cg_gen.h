@@ -105,6 +105,7 @@ struct _tagILGenInfo
 	int				useJavaLib : 1;		/* Use Java and not C# library */
 	int				outputIsJava : 1;	/* Output Java bytecode */
 	int				debugFlag : 1;		/* Non-zero if debug is enabled */
+	int				hasUnsafe : 1;		/* Non-zero if unsafe code in source */
 	int             decimalRoundMode;	/* Rounding mode for ILDecimal */
 	long			stackHeight;		/* Current stack height */
 	long			maxStackHeight;		/* Maximum stack height */

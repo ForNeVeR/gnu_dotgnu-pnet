@@ -267,6 +267,7 @@ void CCUnsafeEnter(ILGenInfo *info, ILNode *node, const char *construct)
 					  construct);
 	}
 	++(info->unsafeLevel);
+	info->hasUnsafe = 1;
 }
 
 void CCUnsafeLeave(ILGenInfo *info)

@@ -1,4 +1,16 @@
 
+2002-10-19  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* cscc/c/c_grammar.y, cscc/csharp/cs_grammar.y: remove duplicate
+	declarations to satisfy the newly pedantic Bison.
+
+	* cscc/csharp/cs_semvalue.h: remove a second #define of
+	CS_SEMKIND_TYPE_NODE.
+
+	* codegen/cg_assign.tc, codegen/cg_nodes.tc, cscc/cshar/cs_oper.tc:
+	re-engineer portions of assignment expressions (e.g. +=) to work on
+	integers smaller than 32 bits w/o crashing the code generator.
+
 2002-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/method_cache.c (_ILCacheSetCookie): check "method"

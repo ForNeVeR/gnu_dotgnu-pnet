@@ -49,8 +49,7 @@ ILNode_GetType(ILNode_Assign)
  */
 ILNode_GetType(ILNode_AssignExpression)
 {
-	return ILNode_GetType
-		(((ILNode_BinaryExpression *)(node->assign))->expr1, info);
+	return ILNode_GetType(node->lvalue,info);
 }
 
 /*
@@ -129,37 +128,17 @@ static ILMachineType AssignCommonType(ILGenInfo *info,
 ILNode_GenDiscard(ILNode_AssignExpression)
 {
 	ILMachineType finalType;
-	ILMachineType secondType;
-	ILMachineType commonType;
 	void *data1, *data2;
 	ILNode_BinaryExpression *bnode = (ILNode_BinaryExpression *)(node->assign);
 
 	/* Get and prepare the l-value for a later store operation */
-	finalType = ILNode_GetAndPrepare(bnode->expr1, info, 0, &data1, &data2);
-
-	/* Determine the common type for the operation */
-	secondType = ILNode_GetType(bnode->expr2, info);
-	commonType = AssignCommonType(info, finalType, secondType);
-
-	/* Cast the first sub-expression to the common type */
-	ILGenCast(info, finalType, commonType);
-
-	/* Evaluate the second sub-expression and cast to the common type */
-	ILGenCast(info, ILNode_GenValue(bnode->expr2, info), commonType);
+	finalType = ILNode_Prepare(node->lvalue, info, &data1, &data2);
 
 	/* Perform the operation */
-	if(yyisa(bnode, ILNode_BinaryArith))
-	{
-		ILBinary_ApplyOp(info, (ILNode_BinaryArith *)bnode, commonType);
-	}
-	else if(yyisa(bnode, ILNode_BinaryBitwise))
-	{
-		ILBitwise_ApplyOp(info, (ILNode_BinaryBitwise *)bnode, commonType);
-	}
-	else if(yyisa(bnode, ILNode_Concat))
+	if(yyisa(bnode, ILNode_Concat))
 	{
 		if(finalType == ILMachineType_String &&
-		   secondType == ILMachineType_String)
+		   ILNode_GetType(bnode->expr2, info) == ILMachineType_String)
 		{
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
@@ -175,6 +154,7 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 					 "class [.library]System.Object)");
 			ILGenAdjust(info, -1);
 		}
+		ILGenCast(info, ILMachineType_String, finalType);
 	}
 	else if(yyisa(bnode, ILNode_DelegateAdd))
 	{
@@ -185,6 +165,7 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 		ILGenAdjust(info, -1);
 		ILGenClassToken(info, IL_OP_CASTCLASS,
 				((ILNode_DelegateAdd *)bnode)->delegateClass);
+		ILGenCast(info, ILMachineType_ObjectRef, finalType);
 	}
 	else if(yyisa(bnode, ILNode_DelegateSub))
 	{
@@ -195,17 +176,16 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 		ILGenAdjust(info, -1);
 		ILGenClassToken(info, IL_OP_CASTCLASS,
 				((ILNode_DelegateSub *)bnode)->delegateClass);
+		ILGenCast(info, ILMachineType_ObjectRef, finalType);
 	}
 	else
 	{
-		ILShift_ApplyOp(info, (ILNode_BinaryShift *)bnode, commonType);
+		/* Evaluate the second sub-expression and cast to the final type */
+		ILGenCast(info, ILNode_GenValue(node->assign, info), finalType);
 	}
 
-	/* Convert the common type back into the final type */
-	ILGenCast(info, commonType, finalType);
-
 	/* Store the value into the destination */
-	ILNode_Store(bnode->expr1, info, 0, data1, data2);
+	ILNode_Store(node->lvalue, info, 0, data1, data2);
 }
 
 /*
@@ -235,37 +215,17 @@ ILNode_GenValue(ILNode_Assign)
 ILNode_GenValue(ILNode_AssignExpression)
 {
 	ILMachineType finalType;
-	ILMachineType secondType;
-	ILMachineType commonType;
 	void *data1, *data2;
 	ILNode_BinaryExpression *bnode = (ILNode_BinaryExpression *)(node->assign);
 
 	/* Get and prepare the l-value for a later store operation */
-	finalType = ILNode_GetAndPrepare(bnode->expr1, info, 0, &data1, &data2);
-
-	/* Determine the common type for the operation */
-	secondType = ILNode_GetType(bnode->expr2, info);
-	commonType = AssignCommonType(info, finalType, secondType);
-
-	/* Cast the first sub-expression to the common type */
-	ILGenCast(info, finalType, commonType);
-
-	/* Evaluate the second sub-expression and cast to the common type */
-	ILGenCast(info, ILNode_GenValue(bnode->expr2, info), commonType);
+	finalType = ILNode_Prepare(node->lvalue, info, &data1, &data2);
 
 	/* Perform the operation */
-	if(yyisa(bnode, ILNode_BinaryArith))
-	{
-		ILBinary_ApplyOp(info, (ILNode_BinaryArith *)bnode, commonType);
-	}
-	else if(yyisa(bnode, ILNode_BinaryBitwise))
-	{
-		ILBitwise_ApplyOp(info, (ILNode_BinaryBitwise *)bnode, commonType);
-	}
-	else if(yyisa(bnode, ILNode_Concat))
+	if(yyisa(bnode, ILNode_Concat))
 	{
 		if(finalType == ILMachineType_String &&
-		   secondType == ILMachineType_String)
+		   ILNode_GetType(bnode->expr2, info) == ILMachineType_String)
 		{
 			ILGenCallByName(info,
 			  "class [.library]System.String [.library]System.String::Concat"
@@ -281,6 +241,7 @@ ILNode_GenValue(ILNode_AssignExpression)
 					 "class [.library]System.Object)");
 			ILGenAdjust(info, -1);
 		}
+		ILGenCast(info, ILMachineType_String, finalType);
 	}
 	else if(yyisa(bnode, ILNode_DelegateAdd))
 	{
@@ -291,6 +252,7 @@ ILNode_GenValue(ILNode_AssignExpression)
 		ILGenAdjust(info, -1);
 		ILGenClassToken(info, IL_OP_CASTCLASS,
 				((ILNode_DelegateAdd *)bnode)->delegateClass);
+		ILGenCast(info, ILMachineType_ObjectRef, finalType);
 	}
 	else if(yyisa(bnode, ILNode_DelegateSub))
 	{
@@ -301,17 +263,16 @@ ILNode_GenValue(ILNode_AssignExpression)
 		ILGenAdjust(info, -1);
 		ILGenClassToken(info, IL_OP_CASTCLASS,
 				((ILNode_DelegateSub *)bnode)->delegateClass);
+		ILGenCast(info, ILMachineType_ObjectRef, finalType);
 	}
 	else
 	{
-		ILShift_ApplyOp(info, (ILNode_BinaryShift *)bnode, commonType);
+		/* Evaluate the second sub-expression and cast to the final type */
+		ILGenCast(info, ILNode_GenValue(node->assign, info), finalType);
 	}
 
-	/* Convert the common type back into the final type */
-	ILGenCast(info, commonType, finalType);
-
 	/* Store the value into the destination */
-	ILNode_Store(bnode->expr1, info, 1, data1, data2);
+	ILNode_Store(node->lvalue, info, 0, data1, data2);
 
 	/* Return the final type to the caller */
 	return finalType;

@@ -316,6 +316,8 @@ struct _tagILSwitchValue
 %node ILNode_AssignExpression ILNode_Expression %abstract =
 {
 	ILNode *assign;		/* BinaryExpression containing the operator */
+	%nocreate ILNode *lvalue;   /*  Points to lvalue when it's buried in
+									the operator  */
 }
 %node ILNode_Assign ILNode_BinaryExpression
 %node ILNode_AssignAdd ILNode_AssignExpression

@@ -61,7 +61,7 @@ extern CSSemValue CSSemValueError;
 #define	CS_SEMKIND_INDEXER_GROUP	(1<<12)
 #define	CS_SEMKIND_CONSTANT			(1<<13)
 #define	CS_SEMKIND_DYN_CONSTANT		(1<<14)
-#define	CS_SEMKIND_TYPE_NODE		(1<<15)
+/*#define	CS_SEMKIND_TYPE_NODE		(1<<15)*/
 #define	CS_SEMKIND_ERROR			(1<<16)
 #define	CS_SEMKIND_BASE				(1<<17)
 

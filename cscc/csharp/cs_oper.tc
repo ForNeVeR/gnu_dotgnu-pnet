@@ -669,11 +669,16 @@ ILNode_SemAnalysis(ILNode_Assign)
 /*
  * Common semantic analysis for operation-based assignment operators.
  */
-static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
-					        ILNode **parent, ILNode **assignParent,
+static CSSemValue AssignSem(ILGenInfo *info, 
+                            ILNode_AssignExpression *anode,
+					        ILNode **assignParent,
 							const ILOperator *table, const char *name,
 							const char *errorName)
 {
+	/*  Re-jigger arguments from the original version  */
+	ILNode_BinaryExpression *node = anode->assign;
+	ILNode **parent = &(anode->assign);
+
 	const ILOperator *oper;
 	ILMethod *method;
 	ILType *returnType;
@@ -683,6 +688,8 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 
 	/* Perform semantic analysis on the arguments */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	anode->lvalue = node->expr1;  /* Preserve lvalue for later */
+
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* The first argument must be an event or an lvalue */
@@ -830,8 +837,8 @@ error:
  */
 ILNode_SemAnalysis(ILNode_AssignAdd)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Add, "op_Addition", "+");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Add, "op_Addition", "+");
 }
 
 /*
@@ -839,8 +846,8 @@ ILNode_SemAnalysis(ILNode_AssignAdd)
  */
 ILNode_SemAnalysis(ILNode_AssignSub)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Sub, "op_Subtraction", "-");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Sub, "op_Subtraction", "-");
 }
 
 /*
@@ -848,8 +855,8 @@ ILNode_SemAnalysis(ILNode_AssignSub)
  */
 ILNode_SemAnalysis(ILNode_AssignMul)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Mul, "op_Multiply", "*");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Mul, "op_Multiply", "*");
 }
 
 /*
@@ -857,8 +864,8 @@ ILNode_SemAnalysis(ILNode_AssignMul)
  */
 ILNode_SemAnalysis(ILNode_AssignDiv)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Div, "op_Division", "/");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Div, "op_Division", "/");
 }
 
 /*
@@ -866,8 +873,8 @@ ILNode_SemAnalysis(ILNode_AssignDiv)
  */
 ILNode_SemAnalysis(ILNode_AssignRem)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Rem, "op_Modulus", "%");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Rem, "op_Modulus", "%");
 }
 
 /*
@@ -875,8 +882,8 @@ ILNode_SemAnalysis(ILNode_AssignRem)
  */
 ILNode_SemAnalysis(ILNode_AssignAnd)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_And, "op_BitwiseAnd", "&");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_And, "op_BitwiseAnd", "&");
 }
 
 /*
@@ -884,8 +891,8 @@ ILNode_SemAnalysis(ILNode_AssignAnd)
  */
 ILNode_SemAnalysis(ILNode_AssignXor)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Xor, "op_ExclusiveOr", "^");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Xor, "op_ExclusiveOr", "^");
 }
 
 /*
@@ -893,8 +900,8 @@ ILNode_SemAnalysis(ILNode_AssignXor)
  */
 ILNode_SemAnalysis(ILNode_AssignOr)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Or, "op_BitwiseOr", "|");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Or, "op_BitwiseOr", "|");
 }
 
 /*
@@ -902,8 +909,8 @@ ILNode_SemAnalysis(ILNode_AssignOr)
  */
 ILNode_SemAnalysis(ILNode_AssignShl)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Shl, "op_LeftShift", "<<");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Shl, "op_LeftShift", "<<");
 }
 
 /*
@@ -911,8 +918,8 @@ ILNode_SemAnalysis(ILNode_AssignShl)
  */
 ILNode_SemAnalysis(ILNode_AssignShr)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Shr, "op_RightShift", ">>");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Shr, "op_RightShift", ">>");
 }
 
 /*
@@ -921,8 +928,8 @@ ILNode_SemAnalysis(ILNode_AssignShr)
 ILNode_SemAnalysis(ILNode_AssignUShr)
 {
 	/* C# does not have an unsigned right shift, so use the signed version */
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
-					 &(node->assign), parent, ILOp_Shr, "op_RightShift", ">>");
+	return AssignSem(info, (ILNode_AssignExpression *)node,
+					 parent, ILOp_Shr, "op_RightShift", ">>");
 }
 
 %{

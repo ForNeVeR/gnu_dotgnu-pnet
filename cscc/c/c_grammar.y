@@ -969,7 +969,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <node>		ParameterIdentifierList IdentifierList ParameterList
 %type <node>		ParameterTypeList ParameterDeclaration ParamDeclaration
 %type <node>		OptParamDeclarationList ParamDeclarationList
-%type <node>		ParamDeclaratorList ParamDeclaration
+%type <node>		ParamDeclaratorList /*ParamDeclaration*/
 
 %type <node>		StructDeclaratorList StructDeclarator InitDeclarator
 %type <node>		InitDeclaratorList Initializer InitializerList
@@ -986,7 +986,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <declSpec>	TypeSpecifierList
 
 %type <decl>		Declarator Declarator2 Pointer AbstractDeclarator
-%type <decl>		AbstractDeclarator2 ParamDeclarator ParamDeclarator
+%type <decl>		AbstractDeclarator2 ParamDeclarator /*ParamDeclarator*/
 
 %type <kind>		StructOrUnion TypeQualifierList TypeQualifier
 

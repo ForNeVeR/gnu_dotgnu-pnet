@@ -806,8 +806,8 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		FormalIndexParameters FormalIndexParameter
 %type <node>		FormalIndexParameterList
 %type <node>		InterfaceDeclaration InterfaceBase InterfaceBody
-%type <node>		OptInterfaceMemberDeclarations InterfaceMemberDeclarations
-%type <node>		InterfaceMemberDeclarations InterfaceMemberDeclaration
+%type <node>		OptInterfaceMemberDeclarations /*InterfaceMemberDeclarations
+%type <node>		InterfaceMemberDeclarations InterfaceMemberDeclaration*/
 %type <node>		InterfaceMemberDeclaration InterfaceMemberDeclarations
 %type <node>		InterfaceMethodDeclaration InterfacePropertyDeclaration
 %type <node>		InterfaceIndexerDeclaration InterfaceEventDeclaration

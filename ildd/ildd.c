@@ -1,7 +1,7 @@
 /*
  * ildd.c - Print information about library dependencies.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,13 +32,17 @@ extern	"C" {
  * Table of command-line options.
  */
 static ILCmdLineOption const options[] = {
+	{"-f", 'f', 0, 0, 0},
+	{"--file-names", 'f', 0,
+		"--file-names or -f",
+		"Print the name of each file that is processed."},
 	{"-p", 'p', 0, 0, 0},
 	{"--pinvoke", 'p', 0,
-		"--pinvoke or -p",
+		"--pinvoke    or -p",
 		"Print detailed information on PInvoke declarations."},
 	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
-		"--version or -v",
+		"--version    or -v",
 		"Print the version of the program."},
 	{"--help", 'h', 0,
 		"--help",
@@ -54,6 +58,7 @@ static int printDependencies(const char *filename, ILContext *context,
 int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
+	int filenames = 0;
 	int pinvoke = 0;
 	int sawStdin;
 	int state, opt;
@@ -69,6 +74,12 @@ int main(int argc, char *argv[])
 	{
 		switch(opt)
 		{
+			case 'f':
+			{
+				filenames = 1;
+			}
+			break;
+
 			case 'p':
 			{
 				pinvoke = 1;
@@ -109,7 +120,7 @@ int main(int argc, char *argv[])
 	/* Load and print information about the input files */
 	sawStdin = 0;
 	errors = 0;
-	multiple = (argc > 2);
+	multiple = ((argc > 2) || filenames);
 	while(argc > 1)
 	{
 		if(!strcmp(argv[1], "-"))
@@ -140,7 +151,7 @@ int main(int argc, char *argv[])
 static void usage(const char *progname)
 {
 	fprintf(stdout, "ILDD " VERSION " - IL Library Dependencies Utility\n");
-	fprintf(stdout, "Copyright (c) 2002 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "Copyright (c) 2002, 2003 Southern Storm Software, Pty Ltd.\n");
 	fprintf(stdout, "\n");
 	fprintf(stdout, "Usage: %s [options] input ...\n", progname);
 	fprintf(stdout, "\n");
@@ -151,7 +162,7 @@ static void version(void)
 {
 
 	fprintf(stdout, "ILDD " VERSION " - IL Library Dependencies Utility\n");
-	fprintf(stdout, "Copyright (c) 2002 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "Copyright (c) 2002, 2003 Southern Storm Software, Pty Ltd.\n");
 	printf("\n");
 	printf("ILDD comes with ABSOLUTELY NO WARRANTY.  This is free software,\n");
 	printf("and you are welcome to redistribute it under the terms of the\n");
@@ -174,10 +185,8 @@ static int printDependencies(const char *filename, ILContext *context,
 	char *path;
 	ILPInvoke *pinv;
 	ILMethod *method;
-#if 0
-	void *dynlib;
-	void *symbol;
-#endif
+	ILFileDecl *file;
+	ILManifestRes *res;
 
 	/* Attempt to load the image into memory */
 	if(ILImageLoadFromFile(filename, context, &image,
@@ -237,6 +246,56 @@ static int printDependencies(const char *filename, ILContext *context,
 		printf("\tmodule %s\n", ILModule_Name(module));
 	}
 
+	/* Print the external file references that this file depends upon */
+	file = 0;
+	while((file = (ILFileDecl *)ILImageNextToken
+				(image, IL_META_TOKEN_FILE, file)) != 0)
+	{
+		if(ILFileDecl_HasMetaData(file))
+		{
+			printf("\tfile %s => ", ILFileDecl_Name(file));
+			path = ILImageSearchPath(ILFileDecl_Name(file), 0,
+									 filename, 0, 0, 0, 0, 0, 0);
+			if(path)
+			{
+				fputs(path, stdout);
+				ILFree(path);
+			}
+			else
+			{
+				fputs("??", stdout);
+			}
+			putc('\n', stdout);
+		}
+		else
+		{
+			printf("\tfile %s\n", ILFileDecl_Name(file));
+		}
+	}
+
+	/* Print the manifest resource information for the file */
+	res = 0;
+	while((res = (ILManifestRes *)ILImageNextToken
+				(image, IL_META_TOKEN_MANIFEST_RESOURCE, res)) != 0)
+	{
+		if(ILManifestRes_OwnerFile(res) != 0)
+		{
+			printf("\tresource %s => file %s\n",
+				   ILManifestRes_Name(res),
+				   ILFileDecl_Name(ILManifestRes_OwnerFile(res)));
+		}
+		else if(ILManifestRes_OwnerAssembly(res) != 0)
+		{
+			printf("\tresource %s => assembly %s\n",
+				   ILManifestRes_Name(res),
+				   ILAssembly_Name(ILManifestRes_OwnerAssembly(res)));
+		}
+		else
+		{
+			printf("\tresource %s => (internal)\n", ILManifestRes_Name(res));
+		}
+	}
+
 	/* Print the external PInvoke'd functions that this file depends upon */
 	pinv = 0;
 	while(pinvoke && (pinv = (ILPInvoke *)ILImageNextToken
@@ -265,22 +324,7 @@ static int printDependencies(const char *filename, ILContext *context,
 		if(path)
 		{
 			fputs(path, stdout);
-#if 0
-			dynlib = ILDynLibraryOpen(path);
-			if(!dynlib)
-			{
-				fputs(" (module not found)", stdout);
-			}
-			else
-			{
-				symbol = ILDynLibraryGetSymbol(dynlib, name);
-				if(!symbol)
-				{
-					fputs(" (symbol not found)", stdout);
-				}
-			}
 			ILFree(path);
-#endif
 		}
 		else
 		{

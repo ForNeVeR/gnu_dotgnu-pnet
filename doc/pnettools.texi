@@ -3345,7 +3345,7 @@ complete list of errors that may occur when loading an IL image file.
 @cindex Dependencies
 @cindex ildd
 
-Ildd lists the assemblies and PInvoke modules that are referenced by
+Ildd lists the assemblies and modules that are referenced by
 an IL object file (@code{.obj}), an IL executable (@code{.exe}),
 or an IL dynamic link library (@code{.dll}).
 
@@ -3366,6 +3366,13 @@ ildd [OPTIONS] PATTERN INPUT ...
 @end example
 
 @table @code
+@cindex -f option (ildd)
+@cindex --file-names option (ildd)
+@item -f
+@itemx --file-names
+Print the name of each file that is processed, even if there is only
+one file specified.
+
 @cindex -p option (ildd)
 @cindex --pinvoke option (ildd)
 @item -p

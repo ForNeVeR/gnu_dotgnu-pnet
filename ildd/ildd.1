@@ -1,4 +1,4 @@
-.\" Copyright (c) 2002 Southern Storm Software, Pty Ltd.
+.\" Copyright (c) 2002, 2003 Southern Storm Software, Pty Ltd.
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH ildd 1 "4 July 2002" "Southern Storm Software" "Portable.NET Development Tools"
+.TH ildd 1 "24 November 2003" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 ildd \- print Intermediate Language (IL) program dependencies
 .SH SYNOPSIS
@@ -24,9 +24,13 @@ ildd \- print Intermediate Language (IL) program dependencies
 \&...
 .SH DESCRIPTION
 .B Ildd
-lists the assemblies and PInvoke modules that are referenced by an IL object
+lists the assemblies and modules that are referenced by an IL object
 file (.obj), an IL executable (.exe), or an IL dynamic link library (.dll).
 .SH OPTIONS
+.TP
+.B \-f, \-\-file\-names
+Print the name of each file that is processed, even if there is only
+one file specified.
 .TP
 .B \-p, \-\-pinvoke
 Print detailed information about PInvoke declarations.

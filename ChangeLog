@@ -17,6 +17,10 @@
 	* image/meta_build.c (Load_ExportedType): don't add exported types
 	to the "redo" list if the "no resolve" load flag is set.
 
+	* doc/pnettools.texi, ildd/ildd.1, ildd/ildd.c: dump file and
+	resource declarations from "ildd"; add the "-f" option to "ildd"
+	to force filenames to be displayed even if there is only one name.
+
 2003-11-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/context.c, image/image.h, image/link.c, image/meta_build.c,

@@ -1,4 +1,15 @@
 
+2002-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, I18N/I18N.build, System/System.build,
+	System.Xml/Xml.build, resources/de_DE/.cvsignore,
+	resources/de_DE/I18N/.cvsignore, resources/de_DE/System/.cvsignore,
+	resources/de_DE/System.Xml/.cvsignore,
+	resources/de_DE/runtime/.cvsignore, runtime/runtime.build:
+	back out the "--with-resources" change because it is better to
+	use satellite assemblies for each language; add .cvsignore files
+	to the "resources/de_DE" directories.
+
 2002-12-11  Gopal.V  <gopalv82@symonds.net>
 
 	* resources/de_DE/I18N/Makefile.am, de_DE/runtime/Makefile.am, 

@@ -19,7 +19,7 @@
 			</references>
 
 			<resources>
-				<file name="${resources}/System/System.resources"/>
+				<file name="../resources/en_US/System/System.resources"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>

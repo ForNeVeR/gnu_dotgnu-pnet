@@ -20,7 +20,7 @@
 			</references>
 
 			<resources>
-				<file name="${resources}/System.Xml/System.Xml.resources"/>
+				<file name="../resources/en_US/System.Xml/System.Xml.resources"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>

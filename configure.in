@@ -177,6 +177,11 @@ resources/en_US/runtime/Makefile
 resources/en_US/I18N/Makefile
 resources/en_US/System/Makefile
 resources/en_US/System.Xml/Makefile
+resources/de_DE/Makefile
+resources/de_DE/runtime/Makefile
+resources/de_DE/I18N/Makefile
+resources/de_DE/System/Makefile
+resources/de_DE/System.Xml/Makefile
 samples/Makefile
 samples/ilrun.sh
 tools/run_test.sh

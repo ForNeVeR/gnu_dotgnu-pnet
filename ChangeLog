@@ -17,6 +17,9 @@
 	* cscc/csharp/cs_decls.tc: error handling for incorrect use
 	of abstract/extern and method bodies.
 
+	* codegen/cg_decls.tc, cscc/csharp/cs_gather.c: process interface
+	overrides during type gathering.
+
 2001-03-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/Makefile.am, codegen/cg_gen.h, codegen/cg_interface.c,

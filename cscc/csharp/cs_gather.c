@@ -578,12 +578,180 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Find an interface member match in a particular interface.
+ */
+static ILMember *FindInterfaceMatch(ILClass *interface,
+									const char *name,
+									ILType *signature,
+									int kind)
+{
+	ILMember *member = 0;
+	while((member = ILClassNextMemberByKind(interface, member, kind)) != 0)
+	{
+		if(strcmp(ILMember_Name(member), name) != 0)
+		{
+			continue;
+		}
+		if(kind == IL_META_MEMBERKIND_METHOD ||
+		   kind == IL_META_MEMBERKIND_PROPERTY)
+		{
+			if(ILTypeIdentical(ILMember_Signature(member), signature))
+			{
+				return member;
+			}
+		}
+		else if(kind == IL_META_MEMBERKIND_EVENT)
+		{
+			if(ILTypeIdentical(ILEvent_Type((ILEvent *)member), signature))
+			{
+				return member;
+			}
+		}
+	}
+	return 0;
+}
+
+/*
+ * Find an interface member match in the interface parents
+ * of a specified class.
+ */
+static ILMember *FindInterfaceMatchInParents(ILClass *classInfo,
+											 const char *name,
+											 ILType *signature,
+											 int kind)
+{
+	ILImplements *impl = 0;
+	ILMember *member;
+	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+	{
+		member = FindInterfaceMatch
+			(ILClassResolve(ILImplementsGetInterface(impl)),
+			 name, signature, kind);
+		if(member)
+		{
+			return member;
+		}
+	}
+	return 0;
+}
+
+/*
+ * Find the interface member that corresponds to a pariticular
+ * member declaration.  Returns NULL if not found.
+ */
+static ILMember *FindInterfaceDecl(ILNode *node, ILClass *classInfo,
+								   ILClass *interface, const char *name,
+								   ILType *signature, int kind,
+								   ILUInt32 *attrs)
+{
+	ILUInt32 newAttrs = *attrs;
+	ILMember *member;
+
+	/* Check the access modifiers */
+	if(interface)
+	{
+		/* Explicit interface declaration */
+		if((newAttrs & IL_META_METHODDEF_STATIC) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "explicit interface member implementation cannot be `static'");
+		}
+		else if((newAttrs & IL_META_METHODDEF_ABSTRACT) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "explicit interface member implementation cannot be `abstract'");
+		}
+		else if((newAttrs & CS_SPECIALATTR_OVERRIDE) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "explicit interface member implementation cannot be `override'");
+		}
+		else if((newAttrs & IL_META_METHODDEF_VIRTUAL) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "explicit interface member implementation cannot be `virtual'");
+		}
+		if((newAttrs & CS_SPECIALATTR_NEW) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "explicit interface member implementation cannot be `new'");
+		}
+		if((newAttrs & IL_META_METHODDEF_MEMBER_ACCESS_MASK) !=
+				IL_META_METHODDEF_PRIVATE)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "explicit interface member implementation must be `private'");
+		}
+
+		/* Set the correct attributes on the explicit implementation */
+		newAttrs &= ~(IL_META_METHODDEF_MEMBER_ACCESS_MASK |
+					  IL_META_METHODDEF_STATIC |
+					  IL_META_METHODDEF_ABSTRACT |
+					  CS_SPECIALATTR_NEW |
+					  CS_SPECIALATTR_OVERRIDE);
+		newAttrs |= IL_META_METHODDEF_PRIVATE |
+					IL_META_METHODDEF_FINAL |
+					IL_META_METHODDEF_VIRTUAL |
+					IL_META_METHODDEF_NEW_SLOT;
+	}
+	else
+	{
+		/* Implicit interface declaration */
+		if((newAttrs & IL_META_METHODDEF_STATIC) != 0)
+		{
+			/* Static members cannot implement interfaces */
+			return 0;
+		}
+		if((newAttrs & IL_META_METHODDEF_VIRTUAL) != 0 &&
+		   (newAttrs & IL_META_METHODDEF_NEW_SLOT) == 0)
+		{
+			/* "override" members do not implement interfaces:
+			   the parent class's virtual method does */
+			return 0;
+		}
+		if((newAttrs & IL_META_METHODDEF_MEMBER_ACCESS_MASK) !=
+				IL_META_METHODDEF_PUBLIC)
+		{
+			/* Implicit interface mappings must be "public" */
+			return 0;
+		}
+
+		/* Make sure that the final method is virtual */
+		newAttrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_NEW_SLOT;
+	}
+
+	/* Search for a match amongst the class's interfaces */
+	if(interface)
+	{
+		member = FindInterfaceMatch(interface, name, signature, kind);
+		if(!member)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "specified member is not present in `%s'",
+						  CSTypeToName(ILClassToType(interface)));
+		}
+	}
+	else
+	{
+		member = FindInterfaceMatchInParents(classInfo, name, signature, kind);
+	}
+
+	/* Adjust the final attributes and return */
+	if(member)
+	{
+		*attrs = newAttrs;
+	}
+	return member;
+}
+
+/*
  * Create a method definition.
  */
 static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 						 ILNode_MethodDeclaration *method)
 {
 	char *name;
+	char *basicName;
 	ILType *tempType;
 	ILMethod *methodInfo;
 	ILType *signature;
@@ -593,17 +761,46 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	ILUInt32 paramNum;
 	ILParameter *parameter;
 	ILMember *member;
+	ILClass *interface;
+	ILMember *interfaceMember;
 	
-	/* Get the name of the method */
+	/* Get the name of the method, and the interface member (if any) */
+	interface = 0;
+	interfaceMember = 0;
 	if(yykind(method->name) == yykindof(ILNode_Identifier))
 	{
 		/* Simple method name */
 		name = ILQualIdentName(method->name, 0);
+		basicName = name;
 	}
 	else
 	{
-		/* Qualified method name that overrides some interface method (TODO) */
+		/* Qualified method name that overrides some interface method */
 		name = ILQualIdentName(method->name, 0);
+		basicName = ILQualIdentName
+			(((ILNode_QualIdent *)(method->name))->right, 0);
+		signature = CSSemType(((ILNode_QualIdent *)(method->name))->left, info,
+							  &(((ILNode_QualIdent *)(method->name))->left));
+		if(signature)
+		{
+			if(!ILType_IsClass(signature) ||
+			   !ILClass_IsInterface(ILType_ToClass(signature)))
+			{
+				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+							  "`%s' is not an interface",
+							  CSTypeToName(signature));
+			}
+			else
+			{
+				interface = ILType_ToClass(signature);
+			}
+		}
+		if(ILClass_IsInterface(classInfo))
+		{
+			CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+				  "cannot use explicit interface member implementations "
+				  "within interfaces");
+		}
 	}
 
 	/* Create the method information block */
@@ -691,6 +888,38 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	/* Add the method to the current scope */
 	AddMemberToScope(info->currentScope, IL_SCOPE_METHOD,
 					 name, (ILMember *)methodInfo, method->name);
+
+	/* Process interface overrides */
+	if(!ILClass_IsInterface(classInfo))
+	{
+		paramNum = method->modifiers;
+		interfaceMember = FindInterfaceDecl
+			((ILNode *)method, classInfo, interface,
+			 basicName, signature, IL_META_MEMBERKIND_METHOD,
+			 &paramNum);
+		if(interfaceMember)
+		{
+			ILMemberSetAttrs((ILMember *)methodInfo, 0xFFFF,
+							 (paramNum & 0xFFFF));
+			if(interface)
+			{
+				/* Create an "ILOverride" block to associate the
+				   explicit member implementation with the method
+				   in the interface that it is implementing */
+				interfaceMember = ILMemberImport(info->image, interfaceMember);
+				if(!interfaceMember)
+				{
+					CCOutOfMemory();
+				}
+				if(!ILOverrideCreate(classInfo, 0,
+									 (ILMethod *)interfaceMember,
+									 methodInfo))
+				{
+					CCOutOfMemory();
+				}
+			}
+		}
+	}
 
 	/* Ignore property methods with "specialname", as they are
 	   tested elsewhere for duplicates */

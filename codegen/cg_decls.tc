@@ -387,6 +387,8 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	int outputLabel;
 	ILParameter *param;
 	ILMachineType returnMachineType;
+	ILOverride *over;
+	ILMethod *decl;
 
 	/* Does the method have PInvoke information associated with it? */
 	if(ILMethod_HasPInvokeImpl(method))
@@ -455,6 +457,21 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 					(unsigned long)(ILParameter_Num(param)));
 			OutputAttributes(info, outstream, (ILProgramItem *)param);
 		}
+	}
+
+	/* Output override information */
+	over = ILOverrideFromMethod(method);
+	if(over)
+	{
+		decl = ILOverride_Decl(over);
+		fputs("\t.override\t", outstream);
+		ILDumpClassName(outstream, info->image,
+						ILMethod_Owner(decl),
+						IL_DUMP_QUOTE_NAMES);
+		fputs("::", outstream);
+		ILDumpIdentifier(outstream, ILMethod_Name(decl), 0,
+						 IL_DUMP_QUOTE_NAMES);
+		putc('\n', outstream);
 	}
 
 	/* Set up the return type so that "return" statements

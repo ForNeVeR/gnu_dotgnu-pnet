@@ -263,6 +263,7 @@ class/System.Runtime.Serialization.Formatters.Soap/Makefile
 class/PEAPI/Makefile
 class/Mono.Data.Tds/Makefile
 class/System.Data/Makefile
+class/Npgsql/Makefile
 class/Mono.Data.PostgreSqlClient/Makefile
 class/Mono.Data.MySql/Makefile
 class/Mono.Data.SqliteClient/Makefile
@@ -279,6 +280,7 @@ class/System.Data.ObjectSpaces/Makefile
 class/Novell.Directory.Ldap/Makefile
 class/System.DirectoryServices/Makefile
 class/System.Web/Makefile
+class/System.Web.Services/Makefile
 class/Mono.Security/Makefile
 class/Mono.Security.Win32/Makefile
 class/System.Security/Makefile
@@ -287,4 +289,3 @@ tools/SqlSharp/Makefile
 jay/Makefile
 ])
 
-dnl class/Npgsql/Makefile

@@ -1,5 +1,12 @@
 
-2003-05-19  Gopal.V  <gopalv82@symonds.net>
+2003-05-20  Gopal.V  <gopalv82@yahoo.com>
+
+	* configure.in, class/Makefile.am, 
+	class/System.Web.Services/Makefile.am, 
+	class/System.Web.Services/System.Web.Services.build: Add
+	System.Web.Services to ml-pnet.
+	
+2003-05-19  Gopal.V  <gopalv82@yahoo.com>
 
 	* configure.in, jay/Makefile.am: add jay as no-inst binary to 
 	enable it to build System.Data.

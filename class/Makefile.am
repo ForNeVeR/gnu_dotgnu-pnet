@@ -17,6 +17,7 @@ SUBDIRS = Custommarshalers \
 		  Mono.Data.TdsClient \
 		  System.Data.OracleClient \
 		  System.Web \
+		  System.Web.Services\
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix \
@@ -25,5 +26,4 @@ SUBDIRS = Custommarshalers \
 		  System.Data.ObjectSpaces \
 		  Novell.Directory.Ldap \
 		  System.DirectoryServices \
-		  Mono.Security.Win32
-##		  Npgsql
+		  Mono.Security.Win32 

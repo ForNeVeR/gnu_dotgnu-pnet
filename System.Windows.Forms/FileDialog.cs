@@ -118,7 +118,6 @@ public abstract class FileDialog : CommonDialog
 					}
 				}
 			}
-	[TODO]
 	public String FileName
 			{
 				get
@@ -127,9 +126,23 @@ public abstract class FileDialog : CommonDialog
 				}
 				set
 				{
-					// TODO: update the dialog box to match.
-					fileName = value;
-					fileNames = null;
+					if(value == null || value.Length == 0)
+					{
+						value = String.Empty;
+					}
+					else
+					{
+						value = Path.GetFullPath(value);
+					}
+					if(fileName != value)
+					{
+						fileName = value;
+						fileNames = null;
+						if(form != null)
+						{
+							form.ChangeFilename(value);
+						}
+					}
 				}
 			}
 	public String[] FileNames
@@ -353,9 +366,6 @@ public abstract class FileDialog : CommonDialog
 					return DialogResult.Cancel;
 				}
 
-				// Save the current directory in case we need to restore it.
-				String currentDirectory = Directory.GetCurrentDirectory();
-
 				// Construct the file dialog form.
 				form = new FileDialogForm(this);
 
@@ -369,20 +379,6 @@ public abstract class FileDialog : CommonDialog
 				{
 					form.DisposeDialog();
 					form = null;
-				}
-
-				// Restore the current directory if necessary.
-				if(RestoreDirectory)
-				{
-					try
-					{
-						Directory.SetCurrentDirectory(currentDirectory);
-					}
-					catch(Exception)
-					{
-						// Ignore errors, in case the original directory
-						// no longer exists.
-					}
 				}
 
 				// Return the final dialog result to the caller.
@@ -723,6 +719,7 @@ public abstract class FileDialog : CommonDialog
 		private int textHeight;
 		private int rowHeight;
 		private int selected;
+		private bool suppressUpdates;
 		private Icon[] icons;
 
 		// Constructor.
@@ -743,6 +740,7 @@ public abstract class FileDialog : CommonDialog
 					scrollBar.Visible = false;
 					scrollBar.Dock = DockStyle.Bottom;
 					scrollBar.TabStop = false;
+					scrollBar.ValueChanged += new EventHandler(ViewScrolled);
 					Controls.Add(scrollBar);
 
 					// Load the icons.  We need icons for drives and links.
@@ -879,7 +877,14 @@ public abstract class FileDialog : CommonDialog
 						scrollBar.Value = 0;
 						scrollBar.Maximum = columns - 1;
 						scrollBar.SmallChange = 1;
-						scrollBar.LargeChange = 1;
+						if((columns - 1) <= visibleColumns)
+						{
+							scrollBar.LargeChange = 1;
+						}
+						else
+						{
+							scrollBar.LargeChange = visibleColumns;
+						}
 						scrollBar.Visible = true;
 					}
 				}
@@ -980,6 +985,23 @@ public abstract class FileDialog : CommonDialog
 					}
 				}
 
+		// Handle a value changed event from the horizontal scroll bar.
+		private void ViewScrolled(Object sender, EventArgs e)
+				{
+					int value = scrollBar.Value;
+					if(!suppressUpdates && leftMostColumn != value)
+					{
+						SetLeftMostColumn(value);
+					}
+				}
+
+		// Set the left-most displayed column.
+		private void SetLeftMostColumn(int column)
+				{
+					leftMostColumn = column;
+					Invalidate();
+				}
+
 		// Change the selection.
 		private void ChangeSelection(int entry)
 				{
@@ -994,7 +1016,29 @@ public abstract class FileDialog : CommonDialog
 						selected = entry;
 						DrawEntry(oldSelected);
 						DrawEntry(entry);
-						// TODO: scroll the entry into view if necessary.
+
+						// Scroll the entry into view if necessary.
+						if(entry != -1)
+						{
+							int column = (entry / rows);
+							int visibleColumns =
+								(ClientSize.Width / columnWidth);
+							if(visibleColumns < 1)
+							{
+								visibleColumns = 1;
+							}
+							if(column < leftMostColumn)
+							{
+								SetLeftMostColumn(column);
+							}
+							else if(column >= (leftMostColumn + visibleColumns))
+							{
+								SetLeftMostColumn(column - visibleColumns + 1);
+							}
+							suppressUpdates = true;
+							scrollBar.Value = column;
+							suppressUpdates = false;
+						}
 
 						// Update the text box to contain the filename.
 						if(entry != -1)
@@ -1050,6 +1094,38 @@ public abstract class FileDialog : CommonDialog
 					if(selected != -1)
 					{
 						DrawEntry(selected);
+					}
+				}
+
+		// Handle a mouse down event.
+		protected override void OnMouseDown(MouseEventArgs e)
+				{
+					base.OnMouseDown(e);
+					if(e.Button == MouseButtons.Left)
+					{
+						int row = e.Y / rowHeight;
+						int column = (e.X / columnWidth) + leftMostColumn;
+						int entry = -1;
+						if(row >= 0 && row < rows &&
+						   column >= 0 && column < columns)
+						{
+							entry = column * rows + row;
+							if(entry >= numEntries)
+							{
+								entry = -1;
+							}
+						}
+						ChangeSelection(entry);
+					}
+				}
+
+		// Handle a double click event.
+		protected override void OnDoubleClick(EventArgs e)
+				{
+					base.OnDoubleClick(e);
+					if((MouseButtons & MouseButtons.Left) != 0)
+					{
+						ActivateSelected();
 					}
 				}
 
@@ -1124,7 +1200,7 @@ public abstract class FileDialog : CommonDialog
 								next += rows;
 								if(next >= numEntries)
 								{
-									next = numEntries - 1;
+									next -= rows;
 								}
 							}
 						}
@@ -1220,8 +1296,8 @@ public abstract class FileDialog : CommonDialog
 					}
 					else
 					{
-						// The user has selected a file: end the dialog.
-						// TODO
+						// The user has selected a file: accept the dialog.
+						dialog.AcceptDialog(null, null);
 					}
 				}
 
@@ -1247,6 +1323,7 @@ public abstract class FileDialog : CommonDialog
 		private Button okButton;
 		private Button cancelButton;
 		private String currentDirectory;
+		private String pattern;
 		private CheckBox readOnly;
 		private bool manualUserTextChange;
 
@@ -1334,6 +1411,8 @@ public abstract class FileDialog : CommonDialog
 					}
 					ClientSize = size;
 					MinimumSize = size;
+					MinimizeBox = false;
+					ShowInTaskbar = false;
 
 					// Hook up interesting events.
 					upButton.Click += new EventHandler(UpOneLevel);
@@ -1341,12 +1420,15 @@ public abstract class FileDialog : CommonDialog
 					directory.SelectedIndexChanged +=
 						new EventHandler(DirectorySelectionChanged);
 					name.TextChanged += new EventHandler(NameTextChanged);
+					okButton.Click += new EventHandler(AcceptDialog);
+					cancelButton.Click += new EventHandler(CancelDialog);
 
 					// Match the requested settings from the dialog parent.
 					RefreshAll();
 
 					// Scan the initial directory.
 					String dir = fileDialogParent.InitialDirectory;
+					pattern = "*.*";
 					if(dir == null || dir.Length == 0)
 					{
 						dir = Directory.GetCurrentDirectory();
@@ -1355,7 +1437,10 @@ public abstract class FileDialog : CommonDialog
 					{
 						dir = Path.GetFullPath(dir);
 					}
-					ChangeDirectory(dir);
+					if(!ChangeDirectory(dir))
+					{
+						ChangeDirectory(Directory.GetCurrentDirectory());
+					}
 				}
 
 		// Dispose of this dialog.
@@ -1365,15 +1450,34 @@ public abstract class FileDialog : CommonDialog
 				}
 
 		// Change to a new directory.
-		public void ChangeDirectory(String dir)
+		public bool ChangeDirectory(String dir)
 				{
+					// Bail out if the directory does not exist.
+					if(!Directory.Exists(dir))
+					{
+						return false;
+					}
+
 					// Record the current directory.
 					currentDirectory = dir;
+
+					// Change the process directory if necessary.
+					if(!(fileDialogParent.RestoreDirectory))
+					{
+						try
+						{
+							Directory.SetCurrentDirectory(currentDirectory);
+						}
+						catch(Exception)
+						{
+							// Ignore errors.
+						}
+					}
 
 					// Scan the current directory and display the entries.
 					FilesystemEntry[] entries;
 					entries = ScanDirectory
-						(dir, "*.*", fileDialogParent.DereferenceLinks);
+						(dir, pattern, fileDialogParent.DereferenceLinks);
 					listBox.Entries = entries;
 
 					// Update the directory combo box with the list.
@@ -1389,6 +1493,7 @@ public abstract class FileDialog : CommonDialog
 					items.Add(d);
 					directory.Text = currentDirectory;
 					directory.EndUpdate();
+					return true;
 				}
 
 		// Reload the current view to match the current settings.
@@ -1428,23 +1533,42 @@ public abstract class FileDialog : CommonDialog
 		// Process a dialog key.
 		protected override bool ProcessDialogKey(Keys keyData)
 				{
-					if(keyData == Keys.F4)
+					switch(keyData)
 					{
-						directory.Focus();
-						directory.DroppedDown = true;
-						return true;
+						case Keys.F4:
+						{
+							directory.Focus();
+							directory.DroppedDown = true;
+						}
+						break;
+
+						case Keys.F5:
+						{
+							Reload();
+						}
+						break;
+
+						case (Keys.Alt | Keys.Home):
+						{
+							Home();
+						}
+						break;
+
+						case Keys.Enter:
+						{
+							AcceptDialog(null, null);
+						}
+						break;
+
+						case Keys.Escape:
+						{
+							CancelDialog(null, null);
+						}
+						break;
+
+						default: return base.ProcessDialogKey(keyData);
 					}
-					else if(keyData == Keys.F5)
-					{
-						Reload();
-						return true;
-					}
-					else if(keyData == (Keys.Alt | Keys.Home))
-					{
-						Home();
-						return true;
-					}
-					return base.ProcessDialogKey(keyData);
+					return true;
 				}
 
 		// Process a change of directory selection in a combo box.
@@ -1513,6 +1637,118 @@ public abstract class FileDialog : CommonDialog
 		private void NameTextChanged(Object sender, EventArgs e)
 				{
 					manualUserTextChange = true;
+				}
+
+		// Handle a "focus enter" event.
+		protected override void OnEnter(EventArgs e)
+				{
+					// Set the focus to the name text box immediately
+					// if the top-level form gets the focus.
+					name.Focus();
+				}
+
+		// Special characters that may appear as directory separators.
+		private static readonly char[] directorySeparators =
+				{'/', '\\', ':',
+				 Path.DirectorySeparatorChar,
+				 Path.AltDirectorySeparatorChar,
+				 Path.VolumeSeparatorChar};
+
+		// Special characters that indicate wildcards.
+		private static readonly char[] wildcards = {'*', '?'};
+
+		// Handle the "accept" button on this dialog.
+		public void AcceptDialog(Object sender, EventArgs e)
+				{
+					String filename = name.Text.Trim();
+					if(filename.IndexOfAny(directorySeparators) != -1)
+					{
+						// Contains a directory specification.
+						filename = Path.Combine(currentDirectory, filename);
+						if(filename == Path.GetPathRoot(filename))
+						{
+							// Move to a root directory.
+							ChangeDirectory(filename);
+							name.Text = String.Empty;
+						}
+						else
+						{
+							// Split the filename into directory and base
+							// components.  Then, change to the specified
+							// directory, and re-accept the dialog with
+							// the base name.
+							if(ChangeDirectory(Path.GetDirectoryName(filename)))
+							{
+								name.Text = Path.GetFileName(filename);
+								AcceptDialog(sender, e);
+							}
+						}
+					}
+					else if(filename.IndexOfAny(wildcards) != -1)
+					{
+						// Contains a wildcard specification.
+						pattern = filename;
+						Reload();
+						name.Text = String.Empty;
+					}
+					else if(filename == "..")
+					{
+						// Move up to the parent directory.
+						UpOneLevel();
+						name.Text = String.Empty;
+					}
+					else if(filename == ".")
+					{
+						// Reload the current level.
+						Reload();
+						name.Text = String.Empty;
+					}
+					else if(filename.Length > 0)
+					{
+						// Ordinary filename, relative to current directory.
+						filename = Path.Combine(currentDirectory, filename);
+						if(Directory.Exists(filename))
+						{
+							// This is a directory.
+							ChangeDirectory(filename);
+							name.Text = "";
+						}
+						else if(FilenameAcceptable(ref filename))
+						{
+							// We finally have a result, so exit the dialog.
+							fileDialogParent.fileName = filename;
+							fileDialogParent.fileNames = null;
+							DialogResult = DialogResult.OK;
+						}
+					}
+				}
+
+		// Handle the "cancel" button on this dialog.
+		private void CancelDialog(Object sender, EventArgs e)
+				{
+					DialogResult = DialogResult.Cancel;
+				}
+
+		// Handle a "closing" event on this form.
+		protected override void OnClosing(CancelEventArgs e)
+				{
+					base.OnClosing(e);
+					e.Cancel = true;
+					DialogResult = DialogResult.Cancel;
+				}
+
+		// Change the filename in the text box to a new value.
+		public void ChangeFilename(String filename)
+				{
+					// TODO
+				}
+
+		// Determine if a filename is acceptable according to the dialog rules.
+		// The filename may be modified to include a default extension.
+		private bool FilenameAcceptable(ref String filename)
+				{
+					// TODO
+					return true;
 				}
 
 	}; // class FileDialogForm

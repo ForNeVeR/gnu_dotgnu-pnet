@@ -1,4 +1,9 @@
 
+2004-01-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/FileDialog.cs: get the file dialog to the
+	point of basic usability as an open dialog.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

@@ -14,6 +14,8 @@
 
 @dircategory Individual utilities
 @direntry
+* csant: (pnettools)csant invocation.
+                                Manage build scripts for C# programs.
 * cscc: (pnettools)cscc invocation.
                                 Compiling to DotGNU Portable .NET.
 * csdoc: (pnettools)csdoc invocation.
@@ -43,20 +45,13 @@
                                             Portable .NET assemblies.
 @end direntry
 
-@c Produces entries for csant tags in an appropriate index.
-@macro csanttag {tag}
-@cindex @code{\tag\} (@command{csant} tag)
-@cindex @command{csant} tag @code{\tag\}
-@end macro
-
 @ifinfo
 The Portable.NET development tools assist with building
 and manipulating images in the portable executable format.
 development.
 
 @noindent
-Copyright @copyright{} 2001, 2002 Southern Storm Software, Pty Ltd
-@*Copyright @copyright{} 2003  Free Software Foundation, Inc.
+Copyright @copyright{} 2001, 2002, 2003 Southern Storm Software, Pty Ltd
 @end ifinfo
 
 @titlepage
@@ -64,8 +59,7 @@ Copyright @copyright{} 2001, 2002 Southern Storm Software, Pty Ltd
 @center @titlefont{Portable.NET Development Tools}
 
 @vskip 0pt plus 1fill
-@center{Copyright @copyright{} 2001, 2002 Southern Storm Software, Pty Ltd}
-@center{Copyright @copyright{} 2003  Free Software Foundation, Inc.}
+@center{Copyright @copyright{} 2001, 2002, 2003 Southern Storm Software, Pty Ltd}
 @end titlepage
 
 @c -----------------------------------------------------------------------
@@ -75,6 +69,7 @@ Copyright @copyright{} 2001, 2002 Southern Storm Software, Pty Ltd
 * Overview::                The tools in brief
 * C# Compiler::             C# compiler
 * Documentation::           XML documentation tools
+* Build Management::        Build management with csant
 * Assembler::               Intermediate language assembler
 * Disassembler::            Intermediate language disassembler
 * Linker::                  Intermediate language assembly linker
@@ -98,6 +93,8 @@ This manual describes a set of tools that can be used to build
 and manipulate applications for the Portable.NET platform.
 
 @table @command
+@item csant
+The C# build management tool.  @xref{Build Management}, for more information.
 @item cscc
 The C# compiler.  @xref{C# Compiler}, for more information.
 @item csdoc
@@ -2010,7 +2007,7 @@ can be viewed or printed with the usual PDF tools.
 
 @c -----------------------------------------------------------------------
 
-@node csdoc2hier invocation, Assembler, csdoc2texi invocation, Documentation
+@node csdoc2hier invocation, Build Management, csdoc2texi invocation, Documentation
 @section Invoking csdoc2hier
 @cindex csdoc2hier invocation
 
@@ -2063,7 +2060,509 @@ Otherwise the exit status is 0.
 
 @c -----------------------------------------------------------------------
 
-@node Assembler, ilasm invocation, csdoc2hier invocation, Top
+@node Build Management, csant invocation, csdoc2hier invocation, Top
+@chapter Build management with csant
+@cindex Build management
+@cindex csant
+
+Csant is an XML based build tool used mainly to compile C# projects.
+Csant supports multiple compilers and generates appropriate command line
+specifications for each compiler.
+
+@menu
+* csant invocation::          Invoking csant
+* Build file syntax::         Syntax of XML build files
+* Compile tag::               Syntax of the <compile> tag
+* Builtin build properties::  Builtin build properties
+* Creating profiles::         Creating profiles to modify a build
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node csant invocation, Build file syntax, Build Management, Build Management
+@chapter Invoking csant
+@cindex csant invocation
+
+The general form of the csant syntax is as follows:
+
+@example
+csant [OPTIONS] [TARGET ...]
+@end example
+
+The tool builds each of the specified targets.  If no target is specified,
+then the default is obtained from the @code{<project>} tag in the
+build file.
+
+@table @code
+@cindex -f option (csant)
+@cindex --file option (csant)
+@item -f FILE
+@itemx --file FILE
+Specify the name of the build file to use.  If this option is not present,
+then csant will look for a file in the base source directory ending with
+the extension @code{.csant} or @code{.build}.
+
+@cindex -b option (csant)
+@cindex --base-src-dir option (csant)
+@item -b DIR
+@itemx --base-src-dir DIR
+Specify the base source directory for the build tree.  By default,
+this is the current directory.
+
+@cindex -B option (csant)
+@cindex --base-build-dir option (csant)
+@item -B DIR
+@itemx --base-build-dir DIR
+Specify the base build directory for the build tree.  By default,
+this is the current directory.
+
+@cindex -D option (csant)
+@cindex --define option (csant)
+@item -D NAME=VALUE
+@itemx --define NAME=VALUE
+Define the property NAME and set it to VALUE.
+
+@cindex -p option (csant)
+@cindex --profile option (csant)
+@item -p FILE
+@itemx --profile FILE
+Specify the definition profile to use.  The definition profile is
+loaded before the main build file, and typically modifies properties.
+This can be used to create multiple build configurations.
+
+@cindex -n option (csant)
+@cindex --just-print option (csant)
+@item -n
+@itemx --just-print
+Print the names of the commands, but do not execute them.
+
+@cindex -d option (csant)
+@cindex --dummy-doc option (csant)
+@item -d
+@itemx --dummy-doc
+Output dummy documentation files.
+
+@cindex -k option (csant)
+@cindex --keep-going option (csant)
+@item -k
+@itemx --keep-going
+Keep processing even after an error.
+
+@cindex -s option (csant)
+@cindex --silent option (csant)
+@item -s
+@itemx --silent
+Do not print the names of commands as they are executed.
+
+@cindex -c option (csant)
+@cindex --csc-redirect option (csant)
+@item -c
+@itemx --csc-redirect
+Treat @code{<csc>} tags as @code{<compile>} tags (for NAnt compatibility).
+
+@cindex -m option (csant)
+@cindex --mono-corlib option (csant)
+@item -m
+@itemx --mono-corlib
+Use Mono's corlib instead of mscorlib during C# compiles.
+
+@cindex -C option (csant)
+@cindex --compiler option (csant)
+@item -C NAME
+@itemx --compiler NAME
+Specify which compiler to use (@code{cscc} (default), @code{csc},
+or @code{mcs}).  Whenever csant encounters a @code{<compile>} tag,
+it will launch the specified compiler, using the appropriate
+command-line options.
+
+@cindex -v option (csant)
+@cindex --version option (csant)
+@item -v
+@itemx --version
+Print the version of the program.
+
+@cindex --help option (csant)
+@item --help
+Print the program's help message.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Build file syntax, Compile tag, csant invocation, Build Management
+@chapter Syntax of XML build files
+@cindex csant build file syntax
+
+@table @code
+@cindex project (csant tag)
+@item <project name="NAME" default="TARGET" ...>
+This must be the top-level tag in the build file.  It defines the
+@code{NAME} of the project, and the default @code{TARGET} to use
+if one wasn't specified on the csant command-line.
+
+If @code{TARGET} is not specified, then only those targets that
+are specified on the command-line will be built.
+
+The @code{srcdir} attribute can be supplied to specify the base
+source directory.  The @code{--base-src-dir} command-line option
+will always override this attribute value.  The default is the
+current directory.
+
+The @code{builddir} attribute can be supplied to specify the base
+build directory.  The @code{--base-build-dir} command-line option
+will always override this attribute value.  The default is the
+current directory.
+
+@cindex target (csant tag)
+@item <target name="NAME" depends="DEPENDS">
+This tag appears as a child of the @code{<project>} tag.  It specifies
+a single build target called @code{NAME}.  Optionally, a dependent
+target may be specified using the @code{depends} attribute.  The
+dependent target will be built before this target.
+
+@cindex compile (csant tag)
+@item <compile output="OUTPUT" ...>
+Launch the compiler on a group of source files to create the
+specified @code{OUTPUT} file.  The compiler that is launched is
+specified using the @code{--compiler} command-line option.
+@xref{Compile tag}, for more information.
+
+@cindex cscc (csant tag)
+@item <cscc output="OUTPUT" ...>
+This is a special version of @code{<compile>} that forces the use
+of the @code{cscc} compiler.  It is otherwise identical to @code{<compile>}.
+
+@cindex csc (csant tag)
+@item <csc output="OUTPUT" target="TYPE" ...>
+This is a special version of @code{<compile>} that forces the use
+of the @code{csc} compiler.  The @code{target} attribute must be supplied,
+for backwards-compatibility with NAnt.  It is otherwise identical to
+@code{<compile>}.
+
+If the @code{--csc-redirect} option was supplied on the command-line,
+then the @code{<csc>} tag will be forced to act like @code{<compile>},
+including its handling of multiple compilers.  This behaviour allows
+pre-existing NAnt build files to be used with csant.
+
+@cindex mcs (csant tag)
+@item <mcs output="OUTPUT" ...>
+This is a special version of @code{<compile>} that forces the use
+of the @code{mcs} compiler.  It is otherwise identical to @code{<compile>}.
+
+@cindex csdoc (csant tag)
+@item <csdoc output="OUTPUT" ...>
+This is a special version of @code{<compile>} that builds XML documentation
+using @code{csdoc}, rather than building a binary.
+
+The @code{library} attribute indicates the name to put into the
+@code{<Library>} tag in the output file.  The @code{private} attribute
+should be set to @code{true} if you also wish to dump private class
+definitions.
+
+If the @code{--dummy-doc} option was supplied on the command-line,
+then the @code{<csdoc>} tag will generate a dummy output file rather
+than running @code{csdoc}.  This is intended for systems that do not
+have @code{csdoc} installed.
+
+@cindex property (csant tag)
+@item <property name="NAME" value="VALUE"/>
+Define a property called NAME and set it to VALUE.  If there is an
+existing property called NAME, then its value will be modified.
+
+Properties can also be set on the command-line using the @code{--define}
+option.
+
+Properties may appear in any attribute value in the build file
+using the syntax @code{$@{NAME@}}.  For example, @code{$@{csant.build.dir@}}
+will insert the name of the build directory.
+
+@xref{Builtin build properties}, for a list of standard builtin properties.
+
+@cindex echo (csant tag)
+@item <echo message="MSG"/>
+Echo the message, MSG, to standard output.
+
+@cindex fail (csant tag)
+@item <fail message="MSG"/>
+Echo the message, MSG, to standard output, and then fail the build.
+
+@cindex delete (csant tag)
+@item <delete file="FILE" [failonerror="FLAG"]/>
+Delete the specified FILE, which is interpreted relative to the build
+directory.
+
+If @code{failonerror} is @code{false} (the default), then the build will
+continue normally if the file does not exist.  If @code{failonerror}
+is @code{true}, then the build will fail if the file does not exist.
+
+@cindex mkdir (csant tag)
+@item <mkdir dir="DIRECTORY"/>
+Make the specified DIRECTORY.  Does nothing if the directory already exists.
+The DIRECTORY is interpreted relative to the build directory.
+
+@cindex copy (csant tag)
+@item <copy file="FROM" tofile="TO"/>
+Copy the file at FROM to the pathname TO.  Both pathnames are
+interpreted relative to the build directory.
+
+@cindex csant (csant tag)
+@item <csant buildfile="FILE" [target="TARGET"] [basedir="DIR"]/>
+Launch a copy of @code{csant} using the build file specified by FILE.
+This is typically used to build the contents of sub-directories.
+
+If @code{target} is supplied, it indicates the target to build instead
+of the default target for the new build file.
+
+If @code{basedir} is supplied, then it is used to modify the source
+and build directories before passing them to the new instance.
+
+@cindex nant (csant tag)
+@item <nant buildfile="FILE" [target="TARGET"] [basedir="DIR"]/>
+This is identical to the @code{<csant>} tag, and is provided for
+backwards compatibility with NAnt.
+@end table
+
+The following is an example of defining a project with two targets,
+@code{all} and @code{clean}:
+
+@example
+<?xml version="1.0"?>
+<project name="Foobar" default="all">
+    <target name="all">
+        <compile output="foobar.dll">
+            <sources>
+                <includes name="**/*.cs"/>
+            </sources>
+        </compile>
+    </target>
+
+    <target name="clean">
+        <delete file="foobar.dll"/>
+    </target>
+</project>
+@end example
+
+Executing @code{csant} in the same directory as this project file
+will build @code{foobar.dll}.  Executing @code{csant clean} in the
+directory will delete the file.
+
+@c -----------------------------------------------------------------------
+
+@node Compile tag, Builtin build properties, Build file syntax, Build Management
+@chapter Syntax of the <compile> tag
+@cindex csant compile tag
+
+The @code{<compile>} tag may have the following attributes:
+
+@table @code
+@item output
+The name of the output file to be built by this rule.  This attribute
+is mandatory.
+
+@item target
+The type of target to be built.  Typical values are @code{library} and
+@code{exe}.  If this attribute is not supplied, then the default is
+determined from the extension on the output file.  This attribute is
+mandatory for the @code{<csc>} tag, for backwards-compatibility with NAnt.
+
+@item debug
+Set to @code{true} or @code{false}, and indicates if debug symbol information
+should be generated for the output binary.  The default is @code{false}.
+
+@item checked
+Set to @code{true} or @code{false}, and indicates if checked operations
+should be used by the C# compiler.  The default is @code{false}.
+
+@item unsafe
+Set to @code{true} or @code{false}, and indicates if unsafe operations
+should be used by the C# compiler.  The default is @code{false}.
+
+@item nostdlib
+Set to @code{true} or @code{false}, and indicates if the standard library,
+@code{mscorlib.dll}, should be disabled.  The default is @code{false},
+indicating that the standard library should be used.
+
+@item optimize
+Set to @code{true} or @code{false}, and indicates if code optimizations
+should be used by the C# compiler.  The default is @code{false}.
+
+@item warnaserror
+Set to @code{true} or @code{false}, and indicates if compiler warnings
+should be treated as errors.  The default is @code{false}.
+
+@item define
+A semi-colon separated list of macro symbols to define.  For example,
+@code{define="FOO;BAR"} will result in @code{-DFOO -DBAR} being passed
+to the compiler.  The @code{<define>} tag can also used to define
+macro symbols.
+@end table
+
+@noindent
+The following tags may be present as children of @code{<compile>}:
+
+@table @code
+@cindex define (csant tag)
+@item <define name="NAME" value="VALUE"/>
+Define the macro symbol NAME if VALUE is set to @code{true}.
+Otherwise, do not define the macro symbol NAME.
+
+The set of macro definitions that are passed to the compiler will be
+augmented by the profile definitions.  @xref{Creating profiles}, for
+more information on profiles.
+
+@cindex arg (csant tag)
+@item <arg [compiler="COMPILER"] value="VALUE"/>
+Adds an argument to the compiler's command-line.  If @code{compiler}
+is present, then the argument will only be added if the specified
+compiler is in use.  This allows compiler-specific options to be
+passed when necessary.
+
+@cindex sources (csant tag)
+@item <sources [basedir="DIR"]>
+Specify a set of source files for the build.  If @code{basedir} is
+present, then it is used to modify the source directory to find the
+source files.
+
+The @code{<includes name="SPEC" [if="COND"]/>} child tag is used to specify a
+group of files to include in the set.  For example, @code{*.cs} will
+include all files in the source directory that end in @code{.cs}.
+To recurse into sub-directories, use a specification such as @code{**/*.cs}.
+
+The @code{<excludes name="SPEC" [if="COND"]/>} child tag is used to specify a
+group of files to exclude from the set, even if they would otherwise
+be included by an @code{<includes>} tag.
+
+The @code{<file name="NAME" [basedir="DIR"]/>} child tag is used to
+add a single file to the set.
+
+If the @code{if} attribute is present on either @code{<includes>} or
+@code{<excludes>}, then it indicates a condition that must be satisfied
+for the tag to be processed.  Usually this condition is the name of
+a profile definition.  e.g. @code{<includes name="foo/*.cs" if="$@{FOO@}"/>}
+will only include the contents of the @code{foo} directory if the
+@code{FOO} definition is set to @code{true}.
+
+@cindex references (csant tag)
+@item <references [basedir="DIR"]>
+Specify a set of library assemblies for the build.  If @code{basedir} is
+present, then it is used to modify the build directory to find the
+library assemblies.
+
+@cindex resources (csant tag)
+@item <resources [basedir="DIR"]>
+Specify a set of resource files for the build.  If @code{basedir} is
+present, then it is used to modify the build directory to find the
+resource files.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Builtin build properties, Creating profiles, Compile tag, Build Management
+@chapter Builtin build properties
+@cindex Builtin build properties
+
+@table @code
+@cindex csant.build.dir property
+@item csant.build.dir
+The pathname of the build directory.
+
+@cindex csant.buildfile property
+@item csant.buildfile
+The pathname for the build file.
+
+@cindex csant.compiler property
+@item csant.compiler
+The name of the compiler to use with @code{<compile>} tags.  The allowed
+values are @code{cscc} (default), @code{csc}, and @code{mcs}.
+
+@cindex csant.project.name property
+@item csant.project.name
+The name of the project, from the top-level @code{<project>} tag.
+
+@cindex csant.src.dir property
+@item csant.src.dir
+The pathname of the source directory.
+
+@cindex cscc property
+@item cscc
+The pathname of the @code{cscc} compiler's executable.  If this is
+not set, then csant will try the @code{CSCC} environment variable.
+If that is not set, then csant will search for @code{cscc} on the PATH.
+
+@cindex cscc.plugins.cs property
+@item cscc.plugins.cs
+The pathname of the C# plugin's executable.
+
+@cindex cscc.plugins.c property
+@item cscc.plugins.c
+The pathname of the C plugin's executable.
+
+@cindex csc property
+@item csc
+The pathname of the @code{csc} compiler's executable.  If this is
+not set, then csant will try the @code{CSC} environment variable.
+If that is not set, then csant will search for @code{csc} on the PATH.
+
+@cindex csdoc property
+@item csdoc
+The pathname of the @code{csdoc} executable.  If this is
+not set, then csant will try the @code{CSDOC} environment variable.
+If that is not set, then csant will search for @code{csdoc} on the PATH.
+
+@cindex mcs property
+@item mcs
+The pathname of the @code{mcs} compiler's executable.  If this is
+not set, then csant will try the @code{MCS} environment variable.
+If that is not set, then csant will search for @code{mcs} on the PATH.
+@end table
+
+In addition, the contents of the environment are placed into properties
+whose names begin with @code{csant.env.}.  For example, the @code{HOME}
+environment variable is available as @code{csant.env.HOME}.
+
+@c -----------------------------------------------------------------------
+
+@node Creating profiles, Assembler, Builtin build properties, Build Management
+@chapter Creating profiles to modify a build
+@cindex Creating profiles
+
+Profile files can be used to modify the build process, supplying
+different groups of options under different circumstances.  For
+example, the following profile:
+
+@example
+<?xml version="1.0"?>
+<profile>
+<define name="FOO" value="true"/>
+<define name="BAR" value="true"/>
+</profile>
+@end example
+
+@noindent
+adds macro definitions to the C# compiler command-line:
+
+@example
+cscc -DFOO -DBAR ...
+@end example
+
+An alternative profile might set @code{FOO} to @code{false} instead,
+to disable the corresponding feature:
+
+@example
+<?xml version="1.0"?>
+<profile>
+<define name="FOO" value="false"/>
+<define name="BAR" value="true"/>
+</profile>
+@end example
+
+The Portable.NET C# library uses this feature to define profiles
+for various library configurations: @code{full}, @code{ecma},
+@code{compact}, etc.  But its use is not limited to Portable.NET:
+any application can use user-defined profiles.
+
+@c -----------------------------------------------------------------------
+
+@node Assembler, ilasm invocation, Creating profiles, Top
 @chapter Intermediate language assembler
 @cindex Assembler
 @cindex ilasm

@@ -1,3 +1,9 @@
+
+2003-09-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csant/csant.1, doc/pnettools.texi: update the documentation
+	for csant to include information about the XML build file syntax.
+
 2003-09-25  Adam Ballai  <Adam@thefrontnetworks.net>
 	
 	* engine/ilrun.c: add necessary code for compact profile

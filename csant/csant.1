@@ -13,36 +13,42 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH csant 1 "28 July 2003" "Southern Storm Software" "Portable.NET Development Tools"
+.TH csant 1 "25 September 2003" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 csant \- the C-Sharp compilation build tool
 .SH SYNOPSIS
 .ll +8
 .B csant
-[ options ]
+[ options ] [
 .I target
-\&...
+\&... ]
 .SH DESCRIPTION
 .B Csant
-is an xml based build tool used mainly to compile C# (pronounced C-Sharp)
+is an XML based build tool used mainly to compile C# (pronounced C-Sharp)
 projects.  \fBCsant\fR supports multiple compilers and generates appropriate 
 command line specifications for each compiler.
 .SH OPTIONS
 .TP
 .B \-\-file \fIname\fB, \-f \fIname\fR
-Specify the \fIname\fR of the build file to use.
+Specify the \fIname\fR of the build file to use.  If this option is not
+present, then csant will look for a file in the base source directory
+ending with the extension `\fB.csant\fR' or `\fB.build\fR'.
 .TP
 .B \-\-base\-src\-dir \fIname\fB, \-b \fIname\fR
-Specify the base source directory for the build tree.
+Specify the base source directory for the build tree.  By default,
+this is the current directory.
 .TP
 .B \-\-base\-build\-dir \fIname\fB, \-B \fIname\fR
-Specify the base build directory for the build tree.
+Specify the base build directory for the build tree.  By default,
+this is the current directory.
 .TP
 .B \-D\fIname\fR=\fIvalue\fB, \-\-define \fIname\fB=\fIvalue\fR
-Define the property `name' and set it to `value'.
+Define the property `\fIname\fR' and set it to `\fIvalue\fR'.
 .TP
 .B \-\-profile \fIname\fB, \-p \fIname\fR
-Specify the definition profile to use.
+Specify the definition profile to use.  The definition profile is
+loaded before the main build file, and typically modifies properties.
+This can be used to create multiple build configurations.
 .TP
 .B \-\-just\-print, \-n
 Print the names of the commands, but do not execute them.
@@ -63,7 +69,10 @@ Treat <csc> tags as <compile> tags (for NAnt compatibility).
 Use Mono's corlib instead of mscorlib during C# compiles.
 .TP
 .B \-\-compiler \fIname\fB, \-C \fIname\fR
-Specify which compiler to use [`cscc' (default), `csc', or `mcs'].
+Specify which compiler to use (`\fBcscc\fR' (default), `\fBcsc\fR',
+or `\fBmcs\fR').  Whenever csant encounters a <compile> tag,
+it will launch the specified compiler, using the appropriate
+command-line options.
 .TP
 .B \-\-version, \-v
 Print the version of the program.

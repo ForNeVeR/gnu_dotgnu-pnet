@@ -113,7 +113,7 @@ public class Socket : IDisposable
 				if(!SocketMethods.Create((int)addressFamily, (int)socketType,
 										 (int)protocolType, out handle))
 				{
-					throw new SocketException(SocketMethods.GetErrno());
+					throw new SocketException(this.GetErrno());
 				}
 			}
 	private Socket(AddressFamily addressFamily, SocketType socketType,
@@ -145,6 +145,31 @@ public class Socket : IDisposable
 				GC.SuppressFinalize(this);
 			}
 
+	// Get the current errno condition.
+	private Errno GetErrno()
+			{
+				// get the errno condition
+				Errno errno = SocketMethods.GetErrno();
+
+				// disconnect as required
+				switch(errno)
+				{
+					case Errno.EPIPE:
+					case Errno.ECONNABORTED:
+					case Errno.ECONNRESET:
+					case Errno.ETIMEDOUT:
+					case Errno.ECONNREFUSED:
+					case Errno.EHOSTDOWN:
+					{
+						connected = false;
+					}
+					break;
+				}
+
+				// return the errno condition
+				return errno;
+			}
+
 	// Accept an incoming connection on this socket.
 	public Socket Accept()
 			{
@@ -174,7 +199,7 @@ public class Socket : IDisposable
 				if(!SocketMethods.Accept
 					  (currentHandle, addrReturn, out newHandle))
 				{
-					throw new SocketException(SocketMethods.GetErrno());
+					throw new SocketException(this.GetErrno());
 				}
 
 				// Create the end-point object for the remote side.
@@ -659,7 +684,7 @@ public class Socket : IDisposable
 					// Bind the address to the socket.
 					if(!SocketMethods.Bind(handle, addr))
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 
 					// Record the local end point for later.
@@ -703,7 +728,7 @@ public class Socket : IDisposable
 					// Connect to the foreign location.
 					if(!SocketMethods.Connect(handle, addr))
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 					connected = true;
 					this.remoteEP = remoteEP;
@@ -745,7 +770,7 @@ public class Socket : IDisposable
 							(handle, (int)optionLevel, (int)optionName,
 							 out optionValue))
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 					return optionValue;
 				}
@@ -785,7 +810,7 @@ public class Socket : IDisposable
 									(handle, out enabled, out seconds))
 							{
 								throw new SocketException
-									(SocketMethods.GetErrno());
+									(this.GetErrno());
 							}
 							return ((enabled && seconds == 0) ? 1 : 0);
 						}
@@ -804,7 +829,7 @@ public class Socket : IDisposable
 									(handle, out enabled, out seconds))
 							{
 								throw new SocketException
-									(SocketMethods.GetErrno());
+									(this.GetErrno());
 							}
 							return new LingerOption(enabled, seconds);
 						}
@@ -860,7 +885,7 @@ public class Socket : IDisposable
 									 group, mcint))
 							{
 								throw new SocketException
-									(SocketMethods.GetErrno());
+									(this.GetErrno());
 							}
 							return new MulticastOption
 								((new SocketAddress(group)).IPAddress,
@@ -900,7 +925,7 @@ public class Socket : IDisposable
 						if(!SocketMethods.DiscoverIrDADevices(handle, data))
 						{
 							throw new SocketException
-								(SocketMethods.GetErrno());
+								(this.GetErrno());
 						}
 						return data;
 					}
@@ -937,7 +962,7 @@ public class Socket : IDisposable
 					// Perform a listen on the socket.
 					if(!SocketMethods.Listen(handle, backlog))
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 				}
 			}
@@ -991,7 +1016,7 @@ public class Socket : IDisposable
 				}
 				else if(result < 0)
 				{
-					throw new SocketException(SocketMethods.GetErrno());
+					throw new SocketException(this.GetErrno());
 				}
 				else
 				{
@@ -1020,7 +1045,7 @@ public class Socket : IDisposable
 						(handle, buffer, offset, size, (int)socketFlags);
 					if(result < 0)
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 					else
 					{
@@ -1084,7 +1109,7 @@ public class Socket : IDisposable
 						 (int)socketFlags, addrReturn);
 					if(result < 0)
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 					else
 					{
@@ -1342,7 +1367,7 @@ public class Socket : IDisposable
 						(handle, buffer, offset, size, (int)socketFlags);
 					if(result < 0)
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 					else
 					{
@@ -1404,7 +1429,7 @@ public class Socket : IDisposable
 						(handle, buffer, offset, size, (int)socketFlags, addr);
 					if(result < 0)
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 					else
 					{
@@ -1453,7 +1478,7 @@ public class Socket : IDisposable
 							(handle, (int)optionLevel, (int)optionName,
 							 optionValue))
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 				}
 			}
@@ -1573,7 +1598,7 @@ public class Socket : IDisposable
 									 linger.LingerTime))
 							{
 								throw new SocketException
-									(SocketMethods.GetErrno());
+									(this.GetErrno());
 							}
 						}
 						return;
@@ -1610,7 +1635,7 @@ public class Socket : IDisposable
 									 group, mcint))
 							{
 								throw new SocketException
-									(SocketMethods.GetErrno());
+									(this.GetErrno());
 							}
 						}
 						return;
@@ -1631,7 +1656,7 @@ public class Socket : IDisposable
 					}
 					if(!SocketMethods.Shutdown(handle, (int)how))
 					{
-						throw new SocketException(SocketMethods.GetErrno());
+						throw new SocketException(this.GetErrno());
 					}
 				}
 			}
@@ -1679,7 +1704,7 @@ public class Socket : IDisposable
 						if(result < 0)
 						{
 							throw new SocketException
-								(SocketMethods.GetErrno());
+								(this.GetErrno());
 						}
 						else
 						{
@@ -1796,7 +1821,7 @@ public class Socket : IDisposable
 						if(!SocketMethods.GetSockName(handle, addrReturn))
 						{
 							throw new SocketException
-								(SocketMethods.GetErrno());
+								(this.GetErrno());
 						}
 
 						// Create a new end-point object using addrReturn.

@@ -1,3 +1,7 @@
+2005-02-25  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System/Net/Sockets/Socket.cs: change connected state as needed on
+	various errno conditions. (patch #3758)
 
 2005-02-24  Gopal V  <gopalv82@yahoo.com>
 

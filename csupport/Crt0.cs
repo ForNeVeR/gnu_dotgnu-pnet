@@ -386,6 +386,16 @@ public unsafe sealed class Crt0
 				}
 			}
 
+	// Set the contents of a wide character string during initialization.
+	public unsafe static void SetWideString(char *dest, String src)
+			{
+				int index = 0;
+				foreach(char ch in src)
+				{
+					dest[index++] = ch;
+				}
+			}
+
 #if CONFIG_SMALL_CONSOLE
 
 	// Helper class for writing to stdout when the System.Console

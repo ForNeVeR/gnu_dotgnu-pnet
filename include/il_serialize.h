@@ -122,6 +122,12 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader, ILMember **member,
 						      const char **name, int *nameLen);
 
 /*
+ * Get the boxed prefix header from a serialization blob. Return the
+ * serialType on success or -1 on error.
+ */
+int ILSerializeReaderGetBoxedPrefix(ILSerializeReader *reader);
+
+/*
  * Initialize a serialization writer for writing values
  * to a custom attribute blob.
  */

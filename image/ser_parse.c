@@ -640,6 +640,19 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader,
 	return type;
 }
 
+int ILSerializeReaderGetBoxedPrefix(ILSerializeReader *reader)
+{
+	int boxedType;
+	if(reader->meta.len < 1)
+	{
+		return -1;
+	}
+	boxedType = (int)(*(reader->meta.data));
+	reader->meta.data += 1;
+	reader->meta.len -= 1;
+	return boxedType;
+}
+
 #ifdef	__cplusplus
 };
 #endif

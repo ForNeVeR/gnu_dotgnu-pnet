@@ -115,8 +115,12 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 	const char *strValue;
 	int strLen;
 	int arrayLen;
+	int boxedType;
 	System_Array * arrayVal;
 	ILObject ** buf;
+	ILType *typeAttr;
+	ILType *systemType=ILExecThreadLookupType(thread,"oSystem.Type");
+	ILClass *classInfo;
 	
 	if(serialType!=ILSerializeGetType(type))
 	{
@@ -163,6 +167,85 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 					}
 					return (ILObject*)((System_String*)ILStringCreateLen(thread,
 									strValue,strLen));	
+			case IL_META_SERIALTYPE_TYPE:
+					strLen = ILSerializeReaderGetString(reader,&strValue);
+					if(strLen == -1) 
+					{
+						return NULL;
+					}
+					classInfo = ILExecThreadLookupClass(thread,strValue);
+					if(!classInfo)
+					{
+						return NULL;
+					}
+					classInfo = ILClassResolve(classInfo);
+					if(ILClass_IsValueType(classInfo))
+					{
+						typeAttr = ILType_FromValueType(classInfo);
+					}
+					else
+					{
+						typeAttr = ILType_FromClass(classInfo);
+					}
+					return _ILGetClrTypeForILType(thread,typeAttr);
+					
+			case IL_META_SERIALTYPE_VARIANT:
+					boxedType=ILSerializeReaderGetBoxedPrefix(reader);
+					if(boxedType==-1)
+					{
+						return NULL;
+					}
+					switch(boxedType)
+					{
+						case IL_META_SERIALTYPE_BOOLEAN :
+						case IL_META_SERIALTYPE_CHAR :
+						case IL_META_SERIALTYPE_I1 :
+						case IL_META_SERIALTYPE_U1 :
+						case IL_META_SERIALTYPE_I2 :
+						case IL_META_SERIALTYPE_U2 :
+						case IL_META_SERIALTYPE_I4 :
+						case IL_META_SERIALTYPE_U4 :
+						case IL_META_SERIALTYPE_I8 :
+						case IL_META_SERIALTYPE_U8 :
+						case IL_META_SERIALTYPE_R4 :
+						case IL_META_SERIALTYPE_R8 :
+						case IL_META_SERIALTYPE_STRING :
+						{
+							/* NOTE: Right now all the serialtypes and
+							 * Elemtypes are the same for primitives */
+							return DeserializeObject(thread,reader,
+									ILType_FromElement(boxedType),boxedType);
+						}
+						/* not reached */
+						case IL_META_SERIALTYPE_TYPE:
+						{
+							return DeserializeObject(thread,reader,
+									systemType, IL_META_SERIALTYPE_TYPE);
+						}
+						case IL_META_SERIALTYPE_ENUM:
+						{
+							int i;
+							strLen = ILSerializeReaderGetString(reader,
+															&strValue);
+							if(strLen == -1) 
+							{
+								return NULL;
+							}
+							classInfo=ILExecThreadLookupClass(thread,strValue);
+							if(!classInfo)
+							{
+								return NULL;
+							}	
+							classInfo=ILClassResolve(classInfo);
+							
+							typeAttr = ILType_FromValueType(classInfo);
+							
+							return DeserializeObject(thread, reader,
+											typeAttr, 
+											ILSerializeGetType(typeAttr));
+						}
+					}
+					
 			default:
 					if((serialType & IL_META_SERIALTYPE_ARRAYOF)!=0)
 					{

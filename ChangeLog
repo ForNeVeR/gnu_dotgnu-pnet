@@ -3,6 +3,12 @@
 
 	* image/ser_parse.c , cscc/csharp/cs_attrs.c: Tagged objects in
 	serialization using IL_META_SERIALTYPE_VARIANT type.
+	
+	* image/ser_parse.c, include/il_serialize.h: add the ILSerializeReader
+	GetBoxedPrefix() function for tagged objects .
+
+	* engine/lib_reflect.c: Implement reflection of tagged object and enums
+	in attributes.
 
 2003-05-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 

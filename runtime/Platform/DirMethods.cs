@@ -48,9 +48,6 @@ internal class DirMethods
 	extern public static Errno GetCreationTime(string path, out long create_time);
 	
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static Errno Copy(string src, string dest);
-	
-	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Errno Delete(string path);
 	
 	[MethodImpl(MethodImplOptions.InternalCall)]

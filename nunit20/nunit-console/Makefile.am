@@ -17,7 +17,9 @@ install-data-local:
 			-Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-f "$(srcdir)/nunit.console.build" -i all
-	$(LN_S) clrwrap $(DESTDIR)$(bindir)/nunit-console-pnet
+	rm -f $(DESTDIR)$(bindir)/nunit-console-pnet
+	rm -f $(DESTDIR)$(bindir)/nunit-console-pnet.exe
+	$(LN_S) clrwrap$(EXEEXT) $(DESTDIR)$(bindir)/nunit-console-pnet$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
@@ -25,4 +27,5 @@ uninstall-local:
 			-Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-f "$(srcdir)/nunit.console.build" -u all
+	rm -f $(DESTDIR)$(bindir)/nunit-console-pnet.exe
 	rm -f $(DESTDIR)$(bindir)/nunit-console-pnet

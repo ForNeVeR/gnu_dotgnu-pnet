@@ -1,4 +1,9 @@
 
+2002-12-04  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_grammar.y: fix the handling of empty initializers
+	for arrays.
+
 2002-12-04  Dawkins, David  <david.dawkins@brooks-pri.com>
 
 	* acconfig.h, configure.in, cscc/c/Makefile.am,

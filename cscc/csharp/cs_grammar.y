@@ -1778,7 +1778,7 @@ ArrayInitializer
 	;
 
 OptVariableInitializerList
-	: /* empty */				{ $$ = 0; }
+	: /* empty */				{ $$ = ILNode_List_create(); }
 	| VariableInitializerList	{ $$ = $1; }
 	;
 

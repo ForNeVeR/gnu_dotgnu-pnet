@@ -416,14 +416,14 @@ void *XSharpPCFCreate(Display *dpy, PCFFontImage *image)
 			 0, 0, width, height, 8, 0);
 	if(!(renderer->ximage))
 	{
-		XSharpPCFRendererDestroy(dpy, renderer);
+		XSharpPCFDestroy(dpy, renderer);
 		return 0;
 	}
 	renderer->ximage->data = (char *)calloc
 		(height * renderer->ximage->bytes_per_line, 1);
 	if(!(renderer->ximage->data))
 	{
-		XSharpPCFRendererDestroy(dpy, renderer);
+		XSharpPCFDestroy(dpy, renderer);
 		return 0;
 	}
 

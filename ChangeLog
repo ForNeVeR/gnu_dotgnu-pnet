@@ -42,6 +42,8 @@
 	Xsharp/Font.cs, Xsharp/Xlib.cs.in, Xsharp/XsharpPCF.c:
 	continue with the PCF font rendering engine (still disabled for now).
 
+	* Xsharp/XsharpPCF.c: fix a reference to a non-existent function.
+
 2003-11-30  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/TabControl.cs:

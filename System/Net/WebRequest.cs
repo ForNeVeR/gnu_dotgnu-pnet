@@ -48,6 +48,7 @@ public abstract class WebRequest : MarshalByRefObject
 		// Register the prefix types here
 		RegisterPrefix(Uri.UriSchemeHttp,  new WebRequestCreator());
 		RegisterPrefix(Uri.UriSchemeHttps, new WebRequestCreator());
+		RegisterPrefix(Uri.UriSchemeFile, new WebRequestCreator());
 
 		// TODO: More prefixes, such as those contained in Uri should come later
 	}
@@ -137,6 +138,10 @@ public abstract class WebRequest : MarshalByRefObject
 			{
 				return new HttpWebRequest(requestUri);
 			}
+			if(requestUri.IsFile)
+			{
+				return new FileWebRequest(requestUri);
+			}
 			throw new NotSupportedException("CreateDefault");
 		}
 
@@ -216,7 +221,8 @@ public abstract class WebRequest : MarshalByRefObject
 		// TODO: There's probably additional checking for what constitutes the
 		// query portion of a Uri, but I'm not sure what it is yet. Probably
 		// look into this later.
-		if(requestUri.HostNameType.Equals(UriHostNameType.Unknown))
+		if(!(requestUri.IsFile) && 
+			requestUri.HostNameType.Equals(UriHostNameType.Unknown))
 		{
 			throw new UriFormatException("requestUri");
 		}
@@ -228,14 +234,13 @@ public abstract class WebRequest : MarshalByRefObject
 	// These could have been done as 'helpers' but they're only needed in this class
 	internal class WebRequestCreator : IWebRequestCreate
 	{
-
-	internal WebRequestCreator()
-	{
-	}
-	
-	public WebRequest Create(Uri uri)
+		internal WebRequestCreator()
 		{
-			return new HttpWebRequest(uri);
+		}
+	
+		public WebRequest Create(Uri uri)
+		{
+			return WebRequest.CreateDefault(uri);
 		}
 	}
 

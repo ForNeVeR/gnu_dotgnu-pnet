@@ -6,6 +6,9 @@
 	
 	* System.Windows.Forms/Form.cs: Fix minor bug in earlier check in.
 
+	* System/Net/WebRequest.cs, System/Net/FileWebRequest.cs,
+	System/Net/FileWebResponse.cs: Implement file:// URI handling.
+
 2004-11-22  Erich Kitzmuller  <ammoq@ammoq.com>
 
 	* System/Net/HttpWebResponse.cs: Fix minor bug in Chunked support

@@ -1,4 +1,10 @@
 
+2002-09-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_gen.c (ILGenGetParamInfo): resolve the method before
+	looking for "ILParameter" blocks, because method references don't
+	have such blocks associated with them.
+
 2002-09-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_const.tc, cscc/csharp/cs_lvalue.tc,

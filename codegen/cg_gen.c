@@ -604,6 +604,7 @@ ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 	/* Find the parameter information block for the method */
 	if(method)
 	{
+		method = (ILMethod *)ILMemberResolve((ILMember *)method);
 		param = 0;
 		while((param = ILMethodNextParam(method, param)) != 0)
 		{

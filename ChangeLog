@@ -11,6 +11,9 @@
 	* ildasm/ildasm_method.c: bug in the dumping of "ldc.i8" arguments,
 	which caused the words to be reversed in the output.
 
+	* ilasm/ilasm_scanner.l: stop at 3 octal digits or 2 hex digits
+	when processing escape sequences inside strings in the assembler.
+
 2002-11-27  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_varusage.h , codegen/cg_varusage.c, codegen/cg_gen.h,

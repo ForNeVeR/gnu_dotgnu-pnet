@@ -118,7 +118,7 @@ static ILIntString ParseString(char *text, int *len)
 {
 	char *save = text;
 	char *out = text;
-	int ch;
+	int ch, numDigits;
 	static char const escapes[] =
 			"\007\010cd\033\014ghijklm\012opq\015s\011u\013wxyz";
 
@@ -142,7 +142,8 @@ static ILIntString ParseString(char *text, int *len)
 				/* Hex character */
 				++text;
 				ch = 0;
-				while(*text != '\0')
+				numDigits = 0;
+				while(numDigits < 2 && *text != '\0')
 				{
 					if(*text >= '0' && *text <= '9')
 						ch = ch * 16 + (*text++ - '0');
@@ -152,6 +153,7 @@ static ILIntString ParseString(char *text, int *len)
 						ch = ch * 16 + (*text++ - 'a' + 10);
 					else
 						break;
+					++numDigits;
 				}
 				*out++ = (char)ch;
 			}
@@ -164,10 +166,12 @@ static ILIntString ParseString(char *text, int *len)
 			else if(*text >= '0' && *text <= '7')
 			{
 				/* Octal character */
+				numDigits = 1;
 				ch = *text++ - '0';
-				while(*text >= '0' && *text <= '7')
+				while(numDigits < 3 && *text >= '0' && *text <= '7')
 				{
 					ch = ch * 8 + (*text++ - '0');
+					++numDigits;
 				}
 				*out++ = (char)ch;
 			}

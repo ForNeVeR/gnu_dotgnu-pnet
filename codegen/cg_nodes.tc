@@ -472,6 +472,22 @@ struct _tagILEvalValue
 	char   *varName;
 	ILNode *expr;
 	ILNode *stmt;
+	%nocreate unsigned long varIndex = {0};
+	%nocreate ILMachineType varType = {ILMachineType_Void};
+	%nocreate ILType *arrayType = {0};
+	%nocreate ILType *elemType = {0};
+}
+%node ILNode_ForeachCollection ILNode_Statement =
+{
+	ILNode *doCast;
+	ILNode *expr;
+	ILNode *stmt;
+	%nocreate unsigned long varIndex = {0};
+	%nocreate ILMachineType varType = {ILMachineType_Void};
+	%nocreate ILType *enumeratorType = {0};
+	%nocreate ILMethod *getEnumerator = {0};
+	%nocreate ILMethod *moveNext = {0};
+	%nocreate ILMethod *getCurrent = {0};
 }
 %node ILNode_Break ILNode_Statement
 %node ILNode_Continue ILNode_Statement

@@ -1,4 +1,10 @@
 
+2001-10-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* codegen/cg_nodes.tc: add "ILNode_ForeachCollection" and add extra
+"%nocreate" fields to "ILNode_Foreach" that are required by the code
+generator.
+
 2001-10-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/csdoc.c (GenerateDocsForEnum): new function.

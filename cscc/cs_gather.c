@@ -274,21 +274,10 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 	ILNode_VarDeclarator *decl;
 	ILField *fieldInfo;
 	char *name;
-	CSSemValue value;
 	ILType *tempType;
 
 	/* Get the field's type */
-	value = ILNode_SemAnalysis(field->type, info, &(field->type));
-	if(value.kind != CS_SEMKIND_TYPE)
-	{
-		CSErrorOnLine(yygetfilename(field->type), yygetlinenum(field->type),
-					  "invalid type for field");
-		tempType = ILType_Int32;
-	}
-	else
-	{
-		tempType = value.type;
-	}
+	tempType = CSSemType(field->type, info, &(field->type));
 
 	/* Iterator over the field declarators and create each field in turn */
 	ILNode_ListIter_Init(&iterator, field->fieldDeclarators);
@@ -320,7 +309,6 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 						 ILNode_MethodDeclaration *method)
 {
 	char *name;
-	CSSemValue value;
 	ILType *tempType;
 	ILMethod *methodInfo;
 	ILType *signature;
@@ -351,17 +339,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	method->methodInfo = methodInfo;
 
 	/* Get the return type */
-	value = ILNode_SemAnalysis(method->type, info, &(method->type));
-	if(value.kind != CS_SEMKIND_TYPE)
-	{
-		CSErrorOnLine(yygetfilename(method->type), yygetlinenum(method->type),
-					  "invalid return type for method");
-		tempType = ILType_Void;
-	}
-	else
-	{
-		tempType = value.type;
-	}
+	tempType = CSSemTypeVoid(method->type, info, &(method->type));
 
 	/* Create the method signature type */
 	signature = ILTypeCreateMethod(info->context, tempType);
@@ -384,18 +362,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 
 		/* Get the type of the parameter */
 		fparam = (ILNode_FormalParameter *)param;
-		value = ILNode_SemAnalysis(fparam->type, info, &(fparam->type));
-		if(value.kind != CS_SEMKIND_TYPE)
-		{
-			CSErrorOnLine(yygetfilename(fparam->type),
-						  yygetlinenum(fparam->type),
-						  "invalid parameter type for method");
-			tempType = ILType_Int32;
-		}
-		else
-		{
-			tempType = value.type;
-		}
+		tempType = CSSemType(fparam->type, info, &(fparam->type));
 
 		/* Add the parameter type to the method signature */
 		if(!ILTypeAddParam(info->context, signature, tempType))
@@ -427,7 +394,6 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 						   ILNode_PropertyDeclaration *property)
 {
 	char *name;
-	CSSemValue value;
 	ILType *propType;
 	ILType *tempType;
 	ILMethod *getMethodInfo;
@@ -495,27 +461,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	}
 
 	/* Get the property type */
-	value = ILNode_SemAnalysis(property->type, info, &(property->type));
-	if(value.kind != CS_SEMKIND_TYPE)
-	{
-		if(property->params)
-		{
-			CSErrorOnLine(yygetfilename(property->type),
-						  yygetlinenum(property->type),
-						  "invalid type for indexer");
-		}
-		else
-		{
-			CSErrorOnLine(yygetfilename(property->type),
-						  yygetlinenum(property->type),
-						  "invalid type for property");
-		}
-		propType = ILType_Int32;
-	}
-	else
-	{
-		propType = value.type;
-	}
+	propType = CSSemType(property->type, info, &(property->type));
 
 	/* Create the property signature types */
 	signature = ILTypeCreateProperty(info->context, propType);
@@ -561,18 +507,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		/* Get the type of the parameter */
 		fparam = (ILNode_FormalParameter *)param;
-		value = ILNode_SemAnalysis(fparam->type, info, &(fparam->type));
-		if(value.kind != CS_SEMKIND_TYPE)
-		{
-			CSErrorOnLine(yygetfilename(fparam->type),
-						  yygetlinenum(fparam->type),
-						  "invalid parameter type for indexer");
-			tempType = ILType_Int32;
-		}
-		else
-		{
-			tempType = value.type;
-		}
+		tempType = CSSemType(fparam->type, info, &(fparam->type));
 
 		/* Add the parameter type to the property signature */
 		if(!ILTypeAddParam(info->context, signature, tempType))

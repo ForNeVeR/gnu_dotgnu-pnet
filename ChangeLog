@@ -3,6 +3,7 @@
 	* System.Windows.Forms/TextBoxBase.cs,
 	System.Windows.Forms/TextBox.cs:  Alter CanUndo according
 	to spec.
+	* System.Windows.Forms/ToolTip.cs: Add stub.
 
 2003-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 

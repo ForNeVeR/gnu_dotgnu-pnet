@@ -31,6 +31,9 @@ because the string API's may not be running in the context of a method.
 * engine/engine.h, engine/process.c, engine/lib_string.c: implement
 string intern'ing.
 
+* engine/lib_string.c: implement new "internalcall" methods for
+string comparisons.
+
 2001-11-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm_dasm.c: dump the correct signature for constructors when

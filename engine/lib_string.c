@@ -361,6 +361,273 @@ static System_String *System_String_ctor_8(ILExecThread *thread,
 }
 
 /*
+ * Compare two Unicode strings.
+ *
+ * TODO: replace this with something better and move to "support".
+ */
+static int ILStrCmpUnicode(const ILUInt16 *str1, ILInt32 length1,
+						   const ILUInt16 *str2, ILInt32 length2)
+{
+	while(length1 > 0 && length2 > 0)
+	{
+		if(*str1 < *str2)
+		{
+			return -1;
+		}
+		else if(*str1 > *str2)
+		{
+			return 1;
+		}
+		++str1;
+		++str2;
+		--length1;
+		--length2;
+	}
+	if(length1 > 0)
+	{
+		return 1;
+	}
+	else if(length2 > 0)
+	{
+		return -1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Compare two Unicode strings, while ignoring case.
+ *
+ * TODO: replace this with something better and move to "support".
+ */
+static int ILStrICmpUnicode(const ILUInt16 *str1, ILInt32 length1,
+							const ILUInt16 *str2, ILInt32 length2)
+{
+	ILUInt16 ch1;
+	ILUInt16 ch2;
+	while(length1 > 0 && length2 > 0)
+	{
+		ch1 = *str1++;
+		ch2 = *str2++;
+		if(ch1 >= 'a' && ch1 <= 'z')
+		{
+			ch1 = (ILUInt16)(ch1 - 'a' + 'A');
+		}
+		if(ch2 >= 'a' && ch2 <= 'z')
+		{
+			ch2 = (ILUInt16)(ch2 - 'a' + 'A');
+		}
+		if(ch1 < ch2)
+		{
+			return -1;
+		}
+		else if(ch1 > ch2)
+		{
+			return 1;
+		}
+		--length1;
+		--length2;
+	}
+	if(length1 > 0)
+	{
+		return 1;
+	}
+	else if(length2 > 0)
+	{
+		return -1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public static int Compare(String strA, String strB);
+ */
+static ILInt32 System_String_Compare(ILExecThread *thread,
+									 System_String *strA,
+									 System_String *strB)
+{
+	/* Handle the easy cases first */
+	if(!strA)
+	{
+		if(!strB)
+		{
+			return 0;
+		}
+		else
+		{
+			return -1;
+		}
+	}
+	else if(!strB)
+	{
+		return 1;
+	}
+	else if(strA == strB)
+	{
+		return 0;
+	}
+
+	/* Compare the two strings */
+	return ILStrCmpUnicode(StringToBuffer(strA), strA->length,
+						   StringToBuffer(strB), strB->length);
+}
+
+/*
+ * public static int InternalCompare(String strA, int indexA, int lengthA,
+ *									 String strB, int indexB, int lengthB,
+ *							 		 bool ignoreCase, CultureInfo culture);
+ */
+static ILInt32 System_String_InternalCompare(ILExecThread *thread,
+									   		 System_String *strA,
+											 ILInt32 indexA, ILInt32 lengthA,
+									   		 System_String *strB,
+											 ILInt32 indexB, ILInt32 lengthB,
+									   		 ILBool ignoreCase,
+									   		 ILObject *culture)
+{
+	/* Handle the easy cases first */
+	if(!strA)
+	{
+		if(!strB)
+		{
+			return 0;
+		}
+		else
+		{
+			return -1;
+		}
+	}
+	else if(!strB)
+	{
+		return 1;
+	}
+
+	/* TODO: handle culture information */
+
+	/* Compare the two strings */
+	if(ignoreCase)
+	{
+		return ILStrICmpUnicode(StringToBuffer(strA) + indexA, lengthA,
+							    StringToBuffer(strB) + indexB, lengthB);
+	}
+	else
+	{
+		return ILStrCmpUnicode(StringToBuffer(strA) + indexA, lengthA,
+							   StringToBuffer(strB) + indexB, lengthB);
+	}
+}
+
+/*
+ * public static int InternalOrdinal(String strA, int indexA, int lengthA,
+ *									 String strB, int indexB, int lengthB);
+ */
+static ILInt32 System_String_InternalOrdinal(ILExecThread *thread,
+									   		 System_String *strA,
+											 ILInt32 indexA, ILInt32 lengthA,
+									   		 System_String *strB,
+											 ILInt32 indexB, ILInt32 lengthB)
+{
+	ILUInt16 *bufA;
+	ILUInt16 *bufB;
+
+	/* Handle the easy cases first */
+	if(!strA)
+	{
+		if(!strB)
+		{
+			return 0;
+		}
+		else
+		{
+			return -1;
+		}
+	}
+	else if(!strB)
+	{
+		return 1;
+	}
+
+	/* Compare the two strings */
+	bufA = StringToBuffer(strA) + indexA;
+	bufB = StringToBuffer(strB) + indexB;
+	while(lengthA > 0 && lengthB > 0)
+	{
+		if(*bufA < *bufB)
+		{
+			return -1;
+		}
+		else if(*bufA > *bufB)
+		{
+			return 1;
+		}
+		++bufA;
+		++bufB;
+		--lengthA;
+		--lengthB;
+	}
+
+	/* Determine the ordering based on the tail sections */
+	if(lengthA > 0)
+	{
+		return 1;
+	}
+	else if(lengthB > 0)
+	{
+		return -1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public static bool Equals(String strA, String strB);
+ */
+static ILBool System_String_Equals(ILExecThread *thread,
+								   System_String *strA,
+								   System_String *strB)
+{
+	if(!strA)
+	{
+		if(!strB)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else if(!strB)
+	{
+		return 0;
+	}
+	else if(strA == strB)
+	{
+		return 1;
+	}
+	else if(strA->length != strB->length)
+	{
+		return 0;
+	}
+	else if(!(strA->length))
+	{
+		return 1;
+	}
+	else
+	{
+		return !ILMemCmp(StringToBuffer(strA),
+						 StringToBuffer(strB), strA->length);
+	}
+}
+
+/*
  * private static String FastAllocateString(int length);
  */
 static System_String *System_String_FastAllocateString
@@ -1021,6 +1288,17 @@ IL_METHOD_BEGIN(_ILSystemStringMethods)
 					0, System_String_ctor_6)
 	IL_CONSTRUCTOR(".ctor",	"(T*bii)V",		0, System_String_ctor_7)
 	IL_CONSTRUCTOR(".ctor",	"(T*b)V",		0, System_String_ctor_8)
+	IL_METHOD("Compare", "(oSystem.String;oSystem.String;)i",
+					System_String_Compare)
+	IL_METHOD("InternalCompare",
+					"(oSystem.String;iioSystem.String;iiZ"
+						"oSystem.Globalization.CultureInfo;)i",
+					System_String_InternalCompare)
+	IL_METHOD("InternalOrdinal",
+					"(oSystem.String;iioSystem.String;ii)i",
+					System_String_InternalOrdinal)
+	IL_METHOD("Equals", "(oSystem.String;oSystem.String;)Z",
+					System_String_Equals)
 	IL_METHOD("FastAllocateString", "(i)oSystem.String;",
 					System_String_FastAllocateString)
 	IL_METHOD("FillString",	"(oSystem.String;ioSystem.String;)V",
@@ -1106,122 +1384,39 @@ ILString *ILStringWCreateLen(ILExecThread *thread,
 
 int ILStringCompare(ILExecThread *thread, ILString *strA, ILString *strB)
 {
-	ILInt32 result = 0;
-	ILExecThreadCallNamed(thread, "System.String", "Compare",
-						  "(oSystem.String;oSystem.String;)i",
-						  &result, strA, strB);
-	return result;
+	return (int)(System_String_Compare(thread,
+									   (System_String *)strA,
+									   (System_String *)strB));
 }
 
 int ILStringCompareIgnoreCase(ILExecThread *thread, ILString *strA,
 							  ILString *strB)
 {
-	ILInt32 result = 0;
-	ILExecThreadCallNamed(thread, "System.String", "Compare",
-						  "(oSystem.String;oSystem.String;Z)i",
-						  &result, strA, strB, (ILVaInt)0);
-	return result;
+	return (int)(System_String_InternalCompare
+						(thread,
+						 (System_String *)strA, 0,
+						 ((strA != 0) ? ((System_String *)strA)->length : 0),
+						 (System_String *)strB, 0,
+						 ((strB != 0) ? ((System_String *)strB)->length : 0),
+						 (ILBool)1, (void *)0));
 }
 
 int ILStringCompareOrdinal(ILExecThread *thread, ILString *strA,
 						   ILString *strB)
 {
-	ILUInt16 *bufA;
-	ILUInt16 *bufB;
-	ILInt32 lenA;
-	ILInt32 lenB;
-
-	/* Handle the easy cases first */
-	if(!strA)
-	{
-		if(strB)
-		{
-			return -1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else if(!strB)
-	{
-		return 1;
-	}
-
-	/* Scan the buffers looking for differences */
-	bufA = StringToBuffer(strA);
-	lenA = ((System_String *)strA)->length;
-	bufB = StringToBuffer(strB);
-	lenB = ((System_String *)strB)->length;
-	while(lenA > 0 && lenB > 0)
-	{
-		if(*bufA < *bufB)
-		{
-			return -1;
-		}
-		else if(*bufA > *bufB)
-		{
-			return 1;
-		}
-		++bufA;
-		++bufB;
-		--lenA;
-		--lenB;
-	}
-
-	/* Determine the ordering based on the tails */
-	if(lenA > 0)
-	{
-		return 1;
-	}
-	else if(lenB > 0)
-	{
-		return -1;
-	}
-	else
-	{
-		return 0;
-	}
+	return (int)(System_String_InternalOrdinal
+						(thread,
+						 (System_String *)strA, 0,
+						 ((strA != 0) ? ((System_String *)strA)->length : 0),
+						 (System_String *)strB, 0,
+						 ((strB != 0) ? ((System_String *)strB)->length : 0)));
 }
 
 int ILStringEquals(ILExecThread *thread, ILString *strA, ILString *strB)
 {
-	ILUInt16 *bufA;
-	ILUInt16 *bufB;
-	ILInt32 lenA;
-	ILInt32 lenB;
-
-	/* Handle the easy cases first */
-	if(!strA)
-	{
-		return (strB == 0);
-	}
-	else if(!strB)
-	{
-		return 0;
-	}
-	else if(strA == strB)
-	{
-		return 1;
-	}
-
-	/* Scan the buffers looking for differences */
-	lenA = ((System_String *)strA)->length;
-	lenB = ((System_String *)strB)->length;
-	if(lenA != lenB)
-	{
-		return 0;
-	}
-	else if(!lenA)
-	{
-		return 1;
-	}
-	else
-	{
-		bufA = StringToBuffer(strA);
-		bufB = StringToBuffer(strB);
-		return (ILMemCmp(bufA, bufB, lenA * sizeof(ILUInt16)) == 0);
-	}
+	return (int)(System_String_Equals(thread,
+									  (System_String *)strA,
+									  (System_String *)strB));
 }
 
 ILString *ILStringConcat(ILExecThread *thread, ILString *strA, ILString *strB)

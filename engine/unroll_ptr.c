@@ -24,12 +24,12 @@
 #include <stddef.h>
 #endif
 /* 
-This should work in case offsetof is not available, but I fear
+This should work in case offsetof is not preset, but I fear
 the segfaults. 
 
 #ifndef offsetof
 #define offsetof(type, field) \
-	   		((unsigned int)(&(((type *)(NULL))->field)))
+	   		((int)(&(((type *)(NULL))->field)))
 #endif
 */
 
@@ -292,9 +292,16 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 	int array  = reg;
 	int i = reg2;
 	int j = reg3;
-	/* only PPC dependent code here, beware of clobbering */
-	int work = PPC_WORK; 
+	int work = PPC_WORK;
 
+	/*
+	  Algorithm of calc_address:
+		
+	  a + (((i - a->bounds[0].lower) * a->bounds[0].multiplier) +
+	  	(j - a->bounds[1].lower) * a->bounds[0].multiplier)) * a->elemSize)
+	  
+	  I've tried to pre-compute a->bounds into bounds (or MD_REG_PC)
+	*/
 #ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	md_reg_is_null(unroll->out, reg);
 	patch1 = unroll->out;
@@ -370,13 +377,16 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 									offsetof(System_MArray, elemSize));
 
 	md_add_reg_reg_word_32(unroll->out, i, j);
-	md_mul_reg_reg_word_32(unroll->out, i, work);
 	
 	md_load_membase_word_native(unroll->out, reg, array, 
 									offsetof(System_MArray,	data));
+	
+	md_mul_reg_reg_word_32(unroll->out, i, work);
+	
+	ppc_cache_prefetch(unroll->out, reg, i);
 
 	md_reg_to_word_native(unroll->out, i);
-	md_add_reg_reg_word_native(unroll->out, reg, i); /* reg == array */
+	md_add_reg_reg_word_native(unroll->out, reg, i);
 }
 
 #endif
@@ -625,6 +635,7 @@ case COP_PWRITE_R:
 break;
 
 #ifdef MD_HAS_FP
+#ifndef CVM_PPC /* TODO: bug in unroll stack handling */
 
 case COP_FWRITE_R:
 {
@@ -650,6 +661,7 @@ case COP_DWRITE_R:
 }
 break;
 
+#endif
 #endif /* MD_HAS_FP */
 
 case COP_PADD_OFFSET:

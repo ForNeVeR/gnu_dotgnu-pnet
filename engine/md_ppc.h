@@ -65,6 +65,7 @@ extern	"C" {
  * must include the MD_FREG_MASK value.
  */
 #define	MD_FREG_0		-1 /* TODO: enable FP */
+//#define	MD_FREG_0		(MD_FREG_MASK | PPC_F0)
 #define	MD_FREG_1		(MD_FREG_MASK | PPC_F1)
 #define	MD_FREG_2		(MD_FREG_MASK | PPC_F2)
 #define	MD_FREG_3		(MD_FREG_MASK | PPC_F3)
@@ -698,6 +699,8 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
 				ppc_load_membase((inst), PPC_WORK, (reg1), 0);\
 				ppc_add_reg_imm((inst), (reg1), (reg1), sizeof(System_Array));\
 				ppc_cmp_reg_reg((inst), PPC_CMPL, (reg2), PPC_WORK); \
+				/* branch compare needs a NOP, refresh cache instead */\
+				ppc_cache_prefetch((inst), reg1, reg2);  \
 			} while (0)
 
 /*

@@ -259,6 +259,8 @@ case COP_INEG:
 }
 break;
 
+#ifndef CVM_PPC /* has 8 byte CVMWords */
+
 case COP_LADD:
 {
 	/* Add 64-bit integers */
@@ -411,6 +413,8 @@ case COP_LNOT:
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
+
+#endif
 
 #ifdef MD_HAS_FP
 

@@ -711,6 +711,13 @@ typedef unsigned int *ppc_inst_ptr;
 			}\
 		} while(0)
 
+#define ppc_cache_prefetch(inst, basereg, indexreg) \
+		do {\
+			*(inst)++ = ((31 << 26) \
+							| (((unsigned int)(indexreg)) << 16)\
+							| (((unsigned int)(basereg)) << 11)\
+							| (246 << 1));\
+		}while(0)
 #ifdef __cplusplus
 };
 #endif

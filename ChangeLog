@@ -32,6 +32,12 @@
 	System.Windows.Forms/SaveFileDialog.cs: build the basic widget
 	structure for file dialogs, but with no behaviour as yet.
 
+	* System.Windows.Forms/ButtonBoxLayout.cs,
+	System.Windows.Forms/HBoxLayout.cs,
+	System.Windows.Forms/MessageBox.cs: add the "ButtonBoxLayout"
+	class as a variant of "HBoxLayout" - it correctly lays out buttons
+	at the bottom of a "MessageBox" dialog.
+
 2003-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

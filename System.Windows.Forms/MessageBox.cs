@@ -221,7 +221,7 @@ public class MessageBox
 		private Button button3;
 		private VBoxLayout vbox;
 		private HBoxLayout hbox;
-		private HBoxLayout buttonBox;
+		private ButtonBoxLayout buttonBox;
 		private bool hasCancel;
 
 		// Constructor.
@@ -247,7 +247,7 @@ public class MessageBox
 				// Create the layout areas.
 				vbox = new VBoxLayout();
 				hbox = new HBoxLayout();
-				buttonBox = new HBoxLayout();
+				buttonBox = new ButtonBoxLayout();
 				vbox.Controls.Add(hbox);
 				vbox.Controls.Add(buttonBox);
 				vbox.StretchControl = hbox;

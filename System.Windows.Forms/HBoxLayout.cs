@@ -32,7 +32,7 @@ internal class HBoxLayout : Control
 	// Internal state.
 	private bool uniformSize;
 	private Control stretchControl;
-	private int margin, spacing;
+	protected int margin, spacing;
 
 	// Constructor.
 	public HBoxLayout()
@@ -167,7 +167,7 @@ internal class HBoxLayout : Control
 			}
 
 	// Lay out the children in this control uniformly.
-	private void UniformLayout()
+	protected virtual void UniformLayout()
 			{
 				int numVisible = 0;
 				int index;
@@ -220,7 +220,7 @@ internal class HBoxLayout : Control
 			}
 
 	// Lay out the children in this control non-uniformly.
-	private void NonUniformLayout()
+	protected virtual void NonUniformLayout()
 			{
 				ControlCollection controls = Controls;
 				int count, index;

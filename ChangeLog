@@ -14,6 +14,10 @@
 	* Xsharp/XsharpSupport.c: temporarily disable the
 	24bpp-MSBFirst optimization because it isn't working correctly.
 
+	* tools/color_test.c: add a simple color testing program to
+	the "tools" directory, to help discover information that we
+	need to know to optimize XsharpSupport's image handling further.
+
 2003-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Private/DateTimeFormat/DateTimeParser.cs:

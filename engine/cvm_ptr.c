@@ -2131,6 +2131,7 @@ VMCASE(COP_PREAD_THIS):
 	/* Read a pointer value from a field within "this" */
 	if(frame[0].ptrValue != 0)
 	{
+		CVM_VAR_LOADED(0); \
 		stacktop[0].ptrValue = GET_THIS_FIELD(void *);
 		MODIFY_PC_AND_STACK(2, 1);
 	}
@@ -2171,6 +2172,7 @@ VMCASE(COP_IREAD_THIS):
 	/* Read an integer value from a field within "this" */
 	if(frame[0].ptrValue != 0)
 	{
+		CVM_VAR_LOADED(0); \
 		stacktop[0].intValue = GET_THIS_FIELD(ILInt32);
 		MODIFY_PC_AND_STACK(2, 1);
 	}

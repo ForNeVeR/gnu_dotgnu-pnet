@@ -20,7 +20,35 @@
 
 #if defined(IL_CVM_GLOBALS)
 
-/* No globals required */
+/*
+ * Macros that help to profile which variables are most commonly used
+ * during execution of applications, and their depth on the stack.
+ */
+#ifdef IL_PROFILE_CVM_VAR_USAGE
+
+extern int _ILCVMVarLoadCounts[256];
+extern int _ILCVMVarLoadDepths[256];
+extern int _ILCVMVarStoreCounts[256];
+extern int _ILCVMVarStoreDepths[256];
+
+#define	CVM_VAR_LOADED(n)	\
+			do { \
+				++(_ILCVMVarLoadCounts[(n)]); \
+				++(_ILCVMVarLoadDepths[stacktop - (frame + (n))]); \
+			} while (0)
+
+#define	CVM_VAR_STORED(n)	\
+			do { \
+				++(_ILCVMVarStoreCounts[(n)]); \
+				++(_ILCVMVarStoreDepths[stacktop - (frame + (n))]); \
+			} while (0)
+
+#else /* !CVM_PROFILE_VAR_USAGE */
+
+#define	CVM_VAR_LOADED(n)
+#define	CVM_VAR_STORED(n)
+
+#endif /* !CVM_PROFILE_VAR_USAGE */
 
 #elif defined(IL_CVM_LOCALS)
 
@@ -31,12 +59,14 @@ ILUInt32 tempNum;
 #define	COP_LOAD_N(n)	\
 VMCASE(COP_ILOAD_##n): \
 { \
+	CVM_VAR_LOADED(n); \
 	stacktop[0].intValue = frame[(n)].intValue; \
 	MODIFY_PC_AND_STACK(1, 1); \
 } \
 VMBREAK; \
 VMCASE(COP_PLOAD_##n): \
 { \
+	CVM_VAR_LOADED(n); \
 	stacktop[0].ptrValue = frame[(n)].ptrValue; \
 	MODIFY_PC_AND_STACK(1, 1); \
 } \
@@ -121,6 +151,7 @@ COP_LOAD_N(3);
 VMCASE(COP_ILOAD):
 {
 	/* Load an integer value from the frame */
+	CVM_VAR_LOADED(pc[1]);
 	stacktop[0].intValue = frame[pc[1]].intValue;
 	MODIFY_PC_AND_STACK(2, 1);
 }
@@ -152,6 +183,7 @@ VMBREAK;
 VMCASE(COP_PLOAD):
 {
 	/* Load a pointer value from the frame */
+	CVM_VAR_LOADED(pc[1]);
 	stacktop[0].ptrValue = frame[pc[1]].ptrValue;
 	MODIFY_PC_AND_STACK(2, 1);
 }
@@ -160,12 +192,14 @@ VMBREAK;
 #define	COP_STORE_N(n)	\
 VMCASE(COP_ISTORE_##n): \
 { \
+	CVM_VAR_STORED(n); \
 	frame[(n)].intValue = stacktop[-1].intValue; \
 	MODIFY_PC_AND_STACK(1, -1); \
 } \
 VMBREAK; \
 VMCASE(COP_PSTORE_##n): \
 { \
+	CVM_VAR_STORED(n); \
 	frame[(n)].ptrValue = stacktop[-1].ptrValue; \
 	MODIFY_PC_AND_STACK(1, -1); \
 } \
@@ -250,6 +284,7 @@ COP_STORE_N(3);
 VMCASE(COP_ISTORE):
 {
 	/* Store an integer value to the frame */
+	CVM_VAR_STORED(pc[1]);
 	frame[pc[1]].intValue = stacktop[-1].intValue;
 	MODIFY_PC_AND_STACK(2, -1);
 }
@@ -281,6 +316,7 @@ VMBREAK;
 VMCASE(COP_PSTORE):
 {
 	/* Store a pointer value to the frame */
+	CVM_VAR_STORED(pc[1]);
 	frame[pc[1]].ptrValue = stacktop[-1].ptrValue;
 	MODIFY_PC_AND_STACK(2, -1);
 }
@@ -307,6 +343,7 @@ VMBREAK;
 VMCASE(COP_MLOAD):
 {
 	/* Load a value consisting of multiple stack words */
+	CVM_VAR_LOADED(pc[1]);
 	IL_MEMCPY(stacktop, &(frame[pc[1]]), sizeof(CVMWord) * (unsigned)(pc[2]));
 	stacktop += (unsigned)(pc[2]);
 	pc += 3;
@@ -334,6 +371,7 @@ VMBREAK;
 VMCASE(COP_MSTORE):
 {
 	/* Store a value consisting of multiple stack words */
+	CVM_VAR_STORED(pc[1]);
 	stacktop -= (unsigned)(pc[2]);
 	IL_MEMCPY(&(frame[pc[1]]), stacktop, sizeof(CVMWord) * (unsigned)(pc[2]));
 	pc += 3;
@@ -360,6 +398,7 @@ VMBREAK;
 VMCASE(COP_WADDR):
 {
 	/* Get the address of the value starting at a frame word */
+	CVM_VAR_LOADED(pc[1]);
 	stacktop[0].ptrValue = (void *)(&(frame[pc[1]]));
 	MODIFY_PC_AND_STACK(2, 1);
 }
@@ -422,6 +461,7 @@ VMBREAK;
 VMCASE(COP_BLOAD):
 {
 	/* Load a byte value from the frame */
+	CVM_VAR_LOADED(pc[1]);
 	stacktop[0].intValue = *((ILUInt8 *)&(frame[pc[1]]));
 	MODIFY_PC_AND_STACK(2, 1);
 }
@@ -454,6 +494,7 @@ VMBREAK;
 VMCASE(COP_BSTORE):
 {
 	/* Store a byte value to the frame */
+	CVM_VAR_STORED(pc[1]);
 	*((ILUInt8 *)&(frame[pc[1]])) = (ILUInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(2, -1);
 }

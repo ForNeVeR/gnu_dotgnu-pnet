@@ -49,6 +49,7 @@ extern	"C" {
  */
 /*#define	IL_PROFILE_CVM_INSNS*/
 /*#define	IL_PROFILE_CVM_METHODS*/
+/*#define	IL_PROFILE_CVM_VAR_USAGE*/
 #ifdef IL_PROFILE_CVM_INSNS
 extern int _ILCVMInsnCount[];
 #endif

@@ -24,6 +24,9 @@
 	* engine/mklabel.sh: modify the awk scripts to work around versions
 	of awk that don't support hex string to number conversion.
 
+	* engine/cvm.c, engine/cvm_dasm.c, engine/cvm_ptr.c,
+	engine/cvm_var.c, engine/ilrun.c: add variable profiling.
+
 2002-05-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_decls.tc, cscc/csharp/cs_lvalue.tc,

@@ -1024,6 +1024,76 @@ int _ILDumpInsnProfile(FILE *stream)
 	return sawCounts;
 }
 
+/*
+ * Variable profiling arrays.
+ */
+int _ILCVMVarLoadCounts[256];
+int _ILCVMVarLoadDepths[256];
+int _ILCVMVarStoreCounts[256];
+int _ILCVMVarStoreDepths[256];
+
+/*
+ * Dump an array in decreasing order of value.
+ */
+static int DumpVarArray(FILE *stream, const char *name, int *array)
+{
+	int indices[256];
+	int index, index2, temp;
+
+	/* Output the array name */
+	fprintf(stream, "\n%s:\n\n", name);
+
+	/* Initialize the "indices" array */
+	index2 = -1;
+	for(index = 0; index < 256; ++index)
+	{
+		if(array[index] != 0)
+		{
+			index2 = index;
+		}
+		indices[index] = index;
+	}
+	if(index2 == -1)
+	{
+		return 0;
+	}
+
+	/* Sort the incoming array */
+	for(index = 0; index < 255; ++index)
+	{
+		for(index2 = index + 1; index2 < 256; ++index2)
+		{
+			if(array[indices[index]] < array[indices[index2]])
+			{
+				temp = indices[index];
+				indices[index] = indices[index2];
+				indices[index2] = temp;
+			}
+		}
+	}
+
+	/* Dump the contents of the array */
+	for(index = 0; index < 256; ++index)
+	{
+		if(array[indices[index]] != 0)
+		{
+			fprintf(stream, "%d\t%d\n", indices[index], array[indices[index]]);
+		}
+	}
+	return 1;
+}
+
+/*
+ * Dump the variable profile arrays.
+ */
+int _ILDumpVarProfile(FILE *stream)
+{
+	return DumpVarArray(stream, "variable load indices", _ILCVMVarLoadCounts)
+	    && DumpVarArray(stream, "variable load depths", _ILCVMVarLoadDepths)
+		&& DumpVarArray(stream, "variable store indices", _ILCVMVarStoreCounts)
+		&& DumpVarArray(stream, "variable store depths", _ILCVMVarStoreDepths);
+}
+
 #ifdef	__cplusplus
 };
 #endif

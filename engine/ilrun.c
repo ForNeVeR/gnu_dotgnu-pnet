@@ -40,6 +40,7 @@ int _ILUnregisterFromKernel(void);
  * Imports from "cvm_dasm.c".
  */
 int _ILDumpInsnProfile(FILE *stream);
+int _ILDumpVarProfile(FILE *stream);
 
 /*
  * Imports from "cvmc.c".
@@ -80,12 +81,16 @@ static ILCmdLineOption const options[] = {
 
 	/* Special internal options that are used for debugging.
 	   Note: -I won't do anything unless IL_PROFILE_CVM_INSNS
-	   is defined in "cvm.c", and -M won't do anything unless
-	   IL_PROFILE_CVM_METHODS is defined in "cvm.c" */
+	   is defined in "cvm.c", -M won't do anything unless
+	   IL_PROFILE_CVM_METHODS is defined in "cvm.c", and -V
+	   won't do anything unless IL_PROFILE_CVM_VAR_USAGE is
+	   defined in "cvm.c" */
 	{"-I", 'I', 0, 0, 0},
 	{"--insn-profile", 'I', 0, 0, 0},
 	{"-M", 'M', 0, 0, 0},
 	{"--method-profile", 'M', 0, 0, 0},
+	{"-V", 'V', 0, 0, 0},
+	{"--var-profile", 'V', 0, 0, 0},
 
 	{0, 0, 0, 0, 0}
 };
@@ -114,6 +119,7 @@ int main(int argc, char *argv[])
 	int registerMode = 0;
 	int dumpInsnProfile = 0;
 	int dumpMethodProfile = 0;
+	int dumpVarProfile = 0;
 
 	/* Initialize the locale routines */
 	ILInitLocale();
@@ -177,6 +183,12 @@ int main(int argc, char *argv[])
 			case 'M':
 			{
 				dumpMethodProfile = 1;
+			}
+			break;
+
+			case 'V':
+			{
+				dumpVarProfile = 1;
 			}
 			break;
 
@@ -353,6 +365,14 @@ int main(int argc, char *argv[])
 		if(!_ILDumpMethodProfile(stdout, process))
 		{
 			fprintf(stderr, "%s: method profiles are not available\n",
+					progname);
+		}
+	}
+	if(dumpVarProfile)
+	{
+		if(!_ILDumpVarProfile(stdout))
+		{
+			fprintf(stderr, "%s: variable profiles are not available\n",
 					progname);
 		}
 	}

@@ -19,6 +19,9 @@ method code generator, output local variables.
 
 * cscc/cs_lvalue.tc: change scopes in semantic analysis for NewScope.
 
+* cscc/cs_gather.c: change VarDeclarator to FieldDeclarator, new calling
+conventions for ILScopeDeclareMember.
+
 2001-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc: add the

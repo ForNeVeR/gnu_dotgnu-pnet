@@ -254,12 +254,12 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
  */
 static void AddMemberToScope(ILScope *scope, int memberKind,
 							 const char *name, ILMember *member,
-							 ILNode *errorNode)
+							 ILNode *node)
 {
-	int error = ILScopeDeclareMember(scope, name, memberKind, member);
+	int error = ILScopeDeclareMember(scope, name, memberKind, member, node);
 	if(error != IL_SCOPE_ERROR_OK)
 	{
-		CSErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "member conflicts with a type name in the same scope");
 	}
 }
@@ -271,7 +271,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 						ILNode_FieldDeclaration *field)
 {
 	ILNode_ListIter iterator;
-	ILNode_VarDeclarator *decl;
+	ILNode_FieldDeclarator *decl;
 	ILField *fieldInfo;
 	char *name;
 	ILType *tempType;
@@ -281,7 +281,8 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 
 	/* Iterator over the field declarators and create each field in turn */
 	ILNode_ListIter_Init(&iterator, field->fieldDeclarators);
-	while((decl = (ILNode_VarDeclarator *)ILNode_ListIter_Next(&iterator)) != 0)
+	while((decl = (ILNode_FieldDeclarator *)
+						ILNode_ListIter_Next(&iterator)) != 0)
 	{
 		/* Get the name of the field */
 		name = ILQualIdentName(decl->name, 0);

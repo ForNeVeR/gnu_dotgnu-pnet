@@ -15,6 +15,10 @@
 	* engine/cvmc_gen.h: slight modification to _CVM_PTR to work around a
 	warning from gcc 3.4.x.
 
+	* cscc/csharp/cs_attrs.c, engine/lib_reflect.c, ildasm/ildasm_attrs.c,
+	image/ser_parse.c, image/ser_writer.c: fix a bug related to the
+	serialization of null strings in attribute blocks.
+
 2004-07-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_gc.c: fix _IL_GCHandle_GCAddrOfPinnedObject behavior

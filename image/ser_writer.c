@@ -197,13 +197,22 @@ void ILSerializeWriterSetFloat64(ILSerializeWriter *writer, ILDouble value)
 void ILSerializeWriterSetString(ILSerializeWriter *writer,
 								const char *str, int len)
 {
-	unsigned char header[IL_META_COMPRESS_MAX_SIZE];
-	int headerLen = ILMetaCompressData(header, len);
-	unsigned char *buf = GetSpace(writer, headerLen + len);
-	if(buf)
+	if(str)
 	{
-		ILMemCpy(buf, header, headerLen);
-		ILMemCpy(buf + headerLen, str, len);
+		unsigned char header[IL_META_COMPRESS_MAX_SIZE];
+		int headerLen = ILMetaCompressData(header, len);
+		unsigned char *buf = GetSpace(writer, headerLen + len);
+		if(buf)
+		{
+			ILMemCpy(buf, header, headerLen);
+			ILMemCpy(buf + headerLen, str, len);
+		}
+	}
+	else
+	{
+		/* Encode the null string in the output */
+		unsigned char *buf = GetSpace(writer, 1);
+		*buf = (unsigned char)0xFF;
 	}
 }
 

@@ -163,7 +163,7 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 					break;
 			case IL_META_SERIALTYPE_STRING:
 					strLen = ILSerializeReaderGetString(reader,&strValue);
-					if(strLen == -1) 
+					if(strLen == -1 || !strValue) 
 					{
 						return NULL;
 					}
@@ -171,7 +171,7 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 									strValue,strLen));	
 			case IL_META_SERIALTYPE_TYPE:
 					strLen = ILSerializeReaderGetString(reader,&strValue);
-					if(strLen == -1) 
+					if(strLen == -1 || !strValue) 
 					{
 						return NULL;
 					}
@@ -233,7 +233,7 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 						{
 							strLen = ILSerializeReaderGetString(reader,
 															&strValue);
-							if(strLen == -1) 
+							if(strLen == -1 || !strValue) 
 							{
 								return NULL;
 							}

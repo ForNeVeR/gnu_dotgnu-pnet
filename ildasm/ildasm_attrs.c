@@ -129,7 +129,14 @@ static int DumpAttrValue(FILE *outstream, ILSerializeReader *reader, int type)
 			{
 				return 0;
 			}
-			ILDumpStringLen(outstream, strValue, strLen);
+			if(strValue)
+			{
+				ILDumpStringLen(outstream, strValue, strLen);
+			}
+			else
+			{
+				fputs("null", outstream);
+			}
 		}
 		break;
 
@@ -141,7 +148,14 @@ static int DumpAttrValue(FILE *outstream, ILSerializeReader *reader, int type)
 				return 0;
 			}
 			fputs("typeof(", outstream);
-			fwrite(strValue, 1, strLen, outstream);
+			if(strValue)
+			{
+				fwrite(strValue, 1, strLen, outstream);
+			}
+			else
+			{
+				fputs("null", outstream);
+			}
 			putc(')', outstream);
 		}
 		break;

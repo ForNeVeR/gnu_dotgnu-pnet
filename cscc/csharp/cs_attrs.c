@@ -332,8 +332,15 @@ static void WriteSerializedEntry(ILGenInfo *info,
 
 		case IL_META_SERIALTYPE_STRING:
 		{
-			ILSerializeWriterSetString(writer, argValue->un.strValue.str,
-									   argValue->un.strValue.len);
+			if(argValue->valueType == ILMachineType_String)
+			{
+				ILSerializeWriterSetString(writer, argValue->un.strValue.str,
+										   argValue->un.strValue.len);
+			}
+			else
+			{
+				ILSerializeWriterSetString(writer, 0, 0);
+			}
 		}
 		break;
 

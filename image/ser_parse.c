@@ -468,7 +468,16 @@ ILDouble ILSerializeReaderGetFloat64(ILSerializeReader *reader)
 
 int ILSerializeReaderGetString(ILSerializeReader *reader, const char **str)
 {
-	unsigned long length = ILMetaUncompressData(&(reader->meta));
+	unsigned long length;
+	if(reader->meta.len > 0 && reader->meta.data[0] == (unsigned char)0xFF)
+	{
+		/* Encoding of the null string */
+		++(reader->meta.data);
+		--(reader->meta.len);
+		*str = 0;
+		return 0;
+	}
+	length = ILMetaUncompressData(&(reader->meta));
 	if(reader->meta.error || length > reader->meta.len)
 	{
 		return -1;
@@ -558,7 +567,7 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader,
 
 	/* Get the member's name */
 	nameLen = ILSerializeReaderGetString(reader, &name);
-	if(nameLen == -1)
+	if(nameLen == -1 || !name)
 	{
 		return -1;
 	}

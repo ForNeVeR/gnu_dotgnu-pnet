@@ -60,7 +60,6 @@ public sealed class Trace
 				listeners = new TraceListenerCollection();
 				listeners.Add(defListener);
 
-#if false
 				// Get the diagnostics configuration options.
 				Hashtable options = (Hashtable)
 					ConfigurationSettings.GetConfig
@@ -72,7 +71,7 @@ public sealed class Trace
 				}
 
 				// Process the options for the default trace listener.
-				value = options["assertuienabled"];
+				Object value = options["assertuienabled"];
 				if(value != null)
 				{
 					defListener.AssertUiEnabled = (bool)value;
@@ -95,7 +94,6 @@ public sealed class Trace
 					indentSize = (int)value;
 				}
 				switches = (Hashtable)(options["switches"]);
-#endif
 			}
 
 	// Global trace properties.

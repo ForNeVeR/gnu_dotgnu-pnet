@@ -1,4 +1,9 @@
 
+2004-09-02  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* System/Diagnostics/Trace.cs: Enable trace level reading code.
+	(Patch #3335, fixes Bug #10241, Gopal)
+
 2004-08-31  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* runtime/System/Type.cs: Remove recursive loop in Type.GetTypeCode for

@@ -113,6 +113,56 @@ public class TestMonitor
 		Monitor.Exit(o2);
 	}
 
+	bool flag;
+	object monitor = new object();
+	
+	private void ExclusionRun1()
+	{
+		lock (monitor)
+		{		
+			Thread.Sleep(1000);
+			
+			flag = true;
+		}		
+	}
+		
+	private void ExclusionRun2()
+	{
+		/* Wait for thread1 to obtain lock */
+		
+		Thread.Sleep(100);
+		
+		lock (monitor)
+		{
+			/* Fails if lock didn't wait for thread1 */
+			
+			failed = !flag;	
+		}
+	}
+	
+	public void TestMonitorExclusion()
+	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+		
+		Thread thread1, thread2;
+		
+		flag = false;
+		failed = true;
+		
+		thread1 = new Thread(new ThreadStart(ExclusionRun1));
+		thread2 = new Thread(new ThreadStart(ExclusionRun2));	
+		
+		thread1.Start();
+		thread2.Start();
+
+		thread1.Join();
+		thread2.Join();
+		
+		Assert("Exclusion failed", !failed);
+	}
 
 	/*
 	 * Variables used for monitor thrashing..
@@ -189,56 +239,5 @@ public class TestMonitor
 		thread2.Join();
 		
 		AssertEquals("Monitor locking", failed, false);
-	}
-
-	bool flag;
-	object monitor = new object();
-	
-	private void ExclusionRun1()
-	{
-		lock (monitor)
-		{		
-			Thread.Sleep(1000);
-			
-			flag = true;
-		}		
-	}
-		
-	private void ExclusionRun2()
-	{
-		/* Wait for thread1 to obtain lock */
-		
-		Thread.Sleep(100);
-		
-		lock (monitor)
-		{
-			/* Fails if lock didn't wait for thread1 */
-			
-			failed = !flag;	
-		}
-	}
-	
-	public void TestMonitorExclusion()
-	{
-		if (!TestThread.IsThreadingSupported)
-		{
-			return;
-		}
-		
-		Thread thread1, thread2;
-		
-		flag = false;
-		failed = true;
-		
-		thread1 = new Thread(new ThreadStart(ExclusionRun1));
-		thread2 = new Thread(new ThreadStart(ExclusionRun2));	
-		
-		thread1.Start();
-		thread2.Start();
-
-		thread1.Join();
-		thread2.Join();
-		
-		Assert("Exclusion failed", !failed);
 	}
 }

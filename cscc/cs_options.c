@@ -883,7 +883,7 @@ void CSAddLinkFile(char *filename, int isTemp)
 		CSOutOfMemory();
 	}
 	files_to_link_temp = newlist;
-	files_to_link_temp[num_files_to_link] = isTemp;
+	files_to_link_temp[num_files_to_link - 1] = isTemp;
 }
 
 #ifdef	__cplusplus

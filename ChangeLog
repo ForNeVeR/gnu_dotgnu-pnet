@@ -20,6 +20,9 @@ required by the ECMA standard.
 * runtime/System/Type.cs: implement "IsAssignableFrom", "IsInstanceOfType",
 and "GetDefaultMembers".
 
+* resources/en_US/runtime/Arg.txt: extra error messages used by the
+runtime engine when implementing arrays.
+
 2001-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/AppDomain.cs,

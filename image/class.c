@@ -298,6 +298,11 @@ ILClass *ILClassCreateRef(ILProgramItem *scope, ILToken token,
 	return info;
 }
 
+ILClass *ILClassResolve(ILClass *info)
+{
+	return (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
+}
+
 ILProgramItem *ILClassGlobalScope(ILImage *image)
 {
 	/* The global scope is the first module definition record */

@@ -30,6 +30,8 @@ include/il_writer.h: remove obsolete code related to Beta 1 support.
 
 * doc/pnetimg.texi: document ILContextNextImage.
 
+* include/il_program.h, image/class.c: implement ILClassResolve.
+
 2001-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: add support for .jar files to the loader.

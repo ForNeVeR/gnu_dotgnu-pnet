@@ -468,6 +468,11 @@ ILClass *ILClassCreateRef(ILProgramItem *scope, ILToken token,
 						  const char *name, const char *namespace);
 
 /*
+ * Resolve cross-image links for a class.
+ */
+ILClass *ILClassResolve(ILClass *info);
+
+/*
  * Get the global scope for an image.  Returns NULL
  * if there is no module definition that is appropriate
  * to define the scope.

@@ -56,6 +56,22 @@ internal struct XConfigureRequestEvent
 	public int detail         { get { return (int)detail__; } }
 	public uint value_mask    { get { return (uint)value_mask__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": parent=" +
+					   ((ulong)parent).ToString() +
+					   " window=" + ((ulong)window).ToString() +
+					   " x=" + x.ToString() +
+					   " y=" + y.ToString() +
+					   " width=" + width.ToString() +
+					   " height=" + height.ToString() +
+					   " border_width=" + border_width.ToString() +
+					   " above=" + ((ulong)above).ToString() +
+					   " detail=" + detail.ToString() +
+					   " value_mask=" + value_mask.ToString();
+			}
+
 } // struct XConfigureRequestEvent
 
 } // namespace Xsharp.Events

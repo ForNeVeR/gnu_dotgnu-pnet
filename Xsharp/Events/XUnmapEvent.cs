@@ -45,6 +45,15 @@ internal struct XUnmapEvent
 	public bool from_configure
 			{ get { return (from_configure__ != Xlib.Bool.False); } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": event_window=" +
+					   ((ulong)event_window).ToString() +
+					   " window=" + ((ulong)window).ToString() +
+					   " from_configure=" + from_configure.ToString();
+			}
+
 } // struct XUnmapEvent
 
 } // namespace Xsharp.Events

@@ -50,6 +50,17 @@ internal struct XExposeEvent
 	public int height         { get { return (int)height__; } }
 	public int count          { get { return (int)count__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " x=" + x.ToString() +
+					   " y=" + y.ToString() +
+					   " width=" + width.ToString() +
+					   " height=" + height.ToString() +
+					   " count=" + count.ToString();
+			}
+
 } // struct XExposeEvent
 
 } // namespace Xsharp.Events

@@ -44,6 +44,14 @@ internal struct XResizeRequestEvent
 	public int width          { get { return (int)width__; } }
 	public int height         { get { return (int)height__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " width=" + width.ToString() +
+					   " height=" + height.ToString();
+			}
+
 } // struct XResizeRequestEvent
 
 } // namespace Xsharp.Events

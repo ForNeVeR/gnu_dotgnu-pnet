@@ -46,6 +46,16 @@ internal struct XGravityEvent
 	public int x              { get { return (int)x__; } }
 	public int y              { get { return (int)y__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": event_window=" +
+					   ((ulong)event_window).ToString() +
+					   " window=" + ((ulong)window).ToString() +
+					   " x=" + x.ToString() +
+					   " y=" + y.ToString();
+			}
+
 } // struct XGravityEvent
 
 } // namespace Xsharp.Events

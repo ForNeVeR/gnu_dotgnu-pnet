@@ -58,6 +58,22 @@ internal struct XButtonEvent
 	public bool same_screen
 		{ get { return (same_screen__ != Xlib.Bool.False); } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " x=" + x.ToString() +
+					   " y=" + y.ToString() +
+					   " x_root=" + x_root.ToString() +
+					   " y_root=" + y_root.ToString() +
+					   " state=" + state.ToString() +
+					   " button=" + button.ToString() +
+					   " time=" + ((ulong)time).ToString() +
+					   " root=" + ((ulong)root).ToString() +
+					   " subwindow=" + ((ulong)subwindow).ToString() +
+					   " same_screen=" + same_screen.ToString();
+			}
+
 } // struct XButtonEvent
 
 } // namespace Xsharp.Events

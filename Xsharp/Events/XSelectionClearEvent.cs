@@ -40,6 +40,14 @@ internal struct XSelectionClearEvent
 	public IntPtr display     { get { return common__.display; } }
 	public Xlib.Window window { get { return common__.window; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " selection=" + ((ulong)selection).ToString() +
+					   " time=" + ((ulong)time).ToString();
+			}
+
 } // struct XSelectionClearEvent
 
 } // namespace Xsharp.Events

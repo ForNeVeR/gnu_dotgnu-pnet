@@ -39,6 +39,14 @@ internal struct XMapRequestEvent
 	public IntPtr display     { get { return common__.display; } }
 	public Xlib.Window parent { get { return common__.window; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": parent=" +
+					   ((ulong)parent).ToString() +
+					   " window=" + ((ulong)window).ToString();
+			}
+
 } // struct XMapRequestEvent
 
 } // namespace Xsharp.Events

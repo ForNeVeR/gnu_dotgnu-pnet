@@ -161,6 +161,14 @@ internal struct XClientMessageEvent
 				return 0;
 			}
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " message_type=" + ((ulong)message_type).ToString() +
+					   " format=" + format.ToString();
+			}
+
 } // struct XClientMessageEvent
 
 } // namespace Xsharp.Events

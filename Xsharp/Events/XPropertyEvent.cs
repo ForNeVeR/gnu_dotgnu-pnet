@@ -44,6 +44,15 @@ internal struct XPropertyEvent
 	// Convert odd fields into types that are useful.
 	public int state          { get { return (int)state__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " atom=" + ((ulong)atom).ToString() +
+					   " time=" + ((ulong)time).ToString() +
+					   " state=" + state.ToString();
+			}
+
 } // struct XPropertyEvent
 
 } // namespace Xsharp.Events

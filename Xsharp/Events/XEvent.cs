@@ -67,6 +67,107 @@ internal struct XEvent
 	public IntPtr display     { get { return xany.display; } }
 	public Xlib.Window window { get { return xany.window; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				switch(type)
+				{
+					case EventType.KeyPress:
+					case EventType.KeyRelease:
+						return xkey.ToString();
+
+					case EventType.ButtonPress:
+					case EventType.ButtonRelease:
+						return xbutton.ToString();
+
+					case EventType.MotionNotify:
+						return xmotion.ToString();
+
+					case EventType.EnterNotify:
+					case EventType.LeaveNotify:
+						return xcrossing.ToString();
+
+					case EventType.FocusIn:
+					case EventType.FocusOut:
+						return xfocus.ToString();
+
+					case EventType.KeymapNotify:
+						return xkeymap.ToString();
+
+					case EventType.Expose:
+						return xexpose.ToString();
+
+					case EventType.GraphicsExpose:
+						return xgraphicsexpose.ToString();
+
+					case EventType.NoExpose:
+						return xnoexpose.ToString();
+
+					case EventType.VisibilityNotify:
+						return xvisibility.ToString();
+
+					case EventType.CreateNotify:
+						return xcreatewindow.ToString();
+
+					case EventType.DestroyNotify:
+						return xdestroywindow.ToString();
+
+					case EventType.UnmapNotify:
+						return xunmap.ToString();
+
+					case EventType.MapNotify:
+						return xmap.ToString();
+
+					case EventType.MapRequest:
+						return xmaprequest.ToString();
+
+					case EventType.ReparentNotify:
+						return xreparent.ToString();
+
+					case EventType.ConfigureNotify:
+						return xconfigure.ToString();
+
+					case EventType.GravityNotify:
+						return xgravity.ToString();
+
+					case EventType.ResizeRequest:
+						return xresizerequest.ToString();
+
+					case EventType.ConfigureRequest:
+						return xconfigurerequest.ToString();
+
+					case EventType.CirculateNotify:
+						return xcirculate.ToString();
+
+					case EventType.CirculateRequest:
+						return xcirculaterequest.ToString();
+
+					case EventType.PropertyNotify:
+						return xproperty.ToString();
+
+					case EventType.SelectionClear:
+						return xselectionclear.ToString();
+
+					case EventType.SelectionRequest:
+						return xselectionrequest.ToString();
+
+					case EventType.SelectionNotify:
+						return xselection.ToString();
+
+					case EventType.ColormapNotify:
+						return xcolormap.ToString();
+
+					case EventType.ClientMessage:
+						return xclient.ToString();
+
+					case EventType.MappingNotify:
+						return xmapping.ToString();
+
+					default:
+						return xany.ToString();
+				}
+			}
+
 } // struct XEvent
 
 } // namespace Xsharp.Events

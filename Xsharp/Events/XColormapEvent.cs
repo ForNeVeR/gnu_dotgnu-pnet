@@ -46,6 +46,15 @@ internal struct XColormapEvent
 			{ get { return (c_new__ != Xlib.Bool.False); } }
 	public int state          { get { return (int)state__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " colormap=" + ((ulong)colormap).ToString() +
+					   " c_new=" + c_new.ToString() +
+					   " state=" + state.ToString();
+			}
+
 } // struct XColormapEvent
 
 } // namespace Xsharp.Events

@@ -111,6 +111,12 @@ internal struct XKeymapEvent
 				return 0;
 			}
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString();
+			}
+
 } // struct XKeymapEvent
 
 } // namespace Xsharp.Events

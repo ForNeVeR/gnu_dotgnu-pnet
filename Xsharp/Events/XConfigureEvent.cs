@@ -56,6 +56,21 @@ internal struct XConfigureEvent
 	public bool override_redirect
 			{ get { return (override_redirect__ != Xlib.Bool.False); } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": event_window=" +
+					   ((ulong)event_window).ToString() +
+					   " window=" + ((ulong)window).ToString() +
+					   " x=" + x.ToString() +
+					   " y=" + y.ToString() +
+					   " width=" + width.ToString() +
+					   " height=" + height.ToString() +
+					   " border_width=" + border_width.ToString() +
+					   " above=" + ((ulong)above).ToString() +
+					   " override_redirect=" + override_redirect.ToString();
+			}
+
 } // struct XConfigureEvent
 
 } // namespace Xsharp.Events

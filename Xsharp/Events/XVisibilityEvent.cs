@@ -42,6 +42,13 @@ internal struct XVisibilityEvent
 	// Convert odd fields into types that are useful.
 	public int state          { get { return (int)state__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " state=" + state.ToString();
+			}
+
 } // struct XVisibilityEvent
 
 } // namespace Xsharp.Events

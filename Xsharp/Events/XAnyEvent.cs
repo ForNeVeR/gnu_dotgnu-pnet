@@ -41,6 +41,13 @@ internal struct XAnyEvent
 	public bool send_event
 		{ get { return (send_event__ != Xlib.Bool.False); } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": window=" +
+					   ((ulong)window).ToString();
+			}
+
 } // struct XAnyEvent
 
 } // namespace Xsharp.Events

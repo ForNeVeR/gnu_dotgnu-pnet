@@ -54,6 +54,20 @@ internal struct XCreateWindowEvent
 	public bool override_redirect
 			{ get { return (override_redirect__ != Xlib.Bool.False); } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": parent=" +
+					   ((ulong)parent).ToString() +
+					   " window=" + ((ulong)window).ToString() +
+					   " x=" + x.ToString() +
+					   " y=" + y.ToString() +
+					   " width=" + width.ToString() +
+					   " height=" + height.ToString() +
+					   " border_width=" + border_width.ToString() +
+					   " override_redirect=" + override_redirect.ToString();
+			}
+
 } // struct XCreateWindowEvent
 
 } // namespace Xsharp.Events

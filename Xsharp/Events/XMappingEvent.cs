@@ -46,6 +46,15 @@ internal struct XMappingEvent
 	public int first_keycode  { get { return (int)first_keycode__; } }
 	public int count          { get { return (int)count__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " request=" + request.ToString() +
+					   " first_keycode=" + first_keycode.ToString() +
+					   " count=" + count.ToString();
+			}
+
 } // struct XMappingEvent
 
 } // namespace Xsharp.Events

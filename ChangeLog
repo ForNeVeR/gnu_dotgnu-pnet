@@ -1,3 +1,26 @@
+
+2003-08-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Events/XAnyEvent.cs, Xsharp/Events/XButtonEvent.cs,
+	Xsharp/Events/XCirculateEvent.cs,
+	Xsharp/Events/XCirculateRequestEvent.cs,
+	Xsharp/Events/XClientMessageEvent.cs, Xsharp/Events/XColormapEvent.cs,
+	Xsharp/Events/XConfigureEvent.cs,
+	Xsharp/Events/XConfigureRequestEvent.cs,
+	Xsharp/Events/XCreateWindowEvent.cs, Xsharp/Events/XCrossingEvent.cs,
+	Xsharp/Events/XDestroyWindowEvent.cs, Xsharp/Events/XEvent.cs,
+	Xsharp/Events/XExposeEvent.cs, Xsharp/Events/XFocusChangeEvent.cs,
+	Xsharp/Events/XGraphicsExposeEvent.cs, Xsharp/Events/XGravityEvent.cs,
+	Xsharp/Events/XKeyEvent.cs, Xsharp/Events/XKeymapEvent.cs,
+	Xsharp/Events/XMapEvent.cs, Xsharp/Events/XMapRequestEvent.cs,
+	Xsharp/Events/XMappingEvent.cs, Xsharp/Events/XMotionEvent.cs,
+	Xsharp/Events/XNoExposeEvent.cs, Xsharp/Events/XPropertyEvent.cs,
+	Xsharp/Events/XReparentEvent.cs, Xsharp/Events/XResizeRequestEvent.cs,
+	Xsharp/Events/XSelectionClearEvent.cs, Xsharp/Events/XSelectionEvent.cs,
+	Xsharp/Events/XSelectionRequestEvent.cs, Xsharp/Events/XUnmapEvent.cs,
+	Xsharp/Events/XVisibilityEvent.cs: add "ToString()" methods to
+	the Xsharp event classes, to help with debugging.
+
 2003-08-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/Image.cs, System.Drawing/Bitmap.cs,

@@ -45,6 +45,15 @@ internal struct XMapEvent
 	public bool override_redirect
 			{ get { return (override_redirect__ != Xlib.Bool.False); } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": event_window=" +
+					   ((ulong)event_window).ToString() +
+					   " window=" + ((ulong)window).ToString() +
+					   " override_redirect=" + override_redirect.ToString();
+			}
+
 } // struct XMapEvent
 
 } // namespace Xsharp.Events

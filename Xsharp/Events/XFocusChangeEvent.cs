@@ -44,6 +44,14 @@ internal struct XFocusChangeEvent
 	public int mode           { get { return (int)mode__; } }
 	public int detail         { get { return (int)detail__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " mode=" + mode.ToString() +
+					   " detail=" + detail.ToString();
+			}
+
 } // struct XFocusChangeEvent
 
 } // namespace Xsharp.Events

@@ -43,6 +43,17 @@ internal struct XSelectionEvent
 	public Xlib.Window requestor
 			{ get { return common__.window; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": requestor=" +
+					   ((ulong)requestor).ToString() +
+					   " selection=" + ((ulong)selection).ToString() +
+					   " target=" + ((ulong)target).ToString() +
+					   " property=" + ((ulong)property).ToString() +
+					   " time=" + ((ulong)time).ToString();
+			}
+
 } // struct XSelectionEvent
 
 } // namespace Xsharp.Events

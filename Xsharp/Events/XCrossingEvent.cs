@@ -64,6 +64,24 @@ internal struct XCrossingEvent
 		{ get { return (focus__ != Xlib.Bool.False); } }
 	public ModifierMask state { get { return (ModifierMask)(uint)state__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " x=" + x.ToString() +
+					   " y=" + y.ToString() +
+					   " x_root=" + x_root.ToString() +
+					   " y_root=" + y_root.ToString() +
+					   " mode=" + mode.ToString() +
+					   " detail=" + detail.ToString() +
+					   " same_screen=" + same_screen.ToString() +
+					   " focus=" + focus.ToString() +
+					   " state=" + state.ToString() +
+					   " time=" + ((ulong)time).ToString() +
+					   " root=" + ((ulong)root).ToString() +
+					   " subwindow=" + ((ulong)subwindow).ToString();
+			}
+
 } // struct XCrossingEvent
 
 } // namespace Xsharp.Events

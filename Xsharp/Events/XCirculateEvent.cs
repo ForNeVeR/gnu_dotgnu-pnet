@@ -44,6 +44,15 @@ internal struct XCirculateEvent
 	// Convert odd fields into types that are useful.
 	public int place          { get { return (int)place__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": event_window=" +
+					   ((ulong)event_window).ToString() +
+					   " window=" + ((ulong)window).ToString() +
+					   " place=" + place.ToString();
+			}
+
 } // struct XCirculateEvent
 
 } // namespace Xsharp.Events

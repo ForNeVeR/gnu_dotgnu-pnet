@@ -45,6 +45,15 @@ internal struct XNoExposeEvent
 	public int major_code     { get { return (int)major_code__; } }
 	public int minor_code     { get { return (int)minor_code__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": drawable=" +
+					   ((ulong)drawable).ToString() +
+					   " major_code=" + major_code.ToString() +
+					   " minor_code=" + minor_code.ToString();
+			}
+
 } // struct XNoExposeEvent
 
 } // namespace Xsharp.Events

@@ -55,6 +55,19 @@ internal struct XGraphicsExposeEvent
 	public int major_code     { get { return (int)major_code__; } }
 	public int minor_code     { get { return (int)minor_code__; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return common__.ToString() +
+					   " x=" + x.ToString() +
+					   " y=" + y.ToString() +
+					   " width=" + width.ToString() +
+					   " height=" + height.ToString() +
+					   " count=" + count.ToString() +
+					   " major_code=" + major_code.ToString() +
+					   " minor_code=" + minor_code.ToString();
+			}
+
 } // struct XGraphicsExposeEvent
 
 } // namespace Xsharp.Events

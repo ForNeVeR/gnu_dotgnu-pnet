@@ -40,6 +40,14 @@ internal struct XDestroyWindowEvent
 	public Xlib.Window event_window
 			{ get { return common__.window; } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": event_window=" +
+					   ((ulong)event_window).ToString() +
+					   " window=" + ((ulong)window).ToString();
+			}
+
 } // struct XDestroyWindowEvent
 
 } // namespace Xsharp.Events

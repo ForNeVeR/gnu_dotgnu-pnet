@@ -50,6 +50,18 @@ internal struct XReparentEvent
 	public bool override_redirect
 			{ get { return (override_redirect__ != Xlib.Bool.False); } }
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ((EventType)type).ToString() + ": event_window=" +
+					   ((ulong)event_window).ToString() +
+					   " window=" + ((ulong)window).ToString() +
+					   " parent=" + ((ulong)parent).ToString() +
+					   " x=" + x.ToString() +
+					   " y=" + y.ToString() +
+					   " override_redirect=" + override_redirect.ToString();
+			}
+
 } // struct XReparentEvent
 
 } // namespace Xsharp.Events

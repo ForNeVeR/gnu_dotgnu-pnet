@@ -320,7 +320,7 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	{		
 			castNode=ILNode_EmptyExpr_create
 				(ILTypeToMachineType(node->elemType));
-			if(!ILCast(info,castNode,&(castNode),node->elemType,type))
+			if(!ILCast(info,castNode,&(castNode),node->elemType,type,1))
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					"Cannot cast '%s' to '%s'",CSTypeToName(node->elemType),
@@ -436,7 +436,7 @@ ILNode_SemAnalysis(ILNode_Foreach)
 			else
 			{	
 				castNode=ILNode_EmptyExpr_create(ILTypeToMachineType(retType));
-				if(!ILCast(info,castNode,&(castNode),retType,type))
+				if(!ILCast(info,castNode,&(castNode),retType,type,1))
 				{
 					CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						"Cannot cast '%s' to '%s'",CSTypeToName(retType),
@@ -702,7 +702,7 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 
 				/* Coerce the case expression to the governing type */
 				if(!ILCoerce(info, caseLabel->expr, &(caseLabel->expr),
-							 CSSemGetType(value), switchType))
+							 CSSemGetType(value), switchType,1))
 				{
 					CCErrorOnLine(yygetfilename(caseLabel->expr),
 								  yygetlinenum(caseLabel->expr),
@@ -907,7 +907,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 		for(posn = 0; posn < numGoverningTypes; ++posn)
 		{
 			if(ILCanCoerceKind(info, actualType, governingTypes[posn],
-			   				   IL_CONVERT_USER_DEFINED))
+			   				   IL_CONVERT_USER_DEFINED,1))
 			{
 				switchType = governingTypes[posn];
 				break;
@@ -917,7 +917,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 		{
 			stringType = ILFindSystemType(info, "String");
 			if(ILCanCoerceKind(info, actualType, stringType,
-							   IL_CONVERT_USER_DEFINED))
+							   IL_CONVERT_USER_DEFINED,1))
 			{
 				switchType = stringType;
 			}
@@ -933,7 +933,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 	}
 
 	/* Cast the switch expression to the governing type */
-	ILCast(info, node->expr, &(node->expr), actualType, switchType);
+	ILCast(info, node->expr, &(node->expr), actualType, switchType,1);
 
 	node->switchType=switchType;
 
@@ -1056,7 +1056,7 @@ ILNode_SemAnalysis(ILNode_GotoCase)
 	}
 	/* Coerce the case expression to the governing type */
 	if(!ILCoerce(info, node->expr, &(node->expr),
-					 CSSemGetType(value), switchExpr->switchType))
+					 CSSemGetType(value), switchExpr->switchType,1))
 	{
 		CCErrorOnLine(yygetfilename(node->expr),
 						  yygetlinenum(node->expr),
@@ -1231,7 +1231,7 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 	{
 		/* Coerce to the return type */
 		if(!ILCoerce(info, node->expr, &(node->expr),
-					 CSSemGetType(value), returnType))
+					 CSSemGetType(value), returnType,1))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  		  "incompatible types in return: "
@@ -1284,7 +1284,7 @@ ILNode_SemAnalysis(ILNode_ThrowExpr)
 	/* Attempt to coerce the value to "System.Exception" */
 	exceptionClass = ILFindSystemType(info, "Exception");
 	if(!ILCoerce(info, node->expr, &(node->expr),
-				 CSSemGetType(value), exceptionClass))
+				 CSSemGetType(value), exceptionClass,1))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 	  		  		  "no conversion from `%s' to `%s'",
@@ -1430,7 +1430,7 @@ ILNode_SemAnalysis(ILNode_Lock)
 
 	/* Coerce the lock expression to "System.Object" */
 	if(!ILCoerce(info, node->expr, &(node->expr),
-				 CSSemGetType(value), objectType))
+				 CSSemGetType(value), objectType,1))
 	{
 		CCErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
 					  "no conversion from `%s' to `%s'",
@@ -1696,7 +1696,7 @@ ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 
 		/* Make sure that the value is compatible with the field's type */
 		if(!ILCoerce(info, decl->initializer, &(decl->initializer),
-					 CSSemGetType(value), type))
+					 CSSemGetType(value), type,1))
 		{
 			CCErrorOnLine(yygetfilename(decl->initializer),
 						  yygetlinenum(decl->initializer),

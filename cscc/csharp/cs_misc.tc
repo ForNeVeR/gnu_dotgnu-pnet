@@ -346,13 +346,13 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 			if(CSSemExpectValue(expr, info, parentNode, &value))
 			{
 				if(!ILCoerce(info, *parentNode, parentNode,
-							 CSSemGetType(value), ILType_Int32) &&
+							 CSSemGetType(value), ILType_Int32,1) &&
 				   !ILCoerce(info, *parentNode, parentNode,
-							 CSSemGetType(value), ILType_UInt32) &&
+							 CSSemGetType(value), ILType_UInt32,1) &&
 				   !ILCoerce(info, *parentNode, parentNode,
-							 CSSemGetType(value), ILType_Int64) &&
+							 CSSemGetType(value), ILType_Int64,1) &&
 				   !ILCoerce(info, *parentNode, parentNode,
-							 CSSemGetType(value), ILType_UInt64))
+							 CSSemGetType(value), ILType_UInt64,1))
 				{
 					CCErrorOnLine
 						(yygetfilename(expr), yygetlinenum(expr),
@@ -376,13 +376,13 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 		if(CSSemExpectValue(expr, info, parentNode, &value))
 		{
 			if(!ILCoerce(info, *parentNode, parentNode,
-						 CSSemGetType(value), ILType_Int32) &&
+						 CSSemGetType(value), ILType_Int32,1) &&
 			   !ILCoerce(info, *parentNode, parentNode,
-						 CSSemGetType(value), ILType_UInt32) &&
+						 CSSemGetType(value), ILType_UInt32,1) &&
 			   !ILCoerce(info, *parentNode, parentNode,
-						 CSSemGetType(value), ILType_Int64) &&
+						 CSSemGetType(value), ILType_Int64,1) &&
 			   !ILCoerce(info, *parentNode, parentNode,
-						 CSSemGetType(value), ILType_UInt64))
+						 CSSemGetType(value), ILType_UInt64,1))
 			{
 				CCErrorOnLine
 					(yygetfilename(expr), yygetlinenum(expr),

@@ -1217,26 +1217,26 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 		for(argNum = 0; argNum < numArgs; ++argNum)
 		{
 			if(ILCoerce(info, args[argNum].node, args[argNum].parent,
-			            args[argNum].type, ILType_Int32))
+			            args[argNum].type, ILType_Int32,1))
 			{
 				args[argNum].node = *(args[argNum].parent);
 			}
 			else if(ILCoerce(info, args[argNum].node, args[argNum].parent,
-			                 args[argNum].type, ILType_UInt32))
+			                 args[argNum].type, ILType_UInt32,1))
 			{
 				args[argNum].node =
 					ArrayIndexToInt(info, *(args[argNum].parent),
 									args[argNum].parent, ILType_UInt32);
 			}
 			else if(ILCoerce(info, args[argNum].node, args[argNum].parent,
-			                 args[argNum].type, ILType_Int64))
+			                 args[argNum].type, ILType_Int64,1))
 			{
 				args[argNum].node =
 					ArrayIndexToInt(info, *(args[argNum].parent),
 									args[argNum].parent, ILType_Int64);
 			}
 			else if(ILCoerce(info, args[argNum].node, args[argNum].parent,
-			                 args[argNum].type, ILType_UInt64))
+			                 args[argNum].type, ILType_UInt64,1))
 			{
 				args[argNum].node =
 					ArrayIndexToInt(info, *(args[argNum].parent),

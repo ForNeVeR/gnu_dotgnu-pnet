@@ -11,6 +11,12 @@
 	* cscc/csharp/cs_gather.c, codegen/cg_scope.c, codegen/cg_scope.h:
 	Fix the scope of aliases so that cscctest gives the correct error
 	messages.
+
+	* codegen/cg_coerce.c, codegen/cg_coerce.h, cscc/c/c_invoke.tc,
+	cscc/csharp/cs_attrs.c,cscc/csharp/cs_cast.tc, cscc/csharp/cs_invoke.tc,
+	cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_misc.tc, cscc/csharp/cs_stmt.tc:
+	Protect ILCoerce indirect mode from going into an infinite loop.
+	
 	
 2002-11-15  Gopal.V  <gopalv82@symonds.net>
 

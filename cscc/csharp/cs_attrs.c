@@ -473,7 +473,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 				if(ILCoerce(info, namedArgs[argNum].node,
 							namedArgs[argNum].parent,
 							namedArgs[argNum].type,
-							GetAttrFieldType(namedFields[argNum])) &&
+							GetAttrFieldType(namedFields[argNum]),1) &&
 				   ILGenCastConst
 				   		(info, &(namedValues[argNum]),
 				   		 namedValues[argNum].valueType,

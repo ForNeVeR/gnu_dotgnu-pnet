@@ -558,7 +558,7 @@ ILNode_CSemAnalysis(ILNode_CSharpInvocation)
 	{
 		ILCoerce(info, argTypes[argNum].node, argTypes[argNum].parent,
 				 ILTypeStripPrefixes(CSemGetType(argTypes[argNum].value)),
-				 ILTypeGetParam(signature, argNum + 1));
+				 ILTypeGetParam(signature, argNum + 1),1);
 	}
 
 	/* Build the new method invocation node for the code generator */

@@ -626,6 +626,12 @@ struct _tagILCoderClass
 	 */
 	void (*throwException)(ILCoder *coder, int inCurrentMethod);
 
+
+	/*
+	 * Set a stack trace. This is often used in conjunction with 
+	 * throwException to mark exceptions with stack traces */
+	void (*setStackTrace)(ILCoder *coder);
+
 	/*
 	 * Re-throw the current exception for a particular exception region.
 	 */
@@ -927,6 +933,8 @@ struct _tagILCoderClass
 													  (hasRethrow)))
 #define	ILCoderThrow(coder,inCurrent) \
 			((*((coder)->classInfo->throwException))((coder), (inCurrent)))
+#define	ILCoderSetStackTrace(coder) \
+			((*((coder)->classInfo->setStackTrace))((coder)))
 #define	ILCoderRethrow(coder,exception) \
 			((*((coder)->classInfo->rethrow))((coder), (exception)))
 #define	ILCoderJsr(coder,dest) \

@@ -4,6 +4,10 @@
 	* engine/lib_diag.c: Remove the skipFrames hack and start from 
 	the current stackframe itself.
 
+	* include/il_coder.h, engine/null_coder.c, engine/cvmc.c, 
+	engine/cvmc_except.c, engine/verify_except.c: Add a new ILCoder
+	function ILCoderSetStackTrace().
+
 2003-05-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_stmt.tc: do not allocate local variables for

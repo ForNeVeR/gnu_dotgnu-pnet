@@ -428,6 +428,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_TailCall,
 	CVMCoder_SetupExceptions,
 	CVMCoder_Throw,
+	CVMCoder_SetStackTrace,
 	CVMCoder_Rethrow,
 	CVMCoder_Jsr,
 	CVMCoder_RetFromJsr,

@@ -326,6 +326,9 @@ static void Coder_SetupExceptions(ILCoder *coder, ILException *exceptions,
 static void Coder_Throw(ILCoder *coder, int inCurrentMethod)
 {
 }
+static void Coder_SetStackTrace(ILCoder *coder)
+{
+}
 static void Coder_Rethrow(ILCoder *coder, ILException *exception)
 {
 }
@@ -456,6 +459,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_TailCall,
 	Coder_SetupExceptions,
 	Coder_Throw,
+	Coder_SetStackTrace,
 	Coder_Rethrow,
 	Coder_Jsr,
 	Coder_RetFromJsr,

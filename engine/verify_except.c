@@ -197,7 +197,8 @@ static void _ThrowSystem(ILCoder *coder, ILMethod *method, int hasExceptions,
 	callInfo.hasParamArray = 0;
 	ILCoderCallCtor(coder, &callInfo, ctor);
 
-	/* Throw the object */
+	/* Set the stack trace & throw the object */
+	ILCoderSetStackTrace(coder);
 	ILCoderThrow(coder, hasExceptions);
 }
 #define	ThrowSystem(namespace,name)	\
@@ -217,6 +218,7 @@ case IL_OP_THROW:
 		/* If the current method has exception handlers, then throw
 		   the object to those handlers.  Otherwise throw directly
 		   to the calling method */
+		ILCoderSetStackTrace(coder);
 		ILCoderThrow(coder, (exceptions != 0));
 		stackSize = 0;
 		lastWasJump = 1;

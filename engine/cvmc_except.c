@@ -80,7 +80,6 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
  */
 static void CVMCoder_Throw(ILCoder *coder, int inCurrentMethod)
 {
-	CVMP_OUT_NONE(COP_PREFIX_SET_STACK_TRACE);
 	if(inCurrentMethod)
 	{
 		CVMP_OUT_NONE(COP_PREFIX_THROW);
@@ -90,6 +89,14 @@ static void CVMCoder_Throw(ILCoder *coder, int inCurrentMethod)
 		CVMP_OUT_NONE(COP_PREFIX_THROW_CALLER);
 	}
 	CVM_ADJUST(-1);
+}
+
+/*
+ * Output a stacktrace instruction.
+ */
+static void CVMCoder_SetStackTrace(ILCoder *coder)
+{
+	CVMP_OUT_NONE(COP_PREFIX_SET_STACK_TRACE);
 }
 
 /*

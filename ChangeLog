@@ -1,4 +1,9 @@
 
+2004-12-08  Marc Haisenko  <haisenko@webport.de>
+
+	* Xsharp/Font.cs: Disable font size rounding if Xft is 
+	enabled (patch #3561, Gopal)
+	
 2004-12-08  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XPath/Private/XPathCompile.tc,

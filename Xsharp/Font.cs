@@ -731,6 +731,12 @@ public class Font
 	// that we don't get unsightly stretching.
 	internal static int NormalizePointSize(int pointSize)
 			{
+				// No need for normalization if using Xft
+				if (Xlib.XSharpUseXft () != 0)
+				{
+				    return pointSize;
+				}
+				
 				if(pointSize < 90)
 				{
 					return 80;

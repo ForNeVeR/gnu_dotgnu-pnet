@@ -396,7 +396,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 	protected Hashtable(SerializationInfo info, StreamingContext context)
 			{
 				// Save the serialization information for the later call
-				// to "OnDeserializationCallback".
+				// to "OnDeserialization".
 				this.info = info;
 			}
 
@@ -946,6 +946,9 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					Add(keys[posn], values[posn]);
 				}
+
+				// De-serialization is finished.
+				info = null;
 			}
 
 #endif // CONFIG_SERIALIZATION

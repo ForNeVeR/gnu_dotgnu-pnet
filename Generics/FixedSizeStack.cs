@@ -39,6 +39,15 @@ public class FixedSizeStack<T> : FixedSizeCollection<T>, IStack<T>
 			}
 
 	// Implement the IStack<T> interface.
+	public void Clear()
+			{
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
+			}
+	public bool Contains(T value)
+			{
+				return stack.Contains(value);
+			}
 	public void Push(T value)
 			{
 				throw new InvalidOperationException

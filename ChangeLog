@@ -8,6 +8,14 @@
 	Generics/SynchronizedDictionary.cs: remove the "Entry" property
 	from "IDictionaryIterator", because it is identical to "Current".
 
+	* Generics/ArrayQueue.cs, Generics/ArrayStack.cs,
+	Generics/FixedSizeQueue.cs, Generics/FixedSizeStack.cs,
+	Generics/IQueue.cs, Generics/IStack.cs,
+	Generics/LinkedList.cs, Generics/ReadOnlyQueue.cs,
+	Generics/ReadOnlyStack.cs, Generics/SynchronizedQueue.cs,
+	Generics/SynchronizedStack.cs: add "Clear" and "Contains" to
+	the IQueue and IStack interfaces.
+
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlTextReader (ReadIdentifier): append the character

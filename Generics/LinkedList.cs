@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public class LinkedList<T>
+public sealed class LinkedList<T>
 	: IDeque<T>, IQueue<T>, IStack<T>, IList<T>, ICloneable
 {
 	// Structure of a list node.
@@ -130,7 +130,7 @@ public class LinkedList<T>
 			}
 
 	// Implement the IDeque<T> interface.
-	public virtual void PushFront(T value)
+	public void PushFront(T value)
 			{
 				Node<T> node = new Node<T>(item);
 				node.next = first;
@@ -145,7 +145,7 @@ public class LinkedList<T>
 				first = node;
 				++count;
 			}
-	public virtual void PushBack(T value)
+	public void PushBack(T value)
 			{
 				Node<T> node = new Node<T>(item);
 				node.prev = last;
@@ -160,7 +160,7 @@ public class LinkedList<T>
 				last = node;
 				++count;
 			}
-	public virtual T PopFront()
+	public T PopFront()
 			{
 				if(first != null)
 				{
@@ -183,7 +183,7 @@ public class LinkedList<T>
 						(S._("Invalid_EmptyList"));
 				}
 			}
-	public virtual T PopBack()
+	public T PopBack()
 			{
 				if(last != null)
 				{
@@ -206,7 +206,7 @@ public class LinkedList<T>
 						(S._("Invalid_EmptyList"));
 				}
 			}
-	public virtual T PeekFront()
+	public T PeekFront()
 			{
 				if(first != null)
 				{
@@ -218,7 +218,7 @@ public class LinkedList<T>
 						(S._("Invalid_EmptyList"));
 				}
 			}
-	public virtual T PeekEnd()
+	public T PeekEnd()
 			{
 				if(last != null)
 				{
@@ -230,7 +230,7 @@ public class LinkedList<T>
 						(S._("Invalid_EmptyList"));
 				}
 			}
-	public virtual T[] ToArray()
+	public T[] ToArray()
 			{
 				T[] array = new T [Count];
 				CopyTo(array, 0);
@@ -252,6 +252,14 @@ public class LinkedList<T>
 			}
 
 	// Implement the IQueue<T> interface privately.
+	void IQueue<T>.Clear()
+			{
+				Clear();
+			}
+	bool IQueue<T>.Contains(T value)
+			{
+				return Contains(value);
+			}
 	void IQueue<T>.Enqueue(T value)
 			{
 				PushBack(value);
@@ -284,6 +292,14 @@ public class LinkedList<T>
 			}
 
 	// Implement the IStack<T> interface privately.
+	void IStack<T>.Clear()
+			{
+				Clear();
+			}
+	bool IStack<T>.Contains(T value)
+			{
+				return Contains(value);
+			}
 	void IStack<T>.Push(T value)
 			{
 				PushFront(value);
@@ -316,7 +332,7 @@ public class LinkedList<T>
 			}
 
 	// Implement the ICollection<T> interface.
-	public virtual void CopyTo(T[] array, int index)
+	public void CopyTo(T[] array, int index)
 			{
 				IIterator<T> iterator = GetIterator();
 				while(iterator.MoveNext())
@@ -324,21 +340,21 @@ public class LinkedList<T>
 					array[index++] = iterator.Current;
 				}
 			}
-	public virtual int Count
+	public int Count
 			{
 				get
 				{
 					return count;
 				}
 			}
-	public virtual bool IsSynchronized
+	public bool IsSynchronized
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual Object SyncRoot
+	public Object SyncRoot
 			{
 				get
 				{
@@ -347,19 +363,19 @@ public class LinkedList<T>
 			}
 
 	// Implement the IList<T> interface.
-	public virtual int Add(T value)
+	public int Add(T value)
 			{
 				int index = count;
 				PushBack(value);
 				return index;
 			}
-	public virtual void Clear()
+	public void Clear()
 			{
 				first = null;
 				last = null;
 				count = 0;
 			}
-	public virtual bool Contains(T value)
+	public bool Contains(T value)
 			{
 				Node<T> current = first;
 				if(typeof(T).IsValueType)
@@ -402,11 +418,11 @@ public class LinkedList<T>
 					}
 				}
 			}
-	public virtual IListIterator<T> GetIterator()
+	public IListIterator<T> GetIterator()
 			{
 				return new ListIterator<T>(this);
 			}
-	public virtual int IndexOf(T value)
+	public int IndexOf(T value)
 			{
 				int index = 0;
 				Node<T> current = first;
@@ -453,7 +469,7 @@ public class LinkedList<T>
 					}
 				}
 			}
-	public virtual void Insert(int index, T value)
+	public void Insert(int index, T value)
 			{
 				if(index == count)
 				{
@@ -465,7 +481,7 @@ public class LinkedList<T>
 					InsertBefore(current, value);
 				}
 			}
-	public virtual void Remove(T value)
+	public void Remove(T value)
 			{
 				Node<T> current = first;
 				if(typeof(T).IsValueType)
@@ -508,32 +524,32 @@ public class LinkedList<T>
 					}
 				}
 			}
-	public virtual void RemoveAt(int index)
+	public void RemoveAt(int index)
 			{
 				Remove(Get(index));
 			}
-	public virtual bool IsFixedSize
+	public bool IsFixedSize
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual bool IsReadOnly
+	public bool IsReadOnly
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual bool IsRandomAccess
+	public bool IsRandomAccess
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual T this[int index]
+	public T this[int index]
 			{
 				get
 				{
@@ -552,7 +568,7 @@ public class LinkedList<T>
 			}
 
 	// Implement the ICloneable interface.
-	public virtual Object Clone()
+	public Object Clone()
 			{
 				LinkedList<T> clone = new LinkedList<T>();
 				IIterator<T> e = GetIterator();

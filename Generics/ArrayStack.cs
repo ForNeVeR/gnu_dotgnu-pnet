@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public class ArrayStack<T> : IStack<T>, ICloneable
+public sealed class ArrayStack<T> : IStack<T>, ICloneable
 {
 	// Internal state.
 	private T[] items;
@@ -55,19 +55,9 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 				items = new T [initialCapacity];
 				size = 0;
 			}
-	public ArrayStack(ICollection<T> col)
-			{
-				if(col == null)
-				{
-					throw new ArgumentNullException("col");
-				}
-				items = new T [col.Count];
-				col.CopyTo(items, 0);
-				size = items.Length;
-			}
 
 	// Implement the ICollection<T> interface.
-	public virtual void CopyTo(T[] array, int index)
+	public void CopyTo(T[] array, int index)
 			{
 				if(array == null)
 				{
@@ -87,21 +77,21 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 					Array.Copy(items, 0, array, index, size);
 				}
 			}
-	public virtual int Count
+	public int Count
 			{
 				get
 				{
 					return size;
 				}
 			}
-	public virtual bool IsSynchronized
+	public bool IsSynchronized
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual Object SyncRoot
+	public Object SyncRoot
 			{
 				get
 				{
@@ -110,7 +100,7 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 			}
 
 	// Implement the ICloneable interface.
-	public virtual Object Clone()
+	public Object Clone()
 			{
 				ArrayStack<T> stack = (ArrayStack<T>)MemberwiseClone();
 				stack.items = (T[])items.Clone();
@@ -118,19 +108,17 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 			}
 
 	// Implement the IIterable<T> interface.
-	public virtual IIterator<T> GetIterator()
+	public IIterator<T> GetIterator()
 			{
 				return new StackIterator<T>(this);
 			}
 
-	// Clear the contents of this stack.
-	public virtual void Clear()
+	// Implement the IStack<T> interface.
+	public void Clear()
 			{
 				size = 0;
 			}
-
-	// Determine if this stack contains a specific object.
-	public virtual bool Contains(T obj)
+	public bool Contains(T obj)
 			{
 				int index;
 				if(typeof(T).IsValueType)
@@ -162,9 +150,7 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 				}
 				return false;
 			}
-
-	// Implement the IStack<T> interface.
-	public virtual void Push(T value)
+	public void Push(T value)
 			{
 				if(size < items.Length)
 				{
@@ -184,7 +170,7 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 					items[size++] = value;
 				}
 			}
-	public virtual T Pop()
+	public T Pop()
 			{
 				if(size > 0)
 				{
@@ -196,7 +182,7 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 						(S._("Invalid_EmptyStack"));
 				}
 			}
-	public virtual T Peek()
+	public T Peek()
 			{
 				if(size > 0)
 				{
@@ -208,7 +194,7 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 						(S._("Invalid_EmptyStack"));
 				}
 			}
-	public virtual T[] ToArray()
+	public T[] ToArray()
 			{
 				T[] array = new T [size];
 				int index;
@@ -218,14 +204,14 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 				}
 				return array;
 			}
-	public virtual bool IsFixedSize
+	public bool IsFixedSize
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual bool IsReadOnly
+	public bool IsReadOnly
 			{
 				get
 				{

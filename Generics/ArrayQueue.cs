@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public class ArrayQueue<T> : IQueue<T>, ICloneable
+public sealed class ArrayQueue<T> : IQueue<T>, ICloneable
 {
 	// Internal state.
 	private T[]   items;
@@ -77,22 +77,9 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 				size = 0;
 				this.growFactor = growFactor;
 			}
-	public ArrayQueue(ICollection<T> col)
-			{
-				if(col == null)
-				{
-					throw new ArgumentNullException("col");
-				}
-				items = new T [col.Count];
-				col.CopyTo(items, 0);
-				add = 0;
-				remove = 0;
-				size = items.Length;
-				growFactor = 2.0f;
-			}
 
 	// Implement the ICollection<T> interface.
-	public virtual void CopyTo(T[] array, int index)
+	public void CopyTo(T[] array, int index)
 			{
 				if(array == null)
 				{
@@ -122,21 +109,21 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 					}
 				}
 			}
-	public virtual int Count
+	public int Count
 			{
 				get
 				{
 					return size;
 				}
 			}
-	public virtual bool IsSynchronized
+	public bool IsSynchronized
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual Object SyncRoot
+	public Object SyncRoot
 			{
 				get
 				{
@@ -145,7 +132,7 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 			}
 
 	// Implement the ICloneable<T> interface.
-	public virtual Object Clone()
+	public Object Clone()
 			{
 				ArrayQueue<T> queue = (ArrayQueue<T>)MemberwiseClone();
 				queue.items = (T[])items.Clone();
@@ -153,21 +140,19 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 			}
 
 	// Implement the IIterable<T> interface.
-	public virtual IIterable<T> GetIterator()
+	public IIterable<T> GetIterator()
 			{
 				return new QueueIterator<T>(this);
 			}
 
-	// Clear the contents of this queue.
-	public virtual void Clear()
+	// Implement the IQueue<T> interface.
+	public void Clear()
 			{
 				add = 0;
 				remove = 0;
 				size = 0;
 			}
-
-	// Determine if this queue contains a specific object.
-	public virtual bool Contains(T obj)
+	public bool Contains(T obj)
 			{
 				int index = remove;
 				int capacity = items.Length;
@@ -205,9 +190,7 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 				}
 				return false;
 			}
-
-	// Implement the IQueue<T> interface.
-	public virtual void Enqueue(T value)
+	public void Enqueue(T value)
 			{
 				if(size < items.Length)
 				{
@@ -241,7 +224,7 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 					++size;
 				}
 			}
-	public virtual T Dequeue()
+	public T Dequeue()
 			{
 				if(size > 0)
 				{
@@ -256,7 +239,7 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 						(S._("Invalid_EmptyQueue"));
 				}
 			}
-	public virtual T Peek()
+	public T Peek()
 			{
 				if(size > 0)
 				{
@@ -268,7 +251,7 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 						(S._("Invalid_EmptyQueue"));
 				}
 			}
-	public virtual T[] ToArray()
+	public T[] ToArray()
 			{
 				T[] array = new T [size];
 				if(size > 0)
@@ -287,14 +270,14 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 				}
 				return array;
 			}
-	public virtual bool IsFixedSize
+	public bool IsFixedSize
 			{
 				get
 				{
 					return false;
 				}
 			}
-	public virtual bool IsReadOnly
+	public bool IsReadOnly
 			{
 				get
 				{

@@ -39,6 +39,20 @@ public class SynchronizedStack<T> : SynchronizedCollection<T>, IStack<T>
 			}
 
 	// Implement the IStack<T> interface.
+	public void Clear()
+			{
+				lock(SyncRoot)
+				{
+					stack.Clear();
+				}
+			}
+	public bool Contains(T value)
+			{
+				lock(SyncRoot)
+				{
+					return stack.Contains(value);
+				}
+			}
 	public void Push(T value)
 			{
 				lock(SyncRoot)

@@ -39,6 +39,15 @@ public class FixedSizeQueue<T> : FixedSizeCollection<T>, IQueue<T>
 			}
 
 	// Implement the IQueue<T> interface.
+	public void Clear()
+			{
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
+			}
+	public bool Contains(T value)
+			{
+				return queue.Contains();
+			}
 	public void Enqueue(T value)
 			{
 				throw new InvalidOperationException

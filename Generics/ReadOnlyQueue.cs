@@ -39,6 +39,14 @@ public class ReadOnlyQueue<T> : ReadOnlyCollection<T>, IQueue<T>
 			}
 
 	// Implement the IQueue<T> interface.
+	public void Clear()
+			{
+				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));
+			}
+	public bool Contains(T value)
+			{
+				return queue.Contains();
+			}
 	public void Enqueue(T value)
 			{
 				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));

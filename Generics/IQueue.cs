@@ -29,6 +29,8 @@ using System;
 
 public interface IQueue<T> : ICollection<T>
 {
+	void Clear();
+	bool Contains(T value);
 	void Enqueue(T value);
 	T Dequeue();
 	T Peek();

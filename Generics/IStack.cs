@@ -29,6 +29,8 @@ using System;
 
 public interface IStack<T> : ICollection<T>
 {
+	void Clear();
+	bool Contains(T value);
 	void Push(T value);
 	T Pop();
 	T Peek();

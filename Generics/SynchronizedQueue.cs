@@ -39,6 +39,20 @@ public class SynchronizedQueue<T> : SynchronizedCollection<T>, IQueue<T>
 			}
 
 	// Implement the IQueue<T> interface.
+	public void Clear()
+			{
+				lock(SyncRoot)
+				{
+					queue.Clear();
+				}
+			}
+	public bool Contains(T value)
+			{
+				lock(SyncRoot)
+				{
+					return queue.Contains();
+				}
+			}
 	public void Enqueue(T value)
 			{
 				lock(SyncRoot)

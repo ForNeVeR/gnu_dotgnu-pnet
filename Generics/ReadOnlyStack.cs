@@ -39,6 +39,14 @@ public class ReadOnlyStack<T> : ReadOnlyCollection<T>, IStack<T>
 			}
 
 	// Implement the IStack<T> interface.
+	public void Clear()
+			{
+				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));
+			}
+	public bool Contains(T value)
+			{
+				return stack.Contains(value);
+			}
 	public void Push(T value)
 			{
 				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));

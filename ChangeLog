@@ -1,4 +1,9 @@
+2003-07-16  Thong Nguyen  <tum@veridicus.com>
 
+	* libgc/win32_threads.c:  Changed GC_CreateThread to return a
+	duplicate handle to fix "Suspend Thread Failed" errors when
+	the engine closes thread handles.
+	
 2003-07-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/marshal.c, image/member.c, image/meta_build.c,

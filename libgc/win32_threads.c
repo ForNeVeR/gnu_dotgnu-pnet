@@ -439,7 +439,19 @@ HANDLE WINAPI GC_CreateThread(
 
 		    /* fill in ID and handle; tell child this is done */
 		    thread_table[i].id = *lpThreadId;
-		    thread_table[i].handle = thread_h;
+
+			if (!DuplicateHandle(GetCurrentProcess(),
+				thread_h,
+				GetCurrentProcess(),
+				(HANDLE*)&thread_table[i].handle,
+				0,
+				0,
+				DUPLICATE_SAME_ACCESS)) {
+					DWORD last_error = GetLastError();
+					GC_printf1("Last error code: %lx\n", last_error);
+					ABORT("DuplicateHandle failed");
+			}
+		    
 		    SetEvent (parent_ready_h);
 
 		    /* wait for child to fill in stack and copy args */
@@ -447,7 +459,7 @@ HANDLE WINAPI GC_CreateThread(
 
 		    /* suspend the child if requested */
 		    if (dwCreationFlags & CREATE_SUSPENDED)
-			SuspendThread (thread_h);
+				SuspendThread (thread_table[i].handle);
 
 		    /* let child call given function now (or when resumed) */
 		    SetEvent (parent_ready_h);
@@ -464,7 +476,7 @@ HANDLE WINAPI GC_CreateThread(
 	    thread_table[i].in_use = FALSE;
 
     } else { /* no thread slot found */
-	SetLastError (ERROR_TOO_MANY_TCBS);
+		SetLastError (ERROR_TOO_MANY_TCBS);
     }
 
     return thread_h;

@@ -196,6 +196,14 @@ struct _tagILEvalValue
 %node ILNode_LogicalNot ILNode_UnaryExpression
 %node ILNode_LogicalAnd ILNode_BinaryExpression
 %node ILNode_LogicalOr ILNode_BinaryExpression
+%node ILNode_UserLogical ILNode_BinaryExpression %abstract =
+{
+	ILMethod *opMethod;
+	ILMethod *trueMethod;
+	ILMethod *falseMethod;
+}
+%node ILNode_UserLogicalAnd ILNode_UserLogical
+%node ILNode_UserLogicalOr ILNode_UserLogical
 
 %output "cg_arith.c"
 

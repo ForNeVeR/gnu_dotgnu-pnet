@@ -156,3 +156,95 @@ JavaGenElse(ILNode_LogicalOr)
 	JavaGenElse(node->expr2, info, label);
 	JavaGenLabel(info, &label1);
 }
+
+/*
+ * Generate value code for the user-defined logical AND operator.
+ */
+JavaGenValue(ILNode_UserLogicalAnd)
+{
+	ILMachineType type;
+	int size;
+	ILLabel label = ILLabel_Undefined;
+
+	/* Evaluate the first sub-expression */
+	type = JavaGenValue(node->expr1, info);
+
+	/* Test the first sub-expression for false */
+	size = JavaGenTypeSize(type);
+	if(size == 1)
+	{
+		JavaGenSimple(info, JAVA_OP_DUP);
+	}
+	else if(size == 2)
+	{
+		JavaGenSimple(info, JAVA_OP_DUP2);
+	}
+	JavaGenAdjust(info, size);
+	if(node->falseMethod)
+	{
+		JavaGenCallByMethod(info, node->falseMethod);
+		JavaGenJump(info, JAVA_OP_IFNE, &label);
+	}
+	else
+	{
+		JavaGenCallByMethod(info, node->trueMethod);
+		JavaGenJump(info, JAVA_OP_IFEQ, &label);
+	}
+	JavaGenAdjust(info, -size);
+
+	/* Pop the first sub-expression and evaluate the second */
+	JavaGenCast(info, type, ILMachineType_Void);
+	type = JavaGenValue(node->expr2, info);
+
+	/* Output the jump label here */
+	JavaGenLabel(info, &label);
+
+	/* Done */
+	return type;
+}
+
+/*
+ * Generate value code for the user-defined logical OR operator.
+ */
+JavaGenValue(ILNode_UserLogicalOr)
+{
+	ILMachineType type;
+	int size;
+	ILLabel label = ILLabel_Undefined;
+
+	/* Evaluate the first sub-expression */
+	type = JavaGenValue(node->expr1, info);
+
+	/* Test the first sub-expression for true */
+	size = JavaGenTypeSize(type);
+	if(size == 1)
+	{
+		JavaGenSimple(info, JAVA_OP_DUP);
+	}
+	else if(size == 2)
+	{
+		JavaGenSimple(info, JAVA_OP_DUP2);
+	}
+	JavaGenAdjust(info, size);
+	if(node->trueMethod)
+	{
+		JavaGenCallByMethod(info, node->trueMethod);
+		JavaGenJump(info, JAVA_OP_IFNE, &label);
+	}
+	else
+	{
+		JavaGenCallByMethod(info, node->falseMethod);
+		JavaGenJump(info, JAVA_OP_IFEQ, &label);
+	}
+	JavaGenAdjust(info, -size);
+
+	/* Pop the first sub-expression and evaluate the second */
+	JavaGenCast(info, type, ILMachineType_Void);
+	type = JavaGenValue(node->expr2, info);
+
+	/* Output the jump label here */
+	JavaGenLabel(info, &label);
+
+	/* Done */
+	return type;
+}

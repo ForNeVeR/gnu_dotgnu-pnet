@@ -29,7 +29,9 @@
  */
 ILNode_GetType(ILNode_LogicalNot),
 ILNode_GetType(ILNode_LogicalAnd),
-ILNode_GetType(ILNode_LogicalOr)
+ILNode_GetType(ILNode_LogicalOr),
+ILNode_GetType(ILNode_UserLogicalAnd),
+ILNode_GetType(ILNode_UserLogicalOr)
 {
 	return ILMachineType_Boolean;
 }
@@ -276,4 +278,80 @@ ILNode_EvalConst(ILNode_LogicalOr)
 	}
 	value->un.i4Value = (tempValue || value->un.i4Value);
 	return 1;
+}
+
+/*
+ * Generate value code for the user-defined logical AND operator.
+ */
+ILNode_GenValue(ILNode_UserLogicalAnd)
+{
+	ILMachineType type;
+	ILLabel label = ILLabel_Undefined;
+
+	/* Evaluate the first sub-expression */
+	type = ILNode_GenValue(node->expr1, info);
+
+	/* Test the first sub-expression for false */
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	if(node->falseMethod)
+	{
+		ILGenCallByMethod(info, node->falseMethod);
+		ILGenJump(info, IL_OP_BRTRUE, &label);
+	}
+	else
+	{
+		ILGenCallByMethod(info, node->trueMethod);
+		ILGenJump(info, IL_OP_BRFALSE, &label);
+	}
+	ILGenAdjust(info, -1);
+
+	/* Pop the first sub-expression and evaluate the second */
+	ILGenSimple(info, IL_OP_POP);
+	ILGenAdjust(info, -1);
+	type = ILNode_GenValue(node->expr2, info);
+
+	/* Output the jump label here */
+	ILGenLabel(info, &label);
+
+	/* Done */
+	return type;
+}
+
+/*
+ * Generate value code for the user-defined logical OR operator.
+ */
+ILNode_GenValue(ILNode_UserLogicalOr)
+{
+	ILMachineType type;
+	ILLabel label = ILLabel_Undefined;
+
+	/* Evaluate the first sub-expression */
+	type = ILNode_GenValue(node->expr1, info);
+
+	/* Test the first sub-expression for true */
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	if(node->trueMethod)
+	{
+		ILGenCallByMethod(info, node->trueMethod);
+		ILGenJump(info, IL_OP_BRTRUE, &label);
+	}
+	else
+	{
+		ILGenCallByMethod(info, node->falseMethod);
+		ILGenJump(info, IL_OP_BRFALSE, &label);
+	}
+	ILGenAdjust(info, -1);
+
+	/* Pop the first sub-expression and evaluate the second */
+	ILGenSimple(info, IL_OP_POP);
+	ILGenAdjust(info, -1);
+	type = ILNode_GenValue(node->expr2, info);
+
+	/* Output the jump label here */
+	ILGenLabel(info, &label);
+
+	/* Done */
+	return type;
 }

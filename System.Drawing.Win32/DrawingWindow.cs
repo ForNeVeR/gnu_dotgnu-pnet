@@ -415,7 +415,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 		{
 			DrawingGraphics g = new DrawingGraphics( toolkit, hdc );
 			System.Drawing.Graphics gr = ToolkitManager.CreateGraphics( g );
-			gr.SetClip(new Rectangle( myPS.rcPaintLeft, myPS.rcPaintTop, myPS.rcPaintRight - myPS.rcPaintLeft, myPS.rcPaintBottom - myPS.rcPaintTop ));
+			gr.SetClip(Rectangle.FromLTRB(myPS.rcPaintLeft, myPS.rcPaintTop, myPS.rcPaintRight, myPS.rcPaintBottom));
 			sink.ToolkitExpose( gr );
 			gr.Dispose();
 		}

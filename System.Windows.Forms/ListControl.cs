@@ -23,6 +23,7 @@
 
 using System;
 using System.Reflection;
+using System.Collections;
 
 namespace System.Windows.Forms
 {
@@ -177,7 +178,19 @@ public abstract class ListControl : Control
 	}
 	
 	protected abstract void RefreshItem( int index );
-	
+
+	[TODO]
+	protected virtual void SetItemCore(int index, object value)
+	{
+		throw new NotImplementedException("SetItemCore");
+	}
+
+	[TODO]
+	protected virtual void SetItemsCore(IList value)
+	{
+		throw new NotImplementedException("SetItemsCore");
+	}
+
 }; // class ListControl
 	
 }; // namespace System.Windows.Forms

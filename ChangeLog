@@ -1,3 +1,6 @@
+2003-07-06  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ListControl.cs: Stub some missing methods.
 
 2003-07-06  Gopal.V  <gopalv82@symonds.net>
 	

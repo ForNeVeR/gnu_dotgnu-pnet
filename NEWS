@@ -1,4 +1,14 @@
 
+0.6.10 (30 October 2004)
+
+	* README updates (Gopal V).
+	* Npgsql, System.Web (Gopal V).
+	* Update debian packaging information (Russell Stuart).
+	* Custommarshalers, System.Web, Mono.Security.Win32, nunit.util,
+	  ByteFX.Data, Sysem.Data (Klaus Treichel).
+	* Change the build system to support profiles (Klaus Treichel).
+	* Perform corlib tests per namespace (Klaus Treichel).
+
 0.6.8 (8 August 2004)
 
 	* Add nunit20 and wsdl tools (Klaus Treichel).

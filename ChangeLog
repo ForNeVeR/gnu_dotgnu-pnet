@@ -5,6 +5,8 @@
 	class/Mono.Security/Mono.Security.build: adjustments to the
 	"<references>" for clean builds.
 
+	* NEWS, configure.in: update version for the "0.6.10" release.
+
 2004-10-29  Klaus Treichel  <ktreichel@web.de>
 
 	* nunit20/core/nunit.core.build: exclude WarningSuite.cs from build.

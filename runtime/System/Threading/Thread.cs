@@ -58,6 +58,8 @@ public sealed class Thread
 				}
 				privateData = new IntPtr(0);
 				this.start = start;
+
+				InitializeThread();
 			}
 
 	// Destructor.
@@ -65,6 +67,9 @@ public sealed class Thread
 			{
 				FinalizeThread();
 			}
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private void InitializeThread();
 
 	// Internal finalization for threads.
 	[MethodImpl(MethodImplOptions.InternalCall)]

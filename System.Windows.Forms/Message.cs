@@ -22,7 +22,8 @@
 namespace System.Windows.Forms
 {
 
-#if !CONFIG_COMPACT_FORMS
+// Note: while "Message" is not a Compact Forms class, we need it
+// to do proper key event dispatching.
 
 public struct Message
 {
@@ -32,6 +33,7 @@ public struct Message
 	private IntPtr wParam;
 	private IntPtr lParam;
 	private IntPtr result;
+	internal Keys key;
 
 	// Get or set the message parameters.
 	public IntPtr HWnd
@@ -100,6 +102,20 @@ public struct Message
 				value.wParam = wparam;
 				value.lParam = lparam;
 				value.result = IntPtr.Zero;
+				value.key = Keys.None;
+				return value;
+			}
+
+	// Create a fake key message.
+	internal static Message CreateKeyMessage(int msg, Keys key)
+			{
+				Message value;
+				value.hWnd = IntPtr.Zero;
+				value.msg = msg;
+				value.wParam = new IntPtr((int)(key & Keys.KeyCode));
+				value.lParam = IntPtr.Zero;
+				value.result = IntPtr.Zero;
+				value.key = key;
 				return value;
 			}
 
@@ -147,7 +163,5 @@ public struct Message
 			}
 
 }; // struct Message
-
-#endif // !CONFIG_COMPACT_FORMS
 
 }; // namespace System.Windows.Forms

@@ -458,6 +458,31 @@ public class InputOnlyWidget : Widget
 			}
 
 	/// <summary>
+	/// <para>Method that is called if a key is released when this
+	/// widget has the focus.</para>
+	/// </summary>
+	///
+	/// <param name="key">
+	/// <para>The key code.</para>
+	/// </param>
+	///
+	/// <param name="modifiers">
+	/// <para>Other button and shift flags that were active.</para>
+	/// </param>
+	///
+	/// <returns>
+	/// <para>Returns <see langword="true"/> if the key has been processed
+	/// and it should not be passed further up the focus tree.  Returns
+	/// <see langword="false"/> if the key should be passed further up
+	/// the focus tree.</para>
+	/// </returns>
+	protected virtual bool OnKeyRelease(KeyName key, ModifierMask modifiers)
+			{
+				// Nothing to do in this class.
+				return false;
+			}
+
+	/// <summary>
 	/// <para>Method that is called when the mouse pointer enters
 	/// this widget.</para>
 	/// </summary>
@@ -677,6 +702,19 @@ public class InputOnlyWidget : Widget
 				if(FullSensitive)
 				{
 					return OnKeyPress(key, modifiers, str);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Dispatch a key release event to this widget from the top-level window.
+	internal bool DispatchKeyReleaseEvent(KeyName key, ModifierMask modifiers)
+			{
+				if(FullSensitive)
+				{
+					return OnKeyRelease(key, modifiers);
 				}
 				else
 				{

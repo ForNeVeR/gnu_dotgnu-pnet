@@ -97,6 +97,16 @@ internal sealed class Win32Constants
 	public const int WS_EX_TRANSPARENT		= 0x00000020;
 	public const int WS_EX_WINDOWEDGE		= 0x00000100;
 
+	// Message codes.
+	public const int WM_KEYDOWN				= 256;
+	public const int WM_KEYUP				= 257;
+	public const int WM_CHAR				= 258;
+	public const int WM_DEADCHAR			= 259;
+	public const int WM_SYSKEYDOWN			= 260;
+	public const int WM_SYSKEYUP			= 261;
+	public const int WM_SYSCHAR				= 262;
+	public const int WM_SYSDEADCHAR			= 263;
+
 }; // class Win32Constants
 
 }; // namespace System.Windows.Forms

@@ -145,6 +145,7 @@ public class TopLevelWindow : InputOutputWidget
 
 					// Top-level widgets receive all key and focus events.
 					SelectInput(EventMask.KeyPressMask |
+								EventMask.KeyReleaseMask |
 								EventMask.FocusChangeMask |
 								EventMask.StructureNotifyMask);
 				}
@@ -818,6 +819,10 @@ public class TopLevelWindow : InputOutputWidget
 	// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
+				Xlib.KeySym keysym;
+				Widget widget;
+				InputOnlyWidget io;
+
 				switch(xevent.type)
 				{
 					case EventType.ClientMessage:
@@ -868,7 +873,7 @@ public class TopLevelWindow : InputOutputWidget
 						{
 							keyBuffer = Marshal.AllocHGlobal(32);
 						}
-						Xlib.KeySym keysym = 0;
+						keysym = 0;
 						int len = Xlib.XLookupString
 							(ref xevent.xkey, keyBuffer, 32,
 							 ref keysym, IntPtr.Zero);
@@ -883,8 +888,7 @@ public class TopLevelWindow : InputOutputWidget
 						}
 
 						// Dispatch the event.
-						Widget widget = focusWidget;
-						InputOnlyWidget io;
+						widget = focusWidget;
 						while(widget != null)
 						{
 							io = (widget as InputOnlyWidget);
@@ -892,6 +896,40 @@ public class TopLevelWindow : InputOutputWidget
 							{
 								if(io.DispatchKeyEvent
 									((KeyName)keysym, xevent.xkey.state, str))
+								{
+									break;
+								}
+							}
+							if(widget == this)
+							{
+								break;
+							}
+							widget = widget.Parent;
+						}
+					}
+					break;
+
+					case EventType.KeyRelease:
+					{
+						// Convert the event into a symbol and a string.
+						if(keyBuffer == IntPtr.Zero)
+						{
+							keyBuffer = Marshal.AllocHGlobal(32);
+						}
+						keysym = 0;
+						int len = Xlib.XLookupString
+							(ref xevent.xkey, keyBuffer, 32,
+							 ref keysym, IntPtr.Zero);
+
+						// Dispatch the event.
+						widget = focusWidget;
+						while(widget != null)
+						{
+							io = (widget as InputOnlyWidget);
+							if(io != null)
+							{
+								if(io.DispatchKeyReleaseEvent
+									((KeyName)keysym, xevent.xkey.state))
 								{
 									break;
 								}

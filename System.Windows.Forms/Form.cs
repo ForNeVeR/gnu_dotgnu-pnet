@@ -1147,10 +1147,16 @@ public class Form : ContainerControl
 			}
 
 	// Preview a keyboard message.
-	[TODO]
 	protected override bool ProcessKeyPreview(ref Message msg)
 			{
-				// TODO
+				if(keyPreview)
+				{
+					// The form wants first crack at the key message.
+					if(ProcessKeyEventArgs(ref msg))
+					{
+						return true;
+					}
+				}
 				return base.ProcessKeyPreview(ref msg);
 			}
 

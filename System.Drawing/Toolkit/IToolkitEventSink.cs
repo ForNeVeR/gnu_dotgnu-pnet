@@ -43,13 +43,13 @@ public interface IToolkitEventSink
 	void ToolkitFocusLeave();
 
 	// Event that is emitted for a key down event.
-	void ToolkitKeyDown(ToolkitKeys key);
+	bool ToolkitKeyDown(ToolkitKeys key);
 
 	// Event that is emitted for a key up event.
-	void ToolkitKeyUp(ToolkitKeys key);
+	bool ToolkitKeyUp(ToolkitKeys key);
 
 	// Event that is emitted for a key character event.
-	void ToolkitKeyChar(char charCode);
+	bool ToolkitKeyChar(char charCode);
 
 	// Event that is emitted for a mouse down event.
 	void ToolkitMouseDown

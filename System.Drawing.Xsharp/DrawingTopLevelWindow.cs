@@ -326,13 +326,17 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 	protected override bool OnKeyPress(KeyName key,
 									   ModifierMask modifiers, String str)
 			{
+				bool processed = false;
 				if(sink != null)
 				{
 					// Emit the "KeyDown" event.
 					ToolkitKeys keyData = DrawingWindow.MapKey(key, modifiers);
 					if(keyData != ToolkitKeys.None)
 					{
-						sink.ToolkitKeyDown(keyData);
+						if(sink.ToolkitKeyDown(keyData))
+						{
+							processed = true;
+						}
 					}
 
 					// Emit the "KeyChar" event if necessary.
@@ -340,13 +344,29 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 					{
 						foreach(char ch in str)
 						{
-							sink.ToolkitKeyChar(ch);
+							if(sink.ToolkitKeyChar(ch))
+							{
+								processed = true;
+							}
 						}
 					}
 				}
+				return processed;
+			}
 
-				// The key has been processed.
-				return true;
+	// Override the key release event from Xsharp.
+	protected override bool OnKeyRelease(KeyName key, ModifierMask modifiers)
+			{
+				if(sink != null)
+				{
+					// Emit the "KeyUp" event.
+					ToolkitKeys keyData = DrawingWindow.MapKey(key, modifiers);
+					if(keyData != ToolkitKeys.None)
+					{
+						return sink.ToolkitKeyUp(keyData);
+					}
+				}
+				return false;
 			}
 
 	// Override the mouse enter event from Xsharp.

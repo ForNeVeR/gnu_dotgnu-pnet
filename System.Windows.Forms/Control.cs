@@ -70,6 +70,7 @@ public class Control : IWin32Window
 #if !CONFIG_COMPACT_FORMS
 	private AccessibleObject accessibilityObject;
 #endif
+	private static Keys currentModifiers;
 
 	// Constructors.
 	public Control()
@@ -1174,13 +1175,11 @@ public class Control : IWin32Window
 			}
 
 	// Get the global state of the modifier keys.
-	[TODO]
 	public static Keys ModifierKeys
 			{
 				get
 				{
-					// TODO
-					return Keys.None;
+					return (currentModifiers & Keys.Modifiers);
 				}
 			}
 
@@ -1639,19 +1638,31 @@ public class Control : IWin32Window
 			}
 
 	// Determine if a character is recognized by a control as an input char.
-	[TODO]
 	protected virtual bool IsInputChar(char c)
 			{
-				// TODO
-				return false;
+				// By default, pass the request up to our parent.
+				if(parent != null)
+				{
+					return parent.IsInputChar(c);
+				}
+				else
+				{
+					return true;
+				}
 			}
 
 	// Determine if a key is recognized by a control as an input key.
-	[TODO]
 	protected virtual bool IsInputKey(Keys keyData)
 			{
-				// TODO
-				return false;
+				// By default, pass the request up to our parent.
+				if(parent != null)
+				{
+					return parent.IsInputKey(keyData);
+				}
+				else
+				{
+					return true;
+				}
 			}
 
 	// Determine if a character is mnemonic in a string.
@@ -1891,50 +1902,98 @@ public class Control : IWin32Window
 			}
 
 	// Process a dialog character.
-	[TODO]
 	protected virtual bool ProcessDialogChar(char charCode)
 			{
-				// TODO
-				return false;
+				// By default, pass the message up to our parent.
+				if(parent != null)
+				{
+					return parent.ProcessDialogChar(charCode);
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 	// Process a dialog key.
-	[TODO]
 	protected virtual bool ProcessDialogKey(Keys keyData)
 			{
-				// TODO
-				return false;
+				// By default, pass the message up to our parent.
+				if(parent != null)
+				{
+					return parent.ProcessDialogKey(keyData);
+				}
+				else
+				{
+					return false;
+				}
 			}
 
-	// Process a key event.
-	[TODO]
+	// Process a key event by turning it into its EventArgs form.
 	protected virtual bool ProcessKeyEventArgs(ref Message msg)
 			{
-				// TODO
-				return false;
+				int msgNum = msg.Msg;
+				KeyEventArgs args1;
+				KeyPressEventArgs args2;
+				if(msgNum == Win32Constants.WM_KEYDOWN)
+				{
+					args1 = new KeyEventArgs(msg.key);
+					OnKeyDown(args1);
+					return args1.Handled;
+				}
+				else if(msgNum == Win32Constants.WM_KEYUP)
+				{
+					args1 = new KeyEventArgs(msg.key);
+					OnKeyUp(args1);
+					return args1.Handled;
+				}
+				else if(msgNum == Win32Constants.WM_CHAR)
+				{
+					args2 = new KeyPressEventArgs((char)(msg.key));
+					OnKeyPress(args2);
+					return args2.Handled;
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 	// Process a keyboard message.
-	[TODO]
 	protected internal virtual bool ProcessKeyMessage(ref Message msg)
 			{
-				// TODO
-				return false;
+				// If we have a parent, then let it preview the event first.
+				if(parent != null)
+				{
+					if(parent.ProcessKeyPreview(ref msg))
+					{
+						return true;
+					}
+				}
+
+				// Turn the event into its EventArgs form and dispatch it.
+				return ProcessKeyEventArgs(ref msg);
 			}
 
 	// Preview a keyboard message.
-	[TODO]
 	protected virtual bool ProcessKeyPreview(ref Message msg)
 			{
-				// TODO
-				return false;
+				// By default, pass the message up to our parent.
+				if(parent != null)
+				{
+					return parent.ProcessKeyPreview(ref msg);
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 	// Process a key mnemonic.
-	[TODO]
 	protected virtual bool ProcessMnemonic(char charCode)
 			{
-				// TODO
+				// By default, controls don't have mnemonics.
+				// Overridden by subclasses that need mnemonics.
 				return false;
 			}
 
@@ -2343,19 +2402,38 @@ public class Control : IWin32Window
 				// the Z-order of child controls automatically.
 			}
 
+	// Pre-process a message before it is dispatched by the event loop.
+	public virtual bool PreProcessMessage(ref Message msg)
+			{
+				// Handle dialog and command keys.
+				int msgNum = msg.Msg;
+				if(msgNum == Win32Constants.WM_KEYDOWN)
+				{
+					if(ProcessCmdKey(ref msg, msg.key))
+					{
+						return true;
+					}
+					if(!IsInputKey(msg.key))
+					{
+						return ProcessDialogKey(msg.key);
+					}
+				}
+				else if(msgNum == Win32Constants.WM_CHAR)
+				{
+					if(!IsInputChar((char)(msg.key)))
+					{
+						return ProcessDialogChar((char)(msg.key));
+					}
+				}
+				return false;
+			}
+
 #if !CONFIG_COMPACT_FORMS
 
 	// Default window procedure for this control class.
 	protected virtual void DefWndProc(ref Message msg)
 			{
 				// Window procedures are not used in this implementation.
-			}
-
-	// Pre-process a message before it is dispatched by the event loop.
-	public virtual bool PreProcessMessage(ref Message msg)
-			{
-				// Window procedures are not used in this implementation.
-				return false;
 			}
 
 	// Process a message.
@@ -4291,21 +4369,47 @@ public class Control : IWin32Window
 			}
 
 	// Toolkit event that is emitted for a key down event.
-	void IToolkitEventSink.ToolkitKeyDown(ToolkitKeys key)
+	bool IToolkitEventSink.ToolkitKeyDown(ToolkitKeys key)
 			{
-				OnKeyDown(new KeyEventArgs((Keys)key));
+				// Create a fake key message and dispatch it.
+				currentModifiers = (Keys)key;
+				Message m = Message.CreateKeyMessage
+					(Win32Constants.WM_KEYDOWN, (Keys)key);
+				if(PreProcessMessage(ref m))
+				{
+					// The key was dispatched as a dialog or command key.
+					return true;
+				}
+				return ProcessKeyMessage(ref m);
 			}
 
 	// Toolkit event that is emitted for a key up event.
-	void IToolkitEventSink.ToolkitKeyUp(ToolkitKeys key)
+	bool IToolkitEventSink.ToolkitKeyUp(ToolkitKeys key)
 			{
-				OnKeyUp(new KeyEventArgs((Keys)key));
+				// Create a fake key message and dispatch it.
+				currentModifiers = (Keys)key;
+				Message m = Message.CreateKeyMessage
+					(Win32Constants.WM_KEYUP, (Keys)key);
+				if(PreProcessMessage(ref m))
+				{
+					// The key was dispatched as a dialog or command key.
+					return true;
+				}
+				return ProcessKeyMessage(ref m);
 			}
 
 	// Toolkit event that is emitted for a key character event.
-	void IToolkitEventSink.ToolkitKeyChar(char charCode)
+	bool IToolkitEventSink.ToolkitKeyChar(char charCode)
 			{
-				OnKeyPress(new KeyPressEventArgs(charCode));
+				// Create a fake key character message and dispatch it.
+				Message m = Message.CreateKeyMessage
+					(Win32Constants.WM_CHAR, (Keys)(int)charCode);
+				if(PreProcessMessage(ref m))
+				{
+					// The key was dispatched as a dialog or command key.
+					return true;
+				}
+				return ProcessKeyMessage(ref m);
 			}
 
 	// Toolkit event that is emitted for a mouse down event.
@@ -4313,6 +4417,7 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 		 	{
+				currentModifiers = (Keys)modifiers;
 				OnMouseDown(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
 			}
@@ -4322,6 +4427,7 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 			{
+				currentModifiers = (Keys)modifiers;
 				OnMouseUp(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
 			}
@@ -4331,6 +4437,7 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 			{
+				currentModifiers = (Keys)modifiers;
 				OnMouseHover(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
 			}
@@ -4340,6 +4447,7 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 			{
+				currentModifiers = (Keys)modifiers;
 				OnMouseMove(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
 			}
@@ -4349,6 +4457,7 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 			{
+				currentModifiers = (Keys)modifiers;
 				OnMouseWheel(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
 			}

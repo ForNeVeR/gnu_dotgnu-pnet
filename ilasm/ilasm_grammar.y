@@ -496,6 +496,40 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 	return shell;
 }
 
+/*
+ * Set the originator for the current assembly definition or reference.
+ */
+static void SetOriginator(char *orig, int len, int fullOriginator)
+{
+	if(ILAsmCurrAssemblyRef)
+	{
+		if(!ILAssemblySetOriginator(ILAsmCurrAssemblyRef,
+									(const void *)orig,
+									(unsigned long)(long)len))
+		{
+			ILAsmOutOfMemory();
+		}
+		if(fullOriginator)
+		{
+			ILAssemblySetRefAttrs(ILAsmCurrAssemblyRef,
+								  IL_META_ASSEMREF_FULL_ORIGINATOR,
+								  IL_META_ASSEMREF_FULL_ORIGINATOR);
+		}
+	}
+	else
+	{
+		if(!ILAssemblySetOriginator(ILAsmAssembly,
+									(const void *)orig,
+									(unsigned long)(long)len))
+		{
+			ILAsmOutOfMemory();
+		}
+		ILAssemblySetAttrs(ILAsmAssembly,
+						   IL_META_ASSEM_PUBLIC_KEY,
+						   IL_META_ASSEM_PUBLIC_KEY);
+	}
+}
+
 %}
 
 /*
@@ -3101,9 +3135,15 @@ AssemblyDeclaration
 	;
 
 AsmOrRefDeclaration
-	: D_ORIGINATOR '=' Bytes
-	| D_PUBLICKEY '=' Bytes
-	| D_PUBLICKEYTOKEN '=' Bytes
+	: D_ORIGINATOR '=' Bytes	{
+					SetOriginator($3.string, $3.len, 1);
+				}
+	| D_PUBLICKEY '=' Bytes		{
+					SetOriginator($3.string, $3.len, 1);
+				}
+	| D_PUBLICKEYTOKEN '=' Bytes	{
+					SetOriginator($3.string, $3.len, 0);
+				}
 	| D_VER Integer32 ':' Integer32 ':' Integer32 ':' Integer32	{
 				/* Set the assembly version */
 				if(ILAsmCurrAssemblyRef)

@@ -142,7 +142,7 @@ static void Dump_Assembly(ILImage *image, FILE *outstream, int flags,
 			(unsigned long)(version[2]), (unsigned long)(version[3]));
 	if((orig = ILAssemblyGetOriginator(assem, &origLen)) != 0)
 	{
-		fputs("\t.originator =", outstream);
+		fputs("\t.publickey =", outstream);
 		ILDAsmDumpBinaryBlob(outstream, image, orig, origLen);
 		putc('\n', outstream);
 	}
@@ -204,6 +204,8 @@ static void Dump_AssemblyRef(ILImage *image, FILE *outstream, int flags,
 							 unsigned long refToken)
 {
 	const ILUInt16 *version;
+	const void *orig;
+	unsigned long origLen;
 	fputs(".assembly extern ", outstream);
 	if((flags & IL_DUMP_SHOW_TOKENS) != 0)
 	{
@@ -217,6 +219,19 @@ static void Dump_AssemblyRef(ILImage *image, FILE *outstream, int flags,
 	fprintf(outstream, "\t.ver %lu:%lu:%lu:%lu\n",
 			(unsigned long)(version[0]), (unsigned long)(version[1]),
 			(unsigned long)(version[2]), (unsigned long)(version[3]));
+	if((orig = ILAssemblyGetOriginator(assem, &origLen)) != 0)
+	{
+		if(ILAssembly_HasFullOriginator(assem))
+		{
+			fputs("\t.publickey =", outstream);
+		}
+		else
+		{
+			fputs("\t.publickeytoken =", outstream);
+		}
+		ILDAsmDumpBinaryBlob(outstream, image, orig, origLen);
+		putc('\n', outstream);
+	}
 	ILDAsmWalkTokens(image, outstream, flags,
 					 IL_META_TOKEN_OS_REF,
 					 (ILDAsmWalkFunc)Dump_OSRef, token);

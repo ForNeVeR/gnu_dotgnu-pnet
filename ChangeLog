@@ -1,4 +1,9 @@
 
+2003-01-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* dumpasm/dump_flags.c, ilasm/ilasm_grammar.y, ildasm/ildasm_global.c:
+	fix the processing of public keys in ilasm and ildasm.
+
 2003-01-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/rc2.c: work around problems with unsigned short

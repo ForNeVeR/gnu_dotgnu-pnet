@@ -424,18 +424,26 @@ ILUInt64 ILSerializeReaderGetUInt64(ILSerializeReader *reader)
 
 ILFloat ILSerializeReaderGetFloat32(ILSerializeReader *reader)
 {
+#ifdef IL_CONFIG_FP_SUPPORTED
 	ILFloat value = IL_READ_FLOAT(reader->meta.data);
 	reader->meta.data += 4;
 	reader->meta.len -= 4;
 	return value;
+#else
+	return (ILFloat)(0.0);
+#endif
 }
 
 ILDouble ILSerializeReaderGetFloat64(ILSerializeReader *reader)
 {
+#ifdef IL_CONFIG_FP_SUPPORTED
 	ILDouble value = IL_READ_DOUBLE(reader->meta.data);
 	reader->meta.data += 8;
 	reader->meta.len -= 8;
 	return value;
+#else
+	return (ILDouble)(0.0);
+#endif
 }
 
 int ILSerializeReaderGetString(ILSerializeReader *reader, const char **str)

@@ -22,6 +22,9 @@
 
 	* image/member.c: #ifdef out Java support if disabled by the profile.
 
+	* image/ser_parse.c: #ifdef out parsing of float/double attribute
+	values if disabled by the profile.
+
 2002-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_config_win.h, include/il_values.h: remove the out

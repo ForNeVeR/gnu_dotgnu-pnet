@@ -359,6 +359,7 @@ AC_MSG_RESULT($X_long)
 AC_OUTPUT([
 Makefile
 tools/Makefile
+config/Makefile
 runtime/Makefile
 I18N/Makefile
 DotGNU.SSL/Makefile

@@ -33,6 +33,51 @@ using System.Xml;
 #endif
 using Platform;
 
+/*
+
+Layout of the configuration file for data accessible by this API:
+
+	<configuration>
+		<configSections>
+			<sectionGroup name="NAME">
+				<!-- sections and groups -->
+			</sectionGroup>
+
+			<section name="NAME" type="TYPE" [allowLocation="?"]
+					 [allowDefinition="?"]>
+			</section>
+
+			<remove name="NAME"/>
+
+			<clear/>
+		</configSections>
+
+		<!-- actual settings sections -->
+	</configuration>
+
+Configuration section names have the form "NAME1/NAME2/NAME3",
+for each level down through the XML file.
+
+The "configSections" tag defines the "schema" for the real configuration
+data that follows.  Each section name has a type associated with it, which
+is the name of the handler for parsing settings in that section.
+
+We load configuration files in the following order:
+
+	GLOBAL/machine.default
+	GLOBAL/machine.config
+	USER/machine.default
+	USER/machine.config
+	application.config
+
+The "machine.default" files are unique to this implementation.  They provide
+the bulk of the schema definition data and fallback defaults for configuration
+settings.  The default files are expected to remain static across all
+installations of the software, whereas "machine.config" files might change
+from machine to machine.
+
+*/
+
 public sealed class ConfigurationSettings
 {
 	// Internal state.
@@ -105,6 +150,24 @@ public sealed class ConfigurationSettings
 					initialized = false;
 				}
 
+		// Check for a machine default file's existence in a directory.
+		private static String CheckForMachineDefault(String dir)
+				{
+					// Bail out if the directory was not specified.
+					if(dir == null || dir.Length == 0)
+					{
+						return null;
+					}
+
+					// Build the full pathname and check for its existence.
+					String pathname = Path.Combine(dir, "machine.schema");
+					if(!File.Exists(pathname))
+					{
+						return null;
+					}
+					return pathname;
+				}
+
 		// Check for a machine configuration file's existence in a directory.
 		private static String CheckForMachineConfig(String dir)
 				{
@@ -139,25 +202,41 @@ public sealed class ConfigurationSettings
 					}
 					try
 					{
-						// Find the machine configuration file.
-						String machineConfigFile;
-						machineConfigFile = CheckForMachineConfig
+						// Find the user/global machine defaults files.
+						String userDefaultFile, globalDefaultFile;
+						userDefaultFile = CheckForMachineDefault
 							(InfoMethods.GetUserStorageDir());
-						if(machineConfigFile == null)
-						{
-							machineConfigFile = CheckForMachineConfig
-								(InfoMethods.GetGlobalConfigDir());
-						}
+						globalDefaultFile = CheckForMachineDefault
+							(InfoMethods.GetGlobalConfigDir());
+
+						// Find the user/global machine configuration files.
+						String userConfigFile, globalConfigFile;
+						userConfigFile = CheckForMachineConfig
+							(InfoMethods.GetUserStorageDir());
+						globalConfigFile = CheckForMachineConfig
+							(InfoMethods.GetGlobalConfigDir());
 
 						// Find the application's configuration file.
 						String appConfigFile =
 							AppDomain.CurrentDomain.SetupInformation
 								.ConfigurationFile;
 
-						// Load the configuration files.
-						if(machineConfigFile != null)
+						// Load all of the configuration files that we found.
+						if(globalDefaultFile != null)
 						{
-							Load(machineConfigFile);
+							Load(globalDefaultFile);
+						}
+						if(globalConfigFile != null)
+						{
+							Load(globalConfigFile);
+						}
+						if(userDefaultFile != null)
+						{
+							Load(userDefaultFile);
+						}
+						if(userConfigFile != null)
+						{
+							Load(userConfigFile);
 						}
 						if(appConfigFile != null && File.Exists(appConfigFile))
 						{

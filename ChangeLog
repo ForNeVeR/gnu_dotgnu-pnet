@@ -12,6 +12,11 @@
 	System/Platform/InfoMethods.cs: locate the application and
 	machine configuration files for "System.Configuration".
 
+	* Makefile.am, configure.in, config/.cvsignore, config/Makefile.am,
+	config/machine.default, System/Configuration/ConfigurationSettings.cs:
+	implement the search algorithm for "machine.config" files; install
+	system-independent fallback defaults in "machine.default".
+
 2003-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/GlobalProxySelection.cs, System/Net/HttpWebRequest.cs:

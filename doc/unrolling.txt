@@ -359,6 +359,13 @@ md_freg_swap(inst)
     Swap the two top-most values on the floating-point register stack.
     Not used if the FPU is not stack-based.
 
+md_cmp_reg_reg_float(inst, dreg, sreg1, sreg2, lessop)
+
+	Compare the two floating-point values in "sreg1" and "sreg2".
+	Set the word register "dreg" to -1, 0, or 1 based on the result.
+	If "lessop" is non-zero, then use the NaN rules for "fcmpl".
+	Otherwise use the NaN rules for "fcmpg".
+
 md_reg_to_byte(inst, reg)
 
     Truncate the contents of a register to 8 bits and zero-extend.

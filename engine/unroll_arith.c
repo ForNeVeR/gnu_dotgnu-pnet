@@ -318,6 +318,42 @@ case COP_ISHR_UN:
 }
 break;
 
+#ifdef MD_HAS_FP
+
+case 0x100 + COP_PREFIX_FCMPL:
+{
+	/* Compare floating point values */
+	UNROLL_START();
+	CheckWordFull(&unroll);
+	GetTopTwoFPRegisters(&unroll, &reg, &reg2, 0);
+	reg3 = GetWordRegister(&unroll, MD_REG1_32BIT);
+	md_cmp_reg_reg_float(unroll.out, reg3, reg, reg2, 1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	PushRegister(&unroll, reg3, MD_REG1_32BIT);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_FCMPG:
+{
+	/* Compare floating point values */
+	UNROLL_START();
+	CheckWordFull(&unroll);
+	GetTopTwoFPRegisters(&unroll, &reg, &reg2, 0);
+	reg3 = GetWordRegister(&unroll, MD_REG1_32BIT);
+	md_cmp_reg_reg_float(unroll.out, reg3, reg, reg2, 0);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	PushRegister(&unroll, reg3, MD_REG1_32BIT);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+#endif /* MD_HAS_FP */
+
 case 0x100 + COP_PREFIX_ICMP:
 {
 	/* Compare integer values with -1, 0, or 1 result */

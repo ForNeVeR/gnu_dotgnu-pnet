@@ -8,6 +8,10 @@
 
 	* engine/md_arm.h, engine/arm_codegen.h: minor tweaks to ARM macros.
 
+	* doc/unrolling.txt, engine/Makefile.am, engine/md_default.h,
+	engine/md_x86.c, engine/md_x86.h, engine/unroll.c,
+	engine/unroll_arith.c: unroll "fcmpl" and "fcmpg" for x86.
+
 2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeCreate

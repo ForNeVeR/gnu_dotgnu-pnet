@@ -376,6 +376,15 @@ extern md_inst_ptr _md_x86_rem_float
 			x86_fchs((inst))
 
 /*
+ * Compare two floating point values and produce a -1, 0, or 1 result.
+ */
+extern md_inst_ptr _md_x86_cmp_float(md_inst_ptr inst, int dreg, int lessop);
+#define	md_cmp_reg_reg_float(inst, dreg, sreg1, sreg2, lessop)	\
+			do { \
+				(inst) = _md_x86_cmp_float((inst), (dreg), (lessop)); \
+			} while (0)
+
+/*
  * Convert word registers between various types.
  */
 extern md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned);

@@ -199,6 +199,63 @@ md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned)
 	return inst;
 }
 
+md_inst_ptr _md_x86_cmp_float(md_inst_ptr inst, int dreg, int lessop)
+{
+	md_inst_ptr patch1, patch2, patch3;
+
+	/* We need the EAX register to store the FPU status word */
+	if(dreg != X86_EAX)
+	{
+		x86_push_reg(inst, X86_EAX);
+	}
+
+	/* Compare the values and get the FPU status word */
+	x86_fcompp(inst);
+	x86_fnstsw(inst);
+	x86_alu_reg_imm(inst, X86_AND, X86_EAX, 0x4500);
+
+	/* Decode the FPU status word to determine the result */
+	x86_alu_reg_imm(inst, X86_CMP, X86_EAX, 0x4000);		/* eq */
+	patch1 = inst;
+	x86_branch8(inst, X86_CC_NE, 0, 0);
+	x86_clear_reg(inst, X86_EAX);
+	patch2 = inst;
+	x86_jump8(inst, 0);
+	x86_patch(patch1, inst);
+	if(lessop)
+	{
+		x86_alu_reg_imm(inst, X86_CMP, X86_EAX, 0x0100);	/* gt */
+		patch1 = inst;
+		x86_branch8(inst, X86_CC_NE, 0, 0);
+		x86_mov_reg_imm(inst, X86_EAX, 1);
+		patch3 = inst;
+		x86_jump8(inst, 0);
+		x86_patch(patch1, inst);
+		x86_mov_reg_imm(inst, X86_EAX, -1);
+	}
+	else
+	{
+		x86_alu_reg_imm(inst, X86_CMP, X86_EAX, 0x0000);	/* lt */
+		patch1 = inst;
+		x86_branch8(inst, X86_CC_NE, 0, 0);
+		x86_mov_reg_imm(inst, X86_EAX, -1);
+		patch3 = inst;
+		x86_jump8(inst, 0);
+		x86_patch(patch1, inst);
+		x86_mov_reg_imm(inst, X86_EAX, 1);
+	}
+	x86_patch(patch2, inst);
+	x86_patch(patch3, inst);
+
+	/* Shift the result into the destination register */
+	if(dreg != X86_EAX)
+	{
+		x86_mov_reg_reg(inst, dreg, X86_EAX, 4);
+		x86_pop_reg(inst, X86_EAX);
+	}
+	return inst;
+}
+
 #ifdef	__cplusplus
 };
 #endif

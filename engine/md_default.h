@@ -78,6 +78,8 @@ extern	"C" {
 			do { ; } while (0)
 #define	md_neg_reg_float(inst,reg)	\
 			do { ; } while (0)
+#define	md_cmp_reg_reg_float(inst,dreg,sreg1,sreg2,lessop)	\
+			do { ; } while (0)
 #endif
 
 /*

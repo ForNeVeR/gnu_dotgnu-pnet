@@ -469,6 +469,33 @@ static int GetCachedWordRegister(MDUnroll *unroll, long local, int flags)
 #ifdef MD_HAS_FP
 
 /*
+ * Check to see if the word register array/stack is full.
+ * If it is, then flush the entire register stack.
+ */
+static void CheckWordFull(MDUnroll *unroll)
+{
+	int index, reg, regmask;
+
+	/* Clear the cached local information */
+	unroll->cachedLocal = -1;
+	unroll->cachedReg = -1;
+
+	/* Search for an unused word register */
+	for(index = 0; index < 16 && regAllocOrder[index] != -1; ++index)
+	{
+		reg = regAllocOrder[index];
+		regmask = (1 << reg);
+		if((unroll->regsUsed & regmask) == 0)
+		{
+			return;
+		}
+	}
+
+	/* Flush the entire register stack */
+	FlushRegisterStack(unroll);
+}
+
+/*
  * Check to see if the floating-point register array/stack is full.
  * If it is, then flush the entire register stack.
  */

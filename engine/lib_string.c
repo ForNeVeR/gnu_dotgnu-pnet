@@ -750,7 +750,7 @@ void _IL_String_RemoveSpace(ILExecThread *thread,
 {
 	ILMemMove(StringToBuffer(dest) + index,
 			  StringToBuffer(dest) + index + length,
-			  dest->length - (index + length));
+			  (dest->length - (index + length)) * sizeof(ILUInt16));
 	dest->length -= length;
 }
 

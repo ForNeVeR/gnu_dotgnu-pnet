@@ -1,4 +1,8 @@
 
+2003-01-01  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* engine/lib_string.c: fix to String.RemoveSpace
+
 2002-12-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/test_verify.c: fix calls to "_ILVerify" to add the

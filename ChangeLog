@@ -13,6 +13,8 @@ don't create the builtin library image if "mscorlib" is being loaded.
 * dumpasm/dump_ident.c: try to print the assembly name rather than the
 module name when dumping class names.
 
+* cscc/cs_invoke.tc: favour non-"params" candidates over "params" candidates.
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

@@ -1,3 +1,7 @@
+2005-01-26  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* configure.in: update pnetlib version number.
+
 2005-01-25  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* configure.in: fix xft check (patch #3646).

@@ -11,6 +11,9 @@
 	add the "--without-libgc" option to "configure", to allow building
 	the system without a full garbage collector.
 
+	* engine/process.c: don't call "ILDynLibraryClose" if PInvoke
+	is disabled, as it will never be required.
+
 2002-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_engine.h, engine/thread.c: add "ILExecThreadCurrent",

@@ -113,8 +113,6 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 
 void ILExecProcessDestroy(ILExecProcess *process)
 {
-	ILLoadedModule *loaded, *nextLoaded;
-
 	/* Destroy the threads associated with the process */
 	while(process->firstThread != 0)
 	{
@@ -144,18 +142,23 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	   The rest will be cleaned up by the garbage collector */
 	ILGCFreePersistent(process->reflectionHash);
 
+#ifdef IL_CONFIG_PINVOKE
 	/* Destroy the loaded module list */
-	loaded = process->loadedModules;
-	while(loaded != 0)
 	{
-		if(loaded->handle != 0)
+		ILLoadedModule *loaded, *nextLoaded;
+		loaded = process->loadedModules;
+		while(loaded != 0)
 		{
-			ILDynLibraryClose(loaded->handle);
+			if(loaded->handle != 0)
+			{
+				ILDynLibraryClose(loaded->handle);
+			}
+			nextLoaded = loaded->next;
+			ILFree(loaded);
+			loaded = nextLoaded;
 		}
-		nextLoaded = loaded->next;
-		ILFree(loaded);
-		loaded = nextLoaded;
 	}
+#endif
 
 	/* Destroy the object lock */
 	ILMutexDestroy(process->lock);

@@ -621,13 +621,9 @@ public sealed class NumberFormatInfo : ICloneable, IFormatProvider
 	// Implementation of the ICloneable interface.
 	public Object Clone()
 			{
-			#if !ECMA_COMPAT
 				NumberFormatInfo numberFormat = (NumberFormatInfo)MemberwiseClone();
 				numberFormat.readOnly = false;
 				return numberFormat;
-			#else
-				return MemberwiseClone();
-			#endif
 			}
 
 	// Implementation of the IFormatProvider interface.

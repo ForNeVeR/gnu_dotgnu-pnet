@@ -2,7 +2,7 @@
  * Utils.cs - Implementation of the
  *			"Microsoft.VisualBasic.Utils" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -358,6 +358,142 @@ public sealed class Utils
 					else if(ch >= '\uFF41' && ch <= '\uFF46')
 					{
 						builder.Append((char)(ch - (0xFF41 + 0x0061)));
+					}
+					else
+					{
+						builder.Append(ch);
+					}
+				}
+				return builder.ToString();
+			}
+
+	// Convert a string into its wide form.
+	internal static String ToWide(String str)
+			{
+				int posn, len;
+				char ch;
+				len = str.Length;
+				for(posn = 0; posn < len; ++posn)
+				{
+					ch = str[posn];
+					if(ch >= '\u0021' && ch <= '\u007E')
+					{
+						break;
+					}
+				}
+				if(posn >= len)
+				{
+					return str;
+				}
+				StringBuilder builder = new StringBuilder();
+				for(posn = 0; posn < len; ++posn)
+				{
+					ch = str[posn];
+					if(ch >= '\u0021' && ch <= '\u007E')
+					{
+						builder.Append((char)(ch - 0x0021 + 0xFF01));
+					}
+					else
+					{
+						builder.Append(ch);
+					}
+				}
+				return builder.ToString();
+			}
+
+	// Convert a string into its narrow form.
+	internal static String ToNarrow(String str)
+			{
+				int posn, len;
+				char ch;
+				len = str.Length;
+				for(posn = 0; posn < len; ++posn)
+				{
+					ch = str[posn];
+					if(ch >= '\uFF01' && ch <= '\uFF5E')
+					{
+						break;
+					}
+				}
+				if(posn >= len)
+				{
+					return str;
+				}
+				StringBuilder builder = new StringBuilder();
+				for(posn = 0; posn < len; ++posn)
+				{
+					ch = str[posn];
+					if(ch >= '\uFF01' && ch <= '\uFF5E')
+					{
+						builder.Append((char)(ch - 0xFF01 + 0x0021));
+					}
+					else
+					{
+						builder.Append(ch);
+					}
+				}
+				return builder.ToString();
+			}
+
+	// Convert katakana characters into hiragana.
+	internal static String ToHiragana(String str)
+			{
+				int posn, len;
+				char ch;
+				len = str.Length;
+				for(posn = 0; posn < len; ++posn)
+				{
+					ch = str[posn];
+					if(ch >= '\u30A1' && ch <= '\u30FE')
+					{
+						break;
+					}
+				}
+				if(posn >= len)
+				{
+					return str;
+				}
+				StringBuilder builder = new StringBuilder();
+				for(posn = 0; posn < len; ++posn)
+				{
+					ch = str[posn];
+					if(ch >= '\u30A1' && ch <= '\u30FE')
+					{
+						builder.Append((char)(ch - 0x30A1 + 0x3041));
+					}
+					else
+					{
+						builder.Append(ch);
+					}
+				}
+				return builder.ToString();
+			}
+
+	// Convert hiragana characters into katakana.
+	internal static String ToKatakana(String str)
+			{
+				int posn, len;
+				char ch;
+				len = str.Length;
+				for(posn = 0; posn < len; ++posn)
+				{
+					ch = str[posn];
+					if(ch >= '\u3041' && ch <= '\u309E')
+					{
+						break;
+					}
+				}
+				if(posn >= len)
+				{
+					return str;
+				}
+				StringBuilder builder = new StringBuilder();
+				for(posn = 0; posn < len; ++posn)
+				{
+					ch = str[posn];
+					if(ch >= '\u3041' && ch <= '\u309E')
+					{
+						builder.Append((char)(ch - 0x3041 + 0x30A1));
 					}
 					else
 					{

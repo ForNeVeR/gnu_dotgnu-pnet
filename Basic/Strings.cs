@@ -219,7 +219,6 @@ public sealed class Strings
 			}
 
 	// Format a currency value.
-	[TODO]
 	public static String FormatCurrency
 				(Object Expression,
 				 [Optional][DefaultValue(-1)] int NumDigitsAfterDecimal,
@@ -230,23 +229,72 @@ public sealed class Strings
 				 [Optional][DefaultValue(TriState.UseDefault)]
 				 		TriState GroupDigits)
 			{
-				// TODO
-				return null;
+				NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;
+				NumberFormatInfo nfiCurrent = nfi;
+				if(NumDigitsAfterDecimal != -1)
+				{
+					nfi = (NumberFormatInfo)(nfi.Clone());
+					nfi.CurrencyDecimalDigits = NumDigitsAfterDecimal;
+				}
+				if(UseParensForNegativeNumbers != TriState.UseDefault)
+				{
+					if(nfi == nfiCurrent)
+					{
+						nfi = (NumberFormatInfo)(nfi.Clone());
+					}
+					if(UseParensForNegativeNumbers == TriState.False)
+					{
+						nfi.CurrencyNegativePattern = 0;
+					}
+					else
+					{
+						nfi.CurrencyNegativePattern = 1;
+					}
+				}
+				if(GroupDigits != TriState.UseDefault)
+				{
+					if(nfi == nfiCurrent)
+					{
+						nfi = (NumberFormatInfo)(nfi.Clone());
+					}
+					if(GroupDigits == TriState.False)
+					{
+						nfi.CurrencyGroupSizes = new int [] {0};
+					}
+					else
+					{
+						nfi.CurrencyGroupSizes = new int [] {3};
+					}
+				}
+				return DoubleType.FromObject(Expression).ToString("C", nfi);
 			}
 
 	// Format a DateTime value.
-	[TODO]
 	public static String FormatDateTime
 				(DateTime Expression,
 				 [Optional][DefaultValue(DateFormat.GeneralDate)]
 				 		DateFormat NamedFormat)
 			{
-				// TODO
-				return null;
+				String format;
+				switch(NamedFormat)
+				{
+					case DateFormat.GeneralDate:	format = "G"; break;
+					case DateFormat.LongDate:		format = "D"; break;
+					case DateFormat.ShortDate:		format = "d"; break;
+					case DateFormat.LongTime:		format = "T"; break;
+					case DateFormat.ShortTime:		format = "t"; break;
+
+					default:
+					{
+						throw new ArgumentException
+							(S._("VB_InvalidDateFormat"), "NamedFormat");
+					}
+					// Not reached.
+				}
+				return Expression.ToString(format);
 			}
 
 	// Format a numeric value.
-	[TODO]
 	public static String FormatNumber
 				(Object Expression,
 				 [Optional][DefaultValue(-1)] int NumDigitsAfterDecimal,
@@ -257,12 +305,47 @@ public sealed class Strings
 				 [Optional][DefaultValue(TriState.UseDefault)]
 				 		TriState GroupDigits)
 			{
-				// TODO
-				return null;
+				NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;
+				NumberFormatInfo nfiCurrent = nfi;
+				if(NumDigitsAfterDecimal != -1)
+				{
+					nfi = (NumberFormatInfo)(nfi.Clone());
+					nfi.NumberDecimalDigits = NumDigitsAfterDecimal;
+				}
+				if(UseParensForNegativeNumbers != TriState.UseDefault)
+				{
+					if(nfi == nfiCurrent)
+					{
+						nfi = (NumberFormatInfo)(nfi.Clone());
+					}
+					if(UseParensForNegativeNumbers == TriState.False)
+					{
+						nfi.NumberNegativePattern = 0;
+					}
+					else
+					{
+						nfi.NumberNegativePattern = 1;
+					}
+				}
+				if(GroupDigits != TriState.UseDefault)
+				{
+					if(nfi == nfiCurrent)
+					{
+						nfi = (NumberFormatInfo)(nfi.Clone());
+					}
+					if(GroupDigits == TriState.False)
+					{
+						nfi.NumberGroupSizes = new int [] {0};
+					}
+					else
+					{
+						nfi.NumberGroupSizes = new int [] {3};
+					}
+				}
+				return DoubleType.FromObject(Expression).ToString("N", nfi);
 			}
 
 	// Format a percentage value.
-	[TODO]
 	public static String FormatPercent
 				(Object Expression,
 				 [Optional][DefaultValue(-1)] int NumDigitsAfterDecimal,
@@ -273,8 +356,44 @@ public sealed class Strings
 				 [Optional][DefaultValue(TriState.UseDefault)]
 				 		TriState GroupDigits)
 			{
-				// TODO
-				return null;
+				NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;
+				NumberFormatInfo nfiCurrent = nfi;
+				if(NumDigitsAfterDecimal != -1)
+				{
+					nfi = (NumberFormatInfo)(nfi.Clone());
+					nfi.PercentDecimalDigits = NumDigitsAfterDecimal;
+				}
+				if(UseParensForNegativeNumbers != TriState.UseDefault)
+				{
+					if(nfi == nfiCurrent)
+					{
+						nfi = (NumberFormatInfo)(nfi.Clone());
+					}
+					if(UseParensForNegativeNumbers == TriState.False)
+					{
+						nfi.PercentNegativePattern = 0;
+					}
+					else
+					{
+						nfi.PercentNegativePattern = 1;
+					}
+				}
+				if(GroupDigits != TriState.UseDefault)
+				{
+					if(nfi == nfiCurrent)
+					{
+						nfi = (NumberFormatInfo)(nfi.Clone());
+					}
+					if(GroupDigits == TriState.False)
+					{
+						nfi.PercentGroupSizes = new int [] {0};
+					}
+					else
+					{
+						nfi.PercentGroupSizes = new int [] {3};
+					}
+				}
+				return DoubleType.FromObject(Expression).ToString("P", nfi);
 			}
 
 	// Get a particular character within a string.
@@ -549,7 +668,6 @@ public sealed class Strings
 					return 0;
 				}
 			}
-	[TODO]
 	public static int Len(Object Expression)
 			{
 				if(Expression == null)
@@ -586,7 +704,7 @@ public sealed class Strings
 				}
 				else if(Expression is ValueType)
 				{
-					// TODO
+					return Marshal.SizeOf(Expression);
 				}
 				throw new ArgumentException
 					(S._("VB_CouldntHandle"), "Expression");
@@ -648,14 +766,82 @@ public sealed class Strings
 					(String1, String2, (Compare == CompareMethod.Text));
 			}
 
-	// Perform a string conversion.
-	[TODO]
+	// Get the TextInfo object for a given locale.
+	private static TextInfo GetTextInfo(int LocaleID)
+			{
+				if(LocaleID == 0)
+				{
+					return CultureInfo.CurrentCulture.TextInfo;
+				}
+			#if CONFIG_REFLECTION
+				if(LocaleID == CultureInfo.CurrentCulture.LCID)
+				{
+					return CultureInfo.CurrentCulture.TextInfo;
+				}
+			#else
+				// We don't have LCID, so use GetHashCode() instead.
+				if(LocaleID == CultureInfo.CurrentCulture.GetHashCode())
+				{
+					return CultureInfo.CurrentCulture.TextInfo;
+				}
+			#endif
+				try
+				{
+					return (new CultureInfo(LocaleID)).TextInfo;
+				}
+				catch(Exception)
+				{
+					return CultureInfo.CurrentCulture.TextInfo;
+				}
+			}
+
+	// Perform a string conversion (we don't support simplified/traditional
+	// conversions or linguistic casing yet).
 	public static String StrConv
 				(String str, VbStrConv Conversion,
 				 [Optional][DefaultValue(0)] int LocaleID)
 			{
-				// TODO
-				return null;
+				if(str == null)
+				{
+					return null;
+				}
+				if((Conversion & VbStrConv.Wide) != 0)
+				{
+					str = Utils.ToWide(str);
+				}
+				else if((Conversion & VbStrConv.Narrow) != 0)
+				{
+					str = Utils.ToNarrow(str);
+				}
+				if((Conversion & VbStrConv.Katakana) != 0)
+				{
+					str = Utils.ToKatakana(str);
+				}
+				else if((Conversion & VbStrConv.Hiragana) != 0)
+				{
+					str = Utils.ToHiragana(str);
+				}
+				switch(Conversion & (VbStrConv)0x0003)
+				{
+					case VbStrConv.UpperCase:
+					{
+						str = GetTextInfo(LocaleID).ToUpper(str);
+					}
+					break;
+
+					case VbStrConv.LowerCase:
+					{
+						str = GetTextInfo(LocaleID).ToLower(str);
+					}
+					break;
+
+					case VbStrConv.ProperCase:
+					{
+						str = GetTextInfo(LocaleID).ToTitleCase(str);
+					}
+					break;
+				}
+				return str;
 			}
 
 	// Duplicate a character a particular number of times.

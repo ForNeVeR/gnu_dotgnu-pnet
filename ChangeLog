@@ -7,6 +7,11 @@
 	tests/Basic/TestString.cs, tools/run_test.sh.in: missing methods
 	in the VB "Strings" class; add the beginnings of a VB test suite.
 
+	* Basic/Strings.cs, Basic/CompilerServices/Utils.cs,
+	resources/en_US/Basic/Basic.txt,
+	runtime/System/Globalization/NumberFormatInfo.cs: implement number
+	formatting and "StrConv" for the VB library.
+
 2004-07-15  klaus Treichel  <ktreichel@web.de>
 
 	* System/Net/HttpWebRequest.cs: uncomment ServicePoint property.	

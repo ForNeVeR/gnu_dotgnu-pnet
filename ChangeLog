@@ -1,4 +1,9 @@
 
+2002-08-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* c/decl/type3.il, c/decl/type3.3il: modified output files that
+	include the ".maxstack" directive.
+
 2002-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/newarray3.cs,

@@ -16,6 +16,7 @@
 	ldc.i4.0
 	conv.i
 	ret
+	.maxstack 1
 } // method a8
 .field public static int8 * 'p'
 .field public static int8 modopt(['OpenSystem.C']'OpenSystem.C'.'IsConst') * 'p2'
@@ -27,10 +28,12 @@
 .method public static void 'f3'(method int32 *(int8 *)) cil managed 
 {
 	ret
+	.maxstack 0
 } // method f3
 .method public static void 'f4'(method int32 *(int8 *) * 'x') cil managed 
 {
 	ret
+	.maxstack 0
 } // method f4
 .class public explicit value sealed serializable ansi 'array int[20]' extends ['.library']'System'.'ValueType'
 {

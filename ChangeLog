@@ -1,3 +1,7 @@
+2002-03-10  Peter Minten  <silvernerd@users.sf.net>
+	* System/Net/Sockets/NetworkStream.cs,
+	System/Net/Sockets/Socket.cs: Started with some simple methods.
+
 2002-03-05  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Added a few of the basic methods. Eventually,
@@ -180,3 +184,4 @@
 
 	* make_patch.sh: add a script that assists with making patch
 	files for users.
+

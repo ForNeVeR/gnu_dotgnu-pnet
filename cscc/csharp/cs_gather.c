@@ -1219,7 +1219,8 @@ static int EventIsVirtual(ILEvent *event)
  * Create a property definition.
  */
 static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
-						   ILNode_PropertyDeclaration *property)
+						   ILNode_PropertyDeclaration *property,
+						   char **defaultMemberName)
 {
 	char *name;
 	char *basicName;
@@ -1251,6 +1252,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		/* Simple property name */
 		name = ILQualIdentName(property->name, 0);
+		basicName = name;
 		interfaceOverride = 0;
 	}
 	else
@@ -1320,6 +1322,14 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 		if(!ILTypeAddParam(info->context, signature, tempType))
 		{
 			CCOutOfMemory();
+		}
+
+		/* Return the name of this indexer for use in the
+		   "DefaultMember" attribute on the containing class */
+		if((property->modifiers & IL_META_METHODDEF_MEMBER_ACCESS_MASK)
+				!= IL_META_METHODDEF_PRIVATE)
+		{
+			*defaultMemberName = basicName;
 		}
 
 		/* Move on to the next parameter */
@@ -1704,6 +1714,7 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	ILNode *savedNamespace;
 	ILNode_ListIter iterator;
 	ILNode *member;
+	char *defaultMemberName;
 
 	/* Get the class information block, and bail out if not defined */
 	classInfo = ((ILNode_ClassDefn *)classNode)->classInfo;
@@ -1734,6 +1745,7 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	info->currentNamespace = ((ILNode_ClassDefn *)classNode)->namespaceNode;
 
 	/* Iterate over the member definitions in the class body */
+	defaultMemberName = 0;
 	ILNode_ListIter_Init(&iterator, body);
 	while((member = ILNode_ListIter_Next(&iterator)) != 0)
 	{
@@ -1754,7 +1766,8 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 		else if(yykind(member) == yykindof(ILNode_PropertyDeclaration))
 		{
 			CreateProperty(info, classInfo,
-						   (ILNode_PropertyDeclaration *)member);
+						   (ILNode_PropertyDeclaration *)member,
+						   &defaultMemberName);
 		}
 		else if(yykind(member) == yykindof(ILNode_EventDeclaration))
 		{
@@ -1775,6 +1788,12 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 			CCErrorOnLine(yygetfilename(member), yygetlinenum(member),
 				  "internal error - do not know how to declare this member");
 		}
+	}
+
+	/* Add the "DefaultMember" attribute to the class if necessary */
+	if(defaultMemberName)
+	{
+		((ILNode_ClassDefn *)classNode)->defaultMemberName = defaultMemberName;
 	}
 
 	/* Return to the original scope */

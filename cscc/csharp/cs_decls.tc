@@ -82,6 +82,10 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	node->visited = ILVisitMode_Processing;
 
 	/* Process the attributes for the class */
+	if(node->defaultMemberName)
+	{
+		CSAddDefaultMemberAttr(info, node->classInfo, node->defaultMemberName);
+	}
 	if(ILClass_IsInterface(node->classInfo))
 	{
 		target = CS_ATTR_INTERFACE;

@@ -26,28 +26,6 @@
 extern	"C" {
 #endif
 
-#if 0
-
-static void AddDllImport(ILProgramItem *item, const char *dllName)
-{
-	ILModule *module;
-	module = ILModuleRefCreateUnique(ILProgramItem_Image(item), dllName);
-	if(!module)
-	{
-		CCOutOfMemory();
-	}
-	if(ILPInvokeCreate((ILMethod *)item, 0,
-					   IL_META_PINVOKE_CALL_CONV_CDECL, module, 0) == 0)
-	{
-		CCOutOfMemory();
-	}
-	ILMemberSetAttrs((ILMember *)item,
-					 IL_META_METHODDEF_PINVOKE_IMPL,
-					 IL_META_METHODDEF_PINVOKE_IMPL);
-}
-
-#endif
-
 /*
  * Get the "field" target for a program item.
  */
@@ -771,43 +749,6 @@ cleanup:
 	{
 		ILSerializeWriterDestroy(writer);
 	}
-
-#if 0
-	/* Quick and dirty hack: recognise the "DllImport" attribute */
-	if(target == CS_ATTR_METHOD)
-	{
-		ILNode_ListIter iter3;
-		ILNode *args, *arg;
-		CSSemValue value;
-		ILEvalValue evalValue;
-		char *name;
-
-		name = ILQualIdentName(((ILNode_Attribute *)attr)->name, 0);
-		if(!strcmp(name, "DllImport") ||
-		   !strcmp(name, "DllImportAttribute"))
-		{
-			args = ((ILNode_AttrArgs *)
-						(((ILNode_Attribute *)attr)->args))
-					->positionalArgs;
-			ILNode_ListIter_Init(&iter3, args);
-			while((arg = ILNode_ListIter_Next(&iter3)) != 0)
-			{
-				if(CSSemExpectValue(arg, info, &arg, &value) &&
-				   ILTypeIsStringClass(CSSemGetType(value)))
-				{
-					if(ILNode_EvalConst(arg, info, &evalValue) &&
-					   evalValue.valueType == ILMachineType_String)
-					{
-						AddDllImport(item,
-							ILInternString(evalValue.un.strValue.str,
-										   evalValue.un.strValue.len)
-								.string);
-					}
-				}
-			}
-		}
-	}
-#endif
 }
 
 void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
@@ -1022,6 +963,71 @@ void CSProcessAttrsForParam(ILGenInfo *info, ILMethod *method,
 
 	/* Process the attributes for the parameter */
 	return CSProcessAttrs(info, item, attributes, CS_ATTR_PARAMETER);
+}
+
+void CSAddDefaultMemberAttr(ILGenInfo *info, ILClass *classInfo,
+							const char *name)
+{
+	ILType *type;
+	ILClass *typeInfo;
+	ILMethod *ctor;
+	ILType *args[1];
+	ILSerializeWriter *writer;
+	const void *blob;
+	unsigned long blobLen;
+	ILAttribute *attribute;
+
+	/* Find the constructor for "DefaultMemberAttribute" */
+	type = ILFindNonSystemType(info, "DefaultMemberAttribute",
+							   "System.Reflection");
+	if(!type || !ILType_IsClass(type))
+	{
+		return;
+	}
+	typeInfo = ILClassResolve(ILType_ToClass(type));
+	args[0] = ILFindSystemType(info, "String");
+	ctor = ILResolveConstructor(info, typeInfo, classInfo, args, 1);
+	if(!ctor)
+	{
+		return;
+	}
+
+	/* Import the constructor method into this image */
+	ctor = (ILMethod *)ILMemberImport(info->image, (ILMember *)ctor);
+	if(!ctor)
+	{
+		CCOutOfMemory();
+	}
+
+	/* Build the attribute value blob */
+	writer = ILSerializeWriterInit();
+	if(!writer)
+	{
+		CCOutOfMemory();
+	}
+	ILSerializeWriterSetString(writer, name, strlen(name));
+	ILSerializeWriterSetNumExtra(writer, 0);
+	blob = ILSerializeWriterGetBlob(writer, &blobLen);
+	if(!blob)
+	{
+		CCOutOfMemory();
+	}
+
+	/* Attach the attribute to the class */
+	attribute = ILAttributeCreate(info->image, 0);
+	if(!attribute)
+	{
+		CCOutOfMemory();
+	}
+	ILAttributeSetType(attribute, ILToProgramItem(ctor));
+	if(!ILAttributeSetValue(attribute, blob, blobLen))
+	{
+		CCOutOfMemory();
+	}
+	ILProgramItemAddAttribute(ILToProgramItem(classInfo), attribute);
+
+	/* Clean up and exit */
+	ILSerializeWriterDestroy(writer);
 }
 
 #ifdef	__cplusplus

@@ -252,6 +252,12 @@ void CSProcessAttrsForParam(ILGenInfo *info, ILMethod *method,
 							unsigned long paramNum,
 							ILNode *attributes);
 
+/*
+ * Add the "DefaultMember" attribute to a class.
+ */
+void CSAddDefaultMemberAttr(ILGenInfo *info, ILClass *classInfo,
+							const char *name);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -131,6 +131,47 @@ static int AddDefaultConstructor(ILClass *classInfo)
 }
 
 /*
+ * Add a parameterized constructor to a class.
+ */
+static int AddParamConstructor(ILClass *classInfo, ILType *argType1,
+							   ILType *argType2)
+{
+	ILMethod *method;
+	ILType *signature;
+	method = ILMethodCreate(classInfo, 0, ".ctor",
+					  	    IL_META_METHODDEF_PUBLIC |
+					  	    IL_META_METHODDEF_HIDE_BY_SIG |
+							IL_META_METHODDEF_SPECIAL_NAME |
+							IL_META_METHODDEF_RT_SPECIAL_NAME);
+	if(!method)
+	{
+		return 0;
+	}
+	signature = ILTypeCreateMethod(ILClassToContext(classInfo), ILType_Void);
+	if(!signature)
+	{
+		return 0;
+	}
+	if(argType1 != ILType_Void)
+	{
+		if(!ILTypeAddParam(ILClassToContext(classInfo), signature, argType1))
+		{
+			return 0;
+		}
+	}
+	if(argType2 != ILType_Void)
+	{
+		if(!ILTypeAddParam(ILClassToContext(classInfo), signature, argType2))
+		{
+			return 0;
+		}
+	}
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
+	ILMemberSetSignature((ILMember *)method, signature);
+	return 1;
+}
+
+/*
  * Add the constructor to the "DecimalConstantAttribute" class.
  *
  * public DecimalConstantAttribute(byte scale, byte sign,
@@ -233,6 +274,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *argHandleClass;
 	ILClass *attributeClass;
 	ILClass *paramAttributeClass;
+	ILClass *defMemberAttributeClass;
 	ILClass *decimalConstantClass;
 	ILClass *exceptionClass;
 	ILClass *disposableInterface;
@@ -417,6 +459,19 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
 	ABORT_IF(constructorOK, AddDefaultConstructor(paramAttributeClass));
+
+	/* Create the "System.Reflection.DefaultMemberAttribute" class */
+	ABORT_IF(defMemberAttributeClass,
+			 ILClassCreate(scope, 0, "DefaultMemberAttribute",
+			 			   "System.Reflection", attributeClass));
+	ILClassSetAttrs(defMemberAttributeClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_SEALED);
+	ABORT_IF(constructorOK,
+			 AddParamConstructor(defMemberAttributeClass,
+			 					 ILType_FromClass(stringClass), ILType_Void));
 
 	/* Create "System.Runtime.CompilerServices.DecimalConstantAttribute" */
 	ABORT_IF(decimalConstantClass,

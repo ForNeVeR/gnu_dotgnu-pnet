@@ -37,6 +37,11 @@
 	* image/lib_attrs.c: remove "IndexerName" from the underlying
 	assembly because it isn't supposed to exist outside the compiler.
 
+	* codegen/cg_library.c, codegen/cg_nodes.tc, cscc/csharp/cs_attrs.c,
+	cscc/csharp/cs_decls.tc, cscc/csharp/cs_gather.c,
+	cscc/csharp/cs_internal.h: add the "DefaultMember" attribute to
+	classes that have indexers.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

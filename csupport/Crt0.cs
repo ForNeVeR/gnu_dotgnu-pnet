@@ -305,18 +305,18 @@ public unsafe sealed class Crt0
 				// Invoke the application's ".init" function, if present.
 				if(mainModule != null)
 				{
-					MethodInfo method = mainModule.GetMethod(".init");
-					if(method != null)
+					MethodInfo initMethod = mainModule.GetMethod(".init");
+					if(initMethod != null)
 					{
-						method.Invoke(null, null);
+						initMethod.Invoke(null, null);
 					}
 				}
 
 				// Register the app's ".fini" function with "atexit".
 				if(mainModule != null)
 				{
-					MethodInfo method = mainModule.GetMethod(".fini");
-					if(method != null)
+					MethodInfo finiMethod = mainModule.GetMethod(".fini");
+					if(finiMethod != null)
 					{
 						// TODO
 					}

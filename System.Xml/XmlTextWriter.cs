@@ -29,7 +29,7 @@ using System.Globalization;
 public class XmlTextWriter : XmlWriter
 {
 	// Internal state.
-	private TextWriter writer;
+	internal TextWriter writer;
 	private System.Xml.Formatting formatting;
 	private int indentation;
 	private char indentChar;

@@ -19,6 +19,11 @@
 	resources/en_US/System.Xml/Xml.txt: continue implementing the
 	"System.Xml" namespace.
 
+	* System.Xml/XmlFragmentTextWriter.cs, System.Xml/XmlTextWriter.cs,
+	csunit/TestMain.cs, csupport/Complex.cs, csupport/Crt0.cs,
+	csupport/FileTable.cs, csupport/LongDouble.cs: fix some pedantic
+	issues turned up by csc.
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, csunit/Makefile.am,

@@ -124,11 +124,13 @@ public sealed class FileTable
 						}
 						else
 						{
+							buffer = null;
 							return null;
 						}
 					}
 					else
 					{
+						buffer = null;
 						return null;
 					}
 				}

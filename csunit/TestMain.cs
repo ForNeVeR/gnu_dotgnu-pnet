@@ -36,7 +36,7 @@ public sealed class TestMain
 				bool showOnlyFailed = false;
 				bool listTests = false;
 				String filename;
-				String typeName;
+				String typeName = null;
 				Assembly assembly;
 				Type type;
 				MethodInfo method;
@@ -131,9 +131,9 @@ public sealed class TestMain
 						 BindingFlags.Static | BindingFlags.Public);
 				if(loadFrom != null)
 				{
-					Object[] args = new Object [1];
-					args[0] = filename;
-					assembly = (Assembly)(loadFrom.Invoke(null, args));
+					Object[] invokeArgs = new Object [1];
+					invokeArgs[0] = filename;
+					assembly = (Assembly)(loadFrom.Invoke(null, invokeArgs));
 				}
 				else
 				{

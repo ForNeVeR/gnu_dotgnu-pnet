@@ -32,12 +32,9 @@ using System.Globalization;
 
 internal class XmlFragmentTextWriter : XmlTextWriter
 {
-	// Internal state.
-	private StringWriter writer;
-
 	// Constructor.
 	public XmlFragmentTextWriter()
-			: base(writer = new StringWriter())
+			: base(new StringWriter())
 			{
 				// Make the writer automatically shift to the content
 				// area of the document if it is in the start state.
@@ -48,7 +45,7 @@ internal class XmlFragmentTextWriter : XmlTextWriter
 	public override String ToString()
 			{
 				Close();
-				return writer.ToString();
+				return ((StringWriter)writer).ToString();
 			}
 
 	// Override some of the XmlTextWriter methods to handle namespaces better.

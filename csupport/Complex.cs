@@ -213,6 +213,8 @@ public struct DoubleImaginary
 
 } // struct DoubleImaginary
 
+#if __CSCC__
+
 [StructLayout(LayoutKind.Sequential)]
 [CName("long double _Complex")]
 public struct LongDoubleComplex
@@ -323,5 +325,7 @@ public struct LongDoubleImaginary
 	public __long_double Imag { get { return imag; } }
 
 } // struct LongDoubleImaginary
+
+#endif // __CSCC__
 
 } // namespace OpenSystem.C

@@ -22,6 +22,8 @@
 namespace OpenSystem.C
 {
 
+#if __CSCC__
+
 using System;
 using System.Runtime.InteropServices;
 
@@ -44,5 +46,7 @@ public struct LongDouble
 			}
 
 } // struct LongDouble
+
+#endif // __CSCC__
 
 } // namespace OpenSystem.C

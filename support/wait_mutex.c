@@ -244,9 +244,6 @@ static int MutexRegister(ILWaitMutex *mutex, _ILWakeup *wakeup)
  */
 static void MutexUnregister(ILWaitMutex *mutex, _ILWakeup *wakeup, int release)
 {
-	void **item;
-	ILList *list;	
-
 	/* Lock down the mutex */
 	_ILMutexLock(&(mutex->parent.lock));
 

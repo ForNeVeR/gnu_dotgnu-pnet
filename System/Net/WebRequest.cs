@@ -46,7 +46,6 @@ public abstract class WebRequest : MarshalByRefObject
 		prefixes.Clear();
 
 		// Register the prefix types here
-		RegisterPrefix(Uri.UriSchemeFtp,   new WebRequestCreator());
 		RegisterPrefix(Uri.UriSchemeHttp,  new WebRequestCreator());
 		RegisterPrefix(Uri.UriSchemeHttps, new WebRequestCreator());
 
@@ -133,7 +132,8 @@ public abstract class WebRequest : MarshalByRefObject
 		// throw new SecurityException("requestUriString");
 		if(CheckUriValidity(requestUri, true))
 		{
-			if(requestUri.Scheme=="http")
+			if(String.Equals(requestUri.Scheme, Uri.UriSchemeHttp) ||
+				String.Equals(requestUri.Scheme, Uri.UriSchemeHttps))
 			{
 				return new HttpWebRequest(requestUri);
 			}

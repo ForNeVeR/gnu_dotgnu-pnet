@@ -1,4 +1,9 @@
 
+2003-05-31  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Net/WebRequest.cs, System/Net/HttpWebRequest.cs,
+	System/System.build: Enable SSL support for HttpWebRequest.
+
 2003-05-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Common/Manager.cs, I18N/Common/RegionData.cs,

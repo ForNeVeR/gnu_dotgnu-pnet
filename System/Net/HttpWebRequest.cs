@@ -33,6 +33,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Net.Sockets;
+using DotGNU.SSL;
 
 public class HttpWebRequest : WebRequest
 {
@@ -60,6 +61,7 @@ public class HttpWebRequest : WebRequest
 //	private ServicePoint servicePoint=null;
 	private int timeout;
 	private string mediaType=null;
+	private bool isSecured=false;
 
 // other useful variables
 	protected bool headerSent=false; 
@@ -72,6 +74,7 @@ public class HttpWebRequest : WebRequest
 	{
 		this.address=uri;
 		this.originalUri=uri;
+		this.isSecured=String.Equals(uri.Scheme,Uri.UriSchemeHttps);
 		this.method="GET";
 		this.headers.SetInternal ("Host", uri.Authority);
 		this.headers.SetInternal ("Date", DateTime.Now.ToUniversalTime().ToString(format));
@@ -176,11 +179,14 @@ public class HttpWebRequest : WebRequest
 		if(outStream==null)
 		{
 			outStream=new HttpStream(this);
+			outStream.Flush();
 			// which is the response stream as well 
 		}
-		outStream.Flush();
-		this.response=new HttpWebResponse(this,this.outStream);
-		this.haveResponse=true; // I hope this is correct
+		if(this.response==null)
+		{
+			this.response=new HttpWebResponse(this,this.outStream);
+			this.haveResponse=true; // I hope this is correct
+		}
 		return this.response; 
 	}
 
@@ -609,15 +615,105 @@ public class HttpWebRequest : WebRequest
 			}
 		return false;
 	}
-	private class HttpStream : NetworkStream
+
+	private class HttpStream : Stream
 	{	
 		private HttpWebRequest request;
-		public HttpStream(HttpWebRequest req) :
-			base(HttpStream.OpenSocket(req),true)
+		private Stream underlying=null;
+		private static SecureConnection secured=null;
+
+		public HttpStream(HttpWebRequest req) 
+			: this(req, HttpStream.OpenStream(req))
+		{
+		}
+
+		public HttpStream(HttpWebRequest req, Stream underlying)
 		{
 			this.request=req;
+			this.underlying=underlying;
 			SendHeaders();
 		}
+
+		// Stub out all stream functionality.
+		public override void Flush() 
+		{
+			underlying.Flush();
+		}
+		
+		public override int Read(byte[] buffer, int offset, int count)
+		{
+			return underlying.Read(buffer, offset, count);
+		}
+		
+		public override int ReadByte() 
+		{
+			return underlying.ReadByte();
+		}
+
+		public override long Seek(long offset, SeekOrigin origin)
+		{
+			return underlying.Seek(offset, origin);
+		}
+		
+		public override void SetLength(long value)
+		{
+			underlying.SetLength(value);
+		}
+
+		public override void Write(byte[] buffer, int offset, int count)
+		{
+			underlying.Write(buffer, offset, count);
+		}
+
+		public override void WriteByte(byte value) 
+		{
+			underlying.WriteByte(value);
+		}
+
+		public override bool CanRead 
+		{
+			get 
+			{
+				return underlying.CanRead;
+			} 
+		}
+
+		public override bool CanSeek 
+		{
+			get 
+			{
+				return underlying.CanSeek; 
+			} 
+		}
+
+		public override bool CanWrite 
+		{
+			get 
+			{
+				return underlying.CanWrite;
+			}
+		}
+		
+		public override long Length
+		{
+			get
+			{
+				return underlying.Length;
+			}
+		}
+
+		public override long Position
+		{
+			get
+			{
+				return underlying.Position;
+			}
+			set
+			{
+				underlying.Position = value;
+			}
+		}
+
 		private static Socket OpenSocket(HttpWebRequest req)
 		{
 			IPAddress ip=Dns.Resolve(req.Address.Host).AddressList[0];
@@ -628,6 +724,24 @@ public class HttpWebRequest : WebRequest
 			server.Connect(ep);
 			return server;
 		}
+
+		private static Stream OpenStream(HttpWebRequest req)
+		{
+			Socket sock=OpenSocket(req);
+			if(req.isSecured)
+			{
+				if(secured==null)
+				{
+					secured=new SecureConnection();
+				}
+				return secured.OpenStream(sock);
+			}
+			else
+			{
+				return new NetworkStream(sock,true);
+			}
+		}
+
 		private void SendHeaders()
 		{
 			StreamWriter writer=new StreamWriter(this);
@@ -643,6 +757,36 @@ public class HttpWebRequest : WebRequest
 			writer.Flush();
 		}
 	} //internal class
+
+	private class SecureConnection: IDisposable
+	{
+		ISecureSessionProvider provider=null;
+		ISecureSession session=null;
+
+		public SecureConnection()
+		{
+			provider = SessionProviderFactory.GetProvider();
+			session = provider.CreateClientSession(Protocol.AutoDetect);
+		}
+		
+		public Stream OpenStream(Socket sock)
+		{
+			return session.PerformHandshake(sock);
+		}
+
+		public void Dispose()
+		{
+			if(session!=null)
+			{
+				session.Dispose();
+				session=null;
+			}
+		}
+		~SecureConnection()
+		{
+			Dispose();
+		}
+	}
 }//class
 
 }//namespace

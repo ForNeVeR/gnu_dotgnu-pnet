@@ -161,6 +161,15 @@ extern CSSemValue CSSemValueDefault;
 }
 
 /*
+ * Documentation comments.
+ */
+%node ILNode_DocComment ILNode_Dummy =
+{
+	char *str;
+	int len;
+}
+
+/*
  * Include C#-specific definitions.
  */
 %include "cs_semantics.tc"

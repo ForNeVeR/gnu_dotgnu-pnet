@@ -2020,7 +2020,7 @@ FixedPointerDeclarator
 
 OptAttributes
 	: /* empty */ 		{ $$ = 0; }
-	| AttributeSections	{ $$ = $1; }
+	| AttributeSections	{ $$ = $1; CSValidateDocs($1); }
 	;
 
 AttributeSections
@@ -2043,7 +2043,7 @@ AttributeSections
 AttributeSection
 	: '[' AttributeList OptComma ']'					{ $$ = $2; }
 	| '[' AttributeTarget AttributeList OptComma ']'	{ $$ = $3; }
-	| DOC_COMMENT										{ $$ = 0; }
+	| DOC_COMMENT		{ MakeBinary(DocComment, $1.string, $1.len); }
 	| '[' error ']'		{
 				/*
 				 * This production recovers from errors in attributes.

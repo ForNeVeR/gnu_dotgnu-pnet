@@ -1,4 +1,9 @@
 
+2001-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* cscc/cs_grammar.y, cscc/cs_defs.tc, cscc/cs_decls.tc: create documentation
+comment nodes from the C# parser.
+
 2001-09-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, Makefile.am, ildb/: add the source code for the

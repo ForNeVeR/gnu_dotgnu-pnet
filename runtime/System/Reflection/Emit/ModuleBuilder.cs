@@ -264,12 +264,15 @@ public class ModuleBuilder : Module, IDetachItem
 	public TypeBuilder DefineType(String name)
 			{
 				return DefineType(name, TypeAttributes.NotPublic,
-								  null, null, PackingSize.Unspecified, 0);
+								  typeof(System.Object), null, 
+								  PackingSize.Unspecified, 0);
 			}
 	public TypeBuilder DefineType(String name, TypeAttributes attr)
 			{
-				return DefineType(name, attr, null, null,
-								  PackingSize.Unspecified, 0);
+				return DefineType(name, attr, 
+									(attr & TypeAttributes.Interface)==0 ?
+										typeof(System.Object) : null ,
+									null, PackingSize.Unspecified, 0);
 			}
 	public TypeBuilder DefineType(String name, TypeAttributes attr,
 								  Type parent)

@@ -1,3 +1,9 @@
+
+2003-07-23  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Reflection/Emit/ModuleBuilder.cs: Use System.Object
+	as the default parent type.
+
 2002-07-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: update Save.

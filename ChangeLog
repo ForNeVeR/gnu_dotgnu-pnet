@@ -12,6 +12,10 @@
 	* ildd/ildd.c: use "n.n.n.n" instead of "n:n:n:n" for version
 	numbers, to be consistent with recommended usage for other tools.
 
+	* cscc/csharp/cs_lookup.c: allow fields to be resolved when
+	performing semantic analysis on an attribute argument so that
+	constants in the current class can be properly expanded (bug #5436).
+
 2003-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_misc.tc (ILNode_NewExpression): report an error

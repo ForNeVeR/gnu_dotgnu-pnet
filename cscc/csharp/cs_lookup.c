@@ -311,7 +311,8 @@ static ILNode *FindNestedClass(ILClass *info, ILNode_ClassDefn *defn,
 static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 						const char *name, ILClass *accessedFrom,
 					    CSMemberLookupInfo *results,
-						int lookInParents, int baseAccess, int literalType)
+						int lookInParents, int baseAccess, int literalType,
+						int inAttrArg)
 {
 	ILImplements *impl;
 	ILMember *member;
@@ -341,6 +342,11 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 					if(literalType && kind != CS_MEMBERKIND_TYPE)
 					{
 						/* In literal type mode, want only types */
+						continue;
+					}
+					if(inAttrArg && kind != IL_META_MEMBERKIND_FIELD)
+					{
+						/* In attribute argument mode, we only want fields */
 						continue;
 					}
 					if(kind != IL_META_MEMBERKIND_METHOD &&
@@ -404,14 +410,14 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 			 */
 			FindMembers(genInfo,ILTypeToClass(genInfo,objectType),
 					    name, accessedFrom, results,
-						0, baseAccess, literalType);
+						0, baseAccess, literalType, inAttrArg);
 
 			impl = 0;
 			while((impl = ILClassNextImplements(info, impl)) != 0)
 			{
 				FindMembers(genInfo, ILImplementsGetInterface(impl),
 						    name, accessedFrom, results,
-							lookInParents, baseAccess, literalType);
+							lookInParents, baseAccess, literalType, inAttrArg);
 			}
 		}
 
@@ -656,7 +662,8 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 static int MemberLookup(ILGenInfo *genInfo, ILClass *info, 
 						const char *name,
 				        ILClass *accessedFrom, CSMemberLookupInfo *results,
-						int lookInParents, int baseAccess, int literalType)
+						int lookInParents, int baseAccess, int literalType,
+						int inAttrArg)
 {
 	/* Initialize the results */
 	InitMembers(results);
@@ -665,7 +672,7 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info,
 	if(info)
 	{
 		FindMembers(genInfo, info, name, accessedFrom, results,
-					lookInParents, baseAccess, literalType);
+					lookInParents, baseAccess, literalType, inAttrArg);
 	}
 
 	/* Trim the list and determine the kind for the result */
@@ -1221,14 +1228,15 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	/* Scan the start type and its nested parents */
 	/* Note: do not lookup class members while resolving the simple names
 	 * inside an attribute argument */
-	while(startType != 0 && !genInfo->inAttrArg)
+	while(startType != 0 /*&& !genInfo->inAttrArg*/)
 	{
 		/* Resolve cross-image references */
 		startType = ILClassResolve(startType);
 
 		/* Look for members */
 		result = MemberLookup(genInfo, startType, name,
-							  accessedFrom, &results, 1, 0, literalType);
+							  accessedFrom, &results, 1, 0, literalType,
+							  genInfo->inAttrArg);
 		if(result != CS_SEMKIND_VOID)
 		{
 			if(genInfo->currentMethod && !reportErrors)
@@ -1409,7 +1417,7 @@ static CSSemValue CSResolveTypeMemberName(ILGenInfo *genInfo,
 	/* Convert the type into a class and perform a lookup */
 	result = MemberLookup(genInfo, ILTypeToClass(genInfo, CSSemGetType(value)),
 						  name, ILClassResolve(CSGetAccessScope(genInfo, 1)), 
-						  &results, 1, CSSemIsBase(value), literalType);
+						  &results, 1, CSSemIsBase(value), literalType, 0);
 
 	if(result != CS_SEMKIND_VOID)
 	{
@@ -1430,7 +1438,7 @@ static CSSemValue CSResolveValueMemberName(ILGenInfo *genInfo,
 	/* Perform a member lookup based on the expression's type */
 	result = MemberLookup(genInfo, ILTypeToClass(genInfo, CSSemGetType(value)),
 						  name, ILClassResolve(CSGetAccessScope(genInfo, 1)),
-						  &results, 1, CSSemIsBase(value), literalType);
+						  &results, 1, CSSemIsBase(value), literalType, 0);
 
 	if(result != CS_SEMKIND_VOID)
 	{
@@ -1641,7 +1649,7 @@ CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
 
 	/* Perform a member lookup based on the expression's type */
 	result = MemberLookup(genInfo, ILTypeToClass(genInfo, objectType),
-						  ".ctor", accessedFrom, &results, 0, 0, 0);
+						  ".ctor", accessedFrom, &results, 0, 0, 0, 0);
 	if(result != CS_SEMKIND_VOID)
 	{
 		/* Filter the result to remove static definitions */

@@ -51,6 +51,15 @@ ILNode_EvalConst(ILNode_QualIdent)
 }
 
 /*
+ * Get the type of a local or argument variable.
+ */
+ILNode_GetType(ILNode_LocalVar),
+ILNode_GetType(ILNode_ArgumentVar)
+{
+	return node->machineType;
+}
+
+/*
  * Get the type of a field access operator.
  */
 ILNode_GetType(ILNode_MemberAccess),
@@ -59,6 +68,15 @@ ILNode_GetType(ILNode_BaseElement),
 ILNode_GetType(ILNode_DerefField)
 {
 	return node->machineType;
+}
+
+/*
+ * Generate discard code for a local or argument variable.
+ */
+ILNode_GenDiscard(ILNode_LocalVar),
+ILNode_GenDiscard(ILNode_ArgumentVar)
+{
+	/* Nothing needs to be done here */
 }
 
 /*
@@ -85,6 +103,26 @@ ILNode_GenDiscard(ILNode_DerefField)
 {
 	/* Evaluate the object expression for its side-effects */
 	ILNode_GenDiscard(node->expr1, info);
+}
+
+/*
+ * Generate value code for a local variable.
+ */
+ILNode_GenValue(ILNode_LocalVar)
+{
+	ILGenLoadLocal(info, node->index);
+	ILGenAdjust(info, 1);
+	return node->machineType;
+}
+
+/*
+ * Generate value code for an argument variable.
+ */
+ILNode_GenValue(ILNode_ArgumentVar)
+{
+	ILGenLoadArg(info, node->index);
+	ILGenAdjust(info, 1);
+	return node->machineType;
 }
 
 /*
@@ -120,6 +158,16 @@ ILNode_GenValue(ILNode_BaseElement)
 ILNode_GenValue(ILNode_DerefField)
 {
 	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a local or argument variable.
+ */
+ILNode_Prepare(ILNode_LocalVar),
+ILNode_Prepare(ILNode_ArgumentVar)
+{
+	/* No preparation is needed for locals or arguments */
 	return node->machineType;
 }
 
@@ -160,6 +208,36 @@ ILNode_Prepare(ILNode_DerefField)
 }
 
 /*
+ * Get and prepare to store into a local variable.
+ */
+ILNode_GetAndPrepare(ILNode_LocalVar)
+{
+	ILGenLoadLocal(info, node->index);
+	ILGenAdjust(info, 1);
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into an argument variable.
+ */
+ILNode_GetAndPrepare(ILNode_ArgumentVar)
+{
+	ILGenLoadArg(info, node->index);
+	ILGenAdjust(info, 1);
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	return node->machineType;
+}
+
+/*
  * Get and prepare to store into a member access destination.
  */
 ILNode_GetAndPrepare(ILNode_MemberAccess)
@@ -193,6 +271,34 @@ ILNode_GetAndPrepare(ILNode_DerefField)
 {
 	/* TODO */
 	return node->machineType;
+}
+
+/*
+ * Store into a local variable.
+ */
+ILNode_Store(ILNode_LocalVar)
+{
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	ILGenStoreLocal(info, node->index);
+	ILGenAdjust(info, -1);
+}
+
+/*
+ * Store into an argument variable.
+ */
+ILNode_Store(ILNode_ArgumentVar)
+{
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	ILGenStoreArg(info, node->index);
+	ILGenAdjust(info, -1);
 }
 
 /*

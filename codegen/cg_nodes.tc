@@ -357,6 +357,16 @@ struct _tagILEvalValue
 	ILNode *left;
 	ILNode *right;
 }
+%node ILNode_LocalVar ILNode_LValue =
+{
+	unsigned long index;
+	ILMachineType machineType;
+}
+%node ILNode_ArgumentVar ILNode_LValue =
+{
+	unsigned long index;
+	ILMachineType machineType;
+}
 %node ILNode_MemberAccess ILNode_LValueBinaryExpr =
 {
 	%nocreate ILMachineType machineType = {ILMachineType_Void};

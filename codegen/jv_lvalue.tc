@@ -37,6 +37,15 @@ JavaGenElse(ILNode_QualIdent)
 }
 
 /*
+ * Generate discard code for local and argument variables.
+ */
+JavaGenDiscard(ILNode_LocalVar),
+JavaGenDiscard(ILNode_ArgumentVar)
+{
+	/* Nothing needs to be done here */
+}
+
+/*
  * Generate discard code for a member access operator.
  */
 JavaGenDiscard(ILNode_MemberAccess)
@@ -60,6 +69,24 @@ JavaGenDiscard(ILNode_DerefField)
 {
 	/* Evaluate the object expression for its side-effects */
 	JavaGenDiscard(node->expr1, info);
+}
+
+/*
+ * Generate value code for a local variable.
+ */
+JavaGenValue(ILNode_LocalVar)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Generate value code for an argument variable.
+ */
+JavaGenValue(ILNode_ArgumentVar)
+{
+	/* TODO */
+	return node->machineType;
 }
 
 /*
@@ -93,6 +120,24 @@ JavaGenValue(ILNode_BaseElement)
  * Generate value code for a field dereference operator.
  */
 JavaGenValue(ILNode_DerefField)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a local variable.
+ */
+JavaPrepare(ILNode_LocalVar)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into an argument variable.
+ */
+JavaPrepare(ILNode_ArgumentVar)
 {
 	/* TODO */
 	return node->machineType;
@@ -135,6 +180,24 @@ JavaPrepare(ILNode_DerefField)
 }
 
 /*
+ * Get and prepare to store into a local variable.
+ */
+JavaGetAndPrepare(ILNode_LocalVar)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into an argument variable.
+ */
+JavaGetAndPrepare(ILNode_ArgumentVar)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
  * Get and prepare to store into a member access destination.
  */
 JavaGetAndPrepare(ILNode_MemberAccess)
@@ -168,6 +231,22 @@ JavaGetAndPrepare(ILNode_DerefField)
 {
 	/* TODO */
 	return node->machineType;
+}
+
+/*
+ * Store into a local variable.
+ */
+JavaStore(ILNode_LocalVar)
+{
+	/* TODO */
+}
+
+/*
+ * Store into an argument variable.
+ */
+JavaStore(ILNode_ArgumentVar)
+{
+	/* TODO */
 }
 
 /*

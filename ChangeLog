@@ -1,4 +1,9 @@
 
+2002-10-09  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* test/runtime/Testruntime.cs, tests/runtime/System/Text/TestStringBuilder.cs:
+	Added some StringBuilder tests to test suite.
+
 2002-10-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/System.Xml/TestXml.build: add the "System" assembly

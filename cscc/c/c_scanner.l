@@ -196,6 +196,12 @@ L\"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
 l\"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
 								  RETURNTOK(WSTRING_LITERAL); }
 
+S\"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
+								  RETURNTOK(CS_STRING_LITERAL); }
+
+s\"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
+								  RETURNTOK(CS_STRING_LITERAL); }
+
 '(\\.|[^\\'])+'					{ CLexParseChar(yytext, &(yylval.integer));
 								  RETURNTOK(INTEGER_CONSTANT); }
 

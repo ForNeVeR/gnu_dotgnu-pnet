@@ -24,6 +24,10 @@
 	keywords; permit an assembly name to be used with "__csharp__"
 	for importing from assemblies other than "mscorlib".
 
+	* cscc/c/c_const.tc, cscc/c/c_grammar.y, cscc/c/c_lexutils.c,
+	cscc/c/c_scanner.l: allow S"foo" to be used for C#-style strings,
+	similarly to Managed C++.
+
 2004-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_typeout.c, cscc/c/c_types.c, doc/c_language_abi.html:

@@ -994,13 +994,14 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 /*
  * Basic lexical values.
  */
-%token IDENTIFIER		"an identifier"
-%token INTEGER_CONSTANT	"an integer value"
-%token FLOAT_CONSTANT	"a floating point value"
-%token IMAG_CONSTANT	"an imaginary value"
-%token STRING_LITERAL	"a string literal"
-%token WSTRING_LITERAL	"a wide string literal"
-%token TYPE_NAME		"a type identifier"
+%token IDENTIFIER			"an identifier"
+%token INTEGER_CONSTANT		"an integer value"
+%token FLOAT_CONSTANT		"a floating point value"
+%token IMAG_CONSTANT		"an imaginary value"
+%token STRING_LITERAL		"a string literal"
+%token WSTRING_LITERAL		"a wide string literal"
+%token CS_STRING_LITERAL	"a C# string literal"
+%token TYPE_NAME			"a type identifier"
 
 /*
  * Operators.
@@ -1102,7 +1103,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <integer>		INTEGER_CONSTANT
 %type <real>		FLOAT_CONSTANT IMAG_CONSTANT
 %type <string>		STRING_LITERAL WSTRING_LITERAL StringLiteral
-%type <string>		WStringLiteral
+%type <string>		WStringLiteral CS_STRING_LITERAL CSharpStringLiteral
 
 %type <name>		AnyIdentifier Identifier
 
@@ -1343,6 +1344,9 @@ PrimaryExpression
 	| WStringLiteral			{
 				$$ = ILNode_CWString_create($1.string, $1.len);
 			}
+	| CSharpStringLiteral			{
+				$$ = ILNode_String_create($1.string, $1.len);
+			}
 	| K_FUNC				{
 				/* Create a reference to the local "__func__" array.
 				   In this implementation, we create a reference to
@@ -1377,6 +1381,13 @@ StringLiteral
 WStringLiteral
 	: WSTRING_LITERAL	{ $$ = $1; }
 	| WStringLiteral WSTRING_LITERAL	{
+				$$ = ILInternAppendedString($1, $2);
+			}
+	;
+
+CSharpStringLiteral
+	: CS_STRING_LITERAL	{ $$ = $1; }
+	| CSharpStringLiteral CS_STRING_LITERAL	{
 				$$ = ILInternAppendedString($1, $2);
 			}
 	;

@@ -494,7 +494,7 @@ void CLexParseString(char *text, ILIntString *value)
 	unsigned ch2;
 
 	/* Initialize the value to be returned */
-	if(*text == 'L' || *text == 'l')
+	if(*text == 'L' || *text == 'l' || *text == 's' || *text == 'S')
 	{
 		++text;
 	}

@@ -360,12 +360,13 @@ ILNode_CSemAnalysis(ILNode_Decimal)
 }
 
 /*
- * Semantic analysis for "string" constants.
+ * Semantic analysis for "C# string" constants.
  */
 ILNode_CSemAnalysis(ILNode_String)
 {
-	/* String object constants are not used in C */
-	return CSemValueDefault;
+	CSemValue value;
+	CSemSetDynConstant(value, ILFindSystemType(info, "String"));
+	return value;
 }
 
 /*

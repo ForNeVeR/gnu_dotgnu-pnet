@@ -1,4 +1,9 @@
 
+2003-03-14  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/lib_type.c: Resolve the type in _ILGetClrTypeForILType
+	function so that it ends up with the correct assembly names.
+
 2003-03-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvmc_stack.c: handle ILEngineType_TypedRef in "dup"

@@ -146,6 +146,8 @@ ILObject *_ILGetClrTypeForILType(ILExecThread *thread, ILType *type)
 	/* Convert the type into an "ILClass" structure */
 	classInfo = ILClassFromType(ILProgramItem_Image(thread->method),
 								0, type, 0);
+	
+	classInfo = ILClassResolve(classInfo);
 
 	/* Get the "ClrType" object for the "ILClass" structure */
 	if(classInfo)

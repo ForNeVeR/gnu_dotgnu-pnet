@@ -1985,10 +1985,13 @@ static ILMember * CheckMemberOverride(ILMember *member1, ILMember *member2)
 	method1=GetUnderlyingMethod(member1);
 	method2=GetUnderlyingMethod(member2);
 	if(!method1 || !method2) return NULL;
-	if(!ILMethod_IsVirtual(method1) || !ILMethod_IsVirtual(method2)) 
+
+	if(!ILTypeIdentical(ILMethod_Signature(method1) , 
+			ILMethod_Signature(method2)))
 	{
 		return NULL;
 	}
+	
 	class1=ILMember_Owner(member1);
 	class2=ILMember_Owner(member2);
 	/* Note: I'm assuming here that the object heirarchy says it all */

@@ -10,6 +10,9 @@
 	* engine/lib_type.c: Load the referenced assembly if it is not
 	already loaded in the context.
 
+	* engine/lib_type.c: Override check should check for just identical
+	types and then pick the latest.
+
 2004-04-28  Ilyak Kasnacheev  <ilyak@office.uw.ru>
 
 	* image/link.c : Remap a few more gtk# related dll references.

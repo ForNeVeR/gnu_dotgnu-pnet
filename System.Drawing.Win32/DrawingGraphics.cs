@@ -69,7 +69,8 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 			{
 				for ( int i = 1;i < points.Length; i++ )
 				{
-					DrawLine( points[i-1].X,points[i-1].Y,points[i].X,points[i].Y );
+					if (points[i-1] != points[i])
+						DrawLine( points[i-1].X,points[i-1].Y,points[i].X,points[i].Y );
 				}
 
 			}
@@ -129,7 +130,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Fill a pie slice within a rectangle defined by four points.
 	public override void FillPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
-				Pie( rect, startAngle, sweepAngle, selectedBrush.hBrush, /*Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN)*/IntPtr.Zero );
+				Pie( rect, startAngle, sweepAngle, selectedBrush.hBrush, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN));
 			}
 
 	private void Pie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle, IntPtr hBrush, IntPtr hPen )

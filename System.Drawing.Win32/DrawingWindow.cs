@@ -76,7 +76,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	void IToolkitWindow.Lower()
 	{
 		//if (hwnd == IntPtr.Zero)
-		//	Console.WriteLine("DrawingWindow.Lower ERROR: Cant lower window. Hwnd not created yet");
+		//	//Console.WriteLine("DrawingWindow.Lower ERROR: Cant lower window. Hwnd not created yet");
 		{
 			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_BOTTOM, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
 			//Console.WriteLine("DrawingWindow.Lower, " + sink);
@@ -148,7 +148,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 					r.X += leftAdjust;
 					r.Y += topAdjust;
 					r.Width -= leftAdjust + rightAdjust;
-					r.Height -= topAdjust - bottomAdjust;
+					r.Height -= topAdjust + bottomAdjust;
 				}
 				return r;
 			}
@@ -352,7 +352,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	{
 		if ((Win32.Api.ActivateState)(wParam & 0xFF) == Win32.Api.ActivateState.WA_INACTIVE)
 			return;
-		Console.WriteLine("DrawingWindow.Activate, " + sink);
+		//Console.WriteLine("DrawingWindow.Activate, " + sink);
 		// We must handle this ourselves
 		//Win32.Api.SetCursor(Win32.Api.LoadCursorA(IntPtr.Zero, Win32.Api.CursorName.IDC_ARROW));
 		//CaptureTopLevel = this;

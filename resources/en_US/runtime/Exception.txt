@@ -108,3 +108,4 @@ Exception_DllNotFound=A required DLL file was not found ({0})
 Exception_IsolatedStorage=An error occurred while processing isolated storage
 Exception_Policy=The security policy forbids the requested operation
 Exception_UnexpectedEngineState=The execution engine encoutered a serious problem
+Exception_ComObjectInUse=The specified COM object is currently in use

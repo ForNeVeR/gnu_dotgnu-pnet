@@ -49,6 +49,26 @@
 	COM-related types into the "ComTypes" namespace and mark the originals
 	as obsolete, as per .NET SDK 1.2.
 
+	* resources/en_US/runtime/Exception.txt,
+	runtime/System/Runtime/InteropServices/BStrWrapper.cs,
+	runtime/System/Runtime/InteropServices/ComDefaultInterfaceAttribute.cs,
+	runtime/System/Runtime/InteropServices/ComObjectInUseException.cs,
+	runtime/System/Runtime/InteropServices/CriticalHandle.cs,
+	runtime/System/Runtime/InteropServices/DefaultCharSetAttribute.cs,
+	runtime/System/Runtime/InteropServices/ExposeAsClassToComAttribute.cs,
+	runtime/System/Runtime/InteropServices/HandleCollector.cs,
+	runtime/System/Runtime/InteropServices/RegistrationClassContext.cs,
+	runtime/System/Runtime/InteropServices/RegistrationConnectionType.cs,
+	runtime/System/Runtime/InteropServices/SafeHandle.cs,
+	runtime/System/Runtime/InteropServices/SetWin32ContextIDispatchAttribute.cs,
+	runtime/System/Runtime/InteropServices/UnmanagedFunctionPointerAttribute.cs,
+	runtime/System/Runtime/InteropServices/VariantWrapper.cs,
+	runtime/System/Runtime/InteropServices/WatsonBucketParameters.cs,
+	runtime/System/Runtime/InteropServices/ComTypes/ITypeInfo2.cs,
+	runtime/System/Runtime/InteropServices/ComTypes/ITypeLib2.cs,
+	runtime/System/Runtime/InteropServices/ComTypes/VARKIND.cs:
+	add new InteropServices classes in .NET SDK 1.2 and 2.0.
+
 2004-07-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/IO/Compression/Adler32.cs,

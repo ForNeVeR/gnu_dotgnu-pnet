@@ -76,6 +76,12 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 		}
 		ILMemberSetSignature((ILMember *)newField, type);
 	}
+	else
+	{
+		/* Set the attribute flags to their correct values */
+		ILMemberSetAttrs((ILMember *)newField, ~((ILUInt32)0),
+						 ILField_Attrs(field));
+	}
 
 	/* Convert the attributes that are attached to the field */
 	if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)field,

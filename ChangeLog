@@ -5,6 +5,9 @@
 	unresolved value type is an enumerated type value,
 	to process attributes when IL_LOADFLAG_NO_RESOLVE is set.
 
+	* image/meta_types.c (ILTypeIsEnum): recognize enumerated
+	types even if the base class library is not loaded.
+
 2003-05-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/arm_codegen.h: rewrite some of the ARM code generation

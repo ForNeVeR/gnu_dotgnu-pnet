@@ -1097,7 +1097,21 @@ int ILTypeIsReference(ILType *type)
 
 int ILTypeIsEnum(ILType *type)
 {
-	return (ILTypeGetEnumType(type) != type);
+	if(ILType_IsValueType(type))
+	{
+		ILClass *classInfo = ILClassResolve(ILType_ToValueType(type));
+		ILClass *parent = ILClass_Parent(classInfo);
+		if(parent)
+		{
+			const char *namespace = ILClass_Namespace(parent);
+			if(namespace && !strcmp(namespace, "System") &&
+			   !strcmp(ILClass_Name(parent), "Enum"))
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
 }
 
 int ILTypeIsValue(ILType *type)

@@ -10,6 +10,13 @@
 	* runtime/System/IO/IsolatedStorage/IsolatedStorageFile.cs:
 	create the isolated storage area under "$HOME/.cli/isolated-storage".
 
+	* runtime/Platform/ISecurityManager.cs,
+	runtime/Platform/NullSecurityManager.cs,
+	runtime/Platform/RuntimeSecurityManager.cs,
+	runtime/Platform/Security.cs, runtime/System/IO/FileStream.cs:
+	remove the platform security manager classes because they don't
+	do anything and they will be superceded by the CAS mechanisms.
+
 2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/Directory.cs, runtime/System/IO/Path.cs,

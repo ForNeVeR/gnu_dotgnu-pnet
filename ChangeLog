@@ -1,4 +1,12 @@
 
+2002-12-22  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Reflection/Emit/ILGenerator.cs, 
+	runtime/System/Reflection/Emit/LocalBuilder.cs,
+	runtime/System/Reflection/Emit/ParameterBuilder.cs,
+	runtime/System/Reflection/Emit/UnmanagedMarshal.cs: Add 
+	stub code for Reflection.Emit.	
+	
 2002-12-21  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	* runtime/System/IO/File.cs: Improve the exception verbage on

@@ -28,15 +28,7 @@
  */
 static IL_INLINE ILNativeFloat LU2F(ILUInt64 value)
 {
-	if(value < (((ILUInt64)1) << 63))
-	{
-		return (ILNativeFloat)(ILInt64)value;
-	}
-	else
-	{
-		return ((ILNativeFloat)(((ILInt64)value) + IL_MIN_INT64)) +
-					(ILNativeFloat)9223372036854775808.0;
-	}
+	return ILUInt64ToFloat(value);
 }
 
 /*
@@ -47,45 +39,7 @@ static IL_INLINE ILNativeFloat LU2F(ILUInt64 value)
  */
 static IL_INLINE ILUInt64 F2LU(ILNativeFloat value)
 {
-	if(FLOAT_IS_FINITE(value))
-	{
-		if(value >= (ILNativeFloat)0.0)
-		{
-			if(value < (ILNativeFloat)9223372036854775808.0)
-			{
-				return (ILUInt64)(ILInt64)value;
-			}
-			else if(value < (ILNativeFloat)18446744073709551616.0)
-			{
-				ILInt64 temp = (ILInt64)(value - 9223372036854775808.0);
-				return (ILUInt64)(temp - IL_MIN_INT64);
-			}
-			else
-			{
-				return IL_MAX_UINT64;
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-#ifdef HAVE_ISNAN
-	else if(isnan(value))
-#else
-	else if(value != value)
-#endif
-	{
-		return 0;
-	}
-	else if(value < (ILNativeFloat)0.0)
-	{
-		return 0;
-	}
-	else
-	{
-		return IL_MAX_UINT64;
-	}
+	return ILFloatToUInt64(value);
 }
 
 /*
@@ -199,29 +153,16 @@ static IL_INLINE int F2UIOvf(CVMWord *posn)
  */
 static IL_INLINE int F2LOvf(CVMWord *posn)
 {
-	ILNativeFloat value = ReadFloat(posn);
-	if(FLOAT_IS_FINITE(value))
+	ILInt64 result;
+	if(ILFloatToInt64Ovf(&result, ReadFloat(posn)))
 	{
-		if(value >= (ILNativeFloat)9223372036854775808.0 &&
-		   value < (ILNativeFloat)9223372036854775808.0)
-		{
-			WriteLong(posn, (ILInt64)value);
-			return 1;
-		}
-		else if(value < (ILNativeFloat)0.0)
-		{
-			/* Account for the range -9223372036854775809.0 to
-			   -9223372036854775808.0, which may get rounded
-			   off if we aren't careful */
-			value += (ILNativeFloat)9223372036854775808.0;
-			if(value > (ILNativeFloat)(-1.0))
-			{
-				WriteLong(posn, IL_MAX_INT64);
-				return 1;
-			}
-		}
+		WriteLong(posn, result);
+		return 1;
 	}
-	return 0;
+	else
+	{
+		return 0;
+	}
 }
 
 /*
@@ -229,24 +170,16 @@ static IL_INLINE int F2LOvf(CVMWord *posn)
  */
 static IL_INLINE int F2LUOvf(CVMWord *posn)
 {
-	ILNativeFloat value = ReadFloat(posn);
-	if(FLOAT_IS_FINITE(value))
+	ILUInt64 result;
+	if(ILFloatToUInt64Ovf(&result, ReadFloat(posn)))
 	{
- 		/* Some platforms cannot perform the conversion directly,
- 		   so we need to do it in stages */
-		if(value < (ILNativeFloat)9223372036854775808.0)
-		{
-			WriteULong(posn, (ILUInt64)(ILInt64)value);
-			return 1;
-		}
-		else if(value < (ILNativeFloat)18446744073709551616.0)
-		{
-			ILInt64 temp = (ILInt64)(value - 9223372036854775808.0);
-			WriteULong(posn, (ILUInt64)(temp - IL_MIN_INT64));
-			return 1;
-		}
+		WriteULong(posn, result);
+		return 1;
 	}
-	return 0;
+	else
+	{
+		return 0;
+	}
 }
 
 #elif defined(IL_CVM_LOCALS)

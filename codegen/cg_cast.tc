@@ -2392,14 +2392,14 @@ ILGenCastConst(ILMachineType_Int64, ILMachineType_UInt64)
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_UInt64)
 {
-	value->un.i8Value = (ILInt64)(ILUInt64)(value->un.r4Value);
+	value->un.i8Value = (ILInt64)ILFloatToUInt64(value->un.r4Value);
 	value->valueType = ILMachineType_UInt64;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float64, ILMachineType_UInt64),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_UInt64)
 {
-	value->un.i8Value = (ILInt64)(ILUInt64)(value->un.r8Value);
+	value->un.i8Value = (ILInt64)ILFloatToUInt64(value->un.r8Value);
 	value->valueType = ILMachineType_UInt64;
 	return 1;
 }
@@ -2452,7 +2452,8 @@ ILGenCastConst(ILMachineType_Int64, ILMachineType_Float32)
 }
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_Float32)
 {
-	value->un.r4Value = (ILFloat)(ILUInt64)(value->un.i8Value);
+	value->un.r4Value =
+		(ILFloat)(ILUInt64ToFloat((ILUInt64)(value->un.i8Value)));
 	value->valueType = ILMachineType_Float32;
 	return 1;
 }
@@ -2510,7 +2511,8 @@ ILGenCastConst(ILMachineType_Int64, ILMachineType_Float64)
 }
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_Float64)
 {
-	value->un.r8Value = (ILDouble)(ILUInt64)(value->un.i8Value);
+	value->un.r8Value =
+		(ILDouble)(ILUInt64ToFloat((ILUInt64)(value->un.i8Value)));
 	value->valueType = ILMachineType_Float64;
 	return 1;
 }
@@ -2572,7 +2574,7 @@ ILGenCastConst(ILMachineType_Int64, ILMachineType_NativeFloat)
 }
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_NativeFloat)
 {
-	value->un.r8Value = (ILDouble)(ILUInt64)(value->un.i8Value);
+	value->un.r8Value = ILUInt64ToFloat((ILUInt64)(value->un.i8Value));
 	value->valueType = ILMachineType_NativeFloat;
 	return 1;
 }

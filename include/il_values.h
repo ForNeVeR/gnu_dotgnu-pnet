@@ -272,6 +272,14 @@ int ILUInt64MulOvf(ILUInt64 *product, ILUInt64 value1, ILUInt64 value2);
  */
 ILNativeFloat ILNativeFloatRem(ILNativeFloat value1, ILNativeFloat value2);
 
+/*
+ * Perform difficult numeric conversions.
+ */
+ILNativeFloat ILUInt64ToFloat(ILUInt64 value);
+ILUInt64 ILFloatToUInt64(ILNativeFloat value);
+int ILFloatToInt64Ovf(ILInt64 *result, ILNativeFloat value);
+int ILFloatToUInt64Ovf(ILUInt64 *result, ILNativeFloat value);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -3,6 +3,7 @@ noinst_PROGRAMS = mkcategory mknumber
 
 libILSupport_a_SOURCES = alloc.c \
 						 cmdline.c \
+						 convert.c \
 						 decimal.c \
 						 file.c \
 						 filemap.c \

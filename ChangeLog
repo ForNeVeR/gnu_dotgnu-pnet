@@ -34,6 +34,10 @@ support/rem_float.c, codegen/cg_arith.tc, engine/cvm_arith.c: implement
 the and use helper functions "ILInt64MulOvf", "ILUInt64MulOvf", and
 "ILNativeFloatRem".
 
+* include/il_values.h, support/Makefile.am, support/convert.c,
+engine/cvm_conv.c, codegen/cg_cast.tc: implement helper functions
+for difficult numeric conversions in "support".
+
 2001-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/l10n.html: check in a proposal for a new resource system for C#.

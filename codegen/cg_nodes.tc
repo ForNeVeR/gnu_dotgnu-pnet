@@ -813,6 +813,7 @@ struct _tagILSwitchValue
 	%nocreate ILNode *staticCtorsMethod = {0};
 	%nocreate ILNode *initCtorsMethod = {0};
 	%nocreate ILNode_ClassDefn *nestedParent = {0};
+	%nocreate ILNode *nestedClasses = {0};
 	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 	%nocreate char *defaultMemberName = {0};
 

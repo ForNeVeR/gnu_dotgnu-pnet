@@ -432,6 +432,14 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	{
 		ILNode_List_Add(list, type);
 	}
+	else
+	{
+		if(!defn->nestedParent->nestedClasses)
+		{
+			defn->nestedParent->nestedClasses = ILNode_List_create();
+		}
+		ILNode_List_Add(defn->nestedParent->nestedClasses, type);
+	}
 }
 
 /*
@@ -2171,13 +2179,18 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 				  "internal error - do not know how to declare this member");
 		}
 	}
-	
-	ILNode_ListIter_Init(&iterator, body);
-	while((member = ILNode_ListIter_Next(&iterator)) != 0)
+
+	/* process the nested classes in the order of creation , rather than
+	 * occurrence in source */
+	if(((ILNode_ClassDefn*)classNode)->nestedClasses)
 	{
-		if(yykind(member) == yykindof(ILNode_ClassDefn))
+		ILNode_ListIter_Init(&iterator, ((ILNode_ClassDefn*)classNode)->nestedClasses);
+		while((member = ILNode_ListIter_Next(&iterator)) != 0)
 		{
-			CreateMembers(info, globalScope, member);
+			if(yykind(member) == yykindof(ILNode_ClassDefn))
+			{
+				CreateMembers(info, globalScope, member);
+			}
 		}
 	}
 

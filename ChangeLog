@@ -7,6 +7,10 @@
 	* cscc/c/c_const.tc: Add ILNode_GetType for CString and CWString so
 	that they return UnmanagedPtr instead of String machine types.
 
+	* cscc/csharp/cs_gather.c, codegen/cg_nodes.tc: Track the nested class
+	creation order in a seperate list in each parent class definition and
+	create members in the proper order.
+
 2004-06-07  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Fix type bug in constant field accesses 

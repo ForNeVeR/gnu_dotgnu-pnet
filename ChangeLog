@@ -15,6 +15,10 @@ module name when dumping class names.
 
 * cscc/cs_invoke.tc: favour non-"params" candidates over "params" candidates.
 
+* codegen/cg_output.c, codegen/jv_output.c: pass "info->image" to
+"ILDumpMethodType", "ILDumpType", and "ILDumpClassName", to ensure
+that the correct module/assembly qualifications are output.
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

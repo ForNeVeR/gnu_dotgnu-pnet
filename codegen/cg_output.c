@@ -182,7 +182,7 @@ void ILGenAllocLocal(ILGenInfo *info, ILType *type, const char *name)
 	if(info->asmOutput)
 	{
 		fputs("\t.locals\t(", info->asmOutput);
-		ILDumpType(info->asmOutput, 0, type, IL_DUMP_QUOTE_NAMES);
+		ILDumpType(info->asmOutput, info->image, type, IL_DUMP_QUOTE_NAMES);
 		if(name)
 		{
 			putc(' ', info->asmOutput);
@@ -273,7 +273,8 @@ void ILGenCallByMethod(ILGenInfo *info, ILMethod *method)
 	if(info->asmOutput)
 	{
 		fputs("\tcall\t", info->asmOutput);
-		ILDumpMethodType(info->asmOutput, 0, ILMethod_Signature(method),
+		ILDumpMethodType(info->asmOutput, info->image,
+						 ILMethod_Signature(method),
 						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
 						 ILMethod_Name(method), 0);
 		putc('\n', info->asmOutput);
@@ -285,7 +286,8 @@ void ILGenCallVirtByMethod(ILGenInfo *info, ILMethod *method)
 	if(info->asmOutput)
 	{
 		fputs("\tcallvirt\t", info->asmOutput);
-		ILDumpMethodType(info->asmOutput, 0, ILMethod_Signature(method),
+		ILDumpMethodType(info->asmOutput, info->image,
+	 					 ILMethod_Signature(method),
 						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
 						 ILMethod_Name(method), 0);
 		putc('\n', info->asmOutput);
@@ -317,7 +319,8 @@ void ILGenClassToken(ILGenInfo *info, int opcode, ILClass *classInfo)
 				  info->asmOutput);
 		}
 		putc('\t', info->asmOutput);
-		ILDumpClassName(info->asmOutput, 0, classInfo, IL_DUMP_QUOTE_NAMES);
+		ILDumpClassName(info->asmOutput, info->image,
+						classInfo, IL_DUMP_QUOTE_NAMES);
 		putc('\n', info->asmOutput);
 	}
 }

@@ -133,6 +133,12 @@ public interface IToolkitGraphics : IDisposable
 	// The remaining point is inferred.
 	void DrawImage(IToolkitImage image,Point[] src, Point[] dest);
 
+	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
+	// in the form of an xbm bitmap.
+	void DrawGlyph(int x, int y,
+				   byte[] bits, int bitsWidth, int bitsHeight,
+				   Color color);
+
 }; // interface IToolkitGraphics
 
 }; // namespace System.Drawing.Toolkit

@@ -146,6 +146,15 @@ public sealed class ToolkitManager
 				return new Graphics(graphics);
 			}
 
+	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
+	// in the form of an xbm bitmap.
+	public static void DrawGlyph(Graphics graphics, int x, int y,
+								 byte[] bits, int bitsWidth, int bitsHeight,
+								 Color color)
+			{
+				graphics.DrawGlyph(x, y, bits, bitsWidth, bitsHeight, color);
+			}
+
 	// Get the override toolkit name.
 	private static String GetToolkitOverride()
 			{

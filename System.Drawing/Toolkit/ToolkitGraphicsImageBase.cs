@@ -312,5 +312,15 @@ namespace System.Drawing.Toolkit
 					destFrame.Copy(sourceFrame, x, y);
 					this.image.ImageChanged();
 				}
+
+		// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
+		// in the form of an xbm bitmap.
+		public override void DrawGlyph
+					(int x, int y,
+					 byte[] bits, int bitsWidth, int bitsHeight, Color color)
+				{
+					// TODO
+				}
+
 	}
 }

@@ -308,6 +308,27 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				}
 			}
 
+	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
+	// in the form of an xbm bitmap.
+	public override void DrawGlyph(int x, int y,
+				   				   byte[] bits, int bitsWidth, int bitsHeight,
+				   				   System.Drawing.Color color)
+			{
+				Xsharp.Bitmap bitmap;
+				bitmap = new Xsharp.Bitmap(bitsWidth, bitsHeight, bits);
+				try
+				{
+					graphics.Foreground = DrawingToolkit.DrawingToXColor(color);
+					graphics.SetFillStippled(bitmap, x, y);
+					graphics.FillRectangle(x, y, bitsWidth, bitsHeight);
+					graphics.SetFillSolid();
+				}
+				finally
+				{
+					bitmap.Destroy();
+				}
+			}
+
 }; // class DrawingGraphics
 
 }; // namespace System.Drawing.Toolkit

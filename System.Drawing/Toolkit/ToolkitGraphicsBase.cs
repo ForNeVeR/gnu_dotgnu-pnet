@@ -647,6 +647,12 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	// Draw an image at the coordinates
 	public abstract void DrawImage(IToolkitImage image, int x, int y);
 
+	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
+	// in the form of an xbm bitmap.
+	public abstract void DrawGlyph(int x, int y,
+				   				   byte[] bits, int bitsWidth, int bitsHeight,
+				   				   Color color);
+
 }; // class ToolkitGraphicsBase
 
 }; // namespace System.Drawing.Toolkit

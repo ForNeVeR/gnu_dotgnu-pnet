@@ -205,6 +205,15 @@ internal class PostscriptGraphics : ToolkitGraphicsBase
 				// TODO
 			}
 
+	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
+	// in the form of an xbm bitmap.
+	public override void DrawGlyph(int x, int y,
+				   				   byte[] bits, int bitsWidth, int bitsHeight,
+				   				   System.Drawing.Color color)
+			{
+				// TODO
+			}
+
 	protected override void Dispose(bool disposing)
 			{
 				// Nothing to do.

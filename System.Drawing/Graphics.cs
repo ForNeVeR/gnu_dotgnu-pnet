@@ -3859,6 +3859,22 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				}
 			}
 
+	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
+	// in the form of an xbm bitmap.
+	internal void DrawGlyph(int x, int y,
+						    byte[] bits, int bitsWidth, int bitsHeight,
+						    Color color)
+			{
+				int dx, dy;
+				ConvertPoint(x, y, out dx, out dy, pageUnit);
+				lock(this)
+				{
+					ToolkitGraphics.DrawGlyph
+						(dx + baseWindow.X, dy + baseWindow.Y,
+						 bits, bitsWidth, bitsHeight, color);
+				}
+			}
+
 }; // class Graphics
 
 }; // namespace System.Drawing

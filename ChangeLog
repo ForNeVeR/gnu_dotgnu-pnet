@@ -31,6 +31,17 @@
 	* runtime/System/Environment.cs, runtime/Platform/InfoMethods.cs:
 	add the "Environment.ProcessorCount" property for 1.2 compatibility.
 
+	* System.Drawing/Graphics.cs,
+	System.Drawing/Toolkit/IToolkitGraphics.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs,
+	System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing.Postscript/PostscriptGraphics.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingGraphics.cs: add the "DrawGlyph"
+	primitive, for drawing simple xbm-based glyphs for minimize,
+	close, scroll arrows, etc.
+
 2003-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:

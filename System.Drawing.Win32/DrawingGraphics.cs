@@ -339,6 +339,15 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 			Win32.Api.RestoreDC(hdc, -1);
 	}
 
+	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
+	// in the form of an xbm bitmap.
+	public override void DrawGlyph(int x, int y,
+				   				   byte[] bits, int bitsWidth, int bitsHeight,
+				   				   System.Drawing.Color color)
+	{
+		// TODO
+	}
+
 }; // class DrawingGraphics
 
 

@@ -37,6 +37,34 @@ public struct RSAParameters
 	[NonSerialized] public byte[] P;
 	[NonSerialized] public byte[] Q;
 
+	// Clear the contents of this structure.
+	internal void Clear()
+			{
+				if(Exponent != null) { Exponent.Initialize(); Exponent = null; }
+				if(Modulus != null) { Modulus.Initialize(); Modulus = null; }
+				if(D != null) { D.Initialize(); D = null; }
+				if(DP != null) { DP.Initialize(); DP = null; }
+				if(DQ != null) { DQ.Initialize(); DQ = null; }
+				if(InverseQ != null) { InverseQ.Initialize(); InverseQ = null; }
+				if(P != null) { P.Initialize(); P = null; }
+				if(Q != null) { Q.Initialize(); Q = null; }
+			}
+
+	// Clone the public parameters in this structure.
+	internal RSAParameters ClonePublic()
+			{
+				RSAParameters p;
+				p.Exponent = Exponent;
+				p.Modulus = Modulus;
+				p.D = null;
+				p.DP = null;
+				p.DQ = null;
+				p.InverseQ = null;
+				p.P = null;
+				p.Q = null;
+				return p;
+			}
+
 }; // struct RSAParameters
 
 #endif // !ECMA_COMPAT

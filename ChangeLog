@@ -1,4 +1,20 @@
 
+2002-07-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Crypto.txt,
+	runtime/Platform/CryptoMethods.cs,
+	runtime/System/Security/Cryptography/CryptoConfig.cs,
+	runtime/System/Security/Cryptography/DSA.cs,
+	runtime/System/Security/Cryptography/DSACryptoServiceProvider.cs,
+	runtime/System/Security/Cryptography/DSAParameters.cs,
+	runtime/System/Security/Cryptography/DSASignatureDeformatter.cs,
+	runtime/System/Security/Cryptography/DSASignatureFormatter.cs,
+	runtime/System/Security/Cryptography/MaskGenerationMethod.cs,
+	runtime/System/Security/Cryptography/PKCS1MaskGenerationMethod.cs,
+	runtime/System/Security/Cryptography/RSAParameters.cs:
+	continue implementing the cryptography code, with support for DSA
+	and PKCS #1 mask generation.
+
 2002-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Crypto.txt,

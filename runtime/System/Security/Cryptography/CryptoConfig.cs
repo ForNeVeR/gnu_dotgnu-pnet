@@ -57,6 +57,8 @@ public class CryptoConfig
 		"System.Security.Cryptography.KeyedHashAlgorithm";
 	internal const String RNGDefault =
 		"System.Security.Cryptography.RandomNumberGenerator";
+	internal const String DSADefault =
+			"System.Security.Cryptography.DSA";
 
 	// Table that maps algorithm names to implementations.
 	private static readonly Object[] algorithms = {
@@ -96,6 +98,8 @@ public class CryptoConfig
 
 			"DSA",				typeof(DSACryptoServiceProvider),
 			"System.Security.Cryptography.DSA",
+								typeof(DSACryptoServiceProvider),
+			"http://www.w3.org/2000/09/xmldsig#dsa-sha1",
 								typeof(DSACryptoServiceProvider),
 #endif
 
@@ -360,6 +364,22 @@ public class CryptoConfig
 					}
 				}
 				return null;
+			}
+
+	// Determine if an algorithm identifier corresponds to a
+	// particular algorithm.
+	internal static bool IsAlgorithm(String name, Type type)
+			{
+				int index;
+				for(index = 0; index < algorithms.Length; index += 2)
+				{
+					if(name.Equals(algorithms[index]))
+					{
+						return ((Type)(algorithms[index + 1]))
+							.IsSubclassOf(type);
+					}
+				}
+				return false;
 			}
 
 }; // class CryptoConfig

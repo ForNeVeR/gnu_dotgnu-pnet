@@ -25,19 +25,23 @@ namespace Platform
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 internal sealed class CryptoMethods
 {
 	// Identifiers for the algorithms.
-	public const int MD5       = 0;
-	public const int SHA1      = 1;
-	public const int SHA256    = 2;
-	public const int SHA384    = 3;
-	public const int SHA512    = 4;
-	public const int DES       = 5;
-	public const int TripleDES = 6;
-	public const int RC2       = 7;
-	public const int Rijndael  = 8;
+	public const int MD5        = 0;
+	public const int SHA1       = 1;
+	public const int SHA256     = 2;
+	public const int SHA384     = 3;
+	public const int SHA512     = 4;
+	public const int DES        = 5;
+	public const int TripleDES  = 6;
+	public const int RC2        = 7;
+	public const int Rijndael   = 8;
+	public const int DSASign    = 9;
+	public const int RSAEncrypt = 10;
+	public const int RSASign    = 11;
 
 	// Determine if a particular algorithm is supported.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -106,6 +110,51 @@ internal sealed class CryptoMethods
 	// Free a symmetric block context.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void SymmetricFree(IntPtr state);
+
+	// Perform a big number addition.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static byte[] NumAdd(byte[] x, byte[] y, byte[] modulus);
+
+	// Perform a big number multiplication.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static byte[] NumMul(byte[] x, byte[] y, byte[] modulus);
+
+	// Perform a big number exponentiation.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static byte[] NumPow(byte[] x, byte[] y, byte[] modulus);
+
+	// Perform a big number inverse.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static byte[] NumInv(byte[] x, byte[] modulus);
+
+	// Perform a big number modulus.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static byte[] NumMod(byte[] x, byte[] modulus);
+
+	// Compute two big numbers for equality.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool NumEq(byte[] x, byte[] y);
+
+	// Determine if a big number is zero.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool NumZero(byte[] x);
+
+	// Retrieve a user's named asymmetric key.  The value is formatted
+	// in ASN.1, according to the relevant PKCS standard for the key type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static byte[] GetKey(int algorithm, String name,
+									   CspProviderFlags flag,
+									   out int result);
+
+	// Store a named asymmetric key for the user.  The value is formatted
+	// in ASN.1, according to the relevatn PKCS standard for the key type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void StoreKey(int algorithm, String name, byte[] key);
+
+	// Result codes for when "GetUserKey" returns "null".
+	public const int UnknownKey   = 1;	// Couldn't find key.
+	public const int NotPermitted = 2;	// Not permitted to access.
+	public const int GenerateKey  = 3;	// Generate a new key for the user.
 
 }; // class CryptoMethods
 

@@ -37,6 +37,34 @@ public struct DSAParameters
 	[NonSerialized] public byte[] X;
 	public byte[] Y;
 
+	// Clear the contents of this structure.
+	internal void Clear()
+			{
+				Counter = 0;
+				if(G != null) { G.Initialize(); G = null; }
+				if(J != null) { J.Initialize(); J = null; }
+				if(P != null) { P.Initialize(); P = null; }
+				if(Q != null) { Q.Initialize(); Q = null; }
+				if(Seed != null) { Seed.Initialize(); Seed = null; }
+				if(X != null) { X.Initialize(); X = null; }
+				if(Y != null) { Y.Initialize(); Y = null; }
+			}
+
+	// Clone the public parameters in this structure.
+	internal DSAParameters ClonePublic()
+			{
+				DSAParameters p;
+				p.Counter = Counter;
+				p.G = G;
+				p.J = J;
+				p.P = P;
+				p.Q = Q;
+				p.Seed = Seed;
+				p.X = null;
+				p.Y = Y;
+				return p;
+			}
+
 }; // struct DSAParameters
 
 #endif // !ECMA_COMPAT

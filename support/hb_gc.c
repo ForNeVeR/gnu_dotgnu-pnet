@@ -174,12 +174,23 @@ static int PrivateGCNotifyFinalize(int timeout)
 	{
 		return 0;
 	}
+
+	if (_FinalizersRunning || ILThreadSelf() == _FinalizerThread)
+	{
+		/* Finalizer thread can't recursively call finalizers */
+		
+		return 0;
+	}
 	
 	/* If threading isn't supported then invoke the finalizers synchronously */
 
-	if (!ILHasThreads() || _FinalizerThread == 0)
+	if (!ILHasThreads())
 	{
+		_FinalizersRunning = 1;
+		
 		GC_invoke_finalizers();
+		
+		_FinalizersRunning = 0;
 
 		return 1;
 	}
@@ -190,13 +201,6 @@ static int PrivateGCNotifyFinalize(int timeout)
 		return Resolve_FinalizerThreadCantRun();		
 	}
 	
-	if (ILThreadSelf() == _FinalizerThread)
-	{
-		/* Finalizer thread can't recursively call finalizers */
-		
-		return 0;
-	}
-
 	/* Start the finalizer thread if it hasn't been started */
 
 	if (!_FinalizerThreadStarted)

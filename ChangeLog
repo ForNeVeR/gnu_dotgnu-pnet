@@ -6,6 +6,8 @@
 * csdoc/doc_tree.h, csdoc/doc_load.c: add the "index" field to "ILDocMember"
 to support HTML document formatting.
 
+* csdoc/doc_texi.c: remove unused code.
+
 2001-09-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h, csdoc/doc_load.c: new functions for accessing XML

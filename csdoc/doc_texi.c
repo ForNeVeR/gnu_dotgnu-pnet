@@ -817,7 +817,6 @@ static void ConvertType(FILE *stream, ILDocType *type,
 {
 	ILDocMember *member;
 	ILDocMemberType lastMemberType;
-	unsigned long index;
 	const char *heading;
 
 	/* Validate that the type node is more or less meaningful */
@@ -860,7 +859,6 @@ static void ConvertType(FILE *stream, ILDocType *type,
 	{
 		fputs("@menu", stream);
 		lastMemberType = ILDocMemberType_Unknown;
-		index = 0;
 		while(member != 0)
 		{
 			heading = 0;
@@ -942,7 +940,6 @@ static void ConvertType(FILE *stream, ILDocType *type,
 	}
 
 	/* Print information about each of the members */
-	index = 0;
 	member = type->members;
 	while(member != 0)
 	{

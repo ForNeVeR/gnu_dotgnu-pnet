@@ -61,6 +61,10 @@ static int TryInlineLoad(ILMethod *method, int numParams,
 			return 0;
 		}
 	}
+	else if(ILClassIsValueType(ILMethod_Owner(method)))
+	{
+		return 0;
+	}
 	else
 	{
 		if (numParams != 1)

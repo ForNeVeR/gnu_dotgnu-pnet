@@ -5,6 +5,10 @@
 
 	* configure.in: update working version to "0.6.11".
 
+2004-10-30  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/verify_call.c: Do not inline loads from value types.
+
 2004-10-29  Peter Lund <firefly@diku.dk>
 
 	* clrwrap/clrwrap.1, csant/csant.1, cscc/cscc.1, cscc/csdoc.1

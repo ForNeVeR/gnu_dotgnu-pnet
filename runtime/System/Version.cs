@@ -37,10 +37,9 @@ public sealed class Version : ICloneable, IComparable
 
 	public Version(String version) 
 			{
-				if (version == 0)
+				if (version == null)
 				{
-					throw new ArgumentNullException
-						("version", _("Arg_NotNull"));
+					throw new ArgumentNullException("version");
 				}
 
 				String[] substrings;
@@ -56,8 +55,7 @@ public sealed class Version : ICloneable, IComparable
 						}
 						catch(Exception e)
 						{
-							throw new FormatException
-								("version", _("Exception_Format"));
+							throw new FormatException(_("Format_Version"));
 						}
 						break;
 
@@ -70,8 +68,7 @@ public sealed class Version : ICloneable, IComparable
 						}
 						catch(Exception e)
 						{
-							throw new FormatException
-								("version", _("Exception_Format"));
+							throw new FormatException(_("Format_Version"));
 						}
 						break;
 
@@ -85,15 +82,13 @@ public sealed class Version : ICloneable, IComparable
 						}
 						catch(Exception e)
 						{
-							throw new FormatException
-								("version", _("Exception_Format"));
+							throw new FormatException(_("Format_Version"));
 						}
 						break;
 
 					default:
 						throw new ArgumentException
-							("version", _("Arg_VersionFields"));
-						break;
+							(_("Arg_VersionFields"), "version");
 				}
 
 				if(this.major < 0)

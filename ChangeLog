@@ -5,6 +5,9 @@
 	a temporary file, to work around C compilers that do not accept
 	"-" as a source file for pre-processing.
 
+	* configure.in, include/il_config.h.in: detect the "nsl" and
+	"socket" libraries for platforms that require them (e.g. Solaris).
+
 2002-06-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/gen_errno.sh: work-around versions of grep that lack

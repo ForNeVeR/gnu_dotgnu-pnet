@@ -1,3 +1,8 @@
+
+2002-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/HttpWebRequest.cs: remove a stray ';'.
+
 2002-03-22  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Began to integrate changes from chiraz's patch

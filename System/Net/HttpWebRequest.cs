@@ -177,7 +177,7 @@ public class HttpWebRequest : WebRequest
 
 	public string UserAgent {get; set;}
 
-	private Socket server {get; set;};
+	private Socket server {get; set;}
 
 }//class
 

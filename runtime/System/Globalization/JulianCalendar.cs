@@ -2,7 +2,7 @@
  * JulianCalendar.cs - Implementation of the
  *        "System.Globalization.JulianCalendar" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,10 @@ public class JulianCalendar : Calendar
 	// Useful constants.
 	private const int DefaultTwoDigitYearMax = 2029;
 	private const int DaysPer4Years = (365 * 4 + 1);
+
+	// Jan 1, 0001 AD is Jan 3, 0001 Julian.  This value is used to
+	// adjust day numbers to account for the discrepancy.
+	private const long EpochAdjust = 2;
 
 	// Constructors.
 	public JulianCalendar()
@@ -77,6 +81,28 @@ public class JulianCalendar : Calendar
 					base.TwoDigitYearMax = value;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the minimum DateTime value supported by this calendar.
+	public override DateTime MinValue
+			{
+				get
+				{
+					return DateTime.MinValue;
+				}
+			}
+
+	// Get the maximum DateTime value supported by this calendar.
+	public override DateTime MaxValue
+			{
+				get
+				{
+					return DateTime.MaxValue;
+				}
+			}
+
+#endif
 
 	// Add a time period to a DateTime value.
 	public override DateTime AddMonths(DateTime time, int months)
@@ -161,8 +187,17 @@ public class JulianCalendar : Calendar
 			}
 	public override int GetDayOfYear(DateTime time)
 			{
-				long ticks = time.Ticks - YearToTicks(GetYear(time));
-				return (int)((ticks / TimeSpan.TicksPerDay) + 1);
+				// Get the year value.
+				int year = GetYear(time);
+
+				// Convert the tick count into a day value.
+				long days = time.Ticks / TimeSpan.TicksPerDay;
+
+				// Adjust for the difference in epochs.
+				days += EpochAdjust;
+
+				// Return the day number within the year.
+				return unchecked((int)((days - YearToDays(year)) + 1));
 			}
 	public override int GetMonth(DateTime time)
 			{
@@ -199,6 +234,9 @@ public class JulianCalendar : Calendar
 
 				// Convert the tick count into a day value.
 				int days = unchecked((int)(time.Ticks / TimeSpan.TicksPerDay));
+
+				// Adjust for the difference in epochs.
+				days += (int)EpochAdjust;
 
 				// Determine the 4-year cycle that contains the date.
 				int yearBase = ((days / DaysPer4Years) * 4) + 1;
@@ -346,11 +384,43 @@ public class JulianCalendar : Calendar
 				return ((year % 4) == 0);
 			}
 
-	// Convert a year into a number of ticks.
-	private static long YearToTicks(int year)
+	// Convert a Julian year into a day number.
+	private static long YearToDays(int year)
 			{
 				--year;
 				return (long)(year * 365 + year / 4);
+			}
+
+	// Determine if a Julian date is in range (0001/01/03 - 9999-10-19).
+	private static bool CheckDateRange(int year, int month, int day)
+			{
+				if(year == 1 && month == 1)
+				{
+					return (day >= 3 && day <= 31);
+				}
+				else if(year == 9999 && month > 10)
+				{
+					return false;
+				}
+				else if(year == 9999 && month == 10 && day > 19)
+				{
+					return false;
+				}
+				else if(year < 1 || year > 9999 || month < 1 || month > 12)
+				{
+					return false;
+				}
+				else if(day < 1)
+				{
+					return false;
+				}
+				bool isLeap = ((year % 4) == 0);
+				int daysInMonth = DateTime.daysForEachMonth[month - 1];
+				if(month == 2 && isLeap)
+				{
+					++daysInMonth;
+				}
+				return (day >= 1 && day <= daysInMonth);
 			}
 
 	// Convert a particular time into a DateTime value.
@@ -365,8 +435,7 @@ public class JulianCalendar : Calendar
 				int daysInMonth;
 				long result;
 				bool isLeap;
-				if(year >= 1 && year <= 9999 &&
-				   month >= 1 && month <= 12)
+				if(CheckDateRange(year, month, day))
 				{
 					isLeap = ((year % 4) == 0);
 					daysInMonth = DateTime.daysForEachMonth[month - 1];
@@ -378,13 +447,14 @@ public class JulianCalendar : Calendar
 					{
 						unchecked
 						{
-							result = YearToTicks(year);
+							result = YearToDays(year);
 							result +=
 								(long)(DateTime.daysBeforeMonth[month - 1]);
 							if(month > 2 && isLeap)
 							{
 								++result;
 							}
+							result -= EpochAdjust;
 							return new DateTime
 								  ((result + (long)(day - 1)) *
 								   TimeSpan.TicksPerDay +

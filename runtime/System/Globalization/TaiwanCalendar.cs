@@ -72,6 +72,29 @@ public class TaiwanCalendar : Calendar
 				}
 			}
 
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the minimum DateTime value supported by this calendar.
+	public override DateTime MinValue
+			{
+				get
+				{
+					// Return the first day in era 1 as the minimum.
+					return ToDateTime(1, 1, 1, 0, 0, 0, 0, 1);
+				}
+			}
+
+	// Get the maximum DateTime value supported by this calendar.
+	public override DateTime MaxValue
+			{
+				get
+				{
+					return DateTime.MaxValue;
+				}
+			}
+
+#endif
+
 	// Add a time period to a DateTime value.
 	public override DateTime AddMonths(DateTime time, int months)
 			{

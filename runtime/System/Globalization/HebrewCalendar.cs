@@ -2,7 +2,7 @@
  * HebrewCalendar.cs - Implementation of the
  *        "System.Globalization.HebrewCalendar" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,11 @@ public class HebrewCalendar : Calendar
 	private const int DefaultTwoDigitYearMax = 5790;
 	private const int MinYear = 5343;
 	private const int MaxYear = 6000;
-	private const int Year1AD = 3760;
+
+	// Gregorian 0001/01/01 is Hebrew 3761/10/18.  This constant
+	// indicates the number of days to use to offset a Gregorian
+	// day number to turn it into a Hebrew day number.
+	private const long Year1ADDays = 1373428;
 
 	// There are 1080 "parts" per hour.
 	private const int PartsPerHour = 1080;
@@ -103,6 +107,28 @@ public class HebrewCalendar : Calendar
 				}
 			}
 
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the minimum DateTime value supported by this calendar.
+	public override DateTime MinValue
+			{
+				get
+				{
+					return ToDateTime(MinYear, 1, 1, 0, HebrewEra);
+				}
+			}
+
+	// Get the maximum DateTime value supported by this calendar.
+	public override DateTime MaxValue
+			{
+				get
+				{
+					return GetMaxValue(MaxYear);
+				}
+			}
+
+#endif
+
 	// Determine if a year value is a Hebrew leap year.
 	private static bool IsHebrewLeapYear(int year)
 			{
@@ -118,6 +144,7 @@ public class HebrewCalendar : Calendar
 			}
 
 	// Get the absolute day number that starts a particular year.
+	// Based on the algorithm used by "http://www.funaba.org/en/calendar.html".
 	private static long StartOfYear(int year)
 			{
 				// Get the number of months before the year.
@@ -272,7 +299,7 @@ public class HebrewCalendar : Calendar
 			{
 				// Get the day of the year.
 				int year = GetYear(time);
-				long yearDays = StartOfYear(year) - StartOfYear(Year1AD);
+				long yearDays = StartOfYear(year) - Year1ADDays;
 				int day = (int)((time.Ticks / TimeSpan.TicksPerDay) - yearDays);
 
 				// Get the month table for this year.
@@ -295,7 +322,7 @@ public class HebrewCalendar : Calendar
 	public override int GetDayOfYear(DateTime time)
 			{
 				int year = GetYear(time);
-				long yearDays = StartOfYear(year) - StartOfYear(Year1AD);
+				long yearDays = StartOfYear(year) - Year1ADDays;
 				return (int)(((time.Ticks /
 								TimeSpan.TicksPerDay) - yearDays) + 1);
 			}
@@ -303,7 +330,7 @@ public class HebrewCalendar : Calendar
 			{
 				// Get the day of the year.
 				int year = GetYear(time);
-				long yearDays = StartOfYear(year) - StartOfYear(Year1AD);
+				long yearDays = StartOfYear(year) - Year1ADDays;
 				int day = (int)((time.Ticks / TimeSpan.TicksPerDay) - yearDays);
 
 				// Get the month table for this year.
@@ -322,7 +349,7 @@ public class HebrewCalendar : Calendar
 			{
 				// Get the absolute day number for "time".
 				long day = time.Ticks / TimeSpan.TicksPerDay;
-				day += StartOfYear(Year1AD);
+				day += Year1ADDays;
 
 				// Perform a range check on MinYear and MaxYear.
 				if(day < StartOfYear(MinYear) ||
@@ -524,7 +551,7 @@ public class HebrewCalendar : Calendar
 				// Convert the Hebrew date into a Gregorian date.
 				// We do this by calculating the number of days since
 				// 1 January 0001 AD, which is Hebrew 01/01/3760.
-				long days = StartOfYear(year) - StartOfYear(Year1AD) + day - 1;
+				long days = StartOfYear(year) - Year1ADDays + day - 1;
 				int[] table = GetMonthTable(year);
 				int posn;
 				for(posn = 1; posn < month; ++posn)

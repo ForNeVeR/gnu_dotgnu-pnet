@@ -2,7 +2,7 @@
  * GregorianCalendar.cs - Implementation of the
  *        "System.Globalization.GregorianCalendar" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,6 +96,28 @@ public class GregorianCalendar : Calendar
 					base.TwoDigitYearMax = value;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the minimum DateTime value supported by this calendar.
+	public override DateTime MinValue
+			{
+				get
+				{
+					return DateTime.MinValue;
+				}
+			}
+
+	// Get the maximum DateTime value supported by this calendar.
+	public override DateTime MaxValue
+			{
+				get
+				{
+					return DateTime.MaxValue;
+				}
+			}
+
+#endif
 
 	// Add a time period to a DateTime value.
 	public override DateTime AddMonths(DateTime time, int months)

@@ -1,6 +1,6 @@
 /*
- * HijriCalendar.cs - Implementation of the
- *        "System.Globalization.HijriCalendar" class.
+ * JalaaliCalendar.cs - Implementation of the
+ *        "System.Globalization.JalaaliCalendar" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,47 +22,46 @@
 namespace System.Globalization
 {
 
-using System;
-using Microsoft.Win32;
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
-public class HijriCalendar : Calendar
+// This Jalaali calendar implementation is based on the algorithm used by
+// "http://www.funaba.org/en/calendar.html".
+
+public class JalaaliCalendar : Calendar
 {
-	// The Hijri era.
-	public static readonly int HijriEra = 1;
+	// The Jalaali era.
+	public const int JalaaliEra = 1;
 
 	// Useful constants.
-	private const int DefaultTwoDigitMax = 1451;
-	private const int MaxYear = 9666;
-	private const long MinTicks = 196130592000000000L; // 622-07-08
-
-	// Internal state.
-	private int adjustment;
+	private const int DefaultTwoDigitMax = 1408;	// guessed value - TODO
+	private const int MinYear = 1;				// Minimum Jalaali year.
+	private const int MaxYear = 9377;			// Maximum Jalaali year.
+	private const long JalaaliYearOne = 226894;	// Day number of 1/1/0001 J.
+	private static readonly DateTime MinDate =
+			new DateTime(622, 3, 21);			// Gregorian for 1/1/0001 J.
 
 	// Number of days in each month of the year.  The last month will
 	// have 30 days in a leap year.
 	private static readonly int[] daysInMonth =
-			{30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29};
+			{31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29};
 
 	// Number of days before each month.
 	private static readonly int[] daysBeforeMonth =
 			{0,
-			 30,
-			 30 + 29,
-			 30 + 29 + 30,
-			 30 + 29 + 30 + 29,
-			 30 + 29 + 30 + 29 + 30,
-			 30 + 29 + 30 + 29 + 30 + 29,
-			 30 + 29 + 30 + 29 + 30 + 29 + 30,
-			 30 + 29 + 30 + 29 + 30 + 29 + 30 + 29,
-			 30 + 29 + 30 + 29 + 30 + 29 + 30 + 29 + 30,
-			 30 + 29 + 30 + 29 + 30 + 29 + 30 + 29 + 30 + 29,
-			 30 + 29 + 30 + 29 + 30 + 29 + 30 + 29 + 30 + 29 + 30};
+			 31,
+			 31 + 31,
+			 31 + 31 + 31,
+			 31 + 31 + 31 + 31,
+			 31 + 31 + 31 + 31 + 31,
+			 31 + 31 + 31 + 31 + 31 + 31,
+			 31 + 31 + 31 + 31 + 31 + 31 + 30,
+			 31 + 31 + 31 + 31 + 31 + 31 + 30 + 30,
+			 31 + 31 + 31 + 31 + 31 + 31 + 30 + 30 + 30,
+			 31 + 31 + 31 + 31 + 31 + 31 + 30 + 30 + 30 + 30,
+			 31 + 31 + 31 + 31 + 31 + 31 + 30 + 30 + 30 + 30 + 30};
 
-	// Constructor.
-	public HijriCalendar()
-			{
-				adjustment = 0x0100;
-			}
+	// Constructors.
+	public JalaaliCalendar() {}
 
 	// Get a list of eras for the calendar.
 	public override int[] Eras
@@ -70,70 +69,8 @@ public class HijriCalendar : Calendar
 				get
 				{
 					int[] eras = new int [1];
-					eras[0] = HijriEra;
+					eras[0] = JalaaliEra;
 					return eras;
-				}
-			}
-
-	// Get or set the Hijri adjustment value, which shifts the
-	// date forward or back by up to two days.
-	public int HijriAdjustment
-			{
-				get
-				{
-					if(adjustment == 0x0100)
-					{
-					#if CONFIG_WIN32_SPECIFICS
-						// Inspect the registry to get the adjustment value.
-						adjustment = 0;
-						try
-						{
-							RegistryKey key = Registry.CurrentUser;
-							key = key.OpenSubKey
-								("Control Panel\\International", false);
-							if(key != null)
-							{
-								Object value = key.GetValue
-									("AddHijriDate", null);
-								key.Close();
-								String str = null;
-								if(value != null)
-								{
-									str = value.ToString();
-								}
-								if(str != null &&
-								   str.StartsWith("AddHijriDate"))
-								{
-									str = str.Substring(12);
-									if(str.Length > 0)
-									{
-										int ivalue = Int32.Parse(str);
-										if(ivalue >= -2 && ivalue <= 2)
-										{
-											adjustment = ivalue;
-										}
-									}
-								}
-							}
-						}
-						catch(Exception)
-						{
-							// Ignore registry access errors.
-						}
-					#else
-						adjustment = 0;
-					#endif
-					}
-					return adjustment;
-				}
-				set
-				{
-					if(value < -2 || value > 2)
-					{
-						throw new ArgumentOutOfRangeException
-							("value", _("ArgRange_HijriAdjustment"));
-					}
-					adjustment = value;
 				}
 			}
 
@@ -156,7 +93,7 @@ public class HijriCalendar : Calendar
 				}
 				set
 				{
-					if(value < 100 || value > MaxYear)
+					if(value < 100 || value > 9999)
 					{
 						throw new ArgumentOutOfRangeException
 							("year", _("ArgRange_Year"));
@@ -165,14 +102,12 @@ public class HijriCalendar : Calendar
 				}
 			}
 
-#if CONFIG_FRAMEWORK_1_2
-
 	// Get the minimum DateTime value supported by this calendar.
 	public override DateTime MinValue
 			{
 				get
 				{
-					return new DateTime(MinTicks);
+					return MinDate;
 				}
 			}
 
@@ -185,91 +120,68 @@ public class HijriCalendar : Calendar
 				}
 			}
 
-#endif
-
-	// Convert a year value into an absolute number of days.
-	private long YearToDays(int year)
+	// Convert a Jalaali year value into an offset in days since 1/1/0001 AD.
+	private static long YearToDays(int year)
 			{
-				int cycle = ((year - 1) / 30) * 30;
-				int left = year - cycle - 1;
-				long days = ((cycle * 10631L) / 30L) + 227013L;
-				while(left > 0)
-				{
-					days += GetDaysInYear(left, HijriEra);
-					--left;
-				}
-				return days;
+				return 365 * (year - 1) +
+				       ((21 + (8 * year)) / 33) +
+					   JalaaliYearOne;
 			}
 
 	// Pull apart a DateTime value into year, month, and day.
-	private void PullDateApart(DateTime time, out int year,
-							   out int month, out int day)
+	private static void PullDateApart(DateTime time, out int year,
+							   		  out int month, out int day)
 			{
-				long days;
-				long estimate1;
-				long estimate2;
-
 				// Validate the time range.
-				if(time.Ticks < MinTicks)
+				if(time < MinDate)
 				{
 					throw new ArgumentOutOfRangeException
-						("time", _("ArgRange_HijriDate"));
+						("time", _("Arg_DateTimeRange"));
 				}
 
-				// Calculate the absolute date, adjusted as necessary.
-				days = (time.Ticks / TimeSpan.TicksPerDay) + 1;
-				days += HijriAdjustment;
+				// Get the absolute day number for the date.
+				long absolute = (time.Ticks / TimeSpan.TicksPerDay) + 1;
 
-				// Calculate the Hijri year value.
-				year = (int)(((days - 227013) * 30) / 10631) + 1;
-				estimate1 = YearToDays(year);
-				estimate2 = GetDaysInYear(year, HijriEra);
-				if(days < estimate1)
+				// Extract the year value.
+				int approx = (int)((absolute - JalaaliYearOne) / 366);
+				int temp, y;
+				temp = 0;
+				y = approx;
+				while(absolute >= (YearToDays(y + 1) + 1))
 				{
-					estimate1 -= estimate2;
-					--year;
+					++temp;
+					++y;
 				}
-				else if(days == estimate1)
-				{
-					--year;
-					estimate2 = GetDaysInYear(year, HijriEra);
-					estimate1 -= estimate2;
-				}
-				else if(days > (estimate1 + estimate2))
-				{
-					estimate1 += estimate2;
-					++year;
-				}
+				year = y;
 
-				// Calculate the Hijri month value.
+				// Extract the year component from the absolute date.
+				absolute -= YearToDays(year);
+
+				// Determine the month and day values.
 				month = 1;
-				days -= estimate1;
-				while(month <= 12 && days > daysBeforeMonth[month - 1])
+				while(month < 12 && absolute > daysInMonth[month - 1])
 				{
+					absolute -= daysInMonth[month - 1];
 					++month;
 				}
-				--month;
-
-				// Calculate the Hijri date value.
-				day = (int)(days - daysBeforeMonth[month - 1]);
+				day = (int)absolute;
 			}
 
 	// Recombine a DateTime value from its components.
 	private DateTime RecombineDate(int year, int month, int day, long ticks)
 			{
-				int limit = GetDaysInMonth(year, month, HijriEra);
+				int limit = GetDaysInMonth(year, month, JalaaliEra);
 				if(day < 1 || day > limit)
 				{
 					throw new ArgumentOutOfRangeException
 						("day", _("ArgRange_Year"));
 				}
 				long days;
-				days = YearToDays(year) + daysBeforeMonth[month - 1] + day;
-				days -= (HijriAdjustment + 1);
+				days = YearToDays(year) + daysBeforeMonth[month - 1] + day - 1;
 				if(days < 0)
 				{
 					throw new ArgumentOutOfRangeException
-						("time", _("ArgRange_HijriDate"));
+						("time", _("Arg_DateTimeRange"));
 				}
 				return new DateTime(days * TimeSpan.TicksPerDay + ticks);
 			}
@@ -300,7 +212,7 @@ public class HijriCalendar : Calendar
 						month += 12;
 					}
 				}
-				int limit = GetDaysInMonth(year, month, HijriEra);
+				int limit = GetDaysInMonth(year, month, JalaaliEra);
 				if(day > limit)
 				{
 					day = limit;
@@ -346,7 +258,7 @@ public class HijriCalendar : Calendar
 	// Get the number of days in a particular month.
 	public override int GetDaysInMonth(int year, int month, int era)
 			{
-				if(era != CurrentEra && era != HijriEra)
+				if(era != CurrentEra && era != JalaaliEra)
 				{
 					throw new ArgumentException(_("Arg_InvalidEra"));
 				}
@@ -377,31 +289,40 @@ public class HijriCalendar : Calendar
 	// Get the number of days in a particular year.
 	public override int GetDaysInYear(int year, int era)
 			{
-				if(IsLeapYear(year, era))
+				if(year < MinYear || year > MaxYear)
 				{
-					return 355;
+					throw new ArgumentOutOfRangeException
+						("year", _("ArgRange_Year"));
+				}
+				if(era != CurrentEra && era != JalaaliEra)
+				{
+					throw new ArgumentException(_("Arg_InvalidEra"));
+				}
+				if(IsLeapYear(year))
+				{
+					return 366;
 				}
 				else
 				{
-					return 354;
+					return 365;
 				}
 			}
 
 	// Get the era for a specific DateTime value.
 	public override int GetEra(DateTime time)
 			{
-				return HijriEra;
+				return JalaaliEra;
 			}
 
 	// Get the number of months in a specific year.
 	public override int GetMonthsInYear(int year, int era)
 			{
-				if(year < 1 || year > MaxYear)
+				if(year < MinYear || year > MaxYear)
 				{
 					throw new ArgumentOutOfRangeException
 						("year", _("ArgRange_Year"));
 				}
-				if(era != CurrentEra && era != HijriEra)
+				if(era != CurrentEra && era != JalaaliEra)
 				{
 					throw new ArgumentException(_("Arg_InvalidEra"));
 				}
@@ -416,9 +337,9 @@ public class HijriCalendar : Calendar
 					throw new ArgumentOutOfRangeException
 						("day", _("ArgRange_Day"));
 				}
-				if(IsLeapMonth(year, month, era))
+				if(DateTime.IsLeapYear(year) && month == 12 && day == 30)
 				{
-					return (day == 30);
+					return true;
 				}
 				else
 				{
@@ -434,36 +355,22 @@ public class HijriCalendar : Calendar
 					throw new ArgumentOutOfRangeException
 						("month", _("ArgRange_Month"));
 				}
-				if(IsLeapYear(year, era))
-				{
-					return (month == 12);
-				}
-				else
-				{
-					return false;
-				}
+				return (IsLeapYear(year, era) && month == 12);
 			}
 
 	// Determine if a particular year is a leap year.
 	public override bool IsLeapYear(int year, int era)
 			{
-				if(year < 1 || year > MaxYear)
+				if(year < MinYear || year > MaxYear)
 				{
 					throw new ArgumentOutOfRangeException
 						("year", _("ArgRange_Year"));
 				}
-				if(era != CurrentEra && era != HijriEra)
+				if(era != CurrentEra && era != JalaaliEra)
 				{
 					throw new ArgumentException(_("Arg_InvalidEra"));
 				}
-				if((((year * 11) + 14) % 30) < 11)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
+			    return (((29 + (8 * year)) % 33) < 8);
 			}
 
 	// Convert a particular time into a DateTime value.
@@ -471,7 +378,7 @@ public class HijriCalendar : Calendar
 										int hour, int minute, int second,
 										int millisecond, int era)
 			{
-				if(era != CurrentEra && era != HijriEra)
+				if(era != CurrentEra && era != JalaaliEra)
 				{
 					throw new ArgumentException(_("Arg_InvalidEra"));
 				}
@@ -483,14 +390,11 @@ public class HijriCalendar : Calendar
 	// Convert a two-digit year value into a four-digit year value.
 	public override int ToFourDigitYear(int year)
 			{
-				if(year > MaxYear)
-				{
-					throw new ArgumentOutOfRangeException
-						("year", _("ArgRange_Year"));
-				}
 				return base.ToFourDigitYear(year);
 			}
 
-}; // class HijriCalendar
+}; // class JalaaliCalendar
+
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Globalization

@@ -1,4 +1,19 @@
 
+2003-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Globalization/Calendar.cs,
+	runtime/System/Globalization/GregorianCalendar.cs,
+	runtime/System/Globalization/HebrewCalendar.cs,
+	runtime/System/Globalization/HijriCalendar.cs,
+	runtime/System/Globalization/JalaaliCalendar.cs,
+	runtime/System/Globalization/JapaneseCalendar.cs,
+	runtime/System/Globalization/JulianCalendar.cs,
+	runtime/System/Globalization/KoreanCalendar.cs,
+	runtime/System/Globalization/TaiwanCalendar.cs,
+	runtime/System/Globalization/ThaiBuddhistCalendar.cs:
+	add the Jalaali calendar; fix some bugs in the Julian and
+	Hebrew calendars; add the 1.2 MinValue and MaxValue properties.
+
 2003-11-12  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs: add some proxy support to

@@ -2,7 +2,7 @@
  * Calendar.cs - Implementation of the
  *        "System.Globalization.Calendar" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,38 @@ public abstract class Calendar
 					twoDigitYearMax = value;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the minimum DateTime value supported by this calendar.
+	public virtual DateTime MinValue
+			{
+				get
+				{
+					return DateTime.MinValue;
+				}
+			}
+
+	// Get the maximum DateTime value supported by this calendar.
+	public virtual DateTime MaxValue
+			{
+				get
+				{
+					return DateTime.MaxValue;
+				}
+			}
+
+	// Helper method for getting the maximum DateTime value for subclasses.
+	internal DateTime GetMaxValue(int maxYear)
+			{
+				DateTime value;
+				int month = GetMonthsInYear(maxYear, CurrentEra);
+				int day = GetDaysInMonth(maxYear, month, CurrentEra);
+				value = ToDateTime(maxYear, month, day, 0, 0, 0, 0, CurrentEra);
+				return new DateTime(value.Ticks + TimeSpan.TicksPerDay - 1);
+			}
+
+#endif
 
 	// Internal version of the default "Add*" methods.
 	private static DateTime DefaultAdd

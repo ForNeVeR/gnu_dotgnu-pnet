@@ -72,6 +72,28 @@ public class ThaiBuddhistCalendar : Calendar
 				}
 			}
 
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the minimum DateTime value supported by this calendar.
+	public override DateTime MinValue
+			{
+				get
+				{
+					return DateTime.MinValue;
+				}
+			}
+
+	// Get the maximum DateTime value supported by this calendar.
+	public override DateTime MaxValue
+			{
+				get
+				{
+					return DateTime.MaxValue;
+				}
+			}
+
+#endif
+
 	// Add a time period to a DateTime value.
 	public override DateTime AddMonths(DateTime time, int months)
 			{

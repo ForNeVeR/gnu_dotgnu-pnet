@@ -6,6 +6,15 @@
 	resources/en_US/System/Arg.txt: implement socket address serialization
 	properly; add IPv6 support to IPEndPoint and IPAddress.
 
+	* Makefile.am, configure.in, DotGNU.SSL/README, DotGNU.SSL/.cvsignore,
+	DotGNU.SSL/ISecureSession.cs, DotGNU.SSL/ISecureSessionProvider.cs,
+	DotGNU.SSL/Makefile.am, DotGNU.SSL/OpenSSL.cs, DotGNU.SSL/Protocol.cs,
+	DotGNU.SSL/SSL.build, DotGNU.SSL/SessionProviderFactory.cs,
+	DotGNU.SSL/Utils.cs, samples/ilrun.sh.in, samples/samples.build,
+	samples/sslfetch.cs: add the "DotGNU.SSL" library, wrapped around
+	OpenSSL, for use in "System.Net" to implement https; add the
+	"sslfetch" sample to demonstrate how to use it.
+
 2003-05-27  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/ComponentModel/PropertyDescriptor.cs: Stub out a bit more

@@ -1,0 +1,109 @@
+/*
+ * sslfetch.cs - Sample program that uses "DotGNU.SSL" to fetch https data.
+ *
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software, you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY, without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program, if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+
+Usage: sslfetch url
+
+Where "url" is a https URL.  This program connects to the specified
+host and port and fetches the contents of the given URL.  The entire
+HTTP response, including the header, is written to stdout.
+
+*/
+
+using System;
+using System.IO;
+using System.Text;
+using System.Net;
+using System.Net.Sockets;
+using DotGNU.SSL;
+
+public class SSLFetch
+{
+	// Main entry point.
+	public static int Main(String[] args)
+			{
+				Uri uri;
+
+				// Process the command-line options.
+				if(args.Length != 1)
+				{
+					Console.Error.WriteLine("Usage: sslfetch url");
+					return 1;
+				}
+				uri = new Uri(args[0]);
+				if(uri.Scheme != "https")
+				{
+					Console.Error.WriteLine("{0} is not a https url", args[0]);
+					return 1;
+				}
+
+				// Resolve the hostname and build an end point.
+				IPHostEntry entry = Dns.Resolve(uri.Host);
+				IPEndPoint ep = new IPEndPoint(entry.AddressList[0], uri.Port);
+
+				// Connect to the remote server.
+				Console.Error.WriteLine("Connecting to {0} ...", ep.ToString());
+				Socket socket = new Socket(AddressFamily.InterNetwork,
+										   SocketType.Stream,
+										   ProtocolType.Unspecified);
+				socket.Connect(ep);
+
+				// Wrap the socket in an SSL client session.
+				ISecureSessionProvider provider;
+				ISecureSession session;
+				provider = SessionProviderFactory.GetProvider();
+				session = provider.CreateClientSession(Protocol.AutoDetect);
+
+				// Perform the SSL handshake and get the stream.
+				Console.Error.WriteLine("Performing the SSL handshake ...");
+				Stream stream = session.PerformHandshake(socket);
+
+				// Write the HTTP "GET" to the server.
+				Console.Error.WriteLine("Sending HTTP request ...");
+				String get = "GET " + uri.LocalPath + " HTTP/1.0\r\n";
+				get += "\r\n";
+				byte[] getData = Encoding.UTF8.GetBytes(get);
+				stream.Write(getData, 0, getData.Length);
+				stream.Flush();
+
+				// Dump the response.
+				byte[] buf = new byte [512];
+				char[] cbuf = new char [2048];
+				int size;
+				while((size = stream.Read(buf, 0, buf.Length)) > 0)
+				{
+					size = Encoding.UTF8.GetChars(buf, 0, size, cbuf, 0);
+					Console.Write(cbuf, 0, size);
+				}
+
+				// Close the secure stream.
+				Console.Error.WriteLine("Closing the secure session ...");
+				stream.Close();
+
+				// Close the socket.
+				Console.Error.WriteLine("Closing the underlying socket ...");
+				socket.Close();
+
+				// Done.
+				return 0;
+			}
+
+}; // class SSLFetch

@@ -22,4 +22,4 @@
 ILRUN="@ILRUN@"
 
 # Run the engine, with the assembly paths set correct.
-exec "$ILRUN" -L../runtime -L../I18N -L../System -L../System.Xml $*
+exec "$ILRUN" -L../runtime -L../I18N -L../DotGNU.SSL -L../System -L../System.Xml $*

@@ -979,6 +979,7 @@ WHITE			[ \t\r\f\v\032]
 "->"					{ RETURNTOK(PTR_OP); }
 
 "abstract"				{ RETURNTOK(ABSTRACT); }
+"__arglist"				{ RETURNTOK(ARGLIST); }
 "as"					{ RETURNTOK(AS); }
 "base"					{ RETURNTOK(BASE); }
 "bool"					{ RETURNTOK(BOOL); }

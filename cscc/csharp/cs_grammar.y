@@ -610,6 +610,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
  */
 %token ABSTRACT				"`abstract'"
 %token ADD					"`add'"
+%token ARGLIST				"`__arglist'"
 %token AS					"`as'"
 %token BASE					"`base'"
 %token BOOL					"`bool'"
@@ -1205,6 +1206,7 @@ PrimaryExpression
 				/* This is also a type */
 				MakeBinary(ArrayType, $1, $3);
 			}
+	| ARGLIST						{ MakeSimple(VarArgList); }
 	| THIS							{ MakeSimple(This); }
 	| BASE '.' Identifier			{ MakeUnary(BaseAccess, $3); }
 	| BASE '[' ExpressionList ']'	{ MakeUnary(BaseElement, $3); }
@@ -1298,7 +1300,15 @@ LiteralExpression
 
 InvocationExpression
 	: PrimaryExpression '(' OptArgumentList ')'		{ 
-				MakeBinary(InvocationExpression, $1, $3); 
+				/* Check for "__arglist", which is handled specially */
+				if(!yyisa($1, ILNode_VarArgList))
+				{
+					MakeBinary(InvocationExpression, $1, $3); 
+				}
+				else
+				{
+					MakeUnary(VarArgExpand, $3); 
+				}
 			}
 	;
 
@@ -2549,6 +2559,9 @@ FormalParameterList
 FormalParameter
 	: OptAttributes ParameterModifier Type Identifier		{
 				$$ = ILNode_FormalParameter_create($1, $2, $3, $4);
+			}
+	| ARGLIST	{
+				$$ = ILNode_FormalParameter_create(0, ILParamMod_arglist, 0, 0);
 			}
 	;
 

@@ -246,9 +246,15 @@ void ILGenItemAddAttribute(ILGenInfo *info, ILProgramItem *item,
 						   const char *name);
 
 /*
+ * Get the number of "usable" parameters for a method signature.
+ */
+int ILGenNumUsableParams(ILType *signature);
+
+/*
  * Get the parameter information associated with a specific
  * method parameter.  "signature" can be NULL, or a cached
- * copy of the method's signature.
+ * copy of the method's signature.  "method" can be NULL if
+ * the signature does not correspond to a known method.
  */
 ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 									  ILUInt32 num, ILType **type);

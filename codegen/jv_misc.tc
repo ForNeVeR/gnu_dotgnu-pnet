@@ -404,6 +404,24 @@ JavaGenValue(ILNode_ArgList)
 }
 
 /*
+ * Generate value code for a vararg list expression.
+ */
+JavaGenValue(ILNode_VarArgList)
+{
+	/* Not used with Java - this should never be called */
+	return ILMachineType_ManagedValue;
+}
+
+/*
+ * Generate value code for a vararg expansion expression.
+ */
+JavaGenValue(ILNode_VarArgExpand)
+{
+	/* Not used with Java - this should never be called */
+	return ILMachineType_Void;
+}
+
+/*
  * Generate value code for an argument expression.
  */
 JavaGenValue(ILNode_Argument)

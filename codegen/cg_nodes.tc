@@ -95,6 +95,7 @@ typedef struct _tagILEvalValue ILEvalValue;
 	ILParamMod_ref,
 	ILParamMod_out,
 	ILParamMod_params,
+	ILParamMod_arglist,
 }
 
 /*
@@ -374,6 +375,8 @@ struct _tagILSwitchValue
 %node ILNode_ToConst ILNode_UnaryExpression
 %node ILNode_This ILNode_Expression
 %node ILNode_ArgList ILNode_BinaryExpression
+%node ILNode_VarArgList ILNode_Expression
+%node ILNode_VarArgExpand ILNode_UnaryExpression
 %node ILNode_Argument ILNode_Expression =
 {
 	ILParameterModifier	modifier;

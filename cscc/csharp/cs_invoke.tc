@@ -100,6 +100,44 @@ ILNode_SemAnalysis(ILNode_ArgList)
 	return value2;
 }
 
+/*
+ * Perform semantic analysis for a vararg list expression.
+ */
+ILNode_SemAnalysis(ILNode_VarArgList)
+{
+	CSSemValue value;
+	ILNode_MethodDeclaration *decl;
+	ILMethod *method;
+
+	/* We can only use this inside "vararg" methods */
+	decl = ((ILNode_MethodDeclaration *)(info->currentMethod));
+	method = (decl ? decl->methodInfo : 0);
+	if(!method ||
+	   (ILMethodGetCallConv(method) & IL_META_CALLCONV_MASK)
+	   		!= IL_META_CALLCONV_VARARG)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`__arglist' must be used inside a vararg method");
+	}
+
+	/* Construct the result type and return it */
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILFindSystemType(info, "RuntimeArgumentHandle");
+	return value;
+}
+
+/*
+ * Perform semantic analysis for a vararg list expansion.
+ */
+ILNode_SemAnalysis(ILNode_VarArgExpand)
+{
+	/* This will only be called if the term "__arglist(values)"
+	   appeared in a context where it wasn't valid */
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		  "`__arglist' cannot be used with arguments in this context");
+	return CSSemValueDefault;
+}
+
 ILNode_SemAnalysis(ILNode_Argument)
 {
 	CSSemValue value;
@@ -165,9 +203,17 @@ void CSItemCandidateError(ILNode *node, char *itemName, int isCtor,
 			{
 				str = ILInternAppendedString(str, ILInternString("ref ", 4));
 			}
-			str = ILInternAppendedString
+			if(args[argNum].modifier != ILParamMod_arglist)
+			{
+				str = ILInternAppendedString
 					(str, ILInternString
 							((char *)CSTypeToName(args[argNum].type), -1));
+			}
+			else
+			{
+				str = ILInternAppendedString
+					(str, ILInternString("__arglist", 9));
+			}
 		}
 		str = ILInternAppendedString(str, ILInternString(")", 1));
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -681,21 +727,53 @@ int CSEvalArguments(ILGenInfo *info, ILNode *argList,
 		}
 
 		/* Populate the argument array element */
-		value = ILNode_SemAnalysis(tempList, info, tempParent);
-		argArray[argNum].node = *tempParent;
-		argArray[argNum].parent = tempParent;
-		argArray[argNum].modifier = GetParamModForArg(tempList);
-		if(CSIsSemValue(value.kind))
+		if(!yyisa(tempList, ILNode_Argument) ||
+		   !yyisa(((ILNode_Argument *)tempList)->expression,
+		   		  ILNode_VarArgExpand))
 		{
-			argArray[argNum].type = value.type;
+			/* Ordinary argument */
+			value = ILNode_SemAnalysis(tempList, info, tempParent);
+			argArray[argNum].node = *tempParent;
+			argArray[argNum].parent = tempParent;
+			argArray[argNum].modifier = GetParamModForArg(tempList);
+			if(CSIsSemValue(value.kind))
+			{
+				argArray[argNum].type = value.type;
+			}
+			else
+			{
+				argArray[argNum].type = ILType_Void;
+				CCErrorOnLine(yygetfilename(tempList),
+							  yygetlinenum(tempList),
+							  "invalid value for argument %u", argNum + 1);
+				haveErrors = 1;
+			}
 		}
 		else
 		{
-			argArray[argNum].type = ILType_Void;
-			CCErrorOnLine(yygetfilename(tempList),
-						  yygetlinenum(tempList),
-						  "invalid value for argument %u", argNum + 1);
-			haveErrors = 1;
+			/* Argument that has the form "__arglist(x, y, z, ...)" */
+			argArray[argNum].node = *tempParent;
+			argArray[argNum].parent = tempParent;
+			argArray[argNum].modifier = ILParamMod_arglist;
+
+			/* "__arglist" parameters must have the "empty" modifier */
+			if(((ILNode_Argument *)tempList)->modifier != ILParamMod_empty)
+			{
+				CCErrorOnLine(yygetfilename(tempList), yygetlinenum(tempList),
+					  "cannot use `ref' or `out' with `__arglist' arguments");
+				haveErrors = 1;
+			}
+
+			/* "__arglist" must be the last argument */
+			if((argNum + 1) != argCount)
+			{
+				CCErrorOnLine(yygetfilename(tempList), yygetlinenum(tempList),
+					  		  "`__arglist' must be the last argument");
+				haveErrors = 1;
+			}
+
+			/* Perform semantic analysis on the "__arglist" values */
+			/* TODO */
 		}
 	}
 
@@ -737,7 +815,7 @@ static ILMethod *GetDelegateInvoke(ILClass *info)
 static ILType *GetItemParamType(ILProgramItem *item, ILType *signature,
 								int paramNum, ILParameterModifier *paramMod)
 {
-	int numParams = ILTypeNumParams(signature);
+	int numParams = ILGenNumUsableParams(signature);
 	int firstParam;
 	ILType *paramType;
 	ILMethod *method;
@@ -770,22 +848,17 @@ static ILType *GetItemParamType(ILProgramItem *item, ILType *signature,
 	}
 	else if((classInfo = ILProgramItemToClass(item)) != 0)
 	{
+		/* Get the delegate method.  If there is none, then use
+		   the information in the signature */
 		method = GetDelegateInvoke(classInfo);
-		if(method)
-		{
-			*paramMod = ILGenGetParamInfo
-					(method, signature, paramNum + firstParam, &paramType);
-		}
-		else
-		{
-			paramType = ILTypeGetParam(signature, paramNum + firstParam);
-			*paramMod = ILParamMod_empty;
-		}
+		*paramMod = ILGenGetParamInfo
+				(method, signature, paramNum + firstParam, &paramType);
 	}
 	else
 	{
-		paramType = ILTypeGetParam(signature, paramNum + firstParam);
-		*paramMod = ILParamMod_empty;
+		/* Probably an indexer property: use the signature */
+		*paramMod = ILGenGetParamInfo
+				(0, signature, paramNum + firstParam, &paramType);
 	}
 	return paramType;
 }
@@ -1341,17 +1414,18 @@ const char *CSItemToName(ILProgramItem *item)
 	{
 		str = ILInternAppendedString(str, ILInternString("(", 1));
 	}
-	numParams = ILTypeNumParams(signature);
+	numParams = ILGenNumUsableParams(signature);
 	for(param = 1; param <= numParams; ++param)
 	{
 		if(method && kind != IL_META_MEMBERKIND_PROPERTY)
 		{
+			/* Use method information to resolve the parameter */
 			paramMod = ILGenGetParamInfo(method, signature, param, &type);
 		}
 		else
 		{
-			type = ILTypeGetParam(signature, param);
-			paramMod = ILParamMod_empty;
+			/* Don't use method information to resolve the parameter */
+			paramMod = ILGenGetParamInfo(0, signature, param, &type);
 		}
 		if(param != 1)
 		{
@@ -1369,11 +1443,18 @@ const char *CSItemToName(ILProgramItem *item)
 		{
 			str = ILInternAppendedString(str, ILInternString("params ", 7));
 		}
-		str = ILInternAppendedString
-				(str, ILInternString((char *)CSTypeToName(type), -1));
-		if(paramMod == ILParamMod_params)
+		if(paramMod != ILParamMod_arglist)
 		{
-			str = ILInternAppendedString(str, ILInternString("[]", 2));
+			str = ILInternAppendedString
+					(str, ILInternString((char *)CSTypeToName(type), -1));
+			if(paramMod == ILParamMod_params)
+			{
+				str = ILInternAppendedString(str, ILInternString("[]", 2));
+			}
+		}
+		else
+		{
+			str = ILInternAppendedString(str, ILInternString("__arglist", 9));
 		}
 	}
 	if(kind == IL_META_MEMBERKIND_PROPERTY)

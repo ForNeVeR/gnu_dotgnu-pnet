@@ -540,6 +540,28 @@ void ILGenItemAddAttribute(ILGenInfo *info, ILProgramItem *item,
 	ILProgramItemAddAttribute(item, attr);
 }
 
+int ILGenNumUsableParams(ILType *signature)
+{
+	ILUInt32 num;
+
+	/* Get the basic number of parameters */
+	num = (ILUInt32)(ILTypeNumParams(signature));
+
+	/* If the signature is "vararg", and we don't have an explicit
+	   sentinel, then add one extra for the "arglist" parameter */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		if((ILType_Kind(signature) & IL_TYPE_COMPLEX_METHOD_SENTINEL) == 0)
+		{
+			++num;
+		}
+	}
+
+	/* Return the number of parameters to the caller */
+	return num;
+}
+
 ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 									  ILUInt32 num, ILType **type)
 {
@@ -555,60 +577,83 @@ ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 	/* Get the parameter's type */
 	*type = ILTypeGetParam(signature, num);
 
-	/* Find the parameter information block */
-	param = 0;
-	while((param = ILMethodNextParam(method, param)) != 0)
+	/* Check for the vararg "arglist" parameter */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
 	{
-		if(ILParameter_Num(param) == num)
+		if(*type == ILType_Sentinel || num > ILTypeNumParams(signature))
 		{
-			/* Check for a "params" parameter by looking for the
-			   "System.ParamArrayAttribute" attribute on the
-			   last parameter supplied to the method */
-			if(num == ILTypeNumParams(signature))
+			*type = ILType_Invalid;
+			return ILParamMod_arglist;
+		}
+	}
+
+	/* Find the parameter information block for the method */
+	if(method)
+	{
+		param = 0;
+		while((param = ILMethodNextParam(method, param)) != 0)
+		{
+			if(ILParameter_Num(param) == num)
 			{
-				if(ILGenItemHasAttribute((ILProgramItem *)param,
-										 "ParamArrayAttribute"))
+				/* Check for a "params" parameter by looking for the
+				   "System.ParamArrayAttribute" attribute on the
+				   last parameter supplied to the method */
+				if(num == ILTypeNumParams(signature))
 				{
-					/* Make sure that this parameter has a
-					   single-dimensional array type */
-					if(*type != 0 &&
-					   ILType_IsComplex(*type) &&
-					   ILType_Kind(*type) == IL_TYPE_COMPLEX_ARRAY)
+					if(ILGenItemHasAttribute((ILProgramItem *)param,
+											 "ParamArrayAttribute"))
 					{
-						*type = ILType_ElemType(*type);
-						return ILParamMod_params;
+						/* Make sure that this parameter has a
+						   single-dimensional array type */
+						if(*type != 0 &&
+						   ILType_IsComplex(*type) &&
+						   ILType_Kind(*type) == IL_TYPE_COMPLEX_ARRAY)
+						{
+							*type = ILType_ElemType(*type);
+							return ILParamMod_params;
+						}
 					}
 				}
+	
+				/* Determine if the parameter is "byref" */
+				if(*type != 0 &&
+				   ILType_IsComplex(*type) &&
+				   ILType_Kind(*type) == IL_TYPE_COMPLEX_BYREF)
+				{
+					*type = ILType_Ref(*type);
+					isByRef = 1;
+				}
+				else
+				{
+					isByRef = 0;
+				}
+	
+				/* Check for "out" parameters */
+				if(ILParameter_IsOut(param) && isByRef)
+				{
+					return ILParamMod_out;
+				}
+	
+				/* Check for "ref" parameters */
+				if(isByRef)
+				{
+					return ILParamMod_ref;
+				}
+	
+				/* This is a normal parameter */
+				return ILParamMod_empty;
 			}
-
-			/* Determine if the parameter is "byref" */
-			if(*type != 0 &&
-			   ILType_IsComplex(*type) &&
-			   ILType_Kind(*type) == IL_TYPE_COMPLEX_BYREF)
-			{
-				*type = ILType_Ref(*type);
-				isByRef = 1;
-			}
-			else
-			{
-				isByRef = 0;
-			}
-
-			/* Check for "out" parameters */
-			if(ILParameter_IsOut(param) && isByRef)
-			{
-				return ILParamMod_out;
-			}
-
-			/* Check for "ref" parameters */
-			if(isByRef)
-			{
-				return ILParamMod_ref;
-			}
-
-			/* This is a normal parameter */
-			return ILParamMod_empty;
 		}
+	}
+
+	/* Check for by-ref parameters.  This can happen if there is
+	   no ILParameter record for the parameter, but it is BYREF. */
+	if(*type != 0 && ILType_IsComplex(*type) &&
+	   ILType_Kind(*type) == IL_TYPE_COMPLEX_BYREF)
+	{
+		*type = ILType_Ref(*type);
+		return ILParamMod_ref;
 	}
 
 	/* If we get here, the parameter is normal */

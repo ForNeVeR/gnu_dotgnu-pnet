@@ -22,6 +22,8 @@
 namespace System.Windows.Forms
 {
 
+#if !CONFIG_COMPACT_FORMS
+
 public enum BootMode
 {
 	Normal				= 0,
@@ -29,5 +31,7 @@ public enum BootMode
 	FailSafeWithNetwork	= 2
 
 }; // enum BootMode
+
+#endif // !CONFIG_COMPACT_FORMS
 
 }; // namespace System.Windows.Forms

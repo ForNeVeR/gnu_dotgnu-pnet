@@ -37,6 +37,12 @@
 	System.Windows.Forms/Screen.cs: implement some housekeeping
 	classes within the Forms API.
 
+	* System.Windows.Forms/ArrangeDirection.cs,
+	System.Windows.Forms/ArrangeStartingPosition.cs,
+	System.Windows.Forms/BootMode.cs,
+	System.Windows.Forms/SystemInformation.cs: implement the
+	"SystemInformation" class.
+
 2003-06-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/Graphics.cs,

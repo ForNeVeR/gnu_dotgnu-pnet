@@ -22,6 +22,8 @@
 namespace System.Windows.Forms
 {
 
+#if !CONFIG_COMPACT_FORMS
+
 using System.Runtime.InteropServices;
 
 #if !ECMA_COMPAT
@@ -35,5 +37,7 @@ public enum ArrangeDirection
 	Up		= 4
 
 }; // enum ArrangeDirection
+
+#endif // !CONFIG_COMPACT_FORMS
 
 }; // namespace System.Windows.Forms

@@ -22,6 +22,8 @@
 namespace System.Windows.Forms
 {
 
+#if !CONFIG_COMPACT_FORMS
+
 public enum ArrangeStartingPosition
 {
 	BottomLeft	= 0,
@@ -31,5 +33,7 @@ public enum ArrangeStartingPosition
 	Hide		= 8
 
 }; // enum ArrangeStartingPosition
+
+#endif // !CONFIG_COMPACT_FORMS
 
 }; // namespace System.Windows.Forms

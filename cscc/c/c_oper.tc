@@ -58,6 +58,147 @@ ILNode_CSemAnalysis(ILNode_LogicalOr)
 #define	IsIntegerMachineType(type)	\
 			((type) >= ILMachineType_Int8 && \
 			 (type) <= ILMachineType_NativeUInt)
+#define	IsSmallIntegerMachineType(type)	\
+			((type) >= ILMachineType_Int8 && \
+			 (type) <= ILMachineType_Int32)
+
+/*
+ * Determine if a machine type is a signed integer type.
+ */
+static int IsSignedMachineType(ILMachineType type)
+{
+	return (type == ILMachineType_Int8 ||
+			type == ILMachineType_Int16 ||
+			type == ILMachineType_Int32 ||
+			type == ILMachineType_Int64);
+}
+
+/*
+ * Multiply a node by a pointer element type size.
+ */
+static ILNode *MulPtrSize(ILNode *node, CSemValue value, ILType *elemType)
+{
+	ILUInt32 elemSize = CTypeSizeAndAlign(elemType, 0);
+	ILEvalValue *evalValue = CSemGetConstant(value);
+	ILNode *newNode;
+	ILInt64 totalSize;
+	if(elemSize != CTYPE_DYNAMIC)
+	{
+		/* The size is constant, so try to compute at compile time */
+		if(elemSize == 0)
+		{
+			newNode = ILNode_Int_create(0, 0, 0);
+			CGenCloneLine(newNode, node);
+			return newNode;
+		}
+		else if(elemSize == 1)
+		{
+			return node;
+		}
+		if(evalValue && IsSmallIntegerMachineType(evalValue->valueType))
+		{
+			totalSize = ((ILInt64)elemSize) *
+						((ILInt64)(evalValue->un.i4Value));
+			if(totalSize >= (ILInt64)IL_MIN_INT32 &&
+			   totalSize <= (ILInt64)IL_MAX_INT32)
+			{
+				if(totalSize >= 0)
+				{
+					newNode = ILNode_Int_create((ILUInt64)totalSize, 0, 1);
+				}
+				else
+				{
+					newNode = ILNode_Int_create
+						((ILUInt64)(-totalSize), 1, 1);
+				}
+				CGenCloneLine(newNode, node);
+				return newNode;
+			}
+		}
+		if(elemSize == 2)
+		{
+			newNode = ILNode_Shl_create
+				(node, ILNode_Int32_create(1, 0, 1));
+		}
+		else if(elemSize == 4)
+		{
+			newNode = ILNode_Shl_create
+				(node, ILNode_Int32_create(2, 0, 1));
+		}
+		else if(elemSize == 8)
+		{
+			newNode = ILNode_Shl_create
+				(node, ILNode_Int32_create(3, 0, 1));
+		}
+		else
+		{
+			newNode = ILNode_Mul_create
+				(node, ILNode_UInt32_create((ILUInt32)elemSize, 0, 1));
+		}
+	}
+	else
+	{
+		/* The size is dynamic: check for the simple 0 and 1 cases */
+		if(evalValue && IsSmallIntegerMachineType(evalValue->valueType))
+		{
+			if(evalValue->un.i4Value == 0)
+			{
+				newNode = ILNode_Int_create(0, 0, 0);
+				CGenCloneLine(newNode, node);
+				return newNode;
+			}
+			else if(evalValue->un.i4Value == 1)
+			{
+				return node;
+			}
+		}
+		newNode = ILNode_Mul_create(node, ILNode_SizeOfType_create(elemType));
+	}
+	CGenCloneLine(newNode, node);
+	return newNode;
+}
+
+/*
+ * Divide a pointer difference by an element size.
+ */
+static ILNode *DivPtrSize(ILNode *node, ILType *elemType)
+{
+	ILUInt32 elemSize = CTypeSizeAndAlign(elemType, 0);
+	ILNode *newNode;
+	if(elemSize != CTYPE_DYNAMIC)
+	{
+		if(elemSize == 1)
+		{
+			return node;
+		}
+		else if(elemSize == 2)
+		{
+			newNode = ILNode_Shr_create
+				(node, ILNode_Int32_create(1, 0, 1));
+		}
+		else if(elemSize == 4)
+		{
+			newNode = ILNode_Shr_create
+				(node, ILNode_Int32_create(2, 0, 1));
+		}
+		else if(elemSize == 8)
+		{
+			newNode = ILNode_Shr_create
+				(node, ILNode_Int32_create(3, 0, 1));
+		}
+		else
+		{
+			newNode = ILNode_Div_create
+				(node, ILNode_Int_create((ILInt32)elemSize, 0, 1));
+		}
+	}
+	else
+	{
+		newNode = ILNode_Div_create(node, ILNode_SizeOfType_create(elemType));
+	}
+	CGenCloneLine(newNode, node);
+	return newNode;
+}
 
 /*
  * Determine a common type for binary operators.
@@ -81,6 +222,12 @@ static ILMachineType CommonBinaryType(ILGenInfo *info,
 		case ILMachineType_Char:
 		{
 			common = ILMachineType_Int32;
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			common = ILMachineType_Float64;
 		}
 		break;
 
@@ -115,6 +262,9 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	ILMachineType common1;
 	ILMachineType common2;
 	ILNode *temp;
+	ILType *elemType;
+	ILType *elemType2;
+	ILType *finalType = ILType_Invalid;
 
 	/* Perform semantic analysis on the two arguments, and
 	   check that they are both r-values */
@@ -172,15 +322,33 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 			   IsIntegerMachineType(type2))
 			{
 				/* Add pointer and integer */
-				/* TODO */
-				goto invalid;
+				elemType = CTypeGetPtrRef(CSemGetType(value1));
+				node->expr2 = MulPtrSize(node->expr2, value2, elemType);
+				if(IsSignedMachineType(type2))
+				{
+					common1 = common2 = ILMachineType_NativeInt;
+				}
+				else
+				{
+					common1 = common2 = ILMachineType_NativeUInt;
+				}
+				finalType = CSemGetType(value1);
 			}
 			else if(type2 == ILMachineType_UnmanagedPtr &&
 			        IsIntegerMachineType(type1))
 			{
 				/* Add integer and pointer */
-				/* TODO */
-				goto invalid;
+				elemType = CTypeGetPtrRef(CSemGetType(value2));
+				node->expr1 = MulPtrSize(node->expr1, value1, elemType);
+				if(IsSignedMachineType(type1))
+				{
+					common1 = common2 = ILMachineType_NativeInt;
+				}
+				else
+				{
+					common1 = common2 = ILMachineType_NativeUInt;
+				}
+				finalType = CSemGetType(value2);
 			}
 			else
 			{
@@ -193,8 +361,54 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 			   IsIntegerMachineType(type2))
 			{
 				/* Subtract pointer and integer */
-				/* TODO */
-				goto invalid;
+				elemType = CTypeGetPtrRef(CSemGetType(value1));
+				node->expr2 = MulPtrSize(node->expr2, value2, elemType);
+				if(IsSignedMachineType(type2))
+				{
+					common1 = common2 = ILMachineType_NativeInt;
+				}
+				else
+				{
+					common1 = common2 = ILMachineType_NativeUInt;
+				}
+				finalType = CSemGetType(value1);
+			}
+			else if(type1 == ILMachineType_UnmanagedPtr &&
+			        type2 == ILMachineType_UnmanagedPtr)
+			{
+				/* Subtract pointer and pointer */
+				elemType = ILTypeStripPrefixes
+					(CTypeGetPtrRef(CSemGetType(value1)));
+				elemType2 = ILTypeStripPrefixes
+					(CTypeGetPtrRef(CSemGetType(value2)));
+				if(!CTypeIsIdentical(elemType, elemType2))
+				{
+					goto invalid;
+				}
+				temp = ILNode_CastSimple_create
+					(node->expr1, ILMachineType_NativeInt);
+				CGenCloneLine(temp, node->expr1);
+				node->expr1 = temp;
+				temp = ILNode_CastSimple_create
+					(node->expr2, ILMachineType_NativeInt);
+				CGenCloneLine(temp, node->expr2);
+				node->expr2 = temp;
+				*parent = DivPtrSize((ILNode *)node, elemType);
+				if(gen_32bit_only)
+				{
+					*parent = ILNode_CastSimple_create
+						(*parent, ILMachineType_Int32);
+					CGenCloneLine(*parent, (ILNode *)node);
+					CSemSetRValue(value1, ILType_Int32);
+				}
+				else
+				{
+					*parent = ILNode_CastSimple_create
+						(*parent, ILMachineType_Int64);
+					CGenCloneLine(*parent, (ILNode *)node);
+					CSemSetRValue(value1, ILType_Int64);
+				}
+				return value1;
 			}
 			else
 			{
@@ -220,7 +434,18 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		CGenCloneLine(temp, node->expr2);
 		node->expr2 = temp;
 	}
-	CSemSetRValue(value1, ILValueTypeToType(info, common1));
+	if(finalType == ILType_Invalid)
+	{
+		/* Simple numeric calculation */
+		CSemSetRValue(value1, ILValueTypeToType(info, common1));
+	}
+	else
+	{
+		/* Pointer calculation */
+		*parent = ILNode_CastSimple_create
+			((ILNode *)node, ILMachineType_UnmanagedPtr);
+		CSemSetRValue(value1, finalType);
+	}
 	return value1;
 
 	/* Report an invalid operands error and bail out */

@@ -1,3 +1,12 @@
+2005-04-04  Marc Haisenko   <marc@darkdust.net>
+
+	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs: removed (unused)
+	selectedPen variable and use Pen property in DrawLine and correctly
+	cast it (fixes NullReference exception)
+
+	* System.Drawing.Xsharp/DrawingPen.cs: also handle DrawingGraphicsImage
+	(only DrawingGraphics was handled)
+	
 2005-04-03  Erich Kitzmuller  <ammoq@ammoq.com>
 
 	* Sytem.Windows.Forms/CobmoBox.cs: Handle LostFocus event. (patch

@@ -96,9 +96,12 @@ internal sealed class DrawingPen : ToolkitPenBase
 	// Select this pen into a graphics object.
 	public override void Select(IToolkitGraphics _graphics)
 			{
-				DrawingGraphics graphics = (_graphics as DrawingGraphics);
-				if(graphics != null)
+				if (_graphics == null)
+					return;
+				
+				if (_graphics is DrawingGraphics)
 				{
+					DrawingGraphics graphics = _graphics as DrawingGraphics;
 					Xsharp.Graphics g = graphics.graphics;
 					int width = (int)(properties.Width);
 					LineStyle style = MapLineStyle(properties.DashStyle);
@@ -144,6 +147,11 @@ internal sealed class DrawingPen : ToolkitPenBase
 					g.Foreground = DrawingToolkit.DrawingToXColor
 						(properties.Color);
 					g.SetFillSolid();
+					graphics.Pen = this;
+				}
+				else if (_graphics is DrawingGraphicsImage)
+				{
+					DrawingGraphicsImage graphics = _graphics as DrawingGraphicsImage;
 					graphics.Pen = this;
 				}
 			}

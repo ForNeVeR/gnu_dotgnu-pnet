@@ -31,7 +31,6 @@ namespace System.Drawing.Toolkit
 	public abstract class ToolkitGraphicsImageBase : ToolkitGraphicsBase
 	{
 		protected ToolkitImageBase image;
-		protected IToolkitPen selectedPen;
 		protected IToolkitBrush selectedBrush;
 		protected IToolkitFont selectedFont;
 
@@ -56,7 +55,14 @@ namespace System.Drawing.Toolkit
 		// Fast version of Bresenham's algorithm.
 		public override void DrawLine(int x1, int y1, int x2, int y2)
 				{
-					int color = (selectedPen as ToolkitPenBase).Color.ToArgb();
+					IToolkitPen pen = Pen;
+					ToolkitPenBase penBase;
+
+					if (pen == null)
+						return;
+					penBase = pen as ToolkitPenBase;
+
+					int color = penBase.Color.ToArgb();
 					Frame frame = image.image.GetFrame(0);
 					// TODO: Finish off
 					int dy = y2 - y1;

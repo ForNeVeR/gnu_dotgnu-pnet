@@ -284,11 +284,219 @@ JavaGenDiscard(ILNode_For)
 }
 
 /*
- * Generate discard code for "foreach" statements.
+ * Generate discard code for "foreach" statements that use 1-D arrays.
  */
 JavaGenDiscard(ILNode_Foreach)
 {
-	/* TODO */
+	unsigned arrayVar;
+	unsigned indexVar;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILLabel label3 = ILLabel_Undefined;
+	ILLabel label4 = ILLabel_Undefined;
+	ILMachineType elemType;
+
+	/* We need a temporary variable for the evaluated array */
+	arrayVar = ILGenTempTypedVar(info, node->arrayType);
+
+	/* We need a temporary variable for the array index */
+	indexVar = ILGenTempTypedVar(info, ILType_Int32);
+
+	/* Evaluate the array expression */
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+			    ILMachineType_ObjectRef);
+	JavaGenStoreLocal(info, arrayVar, ILMachineType_ObjectRef);
+	JavaGenAdjust(info, -1);
+
+	/* Initialize the index expression */
+	JavaGenSimple(info, JAVA_OP_ICONST_0);
+	JavaGenStoreLocal(info, indexVar, ILMachineType_Int32);
+	JavaGenExtend(info, 1);
+
+	/* Jump to the end of the loop to perform the test */
+	JavaGenJump(info, JAVA_OP_GOTO, &label3);
+
+	/* Push the loop label information */
+	PushLoop(info, &label2, &label4);
+
+	/* Fetch the next array element and put it into the variable */
+	JavaGenLabel(info, &label1);
+	JavaGenLoadLocal(info, arrayVar, ILMachineType_ObjectRef);
+	JavaGenLoadLocal(info, indexVar, ILMachineType_Int32);
+	JavaGenAdjust(info, 2);
+	elemType = ILTypeToMachineType(node->elemType);
+	JavaGenLoadArray(info, elemType);
+	JavaGenAdjust(info, (-2 + JavaGenTypeSize(elemType)));
+	JavaGenCast(info, elemType, node->varType);
+	JavaGenStoreLocal(info, node->varIndex, elemType);
+	JavaGenAdjust(info, -(JavaGenTypeSize(elemType)));
+
+	/* Output the loop body */
+	JavaGenDiscard(node->stmt, info);
+
+	/* Increment the array index */
+	JavaGenLabel(info, &label2);
+	JavaGenIncLocal(info, indexVar, 1);
+
+	/* Test the array index condition */
+	JavaGenLabel(info, &label3);
+	JavaGenLoadLocal(info, indexVar, ILMachineType_Int32);
+	JavaGenAdjust(info, 1);
+	JavaGenLoadLocal(info, arrayVar, ILMachineType_ObjectRef);
+	JavaGenAdjust(info, 1);
+	JavaGenSimple(info, JAVA_OP_ARRAYLENGTH);
+	JavaGenJump(info, JAVA_OP_IF_ICMPLT, &label1);
+	JavaGenAdjust(info, -2);
+
+	/* Mark the end of the loop */
+	JavaGenLabel(info, &label4);
+
+	/* Pop the loop label information */
+	PopLoop(info);
+
+	/* Release the temporary variables */
+	ILGenReleaseTempVar(info, arrayVar);
+	ILGenReleaseTempVar(info, indexVar);
+}
+
+/*
+ * Generate discard code for "foreach" statements that use collections.
+ */
+JavaGenDiscard(ILNode_ForeachCollection)
+{
+	unsigned enumVar;
+	unsigned catchVar;
+	unsigned addrVar;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILLabel label3 = ILLabel_Undefined;
+	ILLabel label4 = ILLabel_Undefined;
+	ILLabel label5 = ILLabel_Undefined;
+	ILLabel finallyLabel = ILLabel_Undefined;
+	long saveStack;
+	ILMachineType enumType;
+	ILType *returnType;
+
+	/* We need a temporary variable for the collection enumerator */
+	enumVar = ILGenTempTypedVar(info, node->enumeratorType);
+	enumType = ILTypeToMachineType(node->enumeratorType);
+
+	/* We need a temporary variable to hold the default catch value */
+	catchVar = ILGenTempVar(info, ILMachineType_ObjectRef);
+
+	/* We need a temporary variable to hold the "finally" return address */
+	addrVar = ILGenTempVar(info, ILMachineType_ObjectRef);
+
+	/* Evaluate the collection expression and get the enumerator */
+	saveStack = info->stackHeight;
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+			    ILMachineType_ObjectRef);
+	JavaGenCallMethod(info, node->getEnumerator, saveStack);
+	ILGenAdjust(info, (JavaGenTypeSize(enumType) - 1));
+	JavaGenStoreLocal(info, enumVar, enumType);
+	ILGenAdjust(info, -(JavaGenTypeSize(enumType)));
+
+	/* Encapsulate the loop in a "try" block so that the "Dispose"
+	   method can be called on disposeable enumerators */
+	if(info->asmOutput)
+	{
+		fputs("\t.try {\n", info->asmOutput);
+	}
+	PushFinally(info, &finallyLabel);
+
+	/* Jump to the end of the loop to perform the test */
+	JavaGenJump(info, JAVA_OP_GOTO, &label2);
+
+	/* Push the loop label information */
+	PushLoop(info, &label2, &label3);
+
+	/* Fetch the next collection element and put it into the variable */
+	saveStack = info->stackHeight;
+	JavaGenLoadLocal(info, enumVar, enumType);
+	JavaGenAdjust(info, JavaGenTypeSize(enumType));
+	JavaGenCallMethod(info, node->getCurrent, saveStack);
+	JavaGenAdjust(info, -(JavaGenTypeSize(enumType)));
+	returnType = ILMethod_Signature(node->getCurrent)->un.method.retType;
+	JavaGenAdjust(info, JavaGenTypeSize(ILTypeToMachineType(returnType)));
+	if(node->doCast)
+	{
+		JavaGenCast(info, JavaGenValue(node->doCast, info), node->varType);
+	}
+	JavaGenStoreLocal(info, node->varIndex, node->varType);
+	JavaGenAdjust(info, -(JavaGenTypeSize(node->varType)));
+
+	/* Output the loop body */
+	JavaGenDiscard(node->stmt, info);
+
+	/* Move on to the next enumerator element */
+	JavaGenLabel(info, &label2);
+	saveStack = info->stackHeight;
+	JavaGenLoadLocal(info, enumVar, enumType);
+	JavaGenAdjust(info, JavaGenTypeSize(enumType));
+	JavaGenCallMethod(info, node->moveNext, saveStack);
+	JavaGenAdjust(info, -(JavaGenTypeSize(enumType)));
+	JavaGenAdjust(info, 1);
+	JavaGenJump(info, JAVA_OP_IFNE, &label1);
+	JavaGenAdjust(info, -1);
+
+	/* Mark the end of the loop */
+	JavaGenLabel(info, &label3);
+
+	/* Call the "finally" clause and then jump past it */
+	JavaGenJump(info, JAVA_OP_JSR, &finallyLabel);
+	JavaGenJump(info, JAVA_OP_GOTO, &label4);
+
+	/* Pop the loop label information */
+	PopLoop(info);
+
+	/* Output the default "catch" clause to catch all exceptions */
+	if(info->asmOutput)
+	{
+		fputs("\t}\n\tcatch {\n", info->asmOutput);
+	}
+	JavaGenAdjust(info, 1);
+	JavaGenStoreLocal(info, catchVar, ILMachineType_ObjectRef);
+	JavaGenAdjust(info, -1);
+	JavaGenJump(info, JAVA_OP_JSR, &finallyLabel);
+	JavaGenLoadLocal(info, catchVar, ILMachineType_ObjectRef);
+	JavaGenAdjust(info, 1);
+	JavaGenSimple(info, JAVA_OP_ATHROW);
+	JavaGenAdjust(info, -1);
+
+	/* Output the "finally" clause for disposing the enumerator */
+	if(info->asmOutput)
+	{
+		fputs("\t}\n\tfinally {\n", info->asmOutput);
+	}
+	JavaGenAdjust(info, 1);
+	JavaGenStoreLocal(info, addrVar, ILMachineType_ObjectRef);
+	JavaGenAdjust(info, -1);
+	JavaGenLoadLocal(info, enumVar, enumType);
+	JavaGenAdjust(info, JavaGenTypeSize(enumType));
+	JavaGenClassName(info, JAVA_OP_INSTANCEOF, "System/IDisposable");
+	JavaGenAdjust(info, -(JavaGenTypeSize(enumType) - 1));
+	JavaGenJump(info, JAVA_OP_IFEQ, &label5);
+	JavaGenAdjust(info, -1);
+	saveStack = info->stackHeight;
+	JavaGenLoadLocal(info, enumVar, enumType);
+	JavaGenAdjust(info, JavaGenTypeSize(enumType));
+	JavaGenClassName(info, JAVA_OP_CHECKCAST, "System/IDisposable");
+	JavaGenAdjust(info, -(JavaGenTypeSize(enumType) - 1));
+	JavaGenCallInterface(info, "System/IDisposable", "Dispose", "()V",
+						 info->stackHeight - saveStack);
+	JavaGenAdjust(info, -1);
+	JavaGenLabel(info, &label5);
+	JavaGenRet(info, addrVar);
+	if(info->asmOutput)
+	{
+		fputs("\t}\n", info->asmOutput);
+	}
+	JavaGenLabel(info, &label4);
+	PopLoop(info);
+
+	/* Release the temporary variables (but not "catchVar" and "addrVar"
+	   because of variable reuse issues - see "try" codegen for details) */
+	ILGenReleaseTempVar(info, enumVar);
 }
 
 /*

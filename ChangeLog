@@ -5,6 +5,9 @@
 "%nocreate" fields to "ILNode_Foreach" that are required by the code
 generator.
 
+* codegen/cg_stmt.tc, codegen/jv_stmt.tc: implement code generation for
+the "foreach" statement.
+
 2001-10-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/csdoc.c (GenerateDocsForEnum): new function.

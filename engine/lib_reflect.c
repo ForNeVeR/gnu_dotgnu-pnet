@@ -2656,8 +2656,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 
 		/* Handle byref params differently */
 		if ((ILType_IsComplex(paramType) && ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF))
-		{
-			ILObject *object;
+		{			
 			ILType *paramRefType;
 			int isBoxableType;
 
@@ -2684,18 +2683,17 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 				/* If a null param was passed and the param type is boxable then create 
 				   a new blank value type (This is MS.NET behaviour) */
 				
-				object = ILExecThreadBoxNoValue(thread, paramRefType);
+				paramObject = ILExecThreadBoxNoValue(thread, paramRefType);
 
-				if(!object)
+				if(!paramObject)
 				{
 					ILExecThreadThrowOutOfMemory(thread);
 
 					return 0;
 				}
 
-				/* Assign the object to the object array */
-				paramObject = object;
-				((ILObject **)ArrayToBuffer(parameters))[paramNum] = object;
+				/* Assign the object to the object array */				
+				((ILObject **)ArrayToBuffer(parameters))[paramNum] = paramObject;
 			}
 			
 			if (isBoxableType)
@@ -2712,7 +2710,9 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 		else
 		{
 			if(paramObject)
-			{				
+			{
+				/* If there's an argument then make sure it's the right type */
+
 				objectType = ILClassToType(GetObjectClass(paramObject));
 				
 				/* Make sure the type passed matches the param type */
@@ -2721,64 +2721,82 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 					ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
 					return 0;
 				}
+			}
+			else if (ILType_IsPrimitive(paramType) || ILType_IsValueType(paramType))
+			{
+				/* If there's a null argument and the parameter is a value type
+				   then create a blank value type */
 
-				/* Unbox the object into the argument structure */
-				paramType = ILTypeGetEnumType(paramType);
+				objectType = paramType;
+				
+				paramObject = ILExecThreadBoxNoValue(thread, paramType);
 
-				if(ILType_IsPrimitive(paramType))
-				{				/* Unbox primitive and enumerated types into the argument */
-					if(!ILExecThreadUnboxFloat
-								(thread, objectType, paramObject, &(args[argNum])))
-					{
-						ILExecThreadThrowSystem
-							(thread, "System.ArgumentException", 0);
-						return 0;
-					}
-				}
-				else if(ILType_IsValueType(paramType))
+				if (!paramObject)
 				{
-					/* Pass non-enumerated value types as a pointer
-					into the boxed object.  The "CallMethodV"
-					function will copy the data onto the stack */
-					args[argNum].ptrValue = (void *)paramObject;
-				}
-				else if(ILType_IsClass(paramType))
-				{
-					/* Pass class types by value */
-					args[argNum].objValue = paramObject;
-				}
-				else if(paramType != 0 && ILType_IsComplex(paramType))
-				{
-					if(ILType_Kind(paramType) == IL_TYPE_COMPLEX_ARRAY ||
-					ILType_Kind(paramType) == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
-					{
-						/* Array object references are passed directly */
-						args[argNum].objValue = paramObject;
-					}
-					else
-					{
-						/* Don't know how to pass this kind of value yet */
-						ILExecThreadThrowSystem
-							(thread, "System.ArgumentException", 0);
-						return 0;
-					}
-				}
-				else
-				{
-					/* Don't know what this is, so raise an error */
-					ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
+					ILExecThreadThrowOutOfMemory(thread);
+
 					return 0;
 				}
-			}
+			}			
 			else
 			{
-				/* Null object supplied: the parameter must be an object ref */
+				/* The parameter must be an object ref */
+
 				if(!ILTypeAssignCompatible(image, 0, paramType))
 				{
 					ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
 					return 0;
 				}
+
 				args[argNum].objValue = 0;
+			}
+
+			/* Unbox the object into the argument structure */
+			paramType = ILTypeGetEnumType(paramType);
+
+			if(ILType_IsPrimitive(paramType))
+			{	/* Unbox primitive and enumerated types into the argument */
+				if(!ILExecThreadUnboxFloat
+							(thread, objectType, paramObject, &(args[argNum])))
+				{
+					ILExecThreadThrowSystem
+						(thread, "System.ArgumentException", 0);
+					return 0;
+				}
+			}
+			else if(ILType_IsValueType(paramType))
+			{
+				/* Pass non-enumerated value types as a pointer
+				into the boxed object.  The "CallMethodV"
+				function will copy the data onto the stack */
+				args[argNum].ptrValue = (void *)paramObject;
+			}
+			else if(ILType_IsClass(paramType))
+			{
+				/* Pass class types by value */
+				args[argNum].objValue = paramObject;
+			}
+			else if(paramType != 0 && ILType_IsComplex(paramType))
+			{
+				if(ILType_Kind(paramType) == IL_TYPE_COMPLEX_ARRAY ||
+				ILType_Kind(paramType) == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+				{
+					/* Array object references are passed directly */
+					args[argNum].objValue = paramObject;
+				}
+				else
+				{
+					/* Don't know how to pass this kind of value yet */
+					ILExecThreadThrowSystem
+						(thread, "System.ArgumentException", 0);
+					return 0;
+				}
+			}
+			else
+			{
+				/* Don't know what this is, so raise an error */
+				ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
+				return 0;
 			}
 		}
 		++argNum;

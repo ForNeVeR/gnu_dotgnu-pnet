@@ -22,6 +22,9 @@
 	* engine/cvm_call.c: Modified _ILPackVarArgs to recognise and 
 	properly pack byref arguments.
 	
+	* engine/lib_reflect.c: Allow null args to be passed for value-type
+	params.
+	
 2004-05-17  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* pnet.spec.in: try and kludge my way around "rpm" hanging

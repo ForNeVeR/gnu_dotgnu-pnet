@@ -1,4 +1,9 @@
 
+2002-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/constructor2.err, csharp/class/constructor2.jerr:
+	improved error messages for incorrect base/this constructor references.
+
 2002-11-18  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/class/nested3.cs, csharp/class/nested3.il, 

@@ -1,4 +1,9 @@
 
+2003-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, support/console.c: use a better detection mechanism
+	for systems that use <term.h> instead of <termcap.h>.
+
 2003-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y (GetIndexerName): fix potential

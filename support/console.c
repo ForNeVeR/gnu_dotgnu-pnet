@@ -46,6 +46,9 @@
 #ifdef HAVE_TERMCAP_H
 	#include <termcap.h>
 #elif defined(HAVE_TERM_H)
+	#ifdef HAVE_CURSES_H
+		#include <curses.h>
+	#endif
 	#include <term.h>
 #endif
 #ifdef HAVE_SYS_IOCTL_H

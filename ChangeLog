@@ -14,6 +14,8 @@
 	runtime/System/Makefile, runtime/System/Makefile.am, tools/.cvsignore,
 	tools/csccwrap.sh.in: modify the pnetlib build process to use csant.
 
+	* tools/mscsc.sh, tools/csccflags.sh: remove obsolete files.
+
 2002-03-20 Gerard Toonstra <toonstra@ntlworld.com>
 
 	* System/Net/IPAddress.cs: First class contributed! Mostly

@@ -437,6 +437,7 @@ int ILThreadSuspendRequest(ILThread *thread, int requestOnly)
 	else if(_ILThreadIsSelf(thread))
 	{
 		/* Mark the thread as suspended */
+		thread->state &= ~ IL_TS_SUSPEND_REQUESTED;
 		thread->state |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
 		thread->resumeRequested = 0;
 		

@@ -10,6 +10,9 @@
 	* dumpasm/dump_flags.c: dump the "instance" and "explicit"
 	flags before "vararg".
 
+	* cscc/csharp/cs_attrs.c (IsAttributeTargetDistinct): fix a segv
+	that occurred when attributes were added to parameters.
+
 2003-04-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, engine/int_proto.h, engine/int_table.c,

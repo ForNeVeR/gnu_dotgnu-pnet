@@ -218,7 +218,10 @@ static int IsAttributeTargetDistinct(ILGenInfo *info, ILProgramItem *item,
 	if(target==NULL)
 	{
 		ILMember *member=ILProgramItemToMember(item);
-		target=ILMember_Owner(member);
+		if(member)
+		{
+			target=ILMember_Owner(member);
+		}
 	}
 	while(target!=NULL)
 	{

@@ -805,7 +805,7 @@ static ILIntString ParseLitString(char *text)
 
 DIGIT			[0-9]
 HEX				[a-fA-F0-9]
-IDALPHA			([a-zA-Z_\200-\377]|\\u{HEX}{HEX}{HEX}{HEX}|\\U{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX})
+IDALPHA			([a-zA-Z_]|\\u{HEX}{HEX}{HEX}{HEX}|\\U{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX})
 EXPONENT		[Ee][+-]?{DIGIT}+
 FTYPE			(f|F|d|D|m|M)
 ITYPE			(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)

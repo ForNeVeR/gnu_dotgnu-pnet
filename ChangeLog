@@ -7,6 +7,9 @@
 
 	* cscc/.cvsignore: add "csdoc" to the ignore file.
 
+	* cscc/cs_scanner.l: remove high-bit characters from IDALPHA because
+	it causes lock-ups in the identifier handling.
+
 2001-01-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for "0.2.8" release.

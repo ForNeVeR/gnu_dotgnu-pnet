@@ -1217,7 +1217,9 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
 
 	/* Scan the start type and its nested parents */
-	while(startType != 0)
+	/* Note: do not lookup class members while resolving the simple names
+	 * inside an attribute argument */
+	while(startType != 0 && !genInfo->inAttrArg)
 	{
 		/* Resolve cross-image references */
 		startType = ILClassResolve(startType);

@@ -1384,6 +1384,8 @@ ILNode_SemAnalysis(ILNode_ToAttrConst)
 	CSSemValue value;
 	ILNode_TypeOf *typeofNode;
 
+	info->inAttrArg=1;
+
 	/* Special case: types can be used as attribute constants */
 	if(yyisa(node->expr, ILNode_TypeOf))
 	{
@@ -1438,6 +1440,8 @@ ILNode_SemAnalysis(ILNode_ToAttrConst)
 			CSSemSetDynConstant(value, CSSemGetType(value));
 		}
 	}
+
+	info->inAttrArg=0;
 
 	/* Return the semantic information to the caller */
 	return value;

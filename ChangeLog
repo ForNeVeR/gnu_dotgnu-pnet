@@ -1,5 +1,11 @@
 
-2003-05-65  Rhys Weatherley  <rweather@southern-storm.com.au>
+2003-05-07  Gopal.V  <gopalv82@symonds.net>
+	
+	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/csharp/cs_lookup.c,
+	cscc/csharp/cs_oper.tc: Avoid looking for members when resolving
+	the LHS of qualified identifiers in attribute args.
+
+2003-05-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, dumpasm/dump_flags.c, engine/cvmc_obj.c,
 	ilalink/link_field.c, ilasm/ilasm_grammar.y, ildasm/ildasm_class.c,

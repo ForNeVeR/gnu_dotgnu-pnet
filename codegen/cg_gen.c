@@ -102,6 +102,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->semAnalysis = 0;
 	info->typeGather = 0;
 	info->inSemType = 0;
+	info->inAttrArg = 0;
 	info->useJavaLib = 0;
 	info->outputIsJava = 0;
 	info->debugFlag = 0;

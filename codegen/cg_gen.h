@@ -103,6 +103,7 @@ struct _tagILGenInfo
 	int				semAnalysis : 1;	/* Non-zero during semantic analysis */
 	int				typeGather : 1;		/* Non-zero during type gathering */
 	int				inSemType : 1;		/* Semantic analysis on a type */
+	int				inAttrArg : 1;		/* Non-zero inside an attribute arg */
 	int				useJavaLib : 1;		/* Use Java and not C# library */
 	int				outputIsJava : 1;	/* Output Java bytecode */
 	int				debugFlag : 1;		/* Non-zero if debug is enabled */

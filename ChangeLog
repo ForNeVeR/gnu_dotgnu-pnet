@@ -21,6 +21,9 @@
 	argument array so that it can be returned to the application
 	via the "Platform.TaskMethods" class.
 
+	* engine/lib_stdio.c: implement the remaining "StdRead" methods
+	in the "Platform.Stdio" class.
+
 2002-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c, codegen/cg_resolve.h: add "ILResolveProperty"

@@ -160,8 +160,24 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 								System_Array *value, ILInt32 index,
 								ILInt32 count)
 {
-	/* TODO */
-	return 0;
+	ILUInt16 *buf = ((ILUInt16 *)(ArrayToBuffer(value))) + index;
+	ILInt32 result = 0;
+	int ch;
+	if(fd != 0)
+	{
+		return -1;
+	}
+	while(count > 0)
+	{
+		ch = getc(stdin);
+		if(ch == EOF)
+		{
+			break;
+		}
+		*buf++ = (ILUInt16)(ch & 0xFF);
+		--count;
+	}
+	return result;
 }
 
 /*
@@ -171,8 +187,12 @@ ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread *thread, ILInt32 fd,
 								System_Array *value, ILInt32 index,
 								ILInt32 count)
 {
-	/* TODO */
-	return 0;
+	if(fd != 0)
+	{
+		return -1;
+	}
+	return (ILInt32)(fread(((ILUInt8 *)ArrayToBuffer(value)) + index,
+						   1, count, stdin));
 }
 
 /*

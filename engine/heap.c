@@ -236,6 +236,8 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 	}
 	else
 	{
+		classInfo = ILClassResolve(classInfo);
+
 		/* Make sure the class has been initialized before we start */
 		if(!InitializeClass(thread, classInfo))
 		{
@@ -283,6 +285,8 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 
 ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo)
 {
+	classInfo = ILClassResolve(classInfo);
+
 	if(!InitializeClass(thread, classInfo))
 	{
 		return 0;

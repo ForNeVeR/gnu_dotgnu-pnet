@@ -317,10 +317,20 @@ public sealed class Region : MarshalByRefObject, IDisposable
 	}
 
 	// Get an array of rectangles that represents this region.
+	[TODO]
 	public RectangleF[] GetRegionScans(Matrix matrix)
 	{
-		// TODO Transformation
-		return (RectangleF[])rects.Clone();
+		//HACK: this is temporary and will not work on transforms with shear.
+		RectangleF[] newRects = new RectangleF[rects.Length];
+		for(int i = 0; i < newRects.Length; i++)
+		{
+			RectangleF r = rects[i];
+			float ox, oy, or, ob;
+			matrix.TransformPoint(r.X, r.Y, out ox, out oy);
+			matrix.TransformPoint(r.Right, r.Bottom, out or, out ob);
+			newRects[i] = RectangleF.FromLTRB(ox, oy, or, ob);
+		}
+		return newRects;
 	}
 
 	// Form the intersection of this region and another.

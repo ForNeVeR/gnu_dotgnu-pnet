@@ -4,6 +4,11 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_array.c:
 	implement the "Array.GetRelative" and "Array.SetRelative" internalcalls.
 
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll,
+	samples/mscorlib.dll: latest pnetlib updates.
+
 2002-04-19  Gopal.V  <gopalv82@symonds.net>
 	
 	* csdoc/doc_stub.c : Implement the -fclass , -fnamespace

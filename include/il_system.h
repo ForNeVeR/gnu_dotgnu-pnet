@@ -130,6 +130,9 @@ void ILGetCurrTime(ILCurrTime *timeValue);
    If it isn't possible to get the since-reboot time, this returns zero */
 int ILGetSinceRebootTime(ILCurrTime *timeValue);
 
+/* Get the number of seconds West of GMT for the local timezone */
+ILInt32 ILGetTimeZoneAdjust(void);
+
 /* Get platform directory pathname information */
 typedef struct
 {

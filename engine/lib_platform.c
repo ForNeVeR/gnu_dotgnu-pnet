@@ -96,8 +96,32 @@ static ILInt64 Platform_TimeMethods_GetCurrentTime(ILExecThread *thread)
 {
 	ILCurrTime timeValue;
 	ILGetCurrTime(&timeValue);
+	timeValue.secs -= (ILInt64)(ILGetTimeZoneAdjust());
 	return (timeValue.secs * (ILInt64)10000000) +
 				(ILInt64)(timeValue.nsecs / (ILUInt32)100);
+}
+
+/*
+ * public static long GetCurrentUtcTime();
+ *
+ * This returns UTC time since 12:00 Jan 1, 0001 in tenths of a microsecond.
+ */
+static ILInt64 Platform_TimeMethods_GetCurrentUtcTime(ILExecThread *thread)
+{
+	ILCurrTime timeValue;
+	ILGetCurrTime(&timeValue);
+	return (timeValue.secs * (ILInt64)10000000) +
+				(ILInt64)(timeValue.nsecs / (ILUInt32)100);
+}
+
+/*
+ * public static int GetTimeZoneAdjust();
+ *
+ * This returns the number of seconds West of GMT for the local timezone.
+ */
+static ILInt32 Platform_TimeMethods_GetTimeZoneAdjust(ILExecThread *thread)
+{
+	return ILGetTimeZoneAdjust();
 }
 
 /*
@@ -139,6 +163,10 @@ static ILInt32 Platform_TimeMethods_GetUpTime(ILExecThread *thread)
  */
 IL_METHOD_BEGIN(_ILPlatformTimeMethods)
 	IL_METHOD("GetCurrentTime", "()l", Platform_TimeMethods_GetCurrentTime)
+	IL_METHOD("GetCurrentUtcTime", "()l",
+			  Platform_TimeMethods_GetCurrentUtcTime)
+	IL_METHOD("GetTimeZoneAdjust", "()i",
+			  Platform_TimeMethods_GetTimeZoneAdjust)
 	IL_METHOD("GetUpTime", "()i", Platform_TimeMethods_GetUpTime)
 IL_METHOD_END
 

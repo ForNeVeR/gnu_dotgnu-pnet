@@ -12,6 +12,9 @@ value types are converted properly.
 image/link.c, include/il_engine.h, include/il_image.h: add user-specified
 library search paths to the runtime engine and the image library.
 
+* engine/lib_platform.c, include/il_system.h, support/time.c: add new
+functions to support UTC vs local time zone differences.
+
 2001-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/Makefile.am, image/marshal.c, image/types.c, include/il_meta.h,

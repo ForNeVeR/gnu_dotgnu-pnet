@@ -67,6 +67,21 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue)
 	return 0;
 }
 
+ILInt32 ILGetTimeZoneAdjust(void)
+{
+	static int initialized = 0;
+	static int isdst = 0;
+	if(!initialized)
+	{
+		/* Call "localtime", which will initialise "timezone" for us */
+		time_t temp = time(0);
+		struct tm *tms = localtime(&temp);
+		isdst = tms->tm_isdst;
+		initialized = 1;
+	}
+	return (ILInt32)(timezone + (isdst ? 3600 : 0));
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -1,3 +1,7 @@
+2003-06-28  Neil Cawse  <neilc@geotab.ca>
+
+	* System.Drawing.Win32/DrawingWindow.cs : Mouse events now passing
+	mouse button
 
 2003-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -301,14 +301,16 @@ internal abstract class Formatter
 		//  Type validation
 		if (IsSignedInt(o) && (OToLong(o) < 0) )
 		{
-			if(o==Int64.MinValue)
+			ulong value=(ulong) -OToLong(o);
+
+			if(value==0)
 			{
 				// because -(Int64.MinValue) does not exist
 				ret = "-9223372036854775808.";
 			}
 			else
 			{
-				ret = "-" + Formatter.FormatInteger((ulong) -OToLong(o));
+				ret = "-" + Formatter.FormatInteger(value);
 			}
 		}
 		else if (IsSignedInt(o) || IsUnsignedInt(o))

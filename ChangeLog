@@ -1,4 +1,9 @@
 
+2004-10-12  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Drawing/Graphics.cs: Fix bug #10644 - mnemonic rendering for
+	text.
+
 2004-10-11  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Array.cs, runtime/System/BitConverter.cs: Throw the correct

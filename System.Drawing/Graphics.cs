@@ -1676,6 +1676,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								float beforeWidth =
 										MeasureString(before, font).Width;
 
+								// select the underline font
+								SelectFont(underline);
+
+								// draw the hotkey string
+								ToolkitGraphics.DrawString
+									(hotkey, (x + (int)beforeWidth), y, format);
+
 								// draw the after hotkey string, if needed
 								if(((Object)after) != null)
 								{
@@ -1684,6 +1691,10 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 											MeasureString
 												(hotkey, underline).Width;
 
+									// make sure MeasureString didn't reset
+									// the font
+									SelectFont(font);
+
 									// draw the after hotkey string
 									ToolkitGraphics.DrawString
 										(after,
@@ -1691,12 +1702,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 										 y, format);
 								}
 
-								// select the underline font
-								SelectFont(underline);
-
-								// draw the hotkey string
-								ToolkitGraphics.DrawString
-									(hotkey, (x + (int)beforeWidth), y, format);
 							}
 						}
 						else

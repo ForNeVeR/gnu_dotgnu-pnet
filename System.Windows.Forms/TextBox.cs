@@ -440,16 +440,39 @@ public class TextBox : TextBoxBase
 		if (range.Length > 0)
 		{
 			Region[] bounds = g.MeasureCharacterRanges(Text, Font, new Rectangle(2, 2, Width-4, Height-4), format);
-			for (int i=0; i<Text.Length;i++) 
+			Rectangle prevBounds = new Rectangle(0, 0, 0, Font.Height);
+			for (int i=0; i<Text.Length;i++)
 			{
 				LayoutInfo.Item item = new LayoutInfo.Item();
+				char c = Text[i];
+				if (c == (char) Keys.LineFeed)
+				{
+					item.charVisibility = LayoutInfo.Item.CharVisibility.LineFeed;
+					// Linefeed. The bounds is to the right of the previous character.
+					// If the previous character was also a linefeed, we move down a line
+					// from the previous bounds.
+					if (i>0 && Text[i-1]==10)
+					{
+						bounds[i] = new Region(new Rectangle(2, prevBounds.Top+Font.Height, 0, Font.Height));
+					}
+					else
+					{
+						bounds[i] = new Region(new Rectangle(prevBounds.Right, prevBounds.Top, 0, prevBounds.Height));
+					}
+				}
+				else // c != 10
+				{
+					item.charVisibility = LayoutInfo.Item.CharVisibility.Visible;
+				}
 				RectangleF rect = bounds[i].GetBounds( g);
-				item.visible = !rect.IsEmpty;
-				if (item.visible)
+				if (rect.IsEmpty)
+					item.charVisibility = LayoutInfo.Item.CharVisibility.OutOfBounds;
+				else
 					item.bounds = Rectangle.Truncate( rect);
 				layout.Items[i] = item;
+				prevBounds = item.bounds;
 			}
-		}	
+		}
 	}
 
 	protected class LayoutInfo : ICloneable
@@ -459,10 +482,13 @@ public class TextBox : TextBoxBase
 		// The position and info for each draw item/ character
 		public class Item
 		{
+			public enum CharVisibility {OutOfBounds, Visible, LineFeed};
+               
+			public CharVisibility charVisibility;
 			public Rectangle bounds;
 			public bool selected;
-			public bool visible;
 		}
+
 
 		public object Clone()
 		{
@@ -552,7 +578,7 @@ public class TextBox : TextBoxBase
 		for (int i=0; i<Text.Length;i++) 
 		{
 			LayoutInfo.Item item = layout.Items[i];
-			if (item.visible /*&& e.ClipRectangle.IntersectsWith(item.bounds)*/)
+			if (item.charVisibility == LayoutInfo.Item.CharVisibility.Visible /*&& e.ClipRectangle.IntersectsWith(item.bounds)*/)
 			{
 				Brush back, fore;
 				if (item.selected)
@@ -627,8 +653,15 @@ public class TextBox : TextBoxBase
 		{
 			if (position == Text.Length)
 			{
+				// If the last character is a linefeed, position ourselves at the
+				// beginning of the following line. Otherwise, position ourselves
+				// immediately to the right of the last character.
+				LayoutInfo.Item item = layout.Items[position -1];
 				newBounds = layout.Items[position -1].bounds;
-				newBounds = new Rectangle(newBounds.Right, newBounds.Top, 0, newBounds.Height);
+				if (item.charVisibility == LayoutInfo.Item.CharVisibility.LineFeed)
+					newBounds = new Rectangle(2, newBounds.Top + Font.Height, 0, Font.Height);
+				else
+					newBounds = new Rectangle(newBounds.Right, newBounds.Top, 0, newBounds.Height);			
 			}
 			else
 			{
@@ -661,13 +694,12 @@ public class TextBox : TextBoxBase
 		int i=0;
 		for (; i<Text.Length;i++) 
 		{
-			if (layout.Items[i].visible)
+			if (layout.Items[i].charVisibility != LayoutInfo.Item.CharVisibility.OutOfBounds)
 			{
 				bounds = layout.Items[i].bounds;
 				caretPosition = i;
 				if (pt.Y < bounds.Bottom && pt.X < bounds.Left + bounds.Width/2 )
 				{
-					bounds = new Rectangle(bounds.Left, bounds.Top, 0, bounds.Height);
 					break;
 				}
 				// New Line
@@ -675,7 +707,6 @@ public class TextBox : TextBoxBase
 				{
 					if (pt.Y < prevY)
 					{
-						bounds = new Rectangle(prevBounds.Right, prevBounds.Top, 0, prevBounds.Height);
 						// Move position back to end of previous line
 						caretPosition--;
 						break;
@@ -686,14 +717,18 @@ public class TextBox : TextBoxBase
 			}
 		}
 	
-		// If at the end set the bounds to the last visible item.
 		if (i == Text.Length)
 		{
-			bounds = new Rectangle(prevBounds.Right, prevBounds.Top, 0, prevBounds.Height);
-			caretPosition = Text.Length;
+			// If the last character is a linefeed, set the caret to Text.Length only
+			// if they clicked underneath the linefeed.
+			caretPosition = i;
+			if (Text.Length > 0 &&
+				layout.Items[i-1].charVisibility == LayoutInfo.Item.CharVisibility.LineFeed &&
+				pt.Y <= prevBounds.Bottom)
+				--caretPosition;
 		}
 		
-		SetCaretInvalidate(bounds);
+		SetCaretPosition(caretPosition);
 		return caretPosition;
 	}
 	

@@ -100,15 +100,32 @@ int main(int argc, char *argv[])
 		return (CSHaveErrors != 0);
 	}
 
+	/* Inform the code generator that we are doing semantic analysis */
+	CSCodeGen.semAnalysis = 1;
+
 	/* Perform type gathering */
 	CSParseTree = CSTypeGather(&CSCodeGen, CSGlobalScope, CSParseTree);
 
 	/* Perform semantic analysis */
 	ILNode_SemAnalysis(CSParseTree, &CSCodeGen, &CSParseTree);
 
-	/* Generate the code */
-	ILGenModulesAndAssemblies(&CSCodeGen);
-	ILNode_GenDiscard(CSParseTree, &CSCodeGen);
+	/* We are no longer doing semantic analysis */
+	CSCodeGen.semAnalysis = 0;
+
+	/* If we are only performing a semantic check, then bail out now */
+	if(CSStringListContains(extension_flags, num_extension_flags,
+							"semantic-check"))
+	{
+		CloseCodeGen();
+		return (CSHaveErrors != 0);
+	}
+
+	/* Generate the code if no errors occurred in the previous phases */
+	if(CSHaveErrors == 0)
+	{
+		ILGenModulesAndAssemblies(&CSCodeGen);
+		ILNode_GenDiscard(CSParseTree, &CSCodeGen);
+	}
 
 	/* Close the code generator */
 	CloseCodeGen();

@@ -1,4 +1,10 @@
 
+2001-08-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* cscc/cs_main.c (main): turn on the "semAnalysis" flag during type
+gathering and semantic analysis, don't generate code if semantic analysis
+fails, and add a new "-fsemantic-check" option.
+
 2001-08-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.h, codegen/cg_gen.c: add "unsafeLevel" to "ILGenInfo".

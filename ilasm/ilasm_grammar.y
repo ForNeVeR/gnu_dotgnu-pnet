@@ -978,16 +978,6 @@ Float64
 				SetDouble($$.dbytes, $1);
 			}
 	| K_FLOAT32 '(' Integer32 ')' {
-				/* Convert a 32-bit integer into a 32-bit float */
-				SetFloat($$.fbytes, (ILFloat)($3));
-				SetDouble($$.dbytes, (ILDouble)(ILFloat)($3));
-			}
-	| K_FLOAT64 '(' Integer64 ')' {
-				/* Convert a 64-bit integer into a 64-bit float */
-				SetFloat($$.fbytes, (ILFloat)(ILDouble)($3));
-				SetDouble($$.dbytes, (ILDouble)($3));
-			}
-	| K_FLOAT32 '[' Integer32 ']' {
 				/* Convert a raw big endian value into a 32-bit float */
 				$$.fbytes[3] = (ILUInt8)($3 >> 24);
 				$$.fbytes[2] = (ILUInt8)($3 >> 16);
@@ -995,7 +985,7 @@ Float64
 				$$.fbytes[0] = (ILUInt8)($3);
 				SetDouble($$.dbytes, (ILDouble)(IL_READ_FLOAT($$.fbytes)));
 			}
-	| K_FLOAT64 '[' Integer64 ']' {
+	| K_FLOAT64 '(' Integer64 ')' {
 				/* Convert a raw big endian value into a 64-bit float */
 				$$.dbytes[7] = (ILUInt8)($3 >> 56);
 				$$.dbytes[6] = (ILUInt8)($3 >> 48);

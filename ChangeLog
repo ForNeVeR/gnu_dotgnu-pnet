@@ -10,6 +10,9 @@ the "native" and "runtime" implementation types.
 * include/il_program.h, image/test_macros.c: add the "ILMethod_IsJavaFPStruct"
 and "ILMethod_IsJava" helper macros.
 
+* ilasm/ilasm_grammar.y (Float64): remove the '[' form of floating
+point constants and alter the '(' form to be ECMA-compliant.
+
 2001-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: implement a Java class file to IL converter.

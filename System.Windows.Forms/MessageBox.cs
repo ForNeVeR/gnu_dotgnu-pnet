@@ -266,7 +266,7 @@ public class MessageBox
 					case MessageBoxButtons.OK: default:
 					{
 						button1 = new Button();
-						button1.Text = S._("MessageBox_OK", "OK");
+						button1.Text = S._("SWF_MessageBox_OK", "OK");
 						button2 = null;
 						button3 = null;
 						hasCancel = true;	// Can always cancel an OK dialog.
@@ -277,8 +277,8 @@ public class MessageBox
 					{
 						button1 = new Button();
 						button2 = new Button();
-						button1.Text = S._("MessageBox_OK", "OK");
-						button2.Text = S._("MessageBox_Cancel", "Cancel");
+						button1.Text = S._("SWF_MessageBox_OK", "OK");
+						button2.Text = S._("SWF_MessageBox_Cancel", "Cancel");
 						button3 = null;
 						hasCancel = true;
 					}
@@ -289,9 +289,9 @@ public class MessageBox
 						button1 = new Button();
 						button2 = new Button();
 						button3 = new Button();
-						button1.Text = S._("MessageBox_Abort", "Abort");
-						button2.Text = S._("MessageBox_Retry", "Retry");
-						button3.Text = S._("MessageBox_Ignore", "Ignore");
+						button1.Text = S._("SWF_MessageBox_Abort", "&Abort");
+						button2.Text = S._("SWF_MessageBox_Retry", "&Retry");
+						button3.Text = S._("SWF_MessageBox_Ignore", "&Ignore");
 						hasCancel = false;
 					}
 					break;
@@ -301,9 +301,9 @@ public class MessageBox
 						button1 = new Button();
 						button2 = new Button();
 						button3 = new Button();
-						button1.Text = S._("MessageBox_Yes", "Yes");
-						button2.Text = S._("MessageBox_No", "No");
-						button3.Text = S._("MessageBox_Cancel", "Cancel");
+						button1.Text = S._("SWF_MessageBox_Yes", "&Yes");
+						button2.Text = S._("SWF_MessageBox_No", "&No");
+						button3.Text = S._("SWF_MessageBox_Cancel", "Cancel");
 						hasCancel = true;
 					}
 					break;
@@ -312,8 +312,8 @@ public class MessageBox
 					{
 						button1 = new Button();
 						button2 = new Button();
-						button1.Text = S._("MessageBox_Yes", "Yes");
-						button2.Text = S._("MessageBox_No", "No");
+						button1.Text = S._("SWF_MessageBox_Yes", "&Yes");
+						button2.Text = S._("SWF_MessageBox_No", "&No");
 						button3.Text = null;
 						hasCancel = false;
 					}
@@ -323,8 +323,8 @@ public class MessageBox
 					{
 						button1 = new Button();
 						button2 = new Button();
-						button1.Text = S._("MessageBox_Retry", "Retry");
-						button2.Text = S._("MessageBox_Cancel", "Cancel");
+						button1.Text = S._("SWF_MessageBox_Retry", "&Retry");
+						button2.Text = S._("SWF_MessageBox_Cancel", "Cancel");
 						button3.Text = null;
 						hasCancel = true;
 					}

@@ -4260,7 +4260,7 @@ protected virtual void Dispose(bool disposing)
 					if(index == -1)
 					{
 						throw new ArgumentException
-							(S._("SWF_ControlNotPresent"));
+							(S._("SWF_ControlNotAChild"));
 					}
 					return index;
 				}
@@ -4397,7 +4397,7 @@ protected virtual void Dispose(bool disposing)
 					if(index == -1 && throwException)
 					{
 						throw new ArgumentException
-							(S._("SWF_ControlNotPresent"));
+							(S._("SWF_ControlNotAChild"));
 					}
 					return index;
 				}

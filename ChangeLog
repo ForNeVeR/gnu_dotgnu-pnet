@@ -8,6 +8,14 @@
 	resources/en_US/System.Drawing/System.Drawing.txt:
 	add the string resources for "System.Drawing".
 
+	* configure.in, System.Windows.Forms/Control.cs,
+	System.Windows.Forms/Forms.build, System.Windows.Forms/MessageBox.cs,
+	resources/en_US/Makefile.am,
+	resources/en_US/System.Windows.Forms/.cvsignore,
+	resources/en_US/System.Windows.Forms/Makefile.am,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.txt:
+	add the string resources for "System.Windows.Forms".
+
 2003-10-12  Neil Cawse  <neilcawse@hotmail.com>
 
 	* System.Windows.Forms/TreeView.cs: fix paint crash when no nodes bug.

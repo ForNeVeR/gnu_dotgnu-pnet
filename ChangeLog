@@ -45,6 +45,9 @@
 	* System.Windows.Forms/Control.cs: add the "CreateBackgroundBrush()"
 	helper method.
 
+	* System.Windows.Forms/HACKING: add the "HACKING" file for the
+	Forms implementation.
+
 2003-06-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/Control.cs: Fix minor bug with Bounds 

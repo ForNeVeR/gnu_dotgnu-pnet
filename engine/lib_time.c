@@ -1,7 +1,7 @@
 /*
  * lib_time.c - Internalcall methods for the "Platform.TimeMethods" classes.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,12 +54,13 @@ ILInt64 _IL_TimeMethods_GetCurrentUtcTime(ILExecThread *thread)
 }
 
 /*
- * public static int GetTimeZoneAdjust();
+ * public static int GetTimeZoneAdjust(long time);
  *
  * This returns the number of seconds West of GMT for the local timezone.
  */
-ILInt32 _IL_TimeMethods_GetTimeZoneAdjust(ILExecThread *thread)
+ILInt32 _IL_TimeMethods_GetTimeZoneAdjust(ILExecThread *thread, ILInt64 time)
 {
+	/* TODO: change timezone value based on the time value */
 	return ILGetTimeZoneAdjust();
 }
 
@@ -95,6 +96,38 @@ ILInt32 _IL_TimeMethods_GetUpTime(ILExecThread *thread)
 	}
 	return (ILInt32)((timeValue.secs * (ILInt64)1000) +
 				(ILInt64)(timeValue.nsecs / (ILUInt32)1000));
+}
+
+/*
+ * public static String GetDaylightName();
+ */
+ILString *_IL_TimeMethods_GetDaylightName(ILExecThread *_thread)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static String GetStandardName();
+ */
+extern ILString * _IL_TimeMethods_GetStandardName(ILExecThread *_thread)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static bool GetDaylightRules(int year, out long start,
+ *									   out long end, out long delta);
+ */
+ILBool _IL_TimeMethods_GetDaylightRules(ILExecThread *_thread,
+										ILInt32 year,
+										ILInt64 *start,
+										ILInt64 *end,
+										ILInt64 *delta)
+{
+	/* TODO */
+	return 0;
 }
 
 #ifdef	__cplusplus

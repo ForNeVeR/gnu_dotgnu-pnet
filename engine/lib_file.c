@@ -51,6 +51,22 @@ ILBool _IL_FileMethods_ValidatePathname(ILExecThread *thread, ILString *path)
 }
 
 /*
+ * public static bool Exists(String path);
+ */
+ILBool _IL_FileMethods_Exists(ILExecThread * _thread, ILString * path)
+{
+	const char *cpath = ILStringToAnsi(_thread,path);
+	if(cpath)
+	{
+		return ILFileExists(cpath,(char**)0);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * public static bool Open(String path, FileMode mode,
  *						   FileAccess access, FileShare share,
  *						   out IntPtr handle);

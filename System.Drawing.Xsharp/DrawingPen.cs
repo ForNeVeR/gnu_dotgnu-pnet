@@ -99,10 +99,14 @@ internal sealed class DrawingPen : IToolkitPen
 				if(graphics != null)
 				{
 					Xsharp.Graphics g = graphics.graphics;
-					g.LineWidth = (int)(properties.Width);
+					int width = (int)(properties.Width);
 					LineStyle style = MapLineStyle(properties.DashStyle);
 					if(style == LineStyle.LineOnOffDash)
 					{
+						if(width == 1)
+						{
+							width = 0;
+						}
 						switch(properties.DashStyle)
 						{
 							case DashStyle.Dash:
@@ -130,6 +134,7 @@ internal sealed class DrawingPen : IToolkitPen
 							break;
 						}
 					}
+					g.LineWidth = width;
 					g.LineStyle = style;
 					g.CapStyle = MapCapStyle(properties.EndCap);
 					g.JoinStyle = MapJoinStyle(properties.LineJoin);

@@ -12,6 +12,9 @@
 	Xsharp/Xlib.cs.in: implement some of the support code for
 	dashed pens in Xsharp - not 100% working yet.
 
+	* System.Drawing.Xsharp/DrawingPen.cs, samples/FormsHello.cs:
+	dashed pens only work in X with a line width of 0, not 1.
+
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs, 

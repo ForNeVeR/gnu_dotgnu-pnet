@@ -80,6 +80,10 @@ public class FormsHello : Form
 			(pen, 10, 10, bounds.Width - 20, bounds.Height - 40);
 		pen.Dispose();
 
+		ControlPaint.DrawFocusRectangle
+			(graphics,
+			 new Rectangle(15, 15, bounds.Width - 30, bounds.Height - 50));
+
 		Brush brush = new SolidBrush(Color.Yellow);
 		graphics.FillPie(brush, 20, 20, 60, 60, 30.0f, 70.0f);
 		brush.Dispose();

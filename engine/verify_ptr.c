@@ -239,7 +239,10 @@ case IL_OP_STIND_##name: \
 	else if(unsafeAllowed && \
 	        (STK_BINARY_1 == ILEngineType_I4 || \
 			 STK_BINARY_1 == ILEngineType_I) && \
-			STK_BINARY_2 == (engineType)) \
+			(STK_BINARY_2 == (engineType) || \
+			 ((engineType) == ILEngineType_I && \
+			  (STK_BINARY_2 == ILEngineType_M || \
+			   STK_BINARY_2 == ILEngineType_T)))) \
 	{ \
 		ILCoderToPointer(coder, STK_BINARY_1, &(stack[stackSize - 1])); \
 		ILCoderPtrAccess(coder, opcode); \

@@ -218,7 +218,7 @@ static int ValidateStack(ILImage *image, BranchLabel *label,
 			stack[posn].engineType == ILEngineType_I)
 		{
 			if(labelStack[posn].engineType == ILEngineType_I8 ||
-				labelStack[posn].engineType = ILEngineType_I)
+				labelStack[posn].engineType == ILEngineType_I)
 			{
 				continue;
 			}

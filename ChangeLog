@@ -1,4 +1,9 @@
 
+2004-05-30  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/verify_branch.c: Fix compilation for 64bit platforms 
+	(patch #3109, from Andrzej Dopierala <undefine@pld-linux.org>)
+
 2004-05-29  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/lib_reflect.c: Implement Module.GetTypes() for assembly

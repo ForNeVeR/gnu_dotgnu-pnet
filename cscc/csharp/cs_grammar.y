@@ -2989,7 +2989,8 @@ DestructorDeclaration
 				/* Build the list of attributes needed on "Finalize" */
 				attrs = IL_META_METHODDEF_FAMILY |
 						IL_META_METHODDEF_HIDE_BY_SIG |
-						IL_META_METHODDEF_VIRTUAL;
+						IL_META_METHODDEF_VIRTUAL |
+						CS_SPECIALATTR_OVERRIDE;
 
 				/* Build the name of the "Finalize" method */
 				name = ILQualIdentSimple(ILInternString("Finalize", -1).string);

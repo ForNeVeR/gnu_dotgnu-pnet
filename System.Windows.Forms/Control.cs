@@ -3043,7 +3043,7 @@ public class Control : IWin32Window, IDisposable
 	// Reset the text property to its default value.
 	public virtual void ResetText()
 			{
-				Text = null;
+				Text = String.Empty;
 			}
 
 	// Resume layout operations.

@@ -1,6 +1,6 @@
 /*
- * ColorDialog.cs - Implementation of the
- *			"System.Windows.Forms.ColorDialog" class.
+ * FolderBrowserDialog.cs - Implementation of the
+ *			"System.Windows.Forms.FolderBrowserDialog" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -26,89 +26,91 @@ using System.IO;
 using System.Drawing;
 using System.ComponentModel;
 
-public class ColorDialog : CommonDialog
+public sealed class FolderBrowserDialog : CommonDialog
 {
 	// Internal state.
-	private ColorDialogForm form;
-	private bool allowFullOpen;
-	private bool anyColor;
-	private bool fullOpen;
+	private FolderBrowserDialogForm form;
+	private String description;
+	private String selectedPath;
+#if !ECMA_COMPAT
+	private Environment.SpecialFolder rootFolder;
+#endif
 	private bool showHelp;
-	private bool solidColorOnly;
-	private Color color;
-	private int[] customColors;
+	private bool showNewFolderButton;
 
 	// Constructor.
-	public ColorDialog()
+	public FolderBrowserDialog()
 			{
 				// Make sure that the dialog fields have their default values.
 				Reset();
 			}
 
 	// Get or set this object's properties.
-	public virtual bool AllowFullOpen
+	public String Description
 			{
 				get
 				{
-					return allowFullOpen;
+					return description;
 				}
 				set
 				{
-					allowFullOpen = value;
-				}
-			}
-	public virtual bool AnyColor
-			{
-				get
-				{
-					return anyColor;
-				}
-				set
-				{
-					anyColor = value;
-				}
-			}
-	public Color Color
-			{
-				get
-				{
-					return color;
-				}
-				set
-				{
-					if(color != value)
+					if(description != value)
 					{
-						color = value;
+						if(value == null)
+						{
+							value = String.Empty;
+						}
+						description = value;
 						if(form != null)
 						{
-							form.ChangeColor();
+							form.UpdateDialog();
 						}
 					}
 				}
 			}
-	public int[] CustomColors
+#if !ECMA_COMPAT
+	public Environment.SpecialFolder RootFolder
 			{
 				get
 				{
-					return customColors;
+					return rootFolder;
 				}
 				set
 				{
-					customColors = value;
+					if(rootFolder != value)
+					{
+						rootFolder = value;
+						if(form != null)
+						{
+							form.UpdateDialog();
+						}
+					}
 				}
 			}
-	public virtual bool FullOpen
+#endif
+	public String SelectedPath
 			{
 				get
 				{
-					return fullOpen;
+					return selectedPath;
 				}
 				set
 				{
-					fullOpen = value;
+					if(selectedPath != value)
+					{
+						if(value == null)
+						{
+							value = String.Empty;
+						}
+						selectedPath = value;
+						if(form != null)
+						{
+							form.UpdateDialog();
+						}
+					}
 				}
 			}
-	public virtual bool ShowHelp
+	public bool ShowHelp
 			{
 				get
 				{
@@ -116,33 +118,48 @@ public class ColorDialog : CommonDialog
 				}
 				set
 				{
-					showHelp = value;
+					if(showHelp != value)
+					{
+						showHelp = value;
+						if(form != null)
+						{
+							form.UpdateDialog();
+						}
+					}
 				}
 			}
-	public virtual bool SolidColorOnly
+	public bool ShowNewFolderButton
 			{
 				get
 				{
-					return solidColorOnly;
+					return showNewFolderButton;
 				}
 				set
 				{
-					solidColorOnly = value;
+					if(showNewFolderButton != value)
+					{
+						showNewFolderButton = value;
+						if(form != null)
+						{
+							form.UpdateDialog();
+						}
+					}
 				}
 			}
 
 	// Reset the dialog box controls to their default values.
 	public override void Reset()
 			{
-				allowFullOpen = true;
-				anyColor = false;
-				fullOpen = false;
-				solidColorOnly = false;
-				color = Color.Black;
-				customColors = null;
+				description = String.Empty;
+			#if !ECMA_COMPAT
+				rootFolder = Environment.SpecialFolder.Desktop;
+			#endif
+				selectedPath = String.Empty;
+				showHelp = false;
+				showNewFolderButton = true;
 				if(form != null)
 				{
-					form.ChangeColor();
+					form.UpdateDialog();
 				}
 			}
 
@@ -160,8 +177,8 @@ public class ColorDialog : CommonDialog
 					return DialogResult.Cancel;
 				}
 
-				// Construct the color dialog form.
-				form = new ColorDialogForm(this);
+				// Construct the folder browser dialog form.
+				form = new FolderBrowserDialogForm(this);
 
 				// Run the dialog and get its result.
 				DialogResult result;
@@ -179,20 +196,14 @@ public class ColorDialog : CommonDialog
 				return result;
 			}
 
-	// Convert this object into a string.
-	public override string ToString()
-			{
-				return base.ToString() + ", Color: " + Color.ToString();
-			}
-
-	// Form that represents the color dialog.
-	private class ColorDialogForm : Form
+	// Form that represents the folder browser dialog.
+	private class FolderBrowserDialogForm : Form
 	{
 		// Internal state.
-		private ColorDialog dialog;
+		private FolderBrowserDialog dialog;
 
 		// Constructor.
-		public ColorDialogForm(ColorDialog dialog)
+		public FolderBrowserDialogForm(FolderBrowserDialog dialog)
 				{
 					this.dialog = dialog;
 					// TODO: create the form
@@ -204,14 +215,14 @@ public class ColorDialog : CommonDialog
 					Dispose(true);
 				}
 
-		// Change the color that is displayed in the dialog.
-		public void ChangeColor()
+		// Update the contents of the dialog to match the properties.
+		public void UpdateDialog()
 				{
 					// TODO
 				}
 
-	}; // class ColorDialogForm
+	}; // class FolderBrowserDialogForm
 
-}; // class ColorDialog
+}; // class FolderBrowserDialog
 
 }; // namespace System.Windows.Forms

@@ -4,6 +4,11 @@
 	* System.Drawing.Xsharp/DrawingFont.cs: use the actual family
 	name if the font isn't one of the recognised substitutions.
 
+	* System.Windows.Forms/ColorDialog.cs,
+	System.Windows.Forms/FolderBrowserDialog.cs,
+	System.Windows.Forms/FontDialog.cs: stub out the color, folder
+	browser, and font dialogs, ready to have their UI's implemented.
+
 2004-01-09  Simon Guindon <simon@nureality.ca>
 
 	* System.Windows.Forms/DragEventArgs.cs,

@@ -293,6 +293,11 @@ void ILGenPopTry(ILGenInfo *info);
  */
 ILImage *ILGenCreateBasicImage(ILContext *context, const char *assemName);
 
+/*
+ * Dump the local variable signature for a method.
+ */
+void ILGenDumpILLocals(ILGenInfo *info, ILType *localVarSig);
+
 #ifdef	__cplusplus
 };
 #endif

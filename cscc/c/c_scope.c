@@ -88,6 +88,11 @@ void *CScopeLookup(const char *name)
 	return (void *)ILScopeLookup(CCurrentScope, name, 1);
 }
 
+void *CScopeLookupCurrent(const char *name)
+{
+	return (void *)ILScopeLookup(CCurrentScope, name, 0);
+}
+
 int CScopeIsTypedef(const char *name)
 {
 	ILScopeData *data = ILScopeLookup(CCurrentScope, name, 1);
@@ -115,7 +120,7 @@ int CScopeHasStructOrUnion(const char *name, int structKind)
 
 void CScopeAddStructOrUnion(const char *name, int structKind, ILType *type)
 {
-	ILScopeDeclareItem(CCurrentScope, name,
+	ILScopeDeclareItem(CCurrentScope, StructScopeName(name, structKind),
 					   C_SCDATA_STRUCT_OR_UNION, 0, 0, type);
 }
 
@@ -164,10 +169,11 @@ void CScopeAddParam(const char *name, unsigned index, ILType *type)
 					   (void *)(ILNativeUInt)index, type);
 }
 
-void CScopeAddLocal(const char *name, unsigned index, ILType *type)
+void CScopeAddLocal(const char *name, ILNode *node,
+					unsigned index, ILType *type)
 {
 	ILScopeDeclareItem(CGlobalScope, name,
-					   C_SCDATA_LOCAL_VAR, 0,
+					   C_SCDATA_LOCAL_VAR, PersistNode(node),
 					   (void *)(ILNativeUInt)index, type);
 }
 

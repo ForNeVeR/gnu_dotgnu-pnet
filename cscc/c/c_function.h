@@ -43,6 +43,11 @@ void CFunctionDeclareParams(ILGenInfo *info, ILMethod *method);
 void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body);
 
 /*
+ * Flush a list of global initializers.
+ */
+void CFunctionFlushInits(ILGenInfo *info, ILNode *list);
+
+/*
  * Pre-declare some standard functions.  e.g. "printf", "scanf", etc.
  */
 void CFunctionPredeclare(ILGenInfo *info);
@@ -68,6 +73,11 @@ void CGenSetJmp(ILGenInfo *info);
  * Get the current method that is being analysed or compiled.
  */
 ILMethod *CFunctionGetCurrent(void);
+
+/*
+ * Allocate an index for a local variable in the current function.
+ */
+unsigned CGenAllocLocal(ILGenInfo *info, ILType *type);
 
 #ifdef	__cplusplus
 };

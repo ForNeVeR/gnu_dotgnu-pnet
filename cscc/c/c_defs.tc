@@ -257,6 +257,10 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 {
 	ILUInt32 bitFieldSize;
 }
+%node ILNode_CInitDeclarator ILNode_CDeclarator =
+{
+	ILNode *init;
+}
 %node ILNode_VaStart ILNode_Expression =
 {
 	ILNode *vaList;
@@ -280,10 +284,17 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 %node ILNode_CLocalVar ILNode_LocalVar =
 {
 	ILType *type;
+	ILType *decayedType;
 }
 %node ILNode_CArgumentVar ILNode_ArgumentVar =
 {
 	ILType *type;
+}
+%node ILNode_CGlobalVar ILNode_LValue =
+{
+	char *name;
+	ILType *type;
+	ILType *decayedType;
 }
 %node ILNode_FunctionRef ILNode_Expression =
 {

@@ -62,6 +62,11 @@ void CScopeGlobalInit(ILGenInfo *info);
 void *CScopeLookup(const char *name);
 
 /*
+ * Lookup a name in the current scope, while ignoring parent scopes.
+ */
+void *CScopeLookupCurrent(const char *name);
+
+/*
  * Determine if a name in the current scope is a typedef.
  */
 int CScopeIsTypedef(const char *name);
@@ -126,7 +131,8 @@ void CScopeAddParam(const char *name, unsigned index, ILType *type);
 /*
  * Add information about a non-static local variable to the current scope.
  */
-void CScopeAddLocal(const char *name, unsigned index, ILType *type);
+void CScopeAddLocal(const char *name, ILNode *node,
+					unsigned index, ILType *type);
 
 /*
  * Add an entry to the current scope that records that an identifier

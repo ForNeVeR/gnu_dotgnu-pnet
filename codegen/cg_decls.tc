@@ -425,6 +425,14 @@ static void DumpILLocals(ILGenInfo *info, FILE *outstream, ILType *localVarSig)
 	}
 }
 
+void ILGenDumpILLocals(ILGenInfo *info, ILType *localVarSig)
+{
+	if(info->asmOutput)
+	{
+		DumpILLocals(info, info->asmOutput, localVarSig);
+	}
+}
+
 /*
  * Allocate the arguments and locals for a JL method.
  */

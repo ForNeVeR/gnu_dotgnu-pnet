@@ -49,12 +49,145 @@ ILNode_CSemAnalysis(ILNode_ArgumentVar)
 /*
  * Perform semantic analysis for a C local variable reference.
  */
-ILNode_CSemAnalysis(ILNode_CLocalVar),
+ILNode_CSemAnalysis(ILNode_CLocalVar)
+{
+	CSemValue value;
+	if(node->type != node->decayedType)
+	{
+		/* This is an array that decays to an r-value pointer */
+		CSemSetRValue(value, node->decayedType);
+	}
+	else
+	{
+		/* This type doesn't decay, so it is an l-value */
+		CSemSetLValue(value, node->type);
+	}
+	return value;
+}
+
+/*
+ * Generate value code for a C local variable reference.
+ * This overrides the standard code in "codegen" so that
+ * we can handle arrays that decay into pointers.
+ */
+ILNode_GenValue(ILNode_CLocalVar)
+{
+	if(node->type == node->decayedType)
+	{
+		/* This is an ordinary local variable */
+		ILGenLoadLocal(info, node->index);
+		ILGenAdjust(info, 1);
+	}
+	else
+	{
+		/* This local variable decays immediately into a pointer */
+		ILGenLoadLocalAddr(info, node->index);
+		ILGenAdjust(info, 1);
+	}
+	return node->machineType;
+}
+
+/*
+ * Perform semantic analysis for a C argument variable reference.
+ */
 ILNode_CSemAnalysis(ILNode_CArgumentVar)
 {
 	CSemValue value;
 	CSemSetLValue(value, node->type);
 	return value;
+}
+
+/*
+ * Perform semantic analysis for a C global variable reference.
+ */
+ILNode_CSemAnalysis(ILNode_CGlobalVar)
+{
+	CSemValue value;
+	if(node->type != node->decayedType)
+	{
+		/* This is an array that decays to an r-value pointer */
+		CSemSetRValue(value, node->decayedType);
+	}
+	else
+	{
+		/* This type doesn't decay, so it is an l-value */
+		CSemSetLValue(value, node->type);
+	}
+	return value;
+}
+
+/*
+ * Get the type of a C global variable reference.
+ */
+ILNode_GetType(ILNode_CGlobalVar)
+{
+	return ILTypeToMachineType(node->decayedType);
+}
+
+/*
+ * Generate discard code for a C global variable reference.
+ */
+ILNode_GenDiscard(ILNode_CGlobalVar)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate value code for a C global variable reference.
+ */
+ILNode_GenValue(ILNode_CGlobalVar)
+{
+	/* TODO */
+	return ILTypeToMachineType(node->decayedType);
+}
+
+/*
+ * Prepare a C global variable reference to be stored in.
+ */
+ILNode_Prepare(ILNode_CGlobalVar)
+{
+	/* TODO */
+	return ILTypeToMachineType(node->decayedType);
+}
+
+/*
+ * Get and prepare a C global variable reference.
+ */
+ILNode_GetAndPrepare(ILNode_CGlobalVar)
+{
+	/* TODO */
+	return ILTypeToMachineType(node->decayedType);
+}
+
+/*
+ * Store into a C global variable reference.
+ */
+ILNode_Store(ILNode_CGlobalVar)
+{
+	/* TODO */
+}
+
+/*
+ * Generate an address for a C global variable reference.
+ */
+ILNode_GenRef(ILNode_CGlobalVar)
+{
+	/* TODO */
+}
+
+/*
+ * Stub out unnecessary Java code generation functions.
+ */
+JavaGenValue(ILNode_CGlobalVar),
+JavaPrepare(ILNode_CGlobalVar),
+JavaGetAndPrepare(ILNode_CGlobalVar)
+{
+	/* Never called: nothing to do here */
+	return ILTypeToMachineType(node->decayedType);
+}
+JavaStore(ILNode_CGlobalVar)
+{
+	/* Never called: nothing to do here */
 }
 
 ILNode_CSemAnalysis(ILNode_ArrayAccess)

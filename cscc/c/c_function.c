@@ -33,6 +33,7 @@ static int currSetJmpRef = 0;
 static unsigned markerVar = 0;
 static unsigned valueVar = 0;
 static ILMethod *currMethod = 0;
+static ILType *localVarSig = 0;
 
 /*
  * Report an error that resulted from the compiler trying to
@@ -200,6 +201,9 @@ ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 		CScopeAddFunction(name, node, signature);
 	}
 
+	/* Clear the local variable signature, ready for allocation */
+	localVarSig = 0;
+
 	/* The method block is ready to go */
 	return method;
 }
@@ -270,6 +274,9 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 
 	/* Output the attributes that are attached to the method */
 	CGenOutputAttributes(info, stream, ILToProgramItem(method));
+
+	/* Dump the local variable definitions that we have so far */
+	ILGenDumpILLocals(info, localVarSig);
 
 	/* Notify the code generator as to what the return type is */
 	info->returnType = ILTypeGetReturn(signature);
@@ -426,6 +433,11 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 
 	/* Clean up temporary state that was used for code generation */
 	ILGenEndMethod(info);
+}
+
+void CFunctionFlushInits(ILGenInfo *info, ILNode *list)
+{
+	/* TODO */
 }
 
 void CFunctionPredeclare(ILGenInfo *info)
@@ -593,6 +605,25 @@ void CGenSetJmp(ILGenInfo *info)
 ILMethod *CFunctionGetCurrent(void)
 {
 	return currMethod;
+}
+
+unsigned CGenAllocLocal(ILGenInfo *info, ILType *type)
+{
+	unsigned num;
+	if(!localVarSig)
+	{
+		localVarSig = ILTypeCreateLocalList(info->context);
+		if(!localVarSig)
+		{
+			ILGenOutOfMemory(info);
+		}
+	}
+	num = (unsigned)ILTypeNumLocals(localVarSig);
+	if(!ILTypeAddLocal(info->context, localVarSig, type))
+	{
+		ILGenOutOfMemory(info);
+	}
+	return num;
 }
 
 #ifdef	__cplusplus

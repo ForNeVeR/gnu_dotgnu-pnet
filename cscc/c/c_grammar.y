@@ -34,6 +34,7 @@ static char *functionName = "";
 static ILType *currentStruct = 0;
 static ILType *currentEnum = 0;
 static ILInt32 currentEnumValue = 0;
+static ILNode *initializers = 0;
 
 /*
  * Imports from the lexical analyser.
@@ -265,6 +266,103 @@ static void ProcessBitField(CDeclSpec spec, CDeclarator decl, ILUInt32 size)
 	CTypeDefineBitField(&CCCodeGen, currentStruct, decl.name, type, size);
 }
 
+#if 0
+
+/*
+ * Add a global initializer statement to the pending list.
+ */
+static void AddInitializer(char *name, ILNode *node, ILType *type, ILNode *init)
+{
+	ILNode *stmt;
+
+	/* Build the initialization statement */
+	stmt = ILNode_CGlobalVar_create(name, type, CTypeDecay(&CCCodeGen, type));
+	CGenCloneLine(stmt, node);
+	stmt = ILNode_Assign_create(stmt, init);
+
+	/* Add the statement to the pending list */
+	if(!initializers)
+	{
+		initializers = ILNode_List_create();
+	}
+	ILNode_List_Add(initializers, stmt);
+}
+
+#endif
+
+/*
+ * Report a redeclaration error.
+ */
+static void ReportRedeclared(const char *name, ILNode *node, void *data)
+{
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("redeclaration of `%s'"), name);
+	node = CScopeGetNode(data);
+	if(node)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("`%s' previously declared here"), name);
+	}
+}
+
+/*
+ * Process a local or global declaration.
+ */
+static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
+							   ILNode *init, ILNode **list)
+{
+	ILType *type;
+	void *data;
+
+	/* Finalize the type that is associated with the declaration */
+	type = CDeclFinalize(&CCCodeGen, spec, decl, 0, 0);
+
+	/* See if there is already something in this scope for the name */
+	data = CScopeLookupCurrent(decl.name);
+
+	/* Determine what kind of item to declare */
+	if((spec.specifiers & C_SPEC_TYPEDEF) != 0)
+	{
+		/* Define a new type in the local scope */
+		if(data)
+		{
+			ReportRedeclared(decl.name, decl.node, data);
+		}
+		else
+		{
+			CScopeAddTypedef(decl.name, type, decl.node);
+		}
+	}
+	else if((spec.specifiers & C_SPEC_STATIC) != 0)
+	{
+		/* Declare a global variable that is private to this module */
+		/* TODO */
+	}
+	else if((spec.specifiers & C_SPEC_EXTERN) != 0)
+	{
+		/* Declare a forward reference for a global variable */
+		/* TODO */
+	}
+	else if(CCurrentScope == CGlobalScope)
+	{
+		/* Declare a global variable that is exported from this module */
+		/* TODO */
+	}
+	else
+	{
+		/* Declare a local variable in the current scope */
+		if(data)
+		{
+			ReportRedeclared(decl.name, decl.node, data);
+		}
+		else
+		{
+			CScopeAddLocal(decl.name, decl.node,
+						   CGenAllocLocal(&CCCodeGen, type), type);
+		}
+	}
+}
+
 %}
 
 /*
@@ -408,7 +506,8 @@ static void ProcessBitField(CDeclSpec spec, CDeclarator decl, ILUInt32 size)
 %type <node>		OptParamDeclarationList ParamDeclarationList
 %type <node>		ParamDeclaratorList ParamDeclaration
 
-%type <node>		StructDeclaratorList StructDeclarator
+%type <node>		StructDeclaratorList StructDeclarator InitDeclarator
+%type <node>		InitDeclaratorList Initializer InitializerList
 
 %type <node>		FunctionBody
 
@@ -440,7 +539,7 @@ PrimaryExpression
 	: Identifier			{
 				/* Resolve the identifier to a node */
 				void *data = CScopeLookup($1);
-				ILType *type;
+				ILType *type, *decayedType;
 				if(!data)
 				{
 					/* We don't know what this identifier is, so return
@@ -458,9 +557,11 @@ PrimaryExpression
 						{
 							/* Create a local variable reference */
 							type = CScopeGetType(data);
+							decayedType = CTypeDecay(&CCCodeGen, type);
 							$$ = ILNode_CLocalVar_create
 								(CScopeGetIndex(data),
-								 ILTypeToMachineType(type), type);
+								 ILTypeToMachineType(decayedType), type,
+								 decayedType);
 						}
 						break;
 
@@ -836,8 +937,96 @@ ConstantExpression
 	;
 
 Declaration
-	: DeclarationSpecifiers ';'						{ /* TODO */ }
-	| DeclarationSpecifiers InitDeclaratorList ';'	{ /* TODO */ }
+	: DeclarationSpecifiers ';'		{
+				CDeclSpec spec;
+
+				/* Finalize the declaration specifier */
+				if(CCurrentScope == CGlobalScope)
+				{
+					spec = CDeclSpecFinalize($1, 0, 0, C_KIND_GLOBAL_NAME);
+				}
+				else
+				{
+					spec = CDeclSpecFinalize($1, 0, 0, C_KIND_LOCAL_NAME);
+				}
+
+				/* Check for useless declarations */
+				if((!CTypeIsStruct(spec.baseType) &&
+				    !CTypeIsUnion(spec.baseType)) ||
+				    (spec.specifiers & C_SPEC_STORAGE) != 0)
+				{
+					CCWarning(_("useless keyword or type name "
+								"in empty declaration"));
+				}
+
+				/* This declaration's code is the empty statement */
+				$$ = ILNode_Empty_create();
+			}
+	| DeclarationSpecifiers InitDeclaratorList ';'	{
+				CDeclSpec spec;
+				ILNode_CDeclarator *decl;
+				ILNode_ListIter iter;
+				ILNode *list;
+
+				/* Find the first declarator, for error reporting */
+				if(!yyisa($2, ILNode_List))
+				{
+					decl = (ILNode_CDeclarator *)($2);
+				}
+				else
+				{
+					ILNode_ListIter_Init(&iter, $2);
+					decl = (ILNode_CDeclarator *)(ILNode_ListIter_Next(&iter));
+				}
+
+				/* Finalize the declaration specifier */
+				if(CCurrentScope == CGlobalScope)
+				{
+					spec = CDeclSpecFinalize
+						($1, decl->decl.node, decl->decl.name,
+						 C_KIND_GLOBAL_NAME);
+				}
+				else
+				{
+					spec = CDeclSpecFinalize
+						($1, decl->decl.node, decl->decl.name,
+						 C_KIND_LOCAL_NAME);
+				}
+
+				/* Process the declarations in the list */
+				list = 0;
+				if(yyisa($2, ILNode_CInitDeclarator))
+				{
+					ProcessDeclaration(spec, decl->decl,
+						   ((ILNode_CInitDeclarator *)decl)->init, &list);
+				}
+				else if(yyisa($2, ILNode_CDeclarator))
+				{
+					ProcessDeclaration(spec, decl->decl, 0, &list);
+				}
+				else
+				{
+					ILNode_ListIter_Init(&iter, $2);
+					while((decl = (ILNode_CDeclarator *)
+							ILNode_ListIter_Next(&iter)) != 0)
+					{
+						if(yyisa(decl, ILNode_CInitDeclarator))
+						{
+							ProcessDeclaration(spec, decl->decl,
+							   ((ILNode_CInitDeclarator *)decl)->init, &list);
+						}
+						else
+						{
+							ProcessDeclaration(spec, decl->decl, 0, &list);
+						}
+					}
+				}
+				if(!list)
+				{
+					list = ILNode_Empty_create();
+				}
+				$$ = list;
+			}
 	;
 
 DeclarationSpecifiers
@@ -853,12 +1042,28 @@ DeclarationSpecifiers
 
 InitDeclaratorList
 	: InitDeclarator
-	| InitDeclaratorList ',' InitDeclarator
+	| InitDeclaratorList ',' InitDeclarator	{
+				if(yyisa($1, ILNode_List))
+				{
+					ILNode_List_Add($1, $3);
+					$$ = $1;
+				}
+				else
+				{
+					$$ = ILNode_List_create();
+					ILNode_List_Add($$, $1);
+					ILNode_List_Add($$, $3);
+				}
+			}
 	;
 
 InitDeclarator
-	: Declarator					{ /* TODO */}
-	| Declarator '=' Initializer	{ /* TODO */}
+	: Declarator	{
+				$$ = ILNode_CDeclarator_create($1);
+			}
+	| Declarator '=' Initializer	{
+				$$ = ILNode_CInitDeclarator_create($1, $3);
+			}
 	;
 
 StorageClassSpecifier
@@ -1412,14 +1617,14 @@ AbstractDeclarator2
 	;
 
 Initializer
-	: AssignmentExpression				{}
-	| '{' InitializerList '}'
-	| '{' InitializerList ',' '}'
+	: AssignmentExpression				{ $$ = $1; }
+	| '{' InitializerList '}'			{ $$ = $2; }
+	| '{' InitializerList ',' '}'		{ $$ = $2; }
 	;
 
 InitializerList
-	: Initializer
-	| InitializerList ',' Initializer
+	: Initializer						{ $$ = $1; }
+	| InitializerList ',' Initializer	{ $$ = 0; /* TODO */ }
 	;
 
 Statement
@@ -1595,7 +1800,18 @@ AsmStatement
 	;
 
 File
-	: File2
+	: File2				{
+				/* Flush the code for any remaining initializers */
+				if(initializers != 0)
+				{
+					CFunctionFlushInits(&CCCodeGen, initializers);
+					initializers = 0;
+				}
+
+				/* Roll the treecc node heap back to the last check point */
+				yynodepop();
+				yynodepush();
+			}
 	| /* empty */
 	;
 
@@ -1610,17 +1826,20 @@ ExternalDefinition
 				yynodepop();
 				yynodepush();
 			}
-	| Declaration			{
-				/* Roll the treecc node heap back to the last check point */
-				yynodepop();
-				yynodepush();
-			}
+	| Declaration			{ /* Nothing to do here */ }
 	;
 
 FunctionDefinition
 	: Declarator OptParamDeclarationList '{'	{
 				CDeclSpec spec;
 				ILMethod *method;
+
+				/* Flush the code for any pending initializers */
+				if(initializers != 0)
+				{
+					CFunctionFlushInits(&CCCodeGen, initializers);
+					initializers = 0;
+				}
 
 				/* The default return type in this case is "int" */
 				CDeclSpecSetType(spec, ILType_Int32);
@@ -1660,6 +1879,13 @@ FunctionDefinition
 	  		}
 	| DeclarationSpecifiers Declarator OptParamDeclarationList '{'	{
 				ILMethod *method;
+
+				/* Flush the code for any pending initializers */
+				if(initializers != 0)
+				{
+					CFunctionFlushInits(&CCCodeGen, initializers);
+					initializers = 0;
+				}
 
 				/* Create the method block from the function header */
 				method = CFunctionCreate

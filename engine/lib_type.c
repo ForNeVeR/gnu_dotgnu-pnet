@@ -2155,8 +2155,8 @@ IL_METHOD_BEGIN(_ILReflectionClrTypeMethods)
 						"oSystem.Reflection.Binder;"
 						"vSystem.Reflection.CallingConventions;"
 						"[oSystem.Type;"
-						"[vSystem.Reflection.ParameterModifiers;)"
-					")oSystem.Reflection.MethodInfo;",
+						"[vSystem.Reflection.ParameterModifier;)"
+					")oSystem.Reflection.MemberInfo;",
 					ClrType_GetMemberImpl)
 	IL_METHOD("GetMembersImpl",
 					"(TvSystem.Reflection.MemberTypes;"

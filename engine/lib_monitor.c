@@ -177,15 +177,6 @@ ILBool _IL_Monitor_InternalTryEnter(ILExecThread *thread,
 		return 0;
 	}
 
-	/* Make sure the object isn't a value type */
-	if (ILType_IsValueType(GetObjectClass(obj)))
-	{
-		ILExecThreadThrowSystem(thread, "System.ArgumentException",
-			"Arg_IsValueType");
-
-		return 0;
-	}
-
 	/* Make sure the timeout is within range */
 	if (timeout < -1)
 	{

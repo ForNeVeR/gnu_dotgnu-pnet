@@ -1,4 +1,8 @@
 
+2002-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/Makefile.am: add missing "queue.c" to Makefile.am.
+
 2002-11-02  Charles Schuller  <kyeran@hermes-solutions.biz>
 
 	* support/queue.c, include/il_utils.h, support/Makefile.am: add a 

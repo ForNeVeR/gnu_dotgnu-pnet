@@ -33,6 +33,7 @@ libILSupport_a_SOURCES = aes.c \
 						 mutex.c \
 						 no_defs.c \
 						 pt_defs.c \
+						 queue.c \
 						 rc2.c \
 						 read_float.c \
 						 rem_float.c \

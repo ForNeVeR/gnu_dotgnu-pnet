@@ -445,6 +445,109 @@ void _IL_CryptoMethods_SymmetricFree(ILExecThread *_thread, ILNativeInt state)
 	ILFree((void *)state);
 }
 
+/*
+ * public static byte[] NumAdd(byte[] x, byte[] y, byte[] modulus);
+ */
+System_Array *_IL_CryptoMethods_NumAdd(ILExecThread *_thread,
+									   System_Array *x,
+									   System_Array *y,
+									   System_Array *modulus)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static byte[] NumMul(byte[] x, byte[] y, byte[] modulus);
+ */
+System_Array *_IL_CryptoMethods_NumMul(ILExecThread *_thread,
+									   System_Array *x,
+									   System_Array *y,
+									   System_Array *modulus)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static byte[] NumPow(byte[] x, byte[] y, byte[] modulus);
+ */
+System_Array *_IL_CryptoMethods_NumPow(ILExecThread *_thread,
+									   System_Array *x,
+									   System_Array *y,
+									   System_Array *modulus)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static byte[] NumInv(byte[] x, byte[] modulus);
+ */
+System_Array *_IL_CryptoMethods_NumInv(ILExecThread *_thread,
+									   System_Array *x,
+									   System_Array *modulus)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static byte[] NumMod(byte[] x, byte[] modulus);
+ */
+System_Array *_IL_CryptoMethods_NumMod(ILExecThread *_thread,
+									   System_Array *x,
+									   System_Array *modulus)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static bool NumEq(byte[] x, byte[] y);
+ */
+ILBool _IL_CryptoMethods_NumEq(ILExecThread *_thread,
+							   System_Array *x,
+							   System_Array *y)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static bool NumZero(byte[] x);
+ */
+ILBool _IL_CryptoMethods_NumZero(ILExecThread *_thread, System_Array *x)
+{
+	return 0;
+}
+
+/*
+ * public static byte[] GetKey(int algorithm, String name,
+ *							   CspProviderFlags flag, out int result);
+ */
+System_Array *_IL_CryptoMethods_GetKey(ILExecThread *_thread,
+									   ILInt32 algorithm,
+									   ILString *name,
+									   ILInt32 flag,
+									   ILInt32 *result)
+{
+	/* TODO */
+	*result = 1;	/* UnknownKey */
+	return 0;
+}
+
+/*
+ * public static void StoreKey(int algorithm, String name, byte[] key);
+ */
+void _IL_CryptoMethods_StoreKey(ILExecThread *_thread,
+								ILInt32 algorithm,
+								ILString *name,
+								System_Array *key)
+{
+	/* TODO */
+}
+
 #ifdef	__cplusplus
 };
 #endif

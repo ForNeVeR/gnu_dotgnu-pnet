@@ -21,6 +21,6 @@
 namespace System
 {
 
-public delegate void EventHandler(EventArgs args);
+public delegate void EventHandler(Object sender, EventArgs args);
 
 }; // namespace System

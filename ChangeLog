@@ -6,6 +6,8 @@
 	* System/ComponentModel/EventHandlerList.cs: new class in the
 	"System" assembly.
 
+	* runtime/System/EventHandler.cs: add missing "sender" argument.
+
 2002-06-27  Charlie Carnow   <carnow@gmx.net>
 
 	* System.Xml/XmlReader.cs: Implemented IsStartElement(System.String,

@@ -1583,6 +1583,16 @@ ILClass *ILClassResolveSystem(ILImage *image, void *data, const char *name,
 	return 0;
 }
 
+void *ILClassGetUserData(ILClass *info)
+{
+	return info->userData;
+}
+
+void ILClassSetUserData(ILClass *info, void *data)
+{
+	info->userData = data;
+}
+
 #ifdef	__cplusplus
 };
 #endif

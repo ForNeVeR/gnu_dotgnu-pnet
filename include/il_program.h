@@ -740,6 +740,16 @@ ILClass *ILClassResolveSystem(ILImage *image, void *data, const char *name,
 							  const char *namespace);
 
 /*
+ * Get the user data associated with a class.
+ */
+void *ILClassGetUserData(ILClass *info);
+
+/*
+ * Set the user data associated with a class.
+ */
+void ILClassSetUserData(ILClass *info, void *data);
+
+/*
  * Helper macros for querying information about a class.
  */
 #define	ILClass_FromToken(image,token)	\
@@ -753,6 +763,7 @@ ILClass *ILClassResolveSystem(ILImage *image, void *data, const char *name,
 #define	ILClass_Parent(info)		(ILClassGetParent((info)))
 #define	ILClass_ParentRef(info)		(ILClassGetParentRef((info)))
 #define	ILClass_NestedParent(info)	(ILClassGetNestedParent((info)))
+#define	ILClass_UserData(info)		(ILClassGetUserData((info)))
 #define	ILClass_IsPrivate(info)	\
 			((ILClassGetAttrs((info)) & IL_META_TYPEDEF_VISIBILITY_MASK) \
 					== IL_META_TYPEDEF_NOT_PUBLIC)

@@ -99,12 +99,15 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	int errorReported;
 	ILNode_ClassDefn *defn;
 	ILNode *savedNamespace;
+	ILProgramItem *nestedScope;
+	ILNode *node;
+	ILNode_ListIter iter;
 
 	/* Get the name and namespace for the type, for error reporting */
 	defn = (ILNode_ClassDefn *)type;
 	name = defn->name;
 	namespace = defn->namespace;
-	if(namespace && *namespace == '\0')
+	if(defn->nestedParent || (namespace && *namespace == '\0'))
 	{
 		namespace = 0;
 	}
@@ -124,6 +127,23 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 
 	/* Mark this type as already seen so that we can detect recursion */
 	defn->classInfo = (ILClass *)2;
+
+	/* If this is a nested type, then create its nesting parent first */
+	if(defn->nestedParent)
+	{
+		CreateType(info, globalScope, list,
+				   systemObjectName, (ILNode *)(defn->nestedParent));
+		nestedScope = (ILProgramItem *)(defn->nestedParent->classInfo);
+		if(!nestedScope || nestedScope == (ILProgramItem *)1 ||
+		   nestedScope == (ILProgramItem *)1)
+		{
+			nestedScope = ILClassGlobalScope(info->image);
+		}
+	}
+	else
+	{
+		nestedScope = ILClassGlobalScope(info->image);
+	}
 
 	/* Set the namespace to use for resolving type names */
 	savedNamespace = info->currentNamespace;
@@ -265,8 +285,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	}
 
 	/* Create the class information block */
-	classInfo = ILClassCreate(ILClassGlobalScope(info->image), 0,
-							  name, namespace, parent);
+	classInfo = ILClassCreate(nestedScope, 0, name, namespace, parent);
 	if(!classInfo)
 	{
 		CCOutOfMemory();
@@ -292,8 +311,29 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		ILFree(baseList);
 	}
 
+	/* Record the node on the class as user data */
+	ILClassSetUserData(classInfo, defn);
+
 	/* Add the type to the new top-level list in create order */
-	ILNode_List_Add(list, type);
+	if(!(defn->nestedParent))
+	{
+		ILNode_List_Add(list, type);
+	}
+
+	/* Process the nested types */
+	node = defn->body;
+	if(node && yyisa(node, ILNode_ScopeChange))
+	{
+		node = ((ILNode_ScopeChange *)node)->body;
+	}
+	ILNode_ListIter_Init(&iter, node);
+	while((node = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(yyisa(node, ILNode_ClassDefn))
+		{
+			CreateType(info, globalScope, list, systemObjectName, node);
+		}
+	}
 }
 
 /*
@@ -981,9 +1021,12 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 			CreateDelegateMember(info, classInfo,
 								 (ILNode_DelegateMemberDeclaration *)member);
 		}
-		else if(yykind(member) != yykindof(ILNode_ClassDefn))
+		else if(yykind(member) == yykindof(ILNode_ClassDefn))
 		{
-			/* TODO: nested classes */
+			CreateMembers(info, globalScope, member);
+		}
+		else
+		{
 			CCErrorOnLine(yygetfilename(member), yygetlinenum(member),
 				  "internal error - do not know how to declare this member");
 		}
@@ -995,36 +1038,36 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	info->currentNamespace = savedNamespace;
 }
 
-ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
+/*
+ * Scan all types and their nested children to declare them.
+ */
+static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
+						 ILNode *tree, ILNode_List *list,
+						 ILNode_ClassDefn *nestedParent)
 {
 	ILNode_ListIter iterator;
 	ILNode *child;
 	ILNode_ClassDefn *defn;
-	ILNode_List *list;
+	ILScope *scope;
 	ILNode *origDefn;
-	int error;
 	const char *name;
 	const char *namespace;
-	ILScope *scope;
-	ILNode *systemObject;
+	int error;
 
-	/* Create a new top-level list for the program */
-	list = (ILNode_List *)ILNode_List_create();
-
-	/* Scan all top-level types to declare them */
 	ILNode_ListIter_Init(&iterator, tree);
 	while((child = ILNode_ListIter_Next(&iterator)) != 0)
 	{
 		if(yykind(child) == yykindof(ILNode_ClassDefn))
 		{
 			defn = (ILNode_ClassDefn *)child;
+			defn->nestedParent = nestedParent;
 			name = defn->name;
 			namespace = defn->namespace;
-			if(namespace && *namespace == '\0')
+			if(nestedParent || (namespace && *namespace == '\0'))
 			{
 				namespace = 0;
 			}
-			error = ILScopeDeclareType(globalScope, child,
+			error = ILScopeDeclareType(parentScope, child,
 								   	   name, namespace, &scope,
 								   	   &origDefn);
 			if(error != IL_SCOPE_ERROR_OK)
@@ -1086,16 +1129,34 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 			}
 			else
 			{
-				/* Declare nested types also */
+				/* Declare nested types */
+				DeclareTypes(info, scope, defn->body, list, defn);
 
 				/* Replace the class body with a scoped body */
 				defn->body = ILNode_ScopeChange_create(scope, defn->body);
 
 				/* Add the type to the end of the new top-level list */
-				ILNode_List_Add(list, child);
+				if(!nestedParent)
+				{
+					ILNode_List_Add(list, child);
+				}
 			}
 		}
 	}
+}
+
+ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
+{
+	ILNode_ListIter iterator;
+	ILNode *child;
+	ILNode_List *list;
+	ILNode *systemObject;
+
+	/* Create a new top-level list for the program */
+	list = (ILNode_List *)ILNode_List_create();
+
+	/* Scan all top-level types to declare them */
+	DeclareTypes(info, globalScope, tree, list, 0);
 
 	/* Create the top-level types, and re-order them so that the
 	   base types are listed before types that inherit them */

@@ -11,6 +11,9 @@
 	* engine/Makefile.am, engine/ilrun.c, engine/register.c:
 	add operating system binfmt registration code to ilrun.
 
+	* codegen/cg_nodes.tc, cscc/csharp/cs_gather.c, image/class.c,
+	include/il_program.h: begin type gathering support for nested types.
+
 2001-03-16  Gopal.V <gopalv82@yahoo.com>
 
 	* system/il_system.h , support/file.c : Added the file 

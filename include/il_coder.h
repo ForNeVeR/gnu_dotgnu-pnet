@@ -707,9 +707,50 @@ struct _tagILCoderClass
 	 * Set the different flags which enable or disable
 	 * profiling, debugging etc.
 	 */
-	void (*setFlags)(ILCoder *coder,int flags);
+	void (*setFlags)(ILCoder *coder, int flags);
 
-	
+	/*
+	 * Allocate an extra local variable in the current method frame.
+	 * Returns the local variable index.
+	 */
+	ILUInt32 (*allocExtraLocal)(ILCoder *coder, ILType *type);
+
+	/*
+	 * Push a thread value onto the stack for an internalcall.
+	 */
+	void (*pushThread)(ILCoder *coder, int useRawCalls);
+
+	/*
+	 * Load the address of an argument onto the native argument stack.
+	 */
+	void (*loadNativeArgAddr)(ILCoder *coder, ILUInt32 num);
+
+	/*
+	 * Load the address of a local onto the native argument stack.
+	 */
+	void (*loadNativeLocalAddr)(ILCoder *coder, ILUInt32 num);
+
+	/*
+	 * Start pushing arguments for a "libffi" call onto the stack.
+	 */
+	void (*startFfiArgs)(ILCoder *coder);
+
+	/*
+	 * Push the address of the raw argument block onto the stack.
+	 */
+	void (*pushRawArgPointer)(ILCoder *coder);
+
+	/*
+	 * Perform a function call using "libffi".
+	 */
+	void (*callFfi)(ILCoder *coder, void *fn, void *cif,
+					int useRawCalls, int hasReturn);
+
+	/*
+	 * Check the top of stack value for NULL.
+	 */
+	void (*checkNull)(ILCoder *coder);
+
 	/*
 	 * Sentinel string to catch missing methods in class tables.
 	 */
@@ -953,10 +994,25 @@ struct _tagILCoderClass
 												      (offset), (exact)))
 #define	ILCoderMarkBytecode(coder,offset) \
 			((*((coder)->classInfo->markBytecode))((coder), (offset)))
-
 #define ILCoderSetFlags(coder,flags) \
-	((*((coder)->classInfo->setFlags))((coder), (flags)))
-
+			((*((coder)->classInfo->setFlags))((coder), (flags)))
+#define	ILCoderAllocExtraLocal(coder,type) \
+			((*((coder)->classInfo->allocExtraLocal))((coder), (type)))
+#define	ILCoderPushThread(coder,useRawCalls) \
+			((*((coder)->classInfo->pushThread))((coder), (useRawCalls)))
+#define	ILCoderLoadNativeArgAddr(coder,num) \
+			((*((coder)->classInfo->loadNativeArgAddr))((coder), (num)))
+#define	ILCoderLoadNativeLocalAddr(coder,num) \
+			((*((coder)->classInfo->loadNativeLocalAddr))((coder), (num)))
+#define	ILCoderStartFfiArgs(coder) \
+			((*((coder)->classInfo->startFfiArgs))((coder)))
+#define	ILCoderPushRawArgPointer(coder) \
+			((*((coder)->classInfo->pushRawArgPointer))((coder)))
+#define	ILCoderCallFfi(coder,fn,cif,useRawCalls,hasReturn) \
+			((*((coder)->classInfo->callFfi))((coder), (fn), (cif), \
+											  (useRawCalls), (hasReturn)))
+#define	ILCoderCheckNull(coder) \
+			((*((coder)->classInfo->checkNull))((coder)))
 #define	ILCoderMarkEnd(coder) \
 			((*((coder)->classInfo->markEnd))((coder)))
 

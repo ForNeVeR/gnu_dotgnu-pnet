@@ -24,7 +24,7 @@
  * Load elements from an array.
  */
 static void LoadArrayElem(ILCoder *coder, int opcode1, int opcode2,
-						  ILEngineType engineType, int shift, int stackSize)
+						  ILEngineType indexType, int shift, int stackSize)
 {
 #ifdef IL_NATIVE_INT64
 	if(indexType == ILEngineType_I4)
@@ -625,6 +625,14 @@ static void CVMCoder_NewArray(ILCoder *coder, ILType *arrayType,
 
 	/* Output code to call the array type's constructor */
 	CVM_OUT_PTR(COP_CALL_CTOR, ctor);
+}
+
+/*
+ * Check the top of stack value for NULL.
+ */
+static void CVMCoder_CheckNull(ILCoder *coder)
+{
+	CVM_OUT_NONE(COP_CKNULL);
 }
 
 #endif	/* IL_CVMC_CODE */

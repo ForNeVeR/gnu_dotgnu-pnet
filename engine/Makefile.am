@@ -11,6 +11,7 @@ libILEngine_a_SOURCES = cvm.c \
 						cvm_lengths.c \
 						cvmc.c \
 						dumpconfig.c \
+						gen_marshal.c \
 						heap.c \
 						internal.c \
 						layout.c \
@@ -101,4 +102,8 @@ cvm.o: cvm_labels.h
 cvm_labels.h: $(srcdir)/cvm.h $(srcdir)/mklabel.sh
 	$(SHELL) $(srcdir)/mklabel.sh "$(AWK)" $(srcdir)/cvm.h >cvm_labels.h
 
-CLEANFILES = cvm_opt.s cvm_opt.s.tmp asmfix ilrun_opt cvm_labels.h
+$(srcdir)/gen_marshal.c: $(srcdir)/gen_marshal.tc
+	$(TREECC) -f -o $(srcdir)/gen_marshal.c -h $(srcdir)/gen_marshal.h \
+			$(srcdir)/gen_marshal.tc
+
+CLEANFILES = cvm_labels.h $(srcdir)/gen_marshal.c $(srcdir)/gen_marshal.h

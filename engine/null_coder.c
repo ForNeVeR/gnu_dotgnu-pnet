@@ -372,6 +372,32 @@ static void Coder_MarkEnd(ILCoder *coder)
 static void Coder_SetFlags(ILCoder *coder, int flags)
 {
 }
+static ILUInt32 Coder_AllocExtraLocal(ILCoder *coder, ILType *type)
+{
+	return 0;
+}
+static void Coder_PushThread(ILCoder *coder, int useRawCalls)
+{
+}
+static void Coder_LoadNativeArgAddr(ILCoder *coder, ILUInt32 num)
+{
+}
+static void Coder_LoadNativeLocalAddr(ILCoder *coder, ILUInt32 num)
+{
+}
+static void Coder_StartFfiArgs(ILCoder *coder)
+{
+}
+static void Coder_PushRawArgPointer(ILCoder *coder)
+{
+}
+static void Coder_CallFfi(ILCoder *coder, void *fn, void *cif,
+				  		  int useRawCalls, int hasReturn)
+{
+}
+static void Coder_CheckNull(ILCoder *coder)
+{
+}
 
 /*
  * Null coder class and instance.
@@ -469,6 +495,14 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_MarkBytecode,
 	Coder_MarkEnd,
 	Coder_SetFlags,
+	Coder_AllocExtraLocal,
+	Coder_PushThread,
+	Coder_LoadNativeArgAddr,
+	Coder_LoadNativeLocalAddr,
+	Coder_StartFfiArgs,
+	Coder_PushRawArgPointer,
+	Coder_CallFfi,
+	Coder_CheckNull,
 	"sentinel"
 };
 ILCoder _ILNullCoder = {&_ILNullCoderClass};

@@ -79,6 +79,8 @@ struct _tagILCVMCoder
 	ILMethod	   *currentMethod;
 	int				debugEnabled;
 	int				flags;
+	long			nativeArgPosn;
+	long			nativeArgHeight;
 };
 
 /*
@@ -161,6 +163,9 @@ static ILCoder *CVMCoder_Create(ILUInt32 size, unsigned long cachePageSize)
 	coder->currentMethod = 0;
 	coder->debugEnabled = 0;
 	coder->flags = 0;
+	coder->nativeArgPosn = 0;
+	coder->nativeArgHeight = 0;
+
 	/* Call the interpreter to export the label tables for
 	   use in code generation for direct threading */
 	_ILCVMInterpreter(0);
@@ -439,6 +444,14 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_MarkBytecode,
 	CVMCoder_MarkEnd,
 	CVMCoder_SetFlags,
+	CVMCoder_AllocExtraLocal,
+	CVMCoder_PushThread,
+	CVMCoder_LoadNativeArgAddr,
+	CVMCoder_LoadNativeLocalAddr,
+	CVMCoder_StartFfiArgs,
+	CVMCoder_PushRawArgPointer,
+	CVMCoder_CallFfi,
+	CVMCoder_CheckNull,
 	"sentinel"
 };
 

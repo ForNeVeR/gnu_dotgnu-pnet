@@ -1,8 +1,14 @@
 
-2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+2003-07-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/Makefile.am, csant/csant.1: add the "csant.1" man page
 	to the Makefile; minor edits to the man page.
+
+	* engine/Makefile.am, engine/.cvsignore, engine/cvmc.c,
+	engine/cvmc_ptr.c, engine/cvmc_setup.c, engine/gen_marshal.tc,
+	engine/null_coder.c, engine/verify.c, include/il_coder.h:
+	start adding support for a treecc-based marshalling system,
+	to eventually replace the "CVMCoder_SetupExtern" mess.
 
 2003-07-27  Gopal.V  <gopalv82@symonds.net>
 	

@@ -8,3 +8,5 @@ asmfix
 cvm_opt.s
 cvm_opt.s.tmp
 cvm_labels.h
+gen_marshal.c
+gen_marshal.h

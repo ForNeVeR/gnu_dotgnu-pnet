@@ -1364,4 +1364,126 @@ static void CVMCoder_MarkEnd(ILCoder *coder)
 	}
 }
 
+/*
+ * Allocate an extra local variable in the current method frame.
+ * Returns the local variable index.
+ */
+static ILUInt32 CVMCoder_AllocExtraLocal(ILCoder *coder, ILType *type)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * Push a thread value onto the stack for an internalcall.
+ */
+static void CVMCoder_PushThread(ILCoder *_coder, int useRawCalls)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	if(useRawCalls)
+	{
+		CVM_OUT_NONE(COP_PUSH_THREAD_RAW);
+		CVM_ADJUST(1);
+	}
+	else
+	{
+		CVM_OUT_NONE(COP_PUSH_THREAD);
+		++(coder->nativeArgPosn);
+	}
+}
+
+/*
+ * Load the address of an argument onto the native argument stack.
+ */
+static void CVMCoder_LoadNativeArgAddr(ILCoder *_coder, ILUInt32 num)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	ILUInt32 offset = ((ILCVMCoder *)coder)->argOffsets[num];
+	if(coder->nativeArgPosn < 8)
+	{
+		CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + coder->nativeArgPosn, offset);
+	}
+	else
+	{
+		CVMP_OUT_WORD2(COP_PREFIX_WADDR_NATIVE_N,
+					   (ILUInt32)(ILInt32)(coder->nativeArgPosn),
+					   offset);
+	}
+	++(coder->nativeArgPosn);
+}
+
+/*
+ * Load the address of a local onto the native argument stack.
+ */
+static void CVMCoder_LoadNativeLocalAddr(ILCoder *_coder, ILUInt32 num)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	ILUInt32 offset = ((ILCVMCoder *)coder)->localOffsets[num];
+	if(coder->nativeArgPosn < 8)
+	{
+		CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + coder->nativeArgPosn, offset);
+	}
+	else
+	{
+		CVMP_OUT_WORD2(COP_PREFIX_WADDR_NATIVE_N,
+					   (ILUInt32)(ILInt32)(coder->nativeArgPosn),
+					   offset);
+	}
+	++(coder->nativeArgPosn);
+}
+
+/*
+ * Start pushing arguments for a "libffi" call onto the stack.
+ */
+static void CVMCoder_StartFfiArgs(ILCoder *_coder)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	coder->nativeArgPosn = -1;
+	coder->nativeArgHeight = coder->height;
+}
+
+/*
+ * Push the address of the raw argument block onto the stack.
+ */
+static void CVMCoder_PushRawArgPointer(ILCoder *_coder)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	ILUInt32 height = (ILUInt32)(coder->height - coder->nativeArgHeight);
+	CVM_OUT_WIDE(COP_MADDR, height);
+	CVM_ADJUST(1);
+}
+
+/*
+ * Perform a function call using "libffi".
+ */
+static void CVMCoder_CallFfi(ILCoder *coder, void *fn, void *cif,
+					  		 int useRawCalls, int hasReturn)
+{
+	if(useRawCalls)
+	{
+		if(hasReturn)
+		{
+			CVM_OUT_PTR2(COP_CALL_NATIVE_RAW, fn, cif);
+			CVM_ADJUST(-2);
+		}
+		else
+		{
+			CVM_OUT_PTR2(COP_CALL_NATIVE_VOID_RAW, fn, cif);
+			CVM_ADJUST(-1);
+		}
+	}
+	else
+	{
+		if(hasReturn)
+		{
+			CVM_OUT_PTR2(COP_CALL_NATIVE, fn, cif);
+			CVM_ADJUST(-1);
+		}
+		else
+		{
+			CVM_OUT_PTR2(COP_CALL_NATIVE_VOID, fn, cif);
+		}
+	}
+}
+
 #endif	/* IL_CVMC_CODE */

@@ -242,6 +242,10 @@ static ILEngineType TypeToEngineType(ILType *type)
 	}
 	return ILEngineType_O;
 }
+ILEngineType _ILTypeToEngineType(ILType *type)
+{
+	return TypeToEngineType(type);
+}
 
 /*
  * Determine if a type is represented as an object reference.

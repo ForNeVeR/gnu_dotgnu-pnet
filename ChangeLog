@@ -38,6 +38,9 @@ of "ILMemberResolveRef".
 
 * engine/heap.c: set the maximum heap size when the heap is created.
 
+* engine/lib_decimal.c: change the error message for "Decimal" division
+by zero exceptions.
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

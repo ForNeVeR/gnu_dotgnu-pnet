@@ -45,7 +45,7 @@ static void ThrowDecimalOverflow(ILExecThread *thread)
 static void ThrowDecimalDivZero(ILExecThread *thread)
 {
 	ILExecThreadThrowSystem(thread, "System.DivideByZeroException",
-							"Arg_DivByZero");
+							"Decimal_DivZero");
 }
 
 /*

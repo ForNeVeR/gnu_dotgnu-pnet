@@ -937,7 +937,7 @@ static ILM_Node *MarshalNativeParameter(ILM_Context *context, ILM_State *state,
 	   (marshalType = ILPInvokeGetMarshalType(pinv, context->method, paramNum,
 	   										  &customName, &customNameLen,
 											  &customCookie,
-											  &customCookieLen))
+											  &customCookieLen, argType))
 			!= IL_META_MARSHAL_DIRECT)
 	{
 		switch(marshalType)

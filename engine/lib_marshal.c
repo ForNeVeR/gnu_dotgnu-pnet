@@ -605,6 +605,56 @@ ILBool _IL_Marshal_StructureToPtrInternal(ILExecThread *_thread,
 	return 0;
 }
 
+void _ILStructToNative(ILExecThread *thread, void *value, ILType *type)
+{
+	ILClass *classInfo;
+	ILField *field;
+	void *ptr;
+	ILMethod *method;
+	ILPInvoke *pinv;
+	ILUInt32 marshalType;
+	char *customName;
+	int customNameLen;
+	char *customCookie;
+	int customCookieLen;
+
+	/* Bail out if not a struct type */
+	type = ILTypeStripPrefixes(type);
+	if(!ILType_IsValueType(type))
+	{
+		return;
+	}
+
+	/* Get the current method and PInvoke information */
+	method = thread->method;
+	pinv = ILPInvokeFind(method);
+
+	/* Process the fields within the type */
+	classInfo = ILType_ToValueType(type);
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field,
+				 IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(ILField_IsStatic(field))
+		{
+			continue;
+		}
+		type = ILField_Type(field);
+		ptr = (void *)(((unsigned char *)value) + field->offset);
+		_ILStructToNative(thread, ptr, type);
+	    marshalType = ILPInvokeGetMarshalType(pinv, method, 0,
+	   										  &customName, &customNameLen,
+											  &customCookie,
+											  &customCookieLen, type);
+		/* TODO: convert other kinds of fields, not just delegates */
+		if(marshalType == IL_META_MARSHAL_FNPTR)
+		{
+			*((void **)ptr) = _ILDelegateGetClosure(*((ILObject **)ptr));
+		}
+	}
+}
+
 #endif /* IL_CONFIG_PINVOKE */
 
 #ifdef	__cplusplus

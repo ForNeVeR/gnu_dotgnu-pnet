@@ -1538,7 +1538,7 @@ ILPInvoke *ILPInvokeFindField(ILField *field);
 ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 								 unsigned long param, char **customName,
 								 int *customNameLen, char **customCookie,
-								 int *customCookieLen);
+								 int *customCookieLen, ILType *type);
 
 /*
  * Resolve the module information for a PInvoke declaration

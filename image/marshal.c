@@ -52,8 +52,8 @@ static ILUInt32 StringCharSet(ILPInvoke *pinvoke, ILMethod *method)
 	}
 
 	/* Check the class for character set information */
-	if((method->member.owner->attributes &
-				IL_META_TYPEDEF_STRING_FORMAT_MASK) ==
+	if(method && (method->member.owner->attributes &
+						IL_META_TYPEDEF_STRING_FORMAT_MASK) ==
 			IL_META_TYPEDEF_UNICODE_CLASS)
 	{
 		return IL_META_MARSHAL_UTF8_STRING;
@@ -79,9 +79,8 @@ static ILUInt32 StringCharSet(ILPInvoke *pinvoke, ILMethod *method)
 ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 								 unsigned long param, char **customName,
 								 int *customNameLen, char **customCookie,
-								 int *customCookieLen)
+								 int *customCookieLen, ILType *type)
 {
-	ILType *type = ILTypeGetParam(method->member.signature, param);
 	ILParameter *parameter;
 	ILFieldMarshal *marshal;
 	const unsigned char *nativeType;
@@ -89,14 +88,21 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 	int nativeTypeCode;
 
 	/* Find the parameter information block */
-	if(!(method->parameters))
+	if(method)
 	{
-		_ILMethodLoadParams(method);
+		if(!(method->parameters))
+		{
+			_ILMethodLoadParams(method);
+		}
+		parameter = method->parameters;
+		while(parameter != 0 && parameter->paramNum != param)
+		{
+			parameter = parameter->next;
+		}
 	}
-	parameter = method->parameters;
-	while(parameter != 0 && parameter->paramNum != param)
+	else
 	{
-		parameter = parameter->next;
+		parameter = 0;
 	}
 
 	/* See if we have native type information for the parameter */
@@ -219,7 +225,7 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 								 unsigned long param, char **customName,
 								 int *customNameLen, char **customCookie,
-								 int *customCookieLen)
+								 int *customCookieLen, ILType *type)
 {
 	return IL_META_MARSHAL_DIRECT;
 }

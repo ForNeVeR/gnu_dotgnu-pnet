@@ -1,4 +1,11 @@
 
+2003-10-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,
+	engine/cvm_lengths.c, engine/cvmc_setup.c, engine/gen_marshal.tc,
+	engine/lib_marshal.c, engine/pinvoke.c, image/marshal.c,
+	include/il_program.h: marshal structures that contain delegate fields.
+
 2003-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_type.c (InternalGetSerializableMembers): misplaced "++".

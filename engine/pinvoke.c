@@ -501,7 +501,8 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 		/* Marshal parameters that need special handling */
 		marshalType = ILPInvokeGetMarshalType(0, pinvokeInfo, param,
 											  &customName, &customNameLen,
-											  &customCookie, &customCookieLen);
+											  &customCookie, &customCookieLen,
+											  ILTypeGetParam(signature, param));
 		if(marshalType != IL_META_MARSHAL_DIRECT)
 		{
 			switch(marshalType)
@@ -738,7 +739,7 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 	/* Marshal return types that need special handling */
 	marshalType = ILPInvokeGetMarshalType
 			(0, pinvokeInfo, 0, &customName, &customNameLen,
-			 &customCookie, &customCookieLen);
+			 &customCookie, &customCookieLen, ILTypeGetReturn(signature));
 	if(marshalType != IL_META_MARSHAL_DIRECT)
 	{
 		switch(marshalType)

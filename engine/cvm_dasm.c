@@ -60,6 +60,7 @@ extern	"C" {
 #define	CVM_OPER_CUSTOM				27
 #define	CVM_OPER_TWO_UINT32			28
 #define	CVM_OPER_TAIL_INTERFACE		29
+#define	CVM_OPER_TYPE				30
 
 /*
  * Table of CVM opcodes.  This must be kept in sync with "cvm.h".
@@ -421,7 +422,7 @@ static CVMOpcode const opcodes[256] = {
 	 */
 	{"prefix",			CVM_OPER_PREFIX},
 };
-static CVMOpcode const prefixOpcodes[96] = {
+static CVMOpcode const prefixOpcodes[0x70] = {
 	/*
 	 * Reserved opcodes.
 	 */
@@ -534,6 +535,7 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"fromcustom",		CVM_OPER_CUSTOM},
 	{"array2ansi",		CVM_OPER_NONE},
 	{"array2utf8",		CVM_OPER_NONE},
+	{"struct2native",	CVM_OPER_TYPE},
 
 	/*
 	 * Inline method replacements.
@@ -584,7 +586,22 @@ static CVMOpcode const prefixOpcodes[96] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_5F",	CVM_OPER_NONE},
+	{"preserved_60",	CVM_OPER_NONE},
+	{"preserved_61",	CVM_OPER_NONE},
+	{"preserved_62",	CVM_OPER_NONE},
+	{"preserved_63",	CVM_OPER_NONE},
+	{"preserved_64",	CVM_OPER_NONE},
+	{"preserved_65",	CVM_OPER_NONE},
+	{"preserved_66",	CVM_OPER_NONE},
+	{"preserved_67",	CVM_OPER_NONE},
+	{"preserved_68",	CVM_OPER_NONE},
+	{"preserved_69",	CVM_OPER_NONE},
+	{"preserved_6A",	CVM_OPER_NONE},
+	{"preserved_6B",	CVM_OPER_NONE},
+	{"preserved_6C",	CVM_OPER_NONE},
+	{"preserved_6D",	CVM_OPER_NONE},
+	{"preserved_6E",	CVM_OPER_NONE},
+	{"preserved_6F",	CVM_OPER_NONE},
 };
 
 /*

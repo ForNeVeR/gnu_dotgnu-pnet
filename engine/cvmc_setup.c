@@ -538,6 +538,82 @@ static void CVMEntryPushLeadIn(CVMEntryContext *ctx, ILCVMCoder *coder,
 	}
 }
 
+#ifdef IL_CONFIG_PINVOKE
+
+/*
+ * Determine if a parameter will need marshalling conversion on
+ * the members of a by-ref structure.
+ */
+static int NeedsStructConversion(ILMethod *method, ILPInvoke *pinv,
+								 unsigned long param, ILType *type)
+{
+	ILClass *classInfo;
+	ILField *field;
+	ILUInt32 marshalType;
+	char *customName;
+	int customNameLen;
+	char *customCookie;
+	int customCookieLen;
+	ILParameter *paramInfo;
+
+	/* Bail out if not a reference to a struct type */
+	if(!type || !ILType_IsComplex(type) ||
+	   ILType_Kind(type) != IL_TYPE_COMPLEX_BYREF)
+	{
+		return 0;
+	}
+	type = ILTypeStripPrefixes(ILType_Ref(type));
+	if(!ILType_IsValueType(type))
+	{
+		return 0;
+	}
+
+	/* Don't bother if this is an "out" parameter */
+	paramInfo = 0;
+	while((paramInfo = ILMethodNextParam(method, paramInfo)) != 0)
+	{
+		if(ILParameter_Num(paramInfo) == param &&
+		   ILParameter_IsOut(paramInfo))
+		{
+			return 0;
+		}
+	}
+
+	/* Determine if any of the fields need conversion */
+	classInfo = ILType_ToValueType(type);
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field,
+				 IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(ILField_IsStatic(field))
+		{
+			continue;
+		}
+		type = ILField_Type(field);
+		if(NeedsStructConversion(method, pinv, 0, type))
+		{
+			/* An inner type needs conversion, so convert the outer type */
+			return 1;
+		}
+	    marshalType = ILPInvokeGetMarshalType(pinv, method, 0,
+	   										  &customName, &customNameLen,
+											  &customCookie,
+											  &customCookieLen, type);
+		/* TODO: convert other kinds of fields, not just delegates */
+		if(marshalType == IL_META_MARSHAL_FNPTR)
+		{
+			/* We have found a field that needs to be marshalled */
+			return 1;
+		}
+	}
+
+	/* We don't need conversion if we get here */
+	return 0;
+}
+
+#endif /* IL_CONFIG_PINVOKE */
+
 /*
  * Push native arguments onto the stack.  If "coder" is NULL
  * then determine the number of extra locals that we need only.
@@ -595,7 +671,8 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 		   (marshalType = ILPInvokeGetMarshalType(pinv, method, param,
 		   										  &customName, &customNameLen,
 												  &customCookie,
-												  &customCookieLen))
+												  &customCookieLen,
+												  paramType))
 				!= IL_META_MARSHAL_DIRECT)
 		{
 			offset = coder->argOffsets[param - thisAdjust];
@@ -682,6 +759,25 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 			{
 				CVM_OUT_WIDE(COP_PSTORE, offset);
 			}
+			CVM_ADJUST(-1);
+		}
+
+		/* Check for by-ref structures which include fields that
+		   need to be marshalled explicitly on entry */
+		if(!isInternal &&
+		   NeedsStructConversion(method, pinv, param, paramType))
+		{
+			offset = coder->argOffsets[param - thisAdjust];
+			if(offset < 4)
+			{
+				CVM_OUT_NONE(COP_PLOAD_0 + offset);
+			}
+			else
+			{
+				CVM_OUT_WIDE(COP_PLOAD, offset);
+			}
+			CVM_ADJUST(1);
+			CVMP_OUT_PTR(COP_PREFIX_STRUCT2NATIVE, ILType_Ref(paramType));
 			CVM_ADJUST(-1);
 		}
 	#endif /* IL_CONFIG_PINVOKE */
@@ -1081,7 +1177,7 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 			/* Marshal the PInvoke return value back into a CLR object */
 			marshalType = ILPInvokeGetMarshalType
 				(ILPInvokeFind(method), method, 0, &customName, &customNameLen,
-				 &customCookie, &customCookieLen);
+				 &customCookie, &customCookieLen, returnType);
 			switch(marshalType)
 			{
 				case IL_META_MARSHAL_ANSI_STRING:

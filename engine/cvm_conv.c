@@ -2290,6 +2290,35 @@ VMCASE(COP_PREFIX_FROMCUSTOM):
 }
 VMBREAK(COP_PREFIX_FROMCUSTOM);
 
+/**
+ * <opcode name="struct2native" group="Conversion operators">
+ *   <operation>Convert a struct into its native form</operation>
+ *
+ *   <format>prefix<fsep/>struct2native<fsep/>type</format>
+ *   <dformat>{struct2native}<fsep/>type</dformat>
+ *
+ *   <form name="struct2native" code="COP_PREFIX_STRUCT2NATIVE"/>
+ *
+ *   <before>..., ptr</before>
+ *   <after>...</after>
+ *
+ *   <description>The structured value at <i>ptr</i> is converted from
+ *   its managed form into its native form, converting field values
+ *   as appropriate.</description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_STRUCT2NATIVE):
+{
+	/* Convert a struct into its native form */
+	extern void _ILStructToNative
+		(ILExecThread *thread, void *value, ILType *type);
+	COPY_STATE_TO_THREAD();
+	_ILStructToNative(thread, stacktop[-1].ptrValue, CVMP_ARG_PTR(ILType *));
+	RESTORE_STATE_FROM_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_PTR, -1);
+}
+VMBREAK(COP_PREFIX_STRUCT2NATIVE);
+
 #else /* !IL_CONFIG_PINVOKE */
 
 VMCASE(COP_PREFIX_STR2ANSI):
@@ -2317,6 +2346,13 @@ VMCASE(COP_PREFIX_FROMCUSTOM):
 	MODIFY_PC_AND_STACK(CVMP_LEN_WORD_PTR, 0);
 }
 VMBREAK(COP_PREFIX_TOCUSTOM);
+
+VMCASE(COP_PREFIX_STRUCT2NATIVE):
+{
+	/* Stub out PInvoke-related CVM opcodes */
+	MODIFY_PC_AND_STACK(CVMP_LEN_PTR, -1);
+}
+VMBREAK(COP_PREFIX_STRUCT2NATIVE);
 
 #endif /* !IL_CONFIG_PINVOKE */
 

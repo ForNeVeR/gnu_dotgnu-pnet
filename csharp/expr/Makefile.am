@@ -48,6 +48,7 @@ TESTS = arglist1.cs \
 		shift1.cs \
 		sizeof1.cs \
 		sizeof2.cs \
+		this1.cs \
 		typedref1.cs \
 		typedref2.cs \
 		typeof1.cs \

@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 using System.Runtime.InteropServices;
 
@@ -31,6 +31,6 @@ using System.Runtime.InteropServices;
 public delegate void ComponentChangedEventHandler
 			(Object sender, ComponentChangedEventArgs e);
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design

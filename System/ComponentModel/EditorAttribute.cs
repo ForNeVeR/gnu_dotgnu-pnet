@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 [AttributeUsage(AttributeTargets.All)]
 public sealed class EditorAttribute : Attribute
@@ -105,6 +105,6 @@ public sealed class EditorAttribute : Attribute
 
 }; // class EditorAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.ComponentModel

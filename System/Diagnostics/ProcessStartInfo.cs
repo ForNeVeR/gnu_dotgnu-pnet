@@ -22,14 +22,16 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.ComponentModel;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Text;
 
+#if CONFIG_COMPONENT_MODEL
 [TypeConverter(typeof(ExpandableObjectConverter))]
+#endif
 public sealed class ProcessStartInfo
 {
 	// Special flags for starting processes.
@@ -527,6 +529,6 @@ public sealed class ProcessStartInfo
 
 }; // class ProcessStartInfo
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

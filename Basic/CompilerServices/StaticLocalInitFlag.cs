@@ -25,7 +25,9 @@ namespace Microsoft.VisualBasic.CompilerServices
 using System;
 using System.ComponentModel;
 
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public sealed class StaticLocalInitFlag
 {
 	public short State;

@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 public abstract class DesignerTransaction : IDisposable
 {
@@ -112,6 +112,6 @@ public abstract class DesignerTransaction : IDisposable
 
 }; // class DesignerTransaction
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design

@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 [AttributeUsage(AttributeTargets.All,
 				AllowMultiple=false, Inherited=true)]
@@ -83,6 +83,6 @@ public sealed class RefreshPropertiesAttribute : Attribute
 
 }; // class RefreshPropertiesAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

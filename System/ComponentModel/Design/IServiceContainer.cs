@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 using System.Runtime.InteropServices;
 
@@ -42,6 +42,6 @@ public interface IServiceContainer : IServiceProvider
 
 }; // interface IServiceContainer
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design

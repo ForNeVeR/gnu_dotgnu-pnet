@@ -22,7 +22,7 @@
 namespace Microsoft.Win32
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 using System.Runtime.InteropServices;
 
@@ -48,6 +48,6 @@ public class UserPreferenceChangedEventArgs : EventArgs
 
 }; // class UserPreferenceChangedEventArgs
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace Microsoft.Win32

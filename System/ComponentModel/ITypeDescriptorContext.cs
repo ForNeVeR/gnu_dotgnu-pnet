@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 using System;
 using System.Globalization;
@@ -46,6 +46,6 @@ public interface ITypeDescriptorContext : IServiceProvider
 
 }; // interface ITypeDescriptorContext
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

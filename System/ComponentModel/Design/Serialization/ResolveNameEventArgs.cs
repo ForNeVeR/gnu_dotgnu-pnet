@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 public class ResolveNameEventArgs : EventArgs
 {
@@ -58,6 +58,6 @@ public class ResolveNameEventArgs : EventArgs
 
 }; // class ResolveNameEventArgs
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design.Serialization

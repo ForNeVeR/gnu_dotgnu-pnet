@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 public class ActiveDesignerEventArgs : EventArgs
 {
@@ -56,6 +56,6 @@ public class ActiveDesignerEventArgs : EventArgs
 
 }; // class ActiveDesignerEventArgs
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design

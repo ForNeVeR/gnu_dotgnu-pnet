@@ -26,7 +26,9 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public sealed class ProjectData
 {
 	// Cannot instantiate this class.

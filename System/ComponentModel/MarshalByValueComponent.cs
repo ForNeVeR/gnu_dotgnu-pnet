@@ -23,7 +23,7 @@ using System;
 
 namespace System.ComponentModel
 {
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 	public class MarshalByValueComponent :	IServiceProvider, 
 											IDisposable, 
@@ -98,5 +98,5 @@ namespace System.ComponentModel
 
 	}
 
-#endif // ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 }//namespace System.ComponentModel

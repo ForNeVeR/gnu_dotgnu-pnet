@@ -26,10 +26,10 @@ using System.Reflection;
 using System.Threading;
 using System.Runtime.CompilerServices;
 
-#if ECMA_COMPAT
-internal
-#else
+#if CONFIG_EXTENDED_DIAGNOSTICS
 public
+#else
+internal
 #endif
 class StackTrace
 {

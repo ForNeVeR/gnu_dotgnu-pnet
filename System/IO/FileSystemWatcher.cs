@@ -22,7 +22,7 @@
 namespace System.IO
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS && CONFIG_COMPONENT_MODEL
 
 using System.ComponentModel;
 using System.Threading;
@@ -305,6 +305,6 @@ public class FileSystemWatcher : Component, ISupportInitialize
 
 }; // class FileSystemWatcher
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_COMPONENT_MODEL
 
 }; // namespace System.IO

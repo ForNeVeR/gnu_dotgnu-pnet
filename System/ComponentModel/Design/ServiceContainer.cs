@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 using System.Collections;
 
@@ -166,6 +166,6 @@ public sealed class ServiceContainer : IServiceContainer, IServiceProvider
 
 }; // class ServiceContainer
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design

@@ -22,7 +22,7 @@
 namespace System.IO.IsolatedStorage
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_ISOLATED_STORAGE
 
 using System;
 using System.Runtime.Serialization;
@@ -63,6 +63,6 @@ public class IsolatedStorageException : Exception
 
 }; // class IsolatedStorageException
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_ISOLATED_STORAGE
 
 }; // namespace System.IO.IsolatedStorage

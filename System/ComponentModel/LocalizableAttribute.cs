@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class LocalizableAttribute : Attribute
@@ -53,6 +53,6 @@ public sealed class LocalizableAttribute : Attribute
 
 }; // class LocalizableAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

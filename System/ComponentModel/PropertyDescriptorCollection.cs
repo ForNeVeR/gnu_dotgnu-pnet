@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 using System.Collections;
 using System.Runtime.InteropServices;
@@ -310,6 +310,6 @@ public class PropertyDescriptorCollection : IDictionary, IEnumerable,
 
 }; // class PropertyDescriptorCollection
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

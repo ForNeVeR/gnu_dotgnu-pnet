@@ -14,6 +14,10 @@
 	* all/*: add new profile options - CONFIG_PERMISSIONS and
 	CONFIG_POLICY_OBJECTS.
 
+	* all/*: add new profile options - CONFIG_EXTENDED_DIAGNOSTICS,
+	CONFIG_COMPONENT_MODEL, CONFIG_COMPONENT_MODEL_DESIGN,
+	CONFIG_ISOLATED_STORAGE.
+
 2003-05-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/SocketAddress.cs, System/Net/Sockets/Socket.cs,

@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 using System;
 using System.Globalization;
@@ -88,6 +88,6 @@ public sealed class TypeConverterAttribute : Attribute
 
 }; // class TypeConverterAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.ComponentModel

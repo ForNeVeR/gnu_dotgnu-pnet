@@ -27,8 +27,13 @@ namespace System.CodeDom.Compiler
 using System.IO;
 using System.ComponentModel;
 
+#if CONFIG_COMPONENT_MODEL
 [ToolboxItem(false)]
-public abstract class CodeDomProvider : Component
+#endif
+public abstract class CodeDomProvider
+#if CONFIG_COMPONENT_MODEL
+	: Component
+#endif
 {
 
 	// Constructor.
@@ -72,11 +77,15 @@ public abstract class CodeDomProvider : Component
 				return null;
 			}
 
+#if CONFIG_COMPONENT_MODEL
+
 	// Get a type converter.
 	public virtual TypeConverter GetConverter(Type type)
 			{
 				return TypeDescriptor.GetConverter(type);
 			}
+
+#endif
 
 }; // class CodeDomProvider
 

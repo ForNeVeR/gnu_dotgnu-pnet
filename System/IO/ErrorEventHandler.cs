@@ -22,11 +22,11 @@
 namespace System.IO
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 [Serializable]
 public delegate void ErrorEventHandler(Object sender, ErrorEventArgs e);
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace System.IO

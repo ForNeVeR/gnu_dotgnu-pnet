@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 using System.Collections;
 using System.Reflection;
@@ -42,6 +42,6 @@ public abstract class PropertyDescriptor : MemberDescriptor
 
 }; // class PropertyDescriptor
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class DesignerCategoryAttribute : Attribute
@@ -102,6 +102,6 @@ public sealed class DesignerCategoryAttribute : Attribute
 
 }; // class DesignerCategoryAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

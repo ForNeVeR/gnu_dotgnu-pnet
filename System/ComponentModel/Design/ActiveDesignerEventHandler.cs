@@ -22,12 +22,12 @@
 namespace System.ComponentModel.Design
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 [Serializable]
 public delegate void ActiveDesignerEventHandler
 			(Object sender, ActiveDesignerEventArgs e);
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design

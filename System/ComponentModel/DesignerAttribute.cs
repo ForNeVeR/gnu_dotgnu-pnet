@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.ComponentModel.Design;
 
@@ -38,12 +38,20 @@ public sealed class DesignerAttribute : Attribute
 	public DesignerAttribute(String designerTypeName)
 			{
 				type = designerTypeName;
+			#if CONFIG_COMPONENT_MODEL_DESIGN
 				baseType = typeof(IDesigner).FullName;
+			#else
+				baseType = "System.ComponentModel.Design.IDesigner";
+			#endif
 			}
 	public DesignerAttribute(Type designerType)
 			{
 				type = designerType.AssemblyQualifiedName;
+			#if CONFIG_COMPONENT_MODEL_DESIGN
 				baseType = typeof(IDesigner).FullName;
+			#else
+				baseType = "System.ComponentModel.Design.IDesigner";
+			#endif
 			}
 	public DesignerAttribute(String designerTypeName,
 							 String designerBaseTypeName)
@@ -110,6 +118,6 @@ public sealed class DesignerAttribute : Attribute
 
 }; // class DesignerAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.ComponentModel

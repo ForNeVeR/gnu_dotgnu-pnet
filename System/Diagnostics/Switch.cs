@@ -21,7 +21,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.Collections;
 
@@ -126,6 +126,6 @@ public abstract class Switch
 
 }; // class Switch
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

@@ -25,7 +25,9 @@ namespace Microsoft.VisualBasic
 using System;
 using System.ComponentModel;
 
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public struct TabInfo
 {
 	public short Column;

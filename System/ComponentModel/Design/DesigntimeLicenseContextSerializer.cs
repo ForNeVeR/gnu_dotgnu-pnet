@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design
 {
 
-#if CONFIG_SERIALIZATION
+#if CONFIG_SERIALIZATION && CONFIG_COMPONENT_MODEL_DESIGN
 
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -43,6 +43,6 @@ public class DesigntimeLicenseContextSerializer
 
 }; // class DesigntimeLicenseContextSerializer
 
-#endif // CONFIG_SERIALIZATION
+#endif // CONFIG_SERIALIZATION && CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design

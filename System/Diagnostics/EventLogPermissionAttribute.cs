@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if CONFIG_PERMISSIONS && !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.Security;
 using System.Security.Permissions;
@@ -94,6 +94,6 @@ public class EventLogPermissionAttribute : CodeAccessSecurityAttribute
 
 }; // class EventLogPermissionAttribute
 
-#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

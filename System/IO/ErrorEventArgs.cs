@@ -22,7 +22,7 @@
 namespace System.IO
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 public class ErrorEventArgs : EventArgs
 {
@@ -43,6 +43,6 @@ public class ErrorEventArgs : EventArgs
 
 }; // class ErrorEventArgs
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace System.IO

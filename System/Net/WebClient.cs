@@ -29,7 +29,10 @@ using System.Collections.Specialized;
 namespace System.Net
 {
 #if !ECMA_COMPAT
-	public sealed class WebClient: Component
+	public sealed class WebClient
+#if CONFIG_COMPONENT_MODEL
+		: Component
+#endif
 	{
 		private WebRequest webrequest=null;
 		private WebResponse webresponse=null;

@@ -26,7 +26,9 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public sealed class ObjectType
 {
 	// Constructor.

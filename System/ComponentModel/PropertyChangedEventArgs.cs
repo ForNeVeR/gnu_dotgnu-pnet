@@ -24,7 +24,7 @@ using System;
 
 namespace System.ComponentModel
 {
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 	public class PropertyChangedEventArgs: EventArgs
 	{
 		private string name;

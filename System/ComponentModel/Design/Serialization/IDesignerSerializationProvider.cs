@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 public interface IDesignerSerializationProvider
 {
@@ -33,6 +33,6 @@ public interface IDesignerSerializationProvider
 
 }; // interface IDesignerSerializationProvider
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design.Serialization

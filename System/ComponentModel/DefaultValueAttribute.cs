@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 [AttributeUsage(AttributeTargets.All)]
 public sealed class DefaultValueAttribute : Attribute
@@ -117,6 +117,6 @@ public sealed class DefaultValueAttribute : Attribute
 
 }; // class DefaultValueAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.ComponentModel

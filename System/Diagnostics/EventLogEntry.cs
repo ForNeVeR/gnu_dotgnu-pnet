@@ -22,17 +22,24 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.ComponentModel;
 using System.Runtime.Serialization;
 
 [Serializable]
+#if CONFIG_COMPONENT_MODEL
 [DesignTimeVisible(false)]
 [ToolboxItem(false)]
-public sealed class EventLogEntry : Component
+#endif
+public sealed class EventLogEntry
+#if CONFIG_COMPONENT_MODEL
+	: Component
 #if CONFIG_SERIALIZATION
 	, ISerializable
+#endif
+#elif CONFIG_SERIALIZATION
+	: ISerializable
 #endif
 {
 	// Internal state.
@@ -288,6 +295,6 @@ public sealed class EventLogEntry : Component
 
 }; // class EventLogEntry
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

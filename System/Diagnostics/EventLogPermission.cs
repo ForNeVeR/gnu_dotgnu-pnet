@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if CONFIG_PERMISSIONS && !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.Security.Permissions;
 
@@ -90,6 +90,6 @@ public sealed class EventLogPermission : ResourcePermissionBase
 
 }; // class EventLogPermission
 
-#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 public sealed class EventLogTraceListener : TraceListener
 {
@@ -110,6 +110,6 @@ public sealed class EventLogTraceListener : TraceListener
 
 }; // class EventLogTraceListener
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

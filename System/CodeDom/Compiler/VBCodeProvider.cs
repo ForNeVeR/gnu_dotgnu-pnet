@@ -75,11 +75,15 @@ public class VBCodeProvider : CodeDomProvider
 				return vbCodeCompiler;
 			}
 
+#if CONFIG_COMPONENT_MODEL
+
 	// Get a type converter.
 	public override TypeConverter GetConverter(Type type)
 			{
 				return base.GetConverter(type);
 			}
+
+#endif
 
 }; // class VBCodeProvider
 

@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 [Serializable]
 public enum PerformanceCounterType
@@ -59,6 +59,6 @@ public enum PerformanceCounterType
 
 }; // enum PerformanceCounterType
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

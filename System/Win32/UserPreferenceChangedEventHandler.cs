@@ -22,11 +22,11 @@
 namespace Microsoft.Win32
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 public delegate void UserPreferenceChangedEventHandler
 		(Object sender, UserPreferenceChangedEventArgs e);
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace Microsoft.Win32

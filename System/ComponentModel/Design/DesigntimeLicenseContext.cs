@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 using System.Reflection;
 using System.Collections;
@@ -62,6 +62,6 @@ public class DesigntimeLicenseContext : LicenseContext
 
 }; // class DesigntimeLicenseContext
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design

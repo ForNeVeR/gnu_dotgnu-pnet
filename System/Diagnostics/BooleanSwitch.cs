@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 public class BooleanSwitch : Switch
 {
@@ -45,6 +45,6 @@ public class BooleanSwitch : Switch
 
 }; // class BooleanSwitch
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

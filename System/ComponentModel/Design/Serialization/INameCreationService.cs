@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 public interface INameCreationService
 {
@@ -37,6 +37,6 @@ public interface INameCreationService
 
 }; // interface INameCreationService
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design.Serialization

@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface,
 				AllowMultiple=true, Inherited=true)]
@@ -94,6 +94,6 @@ public sealed class RootDesignerSerializerAttribute : Attribute
 
 }; // class RootDesignerSerializerAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design.Serialization

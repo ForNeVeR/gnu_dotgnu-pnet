@@ -24,7 +24,7 @@ using System;
 
 namespace System.ComponentModel
 {
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	public sealed class DesignerSerializationVisibilityAttribute: Attribute
 	{
 		private DesignerSerializationVisibility vis;

@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.ComponentModel;
 
@@ -34,7 +34,10 @@ using System.ComponentModel;
 // of this API is severely discouraged.
 
 [Designer("System.Diagnostics.Design.ProcessThreadDesigner, System.Design")]
-public class ProcessThread : Component
+public class ProcessThread
+#if CONFIG_COMPONENT_MODEL
+	: Component
+#endif
 {
 	// Internal state.
 	private Process process;
@@ -181,6 +184,6 @@ public class ProcessThread : Component
 
 }; // class ProcessThread
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

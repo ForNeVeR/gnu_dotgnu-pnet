@@ -27,7 +27,9 @@ using System.ComponentModel;
 using System.Globalization;
 
 [StandardModule]
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public sealed class SingleType
 {
 	// This class cannot be instantiated.

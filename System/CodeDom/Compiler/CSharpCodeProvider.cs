@@ -66,11 +66,15 @@ public class CSharpCodeProvider : CodeDomProvider
 				return csharpCodeCompiler;
 			}
 
+#if CONFIG_COMPONENT_MODEL
+
 	// Get a type converter.
 	public override TypeConverter GetConverter(Type type)
 			{
 				return base.GetConverter(type);
 			}
+
+#endif
 
 }; // class CSharpCodeProvider
 

@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 using System;
 using System.Collections;
@@ -80,6 +80,6 @@ public interface IBindingList : IList, ICollection, IEnumerable
 
 }; // interface IBindingList
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

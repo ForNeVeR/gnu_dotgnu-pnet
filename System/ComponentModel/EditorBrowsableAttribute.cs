@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 [AttributeUsage(AttributeTargets.Class |
 			    AttributeTargets.Constructor |
@@ -81,6 +81,6 @@ public sealed class EditorBrowsableAttribute : Attribute
 
 }; // class EditorBrowsableAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

@@ -30,7 +30,9 @@ using System.Threading;
 using System.Text;
 
 [StandardModule]
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public sealed class Utils
 {
 	// Cannot instantiate this class.

@@ -26,7 +26,9 @@ using System;
 using System.ComponentModel;
 
 [StandardModule]
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public sealed class IntegerType
 {
 	// This class cannot be instantiated.

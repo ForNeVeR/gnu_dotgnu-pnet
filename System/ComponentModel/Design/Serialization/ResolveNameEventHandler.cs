@@ -22,12 +22,12 @@
 namespace System.ComponentModel.Design.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 [Serializable]
 public delegate void ResolveNameEventHandler
 			(Object sender, ResolveNameEventArgs e);
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design.Serialization

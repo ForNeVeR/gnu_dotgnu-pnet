@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 public sealed class CounterSampleCalculator
 {
@@ -43,6 +43,6 @@ public sealed class CounterSampleCalculator
 
 }; // class CounterSampleCalculator
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

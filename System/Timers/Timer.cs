@@ -22,7 +22,7 @@
 namespace System.Timers
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_COMPONENT_MODEL
 
 using System.Threading;
 using System.ComponentModel;
@@ -212,6 +212,6 @@ public class Timer : Component, ISupportInitialize
 
 }; // class Timer
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_COMPONENT_MODEL
 
 }; // namespace System.Timers

@@ -22,7 +22,7 @@
 namespace System.IO.IsolatedStorage
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_ISOLATED_STORAGE
 
 [Flags]
 [Serializable]
@@ -36,6 +36,6 @@ public enum IsolatedStorageScope
 
 }; // enum IsolatedStorageScope
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_ISOLATED_STORAGE
 
 }; // namespace System.IO.IsolatedStorage

@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 using System.Collections;
 using System.Reflection;
@@ -183,6 +183,6 @@ public class AttributeCollection : ICollection, IEnumerable
 
 }; // class AttributeCollection
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

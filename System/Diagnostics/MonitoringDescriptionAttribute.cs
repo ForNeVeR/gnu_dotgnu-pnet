@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.ComponentModel;
 
@@ -49,6 +49,6 @@ public class MonitoringDescriptionAttribute : DescriptionAttribute
 
 }; // class MonitoringDescriptionAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

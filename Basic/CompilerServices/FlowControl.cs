@@ -27,7 +27,9 @@ using System.ComponentModel;
 using System.Collections;
 
 [StandardModule]
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public sealed class FlowControl
 {
 	// Cannot instantiate this class.

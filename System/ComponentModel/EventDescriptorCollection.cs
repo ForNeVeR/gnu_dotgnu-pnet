@@ -25,7 +25,7 @@ using System.Collections;
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 	public class EventDescriptorCollection: IEnumerable, ICollection, IList
 	{

@@ -22,7 +22,7 @@
 namespace Microsoft.Win32
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 using System.Collections;
 using System.Threading;
@@ -166,6 +166,6 @@ public sealed class SystemEvents
 
 }; // class SystemEvents
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace Microsoft.Win32

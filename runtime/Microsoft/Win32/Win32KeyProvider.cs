@@ -22,7 +22,7 @@
 namespace Microsoft.Win32
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 using System;
 using System.Text;
@@ -889,6 +889,6 @@ internal sealed class Win32KeyProvider : IRegistryKeyProvider
 
 }; // class Win32KeyProvider
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace Microsoft.Win32

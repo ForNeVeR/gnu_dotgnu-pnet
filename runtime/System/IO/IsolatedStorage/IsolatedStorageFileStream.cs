@@ -22,7 +22,7 @@
 namespace System.IO.IsolatedStorage
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_ISOLATED_STORAGE
 
 using System.IO;
 using System.Security.Permissions;
@@ -265,6 +265,6 @@ public class IsolatedStorageFileStream : FileStream
 
 }; // class IsolatedStorageFileStream
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_ISOLATED_STORAGE
 
 }; // namespace System.IO.IsolatedStorage

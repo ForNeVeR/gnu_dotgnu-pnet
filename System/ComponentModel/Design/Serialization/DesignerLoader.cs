@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL_DESIGN
 
 public abstract class DesignerLoader
 {
@@ -53,6 +53,6 @@ public abstract class DesignerLoader
 
 }; // class DesignerLoader
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL_DESIGN
 
 }; // namespace System.ComponentModel.Design.Serialization

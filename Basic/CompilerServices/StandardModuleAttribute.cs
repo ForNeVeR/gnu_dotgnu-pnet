@@ -26,7 +26,9 @@ using System;
 using System.ComponentModel;
 
 [AttributeUsage(AttributeTargets.Class, Inherited=false, AllowMultiple=false)]
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public sealed class StandardModuleAttribute : Attribute
 {
 	// Constructor.

@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.ComponentModel;
 
@@ -30,7 +30,10 @@ using System.ComponentModel;
 // the system performance counters as they are highly Windows-specific
 // and probably insecure to access anyway.
 
-public sealed class PerformanceCounter : Component, ISupportInitialize
+public sealed class PerformanceCounter
+#if CONFIG_COMPONENT_MODEL
+	: Component, ISupportInitialize
+#endif
 {
 	// Internal state.
 	private String categoryName;
@@ -356,6 +359,6 @@ public sealed class PerformanceCounter : Component, ISupportInitialize
 
 }; // class PerformanceCounter
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

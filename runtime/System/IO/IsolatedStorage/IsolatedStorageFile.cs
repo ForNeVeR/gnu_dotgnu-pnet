@@ -22,7 +22,7 @@
 namespace System.IO.IsolatedStorage
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_ISOLATED_STORAGE
 
 using System.Collections;
 using System.Security;
@@ -485,6 +485,6 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 
 }; // class IsolatedStorageFile
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_ISOLATED_STORAGE
 
 }; // namespace System.IO.IsolatedStorage

@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.Runtime.InteropServices;
 
@@ -47,6 +47,6 @@ public sealed class PerformanceCounterManager : ICollectData
 
 }; // class PerformanceCounterManager
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

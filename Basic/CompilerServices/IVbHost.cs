@@ -26,7 +26,9 @@ using System;
 using System.ComponentModel;
 using System.Windows.Forms;
 
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public interface IVbHost
 {
 	// Get the parent window.  Non-portable.

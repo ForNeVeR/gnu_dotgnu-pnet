@@ -22,7 +22,7 @@
 namespace System.IO
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 [Flags]
 public enum NotifyFilters
@@ -38,6 +38,6 @@ public enum NotifyFilters
 
 }; // enum NotifyFilters
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace System.IO

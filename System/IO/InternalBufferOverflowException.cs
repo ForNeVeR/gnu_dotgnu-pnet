@@ -22,7 +22,7 @@
 namespace System.IO
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 using System.Runtime.Serialization;
 
@@ -44,6 +44,6 @@ public class InternalBufferOverflowException : SystemException
 
 }; // class InternalBufferOverflowException
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace System.IO

@@ -22,7 +22,7 @@
 namespace Microsoft.Win32
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 public class SessionEndedEventArgs : EventArgs
 {
@@ -46,6 +46,6 @@ public class SessionEndedEventArgs : EventArgs
 
 }; // class SessionEndedEventArgs
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace Microsoft.Win32

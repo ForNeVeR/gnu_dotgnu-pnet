@@ -22,12 +22,12 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 [Serializable]
 public delegate void EntryWrittenEventHandler
 		(Object sender, EntryWrittenEventArgs e);
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

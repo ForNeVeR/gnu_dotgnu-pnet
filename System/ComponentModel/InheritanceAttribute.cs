@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 [AttributeUsage(AttributeTargets.Property |
 				AttributeTargets.Field |
@@ -100,6 +100,6 @@ public sealed class InheritanceAttribute : Attribute
 
 }; // class InheritanceAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

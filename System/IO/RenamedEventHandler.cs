@@ -22,12 +22,12 @@
 namespace System.IO
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 [Serializable]
 public delegate void RenamedEventHandler
 			(Object sender, RenamedEventArgs e);
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace System.IO

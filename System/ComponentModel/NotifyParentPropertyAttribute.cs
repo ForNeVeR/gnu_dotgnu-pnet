@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class NotifyParentPropertyAttribute : Attribute
@@ -82,6 +82,6 @@ public sealed class NotifyParentPropertyAttribute : Attribute
 
 }; // class NotifyParentPropertyAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

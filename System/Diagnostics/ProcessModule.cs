@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.ComponentModel;
 
@@ -31,7 +31,10 @@ using System.ComponentModel;
 // dummy information.
 
 [Designer("System.Diagnostics.Design.ProcessModuleDesigner, System.Design")]
-public class ProcessModule : Component
+public class ProcessModule
+#if CONFIG_COMPONENT_MODEL
+	: Component
+#endif
 {
 	// Internal state.
 	private String fileName;
@@ -102,6 +105,6 @@ public class ProcessModule : Component
 
 }; // class ProcessModule
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

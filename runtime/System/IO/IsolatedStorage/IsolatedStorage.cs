@@ -22,7 +22,7 @@
 namespace System.IO.IsolatedStorage
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_ISOLATED_STORAGE
 
 using System.Security;
 using System.Security.Permissions;
@@ -141,6 +141,6 @@ public abstract class IsolatedStorage : MarshalByRefObject
 
 }; // class IsolatedStorage
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_ISOLATED_STORAGE
 
 }; // namespace System.IO.IsolatedStorage

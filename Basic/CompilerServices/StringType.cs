@@ -28,7 +28,9 @@ using System.Globalization;
 using System.Text;
 
 [StandardModule]
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public sealed class StringType
 {
 	// This class cannot be instantiated.

@@ -22,7 +22,7 @@
 namespace Microsoft.Win32
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 public enum UserPreferenceCategory
 {
@@ -42,6 +42,6 @@ public enum UserPreferenceCategory
 
 }; // enum UserPreferenceCategory
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace Microsoft.Win32

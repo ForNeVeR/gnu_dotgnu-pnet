@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 public enum CollectionChangeAction
 {
@@ -32,6 +32,6 @@ public enum CollectionChangeAction
 
 }; // enum CollectionChangeAction
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

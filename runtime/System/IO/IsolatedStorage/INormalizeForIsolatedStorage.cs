@@ -22,7 +22,7 @@
 namespace System.IO.IsolatedStorage
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_ISOLATED_STORAGE
 
 public interface INormalizeForIsolatedStorage
 {
@@ -30,6 +30,6 @@ public interface INormalizeForIsolatedStorage
 
 }; // interface INormalizeForIsolatedStorage
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_ISOLATED_STORAGE
 
 }; // namespace System.IO.IsolatedStorage

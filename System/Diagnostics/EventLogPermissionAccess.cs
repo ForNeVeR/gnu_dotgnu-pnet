@@ -22,7 +22,7 @@
 namespace System.Diagnostics
 {
 
-#if CONFIG_PERMISSIONS && !ECMA_COMPAT
+#if CONFIG_PERMISSIONS && CONFIG_EXTENDED_DIAGNOSTICS
 
 [Serializable]
 [Flags]
@@ -35,6 +35,6 @@ public enum EventLogPermissionAccess
 
 }; // enum EventLogPermissionAccess
 
-#endif // CONFIG_PERMISSIONS && !ECMA_COMPAT
+#endif // CONFIG_PERMISSIONS && CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

@@ -22,20 +22,25 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.ComponentModel;
 using System.Security;
 
 [DefaultEvent("EntryWritten")]
-public class EventLog : Component, ISupportInitialize
+public class EventLog
+#if CONFIG_COMPONENT_MODEL
+	: Component, ISupportInitialize
+#endif
 {
 	// Internal state.
 	private String logName;
 	private String machineName;
 	private String source;
 	private bool enableRaisingEvents;
+#if CONFIG_COMPONENT_MODEL
 	private ISynchronizeInvoke syncInvoke;
+#endif
 
 	// Constructor.
 	public EventLog() : this("", ".", "") {}
@@ -151,6 +156,7 @@ public class EventLog : Component, ISupportInitialize
 					source = (value == null ? "" : source);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
 	[MonitoringDescription("LogSynchronizingObject")]
 	[Browsable(false)]
 	public ISynchronizeInvoke SynchronizingObject
@@ -164,6 +170,7 @@ public class EventLog : Component, ISupportInitialize
 					syncInvoke = value;
 				}
 			}
+#endif
 
 	// Implement the ISupportInitialize interface.
 	public void BeginInit()
@@ -389,6 +396,6 @@ public class EventLog : Component, ISupportInitialize
 
 }; // class EventLog
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

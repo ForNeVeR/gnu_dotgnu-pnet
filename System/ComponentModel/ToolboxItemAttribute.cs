@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 
 [AttributeUsage(AttributeTargets.All)]
 public class ToolboxItemAttribute : Attribute
@@ -121,6 +121,6 @@ public class ToolboxItemAttribute : Attribute
 
 }; // class ToolboxItemAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel

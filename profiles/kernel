@@ -44,4 +44,19 @@
 <!-- Use policy objects from System.Security.Policy -->
 <define name="CONFIG_POLICY_OBJECTS" value="false"/>
 
+<!-- Use extended diagnostics classes from System.Diagnostics -->
+<define name="CONFIG_EXTENDED_DIAGNOSTICS" value="false"/>
+
+<!-- Use non-portable Win32-specific classes -->
+<define name="CONFIG_WIN32_SPECIFICS" value="false"/>
+
+<!-- Use isolated storage classes from System.IO.IsolatedStorage -->
+<define name="CONFIG_ISOLATED_STORAGE" value="false"/>
+
+<!-- Use System.ComponentModel classes -->
+<define name="CONFIG_COMPONENT_MODEL" value="false"/>
+
+<!-- Use System.ComponentModel.Design classes -->
+<define name="CONFIG_COMPONENT_MODEL_DESIGN" value="false"/>
+
 </profile>

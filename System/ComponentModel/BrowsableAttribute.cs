@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 [AttributeUsage(AttributeTargets.All)]
 public sealed class BrowsableAttribute : Attribute
@@ -80,6 +80,6 @@ public sealed class BrowsableAttribute : Attribute
 
 }; // class BrowsableAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.ComponentModel

@@ -21,7 +21,7 @@
 namespace System.Diagnostics
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_EXTENDED_DIAGNOSTICS
 
 using Platform;
 using System.IO;
@@ -43,7 +43,10 @@ using System.Security.Permissions;
 [DefaultProperty("StartInfo")]
 [DefaultEvent("Exited")]
 [Designer("System.Diagnostics.Design.ProcessDesigner, System.Design")]
-public class Process : Component
+public class Process
+#if CONFIG_COMPONENT_MODEL
+	: Component
+#endif
 {
 	// Internal state.
 	private bool enableRaisingEvents;
@@ -53,7 +56,9 @@ public class Process : Component
 	private bool hasExited;
 	private String[] argv;
 	private ProcessStartInfo startInfo;
+#if CONFIG_COMPONENT_MODEL
 	private ISynchronizeInvoke syncObject;
+#endif
 	private StreamWriter stdin; 
 	private StreamReader stdout; 
 	private StreamReader stderr; 
@@ -536,6 +541,7 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
 	[Browsable(false)]
 	[MonitoringDescription("ProcessSynchronizingObject")]
 	public ISynchronizeInvoke SynchronizingObject
@@ -549,6 +555,7 @@ public class Process : Component
 					syncObject = value;
 				}
 			}
+#endif
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[MonitoringDescription("ProcessThreads")]
@@ -635,7 +642,9 @@ public class Process : Component
 					stderr = null;
 				}
 				argv = null;
+#if CONFIG_COMPONENT_MODEL
 				syncObject = null;
+#endif
 				lock(typeof(Process))
 				{
 					// Remove this process from the list of active children.
@@ -1127,6 +1136,6 @@ public class Process : Component
 
 }; // class Process
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

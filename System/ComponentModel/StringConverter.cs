@@ -25,7 +25,7 @@ using System.Globalization;
 
 namespace System.ComponentModel
 {
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 	public class StringConverter: TypeConverter
 	{
 		[TODO]

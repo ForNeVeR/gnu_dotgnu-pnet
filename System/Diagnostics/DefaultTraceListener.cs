@@ -102,11 +102,13 @@ public class DefaultTraceListener : TraceListener
 				{
 					WriteLine(detailMessage);
 				}
+			#if CONFIG_EXTENDED_DIAGNOSTICS
 				String trace = (new StackTrace(true)).ToString();
 				if(trace != null && trace != String.Empty)
 				{
 					Write(trace);
 				}
+			#endif
 
 				// Exit from the application after reporting the failure.
 				Environment.Exit(1);

@@ -24,7 +24,7 @@ using System;
 
 namespace System.ComponentModel
 {
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 	public delegate void CollectionChangeEventHandler (Object sender,
 							CollectionChangeEventArgs e);
 #endif							

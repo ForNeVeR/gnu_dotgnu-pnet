@@ -22,7 +22,7 @@
 namespace System.ComponentModel
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 [AttributeUsage(AttributeTargets.Property)]
 public class RecommendedAsConfigurableAttribute : Attribute
@@ -82,6 +82,6 @@ public class RecommendedAsConfigurableAttribute : Attribute
 
 }; // class RecommendedAsConfigurableAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.ComponentModel

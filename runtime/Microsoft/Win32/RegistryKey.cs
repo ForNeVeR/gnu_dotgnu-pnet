@@ -22,7 +22,7 @@
 namespace Microsoft.Win32
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 using System;
 using System.IO;
@@ -520,6 +520,6 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 
 }; // class RegistryKey
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace Microsoft.Win32

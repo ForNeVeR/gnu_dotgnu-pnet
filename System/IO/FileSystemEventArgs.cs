@@ -22,7 +22,7 @@
 namespace System.IO
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_WIN32_SPECIFICS
 
 public class FileSystemEventArgs : EventArgs
 {
@@ -77,6 +77,6 @@ public class FileSystemEventArgs : EventArgs
 
 }; // class FileSystemEventArgs
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace System.IO

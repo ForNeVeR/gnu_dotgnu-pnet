@@ -25,7 +25,9 @@ namespace Microsoft.VisualBasic
 using System;
 using System.ComponentModel;
 
+#if CONFIG_COMPONENT_MODEL
 [EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 public struct SpcInfo
 {
 	public short Count;

@@ -25,7 +25,7 @@ using System.Reflection;
 
 namespace System.ComponentModel
 {
-#if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
 	public sealed class TypeDescriptor
 	{
 		[TODO]

@@ -10,6 +10,9 @@
 	* include/il_values.h: change the definition of ILInt8 from
 	"char" to "signed char", because the s390 "char" is unsigned.
 
+	* configure.in: disable libffi on hppa* systems, as it isn't
+	ported to PA-RISC yet.
+
 2003-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/*: update the libffi library from the gcc CVS tree.

@@ -55,6 +55,7 @@ AC_ARG_WITH(libffi,
 [
 	case "$host" in
     	*-*-hpux*)		withffi=no ;;
+    	hppa*-*-*)		withffi=no ;;
 		        *)		withffi=yes ;;
 	esac
 ])

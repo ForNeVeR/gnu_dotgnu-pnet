@@ -197,7 +197,7 @@ static void DumpMethodAssociation(ILImage *image, FILE *outstream,
 								  int flags, ILMethod *method)
 {
 	ILDumpMethodType(outstream, image, ILMethod_Signature(method), flags,
-					 ILMethod_Owner(method), ILMethod_Name(method), method);
+					 ILMethod_Owner(method), ILMethod_Name(method), 0);
 }
 
 /*

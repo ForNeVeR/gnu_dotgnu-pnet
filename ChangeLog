@@ -13,6 +13,10 @@
 
 	* dumpasm/dump_flags.c: change "preserve_sig" to "preservesig".
 
+	* ildasm/ildasm_class.c (DumpMethodAssociation): suppress marshalling
+	information on property and event accessors, because it will cause
+	parse problems in the assembler.
+
 2003-01-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* csant/csant_fileset.c: Implement an if conditional flag for the

@@ -212,8 +212,10 @@ public class UnicodeEncoding : Encoding
 				}
 				if(count >= 2)
 				{
-					if((bytes[0] == (byte)0xFE && bytes[1] == (byte)0xFF) ||
-					   (bytes[0] == (byte)0xFF && bytes[1] == (byte)0xFE))
+					if((bytes[index] == (byte)0xFE &&
+					    bytes[index + 1] == (byte)0xFF) ||
+					   (bytes[index] == (byte)0xFF &&
+					    bytes[index + 1] == (byte)0xFE))
 					{
 						return ((count - 1) / 2);
 					}
@@ -253,13 +255,15 @@ public class UnicodeEncoding : Encoding
 				bool isBigEndian;
 				if(byteCount >= 2)
 				{
-					if(bytes[0] == (byte)0xFE && bytes[1] == (byte)0xFF)
+					if(bytes[byteIndex] == (byte)0xFE &&
+					   bytes[byteIndex + 1] == (byte)0xFF)
 					{
 						isBigEndian = true;
 						byteCount -= 2;
 						byteIndex += 2;
 					}
-					else if(bytes[0] == (byte)0xFF && bytes[1] == (byte)0xFE)
+					else if(bytes[byteIndex] == (byte)0xFF &&
+							bytes[byteIndex + 1] == (byte)0xFE)
 					{
 						isBigEndian = false;
 						byteCount -= 2;

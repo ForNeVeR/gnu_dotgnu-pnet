@@ -1,3 +1,9 @@
+
+2003-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/UnicodeEncoding.cs: wrong buffer index used
+	to detect byte order marks.
+
 2003-03-05  Adam Ballai <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextWriter.cs: filestream in 

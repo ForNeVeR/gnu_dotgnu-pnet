@@ -4,6 +4,13 @@
 	* runtime/System/IO/Path.cs: Change the code so that SMB
 	mode is entered only if DirectorySeperatorChar is '\\'
 
+	* runtime/Platform/Errno.cs, runtime/System/IO/FileShare.cs, 
+	runtime/System/IO/FileAccess.cs: rollback changes made to
+	to the enums.
+
+	* runtime/runtime.build, System/System.build: Remove the metadata
+	compile mode from the csant build files.
+
 2002-10-30  Charles Shuller  <kyeran@hermes-solutions.biz>
 
 	* runtime/System/IO/Path.cs: Added patch to GetPathRoot

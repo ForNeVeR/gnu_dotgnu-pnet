@@ -87,7 +87,7 @@ public enum Errno
 	ENOANO			=	55,	/* No anode */
 	EBADRQC			=	56,	/* Invalid request code */
 	EBADSLT			=	57,	/* Invalid slot */
-	EDEADLOCK		=	35, /* FIXME : old value EDEADLK */
+	EDEADLOCK		=	EDEADLK,
 	EBFONT			=	59,	/* Bad font file format */
 	ENOSTR			=	60,	/* Device not a stream */
 	ENODATA			=	61,	/* No data available */

@@ -28,7 +28,7 @@ public enum FileAccess
 {
 	Read      = 0x01,
 	Write     = 0x02,
-	ReadWrite = 0x03/* FIXME: Read | Write */
+	ReadWrite = Read | Write 
 
 }; // enum FileAccess
 

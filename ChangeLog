@@ -1,4 +1,11 @@
 
+2003-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, engine/Makefile.am, engine/lib_stdio.c,
+	engine/process.c, include/il_console.h, include/il_utils.h,
+	support/Makefile.am, support/console.c, support/input.c:
+	check in the new console implementation.
+
 2003-11-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_stdio.c:

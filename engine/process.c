@@ -22,6 +22,7 @@
 
 #include "engine.h"
 #include "lib_defs.h"
+#include "il_console.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -453,6 +454,9 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	/* Free the process block itself */
 	ILGCFreePersistent(process);
+
+	/* Reset the console to the "normal" mode */
+	ILConsoleSetMode(IL_CONSOLE_NORMAL);
 }
 
 void ILExecProcessSetLibraryDirs(ILExecProcess *process,

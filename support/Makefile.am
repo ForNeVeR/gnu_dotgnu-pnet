@@ -7,6 +7,7 @@ libILSupport_a_SOURCES = aes.c \
 						 bignum.c \
 						 clflush.c \
 						 cmdline.c \
+						 console.c \
 						 cvt_float.c \
 						 decimal.c \
 						 def_gc.c \
@@ -23,7 +24,6 @@ libILSupport_a_SOURCES = aes.c \
 						 hash.c \
 						 hashtab.c \
 						 hb_gc.c \
-						 input.c \
 						 intern.c \
 						 locale.c \
 						 md5.c \

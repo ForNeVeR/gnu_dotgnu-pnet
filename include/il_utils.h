@@ -530,27 +530,6 @@ int ILQueueAdd(ILQueueEntry **listRoot, void *newData);
 /* Remove entry and Free entry , but not data . return NULL on fail */
 void *ILQueueRemove(ILQueueEntry **listRoot);
 
-/*
- * Get a single character from the input stream.
- */
-int ILInputGetChar(void);
-
-/*
- * Push a character back into the input stream.
- */
-void ILInputUngetChar(int ch);
-
-/*
- * Read a single line from the input stream, including the terminating '\n'.
- * Returns zero if EOF is detected.
- */
-int ILInputReadLine(void *buffer, int len);
-
-/*
- * Read a buffer of bytes from the input stream.
- */
-int ILInputRead(void *buffer, int len);
-
 #ifdef	__cplusplus
 };
 #endif

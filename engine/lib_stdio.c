@@ -34,6 +34,7 @@ be useful for debugging in embedded environments.
 #include "engine.h"
 #include "lib_defs.h"
 #include "il_utils.h"
+#include "il_console.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -71,7 +72,20 @@ void _IL_Stdio_StdWrite_ic(ILExecThread *thread, ILInt32 fd, ILUInt16 value)
 #ifndef REDUCED_STDIO
 	switch(fd)
 	{
-		case 1:		putc((value & 0xFF), stdout); break;
+		case 1:
+		{
+			if(ILConsoleGetMode() == IL_CONSOLE_NORMAL)
+			{
+				putc((value & 0xFF), stdout);
+			}
+			else
+			{
+				ILConsoleWriteChar(value);
+				fflush(stdout);
+			}
+		}
+		break;
+
 		case 2:		putc((value & 0xFF), stderr); break;
 	}
 #else
@@ -87,11 +101,24 @@ static void StdWrite(ILInt32 fd, ILUInt16 *buf, ILInt32 length)
 #ifndef REDUCED_STDIO
 	if(fd == 1)
 	{
-		while(length > 0)
+		if(ILConsoleGetMode() == IL_CONSOLE_NORMAL)
 		{
-			putc((*buf & 0xFF), stdout);
-			++buf;
-			--length;
+			while(length > 0)
+			{
+				putc((*buf & 0xFF), stdout);
+				++buf;
+				--length;
+			}
+		}
+		else
+		{
+			while(length > 0)
+			{
+				ILConsoleWriteChar(*buf);
+				++buf;
+				--length;
+			}
+			fflush(stdout);
 		}
 	}
 	else if(fd == 2)
@@ -133,7 +160,21 @@ void _IL_Stdio_StdWrite_iaBii(ILExecThread *thread, ILInt32 fd,
 #ifndef REDUCED_STDIO
 	if(fd == 1)
 	{
-		fwrite(((ILUInt8 *)ArrayToBuffer(value)) + index, 1, count, stdout);
+		if(ILConsoleGetMode() == IL_CONSOLE_NORMAL)
+		{
+			fwrite(((ILUInt8 *)ArrayToBuffer(value)) + index, 1, count, stdout);
+		}
+		else
+		{
+			ILUInt8 *buf = ((ILUInt8 *)ArrayToBuffer(value)) + index;
+			while(count > 0)
+			{
+				ILConsoleWriteChar(*buf);
+				++buf;
+				--count;
+			}
+			fflush(stdout);
+		}
 	}
 	else if(fd == 2)
 	{
@@ -170,11 +211,13 @@ void _IL_Stdio_StdWrite_iString(ILExecThread *thread, ILInt32 fd,
  */
 ILInt32 _IL_Stdio_StdRead_i(ILExecThread *thread, ILInt32 fd)
 {
+#ifndef REDUCED_STDIO
 	if(fd == 0)
 	{
-		return (ILInt32)ILInputGetChar();
+		return (ILInt32)(getc(stdin));
 	}
 	else
+#endif
 	{
 		return -1;
 	}
@@ -187,6 +230,7 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 								System_Array *value, ILInt32 index,
 								ILInt32 count)
 {
+#ifndef REDUCED_STDIO
 	ILUInt16 *buf = ((ILUInt16 *)(ArrayToBuffer(value))) + index;
 	ILInt32 result = 0;
 	int ch;
@@ -196,7 +240,7 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 	}
 	while(count > 0)
 	{
-		ch = ILInputGetChar();
+		ch = getc(stdin);
 		if(ch == -1)
 		{
 			break;
@@ -206,6 +250,9 @@ ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
 		--count;
 	}
 	return result;
+#else
+	return -1;
+#endif
 }
 
 /*
@@ -215,12 +262,16 @@ ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread *thread, ILInt32 fd,
 								System_Array *value, ILInt32 index,
 								ILInt32 count)
 {
+#ifndef REDUCED_STDIO
 	if(fd != 0)
 	{
 		return -1;
 	}
-	return (ILInt32)ILInputRead
-		(((ILUInt8 *)ArrayToBuffer(value)) + index, (int)count);
+	return (ILInt32)(int)fread
+		(((ILUInt8 *)ArrayToBuffer(value)) + index, 1, (int)count, stdin);
+#else
+	return -1;
+#endif
 }
 
 /*
@@ -228,16 +279,18 @@ ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread *thread, ILInt32 fd,
  */
 ILInt32 _IL_Stdio_StdPeek(ILExecThread *thread, ILInt32 fd)
 {
+#ifndef REDUCED_STDIO
 	if(fd == 0)
 	{
-		int ch = ILInputGetChar();
+		int ch = getc(stdin);
 		if(ch != -1)
 		{
-			ILInputUngetChar(ch);
+			ungetc(ch, stdin);
 		}
 		return (ILInt32)ch;
 	}
 	else
+#endif
 	{
 		return -1;
 	}
@@ -248,7 +301,7 @@ ILInt32 _IL_Stdio_StdPeek(ILExecThread *thread, ILInt32 fd)
  */
 void _IL_Stdio_SetConsoleMode(ILExecThread *_thread, ILInt32 mode)
 {
-	/* TODO */
+	ILConsoleSetMode(mode);
 }
 
 /*
@@ -256,6 +309,7 @@ void _IL_Stdio_SetConsoleMode(ILExecThread *_thread, ILInt32 mode)
  */
 void _IL_Stdio_Beep(ILExecThread *_thread)
 {
+	ILConsoleBeep();
 }
 
 /*
@@ -263,6 +317,7 @@ void _IL_Stdio_Beep(ILExecThread *_thread)
  */
 void _IL_Stdio_Clear(ILExecThread *_thread)
 {
+	ILConsoleClear();
 }
 
 /*
@@ -271,10 +326,7 @@ void _IL_Stdio_Clear(ILExecThread *_thread)
 void _IL_Stdio_ReadKey(ILExecThread *_thread, ILUInt16 *ch,
 					   ILInt32 *key, ILInt32 *modifiers)
 {
-	/* TODO */
-	*ch = 0;
-	*key = 0;
-	*modifiers = 0;
+	ILConsoleReadKey(ch, key, modifiers);
 }
 
 /*
@@ -282,7 +334,7 @@ void _IL_Stdio_ReadKey(ILExecThread *_thread, ILUInt16 *ch,
  */
 void _IL_Stdio_SetCursorPosition(ILExecThread *_thread, ILInt32 x, ILInt32 y)
 {
-	/* TODO */
+	ILConsoleSetPosition(x, y);
 }
 
 /*
@@ -290,7 +342,7 @@ void _IL_Stdio_SetCursorPosition(ILExecThread *_thread, ILInt32 x, ILInt32 y)
  */
 void _IL_Stdio_SetTextAttributes(ILExecThread *_thread, ILInt32 attrs)
 {
-	/* TODO */
+	ILConsoleSetAttributes(attrs);
 }
 
 /*
@@ -299,9 +351,7 @@ void _IL_Stdio_SetTextAttributes(ILExecThread *_thread, ILInt32 attrs)
 void _IL_Stdio_GetBufferSize(ILExecThread *_thread, ILInt32 *width,
 							 ILInt32 *height)
 {
-	/* TODO */
-	*width = 80;
-	*height = 24;
+	ILConsoleGetBufferSize(width, height);
 }
 
 /*
@@ -310,9 +360,7 @@ void _IL_Stdio_GetBufferSize(ILExecThread *_thread, ILInt32 *width,
 void _IL_Stdio_GetCursorPosition(ILExecThread *_thread, ILInt32 *x,
 								 ILInt32 *y)
 {
-	/* TODO */
-	*x = 0;
-	*y = 0;
+	ILConsoleGetPosition(x, y);
 }
 
 /*
@@ -320,8 +368,7 @@ void _IL_Stdio_GetCursorPosition(ILExecThread *_thread, ILInt32 *x,
  */
 ILBool _IL_Stdio_KeyAvailable(ILExecThread *_thread)
 {
-	/* TODO */
-	return 0;
+	return ILConsoleKeyAvailable();
 }
 
 /*
@@ -329,7 +376,11 @@ ILBool _IL_Stdio_KeyAvailable(ILExecThread *_thread)
  */
 void _IL_Stdio_SetConsoleTitle(ILExecThread *_thread, ILString *title)
 {
-	/* TODO */
+	char *str = ILStringToAnsi(_thread, title);
+	if(str)
+	{
+		ILConsoleSetTitle(str);
+	}
 }
 
 /*
@@ -340,11 +391,7 @@ void _IL_Stdio_GetWindowSize(ILExecThread *_thread,
 							 ILInt32 *left, ILInt32 *top,
 							 ILInt32 *width, ILInt32 *height)
 {
-	/* TODO */
-	*left = 0;
-	*top = 0;
-	*width = 80;
-	*height = 24;
+	ILConsoleGetWindowSize(left, top, width, height);
 }
 
 #ifdef	__cplusplus

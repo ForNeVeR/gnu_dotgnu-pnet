@@ -213,13 +213,10 @@ AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(z, inflate)
 
 dnl Collect up the libraries that we need for GNU readline.
-AC_SUBST(READLINELIBS)
-READLINELIBS=""
-AC_CHECK_LIB(termcap, tgoto, [READLINELIBS="$READLINELIBS -ltermcap"], [])
-AC_CHECK_LIB(readline, readline, [AC_DEFINE(HAVE_LIBREADLINE, 1, [Define if you have the readline library])
-READLINELIBS="-lreadline $READLINELIBS"], [], $READLINELIBS)
-AC_CHECK_LIB(history, add_history, [AC_DEFINE(HAVE_LIBHISTORY, 1, [Define if you have the history library])
-READLINELIBS="-lhistory $READLINELIBS"], [])
+AC_SUBST(TERMCAPLIBS)
+TERMCAPLIBS=""
+AC_CHECK_LIB(termcap, tgoto, [TERMCAPLIBS="-ltermcap"
+AC_DEFINE(HAVE_TGOTO, 1, [Define if you have the tgoto function.])], [])
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -231,7 +228,8 @@ AC_CHECK_HEADERS(sys/time.h sys/types.h dlfcn.h ieeefp.h)
 AC_CHECK_HEADERS(readline/readline.h readline/history.h wchar.h)
 AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h dirent.h sys/utime.h utime.h)
-AC_CHECK_HEADERS(linux/irda.h sys/utsname.h zlib.h)
+AC_CHECK_HEADERS(linux/irda.h sys/utsname.h zlib.h term.h termcap.h)
+AC_CHECK_HEADERS(termios.h sys/termios.h)
 
 dnl Check for "sin6_scope_id".
 AC_TRY_COMPILE([#include "confdefs.h"
@@ -365,6 +363,7 @@ AC_CHECK_FUNCS(usleep gethostbyname gethostbyaddr isatty getlogin)
 AC_CHECK_FUNCS(opendir readdir readdir_r closedir chdir access)
 AC_CHECK_FUNCS(cygwin_conv_to_win32_path snprintf rename utime)
 AC_CHECK_FUNCS(mkdir ioctl setsockopt getsockopt uname)
+AC_CHECK_FUNCS(tcgetattr)
 AC_FUNC_ALLOCA
 
 dnl Add the thread libraries to the end of the link line.

@@ -65,12 +65,12 @@ if PNET_TOOLS
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
-			  $(PACKAGE_LIBS)
+			  $(PACKAGE_LIBS) $(TERMCAPLIBS)
 
 ilverify_SOURCES = ilverify.c
 ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			     ../image/libILImage.a ../support/libILSupport.a \
-			  	 $(PACKAGE_LIBS)
+			  	 $(PACKAGE_LIBS) $(TERMCAPLIBS)
 
 ## We need "-fno-gcse" to stop gcc being overeager when it compiles
 ## the interpreter core in direct threading mode.
@@ -83,12 +83,12 @@ else
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
-			  $(PACKAGE_LIBS)
+			  $(PACKAGE_LIBS) $(TERMCAPLIBS)
 
 ilverify_SOURCES = ilverify.c
 ilverify_LDADD = libILEngine.a \
 			     ../image/libILImage.a ../support/libILSupport.a \
-			  	 $(PACKAGE_LIBS)
+			  	 $(PACKAGE_LIBS) $(TERMCAPLIBS)
 
 ## We need "-fno-gcse" to stop gcc being overeager when it compiles
 ## the interpreter core in direct threading mode.

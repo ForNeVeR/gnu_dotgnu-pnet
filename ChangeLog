@@ -8,6 +8,9 @@
 
 	* engine/ilrun.c: modify "ilrun" to avoid va_list's also.
 
+	* cscc/common/cc_compat.c, image/winres_reader.c, include/il_system.h,
+	support/strings.c: add "ILStrNICmp" as a common support function.
+
 2003-07-08  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_thread.c: Monitor speed improvements.  Prevent

@@ -101,6 +101,7 @@ void  ILPageFree(void *ptr, unsigned long size);
 
 /* String routines */
 int ILStrICmp(const char *str1, const char *str2);
+int ILStrNICmp(const char *str1, const char *str2, int len);
 
 /* Memory mapped files */
 int ILMapFileToMemory(int fd, unsigned long start, unsigned long end,

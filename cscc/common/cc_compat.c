@@ -501,53 +501,6 @@ static void helpOption(char *arg)
 }
 
 /*
- * Length-delimited string comparison with ignore case.
- */
-static int StrNICmp(const char *str1, const char *str2, int len)
-{
-	char ch1;
-	char ch2;
-	while(len > 0 && *str1 != '\0' && *str2 != '\0')
-	{
-		ch1 = *str1++;
-		if(ch1 >= 'A' && ch1 <= 'Z')
-		{
-			ch1 = (ch1 - 'A' + 'a');
-		}
-		ch2 = *str2++;
-		if(ch2 >= 'A' && ch2 <= 'Z')
-		{
-			ch2 = (ch2 - 'A' + 'a');
-		}
-		if(ch1 < ch2)
-		{
-			return -1;
-		}
-		else if(ch1 > ch2)
-		{
-			return 1;
-		}
-		--len;
-	}
-	if(!len)
-	{
-		return 0;
-	}
-	if(*str1 != '\0')
-	{
-		return 1;
-	}
-	else if(*str2 != '\0')
-	{
-		return -1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
  * Determine if a command-line looks like something that should
  * be processed using the compatibility parser.
  */
@@ -592,7 +545,7 @@ int CCNeedsCompatParser(int argc, char *argv[])
 			}
 			if(opt->nameSize)
 			{
-				if(!StrNICmp(argv[posn], opt->name, opt->nameSize) &&
+				if(!ILStrNICmp(argv[posn], opt->name, opt->nameSize) &&
 				   (argv[posn][opt->nameSize] == ':' ||
 				    argv[posn][opt->nameSize] == '=' ||
 				    argv[posn][opt->nameSize] == '\0'))
@@ -657,14 +610,14 @@ void CCParseWithCompatParser(int argc, char *argv[])
 			}
 			if(size)
 			{
-				if(!StrNICmp(argv[posn], opt->name, size) &&
+				if(!ILStrNICmp(argv[posn], opt->name, size) &&
 				   (argv[posn][size] == ':' || argv[posn][size] == '='))
 				{
 					/* This is an option with arguments */
 					InvokeOption(opt, argv[posn] + size + 1);
 					break;
 				}
-				else if(!StrNICmp(argv[posn], opt->name, size) &&
+				else if(!ILStrNICmp(argv[posn], opt->name, size) &&
 				        argv[posn][size] != '\0' && opt->nameSize < 0)
 				{
 					/* Option with arguments, cscc-style */

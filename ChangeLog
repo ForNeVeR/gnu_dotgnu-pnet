@@ -3,7 +3,7 @@
 
 	* System.Windows.Forms/PrintDialog.cs: Add a little meat to the stubs.
 
-2005-02-23  Gopal V  <gopalv82@yahoo.com>
+2005-02-22  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XmlNode.cs,
 	System.Xml/XmlAttribute.cs,
@@ -37,6 +37,9 @@
 	System.Xml/Xsl/XsltException.cs,
 	profiles/*: Add CONFIG_XPATH and CONFIG_XSL 
 	profile options to enable Xpath/Xsl.
+
+	* System.Xml/Private/SelectNodeList.cs: return null if there
+	are no valid matches.(fix Bug #12076).
 	
 2005-02-21  Doru Budai  <doru.budai@gmail.com>
 

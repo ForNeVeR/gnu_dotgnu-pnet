@@ -72,12 +72,20 @@ internal sealed class SelectNodeList : XmlNodeList
 	// Get a particular item within this node list.
 	public override XmlNode Item(int i)
 			{
-				if(cached.Count > i)
+				if(count > i)
 				{
-					return (cached[i] as XmlNode);
+					return (XmlNode)(cached[i]);
 				}
-				Read(i-count+1);
-				return (cached[i] as XmlNode);
+				else if(!finished)
+				{
+					Read(i-count+1);
+					if(count > i)
+					{
+						return (XmlNode)(cached[i]);
+					}
+				}
+				
+				return null;
 			}
 
 	// Implement the "IEnumerable" interface.

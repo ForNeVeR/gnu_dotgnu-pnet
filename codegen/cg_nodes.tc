@@ -404,6 +404,7 @@ struct _tagILSwitchValue
 %node ILNode_Deref ILNode_LValueNoRef =
 {
 	ILNode *expr;
+	ILType *elemType;
 }
 %node ILNode_AddressOf ILNode_UnaryExpression
 %node ILNode_ToBool ILNode_UnaryExpression =

@@ -1231,10 +1231,23 @@ ILNode_SemAnalysis(ILNode_DerefField)
  * Wrap an array index expression in an overflow conversion to "int".
  */
 static ILNode *ArrayIndexToInt(ILGenInfo *info, ILNode *node,
-							   ILNode **parent, ILType *currentType)
+							   ILNode **parent, ILType *currentType,
+							   int pointerAccess)
 {
 	ILNode *result;
-	if(info->overflowInsns)
+	if(pointerAccess)
+	{
+		/* Cast to a native integer if accessing by pointer */
+		if(currentType == ILType_Int32 || currentType == ILType_Int64)
+		{
+			result = ILNode_CastSimple_create(node, ILMachineType_NativeInt);
+		}
+		else
+		{
+			result = ILNode_CastSimple_create(node, ILMachineType_NativeUInt);
+		}
+	}
+	else if(info->overflowInsns)
 	{
 		/* We are already in overflow mode, so just wrap it */
 		result = ILNode_CastSimple_create(node, ILMachineType_Int32);
@@ -1249,6 +1262,41 @@ static ILNode *ArrayIndexToInt(ILGenInfo *info, ILNode *node,
 	}
 	*parent = result;
 	return result;
+}
+
+/*
+ * Coerce an array index to "int", "uint", "long", or "ulong".
+ */
+static void CoerceArrayIndex(ILGenInfo *info, ILNode **node,
+							 ILNode **parent, ILType *type,
+							 int pointerAccess)
+{
+	if(ILCoerce(info, *node, parent, type, ILType_Int32, 1))
+	{
+		*node = ArrayIndexToInt
+			(info, *parent, parent, ILType_Int32, pointerAccess);
+	}
+	else if(ILCoerce(info, *node, parent, type, ILType_UInt32, 1))
+	{
+		*node = ArrayIndexToInt
+			(info, *parent, parent, ILType_UInt32, pointerAccess);
+	}
+	else if(ILCoerce(info, *node, parent, type, ILType_Int64, 1))
+	{
+		*node = ArrayIndexToInt
+			(info, *parent, parent, ILType_Int64, pointerAccess);
+	}
+	else if(ILCoerce(info, *node, parent, type, ILType_UInt64, 1))
+	{
+		*node = ArrayIndexToInt
+			(info, *parent, parent, ILType_Int64, pointerAccess);
+	}
+	else
+	{
+		CCErrorOnLine(yygetfilename(*node), yygetlinenum(*node),
+					  "no conversion from `%s' to `int'",
+					  CSTypeToName(type));
+	}
 }
 
 %}
@@ -1268,6 +1316,7 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 	ILMethod *getMethod;
 	ILMethod *setMethod;
 	ILType *objectType;
+	ILNode *tempNode;
 
 	/* Perform semantic analysis on the array expression */
 	if(!CSSemExpectValue(node->array, info, &(node->array), &value))
@@ -1293,39 +1342,8 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 		   "long", or "ulong", and are converted to "int" */
 		for(argNum = 0; argNum < numArgs; ++argNum)
 		{
-			if(ILCoerce(info, args[argNum].node, args[argNum].parent,
-			            args[argNum].type, ILType_Int32,1))
-			{
-				args[argNum].node = *(args[argNum].parent);
-			}
-			else if(ILCoerce(info, args[argNum].node, args[argNum].parent,
-			                 args[argNum].type, ILType_UInt32,1))
-			{
-				args[argNum].node =
-					ArrayIndexToInt(info, *(args[argNum].parent),
-									args[argNum].parent, ILType_UInt32);
-			}
-			else if(ILCoerce(info, args[argNum].node, args[argNum].parent,
-			                 args[argNum].type, ILType_Int64,1))
-			{
-				args[argNum].node =
-					ArrayIndexToInt(info, *(args[argNum].parent),
-									args[argNum].parent, ILType_Int64);
-			}
-			else if(ILCoerce(info, args[argNum].node, args[argNum].parent,
-			                 args[argNum].type, ILType_UInt64,1))
-			{
-				args[argNum].node =
-					ArrayIndexToInt(info, *(args[argNum].parent),
-									args[argNum].parent, ILType_UInt64);
-			}
-			else
-			{
-				CCErrorOnLine(yygetfilename(args[argNum].node),
-							  yygetlinenum(args[argNum].node),
-							  "no conversion from `%s' to `int'",
-							  CSTypeToName(args[argNum].type));
-			}
+			CoerceArrayIndex(info, &(args[argNum].node), args[argNum].parent,
+			            	 args[argNum].type, 0);
 		}
 
 		/* Check the array's rank */
@@ -1343,6 +1361,49 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 
 		/* Construct the semantic value for the element type */
 		CSSemSetLValue(value, node->elemType);
+	}
+	else if(ILType_IsPointer(CSSemGetType(value)))
+	{
+		/* Access to an array defined by a pointer */
+		CCUnsafeMessage(info, (ILNode *)node,
+						"unsafe pointer-based array access");
+		objectType = CSSemGetType(value);
+		if(numArgs != 1)
+		{
+			CCErrorOnLine(yygetfilename(node->indices),
+						  yygetlinenum(node->indices),
+						  "incorrect number of indices for `%s'",
+						  CSTypeToName(objectType));
+		}
+		objectType = ILTypeStripPrefixes(ILType_Ref(objectType));
+		if(objectType == ILType_Void)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`void *' cannot be used for an array access");
+			objectType = ILType_UInt8;
+		}
+		CoerceArrayIndex(info, &(args[0].node), args[0].parent,
+		            	 args[0].type, 1);
+		if(objectType == ILType_Int8 || objectType == ILType_UInt8 ||
+		   objectType == ILType_Boolean)
+		{
+			tempNode = ILNode_Add_create(node->array, args[0].node);
+		}
+		else
+		{
+			tempNode = ILNode_SizeOf_create(0);
+			((ILNode_SizeOf *)tempNode)->type = objectType;
+			tempNode = ILNode_CastSimple_create
+				(tempNode, ILMachineType_NativeInt);
+			tempNode = ILNode_Add_create(node->array,
+				ILNode_Mul_create(args[0].node, tempNode));
+		}
+		yysetfilename(tempNode, yygetfilename(node));
+		yysetlinenum(tempNode, yygetlinenum(node));
+		*parent = ILNode_Deref_create(tempNode, objectType);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		CSSemSetLValue(value, objectType);
 	}
 	else if(ILType_IsClass(CSSemGetType(value)) ||
 			ILType_IsValueType(CSSemGetType(value)))

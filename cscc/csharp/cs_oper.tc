@@ -1922,15 +1922,16 @@ ILNode_SemAnalysis(ILNode_Deref)
 		return value;
 	}
 	type=CSSemGetType(value);
-	if(ILType_IsComplex(type) && (ILType_Kind(type) == IL_TYPE_COMPLEX_PTR))
+	if(ILType_IsPointer(type) && ILType_Ref(type) != ILType_Void)
 	{
-		CSSemSetLValue(value,ILType_Ref(CSSemGetType(value)));
+		node->elemType = ILType_Ref(type);
+		CSSemSetLValue(value, node->elemType);
 		return value;
 	}
 	else
 	{
 		CCErrorOnLine(yygetfilename(node->expr),yygetlinenum(node->expr),
-			"cannot deference '%s' type",CSTypeToName(CSSemGetType(value)));
+			"cannot dereference '%s'",CSTypeToName(CSSemGetType(value)));
 	}
 	CSSemSetLValue(value, ILType_Int32);
 	return value;
@@ -1950,6 +1951,12 @@ ILNode_SemAnalysis(ILNode_AddressOf)
 				"invalid argument for address operator");
 		CSSemSetRValue(value,ILType_Int32);
 		return value;
+	}
+	if(yyisa(node->expr, ILNode_Deref))
+	{
+		/* If the argument is a pointer dereference, then remove the
+		   extra layer and use the pointer directly as the address */
+		*parent = ((ILNode_Deref *)(node->expr))->expr;
 	}
 	CSSemSetRValue(value,ILTypeCreateRef(info->context,
 							IL_TYPE_COMPLEX_PTR,

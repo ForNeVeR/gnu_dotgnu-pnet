@@ -1605,7 +1605,7 @@ PrefixedUnaryExpression
 			}
 	| INC_OP PrefixedUnaryExpression	{ MakeUnary(PreInc, $2); }
 	| DEC_OP PrefixedUnaryExpression	{ MakeUnary(PreDec, $2); }
-	| '*' PrefixedUnaryExpression		{ MakeUnary(Deref, $2); }
+	| '*' PrefixedUnaryExpression		{ MakeBinary(Deref, $2, 0); }
 	| '&' PrefixedUnaryExpression		{ MakeUnary(AddressOf, $2); }
 	;
 

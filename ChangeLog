@@ -65,6 +65,8 @@ instructions.
 * include/il_coder.h, engine/ilverify.c: modify the coder API's related
 to method calls and constructors.
 
+* engine/cvmc_call.c: output call-related code.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

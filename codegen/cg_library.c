@@ -95,6 +95,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *typedRefClass;
 	ILClass *attributeClass;
 	ILClass *paramAttributeClass;
+	ILClass *exceptionClass;
 	int constructorOK;
 
 	/* Create the "System.Object" class */
@@ -216,6 +217,16 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
 	ABORT_IF(constructorOK, AddDefaultConstructor(paramAttributeClass));
+
+	/* Create the "System.Exception" class */
+	ABORT_IF(exceptionClass,
+			 ILClassCreate(scope, 0, "Exception", "System",
+			 			   objectClass));
+	ILClassSetAttrs(exceptionClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT);
+	ABORT_IF(constructorOK, AddDefaultConstructor(exceptionClass));
 }
 
 #ifdef	__cplusplus

@@ -384,6 +384,7 @@ ILType *ILValueTypeToType(ILGenInfo *info, ILMachineType valueType)
 		case ILMachineType_Float32:		return ILType_Float32;
 		case ILMachineType_Float64:		return ILType_Float64;
 		case ILMachineType_NativeFloat:	return ILType_Float;
+		case ILMachineType_String:		return ILFindSystemType(info, "String");
 		case ILMachineType_ObjectRef:	return ILFindSystemType(info, "Object");
 		default:						break;
 	}

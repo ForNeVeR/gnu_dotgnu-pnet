@@ -1,4 +1,10 @@
 
+2002-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_gen.c, codegen/cg_nodes.tc, codegen/cg_stmt.tc,
+	codegen/jv_stmt.tc, cscc/csharp/cs_stmt.tc: add a special case
+	to "foreach" to handle iteration over strings more efficiently.
+
 2002-05-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_array.c: add special cases for 2-dimensional arrays.

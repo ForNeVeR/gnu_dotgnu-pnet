@@ -290,6 +290,9 @@ ILNode_SemAnalysis(ILNode_Foreach)
 		node->arrayType = value.type;
 	}
 
+	/* Perform semantic analysis on the body of the "foreach" statement */
+	StmtSem(node->stmt, info, &(node->stmt));
+
 	/* Is this a simple array-based or collection-based "foreach" statement? */
 	node->elemType = ILTypeGetElemType(node->arrayType);
 	if(ILType_IsSimpleArray(node->arrayType) &&
@@ -299,6 +302,15 @@ ILNode_SemAnalysis(ILNode_Foreach)
 		   has the same type as the array elements.  We can optimise
 		   this case in the code generator to scan the array efficiently */
 	}
+	else if(ILTypeIsStringClass(node->arrayType) &&
+	        ILTypeIdentical(type, ILType_Char))
+	{
+		/* The collection is a string, which we can special-case */
+		*parent = ILNode_ForeachString_create(node->expr,
+											  node->stmt,
+											  node->varIndex,
+											  node->varType);
+	}
 	else
 	{
 		/* TODO: collection-based array scanning */
@@ -306,16 +318,15 @@ ILNode_SemAnalysis(ILNode_Foreach)
 			  "internal error: collection-based `foreach' not yet supported");
 	}
 
-	/* Perform semantic analysis on the body of the "foreach" statement */
-	StmtSem(node->stmt, info, &(node->stmt));
-
 	/* Done */
 	return CSSemValueDefault;
 }
 
 /*
- * Perform semantic analysis for the "foreach collection" statement.
+ * Perform semantic analysis for the "foreach string" and
+ * "foreach collection" statements.
  */
+ILNode_SemAnalysis(ILNode_ForeachString),
 ILNode_SemAnalysis(ILNode_ForeachCollection)
 {
 	/* We don't need to do anything here, as this node type is

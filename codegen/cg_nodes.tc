@@ -600,6 +600,13 @@ struct _tagILSwitchValue
 	%nocreate ILType *arrayType = {0};
 	%nocreate ILType *elemType = {0};
 }
+%node ILNode_ForeachString ILNode_LabelledStatement =
+{
+	ILNode *expr;
+	ILNode *stmt;
+	unsigned long varIndex;
+	ILMachineType varType;
+}
 %node ILNode_ForeachCollection ILNode_LabelledStatement =
 {
 	ILNode *doCast;

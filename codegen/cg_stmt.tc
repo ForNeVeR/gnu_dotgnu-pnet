@@ -732,6 +732,95 @@ ILNode_GenDiscard(ILNode_Foreach)
 }
 
 /*
+ * Generate discard code for "foreach" statements that use strings.
+ */
+ILNode_GenDiscard(ILNode_ForeachString)
+{
+	unsigned stringVar;
+	unsigned indexVar;
+	unsigned lengthVar;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILLabel label3 = ILLabel_Undefined;
+	ILLabel label4 = ILLabel_Undefined;
+
+	/* We need a temporary variable for the evaluated string */
+	stringVar = ILGenTempVar(info, ILMachineType_String);
+
+	/* We need a temporary variable for the array index */
+	indexVar = ILGenTempTypedVar(info, ILType_Int32);
+
+	/* We need a temporary variable for the string length */
+	lengthVar = ILGenTempTypedVar(info, ILType_Int32);
+
+	/* Evaluate the string expression */
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_String);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	ILGenStoreLocal(info, stringVar);
+	ILGenAdjust(info, -1);
+
+	/* Compute the string length and store it for later */
+	ILGenCallVirtual(info, "int32 [.library]System.String::get_Length()");
+	ILGenStoreLocal(info, lengthVar);
+	ILGenAdjust(info, -1);
+
+	/* Initialize the index expression */
+	ILGenSimple(info, IL_OP_LDC_I4_0);
+	ILGenStoreLocal(info, indexVar);
+	ILGenExtend(info, 1);
+
+	/* Jump to the end of the loop to perform the test */
+	ILGenJump(info, IL_OP_BR, &label3);
+
+	/* Push the loop label information */
+	PushLoop(info, &label2, &label4, node->name);
+
+	/* Fetch the next string element and put it into the variable */
+	ILGenLabel(info, &label1);
+	ILGenLoadLocal(info, stringVar);
+	ILGenLoadLocal(info, indexVar);
+	ILGenAdjust(info, 2);
+	ILGenCallVirtual(info, "char [.library]System.String::get_Chars(int32)");
+	ILGenAdjust(info, -1);
+	ILGenCast(info, ILMachineType_Char, node->varType);
+	ILGenStoreLocal(info, node->varIndex);
+	ILGenAdjust(info, -1);
+
+	/* Output the loop body */
+	ILNode_GenDiscard(node->stmt, info);
+
+	/* Increment the array index */
+	ILGenLabel(info, &label2);
+	ILGenLoadLocal(info, indexVar);
+	ILGenSimple(info, IL_OP_LDC_I4_1);
+	ILGenSimple(info, IL_OP_ADD);
+	ILGenStoreLocal(info, indexVar);
+	ILGenExtend(info, 2);
+
+	/* Test the string index condition */
+	ILGenLabel(info, &label3);
+	ILGenLoadLocal(info, indexVar);
+	ILGenAdjust(info, 1);
+	ILGenLoadLocal(info, lengthVar);
+	ILGenAdjust(info, 1);
+	ILGenJump(info, IL_OP_BLT, &label1);
+	ILGenAdjust(info, -2);
+
+	/* Mark the end of the loop */
+	ILGenLabel(info, &label4);
+
+	/* Pop the loop label information */
+	PopLoop(info);
+
+	/* Release the temporary variables */
+	ILGenReleaseTempVar(info, stringVar);
+	ILGenReleaseTempVar(info, indexVar);
+	ILGenReleaseTempVar(info, lengthVar);
+}
+
+/*
  * Generate discard code for "foreach" statements that use collections.
  */
 ILNode_GenDiscard(ILNode_ForeachCollection)

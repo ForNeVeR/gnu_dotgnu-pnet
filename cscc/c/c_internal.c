@@ -48,6 +48,42 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope)
 	return result;
 }
 
+void CGenBeginCode(ILGenInfo *info)
+{
+	/* Tag the module with the memory model, which tells the linker
+	   that this is a C module requiring special treatment */
+	if(info->asmOutput)
+	{
+		if(gen_32bit_only)
+		{
+			fputs(".custom instance void "
+					"OpenSystem.Languages.C.MemoryModelAttribute"
+					"::.ctor(int32) = (01 00 20 00 00 00 00 00)\n",
+				  info->asmOutput);
+		}
+		else
+		{
+			fputs(".custom instance void "
+					"OpenSystem.Languages.C.MemoryModelAttribute"
+					"::.ctor(int32) = (01 00 40 00 00 00 00 00)\n",
+				  info->asmOutput);
+		}
+	}
+
+	/* Initialize the global definition scope */
+	CScopeGlobalInit(info);
+
+	/* We don't use CCParseTree, but we need to initialize it
+	   to make sure that "common/cc_main.c" has something */
+	CCParseTree = ILNode_Empty_create();
+
+	/* Mark the current treecc node pool location */
+	yynodepush();
+
+	/* Pre-declare builtin definitions */
+	CFunctionPredeclare(info);
+}
+
 void CGenEndCode(ILGenInfo *info)
 {
 	FILE *stream = info->asmOutput;

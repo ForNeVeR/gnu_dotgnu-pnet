@@ -78,9 +78,9 @@ static ILNode *PersistNode(ILNode *node)
 	return newNode;
 }
 
-void CScopeGlobalInit()
+void CScopeGlobalInit(ILGenInfo *info)
 {
-	CGlobalScope = CCurrentScope = ILScopeCreate(&CCCodeGen, 0);
+	CGlobalScope = CCurrentScope = ILScopeCreate(info, 0);
 }
 
 void *CScopeLookup(const char *name)

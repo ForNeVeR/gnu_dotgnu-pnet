@@ -18,6 +18,11 @@
 	* cscc/common/cc_main.c: don't output the unsafe attributes
 	into C object modules - leave it for the linker to do that.
 
+	* cscc/c_main.c, cscc/c/c_internal.c, cscc/c/c_internal.h,
+	cscc/c/c_scope.c, cscc/c/c_scope.h: move the code generator
+	startup logic to "cscc/c"; tag the C object module with the
+	"32 vs 64" memory model indication.
+
 2002-08-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_scope.c, codegen/cg_scope.h, cscc/c_main.c,

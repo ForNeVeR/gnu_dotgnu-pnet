@@ -53,7 +53,7 @@ extern ILScope *CGlobalScope;
 /*
  * Initialize the global scope.
  */
-void CScopeGlobalInit(void);
+void CScopeGlobalInit(ILGenInfo *info);
 
 /*
  * Look up a name in the current scope.  Returns NULL if not found.

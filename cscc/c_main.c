@@ -101,15 +101,8 @@ void CCPluginRestart(FILE *infile)
 	/* Setup up the lexer with the specified input file */
 	c_restart(infile);
 
-	/* Initialize the global definition scope */
-	CScopeGlobalInit();
-
-	/* We don't use CCParseTree, but we need to initialize it
-	   to make sure that "common/cc_main.c" has something */
-	CCParseTree = ILNode_Empty_create();
-
-	/* Mark the current treecc node pool location */
-	yynodepush();
+	/* Begin code generation */
+	CGenBeginCode(&CCCodeGen);
 }
 
 void CCPluginSemAnalysis(void)

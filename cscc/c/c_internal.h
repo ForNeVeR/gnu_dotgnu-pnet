@@ -51,6 +51,11 @@ void *CSemDupExtra(const void *buf, unsigned int len);
 void CGenCrt0(ILGenInfo *info, FILE *stream);
 
 /*
+ * Begin the code generation process.
+ */
+void CGenBeginCode(ILGenInfo *info);
+
+/*
  * End the code generation process, flushing remaining definitions.
  */
 void CGenEndCode(ILGenInfo *info);

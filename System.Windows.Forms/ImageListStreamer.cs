@@ -30,7 +30,13 @@ using System.Runtime.Serialization;
 [Serializable]
 public class ImageListStreamer : ISerializable
 {
+	internal ImageList.ImageCollection images;
 	// TODO
+
+	internal ImageListStreamer(ImageList imageList)
+	{
+		// TODO
+	}
 	private ImageListStreamer(SerializationInfo info, StreamingContext context)
 	{
 	}
@@ -38,6 +44,14 @@ public class ImageListStreamer : ISerializable
 	public virtual void GetObjectData(SerializationInfo si, StreamingContext context)
 	{
 		// TODO
+	}
+
+	internal ImageList.ImageCollection Images
+	{
+		get
+		{
+			return images;
+		}
 	}
 
 }; // class ImageListStreamer

@@ -28,6 +28,7 @@ using System.Collections;
 using System.ComponentModel;
 #endif
 using System.Drawing;
+using System.Drawing.Imaging;
 
 
 [TODO]
@@ -86,13 +87,20 @@ public sealed class ImageList
 	}
 #if !CONFIG_COMPACT_FORMS
 #if CONFIG_SERIALIZATION
-	[TODO]
 	public ImageListStreamer ImageStream
 	{
-		get { return imageStream; }
+		get
+		{
+			if (imageStream == null)
+			{
+				imageStream = new ImageListStreamer(this);
+			}
+			return imageStream;
+		}
 		set
 		{
 			imageStream = value;
+			images = imageStream.Images;
 			OnRecreateHandle();
 		}
 	}
@@ -130,6 +138,7 @@ public sealed class ImageList
 #endif
 	private void OnRecreateHandle()
 	{
+		images = new ImageCollection(this);
 		EventHandler handler = (rhHandler as EventHandler);
 		if (handler != null)
 		{
@@ -241,7 +250,38 @@ public sealed class ImageList
 		#if !CONFIG_COMPACT_FORMS
 			((Bitmap) image).MakeTransparent(owner.TransparentColor);
 		#endif
-			images.Add(image);
+			AddImage(image);
+		}
+
+		// Add the image as the correct size and depth
+		private int AddImage(Image image)
+		{
+			PixelFormat format = FormatFromDepth(owner.ColorDepth);
+			// Create the image we will write to.
+			Image newImage = new Bitmap(owner.ImageSize.Width, owner.ImageSize.Height, format);
+			// Write the old image to the new image.
+			using (Graphics g = Graphics.FromImage(newImage))
+				g.DrawImage(image, 0, 0, newImage.Width, newImage.Height);
+			return images.Add(newImage);
+		}
+
+		private PixelFormat FormatFromDepth(ColorDepth depth)
+		{
+			switch (depth)
+			{
+				case(ColorDepth.Depth4Bit):
+					return PixelFormat.Format4bppIndexed;
+				case (ColorDepth.Depth8Bit):
+					return PixelFormat.Format8bppIndexed;
+				case (ColorDepth.Depth16Bit):
+					return PixelFormat.Format16bppRgb555;
+				case (ColorDepth.Depth24Bit):
+					return PixelFormat.Format24bppRgb;
+				case (ColorDepth.Depth32Bit):
+					return PixelFormat.Format32bppRgb;
+				default:  // Never reached
+					return 0;
+			}
 		}
 
 		public void Add(Image image)
@@ -257,7 +297,7 @@ public sealed class ImageList
 		#if !CONFIG_COMPACT_FORMS
 			((Bitmap) image).MakeTransparent(owner.TransparentColor);
 		#endif
-			images.Add(image);
+			AddImage(image);
 		}
 	#if !CONFIG_COMPACT_FORMS
 		public int Add(Image image, Color transparentColor)
@@ -271,7 +311,7 @@ public sealed class ImageList
 				throw new ArgumentException(/* TODO */);
 			}
 			((Bitmap) image).MakeTransparent(transparentColor);
-			return images.Add(image);
+			return AddImage(image);
 		}
 		public int AddStrip(Image image)
 		{

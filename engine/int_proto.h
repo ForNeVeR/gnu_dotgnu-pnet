@@ -370,11 +370,21 @@ extern ILInt32 _IL_StackFrame_InternalGetNativeOffset(ILExecThread * _thread, IL
 extern ILString * _IL_StackFrame_InternalGetDebugInfo(ILExecThread * _thread, void * method, ILInt32 offset, ILInt32 * line, ILInt32 * column);
 extern System_Array * _IL_StackFrame_GetExceptionStackTrace(ILExecThread * _thread);
 
+extern ILBool _IL_CryptoMethods_AlgorithmSupported(ILExecThread * _thread, ILInt32 algorithm);
 extern ILNativeInt _IL_CryptoMethods_HashNew(ILExecThread * _thread, ILInt32 algorithm);
 extern void _IL_CryptoMethods_HashReset(ILExecThread * _thread, ILNativeInt state);
 extern void _IL_CryptoMethods_HashUpdate(ILExecThread * _thread, ILNativeInt state, System_Array * buffer, ILInt32 offset, ILInt32 count);
 extern void _IL_CryptoMethods_HashFinal(ILExecThread * _thread, ILNativeInt state, System_Array * hash);
 extern void _IL_CryptoMethods_HashFree(ILExecThread * _thread, ILNativeInt state);
+extern ILBool _IL_CryptoMethods_IsSemiWeakKey(ILExecThread * _thread, System_Array * key, ILInt32 offset);
+extern ILBool _IL_CryptoMethods_IsWeakKey(ILExecThread * _thread, System_Array * key, ILInt32 offset);
+extern ILBool _IL_CryptoMethods_SameKey(ILExecThread * _thread, System_Array * key1, ILInt32 offset1, System_Array * key2, ILInt32 offset2);
+extern void _IL_CryptoMethods_GenerateRandom(ILExecThread * _thread, System_Array * buf, ILInt32 offset, ILInt32 count);
+extern ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread * _thread, ILInt32 algorithm, System_Array * key);
+extern ILNativeInt _IL_CryptoMethods_DecryptCreate(ILExecThread * _thread, ILInt32 algorithm, System_Array * key);
+extern void _IL_CryptoMethods_Encrypt(ILExecThread * _thread, ILNativeInt state, System_Array * inBuffer, ILInt32 inOffset, System_Array * outBuffer, ILInt32 outOffset);
+extern void _IL_CryptoMethods_Decrypt(ILExecThread * _thread, ILNativeInt state, System_Array * inBuffer, ILInt32 inOffset, System_Array * outBuffer, ILInt32 outOffset);
+extern void _IL_CryptoMethods_SymmetricFree(ILExecThread * _thread, ILNativeInt state);
 
 extern void _IL_DirMethods_GetPathInfo(ILExecThread * _thread, void * _result);
 extern ILString * _IL_DirMethods_GetSystemDirectory(ILExecThread * _thread);

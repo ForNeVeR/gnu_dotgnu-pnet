@@ -35,6 +35,10 @@ extern	"C" {
 #define	IL_ALG_SHA256			2
 #define	IL_ALG_SHA384			3
 #define	IL_ALG_SHA512			4
+#define	IL_ALG_DES				5
+#define	IL_ALG_TRIPLE_DES		6
+#define	IL_ALG_RC2				7
+#define	IL_ALG_RIJNDAEL			8
 
 /*
  * Hash context header.
@@ -70,6 +74,20 @@ typedef struct
 	ILSHAContext	sha1;
 
 } SHA1HashContext;
+
+/*
+ * public static bool AlgorithmSupported(int algorithm);
+ */
+ILBool _IL_CryptoMethods_AlgorithmSupported(ILExecThread *_thread,
+											ILInt32 algorithm)
+{
+	switch(algorithm)
+	{
+		case IL_ALG_MD5:
+		case IL_ALG_SHA1:		return 1;
+	}
+	return 0;
+}
 
 /*
  * public static IntPtr HashNew(int algorithm);
@@ -157,6 +175,102 @@ void _IL_CryptoMethods_HashFree(ILExecThread *_thread, ILNativeInt state)
 {
 	(*(((HashContext *)state)->reset))(&(((MD5HashContext *)state)->md5));
 	ILFree((void *)state);
+}
+
+/*
+ * public static bool IsSemiWeakKey(byte[] key, int offset);
+ */
+ILBool _IL_CryptoMethods_IsSemiWeakKey(ILExecThread *_thread,
+									   System_Array *key, ILInt32 offset)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static bool IsWeakKey(byte[] key, int offset);
+ */
+ILBool _IL_CryptoMethods_IsWeakKey(ILExecThread *_thread, System_Array *key,
+								   ILInt32 offset)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static bool SameKey(byte[] key1, int offset1,
+ *							  byte[] key2, int offset2);
+ */
+ILBool _IL_CryptoMethods_SameKey(ILExecThread *_thread, System_Array *key1,
+								 ILInt32 offset1, System_Array *key2,
+								 ILInt32 offset2)
+{
+	return !ILMemCmp(((unsigned char *)(ArrayToBuffer(key1))) + offset1,
+					 ((unsigned char *)(ArrayToBuffer(key2))) + offset2, 8);
+}
+
+/*
+ * pubilc static void GenerateRandom(byte[] buf, int offset, int count);
+ */
+void _IL_CryptoMethods_GenerateRandom(ILExecThread *_thread,
+									  System_Array *buf, ILInt32 offset,
+									  ILInt32 count)
+{
+	/* TODO */
+}
+
+/*
+ * public static IntPtr EncryptCreate(int algorithm, byte[] key);
+ */
+ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread *_thread,
+											ILInt32 algorithm,
+											System_Array *key)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static IntPtr EncryptCreate(int algorithm, byte[] key);
+ */
+ILNativeInt _IL_CryptoMethods_DecryptCreate(ILExecThread *_thread,
+											ILInt32 algorithm,
+											System_Array *key)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static void Encrypt(IntPtr state, byte[] inBuffer, int inOffset,
+ *							  byte[] outBuffer, int outOffset);
+ */
+void _IL_CryptoMethods_Encrypt(ILExecThread *_thread,
+							   ILNativeInt state, System_Array *inBuffer,
+							   ILInt32 inOffset, System_Array *outBuffer,
+							   ILInt32 outOffset)
+{
+	/* TODO */
+}
+
+/*
+ * public static void Decrypt(IntPtr state, byte[] inBuffer, int inOffset,
+ *							  byte[] outBuffer, int outOffset);
+ */
+void _IL_CryptoMethods_Decrypt(ILExecThread *_thread,
+							   ILNativeInt state, System_Array *inBuffer,
+							   ILInt32 inOffset, System_Array *outBuffer,
+							   ILInt32 outOffset)
+{
+	/* TODO */
+}
+
+/*
+ * public static void SymmetricFree(IntPtr state);
+ */
+void _IL_CryptoMethods_SymmetricFree(ILExecThread *_thread, ILNativeInt state)
+{
+	/* TODO */
 }
 
 #ifdef	__cplusplus

@@ -2,9 +2,9 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace TextBoxTest
+namespace FormsTest
 {
-	public class TextBoxTest : System.Windows.Forms.Form
+	public class FormsTest : System.Windows.Forms.Form
 	{
 		#region declares
 		private TabControl tabControl1;
@@ -15,6 +15,8 @@ namespace TextBoxTest
 		private TabPage tabPage5;
 		private TabPage tabPage6;
 		private TabPage tabPage7;
+		private TabPage tabPage8;
+		private TabPage tabPage9;
 		
 		// Tab1 Labels Test
 		private System.Windows.Forms.Label label;
@@ -181,15 +183,24 @@ namespace TextBoxTest
 		private System.Windows.Forms.Label labelT3;
 		private System.Windows.Forms.Label labelT4;
 
-		#endregion
+		private MainMenu mainMenu;
+		private MenuItem fileMenuItem;
+		private MenuItem editMenuItem;
+		private MenuItem helpMenuItem;
+		private MenuItem newMenuItem;
+		private MenuItem openMenuItem;
+		private MenuItem exitMenuItem;
+		private MenuItem thisMenuItem, thatMenuItem, otherMenuItem, otherAMenuItem, otherBMenuItem, otherCMenuItem, cutMenuItem, copyMenuItem, pasteMenuItem, aboutMenuItem, seperatorMenuItem;
+		private ContextMenu contextMenu;
 
-		public TextBoxTest()
+		#endregion
+		public FormsTest()
 		{
 			ClientSize = new System.Drawing.Size(500, 820);
 			Text = "System.Windows.Forms Tests";
 			
 			//Bug when suspending layout!
-			//SuspendLayout();
+			SuspendLayout();
 			tabControl1 = new TabControl();
 			tabControl1.Dock = DockStyle.Fill;
 			tabPage1 = new TabPage();
@@ -214,7 +225,12 @@ namespace TextBoxTest
 			tabPage7 = new TabPage();
 			tabPage7.Text = "Primitives";
 			tabControl1.Controls.Add(this.tabPage7);
-
+			tabPage8 = new TabPage();
+			tabPage8.Text = "Graphics";
+			tabControl1.Controls.Add(this.tabPage8);
+			tabPage9 = new TabPage();
+			tabPage9.Text = "ContextMenu";
+			tabControl1.Controls.Add(this.tabPage9);
 			Controls.Add(tabControl1);
 
 			AddLabelTest(tabPage1);
@@ -224,8 +240,11 @@ namespace TextBoxTest
 			AddRegionsTest(tabPage5);
 			AddTabControlsTest(tabPage6);
 			AddPrimitivesTest(tabPage7);
+			AddMenuTest();
+			AddGraphicsTest();
+			AddContextTest();
 
-			//ResumeLayout(false);
+			ResumeLayout(false);
 
 
 		}
@@ -2046,9 +2065,41 @@ namespace TextBoxTest
 		{
 			control.Paint+=new PaintEventHandler(DrawPrimitives);
 		}
+		private void AddMenuTest()
+		{
+			seperatorMenuItem = new MenuItem("-");
+					thisMenuItem = new MenuItem("This");
+					thatMenuItem = new MenuItem("That");
+						otherAMenuItem = new MenuItem("OtherA");
+						otherBMenuItem = new MenuItem("OtherB");
+						otherCMenuItem = new MenuItem("OtherC");
+					otherMenuItem = new MenuItem("Other", new MenuItem[]{otherAMenuItem, otherBMenuItem, seperatorMenuItem, otherCMenuItem});
+				newMenuItem = new MenuItem("New", new MenuItem[]{thisMenuItem, thatMenuItem, otherMenuItem});
+				openMenuItem = new MenuItem("Open");
+				exitMenuItem = new MenuItem("Exit");
+				exitMenuItem.Click +=new EventHandler(exitMenuItem_Click);
+			fileMenuItem = new MenuItem("File",new MenuItem[] {newMenuItem, openMenuItem, exitMenuItem});
+				cutMenuItem = new MenuItem("Cut");
+				copyMenuItem = new MenuItem("Copy");
+				pasteMenuItem = new MenuItem("Paste");
+			editMenuItem = new MenuItem("Edit", new MenuItem[] {cutMenuItem, copyMenuItem, seperatorMenuItem, pasteMenuItem});
+				aboutMenuItem = new MenuItem("About");
+			helpMenuItem = new MenuItem("Help", new MenuItem[] {aboutMenuItem});
+			mainMenu = new MainMenu(new MenuItem[] { fileMenuItem, editMenuItem, helpMenuItem });
+			Menu = mainMenu;
+		}
+		private void AddGraphicsTest()
+		{
+			tabPage8.Paint+=new PaintEventHandler(tabPage8_Paint);
+		}
+		private void AddContextTest()
+		{
+			contextMenu = new ContextMenu( new MenuItem[] { cutMenuItem, copyMenuItem, seperatorMenuItem, pasteMenuItem });
+			tabPage9.ContextMenu = contextMenu;
+		}
 		public static void Main(String[] args)
 		{
-			TextBoxTest form = new TextBoxTest();
+			FormsTest form = new FormsTest();
 			Application.Run(form);
 		}
 
@@ -2257,6 +2308,28 @@ namespace TextBoxTest
 		{
 			foreach(String s in textBox4.Lines)
 				Console.WriteLine(s);
+		}
+
+		private void tabPage8_Paint(object sender, PaintEventArgs e)
+		{
+			// TODO
+			Graphics g = e.Graphics;
+			using (Brush bb = new SolidBrush(Color.Black), rb = new SolidBrush(Color.Red), gb = new SolidBrush(Color.Green))
+			{
+				g.DrawString("BeginContainer", Font, bb, 0, 0);
+				g.SetClip(new Rectangle(20,20, 50, 50));
+				g.FillRectangle(rb, 0, 0, 100, 100);
+				System.Drawing.Drawing2D.GraphicsContainer gc =  g.BeginContainer();
+				g.SetClip(new Rectangle(30, 30, 50, 50));
+				g.ResetClip();
+				g.FillRectangle(gb, 0, 0, 100, 100);
+				g.EndContainer(gc);
+			}
+		}
+
+		private void exitMenuItem_Click(object sender, EventArgs e)
+		{
+			Close();
 		}
 	}
 }

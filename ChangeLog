@@ -7,6 +7,9 @@
 	* support/console.c: if a special key corresponds to a single
 	ASCII character, then return that character as well as the key code.
 
+	* support/console.c: recognise metacharacter sequences like ESC-A
+	and convert them into ALT-A.
+
 2003-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_main.c: enable the "-fgenerics" option by default because

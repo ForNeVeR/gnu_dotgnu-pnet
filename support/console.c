@@ -350,17 +350,6 @@ static SpecialKeyCap const SpecialKeys[] = {
 	{"\033OR",		Key_F3,				0},
 	{"\033OS",		Key_F4,				0},
 	{"\033OZ",		Key_Tab,			Mod_Shift},
-	{"\033A",		Key_UpArrow,		0},
-	{"\033B",		Key_DownArrow,		0},
-	{"\033C",		Key_RightArrow,		0},
-	{"\033D",		Key_LeftArrow,		0},
-	{"\033H",		Key_Home,			0},
-	{"\033F",		Key_End,			0},
-	{"\033P",		Key_F1,				0},
-	{"\033Q",		Key_F2,				0},
-	{"\033R",		Key_F3,				0},
-	{"\033S",		Key_F4,				0},
-	{"\033Z",		Key_Tab,			Mod_Shift},
 
 	/* Other common keycodes, typical to the "linux" and "xterm" entries */
 	{"\033[[A",		Key_F1,				0},
@@ -1000,6 +989,11 @@ void ILConsoleReadKey(ILUInt16 *ch, ILInt32 *key, ILInt32 *modifiers)
 						}
 					}
 				}
+				if(!prefixMatch && keyBufferLen >= 2 && keyBuffer[0] == '\033')
+				{
+					/* This is probably a meta-character indication */
+					goto meta;
+				}
 				if(!prefixMatch || keyBufferLen >= KEY_BUFFER_SIZE)
 				{
 					/* No prefix match, so we have a normal character */
@@ -1016,6 +1010,24 @@ void ILConsoleReadKey(ILUInt16 *ch, ILInt32 *key, ILInt32 *modifiers)
 		{
 			/* Some kind of error occurred */
 			break;
+		}
+		else if(keyBufferLen >= 2 && keyBuffer[0] == '\033')
+		{
+			/* We got a timeout with at least two characters in the
+			   lookahead buffer where the first is an Escape character.
+			   This is probably a metacharacter indication.  e.g. ESC-A
+			   is the same as ALT-A */
+		meta:
+			c = (((int)(keyBuffer[1])) & 0xFF);
+			keyBufferLen -= 2;
+			if(keyBufferLen > 0)
+			{
+				ILMemMove(keyBuffer, keyBuffer + 2, keyBufferLen);
+			}
+			*ch = 0;
+			MapCharToKey(c, key, modifiers);
+			*modifiers |= Mod_Alt;
+			return;
 		}
 		else if(keyBufferLen > 0)
 		{

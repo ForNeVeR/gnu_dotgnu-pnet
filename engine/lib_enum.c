@@ -582,19 +582,19 @@ ILString *_IL_Enum_FormatEnumWithFlags(ILExecThread *thread,
 	/* Convert the value from object form into raw form */
 	enumValue = GetRawEnumValue(thread, value) & mask;
 	leftOver = enumValue;
-
+	
 	/* Find all fields that overlap with the incoming value */
 	field = 0;
 	while((field = GetNextEnumField(classInfo, field, mask, &fieldValue)) != 0)
 	{
 		/* Check for the easy case of an exact match */
 		if(fieldValue == enumValue)
-		{
+		{			
 			if(maxMatches > 4)
 			{
 				ILFree(matches);
 			}
-			return ILStringCreate(thread, ILField_Name(classInfo));
+			return ILStringCreate(thread, ILField_Name(field));
 		}
 
 		/* Ignore the field if there is no overlap with the value */

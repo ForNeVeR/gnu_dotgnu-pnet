@@ -366,9 +366,20 @@ extern ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread * _thread, ILNati
 extern ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2);
 extern ILUInt8 * _IL_ClrResourceStream_ResourceGetAddress(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2);
 
+extern ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILString * _p3, ILInt32 _p4, void * _p5);
+extern void _IL_TypeBuilder_ClrTypeSetPackingSize(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern void _IL_TypeBuilder_ClrTypeSetClassSize(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern void _IL_TypeBuilder_ClrTypeAddInterface(ILExecThread * _thread, ILNativeInt _p1, void * _p2);
+extern ILInt32 _IL_TypeBuilder_ClrTypeGetPackingSize(ILExecThread * _thread, ILNativeInt _p1);
+extern ILInt32 _IL_TypeBuilder_ClrTypeGetClassSize(ILExecThread * _thread, ILNativeInt _p1);
+extern void _IL_TypeBuilder_ClrTypeSetParent(ILExecThread * _thread, ILNativeInt _p1, void * _p2);
+extern ILInt32 _IL_TypeBuilder_ClrTypeImport(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
+extern ILInt32 _IL_TypeBuilder_ClrTypeImportMember(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2);
+
+extern ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread * _thread, ILNativeInt _p1);
 extern ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread * _thread, ILString * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, ILInt32 _p6, ILNativeInt * writer);
 extern void _IL_AssemblyBuilder_ClrSetEntryPoint(ILExecThread * _thread, ILObject * _this, ILNativeInt _p1, ILInt32 _p2);
-extern ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread * _thread, ILNativeInt _p1);
+extern ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 
 extern ILNativeInt _IL_EventBuilder_ClrEventCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILObject * _p3, ILInt32 _p4);
 extern void _IL_EventBuilder_ClrEventAddSemantics(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, void * _p3);
@@ -378,7 +389,11 @@ extern void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread * _thread, ILNativ
 extern void _IL_FieldBuilder_ClrFieldSetMarshal(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2);
 extern void _IL_FieldBuilder_ClrFieldSetOffset(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 
+extern ILNativeInt _IL_MethodBuilder_ClrMethodCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILInt32 _p3, ILInt32 _p4, ILObject * _p5, System_Array * _p6);
+extern void _IL_MethodBuilder_ClrMethodSetImplAttrs(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+
 extern ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2);
+extern ILInt32 _IL_ModuleBuilder_ClrModuleCreateString(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2);
 
 extern ILNativeInt _IL_PropertyBuilder_ClrPropertyCreate(ILExecThread * _thread, ILNativeInt _p1, ILString * _p2, ILInt32 _p3, ILObject * _p4, System_Array * _p5);
 extern void _IL_PropertyBuilder_ClrPropertyAddSemantics(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, void * _p3);

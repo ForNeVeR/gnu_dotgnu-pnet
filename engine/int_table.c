@@ -1829,6 +1829,49 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_jpjppip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, void *, void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpji(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ipjj(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])));
+}
+
+#endif
+
+#ifndef _IL_TypeBuilder_suppressed
+
+IL_METHOD_BEGIN(TypeBuilder_Methods)
+	IL_METHOD("ClrTypeCreate", "(joSystem.String;oSystem.String;vSystem.Reflection.TypeAttributes;vSystem.Reflection.Emit.TypeToken;)j", _IL_TypeBuilder_ClrTypeCreate, marshal_jpjppip)
+	IL_METHOD("ClrTypeSetPackingSize", "(ji)V", _IL_TypeBuilder_ClrTypeSetPackingSize, marshal_vpji)
+	IL_METHOD("ClrTypeSetClassSize", "(ji)V", _IL_TypeBuilder_ClrTypeSetClassSize, marshal_vpji)
+	IL_METHOD("ClrTypeAddInterface", "(jvSystem.Reflection.Emit.TypeToken;)V", _IL_TypeBuilder_ClrTypeAddInterface, marshal_vpjp)
+	IL_METHOD("ClrTypeGetPackingSize", "(j)i", _IL_TypeBuilder_ClrTypeGetPackingSize, marshal_ipj)
+	IL_METHOD("ClrTypeGetClassSize", "(j)i", _IL_TypeBuilder_ClrTypeGetClassSize, marshal_ipj)
+	IL_METHOD("ClrTypeSetParent", "(jvSystem.Reflection.Emit.TypeToken;)V", _IL_TypeBuilder_ClrTypeSetParent, marshal_vpjp)
+	IL_METHOD("ClrTypeImport", "(jj)i", _IL_TypeBuilder_ClrTypeImport, marshal_ipjj)
+	IL_METHOD("ClrTypeImportMember", "(jj)i", _IL_TypeBuilder_ClrTypeImportMember, marshal_ipjj)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_jppiiiiip(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, void *, ILInt32, ILInt32, ILInt32, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((void * *)(avalue[7])));
@@ -1848,9 +1891,10 @@ static void marshal_vppji(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_AssemblyBuilder_suppressed
 
 IL_METHOD_BEGIN(AssemblyBuilder_Methods)
+	IL_METHOD("ClrGetItemToken", "(j)i", _IL_AssemblyBuilder_ClrGetItemToken, marshal_ipj)
 	IL_METHOD("ClrAssemblyCreate", "(oSystem.String;iiiivSystem.Reflection.Emit.AssemblyBuilderAccess;&j)j", _IL_AssemblyBuilder_ClrAssemblyCreate, marshal_jppiiiiip)
 	IL_METHOD("ClrSetEntryPoint", "(TjvSystem.Reflection.Emit.PEFileKinds;)V", _IL_AssemblyBuilder_ClrSetEntryPoint, marshal_vppji)
-	IL_METHOD("ClrGetItemToken", "(j)i", _IL_AssemblyBuilder_ClrGetItemToken, marshal_ipj)
+	IL_METHOD("ClrGetItemFromToken", "(ji)j", _IL_AssemblyBuilder_ClrGetItemFromToken, marshal_jpji)
 IL_METHOD_END
 
 #endif
@@ -1882,15 +1926,6 @@ IL_METHOD_END
 
 #endif
 
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpji(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILNativeUInt, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])));
-}
-
-#endif
-
 #ifndef _IL_FieldBuilder_suppressed
 
 IL_METHOD_BEGIN(FieldBuilder_Methods)
@@ -1904,9 +1939,36 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_jpjpiipp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])), *((void * *)(avalue[6])));
+}
+
+#endif
+
+#ifndef _IL_MethodBuilder_suppressed
+
+IL_METHOD_BEGIN(MethodBuilder_Methods)
+	IL_METHOD("ClrMethodCreate", "(joSystem.String;vSystem.Reflection.MethodAttributes;vSystem.Reflection.CallingConventions;oSystem.Type;[oSystem.Type;)j", _IL_MethodBuilder_ClrMethodCreate, marshal_jpjpiipp)
+	IL_METHOD("ClrMethodSetImplAttrs", "(jvSystem.Reflection.MethodImplAttributes;)V", _IL_MethodBuilder_ClrMethodSetImplAttrs, marshal_vpji)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_jpjp(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ipjp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
 }
 
 #endif
@@ -1915,6 +1977,7 @@ static void marshal_jpjp(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(ModuleBuilder_Methods)
 	IL_METHOD("ClrModuleCreate", "(joSystem.String;)j", _IL_ModuleBuilder_ClrModuleCreate, marshal_jpjp)
+	IL_METHOD("ClrModuleCreateString", "(joSystem.String;)i", _IL_ModuleBuilder_ClrModuleCreateString, marshal_ipjp)
 IL_METHOD_END
 
 #endif
@@ -2610,6 +2673,9 @@ static InternalClassInfo const internalClassTable[] = {
 #ifndef _IL_MethodBase_suppressed
 	{"MethodBase", "System.Reflection", MethodBase_Methods},
 #endif
+#ifndef _IL_MethodBuilder_suppressed
+	{"MethodBuilder", "System.Reflection.Emit", MethodBuilder_Methods},
+#endif
 #ifndef _IL_Module_suppressed
 	{"Module", "System.Reflection", Module_Methods},
 #endif
@@ -2672,6 +2738,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_Type_suppressed
 	{"Type", "System", Type_Methods},
+#endif
+#ifndef _IL_TypeBuilder_suppressed
+	{"TypeBuilder", "System.Reflection.Emit", TypeBuilder_Methods},
 #endif
 #ifndef _IL_TypedReference_suppressed
 	{"TypedReference", "System", TypedReference_Methods},

@@ -71,6 +71,24 @@ ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread *_thread,
 }
 
 /*
+ * internal static IntPtr GetItemFromToken(IntPtr assembly, int token);
+ */
+ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread *_thread,
+													ILNativeInt assembly,
+													ILInt32 token)
+{
+	if(assembly)
+	{
+		return (ILNativeInt)ILProgramItem_FromToken
+			(ILProgramItem_Image((ILAssembly *)assembly), (ILToken)token);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * private static IntPtr ClrEventCreate(IntPtr classInfo, String name,
  *									    Type type, EventAttributes attrs);
  */
@@ -138,7 +156,7 @@ void _IL_FieldBuilder_ClrFieldSetOffset(ILExecThread *_thread,
 }
 
 /*
- * private IntPtr ClrModuleCreate(IntPtr assembly, String name);
+ * private static IntPtr ClrModuleCreate(IntPtr assembly, String name);
  */
 ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
 											  ILNativeInt assembly,
@@ -148,6 +166,17 @@ ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread *_thread,
 	ILToken token = ILProgramItem_Token(assembly);
 	const char *str = (const char *)ILStringToAnsi(_thread, name);
 	return (ILNativeInt)ILModuleCreate(image, token, str, NULL);
+}
+
+/*
+ * private static int ClrModuleCreateString(IntPtr module, String str);
+ */
+ILInt32 _IL_ModuleBuilder_ClrModuleCreateString(ILExecThread *_thread,
+											    ILNativeInt module,
+												ILString *str)
+{
+	/* TODO */
+	return 0;
 }
 
 /*
@@ -188,6 +217,138 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
 												ILObject *value)
 {
 	/* TODO */
+}
+
+/*
+ * private static IntPtr ClrTypeCreate(IntPtr module, String name,
+ *									   String nspace, TypeAttributes attr,
+ *									   TypeToken parent);
+ */
+ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
+										  ILNativeInt module,
+										  ILString *name,
+										  ILString *nspace,
+										  ILInt32 attr,
+										  void *parent)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static void ClrTypeSetPackingSize(IntPtr classInfo, int packingSize);
+ */
+void _IL_TypeBuilder_ClrTypeSetPackingSize(ILExecThread *_thread,
+										   ILNativeInt classInfo,
+										   ILInt32 packingSize)
+{
+	/* TODO */
+}
+
+/*
+ * private static void ClrTypeSetClassSize(IntPtr classInfo, int classSize);
+ */
+void _IL_TypeBuilder_ClrTypeSetClassSize(ILExecThread *_thread,
+										 ILNativeInt classInfo,
+										 ILInt32 classSize)
+{
+	/* TODO */
+}
+
+/*
+ * private static void ClrTypeAddInterface(IntPtr classInfo, TypeToken iface);
+ */
+void _IL_TypeBuilder_ClrTypeAddInterface(ILExecThread *_thread,
+										 ILNativeInt classInfo,
+										 void *iface)
+{
+	/* TODO */
+}
+
+/*
+ * private static int ClrTypeGetPackingSize(IntPtr classInfo);
+ */
+ILInt32 _IL_TypeBuilder_ClrTypeGetPackingSize(ILExecThread *_thread,
+											  ILNativeInt classInfo)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static int ClrTypeGetClassSize(IntPtr classInfo);
+ */
+ILInt32 _IL_TypeBuilder_ClrTypeGetClassSize(ILExecThread *_thread,
+											ILNativeInt classInfo)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static void ClrTypeSetParent(IntPtr classInfo, TypeToken parent);
+ */
+void _IL_TypeBuilder_ClrTypeSetParent(ILExecThread *_thread,
+									  ILNativeInt classInfo,
+									  void *parent)
+{
+	/* TODO */
+}
+
+/*
+ * internal static int ClrTypeImport(IntPtr module, IntPtr classInfo);
+ */
+ILInt32 _IL_TypeBuilder_ClrTypeImport(ILExecThread *_thread,
+									  ILNativeInt module,
+									  ILNativeInt classInfo)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * internal static int ClrTypeImportMember(IntPtr module, IntPtr memberInfo);
+ */
+ILInt32 _IL_TypeBuilder_ClrTypeImportMember(ILExecThread *_thread,
+											ILNativeInt module,
+											ILNativeInt memberInfo)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * internal static IntPtr ClrMethodCreate(IntPtr classInfo, String name,
+ *										  MethodAttributes attributes,
+ *										  CallingConventions callingConvention,
+ *										  Type returnType,
+ *										  Type[] parameterTypes);
+ */
+ILNativeInt _IL_MethodBuilder_ClrMethodCreate(ILExecThread *_thread,
+											  ILNativeInt classInfo,
+											  ILString *name,
+											  ILInt32 attributes,
+											  ILInt32 callingConvention,
+											  ILObject *returnType,
+											  System_Array *parameterTypes)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * internal static void ClrMethodSetImplAttrs(IntPtr method,
+ *											  MethodImplAttributes attributes);
+ */
+void _IL_MethodBuilder_ClrMethodSetImplAttrs(ILExecThread *_thread,
+											 ILNativeInt item,
+											 ILInt32 attributes)
+{
+	if(item)
+	{
+		ILMethodSetImplAttrs((ILMethod *)item, ~((unsigned long)0),
+							 (unsigned long)(long)attributes);
+	}
 }
 
 #endif /* IL_CONFIG_REFLECTION */

@@ -1286,6 +1286,14 @@ ILNode_SemAnalysis(ILNode_ToBool)
 		return value;
 	}
 
+	if(ILCanCoerceNode(info,node->expr,CSSemGetType(value), ILType_Boolean,0))
+	{
+		ILCoerce(info,node->expr,&(node->expr),CSSemGetType(value),
+					ILType_Boolean,0);
+		CSSemSetRValue(value,ILType_Boolean);
+		return value;
+	}
+
 	/* We need a class or a value type if not boolean */
 	if(!ILType_IsValueType(CSSemGetType(value)) &&
 	   !ILType_IsClass(CSSemGetType(value)))

@@ -1557,7 +1557,9 @@ RankSpecifierList
  */
 UnaryExpression
 	: PrimaryExpression					{ $$ = $1; }
-	| '!' PrefixedUnaryExpression		{ MakeUnary(LogicalNot, $2); }
+	| '!' PrefixedUnaryExpression		{ 
+				MakeUnary(LogicalNot,ILNode_ToBool_create($2)); 
+	}
 	| '~' PrefixedUnaryExpression		{ MakeUnary(Not, $2); }
 	| '(' Expression ')' UnaryExpression	{
 				/*

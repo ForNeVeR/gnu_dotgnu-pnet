@@ -10,6 +10,12 @@
 	* cscc/common/cc_preproc.c, cscc/common/cc_preproc.h: implement the
 	"#line default" directive for cscc.
 
+	* cscc/csharp/cs_grammar.y: Wrap all arguments to logical not in
+	a ToBool .
+
+	* cscc/csharp/cs_oper.tc: Check if the ToBool argument can be coerced
+	to a boolean , check for user defined implicit conversions as well.
+
 2003-05-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: replace the reference to the "Tech Support Manager" with

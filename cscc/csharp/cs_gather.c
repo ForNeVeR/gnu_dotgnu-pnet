@@ -80,6 +80,45 @@ static ILClass *NodeToClass(ILNode *node)
 }
 
 /*
+ * Get the full and basic names from a method/property/event name.
+ */
+static char *GetFullAndBasicNames(ILNode *name, char **basicName)
+{
+	char *result;
+	char *basic;
+	char *left;
+	if(yyisa(name, ILNode_Identifier))
+	{
+		result = ILQualIdentName(name, 0);
+		basic = result;
+	}
+	else if(yyisa(name, ILNode_GenericReference))
+	{
+		result = ILQualIdentName(((ILNode_GenericReference *)name)->type, 0);
+		basic = result;
+	}
+	else if(yyisa(name, ILNode_QualIdent))
+	{
+		left = GetFullAndBasicNames(((ILNode_QualIdent *)name)->left, 0);
+		result = GetFullAndBasicNames
+			(((ILNode_QualIdent *)name)->right, &basic);
+		result = ILQualIdentAppend(left, result);
+	}
+	else
+	{
+		/* Shouldn't happen, but do something safe */
+		CCErrorOnLine(yygetfilename(name), yygetlinenum(name),
+					  _("invalid qualified identifier"));
+		result = basic = "x";
+	}
+	if(basicName)
+	{
+		*basicName = basic;
+	}
+	return result;
+}
+
+/*
  * Create the program structure for a type and all of its base types.
  * Returns the new end of the top-level type list.
  */
@@ -89,7 +128,6 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 {
 	const char *name;
 	const char *namespace;
-	const char *baseName;
 	int numBases;
 	ILClass **baseList;
 	int base;
@@ -196,20 +234,6 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		{
 			baseNode = baseNodeList;
 		}
-
-		if(yyisa(baseNode,ILNode_Identifier))
-		{
-			baseName=ILQualIdentName(baseNode,0);
-		}
-		else if(yyisa(baseNode,ILNode_QualIdent))
-		{
-			baseName=ILQualIdentName(((ILNode_QualIdent*)baseNode)->right,0);
-		}
-		else
-		{
-			baseName=0;
-		}
-	
 
 		/* Look in the scope for the base class */
 		if(CSSemBaseType(baseNode, info, &baseNode,
@@ -928,18 +952,16 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	/* Get the name of the method, and the interface member (if any) */
 	interface = 0;
 	interfaceMember = 0;
-	if(yykind(method->name) == yykindof(ILNode_Identifier))
+	if(yykind(method->name) == yykindof(ILNode_Identifier) ||
+	   yykind(method->name) == yykindof(ILNode_GenericReference))
 	{
 		/* Simple method name */
-		name = ILQualIdentName(method->name, 0);
-		basicName = name;
+		name = GetFullAndBasicNames(method->name, &basicName);
 	}
 	else
 	{
 		/* Qualified method name that overrides some interface method */
-		name = ILQualIdentName(method->name, 0);
-		basicName = ILQualIdentName
-			(((ILNode_QualIdent *)(method->name))->right, 0);
+		name = GetFullAndBasicNames(method->name, &basicName);
 		signature = CSSemType(((ILNode_QualIdent *)(method->name))->left, info,
 							  &(((ILNode_QualIdent *)(method->name))->left));
 		if(signature)
@@ -1369,19 +1391,17 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	}
 
 	/* Get the name of the property */
-	if(yykind(property->name) == yykindof(ILNode_Identifier))
+	if(yykind(property->name) == yykindof(ILNode_Identifier) ||
+	   yykind(property->name) == yykindof(ILNode_GenericReference))
 	{
 		/* Simple property name */
-		name = ILQualIdentName(property->name, 0);
-		basicName = name;
+		name = GetFullAndBasicNames(property->name, &basicName);
 		interfaceOverride = 0;
 	}
 	else
 	{
 		/* Qualified property name that overrides some interface property */
-		name = ILQualIdentName(property->name, 0);
-		basicName = ILQualIdentName
-			(((ILNode_QualIdent *)(property->name))->right, 0);
+		name = GetFullAndBasicNames(property->name, &basicName);
 		signature = CSSemType
 				(((ILNode_QualIdent *)(property->name))->left, info,
 			     &(((ILNode_QualIdent *)(property->name))->left));
@@ -1564,18 +1584,17 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 
 	/* Get the name of the event */
 	eventName = ((ILNode_FieldDeclarator *)(eventDecl->fieldDeclarator))->name;
-	if(yykind(eventName) == yykindof(ILNode_Identifier))
+	if(yykind(eventName) == yykindof(ILNode_Identifier) ||
+	   yykind(eventName) == yykindof(ILNode_GenericReference))
 	{
 		/* Simple event name */
-		name = ILQualIdentName(eventName, 0);
+		name = GetFullAndBasicNames(eventName, &basicName);
 		interfaceOverride = 0;
 	}
 	else
 	{
 		/* Qualified event name that overrides some interface event */
-		name = ILQualIdentName(eventName, 0);
-		basicName = ILQualIdentName
-			(((ILNode_QualIdent *)eventName)->right, 0);
+		name = GetFullAndBasicNames(eventName, &basicName);
 		signature = CSSemType
 				(((ILNode_QualIdent *)eventName)->left, info,
 			     &(((ILNode_QualIdent *)eventName)->left));

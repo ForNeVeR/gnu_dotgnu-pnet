@@ -67,7 +67,7 @@ sealed class ResourceWriter : IDisposable, IResourceWriter
 				info = CultureInfo.InvariantCulture.TextInfo;
 			}
 	public ResourceWriter(String fileName)
-			: this(new FileStream(fileName, FileMode.CreateNew,
+			: this(new FileStream(fileName, FileMode.Create,
 								  FileAccess.Write))
 			{
 				// Nothing to do here.

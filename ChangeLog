@@ -30,7 +30,11 @@
 	System.Drawing.Xsharp/mssB08.pcf, System.Drawing.Xsharp/mssBI08.pcf,
 	System.Drawing.Xsharp/mssI08.pcf, System.Drawing.Xsharp/mssR08.pcf,
 	Xsharp/Font.cs: implement a font registration system, and register
-	some PCF fonts through it (not fully implemented yet).
+	some PCF fonts through it.
+
+	* Xsharp/Makefile.am, Xsharp/XsharpPCF.c, Xsharp/XsharpSupport.c,
+	Xsharp/XsharpSupport.h: check in the beginnings of the client-side
+	PCF font rendering engine.
 
 2003-11-30  Neil Cawse  <neilcawse@geotab.com>
 

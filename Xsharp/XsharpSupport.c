@@ -20,37 +20,7 @@
 
 #if !defined(X_DISPLAY_MISSING) && HAVE_SELECT
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#ifdef WIN32
-	#include <X11/Xwinsock.h>
-#endif
-#ifdef USE_XFT_EXTENSION
-	#include <X11/Xft/Xft.h>
-#endif
-#if TIME_WITH_SYS_TIME
-	#include <sys/time.h>
-    #include <time.h>
-#else
-    #if HAVE_SYS_TIME_H
-		#include <sys/time.h>
-    #else
-        #include <time.h>
-    #endif
-#endif
-#if HAVE_SYS_TYPES_H
-	#include <sys/types.h>
-#endif
-#if HAVE_SYS_SELECT_H
-	#include <sys/select.h>
-#endif
-#if HAVE_UNISTD_H
-	#include <unistd.h>
-#endif
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "XsharpSupport.h"
 
 int XSharpSupportPresent(void)
 {
@@ -90,46 +60,6 @@ int XNextEventWithTimeout(Display *dpy, XEvent *event, int timeout)
 	/* Return the final result to the caller */
 	return result;
 }
-
-/*
- * Font style flags.
- */
-#define	FontStyle_Normal		0
-#define	FontStyle_Bold			1
-#define	FontStyle_Italic		2
-#define	FontStyle_Underline		4
-#define	FontStyle_StrikeOut		8
-#define	FontStyle_FontStruct	0x80
-
-/*
- * Structure of Portable.NET's "System.String" object for direct
- * access to the Unicode contents, bypassing PInvoke string conversion.
- *
- * Use the "ILStringLength" and "ILStringToBuffer" macros, so that
- * 32-bit vs 64-bit system differences are properly dealt with.
- */
-typedef unsigned short ILChar;
-typedef struct _tagILString ILString;
-typedef struct
-{
-	int		capacity;
-	int		length;
-
-} System_String_int;
-typedef struct
-{
-	long	capacity;
-	long	length;
-
-} System_String_long;
-#define	ILStringLength(str)	\
-		(sizeof(int) == 4 \
-			? ((System_String_int *)(str))->length \
-			: ((System_String_long *)(str))->length)
-#define	ILStringToBuffer(str)	\
-		(sizeof(int) == 4 \
-			? (ILChar *)(((System_String_int *)(str)) + 1) \
-			: (ILChar *)(((System_String_long *)(str)) + 1))
 
 /*
  * Determine if we can use the Xft extension.
@@ -405,7 +335,7 @@ void XSharpDrawStringSet(Display *dpy, Drawable drawable, GC gc,
 	/* Calculate the positions of the underline and strike-out */
 	if((style & FontStyle_Underline) != 0)
 	{
-		line1 = y + 2;
+		line1 = y + 1;
 	}
 	else
 	{
@@ -500,7 +430,7 @@ void XSharpDrawStringStruct(Display *dpy, Drawable drawable, GC gc,
 	/* Calculate the positions of the underline and strike-out */
 	if((style & FontStyle_Underline) != 0)
 	{
-		line1 = y + 2;
+		line1 = y + 1;
 	}
 	else
 	{
@@ -579,7 +509,7 @@ void XSharpDrawStringXft(Display *dpy, Drawable drawable, GC gc,
 	/* Calculate the positions of the underline and strike-out */
 	if((style & FontStyle_Underline) != 0)
 	{
-		line1 = y + 2;
+		line1 = y + 1;
 	}
 	else
 	{

@@ -1,4 +1,9 @@
 
+2003-06-25  Ian Fung  <if26@cornell.edu>
+	
+	* System.Windows.Forms/LinkLabel.cs: Stubs for the LinkLabel
+	control. (Gopal)
+
 2003-06-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/ContextMenu.cs, System.Windows.Forms/Control.cs,

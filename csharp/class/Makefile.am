@@ -34,6 +34,7 @@ TESTS = ainit1.cs \
 		method11.cs \
 		method12.cs \
 		method13.cs \
+		method14.cs \
 		nested1.cs \
 		property1.cs \
 		property2.cs \

@@ -1,4 +1,10 @@
 
+2002-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/method14.cs,
+	csharp/class/method14.il, csharp/class/method14.jl: test that
+	child candidates always override "better" parent candidates.
+
 2002-11-08  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* csharp/expr/ident1.cs, csharp/expr/ident1.il, cshart/expr/ident1.jl:

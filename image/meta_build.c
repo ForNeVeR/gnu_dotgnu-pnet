@@ -268,6 +268,123 @@ static int ScopeIsModule(ILProgramItem *scope)
 }
 
 /*
+ * Search the raw values in an owned item table for a token match.
+ * Returns the first token that matches in the "ownedType" table
+ * in "firstMatch".  The number of tokens that match is returned
+ * from the function, or zero if there are no matches.
+ */
+typedef int (*SearchRawFunc)(ILUInt32 *values, ILToken searchFor);
+static ILUInt32 SearchForRawToken(ILImage *image, SearchRawFunc func,
+							      ILToken ownedType, ILToken *firstMatch,
+								  ILToken searchFor)
+{
+	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
+	ILToken minToken, maxToken, current;
+	ILUInt32 count;
+	int cmp;
+
+	/* Determine how to perform the search: binary or linear */
+	minToken = (ownedType | 1);
+	maxToken = (ownedType | image->tokenCount[ownedType >> 24]);
+	if((image->sorted & (1 << (int)(ownedType >> 24))) != 0)
+	{
+		/* Perform a binary search for the item */
+		while(minToken <= maxToken)
+		{
+			current = minToken + ((maxToken - minToken) / 2);
+			if(!_ILImageRawTokenData(image, current, values))
+			{
+				return 0;
+			}
+			cmp = (*func)(values, searchFor);
+			if(cmp == 0)
+			{
+				/* We have found a match: search backwards to find the
+				   start of the range */
+				minToken = (ownedType | 1);
+				maxToken = (ownedType | image->tokenCount[ownedType >> 24]);
+				while(current > minToken)
+				{
+					if(!_ILImageRawTokenData(image, current - 1, values))
+					{
+						return 0;
+					}
+					if((*func)(values, searchFor) != 0)
+					{
+						break;
+					}
+					--current;
+				}
+
+			   	/* This is the first match in the table.  Determine
+				   how large the range of items is */
+				*firstMatch = current;
+				count = 1;
+				++current;
+				while(current <= maxToken)
+				{
+					if(!_ILImageRawTokenData(image, current, values))
+					{
+						return 0;
+					}
+					if((*func)(values, searchFor) != 0)
+					{
+						break;
+					}
+					++current;
+					++count;
+				}
+				return count;
+			}
+			else if(cmp < 0)
+			{
+				maxToken = current - 1;
+			}
+			else
+			{
+				minToken = current + 1;
+			}
+		}
+	}
+	else
+	{
+		/* Perform a linear search for the item */
+		for(current = minToken; current <= maxToken; ++current)
+		{
+			if(!_ILImageRawTokenData(image, current, values))
+			{
+				return 0;
+			}
+			if((*func)(values, searchFor) == 0)
+			{
+				/* This is the first match in the table.  Determine
+				   how large the range of items is */
+				*firstMatch = current;
+				count = 1;
+				++current;
+				while(current <= maxToken)
+				{
+					if(!_ILImageRawTokenData(image, current, values))
+					{
+						return 0;
+					}
+					if((*func)(values, searchFor) != 0)
+					{
+						break;
+					}
+					++current;
+					++count;
+				}
+				return count;
+			}
+		}
+	}
+
+	/* If we get here, then we were unable to find a match */
+	return 0;
+}
+
+/*
  * Resolve the TypeRef's.  Returns zero if OK, -1 if a
  * second-phase scan is needed for TypeRef's to this module.
  * Returns a load error otherwise.
@@ -1298,6 +1415,162 @@ static int Load_TypeSpec(ILImage *image, ILUInt32 *values,
 }
 
 /*
+ * Search for a PInvoke token in a raw token table.
+ */
+static int Search_PInvoke(ILUInt32 *values, ILToken token1)
+{
+	ILToken token2 = (ILToken)(values[IL_OFFSET_IMPLMAP_METHOD]);
+	ILToken tokenNum1 = (token1 & ~IL_META_TOKEN_MASK);
+	ILToken tokenNum2 = (token2 & ~IL_META_TOKEN_MASK);
+
+	/* Compare the bottom parts of the token first, because
+	   the table must be sorted on its encoded value, not
+	   on the original value.  Encoded values put the token
+	   type in the low order bits */
+	if(tokenNum1 < tokenNum2)
+	{
+		return -1;
+	}
+	else if(tokenNum1 > tokenNum2)
+	{
+		return 1;
+	}
+	else if(token1 < token2)
+	{
+		return -1;
+	}
+	else if(token1 > token2)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Fetch a PInvoke declaration for a method or field token.
+ */
+static void FetchPInvokeForToken(ILImage *image, ILToken searchFor)
+{
+	ILToken token;
+
+	/* Search the ImplMap table for a matching PInvoke declaration */
+	if(SearchForRawToken(image, Search_PInvoke, IL_META_TOKEN_IMPL_MAP,
+						 &token, searchFor) == 0)
+	{
+		return;
+	}
+
+	/* Load the PInvoke token information on-demand.  This will connect
+	   it up to its owning method or field automatically */
+	ILPInvoke_FromToken(image, token);
+}
+
+/*
+ * Search comparison function for "SearchForTypeDef".
+ */
+static int Search_TypeDef(ILUInt32 *values, ILUInt32 *nextValues,
+						  ILToken searchFor, int isField)
+{
+	ILToken first, last;
+	if(nextValues)
+	{
+		if(isField)
+		{
+			first = values[IL_OFFSET_TYPEDEF_FIRST_FIELD];
+			last = nextValues[IL_OFFSET_TYPEDEF_FIRST_FIELD];
+		}
+		else
+		{
+			first = values[IL_OFFSET_TYPEDEF_FIRST_METHOD];
+			last = nextValues[IL_OFFSET_TYPEDEF_FIRST_METHOD];
+		}
+	}
+	else
+	{
+		if(isField)
+		{
+			first = values[IL_OFFSET_TYPEDEF_FIRST_FIELD];
+			last = IL_MAX_UINT32;
+		}
+		else
+		{
+			first = values[IL_OFFSET_TYPEDEF_FIRST_METHOD];
+			last = IL_MAX_UINT32;
+		}
+	}
+	if(searchFor < first)
+	{
+		return -1;
+	}
+	else if(searchFor < last)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+/*
+ * Find the TypeDef associated with a field or method.
+ */
+static ILToken SearchForTypeDef(ILImage *image, ILToken searchFor, int isField)
+{
+	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
+	ILUInt32 nextValues[IL_IMAGE_TOKEN_COLUMNS];
+	ILUInt32 *nextPtr;
+	ILToken minToken, maxToken, current;
+	int cmp;
+
+	/* Perform a binary search for the TypeDef: the FIRST_FIELD and
+	   FIRST_METHOD columns are assumed to be in ascending order */
+	minToken = (IL_META_TOKEN_TYPE_DEF | 1);
+	maxToken = (IL_META_TOKEN_TYPE_DEF |
+				image->tokenCount[IL_META_TOKEN_TYPE_DEF >> 24]);
+	while(minToken <= maxToken)
+	{
+		current = minToken + ((maxToken - minToken) / 2);
+		if(!_ILImageRawTokenData(image, current, values))
+		{
+			return 0;
+		}
+		if((current + 1) <= maxToken)
+		{
+			if(!_ILImageRawTokenData(image, current + 1, nextValues))
+			{
+				return 0;
+			}
+			nextPtr = nextValues;
+		}
+		else
+		{
+			nextPtr = 0;
+		}
+		cmp = Search_TypeDef(values, nextPtr, searchFor, isField);
+		if(cmp == 0)
+		{
+			/* We have found a match */
+			return current;
+		}
+		else if(cmp < 0)
+		{
+			maxToken = current - 1;
+		}
+		else
+		{
+			minToken = current + 1;
+		}
+	}
+
+	/* If we get here, then we were unable to find a match */
+	return 0;
+}
+
+/*
  * Load a field definition token.
  */
 static int Load_FieldDef(ILImage *image, ILUInt32 *values,
@@ -1335,6 +1608,43 @@ static int Load_FieldDef(ILImage *image, ILUInt32 *values,
 	_ILMemberSetSignatureIndex((ILMember *)field,
 							   values[IL_OFFSET_FIELDDEF_SIGNATURE_RAW]);
 
+	/* Fetch the PInvoke information if necessary */
+	if(ILField_HasPInvokeImpl(field))
+	{
+		FetchPInvokeForToken(image, token);
+	}
+
+	/* Done */
+	return 0;
+}
+
+/*
+ * Load a field definition on-demand by loading its type.
+ */
+static int Load_FieldDefOnDemand(ILImage *image, ILUInt32 *values,
+						         ILUInt32 *valuesNext, ILToken token,
+						         void *userData)
+{
+	ILToken typeDef;
+	ILClass *classInfo;
+
+	/* Search the TypeDef table for the field token */
+	typeDef = SearchForTypeDef(image, token, 1);
+	if(!typeDef)
+	{
+		META_VAL_ERROR("could not find type for field definition");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Load the type */
+	classInfo = ILClass_FromToken(image, typeDef);
+	if(!classInfo)
+	{
+		META_VAL_ERROR("failed to load type for field definition");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Done */
 	return 0;
 }
 
@@ -1447,6 +1757,42 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 	EXIT_IF_ERROR(LoadTokenRange(image, IL_META_TOKEN_PARAM_DEF,
 								 values[IL_OFFSET_METHODDEF_FIRST_PARAM], num,
 								 Load_ParamDef, method));
+
+	/* Fetch the PInvoke information if necessary */
+	if(ILMethod_HasPInvokeImpl(method))
+	{
+		FetchPInvokeForToken(image, token);
+	}
+
+	/* Done */
+	return 0;
+}
+
+/*
+ * Load a method definition on-demand by loading its type.
+ */
+static int Load_MethodDefOnDemand(ILImage *image, ILUInt32 *values,
+						          ILUInt32 *valuesNext, ILToken token,
+						          void *userData)
+{
+	ILToken typeDef;
+	ILClass *classInfo;
+
+	/* Search the TypeDef table for the method token */
+	typeDef = SearchForTypeDef(image, token, 0);
+	if(!typeDef)
+	{
+		META_VAL_ERROR("could not find type for method definition");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Load the type */
+	classInfo = ILClass_FromToken(image, typeDef);
+	if(!classInfo)
+	{
+		META_VAL_ERROR("failed to load type for method definition");
+		return IL_LOADERR_BAD_META;
+	}
 
 	/* Done */
 	return 0;
@@ -2212,123 +2558,6 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 }
 
 /*
- * Search the raw values in an owned item table for a token match.
- * Returns the first token that matches in the "ownedType" table
- * in "firstMatch".  The number of tokens that match is returned
- * from the function, or zero if there are no matches.
- */
-typedef int (*SearchRawFunc)(ILUInt32 *values, ILToken searchFor);
-static ILUInt32 SearchForRawToken(ILImage *image, SearchRawFunc func,
-							      ILToken ownedType, ILToken *firstMatch,
-								  ILToken searchFor)
-{
-	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
-	ILToken minToken, maxToken, current;
-	ILUInt32 count;
-	int cmp;
-
-	/* Determine how to perform the search: binary or linear */
-	minToken = (ownedType | 1);
-	maxToken = (ownedType | image->tokenCount[ownedType >> 24]);
-	if((image->sorted & (1 << (int)(ownedType >> 24))) != 0)
-	{
-		/* Perform a binary search for the item */
-		while(minToken <= maxToken)
-		{
-			current = minToken + ((maxToken - minToken) / 2);
-			if(!_ILImageRawTokenData(image, current, values))
-			{
-				return 0;
-			}
-			cmp = (*func)(values, searchFor);
-			if(cmp == 0)
-			{
-				/* We have found a match: search backwards to find the
-				   start of the range */
-				minToken = (ownedType | 1);
-				maxToken = (ownedType | image->tokenCount[ownedType >> 24]);
-				while(current > minToken)
-				{
-					if(!_ILImageRawTokenData(image, current - 1, values))
-					{
-						return 0;
-					}
-					if((*func)(values, searchFor) != 0)
-					{
-						break;
-					}
-					--current;
-				}
-
-			   	/* This is the first match in the table.  Determine
-				   how large the range of items is */
-				*firstMatch = current;
-				count = 1;
-				++current;
-				while(current <= maxToken)
-				{
-					if(!_ILImageRawTokenData(image, current, values))
-					{
-						return 0;
-					}
-					if((*func)(values, searchFor) != 0)
-					{
-						break;
-					}
-					++current;
-					++count;
-				}
-				return count;
-			}
-			else if(cmp < 0)
-			{
-				maxToken = current - 1;
-			}
-			else
-			{
-				minToken = current + 1;
-			}
-		}
-	}
-	else
-	{
-		/* Perform a linear search for the item */
-		for(current = minToken; current <= maxToken; ++current)
-		{
-			if(!_ILImageRawTokenData(image, current, values))
-			{
-				return 0;
-			}
-			if((*func)(values, searchFor) == 0)
-			{
-				/* This is the first match in the table.  Determine
-				   how large the range of items is */
-				*firstMatch = current;
-				count = 1;
-				++current;
-				while(current <= maxToken)
-				{
-					if(!_ILImageRawTokenData(image, current, values))
-					{
-						return 0;
-					}
-					if((*func)(values, searchFor) != 0)
-					{
-						break;
-					}
-					++current;
-					++count;
-				}
-				return count;
-			}
-		}
-	}
-
-	/* If we get here, then we were unable to find a match */
-	return 0;
-}
-
-/*
  * Load a custom attribute token.
  */
 static int Load_CustomAttr(ILImage *image, ILUInt32 *values,
@@ -2959,9 +3188,11 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_INTERFACE_IMPL,
 							 Load_InterfaceImpl, 0));
 
+#if 0
 	/* Load the PInvoke definitions */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_IMPL_MAP,
 							 Load_PInvoke, 0));
+#endif
 
 	/* Load events and properties for all of the types */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_EVENT_MAP,
@@ -3048,9 +3279,9 @@ static TokenLoadFunc const TokenLoadFunctions[] = {
 	0,
 	0,
 	0,
+	Load_FieldDefOnDemand,
 	0,
-	0,
-	0,
+	Load_MethodDefOnDemand,
 	0,
 	0,							/* 08 */
 	0,
@@ -3072,7 +3303,7 @@ static TokenLoadFunc const TokenLoadFunctions[] = {
 	0,
 	Load_ModuleRef,
 	0,
-	0,
+	Load_PInvoke,
 	Load_FieldRVA,
 	0,
 	0,

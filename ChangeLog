@@ -8,6 +8,9 @@
 
 	* image/link.c: use ".dylib" instead of ".so" for MacOS X.
 
+	* image/meta_build.c: on-demand loading support for FieldDef,
+	MethodDef, and PInvoke tables.
+
 2003-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/dynlib.c: try using NSAddImage to load dynamic

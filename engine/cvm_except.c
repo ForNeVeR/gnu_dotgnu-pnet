@@ -72,7 +72,7 @@ static int FindAndSetStackTrace(ILExecThread *thread, ILObject *object)
 /*
  * Set the stack trace for an exception to the current call context.
  */
-static void SetExceptionStackTrace(ILExecThread *thread, ILObject *object)
+void _ILSetExceptionStackTrace(ILExecThread *thread, ILObject *object)
 {
 	ILClass *classInfo;
 	if(!object)
@@ -395,7 +395,7 @@ VMCASE(COP_PREFIX_SET_STACK_TRACE):
 	/* Set the stack trace within an exception object */
 #if defined(IL_CONFIG_REFLECTION) && defined(IL_CONFIG_DEBUG_LINES)
 	COPY_STATE_TO_THREAD();
-	SetExceptionStackTrace(thread, stacktop[-1].ptrValue);
+	_ILSetExceptionStackTrace(thread, stacktop[-1].ptrValue);
 	RESTORE_STATE_FROM_THREAD();
 #endif
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);

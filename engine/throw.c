@@ -46,6 +46,8 @@ void ILExecThreadSetException(ILExecThread *thread, ILObject *obj)
 	thread->thrownException = obj;
 }
 
+void _ILSetExceptionStackTrace(ILExecThread *thread, ILObject *object);
+
 void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 							 const char *resourceName)
 {
@@ -91,6 +93,7 @@ void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 	{
 		object = ILExecThreadNew(thread, typeName, "(T)V");
 	}
+	_ILSetExceptionStackTrace(thread, object);
 	if(!ILExecThreadHasException(thread))
 	{
 		ILExecThreadSetException(thread, object);

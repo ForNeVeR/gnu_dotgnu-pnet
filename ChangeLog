@@ -92,6 +92,9 @@
 
 	* engine/lib_defs.h: make the object header access macros 64-bit safe.
 
+	* engine/cvm_except.c, engine/throw.c: add the stack trace to
+	exception objects that are created by "ILExecThreadThrowSystem".
+
 2003-06-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c, cscc/c/c_grammar.y: implement global

@@ -1,4 +1,16 @@
 
+2004-05-24  Klaus Treichel  <ktreichel@web.de>
+
+ 	* System.Windows.Forms/UpDownBase.cs
+ 	fix mouse problem on Windows
+ 	change mouse handling to simulate behavior on MS .Net
+	set focus to textbox if user clicks on any updown button.
+ 
+ 	* tests/runtime/System/TestBoolean.cs
+ 	added tests for AND, OR and XOR operators
+
+	(patch #3082 plus minor changes) 
+	
 2004-05-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/ContextMenu.cs: apply patch #2850.
@@ -364,7 +376,7 @@
 2004-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Security/SecurityElement.cs: apply a small patch
-	from Carl-Adam Brengesjö <ca.brengesjo@telia.com> to fix attribute
+	from Carl-Adam BrengesjÃ¶ <ca.brengesjo@telia.com> to fix attribute
 	setting in "SecurityElement".
 
 2004-05-02  Gopal V <gopalv82@yahoo.com>

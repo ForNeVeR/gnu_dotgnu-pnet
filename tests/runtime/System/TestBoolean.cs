@@ -111,6 +111,42 @@ public class TestBoolean : TestCase
 					   false.GetHashCode() != true.GetHashCode());
 			}
 
+	// Test AND operator
+	public void TestANDOperator()
+			{
+				bool b1 = true;
+				bool b2 = false;
+
+				Assert("false.Equals(false & false)", b2.Equals(b2 & b2));
+				Assert("false.Equals(true & false)", b2.Equals(b1 & b2));
+				Assert("false.Equals(false & true)", b2.Equals(b2 & b1));
+				Assert("true.Equals(true & true)", b1.Equals(b1 & b1));
+			}
+
+	// Test OR operator
+	public void TestOROperator()
+			{
+				bool b1 = true;
+				bool b2 = false;
+
+				Assert("false.Equals(false | false)", b2.Equals(b2 | b2));
+				Assert("true.Equals(true | false)", b1.Equals(b1 | b2));
+				Assert("true.Equals(false | true)", b1.Equals(b2 | b1));
+				Assert("true.Equals(true | true)", b1.Equals(b1 | b1));
+			}
+
+	// Test XOR operators
+	public void TestXOROperator()
+			{
+				bool b1 = true;
+				bool b2 = false;
+
+				Assert("false.Equals(false ^ false)", b2.Equals(b2 ^ b2));
+				Assert("true.Equals(true ^ false)", b1.Equals(b1 ^ b2));
+				Assert("true.Equals(false ^ true)", b1.Equals(b2 ^ b1));
+				Assert("false.Equals(true ^ true)", b2.Equals(b1 ^ b1));
+			}
+
 	// Test the Parse method.
 	public void TestBooleanParse()
 			{

@@ -43,8 +43,8 @@ public abstract class UpDownBase : ContainerControl
 		private UpDownBase parent;
 		private Rectangle upButton = Rectangle.Empty;
 		private Rectangle downButton = Rectangle.Empty;
-		private bool upDown = false;
-		private bool downDown = false;
+		private ButtonID captured;
+		private ButtonID pressed;
 		private Timer timer;
 		private int mouseX;
 		private int mouseY;
@@ -54,58 +54,49 @@ public abstract class UpDownBase : ContainerControl
 
 		internal UpDownButtons(UpDownBase parent) : base()
 		{
+			SetStyle(ControlStyles.Selectable, false);
 			this.parent = parent;
 			timer = new Timer();
+			pressed = ButtonID.None;
+			captured = ButtonID.None;
 		}
  		
 		private void BeginButtonPress(MouseEventArgs e)
 		{
-			Capture = true;
 			int x = e.X;
 			int y = e.Y;
 
 			mouseX = x;
 			mouseY = y;
 
+			// Set focus to parent 
+			if (!parent.ContainsFocus)
+			{
+				parent.Focus();
+			}
+
 			if (upButton.Contains(x,y))
 			{
-				upDown = true;
-				downDown = false;
+				pressed = ButtonID.Up;
 			}
 			else 
 			{
 				if (downButton.Contains(x,y))
 				{
-					upDown = false;
-					downDown = true;
+					pressed = ButtonID.Down;
 				}
 				else
 				{
-					upDown = false;
-					downDown = false;
+					pressed = ButtonID.None;
 				}
 			}
 			base.OnMouseDown(e);
-			if (upDown || downDown)
+			if (pressed != ButtonID.None)
 			{
 				Invalidate();
-				// OnUpDown(new UpDownEventArgs((int)(upDown ? ButtonID.up : 
-				// 				(downDown ?  ButtonID.Down : ButtonID.None))));
-				if (upDown)
-				{
-					OnUpDown(new UpDownEventArgs((int)ButtonID.Up));
-				}
-				else
-				{
-					if (downDown)
-					{
-						OnUpDown(new UpDownEventArgs((int)ButtonID.Down));
-					}
-					else
-					{
-						OnUpDown(new UpDownEventArgs((int)ButtonID.None));
-					}
-				}
+				OnUpDown(new UpDownEventArgs((int)pressed));
+				base.Capture = true;
+				captured = pressed;
 				StartTimer();
 			}
 		}
@@ -117,26 +108,65 @@ public abstract class UpDownBase : ContainerControl
 			
 		private void EndButtonPress()
 		{
-			StopTimer();
-			if (upDown || downDown)
+			if (captured != ButtonID.None)
 			{
-				upDown = false;
-				downDown = false;
+				StopTimer();
+				pressed = ButtonID.None;
+				captured = pressed;
+				base.Capture = false;
 				Invalidate();
 			}
 		}
 
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
-			if (e.Button != MouseButtons.Left)
-				return;		
-			BeginButtonPress(e);
+			if (e.Button == MouseButtons.Left)
+			{
+				BeginButtonPress(e);
+			}
+			base.OnMouseDown(e);
 		}
 
 		protected override void OnMouseMove(MouseEventArgs e)
 		{
+			int x = e.X;
+			int y = e.Y;
+
 			mouseX = e.X;
 			mouseY = e.Y;
+			if (captured != ButtonID.None)
+			{
+				if ((captured == ButtonID.Up) && (upButton.Contains(x, y)))
+				{
+					if (captured != pressed)
+					{
+						pressed = captured;
+						StartTimer();
+						Invalidate();
+					}
+				}
+				else
+				{
+					if ((captured == ButtonID.Down) && (downButton.Contains(x, y)))
+					{
+						if (captured != pressed)
+						{
+							pressed = captured;
+							StartTimer();
+							Invalidate();
+						}
+					}
+					else
+					{
+						if (pressed != ButtonID.None)
+						{
+							pressed = ButtonID.None;
+							StopTimer();
+							Invalidate();
+						}
+					}
+				}
+			}
 			base.OnMouseMove(e);
 		}
 
@@ -177,23 +207,7 @@ public abstract class UpDownBase : ContainerControl
 		{
 			timer.Stop();
 			timer.Interval = repeatDelay;
-			// OnUpDown(new UpDownEventArgs((int)(upDown ? ButtonID.up : 
-			// 				(downDown ?  ButtonID.Down : ButtonID.None))));
-			if (upDown)
-			{
-				OnUpDown(new UpDownEventArgs((int)ButtonID.Up));
-			}
-			else
-			{
-				if (downDown)
-				{
-					OnUpDown(new UpDownEventArgs((int)ButtonID.Down));
-				}
-				else
-				{
-					OnUpDown(new UpDownEventArgs((int)ButtonID.None));
-				}
-			}
+			OnUpDown(new UpDownEventArgs((int)pressed));
 			timer.Start();
 		}
 		
@@ -209,8 +223,8 @@ public abstract class UpDownBase : ContainerControl
 								   ForeColor, BackColor,
 								   true, Enabled,
 								   Rectangle.Empty, Rectangle.Empty,
-								   upButton, upDown,
-								   downButton, downDown);
+								   upButton, (pressed == ButtonID.Up),
+								   downButton, (pressed == ButtonID.Down));
 		}
 
 		private void LayoutButtons()
@@ -540,7 +554,8 @@ public abstract class UpDownBase : ContainerControl
 		{
 			upDownButtons.Size = new Size(DefaultButtonsWidth, s.Height);
 			upDownEdit.Size = new Size(s.Width - DefaultButtonsWidth, s.Height);
-			if (upDownAlign == LeftRightAlignment.Left)
+			// this should work but doesn't
+			if ((upDownAlign == LeftRightAlignment.Left) ^ (base.RightToLeft == RightToLeft.Yes))
 			{
 				upDownButtons.Location = new Point(0, 0); 
 				upDownEdit.Location = new Point(DefaultButtonsWidth, 0); 

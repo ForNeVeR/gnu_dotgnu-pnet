@@ -434,6 +434,7 @@ struct _tagILEvalValue
 %node ILNode_NewScope ILNode_Statement =
 {
 	ILNode *stmt;
+	%nocreate ILScope *scope = {0};
 }
 %node ILNode_Switch ILNode_Statement =
 {
@@ -473,6 +474,11 @@ struct _tagILEvalValue
 %node ILNode_FinallyClause ILNode_Statement =
 {
 	ILNode *stmt;
+}
+%node ILNode_LocalVarDeclaration ILNode_Statement =
+{
+	ILNode	   *type;
+	ILNode	   *varNames;
 }
 
 %output "cg_decls.c"
@@ -517,14 +523,7 @@ struct _tagILEvalValue
 	ILNode	   *type;
 	ILNode	   *fieldDeclarators;
 }
-%node ILNode_VarDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	ILUInt32	modifiers;
-	ILNode	   *type;
-	ILNode	   *varDeclarators;
-}
-%node ILNode_VarDeclarator ILNode_Declaration =
+%node ILNode_FieldDeclarator ILNode_Declaration =
 {
 	ILNode		*name;
 	ILNode		*initializer;
@@ -557,9 +556,9 @@ struct _tagILEvalValue
 	ILNode	   *type;
 	ILNode	   *name;
 	ILNode	   *params;
-	ILNode     *initCode;
 	ILNode     *body;
-	%nocreate ILMethod *methodInfo = {0};
+	%nocreate ILMethod *methodInfo  = {0};
+	%nocreate ILType   *localVarSig = {0};
 }
 
 /*

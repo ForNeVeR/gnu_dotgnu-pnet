@@ -354,6 +354,44 @@ public abstract class FileDialog : CommonDialog
 	// Event that is raised to check that a file is OK.
 	public event CancelEventHandler FileOk;
 
+	// List box like control that manages a group of file icons.
+	private sealed class FileIconListBox : Control
+	{
+		// Internal state.
+		private HScrollBar scrollBar;
+
+		// Constructor.
+		public FileIconListBox()
+				{
+					// Set the appropriate style properties for this control.
+					ForeColor = SystemColors.WindowText;
+					BackColor = SystemColors.Window;
+					BorderStyleInternal = BorderStyle.Fixed3D;
+
+					// Create the horizontal scroll bar and position it.
+					scrollBar = new HScrollBar();
+					scrollBar.ForeColor = SystemColors.ControlText;
+					scrollBar.BackColor = SystemColors.Control;
+					scrollBar.Visible = false;
+					scrollBar.Dock = DockStyle.Bottom;
+					Controls.Add(scrollBar);
+				}
+
+		// Lay out the control after a change in contents.
+		public void LayoutControl()
+				{
+					// TODO
+				}
+
+		// Handle a layout request from the parent class.
+		protected override void OnLayout(LayoutEventArgs e)
+				{
+					base.OnLayout(e);
+					LayoutControl();
+				}
+
+	}; // class FileIconListBox
+
 	// Form that defines the UI of a file dialog.
 	private sealed class FileDialogForm : Form
 	{
@@ -362,7 +400,7 @@ public abstract class FileDialog : CommonDialog
 		private VBoxLayout vbox;
 		private HBoxLayout hbox;
 		private GridLayout grid;
-		private ListBox listBox;
+		private FileIconListBox listBox;
 		private ComboBox directory;
 		private Button upButton;
 		private Label nameLabel;
@@ -385,7 +423,7 @@ public abstract class FileDialog : CommonDialog
 					vbox = new VBoxLayout();
 					vbox.Dock = DockStyle.Fill;
 					hbox = new HBoxLayout();
-					listBox = new ListBox();
+					listBox = new FileIconListBox();
 					grid = new GridLayout(3, 2);
 					grid.StretchColumn = 1;
 					vbox.Controls.Add(hbox);

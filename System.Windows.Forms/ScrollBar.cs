@@ -75,7 +75,7 @@ public abstract class ScrollBar : Control
 		get { return base.BackColor; }
 		set
 		{
-			if (value == base.BackColor) { return; }
+			if (value == base.backColor) { return; }
 			base.BackColor = value;
 			Draw();
 		}
@@ -137,7 +137,7 @@ public abstract class ScrollBar : Control
 		get { return base.ForeColor; }
 		set
 		{
-			if (value == base.ForeColor) { return; }
+			if (value == base.foreColor) { return; }
 			base.ForeColor = value;
 			Draw();
 		}

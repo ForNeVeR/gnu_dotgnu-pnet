@@ -34,6 +34,11 @@
 	resources/en_US/System.Windows.Forms/small_text.ico:
 	add some small 16x16 icons for displaying in file dialog boxes.
 
+	* System.Windows.Forms/FileDialog.cs,
+	System.Windows.Forms/ScrollBar.cs: add some icon list infrastructure
+	to the file dialog; fix a bug in detection of non-trivial changes to
+	scrollbar foreground and background colors.
+
 2003-11-20  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingGraphics.cs,

@@ -123,7 +123,7 @@ public class FileNotFoundException : IOException
 	{
 		get
 		{
-			throw NotImplementedException("FusionLog");
+			throw new NotImplementedException("FusionLog");
 		}
 	}
 #endif

@@ -1,4 +1,9 @@
 
+2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/Platform/Errno.cs: list of Unix-style errno codes for interfacing
+to platform-specific error facilities.
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for the "0.1.0" release.

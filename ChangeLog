@@ -6,6 +6,9 @@
 	map that allows nodes to be associated with program items, to easily
 	map from one to the other.
 
+	* cscc/csharp/cs_gather.c: associate nodes with program items
+	during the type gathering process.
+
 2002-06-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/cvm_call.c, engine/engine.h,

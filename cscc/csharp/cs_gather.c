@@ -19,6 +19,7 @@
  */
 
 #include "cs_internal.h"
+#include <codegen/cg_nodemap.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -316,7 +317,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	}
 
 	/* Record the node on the class as user data */
-	ILClassSetUserData(classInfo, defn);
+	ILSetProgramItemMapping(info, (ILNode *)defn);
 
 	/* Process the nested types */
 	node = defn->body;
@@ -560,6 +561,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 		}
 		decl->fieldInfo = fieldInfo;
 		ILMemberSetSignature((ILMember *)fieldInfo, tempType);
+		ILSetProgramItemMapping(info, (ILNode *)decl);
 
 		/* Report on duplicates */
 		if(member)
@@ -819,6 +821,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 		CCOutOfMemory();
 	}
 	method->methodInfo = methodInfo;
+	ILSetProgramItemMapping(info, (ILNode *)method);
 
 	/* Get the return type */
 	tempType = CSSemTypeVoid(method->type, info, &(method->type));
@@ -1032,6 +1035,7 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 	}
 	enumMember->fieldInfo = fieldInfo;
 	ILMemberSetSignature((ILMember *)fieldInfo, tempType);
+	ILSetProgramItemMapping(info, (ILNode *)enumMember);
 
 	/* Report on duplicates within this class only */
 	if(member && ILMember_Owner(member) == classInfo)
@@ -1176,6 +1180,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 		CCOutOfMemory();
 	}
 	property->propertyInfo = propertyInfo;
+	ILSetProgramItemMapping(info, (ILNode *)property);
 
 	/* Add the method semantics to the property */
 	if(property->getAccessor)

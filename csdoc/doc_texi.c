@@ -888,6 +888,15 @@ static void ConvertType(FILE *stream, ILDocType *type,
 	/* Print the C# definition for the type */
 	PrintSignature(stream, type->csSignature);
 
+	/* Print the assembly information for the type */
+	if(type->assembly)
+	{
+		fputs("@noindent @b{Assembly}\n\n", stream);
+		fputs("@quotation\n", stream);
+		PrintString(stream, type->assembly);
+		fputs("\n@end quotation\n\n", stream);
+	}
+
 	/* Print the documentation for the type */
 	PrintDocs(stream, type->doc, type, 0);
 

@@ -128,6 +128,10 @@ static void DestroyType(ILDocType *type)
 	{
 		ILFree(type->fullName);
 	}
+	if(type->assembly)
+	{
+		ILFree(type->assembly);
+	}
 	if(type->ilasmSignature)
 	{
 		ILFree(type->ilasmSignature);

@@ -14,6 +14,10 @@ an unconditional jump, even if the location does not have a label.
 * engine/verify_arith.c: set the correct result type for "add" and "sub"
 operations on pointers.
 
+* csdoc/doc_destroy.c, csdoc/doc_html.c, csdoc/doc_load.c, csdoc/doc_texi.c,
+csdoc/doc_tree.h: keep track of the assembly name for a type when the
+XML file is loaded; report the assembly name in generated documentation.
+
 2001-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * support/filemap.c: modify the #ifdef's according to suggestions from

@@ -1699,6 +1699,15 @@ static void ConvertType(FILE *stream, ILDocType *type,
 		fputs("</BLOCKQUOTE>\n\n", stream);
 	}
 
+	/* Print the assembly information for the type */
+	if(type->assembly)
+	{
+		fputs("<H4>Assembly</H4>\n\n", stream);
+		fputs("<BLOCKQUOTE>\n", stream);
+		PrintString(stream, type->assembly);
+		fputs("\n</BLOCKQUOTE>\n\n", stream);
+	}
+
 	/* Print the documentation for the type */
 	PrintDocs(stream, type->doc, type, 0);
 

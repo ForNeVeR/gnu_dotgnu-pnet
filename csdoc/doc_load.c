@@ -653,6 +653,29 @@ static int ParseTypeContents(ILDocTree *tree, ILDocType *type,
 				ILXMLReadNext(reader);
 			}
 		}
+		else if(ILXMLIsStartTag(reader, "AssemblyInfo"))
+		{
+			/* Parse the assembly name information */
+			ILXMLReadNext(reader);
+			while(ILXMLGetItem(reader) != ILXMLItem_EOF &&
+			      ILXMLGetItem(reader) != ILXMLItem_EndTag)
+			{
+				if(ILXMLIsStartTag(reader, "AssemblyName") &&
+				   type->assembly == 0)
+				{
+					type->assembly = ILXMLGetContents(reader, 0);
+					if(!(type->assembly))
+					{
+						return 0;
+					}
+				}
+				else
+				{
+					ILXMLSkip(reader);
+				}
+				ILXMLReadNext(reader);
+			}
+		}
 		else
 		{
 			ILXMLSkip(reader);
@@ -741,6 +764,7 @@ static int ParseTypes(ILDocTree *tree, ILDocLibrary *library,
 			type->name = 0;
 			type->fullName = 0;
 			type->fullyQualify = 0;
+			type->assembly = 0;
 			type->ilasmSignature = 0;
 			type->csSignature = 0;
 			type->baseType = 0;

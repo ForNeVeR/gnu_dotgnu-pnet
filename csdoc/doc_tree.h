@@ -102,6 +102,7 @@ struct _tagILDocType
 	char		   *name;			/* Name, without the namespace qualifier */
 	char		   *fullName;		/* Full name of the type */
 	int				fullyQualify;	/* Non-zero if name qualify recommended */
+	char		   *assembly;		/* Name of the containing assembly */
 	char		   *ilasmSignature;	/* ILASM signature for the type */
 	char		   *csSignature;	/* C# signature for the type */
 	char		   *baseType;		/* Full name of the base type */

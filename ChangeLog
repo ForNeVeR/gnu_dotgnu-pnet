@@ -4,6 +4,10 @@
 	* HACKING, System/System.build, tools/csccwrap.sh.in: change
 	pnetlib to use a metadata-only compile.
 
+	* AUTHORS: add Gerard Toonstra to the AUTHORS file.
+
+	* NEWS, configure.in: update version for the "0.1.6" release.
+
 2002-03-25  Stephen Compall  <rushing@sigecom.net>
 
 	* System/UriBuilder.cs: Fixed compiler error as reported by

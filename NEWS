@@ -1,5 +1,15 @@
 
-0.1.4 (11 February 2001)
+0.1.6 (27 March 2002)
+
+	* System.Net (Peter Minten, Gerard Toonstra, Gopal V).
+	* System.Uri* (Stephen Compall).
+	* Build logic for the "System" assembly (Rhys Weatherley).
+	* Bug fixes to System.Version, System.TimeSpan (Peter Minten).
+	* Updates to System.Threading.Timer* (Abhaya Agarwal).
+	* Partial implementation of String.Format (Abhaya Agarwal).
+	* Convert the build system to csant (Rhys Weatherley).
+
+0.1.4 (11 February 2002)
 
 	* Add the "make_patch.sh" script to help with patch management.
 	* "System.IO.Path", "System.IO.File", and "Platform.DirMethods"
@@ -15,7 +25,7 @@
 	* "DateTime.Compare" from Abhaya Agarwal <abhayag@cse.iitk.ac.in>.
 	* Number formatting fixes for negative integers.
 
-0.1.2 (7 January 2001)
+0.1.2 (7 January 2002)
 
 	* File handle operations in "Platform".
 	* A new system for handling default messages in exception classes.

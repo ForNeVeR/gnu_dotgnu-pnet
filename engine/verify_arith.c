@@ -111,7 +111,7 @@ static char const subUnsafeMatrix
 		    /* I4    I8    I     F     &     O     *     MV */
 	/* I4: */ {T_I4, T_NO, T_I,  T_NO, T_NO, T_NO, T_NO, T_NO},
 	/* I8: */ {T_NO, T_I8, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO},
-	/* I:  */ {T_I,  T_NO, T_I,  T_NO, T_NO, T_NO, T_NO, T_NO},
+	/* I:  */ {T_I,  T_NO, T_I,  T_NO, T_I,  T_NO, T_I,  T_NO},
 	/* F:  */ {T_NO, T_NO, T_NO, T_F,  T_NO, T_NO, T_NO, T_NO},
 	/* &:  */ {T_M,  T_NO, T_M,  T_NO, T_I,  T_NO, T_I,  T_NO},
 	/* O:  */ {T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO},

@@ -8,6 +8,8 @@
 	* engine/verify_branch.c: allow I and M/T values to be compared
 	in unsafe mode.
 
+	* engine/verify_arith.c: add the I/M and I/T cases to unsafe "sub".
+
 2004-03-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_library.c, ilalink/link_method.c,

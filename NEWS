@@ -10,6 +10,7 @@
 	* Use "fprem", not "fprem1" for x86 IL remainder (Rhys Weatherley).
 	* Handle vararg methods and delegates more centrally (Gopal V).
 	* System.Decimal division bug (Klaus Treichel).
+	* Do not inline loads from value types or crashes will occur (Gopal V).
 
 	C# Compiler:
 

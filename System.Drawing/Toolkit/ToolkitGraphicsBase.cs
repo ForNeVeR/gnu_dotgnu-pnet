@@ -223,14 +223,6 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 					}
 				}
 			}
-	public virtual RectangleF VisibleClipBounds
-			{
-				get
-				{
-					// This should be overridden in subclasses.
-					return RectangleF.Empty;
-				}
-			}
 
 	// Determine if a particular section of the dirty flags are set.
 	protected bool IsDirty(DirtyFlags flags)

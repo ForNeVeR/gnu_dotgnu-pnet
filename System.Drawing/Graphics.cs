@@ -2,6 +2,8 @@
  * Graphics.cs - Implementation of the "System.Drawing.Graphics" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Contributions from Thomas Fritzsche <tf@noto.de>.
+ * Contributions from Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +43,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	internal GraphicsContainer stackTop;
 	internal static Graphics defaultGraphics;
 	// the window this graphics represents overlying the IToolkitGraphics
-	private Rectangle baseWindow;
+	internal Rectangle baseWindow;
 
 	// Default DPI for the screen.
 	internal const float DefaultScreenDpi = 96.0f;
@@ -461,16 +463,16 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				get
 				{
-					lock(this)
+					if(graphics != null)
 					{
-						if(graphics != null)
-						{
-							return graphics.VisibleClipBounds;
-						}
-						else
-						{
-							return RectangleF.Empty;
-						}
+						PointF bottomRight = new PointF(baseWindow.Width, baseWindow.Height);
+						PointF[] coords = new PointF[] {PointF.Empty, bottomRight };
+						TransformPoints(CoordinateSpace.World, CoordinateSpace.Device, coords);
+						return RectangleF.FromLTRB(coords[0].X, coords[0].Y, coords[1].X, coords[1].Y);
+					}
+					else
+					{
+						return RectangleF.Empty;
 					}
 				}
 			}
@@ -1316,9 +1318,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						   RectangleF layoutRectangle, StringFormat format)
 			{
 				if(s == null || s.Length == 0)
-				{
 					return;
-				}
+				if (format == null)
+					format = new StringFormat();
 				Point[] rect = ConvertRectangle
 					(layoutRectangle.X, layoutRectangle.Y,
 					 layoutRectangle.Width, layoutRectangle.Height, pageUnit);
@@ -1328,45 +1330,59 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					SelectFont(font);
 					SelectBrush(brush);
-					if(format != null &&
-					   (format.Alignment != StringAlignment.Near ||
-					    format.LineAlignment != StringAlignment.Near))
+					Region clipTemp = null;
+					if((format.FormatFlags & StringFormatFlags.NoClip) == 0)
 					{
-						// Adjust the rectangle for the alignment values.
-						int charactersFitted, linesFilled;
-						Size size = ToolkitGraphics.MeasureString
-							(s, rect, null,
-							 out charactersFitted, out linesFilled, true);
-						if(format.Alignment == StringAlignment.Center)
+						if (clip != null)
 						{
-							rect[0].X +=
-								(rect[1].X - rect[0].X - size.Width - 2) / 2;
-						}
-						else if(format.Alignment == StringAlignment.Far)
-						{
-							rect[0].X = rect[1].X - size.Width - 3;
-						}
-						if(format.LineAlignment == StringAlignment.Center)
-						{
-							rect[0].Y +=
-								(rect[2].Y - rect[0].Y - size.Height - 2) / 2;
-						}
-						else if(format.LineAlignment == StringAlignment.Far)
-						{
-							rect[0].Y = rect[2].Y - size.Height - 2;
+							clipTemp = clip.Clone();
+							SetClip(layoutRectangle,CombineMode.Intersect);
 						}
 					}
-					ToolkitGraphics.DrawString
-						(s, rect[0].X + baseWindow.X, rect[0].Y + baseWindow.Y, format);
+					SizeF size = MeasureString(s,font);
+					// If we need to wrap then do it the hard way.
+					if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
+						size.Width >= layoutRectangle.Width )
+					{
+						StringDrawPositionCalculator calculator = new StringDrawPositionCalculator(s, this, font, layoutRectangle, format);
+						calculator.LayoutByWords();
+						calculator.Draw(brush);
+					}
+					else
+					{
+						if(format.Alignment != StringAlignment.Near || format.LineAlignment != StringAlignment.Near)
+						{
+							// Adjust the rectangle for the alignment values.
+
+							if(format.Alignment == StringAlignment.Center)
+								rect[0].X += (rect[1].X - rect[0].X - (int)size.Width - 1) / 2;
+							
+							else if(format.Alignment == StringAlignment.Far)
+								rect[0].X = rect[1].X - (int)size.Width - 1;
+							
+							if(format.LineAlignment == StringAlignment.Center)
+								rect[0].Y += (rect[2].Y - rect[0].Y - (int)size.Height - 1) / 2;
+
+							else if(format.LineAlignment == StringAlignment.Far)
+								rect[0].Y = rect[2].Y - (int)size.Height - 1;
+						}
+
+						ToolkitGraphics.DrawString(s, rect[0].X + baseWindow.X, rect[0].Y + baseWindow.Y, format);
+					}
+					if (clipTemp != null)
+						Clip = clipTemp;
 				}
 			}
+
 	public void DrawString(String s, Font font, Brush brush, float x, float y)
 			{
 				DrawString(s, font, brush, x, y, null);
 			}
+
 	public void DrawString(String s, Font font, Brush brush,
 						   float x, float y, StringFormat format)
 			{
+				// TODO
 				if(s == null || s.Length == 0)
 				{
 					return;
@@ -2048,110 +2064,378 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				return Clip.IsVisible(x, y, width, height, this);
 			}
 
-	// Measure the character ranges for a string.
-	// TODO not complete
-	public Region[] MeasureCharacterRanges(String text,
-		Font font, RectangleF layoutRect, StringFormat stringFormat)
-			{
-				RectangleF[] bounds = new RectangleF[text.Length];
-				float xMax = 0;
-				float yMax = 0;
-				float fontHeight = font.GetHeight(this);
-				bool vertical = (stringFormat.FormatFlags & StringFormatFlags.DirectionVertical) != 0;
-				if (vertical)
-				{
-					xMax = layoutRect.Height - 1;
-					yMax = layoutRect.Width - 1;
-				}
-				else
-				{
-					xMax = layoutRect.Width - 1;
-					yMax = layoutRect.Height - 1;
-				}
-				bool noWrap = (stringFormat.FormatFlags & StringFormatFlags.NoWrap) != 0;
-				Lines lines = new Lines();
-				float lineSizeRemaining = yMax;
-				// First line starts at 0
-				lines.Add(0);
-				int currentPos = 0;
-				do
-				{
-					MeasureLine (ref bounds, ref currentPos, ref text, xMax, this, font, vertical, noWrap);
-					lines.Add(currentPos);
-					lineSizeRemaining -= fontHeight;
-					if (currentPos >= text.Length || lineSizeRemaining < 0 || noWrap)
-						break;
-				} while (true);
-				
-				float yOffset = 0;
-				if (stringFormat.LineAlignment == StringAlignment.Center)
-					yOffset = lineSizeRemaining/2;
-				else if (stringFormat.LineAlignment == StringAlignment.Far)
-					yOffset = lineSizeRemaining;
-				float xOffset = 0;
+	private class StringDrawPositionCalculator
+	{
+		private SplitWord[] words;
+		private int wordCount;
+		private String text;
+		private Point[] linePositions;
+		private Graphics graphics;
+		private Font font;
+		private RectangleF layout;
+		private StringFormat format;
 
-				for (int i = 0; i < text.Length;)
+		// Details for each word
+		private  struct SplitWord
 				{
-					if (lines.GetCurrent() == i)
+					public int start;
+					public int length;
+					public Size size;
+					public int line;
+					public SplitWord(int start, int length)
 					{
-						lines.MoveNext();
-						xOffset = 0;
-						if (stringFormat.Alignment == StringAlignment.Far)
+						this.start = start;
+						this.length = length;
+						this.size = Size.Empty;
+						line = -1;
+					}
+				}
+
+		public StringDrawPositionCalculator(String text, Graphics graphics, Font font, RectangleF layout, StringFormat format)
+				{
+					this.text = text;
+					this.graphics = graphics;
+					this.font = font;
+					this.layout = layout;
+					this.format = format;
+				}
+
+		public void LayoutByWords()
+				{
+					wordCount = 0;
+					words = new SplitWord[16];
+					int start = 0;
+					for(int i=0; i < text.Length;)
+					{
+						start = i;
+						char c = text[i];
+						if(c == '\r')
 						{
-							// Go back and find the right point of the last visible character
-							int back = lines.GetCurrent() - 1;
-							if (back > -1)
-							{
-								for (; back >= 0; back--)
-									if (bounds[back]!= Rectangle.Empty)
-										break;
-								xOffset = xMax + 1 - bounds[back].Right;
-							}
+							if (i < text.Length-1 && text[i+1]=='\n')
+								i += 2;
 							else
-								xOffset = xMax + 1;
+								i++; // Invalid, the \r is on its own
 						}
-						else if (stringFormat.Alignment == StringAlignment.Center)
+						else if(c == '\n') // Invalid, the \n is on its own
+							i += 1;
+						else
 						{
-							for (int j = i; j < lines.GetCurrent(); j++)
-								xOffset += bounds[j].Width;
-							xOffset = (xMax + 1 - xOffset)/2;
+							while(i < text.Length && Char.IsWhiteSpace(text[i])) 
+								i++;
+							if (i == start)
+							{
+								while(i < text.Length && !Char.IsWhiteSpace(text[i]) && text[i] != '\n' && text[i] != '\r')
+									i++;
+							}
+							if (wordCount >= words.Length)
+							{
+								SplitWord[] newWords = new SplitWord[words.Length * 2];
+								Array.Copy(words, newWords, words.Length);
+								words = newWords;
+							}
+							words[wordCount++] = new SplitWord(start, i - start);
 						}
-					}
-					else 
+					}	
+					Layout();
+				}
+
+		private void Layout()
+				{
+					MeasureStrings();
+					WrapLines(layout.Width -1);
+					linePositions = GetPositions(layout, format);
+				}
+
+		// Draw each line
+		public void Draw(Brush brush)
+				{
+					graphics.SelectBrush(brush);
+					if (linePositions.Length == 0)
+						return;
+					int currentLine = 0;
+					int textStart = 0;
+					int textLength = 0;
+						
+					SplitWord word = new SplitWord(0,0);
+					Rectangle baseWindow = graphics.baseWindow;
+					for (int i = 0; i <= wordCount; i++)
 					{
-						if (bounds[i] != Rectangle.Empty)
+						if (i != wordCount)
 						{
-							RectangleF rect = bounds[i];
-							bounds[i] = new RectangleF( rect.Left + xOffset + layoutRect.Left, rect.Top + (lines.CurrentLine - 1) * fontHeight + layoutRect.Top + 1, rect.Width, rect.Height);
+							word = words[i];
+							if(word.line== -1)
+								continue;
+							if (word.line == currentLine)
+							{
+								textLength += word.length;
+								continue;
+							}
 						}
-						i++;
+						Point linePosition = linePositions[currentLine];
+						// Draw if some of it is within layout.
+						if(linePosition.X <= layout.Right && linePosition.Y <= layout.Bottom)
+						{
+							String lineText = text.Substring(textStart, textLength);
+							int x = linePosition.X + baseWindow.X;
+							int y = linePosition.Y + baseWindow.Y;
+							graphics.ToolkitGraphics.DrawString(lineText, x, y, null);
+						}
+						textStart = word.start;
+						textLength = word.length;
+						currentLine = word.line;
 					}
 				}
 
-				// Now consolidate positions based on character ranges
-				Region[] regions = new Region[stringFormat.ranges.Length];
-				for (int i = 0; i < stringFormat.ranges.Length; i++)
+		// Use the toolkit to measure all the words and spaces.
+		private void  MeasureStrings() 
 				{
-					CharacterRange range = stringFormat.ranges[i];
-					Region region = null;
-					for (int j = range.First; j < range.First + range.Length; j++)
+					graphics.SelectFont(font);
+					Size spaceSize = new Size(-1,-1);
+					Point[] rect = new Point[0];
+					int charactersFitted;
+					int linesFilled;
+					for(int i=0;i< wordCount;i++)
 					{
-						if (region == null)
-							region = new Region(bounds[j]);
-						else
-							region.Union(bounds[j]);
+						SplitWord word = words[i];
+						char c = text[word.start];
+						if (char.IsWhiteSpace(c))
+						{
+							if (spaceSize.Width == -1)
+								spaceSize = graphics.ToolkitGraphics.MeasureString(" ", rect, null, out charactersFitted, out linesFilled, false);
+							word.size = spaceSize;
+							words[i] = word;
+						}
+						else if (c != '\n' && c != '\r')
+						{
+							word.size = graphics.ToolkitGraphics.MeasureString(text.Substring(word.start, word.length), rect, null, out charactersFitted, out linesFilled, false);
+							words[i] = word;
+						}
 					}
-					regions[i] = region;
 				}
-				return regions;
+
+		// Calculate the word wrap from the words.
+		private void WrapLines(float lineSize)
+				{
+					float currSize=0;
+					int currLine=0;
+
+					for(int i=0; i < wordCount;i++)
+					{
+						SplitWord word = words[i];
+						char c = text[word.start];
+						// Wrap when \r\n
+						if (c == '\r' && word.length == 2) 
+						{
+							currLine++;
+							currSize = 0;
+						}
+						if (Char.IsWhiteSpace(c))
+						{
+							if( i< wordCount-1)
+							{
+								// Check that we are not at the end of the line.
+								SplitWord nextWord = words[i+1];
+								if (text[nextWord.start] != '\r' || nextWord.length != 2)
+								{
+									// If we have space for the next word in the line then set the lines.
+									if (currSize + word.size.Width + nextWord.size.Width <= lineSize) 
+									{
+										currSize += word.size.Width + nextWord.size.Width;
+										word.line = nextWord.line = currLine;
+										words[i] = word;
+										words[i+1] = nextWord;
+										i+=1;
+									} 
+									else
+									{
+										// No space left in the line.
+										currLine++;
+										currSize=0;
+									}
+								}
+							}
+						}
+						else  
+						{
+							// we have no whitespace in line -> append / wrap line
+							if (currSize + word.size.Width < lineSize)
+							{
+								word.line = currLine;
+								words[i] = word;
+								currSize += word.size.Width;
+							} 
+							else
+							{
+								word.line = ++currLine;					
+								words[i] = word;
+								currSize=0;
+							}
+						}			
+					}
+				}
+		// Calculate the Position of the wrapped lines, depending of the 
+		private Point[] GetPositions(RectangleF layout, StringFormat format)
+				{
+					int numLines = 0;
+					for(int i = wordCount-1; i >= 0; i--)
+					{
+						if(words[i].line!=-1)
+						{
+							numLines = words[i].line + 1;
+							break;
+						}
+					}
+					Point[] linePositions = new Point[numLines];
+
+					int h = words[0].size.Height;
+
+					int yOffset=0;
+					// Set the offset based on the  LineAlignment.
+					if (format.LineAlignment == StringAlignment.Far)
+						yOffset = (int)layout.Height - numLines * h;
+					else if (format.LineAlignment == StringAlignment.Center)
+						yOffset = ((int)layout.Height - numLines * h)/2;
+
+					for(int line=0; line < numLines; line++)
+					{
+						int xOffset = 0;
+						if (format.Alignment != StringAlignment.Near)
+						{
+							for(int i=0; i < wordCount; i++)
+							{
+								SplitWord word = words[i];
+								if(word.line == line)
+									xOffset += word.size.Width;
+								if(word.line > line)
+									break;
+							}
+							// Set the offset based on the Alignment.
+							if (format.Alignment == StringAlignment.Far)
+								xOffset = (int)layout.Width - 1 - xOffset;
+							else if (format.Alignment == StringAlignment.Center)
+								xOffset = ((int)layout.Width - 1 - xOffset)/2;
+						}
+
+						linePositions[line].Y=(int)layout.Y + yOffset + line*h;
+						linePositions[line].X=(int)layout.X + xOffset;
+					}
+					return linePositions;
+				}
 			}
 
-	private class Lines
+	private class StringMeasurePositionCalculator
 	{
-		private int[] lines = new int[20];
+		Graphics graphics;
+		String text;
+		Font font;
+		RectangleF layout;
+		StringFormat format;
+		private int[] lines = new int[16];
 		private int count = 0;
-		public int CurrentLine = 0;
-		public void Add(int value)
+		private int currentLine = 0;
+
+		public StringMeasurePositionCalculator(Graphics graphics, String text, Font font, RectangleF layout, StringFormat format)
+				{
+					this.graphics = graphics;
+					this.text = text;
+					this.font = font;
+					this.layout = layout;
+					this.format = format;
+				}
+
+		public Region[] GetRegions()
+				{
+					RectangleF[] bounds = new RectangleF[text.Length];
+					float xMax = 0;
+					float yMax = 0;
+					float fontHeight = font.GetHeight(graphics);
+					bool vertical = (format.FormatFlags & StringFormatFlags.DirectionVertical) != 0;
+					if (vertical)
+					{
+						xMax = layout.Height - 1;
+						yMax = layout.Width - 1;
+					}
+					else
+					{
+						xMax = layout.Width - 1;
+						yMax = layout.Height - 1;
+					}
+					bool noWrap = (format.FormatFlags & StringFormatFlags.NoWrap) != 0;
+					float lineSizeRemaining = yMax;
+					// First line starts at 0
+					AddLine(0);
+					int currentPos = 0;
+					do
+					{
+						MeasureLine (ref bounds, ref currentPos, ref text, xMax, graphics, font, vertical, noWrap);
+						AddLine(currentPos);
+						lineSizeRemaining -= fontHeight;
+					}
+					while (currentPos < text.Length && lineSizeRemaining >= 0 && !noWrap);
+						
+					float yOffset = 0;
+					if (format.LineAlignment == StringAlignment.Center)
+						yOffset = lineSizeRemaining/2;
+					else if (format.LineAlignment == StringAlignment.Far)
+						yOffset = lineSizeRemaining;
+					float xOffset = 0;
+
+					for (int i = 0; i < text.Length;)
+					{
+						if (CurrentLine == i)
+						{
+							currentLine++;
+							xOffset = 0;
+							if (format.Alignment == StringAlignment.Far)
+							{
+								// Go back and find the right point of the last visible character
+								int back = CurrentLine - 1;
+								if (back > -1)
+								{
+									for (; back >= 0; back--)
+										if (bounds[back]!= Rectangle.Empty)
+											break;
+									xOffset = xMax + 1 - bounds[back].Right;
+								}
+								else
+									xOffset = xMax + 1;
+							}
+							else if (format.Alignment == StringAlignment.Center)
+							{
+								for (int j = i; j < CurrentLine; j++)
+									xOffset += bounds[j].Width;
+								xOffset = (xMax + 1 - xOffset)/2;
+							}
+						}
+						else 
+						{
+							if (bounds[i] != Rectangle.Empty)
+							{
+								RectangleF rect = bounds[i];
+								bounds[i] = new RectangleF( rect.Left + xOffset + layout.Left, rect.Top + (currentLine - 1) * fontHeight + layout.Top + 1, rect.Width, rect.Height);
+							}
+							i++;
+						}
+					}
+					// Now consolidate positions based on character ranges
+					Region[] regions = new Region[format.ranges.Length];
+					for (int i = 0; i < format.ranges.Length; i++)
+					{
+						CharacterRange range = format.ranges[i];
+						Region region = null;
+						for (int j = range.First; j < range.First + range.Length; j++)
+						{
+							if (region == null)
+								region = new Region(bounds[j]);
+							else
+								region.Union(bounds[j]);
+						}
+						regions[i] = region;
+					}
+					return regions;
+				}
+				
+		private void AddLine(int value)
 				{
 					if (count == lines.Length)
 					{
@@ -2161,82 +2445,90 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					}
 					lines[count++] = value;
 				}
-		public void MoveNext()
-				{
-					CurrentLine++;
-				}
-		public int GetCurrent()
-				{
-					if (CurrentLine > count)
-						return -1;
-					else
-						return lines[CurrentLine];
-				}
-	}
 
-	// Measures one full line. Updates the positions of the characters in that line relative to 0,0
-	private void MeasureLine(ref RectangleF[] bounds, ref int currentPos,
-		ref string text, float maxX, Graphics g, Font f, bool vertical, bool noWrap)
-			{
-				int initialPos = currentPos;
-				int x = 0;
-				int y = 0;
-				do
+		private int CurrentLine
 				{
-					char c = text[currentPos];
-					if (c == '\n')
+					get
 					{
-						currentPos++;
-						return;
-					}
-					// Ignore returns
-					if (c!= '\r')
-					{
-						//TODO use Platform specific measure function & take into account kerning
-						Size s = g.MeasureString( c.ToString(), f).ToSize();
-						int newX = x;
-						int newY = y;
-						if (vertical)
-							newX += s.Height;
+						if (currentLine > count)
+							return -1;
 						else
-							newX += s.Width;
-						if (newX > maxX)
+							return lines[currentLine];
+					}
+				}
+
+		// Measures one full line. Updates the positions of the characters in that line relative to 0,0
+		private void MeasureLine(ref RectangleF[] bounds, ref int currentPos,
+			ref string text, float maxX, Graphics g, Font f, bool vertical, bool noWrap)
+				{
+					int initialPos = currentPos;
+					int x = 0;
+					int y = 0;
+					do
+					{
+						char c = text[currentPos];
+						if (c == '\n')
 						{
-							if (noWrap)
-								return;
+							currentPos++;
+							return;
+						}
+						// Ignore returns
+						if (c!= '\r')
+						{
+							//TODO use Platform specific measure function & take into account kerning
+							Size s = g.MeasureString( c.ToString(), f).ToSize();
+							int newX = x;
+							int newY = y;
+							if (vertical)
+								newX += s.Height;
+							else
+								newX += s.Width;
+							if (newX > maxX)
+							{
+								if (noWrap)
+									return;
+								else
+								{
+									// Backtrack to wrap the word
+									for (int i = currentPos; i > initialPos; i--)
+									{
+										if (text[i] == ' ')
+										{
+											// Swallow the space
+											bounds[i++] = Rectangle.Empty;
+											currentPos = i;
+											return;
+										}
+									}
+									return;
+								}
+
+							}
 							else
 							{
-								// Backtrack to wrap the word
-								for (int i = currentPos; i > initialPos; i--)
-								{
-									if (text[i] == ' ')
-									{
-										// Swallow the space
-										bounds[i++] = Rectangle.Empty;
-										currentPos = i;
-										return;
-									}
-								}
-								return;
+								if (vertical)
+									bounds[currentPos] = new RectangleF( y, x, s.Height, s.Width - 1 );
+								else
+									bounds[currentPos] = new RectangleF( x, y, s.Width, s.Height - 1 );
 							}
-
+							x = newX;
 						}
-						else
-						{
-							if (vertical)
-								bounds[currentPos] = new RectangleF( y, x, s.Height, s.Width - 1 );
-							else
-								bounds[currentPos] = new RectangleF( x, y, s.Width, s.Height - 1 );
-						}
-						x = newX;
+						currentPos++;
 					}
-					currentPos++;
-				} while (currentPos < text.Length);
+					while (currentPos < text.Length);
+				}
+			}
+
+	// Measure the character ranges for a string.
+	public Region[] MeasureCharacterRanges(String text, Font font, RectangleF layoutRect, StringFormat stringFormat)
+			{
+				StringMeasurePositionCalculator calculator = new StringMeasurePositionCalculator(this, text, font, layoutRect, stringFormat);		
+				return calculator.GetRegions();
 			}
 
 	// Measure the size of a string.
 	public SizeF MeasureString(String text, Font font)
-			{
+			{		
 				return MeasureString(text, font, new SizeF(0.0f, 0.0f), null);
 			}
 	public SizeF MeasureString(String text, Font font, int width)
@@ -2268,10 +2560,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 									 out charactersFitted, out linesFilled);
 			}
 	public SizeF MeasureString(String text, Font font,
-							   SizeF layoutArea, StringFormat format,
-							   out int charactersFitted,
-							   out int linesFilled)
+		SizeF layoutArea, StringFormat format,
+		out int charactersFitted,
+		out int linesFilled)
 			{
+				//TODO
 				if(text == null || text == String.Empty)
 				{
 					charactersFitted = 0;
@@ -2279,13 +2572,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return new SizeF(0.0f, 0.0f);
 				}
 				Point[] rect = ConvertRectangle
-						(0.0f, 0.0f, layoutArea.Width, layoutArea.Height, pageUnit);
+					(0.0f, 0.0f, layoutArea.Width, layoutArea.Height, pageUnit);
 				lock(this)
 				{
 					SelectFont(font);
 					Size size = ToolkitGraphics.MeasureString
 						(text, rect, format,
-						 out charactersFitted, out linesFilled, false);
+						out charactersFitted, out linesFilled, false);
 					return new SizeF(ConvertSizeBack(size.Width, size.Height));
 				}
 			}
@@ -2651,23 +2944,313 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 
 	// Transform points from one co-ordinate space to another.
-	[TODO]
 	public void TransformPoints(CoordinateSpace destSpace,
-								CoordinateSpace srcSpace,
-								Point[] pts)
+		CoordinateSpace srcSpace,
+		Point[] pts)
 			{
-				// TODO
+				float x;
+				float y;
+				
+				if (srcSpace == CoordinateSpace.Device)
+				{
+					if (destSpace != CoordinateSpace.Device)
+					{
+						// Convert from Device to Page.
+						for (int i = 0; i < pts.Length; i++)
+						{
+							if (pageUnit == GraphicsUnit.Pixel)
+								continue;
+							x = pts[i].X;
+							y = pts[i].Y;
+							// Apply the page unit to get page co-ordinates.
+							switch(pageUnit)
+							{
+								case GraphicsUnit.Display:
+								{
+									x /= DpiX / 75.0f;
+									y /= DpiY / 75.0f;
+								}
+									break;
+
+								case GraphicsUnit.Point:
+								{
+									x /= DpiX / 72.0f;
+									y /= DpiY / 72.0f;
+								}
+									break;
+
+								case GraphicsUnit.Inch:
+								{
+									x /= DpiX;
+									y /= DpiY;
+								}
+									break;
+
+								case GraphicsUnit.Document:
+								{
+									x /= DpiX / 300.0f;
+									y /= DpiY / 300.0f;
+								}
+									break;
+
+								case GraphicsUnit.Millimeter:
+								{
+									x /= DpiX / 25.4f;
+									y /= DpiY / 25.4f;
+								}
+									break;
+								default:
+									break;
+							}
+
+							// Apply the inverse of the page scale factor.
+							if(pageScale != 1.0f)
+							{
+								x /= pageScale;
+								y /= pageScale;
+							}
+							pts[i] = new Point((int)x, (int)y);
+						}
+					} // destSpace != CoordinateSpace.Device
+					srcSpace = CoordinateSpace.Page;
+				}
+				if (srcSpace == CoordinateSpace.World)
+				{
+					if (destSpace == CoordinateSpace.World)
+						return;
+					// Convert from World to Page.
+					if (transform != null)
+						transform.TransformPoints(pts);
+
+					srcSpace = CoordinateSpace.Page;
+				}
+				if (srcSpace == CoordinateSpace.Page)
+				{
+					if (destSpace == CoordinateSpace.World && transform != null)
+					{
+						// Convert from Page to World.
+						// Apply the inverse of the world transform.
+						Matrix invert = new Matrix(transform);
+						invert.Invert();
+						invert.TransformPoints(pts);
+					}
+					if (destSpace == CoordinateSpace.Device)
+					{
+						// Convert from Page to Device.
+						// Apply the page scale factor.
+						for (int i = 0; i < pts.Length; i++)
+						{
+							x = pts[i].X;
+							y = pts[i].Y;
+							if(pageScale != 1.0f)
+							{
+								x *= pageScale;
+								y *= pageScale;
+							}
+
+							// Apply the page unit to get device co-ordinates.
+							switch(pageUnit)
+							{
+								case GraphicsUnit.Display:
+								{
+									x *= DpiX / 75.0f;
+									y *= DpiY / 75.0f;
+								}
+									break;
+
+								case GraphicsUnit.Point:
+								{
+									x *= DpiX / 72.0f;
+									y *= DpiY / 72.0f;
+								}
+									break;
+
+								case GraphicsUnit.Inch:
+								{
+									x *= DpiX;
+									y *= DpiY;
+								}
+									break;
+
+								case GraphicsUnit.Document:
+								{
+									x *= DpiX / 300.0f;
+									y *= DpiY / 300.0f;
+								}
+									break;
+
+								case GraphicsUnit.Millimeter:
+								{
+									x *= DpiX / 25.4f;
+									y *= DpiY / 25.4f;
+								}
+									break;
+								case GraphicsUnit.World:
+								case GraphicsUnit.Pixel:
+								default:
+									break;
+
+							}
+							pts[i] = new Point((int)x, (int)y);
+						}
+					}
+				}
 			}
-	[TODO]
+
 	public void TransformPoints(CoordinateSpace destSpace,
-								CoordinateSpace srcSpace,
-								PointF[] pts)
+		CoordinateSpace srcSpace,
+		PointF[] pts)
 			{
-				// TODO
+				float x;
+				float y;
+				
+				if (srcSpace == CoordinateSpace.Device)
+				{
+					if (destSpace != CoordinateSpace.Device)
+					{
+						// Convert from Device to Page.
+						for (int i = 0; i < pts.Length; i++)
+						{
+							if (pageUnit == GraphicsUnit.Pixel)
+								continue;
+							x = pts[i].X;
+							y = pts[i].Y;
+							// Apply the page unit to get page co-ordinates.
+							switch(pageUnit)
+							{
+								case GraphicsUnit.Display:
+								{
+									x /= DpiX / 75.0f;
+									y /= DpiY / 75.0f;
+								}
+									break;
+
+								case GraphicsUnit.Point:
+								{
+									x /= DpiX / 72.0f;
+									y /= DpiY / 72.0f;
+								}
+									break;
+
+								case GraphicsUnit.Inch:
+								{
+									x /= DpiX;
+									y /= DpiY;
+								}
+									break;
+
+								case GraphicsUnit.Document:
+								{
+									x /= DpiX / 300.0f;
+									y /= DpiY / 300.0f;
+								}
+									break;
+
+								case GraphicsUnit.Millimeter:
+								{
+									x /= DpiX / 25.4f;
+									y /= DpiY / 25.4f;
+								}
+									break;
+								default:
+									break;
+							}
+
+							// Apply the inverse of the page scale factor.
+							if(pageScale != 1.0f)
+							{
+								x /= pageScale;
+								y /= pageScale;
+							}
+							pts[i] = new PointF(x, y);
+						}
+					} // destSpace != CoordinateSpace.Device
+					srcSpace = CoordinateSpace.Page;
+				}
+				if (srcSpace == CoordinateSpace.World)
+				{
+					if (destSpace == CoordinateSpace.World)
+						return;
+					// Convert from World to Page.
+					if (transform != null)
+						transform.TransformPoints(pts);
+
+					srcSpace = CoordinateSpace.Page;
+				}
+				if (srcSpace == CoordinateSpace.Page)
+				{
+					if (destSpace == CoordinateSpace.World && transform != null)
+					{
+						// Convert from Page to World.
+						// Apply the inverse of the world transform.
+						Matrix invert = new Matrix(transform);
+						invert.Invert();
+						invert.TransformPoints(pts);
+					}
+					if (destSpace == CoordinateSpace.Device)
+					{
+						// Convert from Page to Device.
+						// Apply the page scale factor.
+						for (int i = 0; i < pts.Length; i++)
+						{
+							x = pts[i].X;
+							y = pts[i].Y;
+							if(pageScale != 1.0f)
+							{
+								x *= pageScale;
+								y *= pageScale;
+							}
+
+							// Apply the page unit to get device co-ordinates.
+							switch(pageUnit)
+							{
+								case GraphicsUnit.Display:
+								{
+									x *= DpiX / 75.0f;
+									y *= DpiY / 75.0f;
+								}
+									break;
+
+								case GraphicsUnit.Point:
+								{
+									x *= DpiX / 72.0f;
+									y *= DpiY / 72.0f;
+								}
+									break;
+
+								case GraphicsUnit.Inch:
+								{
+									x *= DpiX;
+									y *= DpiY;
+								}
+									break;
+
+								case GraphicsUnit.Document:
+								{
+									x *= DpiX / 300.0f;
+									y *= DpiY / 300.0f;
+								}
+									break;
+
+								case GraphicsUnit.Millimeter:
+								{
+									x *= DpiX / 25.4f;
+									y *= DpiY / 25.4f;
+								}
+									break;
+								case GraphicsUnit.World:
+								case GraphicsUnit.Pixel:
+								default:
+									break;
+
+							}
+							pts[i] = new PointF(x, y);
+						}
+					}
+				}
 			}
 
 	// Translate the clipping region by a specified amount.
-	[TODO]
 	public void TranslateClip(int dx, int dy)
 			{
 				Region clip = Clip;

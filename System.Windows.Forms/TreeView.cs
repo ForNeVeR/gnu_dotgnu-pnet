@@ -548,6 +548,7 @@ namespace System.Windows.Forms
 			bool drawing = false;
 			// If the topNode is not the first node, then some nodes are offscreen
 			bool inView = false;
+			StringFormat format = new StringFormat(StringFormatFlags.NoWrap);
 			NodeEnumerator nodes = new NodeEnumerator(Nodes);
 			while (nodes.MoveNext())
 			{
@@ -578,13 +579,13 @@ namespace System.Windows.Forms
 					if (node == selectedNode && Focused)
 					{
 						g.FillRectangle(SystemBrushes.Highlight,node.bounds);
-						g.DrawString(node.Text, Font, SystemBrushes.HighlightText, node.bounds);
+						g.DrawString(node.Text, Font, SystemBrushes.HighlightText, node.bounds,format);
 						Rectangle r = node.bounds;
 						r = new Rectangle(r.X - 1, r.Y - 1, r.Width + 1, r.Height + 1);
 						ControlPaint.DrawFocusRectangle(g, r);
 					}
 					else
-						g.DrawString(node.Text, Font, SystemBrushes.ControlText, node.bounds);
+						g.DrawString(node.Text, Font, SystemBrushes.ControlText, node.bounds,format);
 				}
 				if (!inView)
 				{

@@ -41,7 +41,6 @@ public interface IToolkitGraphics : IDisposable
 	SmoothingMode SmoothingMode { get; set; }
 	int TextContrast { get; set; }
 	TextRenderingHint TextRenderingHint { get; set; }
-	RectangleF VisibleClipBounds { get; }
 
 	// Clear the entire drawing surface.
 	void Clear(Color color);

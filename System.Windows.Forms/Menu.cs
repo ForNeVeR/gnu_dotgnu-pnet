@@ -39,10 +39,13 @@ public abstract class Menu
 	protected Rectangle[] itemBounds;
 	private static Brush backBrush, foreBrush, highlightBrush, highlightTextBrush;
 	private static Pen seperatorPen, borderPen;
+	private StringFormat format;
 
 	// Constructor.
 	protected Menu(MenuItem[] items)
 			{
+				format = new StringFormat();
+				format.FormatFlags |= StringFormatFlags.NoWrap;
 				if(items != null)
 				{
 					this.numItems = items.Length;
@@ -254,7 +257,7 @@ public abstract class Menu
 							back = HighlightBrush;
 						}
 						g.FillRectangle(back, bounds);
-						g.DrawString(menuItem.Text, SystemInformation.MenuFont, fore, textBounds);
+						g.DrawString(menuItem.Text, SystemInformation.MenuFont, fore, textBounds, format);
 						if (this is ContextMenu && menuItem.itemList.Length > 0)
 						{
 							int x = bounds.Right - 7;

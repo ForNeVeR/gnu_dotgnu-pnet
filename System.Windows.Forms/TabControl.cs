@@ -845,6 +845,7 @@ namespace System.Windows.Forms
 			StringFormat format = new StringFormat();
 			format.Alignment = StringAlignment.Center;
 			format.LineAlignment = StringAlignment.Center;
+			format.FormatFlags = StringFormatFlags.NoWrap;
 			using (Brush brush = new SolidBrush( color )) 
 			{
 				graphics.DrawString( text, Font, brush, bounds, format );

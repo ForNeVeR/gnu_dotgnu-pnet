@@ -314,6 +314,20 @@ void ILAsmBuildNewClass(const char *name, ILClass *parent, ILUInt32 attrs)
 		{
 			ILAsmOutOfMemory();
 		}
+
+		/* Translate "private" and "public" into their nested versions */
+		if((attrs & IL_META_TYPEDEF_VISIBILITY_MASK) ==
+				IL_META_TYPEDEF_NOT_PUBLIC)
+		{
+			attrs = (attrs & ~IL_META_TYPEDEF_VISIBILITY_MASK) |
+					IL_META_TYPEDEF_NESTED_PRIVATE;
+		}
+		else if((attrs & IL_META_TYPEDEF_VISIBILITY_MASK) ==
+				IL_META_TYPEDEF_PUBLIC)
+		{
+			attrs = (attrs & ~IL_META_TYPEDEF_VISIBILITY_MASK) |
+					IL_META_TYPEDEF_NESTED_PUBLIC;
+		}
 	}
 
 	/* Set the class attributes */

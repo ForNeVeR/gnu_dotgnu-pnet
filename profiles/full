@@ -8,6 +8,9 @@
 <!-- Secondary framework version -->
 <define name="SECONDARY_VERSION" value="8.0.1200.0"/>
 
+<!-- Metadata version to embed in assembly headers -->
+<define name="METADATA_VERSION" value="v2.0.40607"/>
+
 <!-- Install as the default version in the assembly cache -->
 <define name="INSTALL_AS_DEFAULT" value="true"/>
 

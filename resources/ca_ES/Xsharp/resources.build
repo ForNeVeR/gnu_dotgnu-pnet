@@ -15,6 +15,7 @@
 		<reslink output="Xsharp.resources.dll"
 				 language="ca"
 				 version="${FRAMEWORK_VERSION}"
+				 metadataVersion="${METADATA_VERSION}"
 				 install="true"
 				 installasdefault="${INSTALL_AS_DEFAULT}">
 

@@ -1,4 +1,32 @@
 
+2004-08-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* profiles/compact, profiles/compact-fp, profiles/default1.1,
+	profiles/default1.2, profiles/ecma, profiles/framework1.1,
+	profiles/framework1.2, profiles/full, profiles/kernel,
+	profiles/kernel-fp, profiles/mscompact, profiles/tiny,
+	profiles/tiny-fp, resources/ca_ES/Basic/resources.build,
+	resources/ca_ES/I18N/resources.build,
+	resources/ca_ES/System/resources.build,
+	resources/ca_ES/System.Configuration.Install/resources.build,
+	resources/ca_ES/System.Drawing/resources.build,
+	resources/ca_ES/System.Net.IrDA/resources.build,
+	resources/ca_ES/System.Windows.Forms/resources.build,
+	resources/ca_ES/System.Xml/resources.build,
+	resources/ca_ES/Xsharp/resources.build,
+	resources/ca_ES/runtime/resources.build,
+	resources/de_DE/Basic/resources.build,
+	resources/de_DE/I18N/resources.build,
+	resources/de_DE/System/resources.build,
+	resources/de_DE/System.Configuration.Install/resources.build,
+	resources/de_DE/System.Drawing/resources.build,
+	resources/de_DE/System.Net.IrDA/resources.build,
+	resources/de_DE/System.Windows.Forms/resources.build,
+	resources/de_DE/System.Xml/resources.build,
+	resources/de_DE/Xsharp/resources.build,
+	resources/de_DE/runtime/resources.build, runtime/runtime.build:
+	add "-fmetadata-version" options where necessary.
+
 2004-08-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* profiles/compact, profiles/compact-fp, profiles/default1.1,

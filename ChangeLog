@@ -1,4 +1,9 @@
 
+2003-06-03  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/IO/BufferedStream.cs: Fix a number of potential
+	issues in buffering and flushing operations.
+
 2003-06-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Format.txt, runtime/System/DateTime.cs,

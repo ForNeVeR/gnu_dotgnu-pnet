@@ -97,7 +97,7 @@ namespace System.IO
 			}
 			else
 			{
-				if(stream.Position == this.Position)
+				if((!CanSeek) || stream.Position == this.Position)
 				{
 					if((outBufferLen - outBufferPosn) !=0)
 					{
@@ -116,6 +116,7 @@ namespace System.IO
 					throw new NotSupportedException(_("IO_NotSupp_Seek"));
 				}
 			}
+			stream.Flush();
 		}
 
 		private void FillBuffer()
@@ -268,12 +269,11 @@ namespace System.IO
 			}
 
 			int spaceInBuffer=bufferSize-outBufferLen;
-			int dataLen = array.Length-offset;
 			/* simple cases first ;) */
-			if(spaceInBuffer > dataLen)
+			if(spaceInBuffer > count)
 			{
-				Array.Copy(outBuffer,outBufferPosn,array,offset, dataLen);
-				outBufferLen+=dataLen;
+				Array.Copy(array, offset, outBuffer,outBufferLen, count);
+				outBufferLen+=count;
 				return;
 			}
 			// so we have more data than we can store directly , try making
@@ -283,18 +283,19 @@ namespace System.IO
 				Array.Copy(outBuffer, outBufferPosn, outBuffer, 0, 
 							outBufferLen-outBufferPosn);
 				outBufferLen -= outBufferPosn;	
+				outBufferPosn = 0;
 			}
 			else
 			{
 				/* empty buffer */
 				outBufferLen=0;
+				outBufferPosn=0;
 			}
 			spaceInBuffer=bufferSize-outBufferLen;
-			if(spaceInBuffer > dataLen)
+			if(spaceInBuffer > count)
 			{
-				Array.Copy(outBuffer, outBufferPosn, outBuffer, 0, 
-							outBufferLen-outBufferPosn);
-				outBufferLen+=dataLen;
+				Array.Copy(array, offset, outBuffer, outBufferLen, count);
+				outBufferLen+=count;
 				return;
 			}
 			// now we know that the data is too large to fit in the 
@@ -305,8 +306,8 @@ namespace System.IO
 			if(keptData!=0)
 			{
 				stream.Write(array,offset,count-keptData);
-				Array.Copy(outBuffer, outBufferPosn, array, 
-							offset + count - keptData, keptData);
+				Array.Copy(array, offset + count - keptData, 
+							outBuffer, outBufferPosn, keptData);
 				outBufferLen+=keptData;
 			}
 			else

@@ -13,6 +13,8 @@
 	copy "csunit" back into pnetlib so that we can eventually remove
 	all C# code from "pnet".
 
+	* System.Xml/XmlNodeReader.cs: stub out the methods in "XmlNodeReader".
+
 2002-12-07  Nguyen, Thong  <tum@veridicus.com>
 
 	* runtime/System/Threading/WaitHandle.cs: Added WaitTimeout const.

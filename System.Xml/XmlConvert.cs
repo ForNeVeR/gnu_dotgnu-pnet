@@ -450,11 +450,13 @@ public class XmlConvert
 #endif
 
 #if !ECMA_COMPAT
-	[TODO]
+
+	// Convert a string into a GUID value.
 	public static Guid ToGuid(String value) 
 			{
-				throw new NotImplementedException("ToGuid");
+				return new Guid(value);
 			}
+
 #endif
 
 	// Convert a string to an Int16 value.
@@ -671,11 +673,13 @@ public class XmlConvert
 			}
 	
 #if !ECMA_COMPAT	
-	[TODO]
+
+	// Convert a GUID into a string.
 	public static String ToString(Guid value) 
 			{
-				throw new NotImplementedException("ToString(Guid)");
+				return value.ToString();
 			}
+
 #endif
 
 	// Inner version of "VerifyName" and "VerifyNCName".

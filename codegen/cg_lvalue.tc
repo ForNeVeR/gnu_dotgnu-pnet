@@ -98,6 +98,14 @@ ILNode_GetType(ILNode_ArrayAccess)
 }
 
 /*
+ * Get the type of an indexer access operation.
+ */
+ILNode_GetType(ILNode_IndexerAccess)
+{
+	return node->machineType;
+}
+
+/*
  * Generate discard code for a local or argument variable.
  */
 ILNode_GenDiscard(ILNode_LocalVar),
@@ -147,6 +155,15 @@ ILNode_GenDiscard(ILNode_StaticProperty)
 ILNode_GenDiscard(ILNode_ArrayAccess)
 {
 	ILNode_GenDiscard(node->array, info);
+	ILNode_GenDiscard(node->indices, info);
+}
+
+/*
+ * Generate discard code for an indexer access node.
+ */
+ILNode_GenDiscard(ILNode_IndexerAccess)
+{
+	ILNode_GenDiscard(node->object, info);
 	ILNode_GenDiscard(node->indices, info);
 }
 
@@ -313,6 +330,19 @@ ILNode_GenValue(ILNode_ArrayAccess)
 }
 
 /*
+ * Generate value code for an indexer access node.
+ */
+ILNode_GenValue(ILNode_IndexerAccess)
+{
+	long saveStack = info->stackHeight;
+	ILNode_GenValue(node->object, info);
+	ILNode_GenValue(node->indices, info);
+	ILGenCallMethod(info, node->getMethod);
+	info->stackHeight = saveStack + 1;
+	return node->machineType;
+}
+
+/*
  * Prepare to store into a local or argument variable.
  */
 ILNode_Prepare(ILNode_LocalVar),
@@ -425,6 +455,17 @@ ILNode_Prepare(ILNode_ArrayAccess)
 
 	/* Return the element's machine type to the caller */
 	return machineType;
+}
+
+/*
+ * Prepare to store into an indexer access node.
+ */
+ILNode_Prepare(ILNode_IndexerAccess)
+{
+	node->saveStack = info->stackHeight;
+	ILNode_GenValue(node->object, info);
+	ILNode_GenValue(node->indices, info);
+	return node->machineType;
 }
 
 /*
@@ -795,8 +836,129 @@ ILNode_GetAndPrepare(ILNode_ArrayAccess)
 		{
 			ILGenReleaseTempVar(info, tempIndexVars[dim]);
 		}
+		ILFree(tempIndexVars);
 	}
 	return machineType;
+}
+
+/*
+ * Get and prepare to store into an indexer access node.
+ */
+ILNode_GetAndPrepare(ILNode_IndexerAccess)
+{
+	unsigned tempObjectVar;
+	unsigned tempValueVar;
+	unsigned *tempIndexVars;
+	int numArgs, argNum, posn;
+	ILNode *indexNode;
+	ILType *signature;
+
+	/* Save the current stack position so "Store" knows what to pop */
+	node->saveStack = info->stackHeight;
+
+	/* Get the signature for the "get" method, so that we know
+	   what types to use to temporarily save the index values */
+	signature = ILMethod_Signature(node->getMethod);
+
+	/* Get temporary variables for the object and the indices */
+	tempObjectVar = ILGenTempTypedVar(info, node->objectType);
+	numArgs = 1;
+	indexNode = node->indices;
+	while(yyisa(indexNode, ILNode_ArgList))
+	{
+		++numArgs;
+		indexNode = ((ILNode_ArgList *)indexNode)->expr1;
+	}
+	tempIndexVars = (unsigned *)ILMalloc(sizeof(unsigned) * numArgs);
+	if(!tempIndexVars)
+	{
+		ILGenOutOfMemory(info);
+	}
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		tempIndexVars[argNum] = ILGenTempTypedVar
+				(info, ILTypeGetParam(signature, argNum + 1));
+	}
+
+	/* Get the object reference and save it */
+	ILNode_GenValue(node->object, info);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	ILGenStoreLocal(info, tempObjectVar);
+	ILGenAdjust(info, -1);
+
+	/* Get the index values and save them */
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		posn = numArgs - argNum;
+		indexNode = node->indices;
+		while(posn > 1)
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr1;
+			--posn;
+		}
+		if(yyisa(indexNode, ILNode_ArgList))
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr2;
+		}
+		ILNode_GenValue(indexNode, info);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempIndexVars[argNum]);
+		ILGenAdjust(info, -1);
+	}
+
+	/* Do we need to leave the current value on the stack? */
+	if(leave)
+	{
+		/* Get the indexer element and save it */
+		tempValueVar = ILGenTempTypedVar(info, node->elemType);
+		ILGenCallMethod(info, node->getMethod);
+		ILGenAdjust(info, -numArgs);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempValueVar);
+		ILGenAdjust(info, -1);
+
+		/* Reload all saved values back onto the stack */
+		ILGenLoadLocal(info, tempObjectVar);
+		ILGenAdjust(info, 1);
+		for(argNum = 0; argNum < numArgs; ++argNum)
+		{
+			ILGenLoadLocal(info, tempIndexVars[argNum]);
+			ILGenAdjust(info, 1);
+		}
+		ILGenLoadLocal(info, tempValueVar);
+		ILGenAdjust(info, 1);
+
+		/* Account for the extra value that we will be leaving behind */
+		++(node->saveStack);
+
+		/* Release the extra temporary variable that we used */
+		ILGenReleaseTempVar(info, tempValueVar);
+	}
+	else
+	{
+		/* Reload the values onto the stack and get the indexer element */
+		ILGenLoadLocal(info, tempObjectVar);
+		ILGenAdjust(info, 1);
+		for(argNum = 0; argNum < numArgs; ++argNum)
+		{
+			ILGenLoadLocal(info, tempIndexVars[argNum]);
+			ILGenAdjust(info, 1);
+		}
+		ILGenCallMethod(info, node->getMethod);
+		ILGenAdjust(info, -numArgs);
+	}
+
+	/* Release the temporary variables */
+	ILGenReleaseTempVar(info, tempObjectVar);
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		ILGenReleaseTempVar(info, tempIndexVars[argNum]);
+	}
+	ILFree(tempIndexVars);
+	return node->machineType;
 }
 
 /*
@@ -1026,6 +1188,31 @@ ILNode_Store(ILNode_ArrayAccess)
 		ILGenLoadLocal(info, tempVar);
 		ILGenAdjust(info, 1);
 		ILGenReleaseTempVar(info, tempVar);
+	}
+}
+
+/*
+ * Store into an indexer access node.
+ */
+ILNode_Store(ILNode_IndexerAccess)
+{
+	if(leave)
+	{
+		unsigned tempVar = ILGenTempTypedVar(info, node->elemType);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempVar);
+		ILGenAdjust(info, -1);
+		ILGenCallMethod(info, node->setMethod);
+		info->stackHeight = node->saveStack;
+		ILGenLoadLocal(info, tempVar);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, tempVar);
+	}
+	else
+	{
+		ILGenCallMethod(info, node->setMethod);
+		info->stackHeight = node->saveStack;
 	}
 }
 

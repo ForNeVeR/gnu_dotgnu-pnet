@@ -724,8 +724,15 @@ static ILNode *ArrayIndexToInt(ILGenInfo *info, ILNode *node,
 ILNode_SemAnalysis(ILNode_ArrayAccess)
 {
 	CSSemValue value;
+	CSSemValue indexers;
 	CSEvalArg *args;
 	int numArgs, argNum;
+	unsigned long itemNum;
+	ILProgramItem *itemInfo;
+	int candidateForm;
+	ILMethod *getMethod;
+	ILMethod *setMethod;
+	ILType *objectType;
 
 	/* Perform semantic analysis on the array expression */
 	if(!CSSemExpectValue(node->array, info, &(node->array), &value))
@@ -807,14 +814,118 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 	}
 	else if(ILType_IsClass(value.type) || ILType_IsValueType(value.type))
 	{
-		/* TODO */
-		CSErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
-					  "array or indexed value expected");
-		value.kind = CS_SEMKIND_LVALUE;
-		value.type = ILType_Int32;
+		/* Resolve the indexer for this type */
+		objectType = value.type;
+		indexers = CSResolveIndexers(info, (ILNode *)node,
+									 ILType_ToClass(value.type));
+		if(indexers.kind == CS_SEMKIND_INDEXER_GROUP)
+		{
+			/* Scan through the indexer group looking for something
+			   that is applicable to the expression list */
+			itemNum = 0;
+			while((itemInfo = CSGetGroupMember
+						((void *)(indexers.type), itemNum)) != 0)
+			{
+				candidateForm = CSItemIsCandidate
+						(info, itemInfo, args, numArgs);
+				if(candidateForm)
+				{
+					CSSetGroupMemberForm((void *)(indexers.type), itemNum,
+										 candidateForm);
+					++itemNum;
+				}
+				else
+				{
+					indexers.type = (ILType *)CSRemoveGroupMember
+										((void *)(indexers.type), itemNum);
+				}
+			}
+
+			/* If there are no candidates left, then bail out */
+			itemNum = 0;
+			itemInfo = CSGetGroupMember((void *)(indexers.type), itemNum);
+			if(!itemInfo)
+			{
+				CSItemCandidateError((ILNode *)node, 0, 0,
+								     (void *)(indexers.type), args, numArgs);
+				CSEvalFreeArguments(args);
+				return value;
+			}
+
+			/* If there are two or more candidates, then try to
+			   find the best one */
+			if(CSGetGroupMember((void *)(indexers.type), 1) != 0)
+			{
+				itemInfo = CSBestCandidate(info, (void *)(indexers.type),
+										   args, numArgs);
+				if(!itemInfo)
+				{
+					CSItemCandidateError((ILNode *)node, 0, 0,
+									     (void *)(indexers.type),
+										 args, numArgs);
+					CSEvalFreeArguments(args);
+					return value;
+				}
+			}
+
+			/* Locate the "get" and "set" methods for the indexer */
+			getMethod = ILProperty_Getter((ILProperty *)itemInfo);
+			setMethod = ILProperty_Setter((ILProperty *)itemInfo);
+
+			/* Determine the semantic kind for the value */
+			if(getMethod && setMethod)
+			{
+				value.kind = CS_SEMKIND_LVALUE;
+			}
+			else if(getMethod)
+			{
+				value.kind = CS_SEMKIND_RVALUE;
+			}
+			else if(setMethod)
+			{
+				value.kind = CS_SEMKIND_SVALUE;
+			}
+			else
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "indexer does not have `get' or `set' accessors");
+				value.kind = CS_SEMKIND_LVALUE;
+			}
+
+			/* Import the methods into this image */
+			if(getMethod)
+			{
+				getMethod = (ILMethod *)ILMemberImport
+						(info->image, (ILMember *)getMethod);
+			}
+			if(setMethod)
+			{
+				setMethod = (ILMethod *)ILMemberImport
+						(info->image, (ILMember *)setMethod);
+			}
+
+			/* Coerce the arguments and build the final argument list */
+			value.type = CSItemCoerceArgs
+						(info, ILToProgramItem(itemInfo),
+						 args, numArgs, &(node->indices));
+
+			/* Replace this node with an indexer access node */
+			*parent = ILNode_IndexerAccess_create
+					(node->array, node->indices, getMethod, setMethod,
+					 objectType, value.type, ILTypeToMachineType(value.type));
+		}
+		else
+		{
+			/* No indexers are defined for this type */
+			CSErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
+						  "array or indexed value expected");
+			value.kind = CS_SEMKIND_LVALUE;
+			value.type = ILType_Int32;
+		}
 	}
 	else
 	{
+		/* Not an appropriate value for array or indexer access */
 		CSErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
 					  "array or indexed value expected");
 		value.kind = CS_SEMKIND_LVALUE;
@@ -832,7 +943,8 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 ILNode_SemAnalysis(ILNode_StaticField),
 ILNode_SemAnalysis(ILNode_MemberField),
 ILNode_SemAnalysis(ILNode_StaticProperty),
-ILNode_SemAnalysis(ILNode_MemberProperty)
+ILNode_SemAnalysis(ILNode_MemberProperty),
+ILNode_SemAnalysis(ILNode_IndexerAccess)
 {
 	return CSSemValueDefault;
 }

@@ -5,6 +5,15 @@
 	is forward-referenced, copy the attributes from the real definition
 	to the placeholder reference.
 
+	* ilalink/link_field.c (_ILLinkerConvertField): when a field
+	is forward-referenced, copy the attributes from the real definition
+	to the placeholder reference.
+
+	* codegen/cg_lvalue.tc, codegen/cg_nodes.tc, codegen/jv_lvalue.tc,
+	cscc/cs_defs.tc, cscc/cs_internal.h, cscc/cs_invoke.tc,
+	cscc/cs_lookup.c, cscc/cs_lvalue.tc: implement semantic analysis
+	and code generation for indexers.
+
 2001-01-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvmc_setup.c, engine/internal.c, engine/lib_platform.c,

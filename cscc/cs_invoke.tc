@@ -21,9 +21,10 @@
 %decls %{
 
 /*
- * Convert a method into a printable name, suitable for use in error messages.
+ * Convert a program item (method, property, or delegate)
+ * into a printable name, suitable for use in error messages.
  */
-const char *CSMethodToName(ILMethod *method);
+const char *CSItemToName(ILProgramItem *item);
 
 /*
  * Information that is kept about an evaluated argument.
@@ -50,27 +51,35 @@ int CSEvalArguments(ILGenInfo *info, ILNode *argList,
 void CSEvalFreeArguments(CSEvalArg *args);
 
 /*
- * Determine if a method is a candidate for evaluation.
- * Returns 0 if not a candidate, 1 if a candidate in its
- * normal form, and 2 if a candidate in its expanded form.
+ * Determine if a program item (method, property, or delegate)
+ * is a candidate for evaluation.  Returns 0 if not a candidate,
+ * 1 if a candidate in its normal form, and 2 if a candidate
+ * in its expanded form.
  */
-int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
-					    CSEvalArg *args, int numArgs);
+int CSItemIsCandidate(ILGenInfo *info, ILProgramItem *item,
+					  CSEvalArg *args, int numArgs);
 
 /*
- * Determine the best method candidate in a group.
+ * Determine the best item candidate in a group.
  * Returns NULL if none of the methods are "best".
  */
-ILMethod *CSBestCandidate(ILGenInfo *info, void *group,
-						  CSEvalArg *args, int numArgs);
+ILProgramItem *CSBestCandidate(ILGenInfo *info, void *group,
+						       CSEvalArg *args, int numArgs);
 
 /*
  * Coerce the arguments and set up the final argument list.
- * Returns the method's return type.
+ * Returns the item's return type.
  */
-ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
-						   CSEvalArg *args, int numArgs,
-						   ILNode **argListParent);
+ILType *CSItemCoerceArgs(ILGenInfo *info, ILProgramItem *item,
+						 CSEvalArg *args, int numArgs,
+						 ILNode **argListParent);
+
+/*
+ * Report an error message for a failed item signature match,
+ * listing the candidates for the call.
+ */
+void CSItemCandidateError(ILNode *node, char *itemName, int isCtor,
+						  void *group, CSEvalArg *args, int numArgs);
 
 %}
 
@@ -128,23 +137,19 @@ ILNode_SemAnalysis(ILNode_Argument)
 
 %{
 
-/*
- * Report an error message for a failed method signature match,
- * listing the candidates for the call.
- */
-static void MethodCandidateError(ILNode *node, char *methodName, int isCtor,
-								 void *group, CSEvalArg *args, int numArgs)
+void CSItemCandidateError(ILNode *node, char *itemName, int isCtor,
+						  void *group, CSEvalArg *args, int numArgs)
 {
 	unsigned long num;
-	ILMethod *method;
+	ILProgramItem *item;
 	ILIntString str;
 	int argNum;
 
-	/* Report the method name and argument types */
-	if(methodName)
+	/* Report the item name and argument types */
+	if(itemName)
 	{
 		/* Construct a list of the argument types for the error */
-		str = ILInternString(methodName, -1);
+		str = ILInternString(itemName, -1);
 		str = ILInternAppendedString(str, ILInternString("(", 1));
 		for(argNum = 0; argNum < numArgs; ++argNum)
 		{
@@ -184,17 +189,17 @@ static void MethodCandidateError(ILNode *node, char *methodName, int isCtor,
 
 	/* Report the candidates */
 	num = 0;
-	while((method = CSGetGroupMember(group, num)) != 0)
+	while((item = CSGetGroupMember(group, num)) != 0)
 	{
 		if(!num)
 		{
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-						  "candidates are: %s", CSMethodToName(method));
+						  "candidates are: %s", CSItemToName(item));
 		}
 		else
 		{
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-						  "                %s", CSMethodToName(method));
+						  "                %s", CSItemToName(item));
 		}
 		++num;
 	}
@@ -209,27 +214,28 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 {
 	CSSemValue value;
 	CSSemValue method;
+	ILProgramItem *itemInfo;
 	ILMethod *methodInfo;
 	ILType *retType;
 	CSEvalArg *args;
 	int numArgs;
-	unsigned long methodNum;
-	char *methodName;
+	unsigned long itemNum;
+	char *itemName;
 	int candidateForm;
 
 	/* Get the method name for later error reporting */
 	if(ILIsQualIdent(node->expr1))
 	{
-		methodName = ILQualIdentName(node->expr1, 0);
+		itemName = ILQualIdentName(node->expr1, 0);
 	}
 	else if(yyisa(node->expr1, ILNode_MemberAccess))
 	{
-		methodName = ILQualIdentName
+		itemName = ILQualIdentName
 			(((ILNode_MemberAccess *)(node->expr1))->expr2, 0);
 	}
 	else
 	{
-		methodName = 0;
+		itemName = 0;
 	}
 
 	/* TODO: delegate invocation */
@@ -267,31 +273,30 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	}
 
 	/* Find the set of candidate methods */
-	methodNum = 0;
-	while((methodInfo = CSGetGroupMember
-							((void *)(method.type), methodNum)) != 0)
+	itemNum = 0;
+	while((itemInfo = CSGetGroupMember((void *)(method.type), itemNum)) != 0)
 	{
-		candidateForm = CSMethodIsCandidate(info, methodInfo, args, numArgs);
+		candidateForm = CSItemIsCandidate(info, itemInfo, args, numArgs);
 		if(candidateForm)
 		{
-			CSSetGroupMemberForm((void *)(method.type), methodNum,
+			CSSetGroupMemberForm((void *)(method.type), itemNum,
 								 candidateForm);
-			++methodNum;
+			++itemNum;
 		}
 		else
 		{
 			method.type = (ILType *)CSRemoveGroupMember
-								((void *)(method.type), methodNum);
+								((void *)(method.type), itemNum);
 		}
 	}
 
 	/* If there are no candidates left, then bail out */
-	methodNum = 0;
-	methodInfo = CSGetGroupMember((void *)(method.type), methodNum);
-	if(!methodInfo)
+	itemNum = 0;
+	itemInfo = CSGetGroupMember((void *)(method.type), itemNum);
+	if(!itemInfo)
 	{
-		MethodCandidateError((ILNode *)node, methodName, 0,
-							 (void *)(method.type), args, numArgs);
+		CSItemCandidateError((ILNode *)node, itemName, 0,
+						     (void *)(method.type), args, numArgs);
 		CSEvalFreeArguments(args);
 		return CSSemValueDefault;
 	}
@@ -299,18 +304,19 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	/* There are two or more candidates, then try to find the best one */
 	if(CSGetGroupMember((void *)(method.type), 1) != 0)
 	{
-		methodInfo = CSBestCandidate(info, (void *)(method.type),
-									 args, numArgs);
-		if(!methodInfo)
+		itemInfo = CSBestCandidate(info, (void *)(method.type),
+								   args, numArgs);
+		if(!itemInfo)
 		{
-			MethodCandidateError((ILNode *)node, methodName, 0,
-								 (void *)(method.type), args, numArgs);
+			CSItemCandidateError((ILNode *)node, itemName, 0,
+							     (void *)(method.type), args, numArgs);
 			CSEvalFreeArguments(args);
 			return CSSemValueDefault;
 		}
 	}
 
 	/* Import the method into this image, and set it within the node */
+	methodInfo = (ILMethod *)itemInfo;
 	methodInfo = (ILMethod *)ILMemberImport
 						(info->image, (ILMember *)methodInfo);
 	node->methodInfo = methodInfo;
@@ -322,8 +328,8 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	}
 
 	/* Coerce the arguments and build the final argument list */
-	retType = CSMethodCoerceArgs(info, methodInfo, args, numArgs,
-								 &(node->expr2));
+	retType = CSItemCoerceArgs(info, ILToProgramItem(methodInfo),
+							   args, numArgs, &(node->expr2));
 	CSEvalFreeArguments(args);
 
 	/* The semantic value is the method's return type as an r-value */
@@ -347,12 +353,13 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 {
 	CSSemValue value;
 	CSSemValue method;
+	ILProgramItem *itemInfo;
 	ILMethod *methodInfo;
 	ILType *objectType;
 	ILClass *objectClass;
 	CSEvalArg *args;
 	int numArgs;
-	unsigned long methodNum;
+	unsigned long itemNum;
 	int candidateForm;
 
 	/* Perform semantic analysis on the type */
@@ -419,31 +426,30 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 	}
 
 	/* Find the set of candidate methods */
-	methodNum = 0;
-	while((methodInfo = CSGetGroupMember
-							((void *)(method.type), methodNum)) != 0)
+	itemNum = 0;
+	while((itemInfo = CSGetGroupMember((void *)(method.type), itemNum)) != 0)
 	{
-		candidateForm = CSMethodIsCandidate(info, methodInfo, args, numArgs);
+		candidateForm = CSItemIsCandidate(info, itemInfo, args, numArgs);
 		if(candidateForm)
 		{
-			CSSetGroupMemberForm((void *)(method.type), methodNum,
+			CSSetGroupMemberForm((void *)(method.type), itemNum,
 								 candidateForm);
-			++methodNum;
+			++itemNum;
 		}
 		else
 		{
 			method.type = (ILType *)CSRemoveGroupMember
-								((void *)(method.type), methodNum);
+								((void *)(method.type), itemNum);
 		}
 	}
 
 	/* If there are no candidates left, then bail out */
-	methodNum = 0;
-	methodInfo = CSGetGroupMember((void *)(method.type), methodNum);
-	if(!methodInfo)
+	itemNum = 0;
+	itemInfo = CSGetGroupMember((void *)(method.type), itemNum);
+	if(!itemInfo)
 	{
-		MethodCandidateError((ILNode *)node, 0, 1,
-							 (void *)(method.type), args, numArgs);
+		CSItemCandidateError((ILNode *)node, 0, 1,
+						     (void *)(method.type), args, numArgs);
 		CSEvalFreeArguments(args);
 		return value;
 	}
@@ -451,24 +457,26 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 	/* There are two or more candidates, then try to find the best one */
 	if(CSGetGroupMember((void *)(method.type), 1) != 0)
 	{
-		methodInfo = CSBestCandidate(info, (void *)(method.type),
-									 args, numArgs);
-		if(!methodInfo)
+		itemInfo = CSBestCandidate(info, (void *)(method.type),
+								   args, numArgs);
+		if(!itemInfo)
 		{
-			MethodCandidateError((ILNode *)node, 0, 1,
-								 (void *)(method.type), args, numArgs);
+			CSItemCandidateError((ILNode *)node, 0, 1,
+							     (void *)(method.type), args, numArgs);
 			CSEvalFreeArguments(args);
 			return value;
 		}
 	}
 
 	/* Import the method into this image, and set it within the node */
+	methodInfo = (ILMethod *)itemInfo;
 	methodInfo = (ILMethod *)ILMemberImport
 						(info->image, (ILMember *)methodInfo);
 	node->methodInfo = methodInfo;
 
 	/* Coerce the arguments and build the final argument list */
-	CSMethodCoerceArgs(info, methodInfo, args, numArgs, &(node->argList));
+	CSItemCoerceArgs(info, ILToProgramItem(methodInfo),
+					 args, numArgs, &(node->argList));
 	CSEvalFreeArguments(args);
 
 	/* Return the final semantic value */
@@ -561,90 +569,6 @@ ILNode_SemAnalysis(ILNode_ArgArray)
 }
 
 %{
-
-const char *CSMethodToName(ILMethod *method)
-{
-	ILType *signature = ILMethod_Signature(method);
-	const char *name = ILMethod_Name(method);
-	ILIntString str;
-	ILType *type;
-	ILParameterModifier paramMod;
-	unsigned numParams;
-	unsigned param;
-
-	/* Put "static" or "virtual" on the front if necessary */
-	if(ILMethod_IsStatic(method))
-	{
-		str = ILInternString("static ", 7);
-	}
-	else if(ILMethod_IsVirtual(method))
-	{
-		str = ILInternString("virtual ", 8);
-	}
-	else
-	{
-		str = ILInternString("", 0);
-	}
-
-	/* Get the type of the class that contains the method */
-	type = ILType_FromClass(ILMethod_Owner(method));
-
-	/* The formatting is slightly different for constructors */
-	if(!strcmp(name, ".ctor") || !strcmp(name, ".cctor"))
-	{
-		/* Append the class name to the string */
-		str = ILInternAppendedString
-				(str, ILInternString((char *)CSTypeToName(type), -1));
-	}
-	else
-	{
-		/* Convert the return type into a string */
-		str = ILInternAppendedString
-				(str, ILInternString((char *)CSTypeToName
-										(ILTypeGetReturn(signature)), -1));
-		str = ILInternAppendedString(str, ILInternString(" ", 1));
-
-		/* Append the class name to the string */
-		str = ILInternAppendedString
-				(str, ILInternString((char *)CSTypeToName(type), -1));
-
-		/* Append a dot to the string */
-		str = ILInternAppendedString(str, ILInternString(".", 1));
-
-		/* Append the method name to the string */
-		str = ILInternAppendedString(str, ILInternString((char *)name, -1));
-	}
-
-	/* Add the parameter types to the string */
-	str = ILInternAppendedString(str, ILInternString("(", 1));
-	numParams = ILTypeNumParams(signature);
-	for(param = 1; param <= numParams; ++param)
-	{
-		paramMod = ILGenGetParamInfo(method, signature, param, &type);
-		if(param != 1)
-		{
-			str = ILInternAppendedString(str, ILInternString(", ", 2));
-		}
-		if(paramMod == ILParamMod_out)
-		{
-			str = ILInternAppendedString(str, ILInternString("out ", 4));
-		}
-		else if(paramMod == ILParamMod_ref)
-		{
-			str = ILInternAppendedString(str, ILInternString("ref ", 4));
-		}
-		else if(paramMod == ILParamMod_params)
-		{
-			str = ILInternAppendedString(str, ILInternString("params ", 7));
-		}
-		str = ILInternAppendedString
-				(str, ILInternString((char *)CSTypeToName(type), -1));
-	}
-	str = ILInternAppendedString(str, ILInternString(")", 1));
-
-	/* Return the final string to the caller */
-	return str.string;
-}
 
 /*
  * Count the number of arguments in an ArgList.
@@ -771,16 +695,35 @@ void CSEvalFreeArguments(CSEvalArg *args)
 }
 
 /*
+ * Get the "Invoke" method associated with a delegate class.
+ */
+static ILMethod *GetDelegateInvoke(ILClass *info)
+{
+	ILMethod *method = 0;
+	while((method = (ILMethod *)ILClassNextMemberByKind
+				(info, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		if(!strcmp(ILMethod_Name(method), "Invoke"))
+		{
+			return method;
+		}
+	}
+	return 0;
+}
+
+/*
  * Get the type and modifier information associated with
- * a method parameter.  The first parameter is 0.  Returns
+ * an item parameter.  The first parameter is 0.  Returns
  * ILType_Invalid if the parameter index is invalid.
  */
-static ILType *GetMethodParamType(ILMethod *method, ILType *signature,
-								  int paramNum, ILParameterModifier *paramMod)
+static ILType *GetItemParamType(ILProgramItem *item, ILType *signature,
+								int paramNum, ILParameterModifier *paramMod)
 {
 	int numParams = ILTypeNumParams(signature);
 	int firstParam;
 	ILType *paramType;
+	ILMethod *method;
+	ILClass *classInfo;
 
 	/* If we have an "explicit this" method, then we need to
 	   adjust for the first parameter, which is always "this" */
@@ -802,21 +745,43 @@ static ILType *GetMethodParamType(ILMethod *method, ILType *signature,
 	}
 
 	/* Get the parameter type information and return it */
-	*paramMod = ILGenGetParamInfo(method, signature, paramNum + firstParam,
-								  &paramType);
+	if((method = ILProgramItemToMethod(item)) != 0)
+	{
+		*paramMod = ILGenGetParamInfo(method, signature, paramNum + firstParam,
+									  &paramType);
+	}
+	else if((classInfo = ILProgramItemToClass(item)) != 0)
+	{
+		method = GetDelegateInvoke(classInfo);
+		if(method)
+		{
+			*paramMod = ILGenGetParamInfo
+					(method, signature, paramNum + firstParam, &paramType);
+		}
+		else
+		{
+			paramType = ILTypeGetParam(signature, paramNum + firstParam);
+			*paramMod = ILParamMod_empty;
+		}
+	}
+	else
+	{
+		paramType = ILTypeGetParam(signature, paramNum + firstParam);
+		*paramMod = ILParamMod_empty;
+	}
 	return paramType;
 }
 
 /*
- * Get the type information associated with a method parameter,
+ * Get the type information associated with an item parameter,
  * given that its expansion form is known.
  */
-static ILType *GetMethodExpandedType(ILMethod *method, ILType *signature,
-								     int form, int paramNum,
-									 ILParameterModifier *paramMod)
+static ILType *GetItemExpandedType(ILProgramItem *item, ILType *signature,
+								   int form, int paramNum,
+								   ILParameterModifier *paramMod)
 {
 	ILType *paramType;
-	paramType = GetMethodParamType(method, signature, paramNum, paramMod);
+	paramType = GetItemParamType(item, signature, paramNum, paramMod);
 	if(paramType == ILType_Invalid)
 	{
 		return ILType_Invalid;
@@ -854,22 +819,60 @@ static ILType *GetArrayElemType(ILType *type)
 	}
 }
 
-int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
-						CSEvalArg *args, int numArgs)
+/*
+ * Get the signature of a program item (method, property, or delegate).
+ */
+static ILType *GetItemSignature(ILProgramItem *item)
 {
-	ILType *signature = ILMethod_Signature(method);
+	ILMethod *method;
+	ILProperty *property;
+	ILClass *classInfo;
+
+	/* Determine what kind of item we are dealing with */
+	if((method = ILProgramItemToMethod(item)) != 0)
+	{
+		return ILMethod_Signature(method);
+	}
+	else if((property = ILProgramItemToProperty(item)) != 0)
+	{
+		return ILProperty_Signature(property);
+	}
+	else if((classInfo = ILProgramItemToClass(item)) != 0)
+	{
+		/* Look for the "Invoke" method within the delegate */
+		method = GetDelegateInvoke(classInfo);
+		if(method)
+		{
+			return ILMethod_Signature(method);
+		}
+	}
+
+	/* If we get here, then we do not know how to obtain the signature */
+	return 0;
+}
+
+int CSItemIsCandidate(ILGenInfo *info, ILProgramItem *item,
+					  CSEvalArg *args, int numArgs)
+{
+	ILType *signature = GetItemSignature(item);
 	int argNum, paramNum;
 	ILParameterModifier paramMod;
 	ILType *paramType;
 	ILType *elemType;
 	int matchParams;
 
+	/* If the item does not have a signature, then bail out */
+	if(!signature)
+	{
+		return 0;
+	}
+
 	/* Scan through the parameters looking for a match */
 	paramNum = 0;
 	matchParams = 0;
 	for(argNum = 0; argNum < numArgs; ++argNum)
 	{
-		paramType = GetMethodParamType(method, signature, paramNum, &paramMod);
+		paramType = GetItemParamType(item, signature, paramNum, &paramMod);
 		if(paramType == ILType_Invalid)
 		{
 			/* Too many arguments were supplied */
@@ -939,7 +942,7 @@ int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
 
 	/* Get the next parameter type, which must either be
 	   a "params" array, or the end of the parameter list */
-	paramType = GetMethodParamType(method, signature, paramNum, &paramMod);
+	paramType = GetItemParamType(item, signature, paramNum, &paramMod);
 	if(paramType == ILType_Invalid)
 	{
 		/* The candidate was matched in its normal form */
@@ -958,17 +961,17 @@ int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
 }
 
 /*
- * Determine which of two methods is better than the other one.
- * Returns IL_BETTER_T1 if "method1" is better, or IL_BETTER_T2
- * if "method2" is better, or IL_BETTER_NEITHER if neither is better.
+ * Determine which of two items is better than the other one.
+ * Returns IL_BETTER_T1 if "item1" is better, or IL_BETTER_T2
+ * if "item2" is better, or IL_BETTER_NEITHER if neither is better.
  */
-static int BetterMethod(ILGenInfo *info,
-						ILMethod *method1, int form1,
-						ILMethod *method2, int form2,
-						CSEvalArg *args, int numArgs)
+static int BetterItem(ILGenInfo *info,
+					  ILProgramItem *item1, int form1,
+					  ILProgramItem *item2, int form2,
+					  CSEvalArg *args, int numArgs)
 {
-	ILType *signature1 = ILMethod_Signature(method1);
-	ILType *signature2 = ILMethod_Signature(method2);
+	ILType *signature1 = GetItemSignature(item1);
+	ILType *signature2 = GetItemSignature(item2);
 	int argNum;
 	int paramNum1;
 	int paramNum2;
@@ -986,10 +989,10 @@ static int BetterMethod(ILGenInfo *info,
 	for(argNum = 0; argNum < numArgs; ++argNum)
 	{
 		/* Get the types of the two parameters and the argument */
-		type1 = GetMethodExpandedType(method1, signature1,
-									  form1, paramNum1++, &paramMod1);
-		type2 = GetMethodExpandedType(method2, signature2,
-									  form2, paramNum2++, &paramMod2);
+		type1 = GetItemExpandedType(item1, signature1,
+									form1, paramNum1++, &paramMod1);
+		type2 = GetItemExpandedType(item2, signature2,
+									form2, paramNum2++, &paramMod2);
 		atype = args[argNum].type;
 
 		/* Skip the argument if "out" or "ref", because such arguments
@@ -1006,13 +1009,13 @@ static int BetterMethod(ILGenInfo *info,
 		{
 			if(better == IL_BETTER_T2)
 			{
-				/* The first method is better in this parameter,
+				/* The first item is better in this parameter,
 				   but worse in others */
 				better = -1;
 			}
 			else if(better != -1)
 			{
-				/* The first method is better so far */
+				/* The first item is better so far */
 				better = IL_BETTER_T1;
 			}
 		}
@@ -1020,13 +1023,13 @@ static int BetterMethod(ILGenInfo *info,
 		{
 			if(better == IL_BETTER_T1)
 			{
-				/* The second method is better in this parameter,
+				/* The second item is better in this parameter,
 				   but worse in others */
 				better = -1;
 			}
 			else if(better != -1)
 			{
-				/* The second method is better so far */
+				/* The second item is better so far */
 				better = IL_BETTER_T2;
 			}
 		}
@@ -1053,42 +1056,42 @@ static int BetterMethod(ILGenInfo *info,
 	}
 }
 
-ILMethod *CSBestCandidate(ILGenInfo *info, void *group,
-						  CSEvalArg *args, int numArgs)
+ILProgramItem *CSBestCandidate(ILGenInfo *info, void *group,
+						       CSEvalArg *args, int numArgs)
 {
-	unsigned long methodNum = 1;
-	ILMethod *bestMethod = (ILMethod *)CSGetGroupMember(group, 0);
-	ILMethod *testMethod;
+	unsigned long itemNum = 1;
+	ILProgramItem *bestItem = CSGetGroupMember(group, 0);
+	ILProgramItem *testItem;
 	int better;
 	int form1 = CSGetGroupMemberForm(group, 0);
 	int form2;
 	int sawBetter = 0;
-	while((testMethod = (ILMethod *)CSGetGroupMember(group, methodNum)) != 0)
+	while((testItem = CSGetGroupMember(group, itemNum)) != 0)
 	{
-		form2 = CSGetGroupMemberForm(group, methodNum);
-		better = BetterMethod(info, bestMethod, form1, testMethod,
-							  form2, args, numArgs);
+		form2 = CSGetGroupMemberForm(group, itemNum);
+		better = BetterItem(info, bestItem, form1, testItem,
+							form2, args, numArgs);
 		if(better == IL_BETTER_T1)
 		{
 			sawBetter = 1;
 		}
 		else if(better == IL_BETTER_T2)
 		{
-			bestMethod = testMethod;
+			bestItem = testItem;
 			sawBetter = 1;
 		}
 		else if(better == IL_BETTER_NEITHER && (form1 == 2 && form2 != 2))
 		{
-			/* We've found a method that is just as applicable as
+			/* We've found an item that is just as applicable as
 			   a previous one.  However, the previous one involved
 			   "params" and this one doesn't.  So use this one */
-			bestMethod = testMethod;
+			bestItem = testItem;
 		}
-		++methodNum;
+		++itemNum;
 	}
 	if(sawBetter)
 	{
-		return bestMethod;
+		return bestItem;
 	}
 	else
 	{
@@ -1096,11 +1099,11 @@ ILMethod *CSBestCandidate(ILGenInfo *info, void *group,
 	}
 }
 
-ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
-						   CSEvalArg *args, int numArgs,
-						   ILNode **argListParent)
+ILType *CSItemCoerceArgs(ILGenInfo *info, ILProgramItem *item,
+						 CSEvalArg *args, int numArgs,
+						 ILNode **argListParent)
 {
-	ILType *signature = ILMethod_Signature(method);
+	ILType *signature = GetItemSignature(item);
 	int argNum, argNum2, paramNum;
 	ILParameterModifier paramMod;
 	ILType *paramType;
@@ -1112,7 +1115,7 @@ ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
 	paramNum = 0;
 	for(argNum = 0; argNum < numArgs; ++argNum)
 	{
-		paramType = GetMethodParamType(method, signature, paramNum, &paramMod);
+		paramType = GetItemParamType(item, signature, paramNum, &paramMod);
 		if(paramMod == ILParamMod_params)
 		{
 			break;
@@ -1126,7 +1129,7 @@ ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
 	}
 
 	/* Coerce the remaining "params" parameters */
-	paramType = GetMethodParamType(method, signature, paramNum, &paramMod);
+	paramType = GetItemParamType(item, signature, paramNum, &paramMod);
 	if(paramType != ILType_Invalid && paramMod == ILParamMod_params)
 	{
 		/* Determine how to repack the arguments */
@@ -1205,8 +1208,156 @@ ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
 		}
 	}
 
-	/* Return the method's return type to the caller */
+	/* Return the item's return type to the caller */
 	return ILTypeGetReturn(signature);
+}
+
+const char *CSItemToName(ILProgramItem *item)
+{
+	ILType *signature = GetItemSignature(item);
+	const char *name;
+	ILIntString str;
+	ILType *type;
+	ILParameterModifier paramMod;
+	unsigned numParams;
+	unsigned param;
+	int kind;
+	ILMethod *method;
+	ILProperty *property;
+	ILClass *classInfo;
+	ILClass *owner;
+
+	/* Get the name of the item, and find an underlying method */
+	if((method = ILProgramItemToMethod(item)) != 0)
+	{
+		name = ILMethod_Name(method);
+		kind = IL_META_MEMBERKIND_METHOD;
+		owner = ILMethod_Owner(method);
+	}
+	else if((property = ILProgramItemToProperty(item)) != 0)
+	{
+		name = ILProperty_Name(property);
+		kind = IL_META_MEMBERKIND_PROPERTY;
+		method = ILProperty_Getter(property);
+		if(!method)
+		{
+			method = ILProperty_Setter(property);
+		}
+		owner = ILProperty_Owner(property);
+	}
+	else if((classInfo = ILProgramItemToClass(item)) != 0)
+	{
+		name = ILClass_Name(classInfo);
+		kind = 0;
+		method = GetDelegateInvoke(classInfo);
+		owner = classInfo;
+	}
+	else
+	{
+		name = "unknown";
+		kind = IL_META_MEMBERKIND_METHOD;
+		method = 0;
+		owner = 0;
+	}
+
+	/* Put "static" or "virtual" on the front if necessary */
+	if(method && ILMethod_IsStatic(method))
+	{
+		str = ILInternString("static ", 7);
+	}
+	else if(method && ILMethod_IsVirtual(method))
+	{
+		str = ILInternString("virtual ", 8);
+	}
+	else
+	{
+		str = ILInternString("", 0);
+	}
+
+	/* Get the type of the class that contains the method */
+	type = (owner ? ILType_FromClass(owner) : 0);
+
+	/* The formatting is slightly different for constructors */
+	if(!strcmp(name, ".ctor") || !strcmp(name, ".cctor"))
+	{
+		/* Append the class name to the string */
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName(type), -1));
+	}
+	else
+	{
+		/* Convert the return type into a string */
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName
+										(ILTypeGetReturn(signature)), -1));
+		str = ILInternAppendedString(str, ILInternString(" ", 1));
+
+		/* Append the class name to the string */
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName(type), -1));
+
+		/* Don't add the method name for delegates */
+		if(kind != 0)
+		{
+			/* Append a dot to the string */
+			str = ILInternAppendedString(str, ILInternString(".", 1));
+
+			/* Append the method name to the string */
+			str = ILInternAppendedString(str, ILInternString((char *)name, -1));
+		}
+	}
+
+	/* Add the parameter types to the string */
+	if(kind == IL_META_MEMBERKIND_PROPERTY)
+	{
+		str = ILInternAppendedString(str, ILInternString("[", 1));
+	}
+	else
+	{
+		str = ILInternAppendedString(str, ILInternString("(", 1));
+	}
+	numParams = ILTypeNumParams(signature);
+	for(param = 1; param <= numParams; ++param)
+	{
+		if(method && kind != IL_META_MEMBERKIND_PROPERTY)
+		{
+			paramMod = ILGenGetParamInfo(method, signature, param, &type);
+		}
+		else
+		{
+			type = ILTypeGetParam(signature, param);
+			paramMod = ILParamMod_empty;
+		}
+		if(param != 1)
+		{
+			str = ILInternAppendedString(str, ILInternString(", ", 2));
+		}
+		if(paramMod == ILParamMod_out)
+		{
+			str = ILInternAppendedString(str, ILInternString("out ", 4));
+		}
+		else if(paramMod == ILParamMod_ref)
+		{
+			str = ILInternAppendedString(str, ILInternString("ref ", 4));
+		}
+		else if(paramMod == ILParamMod_params)
+		{
+			str = ILInternAppendedString(str, ILInternString("params ", 7));
+		}
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName(type), -1));
+	}
+	if(kind == IL_META_MEMBERKIND_PROPERTY)
+	{
+		str = ILInternAppendedString(str, ILInternString("]", 1));
+	}
+	else
+	{
+		str = ILInternAppendedString(str, ILInternString(")", 1));
+	}
+
+	/* Return the final string to the caller */
+	return str.string;
 }
 
 %}

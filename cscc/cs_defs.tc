@@ -66,6 +66,7 @@ extern CSSemValue CSSemValueDefault;
 #define	CS_SEMKIND_NAMESPACE		9
 #define	CS_SEMKIND_TYPE_NODE		10
 #define	CS_SEMKIND_AMBIGUOUS		11
+#define	CS_SEMKIND_INDEXER_GROUP	12
 
 /*
  * Determine if a semantic analysis kind is usable as a value.

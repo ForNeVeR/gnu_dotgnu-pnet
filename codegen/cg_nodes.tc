@@ -496,6 +496,17 @@ struct _tagILSwitchValue
 	%nocreate ILType *elemType = {0};
 	%nocreate long saveStack = {0};
 }
+%node ILNode_IndexerAccess ILNode_LValueNoRef =
+{
+	ILNode *object;
+	ILNode *indices;
+	ILMethod *getMethod;
+	ILMethod *setMethod;
+	ILType *objectType;
+	ILType *elemType;
+	ILMachineType machineType;
+	%nocreate long saveStack = {0};
+}
 
 %output "cg_stmt.c"
 

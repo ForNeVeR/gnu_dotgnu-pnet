@@ -99,6 +99,16 @@ JavaGenDiscard(ILNode_ArrayAccess)
 }
 
 /*
+ * Generate discard code for an indexer access node.
+ */
+JavaGenDiscard(ILNode_IndexerAccess)
+{
+	/* Evaluate the sub-expressions for their side-effects only */
+	JavaGenDiscard(node->object, info);
+	JavaGenDiscard(node->indices, info);
+}
+
+/*
  * Generate value code for a local variable.
  */
 JavaGenValue(ILNode_LocalVar)
@@ -298,6 +308,19 @@ JavaGenValue(ILNode_ArrayAccess)
 }
 
 /*
+ * Generate value code for an indexer access node.
+ */
+JavaGenValue(ILNode_IndexerAccess)
+{
+	long saveStack = info->stackHeight;
+	JavaGenValue(node->object, info);
+	JavaGenValue(node->indices, info);
+	JavaGenCallMethod(info, node->getMethod, saveStack);
+	info->stackHeight = saveStack + JavaGenTypeSize(node->machineType);
+	return node->machineType;
+}
+
+/*
  * Prepare to store into a local variable.
  */
 JavaPrepare(ILNode_LocalVar),
@@ -421,6 +444,17 @@ JavaPrepare(ILNode_ArrayAccess)
 	/* The final array dimension is on the stack, together
 	   with the index into it */
 	return machineType;
+}
+
+/*
+ * Prepare to store to an indexer access node.
+ */
+JavaPrepare(ILNode_IndexerAccess)
+{
+	node->saveStack = info->stackHeight;
+	JavaGenValue(node->object, info);
+	JavaGenValue(node->indices, info);
+	return node->machineType;
 }
 
 /*
@@ -670,6 +704,138 @@ JavaGetAndPrepare(ILNode_ArrayAccess)
 }
 
 /*
+ * Get and prepare to store to an indexer access node.
+ */
+JavaGetAndPrepare(ILNode_IndexerAccess)
+{
+	unsigned tempObjectVar;
+	unsigned tempValueVar;
+	unsigned *tempIndexVars;
+	int numArgs, argNum, posn;
+	ILNode *indexNode;
+	ILType *signature;
+	ILMachineType objectMachineType;
+	int objectSize;
+	ILType *indexType;
+	ILMachineType indexMachineType;
+
+	/* Save the current stack position so "Store" knows what to pop */
+	node->saveStack = info->stackHeight;
+
+	/* Get the signature for the "get" method, so that we know
+	   what types to use to temporarily save the index values */
+	signature = ILMethod_Signature(node->getMethod);
+
+	/* Get temporary variables for the object and the indices */
+	tempObjectVar = ILGenTempTypedVar(info, node->objectType);
+	numArgs = 1;
+	indexNode = node->indices;
+	while(yyisa(indexNode, ILNode_ArgList))
+	{
+		++numArgs;
+		indexNode = ((ILNode_ArgList *)indexNode)->expr1;
+	}
+	tempIndexVars = (unsigned *)ILMalloc(sizeof(unsigned) * numArgs);
+	if(!tempIndexVars)
+	{
+		ILGenOutOfMemory(info);
+	}
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		tempIndexVars[argNum] = ILGenTempTypedVar
+				(info, ILTypeGetParam(signature, argNum + 1));
+	}
+
+	/* Get the object reference and save it */
+	JavaGenValue(node->object, info);
+	objectMachineType = ILTypeToMachineType(node->objectType);
+	objectSize = JavaGenTypeSize(objectMachineType);
+	JavaGenDup(info, objectMachineType);
+	JavaGenStoreLocal(info, tempObjectVar, objectMachineType);
+	JavaGenAdjust(info, -objectSize);
+
+	/* Get the index values and save them */
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		posn = numArgs - argNum;
+		indexNode = node->indices;
+		while(posn > 1)
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr1;
+			--posn;
+		}
+		if(yyisa(indexNode, ILNode_ArgList))
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr2;
+		}
+		indexType = ILTypeGetParam(signature, argNum + 1);
+		indexMachineType = ILTypeToMachineType(indexType);
+		JavaGenValue(indexNode, info);
+		JavaGenDup(info, indexMachineType);
+		JavaGenStoreLocal(info, tempIndexVars[argNum], indexMachineType);
+		JavaGenAdjust(info, -JavaGenTypeSize(indexMachineType));
+	}
+
+	/* Do we need to leave the current value on the stack? */
+	if(leave)
+	{
+		/* Get the indexer element and save it */
+		tempValueVar = ILGenTempTypedVar(info, node->elemType);
+		indexMachineType = ILTypeToMachineType(node->elemType);
+		JavaGenCallMethod(info, node->getMethod, node->saveStack);
+		info->stackHeight = node->saveStack + JavaGenTypeSize(indexMachineType);
+		JavaGenDup(info, indexMachineType);
+		JavaGenStoreLocal(info, tempValueVar, indexMachineType);
+		JavaGenAdjust(info, -JavaGenTypeSize(indexMachineType));
+
+		/* Account for the extra value that we will be leaving behind */
+		node->saveStack += JavaGenTypeSize(indexMachineType);
+
+		/* Reload all saved values back onto the stack */
+		JavaGenLoadLocal(info, tempObjectVar, objectMachineType);
+		JavaGenAdjust(info, objectSize);
+		for(argNum = 0; argNum < numArgs; ++argNum)
+		{
+			indexType = ILTypeGetParam(signature, argNum + 1);
+			indexMachineType = ILTypeToMachineType(indexType);
+			JavaGenLoadLocal(info, tempIndexVars[argNum], indexMachineType);
+			JavaGenAdjust(info, JavaGenTypeSize(indexMachineType));
+		}
+		indexMachineType = ILTypeToMachineType(node->elemType);
+		JavaGenLoadLocal(info, tempValueVar, indexMachineType);
+		JavaGenAdjust(info, JavaGenTypeSize(indexMachineType));
+
+		/* Release the extra temporary variable that we used */
+		ILGenReleaseTempVar(info, tempValueVar);
+	}
+	else
+	{
+		/* Reload the values onto the stack and get the indexer element */
+		JavaGenLoadLocal(info, tempObjectVar, objectMachineType);
+		JavaGenAdjust(info, objectSize);
+		for(argNum = 0; argNum < numArgs; ++argNum)
+		{
+			indexType = ILTypeGetParam(signature, argNum + 1);
+			indexMachineType = ILTypeToMachineType(indexType);
+			JavaGenLoadLocal(info, tempIndexVars[argNum], indexMachineType);
+			JavaGenAdjust(info, JavaGenTypeSize(indexMachineType));
+		}
+		JavaGenCallMethod(info, node->getMethod, node->saveStack);
+		indexMachineType = ILTypeToMachineType(node->elemType);
+		info->stackHeight = node->saveStack + JavaGenTypeSize(indexMachineType);
+	}
+
+	/* Release the temporary variables */
+	ILGenReleaseTempVar(info, tempObjectVar);
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		ILGenReleaseTempVar(info, tempIndexVars[argNum]);
+	}
+	ILFree(tempIndexVars);
+	return node->machineType;
+}
+
+/*
  * Store into a local variable.
  */
 JavaStore(ILNode_LocalVar)
@@ -827,4 +993,29 @@ JavaStore(ILNode_ArrayAccess)
 	ILMachineType machineType = ILTypeToMachineType(node->elemType);
 	JavaGenStoreArray(info, machineType);
 	JavaGenAdjust(info, -2 - JavaGenTypeSize(machineType));
+}
+
+/*
+ * Store into an indexer access node.
+ */
+JavaStore(ILNode_IndexerAccess)
+{
+	if(leave)
+	{
+		unsigned tempVar = ILGenTempTypedVar(info, node->elemType);
+		int size = JavaGenTypeSize(node->machineType);
+		JavaGenDup(info, node->machineType);
+		JavaGenStoreLocal(info, tempVar, node->machineType);
+		JavaGenAdjust(info, -size);
+		JavaGenCallMethod(info, node->setMethod, node->saveStack);
+		info->stackHeight = node->saveStack;
+		JavaGenLoadLocal(info, tempVar, node->machineType);
+		JavaGenAdjust(info, size);
+		ILGenReleaseTempVar(info, tempVar);
+	}
+	else
+	{
+		JavaGenCallMethod(info, node->setMethod, node->saveStack);
+		info->stackHeight = node->saveStack;
+	}
 }

@@ -232,10 +232,17 @@ CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
 								ILType *objectType);
 
 /*
- * Get the n'th member from a method group.
+ * Resolve an indexer reference to a semantic value.  The return
+ * value is an indexer group, or "void".
+ */
+CSSemValue CSResolveIndexers(ILGenInfo *genInfo, ILNode *node,
+							 ILClass *classInfo);
+
+/*
+ * Get the n'th member from a method or indexer group.
  * Returns NULL at the end of the group.
  */
-ILMethod *CSGetGroupMember(void *group, unsigned long n);
+ILProgramItem *CSGetGroupMember(void *group, unsigned long n);
 
 /*
  * Remove the n'th member from a method group.

@@ -176,6 +176,56 @@ static void MemberIterRemove(CSMemberLookupIter *iter)
 }
 
 /*
+ * Get the method underlying a member, for permission and access checks.
+ * Returns NULL if there is no underlying method.
+ */
+static ILMethod *GetUnderlyingMethod(ILMember *member)
+{
+	ILMethod *method;
+
+	switch(ILMemberGetKind(member))
+	{
+		case IL_META_MEMBERKIND_METHOD:
+		{
+			return (ILMethod *)member;
+		}
+		/* Not reached */
+
+		case IL_META_MEMBERKIND_PROPERTY:
+		{
+			method = ILProperty_Getter((ILProperty *)member);
+			if(method)
+			{
+				return method;
+			}
+			method = ILProperty_Setter((ILProperty *)member);
+			if(method)
+			{
+				return method;
+			}
+		}
+		break;
+
+		case IL_META_MEMBERKIND_EVENT:
+		{
+			method = ILEvent_AddOn((ILEvent *)member);
+			if(method)
+			{
+				return method;
+			}
+			method = ILEvent_RemoveOn((ILEvent *)member);
+			if(method)
+			{
+				return method;
+			}
+		}
+		break;
+	}
+
+	return 0;
+}
+
+/*
  * Process a class and add all members called "name" to a set
  * of member lookup results.
  */
@@ -189,23 +239,13 @@ static void FindMembers(ILClass *info, const char *name,
 	ILNestedInfo *nested;
 	ILClass *nestedChild;
 	int kind;
+	ILMethod *underlying;
 
 	/* Scan up the parent hierarchy until we run out of parents */
 	while(info != 0)
 	{
 		/* Resolve the class to its actual image */
 		info = ILClassResolve(info);
-
-		/* If this is an interface, then scan its base interfaces */
-		if(ILClass_IsInterface(info))
-		{
-			impl = 0;
-			while((impl = ILClassNextImplements(info, impl)) != 0)
-			{
-				FindMembers(ILImplementsGetInterface(impl),
-						    name, accessedFrom, results, lookInParents);
-			}
-		}
 
 		/* Look for all accessible members with the given name */
 		member = 0;
@@ -215,19 +255,26 @@ static void FindMembers(ILClass *info, const char *name,
 			   ILMemberAccessible(member, accessedFrom))
 			{
 				kind = ILMemberGetKind(member);
-				if(kind == IL_META_MEMBERKIND_METHOD &&
-				   ILMethod_IsVirtual((ILMethod *)member) &&
-				   !ILMethod_IsNewSlot((ILMethod *)member))
-				{
-					/* This is a virtual override, so skip it */
-					continue;
-				}
 				if(kind != IL_META_MEMBERKIND_METHOD &&
 				   kind != IL_META_MEMBERKIND_FIELD &&
 				   kind != IL_META_MEMBERKIND_PROPERTY &&
 				   kind != IL_META_MEMBERKIND_EVENT)
 				{
 					/* This is PInvoke or override, which we don't need */
+					continue;
+				}
+				underlying = GetUnderlyingMethod(member);
+				if(underlying &&
+				   ILMethod_IsVirtual(underlying) &&
+				   !ILMethod_IsNewSlot(underlying))
+				{
+					/* This is a virtual override, so skip it */
+					continue;
+				}
+				if(kind == IL_META_MEMBERKIND_PROPERTY &&
+				   ILTypeNumParams(ILMember_Signature(member)) != 0)
+				{
+					/* This is an indexer, which we do not want here */
 					continue;
 				}
 				AddMember(results, (ILProgramItem *)member, info, kind);
@@ -244,6 +291,17 @@ static void FindMembers(ILClass *info, const char *name,
 			{
 				AddMember(results, (ILProgramItem *)nestedChild,
 						  info, CS_MEMBERKIND_TYPE);
+			}
+		}
+
+		/* If this is an interface, then scan its base interfaces */
+		if(ILClass_IsInterface(info))
+		{
+			impl = 0;
+			while((impl = ILClassNextImplements(info, impl)) != 0)
+			{
+				FindMembers(ILImplementsGetInterface(impl),
+						    name, accessedFrom, results, lookInParents);
 			}
 		}
 
@@ -303,26 +361,16 @@ static int SignatureIdentical(ILType *sig1, ILType *sig2)
 }
 
 /*
- * Perform a member lookup on a type.
+ * Trim a list of members to remove unneeded elements.
  */
-static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
-				        ILClass *accessedFrom, CSMemberLookupInfo *results,
-						int lookInParents)
+static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 {
 	CSMemberLookupIter iter;
 	CSMemberInfo *firstMember;
 	CSMemberInfo *member;
 	CSMemberInfo *testMember;
 	CSMemberInfo *tempMember;
-
-	/* Initialize the results */
-	InitMembers(results);
-
-	/* Collect up all members with the specified name */
-	if(info)
-	{
-		FindMembers(info, name, accessedFrom, results, lookInParents);
-	}
+	CSMemberInfo *prevMember;
 
 	/* If the list is empty, then we are done */
 	if(!(results->num))
@@ -332,49 +380,52 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 
 	/* Trim the list based on the type of the first member */
 	firstMember = results->members;
-	if(firstMember->kind == IL_META_MEMBERKIND_METHOD)
+	if(firstMember->kind == IL_META_MEMBERKIND_METHOD || isIndexerList)
 	{
-		/* This is a method, so remove non-methods from the base types */
-		MemberIterInit(&iter, results);
-		while((member = MemberIterNext(&iter)) != 0)
+		/* Remove non-methods from the base types */
+		if(!isIndexerList)
 		{
-			if(member->kind != IL_META_MEMBERKIND_METHOD &&
-			   member->owner != firstMember->owner)
+			MemberIterInit(&iter, results);
+			while((member = MemberIterNext(&iter)) != 0)
 			{
-				MemberIterRemove(&iter);
+				if(member->kind != IL_META_MEMBERKIND_METHOD &&
+				   member->owner != firstMember->owner)
+				{
+					MemberIterRemove(&iter);
+				}
 			}
 		}
 
-		/* Filter the remaining methods by signature */
+		/* Filter the remaining members by signature */
 		MemberIterInit(&iter, results);
 		while((member = MemberIterNext(&iter)) != 0)
 		{
 			testMember = member->next;
+			prevMember = member;
 			while(testMember != 0)
 			{
-				if(IsBaseTypeFor(ILMethod_Owner(testMember->member),
-								 ILMethod_Owner(member->member)))
+				if(IsBaseTypeFor(testMember->owner, member->owner))
 				{
 					/* "testMember" is in a base type of "member"'s type */
 					if(SignatureIdentical
-							(ILMethod_Signature(testMember->member),
-						     ILMethod_Signature(member->member)))
+							(ILMember_Signature(testMember->member),
+						     ILMember_Signature(member->member)))
 					{
 						/* Remove "testMember" from the method group */
 						tempMember = testMember->next;
+						prevMember->next = tempMember;
 						ILFree(testMember);
 						testMember = tempMember;
 						--(results->num);
 						continue;
 					}
 				}
-				else if(IsBaseTypeFor(ILMethod_Owner(member->member),
-								 	  ILMethod_Owner(testMember->member)))
+				else if(IsBaseTypeFor(member->owner, testMember->owner))
 				{
 					/* "member" is in a base type of "testMember"'s type */
 					if(SignatureIdentical
-							(ILMethod_Signature(testMember->member),
-						     ILMethod_Signature(member->member)))
+							(ILMember_Signature(testMember->member),
+						     ILMember_Signature(member->member)))
 					{
 						/* Remove "member" from the method group */
 						MemberIterRemove(&iter);
@@ -383,18 +434,13 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 				}
 				else if(testMember->member == member->member)
 				{
-					/* We picked up two copies of the same method,
+					/* We picked up two copies of the same member,
 					   which can happen when scanning base interfaces
 					   along multiple inheritance paths */
-					if(SignatureIdentical
-							(ILMethod_Signature(testMember->member),
-						     ILMethod_Signature(member->member)))
-					{
-						/* Remove "member" from the method group */
-						MemberIterRemove(&iter);
-						break;
-					}
+					MemberIterRemove(&iter);
+					break;
 				}
+				prevMember = testMember;
 				testMember = testMember->next;
 			}
 		}
@@ -417,7 +463,11 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 
 	/* Determine whether we have a method list, a non-method,
 	   or a list of members which is ambiguous */
-	if(firstMember->kind == IL_META_MEMBERKIND_METHOD)
+	if(isIndexerList)
+	{
+		return CS_SEMKIND_INDEXER_GROUP;
+	}
+	else if(firstMember->kind == IL_META_MEMBERKIND_METHOD)
 	{
 		/* All members must be methods, or the list is ambiguous */
 		MemberIterInit(&iter, results);
@@ -466,6 +516,106 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 		/* The list is ambiguous */
 		return CS_SEMKIND_AMBIGUOUS;
 	}
+}
+
+/*
+ * Perform a member lookup on a type.
+ */
+static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
+				        ILClass *accessedFrom, CSMemberLookupInfo *results,
+						int lookInParents)
+{
+	/* Initialize the results */
+	InitMembers(results);
+
+	/* Collect up all members with the specified name */
+	if(info)
+	{
+		FindMembers(info, name, accessedFrom, results, lookInParents);
+	}
+
+	/* Trim the list and determine the kind for the result */
+	return TrimMemberList(results, 0);
+}
+
+/*
+ * Process a class and add all indexers to a set of member lookup results.
+ */
+static void FindIndexers(ILClass *info, ILClass *accessedFrom,
+					     CSMemberLookupInfo *results)
+{
+	ILImplements *impl;
+	ILMember *member;
+	ILMethod *method;
+
+	/* Scan up the parent hierarchy until we run out of parents */
+	while(info != 0)
+	{
+		/* Resolve the class to its actual image */
+		info = ILClassResolve(info);
+
+		/* Look for all accessible indexers */
+		member = 0;
+		while((member = ILClassNextMemberByKind
+					(info, member, IL_META_MEMBERKIND_PROPERTY)) != 0)
+		{
+			if(ILMemberAccessible(member, accessedFrom) &&
+			   ILTypeNumParams(ILProperty_Signature(member)) != 0)
+			{
+				method = GetUnderlyingMethod(member);
+				if(!method)
+				{
+					/* Skip indexers with no get or set methods */
+					continue;
+				}
+				if(ILMethod_IsStatic(method))
+				{
+					/* Static indexers are not legal, so skip them */
+					continue;
+				}
+				if(ILMethod_IsVirtual(method) && !ILMethod_IsNewSlot(method))
+				{
+					/* This is a virtual override, so skip it */
+					continue;
+				}
+				AddMember(results, (ILProgramItem *)member, info,
+						  IL_META_MEMBERKIND_PROPERTY);
+			}
+		}
+
+		/* If this is an interface, then scan its base interfaces */
+		if(ILClass_IsInterface(info))
+		{
+			impl = 0;
+			while((impl = ILClassNextImplements(info, impl)) != 0)
+			{
+				FindIndexers(ILImplementsGetInterface(impl),
+						     accessedFrom, results);
+			}
+		}
+
+		/* Move up to the parent */
+		info = ILClass_ParentRef(info);
+	}
+}
+
+/*
+ * Perform an indexer lookup on a type.
+ */
+static int IndexerLookup(ILGenInfo *genInfo, ILClass *info,
+				         ILClass *accessedFrom, CSMemberLookupInfo *results)
+{
+	/* Initialize the results */
+	InitMembers(results);
+
+	/* Collect up all indexers */
+	if(info)
+	{
+		FindIndexers(info, accessedFrom, results);
+	}
+
+	/* Trim the list and determine the kind for the result */
+	return TrimMemberList(results, 1);
 }
 
 /*
@@ -1077,14 +1227,40 @@ CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
 	return value;
 }
 
-ILMethod *CSGetGroupMember(void *group, unsigned long n)
+CSSemValue CSResolveIndexers(ILGenInfo *genInfo, ILNode *node,
+							 ILClass *classInfo)
+{
+	CSSemValue value;
+	ILClass *accessedFrom;
+	int result;
+	CSMemberLookupInfo results;
+
+	/* Find the accessor scope */
+	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
+
+	/* Perform a member lookup based on the class */
+	result = IndexerLookup(genInfo, classInfo, accessedFrom, &results);
+	if(result != CS_SEMKIND_VOID)
+	{
+		value.kind = result;
+		value.type = (ILType *)(results.members);
+		return value;
+	}
+
+	/* There are no applicable indexers */
+	value.kind = CS_SEMKIND_VOID;
+	value.type = ILType_Invalid;
+	return value;
+}
+
+ILProgramItem *CSGetGroupMember(void *group, unsigned long n)
 {
 	CSMemberInfo *member = (CSMemberInfo *)group;
 	while(member != 0)
 	{
 		if(n <= 0)
 		{
-			return (ILMethod *)(member->member);
+			return (ILProgramItem *)(member->member);
 		}
 		--n;
 		member = member->next;

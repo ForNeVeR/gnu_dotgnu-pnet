@@ -528,7 +528,7 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 	_ILMutexLock(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
-	if((thread->state & IL_TS_STOPPED) == 0)
+	if((thread->state & IL_TS_STOPPED) != 0)
 	{
 		/* The thread is already stopped, so return immediately */
 		result = IL_JOIN_OK;

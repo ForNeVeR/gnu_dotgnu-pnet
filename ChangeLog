@@ -4,6 +4,9 @@
 	* engine/lib_enum.c: fixed bug where flag enums don't return correct
 	string format if the enum value matches exactly one value.
 
+	* support/thread.c: fixed bug where ILThreadJoin incorrectly evaluates
+	state of the thread to join.
+
 2003-06-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_info.c:

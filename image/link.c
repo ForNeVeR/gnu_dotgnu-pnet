@@ -165,27 +165,31 @@ static char *LocateAssembly(const char *name, ILUInt16 *version,
 	}
 
 	/* Look in the same directory as the parent assembly */
-	pathlen = strlen(parentAssemblyPath);
-	while(pathlen > 0 && parentAssemblyPath[pathlen - 1] != '/' &&
-	      parentAssemblyPath[pathlen - 1] != '\\')
+	if(parentAssemblyPath)
 	{
-		--pathlen;
-	}
-	if(pathlen > 0)
-	{
-		path = TestAssemblyPath(parentAssemblyPath, pathlen - 1, name, namelen);
-		if(path)
+		pathlen = strlen(parentAssemblyPath);
+		while(pathlen > 0 && parentAssemblyPath[pathlen - 1] != '/' &&
+		      parentAssemblyPath[pathlen - 1] != '\\')
 		{
-			return path;
+			--pathlen;
 		}
-	}
-	else
-	{
-		/* The parent assembly is in the current directory */
-		path = TestAssemblyPath(".", 0, name, namelen);
-		if(path)
+		if(pathlen > 0)
 		{
-			return path;
+			path = TestAssemblyPath(parentAssemblyPath,
+									pathlen - 1, name, namelen);
+			if(path)
+			{
+				return path;
+			}
+		}
+		else
+		{
+			/* The parent assembly is in the current directory */
+			path = TestAssemblyPath(".", 0, name, namelen);
+			if(path)
+			{
+				return path;
+			}
 		}
 	}
 

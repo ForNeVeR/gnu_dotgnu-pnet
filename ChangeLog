@@ -58,6 +58,9 @@
 	* samples/FormsTest.cs: make a small adjustment to FormsTest so
 	that the "Image" tag is selectable once more.
 
+	* doc/translating-pnetlib.txt: add a HOWTO guide on translating
+	the resources into another language.
+
 2003-10-12  Neil Cawse  <neilcawse@hotmail.com>
 
 	* System.Windows.Forms/TreeView.cs: fix paint crash when no nodes bug.

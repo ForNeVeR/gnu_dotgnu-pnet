@@ -12,8 +12,8 @@
 	* codegen/cg_stmt.tc: fix a stack underflow problem in the
 	code generator for switch statements.
 
-	* cscc/c/c_lvalue.tc (ILNode_CBitField): fetch the "other bits"
-	to be OR'ed with a bit field value during the store, not the
+	* cscc/c/c_defs.tc, cscc/c/c_lvalue.tc (ILNode_CBitField): fetch the
+	"other bits" to be OR'ed with a bit field value during the store, not the
 	prepare; otherwise "a->x = a->y = z" won't work correctly.
 
 2004-03-14  Rhys Weatherley  <rweather@southern-storm.com.au>

@@ -333,7 +333,7 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 						  "literal field has an incorrect constant value");
 			return 0;
 		}
-		else if(ILConstantGetElemType(constValue) == IL_META_ELEMTYPE_STRING &&
+		else if(ILField_IsLiteral(field) &&
 		        ILTypeIsStringClass(ILField_Type(field)))
 		{
 			/* Sometimes the empty string constant is stored as a literal

@@ -1,4 +1,9 @@
 
+2001-03-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_lvalue.tc (FieldToConstant): bug in the
+	detection of literal string fields with no constant value.
+
 2001-03-16  Gopal.V <gopalv82@yahoo.com>
 
 	* system/il_system.h , support/file.c : Added the file 

@@ -48,6 +48,8 @@
 	* runtime/System/Resources/ResourceManager.cs: use the "current"
 	variable when checking for the invariant culture, not "culture".
 
+	* System.Drawing/Pen.cs: get and set brush properties on pens.
+
 2003-08-03  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ButtonBase.cs: some improvements for inheritors,

@@ -102,23 +102,33 @@ public sealed class Pen : MarshalByRefObject, ICloneable, IDisposable
 					}
 				}
 			}
-	[TODO]
 	public Brush Brush
 			{
 				get
 				{
-					// TODO
+					if(brush == null)
+					{
+						brush = new SolidBrush(color);
+					}
 					return brush;
 				}
 				set
 				{
-					// TODO
+					if(brush != value)
+					{
+						Dispose();
+						brush = value;
+					}
 				}
 			}
 	public Color Color
 			{
 				get
 				{
+					if(brush is SolidBrush)
+					{
+						return ((SolidBrush)brush).Color;
+					}
 					return color;
 				}
 				set
@@ -127,6 +137,7 @@ public sealed class Pen : MarshalByRefObject, ICloneable, IDisposable
 					{
 						Dispose();
 						color = value;
+						brush = null;
 					}
 				}
 			}
@@ -268,13 +279,34 @@ public sealed class Pen : MarshalByRefObject, ICloneable, IDisposable
 					}
 				}
 			}
-	[TODO]
 	public PenType PenType
 			{
 				get
 				{
-					// TODO
-					return PenType.SolidColor;
+					if(brush == null || brush is SolidBrush)
+					{
+						return PenType.SolidColor;
+					}
+					else if(brush is TextureBrush)
+					{
+						return PenType.TextureFill;
+					}
+					else if(brush is HatchBrush)
+					{
+						return PenType.HatchFill;
+					}
+					else if(brush is PathGradientBrush)
+					{
+						return PenType.PathGradient;
+					}
+					else if(brush is LinearGradientBrush)
+					{
+						return PenType.LinearGradient;
+					}
+					else
+					{
+						return PenType.SolidColor;
+					}
 				}
 			}
 	public LineCap StartCap

@@ -733,11 +733,12 @@ ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
 								   ILUInt32 index)
 {
 	ILImplPrivate *implements;
+	ILClass *searchClass = objectClass;
 
 	/* Locate the interface table within the class hierarchy for the object */
-	while(objectClass != 0)
+	while(searchClass != 0)
 	{
-		implements = ((ILClassPrivate *)(objectClass->userData))->implements;
+		implements = ((ILClassPrivate *)(searchClass->userData))->implements;
 		while(implements != 0)
 		{
 			if(implements->interface == interfaceClass)
@@ -760,7 +761,7 @@ ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
 			}
 			implements = implements->next;
 		}
-		objectClass = ILClassGetParent(objectClass);
+		searchClass = ILClassGetParent(searchClass);
 	}
 
 	/* The interface implementation was not found */

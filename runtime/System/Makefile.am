@@ -144,9 +144,19 @@ CSSRC = Activator.cs \
 		Globalization/NumberStyles.cs \
 		Globalization/TextInfo.cs \
 		Globalization/UnicodeCategory.cs \
+		IO/DirectoryNotFoundException.cs \
+		IO/EndOfStreamException.cs \
+		IO/FileAccess.cs \
+		IO/FileLoadException.cs \
+		IO/FileMode.cs \
+		IO/FileNotFoundException.cs \
+		IO/FileShare.cs \
+		IO/FileStream.cs \
 		IO/IOException.cs \
+		IO/PathTooLongException.cs \
 		IO/StdReader.cs \
 		IO/StdWriter.cs \
+		IO/SeekOrigin.cs \
 		IO/Stream.cs \
 		IO/TextReader.cs \
 		IO/TextWriter.cs \
@@ -238,6 +248,7 @@ CSSRC = Activator.cs \
 		Runtime/Serialization/ISerializable.cs \
 		Runtime/Serialization/SerializationInfo.cs \
 		Runtime/Serialization/StreamingContext.cs \
+		Security/SecurityException.cs \
 		Security/UnverifiableCodeAttribute.cs \
 		Security/Permissions/CodeAccessSecurityAttribute.cs \
 		Security/Permissions/SecurityAction.cs \
@@ -266,8 +277,14 @@ CSSRC = Activator.cs \
 		Threading/Timeout.cs \
 		Threading/WaitHandle.cs \
 		../Platform/DirMethods.cs \
+		../Platform/FileMethods.cs \
+		../Platform/Errno.cs \
+		../Platform/ISecurityManager.cs \
+		../Platform/NullSecurityManager.cs \
 		../Platform/PathInfo.cs \
 		../Platform/PtrSizes.cs \
+		../Platform/RuntimeSecurityManager.cs \
+		../Platform/Security.cs \
 		../Platform/Stdio.cs \
 		../Platform/SysCharInfo.cs \
 		../Platform/TaskMethods.cs \

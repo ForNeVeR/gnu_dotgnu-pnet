@@ -32,6 +32,8 @@ runtime/System/IO/PathTooLongException.cs,
 runtime/System/IO/SeekOrigin.cs,
 runtime/System/IO/Stream.cs: implement many of the "System.IO" classes.
 
+* runtime/System/Makefile.am: add the new classes to the build.
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for the "0.1.0" release.

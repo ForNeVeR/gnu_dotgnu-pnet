@@ -68,7 +68,7 @@ yyerror(char *msg)
 	{
 		fprintf(stderr, "%ld: ", ILAsmLineNum);
 	}
-	if(!strcmp(msg, "parse error"))
+	if(!strcmp(msg, "parse error") || !strcmp(msg, "syntax error"))
 	{
 		/* This message is useless, so print something based on ilasm_text */
 		fprintf(stderr, "parse error at or near `%s'\n", ilasm_text);

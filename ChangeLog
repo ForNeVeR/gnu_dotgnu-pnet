@@ -4,6 +4,11 @@
 	* c/decl/Makefile.am, c/decl/enum1.3il, c/decl/enum1.c,
 	c/decl/enum1.il: test case for a complex enum constant expression.
 
+	* c/expr/Makefile.am, c/expr/funcptr5.3err, c/expr/funcptr5.3il,
+	c/expr/funcptr5.c, c/expr/funcptr5.err, c/expr/funcptr5.il:
+	test case for slightly mismatched function pointer types in calls
+	to functions like "qsort".
+
 2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/stmt/switch1.3il, c/stmt/switch1.il: update C switch test

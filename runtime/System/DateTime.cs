@@ -24,7 +24,7 @@ namespace System
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Platform;
-using Private;
+using System.Private.DateTimeFormat;
 
 // ECMA requires that this have "auto" layout.
 [StructLayout(LayoutKind.Auto)]
@@ -346,47 +346,41 @@ public struct DateTime : IComparable, IFormattable
 			}
 
 	// Parsing methods.
-	[TODO]
 	public static DateTime Parse(String s)
 			{
-				// TODO.
-				return new DateTime(0);
+				return Parse(s,null);
 			}
-	[TODO]
 	public static DateTime Parse(String s, IFormatProvider provider)
 			{
-				// TODO.
-				return new DateTime(0);
+				return Parse(s, provider, DateTimeStyles.AllowWhiteSpaces);
 			}
-	[TODO]
 	public static DateTime Parse(String s, IFormatProvider provider,
 								 DateTimeStyles style)
 			{
-				// TODO.
-				return new DateTime(0);
+				return DateTimeParser.Parse(s,
+					DateTimeFormatInfo.GetInstance(provider),style);
 			}
-	[TODO]
 	public static DateTime ParseExact(String s, String format,
 									  IFormatProvider provider)
 			{
-				// TODO.
-				return new DateTime(0);
+				return DateTimeParser.ParseExact(s,format,
+							DateTimeFormatInfo.GetInstance(provider),
+									DateTimeStyles.AllowWhiteSpaces);
 			}
-	[TODO]
 	public static DateTime ParseExact(String s, String format,
 									  IFormatProvider provider,
 									  DateTimeStyles style)
 			{
-				// TODO.
-				return new DateTime(0);
+				return DateTimeParser.ParseExact(s,format,
+							DateTimeFormatInfo.GetInstance(provider),
+									style);
 			}
-	[TODO]
 	public static DateTime ParseExact(String s, String[] formats,
 									  IFormatProvider provider,
 									  DateTimeStyles style)
 			{
-				// TODO.
-				return new DateTime(0);
+				return DateTimeParser.ParseExact(s,formats,
+							DateTimeFormatInfo.GetInstance(provider),style);
 			}
 
 	public static int Compare(DateTime t1, DateTime t2)

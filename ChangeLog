@@ -1,4 +1,17 @@
 
+2003-02-02  Michael Moore <mtmoore@uga.edu>
+	
+	* runtime/System/Private/DateTimeFormatter.cs: move this
+	into a new directory.
+
+	* runtime/System/Private/DateTimeFormat/,
+	runtime/System/Private/DateTimeFormat/DateTimeFormatTemplate.cs,
+	runtime/System/Private/DateTimeFormat/DateTimeParser.cs,
+	runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs,
+	runtime/System/Private/DateTimeFormat/ParsedDateTime.cs: new
+	directory for the DateTime formatting and parsing stuff.
+	(Gopal)
+
 2003-02-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Collection/ArrayList.cs: double the size of
@@ -7,6 +20,9 @@
 2003-02-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/BufferedStream.cs: fix minor bug.
+
+	* runtime/System/DateTime.cs: connect the DateTimeParser stuff
+	to the public API.
 
 2003-02-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 

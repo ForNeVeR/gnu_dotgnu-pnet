@@ -1435,10 +1435,13 @@ int CSAntTask_ResGen(CSAntTask *task)
 
 	/* Build the command-line to be executed */
 	AddArg(&argv, &argc, FindProgramPath("resgen", "csant.env.RESGEN"));
-	AddArg(&argv, &argc, "/compile");
 	if(isLatin1)
 	{
 		AddArg(&argv, &argc, "--latin1");
+	}
+	else
+	{
+		AddArg(&argv, &argc, "/compile");
 	}
 	numFiles = CSAntFileSetSize(inputs);
 	for(file = 0; file < numFiles; ++file)
@@ -1582,6 +1585,7 @@ int CSAntTask_ResLink(CSAntTask *task)
 							CSAntFileSetFile(resources, file));
 			}
 		}
+		AddArg(&argv, &argc, (char *)0);
 	}
 
 	/* Print and execute the command */

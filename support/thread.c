@@ -38,9 +38,12 @@ extern	"C" {
  * Global state that is mutexed between all threads.
  */
 static _ILMutex threadLockAll;
+/* Number of threads that have started and not finished */
 static long volatile numThreads;
+/* Number of threads that have started and not finished and are background threads */
 static long volatile numBackgroundThreads;
-static ILWaitHandle *foregroundThreadsFinished;
+/* Event that is set when there are no foreground threads left */
+static ILWaitHandle *noFgThreadsEvent;
 
 /*
  * Global mutex for atomic operations.
@@ -60,7 +63,7 @@ int ILHasThreads(void)
 /*
  * Thread library initialization routines that are called once only.
  */
-static void ThreadInit(void)
+static void _ILThreadInit(void)
 {
 	/* Perform system-specific initialization */
 	_ILThreadInitSystem(&mainThread);
@@ -83,7 +86,7 @@ static void ThreadInit(void)
 	_ILWakeupCreate(&(mainThread.wakeup));
 	_ILWakeupQueueCreate(&(mainThread.joinQueue));
 
-	foregroundThreadsFinished = ILWaitEventCreate(1, 1);
+	noFgThreadsEvent = ILWaitEventCreate(1, 1);
 
 	/* Set the thread object for the "main" thread */
 	_ILThreadSetSelf(&mainThread);
@@ -93,45 +96,52 @@ static void ThreadInit(void)
 	numBackgroundThreads = 0;
 }
 
-void ThreadDeinit(void)
+static void _ILThreadDeinit(void)
 {
-	if(foregroundThreadsFinished != 0)
+	if(noFgThreadsEvent != 0)
 	{
-		ILWaitHandleClose(foregroundThreadsFinished);
+		ILWaitHandleClose(noFgThreadsEvent);
 	}
+}
+
+/*
+ * Changes the counters for the number of threads.
+ */
+static void _ILThreadAdjustCount(int numThreadsAdjust, int numBackgroundThreadsAdjust)
+{
+	_ILMutexLock(&threadLockAll);
+	{
+		numThreads += numThreadsAdjust;		
+		numBackgroundThreads += numBackgroundThreadsAdjust;
+		
+		/* If there is only the main thread left then signal the
+		   noFgThreads event */
+		if (numThreads - numBackgroundThreads == 1)
+		{
+			ILWaitEventSet(noFgThreadsEvent);
+		}
+		else
+		{
+			ILWaitEventReset(noFgThreadsEvent);
+		}
+	}
+	_ILMutexUnlock(&threadLockAll);
 }
 
 void ILThreadInit(void)
 {
-	_ILCallOnce(ThreadInit);
+	_ILCallOnce(_ILThreadInit);
 }
 
 void ILThreadDeinit(void)
 {
-	_ILCallOnce(ThreadDeinit);
+	_ILCallOnce(_ILThreadDeinit);
 }
 
-void _ILThreadRun(ILThread *thread)
+static void _ILThreadRunAndFreeCleanups(ILThread *thread)
 {
-	int isbg;
 	ILThreadCleanupEntry *entry, *next;
-
-	/* If we still have a startup function, then execute it.
-	   The field may have been replaced with NULL if the thread
-	   was aborted before it even got going */
-	if(thread->startFunc)
-	{
-		(*(thread->startFunc))(thread->objectArg);
-	}
-
-	/* Mark the thread as stopped */
-	_ILMutexLock(&(thread->lock));
-	thread->state |= IL_TS_STOPPED;
-	isbg = ((thread->state & IL_TS_BACKGROUND) != 0);	
-	_ILMutexUnlock(&(thread->lock));
-
-	/* Notify and remove the cleanup handlers */
-
+	
 	entry = thread->firstCleanupEntry;
 
 	while (entry)
@@ -145,27 +155,40 @@ void _ILThreadRun(ILThread *thread)
 
 		entry = next;
 	}
+}
 
-	/* Wakeup everyone waiting to join */
+void _ILThreadRun(ILThread *thread)
+{	
+	/* When a thread starts, it blocks until the ILThreadStart function
+	   has finished setup */
+	_ILThreadSuspendSelf(thread);
+
+	/* If we still have a startup function, then execute it.
+	   The field may have been replaced with NULL if the thread
+	   was aborted before it even got going */
+	if(thread->startFunc)
+	{
+		(*(thread->startFunc))(thread->objectArg);
+	}
+	
 	_ILMutexLock(&(thread->lock));
-	_ILWakeupQueueWakeAll(&(thread->joinQueue));
+	{
+		/* Mark the thread as stopped */
+		thread->state |= IL_TS_STOPPED;	
+		/* Change the thread count */
+		_ILThreadAdjustCount(-1, ((thread->state & IL_TS_BACKGROUND) != 0) ? -1 : 0);
+	}
 	_ILMutexUnlock(&(thread->lock));
 
-	/* Update the thread counts */
-	_ILMutexLock(&threadLockAll);
-	--numThreads;
-	if(isbg)
-	{
-		numBackgroundThreads -= 1;
+	/* Run and free the cleanup handlers */
+	_ILThreadRunAndFreeCleanups(thread);
+	
+	_ILMutexLock(&(thread->lock));
+	{		
+		/* Wakeup everyone waiting to join */
+		_ILWakeupQueueWakeAll(&(thread->joinQueue));
 	}
-
-	/* If there are no more foreground threads (except the main one) then set
-		the event that signals that state */
-	if(numThreads - numBackgroundThreads == 1)
-	{
-		ILWaitEventSet(foregroundThreadsFinished);
-	}
-	_ILMutexUnlock(&threadLockAll);
+	_ILMutexUnlock(&(thread->lock));
 }
 
 ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
@@ -177,7 +200,6 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	{
 		return 0;
 	}
-
 	/* Create a new thread object and populate it */
 	thread = (ILThread *)ILCalloc(1, sizeof(ILThread));
 	if(!thread)
@@ -203,9 +225,6 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	/* Lock out the thread system */
 	_ILMutexLock(&threadLockAll);
 	
-	/* We have one extra thread in the system at present */
-	++numThreads;
-
 	/* Unlock the thread system and return */
 	_ILMutexUnlock(&threadLockAll);
 	return thread;
@@ -230,17 +249,12 @@ int ILThreadStart(ILThread *thread)
 		{
 			/* Set the thread state to running (0) */
 			thread->state &= ~IL_TS_UNSTARTED;
-			
-			/* If this thread isn't a background thread then unset the
-				foregroundThreadsFinished event.
-				This occurs here rather than in ILThreadCreate so that unstarted
-				threads won't unset the foregroundThreadsFinished event without ever 
-				setting it again (which normally happens at the end of _ILThreadRun) */
+			thread->state |= IL_TS_RUNNING;
 
-			if(((thread->state & IL_TS_BACKGROUND) == 0))
-			{
-				ILWaitEventReset(foregroundThreadsFinished);
-			}
+			_ILThreadAdjustCount(1, (thread->state & IL_TS_BACKGROUND) ? 1 : 0);
+			
+			/* Let the thread start running */
+			_ILThreadResumeSelf(thread);
 
 			result = 1;
 		}
@@ -257,9 +271,6 @@ int ILThreadStart(ILThread *thread)
 
 void ILThreadDestroy(ILThread *thread)
 {
-	int iscounted;
-	int isbg;
-
 	/* Bail out if this is the current thread */
 	if(thread == _ILThreadGetSelf())
 	{
@@ -268,10 +279,8 @@ void ILThreadDestroy(ILThread *thread)
 
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
-
-	/* Nothing to do if the thread is already stopped */
-	iscounted = 0;
-	isbg = 0;
+	
+	/* Don't terminate the thread or adjust counts if it has already been stopped */
 	if((thread->state & IL_TS_STOPPED) == 0)
 	{
 		thread->state |= IL_TS_STOPPED;
@@ -282,44 +291,32 @@ void ILThreadDestroy(ILThread *thread)
 			_ILThreadTerminate(thread);
 		}
 
-		iscounted = 1;
-		isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
-	}
+		/* Adjust the thread count */
+		_ILThreadAdjustCount(-1, (thread->state & IL_TS_BACKGROUND) ? -1 : 0);		
 
-	/* Unlock the thread object and free it */
-	_ILMutexUnlock(&(thread->lock));
+		_ILMutexUnlock(&thread->lock);
+		
+		/* Run and free the cleanup handlers */
+		_ILThreadRunAndFreeCleanups(thread);
+	}
+	else
+	{
+		/* Unlock the thread object and free it */
+		_ILMutexUnlock(&(thread->lock));
+	}
 
 	/* Only destroy the system thread if one was created */
 	if((thread->state & IL_TS_UNSTARTED) == 0)
 	{
 		_ILThreadDestroy(thread);
 	}
+
 	_ILMutexDestroy(&(thread->lock));
 	_ILSemaphoreDestroy(&(thread->suspendAck));
 	_ILSemaphoreDestroy(&(thread->resumeAck));
 	_ILWakeupDestroy(&(thread->wakeup));
 	_ILWakeupQueueDestroy(&(thread->joinQueue));
 	ILFree(thread);
-
-	/* Adjust the thread counts */
-	_ILMutexLock(&threadLockAll);
-	if(iscounted)
-	{
-		--numThreads;
-	}
-	if(isbg)
-	{
-		--numBackgroundThreads;
-	}
-
-	/* If there are no more foreground threads (except the main one) then set
-		the event that signals that state */
-	if(numThreads - numBackgroundThreads == 1)
-	{
-		ILWaitEventSet(foregroundThreadsFinished);
-	}
-
-	_ILMutexUnlock(&threadLockAll);
 }
 
 ILThread *ILThreadSelf(void)
@@ -434,12 +431,14 @@ void ILThreadResume(ILThread *thread)
 		{
 			/* The thread put itself to sleep */
 			thread->state &= ~(IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF);
+			thread->state |= IL_TS_RUNNING;
 			_ILThreadResumeSelf(thread);
 		}
 		else
 		{
 			/* Someone else suspended the thread */
 			thread->state &= ~IL_TS_SUSPENDED;
+			thread->state |= IL_TS_RUNNING;
 			_ILThreadResumeOther(thread);
 		}
 	}
@@ -479,37 +478,45 @@ void ILThreadInterrupt(ILThread *thread)
 	}
 }
 
+int ILThreadSelfAborting()
+{
+	int result;
+	ILThread *thread = _ILThreadGetSelf();
+	
+	_ILMutexLock(&(thread->lock));
+	
+	/* Determine if we've already seen the abort request or not */
+	if((thread->state & IL_TS_ABORTED) != 0)
+	{
+		/* Already aborted */
+		result = 0;
+	}
+	else if((thread->state & IL_TS_ABORT_REQUESTED) != 0)
+	{
+		/* Abort was requested */
+		thread->state &= ~IL_TS_ABORT_REQUESTED;
+		thread->state |= IL_TS_ABORTED;
+		result = 1;
+	}
+	else
+	{
+		/* The thread is not aborting: we were called in error */
+		result = 0;
+	}
+	
+	_ILMutexUnlock(&(thread->lock));
+	
+	return result;
+}
+
 int ILThreadAbort(ILThread *thread)
 {
-	ILThread *self = _ILThreadGetSelf();
 	int result;
 
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
-	/* Is the given thread the current thread? */
-	if(thread == self)
-	{
-		/* Determine if we've already seen the abort request or not */
-		if((thread->state & IL_TS_ABORTED) != 0)
-		{
-			/* Already aborted */
-			result = 0;
-		}
-		else if((thread->state & IL_TS_ABORT_REQUESTED) != 0)
-		{
-			/* Abort was requested */
-			thread->state &= ~IL_TS_ABORT_REQUESTED;
-			thread->state |= IL_TS_ABORTED;
-			result = 1;
-		}
-		else
-		{
-			/* The thread is not aborting: we were called in error */
-			result = 0;
-		}
-	}
-	else if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
 	{
 		/* The thread is already processing an abort or an abort request */
 		result = 0;
@@ -522,9 +529,10 @@ int ILThreadAbort(ILThread *thread)
 		/* If the thread is in the "wait/sleep/join" state, then interrupt it */
 		if((thread->state & IL_TS_WAIT_SLEEP_JOIN) != 0)
 		{
-			_ILMutexUnlock(&(thread->lock));
 			_ILWakeupInterrupt(&(thread->wakeup));
 
+			_ILMutexUnlock(&(thread->lock));
+						
 			return 0;
 		}
 
@@ -545,8 +553,8 @@ int ILThreadIsAborting(void)
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
-	/* Determine if an abort or an abort request is pending on this thread */
-	aborting = ((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0);
+	/* Determine if an abort is in progress on this thread */
+	aborting = ((thread->state & (IL_TS_ABORTED)) != 0);
 
 	/* Unlock the thread object and return */
 	_ILMutexUnlock(&(thread->lock));
@@ -601,11 +609,16 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 		/* The thread is already stopped, so return immediately */
 		result = IL_JOIN_OK;
 	}
+	else if ((thread->state & IL_TS_UNSTARTED) != 0)
+	{
+		/* Can't join a thread that hasn't started */
+		result = IL_JOIN_UNSTARTED;
+	}
 	else
 	{
 		/* Note: We must set our wait limit before adding ourselves to any wait queues.
 		    Failure to do so may mean we may miss some signals because they will be 
-			aborted by the signal invoker (which reads us as having a null wait limit).
+			unset by the signal invoker (which reads us as having a 0 wait limit).
 			In this specific case, the order doesn't actually matter because we have locked 
 			the queue owner (the thread) but both operations must be performed before we
 			unlock the thread - Tum */
@@ -629,7 +642,7 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 
 				/* Put ourselves into the "wait/sleep/join" state */
 				_ILMutexLock(&(self->lock));
-				if((self->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+				if((self->state & (IL_TS_ABORT_REQUESTED)) != 0)
 				{
 					/* The current thread is aborted */
 					_ILMutexUnlock(&(self->lock));
@@ -708,36 +721,32 @@ void ILThreadSetBackground(ILThread *thread, int flag)
 	/* Change the background state of the thread */
 	if(flag)
 	{
-		if((thread->state & IL_TS_BACKGROUND) == 0)
+		if(!(thread->state & IL_TS_BACKGROUND))
 		{
 			thread->state |= IL_TS_BACKGROUND;
-			change = 1;
+			
+			if(!(thread->state & (IL_TS_UNSTARTED | IL_TS_STOPPED)))
+			{
+				_ILThreadAdjustCount(0, 1);
+			}
 		}
 	}
 	else
 	{
-		if((thread->state & IL_TS_BACKGROUND) != 0)
+		if((thread->state & IL_TS_BACKGROUND))
 		{
 			thread->state &= ~IL_TS_BACKGROUND;
 			change = -1;
+
+			if(!(thread->state & (IL_TS_UNSTARTED | IL_TS_STOPPED)))
+			{
+				_ILThreadAdjustCount(0, -1);
+			}
 		}
 	}
 
 	/* Unlock the thread object */
 	_ILMutexUnlock(&(thread->lock));
-
-	/* Adjust "numBackgroundThreads" */
-	_ILMutexLock(&threadLockAll);
-	numBackgroundThreads += change;
-
-	/* If there are no more foreground threads (except the main one) then set
-		the event that signals that state */
-	if(numThreads - numBackgroundThreads == 1)
-	{
-		ILWaitEventSet(foregroundThreadsFinished);
-	}
-
-	_ILMutexUnlock(&threadLockAll);
 }
 
 int ILThreadGetState(ILThread *thread)
@@ -785,6 +794,11 @@ void ILThreadGetCounts(unsigned long *numForeground,
 	_ILMutexUnlock(&threadLockAll);
 }
 
+void ILThreadYield()
+{
+	_ILThreadYield();
+}
+
 int ILThreadSleep(ILUInt32 ms)
 {
 	ILThread *thread = _ILThreadGetSelf();
@@ -795,7 +809,7 @@ int ILThreadSleep(ILUInt32 ms)
 
 	/* Bail out if the current thread is aborted or interrupted */
 
-	if (thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED))
+	if (thread->state & (IL_TS_ABORT_REQUESTED))
 	{
 		_ILMutexUnlock(&(thread->lock));
 		
@@ -836,7 +850,7 @@ int ILThreadSleep(ILUInt32 ms)
 	/* Lock down the thread again */
 	_ILMutexLock(&(thread->lock));
 
-	if (thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED))
+	if (thread->state & (IL_TS_ABORT_REQUESTED))
 	{
 		result = IL_WAIT_ABORTED;
 	}
@@ -875,8 +889,8 @@ void ILThreadWaitForForegroundThreads(int timeout)
 {
 #ifdef IL_NO_THREADS
 	/* Nothing to do */
-#else	
-	ILWaitOne(foregroundThreadsFinished, timeout);
+#else
+	_ILWaitOneBackupInterruptsAndAborts(noFgThreadsEvent, timeout);
 #endif
 }
 

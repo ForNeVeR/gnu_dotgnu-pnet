@@ -1,3 +1,8 @@
+
+2002-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* pnet.spec: remove from the CVS server, as it is auto-generated.
+
 2002-12-01  Stephen Compall  <rushing@sigecom.net>
 
 	* pnet.spec.in: Fixed man page filespecs to support multiple

@@ -49,6 +49,16 @@
 	System/ComponentModel/Win32Exception.cs: Stubs of the ComponentModel
 	namespace.
 
+	* runtime/System/Runtime/InteropServices/ComInterfaceType.cs: An
+	enum needed for ComponentModel.
+
+	* System/ComponentModel/Design/DesignerTransaction.cs,
+	System/ComponentModel/Design/IDesignerHost.cs,
+	System/ComponentModel/Design/IServiceContainer.cs,
+	System/ComponentModel/Design/Makefile,
+	System/ComponentModel/Design/ServiceCreatorCallback.cs: Some 
+	Stubs of ComponentModel.Design namespace.
+
 2002-12-25  Gopal.V  <gopalv82@symonds.net>
 	
 	* resources/en_US/runtime/IO.txt,  resources/de_DE/runtime/IO.txt:

@@ -2189,6 +2189,7 @@ void _IL_Array_Clear(ILExecThread *thread, ILObject *_array,
 	if(!array)
 	{
 		ILExecThreadThrowArgNull(thread, "array");
+		return;
 	}
 
 	/* Get the element type and size */

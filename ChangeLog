@@ -30,6 +30,9 @@
 	* engine/heap.c (InitializeClass): disable finalizers while
 	laying out the class, to prevent recursive locks.
 
+	* engine/lib_array.c (_IL_Array_Clear): missing "return" after
+	checking for null parameters.
+
 2003-04-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_call.c (MatchSignature): pass the correct

@@ -27,12 +27,12 @@ using System.Runtime.CompilerServices;
 public struct RuntimeMethodHandle
 {
 	// Internal state.
-	private IntPtr value__;
+	private IntPtr value_;
 
 	// Internal constructor.
 	internal RuntimeMethodHandle(IntPtr value)
 			{
-				value__ = value;
+				value_ = value;
 			}
 
 #if !ECMA_COMPAT
@@ -46,7 +46,7 @@ public struct RuntimeMethodHandle
 			{
 				get
 				{
-					return value__;
+					return value_;
 				}
 			}
 

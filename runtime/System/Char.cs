@@ -28,19 +28,19 @@ public struct Char : IComparable
 	, IConvertible
 #endif
 {
-	private char value__;
+	private char value_;
 
 	public const char MaxValue = '\uFFFF';
 	public const char MinValue = '\u0000';
 
 	// Override inherited methods.
 	public override int GetHashCode()
-			{ return unchecked(((int)value__) | (((int)value__) << 16)); }
+			{ return unchecked(((int)value_) | (((int)value_) << 16)); }
 	public override bool Equals(Object value)
 			{
 				if(value is Char)
 				{
-					return (value__ == ((Char)value).value__);
+					return (value_ == ((Char)value).value_);
 				}
 				else
 				{
@@ -51,11 +51,11 @@ public struct Char : IComparable
 	// String conversion.
 	public override String ToString()
 			{
-				return new String (value__, 1);
+				return new String (value_, 1);
 			}
 	public String ToString(IFormatProvider provider)
 			{
-				return new String (value__, 1);
+				return new String (value_, 1);
 			}
 #if !ECMA_COMPAT
 	public static String ToString(char value)
@@ -93,7 +93,7 @@ public struct Char : IComparable
 					{
 						throw new ArgumentException(_("Arg_MustBeChar"));
 					}
-					return ((int)value__) - ((int)(((Char)value).value__));
+					return ((int)value_) - ((int)(((Char)value).value_));
 				}
 				else
 				{
@@ -116,39 +116,39 @@ public struct Char : IComparable
 			}
 	byte IConvertible.ToByte(IFormatProvider provider)
 			{
-				return Convert.ToByte(value__);
+				return Convert.ToByte(value_);
 			}
 	sbyte IConvertible.ToSByte(IFormatProvider provider)
 			{
-				return Convert.ToSByte(value__);
+				return Convert.ToSByte(value_);
 			}
 	short IConvertible.ToInt16(IFormatProvider provider)
 			{
-				return Convert.ToInt16(value__);
+				return Convert.ToInt16(value_);
 			}
 	ushort IConvertible.ToUInt16(IFormatProvider provider)
 			{
-				return Convert.ToUInt16(value__);
+				return Convert.ToUInt16(value_);
 			}
 	char IConvertible.ToChar(IFormatProvider provider)
 			{
-				return value__;
+				return value_;
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
-				return Convert.ToInt32(value__);
+				return Convert.ToInt32(value_);
 			}
 	uint IConvertible.ToUInt32(IFormatProvider provider)
 			{
-				return Convert.ToUInt32(value__);
+				return Convert.ToUInt32(value_);
 			}
 	long IConvertible.ToInt64(IFormatProvider provider)
 			{
-				return Convert.ToInt64(value__);
+				return Convert.ToInt64(value_);
 			}
 	ulong IConvertible.ToUInt64(IFormatProvider provider)
 			{
-				return Convert.ToUInt64(value__);
+				return Convert.ToUInt64(value_);
 			}
 	float IConvertible.ToSingle(IFormatProvider provider)
 			{

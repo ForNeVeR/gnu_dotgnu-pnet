@@ -27,12 +27,12 @@ public struct RuntimeArgumentHandle
 {
 
 	// Internal state.
-	private IntPtr value__;
+	private IntPtr value_;
 
 	// Internal constructor.
 	internal RuntimeArgumentHandle(IntPtr value)
 			{
-				value__ = value;
+				value_ = value;
 			}
 
 }; // class RuntimeArgumentHandle

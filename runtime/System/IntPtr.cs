@@ -30,12 +30,12 @@ public struct IntPtr
 	public static readonly IntPtr Zero = new IntPtr(0);
 
 	// Internal state.
-	unsafe private void *value__;
+	unsafe private void *value_;
 
 	// Constructors.
 	unsafe public IntPtr(int value)
 			{
-				value__ = (void *)value;
+				value_ = (void *)value;
 			}
 	unsafe public IntPtr(long value)
 			{
@@ -45,26 +45,26 @@ public struct IntPtr
 				{
 					throw new OverflowException(_("Overflow_Pointer"));
 				}
-				value__ = (void *)value;
+				value_ = (void *)value;
 			}
 #if !ECMA_COMPAT
 	[CLSCompliant(false)]
 	unsafe public IntPtr(void *value)
 			{
-				value__ = value;
+				value_ = value;
 			}
 #endif
 
 	// Override inherited methods.
 	unsafe public override int GetHashCode()
 			{
-				return unchecked((int)value__);
+				return unchecked((int)value_);
 			}
 	unsafe public override bool Equals(Object value)
 			{
 				if(value is IntPtr)
 				{
-					return (value__ == ((IntPtr)value).value__);
+					return (value_ == ((IntPtr)value).value_);
 				}
 				else
 				{
@@ -75,7 +75,7 @@ public struct IntPtr
 	// Numeric conversion.
 	unsafe public int ToInt32()
 			{
-				long ptr = (long)value__;
+				long ptr = (long)value_;
 				if(ptr >= (long)(Int32.MinValue) &&
 				   ptr <= (long)(Int32.MaxValue))
 				{
@@ -88,14 +88,14 @@ public struct IntPtr
 			}
 	unsafe public long ToInt64()
 			{
-				return (long)value__;
+				return (long)value_;
 			}
 
 	// Get the pointer within this object.
 	[CLSCompliant(false)]
 	unsafe public void *ToPointer()
 			{
-				return value__;
+				return value_;
 			}
 
 	// String conversion.
@@ -103,11 +103,11 @@ public struct IntPtr
 			{
 				if(Size == 4)
 				{
-					return ((int)value__).ToString();
+					return ((int)value_).ToString();
 				}
 				else
 				{
-					return ((long)value__).ToString();
+					return ((long)value_).ToString();
 				}
 			}
 
@@ -126,11 +126,11 @@ public struct IntPtr
 	// Operators.
 	unsafe public static bool operator==(IntPtr x, IntPtr y)
 			{
-				return (x.value__ == y.value__);
+				return (x.value_ == y.value_);
 			}
 	unsafe public static bool operator!=(IntPtr x, IntPtr y)
 			{
-				return (x.value__ != y.value__);
+				return (x.value_ != y.value_);
 			}
 
 #if !ECMA_COMPAT

@@ -30,7 +30,7 @@ public struct UInt32 : IComparable, IFormattable
 	, IConvertible
 #endif
 {
-	private uint value__;
+	private uint value_;
 
 	public const uint MaxValue = 0xFFFFFFFF;
 	public const uint MinValue = 0;
@@ -38,13 +38,13 @@ public struct UInt32 : IComparable, IFormattable
 	// Override inherited methods.
 	public override int GetHashCode()
 			{
-				return unchecked(((int)value__) & 0x7FFFFFFF);
+				return unchecked(((int)value_) & 0x7FFFFFFF);
 			}
 	public override bool Equals(Object value)
 			{
 				if(value is UInt32)
 				{
-					return (value__ == ((UInt32)value).value__);
+					return (value_ == ((UInt32)value).value_);
 				}
 				else
 				{
@@ -56,25 +56,25 @@ public struct UInt32 : IComparable, IFormattable
 	public override String ToString()
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, null,
+							((ulong)value_, 0, 0, false, null,
 							 NumberFormatInfo.CurrentInfo);
 			}
 	public String ToString(String format)
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, format,
+							((ulong)value_, 0, 0, false, format,
 							 NumberFormatInfo.CurrentInfo);
 			}
 	public String ToString(IFormatProvider provider)
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, null,
+							((ulong)value_, 0, 0, false, null,
 							 NumberFormatInfo.GetInstance(provider));
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, format,
+							((ulong)value_, 0, 0, false, format,
 							 NumberFormatInfo.GetInstance(provider));
 			}
 
@@ -112,12 +112,12 @@ public struct UInt32 : IComparable, IFormattable
 					{
 						throw new ArgumentException(_("Arg_MustBeUInt32"));
 					}
-					uint value2 = ((UInt32)value).value__;
-					if(value__ < value2)
+					uint value2 = ((UInt32)value).value_;
+					if(value_ < value2)
 					{
 						return -1;
 					}
-					else if(value__ > value2)
+					else if(value_ > value2)
 					{
 						return 1;
 					}
@@ -141,55 +141,55 @@ public struct UInt32 : IComparable, IFormattable
 			}
 	bool IConvertible.ToBoolean(IFormatProvider provider)
 			{
-				return Convert.ToBoolean(value__);
+				return Convert.ToBoolean(value_);
 			}
 	byte IConvertible.ToByte(IFormatProvider provider)
 			{
-				return Convert.ToByte(value__);
+				return Convert.ToByte(value_);
 			}
 	sbyte IConvertible.ToSByte(IFormatProvider provider)
 			{
-				return Convert.ToSByte(value__);
+				return Convert.ToSByte(value_);
 			}
 	short IConvertible.ToInt16(IFormatProvider provider)
 			{
-				return Convert.ToInt16(value__);
+				return Convert.ToInt16(value_);
 			}
 	ushort IConvertible.ToUInt16(IFormatProvider provider)
 			{
-				return Convert.ToUInt16(value__);
+				return Convert.ToUInt16(value_);
 			}
 	char IConvertible.ToChar(IFormatProvider provider)
 			{
-				return Convert.ToChar(value__);
+				return Convert.ToChar(value_);
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
-				return Convert.ToInt32(value__);
+				return Convert.ToInt32(value_);
 			}
 	uint IConvertible.ToUInt32(IFormatProvider provider)
 			{
-				return value__;
+				return value_;
 			}
 	long IConvertible.ToInt64(IFormatProvider provider)
 			{
-				return Convert.ToInt64(value__);
+				return Convert.ToInt64(value_);
 			}
 	ulong IConvertible.ToUInt64(IFormatProvider provider)
 			{
-				return Convert.ToUInt64(value__);
+				return Convert.ToUInt64(value_);
 			}
 	float IConvertible.ToSingle(IFormatProvider provider)
 			{
-				return Convert.ToSingle(value__);
+				return Convert.ToSingle(value_);
 			}
 	double IConvertible.ToDouble(IFormatProvider provider)
 			{
-				return Convert.ToDouble(value__);
+				return Convert.ToDouble(value_);
 			}
 	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
-				return Convert.ToDecimal(value__);
+				return Convert.ToDecimal(value_);
 			}
 	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{

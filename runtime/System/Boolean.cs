@@ -26,19 +26,19 @@ public struct Boolean : IComparable
 	, IConvertible
 #endif
 {
-	private bool value__;
+	private bool value_;
 
 	public static readonly String TrueString = "True";
 	public static readonly String FalseString = "False";
 
 	// Override inherited methods.
 	public override int GetHashCode()
-			{ return (value__ ? 1 : 0); }
+			{ return (value_ ? 1 : 0); }
 	public override bool Equals(Object value)
 			{
 				if(value is Boolean)
 				{
-					return (value__ == ((Boolean)value).value__);
+					return (value_ == ((Boolean)value).value_);
 				}
 				else
 				{
@@ -49,11 +49,11 @@ public struct Boolean : IComparable
 	// String conversion.
 	public override String ToString()
 			{
-				return (value__ ? TrueString : FalseString);
+				return (value_ ? TrueString : FalseString);
 			}
 	public String ToString(IFormatProvider provider)
 			{
-				return (value__ ? TrueString : FalseString);
+				return (value_ ? TrueString : FalseString);
 			}
 
 	// String parsing.
@@ -95,12 +95,12 @@ public struct Boolean : IComparable
 					{
 						throw new ArgumentException(_("Arg_MustBeBoolean"));
 					}
-					bool other = ((Boolean)value).value__;
-					if(value__ == other)
+					bool other = ((Boolean)value).value_;
+					if(value_ == other)
 					{
 						return 0;
 					}
-					else if(value__)
+					else if(value_)
 					{
 						return 1;
 					}
@@ -124,23 +124,23 @@ public struct Boolean : IComparable
 			}
 	bool IConvertible.ToBoolean(IFormatProvider provider)
 			{
-				return value__;
+				return value_;
 			}
 	byte IConvertible.ToByte(IFormatProvider provider)
 			{
-				return Convert.ToByte(value__);
+				return Convert.ToByte(value_);
 			}
 	sbyte IConvertible.ToSByte(IFormatProvider provider)
 			{
-				return Convert.ToSByte(value__);
+				return Convert.ToSByte(value_);
 			}
 	short IConvertible.ToInt16(IFormatProvider provider)
 			{
-				return Convert.ToInt16(value__);
+				return Convert.ToInt16(value_);
 			}
 	ushort IConvertible.ToUInt16(IFormatProvider provider)
 			{
-				return Convert.ToUInt16(value__);
+				return Convert.ToUInt16(value_);
 			}
 	char IConvertible.ToChar(IFormatProvider provider)
 			{
@@ -150,31 +150,31 @@ public struct Boolean : IComparable
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
-				return Convert.ToInt32(value__);
+				return Convert.ToInt32(value_);
 			}
 	uint IConvertible.ToUInt32(IFormatProvider provider)
 			{
-				return Convert.ToUInt32(value__);
+				return Convert.ToUInt32(value_);
 			}
 	long IConvertible.ToInt64(IFormatProvider provider)
 			{
-				return Convert.ToInt64(value__);
+				return Convert.ToInt64(value_);
 			}
 	ulong IConvertible.ToUInt64(IFormatProvider provider)
 			{
-				return Convert.ToUInt64(value__);
+				return Convert.ToUInt64(value_);
 			}
 	float IConvertible.ToSingle(IFormatProvider provider)
 			{
-				return Convert.ToSingle(value__);
+				return Convert.ToSingle(value_);
 			}
 	double IConvertible.ToDouble(IFormatProvider provider)
 			{
-				return Convert.ToDouble(value__);
+				return Convert.ToDouble(value_);
 			}
 	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
-				return Convert.ToDecimal(value__);
+				return Convert.ToDecimal(value_);
 			}
 	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{

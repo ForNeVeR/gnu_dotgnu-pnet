@@ -9,6 +9,21 @@
 	test the properties of symmetric cryptographic objects and
 	for weak DES keys.
 
+	* runtime/System/Boolean.cs, runtime/System/Byte.cs,
+	runtime/System/Char.cs, runtime/System/DateTime.cs,
+	runtime/System/Double.cs, runtime/System/Int16.cs,
+	runtime/System/Int32.cs, runtime/System/Int64.cs,
+	runtime/System/IntPtr.cs, runtime/System/RuntimeArgumentHandle.cs,
+	runtime/System/RuntimeFieldHandle.cs,
+	runtime/System/RuntimeMethodHandle.cs,
+	runtime/System/RuntimeTypeHandle.cs,
+	runtime/System/SByte.cs, runtime/System/Single.cs,
+	runtime/System/TimeSpan.cs, runtime/System/UInt16.cs,
+	runtime/System/UInt32.cs, runtime/System/UInt64.cs,
+	runtime/System/UIntPtr.cs,
+	runtime/System/Collections/DictionaryEntry.cs: rename "value__"
+	to "value_" so that MS'es "peverify" doesn't get confused.
+
 2002-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* pnetlib.spec.in, configure.in : RPM builds for pnetlib

@@ -33,7 +33,7 @@ public struct DateTime : IComparable, IFormattable
 #endif
 {
 
-	private long value__;
+	private long value_;
 
 	// Days in each month in regular years.
 	internal static readonly int[] daysForEachMonth
@@ -126,7 +126,7 @@ public struct DateTime : IComparable, IFormattable
 			{
 				if(ticks >= 0 && ticks <= maxTicks)
 				{
-					value__ = ticks;
+					value_ = ticks;
 				}
 				else
 				{
@@ -136,12 +136,12 @@ public struct DateTime : IComparable, IFormattable
 			}
 	public DateTime(int year, int month, int day)
 			{
-				value__ = DateToTicks(year, month, day);
+				value_ = DateToTicks(year, month, day);
 			}
 	public DateTime(int year, int month, int day,
 					int hour, int minute, int second)
 			{
-				value__ = DateToTicks(year, month, day) +
+				value_ = DateToTicks(year, month, day) +
 						  TimeToTicks(hour, minute, second);
 			}
 	public DateTime(int year, int month, int day,
@@ -149,10 +149,10 @@ public struct DateTime : IComparable, IFormattable
 			{
 				unchecked
 				{
-					value__ = DateToTicks(year, month, day) +
+					value_ = DateToTicks(year, month, day) +
 							  TimeToTicks(hour, minute, second) +
 							  ((long)millisecond) * 10000L;
-					if(value__ < 0 || value__ > maxTicks)
+					if(value_ < 0 || value_ > maxTicks)
 					{
 						throw new ArgumentException(_("Arg_DateTimeRange"));
 					}
@@ -180,7 +180,7 @@ public struct DateTime : IComparable, IFormattable
 				{
 					throw new ArgumentNullException("calendar");
 				}
-				value__ = calendar.ToDateTime(year, month, day, hour,
+				value_ = calendar.ToDateTime(year, month, day, hour,
 											  minute, second, millisecond,
 											  Calendar.CurrentEra)
 								.Ticks;
@@ -242,7 +242,7 @@ public struct DateTime : IComparable, IFormattable
 	// Convert a DateTime value into a Windows file time.
 	public long ToFileTime()
 			{
-				long time = value__ - FileTimeBase.Ticks;
+				long time = value_ - FileTimeBase.Ticks;
 				if(time < 0)
 				{
 					throw new ArgumentOutOfRangeException
@@ -284,14 +284,14 @@ public struct DateTime : IComparable, IFormattable
 	// Convert this DateTime value into an OLE Automation date.
 	public double ToOADate()
 			{
-				if(value__ == 0)
+				if(value_ == 0)
 				{
 					// Special case for uninitialized DateTime values.
 					return 0.0;
 				}
 				else
 				{
-					return (((double)value__) / ((double)TimeSpan.TicksPerDay))
+					return (((double)value_) / ((double)TimeSpan.TicksPerDay))
 								- ((double)OLEBaseTime.Ticks);
 				}
 			}
@@ -303,7 +303,7 @@ public struct DateTime : IComparable, IFormattable
 			{
 				unchecked
 				{
-					return (int)(value__ ^ (value__ >> 32));
+					return (int)(value_ ^ (value_ >> 32));
 				}
 			}
 
@@ -312,7 +312,7 @@ public struct DateTime : IComparable, IFormattable
 			{
 				if(value is DateTime)
 				{
-					return (value__ == ((DateTime)value).value__);
+					return (value_ == ((DateTime)value).value_);
 				}
 				else
 				{
@@ -321,7 +321,7 @@ public struct DateTime : IComparable, IFormattable
 			}
 	public static bool Equals(DateTime d1, DateTime d2)
 			{
-				return (d1.value__ == d2.value__);
+				return (d1.value_ == d2.value_);
 			}
 
 	// String conversion.
@@ -390,11 +390,11 @@ public struct DateTime : IComparable, IFormattable
 
 	public static int Compare(DateTime t1, DateTime t2)
 			{
-				if(t1.value__ < t2.value__)
+				if(t1.value_ < t2.value_)
 				{
 					return -1;
 				}
-				else if(t1.value__ > t2.value__)
+				else if(t1.value_ > t2.value_)
 				{
 					return 1;
 				}
@@ -413,12 +413,12 @@ public struct DateTime : IComparable, IFormattable
 					{
 						throw new ArgumentException(_("Arg_MustBeDateTime"));
 					}
-					long value2 = ((DateTime)value).value__;
-					if(value__ < value2)
+					long value2 = ((DateTime)value).value_;
+					if(value_ < value2)
 					{
 						return -1;
 					}
-					else if(value__ > value2)
+					else if(value_ > value2)
 					{
 						return 1;
 					}
@@ -543,7 +543,7 @@ public struct DateTime : IComparable, IFormattable
 			{
 				get
 				{
-					return new DateTime(value__ - (value__ % ticksPerDay));
+					return new DateTime(value_ - (value_ % ticksPerDay));
 				}
 			}
 	public int Day
@@ -554,7 +554,7 @@ public struct DateTime : IComparable, IFormattable
 					int year = Year;
 
 					// Get the tick offset within the year for the day.
-					long ticks = value__ - YearToTicks(year);
+					long ticks = value_ - YearToTicks(year);
 
 					// Convert the tick offset into days.
 					int days = unchecked((int)(ticks / TimeSpan.TicksPerDay));
@@ -590,7 +590,7 @@ public struct DateTime : IComparable, IFormattable
 					int year = Year;
 
 					// Get the tick offset within the year for the day.
-					long ticks = value__ - YearToTicks(year);
+					long ticks = value_ - YearToTicks(year);
 
 					// Convert the tick offset into days.
 					int days = unchecked((int)(ticks / TimeSpan.TicksPerDay));
@@ -627,7 +627,7 @@ public struct DateTime : IComparable, IFormattable
 					// lot easier to understand and debug.
 
 					// Convert the tick count into a day value.
-					int days = unchecked((int)(value__ / TimeSpan.TicksPerDay));
+					int days = unchecked((int)(value_ / TimeSpan.TicksPerDay));
 
 					// Determine the 400-year cycle that contains the date.
 					int yearBase = ((days / DaysPer400Years) * 400) + 1;
@@ -685,7 +685,7 @@ public struct DateTime : IComparable, IFormattable
 				{
 					unchecked
 					{
-						return (int)((value__ / (ticksPerDay / 24)) % 24);
+						return (int)((value_ / (ticksPerDay / 24)) % 24);
 					}
 				}
 			}
@@ -695,7 +695,7 @@ public struct DateTime : IComparable, IFormattable
 				{
 					unchecked
 					{
-						return (int)((value__ / (ticksPerDay / (24 * 60))) % 60);
+						return (int)((value_ / (ticksPerDay / (24 * 60))) % 60);
 					}
 				}
 			}
@@ -705,7 +705,7 @@ public struct DateTime : IComparable, IFormattable
 				{
 					unchecked
 					{
-						return (int)((value__ / 10000000L) % 60);
+						return (int)((value_ / 10000000L) % 60);
 					}
 				}
 			}
@@ -715,7 +715,7 @@ public struct DateTime : IComparable, IFormattable
 				{
 					unchecked
 					{
-						return (int)((value__ / 10000L) % 1000L);
+						return (int)((value_ / 10000L) % 1000L);
 					}
 				}
 			}
@@ -725,7 +725,7 @@ public struct DateTime : IComparable, IFormattable
 				{
 					unchecked
 					{
-						return (int)(((value__ / ticksPerDay) + 1) % 7);
+						return (int)(((value_ / ticksPerDay) + 1) % 7);
 					}
 				}
 			}
@@ -734,7 +734,7 @@ public struct DateTime : IComparable, IFormattable
 				get
 				{
 					// Get the tick offset within the year for the day.
-					long ticks = value__ - YearToTicks(Year);
+					long ticks = value_ - YearToTicks(Year);
 
 					// Convert the tick offset into days.
 					return unchecked((int)(ticks / TimeSpan.TicksPerDay)) + 1;
@@ -744,14 +744,14 @@ public struct DateTime : IComparable, IFormattable
 			{
 				get
 				{
-					return value__;
+					return value_;
 				}
 			}
 	public TimeSpan TimeOfDay
 			{
 				get
 				{
-					return new TimeSpan(value__ % TimeSpan.TicksPerDay);
+					return new TimeSpan(value_ % TimeSpan.TicksPerDay);
 				}
 			}
 	public static DateTime Now
@@ -779,31 +779,31 @@ public struct DateTime : IComparable, IFormattable
 
 	// Operators.
 	public static bool operator==(DateTime d1, DateTime d2)
-			{ return (d1.value__ == d2.value__); }
+			{ return (d1.value_ == d2.value_); }
 	public static bool operator!=(DateTime d1, DateTime d2)
-			{ return (d1.value__ != d2.value__); }
+			{ return (d1.value_ != d2.value_); }
 	public static bool operator<(DateTime d1, DateTime d2)
-			{ return (d1.value__ < d2.value__); }
+			{ return (d1.value_ < d2.value_); }
 	public static bool operator>(DateTime d1, DateTime d2)
-			{ return (d1.value__ > d2.value__); }
+			{ return (d1.value_ > d2.value_); }
 	public static bool operator<=(DateTime d1, DateTime d2)
-			{ return (d1.value__ <= d2.value__); }
+			{ return (d1.value_ <= d2.value_); }
 	public static bool operator>=(DateTime d1, DateTime d2)
-			{ return (d1.value__ >= d2.value__); }
+			{ return (d1.value_ >= d2.value_); }
 	public static DateTime operator+(DateTime d, TimeSpan t)
-			{ return new DateTime(d.value__ + t.value__); }
+			{ return new DateTime(d.value_ + t.value_); }
 	public static DateTime operator-(DateTime d, TimeSpan t)
-			{ return new DateTime(d.value__ - t.value__); }
+			{ return new DateTime(d.value_ - t.value_); }
 	public static TimeSpan operator-(DateTime d1, DateTime d2)
-			{ return new TimeSpan(d1.value__ - d2.value__); }
+			{ return new TimeSpan(d1.value_ - d2.value_); }
 
 	// Named operators.
 	public DateTime Add(TimeSpan t)
-			{ return new DateTime(value__ + t.value__); }
+			{ return new DateTime(value_ + t.value_); }
 	public DateTime Subtract(TimeSpan t)
-			{ return new DateTime(value__ - t.value__); }
+			{ return new DateTime(value_ - t.value_); }
 	public TimeSpan Subtract(DateTime d)
-			{ return new TimeSpan(value__ - d.value__); }
+			{ return new TimeSpan(value_ - d.value_); }
 
 	// Internal version of the "Add*" methods.
 	private DateTime DoAdd(double value, long multiplier)
@@ -815,7 +815,7 @@ public struct DateTime : IComparable, IFormattable
 					try
 					{
 						return new DateTime
-							(value__ + ((long)(value * (double)multiplier)));
+							(value_ + ((long)(value * (double)multiplier)));
 					}
 					catch(OverflowException)
 					{
@@ -847,7 +847,7 @@ public struct DateTime : IComparable, IFormattable
 				int year = Year;
 				int month = Month;
 				int day = Day;
-				long ticks = (value__ % TimeSpan.TicksPerDay);
+				long ticks = (value_ % TimeSpan.TicksPerDay);
 				int hour = (int)(ticks / TimeSpan.TicksPerHour);
 				int minute = (int)((ticks / TimeSpan.TicksPerMinute) % 60);
 				int second = (int)((ticks / TimeSpan.TicksPerSecond) % 60);
@@ -884,7 +884,7 @@ public struct DateTime : IComparable, IFormattable
 			}
 	public DateTime AddTicks(long value)
 			{
-				return new DateTime(value__ + value);
+				return new DateTime(value_ + value);
 			}
 	public DateTime AddYears(int years)
 			{
@@ -892,7 +892,7 @@ public struct DateTime : IComparable, IFormattable
 				int year = Year;
 				int month = Month;
 				int day = Day;
-				long ticks = (value__ % TimeSpan.TicksPerDay);
+				long ticks = (value_ % TimeSpan.TicksPerDay);
 				int hour = (int)(ticks / TimeSpan.TicksPerHour);
 				int minute = (int)((ticks / TimeSpan.TicksPerMinute) % 60);
 				int second = (int)((ticks / TimeSpan.TicksPerSecond) % 60);
@@ -933,7 +933,7 @@ public struct DateTime : IComparable, IFormattable
 	public DateTime ToLocalTime()
 			{
 				return new DateTime
-					(value__ - ((long)(TimeMethods.GetTimeZoneAdjust())) *
+					(value_ - ((long)(TimeMethods.GetTimeZoneAdjust())) *
 									TimeSpan.TicksPerSecond);
 			}
 
@@ -941,7 +941,7 @@ public struct DateTime : IComparable, IFormattable
 	public DateTime ToUniversalTime()
 			{
 				return new DateTime
-					(value__ + ((long)(TimeMethods.GetTimeZoneAdjust())) *
+					(value_ + ((long)(TimeMethods.GetTimeZoneAdjust())) *
 									TimeSpan.TicksPerSecond);
 			}
 

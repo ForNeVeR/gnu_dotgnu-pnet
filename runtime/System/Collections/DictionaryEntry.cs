@@ -27,8 +27,8 @@ using System;
 public struct DictionaryEntry
 {
 	// Instance fields.
-	private Object key__;
-	private Object value__;
+	private Object key_;
+	private Object value_;
 
 	// Construct a dictionary entry.
 	public DictionaryEntry(Object key, Object value)
@@ -37,8 +37,8 @@ public struct DictionaryEntry
 		{
 			throw new ArgumentNullException("key");
 		}
-		key__ = key;
-		value__ = value;
+		key_ = key;
+		value_ = value;
 	}
 
 	// DictionaryEntry properties.
@@ -46,22 +46,22 @@ public struct DictionaryEntry
 	{
 		get
 		{
-			return key__;
+			return key_;
 		}
 		set
 		{
-			key__ = value;
+			key_ = value;
 		}
 	}
 	public Object Value
 	{
 		get
 		{
-			return value__;
+			return value_;
 		}
 		set
 		{
-			value__ = value;
+			value_ = value;
 		}
 	}
 

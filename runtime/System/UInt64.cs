@@ -30,7 +30,7 @@ public struct UInt64 : IComparable, IFormattable
 	, IConvertible
 #endif
 {
-	private ulong value__;
+	private ulong value_;
 
 	public const ulong MaxValue = 0xFFFFFFFFFFFFFFFF;
 	public const ulong MinValue = 0;
@@ -38,14 +38,14 @@ public struct UInt64 : IComparable, IFormattable
 	// Override inherited methods.
 	public override int GetHashCode()
 			{
-				return unchecked(((int)(value__ ^ (value__ >> 32)))
+				return unchecked(((int)(value_ ^ (value_ >> 32)))
 										& 0x7FFFFFFF);
 			}
 	public override bool Equals(Object value)
 			{
 				if(value is UInt64)
 				{
-					return (value__ == ((UInt64)value).value__);
+					return (value_ == ((UInt64)value).value_);
 				}
 				else
 				{
@@ -57,25 +57,25 @@ public struct UInt64 : IComparable, IFormattable
 	public override String ToString()
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, null,
+							((ulong)value_, 0, 0, false, null,
 							 NumberFormatInfo.CurrentInfo);
 			}
 	public String ToString(String format)
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, format,
+							((ulong)value_, 0, 0, false, format,
 							 NumberFormatInfo.CurrentInfo);
 			}
 	public String ToString(IFormatProvider provider)
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, null,
+							((ulong)value_, 0, 0, false, null,
 							 NumberFormatInfo.GetInstance(provider));
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, format,
+							((ulong)value_, 0, 0, false, format,
 							 NumberFormatInfo.GetInstance(provider));
 			}
 
@@ -114,12 +114,12 @@ public struct UInt64 : IComparable, IFormattable
 					{
 						throw new ArgumentException(_("Arg_MustBeUInt64"));
 					}
-					ulong value2 = ((UInt64)value).value__;
-					if(value__ < value2)
+					ulong value2 = ((UInt64)value).value_;
+					if(value_ < value2)
 					{
 						return -1;
 					}
-					else if(value__ > value2)
+					else if(value_ > value2)
 					{
 						return 1;
 					}
@@ -143,55 +143,55 @@ public struct UInt64 : IComparable, IFormattable
 			}
 	bool IConvertible.ToBoolean(IFormatProvider provider)
 			{
-				return Convert.ToBoolean(value__);
+				return Convert.ToBoolean(value_);
 			}
 	byte IConvertible.ToByte(IFormatProvider provider)
 			{
-				return Convert.ToByte(value__);
+				return Convert.ToByte(value_);
 			}
 	sbyte IConvertible.ToSByte(IFormatProvider provider)
 			{
-				return Convert.ToSByte(value__);
+				return Convert.ToSByte(value_);
 			}
 	short IConvertible.ToInt16(IFormatProvider provider)
 			{
-				return Convert.ToInt16(value__);
+				return Convert.ToInt16(value_);
 			}
 	ushort IConvertible.ToUInt16(IFormatProvider provider)
 			{
-				return Convert.ToUInt16(value__);
+				return Convert.ToUInt16(value_);
 			}
 	char IConvertible.ToChar(IFormatProvider provider)
 			{
-				return Convert.ToChar(value__);
+				return Convert.ToChar(value_);
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
-				return Convert.ToInt32(value__);
+				return Convert.ToInt32(value_);
 			}
 	uint IConvertible.ToUInt32(IFormatProvider provider)
 			{
-				return Convert.ToUInt32(value__);
+				return Convert.ToUInt32(value_);
 			}
 	long IConvertible.ToInt64(IFormatProvider provider)
 			{
-				return Convert.ToInt64(value__);
+				return Convert.ToInt64(value_);
 			}
 	ulong IConvertible.ToUInt64(IFormatProvider provider)
 			{
-				return Convert.ToUInt64(value__);
+				return Convert.ToUInt64(value_);
 			}
 	float IConvertible.ToSingle(IFormatProvider provider)
 			{
-				return Convert.ToSingle(value__);
+				return Convert.ToSingle(value_);
 			}
 	double IConvertible.ToDouble(IFormatProvider provider)
 			{
-				return Convert.ToDouble(value__);
+				return Convert.ToDouble(value_);
 			}
 	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
-				return Convert.ToDecimal(value__);
+				return Convert.ToDecimal(value_);
 			}
 	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{

@@ -24,12 +24,12 @@ namespace System
 public struct RuntimeTypeHandle
 {
 	// Internal state.
-	private IntPtr value__;
+	private IntPtr value_;
 
 	// Constructor.
 	internal RuntimeTypeHandle(IntPtr value)
 			{
-				value__ = value;
+				value_ = value;
 			}
 
 	// Properties.
@@ -37,7 +37,7 @@ public struct RuntimeTypeHandle
 			{
 				get
 				{
-					return value__;
+					return value_;
 				}
 			}
 

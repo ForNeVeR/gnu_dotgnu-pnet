@@ -25,12 +25,12 @@ namespace System
 public struct RuntimeFieldHandle
 {
 	// Internal state.
-	private IntPtr value__;
+	private IntPtr value_;
 
 	// Internal constructor.
 	internal RuntimeFieldHandle(IntPtr value)
 			{
-				value__ = value;
+				value_ = value;
 			}
 
 	// Properties.
@@ -38,7 +38,7 @@ public struct RuntimeFieldHandle
 			{
 				get
 				{
-					return value__;
+					return value_;
 				}
 			}
 

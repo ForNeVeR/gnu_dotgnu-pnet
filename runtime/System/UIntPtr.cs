@@ -31,12 +31,12 @@ public struct UIntPtr
 	public static readonly UIntPtr Zero = new UIntPtr(0);
 
 	// Internal state.
-	unsafe private void *value__;
+	unsafe private void *value_;
 
 	// Constructors.
 	unsafe public UIntPtr(uint value)
 			{
-				value__ = (void *)value;
+				value_ = (void *)value;
 			}
 	unsafe public UIntPtr(ulong value)
 			{
@@ -45,26 +45,26 @@ public struct UIntPtr
 				{
 					throw new OverflowException(_("Overflow_Pointer"));
 				}
-				value__ = (void *)value;
+				value_ = (void *)value;
 			}
 #if !ECMA_COMPAT
 	[CLSCompliant(false)]
 	unsafe public UIntPtr(void *value)
 			{
-				value__ = value;
+				value_ = value;
 			}
 #endif
 
 	// Override inherited methods.
 	unsafe public override int GetHashCode()
 			{
-				return unchecked((int)value__);
+				return unchecked((int)value_);
 			}
 	unsafe public override bool Equals(Object value)
 			{
 				if(value is UIntPtr)
 				{
-					return (value__ == ((UIntPtr)value).value__);
+					return (value_ == ((UIntPtr)value).value_);
 				}
 				else
 				{
@@ -75,7 +75,7 @@ public struct UIntPtr
 	// Numeric conversion.
 	unsafe public uint ToUInt32()
 			{
-				ulong ptr = (ulong)value__;
+				ulong ptr = (ulong)value_;
 				if(ptr <= (ulong)(UInt32.MaxValue))
 				{
 					return unchecked((uint)ptr);
@@ -87,14 +87,14 @@ public struct UIntPtr
 			}
 	unsafe public ulong ToUInt64()
 			{
-				return (ulong)value__;
+				return (ulong)value_;
 			}
 
 	// Get the pointer within this object.
 	[CLSCompliant(false)]
 	unsafe public void *ToPointer()
 			{
-				return value__;
+				return value_;
 			}
 
 	// String conversion.
@@ -102,11 +102,11 @@ public struct UIntPtr
 			{
 				if(Size == 4)
 				{
-					return ((uint)value__).ToString();
+					return ((uint)value_).ToString();
 				}
 				else
 				{
-					return ((ulong)value__).ToString();
+					return ((ulong)value_).ToString();
 				}
 			}
 
@@ -125,11 +125,11 @@ public struct UIntPtr
 	// Operators.
 	unsafe public static bool operator==(UIntPtr x, UIntPtr y)
 			{
-				return (x.value__ == y.value__);
+				return (x.value_ == y.value_);
 			}
 	unsafe public static bool operator!=(UIntPtr x, UIntPtr y)
 			{
-				return (x.value__ != y.value__);
+				return (x.value_ != y.value_);
 			}
 
 #if !ECMA_COMPAT

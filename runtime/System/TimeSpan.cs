@@ -23,7 +23,7 @@ namespace System
 
 public struct TimeSpan : IComparable
 {
-	internal long value__;
+	internal long value_;
 
 	// Public constants.
 	public static readonly TimeSpan MinValue =
@@ -40,7 +40,7 @@ public struct TimeSpan : IComparable
 	// Constructors.
 	public TimeSpan(long ticks)
 			{
-				value__ = ticks;
+				value_ = ticks;
 			}
 	public TimeSpan(int hours, int minutes, int seconds)
 			: this(0, hours, minutes, seconds, 0) {}
@@ -57,7 +57,7 @@ public struct TimeSpan : IComparable
 							 ((Decimal)minutes) * ((Decimal)TicksPerMinute) +
 							 ((Decimal)seconds) * ((Decimal)TicksPerSecond) +
 							 ((Decimal)milliseconds) * 10000.0m;
-					value__ = Decimal.ToInt64(result);
+					value_ = Decimal.ToInt64(result);
 				}
 				catch(OverflowException)
 				{
@@ -75,12 +75,12 @@ public struct TimeSpan : IComparable
 					{
 						throw new ArgumentException(_("Arg_MustBeTimeSpan"));
 					}
-					long value2 = ((TimeSpan)value).value__;
-					if(value__ < value2)
+					long value2 = ((TimeSpan)value).value_;
+					if(value_ < value2)
 					{
 						return -1;
 					}
-					else if(value__ > value2)
+					else if(value_ > value2)
 					{
 						return 1;
 					}
@@ -111,7 +111,7 @@ public struct TimeSpan : IComparable
 				int hours = Hours;
 				int minutes = Minutes;
 				int seconds = Seconds;
-				int fractional = unchecked((int)(value__ % TicksPerSecond));
+				int fractional = unchecked((int)(value_ % TicksPerSecond));
 				String result;
 				if(days != 0)
 				{
@@ -144,18 +144,18 @@ public struct TimeSpan : IComparable
 			{
 				checked
 				{
-					return new TimeSpan(value__ + ts.value__);
+					return new TimeSpan(value_ + ts.value_);
 				}
 			}
 
 	// Compare TimeSpan values.
 	public static int Compare(TimeSpan t1, TimeSpan t2)
 			{
-				if(t1.value__ < t2.value__)
+				if(t1.value_ < t2.value_)
 				{
 					return -1;
 				}
-				else if(t1.value__ > t2.value__)
+				else if(t1.value_ > t2.value_)
 				{
 					return 1;
 				}
@@ -168,7 +168,7 @@ public struct TimeSpan : IComparable
 	// Return the absolute duration of a TimeSpan value.
 	public TimeSpan Duration()
 			{
-				return new TimeSpan(Math.Abs(value__));
+				return new TimeSpan(Math.Abs(value_));
 			}
 
 	// Determine if this TimeSpan object is equal to another Object.
@@ -176,7 +176,7 @@ public struct TimeSpan : IComparable
 			{
 				if(value is TimeSpan)
 				{
-					return (value__ == ((TimeSpan)value).value__);
+					return (value_ == ((TimeSpan)value).value_);
 				}
 				else
 				{
@@ -187,7 +187,7 @@ public struct TimeSpan : IComparable
 	// Determine if two TimeSpan values are equal.
 	public static bool Equals(TimeSpan t1, TimeSpan t2)
 			{
-				return (t1.value__ == t2.value__);
+				return (t1.value_ == t2.value_);
 			}
 
 	// Convert a floating point number of days into a TimeSpan.
@@ -307,15 +307,15 @@ public struct TimeSpan : IComparable
 	// Get the hash code for this instance.
 	public override int GetHashCode()
 			{
-				return unchecked((int)(value__ ^ (value__ >> 16)));
+				return unchecked((int)(value_ ^ (value_ >> 16)));
 			}
 
 	// Negate a TimeSpan value.
 	public TimeSpan Negate()
 			{
-				if(value__ != Int64.MinValue)
+				if(value_ != Int64.MinValue)
 				{
-					return new TimeSpan(unchecked(-value__));
+					return new TimeSpan(unchecked(-value_));
 				}
 				else
 				{
@@ -415,7 +415,7 @@ public struct TimeSpan : IComparable
 			{
 				checked
 				{
-					return new TimeSpan(value__ - ts.value__);
+					return new TimeSpan(value_ - ts.value_);
 				}
 			}
 
@@ -438,27 +438,27 @@ public struct TimeSpan : IComparable
 			}
 	public static bool operator==(TimeSpan t1, TimeSpan t2)
 			{
-				return (t1.value__ == t2.value__);
+				return (t1.value_ == t2.value_);
 			}
 	public static bool operator!=(TimeSpan t1, TimeSpan t2)
 			{
-				return (t1.value__ != t2.value__);
+				return (t1.value_ != t2.value_);
 			}
 	public static bool operator>(TimeSpan t1, TimeSpan t2)
 			{
-				return (t1.value__ > t2.value__);
+				return (t1.value_ > t2.value_);
 			}
 	public static bool operator>=(TimeSpan t1, TimeSpan t2)
 			{
-				return (t1.value__ >= t2.value__);
+				return (t1.value_ >= t2.value_);
 			}
 	public static bool operator<(TimeSpan t1, TimeSpan t2)
 			{
-				return (t1.value__ < t2.value__);
+				return (t1.value_ < t2.value_);
 			}
 	public static bool operator<=(TimeSpan t1, TimeSpan t2)
 			{
-				return (t1.value__ <= t2.value__);
+				return (t1.value_ <= t2.value_);
 			}
 
 	// Properties.
@@ -466,28 +466,28 @@ public struct TimeSpan : IComparable
 			{
 				get
 				{
-					return unchecked((int)(value__ / TicksPerDay));
+					return unchecked((int)(value_ / TicksPerDay));
 				}
 			}
 	public int Hours
 			{
 				get
 				{
-					return unchecked((int)((value__ / TicksPerHour) % 24));
+					return unchecked((int)((value_ / TicksPerHour) % 24));
 				}
 			}
 	public int Minutes
 			{
 				get
 				{
-					return unchecked((int)((value__ / TicksPerMinute) % 60));
+					return unchecked((int)((value_ / TicksPerMinute) % 60));
 				}
 			}
 	public int Seconds
 			{
 				get
 				{
-					return unchecked((int)((value__ / TicksPerSecond) % 60));
+					return unchecked((int)((value_ / TicksPerSecond) % 60));
 				}
 			}
 	public int Milliseconds
@@ -495,49 +495,49 @@ public struct TimeSpan : IComparable
 				get
 				{
 					return unchecked
-						((int)((value__ / TicksPerMillisecond) % 1000));
+						((int)((value_ / TicksPerMillisecond) % 1000));
 				}
 			}
 	public long Ticks
 			{
 				get
 				{
-					return value__;
+					return value_;
 				}
 			}
 	public double TotalDays
 			{
 				get
 				{
-					return ((double)value__) / ((double)TicksPerDay);
+					return ((double)value_) / ((double)TicksPerDay);
 				}
 			}
 	public double TotalHours
 			{
 				get
 				{
-					return ((double)value__) / ((double)TicksPerHour);
+					return ((double)value_) / ((double)TicksPerHour);
 				}
 			}
 	public double TotalMinutes
 			{
 				get
 				{
-					return ((double)value__) / ((double)TicksPerMinute);
+					return ((double)value_) / ((double)TicksPerMinute);
 				}
 			}
 	public double TotalSeconds
 			{
 				get
 				{
-					return ((double)value__) / ((double)TicksPerSecond);
+					return ((double)value_) / ((double)TicksPerSecond);
 				}
 			}
 	public double TotalMilliseconds
 			{
 				get
 				{
-					double temp = ((double)value__) / 1000.0;
+					double temp = ((double)value_) / 1000.0;
 					if(temp > 922337203685477.0)
 					{
 						return 922337203685477.0;

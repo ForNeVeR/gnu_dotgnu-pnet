@@ -29,19 +29,19 @@ public struct Byte : IComparable, IFormattable
 	, IConvertible
 #endif
 {
-	private byte value__;
+	private byte value_;
 
 	public const byte MaxValue = 255;
 	public const byte MinValue = 0;
 
 	// Override inherited methods.
 	public override int GetHashCode()
-			{ return (int)value__; }
+			{ return (int)value_; }
 	public override bool Equals(Object value)
 			{
 				if(value is Byte)
 				{
-					return (value__ == ((Byte)value).value__);
+					return (value_ == ((Byte)value).value_);
 				}
 				else
 				{
@@ -53,25 +53,25 @@ public struct Byte : IComparable, IFormattable
 	public override String ToString()
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, null,
+							((ulong)value_, 0, 0, false, null,
 							 NumberFormatInfo.CurrentInfo);
 			}
 	public String ToString(String format)
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, format,
+							((ulong)value_, 0, 0, false, format,
 							 NumberFormatInfo.CurrentInfo);
 			}
 	public String ToString(IFormatProvider provider)
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, null,
+							((ulong)value_, 0, 0, false, null,
 							 NumberFormatInfo.GetInstance(provider));
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
 				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, format,
+							((ulong)value_, 0, 0, false, format,
 							 NumberFormatInfo.GetInstance(provider));
 			}
 
@@ -105,7 +105,7 @@ public struct Byte : IComparable, IFormattable
 					{
 						throw new ArgumentException(_("Arg_MustBeByte"));
 					}
-					return ((int)value__) - ((int)((Byte)value).value__);
+					return ((int)value_) - ((int)((Byte)value).value_);
 				}
 				else
 				{
@@ -122,55 +122,55 @@ public struct Byte : IComparable, IFormattable
 			}
 	bool IConvertible.ToBoolean(IFormatProvider provider)
 			{
-				return Convert.ToBoolean(value__);
+				return Convert.ToBoolean(value_);
 			}
 	byte IConvertible.ToByte(IFormatProvider provider)
 			{
-				return value__;
+				return value_;
 			}
 	sbyte IConvertible.ToSByte(IFormatProvider provider)
 			{
-				return Convert.ToSByte(value__);
+				return Convert.ToSByte(value_);
 			}
 	short IConvertible.ToInt16(IFormatProvider provider)
 			{
-				return Convert.ToInt16(value__);
+				return Convert.ToInt16(value_);
 			}
 	ushort IConvertible.ToUInt16(IFormatProvider provider)
 			{
-				return Convert.ToUInt16(value__);
+				return Convert.ToUInt16(value_);
 			}
 	char IConvertible.ToChar(IFormatProvider provider)
 			{
-				return Convert.ToChar(value__);
+				return Convert.ToChar(value_);
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
-				return Convert.ToInt32(value__);
+				return Convert.ToInt32(value_);
 			}
 	uint IConvertible.ToUInt32(IFormatProvider provider)
 			{
-				return Convert.ToUInt32(value__);
+				return Convert.ToUInt32(value_);
 			}
 	long IConvertible.ToInt64(IFormatProvider provider)
 			{
-				return Convert.ToInt64(value__);
+				return Convert.ToInt64(value_);
 			}
 	ulong IConvertible.ToUInt64(IFormatProvider provider)
 			{
-				return Convert.ToUInt64(value__);
+				return Convert.ToUInt64(value_);
 			}
 	float IConvertible.ToSingle(IFormatProvider provider)
 			{
-				return Convert.ToSingle(value__);
+				return Convert.ToSingle(value_);
 			}
 	double IConvertible.ToDouble(IFormatProvider provider)
 			{
-				return Convert.ToDouble(value__);
+				return Convert.ToDouble(value_);
 			}
 	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
-				return Convert.ToDecimal(value__);
+				return Convert.ToDecimal(value_);
 			}
 	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{

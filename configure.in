@@ -259,6 +259,6 @@ if test "x$no_recursion" != "xyes"; then
 		cd "${srcdir}/libffi"
 		./configure --disable-multilib --disable-shared
 	fi
-	cd ../libgc
+	cd "${srcdir}/libgc"
 	./configure --enable-threads=$THREADS
 fi

@@ -26,6 +26,8 @@
 	engine/pinvoke.c, ilnative/ilcheck.c: modify the engine to handle
 	both libffi and non-libffi internalcall marshalling.
 
+	* configure.in: directory cd error for "libgc" configuration.
+
 2002-05-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/src/powerpc/ffi_darwin.c: rearrange declarations

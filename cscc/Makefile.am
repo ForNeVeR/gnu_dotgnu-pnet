@@ -6,7 +6,8 @@ man_MANS        = cscc.1 csdoc.1
 EXTRA_DIST      = $(man_MANS)
 
 cscc_SOURCES = cscc.c
-cscc_LDADD   = common/libILCCommon.a ../ilalink/libILLink.a \
+cscc_LDADD   = common/libILCCommon.a ../ilasm/libILAsm.a \
+			   ../ilalink/libILLink.a \
 			   ../dumpasm/libILDumpAsm.a ../image/libILImage.a \
 			   ../support/libILSupport.a
 

@@ -101,6 +101,11 @@ extern char *ILAsmDebugLastFile;
 extern char *ILAsmLibraryName;
 
 /*
+ * Reset global variables to their default state.
+ */
+void ILAsmBuildReset(void);
+
+/*
  * Initialize the building routines.
  */
 void ILAsmBuildInit(const char *outputFilename);

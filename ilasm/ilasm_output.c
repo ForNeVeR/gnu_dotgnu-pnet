@@ -69,6 +69,13 @@ static ILAsmOutException *exceptionList = 0;
 static ILAsmOutException *lastException = 0;
 static unsigned long  numExceptions = 0;
 static int            haveDebug = 0;
+static ILUInt32 switchCountOffset = 0;
+static ILUInt32 ssaStartOffset = 0;
+static ILUInt32 switchStartOffset = 0;
+static ILUInt32 switchHighOffset = 0;
+static ILUInt32 switchNPairsOffset = 0;
+static char* defaultTableSwitchLabel = 0;
+static char* defaultLookupSwitchLabel = 0;
 
 /*
  * Output a single byte to the buffer.
@@ -241,6 +248,64 @@ static void OutShortVar(ILInt32 lopcode, ILInt32 sopcode,
 	}
 }
 
+void ILAsmOutReset(void)
+{
+	LocalInfo *local, *nextLocal;
+	ILAsmOutException *exception, *nextException;
+
+	/* Destroy allocated data structures */
+	if(ILAsmWriter)
+	{
+		ILWriterDestroy(ILAsmWriter);
+	}
+	if(buffer)
+	{
+		ILFree(buffer);
+	}
+	local = localNames;
+	while(local != 0)
+	{
+		nextLocal = local->next;
+		ILFree(local);
+		local = nextLocal;
+	}
+	exception = exceptionList;
+	while(exception != 0)
+	{
+		nextException = exception->next;
+		ILFree(exception);
+		exception = nextException;
+	}
+	if(initLabelPool)
+	{
+		ILMemPoolClear(&labelPool);
+		ILMemPoolClear(&labelRefPool);
+	}
+
+	/* Set the global variables back to their defaults */
+	ILAsmWriter = 0;
+	buffer = 0;
+	length = 0;
+	localVars = 0;
+	maxStack = 0;
+	initLocals = 0;
+	localIndex = 0;
+	localNames = 0;
+	exceptionList = 0;
+	lastException = 0;
+	numExceptions = 0;
+	haveDebug = 0;
+	switchCountOffset = 0;
+	ssaStartOffset = 0;
+	switchStartOffset = 0;
+	switchHighOffset = 0;
+	switchNPairsOffset = 0;
+	defaultTableSwitchLabel = 0;
+	defaultLookupSwitchLabel = 0;
+	initLabelPool = 0;
+	labels = 0;
+}
+
 void ILAsmOutCreate(FILE *stream, int seekable, int type, int flags)
 {
 	ILAsmWriter = ILWriterCreate(stream, seekable, type, flags);
@@ -256,6 +321,7 @@ int ILAsmOutDestroy(void)
 	ILAsmBuildEndModule();
 	ILWriterOutputMetadata(ILAsmWriter, ILAsmImage);
 	error = ILWriterDestroy(ILAsmWriter);
+	ILAsmWriter = 0;
 	if(error < 0)
 	{
 		ILAsmOutOfMemory();
@@ -893,8 +959,6 @@ void ILAsmOutBranch(ILInt32 opcode, char *label)
 	Branch(opcode, label);
 }
 
-static ILUInt32 switchCountOffset = 0;
-
 /*
  * Output a switch label reference.
  */
@@ -1230,8 +1294,6 @@ void ILAsmOutDebugLine(char *filename, ILUInt32 line)
 	info->debugLine = line;
 	haveDebug = 1;
 }
-
-static ILUInt32 ssaStartOffset = 0;
 
 void ILAsmOutSSAStart(ILInt32 opcode)
 {
@@ -2250,10 +2312,6 @@ void ILJavaAsmOutMultinewarrayFromName(ILInt32 opcode, char *typeName, ILInt64 d
 	OUT_BYTE(dim);
 }
 
-static ILUInt32 switchStartOffset = 0;
-static ILUInt32 switchHighOffset = 0;
-static ILUInt32 switchNPairsOffset = 0;
-
 /*
  * Output a switch label reference in java.
  */
@@ -2290,8 +2348,6 @@ static void JavaSwitchRef(char *name)
 	OUT_BYTE(0);
 	OUT_BYTE(0);
 }
-
-static char* defaultTableSwitchLabel = 0;
 
 void ILJavaAsmOutTableSwitchDefaultRefInt(ILInt64 addr)
 {
@@ -2352,8 +2408,6 @@ void ILJavaAsmOutTableSwitchEnd(ILUInt64 low)
 	buffer[switchHighOffset + 2] = (unsigned char)(high >> 8);
 	buffer[switchHighOffset + 3] = (unsigned char)high;
 }
-
-static char* defaultLookupSwitchLabel = 0;
 
 void ILJavaAsmOutLookupSwitchDefaultRefInt(ILInt64 addr)
 {

@@ -1,4 +1,13 @@
 
+2002-12-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/Makefile.am, cscc/cscc.c, ilasm/Makefile.am,
+	ilasm/ilasm.c, ilasm/ilasm_build.c, ilasm/ilasm_build.h,
+	ilasm/ilasm_data.c, ilasm/ilasm_data.h, ilasm/ilasm_grammar.y,
+	ilasm/ilasm_main.c, ilasm/ilasm_output.c, ilasm/ilasm_output.h:
+	turn "ilasm" into a library that can be directly linked into
+	"cscc", and then link it into "cscc".
+
 2002-12-12 Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_defs.tc, 

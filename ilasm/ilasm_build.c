@@ -64,6 +64,47 @@ static int classStackMax;
 static ILProgramItem **scopeStack;
 static int scopeStackSize;
 static int scopeStackMax;
+static long nextUnique = 1;
+
+void ILAsmBuildReset(void)
+{
+	/* Destroy the global state */
+	if(ILAsmContext)
+	{
+		ILContextDestroy(ILAsmContext);
+	}
+	if(classStack)
+	{
+		ILFree(classStack);
+	}
+	if(scopeStack)
+	{
+		ILFree(scopeStack);
+	}
+
+	/* Set the globals back to their defaults */
+	ILAsmContext = 0;
+	ILAsmImage = 0;
+	ILAsmModule = 0;
+	ILAsmAssembly = 0;
+	ILAsmLastToken = 0;
+	ILAsmCurrScope = 0;
+	ILAsmClass = 0;
+	ILAsmCurrAssemblyRef = 0;
+	ILAsmModuleClass = 0;
+	ILAsmDebugMode = 0;
+	ILAsmDebugLastFile = "";
+	ILAsmLibraryName = "mscorlib";
+	namespace.string = 0;
+	namespace.len = 0;
+	classStack = 0;
+	classStackSize = 0;
+	classStackMax = 0;
+	scopeStack = 0;
+	scopeStackSize = 0;
+	scopeStackMax = 0;
+	nextUnique = 1;
+}
 
 void ILAsmBuildInit(const char *outputFilename)
 {
@@ -215,7 +256,6 @@ void ILAsmSplitName(const char *str, int len, const char **name,
 void ILAsmBuildNewClass(const char *name, ILClass *parent, ILUInt32 attrs)
 {
 	ILClass *info;
-	static long nextUnique = 1;
 	char uniqueName[64];
 
 	/* Set the default parent to "System.Object" if necessary */

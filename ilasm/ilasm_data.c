@@ -43,6 +43,18 @@ static ILUInt32 dataOffset = 0;
 static ILUInt32 tlsOffset = 0;
 static ILHashTable *nameTable = 0;
 
+void ILAsmDataReset(void)
+{
+	sectionIsData = 1;
+	dataOffset = 0;
+	tlsOffset = 0;
+	if(nameTable != 0)
+	{
+		ILHashDestroy(nameTable);
+		nameTable = 0;
+	}
+}
+
 void ILAsmDataSetNormal(void)
 {
 	sectionIsData = 1;
@@ -85,6 +97,11 @@ static int DataLabelMatchFunc(const void *elem, const void *key)
 	return !strcmp(((DataLabelHashEntry *)elem)->name, (const char *)key);
 }
 
+static void DataLabelFreeFunc(void *elem)
+{
+	ILFree(elem);
+}
+
 void ILAsmDataSetLabel(char *name)
 {
 	DataLabelHashEntry *entry;
@@ -92,7 +109,8 @@ void ILAsmDataSetLabel(char *name)
 	{
 		nameTable = ILHashCreate(0, DataLabelComputeFunc,
 								 DataLabelKeyComputeFunc,
-								 DataLabelMatchFunc, 0);
+								 DataLabelMatchFunc,
+								 DataLabelFreeFunc);
 		if(!nameTable)
 		{
 			ILAsmOutOfMemory();

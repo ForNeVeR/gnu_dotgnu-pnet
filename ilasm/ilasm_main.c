@@ -1,7 +1,7 @@
 /*
  * ilasm_main.c - Main entry point for "ilasm".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "il_system.h"
 #include "il_utils.h"
 #include "ilasm_build.h"
+#include "ilasm_data.h"
 #include "ilasm_output.h"
 
 #ifdef	__cplusplus
@@ -122,6 +123,7 @@ extern char *ILAsmFilename;
 extern long  ILAsmLineNum;
 extern int   ILAsmErrors;
 extern int   ILAsmParseHexBytes;
+extern int   ILAsmParseJava;
 
 /*
  * Code generation flags.
@@ -130,8 +132,9 @@ int ILAsmShortInsns = 1;
 
 static void usage(const char *progname);
 static void version(void);
+static void reset(void);
 
-int main(int argc, char *argv[])
+int ILAsmMain(int argc, char *argv[])
 {
 	char *progname = argv[0];
 	char *outputFile = 0;
@@ -146,6 +149,10 @@ int main(int argc, char *argv[])
 	int flags = IL_WRITEFLAG_SUBSYS_CUI;
 	int defFormatIsExe = 0;
 	char *resourceFile = 0;
+
+	/* Reset the global option variables, in case we were called
+	   multiple times within the same process */
+	reset();
 
 	/* Parse the command-line arguments */
 	state = 0;
@@ -177,6 +184,7 @@ int main(int argc, char *argv[])
 				else
 				{
 					usage(progname);
+					reset();
 					return 1;
 				}
 			}
@@ -315,6 +323,7 @@ int main(int argc, char *argv[])
 			case 'v':
 			{
 				version();
+				reset();
 				return 0;
 			}
 			/* Not reached */
@@ -343,6 +352,7 @@ int main(int argc, char *argv[])
 			default:
 			{
 				usage(progname);
+				reset();
 				return 1;
 			}
 			/* Not reached */
@@ -353,6 +363,7 @@ int main(int argc, char *argv[])
 	if(argc <= 1)
 	{
 		usage(progname);
+		reset();
 		return 1;
 	}
 
@@ -437,6 +448,7 @@ int main(int argc, char *argv[])
 			if((outfile = fopen(outputFile, "w")) == NULL)
 			{
 				perror(outputFile);
+				reset();
 				return 1;
 			}
 		}
@@ -510,6 +522,7 @@ int main(int argc, char *argv[])
 			fclose(outfile);
 			ILDeleteFile(outputFile);
 		}
+		reset();
 		return 1;
 	}
 
@@ -520,6 +533,7 @@ int main(int argc, char *argv[])
 		{
 			fclose(outfile);
 		}
+		reset();
 		return 1;
 	}
 	if(outfile != NULL)
@@ -528,13 +542,14 @@ int main(int argc, char *argv[])
 	}
 
 	/* Done */
+	reset();
 	return 0;
 }
 
 static void usage(const char *progname)
 {
 	fprintf(stdout, "ILASM " VERSION " - Intermediate Language Assembler\n");
-	fprintf(stdout, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "Copyright (c) 2001, 2002 Southern Storm Software, Pty Ltd.\n");
 	fprintf(stdout, "\n");
 	fprintf(stdout, "Usage: %s [options] input.il ...\n", progname);
 	fprintf(stdout, "\n");
@@ -545,13 +560,31 @@ static void version(void)
 {
 
 	printf("ILASM " VERSION " - Intermediate Language Assembler\n");
-	printf("Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	printf("Copyright (c) 2001, 2002 Southern Storm Software, Pty Ltd.\n");
 	printf("\n");
 	printf("ILASM comes with ABSOLUTELY NO WARRANTY.  This is free software,\n");
 	printf("and you are welcome to redistribute it under the terms of the\n");
 	printf("GNU General Public License.  See the file COPYING for further details.\n");
 	printf("\n");
 	printf("Use the `--help' option to get help on the command-line options.\n");
+}
+
+/*
+ * Reset all global variables to their defaults so that we
+ * can re-enter the assembler multiple times.
+ */
+static void reset(void)
+{
+	ilasm_debug = 0;
+	ILAsmFilename = 0;
+	ILAsmLineNum = 1;
+	ILAsmErrors = 0;
+	ILAsmParseHexBytes = 0;
+	ILAsmParseJava = 0;
+	ILAsmShortInsns = 1;
+	ILAsmOutReset();
+	ILAsmBuildReset();
+	ILAsmDataReset();
 }
 
 #ifdef	__cplusplus

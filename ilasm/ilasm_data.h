@@ -26,6 +26,11 @@ extern	"C" {
 #endif
 
 /*
+ * Reset the data output routines to the startup default.
+ */
+void ILAsmDataReset(void);
+
+/*
  * Set the output data section to normal initialized data.
  */
 void ILAsmDataSetNormal(void);

@@ -124,7 +124,7 @@ void ILAsmPrintMessage(const char *filename, long linenum,
  */
 void ILAsmOutOfMemory(void)
 {
-	fprintf(stderr, "virtual memory exhausted\n");
+	fprintf(stderr, "ilasm: virtual memory exhausted\n");
 	exit(1);
 }
 

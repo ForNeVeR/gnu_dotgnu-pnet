@@ -43,6 +43,12 @@ extern	"C" {
 #endif
 
 /*
+ * Define this variable to use the builtin "ilasm" library
+ * rather than the external "ilasm" executable.
+ */
+#define	USE_BUILTIN_ILASM	1
+
+/*
  * The default system include path.  We look in "lib" first,
  * just in case there is a pre-compiled "dll" for a package.
  */
@@ -880,6 +886,8 @@ static char *FindLanguagePlugin(char *name, char *ext)
 	return 0;
 }
 
+#ifndef USE_BUILTIN_ILASM
+
 /*
  * Find the "ilasm" program.
  */
@@ -932,6 +940,8 @@ static void FindILAsmProgram(void)
 	fprintf(stderr, _("%s: could not locate the `ilasm' program\n"), progname);
 	exit(1);
 }
+
+#endif /* !USE_BUILTIN_ILASM */
 
 /*
  * Compare two file extensions for equality, while ignoring case.
@@ -1053,6 +1063,11 @@ static int ExecChild(char **argv, const char *filename)
 }
 
 /*
+ * Import the assembler code from "libILAsm".
+ */
+int ILAsmMain(int argc, char *argv[]);
+
+/*
  * Process an input file using the assembler.
  */
 static int ProcessWithAssembler(const char *filename, int jvmMode)
@@ -1065,8 +1080,12 @@ static int ProcessWithAssembler(const char *filename, int jvmMode)
 	/* Build the assembler command-line */
 	cmdline = 0;
 	cmdline_size = 0;
+#ifdef USE_BUILTIN_ILASM
+	AddArgument(&cmdline, &cmdline_size, "ilasm");
+#else
 	FindILAsmProgram();
 	AddArgument(&cmdline, &cmdline_size, ilasm_program);
+#endif
 	if(executable_flag)
 	{
 		obj_output = ChangeExtension((char *)filename, "objtmp");
@@ -1106,7 +1125,11 @@ static int ProcessWithAssembler(const char *filename, int jvmMode)
 	AddArgument(&cmdline, &cmdline_size, 0);
 
 	/* Execute the assembler */
+#ifdef USE_BUILTIN_ILASM
+	status = ILAsmMain(cmdline_size - 1, cmdline);
+#else
 	status = ExecChild(cmdline, 0);
+#endif
 	ILFree(cmdline);
 	if(status != 0)
 	{
@@ -1135,7 +1158,9 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	   when it terminates */
 	if(compile_flag || executable_flag)
 	{
+	#ifndef USE_BUILTIN_ILASM
 		FindILAsmProgram();
+	#endif
 	}
 
 	/* Build the command-line for the plug-in */
@@ -1386,7 +1411,11 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	/* Build the assembler command-line */
 	cmdline = 0;
 	cmdline_size = 0;
+#ifdef USE_BUILTIN_ILASM
+	AddArgument(&cmdline, &cmdline_size, "ilasm");
+#else
 	AddArgument(&cmdline, &cmdline_size, ilasm_program);
+#endif
 	if(executable_flag)
 	{
 		obj_output = ChangeExtension((char *)filename, "objtmp");
@@ -1423,7 +1452,11 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	/* Execute the assembler */
 	saveAsm = CCStringListContains(extension_flags, num_extension_flags,
 							       "save-asm");
+#ifdef USE_BUILTIN_ILASM
+	status = ILAsmMain(cmdline_size - 1, cmdline);
+#else
 	status = ExecChild(cmdline, 0);
+#endif
 	ILFree(cmdline);
 	if(status != 0)
 	{

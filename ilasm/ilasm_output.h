@@ -35,6 +35,11 @@ extern	"C" {
 extern ILWriter *ILAsmWriter;
 
 /*
+ * Reset global variables back to their defaults.
+ */
+void ILAsmOutReset(void);
+
+/*
  * Create the global image writer.
  */
 void ILAsmOutCreate(FILE *stream, int seekable, int type, int flags);

@@ -25,6 +25,21 @@ extern	"C" {
 #endif
 
 /*
+ * Builtin public key values, to be used to fool Microsoft runtime
+ * engines into loading our assemblies without complaining about
+ * unimportant linking policy issues.
+ */
+char const ILLinkerNeutralKey[] = "00000000000000000400000000000000";
+char const ILLinkerNeutralKeyToken[] = "b77a5c561934e089";
+char const ILLinkerMicrosoftKey[] =
+	"002400000480000094000000060200000024000052534131000400000100010007d1"
+	"fa57c4aed9f0a32e84aa0faefd0de9e8fd6aec8f87fb03766c834c99921eb23be79a"
+	"d9d5dcc1dd9ad236132102900b723cf980957fc4e177108fc607774f29e8320e92ea"
+	"05ece4e821c0a5efe8f1645c4c0c93c1ab99285d622caa652c1dfad63d745d6f2de5"
+	"f17e5eaf0fc4963d261c8a12436518206dc093344d5ad293";
+char const ILLinkerMicrosoftKeyToken[] = "b03f5f7f11d50a3a";
+
+/*
  * Process a single image that is to be linked into the final binary.
  */
 static int ProcessImage(ILLinker *linker, ILImage *image,

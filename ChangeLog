@@ -11,6 +11,10 @@
 	* image/meta_build.c: on-demand loading support for FieldDef,
 	MethodDef, and PInvoke tables.
 
+	* ilalink/link_create.c, ilalink/link_image.c, ilalink/link_library.c,
+	ilalink/link_main.c, ilalink/linker.h, include/il_linker.h:
+	add public key and public key token support to the linker.
+
 2003-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/dynlib.c: try using NSAddImage to load dynamic

@@ -318,14 +318,71 @@ void _ILLinkerOutOfMemory(ILLinker *linker)
 	linker->outOfMemory = 1;
 }
 
+/*
+ * Convert a hex string into a byte array.
+ */
+static unsigned char *HexToBytes(ILLinker *linker, const char *str, int *len)
+{
+	unsigned char *bytes = 0;
+	unsigned char *newBytes;
+	int value = 0;
+	int temp;
+	int digit = 0;
+	*len = 0;
+	while(*str != '\0')
+	{
+		if(*str >= '0' && *str <= '9')
+		{
+			temp = (*str - '0');
+		}
+		else if(*str >= 'A' && *str <= 'F')
+		{
+			temp = (*str - 'A' + 10);
+		}
+		else if(*str >= 'a' && *str <= 'f')
+		{
+			temp = (*str - 'a' + 10);
+		}
+		else
+		{
+			++str;
+			continue;
+		}
+		if(!digit)
+		{
+			value = temp;
+			digit = 1;
+		}
+		else
+		{
+			value = value * 16 + temp;
+			digit = 0;
+			if((newBytes = (unsigned char *)ILRealloc(bytes, *len + 1)) == 0)
+			{
+				ILFree(bytes);
+				_ILLinkerOutOfMemory(linker);
+				*len = 0;
+				return 0;
+			}
+			bytes = newBytes;
+			bytes[(*len)++] = (unsigned char)value;
+		}
+		++str;
+	}
+	return bytes;
+}
+
 int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 									const char *moduleName,
 									const char *assemblyName,
 									ILUInt16 *assemblyVersion,
+									const char *assemblyKey,
 									int hashAlgorithm)
 {
 	ILModule *module;
 	ILAssembly *assembly;
+	unsigned char *bytes;
+	int lenBytes;
 
 	/* Create the module */
 	module = ILModuleCreate(linker->image, 0, moduleName, 0);
@@ -344,6 +401,32 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 	}
 	ILAssemblySetVersion(assembly, assemblyVersion);
 	ILAssemblySetHashAlgorithm(assembly, hashAlgorithm);
+	if(assemblyKey)
+	{
+		/* Recognise special builtin key values */
+		if(!strcmp(assemblyKey, "neutral"))
+		{
+			assemblyKey = ILLinkerNeutralKey;
+		}
+		else if(!strcmp(assemblyKey, "ms"))
+		{
+			assemblyKey = ILLinkerMicrosoftKey;
+		}
+
+		/* Convert the key from hex into a byte array */
+		bytes = HexToBytes(linker, assemblyKey, &lenBytes);
+		if(bytes)
+		{
+			if(!ILAssemblySetOriginator
+					(assembly, bytes, (unsigned long)(long)lenBytes))
+			{
+				_ILLinkerOutOfMemory(linker);
+			}
+			ILAssemblySetAttrs(assembly, IL_META_ASSEM_PUBLIC_KEY,
+										 IL_META_ASSEM_PUBLIC_KEY);
+			ILFree(bytes);
+		}
+	}
 
 	/* Create the "<Module>" type, which holds global functions and variables */
 	if(!ILClassCreate((ILProgramItem *)module, 0, "<Module>", 0, 0))

@@ -19,6 +19,7 @@
  */
 
 #include "linker.h"
+#include "il_crypt.h"
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -179,6 +180,10 @@ static void LibraryDestroy(ILLibrary *library)
 		next = library->altNames;
 		ILFree(library->name);
 		ILFree(library->filename);
+		if(library->publicKey)
+		{
+			ILFree(library->publicKey);
+		}
 		ILHashDestroy(library->classHash);
 		ILHashDestroy(library->symbolHash);
 		ILMemPoolDestroy(&(library->pool));
@@ -284,6 +289,8 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 	ILLibrary *lastLibrary;
 	ILLibrary *nextLibrary;
 	ILAssembly *assem;
+	const void *originator;
+	unsigned long originatorLen;
 
 	/* Scan the assembly definitions */
 	library = 0;
@@ -299,6 +306,8 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 			LibraryDestroy(library);
 			return 0;
 		}
+		nextLibrary->publicKey = 0;
+		nextLibrary->publicKeyLen = 0;
 		nextLibrary->name = ILDupString(ILAssembly_Name(assem));
 		if(!(nextLibrary->name))
 		{
@@ -326,6 +335,17 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 		}
 		else
 		{
+			originator = ILAssemblyGetOriginator(assem, &originatorLen);
+			if(originator && originatorLen)
+			{
+				nextLibrary->publicKey =
+					(unsigned char *)ILMalloc(originatorLen + 1);
+				if(nextLibrary->publicKey)
+				{
+					ILMemCpy(nextLibrary->publicKey, originator, originatorLen);
+					nextLibrary->publicKeyLen = (ILUInt32)originatorLen;
+				}
+			}
 			nextLibrary->classHash =
 				ILHashCreate(0, (ILHashComputeFunc)ClassHash_Compute,
 								(ILHashKeyComputeFunc)ClassHash_KeyCompute,
@@ -333,6 +353,10 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 								(ILHashFreeFunc)0);
 			if(!(nextLibrary->classHash))
 			{
+				if(nextLibrary->publicKey)
+				{
+					ILFree(nextLibrary->publicKey);
+				}
 				ILFree(nextLibrary->filename);
 				ILFree(nextLibrary->name);
 				ILFree(nextLibrary);
@@ -347,6 +371,10 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 			if(!(nextLibrary->symbolHash))
 			{
 				ILHashDestroy(nextLibrary->classHash);
+				if(nextLibrary->publicKey)
+				{
+					ILFree(nextLibrary->publicKey);
+				}
 				ILFree(nextLibrary->filename);
 				ILFree(nextLibrary->name);
 				ILFree(nextLibrary);
@@ -899,6 +927,32 @@ void _ILLinkerPrintClass(ILLibraryFind *find, const char *name,
 }
 
 /*
+ * Set the public key token for an assembly reference.
+ */
+static int SetAssemblyRefToken(ILAssembly *assem, unsigned char *key,
+							   ILUInt32 keyLen)
+{
+	ILSHAContext sha;
+	unsigned char hash[IL_SHA_HASH_SIZE];
+	unsigned char token[8];
+	int posn;
+
+	/* Compute the SHA1 hash of the key value */
+	ILSHAInit(&sha);
+	ILSHAData(&sha, key, (unsigned long)keyLen);
+	ILSHAFinalize(&sha, hash);
+
+	/* The token is the last 8 bytes of the hash, reversed */
+	for(posn = 0; posn < 8; ++posn)
+	{
+		token[posn] = hash[IL_SHA_HASH_SIZE - posn - 1];
+	}
+
+	/* Set the token on the assembly reference record */
+	return ILAssemblySetOriginator(assem, token, 8);
+}
+
+/*
  * Make a type reference within an image.
  */
 static ILClass *MakeTypeRef(ILLibraryFind *find, ILLibraryClass *libClass,
@@ -955,6 +1009,15 @@ static ILClass *MakeTypeRef(ILLibraryFind *find, ILLibraryClass *libClass,
 				return 0;
 			}
 			ILAssemblySetVersion(assem, find->library->version);
+			if(find->library->publicKey)
+			{
+				if(!SetAssemblyRefToken(assem, find->library->publicKey,
+								        find->library->publicKeyLen))
+				{
+					_ILLinkerOutOfMemory(find->linker);
+					return 0;
+				}
+			}
 		}
 
 		/* See if we already have a reference */

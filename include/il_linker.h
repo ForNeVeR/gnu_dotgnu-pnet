@@ -59,6 +59,7 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 									const char *moduleName,
 									const char *assemblyName,
 									ILUInt16 *assemblyVersion,
+									const char *assemblyKey,
 									int hashAlgorithm);
 
 /*
@@ -155,6 +156,18 @@ int ILLinkerSetFlags(ILLinker *linker, int flags);
  * options.  It is really linked into the calling program.
  */
 int ILLinkerMain(int argc, char *argv[]);
+
+/*
+ * The neutral ECMA public key and its token value.
+ */
+extern char const ILLinkerNeutralKey[];
+extern char const ILLinkerNeutralKeyToken[];
+
+/*
+ * The Microsoft public key and its token value.
+ */
+extern char const ILLinkerMicrosoftKey[];
+extern char const ILLinkerMicrosoftKeyToken[];
 
 #ifdef	__cplusplus
 };

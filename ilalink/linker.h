@@ -87,6 +87,8 @@ struct _tagILLibrary
 	char           *filename;		/* Filename for the library's assembly */
 	ILUInt16		version[4];		/* Version of the library's assembly */
 	ILLibrary	   *altNames;		/* Alternative names for the library */
+	unsigned char  *publicKey;		/* Public key value for the library */
+	ILUInt32		publicKeyLen;	/* Length of the public key value */
 	ILHashTable    *classHash;		/* Hash table for class name lookup */
 	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
 	ILMemPool		pool;			/* Memory pool for symbol allocation */

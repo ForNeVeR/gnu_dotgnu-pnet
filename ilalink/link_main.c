@@ -88,6 +88,9 @@ static ILCmdLineOption const options[] = {
 	{"-M", 'M', 1,
 		"-fmodule-name=name          or -M name",
 		"Specify the name of the module to embed in the output."},
+	{"-K", 'K', 1,
+		"-fassembly-key=key          or -K key",
+		"Specify the assembly's public key value."},
 	{"-E", 'E', 1, 0, 0},
 	{"--entry-point", 'E', 1,
 		"--entry-point name          or -E name",
@@ -193,6 +196,7 @@ int ILLinkerMain(int argc, char *argv[])
 	char *assemblyName = NULL;
 	ILUInt16 assemblyVersion[4] = {0, 0, 0, 0};
 	char *moduleName = NULL;
+	const char *publicKey = NULL;
 	char *entryPoint = NULL;
 	int hashAlgorithm = IL_META_HASHALG_SHA1;
 	int len;
@@ -350,6 +354,12 @@ int ILLinkerMain(int argc, char *argv[])
 			}
 			break;
 
+			case 'K':
+			{
+				publicKey = param;
+			}
+			break;
+
 			case 'E':
 			{
 				entryPoint = param;
@@ -495,6 +505,10 @@ int ILLinkerMain(int argc, char *argv[])
 								progname, param);
 						return 1;
 					}
+				}
+				else if(!strncmp(param, "assembly-key=", 13))
+				{
+					publicKey = param + 13;
 				}
 				else if(!strncmp(param, "module-name=", 12))
 				{
@@ -717,7 +731,7 @@ int ILLinkerMain(int argc, char *argv[])
 	/* Create the global module and assembly */
 	if(!ILLinkerCreateModuleAndAssembly(linker, moduleName,
 										assemblyName, assemblyVersion,
-										hashAlgorithm))
+										publicKey, hashAlgorithm))
 	{
 		ILLinkerDestroy(linker);
 		fclose(outfile);

@@ -21,6 +21,9 @@
 	Xsharp/TopLevelWindow.cs: detect when top-level forms are activated
 	or deactivated and dispatch the appropriate events.
 
+	* System.Windows.Forms/ControlPaint.cs: implement some more of
+	the "ControlPaint" utility class.
+
 2003-06-22  Rich Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ImageList.cs: fix a couple of minor mistakes

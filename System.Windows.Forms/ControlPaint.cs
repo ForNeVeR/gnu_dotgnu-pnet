@@ -306,7 +306,6 @@ public sealed class ControlPaint
 					break;
 				}
 			}
-	[TODO]
 	public static void DrawBorder
 				(Graphics graphics, Rectangle bounds, Color leftColor,
 			     int leftWidth, ButtonBorderStyle leftStyle, Color topColor,
@@ -315,7 +314,423 @@ public sealed class ControlPaint
 				 Color bottomColor, int bottomWidth,
 				 ButtonBorderStyle bottomStyle)
 			{
-				// TODO
+				Pen pen;
+				float percent, change;
+
+				// Paint the left side of the border.
+				if(leftWidth > 0)
+				{
+					switch(leftStyle)
+					{
+						case ButtonBorderStyle.Dotted:
+						{
+							pen = new Pen(leftColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							pen.DashStyle = DashStyle.Dot;
+							while(leftWidth > 0)
+							{
+								--leftWidth;
+								graphics.DrawLine
+									(pen, bounds.X + leftWidth,
+									 bounds.Y + leftWidth + 1,
+									 bounds.X + leftWidth,
+									 bounds.Y + bounds.Height - leftWidth - 2);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Dashed:
+						{
+							pen = new Pen(leftColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							pen.DashStyle = DashStyle.Dash;
+							while(leftWidth > 0)
+							{
+								--leftWidth;
+								graphics.DrawLine
+									(pen, bounds.X + leftWidth,
+									 bounds.Y + leftWidth + 1,
+									 bounds.X + leftWidth,
+									 bounds.Y + bounds.Height - leftWidth - 2);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Solid:
+						{
+							pen = new Pen(leftColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							while(leftWidth > 0)
+							{
+								--leftWidth;
+								graphics.DrawLine
+									(pen, bounds.X + leftWidth,
+									 bounds.Y + leftWidth + 1,
+									 bounds.X + leftWidth,
+									 bounds.Y + bounds.Height - leftWidth - 2);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Inset:
+						{
+							change = (1.0f / leftWidth);
+							percent = 1.0f;
+							while(leftWidth > 0)
+							{
+								--leftWidth;
+								pen = new Pen(Dark(leftColor, percent), 1.0f);
+								pen.EndCap = LineCap.Square;
+								graphics.DrawLine
+									(pen, bounds.X + leftWidth,
+									 bounds.Y + leftWidth + 1,
+									 bounds.X + leftWidth,
+									 bounds.Y + bounds.Height - leftWidth - 2);
+								pen.Dispose();
+								percent -= change;
+							}
+						}
+						break;
+
+						case ButtonBorderStyle.Outset:
+						{
+							change = (1.0f / leftWidth);
+							percent = change;
+							while(leftWidth > 0)
+							{
+								--leftWidth;
+								pen = new Pen(Light(leftColor, percent), 1.0f);
+								pen.EndCap = LineCap.Square;
+								graphics.DrawLine
+									(pen, bounds.X + leftWidth,
+									 bounds.Y + leftWidth + 1,
+									 bounds.X + leftWidth,
+									 bounds.Y + bounds.Height - leftWidth - 2);
+								pen.Dispose();
+								percent += change;
+							}
+						}
+						break;
+					}
+				}
+
+				// Paint the top side of the border.
+				if(topWidth > 0)
+				{
+					switch(topStyle)
+					{
+						case ButtonBorderStyle.Dotted:
+						{
+							pen = new Pen(topColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							pen.DashStyle = DashStyle.Dot;
+							while(topWidth > 0)
+							{
+								--topWidth;
+								graphics.DrawLine
+									(pen, bounds.X + topWidth,
+									 bounds.Y + topWidth,
+									 bounds.X + bounds.Width - 1 - topWidth,
+									 bounds.Y + topWidth);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Dashed:
+						{
+							pen = new Pen(topColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							pen.DashStyle = DashStyle.Dash;
+							while(topWidth > 0)
+							{
+								--topWidth;
+								graphics.DrawLine
+									(pen, bounds.X + topWidth,
+									 bounds.Y + topWidth,
+									 bounds.X + bounds.Width - 1 - topWidth,
+									 bounds.Y + topWidth);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Solid:
+						{
+							pen = new Pen(topColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							while(topWidth > 0)
+							{
+								--topWidth;
+								graphics.DrawLine
+									(pen, bounds.X + topWidth,
+									 bounds.Y + topWidth,
+									 bounds.X + bounds.Width - 1 - topWidth,
+									 bounds.Y + topWidth);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Inset:
+						{
+							change = (1.0f / topWidth);
+							percent = 1.0f;
+							while(topWidth > 0)
+							{
+								--topWidth;
+								pen = new Pen(Dark(leftColor, percent), 1.0f);
+								pen.EndCap = LineCap.Square;
+								graphics.DrawLine
+									(pen, bounds.X + topWidth,
+									 bounds.Y + topWidth,
+									 bounds.X + bounds.Width - 1 - topWidth,
+									 bounds.Y + topWidth);
+								pen.Dispose();
+								percent -= change;
+							}
+						}
+						break;
+
+						case ButtonBorderStyle.Outset:
+						{
+							change = (1.0f / topWidth);
+							percent = change;
+							while(topWidth > 0)
+							{
+								--topWidth;
+								pen = new Pen(Light(leftColor, percent), 1.0f);
+								pen.EndCap = LineCap.Square;
+								graphics.DrawLine
+									(pen, bounds.X + topWidth,
+									 bounds.Y + topWidth,
+									 bounds.X + bounds.Width - 1 - topWidth,
+									 bounds.Y + topWidth);
+								pen.Dispose();
+								percent += change;
+							}
+						}
+						break;
+					}
+				}
+
+				// Paint the right side of the border.
+				if(rightWidth > 0)
+				{
+					switch(rightStyle)
+					{
+						case ButtonBorderStyle.Dotted:
+						{
+							pen = new Pen(rightColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							pen.DashStyle = DashStyle.Dot;
+							while(rightWidth > 0)
+							{
+								--rightWidth;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + rightWidth,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + bounds.Height - 1 - rightWidth);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Dashed:
+						{
+							pen = new Pen(rightColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							pen.DashStyle = DashStyle.Dash;
+							while(rightWidth > 0)
+							{
+								--rightWidth;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + rightWidth,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + bounds.Height - 1 - rightWidth);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Solid:
+						{
+							pen = new Pen(rightColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							while(rightWidth > 0)
+							{
+								--rightWidth;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + rightWidth,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + bounds.Height - 1 - rightWidth);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Inset:
+						{
+							change = (1.0f / rightWidth);
+							percent = 1.0f;
+							while(rightWidth > 0)
+							{
+								--rightWidth;
+								pen = new Pen(Dark(leftColor, percent), 1.0f);
+								pen.EndCap = LineCap.Square;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + rightWidth,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + bounds.Height - 1 - rightWidth);
+								pen.Dispose();
+								percent -= change;
+							}
+						}
+						break;
+
+						case ButtonBorderStyle.Outset:
+						{
+							change = (1.0f / rightWidth);
+							percent = change;
+							while(rightWidth > 0)
+							{
+								--rightWidth;
+								pen = new Pen(Light(leftColor, percent), 1.0f);
+								pen.EndCap = LineCap.Square;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + rightWidth,
+									 bounds.X + bounds.Width - 1 - rightWidth,
+									 bounds.Y + bounds.Height - 1 - rightWidth);
+								pen.Dispose();
+								percent += change;
+							}
+						}
+						break;
+					}
+				}
+
+				// Paint the bottom side of the border.
+				if(bottomWidth > 0)
+				{
+					switch(bottomStyle)
+					{
+						case ButtonBorderStyle.Dotted:
+						{
+							pen = new Pen(bottomColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							pen.DashStyle = DashStyle.Dot;
+							while(bottomWidth > 0)
+							{
+								--bottomWidth;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bottomWidth,
+									 bounds.Y + bounds.Height - 1 - bottomWidth,
+									 bounds.X + bounds.Width - 2 - bottomWidth,
+									 bounds.Y +
+									 	bounds.Height - 1 - bottomWidth);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Dashed:
+						{
+							pen = new Pen(bottomColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							pen.DashStyle = DashStyle.Dash;
+							while(bottomWidth > 0)
+							{
+								--bottomWidth;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bottomWidth,
+									 bounds.Y + bounds.Height - 1 - bottomWidth,
+									 bounds.X + bounds.Width - 2 - bottomWidth,
+									 bounds.Y +
+									 	bounds.Height - 1 - bottomWidth);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Solid:
+						{
+							pen = new Pen(bottomColor, 1.0f);
+							pen.EndCap = LineCap.Square;
+							while(bottomWidth > 0)
+							{
+								--bottomWidth;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bottomWidth,
+									 bounds.Y + bounds.Height - 1 - bottomWidth,
+									 bounds.X + bounds.Width - 2 - bottomWidth,
+									 bounds.Y +
+									 	bounds.Height - 1 - bottomWidth);
+							}
+							pen.Dispose();
+						}
+						break;
+
+						case ButtonBorderStyle.Inset:
+						{
+							change = (1.0f / bottomWidth);
+							percent = 1.0f;
+							while(bottomWidth > 0)
+							{
+								--bottomWidth;
+								pen = new Pen(Dark(leftColor, percent), 1.0f);
+								pen.EndCap = LineCap.Square;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bottomWidth,
+									 bounds.Y + bounds.Height - 1 - bottomWidth,
+									 bounds.X + bounds.Width - 2 - bottomWidth,
+									 bounds.Y +
+									 	bounds.Height - 1 - bottomWidth);
+								pen.Dispose();
+								percent -= change;
+							}
+						}
+						break;
+
+						case ButtonBorderStyle.Outset:
+						{
+							change = (1.0f / bottomWidth);
+							percent = change;
+							while(bottomWidth > 0)
+							{
+								--bottomWidth;
+								pen = new Pen(Light(leftColor, percent), 1.0f);
+								pen.EndCap = LineCap.Square;
+								graphics.DrawLine
+									(pen,
+									 bounds.X + bottomWidth,
+									 bounds.Y + bounds.Height - 1 - bottomWidth,
+									 bounds.X + bounds.Width - 2 - bottomWidth,
+									 bounds.Y +
+									 	bounds.Height - 1 - bottomWidth);
+								pen.Dispose();
+								percent += change;
+							}
+						}
+						break;
+					}
+				}
 			}
 
 	// Draw a 3D border within a rectangle.
@@ -645,11 +1060,50 @@ public sealed class ControlPaint
 			}
 
 	// Draw a container grab handle.
-	[TODO]
 	public static void DrawContainerGrabHandle
 				(Graphics graphics, Rectangle rectangle)
 			{
-				// TODO
+				Pen black = new Pen(Color.Black, 1.0f);
+				black.EndCap = LineCap.Square;
+				graphics.FillRectangle(Brushes.White, rectangle);
+				graphics.DrawRectangle(black, rectangle);
+				graphics.DrawLine
+					(black,
+					 rectangle.X + rectangle.Width / 2,
+					 rectangle.Y + 2,
+					 rectangle.X + rectangle.Width / 2,
+					 rectangle.Y + rectangle.Height - 3);
+				graphics.DrawLine
+					(black,
+					 rectangle.X + 2,
+					 rectangle.Y + rectangle.Height / 2,
+					 rectangle.X + rectangle.Width - 3,
+					 rectangle.Y + rectangle.Height / 2);
+				graphics.DrawLine
+					(black,
+					 rectangle.X + rectangle.Width / 2 - 1,
+					 rectangle.Y + 3,
+					 rectangle.X + rectangle.Width / 2 + 1,
+					 rectangle.Y + 3);
+				graphics.DrawLine
+					(black,
+					 rectangle.X + rectangle.Width / 2 - 1,
+					 rectangle.Y + rectangle.Height - 4,
+					 rectangle.X + rectangle.Width / 2 + 1,
+					 rectangle.Y + rectangle.Height - 4);
+				graphics.DrawLine
+					(black,
+					 rectangle.X + 3,
+					 rectangle.Y + rectangle.Height / 2 - 1,
+					 rectangle.X + 3,
+					 rectangle.Y + rectangle.Height / 2 + 1);
+				graphics.DrawLine
+					(black,
+					 rectangle.X + rectangle.Width - 4,
+					 rectangle.Y + rectangle.Height / 2 - 1,
+					 rectangle.X + rectangle.Width - 4,
+					 rectangle.Y + rectangle.Height / 2 + 1);
+				black.Dispose();
 			}
 
 	// Draw a focus rectangle.
@@ -672,12 +1126,40 @@ public sealed class ControlPaint
 			}
 
 	// Draw a grab handle.
-	[TODO]
 	public static void DrawGrabHandle
 				(Graphics graphics, Rectangle rectangle,
 				 bool primary, bool enabled)
 			{
-				// TODO
+				Brush background;
+				Pen border;
+				if(primary)
+				{
+					if(enabled)
+					{
+						background = Brushes.White;
+						border = Pens.Black;
+					}
+					else
+					{
+						background = SystemBrushes.Control;
+						border = Pens.Black;
+					}
+				}
+				else
+				{
+					if(enabled)
+					{
+						background = Brushes.Black;
+						border = Pens.White;
+					}
+					else
+					{
+						background = SystemBrushes.Control;
+						border = Pens.White;
+					}
+				}
+				graphics.FillRectangle(background, rectangle);
+				graphics.DrawRectangle(border, rectangle);
 			}
 
 	// Draw a grid of dots.
@@ -698,11 +1180,28 @@ public sealed class ControlPaint
 			}
 
 	// Draw a locked selection frame.
-	[TODO]
 	public static void DrawLockedFrame
 				(Graphics graphics, Rectangle rectangle, bool primary)
 			{
-				// TODO
+				Pen outer;
+				Pen inner;
+				if(primary)
+				{
+					outer = Pens.White;
+					inner = Pens.Black;
+				}
+				else
+				{
+					outer = Pens.Black;
+					inner = Pens.White;
+				}
+				graphics.DrawRectangle(outer, rectangle);
+				graphics.DrawRectangle
+					(outer, rectangle.X + 1, rectangle.Y + 1,
+					 rectangle.Width - 2, rectangle.Height - 2);
+				graphics.DrawRectangle
+					(inner, rectangle.X + 2, rectangle.Y + 2,
+					 rectangle.Width - 4, rectangle.Height - 4);
 			}
 
 	// Draw a menu glyph.

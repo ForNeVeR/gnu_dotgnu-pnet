@@ -1,4 +1,11 @@
 
+2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/XmlTextReader (ReadIdentifier): append the character
+	to the string builder after testing for terminating characters,
+	to avoid the use of "ToString(0, length - 1)", which is less
+	efficient than "ToString()".
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

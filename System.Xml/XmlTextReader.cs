@@ -493,7 +493,6 @@ public class XmlTextReader : XmlReader
 				
 				while((ch = ReadChar()) != -1)
 				{
-					builder.Append((char)ch);
 					if((char)ch == '/')
 					{
 						SkipWhite();
@@ -501,13 +500,13 @@ public class XmlTextReader : XmlReader
 						nodeType = XmlNodeType.EndElement;
 						isEmpty = true;
 						readAttribute = false;
-						return builder.ToString(0, builder.Length -1);
+						return builder.ToString();
 					}
 					else if((char)ch == '>')
 					{
 						nodeType = XmlNodeType.Element;
 						readAttribute = false;
-						return builder.ToString(0, builder.Length -1);
+						return builder.ToString();
 					}
 					else if (Char.IsWhiteSpace((char)ch))
 					{
@@ -518,13 +517,13 @@ public class XmlTextReader : XmlReader
 							nodeType = XmlNodeType.Element;
 							readAttribute = true;
 							
-							return builder.ToString(0, builder.Length -1);
+							return builder.ToString();
 						}
 						else if((char)ch == '>')
 						{
 							nodeType = XmlNodeType.Element;
 							readAttribute = false;
-							return builder.ToString(0, builder.Length -1);
+							return builder.ToString();
 						}
 						else if((char)ch == '/')
 						{
@@ -533,10 +532,10 @@ public class XmlTextReader : XmlReader
 							nodeType = XmlNodeType.EndElement;
 							isEmpty = true;
 							readAttribute = false;
-							return builder.ToString(0, builder.Length -1);
+							return builder.ToString();
 						}
 					}
-
+					builder.Append((char)ch);
 				}
 				return null;
 			}

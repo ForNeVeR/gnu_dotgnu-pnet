@@ -39,16 +39,18 @@ public class ModuleBuilder : Module
 	private AssemblyBuilder assembly;
 	private String name;
 	private bool transient;
+	private bool emitSymbolInfo;
 	private TypeBuilder moduleType;
 
 	// Constructor.
 	internal ModuleBuilder(AssemblyBuilder assembly, String name,
-						   bool transient)
+						   bool transient, bool emitSymbolInfo)
 			{
 				// Initialize the fields within this object.
 				this.assembly = assembly;
 				this.name = name;
 				this.transient = transient;
+				this.emitSymbolInfo = emitSymbolInfo;
 
 				// Create a new module within the assembly.
 				privateData = ClrModuleCreate(assembly.privateData, name);

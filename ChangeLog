@@ -7,6 +7,11 @@
 	runtime/System/Reflection/Emit/TypeBuilder.cs: continue the
 	implementation of the Reflection.Emit API.
 
+	* runtime/System/AppDomain.cs,
+	runtime/System/Reflection/Emit/AssemblyBuilder.cs,
+	runtime/System/Reflection/Emit/ModuleBuilder.cs: define dynamic
+	assemblies and modules.
+
 2003-03-17  Jonathan Springer  <jonathan.springer@verizon.net>
 
 	* runtime/System/Private/NumberParser.cs,

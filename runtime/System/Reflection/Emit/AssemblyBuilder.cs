@@ -35,22 +35,42 @@ using System.Threading;
 public sealed class AssemblyBuilder : Assembly
 {
 	// Internal state.
-	private AssemblyName name;
-	private MethodInfo entryPoint;
+	private AssemblyBuilderAccess access;
+	private String directory;
 	private bool isSynchronized;
+	private bool saved;
+	private MethodInfo entryPoint;
+	private IntPtr writer;
+	private ModuleBuilder module;
 
 	// Constructor.  Called from AppDomain.DefineDynamicAssembly.
-	[TODO]
 	internal AssemblyBuilder(AssemblyName name, AssemblyBuilderAccess access,
-							 String directory, Evidence evidence,
-							 PermissionSet requiredPermissions,
-							 PermissionSet optionalPermissions,
-							 PermissionSet refusedPermissions,
-							 bool isSynchronized)
+							 String directory, bool isSynchronized)
 			{
-				this.name = (AssemblyName)(name.Clone());
-				entryPoint = null;
+				this.access = access;
+				this.directory = directory;
 				this.isSynchronized = isSynchronized;
+				this.saved = false;
+				this.entryPoint = null;
+				Version version = name.Version;
+				if(version != null)
+				{
+					this.privateData = ClrAssemblyCreate
+						(name.Name, version.Major, version.Minor,
+						 version.Build, version.Revision,
+						 access, out writer);
+				}
+				else
+				{
+					this.privateData = ClrAssemblyCreate
+						(name.Name, 0, 0, 0, 0, access, out writer);
+				}
+				if(this.privateData == IntPtr.Zero)
+				{
+					// The runtime engine disallowed dynamic assemblies.
+					throw new SecurityException
+						(_("Emit_NoDynamicAssemblies"));
+				}
 			}
 
 	// Start a synchronized operation on this assembly builder.
@@ -110,30 +130,63 @@ public sealed class AssemblyBuilder : Assembly
 		 		throw new NotImplementedException("AddResourceFile");
 			}
 
-	[TODO]
+	// Define a dynamic module that is attached to this assembly.
 	public ModuleBuilder DefineDynamicModule(String name)
 			{
-		 		throw new NotImplementedException("DefineDynamicModule");
+				return DefineDynamicModule(name, false);
 			}
-
-	[TODO]
 	public ModuleBuilder DefineDynamicModule(String name, bool emitSymbolInfo)
 			{
-		 		throw new NotImplementedException("DefineDynamicModule");
+				try
+				{
+					StartSync();
+					if(saved)
+					{
+						throw new InvalidOperationException
+							(_("Emit_AlreadySaved"));
+					}
+					if(name == null)
+					{
+						throw new ArgumentNullException("name");
+					}
+					if(name == String.Empty)
+					{
+						throw new ArgumentException
+							(_("Emit_ModuleNameInvalid"));
+					}
+					if(Char.IsWhiteSpace(name[0]) ||
+				   	   name.IndexOf('/') != -1 ||
+				   	   name.IndexOf('\\') != -1)
+					{
+						throw new ArgumentException
+							(_("Emit_ModuleNameInvalid"));
+					}
+					if(module != null)
+					{
+						// We don't support assemblies with multiple modules.
+		 				throw new NotSupportedException
+							(_("Emit_SingleModuleOnly"));
+					}
+					module = new ModuleBuilder
+						(this, name, true, emitSymbolInfo);
+					return module;
+				}
+				finally
+				{
+					EndSync();
+				}
 			}
-
-	[TODO]
 	public ModuleBuilder DefineDynamicModule(String name, String fileName)
 			{
-		 		throw new NotImplementedException("DefineDynamicModule");
+		 		return DefineDynamicModule(name, fileName, false);
 			}
-
-	[TODO]
 	public ModuleBuilder DefineDynamicModule(String name, String fileName, 
 											 bool emitSymbolInfo)
 			{
-		 		throw new NotImplementedException("DefineDynamicModule");
+				// We don't support modules in external files.
+		 		throw new NotSupportedException(_("Emit_ExternalModule"));
 			}
+
 /*
 	[TODO]
 	public IResourceWriter DefineResource(String name, String description, 
@@ -189,10 +242,26 @@ public sealed class AssemblyBuilder : Assembly
 		 		throw new NotImplementedException("EmbedResourceFile");
 			}
 
-	[TODO]
+	// Get a particular module within this assembly.
 	public ModuleBuilder GetDynamicModule(String name)
 			{
-		 		throw new NotImplementedException("GetDynamicModule");
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(name == String.Empty)
+				{
+					throw new ArgumentException
+						(_("Emit_ModuleNameInvalid"));
+				}
+				if(module != null && module.Name == name)
+				{
+					return module;
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	[TODO]
@@ -247,6 +316,12 @@ public sealed class AssemblyBuilder : Assembly
 			*/
 				entryPoint = entryMethod;
 			}
+
+	// Create a new assembly.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static IntPtr ClrAssemblyCreate
+			(String name, int v1, int v2, int v3, int v4,
+			 AssemblyBuilderAccess access, out IntPtr writer);
 
 	// Internal version of "SetEntryPoint".
 	[MethodImpl(MethodImplOptions.InternalCall)]

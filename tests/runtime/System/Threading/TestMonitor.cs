@@ -114,13 +114,16 @@ public class TestMonitor
 	}
 
 	bool flag;
+	volatile bool xseen = false;
 	object monitor = new object();
 	
 	private void ExclusionRun1()
 	{
 		lock (monitor)
-		{		
-			Thread.Sleep(1000);
+		{	
+			xseen = true;
+			
+			Thread.Sleep(800);
 			
 			flag = true;
 		}		
@@ -130,7 +133,10 @@ public class TestMonitor
 	{
 		/* Wait for thread1 to obtain lock */
 		
-		Thread.Sleep(100);
+		while (!xseen)
+		{
+			Thread.Sleep(10);
+		}
 		
 		lock (monitor)
 		{
@@ -151,6 +157,7 @@ public class TestMonitor
 		
 		flag = false;
 		failed = true;
+		xseen = false;
 		
 		thread1 = new Thread(new ThreadStart(ExclusionRun1));
 		thread2 = new Thread(new ThreadStart(ExclusionRun2));	
@@ -379,6 +386,7 @@ public class TestMonitor
 	
 	public class TestWaitThenPulse
 	{
+		private volatile bool seen = false;
 		private object o = new object();
 		private ArrayList results = new ArrayList();
 		
@@ -396,6 +404,8 @@ public class TestMonitor
 			
 			lock (o)
 			{
+				seen = true;
+				
 				AddResult(2);
 				
 				Monitor.Wait(o);
@@ -406,9 +416,12 @@ public class TestMonitor
 		
 		public void Run2()
 		{
-			Console.Write("Waiting 3 seconds before pulse ... ");
+			Console.Write("Waiting to pulse ... ");
 
-			Thread.Sleep(3000);
+			while (!seen)
+			{
+				Thread.Sleep(10);
+			}
 
 			AddResult(3);
 			
@@ -495,7 +508,7 @@ public class TestMonitor
 			lock (this.o)
 			{
 				thread.Interrupt();
-				Thread.Sleep(2*1000);
+				Thread.Sleep(800);
 				this.seen = true;
 			}
 			thread.Join();
@@ -670,7 +683,7 @@ public class TestMonitor
 	/*
 	 * Test that an Abort breaks a Monitor.Enter wait.
 	 */
-	public void NoTestMonitorAbortEnter()
+	public void TestMonitorAbortEnter()
 	{
 		if (!TestThread.IsThreadingSupported)
 			return;
@@ -699,7 +712,7 @@ public class TestMonitor
 			{
 				this.seen = true;
 				Thread.MemoryBarrier();
-				Thread.Sleep(2*1000);
+				Thread.Sleep(800);
 				thread.Abort();
 				thread.Join();
 			}
@@ -768,12 +781,12 @@ public class TestMonitor
 				try
 				{
 					System.Threading.Monitor.Exit(this.o);
-					this.result = null;
-				}
-				catch (System.Exception e)
-				{
-					this.result = "Got unexpected exception during Exit: " + e;
+					this.result = "Incorrectly gained monitor on abort while entering";
 					return;
+				}
+				catch (SynchronizationLockException)
+				{
+					this.result = null;
 				}
 			}
 			catch (System.Exception e)
@@ -851,7 +864,7 @@ public class TestMonitor
 	 * Test that a Monitor re-aquires the lock if aborted during a
 	 * Wait().
 	 */
-	public void NoTestMonitorAbortDuringWait()
+	public void TestMonitorAbortDuringWait()
 	{
 		if (!TestThread.IsThreadingSupported)
 		{
@@ -883,7 +896,7 @@ public class TestMonitor
 			lock (this.o)
 			{
 				thread.Abort();
-				Thread.Sleep(2*1000);
+				Thread.Sleep(800);
 				this.seen = true;
 			}
 			thread.Join();
@@ -982,9 +995,9 @@ public class TestMonitor
 			lock (this.o)
 			{
 				Monitor.Pulse(o);
-				Thread.Sleep(2*1000);
+				Thread.Sleep(800);
 				thread.Interrupt();
-				Thread.Sleep(2*1000);
+				Thread.Sleep(800);
 				this.seen = true;
 			}
 			thread.Join();
@@ -1029,7 +1042,7 @@ public class TestMonitor
 	 * Test that a thread can not be aborted re-aquiring the monitor
 	 * after a Wait().
 	 */
-	public void NoTestMonitorAbortAfterWait()
+	public void TestMonitorAbortAfterWait()
 	{
 		if (!TestThread.IsThreadingSupported)
 			return;
@@ -1058,9 +1071,9 @@ public class TestMonitor
 			lock (this.o)
 			{
 				Monitor.Pulse(o);
-				Thread.Sleep(2*1000);
+				Thread.Sleep(800);
 				thread.Abort();
-				Thread.Sleep(2*1000);
+				Thread.Sleep(800);
 				this.seen = true;
 			}
 			thread.Join();
@@ -1103,18 +1116,25 @@ public class TestMonitor
 				if (!this.seen)
 				{
 					this.result = "Wait did not re-aquire lock after abort";
-				Thread.Sleep(2*1000);
+				Thread.Sleep(800);
 					return;
 				}
 				try
 				{
 					System.Threading.Monitor.Exit(this.o);
-					this.result = null;
+					this.result = "finally not executed";
 				}
 				catch (System.Exception e)
 				{
 					this.result = "Got unexpected exception during Exit: " + e;
 					return;
+				}
+				finally
+				{
+					if (this.result == "finally not executed")
+					{				
+						this.result = null;
+					}
 				}
 			}
 			catch (System.Exception e)

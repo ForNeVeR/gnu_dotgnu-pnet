@@ -1,4 +1,11 @@
 
+2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/stmt/Makefile.am, csharp/stmt/return2.cs,
+	csharp/stmt/return2.il, csharp/stmt/return2.jl:
+	test for correct code generation of "if" statements when
+	the "then" clause ends in a "return" statement.
+
 2002-05-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/binary3.jl: change to output file due to bug

@@ -7,6 +7,7 @@ TESTS = block1.cs \
 		lock1.cs \
 		lock2.cs \
 		return1.cs \
+		return2.cs \
 		switch1.cs \
 		switch2.cs
 

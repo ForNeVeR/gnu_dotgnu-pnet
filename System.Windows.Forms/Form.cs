@@ -393,6 +393,7 @@ public class Form : ContainerControl
 						return;
 					}
 					mdiParent = value;
+					value.mdiClient.Controls.Add(this);
 				}
 			}
 	public bool MinimizeBox
@@ -698,7 +699,7 @@ public class Form : ContainerControl
 			{
 				get
 				{
-					return true;
+					return (mdiParent == null);
 				}
 			}
 

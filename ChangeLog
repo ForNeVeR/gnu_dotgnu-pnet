@@ -4,6 +4,12 @@
 	* include/signal.h, libc/signal/kill.c, libpthread/pthread_kill.c:
 	add the "sigwait" function.
 
+	* include/Makefile.am, include/grp.h, libc/pwd/Makefile.am,
+	libc/pwd/endgrent.c, libc/pwd/getgrent.c, libc/pwd/getgrgid.c,
+	libc/pwd/getgrgid_r.c, libc/pwd/getgrnam.c, libc/pwd/getgrnam_r.c,
+	libc/pwd/grent.c, libc/pwd/grent.h, libc/pwd/pwpersist.c,
+	libc/pwd/setgrent.c: implement the group file functions.
+
 2004-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, include/pthread-support.h,

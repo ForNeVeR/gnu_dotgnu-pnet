@@ -20,8 +20,10 @@
  */
 
 #include <pwd.h>
+#include <grp.h>
 #include <string.h>
 #include "pwent.h"
+#include "grent.h"
 
 static char *
 persistpw (char *value, char **buffer, size_t *buflen)
@@ -62,5 +64,59 @@ __persistpw (struct passwd *pwd, char *buffer, size_t buflen)
     {
       return 0;
     }
+  return 1;
+}
+
+int
+__persistgr (struct group *grp, char *buffer, size_t buflen)
+{
+  char **members;
+  int len;
+  size_t round;
+
+  /* Persist the group name */
+  if ((grp->gr_name = persistpw (grp->gr_name, &buffer, &buflen)) == 0)
+    {
+      return 0;
+    }
+
+  /* Determine the length of the group member list */
+  len = 0;
+  while (grp->gr_mem[len] != 0)
+    ++len;
+  ++len;
+
+  /* Allocate space for the array of group member pointers */
+  round = (size_t)(((long)buffer) % sizeof (char *));
+  if (round != 0)
+    {
+      round = sizeof (char *) - round;
+      if (buflen < round)
+        {
+	  return 0;
+	}
+      buffer += round;
+      buflen -= round;
+    }
+  members = (char **)buffer;
+  round = len * sizeof (char *);
+  if (buflen < round)
+    {
+      return 0;
+    }
+  buffer += round;
+  buflen -= round;
+
+  /* Persist the group members */
+  len = 0;
+  while (grp->gr_mem[len] != 0)
+    {
+      members[len] = persistpw (grp->gr_mem[len], &buffer, &buflen);
+      if (!(members[len]))
+        return 0;
+      ++len;
+    }
+  members[len] = 0;
+  grp->gr_mem = members;
   return 1;
 }

@@ -12,6 +12,7 @@ libinclude_HEADERS = \
 	features.h \
 	gmp.h \
 	gmp-mparam.h \
+	grp.h \
 	ieee754.h \
 	inttypes.h \
 	limits.h \

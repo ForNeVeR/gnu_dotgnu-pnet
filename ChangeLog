@@ -8,6 +8,12 @@
 
 	* cscc/csharp/cs_semvalue.h: clean up the list of semantic kinds.
 
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll,
+	samples/System.Xml.dll, samples/System.dll, samples/mscorlib.dll:
+	update all assemblies from pnetlib.
+
 2002-11-03  Richard Baumann <biochem333@nyc.rr.com>
 	
 	* support/numformat.c, support/Makefile.am, include/il_utils.h: Add an

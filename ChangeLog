@@ -1,4 +1,9 @@
 
+2003-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* c/decl/Makefile.am, c/decl/enum1.3il, c/decl/enum1.c,
+	c/decl/enum1.il: test case for a complex enum constant expression.
+
 2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/stmt/switch1.3il, c/stmt/switch1.il: update C switch test

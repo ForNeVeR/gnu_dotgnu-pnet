@@ -1,6 +1,7 @@
 
 TESTS = cdtor1.c \
 		cdtor2.c \
+		enum1.c \
 		proto1.c \
 		struct1.c \
 		struct2.c \

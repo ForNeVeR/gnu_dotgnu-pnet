@@ -867,6 +867,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
   	ILNode_SemGuard *constVar;
 	ILNode_UsingAlias *alias;
 	ILType *type;
+	ILEvalValue evalValue;
 
 	if(!info->inSemType)
 	{
@@ -946,8 +947,11 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	{
 		method = (ILNode_MethodDeclaration *)(info->currentMethod);
 		constVar = (ILNode_SemGuard *)(ILScopeDataGetData1(data));
-		*parent = constVar->expr;
-		CSSemSetRValue(value, CSSemGetType(constVar->value));
+		if(ILNode_EvalConst(constVar->expr, info, &evalValue))
+		{
+			CSSemSetConstant(value, CSSemGetType(constVar->value), evalValue);
+			CSSemReplaceWithConstant(parent, value);
+		}
 		if((void*)(*parent) != (void*)node)
 		{
 			yysetfilename(*parent, yygetfilename(node));

@@ -1,4 +1,9 @@
 
+2004-06-10  Gopal V  <gopalv82@yahoo.com>
+
+	* cscc/csharp/cs_lvalue.tc: Use CSSemSetConstant instead of CSSemSetRValue
+	for local consts. (fix bug #9273)
+
 2004-06-09  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/verify_call.c: Load the user strings from the image of

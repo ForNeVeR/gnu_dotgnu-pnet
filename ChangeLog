@@ -3,6 +3,9 @@
 
 	* engine/lib_reflect.c: fix a compile warning in previous checkin.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_type.c:
+	update internalcalls for type generics to match Gyro 1.0.
+
 2003-08-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/int_proto.h, engine/int_table.c: update for new internal calls

@@ -2509,47 +2509,51 @@ ILObject *_IL_Type_GetTypeFromHandle(ILExecThread *thread, void *handle)
 }
 
 /*
- * protected override bool IsGenericTypeImpl();
+ * protected override bool HasGenericArgumentsImpl();
  */
-ILBool _IL_ClrType_IsGenericTypeImpl(ILExecThread *thread, ILObject *_this)
+ILBool _IL_ClrType_HasGenericArgumentsImpl(ILExecThread *thread,
+										   ILObject *_this)
 {
 	/* TODO */
 	return 0;
 }
 
 /*
- * protected override int ArityImpl();
+ * protected override bool HasGenericParametersImpl();
  */
-ILInt32 _IL_ClrType_ArityImpl(ILExecThread *thread, ILObject *_this)
+ILBool _IL_ClrType_HasGenericParametersImpl(ILExecThread *thread,
+										    ILObject *_this)
 {
 	/* TODO */
 	return 0;
 }
 
 /*
- * public override Type[] GetInstantiation();
+ * public override Type[] GetGenericArguments();
  */
-System_Array *_IL_ClrType_GetInstantiation(ILExecThread *thread,
-										   ILObject * _this)
+System_Array *_IL_ClrType_GetGenericArguments(ILExecThread *thread,
+										      ILObject * _this)
 {
 	/* TODO */
 	return 0;
 }
 
 /*
- * public override Type Instantiate(Type[] inst);
+ * public override Type BindGenericParameters(Type[] inst);
  */
-ILObject *_IL_ClrType_Instantiate(ILExecThread *thread, ILObject *_this,
-								  System_Array *inst)
+ILObject *_IL_ClrType_BindGenericParameters(ILExecThread *thread,
+										    ILObject *_this,
+											System_Array *inst)
 {
 	/* TODO */
 	return 0;
 }
 
 /*
- * public override Type GetGenericType();
+ * public override Type GetGenericTypeDefinition();
  */
-ILObject *_IL_ClrType_GetGenericType(ILExecThread *thread, ILObject *_this)
+ILObject *_IL_ClrType_GetGenericTypeDefinition(ILExecThread *thread,
+											   ILObject *_this)
 {
 	/* TODO */
 	return 0;

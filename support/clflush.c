@@ -38,25 +38,24 @@ void ILCacheFlush(void *buf, long length)
 
 	/* Flush the CPU cache on PPC platforms */
 	register unsigned char *p;
+	register int count;
+	const int cache_line_size = 8; /* minimum is 8 - 32 in most boxen */
 
-	/* Flush the data out of the data cache */
-	p = (unsigned char *)buf;
-	while(length > 0)
+	/* find start of cache block */
+	p = (unsigned char *)((long)buf & ~(cache_line_size - 1));
+	/* find end of cache block */
+	count = length + (((long)buf + cache_line_size) 
+									& (cache_line_size - 1));
+	while(count > 0)
 	{
-		__asm__ __volatile__ ("dcbst 0,%0" :: "r"(p));
-		p += 4;
-		length -= 4;
+		/* Flush the data cache (coherence) */
+		__asm__ __volatile__ ("dcbf 0,%0" :: "r"(p));
+		/* Invalidate the cache lines in the instruction cache */
+		__asm__ __volatile__ ("icbi 0,%0" :: "r"(p));
+		p += cache_line_size;
+		count -= cache_line_size;
 	}
 	__asm__ __volatile__ ("sync");
-
-	/* Invalidate the cache lines in the instruction cache */
-	p = (unsigned char *)buf;
-	while(length > 0)
-	{
-		__asm__ __volatile__ ("icbi 0,%0; isync" :: "r"(p));
-		p += 4;
-		length -= 4;
-	}
 	__asm__ __volatile__ ("isync");
 
 #elif defined(__sparc)

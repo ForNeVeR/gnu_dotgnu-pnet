@@ -1,4 +1,10 @@
 
+2004-12-17  Gopal V  <gopalv82@yahoo.com>
+
+	* support/clflush.c: Reimplement cache flushing for
+	PPC to use "dcbf" instead of "dcbst" to ensure that
+	cache coherency is proper.
+
 2004-12-16  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/md_ppc.h, engine/ppc_codegen.h: First cut

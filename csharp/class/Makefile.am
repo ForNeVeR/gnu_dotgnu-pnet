@@ -9,6 +9,7 @@ TESTS = const1.cs \
 		field1.cs \
 		field2.cs \
 		field3.cs \
+		interface1.cs \
 		method1.cs \
 		method2.cs \
 		method3.cs \

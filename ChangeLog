@@ -8,6 +8,9 @@
 	runtime/System/Diagnostics/StackTrace.cs: print the correct stack
 	trace for exceptions.
 
+	* runtime/runtime.build: minor fix to cause the build script to
+	pass the correct resource information to csc.
+
 2002-04-07  Gopal.V <gopalv82@yahoo.com>
 
 	* System/Net/HttpWebRequest.cs: Added property get,set methods

@@ -5,6 +5,9 @@
 	csharp/class/property6.jl, csharp/class/Makefile.am : Use of the 'extern' 
 	qualifier for properties.
 
+	* csharp/parser/member_access2.err, csharp/parser/member_access2.jerr:
+	update error message for the 'extern' on properties issue.
+
 2002-12-10  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/stmt/using3.cs, csharp/stmt/using3.il, csharp/stmt/using3.jl,

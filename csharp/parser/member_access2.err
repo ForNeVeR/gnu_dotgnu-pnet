@@ -31,7 +31,6 @@
 ./member_access2.cs:63: cannot use both `virtual' and `sealed'
 ./member_access2.cs:66: `extern' cannot be used in this context
 ./member_access2.cs:67: `volatile' cannot be used in this context
-./member_access2.cs:70: `extern' cannot be used in this context
 ./member_access2.cs:71: `volatile' cannot be used in this context
 ./member_access2.cs:74: operators must have `public' access
 ./member_access2.cs:75: operators must have `static' access
@@ -42,3 +41,5 @@
 ./member_access2.cs:84: warning: declaration of `m1' hides an inherited member, and `new' was not present
 ./member_access2.cs:85: warning: declaration of `m6' hides an inherited member, and `new' was not present
 ./member_access2.cs:62: `abstract' cannot be used with a method body
+./member_access2.cs:70: `extern' cannot be used with a method body
+./member_access2.cs:70: `extern' cannot be used with a method body

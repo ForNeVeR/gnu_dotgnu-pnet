@@ -1,4 +1,14 @@
 
+2002-12-18 Gopal.V  <gopalv82@symonds.net>
+	
+	* support/dir.c: reset errno inside ILDeleteDir().
+
+2002-12-18  Aditya P. Bansod <abansod@fullenergy.com>
+
+	* configure.in, engine/lib_dir.c, include/il_sysio.h, support/dir.c:
+	implement internal calls for System.IO.Directory.Move(). 
+	(Patch #857,Gopal)
+
 2002-12-17 Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_semantics.tc, cscc/csharp/cs_attrs.c: Implement

@@ -166,8 +166,13 @@ ILInt32 _IL_DirMethods_Rename(ILExecThread *_thread,
 							  ILString *old_name,
 							  ILString *new_name)
 {
-	/* TODO */
-	return IL_ERRNO_EPERM;
+	char * old_name_ansi = ILStringToAnsi(_thread, old_name);
+	char * new_name_ansi = ILStringToAnsi(_thread, new_name);
+	if(old_name_ansi == NULL || new_name_ansi == NULL)
+	{
+		return IL_ERRNO_ENOMEM;
+	}
+	return ILRenameDir(old_name_ansi, new_name_ansi);
 }
 
 /*

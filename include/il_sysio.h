@@ -285,6 +285,7 @@ typedef struct _tagILDirEnt ILDirEnt;
  * Directory access functions.
  */
 ILInt32 ILDeleteDir(const char *path);
+ILInt32 ILRenameDir(const char *old_name, const char *new_name);
 ILDir *ILOpenDir(char *path);
 ILDirEnt *ILReadDir(ILDir *directory);
 int ILCloseDir(ILDir *directory);

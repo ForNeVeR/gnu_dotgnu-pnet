@@ -54,6 +54,7 @@ extern	"C" {
 
 ILInt32 ILDeleteDir(const char *path)
 {
+	errno=0;
 	if (path == NULL)
 	  {
 	    return IL_ERRNO_ENOENT;
@@ -65,6 +66,26 @@ ILInt32 ILDeleteDir(const char *path)
 #else
     return IL_ERRNO_ENOSYS;
 #endif
+
+}
+
+ILInt32 ILRenameDir(const char *old_name, const char *new_name)
+{
+	int retVal;
+
+	/* Reset errno because we're not sure what it'll be */
+	errno = 0;
+	if (old_name == NULL || new_name == NULL)
+	{
+	    return IL_ERRNO_ENOENT;
+	}
+
+#ifdef HAVE_RENAME
+	retVal = rename(old_name, new_name);
+	return ILSysIOConvertErrno(errno);
+#else
+	return IL_ERRNO_ENOSYS;
+#endif	
 
 }
 

@@ -57,6 +57,50 @@ public abstract class MethodInfo : MethodBase
 
 #endif // !ECMA_COMPAT
 
+	// Determine if this method has generic arguments.
+	protected virtual bool HasGenericArgumentsImpl()
+			{
+				return false;
+			}
+	public bool HasGenericArguments
+			{
+				get
+				{
+					return HasGenericArgumentsImpl();
+				}
+			}
+
+	// Determine if this method has uninstantiated generic parameters.
+	protected virtual bool HasGenericParametersImpl()
+			{
+				return false;
+			}
+	public bool HasGenericParameters
+			{
+				get
+				{
+					return HasGenericParametersImpl();
+				}
+			}
+
+	// Get the arguments for this generic method instantiation.
+	public virtual Type[] GetGenericArguments()
+			{
+				throw new NotSupportedException(_("NotSupp_NotGenericType"));
+			}
+
+	// Get the generic base method upon this instantiation was based.
+	public virtual MethodInfo GetGenericMethodDefinition()
+			{
+				throw new NotSupportedException(_("NotSupp_NotGenericType"));
+			}
+
+	// Bind arguments to this generic method to instantiate it.
+	public virtual MethodInfo BindGenericParameters(Type[] typeArgs)
+			{
+				throw new NotSupportedException(_("NotSupp_NotGenericType"));
+			}
+
 }; // class MethodInfo
 
 #endif // CONFIG_REFLECTION

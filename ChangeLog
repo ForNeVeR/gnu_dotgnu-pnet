@@ -50,6 +50,11 @@
 	runtime/System/Reflection/Emit/TypeBuilder.cs: update the
 	internalcalls for type generics to match Gyro 1.0.
 
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Reflection/ClrMethod.cs,
+	runtime/System/Reflection/MethodInfo.cs: add internalcalls
+	for method generics.
+
 2003-08-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/Serialization/*.cs: stub out the xml serialization classes.

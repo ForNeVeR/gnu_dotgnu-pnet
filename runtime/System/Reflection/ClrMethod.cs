@@ -199,6 +199,84 @@ internal sealed class ClrMethod : MethodInfo, IClrProgramItem
 				return builder.ToString();
 			}
 
+	// Determine if this method has generic arguments.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern protected override bool HasGenericArgumentsImpl();
+
+	// Determine if this method has uninstantiated generic parameters.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern protected override bool HasGenericParametersImpl();
+
+	// Get the arguments for this generic method instantiation.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private Type[] GetGenericArgumentsImpl();
+	public override Type[] GetGenericArguments()
+			{
+				if(!HasGenericArgumentsImpl())
+				{
+					return new Type [0];
+				}
+				else
+				{
+					return GetGenericArgumentsImpl();
+				}
+			}
+
+	// Get the generic base method upon this instantiation was based.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private ClrMethod GetGenericMethodDefinitionImpl();
+	public override MethodInfo GetGenericMethodDefinition()
+			{
+				if(HasGenericArgumentsImpl())
+				{
+					return GetGenericMethodDefinitionImpl();
+				}
+				else if(HasGenericParametersImpl())
+				{
+					// Not instantiated, so the base method is itself.
+					return this;
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Get the arity of an uninstantiated generic method.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private int GetArity();
+
+	// Bind arguments to this generic method to instantiate it.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private MethodInfo BindGenericParametersImpl(Type[] typeArgs);
+	public override MethodInfo BindGenericParameters(Type[] typeArgs)
+			{
+				if(typeArgs == null)
+				{
+					throw new ArgumentNullException("typeArgs");
+				}
+				ClrMethod method = this;
+				if(HasGenericArgumentsImpl())
+				{
+					// Use the base method, not the instantiated form.
+					method = GetGenericMethodDefinitionImpl();
+				}
+				if(!method.HasGenericParametersImpl())
+				{
+					throw new ArgumentException
+						(_("Arg_NotGenericMethod"));
+				}
+				else if(method.GetArity() != typeArgs.Length)
+				{
+					throw new ArgumentException
+						(_("Arg_GenericParameterCount"));
+				}
+				else
+				{
+					return method.BindGenericParametersImpl(typeArgs);
+				}
+			}
+
 }; // class ClrMethod
 
 #endif // CONFIG_REFLECTION

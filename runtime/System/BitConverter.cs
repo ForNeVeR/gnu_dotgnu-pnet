@@ -28,6 +28,8 @@ using System.Runtime.CompilerServices;
 
 public sealed class BitConverter
 {
+	// Cannot instantiate this class.
+	private BitConverter() {}
 
 	// Specification of the endian-ness of this platform.
 	public static readonly bool IsLittleEndian = GetLittleEndian();

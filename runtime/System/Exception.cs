@@ -135,15 +135,6 @@ public class Exception
 			return result;
 		}
 
-#if !ECMA_COMPAT
-	// Set the help link for this exception.
-	public virtual Exception SetHelpLink(String help)
-		{
-			helpLink = help;
-			return this;
-		}
-#endif
-
 	// Convert the exception into a string.
 	public override String ToString()
 		{
@@ -223,6 +214,10 @@ public class Exception
 			{
 				return helpLink;
 			}
+			set
+			{
+				helpLink = value;
+			}
 		}
 	public virtual String Source
 		{
@@ -242,7 +237,7 @@ public class Exception
 				source = value;
 			}
 		}
-	public virtual MethodBase TargetSite
+	public MethodBase TargetSite
 		{
 			get
 			{

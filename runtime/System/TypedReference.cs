@@ -120,7 +120,7 @@ struct TypedReference
 
 	// Internal version of "SetTypedReference".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool ClrSetTypedReference
+	extern private static bool ClrSetTypedReference
 				(TypedReference target, Object value);
 
 	// Get the type handle within a typed reference.

@@ -27,6 +27,9 @@ using System.Runtime.Serialization;
 
 [CLSCompliant(false)]
 public struct UIntPtr
+#if !ECMA_COMPAT
+	: ISerializable
+#endif
 {
 	// Public constants.
 	public static readonly UIntPtr Zero = new UIntPtr(0);

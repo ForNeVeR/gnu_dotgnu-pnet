@@ -30,6 +30,9 @@ using System.Runtime.CompilerServices;
 public abstract class Type
 #if CONFIG_REFLECTION
 	: MemberInfo
+#if !ECMA_COMPAT
+	, IReflect
+#endif
 #endif
 {
 

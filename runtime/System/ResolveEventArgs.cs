@@ -23,7 +23,7 @@ namespace System
 
 #if !ECMA_COMPAT
 
-public class ResolveEventArgs
+public class ResolveEventArgs : EventArgs
 {
 	// Internal state.
 	private String name;

@@ -35,6 +35,8 @@ public
 #endif
 sealed class Activator
 {
+	// Cannot instantiate this class.
+	private Activator() {}
 
 #if CONFIG_REMOTING
 

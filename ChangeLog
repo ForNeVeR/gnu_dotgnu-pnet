@@ -52,6 +52,14 @@
 	runtime/System/Security/Policy/ZoneMembershipCondition.cs:
 	missing classes in "System.Security.Policy".
 
+	* runtime/System/Activator.cs, runtime/System/ArgIterator.cs,
+	runtime/System/Array.cs, runtime/System/BitConverter.cs,
+	runtime/System/Environment.cs, runtime/System/Exception.cs,
+	runtime/System/ResolveEventArgs.cs, runtime/System/Type.cs,
+	runtime/System/TypeInitializationException.cs,
+	runtime/System/TypedReference.cs, runtime/System/UIntPtr.cs:
+	fix some minor signature problems in the "System" namespace.
+
 2003-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

@@ -33,12 +33,17 @@ public sealed class TypeInitializationException : SystemException
 		: base(_("Exception_TypeInit")) {}
 	private TypeInitializationException(String msg)
 		: base(msg) {}
-	private TypeInitializationException(String typeName, Exception inner)
+#if ECMA_COMPAT
+	private
+#else
+	public
+#endif
+	TypeInitializationException(String typeName, Exception inner)
 		: base(null, inner)
 		{ this.typeName = typeName; }
 #if !ECMA_COMPAT
-	protected TypeInitializationException(SerializationInfo info,
-										  StreamingContext context)
+	internal TypeInitializationException(SerializationInfo info,
+										 StreamingContext context)
 		: base(info, context)
 		{
 			typeName = info.GetString("TypeName");

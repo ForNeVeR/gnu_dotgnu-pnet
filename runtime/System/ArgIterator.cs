@@ -24,7 +24,9 @@ namespace System
 #if !ECMA_COMPAT
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
+[StructLayout(LayoutKind.Auto)]
 public struct ArgIterator
 {
 	private int cookie1;

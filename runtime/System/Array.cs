@@ -29,10 +29,17 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 {
 
 	// Constructor.
+#if ECMA_COMPAT
 	protected Array()
 	{
 		// Nothing to do here.
 	}
+#else
+	private Array()
+	{
+		// Nothing to do here.
+	}
+#endif
 
 	// Inner version of "BinarySearch" used by the methods below
 	// once the arguments have been validated.
@@ -1398,7 +1405,11 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			return GetLength();
 		}
 	}
+#if ECMA_COMPAT
 	public long LongLength
+#else
+	private long LongLength
+#endif
 	{
 		get
 		{

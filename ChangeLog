@@ -12,6 +12,8 @@
 	that are created by the engine; expose "SystemException" as
 	"_ILSystemException" so it can be reused elsewhere.
 
+	* ildiff/.cvsignore: add .cvsignore file to ildiff directory.
+
 2002-05-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y (OuterDeclaration): don't call "yyerrok"

@@ -6,6 +6,10 @@ TESTS = binary1.cs \
 		cast1.cs \
 		cast2.cs \
 		cast3.cs \
+		cast4.cs \
+		cast5.cs \
+		cast6.cs \
+		cast7.cs \
 		const1.cs \
 		incdec1.cs \
 		incdec2.cs \

@@ -1,0 +1,1 @@
+./cast5.cs:32: incompatible types in assignment: no conversion from `int' to `Color'

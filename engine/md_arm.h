@@ -413,6 +413,17 @@ typedef arm_inst_ptr	md_inst_ptr;
 			} while (0)
 
 /*
+ * Jump to a program counter that is defined by a switch table.
+ */
+#define	md_switch(inst,reg,table)	\
+			do { \
+				arm_load_membase((inst), ARM_WORK, ARM_PC, 4); \
+				arm_load_memindex((inst), MD_REG_PC, ARM_WORK, (reg)); \
+				arm_load_membase((inst), ARM_PC, MD_REG_PC, 0); \
+				*((inst)++) = (unsigned int)(table); \
+			} while (0)
+
+/*
  * Perform a clear operation at a memory base.
  */
 #define	md_clear_membase_start(inst)	\
@@ -489,10 +500,25 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
 			} while (0)
 
 /*
+ * Set the condition codes based on comparing two values.
+ */
+#define	md_cmp_cc_reg_reg_word_32(inst,reg1,reg2)	\
+			arm_test_reg_reg((inst), ARM_CMP, (reg1), (reg2))
+#define	md_cmp_cc_reg_reg_word_native(inst,reg1,reg2)	\
+			arm_test_reg_reg((inst), ARM_CMP, (reg1), (reg2))
+
+/*
  * Test the contents of a register against NULL and set the
  * condition codes based on the result.
  */
 #define	md_reg_is_null(inst,reg)	\
+			arm_test_reg_imm8((inst), ARM_CMP, (reg), 0)
+
+/*
+ * Test the contents of a register against 32-bit zero and set the
+ * condition codes based on the result.
+ */
+#define	md_reg_is_zero(inst,reg)	\
 			arm_test_reg_imm8((inst), ARM_CMP, (reg), 0)
 
 /*
@@ -519,6 +545,22 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
 			arm_branch_imm((inst), ARM_CC_GT_UN, 0)
 #define	md_branch_ge_un(inst)	\
 			arm_branch_imm((inst), ARM_CC_GE_UN, 0)
+#define	md_branch_cc(inst,cond)	\
+			arm_branch_imm((inst), (cond), 0)
+
+/*
+ * Specific condition codes for "md_branch_cc".
+ */
+#define	MD_CC_EQ				ARM_CC_EQ
+#define	MD_CC_NE				ARM_CC_NE
+#define	MD_CC_LT				ARM_CC_LT
+#define	MD_CC_LE				ARM_CC_LE
+#define	MD_CC_GT				ARM_CC_GT
+#define	MD_CC_GE				ARM_CC_GE
+#define	MD_CC_LT_UN				ARM_CC_LT_UN
+#define	MD_CC_LE_UN				ARM_CC_LE_UN
+#define	MD_CC_GT_UN				ARM_CC_GT_UN
+#define	MD_CC_GE_UN				ARM_CC_GE_UN
 
 /*
  * Back-patch a branch instruction at "patch" to branch to "inst".

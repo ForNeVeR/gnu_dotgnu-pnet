@@ -183,6 +183,22 @@ md_inst_ptr _md_x86_compare(md_inst_ptr inst, int reg1, int reg2, int isSigned)
 	return inst;
 }
 
+md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned)
+{
+	if(reg == X86_EAX || reg == X86_EBX || reg == X86_ECX || reg == X86_EDX)
+	{
+		x86_widen_reg(inst, reg, reg, isSigned, 0);
+	}
+	else
+	{
+		x86_push_reg(inst, X86_EAX);
+		x86_mov_reg_reg(inst, X86_EAX, reg, 4);
+		x86_widen_reg(inst, reg, X86_EAX, isSigned, 0);
+		x86_pop_reg(inst, X86_EAX);
+	}
+	return inst;
+}
+
 #ifdef	__cplusplus
 };
 #endif

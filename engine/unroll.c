@@ -206,6 +206,22 @@ static void FixStackHeight(MDUnroll *unroll)
 	}
 }
 
+/*
+ * Restore special registers that were saved during execution.
+ */
+static void RestoreSpecialRegisters(MDUnroll *unroll)
+{
+	int index, reg;
+	for(index = 15; index >= 0; --index)
+	{
+		reg = regAllocOrder[index];
+		if(reg != -1 && (unroll->regsSaved & (1 << reg)) != 0)
+		{
+			md_pop_reg(unroll->out, reg);
+		}
+	}
+}
+
 #if !MD_STATE_ALREADY_IN_REGS
 
 /*
@@ -273,8 +289,6 @@ static void UnloadMachineState(MDUnroll *unroll, unsigned char *pc,
  */
 static void BranchToPC(MDUnroll *unroll, unsigned char *pc)
 {
-	int index, reg;
-
 	/* Flush the register stack to the CVM stack */
 	FlushRegisterStack(unroll);
 
@@ -283,14 +297,7 @@ static void BranchToPC(MDUnroll *unroll, unsigned char *pc)
 	unroll->stackHeight = 0;
 
 	/* Restore the special registers that we used */
-	for(index = 15; index >= 0; --index)
-	{
-		reg = regAllocOrder[index];
-		if(reg != -1 && (unroll->regsSaved & (1 << reg)) != 0)
-		{
-			md_pop_reg(unroll->out, reg);
-		}
-	}
+	RestoreSpecialRegisters(unroll);
 	unroll->regsSaved = 0;
 
 	/* Unload the machine state and jump back into the CVM interpreter */
@@ -304,7 +311,7 @@ static void BranchToPC(MDUnroll *unroll, unsigned char *pc)
 static void ReExecute(MDUnroll *unroll, unsigned char *pc,
 					  unsigned char *label)
 {
-	int index, reg, finalHeight;
+	int finalHeight;
 
 	/* Flush the register stack, but don't change it as we will
 	   still need it further down the code */
@@ -321,14 +328,7 @@ static void ReExecute(MDUnroll *unroll, unsigned char *pc,
 	}
 
 	/* Restore the saved special registers */
-	for(index = 15; index >= 0; --index)
-	{
-		reg = regAllocOrder[index];
-		if(reg != -1 && (unroll->regsSaved & (1 << reg)) != 0)
-		{
-			md_pop_reg(unroll->out, reg);
-		}
-	}
+	RestoreSpecialRegisters(unroll);
 
 	/* Jump into the CVM interpreter to re-execute the instruction */
 	UnloadMachineState(unroll, pc, label);
@@ -1353,9 +1353,9 @@ static void DumpCode(ILMethod *method, unsigned char *start, int len)
  */
 #define	IL_UNROLL_GLOBAL
 #include "unroll_arith.c"
-//#include "unroll_branch.c"
+#include "unroll_branch.c"
 #include "unroll_const.c"
-//#include "unroll_conv.c"
+#include "unroll_conv.c"
 #include "unroll_ptr.c"
 #include "unroll_var.c"
 #undef	IL_UNROLL_GLOBAL
@@ -1435,9 +1435,9 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 		{
 			#define	IL_UNROLL_CASES
 			#include "unroll_arith.c"
-			//#include "unroll_branch.c"
+			#include "unroll_branch.c"
 			#include "unroll_const.c"
-			//#include "unroll_conv.c"
+			#include "unroll_conv.c"
 			#include "unroll_ptr.c"
 			#include "unroll_var.c"
 			#undef	IL_UNROLL_CASES

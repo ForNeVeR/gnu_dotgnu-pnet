@@ -378,10 +378,15 @@ extern md_inst_ptr _md_x86_rem_float
 /*
  * Convert word registers between various types.
  */
+extern md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned);
 #define	md_reg_to_byte(inst,reg)	\
-			x86_widen_reg((inst), (reg), (reg), 0, 0)
+			do { \
+				(inst) = _md_x86_widen_byte((inst), (reg), 0); \
+			} while (0)
 #define	md_reg_to_sbyte(inst,reg)	\
-			x86_widen_reg((inst), (reg), (reg), 1, 0)
+			do { \
+				(inst) = _md_x86_widen_byte((inst), (reg), 1); \
+			} while (0)
 #define	md_reg_to_short(inst,reg)	\
 			x86_widen_reg((inst), (reg), (reg), 1, 1)
 #define	md_reg_to_ushort(inst,reg)	\
@@ -432,6 +437,16 @@ extern md_inst_ptr _md_x86_rem_float
 				{ \
 					x86_jump_membase((inst), MD_REG_PC, 0); \
 				} \
+			} while (0)
+
+/*
+ * Jump to a program counter that is defined by a switch table.
+ */
+#define	md_switch(inst,reg,table)	\
+			do { \
+				x86_mov_reg_memindex((inst), MD_REG_PC, X86_NOBASEREG, \
+									 (int)(table), (reg), 2, 4); \
+				x86_jump_membase((inst), MD_REG_PC, 0); \
 			} while (0)
 
 /*
@@ -495,11 +510,33 @@ extern md_inst_ptr _md_x86_compare
 					((inst), (reg1), (reg2), 0); } while (0)
 
 /*
+ * Set the condition codes based on comparing two values.
+ */
+#define	md_cmp_cc_reg_reg_word_32(inst,reg1,reg2)	\
+			x86_alu_reg_reg((inst), X86_CMP, (reg1), (reg2))
+#define	md_cmp_cc_reg_reg_word_native(inst,reg1,reg2)	\
+			x86_alu_reg_reg((inst), X86_CMP, (reg1), (reg2))
+
+/*
  * Test the contents of a register against NULL and set the
  * condition codes based on the result.
  */
 #define	md_reg_is_null(inst,reg)	\
 			x86_alu_reg_reg((inst), X86_OR, (reg), (reg))
+
+/*
+ * Test the contents of a register against 32-bit zero and set the
+ * condition codes based on the result.
+ */
+#define	md_reg_is_zero(inst,reg)	\
+			x86_alu_reg_reg((inst), X86_OR, (reg), (reg))
+
+/*
+ * Compare a 32-bit register against an immediate value and set
+ * the condition codes based on the result.
+ */
+#define	md_cmp_reg_imm_word_32(inst,reg,imm)	\
+			x86_alu_reg_imm((inst), X86_CMP, (reg), (int)(imm))
 
 /*
  * Output a branch to a location based on a condition.  The actual
@@ -525,6 +562,22 @@ extern md_inst_ptr _md_x86_compare
 			x86_branch32((inst), X86_CC_GT, 0, 0)
 #define	md_branch_ge_un(inst)	\
 			x86_branch32((inst), X86_CC_GE, 0, 0)
+#define	md_branch_cc(inst,cond)	\
+			x86_branch32((inst), (cond) & 15, 0, ((cond) & 16) != 0)
+
+/*
+ * Specific condition codes for "md_branch_cc".
+ */
+#define	MD_CC_EQ				X86_CC_EQ
+#define	MD_CC_NE				X86_CC_NE
+#define	MD_CC_LT				(X86_CC_LT | 16)
+#define	MD_CC_LE				(X86_CC_LE | 16)
+#define	MD_CC_GT				(X86_CC_GT | 16)
+#define	MD_CC_GE				(X86_CC_GE | 16)
+#define	MD_CC_LT_UN				X86_CC_LT
+#define	MD_CC_LE_UN				X86_CC_LE
+#define	MD_CC_GT_UN				X86_CC_GT
+#define	MD_CC_GE_UN				X86_CC_GE
 
 /*
  * Back-patch a branch instruction at "patch" to branch to "inst".
@@ -565,7 +618,7 @@ extern md_inst_ptr _md_x86_compare
 #define	md_load_memindex_byte(inst,reg,basereg,indexreg,disp)	\
 			do { \
 				x86_widen_memindex((inst), (reg), (basereg), \
-								   (disp), (indexreg), 0, 1, 0); \
+								   (disp), (indexreg), 0, 0, 0); \
 			} while (0)
 
 /*
@@ -574,7 +627,7 @@ extern md_inst_ptr _md_x86_compare
 #define	md_load_memindex_sbyte(inst,reg,basereg,indexreg,disp)	\
 			do { \
 				x86_widen_memindex((inst), (reg), (basereg), \
-								   (disp), (indexreg), 0, 0, 0); \
+								   (disp), (indexreg), 0, 1, 0); \
 			} while (0)
 
 /*

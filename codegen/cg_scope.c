@@ -601,6 +601,39 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 	return 0;
 }
 
+int ILScopeDeclareMember(ILScope *scope, const char *name,
+						 int memberKind, ILMember *member)
+{
+	ILScopeData *data;
+
+	/* Determine if there is a declaration for the name already */
+	data = ILScopeLookup(scope, name, 0);
+	if(data != 0)
+	{
+		if(data->rbnode.kind == IL_SCOPE_DECLARED_TYPE)
+		{
+			/* Declaration conflicts with a type the user already declared */
+			return IL_SCOPE_ERROR_REDECLARED;
+		}
+		else if(data->rbnode.kind == IL_SCOPE_SUBSCOPE)
+		{
+			/* There is already a namespace with that name in existence */
+			return IL_SCOPE_ERROR_NAME_IS_NAMESPACE;
+		}
+		else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
+		{
+			/* Conflict with an imported type */
+			return IL_SCOPE_ERROR_IMPORT_CONFLICT;
+		}
+	}
+
+	/* Add the member to the scope */
+	AddToScope(scope, name, memberKind, member);
+
+	/* Done */
+	return IL_SCOPE_ERROR_OK;
+}
+
 int ILScopeDataGetKind(ILScopeData *data)
 {
 	return data->rbnode.kind;

@@ -113,6 +113,13 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 					   ILNode **nodeInfo);
 
 /*
+ * Declare a class member within a particular scope.
+ * Returns a scope error code if already declared.
+ */
+int ILScopeDeclareMember(ILScope *scope, const char *name,
+						 int memberKind, ILMember *member);
+
+/*
  * Get the kind value associated with a scope item.
  */
 int ILScopeDataGetKind(ILScopeData *data);

@@ -56,6 +56,8 @@ public abstract class ScrollBar : Control
 	private Timer idleTimer;
 	private MouseEventArgs idleMouse;
 
+	private const int minThumbSize = 8;
+
 	// Constructors
 	public ScrollBar() : base()
 	{
@@ -206,6 +208,8 @@ public abstract class ScrollBar : Control
 			}
 			if (value == maximum) { return; }
 			maximum = value;
+			if (value > maximum)
+				Value = maximum;
 			LayoutScrollBar();
 			Draw();
 		}
@@ -223,6 +227,8 @@ public abstract class ScrollBar : Control
 			}
 			if (value == minimum) { return; }
 			minimum = value;
+			if (value < minimum)
+				Value = minimum;
 			LayoutScrollBar();
 			Draw();
 		}
@@ -432,19 +438,21 @@ public abstract class ScrollBar : Control
 		}
 		
 		// Thumb.
-		zeroMax = maximum - minimum;
+		zeroMax = maximum - minimum - largeChange + 1;
 		if (zeroMax == 0)
 		{
 			bar = Rectangle.Empty;
 			return;
 		}
 		zeroVal = value - minimum;
-		percentage = (double) (largeChange) / zeroMax;
-		thumbHeight = (int) (percentage * trackHeight) - 1;
+		percentage = (double) (largeChange) / (maximum - minimum + 1);
+		thumbHeight = (int) (percentage * trackHeight);
 		if (thumbHeight > trackHeight)
 			thumbHeight = trackHeight;
+		if (thumbHeight < minThumbSize)
+			thumbHeight = minThumbSize;
 		percentage = (double) zeroVal / zeroMax;
-		thumbPos = (int) (percentage * trackHeight);
+		thumbPos = (int) (percentage * (trackHeight - thumbHeight));
 		if (thumbPos > trackHeight - thumbHeight)
 			thumbPos = trackHeight - thumbHeight;
 		if (thumbPos < 0)
@@ -896,24 +904,22 @@ public abstract class ScrollBar : Control
 			if(vertical)
 			{
 				int position = bar.Y - track.Y;
-				double percentage = (double) position / track.Height;
-				v = (int)(percentage * (maximum - minimum) + minimum);
+				double percentage = (double) position / (track.Height - bar.Height);
+				v = (int)(percentage * (maximum - minimum + 1 - largeChange));
 			}
 			else
 			{
 				int position = bar.X - track.X;
-				double percentage = (double) position / track.Width;
-				v = (int)(percentage * (maximum - minimum));
+				double percentage = (double) position / (track.Width - bar.Width);
+				v = (int)(percentage * (maximum - minimum + 1 - largeChange));
 			
 				if(RightToLeft == RightToLeft.Yes)
 				{
 					int guiMax = (maximum - largeChange - minimum);
 					v = guiMax - v;
 				}
-			
-				v += minimum;
 			}
-		
+			v += minimum;
 			if (v < minimum)
 				v = minimum;
 			if (v > maximum)

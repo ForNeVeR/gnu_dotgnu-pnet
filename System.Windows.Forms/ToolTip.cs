@@ -32,100 +32,118 @@ public sealed class ToolTip
 	: Component, IExtenderProvider
 #endif
 {
-	//[TODO]
+	private bool active;
+	private int automaticDelay;
+	private int autopopDelay;
+	private int initialDelay;
+	private int reshowDelay;
+	private bool showAlways;
+
+	[TODO]
 	public ToolTip()
-			{
-	
-		
-			}
+	{
+		active = true;
+		automaticDelay = 500;
+		autopopDelay = 10 * automaticDelay;
+		initialDelay = automaticDelay;
+		reshowDelay = automaticDelay / 5;
+		showAlways = false;
+	}
 
 #if CONFIG_COMPONENT_MODEL
-	//[TODO]
-	public ToolTip(IContainer cont)
-			{
+	[TODO]
+	public ToolTip(IContainer cont) : this()
+	{
 
-			}
+	}
 #endif
 
-//	[TODO]
 	public bool Active
-			{
-				get
-				{
-					return false;
-				}
-				set
-				{
-				}
-			}
+	{
+		get
+		{
+			return active;
+		}
+		set
+		{
+			active = value;
+		}
+	}
 
-//	[TODO]
 	public int AutomaticDelay
-			{
-				get
-				{
-					return 0;
-				}
-				set
-				{
+	{
+		get
+		{
+			return automaticDelay;
+		}
+		set
+		{
+			automaticDelay = value;
+		}
+	}
 
-				}
-			}
+	public int AutoPopDelay 
+	{
+		get
+		{
+			return autopopDelay;
+		}
+		set
+		{
+			autopopDelay = value;
+		}
+	}
 
-//	[TODO]
-	public bool AutoPopDelay 
-			{
-				get
-				{
-					return false;
-				}
-				set
-				{
-
-				}
-			}
-
-//	[TODO]
 	public int ReshowDelay
-			{
-				get
-				{	
-					return 0;
-				}
-				set
-				{
+	{
+		get
+		{	
+			return reshowDelay;
+		}
+		set
+		{
+			reshowDelay = value;
+		}
+	}
 
-				}
-
-			}
-
-//	[TODO]
 	public bool ShowAlways 
-			{
-				get
-				{
-					return false;
-				}
-				set
-				{
+	{
+		get
+		{
+			return showAlways;
+		}
+		set
+		{
+			showAlways = value;
+		}
+	}
 
-				}
-			}
+	public int InitialDelay
+	{
+		get
+		{
+			return initialDelay;
+		}
+		set
+		{
+			initialDelay = value;
+		}
+	}
 
-//	[TODO]
+	[TODO]
 	public String GetToolTip(Control control)
 			{
 				// TODO
 				return String.Empty;
 			}
-//	[TODO]
+	[TODO]
 	public bool CanExtend(Object target)
 			{
 				// TODO
 				return false;
 			}
 
-//	[TODO]
+	[TODO]
 #if CONFIG_COMPONENT_MODEL
 	protected override void Dispose(bool disposing)
 #else
@@ -135,26 +153,25 @@ public sealed class ToolTip
 				// TODO
 			}
 
-//	[TODO]
+	[TODO]
 	public void RemoveAll()
 			{
 				// TODO
 			}
 
-//	[TODO]
+	[TODO]
 	public void SetToolTip(Control control, String caption)
 			{
 				// TODO
 			}
 
-//	[TODO]
+	[TODO]
 	public override string ToString()
 			{
 				// TODO
 				return String.Empty;
 			}
 	
-//	[TODO]
 	~ToolTip()
 			{	
 				Dispose(false);

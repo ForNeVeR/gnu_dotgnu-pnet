@@ -3,6 +3,10 @@
 
 	* Xsharp/TopLevelWindow.cs: set proper mask argument to	
 	XReconfigureWMWindow to fix bug #8983. (patch #3234, Gopal).
+	
+	* System.Windows.Forms/ToolTip.cs: Add InitialDelay property. 
+	Also add private variables with default values set for all properties.
+	(patch #3233, Gopal).
 
 2004-07-31  David Logan  <djlogan2@comcast.net>
 

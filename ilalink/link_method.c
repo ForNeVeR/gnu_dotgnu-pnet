@@ -621,6 +621,10 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	{
 		/* Extract the signature of the existing method */
 		newSignature = ILMethod_Signature(newMethod);
+
+		/* Set the attributes to what they should be */
+		ILMemberSetAttrs((ILMember *)newMethod, ~((ILUInt32)0),
+						 ILMethod_Attrs(method));
 	}
 
 	/* Copy the calling conventions */

@@ -256,8 +256,19 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 
 		// Copy the array contents the hard way.
-		// TODO
-		throw new ArrayTypeMismatchException();
+		if(!Convert.CanConvert(arrayType1, arrayType2))
+		{
+			throw new ArrayTypeMismatchException
+				(_("Exception_ArrayTypeMismatch"));
+		}
+		int index;
+		for(index = 0; index < length; ++index)
+		{
+			destinationArray.SetRelative
+				(Convert.ConvertObject
+					(sourceArray.GetRelative(sourceIndex + index), arrayType2),
+				 destinationIndex + index);
+		}
 	}
 
 	// Implement the ICollection interface.
@@ -679,6 +690,10 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private Object Get(int[] indices);
 
+	// Internal version of "GetValue" that uses relative indexing.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private Object GetRelative(int index);
+
 	// Get the value at a particular index within a multi-dimensional array.
 	public Object GetValue(int[] indices)
 	{
@@ -956,6 +971,10 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	extern private void Set(Object value, int index1, int index2, int index3);
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private void Set(Object value, int[] indices);
+
+	// Internal version of "SetValue" that uses relative indexing.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private void SetRelative(Object value, int index);
 
 	// Set the value at a particular index within a multi-dimensional array.
 	public void SetValue(Object value, int[] indices)

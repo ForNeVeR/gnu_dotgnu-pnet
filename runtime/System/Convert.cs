@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Private;
+using System.Text;
 using System.Globalization;
 
 public sealed class Convert
@@ -2171,6 +2172,33 @@ public sealed class Convert
 				}
 			}
 
+	// Characters to use to encode 6-bit values in base64.
+	private const String base64Chars =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+	// Map bytes in base64 to 6-bit values.
+	private static readonly sbyte[] base64Values = {
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // 00
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // 10
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, 62, -1, -1, 63, // 20
+		52, 53, 54, 55, 56, 57, 58, 59,   60, 61, -1, -1, -1, -1, -1, -1, // 30
+
+		 0,  1,  2,  3,  4,  5,  6,  7,    8,  9, 10, 11, 12, 13, 14, 15, // 40
+		16, 17, 18, 19, 20, 21, 22, 23,   24, 25, -1, -1, -1, -1, -1, -1, // 50
+		26, 27, 28, 29, 30, 31, 32, 33,   34, 35, 36, 37, 38, 39, 40, 41, // 60
+		42, 43, 44, 45, 46, 47, 48, 49,   50, 51, -1, -1, -1, -1, -1, -1, // 70
+
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // 80
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // 90
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // A0
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // B0
+
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // C0
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // D0
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // E0
+		-1, -1, -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1, -1, -1, -1, // F0
+	};
+
 	// Convert a set of base64 characters into an array of bytes.
 	public static byte[] FromBase64CharArray(char[] inArray, int offset,
 											 int length)
@@ -2190,15 +2218,338 @@ public sealed class Convert
 					throw new ArgumentException
 						(_("Arg_InvalidArrayRange"));
 				}
-				else if(length < 4 || (length % 4) != 0)
+
+				// Determine the length of the result array in 6-bit values.
+				int resultLen = 0;
+				int index = offset;
+				int count = length;
+				char ch;
+				int byteval;
+				int numPadding;
+				sbyte[] base64 = base64Values;
+				while(count > 0)
 				{
-					throw new FormatException
-						(_("Format_Base64ArrayLength"));
+					ch = inArray[index++];
+					--count;
+					if(ch < '\u0100')
+					{
+						byteval = base64[(int)ch];
+					}
+					else
+					{
+						byteval = -1;
+					}
+					if(byteval != -1)
+					{
+						++resultLen;
+					}
+					else if(ch == '=')
+					{
+						// Process the padding characters.
+						numPadding = 1;
+						while(count > 0)
+						{
+							ch = inArray[index++];
+							--count;
+							if(ch == '=')
+							{
+								++numPadding;
+							}
+							else if(ch != ' ' && ch != '\t' &&
+									ch != '\r' && ch != '\n')
+							{
+								throw new FormatException
+									(_("Format_Base64ArrayChar"));
+							}
+						}
+					}
+					else if(ch != ' ' && ch != '\t' &&
+					        ch != '\r' && ch != '\n')
+					{
+						// Invalid base64 character.
+						throw new FormatException
+							(_("Format_Base64ArrayChar"));
+					}
 				}
 
+				// Convert the result length into bytes and allocate the array.
+				resultLen = (int)((((long)resultLen) * 6L) / 8L);
+				byte[] result = new byte [resultLen];
+
 				// Convert the contents of the array.
-				// TODO
-				return null;
+				resultLen = 0;
+				index = offset;
+				count = length;
+				int bits = 0;
+				int numBits = 0;
+				while(count > 0)
+				{
+					ch = inArray[index++];
+					--count;
+					if(ch < '\u0100')
+					{
+						byteval = base64[(int)ch];
+					}
+					else
+					{
+						byteval = -1;
+					}
+					if(byteval != -1)
+					{
+						bits = (bits << 6) + byteval;
+						numBits += 6;
+						if(numBits >= 8)
+						{
+							numBits -= 8;
+							result[resultLen++] = (byte)(bits >> numBits);
+							bits &= ((1 << numBits) - 1);
+						}
+					}
+				}
+				return result;
+			}
+
+	// Convert a base64-encoded string into an array of bytes.
+	public static byte[] FromBase64String(String s)
+			{
+				// Validate the parameters.
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+
+				// Determine the length of the result array in 6-bit values.
+				int resultLen = 0;
+				int index = 0;
+				int count = s.Length;
+				char ch;
+				int byteval;
+				int numPadding;
+				sbyte[] base64 = base64Values;
+				while(count > 0)
+				{
+					ch = s[index++];
+					--count;
+					if(ch < '\u0100')
+					{
+						byteval = base64[(int)ch];
+					}
+					else
+					{
+						byteval = -1;
+					}
+					if(byteval != -1)
+					{
+						++resultLen;
+					}
+					else if(ch == '=')
+					{
+						// Process the padding characters.
+						numPadding = 1;
+						while(count > 0)
+						{
+							ch = s[index++];
+							--count;
+							if(ch == '=')
+							{
+								++numPadding;
+							}
+							else if(ch != ' ' && ch != '\t' &&
+									ch != '\r' && ch != '\n')
+							{
+								throw new FormatException
+									(_("Format_Base64ArrayChar"));
+							}
+						}
+					}
+					else if(ch != ' ' && ch != '\t' &&
+					        ch != '\r' && ch != '\n')
+					{
+						// Invalid base64 character.
+						throw new FormatException
+							(_("Format_Base64ArrayChar"));
+					}
+				}
+
+				// Convert the result length into bytes and allocate the array.
+				resultLen = (int)((((long)resultLen) * 6L) / 8L);
+				byte[] result = new byte [resultLen];
+
+				// Convert the contents of the array.
+				resultLen = 0;
+				index = 0;
+				count = s.Length;
+				int bits = 0;
+				int numBits = 0;
+				while(count > 0)
+				{
+					ch = s[index++];
+					--count;
+					if(ch < '\u0100')
+					{
+						byteval = base64[(int)ch];
+					}
+					else
+					{
+						byteval = -1;
+					}
+					if(byteval != -1)
+					{
+						bits = (bits << 6) + byteval;
+						numBits += 6;
+						if(numBits >= 8)
+						{
+							numBits -= 8;
+							result[resultLen++] = (byte)(bits >> numBits);
+							bits &= ((1 << numBits) - 1);
+						}
+					}
+				}
+				return result;
+			}
+
+	// Convert an array of bytes into base64 characters.
+	public static int ToBase64CharArray(byte[] inArray, int offsetIn,
+										int length, char[] outArray,
+										int offsetOut)
+			{
+				// Validate the parameters.
+				if(inArray == null)
+				{
+					throw new ArgumentNullException("inArray");
+				}
+				if(outArray == null)
+				{
+					throw new ArgumentNullException("outArray");
+				}
+				if(offsetIn < 0 || offsetIn > inArray.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("offsetIn", _("ArgRange_Array"));
+				}
+				if(length < 0 || length > (inArray.Length - offsetIn))
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
+				if(offsetOut < 0 || offsetOut > outArray.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("outArray", _("ArgRange_Array"));
+				}
+
+				// Convert the bytes.
+				int bits = 0;
+				int numBits = 0;
+				String base64 = base64Chars;
+				int size = length;
+				int posn = offsetOut;
+				int outLen = outArray.Length;
+				while(size > 0)
+				{
+					bits = (bits << 8) + inArray[offsetIn++];
+					numBits += 8;
+					--size;
+					while(numBits >= 6)
+					{
+						numBits -= 6;
+						if(posn >= outLen)
+						{
+							throw new ArgumentOutOfRangeException
+								("offsetOut", _("Arg_InsufficientSpace"));
+						}
+						outArray[posn++] = base64[bits >> numBits];
+						bits &= ((1 << numBits) - 1);
+					}
+				}
+				length %= 3;
+				if(length == 1)
+				{
+					if((posn + 3) > outLen)
+					{
+						throw new ArgumentOutOfRangeException
+							("offsetOut", _("Arg_InsufficientSpace"));
+					}
+					outArray[posn++] = base64[bits << (6 - numBits)];
+					outArray[posn++] = '=';
+					outArray[posn++] = '=';
+				}
+				else if(length == 2)
+				{
+					if((posn + 2) > outLen)
+					{
+						throw new ArgumentOutOfRangeException
+							("offsetOut", _("Arg_InsufficientSpace"));
+					}
+					outArray[posn++] = base64[bits << (6 - numBits)];
+					outArray[posn++] = '=';
+				}
+
+				// Finished.
+				return posn - offsetOut;
+			}
+
+	// Convert an array of bytes into a base64 string.
+	public static String ToBase64String(byte[] inArray)
+			{
+				if(inArray == null)
+				{
+					throw new ArgumentNullException("inArray");
+				}
+				return ToBase64String(inArray, 0, inArray.Length);
+			}
+	public static String ToBase64String(byte[] inArray, int offset, int length)
+			{
+				// Validate the parameters.
+				if(inArray == null)
+				{
+					throw new ArgumentNullException("inArray");
+				}
+				if(offset < 0 || offset > inArray.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("offset", _("ArgRange_Array"));
+				}
+				if(length < 0 || length > (inArray.Length - offset))
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
+
+				// Convert the bytes.
+				StringBuilder builder =
+					new StringBuilder
+						((int)(((((long)length) + 2L) * 4L) / 3L));
+				int bits = 0;
+				int numBits = 0;
+				String base64 = base64Chars;
+				int size = length;
+				while(size > 0)
+				{
+					bits = (bits << 8) + inArray[offset++];
+					numBits += 8;
+					--size;
+					while(numBits >= 6)
+					{
+						builder.Append(base64[bits >> numBits]);
+						bits &= ((1 << numBits) - 1);
+					}
+				}
+				length %= 3;
+				if(length == 1)
+				{
+					builder.Append(base64[bits << (6 - numBits)]);
+					builder.Append('=');
+					builder.Append('=');
+				}
+				else if(length == 2)
+				{
+					builder.Append(base64[bits << (6 - numBits)]);
+					builder.Append('=');
+				}
+
+				// Finished.
+				return builder.ToString();
 			}
 
 #endif // !ECMA_COMPAT

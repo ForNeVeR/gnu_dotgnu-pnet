@@ -158,7 +158,7 @@ MULTICLEAN = true
 toolexeclib_LTLIBRARIES = libffi.la
 noinst_LTLIBRARIES = libffi_convenience.la
 
-noinst_PROGRAMS = ffitest
+noinst_PROGRAMS = 
 
 ffitest_OBJECTS = ffitest.lo
 ffitest_LDADD = libffi.la
@@ -341,7 +341,7 @@ libffi_la_LIBADD =
 @POWERPC_DARWIN_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @POWERPC_DARWIN_TRUE@src/powerpc/ffi_darwin.lo src/powerpc/darwin.lo \
 @POWERPC_DARWIN_TRUE@src/powerpc/darwin_closure.lo
-noinst_PROGRAMS =  ffitest$(EXEEXT)
+noinst_PROGRAMS =  
 PROGRAMS =  $(noinst_PROGRAMS)
 
 ffitest_DEPENDENCIES =  libffi.la

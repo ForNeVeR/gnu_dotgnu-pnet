@@ -42,6 +42,9 @@
 	enable the generic unroller by default; only compile in the
 	md_arm and md_x86 code for the respective platforms.
 
+	* libffi/Makefile.am, libffi/Makefile.in: remove ffitest from
+	the build because it breaks the ia64 version.
+
 2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeCreate

@@ -79,7 +79,7 @@ MULTICLEAN = true
 toolexeclib_LTLIBRARIES = libffi.la
 noinst_LTLIBRARIES = libffi_convenience.la
 
-noinst_PROGRAMS = ffitest
+noinst_PROGRAMS = 
 
 ffitest_OBJECTS = ffitest.lo
 ffitest_LDADD = libffi.la

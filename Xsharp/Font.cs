@@ -90,7 +90,7 @@ public class Font
 					this.family = family;
 				else
 					this.family = SansSerif;
-				if(pointSize < 0 || pointSize > 1000)
+				if(pointSize < 0 || pointSize > 10000)
 					this.pointSize = 120;
 				else
 					this.pointSize = pointSize;

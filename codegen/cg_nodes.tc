@@ -998,36 +998,26 @@ struct _tagILSwitchValue
  */
 ILNode_GetType(ILNode_Statement)
 {
-	fprintf(stderr, "GetType is not implemented for node type `%s'",
-			yykindname(node));
-	exit(1);
-	return ILMachineType_Void; /* Not reached */
+	return ILMachineType_Void;
 }
 ILNode_GenValue(ILNode_Statement)
 {
-	fprintf(stderr, "GenDiscard is not implemented for node type `%s'",
-			yykindname(node));
-	exit(1);
-	return ILMachineType_Void; /* Not reached */
+	ILNode_GenDiscard(node, info);
+	return ILMachineType_Void;
 }
 ILNode_GenThen(ILNode_Statement)
 {
-	fprintf(stderr, "GenThen is not implemented for node type `%s'",
-			yykindname(node));
-	exit(1);
+	ILMachineType type = ILNode_GenValue(node, info);
+	ILNodeStackThen(info, label, type);
 }
 ILNode_GenElse(ILNode_Statement)
 {
-	fprintf(stderr, "GenElse is not implemented for node type `%s'",
-			yykindname(node));
-	exit(1);
+	ILMachineType type = ILNode_GenValue(node, info);
+	ILNodeStackElse(info, label, type);
 }
 ILNode_EvalConst(ILNode_Statement)
 {
-	fprintf(stderr, "EvalConst is not implemented for node type `%s'",
-			yykindname(node));
-	exit(1);
-	return 0; /* Not reached */
+	return 0;
 }
 
 /*

@@ -4,6 +4,10 @@
 	* image/pecoff_loader.c (MemoryRead): reversed test, causing segv
 	(found by Chris Smith - bug #4807).
 
+	* codegen/cg_nodes.tc, codegen/cg_stmt.tc: implement "GetType"
+	and "GenValue" for scopes and compound statements, to support
+	statement expressions in C (bug #4809).
+
 2003-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c_main.c, cscc/c/c_grammar.y, cscc/c/c_scanner.l:

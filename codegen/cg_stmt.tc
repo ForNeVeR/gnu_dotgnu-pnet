@@ -350,6 +350,32 @@ void ILNodeAddLabel(ILNode *stmt, char *name)
 %}
 
 /*
+ * Get type information for compound statements used as expressions.
+ */
+ILNode_GetType(ILNode_List)
+{
+	ILNode_ListIter iter;
+	ILNode *last = 0;
+	ILNode *stmt;
+	ILNode_ListIter_Init(&iter, node);
+	while((stmt = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(!yyisa(stmt, ILNode_Empty))
+		{
+			last = stmt;
+		}
+	}
+	if(last)
+	{
+		return ILNode_GetType(last, info);
+	}
+	else
+	{
+		return ILMachineType_Void;
+	}
+}
+
+/*
  * Generate discard code for empty statements.
  */
 ILNode_GenDiscard(ILNode_Empty)
@@ -379,6 +405,32 @@ ILNode_GenDiscard(ILNode_List)
 	{
 		ILNode_GenDiscard(current, info);
 	}
+}
+
+/*
+ * Generate value code for compound statements used as expressions.
+ */
+ILNode_GenValue(ILNode_Compound),
+ILNode_GenValue(ILNode_List)
+{
+	ILNode_ListIter iter;
+	ILNode *current;
+	ILMachineType lastType = ILMachineType_Void;
+
+	ILNode_ListIter_Init(&iter, node);
+	while((current = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(!yyisa(node, ILNode_Empty))
+		{
+			if(lastType != ILMachineType_Void)
+			{
+				ILGenSimple(info, IL_OP_POP);
+				ILGenAdjust(info, -1);
+			}
+			lastType = ILNode_GenValue(current, info);
+		}
+	}
+	return lastType;
 }
 
 /*
@@ -1504,6 +1556,42 @@ static void TrimGotoList(ILGenInfo *info, int tryScope)
 }
 
 %}
+
+/*
+ * Get type information for the "new scope" statement.
+ */
+ILNode_GetType(ILNode_NewScope)
+{
+	return ILNode_GetType(node->stmt, info);
+}
+
+/*
+ * Generate value code for the "new scope" statement.
+ */
+ILNode_GenValue(ILNode_NewScope)
+{
+	ILMachineType type;
+	if(info->hasGotoScopes)
+	{
+		/* Enter a new scope */
+		++(info->scopeLevel);
+
+		/* Generate the code within the scope */
+		type = ILNode_GenValue(node->stmt, info);
+
+		/* Exit from the scope */
+		--(info->scopeLevel);
+
+		/* Trim goto labels that were defined within the scope */
+		TrimGotoList(info, 0);
+	}
+	else
+	{
+		/* Generate the code within the scope */
+		type = ILNode_GenValue(node->stmt, info);
+	}
+	return type;
+}
 
 /*
  * Generate discard code for the "new scope" statement.

@@ -18,6 +18,9 @@
 	for "Delegate" and "MulticastDelegate"; fix operator matching rules
 	in "ResolveMethod".
 
+	* cscc/csharp/cs_gather.c, cscc/csharp/cs_grammar.y: implement
+	type gathering for events.
+
 2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/configure, libffi/configure.in: add host detection

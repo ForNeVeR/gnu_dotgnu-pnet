@@ -1074,6 +1074,31 @@ static int PropertyIsVirtual(ILProperty *property)
 }
 
 /*
+ * Determine if an event is virtual by inspecting its add or remove methods.
+ */
+static int EventIsVirtual(ILEvent *event)
+{
+	ILMethod *method;
+
+	/* Check the "add" method */
+	method = ILEventGetAddOn(event);
+	if(method)
+	{
+		return ILMethod_IsVirtual(method);
+	}
+
+	/* Check the "remove" method */
+	method = ILEventGetRemoveOn(event);
+	if(method)
+	{
+		return ILMethod_IsVirtual(method);
+	}
+
+	/* No "add" or "remove", so assume that it isn't virtual */
+	return 0;
+}
+
+/*
  * Create a property definition.
  */
 static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
@@ -1242,12 +1267,186 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Create an event definition from a specific declarator.
+ */
+static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
+						    ILNode_EventDeclaration *event,
+							ILType *eventType,
+							ILNode_EventDeclarator *eventDecl)
+{
+	char *name;
+	ILNode *eventName;
+	ILEvent *eventInfo;
+	ILType *signature;
+	ILMember *member;
+	int interfaceOverride;
+	
+	/* Create the add and remove methods */
+	if(eventDecl->addAccessor)
+	{
+		CreateMethod(info, classInfo,
+				     (ILNode_MethodDeclaration *)(eventDecl->addAccessor));
+	}
+	if(eventDecl->removeAccessor)
+	{
+		CreateMethod(info, classInfo,
+				     (ILNode_MethodDeclaration *)(eventDecl->removeAccessor));
+	}
+
+	/* TODO: event initializers */
+
+	/* Get the name of the event */
+	eventName = ((ILNode_FieldDeclarator *)(eventDecl->fieldDeclarator))->name;
+	if(yykind(eventName) == yykindof(ILNode_Identifier))
+	{
+		/* Simple event name */
+		name = ILQualIdentName(eventName, 0);
+		interfaceOverride = 0;
+	}
+	else
+	{
+		/* Qualified event name that overrides some interface event */
+		name = ILQualIdentName(eventName, 0);
+		signature = CSSemType
+				(((ILNode_QualIdent *)eventName)->left, info,
+			     &(((ILNode_QualIdent *)eventName)->left));
+		if(signature)
+		{
+			if(!ILType_IsClass(signature) ||
+			   !ILClass_IsInterface(ILType_ToClass(signature)))
+			{
+				CCErrorOnLine(yygetfilename(eventName),
+							  yygetlinenum(eventName),
+							  "`%s' is not an interface",
+							  CSTypeToName(signature));
+			}
+		}
+		if(ILClass_IsInterface(classInfo))
+		{
+			CCErrorOnLine(yygetfilename(eventName), yygetlinenum(eventName),
+				  "cannot use explicit interface member implementations "
+				  "within interfaces");
+		}
+		interfaceOverride = 1;
+	}
+
+	/* Create the event information block */
+	eventInfo = ILEventCreate(classInfo, 0, name, 0,
+							  ILTypeToClass(info, eventType));
+	if(!eventInfo)
+	{
+		CCOutOfMemory();
+	}
+	eventDecl->eventInfo = eventInfo;
+	ILSetProgramItemMapping(info, (ILNode *)eventDecl);
+
+	/* Add the method semantics to the event */
+	if(eventDecl->addAccessor)
+	{
+		if(!ILMethodSemCreate((ILProgramItem *)eventInfo, 0,
+					  IL_META_METHODSEM_ADD_ON,
+					  ((ILNode_MethodDeclaration *)(eventDecl->addAccessor))
+					  		->methodInfo))
+		{
+			CCOutOfMemory();
+		}
+	}
+	if(eventDecl->removeAccessor)
+	{
+		if(!ILMethodSemCreate((ILProgramItem *)eventInfo, 0,
+					  IL_META_METHODSEM_REMOVE_ON,
+					  ((ILNode_MethodDeclaration *)(eventDecl->removeAccessor))
+					  		->methodInfo))
+		{
+			CCOutOfMemory();
+		}
+	}
+
+	/* Add the event to the current scope */
+	AddMemberToScope(info->currentScope, IL_SCOPE_EVENT,
+					 name, (ILMember *)eventInfo, eventName);
+
+	/* Look for duplicates and report on them */
+	member = FindMemberByName(classInfo, name, classInfo);
+	if(member)
+	{
+		if(ILMember_IsEvent(member) &&
+		   EventIsVirtual((ILEvent *)member) &&
+		   (event->modifiers & IL_META_METHODDEF_NEW_SLOT) == 0)
+		{
+			/* Check for the correct form of virtual method overrides */
+			if((event->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+			{
+				CCErrorOnLine(yygetfilename(eventDecl), yygetlinenum(eventDecl),
+		  			"declaration of `%s' overrides an inherited member, "
+					"and `override' was not present", name);
+			}
+		}
+		else
+		{
+			ReportDuplicates(eventName, (ILMember *)eventInfo,
+							 member, classInfo, event->modifiers, name);
+		}
+	}
+	else if((event->modifiers & CS_SPECIALATTR_NEW) != 0)
+	{
+		ReportUnnecessaryNew(eventName, name);
+	}
+
+	/* Create the hidden field for the event if necessary.  We must do
+	   this after checking for duplicates so we don't get a false match */
+	if(event->needFields)
+	{
+		ILUInt32 attrs = IL_META_FIELDDEF_PRIVATE;
+		ILField *field;
+		if((event->modifiers & IL_META_METHODDEF_STATIC) != 0)
+		{
+			attrs |= IL_META_FIELDDEF_STATIC;
+		}
+		field = ILFieldCreate(classInfo, 0, name, attrs);
+		if(!field)
+		{
+			CCOutOfMemory();
+		}
+		ILMemberSetSignature((ILMember *)field, eventType);
+	}
+}
+
+/*
  * Create an event definition.
  */
 static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
 						ILNode_EventDeclaration *event)
 {
-	/* TODO */
+	ILNode_ListIter iter;
+	ILNode *decl;
+	ILType *eventType;
+
+	/* Get the event type and check that it is a delegate */
+	eventType = CSSemType(event->type, info, &(event->type));
+	if(!ILTypeIsDelegate(eventType))
+	{
+		CCErrorOnLine(yygetfilename(event), yygetlinenum(event),
+  			"`%s' is not a delegate type", CSTypeToName(eventType));
+	}
+
+	/* Process the event declarators */
+	if(yyisa(event->eventDeclarators, ILNode_EventDeclarator))
+	{
+		/* Create the methods for the event declarator */
+		CreateEventDecl(info, classInfo, event, eventType,
+					    (ILNode_EventDeclarator *)(event->eventDeclarators));
+	}
+	else
+	{
+		/* Scan the list and create the methods that we require */
+		ILNode_ListIter_Init(&iter, event->eventDeclarators);
+		while((decl = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			CreateEventDecl(info, classInfo, event, eventType,
+							(ILNode_EventDeclarator *)decl);
+		}
+	}
 }
 
 /*

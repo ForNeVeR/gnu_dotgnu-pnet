@@ -424,79 +424,86 @@ static void CreateEventDeclMethods(ILNode_EventDeclaration *event,
 	ILNode_MethodDeclaration *method;
 	ILNode *eventName;
 	ILNode *name;
-	ILNode *params;
+	ILNode *addParams;
+	ILNode *removeParams;
 
 	/* Get the name of the event */
 	eventName = ((ILNode_FieldDeclarator *)(decl->fieldDeclarator))->name;
 
 	/* Create the parameter information for the "add" and "remove" methods */
-	params = ILNode_List_create();
-	ILNode_List_Add(params,
+	addParams = ILNode_List_create();
+	ILNode_List_Add(addParams,
+		ILNode_FormalParameter_create(0, ILParamMod_empty, event->type,
+				ILQualIdentSimple(ILInternString("value", 5).string)));
+	removeParams = ILNode_List_create();
+	ILNode_List_Add(removeParams,
 		ILNode_FormalParameter_create(0, ILParamMod_empty, event->type,
 				ILQualIdentSimple(ILInternString("value", 5).string)));
 
 	/* Create the "add" method */
-	if(!(decl->addAccessor))
+	name = AdjustPropertyName(eventName, "add_");
+	method = (ILNode_MethodDeclaration *)(decl->addAccessor);
+	if(!method && event->needFields)
 	{
-		name = AdjustPropertyName(eventName, "add_");
-		method = (ILNode_MethodDeclaration *)(decl->addAccessor);
-		if(!method && event->needFields)
-		{
-			/* Field-based event that needs a pre-defined body */
-			method = (ILNode_MethodDeclaration *)
-				ILNode_MethodDeclaration_create
-						(0, event->modifiers, 0, name, params, 0);
-			/* TODO: construct the method body */
-			decl->addAccessor = (ILNode *)method;
-		}
-		else if(!method)
-		{
-			/* Abstract interface definition */
-			method = (ILNode_MethodDeclaration *)
-				ILNode_MethodDeclaration_create
-						(0, event->modifiers, 0, name, params, 0);
-			decl->addAccessor = (ILNode *)method;
-		}
-		else
-		{
-			/* Regular class definition */
-			method->modifiers = event->modifiers;
-			method->type = 0;
-			method->name = name;
-			method->params = params;
-		}
+		/* Field-based event that needs a pre-defined body */
+		method = (ILNode_MethodDeclaration *)
+			ILNode_MethodDeclaration_create
+					(0, event->modifiers, 0, name, addParams, 0);
+		method->body = ILNode_NewScope_create
+							(ILNode_AssignAdd_create
+								(ILNode_Add_create(eventName, 
+									ILQualIdentSimple
+										(ILInternString("value", 5).string))));
+		decl->addAccessor = (ILNode *)method;
+	}
+	else if(!method)
+	{
+		/* Abstract interface definition */
+		method = (ILNode_MethodDeclaration *)
+			ILNode_MethodDeclaration_create
+					(0, event->modifiers, 0, name, addParams, 0);
+		decl->addAccessor = (ILNode *)method;
+	}
+	else
+	{
+		/* Regular class definition */
+		method->modifiers = event->modifiers;
+		method->type = 0;
+		method->name = name;
+		method->params = addParams;
 	}
 
 	/* Create the "remove" method */
-	if(!(decl->removeAccessor))
+	name = AdjustPropertyName(eventName, "remove_");
+	method = (ILNode_MethodDeclaration *)(decl->removeAccessor);
+	if(!method && event->needFields)
 	{
-		name = AdjustPropertyName(eventName, "remove_");
-		method = (ILNode_MethodDeclaration *)(decl->removeAccessor);
-		if(!method && event->needFields)
-		{
-			/* Field-based event that needs a pre-defined body */
-			method = (ILNode_MethodDeclaration *)
-				ILNode_MethodDeclaration_create
-						(0, event->modifiers, 0, name, params, 0);
-			/* TODO: construct the method body */
-			decl->removeAccessor = (ILNode *)method;
-		}
-		else if(!method)
-		{
-			/* Abstract interface definition */
-			method = (ILNode_MethodDeclaration *)
-				ILNode_MethodDeclaration_create
-						(0, event->modifiers, 0, name, params, 0);
-			decl->removeAccessor = (ILNode *)method;
-		}
-		else
-		{
-			/* Regular class definition */
-			method->modifiers = event->modifiers;
-			method->type = 0;
-			method->name = name;
-			method->params = params;
-		}
+		/* Field-based event that needs a pre-defined body */
+		method = (ILNode_MethodDeclaration *)
+			ILNode_MethodDeclaration_create
+					(0, event->modifiers, 0, name, removeParams, 0);
+		method->body = ILNode_NewScope_create
+							(ILNode_AssignSub_create
+								(ILNode_Sub_create(eventName, 
+									ILQualIdentSimple
+										(ILInternString("value", 5).string))));
+		decl->removeAccessor = (ILNode *)method;
+	}
+	else if(!method)
+	{
+		/* Abstract interface definition */
+		method = (ILNode_MethodDeclaration *)
+			ILNode_MethodDeclaration_create
+					(0, event->modifiers, 0, name, removeParams, 0);
+		decl->removeAccessor = (ILNode *)method;
+	}
+	else
+	{
+		/* Regular class definition */
+		method->modifiers = event->modifiers;
+		method->type = 0;
+		method->name = name;
+		method->params = removeParams;
 	}
 }
 

@@ -1,3 +1,9 @@
+
+2004-05-02  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Collections/Stack.cs: Fix CopyTo to copy the elements
+	with stack top as index 0 and counting up.
+
 2004-06-02  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Threading/Monitor.cs: Changed TryEnter()

@@ -91,7 +91,7 @@ public class Stack : ICollection, IEnumerable, ICloneable
 				}
 				else if(size > 0)
 				{
-					Array.Copy(items, 0, array, index, size);
+					Array.Copy(ToArray(), 0, array, index, size);
 				}
 			}
 	public virtual int Count

@@ -40,6 +40,11 @@
 	standard library when certain combinations of options are
 	supplied on the cscc command-line.
 
+	* csant/csant.c, csant/csant_build.c, csant/csant_cscc.c,
+	csant/csant_defs.h, csant/csant_task.c: add the "-m" option
+	to "csant", which forces the use of "-fstdlib-name=corlib"
+	when building Mono libraries.
+
 2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (Load_MemberRef): report "unresolved external

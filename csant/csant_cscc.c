@@ -629,6 +629,12 @@ static char **BuildCsccCommandLine(CSAntCompileArgs *args)
 		AddArg(&argv, &argc, "-flatin1-charset");
 	}
 
+	/* Add "-fstdlib-name=corlib" if forced to do so */
+	if(CSAntForceCorLib)
+	{
+		AddArg(&argv, &argc, "-fstdlib-name=corlib");
+	}
+
 	/* Add any extra arguments that were supplied */
 	for(posn = 0; posn < args->numArgs; ++posn)
 	{

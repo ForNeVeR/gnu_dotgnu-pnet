@@ -235,7 +235,7 @@ static int Task_CSAnt(CSAntTask *task)
 	const char *buildFile;
 	const char *target;
 	const char *compiler;
-	char *argv[20];
+	char *argv[40];
 	int argc, posn;
 	int result;
 
@@ -285,6 +285,10 @@ static int Task_CSAnt(CSAntTask *task)
 	if(CSAntRedirectCsc)
 	{
 		argv[argc++] = "-c";
+	}
+	if(CSAntForceCorLib)
+	{
+		argv[argc++] = "-m";
 	}
 	argv[argc++] = "-C";
 	argv[argc++] = (char *)compiler;

@@ -40,6 +40,7 @@ extern int   CSAntKeepGoing;
 extern int   CSAntSilent;
 extern int   CSAntRedirectCsc;
 extern int   CSAntDummyDoc;
+extern int   CSAntForceCorLib;
 extern char *CSAntCompiler;
 extern char *CSAntBaseSrcDir;
 extern char *CSAntBaseBuildDir;

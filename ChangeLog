@@ -8,6 +8,13 @@
 	tests/runtime/System/Runtime/InteropServices/TestMarshal.cs:
 	test cases and bug fixes for System.Runtime.InteropServices.Marshal.
 
+	* tests/runtime/Testruntime.cs,
+	tests/runtime/System/Runtime/CompilerServices/Makefile,
+	tests/runtime/System/Runtime/CompilerServices/SuiteCompilerServices.cs,
+	tests/runtime/System/Runtime/CompilerServices/TestCompilerServices.cs,
+	tests/runtime/System/Runtime/CompilerServices/code-review.txt:
+	test cases for System.Runtime.CompilerServices.
+
 2003-06-03  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/BufferedStream.cs: Fix a number of potential

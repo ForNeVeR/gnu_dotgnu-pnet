@@ -997,12 +997,14 @@ ILNode_GetType(ILNode_Statement)
 	fprintf(stderr, "GetType is not implemented for node type `%s'",
 			yykindname(node));
 	exit(1);
+	return ILMachineType_Void; /* Not reached */
 }
 ILNode_GenValue(ILNode_Statement)
 {
 	fprintf(stderr, "GenDiscard is not implemented for node type `%s'",
 			yykindname(node));
 	exit(1);
+	return ILMachineType_Void; /* Not reached */
 }
 ILNode_GenThen(ILNode_Statement)
 {
@@ -1021,6 +1023,7 @@ ILNode_EvalConst(ILNode_Statement)
 	fprintf(stderr, "EvalConst is not implemented for node type `%s'",
 			yykindname(node));
 	exit(1);
+	return 0; /* Not reached */
 }
 
 /*
@@ -1031,6 +1034,7 @@ ILNode_GetType(ILNode_Dummy)
 	fprintf(stderr, "GetType is not implemented for node type `%s'",
 			yykindname(node));
 	exit(1);
+	return ILMachineType_Void; 
 }
 ILNode_GenDiscard(ILNode_Dummy)
 {
@@ -1043,6 +1047,7 @@ ILNode_GenValue(ILNode_Dummy)
 	fprintf(stderr, "GenValue is not implemented for node type `%s'",
 			yykindname(node));
 	exit(1);
+	return ILMachineType_Void; /* Not reached */
 }
 ILNode_GenThen(ILNode_Dummy)
 {
@@ -1061,6 +1066,7 @@ ILNode_EvalConst(ILNode_Dummy)
 	fprintf(stderr, "EvalConst is not implemented for node type `%s'",
 			yykindname(node));
 	exit(1);
+	return 0; /* Not reached */
 }
 
 /*

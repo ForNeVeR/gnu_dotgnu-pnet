@@ -399,9 +399,10 @@ ILNode_GenDiscard(ILNode_This)
 }
 
 /*
- * Generate discard code for an "as" expression.
+ * Generate discard code for an "as" or "is" expression.
  */
-ILNode_GenDiscard(ILNode_As)
+ILNode_GenDiscard(ILNode_As),
+ILNode_GenDiscard(ILNode_Is)
 {
 	/* Evaluate the expression for its side effects only */
 	ILNode_GenDiscard(node->expr, info);

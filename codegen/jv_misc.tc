@@ -160,9 +160,10 @@ JavaGenDiscard(ILNode_This)
 }
 
 /*
- * Generate discard code for an "as" expression.
+ * Generate discard code for an "as" or "is" expression.
  */
-JavaGenDiscard(ILNode_As)
+JavaGenDiscard(ILNode_As),
+JavaGenDiscard(ILNode_Is)
 {
 	/* Evaluate the expression for its side effects only */
 	JavaGenDiscard(node->expr, info);

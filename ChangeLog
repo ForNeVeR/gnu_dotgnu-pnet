@@ -6,6 +6,8 @@ floating-point constants.
 
 * codegen/jv_arith.tc: implement JavaGenDiscard for string concatenation.
 
+* codegen/cg_misc.tc, codegen/jv_misc.tc: GenDiscard for ILNode_Is.
+
 2001-08-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_scope.h, codegen/cg_scope.c: add node information to all

@@ -35,7 +35,7 @@ static CSemValue StmtSem(ILNode *node, ILGenInfo *info,
 	if(node)
 	{
 		value = ILNode_CSemAnalysis(node, info, parent, stmtLevel);
-		if(!CSemIsVoid(value) && !CSemIsRValue(value))
+		if(!CSemIsVoid(value) && !CSemIsRValue(value) && !CSemIsError(value))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  _("invalid statement"));

@@ -483,6 +483,112 @@ ILNode_GenValue(ILNode_CInvocationExpression)
  */
 ILNode_CSemAnalysis(ILNode_CSharpInvocation)
 {
-	/* TODO */
-	return CSemValueError;
+	ILClass *classInfo;
+	ILType *signature;
+	CEvalArg *argTypes;
+	ILType **typeArray;
+	ILUInt32 numArgs;
+	ILUInt32 argNum;
+	ILMethod *method;
+	ILClass *callScope;
+	CSemValue value;
+	ILNode_InvocationExpression *invoke;
+
+	/* Convert the type into its C# class */
+	classInfo = ILTypeToClass(info, ILTypeStripPrefixes(node->type));
+
+	/* Perform semantic analysis on the invocation arguments */
+	numArgs = CountArgs(node->args);
+	if(numArgs != 0)
+	{
+		argTypes = (CEvalArg *)ILMalloc(numArgs * sizeof(CEvalArg));
+		if(!argTypes)
+		{
+			CCOutOfMemory();
+		}
+		typeArray = (ILType **)ILMalloc(numArgs * sizeof(ILType *));
+		if(!typeArray)
+		{
+			CCOutOfMemory();
+		}
+		for(argNum = 0; argNum < numArgs; ++argNum)
+		{
+			ArgumentSem(info, &(argTypes[argNum]), node->args,
+						&(node->args), argNum, numArgs);
+			typeArray[argNum] = ILTypeStripPrefixes
+				(CSemGetType(argTypes[argNum].value));
+		}
+	}
+	else
+	{
+		argTypes = 0;
+		typeArray = 0;
+	}
+
+	/* Resolve a static method that takes the supplied arguments */
+	callScope = ILClassLookup(ILClassGlobalScope(info->image), "<Module>", 0);
+	if(classInfo)
+	{
+		method = ILResolveStaticMethod(info, classInfo, callScope,
+									   node->name, typeArray, (int)numArgs);
+	}
+	else
+	{
+		method = 0;
+	}
+	if(!method)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("no candidate for method invocation"));
+		if(argTypes)
+		{
+			ILFree(argTypes);
+		}
+		if(typeArray)
+		{
+			ILFree(typeArray);
+		}
+		return CSemValueError;
+	}
+
+	/* Coerce the arguments to the method's actual parameter types,
+	   using C#-style coercion rules rather than C-style rules */
+	signature = ILMethod_Signature(method);
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		ILCoerce(info, argTypes[argNum].node, argTypes[argNum].parent,
+				 ILTypeStripPrefixes(CSemGetType(argTypes[argNum].value)),
+				 ILTypeGetParam(signature, argNum + 1));
+	}
+
+	/* Build the new method invocation node for the code generator */
+	invoke = (ILNode_InvocationExpression *)
+		ILNode_InvocationExpression_create(0, node->args);
+	CGenCloneLine((ILNode *)invoke, (ILNode *)node);
+	invoke->thisExpr = 0;
+	invoke->methodInfo = method;
+	invoke->callSiteSig = 0;
+	*parent = (ILNode *)invoke;
+
+	/* Clean up the memory that we used */
+	if(argTypes)
+	{
+		ILFree(argTypes);
+	}
+	if(typeArray)
+	{
+		ILFree(typeArray);
+	}
+
+	/* Construct the r-value for the method's return type */
+	signature = ILTypeGetReturnWithPrefixes(signature);
+	if(ILTypeIdentical(signature, ILType_Void))
+	{
+		return CSemValueDefault;
+	}
+	else
+	{
+		CSemSetRValue(value, signature);
+		return value;
+	}
 }

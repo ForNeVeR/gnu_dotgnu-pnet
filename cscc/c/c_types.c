@@ -1580,6 +1580,7 @@ ILType *CTypeFromCSharp(ILGenInfo *info, ILNode *node)
 {
 	char *name;
 	char *namespace;
+	ILType *type;
 
 	/* Break the identifier into name and namespace */
 	if(yyisa(node, ILNode_Identifier))
@@ -1616,7 +1617,14 @@ ILType *CTypeFromCSharp(ILGenInfo *info, ILNode *node)
 	}
 
 	/* Look up the type (returns NULL if not found) */
-	return ILFindNonSystemType(info, name, namespace);
+	type = ILFindNonSystemType(info, name, namespace);
+	if(!type)
+	{
+		return 0;
+	}
+
+	/* Convert builtin classes to their primitive forms */
+	return ILClassToType(ILTypeToClass(info, type));
 }
 
 #ifdef	__cplusplus

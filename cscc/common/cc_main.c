@@ -427,11 +427,22 @@ static int LoadLibrary(const char *name)
 		}
 	}
 
-	/* Last try: look in the current directory */
+	/* Look in the current directory in case the programmer has
+	   all of their libraries locally */
 	path = CheckPath(".", name, len);
 	if(path)
 	{
 		return LoadLibraryFromPath(path, 1);
+	}
+
+	/* Try the system-wide search order */
+	if(!nostdlib_flag)
+	{
+		path = ILImageSearchPath(name, 0, 0, 0, 0, 0, 0, 0, 0);
+		if(path)
+		{
+			return LoadLibraryFromPath(path, 1);
+		}
 	}
 
 	/* Could not locate the library */

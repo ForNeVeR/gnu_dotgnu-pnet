@@ -10,6 +10,9 @@
 	be on the path prior to the pnetlib assemblies; use the same
 	path for PInvoke modules.
 
+	* cscc/common/cc_main.c: integrate the full system search path
+	into the compiler and csdoc.
+
 2002-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with delegate comparison fix.

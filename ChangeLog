@@ -1,4 +1,9 @@
 
+2004-05-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* samples/developers/MainForm.cs: fix a upper/lower case issue
+	in the name of png file.
+
 2004-05-26  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Reflection/Assembly.cs: Fix LoadFrom to accept 

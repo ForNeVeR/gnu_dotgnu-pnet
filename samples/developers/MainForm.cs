@@ -72,7 +72,7 @@ namespace ThreadsDemo
 
 				PictureBox picture = new PictureBox();
 
-				picture.Image = Image.FromFile("DotGNU_Logo.PNG");
+				picture.Image = Image.FromFile("DotGNU_Logo.png");
 				
 				mainPanel.Controls.Add(picture);
 				picture.SendToBack();

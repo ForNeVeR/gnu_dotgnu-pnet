@@ -32,7 +32,7 @@ internal sealed unsafe class ICE
 	extern public static Xlib.Xint IceRegisterForProtocolSetup
 			(String protocolName, String vendor, String release,
 			 Xlib.Xint versionCount, ref IcePoVersionRec versionRecs,
-			 Xlib.Xint authCount, ref String[] authNames,
+			 Xlib.Xint authCount, String[] authNames,
 			 ref IcePoAuthProc authProcs, IceIOErrorProc ioErrorProc);
 
 	[DllImport("ICE")]

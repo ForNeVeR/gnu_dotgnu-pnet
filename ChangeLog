@@ -1,4 +1,9 @@
 
+2004-04-22  Ilyak Kasnacheev <ilyak@online.ru>
+
+	* Xsharp/Ice/ICE.cs, Xsharp/Ice/IceClient.cs: Pass the authnames as 
+	a char ** marshalled from String[] . (patch #2955, Gopal).
+ 
 2004-04-21  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Xml/Xsl/XslTransform.cs: This patch is needed to add 

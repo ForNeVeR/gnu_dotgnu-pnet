@@ -120,7 +120,7 @@ public abstract unsafe class IceClient
 				majorOpcode = (int)ICE.IceRegisterForProtocolSetup
 					(protocolName, vendor, release,
 					 (Xlib.Xint)1, ref version,
-					 (Xlib.Xint)1, ref authNames, ref authProc, null);
+					 (Xlib.Xint)1, authNames, ref authProc, null);
 				if(majorOpcode < 0)
 				{
 					throw new XInvalidOperationException();

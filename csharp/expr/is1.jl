@@ -7,7 +7,7 @@
 	.ver 0:0:0:0
 }
 .module '<Module>'
-.class private auto interface ansi 'I'
+.class private auto interface abstract ansi 'I'
 {
 } // class I
 .class private auto sealed serializable ansi 'Color' extends ['.library']'System'.'Enum'

@@ -7,7 +7,7 @@
 	.ver 0:0:0:0
 }
 .module '<Module>'
-.class public auto interface ansi 'IEnumerator'
+.class public auto interface abstract ansi 'IEnumerator'
 {
 .method public virtual hidebysig newslot abstract instance bool 'MoveNext'() cil managed java 
 {
@@ -84,7 +84,7 @@
 	.set instance void 'set_Value'(class ['.library']'System'.'Object')
 } // property Value
 } // class DictionaryEntry
-.class public auto interface ansi 'IDictionaryEnumerator' implements 'IEnumerator'
+.class public auto interface abstract ansi 'IDictionaryEnumerator' implements 'IEnumerator'
 {
 .method public virtual hidebysig newslot abstract instance valuetype 'DictionaryEntry' 'get_Entry'() cil managed java 
 {
@@ -108,13 +108,13 @@
 	.get instance class ['.library']'System'.'Object' 'get_Value'()
 } // property Value
 } // class IDictionaryEnumerator
-.class public auto interface ansi 'IEnumerable'
+.class public auto interface abstract ansi 'IEnumerable'
 {
 .method public virtual hidebysig newslot abstract instance class 'IEnumerator' 'GetEnumerator'() cil managed java 
 {
 } // method GetEnumerator
 } // class IEnumerable
-.class public auto interface ansi 'ICollection' implements 'IEnumerable'
+.class public auto interface abstract ansi 'ICollection' implements 'IEnumerable'
 {
 .method public virtual hidebysig newslot abstract instance int32 'get_Count'() cil managed java 
 {
@@ -138,7 +138,7 @@
 	.get instance class ['.library']'System'.'Object' 'get_SyncRoot'()
 } // property SyncRoot
 } // class ICollection
-.class public auto interface ansi 'IDictionary' implements 'ICollection', 'IEnumerable'
+.class public auto interface abstract ansi 'IDictionary' implements 'ICollection', 'IEnumerable'
 {
 .method public virtual hidebysig newslot abstract instance void 'Add'(class ['.library']'System'.'Object' 'key', class ['.library']'System'.'Object' 'value') cil managed java 
 {

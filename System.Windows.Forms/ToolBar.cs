@@ -1544,10 +1544,18 @@ public class ToolBar : Control
 			Redraw();
 		}
 	}
-	[TODO]
+
 	public override string ToString()
 	{
-		return base.ToString();
+		string ret = base.ToString() + ", Buttons.Count: " + buttons.Count.ToString();
+		if(buttons.Count > 0)
+		{
+			for(int cnt = 0; cnt < buttons.Count; cnt++)
+			{
+				ret += ", Buttons[" + cnt.ToString() + "]: ToolBarButton: " + buttons[cnt].Text + ", Style: " + buttons[cnt].Style.ToString();
+			}
+		}
+		return ret;
 	}
 #if !CONFIG_COMPACT_FORMS
 	protected override void WndProc(ref Message m)

@@ -208,5 +208,11 @@ namespace System.Windows.Forms
 				base.SetBoundsCore (x, y, width, height, specified);
 				Invalidate();
 			}
+
+		public override String ToString()
+			{
+				return base.ToString() + ", Minimum: " + min.ToString() + ", Maximum: " +
+								 max.ToString() + ", Value: " + value.ToString();
+			}
 	}
 }//namespace

@@ -163,6 +163,17 @@ public class CreateParams
 				}
 			}
 
+	public override String ToString()
+			{
+				return "CreateParams {'" + ClassName + 
+					"', '" + Caption + "', 0x" + 
+					Style.ToString() + ", 0x" +
+			       	ExStyle.ToString() + 
+					", {" + X.ToString() + 
+					", " + Y.ToString() + 
+					", " + Width.ToString() + 
+					", " + Height.ToString() + "}}";
+			}
 }; // class CreateParams
 
 }; // namespace System.Windows.Forms

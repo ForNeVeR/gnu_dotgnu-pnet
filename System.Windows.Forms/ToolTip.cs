@@ -168,8 +168,7 @@ public sealed class ToolTip
 	[TODO]
 	public override string ToString()
 			{
-				// TODO
-				return String.Empty;
+				return base.ToString() + " InitialDelay: " + initialDelay.ToString() + ", ShowAlways: " + showAlways.ToString();
 			}
 	
 	~ToolTip()

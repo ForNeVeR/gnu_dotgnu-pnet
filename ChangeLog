@@ -1,4 +1,13 @@
 
+2004-12-07  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/CheckBox.cs, System.Windows.Forms/CreateParams.cs,
+	System.Windows.Forms/HelpProvider.cs, System.Windows.Forms/ProgressBar.cs,
+	System.Windows.Forms/StatusBar.cs, System.Windows.Forms/TabControl.cs,
+	System.Windows.Forms/TabPage.cs, System.Windows.Forms/ToolBar.cs,
+	System.Windows.Forms/ToolTip.cs: Implement missing ToString methods.
+	(patch #3553, Klaus)
+
 2004-12-07  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XPath/Private/XPathCompile.tc,

@@ -616,6 +616,11 @@ public class CheckBox : ButtonBase
 				return false;
 			}
 
+	public override String ToString()
+			{
+				return base.ToString() + ", CheckState: " +
+					(state == CheckState.Unchecked ? "0" : "1");
+			}
 }; // class CheckBox
 
 }; // namespace System.Windows.Forms

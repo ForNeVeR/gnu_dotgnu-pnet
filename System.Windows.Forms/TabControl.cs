@@ -327,7 +327,20 @@ namespace System.Windows.Forms
 			return new TabChildControls( this );
 		}
 
-		
+		public override String ToString()
+		{
+			string ret =  base.ToString() + ", TabPages.Count: " + TabCount.ToString();
+			if(TabPages.Count > 0)
+			{
+				for(int cnt = 0; cnt < TabPages.Count; cnt++)
+				{
+					ret += ", TabPages[" + cnt + "]: TabPage: " + TabPages[cnt].Text;
+				}
+			}
+
+			return ret;
+		}
+	
 		// Collection of child control TabPages.
 		public class TabChildControls : Control.ControlCollection
 		{

@@ -137,6 +137,10 @@ namespace System.Windows.Forms
 			}
 		}
 
+		public override String ToString()
+		{
+			return base.ToString() + " HelpNamespace: " + helpNamespace;
+		}
 	}
 
 #endif // CONFIG_COMPONENT_MODEL

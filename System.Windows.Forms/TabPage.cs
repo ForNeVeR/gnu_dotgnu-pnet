@@ -139,5 +139,10 @@ namespace System.Windows.Forms
 			public TabPageControlCollection(TabPage owner) : base( owner )
 			{}
 		}
+
+		public override String ToString()
+		{
+			return "TabPage: {" + base.Text + "}";
+		}
 	}
 }

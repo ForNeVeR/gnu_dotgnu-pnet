@@ -310,7 +310,12 @@ namespace System.Windows.Forms
 			Invalidate();
 			base.OnResize(e);
 		}
-		
+
+		public override String ToString()
+		{
+			return base.ToString() + " Panels.Count: " + panels.Count.ToString();
+		}
+	
 		#if !CONFIG_COMPACT_FORMS
 		// Process a message.
 		protected override void WndProc(ref Message m)

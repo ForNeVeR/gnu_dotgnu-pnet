@@ -31,7 +31,8 @@ extern	"C" {
 #define	PROG_LANG_DEFAULT		0
 #define	PROG_LANG_CSHARP		1
 #define	PROG_LANG_IL			2
-#define	PROG_LANG_OTHER			3
+#define	PROG_LANG_JL			3
+#define	PROG_LANG_OTHER			4
 
 /*
  * Supported output/macro dump formats for "dump_output_format".

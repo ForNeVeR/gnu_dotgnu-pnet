@@ -26,6 +26,8 @@ output is JVM.
 * cscc/cs_main.c: support for the "-mjvm" command-line option; change the
 default "checked" state to "off".
 
+* cscc/cs_options.h, cscc/cs_options.c: new language type for "JL".
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions

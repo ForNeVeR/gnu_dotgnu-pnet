@@ -279,6 +279,10 @@ static void xOption(char *arg)
 	{
 		prog_language = PROG_LANG_IL;
 	}
+	else if(!strcmp(arg, "jl"))
+	{
+		prog_language = PROG_LANG_JL;
+	}
 	else if(!strcmp(arg, "none"))
 	{
 		prog_language = PROG_LANG_DEFAULT;

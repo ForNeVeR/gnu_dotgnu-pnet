@@ -17,6 +17,9 @@
 	* cscc/csharp/cs_cast.c: Allow null to be casted to System.IntPtr even
 	outside unsafe mode (fixes bug #8207)
 
+	* codegen/cg_lvalue.tc: Use PrepareForThis access for indexers on
+	valuetypes as well.
+
 2004-06-07  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Fix type bug in constant field accesses 

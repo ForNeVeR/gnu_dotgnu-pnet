@@ -388,7 +388,9 @@ ILNode_GenValue(ILNode_ArrayAccess)
 ILNode_GenValue(ILNode_IndexerAccess)
 {
 	long saveStack = info->stackHeight;
-	ILNode_GenValue(node->object, info);
+	unsigned thisTemp = ILGenPrepareForThisAccess
+				(info, node->object, ILMethod_Owner(node->getMethod), 0);
+						
 	ILNode_GenValue(node->indices, info);
 	if(node->baseAccess)
 	{
@@ -399,6 +401,9 @@ ILNode_GenValue(ILNode_IndexerAccess)
 		ILGenCallMethod(info, node->getMethod);
 	}
 	info->stackHeight = saveStack + 1;
+
+	/* Release the temporary local variable if necessary */
+	ILGenFreeThisVar(info, thisTemp);
 	return node->machineType;
 }
 

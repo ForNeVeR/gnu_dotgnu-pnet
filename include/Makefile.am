@@ -1,5 +1,6 @@
 libILincludedir = $(includedir)/pnet
-libILinclude_HEADERS = il_config.h \
+libILinclude_HEADERS = il_coder.h \
+					   il_config.h \
 					   il_decimal.h \
 					   il_dumpasm.h \
 					   il_image.h \

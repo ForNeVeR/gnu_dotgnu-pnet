@@ -1,3 +1,7 @@
+2004-05-10  Thong Nguyen  <tum@veridicus.com>
+
+	* support/interlocked_x86.h:  Make ILInterlockedDecrement
+	return decremented value not incremented value.
 
 2004-05-10  Gopal V  <gopalv82@yahoo.com>
 

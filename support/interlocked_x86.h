@@ -80,7 +80,7 @@ static IL_INLINE ILInt32 ILInterlockedDecrement(ILInt32 *destination)
 		: "0" (-1), "m" (*destination)
 	);
 
-	return retval + 1;
+	return retval - 1;
 }
 
 /*

@@ -1,4 +1,11 @@
 
+0.5.0 (11 January 2003)
+
+	* Bring the version number into sync with "pnet".
+	* Build fixes related to moving assemblies out of "pnet" into "pnetlib".
+	* Fake password file library.
+	* Stub out pthread-style mutexes to help in building thread-safe code.
+
 0.0.2 (2 September 2002)
 
 	* Initial formal release of "pnetC".

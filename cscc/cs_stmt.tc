@@ -45,10 +45,12 @@ static void StmtSem(ILNode *node, ILGenInfo *info, ILNode **parent)
 	if(node)
 	{
 		value = ILNode_SemAnalysis(node, info, parent);
-		if(value.kind == CS_SEMKIND_TYPE)
+		if(value.kind != CS_SEMKIND_VOID &&
+		   value.kind != CS_SEMKIND_LVALUE &&
+		   value.kind != CS_SEMKIND_RVALUE)
 		{
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-						  "type used as a statement");
+						  "invalid statement");
 		}
 	}
 }
@@ -485,8 +487,10 @@ ILNode_SemAnalysis(ILNode_Unsafe)
 {
 	CSSemValue value;
 	CSUnsafeEnter(info, (ILNode *)node, "unsafe statement");
-	value = ILNode_SemAnalysis(node->stmt, info, &(node->stmt));
+	StmtSem(node->stmt, info, &(node->stmt));
 	CSUnsafeLeave(info);
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
 	return value;
 }
 

@@ -16,6 +16,8 @@ implement "&", "^", and "|" for the "bool" type.
 * codegen/cg_nodes.tc, codegen/cg_logical.tc, codegen/jv_logical.tc:
 implement the "UserLogicalAnd" and "UserLogicalOr" node types.
 
+* cscc/cs_stmt.tc: semantic analysis for statements.
+
 2001-08-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_scope.h, codegen/cg_scope.c: add node information to all

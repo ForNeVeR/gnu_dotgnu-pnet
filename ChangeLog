@@ -1,4 +1,12 @@
 
+2002-04-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/Makefile.am, support/mutex.c, support/no_defs.c,
+	support/no_defs.h, support/pt_defs.c, support/pt_defs.h,
+	support/thr_defs.h, support/thread.c, support/w32_defs.c,
+	support/w32_defs.h: rearrange the threading code so that
+	90% of it is common between platforms.
+
 2002-04-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,

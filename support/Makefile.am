@@ -22,10 +22,9 @@ libILSupport_a_SOURCES = allocate.c \
 						 mempool.c \
 						 memstack.c \
 						 mul_long.c \
-						 no_thread.c \
-						 pt_mutex.c \
-						 pt_thread.c \
-						 pt_wait.c \
+						 mutex.c \
+						 no_defs.c \
+						 pt_defs.c \
 						 read_float.c \
 						 rem_float.c \
 						 sha1.c \
@@ -33,12 +32,12 @@ libILSupport_a_SOURCES = allocate.c \
 						 spawn.c \
 						 strings.c \
 						 test_float.c \
+						 thread.c \
 						 time.c \
 						 unicode.c \
 						 utf8.c \
 						 utf16.c \
-						 w32_thread.c \
-						 w32_mutex.c \
+						 w32_defs.c \
 						 write_float.c \
 						 xml.c
 

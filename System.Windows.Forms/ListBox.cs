@@ -697,11 +697,13 @@ public class ListBox : ListControl
 		{
 			get
 			{
-				return true;	
+				return true;
 			}
 		}
 	} // class SelectedObjectCollection;
 
+	public const int DefaultItemHeight=13;
+	
 	public const int NoMatches = -1;
 
 	public override Color BackColor
@@ -826,12 +828,12 @@ public class ListBox : ListControl
 		}
 	}
 
-	[TODO]
+	//[TODO]
 	public int PreferredHeight
 	{
 		get
 		{
-			return 0;
+			return (this.internalDataSource.Count * this.ItemHeight)+ SystemInformation.BorderSize.Height * 4 + 3;
 		}
 	}
 
@@ -1025,28 +1027,28 @@ public class ListBox : ListControl
 		this.FlushPaint();
 	}
 
-	[TODO]
+	//[TODO]
 	public int FindString( String s )
 	{
-		return -1;
+		return FindStringInternal(s, internalDataSource, -1, false);
 	}
 
-	[TODO]
+	//[TODO]
 	public int FindString( String s, int index )
 	{
-		return -1;
+		return FindStringInternal(s, internalDataSource, index, false);
 	}
 
-	[TODO]
+	//[TODO]
 	public int FindStringExact( String s )
 	{
-		return -1;
+		return FindStringInternal(s, internalDataSource, -1, true);
 	}
 
-	[TODO]
+	//[TODO]
 	public int FindStringExact( String s, int index )
 	{
-		return -1;
+		return FindStringInternal(s, internalDataSource, index, true);
 	}
 
 	[TODO]

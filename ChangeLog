@@ -1,4 +1,10 @@
 
+2004-12-08 Shylaja Kokoori  <skokoori@cox.net>
+
+	* System.Windows.Forms/Listbox.cs: Added functionality for FindString, 
+	FindStringExact and PreferredHeight. Added field DefaultItemHeight.
+	(patch #3554, Gopal).
+
 2004-12-08  Marc Haisenko  <haisenko@webport.de>
 
 	* Xsharp/Font.cs: Disable font size rounding if Xft is 

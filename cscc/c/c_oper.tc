@@ -893,7 +893,5 @@ JavaGenValue(ILNode_SizeOfExpr)
  */
 ILNode_CSemAnalysis(ILNode_Error)
 {
-	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-				  _("internal error - construct not yet implemented"));
 	return CSemValueError;
 }

@@ -39,6 +39,7 @@ extern	"C" {
 #define	C_SCDATA_FUNCTION				107
 #define	C_SCDATA_FUNCTION_FORWARD		108
 #define	C_SCDATA_FUNCTION_INFERRED		109
+#define	C_SCDATA_UNDECLARED				110
 
 /*
  * The current scope.
@@ -126,6 +127,12 @@ void CScopeAddParam(const char *name, unsigned index, ILType *type);
  * Add information about a non-static local variable to the current scope.
  */
 void CScopeAddLocal(const char *name, unsigned index, ILType *type);
+
+/*
+ * Add an entry to the current scope that records that an identifier
+ * was undeclared, but that we don't want to know about it again.
+ */
+void CScopeAddUndeclared(const char *name);
 
 /*
  * Get the scope data kind.

@@ -51,6 +51,50 @@ static void yyerror(char *msg)
 }
 
 /*
+ * Fix up an identifier node that was previously detected as
+ * undeclared, but we weren't sure if it was going to be used
+ * as a normal identifier or a forward-referenced function name.
+ */
+static ILNode *FixIdentifierNode(ILNode *node, int functionRef)
+{
+	char *name;
+
+	/* Bail out if the node is not an identifier */
+	if(!yyisa(node, ILNode_Identifier))
+	{
+		return node;
+	}
+
+	/* Extract the name from the identifier node */
+	name = ILQualIdentName(node, 0);
+
+	/* Report an error if not a function reference */
+	if(!functionRef)
+	{
+		if(functionName && functionName[0] != '\0')
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				_("`%s' undeclared (first use in this function)"), name);
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				_("(Each undeclared identifier is reported only once"));
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				_("for each function it appears in.)"));
+			CScopeAddUndeclared(name);
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				_("`%s' undeclared"), name);
+		}
+		return ILNode_Error_create();
+	}
+
+	/* Create a forward-reference to the function, which will be
+	   fixed up during semantic analysis to contain the signature */
+	return ILNode_FunctionRef_create(name, ILType_Invalid);
+}
+
+/*
  * Copy the contents of one parameter declaration list to another.
  */
 static void CopyParamDecls(ILNode *dest, ILNode *src)
@@ -343,7 +387,7 @@ static void ProcessBitField(CDeclSpec spec, CDeclarator decl, ILUInt32 size)
 
 %type <name>		AnyIdentifier Identifier
 
-%type <node>		PrimaryExpression PostfixExpression PostfixExpression2
+%type <node>		PrimaryExpression PostfixExpression
 %type <node>		ArgumentExpressionList UnaryExpression CastExpression
 %type <node>		MultiplicativeExpression AdditiveExpression ShiftExpression
 %type <node>		RelationalExpression EqualityExpression AndExpression
@@ -393,7 +437,68 @@ Identifier
 	;
 
 PrimaryExpression
-	: Identifier			{ /* TODO: resolve the identifier to a node */ }
+	: Identifier			{
+				/* Resolve the identifier to a node */
+				void *data = CScopeLookup($1);
+				ILType *type;
+				if(!data)
+				{
+					/* We don't know what this identifier is, so return
+					   a generic node until the next higher level can
+					   make a determination as to whether the name is truly
+					   undeclared or a forward reference to a function */
+					$$ = ILNode_Identifier_create($1);
+				}
+				else
+				{
+					/* Determine the kind of node to create */
+					switch(CScopeGetKind(data))
+					{
+						case C_SCDATA_LOCAL_VAR:
+						{
+							/* Create a local variable reference */
+							type = CScopeGetType(data);
+							$$ = ILNode_CLocalVar_create
+								(CScopeGetIndex(data),
+								 ILTypeToMachineType(type), type);
+						}
+						break;
+
+						case C_SCDATA_PARAMETER_VAR:
+						{
+							/* Create a parameter variable reference */
+							type = CScopeGetType(data);
+							$$ = ILNode_CArgumentVar_create
+								(CScopeGetIndex(data),
+								 ILTypeToMachineType(type), type);
+						}
+						break;
+
+						case C_SCDATA_GLOBAL_VAR:
+						case C_SCDATA_GLOBAL_VAR_FORWARD:
+						{
+							/* TODO */
+						}
+						break;
+
+						case C_SCDATA_FUNCTION:
+						case C_SCDATA_FUNCTION_FORWARD:
+						case C_SCDATA_FUNCTION_INFERRED:
+						{
+							$$ = ILNode_FunctionRef_create
+									($1, CScopeGetType(data));
+						}
+						break;
+
+						default:
+						{
+							/* Previously detected an undeclared identifier */
+							$$ = ILNode_Error_create();
+						}
+						break;
+					}
+				}
+			}
 	| INTEGER_CONSTANT		{
 				/* Convert the integer value into a node */
 				switch($1.type)
@@ -494,31 +599,31 @@ StringLiteral
 	;
 
 PostfixExpression
-	: PostfixExpression2
-	;
-
-PostfixExpression2
 	: PrimaryExpression
 	| PostfixExpression '[' Expression ']'	{
-				$$ = ILNode_ArrayAccess_create($1, $3);
+				$$ = ILNode_ArrayAccess_create(FixIdentifierNode($1, 0), $3);
 			}
-	| PostfixExpression2 '(' ')'	{
-				$$ = ILNode_InvocationExpression_create($1, 0);
+	| PostfixExpression '(' ')'	{
+				$$ = ILNode_InvocationExpression_create
+						(FixIdentifierNode($1, 1), 0);
 			}
-	| PostfixExpression2 '(' ArgumentExpressionList ')'	{
-				$$ = ILNode_InvocationExpression_create($1, $3);
+	| PostfixExpression '(' ArgumentExpressionList ')'	{
+				$$ = ILNode_InvocationExpression_create
+						(FixIdentifierNode($1, 1), $3);
 			}
 	| PostfixExpression '.' AnyIdentifier	{
-				$$ = ILNode_MemberAccess_create($1, ILQualIdentSimple($3));
+				$$ = ILNode_MemberAccess_create
+						(FixIdentifierNode($1, 0), ILQualIdentSimple($3));
 			}
 	| PostfixExpression PTR_OP AnyIdentifier	{
-				$$ = ILNode_DerefField_create($1, ILQualIdentSimple($3));
+				$$ = ILNode_DerefField_create
+						(FixIdentifierNode($1, 0), ILQualIdentSimple($3));
 			}
 	| PostfixExpression INC_OP		{
-				$$ = ILNode_PostInc_create($1);
+				$$ = ILNode_PostInc_create(FixIdentifierNode($1, 0));
 			}
 	| PostfixExpression DEC_OP		{
-				$$ = ILNode_PostDec_create($1);
+				$$ = ILNode_PostDec_create(FixIdentifierNode($1, 0));
 			}
 	| K_VA_ARG '(' UnaryExpression ',' TypeName ')'	{
 				$$ = ILNode_VaArg_create($3, $5);
@@ -548,7 +653,7 @@ ArgumentExpressionList
 	;
 
 UnaryExpression
-	: PostfixExpression
+	: PostfixExpression			{ $$ = FixIdentifierNode($1, 0); }
 	| INC_OP UnaryExpression	{ $$ = ILNode_PreInc_create($2); }
 	| DEC_OP UnaryExpression	{ $$ = ILNode_PreDec_create($2); }
 	| '-' CastExpression		{

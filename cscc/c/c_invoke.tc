@@ -18,6 +18,48 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/*
+ * Perform semantic analysis on a function reference node.
+ * This will only be called when the function is used as
+ * a value rather than as part of a function invocation,
+ * so we don't need to worry about forward references.
+ */
+ILNode_CSemAnalysis(ILNode_FunctionRef)
+{
+	CSemValue value;
+	CSemSetRValue(value, node->signature);
+	return value;
+}
+
+/*
+ * Get the type of a function reference node.
+ */
+ILNode_GetType(ILNode_FunctionRef)
+{
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
+ * Generate value code for a function reference node.
+ */
+ILNode_GenValue(ILNode_FunctionRef)
+{
+	if(info->asmOutput)
+	{
+		fputs("\tldftn\t", info->asmOutput);
+		ILDumpMethodType(info->asmOutput, info->image, node->signature,
+						 IL_DUMP_QUOTE_NAMES, 0, node->name, 0);
+		putc('\n', info->asmOutput);
+	}
+	ILGenAdjust(info, 1);
+	return ILMachineType_UnmanagedPtr;
+}
+JavaGenValue(ILNode_FunctionRef)
+{
+	/* Never called: nothing to do here */
+	return ILMachineType_UnmanagedPtr;
+}
+
 ILNode_CSemAnalysis(ILNode_InvocationExpression)
 {
 	/* TODO */

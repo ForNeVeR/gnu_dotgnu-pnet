@@ -233,6 +233,7 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 
 %{
 #include <cscc/c/c_internal.h>
+#include "il_dumpasm.h"
 %}
 
 /*
@@ -276,11 +277,25 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 {
 	char *code;
 }
+%node ILNode_CLocalVar ILNode_LocalVar =
+{
+	ILType *type;
+}
+%node ILNode_CArgumentVar ILNode_ArgumentVar =
+{
+	ILType *type;
+}
+%node ILNode_FunctionRef ILNode_Expression =
+{
+	char *name;
+	ILType *signature;
+}
 
 %output "c_semantics.c"
 
 %{
 #include <cscc/c/c_internal.h>
+#include "il_dumpasm.h"
 %}
 
 /*

@@ -36,16 +36,25 @@ ILNode_CSemAnalysis(ILNode_DerefField)
 	return CSemValueError;
 }
 
-ILNode_CSemAnalysis(ILNode_LocalVar)
+/*
+ * Perform semantic analysis for a local variable reference.
+ */
+ILNode_CSemAnalysis(ILNode_LocalVar),
+ILNode_CSemAnalysis(ILNode_ArgumentVar)
 {
-	/* TODO */
+	/* These node types aren't used by the grammar */
 	return CSemValueError;
 }
 
-ILNode_CSemAnalysis(ILNode_ArgumentVar)
+/*
+ * Perform semantic analysis for a C local variable reference.
+ */
+ILNode_CSemAnalysis(ILNode_CLocalVar),
+ILNode_CSemAnalysis(ILNode_CArgumentVar)
 {
-	/* TODO */
-	return CSemValueError;
+	CSemValue value;
+	CSemSetLValue(value, node->type);
+	return value;
 }
 
 ILNode_CSemAnalysis(ILNode_ArrayAccess)

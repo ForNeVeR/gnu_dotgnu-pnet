@@ -171,6 +171,11 @@ void CScopeAddLocal(const char *name, unsigned index, ILType *type)
 					   (void *)(ILNativeUInt)index, type);
 }
 
+void CScopeAddUndeclared(const char *name)
+{
+	ILScopeDeclareItem(CGlobalScope, name, C_SCDATA_UNDECLARED, 0, 0, 0);
+}
+
 int CScopeGetKind(void *data)
 {
 	return ILScopeDataGetKind((ILScopeData *)data);
@@ -184,6 +189,11 @@ ILType *CScopeGetType(void *data)
 ILNode *CScopeGetNode(void *data)
 {
 	return ILScopeDataGetNode((ILScopeData *)data);
+}
+
+unsigned CScopeGetIndex(void *data)
+{
+	return (unsigned)(ILNativeUInt)(ILScopeDataGetData1((ILScopeData *)data));
 }
 
 #ifdef	__cplusplus

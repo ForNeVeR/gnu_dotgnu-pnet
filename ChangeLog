@@ -1,4 +1,9 @@
 
+2002-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/Common/ByteEncoding.cs: missing "++" when converting strings
+	(Gonzalo Paniagua Javier <gonzalo@ximian.com>).
+
 2002-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/DateTime.cs: change to "DateToTicks" to correct

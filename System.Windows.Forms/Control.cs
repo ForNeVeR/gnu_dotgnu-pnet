@@ -42,7 +42,7 @@ public class Control : IWin32Window
 		// in the case of forms and non client areas
 		private int left, top, width, height;
 		private int prevParentWidth, prevParentHeight;
-		private String text;
+		internal String text;
 		private String name;
 		private HookedEvent hookedEvents;
 		private Control[] children;
@@ -419,7 +419,10 @@ public class Control : IWin32Window
 			{
 				if(toolkitWindow != null)
 				{
-					toolkitWindow.Capture = value;
+					// Do not allow capturing if the parent is a popup
+					// (already captured).
+					if (!(parent is PopupControl))
+						toolkitWindow.Capture = value;
 				}
 			}
 		}
@@ -3658,6 +3661,8 @@ public class Control : IWin32Window
 			{
 				contextMenu.Show(this, new Point(e.X, e.Y));
 			}
+			if (e.Button == MouseButtons.Left)
+				OnClick(EventArgs.Empty);
 		}
 		internal void OnMouseDownInternal(MouseEventArgs e)
 		{

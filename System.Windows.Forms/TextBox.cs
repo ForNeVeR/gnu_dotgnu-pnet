@@ -36,6 +36,7 @@ public class TextBox : TextBoxBase
 	private Brush selectedForeBrush, selectedBackBrush;
 	private Brush foreBrush, backBrush, disabledBackBrush;
 	private Pen backPen;
+	private bool inTextChangedEvent;
 
 	// The position and drawing information for each item
 	protected LayoutInfo layout;
@@ -182,11 +183,7 @@ public class TextBox : TextBoxBase
 			{
 				char cNext = value[0];
 				if (value.Length > 1)
-
-			// Set the position to the end
-			SelectInternal(Text.Length, 0);
-			CaretSetEndSelection();
-
+			
 				{
 					for (int i = 0; i < value.Length - 1; i++)
 					{
@@ -215,8 +212,17 @@ public class TextBox : TextBoxBase
 					sb.Append(cNext);
 			}
 			SetTextInternal( sb.ToString());
-			ResetView();
-			Redraw(ControlGraphics);
+			// Set the position to the end
+			SelectInternal(Text.Length, 0);
+			if (!inTextChangedEvent)
+			{
+				CaretSetEndSelection();
+
+				ResetView();
+				Redraw(ControlGraphics);
+				OnTextChanged(EventArgs.Empty);
+			}
+
 		}
 	}
 
@@ -287,6 +293,7 @@ public class TextBox : TextBoxBase
 			SetTextInternal( sb.ToString());
 			ResetView();
 			Redraw(ControlGraphics);
+			OnTextChanged(EventArgs.Empty);
 		}
 	}
 
@@ -430,7 +437,7 @@ public class TextBox : TextBoxBase
 		}
 
 		string strInsert;
-			if (c=='\r')
+		if (c=='\r')
 			strInsert = "\r\n";
 		else
 			strInsert = c.ToString();
@@ -439,6 +446,8 @@ public class TextBox : TextBoxBase
 		CaretSetPosition(SelectionStart);
 		ScrollToCaretNoRedraw();
 		Redraw(ControlGraphics);
+		OnTextChanged(EventArgs.Empty);
+
 	}
 
 	// Handle "MouseDown" events for the text box.
@@ -772,7 +781,8 @@ public class TextBox : TextBoxBase
 		if (prevLayout)
 			oldLayout = (LayoutInfo)layout.Clone();
 		string oldText = Text;
-		base.Text = text;
+		// We must not trigger the onTextChanged event yet else this controls text could be change in the event!
+		(this as Control).text = text;
 		LayoutFromText();
 		if (prevLayout)
 		{
@@ -926,6 +936,7 @@ public class TextBox : TextBoxBase
 						SelectInternal(GetSelectionStart()-nbCharsToDelete, 0);
 					}
 				}
+				OnTextChanged(EventArgs.Empty);
 
 				// In the case of multiline we ensure that we recover any blank lines created by backspacing at the bottom (if the text is bigger than the view area).
 				// In the case of non multiline, we recover any character space that is now there after deleting
@@ -980,6 +991,7 @@ public class TextBox : TextBoxBase
 					}
 				}
 				SelectInternal(GetSelectionStart(),0);
+				OnTextChanged(EventArgs.Empty);
 				break;
 			}
 		}
@@ -1104,7 +1116,6 @@ public class TextBox : TextBoxBase
 							mouseDown = true;
 							Capture = true;
 						}
-						
 						CaretSetEndSelection();
 						// If you click right at the end/beginning, make sure the caret is in view
 						ScrollToCaretNoRedraw();
@@ -1424,6 +1435,13 @@ public class TextBox : TextBoxBase
 		if (graphics != null)
 			graphics.Dispose();
 		graphics = null;
+	}
+
+	protected override void OnTextChanged(EventArgs e)
+	{
+		inTextChangedEvent = true;
+		base.OnTextChanged (e);
+		inTextChangedEvent = false;
 	}
 
 	

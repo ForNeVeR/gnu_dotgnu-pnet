@@ -12,6 +12,7 @@ libinclude_HEADERS = alloca.h \
 					 math.h \
 					 setjmp.h \
 					 stdarg.h \
+					 stdbool.h \
 					 stddef.h \
 					 stdint.h \
 					 stdio.h \

@@ -36,8 +36,8 @@ extern	"C" {
  * the system in chunks of this size.  This will also determine
  * the maximum method size that can be translated.
  */
-#ifndef	IL_CACHE_PAGE_SIZE
-#define	IL_CACHE_PAGE_SIZE		(128 * 1024)
+#ifndef	IL_CONFIG_CACHE_PAGE_SIZE
+#define	IL_CONFIG_CACHE_PAGE_SIZE		(128 * 1024)
 #endif
 
 /*
@@ -402,7 +402,7 @@ ILCache *_ILCacheCreate(long limit)
 	cache->pages = 0;
 	cache->numPages = 0;
 	size = ILPageAllocSize();
-	size = (IL_CACHE_PAGE_SIZE / size) * size;
+	size = (IL_CONFIG_CACHE_PAGE_SIZE / size) * size;
 	if(!size)
 	{
 		size = ILPageAllocSize();
@@ -1049,8 +1049,8 @@ Cache data structure
 
 The cache consists of one or more "cache pages", which contain method
 code and auxillary data.  The default size for a cache page is 128k
-(IL_CACHE_PAGE_SIZE).  The size is adjusted to be a multiple of the
-system page size (usually 4k), and then stored in "pageSize".
+(IL_CONFIG_CACHE_PAGE_SIZE).  The size is adjusted to be a multiple
+of the system page size (usually 4k), and then stored in "pageSize".
 
 Method code is written into a cache page starting at the bottom of the
 page, and growing upwards.  Auxillary data is written into a cache page

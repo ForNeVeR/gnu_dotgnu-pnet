@@ -198,7 +198,7 @@ int ILImageLoad(FILE *file, const char *filename,
 		offset = 20;
 		isOBJ = 1;
 	}
-#ifndef IL_NO_JAVA
+#ifdef IL_CONFIG_JAVA
 	else if((buffer[0] == (char)0xCA && buffer[1] == (char)0xFE) ||
 	        (buffer[0] == 'P' && buffer[1] == 'K'))
 	{

@@ -34,12 +34,15 @@ extern	"C" {
 
 /*
  * See if we have sufficient functions to do locale-based conversion.
- * The "IL_USE_LATIN1" macro is defined to set the encoding to Latin1
- * if we have no idea how to convert to and from the system encoding.
+ * The "IL_CONFIG_LATIN1" macro is defined to set the encoding to Latin1
+ * if we have no idea how to convert to and from the system encoding,
+ * or if the profile says to always use Latin1.
  */
 #if !(defined(HAVE_WCTOMB) || defined(HAVE_WCRTOMB)) || \
     !(defined(HAVE_MBTOWC) || defined(HAVE_MBRTOWC))
-#define	IL_USE_LATIN1	1
+#ifndef IL_CONFIG_LATIN1
+#define	IL_CONFIG_LATIN1	1
+#endif
 #endif
 
 /*
@@ -47,7 +50,7 @@ extern	"C" {
  */
 static ILInt32 GetByteCount(ILUInt16 *chars, ILInt32 count)
 {
-#ifdef IL_USE_LATIN1
+#ifdef IL_CONFIG_LATIN1
 	return count;
 #else
 #if HAVE_WCRTOMB
@@ -106,7 +109,7 @@ static ILInt32 GetByteCount(ILUInt16 *chars, ILInt32 count)
 static ILInt32 GetBytes(ILUInt16 *chars, ILInt32 charCount,
                         ILUInt8 *bytes, ILInt32 byteCount)
 {
-#ifdef IL_USE_LATIN1
+#ifdef IL_CONFIG_LATIN1
 	ILInt32 len;
 	ILUInt32 ch;
 
@@ -208,7 +211,7 @@ static ILInt32 GetBytes(ILUInt16 *chars, ILInt32 charCount,
 static ILInt32 GetChars(ILUInt8 *bytes, ILInt32 byteCount,
 						ILUInt16 *chars, ILInt32 charCount)
 {
-#ifdef IL_USE_LATIN1
+#ifdef IL_CONFIG_LATIN1
 	ILInt32 len;
 
 	/* Check for enough space in the output buffer */
@@ -378,7 +381,7 @@ ILInt32 _IL_DefaultEncoding_InternalGetCharCount
 				(ILExecThread *_thread, System_Array *bytes,
 				 ILInt32 index, ILInt32 count)
 {
-#ifdef IL_USE_LATIN1
+#ifdef IL_CONFIG_LATIN1
 	return count;
 #else
 #if HAVE_MBRTOWC
@@ -474,7 +477,7 @@ ILInt32 _IL_DefaultEncoding_InternalGetChars
 ILInt32 _IL_DefaultEncoding_InternalGetMaxByteCount
 				(ILExecThread *_thread, ILInt32 charCount)
 {
-#ifdef IL_USE_LATIN1
+#ifdef IL_CONFIG_LATIN1
 	return charCount;
 #else
 	return charCount * MB_CUR_MAX;
@@ -519,7 +522,7 @@ ILString *_IL_DefaultEncoding_InternalGetString
  */
 ILInt32 _IL_DefaultEncoding_InternalCodePage(ILExecThread *_thread)
 {
-#ifdef IL_USE_LATIN1
+#ifdef IL_CONFIG_LATIN1
 	/* We know that the default encoding is Latin-1, so return
 	   the magic Windows code page number for it */
 	return 28591;

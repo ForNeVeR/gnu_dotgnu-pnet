@@ -79,6 +79,7 @@ static ILCmdLineOption const options[] = {
 		"--help",
 		"Print this help message."},
 
+#ifndef IL_CONFIG_REDUCE_CODE
 	/* Special internal options that are used for debugging.
 	   Note: -I won't do anything unless IL_PROFILE_CVM_INSNS
 	   is defined in "cvm.c", -M won't do anything unless
@@ -93,6 +94,7 @@ static ILCmdLineOption const options[] = {
 	{"--var-profile", 'V', 0, 0, 0},
 	{"-P", 'P', 0, 0, 0},
 	{"--dump-params", 'P', 0, 0, 0},
+#endif
 
 	{0, 0, 0, 0, 0}
 };
@@ -103,8 +105,8 @@ static void version(void);
 int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
-	unsigned long heapSize = 0;
-	unsigned long stackSize = 0;
+	unsigned long heapSize = IL_CONFIG_GC_HEAP_SIZE;
+	unsigned long stackSize = IL_CONFIG_STACK_SIZE;
 	char **libraryDirs;
 	int numLibraryDirs;
 	int state, opt;
@@ -119,10 +121,12 @@ int main(int argc, char *argv[])
 	ILObject *exception;
 	int sawException;
 	int registerMode = 0;
+#ifndef IL_CONFIG_REDUCE_CODE
 	int dumpInsnProfile = 0;
 	int dumpMethodProfile = 0;
 	int dumpVarProfile = 0;
 	int dumpParams = 0;
+#endif
 
 	/* Initialize the locale routines */
 	ILInitLocale();
@@ -177,6 +181,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+		#ifndef IL_CONFIG_REDUCE_CODE
 			case 'I':
 			{
 				dumpInsnProfile = 1;
@@ -200,6 +205,7 @@ int main(int argc, char *argv[])
 				dumpParams = 1;
 			}
 			break;
+		#endif
 
 			case 'v':
 			{
@@ -360,6 +366,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
+#ifndef IL_CONFIG_REDUCE_CODE
 	/* Print profile information if requested */
 	if(dumpInsnProfile)
 	{
@@ -392,6 +399,7 @@ int main(int argc, char *argv[])
 		printf("Method Cache Size = %ld\n",
 			   ILExecProcessGetParam(process, IL_EXEC_PARAM_MC_SIZE));
 	}
+#endif
 
 	/* Clean up the process and exit */
 	error = ILExecProcessGetStatus(process);

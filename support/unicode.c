@@ -26,6 +26,15 @@ extern	"C" {
 #endif
 
 /*
+ * Use small unicode tables if we are configured as Latin1 only.
+ */
+#ifdef IL_CONFIG_LATIN1
+#ifndef	SMALL_UNICODE_TABLE
+#define	SMALL_UNICODE_TABLE 1
+#endif
+#endif
+
+/*
  * Include the Unicode category table from "unicat.c".
  * The table is automatically generated from "UnicodeData.txt"
  * using the "mkcategory" program.  The latest version of

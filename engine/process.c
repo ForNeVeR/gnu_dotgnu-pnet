@@ -48,9 +48,9 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	process->lock = 0;
 	process->firstThread = 0;
 	process->mainThread = 0;
-	process->stackSize = ((stackSize < IL_ENGINE_STACK_SIZE)
-							? IL_ENGINE_STACK_SIZE : stackSize);
-	process->frameStackSize = IL_ENGINE_FRAME_STACK_SIZE;
+	process->stackSize = ((stackSize < IL_CONFIG_STACK_SIZE)
+							? IL_CONFIG_STACK_SIZE : stackSize);
+	process->frameStackSize = IL_CONFIG_FRAME_STACK_SIZE;
 	process->context = 0;
 	process->metadataLock = 0;
 	process->exitStatus = 0;

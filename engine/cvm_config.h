@@ -65,7 +65,9 @@ extern int _ILCVMInsnCount[];
 	#define	CVM_DUMP()
 	#define CVM_WIDE_DUMP()
 	#define CVM_PREFIX_DUMP()
-	#define	IL_CVM_DIRECT_ALLOWED
+	#ifdef IL_CONFIG_DIRECT
+		#define	IL_CVM_DIRECT_ALLOWED
+	#endif
 #endif
 
 /*
@@ -169,7 +171,8 @@ extern int _ILCVMInsnCount[];
 #if defined(IL_CVM_DIRECT) && defined(CVM_X86) && \
 	defined(__GNUC__) && !defined(IL_NO_ASM) && \
 	!defined(IL_CVM_PROFILE_CVM_METHODS) && \
-	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE)
+	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
+	defined(IL_CONFIG_UNROLL)
 #define	IL_CVM_DIRECT_UNROLLED_X86
 #define	IL_CVM_DIRECT_UNROLLED
 #endif

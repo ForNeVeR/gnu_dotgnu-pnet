@@ -59,6 +59,7 @@
  */
 ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 {
+#ifdef IL_CONFIG_GROW_FRAMES
 	ILUInt32 newsize;
 	ILCallFrame *newframe;
 
@@ -82,6 +83,11 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 
 	/* Return the new frame to the caller */
 	return &(thread->frameStack[(thread->numFrames)++]);
+#else
+	/* We are not allowed to grow the frame stack */
+    thread->thrownException = thread->process->outOfMemoryObject;
+	return 0;
+#endif
 }
 
 #ifdef IL_DUMP_CVM

@@ -46,11 +46,11 @@ extern	"C" {
 /*
  * Default values.
  */
-#ifndef	IL_ENGINE_STACK_SIZE
-#define	IL_ENGINE_STACK_SIZE		8192
+#ifndef	IL_CONFIG_STACK_SIZE
+#define	IL_CONFIG_STACK_SIZE		8192
 #endif
-#ifndef	IL_ENGINE_FRAME_STACK_SIZE
-#define	IL_ENGINE_FRAME_STACK_SIZE	512
+#ifndef	IL_CONFIG_FRAME_STACK_SIZE
+#define	IL_CONFIG_FRAME_STACK_SIZE	512
 #endif
 
 /*

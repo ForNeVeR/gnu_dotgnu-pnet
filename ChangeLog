@@ -24,6 +24,11 @@
 	profiles/kernel-fp, profiles/mkprofile.sh: add the build
 	profile definitions and the "--with-profile" configure option.
 
+	* engine/cvm_call.c, engine/cvm_config.h, engine/engine.h,
+	engine/ilrun.c, engine/lib_encoding.c, engine/method_cache.c,
+	engine/process.c, image/pecoff_loader.c, support/unicode.c:
+	add the simple configuration profile #ifdef's to the code.
+
 2002-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, codegen/jv_stmt.tc: make sure that the

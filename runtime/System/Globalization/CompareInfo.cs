@@ -27,6 +27,14 @@ public class CompareInfo
 
 // TODO
 
+	public int Compare(String string1, String string2, CompareOptions options)
+			{
+				// TODO
+				return String.Compare
+						(string1, string2,
+					     (options & CompareOptions.IgnoreCase) != 0);
+			}
+
 }; // class CompareInfo
 
 }; // namespace System.Globalization

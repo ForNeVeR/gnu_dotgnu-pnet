@@ -121,6 +121,9 @@ CSSRC = Activator.cs \
 		ValueType.cs \
 		Version.cs \
 		Void.cs \
+		Collections/BitArray.cs \
+		Collections/CaseInsensitiveComparer.cs \
+		Collections/CaseInsensitiveHashCodeProvider.cs \
 		Collections/Comparer.cs \
 		Collections/DictionaryEntry.cs \
 		Collections/Hashtable.cs \

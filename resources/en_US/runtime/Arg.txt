@@ -80,6 +80,7 @@ Arg_InvalidDimension=Invalid array dimension
 Arg_ElementTypeMismatch=Array element type mismatch
 Arg_InvalidEra=Invalid era value for calendar method
 Arg_HashExistingEntry=There is already an existing hash table entry with the specified key
+Arg_BitArrayLengths=The lengths of the two bit arrays are not identical
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

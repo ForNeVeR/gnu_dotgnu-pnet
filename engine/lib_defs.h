@@ -92,6 +92,18 @@ typedef struct
 } System_Reflection;
 
 /*
+ * Check that the caller has permission to access a specific class
+ * or member via reflection.  Returns non-zero if access has been granted.
+ */
+int _ILClrCheckAccess(ILExecThread *thread, ILClass *classInfo,
+					  ILMember *member);
+
+/*
+ * Check that the caller has permission to access a specific program item.
+ */
+int _ILClrCheckItemAccess(ILExecThread *thread, ILProgramItem *item);
+
+/*
  * Convert an "ILClass" into a "ClrType" instance.
  */
 ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo);

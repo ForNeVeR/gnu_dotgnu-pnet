@@ -67,12 +67,8 @@ static ILImage *CallerImage(ILExecThread *thread)
 	return systemImage;
 }
 
-/*
- * Check that the caller has permission to access a specific class or member.
- * Returns non-zero if access has been granted.
- */
-static int CheckAccess(ILExecThread *thread, ILClass *classInfo,
-					   ILMember *member)
+int _ILClrCheckAccess(ILExecThread *thread, ILClass *classInfo,
+					  ILMember *member)
 {
 	ILImage *systemImage;
 	ILMethod *method;
@@ -116,6 +112,30 @@ static int CheckAccess(ILExecThread *thread, ILClass *classInfo,
 
 	/* Check that the caller has "ReflectionPermission" */
 	/* TODO */
+	return 1;
+}
+
+int _ILClrCheckItemAccess(ILExecThread *thread, ILProgramItem *item)
+{
+	ILClass *classInfo;
+	ILMember *member;
+
+	/* Is the item a class? */
+	classInfo = ILProgramItemToClass(item);
+	if(classInfo)
+	{
+		return _ILClrCheckAccess(thread, classInfo, (ILMember *)0);
+	}
+
+	/* Is the item a class member? */
+	member = ILProgramItemToMember(item);
+	if(member)
+	{
+		return _ILClrCheckAccess(thread, (ILClass *)0, member);
+	}
+
+	/* We assume that it is OK to access other types of items.
+	   Usually these are assemblies and modules, which are public */
 	return 1;
 }
 
@@ -444,7 +464,7 @@ static ILObject *System_Type_GetType(ILExecThread *thread,
 	}
 
 	/* Check that we have permission to reflect the type */
-	if(!CheckAccess(thread, classInfo, 0))
+	if(!_ILClrCheckAccess(thread, classInfo, 0))
 	{
 		return 0;
 	}

@@ -132,13 +132,28 @@ internal sealed class PostscriptPrintSession : IToolkitPrintSession
 				// of the page.
 				writer.WriteLine("/pagelevel save def");
 
-				// TODO: apply a rotation for landscape mode.
+				// Flip the co-ordinate system so that the top-left
+				// margin position on the page is the origin.
+				double temp;
+				if(e.PageSettings.Landscape)
+				{
+					// TODO: rotate the co-ordinate system for landscape mode.
+				}
+				else
+				{
+					temp = (e.PageBounds.Height * 72.0) / 100.0;
+					writer.WriteLine("0 {0} translate 1 -1 scale", temp);
+				}
 
 				// Mark the end of the page header information.
 				writer.WriteLine("%%EndPageSetup");
 
 				// We are now on a page.
 				onPage = true;
+
+				// Save the graphics state.  It will be restored and
+				// re-saved every time a pen or brush is changed.
+				writer.WriteLine("gsave");
 
 				// Create a "Graphics" object for this page and return it.
 				return ToolkitManager.CreateGraphics
@@ -151,7 +166,7 @@ internal sealed class PostscriptPrintSession : IToolkitPrintSession
 				if(onPage)
 				{
 					// Restore the VM state at the start of the page.
-					writer.WriteLine("pagelevel restore");
+					writer.WriteLine("grestore pagelevel restore");
 
 					// Show the page.
 					writer.WriteLine("showpage");

@@ -79,8 +79,8 @@ public class NullToolkit : IToolkit
 			}
 
 	// Create a hatched toolkit brush.
-	public IToolkitBrush CreateHatchBrush(HatchStyle style, Color foreColor,
-								   		  Color backColor)
+	public virtual IToolkitBrush CreateHatchBrush
+					(HatchStyle style, Color foreColor, Color backColor)
 			{
 				return null;
 			}

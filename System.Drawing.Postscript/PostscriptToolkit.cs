@@ -22,11 +22,62 @@
 namespace System.Drawing.Toolkit
 {
 
+using System.Drawing;
 using System.Drawing.Printing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 internal sealed class PostscriptToolkit : NullToolkit
 {
-	// TODO: handle pens, brushes, etc
+	// Create a solid toolkit brush.
+	public override IToolkitBrush CreateSolidBrush(Color color)
+			{
+				return null;
+			}
+
+	// Create a hatched toolkit brush.
+	public override IToolkitBrush CreateHatchBrush
+				(HatchStyle style, Color foreColor, Color backColor)
+			{
+				return null;
+			}
+
+	// Create a linear gradient brush.  Returns null if the
+	// toolkit does not support linear gradient brushes.
+	public override IToolkitBrush CreateLinearGradientBrush
+				(RectangleF rect, Color color1, Color color2,
+				 LinearGradientMode mode)
+			{
+				return null;
+			}
+	public override IToolkitBrush CreateLinearGradientBrush
+				(RectangleF rect, Color color1, Color color2,
+				 float angle, bool isAngleScaleable)
+			{
+				return null;
+			}
+
+	// Create a texture brush.
+	public override IToolkitBrush CreateTextureBrush
+				(TextureBrush properties, RectangleF dstRect,
+				 ImageAttributes imageAttr)
+			{
+				return null;
+			}
+
+	// Create a toolkit pen from the properties in the specified object.
+	// If the toolkit does not support the precise combination of pen
+	// properties, it will return the closest matching pen.
+	public override IToolkitPen CreatePen(Pen pen)
+			{
+				return new PostscriptPen(pen);
+			}
+
+	// Create a toolkit font from the properties in the specified object.
+	public override IToolkitFont CreateFont(Font font)
+			{
+				return null;
+			}
 
 }; // class PostscriptToolkit
 

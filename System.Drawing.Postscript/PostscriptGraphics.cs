@@ -30,8 +30,9 @@ using System.Drawing.Drawing2D;
 internal class PostscriptGraphics : ToolkitGraphicsBase
 {
 	// Internal state.
-	private TextWriter writer;
+	internal TextWriter writer;
 	private PostscriptPrintSession session;
+	internal IToolkitSelectObject selectObject;
 
 	// Constructor.
 	public PostscriptGraphics(IToolkit toolkit, TextWriter writer,
@@ -40,6 +41,7 @@ internal class PostscriptGraphics : ToolkitGraphicsBase
 			{
 				this.writer = writer;
 				this.session = session;
+				this.selectObject = null;
 			}
 
 	// Get or set the graphics object's properties.
@@ -68,25 +70,47 @@ internal class PostscriptGraphics : ToolkitGraphicsBase
 	// Draw a line between two points using the current pen.
 	public override void DrawLine(int x1, int y1, int x2, int y2)
 			{
-				// TODO
+				writer.WriteLine("{0} {1} moveto {2} {3} lineto stroke",
+								 x1, y1, x2, y2);
 			}
 
 	// Draw a set of connected line seguments using the current pen.
 	public override void DrawLines(Point[] points)
 			{
-				// TODO
+				int index;
+				writer.Write("{0} {1} moveto ", points[0].X, points[0].Y);
+				for(index = 1; index < points.Length; ++index)
+				{
+					writer.Write("{0} {1} lineto ",
+								 points[index].X, points[index].Y);
+				}
+				writer.WriteLine("stroke");
 			}
 
 	// Draw a polygon using the current pen.
 	public override void DrawPolygon(Point[] points)
 			{
-				// TODO
+				int index;
+				writer.Write("{0} {1} moveto ", points[0].X, points[0].Y);
+				for(index = 1; index < points.Length; ++index)
+				{
+					writer.Write("{0} {1} lineto ",
+								 points[index].X, points[index].Y);
+				}
+				writer.WriteLine("closepath stroke");
 			}
 
 	// Fill a polygon using the current brush.
 	public override void FillPolygon(Point[] points, FillMode fillMode)
 			{
-				// TODO
+				int index;
+				writer.Write("{0} {1} moveto ", points[0].X, points[0].Y);
+				for(index = 1; index < points.Length; ++index)
+				{
+					writer.Write("{0} {1} lineto ",
+								 points[index].X, points[index].Y);
+				}
+				writer.WriteLine("closepath fill");
 			}
 
 	// Draw an arc within a rectangle defined by four points.

@@ -1,3 +1,6 @@
+2003-08-23  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* csupport/Directory.cs: moved to dirent-glue.cs in pnetC.
 
 2003-08-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 

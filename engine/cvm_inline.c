@@ -86,7 +86,7 @@ VMCASE(COP_PREFIX_STRING_CONCAT_2):
 					   (ILString *)(stacktop[-2].ptrValue),
 					   (ILString *)(stacktop[-1].ptrValue));
 	RESTORE_STATE_FROM_THREAD();
-	MODIFY_PC_AND_STACK(2, -1);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_STRING_CONCAT_2);
 
@@ -121,7 +121,7 @@ VMCASE(COP_PREFIX_STRING_CONCAT_3):
 					    (ILString *)(stacktop[-2].ptrValue),
 					    (ILString *)(stacktop[-1].ptrValue));
 	RESTORE_STATE_FROM_THREAD();
-	MODIFY_PC_AND_STACK(2, -2);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -2);
 }
 VMBREAK(COP_PREFIX_STRING_CONCAT_3);
 
@@ -157,7 +157,7 @@ VMCASE(COP_PREFIX_STRING_CONCAT_4):
 					    (ILString *)(stacktop[-2].ptrValue),
 					    (ILString *)(stacktop[-1].ptrValue));
 	RESTORE_STATE_FROM_THREAD();
-	MODIFY_PC_AND_STACK(2, -3);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -3);
 }
 VMBREAK(COP_PREFIX_STRING_CONCAT_4);
 
@@ -189,7 +189,7 @@ VMCASE(COP_PREFIX_STRING_EQ):
 	stacktop[-2].intValue =
 		StringEquals((System_String *)(stacktop[-2].ptrValue),
 					 (System_String *)(stacktop[-1].ptrValue));
-	MODIFY_PC_AND_STACK(2, -1);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_STRING_EQ);
 
@@ -221,7 +221,7 @@ VMCASE(COP_PREFIX_STRING_NE):
 	stacktop[-2].intValue =
 		!StringEquals((System_String *)(stacktop[-2].ptrValue),
 					  (System_String *)(stacktop[-1].ptrValue));
-	MODIFY_PC_AND_STACK(2, -1);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_STRING_NE);
 
@@ -267,7 +267,7 @@ VMCASE(COP_PREFIX_STRING_GET_CHAR):
 		{
 			stacktop[-2].uintValue =
 				(ILUInt32)(StringToBuffer(tempptr))[tempNum];
-			MODIFY_PC_AND_STACK(2, -1);
+			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 		}
 		else
 		{
@@ -314,7 +314,7 @@ VMCASE(COP_PREFIX_TYPE_FROM_HANDLE):
 			(void *)(_ILGetClrType(thread, (ILClass *)tempptr));
 		RESTORE_STATE_FROM_THREAD();
 	}
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_TYPE_FROM_HANDLE);
 

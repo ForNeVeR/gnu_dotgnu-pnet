@@ -21,6 +21,7 @@
 #include "engine_private.h"
 #include "lib_defs.h"
 #include "cvm.h"
+#include "cvm_format.h"
 #if defined(HAVE_LIBFFI)
 #include "ffi.h"
 #endif
@@ -143,6 +144,16 @@ extern int _ILCVMInsnCount[];
 			do { \
 				pc += (pcmod); \
 				stacktop += (stkmod); \
+			} while (0)
+
+/*
+ * Modify the program counter and stack pointer in reverse order
+ * because the "stkmod" value is extracted from the program.
+ */
+#define	MODIFY_PC_AND_STACK_REVERSE(pcmod,stkmod)	\
+			do { \
+				stacktop += (stkmod); \
+				pc += (pcmod); \
 			} while (0)
 
 /*
@@ -457,7 +468,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			VMCASE(COP_NOP):
 			{
 				/* The world's simplest instruction */
-				MODIFY_PC_AND_STACK(1, 0);
+				MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 			}
 			VMBREAK(COP_NOP);
 
@@ -494,10 +505,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			 */
 			VMCASE(COP_WIDE):
 			{
-			#ifdef IL_PROFILE_CVM_INSNS
-				++(_ILCVMInsnCount[((int)(pc[1]))]);
-			#endif
-				switch(pc[1])
+				switch(CVM_ARG_SUB_OPCODE)
 				{
 					/* Include the instruction categories for the wide switch */
 					#define IL_CVM_WIDE
@@ -517,7 +525,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					default:
 					{
 						/* Treat all other wide opcodes as NOP */
-						MODIFY_PC_AND_STACK(2, 0);
+						MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 					}
 					break;
 				}
@@ -542,10 +550,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			VMCASE(COP_PREFIX):
 			{
 				/* Execute a prefixed opcode */
-			#ifdef IL_PROFILE_CVM_INSNS
-				++(_ILCVMInsnCount[((int)(pc[1])) + 0x100]);
-			#endif
-				VMPREFIXSWITCH(pc[1])
+				VMPREFIXSWITCH(CVM_ARG_SUB_OPCODE)
 				{
 					/* Include instruction categories for the prefix switch */
 					#define IL_CVM_PREFIX
@@ -565,7 +570,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					VMPREFIXDEFAULT:
 					{
 						/* Treat all other prefixed opcodes as NOP */
-						MODIFY_PC_AND_STACK(2, 0);
+						MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 					}
 					VMBREAK(COP_PREFIX);
 				}
@@ -575,7 +580,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			VMDEFAULT:
 			{
 				/* Treat all other opcodes as NOP */
-				MODIFY_PC_AND_STACK(1, 0);
+				MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 			}
 			VMBREAK(_DEFAULT_MAIN);
 		}

@@ -381,7 +381,7 @@ VMCASE(COP_IADD):
 {
 	/* Integer add */
 	stacktop[-2].intValue += stacktop[-1].intValue;
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_IADD);
 
@@ -419,7 +419,7 @@ VMCASE(COP_IADD_OVF):
 	if(IAddOvf(&(stacktop[-2].intValue),
 			   stacktop[-2].intValue, stacktop[-1].intValue))
 	{
-		MODIFY_PC_AND_STACK(1, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
 	else
 	{
@@ -462,7 +462,7 @@ VMCASE(COP_IADD_OVF_UN):
 	if(IUAddOvf(&(stacktop[-2].uintValue),
 			    stacktop[-2].uintValue, stacktop[-1].uintValue))
 	{
-		MODIFY_PC_AND_STACK(1, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
 	else
 	{
@@ -501,7 +501,7 @@ VMCASE(COP_ISUB):
 {
 	/* Integer subtract */
 	stacktop[-2].intValue -= stacktop[-1].intValue;
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_ISUB);
 
@@ -539,7 +539,7 @@ VMCASE(COP_ISUB_OVF):
 	if(ISubOvf(&(stacktop[-2].intValue),
 			   stacktop[-2].intValue, stacktop[-1].intValue))
 	{
-		MODIFY_PC_AND_STACK(1, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
 	else
 	{
@@ -582,7 +582,7 @@ VMCASE(COP_ISUB_OVF_UN):
 	if(IUSubOvf(&(stacktop[-2].uintValue),
 			    stacktop[-2].uintValue, stacktop[-1].uintValue))
 	{
-		MODIFY_PC_AND_STACK(1, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
 	else
 	{
@@ -621,7 +621,7 @@ VMCASE(COP_IMUL):
 {
 	/* Integer (and unsigned integer) multiply */
 	stacktop[-2].intValue *= stacktop[-1].intValue;
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_IMUL);
 
@@ -659,7 +659,7 @@ VMCASE(COP_IMUL_OVF):
 	if(IMulOvf(&(stacktop[-2].intValue),
 			   stacktop[-2].intValue, stacktop[-1].intValue))
 	{
-		MODIFY_PC_AND_STACK(1, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
 	else
 	{
@@ -702,7 +702,7 @@ VMCASE(COP_IMUL_OVF_UN):
 	if(IUMulOvf(&(stacktop[-2].uintValue),
 			    stacktop[-2].uintValue, stacktop[-1].uintValue))
 	{
-		MODIFY_PC_AND_STACK(1, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
 	else
 	{
@@ -744,7 +744,7 @@ VMCASE(COP_IDIV):
 		   stacktop[-2].intValue != IL_MIN_INT32)
 		{
 			stacktop[-2].intValue /= stacktop[-1].intValue;
-			MODIFY_PC_AND_STACK(1, -1);
+			MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 		}
 		else
 		{
@@ -786,7 +786,7 @@ VMCASE(COP_IDIV_UN):
 	if(stacktop[-1].uintValue != 0)
 	{
 		stacktop[-2].uintValue /= stacktop[-1].uintValue;
-		MODIFY_PC_AND_STACK(1, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
 	else
 	{
@@ -828,7 +828,7 @@ VMCASE(COP_IREM):
 		   stacktop[-2].intValue != IL_MIN_INT32)
 		{
 			stacktop[-2].intValue %= stacktop[-1].intValue;
-			MODIFY_PC_AND_STACK(1, -1);
+			MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 		}
 		else
 		{
@@ -870,7 +870,7 @@ VMCASE(COP_IREM_UN):
 	if(stacktop[-1].uintValue != 0)
 	{
 		stacktop[-2].uintValue %= stacktop[-1].uintValue;
-		MODIFY_PC_AND_STACK(1, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 	}
 	else
 	{
@@ -904,7 +904,7 @@ VMCASE(COP_INEG):
 {
 	/* Integer negate */
 	stacktop[-1].intValue = -(stacktop[-1].intValue);
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_INEG);
 
@@ -947,7 +947,7 @@ VMCASE(COP_LADD):
 	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)])) +
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
-	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 }
 VMBREAK(COP_LADD);
 
@@ -985,7 +985,7 @@ VMCASE(COP_LADD_OVF):
 	if(LAddOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		       &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1028,7 +1028,7 @@ VMCASE(COP_LADD_OVF_UN):
 	if(LUAddOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		        &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1069,7 +1069,7 @@ VMCASE(COP_LSUB):
 	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)])) -
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
-	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 }
 VMBREAK(COP_LSUB);
 
@@ -1107,7 +1107,7 @@ VMCASE(COP_LSUB_OVF):
 	if(!LSubOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		        &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1150,7 +1150,7 @@ VMCASE(COP_LSUB_OVF_UN):
 	if(!LUSubOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		         &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1191,7 +1191,7 @@ VMCASE(COP_LMUL):
 	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)])) *
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
-	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 }
 VMBREAK(COP_LMUL);
 
@@ -1229,7 +1229,7 @@ VMCASE(COP_LMUL_OVF):
 	if(!LMulOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		        &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1272,7 +1272,7 @@ VMCASE(COP_LMUL_OVF_UN):
 	if(!LUMulOvf(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		         &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1313,7 +1313,7 @@ VMCASE(COP_LDIV):
 		 			 &(stacktop[-CVM_WORDS_PER_LONG]));
 	if(divResult > 0)
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else if(!divResult)
 	{
@@ -1354,7 +1354,7 @@ VMCASE(COP_LDIV_UN):
 	if(LUDiv(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
  			 &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1395,7 +1395,7 @@ VMCASE(COP_LREM):
 		 			 &(stacktop[-CVM_WORDS_PER_LONG]));
 	if(divResult > 0)
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else if(!divResult)
 	{
@@ -1436,7 +1436,7 @@ VMCASE(COP_LREM_UN):
 	if(LURem(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
  			 &(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1471,7 +1471,7 @@ VMCASE(COP_LNEG):
 	/* Long negate */
 	WriteLong(&(stacktop[-CVM_WORDS_PER_LONG]),
 		-(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG]))));
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_LNEG);
 
@@ -1481,7 +1481,7 @@ VMCASE(COP_##name): \
 	WriteFloat(&(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT * 2)]), \
 		ReadFloat(&(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT * 2)])) \
 		op ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))); \
-	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_NATIVE_FLOAT); \
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT); \
 } \
 VMBREAK(COP_##name)
 
@@ -1600,7 +1600,7 @@ VMCASE(COP_FREM):
 	  FRem(ReadFloat(&(stacktop
 	  					[-(CVM_WORDS_PER_NATIVE_FLOAT * 2)])),
 		   ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))));
-	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_NATIVE_FLOAT);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT);
 }
 VMBREAK(COP_FREM);
 
@@ -1626,7 +1626,7 @@ VMCASE(COP_FNEG):
 	/* Floating point negate */
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]),
 	  	-ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_FNEG);
 
@@ -1654,7 +1654,7 @@ VMCASE(COP_IAND):
 {
 	/* Integer bitwise AND */
 	stacktop[-2].intValue &= stacktop[-1].intValue;
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_IAND);
 
@@ -1682,7 +1682,7 @@ VMCASE(COP_IOR):
 {
 	/* Integer bitwise OR */
 	stacktop[-2].intValue |= stacktop[-1].intValue;
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_IOR);
 
@@ -1710,7 +1710,7 @@ VMCASE(COP_IXOR):
 {
 	/* Integer bitwise XOR */
 	stacktop[-2].intValue ^= stacktop[-1].intValue;
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_IXOR);
 
@@ -1738,7 +1738,7 @@ VMCASE(COP_INOT):
 {
 	/* Integer bitwise NOT */
 	stacktop[-1].intValue = ~(stacktop[-1].intValue);
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_INOT);
 
@@ -1768,7 +1768,7 @@ VMCASE(COP_ISHL):
 {
 	/* Integer shift left */
 	stacktop[-2].intValue <<= (stacktop[-1].uintValue & 0x1F);
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_ISHL);
 
@@ -1796,7 +1796,7 @@ VMCASE(COP_ISHR):
 {
 	/* Integer shift right */
 	stacktop[-2].intValue >>= (stacktop[-1].uintValue & 0x1F);
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_ISHR);
 
@@ -1823,7 +1823,7 @@ VMCASE(COP_ISHR_UN):
 {
 	/* Unsigned integer shift right */
 	stacktop[-2].uintValue >>= (stacktop[-1].uintValue & 0x1F);
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_ISHR_UN);
 
@@ -1853,7 +1853,7 @@ VMCASE(COP_LAND):
 	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)])) &
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
-	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 }
 VMBREAK(COP_LAND);
 
@@ -1883,7 +1883,7 @@ VMCASE(COP_LOR):
 	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)])) |
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
-	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 }
 VMBREAK(COP_LOR);
 
@@ -1913,7 +1913,7 @@ VMCASE(COP_LXOR):
 	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG * 2)])) ^
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
-	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_LONG);
 }
 VMBREAK(COP_LXOR);
 
@@ -1942,7 +1942,7 @@ VMCASE(COP_LNOT):
 	/* Long bitwise NOT */
 	WriteLong(&(stacktop[-CVM_WORDS_PER_LONG]),
 		~(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG]))));
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_LNOT);
 
@@ -1974,7 +1974,7 @@ VMCASE(COP_LSHL):
 	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
 		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)])) <<
 	    (stacktop[-1].uintValue & 0x3F));
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_LSHL);
 
@@ -2004,7 +2004,7 @@ VMCASE(COP_LSHR):
 	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
 		ReadLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)])) >>
 	    (stacktop[-1].uintValue & 0x3F));
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_LSHR);
 
@@ -2033,7 +2033,7 @@ VMCASE(COP_LSHR_UN):
 	WriteULong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
 		ReadULong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)])) >>
 	    (stacktop[-1].uintValue & 0x3F));
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_LSHR_UN);
 
@@ -2066,7 +2066,7 @@ VMCASE(COP_PREFIX_CKFINITE):
 	/* Check the top-most float value to see if it is finite */
 	if(FLOAT_IS_FINITE(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))))
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{

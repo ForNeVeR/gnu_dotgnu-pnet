@@ -63,7 +63,7 @@
 VMCASE(COP_BR):
 {
 	/* Unconditional branch */
-	pc += (ILInt32)(ILInt8)(pc[1]);
+	pc = CVM_ARG_BRANCH_SHORT;
 }
 VMBREAK(COP_BR);
 
@@ -97,12 +97,12 @@ VMCASE(COP_BEQ):
 	/* Branch if the top two integers are equal */
 	if(stacktop[-2].intValue == stacktop[-1].intValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BEQ);
@@ -137,12 +137,12 @@ VMCASE(COP_BNE):
 	/* Branch if the top two integers are not equal */
 	if(stacktop[-2].intValue != stacktop[-1].intValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BNE);
@@ -172,12 +172,12 @@ VMCASE(COP_BLT):
 	/* Branch if the top two integers are less than */
 	if(stacktop[-2].intValue < stacktop[-1].intValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BLT);
@@ -207,12 +207,12 @@ VMCASE(COP_BLT_UN):
 	/* Branch if the top two unsigned integers are less than */
 	if(stacktop[-2].uintValue < stacktop[-1].uintValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BLT_UN);
@@ -243,12 +243,12 @@ VMCASE(COP_BLE):
 	/* Branch if the top two integers are less than or equal */
 	if(stacktop[-2].intValue <= stacktop[-1].intValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BLE);
@@ -280,12 +280,12 @@ VMCASE(COP_BLE_UN):
 	   are less than or equal */
 	if(stacktop[-2].uintValue <= stacktop[-1].uintValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BLE_UN);
@@ -315,12 +315,12 @@ VMCASE(COP_BGT):
 	/* Branch if the top two integers are greater than */
 	if(stacktop[-2].intValue > stacktop[-1].intValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BGT);
@@ -350,12 +350,12 @@ VMCASE(COP_BGT_UN):
 	/* Branch if the top two unsigned integers are greater than */
 	if(stacktop[-2].uintValue > stacktop[-1].uintValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BGT_UN);
@@ -386,12 +386,12 @@ VMCASE(COP_BGE):
 	/* Branch if the top two integers are greater than or equal */
 	if(stacktop[-2].intValue >= stacktop[-1].intValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BGE);
@@ -423,12 +423,12 @@ VMCASE(COP_BGE_UN):
 	   are greater than or equal */
 	if(stacktop[-2].uintValue >= stacktop[-1].uintValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BGE_UN);
@@ -463,12 +463,12 @@ VMCASE(COP_BRTRUE):
 	/* Branch if the top value is non-zero */
 	if(stacktop[-1].intValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 1;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -1);
 	}
 }
 VMBREAK(COP_BRTRUE);
@@ -503,12 +503,12 @@ VMCASE(COP_BRFALSE):
 	/* Branch if the top value is zero */
 	if(!(stacktop[-1].intValue))
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 1;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -1);
 	}
 }
 VMBREAK(COP_BRFALSE);
@@ -543,12 +543,12 @@ VMCASE(COP_BRNULL):
 	/* Branch if the top value is null */
 	if(!(stacktop[-1].ptrValue))
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 1;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -1);
 	}
 }
 VMBREAK(COP_BRNULL);
@@ -583,12 +583,12 @@ VMCASE(COP_BRNONNULL):
 	/* Branch if the top value is non-null */
 	if(stacktop[-1].ptrValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 1;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -1);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -1);
 	}
 }
 VMBREAK(COP_BRNONNULL);
@@ -623,12 +623,12 @@ VMCASE(COP_BR_PEQ):
 	/* Branch if the top two pointers are equal */
 	if(stacktop[-2].ptrValue == stacktop[-1].ptrValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BR_PEQ);
@@ -663,12 +663,12 @@ VMCASE(COP_BR_PNE):
 	/* Branch if the top two pointers are not equal */
 	if(stacktop[-2].ptrValue != stacktop[-1].ptrValue)
 	{
-		pc += (ILInt32)(ILInt8)(pc[1]);
+		pc = CVM_ARG_BRANCH_SHORT;
 		stacktop -= 2;
 	}
 	else
 	{
-		MODIFY_PC_AND_STACK(6, -2);
+		MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 	}
 }
 VMBREAK(COP_BR_PNE);
@@ -691,13 +691,13 @@ VMBREAK(COP_BR_PNE);
 VMCASE(COP_BR_LONG):
 {
 	/* Determine which type of long branch to use */
-	switch(pc[1])
+	switch(CVM_ARG_SUB_OPCODE)
 	{
 		case COP_BR:
 		default:
 		{
 			/* Unconditional branch */
-			pc += IL_READ_INT32(pc + 2);
+			pc = CVM_ARG_BRANCH_LONG;
 		}
 		VMBREAKNOEND;
 		
@@ -706,12 +706,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top two integers are equal */
 			if(stacktop[-2].intValue == stacktop[-1].intValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -721,12 +721,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top two integers are not equal */
 			if(stacktop[-2].intValue != stacktop[-1].intValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -736,12 +736,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top two integers are less than */
 			if(stacktop[-2].intValue < stacktop[-1].intValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -752,12 +752,12 @@ VMCASE(COP_BR_LONG):
 			   are less than */
 			if(stacktop[-2].uintValue < stacktop[-1].uintValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -768,12 +768,12 @@ VMCASE(COP_BR_LONG):
 			   less than or equal */
 			if(stacktop[-2].intValue <= stacktop[-1].intValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -784,12 +784,12 @@ VMCASE(COP_BR_LONG):
 			   are less than or equal */
 			if(stacktop[-2].uintValue <= stacktop[-1].uintValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -799,12 +799,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top two integers are greater than */
 			if(stacktop[-2].intValue > stacktop[-1].intValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -815,12 +815,12 @@ VMCASE(COP_BR_LONG):
 			   are greater than */
 			if(stacktop[-2].uintValue > stacktop[-1].uintValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -831,12 +831,12 @@ VMCASE(COP_BR_LONG):
 			   greater than or equal */
 			if(stacktop[-2].intValue >= stacktop[-1].intValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -847,12 +847,12 @@ VMCASE(COP_BR_LONG):
 			   are greater than or equal */
 			if(stacktop[-2].uintValue >= stacktop[-1].uintValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -862,12 +862,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top value is non-zero */
 			if(stacktop[-1].intValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 1;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -1);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -1);
 			}
 		}
 		VMBREAKNOEND;
@@ -877,12 +877,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top value is zero */
 			if(!(stacktop[-1].intValue))
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 1;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -1);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -1);
 			}
 		}
 		VMBREAKNOEND;
@@ -892,12 +892,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top value is null */
 			if(!(stacktop[-1].ptrValue))
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 1;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -1);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -1);
 			}
 		}
 		VMBREAKNOEND;
@@ -907,12 +907,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top value is non-null */
 			if(stacktop[-1].ptrValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 1;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -1);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -1);
 			}
 		}
 		VMBREAKNOEND;
@@ -922,12 +922,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top two pointers are equal */
 			if(stacktop[-2].ptrValue == stacktop[-1].ptrValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -937,12 +937,12 @@ VMCASE(COP_BR_LONG):
 			/* Branch if the top two pointers are not equal */
 			if(stacktop[-2].ptrValue != stacktop[-1].ptrValue)
 			{
-				pc += IL_READ_INT32(pc + 2);
+				pc = CVM_ARG_BRANCH_LONG;
 				stacktop -= 2;
 			}
 			else
 			{
-				MODIFY_PC_AND_STACK(6, -2);
+				MODIFY_PC_AND_STACK(CVM_LEN_BRANCH, -2);
 			}
 		}
 		VMBREAKNOEND;
@@ -950,8 +950,8 @@ VMCASE(COP_BR_LONG):
 		case COP_JSR:
 		{
 			/* Long form of the "jsr" opcode */
-			stacktop[0].ptrValue = (void *)(pc + 6);
-			pc += IL_READ_INT32(pc + 2);
+			stacktop[0].ptrValue = (void *)CVM_ARG_JSR_RETURN;
+			pc = CVM_ARG_BRANCH_LONG;
 			stacktop += 1;
 		}
 		VMBREAKNOEND;
@@ -984,17 +984,16 @@ VMBREAK(COP_BR_LONG);
 VMCASE(COP_SWITCH):
 {
 	/* Process a switch statement */
-	if(stacktop[-1].uintValue < IL_READ_UINT32(pc + 1))
+	if(stacktop[-1].uintValue < CVM_ARG_SWITCH_LIMIT)
 	{
 		/* Jump to a specific case */
-		tempNum = 9 + stacktop[-1].uintValue * 4;
-		pc += IL_READ_INT32(pc + tempNum);
+		pc = CVM_ARG_SWITCH_DEST(stacktop[-1].uintValue);
 		--stacktop;
 	}
 	else
 	{
 		/* Jump to the default case */
-		pc += IL_READ_INT32(pc + 5);
+		pc = CVM_ARG_SWITCH_DEFAULT;
 		--stacktop;
 	}
 }

@@ -210,7 +210,7 @@ VMCASE(COP_I2B):
 {
 	/* Convert from integer to signed byte */
 	stacktop[-1].intValue = (ILInt32)(ILInt8)(stacktop[-1].intValue);
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_I2B);
 
@@ -236,7 +236,7 @@ VMCASE(COP_I2UB):
 {
 	/* Convert from integer to unsigned byte */
 	stacktop[-1].intValue = (ILInt32)(ILUInt8)(stacktop[-1].intValue);
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_I2UB);
 
@@ -262,7 +262,7 @@ VMCASE(COP_I2S):
 {
 	/* Convert from integer to signed short */
 	stacktop[-1].intValue = (ILInt32)(ILInt16)(stacktop[-1].intValue);
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_I2S);
 
@@ -288,7 +288,7 @@ VMCASE(COP_I2US):
 {
 	/* Convert from integer to unsigned short */
 	stacktop[-1].intValue = (ILInt32)(ILUInt16)(stacktop[-1].intValue);
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_I2US);
 
@@ -313,7 +313,7 @@ VMCASE(COP_I2L):
 {
 	/* Convert from integer to long */
 	WriteLong(&(stacktop[-1]), (ILInt64)(stacktop[-1].intValue));
-	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_LONG - 1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_LONG - 1);
 }
 VMBREAK(COP_I2L);
 
@@ -338,7 +338,7 @@ VMCASE(COP_IU2L):
 {
 	/* Convert from unsigned integer to long */
 	WriteLong(&(stacktop[-1]), (ILInt64)(stacktop[-1].uintValue));
-	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_LONG - 1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_LONG - 1);
 }
 VMBREAK(COP_IU2L);
 
@@ -363,7 +363,7 @@ VMCASE(COP_I2F):
 {
 	/* Convert from integer to "native float" */
 	WriteFloat(&(stacktop[-1]), (ILNativeFloat)(stacktop[-1].intValue));
-	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
 VMBREAK(COP_I2F);
 
@@ -388,7 +388,7 @@ VMCASE(COP_IU2F):
 {
 	/* Convert from unsigned integer to "native float" */
 	WriteFloat(&(stacktop[-1]), (ILNativeFloat)(stacktop[-1].uintValue));
-	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
 VMBREAK(COP_IU2F);
 
@@ -414,7 +414,7 @@ VMCASE(COP_L2I):
 	/* Convert from long to integer */
 	stacktop[-CVM_WORDS_PER_LONG].intValue =
 		(ILInt32)(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
-	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_LONG - 1));
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -(CVM_WORDS_PER_LONG - 1));
 }
 VMBREAK(COP_L2I);
 
@@ -446,7 +446,7 @@ VMCASE(COP_L2F):
 	/* Convert from long to "native float" */
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_LONG]),
 	   (ILNativeFloat)(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG]))));
-	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT -
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_NATIVE_FLOAT -
 						   CVM_WORDS_PER_LONG);
 }
 VMBREAK(COP_L2F);
@@ -479,8 +479,8 @@ VMCASE(COP_LU2F):
 	/* Convert from unsigned long to "native float" */
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_LONG]),
 			   LU2F(ReadULong(&(stacktop[-CVM_WORDS_PER_LONG]))));
-	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT -
-						   CVM_WORDS_PER_LONG);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_NATIVE_FLOAT -
+						              CVM_WORDS_PER_LONG);
 }
 VMBREAK(COP_LU2F);
 
@@ -506,7 +506,7 @@ VMCASE(COP_F2I):
 	/* Convert from "native float" to integer */
 	stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = (ILInt32)
 		(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
-	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT - 1));
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -(CVM_WORDS_PER_NATIVE_FLOAT - 1));
 }
 VMBREAK(COP_F2I);
 
@@ -532,7 +532,7 @@ VMCASE(COP_F2IU):
 	/* Convert from "native float" to unsigned integer */
 	stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].uintValue = (ILUInt32)
 		(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
-	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT - 1));
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -(CVM_WORDS_PER_NATIVE_FLOAT - 1));
 }
 VMBREAK(COP_F2IU);
 
@@ -558,7 +558,7 @@ VMCASE(COP_F2L):
 	/* Convert from "native float" to long */
 	WriteLong(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]), (ILInt64)
 		ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
-	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT -
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -(CVM_WORDS_PER_NATIVE_FLOAT -
 							 CVM_WORDS_PER_LONG));
 }
 VMBREAK(COP_F2L);
@@ -585,8 +585,8 @@ VMCASE(COP_F2LU):
 	/* Convert from "native float" to unsigned long */
 	WriteULong(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]),
 			   F2LU(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))));
-	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT -
-							 CVM_WORDS_PER_LONG));
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -(CVM_WORDS_PER_NATIVE_FLOAT -
+							            CVM_WORDS_PER_LONG));
 }
 VMBREAK(COP_F2LU);
 
@@ -614,7 +614,7 @@ VMCASE(COP_F2F):
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]),
 		(ILNativeFloat)(ILFloat)
 		ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_F2F);
 
@@ -642,7 +642,7 @@ VMCASE(COP_F2D):
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]),
 		(ILNativeFloat)(ILDouble)
 		ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_F2D);
 
@@ -672,9 +672,9 @@ VMCASE(COP_I2P_LOWER):
 {
 	/* Convert an I4 value into a pointer value that
 	   is lower down on the stack */
-	position = -(((ILInt32)(pc[1])) + 1);
+	position = -(((ILInt32)CVM_ARG_WIDE_SMALL) + 1);
 	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0);
 }
 VMBREAK(COP_I2P_LOWER);
 
@@ -715,9 +715,9 @@ VMCASE(COP_FIX_I4_I):
 		ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	WriteLong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
 		(ILInt64)(stacktop[-(CVM_WORDS_PER_LONG + 1)].intValue));
-	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_LONG - 1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_LONG - 1);
 #else
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 #endif
 }
 VMBREAK(COP_FIX_I4_I);
@@ -759,9 +759,9 @@ VMCASE(COP_FIX_I4_U):
 		ReadULong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	WriteULong(&(stacktop[-(CVM_WORDS_PER_LONG + 1)]),
 		(ILUInt64)(stacktop[-(CVM_WORDS_PER_LONG + 1)].uintValue));
-	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_LONG - 1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_LONG - 1);
 #else
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 #endif
 }
 VMBREAK(COP_FIX_I4_U);
@@ -772,9 +772,9 @@ case COP_I2P_LOWER:
 {
 	/* Convert an I4 value into a pointer value that
 	   is lower down on the stack */
-	position = -(IL_READ_INT32(pc + 2) + 1);
+	position = -(((ILInt32)CVM_ARG_WIDE_LARGE) + 1);
 	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
-	MODIFY_PC_AND_STACK(6, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0);
 }
 VMBREAKNOEND;
 
@@ -811,7 +811,7 @@ VMCASE(COP_PREFIX_I2B_OVF):
 	/* Convert "int" into "sbyte" with overflow testing */
 	if(stacktop[-1].intValue >= -128 && stacktop[-1].intValue <= 127)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -851,7 +851,7 @@ VMCASE(COP_PREFIX_I2UB_OVF):
 	/* Convert "int" into "byte" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 255)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -889,7 +889,7 @@ VMCASE(COP_PREFIX_IU2B_OVF):
 	/* Convert "uint" into "sbyte" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 127)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -927,7 +927,7 @@ VMCASE(COP_PREFIX_IU2UB_OVF):
 	/* Convert "uint" into "byte" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 255)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -967,7 +967,7 @@ VMCASE(COP_PREFIX_I2S_OVF):
 	/* Convert "int" into "short" with overflow testing */
 	if(stacktop[-1].intValue >= -32768 && stacktop[-1].intValue <= 32767)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -1007,7 +1007,7 @@ VMCASE(COP_PREFIX_I2US_OVF):
 	/* Convert "int" into "ushort" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 65535)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -1045,7 +1045,7 @@ VMCASE(COP_PREFIX_IU2S_OVF):
 	/* Convert "uint" into "short" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 32767)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -1083,7 +1083,7 @@ VMCASE(COP_PREFIX_IU2US_OVF):
 	/* Convert "uint" into "ushort" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 65535)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -1121,7 +1121,7 @@ VMCASE(COP_PREFIX_I2IU_OVF):
 	/* Convert "int" into "uint" with overflow testing */
 	if(stacktop[-1].intValue >= 0)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -1159,7 +1159,7 @@ VMCASE(COP_PREFIX_IU2I_OVF):
 	/* Convert "uint" into "int" with overflow testing */
 	if(stacktop[-1].intValue >= 0)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -1198,7 +1198,7 @@ VMCASE(COP_PREFIX_I2UL_OVF):
 	if(stacktop[-1].intValue >= 0)
 	{
 		WriteLong(&(stacktop[-1]), (ILInt64)(stacktop[-1].intValue));
-		MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_LONG - 1);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, CVM_WORDS_PER_LONG - 1);
 	}
 	else
 	{
@@ -1236,7 +1236,7 @@ VMCASE(COP_PREFIX_L2I_OVF):
 	/* Convert "long" into "int" with overflow testing */
 	if(L2IOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1 - CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1274,7 +1274,7 @@ VMCASE(COP_PREFIX_L2UI_OVF):
 	/* Convert "long" into "uint" with overflow testing */
 	if(L2UIOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1 - CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1312,7 +1312,7 @@ VMCASE(COP_PREFIX_LU2I_OVF):
 	/* Convert "ulong" into "int" with overflow testing */
 	if(LU2IOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1 - CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1350,7 +1350,7 @@ VMCASE(COP_PREFIX_LU2IU_OVF):
 	/* Convert "ulong" into "uint" with overflow testing */
 	if(LU2UIOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
 	{
-		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_LONG);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1 - CVM_WORDS_PER_LONG);
 	}
 	else
 	{
@@ -1388,7 +1388,7 @@ VMCASE(COP_PREFIX_L2UL_OVF):
 	/* Convert "long" into "ulong" with overflow testing */
 	if(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])) >= 0)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -1426,7 +1426,7 @@ VMCASE(COP_PREFIX_LU2L_OVF):
 	/* Convert "ulong" into "long" with overflow testing */
 	if(ReadULong(&(stacktop[-CVM_WORDS_PER_LONG])) <= (ILUInt64)IL_MAX_INT64)
 	{
-		MODIFY_PC_AND_STACK(2, 0);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}
 	else
 	{
@@ -1465,7 +1465,7 @@ VMCASE(COP_PREFIX_F2I_OVF):
 	/* Convert "native float" into "int" with overflow testing */
 	if(F2IOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
 	{
-		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_NATIVE_FLOAT);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1 - CVM_WORDS_PER_NATIVE_FLOAT);
 	}
 	else
 	{
@@ -1504,7 +1504,7 @@ VMCASE(COP_PREFIX_F2IU_OVF):
 	/* Convert "native float" into "uint" with overflow testing */
 	if(F2UIOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
 	{
-		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_NATIVE_FLOAT);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1 - CVM_WORDS_PER_NATIVE_FLOAT);
 	}
 	else
 	{
@@ -1543,7 +1543,8 @@ VMCASE(COP_PREFIX_F2L_OVF):
 	/* Convert "native float" into "long" with overflow testing */
 	if(F2LOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
 	{
-		MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_LONG - CVM_WORDS_PER_NATIVE_FLOAT);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE,
+							CVM_WORDS_PER_LONG - CVM_WORDS_PER_NATIVE_FLOAT);
 	}
 	else
 	{
@@ -1582,7 +1583,8 @@ VMCASE(COP_PREFIX_F2LU_OVF):
 	/* Convert "native float" into "long" with overflow testing */
 	if(F2LUOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
 	{
-		MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_LONG - CVM_WORDS_PER_NATIVE_FLOAT);
+		MODIFY_PC_AND_STACK(CVMP_LEN_NONE,
+							CVM_WORDS_PER_LONG - CVM_WORDS_PER_NATIVE_FLOAT);
 	}
 	else
 	{
@@ -1617,7 +1619,7 @@ VMCASE(COP_PREFIX_I2B_ALIGNED):
 {
 	/* Convert a 32-bit value into a byte and align it on a word boundary */
 	*((ILInt8 *)(stacktop - 1)) = (ILInt8)(stacktop[-1].intValue);
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_I2B_ALIGNED);
 
@@ -1647,7 +1649,7 @@ VMCASE(COP_PREFIX_I2S_ALIGNED):
 {
 	/* Convert a 32-bit value into a short and align it on a word boundary */
 	*((ILInt16 *)(stacktop - 1)) = (ILInt16)(stacktop[-1].intValue);
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_I2S_ALIGNED);
 
@@ -1682,7 +1684,8 @@ VMCASE(COP_PREFIX_F2F_ALIGNED):
 	/* Convert a native float into a float32 and align it on a word boundary */
 	*((ILFloat *)(stacktop - CVM_WORDS_PER_NATIVE_FLOAT)) =
 			   ReadFloat(stacktop - CVM_WORDS_PER_NATIVE_FLOAT);
-	MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_FLOAT - CVM_WORDS_PER_NATIVE_FLOAT);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE,
+						CVM_WORDS_PER_FLOAT - CVM_WORDS_PER_NATIVE_FLOAT);
 }
 VMBREAK(COP_PREFIX_F2F_ALIGNED);
 
@@ -1717,7 +1720,8 @@ VMCASE(COP_PREFIX_F2D_ALIGNED):
 	/* Convert a native float into a float64 and align it on a word boundary */
 	WriteDouble(stacktop - CVM_WORDS_PER_NATIVE_FLOAT,
 			    ReadFloat(stacktop - CVM_WORDS_PER_NATIVE_FLOAT));
-	MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_DOUBLE - CVM_WORDS_PER_NATIVE_FLOAT);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE,
+					    CVM_WORDS_PER_DOUBLE - CVM_WORDS_PER_NATIVE_FLOAT);
 }
 VMBREAK(COP_PREFIX_F2D_ALIGNED);
 
@@ -1753,7 +1757,7 @@ VMCASE(COP_PREFIX_STR2ANSI):
 			(void *)ILStringToAnsi(thread, (ILString *)(stacktop[-1].ptrValue));
 		RESTORE_STATE_FROM_THREAD();
 	}
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_STR2ANSI);
 
@@ -1789,7 +1793,7 @@ VMCASE(COP_PREFIX_STR2UTF8):
 			(void *)ILStringToUTF8(thread, (ILString *)(stacktop[-1].ptrValue));
 		RESTORE_STATE_FROM_THREAD();
 	}
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_STR2UTF8);
 

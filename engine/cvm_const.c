@@ -52,7 +52,7 @@ VMCASE(COP_LDNULL):
 {
 	/* Load the "null" pointer value to the stack top */
 	stacktop[0].ptrValue = 0;
-	MODIFY_PC_AND_STACK(1, 1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 1);
 }
 VMBREAK(COP_LDNULL);
 
@@ -60,7 +60,7 @@ VMBREAK(COP_LDNULL);
 VMCASE(COP_LDC_I4_##name): \
 { \
 	stacktop[0].intValue = (ILInt32)(value); \
-	MODIFY_PC_AND_STACK(1, 1); \
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 1); \
 } \
 VMBREAK(COP_LDC_I4_##name) \
 
@@ -125,8 +125,8 @@ COP_LDC_I4_VALUE(8, 8);
 VMCASE(COP_LDC_I4_S):
 {
 	/* Load an 8-bit integer constant onto the stack */
-	stacktop[0].intValue = (ILInt32)(ILInt8)(pc[1]);
-	MODIFY_PC_AND_STACK(2, 1);
+	stacktop[0].intValue = CVM_ARG_SBYTE;
+	MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 1);
 }
 VMBREAK(COP_LDC_I4_S);
 
@@ -151,8 +151,8 @@ VMBREAK(COP_LDC_I4_S);
 VMCASE(COP_LDC_I4):
 {
 	/* Load a 32-bit integer constant onto the stack */
-	stacktop[0].intValue = IL_READ_INT32(pc + 1);
-	MODIFY_PC_AND_STACK(5, 1);
+	stacktop[0].intValue = (ILInt32)CVM_ARG_WORD;
+	MODIFY_PC_AND_STACK(CVM_LEN_WORD, 1);
 }
 VMBREAK(COP_LDC_I4);
 
@@ -177,8 +177,8 @@ VMBREAK(COP_LDC_I4);
 VMCASE(COP_LDC_I8):
 {
 	/* Load a 64-bit integer constant onto the stack */
-	WriteLong(&(stacktop[0]), IL_READ_INT64(pc + 1));
-	MODIFY_PC_AND_STACK(9, CVM_WORDS_PER_LONG);
+	WriteLong(&(stacktop[0]), CVM_ARG_LONG);
+	MODIFY_PC_AND_STACK(CVM_LEN_LONG, CVM_WORDS_PER_LONG);
 }
 VMBREAK(COP_LDC_I8);
 
@@ -201,9 +201,8 @@ VMBREAK(COP_LDC_I8);
 VMCASE(COP_LDC_R4):
 {
 	/* Load a 32-bit floating point value onto the stack */
-	WriteFloat(&(stacktop[0]),
-		(ILNativeFloat)IL_READ_FLOAT(pc + 1));
-	MODIFY_PC_AND_STACK(5, CVM_WORDS_PER_NATIVE_FLOAT);
+	WriteFloat(&(stacktop[0]), (ILNativeFloat)CVM_ARG_FLOAT);
+	MODIFY_PC_AND_STACK(CVM_LEN_FLOAT, CVM_WORDS_PER_NATIVE_FLOAT);
 }
 VMBREAK(COP_LDC_R4);
 
@@ -226,9 +225,8 @@ VMBREAK(COP_LDC_R4);
 VMCASE(COP_LDC_R8):
 {
 	/* Load a 64-bit floating point value onto the stack */
-	WriteFloat(&(stacktop[0]),
-		(ILNativeFloat)IL_READ_DOUBLE(pc + 1));
-	MODIFY_PC_AND_STACK(9, CVM_WORDS_PER_NATIVE_FLOAT);
+	WriteFloat(&(stacktop[0]), (ILNativeFloat)CVM_ARG_DOUBLE);
+	MODIFY_PC_AND_STACK(CVM_LEN_DOUBLE, CVM_WORDS_PER_NATIVE_FLOAT);
 }
 VMBREAK(COP_LDC_R8);
 

@@ -115,8 +115,8 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
 VMCASE(COP_JSR):
 {
 	/* Jump to a subroutine within this method */
-	stacktop[0].ptrValue = (void *)(pc + 6);
-	pc += (ILInt32)(ILInt8)(pc[1]);
+	stacktop[0].ptrValue = (void *)CVM_ARG_JSR_RETURN;
+	pc = CVM_ARG_BRANCH_SHORT;
 	stacktop += 1;
 }
 VMBREAK(COP_JSR);
@@ -171,7 +171,7 @@ VMCASE(COP_PREFIX_ENTER_TRY):
 {
 	/* Enter a try context for this method */
 	thread->exceptHeight = stacktop;
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_ENTER_TRY);
 
@@ -225,11 +225,11 @@ searchForHandler:
 #endif
 	tempNum = (ILUInt32)(pc - (unsigned char *)(method->userData));
 	pc = ILCoderPCToHandler(thread->process->coder, pc, 0);
-	while(tempNum < IL_READ_UINT32(pc) || tempNum >= IL_READ_UINT32(pc + 4))
+	while(tempNum < CVM_ARG_TRY_START || tempNum >= CVM_ARG_TRY_END)
 	{
-		pc += IL_READ_UINT32(pc + 8);
+		pc += CVM_ARG_TRY_LENGTH;
 	}
-	pc += 12;
+	pc += CVM_LEN_TRY;
 }
 VMBREAK(COP_PREFIX_THROW);
 

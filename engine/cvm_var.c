@@ -61,14 +61,14 @@ VMCASE(COP_ILOAD_##n): \
 { \
 	CVM_VAR_LOADED(n); \
 	stacktop[0].intValue = frame[(n)].intValue; \
-	MODIFY_PC_AND_STACK(1, 1); \
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 1); \
 } \
 VMBREAK(COP_ILOAD_##n); \
 VMCASE(COP_PLOAD_##n): \
 { \
 	CVM_VAR_LOADED(n); \
 	stacktop[0].ptrValue = frame[(n)].ptrValue; \
-	MODIFY_PC_AND_STACK(1, 1); \
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 1); \
 } \
 VMBREAK(COP_PLOAD_##n)
 
@@ -151,9 +151,9 @@ COP_LOAD_N(3);
 VMCASE(COP_ILOAD):
 {
 	/* Load an integer value from the frame */
-	CVM_VAR_LOADED(pc[1]);
-	stacktop[0].intValue = frame[pc[1]].intValue;
-	MODIFY_PC_AND_STACK(2, 1);
+	CVM_VAR_LOADED(CVM_ARG_WIDE_SMALL);
+	stacktop[0].intValue = frame[CVM_ARG_WIDE_SMALL].intValue;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 1);
 }
 VMBREAK(COP_ILOAD);
 
@@ -183,9 +183,9 @@ VMBREAK(COP_ILOAD);
 VMCASE(COP_PLOAD):
 {
 	/* Load a pointer value from the frame */
-	CVM_VAR_LOADED(pc[1]);
-	stacktop[0].ptrValue = frame[pc[1]].ptrValue;
-	MODIFY_PC_AND_STACK(2, 1);
+	CVM_VAR_LOADED(CVM_ARG_WIDE_SMALL);
+	stacktop[0].ptrValue = frame[CVM_ARG_WIDE_SMALL].ptrValue;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 1);
 }
 VMBREAK(COP_PLOAD);
 
@@ -194,14 +194,14 @@ VMCASE(COP_ISTORE_##n): \
 { \
 	CVM_VAR_STORED(n); \
 	frame[(n)].intValue = stacktop[-1].intValue; \
-	MODIFY_PC_AND_STACK(1, -1); \
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1); \
 } \
 VMBREAK(COP_ISTORE_##n); \
 VMCASE(COP_PSTORE_##n): \
 { \
 	CVM_VAR_STORED(n); \
 	frame[(n)].ptrValue = stacktop[-1].ptrValue; \
-	MODIFY_PC_AND_STACK(1, -1); \
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1); \
 } \
 VMBREAK(COP_PSTORE_##n)
 
@@ -284,9 +284,9 @@ COP_STORE_N(3);
 VMCASE(COP_ISTORE):
 {
 	/* Store an integer value to the frame */
-	CVM_VAR_STORED(pc[1]);
-	frame[pc[1]].intValue = stacktop[-1].intValue;
-	MODIFY_PC_AND_STACK(2, -1);
+	CVM_VAR_STORED(CVM_ARG_WIDE_SMALL);
+	frame[CVM_ARG_WIDE_SMALL].intValue = stacktop[-1].intValue;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, -1);
 }
 VMBREAK(COP_ISTORE);
 
@@ -316,9 +316,9 @@ VMBREAK(COP_ISTORE);
 VMCASE(COP_PSTORE):
 {
 	/* Store a pointer value to the frame */
-	CVM_VAR_STORED(pc[1]);
-	frame[pc[1]].ptrValue = stacktop[-1].ptrValue;
-	MODIFY_PC_AND_STACK(2, -1);
+	CVM_VAR_STORED(CVM_ARG_WIDE_SMALL);
+	frame[CVM_ARG_WIDE_SMALL].ptrValue = stacktop[-1].ptrValue;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, -1);
 }
 VMBREAK(COP_PSTORE);
 
@@ -343,10 +343,10 @@ VMBREAK(COP_PSTORE);
 VMCASE(COP_MLOAD):
 {
 	/* Load a value consisting of multiple stack words */
-	CVM_VAR_LOADED(pc[1]);
-	IL_MEMCPY(stacktop, &(frame[pc[1]]), sizeof(CVMWord) * (unsigned)(pc[2]));
-	stacktop += (unsigned)(pc[2]);
-	pc += 3;
+	CVM_VAR_LOADED(CVM_ARG_DWIDE1_SMALL);
+	IL_MEMCPY(stacktop, &(frame[CVM_ARG_DWIDE1_SMALL]),
+	          sizeof(CVMWord) * CVM_ARG_DWIDE2_SMALL);
+	MODIFY_PC_AND_STACK_REVERSE(CVM_LEN_DWIDE_SMALL, CVM_ARG_DWIDE2_SMALL);
 }
 VMBREAK(COP_MLOAD);
 
@@ -358,7 +358,7 @@ VMBREAK(COP_MLOAD);
  *   <format>mstore<fsep/>N[1]<fsep/>M[1]</format>
  *   <format>wide<fsep/>mstore<fsep/>N[4]<fsep/>M[4]</format>
  *
- *   <form name="mload" code="COP_MLOAD"/>
+ *   <form name="mstore" code="COP_MSTORE"/>
  *
  *   <before>..., value1, ..., valueM</before>
  *   <after>...</after>
@@ -371,10 +371,11 @@ VMBREAK(COP_MLOAD);
 VMCASE(COP_MSTORE):
 {
 	/* Store a value consisting of multiple stack words */
-	CVM_VAR_STORED(pc[1]);
-	stacktop -= (unsigned)(pc[2]);
-	IL_MEMCPY(&(frame[pc[1]]), stacktop, sizeof(CVMWord) * (unsigned)(pc[2]));
-	pc += 3;
+	CVM_VAR_STORED(CVM_ARG_DWIDE1_SMALL);
+	stacktop -= CVM_ARG_DWIDE2_SMALL;
+	IL_MEMCPY(&(frame[CVM_ARG_DWIDE1_SMALL]), stacktop,
+			  sizeof(CVMWord) * CVM_ARG_DWIDE2_SMALL);
+	MODIFY_PC_AND_STACK(CVM_LEN_DWIDE_SMALL, 0);
 }
 VMBREAK(COP_MSTORE);
 
@@ -398,9 +399,9 @@ VMBREAK(COP_MSTORE);
 VMCASE(COP_WADDR):
 {
 	/* Get the address of the value starting at a frame word */
-	CVM_VAR_LOADED(pc[1]);
-	stacktop[0].ptrValue = (void *)(&(frame[pc[1]]));
-	MODIFY_PC_AND_STACK(2, 1);
+	CVM_VAR_LOADED(CVM_ARG_WIDE_SMALL);
+	stacktop[0].ptrValue = (void *)(&(frame[CVM_ARG_WIDE_SMALL]));
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 1);
 }
 VMBREAK(COP_WADDR);
 
@@ -430,8 +431,8 @@ VMBREAK(COP_WADDR);
 VMCASE(COP_MADDR):
 {
 	/* Get the address of a managed value N words down the stack */
-	stacktop[0].ptrValue = (void *)(stacktop - ((int)(pc[1])));
-	MODIFY_PC_AND_STACK(2, 1);
+	stacktop[0].ptrValue = (void *)(stacktop - CVM_ARG_WIDE_SMALL);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 1);
 }
 VMBREAK(COP_MADDR);
 
@@ -461,9 +462,9 @@ VMBREAK(COP_MADDR);
 VMCASE(COP_BLOAD):
 {
 	/* Load a byte value from the frame */
-	CVM_VAR_LOADED(pc[1]);
-	stacktop[0].intValue = *((ILUInt8 *)&(frame[pc[1]]));
-	MODIFY_PC_AND_STACK(2, 1);
+	CVM_VAR_LOADED(CVM_ARG_BYTE);
+	stacktop[0].intValue = *((ILUInt8 *)&(frame[CVM_ARG_BYTE]));
+	MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 1);
 }
 VMBREAK(COP_BLOAD);
 
@@ -494,9 +495,9 @@ VMBREAK(COP_BLOAD);
 VMCASE(COP_BSTORE):
 {
 	/* Store a byte value to the frame */
-	CVM_VAR_STORED(pc[1]);
-	*((ILUInt8 *)&(frame[pc[1]])) = (ILUInt8)(stacktop[-1].intValue);
-	MODIFY_PC_AND_STACK(2, -1);
+	CVM_VAR_STORED(CVM_ARG_BYTE);
+	*((ILUInt8 *)&(frame[CVM_ARG_BYTE])) = (ILUInt8)(stacktop[-1].intValue);
+	MODIFY_PC_AND_STACK(CVM_LEN_BYTE, -1);
 }
 VMBREAK(COP_BSTORE);
 
@@ -538,8 +539,9 @@ VMCASE(COP_BFIXUP):
 	   them by an address that is always aligned on the start
 	   of a stack word.  This operation fixes address mismatches
 	   on CPU's that aren't little-endian */
-	*((ILInt8 *)(&(frame[pc[1]]))) = (ILInt8)(frame[pc[1]].intValue);
-	MODIFY_PC_AND_STACK(2, 0);
+	*((ILInt8 *)(&(frame[CVM_ARG_WIDE_SMALL]))) =
+			(ILInt8)(frame[CVM_ARG_WIDE_SMALL].intValue);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0);
 }
 VMBREAK(COP_BFIXUP);
 
@@ -577,8 +579,9 @@ VMCASE(COP_SFIXUP):
 {
 	/* Perform a short fixup on a frame offset that corresponds
 	   to an argument.  See above for the rationale */
-	*((ILInt16 *)(&(frame[pc[1]]))) = (ILInt16)(frame[pc[1]].intValue);
-	MODIFY_PC_AND_STACK(2, 0);
+	*((ILInt16 *)(&(frame[CVM_ARG_WIDE_SMALL]))) =
+			(ILInt16)(frame[CVM_ARG_WIDE_SMALL].intValue);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0);
 }
 VMBREAK(COP_SFIXUP);
 
@@ -616,8 +619,9 @@ VMCASE(COP_FFIXUP):
 	   to an argument.  Float arguments are passed from the caller
 	   as "native float" values, but inside the method we need to
 	   access them by an address that is a pointer to "float" */
-	*((ILFloat *)(&(frame[pc[1]]))) = (ILFloat)ReadFloat(&(frame[pc[1]]));
-	MODIFY_PC_AND_STACK(2, 0);
+	*((ILFloat *)(&(frame[CVM_ARG_WIDE_SMALL]))) =
+			(ILFloat)ReadFloat(&(frame[CVM_ARG_WIDE_SMALL]));
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0);
 }
 VMBREAK(COP_FFIXUP);
 
@@ -655,8 +659,9 @@ VMCASE(COP_DFIXUP):
 	   to an argument.  Double arguments are passed from the caller
 	   as "native float" values, but inside the method we need to
 	   access them by an address that is a pointer to "double" */
-	WriteDouble(&(frame[pc[1]]), (ILDouble)ReadFloat(&(frame[pc[1]])));
-	MODIFY_PC_AND_STACK(2, 0);
+	WriteDouble(&(frame[CVM_ARG_WIDE_SMALL]),
+			(ILDouble)ReadFloat(&(frame[CVM_ARG_WIDE_SMALL])));
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0);
 }
 VMBREAK(COP_DFIXUP);
 
@@ -685,7 +690,7 @@ VMCASE(COP_MK_LOCAL_1):
 #else
 	IL_MEMZERO(&(stacktop[0]), sizeof(CVMWord));
 #endif
-	MODIFY_PC_AND_STACK(1, 1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 1);
 }
 VMBREAK(COP_MK_LOCAL_1);
 
@@ -715,7 +720,7 @@ VMCASE(COP_MK_LOCAL_2):
 #else
 	IL_MEMZERO(&(stacktop[0]), sizeof(CVMWord) * 2);
 #endif
-	MODIFY_PC_AND_STACK(1, 2);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 2);
 }
 VMBREAK(COP_MK_LOCAL_2);
 
@@ -746,7 +751,7 @@ VMCASE(COP_MK_LOCAL_3):
 #else
 	IL_MEMZERO(&(stacktop[0]), sizeof(CVMWord) * 3);
 #endif
-	MODIFY_PC_AND_STACK(1, 3);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 3);
 }
 VMBREAK(COP_MK_LOCAL_3);
 
@@ -771,9 +776,8 @@ VMBREAK(COP_MK_LOCAL_3);
 VMCASE(COP_MK_LOCAL_N):
 {
 	/* Make an arbitrary number of local variable slots */
-	IL_MEMZERO(&(stacktop[0]), sizeof(CVMWord) * ((unsigned)(pc[1])));
-	stacktop += ((unsigned)(pc[1]));
-	pc += 2;
+	IL_MEMZERO(&(stacktop[0]), sizeof(CVMWord) * CVM_ARG_WIDE_SMALL);
+	MODIFY_PC_AND_STACK_REVERSE(CVM_LEN_WIDE_SMALL, CVM_ARG_WIDE_SMALL);
 }
 VMBREAK(COP_MK_LOCAL_N);
 
@@ -782,115 +786,114 @@ VMBREAK(COP_MK_LOCAL_N);
 case COP_ILOAD:
 {
 	/* Wide version of "iload" */
-	stacktop[0].intValue = frame[IL_READ_UINT32(pc + 2)].intValue;
-	MODIFY_PC_AND_STACK(6, 1);
+	stacktop[0].intValue = frame[CVM_ARG_WIDE_LARGE].intValue;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 1);
 }
 VMBREAKNOEND;
 
 case COP_PLOAD:
 {
 	/* Wide version of "pload" */
-	stacktop[0].ptrValue = frame[IL_READ_UINT32(pc + 2)].ptrValue;
-	MODIFY_PC_AND_STACK(6, 1);
+	stacktop[0].ptrValue = frame[CVM_ARG_WIDE_LARGE].ptrValue;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 1);
 }
 VMBREAKNOEND;
 
 case COP_ISTORE:
 {
 	/* Wide version of "istore" */
-	frame[IL_READ_UINT32(pc + 2)].intValue = stacktop[-1].intValue;
-	MODIFY_PC_AND_STACK(6, -1);
+	frame[CVM_ARG_WIDE_LARGE].intValue = stacktop[-1].intValue;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, -1);
 }
 VMBREAKNOEND;
 
 case COP_PSTORE:
 {
 	/* Wide version of "pstore" */
-	frame[IL_READ_UINT32(pc + 2)].ptrValue = stacktop[-1].ptrValue;
-	MODIFY_PC_AND_STACK(6, -1);
+	frame[CVM_ARG_WIDE_LARGE].ptrValue = stacktop[-1].ptrValue;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, -1);
 }
 VMBREAKNOEND;
 
 case COP_MLOAD:
 {
 	/* Wide version of "mload" */
-	tempNum = IL_READ_UINT32(pc + 6);
-	IL_MEMCPY(stacktop, &(frame[IL_READ_UINT32(pc + 2)]),
+	tempNum = CVM_ARG_DWIDE2_LARGE;
+	IL_MEMCPY(stacktop, &(frame[CVM_ARG_DWIDE1_LARGE]),
 			  sizeof(CVMWord) * tempNum);
-	stacktop += tempNum;
-	pc += 10;
+	MODIFY_PC_AND_STACK(CVM_LEN_DWIDE_LARGE, tempNum);
 }
 VMBREAKNOEND;
 
 case COP_MSTORE:
 {
 	/* Wide version of "mstore" */
-	tempNum = IL_READ_UINT32(pc + 6);
+	tempNum = CVM_ARG_DWIDE2_LARGE;
 	stacktop -= tempNum;
-	IL_MEMCPY(&(frame[IL_READ_UINT32(pc + 2)]), stacktop,
+	IL_MEMCPY(&(frame[CVM_ARG_DWIDE1_LARGE]), stacktop,
 			  sizeof(CVMWord) * tempNum);
-	pc += 10;
+	MODIFY_PC_AND_STACK(CVM_LEN_DWIDE_LARGE, 0);
 }
 VMBREAKNOEND;
 
 case COP_WADDR:
 {
 	/* Wide version of "waddr" */
-	stacktop[0].ptrValue = (void *)(&(frame[IL_READ_UINT32(pc + 2)]));
-	MODIFY_PC_AND_STACK(6, 1);
+	stacktop[0].ptrValue = (void *)(&(frame[CVM_ARG_WIDE_LARGE]));
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 1);
 }
 VMBREAKNOEND;
 
 case COP_MADDR:
 {
 	/* Wide version of "maddr" */
-	stacktop[0].ptrValue = (void *)(stacktop - IL_READ_UINT32(pc + 2));
-	MODIFY_PC_AND_STACK(6, 1);
+	stacktop[0].ptrValue = (void *)(stacktop - CVM_ARG_WIDE_LARGE);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 1);
 }
 VMBREAKNOEND;
 
 case COP_BFIXUP:
 {
 	/* Wide version of "bfixup" */
-	tempNum = IL_READ_UINT32(pc + 2);
+	tempNum = CVM_ARG_WIDE_LARGE;
 	*((ILInt8 *)(&(frame[tempNum]))) = (ILInt8)(frame[tempNum].intValue);
-	MODIFY_PC_AND_STACK(6, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0);
 }
 VMBREAKNOEND;
 
 case COP_SFIXUP:
 {
 	/* Wide version of "sfixup" */
-	tempNum = IL_READ_UINT32(pc + 2);
+	tempNum = CVM_ARG_WIDE_LARGE;
 	*((ILInt16 *)(&(frame[tempNum]))) = (ILInt16)(frame[tempNum].intValue);
-	MODIFY_PC_AND_STACK(6, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0);
 }
 VMBREAKNOEND;
 
 case COP_FFIXUP:
 {
 	/* Wide version of "ffixup" */
-	tempNum = IL_READ_UINT32(pc + 2);
+	tempNum = CVM_ARG_WIDE_LARGE;
 	*((ILFloat *)(&(frame[tempNum]))) = (ILFloat)ReadFloat(&(frame[tempNum]));
-	MODIFY_PC_AND_STACK(6, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0);
 }
 VMBREAKNOEND;
 
 case COP_DFIXUP:
 {
 	/* Wide version of "dfixup" */
-	tempNum = IL_READ_UINT32(pc + 2);
+	tempNum = CVM_ARG_WIDE_LARGE;
 	WriteDouble(&(frame[tempNum]), (ILDouble)ReadFloat(&(frame[tempNum])));
-	MODIFY_PC_AND_STACK(6, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0);
 }
 VMBREAKNOEND;
 
 case COP_MK_LOCAL_N:
 {
 	/* Wide version of "mk_local_n" */
-	tempNum = IL_READ_UINT32(pc + 2);
+	tempNum = CVM_ARG_WIDE_LARGE;
 	IL_MEMZERO(&(stacktop[0]), sizeof(CVMWord) * tempNum);
-	MODIFY_PC_AND_STACK(6, tempNum);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, tempNum);
 }
 VMBREAKNOEND;
 

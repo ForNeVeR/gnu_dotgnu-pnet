@@ -47,7 +47,7 @@ VMCASE(COP_DUP):
 {
 	/* Duplicate the top-most word on the stack */
 	stacktop[0] = stacktop[-1];
-	MODIFY_PC_AND_STACK(1, 1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 1);
 }
 VMBREAK(COP_DUP);
 
@@ -71,7 +71,7 @@ VMCASE(COP_DUP2):
 	/* Duplicate the top two words on the stack */
 	stacktop[0] = stacktop[-2];
 	stacktop[1] = stacktop[-1];
-	MODIFY_PC_AND_STACK(1, 2);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 2);
 }
 VMBREAK(COP_DUP2);
 
@@ -97,10 +97,10 @@ VMBREAK(COP_DUP2);
 VMCASE(COP_DUP_N):
 {
 	/* Duplicate the top N words on the stack */
-	IL_MEMCPY(&(stacktop[0]), &(stacktop[-((int)(pc[1]))]),
-			  sizeof(CVMWord) * ((unsigned)(pc[1])));
-	stacktop += (unsigned)(pc[1]);
-	pc += 2;
+	tempNum = CVM_ARG_WIDE_SMALL;
+	IL_MEMCPY(&(stacktop[0]), &(stacktop[-((ILInt32)tempNum)]),
+			  sizeof(CVMWord) * tempNum);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, tempNum);
 }
 VMBREAK(COP_DUP_N);
 
@@ -124,8 +124,8 @@ VMBREAK(COP_DUP_N);
 VMCASE(COP_DUP_WORD_N):
 {
 	/* Duplicate a word which is N words down the stack */
-	stacktop[0] = stacktop[-(((int)(pc[1])) + 1)];
-	MODIFY_PC_AND_STACK(2, 1);
+	stacktop[0] = stacktop[-(((ILInt32)CVM_ARG_WIDE_SMALL) + 1)];
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 1);
 }
 VMBREAK(COP_DUP_WORD_N);
 
@@ -147,7 +147,7 @@ VMBREAK(COP_DUP_WORD_N);
 VMCASE(COP_POP):
 {
 	/* Pop the top-most word from the stack */
-	MODIFY_PC_AND_STACK(1, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -1);
 }
 VMBREAK(COP_POP);
 
@@ -169,7 +169,7 @@ VMBREAK(COP_POP);
 VMCASE(COP_POP2):
 {
 	/* Pop the top two words from the stack */
-	MODIFY_PC_AND_STACK(1, -2);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -2);
 }
 VMBREAK(COP_POP2);
 
@@ -192,8 +192,8 @@ VMBREAK(COP_POP2);
 VMCASE(COP_POP_N):
 {
 	/* Pop the top N words from the stack */
-	stacktop -= (unsigned)(pc[1]);
-	pc += 2;
+	MODIFY_PC_AND_STACK_REVERSE(CVM_LEN_WIDE_SMALL,
+								-((ILInt32)CVM_ARG_WIDE_SMALL));
 }
 VMBREAK(COP_POP_N);
 
@@ -215,12 +215,13 @@ VMBREAK(COP_POP_N);
  */
 VMCASE(COP_SQUASH):
 {
-	/* Squash N words out of the stack, M words down the stack */
-	IL_MEMMOVE(&(stacktop[-(((int)(pc[1])) + ((int)(pc[2])))]),
-			   &(stacktop[-((int)(pc[1]))]),
-			   sizeof(CVMWord *) * ((int)(pc[1])));
-	stacktop -= (int)(pc[2]);
-	pc += 3;
+	/* Squash M words out of the stack, N words down the stack */
+	tempNum = CVM_ARG_DWIDE1_SMALL;
+	tempSize = CVM_ARG_DWIDE2_SMALL;
+	IL_MEMMOVE(&(stacktop[-(((ILInt32)tempNum) + ((ILInt32)tempSize))]),
+			   &(stacktop[-((ILInt32)tempNum)]),
+			   sizeof(CVMWord *) * tempNum);
+	MODIFY_PC_AND_STACK(CVM_LEN_DWIDE_SMALL, -((ILInt32)tempSize));
 }
 VMBREAK(COP_SQUASH);
 
@@ -254,10 +255,12 @@ VMCASE(COP_CKHEIGHT):
 	/* Check the height of the stack to ensure that we have
 	   at least 8 stack slots available.  This instruction
 	   occupies 5 bytes because it is normally overlaid on
-	   top of a longer CKHEIGHT_N instruction */
-	if(((ILUInt32)(stackmax - stacktop)) >= 8)
+	   top of a longer CKHEIGHT_N instruction.  We allow one
+	   extra slot to allow for engine exception objects to
+	   be pushed onto the stack at the maximum height */
+	if(((ILUInt32)(stackmax - stacktop)) > 8)
 	{
-		MODIFY_PC_AND_STACK(5, 0);
+		MODIFY_PC_AND_STACK(CVM_LEN_WORD, 0);
 	}
 	else
 	{
@@ -291,10 +294,11 @@ VMBREAK(COP_CKHEIGHT);
 VMCASE(COP_CKHEIGHT_N):
 {
 	/* Check the height of the stack to ensure that we have
-	   at least N stack slots available */
-	if(((ILUInt32)(stackmax - stacktop)) >= IL_READ_UINT32(pc + 1))
+	   at least N stack slots available, plus 1 extra to allow
+	   for engine exception objects to be pushed */
+	if(((ILUInt32)(stackmax - stacktop)) > CVM_ARG_WORD)
 	{
-		MODIFY_PC_AND_STACK(5, 0);
+		MODIFY_PC_AND_STACK(CVM_LEN_WORD, 0);
 	}
 	else
 	{
@@ -322,8 +326,8 @@ VMBREAK(COP_CKHEIGHT_N);
 VMCASE(COP_SET_NUM_ARGS):
 {
 	/* Set the number of argument stack slots */
-	frame = stacktop - ((ILUInt32)(pc[1]));
-	MODIFY_PC_AND_STACK(2, 0);
+	frame = stacktop - CVM_ARG_WIDE_SMALL;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0);
 }
 VMBREAK(COP_SET_NUM_ARGS);
 
@@ -332,45 +336,45 @@ VMBREAK(COP_SET_NUM_ARGS);
 case COP_DUP_N:
 {
 	/* Wide version of "dup_n" */
-	tempNum = IL_READ_UINT32(pc + 2);
+	tempNum = CVM_ARG_WIDE_LARGE;
 	IL_MEMCPY(&(stacktop[0]), &(stacktop[-((int)tempNum)]),
 			  sizeof(CVMWord) * tempNum);
-	MODIFY_PC_AND_STACK(6, tempNum);
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, tempNum);
 }
 VMBREAKNOEND;
 
 case COP_DUP_WORD_N:
 {
 	/* Wide version of "dup_word_n" */
-	stacktop[0] = stacktop[-(((int)IL_READ_UINT32(pc + 2)) + 1)];
-	MODIFY_PC_AND_STACK(6, 1);
+	stacktop[0] = stacktop[-(((ILInt32)CVM_ARG_WIDE_LARGE) + 1)];
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 1);
 }
 VMBREAKNOEND;
 
 case COP_POP_N:
 {
 	/* Wide version of "pop_n" */
-	stacktop -= IL_READ_UINT32(pc + 2);
-	pc += 6;
+	MODIFY_PC_AND_STACK_REVERSE(CVM_LEN_WIDE_LARGE,
+								-((ILInt32)CVM_ARG_WIDE_LARGE));
 }
 VMBREAKNOEND;
 
 case COP_SQUASH:
 {
 	/* Wide version of "squash" */
-	tempNum = IL_READ_UINT32(pc + 2);
-	tempptr = stacktop - tempNum - IL_READ_UINT32(pc + 6);
+	tempNum = CVM_ARG_DWIDE1_LARGE;
+	tempSize = CVM_ARG_DWIDE2_LARGE;
+	tempptr = stacktop - tempNum - tempSize;
 	IL_MEMMOVE(tempptr, stacktop - tempNum, sizeof(CVMWord *) * tempNum);
-	stacktop -= IL_READ_UINT32(pc + 6);
-	pc += 10;
+	MODIFY_PC_AND_STACK(CVM_LEN_DWIDE_LARGE, -((ILInt32)tempSize));
 }
 VMBREAKNOEND;
 
 case COP_SET_NUM_ARGS:
 {
 	/* Wide version of "set_num_args" */
-	frame = stacktop - IL_READ_UINT32(pc + 2);
-	MODIFY_PC_AND_STACK(6, 0);
+	frame = stacktop - CVM_ARG_WIDE_LARGE;
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0);
 }
 VMBREAKNOEND;
 

@@ -7,6 +7,14 @@
 	* engine/cvmc_branch.c: code generation problem with branches
 	and comparisons that involve pointers.
 
+	* engine/cvm.c, engine/cvm_arith.c, engine/cvm_branch.c,
+	engine/cvm_call.c, engine/cvm_compare.c, engine/cvm_const.c,
+	engine/cvm_conv.c, engine/cvm_except.c, engine/cvm_inline.c,
+	engine/cvm_ptr.c, engine/cvm_stack.c, engine/cvm_var.c,
+	engine/cvm_format.h: abstract the details of operand unpacking
+	and instruction lengths, to make it easier to change to a direct
+	threading interpreter in the future.
+
 2002-05-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* auto_gen.sh, configure.in, codegen/Makefile.am, csant/Makefile.am,

@@ -375,7 +375,7 @@ ILCallFrame *callFrame;
 VMCASE(COP_CALL):
 {
 	/* Call a method */
-	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
+	methodToCall = CVM_ARG_PTR(ILMethod *);
 	if(methodToCall->userData)
 	{
 		/* It is converted: allocate a new call frame */
@@ -383,7 +383,7 @@ VMCASE(COP_CALL):
 
 		/* Fill in the call frame details */
 		callFrame->method = method;
-		callFrame->pc = pc + sizeof(void *) + 1;
+		callFrame->pc = CVM_ARG_CALL_RETURN(pc);
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 
@@ -409,7 +409,7 @@ VMCASE(COP_CALL):
 
 		/* Fill in the call frame details */
 		callFrame->method = method;
-		callFrame->pc = thread->pc + 1 + sizeof(void *);
+		callFrame->pc = CVM_ARG_CALL_RETURN(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 
@@ -457,7 +457,7 @@ VMBREAK(COP_CALL);
 VMCASE(COP_CALL_CTOR):
 {
 	/* Call a constructor that we don't know if it has been converted */
-	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
+	methodToCall = CVM_ARG_PTR(ILMethod *);
 
 	/* Determine if we have already converted the constructor */
 	if(methodToCall->userData)
@@ -467,7 +467,7 @@ VMCASE(COP_CALL_CTOR):
 
 		/* Fill in the call frame details */
 		callFrame->method = method;
-		callFrame->pc = pc + 1 + sizeof(void *);
+		callFrame->pc = CVM_ARG_CALL_RETURN(pc);
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 
@@ -494,7 +494,7 @@ VMCASE(COP_CALL_CTOR):
 
 		/* Fill in the call frame details */
 		callFrame->method = method;
-		callFrame->pc = thread->pc + 1 + sizeof(void *);
+		callFrame->pc = CVM_ARG_CALL_RETURN(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 
@@ -545,12 +545,11 @@ VMCASE(COP_CALL_NATIVE):
 {
 	/* Call a native method */
 	COPY_STATE_TO_THREAD();
-	FFI_CALL(ReadPointer(pc + 1 + sizeof(void *)),
-	         ReadPointer(pc + 1), stacktop[-1].ptrValue,
-			 nativeArgs);
+	FFI_CALL(CVM_ARG_PTR2(void *), CVM_ARG_PTR(void *),
+	         stacktop[-1].ptrValue, nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
 	pc = thread->pc;
-	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, -1);
+	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, -1);
 }
 VMBREAK(COP_CALL_NATIVE);
 
@@ -571,11 +570,10 @@ VMCASE(COP_CALL_NATIVE_VOID):
 {
 	/* Call a native method that has no return value */
 	COPY_STATE_TO_THREAD();
-	FFI_CALL(ReadPointer(pc + 1 + sizeof(void *)),
-	         ReadPointer(pc + 1), 0, nativeArgs);
+	FFI_CALL(CVM_ARG_PTR2(void *), CVM_ARG_PTR(void *), 0, nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
 	pc = thread->pc;
-	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_PTR2, -1);
 }
 VMBREAK(COP_CALL_NATIVE_VOID);
 
@@ -609,12 +607,12 @@ VMBREAK(COP_CALL_NATIVE_VOID);
 VMCASE(COP_CALL_VIRTUAL):
 {
 	/* Call a virtual method */
-	tempptr = stacktop[-((ILInt32)(pc[1]))].ptrValue;
+	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_SMALL)].ptrValue;
 	if(tempptr)
 	{
 		/* Locate the method to be called */
 		methodToCall = ((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
-							->vtable[(ILUInt32)(pc[2])];
+							->vtable[CVM_ARG_DWIDE2_SMALL];
 
 		/* Copy the state back into the thread object */
 		COPY_STATE_TO_THREAD();
@@ -631,7 +629,7 @@ VMCASE(COP_CALL_VIRTUAL):
 
 		/* Fill in the call frame details */
 		callFrame->method = method;
-		callFrame->pc = thread->pc + 3;
+		callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 
@@ -685,13 +683,13 @@ VMBREAK(COP_CALL_VIRTUAL);
 VMCASE(COP_CALL_INTERFACE):
 {
 	/* Call an interface method */
-	tempptr = stacktop[-((ILInt32)(pc[1]))].ptrValue;
+	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_SMALL)].ptrValue;
 	if(tempptr)
 	{
 		/* Locate the method to be called */
-		methodToCall = _ILLookupInterfaceMethod(GetObjectClass(tempptr),
-												(ILClass *)ReadPointer(pc + 3),
-												(ILUInt32)(pc[2]));
+		methodToCall = _ILLookupInterfaceMethod
+			(GetObjectClass(tempptr), CVM_ARG_DWIDE_PTR_SMALL(ILClass *),
+			 CVM_ARG_DWIDE2_SMALL);
 		if(!methodToCall)
 		{
 			MISSING_METHOD_EXCEPTION();
@@ -712,7 +710,7 @@ VMCASE(COP_CALL_INTERFACE):
 
 		/* Fill in the call frame details */
 		callFrame->method = method;
-		callFrame->pc = thread->pc + 3 + sizeof(void *);
+		callFrame->pc = CVM_ARG_CALLI_RETURN_SMALL(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 
@@ -761,7 +759,7 @@ VMCASE(COP_CCTOR_ONCE):
 	{
 		/* We haven't executed this method yet, so mark and continue */
 		method->member.owner->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
-		MODIFY_PC_AND_STACK(1, 0);
+		MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 		VMBREAK(COP_CCTOR_ONCE);
 	}
 }
@@ -900,7 +898,7 @@ VMCASE(COP_RETURN_2):
  *   <operation>Return from the current method with <i>n</i> stack
  *              words as the return value</operation>
  *
- *   <format>return_n</format>
+ *   <format>return_n<fsep/>N[4]</format>
  *
  *   <form name="return_2" code="COP_RETURN_N"/>
  *
@@ -926,7 +924,7 @@ VMCASE(COP_RETURN_2):
 VMCASE(COP_RETURN_N):
 {
 	/* Return from a method with an N-word return value */
-	tempNum = IL_READ_UINT32(pc + 1);
+	tempNum = CVM_ARG_WORD;
 	IL_MEMMOVE(frame, stacktop - tempNum, sizeof(CVMWord) * tempNum);
 	stacktop = frame + tempNum;
 	goto popFrame;
@@ -952,7 +950,7 @@ VMCASE(COP_PUSH_THREAD):
 {
 	/* Push a pointer to the thread value onto the native argument stack */
 	nativeArgs[0] = (void *)&thread;
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_PUSH_THREAD);
 
@@ -985,7 +983,7 @@ VMCASE(COP_PUSHDOWN):
 	if(((ILUInt32)(stackmax - stacktop)) >= 1)
 	{
 		tempptr = stacktop[-1].ptrValue;
-		tempNum = IL_READ_UINT32(pc + 1);
+		tempNum = CVM_ARG_WORD;
 		if(tempNum != 0)
 		{
 			IL_MEMMOVE(stacktop + 1 - tempNum, stacktop - 1 - tempNum,
@@ -993,7 +991,7 @@ VMCASE(COP_PUSHDOWN):
 		}
 		(stacktop - tempNum - 1)->ptrValue = tempptr;
 		(stacktop - tempNum)->ptrValue = tempptr;
-		MODIFY_PC_AND_STACK(5, 1);
+		MODIFY_PC_AND_STACK(CVM_LEN_WORD, 1);
 	}
 	else
 	{
@@ -1006,8 +1004,8 @@ VMBREAK(COP_PUSHDOWN);
 VMCASE(COP_WADDR_NATIVE_##name): \
 { \
 	/* Set a value within the native argument stack */ \
-	nativeArgs[(value) + 1] = (void *)(&(frame[pc[1]])); \
-	MODIFY_PC_AND_STACK(2, 0); \
+	nativeArgs[(value) + 1] = (void *)(&(frame[CVM_ARG_WIDE_SMALL])); \
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0); \
 } \
 VMBREAK(COP_WADDR_NATIVE_##name)
 
@@ -1049,7 +1047,7 @@ VMCASE(COP_CALLI):
 {
 	/* Call a method by pointer */
 	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_CALLI);
 
@@ -1057,7 +1055,7 @@ VMCASE(COP_JMPI):
 {
 	/* Jump to a method by pointer */
 	/* TODO */
-	MODIFY_PC_AND_STACK(1, 0);
+	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_JMPI);
 
@@ -1066,12 +1064,12 @@ VMBREAK(COP_JMPI);
 case COP_CALL_VIRTUAL:
 {
 	/* Wide version of "call_virtual" */
-	tempptr = stacktop[-(IL_READ_INT32(pc + 2))].ptrValue;
+	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_LARGE)].ptrValue;
 	if(tempptr)
 	{
 		/* Locate the method to be called */
 		methodToCall = ((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
-							->vtable[IL_READ_UINT32(pc + 6)];
+							->vtable[CVM_ARG_DWIDE2_LARGE];
 
 		/* Copy the state back into the thread object */
 		COPY_STATE_TO_THREAD();
@@ -1088,7 +1086,7 @@ case COP_CALL_VIRTUAL:
 
 		/* Fill in the call frame details */
 		callFrame->method = method;
-		callFrame->pc = thread->pc + 10;
+		callFrame->pc = CVM_ARG_CALLV_RETURN_LARGE(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 
@@ -1111,13 +1109,13 @@ VMBREAKNOEND;
 case COP_CALL_INTERFACE:
 {
 	/* Wide version of "call_interface" */
-	tempptr = stacktop[-(IL_READ_INT32(pc + 2))].ptrValue;
+	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_LARGE)].ptrValue;
 	if(tempptr)
 	{
 		/* Locate the method to be called */
-		methodToCall = _ILLookupInterfaceMethod(GetObjectClass(tempptr),
-												(ILClass *)ReadPointer(pc + 10),
-												IL_READ_UINT32(pc + 6));
+		methodToCall = _ILLookupInterfaceMethod
+			(GetObjectClass(tempptr), CVM_ARG_DWIDE_PTR_LARGE(ILClass *),
+			 CVM_ARG_DWIDE2_LARGE);
 		if(!methodToCall)
 		{
 			MISSING_METHOD_EXCEPTION();
@@ -1138,7 +1136,7 @@ case COP_CALL_INTERFACE:
 
 		/* Fill in the call frame details */
 		callFrame->method = method;
-		callFrame->pc = thread->pc + 10 + sizeof(void *);
+		callFrame->pc = CVM_ARG_CALLI_RETURN_LARGE(thread->pc);
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 
@@ -1162,8 +1160,8 @@ VMBREAKNOEND;
 case COP_WADDR_NATIVE_##name: \
 { \
 	/* Wide version of "waddr_native_*" */ \
-	nativeArgs[(value) + 1] = (void *)(&(frame[IL_READ_UINT32(pc + 2)])); \
-	MODIFY_PC_AND_STACK(6, 0); \
+	nativeArgs[(value) + 1] = (void *)(&(frame[CVM_ARG_WIDE_LARGE])); \
+	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0); \
 } \
 break
 
@@ -1195,12 +1193,12 @@ COP_WADDR_NATIVE_WIDE(7, 7);
  */
 VMCASE(COP_PREFIX_TAIL):
 {
-	switch(pc[2]) 
+	switch(CVM_ARG_TAIL_OPCODE)
 	{
 		case COP_CALL:
 		{
 			/* Retrieve the target method */
-			methodToCall = (ILMethod *)(ReadPointer(pc + 3));
+			methodToCall = CVM_ARG_TAIL_METHOD;
 
 			/* Convert the method if necessary */
 			if(methodToCall->userData)
@@ -1239,7 +1237,7 @@ VMCASE(COP_PREFIX_TAIL):
 		default:
 		{
 			/* TODO - Implement other call styles */
-			MODIFY_PC_AND_STACK(2, 0);
+			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 		}
 		break;
 	}
@@ -1267,8 +1265,8 @@ VMBREAK(COP_PREFIX_TAIL);
 VMCASE(COP_PREFIX_LDFTN):
 {
 	/* Load the address of a function onto the stack */
-	stacktop[0].ptrValue = ReadPointer(pc + 2);
-	MODIFY_PC_AND_STACK(2 + sizeof(void *), 1);
+	stacktop[0].ptrValue = CVMP_ARG_PTR(void *);
+	MODIFY_PC_AND_STACK(CVMP_LEN_PTR, 1);
 }
 VMBREAK(COP_PREFIX_LDFTN);
 
@@ -1298,8 +1296,8 @@ VMCASE(COP_PREFIX_LDVIRTFTN):
 	{
 		stacktop[-1].ptrValue =
 			((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
-					->vtable[IL_READ_UINT32(pc + 2)];
-		MODIFY_PC_AND_STACK(6, 0);
+					->vtable[CVMP_ARG_WORD];
+		MODIFY_PC_AND_STACK(CVMP_LEN_WORD, 0);
 	}
 	else
 	{
@@ -1338,9 +1336,9 @@ VMCASE(COP_PREFIX_LDINTERFFTN):
 	{
 		stacktop[-1].ptrValue =
 			_ILLookupInterfaceMethod(GetObjectClass(tempptr),
-									 (ILClass *)ReadPointer(pc + 6),
-									 IL_READ_UINT32(pc + 2));
-		MODIFY_PC_AND_STACK(6 + sizeof(void *), 0);
+									 CVMP_ARG_WORD_PTR(ILClass *),
+									 CVMP_ARG_WORD);
+		MODIFY_PC_AND_STACK(CVMP_LEN_WORD_PTR, 0);
 	}
 	else
 	{
@@ -1383,13 +1381,12 @@ VMCASE(COP_PREFIX_PACK_VARARGS):
 {
 	/* Pack a set of arguments for a vararg method call */
 	COPY_STATE_TO_THREAD();
-	tempNum = PackVarArgs(thread, stacktop, IL_READ_UINT32(pc + 2),
-						  IL_READ_UINT32(pc + 6),
-						  (ILType *)ReadPointer(pc + 10), &tempptr);
+	tempNum = PackVarArgs(thread, stacktop, CVMP_ARG_WORD, CVMP_ARG_WORD2,
+						  CVMP_ARG_WORD2_PTR(ILType *), &tempptr);
 	RESTORE_STATE_FROM_THREAD();
 	stacktop -= tempNum;
 	stacktop[0].ptrValue = tempptr;
-	MODIFY_PC_AND_STACK(10 + sizeof(void *), 1);
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD2_PTR, 1);
 }
 VMBREAK(COP_PREFIX_PACK_VARARGS);
 

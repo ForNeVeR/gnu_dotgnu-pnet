@@ -132,7 +132,7 @@ VMCASE(COP_PREFIX_ICMP):
 	{
 		stacktop[-2].intValue = 0;
 	}
-	MODIFY_PC_AND_STACK(2, -1);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_ICMP);
 
@@ -175,7 +175,7 @@ VMCASE(COP_PREFIX_ICMP_UN):
 	{
 		stacktop[-2].intValue = 0;
 	}
-	MODIFY_PC_AND_STACK(2, -1);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_ICMP_UN);
 
@@ -209,7 +209,7 @@ VMCASE(COP_PREFIX_LCMP):
 	stacktop[-(CVM_WORDS_PER_LONG * 2)].intValue =
 		LCmp(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		     &(stacktop[-CVM_WORDS_PER_LONG]));
-	MODIFY_PC_AND_STACK(2, -(CVM_WORDS_PER_LONG * 2) + 1);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -(CVM_WORDS_PER_LONG * 2) + 1);
 }
 VMBREAK(COP_PREFIX_LCMP);
 
@@ -243,7 +243,7 @@ VMCASE(COP_PREFIX_LCMP_UN):
 	stacktop[-(CVM_WORDS_PER_LONG * 2)].intValue =
 		LUCmp(&(stacktop[-(CVM_WORDS_PER_LONG * 2)]),
 		      &(stacktop[-CVM_WORDS_PER_LONG]));
-	MODIFY_PC_AND_STACK(2, -(CVM_WORDS_PER_LONG * 2) + 1);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -(CVM_WORDS_PER_LONG * 2) + 1);
 }
 VMBREAK(COP_PREFIX_LCMP_UN);
 
@@ -280,7 +280,7 @@ VMCASE(COP_PREFIX_FCMPL):
 		FCmp(&(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT * 2)]),
 		     &(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]), -1);
 	MODIFY_PC_AND_STACK
-		(2, -(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
+		(CVMP_LEN_NONE, -(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 }
 VMBREAK(COP_PREFIX_FCMPL);
 
@@ -318,7 +318,7 @@ VMCASE(COP_PREFIX_FCMPG):
 		FCmp(&(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT * 2)]),
 		     &(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]), 1);
 	MODIFY_PC_AND_STACK
-		(2, -(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
+		(CVMP_LEN_NONE, -(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 }
 VMBREAK(COP_PREFIX_FCMPG);
 
@@ -361,7 +361,7 @@ VMCASE(COP_PREFIX_PCMP):
 	{
 		stacktop[-2].intValue = 0;
 	}
-	MODIFY_PC_AND_STACK(2, -1);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_PCMP);
 
@@ -392,7 +392,7 @@ VMCASE(COP_PREFIX_SETEQ):
 {
 	/* Set true if the stack top is zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue == 0);
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_SETEQ);
 
@@ -423,7 +423,7 @@ VMCASE(COP_PREFIX_SETNE):
 {
 	/* Set true if the stack top is non-zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue != 0);
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_SETNE);
 
@@ -454,7 +454,7 @@ VMCASE(COP_PREFIX_SETLT):
 {
 	/* Set true if the stack top is less than zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue < 0);
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_SETLT);
 
@@ -485,7 +485,7 @@ VMCASE(COP_PREFIX_SETLE):
 {
 	/* Set true if the stack top is less or equal to zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue <= 0);
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_SETLE);
 
@@ -516,7 +516,7 @@ VMCASE(COP_PREFIX_SETGT):
 {
 	/* Set true if the stack top is greater than zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue > 0);
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_SETGT);
 
@@ -547,7 +547,7 @@ VMCASE(COP_PREFIX_SETGE):
 {
 	/* Set true if the stack top greater or equal to zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue >= 0);
-	MODIFY_PC_AND_STACK(2, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_SETGE);
 

@@ -9,6 +9,9 @@
 	* engine/lib_defs.h: make sure that the System_Array header is padded
 	to the best possible alignment on 64-bit platforms.
 
+	* engine/cvm_ptr.c: bug fix - "get2d" was not multiplying the
+	element position by the element size to get the array offset.
+
 2003-02-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, Makefile.am: automatically add "-fno-inline-functions"

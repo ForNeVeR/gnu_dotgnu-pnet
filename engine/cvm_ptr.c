@@ -3235,8 +3235,8 @@ VMCASE(COP_PREFIX_GET2D):
 		{
 			stacktop[-3].ptrValue = (void *)
 				(((unsigned char *)(array->data)) +
-				 index1 * array->bounds[0].multiplier +
-				 index2 * array->bounds[1].multiplier);
+				 (index1 * array->bounds[0].multiplier +
+				  index2 * array->bounds[1].multiplier) * array->elemSize);
 			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -2);
 		}
 		else

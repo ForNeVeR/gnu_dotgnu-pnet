@@ -37,7 +37,7 @@ internal sealed class DateTimeParser
 			}
 
 	// Parse a decimal number from a string.
-	private static int ParseNumber(String s, ref int posn)
+	private static int ParseNumber(String s, ref int posn, int maxDigits)
 			{
 				int value;
 
@@ -49,9 +49,11 @@ internal sealed class DateTimeParser
 				value = (int)(s[posn++] - '0');
 
 				// Recognize additional digits.
-				while(posn < s.Length && s[posn] >= '0' && s[posn] <= '9')
+				while(maxDigits > 1 && posn < s.Length && s[posn] >= '0'
+				      && s[posn] <= '9')
 				{
 					value = (value * 10) + (int)(s[posn++] - '0');
+					--maxDigits;
 				}
 
 				// Return the value to the caller.
@@ -149,13 +151,13 @@ internal sealed class DateTimeParser
 				}
 
 				// Parse the hour portion of the timezone.
-				hour = ParseNumber(s, ref posn);
+				hour = ParseNumber(s, ref posn, 2);
 
 				// Parse the minute portion if there is a ':' separator.
 				if(posn < s.Length && s[posn] == ':')
 				{
 					++posn;
-					minute = ParseNumber(s, ref posn);
+					minute = ParseNumber(s, ref posn, 2);
 				}
 				else
 				{
@@ -319,7 +321,7 @@ internal sealed class DateTimeParser
 							// because they don't add anything to the value.
 							if(count == 1 || count == 2)
 							{
-								day = ParseNumber(s, ref sposn);
+								day = ParseNumber(s, ref sposn, 2);
 							}
 							else if(count == 3)
 							{
@@ -338,7 +340,7 @@ internal sealed class DateTimeParser
 							// Parse the month.
 							if(count == 1 || count == 2)
 							{
-								month = ParseNumber(s, ref sposn);
+								month = ParseNumber(s, ref sposn, 2);
 							}
 							else if(count == 3)
 							{
@@ -359,11 +361,11 @@ internal sealed class DateTimeParser
 							if(count == 1 || count == 2)
 							{
 								year = calendar.ToFourDigitYear
-									(ParseNumber(s, ref sposn));
+									(ParseNumber(s, ref sposn, 2));
 							}
 							else
 							{
-								year = ParseNumber(s, ref sposn);
+								year = ParseNumber(s, ref sposn, 4);
 							}
 						}
 						break;
@@ -378,35 +380,36 @@ internal sealed class DateTimeParser
 						case 'h':
 						{
 							// Parse the hour in 12-hour format.
-							hour = ParseNumber(s, ref sposn);
+							hour = ParseNumber(s, ref sposn, 2);
 						}
 						break;
 
 						case 'H':
 						{
 							// Parse the hour in 24-hour format.
-							hour = ParseNumber(s, ref sposn);
+							hour = ParseNumber(s, ref sposn, 2);
 						}
 						break;
 
 						case 'm':
 						{
 							// Parse the minute.
-							minute = ParseNumber(s, ref sposn);
+							minute = ParseNumber(s, ref sposn, 2);
 						}
 						break;
 
 						case 's':
 						{
 							// Parse the second.
-							second = ParseNumber(s, ref sposn);
+							second = ParseNumber(s, ref sposn, 2);
 						}
 						break;
 
 						case 'f':
 						{
 							// Parse fractions of a second.
-							fractions = ParseNumber(s, ref sposn);
+							fractions = ParseNumber(s, ref sposn,
+													Int32.MaxValue);
 							while(count < 7)
 							{
 								fractions *= 10;

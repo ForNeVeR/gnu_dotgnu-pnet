@@ -1,4 +1,10 @@
 
+2003-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Private/DateTimeFormat/DateTimeParser.cs:
+	parse numeric fields with a maximum digit count, so that
+	"yyyyMMdd" formats can be processed correctly (bug #6682).
+
 2003-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/GlobalProxySelection.cs, System/Net/HttpWebRequest.cs:

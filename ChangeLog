@@ -40,6 +40,8 @@
 	* samples/samples.build: added in RegionTest.exe and TextBoxTest.exe
 	samples/RegionTest.cs, samples/TextBoxTest.cs: new samples
 
+	* System.Drawing/Toolkit/IToolkitWindow.cs: new Focus() method
+
 2003-07-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Graphics.cs, Xsharp/InputOutputWidget.cs: add the

@@ -1,4 +1,17 @@
 
+0.2.6 (25 July 2002)
+
+	* System.Xml.XmlReader (Charlie Carnow).
+	* "Marshal" class and supporting types to round out the PInvoke classes.
+	* Extra classes that are required by Gtk#.
+	* Be careful when comparing delegates so that we don't get the "==" and
+	  "!=" operators when we shouldn't be using them.
+	* Fix range checks in System.String.
+	* System.Security.Cryptography namespace.
+	* Replace the internalcall for "String.EqualRange" with
+	  "String.FindInRange" (based on a suggestion by Gopal V).
+	* System.Uri/MakeRelative (Rich Baumann, Stephen Compall).
+
 0.2.4 (27 June 2002)
 
 	* Harden various classes against missing functionality in the

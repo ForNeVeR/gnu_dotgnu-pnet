@@ -24,6 +24,12 @@
 #include "ilasm_build.h"
 #include "ilasm_data.h"
 #include "ilasm_output.h"
+#if HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+#endif
+#if HAVE_SYS_STAT_H
+	#include <sys/stat.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -553,6 +559,16 @@ int ILAsmMain(int argc, char *argv[], FILE *newStdin)
 	{
 		fclose(outfile);
 	}
+
+	/* Change the permissions on the file if it is an executable */
+#if !(defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__))
+	if(format == IL_IMAGETYPE_EXE && outfile)
+	{
+		int mask = umask(0);
+		umask(mask);
+		chmod(outputFile, 0777 & ~mask);
+	}
+#endif
 
 	/* Done */
 	reset();

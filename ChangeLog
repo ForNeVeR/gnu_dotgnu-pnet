@@ -1,4 +1,9 @@
 
+2003-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilasm/ilasm_main.c: change the permissions to +x if writing
+	an executable.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_misc.c: rewrite "GetNextArg(RuntimeTypeHandle)"

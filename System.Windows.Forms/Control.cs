@@ -4576,9 +4576,9 @@ protected virtual void Dispose(bool disposing)
 					owner.SuspendLayout();
 					try
 					{
-						foreach(Control control in controls)
+						for(int posn = controls.Length - 1; posn >= 0; posn--)
 						{
-							Add(control);
+							Add(controls[posn]);
 						}
 					}
 					finally

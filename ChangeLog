@@ -1,3 +1,7 @@
+2004-06-24  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Drawing.Win32/Win32.cs: optimization of SwapRGB from Neil Cawse
+
 2004-06-24  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Drawing.Win32/DrawingGraphics.cs,

@@ -28,16 +28,7 @@ internal class Api
 	// Utility function for swapping colors - BGR to RGB and vice versa
 	public static int SwapRGB(int color)
 	{
-		string zeropad = "000000";
-		string hexcolor = color.ToString("X6");
-
-		hexcolor = zeropad.Substring(0, 6 - (hexcolor.Length)) + hexcolor;
-
-		int b = Convert.ToByte(Convert.ToInt32(hexcolor.Substring(0, 2), 16));
-		int g = Convert.ToByte(Convert.ToInt32(hexcolor.Substring(2, 2), 16));
-		int r = Convert.ToByte(Convert.ToInt32(hexcolor.Substring(4, 2), 16));
-
-		return ((r * 256) + g) * 256 + b;
+		return (color & 0xFF) << 16 | color & 0xFF00 | color >> 16 & 0xFF;
 	}
 
 	public delegate int WNDPROC( IntPtr hwnd, int msg, int wParam, int lParam);

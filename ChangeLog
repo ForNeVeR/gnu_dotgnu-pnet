@@ -6,6 +6,10 @@
 	modify the internalcall interface for sockets to match the
 	changes to pnetlib; IPv6 and IrDA socket addresses should now work.
 
+	* configure.in, support/socket.c: add <linux/irda.h> to the set
+	of headers to detect at configuration time; include <linux/types.h>
+	before <linux/irda.h>.
+
 2003-05-26  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_diag.c: Remove the skipFrames hack and start from 

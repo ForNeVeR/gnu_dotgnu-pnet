@@ -228,6 +228,7 @@ AC_CHECK_HEADERS(sys/time.h sys/types.h dlfcn.h ieeefp.h)
 AC_CHECK_HEADERS(readline/readline.h readline/history.h wchar.h)
 AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h dirent.h sys/utime.h utime.h)
+AC_CHECK_HEADERS(linux/irda.h)
 
 dnl A macro that helps detect the size of types in a cross-compile environment.
 AC_DEFUN([AC_COMPILE_CHECK_SIZEOF],

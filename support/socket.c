@@ -56,6 +56,7 @@
 #include <winsock.h>
 #endif
 #if HAVE_LINUX_IRDA_H
+#include <linux/types.h>
 #include <linux/irda.h>
 #endif
 

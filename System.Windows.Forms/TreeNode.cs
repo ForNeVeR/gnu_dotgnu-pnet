@@ -223,38 +223,69 @@ namespace System.Windows.Forms
 
 		public void EnsureVisible()
 		{
-			Expand();
-			// Find "this" node number and position from the top control.
-			int nodeFromTop = -1;
-			int nodeNo = 0;
-			TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(this.nodes);
-			while (nodes.MoveNext())
+			TreeView.NodeEnumerator nodes;
+			int nodeFromTop;
+			int nodeNo;
+			while (true)
 			{
-				if (nodes.currentNode == treeView.topNode)
+				// Find "this" node number and position from the top control.
+				nodeFromTop = -1;
+				nodeNo = 0;
+				bool nodeFound = false;
+				nodes = new TreeView.NodeEnumerator(treeView.nodes);
+				while (nodes.MoveNext())
 				{
-					// We are at the top of the control.
-					nodeFromTop = 0;
+					if (nodes.currentNode == treeView.topNode)
+					{
+						// We are at the top of the control.
+						nodeFromTop = 0;
+					}
+					if (nodes.currentNode == this)
+					{
+						if (nodeFromTop < 0)
+						{
+							treeView.topNode = this;
+							treeView.Invalidate();
+							return;
+						}
+						nodeFound = true;
+						break;
+					}
+					if (nodeFromTop >= 0)
+					{
+						nodeFromTop++;
+					}
+					nodeNo++;
 				}
-				if (nodes.currentNode == this)
+			
+
+				if (nodeFound)
 				{
 					break;
 				}
-				if (nodeFromTop >= 0)
+				else
 				{
-					nodeFromTop++;
+					// Make sure all parents are expanded and see if its now visible.
+					TreeNode node = this;
+					TreeNode highestNode = node;
+					for (; node != null; node = node.Parent)
+					{
+						node.expanded = true;
+						highestNode = node;
+					}
+					treeView.InvalidateDown(highestNode);
 				}
-				nodeNo++;
 			}
 
-			int visibleNodes = treeView.VisibleCount;
+			int visibleNodes = treeView.VisibleCountActual;
 			// See if its already visible.
-			if (nodeFromTop >= 0 && nodeFromTop <= visibleNodes)
+			if (nodeFromTop < visibleNodes)
 			{
 				return;
 			}
 
 			// Set the top node no we want to make this node 1 up from the bottom.
-			nodeFromTop = nodeNo - visibleNodes - 1;
+			nodeFromTop = nodeNo - visibleNodes + 1;
 			if (nodeFromTop < 0)
 			{
 				nodeFromTop = 0;
@@ -633,7 +664,7 @@ namespace System.Windows.Forms
 		{
 			get
 			{
-				TreeNode visibleNode = FirstNode;
+				TreeNode visibleNode = null;
 				TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(treeView.nodes);
 				while (nodes.MoveNext())
 				{
@@ -656,12 +687,31 @@ namespace System.Windows.Forms
 			if (treeView != null)
 			{
 				treeView.InvalidateDown(this);
-				treeView = null;
 			}
+			
+			// When removing a node, we need to see if topNode is it or its children.
+			// If so we find a new topNode.
+			TreeNode node = treeView.topNode;
+			while (node != null)
+			{
+				if (node == this)
+				{
+					treeView.topNode = PrevVisibleNode;
+					break;
+				}
+				node = node.parent;
+			}
+			
+			RemoveRecurse();
+
+		}
+
+		private void RemoveRecurse()
+		{
 			// Remove children.
 			for (int i = 0; i < childCount; i++)
 			{
-				children[i].Remove();
+				children[i].RemoveRecurse();
 			}
 			// Remove out of parent's children.
 			for (int i = index; i < parent.childCount - 1; i++)
@@ -672,6 +722,7 @@ namespace System.Windows.Forms
 			}
 			parent.childCount--;
 			parent = null;
+			treeView = null;
 		}
 
 		public int SelectedImageIndex

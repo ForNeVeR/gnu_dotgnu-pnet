@@ -564,7 +564,7 @@ public abstract class ButtonBase : Control
 
 	protected override void OnMouseDown(MouseEventArgs e)
 			{
-				if(button == MouseButtons.None)
+				if(button == MouseButtons.None && e.Button == MouseButtons.Left)
 				{
 					button = e.Button;
 					pressed = true;

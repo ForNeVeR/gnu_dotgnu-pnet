@@ -43,7 +43,7 @@ namespace System.Windows.Forms
 		private int itemHeight;
 		private bool labelEdit;
 		private Timer mouseClickTimer;
-		private const int mouseEditTimeout = 400;
+		private const int mouseEditTimeout = 350;
 		internal TreeNodeCollection nodes;
 		private TreeNode nodeToEdit = null;
 		private string pathSeparator = @"\";
@@ -64,6 +64,7 @@ namespace System.Windows.Forms
 		// Offset of tree view by scrolling.
 		internal int xOffset = 0;
 		const int xPadding = 2;
+		int xScrollValueBeforeEdit = 0;
  
 		public event TreeViewEventHandler AfterCheck
 		{
@@ -241,13 +242,10 @@ namespace System.Windows.Forms
 			nodeBounds.X -= 2;
 			nodeBounds.Height += 4;
 			nodeBounds.Width += 4;
-			// Clear out the area behind the textbox.
-			using (Graphics g = CreateGraphics())
+
+			if (hScrollBar != null)
 			{
-				using (Brush b = new SolidBrush(BackColor))
-				{
-					g.FillRectangle(b, nodeBounds);
-				}
+				xScrollValueBeforeEdit = hScrollBar.Value;
 			}
 			int x = nodeBounds.X;
 			int width = GetTextBoxWidth(ref x);
@@ -256,6 +254,9 @@ namespace System.Windows.Forms
 			textBox.Visible = true;
 			textBox.Focus();
 			textBox.SelectAll();
+			// Redraw to hide the node we are editing.
+			Draw(editNode);
+			
 		}
 
 		public void BeginUpdate()
@@ -324,9 +325,10 @@ namespace System.Windows.Forms
 		// Render the treeview starting from startingLine
 		internal void Draw(Graphics g, TreeNode startNode)
 		{
-			
 			if (updating > 0)
+			{
 				return;
+			}
 
 			Rectangle clientRectangle = ClientRectangle;
 			int drawableHeight = clientRectangle.Height;
@@ -375,6 +377,7 @@ namespace System.Windows.Forms
 			int nodeFromTop = -1;
 			// Number of nodes.
 			int nodeCount = 0;
+			int topNodePosition = 0;
 			// The maximum width of a displayed node.
 			int maxWidth = 0;
 			StringFormat format = new StringFormat(StringFormatFlags.NoWrap);
@@ -382,6 +385,8 @@ namespace System.Windows.Forms
 			{
 				topNode = this.nodes[0];
 			}
+			Rectangle textBounds = Rectangle.Empty;
+
 			NodeEnumerator nodes = new NodeEnumerator(this.nodes);
 			using (Pen markerPen = new Pen(SystemColors.ControlLight))
 			{
@@ -395,6 +400,7 @@ namespace System.Windows.Forms
 						{
 							// We are at the top node.
 							nodeFromTop = 0;
+							topNodePosition = nodeCount;
 						}
 					
 						// Check to see if we must start drawing. Clear the background.
@@ -408,6 +414,31 @@ namespace System.Windows.Forms
 							}
 							drawing = true;
 						}
+					}
+
+					// Even if we arnt drawing nodes yet, we need to measure if the nodes are visible, for hscrollbar purposes.
+					if (nodeFromTop >= 0 && drawableHeight > 0)
+					{
+						textBounds = GetTextBounds(g, nodes.currentNode, nodeFromTop, nodes.level);
+						// Is the text too wide to fit in - if so we need an h scroll bar.
+						if (textBounds.Right > drawableWidth && !needsHScrollBar && scrollable)
+						{
+							needsHScrollBar = true;
+							if (hScrollBar == null)
+							{
+								hScrollBar = new HScrollBar();
+								createNewHScrollBar = true;
+							}
+							drawableHeight -= hScrollBar.Height;
+							// Don't allow drawing on the area that is going to be the scroll bar.
+							Rectangle rect = new Rectangle(0, clientRectangle.Height - hScrollBar.Height, clientRectangle.Width, hScrollBar.Height);
+							g.ExcludeClip(rect);
+						}
+						if (textBounds.Right > maxWidth)
+						{
+							maxWidth = textBounds.Right;
+						}
+
 					}
 
 					// Draw the node if we still have space.
@@ -444,27 +475,10 @@ namespace System.Windows.Forms
 							
 							}
 						}
-						bounds = GetTextBounds(g, nodes.currentNode, nodeFromTop, nodes.level);
-						// Is the text too wide to fit in - if so we need an h scroll bar.
-						if (bounds.Right > drawableWidth && !needsHScrollBar && scrollable)
-						{
-							needsHScrollBar = true;
-							if (hScrollBar == null)
-							{
-								hScrollBar = new HScrollBar();
-								createNewHScrollBar = true;
-							}
-							drawableHeight -= hScrollBar.Height;
-							// Don't allow drawing on the area that is going to be the scroll bar.
-							Rectangle rect = new Rectangle(0, clientRectangle.Height - hScrollBar.Height, clientRectangle.Width, hScrollBar.Height);
-							g.ExcludeClip(rect);
-						}
-						if (bounds.Right > maxWidth)
-						{
-							maxWidth = bounds.Right;
-						}
+						bounds = textBounds;
 						// The height may be too small now.
-						if (drawableHeight > 0)
+						// If we are currently editing a node then dont draw it.
+						if (drawableHeight > 0 && nodes.currentNode != editNode)
 						{
 							// Draw the node text.
 							if (nodes.currentNode  == selectedNode && (Focused || !hideSelection))
@@ -494,52 +508,21 @@ namespace System.Windows.Forms
 			// If we need a v scroll bar, then set it up.
 			if (needsVScrollBar)
 			{
-				vScrollBar.Maximum = nodeCount;
-				vScrollBar.LargeChange = VisibleCount;
-				// Set the position of the V scroll bar but leave a hole if they are both visible.
-				int height = clientRectangle.Height;
-				if (needsHScrollBar)
-				{
-					height -= hScrollBar.Height;
-				}
-				vScrollBar.SetBounds(clientRectangle.Width - vScrollBar.Width, 0, vScrollBar.Width, height);
-				
-				if (createNewVScrollBar)
-				{
-					Controls.Add(vScrollBar);
-					vScrollBar.ValueChanged+=new EventHandler(vScrollBar_ValueChanged);
-				}
+				SetupVScrollBar(nodeCount, needsHScrollBar, createNewVScrollBar, topNodePosition);
 			}
 			if (needsHScrollBar)
 			{
-				int width = clientRectangle.Width;
-				if (needsVScrollBar)
-				{
-					width -= vScrollBar.Width;
-				}
-				hScrollBar.Maximum = (maxWidth + xOffset) / hScrollBarPixelsScrolled;
-				hScrollBar.LargeChange = width / hScrollBarPixelsScrolled;
-				// Set the position of the H scroll bar but leave a hole if they are both visible.
-				hScrollBar.SetBounds(0, clientRectangle.Height - hScrollBar.Height, width, hScrollBar.Height);
-				// Force a redraw because if none of the hScrollBar values above change, we still want to make sure it is redrawn.
-				hScrollBar.Invalidate();
-				
-				if (createNewHScrollBar)
-				{
-					hScrollBar.ValueChanged +=new EventHandler(hScrollBar_ValueChanged);
-					Controls.Add(hScrollBar);
-				}
-
-				// Draw the gap between the two if needed.
-				if (needsVScrollBar)
-				{
-					Rectangle gap = new Rectangle(hScrollBar.Right, hScrollBar.Top, vScrollBar.Width, hScrollBar.Height);
-					g.FillRectangle(SystemBrushes.Control, gap);
-				}
+				SetupHScrollBar(needsVScrollBar, maxWidth, createNewHScrollBar, g);
 			}
 			else if (hScrollBar != null)
 			{
 				// We dont need the scroll bar.
+				// If we have scrolled then we need to reset the position.
+				if (xOffset != 0)
+				{
+					xOffset = 0;
+					Invalidate();
+				}
 				Controls.Remove(hScrollBar);
 				hScrollBar.Dispose();
 				hScrollBar = null;
@@ -602,6 +585,10 @@ namespace System.Windows.Forms
 			}
 			textBox.Visible = false;
 			editNode = null;
+			if (hScrollBar != null)
+			{
+				hScrollBar.Value = xScrollValueBeforeEdit;
+			}
 		}
 
 		public void EndUpdate()
@@ -838,11 +825,13 @@ namespace System.Windows.Forms
 				{
 					width = minTextBoxWidth;
 				}
-				int maxWidth = ClientRectangle.Width - x;
+				int maxPossibleWidth = ClientRectangle.Width;
 				if (vScrollBar != null)
 				{
-					maxWidth -= vScrollBar.Width;
+					maxPossibleWidth -= vScrollBar.Width;
 				}
+				int maxWidth = maxPossibleWidth - x;
+
 				if (width > maxWidth)
 				{
 					width = maxWidth;
@@ -854,6 +843,15 @@ namespace System.Windows.Forms
 						int move = xOffset - offsetBefore;
 						width += move;
 						x -= move;
+						if (x < 0)
+						{
+							x = 0;
+						}
+						if (width > maxPossibleWidth - x)
+						{
+							width = maxPossibleWidth - x;
+						}
+						
 					}
 				}
 				return width;
@@ -947,10 +945,11 @@ namespace System.Windows.Forms
 		// Invalidate from startNode down.
 		internal void InvalidateDown(TreeNode startNode)
 		{
-			if (this.nodes == null)
+			if (updating > 0 || this.nodes == null)
 			{
 				return;
 			}
+			
 			// Find the position of startNode relative to the top node.
 			int nodeFromTop = -1;
 			TreeView.NodeEnumerator nodes = new TreeView.NodeEnumerator(this.nodes);
@@ -1142,11 +1141,13 @@ namespace System.Windows.Forms
 			}
 		}
 
-		protected override void OnGotFocus(EventArgs e)
+		protected override void OnEnter(EventArgs e)
 		{
-			base.OnGotFocus (e);
-			if (selectedNode != null)
-				selectedNode.Invalidate();
+			base.OnEnter (e);
+			if (nodes.Count > 0)
+			{
+				SelectedNode.Invalidate();
+			}
 		}
 
 		protected override void OnHandleCreated(EventArgs e)
@@ -1178,6 +1179,7 @@ namespace System.Windows.Forms
 				if (!args.Cancel)
 				{
 					selectedNode.isChecked = !selectedNode.isChecked;
+					selectedNode.Invalidate();
 					this.OnAfterCheck(new TreeViewEventArgs(selectedNode, TreeViewAction.ByKeyboard));
 				}
 				e.Handled = true;
@@ -1205,18 +1207,9 @@ namespace System.Windows.Forms
 		}
 
 		// Non Microsoft member.
-		protected override void OnLostFocus(EventArgs e)
-		{
-			base.OnLostFocus (e);
-			if (selectedNode != null)
-			{
-				selectedNode.Invalidate();
-			}
-		}
-
-		// Non Microsoft member.
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
+			nodeToEdit = null;
 			if (e.Button == MouseButtons.Left)
 			{
 				int nodeFromTop = -1;
@@ -1278,7 +1271,7 @@ namespace System.Windows.Forms
 		// Non Microsoft member.
 		protected override void OnMouseUp(MouseEventArgs e)
 		{
-			ProcessClick(e.X, e.Y, false);
+			ProcessClick(e.X, e.Y, (e.Button == MouseButtons.Right));
 
 			base.OnMouseUp (e);
 		}
@@ -1309,6 +1302,7 @@ namespace System.Windows.Forms
 							if (imageList == null || !GetImageBounds(nodeFromTop, nodes.level).Contains(x, y))
 							{
 								// Clicking the text can be used to edit and select.
+								// if false then the hierarchy marker must have been clicked.
 								if (GetTextBounds(g, nodes.currentNode, nodeFromTop, nodes.level).Contains(x, y))
 								{
 									allowEdit = true;
@@ -1318,23 +1312,25 @@ namespace System.Windows.Forms
 									allowSelect = false;
 								}
 							}
-							if (mouseClickTimer != null && mouseClickTimer.Enabled && (allowEdit || allowSelect))
+							if (SelectedNode == nodes.Current && mouseClickTimer != null && mouseClickTimer.Enabled && (allowEdit || allowSelect))
 							{
 								mouseClickTimer.Stop();
+								nodeToEdit = null;
 								nodes.currentNode.Toggle();
 								return;
 							}
-							if (allowSelect)
+							if (allowSelect || rightMouse)
 							{
-								if (SelectedNode == nodes.Current)
+								if (selectedNode == nodes.Current)
 								{
-									if (labelEdit && allowEdit)
+									if (labelEdit && allowEdit && !rightMouse)
 									{
 										nodeToEdit = nodes.currentNode;
 									}
 								}
 								else
 								{
+									nodeToEdit = null;
 									// Do the events.
 									TreeViewCancelEventArgs eventArgs = new TreeViewCancelEventArgs(nodes.currentNode, false, TreeViewAction.ByMouse);
 									OnBeforeSelect(eventArgs);
@@ -1342,7 +1338,12 @@ namespace System.Windows.Forms
 									{
 										SelectedNode = nodes.currentNode;
 										OnAfterSelect(new TreeViewEventArgs(nodes.currentNode));
+										Focus();
 									}
+								}
+								if (rightMouse)
+								{
+									return;
 								}
 								if (mouseClickTimer == null)
 								{
@@ -1360,11 +1361,156 @@ namespace System.Windows.Forms
 			}
 		}
 
+		protected override bool ProcessDialogKey(Keys keyData)
+		{
+			if ((keyData & Keys.Alt) == 0)
+			{
+				Keys key = keyData & Keys.KeyCode;
+				bool shiftKey = (keyData & Keys.Shift) != 0;
+				bool controlKey = (keyData & Keys.Control) != 0;
+				TreeNode selectedNode = SelectedNode;
+
+				switch (key)
+				{
+					case Keys.Left:
+						if (selectedNode != null)
+						{
+							if (selectedNode.IsExpanded)
+							{
+								selectedNode.Collapse();
+							}
+							else if (selectedNode.Parent != null)
+							{
+								SelectedNode = selectedNode.Parent;
+							}
+						}
+						return true;
+					case Keys.Right:
+						if (selectedNode != null && selectedNode.Nodes.Count != 0)
+						{
+							if (selectedNode.IsExpanded)
+							{
+								SelectedNode = selectedNode.NextVisibleNode;
+							}
+							else
+							{
+								selectedNode.Expand();
+							}
+						}
+						return true;
+					case Keys.Up:
+						if (selectedNode != null)
+						{
+							selectedNode = selectedNode.PrevVisibleNode;
+							if (selectedNode != null)
+							{
+								SelectedNode = selectedNode;
+							}
+						}
+						return true;
+					case Keys.Down:
+						if (selectedNode != null)
+						{
+							selectedNode = selectedNode.NextVisibleNode;
+							if (selectedNode != null)
+							{
+								SelectedNode = selectedNode;
+							}
+						}	
+						return true;
+					case Keys.Home:
+						if (Nodes[0] != null)
+						{
+							SelectedNode = Nodes[0];
+						}
+						return true;
+					case Keys.End:
+					{
+						NodeEnumerator nodes = new NodeEnumerator(this.nodes);
+						while (nodes.MoveNext())
+						{
+						}
+						SelectedNode = nodes.currentNode;
+						return true;
+					}
+					case Keys.Prior:
+					{
+						int nodePosition = 0;
+						// Get the position of the current selected node.
+						NodeEnumerator nodes = new NodeEnumerator(this.nodes);
+						while (nodes.MoveNext())
+						{
+							if (nodes.currentNode == selectedNode)
+							{
+								break;
+							}
+							nodePosition++;
+						}
+
+						nodePosition -= VisibleCountActual - 1;
+						if (nodePosition < 0)
+						{
+							nodePosition = 0;
+						}
+
+						// Get the node that corresponds to the position.
+						nodes.Reset();
+						while (nodes.MoveNext())
+						{
+							if (nodePosition-- == 0)
+							{
+								break;
+							}
+						}
+
+						// Set the selectedNode.
+						SelectedNode = nodes.currentNode;
+
+					}
+						return true;
+					case Keys.Next:
+					{
+						int rows = 0;
+						int rowsPerPage = VisibleCountActual;
+						NodeEnumerator nodes = new NodeEnumerator(this.nodes);
+						while (nodes.MoveNext())
+						{
+							if (nodes.currentNode == selectedNode || rows > 0)
+							{
+								rows++;
+								if (rows >= rowsPerPage)
+								{
+									break;
+								}
+							}
+						}
+						SelectedNode = nodes.currentNode;
+						
+						return true;
+					}
+				}
+	
+			}
+			return base.ProcessDialogKey(keyData);
+		}
+
+
 		// Non Microsoft member.
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			Draw(e.Graphics, root);
 		}
+
+		// Non Microsoft member.
+		protected override void OnLeave(EventArgs e)
+		{
+				base.OnLeave (e);
+				if (selectedNode != null)
+				{
+					selectedNode.Invalidate();
+				}
+		}
+
 
 		public new event PaintEventHandler Paint
 		{
@@ -1442,10 +1588,14 @@ namespace System.Windows.Forms
 		{
 			get
 			{
+				if (selectedNode == null && nodes.Count > 0)
+				{
+					return nodes[0];
+				}
 				return selectedNode;
 			}
 			set
-			{
+			{			
 				if (value != selectedNode)
 				{
 					// Redraw the old item
@@ -1459,7 +1609,12 @@ namespace System.Windows.Forms
 					{
 						selectedNode = value;
 					}
-					selectedNode.Invalidate();
+
+					if (selectedNode != null)
+					{
+						selectedNode.Invalidate();
+						selectedNode.EnsureVisible();
+					}
 				}
 			}
 		}
@@ -1473,7 +1628,67 @@ namespace System.Windows.Forms
 			}
 		}
 
+		private void SetupHScrollBar(bool needsVScrollBar, int maxWidth, bool createNew, Graphics g)
+		{
+			Rectangle clientRectangle = ClientRectangle;
+			int width = clientRectangle.Width;
+			if (needsVScrollBar)
+			{
+				width -= vScrollBar.Width;
+			}
+
+			// If a node remove operation has caused the right most node to be removed, then the xoffset needs to be moved back.
+			// The "hScrollBarPixelsScrolled" is because xOffset can only occur in increments of hScrollBarPixelsScrolled.
+			if (maxWidth < width - hScrollBarPixelsScrolled * 2)
+			{
+				xOffset -= width - maxWidth;
+				Invalidate();
+				return;
+			}
+
+			//hScrollBar.Value = xOffset/hScrollBarPixelsScrolled;
+			hScrollBar.Maximum = (maxWidth + xOffset) / hScrollBarPixelsScrolled;
+			hScrollBar.LargeChange = width / hScrollBarPixelsScrolled;
+			// Set the position of the H scroll bar but leave a hole if they are both visible.
+			hScrollBar.SetBounds(0, clientRectangle.Height - hScrollBar.Height, width, hScrollBar.Height);
+			// Force a redraw because if none of the hScrollBar values above change, we still want to make sure it is redrawn.
+			hScrollBar.Invalidate();
+				
+			if (createNew)
+			{
+				hScrollBar.ValueChanged +=new EventHandler(hScrollBar_ValueChanged);
+				Controls.Add(hScrollBar);
+			}
+
+			// Draw the gap between the two if needed.
+			if (needsVScrollBar)
+			{
+				Rectangle gap = new Rectangle(hScrollBar.Right, hScrollBar.Top, vScrollBar.Width, hScrollBar.Height);
+				g.FillRectangle(SystemBrushes.Control, gap);
+			}
+		}
 		
+		private void SetupVScrollBar(int nodeCount, bool needsHScrollBar, bool createNew, int selectedNodePosition)
+		{
+			Rectangle clientRectangle = ClientRectangle;
+			vScrollBar.Maximum = nodeCount;
+			// Set the position of the V scroll bar but leave a hole if they are both visible.
+			int height = clientRectangle.Height;
+			if (needsHScrollBar)
+			{
+				height -= hScrollBar.Height;
+			}
+			vScrollBar.LargeChange = height / ItemHeight;
+			vScrollBar.Value = selectedNodePosition;
+			vScrollBar.SetBounds(clientRectangle.Width - vScrollBar.Width, 0, vScrollBar.Width, height);
+				
+			if (createNew)
+			{
+				Controls.Add(vScrollBar);
+				vScrollBar.ValueChanged+=new EventHandler(vScrollBar_ValueChanged);
+			}
+		}
+
 		public bool ShowLines
 		{
 			get
@@ -1556,7 +1771,7 @@ namespace System.Windows.Forms
 		{
 			if (e.KeyCode == Keys.Enter)
 			{
-				EndEdit(false);
+				textBox.Visible = false;
 			}
 			else
 			{
@@ -1601,6 +1816,16 @@ namespace System.Windows.Forms
 			SetStyle(ControlStyles.StandardClick, false);
 		}
 
+		protected internal override void ToolkitMouseDown(MouseButtons buttons, Keys modifiers, int clicks, int x, int y, int delta)
+		{
+			// We need to prevent the focus messages happening. These happen automatically in Controls ToolkitMouseDown.
+			// We manually set the focus after the node is selected to make sure the events happen in the order ms does.
+			if (Enabled)
+			{
+				OnMouseDown(new MouseEventArgs(buttons, clicks, x, y, delta));
+			}
+		}
+
 		public TreeNode TopNode 
 		{
 			get
@@ -1614,10 +1839,10 @@ namespace System.Windows.Forms
 			string s = base.ToString();
 			if (Nodes != null)
 			{
-				s = s + ", Nodes.Count: " + Nodes.Count;
+				s = s + ", Count: " + Nodes.Count;
 				if (Nodes.Count > 0)
 				{
-					s = s + ", Nodes[0]: " + Nodes[0].ToString();
+					s = s + ", [0]: " + Nodes[0].ToString();
 				}
 			}
 			return s; 
@@ -1629,6 +1854,19 @@ namespace System.Windows.Forms
 			get
 			{
 				return ClientRectangle.Height / ItemHeight;
+			}
+		}
+
+		internal int VisibleCountActual
+		{
+			get
+			{
+				int height = ClientRectangle.Height;
+				if (hScrollBar != null && hScrollBar.Visible)
+				{
+					height -= hScrollBar.Height;
+				}
+				return height / ItemHeight;
 			}
 		}
 
@@ -1682,7 +1920,7 @@ namespace System.Windows.Forms
 				{
 					return false;
 				}
-				if (currentNode.Nodes.Count > 0 && currentNode.expanded)
+				if (currentNode.childCount > 0 && currentNode.expanded)
 				{
 					// If expanded climb into hierarchy.
 					currentNode = currentNode.Nodes[0];
@@ -1691,18 +1929,24 @@ namespace System.Windows.Forms
 				else
 				{
 					TreeNode nextNode = currentNode.NextNode;
+					TreeNode nextCurrentNode = currentNode;
 					while (nextNode == null)
 					{
 						// We need to move back up.
 						// Are we back at the top?
-						if (currentNode.Parent == null)
+						if (nextCurrentNode.Parent == null)
 						{
+							// Leave the nextNode as the previous last node.
+							nextNode = currentNode;
 							return false;
 						}
 						else
 						{
-							currentNode = currentNode.Parent;
-							nextNode = currentNode.NextNode;
+							nextCurrentNode = nextCurrentNode.Parent;
+							if (nextCurrentNode.parent != null)
+							{
+								nextNode = nextCurrentNode.NextNode;
+							}
 							level--;
 						}
 					}

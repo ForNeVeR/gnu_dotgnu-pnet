@@ -2,7 +2,7 @@
  * ContextMenu.cs - Implementation of the
  *			"System.Windows.Forms.ContextMenu" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+  * Copyright (C) 2004  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,142 +35,228 @@ public class ContextMenu : Menu
 	private Control associatedControl;
 	private int currentMouseItem;
 
-	internal event EventHandler PopDownAll;
+	internal event MouseEventHandler MouseMove;
+	internal event MouseEventHandler MouseDown;
 
 	// Constructors.
 	public ContextMenu() : base(null)
-			{
-				rightToLeft = RightToLeft.Inherit;
-			}
+	{
+		rightToLeft = RightToLeft.Inherit;
+	}
 	public ContextMenu(MenuItem[] items) : base(items)
-			{
-				rightToLeft = RightToLeft.Inherit;
-			}
+	{
+		rightToLeft = RightToLeft.Inherit;
+	}
 
 	// Get or set the right-to-left property.
 	public virtual RightToLeft RightToLeft
+	{
+		get
+		{
+			if(rightToLeft != RightToLeft.Inherit)
 			{
-				get
-				{
-					if(rightToLeft != RightToLeft.Inherit)
-					{
-						return rightToLeft;
-					}
-					else if(sourceControl != null)
-					{
-						return sourceControl.RightToLeft;
-					}
-					else
-					{
-						return RightToLeft.No;
-					}
-				}
-				set
-				{
-					if(rightToLeft != value)
-					{
-						SuppressUpdates();
-						rightToLeft = value;
-						AllowUpdates();
-					}
-				}
+				return rightToLeft;
 			}
+			else if(sourceControl != null)
+			{
+				return sourceControl.RightToLeft;
+			}
+			else
+			{
+				return RightToLeft.No;
+			}
+		}
+		set
+		{
+			if(rightToLeft != value)
+			{
+				SuppressUpdates();
+				rightToLeft = value;
+				AllowUpdates();
+			}
+		}
+	}
 
 	// Get the control that owns this context menu.
 	public Control SourceControl
-			{
-				get
-				{
-					return sourceControl;
-				}
-			}
+	{
+		get
+		{
+			return sourceControl;
+		}
+	}
 
 	protected virtual void OnPopup(EventArgs e)
-			{
-				if (Popup != null)
-					this.Popup(this, e);
-			}
+	{
+		if (Popup != null)
+		{
+			this.Popup(this, e);
+		}
+	}
 
 	// Show this context menu at the specified control-relative co-ordinates.
 	public void Show(Control control, Point pos)
-			{
-				associatedControl = control;
-				currentMouseItem = -1; // Not over anything
-				popupControl = new PopupControl();
-				popupControl.MouseMove +=new MouseEventHandler(OnMouseMove);
-				popupControl.MouseDown +=new MouseEventHandler(OnMouseDown);
-				popupControl.PopDown +=new EventHandler(popupControl_PopDown);
-				popupControl.Paint +=new PaintEventHandler(popupControl_Paint);
-				OnPopup(EventArgs.Empty);
-				Point pt = control.PointToScreen(pos);
-				using (Graphics g = popupControl.CreateGraphics())
-				{
-					Size size = MeasureItemBounds(g);
-					size.Height -= 1;
-					popupControl.Bounds = new Rectangle( pt, size);
-				}
-				popupControl.Show();
-			}
+	{
+		associatedControl = control;
+		currentMouseItem = -1; // Not over anything
+		popupControl = new PopupControl();
+		// We need the following events from popupControl.
+		popupControl.MouseMove +=new MouseEventHandler(OnMouseMove);
+		popupControl.MouseDown +=new MouseEventHandler(OnMouseDown);
+		popupControl.Paint +=new PaintEventHandler(popupControl_Paint);
+
+		OnPopup(EventArgs.Empty);
+
+		// Figure out where we need to put the popup and its size.
+		Point pt = control.PointToScreen(pos);
+		using (Graphics g = popupControl.CreateGraphics())
+		{
+			Size size = MeasureItemBounds(g);
+			size.Height -= 1;
+			popupControl.Bounds = new Rectangle( pt, size);
+		}
+		popupControl.Show();
+	}
 
 	private void popupControl_Paint(Object sender, PaintEventArgs e)
-			{
-				Graphics g = e.Graphics;
-				Rectangle rect = popupControl.ClientRectangle;
-				ThemeManager.MainPainter.DrawButton
-					(g, rect.X, rect.Y, rect.Width, rect.Height,
-					 ButtonState.Normal, SystemColors.MenuText,
-					 SystemColors.Menu, false);
-				// Draw the menu items
-				for (int i = 0; i < MenuItems.Count; i++)
-					DrawMenuItem(g, i, false);
-			}
+	{
+		Graphics g = e.Graphics;
+		Rectangle rect = popupControl.ClientRectangle;
+		ThemeManager.MainPainter.DrawButton
+			(g, rect.X, rect.Y, rect.Width, rect.Height,
+			ButtonState.Normal, SystemColors.MenuText,
+			SystemColors.Menu, false);
+
+		// Draw the menu items.
+		for (int i = 0; i < MenuItems.Count; i++)
+		{
+			DrawMenuItem(g, i, false);
+		}
+	}
 
 	private void OnMouseDown(Object s, MouseEventArgs e)
+	{
+		// What item are we over?
+		int item = ItemFromPoint(new Point(e.X, e.Y));
+		if (item != -1)
+		{
+			MenuItem menuItem = ItemSelected(item);
+			// If there were no sub items, then we need to "PerformClick".
+			if (menuItem.MenuItems.Count == 0)
 			{
-				int item = ItemFromPoint(new Point(e.X, e.Y));
-				if (item != -1)
-				{
-					MenuItem menuItem = MenuItems[item];
-					if (nextPopupMenu != null)
-					{
-						nextPopupMenu.PopDown();
-						nextPopupMenu = null;
-					}
-					if (menuItem.MenuItems.Count > 0)
-					{
-						nextPopupMenu = new ContextMenu(menuItem.itemList);
-						Point location = new Point(itemBounds[item].Right, itemBounds[item].Y);
-						location = popupControl.PointToScreen(location);
-						location = associatedControl.PointToClient(location);
-
-						nextPopupMenu.Show( associatedControl, location);
-						nextPopupMenu.PopDownAll +=new EventHandler(nextPopupMenu_PopDownAll);
-								
-					}
-					else
-						PopDownRecurse();
-					menuItem.PerformClick();
-				}
+				menuItem.PerformClick();
+				PopDown();
 			}
+			else
+			{
+				return;
+			}
+		}
+		// Do we need to pass the mouse down along?
+		if (MouseDown != null)
+		{
+			// Convert the mouse co-ordinates relative to the associated control (form).
+			MouseDown(this, CreateParentMouseArgs(e));
+		}
+	}
+
+	private MenuItem ItemSelected(int item)
+	{
+		MenuItem menuItem = MenuItems[item];
+		// Remove any currently "popped up" child menus.
+		if (nextPopupMenu != null)
+		{
+			nextPopupMenu.PopDown();
+			nextPopupMenu = null;
+		}
+		// If there are sub menus then show the next child menu.
+		if (menuItem.MenuItems.Count > 0)
+		{
+			nextPopupMenu = new ContextMenu(menuItem.itemList);
+			Point location = new Point(itemBounds[item].Right + 1, itemBounds[item].Y - 1);
+			location = popupControl.PointToScreen(location);
+			location = associatedControl.PointToClient(location);
+
+			nextPopupMenu.MouseMove +=new MouseEventHandler(nextPopupMenu_MouseMove);
+			nextPopupMenu.MouseDown +=new MouseEventHandler(nextPopupMenu_MouseDown);
+			nextPopupMenu.Show( associatedControl, location);
+		}
+		return menuItem;
+	}
+
+	protected internal override void ItemSelectTimerTick(object sender, EventArgs e)
+	{
+		base.ItemSelectTimerTick (sender, e);
+		ItemSelected(currentMouseItem);
+	}
 
 	private void OnMouseMove(Object s, MouseEventArgs e)
+	{
+		// What item are we over?
+		int newMouseItem = ItemFromPoint(new Point(e.X, e.Y));
+		// Dont worry if the mouse is still on the same item.
+		if (newMouseItem != currentMouseItem)
+		{
+			// Draw the menu by un-highlighting the old and highlighting the new.
+			using (Graphics g = popupControl.CreateGraphics())
 			{
-				int newMouseItem = ItemFromPoint(new Point(e.X, e.Y));
-				// Dont worry if the mouse is still on the same item.
-				if (newMouseItem == currentMouseItem)
-					return;
-				using (Graphics g = popupControl.CreateGraphics())
+				if (currentMouseItem != -1)
 				{
-					if (currentMouseItem != -1)
-						DrawMenuItem(g, currentMouseItem, false);
-					if (newMouseItem != -1)
-						DrawMenuItem(g, newMouseItem, true);
+					DrawMenuItem(g, currentMouseItem, false);
 				}
-				currentMouseItem = newMouseItem;
+				if (newMouseItem != -1)
+				{
+					DrawMenuItem(g, newMouseItem, true);
+				}
 			}
+			currentMouseItem = newMouseItem;
 
-	// Calculates the position of each MenuItem
-	// Returns the bounds of all MenuItems
+			StartTimer(newMouseItem);
+		}
+		// Do we need to pass the mouse move along?
+		if (MouseMove != null)
+		{
+			// Convert the mouse co-ordinates relative to the associated control (form).
+			MouseMove(this, CreateParentMouseArgs(e));
+		}
+	}
+
+	// Create the correct mouse args relative to our "associated control" ie the form.
+	private MouseEventArgs CreateParentMouseArgs(MouseEventArgs e)
+	{
+		// Convert the mouse co-ordinates relative to the associated control (form).
+		Point pt = associatedControl.PointToClient(popupControl.Location);
+		pt.X += e.X;
+		pt.Y += e.Y;
+		return new MouseEventArgs(e.Button, e.Clicks, pt.X, pt.Y, e.Delta);
+	}
+
+	// Create the correct mouse args relative to this popup.
+	private MouseEventArgs CreateLocalMouseArgs(MouseEventArgs e)
+	{
+		// Convert the associated control (the form) mouse position to be relative to this ContextMenu.
+		Point pt = new Point(e.X, e.Y);
+		pt = associatedControl.PointToScreen(pt);
+		pt.X -= popupControl.Left;
+		pt.Y -= popupControl.Top;
+		return new MouseEventArgs(e.Button, e.Clicks, pt.X, pt.Y, e.Delta);
+	}
+
+	// The mouse move from our child.
+	private void nextPopupMenu_MouseMove(Object sender, MouseEventArgs e)
+	{
+		OnMouseMove(sender, CreateLocalMouseArgs(e));	
+	}
+
+	// The mouse down from our child.
+	private void nextPopupMenu_MouseDown(Object sender, MouseEventArgs e)
+	{
+		OnMouseDown(sender, CreateLocalMouseArgs(e));
+	}
+
+
+	// Calculates the position of each MenuItem,
+	// returns the bounds of all MenuItems.
 	private Size MeasureItemBounds(Graphics g)
 	{
 		Size outside = Size.Empty;
@@ -207,12 +293,18 @@ public class ContextMenu : Menu
 			itemBounds[i] = bounds;
 			y += bounds.Height;
 			if (outside.Width < width)
+			{
 				outside.Width = width;
+			}
 		}
 		if (outside.Width < MinimumItemWidth)
+		{
 			outside.Width = MinimumItemWidth;
+		}
 		for (int i = 0; i < MenuItems.Count; i++)
+		{
 			itemBounds[i].Width = outside.Width;
+		}
 		outside.Height = y + MenuPaddingSize.Height;
 		outside.Width += MenuPaddingSize.Width;
 		return outside;
@@ -225,7 +317,7 @@ public class ContextMenu : Menu
 			return 100;
 		}
 	}
-	
+
 	// Add this main menu to a control.
 	internal void AddToControl(Control control)
 	{
@@ -241,40 +333,6 @@ public class ContextMenu : Menu
 	// Event that is emitted just before the menu pops up.
 	public event EventHandler Popup;
 
-	// The window that has captured the mouse has signaled
-	private void popupControl_PopDown(object sender, EventArgs e)
-	{
-		if (PopDownAll != null)
-			PopDownAll(this, EventArgs.Empty);
-	}
-
-	// The child has asked me to pop down.
-	private void nextPopupMenu_PopDownAll(object sender, EventArgs e)
-	{
-		PopDownRecurse();
-	}
-
-	// Pop down the context menu at end of the chain. Causes all to pop down.
-	internal void PopDownEnd()
-	{
-		ContextMenu current = this;
-		for(;;)
-		{
-			if (current.popupControl == null)
-				break;
-			current = current.nextPopupMenu;
-		}
-		current.PopDownRecurse();
-	}
-
-	// Hide and then pop down the next in the chain.
-	internal void PopDownRecurse()
-	{
-		popupControl.Hide();
-		if (PopDownAll != null)
-			PopDownAll(this, EventArgs.Empty);
-	}
-
 	// Pop down this context menu and its children.
 	internal void PopDown()
 	{
@@ -285,6 +343,7 @@ public class ContextMenu : Menu
 		}
 		popupControl.Hide();
 	}
+
 }; // class ContextMenu
 
 }; // namespace System.Windows.Forms

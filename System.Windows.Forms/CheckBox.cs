@@ -48,6 +48,7 @@ public class CheckBox : ButtonBase
 				checkAlign = ContentAlignment.MiddleLeft;
 				TextAlign = ContentAlignment.MiddleLeft;
 				autoCheck = true;
+				SetStyle(ControlStyles.StandardClick | ControlStyles.StandardDoubleClick, false);
 			}
 
 	// Calculate the current state of the button for its visual appearance.

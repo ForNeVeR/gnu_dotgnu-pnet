@@ -120,19 +120,26 @@ namespace System.Windows.Forms
 		protected virtual void OnSelectedIndexChanged(EventArgs e)
 		{
 			if (selectedIndex == -1 || selectedIndex >= TabCount)
+			{
 				return;
+			}
 			SuspendLayout();
 			if (prevSelectedIndex > -1)
 			{
 				GetChildByIndex( prevSelectedIndex ).Visible = false;
 			}
-			GetChildByIndex( selectedIndex ).Visible = true;
+
+			Control selectedPage = GetChildByIndex( selectedIndex );
+			selectedPage.Visible = true;
 			SetTabPageBounds();
 			
 			if (SelectedIndexChanged != null)
+			{
 				SelectedIndexChanged( this, EventArgs.Empty );
+			}
 			ResumeLayout();
 			InvalidateTabs();
+
 		}
 
 		protected void RemoveAll()
@@ -925,8 +932,24 @@ namespace System.Windows.Forms
 				if (newSelectedIndex > -1)
 				{
 					SelectedIndex = newSelectedIndex;
-					// Makes sure that when tabbing off the tab into the child controls that the tab order resets.
-					ActiveControl = this;
+					
+					// Handle focus.
+					if (!Focused)
+					{
+						if (SelectedTab.SelectNextControl(null, true, true, false, false))
+						{
+						}
+						else
+						{
+							/*IContainerControl container = GetContainerControl();
+							if (container != null)
+							{
+								container.ActiveControl = this;
+							}*/
+
+						}
+					}
+
 				}
 			}
 			base.OnMouseDown (e);
@@ -945,6 +968,15 @@ namespace System.Windows.Forms
 			// Redraw the selected button to set the focus.
 			DrawButton(selectedIndex);
 			base.OnEnter (e);
+		}
+
+		protected override bool ProcessKeyPreview(ref Message m)
+		{
+			if (ProcessKeyEventArgs(ref m))
+			{
+				return true; 
+			}
+			return base.ProcessKeyPreview(ref m); 
 		}
 
 

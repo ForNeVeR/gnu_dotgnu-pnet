@@ -30,6 +30,7 @@ using System.Drawing.Text;
 using System.Collections;
 using System.Threading;
 using System.Reflection;
+using System.Drawing.Drawing2D;
 
 #if CONFIG_COMPONENT_MODEL
 public class Control : Component, ISynchronizeInvoke, IWin32Window
@@ -85,6 +86,7 @@ public class Control : IWin32Window, IDisposable
 	private Cursor cursor;
 	private bool notifyClick = false;
 	private bool notifyDoubleClick = false;
+	private bool validationCancelled = false;
 
 	// Constructors.
 	public Control()
@@ -437,9 +439,6 @@ public class Control : IWin32Window, IDisposable
 				{
 					if(toolkitWindow != null)
 					{
-						// Do not allow capturing if the parent is a popup
-						// (already captured).
-						if (!(parent is PopupControl))
 							toolkitWindow.Capture = value;
 					}
 				}
@@ -485,10 +484,16 @@ public class Control : IWin32Window, IDisposable
 				get
 				{
 					if (Focused)
+					{
 						return true;
+					}
 					for (int i = 0; i < numChildren; i++)
-						if (children[i].Focused)
+					{
+						if (children[i].ContainsFocus)
+						{
 							return true;
+						}
+					}
 					return false;
 				}
 			}
@@ -1589,7 +1594,7 @@ public class Control : IWin32Window, IDisposable
 	// Find the form that this control is a member of.
 	public Form FindForm()
 			{
-				Control current = Parent;
+				Control current = this;
 				while(current != null && !(current is Form))
 				{
 					current = current.Parent;
@@ -1602,16 +1607,15 @@ public class Control : IWin32Window, IDisposable
 			{
 				if (CanFocus && toolkitWindow != null)
 					toolkitWindow.Focus();
-				bool focused = Focused;
 
 				// Set the active control in the parent container.
-				if (focused && Parent != null)
+				if (Focused && Parent != null)
 				{
 					ContainerControl container = Parent.GetContainerControl() as ContainerControl;
 					if (container != null)
 						container.ActiveControl = this;
 				}
-				return focused;
+				return Focused;
 			}
 
 	// Convert a child HWND into the corresponding Control object.
@@ -1657,7 +1661,7 @@ public class Control : IWin32Window, IDisposable
 	public IContainerControl GetContainerControl()
 			{
 				Control current = this;
-				while(current != null && !(current is IContainerControl))
+				while(current != null && !(current is IContainerControl && (current.controlStyle & (int)ControlStyles.ContainerControl) != 0))
 				{
 					current = current.Parent;
 				}
@@ -1668,7 +1672,9 @@ public class Control : IWin32Window, IDisposable
 	public Control GetNextControl(Control ctl, bool forward)
 			{
 				if (!Contains(ctl))
+				{
 					ctl = this;
+				}
 
 				if (forward && ctl.children != null && ctl.numChildren > 0 && (ctl == this || !(ctl is IContainerControl) || !ctl.GetStyle(ControlStyles.ContainerControl)))
 				{
@@ -1677,7 +1683,9 @@ public class Control : IWin32Window, IDisposable
 					for (int i = 1; i < ctl.numChildren; i++)
 					{
 						if (found.tabIndex > ctl.children[i].tabIndex)
+						{
 							found = ctl.children[i];
+						}
 					}
 					return found;
 				}
@@ -1686,41 +1694,64 @@ public class Control : IWin32Window, IDisposable
 				while (ctl != this)
 				{
 					Control found = null;
-					Control parent = ctl.parent;
-					if (parent.children != null)
+					if (ctl.parent.numChildren > 0)
 					{
 						bool passedStart = false;
 						if (forward)
 						{
-							for (int i = 0; i < parent.numChildren; i++)
+							for (int i = 0; i < ctl.parent.numChildren; i++)
 							{
-								Control child = parent.children[i];
+								Control child = ctl.parent.children[i];
 								if (child == ctl)
+								{
 									passedStart = true;
+								}
 								else if (child.tabIndex >= ctl.tabIndex && (child.tabIndex != ctl.tabIndex || passedStart))
 								{
 									if (found == null || found.tabIndex > child.tabIndex)
-										found = parent.children[i];
+									{
+										found = ctl.parent.children[i];
+									}
 								}
 							}
+							if (found != null)
+							{
+								return found;
+							}
 						}
-						else //backwards
+						else // backwards
 						{
 							// Search up through the childs hierarchy for the previous control, until we've search in this control.
-							for (int i = parent.numChildren - 1; i >= 0 ; i--)
+							for (int i = ctl.parent.numChildren - 1; i >= 0 ; i--)
 							{
-								Control child = parent.children[i];
+								Control child = ctl.parent.children[i];
 								if (child == ctl)
-									passedStart = true;
-								else if (child.tabIndex < ctl.tabIndex && (child.tabIndex != ctl.tabIndex || passedStart))
 								{
-									if (found == null || found.tabIndex <= child.tabIndex)
-										found = parent.children[i];
+									passedStart = true;
+								}
+								else if (child.tabIndex <= ctl.tabIndex && (child.tabIndex != ctl.tabIndex || passedStart))
+								{
+									if (found == null || found.tabIndex < child.tabIndex)
+									{
+										found = ctl.parent.children[i];
+									}
 								}
 							}
+							if (found == null)
+							{
+								if (ctl.parent == this)
+								{
+									return null;
+								}
+								return ctl.parent;
+							}
+							else
+							{
+								ctl = found;
+								break;
+							}
 						}
-						if (found != null)
-							return found;
+
 					}
 					ctl = ctl.parent;
 				}
@@ -1728,33 +1759,36 @@ public class Control : IWin32Window, IDisposable
 				if (!forward)
 				{
 					// Find the container because there was no control found.
-				#if CONFIG_COMPONENT_MODEL
+		#if CONFIG_COMPONENT_MODEL
 					while (ctl.numChildren > 0 && (ctl ==this || !(ctl is IContainer) || !ctl.GetStyle(ControlStyles.ContainerControl)))
-				#else
+		#else
 					while (ctl.numChildren > 0 && (ctl ==this || !ctl.GetStyle(ControlStyles.ContainerControl)))
-				#endif
+		#endif
 					{
 						Control found = ctl.children[ctl.numChildren - 1];
 						for (int i = ctl.numChildren - 2; i >= 0; i--)
 						{
 							Control c = ctl.children[i];
 							if (found.tabIndex < c.tabIndex)
+							{
 								found = c;
+							}
 						}
 						ctl = found;
 					}
 				}
 			
 				if (ctl != this)
+				{
 					return ctl;
-				else
-					return null;
+				}
+				return null;
 			}
 
 	// Get a particular style flag.
 	protected bool GetStyle(ControlStyles flag)
 			{
-				return ((controlStyle & (int)flag) != 0);
+				return (((ControlStyles)controlStyle & flag) == flag);
 			}
 
 	// Determine if this is a top-level control.
@@ -1772,7 +1806,7 @@ public class Control : IWin32Window, IDisposable
 	// Initialize layout as this control has just been added to a container.
 	protected virtual void InitLayout()
 			{
-				if(Dock == DockStyle.None)
+				if(parent != null && Dock == DockStyle.None)
 				{
 					// Record the current width and height of the parent
 					// control so that we can reposition during layout later.
@@ -2166,10 +2200,16 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Process a command key.
-	[TODO]
 	protected virtual bool ProcessCmdKey(ref Message msg, Keys keyData)
 			{
-				// TODO
+				if (contextMenu != null && contextMenu.ProcessCmdKey(ref msg, keyData))
+				{
+					return true; 
+				}
+				if (parent != null)
+				{
+					return parent.ProcessCmdKey(ref msg, keyData);
+				}
 				return false;
 			}
 
@@ -2506,7 +2546,7 @@ public class Control : IWin32Window, IDisposable
 		(Control ctl, bool forward, bool tabStopOnly,
 		bool nested, bool wrap)
 			{
-				if (!nested && ctl.parent != this || !Contains(ctl))
+				if (!Contains(ctl) || !nested && ctl.parent != this)
 					ctl = null;
 
 				Control control = ctl;
@@ -2655,6 +2695,17 @@ public class Control : IWin32Window, IDisposable
 			{
 				if(visible != value)
 				{
+					if (!value)
+					{
+						if (ContainsFocus && Parent != null)
+						{
+							Control container = Parent.GetContainerControl() as Control;
+							if (container != null)
+							{
+									container.SelectNextControl(this, true, true, true, true);
+							}
+						}
+					}
 					// Update the visible state.
 					visible = value;
 					OnVisibleChanged(EventArgs.Empty);
@@ -4720,10 +4771,10 @@ public class Control : IWin32Window, IDisposable
 				// Use CreateNonClientGraphics for access to the whole
 				// control including border and menus.
 
-				// Check to see if we must erase the background.
-				bool doubleBuffer = GetStyle(ControlStyles.DoubleBuffer) && GetStyle(ControlStyles.AllPaintingInWmPaint);
+				bool doubleBuffer = GetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint);
 				if (!GetStyle(ControlStyles.Opaque) & !doubleBuffer)
 				{
+					// We must erase the background.
 					using (Brush brush = CreateBackgroundBrush())
 					{
 						graphics.FillRectangle(brush, 0, 0, width, height);
@@ -4741,13 +4792,45 @@ public class Control : IWin32Window, IDisposable
 							graphics.DrawRectangle(p, 0, 0, width - 1, height - 1);
 						break;
 				}
-			
-				// Create the graphics of the client area.
-				Graphics paintGraphics = new Graphics(graphics,
-					new Rectangle( ClientOrigin - new Size(ToolkitDrawOrigin), ClientSize));
-				PaintEventArgs e = new PaintEventArgs(
-					paintGraphics, Rectangle.Truncate(paintGraphics.ClipBounds));
-				OnPaint(e);
+				// The paint only allows drawing in the client area.
+				Rectangle clientRectangle = new Rectangle(ClientOrigin - new Size(ToolkitDrawOrigin), ClientSize);
+
+				// If we are double buffering, we need to create a Graphics of a bitmap, do all the drawing on that and then write that to the screen in one go.
+				if (doubleBuffer)
+				{
+					Rectangle clipBounds = Rectangle.Truncate(graphics.ClipBounds);
+					clipBounds.Offset(clientRectangle.Location);
+					// TODO Get the actual color depth of the screen holding the control.
+					// TODO:
+					using (Graphics g = CreateGraphics())
+					{
+						PaintEventArgs e = new PaintEventArgs(g, clipBounds);
+						if (GetStyle(ControlStyles.AllPaintingInWmPaint))
+						{
+							GraphicsState state = g.Save();
+							OnPaintBackground(e);
+							g.Restore(state);
+						}
+						OnPaint(e);
+					}
+				}
+				else
+				{
+					// Create the graphics of the client area.
+					using (Graphics g = new Graphics(graphics, clientRectangle))
+					{
+					
+						PaintEventArgs e = new PaintEventArgs(
+							g, Rectangle.Truncate(g.ClipBounds));
+						if (GetStyle(ControlStyles.AllPaintingInWmPaint))
+						{
+							GraphicsState state = g.Save();
+							OnPaintBackground(e);
+							g.Restore(state);
+						}
+						OnPaint(e);
+					}
+				}
 			}
 
 	// Toolkit event that is emitted when the mouse enters this window.
@@ -4765,13 +4848,13 @@ public class Control : IWin32Window, IDisposable
 	// Toolkit event that is emitted when the focus enters this window.
 	void IToolkitEventSink.ToolkitFocusEnter()
 			{
-				OnEnter(EventArgs.Empty);
+				OnGotFocus(EventArgs.Empty);
 			}
 
 	// Toolkit event that is emitted when the focus leaves this window.
 	void IToolkitEventSink.ToolkitFocusLeave()
 			{
-				OnLeave(EventArgs.Empty);
+				OnLostFocus(EventArgs.Empty);
 			}
 
 	// Event that is emitted when the primary focus enters this window.
@@ -4837,30 +4920,34 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
+				if (!enabled)
+				{
+					return;
+				}
 				// Convert to client coordinates
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
 				mouseButtons = (MouseButtons)buttons;
-					
+									
 				currentModifiers = (Keys)modifiers;
-				// Walk up the hierarchy and see if we must focus the control
-				bool canFocus = true;
-				for (Control c = this; c != null; c = c.parent)
-				{
-					if (!c.GetStyle(ControlStyles.Selectable) || !enabled)
-					{
-						canFocus = false;
-						break;
-					}
-				}
-				if (canFocus)
+
+				ToolkitMouseDown(mouseButtons, currentModifiers, clicks, x, y, delta);
+			}
+
+	internal protected virtual void ToolkitMouseDown
+		(MouseButtons buttons, Keys modifiers,
+		int clicks, int x, int y, int delta)
+			{
+				
+				if (GetStyle(ControlStyles.Selectable) && buttons == MouseButtons.Left)
 				{
 					Focus();
 				}
+				// Walk up the hierarchy and see if we must focus the control
 				if (Enabled)
 				{
 					OnMouseDown(new MouseEventArgs
-						((MouseButtons)buttons, clicks, x, y, delta));
+						(buttons, clicks, x, y, delta));
 				}
 				// We fire the OnDoubleClick and OnClick events when the mouse button is up/
 				if (GetStyle(ControlStyles.StandardClick))
@@ -5076,6 +5163,32 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 
+	protected internal void DoEnter()
+			{
+				OnEnter(EventArgs.Empty);
+			}
+
+	protected internal void DoLeave()
+	{
+		OnLeave(EventArgs.Empty);
+	}
+
+	protected internal bool DoValidating()
+	{
+		CancelEventArgs args = new CancelEventArgs();
+		OnValidating(args);
+		return args.Cancel;
+	}
+
+	protected internal void DoValidated()
+	{
+		OnValidated(EventArgs.Empty);
+	}
+
+	internal virtual void DoValidationCancel(bool cancelled)
+	{
+			this.validationCancelled = cancelled;
+	}
 
 
 #if !CONFIG_COMPACT_FORMS

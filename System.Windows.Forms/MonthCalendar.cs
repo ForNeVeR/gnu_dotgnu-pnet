@@ -339,7 +339,9 @@ public class MonthCalendar : Control
 		{
 			base.OnPaint(e);
 			bool prev = (index==0);
-			bool next = (index==parent.calendarDims.Width-1);
+			Size parentDims = parent.calendarDims;
+
+			bool next = (index==parentDims.Width-1);
 			DateTime d=parent.selectionStart;
 			// Note: this is to prevent 31 Dec + 2 being 31 Feb :)
 			d = new DateTime(d.Year, d.Month, 1);
@@ -350,10 +352,11 @@ public class MonthCalendar : Control
 						(CalendarFlags.PrevButton | CalendarFlags.ShowLastMonth)
 						: CalendarFlags.None ;
 						
-			flags |= (index == parent.calendarDims.Width-1) ? 
+			flags |= (index == parentDims.Width-1) ? 
 							CalendarFlags.NextButton : CalendarFlags.None;
+
 							
-			flags |= (index == parent.calendarDims.Width*parent.calendarDims.Height-1) ?  CalendarFlags.ShowNextMonth : CalendarFlags.None;
+			flags |= (index == parentDims.Width*parentDims.Height-1) ?  CalendarFlags.ShowNextMonth : CalendarFlags.None;
 
 			DrawMonth(e.Graphics, d, flags);
 		}
@@ -421,128 +424,124 @@ public class MonthCalendar : Control
 	
 			while(startDate.DayOfWeek != DayOfWeek.Sunday)
 			{
-					startDate = startDate.AddDays(-1);
+				startDate = startDate.AddDays(-1);
 			}
 	
 			firstDateCell = startDate;
 							
-			using(Graphics g = CreateGraphics())
-			{
+			g.FillRectangle(lightBrush,titleRect);
 	
-				g.FillRectangle(lightBrush,titleRect);
-	
-				String monthString = monthDate.ToString("MMMM");
-				String yearString = monthDate.ToString("yyyy");
+			String monthString = monthDate.ToString("MMMM");
+			String yearString = monthDate.ToString("yyyy");
 				
-				Font boldFont = new Font(Font, FontStyle.Bold);
+			Font boldFont = new Font(Font, FontStyle.Bold);
 				
-				g.DrawString(monthString,
-									boldFont,
-									enabledBrush,
-									monthRect.Left,
-									monthRect.Top,	
-									null);
+			g.DrawString(monthString,
+				boldFont,
+				enabledBrush,
+				monthRect.Left,
+				monthRect.Top,	
+				null);
 					
-				g.DrawString(yearString,
-									boldFont,
-									enabledBrush,
-									yearRect.Left,
-									yearRect.Top,	
-									null);
+			g.DrawString(yearString,
+				boldFont,
+				enabledBrush,
+				yearRect.Left,
+				yearRect.Top,	
+				null);
 
-				DateTime weekStart=firstDateCell;
-				for(int i=0;i<7;i++)
-				{
-					int offset=(cellSize.Width-textSize.Width*3)/2;
-					g.DrawString(weekStart.ToString("ddd"),
-									Font,
-									disabledBrush,
-									titleRect.Left + cellSize.Width * i + offset,
-									titleRect.Bottom,
-									null);
+			DateTime weekStart=firstDateCell;
+			for(int i=0;i<7;i++)
+			{
+				int offset=(cellSize.Width-textSize.Width*3)/2;
+				g.DrawString(weekStart.ToString("ddd"),
+					Font,
+					disabledBrush,
+					titleRect.Left + cellSize.Width * i + offset,
+					titleRect.Bottom,
+					null);
 
-					weekStart = weekStart.AddDays(1);
-				}
-				for(int i=0;i<6*7;i++)
-				{
-					int day=startDate.Day;
-					/* Note: the difference between years cannot be more
+				weekStart = weekStart.AddDays(1);
+			}
+			for(int i=0;i<6*7;i++)
+			{
+				int day=startDate.Day;
+				/* Note: the difference between years cannot be more
 					 * than 1 as a MAXIMUM of 7 days will be the difference
 					 * between startDate and endDate */
-					int monthRelation = (startDate.Year != monthDate.Year) ?
-											startDate.Year - monthDate.Year :
-											startDate.Month - monthDate.Month;
+				int monthRelation = (startDate.Year != monthDate.Year) ?
+					startDate.Year - monthDate.Year :
+					startDate.Month - monthDate.Month;
 					
-					Brush b = enabledBrush;
+				Brush b = enabledBrush;
 					
-					if(monthRelation!=0) b = disabledBrush;
+				if(monthRelation!=0) b = disabledBrush;
 
-					if(monthRelation==0 && monthStartPos==-1) 
-					{
-						monthStartPos = i;
-					}
-
-					if(monthRelation==1 && monthEndPos==-1)
-					{
-						monthEndPos = i;
-					}
-	
-					int offset= (cellSize.Width - (day > 9 ? 2 : 1) * numSize.Width)/ 2;
-	
-					Rectangle rect=new Rectangle(dayRect.Left+cellSize.Width * (i%7),
-												dayRect.Top+ (i/7) * cellSize.Height,
-												cellSize.Width,
-												cellSize.Height);
-	
-					if(monthRelation==0 && startDate >= parent.selectionStart 
-										&& startDate <= parent.selectionEnd)
-					{
-						hasSelectedItem = true;
-						g.FillRectangle(lightBrush, rect);
-					}
-					if(monthRelation==0 && startDate == today)
-					{
-						using(Pen redPen = new Pen(Color.Red, 1.0f))
-						{
-							rect.Size+=new Size(-1,0);
-							g.DrawRectangle(redPen, rect);
-						}
-					}
-					if(monthRelation==0 
-							||	((monthRelation < 0) && ((flags & CalendarFlags.ShowLastMonth) != 0)) 
-							||  ((monthRelation > 0) &&	((flags & CalendarFlags.ShowNextMonth) != 0)))
-					{
-						Font font = IsBolded(startDate) ? boldFont : Font ;
-
-						g.DrawString(day.ToString(),
-									font,
-									b,
-									rect.Left + offset,
-									rect.Top,	
-									null);
-						posHasDate[i]=true;
-					}
-					else
-					{
-						posHasDate[i]=false;
-					}
-					startDate=startDate.AddDays(1);
+				if(monthRelation==0 && monthStartPos==-1) 
+				{
+					monthStartPos = i;
 				}
+
+				if(monthRelation==1 && monthEndPos==-1)
+				{
+					monthEndPos = i;
+				}
+	
+				int offset= (cellSize.Width - (day > 9 ? 2 : 1) * numSize.Width)/ 2;
+	
+				Rectangle rect=new Rectangle(dayRect.Left+cellSize.Width * (i%7),
+					dayRect.Top+ (i/7) * cellSize.Height,
+					cellSize.Width,
+					cellSize.Height);
+	
+				if(monthRelation==0 && startDate >= parent.selectionStart 
+					&& startDate <= parent.selectionEnd)
+				{
+					hasSelectedItem = true;
+					g.FillRectangle(lightBrush, rect);
+				}
+				if(monthRelation==0 && startDate == today)
+				{
+					using(Pen redPen = new Pen(Color.Red, 1.0f))
+					{
+						rect.Size+=new Size(-1,0);
+						g.DrawRectangle(redPen, rect);
+					}
+				}
+				if(monthRelation==0 
+					||	((monthRelation < 0) && ((flags & CalendarFlags.ShowLastMonth) != 0)) 
+					||  ((monthRelation > 0) &&	((flags & CalendarFlags.ShowNextMonth) != 0)))
+				{
+					Font font = IsBolded(startDate) ? boldFont : Font ;
+
+					g.DrawString(day.ToString(),
+						font,
+						b,
+						rect.Left + offset,
+						rect.Top,	
+						null);
+					posHasDate[i]=true;
+				}
+				else
+				{
+					posHasDate[i]=false;
+				}
+				startDate=startDate.AddDays(1);
 				
 				boldFont.Dispose();
 
 				if((flags & CalendarFlags.PrevButton) != 0)
 				{
-						ControlPaint.DrawScrollButton(g, 
-											prevBtnRect, ScrollButton.Left, 
-											ButtonState.Flat);
+					ControlPaint.DrawScrollButton(g, 
+						prevBtnRect, ScrollButton.Left, 
+						ButtonState.Flat);
 				}
 	
 				if((flags & CalendarFlags.NextButton) != 0)
 				{
 					ControlPaint.DrawScrollButton(g, 
-									nextBtnRect, ScrollButton.Right, 
-									ButtonState.Flat);
+						nextBtnRect, ScrollButton.Right, 
+						ButtonState.Flat);
 				}
 			}
 	
@@ -627,7 +626,8 @@ public class MonthCalendar : Control
 		{
 			Point p = new Point(e.X, e.Y);
 			Size cellSize = parent.cellSize;
-			int nextPage = parent.calendarDims.Width*parent.calendarDims.Height;
+			Size parentDims = parent.calendarDims;
+			int nextPage = parentDims.Width*parentDims.Height;
 
 			// TODO : Handle long clicks with a timer like ScrollBar does	
 			if(prevBtnRect.Contains(p))

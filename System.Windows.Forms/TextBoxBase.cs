@@ -413,15 +413,28 @@ public abstract class TextBoxBase : Control
 
 	protected override bool ProcessDialogKey(Keys keyData)
 			{
-				if ((keyData & Keys.Alt) == 0 && (keyData & Keys.Control) != 0)
+				if ((keyData & Keys.Alt) == 0)
 				{
 					Keys key = keyData & Keys.KeyCode;
-					if (key == Keys.Tab)
+					bool shiftKey = (keyData & Keys.Shift) != 0;
+					bool controlKey = (keyData & Keys.Control) != 0;
+
+					switch (key)
 					{
-						bool forward = (key & Keys.Shift) == 0;
-						if (Parent.SelectNextControl(this, forward, true, true, true))
-							return true; 
+						case Keys.Left:
+							MoveCaret(controlKey ? CaretDirection.WordLeft : CaretDirection.Left, shiftKey);
+							return true;
+						case Keys.Right:
+							MoveCaret(controlKey ? CaretDirection.WordRight : CaretDirection.Right, shiftKey);
+							return true;
+						case Keys.Up:
+							MoveCaret(CaretDirection.LineUp, shiftKey);
+							return true;
+						case Keys.Down:
+							MoveCaret(CaretDirection.LineDown, shiftKey);
+							return true;
 					}
+	
 				}
 				return base.ProcessDialogKey(keyData);
 			}
@@ -744,86 +757,70 @@ public abstract class TextBoxBase : Control
 		
 		switch (e.KeyCode)
 		{
-		case Keys.Left:
-			MoveCaret(controlKey ? CaretDirection.WordLeft : CaretDirection.Left, extendSel);
-			e.Handled = true;
-			break;
-		case Keys.Right:
-			MoveCaret(controlKey ? CaretDirection.WordRight : CaretDirection.Right, extendSel);
-			e.Handled = true;
-			break;
-		case Keys.Up:
-			MoveCaret(CaretDirection.LineUp, extendSel);
-			e.Handled = true;
-			break;
-		case Keys.Down:
-			MoveCaret(CaretDirection.LineDown, extendSel);
-			e.Handled = true;
-			break;
-		case Keys.PageUp:
-			MoveCaret(CaretDirection.PageUp, extendSel);
-			e.Handled = true;
-			break;
-		case Keys.PageDown:
-			MoveCaret(CaretDirection.PageDown, extendSel);
-			e.Handled = true;
-			break;
-		case Keys.Home:
-			MoveCaret(controlKey ? CaretDirection.TextStart : CaretDirection.LineStart, extendSel);
-			e.Handled = true;
-			break;
-		case Keys.End:
-			MoveCaret(controlKey ? CaretDirection.TextEnd : CaretDirection.LineEnd, extendSel);
-			e.Handled = true;
-			break;
-		case Keys.C:
-			if (controlKey)
-			{
-				Copy();
+			case Keys.PageUp:
+				MoveCaret(CaretDirection.PageUp, extendSel);
 				e.Handled = true;
-			}
-			break;
-		case Keys.X:
-			if (controlKey)
-			{
-				Cut();
+				break;
+			case Keys.PageDown:
+				MoveCaret(CaretDirection.PageDown, extendSel);
 				e.Handled = true;
-			}
-			break;
-		case Keys.V:
-			if (controlKey)
-			{
-				Paste();
+				break;
+			case Keys.Home:
+				MoveCaret(controlKey ? CaretDirection.TextStart : CaretDirection.LineStart, extendSel);
 				e.Handled = true;
-			}
-			break;
-		case Keys.A:
-			if (controlKey)
-			{
-				SelectAll();
+				break;
+			case Keys.End:
+				MoveCaret(controlKey ? CaretDirection.TextEnd : CaretDirection.LineEnd, extendSel);
 				e.Handled = true;
-			}
-			break;
-		case Keys.Z:
-			if (controlKey)
-			{
-				Undo();
+				break;
+			case Keys.C:
+				if (controlKey)
+				{
+					Copy();
+					e.Handled = true;
+				}
+				break;
+			case Keys.X:
+				if (controlKey)
+				{
+					Cut();
+					e.Handled = true;
+				}
+				break;
+			case Keys.V:
+				if (controlKey)
+				{
+					Paste();
+					e.Handled = true;
+				}
+				break;
+			case Keys.A:
+				if (controlKey)
+				{
+					SelectAll();
+					e.Handled = true;
+				}
+				break;
+			case Keys.Z:
+				if (controlKey)
+				{
+					Undo();
+					e.Handled = true;
+				}
+				break;
+			case Keys.Back:
+				DeleteTextOp(controlKey ? CaretDirection.WordLeft : CaretDirection.Left);
 				e.Handled = true;
-			}
-			break;
-		case Keys.Back:
-			DeleteTextOp(controlKey ? CaretDirection.WordLeft : CaretDirection.Left);
-			e.Handled = true;
-			break;
-		case Keys.Delete:
-			DeleteTextOp(controlKey ? CaretDirection.WordRight : CaretDirection.Right);
-			e.Handled = true;
-			break;
-		case Keys.Insert:
-			insertMode = insertMode==InsertMode.Insert ? InsertMode.Overwrite : InsertMode.Insert;
-			OnToggleInsertMode();
-			e.Handled = true;
-			break;
+				break;
+			case Keys.Delete:
+				DeleteTextOp(controlKey ? CaretDirection.WordRight : CaretDirection.Right);
+				e.Handled = true;
+				break;
+			case Keys.Insert:
+				insertMode = insertMode==InsertMode.Insert ? InsertMode.Overwrite : InsertMode.Insert;
+				OnToggleInsertMode();
+				e.Handled = true;
+				break;
 		}
 	}
 

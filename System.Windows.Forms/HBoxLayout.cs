@@ -106,8 +106,7 @@ internal class HBoxLayout : Control, IRecommendedSize
 				}
 				else if(control is Label)
 				{
-					return new Size(((Label)control).PreferredWidth + 1,
-									((Label)control).PreferredHeight);
+					return (control as Label).GetPreferredSize();
 				}
 				else
 				{

@@ -195,44 +195,48 @@ public class Label : Control
 				get
 				{
 					// See if we have a cached width from last time.
-					if(preferredWidth != -1)
+					if(preferredWidth == -1)
 					{
-						return preferredWidth;
-					}
-
-					// Bail out if the text string is empty.
-					String text = Text;
-					if(text == null || text == String.Empty)
-					{
-						preferredWidth = 1;
-						if(BorderStyle != BorderStyle.None)
-						{
-							preferredWidth += 4;
-						}
-						return preferredWidth;
-					}
-
-					// Get a graphics object and measure the text.
-					SizeF size;
-					using (Graphics graphics = CreateGraphics())
-						size = graphics.MeasureString
-							(text, Font, new SizeF(0.0f, 0.0f), GetStringFormat());
-
-					// Return the ceiling of the width.  We add one to
-					// account for a small discrepancy between the behaviour
-					// of MeasureString and DrawString.
-				#if CONFIG_EXTENDED_NUMERICS
-					preferredWidth = (int)(Math.Ceiling(size.Width));
-				#else
-					preferredWidth = (int)(size.Width + 0.99f);
-				#endif
-					++preferredWidth;
-					if(BorderStyle != BorderStyle.None)
-					{
-						preferredWidth += 4;
+						preferredWidth = GetPreferredSize().Width;
 					}
 					return preferredWidth;
 				}
+			}
+	// The actual size the text in the label would occupy.
+	internal Size GetPreferredSize()
+			{
+				Size size;
+				// Bail out if the text string is empty.
+				String text = Text;
+				if(text == null || text == String.Empty)
+				{
+					size = new Size(2, 0);
+				}
+				else
+				{
+					// Get a graphics object and measure the text.
+					using (Graphics graphics = CreateGraphics())
+					{
+						// Measure using very large bounds and using the default StringFormat.
+						SizeF size1 = graphics.MeasureString
+							(text, Font, new SizeF(30000.0f, 30000.0f));
+	#if CONFIG_EXTENDED_NUMERICS
+						size = Size.Ceiling(size1);
+	#else
+						size = new Size((int)(size1.Width + 0.99f),(int)(size1.Height + 0.99f));
+	#endif
+					}
+				}
+
+				// Add one to account for a small discrepancy between the behaviour
+				// of MeasureString and DrawString and 1 because we leave the first pixel blank when drawing.
+				size.Width += 2;
+
+				if(BorderStyle != BorderStyle.None)
+				{
+					size += new Size(4, 4);
+				}
+				return size;
 			}
 	protected virtual bool RenderTransparent
 			{

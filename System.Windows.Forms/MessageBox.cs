@@ -435,8 +435,6 @@ public class MessageBox
 
 				// Set the initial message box size to the vbox's recommended.
 				ClientSize = vbox.RecommendedSize;
-				MinimumSize = ClientSize;
-				MaximumSize = ClientSize;
 			}
 
 		// Detect when button 1 is clicked.

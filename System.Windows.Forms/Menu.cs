@@ -1,7 +1,8 @@
 /*
  * Menu.cs - Implementation of the "System.Windows.Forms.Menu" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +39,11 @@ public abstract class Menu
 	private int suppressUpdates;
 	protected Rectangle[] itemBounds;
 	private StringFormat format;
+
+	// Interval before popping up a menu when the mouse is hovered.
+	internal const int itemSelectInterval = 350;
+
+	protected internal Timer itemSelectTimer;
 
 	// Constructor.
 	protected Menu(MenuItem[] items)
@@ -222,7 +228,7 @@ public abstract class Menu
 				}
 			}
 
-	internal void DrawMenuItem(Graphics g, int item, bool highlighted)
+	protected internal void DrawMenuItem(Graphics g, int item, bool highlighted)
 			{
 				Rectangle bounds = itemBounds[item];
 						
@@ -271,7 +277,7 @@ public abstract class Menu
 				}
 			}
 
-	internal int ItemFromPoint(Point p)
+	protected internal int ItemFromPoint(Point p)
 			{
 				if (itemBounds == null)
 					return -1;
@@ -283,11 +289,55 @@ public abstract class Menu
 				return -1;
 			}
 
+	// Start the select item timer.
+	protected internal void StartTimer(int item)
+			{
+				// If we are hovering on a new item, then we need to time.
+				if (item != -1)
+				{
+					// Start the timer for this item.
+					if (itemSelectTimer == null)
+					{
+						itemSelectTimer = new Timer();
+						itemSelectTimer.Tick +=new EventHandler(ItemSelectTimerTick);
+					}
+					else
+					{
+						itemSelectTimer.Stop();
+					}
+					itemSelectTimer.Interval = Menu.itemSelectInterval;
+					itemSelectTimer.Start();
+				}
+				else if (itemSelectTimer != null && itemSelectTimer.Enabled)
+				{
+					itemSelectTimer.Stop();
+				}
+			}
+
+	protected virtual internal void ItemSelectTimerTick(object sender, EventArgs e)
+			{
+				itemSelectTimer.Stop();
+			}
+
 	internal protected bool ProcessCmdKey(ref Message msg, Keys keyData)
 			{
 				// TODO
 				return false;
 			} 
+
+	
+#if CONFIG_COMPONENT_MODEL
+	// Dispose of this menu.
+	protected override void Dispose(bool disposing)
+			{
+				if (itemSelectTimer != null)
+				{
+					itemSelectTimer.Dispose();
+					itemSelectTimer = null;
+				}
+				base.Dispose(disposing);
+			}
+#endif
 	
 	// Collection of menu items.
 	public class MenuItemCollection : IList

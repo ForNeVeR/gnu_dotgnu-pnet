@@ -31,7 +31,7 @@ namespace System.Windows.Forms
 		public Panel() : base()
 		{
 			TabStop = false;
-			SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.Selectable, false);
+			SetStyle(ControlStyles.AllPaintingInWmPaint /*| ControlStyles.Selectable*/, false);
 			SetStyle(ControlStyles.SupportsTransparentBackColor, true);
 		}
 

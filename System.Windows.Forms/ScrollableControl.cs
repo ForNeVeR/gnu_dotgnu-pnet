@@ -53,6 +53,11 @@ public class ScrollableControl : Control
 				HandleCreated+=new EventHandler(ScrollableControl_HandleCreated);
 			}
 
+	protected virtual void AdjustFormScrollbars(bool displayScrollbars)
+			{
+				UpdateScrollBars(); 
+			}
+
 	// Get or set this control's properties.
 	public virtual bool AutoScroll
 			{
@@ -401,6 +406,12 @@ public class ScrollableControl : Control
 					return total;					
 				}
 			}
+
+	[TODO]
+	public void ScrollControlIntoView(Control activeControl)
+	{
+		// TODO
+	}
 
 	/// <summary>
 	/// current visible area of scrollarea

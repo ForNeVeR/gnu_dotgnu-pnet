@@ -2,7 +2,8 @@
  * MainMenu.cs - Implementation of the
  *			"System.Windows.Forms.MainMenu" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +32,8 @@ using System.Drawing;
 		private Form ownerForm;
 		private ContextMenu menuPopup;
 		private int currentMouseItem = -1;
+		// Has the menu been clicked.
+		private bool clicked = false;
 
 		// Constructors.
 		public MainMenu() : base(null)
@@ -103,19 +106,20 @@ using System.Drawing;
 
 	// Dispose of this menu.
 	protected override void Dispose(bool disposing)
-			{
-				base.Dispose(disposing);
-			}
+	{
+		base.Dispose(disposing);
+	}
 
 #endif
 
 		// Add this main menu to a form.
 		internal void AddToForm(Form form)
 		{
-			// Measure the positions
 			ownerForm = form;
 			if (!ownerForm.IsHandleCreated)
+			{
 				return;
+			}
 			// Cause the form to reposition its controls 
 			// now that the client area has changed
 			form.PerformLayout();
@@ -134,14 +138,19 @@ using System.Drawing;
 		{
 			using (Graphics g = ownerForm.CreateNonClientGraphics())
 			{
+				// Measure the menus if they need to be.
 				if (itemBounds == null)
+				{
 					MeasureItemBounds(g);
+				}
 				for (int i = 0; i < MenuItems.Count; i++)
+				{
 					DrawMenuItem(g, i, false);
+				}
 			}
 		}
 
-		// Calculates the position of each MenuItem
+		// Calculates the position of each MenuItem.
 		private void MeasureItemBounds(Graphics g)
 		{
 			itemBounds = new Rectangle[MenuItems.Count];
@@ -170,6 +179,11 @@ using System.Drawing;
 			}
 		}
 
+		private void OnMouseDownMenus(object sender, MouseEventArgs e)
+		{
+			OnMouseDown(e);
+		}
+
 		internal void OnMouseDown( MouseEventArgs e)
 		{
 			// Get the mouse coordinate relative to the control
@@ -178,48 +192,99 @@ using System.Drawing;
 			int item = ItemFromPoint(new Point(e.X, y));
 			if (item != -1)
 			{
-				if (menuPopup != null)
+				MenuItem menuItem = ItemSelected(item);
+				if (menuItem.MenuItems.Count == 0)
 				{
-					menuPopup.popupControl.Hide();
-					menuPopup = null;
-				}
-				MenuItemCollection subMenus = MenuItems[item].MenuItems;
-				if (subMenus.Count > 0)
-				{
-					menuPopup = new ContextMenu(MenuItems[item].itemList);
-					Point pt = new Point(itemBounds[item].Left, 0);
-					menuPopup.Show(ownerForm, pt);
+					clicked = false;
+					menuItem.PerformClick();
 				}
 				else
-					MenuItems[item].PerformClick();
+				{
+					clicked = true;
+				}
+			}
+			else
+			{
+				// We have clicked outside of any menus that are up so pop down all menus.
+				if (menuPopup != null)
+				{
+					menuPopup.PopDown();
+					clicked = false;
+				}
 			}
 		}
 
+		private MenuItem ItemSelected(int item)
+		{
+			// Remove any exisiting menus.
+			if (menuPopup != null)
+			{
+				menuPopup.PopDown();
+				menuPopup = null;
+			}
+
+			MenuItem menuItem = MenuItems[item];
+			if (menuItem.MenuItems.Count > 0)
+			{
+				menuPopup = new ContextMenu(menuItem.itemList);
+				Point pt = new Point(itemBounds[item].Left, 0);
+				menuPopup.MouseMove +=new MouseEventHandler(OnMouseMoveMenus);
+				menuPopup.MouseDown +=new MouseEventHandler(OnMouseDownMenus);
+				menuPopup.Show(ownerForm, pt);
+			}
+			return menuItem;
+		}
+
+		private void OnMouseMoveMenus(object sender, MouseEventArgs e)
+		{
+			OnMouseMove(e);
+		}
 		
 		internal void OnMouseMove(MouseEventArgs e)
 		{
-			// Get the mouse coordinate relative to the control
+			// Get the mouse coordinate relative to the control.
 			int y = e.Y + SystemInformation.MenuHeight;
 			int newMouseItem = ItemFromPoint(new Point(e.X, y));
 			// Dont worry if the mouse is still on the same item.
 			if (newMouseItem == currentMouseItem)
+			{
 				return;
+			}
+			// Draw by removing the previous highlight and drawing the new one.
 			using (Graphics g = ownerForm.CreateNonClientGraphics())
 			{
 				if (currentMouseItem != -1)
+				{
 					DrawMenuItem(g, currentMouseItem, false);
+				}
 				if (newMouseItem != -1)
+				{
 					DrawMenuItem(g, newMouseItem, true);
+				}
 			}
 			currentMouseItem = newMouseItem;
+			if (clicked)
+			{
+				StartTimer(newMouseItem);
+			}
+		}
+
+		protected internal override void ItemSelectTimerTick(object sender, EventArgs e)
+		{
+			base.ItemSelectTimerTick (sender, e);
+			ItemSelected(currentMouseItem);
 		}
 
 		internal void OnMouseLeave()
 		{
 			if (currentMouseItem == -1)
+			{
 				return;
+			}
 			using (Graphics g = ownerForm.CreateNonClientGraphics())
+			{
 				DrawMenuItem(g, currentMouseItem, false);
+			}
 			currentMouseItem = -1;
 		}
 	

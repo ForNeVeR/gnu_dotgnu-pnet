@@ -72,7 +72,9 @@ internal class PopupControl : Control
 				{
 					Hide();
 					if (PopDown != null)
+					{
 						PopDown(this, EventArgs.Empty);
+					}
 				}
 			}
 

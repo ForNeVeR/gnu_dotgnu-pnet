@@ -204,6 +204,24 @@ CSSRC = Activator.cs \
 		Reflection/TargetInvocationException.cs \
 		Reflection/TargetParameterCountException.cs \
 		Reflection/TypeAttributes.cs \
+		Reflection/Emit/AssemblyBuilderAccess.cs \
+		Reflection/Emit/EventToken.cs \
+		Reflection/Emit/FieldToken.cs \
+		Reflection/Emit/FlowControl.cs \
+		Reflection/Emit/Label.cs \
+		Reflection/Emit/MethodToken.cs \
+		Reflection/Emit/OpCode.cs \
+		Reflection/Emit/OpCodeType.cs \
+		Reflection/Emit/OpCodes.cs \
+		Reflection/Emit/OperandType.cs \
+		Reflection/Emit/PEFileKinds.cs \
+		Reflection/Emit/PackingSize.cs \
+		Reflection/Emit/ParameterToken.cs \
+		Reflection/Emit/PropertyToken.cs \
+		Reflection/Emit/SignatureToken.cs \
+		Reflection/Emit/StackBehaviour.cs \
+		Reflection/Emit/StringToken.cs \
+		Reflection/Emit/TypeToken.cs \
 		Resources/IResourceReader.cs \
 		Resources/IResourceWriter.cs \
 		Resources/MissingManifestResourceException.cs \

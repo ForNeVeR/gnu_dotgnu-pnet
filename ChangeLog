@@ -1,4 +1,28 @@
 
+2001-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/Makefile.am,
+runtime/System/Reflection/Emit/Makefile,
+runtime/System/Reflection/Emit/AssemblyBuilderAccess.cs,
+runtime/System/Reflection/Emit/EventToken.cs,
+runtime/System/Reflection/Emit/FieldToken.cs,
+runtime/System/Reflection/Emit/FlowControl.cs,
+runtime/System/Reflection/Emit/Label.cs,
+runtime/System/Reflection/Emit/MethodToken.cs,
+runtime/System/Reflection/Emit/OpCode.cs,
+runtime/System/Reflection/Emit/OpCodes.cs,
+runtime/System/Reflection/Emit/OpCodeType.cs,
+runtime/System/Reflection/Emit/OperandType.cs,
+runtime/System/Reflection/Emit/PackingSize.cs,
+runtime/System/Reflection/Emit/ParameterToken.cs,
+runtime/System/Reflection/Emit/PEFileKinds.cs,
+runtime/System/Reflection/Emit/PropertyToken.cs,
+runtime/System/Reflection/Emit/SignatureToken.cs,
+runtime/System/Reflection/Emit/StackBehaviour.cs,
+runtime/System/Reflection/Emit/StringToken.cs,
+runtime/System/Reflection/Emit/TypeToken.cs: implement many of the simple
+classes in "System.Reflection.Emit".
+
 2001-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/BitConverter.cs, runtime/System/Buffer.cs,

@@ -130,7 +130,6 @@ static ILObject *GetMarshallingInstance(ILExecThread *thread,
  */
 static void ThrowCustomError(ILExecThread *thread)
 {
-puts("Hello");
 	/* TODO */
 }
 

@@ -114,6 +114,21 @@ public class Label : Control
 					}
 				}
 			}
+	public FlatStyle FlatStyle
+			{
+				get
+				{
+					return flatStyle;
+				}
+				set
+				{
+					if(flatStyle != value)
+					{
+						flatStyle = value;
+						Recalculate();
+					}
+				}
+			}
 	public Image Image
 			{
 				get

@@ -5,6 +5,8 @@
 	TabPageCollection class, which is not supposed to inherit
 	from ControlCollection.
 
+	* System.Windows.Forms/Label.cs: add the "FlatStyle" property.
+
 2004-03-12  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlTextWriter.cs, tests/System.Xml/TestXmlTextReader.cs:

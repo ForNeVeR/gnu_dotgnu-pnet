@@ -32,6 +32,7 @@ extern	"C" {
 #define	IL_CONVERT_MISSING_METHOD	2
 #define	IL_CONVERT_NOT_SUPPORTED	3
 #define	IL_CONVERT_OUT_OF_MEMORY	4
+#define	IL_CONVERT_TYPE_INIT		5
 
 #ifdef IL_CONFIG_PINVOKE
 
@@ -129,6 +130,14 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		return 0;
 	}
 #endif
+
+	/* Make sure that we can lay out the method's class */
+	if(!_ILLayoutClass(ILMethod_Owner(method)))
+	{
+		IL_METADATA_UNLOCK(thread);
+		*errorCode = IL_CONVERT_TYPE_INIT;
+		return 0;
+	}
 
 	/* Get the method code */
 	if(!ILMethodGetCode(method, &code))
@@ -423,6 +432,14 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			case IL_CONVERT_OUT_OF_MEMORY:
 			{
 				ILExecThreadThrowOutOfMemory(thread);
+			}
+			break;
+
+			case IL_CONVERT_TYPE_INIT:
+			{
+				ILExecThreadSetException
+					(thread, _ILSystemException(thread, 
+						"System.TypeInitializationException"));
 			}
 			break;
 		}

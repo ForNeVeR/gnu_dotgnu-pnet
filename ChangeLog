@@ -8,6 +8,9 @@
 	"_ILEngineAlloc" in the CVM "new" instruction, because the class
 	may not have been laid out yet.
 
+	* engine/convert.c (_ILConvertMethod): if the method's class cannot
+	be laid out, then throw "TypeInitializationException".
+
 2002-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am: add mising .h files to the install.

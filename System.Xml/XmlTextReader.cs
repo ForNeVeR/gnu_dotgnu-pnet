@@ -69,6 +69,7 @@ public class XmlTextReader : XmlReader
 	private String internalSubset;
 	private bool isEntity = false;
 	private int startEntity = 0;
+	private bool isDocType = false;
 
 	// Constructors.
 	protected XmlTextReader()
@@ -836,8 +837,9 @@ public class XmlTextReader : XmlReader
 						}
 
 						// Comment, CDATA, or document type information.
+						isDocType = true;
 						ch = ReadChar();
-						AnalyzeChar(ch, true);
+						AnalyzeChar(ch, false);
 						break;
 					case '-':
 						// Parse the "<!--" comment start sequence.
@@ -925,7 +927,7 @@ public class XmlTextReader : XmlReader
 						break;
 							
 					case 'D':
-						if(structFlag != true)
+						if(structFlag == true || isDocType == false)
 						{
 							goto default;
 						}

@@ -310,9 +310,9 @@ static void Dump_ExportedType(ILImage *image, FILE *outstream, int flags,
 	ILExportedType *expType;
 
 	/* Dump the export heading */
-	fputs(".export ", outstream);
+	fputs(".class extern ", outstream);
 	ILDumpFlags(outstream, ILExportedType_Attrs(type),
-				ILTypeDefinitionFlags, 0);
+				ILExportedTypeDefinitionFlags, 0);
 	ILDumpIdentifier(outstream, ILExportedType_Name(type),
 					 ILExportedType_Namespace(type), flags);
 	fputs("\n{\n", outstream);

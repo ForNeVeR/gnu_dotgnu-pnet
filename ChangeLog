@@ -33,6 +33,10 @@
 
 	* cscc/common/cc_options.c: bug in the "corlib.dll" detection logic.
 
+	* dumpasm/dump_flags.c, ilasm/ilasm_grammar.y, ildasm/ildasm_global.c,
+	include/il_dumpasm.h: convert ".export" into ".class extern" to
+	match the latest IL syntactic conventions.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

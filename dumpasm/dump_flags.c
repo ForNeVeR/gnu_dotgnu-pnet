@@ -78,6 +78,28 @@ ILFlagInfo const ILTypeDefinitionFlags[] = {
 };
 
 /*
+ * Exported type definition flag table.
+ */
+ILFlagInfo const ILExportedTypeDefinitionFlags[] = {
+	{"private", IL_META_TYPEDEF_NOT_PUBLIC, IL_META_TYPEDEF_VISIBILITY_MASK},
+	{"public", IL_META_TYPEDEF_PUBLIC, IL_META_TYPEDEF_VISIBILITY_MASK},
+	{"nested public", IL_META_TYPEDEF_NESTED_PUBLIC,
+				IL_META_TYPEDEF_VISIBILITY_MASK},
+	{"nested private", IL_META_TYPEDEF_NESTED_PRIVATE,
+				IL_META_TYPEDEF_VISIBILITY_MASK},
+	{"nested family", IL_META_TYPEDEF_NESTED_FAMILY,
+				IL_META_TYPEDEF_VISIBILITY_MASK},
+	{"nested assembly", IL_META_TYPEDEF_NESTED_ASSEMBLY,
+				IL_META_TYPEDEF_VISIBILITY_MASK},
+	{"nested famandassem", IL_META_TYPEDEF_NESTED_FAM_AND_ASSEM,
+				IL_META_TYPEDEF_VISIBILITY_MASK},
+	{"nested famorassem", IL_META_TYPEDEF_NESTED_FAM_OR_ASSEM,
+				IL_META_TYPEDEF_VISIBILITY_MASK},
+	{0, IL_META_TYPEDEF_RT_SPECIAL_NAME |
+		IL_META_TYPEDEF_HAS_SECURITY, 0xFFEC0800},
+};
+
+/*
  * Field definition flag table.
  */
 ILFlagInfo const ILFieldDefinitionFlags[] = {

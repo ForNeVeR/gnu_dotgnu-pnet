@@ -3592,7 +3592,8 @@ ExportHeading
 	;
 
 ExportKeyword
-	: D_EXPORT
+	: D_CLASS K_EXTERN
+	| D_EXPORT
 	| D_COMTYPE
 	;
 

@@ -61,6 +61,7 @@ typedef struct _tagILFlagInfo
  * Built in flag information tables.
  */
 extern ILFlagInfo const ILTypeDefinitionFlags[];
+extern ILFlagInfo const ILExportedTypeDefinitionFlags[];
 extern ILFlagInfo const ILFieldDefinitionFlags[];
 extern ILFlagInfo const ILMethodDefinitionFlags[];
 extern ILFlagInfo const ILParameterDefinitionFlags[];

@@ -99,7 +99,7 @@ public abstract class TraceListener : MarshalByRefObject, IDisposable
 				}
 				set
 				{
-					needIndent = true;
+					needIndent = value;
 				}
 			}
 

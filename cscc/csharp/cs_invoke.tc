@@ -572,7 +572,9 @@ CSSemValue DelegateCreationSem(ILGenInfo *info, ILNode *node,
 	unsigned long itemNum;
 	ILProgramItem *itemInfo;
 	ILMethod *firstMatch;
+	ILNode_MethodDeclaration *caller;
 	ILNode *newExpr;
+	ILNode *thisExpr;
 
 	/* The result is an r-value of type "delegateType" */
 	CSSemSetRValue(result, delegateType);
@@ -624,6 +626,24 @@ CSSemValue DelegateCreationSem(ILGenInfo *info, ILNode *node,
 	}
 	else
 	{
+		if(yyisa(newExpr,ILNode_Argument))
+		{
+			thisExpr=((ILNode_Argument*)(newExpr))->expression;
+			if(yyisa(thisExpr, ILNode_This) ||
+		  	  (yyisa(thisExpr, ILNode_MarkType) &&
+			   yyisa(((ILNode_MarkType *)(thisExpr))->expr, ILNode_This)))
+			{
+				caller = (ILNode_MethodDeclaration *)(info->currentMethod);
+				if(!caller || 
+					(caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+				{
+					/* Attempt to call an instance method using "this"
+					   from within a static method */
+					CCErrorOnLine(yygetfilename(newExpr), yygetlinenum(newExpr),
+						  "cannot access instance members in static methods");
+				}
+			}
+		}
 		*parent = ILNode_DelegateCreationExpression_create
 			(ILType_ToClass(delegateType), newExpr, firstMatch);
 	}

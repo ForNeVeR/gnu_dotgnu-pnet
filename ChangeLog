@@ -46,6 +46,9 @@
 
 	* codegen/cg_gen.h,cscc/common/cc_main.c: remove the two flags.
 
+	* cscc/csharp/cs_invoke.tc: Check instance accesses for parameters of
+	delegate creation expressions.
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/internal.c,

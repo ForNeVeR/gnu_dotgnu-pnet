@@ -155,23 +155,6 @@ public class DoubleBuffer : Drawable
 			}
 
 	/// <summary>
-	/// <para>Destroy this drawable from a finalizer if it is
-	/// currently active.</para>
-	/// </summary>
-	///
-	/// <remarks>
-	/// <para>This version is called from object finalizers.  Subclasses
-	/// need to be careful not to lock the display during finalization
-	/// because doing so can lead to deadlock conditions.</para>
-	/// </remarks>
-	public override void DestroyFromFinalizer()
-			{
-				// Just clear the handle: the X server will clean
-				// up the buffer object for us at shutdown.
-				handle = XDrawable.Zero;
-			}
-
-	/// <summary>
 	/// <para>Get the widget that underlies this double buffer.</para>
 	/// </summary>
 	///

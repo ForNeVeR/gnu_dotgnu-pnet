@@ -56,7 +56,7 @@ public abstract class Drawable : IDisposable
 	/// </summary>
 	~Drawable()
 			{
-				DestroyFromFinalizer();
+				Destroy();
 			}
 
 	// Set the handle for this drawable, assuming it is a widget.
@@ -175,21 +175,6 @@ public abstract class Drawable : IDisposable
 	/// <para>Destroy this drawable if it is currently active.</para>
 	/// </summary>
 	public virtual void Destroy()
-			{
-				// Nothing to do here: overridden in subclasses.
-			}
-
-	/// <summary>
-	/// <para>Destroy this drawable from a finalizer if it is
-	/// currently active.</para>
-	/// </summary>
-	///
-	/// <remarks>
-	/// <para>This version is called from object finalizers.  Subclasses
-	/// need to be careful not to lock the display during finalization
-	/// because doing so can lead to deadlock conditions.</para>
-	/// </remarks>
-	public virtual void DestroyFromFinalizer()
 			{
 				// Nothing to do here: overridden in subclasses.
 			}

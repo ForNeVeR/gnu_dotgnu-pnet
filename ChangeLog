@@ -4,6 +4,9 @@
 	* configure.in, support/ansi.c, support/dir.c: Fix compile errors on
 	BeOS (thanks to Tomas Wilhelmsson <wilhelmsson_tomas@hotmail.com>).
 
+	* support/dynlib.c: Implement BeOS specific dynlib functionality.
+	(thanks to Tomas)
+
 2004-10-26  Klaus Treichel  <ktreichel@web.de>
 
 	* support/decimal.c: fix division bug

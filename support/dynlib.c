@@ -28,6 +28,12 @@
 		#endif
 	#endif
 #else
+
+#ifdef __BEOS__ 
+	#include <be/kernel/image.h>
+	#include <OS.h>
+#endif
+
 #ifdef HAVE_DLFCN_H
 	#include <dlfcn.h>
 #endif
@@ -165,6 +171,85 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 	}
 #ifdef IL_DYNLIB_DEBUG
 	fprintf(stderr, "%s: could not find the specified symbol\n", symbol);
+#endif
+	return 0;
+}
+
+#elif defined(__BEOS__)
+
+void *ILDynLibraryOpen(const char *name)
+{
+	image_id handle;
+	const char *error;
+	handle = load_add_on(name);
+	if(!handle)
+	{
+		/* If the name does not start with "lib" and does not
+		   contain a path, then prepend "lib" and try again */
+		if(strncmp(name, "lib", 3) != 0)
+		{
+			error = name;
+			while(*error != '\0' && *error != '/' && *error != '\\')
+			{
+				++error;
+			}
+			if(*error == '\0')
+			{
+				/* Try adding "lib" to the start */
+				char *temp = (char *)ILMalloc(strlen(name) + 4);
+				if(temp)
+				{
+					strcpy(temp, "lib");
+					strcat(temp, name);
+					handle = load_add_on(temp);
+					ILFree(temp);
+					if(handle >= B_NO_ERROR) /* errors are < B_NO_ERROR */
+					{
+						return handle;
+					}
+				}
+
+				/* Reload the original error state */
+				handle = load_add_on(name);
+			}
+		}
+
+		/* Report the error */
+	#ifdef IL_DYNLIB_DEBUG
+		error = strerror(handle); 
+		fprintf(stderr, "%s: \n", name,
+				(error ? error : "could not load dynamic library"));
+	#endif
+		return 0;
+	}
+	else
+	{
+		return handle;
+	}
+}
+
+void  ILDynLibraryClose(void *handle)
+{
+	/* TODO */
+	unload_add_on(handle);
+}
+
+void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
+{
+	void *value;
+	const char * error;
+	int b_error;
+
+	b_error = get_image_symbol((image_id)handle, (char *)symbol, 
+								B_SYMBOL_TYPE_ANY, (void**) &value);
+
+	if(b_error == B_OK)
+	{
+		return value;
+	}
+#ifdef IL_DYNLIB_DEBUG
+	error = strerror(handle); 
+	fprintf(stderr, "%s: %s\n", symbol, error);
 #endif
 	return 0;
 }

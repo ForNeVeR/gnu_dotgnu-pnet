@@ -3,6 +3,9 @@
 	
 	* System.Windows.Forms/Panel.cs: Stub out the Panel control
 
+	* System.Windows.Forms/ControlPaint.cs: Implement the DrawBorder3D
+	method in ControlPaint.
+
 2003-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/Toolkit/IToolkitEventSink.cs,

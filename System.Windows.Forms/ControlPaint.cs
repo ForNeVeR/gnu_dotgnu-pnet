@@ -790,23 +790,105 @@ public sealed class ControlPaint
 									  Border3DStyle style,
 									  Border3DSide sides)
 			{
-				Color light, lightlight, dark, darkdark;
+				Color dark, light, darkdark, lightlight;
+				Color top1, top2 , left1, left2;
+				Color bottom1, bottom2, right1, right2;
 				Pen pen;
+				bool doubleBorder=false;
 
-				// Draw the border around the edges of the button.
-				if(style == Border3DStyle.Etched)
+				dark=Dark(backColor);
+				light=Light(backColor);
+				darkdark=DarkDark(backColor);
+				lightlight=LightLight(backColor);
+								
+				switch(style)
 				{
-					lightlight = DarkDark(backColor);
-					darkdark = LightLight(backColor);
-					light = Dark(backColor);
-					dark = Light(backColor);
-				}
-				else
-				{
-					lightlight = LightLight(backColor);
-					darkdark = DarkDark(backColor);
-					light = Light(backColor);
-					dark = Dark(backColor);
+					case Border3DStyle.Flat:
+						top1=dark;
+						left1=dark;
+						right1=dark;
+						bottom1=dark;
+						doubleBorder=false;
+						break;
+					case Border3DStyle.Raised:
+						top1=light;
+						top2=lightlight;
+						left1=light;
+						left2=lightlight;
+						bottom1=dark;
+						bottom2=darkdark;
+						right1=dark;
+						right2=darkdark;
+						doubleBorder=true;
+						break;
+					case Border3DStyle.RaisedInner:
+						top1=lightlight;
+						left1=lightlight;
+						bottom1=dark;
+						right1=dark;
+						doubleBorder=false;
+						break;
+					case Border3DStyle.RaisedOuter:
+						top1=light;
+						left1=light;
+						bottom1=darkdark;
+						right1=darkdark;
+						doubleBorder=false;
+						break;
+					case Border3DStyle.Etched:
+						top1=dark;
+						top2=lightlight;
+						left1=dark;
+						left2=lightlight;
+						bottom1=dark;
+						bottom2=lightlight;
+						right1=dark;
+						right2=lightlight;
+						doubleBorder=true;
+						break;
+					case Border3DStyle.Sunken:
+						top1=dark;
+						top2=darkdark;
+						left1=dark;
+						left2=darkdark;
+						right1=light;
+						right2=lightlight;
+						bottom1=light;
+						bottom2=lightlight;
+						doubleBorder=true;
+						break;
+					case Border3DStyle.SunkenOuter:
+						top1=dark;
+						left1=dark;
+						bottom1=lightlight;
+						right1=lightlight;
+						doubleBorder=false;
+						break;
+					case Border3DStyle.SunkenInner:
+						top1=dark;
+						left1=dark;
+						bottom1=light;
+						right1=light;
+						doubleBorder=false;
+						break;					
+					case Border3DStyle.Bump:
+						top1=light;
+						top2=darkdark;
+						left1=light;
+						left2=darkdark;
+						right1=light;
+						right2=darkdark;
+						bottom1=light;
+						bottom2=darkdark;
+						doubleBorder=true;
+						break;
+					default:
+						top1=foreColor;
+						bottom1=foreColor;
+						left1=foreColor;
+						right1=foreColor;
+						doubleBorder=false;
+						break;
 				}
 
 				if(width >= 2 && height >= 2)
@@ -820,48 +902,79 @@ public sealed class ControlPaint
 					width -= 2;
 					height -= 2;
 				}
-				if(width >= 4 && height >= 4)
+				if(doubleBorder && (width >= 4 && height >= 4))
 				{
-					pen = new Pen(lightlight, 1.0f);
+					pen = new Pen(left1, 1.0f);
 					pen.EndCap = LineCap.Square;
 					if((sides & Border3DSide.Left )!=0)
 					{
 						graphics.DrawLine(pen, x, y + height - 2, x, y);
-						pen.Color = light;
+						pen.Color = left2;
 						graphics.DrawLine(pen, x + 1, y + height - 3,
 									  x + 1, y + 1);
 					}
 					if((sides & Border3DSide.Right )!=0)
 					{
-						pen.Color = darkdark;
-						graphics.DrawLine(pen, x + width - 1, y,
-									  x + width - 1, y + height - 1);
-						pen.Color = dark;
+						pen.Color = right1;
 						graphics.DrawLine(pen, x + width - 2, y + 1,
 									  x + width - 2, y + height - 2);
+						pen.Color = right2;
+						graphics.DrawLine(pen, x + width - 1, y,
+									  x + width - 1, y + height - 1);
 					}
 					if((sides & Border3DSide.Top)!=0)
 					{
-						pen.Color = lightlight;
+						pen.Color = top1;
 						graphics.DrawLine(pen, x + 1, y, x + width - 2, y);
-						pen.Color = light;
+						pen.Color = top2;
 						graphics.DrawLine(pen, x + 2, y + 1,
 									  x + width - 3, y + 1);
 					}
 					if((sides & Border3DSide.Bottom)!=0)
 					{
-						pen.Color = darkdark;
-						graphics.DrawLine(pen, x + width - 2, y + height - 1,
-									  x, y + height - 1);
-						pen.Color = dark;
+						pen.Color = bottom1;
 						graphics.DrawLine(pen, x + width - 3, y + height - 2,
 									  x + 1, y + height - 2);
+						pen.Color = bottom2;
+						graphics.DrawLine(pen, x + width - 2, y + height - 1,
+									  x, y + height - 1);
 					}
 					pen.Dispose();
 					x += 2;
 					y += 2;
 					width -= 4;
 					height -= 4;
+				}
+				else if(!doubleBorder && width >= 2 && height >= 2)
+				{
+					pen = new Pen(left1, 1.0f);
+					pen.EndCap = LineCap.Square;
+					if((sides & Border3DSide.Left )!=0)
+					{
+						graphics.DrawLine(pen, x, y + height - 2, x, y);
+					}
+					if((sides & Border3DSide.Right )!=0)
+					{
+						pen.Color = right1;
+						graphics.DrawLine(pen, x + width - 1, y,
+									  x + width - 1, y + height - 1);
+					}
+					if((sides & Border3DSide.Top)!=0)
+					{
+						pen.Color = top1;
+						graphics.DrawLine(pen, x + 1, y, x + width - 2, y);
+					}
+					if((sides & Border3DSide.Bottom)!=0)
+					{
+						pen.Color = bottom1;
+						graphics.DrawLine(pen, x + width - 2, y + height - 1,
+									  x, y + height - 1);
+					}
+					pen.Dispose();
+					x+=1;
+					y+=1;
+					width -=2;
+					height -=2;
 				}
 			}
 
@@ -991,7 +1104,8 @@ public sealed class ControlPaint
 				// TODO : draw disabled mode progressbar
 				// TODO : handle large no of blocks ie merge cases
 				int blockWidth, blockHeight, xSpacing, ySpacing;
-				DrawBorder3D(graphics,x,y,width,height);
+				DrawBorder3D(graphics,x,y,width,height, 
+								Border3DStyle.SunkenInner);
 				width-=4;
 				height-=4;
 				x+=2;

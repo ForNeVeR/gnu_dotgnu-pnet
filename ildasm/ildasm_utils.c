@@ -131,6 +131,7 @@ void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,
 	ILDeclSecurity *security;
 	const void *blob;
 	unsigned long blobLen;
+	ILUInt16 ch;
 
 	/* Get the security information, if any */
 	security = ILDeclSecurityGetFromOwner(item);
@@ -155,6 +156,34 @@ void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,
 
 	/* Terminate the line */
 	putc('\n', outstream);
+
+	/* Dump the text version of the XML within the security blob */
+	if(blob)
+	{
+		fputs("\t// ", outstream);
+		while(blobLen >= 2)
+		{
+			ch = IL_READ_UINT16(blob);
+			if(ch == '\n')
+			{
+				if(blobLen >= 4)
+				{
+					fputs("\n\t// ", outstream);
+				}
+			}
+			else if(ch >= ' ' && ch <= 0x7E)
+			{
+				putc((int)ch, outstream);
+			}
+			else if(ch != '\r')
+			{
+				fprintf(outstream, "&#x%04lX;", (unsigned long)ch);
+			}
+			blob = (const void *)(((const char *)blob) + 2);
+			blobLen -= 2;
+		}
+		putc('\n', outstream);
+	}
 }
 
 #ifdef	__cplusplus

@@ -16,6 +16,10 @@ of "stloc".
 "ILClassToType"; fix stack size handling for "ldlen"; fix return type
 for "ldelem.ref".
 
+* engine/verify.c: debugging code for the verifier; account for "this"
+in instance methods; type identity and value type testing in
+"AssignCompatible".
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

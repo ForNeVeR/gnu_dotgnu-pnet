@@ -27,18 +27,6 @@ extern	"C" {
 #endif
 
 /*
- * Jump target information.
- */
-typedef struct _tagJumpTarget JumpTarget;
-struct _tagJumpTarget
-{
-	JumpTarget *next;
-	ILUInt32	offset;
-	ILUInt32	stackSize;
-
-};
-
-/*
  * Temporary memory allocator.
  */
 typedef struct
@@ -143,54 +131,6 @@ static IL_INLINE int IsJumpTarget(unsigned long *jumpMask, ILUInt32 offset)
 	return ((jumpMask[offset / (sizeof(unsigned long) * 4)] &
 		(((unsigned long)2) << ((offset % (sizeof(unsigned long) * 4)) * 2)))
 				!= 0);
-}
-
-/*
- * Process a jump target.
- */
-static int ProcessJumpTarget(JumpTarget **targetList, ILUInt32 offset,
-							 ILEngineStackItem *stack, ILUInt32 stackSize,
-							 TempAllocator *allocator)
-{
-	JumpTarget *target;
-
-	/* Search for an existing target block for this offset */
-	target = *targetList;
-	while(target != 0)
-	{
-		if(target->offset == offset)
-		{
-			/* Verify the current stack information against
-			   the information recorded for the target */
-			if(stackSize != target->stackSize ||
-			   (stackSize != 0 &&
-			    ILMemCmp(target + 1, stack,
-						 sizeof(ILEngineStackItem) * stackSize) != 0))
-			{
-				return 0;
-			}
-			return 1;
-		}
-		target = target->next;
-	}
-
-	/* Allocate a new jump target block */
-	target = (JumpTarget *)TempAllocate
-			(allocator, sizeof(JumpTarget) +
-					(sizeof(ILEngineStackItem) * stackSize));
-	if(!target)
-	{
-		return 0;
-	}
-	target->next = *targetList;
-	*targetList = target;
-	target->offset = offset;
-	target->stackSize = stackSize;
-	if(stackSize > 0)
-	{
-		ILMemCpy(target + 1, stack, sizeof(ILEngineStackItem) * stackSize);
-	}
-	return 1;
 }
 
 /*
@@ -331,10 +271,19 @@ static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 										   classInfo);
 			}
 		}
+		else if(ILTypeIdentical(item->typeInfo, type))
+		{
+			return 1;
+		}
 		else
 		{
 			return 0;
 		}
+	}
+	else if(item->engineType == ILEngineType_MV)
+	{
+		/* Can only assign managed values to an exact type destination */
+		return ILTypeIdentical(item->typeInfo, type);
 	}
 	else
 	{
@@ -346,12 +295,25 @@ static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 /*
  * Bailout routines for various kinds of verification failure.
  */
-#define	VERIFY_TRUNCATED()		goto cleanup
-#define	VERIFY_BRANCH_ERROR()	goto cleanup
-#define	VERIFY_INSN_ERROR()		goto cleanup
-#define	VERIFY_STACK_ERROR()	goto cleanup
-#define	VERIFY_TYPE_ERROR()		goto cleanup
-#define	VERIFY_MEMORY_ERROR()	goto cleanup
+/*#define	IL_VERIFY_DEBUG*/
+#ifdef IL_VERIFY_DEBUG
+#define	VERIFY_REPORT()	\
+			do { \
+				fprintf(stderr, "%s::%s [%lX] - %s\n", \
+						ILClass_Name(ILMethod_Owner(method)), \
+						ILMethod_Name(method), \
+						(unsigned long)(offset + ILMethod_RVA(method)), \
+						insn->name); \
+			} while (0)
+#else
+#define	VERIFY_REPORT()	do {} while (0)
+#endif
+#define	VERIFY_TRUNCATED()		VERIFY_REPORT(); goto cleanup
+#define	VERIFY_BRANCH_ERROR()	VERIFY_REPORT(); goto cleanup
+#define	VERIFY_INSN_ERROR()		VERIFY_REPORT(); goto cleanup
+#define	VERIFY_STACK_ERROR()	VERIFY_REPORT(); goto cleanup
+#define	VERIFY_TYPE_ERROR()		VERIFY_REPORT(); goto cleanup
+#define	VERIFY_MEMORY_ERROR()	VERIFY_REPORT(); goto cleanup
 
 /*
  * Check for certain opcode types.
@@ -367,12 +329,12 @@ static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 #include "verify_var.c"
 #include "verify_const.c"
 #include "verify_arith.c"
-#include "verify_branch.c"
 #include "verify_conv.c"
 #include "verify_stack.c"
 #include "verify_ptr.c"
 #include "verify_call.c"
 #include "verify_obj.c"
+#include "verify_branch.c"
 #include "verify_except.c"
 #include "verify_ann.c"
 #undef IL_VERIFY_GLOBALS
@@ -389,7 +351,6 @@ int _ILVerify(ILCoder *coder, ILMethod *method,
 	ILUInt32 insnSize;
 	int insnType;
 	ILUInt32 offset;
-	JumpTarget *targetList;
 	ILEngineStackItem *stack;
 	ILUInt32 stackSize;
 	const ILOpcodeInfo *insn;
@@ -405,19 +366,19 @@ int _ILVerify(ILCoder *coder, ILMethod *method,
 #include "verify_var.c"
 #include "verify_const.c"
 #include "verify_arith.c"
-#include "verify_branch.c"
 #include "verify_conv.c"
 #include "verify_stack.c"
 #include "verify_ptr.c"
 #include "verify_call.c"
 #include "verify_obj.c"
+#include "verify_branch.c"
 #include "verify_except.c"
 #include "verify_ann.c"
 #undef IL_VERIFY_LOCALS
 
 restart:
 	result = 0;
-	targetList = 0;
+	labelList = 0;
 
 	/* Set up the coder to process the method */
 	if(!ILCoderSetup(coder, method, code))
@@ -620,6 +581,12 @@ restart:
 	/* Get the method signature, plus the number of arguments and locals */
 	signature = ILMethod_Signature(method);
 	numArgs = signature->num;
+	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
+	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	{
+		/* Account for the "this" argument */
+		++numArgs;
+	}
 	if(code->localVarSig)
 	{
 		localVars = ILStandAloneSigGetType(code->localVarSig);
@@ -641,15 +608,25 @@ restart:
 		offset = (ILUInt32)(pc - (unsigned char *)(code->code));
 		if(IsJumpTarget(jumpMask, offset))
 		{
-			/* Verify the stack information */
-			if(!ProcessJumpTarget(&targetList, offset, stack,
-								  stackSize, &allocator))
-			{
-				VERIFY_MEMORY_ERROR();
-			}
+			/* Validate the stack information */
+			VALIDATE_TARGET_STACK(offset);
 
 			/* Notify the coder of a label at this position */
 			ILCoderLabel(coder, offset);
+			ILCoderStackRefresh(coder, stack, stackSize);
+		}
+		else if(lastWasJump)
+		{
+			/* An instruction just after an opcode that jumps to
+			   somewhere else in the flow of control.  As this
+			   isn't a jump target, we assume that the stack
+			   must be empty at this point */
+			if(stackSize != 0)
+			{
+				VERIFY_STACK_ERROR();
+			}
+
+			/* Reset the coder's notion of the stack to empty */
 			ILCoderStackRefresh(coder, stack, stackSize);
 		}
 
@@ -685,12 +662,12 @@ restart:
 #include "verify_var.c"
 #include "verify_const.c"
 #include "verify_arith.c"
-#include "verify_branch.c"
 #include "verify_conv.c"
 #include "verify_stack.c"
 #include "verify_ptr.c"
 #include "verify_call.c"
 #include "verify_obj.c"
+#include "verify_branch.c"
 #include "verify_except.c"
 #include "verify_ann.c"
 #undef IL_VERIFY_CODE

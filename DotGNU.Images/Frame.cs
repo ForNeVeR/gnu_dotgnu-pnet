@@ -161,6 +161,10 @@ public class Frame : MarshalByRefObject, IDisposable
 						// Generate the mask from the pixel information.
 						GenerateTransparencyMask();
 					}
+					else if(mask == null && (pixelFormat & PixelFormat.Alpha) !=0)
+					{
+						GenerateAlphaTransparencyMask();
+					}
 					return mask;
 				}
 			}
@@ -811,6 +815,64 @@ public class Frame : MarshalByRefObject, IDisposable
 								mask[maskOffset + x] =
 									(byte)(~(data[offset + x]));
 							}
+						}
+					}
+				}
+			}
+
+	// TODO: Remove when we have true alpha support
+	private void GenerateAlphaTransparencyMask()
+			{
+				byte[] data = this.data;
+				// Make sure that the frame is compatible with this operation.
+				if(palette != null || transparentPixel != -1 ||
+				   (pixelFormat & PixelFormat.Alpha) == 0 ||
+				   data == null)
+				{
+					return;
+				}
+
+				// Add the mask bits to the frame.
+				AddMask();
+				byte[] mask = this.mask;
+				
+				// Process the image lines looking for the alpha < 0xFF.
+				int x, y, offset, maskOffset;
+				int width = this.width;
+				for(y = 0; y < height; ++y)
+				{
+					offset = y * stride;
+					maskOffset = y * maskStride;
+					for(x = 0; x < width; ++x)
+					{
+						int alpha = 0xFF; 
+						switch(pixelFormat)
+						{
+							case PixelFormat.Format32bppArgb:
+							{
+								alpha = data[offset + 4 * x] ; 
+							}
+							break;
+							case PixelFormat.Format32bppPArgb:
+							{
+								alpha = data[offset + 4 * x + 3] ; 
+							}
+							break;
+							case PixelFormat.Format64bppPArgb:
+							{
+								alpha = data[offset + 8 * x + 7];
+							}
+							break;
+							case PixelFormat.Format64bppArgb:
+							{
+								alpha = data[offset + 8 * x];
+							}
+							break;
+						}
+						if(alpha != 0)
+						{
+							mask[maskOffset + (x >> 3)] |=
+										(byte)(0x80 >> (x & 7));
 						}
 					}
 				}

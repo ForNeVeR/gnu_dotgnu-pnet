@@ -1,4 +1,9 @@
 
+2004-04-28  Gopal V <gopalv82@yahoo.com>
+
+	* DotGNU.Images/Frame.cs: Generate a mask from Alpha information
+	as a temporary fix until full alpha blending is implemented.
+
 2004-04-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing.Xsharp/DrawingMdiClient.cs,

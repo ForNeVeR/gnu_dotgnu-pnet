@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 public class DiscardableAttribute : Attribute
 {
 
@@ -29,5 +31,7 @@ public class DiscardableAttribute : Attribute
 	public DiscardableAttribute() : base() {}
 
 }; // class DiscardableAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

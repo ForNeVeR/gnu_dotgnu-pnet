@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 [AttributeUsage(AttributeTargets.Field)]
 public sealed class AccessedThroughPropertyAttribute : Attribute
 {
@@ -45,5 +47,7 @@ public sealed class AccessedThroughPropertyAttribute : Attribute
 			}
 
 }; // class AccessedThroughPropertyAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

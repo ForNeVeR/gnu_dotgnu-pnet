@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 using System.Runtime.InteropServices;
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
@@ -31,16 +33,16 @@ public sealed class IDispatchConstantAttribute : CustomConstantAttribute
 	public IDispatchConstantAttribute() : base() {}
 
 	// Properties.
-	[TODO]
 	public override Object Value
 			{
 				get
 				{
-					// TODO: return new DispatchWrapper(null);
-					return null;
+					return new DispatchWrapper(null);
 				}
 			}
 
 }; // class IDispatchConstantAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

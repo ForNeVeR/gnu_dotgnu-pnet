@@ -34,8 +34,10 @@ public sealed class RuntimeHelpers
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int InternalOffsetToStringData();
 
+#if !ECMA_COMPAT
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Object GetObjectValue(Object obj);
+#endif
 
 	public static int OffsetToStringData
 			{

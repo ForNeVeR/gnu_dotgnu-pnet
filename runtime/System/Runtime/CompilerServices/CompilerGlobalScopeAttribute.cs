@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 [AttributeUsage(AttributeTargets.Class)]
 public class CompilerGlobalScopeAttribute : Attribute
 {
@@ -30,5 +32,7 @@ public class CompilerGlobalScopeAttribute : Attribute
 	public CompilerGlobalScopeAttribute() : base() {}
 
 }; // class CompilerGlobalScopeAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

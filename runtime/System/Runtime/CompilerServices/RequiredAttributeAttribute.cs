@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct |
 				AttributeTargets.Enum | AttributeTargets.Interface)]
 public sealed class RequiredAttributeAttribute : Attribute
@@ -46,5 +48,7 @@ public sealed class RequiredAttributeAttribute : Attribute
 			}
 
 }; // class RequiredAttributeAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

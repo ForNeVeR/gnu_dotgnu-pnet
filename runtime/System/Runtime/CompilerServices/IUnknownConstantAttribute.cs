@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 using System.Runtime.InteropServices;
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
@@ -35,11 +37,12 @@ public sealed class IUnknownConstantAttribute : CustomConstantAttribute
 			{
 				get
 				{
-					// TODO: return new UnknownWrapper(null);
-					return null;
+					return new UnknownWrapper(null);
 				}
 			}
 
 }; // class IUnknownConstantAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

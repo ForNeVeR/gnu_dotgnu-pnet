@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
 public sealed class DateTimeConstantAttribute : CustomConstantAttribute
 {
@@ -44,5 +46,7 @@ public sealed class DateTimeConstantAttribute : CustomConstantAttribute
 			}
 
 }; // class DateTimeConstantAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

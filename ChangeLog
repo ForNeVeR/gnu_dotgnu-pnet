@@ -22,6 +22,26 @@
 	* runtime/System/IO/StreamReader.cs (ReadChars): error in
 	buffer management when shifting unused down.
 
+	* runtime/System/Runtime/CompilerServices/AccessedThroughPropertyAttribute.cs,
+	runtime/System/Runtime/CompilerServices/CallConvCdecl.cs,
+	runtime/System/Runtime/CompilerServices/CallConvFastcall.cs,
+	runtime/System/Runtime/CompilerServices/CallConvStdcall.cs,
+	runtime/System/Runtime/CompilerServices/CallConvThiscall.cs,
+	runtime/System/Runtime/CompilerServices/CompilationRelaxationsAttribute.cs,
+	runtime/System/Runtime/CompilerServices/CompilerGlobalScopeAttribute.cs,
+	runtime/System/Runtime/CompilerServices/CustomConstantAttribute.cs,
+	runtime/System/Runtime/CompilerServices/DateTimeConstantAttribute.cs,
+	runtime/System/Runtime/CompilerServices/DiscardableAttribute.cs,
+	runtime/System/Runtime/CompilerServices/IDispatchConstantAttribute.cs,
+	runtime/System/Runtime/CompilerServices/IUnknownConstantAttribute.cs,
+	runtime/System/Runtime/CompilerServices/IndexerNameAttribute.cs,
+	runtime/System/Runtime/CompilerServices/MethodCodeType.cs,
+	runtime/System/Runtime/CompilerServices/RequiredAttributeAttribute.cs,
+	runtime/System/Runtime/CompilerServices/RuntimeHelpers.cs,
+	runtime/System/Runtime/CompilerServices/CSharp/IndexerNameAttribute.cs,
+	runtime/System/Runtime/CompilerServices/CSharp/Makefile:
+	mark non-ECMA classes in "System.Runtime.CompilerServices".
+
 2003-04-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Microsoft/Win32/IRegistryKeyProvider.cs,

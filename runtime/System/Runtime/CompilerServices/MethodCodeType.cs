@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 public enum MethodCodeType
 {
 	IL      = 0,
@@ -30,5 +32,7 @@ public enum MethodCodeType
 	Runtime = 3
 
 }; // enum MethodCodeType
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

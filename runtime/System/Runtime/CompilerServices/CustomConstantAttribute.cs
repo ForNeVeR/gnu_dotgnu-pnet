@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
 public abstract class CustomConstantAttribute : Attribute
 {
@@ -33,5 +35,7 @@ public abstract class CustomConstantAttribute : Attribute
 	public abstract Object Value { get; }
 
 }; // class CustomConstantAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

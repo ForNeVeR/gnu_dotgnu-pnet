@@ -22,6 +22,8 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 [AttributeUsage(AttributeTargets.Module)]
 public class CompilationRelaxationsAttribute : Attribute
 {
@@ -45,5 +47,7 @@ public class CompilationRelaxationsAttribute : Attribute
 			}
 
 }; // class CompilationRelaxationsAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

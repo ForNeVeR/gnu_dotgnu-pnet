@@ -22,11 +22,15 @@
 namespace System.Runtime.CompilerServices
 {
 
+#if !ECMA_COMPAT
+
 public class CallConvThiscall
 {
 
 	public CallConvThiscall() : base() {}
 
 }; // class CallConvThiscall
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

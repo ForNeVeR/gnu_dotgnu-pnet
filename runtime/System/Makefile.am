@@ -143,9 +143,13 @@ CSSRC = Activator.cs \
 		Diagnostics/StackTrace.cs \
 		Globalization/Calendar.cs \
 		Globalization/CalendarWeekRule.cs \
+		Globalization/CompareInfo.cs \
 		Globalization/CompareOptions.cs \
 		Globalization/CultureInfo.cs \
+		Globalization/CultureName.cs \
+		Globalization/CultureNameTable.cs \
 		Globalization/CultureTypes.cs \
+		Globalization/DateTimeFormatInfo.cs \
 		Globalization/DateTimeStyles.cs \
 		Globalization/GregorianCalendar.cs \
 		Globalization/GregorianCalendarTypes.cs \

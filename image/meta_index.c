@@ -1287,10 +1287,12 @@ void *ILImageSearchForToken(ILImage *image, ILToken tokenType,
 	ILToken token;
 	ILToken left, right;
 	void *item;
+	void **data;
 	int cmp;
 
 	/* Find the table in question */
 	maxToken = (tokenType | image->tokenCount[tokenType >> 24]);
+	data = image->tokenData[tokenType >> 24];
 
 	/* Is the table sorted? */
 	if((image->sorted & (((ILUInt64)1) << (tokenType >> 24))) != 0)
@@ -1328,10 +1330,20 @@ void *ILImageSearchForToken(ILImage *image, ILToken tokenType,
 	linearSearch:
 		for(token = (tokenType | 1); token <= maxToken; ++token)
 		{
-			item = ILImageTokenInfo(image, token);
-			if(item && (*compareFunc)(item, userData) == 0)
+			if(data && (item = data[(token & ~IL_META_TOKEN_MASK) - 1]) != 0)
 			{
-				return item;
+				if((*compareFunc)(item, userData) == 0)
+				{
+					return item;
+				}
+			}
+			else
+			{
+				item = ILImageTokenInfo(image, token);
+				if(item && (*compareFunc)(item, userData) == 0)
+				{
+					return item;
+				}
 			}
 		}
 	}

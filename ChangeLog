@@ -20,6 +20,9 @@
 	cscc/csharp/cs_lookup.c: use ILClassNextMemberMatch to speed
 	up member resolution in the C# compiler.
 
+	* image/meta_index.c (ILImageSearchForToken): unwind the token
+	retrieval code a little to speed up token searching.
+
 2003-02-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_decls.tc: Re-order the static constructors so

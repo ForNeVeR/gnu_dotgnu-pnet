@@ -7,6 +7,9 @@
 	* runtime/System/Double.cs: fix the default format for Double.ToString
 	(Bug #2223).
 
+	* runtime/System/Double.cs: Check out the last change made as it broke
+	some tests.
+
 2003-01-15  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextWriter.cs: WriteString and WriteRaw

@@ -105,7 +105,7 @@ public struct Double : IComparable, IFormattable
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				if (format == null) format = "G2";
+				if (format == null) format = "G";
 				return
 					Formatter.CreateFormatter(format).Format(this, provider);
 			}

@@ -5,6 +5,9 @@
 	c/decl/typeof1.3il, c/decl/typeof1.c, c/decl/typeof1.il:
 	new tests for type specifiers and function aliases.
 
+	* c/decl/typeof1.3il, c/decl/typeof1.il: modify output files
+	to include "tail" prefixes in weak/strong alias definitions.
+
 2002-08-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/decl/type3.il, c/decl/type3.3il: modified output files that

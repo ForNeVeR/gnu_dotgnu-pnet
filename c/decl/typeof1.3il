@@ -22,6 +22,7 @@
 .custom instance void OpenSystem.C.WeakAliasForAttribute::.ctor(class [.library]System.String) = (01 00 05 66 75 6E 63 32 00 00)
 	ldarg	0
 	ldsfld	int32 *(int32) 'func4-alias'
+	tail.
 	calli	int32 (int32)
 	ret
 	.maxstack 2
@@ -38,6 +39,7 @@
 {
 .custom instance void OpenSystem.C.StrongAliasForAttribute::.ctor(class [.library]System.String) = (01 00 05 66 75 6E 63 32 00 00)
 	ldarg	0
+	tail.
 	call	int32 'func2'(int32)
 	ret
 	.maxstack 1

@@ -2,6 +2,8 @@
         
 	* System.Xml/XmlTextReader.cs:  Fix for bug #4194. Incorrect 
 	NodeType state for ReadAttributeValue.
+	* tests/System.Xml/TestXmlTextReader.cs: Add test for 
+	ReadAttributeValue
 	
 2003-07-02  Cecilio Pardo  <cpardo@imayhem.com>
 	

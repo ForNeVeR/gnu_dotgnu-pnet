@@ -1,4 +1,9 @@
 
+2002-10-31  Gopal.V  <gopalv82@symonds.net>
+
+	* codegen/cg_misc.tc: Generate addresses instead of values while
+	unboxing basic valuetypes. (stloc.0,ldloca.s 0)
+
 2002-10-30  Robert Hwang <hwang_rob@yahoo.ca>
 
 	* cscc/cshar/cs_decls.tc: Fix enum bug by saving and restoring 

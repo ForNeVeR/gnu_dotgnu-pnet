@@ -18,6 +18,12 @@
 //
 //    ilrun codepage.exe -u name
 //       -- Dump mappings from Unicode to web encoding "name".
+//
+//    ilrun codepage.exe -c nnn
+//       -- Dump mappings from code page "nnn" to Unicode.
+//
+//    ilrun codepage.exe -c name
+//       -- Dump mappings from web encoding "name" to Unicode.
 
 using System;
 using System.Text;
@@ -99,11 +105,22 @@ class CodePage
 		}
 	}
 
-	private static String hexchars = "0123456789abcdef";
+	private static String hexcharsLower = "0123456789abcdef";
+	private static String hexcharsUpper = "0123456789ABCDEF";
 
 	// Dump a value in hexadecimal.
 	private static void DumpHex(int value, int numDigits)
 	{
+		String hexchars;
+		if(numDigits >= 0)
+		{
+			hexchars = hexcharsLower;
+		}
+		else
+		{
+			hexchars = hexcharsUpper;
+			numDigits = -numDigits;
+		}
 		int shift = (numDigits * 4) - 4;
 		while(shift >= 0)
 		{
@@ -189,11 +206,15 @@ class CodePage
 	}
 
 	// Dump the Unicode character mappings for an encoding.
-	private static void DumpEncoding(Encoding enc)
+	private static void DumpEncoding(Encoding enc, bool fromCodePage)
 	{
 		byte[] buf = new byte [enc.GetMaxByteCount(1)];
 		char[] chars = new char [1];
-		int value, numBytes, index;
+		ushort[] usage = new ushort [65535];
+		int value, numBytes, index, codeValue;
+		Console.WriteLine("# Code page {0} - {1}",
+						  enc.CodePage, enc.EncodingName);
+		Console.WriteLine();
 		for(value = 0; value < 65536; ++value)
 		{
 			chars[0] = (char)value;
@@ -212,14 +233,38 @@ class CodePage
 			if(numBytes > 0 &&
 			   (numBytes != 1 || buf[0] != (byte)'?' || value == (int)'?'))
 			{
-				DumpHex(value, 4);
-				Console.Write(':');
-				for(index = 0; index < numBytes; ++index)
+				if(fromCodePage)
 				{
-					Console.Write(' ');
-					DumpHex(buf[index], 2);
+					Console.Write("0x");
+					for(index = 0; index < numBytes; ++index)
+					{
+						DumpHex(buf[index], -2);
+					}
+					Console.Write(" 0x");
+					DumpHex(value, -4);
+					Console.WriteLine();
 				}
-				Console.WriteLine();
+				else
+				{
+					Console.Write("<U");
+					DumpHex(value, -4);
+					Console.Write("> \\x");
+					codeValue = 0;
+					for(index = 0; index < numBytes; ++index)
+					{
+						codeValue = (codeValue << 8) + buf[index];
+						DumpHex(buf[index], -2);
+					}
+					if(codeValue < 0x10000)
+					{
+						Console.WriteLine(" |{0}", usage[codeValue]);
+						++(usage[codeValue]);
+					}
+					else
+					{
+						Console.WriteLine();
+					}
+				}
 			}
 		}
 	}
@@ -281,7 +326,7 @@ class CodePage
 	}
 
 	// Dump Unicodoe mappings for a specific code page.
-	private static void DumpPage(int page)
+	private static void DumpPage(int page, bool fromCodePage)
 	{
 		Encoding enc;
 		try
@@ -298,7 +343,7 @@ class CodePage
 		}
 		if(enc != null)
 		{
-			DumpEncoding(enc);
+			DumpEncoding(enc, fromCodePage);
 		}
 		else
 		{
@@ -308,7 +353,7 @@ class CodePage
 	}
 
 	// Dump Unicode mappings for a specific web encoding.
-	private static void DumpWebEncoding(String name)
+	private static void DumpWebEncoding(String name, bool fromCodePage)
 	{
 		Encoding enc;
 		try
@@ -325,7 +370,7 @@ class CodePage
 		}
 		if(enc != null)
 		{
-			DumpEncoding(enc);
+			DumpEncoding(enc, fromCodePage);
 		}
 		else
 		{
@@ -346,11 +391,22 @@ class CodePage
 			{
 				if(args[1][0] >= '0' && args[1][0] <= '9')
 				{
-					DumpPage(Int32.Parse(args[1]));
+					DumpPage(Int32.Parse(args[1]), false);
 				}
 				else
 				{
-					DumpWebEncoding(args[1]);
+					DumpWebEncoding(args[1], false);
+				}
+			}
+			else if(args[0] == "-c" && args.Length > 1)
+			{
+				if(args[1][0] >= '0' && args[1][0] <= '9')
+				{
+					DumpPage(Int32.Parse(args[1]), true);
+				}
+				else
+				{
+					DumpWebEncoding(args[1], true);
 				}
 			}
 			else if(args[0][0] >= '0' && args[0][0] <= '9')

@@ -28,6 +28,9 @@
 	* I18N/CJK/MultiByteEncoding.cs: map unknown Unicode characters
 	to the empty string, not NUL.
 
+	* samples/codepage.cs: add -u and -c options to codepage that
+	can dump code pages in UCM or reverse-UCM form.
+
 2003-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/CJK/CP51932.cs, I18N/CJK/CP932.cs: changes to the

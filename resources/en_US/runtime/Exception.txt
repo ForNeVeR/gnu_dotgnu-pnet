@@ -64,6 +64,7 @@ Exception_TypeInit=Type initialization failed
 Exception_TypeInitName=Type initialization failed for {0}
 Exception_TypeUnload=Type has been unloaded
 Exception_Unauthorized=Attempted to perform an unauthorized operation
+Exception_HiddenBuffer=The buffer cannot be retrieved for this instance
 Exception_AmbiguousMatch=Ambiguous match found
 Exception_Target=Instance method cannot be invoked on a null target
 Exception_TargetInvoke=Exception has been thrown by the target of an invocation

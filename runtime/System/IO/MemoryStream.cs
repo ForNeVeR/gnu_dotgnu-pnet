@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2002  Free Software Foundation, Inc.
  *
+ * Contributed by Stephen Compall <rushing@sigecom.net>.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -40,6 +42,9 @@ public class MemoryStream : Stream
 	// readable and seekable are always true
 	private bool writable, resizable, visibleBuffer;
 
+	// position is always indexed to bottomLimit
+	// it's safe to assume so, because any1 who uses the constructors with
+	// `index' better know what he/she is doing anyway
 	private int position = 0;
 	// a capacity variable is unnecessary
 
@@ -74,7 +79,7 @@ public class MemoryStream : Stream
 			throw new ArgumentNullException("buffer");
 
 		impl_buffer = (byte[]) buffer.Clone(); // protect from intruders
-		writable = true;
+		this.writable = writable; // scoping
 		resizable = visibleBuffer = false;
 		bottomLimit = 0;
 		topLimit = buffer.Length;
@@ -104,7 +109,7 @@ public class MemoryStream : Stream
 		if (publiclyVisible) // can use buffer passed as internal buffer
 		{
 			impl_buffer = buffer;
-			bottomLimit = position = index;
+			bottomLimit = index;
 			topLimit = index + count;
 		}
 		else // must hide
@@ -125,7 +130,6 @@ public class MemoryStream : Stream
 	{
 		// effectively call Flush()
 		this.Flush();
-		impl_buffer = null; // release resources per ECMA Stream
 		streamclosed = true;
 		base.Close();
 	}
@@ -138,7 +142,7 @@ public class MemoryStream : Stream
 	public virtual byte[] GetBuffer()
 	{
 		if (!visibleBuffer)
-			throw new UnauthorizedAccessException();
+			throw new UnauthorizedAccessException(_("Exception_HiddenBuffer"));
 		return impl_buffer;
 	}
 
@@ -151,17 +155,16 @@ public class MemoryStream : Stream
 		// MemoryStream doesn't say what to do when can't read,
 		// but Stream says use NotSupportedException.
 		// however, it should say throw InvalidOperationException
-		// so I am just returning 0, because 0 chars were read :)
 		// TODO: is this behavior correct?
 		if (!CanRead)
-			return 0;
+			throw new NotSupportedException(_("IO_NotSupp_Read"));
 
 		byte[] src_buffer = forceGetBuffer();
 
-		if (count > topLimit - Position) // Copy will throw
-			count = (int)(topLimit - Position); // fixed
+		if (count > Length - Position) // Copy will throw
+			count = (int)(Length - Position); // fixed
 
-		Array.Copy(impl_buffer, (int)Position, buffer, offset, count);
+		Array.Copy(impl_buffer, (int)(Position + bottomLimit), buffer, offset, count);
 		forcePositionChange(count);
 		return count;
 	}
@@ -171,11 +174,14 @@ public class MemoryStream : Stream
 		if (streamclosed)
 			throw new ObjectDisposedException(null, _("IO_StreamClosed"));
 
-		if (!CanRead || topLimit == Position)
+		if (!CanRead)
+			throw new NotSupportedException(_("IO_NotSupp_Read"));
+
+		if (Capacity == Position)
 			return -1;
 		else
 		{
-			int retval = forceGetBuffer()[Position];
+			int retval = forceGetBuffer()[Position + bottomLimit];
 			forcePositionChange(1);
 			return retval;
 		}
@@ -192,6 +198,8 @@ public class MemoryStream : Stream
 			break;
 		case SeekOrigin.End:
 			break;
+		default:
+			throw new ObjectDisposedException(/* TODO */);
 		}
 		return -1;
 	}
@@ -266,10 +274,11 @@ public class MemoryStream : Stream
 				throw new NotSupportedException(_("IO_StreamClosed"));
 
 			// just ignore if smaller
-			if (resizable && value > topLimit) // bottom is always 0
+			int old_capacity = Capacity;
+			if (resizable && value > old_capacity) // bottom is always 0
 			{
 				byte[] new_impl_buffer = new byte[value];
-				Array.Copy(impl_buffer, new_impl_buffer, topLimit);
+				Array.Copy(forceGetBuffer(), new_impl_buffer, topLimit);
 				impl_buffer = new_impl_buffer;
 				topLimit = value;
 			}
@@ -286,12 +295,11 @@ public class MemoryStream : Stream
 		}
 	}
 
-	[TODO]
 	public override long Position
 	{
 		get
 		{
-			return -1;
+			return position;
 		}
 		set
 		{
@@ -302,8 +310,8 @@ public class MemoryStream : Stream
 			if (streamclosed)
 				throw new ObjectDisposedException(null, _("IO_StreamClosed"));
 			if (!CanSeek)
-				return;
-			if (value > topLimit || value < bottomLimit)
+				throw new NotSupportedException(_("IO_NotSupp_Seek"));
+			if (value > Capacity || value < 0)
 				throw new ArgumentOutOfRangeException("value", _("Arg_InvalidArrayIndex"));
 
 			position = (int)value;
@@ -316,10 +324,19 @@ public class MemoryStream : Stream
 	// specify increment to posn
 	private void forcePositionChange(int increment)
 	{
-		int posn = (int)(Position + increment);
-		Position = posn;
-		if (Position != posn) // weird but quite possible
-			position = posn;
+		long posn = Position;
+		try
+		{
+			Position = posn + increment;
+		}
+		catch (NotSupportedException)
+		{
+			position = posn + increment;
+		}
+		catch (ArgumentOutOfRangeException)
+		{
+			Position = Length;
+		}
 	}
 
 	// use this in case a child has its own buffer

@@ -1,3 +1,10 @@
+2002-04-28  Stephen Compall  <rushing@sigecom.net>
+
+	* runtime/System/IO/MemoryStream.cs: Fixes for ECMA compliance,
+	whatever that means.
+
+	* resources/en_US/runtime/Exception.cs: new "Exception_HiddenBuffer".
+
 2002-04-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	*  System/Net/Sockets/Socket.cs: reversed order of parameters to

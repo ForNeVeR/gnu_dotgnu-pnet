@@ -10,6 +10,8 @@
 * image/pecoff_loader.c (ILImageLoad), image/image.h (_ILImageJavaLoad),
 image/Makefile.am: hook the Java class loading functionality to "ILImageLoad".
 
+* include/Makefile.am: add "il_jopcodes.h" to the "include" make.
+
 2001-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_decls.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

@@ -1069,7 +1069,6 @@ static int processImage(ILLinker *linker, const char *filename,
 {
 	int errors = 0;
 	int model, alignFlags;
-	char libcName[64];
 
 	/* Add the image to the linker context */
 	model = ILLinkerCMemoryModel(image, &alignFlags);
@@ -1093,8 +1092,7 @@ static int processImage(ILLinker *linker, const char *filename,
 			{
 				if(!stdCLibrary)
 				{
-					sprintf(libcName, "libc%d", model);
-					stdCLibrary = libcName;
+					stdCLibrary = "libc";
 				}
 				errors |= addLibrary(linker, stdCLibrary);
 			}

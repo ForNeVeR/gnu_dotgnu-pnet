@@ -482,7 +482,7 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 	}
 
 	/* Set the C module name for library assemblies.  The module name
-	   is the name of the assembly, with "64" or "32" stripped off */
+	   is the name of the assembly */
 	if(!strcmp(linker->moduleName, IL_LINKER_DLL_MODULE_NAME))
 	{
 		lenBytes = strlen(assemblyName);
@@ -493,16 +493,6 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 			return 0;
 		}
 		strcpy(name, assemblyName);
-		if(lenBytes > 2 && assemblyName[lenBytes - 2] == '6' &&
-		   assemblyName[lenBytes - 1] == '4')
-		{
-			name[lenBytes - 2] = '\0';
-		}
-		else if(lenBytes > 2 && assemblyName[lenBytes - 2] == '3' &&
-		        assemblyName[lenBytes - 1] == '2')
-		{
-			name[lenBytes - 2] = '\0';
-		}
 		ILFree(linker->moduleName);
 		linker->moduleName = name;
 	}

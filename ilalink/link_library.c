@@ -129,14 +129,14 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 		return newName;
 	}
 
-	/* Prepend "lib" and append the memory model.  This allows us
-	   to convert references such as "-lm" into "-llibm64" */
+	/* Prepend "lib".  This allows us to convert references
+	   such as "-lm" into "-llibm" */
 	if(strncmp(name, "lib", 3) == 0)
 	{
 		return 0;
 	}
 	len = strlen(name);
-	expanded = (char *)ILMalloc(len + 6);
+	expanded = (char *)ILMalloc(len + 4);
 	if(!expanded)
 	{
 		_ILLinkerOutOfMemory(linker);
@@ -144,14 +144,6 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 	}
 	strcpy(expanded, "lib");
 	strcpy(expanded + 3, name);
-	if(linker->is32Bit)
-	{
-		strcpy(expanded + 3 + len, "32");
-	}
-	else
-	{
-		strcpy(expanded + 3 + len, "64");
-	}
 
 	/* Search the library directories for the expanded name */
 	newName = ILImageSearchPath

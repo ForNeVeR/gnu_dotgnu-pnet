@@ -4,6 +4,11 @@
 	* JScript/jsrun.cs: Implement --help , --version commands for
 	jsrun. (patch #3038, Gopal)
 
+	* JScript/Vsa/VsaCodeItem.cs, JScript/Execute/Support.cs,
+	JScript/Nodes/JExpr.tc: Redirect error output to ScriptStream 
+	and use ScriptStream instead of Console for the print statement.
+	(patch #3036, Gopal)
+
 2004-05-07  Gopal V  <gopalv82@yahoo.com>
 
 	* JScript/Parser/JSParser.cs: Eatup the increment or decrement tokens

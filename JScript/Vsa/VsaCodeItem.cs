@@ -120,7 +120,11 @@ internal sealed class VsaCodeItem : VsaItem, IVsaCodeItem
 					}
 					catch(JScriptException e)
 					{
-						// Parse error that wasn't caught internally.
+#if !CONFIG_SMALLCONSOLE
+						ScriptStream.Error.WriteLine(e.Message);
+#else
+						ScriptStream.WriteLine(e.Message);
+#endif
 						return false;
 					}
 					if(parser.numErrors > 0)

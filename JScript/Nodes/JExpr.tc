@@ -859,6 +859,5 @@ Eval(JEval)
 Eval(JPrint)
 {
 	Support.Print(engine, expr);
-	Console.WriteLine();
 	return Empty.Value;
 }

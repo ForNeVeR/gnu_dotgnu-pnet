@@ -363,7 +363,7 @@ internal sealed class Support
 					}
 					if(pvalue != null)
 					{
-						Console.Write(pvalue);
+						ScriptStream.WriteLine(pvalue);
 					}
 				}
 			}

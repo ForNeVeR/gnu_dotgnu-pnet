@@ -26,6 +26,8 @@ using System.Drawing;
 
 public abstract class TextBoxBase : Control
 {
+	internal enum InsertMode {Insert, Overwrite};
+	
 	// Internal state.
 	private bool acceptsTab;
 	private bool autoSize;
@@ -33,6 +35,7 @@ public abstract class TextBoxBase : Control
 	private bool modified;
 	private bool multiline;
 	private bool readOnly;
+	private InsertMode insertMode;
 	private bool wordWrap;
 	private BorderStyle borderStyle;
 	private int maxLength;
@@ -46,9 +49,13 @@ public abstract class TextBoxBase : Control
 				modified = false;
 				multiline = false;
 				readOnly = false;
+				insertMode = InsertMode.Insert;
 				wordWrap = true;
 				borderStyle = BorderStyle.Fixed3D;
 				maxLength = 32767;
+				
+				// Trap key down events
+				KeyDown += new KeyEventHandler(HandleKeyDown);
 			}
 
 	// Get or set this object's properties.
@@ -306,10 +313,9 @@ public abstract class TextBoxBase : Control
 			}
 
 	// Append text to this control.
-	[TODO]
 	public void AppendText(String text)
 			{
-				// TODO
+				Text += text;
 			}
 
 	// Clear all text from this control.
@@ -330,6 +336,7 @@ public abstract class TextBoxBase : Control
 	public void Copy()
 			{
 				// TODO
+				Console.WriteLine("TextBoxBase.Copy()");
 			}
 
 	// Create the handle for this control.
@@ -344,6 +351,7 @@ public abstract class TextBoxBase : Control
 	public void Cut()
 			{
 				// TODO
+				Console.WriteLine("TextBoxBase.Cut()");
 			}
 
 	// Determine if a key is recognized by a control as an input key.
@@ -387,6 +395,7 @@ public abstract class TextBoxBase : Control
 	public void Paste()
 			{
 				// TODO
+				Console.WriteLine("TextBoxBase.Paste()");
 			}
 
 	// Process a dialog key.
@@ -417,22 +426,13 @@ public abstract class TextBoxBase : Control
 						(S._("SWF_NonNegative"), "length");
 				}
 				SelectInternal( start, length);
+				ScrollToCaret();
 			}
 
 	// Select all text in the control.
 	public void SelectAll()
 			{
 				Select(0, TextLength);
-			}
-
-	// Inner core of "SetBounds".
-	[TODO]
-	protected override void SetBoundsCore
-				(int x, int y, int width, int height,
-				 BoundsSpecified specified)
-			{
-				// TODO
-				base.SetBoundsCore(x, y, width, height, specified);
 			}
 
 	// Convert this object into a string.
@@ -538,6 +538,18 @@ public abstract class TextBoxBase : Control
 				}
 			}
 
+	// Caret Navigation
+	protected enum CaretDirection
+	{
+		Left, Right, WordLeft, WordRight, LineStart, LineEnd,
+		LineUp, LineDown, PageUp, PageDown, TextStart, TextEnd
+	};
+	
+	protected abstract void MoveCaret(CaretDirection dir, bool extend);
+
+	// Deletes text (i.e. backspace, delete keys)
+	protected abstract void DeleteTextOp(CaretDirection dir);
+
 	// Dispatch events from this control.
 	protected virtual void OnAcceptsTabChanged(EventArgs e)
 			{
@@ -572,11 +584,9 @@ public abstract class TextBoxBase : Control
 				}
 			}
 
-	[TODO]
 	protected override void OnFontChanged(EventArgs e)
 			{
 				base.OnFontChanged(e);
-				// TODO: adjust the height of the control to match the font
 			}
 
 	protected override void OnHandleCreated(EventArgs e)
@@ -674,6 +684,14 @@ public abstract class TextBoxBase : Control
 	// Make sure the caret is visible
 	abstract protected void ScrollToCaretInternal();
 
+	// Toggle insert/overwrite mode
+	internal InsertMode GetInsertMode()
+	{
+		return insertMode;
+	}
+	
+	abstract internal void OnToggleInsertMode();
+
 #if !CONFIG_COMPACT_FORMS
 
 	// Process a message.
@@ -683,6 +701,97 @@ public abstract class TextBoxBase : Control
 			}
 
 #endif // !CONFIG_COMPACT_FORMS
+
+	// Handle "KeyDown" events for the text box.
+	private void HandleKeyDown(Object sender, KeyEventArgs e)
+	{
+		bool extendSel = (ModifierKeys & Keys.Shift) != 0;
+		bool controlKey = (ModifierKeys & Keys.Control) != 0;
+		
+		switch (e.KeyCode)
+		{
+		case Keys.Left:
+			MoveCaret(controlKey ? CaretDirection.WordLeft : CaretDirection.Left, extendSel);
+			e.Handled = true;
+			break;
+		case Keys.Right:
+			MoveCaret(controlKey ? CaretDirection.WordRight : CaretDirection.Right, extendSel);
+			e.Handled = true;
+			break;
+		case Keys.Up:
+			MoveCaret(CaretDirection.LineUp, extendSel);
+			e.Handled = true;
+			break;
+		case Keys.Down:
+			MoveCaret(CaretDirection.LineDown, extendSel);
+			e.Handled = true;
+			break;
+		case Keys.PageUp:
+			MoveCaret(CaretDirection.PageUp, extendSel);
+			e.Handled = true;
+			break;
+		case Keys.PageDown:
+			MoveCaret(CaretDirection.PageDown, extendSel);
+			e.Handled = true;
+			break;
+		case Keys.Home:
+			MoveCaret(controlKey ? CaretDirection.TextStart : CaretDirection.LineStart, extendSel);
+			e.Handled = true;
+			break;
+		case Keys.End:
+			MoveCaret(controlKey ? CaretDirection.TextEnd : CaretDirection.LineEnd, extendSel);
+			e.Handled = true;
+			break;
+		case Keys.C:
+			if (controlKey)
+			{
+				Copy();
+				e.Handled = true;
+			}
+			break;
+		case Keys.X:
+			if (controlKey)
+			{
+				Cut();
+				e.Handled = true;
+			}
+			break;
+		case Keys.V:
+			if (controlKey)
+			{
+				Paste();
+				e.Handled = true;
+			}
+			break;
+		case Keys.A:
+			if (controlKey)
+			{
+				SelectAll();
+				e.Handled = true;
+			}
+			break;
+		case Keys.Z:
+			if (controlKey)
+			{
+				Undo();
+				e.Handled = true;
+			}
+			break;
+		case Keys.Back:
+			DeleteTextOp(controlKey ? CaretDirection.WordLeft : CaretDirection.Left);
+			e.Handled = true;
+			break;
+		case Keys.Delete:
+			DeleteTextOp(controlKey ? CaretDirection.WordRight : CaretDirection.Right);
+			e.Handled = true;
+			break;
+		case Keys.Insert:
+			insertMode = insertMode==InsertMode.Insert ? InsertMode.Overwrite : InsertMode.Insert;
+			OnToggleInsertMode();
+			e.Handled = true;
+			break;
+		}
+	}
 
 }; // class TextBoxBase
 

@@ -50,6 +50,7 @@ static void MakeValueType(ILGenInfo *info, ILImage *image,
 				    IL_META_TYPEDEF_VALUE_TYPE |
 				    IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
 				    IL_META_TYPEDEF_SERIALIZABLE |
+				    IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
 }
 
@@ -63,11 +64,13 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *voidClass;
 	ILClass *intPtrClass;
 	ILClass *uintPtrClass;
+	ILClass *typedRefClass;
 
 	/* Create the "System.Object" class */
 	ABORT_IF(objectClass, ILClassCreate(scope, 0, "Object", "System", 0));
 	ILClassSetAttrs(objectClass, ~0,
 				    IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 					IL_META_TYPEDEF_SERIALIZABLE);
 
 	/* Create the "System.String" class */
@@ -76,6 +79,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClassSetAttrs(stringClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
 
 	/* Create the "System.ValueType" class */
@@ -83,6 +87,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 			 ILClassCreate(scope, 0, "ValueType", "System", objectClass));
 	ILClassSetAttrs(valueTypeClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SERIALIZABLE);
 
 	/* Create the "System.Void" class */
@@ -91,6 +96,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClassSetAttrs(voidClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 					IL_META_TYPEDEF_SEALED);
 
 	/* Create the numeric value types */
@@ -113,6 +119,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
 				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
 
 	/* Create the "System.UIntPtr" class */
@@ -122,6 +129,18 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
 				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_SEALED);
+
+	/* Create the "System.TypedReference" class */
+	ABORT_IF(typedRefClass,
+			 ILClassCreate(scope, 0, "TypedReference", "System",
+			 			   valueTypeClass));
+	ILClassSetAttrs(typedRefClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_VALUE_TYPE |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SEALED);
 }
 

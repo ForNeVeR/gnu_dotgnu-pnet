@@ -23,6 +23,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.ComponentModel;
 using System.Windows.Forms;
 
@@ -37,19 +38,19 @@ public class CheckBox : ButtonBase
 	private bool autoCheck;
 	private bool threeState;
 	private CheckState state;
-	private Size defaultSize;
-	private int checkSize = 13;
+	private const int normalCheckSize = 13;
+	private const int flatCheckSize = 13;
 
 	// Contructor.
 	public CheckBox()
 			{
 				Appearance = Appearance.Normal;
-				defaultSize = new Size(104, 24);
-				Size = defaultSize;
 				checkAlign = ContentAlignment.MiddleLeft;
 				TextAlign = ContentAlignment.MiddleLeft;
+				autoCheck = true;
 			}
 
+	// Draw the contents of this check box.
 	internal override void Draw(Graphics graphics)
 			{
 				DrawBox(graphics);
@@ -60,6 +61,16 @@ public class CheckBox : ButtonBase
 			{
 				int checkX = 0;
 				int checkY = 0;
+
+				int checkSize;
+				if(FlatStyle == FlatStyle.Flat)
+				{
+					checkSize = flatCheckSize;
+				}
+				else
+				{
+					checkSize = normalCheckSize;
+				}
 		
 				switch (checkAlign)
 				{
@@ -105,7 +116,21 @@ public class CheckBox : ButtonBase
 				{
 					checkState = ButtonState.Checked;
 				}
-				ControlPaint.DrawCheckBox(graphics, checkX, checkY, checkSize, checkSize, checkState);
+				if(pressed && entered)
+				{
+					checkState |= ButtonState.Pushed;
+				}
+				if(!Enabled)
+				{
+					checkState |= ButtonState.Inactive;
+				}
+				if(FlatStyle == FlatStyle.Flat)
+				{
+					checkState |= ButtonState.Flat;
+				}
+				ControlPaint.DrawCheckBox
+					(graphics, checkX, checkY,
+					 checkSize, checkSize, checkState);
 			}
 
 	private void DrawText(Graphics graphics)
@@ -115,10 +140,21 @@ public class CheckBox : ButtonBase
 				int width = Width - 2;
 				int height = Height - 4;
 		
+				int checkSize;
+				if(FlatStyle == FlatStyle.Flat)
+				{
+					checkSize = flatCheckSize;
+				}
+				else
+				{
+					checkSize = normalCheckSize;
+				}
+		
 				SizeF textSize = graphics.MeasureString(Text, Font);
 				StringFormat format = new StringFormat();
 				format.Alignment = StringAlignment.Near;
 				format.LineAlignment = StringAlignment.Far;
+				format.HotkeyPrefix = HotkeyPrefix.Show;
 
 				switch (checkAlign)
 				{
@@ -193,13 +229,26 @@ public class CheckBox : ButtonBase
 						format.LineAlignment = StringAlignment.Near;
 						break;
 				}
-				Brush brush = new SolidBrush(ForeColor);
 				Rectangle rect = new Rectangle(x, y, width, height);
-				graphics.DrawString(Text, Font, brush, rect, format);
-				brush.Dispose();
+				String text = Text;
+				Font font = Font;
+				if(text != null && text != String.Empty)
+				{
+					if(Enabled)
+					{
+						Brush brush = new SolidBrush(ForeColor);
+						graphics.DrawString(text, font, brush, rect, format);
+						brush.Dispose();
+					}
+					else
+					{
+						ControlPaint.DrawStringDisabled
+							(graphics, text, font, BackColor, rect, format);
+					}
+				}
 			}
 
-	// Gets or sets the value that determines the appearance of a check box control.
+	// Gets or sets the check box appearance.
 	public Appearance Appearance 
 			{
 				get
@@ -208,7 +257,12 @@ public class CheckBox : ButtonBase
 				}
 				set
 				{
-					appearance = value;
+					if(appearance != value)
+					{
+						appearance = value;
+						Redraw();
+						OnAppearanceChanged(EventArgs.Empty);
+					}
 				}
 			}
 
@@ -221,14 +275,11 @@ public class CheckBox : ButtonBase
 				}
 				set
 				{
-					if(autoCheck != value)
-					{
-						autoCheck = value;
-					}
+					autoCheck = value;
 				}
 			}
 
-	// Gets or sets the horizontal and vertical alignment of a check box on a check box control.
+	// Gets or set alignment of a check box on a check box control.
 	public ContentAlignment CheckAlign 
 			{
 				get
@@ -237,8 +288,11 @@ public class CheckBox : ButtonBase
 				}
 				set
 				{
-					checkAlign = value;
-					Invalidate();
+					if(checkAlign != value)
+					{
+						checkAlign = value;
+						Invalidate();
+					}
 				}
 			}
 
@@ -273,7 +327,14 @@ public class CheckBox : ButtonBase
 				{
 					if(state != value)
 					{
+						bool checkedBefore = (state != CheckState.Unchecked);
 						state = value;
+						bool checkedAfter = (state != CheckState.Unchecked);
+						Redraw();
+						if(checkedBefore != checkedAfter)
+						{
+							OnCheckedChanged(EventArgs.Empty);
+						}
 						OnCheckStateChanged(EventArgs.Empty);
 					}
 				}
@@ -282,17 +343,16 @@ public class CheckBox : ButtonBase
 	// Gets or sets the site of the control.
 #if CONFIG_COMPONENT_MODEL
 	public override ISite Site 
-
-	{
-		get 
-		{
-			return base.Site;
-		}
-		set
-		{
-			base.Site = value;
-		}
-	}
+			{
+				get 
+				{
+					return base.Site;
+				}
+				set
+				{
+					base.Site = value;
+				}
+			}
 #endif
 
 	// Gets or sets the alignment of the text on the checkbox control.
@@ -318,17 +378,35 @@ public class CheckBox : ButtonBase
 				}
 				set
 				{
-					if(threeState != value)
-					{
-						threeState = value;
-					}
+					threeState = value;
 				}
 			}
+
 	// Occurs when the value of the Appearance property changes.
-	public event EventHandler AppearanceChanged;
+	public event EventHandler AppearanceChanged
+			{
+				add
+				{
+					AddHandler(EventId.AppearanceChanged, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.AppearanceChanged, value);
+				}
+			}
 	
 	// Occurs when the value of the Checked property changes.
-	public event EventHandler CheckedChanged;
+	public event EventHandler CheckedChanged
+			{
+				add
+				{
+					AddHandler(EventId.CheckedChanged, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.CheckedChanged, value);
+				}
+			}
 
 	// Event that is emitted when the check state changes.
 	public event EventHandler CheckStateChanged
@@ -342,6 +420,7 @@ public class CheckBox : ButtonBase
 					RemoveHandler(EventId.CheckStateChanged, value);
 				}
 			}
+
 	// Gets the required creation parameters when the control handle is created.
 	protected override CreateParams CreateParams 
 			{
@@ -350,23 +429,17 @@ public class CheckBox : ButtonBase
 					return base.CreateParams;
 				}
 			}
-	// Gets the default Input Method Editor (IME) mode supported by this control.
-	protected override ImeMode DefaultImeMode 
-			{
-				get
-				{
-					return base.DefaultImeMode;
-				}
-			}
+
 	// Gets the default size of the control.	
 	protected override Size DefaultSize 
 			{
 				get
 				{
-					return defaultSize;
+					return new Size(104, 24);
 				}
 			}
 
+	// Create an accessibility object.
 	protected override AccessibleObject CreateAccessibilityInstance()
 			{
 				return base.CreateAccessibilityInstance();
@@ -375,16 +448,23 @@ public class CheckBox : ButtonBase
 	// Raises the AppearanceChanged event.
 	protected virtual void OnAppearanceChanged(EventArgs e)
 			{
-				if (AppearanceChanged != null)
-					AppearanceChanged(this, e);
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.AppearanceChanged));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
 			}
 
 	// Raises the CheckedChanged event.
 	protected virtual void OnCheckedChanged(EventArgs e)
 			{
-				if (CheckedChanged != null)
-					CheckedChanged(this, e);
-		
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.CheckedChanged));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
 			}
 
 	// Emit the CheckStateChanged event.
@@ -401,6 +481,30 @@ public class CheckBox : ButtonBase
 	// Raises the Click event.
 	protected override void OnClick(EventArgs e)
 			{
+				if(autoCheck)
+				{
+					CheckState newState;
+					if(state == CheckState.Unchecked)
+					{
+						newState = CheckState.Checked;
+					}
+					else if(state == CheckState.Checked)
+					{
+						if(threeState)
+						{
+							newState = CheckState.Indeterminate;
+						}
+						else
+						{
+							newState = CheckState.Unchecked;
+						}
+					}
+					else
+					{
+						newState = CheckState.Unchecked;
+					}
+					CheckState = newState;
+				}
 				base.OnClick(e);
 			}
 
@@ -410,52 +514,29 @@ public class CheckBox : ButtonBase
 				base.OnHandleCreated(e);
 			}
 
-	protected override void OnMouseDown(MouseEventArgs e)
-			{
-				if(button == MouseButtons.None)
-				{
-					button = e.Button;
-					pressed = true;
-					using (Graphics graphics = CreateGraphics())
-						DrawBox(graphics);
-				}
-			}
-
-
 	// Raises the MouseUp event.
 	protected override void OnMouseUp(MouseEventArgs mevent)
 			{
-				if (state == CheckState.Unchecked)
+				bool clicked = (entered && pressed);
+				base.OnMouseUp(mevent);
+				if(clicked)
 				{
-					state = CheckState.Checked;
+					OnClick(EventArgs.Empty);
 				}
-				else
-				{
-					state = CheckState.Unchecked;
-				}
-				
-				this.OnCheckedChanged(mevent);
-				this.OnCheckStateChanged(mevent);
-				if(button == mevent.Button)
-				{
-					button = MouseButtons.None;
-					pressed = false;
-				}
-				using (Graphics graphics = CreateGraphics())
-					DrawBox(graphics);
-				
 			}
 
 	// Processes a mnemonic character.
 	protected override bool ProcessMnemonic(char charCode)
 			{
+				if(IsMnemonic(charCode, Text))
+				{
+					if(CanSelect)
+					{
+						OnClick(EventArgs.Empty);
+						return true;
+					}
+				}
 				return false;
-			}
-
-	// Set the check box state - used by the toolkit in response to events.
-	internal void SetCheckState(CheckState state)
-			{
-				this.state = state;
 			}
 
 }; // class CheckBox

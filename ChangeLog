@@ -39,6 +39,14 @@
 	rather than via properties, to reduce the number of method calls
 	that are needed to break an event down into its components.
 
+	* System.Windows.Forms/ButtonBase.cs, System.Windows.Forms/CheckBox.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/EventId.cs,
+	System.Windows.Forms/RadioButton.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/Glyphs.cs: implement glyph-based drawing
+	of checkboxes; fix some drawing/logic bugs in "CheckBox" and
+	"ButtonBase".
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

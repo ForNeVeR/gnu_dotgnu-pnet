@@ -385,13 +385,11 @@ public class Control : IWin32Window
 					return (Visible && Enabled && GetStyle(ControlStyles.Selectable));
 				}
 			}
-	[TODO]
 	public bool CanSelect
 			{
 				get
 				{
-					// TODO
-					return false;
+					return GetStyle(ControlStyles.Selectable);
 				}
 			}
 	public bool CausesValidation

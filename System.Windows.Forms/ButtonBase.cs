@@ -389,7 +389,7 @@ public abstract class ButtonBase : Control
 			}
 
 	// Redraw the button after a state change.
-	private void Redraw()
+	internal void Redraw()
 			{
 				// Bail out if the button is not currently visible.
 				if(!Visible || !IsHandleCreated)
@@ -448,21 +448,13 @@ public abstract class ButtonBase : Control
 	protected override void OnMouseEnter(EventArgs e)
 			{
 				entered = true;
-				if (flatStyle == FlatStyle.Popup)
-				{
-					Redraw();
-				}
+				Redraw();
 				base.OnMouseEnter(e);
 			}
 	protected override void OnMouseLeave(EventArgs e)
 			{
 				entered = false;
-				if (flatStyle == FlatStyle.Popup || pressed)
-				{
-					pressed = false;
-					button = MouseButtons.None;
-					Redraw();
-				}
+				Redraw();
 				base.OnMouseLeave(e);
 			}
 	protected override void OnMouseMove(MouseEventArgs e)

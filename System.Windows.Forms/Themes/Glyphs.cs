@@ -76,6 +76,12 @@ internal class Glyphs
 	public static readonly byte[] drop_down_arrow_bits =
 		{0x7f, 0x3e, 0x1c, 0x08};
 
+	// Checkmark within a checkbox.
+	public const int checkmark_width = 7;
+	public const int checkmark_height = 7;
+	public static readonly byte[] checkmark_bits =
+		{0x40, 0x60, 0x71, 0x3b, 0x1f, 0x0e, 0x04};
+
 }; // class Glyphs
 
 }; // namespace System.Windows.Forms.Themes

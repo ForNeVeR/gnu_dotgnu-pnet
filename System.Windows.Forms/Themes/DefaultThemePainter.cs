@@ -969,10 +969,69 @@ internal class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a check box control.
-	// TODO: antialiased checkmark 
 	public virtual void DrawCheckBox(Graphics graphics, int x, int y,
 								     int width, int height, ButtonState state)
 			{
+				// Draw the border around the outside of the checkbox.
+				if((state & ButtonState.Flat) == 0)
+				{
+					ControlPaint.DrawBorder3D
+						(graphics, x, y, width, height,
+						 Border3DStyle.Sunken, Border3DSide.All);
+					x += 2;
+					y += 2;
+					width -= 4;
+					height -= 4;
+				}
+				else
+				{
+					if((state & ButtonState.Inactive) != 0)
+					{
+						graphics.DrawRectangle
+							(SystemPens.ControlDark, x, y, width, height);
+					}
+					else
+					{
+						graphics.DrawRectangle
+							(SystemPens.ControlText, x, y, width, height);
+					}
+					x += 1;
+					y += 1;
+					width -= 2;
+					height -= 2;
+				}
+
+				// Fill the background of the checkbox.
+				if((state & (ButtonState.Inactive | ButtonState.Pushed)) != 0)
+				{
+					graphics.FillRectangle
+						(SystemBrushes.Control, x, y, width, height);
+				}
+				else
+				{
+					graphics.FillRectangle
+						(SystemBrushes.Window, x, y, width, height);
+				}
+
+				// Draw the checkmark in the checkbox.
+				if((state & ButtonState.Checked) != 0)
+				{
+					Color color;
+					if((state & ButtonState.Inactive) != 0)
+					{
+						color = SystemColors.ControlDark;
+					}
+					else
+					{
+						color = SystemColors.ControlText;
+					}
+					DrawGlyph(graphics, x, y, width, height,
+							  Glyphs.checkmark_bits,
+							  Glyphs.checkmark_width,
+							  Glyphs.checkmark_height, color);
+				}
+
+#if false	// May need later for non-standard glyph sizes.
 				Brush brush = new SolidBrush(Color.White);
 				ControlPaint.DrawBorder3D(graphics, x, y, width, height, Border3DStyle.Sunken, Border3DSide.All);
 				graphics.FillRectangle(brush, x + 2, y + 2, width - 2, height - 2);
@@ -990,6 +1049,7 @@ internal class DefaultThemePainter : IThemePainter
 					blackBrush.Dispose();
 					pen.Dispose();
 				}
+#endif
 			}
 
 	// Draw a combo box's drop down button control.

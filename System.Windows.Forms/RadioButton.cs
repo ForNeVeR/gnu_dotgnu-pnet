@@ -469,19 +469,8 @@ public class RadioButton : ButtonBase
 				return false;
 			}
 
-	// Redraw the button after a state change.
-	private void Redraw()
-			{
-				// Bail out if the button is not currently visible.
-				if (!Visible || !IsHandleCreated) { return; }
 
-				// Redraw the button.
-				using (Graphics graphics = CreateGraphics())
-				{
-					Draw(graphics);
-				}
-			}
-
+	// Convert this object into a string.
 	public override string ToString()
 			{
 				return GetType().FullName.ToString() + ", Checked: " + Checked.ToString();

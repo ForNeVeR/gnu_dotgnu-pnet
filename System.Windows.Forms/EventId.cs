@@ -88,6 +88,8 @@ internal enum EventId
 	VisibleChanged,
 
 	// "CheckBox" events.
+	AppearanceChanged,
+	CheckedChanged,
 	CheckStateChanged,
 
 	// "Label" events.

@@ -115,6 +115,7 @@ Arg_FileIOAccess=Invalid file I/O permission access value
 Arg_SecurityFlag=Invalid security permission flag value
 Arg_ReflectionFlag=Invalid reflection permission flag value
 Arg_FileDialogAccess=Invalid file dialog permission access value
+Arg_InvalidSite=Invalid site permission value
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

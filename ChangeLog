@@ -44,6 +44,15 @@
 	interface for code access security (CAS) so that most of the work
 	happens in the C# code, not the runtime engine.
 
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Security/Permissions/SiteIdentityPermission.cs,
+	runtime/System/Security/Permissions/SiteIdentityPermissionAttribute.cs,
+	runtime/System/Security/Permissions/UrlIdentityPermission.cs,
+	runtime/System/Security/Permissions/UrlIdentityPermissionAttribute.cs,
+	runtime/System/Security/Permissions/ZoneIdentityPermission.cs,
+	runtime/System/Security/Permissions/ZoneIdentityPermissionAttribute.cs:
+	more non-ECMA permissions classes.
+
 2003-03-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/UTF8Encoding.cs,

@@ -723,7 +723,7 @@ break;
  *   <after>..., newpointer</after>
  *
  *   <description>Pop <i>pointer</i> from the stack as type <code>ptr</code>.
- *   Compute <i>newpointer = pointer + N</code> and push <i>newpointer</i>
+ *   Compute <i>newpointer = pointer + N</i> and push <i>newpointer</i>
  *   onto the stack.</description>
  * </opcode>
  */
@@ -753,7 +753,7 @@ break;
  *
  *   <description>Read <i>pointer</i> from the <i>N</i> positions
  *   down the stack as type <code>ptr</code>.  Compute
- *   <i>newpointer = pointer + M</code> and replace <i>pointer</i>
+ *   <i>newpointer = pointer + M</i> and replace <i>pointer</i>
  *   with <i>newpointer</i>.  A value of <i>N == 0</i> indicates the
  *   top-most stack word.</description>
  *
@@ -785,7 +785,7 @@ break;
  *
  *   <description>Pop <i>pointer</i> and <i>value</i> from the stack
  *   as the types <code>ptr</code> and <code>int32</code> respectively.
- *   Compute <i>newpointer = pointer + value</code> and push
+ *   Compute <i>newpointer = pointer + value</i> and push
  *   <i>newpointer</i> onto the stack.</description>
  *
  *   <notes>The <i>padd_offset</i> instruction is more efficient if
@@ -816,7 +816,7 @@ break;
  *
  *   <description>Pop <i>value</i> and <i>pointer</i> from the stack
  *   as the types <code>int32</code> and <code>ptr</code> respectively.
- *   Compute <i>newpointer = pointer + value</code> and push
+ *   Compute <i>newpointer = pointer + value</i> and push
  *   <i>newpointer</i> onto the stack.</description>
  * </opcode>
  */
@@ -843,7 +843,7 @@ break;
  *
  *   <description>Pop <i>pointer</i> and <i>value</i> from the stack
  *   as the types <code>ptr</code> and <code>int64</code> respectively.
- *   Compute <i>newpointer = pointer + value</code> and push
+ *   Compute <i>newpointer = pointer + value</i> and push
  *   <i>newpointer</i> onto the stack.</description>
  *
  *   <notes>The <i>value</i> will be truncated to 32 bits on platforms
@@ -884,7 +884,7 @@ break;
  *
  *   <description>Pop <i>value</i> and <i>pointer</i> from the stack
  *   as the types <code>int64</code> and <code>ptr</code> respectively.
- *   Compute <i>newpointer = pointer + value</code> and push
+ *   Compute <i>newpointer = pointer + value</i> and push
  *   <i>newpointer</i> onto the stack.</description>
  *
  *   <notes>The <i>value</i> will be truncated to 32 bits on platforms
@@ -921,7 +921,7 @@ break;
  *   <after>..., result</after>
  *
  *   <description>Pop <i>value1</i> and <i>value2</i> from the stack
- *   as type <code>ptr</code>.  Compute <i>result = value1 - value2</code>
+ *   as type <code>ptr</code>.  Compute <i>result = value1 - value2</i>
  *   and push <i>result</i> onto the stack.  The type of <i>result</i>
  *   will be either <code>int32</code> or <code>int64</code>, depending
  *   upon the platform.</description>
@@ -956,7 +956,7 @@ break;
  *
  *   <description>Pop <i>pointer</i> and <i>value</i> from the stack
  *   as the types <code>ptr</code> and <code>int32</code> respectively.
- *   Compute <i>newpointer = pointer - value</code> and push
+ *   Compute <i>newpointer = pointer - value</i> and push
  *   <i>newpointer</i> onto the stack.</description>
  * </opcode>
  */
@@ -983,7 +983,7 @@ break;
  *
  *   <description>Pop <i>pointer</i> and <i>value</i> from the stack
  *   as the types <code>ptr</code> and <code>int64</code> respectively.
- *   Compute <i>newpointer = pointer - value</code> and push
+ *   Compute <i>newpointer = pointer - value</i> and push
  *   <i>newpointer</i> onto the stack.</description>
  *
  *   <notes>The <i>value</i> will be truncated to 32 bits on platforms
@@ -1128,9 +1128,9 @@ break
  *   and push it onto the stack.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1155,9 +1155,9 @@ SIMPLE_READ_ELEM(COP_BREAD_ELEM,  ILInt8);
  *   and push it onto the stack.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1182,9 +1182,9 @@ SIMPLE_READ_ELEM(COP_UBREAD_ELEM, ILUInt8);
  *   and push it onto the stack.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1209,9 +1209,9 @@ SIMPLE_READ_ELEM(COP_SREAD_ELEM,  ILInt16);
  *   and push it onto the stack.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1238,9 +1238,9 @@ SIMPLE_READ_ELEM(COP_USREAD_ELEM, ILUInt16);
  *   type <code>uint32</code> from an array.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1269,9 +1269,9 @@ SIMPLE_READ_ELEM(COP_IREAD_ELEM,  ILInt32);
  *   platforms.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1343,9 +1343,9 @@ break
  *   position <i>index</i> in <i>array</i>.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1370,9 +1370,9 @@ SIMPLE_WRITE_ELEM(COP_BWRITE_ELEM, ILInt8);
  *   position <i>index</i> in <i>array</i>.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1397,9 +1397,9 @@ SIMPLE_WRITE_ELEM(COP_SWRITE_ELEM, ILInt16);
  *   in <i>array</i>.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1429,9 +1429,9 @@ SIMPLE_WRITE_ELEM(COP_IWRITE_ELEM, ILInt32);
  *   platforms.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1488,9 +1488,9 @@ break;
  *   elements by pointer.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1548,9 +1548,9 @@ break;
  *   elements by pointer.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1608,9 +1608,9 @@ break;
  *   instruction to store <i>value</i> at <i>pointer</i>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -1654,7 +1654,7 @@ break;
  *   as type <code>native int</code>.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -1706,7 +1706,7 @@ break;
  *   the sequence <i>cknull, ldc_i4 N, padd_i4, bread</i>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -1745,7 +1745,7 @@ break;
  *   the sequence <i>cknull, ldc_i4 N, padd_i4, ubread</i>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -1784,7 +1784,7 @@ break;
  *   the sequence <i>cknull, ldc_i4 N, padd_i4, sread</i>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -1823,7 +1823,7 @@ break;
  *   the sequence <i>cknull, ldc_i4 N, padd_i4, usread</i>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -1862,7 +1862,7 @@ break;
  *   the sequence <i>cknull, ldc_i4 N, padd_i4, iread</i>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -1906,7 +1906,7 @@ break;
  *   platforms.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -1949,7 +1949,7 @@ break;
  *   <code>uint8</code>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -1992,7 +1992,7 @@ break;
  *   <code>uint16</code>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -2034,7 +2034,7 @@ break;
  *   <code>uint32</code>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -2078,7 +2078,7 @@ break;
  *   platforms.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>object</i> is <code>null</code>.</exception>
  *   </exceptions>
  * </opcode>
@@ -2122,7 +2122,7 @@ break;
  *   Use <i>castinterface</i> to cast objects to interfaces.</notes>
  *
  *   <exceptions>
- *     <exception name="System.InvalidCastException"/>Raised if
+ *     <exception name="System.InvalidCastException">Raised if
  *     <i>object</i>'s class does not inherit from <i>class</i>.</exception>
  *   </exceptions>
  * </opcode>
@@ -2205,7 +2205,7 @@ break;
  *   Use <i>castclass</i> to cast objects to parent classes.</notes>
  *
  *   <exceptions>
- *     <exception name="System.InvalidCastException"/>Raised if
+ *     <exception name="System.InvalidCastException">Raised if
  *     <i>object</i>'s class does not implement <i>interface</i>.</exception>
  *   </exceptions>
  * </opcode>
@@ -2289,7 +2289,7 @@ break;
  *   fields within a class.</notes>
  *
  *   <exceptions>
- *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     <exception name="System.OutOfMemoryException">Raised if
  *     there is insufficient memory to allocate the static data
  *     area.</exception>
  *   </exceptions>
@@ -2337,7 +2337,7 @@ break;
  *   initialized to zero.</notes>
  *
  *   <exceptions>
- *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     <exception name="System.OutOfMemoryException">Raised if
  *     there is insufficient memory to allocate the object.</exception>
  *   </exceptions>
  * </opcode>
@@ -2416,7 +2416,7 @@ break;
  *   object onto the stack.</description>
  *
  *   <exceptions>
- *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     <exception name="System.OutOfMemoryException">Raised if
  *     there is insufficient memory to allocate the string.</exception>
  *   </exceptions>
  * </opcode>
@@ -2487,7 +2487,7 @@ break;
  *   to the contents of the object.</notes>
  *
  *   <exceptions>
- *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     <exception name="System.OutOfMemoryException">Raised if
  *     there is insufficient memory to allocate the new object.</exception>
  *   </exceptions>
  * </opcode>
@@ -2527,7 +2527,7 @@ break;
  *   descriptor, which may 32 or 64 bits in size.</notes>
  *
  *   <exceptions>
- *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     <exception name="System.OutOfMemoryException">Raised if
  *     there is insufficient memory to allocate the new object.</exception>
  *   </exceptions>
  * </opcode>
@@ -2592,7 +2592,7 @@ break;
  *
  *   <description>Pop <i>dest</i>, <i>src</i>, and <i>length</i>
  *   from the stack as the types <code>ptr</code>, <code>ptr</code>,
- *   and </code>uint32</code> respectively.  Move <i>length</i> bytes
+ *   and <code>uint32</code> respectively.  Move <i>length</i> bytes
  *   of memory from <i>src</i> to <i>dest</i>.</description>
  *
  *   <notes>If the source and destination regions overlap, this instruction
@@ -2827,12 +2827,12 @@ break
  *   <i>index</i> in <i>array</i>, and push it onto the stack.</description>
  *
  *   <notes>This instruction can also be used to read values of
- *   type <cod>uint64</code>.</notes>
+ *   type <code>uint64</code>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -2858,9 +2858,9 @@ LARGE_READ_ELEM(COP_PREFIX_LREAD_ELEM, ILInt64, CVM_WORDS_PER_LONG,
  *   and push it onto the stack.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -2886,9 +2886,9 @@ LARGE_READ_ELEM(COP_PREFIX_FREAD_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
  *   and push it onto the stack.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -2943,9 +2943,9 @@ break
  *   type <code>uint64</code>.</notes>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -2971,9 +2971,9 @@ LARGE_WRITE_ELEM(COP_PREFIX_LWRITE_ELEM, ILInt64, CVM_WORDS_PER_LONG,
  *   at position <i>index</i> in <i>array</i>.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>
@@ -2999,9 +2999,9 @@ LARGE_WRITE_ELEM(COP_PREFIX_FWRITE_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
  *   at position <i>index</i> in <i>array</i>.</description>
  *
  *   <exceptions>
- *     <exception name="System.NullReferenceException"/>Raised if
+ *     <exception name="System.NullReferenceException">Raised if
  *     <i>array</i> is <code>null</code>.</exception>
- *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <exception name="System.IndexOutOfRangeException">Raised if
  *     <i>index</i> is not within the array's bounds.</exception>
  *   </exceptions>
  * </opcode>

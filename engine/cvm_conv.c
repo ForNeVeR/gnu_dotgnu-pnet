@@ -321,9 +321,9 @@ break;
  * <opcode name="iu2l">
  *   <operation>Convert <code>uint32</code> to <code>int64</code></operation>
  *
- *   <format>i2ul</format>
+ *   <format>iu2l</format>
  *
- *   <form name="i2ul" code="COP_I2UL"/>
+ *   <form name="iu2l" code="COP_IU2L"/>
  *
  *   <before>..., value</before>
  *   <after>..., result</after>

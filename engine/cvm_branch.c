@@ -86,7 +86,7 @@ break;
  *   then the program branches to <i>pc + offset</i>.  Otherwise,
  *   the program continues with the next instruction.</description>
  *
- *   <notes>This instruction must not be confused with <code>peq</code>.
+ *   <notes>This instruction must not be confused with <i>br_peq</i>.
  *   Values of type <code>int32</code> and <code>ptr</code> do not
  *   necessarily occupy the same amount of space in a stack word on
  *   all platforms.</notes>
@@ -126,7 +126,7 @@ break;
  *   then the program branches to <i>pc + offset</i>.  Otherwise,
  *   the program continues with the next instruction.</description>
  *
- *   <notes>This instruction must not be confused with <code>pne</code>.
+ *   <notes>This instruction must not be confused with <i>br_pne</i>.
  *   Values of type <code>int32</code> and <code>ptr</code> do not
  *   necessarily occupy the same amount of space in a stack word on
  *   all platforms.</notes>
@@ -594,15 +594,15 @@ case COP_BRNONNULL:
 break;
 
 /**
- * <opcode name="peq">
+ * <opcode name="br_peq">
  *   <operation>Branch conditionally if <code>ptr</code> values
  *   are equal</operation>
  *
- *   <format>peq<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
- *   <format>br_long<fsep/>peq
+ *   <format>br_peq<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>br_peq
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
  *
- *   <form name="peq" code="COP_PEQ"/>
+ *   <form name="br_peq" code="COP_BR_PEQ"/>
  *
  *   <before>..., value1, value2</before>
  *   <after>...</after>
@@ -612,7 +612,7 @@ break;
  *   then the program branches to <i>pc + offset</i>.  Otherwise,
  *   the program continues with the next instruction.</description>
  *
- *   <notes>This instruction must not be confused with <code>beq</code>.
+ *   <notes>This instruction must not be confused with <i>beq</i>.
  *   Values of type <code>int32</code> and <code>ptr</code> do not
  *   necessarily occupy the same amount of space in a stack word on
  *   all platforms.</notes>
@@ -634,15 +634,15 @@ case COP_BR_PEQ:
 break;
 
 /**
- * <opcode name="pne">
+ * <opcode name="br_pne">
  *   <operation>Branch conditionally if <code>ptr</code> values
  *   are not equal</operation>
  *
- *   <format>pne<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
- *   <format>br_long<fsep/>pne
+ *   <format>br_pne<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>br_pne
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
  *
- *   <form name="pne" code="COP_PNE"/>
+ *   <form name="br_pne" code="COP_BR_PNE"/>
  *
  *   <before>..., value1, value2</before>
  *   <after>...</after>
@@ -652,7 +652,7 @@ break;
  *   then the program branches to <i>pc + offset</i>.  Otherwise,
  *   the program continues with the next instruction.</description>
  *
- *   <notes>This instruction must not be confused with <code>bne</code>.
+ *   <notes>This instruction must not be confused with <i>bne</i>.
  *   Values of type <code>int32</code> and <code>ptr</code> do not
  *   necessarily occupy the same amount of space in a stack word on
  *   all platforms.</notes>
@@ -971,7 +971,7 @@ break;
  *   <after>...</after>
  *
  *   <description>The <i>value</i> is popped from the stack as
- *   type <i>uint32</code>.  If it is greater than or equal to
+ *   type <code>uint32</code>.  If it is greater than or equal to
  *   <i>max</i>, then the program continues at <i>pc + defoffset</i>.
  *   Otherwise, the 32-bit signed value at <i>pc + 9 + value * 4</i>
  *   is fetched and added to <i>pc</i>.</description>

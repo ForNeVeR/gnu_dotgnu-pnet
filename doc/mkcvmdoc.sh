@@ -36,7 +36,7 @@ if test ! -d "$top_srcdir/doc/cvmdoc" ; then
 fi
 
 # Create the "cvm.xml" file from the interpreter sources.
-if "$top_builddir/csdoc/src2xml" "$top_srcdir"/engine/cvm_*.c >"$top_srcdir/doc/cvmdoc/cvm.xml" ; then
+if "$top_builddir/csdoc/src2xml" "$top_srcdir"/engine/cvm*.c >"$top_srcdir/doc/cvmdoc/cvm.xml" ; then
 	:
 else
 	rm -f "$top_srcdir/doc/cvmdoc/cvm.xml"

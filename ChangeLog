@@ -39,6 +39,8 @@
 	* runtime/System/IO/Path.cs: Fix small typo GetTempFilename to 
 	GetTempFileName 
 
+	* System/Net/IPAddress.cs: Fix sign extension bug in Parse()
+
 2002-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Platform/Errno.cs, System/Platform/SocketMethods.cs,

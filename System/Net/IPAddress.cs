@@ -125,7 +125,10 @@ public class IPAddress
 					throw new FormatException(S._("Format_IP"));
 				}
 
-				parsed = (quadD + (quadC << 8) + (quadB << 16) + (quadA << 24));
+				parsed=	((quadD)) ;
+				parsed|=((quadC << 8)  & 0xFF00);
+				parsed|=((quadB << 16) & 0xFF0000);
+				parsed|=((quadA << 24) & 0xFF000000);
 
 				return new IPAddress((long)(uint)HostToNetworkOrder(parsed));
 			}	

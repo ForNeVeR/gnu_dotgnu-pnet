@@ -32,6 +32,21 @@ public class CID0814 : CID0014
 	public CID0814()
 		: base(0x0814, CultureNameTable.GetNameInfoByID(0x0814)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "nn";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "NO";
+		}
+	}
+
 }; // class CID0814
 
 public class CNnn_no : CID0814

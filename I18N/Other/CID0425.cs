@@ -32,6 +32,21 @@ public class CID0425 : CID0025
 	public CID0425()
 		: base(0x0425, CultureNameTable.GetNameInfoByID(0x0425)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "et";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "EE";
+		}
+	}
+
 }; // class CID0425
 
 public class CNet_ee : CID0425

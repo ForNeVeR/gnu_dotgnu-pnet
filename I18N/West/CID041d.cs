@@ -32,6 +32,21 @@ public class CID041d : CID001d
 	public CID041d()
 		: base(0x041D, CultureNameTable.GetNameInfoByID(0x041D)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "sv";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "SE";
+		}
+	}
+
 }; // class CID041d
 
 public class CNsv_se : CID041d

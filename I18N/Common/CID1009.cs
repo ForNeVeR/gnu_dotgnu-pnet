@@ -1,5 +1,5 @@
 /*
- * CID0c09.cs - en-AU culture handler.
+ * CID1009.cs - en-CA culture handler.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -18,19 +18,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// Generated from "en_AU.txt".
+// Generated from "en_CA.txt".
 
-namespace I18N.West
+namespace I18N.Common
 {
 
 using System;
 using System.Globalization;
-using I18N.Common;
 
-public class CID0c09 : CID0009
+public class CID1009 : CID0009
 {
-	public CID0c09()
-		: base(0x0C09, CultureNameTable.GetNameInfoByID(0x0C09)) {}
+	public CID1009()
+		: base(0x1009, CultureNameTable.GetNameInfoByID(0x1009)) {}
+
+	public override String Language
+	{
+		get
+		{
+			return "en";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "CA";
+		}
+	}
 
 	public override DateTimeFormatInfo DateTimeFormat
 	{
@@ -39,22 +53,22 @@ public class CID0c09 : CID0009
 			DateTimeFormatInfo dfi = base.DateTimeFormat;
 			dfi.DateSeparator = "/";
 			dfi.TimeSeparator = ":";
-			dfi.LongDatePattern = "d MMMM yyyy";
-			dfi.LongTimePattern = "h:mm:ss tt";
+			dfi.LongDatePattern = "MMMM d, yyyy";
+			dfi.LongTimePattern = "h:mm:ss tt z";
 			dfi.ShortDatePattern = "dd/MM/yy";
 			dfi.ShortTimePattern = "h:mm tt";
-			dfi.FullDateTimePattern = "dddd, d MMMM yyyy h:mm:ss tt z";
+			dfi.FullDateTimePattern = "dddd, MMMM d, yyyy h:mm:ss tt z";
 #if !ECMA_COMPAT
 			dfi.I18NSetDateTimePatterns(new String[] {
 				"d:dd/MM/yy",
-				"D:dddd, d MMMM yyyy",
-				"f:dddd, d MMMM yyyy h:mm:ss tt z",
-				"f:dddd, d MMMM yyyy h:mm:ss tt",
-				"f:dddd, d MMMM yyyy h:mm:ss tt",
-				"f:dddd, d MMMM yyyy h:mm tt",
-				"F:dddd, d MMMM yyyy HH:mm:ss",
+				"D:dddd, MMMM d, yyyy",
+				"f:dddd, MMMM d, yyyy h:mm:ss tt z",
+				"f:dddd, MMMM d, yyyy h:mm:ss tt z",
+				"f:dddd, MMMM d, yyyy h:mm:ss tt",
+				"f:dddd, MMMM d, yyyy h:mm tt",
+				"F:dddd, MMMM d, yyyy HH:mm:ss",
 				"g:dd/MM/yy h:mm:ss tt z",
-				"g:dd/MM/yy h:mm:ss tt",
+				"g:dd/MM/yy h:mm:ss tt z",
 				"g:dd/MM/yy h:mm:ss tt",
 				"g:dd/MM/yy h:mm tt",
 				"G:dd/MM/yy HH:mm:ss",
@@ -64,7 +78,7 @@ public class CID0c09 : CID0009
 				"R:ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
 				"s:yyyy'-'MM'-'dd'T'HH':'mm':'ss",
 				"t:h:mm:ss tt z",
-				"t:h:mm:ss tt",
+				"t:h:mm:ss tt z",
 				"t:h:mm:ss tt",
 				"t:h:mm tt",
 				"T:HH:mm:ss",
@@ -82,27 +96,12 @@ public class CID0c09 : CID0009
 		}
 	}
 
-	public override NumberFormatInfo NumberFormat
-	{
-		get
-		{
-			NumberFormatInfo nfi = base.NumberFormat;
-			nfi.CurrencySymbol = "$";
-			nfi.CurrencyDecimalDigits = 2;
-			return nfi;
-		}
-		set
-		{
-			base.NumberFormat = value; // not used
-		}
-	}
+}; // class CID1009
 
-}; // class CID0c09
-
-public class CNen_au : CID0c09
+public class CNen_ca : CID1009
 {
-	public CNen_au() : base() {}
+	public CNen_ca() : base() {}
 
-}; // class CNen_au
+}; // class CNen_ca
 
-}; // namespace I18N.West
+}; // namespace I18N.Common

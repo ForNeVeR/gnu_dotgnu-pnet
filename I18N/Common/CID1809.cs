@@ -20,17 +20,31 @@
 
 // Generated from "en_IE.txt".
 
-namespace I18N.West
+namespace I18N.Common
 {
 
 using System;
 using System.Globalization;
-using I18N.Common;
 
 public class CID1809 : CID0009
 {
 	public CID1809()
 		: base(0x1809, CultureNameTable.GetNameInfoByID(0x1809)) {}
+
+	public override String Language
+	{
+		get
+		{
+			return "en";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "IE";
+		}
+	}
 
 	public override DateTimeFormatInfo DateTimeFormat
 	{
@@ -90,4 +104,4 @@ public class CNen_ie : CID1809
 
 }; // class CNen_ie
 
-}; // namespace I18N.West
+}; // namespace I18N.Common

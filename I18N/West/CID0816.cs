@@ -32,6 +32,21 @@ public class CID0816 : CID0016
 	public CID0816()
 		: base(0x0816, CultureNameTable.GetNameInfoByID(0x0816)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "pt";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "PT";
+		}
+	}
+
 	public override NumberFormatInfo NumberFormat
 	{
 		get

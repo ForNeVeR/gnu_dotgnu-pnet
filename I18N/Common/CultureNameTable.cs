@@ -148,10 +148,10 @@ public sealed class CultureNameTable
 			("eu-ES", 0x042D, "eu", "eus", "EUQ", "Basque (Spain)",
 			 "euskara (Espainia)"));
 		Add(new CultureName
-			("be",    0x002D, "be", "bel", "BEL", "Belarusian",
+			("be",    0x0023, "be", "bel", "BEL", "Belarusian",
 			 "\u0411\u0435\u043B\u0430\u0440\u0443\u0441\u043A\u0456"));
 		Add(new CultureName
-			("be-BY", 0x042D, "be", "bel", "BEL", "Belarusian (Belarus)",
+			("be-BY", 0x0423, "be", "bel", "BEL", "Belarusian (Belarus)",
 			 "\u0411\u0435\u043B\u0430\u0440\u0443\u0441\u043A\u0456 (\u0411\u0435\u043B\u0430\u0440\u0443\u0441\u044C)"));
 		Add(new CultureName
 			("bg",    0x0002, "bg", "bul", "BGR", "Bulgarian",

@@ -32,6 +32,21 @@ public class CID1801 : CID0001
 	public CID1801()
 		: base(0x1801, CultureNameTable.GetNameInfoByID(0x1801)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "ar";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "MA";
+		}
+	}
+
 }; // class CID1801
 
 public class CNar_ma : CID1801

@@ -20,17 +20,31 @@
 
 // Generated from "en_US.txt".
 
-namespace I18N.West
+namespace I18N.Common
 {
 
 using System;
 using System.Globalization;
-using I18N.Common;
 
 public class CID0409 : CID0009
 {
 	public CID0409()
 		: base(0x0409, CultureNameTable.GetNameInfoByID(0x0409)) {}
+
+	public override String Language
+	{
+		get
+		{
+			return "en";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "US";
+		}
+	}
 
 	public override NumberFormatInfo NumberFormat
 	{
@@ -55,4 +69,4 @@ public class CNen_us : CID0409
 
 }; // class CNen_us
 
-}; // namespace I18N.West
+}; // namespace I18N.Common

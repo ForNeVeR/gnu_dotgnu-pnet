@@ -32,6 +32,21 @@ public class CID3001 : CID0001
 	public CID3001()
 		: base(0x3001, CultureNameTable.GetNameInfoByID(0x3001)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "ar";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "LB";
+		}
+	}
+
 	public override DateTimeFormatInfo DateTimeFormat
 	{
 		get

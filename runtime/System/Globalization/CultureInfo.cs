@@ -411,9 +411,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					// We use the prevailing resources to translate
-					// the english name into a display name.
-					return _(EnglishName);
+					if(handler != null)
+					{
+						return handler.DisplayName;
+					}
+					return "Invariant Language (Invariant Country)";
 				}
 			}
 

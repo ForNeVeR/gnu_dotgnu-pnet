@@ -32,6 +32,21 @@ public class CID042f : CID002f
 	public CID042f()
 		: base(0x042F, CultureNameTable.GetNameInfoByID(0x042F)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "mk";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "MK";
+		}
+	}
+
 }; // class CID042f
 
 public class CNmk_mk : CID042f

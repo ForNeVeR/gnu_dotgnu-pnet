@@ -32,6 +32,21 @@ public class CID040d : CID000d
 	public CID040d()
 		: base(0x040D, CultureNameTable.GetNameInfoByID(0x040D)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "he";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "IL";
+		}
+	}
+
 }; // class CID040d
 
 public class CNhe_il : CID040d

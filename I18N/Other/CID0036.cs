@@ -36,6 +36,14 @@ public class CID0036 : RootCulture
 	public CID0036(int culture, CultureName cultureName)
 		: base(culture, cultureName) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "af";
+		}
+	}
+
 	public override DateTimeFormatInfo DateTimeFormat
 	{
 		get

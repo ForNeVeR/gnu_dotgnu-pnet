@@ -32,6 +32,21 @@ public class CID3401 : CID0001
 	public CID3401()
 		: base(0x3401, CultureNameTable.GetNameInfoByID(0x3401)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "ar";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "KW";
+		}
+	}
+
 }; // class CID3401
 
 public class CNar_kw : CID3401

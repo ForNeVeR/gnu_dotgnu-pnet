@@ -32,6 +32,21 @@ public class CID0406 : CID0006
 	public CID0406()
 		: base(0x0406, CultureNameTable.GetNameInfoByID(0x0406)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "da";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "DK";
+		}
+	}
+
 }; // class CID0406
 
 public class CNda_dk : CID0406

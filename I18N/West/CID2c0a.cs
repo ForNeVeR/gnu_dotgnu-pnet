@@ -32,6 +32,21 @@ public class CID2c0a : CID000a
 	public CID2c0a()
 		: base(0x2C0A, CultureNameTable.GetNameInfoByID(0x2C0A)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "es";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "AR";
+		}
+	}
+
 	public override DateTimeFormatInfo DateTimeFormat
 	{
 		get

@@ -32,6 +32,21 @@ public class CID042a : CID002a
 	public CID042a()
 		: base(0x042A, CultureNameTable.GetNameInfoByID(0x042A)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "vi";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "VN";
+		}
+	}
+
 }; // class CID042a
 
 public class CNvi_vn : CID042a

@@ -36,6 +36,14 @@ public class CID001c : RootCulture
 	public CID001c(int culture, CultureName cultureName)
 		: base(culture, cultureName) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "sq";
+		}
+	}
+
 	public override DateTimeFormatInfo DateTimeFormat
 	{
 		get
@@ -112,6 +120,24 @@ public class CID001c : RootCulture
 		{
 			base.NumberFormat = value; // not used
 		}
+	}
+
+	public override String ResolveLanguage(String name)
+	{
+		switch(name)
+		{
+			case "sq": return "shqipe";
+		}
+		return base.ResolveLanguage(name);
+	}
+
+	public override String ResolveCountry(String name)
+	{
+		switch(name)
+		{
+			case "AL": return "Shqip\u00EBria";
+		}
+		return base.ResolveCountry(name);
 	}
 
 }; // class CID001c

@@ -566,7 +566,7 @@ static void printHeader(void)
 		   indicates to "CultureInfo" that this is an inherited
 		   definition, and that it should not attempt to recursively
 		   load the culture again */
-		printf("public class RootCulture : CultureInfo\n{\n", identifier);
+		printf("public abstract class RootCulture : CultureInfo\n{\n");
 		printf("\tprivate CultureName cultureName;\n\n");
 		printf("\tpublic RootCulture(int culture, CultureName cultureName)\n");
 		printf("\t\t: base(0x40000000 + culture)\n");
@@ -575,11 +575,18 @@ static void printHeader(void)
 		printf("\t}\n\n");
 
 		/* Override the name properties */
+		printf("\tpublic override String DisplayName\n");
+		printf("\t{\n");
+		printf("\t\tget\n");
+		printf("\t\t{\n");
+		printf("\t\t\treturn Manager.GetDisplayName(this);\n");
+		printf("\t\t}\n");
+		printf("\t}\n");
 		printf("\tpublic override String EnglishName\n");
 		printf("\t{\n");
 		printf("\t\tget\n");
 		printf("\t\t{\n");
-		printf("\t\t\treturn cultureName.englishName;\n");
+		printf("\t\t\treturn Manager.GetEnglishName(this);\n");
 		printf("\t\t}\n");
 		printf("\t}\n");
 		printf("\tpublic override String Name\n");
@@ -593,7 +600,7 @@ static void printHeader(void)
 		printf("\t{\n");
 		printf("\t\tget\n");
 		printf("\t\t{\n");
-		printf("\t\t\treturn cultureName.nativeName;\n");
+		printf("\t\t\treturn Manager.GetNativeName(this);\n");
 		printf("\t\t}\n");
 		printf("\t}\n");
 		printf("\tpublic override String ThreeLetterISOLanguageName\n");
@@ -615,6 +622,16 @@ static void printHeader(void)
 		printf("\t\tget\n");
 		printf("\t\t{\n");
 		printf("\t\t\treturn cultureName.twoLetterISOName;\n");
+		printf("\t\t}\n");
+		printf("\t}\n\n");
+
+		/* Declare the "Language" and "Country" properties for the root */
+		printf("\tpublic abstract String Language { get; }\n");
+		printf("\tpublic virtual String Country\n");
+		printf("\t{\n");
+		printf("\t\tget\n");
+		printf("\t\t{\n");
+		printf("\t\t\treturn null;\n");
 		printf("\t\t}\n");
 		printf("\t}\n\n");
 	}
@@ -641,6 +658,28 @@ static void printHeader(void)
 		printf("\t\t: base(0x%04X, "
 					"CultureNameTable.GetNameInfoByID(0x%04X)) {}\n\n",
 			   identifier, identifier);
+	}
+	if(identifier != 0)
+	{
+		/* Declare the "Language" and "Country" properties for a culture */
+		printf("\tpublic override String Language\n");
+		printf("\t{\n");
+		printf("\t\tget\n");
+		printf("\t\t{\n");
+		printf("\t\t\treturn \"%c%c\";\n", name[0], name[1]);
+		printf("\t\t}\n");
+		printf("\t}\n");
+		if(strlen(name) > 2)
+		{
+			printf("\tpublic override String Country\n");
+			printf("\t{\n");
+			printf("\t\tget\n");
+			printf("\t\t{\n");
+			printf("\t\t\treturn \"%c%c\";\n", name[3], name[4]);
+			printf("\t\t}\n");
+			printf("\t}\n");
+		}
+		printf("\n");
 	}
 }
 
@@ -1165,10 +1204,99 @@ static void printNumberFormat(void)
 }
 
 /*
+ * Print the language name resolvers.
+ */
+static void printLanguageResolvers(void)
+{
+	Node *langs = getNode("Languages");
+	Node *countries = getNode("Countries");
+	Node *child;
+
+	/* Bail out if no language or country names are defined for this culture */
+	if(!langs && !countries)
+	{
+		return;
+	}
+
+	/* Create the language resolver method */
+	if(langs)
+	{
+		if(!identifier)
+		{
+			printf("\tpublic virtual String ResolveLanguage(String name)\n");
+		}
+		else
+		{
+			printf("\tpublic override String ResolveLanguage(String name)\n");
+		}
+		printf("\t{\n");
+		printf("\t\tswitch(name)\n");
+		printf("\t\t{\n");
+		child = langs->children;
+		while(child != 0)
+		{
+			if(child->children)
+			{
+				printf("\t\t\tcase \"%s\": return \"%s\";\n",
+					   child->name, child->children->name);
+			}
+			child = child->next;
+		}
+		printf("\t\t}\n");
+		if(!identifier)
+		{
+			printf("\t\treturn name;\n");
+		}
+		else
+		{
+			printf("\t\treturn base.ResolveLanguage(name);\n");
+		}
+		printf("\t}\n\n");
+	}
+
+	/* Create the country resolver method */
+	if(countries)
+	{
+		if(!identifier)
+		{
+			printf("\tpublic virtual String ResolveCountry(String name)\n");
+		}
+		else
+		{
+			printf("\tpublic override String ResolveCountry(String name)\n");
+		}
+		printf("\t{\n");
+		printf("\t\tswitch(name)\n");
+		printf("\t\t{\n");
+		child = countries->children;
+		while(child != 0)
+		{
+			if(child->children)
+			{
+				printf("\t\t\tcase \"%s\": return \"%s\";\n",
+					   child->name, child->children->name);
+			}
+			child = child->next;
+		}
+		printf("\t\t}\n");
+		if(!identifier)
+		{
+			printf("\t\treturn name;\n");
+		}
+		else
+		{
+			printf("\t\treturn base.ResolveCountry(name);\n");
+		}
+		printf("\t}\n\n");
+	}
+}
+
+/*
  * Print the definition of the culture, using the loaded locale rules.
  */
 static void printDefinition(void)
 {
 	printDateTimeFormat();
 	printNumberFormat();
+	printLanguageResolvers();
 }

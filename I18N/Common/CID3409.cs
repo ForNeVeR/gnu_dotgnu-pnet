@@ -1,5 +1,5 @@
 /*
- * CID1009.cs - en-CA culture handler.
+ * CID3409.cs - en-PH culture handler.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -18,19 +18,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// Generated from "en_CA.txt".
+// Generated from "en_PH.txt".
 
-namespace I18N.West
+namespace I18N.Common
 {
 
 using System;
 using System.Globalization;
-using I18N.Common;
 
-public class CID1009 : CID0009
+public class CID3409 : CID0009
 {
-	public CID1009()
-		: base(0x1009, CultureNameTable.GetNameInfoByID(0x1009)) {}
+	public CID3409()
+		: base(0x3409, CultureNameTable.GetNameInfoByID(0x3409)) {}
+
+	public override String Language
+	{
+		get
+		{
+			return "en";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "PH";
+		}
+	}
 
 	public override DateTimeFormatInfo DateTimeFormat
 	{
@@ -41,23 +55,23 @@ public class CID1009 : CID0009
 			dfi.TimeSeparator = ":";
 			dfi.LongDatePattern = "MMMM d, yyyy";
 			dfi.LongTimePattern = "h:mm:ss tt z";
-			dfi.ShortDatePattern = "dd/MM/yy";
+			dfi.ShortDatePattern = "M/d/yy";
 			dfi.ShortTimePattern = "h:mm tt";
 			dfi.FullDateTimePattern = "dddd, MMMM d, yyyy h:mm:ss tt z";
 #if !ECMA_COMPAT
 			dfi.I18NSetDateTimePatterns(new String[] {
-				"d:dd/MM/yy",
+				"d:M/d/yy",
 				"D:dddd, MMMM d, yyyy",
 				"f:dddd, MMMM d, yyyy h:mm:ss tt z",
 				"f:dddd, MMMM d, yyyy h:mm:ss tt z",
 				"f:dddd, MMMM d, yyyy h:mm:ss tt",
 				"f:dddd, MMMM d, yyyy h:mm tt",
 				"F:dddd, MMMM d, yyyy HH:mm:ss",
-				"g:dd/MM/yy h:mm:ss tt z",
-				"g:dd/MM/yy h:mm:ss tt z",
-				"g:dd/MM/yy h:mm:ss tt",
-				"g:dd/MM/yy h:mm tt",
-				"G:dd/MM/yy HH:mm:ss",
+				"g:M/d/yy h:mm:ss tt z",
+				"g:M/d/yy h:mm:ss tt z",
+				"g:M/d/yy h:mm:ss tt",
+				"g:M/d/yy h:mm tt",
+				"G:M/d/yy HH:mm:ss",
 				"m:MMMM dd",
 				"M:MMMM dd",
 				"r:ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
@@ -82,12 +96,12 @@ public class CID1009 : CID0009
 		}
 	}
 
-}; // class CID1009
+}; // class CID3409
 
-public class CNen_ca : CID1009
+public class CNen_ph : CID3409
 {
-	public CNen_ca() : base() {}
+	public CNen_ph() : base() {}
 
-}; // class CNen_ca
+}; // class CNen_ph
 
-}; // namespace I18N.West
+}; // namespace I18N.Common

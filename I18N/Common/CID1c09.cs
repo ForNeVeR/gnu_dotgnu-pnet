@@ -20,17 +20,31 @@
 
 // Generated from "en_ZA.txt".
 
-namespace I18N.West
+namespace I18N.Common
 {
 
 using System;
 using System.Globalization;
-using I18N.Common;
 
 public class CID1c09 : CID0009
 {
 	public CID1c09()
 		: base(0x1C09, CultureNameTable.GetNameInfoByID(0x1C09)) {}
+
+	public override String Language
+	{
+		get
+		{
+			return "en";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "ZA";
+		}
+	}
 
 	public override DateTimeFormatInfo DateTimeFormat
 	{
@@ -90,4 +104,4 @@ public class CNen_za : CID1c09
 
 }; // class CNen_za
 
-}; // namespace I18N.West
+}; // namespace I18N.Common

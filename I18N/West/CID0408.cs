@@ -32,6 +32,21 @@ public class CID0408 : CID0008
 	public CID0408()
 		: base(0x0408, CultureNameTable.GetNameInfoByID(0x0408)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "el";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "GR";
+		}
+	}
+
 }; // class CID0408
 
 public class CNel_gr : CID0408

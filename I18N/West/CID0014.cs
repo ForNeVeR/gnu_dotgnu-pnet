@@ -36,6 +36,14 @@ public class CID0014 : RootCulture
 	public CID0014(int culture, CultureName cultureName)
 		: base(culture, cultureName) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "no";
+		}
+	}
+
 }; // class CID0014
 
 public class CNno : CID0014

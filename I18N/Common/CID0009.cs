@@ -20,12 +20,11 @@
 
 // Generated from "en.txt".
 
-namespace I18N.West
+namespace I18N.Common
 {
 
 using System;
 using System.Globalization;
-using I18N.Common;
 
 public class CID0009 : RootCulture
 {
@@ -36,6 +35,14 @@ public class CID0009 : RootCulture
 	public CID0009(int culture, CultureName cultureName)
 		: base(culture, cultureName) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "en";
+		}
+	}
+
 }; // class CID0009
 
 public class CNen : CID0009
@@ -44,4 +51,4 @@ public class CNen : CID0009
 
 }; // class CNen
 
-}; // namespace I18N.West
+}; // namespace I18N.Common

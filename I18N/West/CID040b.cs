@@ -32,6 +32,21 @@ public class CID040b : CID000b
 	public CID040b()
 		: base(0x040B, CultureNameTable.GetNameInfoByID(0x040B)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "fi";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "FI";
+		}
+	}
+
 }; // class CID040b
 
 public class CNfi_fi : CID040b

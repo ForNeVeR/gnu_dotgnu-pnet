@@ -32,6 +32,21 @@ public class CID0413 : CID0013
 	public CID0413()
 		: base(0x0413, CultureNameTable.GetNameInfoByID(0x0413)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "nl";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "NL";
+		}
+	}
+
 }; // class CID0413
 
 public class CNnl_nl : CID0413

@@ -1,5 +1,5 @@
 
-REGION_ASSEMBLIES = I18N.CJK.dll I18N.MidEast.dll \
+REGION_ASSEMBLIES = I18N.dll I18N.CJK.dll I18N.MidEast.dll \
 					I18N.Other.dll I18N.Rare.dll \
 					I18N.West.dll
 HANDLER_FILE = I18N-handlers.def
@@ -17,9 +17,8 @@ $(REGION_ASSEMBLIES): build-assemblies
 $(HANDLER_FILE): $(REGION_ASSEMBLIES)
 	$(SHELL) mklist.sh "$(ILFIND)" $(HANDLER_FILE) $(REGION_ASSEMBLIES)
 
-CLEANFILES = I18N.dll $(REGION_ASSEMBLIES) $(HANDLER_FILE)
+CLEANFILES = $(REGION_ASSEMBLIES) $(HANDLER_FILE)
 
 pnetassembliesdir = $(libdir)/cscc/lib
-pnetassemblies_DATA = I18N.dll \
-					  $(REGION_ASSEMBLIES)\
+pnetassemblies_DATA = $(REGION_ASSEMBLIES)\
 					  $(HANDLER_FILE)

@@ -32,6 +32,21 @@ public class CID1004 : CID0004
 	public CID1004()
 		: base(0x1004, CultureNameTable.GetNameInfoByID(0x1004)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "zh";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "SG";
+		}
+	}
+
 }; // class CID1004
 
 public class CNzh_sg : CID1004

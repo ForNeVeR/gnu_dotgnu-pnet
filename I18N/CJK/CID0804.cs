@@ -32,6 +32,21 @@ public class CID0804 : CID0004
 	public CID0804()
 		: base(0x0804, CultureNameTable.GetNameInfoByID(0x0804)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "zh";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "CN";
+		}
+	}
+
 	public override DateTimeFormatInfo DateTimeFormat
 	{
 		get
@@ -80,6 +95,17 @@ public class CID0804 : CID0004
 		{
 			base.DateTimeFormat = value; // not used
 		}
+	}
+
+	public override String ResolveCountry(String name)
+	{
+		switch(name)
+		{
+			case "CN": return "\u4E2D\u534E\u4EBA\u6C11\u5171\u548C\u56FD";
+			case "TW": return "\u53F0\u6E7E";
+			case "HK": return "\u9999\u6E2F";
+		}
+		return base.ResolveCountry(name);
 	}
 
 }; // class CID0804

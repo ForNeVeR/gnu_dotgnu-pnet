@@ -36,6 +36,14 @@ public class CID0056 : RootCulture
 	public CID0056(int culture, CultureName cultureName)
 		: base(culture, cultureName) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "gl";
+		}
+	}
+
 }; // class CID0056
 
 public class CNgl : CID0056

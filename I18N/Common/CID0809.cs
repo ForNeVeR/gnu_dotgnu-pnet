@@ -1,5 +1,5 @@
 /*
- * CID3409.cs - en-PH culture handler.
+ * CID0809.cs - en-GB culture handler.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -18,19 +18,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// Generated from "en_PH.txt".
+// Generated from "en_GB.txt".
 
-namespace I18N.West
+namespace I18N.Common
 {
 
 using System;
 using System.Globalization;
-using I18N.Common;
 
-public class CID3409 : CID0009
+public class CID0809 : CID0009
 {
-	public CID3409()
-		: base(0x3409, CultureNameTable.GetNameInfoByID(0x3409)) {}
+	public CID0809()
+		: base(0x0809, CultureNameTable.GetNameInfoByID(0x0809)) {}
+
+	public override String Language
+	{
+		get
+		{
+			return "en";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "GB";
+		}
+	}
 
 	public override DateTimeFormatInfo DateTimeFormat
 	{
@@ -39,34 +53,34 @@ public class CID3409 : CID0009
 			DateTimeFormatInfo dfi = base.DateTimeFormat;
 			dfi.DateSeparator = "/";
 			dfi.TimeSeparator = ":";
-			dfi.LongDatePattern = "MMMM d, yyyy";
-			dfi.LongTimePattern = "h:mm:ss tt z";
-			dfi.ShortDatePattern = "M/d/yy";
-			dfi.ShortTimePattern = "h:mm tt";
-			dfi.FullDateTimePattern = "dddd, MMMM d, yyyy h:mm:ss tt z";
+			dfi.LongDatePattern = "d MMMM yyyy";
+			dfi.LongTimePattern = "HH:mm:ss z";
+			dfi.ShortDatePattern = "dd/MM/yyyy";
+			dfi.ShortTimePattern = "HH:mm";
+			dfi.FullDateTimePattern = "dddd, d MMMM yyyy HH:mm:ss z";
 #if !ECMA_COMPAT
 			dfi.I18NSetDateTimePatterns(new String[] {
-				"d:M/d/yy",
-				"D:dddd, MMMM d, yyyy",
-				"f:dddd, MMMM d, yyyy h:mm:ss tt z",
-				"f:dddd, MMMM d, yyyy h:mm:ss tt z",
-				"f:dddd, MMMM d, yyyy h:mm:ss tt",
-				"f:dddd, MMMM d, yyyy h:mm tt",
-				"F:dddd, MMMM d, yyyy HH:mm:ss",
-				"g:M/d/yy h:mm:ss tt z",
-				"g:M/d/yy h:mm:ss tt z",
-				"g:M/d/yy h:mm:ss tt",
-				"g:M/d/yy h:mm tt",
-				"G:M/d/yy HH:mm:ss",
+				"d:dd/MM/yyyy",
+				"D:dddd, d MMMM yyyy",
+				"f:dddd, d MMMM yyyy HH:mm:ss z",
+				"f:dddd, d MMMM yyyy HH:mm:ss z",
+				"f:dddd, d MMMM yyyy HH:mm:ss",
+				"f:dddd, d MMMM yyyy HH:mm",
+				"F:dddd, d MMMM yyyy HH:mm:ss",
+				"g:dd/MM/yyyy HH:mm:ss z",
+				"g:dd/MM/yyyy HH:mm:ss z",
+				"g:dd/MM/yyyy HH:mm:ss",
+				"g:dd/MM/yyyy HH:mm",
+				"G:dd/MM/yyyy HH:mm:ss",
 				"m:MMMM dd",
 				"M:MMMM dd",
 				"r:ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
 				"R:ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
 				"s:yyyy'-'MM'-'dd'T'HH':'mm':'ss",
-				"t:h:mm:ss tt z",
-				"t:h:mm:ss tt z",
-				"t:h:mm:ss tt",
-				"t:h:mm tt",
+				"t:HH:mm:ss z",
+				"t:HH:mm:ss z",
+				"t:HH:mm:ss",
+				"t:HH:mm",
 				"T:HH:mm:ss",
 				"u:yyyy'-'MM'-'dd HH':'mm':'ss'Z'",
 				"U:dddd, dd MMMM yyyy HH:mm:ss",
@@ -82,12 +96,12 @@ public class CID3409 : CID0009
 		}
 	}
 
-}; // class CID3409
+}; // class CID0809
 
-public class CNen_ph : CID3409
+public class CNen_gb : CID0809
 {
-	public CNen_ph() : base() {}
+	public CNen_gb() : base() {}
 
-}; // class CNen_ph
+}; // class CNen_gb
 
-}; // namespace I18N.West
+}; // namespace I18N.Common

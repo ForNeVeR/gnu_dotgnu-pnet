@@ -32,6 +32,21 @@ public class CID0416 : CID0016
 	public CID0416()
 		: base(0x0416, CultureNameTable.GetNameInfoByID(0x0416)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "pt";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "BR";
+		}
+	}
+
 	public override DateTimeFormatInfo DateTimeFormat
 	{
 		get

@@ -32,6 +32,21 @@ public class CID0411 : CID0011
 	public CID0411()
 		: base(0x0411, CultureNameTable.GetNameInfoByID(0x0411)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "ja";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "JP";
+		}
+	}
+
 }; // class CID0411
 
 public class CNja_jp : CID0411

@@ -36,6 +36,14 @@ public class CID0013 : RootCulture
 	public CID0013(int culture, CultureName cultureName)
 		: base(culture, cultureName) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "nl";
+		}
+	}
+
 	public override DateTimeFormatInfo DateTimeFormat
 	{
 		get
@@ -110,6 +118,25 @@ public class CID0013 : RootCulture
 		{
 			base.NumberFormat = value; // not used
 		}
+	}
+
+	public override String ResolveLanguage(String name)
+	{
+		switch(name)
+		{
+			case "nl": return "Nederlands";
+		}
+		return base.ResolveLanguage(name);
+	}
+
+	public override String ResolveCountry(String name)
+	{
+		switch(name)
+		{
+			case "NL": return "Nederland";
+			case "BE": return "Belgi\u00EB";
+		}
+		return base.ResolveCountry(name);
 	}
 
 }; // class CID0013

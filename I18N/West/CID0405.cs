@@ -32,6 +32,21 @@ public class CID0405 : CID0005
 	public CID0405()
 		: base(0x0405, CultureNameTable.GetNameInfoByID(0x0405)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "cs";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "CZ";
+		}
+	}
+
 }; // class CID0405
 
 public class CNcs_cz : CID0405

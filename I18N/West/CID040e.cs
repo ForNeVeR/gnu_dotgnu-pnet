@@ -32,6 +32,21 @@ public class CID040e : CID000e
 	public CID040e()
 		: base(0x040E, CultureNameTable.GetNameInfoByID(0x040E)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "hu";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "HU";
+		}
+	}
+
 }; // class CID040e
 
 public class CNhu_hu : CID040e

@@ -7,6 +7,10 @@
 	* runtime/System/Globalization/HebrewCalendar.cs: implement the
 	missing functionality in HebrewCalendar.
 
+	* I18N/*: add support for DisplayName, EnglishName, and
+	NativeName, based on the information in the locale files;
+	move the English locales into "I18N.dll" to support EnglishName.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Uri.cs: Remove multiple static constructors in the code.

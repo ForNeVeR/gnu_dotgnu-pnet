@@ -1,5 +1,5 @@
 /*
- * CID0809.cs - en-GB culture handler.
+ * CID0c09.cs - en-AU culture handler.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -18,19 +18,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// Generated from "en_GB.txt".
+// Generated from "en_AU.txt".
 
-namespace I18N.West
+namespace I18N.Common
 {
 
 using System;
 using System.Globalization;
-using I18N.Common;
 
-public class CID0809 : CID0009
+public class CID0c09 : CID0009
 {
-	public CID0809()
-		: base(0x0809, CultureNameTable.GetNameInfoByID(0x0809)) {}
+	public CID0c09()
+		: base(0x0C09, CultureNameTable.GetNameInfoByID(0x0C09)) {}
+
+	public override String Language
+	{
+		get
+		{
+			return "en";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "AU";
+		}
+	}
 
 	public override DateTimeFormatInfo DateTimeFormat
 	{
@@ -40,33 +54,33 @@ public class CID0809 : CID0009
 			dfi.DateSeparator = "/";
 			dfi.TimeSeparator = ":";
 			dfi.LongDatePattern = "d MMMM yyyy";
-			dfi.LongTimePattern = "HH:mm:ss z";
-			dfi.ShortDatePattern = "dd/MM/yyyy";
-			dfi.ShortTimePattern = "HH:mm";
-			dfi.FullDateTimePattern = "dddd, d MMMM yyyy HH:mm:ss z";
+			dfi.LongTimePattern = "h:mm:ss tt";
+			dfi.ShortDatePattern = "dd/MM/yy";
+			dfi.ShortTimePattern = "h:mm tt";
+			dfi.FullDateTimePattern = "dddd, d MMMM yyyy h:mm:ss tt z";
 #if !ECMA_COMPAT
 			dfi.I18NSetDateTimePatterns(new String[] {
-				"d:dd/MM/yyyy",
+				"d:dd/MM/yy",
 				"D:dddd, d MMMM yyyy",
-				"f:dddd, d MMMM yyyy HH:mm:ss z",
-				"f:dddd, d MMMM yyyy HH:mm:ss z",
-				"f:dddd, d MMMM yyyy HH:mm:ss",
-				"f:dddd, d MMMM yyyy HH:mm",
+				"f:dddd, d MMMM yyyy h:mm:ss tt z",
+				"f:dddd, d MMMM yyyy h:mm:ss tt",
+				"f:dddd, d MMMM yyyy h:mm:ss tt",
+				"f:dddd, d MMMM yyyy h:mm tt",
 				"F:dddd, d MMMM yyyy HH:mm:ss",
-				"g:dd/MM/yyyy HH:mm:ss z",
-				"g:dd/MM/yyyy HH:mm:ss z",
-				"g:dd/MM/yyyy HH:mm:ss",
-				"g:dd/MM/yyyy HH:mm",
-				"G:dd/MM/yyyy HH:mm:ss",
+				"g:dd/MM/yy h:mm:ss tt z",
+				"g:dd/MM/yy h:mm:ss tt",
+				"g:dd/MM/yy h:mm:ss tt",
+				"g:dd/MM/yy h:mm tt",
+				"G:dd/MM/yy HH:mm:ss",
 				"m:MMMM dd",
 				"M:MMMM dd",
 				"r:ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
 				"R:ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
 				"s:yyyy'-'MM'-'dd'T'HH':'mm':'ss",
-				"t:HH:mm:ss z",
-				"t:HH:mm:ss z",
-				"t:HH:mm:ss",
-				"t:HH:mm",
+				"t:h:mm:ss tt z",
+				"t:h:mm:ss tt",
+				"t:h:mm:ss tt",
+				"t:h:mm tt",
 				"T:HH:mm:ss",
 				"u:yyyy'-'MM'-'dd HH':'mm':'ss'Z'",
 				"U:dddd, dd MMMM yyyy HH:mm:ss",
@@ -82,12 +96,27 @@ public class CID0809 : CID0009
 		}
 	}
 
-}; // class CID0809
+	public override NumberFormatInfo NumberFormat
+	{
+		get
+		{
+			NumberFormatInfo nfi = base.NumberFormat;
+			nfi.CurrencySymbol = "$";
+			nfi.CurrencyDecimalDigits = 2;
+			return nfi;
+		}
+		set
+		{
+			base.NumberFormat = value; // not used
+		}
+	}
 
-public class CNen_gb : CID0809
+}; // class CID0c09
+
+public class CNen_au : CID0c09
 {
-	public CNen_gb() : base() {}
+	public CNen_au() : base() {}
 
-}; // class CNen_gb
+}; // class CNen_au
 
-}; // namespace I18N.West
+}; // namespace I18N.Common

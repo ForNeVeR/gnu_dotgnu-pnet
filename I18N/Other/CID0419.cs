@@ -32,6 +32,21 @@ public class CID0419 : CID0019
 	public CID0419()
 		: base(0x0419, CultureNameTable.GetNameInfoByID(0x0419)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "ru";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "RU";
+		}
+	}
+
 	public override NumberFormatInfo NumberFormat
 	{
 		get

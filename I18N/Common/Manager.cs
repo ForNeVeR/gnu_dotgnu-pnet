@@ -170,6 +170,54 @@ public class Manager
 				return (CultureNameTable.GetNameInfoByName(name) != null);
 			}
 
+	// Resolve a culture name using a string culture.
+	private static String GetCultureName(RootCulture info, RootCulture str)
+			{
+				String name = str.ResolveLanguage(info.Language);
+				String country = info.Country;
+				if(country != null)
+				{
+					name = name + " (" + str.ResolveCountry(country) + ")";
+				}
+				return name;
+			}
+
+	// Get the display name for a particular culture.
+	public static String GetDisplayName(RootCulture info)
+			{
+				// Get the culture handler for the current culture.
+				int cultureID = CultureInfo.CurrentCulture.LCID;
+				StringBuilder builder = new StringBuilder();
+				builder.Append(hex[(cultureID >> 12) & 0x0F]);
+				builder.Append(hex[(cultureID >> 8) & 0x0F]);
+				builder.Append(hex[(cultureID >> 4) & 0x0F]);
+				builder.Append(hex[cultureID & 0x0F]);
+				String name = builder.ToString();
+				RootCulture culture =
+					(PrimaryManager.Instantiate("CID" + name) as RootCulture);
+
+				// Use invariant English if we couldn't find the culture.
+				if(culture == null)
+				{
+					culture = new CNen();
+				}
+
+				// Build the display name from the language and country.
+				return GetCultureName(info, culture);
+			}
+
+	// Get the English name for a particular culture.
+	public static String GetEnglishName(RootCulture info)
+			{
+				return GetCultureName(info, new CNen());
+			}
+
+	// Get the native name for a particular culture.
+	public static String GetNativeName(RootCulture info)
+			{
+				return GetCultureName(info, info);
+			}
+
 	// Convert a culture identifier from hex.
 	private static int FromHex(String name, int index)
 			{
@@ -330,7 +378,14 @@ public class Manager
 					{
 						try
 						{
-							assembly = Assembly.Load(region);
+							if(region == "I18N.Common")
+							{
+								assembly = Assembly.GetExecutingAssembly();
+							}
+							else
+							{
+								assembly = Assembly.Load(region);
+							}
 						}
 						catch(SystemException)
 						{

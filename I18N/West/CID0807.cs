@@ -32,6 +32,21 @@ public class CID0807 : CID0007
 	public CID0807()
 		: base(0x0807, CultureNameTable.GetNameInfoByID(0x0807)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "de";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "CH";
+		}
+	}
+
 	public override NumberFormatInfo NumberFormat
 	{
 		get
@@ -52,6 +67,25 @@ public class CID0807 : CID0007
 		{
 			base.NumberFormat = value; // not used
 		}
+	}
+
+	public override String ResolveCountry(String name)
+	{
+		switch(name)
+		{
+			case "BD": return "Bangladesh";
+			case "BW": return "Botswana";
+			case "BN": return "Brunei";
+			case "DJ": return "Djibouti";
+			case "CV": return "Kapverden";
+			case "MH": return "Marshall-Inseln";
+			case "RW": return "Rwanda";
+			case "SB": return "Salomon-Inseln";
+			case "ST": return "Sao Tom\u00e9 und Principe";
+			case "ZW": return "Zimbabwe";
+			case "GB": return "Grossbritannien";
+		}
+		return base.ResolveCountry(name);
 	}
 
 }; // class CID0807

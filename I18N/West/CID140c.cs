@@ -32,6 +32,21 @@ public class CID140c : CID000c
 	public CID140c()
 		: base(0x140C, CultureNameTable.GetNameInfoByID(0x140C)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "fr";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "LU";
+		}
+	}
+
 	public override NumberFormatInfo NumberFormat
 	{
 		get

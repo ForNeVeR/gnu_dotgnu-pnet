@@ -32,6 +32,21 @@ public class CID1007 : CID0007
 	public CID1007()
 		: base(0x1007, CultureNameTable.GetNameInfoByID(0x1007)) {}
 
+	public override String Language
+	{
+		get
+		{
+			return "de";
+		}
+	}
+	public override String Country
+	{
+		get
+		{
+			return "LU";
+		}
+	}
+
 	public override NumberFormatInfo NumberFormat
 	{
 		get

@@ -164,35 +164,35 @@ ${LOC2CUL} --region West --id 0x0408 --name el-GR \
 
 # English
 
-${LOC2CUL} --region West --id 0x0009 --name en \
-	West/en.txt >West/CID0009.cs
+${LOC2CUL} --region Common --id 0x0009 --name en \
+	Common/en.txt >Common/CID0009.cs
 
-${LOC2CUL} --region West --id 0x0C09 --name en-AU \
-	West/en_AU.txt >West/CID0c09.cs
+${LOC2CUL} --region Common --id 0x0C09 --name en-AU \
+	Common/en_AU.txt >Common/CID0c09.cs
 
-${LOC2CUL} --region West --id 0x1009 --name en-CA \
-	West/en_CA.txt >West/CID1009.cs
+${LOC2CUL} --region Common --id 0x1009 --name en-CA \
+	Common/en_CA.txt >Common/CID1009.cs
 
-${LOC2CUL} --region West --id 0x0809 --name en-GB \
-	West/en_GB.txt >West/CID0809.cs
+${LOC2CUL} --region Common --id 0x0809 --name en-GB \
+	Common/en_GB.txt >Common/CID0809.cs
 
-${LOC2CUL} --region West --id 0x1809 --name en-IE \
-	West/en_IE.txt >West/CID1809.cs
+${LOC2CUL} --region Common --id 0x1809 --name en-IE \
+	Common/en_IE.txt >Common/CID1809.cs
 
-${LOC2CUL} --region West --id 0x1409 --name en-NZ \
-	West/en_NZ.txt >West/CID1409.cs
+${LOC2CUL} --region Common --id 0x1409 --name en-NZ \
+	Common/en_NZ.txt >Common/CID1409.cs
 
-${LOC2CUL} --region West --id 0x3409 --name en-PH \
-	West/en_PH.txt >West/CID3409.cs
+${LOC2CUL} --region Common --id 0x3409 --name en-PH \
+	Common/en_PH.txt >Common/CID3409.cs
 
-${LOC2CUL} --region West --id 0x0409 --name en-US \
-	West/en_US.txt >West/CID0409.cs
+${LOC2CUL} --region Common --id 0x0409 --name en-US \
+	Common/en_US.txt >Common/CID0409.cs
 
-${LOC2CUL} --region West --id 0x1C09 --name en-ZA \
-	West/en_ZA.txt >West/CID1c09.cs
+${LOC2CUL} --region Common --id 0x1C09 --name en-ZA \
+	Common/en_ZA.txt >Common/CID1c09.cs
 
-${LOC2CUL} --region West --id 0x3009 --name en-ZW \
-	West/en_ZW.txt >West/CID3009.cs
+${LOC2CUL} --region Common --id 0x3009 --name en-ZW \
+	Common/en_ZW.txt >Common/CID3009.cs
 
 # Spanish
 

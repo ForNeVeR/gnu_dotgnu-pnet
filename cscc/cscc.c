@@ -1093,6 +1093,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	int posn, status;
 	char *asm_output;
 	char *obj_output;
+	int saveAsm;
 
 	/* If we are compiling to ".obj" or an executable, then
 	   get the location of "ilasm" now.  There's no point
@@ -1360,16 +1361,20 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	AddArgument(&cmdline, &cmdline_size, 0);
 
 	/* Execute the assembler */
+	saveAsm = CCStringListContains(extension_flags, num_extension_flags,
+							       "save-asm");
 	status = ExecChild(cmdline, 0);
 	ILFree(cmdline);
 	if(status != 0)
 	{
-		ILDeleteFile(asm_output);
+		if(!saveAsm)
+		{
+			ILDeleteFile(asm_output);
+		}
 		ILDeleteFile(obj_output);
 		return status;
 	}
-	if(!CCStringListContains(extension_flags, num_extension_flags,
-							 "save-asm"))
+	if(!saveAsm)
 	{
 		ILDeleteFile(asm_output);
 	}

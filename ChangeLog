@@ -1,4 +1,9 @@
 
+2002-05-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cscc.c: "-fsave-asm" saves the assembly output even if
+	the assembler fails.
+
 2002-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_except.c, engine/engine.h:

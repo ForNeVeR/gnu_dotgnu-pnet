@@ -25,6 +25,7 @@
 #elif defined(IL_VERIFY_LOCALS)
 
 ILClass *stringClass = 0;
+unsigned long strLen;
 
 #else /* IL_VERIFY_CODE */
 
@@ -101,7 +102,14 @@ case IL_OP_LDSTR:
 			goto cleanup;
 		}
 	}
-	ILCoderConstant(coder, opcode, pc + 1);
+	argNum = IL_READ_UINT32(pc + 1);
+	if((argNum & IL_META_TOKEN_MASK) != IL_META_TOKEN_STRING ||
+	   !ILImageGetUserString(ILProgramItem_Image(method),
+	   						 argNum & ~IL_META_TOKEN_MASK, &strLen))
+	{
+		VERIFY_INSN_ERROR();
+	}
+	ILCoderStringConstant(coder, (ILToken)argNum);
 	stack[stackSize].engineType = ILEngineType_O;
 	stack[stackSize].typeInfo = ILType_FromClass(stringClass);
 	++stackSize;

@@ -9,6 +9,8 @@ add the "StringConstant" coder API.
 
 * engine/cvm.h, engine/cvm_ptr.c: implement the "ldstr" opcode.
 
+* engine/verify_const.c: verify the string token properly.
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

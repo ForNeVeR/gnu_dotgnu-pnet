@@ -1,4 +1,16 @@
 
+2003-05-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Configuration/AppSettingsReader.cs,
+	System/Configuration/ConfigurationSettings.cs,
+	System/Configuration/DictionarySectionHandler.cs,
+	System/Configuration/IgnoreSectionHandler.cs,
+	System/Configuration/Makefile,
+	System/Configuration/NameValueFileSectionHandler.cs,
+	System/Configuration/NameValueSectionHandler.cs,
+	System/Configuration/SingleTagSectionHandler.cs: missing classes
+	in the "System.Configuration" namespace.
+
 2003-05-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Uri.cs: Re-write Canonicalize() and finish normalization

@@ -37,6 +37,7 @@ public sealed class ConfigurationSettings
 	private ConfigurationSettings() {}
 
 	// Get a configuration object for a specific section.
+	[TODO]
 	public static Object GetConfig(String sectionName)
 			{
 				// TODO

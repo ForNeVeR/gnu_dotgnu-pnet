@@ -22,6 +22,9 @@
 #include "lib_defs.h"
 #include "il_sysio.h"
 #include "il_errno.h"
+#ifdef IL_WIN32_NATIVE
+	#include <winsock.h>
+#else
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -34,8 +37,6 @@
 #ifdef HAVE_NETDB_H
 	#include <netdb.h>
 #endif
-#ifdef IL_WIN32_NATIVE
-	#include <winsock.h>
 #endif
 
 #ifdef IL_CONFIG_NETWORKING

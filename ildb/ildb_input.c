@@ -31,12 +31,14 @@
 /*
  * Determine if we have the readline and history libraries.
  */
+#if !defined(IL_WIN32_NATIVE)
 #if defined(HAVE_LIBREADLINE) && defined(HAVE_READLINE_READLINE_H)
 #include <readline/readline.h>
 #define	ILDB_USE_READLINE
 #if defined(HAVE_LIBHISTORY) && defined(HAVE_READLINE_HISTORY_H)
 #include <readline/history.h>
 #define	ILDB_USE_HISTORY
+#endif
 #endif
 #endif
 

@@ -23,6 +23,11 @@
 
 #ifdef IL_CONFIG_NETWORKING
 
+#ifdef IL_WIN32_NATIVE
+#include <winsock.h>
+#include <time.h>
+#define	close	closesocket
+#else
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>
     #include <time.h>
@@ -52,12 +57,10 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
-#ifdef IL_WIN32_NATIVE
-#include <winsock.h>
-#endif
 #if HAVE_LINUX_IRDA_H
 #include <linux/types.h>
 #include <linux/irda.h>
+#endif
 #endif
 
 #ifdef	__cplusplus

@@ -23,11 +23,12 @@
 #ifdef HAVE_MATH_H
 #include <math.h>
 #endif
+#ifdef IL_WIN32_NATIVE
+#include <float.h>
+#else
 #ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
 #endif
-#ifdef IL_WIN32_NATIVE
-#include <float.h>
 #endif
 
 #ifdef	__cplusplus

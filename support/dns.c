@@ -20,11 +20,15 @@
 
 #include "il_system.h"
 #include "il_utils.h"
+#ifdef IL_WIN32_PLATFORM
+#include <winsock.h>
+#else
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 #if HAVE_NETDB_H
 #include <netdb.h>
+#endif 
 #endif 
 
 #ifdef	__cplusplus

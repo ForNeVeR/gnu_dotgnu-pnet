@@ -24,8 +24,10 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#ifndef IL_WIN32_NATIVE
 #ifdef HAVE_SYS_CYGWIN_H
 #include <sys/cygwin.h>
+#endif
 #endif
 
 #ifdef	__cplusplus

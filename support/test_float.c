@@ -22,15 +22,16 @@
 #ifdef HAVE_MATH_H
 #include <math.h>
 #endif
-#ifdef HAVE_IEEEFP_H
-#include <ieeefp.h>
-#endif
 #ifdef IL_WIN32_NATIVE
 #include <float.h>
 #if !defined(isnan)
 #define isnan(value)	_isnan((value))
 #endif
 #define HAVE_ISNAN 1
+#else
+#ifdef HAVE_IEEEFP_H
+#include <ieeefp.h>
+#endif
 #endif
 
 #ifdef	__cplusplus

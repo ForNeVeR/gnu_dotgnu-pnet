@@ -5,6 +5,12 @@
 	before the generic "dlopen" version, as some MacOS X systems
 	have "dlopen", but it doesn't do the right thing.
 
+	* csant/csant_dir.c, cscc/bf/bf_grammar.y, engine/lib_math.c,
+	engine/lib_socket.c, ildb/ildb_input.c, support/allocate.c,
+	support/dns.c, support/dynlib.c, support/filemap.c,
+	support/socket.c, support/test_float.c: #include fixes for
+	non-cygwin win32 builds.
+
 	* NEWS, configure.in: update version for the "0.5.8" release.
 
 	* configure.in: update working version to "0.5.9".

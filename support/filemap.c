@@ -20,6 +20,11 @@
 
 #include "il_system.h"
 #include "mem_debug.h"
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
+	#include <windows.h>
+	#include <io.h>
+	#define	IL_USE_WIN32_MMAP
+#else
 #ifdef HAVE_SYS_TYPES_H
 	#include <sys/types.h>
 #endif
@@ -29,10 +34,6 @@
 #ifdef HAVE_SYS_MMAN_H
 	#include <sys/mman.h>
 #endif
-#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
-	#include <windows.h>
-	#include <io.h>
-	#define	IL_USE_WIN32_MMAP
 #endif
 
 #ifdef	__cplusplus

@@ -126,6 +126,7 @@ Move
 	| PREV {
 		$$ = ILNode_BFMove_create(-1);
 	}
+	;
 	
 
 Instruction

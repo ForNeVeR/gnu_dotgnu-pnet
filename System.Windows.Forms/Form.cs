@@ -1383,7 +1383,8 @@ public class Form : ContainerControl
 	protected override void OnVisibleChanged(EventArgs e)
 			{
 				base.OnVisibleChanged(e);
-				if(loaded == false && toolkitWindow.IsMapped)
+				if(loaded == false && 
+						toolkitWindow != null && toolkitWindow.IsMapped)
 				{
 					loaded = true;
 					OnLoad(EventArgs.Empty);

@@ -3,6 +3,8 @@
 
 	* System.Windows.Forms/Form.cs: Generate an OnLoad event only once
 	and only when the window has already been mapped.
+	
+	* System.Windows.Forms/Form.cs: Fix minor bug in earlier check in.
 
 2004-11-22  Erich Kitzmuller  <ammoq@ammoq.com>
 

@@ -24,6 +24,7 @@ namespace System.Xml
 
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Collections;
 using System.Xml.Private;
@@ -296,8 +297,11 @@ public class XmlTextReader : XmlReader
 			: this(nt)
 			{
 				if(url == null) { throw new XmlException("url"); }
-				// TODO - handle non-file streams
-				XmlStreamReader sr = new XmlStreamReader(url, true);
+				
+				WebClient webclient = new WebClient();
+				Stream webstream = webclient.OpenRead(url);
+				
+				XmlStreamReader sr = new XmlStreamReader(webstream, true);
 				input.Reader = sr;
 				context.BaseURI = nt.Add(url);
 				context.Encoding = sr.CurrentEncoding;

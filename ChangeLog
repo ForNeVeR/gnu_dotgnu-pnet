@@ -4,6 +4,9 @@
 	* System/Net/HttpWebResponse.cs: Add HTTP Chunked support to 
 	WebResponse. (bug #10848, Gopal)
 
+	* System.Xml/XmlTextReader.cs: Fix for HTTP support for XmlReader.
+	(patch #3511, Gopal)
+
 2004-11-19  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/PictureBox.cs: Fix Bug #11016: Allow transparent

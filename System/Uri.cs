@@ -654,11 +654,23 @@ public class Uri : MarshalByRefObject
 
 	private void CheckParsed()
 	{
-		this.hostNameType = CheckHostName(this.host);
-		if(hostNameType==UriHostNameType.Unknown)
+		bool isPath=false;
+		
+		if((this.host==null || this.host=="") && 
+			(this.scheme=="file" || this.scheme==null))
 		{
-			throw new UriFormatException(S._("Arg_UriHostName"));
+			this.scheme=UriSchemeFile;
+			this.delim="://";
 		}
+		else
+		{
+			this.hostNameType = CheckHostName(this.host);
+			if(hostNameType==UriHostNameType.Unknown)
+			{
+				throw new UriFormatException(S._("Arg_UriHostName"));
+			}
+		}
+
 		if(!CheckSchemeName(this.scheme))
 		{
 			throw new UriFormatException(S._("Arg_InvalidScheme"));

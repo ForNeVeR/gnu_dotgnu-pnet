@@ -100,6 +100,7 @@ EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/powerpc/darwin.S src/powerpc/aix.S \
 		src/powerpc/darwin_closure.S src/powerpc/aix_closure.S \
 		src/arm/ffi.c src/arm/sysv.S \
+		src/cris/ffi.c src/cris/sysv.S \
 		src/s390/ffi.c src/s390/sysv.S \
 		src/sh/ffi.c src/sh/sysv.S
 
@@ -177,6 +178,7 @@ TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closur
 TARGET_SRC_POWERPC_AIX = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
 TARGET_SRC_POWERPC_DARWIN = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
 TARGET_SRC_ARM = src/arm/sysv.S src/arm/ffi.c
+TARGET_SRC_CRIS32 = src/cris/sysv.S src/cris/ffi.c
 TARGET_SRC_S390 = src/s390/sysv.S src/s390/ffi.c
 TARGET_SRC_X86_64 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
 TARGET_SRC_SH = src/sh/sysv.S src/sh/ffi.c
@@ -288,6 +290,9 @@ libffi_convenience_la_LIBADD =
 @ARM_TRUE@libffi_convenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @ARM_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @ARM_TRUE@src/arm/sysv.lo src/arm/ffi.lo
+@CRIS32_TRUE@libffi_convenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@CRIS32_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@CRIS32_TRUE@src/cris/sysv.lo src/cris/ffi.lo
 libffi_la_LIBADD = 
 @SH_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
 @SH_TRUE@src/raw_api.lo src/java_raw_api.lo src/sh/sysv.lo \
@@ -318,6 +323,9 @@ libffi_la_LIBADD =
 @ARM_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
 @ARM_TRUE@src/raw_api.lo src/java_raw_api.lo src/arm/sysv.lo \
 @ARM_TRUE@src/arm/ffi.lo
+@CRIS32_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
+@CRIS32_TRUE@src/raw_api.lo src/java_raw_api.lo src/cris/sysv.lo \
+@CRIS32_TRUE@src/cris/ffi.lo
 @ALPHA_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @ALPHA_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @ALPHA_TRUE@src/alpha/ffi.lo src/alpha/osf.lo
@@ -615,7 +623,7 @@ distdir: $(DISTFILES)
 	mkdir $(distdir)
 	-chmod 777 $(distdir)
 	$(mkinstalldirs) $(distdir)/src/alpha $(distdir)/src/arm \
-	   $(distdir)/src/m68k $(distdir)/src/mips \
+	   $(distdir)/src/m68k $(distdir)/src/mips $(distdir)/src/cris \
 	   $(distdir)/src/powerpc $(distdir)/src/s390 $(distdir)/src/sh \
 	   $(distdir)/src/sparc $(distdir)/src/x86
 	@for file in $(DISTFILES); do \

@@ -1,4 +1,16 @@
 
+2004-10-29  Simon Posnjak <simon.posnjak@siol.net>
+
+	* include/il_align.h: force alignment to 4-bytes for CRIS
+	
+	* libffi/Makefile.am, libffi/Makefile.in, libffi/configure,
+	libffi/configure.in, libffi/include/ffi.h.in, libffi/src/cris/ffi.c,
+	libffi/src/cris/sysv.S, libffi/src/prep_cif.c, libffi/src/types.c,
+	libgc/include/gc.h, libgc/include/private/gc_locks.h, 
+	libgc/include/private/gcconfig.h, libgc/os_dep.c: port libffi and 
+	libgc to CRIS platform.
+	(Gopal, patch from email).
+
 2004-10-28  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_grammar.y: Fix segfault due to missing yyisa check.

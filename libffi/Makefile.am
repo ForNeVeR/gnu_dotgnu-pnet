@@ -17,6 +17,7 @@ EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/powerpc/darwin.S src/powerpc/aix.S \
 		src/powerpc/darwin_closure.S src/powerpc/aix_closure.S \
 		src/arm/ffi.c src/arm/sysv.S \
+		src/cris/ffi.c src/cris/sysv.S \
 		src/s390/ffi.c src/s390/sysv.S \
 		src/sh/ffi.c src/sh/sysv.S
 
@@ -98,6 +99,7 @@ TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closur
 TARGET_SRC_POWERPC_AIX = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
 TARGET_SRC_POWERPC_DARWIN = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
 TARGET_SRC_ARM =  src/arm/sysv.S src/arm/ffi.c
+TARGET_SRC_CRIS32 =  src/cris/sysv.S src/cris/ffi.c
 TARGET_SRC_S390 =  src/s390/sysv.S src/s390/ffi.c
 TARGET_SRC_X86_64 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
 TARGET_SRC_SH =  src/sh/sysv.S src/sh/ffi.c
@@ -121,6 +123,10 @@ endif
 if X86
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
 libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
+endif
+if CRIS32
+libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_CRIS32)
+libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_CRIS32)
 endif
 if X86_WIN32
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_WIN32)
@@ -157,6 +163,10 @@ endif
 if ARM
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
 libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
+endif
+if CRIS32
+libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_CRIS32)
+libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_CRIS32)
 endif
 if S390
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_S390)

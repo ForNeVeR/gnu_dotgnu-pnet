@@ -33,6 +33,44 @@
 /* Perform machine independent initialization of aggregate type
    specifications. */
 
+ffi_status initialize_aggregate_packed_params ( /*@out@ */ ffi_type * arg)
+{
+  ffi_type **ptr;
+
+  FFI_ASSERT (arg != NULL);
+
+  /*@-usedef@ */
+
+  FFI_ASSERT (arg->elements != NULL);
+  FFI_ASSERT (arg->size == 0);
+  FFI_ASSERT (arg->alignment == 0);
+
+  ptr = &(arg->elements[0]);
+
+  while ((*ptr) != NULL)    {
+      if (((*ptr)->size == 0)
+          && (initialize_aggregate_packed_params ((*ptr)) != FFI_OK))
+        return FFI_BAD_TYPEDEF;
+
+      /* Perform a sanity check on the argument type */
+      FFI_ASSERT (ffi_type_test ((*ptr)));
+
+      arg->size += (*ptr)->size;
+
+      arg->alignment = (arg->alignment > (*ptr)->alignment) ?
+        arg->alignment : (*ptr)->alignment;
+
+      ptr++;
+    }
+
+  if (arg->size == 0)
+    return FFI_BAD_TYPEDEF;
+  else
+    return FFI_OK;
+
+  /*@=usedef@ */
+}
+
 static ffi_status initialize_aggregate(/*@out@*/ ffi_type *arg)
 {
   ffi_type **ptr; 
@@ -104,7 +142,7 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
   FFI_ASSERT(ffi_type_test(cif->rtype));
 
   /* x86-64 and s390 stack space allocation is handled in prep_machdep.  */
-#if !defined M68K && !defined __x86_64__ && !defined S390
+#if !defined M68K && !defined __x86_64__ && !defined S390 && !defined CRIS
   /* Make space for the return structure pointer */
   if (cif->rtype->type == FFI_TYPE_STRUCT
 #ifdef SPARC
@@ -120,8 +158,20 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
       FFI_ASSERT(ffi_type_test(*ptr));
 
       /* Initialize any uninitialized aggregate type definitions */
+#ifdef CRIS32
+      if ((*ptr)->type == FFI_TYPE_STRUCT)
+      {
+        if (((*ptr)->size == 0) && (initialize_aggregate_packed_params((*ptr)) != FFI_OK))
+           return FFI_BAD_TYPEDEF;
+      }
+      else
+      {
+#endif
       if (((*ptr)->size == 0) && (initialize_aggregate((*ptr)) != FFI_OK))
 	return FFI_BAD_TYPEDEF;
+#ifdef CRIS32
+      }
+#endif
 
 #if !defined __x86_64__ && !defined S390
 #ifdef SPARC
@@ -136,8 +186,29 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
 	  /* Add any padding if necessary */
 	  if (((*ptr)->alignment - 1) & bytes)
 	    bytes = ALIGN(bytes, (*ptr)->alignment);
-	  
+#ifdef CRIS32
+          if ((*ptr)->type == FFI_TYPE_STRUCT)
+          {
+           if ((*ptr)->size > 8)
+           {
+               bytes += (*ptr)->size;
+               bytes += sizeof (void *);
+           }
+           else
+           {
+               if ((*ptr)->size > 4)
+                   bytes += 8;
+               else
+                   bytes += 4;
+           }
+         }
+         else
+         {
+           bytes += STACK_ARG_SIZE((*ptr)->size);
+         }
+#else	  
 	  bytes += STACK_ARG_SIZE((*ptr)->size);
+#endif
 	}
 #endif
     }

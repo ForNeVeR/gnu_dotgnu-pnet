@@ -232,6 +232,10 @@
 #    define ARM32
 #    define mach_type_known
 # endif
+# if defined(LINUX) && defined(__cris__)
+#    define CRIS32
+#    define mach_type_known
+# endif
 # if defined(LINUX) && (defined(powerpc) || defined(__powerpc__) || defined(powerpc64) || defined(__powerpc64__))
 #    define POWERPC
 #    define mach_type_known
@@ -474,6 +478,7 @@
 		    /*		   POWERPC    ==> IBM/Apple PowerPC	*/
 		    /*			(MACOS(<=9),DARWIN(incl.MACOSX),*/
 		    /*			 LINUX, NETBSD, NOSYS variants)	*/
+		    /*		   CRIS32       ==> Axis Etrax 100LX 	*/
 
 
 /*
@@ -1800,6 +1805,19 @@
 #   endif
 #endif
 
+# ifdef CRIS32
+#   define MACH_TYPE "CRIS"
+#   define CPP_WORDSZ 32
+#   define ALIGNMENT 1
+#   define OS_TYPE "LINUX"
+#   define DYNAMIC_LOADING
+#   define LINUX_STACKBOTTOM
+#   define USE_GENERIC_PUSH_REGS
+#   define SEARCH_FOR_DATA_START
+      extern int _end[];
+#   define DATAEND (_end)
+# endif
+
 # ifdef SH
 #   define MACH_TYPE "SH"
 #   define ALIGNMENT 4
@@ -2048,7 +2066,7 @@
 # endif
 
 # if defined(HP_PA) || defined(M88K) || defined(POWERPC) && !defined(DARWIN) \
-	     || defined(LINT) || defined(MSWINCE) || defined(ARM32) \
+	     || defined(LINT) || defined(MSWINCE) || defined(ARM32) || defined(CRIS32) \
 	     || (defined(I386) && defined(__LCC__))
 	/* Use setjmp based hack to mark from callee-save registers.    */
 	/* The define should move to the individual platform 		*/

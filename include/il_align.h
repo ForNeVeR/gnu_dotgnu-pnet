@@ -63,6 +63,11 @@ _IL_ALIGN_CHECK_TYPE(ILNativeFloat, long_double);
 			  			 		 _IL_ALIGN_FOR_TYPE(double), \
 			  			 		 _IL_ALIGN_FOR_TYPE(long_double)))
 
+#ifdef __cris__
+#undef IL_BEST_ALIGNMENT
+#define IL_BEST_ALIGNMENT 4
+#endif
+
 #ifdef	__cplusplus
 };
 #endif

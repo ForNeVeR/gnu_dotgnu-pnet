@@ -476,6 +476,9 @@ GC_API GC_PTR GC_malloc_atomic_ignore_off_page GC_PROTO((size_t lb));
 # if defined(__i386__) || defined(__x86_64__)
 #   define GC_CAN_SAVE_CALL_STACKS
 # endif
+# if defined(__UCLIBC__)
+#     undef GC_HAVE_BUILTIN_BACKTRACE
+# endif
 #endif
 
 #if defined(GC_HAVE_BUILTIN_BACKTRACE) && !defined(GC_CAN_SAVE_CALL_STACKS)

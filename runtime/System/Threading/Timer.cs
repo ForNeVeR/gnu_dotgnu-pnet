@@ -78,11 +78,14 @@ namespace System.Threading
 			//
 			// Initialize the timer state.
 			//
-			this.disposed = false;
-			this.alarm = Timer.alarmClock.CreateAlarm(
-				new AlarmClock.AlarmExpiredHandler(this.fireTimer));
-			this.callback = callback;
-			this.state = state;
+			lock (this)
+			{
+				this.disposed = false;
+				this.alarm = Timer.alarmClock.CreateAlarm(
+					new AlarmClock.AlarmExpiredHandler(this.fireTimer));
+				this.callback = callback;
+				this.state = state;
+			}
 		}
 
 		//
@@ -214,11 +217,11 @@ namespace System.Threading
 				if (this.disposed)
 					return false;
 				this.disposed = true;
+				this.notifyObject = notifyObject;
 			}
 			this.alarm.SetAlarm(AlarmClock.INFINITE, AlarmClock.INFINITE);
-			if (notifyObject != null)
+			if (this.notifyObject != null)
 			{
-				this.notifyObject = notifyObject;
 				lock (typeof(Timer))
 					Timer.disposeQueue.Enqueue(this);
 				Timer.threadWakeup.Set();
@@ -278,12 +281,13 @@ namespace System.Threading
 					lock (typeof(Timer))
 					{
 						if (Timer.disposeQueue.Count == 0)
-						{
 							break;
-						}
 						timer = (Timer)Timer.disposeQueue.Dequeue();
 					}
-					(timer.notifyObject as ISignal).Signal();
+					WaitHandle notifyObject;
+					lock (timer)
+						notifyObject = timer.notifyObject;
+					(notifyObject as ISignal).Signal();
 				}
 				//
 				// Sleep until an alarm is due to go off.
@@ -539,9 +543,12 @@ namespace System.Threading
 				/// <summary>Create a new Alarm.</summary>
 				public Alarm(AlarmClock alarmClock, AlarmExpiredHandler alarmExpired)
 				{
-					this.alarmClock = alarmClock;
-					this.AlarmExpired = alarmExpired;
-					this.ExpiryTime = DISABLED;
+					lock (this)
+					{
+						this.alarmClock = alarmClock;
+						this.AlarmExpired = alarmExpired;
+						this.ExpiryTime = DISABLED;
+					}
 				}
 
 				public void SetAlarm(long dueTime, long period)

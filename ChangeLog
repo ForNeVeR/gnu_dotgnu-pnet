@@ -1,3 +1,7 @@
+2004-06-11  Russell Stuart <russell-savannah@stuart.id.au>
+
+	* tests/runtime/System/Threading/TestTimer.cs: Fixed bug in unit
+	test for Timer.cs.  Bug was causing it to failures under cygwin.
 
 2004-06-10  Gopal V  <gopalv82@yahoo.com>
 

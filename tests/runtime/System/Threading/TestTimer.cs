@@ -77,11 +77,17 @@ public class TestTimer : TestCase
 		}
 	}
 
+	private static void timerCallbackDummy(Object state)
+	{
+	}
+
 	//
 	// Test the constructor builds a reasonable looking object.
 	//
 	public void TestTimerConstructor()
 	{
+		TimerCallback timerCallbackDummyDelegate =
+			new TimerCallback(timerCallbackDummy);
 		if (!TestThread.IsThreadingSupported)
 			return;
 		//
@@ -95,8 +101,11 @@ public class TestTimer : TestCase
 		catch (ArgumentNullException)
 		{
 		}
-		new Timer(this.timerCallbackDelegate, null, 0, Timeout.Infinite).Dispose();
-		new Timer(this.timerCallbackDelegate, null, 0, 0).Dispose();
+		Timer timer = new Timer(
+			timerCallbackDummyDelegate, null, 0, Timeout.Infinite);
+		timer.Dispose();
+		timer = new Timer(timerCallbackDummyDelegate, null, 0, 0);
+		timer.Dispose();
 		try
 		{
 			new Timer(this.timerCallbackDelegate, this, -2, 0);

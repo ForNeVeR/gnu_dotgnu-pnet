@@ -59,6 +59,7 @@ typedef struct
 	int		stackHeight;		/* Current virtual height of CVM stack */
 	long	cachedLocal;		/* Local variable that was just stored */
 	int		cachedReg;			/* Register for variable that was stored */
+	int		thisValidated;		/* "this" has been checked for NULL */
 
 } X86Unroll;
 
@@ -191,7 +192,7 @@ static void BranchToPC(X86Unroll *unroll, unsigned char *pc)
 static void ReExecute(X86Unroll *unroll, unsigned char *pc,
 					  unsigned char *label)
 {
-	int index, reg, height;
+	int index, reg, height, finalHeight;
 
 	/* Flush the register stack, but don't change it as we will
 	   still need it further down the code */
@@ -211,6 +212,7 @@ static void ReExecute(X86Unroll *unroll, unsigned char *pc,
 			height += 12;
 		}
 	}
+	finalHeight = height;
 	for(index = unroll->pseudoStackSize - 1; index >= 0; --index)
 	{
 		reg = unroll->pseudoStack[index];
@@ -228,13 +230,13 @@ static void ReExecute(X86Unroll *unroll, unsigned char *pc,
 	}
 
 	/* Fix up the stack height */
-	if(height > 0)
+	if(finalHeight > 0)
 	{
-		x86_alu_reg_imm(unroll->out, X86_ADD, REG_STACK, height);
+		x86_alu_reg_imm(unroll->out, X86_ADD, REG_STACK, finalHeight);
 	}
-	else if(height < 0)
+	else if(finalHeight < 0)
 	{
-		x86_alu_reg_imm(unroll->out, X86_SUB, REG_STACK, -height);
+		x86_alu_reg_imm(unroll->out, X86_SUB, REG_STACK, -finalHeight);
 	}
 
 	/* Restore the saved special registers */
@@ -735,6 +737,7 @@ static void PushRegister(X86Unroll *unroll, int reg)
 				*((void **)overwritePC) = unrollStart; \
 				inUnrollBlock = 0; \
 				unroll.cachedLocal = -1; \
+				unroll.thisValidated = 0; \
 			} while (0)
 
 /*
@@ -921,6 +924,7 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	unroll.stackHeight = 0;
 	unroll.cachedLocal = -1;
 	unroll.cachedReg = -1;
+	unroll.thisValidated = 0;
 	inUnrollBlock = 0;
 	overwritePC = 0;
 	unrollStart = 0;

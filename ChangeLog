@@ -1,4 +1,9 @@
 
+2004-05-17  Russell Stuart  <russell-savannah@stuart.id.au>
+
+	* pnet.spec.in: try and kludge my way around "rpm" hanging
+	when the info files are installed / uninstalled.
+
 2004-05-15  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/lib_reflect.c , engine/int_proto.h, engine/int_table.c:

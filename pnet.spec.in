@@ -65,6 +65,7 @@ Portable .NET.
 %setup -q
 
 %build
+./auto_gen.sh
 test "/" = "${RPM_BUILD_ROOT}" || rm -rf ${RPM_BUILD_ROOT}
 export CFLAGS=$(echo $RPM_OPT_FLAGS|sed -e 's!-O3!-O2!g')
 %configure
@@ -78,9 +79,11 @@ test "/" = "${RPM_BUILD_ROOT}" || rm -rf ${RPM_BUILD_ROOT}
 
 %post tools
 /sbin/install-info %{_infodir}/pnettools.info.gz %{_infodir}/dir || :
+sleep 1
 
 %postun tools
 test "$1" != 0 || /sbin/install-info --delete %{_infodir}/pnettools.info.gz %{_infodir}/dir || :
+sleep 1
 
 %files interpreter
 %defattr(-,root,root,-)

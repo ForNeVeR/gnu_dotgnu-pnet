@@ -196,6 +196,18 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree);
  */
 void CSValidateDocs(ILNode *docList);
 
+/*
+ * Resolve a simple name to a semantic value.
+ */
+CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
+							   const char *name);
+
+/*
+ * Resolve a member name to a semantic value. 
+ */
+CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
+							   CSSemValue value, const char *name);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -92,11 +92,11 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 						 IL_DUMP_QUOTE_NAMES);
 
 		/* Output the name of the parent class */
-		if(ILClass_Parent(classInfo) != 0)
+		if(ILClass_ParentRef(classInfo) != 0)
 		{
 			fputs(" extends ", info->asmOutput);
 			ILDumpClassName(info->asmOutput, info->image,
-							ILClass_Parent(classInfo),
+							ILClass_ParentRef(classInfo),
 							IL_DUMP_QUOTE_NAMES);
 		}
 

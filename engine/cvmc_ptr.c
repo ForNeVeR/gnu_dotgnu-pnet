@@ -628,10 +628,29 @@ static void CVMCoder_ArrayLength(ILCoder *coder)
 /*
  * Construct a new array, given a type and length value.
  */
-static void CVMCoder_NewArray(ILCoder *coder, ILType *elemType,
-					 		  ILEngineType lengthType)
+static void CVMCoder_NewArray(ILCoder *coder, ILType *arrayType,
+					 		  ILClass *arrayClass, ILEngineType lengthType)
 {
-	/* TODO */
+	ILMethod *ctor;
+
+#ifdef IL_NATIVE_INT64
+	/* Convert the length into I4 */
+	if(lengthType == ILEngineType_I)
+	{
+		CVM_BYTE(COP_L2I);
+	}
+#endif
+
+	/* Find the allocation constructor within the array class.
+	   We know that the class only has one method, so it must
+	   be the constructor that we are looking for */
+	ctor = (ILMethod *)ILClassNextMemberByKind
+					(arrayClass, 0, IL_META_MEMBERKIND_METHOD);
+
+	/* Output code to call the array type's constructor */
+	CVM_BYTE(COP_CALL_CTOR);
+	CVM_WORD(0);
+	CVM_PTR(ctor);
 }
 
 #endif	/* IL_CVMC_CODE */

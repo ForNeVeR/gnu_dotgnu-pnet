@@ -29,6 +29,10 @@ check assignment-compatibility of object references.
 * engine/lib_array.c, engine/internal.c: implement a "runtime"
 constructor for single-dimensional arrays.
 
+* include/il_coder.h, engine/ilverify.c, engine/verify_ptr.c,
+engine/cvmc_ptr.c: modify the "NewArray" coder API so that it takes
+the entire array type instead of just the element type.
+
 2001-10-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/engine.h: remove the thread argument

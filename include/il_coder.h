@@ -315,8 +315,8 @@ struct _tagILCoderClass
 	/*
 	 * Construct a new array, given a type and length value.
 	 */
-	void (*newArray)(ILCoder *coder, ILType *elemType,
-					 ILEngineType lengthType);
+	void (*newArray)(ILCoder *coder, ILType *arrayType,
+					 ILClass *arrayClass, ILEngineType lengthType);
 
 	/*
 	 * Allocate local stack space.
@@ -614,9 +614,9 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->ptrPrefix))((coder), (alignment)))
 #define	ILCoderArrayLength(coder) \
 			((*((coder)->classInfo->arrayLength))((coder)))
-#define	ILCoderNewArray(coder,elemType,lengthType) \
-			((*((coder)->classInfo->newArray))((coder), (elemType), \
-											   (lengthType)))
+#define	ILCoderNewArray(coder,arrayType,arrayClass,lengthType) \
+			((*((coder)->classInfo->newArray))((coder), (arrayType), \
+											   (arrayClass), (lengthType)))
 #define	ILCoderLocalAlloc(coder,sizeType) \
 			((*((coder)->classInfo->localAlloc))((coder), (sizeType)))
 #define	ILCoderCastClass(coder,_classInfo,throwException) \

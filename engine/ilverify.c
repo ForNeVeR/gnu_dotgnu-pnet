@@ -311,8 +311,8 @@ static void Coder_PtrPrefix(ILCoder *coder, int alignment)
 static void Coder_ArrayLength(ILCoder *coder)
 {
 }
-static void Coder_NewArray(ILCoder *coder, ILType *elemType,
-						   ILEngineType lengthType)
+static void Coder_NewArray(ILCoder *coder, ILType *arrayType,
+						   ILClass *arrayClass, ILEngineType lengthType)
 {
 }
 static void Coder_LocalAlloc(ILCoder *coder, ILEngineType sizeType)

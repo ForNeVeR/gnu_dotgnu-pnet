@@ -1914,17 +1914,15 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					yMax = layoutRect.Height - 1;
 				}
 				bool noWrap = (stringFormat.FormatFlags & StringFormatFlags.NoWrap) != 0;
-				//TODO stringFormat.LineAlignment;
-				int[] lines = new int[20];
+				Lines lines = new Lines();
 				float lineSizeRemaining = yMax;
-				int currentLine = 0;
 				// First line starts at 0
-				lines[currentLine++] = 0;
+				lines.Add(0);
 				int currentPos = 0;
 				do
 				{
 					MeasureLine (ref bounds, ref currentPos, ref text, xMax, this, font, vertical, noWrap);
-					lines[currentLine++] = currentPos;
+					lines.Add(currentPos);
 					if (currentPos < text.Length && text[currentPos] == (char)10)
 						currentPos++;
 					lineSizeRemaining -= fontHeight;
@@ -1932,27 +1930,48 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						break;
 				} while (true);
 				
-				int nextLine = 0;
+				float yOffset = 0;
+				if (stringFormat.LineAlignment == StringAlignment.Center)
+					yOffset = lineSizeRemaining/2;
+				else if (stringFormat.LineAlignment == StringAlignment.Far)
+					yOffset = lineSizeRemaining;
 				float xOffset = 0;
-				for (int i = 0; i < text.Length; i++)
+
+				for (int i = 0; i < text.Length;)
 				{
-					if (lines[nextLine] == i)
+					if (lines.GetCurrent() == i)
 					{
+						lines.MoveNext();
 						xOffset = 0;
-						nextLine++;
 						if (stringFormat.Alignment == StringAlignment.Far)
-							xOffset = xMax + 1 - bounds[lines[nextLine] - 1].Right;
+						{
+							// Go back and find the right point of the last visible character
+							int back = lines.GetCurrent() - 1;
+							if (back > -1)
+							{
+								for (; back >= 0; back--)
+									if (bounds[back]!= Rectangle.Empty)
+										break;
+								xOffset = xMax + 1 - bounds[back].Right;
+							}
+							else
+								xOffset = xMax + 1;
+						}
 						else if (stringFormat.Alignment == StringAlignment.Center)
 						{
-							for (int j = i; j < lines[nextLine]; j++)
+							for (int j = i; j < lines.GetCurrent(); j++)
 								xOffset += bounds[j].Width;
 							xOffset = (xMax + 1 - xOffset)/2;
 						}
 					}
-					if (bounds[i] != Rectangle.Empty)
+					else 
 					{
-						RectangleF rect = bounds[i];
-						bounds[i] = new RectangleF( rect.Left + xOffset + layoutRect.Left, rect.Top + (nextLine - 1) * fontHeight + layoutRect.Top, rect.Width, rect.Height);
+						if (bounds[i] != Rectangle.Empty)
+						{
+							RectangleF rect = bounds[i];
+							bounds[i] = new RectangleF( rect.Left + xOffset + layoutRect.Left, rect.Top + (lines.CurrentLine - 1) * fontHeight + layoutRect.Top, rect.Width, rect.Height);
+						}
+						i++;
 					}
 				}
 
@@ -1969,10 +1988,39 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				return regions;
 			}
 
+	private class Lines
+	{
+		private int[] lines = new int[20];
+		private int count = 0;
+		public int CurrentLine = 0;
+		public void Add(int value)
+				{
+					if (count == lines.Length)
+					{
+						int[] newLines = new int[lines.Length*2];
+						Array.Copy(lines, newLines, lines.Length);
+						lines = newLines;
+					}
+					lines[count++] = value;
+				}
+		public void MoveNext()
+				{
+					CurrentLine++;
+				}
+		public int GetCurrent()
+				{
+					if (CurrentLine > count)
+						return -1;
+					else
+						return lines[CurrentLine];
+				}
+	}
+
 	// Measures one full line. Updates the positions of the characters in that line relative to 0,0
 	private void MeasureLine(ref RectangleF[] bounds, ref int currentPos,
 		ref string text, float maxX, Graphics g, Font f, bool vertical, bool noWrap)
 			{
+				int initialPos = currentPos;
 				int x = 0;
 				int y = 0;
 				do
@@ -1993,8 +2041,24 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							newX += s.Width;
 						if (newX > maxX)
 						{
-							if (!noWrap)
+							if (noWrap)
 								return;
+							else
+							{
+								// Backtrack to wrap the word
+								for (int i = currentPos; i > initialPos; i--)
+								{
+									if (text[i] == (char)32)
+									{
+										// Swallow the space
+										bounds[i++] = Rectangle.Empty;
+										currentPos = i;
+										return;
+									}
+								}
+								return;
+							}
+
 						}
 						else
 						{

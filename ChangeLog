@@ -1,3 +1,8 @@
+
+2003-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_reflect.c: fix a compile warning in previous checkin.
+
 2003-08-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/int_proto.h, engine/int_table.c: update for new internal calls

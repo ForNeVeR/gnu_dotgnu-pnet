@@ -783,7 +783,7 @@ System_Array *_IL_AppDomain_GetAssemblies(ILExecThread *thread,
 	}
 
 	/* create the image array */
-	if (!(images = (ILImage *)ILMalloc(sizeof(ILImage *)*num)))
+	if (!(images = (ILImage **)ILMalloc(sizeof(ILImage *)*num)))
 	{
 		IL_METADATA_UNLOCK(thread);
 		ILExecThreadThrowOutOfMemory(thread);

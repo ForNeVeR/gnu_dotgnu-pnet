@@ -371,7 +371,7 @@ ILNode_GenDiscard(ILNode_EventDeclarator)
 			fputs("\t.addon ", outstream);
 			ILDumpMethodType(outstream, info->image,
 						     ILMethod_Signature(methodInfo),
-						     IL_DUMP_QUOTE_NAMES, 0,
+						     IL_DUMP_QUOTE_NAMES, ILMethod_Owner(methodInfo),
 							 ILMethod_Name(methodInfo), 0);
 			putc('\n', outstream);
 		}
@@ -382,7 +382,7 @@ ILNode_GenDiscard(ILNode_EventDeclarator)
 			fputs("\t.removeon ", outstream);
 			ILDumpMethodType(outstream, info->image,
 						     ILMethod_Signature(methodInfo),
-						     IL_DUMP_QUOTE_NAMES, 0,
+						     IL_DUMP_QUOTE_NAMES, ILMethod_Owner(methodInfo),
 							 ILMethod_Name(methodInfo), 0);
 			putc('\n', outstream);
 		}
@@ -795,7 +795,7 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 			fputs("\t.get ", outstream);
 			ILDumpMethodType(outstream, info->image,
 						     ILMethod_Signature(methodInfo),
-						     IL_DUMP_QUOTE_NAMES, 0,
+						     IL_DUMP_QUOTE_NAMES, ILMethod_Owner(methodInfo),
 							 ILMethod_Name(methodInfo), 0);
 			putc('\n', outstream);
 		}
@@ -806,7 +806,7 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 			fputs("\t.set ", outstream);
 			ILDumpMethodType(outstream, info->image,
 						     ILMethod_Signature(methodInfo),
-						     IL_DUMP_QUOTE_NAMES, 0,
+						     IL_DUMP_QUOTE_NAMES, ILMethod_Owner(methodInfo),
 							 ILMethod_Name(methodInfo), 0);
 			putc('\n', outstream);
 		}

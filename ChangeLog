@@ -8,6 +8,10 @@
 	that have MemberRef tokens, as they aren't important to determine
 	the first field and method token in the type.
 
+	* codegen/cg_decls.tc: fully qualify method references for
+	properties and events, to prevent the assembler defaulting to
+	the global module type for unqualified references.
+
 2002-07-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c, ilalink/link_field.c, ilalink/link_image.c,

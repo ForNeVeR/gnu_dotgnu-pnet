@@ -210,7 +210,21 @@ fi
 AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_LIB(socket, connect)
 AC_CHECK_LIB(nsl, gethostbyname)
-AC_CHECK_LIB(z, inflate)
+have_libz=no
+if test "x$suppress_libm" = "xno" ; then
+	AC_CHECK_LIB(z, inflate,
+				 [have_libz=yes
+				  LIBS="-lz $LIBS"], [])
+else
+	dnl Use the static version of zlib under mingw32 to avoid a
+	dnl dependency upon "mgwz.dll".
+	AC_CHECK_LIB(z, inflate,
+				 [have_libz=yes
+		 		  LIBS="-Bstatic -lz -Bdynamic $LIBS"], [])
+fi
+if test "x$have_libz" = "xyes" ; then
+	AC_DEFINE(HAVE_LIBZ, 1, [Define if you have the z library (-lz).])
+fi
 
 dnl Checks for header files.
 AC_HEADER_STDC

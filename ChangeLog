@@ -11,6 +11,9 @@
 	support/time.c, support/wait.c, support/wait_event.c:
 	fix some warnings that were turned up by gcc 3.3.
 
+	* configure.in: use the static version of libz under mingw32
+	to avoid a dependency upon "mgwz.dll".
+
 2003-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, ilgac/.cvsignore, ilgac/Makefile.am,

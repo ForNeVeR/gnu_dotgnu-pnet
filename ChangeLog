@@ -28,6 +28,8 @@
 	
 	* samples/FormsTest.cs: add in drawing primitives tests
 
+	* System.Drawing.Postscript/PostscriptGraphics.cs: small csc compile change
+
 
 2003-08-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 

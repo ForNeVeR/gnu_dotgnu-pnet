@@ -199,93 +199,13 @@ public sealed class StringBuilder
 				return builder;
 			}
 
-	// Append space to a string builder.  Returns the actual
-	// number of characters that can be appended.
-	private int AppendSpace(int length)
-			{
-				int buildLen = buildString.length;
-				int newLength, temp;
-
-				// Determine the new length.
-				temp = buildLen + length;
-				if (temp > buildString.capacity)
-				{
-					if(buildString.capacity < 2048)
-					{
-						newLength = buildString.capacity * 2;
-						if(temp > newLength)
-						{
-							newLength = temp;
-						}
-					}
-					else
-					{
-						newLength = (buildLen + length + ResizeRoundBig) & ~ResizeRoundBig;
-					}
-				}
-				else
-				{
-					newLength = buildString.capacity;
-				}
-				if(newLength > maxCapacity)
-				{
-					newLength = maxCapacity;
-					temp = newLength - buildLen;
-					if(temp < length)
-					{
-						length = temp;
-					}
-				}
-
-				// Reallocate the string as necessary.
-				if(needsCopy)
-				{
-					int capacity = buildString.capacity;
-					if(capacity < newLength)
-					{
-						capacity = (newLength + ResizeRound)
-										& ~ResizeRound;
-					}
-					if(capacity > maxCapacity)
-					{
-						capacity = maxCapacity;
-					}
-					buildString = NewBuilder(buildString, capacity);
-					needsCopy = false;
-				}
-				else if(newLength > buildString.capacity)
-				{
-					newLength = (newLength + ResizeRound) & ~ResizeRound;
-					if(newLength > maxCapacity)
-					{
-						newLength = maxCapacity;
-					}
-					buildString = NewBuilder(buildString, newLength);
-				}
-
-				// Return the actual length to the caller.
-				return length;
-			}
-
 	// Append a string to this builder.
 	//
 	// Note: the ECMA spec is unclear as to what happens when the
 	// maximum capacity overflows.  We have chosen to append as
 	// much as possible and truncate the rest.
-	public StringBuilder Append(String value)
-			{
-				if(value != null)
-				{
-					// Append some extra space to the string.
-					int valueLen = AppendSpace(value.Length);
-
-					// Copy the contents of the value into place.
-					String.Copy(buildString, buildString.length,
-								value, 0, valueLen);
-					buildString.length += valueLen;
-				}
-				return this;
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Append(String value);
 
 	// Append other types of values to this builder.
 	public StringBuilder Append(bool value)
@@ -310,34 +230,12 @@ public sealed class StringBuilder
 			{
 				return Append(value.ToString());
 			}
-	public StringBuilder Append(char value)
-			{
-				int length = AppendSpace(1);
-				String.CharFill(buildString, buildString.length,
-								length, value);
-				buildString.length += length;
-				return this;
-			}
-	public StringBuilder Append(char value, int repeatCount)
-			{
-				if(repeatCount < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("repeatCount", _("ArgRange_NonNegative"));
-				}
-				else if(repeatCount == 0)
-				{
-					return this;
-				}
-				else
-				{
-					repeatCount = AppendSpace(repeatCount);
-					String.CharFill(buildString, buildString.length,
-								    repeatCount, value);
-					buildString.length += repeatCount;
-					return this;
-				}
-			}
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Append(char value);
+
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Append(char value, int repeatCount);
+
 	public StringBuilder Append(int value)
 			{
 				return Append(value.ToString());
@@ -381,71 +279,15 @@ public sealed class StringBuilder
 					return this;
 				}
 			}
-	public StringBuilder Append(String value, int startIndex, int length)
-			{
-				if(value != null)
-				{
-					if(startIndex < 0 || startIndex > value.Length)
-					{
-						throw new ArgumentOutOfRangeException
-							("startIndex", _("ArgRange_Array"));
-					}
-					else if(length < 0 || (value.Length - startIndex) < length)
-					{
-						throw new ArgumentOutOfRangeException
-							("length", _("ArgRange_Array"));
-					}
-					length = AppendSpace(length);
-					String.Copy(buildString, buildString.length,
-							    value, startIndex, length);
-					buildString.length += length;
-					return this;
-				}
-				else if(startIndex != 0 || length != 0)
-				{
-					throw new ArgumentNullException("value");
-				}
-				else
-				{
-					return this;
-				}
-			}
-	public StringBuilder Append(char[] value)
-			{
-				if(value != null)
-				{
-					return Append(value, 0, value.Length);
-				}
-				else
-				{
-					return this;
-				}
-			}
-	public StringBuilder Append(char[] value, int startIndex, int length)
-			{
-				if(value != null)
-				{
-					if(startIndex < 0 || startIndex > value.Length)
-					{
-						throw new ArgumentOutOfRangeException
-							("startIndex", _("ArgRange_Array"));
-					}
-					else if(length < 0 || (value.Length - startIndex) < length)
-					{
-						throw new ArgumentOutOfRangeException
-							("length", _("ArgRange_Array"));
-					}
-				}
-				else if(startIndex != 0 || length != 0)
-				{
-					throw new ArgumentNullException("value");
-				}
-				length = AppendSpace(length);
-				String.CharFill(buildString, buildString.length,
-							    value, startIndex, length);
-				buildString.length += length;
-				return this;
-			}
+
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Append(String value, int startIndex, int length);
+
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Append(char[] value);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Append(char[] value, int startIndex, int length);
 
 	// Appended formatted values to this string builder.
 	public StringBuilder AppendFormat(String format, Object arg0)
@@ -472,34 +314,8 @@ public sealed class StringBuilder
 			}
 
 	// Ensure that this string builder has a specific capacity available.
-	public int EnsureCapacity(int capacity)
-			{
-				if(capacity < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("capacity", _("ArgRange_NonNegative"));
-				}
-				else if(capacity <= buildString.capacity)
-				{
-					return buildString.capacity;
-				}
-				// use same allocation scheme as in AddSpace
-				if(capacity < 2048)
-				{
-					capacity = (capacity + ResizeRound) & ~ ResizeRound;
-				}
-				else
-				{
-					capacity = (capacity + ResizeRoundBig) & ~ ResizeRoundBig;
-				}
-				if(capacity > maxCapacity)
-				{
-					capacity = maxCapacity;
-				}
-				buildString = NewBuilder(buildString, capacity);
-				needsCopy = false;
-				return buildString.capacity;
-			}
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public int EnsureCapacity(int capacity);
 
 	// Determine if two StringBuilders are equal.
 	public bool Equals(StringBuilder sb)
@@ -514,77 +330,13 @@ public sealed class StringBuilder
 				}
 			}
 
-	// Insert space to a string builder.  Returns the actual
-	// number of characters that can be inserted.
-	private int InsertSpace(int index, int length)
-			{
-				int buildLen = buildString.length;
-				int newLength;
-
-				// Validate the index.
-				if(index < 0 || index > buildLen)
-				{
-					throw new ArgumentOutOfRangeException
-						("index", _("ArgRange_StringIndex"));
-				}
-
-				// Determine the new length.
-				newLength = buildLen + length;
-				if(newLength > buildString.capacity)
-				{
-					// Reallocate the string as necessary.
-					if(newLength > 2048)
-					{
-						newLength = (newLength + ResizeRoundBig) & ~ResizeRoundBig;
-					}
-					else
-					{
-						newLength = (newLength + ResizeRound) & ~ResizeRound;
-					}
-					if(newLength > maxCapacity)
-					{
-						newLength = maxCapacity;
-						length = newLength - buildLen;
-					}
-					buildString = NewBuilder(buildString, newLength);
-					needsCopy = false;
-				}
-				else
-				{
-					if(needsCopy)
-					{
-						buildString = NewBuilder(buildString, buildString.capacity);
-						needsCopy = false;
-					}
-				}
-
-				// Move the characters after the index up.
-				if(index <= buildLen && length > 0)
-				{
-					String.InsertSpace(buildString, index, index + length);
-				}
-
-				// Return the actual length to the caller.
-				return length;
-			}
-
 	// Insert a string into this builder.
 	//
 	// Note: the ECMA spec is unclear as to what happens when the
 	// maximum capacity overflows.  We have chosen to insert as
 	// much as possible and truncate the rest.
-	public StringBuilder Insert(int index, String value)
-			{
-				if(value != null)
-				{
-					// Insert some extra space to the string.
-					int valueLen = InsertSpace(index, value.Length);
-
-					// Copy the contents of the value into place.
-					String.Copy(buildString, index, value, 0, valueLen);
-				}
-				return this;
-			}
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Insert(int index, String value);
 
 	// Insert other types of values into this builder.
 	public StringBuilder Insert(int index, bool value)
@@ -609,12 +361,9 @@ public sealed class StringBuilder
 			{
 				return Insert(index, value.ToString());
 			}
-	public StringBuilder Insert(int index, char value)
-			{
-				int length = InsertSpace(index, 1);
-				String.CharFill(buildString, index, length, value);
-				return this;
-			}
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Insert(int index, char value);
+
 	public StringBuilder Insert(int index, int value)
 			{
 				return Insert(index, value.ToString());
@@ -658,59 +407,15 @@ public sealed class StringBuilder
 					return this;
 				}
 			}
-	public StringBuilder Insert(int index, char[] value)
-			{
-				if(value != null)
-				{
-					return Insert(index, value, 0, value.Length);
-				}
-				else
-				{
-					return this;
-				}
-			}
-	public StringBuilder Insert(int index, char[] value,
-								int startIndex, int length)
-			{
-				if(value != null)
-				{
-					if(startIndex < 0 || startIndex > value.Length)
-					{
-						throw new ArgumentOutOfRangeException
-							("startIndex", _("ArgRange_Array"));
-					}
-					else if((value.Length - startIndex) < length)
-					{
-						throw new ArgumentOutOfRangeException
-							("length", _("ArgRange_Array"));
-					}
-					length = InsertSpace(index, length);
-					String.CharFill(buildString, index, value, startIndex, length);
-				}
-				else if(startIndex != 0 || length != 0)
-				{
-					throw new ArgumentNullException("value");
-				}
-				return this;
-			}
-	public StringBuilder Insert(int index, String value, int count)
-			{
-				if(count < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("count", _("ArgRange_NonNegative"));
-				}
-				while(count > 0)
-				{
-					Insert(index, value);
-					if(buildString.length >= maxCapacity)
-					{
-						break;
-					}
-					--count;
-				}
-				return this;
-			}
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Insert(int index, char[] value);
+
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Insert(int index, char[] value,
+								int startIndex, int length);
+
+    [MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Insert(int index, String value, int count);
 
 	// Remove a range of characters from this string builder.
 	public StringBuilder Remove(int startIndex, int length)
@@ -736,15 +441,9 @@ public sealed class StringBuilder
 			}
 
 	// Replace all occurrences of a specific old string with a new string.
-	public StringBuilder Replace(char oldChar, char newChar)
-			{
-				if(oldChar != newChar && buildString.length > 0)
-				{
-					buildString = buildString.Replace(oldChar, newChar);
-					needsCopy = false;
-				}
-				return this;
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Replace(char oldChar, char newChar);
+
 	public StringBuilder Replace(String oldValue, String newValue)
 			{
 				return Replace(oldValue, newValue, 0, buildString.length);
@@ -790,42 +489,9 @@ public sealed class StringBuilder
 				}
 				return this;
 			}
-	public StringBuilder Replace(char oldChar, char newChar,
-								 int startIndex, int count)
-			{
-				if(startIndex < 0 || startIndex > buildString.length)
-				{
-					throw new ArgumentOutOfRangeException
-						("startIndex", _("ArgRange_StringIndex"));
-				}
-				else if((buildString.length - startIndex) < count)
-				{
-					throw new ArgumentOutOfRangeException
-						("count", _("ArgRange_StringRange"));
-				}
-				else if(oldChar == newChar)
-				{
-					return this;
-				}
-				if(count > 0)
-				{
-					String temp = buildString;
-					buildString = NewBuilder(null, buildString.capacity);
-					needsCopy = false;
-					if(startIndex > 0)
-					{
-						Append(temp, 0, startIndex);
-					}
-					Append(temp.Substring(startIndex, count)
-							   .Replace(oldChar, newChar));
-					if((startIndex + count) < temp.length)
-					{
-						Append(temp, startIndex + count,
-							   temp.length - (startIndex + count));
-					}
-				}
-				return this;
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+ 	extern public StringBuilder Replace(char oldChar, char newChar,
+								 int startIndex, int count);
 
 	// Convert this string builder into a string.
 	public override String ToString()
@@ -894,7 +560,7 @@ public sealed class StringBuilder
 			{
 				get
 				{
-					return buildString.Length;
+					return buildString.length;
 				}
 				set
 				{

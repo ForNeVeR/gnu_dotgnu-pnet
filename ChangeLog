@@ -1,3 +1,8 @@
+2005-02-06  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Text/StringBuilder.cd: reimplement some functionality as
+	internalcalls (Performance).
+
 2004-02-04  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/TextBox.cs: Drawing background and Caret.

@@ -333,6 +333,20 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 				}
 			}
 
+#if !ECMA_COMPAT
+	public static Assembly LoadWithPartialName (string partialName)
+			{
+				return LoadWithPartialName (partialName, null);
+			}
+
+	[TODO]
+	public static Assembly LoadWithPartialName (string partialName, 
+												Evidence securityEvidence)
+			{
+				return LoadFrom(partialName);
+			}
+#endif
+
 	[TODO]
 	public virtual AssemblyName GetName()
 	{

@@ -1,4 +1,9 @@
 
+2003-01-13  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Reflection/Assembly.cs: Add some new methods for supporting
+	some external libraries.
+
 2003-01-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Xml/XmlElement.cs: Fix minor bug with setting the InnerText

@@ -1,4 +1,10 @@
 // An example that demonstrates access to environment variables.
+//
+// "getenv" with no command-line arguments will print the values
+// of all environment variables.
+//
+// "getenv" with an argument will print the value of just that
+// environment variable.
 
 using System.Collections;
 
@@ -11,8 +17,6 @@ public class getenv
 			String value = Environment.GetEnvironmentVariable(args[0]);
 			if(value != null)
 			{
-				Console.Write(args[0]);
-				Console.Write("=");
 				Console.WriteLine(value);
 			}
 			else
@@ -21,8 +25,6 @@ public class getenv
 				Console.WriteLine(" does not exist in the environment");
 			}
 		}
-#if false
-		// Doesn't compile yet: working on it - Rhys.
 		else
 		{
 			IDictionary vars = Environment.GetEnvironmentVariables();
@@ -34,11 +36,5 @@ public class getenv
 				Console.WriteLine((String)(e.Value));
 			}
 		}
-#else
-		else
-		{
-			Console.WriteLine("Usage: getenv varname");
-		}
-#endif
 	}
 }

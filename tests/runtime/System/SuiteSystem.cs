@@ -30,6 +30,7 @@ public class SuiteSystem
 				suite.AddTests(typeof(TestArgIterator));
 				suite.AddTests(typeof(TestArray));
 				suite.AddTests(typeof(TestBoolean));
+				suite.AddTests(typeof(TestConvert));
 				suite.AddTests(typeof(TestDecimal));
 				suite.AddTests(typeof(TestDelegate));
 				suite.AddTests(typeof(TestDouble));

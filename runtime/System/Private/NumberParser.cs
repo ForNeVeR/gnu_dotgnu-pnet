@@ -2,6 +2,7 @@
  * NumberParser.cs - Implementation of "System.Private.NumberParser".
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,6 +73,16 @@ internal sealed class NumberParser
 		if(posn >= len)
 		{
 			throw new FormatException(_("Format_Integer"));
+		}
+
+		// Accept "0x" or "0X" for radix 16.
+		if (radix == 16 && posn <= len - 2 && value[posn] == '0')
+		{
+			ch = value[posn+1];
+			if (ch == 'x' || ch == 'X')
+			{
+				posn += 2;
+			}
 		}
 
 		// Parse the main part of the number.
@@ -154,7 +165,21 @@ internal sealed class NumberParser
 		return noOverflow;
 	}
 
-	public static int StringToInt32(String value, int radix, int ovfValue)
+	private static void NegateIfSignBit(ref ulong magnitude, ref bool sign,
+										ulong signbit, ulong mask)
+	{
+		// unpredictable if sign not currently positive
+		if (!sign && (magnitude & signbit) != 0ul)
+		{
+			// (~x)+1 => negate in two's complement, but only negating
+			// mask bits (which should be 0, or overflow)
+			magnitude = (magnitude ^ mask) + 1;
+			sign = true;
+		}
+	}
+
+	public static int StringToInt32(String value, int radix, int ovfValue,
+									uint signbit, uint mask)
 	{
 		ulong result;
 		bool sign;
@@ -162,6 +187,10 @@ internal sealed class NumberParser
 		// Parse the number.
 		if(StringToNumber(value, radix, out result, out sign))
 		{
+			if (radix != 10)
+			{
+				NegateIfSignBit(ref result, ref sign, signbit, mask);
+			}
 			if(!sign)
 			{
 				if(result <= 2147483647)
@@ -229,6 +258,11 @@ internal sealed class NumberParser
 		// Parse the number.
 		if(StringToNumber(value, radix, out result, out sign))
 		{
+			if (radix != 10)
+			{
+				NegateIfSignBit (ref result, ref sign,
+								 0x8000000000000000, UInt64.MaxValue);
+			}
 			if(!sign)
 			{
 				if(result <= 9223372036854775807)

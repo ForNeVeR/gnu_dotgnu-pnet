@@ -1,4 +1,22 @@
 
+2004-11-14  Stephen Compall  <s11@member.fsf.org>
+
+	* runtime/System/Private/NumberParser.cs
+	(NegateIfSignBit): New static method.
+	(StringToInt32): Use NegateIfSignBit.  Add signbit and mask
+	arguments.
+	(StringToInt64): Use NegateIfSignBit.
+	(StringToNumber): Accept "0x" or "0X" for radix 16.
+
+	* runtime/System/Convert.cs (ToSByte(String,int)): Pass signbit
+	and mask arguments to StringToInt32.
+	(ToInt16(String,int)): Same.
+	(ToInt32(String,int)): Same.
+
+	* tests/runtime/System/TestConvert.cs: New file.
+
+	* tests/runtime/System/SuiteSystem.cs (Suite): Add TestConvert.
+	
 2004-11-13  Marc Haisenko  <haisenko@webport.de>
 
 	* System.Windows.Forms/ListViewItem.cs: Fix minor bug in SizeSubItemArray

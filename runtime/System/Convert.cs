@@ -575,7 +575,7 @@ public sealed class Convert
 				   fromBase == 10 || fromBase == 16)
 				{
 					return ToSByte(NumberParser.StringToInt32
-										(value, fromBase, 128));
+								   (value, fromBase, 128, 0x80, Byte.MaxValue));
 				}
 				else
 				{
@@ -794,7 +794,8 @@ public sealed class Convert
 				   fromBase == 10 || fromBase == 16)
 				{
 					return ToInt16(NumberParser.StringToInt32
-										(value, fromBase, 32768));
+								   (value, fromBase, 32768, 0x8000,
+									UInt16.MaxValue));
 				}
 				else
 				{
@@ -1239,7 +1240,7 @@ public sealed class Convert
 				if(fromBase == 2 || fromBase == 8 ||
 				   fromBase == 10 || fromBase == 16)
 				{
-					return NumberParser.StringToInt32(value, fromBase, 0);
+					return NumberParser.StringToInt32(value, fromBase, 0, 0x80000000, UInt32.MaxValue);
 				}
 				else
 				{

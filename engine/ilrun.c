@@ -28,6 +28,12 @@ extern	"C" {
 #endif
 
 /*
+ * Imports from "register.c".
+ */
+int _ILRegisterWithKernel(const char *progname);
+int _ILUnregisterFromKernel(void);
+
+/*
  * Table of command-line options.
  */
 static ILCmdLineOption const options[] = {
@@ -39,6 +45,14 @@ static ILCmdLineOption const options[] = {
 	{"--library-dir", 'L', 1,
 		"--library-dir dir  or -L dir",
 		"Specify a directory to search for libraries."},
+#if defined(linux) || defined(__linux) || defined(__linux__)
+	{"--register", 'r', 0,
+		"--register",
+		"Register ilrun with the operating system."},
+	{"--unregister", 'u', 0,
+		"--unregister",
+		"Unregister ilrun from the operating system."},
+#endif
 	{"--version", 'v', 0,
 		"--version          or -v",
 		"Print the version of the program"},
@@ -68,6 +82,7 @@ int main(int argc, char *argv[])
 	ILString *argString;
 	ILObject *exception;
 	int sawException;
+	int registerMode = 0;
 
 	/* Allocate space for the library list */
 	libraryDirs = (char **)ILMalloc(sizeof(char *) * argc);
@@ -101,6 +116,12 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'r': case 'u':
+			{
+				registerMode = opt;
+			}
+			break;
+
 			case 'v':
 			{
 				version();
@@ -115,6 +136,23 @@ int main(int argc, char *argv[])
 			}
 			/* Not reached */
 		}
+	}
+
+	/* Check for register/unregister modes */
+	if(registerMode == 'r')
+	{
+		if(argc <= 1)
+		{
+			return _ILRegisterWithKernel(progname);
+		}
+		else
+		{
+			return _ILRegisterWithKernel(argv[1]);
+		}
+	}
+	else if(registerMode == 'u')
+	{
+		return _ILUnregisterFromKernel();
 	}
 
 	/* We need at least one input file argument */

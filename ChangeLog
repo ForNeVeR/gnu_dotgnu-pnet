@@ -8,6 +8,9 @@
 	cscc/csharp/cs_lookup.c: detect duplicate methods and
 	incorrect virtual method overrides.
 
+	* engine/Makefile.am, engine/ilrun.c, engine/register.c:
+	add operating system binfmt registration code to ilrun.
+
 2001-03-16  Gopal.V <gopalv82@yahoo.com>
 
 	* system/il_system.h , support/file.c : Added the file 

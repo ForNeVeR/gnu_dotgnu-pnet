@@ -30,6 +30,7 @@ COMMON_ENGINE_SOURCES = box.c \
 						null_coder.c \
 						pinvoke.c \
 						process.c \
+						register.c \
 						thread.c \
 						throw.c \
 						verify.c

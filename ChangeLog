@@ -33,6 +33,10 @@ runtime/System/Guid.cs, runtime/System/Type.cs,
 runtime/System/Reflection/ClrType.cs: implement the Guid class and
 alter other classes that depend upon it.
 
+* runtime/System/Activator.cs, runtime/System/AppDomain.cs,
+runtime/System/AppDomainUnloadedException.cs, runtime/System/ArgIterator.cs:
+insert "ECMA_COMPAT" where necessary to #if out non-ECMA definitions.
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/Platform/Errno.cs: list of Unix-style errno codes for interfacing

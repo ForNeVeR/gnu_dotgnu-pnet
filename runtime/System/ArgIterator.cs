@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if !ECMA_COMPAT
+
 using System.Runtime.CompilerServices;
 
 public struct ArgIterator
@@ -68,5 +70,7 @@ public struct ArgIterator
 	extern public int GetRemainingCount();
 
 }; // class ArgIterator
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System

@@ -44,6 +44,7 @@ public sealed class AppDomain : MarshalByRefObject
 		return new AppDomain(friendlyName);
 	}
 
+#if !ECMA_COMPAT
 	// Load and execute a file containing an assembly.
 	public int ExecuteAssembly(String assemblyFile)
 	{
@@ -54,6 +55,7 @@ public sealed class AppDomain : MarshalByRefObject
 		// TODO: load and execute the assembly.
 		return 0;
 	}
+#endif
 
 	// Return a string representing the current instance.
 	public override String ToString()
@@ -80,8 +82,14 @@ public sealed class AppDomain : MarshalByRefObject
 		}
 	}
 
+	// Event that is emitted when an assembly is loaded into this domain.
+	public event AssemblyLoadEventHandler AssemblyLoad;
+
 	// Event that is emitted when an application domain is unloaded.
 	public event EventHandler DomainUnload;
+
+	// Event that is emitted when an exception is unhandled by the domain.
+	public event UnhandledExceptionEventHandler UnhandledException;
 
 }; // class AppDomain
 

@@ -26,7 +26,12 @@ using System.Runtime.Remoting;
 using System.Globalization;
 using System.Security.Policy;
 
-public sealed class Activator
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class Activator
 {
 	// Create a COM object instance.
 	public static ObjectHandle CreateComInstanceFrom

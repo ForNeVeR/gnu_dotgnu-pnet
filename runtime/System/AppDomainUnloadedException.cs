@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if !ECMA_COMPAT
+
 public class AppDomainUnloadedException : SystemException
 {
 
@@ -43,5 +45,7 @@ public class AppDomainUnloadedException : SystemException
 			}
 
 }; // class AppDomainUnloadedException
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System

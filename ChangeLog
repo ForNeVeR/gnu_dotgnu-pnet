@@ -1,4 +1,9 @@
 
+2004-05-16  Gopal V  <gopalv82@yahoo.com>
+
+	* config/machine.default: fix all the xml errors in machine.default
+	for the "system.web" handlers.
+
 2004-05-16  Andres March  <me@andresmarch.com>
 
 	* System.Xml/XmlDocument.cs, tests/System.Xml/TestXmlDocument.cs: 

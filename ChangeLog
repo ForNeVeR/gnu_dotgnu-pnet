@@ -1,4 +1,8 @@
 
+2004-12-11  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/PrintDialog.cs: Add stub.
+
 2004-12-15  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/RichTextBox.cs: Add stub.

@@ -593,7 +593,7 @@ static int CompareCaseLabels(const void *e1, const void *e2)
 			const char *str1 = value1->un.strValue.str;
 			const char *str2 = value2->un.strValue.str;
 			int len1 = value1->un.strValue.len;
-			int len2 = value1->un.strValue.len;
+			int len2 = value2->un.strValue.len;
 			unsigned char ch1;
 			unsigned char ch2;
 			if(!str1)

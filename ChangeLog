@@ -4,6 +4,10 @@
 	* cscc/csharp/cs_lvalue.tc (FieldToConstant): bug in the
 	detection of literal string fields with no constant value.
 
+	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,
+	cscc/csharp/cs_lookup.c: detect duplicate methods and
+	incorrect virtual method overrides.
+
 2001-03-16  Gopal.V <gopalv82@yahoo.com>
 
 	* system/il_system.h , support/file.c : Added the file 

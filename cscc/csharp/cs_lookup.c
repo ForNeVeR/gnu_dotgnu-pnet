@@ -330,11 +330,7 @@ static int IsBaseTypeFor(ILClass *info1, ILClass *info2)
 	return 0;
 }
 
-/*
- * Determine if two method signatures have identical parameters.
- * Ignore the return type and the static vs instance property.
- */
-static int SignatureIdentical(ILType *sig1, ILType *sig2)
+int CSSignatureIdentical(ILType *sig1, ILType *sig2)
 {
 	unsigned long numParams;
 	unsigned long paramNum;
@@ -407,7 +403,7 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 				if(IsBaseTypeFor(testMember->owner, member->owner))
 				{
 					/* "testMember" is in a base type of "member"'s type */
-					if(SignatureIdentical
+					if(CSSignatureIdentical
 							(ILMember_Signature(testMember->member),
 						     ILMember_Signature(member->member)))
 					{
@@ -423,7 +419,7 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 				else if(IsBaseTypeFor(member->owner, testMember->owner))
 				{
 					/* "member" is in a base type of "testMember"'s type */
-					if(SignatureIdentical
+					if(CSSignatureIdentical
 							(ILMember_Signature(testMember->member),
 						     ILMember_Signature(member->member)))
 					{

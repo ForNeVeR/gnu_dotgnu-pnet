@@ -314,12 +314,14 @@ static void AddMemberToScope(ILScope *scope, int memberKind,
 /*
  * Search for a member with a specific name to do duplicate testing.
  */
-static ILMember *FindMemberByName(ILClass *classInfo, const char *name)
+static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
+								  ILClass *scope)
 {
-	ILClass *scope = classInfo;
 	ILMember *member;
+	ILImplements *impl;
 	while(classInfo != 0)
 	{
+		/* Scan the members of this class */
 		member = 0;
 		while((member = ILClassNextMember(classInfo, member)) != 0)
 		{
@@ -329,6 +331,71 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name)
 				return member;
 			}
 		}
+
+		/* Scan the interfaces that this class implements */
+		impl = 0;
+		while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+		{
+			member = FindMemberByName
+				(ILClassResolve(ILImplementsGetInterface(impl)),
+				 name, scope);
+			if(member)
+			{
+				return member;
+			}
+		}
+
+		/* Move up to the parent of this class */
+		classInfo = ILClass_Parent(classInfo);
+	}
+	return 0;
+}
+
+/*
+ * Search for a member with a specific name and/or signature.
+ */
+static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
+									   ILType *signature, ILMember *notThis,
+									   ILClass *scope)
+{
+	ILMember *member;
+	ILImplements *impl;
+	while(classInfo != 0)
+	{
+		/* Scan the members of this class */
+		member = 0;
+		while((member = ILClassNextMember(classInfo, member)) != 0)
+		{
+			if(member != notThis &&
+			   !strcmp(ILMember_Name(member), name) &&
+			   ILMemberAccessible(member, scope))
+			{
+				if(!ILMember_IsMethod(member))
+				{
+					return member;
+				}
+				else if(CSSignatureIdentical(ILMemberGetSignature(member),
+										     signature))
+				{
+					return member;
+				}
+			}
+		}
+
+		/* Scan the interfaces that this class implements */
+		impl = 0;
+		while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+		{
+			member = FindMemberBySignature
+				(ILClassResolve(ILImplementsGetInterface(impl)),
+				 name, signature, notThis, scope);
+			if(member)
+			{
+				return member;
+			}
+		}
+
+		/* Move up to the parent of this class */
 		classInfo = ILClass_Parent(classInfo);
 	}
 	return 0;
@@ -339,7 +406,7 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name)
  */
 static void ReportDuplicates(ILNode *node, ILMember *newMember,
 							 ILMember *existingMember, ILClass *classInfo,
-							 ILUInt32 modifiers)
+							 ILUInt32 modifiers, char *name)
 {
 	/* TODO: we need better error messages here */
 
@@ -347,23 +414,26 @@ static void ReportDuplicates(ILNode *node, ILMember *newMember,
 	{
 		/* The duplicate is in the same class */
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-		  			  "declaration conflicts with an existing member");
+		  			  "declaration of `%s' conflicts with an existing member",
+					  name);
 	}
 	else if((modifiers & CS_SPECIALATTR_NEW) == 0)
 	{
 		/* The duplicate is in a parent class, and "new" wasn't specified */
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-		  "declaration hides an inherited member, and `new' was not present");
+		  "declaration of `%s' hides an inherited member, "
+		  "and `new' was not present", name);
 	}
 }
 
 /*
  * Report a warning for an unnecessary "new" keyword on a declaration.
  */
-static void ReportUnnecessaryNew(ILNode *node)
+static void ReportUnnecessaryNew(ILNode *node, char *name)
 {
 	CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
-			        "declaration includes unnecessary `new' keyword");
+			        "declaration of `%s' includes unnecessary `new' keyword",
+					name);
 }
 
 /*
@@ -410,7 +480,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 		name = ILQualIdentName(decl->name, 0);
 
 		/* Look for duplicates */
-		member = FindMemberByName(classInfo, name);
+		member = FindMemberByName(classInfo, name, classInfo);
 
 		/* Create the field information block */
 		fieldInfo = ILFieldCreate(classInfo, 0, name,
@@ -425,12 +495,12 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 		/* Report on duplicates */
 		if(member)
 		{
-			ReportDuplicates((ILNode *)decl, (ILMember *)fieldInfo,
-							 member, classInfo, field->modifiers);
+			ReportDuplicates(decl->name, (ILMember *)fieldInfo,
+							 member, classInfo, field->modifiers, name);
 		}
 		else if((field->modifiers & CS_SPECIALATTR_NEW) != 0)
 		{
-			ReportUnnecessaryNew((ILNode *)decl);
+			ReportUnnecessaryNew(decl->name, name);
 		}
 
 		/* Add the field to the current scope */
@@ -454,6 +524,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	ILNode_FormalParameter *fparam;
 	ILUInt32 paramNum;
 	ILParameter *parameter;
+	ILMember *member;
 	
 	/* Get the name of the method */
 	if(yykind(method->name) == yykindof(ILNode_Identifier))
@@ -552,6 +623,36 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	/* Add the method to the current scope */
 	AddMemberToScope(info->currentScope, IL_SCOPE_METHOD,
 					 name, (ILMember *)methodInfo, method->name);
+
+	/* Look for duplicates and report on them */
+	member = FindMemberBySignature(classInfo, name, signature,
+								   (ILMember *)methodInfo, classInfo);
+	if(member)
+	{
+		if(ILMember_IsMethod(member) &&
+		   ILMethod_IsVirtual((ILMethod *)member) &&
+		   !ILMethod_IsNewSlot(methodInfo))
+		{
+			/* Check for the correct form of virtual method overrides */
+			if((method->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+			{
+				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+		  			"declaration of `%s' overrides an inherited member, "
+					"and `override' was not present", name);
+			}
+		}
+		else if(ILMember_Owner(member) == classInfo ||
+		        (!ILMethodIsConstructor(methodInfo) &&
+				 !ILMethodIsStaticConstructor(methodInfo)))
+		{
+			ReportDuplicates(method->name, (ILMember *)methodInfo,
+							 member, classInfo, method->modifiers, name);
+		}
+	}
+	else if((method->modifiers & CS_SPECIALATTR_NEW) != 0)
+	{
+		ReportUnnecessaryNew(method->name, name);
+	}
 }
 
 /*
@@ -580,7 +681,7 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 	}
 
 	/* Look for duplicates */
-	member = FindMemberByName(classInfo, name);
+	member = FindMemberByName(classInfo, name, classInfo);
 
 	/* Create the field information block */
 	fieldInfo = ILFieldCreate(classInfo, 0, name,
@@ -598,7 +699,7 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 	if(member && ILMember_Owner(member) == classInfo)
 	{
 		ReportDuplicates((ILNode *)enumMember, (ILMember *)fieldInfo,
-						 member, classInfo, 0);
+						 member, classInfo, 0, name);
 	}
 }
 
@@ -645,7 +746,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	}
 
 	/* Look for duplicates */
-	member = FindMemberByName(classInfo, name);
+	member = FindMemberByName(classInfo, name, classInfo);
 
 	/* Get the property type */
 	propType = CSSemType(property->type, info, &(property->type));
@@ -713,12 +814,12 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	/* Report on duplicates */
 	if(member)
 	{
-		ReportDuplicates((ILNode *)property, (ILMember *)propertyInfo,
-						 member, classInfo, property->modifiers);
+		ReportDuplicates(property->name, (ILMember *)propertyInfo,
+						 member, classInfo, property->modifiers, name);
 	}
 	else if((property->modifiers & CS_SPECIALATTR_NEW) != 0)
 	{
-		ReportUnnecessaryNew((ILNode *)property);
+		ReportUnnecessaryNew(property->name, name);
 	}
 
 	/* Add the property to the current scope */

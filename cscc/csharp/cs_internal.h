@@ -124,6 +124,12 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree);
 void CSValidateDocs(ILNode *docList);
 
 /*
+ * Determine if two method signatures have identical parameters.
+ * Ignore the return type and the static vs instance property.
+ */
+int CSSignatureIdentical(ILType *sig1, ILType *sig2);
+
+/*
  * Get the scope to use for access checks in the current context.
  */
 ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule);

@@ -129,13 +129,14 @@ public sealed class LicenseManager
 					throw new LicenseException(type);
 				}
 			}
-	public static void Validate(Type type, Object instance)
+	public static License Validate(Type type, Object instance)
 			{
 				License license;
 				if(!IsValid(type, instance, out license))
 				{
 					throw new LicenseException(type, instance);
 				}
+				return license;
 			}
 
 }; // class LicenseManager

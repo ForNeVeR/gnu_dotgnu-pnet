@@ -1,6 +1,6 @@
 /*
- * ExpandableObjectConverter.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.ExpandableObjectConverter" class.
+ * ComponentEditor.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.ComponentEditor" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,32 +24,20 @@ namespace System.ComponentModel
 
 #if CONFIG_COMPONENT_MODEL
 
-using System;
-using System.Collections;
-using System.Globalization;
-using System.ComponentModel.Design;
-
-public class ExpandableObjectConverter : TypeConverter
+public abstract class ComponentEditor
 {
 	// Constructor.
-	public ExpandableObjectConverter() {}
+	protected ComponentEditor() {}
 
-	// Get the properties for an object.
-	public override PropertyDescriptorCollection GetProperties
-				(ITypeDescriptorContext context, Object value,
-				 Attribute[] attributes)
+	// Edit a component and indicate if it was modified.
+	public bool EditComponent(Object component)
 			{
-				return TypeDescriptor.GetProperties(value, attributes);
+				return EditComponent(null, component);
 			}
+	public abstract bool EditComponent
+				(ITypeDescriptorContext context, Object component);
 
-	// Determine if the "GetProperties" method is supported.
-	public override bool GetPropertiesSupported
-				(ITypeDescriptorContext context)
-			{
-				return true;
-			}
-
-}; // class ExpandableObjectConverter
+}; // class ComponentEditor
 
 #endif // CONFIG_COMPONENT_MODEL
 

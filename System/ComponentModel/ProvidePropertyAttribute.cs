@@ -26,7 +26,7 @@ namespace System.ComponentModel
 
 using System;
 
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple=true)]
 public sealed class ProvidePropertyAttribute : Attribute
 {
 	// Internal state.

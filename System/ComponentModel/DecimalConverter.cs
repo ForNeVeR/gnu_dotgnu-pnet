@@ -27,6 +27,7 @@ namespace System.ComponentModel
 using System;
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.ComponentModel.Design.Serialization;
 
 public class DecimalConverter : BaseNumberConverter
@@ -66,7 +67,6 @@ public class DecimalConverter : BaseNumberConverter
 			}
 
 	// Convert this object into another type.
-	[TODO]
 	public override Object ConvertTo(ITypeDescriptorContext context,
 									 CultureInfo culture,
 									 Object value, Type destinationType)
@@ -76,17 +76,23 @@ public class DecimalConverter : BaseNumberConverter
 					throw new ArgumentNullException("destinationType");
 				}
 			#if CONFIG_COMPONENT_MODEL_DESIGN
-				if(destinationType == typeof(InstanceDescriptor))
+				if(destinationType == typeof(InstanceDescriptor) &&
+				   value is Decimal)
 				{
-					// TODO
-					return null;
+					ConstructorInfo ctor;
+					ctor = typeof(Decimal).GetConstructor
+							(new Type [] {typeof(int[])});
+					if(ctor == null)
+					{
+						return null;
+					}
+					return new InstanceDescriptor
+						(ctor, new Object []
+							{Decimal.GetBits((Decimal)value)});
 				}
-				else
 			#endif
-				{
-					return base.ConvertTo(context, culture, value,
-										  destinationType);
-				}
+				return base.ConvertTo(context, culture, value,
+									  destinationType);
 			}
 
 }; // class DecimalConverter

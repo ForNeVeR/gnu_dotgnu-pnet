@@ -2,7 +2,7 @@
  * TypeConverter.cs - Implementation of the
  *		"System.ComponentModel.ComponentModel.TypeConverter" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -280,74 +280,221 @@ public class TypeConverter
 				return props;
 			}
 
-	// nested class
+	// Wrap a collection to make it indexable.
 	public class StandardValuesCollection : ICollection, IEnumerable
 	{
-	
+		// Internal state.
 		private ICollection values;
 		
-		public StandardValuesCollection (ICollection values)
-		{
-			if(values != null)
-			{
-				this.values = values;
-			}
-			else
-			{
-				this.values = new Object [0];
-			}
-		}
+		// Constructor.
+		public StandardValuesCollection(ICollection values)
+				{
+					if(values != null)
+					{
+						this.values = values;
+					}
+					else
+					{
+						this.values = new Object[0];
+					}
+				}
 
-		public void CopyTo (Array array, int index)
-		{
-			values.CopyTo (array, index);
-		}
-
-		public IEnumerator GetEnumerator ()
-		{
-			return values.GetEnumerator ();
-		}
-
-		bool ICollection.IsSynchronized
-		{
-			get 
-			{
-				return false; 
-			}
-		}
-
-		object ICollection.SyncRoot
-		{
-			get 
-			{ 
-				return null;
-			}
-		}
-
-		int ICollection.Count
-		{
-			get 
-			{
-				return this.Count;
-			}
-		}
-
+		// Get the number of elements in this collection.
 		public int Count
-		{
-			get
-			{
-				return values.Count;
-			}
-		}
+				{
+					get
+					{
+						return values.Count;
+					}
+				}
 
-		public object this [int index]
-		{
-			get 
-			{
-				return (values as IList) [index]; 
-			}
-		}
-	}
+		// Copy the elements of this collection into an array.
+		public void CopyTo(Array array, int index)
+				{
+					values.CopyTo(array, index);
+				}
+
+		// Get an enumerator for this collection.
+		public IEnumerator GetEnumerator()
+				{
+					return values.GetEnumerator();
+				}
+
+		// Implement the ICollection interface.
+		void ICollection.CopyTo(Array array, int index)
+				{
+					values.CopyTo(array, index);
+				}
+		int ICollection.Count
+				{
+					get 
+					{
+						return values.Count;
+					}
+				}
+		bool ICollection.IsSynchronized
+				{
+					get 
+					{
+						return false; 
+					}
+				}
+		Object ICollection.SyncRoot
+				{
+					get 
+					{ 
+						return null;
+					}
+				}
+
+		// Implement the IEnumerable interface.
+		IEnumerator IEnumerable.GetEnumerator()
+				{
+					return values.GetEnumerator();
+				}
+
+		// Get an item from this collection.
+		public Object this[int index]
+				{
+					get
+					{
+						if(values is IList)
+						{
+							return ((IList)values)[index];
+						}
+						else
+						{
+							if(index < 0 || index >= values.Count)
+							{
+								throw new IndexOutOfRangeException
+									(S._("Arg_InvalidArrayIndex"));
+							}
+							IEnumerator e = values.GetEnumerator();
+							while(e.MoveNext())
+							{
+								if(index == 0)
+								{
+									return e.Current;
+								}
+								--index;
+							}
+							throw new IndexOutOfRangeException
+								(S._("Arg_InvalidArrayIndex"));
+						}
+					}
+				}
+
+	}; // class StandardValuesCollection
+
+	// Simple property descriptor for objects that don't have properties.
+	protected abstract class SimplePropertyDescriptor : PropertyDescriptor
+	{
+		// Internal state.
+		private Type componentType;
+		private Type propertyType;
+
+		// Constructors.
+		public SimplePropertyDescriptor
+					(Type componentType, String name, Type propertyType)
+				: base(name, null)
+				{
+					this.componentType = componentType;
+					this.propertyType = propertyType;
+				}
+		public SimplePropertyDescriptor
+					(Type componentType, String name, Type propertyType,
+					 Attribute[] attributes)
+				: base(name, attributes)
+				{
+					this.componentType = componentType;
+					this.propertyType = propertyType;
+				}
+
+		// Get the component type that owns this property.
+		public override Type ComponentType
+				{
+					get
+					{
+						return componentType;
+					}
+				}
+
+		// Determine if this property is read-only.
+		public override bool IsReadOnly
+				{
+					get
+					{
+						ReadOnlyAttribute attr;
+						attr = (ReadOnlyAttribute)
+							(Attributes[typeof(ReadOnlyAttribute)]);
+						if(attr != null)
+						{
+							return attr.IsReadOnly;
+						}
+						else
+						{
+							return false;
+						}
+					}
+				}
+
+		// Get the type of this property.
+		public override Type PropertyType
+				{
+					get
+					{
+						return propertyType;
+					}
+				}
+
+		// Determine if resetting a component's property will change its value.
+		public override bool CanResetValue(Object component)
+				{
+					DefaultValueAttribute attr;
+					attr = (DefaultValueAttribute)
+						(Attributes[typeof(DefaultValueAttribute)]);
+					if(attr != null)
+					{
+						// Strictly speaking, this should probably
+						// check that the values are *not* equal, but
+						// other implementations check for equality.
+						// So we do that as well, for compatibility.
+						Object value1 = GetValue(component);
+						Object value2 = attr.Value;
+						if(value1 == null)
+						{
+							return (value2 == null);
+						}
+						else
+						{
+							return value1.Equals(value2);
+						}
+					}
+					else
+					{
+						return false;
+					}
+				}
+
+		// Reset the property value associated with a component.
+		public override void ResetValue(Object component)
+				{
+					DefaultValueAttribute attr;
+					attr = (DefaultValueAttribute)
+						(Attributes[typeof(DefaultValueAttribute)]);
+					if(attr != null)
+					{
+						SetValue(component, attr.Value);
+					}
+				}
+
+		// Determine if a property value needs to be serialized.
+		public override bool ShouldSerializeValue(Object component)
+				{
+					return false;
+				}
+
+	}; // class SimplePropertyDescriptor
 
 }; // class TypeConverter
 

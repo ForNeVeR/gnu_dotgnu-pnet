@@ -2,7 +2,7 @@
  * MemberDescriptor.cs - Implementation of the
  *		"System.ComponentModel.ComponentModel.MemberDescriptor" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ namespace System.ComponentModel
 using System.Collections;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.ComponentModel.Design;
 
 [ComVisible(true)]
 public abstract class MemberDescriptor
@@ -37,7 +38,9 @@ public abstract class MemberDescriptor
 	private String category;
 	private String description;
 	private bool designTimeOnly;
+	private bool loadedDesignTimeOnly;
 	private bool isBrowsable;
+	private bool loadedBrowsable;
 	private String displayName;
 	private String name;
 
@@ -46,18 +49,49 @@ public abstract class MemberDescriptor
 			: this(descr, null) {}
 	protected MemberDescriptor(String name)
 			: this(name, null) {}
-	[TODO]
 	protected MemberDescriptor
 				(MemberDescriptor descr, Attribute[] newAttributes)
 			{
-				// TODO
-				name = descr.Name;
+				this.name = descr.Name;
+				this.displayName = descr.DisplayName;
+				this.attributes =
+					MergeAttributes(descr.AttributeArray, newAttributes);
 			}
-	[TODO]
 	protected MemberDescriptor(String name, Attribute[] newAttributes)
 			{
-				// TODO
+				if(name == null || name.Length == 0)
+				{
+					throw new ArgumentException
+						(S._("ArgRange_StringNonEmpty"), "name");
+				}
 				this.name = name;
+				this.displayName = name;
+				this.attributes = newAttributes;
+			}
+
+	// Merge two attribute lists.
+	private static Attribute[] MergeAttributes
+				(Attribute[] list1, Attribute[] list2)
+			{
+				if(list1 == null)
+				{
+					if(list2 == null)
+					{
+						return null;
+					}
+					else
+					{
+						return (Attribute[])(list2.Clone());
+					}
+				}
+				else if(list2 == null)
+				{
+					return (Attribute[])(list1.Clone());
+				}
+				Attribute[] list = new Attribute [list1.Length + list2.Length];
+				Array.Copy(list1, 0, list, 0, list1.Length);
+				Array.Copy(list2, 0, list, list1.Length, list2.Length);
+				return list;
 			}
 
 	// Properties.
@@ -72,48 +106,80 @@ public abstract class MemberDescriptor
 					return attributeCollection;
 				}
 			}
-	[TODO]
 	public virtual String Category
 			{
 				get
 				{
-					// TODO
+					if(category == null)
+					{
+						CategoryAttribute attr;
+						attr = (CategoryAttribute)
+							(Attributes[typeof(CategoryAttribute)]);
+						if(attr != null)
+						{
+							category = attr.Category;
+						}
+					}
 					return category;
 				}
 			}
-	[TODO]
 	public virtual String Description
 			{
 				get
 				{
-					// TODO
+					if(description == null)
+					{
+						DescriptionAttribute attr;
+						attr = (DescriptionAttribute)
+							(Attributes[typeof(DescriptionAttribute)]);
+						if(attr != null)
+						{
+							description = attr.Description;
+						}
+					}
 					return description;
 				}
 			}
-	[TODO]
 	public virtual bool DesignTimeOnly
 			{
 				get
 				{
-					// TODO
+					if(!loadedDesignTimeOnly)
+					{
+						DesignOnlyAttribute attr;
+						attr = (DesignOnlyAttribute)
+							(Attributes[typeof(DesignOnlyAttribute)]);
+						if(attr != null)
+						{
+							designTimeOnly = attr.IsDesignOnly;
+						}
+						loadedDesignTimeOnly = true;
+					}
 					return designTimeOnly;
 				}
 			}
-	[TODO]
 	public virtual String DisplayName
 			{
 				get
 				{
-					// TODO
 					return displayName;
 				}
 			}
-	[TODO]
 	public virtual bool IsBrowsable
 			{
 				get
 				{
-					// TODO
+					if(!loadedBrowsable)
+					{
+						BrowsableAttribute attr;
+						attr = (BrowsableAttribute)
+							(Attributes[typeof(BrowsableAttribute)]);
+						if(attr != null)
+						{
+							isBrowsable = attr.Browsable;
+						}
+						loadedBrowsable = true;
+					}
 					return isBrowsable;
 				}
 			}
@@ -133,14 +199,39 @@ public abstract class MemberDescriptor
 			}
 
 	// Determine if this member descriptor is equal to another.
-	[TODO]
 	public override bool Equals(Object obj)
 			{
 				MemberDescriptor other = (obj as MemberDescriptor);
 				if(other != null)
 				{
-					// TODO
-					return false;
+					if(other.Name != Name ||
+					   other.Category != Category ||
+					   other.Description != Description)
+					{
+						return false;
+					}
+					Attribute[] attrs = other.AttributeArray;
+					if(attrs == null)
+					{
+						return (attributes == null || attributes.Length == 0);
+					}
+					else if(attributes == null)
+					{
+						return (attrs.Length == 0);
+					}
+					else if(attrs.Length != attributes.Length)
+					{
+						return false;
+					}
+					int index;
+					for(index = 0; index < attrs.Length; ++index)
+					{
+						if(!attributes[index].Equals(attrs[index]))
+						{
+							return false;
+						}
+					}
+					return true;
 				}
 				else
 				{
@@ -155,7 +246,6 @@ public abstract class MemberDescriptor
 			}
 
 	// Get or set the entire attribute array.
-	[TODO]
 	protected virtual Attribute[] AttributeArray
 			{
 				get
@@ -235,19 +325,48 @@ public abstract class MemberDescriptor
 			}
 
 	// Get the object to be invoked.
-	[TODO]
 	protected static Object GetInvokee(Type componentClass, Object component)
 			{
-				// TODO
-				return component;
+				if(componentClass.IsInstanceOfType(component))
+				{
+					return component;
+				}
+				if(!(component is IComponent))
+				{
+					return component;
+				}
+				ISite site = ((IComponent)component).Site;
+				if(site == null || !(site.DesignMode))
+				{
+					return component;
+				}
+				IDesignerHost host = (IDesignerHost)
+					site.GetService(typeof(IDesignerHost));
+				if(host == null)
+				{
+					return component;
+				}
+				IDesigner designer = host.GetDesigner((IComponent)component);
+				if(designer == null ||
+				   !(componentClass.IsInstanceOfType(designer)))
+				{
+					return component;
+				}
+				return designer;
 			}
 
 	// Get a component site for an object.
-	[TODO]
 	protected static ISite GetSite(Object component)
 			{
-				// TODO
-				return null;
+				IComponent comp = (component as IComponent);
+				if(comp != null)
+				{
+					return comp.Site;
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 }; // class MemberDescriptor

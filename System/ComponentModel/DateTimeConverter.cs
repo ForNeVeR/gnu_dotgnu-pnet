@@ -26,6 +26,7 @@ namespace System.ComponentModel
 
 using System;
 using System.Collections;
+using System.Reflection;
 using System.Globalization;
 using System.ComponentModel.Design.Serialization;
 
@@ -86,7 +87,6 @@ public class DateTimeConverter : TypeConverter
 			}
 
 	// Convert this object into another type.
-	[TODO]
 	public override Object ConvertTo(ITypeDescriptorContext context,
 									 CultureInfo culture,
 									 Object value, Type destinationType)
@@ -120,17 +120,22 @@ public class DateTimeConverter : TypeConverter
 					}
 				}
 			#if CONFIG_COMPONENT_MODEL_DESIGN
-				else if(destinationType == typeof(InstanceDescriptor))
+				if(destinationType == typeof(InstanceDescriptor) &&
+				   value is DateTime)
 				{
-					// TODO
-					return null;
+					ConstructorInfo ctor;
+					ctor = typeof(DateTime).GetConstructor
+							(new Type [] {typeof(long)});
+					if(ctor == null)
+					{
+						return null;
+					}
+					return new InstanceDescriptor
+						(ctor, new Object [] {((DateTime)value).Ticks});
 				}
 			#endif
-				else
-				{
-					return base.ConvertTo
-						(context, culture, value, destinationType);
-				}
+				return base.ConvertTo
+					(context, culture, value, destinationType);
 			}
 
 }; // class DateTimeConverter

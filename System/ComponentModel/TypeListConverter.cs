@@ -27,6 +27,7 @@ namespace System.ComponentModel
 using System;
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.ComponentModel.Design.Serialization;
 
 public abstract class TypeListConverter : TypeConverter
@@ -94,7 +95,6 @@ public abstract class TypeListConverter : TypeConverter
 			}
 
 	// Convert this object into another type.
-	[TODO]
 	public override Object ConvertTo(ITypeDescriptorContext context,
 									 CultureInfo culture,
 									 Object value, Type destinationType)
@@ -115,17 +115,23 @@ public abstract class TypeListConverter : TypeConverter
 					}
 				}
 			#if CONFIG_COMPONENT_MODEL_DESIGN
-				else if(destinationType == typeof(InstanceDescriptor))
+				if(destinationType == typeof(InstanceDescriptor) &&
+				   value is Type)
 				{
-					// TODO
-					return null;
+					MethodInfo method;
+					method = typeof(Type).GetMethod
+							("GetType", new Type [] {typeof(String)});
+					if(method == null)
+					{
+						return null;
+					}
+					return new InstanceDescriptor
+						(method, new Object []
+							{((Type)value).AssemblyQualifiedName});
 				}
 			#endif
-				else
-				{
-					return base.ConvertTo
-						(context, culture, value, destinationType);
-				}
+				return base.ConvertTo
+					(context, culture, value, destinationType);
 			}
 
 	// Return a collection of standard values for this data type.

@@ -27,6 +27,7 @@ namespace System.ComponentModel
 using System;
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.ComponentModel.Design.Serialization;
 
 public class TimeSpanConverter : TypeConverter
@@ -80,7 +81,6 @@ public class TimeSpanConverter : TypeConverter
 			}
 
 	// Convert this object into another type.
-	[TODO]
 	public override Object ConvertTo(ITypeDescriptorContext context,
 									 CultureInfo culture,
 									 Object value, Type destinationType)
@@ -101,17 +101,22 @@ public class TimeSpanConverter : TypeConverter
 					}
 				}
 			#if CONFIG_COMPONENT_MODEL_DESIGN
-				else if(destinationType == typeof(InstanceDescriptor))
+				if(destinationType == typeof(InstanceDescriptor) &&
+				   value is TimeSpan)
 				{
-					// TODO
-					return null;
+					ConstructorInfo ctor;
+					ctor = typeof(TimeSpan).GetConstructor
+							(new Type [] {typeof(long)});
+					if(ctor == null)
+					{
+						return null;
+					}
+					return new InstanceDescriptor
+						(ctor, new Object [] {((TimeSpan)value).Ticks});
 				}
 			#endif
-				else
-				{
-					return base.ConvertTo
-						(context, culture, value, destinationType);
-				}
+				return base.ConvertTo
+					(context, culture, value, destinationType);
 			}
 
 }; // class TimeSpanConverter

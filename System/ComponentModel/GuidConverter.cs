@@ -27,6 +27,7 @@ namespace System.ComponentModel
 using System;
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.ComponentModel.Design.Serialization;
 
 public class GuidConverter : TypeConverter
@@ -80,7 +81,6 @@ public class GuidConverter : TypeConverter
 			}
 
 	// Convert this object into another type.
-	[TODO]
 	public override Object ConvertTo(ITypeDescriptorContext context,
 									 CultureInfo culture,
 									 Object value, Type destinationType)
@@ -94,17 +94,22 @@ public class GuidConverter : TypeConverter
 					return value.ToString();
 				}
 			#if CONFIG_COMPONENT_MODEL_DESIGN
-				else if(destinationType == typeof(InstanceDescriptor))
+				if(destinationType == typeof(InstanceDescriptor) &&
+				   value is Guid)
 				{
-					// TODO
-					return null;
+					ConstructorInfo ctor;
+					ctor = typeof(Guid).GetConstructor
+							(new Type [] {typeof(String)});
+					if(ctor == null)
+					{
+						return null;
+					}
+					return new InstanceDescriptor
+						(ctor, new Object [] {((Guid)value).ToString()});
 				}
 			#endif
-				else
-				{
-					return base.ConvertTo
-						(context, culture, value, destinationType);
-				}
+				return base.ConvertTo
+					(context, culture, value, destinationType);
 			}
 
 }; // class GuidConverter

@@ -1,6 +1,6 @@
 /*
- * ExpandableObjectConverter.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.ExpandableObjectConverter" class.
+ * ComponentConverter.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.ComponentConverter" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -29,10 +29,10 @@ using System.Collections;
 using System.Globalization;
 using System.ComponentModel.Design;
 
-public class ExpandableObjectConverter : TypeConverter
+public class ComponentConverter : ReferenceConverter
 {
 	// Constructor.
-	public ExpandableObjectConverter() {}
+	public ComponentConverter(Type type) : base(type) {}
 
 	// Get the properties for an object.
 	public override PropertyDescriptorCollection GetProperties
@@ -49,7 +49,7 @@ public class ExpandableObjectConverter : TypeConverter
 				return true;
 			}
 
-}; // class ExpandableObjectConverter
+}; // class ComponentConverter
 
 #endif // CONFIG_COMPONENT_MODEL
 

@@ -28,7 +28,7 @@ using System;
 using System.ComponentModel.Design;
 
 [DesignerCategory("Component")]
-// TODO: [TypeConverter(typeof(ComponentConverter))]
+[TypeConverter(typeof(ComponentConverter))]
 #if CONFIG_COMPONENT_MODEL_DESIGN
 [Designer
 	("System.Windows.Forms.Design.ComponentDocumentDesigner, System.Design",

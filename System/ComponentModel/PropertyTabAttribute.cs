@@ -94,8 +94,10 @@ public class PropertyTabAttribute : Attribute
 	// Determine if two objects are equal.
 	public override bool Equals(Object obj)
 			{
-				PropertyTabAttribute other =
-					(obj as PropertyTabAttribute);
+				return Equals(obj as PropertyTabAttribute);
+			}
+	public bool Equals(PropertyTabAttribute other)
+			{
 				if(other != null)
 				{
 					if(other.tabClasses.Length != tabClasses.Length)

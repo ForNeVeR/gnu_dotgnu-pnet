@@ -1,6 +1,6 @@
 /*
- * EventDescriptor.cs - 
- *				Implementation of "System.ComponentModel.EventDescriptor".
+ * EventDescriptor.cs - Implementation of the
+ *			"System.ComponentModel.EventDescriptor" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -23,25 +23,38 @@ using System;
 
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
 
-	public abstract class EventDescriptor: MemberDescriptor
-	{
-		protected EventDescriptor(MemberDescriptor desc) 
-			: base(desc)
-		{
-		}
+using System.Runtime.InteropServices;
 
-		protected EventDescriptor(MemberDescriptor desc, Attribute[] attrs)
-			: base(desc,attrs)
-		{
-		}
+[ComVisible(true)]
+public abstract class EventDescriptor : MemberDescriptor
+{
+	// Constructors.
+	protected EventDescriptor(MemberDescriptor descr) : base(descr) {}
+	protected EventDescriptor(MemberDescriptor descr, Attribute[] attrs)
+			: base(descr, attrs) {}
+	protected EventDescriptor(String name, Attribute[] attrs)
+			: base(name, attrs) {}
 
-		protected EventDescriptor(String str, Attribute[] attrs)
-			: base(str,attrs)
-		{
-		}
-	}
+	// Get the type of component that this event is bound to.
+	public abstract Type ComponentType { get; }
 
-#endif
-}//namespace
+	// Get the delegate type associated with the event.
+	public abstract Type EventType { get; }
+
+	// Determine if the event delegate is multicast.
+	public abstract bool IsMulticast { get; }
+
+	// Add an event handler to a component.
+	public abstract void AddEventHandler(Object component, Delegate value);
+
+	// Remove an event handler from a component.
+	public abstract void RemoveEventHandler(Object component, Delegate value);
+
+}; // class EventDescriptor
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

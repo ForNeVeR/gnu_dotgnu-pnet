@@ -27,6 +27,7 @@ namespace System.ComponentModel
 using System;
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.ComponentModel.Design.Serialization;
 
 public class EnumConverter : TypeConverter
@@ -115,7 +116,6 @@ public class EnumConverter : TypeConverter
 			}
 
 	// Convert this object into another type.
-	[TODO]
 	public override Object ConvertTo(ITypeDescriptorContext context,
 									 CultureInfo culture,
 									 Object value, Type destinationType)
@@ -129,17 +129,29 @@ public class EnumConverter : TypeConverter
 					return value.ToString();
 				}
 			#if CONFIG_COMPONENT_MODEL_DESIGN
-				else if(destinationType == typeof(InstanceDescriptor))
+				if(destinationType == typeof(InstanceDescriptor) &&
+				   type.IsInstanceOfType(value))
 				{
-					// TODO
-					return null;
+					MethodInfo method;
+					method = typeof(Enum).GetMethod
+							("ToObject",
+							 new Type [] {typeof(Type), typeof(Object)});
+					if(method == null)
+					{
+						return null;
+					}
+					FieldInfo field = value.GetType().GetField("value__");
+					if(field == null)
+					{
+						return null;
+					}
+					return new InstanceDescriptor
+						(method, new Object []
+							{type, field.GetValue(value)});
 				}
 			#endif
-				else
-				{
-					return base.ConvertTo
-						(context, culture, value, destinationType);
-				}
+				return base.ConvertTo
+					(context, culture, value, destinationType);
 			}
 
 	// Return a collection of standard values for this data type.

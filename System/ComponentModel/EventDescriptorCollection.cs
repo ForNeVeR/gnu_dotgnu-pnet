@@ -1,6 +1,6 @@
 /*
- * EventDescriptorCollection.cs - 
- *		Implementation of "System.ComponentModel.EventDescriptorCollection" 
+ * EventDescriptorCollection.cs - Implementation of the
+ *			"System.ComponentModel.EventDescriptorCollection" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,230 +19,290 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-using System.Collections;
-
 namespace System.ComponentModel
 {
 
 #if CONFIG_COMPONENT_MODEL
 
-	public class EventDescriptorCollection: IEnumerable, ICollection, IList
-	{
-		[TODO]
-		public EventDescriptorCollection(EventDescriptor[] events)
-		{
-			throw new NotImplementedException(".ctor");
-		}
+using System.Collections;
+using System.Globalization;
+using System.Runtime.InteropServices;
 
-		[TODO]
-		public int Add(EventDescriptor value)
-		{
-			throw new NotImplementedException("Add");
-		}
+[ComVisible(true)]
+public class EventDescriptorCollection : IList, ICollection, IEnumerable
+{
+	// Internal state.
+	private ArrayList list;
 
-		[TODO]
-		public void Clear()
-		{
-			throw new NotImplementedException("Clear");
-		}
+	// Empty collection.
+	public static readonly EventDescriptorCollection Empty =
+			new EventDescriptorCollection(null);
 
-		[TODO]
-		public bool Contains(EventDescriptor value)
-		{
-			throw new NotImplementedException("Contains");
-		}
-
-		[TODO]
-		public virtual EventDescriptor Find(String name, bool ignoreCase)
-		{
-			throw new NotImplementedException("Find");
-		}
-
-		[TODO]
-		public IEnumerator GetEnumerator()
-		{
-			throw new NotImplementedException("GetEnumerator");
-		}
-
-		[TODO]
-		public int IndexOf(EventDescriptor value)
-		{
-			throw new NotImplementedException("IndexOf");
-		}
-
-		[TODO]
-		public void Insert(int index, EventDescriptor value)
-		{
-			throw new NotImplementedException("Insert");
-		}
-
-		[TODO]
-		protected virtual EventDescriptorCollection InternalSort(
-										IComparer comparer)
-		{
-			throw new NotImplementedException("InternalSort");
-		}
-
-		[TODO]
-		protected virtual EventDescriptorCollection InternalSort(String[] order)
-		{
-			throw new NotImplementedException("InternalSort");
-		}
-
-		[TODO]
-		public void Remove(EventDescriptor value)
-		{
-			throw new NotImplementedException("Remove");
-		}
-
-		[TODO]
-		public void RemoveAt(int index)
-		{
-			throw new NotImplementedException("RemoveAt");
-		}
-
-		[TODO]
-		public virtual EventDescriptorCollection Sort()
-		{
-			throw new NotImplementedException("Sort");
-		}
-
-		[TODO]
-		public virtual EventDescriptorCollection Sort(IComparer comparer)
-		{
-			throw new NotImplementedException("Sort");
-		}
-
-		[TODO]
-		public virtual EventDescriptorCollection Sort(String[] order)
-		{
-			throw new NotImplementedException("Sort");
-		}
-
-		[TODO]
-		public virtual EventDescriptorCollection Sort(String[] order, 
-													  IComparer comparer)
-		{
-			throw new NotImplementedException("Sort");
-		}
-
-		public static readonly EventDescriptorCollection Empty=new EventDescriptorCollection(new EventDescriptor[]{});
-
-		[TODO]
-		public int Count 
-		{ 
-			get
+	// Constructors.
+	public EventDescriptorCollection(EventDescriptor[] events)
 			{
-				throw new NotImplementedException("Count");
+				list = new ArrayList();
+				if(events != null)
+				{
+					foreach(EventDescriptor descr in events)
+					{
+						list.Add(descr);
+					}
+				}
 			}
-		}
-
-		[TODO]
-		public virtual EventDescriptor this[String name] 
-		{
-			get
+	private EventDescriptorCollection(EventDescriptorCollection copyFrom,
+									  String[] names, IComparer comparer)
 			{
-				throw new NotImplementedException("Item(string)");
+				list = (ArrayList)(copyFrom.list.Clone());
+				InternalSort(names, comparer);
 			}
-		}
 
-		[TODO]
-		public virtual EventDescriptor this[int index] 
-		{
-			get
+	// Get the number of items in the collection.
+	public int Count
 			{
-				throw new NotImplementedException("Item(int)");
+				get
+				{
+					return list.Count;
+				}
 			}
-		}
 
-		// IList implements
-
-		[TODO]
-		int IList.Add (Object value)
-		{
-			return Add((EventDescriptor) value);
-		}
-
-		[TODO]
-		bool IList.Contains (Object value) 
-		{
-			return Contains((EventDescriptor) value);
-		}
-
-		[TODO]
-		int IList.IndexOf (Object value)
-		{
-			return IndexOf((EventDescriptor) value);
-		}
-
-		[TODO]
-		void IList.Insert (int index, Object value)
-		{
-			Insert(index, (EventDescriptor) value);
-		}
-
-		[TODO]
-		void IList.Remove (Object value)
-		{
-			Remove((EventDescriptor) value);
-		}
-
-		bool IList.IsFixedSize 
-		{
-			get 
+	// Get a specific event by index.
+	public virtual EventDescriptor this[int index]
 			{
-				return false; 
+				get
+				{
+					if(index < 0 || index >= list.Count)
+					{
+						throw new IndexOutOfRangeException
+							(S._("Arg_InvalidArrayIndex"));
+					}
+					return (EventDescriptor)(list[index]);
+				}
 			}
-		}
 
-		bool IList.IsReadOnly
-		{
-			get
-			{ 
-				return false; 
-			}
-		}
-
-		[TODO]
-		Object IList.this[int index] 
-		{
-			get 
+	// Get a specific event by name.
+	public virtual EventDescriptor this[String name]
 			{
-				throw new NotImplementedException("IList[int]");
+				get
+				{
+					return Find(name, false);
+				}
 			}
-			set 
+
+	// Add an descriptor to this collection.
+	public int Add(EventDescriptor value)
 			{
-				throw new NotImplementedException("IList[int]");
+				return list.Add(value);
 			}
-		}
 
-		// ICollection implements
-
-		[TODO]
-		void ICollection.CopyTo (Array array, int index)
-		{
-			throw new NotImplementedException ("ICollection.CopyTo");
-		}
-
-		[TODO]
-		bool ICollection.IsSynchronized
-		{
-			get 
+	// Clear this collection.
+	public void Clear()
 			{
-				throw new NotImplementedException("ICollection.IsSynchronized");
+				list.Clear();
 			}
-		}
 
-		[TODO]
-		Object ICollection.SyncRoot
-		{
-			get 
+	// Determine if this collection contains a particular descriptor.
+	public bool Contains(EventDescriptor value)
 			{
-				throw new NotImplementedException("ICollection.SyncRoot");
+				return list.Contains(value);
 			}
-		}
 
-	}
-#endif
-}//namespace
+	// Find a descriptor with a specific name.
+	public virtual EventDescriptor Find(String name, bool ignoreCase)
+			{
+				foreach(EventDescriptor descr in list)
+				{
+					if(String.Compare(descr.Name, name, ignoreCase,
+									  CultureInfo.InvariantCulture) == 0)
+					{
+						return descr;
+					}
+				}
+				return null;
+			}
+
+	// Get an enumerator for this collection.
+	public IEnumerator GetEnumerator()
+			{
+				return list.GetEnumerator();
+			}
+
+	// Get the index of a specific descriptor within the collection.
+	public int IndexOf(EventDescriptor value)
+			{
+				return list.IndexOf(value);
+			}
+
+	// Insert a descriptor into this collection.
+	public void Insert(int index, EventDescriptor value)
+			{
+				list.Insert(index, value);
+			}
+
+	// Remove a descriptor from this collection.
+	public void Remove(EventDescriptor value)
+			{
+				list.Remove(value);
+			}
+
+	// Remove a descriptor at a particular index within this collection.
+	public void RemoveAt(int index)
+			{
+				list.RemoveAt(index);
+			}
+
+	// Sort the descriptor collection.
+	public virtual EventDescriptorCollection Sort()
+			{
+				return new EventDescriptorCollection(this, null, null);
+			}
+	public virtual EventDescriptorCollection Sort(IComparer comparer)
+			{
+				return new EventDescriptorCollection(this, null, comparer);
+			}
+	public virtual EventDescriptorCollection Sort(String[] names)
+			{
+				return new EventDescriptorCollection(this, names, null);
+			}
+	public virtual EventDescriptorCollection Sort
+				(String[] names, IComparer comparer)
+			{
+				return new EventDescriptorCollection(this, names, comparer);
+			}
+
+	// Internal version of "Sort".
+	private void InternalSort(String[] names, IComparer comparer)
+			{
+				if(comparer == null)
+				{
+					comparer = new TypeDescriptor.DescriptorComparer();
+				}
+				if(names != null && names.Length > 0)
+				{
+					// Copy across elements from "names" before
+					// sorting the main list and appending it.
+					ArrayList newList = new ArrayList(list.Count);
+					foreach(String name in names)
+					{
+						EventDescriptor descr = Find(name, false);
+						if(descr != null)
+						{
+							newList.Add(descr);
+							list.Remove(descr);
+						}
+					}
+					list.Sort(comparer);
+					foreach(EventDescriptor ed in list)
+					{
+						newList.Add(ed);
+					}
+					list = newList;
+				}
+				else
+				{
+					// No names, so just sort the main list.
+					list.Sort(comparer);
+				}
+			}
+	protected void InternalSort(IComparer comparer)
+			{
+				InternalSort(null, comparer);
+			}
+	protected void InternalSort(String[] names)
+			{
+				InternalSort(names, null);
+			}
+
+	// Implement the IList interface.
+	int IList.Add(Object value)
+			{
+				return Add((EventDescriptor)value);
+			}
+	void IList.Clear()
+			{
+				Clear();
+			}
+	bool IList.Contains(Object value)
+			{
+				return list.Contains(value);
+			}
+	int IList.IndexOf(Object value)
+			{
+				return list.IndexOf(value);
+			}
+	void IList.Insert(int index, Object value)
+			{
+				Insert(index, (EventDescriptor)value);
+			}
+	void IList.Remove(Object value)
+			{
+				list.Remove(value);
+			}
+	void IList.RemoveAt(int index)
+			{
+				list.RemoveAt(index);
+			}
+	bool IList.IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+	bool IList.IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
+	Object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					list[index] = (EventDescriptor)value;
+				}
+			}
+
+	// Implement the ICollection interface.
+	void ICollection.CopyTo(Array array, int index)
+			{
+				list.CopyTo(array, index);
+			}
+	int ICollection.Count
+			{
+				get
+				{
+					return list.Count;
+				}
+			}
+	bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+	Object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
+
+	// Implement the IEnumerable interface.
+	IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+
+}; // class EventDescriptorCollection
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

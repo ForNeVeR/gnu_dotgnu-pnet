@@ -1,8 +1,8 @@
 /*
  * PropertyDescriptorCollection.cs - Implementation of the
- *	"System.ComponentModel.ComponentModel.PropertyDescriptorCollection" class.
+ *			"System.ComponentModel.PropertyDescriptorCollection" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,288 +25,440 @@ namespace System.ComponentModel
 #if CONFIG_COMPONENT_MODEL
 
 using System.Collections;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
-[TODO]
-[ComVisible(true)]
-public class PropertyDescriptorCollection : IDictionary, IEnumerable, 
-											ICollection, IList
+public class PropertyDescriptorCollection
+		: IList, ICollection, IEnumerable, IDictionary
 {
-	// TODO
+	// Internal state.
+	private ArrayList list;
+
+	// Empty collection.
 	public static readonly PropertyDescriptorCollection Empty =
-								new PropertyDescriptorCollection(null);
+			new PropertyDescriptorCollection(null);
 
-	[TODO]
-	public PropertyDescriptorCollection() 
-	{
-	}
-	
-	[TODO]
-	public PropertyDescriptorCollection(PropertyDescriptor [] properties) 
-	{
-	}
+	// Constructors.
+	public PropertyDescriptorCollection(PropertyDescriptor[] properties)
+			{
+				list = new ArrayList();
+				if(properties != null)
+				{
+					foreach(PropertyDescriptor descr in properties)
+					{
+						list.Add(descr);
+					}
+				}
+			}
+	private PropertyDescriptorCollection(PropertyDescriptorCollection copyFrom,
+									     String[] names, IComparer comparer)
+			{
+				list = (ArrayList)(copyFrom.list.Clone());
+				InternalSort(names, comparer);
+			}
 
-	[TODO]
+	// Get the number of items in the collection.
+	public int Count
+			{
+				get
+				{
+					return list.Count;
+				}
+			}
+
+	// Get a specific property by index.
+	public virtual PropertyDescriptor this[int index]
+			{
+				get
+				{
+					if(index < 0 || index >= list.Count)
+					{
+						throw new IndexOutOfRangeException
+							(S._("Arg_InvalidArrayIndex"));
+					}
+					return (PropertyDescriptor)(list[index]);
+				}
+			}
+
+	// Get a specific property by name.
+	public virtual PropertyDescriptor this[String name]
+			{
+				get
+				{
+					return Find(name, false);
+				}
+			}
+
+	// Add an descriptor to this collection.
 	public int Add(PropertyDescriptor value)
-	{
-		 throw new NotImplementedException("Add");
-	}
+			{
+				return list.Add(value);
+			}
 
-	[TODO]
+	// Clear this collection.
 	public void Clear()
-	{
-		 throw new NotImplementedException("Clear");
-	}
+			{
+				list.Clear();
+			}
 
-	[TODO]
+	// Determine if this collection contains a particular descriptor.
 	public bool Contains(PropertyDescriptor value)
-	{
-		 throw new NotImplementedException("Contains");
-	}
+			{
+				return list.Contains(value);
+			}
 
-	[TODO]
-	public void CopyTo(Array array, int index)
-	{
-		 throw new NotImplementedException("CopyTo");
-	}
-
-	[TODO]
+	// Find a descriptor with a specific name.
 	public virtual PropertyDescriptor Find(String name, bool ignoreCase)
-	{
-		 throw new NotImplementedException("Find");
-	}
+			{
+				foreach(PropertyDescriptor descr in list)
+				{
+					if(String.Compare(descr.Name, name, ignoreCase,
+									  CultureInfo.InvariantCulture) == 0)
+					{
+						return descr;
+					}
+				}
+				return null;
+			}
 
-	[TODO]
+	// Get an enumerator for this collection.
 	public virtual IEnumerator GetEnumerator()
-	{
-		 throw new NotImplementedException("GetEnumerator");
-	}
+			{
+				return list.GetEnumerator();
+			}
 
-	[TODO]
+	// Get the index of a specific descriptor within the collection.
 	public int IndexOf(PropertyDescriptor value)
-	{
-		 throw new NotImplementedException("IndexOf");
-	}
+			{
+				return list.IndexOf(value);
+			}
 
-	[TODO]
+	// Insert a descriptor into this collection.
 	public void Insert(int index, PropertyDescriptor value)
-	{
-		 throw new NotImplementedException("Insert");
-	}
+			{
+				list.Insert(index, value);
+			}
 
-	[TODO]
-	protected void InternalSort(IComparer ic)
-	{
-		 throw new NotImplementedException("InternalSort");
-	}
-
-	[TODO]
-	protected void InternalSort(String[] order)
-	{
-		 throw new NotImplementedException("InternalSort");
-	}
-
-	[TODO]
+	// Remove a descriptor from this collection.
 	public void Remove(PropertyDescriptor value)
-	{
-		 throw new NotImplementedException("Remove");
-	}
+			{
+				list.Remove(value);
+			}
 
-	[TODO]
+	// Remove a descriptor at a particular index within this collection.
 	public void RemoveAt(int index)
-	{
-		 throw new NotImplementedException("RemoveAt");
-	}
+			{
+				list.RemoveAt(index);
+			}
 
-	[TODO]
+	// Sort the descriptor collection.
 	public virtual PropertyDescriptorCollection Sort()
-	{
-		 throw new NotImplementedException("Sort");
-	}
+			{
+				return new PropertyDescriptorCollection(this, null, null);
+			}
+	public virtual PropertyDescriptorCollection Sort(IComparer comparer)
+			{
+				return new PropertyDescriptorCollection(this, null, comparer);
+			}
+	public virtual PropertyDescriptorCollection Sort(String[] names)
+			{
+				return new PropertyDescriptorCollection(this, names, null);
+			}
+	public virtual PropertyDescriptorCollection Sort
+				(String[] names, IComparer comparer)
+			{
+				return new PropertyDescriptorCollection(this, names, comparer);
+			}
 
-	[TODO]
-	public virtual PropertyDescriptorCollection Sort(IComparer ic)
-	{
-		 throw new NotImplementedException("Sort");
-	}
+	// Internal version of "Sort".
+	private void InternalSort(String[] names, IComparer comparer)
+			{
+				if(comparer == null)
+				{
+					comparer = new TypeDescriptor.DescriptorComparer();
+				}
+				if(names != null && names.Length > 0)
+				{
+					// Copy across elements from "names" before
+					// sorting the main list and appending it.
+					ArrayList newList = new ArrayList(list.Count);
+					foreach(String name in names)
+					{
+						PropertyDescriptor descr = Find(name, false);
+						if(descr != null)
+						{
+							newList.Add(descr);
+							list.Remove(descr);
+						}
+					}
+					list.Sort(comparer);
+					foreach(PropertyDescriptor ed in list)
+					{
+						newList.Add(ed);
+					}
+					list = newList;
+				}
+				else
+				{
+					// No names, so just sort the main list.
+					list.Sort(comparer);
+				}
+			}
+	protected void InternalSort(IComparer comparer)
+			{
+				InternalSort(null, comparer);
+			}
+	protected void InternalSort(String[] names)
+			{
+				InternalSort(names, null);
+			}
 
-	[TODO]
-	public virtual PropertyDescriptorCollection Sort(String []names)
-	{
-		 throw new NotImplementedException("Sort");
-	}
-
-	[TODO]
-	public int Count 
-	{
-		get
-		{
-			throw new NotImplementedException("Count");
-		}
-	}
-
-	[TODO]
-	public bool IsReadOnly 
-	{
-		get
-		{
-			throw new NotImplementedException("IsReadOnly");
-		}
-	}
-
-	[TODO]
-	public bool IsSynchronized 
-	{
-		get
-		{
-			throw new NotImplementedException("IsSynchronized");
-		}
-	}
-
-	[TODO]
-	public virtual PropertyDescriptor this[String name] 
-	{
-		get
-		{
-			throw new NotImplementedException("Item");
-		}
-	}
-
-	[TODO]
-	public virtual PropertyDescriptor this[int index] 
-	{
-		get
-		{
-			throw new NotImplementedException("Item");
-		}
-	}
-
-	// NOTE: only the missing interface cases have been implemented , others
-	// are automatically obtained from the various virtual methods above.
-	// Implementor might find it necessary to split them out into seperate
-	// explicit interface methods.
-
-	// IList implements
-
-	[TODO]
+	// Implement the IList interface.
 	int IList.Add(Object value)
-	{
-		throw new NotImplementedException();
-	}
-
-	[TODO]
+			{
+				return Add((PropertyDescriptor)value);
+			}
+	void IList.Clear()
+			{
+				Clear();
+			}
 	bool IList.Contains(Object value)
-	{
-		throw new NotImplementedException();
-	}
-
-	[TODO]
+			{
+				return list.Contains(value);
+			}
 	int IList.IndexOf(Object value)
-	{
-		throw new NotImplementedException();
-	}
-
-	[TODO]
+			{
+				return list.IndexOf(value);
+			}
 	void IList.Insert(int index, Object value)
-	{
-		throw new NotImplementedException();
-	}
-
-	[TODO]
+			{
+				Insert(index, (PropertyDescriptor)value);
+			}
 	void IList.Remove(Object value)
-	{
-		throw new NotImplementedException();
-	}
+			{
+				list.Remove(value);
+			}
+	void IList.RemoveAt(int index)
+			{
+				list.RemoveAt(index);
+			}
+	bool IList.IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+	bool IList.IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
+	Object IList.this[int index]
+			{
+				get
+				{
+					return this[index];
+				}
+				set
+				{
+					list[index] = (PropertyDescriptor)value;
+				}
+			}
 
-	[TODO]
-	bool IList.IsFixedSize 
-	{
-		get
-		{
-			throw new NotImplementedException();
-		}
-	}
-	
-	[TODO]
-	Object IList.this[int index] 
-	{
-		get
-		{
-			throw new NotImplementedException();
-		}
-		set
-		{
-			throw new NotImplementedException();
-		}
-	}
+	// Implement the ICollection interface.
+	public void CopyTo(Array array, int index)
+			{
+				list.CopyTo(array, index);
+			}
+	int ICollection.Count
+			{
+				get
+				{
+					return list.Count;
+				}
+			}
+	bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+	Object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
 
-	// ICollection implements
-	Object ICollection.SyncRoot 
-	{ 
-		get
-		{
-			throw new NotImplementedException();
-		}
-	}
+	// Implement the IEnumerable interface.
+	IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
 
-	// IDictionary implements
-
+	// Implement the IDictionary interface.
 	void IDictionary.Add(Object key, Object value)
-	{
-		throw new NotImplementedException();
-	}
-
+			{
+				if(value is PropertyDescriptor)
+				{
+					Add((PropertyDescriptor)value);
+				}
+				else
+				{
+					throw new ArgumentException
+						(S._("Arg_InvalidElement"));
+				}
+			}
+	void IDictionary.Clear()
+			{
+				Clear();
+			}
 	bool IDictionary.Contains(Object key)
-	{
-		throw new NotImplementedException();
-	}
-
+			{
+				if(key is String)
+				{
+					return (Find((String)key, false) != null);
+				}
+				else
+				{
+					return false;
+				}
+			}
 	IDictionaryEnumerator IDictionary.GetEnumerator()
-	{
-		throw new NotImplementedException();
-	}
-
+			{
+				return new Enumerator(GetEnumerator());
+			}
 	void IDictionary.Remove(Object key)
-	{
-		throw new NotImplementedException();
-	}
-
+			{
+				if(key is String)
+				{
+					PropertyDescriptor descr = Find((String)key, false);
+					if(descr != null)
+					{
+						Remove(descr);
+					}
+				}
+			}
 	bool IDictionary.IsFixedSize
-	{
-		get
-		{
-			throw new NotImplementedException();
-		}
-	}
-
+			{
+				get
+				{
+					return false;
+				}
+			}
+	bool IDictionary.IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
 	Object IDictionary.this[Object key]
-	{
-		get
-		{
-			throw new NotImplementedException();
-		}
-		set
-		{
-			throw new NotImplementedException();
-		}
-	}
-
+			{
+				get
+				{
+					if(key is String)
+					{
+						return Find((String)key, false);
+					}
+					else
+					{
+						return null;
+					}
+				}
+				set
+				{
+					((IDictionary)this).Add(key, value);
+				}
+			}
 	ICollection IDictionary.Keys
-	{
-		get
-		{
-			throw new NotImplementedException();
-		}
-	}
-	
+			{
+				get
+				{
+					String[] keys = new String [list.Count];
+					int posn = 0;
+					foreach(PropertyDescriptor descr in list)
+					{
+						keys[posn++] = descr.Name;
+					}
+					return keys;
+				}
+			}
 	ICollection IDictionary.Values
+			{
+				get
+				{
+					PropertyDescriptor[] values;
+					values = new PropertyDescriptor [list.Count];
+					int posn = 0;
+					foreach(PropertyDescriptor descr in list)
+					{
+						values[posn++] = descr;
+					}
+					return values;
+				}
+			}
+
+	// Dictionary enumerator for property descriptor collections.
+	private sealed class Enumerator : IDictionaryEnumerator
 	{
-		get
-		{
-			throw new NotImplementedException();
-		}
-	}
-	
+		// Internal state.
+		private IEnumerator e;
+
+		// Constructor.
+		public Enumerator(IEnumerator e)
+				{
+					this.e = e;
+				}
+
+		// Implement the IEnumerator interface.
+		public bool MoveNext()
+				{
+					return e.MoveNext();
+				}
+		public void Reset()
+				{
+					e.Reset();
+				}
+		public Object Current
+				{
+					get
+					{
+						return Entry;
+					}
+				}
+
+		// Implement the IDictionaryEnumerator interface.
+		public DictionaryEntry Entry
+				{
+					get
+					{
+						PropertyDescriptor descr;
+						descr = (PropertyDescriptor)(e.Current);
+						return new DictionaryEntry(descr.Name, descr);
+					}
+				}
+		public Object Key
+				{
+					get
+					{
+						return ((PropertyDescriptor)(e.Current)).Name;
+					}
+				}
+		public Object Value
+				{
+					get
+					{
+						return (PropertyDescriptor)(e.Current);
+					}
+				}
+
+	}; // class IDictionaryEnumerator
 
 }; // class PropertyDescriptorCollection
 

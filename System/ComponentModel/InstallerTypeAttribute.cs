@@ -1,6 +1,6 @@
 /*
- * LicenseProviderAttribute.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.LicenseProviderAttribute" class.
+ * InstallerTypeAttribute.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.InstallerTypeAttribute" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -25,60 +25,40 @@ namespace System.ComponentModel
 #if CONFIG_COMPONENT_MODEL
 
 using System;
+using System.Globalization;
 
-[AttributeUsage(AttributeTargets.Class,
-				AllowMultiple=false, Inherited=false)]
-public sealed class LicenseProviderAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class)]
+public class InstallerTypeAttribute : Attribute
 {
 	// Internal state.
-	private Type type;
-
-	// The default attribute value.
-	public static readonly LicenseProviderAttribute Default =
-			new LicenseProviderAttribute();
+	private String typeName;
 
 	// Constructors.
-	public LicenseProviderAttribute() {}
-	public LicenseProviderAttribute(String typeName)
+	public InstallerTypeAttribute(String typeName)
 			{
-				this.type = Type.GetType(typeName);
+				this.typeName = typeName;
 			}
-	public LicenseProviderAttribute(Type type)
+	public InstallerTypeAttribute(Type type)
 			{
-				this.type = type;
+				this.typeName = type.AssemblyQualifiedName;
 			}
 
-	// Get this attribute's values.
-	public Type LicenseProvider
+	// Get the name of the converter type.
+	public virtual Type InstallerType
 			{
 				get
 				{
-					return type;
-				}
-			}
-	public override Object TypeId
-			{
-				get
-				{
-					if(type != null)
-					{
-						return GetType().FullName + type.FullName;
-					}
-					else
-					{
-						return GetType().FullName;
-					}
+					return Type.GetType(typeName);
 				}
 			}
 
-	// Determine if two objects are equal.
+	// Determine if two type converter attributes are equal.
 	public override bool Equals(Object obj)
 			{
-				LicenseProviderAttribute other =
-					(obj as LicenseProviderAttribute);
-				if(other != null)
+				InstallerTypeAttribute a = (obj as InstallerTypeAttribute);
+				if(a != null)
 				{
-					return (other.type == type);
+					return (a.typeName == typeName);
 				}
 				else
 				{
@@ -86,13 +66,13 @@ public sealed class LicenseProviderAttribute : Attribute
 				}
 			}
 
-	// Get the hash code for this object.
+	// Get a hash code for this instance.
 	public override int GetHashCode()
 			{
 				return base.GetHashCode();
 			}
 
-}; // class LicenseProviderAttribute
+}; // class InstallerTypeAttribute
 
 #endif // CONFIG_COMPONENT_MODEL
 

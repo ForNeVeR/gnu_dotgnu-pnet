@@ -30,13 +30,13 @@ using System.ComponentModel.Design.Serialization;
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-//TODO: [TypeConverter(typeof(ComponentConverter))]
+[TypeConverter(typeof(ComponentConverter))]
 #if CONFIG_COMPONENT_MODEL_DESIGN
 [Designer
 	("System.Windows.Forms.Design.ComponentDocumentDesigner, System.Design",
 	 typeof(IRootDesigner))]
 [Designer
-	("System.Windows.Forms.Design.ComponentDocumentDesigner, System.Design",
+	("System.ComponentModel.Design.ComponentDesigner, System.Design",
 	 typeof(IDesigner))]
 [RootDesignerSerializer
 	("System.ComponentModel.Design.Serialization.RootCodeDomSerializer, System.Design",

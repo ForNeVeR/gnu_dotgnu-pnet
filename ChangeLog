@@ -1,4 +1,36 @@
 
+2003-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/ComponentModel/ArrayConverter.cs,
+	System/ComponentModel/ComponentConverter.cs,
+	System/ComponentModel/ComponentEditor.cs,
+	System/ComponentModel/ComponentResourceManager.cs,
+	System/ComponentModel/CultureInfoConverter.cs,
+	System/ComponentModel/DateTimeConverter.cs,
+	System/ComponentModel/DecimalConverter.cs,
+	System/ComponentModel/EnumConverter.cs,
+	System/ComponentModel/EventDescriptor.cs,
+	System/ComponentModel/EventDescriptorCollection.cs,
+	System/ComponentModel/ExpandableObjectConverter.cs,
+	System/ComponentModel/ExtenderProvidedPropertyAttribute.cs,
+	System/ComponentModel/GuidConverter.cs,
+	System/ComponentModel/IComponent.cs,
+	System/ComponentModel/InstallerTypeAttribute.cs,
+	System/ComponentModel/LicenseManager.cs,
+	System/ComponentModel/LicenseProviderAttribute.cs,
+	System/ComponentModel/MarshalByValueComponent.cs,
+	System/ComponentModel/MemberDescriptor.cs,
+	System/ComponentModel/PropertyDescriptor.cs,
+	System/ComponentModel/PropertyDescriptorCollection.cs,
+	System/ComponentModel/PropertyTabAttribute.cs,
+	System/ComponentModel/ProvidePropertyAttribute.cs,
+	System/ComponentModel/TimeSpanConverter.cs,
+	System/ComponentModel/TypeConverter.cs,
+	System/ComponentModel/TypeDescriptor.cs,
+	System/ComponentModel/TypeListConverter.cs,
+	resources/en_US/System/Arg.txt: missing classes and functionality
+	within the "System.ComponentModel" namespace.
+
 2003-09-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Uri.cs, System/UriHostNameType.cs: missing functionality.

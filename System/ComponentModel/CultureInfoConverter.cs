@@ -27,6 +27,7 @@ namespace System.ComponentModel
 using System;
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.ComponentModel.Design.Serialization;
 
 public class CultureInfoConverter : TypeConverter
@@ -65,17 +66,34 @@ public class CultureInfoConverter : TypeConverter
 			}
 
 	// Convert from another type to the one represented by this class.
-	[TODO]
 	public override Object ConvertFrom(ITypeDescriptorContext context,
 									   CultureInfo culture,
 									   Object value)
 			{
-				// TODO
+				if(value is String)
+				{
+					String name = (String)value;
+					if(name == "(Default)")
+					{
+						return CultureInfo.InvariantCulture;
+					}
+					CultureInfo[] cultures;
+					cultures = CultureInfo.GetCultures
+						(CultureTypes.AllCultures);
+					foreach(CultureInfo culture in cultures)
+					{
+						if(String.Compare(culture.DisplayName, name, true) == 0)
+						{
+							return culture;
+						}
+					}
+					throw new ArgumentException
+						(S._("Arg_InvalidCultureName"));
+				}
 				return base.ConvertFrom(context, culture, value);
 			}
 
 	// Convert this object into another type.
-	[TODO]
 	public override Object ConvertTo(ITypeDescriptorContext context,
 									 CultureInfo culture,
 									 Object value, Type destinationType)
@@ -86,30 +104,51 @@ public class CultureInfoConverter : TypeConverter
 				}
 				if(destinationType == typeof(String))
 				{
-					// TODO
+					if(value is CultureInfo)
+					{
+						if(((CultureInfo)value).LCID == 0x007F)
+						{
+							return "(Default)";
+						}
+						else
+						{
+							return ((CultureInfo)value).DisplayName;
+						}
+					}
 					return String.Empty;
 				}
 			#if CONFIG_COMPONENT_MODEL_DESIGN
-				else if(destinationType == typeof(InstanceDescriptor))
+				if(destinationType == typeof(InstanceDescriptor) &&
+				   value is CultureInfo)
 				{
-					// TODO
-					return null;
+					ConstructorInfo ctor;
+					ctor = typeof(CultureInfo).GetConstructor
+							(new Type [] {typeof(int)});
+					if(ctor == null)
+					{
+						return null;
+					}
+					return new InstanceDescriptor
+						(ctor, new Object [] {((CultureInfo)value).LCID});
 				}
 			#endif
-				else
-				{
-					return base.ConvertTo
-						(context, culture, value, destinationType);
-				}
+				return base.ConvertTo
+					(context, culture, value, destinationType);
 			}
 
 	// Return a collection of standard values for this data type.
-	[TODO]
 	public override StandardValuesCollection GetStandardValues
 				(ITypeDescriptorContext context)
 			{
-				// TODO
-				return null;
+				ArrayList list = new ArrayList();
+				list.Add("(Default)");
+				CultureInfo[] cultures =
+					CultureInfo.GetCultures(CultureTypes.AllCultures);
+				foreach(CultureInfo culture in cultures)
+				{
+					list.Add(culture.DisplayName);
+				}
+				return new StandardValuesCollection(list);
 			}
 
 	// Determine if the list of standard values is an exclusive list.

@@ -27,7 +27,7 @@ namespace Microsoft.Win32
 using System;
 using System.IO;
 using System.Security;
-using System.Security.AccessControl;
+//using System.Security.AccessControl;
 
 public sealed class RegistryKey : MarshalByRefObject, IDisposable
 {

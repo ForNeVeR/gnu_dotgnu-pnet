@@ -7,3 +7,4 @@ config.cache
 config.status
 pnet.spec
 aclocal.m4
+confdefs.h

@@ -1,4 +1,8 @@
 
+2002-12-06  Dawkins, David  <david.dawkins@brooks-pri.com>
+
+	* .cvsignore: Add confdefs.h to cvsignore list (Gopal)
+
 2002-12-06  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc: consider 'null' as an object for 

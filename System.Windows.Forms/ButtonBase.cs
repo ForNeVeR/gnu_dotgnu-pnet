@@ -37,9 +37,10 @@ public abstract class ButtonBase : Control
 	private bool isDefault;
 	internal bool entered;
 	internal bool pressed;
-	private bool hasFocus;
+	internal bool hasFocus;
 	internal MouseButtons button;
 	private StringFormat format;
+	private ButtonState prevState;
 
 	// Contructor.
 	protected ButtonBase()
@@ -48,6 +49,7 @@ public abstract class ButtonBase : Control
 				imageAlign = ContentAlignment.MiddleCenter;
 				imageIndex = -1;
 				textAlign = ContentAlignment.MiddleCenter;
+				prevState = (ButtonState)(-1);
 				format = new StringFormat();
 				SetStringFormat();
 				SetStyle(ControlStyles.ResizeRedraw, true);
@@ -322,6 +324,11 @@ public abstract class ButtonBase : Control
 							state |= ButtonState.Flat;
 						}
 					}
+					if(hasFocus)
+					{
+						// Special flag that indicates a focus rectangle.
+						state |= (ButtonState)0x20000;
+					}
 				}
 				else
 				{
@@ -397,22 +404,35 @@ public abstract class ButtonBase : Control
 					return;
 				}
 
+				// Clear the previous state, for non-trivial draw detection.
+				prevState = (ButtonState)(-1);
+
 				// Redraw the button.
 				using(Graphics graphics = CreateGraphics())
 					Draw(graphics);
 			}
 
+	// Redraw if a non-trivial state change has occurred.
+	internal void RedrawIfChanged()
+			{
+				ButtonState state = CalculateState();
+				if(state != prevState)
+				{
+					Redraw();
+					prevState = state;
+				}
+			}
+
 	// Override events from the "Control" class.
 	protected override void OnEnabledChanged(EventArgs e)
 			{
-				Redraw();
+				RedrawIfChanged();
 				base.OnEnabledChanged(e);
 			}
 	protected override void OnGotFocus(EventArgs e)
 			{
 				hasFocus = true;
-				if (flatStyle == FlatStyle.Popup)
-					Redraw();
+				RedrawIfChanged();
 				base.OnGotFocus(e);
 			}
 	[TODO]
@@ -431,8 +451,7 @@ public abstract class ButtonBase : Control
 	protected override void OnLostFocus(EventArgs e)
 			{
 				hasFocus = false;
-				if (flatStyle == FlatStyle.Popup)
-					Redraw();
+				RedrawIfChanged();
 				base.OnLostFocus(e);
 			}
 	protected override void OnMouseDown(MouseEventArgs e)
@@ -441,20 +460,20 @@ public abstract class ButtonBase : Control
 				{
 					button = e.Button;
 					pressed = true;
-					Redraw();
+					RedrawIfChanged();
 				}
 				base.OnMouseDown(e);
 			}
 	protected override void OnMouseEnter(EventArgs e)
 			{
 				entered = true;
-				Redraw();
+				RedrawIfChanged();
 				base.OnMouseEnter(e);
 			}
 	protected override void OnMouseLeave(EventArgs e)
 			{
 				entered = false;
-				Redraw();
+				RedrawIfChanged();
 				base.OnMouseLeave(e);
 			}
 	protected override void OnMouseMove(MouseEventArgs e)
@@ -467,12 +486,13 @@ public abstract class ButtonBase : Control
 				{
 					button = MouseButtons.None;
 					pressed = false;
-					Redraw();
+					RedrawIfChanged();
 				}
 				base.OnMouseUp(e);
 			}
 	protected override void OnPaint(PaintEventArgs e)
 			{
+				prevState = CalculateState();
 				Draw(e.Graphics);
 				base.OnPaint(e);
 			}

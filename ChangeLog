@@ -19,6 +19,10 @@
 	System.Windows.Forms/RadioButton.cs: fix some logic errors in
 	the button classes.
 
+	* System.Windows.Forms/ButtonBase.cs, System.Windows.Forms/CheckBox.cs,
+	System.Windows.Forms/RadioButton.cs: attempt to reduce button
+	flicker by only redrawing when a real state change occurs.
+
 2003-11-20  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingGraphics.cs,

@@ -188,7 +188,7 @@ public class RadioButton : ButtonBase
 
 					// Record the value and redraw this radio button.
 					isChecked = value;
-					Redraw();
+					RedrawIfChanged();
 
 					// Disable the other radio buttons in the group.
 					DisableOthersInGroup();
@@ -271,6 +271,11 @@ public class RadioButton : ButtonBase
 					if (entered && pressed)
 					{
 						state |= ButtonState.Pushed;
+					}
+					if(hasFocus)
+					{
+						// Special flag that indicates a focus rectangle.
+						state |= (ButtonState)0x20000;
 					}
 				}
 				else
@@ -482,10 +487,12 @@ public class RadioButton : ButtonBase
 	// Process a focus enter event.
 	protected override void OnEnter(EventArgs e)
 			{
+			#if false	// TODO: uncomment once "MouseButtons" works
 				if(MouseButtons == MouseButtons.None)
 				{
 					OnClick(e);
 				}
+			#endif
 				base.OnEnter(e);
 			}
 

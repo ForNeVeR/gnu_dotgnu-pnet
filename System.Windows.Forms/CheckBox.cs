@@ -50,6 +50,43 @@ public class CheckBox : ButtonBase
 				autoCheck = true;
 			}
 
+	// Calculate the current state of the button for its visual appearance.
+	internal override ButtonState CalculateState()
+			{
+				ButtonState checkState;
+				if(state == CheckState.Unchecked)
+				{
+					checkState = ButtonState.Normal;
+				}
+				else if(state == CheckState.Checked)
+				{
+					checkState = ButtonState.Checked;
+				}
+				else if(state == CheckState.Indeterminate)
+				{
+					// Special flag for "IThemePainter.DrawCheckBox".
+					checkState = ButtonState.Checked | (ButtonState)0x10000;
+				}
+				if(pressed && entered)
+				{
+					checkState |= ButtonState.Pushed;
+				}
+				if(!Enabled)
+				{
+					checkState |= ButtonState.Inactive;
+				}
+				if(FlatStyle == FlatStyle.Flat)
+				{
+					checkState |= ButtonState.Flat;
+				}
+				if(hasFocus)
+				{
+					// Special flag that indicates a focus rectangle.
+					checkState |= (ButtonState)0x20000;
+				}
+				return checkState;
+			}
+
 	// Draw the contents of this check box.
 	internal override void Draw(Graphics graphics)
 			{
@@ -111,32 +148,7 @@ public class CheckBox : ButtonBase
 						checkY = 0;
 						break;
 				}
-				ButtonState checkState;
-				if(state == CheckState.Unchecked)
-				{
-					checkState = ButtonState.Normal;
-				}
-				else if(state == CheckState.Checked)
-				{
-					checkState = ButtonState.Checked;
-				}
-				else if(state == CheckState.Indeterminate)
-				{
-					// Special flag for "IThemePainter.DrawCheckBox".
-					checkState = ButtonState.Checked | (ButtonState)0x10000;
-				}
-				if(pressed && entered)
-				{
-					checkState |= ButtonState.Pushed;
-				}
-				if(!Enabled)
-				{
-					checkState |= ButtonState.Inactive;
-				}
-				if(FlatStyle == FlatStyle.Flat)
-				{
-					checkState |= ButtonState.Flat;
-				}
+				ButtonState checkState = CalculateState();
 				ControlPaint.DrawCheckBox
 					(graphics, checkX, checkY,
 					 checkSize, checkSize, checkState);
@@ -339,7 +351,7 @@ public class CheckBox : ButtonBase
 						bool checkedBefore = (state != CheckState.Unchecked);
 						state = value;
 						bool checkedAfter = (state != CheckState.Unchecked);
-						Redraw();
+						RedrawIfChanged();
 						if(checkedBefore != checkedAfter)
 						{
 							OnCheckedChanged(EventArgs.Empty);

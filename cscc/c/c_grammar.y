@@ -849,7 +849,7 @@ Declarator2
 			}
 	| '(' Declarator ')'		{ $$ = $2; }
 	| Declarator2 '[' ']'		{
-				$$ = CDeclCreateArray(&CCCodeGen, $1);
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
 			}
 	| Declarator2 '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
@@ -857,7 +857,7 @@ Declarator2
 				ILUInt32 size = 1;
 
 				/* Create the array */
-				$$ = CDeclCreateSizedArray(&CCCodeGen, $1, size);
+				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
 			}
 	| Declarator2 '(' ')'		{
 				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0);
@@ -1040,7 +1040,7 @@ AbstractDeclarator2
 	: '(' AbstractDeclarator ')'		{ $$ = $2; }
 	| '[' ']'			{
 				CDeclSetName($$, 0, 0);
-				$$ = CDeclCreateArray(&CCCodeGen, $$);
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $$);
 			}
 	| '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
@@ -1049,10 +1049,10 @@ AbstractDeclarator2
 
 				/* Create the array */
 				CDeclSetName($$, 0, 0);
-				$$ = CDeclCreateSizedArray(&CCCodeGen, $$, size);
+				$$ = CDeclCreateArray(&CCCodeGen, $$, size);
 			}
 	| AbstractDeclarator2 '[' ']'	{
-				$$ = CDeclCreateArray(&CCCodeGen, $1);
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
 			}
 	| AbstractDeclarator2 '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
@@ -1060,7 +1060,7 @@ AbstractDeclarator2
 				ILUInt32 size = 1;
 
 				/* Create the array */
-				$$ = CDeclCreateSizedArray(&CCCodeGen, $1, size);
+				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
 			}
 	| '(' ')'	{ /* TODO */ }
 	| '(' ')' FuncAttributes	{ /* TODO */ }

@@ -47,9 +47,18 @@ ILType *CTypeCreateEnum(ILGenInfo *info, const char *name,
 
 /*
  * Create a C array type.  If the array type already exists,
- * then return it as-is.
+ * then return it as-is.  Returns NULL if the array size is
+ * too large to be represented by the CLI implementation,
+ * or if the element type has a dynamic size.
  */
 ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size);
+
+/*
+ * Create an open-ended C array type.  If the array type already
+ * exists, then return it as-is.  Returns NULL if the element
+ * type has a dynamic size.
+ */
+ILType *CTypeCreateOpenArray(ILGenInfo *info, ILType *elemType);
 
 /*
  * Create a C pointer type.
@@ -116,7 +125,8 @@ ILType *CTypeDefineEnum(ILGenInfo *info, const char *name,
 ILType *CTypeDefineAnonEnum(ILGenInfo *info, const char *funcName);
 
 /*
- * Define a new field within a "struct" or "union".
+ * Define a new field within a "struct" or "union".  Returns NULL
+ * if the type is dynamic in size.
  */
 ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 					 	  const char *fieldName, ILType *fieldType);
@@ -175,9 +185,14 @@ int CTypeGetStructKind(ILType *type);
 int CTypeIsEnum(ILType *type);
 
 /*
- * Determine if a C type is an array.
+ * Determine if a C type is an array (open or with a specified size).
  */
 int CTypeIsArray(ILType *type);
+
+/*
+ * Determine if a C type is an open-ended array.
+ */
+int CTypeIsOpenArray(ILType *type);
 
 /*
  * Determine if a C type is a pointer type.
@@ -228,8 +243,15 @@ int CTypeIsIdentical(ILType *type1, ILType *type2);
 #define	CTYPE_DYNAMIC	IL_MAX_UINT32
 
 /*
+ * Special value that is used to indicate that the size of
+ * a type is unknown because it is not yet fully defined.
+ */
+#define	CTYPE_UNKNOWN	(IL_MAX_UINT32 - 1)
+
+/*
  * Get the size and alignment of a C type.  Returns CTYPE_DYNAMIC
- * if the size must be computed at runtime.
+ * if the size must be computed at runtime, or CTYPE_UNKNOWN if
+ * the type is not yet fully defined.
  */
 ILUInt32 CTypeSizeAndAlign(ILType *type, ILUInt32 *align);
 

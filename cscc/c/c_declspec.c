@@ -670,18 +670,20 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	return result;
 }
 
-CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem)
+CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem)
 {
 	CDeclarator result;
 	ILType *type;
 
-	/* Simple array types are identical to pointer types */
-	type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR,
-						   ILType_Invalid);
+	/* Create a C#-style array reference, which we will turn into a
+	   C-style array type when "CDeclFinalize" is called.  For now,
+	   this is just a place-holder */
+	type = ILTypeCreateArray(info->context, 1, ILType_Invalid);
 	if(!type)
 	{
 		ILGenOutOfMemory(info);
 	}
+	ILTypeSetSize(type, 0, (long)(-1L));
 
 	/* Insert "type" into the hole in "elem" to create "result" */
 	result.name = elem.name;
@@ -703,8 +705,7 @@ CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem)
 	return result;
 }
 
-CDeclarator CDeclCreateSizedArray(ILGenInfo *info, CDeclarator elem,
-								  ILUInt32 size)
+CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem, ILUInt32 size)
 {
 	CDeclarator result;
 	ILType *type;
@@ -717,7 +718,13 @@ CDeclarator CDeclCreateSizedArray(ILGenInfo *info, CDeclarator elem,
 	{
 		ILGenOutOfMemory(info);
 	}
-	ILTypeSetSize(type, 0, (unsigned long)size);
+	if(((long)size) == (long)(-1L))
+	{
+		/* Prevent confusion with "CDeclCreateOpenArray".  The size
+		   will eventually be rejected by "ReplaceArrayTypes" anyway */
+		--size;
+	}
+	ILTypeSetSize(type, 0, (long)size);
 
 	/* Insert "type" into the hole in "elem" to create "result" */
 	result.name = elem.name;
@@ -1050,6 +1057,8 @@ CDeclarator CDeclCombine(CDeclarator decl1, CDeclarator decl2)
 static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 {
 	ILType *elemType;
+	ILUInt32 elemSize;
+
 	if(type != 0 && ILType_IsComplex(type))
 	{
 		switch(ILType_Kind(type))
@@ -1066,16 +1075,37 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 				/* Replace array types in the element type */
 				elemType = ReplaceArrayTypes(info, ILType_ElemType(type));
 
-				/* Report an error if the type is not defined yet */
-				if(!CTypeAlreadyDefined(elemType))
+				/* Report an error if the type has unknown or variable size */
+				elemSize = CTypeSizeAndAlign(elemType, 0);
+				if(elemSize == CTYPE_UNKNOWN)
 				{
 					char *name = CTypeToName(info, elemType);
 					CCError(_("storage size of `%s' is not known"), name);
 					ILFree(name);
+					elemType = ILType_Int32;
+				}
+				else if(elemSize == CTYPE_DYNAMIC)
+				{
+					char *name = CTypeToName(info, elemType);
+					CCError(_("storage size of `%s' is not constant"), name);
+					ILFree(name);
+					elemType = ILType_Int32;
 				}
 
 				/* Construct a new C-style array type */
-				type = CTypeCreateArray(info, elemType, ILType_Size(type));
+				if(ILType_Size(type) == (long)(-1L))
+				{
+					type = CTypeCreateOpenArray(info, elemType);
+				}
+				else
+				{
+					type = CTypeCreateArray(info, elemType, ILType_Size(type));
+					if(!type)
+					{
+						CCError(_("size of array is too large"));
+						type = CTypeCreateArray(info, elemType, 1);
+					}
+				}
 			}
 			break;
 

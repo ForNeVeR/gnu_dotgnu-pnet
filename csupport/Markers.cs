@@ -27,11 +27,12 @@ using System;
 // A modifier class that is used to mark "const" types.
 public sealed class IsConst {}
 
-// An attribute class that is used to mark bit fields.
-[AttributeUsage(AttributeTargets.Field)]
+// An attribute class that is used to declare bit fields.
+[AttributeUsage(AttributeTargets.Struct, AllowMultiple=true)]
 public sealed class BitFieldAttribute : Attribute
 {
-	public BitFieldAttribute(int start, int numBits) {}
+	public BitFieldAttribute(String name, String storageName,
+							 int start, int numBits) {}
 }
 
 // An attribute class that is used to mark weak alias definitions.

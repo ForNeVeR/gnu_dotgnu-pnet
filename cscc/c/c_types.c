@@ -27,7 +27,6 @@ extern	"C" {
 /*
  * Forward declarations.
  */
-static ILUInt32 TypeSizeAndAlign(ILType *type, ILUInt32 *align, int force);
 static char *AppendThree(ILGenInfo *info, const char *prefix,
 						 char *str, const char *suffix);
 
@@ -149,16 +148,21 @@ ILType *CTypeCreateEnum(ILGenInfo *info, const char *name,
 	return ILType_FromValueType(classInfo);
 }
 
-ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
+/*
+ * Create an array type, with either a size or an open-ended definition.
+ */
+static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
+						   ILUInt32 size, int isOpen)
 {
 	char sizeName[64];
 	char *name;
 	ILUInt32 elemSize, align;
-	ILUInt32 attrs, index;
+	ILUInt32 attrs;
 	ILClass *classInfo;
 	ILField *field;
 
 	/* Create the name of the array type */
+	/* TODO: fix the array type name, which has backwards dimensions */
 	sprintf(sizeName, "[%lu]", (unsigned long)size);
 	name = AppendThree(info, "array ", CTypeToName(info, elemType), sizeName);
 
@@ -171,7 +175,19 @@ ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
 	}
 
 	/* Get the size and alignment of the element type */
-	elemSize = TypeSizeAndAlign(elemType, &align, 0);
+	elemSize = CTypeSizeAndAlign(elemType, &align);
+	if(elemSize == CTYPE_DYNAMIC || elemSize == CTYPE_UNKNOWN)
+	{
+		return 0;
+	}
+
+	/* Validate the array size: it must not overflow the ".size" field
+	   within the class's metadata structure */
+	if((((ILUInt64)elemSize) * ((ILUInt64)size)) >
+			(ILUInt64)(ILInt64)IL_MAX_INT32)
+	{
+		return 0;
+	}
 
 	/* Determine the attributes for the array type */
 	if(ILType_IsValueType(elemType) &&
@@ -188,11 +204,8 @@ ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
 	}
 	attrs |= IL_META_TYPEDEF_SEALED |
 			 IL_META_TYPEDEF_SERIALIZABLE |
-			 IL_META_TYPEDEF_VALUE_TYPE;
-	if(elemSize != CTYPE_DYNAMIC)
-	{
-		attrs |= IL_META_TYPEDEF_EXPLICIT_LAYOUT;
-	}
+			 IL_META_TYPEDEF_VALUE_TYPE |
+			 IL_META_TYPEDEF_EXPLICIT_LAYOUT;
 
 	/* Create the class that corresponds to the array type */
 	classInfo = ILType_ToClass(ILFindSystemType(info, "ValueType"));
@@ -204,20 +217,25 @@ ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
 	}
 	ILClassSetAttrs(classInfo, ~((ILUInt32)0), attrs);
 
-	/* Set the explicit size and alignment if not native */
-	if(elemSize != CTYPE_DYNAMIC)
+	/* Set the explicit size and alignment of the entire array type */
+	if(!ILClassLayoutCreate(info->image, 0, classInfo,
+						    align, elemSize * size))
 	{
-		if(!ILClassLayoutCreate(info->image, 0, classInfo,
-							    align, elemSize * size))
-		{
-			ILGenOutOfMemory(info);
-		}
+		ILGenOutOfMemory(info);
 	}
 
 	/* Create the "elem__" field which defines the type */
-	if(size == 0)
+	if(isOpen)
 	{
-		/* Zero-sized arrays store the type as a "static" field */
+		/* Zero-sized arrays store the type as a "private static" field */
+		field = ILFieldCreate(classInfo, 0, "elem__",
+							  IL_META_FIELDDEF_PRIVATE |
+							  IL_META_FIELDDEF_STATIC |
+							  IL_META_FIELDDEF_SPECIAL_NAME);
+	}
+	else if(size == 0)
+	{
+		/* Zero-sized arrays store the type as a "public static" field */
 		field = ILFieldCreate(classInfo, 0, "elem__",
 							  IL_META_FIELDDEF_PUBLIC |
 							  IL_META_FIELDDEF_STATIC |
@@ -229,12 +247,9 @@ ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
 		field = ILFieldCreate(classInfo, 0, "elem__",
 							  IL_META_FIELDDEF_PUBLIC |
 							  IL_META_FIELDDEF_SPECIAL_NAME);
-		if(elemSize != CTYPE_DYNAMIC)
+		if(!ILFieldLayoutCreate(info->image, 0, field, 0))
 		{
-			if(!ILFieldLayoutCreate(info->image, 0, field, 0))
-			{
-				ILGenOutOfMemory(info);
-			}
+			ILGenOutOfMemory(info);
 		}
 	}
 	if(!field)
@@ -243,27 +258,18 @@ ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
 	}
 	ILMemberSetSignature((ILMember *)field, elemType);
 
-	/* If this is a native array, then also create fields for
-	   the other elements, to force the runtime engine to make
-	   the structure big enough to hold all of the elements */
-	if(elemSize == CTYPE_DYNAMIC)
-	{
-		for(index = 1; index < size; ++index)
-		{
-			sprintf(sizeName, "elem__%lu", (unsigned long)index);
-			field = ILFieldCreate(classInfo, 0, sizeName,
-								  IL_META_FIELDDEF_PUBLIC |
-								  IL_META_FIELDDEF_SPECIAL_NAME);
-			if(!field)
-			{
-				ILGenOutOfMemory(info);
-			}
-			ILMemberSetSignature((ILMember *)field, elemType);
-		}
-	}
-
 	/* Return the array type to the caller */
 	return ILType_FromValueType(classInfo);
+}
+
+ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
+{
+	return CreateArray(info, elemType, size, 0);
+}
+
+ILType *CTypeCreateOpenArray(ILGenInfo *info, ILType *elemType)
+{
+	return CreateArray(info, elemType, 0, 1);
 }
 
 ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType)
@@ -625,7 +631,11 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	ILField *field;
 
 	/* Determine the size and alignment of the new field */
-	size = TypeSizeAndAlign(fieldType, &align, 1);
+	size = CTypeSizeAndAlign(fieldType, &align);
+	if(size == CTYPE_DYNAMIC || size == CTYPE_UNKNOWN || !layout)
+	{
+		return 0;
+	}
 
 	/* Create the new field */
 	field = ILFieldCreate(classInfo, 0, fieldName, IL_META_FIELDDEF_PUBLIC);
@@ -635,41 +645,31 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	}
 
 	/* Perform explicit layout on the field */
-	if(layout)
+	classSize = ILClassLayoutGetClassSize(layout);
+	if(isUnion)
 	{
-		classSize = ILClassLayoutGetClassSize(layout);
-		if(isUnion)
-		{
-			offset = 0;
-		}
-		else
-		{
-			offset = classSize;
-		}
-		if((offset % align) != 0)
-		{
-			offset += align - (offset % align);
-		}
-		if(!ILFieldLayoutCreate(info->image, 0, field, offset))
-		{
-			ILGenOutOfMemory(info);
-		}
-		offset += size;
-		if(offset > classSize)
-		{
-			ILClassLayoutSetClassSize(layout, classSize);
-		}
-		if(align > ILClassLayoutGetPackingSize(layout))
-		{
-			ILClassLayoutSetPackingSize(layout, align);
-		}
+		offset = 0;
 	}
-	else if(isUnion)
+	else
 	{
-		if(!ILFieldLayoutCreate(info->image, 0, field, 0))
-		{
-			ILGenOutOfMemory(info);
-		}
+		offset = classSize;
+	}
+	if((offset % align) != 0)
+	{
+		offset += align - (offset % align);
+	}
+	if(!ILFieldLayoutCreate(info->image, 0, field, offset))
+	{
+		ILGenOutOfMemory(info);
+	}
+	offset += size;
+	if(offset > classSize)
+	{
+		ILClassLayoutSetClassSize(layout, classSize);
+	}
+	if(align > ILClassLayoutGetPackingSize(layout))
+	{
+		ILClassLayoutSetPackingSize(layout, align);
 	}
 
 	/* Return the final field to the caller */
@@ -819,6 +819,45 @@ int CTypeIsArray(ILType *type)
 	return 0;
 }
 
+/*
+ * Find the "elem__" field within an array type.
+ */
+static ILField *FindArrayElemField(ILClass *classInfo)
+{
+	ILField *field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(!strcmp(ILField_Name(field), "elem__"))
+		{
+			return field;
+		}
+	}
+	return 0;
+}
+
+int CTypeIsOpenArray(ILType *type)
+{
+	ILField *field;
+	type = ILTypeStripPrefixes(type);
+	if(ILType_IsValueType(type))
+	{
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "array ", 6))
+		{
+			field = FindArrayElemField(ILType_ToValueType(type));
+			if(field)
+			{
+				return ILField_IsPrivate(field);
+			}
+			else
+			{
+				return 0;
+			}
+		}
+	}
+	return 0;
+}
+
 int CTypeIsPointer(ILType *type)
 {
 	type = ILTypeStripPrefixes(type);
@@ -909,11 +948,8 @@ ILUInt32 CTypeGetNumElems(ILType *type)
 	ILClass *classInfo;
 	ILField *field;
 	ILType *elemType;
-	ILUInt32 highest;
-	ILUInt32 current;
 	ILUInt32 elemSize;
 	ILClassLayout *layout;
-	const char *num;
 
 	/* Strip the prefixes and check that this is actually an array type */
 	type = ILTypeStripPrefixes(type);
@@ -922,49 +958,21 @@ ILUInt32 CTypeGetNumElems(ILType *type)
 		return 0;
 	}
 
-	/* Search for the "elem__" field within the array type and find
-	   the highest-numbered field that begins with "elem__" */
+	/* Search for the "elem__" field within the array type */
 	classInfo = ILType_ToValueType(type);
-	field = 0;
-	highest = 0;
-	elemType = ILType_Invalid;
-	while((field = (ILField *)ILClassNextMemberByKind
-				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
-	{
-		if(!strcmp(ILField_Name(field), "elem__"))
-		{
-			/* If the field is static, then the array size is zero */
-			if(ILField_IsStatic(field))
-			{
-				return 0;
-			}
-			elemType = ILField_Type(field);
-		}
-		else if(!strncmp(ILField_Name(field), "elem__", 6))
-		{
-			num = ILField_Name(field) + 6;
-			current = 0;
-			while(*num >= '0' && *num <= '9')
-			{
-				current = current * 10 + (ILUInt32)(*num++ - '0');
-			}
-			if(current > highest)
-			{
-				highest = current;
-			}
-		}
-	}
-	if(elemType == ILType_Invalid)
+	field = FindArrayElemField(classInfo);
+	if(!field)
 	{
 		return 0;
 	}
+	elemType = ILField_Type(field);
 
 	/* Determine the size */
 	layout = ILClassLayoutGetFromOwner(classInfo);
 	if(layout != 0)
 	{
 		/* The size is determined from the class and element sizes */
-		elemSize = TypeSizeAndAlign(elemType, 0, 1);
+		elemSize = CTypeSizeAndAlign(elemType, 0);
 		if(elemSize == 0)
 		{
 			/* Avoid divide by zero errors when the element type is empty */
@@ -977,8 +985,8 @@ ILUInt32 CTypeGetNumElems(ILType *type)
 	}
 	else
 	{
-		/* The size is the highest index plus one */
-		return highest + 1;
+		/* No explicit layout: this shouldn't happen */
+		return 0;
 	}
 }
 
@@ -996,16 +1004,15 @@ ILType *CTypeGetElemType(ILType *type)
 
 	/* Search for the "elem__" field within the array type */
 	classInfo = ILType_ToValueType(type);
-	field = 0;
-	while((field = (ILField *)ILClassNextMemberByKind
-				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	field = FindArrayElemField(classInfo);
+	if(field)
 	{
-		if(!strcmp(ILField_Name(field), "elem__"))
-		{
-			return ILField_Type(field);
-		}
+		return ILField_Type(field);
 	}
-	return 0;
+	else
+	{
+		return 0;
+	}
 }
 
 ILType *CTypeGetPtrRef(ILType *type)
@@ -1066,28 +1073,16 @@ int CTypeIsIdentical(ILType *type1, ILType *type2)
 #define	ALIGN_INT32				4
 #define	SIZE_INT64				8
 #define	ALIGN_INT64				8
-#define	SIZE_NATIVE_INT32		4
-#define	ALIGN_NATIVE_INT32		4
-#define	SIZE_NATIVE_INT64		8
-#define	ALIGN_NATIVE_INT64		8
 #define	SIZE_FLOAT32			4
 #define	ALIGN_FLOAT32			4
 #define	SIZE_FLOAT64			8
 #define	ALIGN_FLOAT64			8
-#define	SIZE_NATIVE_FLOAT		16
-#define	ALIGN_NATIVE_FLOAT		16
 #define	SIZE_PTR32				4
 #define	ALIGN_PTR32				4
 #define	SIZE_PTR64				8
 #define	ALIGN_PTR64				8
 
-/*
- * Compute the size and alignment of a type.  If "force" is
- * zero, then this function will return CTYPE_DYNAMIC if the type's
- * size must be determined at runtime.  If "force" is non-zero,
- * then the type's compile time size is returned regardless.
- */
-static ILUInt32 TypeSizeAndAlign(ILType *_type, ILUInt32 *align, int force)
+ILUInt32 CTypeSizeAndAlign(ILType *_type, ILUInt32 *align)
 {
 	ILType *type = ILTypeStripPrefixes(_type);
 	ILUInt32 alignTemp;
@@ -1142,21 +1137,8 @@ static ILUInt32 TypeSizeAndAlign(ILType *_type, ILUInt32 *align, int force)
 			case IL_META_ELEMTYPE_I:
 			case IL_META_ELEMTYPE_U:
 			{
-				if(gen_32bit_only)
-				{
-					*align = ALIGN_NATIVE_INT32;
-					return SIZE_NATIVE_INT32;
-				}
-				else if(force)
-				{
-					*align = ALIGN_NATIVE_INT64;
-					return SIZE_NATIVE_INT64;
-				}
-				else
-				{
-					*align = ALIGN_NATIVE_INT64;
-					return CTYPE_DYNAMIC;
-				}
+				*align = ALIGN_INT64;
+				return CTYPE_DYNAMIC;
 			}
 			/* Not reached */
 
@@ -1176,15 +1158,8 @@ static ILUInt32 TypeSizeAndAlign(ILType *_type, ILUInt32 *align, int force)
 
 			case IL_META_ELEMTYPE_R:
 			{
-				*align = ALIGN_NATIVE_FLOAT;
-				if(force)
-				{
-					return SIZE_NATIVE_FLOAT;
-				}
-				else
-				{
-					return CTYPE_DYNAMIC;
-				}
+				*align = ALIGN_FLOAT64;
+				return CTYPE_DYNAMIC;
 			}
 			/* Not reached */
 		}
@@ -1197,7 +1172,7 @@ static ILUInt32 TypeSizeAndAlign(ILType *_type, ILUInt32 *align, int force)
 		if((subType = ILTypeGetEnumType(type)) != 0)
 		{
 			/* Use the size of the type underlying the enumeration */
-			return TypeSizeAndAlign(subType, align, force);
+			return CTypeSizeAndAlign(subType, align);
 		}
 
 		/* Bail out if this is a struct or union with unknown size */
@@ -1205,7 +1180,17 @@ static ILUInt32 TypeSizeAndAlign(ILType *_type, ILUInt32 *align, int force)
 		if(ILClassIsRef(classInfo))
 		{
 			*align = 1;
-			return CTYPE_DYNAMIC;
+			return CTYPE_UNKNOWN;
+		}
+
+		/* If the type is an open-ended array, then it is unknown */
+		if(!strncmp(ILClass_Name(classInfo), "array ", 6))
+		{
+			if(CTypeIsOpenArray(type))
+			{
+				*align = 1;
+				return CTYPE_UNKNOWN;
+			}
 		}
 
 		/* Look for explicit size and alignment values on the class */
@@ -1240,27 +1225,9 @@ static ILUInt32 TypeSizeAndAlign(ILType *_type, ILUInt32 *align, int force)
 		}
 	}
 
-	/* Assume that everything else is the same size as a pointer */
-	if(gen_32bit_only)
-	{
-		*align = ALIGN_PTR32;
-		return SIZE_PTR32;
-	}
-	else if(force)
-	{
-		*align = ALIGN_PTR64;
-		return SIZE_PTR64;
-	}
-	else
-	{
-		*align = ALIGN_PTR64;
-		return CTYPE_DYNAMIC;
-	}
-}
-
-ILUInt32 CTypeSizeAndAlign(ILType *type, ILUInt32 *align)
-{
-	return TypeSizeAndAlign(type, align, 0);
+	/* Assume that everything else is dynamic */
+	*align = ALIGN_PTR64;
+	return CTYPE_DYNAMIC;
 }
 
 /*

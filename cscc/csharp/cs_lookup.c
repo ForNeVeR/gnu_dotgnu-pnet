@@ -585,6 +585,34 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 	}
 	else
 	{
+		/* If we have both a field and an event, then favour the field.
+		   We get such situations when compiling a class that implements
+		   an event using a compiler-supplied private field.  Inside
+		   the class, we want the field.  Outside the class we will
+		   only see the event */
+		if(results->num == 2)
+		{
+			if(firstMember->kind == IL_META_MEMBERKIND_FIELD &&
+			   firstMember->next->kind == IL_META_MEMBERKIND_EVENT)
+			{
+				/* Remove the event from the results */
+				MemberIterInit(&iter, results);
+				MemberIterNext(&iter);
+				MemberIterNext(&iter);
+				MemberIterRemove(&iter);
+				return CS_SEMKIND_FIELD;
+			}
+			if(firstMember->kind == IL_META_MEMBERKIND_EVENT &&
+			   firstMember->next->kind == IL_META_MEMBERKIND_FIELD)
+			{
+				/* Remove the event from the results */
+				MemberIterInit(&iter, results);
+				MemberIterNext(&iter);
+				MemberIterRemove(&iter);
+				return CS_SEMKIND_FIELD;
+			}
+		}
+
 		/* The list is ambiguous */
 		return CS_SEMKIND_AMBIGUOUS;
 	}
@@ -722,11 +750,13 @@ static void AmbiguousError(ILNode *node, const char *name,
 
 			case CS_MEMBERKIND_TYPE_NODE:
 			{
+				/* TODO */
 			}
 			break;
 
 			case CS_MEMBERKIND_NAMESPACE:
 			{
+				/* TODO */
 			}
 			break;
 
@@ -743,16 +773,24 @@ static void AmbiguousError(ILNode *node, const char *name,
 
 			case IL_META_MEMBERKIND_METHOD:
 			{
+				/* TODO */
 			}
 			break;
 
 			case IL_META_MEMBERKIND_PROPERTY:
 			{
+				/* TODO */
 			}
 			break;
 
 			case IL_META_MEMBERKIND_EVENT:
 			{
+				typeName = CSTypeToName
+						(ILEvent_Type((ILEvent *)(member->member)));
+				typeName2 = CSTypeToName(ILClassToType
+						(ILEvent_Owner((ILEvent *)(member->member))));
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				              "  event %s %s.%s", typeName, typeName2, name);
 			}
 			break;
 		}

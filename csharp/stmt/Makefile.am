@@ -19,7 +19,9 @@ TESTS = block1.cs \
 		switch4.cs \
 		switch5.cs \
 		using1.cs \
-		using2.cs
+		using2.cs \
+		using3.cs \
+		using4.cs
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tools/run_test.sh
 

@@ -1,4 +1,11 @@
 
+2002-12-10  Gopal.V <gopalv82@symonds.net>
+
+	* csharp/stmt/using3.cs, csharp/stmt/using3.il, csharp/stmt/using3.jl,
+	csharp/stmt/using4.cs,csharp/stmt/using4.il,csharp/stmt/using4.jl,
+	csharp/stmt/Makefile.am : test cases for ILNode_Using . The JVM cases 
+	are broken. fix it after the compiler is fixed.
+	
 2002-12-08  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/class/member_access1.cs, csharp/class/member_access1.il,

@@ -34,6 +34,9 @@
 	* image/lib_attrs.c: recognise the "Serializable" and "NonSerialized"
 	attributes as builtin library attributes.
 
+	* image/lib_attrs.c: remove "IndexerName" from the underlying
+	assembly because it isn't supposed to exist outside the compiler.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

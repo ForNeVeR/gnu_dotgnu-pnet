@@ -724,6 +724,15 @@ static int MethodImplAttribute(ILProgramItem *item, ILSerializeReader *reader)
 }
 
 /*
+ * Process an indexer name attribute.
+ */
+static int IndexerNameAttribute(ILProgramItem *item, ILSerializeReader *reader)
+{
+	/* We must use this on a property, and we just remove it when found */
+	return (ILProgramItemToProperty(item) != 0);
+}
+
+/*
  * Attribute lookup tables.
  */
 typedef struct
@@ -748,6 +757,11 @@ static AttrConvertInfo const interopAttrs[] = {
 };
 static AttrConvertInfo const compilerAttrs[] = {
 	{"MethodImplAttribute",	MethodImplAttribute},
+	{"IndexerNameAttribute", IndexerNameAttribute},
+	{0, 0}
+};
+static AttrConvertInfo const compilerCSharpAttrs[] = {
+	{"IndexerNameAttribute", IndexerNameAttribute},
 	{0, 0}
 };
 
@@ -788,6 +802,10 @@ static int ConvertAttribute(ILProgramItem *item, ILAttribute *attr)
 	else if(!strcmp(namespace, "System.Runtime.CompilerServices"))
 	{
 		info = compilerAttrs;
+	}
+	else if(!strcmp(namespace, "System.Runtime.CompilerServices.CSharp"))
+	{
+		info = compilerCSharpAttrs;
 	}
 	else if(!strcmp(namespace, "System"))
 	{

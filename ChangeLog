@@ -3,6 +3,13 @@
 	* System.Windows.Forms/TextBox.cs: Remember previous height in case
 	needed when multiline changes.
 
+	* System.Drawing/Toolkit/ToolkitGraphicsBase.cs: apply patch #1936,
+	DrawCurve/DrawClosedCurve/FillClosedCurve Thomas Fritzsche <tf@noto.de>
+
+	* System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs: apply patch #1937,
+	DrawArc mirror fix Thomas Fritzsche <tf@noto.de>
+
 2003-09-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ChangeLog, doc/ChangeLog-4: move the bulk of the ChangeLog

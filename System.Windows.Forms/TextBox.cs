@@ -74,6 +74,10 @@ public class TextBox : TextBoxBase
 	// Binding PropertyInfo for DataBinding of Text.
 	private PropertyInfo bindInfo = null;
 	
+	// Variables to work around scrollbar visibility problem
+	private bool showVScrollBar;
+	private bool showHScrollBar;
+	
 	public TextBox()
 	{
 		// Trap interesting events.  We do it this way rather
@@ -182,8 +186,12 @@ public class TextBox : TextBoxBase
 		}
 	}
 
-	private void SetupScrollBars()
+	// Set up the scrollbars. Returns whether SetScrollBarPositions has to be called as well.
+	private bool SetupScrollBars()
 	{
+		// Do we need to call SetScrollBarPositions ?
+		bool callPositions = false;
+		
 		// Set vertical scrollbar
 		// There is no vertical scrollbar if the textbox is not multiline
 		if (Multiline && (scrollBars == ScrollBars.Both || scrollBars == ScrollBars.Vertical))
@@ -194,7 +202,7 @@ public class TextBox : TextBoxBase
 				vScrollBar.backColor = SystemColors.ScrollBar;
 				vScrollBar.ValueChanged+=new EventHandler(vScrollBar_ValueChanged);
 				vScrollBar.Maximum = 0;
-				SetScrollBarPositions();
+				callPositions = true;
 				Controls.Add(vScrollBar);
 			}
 		}
@@ -213,7 +221,7 @@ public class TextBox : TextBoxBase
 				hScrollBar.backColor = SystemColors.ScrollBar;
 				hScrollBar.ValueChanged+=new EventHandler(hScrollBar_ValueChanged);
 				hScrollBar.Maximum = 0;
-				SetScrollBarPositions();
+				callPositions = true;
 				Controls.Add(hScrollBar);
 			}
 		}
@@ -222,6 +230,10 @@ public class TextBox : TextBoxBase
 			Controls.Remove(hScrollBar);
 			hScrollBar = null;
 		}
+
+		SetScrollBarVisibility ();
+		
+		return callPositions;
 	}
 
 	// Setup the positions of the scrollBar depending on the combination
@@ -231,49 +243,22 @@ public class TextBox : TextBoxBase
 		{
 			return;
 		}
-		bool vScrollBarVisible = false;
-		bool hScrollBarVisible = false;
 		
-		int width;
-		if (vScrollBar == null)
-		{
-			width = ClientRectangle.Width;
-		}
-		else
-		{
-			width = ClientRectangle.Width - vScrollBar.Width;
-			if (width < 5)
+		int width = ClientRectangle.Width;
+		if (vScrollBar != null && showVScrollBar)
 			{
-				width = ClientRectangle.Width;
-			}
-			else
-			{
-				vScrollBarVisible = true;
-			}
+			width -= vScrollBar.Width;
 		}
 
-		int height;
-		if (hScrollBar == null)
-		{
-			height = ClientRectangle.Height;
-		}
-		else
-		{
-			height = ClientRectangle.Height - hScrollBar.Height;
-			if (height < 5)
+		int height = ClientRectangle.Height;
+		if (hScrollBar != null && showHScrollBar)
 			{
-				height = ClientRectangle.Height;
-			}
-			else
-			{
-				hScrollBarVisible = true;
-			}
+			height -= hScrollBar.Height;
 		}
 
 
 		if (vScrollBar != null)
 		{
-			vScrollBar.Visible = vScrollBarVisible;
 			vScrollBar.Bounds = new Rectangle(ClientRectangle.Width - vScrollBar.Width, 0, vScrollBar.Width, height);
 			
 			int remainder = TextDrawArea.Height % Font.Height;
@@ -290,7 +275,6 @@ public class TextBox : TextBoxBase
 		}
 		if (hScrollBar != null)
 		{
-			hScrollBar.Visible = hScrollBarVisible;
 			hScrollBar.Bounds = new Rectangle(0, ClientRectangle.Height - hScrollBar.Height, width, hScrollBar.Height);
 			int maximum = MaxTextDimensions.Width;
 			if (maximum < TextDrawArea.Width)
@@ -301,6 +285,27 @@ public class TextBox : TextBoxBase
 			hScrollBar.Maximum = maximum;
 			hScrollBar.SmallChange = 5;
 			hScrollBar.LargeChange = TextDrawArea.Width + 1;
+		}
+	}
+
+	// Set whether the scrollbars are visible.
+	private void SetScrollBarVisibility()
+	{
+		if (vScrollBar == null && hScrollBar == null)
+		{
+			return;
+		}
+		
+		if (vScrollBar != null)
+		{
+			showVScrollBar = (ClientRectangle.Width - vScrollBar.Width >= 5);
+			vScrollBar.Visible = showVScrollBar;
+		}
+
+		if (hScrollBar != null)
+		{
+			showHScrollBar = (ClientRectangle.Height - hScrollBar.Height >= 5);
+			hScrollBar.Visible = showHScrollBar;
 		}
 	}
 
@@ -679,7 +684,7 @@ public class TextBox : TextBoxBase
 			ResetView();
 		}
 		// Draw scrollbar corner if both are visible
-		if (vScrollBar != null && hScrollBar != null && vScrollBar.Visible && hScrollBar.Visible)
+		if (vScrollBar != null && hScrollBar != null && showVScrollBar && showHScrollBar)
 		{
 			g.FillRectangle(SystemBrushes.Control, hScrollBar.Right, vScrollBar.Bottom, vScrollBar.Width, hScrollBar.Height);
 		}
@@ -764,6 +769,8 @@ public class TextBox : TextBoxBase
 	// All rendered in client coordinates.
 	protected void LayoutFromText(String newText, Graphics g)
 	{
+		bool callSetScrollBarPositions;
+		
 		if (!IsHandleCreated)
 			return;
 		if (layout == null)
@@ -777,6 +784,7 @@ public class TextBox : TextBoxBase
 		// yLine is the y coordinate of this point.
 		int yLine = 1;
 		int posLine = 0;
+
 		for (int i = 0; i < layout.Items.Length; i++)
 		{
 			if (i > newText.Length - 1)
@@ -790,6 +798,11 @@ public class TextBox : TextBoxBase
 			if (newText[i] != Text[i])
 				break;
 		}
+
+		// Set up the scrollbars and remember whether we need to call SetScrollBarPositions.
+		// We need to do this here so TextDrawArea returns correct values.
+		callSetScrollBarPositions = SetupScrollBars();
+
 		// We leave 1 pixel on the left and right for the caret
 		// Multiline textboxes are infinite in the y direction
 		// non multiline are infinite in the x direction and we scroll when needed
@@ -905,7 +918,10 @@ public class TextBox : TextBoxBase
 			layout.Items[i] = item;
 			prevType = item.type;
 		}
-		SetupScrollBars();
+		
+		// Set the positions of the scrollbars if SetupScrollBars told us to do so
+		if (callSetScrollBarPositions)
+		    SetScrollBarPositions ();
 	}
 
 	// Make sure the caret is visible
@@ -1325,6 +1341,7 @@ public class TextBox : TextBoxBase
 		// If the height or width changes then relayout the text
 		if ((specified & BoundsSpecified.Height) != 0 | (specified & BoundsSpecified.Width) != 0)
 		{
+			layout = null;
 			LayoutFromText(Text);
 			SetScrollBarPositions();
 			// Redraw
@@ -1942,16 +1959,17 @@ public class TextBox : TextBoxBase
 		layout = null;
 	}
 
+
 	private Rectangle TextDrawArea
 	{
 		get
 		{
 			Rectangle rect = ClientRectangle;
-			if (vScrollBar != null && vScrollBar.Visible)
+			if (vScrollBar != null && showVScrollBar)
 			{
 				rect.Width -= vScrollBar.Width;
 			}
-			if (hScrollBar != null && hScrollBar.Visible)
+			if (hScrollBar != null && showHScrollBar)
 			{
 				rect.Height -= hScrollBar.Height;
 			}
@@ -1996,7 +2014,7 @@ public class TextBox : TextBoxBase
 			// Make sure the entire textbox is redrawn
 			InvalidateAll();
 			yViewOffset = value;
-			if (vScrollBar != null && vScrollBar.Visible)
+			if (vScrollBar != null && showVScrollBar)
 			{
 				vScrollBar.Value = yViewOffset;
 			}

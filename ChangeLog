@@ -11,6 +11,8 @@
 	unpack "native float" values from variable-argument lists using
 	the "OpenSystem.C.NativeFloat" value type.
 
+	* csupport/Markers.cs: define the "StrongAliasFor" attribute class.
+
 2002-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_misc.tc: implement array initializers in "new"

@@ -36,10 +36,17 @@ public sealed class BitFieldAttribute : Attribute
 }
 
 // An attribute class that is used to mark weak alias definitions.
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Method)]
 public sealed class WeakAliasForAttribute : Attribute
 {
 	public WeakAliasForAttribute(String name) {}
+}
+
+// An attribute class that is used to mark strong alias definitions.
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
+public sealed class StrongAliasForAttribute : Attribute
+{
+	public StrongAliasForAttribute(String name) {}
 }
 
 // An attribute class that is used to mark initializers.

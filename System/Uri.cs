@@ -7,6 +7,7 @@
  * Contributions by Gerard Toonstra <toonstra@ntlworld.com>
  * Contributions by Rich Baumann <biochem333@nyc.rr.com>
  * Contributions by Gopal V <gopalv82@symonds.net>
+ * Contributions by Rhys Weatherley <rweather@southern-storm.com.au>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,11 +31,17 @@ using System.Text;
 using System.Private;
 using System.Net.Sockets;
 using System.Collections;
+using System.Runtime.Serialization;
 
 namespace System
 {
 
+#if CONFIG_SERIALIZATION
+[Serializable]
+public class Uri : MarshalByRefObject, ISerializable
+#else
 public class Uri : MarshalByRefObject
+#endif
 {
 
 	public static readonly String SchemeDelimiter = "://";
@@ -186,6 +193,14 @@ public class Uri : MarshalByRefObject
 		Escape();
 		Canonicalize();
 	}
+
+#if CONFIG_SERIALIZATION
+	protected Uri(SerializationInfo info, StreamingContext context)
+		: this(info.GetString("AbsoluteUri"), true)
+	{
+		// Nothing to do here.
+	}
+#endif
 
 	private Uri()
 	{
@@ -379,10 +394,9 @@ public class Uri : MarshalByRefObject
 		return true;
 	}
 
-	[TODO]
 	protected virtual void CheckSecurity()
 	{
-		 throw new NotImplementedException("CheckSecurity");
+		 // Nothing to do here.
 	}
 
 	public override bool Equals(Object comparand)
@@ -1025,5 +1039,27 @@ public class Uri : MarshalByRefObject
 		// TODO
 		return false;
 	}
+
+	// Determine if this is an UNC path.
+	public bool IsUnc
+	{
+		get
+		{
+			// We don't support UNC paths at present.
+			return false;
+		}
+	}
+
+#if CONFIG_SERIALIZATION
+
+	// Serialize this URI object.
+	void ISerializable.GetObjectData(SerializationInfo serializationInfo,
+									 StreamingContext streamingContext)
+	{
+		serializationInfo.AddValue("AbsoluteUri", AbsoluteUri);
+	}
+
+#endif
+
 }
 }//namespace

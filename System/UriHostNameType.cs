@@ -1,7 +1,7 @@
 /*
  * UriHostNameType.cs - Implementation of the "System.UriHostNameType" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,12 @@ namespace System
 
 public enum UriHostNameType
 {
-	Dns = 2,
-	IPv4 = 3,
-	IPv6 = 4,
-	Unknown = 0	
+	Unknown	= 0,
+	Basic	= 1,
+	Dns		= 2,
+	IPv4	= 3,
+	IPv6	= 4,
+
 }; // enum UriHostNameType
 
 }; // namespace System

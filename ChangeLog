@@ -1,4 +1,8 @@
 
+2003-09-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Uri.cs, System/UriHostNameType.cs: missing functionality.
+
 2003-09-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Invalid.txt, runtime/System/AppDomain.cs,

@@ -18,6 +18,9 @@
 	CONFIG_COMPONENT_MODEL, CONFIG_COMPONENT_MODEL_DESIGN,
 	CONFIG_ISOLATED_STORAGE.
 
+	* profiles/mscompact: add a new profile that roughly corresponds
+	to the MS Compact .NET Framework.
+
 2003-05-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/SocketAddress.cs, System/Net/Sockets/Socket.cs,

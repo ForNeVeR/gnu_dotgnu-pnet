@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<profile>
+<!-- Profile that roughly corresponds to the MS Compact .NET Framework -->
+
+<!-- Provides non-ECMA features -->
+<define name="NON_ECMA" value="true"/>
+
+<!-- Only use ECMA-compatible features -->
+<define name="ECMA_COMPAT" value="false"/>
+
+<!-- Use reflection facilities -->
+<define name="CONFIG_REFLECTION" value="true"/>
+
+<!-- Use runtime infrastructure facilities -->
+<define name="CONFIG_RUNTIME_INFRA" value="true"/>
+
+<!-- Use extended numerics -->
+<define name="CONFIG_EXTENDED_NUMERICS" value="true"/>
+
+<!-- Use line number debug information -->
+<define name="CONFIG_DEBUG_LINES" value="true"/>
+
+<!-- Use remoting facilities -->
+<define name="CONFIG_REMOTING" value="false"/>
+
+<!-- Use serialization facilities -->
+<define name="CONFIG_SERIALIZATION" value="false"/>
+
+<!-- Use serialization facilities -->
+<define name="CONFIG_REFLECTION_EMIT" value="false"/>
+
+<!-- Use COM interoperability marker classes -->
+<define name="CONFIG_COM_INTEROP" value="false"/>
+
+<!-- Use CodeDom facilities -->
+<define name="CONFIG_CODEDOM" value="false"/>
+
+<!-- Use cryptography facilities -->
+<define name="CONFIG_CRYPTO" value="false"/>
+
+<!-- Use X.509 certificate facilities -->
+<define name="CONFIG_X509_CERTIFICATES" value="true"/>
+
+<!-- Use permissions objects from System.Security.Permissions -->
+<define name="CONFIG_PERMISSIONS" value="false"/>
+
+<!-- Use policy objects from System.Security.Policy -->
+<define name="CONFIG_POLICY_OBJECTS" value="false"/>
+
+<!-- Use extended diagnostics classes from System.Diagnostics -->
+<define name="CONFIG_EXTENDED_DIAGNOSTICS" value="false"/>
+
+<!-- Use non-portable Win32-specific classes -->
+<define name="CONFIG_WIN32_SPECIFICS" value="false"/>
+
+<!-- Use isolated storage classes from System.IO.IsolatedStorage -->
+<define name="CONFIG_ISOLATED_STORAGE" value="false"/>
+
+<!-- Use System.ComponentModel classes -->
+<define name="CONFIG_COMPONENT_MODEL" value="true"/>
+
+<!-- Use System.ComponentModel.Design classes -->
+<define name="CONFIG_COMPONENT_MODEL_DESIGN" value="false"/>
+
+</profile>

@@ -297,25 +297,6 @@ public class Font
 			}
 
 	/// <summary>
-	/// <para>Constructs a new instance of <see cref="T:Xsharp.Font"/>
-	/// with a default style.</para>
-	/// </summary>
-	///
-	/// <param name="family">
-	/// <para>The name of the font family, or <see langword="null"/> to
-	/// use the default sans-serif font.</para>
-	/// </param>
-	///
-	/// <param name="pointSize">
-	/// <para>The point size (120 is typically "normal height").</para>
-	/// </param>
-	public Font(String family, int pointSize)
-			: this(family, pointSize, FontStyle.Normal)
-			{
-				// Nothing to do here.
-			}
-
-	/// <summary>
 	/// <para>Construct a font from an XLFD name.</para>
 	/// </summary>
 	///

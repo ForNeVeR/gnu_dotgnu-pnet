@@ -1,3 +1,9 @@
+
+2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Font.cs: remove a public constructor that is no longer
+	required.
+
 2003-11-30  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/TabControl.cs:

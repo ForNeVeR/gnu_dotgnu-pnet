@@ -372,7 +372,9 @@ void GC_get_next_stack(char *start, char **lo, char **hi)
     if (*lo < start) *lo = start;
 }
 
-#if !defined(MSWINCE) && !(defined(__MINGW32__) && !defined(_DLL))
+/*#if !defined(MSWINCE) && !(defined(__MINGW32__) && !defined(_DLL))*/
+
+#if defined(_DLL) || (defined(CYGWIN32) && !defined(GC_DISABLE_CYGWIN_PTHREADS))
 
 HANDLE WINAPI GC_CreateThread(
     LPSECURITY_ATTRIBUTES lpThreadAttributes, 

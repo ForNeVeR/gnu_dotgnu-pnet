@@ -7,6 +7,10 @@
 
 	* configure.in: don't attempt to detect termcap or curses under Win32.
 
+	* support/sha384.c, support/sha512.c, support/thread.c,
+	support/time.c, support/wait.c, support/wait_event.c:
+	fix some warnings that were turned up by gcc 3.3.
+
 2003-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, ilgac/.cvsignore, ilgac/Makefile.am,

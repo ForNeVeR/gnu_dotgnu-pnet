@@ -278,7 +278,7 @@ int ILWaitAny(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout)
 
 	/* Wait until we are signalled, timed out, or interrupted */
 	resultHandle = 0;
-	result = _ILWakeupWait(wakeup, timeout, (void **)&resultHandle);
+	result = _ILWakeupWait(wakeup, timeout, (void *)&resultHandle);
 
 	/* Unregister the thread from the wait handles */
 	index2 = 0;

@@ -48,31 +48,19 @@ extern	"C" {
  * Magic number that converts a time which is relative to
  * Jan 1, 1970 into a value which is relative to Jan 1, 0001.
  */
-#ifdef 	IL_WIN32_NATIVE
 #define	EPOCH_ADJUST	((ILInt64)62135596800LL)
-#else
-#define	EPOCH_ADJUST	((ILInt64)62135596800L)
-#endif
 
 /*
  * Magic number that converts a time which is relative to
  * Jan 1, 1601 into a value which is relative to Jan 1, 0001.
  */
-#ifdef 	IL_WIN32_NATIVE
 #define	WIN32_EPOCH_ADJUST	((ILInt64)50491123200LL)
-#else
-#define	WIN32_EPOCH_ADJUST	((ILInt64)50491123200L)
-#endif
 
 /*
  * Magic number that converts a time which is relative to
  * Jan 1, 1904 into a value which is relative to Jan 1, 0001.
  */
-#ifdef 	IL_WIN32_NATIVE
 #define	PALM_EPOCH_ADJUST	((ILInt64)60052752000LL)
-#else
-#define	PALM_EPOCH_ADJUST	((ILInt64)60052752000L)
-#endif
 
 void ILGetCurrTime(ILCurrTime *timeValue)
 {

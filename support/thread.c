@@ -994,7 +994,7 @@ void ILThreadSetPriority(ILThread *thread, int priority)
 
 int ILThreadGetPriority(ILThread *thread)
 {
-	_ILThreadGetPriority(thread);
+	return _ILThreadGetPriority(thread);
 }
 
 void _ILThreadSuspendRequest(ILThread *thread)

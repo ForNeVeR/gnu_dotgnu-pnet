@@ -100,7 +100,7 @@ static void EventUnregister(ILWaitEvent *event, _ILWakeup *wakeup, int release)
 
 static int EventSignal(ILWaitHandle *waitHandle)
 {
-	ILWaitEventSet(waitHandle);
+	return ILWaitEventSet(waitHandle);
 }
 
 /*

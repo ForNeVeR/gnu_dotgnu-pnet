@@ -32,14 +32,14 @@ extern	"C" {
 void ILSHA384Init(ILSHA384Context *sha)
 {
 	sha->inputLen = 0;
-	sha->A = 0xcbbb9d5dc1059ed8;
-	sha->B = 0x629a292a367cd507;
-	sha->C = 0x9159015a3070dd17;
-	sha->D = 0x152fecd8f70e5939;
-	sha->E = 0x67332667ffc00b31;
-	sha->F = 0x8eb44a8768581511;
-	sha->G = 0xdb0c2e0d64f98fa7;
-	sha->H = 0x47b5481dbefa4fa4;
+	sha->A = (ILUInt64)(0xcbbb9d5dc1059ed8LL);
+	sha->B = (ILUInt64)(0x629a292a367cd507LL);
+	sha->C = (ILUInt64)(0x9159015a3070dd17LL);
+	sha->D = (ILUInt64)(0x152fecd8f70e5939LL);
+	sha->E = (ILUInt64)(0x67332667ffc00b31LL);
+	sha->F = (ILUInt64)(0x8eb44a8768581511LL);
+	sha->G = (ILUInt64)(0xdb0c2e0d64f98fa7LL);
+	sha->H = (ILUInt64)(0x47b5481dbefa4fa4LL);
 	sha->totalLen = 0;
 }
 

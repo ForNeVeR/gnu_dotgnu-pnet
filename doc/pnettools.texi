@@ -1453,6 +1453,8 @@ that are unique to our implementation.
 * Labels as values::           Using goto labels as values in functions
 * Reference parameters::       Passing values by reference to functions
 * Thread-specific variables::  Declaring thread-specific variables
+* PInvoke importing::          Importing external functions via PInvoke
+* Calling C from C#::          Calling C code from C#
 * Other keywords::             Other keywords in the C compiler
 @end menu
 
@@ -1486,6 +1488,9 @@ $ _
 
 The output of the C compiler is a pure IL binary, just as for the
 C# compiler.
+
+Note: you will need to install the @code{pnetC} package to compile and
+run C programs.
 
 @c -----------------------------------------------------------------------
 
@@ -1672,7 +1677,7 @@ an entire namespace:
 @example
 __using__ System::Text::StringBuilder;
 
-StringBuilder builder;
+StringBuilder *builder;
 @end example
 
 @cindex #using directive
@@ -1894,7 +1899,7 @@ with C# methods that have @code{ref} and @code{out} parameters.
 
 @c -----------------------------------------------------------------------
 
-@node Thread-specific variables, Other keywords, Reference parameters, C Compiler
+@node Thread-specific variables, PInvoke importing, Reference parameters, C Compiler
 @section Declaring thread-specific variables
 @cindex Thread-specific variables
 @cindex __declspec keyword
@@ -1917,7 +1922,86 @@ by our compiler at present.  All other arguments (e.g. @code{dllimport},
 
 @c -----------------------------------------------------------------------
 
-@node Other keywords, Documentation, Thread-specific variables, C Compiler
+@node PInvoke importing, Calling C from C#, Thread-specific variables, C Compiler
+@section Importing functions via PInvoke
+@cindex PInvoke in C
+
+Native functions may be imported via PInvoke using function
+attributes.  For example:
+
+@example
+extern int getpid(void) __attribute__((pinvoke("libc.so.6"), cdecl));
+@end example
+
+@noindent
+The following attributes may be present:
+
+@table @code
+@item pinvoke(LIB)
+Specify that the function is imported via PInvoke from the specified
+native library.  The argument must be a string.
+
+@item name(STR)
+Specify the raw name of the function in the library, if it is
+different from the declared name of the function.  The argument
+must be a string.
+
+@item ansi
+@itemx unicode
+@itemx auto
+Specify the string marshalling conventions.
+
+@item winapi
+@itemx cdecl
+@itemx stdcall
+@itemx thiscall
+@itemx fastcall
+Specify the calling conventions.
+
+@item nomangle
+Corresponds to the @code{ExactSpelling} property in
+@code{DllImportAttribute}.
+
+@item preservesig
+Corresponds to the @code{PreserveSig} property in
+@code{DllImportAttribute}.
+
+@item lasterr
+Corresponds to the @code{SetLastError} property in
+@code{DllImportAttribute}.
+@end table
+
+The @code{__attribute__} keyword is adapted from gcc, but the actual
+attribute names are unique to our compiler.  The attribute names
+can also be specified with leading and trailing underscores
+(e.g. @code{__pinvoke__}, @code{__cdecl__}, etc).
+
+@c -----------------------------------------------------------------------
+
+@node Calling C from C#, Other keywords, PInvoke importing, C Compiler
+@section Calling C code from C#
+@cindex Calling C from C#
+
+If the C function is in a library assembly, then you can access it as
+though it was a regular C# method.  For example, the following program
+will sleep for five seconds:
+
+@example
+public class Sleeper
+@{
+    public static void Main()
+    @{
+        libc.sleep(5);
+    @}
+@}
+@end example
+
+All of the public functions and global variables for a library called
+@code{libABC.dll} will be contained in a class called @code{libABC}.
+
+@c -----------------------------------------------------------------------
+
+@node Other keywords, Documentation, Calling C from C#, C Compiler
 @section Other keywords in the C compiler
 @cindex Other C keywords
 @cindex __asm__ keyword

@@ -416,6 +416,10 @@ static CSemValue ApplyCoercion(ILGenInfo *info, ILNode *node, ILNode **parent,
 			CSemSetRValue(fromValue, toType);
 		}
 	}
+	else
+	{
+		CSemSetRValue(fromValue, toType);
+	}
 
 	/* Return the modified semantic value to the caller */
 	return fromValue;

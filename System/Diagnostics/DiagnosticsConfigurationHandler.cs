@@ -1,8 +1,8 @@
 /*
- * ConditionalAttribute.cs - Implementation of the
- *			"System.Diagnostics.ConditionalAttribute" class.
+ * DiagnosticsConfigurationHandler.cs - Implementation of the
+ *		"System.Diagnostics.DiagnosticsConfigurationHandler" interface.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,27 +22,31 @@
 namespace System.Diagnostics
 {
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple=true)]
-public sealed class ConditionalAttribute : Attribute
+#if CONFIG_EXTENDED_DIAGNOSTICS
+
+using System;
+using System.Xml;
+using System.Configuration;
+
+public class DiagnosticsConfigurationHandler : IConfigurationSectionHandler
 {
-	// Internal state.
-	String condition;
+	// Constructor.
+	public DiagnosticsConfigurationHandler() {}
 
-	// Constructors.
-	public ConditionalAttribute(String conditionString)
+#if SECOND_PASS
+
+	// Create a configuration object for a section.
+	[TODO]
+	public Object Create(Object parent, Object configContext, XmlNode section)
 			{
-				condition = conditionString;
+				// TODO
+				return null;
 			}
 
-	// Properties.
-	public String ConditionString
-			{
-				get
-				{
-					return condition;
-				}
-			}
+#endif // SECOND_PASS
 
-}; // class ConditionalAttribute
+}; // class DiagnosticsConfigurationHandler
+
+#endif // CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

@@ -25,9 +25,14 @@ namespace System.Diagnostics
 #if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.ComponentModel;
+using System.Collections;
 using System.Security;
 
 [DefaultEvent("EntryWritten")]
+#if CONFIG_COMPONENT_MODEL
+[DesignerAttribute("Microsoft.VisualStudio.Install.EventLogInstallableComponentDesigner, Microsoft.VisualStudio")]
+[InstallerType("System.Diagnostics.EventLogInstaller, System.Configuration.Install")]
+#endif
 public class EventLog
 #if CONFIG_COMPONENT_MODEL
 	: Component, ISupportInitialize
@@ -38,9 +43,11 @@ public class EventLog
 	private String machineName;
 	private String source;
 	private bool enableRaisingEvents;
+	private EventLogEntryCollection entries;
 #if CONFIG_COMPONENT_MODEL
 	private ISynchronizeInvoke syncInvoke;
 #endif
+	private static ArrayList logs = new ArrayList();
 
 	// Constructor.
 	public EventLog() : this("", ".", "") {}
@@ -60,6 +67,7 @@ public class EventLog
 				this.logName = logName;
 				this.machineName = machineName;
 				this.source = (source == null ? "" : source);
+				this.entries = new EventLogEntryCollection();
 			}
 
 	// Get or set event log properties.
@@ -80,13 +88,11 @@ public class EventLog
 	[MonitoringDescription("LogEntries")]
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	[TODO]
 	public EventLogEntryCollection Entries
 			{
 				get
 				{
-					// TODO
-					return null;
+					return entries;
 				}
 			}
 	[MonitoringDescription("LogLog")]
@@ -183,17 +189,15 @@ public class EventLog
 			}
 
 	// Clear all entries from the event log.
-	[TODO]
 	public void Clear()
 			{
-				// TODO
+				entries.Clear();
 			}
 
 	// Close this event log.
-	[TODO]
 	public void Close()
 			{
-				// TODO
+				// Nothing to do here in this implementation.
 			}
 
 	// Create a new event source.
@@ -201,7 +205,6 @@ public class EventLog
 			{
 				CreateEventSource(source, logName, ".");
 			}
-	[TODO]
 	public static void CreateEventSource
 				(String source, String logName, String machineName)
 			{
@@ -226,7 +229,25 @@ public class EventLog
 						(S._("Invalid_RemoteEventSource"));
 				}
 
-				// TODO
+				// See if we already have a log with this name,
+				// and bail out if we have.
+				lock(typeof(EventLog))
+				{
+					foreach(EventLog log in logs)
+					{
+						if(log.Source == source &&
+						   log.Log == logName &&
+						   log.MachineName == machineName)
+						{
+							return;
+						}
+					}
+
+					// Create a new event log on this machine.
+					EventLog eventLog = new EventLog
+						(logName, machineName, source);
+					logs.Add(eventLog);
+				}
 			}
 
 	// Delete an event log.
@@ -234,10 +255,36 @@ public class EventLog
 			{
 				Delete(logName, ".");
 			}
-	[TODO]
 	public static void Delete(String logName, String machineName)
 			{
-				// TODO
+				// Validate the parameters.
+				if(logName == null || logName == String.Empty)
+				{
+					throw new ArgumentNullException("logName");
+				}
+				if(machineName == null)
+				{
+					throw new ArgumentNullException("machineName");
+				}
+				if(machineName != ".")
+				{
+					throw new SecurityException
+						(S._("Invalid_RemoteEventSource"));
+				}
+
+				// Look for the log and delete it.
+				lock(typeof(EventLog))
+				{
+					foreach(EventLog log in logs)
+					{
+						if(log.Log == logName &&
+						   log.MachineName == machineName)
+						{
+							logs.Remove(log);
+							return;
+						}
+					}
+				}
 			}
 
 	// Delete an event source.
@@ -245,17 +292,42 @@ public class EventLog
 			{
 				DeleteEventSource(source, ".");
 			}
-	[TODO]
 	public static void DeleteEventSource(String source, String machineName)
 			{
-				// TODO
+				// Validate the parameters.
+				if(source == null || source == String.Empty)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(machineName == null)
+				{
+					throw new ArgumentNullException("machineName");
+				}
+				if(machineName != ".")
+				{
+					throw new SecurityException
+						(S._("Invalid_RemoteEventSource"));
+				}
+
+				// Look for the log and delete it.
+				lock(typeof(EventLog))
+				{
+					foreach(EventLog log in logs)
+					{
+						if(log.Source == source &&
+						   log.MachineName == machineName)
+						{
+							logs.Remove(log);
+							return;
+						}
+					}
+				}
 			}
 
 	// Dispose of this event log.
-	[TODO]
 	protected override void Dispose(bool disposing)
 			{
-				// TODO
+				// Nothing to do in this implementation.
 			}
 
 	// Determine if a particular log exists.
@@ -263,11 +335,20 @@ public class EventLog
 			{
 				return Exists(logName, ".");
 			}
-	[TODO]
 	public static bool Exists(String logName, String machineName)
 			{
-				// TODO
-				return false;
+				lock(typeof(EventLog))
+				{
+					foreach(EventLog log in logs)
+					{
+						if(log.Log == logName &&
+						   log.MachineName == machineName)
+						{
+							return true;
+						}
+					}
+					return false;
+				}
 			}
 
 	// Get all active event logs.
@@ -275,11 +356,38 @@ public class EventLog
 			{
 				return GetEventLogs(".");
 			}
-	[TODO]
 	public static EventLog[] GetEventLogs(String machineName)
 			{
-				// TODO
-				return new EventLog [0];
+				lock(typeof(EventLog))
+				{
+					if(machineName == ".")
+					{
+						return (EventLog[])(logs.ToArray(typeof(EventLog)));
+					}
+					else
+					{
+						throw new SecurityException
+							(S._("Invalid_RemoteEventSource"));
+					}
+				}
+			}
+
+	// Get the name of a log given its source name.
+	public static String LogNameFromSourceName
+				(String source, String machineName)
+			{
+				lock(typeof(EventLog))
+				{
+					foreach(EventLog log in logs)
+					{
+						if(log.Source == source &&
+						   log.MachineName == machineName)
+						{
+							return log.Log;
+						}
+					}
+					return null;
+				}
 			}
 
 	// Determine if a particular event source exists.
@@ -287,15 +395,23 @@ public class EventLog
 			{
 				return SourceExists(source, ".");
 			}
-	[TODO]
 	public static bool SourceExists(String source, String machineName)
 			{
-				// TODO
-				return false;
+				lock(typeof(EventLog))
+				{
+					foreach(EventLog log in logs)
+					{
+						if(log.Source == source &&
+						   log.MachineName == machineName)
+						{
+							return true;
+						}
+					}
+					return false;
+				}
 			}
 
 	// Write an entry to this event log.
-	[TODO]
 	private void WriteEntryToLog(String source, String message,
 						   		 EventLogEntryType type, int eventID,
 						   		 short category, byte[] rawData)
@@ -322,7 +438,7 @@ public class EventLog
 				entry.userName = Environment.UserName;
 
 				// Write the entry to the log.
-				// TODO
+				entries.Add(entry);
 
 				// Notify the listening event handlers for local events.
 				if(enableRaisingEvents && machineName == "." &&
@@ -381,13 +497,21 @@ public class EventLog
 				WriteEntry(source, message, type, eventID,
 						   category, null);
 			}
-	[TODO]
 	public static void WriteEntry(String source, String message,
 						   		  EventLogEntryType type, int eventID,
 						   		  short category, byte[] rawData)
 			{
-				// TODO: find the log for the source and call
-				// the "WriteEntryToLog" method.
+				lock(typeof(EventLog))
+				{
+					foreach(EventLog log in logs)
+					{
+						if(log.Source == source)
+						{
+							log.WriteEntryToLog(source, message, type,
+												eventID, category, rawData);
+						}
+					}
+				}
 			}
 
 	// Event that indicates when an entry is written to the log.

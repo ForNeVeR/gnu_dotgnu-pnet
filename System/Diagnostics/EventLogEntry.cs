@@ -126,6 +126,10 @@ public sealed class EventLogEntry
 				}
 			}
 	[MonitoringDescription("LogEntryMessage")]
+#if CONFIG_COMPONENT_MODEL
+	[Editor("System.ComponentModel.Design.BinaryEditor, System.Design",
+			"System.Drawing.Design.UITypeEditor, System.Drawing")]
+#endif
 	public String Message
 			{
 				get

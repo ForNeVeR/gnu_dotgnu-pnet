@@ -17,6 +17,24 @@
 	* System/ComponentModel/ComponentResourceManager.cs: implement
 	"ApplyResources" for component resource managers.
 
+	* System/Diagnostics/AlphabeticalEnumConverter.cs,
+	System/Diagnostics/DefaultTraceListener.cs,
+	System/Diagnostics/DiagnosticsConfigurationHandler.cs,
+	System/Diagnostics/EventLog.cs,
+	System/Diagnostics/EventLogEntry.cs,
+	System/Diagnostics/EventLogEntryCollection.cs,
+	System/Diagnostics/PerformanceCounter.cs,
+	System/Diagnostics/PerformanceCounterPermission.cs,
+	System/Diagnostics/PerformanceCounterPermissionAttribute.cs,
+	System/Diagnostics/PerformanceCounterPermissionEntry.cs,
+	System/Diagnostics/PerformanceCounterPermissionEntryCollection.cs,
+	System/Diagnostics/PerformanceCounterType.cs,
+	System.Configuration.Install/EventLogInstaller.cs,
+	System.Configuration.Install/PerformanceCounterInstaller.cs,
+	runtime/System/Diagnostics/ConditionalAttribute.cs:
+	missing functionality and signature-compatibility for the
+	"System.Diagnostics" namespace.
+
 2003-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/ArrayConverter.cs,

@@ -1,8 +1,8 @@
 /*
- * ConditionalAttribute.cs - Implementation of the
- *			"System.Diagnostics.ConditionalAttribute" class.
+ * AlphabeticalEnumConverter.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.AlphabeticalEnumConverter" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,27 +22,18 @@
 namespace System.Diagnostics
 {
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple=true)]
-public sealed class ConditionalAttribute : Attribute
+#if CONFIG_COMPONENT_MODEL && CONFIG_EXTENDED_DIAGNOSTICS
+
+using System.ComponentModel;
+
+internal sealed class AlphabeticalEnumConverter : EnumConverter
 {
-	// Internal state.
-	String condition;
+	// Constructor.
+	public AlphabeticalEnumConverter()
+			: base(typeof(PerformanceCounterType)) {}
 
-	// Constructors.
-	public ConditionalAttribute(String conditionString)
-			{
-				condition = conditionString;
-			}
+}; // class AlphabeticalEnumConverter
 
-	// Properties.
-	public String ConditionString
-			{
-				get
-				{
-					return condition;
-				}
-			}
-
-}; // class ConditionalAttribute
+#endif // CONFIG_COMPONENT_MODEL && CONFIG_EXTENDED_DIAGNOSTICS
 
 }; // namespace System.Diagnostics

@@ -85,6 +85,18 @@ public class EventLogEntryCollection : ICollection, IEnumerable
 				list.CopyTo(entries, index);
 			}
 
+	// Add an entry to this collection.
+	internal void Add(EventLogEntry entry)
+			{
+				list.Add(entry);
+			}
+
+	// Clear this collection.
+	internal void Clear()
+			{
+				list.Clear();
+			}
+
 }; // class EventLogEntryCollection
 
 #endif // CONFIG_EXTENDED_DIAGNOSTICS

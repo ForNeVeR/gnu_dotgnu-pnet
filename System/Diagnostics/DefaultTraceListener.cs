@@ -24,6 +24,7 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
+using System.IO;
 using System.Runtime.InteropServices;
 
 [ComVisible(false)]
@@ -37,23 +38,13 @@ public class DefaultTraceListener : TraceListener
 	// Constructor.
 	public DefaultTraceListener() : base("Default") {}
 
-	// Load the configuration settings.
-	private void LoadConfig()
-			{
-				if(!loadDone)
-				{
-					// TODO
-				}
-			}
-
-	// Get or set the "UI enabled" flag.
+	// Get or set the "UI enabled" flag (not used in this implementation).
 	public bool AssertUiEnabled
 			{
 				get
 				{
 					lock(this)
 					{
-						LoadConfig();
 						return assertUiEnabled;
 					}
 				}
@@ -61,7 +52,6 @@ public class DefaultTraceListener : TraceListener
 				{
 					lock(this)
 					{
-						LoadConfig();
 						assertUiEnabled = value;
 					}
 				}
@@ -74,7 +64,6 @@ public class DefaultTraceListener : TraceListener
 				{
 					lock(this)
 					{
-						LoadConfig();
 						return logFileName;
 					}
 				}
@@ -82,7 +71,6 @@ public class DefaultTraceListener : TraceListener
 				{
 					lock(this)
 					{
-						LoadConfig();
 						logFileName = value;
 					}
 				}
@@ -119,7 +107,6 @@ public class DefaultTraceListener : TraceListener
 			{
 				lock(this)
 				{
-					LoadConfig();
 					if(NeedIndent)
 					{
 						WriteIndent();
@@ -138,7 +125,6 @@ public class DefaultTraceListener : TraceListener
 			{
 				lock(this)
 				{
-					LoadConfig();
 					if(NeedIndent)
 					{
 						WriteIndent();
@@ -156,9 +142,21 @@ public class DefaultTraceListener : TraceListener
 	// Write a string to the log file.
 	private void WriteLog(String message, bool eol)
 			{
-				// We don't support log files yet, as they are not secure.
-				// This method is a placeholder for a future implementation
-				// should it ever make sense to add this feature.
+				if(logFileName != null && logFileName.Length > 0)
+				{
+					StreamWriter writer = new StreamWriter
+						(logFileName, true);
+					if(eol)
+					{
+						writer.WriteLine(message);
+					}
+					else
+					{
+						writer.Write(message);
+					}
+					writer.Flush();
+					writer.Close();
+				}
 			}
 
 }; // class DefaultTraceListener

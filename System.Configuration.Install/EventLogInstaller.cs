@@ -44,6 +44,8 @@ public class EventLogInstaller : ComponentInstaller
 			}
 
 	// Get or set this object's properties.
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
 	public String Log
 			{
 				get
@@ -55,6 +57,8 @@ public class EventLogInstaller : ComponentInstaller
 					log = value;
 				}
 			}
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
 	public String Source
 			{
 				get

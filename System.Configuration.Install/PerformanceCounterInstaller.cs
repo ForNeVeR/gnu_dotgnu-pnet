@@ -46,6 +46,8 @@ public class PerformanceCounterInstaller : ComponentInstaller
 			}
 
 	// Get or set this object's properties.
+	[DefaultValue("")]
+	[MonitoringDescription("PCI_CategoryHelp")]
 	public String CategoryHelp
 			{
 				get
@@ -61,6 +63,9 @@ public class PerformanceCounterInstaller : ComponentInstaller
 					categoryHelp = value;
 				}
 			}
+	[DefaultValue("")]
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
 	public String CategoryName
 			{
 				get
@@ -76,6 +81,8 @@ public class PerformanceCounterInstaller : ComponentInstaller
 					categoryName = value;
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+	[MonitoringDescription("PCI_Counters")]
 	public CounterCreationDataCollection Counters
 			{
 				get
@@ -83,6 +90,7 @@ public class PerformanceCounterInstaller : ComponentInstaller
 					return counters;
 				}
 			}
+	[MonitoringDescription("PCI_UninstallAction")]
 	public UninstallAction UninstallAction
 			{
 				get

@@ -24,7 +24,11 @@ namespace System.Diagnostics
 
 #if CONFIG_EXTENDED_DIAGNOSTICS
 
-[Serializable]
+using System.ComponentModel;
+
+#if CONFIG_COMPONENT_MODEL
+[TypeConverter(typeof(AlphabeticalEnumConverter))]
+#endif
 public enum PerformanceCounterType
 {
 

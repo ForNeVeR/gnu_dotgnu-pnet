@@ -30,6 +30,10 @@ using System.ComponentModel;
 // the system performance counters as they are highly Windows-specific
 // and probably insecure to access anyway.
 
+#if CONFIG_COMPONENT_MODEL
+[Designer("Microsoft.VisualStudio.Install.PerformanceCounterDesigner, Microsoft.VisualStudio")]
+[InstallerType("System.Diagnostics.PerformanceCounterInstaller,System.Configuration.Install")]
+#endif
 public sealed class PerformanceCounter
 #if CONFIG_COMPONENT_MODEL
 	: Component, ISupportInitialize

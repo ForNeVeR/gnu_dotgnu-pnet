@@ -455,7 +455,8 @@ static int dumpFile(const char *filename, FILE *stream,
 	fprintf(outstream, "// Image type: %s\n",
 		    (imageType == IL_IMAGETYPE_DLL ? "DLL" :
 				(imageType == IL_IMAGETYPE_EXE ? "EXE" :
-					(imageType == IL_IMAGETYPE_OBJ ? "OBJ" : "Unknown"))));
+					(imageType == IL_IMAGETYPE_JAVA ? "Java" :
+						(imageType == IL_IMAGETYPE_OBJ ? "OBJ" : "Unknown")))));
 	fprintf(outstream, "// Native code present: %s\n",
 		    (ILImageHadNative(image) ? "Yes" : "No"));
 	fprintf(outstream, "// 32-bit only: %s\n",

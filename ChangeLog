@@ -12,6 +12,9 @@ image/Makefile.am: hook the Java class loading functionality to "ILImageLoad".
 
 * include/Makefile.am: add "il_jopcodes.h" to the "include" make.
 
+* ildasm/ildasm_main.c (dumpFile): recognise IL_IMAGETYPE_JAVA as a
+legitimate image type.
+
 2001-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_decls.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

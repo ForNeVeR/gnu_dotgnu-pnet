@@ -74,7 +74,7 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 				
 				// Redraw the entire window including the non client portion
 				Win32.Api.RedrawWindow( hwnd, IntPtr.Zero, IntPtr.Zero, Win32.Api.RedrawWindowFlags.RDW_INVALIDATE | Win32.Api.RedrawWindowFlags.RDW_FRAME );
-				// Console.WriteLine( "DrawingTopLevelWindow.SetWindowFlags, " + sink );
+				//Console.WriteLine( "DrawingTopLevelWindow.SetWindowFlags, " + sink );
 				
 
 			}

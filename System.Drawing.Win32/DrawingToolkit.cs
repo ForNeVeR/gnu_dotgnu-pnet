@@ -39,6 +39,15 @@ public class DrawingToolkit : IToolkit
 	internal DrawingWindow capturedTopWindow;
 	// The current window that has been entered by the mouse.
 	internal DrawingWindow enteredWindow;
+	// The window used as the parent when we want to hide the taskbar item and for processing the timers
+	private DrawingHiddenWindow hiddenWindow;
+
+	public DrawingToolkit()
+			{
+				hiddenWindow = new DrawingHiddenWindow(this, "DrawingHiddenWindow",0,0,null);
+				windows.Add(hiddenWindow);
+				hiddenWindow.CreateWindow();
+			}
 
 	// Process events in the event queue.  If "waitForEvent" is true,
 	// then wait for the next event and return "false" if "Quit" was
@@ -124,6 +133,11 @@ public class DrawingToolkit : IToolkit
 	public IToolkitGraphics CreateFromHwnd(IntPtr hwnd)
 			{
 				return null;
+			}
+
+	public IToolkitGraphics CreateFromImage(IToolkitImage image)
+			{
+				return new DrawingGraphicsImage(this, image);
 			}
 
 	// Create a solid toolkit brush.
@@ -448,7 +462,7 @@ public class DrawingToolkit : IToolkit
 		else
 			cookie = (uint)(timers[timers.Count-1] as Timer).cookie + 1;
 		// Assume for now that the first window created will service the timers
-		Win32.Api.SetTimer( (windows[0] as DrawingWindow).hwnd, cookie, (uint)interval, IntPtr.Zero );
+		Win32.Api.SetTimer( hiddenWindow.hwnd, cookie, (uint)interval, IntPtr.Zero );
 		timers.Add(new Timer(owner, cookie, expire));
 		return cookie;
 	}
@@ -541,8 +555,7 @@ public class DrawingToolkit : IToolkit
 				DrawingWindow(hwnd).KillFocus();
 				break;
 			case Win32.Api.WindowsMessages.WM_ACTIVATE:
-				DrawingWindow(hwnd).Activate(wParam, lParam);
-				break;
+				return DrawingWindow(hwnd).Activate(wParam, lParam);
 
 			case Win32.Api.WindowsMessages.WM_WINDOWPOSCHANGING:
 				DrawingWindow(hwnd).WindowPosChanging(lParam);
@@ -649,6 +662,9 @@ public class DrawingToolkit : IToolkit
 			case Win32.Api.WindowsMessages.WM_TIMER:
 				TimerFired( wParam);
 				break;
+
+			case Win32.Api.WindowsMessages.WM_MOUSEACTIVATE:
+				return DrawingWindow(hwnd).MouseActivate(DrawingWindow(new IntPtr(wParam)));
 
 			default:
 				retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);

@@ -57,6 +57,7 @@ internal class Api
 			WM_ERASEBKGND = 0x14,
 			WM_SETTINGCHANGE = 0x1A,
 			WM_SETCURSOR = 0x20,
+			WM_MOUSEACTIVATE = 0x21,
 			WM_WINDOWPOSCHANGING = 0x46,
 			WM_NCCALCSIZE = 0x83,
 			WM_NCHITTEST = 0x84,
@@ -381,6 +382,14 @@ internal class Api
 		BI_PNG = 5
 	}
 
+	public enum WM_MOUSEACTIVATEReturn
+	{
+		MA_ACTIVATE = 1,
+		MA_ACTIVATEANDEAT = 2,
+		MA_NOACTIVATE = 3,
+		MA_NOACTIVATEANDEAT = 4
+	}
+
 	[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi)]
 	public struct WNDCLASS 
 	{
@@ -669,25 +678,6 @@ internal class Api
 		public uint flags;
 	}
 
-// Not used	
-	[StructLayout(LayoutKind.Sequential)]
-	public class BITMAPINFO
-	{
-		public int biSize;
-		public int biWidth;
-		public int biHeight;
-		public short biPlanes;
-		public short biBitCount;
-		public BitMapInfoCompressionType biCompression;
-		public int biSizeImage = 0;
-		public int biXPelsPerMeter = 0;
-		public int biYPelsPerMeter = 0;
-		public int biClrUsed = 0;
-		public int biClrImportant = 0;
-		[MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValArray, SizeConst=1024)]
-		public byte[] bmiColors; 
-	};
-
 	[StructLayout(LayoutKind.Sequential)]
 	public struct RGNDATA
 	{
@@ -958,8 +948,8 @@ internal class Api
 	[DllImport("user32")]
 	public static extern IntPtr WindowFromPoint( POINT Point);
 
-	[DllImport("gdi32")]
-	public static extern IntPtr CreateDIBSection(IntPtr hdc, [In,MarshalAs(UnmanagedType.LPStruct)] BITMAPINFO pbmi, DibColorTableType iUsage, out IntPtr ppvBits, IntPtr hSection, uint dwOffset);
+	//[DllImport("gdi32")]
+	//public static extern IntPtr CreateDIBSection(IntPtr hdc, [In,MarshalAs(UnmanagedType.LPStruct)] BITMAPINFO pbmi, DibColorTableType iUsage, out IntPtr ppvBits, IntPtr hSection, uint dwOffset);
 
 	[DllImport("gdi32")]
 	public static extern int BitBlt (IntPtr hdcDest, int x, int y, int nWidth, int nHeight, IntPtr hSrcDC, int xSrc, int ySrc, RopType dwRop);
@@ -979,7 +969,8 @@ internal class Api
 		uint uStartScan,         // first scan line in array
 		uint cScanLines,         // number of scan lines
 		ref byte lpvBits,     // array of DIB bits
-		BITMAPINFO lpbmi, // bitmap information
+		byte[] lpbmi, // bitmap information
+		//BITMAPINFO lpbmi, // bitmap information
 	uint fuColorUse          // RGB or palette indexes
 		);
 

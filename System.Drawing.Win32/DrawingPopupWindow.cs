@@ -67,6 +67,11 @@ namespace System.Drawing.Toolkit
 			sink.ToolkitExternalResize( dimensions.Width, dimensions.Height );
 		}
 
+		internal override int MouseActivate(DrawingWindow activateWindow)
+		{
+			return (int)Win32.Api.WM_MOUSEACTIVATEReturn.MA_NOACTIVATE;
+		}
+
 		public override bool IsMapped
 		{
 			get

@@ -29,9 +29,6 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Internal state.
 	//internal Xsharp.Font font;
 	internal IntPtr hdc;
-	internal DrawingPen selectedPen;
-	internal DrawingBrush selectedBrush;
-	internal DrawingFont selectedFont;
 
 	public DrawingGraphics(IToolkit toolkit, IntPtr hdc)
 			: base(toolkit)
@@ -55,24 +52,13 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw a line between two points using the current pen.
 	public override void DrawLine( int x1, int y1, int x2, int y2 )
 			{
-				IntPtr prevhPen = Win32.Api.SelectObject( hdc, selectedPen.hPen );
+				IntPtr prevhPen = Win32.Api.SelectObject( hdc, (pen as DrawingPen).hPen );
 				Win32.Api.MoveToEx( hdc, x1, y1,IntPtr.Zero );
 				Win32.Api.LineTo( hdc, x2, y2 );
 				//set last point
-				Win32.Api.SetPixel( hdc, x2, y2, ColorToWin32( selectedPen.properties.Color ) );
+				Win32.Api.SetPixel( hdc, x2, y2, ColorToWin32( (pen as DrawingPen).properties.Color ) );
 				Win32.Api.SelectObject( hdc, prevhPen );
 				
-			}
-
-	// Draw a set of connected line seguments using the current pen.
-	public override void DrawLines( System.Drawing.Point[] points )
-			{
-				for ( int i = 1;i < points.Length; i++ )
-				{
-					if (points[i-1] != points[i])
-						DrawLine( points[i-1].X,points[i-1].Y,points[i].X,points[i].Y );
-				}
-
 			}
 
 	private Win32.Api.POINT[] ConvertPoints( System.Drawing.Point[] points ) 
@@ -89,14 +75,14 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw a polygon using the current pen.
 	public override void DrawPolygon( System.Drawing.Point[] points )
 			{
-				Polygon( points, Win32.Api.GetStockObject(Win32.Api.StockObjectType.HOLLOW_BRUSH), selectedPen.hPen);
+				Polygon( points, Win32.Api.GetStockObject(Win32.Api.StockObjectType.HOLLOW_BRUSH), (pen as DrawingPen).hPen);
 			}
 
 	// Fill a polygon using the current brush.
 	public override void FillPolygon( System.Drawing.Point[] points, FillMode fillMode )
 			{
 				Win32.Api.SetPolyFillMode(hdc, (int)fillMode);
-				Polygon( points, selectedBrush.hBrush, Win32.Api.GetStockObject(Win32.Api.StockObjectType.NULL_PEN) );
+				Polygon( points, (brush as DrawingBrush).hBrush, Win32.Api.GetStockObject(Win32.Api.StockObjectType.NULL_PEN) );
 			}
 
 	private void Polygon( System.Drawing.Point[] points, IntPtr hBrush, IntPtr hPen )
@@ -115,7 +101,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw an arc within a rectangle defined by four points.
 	public override void DrawArc( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
-				IntPtr prevhPen = Win32.Api.SelectObject( hdc, selectedPen.hPen );
+				IntPtr prevhPen = Win32.Api.SelectObject( hdc, (pen as DrawingPen).hPen );
 				Rectangle intersect = EllipseIntersect( rect, startAngle, sweepAngle );
 				Win32.Api.Arc( hdc, rect[0].X, rect[0].Y, rect[2].X, rect[2].Y, intersect.Left, intersect.Top, intersect.Right, intersect.Bottom );
 				Win32.Api.SelectObject( hdc, prevhPen );
@@ -126,13 +112,13 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	public override void DrawPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
 				
-				Pie( rect, startAngle, sweepAngle, Win32.Api.GetStockObject( Win32.Api.StockObjectType.HOLLOW_BRUSH ), selectedPen.hPen );
+				Pie( rect, startAngle, sweepAngle, Win32.Api.GetStockObject( Win32.Api.StockObjectType.HOLLOW_BRUSH ), (pen as DrawingPen).hPen );
 			}
 
 	// Fill a pie slice within a rectangle defined by four points.
 	public override void FillPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
-				Pie( rect, startAngle, sweepAngle, selectedBrush.hBrush, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN));
+				Pie( rect, startAngle, sweepAngle, (brush as DrawingBrush).hBrush, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN));
 			}
 
 	private void Pie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle, IntPtr hBrush, IntPtr hPen )
@@ -200,7 +186,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				3) TextOut
 				4) EndPath
 				5) StrokeAndFillPath*/
-				Win32.Api.SetTextColor(hdc, ColorToWin32(selectedBrush.color));
+				Win32.Api.SetTextColor(hdc, ColorToWin32((brush as ToolkitBrushBase).Color));
 				Win32.Api.ExtTextOutA(hdc, x, y, 0, IntPtr.Zero, s, (uint)s.Length, IntPtr.Zero);
 			}
 
@@ -311,30 +297,6 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 		hdc = IntPtr.Zero;
 	}
 
-	internal DrawingPen SelectPen
-	{
-		set
-		{
-			selectedPen = value;
-		}
-	}
-
-	internal DrawingBrush SelectBrush
-	{
-		set
-		{
-			selectedBrush = value;
-		}
-	}
-
-	internal DrawingFont SelectFont
-	{
-		set
-		{
-			selectedFont = value;
-		}
-	}
-
 	// Write an image at x, y taking into account the mask
 	public override void DrawImage(IToolkitImage image, int x, int y)
 	{
@@ -353,7 +315,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 		}
 
 		// Draw the image
-		Win32.Api.SetDIBitsToDevice( hdc, x, y, (uint)di.frame.Width,(uint)di.frame.Height, 0, 0, 0, (uint)di.frame.Height,ref di.frame.Data[0], di.bitMapInfo, 0 /*RGB*/);
+		Win32.Api.SetDIBitsToDevice( hdc, x, y, (uint)di.imageFrame.Width,(uint)di.imageFrame.Height, 0, 0, 0, (uint)di.imageFrame.Height,ref di.imageFrame.Data[0], di.bitMapInfo, 0 /*RGB*/);
 
 		// Restore the clipping
 		if (di.hMaskRegion != IntPtr.Zero)

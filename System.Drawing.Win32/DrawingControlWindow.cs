@@ -71,7 +71,7 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 			(this as IToolkitWindow).MoveResize(x, y, dimensions.Width, dimensions.Height);
 			
 			if (visible && !parented)
-				setVisible();
+				SetVisible();
 		}
 		//Console.WriteLine("DrawingWindow.Reparent, " + sink);
 	}

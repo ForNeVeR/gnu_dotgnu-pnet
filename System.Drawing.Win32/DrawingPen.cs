@@ -23,7 +23,7 @@ namespace System.Drawing.Toolkit
 using System;
 using System.Drawing.Drawing2D;
 
-internal class DrawingPen : IToolkitPen, IDisposable
+internal class DrawingPen : ToolkitPenBase
 {
 	// Internal state.
 	internal Pen properties;
@@ -31,7 +31,7 @@ internal class DrawingPen : IToolkitPen, IDisposable
 	private IToolkit toolkit;
 
 	// Constructor.
-	public DrawingPen(IToolkit toolkit, Pen properties)
+	public DrawingPen(IToolkit toolkit, Pen properties) : base(properties.Color, (int)properties.Width)
 			{
 				this.toolkit = toolkit;
 				this.properties = properties;
@@ -41,19 +41,19 @@ internal class DrawingPen : IToolkitPen, IDisposable
 			}
 
 	// Select this pen into a graphics object.
-	public void Select(IToolkitGraphics graphics)
+	public override void Select(IToolkitGraphics graphics)
 			{
-				(graphics as DrawingGraphics).SelectPen = this;
+				(graphics as DrawingGraphics).Pen = this;
 			}
 
 	// Select a brush-based pen into a graphics object.
-	public void Select(IToolkitGraphics graphics, IToolkitBrush brush)
+	public override void Select(IToolkitGraphics graphics, IToolkitBrush brush)
 			{
 				Select(graphics);
 			}
 
 	// Dispose of this object.
-	public void Dispose()
+	public override void Dispose()
 	{
 		Win32.Api.DeleteObject(hPen);
 		hPen = IntPtr.Zero;

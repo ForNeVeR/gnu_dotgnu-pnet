@@ -23,40 +23,68 @@ namespace System.Drawing.Toolkit
 	using System;
 	using System.Runtime.InteropServices;
 	using DotGNU.Images;
-	public class DrawingImage : IToolkitImage
+	public class DrawingImage : ToolkitImageBase
 	{
-		internal Frame frame;
-		internal Win32.Api.BITMAPINFO bitMapInfo;
-		internal IntPtr hMaskRegion;
+		internal Frame imageFrame;
+		internal /*Win32.Api.BITMAPINFO*/ byte[] bitMapInfo;
+		internal IntPtr hMaskRegion = IntPtr.Zero;
 
-		public DrawingImage(Image image, int frame)
+		public DrawingImage(Image image, int frame) : base(image, frame)
 		{
-			this.frame = image.GetFrame(frame);
-			
-			// Setup bitmapinfo structure
-			bitMapInfo = new System.Drawing.Win32.Api.BITMAPINFO();
-			bitMapInfo.biSize = 40;
-			bitMapInfo.biBitCount = FormatToBitCount(this.frame.PixelFormat);
-			bitMapInfo.biPlanes = 1;
-			bitMapInfo.biWidth = this.frame.Width;
-			// By making it negative, we are telling windows to draw the scanlines the correct way around (not in reverse)
-			bitMapInfo.biHeight = -this.frame.Height;
-			bitMapInfo.biCompression = Win32.Api.BitMapInfoCompressionType.BI_RGB;
-			//Setup palette
-			if (this.frame.Palette != null)
+			ImageChanged();
+		}
+
+		public override void ImageChanged()
+		{
+			Win32.Api.DeleteObject(hMaskRegion);
+			imageFrame = image.GetFrame(frame);
+
+			// Set the size of the structure
+			int size = 40;
+			if (imageFrame.PixelFormat == PixelFormat.Format16bppRgb565)
+				size += 3 * 4;
+			else if (imageFrame.PixelFormat == PixelFormat.Format8bppIndexed)
+				size += 256 * 4;
+			else if (imageFrame.PixelFormat == PixelFormat.Format4bppIndexed)
+				size += 40 + 16 * 4;
+			else if (imageFrame.PixelFormat == PixelFormat.Format1bppIndexed)
+				size += 40 + 2 * 4;
+			bitMapInfo = new byte[size];
+			WriteInt32(bitMapInfo, 0, 40); //biSize
+			WriteInt32(bitMapInfo, 4, imageFrame.Width); //biWidth
+			WriteInt32(bitMapInfo, 8, -imageFrame.Height); //biHeight
+			WriteInt32(bitMapInfo, 12, 1); //biPlanes
+			WriteInt32(bitMapInfo, 14, FormatToBitCount(imageFrame.PixelFormat)); //biBitCount
+			if (imageFrame.PixelFormat == PixelFormat.Format16bppRgb565)
 			{
-				byte[] paletteData = new byte[1024];
+				WriteInt32(bitMapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_BITFIELDS);
+				// Setup the masks for 565
+				WriteInt32(bitMapInfo, 40, 0xF800); // R Mask
+				WriteInt32(bitMapInfo, 44, 0x07E0); // G Mask
+				WriteInt32(bitMapInfo, 48, 0x001F); // B Mask
+			}
+			else
+				WriteInt32(bitMapInfo, 16, (int)Win32.Api.BitMapInfoCompressionType.BI_RGB); // biCompression
+
+			WriteInt32(bitMapInfo, 20, 0); // biSizeImage
+			WriteInt32(bitMapInfo, 24, 0); // biXPelsPerMeter
+			WriteInt32(bitMapInfo, 28, 0); // biYPelsPerMeter
+			WriteInt32(bitMapInfo, 32, 0); // biClrUsed
+			WriteInt32(bitMapInfo, 36, 0); // biClrImportant
+			//Setup palette
+			if (imageFrame.Palette != null)
+			{
 				// Write in RGBQUADS
-				for (int i = 0; i < this.frame.Palette.Length; i++)
-					WriteBGR(paletteData, i * 4, this.frame.Palette[i]);
-				bitMapInfo.bmiColors = paletteData;
+				for (int i = 0; i < imageFrame.Palette.Length; i++)
+					WriteBGR(bitMapInfo, 40 + i * 4, imageFrame.Palette[i]);
 			}
 
-			if (this.frame.Mask == null)
+			if (imageFrame.Mask == null)
 				hMaskRegion = IntPtr.Zero;
 			else
-				hMaskRegion = MaskToRegion(this.frame);
+				hMaskRegion = MaskToRegion(imageFrame);
 		}
+
 
 		// Convert the mask bits in the frame into a Win32 region.
 		// Optimize this by adding the maximum number of rectangles at once and
@@ -73,8 +101,8 @@ namespace System.Drawing.Toolkit
 			// Win98 only allows 4000. So we break this into steps
 			int initialCount = 3900;
 			// No point in being more than the number of pixels
-			if (frame.Width * frame.Height < initialCount)
-				initialCount = frame.Width * frame.Height;
+			if (imageFrame.Width * imageFrame.Height < initialCount)
+				initialCount = imageFrame.Width * imageFrame.Height;
 			
 			uint count = 0;
 			// Set the initial quantity of the rectangles.
@@ -243,7 +271,24 @@ namespace System.Drawing.Toolkit
 			buffer[offset + 3] = (byte)0;
 		}
 
-		public void Dispose()
+			// Write a little-endian 16-bit integer value to a buffer.
+		private static void WriteUInt16(byte[] buffer, int offset, int value)
+		{
+			buffer[offset] = (byte)value;
+			buffer[offset + 1] = (byte)(value >> 8);
+		}
+
+		// Write a little-endian 32-bit integer value to a buffer.
+		private static void WriteInt32(byte[] buffer, int offset, int value)
+		{
+			buffer[offset] = (byte)value;
+			buffer[offset + 1] = (byte)(value >> 8);
+			buffer[offset + 2] = (byte)(value >> 16);
+			buffer[offset + 3] = (byte)(value >> 24);
+		}
+
+
+		public override void Dispose()
 		{
 			Win32.Api.DeleteObject(hMaskRegion);
 		}

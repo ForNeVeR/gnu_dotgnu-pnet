@@ -42,11 +42,12 @@ internal class DrawingFont : IToolkitFont
 	// Select this font into a graphics object.
 	public void Select(IToolkitGraphics graphics)
 			{
-				if ((graphics as DrawingGraphics).selectedFont == this)
+				if ((graphics as DrawingGraphics).Font == this)
 					return;
 				Win32.Api.SelectObject((graphics as DrawingGraphics).hdc, hFont);
-				(graphics as DrawingGraphics).selectedFont = this;
+				(graphics as DrawingGraphics).Font = this;
 				Win32.Api.SetBkMode((graphics as DrawingGraphics).hdc,Win32.Api.BackGroundModeType.TRANSPARENT);
+				
 			}
 
 	// Dispose of this font.

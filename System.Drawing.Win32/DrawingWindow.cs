@@ -76,9 +76,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 	void IToolkitWindow.Lower()
 	{
 		//if (hwnd == IntPtr.Zero)
-		//	//Console.WriteLine("DrawingWindow.Lower ERROR: Cant lower window. Hwnd not created yet");
+		//Console.WriteLine("DrawingWindow.Lower ERROR: Cant lower window. Hwnd not created yet");
 		{
-			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_BOTTOM, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
+			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_BOTTOM, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE | Win32.Api.SetWindowsPosFlags.SWP_NOACTIVATE);
 			//Console.WriteLine("DrawingWindow.Lower, " + sink);
 		}
 	}
@@ -222,7 +222,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 			int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
 			Toolkit.GetWindowAdjust(out leftAdjust, out topAdjust, out rightAdjust, out bottomAdjust, flags);
 			outsideDimensions = new Rectangle( x - leftAdjust, y - topAdjust, width + leftAdjust + rightAdjust, height + topAdjust + bottomAdjust);
-			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, outsideDimensions.Left, outsideDimensions.Top, outsideDimensions.Width, outsideDimensions.Height, Win32.Api.SetWindowsPosFlags.SWP_NOSENDCHANGING);
+			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, outsideDimensions.Left, outsideDimensions.Top, outsideDimensions.Width, outsideDimensions.Height, Win32.Api.SetWindowsPosFlags.SWP_NOSENDCHANGING | Win32.Api.SetWindowsPosFlags.SWP_NOACTIVATE);
 		}
 		//Console.WriteLine("DrawingWindow.MoveResize, " + sink +",["+x+","+y+","+width+","+height+"]");
 	}
@@ -240,7 +240,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 		{
 			visible = value;
 			if (hwnd != IntPtr.Zero)
-				setVisible();
+				SetVisible();
 			//Console.WriteLine("DrawingWindow.setIsMapped "+sink+",visible="+value);
 		}
 	}
@@ -320,7 +320,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 		//TODO: Check if its +1
 		r.right = x + width + 1;
 		r.bottom = y + height + 1;
-		Win32.Api.InvalidateRect(hwnd, ref r, false);
+		Win32.Api.InvalidateRect(hwnd, ref r, true);
 		//Console.WriteLine("DrawingWindow.Invalidate, "+sink + " ["+x+","+y+","+width+","+height+"]");
 	}
 
@@ -347,14 +347,26 @@ internal abstract class DrawingWindow : IToolkitWindow
 	}
 
 	// This occurs when a top level window (form) receives focus)
-	internal void Activate(int wParam, int lParam)
+	internal virtual int Activate(int wParam, int lParam)
 	{
+		//Console.WriteLine("DrawingWindow.Activate, " + sink + "," + ((Win32.Api.ActivateState)(wParam & 0xFF)).ToString());
 		if ((Win32.Api.ActivateState)(wParam & 0xFF) == Win32.Api.ActivateState.WA_INACTIVE)
-			return;
-		//Console.WriteLine("DrawingWindow.Activate, " + sink);
+		{
+			// Make sure we still dont hold the capture.
+			CaptureTopLevel(null);
+		}
 		// We must handle this ourselves
 		//Win32.Api.SetCursor(Win32.Api.LoadCursorA(IntPtr.Zero, Win32.Api.CursorName.IDC_ARROW));
 		//CaptureTopLevel = this;
+		return 0;
+	}
+
+	internal virtual int MouseActivate(DrawingWindow activateWindow)
+	{
+		//Console.WriteLine("DrawingWindow.MouseActivate, " + sink +"," + activateWindow.sink);
+		if (activateWindow is DrawingPopupWindow)
+			return (int)Win32.Api.WM_MOUSEACTIVATEReturn.MA_NOACTIVATE;
+		return (int)Win32.Api.WM_MOUSEACTIVATEReturn.MA_ACTIVATE;
 	}
 
 	private void CaptureTopLevel(DrawingWindow window)
@@ -387,33 +399,20 @@ internal abstract class DrawingWindow : IToolkitWindow
 		
 		DrawingWindow actual;
 		DrawingWindow found = FindDeepestChild(lParam, out x, out y, out actual);
+		// Do Leave and Entered events.
 		if (toolkit.enteredWindow != actual)
 		{
 			if (toolkit.enteredWindow != null)
 			{
 				//Console.WriteLine("DrawingWindow.MouseLeave, " + toolkit.enteredWindow.sink);
-				// Check to see if the event changes the capture state if so redo
-				DrawingWindow prevCapturedWindow = toolkit.capturedWindow;
 				toolkit.enteredWindow.sink.ToolkitMouseLeave();
 				toolkit.enteredWindow = null;
-				if (prevCapturedWindow != toolkit.capturedWindow)
-				{
-					MouseMove(msg, wParam, lParam);
-					return;
-				}
 			}
 			if (actual != null)
 			{
 				//Console.WriteLine("DrawingWindow.MouseEnter, " + actual.sink);
 				toolkit.enteredWindow = actual;
-				// Check to see if the event changes the capture state if so redo
-				DrawingWindow prevCapturedWindow = toolkit.capturedWindow;
 				actual.sink.ToolkitMouseEnter();
-				if (prevCapturedWindow != toolkit.capturedWindow)
-				{
-					MouseMove(msg, wParam, lParam);
-					return;
-				}
 			}
 		}
 		
@@ -422,7 +421,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 			found = toolkit.capturedWindow;
 
 		// If this is the first time over a window, set the capture and try again
-		if (toolkit.capturedTopWindow == null)
+		if (toolkit.capturedTopWindow == null && toolkit.capturedWindow == null)
 		{
 			if (toolkit.capturedWindow != null)
 				CaptureTopLevel(toolkit.capturedWindow);
@@ -431,16 +430,13 @@ internal abstract class DrawingWindow : IToolkitWindow
 			MouseMove(msg, wParam, lParam);
 			return;
 		}
-		
 
 		Win32.Api.POINT mouse;
 		mouse.x= MouseX(lParam) + DimensionsScreen.X;
 		mouse.y = MouseY(lParam) + DimensionsScreen.Y;
 		DrawingWindow actualWindow = toolkit.DrawingWindow(Win32.Api.WindowFromPoint(mouse));
 
-		if (toolkit.capturedWindow != null)
-			toolkit.capturedWindow.sink.ToolkitMouseMove(buttons, keys,0 ,x ,y, 0);
-		else if (actualWindow != null && actualWindow.topOfHeirarchy == toolkit.capturedTopWindow)
+		if (actualWindow != null && actualWindow.topOfHeirarchy == toolkit.capturedTopWindow)
 		{
 			// On the window decorations.
 			if (found == null)
@@ -448,6 +444,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 			else
 				// Send the message to the client window
 				found.sink.ToolkitMouseMove(buttons, keys,0 ,x ,y, 0);
+			//Console.WriteLine("DrawingWindow.MouseMove, " + (actual==null?"null":actual.sink.ToString()) +", (" + x +", " + y +"), " + buttons +"," + keys );
 		}
 		else
 		{
@@ -471,7 +468,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 			return;
 			*/
 		}
-		
 	}
 	
 	// Returns the dimensions relative to the screen.
@@ -511,6 +507,8 @@ internal abstract class DrawingWindow : IToolkitWindow
 			found.sink.ToolkitMouseDown(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam), 1 ,x ,y ,0);
 			//Console.WriteLine("DrawingWindow.ButtonDown " + found.sink + " [" + x + "," + y + "], key:" + MapMouseToToolkitKeys(wParam) + ", button:" + MapToToolkitMouseButtons(wParam));
 		}
+		else
+			CaptureTopLevel(null);
 	}
 
 	internal void ButtonUp(int msg, int wParam, int lParam)
@@ -578,13 +576,15 @@ internal abstract class DrawingWindow : IToolkitWindow
 		{
 			// Adjust the coordinates relative to the "found" window.
 			Rectangle child;
-			if (toolkit.capturedWindow == null)
+			//if (toolkit.capturedWindow == null)
 				child = found.DimensionsScreen;
-			else
-				child = toolkit.capturedWindow.DimensionsScreen;
+			//else
+			//	child = toolkit.capturedWindow.DimensionsScreen;
 			x -= child.X;
 			y -= child.Y;
 		}
+		//if (found != null)
+		//	Console.WriteLine(found.sink);
 
 		return found;
 	}
@@ -631,8 +631,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 			gr.SetClip(Rectangle.FromLTRB(myPS.rcPaintLeft, myPS.rcPaintTop, myPS.rcPaintRight, myPS.rcPaintBottom));
 			sink.ToolkitExpose( gr );
 			gr.Dispose();
+			//Console.WriteLine( "DrawingWindow.Paint "+ sink +","+gr.ClipBounds.ToString());
+
 		}
-		//Console.WriteLine( "DrawingWindow.Paint "+ sink);
 
 		Win32.Api.EndPaint( hwnd, ref myPS );
 	}
@@ -766,7 +767,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	}
 
 	// This is called to set whether a window is visible or not. Can only happen once the window is created.
-	protected void setVisible()
+	protected void SetVisible()
 	{
 		if (visible)
 			Win32.Api.ShowWindow(hwnd,Win32.Api.ShowWindowCommand.SW_SHOWNA);

@@ -22,27 +22,25 @@ namespace System.Drawing.Toolkit
 
 	using System;
 	
-	abstract class DrawingBrush : IToolkitBrush, IDisposable
+	abstract class DrawingBrush : ToolkitBrushBase
 	{
 		// Internal state.
 		protected internal IntPtr hBrush;
-		protected internal Color color;
 		protected IToolkit toolkit;
 
-		public DrawingBrush(IToolkit toolkit, Color color) 
+		public DrawingBrush(IToolkit toolkit, Color color) : base (color)
 		{
 			this.toolkit = toolkit;
-			this.color = color;
 		}
 
 		// Select this brush into a graphics object.
-		public virtual void Select(IToolkitGraphics graphics)
+		public override void Select(IToolkitGraphics graphics)
 		{
-			(graphics as DrawingGraphics).SelectBrush = this;
+			(graphics as DrawingGraphics).Brush = this;
 		}
 
 		// Dispose of this object.
-		public void Dispose()
+		public override void Dispose()
 		{
 			Win32.Api.DeleteObject(hBrush);
 			hBrush = IntPtr.Zero;

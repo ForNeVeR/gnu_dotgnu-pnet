@@ -9,6 +9,8 @@
 
 	* NEWS, configure.in: update version for the "0.4.4" release.
 
+	* configure.in: update working version to "0.4.5".
+
 2002-08-23  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_stmt.tc, codegen/cg_nodes.tc, codegen/cg_stmt.tc:

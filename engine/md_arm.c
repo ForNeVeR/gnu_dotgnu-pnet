@@ -18,11 +18,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "cvm_config.h"
 #include "md_arm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
+
+#ifdef CVM_ARM
 
 arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value)
 {
@@ -164,6 +167,8 @@ md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg, int cond, int invcond)
 	arm_alu_reg_imm8_cond(inst, ARM_MOV, reg, 0, 0, invcond);
 	return inst;
 }
+
+#endif /* CVM_ARM */
 
 #ifdef	__cplusplus
 };

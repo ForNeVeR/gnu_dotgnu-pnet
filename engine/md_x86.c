@@ -18,11 +18,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "cvm_config.h"
 #include "md_x86.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
+
+#ifdef CVM_X86
 
 md_inst_ptr _md_x86_shift(md_inst_ptr inst, int opc, int reg1, int reg2)
 {
@@ -255,6 +258,8 @@ md_inst_ptr _md_x86_cmp_float(md_inst_ptr inst, int dreg, int lessop)
 	}
 	return inst;
 }
+
+#endif /* CVM_X86 */
 
 #ifdef	__cplusplus
 };

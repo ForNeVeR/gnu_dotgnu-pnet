@@ -35,6 +35,10 @@
 	* engine/unroll_ptr.c: tune short branches a little for x86
 	to increase code density and hence CPU caching behaviour.
 
+	* engine/Makefile.am, engine/md_arm.c, engine/md_x86.c:
+	enable the generic unroller by default; only compile in the
+	md_arm and md_x86 code for the respective platforms.
+
 2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeCreate

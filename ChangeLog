@@ -1,4 +1,13 @@
 
+2004-09-28  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: add class/ByteFX.Data/MAkefile to the files to be created
+
+	* class/Makefile.am: include ByteFX.Data and Npgsql in the build.
+
+	* class/ByteFX.Data/ByteFX.Data.build: add missing references and exclude
+	one file.
+
 2004-09-27  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in, profiles/framework1.1, profiles/framework2.0: change the

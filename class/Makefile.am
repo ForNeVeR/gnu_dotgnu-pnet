@@ -9,6 +9,8 @@ SUBDIRS = Custommarshalers \
 		  System.Security \
 		  Mono.Data.Tds \
 		  System.Data \
+		  ByteFX.Data \
+		  Npgsql \
 		  Mono.Data.PostgreSqlClient \
 		  Mono.Data.MySql \
 		  Mono.Data.DB2Client \

@@ -293,6 +293,7 @@ fi
 AC_OUTPUT([
 Makefile
 class/Makefile
+class/ByteFX.Data/Makefile
 class/Custommarshalers/Makefile
 class/System.Management/Makefile
 class/System.Messaging/Makefile

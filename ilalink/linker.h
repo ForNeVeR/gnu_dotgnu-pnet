@@ -66,6 +66,7 @@ struct _tagILLibrarySymbol
 #define	IL_LINKSYM_WEAK			(1<<2)
 #define	IL_LINKSYM_STRONG		(1<<3)
 #define	IL_LINKSYM_HAVE_REF		(1<<4)
+#define	IL_LINKSYM_SAW_UNDEF	(1<<5)
 
 /*
  * Combined structure, for allocation within "ILLibrary::pool".

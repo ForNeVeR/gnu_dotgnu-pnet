@@ -521,7 +521,11 @@ static int AddGlobalSymbol(ILLinker *linker, ILLibrary *library,
 					return 1;
 				}
 			}
-			fprintf(stderr, "%s : multiply defined\n", name);
+			if((libSymbol->flags & IL_LINKSYM_SAW_UNDEF) == 0)
+			{
+				fprintf(stderr, "%s : multiply defined\n", name);
+				libSymbol->flags |= IL_LINKSYM_SAW_UNDEF;
+			}
 			linker->error = 1;
 			return 1;
 		}

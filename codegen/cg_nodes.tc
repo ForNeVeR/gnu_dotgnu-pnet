@@ -439,6 +439,12 @@ struct _tagILSwitchValue
 	%nocreate ILMethod *methodInfo = {0};
 	%nocreate ILType   *callSiteSig = {0};
 }
+%node ILNode_DelegateCreationExpression ILNode_Expression =
+{
+	ILClass	   *delegateClass;
+	ILNode	   *expr;
+	ILMethod   *methodInfo;
+}
 %node ILNode_DefaultConstructor ILNode_Expression =
 {
 	ILType     *type;

@@ -12,6 +12,10 @@
 	* engine/internal.c (_ILFindInternalCall): if the namespace is
 	not present, then we still want to process arrays and delegates.
 
+	* codegen/cg_misc.tc, codegen/cg_nodes.tc, codegen/cg_output.c,
+	codegen/cg_output.h, codegen/jv_misc.tc, cscc/csharp/cs_invoke.tc:
+	code generation for delegate creation.
+
 2002-06-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/delegate.c, engine/engine.h,

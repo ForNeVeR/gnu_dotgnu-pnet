@@ -149,6 +149,16 @@ void ILGenNewObj(ILGenInfo *info, const char *className,
 				 const char *signature);
 
 /*
+ * Create a new delegate instance.
+ */
+void ILGenNewDelegate(ILGenInfo *info, ILClass *classInfo);
+
+/*
+ * Load the address of a method onto the stack.
+ */
+void ILGenLoadMethod(ILGenInfo *info, int opcode, ILMethod *method);
+
+/*
  * Output an instruction that takes a class token as an argument.
  */
 void ILGenClassToken(ILGenInfo *info, int opcode, ILClass *classInfo);

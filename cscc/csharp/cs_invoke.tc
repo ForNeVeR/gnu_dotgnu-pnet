@@ -512,8 +512,34 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = objectType;
 
-	/* The type must be a non-abstract class or a value type */
-	if(ILType_IsClass(objectType))
+	/* The type must be a delegate, a non-abstract class, or a value type */
+	if(ILTypeIsDelegate(objectType))
+	{
+		/* Delegate creation is not supported with Java output */
+		if(info->outputIsJava)
+		{
+			CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+			  			  "delegate creation disallowed when compiling to "
+						  "Java bytecode");
+			return value;
+		}
+
+		/* Delegate creation expressions must have a single argument */
+		if(!(node->argList) || yyisa(node->argList, ILNode_ArgList))
+		{
+			CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+			  			  "invalid delegate creation expression for `%s'",
+			  			  CSTypeToName(objectType));
+			return value;
+		}
+
+		/* TODO: evaluate the expression and then replace this node
+		   with the applicable delegate creation or clone node */
+		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+		  			  "delegate creation is not implemented");
+		return value;
+	}
+	else if(ILType_IsClass(objectType))
 	{
 		objectClass = ILClassResolve(ILType_ToClass(objectType));
 		if(ILClass_IsInterface(objectClass))
@@ -634,6 +660,15 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 
 	/* Return the final semantic value */
 	return value;
+}
+
+/*
+ * Perform semantic analysis for a delegate creation expression.
+ */
+ILNode_SemAnalysis(ILNode_DelegateCreationExpression)
+{
+	/* This is a dummy: it won't be called in practice */
+	return CSSemValueDefault;
 }
 
 /*

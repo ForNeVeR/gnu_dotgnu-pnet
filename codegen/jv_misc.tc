@@ -1436,6 +1436,15 @@ JavaGenValue(ILNode_ObjectCreationExpression)
 }
 
 /*
+ * Generate value code for a delegate constructor call.
+ */
+JavaGenValue(ILNode_DelegateCreationExpression)
+{
+	/* Delegate creation is not yet supported in Java */
+	return ILMachineType_ObjectRef;
+}
+
+/*
  * Generate value code for a default value type constructor call.
  */
 JavaGenValue(ILNode_DefaultConstructor)

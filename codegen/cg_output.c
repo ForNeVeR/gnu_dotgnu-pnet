@@ -383,6 +383,41 @@ void ILGenNewObj(ILGenInfo *info, const char *className,
 	}
 }
 
+void ILGenNewDelegate(ILGenInfo *info, ILClass *classInfo)
+{
+	if(info->asmOutput)
+	{
+		fputs("\tnewobj\tinstance void ", info->asmOutput);
+		ILDumpClassName(info->asmOutput, info->image,
+						classInfo, IL_DUMP_QUOTE_NAMES);
+		fputs("::.ctor(class [.library]System.Object, native int)\n",
+			  info->asmOutput);
+	}
+}
+
+void ILGenLoadMethod(ILGenInfo *info, int opcode, ILMethod *method)
+{
+	if(info->asmOutput)
+	{
+		putc('\t', info->asmOutput);
+		if(opcode < IL_OP_PREFIX)
+		{
+			fputs(ILMainOpcodeTable[opcode].name, info->asmOutput);
+		}
+		else
+		{
+			fputs(ILPrefixOpcodeTable[opcode - IL_OP_PREFIX].name,
+				  info->asmOutput);
+		}
+		putc('\t', info->asmOutput);
+		ILDumpMethodType(info->asmOutput, info->image,
+	 					 ILMethod_Signature(method),
+						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
+						 ILMethod_Name(method), 0);
+		putc('\n', info->asmOutput);
+	}
+}
+
 void ILGenClassToken(ILGenInfo *info, int opcode, ILClass *classInfo)
 {
 	if(info->asmOutput)

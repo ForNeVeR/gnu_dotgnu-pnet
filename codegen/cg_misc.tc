@@ -141,6 +141,14 @@ ILNode_GetType(ILNode_ObjectCreationExpression)
 }
 
 /*
+ * Get the type of a delegate constructor call.
+ */
+ILNode_GetType(ILNode_DelegateCreationExpression)
+{
+	return ILMachineType_ObjectRef;
+}
+
+/*
  * Get the type of a default value type constructor call.
  */
 ILNode_GetType(ILNode_DefaultConstructor)
@@ -1005,6 +1013,45 @@ ILNode_GenValue(ILNode_ObjectCreationExpression)
 	{
 		return ILMachineType_ObjectRef;
 	}
+}
+
+/*
+ * Generate value code for a delegate constructor call.
+ */
+ILNode_GenValue(ILNode_DelegateCreationExpression)
+{
+	/* Push the object expression */
+	if(node->expr)
+	{
+		ILNode_GenValue(node->expr, info);
+	}
+	else
+	{
+		ILGenSimple(info, IL_OP_LDNULL);
+		ILGenAdjust(info, 1);
+	}
+
+	/* Retrieve the method pointer */
+	if(ILMethod_IsVirtual(node->methodInfo))
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenLoadMethod(info, IL_OP_PREFIX + IL_PREFIX_OP_LDVIRTFTN,
+						node->methodInfo);
+	}
+	else
+	{
+		ILGenLoadMethod(info, IL_OP_PREFIX + IL_PREFIX_OP_LDFTN,
+						node->methodInfo);
+		ILGenAdjust(info, 1);
+	}
+
+	/* Call the delegate constructor */
+	ILGenNewDelegate(info, node->delegateClass);
+	ILGenAdjust(info, -1);
+
+	/* Delegates are always object references */
+	return ILMachineType_ObjectRef;
 }
 
 /*

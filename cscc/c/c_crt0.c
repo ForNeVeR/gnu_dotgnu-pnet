@@ -183,6 +183,21 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 		return;
 	}
 
+	/* If "-fcross-compile-check" is set, then generate a ".start"
+	   method that cannot be executed by the runtime engine.  This
+	   forces GNU autoconf to bail out and think that cscc is a
+	   cross-compiler.  Which it is */
+	if(CCStringListContains(extension_flags, num_extension_flags,
+							"cross-compile-check"))
+	{
+		fputs(".method public static void '.start'(int32 args) cil managed\n",
+					stream);
+		fputs("{\n\t.entrypoint\n", stream);
+		fputs("\tret\n", stream);
+		fputs("} // method .start\n", stream);
+		return;
+	}
+
 	/* Generate the ".start" crt0 code for the program */
 	fputs(".method public static void '.start'"
 				"(class [.library]System.String[] args) cil managed\n",

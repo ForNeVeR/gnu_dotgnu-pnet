@@ -14,6 +14,9 @@
 	* cscc/csharp/cs_stmt.tc (ILNode_Foreach): push into a loop
 	context inside the body of a "foreach" loop.
 
+	* cscc/cscc.c, cscc/c/c_crt0.c: slight modifications to the
+	compiler to make integration with automake/autoconf easier.
+
 2002-08-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify.c (AssignCompatible): resolve classes before

@@ -514,8 +514,8 @@ static void ParseCommandLine(int argc, char *argv[])
 		}
 		else if(compile_flag)
 		{
-			/* Use the name of the source file with a ".obj" extension */
-			output_filename = ChangeExtension(input_files[0], "obj");
+			/* Use the name of the source file with a ".o" extension */
+			output_filename = ChangeExtension(input_files[0], "o");
 		}
 		else if(assemble_flag)
 		{

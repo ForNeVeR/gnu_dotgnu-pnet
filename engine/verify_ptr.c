@@ -399,15 +399,15 @@ case IL_OP_LDOBJ:
 {
 	/* Load a value type from a pointer */
 	classInfo = GetValueTypeToken(method, pc);
+	classType = (classInfo ? ILClassToType(classInfo) : 0);
 	if(STK_UNARY == ILEngineType_M || STK_UNARY == ILEngineType_T)
 	{
 		if(classInfo &&
-		   ILTypeIdentical(stack[stackSize - 1].typeInfo,
-		   				   ILType_FromValueType(classInfo)))
+		   ILTypeIdentical(stack[stackSize - 1].typeInfo, classType))
 		{
 			ILCoderPtrAccessManaged(coder, opcode, classInfo);
-			stack[stackSize - 1].engineType = ILEngineType_MV;
-			stack[stackSize - 1].typeInfo = ILType_FromValueType(classInfo);
+			stack[stackSize - 1].engineType = TypeToEngineType(classType);
+			stack[stackSize - 1].typeInfo = classType;
 		}
 		else
 		{
@@ -421,8 +421,8 @@ case IL_OP_LDOBJ:
 		{
 			ILCoderToPointer(coder, STK_UNARY, (ILEngineStackItem *)0);
 			ILCoderPtrAccessManaged(coder, opcode, classInfo);
-			stack[stackSize - 1].engineType = ILEngineType_MV;
-			stack[stackSize - 1].typeInfo = ILType_FromValueType(classInfo);
+			stack[stackSize - 1].engineType = TypeToEngineType(classType);
+			stack[stackSize - 1].typeInfo = classType;
 		}
 		else
 		{

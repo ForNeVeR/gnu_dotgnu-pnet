@@ -3,6 +3,9 @@
 
 	* samples/mscorlib.dll: new version with delegate comparison fix.
 
+	* engine/verify_ptr.c (IL_OP_LDOBJ): fix verification of "ldobj"
+	instructions that involve primitive types like IntPtr and UIntPtr.
+
 2002-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,

@@ -37,6 +37,10 @@
 	* cscc/cs_decls.tc (AddConstantValue): bug fix - use "0x80" for the
 	negative sign indicator, instead of "0x01".
 
+	* include/il_utils.h, support/Makefile.am, support/utf8.c,
+	support/utf16.c: implement more helper functions for the
+	UTF-8 and UTF-16 encodings.
+
 2001-01-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for "0.2.8" release.

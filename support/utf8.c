@@ -24,8 +24,9 @@
 extern	"C" {
 #endif
 
-unsigned long ILUTF8ReadChar(const char *str, int len, int *posn)
+unsigned long ILUTF8ReadChar(const void *_str, int len, int *posn)
 {
+	const char *str = (const char *)_str;
 	char ch = str[*posn];
 	unsigned long result;
 	if((ch & 0x80) == 0)
@@ -89,6 +90,99 @@ unsigned long ILUTF8ReadChar(const char *str, int len, int *posn)
 		/* Invalid UTF-8 encoding: treat as an 8-bit Latin-1 character */
 		++(*posn);
 		return (((unsigned long)ch) & 0xFF);
+	}
+}
+
+int ILUTF8WriteChar(char *str, unsigned long ch)
+{
+	if(str)
+	{
+		/* Write the character to the buffer */
+		if(!ch)
+		{
+			/* Encode embedded NUL's as 0xC0 0x80 so that code
+			   that uses C-style strings doesn't get confused */
+			str[0] = (char)0xC0;
+			str[1] = (char)0x80;
+			return 2;
+		}
+		else if(ch < (unsigned long)0x80)
+		{
+			str[0] = (char)ch;
+			return 1;
+		}
+		else if(ch < (((unsigned long)1) << 11))
+		{
+			str[0] = (char)(0xC0 | (ch >> 6));
+			str[1] = (char)(0x80 | (ch & 0x3F));
+			return 2;
+		}
+		else if(ch < (((unsigned long)1) << 16))
+		{
+			str[0] = (char)(0xE0 | (ch >> 12));
+			str[1] = (char)(0x80 | ((ch >> 6) & 0x3F));
+			str[2] = (char)(0x80 | (ch & 0x3F));
+			return 3;
+		}
+		else if(ch < (((unsigned long)1) << 21))
+		{
+			str[0] = (char)(0xF0 | (ch >> 18));
+			str[1] = (char)(0x80 | ((ch >> 12) & 0x3F));
+			str[2] = (char)(0x80 | ((ch >> 6) & 0x3F));
+			str[3] = (char)(0x80 | (ch & 0x3F));
+			return 4;
+		}
+		else if(ch < (((unsigned long)1) << 26))
+		{
+			str[0] = (char)(0xF8 | (ch >> 24));
+			str[1] = (char)(0x80 | ((ch >> 18) & 0x3F));
+			str[2] = (char)(0x80 | ((ch >> 12) & 0x3F));
+			str[3] = (char)(0x80 | ((ch >> 6) & 0x3F));
+			str[4] = (char)(0x80 | (ch & 0x3F));
+			return 5;
+		}
+		else
+		{
+			str[0] = (char)(0xFC | (ch >> 30));
+			str[1] = (char)(0x80 | ((ch >> 24) & 0x3F));
+			str[2] = (char)(0x80 | ((ch >> 18) & 0x3F));
+			str[3] = (char)(0x80 | ((ch >> 12) & 0x3F));
+			str[4] = (char)(0x80 | ((ch >> 6) & 0x3F));
+			str[5] = (char)(0x80 | (ch & 0x3F));
+			return 6;
+		}
+	}
+	else
+	{
+		/* Determine the length of the character */
+		if(!ch)
+		{
+			return 2;
+		}
+		else if(ch < (unsigned long)0x80)
+		{
+			return 1;
+		}
+		else if(ch < (((unsigned long)1) << 11))
+		{
+			return 2;
+		}
+		else if(ch < (((unsigned long)1) << 16))
+		{
+			return 3;
+		}
+		else if(ch < (((unsigned long)1) << 21))
+		{
+			return 4;
+		}
+		else if(ch < (((unsigned long)1) << 26))
+		{
+			return 5;
+		}
+		else
+		{
+			return 6;
+		}
 	}
 }
 

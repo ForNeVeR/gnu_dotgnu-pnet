@@ -170,7 +170,40 @@ void *ILMemStackAllocItem(ILMemStack *stack, unsigned size);
 /*
  * Read a UTF-8 character from a string position.
  */
-unsigned long ILUTF8ReadChar(const char *str, int len, int *posn);
+unsigned long ILUTF8ReadChar(const void *str, int len, int *posn);
+
+/*
+ * Write a UTF-8 character to a buffer.  Returns the
+ * number of bytes used.  If the buffer is NULL, then
+ * return the number of bytes needed.
+ */
+int ILUTF8WriteChar(char *str, unsigned long ch);
+
+/*
+ * Read a UTF-16 character from a 16-bit string position.
+ * "len" and "posn" are indexes into a 16-bit array.
+ */
+unsigned long ILUTF16ReadChar(const unsigned short *str, int len, int *posn);
+
+/*
+ * Read a UTF-16 character from a string as little-endian values.
+ * "len" and "posn" are indexes into a byte array.
+ */
+unsigned long ILUTF16ReadCharAsBytes(const void *str, int len, int *posn);
+
+/*
+ * Convert a 32-bit Unicode character into UTF-16.  Returns the
+ * number of 16-bit characters required (1 or 2), or zero if
+ * the character cannot be represented using UTF-16.
+ */
+int ILUTF16WriteChar(unsigned short *buf, unsigned long ch);
+
+/*
+ * Convert a 32-bit Unicode character into UTF-16, and store it
+ * using little-endian bytes at "buf".  Returns the number of
+ * bytes (2 or 4), or zero if the character cannot be represented.
+ */
+int ILUTF16WriteCharAsBytes(void *buf, unsigned long ch);
 
 /*
  * Unicode character categories.

@@ -319,10 +319,8 @@ ILNode_SemAnalysis(ILNode_Continue)
  */
 ILNode_SemAnalysis(ILNode_Return)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	/* Emit an error if the return type is not "void" */
+	return CSSemValueDefault;
 }
 
 /*
@@ -331,9 +329,33 @@ ILNode_SemAnalysis(ILNode_Return)
 ILNode_SemAnalysis(ILNode_ReturnExpr)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	ILType *returnType;
+
+	/* Perform semantic analysis on the expression */
+	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid return value");
+		return CSSemValueDefault;
+	}
+
+	/* Determine if the value is compatible with the return type */
+	returnType = ILMethod_Signature
+		(((ILNode_MethodDeclaration *)(info->currentMethod))->methodInfo)
+				->un.method.retType;
+	if(returnType == ILType_Void)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "return with a value in a method returning `void'");
+		return CSSemValueDefault;
+	}
+	else
+	{
+		/* TODO: cast to the return type */
+	}
+
+	/* Done */
+	return CSSemValueDefault;
 }
 
 /*

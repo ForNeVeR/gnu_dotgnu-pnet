@@ -38,6 +38,8 @@ for accessing method arguments.
 * cscc/cs_decls.tc (ILNode_MethodDeclaration): declare parameters into
 the method's local variable scope.
 
+* cscc/cs_stmt.tc: implement semantic analysis for return statements.
+
 2001-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc: add the

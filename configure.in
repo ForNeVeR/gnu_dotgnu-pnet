@@ -12,7 +12,6 @@ AC_SUBST(CSCC_EXE_LIBS)
 AC_SUBST(RESGEN)
 AC_SUBST(RESGEN_FLAGS)
 AC_SUBST(ILRUN)
-AC_SUBST(ILRUN_FLAGS)
 AC_SUBST(ILFIND)
 AC_SUBST(PNET_PATH)
 
@@ -145,11 +144,6 @@ if test "$ILRUN" = "" ; then
 	echo "Use the --with-pnet option to specify Portable.NET's location."
 	echo '**************************************************************'
 	exit 1
-fi
-if test -f "$PNET_PATH/samples/mscorlib.dll" ; then
-	ILRUN_FLAGS="-L$PNET_PATH/samples"
-else
-	ILRUN_FLAGS=""
 fi
 
 dnl Find the Portable.NET ilfind program.

@@ -19,6 +19,9 @@
 	as it won't be living in "pnet" for much longer, and it isn't
 	currently used for testing pnetlib.
 
+	* configure.in: remove "ILRUN_FLAGS" as there is no need to
+	access "pnet/samples/mscorlib.dll" any more.
+
 2002-12-07  Nguyen, Thong  <tum@veridicus.com>
 
 	* runtime/System/Threading/WaitHandle.cs: Added WaitTimeout const.

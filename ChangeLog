@@ -1,4 +1,9 @@
 
+2003-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/engine.h, engine/lib_reflect.c, engine/lib_string.c:
+	fix alignment and endian-ness issues in "UnpackConstant".
+
 2003-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_reflect.c: wrong value used to check for superclass

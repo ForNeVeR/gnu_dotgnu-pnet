@@ -1357,54 +1357,73 @@ ILObject *_IL_FieldInfo_GetFieldFromHandle(ILExecThread *thread,
  * Unpack a constant into the correct boxed type
  */
 ILObject* UnpackConstant(ILExecThread *thread,ILConstant* constant,
-							ILType *type)
+						 ILType *type)
 {
 	unsigned long len;
+	ILInt8 byteValue;
+	ILInt16 shortValue;
  	ILInt32 intValue;
- 	ILUInt32 uintValue;
  	ILInt64 longValue;
- 	ILUInt64 ulongValue;
  	ILFloat floatValue;
  	ILDouble doubleValue;
- 	const char* strValue;
+	unsigned char *ptr;
+
+	ptr = (unsigned char *)(ILConstantGetValue(constant,&(len)));
+	if(!ptr)
+		return 0;
+
  	switch(ILConstantGetElemType(constant))
  	{
  		case IL_META_ELEMTYPE_BOOLEAN:
- 		case IL_META_ELEMTYPE_CHAR:
  		case IL_META_ELEMTYPE_I1:
- 		case IL_META_ELEMTYPE_I2:	
- 		case IL_META_ELEMTYPE_I4:
- 			intValue = *((ILInt32*)(ILConstantGetValue(constant,&(len))));
- 			return ILExecThreadBox(thread,type,&(intValue));
- 			break;
  		case IL_META_ELEMTYPE_U1:
+			if(len < 1)
+				return 0;
+ 			byteValue = *((ILInt8 *)ptr);
+ 			return ILExecThreadBox(thread,type,&(byteValue));
+
+ 		case IL_META_ELEMTYPE_I2:	
  		case IL_META_ELEMTYPE_U2:
+ 		case IL_META_ELEMTYPE_CHAR:
+			if(len < 2)
+				return 0;
+ 			shortValue = IL_READ_INT16(ptr);
+ 			return ILExecThreadBox(thread,type,&(shortValue));
+
+ 		case IL_META_ELEMTYPE_I4:
  		case IL_META_ELEMTYPE_U4:
- 			uintValue = *((ILUInt32*)(ILConstantGetValue(constant,&(len))));
- 			return ILExecThreadBox(thread,type,&(uintValue));
- 			break;
+			if(len < 4)
+				return 0;
+ 			intValue = IL_READ_INT32(ptr);
+ 			return ILExecThreadBox(thread,type,&(intValue));
+
  		case IL_META_ELEMTYPE_I8:
- 			longValue = *((ILInt64*)(ILConstantGetValue(constant,&(len))));
- 			return ILExecThreadBox(thread,type,&(longValue));
- 			break;
  		case IL_META_ELEMTYPE_U8:
- 			ulongValue = *((ILInt64*)(ILConstantGetValue(constant,&(len))));
- 			return ILExecThreadBox(thread,type,&(ulongValue));
- 			break;
+			if(len < 8)
+				return 0;
+ 			longValue = IL_READ_INT64(ptr);
+ 			return ILExecThreadBox(thread,type,&(longValue));
+
  		case IL_META_ELEMTYPE_R4:
- 			floatValue =  *((ILFloat*)(ILConstantGetValue(constant,&(len))));
+			if(len < 4)
+				return 0;
+ 			floatValue =  IL_READ_FLOAT(ptr);
  			return ILExecThreadBox(thread,type,&(floatValue));
- 			break;
+
  		case IL_META_ELEMTYPE_R8:	
- 			doubleValue =  *((ILDouble*)(ILConstantGetValue(constant,&(len))));
+			if(len < 8)
+				return 0;
+ 			doubleValue =  IL_READ_DOUBLE(ptr);
  			return ILExecThreadBox(thread,type,&(doubleValue));
- 			break;
+
  		case IL_META_ELEMTYPE_STRING:
- 			strValue = (const char *)(ILConstantGetValue(constant, &len));
- 			return (ILObject*)((System_String*)ILStringCreateLen(thread,
- 									strValue,len));
- 		/* TODO : implement the object unpacking ? */
+			return (ILObject *)_ILStringInternFromConstant(thread,ptr,len / 2);
+
+		default:
+			/* Assume that the constant is the "null" object */
+			break;
   	}
+
 	return 0;
 }
 
@@ -1437,20 +1456,25 @@ ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
 	/* Is the field literla, static or instance? */
 	if(ILField_IsLiteral(field))
 	{
-		constant=ILConstantGetFromOwner((ILProgramItem*)field);
-		if(!constant)return 0;
-		/*
-		 * Note: this is to support some non-compliant code generated
-		 * by Mono's compiler */
-		type=ILClassToType(ILField_Owner(field));
+		/* Get the constant value associated with the literal field */
+		constant = ILConstantGetFromOwner((ILProgramItem*)field);
+		if(!constant)
+		{
+			return 0;
+		}
+
+		/* If the class is "enum", then use the type of the class instead
+		   of the field.  This is needed because some Reflection.Emit
+		   implementations generate the constants using the underlying
+		   type instead of the class type */
+		type = ILClassToType(ILField_Owner(field));
 		if(ILTypeIsEnum(type))
 		{
-			return UnpackConstant(thread,constant,ILClassToType(
-									ILField_Owner(field)));
+			return UnpackConstant(thread, constant, type);
 		}
 		else
 		{
-			return UnpackConstant(thread,constant,ILField_Type(field));
+			return UnpackConstant(thread, constant, ILField_Type(field));
 		}
 	}
 	else if(ILField_IsStatic(field))

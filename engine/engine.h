@@ -434,6 +434,13 @@ ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
 								   ILToken token);
 
 /*
+ * Intern a string from a field constant within an image.
+ * Returns NULL if an exception was thrown.
+ */
+ILString *_ILStringInternFromConstant(ILExecThread *thread, void *data,
+									  unsigned long numChars);
+
+/*
  * Convert a string into a buffer of characters for direct access.
  * This is faster than calling "ToCharArray()", but should only
  * be used inside the engine.  Returns the length.

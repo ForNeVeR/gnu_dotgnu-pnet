@@ -1790,25 +1790,15 @@ static int SameAsImage(ILUInt16 *buf, const char *str, ILInt32 len)
 #endif
 }
 
-ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
-								   ILToken token)
+static ILString *InternFromBuffer(ILExecThread *thread,
+								  const char *str, unsigned long len)
 {
-	const char *str;
-	unsigned long len;
 	unsigned long posn;
 	System_String *newStr;
 	ILStrHash *table;
 	ILStrHash *entry;
 	ILInt32 hashTemp;
 	ILUInt32 hash;
-
-	/* Get the string from the image's "#US" blob */
-	str = ILImageGetUserString(image, token & ~IL_META_TOKEN_MASK, &len);
-	if(!str)
-	{
-		/* Shouldn't happen, but intern an empty string anyway */
-		len = 0;
-	}
 
 	/* Allocate a new hash table, if required */
 	table = (ILStrHash *)(thread->process->internHash);
@@ -1895,6 +1885,30 @@ ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
 
 	/* Return the final string to the caller */
 	return (ILString *)newStr;
+}
+
+ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
+								   ILToken token)
+{
+	const char *str;
+	unsigned long len;
+
+	/* Get the string from the image's "#US" blob */
+	str = ILImageGetUserString(image, token & ~IL_META_TOKEN_MASK, &len);
+	if(!str)
+	{
+		/* Shouldn't happen, but intern an empty string anyway */
+		len = 0;
+	}
+
+	/* Internalize the string buffer */
+	return InternFromBuffer(thread, str, len);
+}
+
+ILString *_ILStringInternFromConstant(ILExecThread *thread, void *data,
+									  unsigned long numChars)
+{
+	return InternFromBuffer(thread, (const char *)data, numChars);
 }
 
 ILInt32 _ILStringToBuffer(ILExecThread *thread, ILString *str, ILUInt16 **buf)

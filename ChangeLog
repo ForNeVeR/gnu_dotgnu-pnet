@@ -66,6 +66,9 @@
 
 	* README: update the linking exception to match GNU Classpath.
 
+	* configure.in: add "AC_LIBTOOL_WIN32_DLL" to configure.in,
+	so that Xsharp's support routines are built properly under Win32.
+
 2003-10-12  Neil Cawse  <neilcawse@hotmail.com>
 
 	* System.Windows.Forms/TreeView.cs: fix paint crash when no nodes bug.

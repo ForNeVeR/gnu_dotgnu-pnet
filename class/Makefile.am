@@ -9,9 +9,10 @@ SUBDIRS = Custommarshalers \
 		  System.Data \
 		  Mono.Data.PostgreSqlClient \
 		  Mono.Data.MySql \
-		  Npgsql \
 		  Mono.Data.DB2Client \
 		  System.Data.OracleClient \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix
+
+##		  Npgsql

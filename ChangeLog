@@ -1,4 +1,9 @@
 
+2003-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, class/Makefile.am: temporarily disable
+	Npgsql because it doesn't build due to missing dependencies.
+
 2003-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.0" release.

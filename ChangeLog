@@ -8,3 +8,5 @@
 * cscc/cscc.1: added a description of the "__JVM__" macro, moved
 plug-in section completely to the texinfo documentation, and added
 the "-mjvm" option.
+
+* doc/texinfo.tex: added to support texinfo documentation make's.

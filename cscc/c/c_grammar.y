@@ -982,6 +982,12 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 		ILType		   *parent;
 	}					structInfo;
 	ILMethod           *methodInfo;
+	struct
+	{
+		ILType		   *type;
+		char		   *id;
+		ILNode         *idNode;
+	}					catchInfo;
 
 }
 
@@ -1077,6 +1083,10 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_LONG_LONG		"`__long_long__'"
 %token K_UINT			"`__unsigned_int__'"
 %token K_THREAD_SPECIFIC "`__thread_specific__'"
+%token K_TRY			"`__try__'"
+%token K_CATCH			"`__catch__'"
+%token K_FINALLY		"`__finally__'"
+%token K_THROW			"`__throw__'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -1113,6 +1123,12 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <node>		StructDeclaratorList StructDeclarator InitDeclarator
 %type <node>		InitDeclaratorList Initializer InitializerList
 
+%type <node>		TryStatement CatchClauses SpecificCatchClauses
+%type <node>		OptSpecificCatchClauses GeneralCatchClause
+%type <node>		OptGeneralCatchClause FinallyClause SpecificCatchClause
+%type <node>		ThrowStatement
+%type <catchInfo>	CatchNameInfo
+
 %type <type>		CSharpSpecifier CSharpType CSharpBuiltinType
 %type <node>		QualifiedIdentifier
 %type <kind>		DimensionSeparators DimensionSeparatorList
@@ -1129,7 +1145,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 
 %type <kind>		StructOrUnion TypeQualifierList TypeQualifier
 
-%expect 6
+%expect 9
 
 %start File
 %%
@@ -2592,6 +2608,8 @@ Statement2
 	| IterationStatement
 	| JumpStatement
 	| AsmStatement
+	| TryStatement
+	| ThrowStatement
 	| error ';'			{ $$ = ILNode_Empty_create(); }
 	;
 
@@ -2753,6 +2771,117 @@ AsmStatement
 	| K_ASM K_VOLATILE '(' StringLiteral COLON_COLON_OP ')'	{
 				$$ = ILNode_AsmStmt_create($4.string);
 			}
+	;
+
+TryStatement
+	: K_TRY CompoundStatement CatchClauses		{
+				$$ = ILNode_Try_create($2, $3, 0);
+			}
+	| K_TRY CompoundStatement FinallyClause		{
+				$$ = ILNode_Try_create($2, 0, $3);
+			}
+	| K_TRY CompoundStatement CatchClauses FinallyClause	{
+				$$ = ILNode_Try_create($2, $3, $4);
+			}
+	;
+
+CatchClauses
+	: SpecificCatchClauses OptGeneralCatchClause	{
+				if($2)
+				{
+					ILNode_List_Add($1, $2);
+				}
+				$$ = $1;
+			}
+	| OptSpecificCatchClauses GeneralCatchClause	{
+				if($1)
+				{
+					ILNode_List_Add($1, $2);
+					$$ = $1;
+				}
+				else
+				{
+					$$ = ILNode_CatchClauses_create();
+					ILNode_List_Add($$, $2);
+				}
+			}
+	;
+
+OptSpecificCatchClauses
+	: /* empty */				{ $$ = 0; }
+	| SpecificCatchClauses		{ $$ = $1; }
+	;
+
+SpecificCatchClauses
+	: SpecificCatchClause		{
+				$$ = ILNode_CatchClauses_create();
+				ILNode_List_Add($$, $1);
+			}
+	| SpecificCatchClauses SpecificCatchClause	{
+				ILNode_List_Add($1, $2);
+				$$ = $1;
+			}
+	;
+
+SpecificCatchClause
+	: K_CATCH CatchNameInfo CompoundStatement	{
+				$$ = ILNode_CatchClause_create(0, $2.id, $2.idNode, $3);
+				((ILNode_CatchClause *)$$)->classInfo =
+					ILTypeToClass(&CCCodeGen, $2.type);
+			}
+	;
+
+CatchNameInfo
+	: /* empty */ {
+				$$.type = ILFindSystemType(&CCCodeGen, "Exception");
+				$$.id = 0;
+				$$.idNode = 0;
+			}
+	| '(' TypeName Identifier ')' {
+				$$.type = $2;
+				$$.id = $3;
+				$$.idNode = ILQualIdentSimple($3);
+			}
+	| '(' TypeName ')'			  {
+				$$.type = $2;
+				$$.id = 0;
+				$$.idNode = 0;
+			}
+	| '(' error ')'	{
+				/*
+				 * This production recovers from errors in catch
+				 * variable name declarations.
+				 */
+				$$.type = ILFindSystemType(&CCCodeGen, "Exception");
+				$$.id = 0;
+				$$.idNode = 0;
+				yyerrok;
+			}
+	;
+
+OptGeneralCatchClause
+	: /* empty */				{ $$ = 0; }
+	| GeneralCatchClause		{ $$ = $1; }
+	;
+
+GeneralCatchClause
+	: K_CATCH CompoundStatement		{
+				$$ = ILNode_CatchClause_create(0, 0, 0, $2);
+				((ILNode_CatchClause *)$$)->classInfo = ILTypeToClass
+						(&CCCodeGen, ILFindSystemType
+							(&CCCodeGen, "Exception"));
+			}
+	;
+
+FinallyClause
+	: K_FINALLY CompoundStatement		{
+				$$ = ILNode_FinallyClause_create($2);
+			}
+	;
+
+ThrowStatement
+	: K_THROW ';'						{ $$ = ILNode_Throw_create(); }
+	| K_THROW Expression ';'			{ $$ = ILNode_ThrowExpr_create($2); }
 	;
 
 File

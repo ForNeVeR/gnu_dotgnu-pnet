@@ -1212,3 +1212,154 @@ JavaGenDiscard(ILNode_CGotoPtr)
 {
 	/* Nothing to do here */
 }
+
+/*
+ * Perform semantic analysis for the "throw" statement.
+ */
+ILNode_CSemAnalysis(ILNode_Throw)
+{
+	if(!StmtContextOK(info, C_STMT_CATCH, C_STMT_FINALLY | C_STMT_TRY))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	  		  		  _("`__throw__' with no value must be used "
+					    "inside a `__catch__' clause"));
+	}
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for the "throw expression" statement.
+ */
+ILNode_CSemAnalysis(ILNode_ThrowExpr)
+{
+	CSemValue value;
+	ILType *exceptionClass;
+
+	/* Perform semantic analysis on the value */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(CSemIsError(value))
+	{
+		/* We've already reported an error for a bad expression,
+		   so don't bother complaining about the situation again */
+		return CSemValueDefault;
+	}
+	else if(!CSemIsRValue(value))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("invalid throw expression"));
+		return CSemValueDefault;
+	}
+
+	/* Attempt to coerce the value to "System.Exception" */
+	exceptionClass = ILFindSystemType(info, "Exception");
+	if(!CCanCoerce(CSemGetType(value), exceptionClass))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	  		  		  "no conversion from `%s' to `%s'",
+					  CTypeToName(info, CSemGetType(value)),
+					  CTypeToName(info, exceptionClass));
+	}
+	CCoerceNode(info, node->expr, &(node->expr), value, exceptionClass);
+
+	/* Done */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for the "try" statement.
+ */
+ILNode_CSemAnalysis(ILNode_Try)
+{
+	/* Exception blocks must be at the statement level of the function */
+	if(!stmtLevel)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("`__try__' used within expression statement"));
+		return CSemValueDefault;
+	}
+
+	/* Enter a "try" context */
+	PushStmtContext(info, C_STMT_TRY);
+
+	/* Perform semantic analysis on the "try" body */
+	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+
+	/* Perform semantic analysis on the "catch" clauses */
+	StmtSem(node->catchClauses, info, &(node->catchClauses), stmtLevel);
+
+	/* Perform semantic analysis on the "finally" clause */
+	StmtSem(node->finallyClause, info, &(node->finallyClause), stmtLevel);
+
+	/* Exit from the "try" context */
+	PopStmtContext(info);
+
+	/* Done */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for the "catch clause" statement.
+ */
+ILNode_CSemAnalysis(ILNode_CatchClause)
+{
+	ILType *exceptionType = ILFindSystemType(info, "Exception");
+	ILType *thrownType;
+	ILScope *newScope;
+
+	/* Enter a "catch" context */
+	PushStmtContext(info, C_STMT_CATCH);
+
+	/* Wrap the catch body in a new scope */
+	newScope = ILScopeCreate(info, info->currentScope);
+	node->stmt = ILNode_NewScope_create(node->stmt);
+	((ILNode_NewScope *)(node->stmt))->scope = newScope;
+
+	/* Validate the thrown value type, which is in "node->classInfo" */
+	thrownType = ILClassToType(node->classInfo);
+	if(!CCanCoerce(thrownType, exceptionType))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	  		  		  _("`%s' does not inherit from `%s'"),
+					  CTypeToName(info, thrownType),
+					  CTypeToName(info, exceptionType));
+		thrownType = exceptionType;
+	}
+
+	/* Declare a new local variable for the catch value */
+	if(node->name)
+	{
+		/* Add the type to the local variable signature for this method */
+		node->varIndex = CGenAllocLocal(info, thrownType);
+
+		/* Create a local variable entry in the current scope */
+		ILScopeDeclareLocal(newScope, node->name, node->varIndex,
+							node->nameNode);
+	}
+
+	/* Perform semantic analysis on the catch body */
+	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+
+	/* Exit from the "catch" context */
+	PopStmtContext(info);
+
+	/* Done */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for the "finally clause" statement.
+ */
+ILNode_CSemAnalysis(ILNode_FinallyClause)
+{
+	/* Enter a "finally" context */
+	PushStmtContext(info, C_STMT_FINALLY);
+
+	/* Perform semantic analysis on the finally body */
+	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+
+	/* Exit from the "finally" context */
+	PopStmtContext(info);
+
+	/* Done */
+	return CSemValueDefault;
+}

@@ -12,6 +12,10 @@
 	* cscc/c/c_declspec.c: the type "__native__ int" was not being
 	properly recognised.
 
+	* cscc/c/c_grammar.y, cscc/c/c_scanner.l, cscc/c/c_stmt.tc,
+	cscc/c/c_stubs.tc: add exception statements to the C compiler,
+	so that exceptions that are thrown by C# code can be caught.
+
 2004-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_typeout.c, cscc/c/c_types.c, doc/c_language_abi.html:

@@ -172,6 +172,11 @@ WHITE			[ \t\v\r\f]
 
 "__thread_specific__"	{ return K_THREAD_SPECIFIC; }
 
+"__try__"				{ return K_TRY; }
+"__catch__"				{ return K_CATCH; }
+"__finally__"			{ return K_FINALLY; }
+"__throw__"				{ return K_THROW; }
+
 \"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
 								  RETURNTOK(STRING_LITERAL); }
 

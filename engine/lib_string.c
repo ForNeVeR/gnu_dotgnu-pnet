@@ -1302,9 +1302,9 @@ System_String *_IL_String_Replace_StringString(ILExecThread *thread,
 	buf = StringToBuffer(str);
 	finalLen = 0;
 	posn = 0;
-	while((posn + oldLen) <= _this->length)
+	while((posn) <= _this->length)
 	{
-		if(EqualRange(_this, posn, oldLen, oldValue, 0))
+		if((posn + oldLen) <= _this->length && EqualRange(_this, posn, oldLen, oldValue, 0))
 		{
 			if(newLen > 0)
 			{

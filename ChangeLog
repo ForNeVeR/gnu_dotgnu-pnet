@@ -73,6 +73,9 @@ changes to "il_coder.h".
 * engine/cvmc.c: include private engine details so that we can access
 the internals of "ILMethod"; rearrange coder API table to match "il_coder.h".
 
+* engine/cvmc_setup.c: implement the new coder API "CtorOffset"; don't
+allocate space for zero local variables.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

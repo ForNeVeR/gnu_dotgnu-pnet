@@ -259,7 +259,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	{
 		CVM_BYTE(COP_MK_LOCAL_3);
 	}
-	else
+	else if(offset != 0)
 	{
 		CVM_WIDE(COP_MK_LOCAL_N, offset);
 	}
@@ -546,6 +546,15 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 
 	/* Done */
 	return 1;
+}
+
+/*
+ * Get the offset of an allocation constructor entry point
+ * relative to the main method entry point.
+ */
+static int CVMCoder_CtorOffset(ILCoder *coder)
+{
+	return 6;
 }
 
 /*

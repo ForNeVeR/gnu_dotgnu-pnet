@@ -1,4 +1,13 @@
 
+2003-06-30  Thong Nguyen  <tum@veridicus.com>
+
+	* engine/lib_thread.c: Fix argument exception instead of
+	SyncLockException thrown.
+	
+	* engine/cvm_inline.c: Monitor.Enter and Monitor.Exit now
+	properly save/restore the stack state.  Fixes case where
+	exceptions not always thrown.
+	
 2003-06-29  Thong Nguyen  <tum@veridicus.com>
 
 	* configure.in: Made gcc threading model detected occur only if

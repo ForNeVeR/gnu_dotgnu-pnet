@@ -286,7 +286,7 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *obj)
 		ILExecThreadThrowSystem
 			(
 			thread,				
-			"System.ArgumentException",	
+			"System.Threading.SynchronizationLockException",	
 			"Exception_ThreadNeedsLock"
 			);
 

@@ -351,8 +351,10 @@ VMCASE(COP_PREFIX_MONITOR_ENTER):
 	/* Enter a monitor on an object */
 	/* TODO: Actually make it fully inline :) */
 	
-	_IL_Monitor_Enter(thread, (ILObject *)stacktop[-1].ptrValue);
-	
+	COPY_STATE_TO_THREAD();
+	_IL_Monitor_Enter(thread, (ILObject *)stacktop[-1].ptrValue);	
+	RESTORE_STATE_FROM_THREAD();
+
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_MONITOR_ENTER);
@@ -383,7 +385,9 @@ VMCASE(COP_PREFIX_MONITOR_EXIT):
 	/* Exit a monitor on an object */
 	/* TODO: Actually make it fully inline :) */
 	
-	_IL_Monitor_Exit(thread, (ILObject *)stacktop[-1].ptrValue);
+	COPY_STATE_TO_THREAD();
+	_IL_Monitor_Exit(thread, (ILObject *)stacktop[-1].ptrValue);	
+	RESTORE_STATE_FROM_THREAD();
 
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }

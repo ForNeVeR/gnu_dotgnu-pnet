@@ -123,6 +123,148 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				} \
 			} while (0)
 
+/*
+ * Determine the number of stack words that are occupied
+ * by a specific type.
+ */
+#define	StackWordsForType(type)	\
+			((ILSizeOfType((type)) + sizeof(CVMWord) - 1) / sizeof(CVMWord))
+
+/*
+ * Pack a set of arguments into a vararg "Object[]" array.
+ * Returns the number of stack words to pop from the function,
+ * and the new array in "*array".
+ */
+static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
+							ILUInt32 firstParam, ILUInt32 numArgs,
+							ILType *callSiteSig, void **array)
+{
+	ILUInt32 height;
+	ILUInt32 param;
+	ILObject **posn;
+	ILType *paramType;
+	ILType *enumType;
+	ILInt8 boxByte;
+	ILInt16 boxShort;
+	void *ptr;
+
+	/* Allocate an array to hold all of the arguments */
+	*array = ILExecThreadNew(thread, "[oSystem.Object;", "(Ti)V",
+							 (ILVaUInt)numArgs);
+	if(!(*array))
+	{
+		return 0;
+	}
+
+	/* Find the base and height of the varargs arguments */
+	height = 0;
+	for(param = 0; param < numArgs; ++param)
+	{
+		height += StackWordsForType
+			(ILTypeGetParam(callSiteSig, firstParam + param));
+	}
+	stacktop -= height;
+
+	/* Convert the arguments into objects in the array */
+	posn = (ILObject **)ArrayToBuffer(*array);
+	for(param = 0; param < numArgs; ++param)
+	{
+		paramType = ILTypeGetParam(callSiteSig, firstParam + param);
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Box a primitive value after aligning it properly */
+			switch(ILType_ToElement(paramType))
+			{
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_U1:
+				case IL_META_ELEMTYPE_BOOLEAN:
+				{
+					boxByte = (ILInt8)(stacktop->intValue);
+					ptr = &boxByte;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_CHAR:
+				{
+					boxShort = (ILInt16)(stacktop->intValue);
+					ptr = &boxShort;
+				}
+				break;
+
+				default:
+				{
+					ptr = stacktop;
+				}
+				break;
+			}
+			*posn = ILExecThreadBox(thread, paramType, ptr);
+			if(!(*posn))
+			{
+				return 0;
+			}
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			/* Box value types after aligning small enumerated types */
+			ptr = stacktop;
+			if(ILTypeIsEnum(paramType))
+			{
+				enumType = ILTypeGetEnumType(paramType);
+				if(ILType_IsPrimitive(enumType))
+				{
+					switch(ILType_ToElement(enumType))
+					{
+						case IL_META_ELEMTYPE_I1:
+						case IL_META_ELEMTYPE_U1:
+						case IL_META_ELEMTYPE_BOOLEAN:
+						{
+							boxByte = (ILInt8)(stacktop->intValue);
+							ptr = &boxByte;
+						}
+						break;
+
+						case IL_META_ELEMTYPE_I2:
+						case IL_META_ELEMTYPE_U2:
+						case IL_META_ELEMTYPE_CHAR:
+						{
+							boxShort = (ILInt16)(stacktop->intValue);
+							ptr = &boxShort;
+						}
+						break;
+					}
+				}
+			}
+			*posn = ILExecThreadBox(thread, paramType, ptr);
+			if(!(*posn))
+			{
+				return 0;
+			}
+		}
+		else if(ILTypeIsReference(paramType))
+		{
+			/* Object reference type: pass it directly */
+			*posn = (ILObject *)(stacktop->ptrValue);
+		}
+		else
+		{
+			/* Assume that everything else is a pointer, and wrap
+			   it up within a "System.IntPtr" object */
+			*posn = ILExecThreadBox(thread, ILType_Int, stacktop);
+			if(!(*posn))
+			{
+				return 0;
+			}
+		}
+		stacktop += StackWordsForType(paramType);
+		++posn;
+	}
+
+	/* Return the height of the varargs arguments to the caller */
+	return height;
+}
+
 #elif defined(IL_CVM_LOCALS)
 
 ILMethod *methodToCall;
@@ -1180,6 +1322,50 @@ VMCASE(COP_PREFIX_LDINTERFFTN):
 	{
 		NULL_POINTER_EXCEPTION();
 	}
+}
+VMBREAK;
+
+/**
+ * <opcode name="pack_varargs" group="Call management instructions">
+ *   <operation>Pack a set of arguments for a vararg method call</operation>
+ *
+ *   <format>prefix<fsep/>pack_varargs<fsep/>first[4]
+ *           <fsep/>num[4]<fsep/>signature</format>
+ *
+ *   <form name="pack_varargs" code="COP_PREFIX_PACK_VARARGS"/>
+ *
+ *   <before>..., arg1, ..., argN</before>
+ *   <after>..., array</after>
+ *
+ *   <description>Pop <i>N</i> words from the stack and pack them
+ *   into an array of type <code>System.Object</code>.  The <i>first</i>
+ *   value is the index of the first parameter in <i>signature</i>
+ *   that corresponds to a word on the stack.  The <i>num</i> value is
+ *   the number of logical arguments to be packed.  The final
+ *   <i>array</i> is pushed onto the stack as type <code>ptr</code>.
+ *   </description>
+ *
+ *   <notes>The <i>signature</i> value may be either 32 or 64 bits in size,
+ *   depending upon the platform, and will usually include a sentinel
+ *   marker at position <i>first - 1</i>.  The <i>signature</i> may not
+ *   have a sentinel marker if <i>num</i> is zero.<p/>
+ *
+ *   This instruction is used to pack the arguments for a call to a
+ *   <code>vararg</code> method.  The method itself will receive a
+ *   single argument containing a pointer to the array.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_PACK_VARARGS):
+{
+	/* Pack a set of arguments for a vararg method call */
+	COPY_STATE_TO_THREAD();
+	tempNum = PackVarArgs(thread, stacktop, IL_READ_UINT32(pc + 2),
+						  IL_READ_UINT32(pc + 6),
+						  (ILType *)ReadPointer(pc + 10), &tempptr);
+	RESTORE_STATE_FROM_THREAD();
+	stacktop -= tempNum;
+	stacktop[0].ptrValue = tempptr;
+	MODIFY_PC_AND_STACK(10 + sizeof(void *), 1);
 }
 VMBREAK;
 

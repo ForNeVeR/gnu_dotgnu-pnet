@@ -24,6 +24,11 @@
 	* engine/verify.c: recognise "typedref" values in "TypeToEngineType"
 	and "AssignCompatible".
 
+	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,
+	engine/cvmc.c, engine/cvmc_call.c, engine/cvmc_obj.c,
+	engine/cvmc_setup.c: add the "pack_varargs" CVM instruction to
+	repack the stack when calling a vararg method.
+
 2002-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_except.c, engine/engine.h:

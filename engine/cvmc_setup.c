@@ -72,6 +72,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	ILUInt32 offset;
 	ILUInt32 maxArgOffset;
 	ILUInt32 num;
+	ILUInt32 total;
 	ILUInt32 current;
 	ILUInt32 argIndex;
 	ILUInt32 extraLocals;
@@ -126,7 +127,8 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	if(ILType_HasThis(signature) && !suppressThis)
 	{
 		/* Allocate an argument slot for the "this" parameter */
-		ALLOC_ARGS(num + 1);
+		total = num + 1;
+		ALLOC_ARGS(total);
 		coder->argOffsets[0] = 0;
 		argIndex = 1;
 		offset = 1;
@@ -136,7 +138,8 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		/* No "this" parameter, or it is explicitly provided in the
 		   signature, or this is an allocating constructor which must
 		   create its own "this" parameter during execution */
-		ALLOC_ARGS(num);
+		total = num;
+		ALLOC_ARGS(total);
 		argIndex = 0;
 		offset = 0;
 	}
@@ -160,6 +163,16 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 				++extraLocals;
 			}
 		}
+	}
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		/* Vararg methods have an extra parameter to pass the variable
+		   arguments within an "Object[]" array */
+		ALLOC_ARGS(total + 1);
+		coder->varargIndex = argIndex;
+		coder->argOffsets[argIndex++] = offset;
+		++offset;
 	}
 	maxArgOffset = offset;
 

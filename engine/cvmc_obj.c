@@ -1007,7 +1007,24 @@ static void CVMCoder_SizeOf(ILCoder *coder, ILType *type)
 
 static void CVMCoder_ArgList(ILCoder *coder)
 {
-	/* TODO */
+	/* Load the argument that contains the "Object[]" array with
+	   the extra parameters that were passed to the method */
+	ILUInt32 num = ((ILCVMCoder *)coder)->varargIndex;
+	if(num < 4)
+	{
+		CVM_BYTE(COP_PLOAD_0 + num);
+	}
+	else if(num < 256)
+	{
+		CVM_BYTE(COP_PLOAD);
+		CVM_BYTE(num);
+	}
+	else
+	{
+		CVM_BYTE(COP_WIDE);
+		CVM_BYTE(COP_PLOAD);
+		CVM_WORD(num);
+	}
 }
 
 #endif	/* IL_CVMC_CODE */

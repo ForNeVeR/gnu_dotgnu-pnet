@@ -401,13 +401,14 @@ extern	"C" {
 #define	COP_PREFIX_LDFTN			0x15
 #define	COP_PREFIX_LDVIRTFTN		0x16
 #define	COP_PREFIX_LDINTERFFTN		0x17
+#define	COP_PREFIX_PACK_VARARGS		0x18
 
 /*
  * Prefixed exception handling opcodes.
  */
-#define	COP_PREFIX_ENTER_TRY		0x18
-#define	COP_PREFIX_THROW			0x19
-#define	COP_PREFIX_THROW_CALLER		0x1A
+#define	COP_PREFIX_ENTER_TRY		0x19
+#define	COP_PREFIX_THROW			0x1A
+#define	COP_PREFIX_THROW_CALLER		0x1B
 
 /*
  * Prefixed typedref handling opcodes.

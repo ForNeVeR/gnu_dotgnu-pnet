@@ -62,6 +62,7 @@ struct _tagILCVMCoder
 	long			maxHeight;
 	ILUInt32	   *argOffsets;
 	ILUInt32		maxArgs;
+	ILUInt32		varargIndex;
 	ILUInt32	   *localOffsets;
 	ILUInt32		maxLocals;
 	ILMemPool		labelPool;
@@ -238,6 +239,7 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	coder->maxHeight = 0;
 	coder->argOffsets = 0;
 	coder->maxArgs = 0;
+	coder->varargIndex = 0;
 	coder->localOffsets = 0;
 	coder->maxLocals = 0;
 	ILMemPoolInit(&(coder->labelPool), sizeof(ILCVMLabel), 8);

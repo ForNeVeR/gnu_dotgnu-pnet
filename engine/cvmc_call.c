@@ -38,7 +38,13 @@ static void CVMCoder_PackVarArgs(ILCoder *coder, ILType *callSiteSig,
 					             ILUInt32 firstParam, ILEngineStackItem *args,
 						         ILUInt32 numArgs)
 {
-	/* TODO */
+	CVM_BYTE(COP_PREFIX);
+	CVM_BYTE(COP_PREFIX_PACK_VARARGS);
+	CVM_WORD(firstParam);
+	CVM_WORD(numArgs);
+	CVM_PTR(callSiteSig);
+	CVM_ADJUST(-(ILInt32)(ComputeStackSize(coder, args, numArgs)));
+	CVM_ADJUST(1);
 }
 
 static void CVMCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,

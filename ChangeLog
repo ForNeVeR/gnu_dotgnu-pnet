@@ -12,6 +12,9 @@
 	engine/md_x86.c, engine/md_x86.h, engine/unroll.c,
 	engine/unroll_arith.c: unroll "fcmpl" and "fcmpg" for x86.
 
+	* engine/md_arm.h, engine/md_x86.h, engine/unroll.c,
+	engine/unroll_arith.c: unroll some 64-bit integer operations.
+
 2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeCreate

@@ -130,6 +130,11 @@ extern	"C" {
 #define	MD_HAS_INT_DIVISION			0
 
 /*
+ * Set to 1 if 64-bit register pairs are stored in little-endian order.
+ */
+#define	MD_LITTLE_ENDIAN_LONGS		1
+
+/*
  * Type of the instruction pointer for outputting code.
  */
 typedef arm_inst_ptr	md_inst_ptr;
@@ -203,6 +208,16 @@ typedef arm_inst_ptr	md_inst_ptr;
 			arm_load_membase((inst), (reg), (basereg), (offset))
 
 /*
+ * Load a 64-bit word value from an offset from a pointer register
+ * as a pair of 32-bit registers.  Only used on 32-bit platforms.
+ */
+#define	md_load_membase_word_64(inst,lreg,hreg,basereg,offset)	\
+			do { \
+				arm_load_membase((inst), (lreg), (basereg), (offset)); \
+				arm_load_membase((inst), (hreg), (basereg), (offset) + 4); \
+			} while (0)
+
+/*
  * Load a byte value from an offset from a pointer register.
  */
 #define	md_load_membase_byte(inst,reg,basereg,offset)	\
@@ -250,6 +265,16 @@ typedef arm_inst_ptr	md_inst_ptr;
  */
 #define	md_store_membase_word_native(inst,reg,basereg,offset)	\
 			arm_store_membase((inst), (reg), (basereg), (offset))
+
+/*
+ * Store a pair of 32-bit word registers to an offset from a pointer
+ * register as a 64-bit value.  Only used on 32-bit platforms.
+ */
+#define	md_store_membase_word_64(inst,lreg,hreg,basereg,offset)	\
+			do { \
+				arm_store_membase((inst), (lreg), (basereg), (offset)); \
+				arm_store_membase((inst), (hreg), (basereg), (offset) + 4); \
+			} while (0)
 
 /*
  * Store a byte value to an offset from a pointer register.
@@ -333,6 +358,29 @@ typedef arm_inst_ptr	md_inst_ptr;
 			arm_shift_reg_reg((inst), ARM_SAR, (reg1), (reg1), (reg2))
 #define	md_ushr_reg_reg_word_32(inst,reg1,reg2)	\
 			arm_shift_reg_reg((inst), ARM_SHR, (reg1), (reg1), (reg2))
+
+/*
+ * Perform arithmetic on 64-bit values represented as 32-bit word pairs.
+ */
+#define	md_add_reg_reg_word_64(inst,lreg1,hreg1,lreg2,hreg2)	\
+			do { \
+				arm_alu_cc_reg_reg((inst), ARM_ADD, \
+								   (lreg1), (lreg1), (lreg2)); \
+				arm_alu_reg_reg((inst), ARM_ADC, (hreg1), (hreg1), (hreg2)); \
+			} while (0)
+#define	md_sub_reg_reg_word_64(inst,lreg1,hreg1,lreg2,hreg2)	\
+			do { \
+				arm_alu_cc_reg_reg((inst), ARM_SUB, \
+								   (lreg1), (lreg1), (lreg2)); \
+				arm_alu_reg_reg((inst), ARM_SBC, (hreg1), (hreg1), (hreg2)); \
+			} while (0)
+#define	md_neg_reg_word_64(inst,lreg,hreg)	\
+			do { \
+				arm_alu_reg((inst), ARM_MVN, (lreg), (lreg)); \
+				arm_alu_reg((inst), ARM_MVN, (hreg), (hreg)); \
+				arm_alu_cc_reg_imm8((inst), ARM_ADD, (lreg), (lreg), 1); \
+				arm_alu_reg_imm8((inst), ARM_ADC, (hreg), (hreg), 0); \
+			} while (0)
 
 /*
  * Convert word registers between various types.

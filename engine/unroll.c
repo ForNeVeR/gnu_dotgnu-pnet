@@ -343,7 +343,9 @@ static void ReExecute(MDUnroll *unroll, unsigned char *pc,
 #define	MD_REG2_NATIVE		0x0002
 #define	MD_REG3_32BIT		0x0000
 #define	MD_REG3_NATIVE		0x0004
-#define	MD_REGN_NATIVE		0x0007
+#define	MD_REG4_32BIT		0x0000
+#define	MD_REG4_NATIVE		0x0008
+#define	MD_REGN_NATIVE		0x000F
 
 /*
  * Get a register that can be used to store word values.
@@ -816,6 +818,108 @@ static void GetTopThreeWordRegisters(MDUnroll *unroll,
 	*reg2 = (unroll->pseudoStack[1] & ~MD_NATIVE_REG_MASK);
 	*reg3 = (unroll->pseudoStack[2] & ~MD_NATIVE_REG_MASK);
 }
+
+#ifdef IL_NATIVE_INT32
+
+/*
+ * Get the four top-most word values on the stack into registers.
+ * "reg1" will be the lowest of the four.
+ */
+static void GetTopFourWordRegisters(MDUnroll *unroll,
+									int *reg1, int *reg2,
+									int *reg3, int *reg4,
+									int flags)
+{
+	/* Clear the cached local information */
+	unroll->cachedLocal = -1;
+	unroll->cachedReg = -1;
+
+	/* See if we already have four word registers in play */
+	if(unroll->pseudoStackSize > 3)
+	{
+		*reg1 = unroll->pseudoStack[unroll->pseudoStackSize - 4];
+		if(!MD_IS_FREG(*reg1))
+		{
+			*reg2 = unroll->pseudoStack[unroll->pseudoStackSize - 3];
+			if(!MD_IS_FREG(*reg2))
+			{
+				*reg3 = unroll->pseudoStack[unroll->pseudoStackSize - 2];
+				if(!MD_IS_FREG(*reg3))
+				{
+					*reg4 = unroll->pseudoStack[unroll->pseudoStackSize - 1];
+					if(!MD_IS_FREG(*reg4))
+					{
+						*reg1 &= ~MD_NATIVE_REG_MASK;
+						*reg2 &= ~MD_NATIVE_REG_MASK;
+						*reg3 &= ~MD_NATIVE_REG_MASK;
+						*reg4 &= ~MD_NATIVE_REG_MASK;
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	/* See if we have three word registers in play */
+	if(unroll->pseudoStackSize == 3)
+	{
+		*reg2 = unroll->pseudoStack[0];
+		*reg3 = unroll->pseudoStack[1];
+		*reg4 = unroll->pseudoStack[2];
+		if(!MD_IS_FREG(*reg2) && !MD_IS_FREG(*reg3) && !MD_IS_FREG(*reg4))
+		{
+			*reg1 = RollRegisterStack(unroll, flags & MD_REG1_NATIVE, -1);
+			*reg2 &= ~MD_NATIVE_REG_MASK;
+			*reg3 &= ~MD_NATIVE_REG_MASK;
+			*reg4 &= ~MD_NATIVE_REG_MASK;
+			return;
+		}
+	}
+
+	/* See if we have two word registers in play */
+	if(unroll->pseudoStackSize == 2)
+	{
+		*reg3 = unroll->pseudoStack[0];
+		*reg4 = unroll->pseudoStack[1];
+		if(!MD_IS_FREG(*reg3) && !MD_IS_FREG(*reg4))
+		{
+			*reg4 &= ~MD_NATIVE_REG_MASK;
+			*reg3 &= ~MD_NATIVE_REG_MASK;
+			*reg2 = RollRegisterStack(unroll, flags & MD_REG2_NATIVE, -1);
+			*reg1 = RollRegisterStack(unroll, flags & MD_REG1_NATIVE, -1);
+			return;
+		}
+	}
+
+	/* See if we have one word register in play */
+	if(unroll->pseudoStackSize == 1)
+	{
+		*reg4 = unroll->pseudoStack[0];
+		if(!MD_IS_FREG(*reg4))
+		{
+			*reg4 &= ~MD_NATIVE_REG_MASK;
+			*reg3 = RollRegisterStack(unroll, flags & MD_REG3_NATIVE, -1);
+			*reg2 = RollRegisterStack(unroll, flags & MD_REG2_NATIVE, -1);
+			*reg1 = RollRegisterStack(unroll, flags & MD_REG1_NATIVE, -1);
+			return;
+		}
+	}
+
+	/* We may have an FP register in play, so flush it */
+	FlushRegisterStack(unroll);
+
+	/* Load the top of the CVM stack into the first four registers */
+	RollRegisterStack(unroll, flags & MD_REG4_NATIVE, regAllocOrder[3]);
+	RollRegisterStack(unroll, flags & MD_REG3_NATIVE, regAllocOrder[2]);
+	RollRegisterStack(unroll, flags & MD_REG2_NATIVE, regAllocOrder[1]);
+	RollRegisterStack(unroll, flags & MD_REG1_NATIVE, regAllocOrder[0]);
+	*reg1 = (unroll->pseudoStack[0] & ~MD_NATIVE_REG_MASK);
+	*reg2 = (unroll->pseudoStack[1] & ~MD_NATIVE_REG_MASK);
+	*reg3 = (unroll->pseudoStack[2] & ~MD_NATIVE_REG_MASK);
+	*reg4 = (unroll->pseudoStack[3] & ~MD_NATIVE_REG_MASK);
+}
+
+#endif /* IL_NATIVE_INT32 */
 
 #ifdef MD_HAS_FP
 
@@ -1406,6 +1510,9 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	unsigned char *overwritePC;
 	md_inst_ptr unrollStart;
 	int reg, reg2, reg3;
+#ifdef IL_NATIVE_INT32
+	int reg4;
+#endif
 	ILCachePosn posn;
 
 	/* Find some room in the cache */

@@ -173,6 +173,159 @@ case COP_INEG:
 }
 break;
 
+case COP_LADD:
+{
+	/* Add 64-bit integers */
+	UNROLL_START();
+#ifdef IL_NATIVE_INT32
+	GetTopFourWordRegisters(&unroll, &reg, &reg2, &reg3, &reg4,
+						    MD_REG1_32BIT | MD_REG2_32BIT |
+						    MD_REG3_32BIT | MD_REG4_32BIT);
+#if MD_LITTLE_ENDIAN_LONGS
+	md_add_reg_reg_word_64(unroll.out, reg, reg2, reg3, reg4);
+#else
+	md_add_reg_reg_word_64(unroll.out, reg2, reg, reg4, reg3);
+#endif
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+#else
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_NATIVE);
+	md_add_reg_reg_word_native(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+#endif
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_LSUB:
+{
+	/* Subtract 64-bit integers */
+	UNROLL_START();
+#ifdef IL_NATIVE_INT32
+	GetTopFourWordRegisters(&unroll, &reg, &reg2, &reg3, &reg4,
+						    MD_REG1_32BIT | MD_REG2_32BIT |
+						    MD_REG3_32BIT | MD_REG4_32BIT);
+#if MD_LITTLE_ENDIAN_LONGS
+	md_sub_reg_reg_word_64(unroll.out, reg, reg2, reg3, reg4);
+#else
+	md_sub_reg_reg_word_64(unroll.out, reg2, reg, reg4, reg3);
+#endif
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+#else
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_NATIVE);
+	md_sub_reg_reg_word_native(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+#endif
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_LAND:
+{
+	/* Bitwise AND 64-bit integers */
+	UNROLL_START();
+#ifdef IL_NATIVE_INT32
+	GetTopFourWordRegisters(&unroll, &reg, &reg2, &reg3, &reg4,
+						    MD_REG1_32BIT | MD_REG2_32BIT |
+						    MD_REG3_32BIT | MD_REG4_32BIT);
+	md_and_reg_reg_word_32(unroll.out, reg, reg3);
+	md_and_reg_reg_word_32(unroll.out, reg2, reg4);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+#else
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_NATIVE);
+	md_add_reg_reg_word_native(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+#endif
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_LOR:
+{
+	/* Bitwise OR 64-bit integers */
+	UNROLL_START();
+#ifdef IL_NATIVE_INT32
+	GetTopFourWordRegisters(&unroll, &reg, &reg2, &reg3, &reg4,
+						    MD_REG1_32BIT | MD_REG2_32BIT |
+						    MD_REG3_32BIT | MD_REG4_32BIT);
+	md_or_reg_reg_word_32(unroll.out, reg, reg3);
+	md_or_reg_reg_word_32(unroll.out, reg2, reg4);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+#else
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_NATIVE);
+	md_or_reg_reg_word_native(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+#endif
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_LXOR:
+{
+	/* Bitwise XOR 64-bit integers */
+	UNROLL_START();
+#ifdef IL_NATIVE_INT32
+	GetTopFourWordRegisters(&unroll, &reg, &reg2, &reg3, &reg4,
+						    MD_REG1_32BIT | MD_REG2_32BIT |
+						    MD_REG3_32BIT | MD_REG4_32BIT);
+	md_xor_reg_reg_word_32(unroll.out, reg, reg3);
+	md_xor_reg_reg_word_32(unroll.out, reg2, reg4);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+#else
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_NATIVE);
+	md_xor_reg_reg_word_native(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+#endif
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_LNEG:
+{
+	/* Negate a 64-bit integer */
+	UNROLL_START();
+#ifdef IL_NATIVE_INT32
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_32BIT | MD_REG2_32BIT);
+#if MD_LITTLE_ENDIAN_LONGS
+	md_neg_reg_word_64(unroll.out, reg, reg2);
+#else
+	md_neg_reg_word_64(unroll.out, reg2, reg);
+#endif
+#else
+	reg = GetTopWordRegister(&unroll, MD_REG1_NATIVE);
+	md_neg_reg_word_native(unroll.out, reg);
+#endif
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_LNOT:
+{
+	/* Bitwise NOT a 64-bit integer */
+	UNROLL_START();
+#ifdef IL_NATIVE_INT32
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_32BIT | MD_REG2_32BIT);
+	md_not_reg_word_32(unroll.out, reg);
+	md_not_reg_word_32(unroll.out, reg2);
+#else
+	reg = GetTopWordRegister(&unroll, MD_REG1_NATIVE);
+	md_not_reg_word_native(unroll.out, reg);
+#endif
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
 #ifdef MD_HAS_FP
 
 case COP_FADD:

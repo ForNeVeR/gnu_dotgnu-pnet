@@ -51,6 +51,9 @@
 	System.Windows.Forms/Themes/DefaultThemePainter.cs:
 	draw the "indeterminate" state of a three-state checkbox properly.
 
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: off by one
+	bug when drawing the outline of a flat checkbox.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

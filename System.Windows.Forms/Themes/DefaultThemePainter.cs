@@ -988,12 +988,14 @@ internal class DefaultThemePainter : IThemePainter
 					if((state & ButtonState.Inactive) != 0)
 					{
 						graphics.DrawRectangle
-							(SystemPens.ControlDark, x, y, width, height);
+							(SystemPens.ControlDark, x, y,
+							 width - 1, height - 1);
 					}
 					else
 					{
 						graphics.DrawRectangle
-							(SystemPens.ControlText, x, y, width, height);
+							(SystemPens.ControlText, x, y,
+							 width - 1, height - 1);
 					}
 					x += 1;
 					y += 1;

@@ -32,6 +32,25 @@
 	System/CodeDom/Compiler/VBCodeProvider.cs: stub out the CodeDom
 	code generator for the VB language.
 
+	* System/Win32/Makefile,
+	System/Win32/PowerModeChangedEventArgs.cs,
+	System/Win32/PowerModeChangedEventHandler.cs,
+	System/Win32/PowerModes.cs,
+	System/Win32/SessionEndReasons.cs,
+	System/Win32/SessionEndedEventArgs.cs,
+	System/Win32/SessionEndedEventHandler.cs,
+	System/Win32/SessionEndingEventArgs.cs,
+	System/Win32/SessionEndingEventHandler.cs,
+	System/Win32/SystemEvents.cs,
+	System/Win32/TimerElapsedEventArgs.cs,
+	System/Win32/TimerElapsedEventHandler.cs,
+	System/Win32/UserPreferenceCategory.cs,
+	System/Win32/UserPreferenceChangedEventArgs.cs,
+	System/Win32/UserPreferenceChangedEventHandler.cs,
+	System/Win32/UserPreferenceChangingEventArgs.cs,
+	System/Win32/UserPreferenceChangingEventHandler.cs: add a missing
+	namespace and its implementation.
+
 2003-05-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Basic/ErrObject.cs, Basic/Information.cs,

@@ -283,17 +283,20 @@ public class CheckBox : ButtonBase
 			}
 
 	// Gets or sets the site of the control.
-	// TODO
-	public ISite Site 
-			{
-				get 
-				{
-					return null;
-				}
-				set
-				{
-				}
-			}
+#if CONFIG_COMPONENT_MODEL
+	public override ISite Site 
+
+	{
+		get 
+		{
+			return base.Site;
+		}
+		set
+		{
+			base.Site = value;
+		}
+	}
+#endif
 
 	// Gets or sets the alignment of the text on the checkbox control.
 	public override ContentAlignment TextAlign 

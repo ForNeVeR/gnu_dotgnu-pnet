@@ -318,7 +318,8 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	}
 	else if(ILType_IsSimpleArray(node->arrayType))
 	{		
-			castNode=ILNode_EmptyExpr_create(node->varType);
+			castNode=ILNode_EmptyExpr_create
+				(ILTypeToMachineType(node->elemType));
 			if(!ILCast(info,castNode,&(castNode),node->elemType,type))
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -413,7 +414,7 @@ ILNode_SemAnalysis(ILNode_Foreach)
 			}
 			else
 			{	
-				castNode=ILNode_EmptyExpr_create(node->varType);
+				castNode=ILNode_EmptyExpr_create(ILTypeToMachineType(retType));
 				if(!ILCast(info,castNode,&(castNode),retType,type))
 				{
 					CCErrorOnLine(yygetfilename(node), yygetlinenum(node),

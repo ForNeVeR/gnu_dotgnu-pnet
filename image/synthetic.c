@@ -195,7 +195,7 @@ static int AddSArrayMethods(ILClass *info, ILType *type)
 
 	/* Build the constructor, which specifies a single dimension */
 	method = ILMethodCreate(info, 0, ".ctor",
-							IL_META_METHODDEF_PRIVATE |
+							IL_META_METHODDEF_PUBLIC |
 							IL_META_METHODDEF_HIDE_BY_SIG |
 							IL_META_METHODDEF_SPECIAL_NAME |
 							IL_META_METHODDEF_RT_SPECIAL_NAME);

@@ -9,6 +9,9 @@
 	argument to "callvirt", "newobj", and "ldvirtfn" to use
 	the "hasthis" flag on the method signature.
 
+	* engine/verify_call.c, image/synthetic.c: fix verification of
+	"newobj" when single-dimensional classes are used.
+
 2003-01-12  Gopal.V  <gopalv82@symonds.net>
 
 	* ilasm/ilasm_grammar.y: force all constructor references to be 

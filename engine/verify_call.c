@@ -1332,7 +1332,7 @@ case IL_OP_NEWOBJ:
 						    (ILUInt32)numParams, methodInfo);
 			stackSize -= (ILUInt32)numParams;
 			stack[stackSize].engineType = ILEngineType_O;
-			stack[stackSize].typeInfo = ILType_FromClass(classInfo);
+			stack[stackSize].typeInfo = ILClassToType(classInfo);
 			++stackSize;
 		}
 		else if(!ILClassIsValueType(classInfo))
@@ -1353,7 +1353,7 @@ case IL_OP_NEWOBJ:
 			if(stackSize < code->maxStack)
 			{
 				stack[stackSize].engineType = ILEngineType_O;
-				stack[stackSize].typeInfo = ILType_FromClass(classInfo);
+				stack[stackSize].typeInfo = ILClassToType(classInfo);
 				++stackSize;
 			}
 			else

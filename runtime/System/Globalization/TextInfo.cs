@@ -22,34 +22,73 @@ namespace System.Globalization
 {
 
 using System;
+using System.Text;
 
-[TODO]
 public class TextInfo
 {
-
+	/*
+	 * Note: This class has been hacked together , it is not
+	 * optimised ... And these should be virtual right ?..
+	 */
 	// Convert characters or strings to lower case.
-	public char ToLower(char c)
+	public virtual char ToLower(char c)
 			{
+				if(c>='A' && c<='Z')
+					c=(char)(c+'a'-'A');
 				return c;
 			}
-	public String ToLower(String s)
+	public virtual String ToLower(String s)
 			{
+				if(s==null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				for(int i=0;i<s.Length;i++)
+				{
+					s.SetChar(i,ToLower(s[i]));
+				}
 				return s;
 			}
 
 	// Convert characters or strings to upper case.
-	public char ToUpper(char c)
+	public virtual char ToUpper(char c)
 			{
+				if(c>='a' && c<='z')
+					c=(char)(c-'a'+'A');
 				return c;
 			}
-	public String ToUpper(String s)
+	public virtual String ToUpper(String s)
 			{
+				if(s==null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				for(int i=0;i<s.Length;i++)
+				{
+					s.SetChar(i,ToUpper(s[i]));
+				}
 				return s;
 			}
 
 	// Convert a string to title case.
-	public String ToTitleCase(String s)
+	public virtual String ToTitleCase(String s)
 			{
+				if(s==null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				StringBuilder sb=new StringBuilder(s.Length);
+				int start=0;
+				for(int i=0;i<s.Length;i++)
+				{
+					if(CharacterInfo.IsSeparator(s[i]))
+					{
+						String word=(s.Substring(start,i+1-start)).ToLower();
+						word.SetChar(0,ToUpper(word[0]));
+						sb.Append(word);
+						start=i+1;
+					}
+				}
 				return s;
 			}
 

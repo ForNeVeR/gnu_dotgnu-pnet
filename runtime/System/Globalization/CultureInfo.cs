@@ -37,6 +37,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 	private Calendar	calendar;
 	private NumberFormatInfo numberFormat;
 	private DateTimeFormatInfo dateTimeFormat;
+	private TextInfo	textInfo=null;
 
 	// Culture identifier for "es-ES" with traditional sort rules.
 	private const int TraditionalSpanish = 0x040A;
@@ -419,8 +420,12 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
+					if(this.textInfo==null)
+					{
+						this.textInfo=new TextInfo();
+					}
 					// TODO
-					return null;
+					return this.textInfo;
 				}
 			}
 

@@ -1,4 +1,10 @@
 
+2002-11-13  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/Globalization/TextInfo.cs, 
+	runtime/System/Globalization/CultureInfo.cs : Add ToUpper/Lower
+	fallback functions for English.
+
 2002-11-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/StreamWriter.cs: Commit a patch to a

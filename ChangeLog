@@ -5,6 +5,10 @@
 	dynamic linking, to make it easier to resolve cross-assembly
 	type references in recursive situations.
 
+	* image/image.h, image/meta_build.c, image/pecoff_loader.c:
+	put some infrastructure in place to support on-demand loading
+	of TypeRef tokens.
+
 2003-09-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/dns.c, support/socket.c: make sure that the socket

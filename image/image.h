@@ -156,6 +156,9 @@ struct _tagILImage
 	/* File that the image was loaded file */
 	char		   *filename;		/* NULL if filename is unknown */
 
+	/* Flags that were used during loading */
+	int				loadFlags;
+
 	/* Housekeeping for managing the raw PE/COFF for of an image */
 	int				type : 8;		/* Type of image */
 	int				secure : 1;		/* Non-zero if image source is secure */

@@ -875,6 +875,7 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 			return IL_LOADERR_MEMORY;
 		}
 	}
+	(*image)->loadFlags = flags;
 	(*image)->type = (isOBJ ? IL_IMAGETYPE_OBJ :
 						(isDLL ? IL_IMAGETYPE_DLL : IL_IMAGETYPE_EXE));
 	(*image)->secure = ((flags & IL_LOADFLAG_INSECURE) == 0);

@@ -1,7 +1,7 @@
 /*
  * meta_build.c - Build metadata structures from a metadata index.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1043,6 +1043,10 @@ static int Load_TypeRef(ILImage *image, ILUInt32 *values,
 	const char *namespace;
 	ILProgramItem *scope;
 	ILClass *info;
+	ILClass *importInfo;
+	ILImage *importImage;
+	ILProgramItem *importScope;
+	ILClassName *className;
 
 	/* Get the TypeRef name and namespace */
 	name = ILImageGetString(image, values[IL_OFFSET_TYPEREF_NAME]);
@@ -1069,16 +1073,29 @@ static int Load_TypeRef(ILImage *image, ILUInt32 *values,
 		return IL_LOADERR_BAD_META;
 	}
 
-	/* If we already have a reference locally, then reuse it */
-	info = ILClassLookup(scope, name, namespace);
-	if(info)
+	/* Look for the class name locally */
+	className = _ILClassNameLookup(image, scope, 0, name, namespace);
+	if(!className)
 	{
-		if(!_ILImageSetToken(image, &(info->programItem), token,
-					         IL_META_TOKEN_TYPE_REF))
+		/* This shouldn't happen */
+		META_VAL_ERROR("could not find the type reference's name");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Resolve the class name, being careful not to create a circularity
+	   where the TypeRef tries to load itself */
+	if(className->token != token)
+	{
+		info = _ILClassNameToClass(className);
+		if(info)
 		{
-			return IL_LOADERR_MEMORY;
+			if(!_ILImageSetToken(image, &(info->programItem), token,
+						         IL_META_TOKEN_TYPE_REF))
+			{
+				return IL_LOADERR_MEMORY;
+			}
+			return 0;
 		}
-		return 0;
 	}
 
 	/* Create a new type reference */
@@ -1091,6 +1108,121 @@ static int Load_TypeRef(ILImage *image, ILUInt32 *values,
 				         IL_META_TOKEN_TYPE_REF))
 	{
 		return IL_LOADERR_MEMORY;
+	}
+
+	/* If the "no resolve" flag is set, then there is nothing more to do */
+	if((image->loadFlags & IL_LOADFLAG_NO_RESOLVE) != 0)
+	{
+		return 0;
+	}
+
+	/* If the scope is the current module, then we have encountered a
+	   dangling TypeRef.  Search for it through-out the system */
+	if(ScopeIsModule(scope))
+	{
+		/* Is this a global or a nested class? */
+		if(!ILClassIsNestingScope(scope))
+		{
+			/* Global class: look in any image for the type */
+			importInfo = ILClassLookupGlobal(image->context,
+											 info->className->name,
+											 info->className->namespace);
+		}
+		else
+		{
+			/* Nested class: look within the parent scope */
+			scope = _ILProgramItemLinkedTo(scope);
+			if(scope)
+			{
+				importInfo = ILClassLookup(scope, info->className->name,
+										   info->className->namespace);
+			}
+			else
+			{
+				importInfo = 0;
+			}
+		}
+
+		/* Link "info" to "importInfo" */
+		if(importInfo)
+		{
+			if(!_ILProgramItemLink(&(info->programItem),
+								   &(importInfo->programItem)))
+			{
+				return IL_LOADERR_MEMORY;
+			}
+		}
+		else
+		{
+		#if IL_DEBUG_META
+			ReportResolveError(image, 0, info->className->name,
+							   info->className->namespace);
+		#endif
+			return IL_LOADERR_UNRESOLVED;
+		}
+
+		/* We have resolved the dangling TypeRef */
+		return 0;
+	}
+
+	/* Attempt to resolve references to other images */
+	importInfo = 0;
+	switch(ILProgramItem_Token(scope) & IL_META_TOKEN_MASK)
+	{
+		case IL_META_TOKEN_TYPE_REF:
+		{
+			/* Nested type within a foreign assembly */
+			importScope = _ILProgramItemLinkedTo(scope);
+			if(importScope)
+			{
+				importInfo = ILClassLookup
+					(importScope, name, namespace);
+			}
+		}
+		break;
+
+		case IL_META_TOKEN_MODULE_REF:
+		{
+			/* Module reference imports are not currently
+			   supported.  Types should be imported from
+			   assemblies, not modules.  Module references
+			   should only be used for PInvoke imports */
+		}
+		break;
+
+		case IL_META_TOKEN_ASSEMBLY_REF:
+		{
+			/* Type is imported from a foreign assembly */
+			importImage = ILAssemblyToImage((ILAssembly *)scope);
+			if(importImage)
+			{
+				importScope = ILClassGlobalScope(importImage);
+				if(importScope)
+				{
+					importInfo = ILClassLookup
+						(importScope, name, namespace);
+				}
+			}
+		}
+		break;
+	}
+	if(importInfo)
+	{
+		/* Link "info" to "importInfo" */
+		if(!_ILProgramItemLink(&(info->programItem),
+							   &(importInfo->programItem)))
+		{
+			return IL_LOADERR_MEMORY;
+		}
+	}
+	else
+	{
+		/* Could not resolve the type */
+	#if IL_DEBUG_META
+		ReportResolveError(image, values[IL_OFFSET_TYPEREF_SCOPE],
+						   name, namespace);
+	#endif
+		return IL_LOADERR_UNRESOLVED;
 	}
 
 	/* The type reference has been created */
@@ -1186,111 +1318,6 @@ static int Load_TypeRefName(ILImage *image, ILUInt32 *values,
 }
 
 /*
- * Load a type definition token.
- */
-static int Load_TypeDef(ILImage *image, ILUInt32 *values,
-						ILUInt32 *valuesNext, ILToken token,
-						void *userData)
-{
-	ILClass *info;
-	ILClass *parent;
-	const char *name;
-	const char *namespace;
-	int error;
-	ILProgramItem *scope;
-
-	/* If we have already loaded this type, then bail out */
-	if(_ILImageTokenAlreadyLoaded(image, token))
-	{
-		return 0;
-	}
-
-	/* Get the name and namespace for the type */
-	name = ILImageGetString(image, values[IL_OFFSET_TYPEDEF_NAME]);
-	namespace = ILImageGetString(image, values[IL_OFFSET_TYPEDEF_NAMESPACE]);
-	if(namespace && *namespace == '\0')
-	{
-		namespace = 0;
-	}
-
-	/* Determine the scope to use to define the type */
-	if((values[IL_OFFSET_TYPEDEF_ATTRS] & IL_META_TYPEDEF_VISIBILITY_MASK)
-			< IL_META_TYPEDEF_NESTED_PUBLIC)
-	{
-		/* Global scope */
-		scope = ILClassGlobalScope(image);
-	}
-	else
-	{
-		/* Nested scope */
-		scope = FindNestedParent(image, token, 0);
-	}
-
-	/* If we don't have a scope, then exit with an error */
-	if(!scope)
-	{
-		META_VAL_ERROR("unknown type definition scope");
-		return IL_LOADERR_BAD_META;
-	}
-
-	/* Locate the parent class */
-	if(values[IL_OFFSET_TYPEDEF_PARENT])
-	{
-		parent = ILClass_FromToken(image, values[IL_OFFSET_TYPEDEF_PARENT]);
-		if(parent)
-		{
-			/* Resolve TypeSpec's into ILClass structures */
-			parent = ILProgramItemToClass((ILProgramItem *)parent);
-		}
-		else if((values[IL_OFFSET_TYPEDEF_PARENT] & IL_META_TOKEN_MASK)
-					== IL_META_TOKEN_TYPE_DEF)
-		{
-			/* The class inherits from a TypeDef we haven't seen yet */
-			error = LoadForwardTypeDef(image, values[IL_OFFSET_TYPEDEF_PARENT]);
-			if(error != 0)
-			{
-				return error;
-			}
-			parent = ILClass_FromToken(image, values[IL_OFFSET_TYPEDEF_PARENT]);
-		}
-		if(!parent)
-		{
-			META_VAL_ERROR("cannot locate parent type");
-			return IL_LOADERR_BAD_META;
-		}
-	}
-	else
-	{
-		/* No parent, so this is probably the "System.Object" class */
-		parent = 0;
-	}
-
-	/* See if we already have a definition using this name */
-	info = ILClassLookup(scope, name, namespace);
-	if(info)
-	{
-		if(!ILClassIsRef(info))
-		{
-			META_VAL_ERROR("type defined multiple times");
-			return IL_LOADERR_BAD_META;
-		}
-	}
-
-	/* Create the class, which will convert the reference if necessary */
-	info = ILClassCreate(scope, token, name, namespace, parent);
-	if(!info)
-	{
-		return IL_LOADERR_MEMORY;
-	}
-
-	/* Set the attributes for the class */
-	ILClassSetAttrs(info, ~0, values[IL_OFFSET_TYPEDEF_ATTRS]);
-
-	/* Done: we'll get the members later */
-	return 0;
-}
-
-/*
  * Load a type definition name.
  */
 static int Load_TypeDefNameInner(ILImage *image, ILUInt32 *values,
@@ -1359,6 +1386,7 @@ static int Load_TypeDefNameInner(ILImage *image, ILUInt32 *values,
 	className = _ILClassNameLookup(image, scope, scopeName, name, namespace);
 	if(className)
 	{
+		className->token = token;	/* Point the name at the TypeDef */
 		*nameInfo = className;
 		return 0;
 	}
@@ -3114,6 +3142,155 @@ static int Load_GenericPar(ILImage *image, ILUInt32 *values,
 }
 
 /*
+ * Load a type definition token.
+ */
+static int Load_TypeDef(ILImage *image, ILUInt32 *values,
+						ILUInt32 *valuesNext, ILToken token,
+						void *userData)
+{
+	ILClass *info;
+	ILClass *parent;
+	const char *name;
+	const char *namespace;
+	int error;
+	ILProgramItem *scope;
+#if 0
+	ILUInt32 num;
+#endif
+
+	/* If we have already loaded this type, then bail out */
+	if(_ILImageTokenAlreadyLoaded(image, token))
+	{
+		return 0;
+	}
+
+	/* Get the name and namespace for the type */
+	name = ILImageGetString(image, values[IL_OFFSET_TYPEDEF_NAME]);
+	namespace = ILImageGetString(image, values[IL_OFFSET_TYPEDEF_NAMESPACE]);
+	if(namespace && *namespace == '\0')
+	{
+		namespace = 0;
+	}
+
+	/* Determine the scope to use to define the type */
+	if((values[IL_OFFSET_TYPEDEF_ATTRS] & IL_META_TYPEDEF_VISIBILITY_MASK)
+			< IL_META_TYPEDEF_NESTED_PUBLIC)
+	{
+		/* Global scope */
+		scope = ILClassGlobalScope(image);
+	}
+	else
+	{
+		/* Nested scope */
+		scope = FindNestedParent(image, token, 0);
+	}
+
+	/* If we don't have a scope, then exit with an error */
+	if(!scope)
+	{
+		META_VAL_ERROR("unknown type definition scope");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Locate the parent class */
+	if(values[IL_OFFSET_TYPEDEF_PARENT])
+	{
+		parent = ILClass_FromToken(image, values[IL_OFFSET_TYPEDEF_PARENT]);
+		if(parent)
+		{
+			/* Resolve TypeSpec's into ILClass structures */
+			parent = ILProgramItemToClass((ILProgramItem *)parent);
+		}
+		else if((values[IL_OFFSET_TYPEDEF_PARENT] & IL_META_TOKEN_MASK)
+					== IL_META_TOKEN_TYPE_DEF)
+		{
+			/* The class inherits from a TypeDef we haven't seen yet */
+			error = LoadForwardTypeDef(image, values[IL_OFFSET_TYPEDEF_PARENT]);
+			if(error != 0)
+			{
+				return error;
+			}
+			parent = ILClass_FromToken(image, values[IL_OFFSET_TYPEDEF_PARENT]);
+		}
+		if(!parent)
+		{
+			META_VAL_ERROR("cannot locate parent type");
+			return IL_LOADERR_BAD_META;
+		}
+	}
+	else
+	{
+		/* No parent, so this is probably the "System.Object" class */
+		parent = 0;
+	}
+
+	/* See if we already have a definition using this name */
+	info = ILClassLookup(scope, name, namespace);
+	if(info)
+	{
+		if(!ILClassIsRef(info))
+		{
+			META_VAL_ERROR("type defined multiple times");
+			return IL_LOADERR_BAD_META;
+		}
+	}
+
+	/* Create the class, which will convert the reference if necessary */
+	info = ILClassCreate(scope, token, name, namespace, parent);
+	if(!info)
+	{
+		return IL_LOADERR_MEMORY;
+	}
+
+	/* Set the attributes for the class */
+	ILClassSetAttrs(info, ~0, values[IL_OFFSET_TYPEDEF_ATTRS]);
+
+#if 0
+
+#if 0	/* TODO */
+	/* If the class has a nested attribute, but it is
+	   at the top-most level, then complain */
+	if(ILClassGetNestedParent(info) == 0 &&
+	   (ILClass_IsNestedPublic(info) ||
+	    ILClass_IsNestedPrivate(info) ||
+		ILClass_IsNestedFamily(info) ||
+		ILClass_IsNestedAssembly(info) ||
+		ILClass_IsNestedFamAndAssem(info) ||
+		ILClass_IsNestedFamOrAssem(info)))
+	{
+		META_VAL_ERROR("nested class at outer scope");
+		return IL_LOADERR_BAD_META;
+	}
+#endif
+
+	/* Load the fields */
+	if(!SizeOfRange(image, IL_META_TOKEN_FIELD_DEF,
+					values, valuesNext, IL_OFFSET_TYPEDEF_FIRST_FIELD, &num))
+	{
+		META_VAL_ERROR("invalid field count");
+		return IL_LOADERR_BAD_META;
+	}
+	EXIT_IF_ERROR(LoadTokenRange(image, IL_META_TOKEN_FIELD_DEF,
+								 values[IL_OFFSET_TYPEDEF_FIRST_FIELD], num,
+								 Load_FieldDef, info));
+
+	/* Load the methods */
+	if(!SizeOfRange(image, IL_META_TOKEN_METHOD_DEF,
+					values, valuesNext, IL_OFFSET_TYPEDEF_FIRST_METHOD, &num))
+	{
+		META_VAL_ERROR("invalid method count");
+		return IL_LOADERR_BAD_META;
+	}
+	EXIT_IF_ERROR(LoadTokenRange(image, IL_META_TOKEN_METHOD_DEF,
+								 values[IL_OFFSET_TYPEDEF_FIRST_METHOD], num,
+								 Load_MethodDef, info));
+#endif
+
+	/* Done: we'll get the other members later */
+	return 0;
+}
+
+/*
  * Load a method specification token.
  */
 static int Load_MethodSpec(ILImage *image, ILUInt32 *values,
@@ -3211,9 +3388,11 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_TYPE_DEF,
 							 Load_TypeDef, 0));
 
+#if 0
 	/* Load the TypeSpec table */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_TYPE_SPEC,
 							 Load_TypeSpec, 0));
+#endif
 
 	/* Perform phase 2 type resolution on the TypeRef table */
 	if(needPhase2)
@@ -3343,7 +3522,7 @@ static TokenLoadFunc const TokenLoadFunctions[] = {
 	0, 							/* 18 */
 	0,
 	Load_ModuleRef,
-	0,
+	Load_TypeSpec,
 	Load_PInvoke,
 	Load_FieldRVA,
 	0,

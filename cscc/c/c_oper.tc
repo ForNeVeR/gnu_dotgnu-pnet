@@ -1794,6 +1794,81 @@ ILNode_CSemAnalysis(ILNode_AssignUShr)
 }
 
 /*
+ * Perform semantic analysis for the array assignment statement.
+ */
+ILNode_CSemAnalysis(ILNode_CAssignArray)
+{
+	CSemValue value1;
+	ILType *elemType;
+	ILUInt32 arraySize;
+	ILUInt32 initSize;
+
+	/* Perform semantic analysis on the destination expression.
+	   We expect it to be either an l-value or a decayed r-value */
+	value1 = ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), 0);
+	if(CSemIsDecayed(value1))
+	{
+		/* Un-decay the array type */
+		CSemSetLValue(value1, CSemGetDecayedType(value1));
+	}
+	else if(!CSemIsLValue(value1))
+	{
+		if(!CSemIsError(value1))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid lvalue in assignment"));
+		}
+		return CSemValueError;
+	}
+
+	/* Determine the type of assignment based on the r-value */
+	if(yyisa(node->expr2, ILNode_CString))
+	{
+		/* Assign the contents of a string */
+		elemType = CTypeWithoutQuals(CTypeGetElemType(CSemGetType(value1)));
+		if(elemType != ILType_Int8 && elemType != ILType_UInt8)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  	  _("invalid initializer"));
+			return CSemValueError;
+		}
+		arraySize = CTypeGetNumElems(CSemGetType(value1));
+		initSize = (ILUInt32)(((ILNode_CString *)(node->expr2))->len);
+		if(initSize > arraySize)
+		{
+			CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+			  	    _("initializer-string for array of chars is too long"));
+		}
+	}
+	else if(yyisa(node->expr2, ILNode_ArrayInit))
+	{
+		/* TODO */
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("array/structure assignment is not implemented yet"));
+	}
+	else
+	{
+		/* The grammar already reported an error for this case */
+		return CSemValueError;
+	}
+
+	/* Array assignment is used at the statement level of a function */
+	return CSemValueDefault;
+}
+
+/*
+ * Generate discard code for an array assignment statement.
+ */
+ILNode_GenDiscard(ILNode_CAssignArray)
+{
+	/* TODO */
+}
+JavaGenDiscard(ILNode_CAssignArray)
+{
+	/* Nothing to do here */
+}
+
+/*
  * Perform semantic analysis for the pre-increment expression.
  */
 ILNode_CSemAnalysis(ILNode_PreInc)

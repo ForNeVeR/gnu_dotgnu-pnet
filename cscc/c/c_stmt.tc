@@ -148,7 +148,7 @@ ILNode_CSemAnalysis(ILNode_List)
 		{
 			*(iter.last) = replace;
 		}
-		if(!CSemIsVoid(value) && !CSemIsRValue(value))
+		if(!CSemIsVoid(value) && !CSemIsRValue(value) && !CSemIsError(value))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  _("invalid statement"));

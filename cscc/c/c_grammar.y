@@ -510,6 +510,29 @@ static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
 }
 
 /*
+ * Get the size of an array initializer for a particular array type.
+ */
+static ILUInt32 ArrayInitializerSize(ILType *type, ILNode *init)
+{
+	/* Handle the string case first */
+	if(yyisa(init, ILNode_CString))
+	{
+		return (ILUInt32)(((ILNode_CString *)init)->len) + 1;
+	}
+
+	/* If this isn't an array initializer, then bail out */
+	if(!yyisa(init, ILNode_ArrayInit))
+	{
+		CCErrorOnLine(yygetfilename(init), yygetlinenum(init),
+					  _("invalid initializer"));
+		return 1;
+	}
+
+	/* TODO: handle arrays of structures that don't have nested bracketing */
+	return ILNode_List_Length(((ILNode_ArrayInit *)init)->expr);
+}
+
+/*
  * Process a local or global declaration.
  */
 static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
@@ -520,6 +543,7 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 	unsigned index;
 	ILNode *assign;
 	ILType *prevType;
+	ILUInt32 size;
 
 	/* If there is a parameter list associated with the declarator, then
 	   we are declaring a forward function reference, not a variable */
@@ -616,7 +640,25 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 			}
 		}
 
-		/* TODO: extend open arrays to the same size as initializers */
+		/* Extend open arrays to the same size as initializers */
+		if(CTypeIsOpenArray(type))
+		{
+			if(init != 0)
+			{
+				/* Infer the initializer size from the expression */
+				size = ArrayInitializerSize(type, init);
+			}
+			else
+			{
+				/* If there is no initializer, then change to one element */
+				CCWarningOnLine(yygetfilename(decl.node),
+								yygetlinenum(decl.node),
+								_("array `%s' assumed to have one element"),
+								decl.name);
+				size = 1;
+			}
+			type = CTypeCreateArray(&CCCodeGen, CTypeGetElemType(type), size);
+		}
 
 		/* Make sure that the type size is fixed or dynamic */
 		if(CTypeSizeAndAlign(type, 0) == CTYPE_UNKNOWN)
@@ -668,6 +710,28 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 		}
 		else
 		{
+			/* Extend open arrays to the same size as initializers */
+			if(CTypeIsOpenArray(type))
+			{
+				if(init != 0)
+				{
+					/* Infer the initializer size from the expression */
+					size = ArrayInitializerSize(type, init);
+				}
+				else
+				{
+					/* If there is no initializer, then change to one element */
+					CCWarningOnLine(yygetfilename(decl.node),
+									yygetlinenum(decl.node),
+									_("array `%s' assumed to have one element"),
+									decl.name);
+					size = 1;
+				}
+				type = CTypeCreateArray
+					(&CCCodeGen, CTypeGetElemType(type), size);
+			}
+
+			/* Allocate the global variable */
 			index = CGenAllocLocal(&CCCodeGen, type);
 			CScopeAddLocal(decl.name, decl.node, index, type);
 			if(init)
@@ -680,7 +744,14 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 					(index, ILTypeToMachineType(type), type,
 					 CTypeDecay(&CCCodeGen, type));
 				CGenCloneLine(assign, decl.node);
-				assign = ILNode_Assign_create(assign, init);
+				if(CTypeIsArray(type))
+				{
+					assign = ILNode_CAssignArray_create(assign, init);
+				}
+				else
+				{
+					assign = ILNode_Assign_create(assign, init);
+				}
 				CGenCloneLine(assign, init);
 				ILNode_List_Add(*list, assign);
 			}
@@ -2342,13 +2413,19 @@ AbstractDeclarator2
 
 Initializer
 	: AssignmentExpression				{ $$ = $1; }
-	| '{' InitializerList '}'			{ $$ = $2; }
-	| '{' InitializerList ',' '}'		{ $$ = $2; }
+	| '{' InitializerList '}'			{ $$ = ILNode_ArrayInit_create($2); }
+	| '{' InitializerList ',' '}'		{ $$ = ILNode_ArrayInit_create($2); }
 	;
 
 InitializerList
-	: Initializer						{ $$ = $1; }
-	| InitializerList ',' Initializer	{ $$ = 0; /* TODO */ }
+	: Initializer						{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}
+	| InitializerList ',' Initializer	{
+				$$ = $1;
+				ILNode_List_Add($$, $3);
+			}
 	;
 
 Statement

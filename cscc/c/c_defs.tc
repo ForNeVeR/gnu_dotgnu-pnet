@@ -403,6 +403,11 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 {
 	ILEvalValue value;
 }
+%node ILNode_CAssignArray ILNode_Statement =
+{
+	ILNode *expr1;
+	ILNode *expr2;
+}
 
 %output "c_semantics.c"
 

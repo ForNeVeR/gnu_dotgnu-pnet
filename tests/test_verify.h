@@ -1028,6 +1028,16 @@ static char *name##_operands_7[] = { \
 		RegisterSimpleFail(name##_operands_6); \
 		RegisterSimpleFail(name##_operands_7); \
 	} while (0)
+#define	testUnaryConvOperands(name)	\
+	do { \
+		RegisterSimple(name##_operands_1); \
+		RegisterSimple(name##_operands_2); \
+		RegisterSimple(name##_operands_3); \
+		RegisterSimple(name##_operands_4); \
+		RegisterSimpleUnsafe(name##_operands_5); \
+		RegisterSimpleFail(name##_operands_6); \
+		RegisterSimpleFail(name##_operands_7); \
+	} while (0)
 #define	testUnaryIntegerOperands(name)	\
 	do { \
 		RegisterSimple(name##_operands_1); \

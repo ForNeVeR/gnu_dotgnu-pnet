@@ -212,135 +212,135 @@ void registerConvTests(void)
 	ILUnitRegisterSuite("Conversion Instructions");
 
 	testUnaryNature(conv_i1);
-	testUnaryNumericOperands(conv_i1);
+	testUnaryConvOperands(conv_i1);
 	testConvResultType(conv_i1);
 
 	testUnaryNature(conv_i2);
-	testUnaryNumericOperands(conv_i2);
+	testUnaryConvOperands(conv_i2);
 	testConvResultType(conv_i2);
 
 	testUnaryNature(conv_i4);
-	testUnaryNumericOperands(conv_i4);
+	testUnaryConvOperands(conv_i4);
 	testConvResultType(conv_i4);
 
 	testUnaryNature(conv_i8);
-	testUnaryNumericOperands(conv_i8);
+	testUnaryConvOperands(conv_i8);
 	testConvResultType(conv_i8);
 
 	testUnaryNature(conv_r4);
-	testUnaryNumericOperands(conv_r4);
+	testUnaryConvOperands(conv_r4);
 	testConvResultType(conv_r4);
 
 	testUnaryNature(conv_r8);
-	testUnaryNumericOperands(conv_r8);
+	testUnaryConvOperands(conv_r8);
 	testConvResultType(conv_r8);
 
 	testUnaryNature(conv_u4);
-	testUnaryNumericOperands(conv_u4);
+	testUnaryConvOperands(conv_u4);
 	testConvResultType(conv_u4);
 
 	testUnaryNature(conv_u8);
-	testUnaryNumericOperands(conv_u8);
+	testUnaryConvOperands(conv_u8);
 	testConvResultType(conv_u8);
 
 	testUnaryNature(conv_r_un);
-	testUnaryNumericOperands(conv_r_un);
+	testUnaryConvOperands(conv_r_un);
 	testConvResultType(conv_r_un);
 
 	testUnaryNature(conv_ovf_i1_un);
-	testUnaryNumericOperands(conv_ovf_i1_un);
+	testUnaryConvOperands(conv_ovf_i1_un);
 	testConvResultType(conv_ovf_i1_un);
 
 	testUnaryNature(conv_ovf_i2_un);
-	testUnaryNumericOperands(conv_ovf_i2_un);
+	testUnaryConvOperands(conv_ovf_i2_un);
 	testConvResultType(conv_ovf_i2_un);
 
 	testUnaryNature(conv_ovf_i4_un);
-	testUnaryNumericOperands(conv_ovf_i4_un);
+	testUnaryConvOperands(conv_ovf_i4_un);
 	testConvResultType(conv_ovf_i4_un);
 
 	testUnaryNature(conv_ovf_i8_un);
-	testUnaryNumericOperands(conv_ovf_i8_un);
+	testUnaryConvOperands(conv_ovf_i8_un);
 	testConvResultType(conv_ovf_i8_un);
 
 	testUnaryNature(conv_ovf_u1_un);
-	testUnaryNumericOperands(conv_ovf_u1_un);
+	testUnaryConvOperands(conv_ovf_u1_un);
 	testConvResultType(conv_ovf_u1_un);
 
 	testUnaryNature(conv_ovf_u2_un);
-	testUnaryNumericOperands(conv_ovf_u2_un);
+	testUnaryConvOperands(conv_ovf_u2_un);
 	testConvResultType(conv_ovf_u2_un);
 
 	testUnaryNature(conv_ovf_u4_un);
-	testUnaryNumericOperands(conv_ovf_u4_un);
+	testUnaryConvOperands(conv_ovf_u4_un);
 	testConvResultType(conv_ovf_u4_un);
 
 	testUnaryNature(conv_ovf_u8_un);
-	testUnaryNumericOperands(conv_ovf_u8_un);
+	testUnaryConvOperands(conv_ovf_u8_un);
 	testConvResultType(conv_ovf_u8_un);
 
 	testUnaryNature(conv_ovf_i_un);
-	testUnaryNumericOperands(conv_ovf_i_un);
+	testUnaryConvOperands(conv_ovf_i_un);
 	testConvResultType(conv_ovf_i_un);
 
 	testUnaryNature(conv_ovf_u_un);
-	testUnaryNumericOperands(conv_ovf_u_un);
+	testUnaryConvOperands(conv_ovf_u_un);
 	testConvResultType(conv_ovf_u_un);
 
 	testUnaryNature(conv_ovf_i1);
-	testUnaryNumericOperands(conv_ovf_i1);
+	testUnaryConvOperands(conv_ovf_i1);
 	testConvResultType(conv_ovf_i1);
 
 	testUnaryNature(conv_ovf_u1);
-	testUnaryNumericOperands(conv_ovf_u1);
+	testUnaryConvOperands(conv_ovf_u1);
 	testConvResultType(conv_ovf_u1);
 
 	testUnaryNature(conv_ovf_i2);
-	testUnaryNumericOperands(conv_ovf_i2);
+	testUnaryConvOperands(conv_ovf_i2);
 	testConvResultType(conv_ovf_i2);
 
 	testUnaryNature(conv_ovf_u2);
-	testUnaryNumericOperands(conv_ovf_u2);
+	testUnaryConvOperands(conv_ovf_u2);
 	testConvResultType(conv_ovf_u2);
 
 	testUnaryNature(conv_ovf_i4);
-	testUnaryNumericOperands(conv_ovf_i4);
+	testUnaryConvOperands(conv_ovf_i4);
 	testConvResultType(conv_ovf_i4);
 
 	testUnaryNature(conv_ovf_u4);
-	testUnaryNumericOperands(conv_ovf_u4);
+	testUnaryConvOperands(conv_ovf_u4);
 	testConvResultType(conv_ovf_u4);
 
 	testUnaryNature(conv_ovf_i8);
-	testUnaryNumericOperands(conv_ovf_i8);
+	testUnaryConvOperands(conv_ovf_i8);
 	testConvResultType(conv_ovf_i8);
 
 	testUnaryNature(conv_ovf_u8);
-	testUnaryNumericOperands(conv_ovf_u8);
+	testUnaryConvOperands(conv_ovf_u8);
 	testConvResultType(conv_ovf_u8);
 
 	testUnaryNature(conv_u2);
-	testUnaryNumericOperands(conv_u2);
+	testUnaryConvOperands(conv_u2);
 	testConvResultType(conv_u2);
 
 	testUnaryNature(conv_u1);
-	testUnaryNumericOperands(conv_u1);
+	testUnaryConvOperands(conv_u1);
 	testConvResultType(conv_u1);
 
 	testUnaryNature(conv_i);
-	testUnaryNumericOperands(conv_i);
+	testUnaryConvOperands(conv_i);
 	testConvResultType(conv_i);
 
 	testUnaryNature(conv_ovf_i);
-	testUnaryNumericOperands(conv_ovf_i);
+	testUnaryConvOperands(conv_ovf_i);
 	testConvResultType(conv_ovf_i);
 
 	testUnaryNature(conv_ovf_u);
-	testUnaryNumericOperands(conv_ovf_u);
+	testUnaryConvOperands(conv_ovf_u);
 	testConvResultType(conv_ovf_u);
 
 	testUnaryNature(conv_u);
-	testUnaryNumericOperands(conv_u);
+	testUnaryConvOperands(conv_u);
 	testConvResultType(conv_u);
 }
 

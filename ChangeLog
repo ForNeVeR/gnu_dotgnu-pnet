@@ -15,6 +15,9 @@ resolution API.
 * codegen/cg_misc.tc, codegen/jv_misc.tc: bug fix: empty "params" parameters
 are passed as zero-element arrays, not "null".
 
+* cscc/cs_invoke.tc: semantic analysis for "ref", "out", and "params"
+parameters.
+
 2001-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, Makefile.am, ildiff/AUTHORS, ildiff/README, ildiff/TODO,

@@ -641,12 +641,26 @@ int ILExecThreadSetElem(ILExecThread *thread, ILObject *array,
 ILObject *ILExecThreadBox(ILExecThread *thread, ILType *type, void *ptr);
 
 /*
+ * Box the value at a pointer using a specific primitive or value type,
+ * and handle the case where float/double values are stored as ILNativeFloat.
+ */
+ILObject *ILExecThreadBoxFloat(ILExecThread *thread, ILType *type, void *ptr);
+
+/*
  * Unbox an object using a specific primitive or value type and
  * write the contents to a pointer.  Returns zero if the object
  * is NULL or is not of the correct type.
  */
 int ILExecThreadUnbox(ILExecThread *thread, ILType *type,
 					  ILObject *object, void *ptr);
+
+/*
+ * Unbox an object using a specific primitive or value type and
+ * write the contents to a pointer and handle the case where
+ * float/double values are stored as ILNativeFloat.
+ */
+int ILExecThreadUnboxFloat(ILExecThread *thread, ILType *type,
+					       ILObject *object, void *ptr);
 
 /*
  * Print the current exception object to standard error.

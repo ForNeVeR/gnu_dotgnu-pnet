@@ -54,6 +54,46 @@ ILObject *ILExecThreadBox(ILExecThread *thread, ILType *type, void *ptr)
 	}
 }
 
+ILObject *ILExecThreadBoxFloat(ILExecThread *thread, ILType *type, void *ptr)
+{
+	ILClass *classInfo;
+	ILObject *object;
+	ILUInt32 typeSize;
+	if(ILType_IsPrimitive(type) || ILType_IsValueType(type))
+	{
+		classInfo = ILClassFromType
+			(ILContextNextImage(thread->process->context, 0),
+			 0, type, 0);
+		if(!classInfo)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		typeSize = ILSizeOfType(thread, type);
+		object = (ILObject *)_ILEngineAlloc(thread, classInfo, typeSize);
+		if(object)
+		{
+			if(type == ILType_Float32)
+			{
+				*((ILFloat *)object) = (ILFloat)(*((ILNativeFloat *)ptr));
+			}
+			else if(type == ILType_Float64)
+			{
+				*((ILDouble *)object) = (ILDouble)(*((ILNativeFloat *)ptr));
+			}
+			else
+			{
+				ILMemCpy(object, ptr, typeSize);
+			}
+		}
+		return object;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 int ILExecThreadUnbox(ILExecThread *thread, ILType *type,
 					  ILObject *object, void *ptr)
 {
@@ -62,6 +102,33 @@ int ILExecThreadUnbox(ILExecThread *thread, ILType *type,
 	   ILTypeIdentical(type, ILClassToType(GetObjectClass(object))))
 	{
 		ILMemCpy(ptr, object, ILSizeOfType(thread, type));
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int ILExecThreadUnboxFloat(ILExecThread *thread, ILType *type,
+					       ILObject *object, void *ptr)
+{
+	if(object && ptr &&
+	   (ILType_IsPrimitive(type) || ILType_IsValueType(type)) &&
+	   ILTypeIdentical(type, ILClassToType(GetObjectClass(object))))
+	{
+		if(type == ILType_Float32)
+		{
+			*((ILNativeFloat *)ptr) = (ILNativeFloat)(*((ILFloat *)object));
+		}
+		else if(type == ILType_Float64)
+		{
+			*((ILNativeFloat *)ptr) = (ILNativeFloat)(*((ILDouble *)object));
+		}
+		else
+		{
+			ILMemCpy(ptr, object, ILSizeOfType(thread, type));
+		}
 		return 1;
 	}
 	else

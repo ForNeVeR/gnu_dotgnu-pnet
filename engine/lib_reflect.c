@@ -1752,8 +1752,8 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 			if(ILType_IsPrimitive(paramType))
 			{
 				/* Unbox primitive and enumerated types into the argument */
-				if(!ILExecThreadUnbox(thread, objectType, paramObject,
-									  &(args[argNum])))
+				if(!ILExecThreadUnboxFloat
+							(thread, objectType, paramObject, &(args[argNum])))
 				{
 					ILExecThreadThrowSystem
 						(thread, "System.ArgumentException", 0);
@@ -1850,7 +1850,8 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 		{
 			return 0;
 		}
-		return ILExecThreadBox(thread, ILTypeGetReturn(signature), &result);
+		return ILExecThreadBoxFloat
+			(thread, ILTypeGetReturn(signature), &result);
 	}
 	else if(ILType_IsClass(paramType))
 	{

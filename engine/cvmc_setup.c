@@ -607,43 +607,28 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 		{
 			case (unsigned long)ILType_Boolean:
 			case (unsigned long)ILType_Int8:
-			{
-				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
-				CVM_ADJUST(1);
-				CVM_OUT_NONE(COP_BREAD);
-				CVM_OUT_NONE(COP_RETURN_1);
-				CVM_ADJUST(-1);
-			}
-			break;
-
 			case (unsigned long)ILType_UInt8:
-			{
-				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
-				CVM_ADJUST(1);
-				CVM_OUT_NONE(COP_UBREAD);
-				CVM_OUT_NONE(COP_RETURN_1);
-				CVM_ADJUST(-1);
-			}
-			break;
-
 			case (unsigned long)ILType_Int16:
-			{
-				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
-				CVM_ADJUST(1);
-				CVM_OUT_NONE(COP_SREAD);
-				CVM_OUT_NONE(COP_RETURN_1);
-				CVM_ADJUST(-1);
-			}
-			break;
-
 			case (unsigned long)ILType_UInt16:
 			case (unsigned long)ILType_Char:
+			case (unsigned long)ILType_Int32:
+			case (unsigned long)ILType_UInt32:
 			{
-				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
+				/* Return values of int or less are returned as
+				   native integer values by libffi */
+			#ifdef IL_NATIVE_INT32
+				CVM_OUT_WIDE(COP_ILOAD, coder->localOffsets[0]);
 				CVM_ADJUST(1);
-				CVM_OUT_NONE(COP_USREAD);
 				CVM_OUT_NONE(COP_RETURN_1);
 				CVM_ADJUST(-1);
+			#else
+				CVM_OUT_DWIDE(COP_MLOAD, coder->localOffsets[0],
+							  CVM_WORDS_PER_LONG);
+				CVM_ADJUST(CVM_WORDS_PER_LONG);
+				CVM_OUT_NONE(CVM_L2I);
+				CVM_OUT_NONE(COP_RETURN_1);
+				CVM_ADJUST(-CVM_WORDS_PER_LONG);
+			#endif
 			}
 			break;
 

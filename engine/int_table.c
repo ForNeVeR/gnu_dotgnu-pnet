@@ -13,7 +13,7 @@ static void marshal_ppp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
 }
 
 #endif
@@ -22,7 +22,7 @@ static void marshal_ipp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bppp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])));
 }
 
 #endif
@@ -129,7 +129,7 @@ static void marshal_ppjpp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ippi(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
 }
 
 #endif
@@ -235,7 +235,7 @@ IL_METHOD_END
 
 static void marshal_bp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *))fn)(*((void * *)(avalue[0])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *))fn)(*((void * *)(avalue[0])));
 }
 
 #endif
@@ -262,7 +262,7 @@ static void marshal_dpl(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipf(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILFloat))fn)(*((void * *)(avalue[0])), *((ILFloat *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILFloat))fn)(*((void * *)(avalue[0])), *((ILFloat *)(avalue[1])));
 }
 
 #endif
@@ -288,7 +288,7 @@ IL_METHOD_END
 
 static void marshal_Bppi(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILUInt8 *)rvalue) = (*(ILUInt8 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+	*((ILNativeUInt *)rvalue) = (*(ILUInt8 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
 }
 
 #endif
@@ -313,7 +313,7 @@ IL_METHOD_END
 
 static void marshal_ippp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])));
 }
 
 #endif
@@ -375,7 +375,7 @@ IL_METHOD_END
 
 static void marshal_bpd(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
 }
 
 #endif
@@ -384,7 +384,7 @@ static void marshal_bpd(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipd(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
 }
 
 #endif
@@ -481,7 +481,7 @@ IL_METHOD_END
 
 static void marshal_bpf(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILFloat))fn)(*((void * *)(avalue[0])), *((ILFloat *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILFloat))fn)(*((void * *)(avalue[0])), *((ILFloat *)(avalue[1])));
 }
 
 #endif
@@ -522,7 +522,7 @@ static void marshal_pppiip(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ippiipiibp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32, ILInt8, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((ILInt8 *)(avalue[7])), *((void * *)(avalue[8])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32, ILInt8, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])), *((ILInt8 *)(avalue[7])), *((void * *)(avalue[8])));
 }
 
 #endif
@@ -531,7 +531,7 @@ static void marshal_ippiipiibp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ippiipii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt32 *)(avalue[6])));
 }
 
 #endif
@@ -567,7 +567,7 @@ static void marshal_ppppp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ippSii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, ILUInt16, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILUInt16 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILUInt16, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILUInt16 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
 }
 
 #endif
@@ -576,7 +576,7 @@ static void marshal_ippSii(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bppiipi(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])));
 }
 
 #endif
@@ -585,7 +585,7 @@ static void marshal_bppiipi(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipppii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
 }
 
 #endif
@@ -621,7 +621,7 @@ static void marshal_ppppi(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_Sppi(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILUInt16 *)rvalue) = (*(ILUInt16 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+	*((ILNativeUInt *)rvalue) = (*(ILUInt16 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
 }
 
 #endif
@@ -717,7 +717,7 @@ IL_METHOD_END
 
 static void marshal_ippii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])));
 }
 
 #endif
@@ -766,7 +766,7 @@ IL_METHOD_END
 
 static void marshal_bppi(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
 }
 
 #endif
@@ -793,7 +793,7 @@ static void marshal_vpj(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bppib(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt8 *)(avalue[3])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt8 *)(avalue[3])));
 }
 
 #endif
@@ -802,7 +802,7 @@ static void marshal_bppib(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ippib(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt8 *)(avalue[3])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt8 *)(avalue[3])));
 }
 
 #endif
@@ -811,7 +811,7 @@ static void marshal_ippib(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpji(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])));
 }
 
 #endif
@@ -850,7 +850,7 @@ static void marshal_vpi(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_Bpp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILUInt8 *)rvalue) = (*(ILUInt8 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
+	*((ILNativeUInt *)rvalue) = (*(ILUInt8 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
 }
 
 #endif
@@ -859,7 +859,7 @@ static void marshal_Bpp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
 }
 
 #endif
@@ -868,7 +868,7 @@ static void marshal_bpp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_spp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt16 *)rvalue) = (*(ILInt16 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt16 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
 }
 
 #endif
@@ -877,7 +877,7 @@ static void marshal_spp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_Spp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILUInt16 *)rvalue) = (*(ILUInt16 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
+	*((ILNativeUInt *)rvalue) = (*(ILUInt16 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
 }
 
 #endif
@@ -886,7 +886,7 @@ static void marshal_Spp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_Ipp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILUInt32 *)rvalue) = (*(ILUInt32 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
+	*((ILNativeUInt *)rvalue) = (*(ILUInt32 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
 }
 
 #endif
@@ -1053,7 +1053,7 @@ IL_METHOD_END
 
 static void marshal_ippiipi(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, ILInt32, ILInt32, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])));
 }
 
 #endif
@@ -1062,7 +1062,7 @@ static void marshal_ippiipi(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipi(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
 }
 
 #endif
@@ -1071,7 +1071,7 @@ static void marshal_ipi(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ip(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *))fn)(*((void * *)(avalue[0])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *))fn)(*((void * *)(avalue[0])));
 }
 
 #endif
@@ -1117,7 +1117,7 @@ static void marshal_jpi(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpi(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
 }
 
 #endif
@@ -1261,7 +1261,7 @@ static void marshal_ppjjb(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpjjb(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILNativeUInt, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((ILInt8 *)(avalue[3])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILNativeUInt, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILNativeUInt *)(avalue[2])), *((ILInt8 *)(avalue[3])));
 }
 
 #endif
@@ -1297,7 +1297,7 @@ static void marshal_ppji(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipj(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
 }
 
 #endif
@@ -1315,7 +1315,7 @@ static void marshal_ppjib(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpjib(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt8 *)(avalue[3])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt8 *)(avalue[3])));
 }
 
 #endif
@@ -1324,7 +1324,7 @@ static void marshal_bpjib(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpj(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
 }
 
 #endif
@@ -1373,7 +1373,7 @@ IL_METHOD_END
 
 static void marshal_ipjlpii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, ILInt64, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt64 *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, ILInt64, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt64 *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])));
 }
 
 #endif
@@ -1382,7 +1382,7 @@ static void marshal_ipjlpii(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipjl(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, ILInt64))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt64 *)(avalue[2])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, ILInt64))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt64 *)(avalue[2])));
 }
 
 #endif
@@ -1535,7 +1535,7 @@ static void marshal_jp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bppiiip(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])));
 }
 
 #endif
@@ -1553,7 +1553,7 @@ static void marshal_lpjli(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpjpii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
 }
 
 #endif
@@ -1562,7 +1562,7 @@ static void marshal_bpjpii(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipjpii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
 }
 
 #endif
@@ -1571,7 +1571,7 @@ static void marshal_ipjpii(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpjl(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt64))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt64 *)(avalue[2])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt64))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt64 *)(avalue[2])));
 }
 
 #endif
@@ -1597,7 +1597,7 @@ IL_METHOD_END
 
 static void marshal_bppj(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILNativeUInt *)(avalue[2])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILNativeUInt *)(avalue[2])));
 }
 
 #endif
@@ -1606,7 +1606,7 @@ static void marshal_bppj(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpppiii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])));
 }
 
 #endif
@@ -1625,7 +1625,7 @@ IL_METHOD_END
 
 static void marshal_bpiiip(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILInt32, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILInt32, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
 }
 
 #endif
@@ -1634,7 +1634,7 @@ static void marshal_bpiiip(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpjili(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt64, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt64 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt64, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt64 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
 }
 
 #endif
@@ -1643,7 +1643,7 @@ static void marshal_bpjili(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_bpjppp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt8 *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
 }
 
 #endif
@@ -1652,7 +1652,7 @@ static void marshal_bpjppp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipjpiii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])));
 }
 
 #endif
@@ -1661,7 +1661,7 @@ static void marshal_ipjpiii(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipjpiiipp(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((void * *)(avalue[6])), *((void * *)(avalue[7])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((void * *)(avalue[6])), *((void * *)(avalue[7])));
 }
 
 #endif
@@ -1670,7 +1670,7 @@ static void marshal_ipjpiiipp(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipjpiiili(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, ILInt32, ILInt64, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt64 *)(avalue[6])), *((ILInt32 *)(avalue[7])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, ILInt32, ILInt64, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((ILInt64 *)(avalue[6])), *((ILInt32 *)(avalue[7])));
 }
 
 #endif
@@ -1679,7 +1679,7 @@ static void marshal_ipjpiiili(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ippppl(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, void *, void *, void *, ILInt64))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt64 *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, void *, void *, ILInt64))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt64 *)(avalue[4])));
 }
 
 #endif
@@ -1732,7 +1732,7 @@ static void marshal_vpip(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_ipipii(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
 }
 
 #endif
@@ -1754,7 +1754,7 @@ IL_METHOD_END
 
 static void marshal_ipS(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt32 *)rvalue) = (*(ILInt32 (*)(void *, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILUInt16 *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILUInt16))fn)(*((void * *)(avalue[0])), *((ILUInt16 *)(avalue[1])));
 }
 
 #endif
@@ -1813,7 +1813,7 @@ static void marshal_lpl(void (*fn)(), void *rvalue, void **avalue)
 
 static void marshal_sps(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((ILInt16 *)rvalue) = (*(ILInt16 (*)(void *, ILInt16))fn)(*((void * *)(avalue[0])), *((ILInt16 *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt16 (*)(void *, ILInt16))fn)(*((void * *)(avalue[0])), *((ILInt16 *)(avalue[1])));
 }
 
 #endif

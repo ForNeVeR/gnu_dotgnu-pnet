@@ -14,6 +14,10 @@
 	* engine/lib_reflect.c (CreateFileStream): strip extra '/' from
 	the assembly pathname so that we don't get two '/'s in the name.
 
+	* engine/cvmc_setup.c, engine/int_table.c, ilnative/ilinternal.c:
+	handle the libffi expansion that occurs when native return types
+	are 32-bits or less in size.
+
 2002-05-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc,codegen/cg_lvalue.tc,codegen/cg_misc.tc

@@ -940,6 +940,33 @@ static void dumpFfiType(FILE *outfile, int ffiType)
 }
 
 /*
+ * Dump the C name of a FFI marshalling type for return values.
+ */
+static void dumpFfiReturnType(FILE *outfile, int ffiType)
+{
+	switch(ffiType)
+	{
+		case IL_FFI_VOID:		fputs("void", outfile); break;
+		case IL_FFI_UINT8:
+		case IL_FFI_UINT16:
+		case IL_FFI_UINT32:		fputs("ILNativeUInt", outfile); break;
+		case IL_FFI_SINT16:
+		case IL_FFI_SINT8:
+		case IL_FFI_SINT32:		fputs("ILNativeInt", outfile); break;
+		case IL_FFI_UINT64:		fputs("ILUInt64", outfile); break;
+		case IL_FFI_SINT64:		fputs("ILInt64", outfile); break;
+		case IL_FFI_UINTPTR:	fputs("ILNativeInt", outfile); break;
+		case IL_FFI_SINTPTR:	fputs("ILNativeUInt", outfile); break;
+		case IL_FFI_FLOAT32:	fputs("ILFloat", outfile); break;
+		case IL_FFI_FLOAT64:	fputs("ILDouble", outfile); break;
+		case IL_FFI_FLOAT:		fputs("ILNativeFloat", outfile); break;
+		case IL_FFI_PTR:		fputs("void *", outfile); break;
+		case IL_FFI_TYPEDREF:	fputs("ILTypedRef", outfile); break;
+		default:				break;
+	}
+}
+
+/*
  * Dump the name of a marshalling function.
  */
 static void dumpFfiMarshalerName(FILE *outfile, char *profile, int size)
@@ -1027,7 +1054,7 @@ static void dumpFfiMarshaler(FILE *outfile, char *profile, int size)
 	if(profile[0] != IL_FFI_VOID)
 	{
 		fputs("*((", outfile);
-		dumpFfiType(outfile, profile[0]);
+		dumpFfiReturnType(outfile, profile[0]);
 		fputs(" *)rvalue) = ", outfile);
 	}
 

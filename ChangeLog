@@ -4,6 +4,10 @@
 	* engine/md_ppc.h, engine/ppc_codegen.h: check in the early
 	stages of the PPC unroller macros.
 
+	* support/ansi.c: don't use the mb/wc routines if wchar.h is
+	not present (needed for some Mac OS X systems that have the
+	functions but not the header file definitions for mbstate_t).
+
 2003-08-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* ildasm/ildasm_internal.h, ildasm/ildasm_main.c, ildasm/ildasm.1: 

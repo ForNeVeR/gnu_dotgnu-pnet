@@ -38,7 +38,8 @@ extern	"C" {
  * or if the profile says to always use Latin1.
  */
 #if !(defined(HAVE_WCTOMB) || defined(HAVE_WCRTOMB)) || \
-    !(defined(HAVE_MBTOWC) || defined(HAVE_MBRTOWC))
+    !(defined(HAVE_MBTOWC) || defined(HAVE_MBRTOWC)) || \
+	!(defined(HAVE_WCHAR_H))
 #ifndef IL_CONFIG_LATIN1
 #define	IL_CONFIG_LATIN1	1
 #endif

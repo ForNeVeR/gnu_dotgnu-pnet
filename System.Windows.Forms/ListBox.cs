@@ -379,7 +379,10 @@ public class ListBox : ListControl
 				List[index] = value; 
 				
 				if(this.owner != null && !this.owner.suppressEvents)
+				{
+					this.owner.FireSelectedValueChanged();
 					this.owner.FireSelectedIndexChanged();
+				}
 			}
   		}
 
@@ -391,7 +394,10 @@ public class ListBox : ListControl
 				List[index] = value; 
 
 				if(this.owner != null && !this.owner.suppressEvents)
+				{
+					this.owner.FireSelectedValueChanged();
 					this.owner.FireSelectedIndexChanged();
+				}
 			}
   		}
 
@@ -409,7 +415,10 @@ public class ListBox : ListControl
 			{
 				this.owner.PaintItem(value);
 				if(!this.owner.suppressEvents)
+				{
+					this.owner.FireSelectedValueChanged();
 					this.owner.FireSelectedIndexChanged();
+				}
 			}
 			
  			return result;
@@ -433,7 +442,10 @@ public class ListBox : ListControl
 					this.owner.PaintItem((int) o);
 			
 				if(!this.owner.suppressEvents)
+				{
+					this.owner.FireSelectedValueChanged();
 					this.owner.FireSelectedIndexChanged();
+				}
 			}
  		}
 
@@ -454,7 +466,10 @@ public class ListBox : ListControl
 				this.owner.FlushPaint();
 
 				if(!this.owner.suppressEvents)
+				{
+					this.owner.FireSelectedValueChanged();
 					this.owner.FireSelectedIndexChanged();
+				}
 			}
  		}
 
@@ -476,7 +491,10 @@ public class ListBox : ListControl
  				this.owner.PaintItem((int) value);
 
 				if(!this.owner.suppressEvents)
+				{
+					this.owner.FireSelectedValueChanged();
 					this.owner.FireSelectedIndexChanged();
+				}
 			}
  		}
 		
@@ -488,7 +506,10 @@ public class ListBox : ListControl
  				this.owner.PaintItem((int) value);
 
 				if(!this.owner.suppressEvents)
+				{
+					this.owner.FireSelectedValueChanged();
 					this.owner.FireSelectedIndexChanged();
+				}
 			}
  		}
 
@@ -501,7 +522,10 @@ public class ListBox : ListControl
 				this.owner.PaintItem(value);
 
 				if(!this.owner.suppressEvents)
+				{
+					this.owner.FireSelectedValueChanged();
 					this.owner.FireSelectedIndexChanged();
+				}
 			}
  		}
 
@@ -1195,6 +1219,11 @@ public class ListBox : ListControl
 		base.OnResize( e );
 	}
 	
+	private void FireSelectedValueChanged()
+	{
+		this.OnSelectedValueChanged(new EventArgs());
+	}
+	
 	private void FireSelectedIndexChanged()
 	{
 		this.OnSelectedIndexChanged(new EventArgs());
@@ -1844,6 +1873,7 @@ public class ListBox : ListControl
 			this.FlushPaint();
 
 			this.suppressEvents = false;
+			this.FireSelectedValueChanged();
 			this.FireSelectedIndexChanged();
 		}	
 	}
@@ -1878,6 +1908,7 @@ public class ListBox : ListControl
 					this.suppressEvents = true;
 					this.MoveSelection(dataInd);
 					this.suppressEvents = false;
+					this.FireSelectedValueChanged();
 					this.FireSelectedIndexChanged();
 					break;
 				
@@ -1927,6 +1958,7 @@ public class ListBox : ListControl
 						this.selectedIndices.Clear();
 						this.selectedIndices.Add(dataInd);
 						this.suppressEvents = false;
+						this.FireSelectedValueChanged();
 						this.FireSelectedIndexChanged();
 					}
 					
@@ -1988,6 +2020,7 @@ public class ListBox : ListControl
 					this.suppressEvents = true;
 					this.MoveSelection(dataInd);
 					this.suppressEvents = false;
+					this.FireSelectedValueChanged();
 					this.FireSelectedIndexChanged();
 					break;
 					
@@ -2168,6 +2201,7 @@ public class ListBox : ListControl
 				this.suppressEvents = true;	
 				this.MoveSelection(this.FocusedItem);
 				this.suppressEvents = false;
+				this.FireSelectedValueChanged();
 				this.FireSelectedIndexChanged();
 			}
 			else if(multiEx && !shift)
@@ -2176,6 +2210,7 @@ public class ListBox : ListControl
 				this.selectedIndices.Clear();
 				this.selectedIndices.Add(this.FocusedItem);
 				this.suppressEvents = false;
+				this.FireSelectedValueChanged();
 				this.FireSelectedIndexChanged();
 			}
 		}

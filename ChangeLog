@@ -9,6 +9,11 @@ source files; declare new conversion functions.
 * ilalink/link_class.c, ilalink/link_field.c, ilalink/link_misc.c,
 ilalink/Makefile.am: new files.
 
+* ilalink/link_attrs.c: stub out "_ILLinkerConvertSecurity".
+
+* ilalink/link_method.c: convert PInvoke, overrides, and parameter
+marshalling.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

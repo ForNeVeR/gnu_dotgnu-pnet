@@ -33,6 +33,10 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	ILType *newSignature;
 	ILParameter *param;
 	ILParameter *newParam;
+	ILModule *module;
+	ILPInvoke *pinvoke;
+	ILOverride *over;
+	ILMethod *decl;
 	ILMethodCode code;
 
 	/* See if we already have a definition of this method in the class */
@@ -113,6 +117,11 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 		{
 			return 0;
 		}
+		if(!_ILLinkerConvertMarshal(linker, (ILProgramItem *)param,
+									(ILProgramItem *)newParam, 1))
+		{
+			return 0;
+		}
 	}
 
 	/* Convert the custom attributes that are attached to the method */
@@ -120,6 +129,53 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 						      (ILProgramItem *)newMethod))
 	{
 		return 0;
+	}
+
+	/* Convert the security declarations that are attached to the method */
+	if(!_ILLinkerConvertSecurity(linker, (ILProgramItem *)method,
+						         (ILProgramItem *)newMethod))
+	{
+		return 0;
+	}
+
+	/* Convert the PInvoke information for the method */
+	pinvoke = ILPInvokeFind(method);
+	if(pinvoke)
+	{
+		module = ILPInvoke_Module(pinvoke);
+		if(module)
+		{
+			module = ILModuleRefCreateUnique(linker->image,
+											 ILModule_Name(module));
+			if(!module)
+			{
+				_ILLinkerOutOfMemory(linker);
+				return 0;
+			}
+		}
+		if(!ILPInvokeCreate(newMethod, 0, ILPInvoke_Attrs(pinvoke),
+							module, ILPInvoke_Alias(pinvoke)))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+	}
+
+	/* Convert the override information for the method */
+	over = ILOverrideFromMethod(method);
+	if(over)
+	{
+		decl = ILOverrideGetDecl(over);
+		decl = (ILMethod *)_ILLinkerConvertMemberRef(linker, (ILMember *)decl);
+		if(!decl)
+		{
+			return 0;
+		}
+		if(!ILOverrideCreate(newClass, 0, decl, newMethod))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
 	}
 
 	/* Get the method's code.  If there is no code, then we are done */
@@ -130,6 +186,103 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 
 	/* Finished */
 	return 1;
+}
+
+ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
+{
+	ILClass *owner;
+	ILType *synType;
+	ILTypeSpec *spec;
+	const char *name;
+	ILType *signature;
+	ILType *newSignature;
+	ILMethod *method;
+	ILField *field;
+
+	/* Convert the member's owner reference */
+	owner = ILMember_Owner(member);
+	synType = ILClassGetSynType(owner);
+	if(synType)
+	{
+		/* Map the synthetic type reference into the new image */
+		spec = _ILLinkerConvertTypeSpec(linker, synType);
+		if(!spec)
+		{
+			return 0;
+		}
+		owner = ILTypeSpecGetClass(spec);
+	}
+	else
+	{
+		owner = _ILLinkerConvertClassRef(linker, owner);
+		if(!owner)
+		{
+			return 0;
+		}
+	}
+
+	/* Search for an existing member with the requested signature */
+	name = ILMember_Name(member);
+	signature = ILMember_Signature(member);
+	if(ILMember_IsMethod(member))
+	{
+		/* Searching for a method */
+		method = 0;
+		while((method = (ILMethod *)ILClassNextMemberByKind
+				(owner, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if(!strcmp(ILMethod_Name(method), name) &&
+			   ILTypeIdentical(ILMethod_Signature(method), signature))
+			{
+				return (ILMember *)method;
+			}
+		}
+
+		/* Create a MemberRef for the method */
+		method = ILMethodCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
+		if(!method)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		newSignature = _ILLinkerConvertType(linker, signature);
+		if(!newSignature)
+		{
+			return 0;
+		}
+		ILMemberSetSignature((ILMember *)method, newSignature);
+		ILMethodSetCallConv(method, (newSignature->kind >> 8));
+		return (ILMember *)method;
+	}
+	else
+	{
+		/* Searching for a field */
+		field = 0;
+		while((field = (ILField *)ILClassNextMemberByKind
+				(owner, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if(!strcmp(ILField_Name(field), name) &&
+			   ILTypeIdentical(ILField_Type(field), signature))
+			{
+				return (ILMember *)field;
+			}
+		}
+
+		/* Create a MemberRef for the field */
+		field = ILFieldCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
+		if(!field)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		newSignature = _ILLinkerConvertType(linker, signature);
+		if(!newSignature)
+		{
+			return 0;
+		}
+		ILMemberSetSignature((ILMember *)field, newSignature);
+		return (ILMember *)field;
+	}
 }
 
 #ifdef	__cplusplus

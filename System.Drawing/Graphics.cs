@@ -68,18 +68,27 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				this.baseWindow = baseWindow;
 			}
 
+	// Create a Graphics that is internally offset to baseWindow
 	public Graphics(Graphics graphics, Rectangle baseWindow)
 			{
+				// Use the same toolkit
 				this.graphics = graphics.graphics;
 				if (graphics.clip != null)
-					this.clip = graphics.clip.Clone();
+				{
+					clip = graphics.clip.Clone();
+					clip.Intersect(baseWindow);
+				}
+				else
+					clip = new Region(baseWindow);
+				// Find out what the clip is with our new Origin
+				clip.Translate(-baseWindow.X, -baseWindow.Y);
+				this.baseWindow = baseWindow;
+				Clip = clip;
 				if (graphics.transform != null)
 					this.transform = new Matrix(graphics.transform);
 				this.pageScale = graphics.pageScale;
 				this.pageUnit = graphics.pageUnit;
 				this.stackTop = null;
-				this.baseWindow = baseWindow;
-			
 			}
 
 
@@ -2597,19 +2606,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					transform.TransformPoint(x, y, out newX, out newY);
 				}
-				else if(pageScale == 1.0f)
-				{
-					// Transform is identity and the page scale is 1,
-					// so we can bail out early if we are using pixels
-					// for the page unit, as there will be no change.
-					if(pageUnit == GraphicsUnit.World ||
-					   pageUnit == GraphicsUnit.Pixel)
-					{
-						return;
-					}
-					newX = (float)x;
-					newY = (float)y;
-				}
 				else
 				{
 					newX = (float)x;
@@ -3005,24 +3001,18 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Update the clipping region within the IToolkitGraphics object.
 	private void UpdateClip()
 			{
-				if (baseWindow == Rectangle.Empty)
-					UpdateClipActual(clip);
-				else
-				{
-					Region clipRegion = clip.Clone();
-					clipRegion.Translate(baseWindow.Left, baseWindow.Top);
-					clipRegion.Intersect(baseWindow);
-					UpdateClipActual(clipRegion);
-				}
-			}
-
-	// Update the actual IToolkit clipping
-	private void UpdateClipActual(Region clip)
-			{
 				RectangleF[] rectsF = clip.GetRegionScans(new Matrix());
 				Rectangle[] rects = new Rectangle[rectsF.Length];
 				for(int i=0;i < rectsF.Length; i++)
-					rects[i] = Rectangle.Truncate(rectsF[i]);
+				{
+					Rectangle r = Rectangle.Truncate(rectsF[i]);
+					if (baseWindow != Rectangle.Empty)
+					{
+						r.Offset(baseWindow.Location);
+						r.Intersect(baseWindow);
+					}
+					rects[i] = r;
+				}
 				graphics.SetClipRects(rects);
 			}
 

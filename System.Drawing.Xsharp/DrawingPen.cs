@@ -43,15 +43,15 @@ internal sealed class DrawingPen : IToolkitPen
 			{
 				switch(style)
 				{
-					// TODO: dashed lines
 					case DashStyle.Solid:
+					case DashStyle.Custom:
+					default:
+						return LineStyle.LineSolid;
 					case DashStyle.Dash:
 					case DashStyle.Dot:
 					case DashStyle.DashDot:
 					case DashStyle.DashDotDot:
-					case DashStyle.Custom:
-					default:
-						return LineStyle.LineSolid;
+						return LineStyle.LineOnOffDash;
 				}
 			}
 
@@ -86,6 +86,12 @@ internal sealed class DrawingPen : IToolkitPen
 				}
 			}
 
+	// Standard dash patterns.
+	private static readonly byte[] dash = {3, 1};
+	private static readonly byte[] dot = {1, 1};
+	private static readonly byte[] dashdot = {3, 1, 1, 1};
+	private static readonly byte[] dashdotdot = {3, 1, 1, 1, 1, 1};
+
 	// Select this pen into a graphics object.
 	public void Select(IToolkitGraphics _graphics)
 			{
@@ -94,12 +100,41 @@ internal sealed class DrawingPen : IToolkitPen
 				{
 					Xsharp.Graphics g = graphics.graphics;
 					g.LineWidth = (int)(properties.Width);
-					g.LineStyle = MapLineStyle(properties.DashStyle);
+					LineStyle style = MapLineStyle(properties.DashStyle);
+					if(style == LineStyle.LineOnOffDash)
+					{
+						switch(properties.DashStyle)
+						{
+							case DashStyle.Dash:
+							{
+								g.DashPattern = dash;
+							}
+							break;
+
+							case DashStyle.Dot:
+							{
+								g.DashPattern = dot;
+							}
+							break;
+
+							case DashStyle.DashDot:
+							{
+								g.DashPattern = dashdot;
+							}
+							break;
+
+							case DashStyle.DashDotDot:
+							{
+								g.DashPattern = dashdotdot;
+							}
+							break;
+						}
+					}
+					g.LineStyle = style;
 					g.CapStyle = MapCapStyle(properties.EndCap);
 					g.JoinStyle = MapJoinStyle(properties.LineJoin);
 					g.Foreground = DrawingToolkit.DrawingToXColor
 						(properties.Color);
-					// TODO: dashed line patterns
 				}
 			}
 

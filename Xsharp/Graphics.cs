@@ -64,6 +64,7 @@ public sealed class Graphics : IDisposable
 	private Color background;
 	private Pixmap tile;
 	private Bitmap stipple;
+	private byte[] dashPattern;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.Graphics"/> object and
@@ -563,6 +564,47 @@ public sealed class Graphics : IDisposable
 					finally
 					{
 						dpy.Unlock();
+					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Get or set the dash pattern for line drawing.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The pattern to draw with.  Alternating sizes for the
+	/// dashes and the gaps.</para>
+	/// </value>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if the value is set to <see langword="null"/>.</para>
+	/// </exception>
+	public byte[] DashPattern
+			{
+				get
+				{
+					return dashPattern;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					if(value != dashPattern)
+					{
+						try
+						{
+							IntPtr display = Lock();
+							dashPattern = value;
+							Xlib.XSetDashes(display, gc, 0, dashPattern,
+											dashPattern.Length);
+						}
+						finally
+						{
+							dpy.Unlock();
+						}
 					}
 				}
 			}

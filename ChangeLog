@@ -1,4 +1,10 @@
 
+2003-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing.Xsharp/DrawingPen.cs, Xsharp/Graphics.cs,
+	Xsharp/Xlib.cs.in: implement some of the support code for
+	dashed pens in Xsharp - not 100% working yet.
+
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs, 

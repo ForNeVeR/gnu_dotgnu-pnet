@@ -358,6 +358,11 @@ internal sealed class Xlib
 			(IntPtr display, IntPtr gc, @X_int@ x, @X_int@ y);
 
 	[DllImport("X11")]
+	extern public static @X_int@ XSetDashes
+			(IntPtr display, IntPtr gc, @X_int@ dash_offset,
+			 byte[] dash_list, @X_int@ n);
+
+	[DllImport("X11")]
 	extern public static @X_int@ XDrawLine
 			(IntPtr display, Drawable drawable, IntPtr gc,
 			 @X_int@ x1, @X_int@ y1, @X_int@ x2, @X_int@ y2);

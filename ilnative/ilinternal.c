@@ -993,10 +993,6 @@ static int processFile(const char *filename, ILContext *context,
 
 	/* Clean up and exit */
 	ILImageDestroy(image);
-	if(classTable)
-	{
-		ILFree(classTable);
-	}
 	return 0;
 }
 

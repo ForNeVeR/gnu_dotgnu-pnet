@@ -837,7 +837,14 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 		}
 
 		/* Create a MemberRef for the method */
-		method = ILMethodCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
+		if(ILClassIsRef(owner))
+		{
+			method = ILMethodCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
+		}
+		else
+		{
+			method = ILMethodCreate(owner, 0, name, 0);
+		}
 		if(!method)
 		{
 			_ILLinkerOutOfMemory(linker);
@@ -862,7 +869,14 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 		}
 
 		/* Create a MemberRef for the field */
-		field = ILFieldCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
+		if(ILClassIsRef(owner))
+		{
+			field = ILFieldCreate(owner, (ILToken)IL_MAX_UINT32, name, 0);
+		}
+		else
+		{
+			field = ILFieldCreate(owner, 0, name, 0);
+		}
 		if(!field)
 		{
 			_ILLinkerOutOfMemory(linker);

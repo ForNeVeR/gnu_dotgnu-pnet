@@ -1,4 +1,11 @@
 
+2001-01-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilalink/link_method.c (_ILLinkerConvertMemberRef): create a
+	referenced method or field as a def, not a ref, if the class
+	is already a def.  This is needed to handle forward definitions
+	within the same class.
+
 2001-01-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_invoke.tc, cscc/cs_lvalue.tc: report errors when instance

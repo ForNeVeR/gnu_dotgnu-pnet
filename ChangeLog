@@ -39,6 +39,9 @@
 	runtime/System/Reflection/Emit/TypeBuilder.cs: harden and secure
 	the Reflection.Emit API against multi-threaded access.
 
+	* runtime/System/Reflection/Emit/IDetachItem.cs: new internal
+	interface for use in detaching everything after a save.
+
 2003-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/ClrField.cs,

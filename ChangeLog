@@ -26,6 +26,9 @@ is recorded as the start of the non-allocation entry point to the method.
 This ensures that relative return addresses are correct when the constructor
 calls sub-methods.
 
+* engine/cvm_call.c: mark call instructions as "TODO" to remind us to
+implement them at some point.
+
 2001-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm_dasm.c, engine/cvmc_obj.c, engine/cvm_ptr.c,

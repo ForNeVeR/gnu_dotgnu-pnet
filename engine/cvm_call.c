@@ -191,12 +191,14 @@ break;
 
 case COP_CALL_VIRTUAL:
 {
+	/* TODO */
 	MODIFY_PC_AND_STACK(1, 0);
 }
 break;
 
 case COP_CALL_INTERFACE:
 {
+	/* TODO */
 	MODIFY_PC_AND_STACK(1, 0);
 }
 break;
@@ -337,6 +339,7 @@ break;
 case COP_CALL_VIRTUAL:
 {
 	/* Wide version of "call_virtual" */
+	/* TODO */
 	MODIFY_PC_AND_STACK(2, 0);
 }
 break;
@@ -344,6 +347,7 @@ break;
 case COP_CALL_INTERFACE:
 {
 	/* Wide version of "call_interface" */
+	/* TODO */
 	MODIFY_PC_AND_STACK(2, 0);
 }
 break;
@@ -353,6 +357,7 @@ break;
 case COP_PREFIX_TAIL:
 {
 	/* Perform a tail call to another method */
+	/* TODO */
 	MODIFY_PC_AND_STACK(2, 0);
 }
 break;

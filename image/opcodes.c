@@ -348,7 +348,7 @@ ILOpcodeInfo const ILPrefixOpcodeTable[256] = {
 	{"unused_prefix_10",	0, 0, IL_OPCODE_ARGS_INVALID, 2},
 
 	{"endfilter",			1, 0, IL_OPCODE_ARGS_NONE, 2},
-	{"unaligned.",			0, 0, IL_OPCODE_ARGS_NONE, 2},
+	{"unaligned.",			0, 0, IL_OPCODE_ARGS_UINT8, 3},
 	{"volatile.",			0, 0, IL_OPCODE_ARGS_NONE, 2},
 	{"tail.",				0, 0, IL_OPCODE_ARGS_NONE, 2},
 	{"initobj",				1, 0, IL_OPCODE_ARGS_TOKEN, 6},

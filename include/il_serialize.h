@@ -1,7 +1,7 @@
 /*
  * il_serialize.h - Routines for serializing attribute values.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,9 +33,10 @@ extern	"C" {
 #define	IL_META_SERIALTYPE_ARRAYOF		0x80
 
 /*
- * Opaque definition of ILSerializeReader.
+ * Opaque definitions of ILSerializeReader and ILSerializeWriter.
  */
 typedef struct _tagILSerializeReader ILSerializeReader;
+typedef struct _tagILSerializeWriter ILSerializeWriter;
 
 /*
  * Initialize a serialization reader for extracting values
@@ -119,6 +120,79 @@ int ILSerializeReaderGetNumExtra(ILSerializeReader *reader);
  */
 int ILSerializeReaderGetExtra(ILSerializeReader *reader, ILMember **member,
 						      const char **name, int *nameLen);
+
+/*
+ * Initialize a serialization writer for writing values
+ * to a custom attribute blob.
+ */
+ILSerializeWriter *ILSerializeWriterInit(void);
+
+/*
+ * Destroy a serialization writer's temporary storage.
+ */
+void ILSerializeWriterDestroy(ILSerializeWriter *writer);
+
+/*
+ * Get the final blob value from a serialization writer.
+ * Returns NULL if out of memory.
+ */
+const void *ILSerializeWriterGetBlob(ILSerializeWriter *writer,
+									 unsigned long *blobLen);
+
+/*
+ * Write an integer value of 32 bits or less to a writer.
+ */
+void ILSerializeWriterSetInt32(ILSerializeWriter *writer,
+							   ILInt32 value, int type);
+
+/*
+ * Write an unsigned integer value of 32 bits or less to a writer.
+ */
+void ILSerializeWriterSetUInt32(ILSerializeWriter *writer,
+							    ILUInt32 value, int type);
+
+/*
+ * Write an integer value of 64 bits in size to a writer.
+ */
+void ILSerializeWriterSetInt64(ILSerializeWriter *writer, ILInt64 value);
+
+/*
+ * Write an unsigned integer value of 64 bits in size to a writer.
+ */
+void ILSerializeWriterSetUInt64(ILSerializeWriter *writer, ILUInt64 value);
+
+/*
+ * Write a 32-bit floating point value to a writer.
+ */
+void ILSerializeWriterSetFloat32(ILSerializeWriter *writer, ILFloat value);
+
+/*
+ * Write a 64-bit floating point value to a writer.
+ */
+void ILSerializeWriterSetFloat64(ILSerializeWriter *writer, ILDouble value);
+
+/*
+ * Write a string value to a writer.
+ */
+void ILSerializeWriterSetString(ILSerializeWriter *writer,
+								const char *str, int len);
+
+/*
+ * Write the number of extra fields to a writer.
+ */
+void ILSerializeWriterSetNumExtra(ILSerializeWriter *writer, int num);
+
+/*
+ * Write the name of a extra field to a writer.
+ */
+void ILSerializeWriterSetField(ILSerializeWriter *writer,
+							   const char *name, int type);
+
+/*
+ * Write the name of a extra property to a writer.
+ */
+void ILSerializeWriterSetProperty(ILSerializeWriter *writer,
+								  const char *name, int type);
 
 #ifdef	__cplusplus
 };

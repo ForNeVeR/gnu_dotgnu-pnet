@@ -875,6 +875,7 @@ public class XmlTextReader : XmlReader
 								if((char)ch == '/')
 								{
 									readAttribute = false;
+									isEmpty = true;
 									Expect('>');
 									break;
 								}
@@ -901,7 +902,8 @@ public class XmlTextReader : XmlReader
 							name = ReadIdentifier(ch);
 							// checking for termination '/'
 							SetName(name);
-							++depth;
+							if(nodeType == XmlNodeType.Element)
+								++depth;
 							// reset buffer
 							builder = new StringBuilder();
 							break;

@@ -7,6 +7,8 @@
 	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs: Fixed up
 	bugs found from rdf parsing and added Namespace support to
 	XmlTextReader.
+	* System.Xml/XmlTextReader.cs : BUG #2405 fix. Added better depth
+	control.
 
 2003-01-26  Adam Ballai  <minddog@cannibutter.com>
 	

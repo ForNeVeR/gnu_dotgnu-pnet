@@ -63,7 +63,8 @@ internal sealed class WithScope : ScriptObject, IActivationObject,
 			}
 
 	// Get a specific member.
-	public override MemberInfo GetMember(String name, BindingFlags bindingAttr)
+	public override MemberInfo[] GetMember
+				(String name, BindingFlags bindingAttr)
 			{
 				// TODO
 				return null;

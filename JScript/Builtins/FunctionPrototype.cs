@@ -89,6 +89,13 @@ public class FunctionPrototype : ScriptFunction
 				}
 			}
 
+	// Perform a call on this object.
+	internal override Object Call(Object thisob, Object[] args)
+			{
+				// TODO
+				return null;
+			}
+
 }; // class FunctionPrototype
 
 // "Lenient" version of the above class which exports all of the

@@ -58,7 +58,8 @@ public class JSObject : ScriptObject, IEnumerable
 			}
 
 	// Get member information for this object.
-	public override MemberInfo GetMember(String name, BindingFlags bindingAttr)
+	public override MemberInfo[] GetMember
+				(String name, BindingFlags bindingAttr)
 			{
 				// TODO
 				return null;

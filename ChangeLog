@@ -1,4 +1,11 @@
 
+2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* JScript/Builtins/FunctionPrototype.cs,
+	JScript/Execute/ActivationObject.cs, JScript/Execute/JSObject.cs,
+	JScript/Execute/WithScope.cs, runtime/System/Globalization/Calendar.cs:
+	fix abstract method override bugs.
+
 2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Generics/DictionaryEnumeratorAdapter.cs,

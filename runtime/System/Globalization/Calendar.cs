@@ -133,7 +133,7 @@ public abstract class Calendar
 
 	// Extract the components from a DateTime value.
 	public abstract int GetDayOfMonth(DateTime time);
-	public abstract int GetDayOfWeek(DateTime time);
+	public abstract System.DayOfWeek GetDayOfWeek(DateTime time);
 	public abstract int GetDayOfYear(DateTime time);
 	public virtual int GetHour(DateTime time)
 			{

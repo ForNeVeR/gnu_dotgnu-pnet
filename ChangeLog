@@ -51,6 +51,9 @@ that don't have the "value" attribute bit set.
 jump targets for exception blocks; fix "null" handling in "AssignCompatible"
 so that it works with arrays; move "IsObjectRef" here from "verify_ptr.c".
 
+* include/il_coder.h, engine/ilverify.c: new coder API for the arguments
+to value type constructors.
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

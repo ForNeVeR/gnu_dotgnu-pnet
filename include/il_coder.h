@@ -449,6 +449,14 @@ struct _tagILCoderClass
 					 ILUInt32 numArgs);
 
 	/*
+	 * Rearrange the evaluation stack to insert a value
+	 * and a managed pointer to the value just before
+	 * constructor arguments.
+	 */
+	void (*valueCtorArgs)(ILCoder *coder, ILClass *classInfo,
+						  ILEngineStackItem *args, ILUInt32 numArgs);
+
+	/*
 	 * Call a method directly.
 	 */
 	void (*callMethod)(ILCoder *coder, ILEngineStackItem *args,
@@ -633,6 +641,9 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->newObj))((coder), (_classInfo)))
 #define	ILCoderCtorArgs(coder,args,numArgs) \
 			((*((coder)->classInfo->ctorArgs))((coder), (args), (numArgs)))
+#define	ILCoderValueCtorArgs(coder,_classInfo,args,numArgs) \
+			((*((coder)->classInfo->valueCtorArgs))((coder), (_classInfo), \
+													(args), (numArgs)))
 #define	ILCoderCallMethod(coder,args,numArgs,methodInfo) \
 			((*((coder)->classInfo->callMethod))((coder), (args), \
 												 (numArgs), (methodInfo)))

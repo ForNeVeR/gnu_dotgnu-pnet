@@ -386,6 +386,10 @@ static void Coder_CtorArgs(ILCoder *coder, ILEngineStackItem *args,
 					 	   ILUInt32 numArgs)
 {
 }
+static void Coder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
+								ILEngineStackItem *args, ILUInt32 numArgs)
+{
+}
 static void Coder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 					   		 ILUInt32 numArgs, ILMethod *methodInfo)
 {
@@ -469,6 +473,7 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_DownConvertArg,
 	Coder_NewObj,
 	Coder_CtorArgs,
+	Coder_ValueCtorArgs,
 	Coder_CallMethod,
 	Coder_CallVirtual,
 	Coder_CallInterface,

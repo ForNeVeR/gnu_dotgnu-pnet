@@ -34,6 +34,9 @@ negate decimal constants in-place.
 * auto_gen.sh: new file, which runs automake and autoconf on a fresh
 CVS check-out to make the necessary build files.
 
+* cscc/cs_cast.tc: semantic analysis for casts; implement CSTypeToName to
+support better error messages related to type conversions.
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

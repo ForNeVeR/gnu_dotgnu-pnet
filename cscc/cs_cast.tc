@@ -18,14 +18,162 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+%decls %{
+
+/*
+ * Convert a type into a printable name, suitable for use in error messages.
+ */
+const char *CSTypeToName(ILType *type);
+
+%}
+
 /*
  * Perform semantic analysis for a user-level cast operator.
  */
 ILNode_SemAnalysis(ILNode_UserCast)
 {
-	/* TODO */
+	CSSemValue type;
 	CSSemValue value;
+
+	/* Perform semantic analysis on the type and value expressions */
+	type = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	value = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+
+	/* Validate the value */
+	if(!CSIsSemValue(value.kind))
+	{
+		CSErrorOnLine(yygetfilename(node->expr2), yygetlinenum(node->expr2),
+					  "invalid value supplied to cast");
+		if(type.kind == CS_SEMKIND_TYPE)
+		{
+			value.type = type.type;
+		}
+		else
+		{
+			value.type = ILType_Int32;
+		}
+	}
+
+	/* Validate the type */
+	if(type.kind != CS_SEMKIND_TYPE)
+	{
+		CSErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
+					  "invalid type supplied to cast");
+		type.type = value.type;
+	}
+
+	/* Determine if we can cast between the types */
+	if(!ILCast(info, node->expr2, &(node->expr2), value.type, type.type))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "cannot cast from `%s' to `%s'",
+					  CSTypeToName(value.type), CSTypeToName(type.type));
+	}
+	else
+	{
+		/* Replace this node with the converted node */
+		*parent = node->expr2;
+	}
+
+	/* Return an rvalue of the final type to the caller */
 	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	value.type = type.type;
 	return value;
 }
+
+%end %{
+
+const char *CSTypeToName(ILType *type)
+{
+	if(ILType_IsPrimitive(type))
+	{
+		/* Get the name of a primitive type */
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_VOID:			return "void";
+			case IL_META_ELEMTYPE_BOOLEAN:		return "bool";
+			case IL_META_ELEMTYPE_I1:			return "sbyte";
+			case IL_META_ELEMTYPE_U1:			return "byte";
+			case IL_META_ELEMTYPE_I2:			return "short";
+			case IL_META_ELEMTYPE_U2:			return "ushort";
+			case IL_META_ELEMTYPE_CHAR:			return "char";
+			case IL_META_ELEMTYPE_I4:			return "int";
+			case IL_META_ELEMTYPE_U4:			return "uint";
+			case IL_META_ELEMTYPE_I8:			return "long";
+			case IL_META_ELEMTYPE_U8:			return "ulong";
+			case IL_META_ELEMTYPE_R4:			return "float";
+			case IL_META_ELEMTYPE_R8:			return "double";
+			case IL_META_ELEMTYPE_R:			return "double";
+			case IL_META_ELEMTYPE_I:			return "void *";
+			case IL_META_ELEMTYPE_U:			return "void *";
+			case IL_META_ELEMTYPE_STRING:		return "System.String";
+			case IL_META_ELEMTYPE_OBJECT:		return "System.Object";
+			case IL_META_ELEMTYPE_TYPEDBYREF:	return "System.TypedReference";
+		}
+	}
+	else if(ILType_IsValueType(type) || ILType_IsClass(type))
+	{
+		/* Get the name of a value or class type */
+		ILClass *classInfo = ILType_ToClass(type);
+		const char *name = ILClass_Name(classInfo);
+		const char *namespace = ILClass_Namespace(classInfo);
+		if(namespace)
+		{
+			return ILInternAppendedString
+						(ILInternAppendedString
+							(ILInternString((char *)namespace, -1),
+							 ILInternString((char *)".", 1)),
+						 ILInternString((char *)name, -1)).string;
+		}
+		else
+		{
+			return name;
+		}
+	}
+	else if(type != ILType_Invalid)
+	{
+		/* Get the name of a complex type */
+		if(type->kind == IL_TYPE_COMPLEX_BYREF)
+		{
+			return ILInternAppendedString
+					(ILInternString((char *)CSTypeToName(type->un.refType), -1),
+					 ILInternString((char *)" &", 2)).string;
+		}
+		else if(type->kind == IL_TYPE_COMPLEX_PTR)
+		{
+			return ILInternAppendedString
+					(ILInternString((char *)CSTypeToName(type->un.refType), -1),
+					 ILInternString((char *)" *", 2)).string;
+		}
+		else if(type->kind == IL_TYPE_COMPLEX_ARRAY)
+		{
+			ILType *elemType = type->un.array.elemType;
+			ILIntString str;
+			ILIntString bounds;
+			while(ILType_IsComplex(elemType) && elemType != ILType_Invalid &&
+			      elemType->kind == IL_TYPE_COMPLEX_ARRAY)
+			{
+				elemType = elemType->un.array.elemType;
+			}
+			str = ILInternString((char *)CSTypeToName(elemType), -1);
+			bounds = ILInternString((char *)"[]", 2);
+			while(type != elemType)
+			{
+				str = ILInternAppendedString(str, bounds);
+				type = type->un.array.elemType;
+			}
+			return str.string;
+		}
+		else if(type->kind == IL_TYPE_COMPLEX_CMOD_REQD ||
+				type->kind == IL_TYPE_COMPLEX_CMOD_OPT)
+		{
+			return CSTypeToName(type->un.modifier.type);
+		}
+		else if((type->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+		{
+		}
+	}
+	return "invalid type";
+}
+
+%}

@@ -1,9 +1,11 @@
 bin_PROGRAMS   = ildiff
-man_MANS       =
+man_MANS       = ildiff.1
 EXTRA_DIST     = $(man_MANS)
+
 ildiff_SOURCES = ildiff.c pretty.h
-ildiff_LDADD   = ../image/libILImage.a ../support/libILSupport.a ../dumpasm/libILDumpAsm.a
+ildiff_LDADD   = ../dumpasm/libILDumpAsm.a ../image/libILImage.a \
+				 ../support/libILSupport.a
 
 if USINGGCC
-INCLUDES = -Wall -I../includes/
+INCLUDES = -Wall
 endif

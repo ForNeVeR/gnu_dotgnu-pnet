@@ -1,0 +1,58 @@
+.\" Copyright (c) 2001 FreeDevelopers.net
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+.TH ildiff 1 "28 September 2001" "FreeDevelopers.net" "Portable.NET Development Tools"
+.SH NAME
+ildiff \- the Intermediate Language (IL) comparison utility
+.SH SYNOPSIS
+.ll +8
+.B ildiff
+[ options ]
+.I input1
+.I input2
+.SH DESCRIPTION
+.B Ildiff
+compares two IL files and produces a report on which program elements
+are different.  The differences are written to standard output.
+.SH OPTIONS
+.TP
+.B \-p, \-\-pretty
+Use colors in the output stream to highlight the program elements
+that differ.  This will only work on terminals that support
+ANSI color sequences.  The behaviour is undefined on other
+terminal types.
+.TP
+.B \-s, \-\-same
+Report program elements that are the same instead of different.
+.TP
+.B \-\-help
+Print a usage message for the \fBildiff\fR program.
+.TP
+.B \-v, \-\-version
+Print the version of the \fBildiff\fR program.
+.TP
+.B \-\-
+Marks the end of the command-line options, and the beginning of
+the input filenames.  You may need to use this if your first
+input filename begins with '-'.  e.g. "ilidff -- -input1.obj input2.obj".
+.SH "AUTHOR"
+Written by Gopal V <gopalv82@yahoo.com>.
+
+http://www.dotgnu.org/
+.SH "SEE ALSO"
+diff(1)
+.SH "DIAGNOSTICS"
+Exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.

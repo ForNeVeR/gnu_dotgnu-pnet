@@ -262,7 +262,10 @@ const char *ILDebugGetLineInfo(ILDebugContext *dbg, ILToken token,
 	ILUInt32 tempLine;
 	ILUInt32 tempColumn;
 
-	/* Find the highest block that is lower than the specified offset */
+	/* Find the highest block that is lower than the specified offset.
+	   If there are multiple lines for the same offset then return
+	   the highest line number.  Multiple lines can happen when nested
+	   blocks in the original source all begin on the same offset */
 	ILDebugIterInit(&iter, dbg, token);
 	while(ILDebugIterNext(&iter))
 	{
@@ -299,10 +302,13 @@ const char *ILDebugGetLineInfo(ILDebugContext *dbg, ILToken token,
 				}
 				if(tempOffset <= offset && tempOffset >= lowOffset)
 				{
-					lowFilename = tempFilename;
-					lowOffset = tempOffset;
-					lowLine = tempLine;
-					lowColumn = tempColumn;
+					if(!lowFilename || tempLine > lowLine)
+					{
+						lowFilename = tempFilename;
+						lowOffset = tempOffset;
+						lowLine = tempLine;
+						lowColumn = tempColumn;
+					}
 				}
 			}
 		}
@@ -320,10 +326,13 @@ const char *ILDebugGetLineInfo(ILDebugContext *dbg, ILToken token,
 				}
 				if(tempOffset <= offset && tempOffset >= lowOffset)
 				{
-					lowFilename = tempFilename;
-					lowOffset = tempOffset;
-					lowLine = tempLine;
-					lowColumn = tempColumn;
+					if(!lowFilename || tempLine > lowLine)
+					{
+						lowFilename = tempFilename;
+						lowOffset = tempOffset;
+						lowLine = tempLine;
+						lowColumn = tempColumn;
+					}
 				}
 			}
 		}
@@ -341,10 +350,13 @@ const char *ILDebugGetLineInfo(ILDebugContext *dbg, ILToken token,
 				}
 				if(tempOffset <= offset && tempOffset >= lowOffset)
 				{
-					lowFilename = tempFilename;
-					lowOffset = tempOffset;
-					lowLine = tempLine;
-					lowColumn = tempColumn;
+					if(!lowFilename || tempLine > lowLine)
+					{
+						lowFilename = tempFilename;
+						lowOffset = tempOffset;
+						lowLine = tempLine;
+						lowColumn = tempColumn;
+					}
 				}
 			}
 		}

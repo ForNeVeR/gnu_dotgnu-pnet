@@ -27,6 +27,10 @@
 	* engine/lib_diag.c: back out a previous change - invalid line/column
 	numbers are zero, not -1.
 
+	* image/debug_reader.c (ILDebugGetLineInfo): return the highest
+	line number for an IL offset just in case multiple nested blocks
+	start at the same code offset.
+
 2002-04-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,

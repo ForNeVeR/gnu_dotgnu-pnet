@@ -108,7 +108,7 @@ public class XmlTextReader : XmlReader
 				attr = new XmlAttributeToken(nameTable,null,null);
 				attributes = new XmlAttributeCollection(attr); 
 				attributeIndex = -1;
-				depth = 0;
+				depth = -1;
 				isEmpty = false;
 				contextSupport = false;
 				name = String.Empty;
@@ -360,7 +360,6 @@ public class XmlTextReader : XmlReader
 				StringReader s = new StringReader(tmp);
 				Close();
 				readState = ReadState.EndOfFile;
-				
 				return s;
 			}
 
@@ -807,6 +806,7 @@ public class XmlTextReader : XmlReader
 								if(builder.ToString(0, builder.Length -1) == "xml")
 								{
 									nodeType = XmlNodeType.XmlDeclaration;
+									SetName("xml");
 								}
 								else
 								{
@@ -823,11 +823,10 @@ public class XmlTextReader : XmlReader
 							if((char)ch == '?' && (char)reader.Peek() == '>')
 							{
 								value = builder.ToString(0, builder.Length -1);
-								ReadChar();
+								ch = ReadChar();
 								break;
 							}
 						}
-						
 						break;
 					case '!':
 						// Check for correct structure 
@@ -1757,7 +1756,7 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					if(attributeIndex == -1)
+					if(attributeIndex == -1 && depth != -1)
 					{
 						return depth;
 					}

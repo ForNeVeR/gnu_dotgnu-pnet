@@ -1,3 +1,7 @@
+2003-11-14  Adam Ballai <adam@thefrontnetworks.net>
+
+	* System.Xml/XmlTextReader.cs: bug fix for #4215.
+
 2003-11-14  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: improvements to MeasureString and

@@ -1623,8 +1623,10 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 	const char *name;
 	ILType *type;
 	ILClass *classInfo;
+	ILClass *resolvedClass;
 	ILTypeSpec *spec;
 	ILMember *member;
+	ILMember *resolvedMember;
 	int isMethod;
 	ILMethod *method;
 	int loadFlags = (int)userData;
@@ -1720,6 +1722,10 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 			{
 				/* Create a method reference within the TypeRef */
 				method = ILMethodCreate(classInfo, token, name, 0);
+				if(!method)
+				{
+					return IL_LOADERR_MEMORY;
+				}
 				ILMethodSetCallConv(method, (type->kind >> 8));
 				member = (ILMember *)method;
 			}
@@ -1727,12 +1733,58 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 			{
 				/* Create a field reference within the TypeRef */
 				member = (ILMember *)ILFieldCreate(classInfo, token, name, 0);
+				if(!member)
+				{
+					return IL_LOADERR_MEMORY;
+				}
 			}
 			ILMemberSetSignature(member, type);
 
-			/* TODO: Resolve the member reference to the foreign type */
+			/* Resolve the member reference to the foreign type */
 			if((loadFlags & IL_LOADFLAG_NO_RESOLVE) == 0)
 			{
+				resolvedClass = ILClassResolve(classInfo);
+				if(!resolvedClass || ILClassIsRef(resolvedClass))
+				{
+					/* Failed to resolve the class */
+					member = 0;
+					break;
+				}
+				resolvedMember = 0;
+				while((resolvedMember = ILClassNextMember(resolvedClass,
+														  resolvedMember)) != 0)
+				{
+					if(!strcmp(ILMember_Name(resolvedMember), name))
+					{
+						if(isMethod && ILMember_IsMethod(resolvedMember))
+						{
+							if(ILTypeIdentical
+									(ILMember_Signature(resolvedMember), type))
+							{
+								break;
+							}
+						}
+						else if(!isMethod && ILMember_IsField(resolvedMember))
+						{
+							if(ILTypeIdentical
+									(ILMember_Signature(resolvedMember), type))
+							{
+								break;
+							}
+						}
+					}
+				}
+				if(!resolvedMember)
+				{
+					/* Failed to resolve the member */
+					member = 0;
+					break;
+				}
+				if(!_ILProgramItemLink(&(member->programItem),
+									   &(resolvedMember->programItem)))
+				{
+					return IL_LOADERR_MEMORY;
+				}
 			}
 		}
 		break;

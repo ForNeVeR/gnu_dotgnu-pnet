@@ -326,49 +326,49 @@ internal sealed class DrawingTopLevelWindow
 	void IToolkitTopLevelWindow.SetWindowFlags(ToolkitWindowFlags flags)
 			{
 				// Set the default hint flags.
-				MotifDecorations decorations = MotifDecorations.All;
-				MotifFunctions functions = MotifFunctions.All;
+				MotifDecorations decorations = 0;
+				MotifFunctions functions = 0;
 				MotifInputType inputType = MotifInputType.Normal;
 				OtherHints otherHints = OtherHints.None;
 
 				// Alter decorations according to the window flags.
-				if((flags & ToolkitWindowFlags.Close) == 0)
+				if((flags & ToolkitWindowFlags.Close) != 0)
 				{
 					functions |= MotifFunctions.Close;
 				}
-				if((flags & ToolkitWindowFlags.Minimize) == 0)
+				if((flags & ToolkitWindowFlags.Minimize) != 0)
 				{
 					decorations |= MotifDecorations.Minimize;
 					functions |= MotifFunctions.Minimize;
 				}
-				if((flags & ToolkitWindowFlags.Caption) == 0)
+				if((flags & ToolkitWindowFlags.Caption) != 0)
 				{
 					decorations |= MotifDecorations.Title;
 				}
-				if((flags & ToolkitWindowFlags.Border) == 0)
+				if((flags & ToolkitWindowFlags.Border) != 0)
 				{
 					decorations |= MotifDecorations.Border;
 				}
-				if((flags & ToolkitWindowFlags.ResizeHandles) == 0)
+				if((flags & ToolkitWindowFlags.ResizeHandles) != 0)
 				{
 					decorations |= MotifDecorations.ResizeHandles;
 				}
-				if((flags & ToolkitWindowFlags.Menu) == 0)
+				if((flags & ToolkitWindowFlags.Menu) != 0)
 				{
 					decorations |= MotifDecorations.Menu;
 				}
-				if((flags & ToolkitWindowFlags.Resize) == 0)
+				if((flags & ToolkitWindowFlags.Resize) != 0)
 				{
 					decorations |= MotifDecorations.Maximize |
 								   MotifDecorations.ResizeHandles;
 					functions |= MotifFunctions.Maximize |
 								 MotifFunctions.Resize;
 				}
-				if((flags & ToolkitWindowFlags.Move) == 0)
+				if((flags & ToolkitWindowFlags.Move) != 0)
 				{
 					functions |= MotifFunctions.Move;
 				}
-				if((flags & ToolkitWindowFlags.Modal) == 0)
+				if((flags & ToolkitWindowFlags.Modal) != 0)
 				{
 					inputType = MotifInputType.ApplicationModal;
 				}
@@ -654,7 +654,7 @@ internal sealed class DrawingTopLevelWindow
 				WindowStateChanged();
 			}
 
-			private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+	private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
 			{
 				base.SendBeginInvoke(i_gch);
 			}

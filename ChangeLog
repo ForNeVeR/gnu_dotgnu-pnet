@@ -1,5 +1,8 @@
 2004-07-07  Richard Baumann  <biochem333@nyc.rr.com>
 
+	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Windows.Forms/Form.cs: enable borderless windows.
+
 	* System.Windows.Forms/TextBoxBase.cs: add the nested internal
 	classes which constitute the new model/view backend for text boxes.
 

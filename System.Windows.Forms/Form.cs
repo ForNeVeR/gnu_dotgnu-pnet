@@ -717,10 +717,8 @@ public class Form : ContainerControl
 				{
 					case FormBorderStyle.None:
 					{
-						flags &= ~(ToolkitWindowFlags.Maximize |
-								   ToolkitWindowFlags.ResizeHandles |
-								   ToolkitWindowFlags.Resize |
-								   ToolkitWindowFlags.Border);
+						flags = (ToolkitWindowFlags.Close |
+						         ToolkitWindowFlags.ShowInTaskbar);
 					}
 					break;
 

@@ -384,6 +384,44 @@ ILUInt32 _ILSearchForRawToken(ILImage *image, ILSearchRawFunc func,
 }
 
 /*
+ * Add a program item to the redo list.  Returns zero if out of memory.
+ */
+static int AddToRedoList(ILContext *context, ILProgramItem *item)
+{
+	ILProgramItem **items;
+	if(context->numRedoItems >= context->maxRedoItems)
+	{
+		items = (ILProgramItem **)ILRealloc
+			(context->redoItems,
+			 sizeof(ILProgramItem *) * (context->maxRedoItems + 64));
+		if(!items)
+		{
+			return 0;
+		}
+		context->redoItems = items;
+		context->maxRedoItems += 64;
+	}
+	context->redoItems[(context->numRedoItems)++] = item;
+	return 1;
+}
+
+/*
+ * Determine if a program item is currently on the redo list.
+ */
+static int IsOnRedoList(ILContext *context, ILProgramItem *item)
+{
+	ILUInt32 posn;
+	for(posn = 0; posn < context->numRedoItems; ++posn)
+	{
+		if(context->redoItems[posn] == item)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*
  * Resolve the TypeRef's.  Returns zero if OK, -1 if a
  * second-phase scan is needed for TypeRef's to this module.
  * Returns a load error otherwise.
@@ -500,6 +538,16 @@ static int ResolveTypeRefs(ILImage *image, int loadFlags)
 					importInfo = ILClassLookup
 						(importScope, name, namespace);
 				}
+				else if(IsOnRedoList(image->context, scope))
+				{
+					/* The nesting parent is marked for redo,
+					   so mark the child for redo also */
+					if(!AddToRedoList(image->context, scope))
+					{
+						return IL_LOADERR_MEMORY;
+					}
+					continue;
+				}
 			}
 			break;
 
@@ -518,11 +566,24 @@ static int ResolveTypeRefs(ILImage *image, int loadFlags)
 				importImage = ILAssemblyToImage((ILAssembly *)scope);
 				if(importImage)
 				{
-					importScope = ILClassGlobalScope(importImage);
-					if(importScope)
+					if(importImage == image || !(importImage->loading))
 					{
-						importInfo = ILClassLookup
-							(importScope, name, namespace);
+						importScope = ILClassGlobalScope(importImage);
+						if(importScope)
+						{
+							importInfo = ILClassLookup
+								(importScope, name, namespace);
+						}
+					}
+					else
+					{
+						/* We cannot resolve this TypeRef yet.  We queue it
+						   on the "redo" list to be redone later */
+						if(!AddToRedoList(image->context, &(info->programItem)))
+						{
+							return IL_LOADERR_MEMORY;
+						}
+						continue;
 					}
 				}
 			}
@@ -2455,8 +2516,24 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 				if(!resolvedClass || ILClassIsRef(resolvedClass))
 				{
 					/* Failed to resolve the class */
-					member = 0;
-					break;
+					if(resolvedClass &&
+					   IsOnRedoList(image->context,
+					   			    &(resolvedClass->programItem)))
+					{
+						/* The TypeRef is on the redo list, so add
+						   the MemberRef to the redo list also */
+						if(!AddToRedoList(image->context,
+										  &(member->programItem)))
+						{
+							return IL_LOADERR_MEMORY;
+						}
+						break;
+					}
+					else
+					{
+						member = 0;
+						break;
+					}
 				}
 				resolvedMember = 0;
 				while(resolvedClass != 0)
@@ -3534,6 +3611,235 @@ void *_ILImageLoadOnDemand(ILImage *image, ILToken token)
 		return data[(token & ~IL_META_TOKEN_MASK) - 1];
 	}
 	return 0;
+}
+
+/*
+ * Redo a "TypeRef" token that was left dangling because of
+ * recursive assembly references.
+ */
+static int RedoTypeRef(ILImage *image, ILClass *classInfo)
+{
+	ILProgramItem *scope = ILClassGetScope(classInfo);
+	ILProgramItem *importScope;
+	ILImage *importImage;
+	ILClass *importInfo = 0;
+	switch(ILProgramItem_Token(scope) & IL_META_TOKEN_MASK)
+	{
+		case IL_META_TOKEN_TYPE_REF:
+		{
+			/* Nested type within a foreign assembly */
+			importScope = _ILProgramItemLinkedTo(scope);
+			if(importScope)
+			{
+				importInfo = ILClassLookup
+					(importScope, ILClass_Name(classInfo),
+					 ILClass_Namespace(classInfo));
+			}
+		}
+		break;
+
+		case IL_META_TOKEN_ASSEMBLY_REF:
+		{
+			/* Type is imported from a foreign assembly */
+			importImage = ILAssemblyToImage((ILAssembly *)scope);
+			if(importImage)
+			{
+				importScope = ILClassGlobalScope(importImage);
+				if(importScope)
+				{
+					importInfo = ILClassLookup
+						(importScope, ILClass_Name(classInfo),
+						 ILClass_Namespace(classInfo));
+				}
+			}
+		}
+		break;
+	}
+	if(importInfo)
+	{
+		/* Link "info" to "importInfo" */
+		if(!_ILProgramItemLink(&(classInfo->programItem),
+							   &(importInfo->programItem)))
+		{
+			return IL_LOADERR_MEMORY;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		/* Could not resolve the type */
+	#if IL_DEBUG_META
+		ReportResolveError(image, scope->token,
+						   ILClass_Name(classInfo),
+						   ILClass_Namespace(classInfo));
+	#endif
+		return IL_LOADERR_UNRESOLVED;
+	}
+}
+
+/*
+ * Redo a "MemberRef" token that was left dangling because of
+ * recursive assembly references.
+ */
+static int RedoMemberRef(ILImage *image, ILMember *member)
+{
+	ILToken token = ILMember_Token(member);
+	ILClass *classInfo = ILMember_Owner(member);
+	const char *name = ILMember_Name(member);
+	ILClass *resolvedClass;
+	ILMember *resolvedMember;
+	int isMethod = ILMember_IsMethod(member);
+	ILType *type = ILMember_Signature(member);
+	ILMethod *method;
+
+	/* Resolve the class the contains the member */
+	resolvedClass = ILClassResolve(classInfo);
+	if(!resolvedClass || ILClassIsRef(resolvedClass))
+	{
+		goto reportError;
+	}
+
+	/* Walk the class hierarchy looking for the member */
+	resolvedMember = 0;
+	while(resolvedClass != 0)
+	{
+		resolvedMember = 0;
+		while((resolvedMember = ILClassNextMember
+					(resolvedClass, resolvedMember)) != 0)
+		{
+			if(!strcmp(ILMember_Name(resolvedMember), name))
+			{
+				if(isMethod && ILMember_IsMethod(resolvedMember))
+				{
+					if(ILTypeIdentical
+						(ILMember_Signature(resolvedMember), type))
+					{
+						break;
+					}
+				}
+				else if(!isMethod && ILMember_IsField(resolvedMember))
+				{
+					if(ILTypeIdentical
+						(ILMember_Signature(resolvedMember), type))
+					{
+						break;
+					}
+				}
+			}
+		}
+		if(resolvedMember != 0)
+		{
+			break;
+		}
+		resolvedClass = ILClass_Parent(resolvedClass);
+	}
+	if(!resolvedMember)
+	{
+		/* Failed to resolve the member */
+		if(ILType_IsComplex(type) &&
+		   ILType_Kind(type) == (IL_TYPE_COMPLEX_METHOD |
+		   						 IL_TYPE_COMPLEX_METHOD_SENTINEL))
+		{
+			/* Create a local reference to a vararg call site */
+			method = ILMethodCreate(classInfo, token, name, 0);
+			if(!method)
+			{
+				return IL_LOADERR_MEMORY;
+			}
+			ILMethodSetCallConv(method, ILType_CallConv(type));
+			ILMemberSetSignature((ILMember *)method, type);
+			return 0;
+		}
+		goto reportError;
+	}
+	if(!_ILProgramItemLink(&(member->programItem),
+						   &(resolvedMember->programItem)))
+	{
+		return IL_LOADERR_MEMORY;
+	}
+	return 0;
+
+	/* Report an error in the member resolution process */
+reportError:
+#if IL_DEBUG_META
+	if(classInfo)
+	{
+		if(classInfo->className->namespace &&
+		   !strcmp(classInfo->className->namespace, "$Synthetic"))
+		{
+			fprintf(stderr,
+					"token 0x%08lX: member `%s.%s' not found\n",
+					(unsigned long)token, classInfo->className->name, name);
+		}
+		else
+		{
+			fprintf(stderr,
+					"token 0x%08lX: member `%s%s%s.%s' not found\n",
+					(unsigned long)token,
+					(classInfo->className->namespace
+							? classInfo->className->namespace : ""),
+					(classInfo->className->namespace ? "." : ""),
+					classInfo->className->name, name);
+		}
+	}
+	else
+	{
+		fprintf(stderr,
+				"token 0x%08lX: member %s not found\n",
+				(unsigned long)token, name);
+	}
+#endif
+	return IL_LOADERR_UNRESOLVED;
+}
+
+int _ILImageRedoReferences(ILContext *context)
+{
+	ILUInt32 posn;
+	ILProgramItem *item;
+	int error = 0;
+	int error2;
+
+	/* Process the TypeRef's that are registered to be redone */
+	for(posn = 0; posn < context->numRedoItems; ++posn)
+	{
+		item = context->redoItems[posn];
+		switch(item->token & IL_META_TOKEN_MASK)
+		{
+			case IL_META_TOKEN_TYPE_REF:
+			{
+				error2 = RedoTypeRef(item->image, (ILClass *)item);
+				if(!error)
+				{
+					error = error2;
+				}
+			}
+			break;
+		}
+	}
+
+	/* Process the MemberRef's that are registered to be redone.
+	   Must be done after all TypeRef's because a member's signature
+	   may refer to a TypeRef that appears later in the redo list */
+	for(posn = 0; posn < context->numRedoItems; ++posn)
+	{
+		item = context->redoItems[posn];
+		switch(item->token & IL_META_TOKEN_MASK)
+		{
+			case IL_META_TOKEN_MEMBER_REF:
+			{
+				error2 = RedoMemberRef(item->image, (ILMember *)item);
+				if(!error)
+				{
+					error = error2;
+				}
+			}
+			break;
+		}
+	}
+	return error;
 }
 
 #ifdef	__cplusplus

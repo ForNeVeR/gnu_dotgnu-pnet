@@ -562,14 +562,17 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 	int sameDir;
 	int loadFlags;
 	int len, retryLower;
+	ILImage *linkImage;
 
 	/* Scan the AssemblyRef table for the assemblies that we require */
 	assem = 0;
 	while((assem = (ILAssembly *)ILImageNextToken
 				(image, IL_META_TOKEN_ASSEMBLY_REF, assem)) != 0)
 	{
-		/* Ignore this assembly reference if we already have it */
-		if(ILContextGetAssembly(image->context, assem->name) != 0)
+		/* Ignore this assembly reference if we already have it and
+		   it isn't marked as "building" */
+		linkImage = ILContextGetAssembly(image->context, assem->name);
+		if(linkImage && linkImage->type != IL_IMAGETYPE_BUILDING)
 		{
 			continue;
 		}

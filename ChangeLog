@@ -1,4 +1,11 @@
 
+2003-11-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/context.c, image/image.h, image/link.c, image/meta_build.c,
+	image/pecoff_loader.c: add a "redo" list to the program loading
+	process, to allow recursive TypeRef's and MemberRef's to be
+	resolved in a final pass after all recursive images have been loaded.
+
 2003-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_oper.tc: implement a short-cut in the "==" and "!="

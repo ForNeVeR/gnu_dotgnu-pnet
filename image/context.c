@@ -265,6 +265,12 @@ void ILContextDestroy(ILContext *context)
 	/* Destroy the type pool */
 	ILMemPoolDestroy(&(context->typePool));
 
+	/* Destory the redo table */
+	if(context->redoItems)
+	{
+		ILFree(context->redoItems);
+	}
+
 	/* Destroy the context itself */
 	ILFree(context);
 }

@@ -937,18 +937,43 @@ noRuntimeHeader:
 	(*image)->rsrcRVA = rsrcRVA;
 	(*image)->rsrcSize = rsrcSize;
 
+	/* Mark the metadata as loading so that we can detect TypeRef recursion */
+	(*image)->loading = 1;
+	++(context->redoLevel);
+
 	/* Load the meta information from the image */
 	if((flags & IL_LOADFLAG_NO_METADATA) == 0)
 	{
-		if((error = _ILImageParseMeta(*image, filename, flags)) != 0)
+		error = _ILImageParseMeta(*image, filename, flags);
+	}
+	else
+	{
+		error = 0;
+	}
+
+	/* The metadata is now fully loaded for this image */
+	(*image)->loading = 0;
+	if(--(context->redoLevel) == 0 && context->numRedoItems > 0)
+	{
+		/* We've exited all recursive loading levels, so redo queued items */
+		if(!error)
 		{
-			ILImageDestroy(*image);
-			return error;
+			error = _ILImageRedoReferences(context);
 		}
+
+		/* Free the "redo" table, which we no longer need */
+		ILFree(context->redoItems);
+		context->redoItems = 0;
+		context->numRedoItems = 0;
+		context->maxRedoItems = 0;
 	}
 
 	/* The image is loaded and ready to go */
-	return 0;
+	if(error)
+	{
+		ILImageDestroy(*image);
+	}
+	return error;
 }
 
 #ifndef REDUCED_STDIO

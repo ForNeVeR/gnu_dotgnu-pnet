@@ -91,6 +91,14 @@ struct _tagILContext
 
 	/* User data for the runtime engine */
 	void *userData;
+
+	/* Reference "redo" table.  This is the list of references that
+	   must be redone to fix up recursive TypeRef's and MemberRef's */
+	ILProgramItem **redoItems;
+	ILUInt32		numRedoItems;
+	ILUInt32		maxRedoItems;
+	ILUInt32		redoLevel;
+
 };
 
 /*
@@ -169,6 +177,7 @@ struct _tagILImage
 	int				strRefBig : 1;	/* Non-zero if STRREF's are 32-bit */
 	int				blobRefBig : 1;	/* Non-zero if BLOBREF's are 32-bit */
 	int				guidRefBig : 1;	/* Non-zero if GUIDREF's are 32-bit */
+	int				loading : 1;	/* Non-zero if still loading metadata */
 	ILSectionMap   *map;			/* Maps virtual to real addresses */
 	char		   *data;			/* Data that makes up the IL image */
 	unsigned long	len;			/* Length of the IL image */
@@ -471,6 +480,12 @@ int _ILImageParseMeta(ILImage *image, const char *filename, int flags);
  */
 int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 								int loadFlags);
+
+/*
+ * Redo TypeRef and MemberRef references that resulted from recursive
+ * assembly references.
+ */
+int _ILImageRedoReferences(ILContext *context);
 
 /*
  * Load a token information block on demand.

@@ -27,7 +27,7 @@ namespace System.IO
 using System.Runtime.Serialization;
 
 [Serializable]
-public class InternalBufferOverflowException : Exception
+public class InternalBufferOverflowException : SystemException
 {
 	// Constructors.
 	public InternalBufferOverflowException()

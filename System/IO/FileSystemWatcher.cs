@@ -38,6 +38,7 @@ using System.Threading;
 // requirements in a platform-neutral fashion without creating a security
 // hole at the same time.
 
+[DefaultEvent("Changed")]
 public class FileSystemWatcher : Component, ISupportInitialize
 {
 	// Internal state.
@@ -47,7 +48,7 @@ public class FileSystemWatcher : Component, ISupportInitialize
 	private bool includeSubdirectories;
 	private int internalBufferSize;
 	private NotifyFilters notifyFilter;
-	private Object synchronizingObject;
+	private ISynchronizeInvoke synchronizingObject;
 
 	// Constructors.
 	public FileSystemWatcher()
@@ -98,6 +99,8 @@ public class FileSystemWatcher : Component, ISupportInitialize
 			}
 
 	// Get or set this object's properties.
+	[IODescription("FSW_Enabled")]
+	[DefaultValue(false)]
 	public bool EnableRaisingEvents
 			{
 				get
@@ -109,6 +112,11 @@ public class FileSystemWatcher : Component, ISupportInitialize
 					enableRaisingEvents = value;
 				}
 			}
+	[IODescription("FSW_Filter")]
+	[DefaultValue("*.*")]
+	[RecommendedAsConfigurable(true)]
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
 	public String Filter
 			{
 				get
@@ -127,6 +135,8 @@ public class FileSystemWatcher : Component, ISupportInitialize
 					}
 				}
 			}
+	[IODescription("FSW_IncludeSubdirectories")]
+	[DefaultValue(false)]
 	public bool IncludeSubdirectories
 			{
 				get
@@ -138,6 +148,8 @@ public class FileSystemWatcher : Component, ISupportInitialize
 					includeSubdirectories = value;
 				}
 			}
+	[Browsable(false)]
+	[DefaultValue(8192)]
 	public int InternalBufferSize
 			{
 				get
@@ -149,6 +161,7 @@ public class FileSystemWatcher : Component, ISupportInitialize
 					internalBufferSize = value;
 				}
 			}
+	[IODescription("FSW_ChangedFilter")]
 	public NotifyFilters NotifyFilter
 			{
 				get
@@ -160,6 +173,14 @@ public class FileSystemWatcher : Component, ISupportInitialize
 					notifyFilter = value;
 				}
 			}
+	[IODescription("FSW_Path")]
+	[DefaultValue("")]
+	[RecommendedAsConfigurable(true)]
+	[Editor
+		("System.Diagnostics.Design.FSWPathEditor, System.Design",
+		 "System.Drawing.Design.UITypeEditor, System.Drawing")]
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
 	public String Path
 			{
 				get
@@ -178,6 +199,7 @@ public class FileSystemWatcher : Component, ISupportInitialize
 					}
 				}
 			}
+	[Browsable(false)]
 	public override ISite Site
 			{
 				get
@@ -193,7 +215,8 @@ public class FileSystemWatcher : Component, ISupportInitialize
 					}
 				}
 			}
-	public Object SynchronizingObject
+	[IODescription("FSW_SynchronizingObject")]
+	public ISynchronizeInvoke SynchronizingObject
 			{
 				get
 				{
@@ -206,10 +229,10 @@ public class FileSystemWatcher : Component, ISupportInitialize
 			}
 
 	// Begin initialization of a watcher.
-	public virtual void BeginInit() {}
+	public void BeginInit() {}
 
 	// End initialization of a watcher.
-	public virtual void EndInit() {}
+	public void EndInit() {}
 
 	// Wait for a particular kind of change to occur.
 	public WaitForChangedResult WaitForChanged(WatcherChangeTypes changeType)
@@ -226,10 +249,15 @@ public class FileSystemWatcher : Component, ISupportInitialize
 			}
 
 	// Events that are emitted for various filesystem operations.
+	[IODescription("FSW_Changed")]
 	public event FileSystemEventHandler Changed;
+	[IODescription("FSW_Created")]
 	public event FileSystemEventHandler Created;
+	[IODescription("FSW_Deleted")]
 	public event FileSystemEventHandler Deleted;
+	[Browsable(false)]
 	public event ErrorEventHandler Error;
+	[IODescription("FSW_Renamed")]
 	public event RenamedEventHandler Renamed;
 
 	// Dispose of this object.

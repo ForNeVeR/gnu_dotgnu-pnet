@@ -864,6 +864,12 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 	while((section = (ILNode_AttributeSection *)
 				ILNode_ListIter_Next(&iter)) != 0)
 	{
+		/* Skip documentation comments, if present */
+		if(yyisa(section, ILNode_DocComment))
+		{
+			continue;
+		}
+
 		/* Resolve the target item */
 		item = mainItem;
 		target = mainTarget;

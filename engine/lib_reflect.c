@@ -1026,56 +1026,18 @@ System_Array *_IL_Assembly_GetFiles(ILExecThread *thread,
 /*
  * private String GetLocation();
  */
-ILString *_IL_Assembly_GetLocation(ILExecThread *thread,
-                                        ILObject *_this)
+ILString *_IL_Assembly_GetLocation(ILExecThread *thread, ILObject *_this)
 {
-	ILString *retval;
-	ILProgramItem *item;
-	ILImage *image;
-	char *path;
-	int len;
-
-	/* Bail out we have no filename to work with */
-	if (!(item = (ILProgramItem *)_ILClrFromObject(thread, _this)))
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	if(image)
+	{
+		return ILStringCreate(thread, image->filename);
+	}
+	else
 	{
 		return 0;
 	}
-	if (!(image = ILProgramItem_Image(item)))
-	{
-		return 0;
-	}
-	if(!(image->filename))
-	{
-		return 0;
-	}
-
-	/* Strip the base name off the image's filename */
-	len = strlen(image->filename);
-	while(len > 0 &&
-	      image->filename[len-1] != '/' &&
-	      image->filename[len-1] != '\\')
-	{
-		--len;
-	}
-
-	/* Bail out we have an empty path */
-	if (!len)
-	{
-		return 0;
-	}
-
-	/* Construct the path */
-	if(!(path = (char *)ILMalloc(len+1)))
-	{
-		ILExecThreadThrowOutOfMemory(thread);
-		return 0;
-	}
-	strncpy(path, image->filename, len);
-	retval = ILStringCreate(thread, path);
-	ILFree(path);
-
-	/* Return the path to the caller */
-	return retval;
 }
 
 /*

@@ -1,4 +1,9 @@
 
+2003-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_reflect.c: "Assembly.GetLocation" should return
+	the full pathname for the assembly, not just the directory.
+
 2003-08-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c: regenerate the

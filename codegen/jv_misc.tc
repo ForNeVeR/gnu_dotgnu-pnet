@@ -385,6 +385,15 @@ JavaGenValue(ILNode_ArgList)
 }
 
 /*
+ * Generate value code for an argument expression.
+ */
+JavaGenValue(ILNode_Argument)
+{
+	/* TODO: ref and out parameters */
+	return JavaGenValue(node->expression, info);
+}
+
+/*
  * Generate value code for an "as" expression.
  */
 JavaGenValue(ILNode_As)
@@ -1217,8 +1226,73 @@ JavaGenValue(ILNode_ObjectCreationExpression)
 
 JavaGenValue(ILNode_InvocationExpression)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	ILMachineType resultType;
+	long saveStack;
+
+	/* Save the current stack height, so we know where to
+	   unwind to when popping the arguments */
+	saveStack = info->stackHeight;
+
+	/* Push the "this" expression if necessary */
+	if(node->thisExpr)
+	{
+		JavaGenCast(info, JavaGenValue(node->thisExpr, info),
+					ILMachineType_ObjectRef);
+	}
+
+	/* Push the argument expressions */
+	if(node->expr2)
+	{
+		JavaGenValue(node->expr2, info);
+	}
+
+	/* Invoke the method */
+	if(node->methodInfo)
+	{
+		if(ILMethod_IsVirtual(node->methodInfo))
+		{
+			if(ILClass_IsInterface(ILMethod_Owner(node->methodInfo)))
+			{
+				JavaGenCallInterfaceByMethod(info, node->methodInfo,
+											 info->stackHeight - saveStack);
+			}
+			else
+			{
+				JavaGenCallVirtByMethod(info, node->methodInfo);
+			}
+		}
+		else if(ILMethod_IsStatic(node->methodInfo))
+		{
+			JavaGenCallByMethod(info, node->methodInfo);
+		}
+		else
+		{
+			JavaGenCallSpecialByMethod(info, node->methodInfo);
+		}
+		resultType = ILTypeToMachineType(ILMethod_Signature(node->methodInfo)
+											->un.method.retType);
+	}
+	else
+	{
+		resultType = ILMachineType_Void;
+	}
+
+	/* Re-adjust the stack to remove the arguments */
+	if(resultType == ILMachineType_Void)
+	{
+		info->stackHeight = saveStack;
+	}
+	else
+	{
+		info->stackHeight = saveStack + JavaGenTypeSize(resultType);
+		if(info->stackHeight > info->maxStackHeight)
+		{
+			info->maxStackHeight = info->stackHeight;
+		}
+	}
+
+	/* Done */
+	return resultType;
 }
 
 JavaGenValue(ILNode_BaseInit),

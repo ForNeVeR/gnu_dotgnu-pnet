@@ -123,8 +123,15 @@ ILNode_GetType(ILNode_ObjectCreationExpression)
 
 ILNode_GetType(ILNode_InvocationExpression)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	if(node->methodInfo)
+	{
+		return ILTypeToMachineType(ILMethod_Signature(node->methodInfo)
+										->un.method.retType);
+	}
+	else
+	{
+		return ILMachineType_Void;
+	}
 }
 
 ILNode_GetType(ILNode_BaseInit),
@@ -196,6 +203,22 @@ ILNode_GetType(ILNode_ArgList)
 {
 	/* This will never be called, but we have to return something */
 	return ILMachineType_Void;
+}
+
+/*
+ * Get the type of an argument expression.
+ */
+ILNode_GetType(ILNode_Argument)
+{
+	if(node->modifier == ILParamMod_ref ||
+	   node->modifier == ILParamMod_out)
+	{
+		return ILMachineType_ManagedPtr;
+	}
+	else
+	{
+		return ILNode_GetType(node->expression, info);
+	}
 }
 
 /*
@@ -613,6 +636,15 @@ ILNode_GenValue(ILNode_ArgList)
 	return ILNode_GenValue(node->expr2, info);
 }
 
+/*
+ * Generate value code for an argument expression.
+ */
+ILNode_GenValue(ILNode_Argument)
+{
+	/* TODO: reference and out parameters */
+	return ILNode_GenValue(node->expression, info);
+}
+
 ILNode_GenValue(ILNode_NewExpression)
 {
 	/* TODO */
@@ -627,8 +659,61 @@ ILNode_GenValue(ILNode_ObjectCreationExpression)
 
 ILNode_GenValue(ILNode_InvocationExpression)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	ILMachineType resultType;
+	long saveStack;
+
+	/* Save the current stack height, so we know where to
+	   unwind to when popping the arguments */
+	saveStack = info->stackHeight;
+
+	/* Push the "this" expression if necessary */
+	if(node->thisExpr)
+	{
+		ILGenCast(info, ILNode_GenValue(node->thisExpr, info),
+				  ILMachineType_ObjectRef);
+	}
+
+	/* Push the argument expressions */
+	if(node->expr2)
+	{
+		ILNode_GenValue(node->expr2, info);
+	}
+
+	/* Invoke the method */
+	if(node->methodInfo)
+	{
+		if(ILMethod_IsVirtual(node->methodInfo))
+		{
+			ILGenCallVirtByMethod(info, node->methodInfo);
+		}
+		else
+		{
+			ILGenCallByMethod(info, node->methodInfo);
+		}
+		resultType = ILTypeToMachineType(ILMethod_Signature(node->methodInfo)
+											->un.method.retType);
+	}
+	else
+	{
+		resultType = ILMachineType_Void;
+	}
+
+	/* Re-adjust the stack to remove the arguments */
+	if(resultType == ILMachineType_Void)
+	{
+		info->stackHeight = saveStack;
+	}
+	else
+	{
+		info->stackHeight = saveStack + 1;
+		if(info->stackHeight > info->maxStackHeight)
+		{
+			info->maxStackHeight = info->stackHeight;
+		}
+	}
+
+	/* Done */
+	return resultType;
 }
 
 ILNode_GenValue(ILNode_BaseInit),

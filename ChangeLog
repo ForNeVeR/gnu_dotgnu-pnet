@@ -15,6 +15,9 @@ documentation elements.
 * codegen/cg_nodes.tc: convert InvocationExpression into a subtype of
 BinaryExpression; convert Argument from a declaration into an expression.
 
+* codegen/cg_misc.tc, codegen/jv_misc.tc: code generation for method
+invocation and argument evaluation.
+
 2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/csdoc.dtd: update the DTD for the XML documentation format.

@@ -1322,9 +1322,6 @@ ConditionalExpression
 				$$ = ILNode_Conditional_create
 						(ILNode_ToBool_create($1), $3, $5);
 			}
-	| LogicalOrExpression '?' ':' ConditionalExpression	{
-				$$ = ILNode_TwoConditional_create($1, $4);
-			}
 	;
 
 AssignmentExpression

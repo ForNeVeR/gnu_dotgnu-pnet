@@ -275,7 +275,6 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 {
 	ILType *type;
 }
-%node ILNode_TwoConditional ILNode_BinaryExpression
 %node ILNode_CDeclarator ILNode_Dummy =
 {
 	CDeclarator decl;

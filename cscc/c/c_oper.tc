@@ -1564,53 +1564,100 @@ ILNode_CSemAnalysis(ILNode_CastType)
 	return CCastNode(info, node->expr, parent, value, node->type);
 }
 
+%{
+
+/*
+ * Get the common type for a conditional operator.  Returns "ILType_Invalid"
+ * if there is no common type.
+ */
+static ILType *CommonCondType(ILGenInfo *info, ILType *type1, ILType *type2)
+{
+	ILMachineType mtype1 = ILTypeToMachineType(type1);
+	ILMachineType mtype2 = ILTypeToMachineType(type2);
+
+	/* If one of the types is "void", then the result is also "void" */
+	if(mtype1 == ILMachineType_Void ||
+	   mtype2 == ILMachineType_Void)
+	{
+		return ILType_Void;
+	}
+
+	/* Check for numeric combinations */
+	if(IsNumericMachineType(mtype1) && IsNumericMachineType(mtype2))
+	{
+		return ILValueTypeToType(info, CommonBinaryType(info, mtype1, mtype2));
+	}
+
+	/* Check for pointer combinations */
+	if(CTypeIsPointer(type1) && CTypeIsPointer(type2))
+	{
+		return type1;
+	}
+	else if(CTypeIsPointer(type1) && IsIntegerMachineType(mtype2))
+	{
+		return type1;
+	}
+	else if(CTypeIsPointer(type2) && IsIntegerMachineType(mtype1))
+	{
+		return type2;
+	}
+
+	/* The types must be identical (e.g. for struct and union types) */
+	if(CTypeIsIdentical(type1, type2))
+	{
+		return type1;
+	}
+
+	/* Could not determine a common type */
+	return ILType_Invalid;
+}
+
+%}
+
 /*
  * Perform semantic analysis for the conditional operator.
  */
 ILNode_CSemAnalysis(ILNode_Conditional)
 {
-	/* TODO */
+	CSemValue value1;
+	CSemValue value2;
+	ILType *commonType;
+
+	/* Perform semantic analysis on the boolean condition */
+	ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), stmtLevel);
+
+	/* Perform semantic analysis on the "then" and "else" clauses */
+	value1 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
+	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr3), stmtLevel);
+	if((!CSemIsRValue(value1) && !CSemIsVoid(value1)) ||
+	   (!CSemIsRValue(value2) && !CSemIsVoid(value2)))
+	{
+		goto error;
+	}
+
+	/* Determine the common type and then coerce the arguments */
+	commonType = CommonCondType(info, CSemGetType(value1), CSemGetType(value2));
+	if(commonType == ILType_Invalid)
+	{
+		goto error;
+	}
+	else if(commonType == ILType_Void)
+	{
+		return CSemValueDefault;
+	}
+	else
+	{
+		CCoerceNode(info, node->expr2, &(node->expr2), value1, commonType);
+		CCoerceNode(info, node->expr3, &(node->expr3), value2, commonType);
+		CSemSetRValue(value1, commonType);
+		return value1;
+	}
+
+	/* Report an error with the arguments to "?:" */
+error:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("invalid operands to ternary `?:'"));
 	return CSemValueError;
-}
-
-/*
- * Perform semantic analysis for the two-place conditional operator.
- */
-ILNode_CSemAnalysis(ILNode_TwoConditional)
-{
-	/* TODO */
-	return CSemValueError;
-}
-
-/*
- * Generate the type of a two-place conditional operator.
- */
-ILNode_GetType(ILNode_TwoConditional)
-{
-	/* TODO */
-	return ILMachineType_Void;
-}
-
-/*
- * Generate discard code for the two-place conditional operator.
- */
-ILNode_GenDiscard(ILNode_TwoConditional)
-{
-	/* TODO */
-}
-
-/*
- * Generate value code for the two-place conditional operator.
- */
-ILNode_GenValue(ILNode_TwoConditional)
-{
-	/* TODO */
-	return ILMachineType_Void;
-}
-JavaGenValue(ILNode_TwoConditional)
-{
-	/* Never called: nothing to do here */
-	return ILMachineType_Void;
 }
 
 /*

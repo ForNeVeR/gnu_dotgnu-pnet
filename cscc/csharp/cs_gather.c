@@ -935,6 +935,8 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 {
 	char *name;
 	char *basicName;
+	ILUInt32 thisAccess;
+	ILUInt32 baseAccess;
 	ILType *tempType;
 	ILMethod *methodInfo;
 	ILType *signature;
@@ -1222,13 +1224,23 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 			  			"declaration of `%s' overrides an inherited member, "
 						"and `override' was not present", name);
 				}
-				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) !=0 
-				 && (method->modifiers & IL_META_METHODDEF_MEMBER_ACCESS_MASK)
-				 !=	(ILMember_Attrs(member) & 
-						 IL_META_METHODDEF_MEMBER_ACCESS_MASK))
+
+				/* Get the access modifiers for this and the base methods */
+				thisAccess = (method->modifiers &
+				            IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+				baseAccess = (ILMember_Attrs(member) &
+				            IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+
+				/* Check for legal modifiers for overrides */
+				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) != 0 &&
+				   (thisAccess != baseAccess) &&
+				   ((ILProgramItem_Image(member) ==
+				     ILProgramItem_Image(methodInfo)) ||
+				    (thisAccess != IL_META_METHODDEF_FAMILY) ||
+				    (baseAccess != IL_META_METHODDEF_FAM_OR_ASSEM)))
 				{
-					class1=ILMember_Owner(member);
-					class2=ILMethod_Owner(methodInfo);
+					class1 = ILMember_Owner(member);
+					class2 = ILMethod_Owner(methodInfo);
 					CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
 						"cannot change the access modifiers while overriding "
 						"method '%s%s%s.%s' with '%s%s%s.%s' ",

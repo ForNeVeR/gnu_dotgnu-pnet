@@ -229,7 +229,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 
 	/* Bail out if the method group is NULL.  This is used by "BaseInit"
 	   to indicate no parent constructor in "System.Object" */
-	if(value.type == 0)
+	if(method.type == 0)
 	{
 		if(node->expr2)
 		{

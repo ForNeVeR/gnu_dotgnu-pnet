@@ -156,7 +156,7 @@ public class Uri : MarshalByRefObject
 			// TODO: convert file to platform based file reference
 		}
 
-		this.path = this.absolutePath.Replace('\\', '/').Replace("//", "/")
+		this.path = this.path.Replace('\\', '/').Replace("//", "/")
 			.Replace("/../", "/").Replace("/./", "/");
 	}
 
@@ -524,7 +524,7 @@ public class Uri : MarshalByRefObject
 			try
 			{
 				// technically, ports are 16 bit, but...
-				this.port = Int32.Parse(Authority.Substring(interimpos1 + 1));
+				this.port = Int32.Parse(authority.Substring(interimpos1 + 1));
 			}
 			catch (FormatException fe) { this.Port = -1; }
 			catch (OverflowException oe)

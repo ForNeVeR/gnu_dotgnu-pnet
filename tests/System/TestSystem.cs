@@ -28,6 +28,7 @@ public class TestSystem
 			{
 				TestSuite suite = new TestSuite("System Tests");
 				suite.AddTests(typeof(TestBoolean));
+				suite.AddTests(typeof(TestUri));
 				return suite;
 			}
 

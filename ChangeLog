@@ -1,3 +1,9 @@
+2002-04-14  Stephen Compall  <rushing@sigecom.net>
+
+	* tests/System/TestUri.cs, tests/System/TestSystem.cs: added a
+	partial test suite for System.Uri (so I can clean it up!)
+
+	* System/Uri.cs: minor syntax fixes.
 
 2002-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
@@ -67,6 +73,11 @@
 	runtime/System/Resources/README.ECMA,
 	runtime/System/Resources/ResourceReader.cs: continue the
 	implementation of resource-related classes.
+
+2002-04-11  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Fixed character literals, cleaned up Parse()
+	*alot*.
 
 2002-04-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 

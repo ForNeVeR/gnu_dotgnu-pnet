@@ -6,6 +6,9 @@
 	* cscc/csharp/cs_semantics.tc: Improve error reporting for missing types
 	to specify the missing type name in error message.
 
+	* codegen/cg_stmt.tc: Fix continue bug in ForeachCollection code , 
+	remove infinite loop.
+
 2003-01-15  Gopal.V  <gopalv82@symonds.net>
 	
 	* image/link.c: fix minor bug when the PInvoke shared objects are missing.

@@ -107,14 +107,13 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 			}
 
 	// Unload a specific application domain.
-	[TODO]
 	public static void Unload(AppDomain domain)
 			{
 				if(domain == null)
 				{
 					throw new ArgumentNullException("domain");
 				}
-				// TODO: unload the domain.
+				// All domains are local, and we cannot unload them at present.
 			}
 
 	// Get the friendly name associated with this application domain.

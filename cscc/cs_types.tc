@@ -65,13 +65,59 @@ int CSHasUnsafeType(ILNode *node)
 %}
 
 /*
- * Perform semantic analysis for array types.
+ * Perform semantic analysis for array types.  Array types are
+ * constructed by the C# grammar with the rank specifiers in the
+ * reverse of the true order, which this function fixes up.
  */
 ILNode_SemAnalysis(ILNode_ArrayType)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
+	ILNode *elemType;
+	ILNode **elemTypeParent;
+	ILType *arrayType;
+
+	/* Find the element type at the end of the rank specifiers */
+	elemType = node->type;
+	elemTypeParent = &(node->type);
+	while(yykind(elemType) == yykindof(ILNode_ArrayType))
+	{
+		elemTypeParent = &(((ILNode_ArrayType *)elemType)->type);
+		elemType = ((ILNode_ArrayType *)elemType)->type;
+	}
+
+	/* Perform semantic analysis on the element type */
+	value = ILNode_SemAnalysis(elemType, info, elemTypeParent);
+	if(value.kind != CS_SEMKIND_TYPE)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid array element type");
+		value.kind = CS_SEMKIND_TYPE;
+		value.type = ILType_Int32;
+	}
+
+	/* Create the array type from the outermost rank inwards */
+	arrayType = ILTypeCreateArray(info->context, node->numDimensions,
+								  value.type);
+	if(!arrayType)
+	{
+		CSOutOfMemory();
+	}
+	elemType = node->type;
+	while(yykind(elemType) == yykindof(ILNode_ArrayType))
+	{
+		arrayType = ILTypeCreateArray
+			(info->context, ((ILNode_ArrayType *)elemType)->numDimensions,
+			 arrayType);
+		if(!arrayType)
+		{
+			CSOutOfMemory();
+		}
+		elemType = ((ILNode_ArrayType *)elemType)->type;
+	}
+
+	/* Return the final array type */
+	value.kind = CS_SEMKIND_TYPE;
+	value.type = arrayType;
 	return value;
 }
 
@@ -81,8 +127,25 @@ ILNode_SemAnalysis(ILNode_ArrayType)
 ILNode_SemAnalysis(ILNode_PtrType)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
+
+	/* Perform semantic analysis on the element type */
+	value = ILNode_SemAnalysis(node->type, info, &(node->type));
+	if(value.kind != CS_SEMKIND_TYPE)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid pointer element type");
+		value.kind = CS_SEMKIND_TYPE;
+		value.type = ILType_Int32;
+	}
+
+	/* Create the pointer type */
+	value.kind = CS_SEMKIND_TYPE;
+	value.type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR,
+								 value.type);
+	if(!(value.type))
+	{
+		CSOutOfMemory();
+	}
 	return value;
 }
 
@@ -92,8 +155,13 @@ ILNode_SemAnalysis(ILNode_PtrType)
 ILNode_SemAnalysis(ILNode_VoidPtrType)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
+	value.kind = CS_SEMKIND_TYPE;
+	value.type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR,
+								 ILType_Void);
+	if(!(value.type))
+	{
+		CSOutOfMemory();
+	}
 	return value;
 }
 
@@ -103,7 +171,209 @@ ILNode_SemAnalysis(ILNode_VoidPtrType)
 ILNode_SemAnalysis(ILNode_VoidType)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
+	value.kind = CS_SEMKIND_TYPE;
+	value.type = ILType_Void;
 	return value;
+}
+
+/*
+ * Perform semantic analysis for primitive types.
+ */
+ILNode_SemAnalysis(ILNode_PrimitiveType)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_TYPE;
+	value.type = ILType_FromElement(node->elementType);
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "object" type.
+ */
+ILNode_SemAnalysis(ILNode_ObjectType)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_TYPE;
+	value.type = ILFindSystemType(info, "Object");
+	if(!(value.type))
+	{
+		CSOutOfMemory();
+	}
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "string" type.
+ */
+ILNode_SemAnalysis(ILNode_StringType)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_TYPE;
+	value.type = ILFindSystemType(info, "String");
+	if(!(value.type))
+	{
+		CSOutOfMemory();
+	}
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "decimal" type.
+ */
+ILNode_SemAnalysis(ILNode_DecimalType)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_TYPE;
+	value.type = ILFindSystemType(info, "Decimal");
+	if(!(value.type))
+	{
+		CSOutOfMemory();
+	}
+	return value;
+}
+
+%{
+
+/*
+ * Get the number of suffixes in a local variable type suffix list.
+ */
+static ILUInt32 SuffixListLen(ILNode *list)
+{
+	ILNode_ListIter iter;
+	ILUInt32 count = 0;
+	ILNode_ListIter_Init(&iter, list);
+	while(ILNode_ListIter_Next(&iter))
+	{
+		++count;
+	}
+	return count;
+}
+
+/*
+ * Get a particular suffix value from a local variable type suffix list.
+ */
+static ILUInt32 SuffixListValue(ILNode *list, ILUInt32 elemNum)
+{
+	ILNode_ListIter iter;
+	ILNode *child;
+	ILUInt32 count = 0;
+	ILNode_ListIter_Init(&iter, list);
+	while((child = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(count == elemNum)
+		{
+			return ((ILNode_TypeSuffix *)child)->count;
+		}
+		++count;
+	}
+	return 0;
+}
+
+%}
+
+/*
+ * Perform semantic analysis for local variable types,
+ * which have to split the main type from the suffixes.
+ * Without the split, there are reduce/reduce conflicts
+ * in the C# grammar.
+ */
+ILNode_SemAnalysis(ILNode_LocalVariableType)
+{
+	CSSemValue value;
+	ILUInt32 len;
+	ILUInt32 posn;
+	ILUInt32 count;
+	ILUInt32 numRanks;
+	ILUInt32 tempRank;
+	ILType *type;
+
+	/* Perform semantic analysis on the element type */
+	value = ILNode_SemAnalysis(node->type, info, &(node->type));
+	if(value.kind != CS_SEMKIND_TYPE)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid local variable type");
+		value.kind = CS_SEMKIND_TYPE;
+		type = ILType_Int32;
+	}
+	else
+	{
+		type = value.type;
+	}
+
+	/* If the element type is "void", then the first suffix
+	   must indicate a pointer type */
+	len = SuffixListLen(node->suffixes);
+	if(type == ILType_Void)
+	{
+		if(!len || SuffixListValue(node->suffixes, 0) != 0)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`void' not permitted as a local variable type");
+			value.kind = CS_SEMKIND_TYPE;
+			value.type = ILType_Int32;
+			return value;
+		}
+	}
+
+	/* Add the suffixes to the type */
+	posn = 0;
+	while(posn < len)
+	{
+		count = SuffixListValue(node->suffixes, posn);
+		if(count != 0 && (posn + 1) == len)
+		{
+			/* Special case: single rank specifier */
+			type = ILTypeCreateArray(info->context, count, type);
+			if(!type)
+			{
+				CSOutOfMemory();
+			}
+			++posn;
+		}
+		else if(count != 0)
+		{
+			/* Construct an array type from a group of rank specifiers */
+			numRanks = 1;
+			while((posn + numRanks) < len &&
+		       (count = SuffixListValue(node->suffixes, posn + numRanks)) != 0)
+			{
+				++numRanks;
+			}
+			tempRank = numRanks;
+			while(tempRank > 0)
+			{
+				--tempRank;
+				count = SuffixListValue(node->suffixes, posn + tempRank);
+				type = ILTypeCreateArray(info->context, count, type);
+				if(!type)
+				{
+					CSOutOfMemory();
+				}
+			}
+			posn += numRanks;
+		}
+		else
+		{
+			/* Construct a pointer type */
+			type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR, type);
+			if(!type)
+			{
+				CSOutOfMemory();
+			}
+			++posn;
+		}
+	}
+	value.kind = CS_SEMKIND_TYPE;
+	value.type = type;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for type suffixes.
+ */
+ILNode_SemAnalysis(ILNode_TypeSuffix)
+{
+	/* This is never actually called, so do nothing */
+	return CSSemValueDefault;
 }

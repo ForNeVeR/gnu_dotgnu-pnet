@@ -11,6 +11,8 @@ remove ILNode_TypeSuffix and ILNode_LocalVariableType.
 ILNode_StringType, ILNode_DecimalType, and rearrange the text a
 little for clarity.
 
+* cscc/cs_types.tc: semantic analysis for type nodes.
+
 2001-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h: add the IL_INLINE helper macro.

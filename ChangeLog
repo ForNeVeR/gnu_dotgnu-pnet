@@ -3,6 +3,14 @@
 
 	* make_patch.sh: add the helper patch script to pnetC.
 
+	* include/bits/Makefile.am, include/bits/mman.h,
+	include/sys/Makefile.am, include/sys/mman.h, libc/misc/Makefile.am,
+	libc/misc/madvise.c, libc/misc/mincore.c, libc/misc/mlock.c,
+	libc/misc/mlockall.c, libc/misc/mmap.c, libc/misc/mmap64.c,
+	libc/misc/mprotect.c, libc/misc/msync.c, libc/misc/munlock.c,
+	libc/misc/munlockall.c, libc/misc/munmap.c: stub out the
+	mmap-related system calls.
+
 2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.5.10" release.

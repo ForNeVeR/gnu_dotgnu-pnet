@@ -70,7 +70,7 @@ public class TestString : TestCase
 			String.Compare("abc","abcd") < 0);
 
 		Assert("String.Compare(\"xyz\",\"abc\")",
-			String.Compare("xyz","abc") == 0);
+			String.Compare("xyz","abc") > 0);
 
 		Assert("String.Compare(\"abc\",\"ABC\",true)",
 			String.Compare("abc","ABC",true) == 0);
@@ -81,8 +81,8 @@ public class TestString : TestCase
 		Assert("String.Compare(\"abc\",\"ABC\",false)",
 			String.Compare("abc","ABC",false) != 0);
 
-		Assert("String.Compare(\"a\",\"A\")",String.Compare("a","A") < 0);
-		Assert("String.Compare(\"A\",\"a\")",String.Compare("A","a") > 0);
+		Assert("String.Compare(\"a\",\"A\")",String.Compare("a","A") > 0);
+		Assert("String.Compare(\"A\",\"a\")",String.Compare("A","a") < 0);
 	
 		AssertEquals("String.Compare(\"\",\"\")",String.Compare("",""),0);
 
@@ -96,10 +96,10 @@ public class TestString : TestCase
 			String.Compare("abcdabcd",4,"ab",0,2),0);
 			
 		Assert("String.Compare(\"abcdabcd\",1,\"ab\",0,2)",
-			String.Compare("abcdabcd",1,"ab",0,2) < 0 );
+			String.Compare("abcdabcd",1,"ab",0,2) > 0 );
 
 		Assert("String.Compare(\"abcdabcd\",0,\"xyz\",0,2)",
-			String.Compare("abcdabcd",0,"xyz",0,2) > 0 );
+			String.Compare("abcdabcd",0,"xyz",0,2) < 0 );
 		
 		AssertEquals("String.Compare(\"abcdabcd\",0,\"abd\",0,2)",
 			String.Compare("abcdabcd",0,"abd",0,2),0);
@@ -192,7 +192,7 @@ public class TestString : TestCase
 			str1.CopyTo(0,(char[])null,0,0);
 			Fail("str1.CopyTo(0,(char[])null,0,0) should have throws a ArgumentNullException");
 		}
-		catch(ArgumentNullException err)
+		catch(NullReferenceException err)
 		{
 			//worked !
 		}

@@ -1,4 +1,8 @@
 
+2002-09-17  Gopal.V  <gopalv82@symonds.net>
+
+	* tests/System/TestString.cs: fix wrong asserts in TestStringCompare 
+
 2002-09-16  Gopal.V  <gopalv82@symonds.net>
 
 	* tests/System/TestUri.cs , tests/System/TestString.cs : fix minor 

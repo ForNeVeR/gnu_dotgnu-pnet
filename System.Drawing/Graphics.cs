@@ -986,6 +986,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				ConvertPoint(ref x1, ref y1);
 				ConvertPoint(ref x2, ref y2);
+				if (x1 == x2 && y1 == y2)
+					return;
 				lock(this)
 				{
 					SelectPen(pen);
@@ -1901,7 +1903,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				RectangleF[] bounds = new RectangleF[text.Length];
 				float xMax = 0;
 				float yMax = 0;
-				float fontHeight = font.GetHeight(this) - 1;
+				float fontHeight = font.GetHeight(this);
 				bool vertical = (stringFormat.FormatFlags & StringFormatFlags.DirectionVertical) != 0;
 				if (vertical)
 				{
@@ -2063,9 +2065,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						else
 						{
 							if (vertical)
-								bounds[currentPos] = new RectangleF( y, x, s.Height, s.Width );
+								bounds[currentPos] = new RectangleF( y, x, s.Height, s.Width - 1 );
 							else
-								bounds[currentPos] = new RectangleF( x, y, s.Width, s.Height );
+								bounds[currentPos] = new RectangleF( x, y, s.Width, s.Height - 1 );
 						}
 						x = newX;
 					}
@@ -2789,9 +2791,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				Point[] points = new Point [4];
 				points[0] = new Point(x, y);
-				points[1] = new Point(x + width - 1, y);
-				points[2] = new Point(x + width - 1, y + height - 1);
-				points[3] = new Point(x, y + height - 1);
+				points[1] = new Point(x + width, y);
+				points[2] = new Point(x + width, y + height);
+				points[3] = new Point(x, y + height);
 				return ConvertPoints(points, 4);
 			}
 	private Point[] ConvertRectangle(float x, float y,
@@ -2799,9 +2801,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				PointF[] points = new PointF [4];
 				points[0] = new PointF(x, y);
-				points[1] = new PointF(x + width - 1, y);
-				points[2] = new PointF(x + width - 1, y + height - 1);
-				points[3] = new PointF(x, y + height - 1);
+				points[1] = new PointF(x + width, y);
+				points[2] = new PointF(x + width, y + height);
+				points[3] = new PointF(x, y + height);
 				return ConvertPoints(points, 4);
 			}
 
@@ -2960,7 +2962,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					throw new ObjectDisposedException("graphics");
 				}
-				IToolkitFont tfont = font.GetFont(graphics.Toolkit);
+				IToolkitFont tfont = font.GetFont(graphics.Toolkit, DpiY);
 				tfont.Select(graphics);
 			}
 

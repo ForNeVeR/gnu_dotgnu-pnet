@@ -417,6 +417,8 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 	ILMethod *getter;
 	ILMethod *setter;
 	ILNode *constNode;
+	ILMethod *method;
+	int allowConst;
 
 	switch(value.kind)
 	{
@@ -443,11 +445,46 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			value.kind = CS_SEMKIND_LVALUE;
 			value.type = ILField_Type(field);
 
+			/* Check the usage of "readonly" fields */
+			allowConst = 1;
+			if(ILField_IsInitOnly(field))
+			{
+				method = ((ILNode_MethodDeclaration *)(info->currentMethod))
+							->methodInfo;
+				if(method && CSGetAccessScope(info, 1) == ILField_Owner(field))
+				{
+					/* The field is being used inside the class */
+					if(ILField_IsStatic(field) &&
+					   ILMethodIsStaticConstructor(method))
+					{
+						/* Static readonly used within static constructor */
+						allowConst = 0;
+					}
+					else if(!ILField_IsStatic(field) &&
+					        ILMethodIsConstructor(method))
+					{
+						/* Instance readonly used within instance constructor.
+						   Nothing needs to be done here */
+					}
+					else
+					{
+						/* The field is used elsewhere, so make it an r-value */
+						value.kind = CS_SEMKIND_RVALUE;
+					}
+				}
+				else
+				{
+					/* The field is used elsewhere, so make it an r-value */
+					value.kind = CS_SEMKIND_RVALUE;
+				}
+			}
+
 			/* Replace this identifier with a field access node */
 			if(ILField_IsStatic(field))
 			{
 				/* Convert the field into a constant node if possible */
-				if((constNode = FieldToConstant(info, node, field)) != 0)
+				if(allowConst &&
+				   (constNode = FieldToConstant(info, node, field)) != 0)
 				{
 					*parent = constNode;
 					value.kind = CS_SEMKIND_RVALUE;

@@ -307,3 +307,15 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 	/* TODO */
 	return CSSemValueDefault;
 }
+
+/*
+ * Perform semantic analysis for the "semantic guard" expression.
+ * This is an "as-is" node that has already been analysed in a
+ * previous pass and should not be analysed again.  This usually
+ * happens when field initializers are turned into statements
+ * within static constructors.
+ */
+ILNode_SemAnalysis(ILNode_SemGuard)
+{
+	return node->value;
+}

@@ -136,6 +136,10 @@ extern CSSemValue CSSemValueDefault;
 %node ILNode_UserCast ILNode_DummyBinaryExpr
 %node ILNode_IsUntyped ILNode_DummyBinaryExpr
 %node ILNode_AsUntyped ILNode_DummyBinaryExpr
+%node ILNode_SemGuard ILNode_AsIs =
+{
+	CSSemValue	value;
+}
 
 /*
  * Statements.

@@ -180,6 +180,11 @@ void CSSetGroupMemberForm(void *group, unsigned long n, int form);
  */
 int CSGetGroupMemberForm(void *group, unsigned long n);
 
+/*
+ * Add a statement to the static constructor for the current class.
+ */
+void CSAddStaticCtor(ILGenInfo *info, ILNode *stmt);
+
 #ifdef	__cplusplus
 };
 #endif

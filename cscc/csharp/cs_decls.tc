@@ -370,6 +370,17 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 	}
 }
 
+void CSAddStaticCtor(ILGenInfo *info, ILNode *stmt)
+{
+	ILNode_ClassDefn *defn = (ILNode_ClassDefn *)(info->currentClass);
+	if(defn && stmt)
+	{
+		stmt = ILNode_NewScope_create(stmt);
+		defn->staticCtors =
+			ILNode_Compound_CreateFrom(defn->staticCtors, stmt);
+	}
+}
+
 %}
 
 /*
@@ -483,9 +494,10 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		}
 
 		/* Add a statement to the static constructor to initialize the field */
+		decl->initializer = ILNode_SemGuard_create(decl->initializer, value);
+		CSAddStaticCtor(info, ILNode_Assign_create
+			(decl->name, decl->initializer));
 	}
-
-	/* TODO: check that there are no duplicate definitions */
 
 	/* Leave the unsafe context for the field */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)

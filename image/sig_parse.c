@@ -418,7 +418,7 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 				value = *((reader->data)++);
 				--(reader->len);
 				type = ILTypeCreateVarNum
-					(context, IL_META_ELEMTYPE_MVAR, (int)value);
+					(context, IL_TYPE_COMPLEX_MVAR, (int)value);
 			}
 			else
 			{
@@ -435,7 +435,7 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 				value = *((reader->data)++);
 				--(reader->len);
 				type = ILTypeCreateVarNum
-					(context, IL_META_ELEMTYPE_VAR, (int)value);
+					(context, IL_TYPE_COMPLEX_VAR, (int)value);
 			}
 			else
 			{

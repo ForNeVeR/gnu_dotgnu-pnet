@@ -4,6 +4,9 @@
 	* image/meta_index.c: forgot to terminate the Fields_GenericPar
 	and Fields_MethodSpec tables with END_FIELD.
 
+	* image/sig_parse.c (ParseElemType): wrong macros used for the
+	"var" and "mvar" complex type codes.
+
 2003-02-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* support/dir.c : fix build breaking on Mingw32 

@@ -27,7 +27,7 @@ namespace System.Drawing.Toolkit
 // create owner-draw widgets and the like.
 
 [NonStandardExtra]
-public interface IToolkitWindow
+public interface IToolkitWindow : IDisposable
 {
 	// Get the toolkit that owns this window.
 	IToolkit Toolkit { get; }

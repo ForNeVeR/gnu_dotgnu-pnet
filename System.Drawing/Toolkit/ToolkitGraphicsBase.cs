@@ -247,7 +247,15 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	// Dispose of this object.
 	public virtual void Dispose()
 			{
-				// Nothing to do in this base class.
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+
+	protected abstract void Dispose(bool disposing);
+
+	~ToolkitGraphicsBase()
+			{
+				Dispose(false);
 			}
 
 	// Clear the entire drawing surface.

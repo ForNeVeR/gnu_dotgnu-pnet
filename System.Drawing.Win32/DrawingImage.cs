@@ -287,10 +287,11 @@ namespace System.Drawing.Toolkit
 			buffer[offset + 3] = (byte)(value >> 24);
 		}
 
-
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
+			// Doesnt matter if its already been disposed.
 			Win32.Api.DeleteObject(hMaskRegion);
+			hMaskRegion = IntPtr.Zero;
 		}
 
 	}

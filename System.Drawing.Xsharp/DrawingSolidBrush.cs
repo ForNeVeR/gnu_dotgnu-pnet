@@ -49,7 +49,7 @@ internal sealed class DrawingSolidBrush : ToolkitBrushBase
 			}
 
 	// Dispose of this brush.
-	public override void Dispose()
+	protected override void Dispose(bool disposing)
 			{
 				// Nothing to do here in this implementation.
 			}

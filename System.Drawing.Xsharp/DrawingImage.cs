@@ -50,7 +50,7 @@ public class DrawingImage : ToolkitImageBase
 
 
 	// Dispose of this image.
-	public override void Dispose()
+	protected override void Dispose(bool disposing)
 			{
 				if(xImage != null)
 				{

@@ -36,7 +36,19 @@ namespace System.Drawing.Toolkit
 					this.width = width;
 				}
 
-		public abstract void Dispose();
+		public void Dispose()
+				{
+					Dispose(true);
+					GC.SuppressFinalize(this);
+				}
+
+		protected abstract void Dispose(bool disposing);
+
+		~ToolkitPenBase()
+			{
+				Dispose(false);
+			}
+
 		public abstract void Select(IToolkitGraphics graphics);
 		public abstract void Select(IToolkitGraphics graphics, IToolkitBrush brush);
 

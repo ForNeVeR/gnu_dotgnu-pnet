@@ -50,11 +50,22 @@ internal class DrawingFont : IToolkitFont
 				
 			}
 
-	// Dispose of this font.
-	public void Dispose()
+	protected virtual void Dispose(bool disposing)
 			{
 				Win32.Api.DeleteObject(hFont);
 				hFont = IntPtr.Zero;
+			}
+
+	// Dispose of this font.
+	public void Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+
+	~DrawingFont()
+			{
+				Dispose(false);
 			}
 
 	// Get the raw HFONT for this toolkit font.  IntPtr.Zero if none.

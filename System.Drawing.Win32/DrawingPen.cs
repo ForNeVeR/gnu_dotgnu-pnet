@@ -53,11 +53,11 @@ internal class DrawingPen : ToolkitPenBase
 			}
 
 	// Dispose of this object.
-	public override void Dispose()
-	{
-		Win32.Api.DeleteObject(hPen);
-		hPen = IntPtr.Zero;
-	}
+	protected override void Dispose(bool disposing)
+			{
+				Win32.Api.DeleteObject(hPen);
+				hPen = IntPtr.Zero;
+			}
 
 }; // class DrawingPen
 

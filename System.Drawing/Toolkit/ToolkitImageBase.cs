@@ -36,7 +36,18 @@ namespace System.Drawing.Toolkit
 					this.frame = frame;
 				}
 
-		public abstract void Dispose();
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		~ToolkitImageBase()
+		{
+			Dispose(false);
+		}
+
+		protected abstract void Dispose(bool disposing);
 
 		public abstract void ImageChanged();
 

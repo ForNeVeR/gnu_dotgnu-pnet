@@ -33,7 +33,20 @@ namespace System.Drawing.Toolkit
 			{
 				this.color = color;
 			}
-		public abstract void Dispose();
+
+		public void Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+
+		protected abstract void Dispose(bool disposing);
+
+		~ToolkitBrushBase()
+			{
+				Dispose(false);
+			}
+
 		public abstract void Select(IToolkitGraphics graphics);
 
 		public Color Color

@@ -41,6 +41,12 @@ namespace System.Drawing.Toolkit
 					this.image = image as ToolkitImageBase;
 				}
 
+		protected override void Dispose(bool disposing)
+		{
+
+		}
+
+
 		// Clear the entire drawing surface.
 		public override void Clear(Color color)
 				{

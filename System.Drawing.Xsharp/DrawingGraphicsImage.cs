@@ -32,12 +32,6 @@ namespace System.Drawing.Toolkit
 		public DrawingGraphicsImage(IToolkit toolkit, IToolkitImage image)
 			: base(toolkit, image) {}
 
-		// Dispose of this object.
-		public override void Dispose()
-		{
-			// TODO
-		}
-
 		// Draw a string using the current font and brush.
 		public override void DrawString
 			(String s, int x, int y, StringFormat format)

@@ -188,11 +188,27 @@ internal abstract class DrawingWindow : IToolkitWindow
 	}
 
 	//Destroy window
-	public virtual void Destroy()
+	void IToolkitWindow.Destroy()
 	{
 		// Call will ignore if hwnd = IntPtr.Zero
 		Win32.Api.DestroyWindow(hwnd);
 		//Console.WriteLine("DrawingWindow.Destroy, "+sink);
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		(this as IToolkitWindow).Destroy();
+	}
+
+	~DrawingWindow()
+	{
+		Dispose(false);
 	}
 
 	void IToolkitWindow.SetWindowFlags(System.Drawing.Toolkit.ToolkitWindowFlags flags)

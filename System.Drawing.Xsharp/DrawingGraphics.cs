@@ -41,7 +41,7 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 			}
 
 	// Dispose of this object.
-	public override void Dispose()
+	protected override void Dispose(bool disposing)
 			{
 				if(graphics != null)
 				{

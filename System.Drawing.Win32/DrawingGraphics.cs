@@ -38,7 +38,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 
 
 	// Dispose of this object.
-	public override void Dispose()
+	protected override void Dispose(bool disposing)
 			{
 				DeleteDC();
 			}

@@ -40,7 +40,7 @@ namespace System.Drawing.Toolkit
 		}
 
 		// Dispose of this object.
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
 			Win32.Api.DeleteObject(hBrush);
 			hBrush = IntPtr.Zero;

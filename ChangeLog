@@ -6,11 +6,11 @@
 	transforms but not shear. Implement ConvertTo and GetProperties.
 
 	* DotGNU.Images/Frame.cs, DotGNU.Images/Image.cs: 
-	Copying of the mask and other mask fixes.
+	copying of the mask and other mask fixes.
 
 	* System.Drawing.Win32/DrawingGraphics.cs,
 	System.Drawing.Win32/DrawingToolkit.cs, 
-	System.Drawing.Win32/DrawingWindow.cs: More accurate ellipse and arc
+	System.Drawing.Win32/DrawingWindow.cs: more accurate ellipse and arc
 	drawing thanks to H.Jones <inzanekaoz@yahoo.com>. Dont erase
 	background - done in Control.
 
@@ -19,13 +19,34 @@
 	System.Windows.Forms/EventId.cs, System.Windows.Forms/Form.cs, 
 	System.Windows.Forms/ImageList.cs, 
 	System.Windows.Forms/TextBoxBase.cs, System.Windows.Forms/ToolBar.cs: 
-	Implement ProcessTabKey and ProcessDialogKey. Use ContextMenu.OnPaint
+	implement ProcessTabKey and ProcessDialogKey. Use ContextMenu.OnPaint
 	to implement drawing rather. Implement Control.ContainsFocus, control
 	styles wrong. Invalidate fixed when handling child controls. Docked
 	controls being layed out the wrong way. Implement Control.Refresh.
 	Handle opaque style. Implement Form.ProcessDialogKey and fix create
 	layout bug. Implement ImageList.Dispose(). Toolbar UI bug fix and
 	implement Dispose(). Implement TextControlBase.ProcessDialogKey.
+
+	* System.Drawing/Toolkit/IToolkitWindow.cs,
+	System.Drawing/Toolkit/ToolkitBrushBase.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs,
+	System.Drawing/Toolkit/ToolkitImageBase.cs,
+	System.Drawing/Toolkit/ToolkitPenBase.cs,
+	System.Drawing.Postscript/PostscriptGraphics.cs,
+	System.Drawing.Win32/DrawingBrush.cs,
+	System.Drawing.Win32/DrawingFont.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingGraphicsImage.cs,
+	System.Drawing.Win32/DrawingImage.cs,
+	System.Drawing.Win32/DrawingPen.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingGraphicsImage.cs,
+	System.Drawing.Xsharp/DrawingHatchBrush.cs,
+	System.Drawing.Xsharp/DrawingImage.cs,
+	System.Drawing.Xsharp/DrawingPen.cs,
+	System.Drawing.Xsharp/DrawingSolidBrush.cs: fix IDispose pattern.
 
 2003-11-14  Adam Ballai <adam@thefrontnetworks.net>
 

@@ -157,7 +157,7 @@ internal sealed class DrawingPen : ToolkitPenBase
 			}
 
 	// Dispose of this pen.
-	public override void Dispose()
+	protected override void Dispose(bool disposing)
 			{
 				// Nothing to do here in this implementation.
 			}

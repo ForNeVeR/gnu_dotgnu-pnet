@@ -134,7 +134,7 @@ case IL_OP_STARG_S:
 case IL_OP_PREFIX + IL_PREFIX_OP_STARG:
 {
 	/* Store the top of the stack into an argument */
-	argNum = (ILUInt32)(pc[1]);
+	argNum = (ILUInt32)(IL_READ_UINT16(pc + 2));
 checkSTArg:
 	if(argNum >= numArgs)
 	{
@@ -274,7 +274,7 @@ case IL_OP_LDLOCA_S:
 case IL_OP_PREFIX + IL_PREFIX_OP_LDLOCA:
 {
 	/* Load the address of a local variable onto the stack */
-	argNum = (ILUInt32)(pc[1]);
+	argNum = (ILUInt32)(IL_READ_UINT16(pc + 2));
 checkLDLocA:
 	if(argNum >= numLocals)
 	{

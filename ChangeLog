@@ -21,6 +21,9 @@ tests/ilunit.c, tests/ilunit.h, tests/test_verify.c: implement an
 XUnit-style testing framework to assist with testing the system;
 begin writing a test harness for the bytecode verifier.
 
+* engine/verify_var.c: fix the code that fetches 16-bit variable numbers
+in some of the prefixed opcodes.
+
 2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,

@@ -148,6 +148,16 @@ internal sealed class ASN1Parser
 				offset += adjust;
 				count -= adjust;
 			}
+	public void Skip(ASN1Type type)
+			{
+				if(Type != type)
+				{
+					// Not the expected type.
+					throw new CryptographicException
+						(_("Crypto_InvalidASN1"));
+				}
+				Skip();
+			}
 
 	// Determine if the next ASN.1 field has a specific type.
 	public bool IsInteger()
@@ -244,6 +254,18 @@ internal sealed class ASN1Parser
 	public byte[] GetContentsAsArray(ASN1Type type)
 			{
 				return GetContentsAsArray(type, 0);
+			}
+
+	// Get a whole field, including the header, as a byte array.
+	public byte[] GetWholeAsArray()
+			{
+				int len = Length;
+				int ofs = Offset;
+				byte[] result = new byte [len + ofs];
+				Array.Copy(buffer, offset, result, 0, len + ofs);
+				offset += len + ofs;
+				count -= len + ofs;
+				return result;
 			}
 
 	// Get a parser for the contents of a sequence or set.

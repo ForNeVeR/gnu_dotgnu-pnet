@@ -53,3 +53,5 @@ Crypto_RSAMessageTooLong=The message to be encrypted is too long for the key
 Crypto_RSAKeyTooShort=The RSA key is too short for decryption operations
 Crypto_RSAInvalidCiphertext=Invalid ciphertext format for RSA decryption
 Crypto_InvalidHashSize=Invalid hash size for digital signature operation
+Crypto_CertNotSupp=Handle-based certificate construction is not supported
+Crypto_SignedNotSupp=Signed certificate files are not supported

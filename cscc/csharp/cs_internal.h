@@ -86,6 +86,11 @@ extern int CSGetSetKeywords;
 extern int CSMetadataOnly;
 
 /*
+ * A flag that is set to 1 to disable generics support.
+ */
+extern int CSNoGenerics;
+
+/*
  * Determine if a type or parameter node contains unsafe types.
  */
 int CSHasUnsafeType(ILNode *node);

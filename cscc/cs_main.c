@@ -50,6 +50,11 @@ int CCPluginInit(void)
 	{
 		CSMetadataOnly = 1;
 	}
+	if(CCStringListContains(extension_flags, num_extension_flags,
+							"no-generics"))
+	{
+		CSNoGenerics = 1;
+	}
 	return 1;
 }
 

@@ -4,6 +4,10 @@
 	* cscc/csharp/cs_stmt.tc: Improve the Enumerator detection code
 	to resolve the interface instead of the local implementation.
 
+	* cscc/csharp/cs_scanner.l, cscc/csharp/cs_internal.h, 
+	cscc/cs_main.c: Add a new option '-fno-generics' to disable
+	identification of generic keywords like 'where'.
+
 2003-05-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_attrs.c, cscc/csharp/cs_defs.tc,

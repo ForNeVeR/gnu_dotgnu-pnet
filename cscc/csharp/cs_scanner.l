@@ -32,6 +32,7 @@ extern YYLTYPE yylloc;
 #endif
 
 int       CSGetSetKeywords = 0;
+int		  CSNoGenerics = 0;
 
 /*
  * Get the next line of input from the C# pre-processor.
@@ -1067,7 +1068,17 @@ WHITE			[ \t\r\f\v\032]
 "virtual"				{ RETURNTOK(VIRTUAL); }
 "void"					{ RETURNTOK(VOID); }
 "volatile"				{ RETURNTOK(VOLATILE); }
-"where"					{ RETURNTOK(WHERE); }
+"where"					{ 
+							if(CSNoGenerics)
+							{
+								yylval.name = (ParseIdentifier(yytext)).string;
+								RETURNTOK(IDENTIFIER);
+							}
+							else
+							{
+								RETURNTOK(WHERE); 
+							}
+						}
 "while"					{ RETURNTOK(WHILE); }
 
 {IDALPHA}({DIGIT}|{IDALPHA})*		{

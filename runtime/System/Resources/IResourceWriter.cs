@@ -1,6 +1,6 @@
 /*
  * IResourceWriter.cs - Implementation of the
- *		"System.Resources.ResourceWriter" interface.
+ *		"System.Resources.IResourceWriter" interface.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *

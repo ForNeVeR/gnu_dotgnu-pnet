@@ -1,0 +1,3 @@
+The "System.Resources" classes are not strictly ECMA-compatible,
+but it is next to impossible to build a useful set of ECMA
+assemblies without some degree of resource support.

@@ -1,6 +1,6 @@
 /*
  * IResourceReader.cs - Implementation of the
- *		"System.Resources.ResourceReader" interface.
+ *		"System.Resources.IResourceReader" interface.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *

@@ -1,4 +1,12 @@
 
+2002-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Resources/IResourceReader.cs,
+	runtime/System/Resources/IResourceWriter.cs,
+	runtime/System/Resources/README.ECMA,
+	runtime/System/Resources/ResourceReader.cs: continue the
+	implementation of resource-related classes.
+
 2002-04-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/SocketMethods.cs: add some extra "using"

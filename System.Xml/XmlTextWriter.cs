@@ -132,11 +132,11 @@ public class XmlTextWriter : XmlWriter
 	// Add indentation before the current element.
 	private void DoIndent()
 			{
-				writer.Write(Environment.NewLine);
 				if(xmlSpace != System.Xml.XmlSpace.Preserve &&
 				   formatting == System.Xml.Formatting.Indented)
 				{
 					int indent = indentLevel;
+					writer.Write(Environment.NewLine);
 					while(indent > 0)
 					{
 						writer.Write(indentChar);

@@ -54,7 +54,7 @@ public sealed class Path
 			}
 
 	// Determine if a character is a directory separator.
-	private static bool IsSeparator(char ch)
+	internal static bool IsSeparator(char ch)
 			{
 				// We always check for '/' and '\\' because Windows
 				// programmers have been known to hard-wire them

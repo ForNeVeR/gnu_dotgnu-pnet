@@ -160,6 +160,41 @@ public sealed class AppDomain
 	// Event that is emitted when an exception is unhandled by the domain.
 	public event UnhandledExceptionEventHandler UnhandledException;
 
+#if !ECMA_COMPAT
+
+	// Create the setup information block for the current domain.
+	private static AppDomainSetup CreateCurrentSetup()
+			{
+				AppDomainSetup setup = new AppDomainSetup();
+
+				// Get the location information for the assembly
+				// that contains the program entry point.
+			#if CONFIG_RUNTIME_INFRA
+				Assembly entry = Assembly.GetEntryAssembly();
+				String location = entry.Location;
+				if(location != null && location != String.Empty)
+				{
+					// "ApplicationBase" is the directory containing
+					// the application, ending with a directory separator.
+					String dir = Path.GetDirectoryName(location);
+					if(dir != null && dir.Length > 0 &&
+					   !Path.IsSeparator(dir[dir.Length - 1]))
+					{
+						dir += Path.DirectorySeparatorChar;
+					}
+					setup.ApplicationBase = dir;
+
+					// The configuration file is the name of the entry
+					// assembly with ".config" added to the end.
+					setup.ConfigurationFile = location + ".config";
+				}
+			#endif
+
+				return setup;
+			}
+
+#endif
+
 	// Get the current domain.
 #if ECMA_COMPAT
 	internal
@@ -174,7 +209,12 @@ public sealed class AppDomain
 					{
 						if(currentDomain == null)
 						{
+						#if !ECMA_COMPAT
+							currentDomain = new AppDomain
+								("current", null, CreateCurrentSetup());
+						#else
 							currentDomain = new AppDomain("current");
+						#endif
 						}
 						return currentDomain;
 					}

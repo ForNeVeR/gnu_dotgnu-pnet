@@ -833,7 +833,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 16
+%expect 17
 
 %start CompilationUnit
 %%
@@ -2106,7 +2106,12 @@ SpecificCatchClause
 	;
 
 CatchNameInfo
-	: '(' Type Identifier ')' {
+	: /* nothing */ {
+				$$.type=ILNode_Identifier_create("Exception");
+				$$.id = 0;
+				$$.idNode = 0;
+			}
+	| '(' Type Identifier ')' {
 				$$.type = $2;
 				$$.id = ILQualIdentName($3, 0);
 				$$.idNode = $3;

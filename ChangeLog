@@ -25,6 +25,9 @@ in the configure.in file.
 * engine/asmfix.c: changes to accomodate assembler issues that are
 specific to cygwin.
 
+* support/dynlib.c: simplify the pathname handling - we will handle
+the ugliness of prefixes and suffixes elsewhere.
+
 2001-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c,

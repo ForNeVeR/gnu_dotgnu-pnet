@@ -33,96 +33,19 @@ extern	"C" {
 void *ILDynLibraryOpen(const char *name)
 {
 	void *handle;
-	int len;
-	char *fullName;
 	const char *error;
-
-	/* Convert the name into its full form */
-#ifdef _WIN32
-	len = strlen(fullName);
-	if(len < 4 || ILStrICmp(name + len - 4, ".dll") != 0)
-	{
-		fullName = (char *)ILMalloc(len + 5);
-		if(!fullName)
-		{
-			return 0;
-		}
-		strcpy(fullName, name);
-		if(len > 0 && name[len - 1] == '.')
-		{
-			strcat(fullName, "dll");
-		}
-		else
-		{
-			strcat(fullName, ".dll");
-		}
-	}
-	else
-	{
-		fullName = ILDupString(name);
-		if(!fullName)
-		{
-			return 0;
-		}
-	}
-#else	/* !_WIN32 */
-	int needSO, needLib;
-	len = 0;
-	needSO = 1;
-	while(name[len] != '\0')
-	{
-		if(name[len] == '.' && name[len + 1] == 's' && name[len + 2] == 'o' &&
-		   (name[len + 3] == '\0' || name[len + 3] == '.'))
-		{
-			needSO = 0;
-			break;
-		}
-		++len;
-	}
-	if(strchr(name, '/') == 0 &&
-	   (name[0] != 'l' || name[1] != 'i' || name[2] != 'b'))
-	{
-		needLib = 1;
-	}
-	else
-	{
-		needLib = 0;
-	}
-	fullName = (char *)ILMalloc(strlen(name) + (needSO ? 3 : 0) +
-											   (needLib ? 3 : 0) + 1);
-	if(!fullName)
-	{
-		return 0;
-	}
-	if(needLib)
-	{
-		strcpy(fullName, "lib");
-		strcat(fullName, name);
-	}
-	else
-	{
-		strcpy(fullName, name);
-	}
-	if(needSO)
-	{
-		strcat(fullName, ".so");
-	}
-#endif	/* !_WIN32 */
-
-	/* Attempt to load the library */
-	handle = dlopen(fullName, RTLD_LAZY | RTLD_GLOBAL);
+	handle = dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
 	if(!handle)
 	{
 		error = dlerror();
-		fprintf(stderr, "%s: %s\n", fullName,
+		fprintf(stderr, "%s: %s\n", name,
 				(error ? error : "could not load dynamic library"));
-		ILFree(fullName);
 		return 0;
 	}
-
-	/* Done */
-	ILFree(fullName);
-	return handle;
+	else
+	{
+		return handle;
+	}
 }
 
 void  ILDynLibraryClose(void *handle)

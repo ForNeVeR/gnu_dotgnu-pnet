@@ -26,21 +26,21 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 {
 
 	protected static uint createCount;
-	public DrawingTopLevelWindow(IToolkit toolkit, String name,
+	public DrawingTopLevelWindow(DrawingToolkit toolkit, String name,
 						 		 int width, int height, IToolkitEventSink sink) : base ( toolkit )
 			{
 				this.sink = sink;
 				//Console.WriteLine("DrawingTopLevelWindow");
 				dimensions = new Rectangle(0, 0, width, height);
 
-				//At the moment we create a unique class name for EVERY window. SWF does it for each unique window class
+				// At the moment we create a unique class name for EVERY window. SWF does it for each unique window class
 				className = "DrawingTopLevelWindow" + createCount++;
 
-				//Register the windows class
+				// Register the windows class
 				windowsClass = new Win32.Api.WNDCLASS();
 				windowsClass.style = Win32.Api.WindowClassStyle.CS_DBLCLKS;
-				windowsClass.lpfnWndProc = new Win32.Api.WNDPROC((toolkit as DrawingToolkit).WindowsLoop);
-				 //We will draw
+				windowsClass.lpfnWndProc = new Win32.Api.WNDPROC(toolkit.WindowsLoop);
+				// We will draw
 				windowsClass.hbrBackground = IntPtr.Zero;
 				windowsClass.lpszClassName = className ;
 				if (Win32.Api.RegisterClassA( ref windowsClass)==0) 
@@ -48,33 +48,34 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 					throw new Exception("Failed to register Windows class " + className);
 				}
 				
-				//Set default window characteristics
+				// Set default window characteristics
 				flags = ToolkitWindowFlags.Menu | ToolkitWindowFlags.Close | ToolkitWindowFlags.Minimize | ToolkitWindowFlags.Maximize | ToolkitWindowFlags.Caption | ToolkitWindowFlags.ResizeHandles;
-				(toolkit as DrawingToolkit).GetWin32StylesFromFlags( flags, out style, out extendedStyle);
+				toolkit.GetWin32StylesFromFlags( flags, out style, out extendedStyle);
 				menu = false;
 				extendedStyle = 0;
+				topOfHeirarchy = this;
 			}
 
 	// Change the set of supported window decorations and functions.
 	void IToolkitWindow.SetWindowFlags(ToolkitWindowFlags flags)
 			{
 				if (hwnd == IntPtr.Zero)
-					throw new ApplicationException("DrawingTopLevelWindow.SetWindowsFlags ERROR: Cant SetWindowsFlags. Hwnd not created yet.");
+					throw new ApplicationException("DrawingTopLevelWindow.SetWindowsFlags ERROR: Cant SetWindowsFlags. Hwnd not created yet");
 		
 				Win32.Api.WindowStyle style;
 				Win32.Api.WindowsExtendedStyle extendedStyle;
 				
-				(Toolkit as DrawingToolkit).GetWin32StylesFromFlags( flags, out style, out extendedStyle);
+				toolkit.GetWin32StylesFromFlags( flags, out style, out extendedStyle);
 				
 				//Now set the style
 				if (Win32.Api.SetWindowLong(hwnd, Win32.Api.SetWindowLongType.GWL_STYLE,style) == 0)
-					throw new InvalidOperationException("Unable to change the window style.");
+					throw new InvalidOperationException("Unable to change the window style");
 				if (Win32.Api.SetWindowLong(hwnd, Win32.Api.SetWindowLongType.GWL_EXSTYLE,extendedStyle) == 0)
-					throw new InvalidOperationException("Unable to change the extended window style.");
+					throw new InvalidOperationException("Unable to change the extended window style");
 
-				//Redraw the entire window including the non client portion
+				// Redraw the entire window including the non client portion
 				Win32.Api.RedrawWindow( hwnd, IntPtr.Zero, IntPtr.Zero, Win32.Api.RedrawWindowFlags.RDW_INVALIDATE | Win32.Api.RedrawWindowFlags.RDW_FRAME );
-				//Console.WriteLine( "DrawingTopLevelWindow.SetWindowFlags, hwnd="+hwnd );
+				// Console.WriteLine( "DrawingTopLevelWindow.SetWindowFlags, " + sink );
 
 			}
 
@@ -82,14 +83,14 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 	{
 		if (sink != null)
 			sink.ToolkitPrimaryFocusEnter();
-		//Console.WriteLine( "DrawingTopLevelWindow.GotFocus hwnd="+hwnd );
+		//Console.WriteLine( "DrawingTopLevelWindow.GotFocus "+sink );
 	}
 
 	internal override void KillFocus()
 	{
 		if (sink != null)
 			sink.ToolkitPrimaryFocusLeave();
-		//Console.WriteLine( "DrawingTopLevelWindow.LostFocus hwnd="+hwnd ) ;
+		//Console.WriteLine( "DrawingTopLevelWindow.LostFocus "+sink ) ;
 	}
 
 	internal override void Close()
@@ -107,17 +108,18 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 		int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
 		Toolkit.GetWindowAdjust( out leftAdjust, out topAdjust, out rightAdjust, out bottomAdjust, flags);
 
-		Size outside = new Size(dimensions.Size.Width + leftAdjust + rightAdjust, dimensions.Size.Height + topAdjust + bottomAdjust);
+		Size outside = new Size(dimensions.Width + leftAdjust + rightAdjust, dimensions.Height + topAdjust + bottomAdjust);
 
 		hwnd = Win32.Api.CreateWindowExA( extendedStyle, className, "", style, Win32.Api.CW_USEDEFAULT, 0, outside.Width, outside.Height, IntPtr.Zero, IntPtr.Zero, Win32.Api.GetModuleHandleA(null), IntPtr.Zero );
 		if (hwnd==IntPtr.Zero) 
 		{
-			throw new Exception( "Failed to create new Window" );
+			throw new Exception("OS reported failure to create new Window");
 		}
-		Rectangle dimension = (this as IToolkitWindow).Dimensions;
-		sink.ToolkitExternalMove( dimension.X, dimension.Y );
+		dimensions = (this as IToolkitWindow).Dimensions;
+		outsideDimensions = new Rectangle(dimensions.X - leftAdjust, dimensions.Y - topAdjust, dimensions.Width + leftAdjust + rightAdjust, dimensions.Height + topAdjust + bottomAdjust);
+		sink.ToolkitExternalMove( dimensions.X, dimensions.Y );
 		sink.ToolkitExternalResize( dimensions.Width, dimensions.Height );
-		//Console.WriteLine( "DrawingTopLevelWindow.CreateWindow, hwnd="+hwnd+", [" + dimensions.Size.ToString() + "]" );
+		//Console.WriteLine( "DrawingTopLevelWindow.CreateWindow, "+sink+", [" + dimensions.Size + "]" );
 	}
 }; // class DrawingTopLevelWindow
 

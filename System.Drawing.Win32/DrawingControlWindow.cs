@@ -21,13 +21,14 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
+using System.Collections;
 
 internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 {
 	//for a unique class name
 	protected static uint createCount;
 
-	public DrawingControlWindow(IToolkit toolkit, string name, DrawingWindow parent, int x, int y, int width, int height, IToolkitEventSink sink) : base (toolkit)
+	public DrawingControlWindow(DrawingToolkit toolkit, string name, DrawingWindow parent, int x, int y, int width, int height, IToolkitEventSink sink) : base (toolkit)
 	{
 		this.sink = sink;
 		//Console.WriteLine("DrawingControlWindow");
@@ -38,7 +39,7 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 		//Register the windows class
 		windowsClass = new Win32.Api.WNDCLASS();
 		windowsClass.style = Win32.Api.WindowClassStyle.CS_DBLCLKS;
-		windowsClass.lpfnWndProc = new Win32.Api.WNDPROC((toolkit as DrawingToolkit).WindowsLoop);
+		windowsClass.lpfnWndProc = new Win32.Api.WNDPROC(toolkit.WindowsLoop);
 		windowsClass.hbrBackground = IntPtr.Zero; //(IntPtr)(Win32.Api.COLOR_WINDOW + 1);
 		windowsClass.lpszClassName = className ;
 		if (Win32.Api.RegisterClassA( ref windowsClass)==0) 
@@ -55,22 +56,24 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 	{
 		if (parent != this.parent)
 		{
-			//window with no parent cant be visible
+			// window with no parent cant be visible
 			if (parent == null || (parent as DrawingWindow).hwnd == IntPtr.Zero)
 				IsMapped = false;
 			bool parented = this.parent != null && this.parent.hwnd != IntPtr.Zero;
-			this.parent = (DrawingWindow)parent;
+
+			// Adjust the heirararchy of parents and top of heirarchy
+			AdjustWindows(parent as DrawingWindow);
 			
 			suspendExternalMoveResizeNotify = true;
 			Win32.Api.SetParent( hwnd, parentHwnd);
 			suspendExternalMoveResizeNotify = false;
 			// Reposition this window on the client
-			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_TOP, x, y, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOSENDCHANGING | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
+			(this as IToolkitWindow).MoveResize(x, y, dimensions.Width, dimensions.Height);
 			
 			if (visible && !parented)
 				setVisible();
 		}
-		//Console.WriteLine("DrawingWindow.Reparent, hwnd="+hwnd);
+		//Console.WriteLine("DrawingWindow.Reparent, " + sink);
 	}
 	
 	internal override void CreateWindow()
@@ -83,6 +86,7 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 		}
 		sink.ToolkitExternalMove( dimensions.X, dimensions.Y );
 		sink.ToolkitExternalResize( dimensions.Width, dimensions.Height );
+		AdjustWindows(parent);
 	}
 
 	protected IntPtr parentHwnd 
@@ -104,7 +108,7 @@ internal class DrawingControlWindow : DrawingWindow, IToolkitWindow
 		}
 		set
 		{
-			//cant change the visiblity of a window that doesnt have a parent
+			// cant change the visiblity of a window that doesnt have a parent
 			if (parent != null && parent.hwnd != IntPtr.Zero)
 				base.IsMapped = value;
 			else

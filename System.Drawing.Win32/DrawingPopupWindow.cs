@@ -26,7 +26,7 @@ namespace System.Drawing.Toolkit
 	{
 		protected uint createCount;
 
-		public DrawingPopupWindow(IToolkit toolkit, int x, int y, int width, int height,
+		public DrawingPopupWindow(DrawingToolkit toolkit, int x, int y, int width, int height,
 								  IToolkitEventSink sink) : base ( toolkit )
 			{
 				//Console.WriteLine("DrawingPopupWindow");
@@ -39,7 +39,7 @@ namespace System.Drawing.Toolkit
 				// Register the windows class
 				windowsClass = new Win32.Api.WNDCLASS();
 				windowsClass.style = Win32.Api.WindowClassStyle.CS_DBLCLKS;
-				windowsClass.lpfnWndProc = new Win32.Api.WNDPROC((toolkit as DrawingToolkit).WindowsLoop);
+				windowsClass.lpfnWndProc = new Win32.Api.WNDPROC(toolkit.WindowsLoop);
 				// We will draw
 				windowsClass.hbrBackground = IntPtr.Zero;
 				windowsClass.lpszClassName = className ;
@@ -53,7 +53,6 @@ namespace System.Drawing.Toolkit
 				menu = false;
 				extendedStyle = Win32.Api.WindowsExtendedStyle.WS_EX_TOOLWINDOW;
 				// We capture the mouse, and we want the client windows to be notified
-				postMessageToClient = true;
 			}
 
 		internal override void CreateWindow()

@@ -24,7 +24,7 @@ namespace System.Drawing.Toolkit
 
 	internal class DrawingRootTopLevelWindow : DrawingTopLevelWindow
 	{
-		public DrawingRootTopLevelWindow(IToolkit toolkit, String name,
+		public DrawingRootTopLevelWindow(DrawingToolkit toolkit, String name,
 			int width, int height, IToolkitEventSink sink) : base (toolkit, name, width, height, sink) {}
 
 		//TODO

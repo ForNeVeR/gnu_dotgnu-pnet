@@ -265,9 +265,9 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 			}
 
 	// Set the clipping region to a complex mask.
+	//TODO
 	public override void SetClipMask(Object mask, int topx, int topy)
 			{
-				// TODO
 			}
 
 	// Get the line spacing for the font selected into this graphics object.
@@ -283,8 +283,8 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				return color.R | color.G<<8 | color.B<<16;
 			}
 
-	//Under 95/98 an object(fonts, pens or brushes) cant be disposed when it is select into a dc
-	//This leads to a leak. So, if a dc is disposed, select out all the object types so when the objects are actually disposed, they will actually dispose.
+	// Under 95/98 an object(fonts, pens or brushes) cant be disposed when it is select into a dc
+	// This leads to a leak. So, if a dc is disposed, select out all the object types so when the objects are actually disposed, they will actually dispose.
 	private void DeleteDC()
 	{
 		Win32.Api.DeleteObject(hdc);

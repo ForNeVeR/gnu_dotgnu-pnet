@@ -33,6 +33,12 @@ public class DrawingToolkit : IToolkit
 {
 	private ArrayList timers = new ArrayList();
 	internal ArrayList windows = new ArrayList();
+	// The child window or control that has captured or null for none
+	internal DrawingWindow capturedWindow;
+	// The top level window that has the capture.
+	internal DrawingWindow capturedTopWindow;
+	// The current window that has been entered by the mouse.
+	internal DrawingWindow enteredWindow;
 
 	// Process events in the event queue.  If "waitForEvent" is true,
 	// then wait for the next event and return "false" if "Quit" was
@@ -44,12 +50,12 @@ public class DrawingToolkit : IToolkit
 				Win32.Api.MSG message;
 				if (!waitForEvent)
 				{
-					//return false if there is no message or the quit message
+					// return false if there is no message or the quit message
 					if (!Win32.Api.PeekMessageA(out message, IntPtr.Zero, 0, 0, Win32.Api.PeekMessageType.PM_NOREMOVE)
 						|| message.message==Win32.Api.WindowsMessages.WM_QUIT)
 						return false;
 				}
-				//process the message
+				// process the message
 				if (Win32.Api.GetMessageA(out message, IntPtr.Zero,0,0)==0)
 					return false; //occurs on WM_QUIT
 				Win32.Api.TranslateMessage(ref message);
@@ -106,6 +112,7 @@ public class DrawingToolkit : IToolkit
 			}
 
 	// Create an IToolkitGraphics object from a HDC.
+	//TODO
 	public IToolkitGraphics CreateFromHdc(IntPtr hdc, IntPtr hdevice)
 			{
 				// This is tricky - maybe we have to keep track of which hdc's we create?
@@ -113,6 +120,7 @@ public class DrawingToolkit : IToolkit
 			}
 
 	// Create an IToolkitGraphics object from a HWND.
+	//TODO
 	public IToolkitGraphics CreateFromHwnd(IntPtr hwnd)
 			{
 				return null;
@@ -133,21 +141,21 @@ public class DrawingToolkit : IToolkit
 			}
 
 	// Create a linear gradient brush.
+	//TODO
 	public IToolkitBrush CreateLinearGradientBrush
 				(RectangleF rect, System.Drawing.Color color1,
 				 System.Drawing.Color color2,
 				 LinearGradientMode mode)
 			{
-				//TODO
 				return null;
 			}
 
+	//TODO
 	public IToolkitBrush CreateLinearGradientBrush
 				(RectangleF rect, System.Drawing.Color color1,
 				 System.Drawing.Color color2, float angle,
 				 bool isAngleScaleable)
 			{
-				//TODO
 				return null;
 			}
 
@@ -436,14 +444,14 @@ public class DrawingToolkit : IToolkit
 	{
 		Timer timer = new Timer(owner, expire);
 		timers.Add(timer);
-		//timer.cookie = Win32.Api.SetTimer( IntPtr.Zero, 0, (uint)interval, new Win32.Api.TimerProc(timer.TimerHandler) );
+		timer.cookie = Win32.Api.SetTimer( IntPtr.Zero, 0, (uint)interval, new Win32.Api.TimerProc(timer.TimerHandler) );
 		return timer.cookie;
 	}
 
 	// Unregister a timer.
 	public void UnregisterTimer(Object cookie)
 	{
-		//Win32.Api.KillTimer( IntPtr.Zero, (uint)cookie );
+		Win32.Api.KillTimer( IntPtr.Zero, (uint)cookie );
 		for( int i = 0; i < timers.Count;  i++ )
 		{
 			Timer timer = timers[i] as Timer;
@@ -512,6 +520,9 @@ public class DrawingToolkit : IToolkit
 			case Win32.Api.WindowsMessages.WM_KILLFOCUS:
 				DrawingWindow(hwnd).KillFocus();
 				break;
+			case Win32.Api.WindowsMessages.WM_ACTIVATE:
+				DrawingWindow(hwnd).Activate(wParam, lParam);
+				break;
 
 			case Win32.Api.WindowsMessages.WM_WINDOWPOSCHANGING:
 				DrawingWindow(hwnd).WindowPosChanging(lParam);
@@ -541,10 +552,6 @@ public class DrawingToolkit : IToolkit
 					break;
 			}
 				break;	
-
-			case Win32.Api.WindowsMessages.WM_DESTROY:
-				DrawingWindow(hwnd).Destroyed();
-				break;
 
 			case Win32.Api.WindowsMessages.WM_PAINT:
 				DrawingWindow(hwnd).Paint();
@@ -602,10 +609,7 @@ public class DrawingToolkit : IToolkit
 			case Win32.Api.WindowsMessages.WM_XBUTTONDBLCLK:
 				DrawingWindow(hwnd).DoubleClick( msg, wParam, lParam );
 				break;
-			case Win32.Api.WindowsMessages.WM_MOUSELEAVE:
-				DrawingWindow(hwnd).MouseLeave(msg);
-				break;
-
+			
 			case Win32.Api.WindowsMessages.WM_KEYDOWN:
 			case Win32.Api.WindowsMessages.WM_SYSKEYDOWN:
 				DrawingWindow(hwnd).KeyDown( wParam, lParam );
@@ -629,7 +633,7 @@ public class DrawingToolkit : IToolkit
 		return retval;
 	}
 
-	private DrawingWindow DrawingWindow(IntPtr hwnd)
+	internal DrawingWindow DrawingWindow(IntPtr hwnd)
 	{
 		foreach(DrawingWindow window in windows)
 			if (window.hwnd == hwnd)

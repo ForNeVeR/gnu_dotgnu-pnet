@@ -89,6 +89,15 @@ internal class Api
 
 		}
 
+	public enum ActivateState
+	{
+		WA_INACTIVE = 0,
+		WA_ACTIVE = 1,
+		WA_CLICKACTIVE =2
+	}
+
+	public static IntPtr HWND_BROADCAST = (IntPtr)0xffff;
+
 	public enum MouseKeyState : ushort
 	{
 		MK_LBUTTON = 0x1,
@@ -865,6 +874,9 @@ internal class Api
 
 	[DllImport("user32")]
 	public static extern IntPtr ReleaseCapture();
+
+	[DllImport("user32")]
+	public static extern IntPtr WindowFromPoint( POINT Point);
 
 }//Api
 

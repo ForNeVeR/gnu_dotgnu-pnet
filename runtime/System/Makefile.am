@@ -132,6 +132,8 @@ CSSRC = Activator.cs \
 		Collections/IEnumerator.cs \
 		Collections/IHashCodeProvider.cs \
 		Collections/IList.cs \
+		Collections/SynchronizedDictEnumerator.cs \
+		Collections/SynchronizedEnumerator.cs \
 		Configuration/Assemblies/AssemblyHash.cs \
 		Configuration/Assemblies/AssemblyHashAlgorithm.cs \
 		Configuration/Assemblies/AssemblyVersionCompatibility.cs \

@@ -26,19 +26,6 @@
 #if defined(HAVE_LIBFFI)
 #include "ffi.h"
 #endif
-#ifdef IL_CONFIG_FP_SUPPORTED
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-#ifdef HAVE_IEEEFP_H
-#include <ieeefp.h>
-#endif
-#ifdef IL_NATIVE_WIN32
-#include <float.h>
-#define isnan(value)	_isnan((value))
-#define HAVE_ISNAN 1
-#endif
-#endif /* IL_CONFIG_FP_SUPPORTED */
 
 #ifdef	__cplusplus
 extern	"C" {

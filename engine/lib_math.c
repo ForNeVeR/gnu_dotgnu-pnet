@@ -28,8 +28,6 @@
 #endif
 #ifdef IL_NATIVE_WIN32
 #include <float.h>
-#define isnan(value)	_isnan((value))
-#define HAVE_ISNAN 1
 #endif
 
 #ifdef	__cplusplus
@@ -81,69 +79,17 @@ extern	"C" {
 /*
  * Test for "not a number".
  */
-#ifdef HAVE_ISNAN
-	#define	Math_IsNaN(x)		(isnan((x)))
-#else
-	#define	Math_IsNaN(x)		((x) != (x))
-#endif
+#define	Math_IsNaN(x)			(ILNativeFloatIsNaN((x)))
 
 /*
  * Test for infinities.
  */
-#ifdef	HAVE_ISINF
-	#define	Math_IsInf(x)		(isinf((x)))
-#else	/* !HAVE_ISINF */
-	#ifdef  HAVE_FINITE
-		static IL_INLINE int IsInfDouble(ILDouble x)
-		{
-			if(finite(x))
-			{
-				return 0;
-			}
-			else if(x < (ILDouble)0.0)
-			{
-				return -1;
-			}
-			else
-			{
-				return 1;
-			}
-		}
-	#else	/* !HAVE_FINITE */
-		static int IsInfDouble(ILDouble x)
-		{
-			unsigned char buf[8];
-			ILUInt32 test;
-			IL_WRITE_DOUBLE(buf, (ILDouble)x);
-			test = IL_READ_UINT32(buf + 4);
-			if((test & (ILUInt32)0x7FF80000) == (ILUInt32)0x7FF00000)
-			{
-				if((test & (ILUInt32)0x80000000) != 0)
-				{
-					return -1;
-				}
-				else
-				{
-					return 1;
-				}
-			}
-			else
-			{
-				return 0;
-			}
-		}
-	#endif	/* !HAVE_FINITE */
-	#define	Math_IsInf(x)	(IsInfDouble((ILDouble)(x)))
-#endif	/* !HAVE_ISINF */
+#define	Math_IsInf(x)			(ILNativeFloatIsInf((x)))
 
 /*
  * Test for finite values.
  */
-#ifdef HAVE_FINITE
-	#define	Math_Finite(x)	(finite((x)))
-#else
-	#define	Math_Finite(x)	(!Math_IsNaN((x)) && Math_IsInf((x)) == 0)
-#endif
+#define	Math_Finite(x)			(ILNativeFloatIsFinite((x)))
 
 /*
  * Get the floor or ceiling of a value.

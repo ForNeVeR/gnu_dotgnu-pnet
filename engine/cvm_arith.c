@@ -21,24 +21,6 @@
 #if defined(IL_CVM_GLOBALS)
 
 /*
- * Check to see if a floating point number is finite.
- */
-#ifdef hpux
-	#define	FLOAT_IS_FINITE(value)	(isfinite((value)))
-#else /* !hpux */
-	#ifdef HAVE_FINITE
-		#define	FLOAT_IS_FINITE(value)	(finite((value)))
-	#else /* !HAVE_FINITE */
-		#if defined(HAVE_ISNAN) && defined(HAVE_ISINF)
-			#define	FLOAT_IS_FINITE(value)	(!isnan((value)) && \
-											  isinf((value)) == 0)
-		#else
-			#error "Don't know how to determine if floating point numbers are finite"
-		#endif
-	#endif /* !HAVE_FINITE */
-#endif /* !hpux */
-
-/*
  * Integer add with overflow detection.
  */
 static IL_INLINE int IAddOvf(ILInt32 *result, ILInt32 a, ILInt32 b)
@@ -2151,7 +2133,8 @@ VMBREAK(COP_LSHR_UN);
 VMCASE(COP_PREFIX_CKFINITE):
 {
 	/* Check the top-most float value to see if it is finite */
-	if(FLOAT_IS_FINITE(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))))
+	if(ILNativeFloatIsFinite
+			(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))))
 	{
 		MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 	}

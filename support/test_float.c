@@ -62,6 +62,32 @@ int ILNativeFloatIsFinite(ILNativeFloat value)
 #endif /* !hpux */
 }
 
+int ILNativeFloatIsInf(ILNativeFloat value)
+{
+	/* Note: some platforms have a broken "isinf" that returns 1
+	   for both negative and positive infinity.  The code below
+	   attempts to correct for this bug */
+#ifdef HAVE_ISINF
+	if(isinf(value) == 0)
+	{
+		return 0;
+	}
+#else
+	if(ILNativeFloatIsNaN(value) || ILNativeFloatIsFinite(value))
+	{
+		return 0;
+	}
+#endif
+	if(value < (ILNativeFloat)0.0)
+	{
+		return -1;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

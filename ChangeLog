@@ -3,6 +3,11 @@
 
 	* cscc/c/c_defs.tc, cscc/c/c_grammar.y, cscc/c/c_oper.tc,
 	cscc/c/c_stmt.tc: infer the size of an array from its initializer.
+
+	* engine/cvm.c, engine/cvm_arith.c, engine/cvm_compare.c,
+	engine/cvm_conv.c, engine/lib_math.c, include/il_values.h,
+	support/test_float.c: work around bugs in "isinf" on platforms
+	that incorrectly return 1 for negative infinity.
  
 2002-12-09  Gopal.V  <gopalv82@symonds.net>
 	

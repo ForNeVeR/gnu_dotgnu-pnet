@@ -274,6 +274,7 @@ ILNativeFloat ILNativeFloatRem(ILNativeFloat value1, ILNativeFloat value2);
  */
 int ILNativeFloatIsNaN(ILNativeFloat value);
 int ILNativeFloatIsFinite(ILNativeFloat value);
+int ILNativeFloatIsInf(ILNativeFloat value);
 
 /*
  * Perform difficult numeric conversions.

@@ -124,7 +124,7 @@ static IL_INLINE int LU2UIOvf(CVMWord *posn)
 static IL_INLINE int F2IOvf(CVMWord *posn)
 {
 	ILNativeFloat value = ReadFloat(posn);
-	if(FLOAT_IS_FINITE(value))
+	if(ILNativeFloatIsFinite(value))
 	{
 		if(value > (ILNativeFloat)(-2147483649.0) &&
 		   value < (ILNativeFloat)2147483648.0)
@@ -142,7 +142,7 @@ static IL_INLINE int F2IOvf(CVMWord *posn)
 static IL_INLINE int F2UIOvf(CVMWord *posn)
 {
 	ILNativeFloat value = ReadFloat(posn);
-	if(FLOAT_IS_FINITE(value))
+	if(ILNativeFloatIsFinite(value))
 	{
 		if(value >= (ILNativeFloat)0.0 &&
 		   value < (ILNativeFloat)4294967296.0)

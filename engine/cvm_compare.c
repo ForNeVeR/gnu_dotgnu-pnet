@@ -71,7 +71,7 @@ static IL_INLINE ILInt32 FCmp(CVMWord *a, CVMWord *b, ILInt32 nanResult)
 {
 	ILNativeFloat tempa = ReadFloat(a);
 	ILNativeFloat tempb = ReadFloat(b);
-	if(isnan(tempa) || isnan(tempb))
+	if(ILNativeFloatIsNaN(tempa) || ILNativeFloatIsNaN(tempb))
 	{
 		return nanResult;
 	}

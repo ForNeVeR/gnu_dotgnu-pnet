@@ -185,9 +185,9 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 	while(len > 0 && name[len - 1] != '/' && name[len - 1] != '\\')
 	{
 		--len;
-		if(name[len] == '.')
+		if(name[len] == '.' && !hasExt)
 		{
-			hasExt = 1;
+			hasExt = !ILStrICmp(name + len + 1, "dll");
 		}
 	}
 	if(len > 0)
@@ -213,7 +213,7 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 	{
 		if(hasExt)
 		{
-			/* The name probably already has the ".dll" extension */
+			/* The name already has the ".dll" extension */
 			newName = (char *)ILMalloc(libraryDir->len + len + 2);
 			if(!newName)
 			{

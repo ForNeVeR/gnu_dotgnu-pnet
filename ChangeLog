@@ -41,6 +41,9 @@
 	* ilasm/ilasm_build.c: allow assembly references to be specified
 	implicitly, to make it easier to handle transistive inclusions.
 
+	* ilalink/link_library.c (ILLinkerResolveLibrary): bug in the
+	handling of assembly names that contain '.' but don't end in ".dll".
+
 2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/configure, libffi/configure.in: add host detection

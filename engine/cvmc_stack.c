@@ -114,6 +114,7 @@ static void DupWords(ILCoder *coder, ILUInt32 numWords)
 	{
 		CVM_WIDE(COP_DUP_N, numWords);
 	}
+	CVM_ADJUST(numWords);
 }
 
 /*
@@ -178,6 +179,7 @@ static void PopWords(ILCoder *coder, ILUInt32 numWords)
 	{
 		CVM_WIDE(COP_POP_N, numWords);
 	}
+	CVM_ADJUST(-((ILInt32)(numWords)));
 }
 
 /*

@@ -88,7 +88,7 @@ void ILDumpFlags(FILE *stream, unsigned long flags, const ILFlagInfo *table,
  * The "flags" value is a combination of the "IL_DUMP_xxx" flags.
  */
 void ILDumpIdentifier(FILE *stream, const char *name,
-					  const char *namespace, int flags);
+					  const char *nspace, int flags);
 
 /*
  * Dump a class name to an output stream, together with

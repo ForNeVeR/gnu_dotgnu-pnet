@@ -470,7 +470,7 @@ const void *ILAssemblyGetHash(ILAssembly *assem, unsigned long *len);
  * the class already exists.
  */
 ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
-					   const char *namespace, ILClass *parent);
+					   const char *nspace, ILClass *parent);
 
 /*
  * Create a reference class within a particular scope.
@@ -478,7 +478,7 @@ ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
  * to creating the class.
  */
 ILClass *ILClassCreateRef(ILProgramItem *scope, ILToken token,
-						  const char *name, const char *namespace);
+						  const char *name, const char *nspace);
 
 /*
  * Resolve cross-image links for a class.
@@ -570,7 +570,7 @@ int ILClassIsValid(ILClass *info);
  * if the class does not exist.
  */
 ILClass *ILClassLookup(ILProgramItem *scope,
-					   const char *name, const char *namespace);
+					   const char *name, const char *nspace);
 
 /*
  * Look up a class using its name within a specified scope,
@@ -578,7 +578,7 @@ ILClass *ILClassLookup(ILProgramItem *scope,
  */
 ILClass *ILClassLookupLen(ILProgramItem *scope,
 					      const char *name, int nameLen,
-						  const char *namespace, int namespaceLen);
+						  const char *nspace, int namespaceLen);
 
 /*
  * Look up a class using its name within a specified scope,
@@ -586,7 +586,7 @@ ILClass *ILClassLookupLen(ILProgramItem *scope,
  */
 ILClass *ILClassLookupUnicode(ILProgramItem *scope,
 					          const ILUInt16 *name, int nameLen,
-						  	  const ILUInt16 *namespace, int namespaceLen,
+						  	  const ILUInt16 *nspace, int namespaceLen,
 							  int ignoreCase);
 
 /*
@@ -594,7 +594,7 @@ ILClass *ILClassLookupUnicode(ILProgramItem *scope,
  * Returns NULL if not found.
  */
 ILClass *ILClassLookupGlobal(ILContext *context,
-							 const char *name, const char *namespace);
+							 const char *name, const char *nspace);
 
 /*
  * Look up a global class within any image in a context,
@@ -602,7 +602,7 @@ ILClass *ILClassLookupGlobal(ILContext *context,
  */
 ILClass *ILClassLookupGlobalLen(ILContext *context,
 							    const char *name, int nameLen,
-								const char *namespace, int namespaceLen);
+								const char *nspace, int namespaceLen);
 
 /*
  * Look up a global class within any image in a context,
@@ -610,7 +610,7 @@ ILClass *ILClassLookupGlobalLen(ILContext *context,
  */
 ILClass *ILClassLookupGlobalUnicode(ILContext *context,
 					                const ILUInt16 *name, int nameLen,
-						  	        const ILUInt16 *namespace, int namespaceLen,
+						  	        const ILUInt16 *nspace, int namespaceLen,
 							        int ignoreCase);
 
 /*
@@ -734,7 +734,7 @@ ILType *ILClassToTypeDirect(ILClass *info);
  */
 typedef ILClass *(*ILSystemTypeResolver)(ILImage *image, void *data,
 									     const char *name,
-										 const char *namespace);
+										 const char *nspace);
 
 /*
  * Convert a type value into a class information block.
@@ -750,7 +750,7 @@ ILClass *ILClassFromType(ILImage *image, void *data, ILType *type,
  * Default system type resolver.
  */
 ILClass *ILClassResolveSystem(ILImage *image, void *data, const char *name,
-							  const char *namespace);
+							  const char *nspace);
 
 /*
  * Get the user data associated with a class.
@@ -2127,7 +2127,7 @@ ILUInt32 ILManifestResGetAttrs(ILManifestRes *res);
 ILExportedType *ILExportedTypeCreate(ILImage *image, ILToken token,
 									 ILUInt32 attributes,
 									 const char *name,
-									 const char *namespace);
+									 const char *nspace);
 
 /*
  * Get the attributes associated with an exported type declaration.
@@ -2178,7 +2178,7 @@ ILProgramItem *ILExportedTypeGetScope(ILExportedType *type);
  */
 ILExportedType *ILExportedTypeFind(ILImage *image,
 								   const char *name,
-								   const char *namespace);
+								   const char *nspace);
 
 /*
  * Helper macros for querying information about exported types.

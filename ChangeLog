@@ -4,6 +4,10 @@
 	* cscc/common/cc_options.c: remove "gtk-imaging-sharp" from the
 	link line, because it is no longer part of Gtk#.
 
+	* include/il_dumpasm.h, include/il_program.h: change instances
+	of the word "namespace" into "nspace" in the headers to better
+	integrate with modern C++ compilers.
+
 2002-07-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: latest version with cryptography classes.

@@ -9,6 +9,9 @@
 	cscc/c/c_types.h: add support for C declaration specifiers, scopes,
 	struct headers, union headers, and enum headers.
 
+	* include/il_utils.h, support/hashtab.c (ILHashIterNext):
+	incorrect iteration logic.
+
 2002-07-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, cscc/Makefile.am, cscc/c_main.c, cscc/c/.cvsignore,

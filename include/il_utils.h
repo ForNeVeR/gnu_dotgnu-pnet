@@ -459,7 +459,7 @@ void *ILHashIterNext(ILHashIter *iter);
  * table and casting the result to a particular structure type.
  */
 #define	ILHashIterNextType(iter,type)	\
-				((type *)ILHashIterNext((iter), (type)))
+				((type *)ILHashIterNext((iter)))
 
 /* Initialize the locale routines for this application instance */
 void ILInitLocale(void);

@@ -281,6 +281,7 @@ void ILHashIterInit(ILHashIter *iter, ILHashTable *hashtab)
 
 void *ILHashIterNext(ILHashIter *iter)
 {
+	ILHashEntry *temp;
 	for(;;)
 	{
 		if(iter->entry == 0)
@@ -296,9 +297,10 @@ void *ILHashIterNext(ILHashIter *iter)
 		{
 			iter->entry = iter->entry->overflow;
 		}
-		if(iter->entry != 0)
+		if((temp = iter->entry) != 0)
 		{
-			return iter->entry->elem;
+			iter->entry = temp->overflow;
+			return temp->elem;
 		}
 	}
 	return 0;

@@ -6,6 +6,9 @@
 	parts of "ILClassInstantiate", to turn a generic class
 	declaration into a particular instance.
 
+	* cscc/csharp/cs_grammar.y: integrate generic type indicators
+	like "A<T>" into the expression syntax.
+
 2003-02-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/engine.h, engine/pinvoke.c: use the

@@ -912,7 +912,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 21
+%expect 25
 
 %start CompilationUnit
 %%
@@ -1341,9 +1341,6 @@ BuiltinType
  * Expressions.
  */
 
-/* TODO: Identifier '<' TypeActuals '>' for generic type references.
-   A bit problematic at the moment due to reduce/reduce issues */
-
 PrimaryExpression
 	: LiteralExpression				{ $$ = $1; }
 	| Identifier					{ $$ = $1; }
@@ -1640,6 +1637,11 @@ ShiftExpression
 			}
 	;
 
+/*
+ * Relational expressions also recognise generic type references.
+ * We have to put them here instead of in the more logical place
+ * of "PrimaryExpression" to prevent reduce/reduce conflicts.
+ */
 RelationalExpression
 	: ShiftExpression				{ $$ = $1; }
 	| RelationalExpression '<' ShiftExpression		{
@@ -1659,6 +1661,31 @@ RelationalExpression
 			}
 	| RelationalExpression AS Type					{
 				MakeBinary(AsUntyped, $1, $3);
+			}
+	| RelationalExpression '<' ShiftExpression '>'		{
+				/* TODO: generic type reference */
+				$$ = $1;
+			}
+	| RelationalExpression '<' ShiftExpression TypeSuffixList '>'	{
+				/* TODO: generic type reference */
+				$$ = $1;
+			}
+	| RelationalExpression '<' ShiftExpression ',' TypeActuals '>'	{
+				/* TODO: generic type reference */
+				$$ = $1;
+			}
+	| RelationalExpression '<' ShiftExpression TypeSuffixList ',' 
+			TypeActuals '>'		{
+				/* TODO: generic type reference */
+				$$ = $1;
+			}
+	| RelationalExpression '<' BuiltinType TypeSuffixes '>'	{
+				/* TODO: generic type reference */
+				$$ = $1;
+			}
+	| RelationalExpression '<' BuiltinType TypeSuffixes ',' TypeActuals '>'	{
+				/* TODO: generic type reference */
+				$$ = $1;
 			}
 	;
 

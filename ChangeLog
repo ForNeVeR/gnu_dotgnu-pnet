@@ -1,8 +1,13 @@
+
+2004-01-21  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/unroll.c: Add CVM_PPC as an unrolled platform.
+
 2005-01-23  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* Updated build-depian-packages.sh for new release.
 
-2004-01-21  Gopal V  <gopalv82@yahoo.com>
+2005-01-21  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/md_ppc.h, engine/md_ppc.c, engine/ppc_codegen.h, 
 	engine/unroll_arith.c, engine/unroll_ptr.c, engine/cvm_config.h:

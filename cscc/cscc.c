@@ -1351,6 +1351,8 @@ static int LinkExecutable(void)
 		AddArgument(&cmdline, &cmdline_size, "-L");
 		AddArgument(&cmdline, &cmdline_size, sys_link_dirs[posn]);
 	}
+	AddArgument(&cmdline, &cmdline_size, "-L");
+	AddArgument(&cmdline, &cmdline_size, ".");
 	for(posn = 0; posn < num_libraries; ++posn)
 	{
 		AddArgument(&cmdline, &cmdline_size, "-l");

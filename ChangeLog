@@ -28,6 +28,9 @@ if we are building a final executable or library.
 * cscc/cs_options.c (CSAddLinkFile): the wrong array element in
 "files_to_link_temp" was being set.
 
+* cscc/cscc.c: add "-L ." to the end of the linker command-line to make
+it use the same library resolution code as "cscc-cs".
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

@@ -11,6 +11,8 @@
 
 	* engine/lib_array.c: missing return values.
 
+	* samples/mscorlib.dll: updated version after csant changes to pnetlib.
+
 2001-03-21 Gopal.V <gopalv82@yahoo.com>
 	* csdoc/doc_stub.c : Added the Csdoc to C# stub generation.
 

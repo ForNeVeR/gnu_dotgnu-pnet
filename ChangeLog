@@ -5,6 +5,9 @@
 	Implement seteq, setgt and other compare against zero 
 	predicates.
 
+	* doc/unrolling.txt: Add more documentation on debugging 
+	the unroller in gdb.
+
 2004-12-17  Gopal V  <gopalv82@yahoo.com>
 
 	* support/clflush.c: Reimplement cache flushing for

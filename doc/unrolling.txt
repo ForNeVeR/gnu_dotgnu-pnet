@@ -567,12 +567,26 @@ of "unroll_xxx.c" until the problem disappears.  Whatever you commented
 out last might have something to do with the problem.
 
 While you can breakpoint the unroller while it is converting code, it isn't
-possible to put breakpoints in the code that it outputs.
+easy to put breakpoints in the code that it outputs. A suggested strategy
+is to use the native trap/break instruction and using gdb to catch it. For
+instance, see the following example in PowerPC unroller (LOR instruction).
 
-You can also uncomment "UNROLL_DEBUG" in "unroll.c".  This will cause
-the unroller to disassemble the unrolled code as it executes methods.
-By staring at this output, you should hopefully be able to figure out
-which instructions are being unrolled incorrectly.
+ Program received signal SIGTRAP, Trace/breakpoint trap.
+ 0x3003b158 in ?? ()
+ (gdb) x/4i $pc
+ 0x3003b158:     trap
+ 0x3003b15c:     or      r9,r9,r10
+ 0x3003b160:     or      r11,r11,r8
+ 0x3003b164:     stw     r9,-32(r19)
+ (gdb) set $pc = $pc + 4  
+ (gdb) ni
+
+Gdb provides an excellent inline disassembler which is invaluable when 
+writing an unroller. For a bigger picture of the unrolled code, you can 
+also uncomment "UNROLL_DEBUG" in "unroll.c".  This will cause the unroller
+to disassemble the unrolled code before it executes methods. By staring at 
+this output, you should hopefully be able to figure out which instructions 
+are being unrolled incorrectly.
 
 Another problem is the CPU cache.  Most CPU's need to flush the data cache
 prior to executing the unrolled code.  Check the "pnet/support/clflush.c"

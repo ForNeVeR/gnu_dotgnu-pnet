@@ -148,7 +148,7 @@ public sealed class DrawingToolkit : IToolkit
 	// it to return back from "ProcessEvents".
 	public void Wakeup(Thread thread)
 			{
-				// TODO
+				app.Display.DefaultScreenOfDisplay.Wakeup();
 			}
 
 	// Get lighter or darker versions of a color.

@@ -4,6 +4,10 @@
 	* runtime/System/Reflection/Assembly.cs: fix a reversed test in
 	"GetManifestResourceStream(Type,String)".
 
+	* System.Drawing.Xsharp/DrawingToolkit.cs, Xsharp/Screen.cs,
+	Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c: implement the "wakeup"
+	signal for Xsharp.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

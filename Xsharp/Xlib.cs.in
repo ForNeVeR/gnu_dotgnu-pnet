@@ -586,6 +586,10 @@ internal sealed unsafe class Xlib
 	extern public static void XSharpSendClose
 			(IntPtr display, Xlib.Window window);
 
+	[DllImport("XsharpSupport")]
+	extern public static void XSharpSendWakeup
+			(IntPtr display, Xlib.Window window);
+
 	// Helper functions for creating and managing application groups.
 
 	[DllImport("Xext")]

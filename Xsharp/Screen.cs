@@ -237,6 +237,30 @@ public sealed class Screen
 				}
 			}
 
+	/// <summary>
+	/// <para>Send a wakeup message to the event queue for this screen.</para>
+	/// </summary>
+	///
+	/// <remarks>
+	/// <para>Wakeup messages are sent from one thread to the event queue
+	/// thread, to cause the event queue to stop blocking and return back to
+	/// the caller.  The wakeup message involves a round trip to the
+	/// X server, so it should be used sparingly.</para>
+	/// </remarks>
+	public void Wakeup()
+			{
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.XSharpSendWakeup
+						(display, placeholder.GetWidgetHandle());
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
 	// Get the default visual for this screen.  We currently only
 	// support screens with one visual.
 	internal IntPtr DefaultVisual

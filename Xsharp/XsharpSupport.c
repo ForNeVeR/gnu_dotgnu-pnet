@@ -1241,6 +1241,21 @@ void XSharpSendClose(Display *dpy, Window window)
 	}
 }
 
+/*
+ * Send a wakeup message to a window.
+ */
+void XSharpSendWakeup(Display *dpy, Window window)
+{
+	Atom wakeupAtom = XInternAtom(dpy, "_XSHARP_WAKEUP", False);
+	XEvent msg;
+	memset(&msg, 0, sizeof(msg));
+	msg.xclient.type = ClientMessage;
+	msg.xclient.window = window;
+	msg.xclient.message_type = wakeupAtom;
+	msg.xclient.format = 32;
+	XSendEvent(dpy, window, False, NoEventMask, &msg);
+}
+
 #else /* X_DISPLAY_MISSING || !HAVE_SELECT */
 
 int XNextEventWithTimeout(void *dpy, void *event, int timeout)
@@ -1325,6 +1340,11 @@ void XSharpGetRegionRect(void *region, int index, void *rect)
 }
 
 void XSharpSendClose(Display *dpy, Window window)
+{
+	/* Nothing to do here */
+}
+
+void XSharpSendWakeup(Display *dpy, Window window)
 {
 	/* Nothing to do here */
 }

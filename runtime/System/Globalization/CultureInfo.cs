@@ -73,7 +73,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 					cultureID   = culture;
 					cultureName = CultureNameTable.GetNameInfoByID
 						(0x0C0A, true);
-					handler = _I18NCultureHandler.GetCultureHandler(cultureID);
+					handler = _I18NCultureHandler.GetCultureHandler
+						(cultureID, useUserOverride);
 				}
 				else if(culture == 0x007F)
 				{
@@ -89,7 +90,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 					cultureID   = culture;
 					cultureName = CultureNameTable.GetNameInfoByID
 						(culture, true);
-					handler = _I18NCultureHandler.GetCultureHandler(cultureID);
+					handler = _I18NCultureHandler.GetCultureHandler
+						(cultureID, useUserOverride);
 				}
 				userOverride = useUserOverride;
 			}
@@ -102,7 +104,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 				cultureName = CultureNameTable.GetNameInfoByName(name, true);
 				cultureID   = cultureName.cultureID;
 				userOverride = useUserOverride;
-				handler = _I18NCultureHandler.GetCultureHandler(cultureID);
+				handler = _I18NCultureHandler.GetCultureHandler
+					(cultureID, useUserOverride);
 			}
 
 	// Get the invariant culture object.
@@ -157,7 +160,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 							id = MapNameToID(name, false);
 						}
 						if(id <= 0 ||
-						   _I18NCultureHandler.GetCultureHandler(id) == null)
+						   _I18NCultureHandler.GetCultureHandler
+						   		(id, true) == null)
 						{
 							currentCulture = InvariantCulture;
 						}

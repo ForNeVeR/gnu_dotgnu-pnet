@@ -42,6 +42,11 @@
 	runtime/System/Private/RegionNameTable.cs: implement the
 	System.Globalization.RegionInfo class and its dependencies.
 
+	* runtime/System/Globalization/CompareInfo.cs,
+	runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Globalization/_I18NCultureHandler.cs:
+	pass the user override flag to I18N when creating cultures.
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs: Fix minor bug in ArrayEnumerator1

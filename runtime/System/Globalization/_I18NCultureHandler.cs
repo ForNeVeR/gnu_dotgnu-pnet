@@ -90,13 +90,16 @@ public abstract class _I18NCultureHandler
 			}
 
 	// Get the culture handler for a specific culture.
-	internal static _I18NCultureHandler GetCultureHandler(int culture)
+	internal static _I18NCultureHandler GetCultureHandler
+				(int culture, bool useUserOverride)
 			{
-				Object obj = Encoding.InvokeI18N("GetCulture", culture);
+				Object obj = Encoding.InvokeI18N
+						("GetCulture", culture, useUserOverride);
 				if(obj == null)
 				{
 					// Try the neutral culture instead.
-					obj = Encoding.InvokeI18N("GetCulture", culture & 0x03FF);
+					obj = Encoding.InvokeI18N
+						("GetCulture", culture & 0x03FF, useUserOverride);
 				}
 				return (_I18NCultureHandler)obj;
 			}

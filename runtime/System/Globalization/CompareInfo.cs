@@ -66,7 +66,7 @@ public class CompareInfo : IDeserializationCallback
 				CompareInfo info;
 
 				// Find the culture-specific handler.
-				handler = _I18NCultureHandler.GetCultureHandler(culture);
+				handler = _I18NCultureHandler.GetCultureHandler(culture, true);
 				if(handler != null)
 				{
 					info = handler.CultureCompareInfo;

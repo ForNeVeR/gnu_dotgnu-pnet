@@ -409,6 +409,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 		{
 			CSOutOfMemory();
 		}
+		++paramNum;
 	}
 
 	/* Set the signature for the method */
@@ -425,6 +426,262 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 						   ILNode_PropertyDeclaration *property)
 {
+	char *name;
+	CSSemValue value;
+	ILType *propType;
+	ILType *tempType;
+	ILMethod *getMethodInfo;
+	ILMethod *setMethodInfo;
+	ILProperty *propertyInfo;
+	ILType *signature;
+	ILType *getSignature;
+	ILType *setSignature;
+	ILNode_ListIter iterator;
+	ILNode *param;
+	ILNode_FormalParameter *fparam;
+	ILUInt32 paramNum;
+	char *getName;
+	char *setName;
+	
+	/* Get the name of the property */
+	if(yykind(property->name) == yykindof(ILNode_Identifier))
+	{
+		/* Simple method name */
+		name = ILQualIdentName(property->name, 0);
+	}
+	else
+	{
+		/* Qualified property name that overrides some
+		   interface property (TODO) */
+		name = ILQualIdentName(property->name, 0);
+	}
+
+	/* Create the method information blocks for the get and set methods */
+	if((property->getsetFlags & 1) != 0)
+	{
+		getName = ILInternAppendedString(ILInternString("get_", 4),
+										 ILInternString(name, -1)).string;
+		getMethodInfo = ILMethodCreate(classInfo, 0, getName,
+									   (property->modifiers & 0xFFFF) |
+									   IL_META_METHODDEF_SPECIAL_NAME);
+		if(!getMethodInfo)
+		{
+			CSOutOfMemory();
+		}
+		property->getMethodInfo = getMethodInfo;
+	}
+	else
+	{
+		getMethodInfo = 0;
+		getName = 0;
+	}
+	if((property->getsetFlags & 2) != 0)
+	{
+		setName = ILInternAppendedString(ILInternString("set_", 4),
+										 ILInternString(name, -1)).string;
+		setMethodInfo = ILMethodCreate(classInfo, 0, setName,
+									   (property->modifiers & 0xFFFF) |
+									   IL_META_METHODDEF_SPECIAL_NAME);
+		if(!setMethodInfo)
+		{
+			CSOutOfMemory();
+		}
+		property->setMethodInfo = setMethodInfo;
+	}
+	else
+	{
+		setMethodInfo = 0;
+		setName = 0;
+	}
+
+	/* Get the property type */
+	value = ILNode_SemAnalysis(property->type, info, &(property->type));
+	if(value.kind != CS_SEMKIND_TYPE)
+	{
+		if(property->params)
+		{
+			CSErrorOnLine(yygetfilename(property->type),
+						  yygetlinenum(property->type),
+						  "invalid type for indexer");
+		}
+		else
+		{
+			CSErrorOnLine(yygetfilename(property->type),
+						  yygetlinenum(property->type),
+						  "invalid type for property");
+		}
+		propType = ILType_Int32;
+	}
+	else
+	{
+		propType = value.type;
+	}
+
+	/* Create the property signature types */
+	signature = ILTypeCreateProperty(info->context, propType);
+	if(!signature)
+	{
+		CSOutOfMemory();
+	}
+	if((property->modifiers & IL_META_METHODDEF_STATIC) == 0)
+	{
+		signature->kind |= (short)(IL_META_CALLCONV_HASTHIS << 8);
+	}
+	if((property->getsetFlags & 1) != 0)
+	{
+		getSignature = ILTypeCreateMethod(info->context, propType);
+		if((property->modifiers & IL_META_METHODDEF_STATIC) == 0)
+		{
+			getSignature->kind |= (short)(IL_META_CALLCONV_HASTHIS << 8);
+			ILMethodSetCallConv(getMethodInfo, IL_META_CALLCONV_HASTHIS);
+		}
+	}
+	else
+	{
+		getSignature = 0;
+	}
+	if((property->getsetFlags & 2) != 0)
+	{
+		setSignature = ILTypeCreateMethod(info->context, ILType_Void);
+		if((property->modifiers & IL_META_METHODDEF_STATIC) == 0)
+		{
+			setSignature->kind |= (short)(IL_META_CALLCONV_HASTHIS << 8);
+			ILMethodSetCallConv(setMethodInfo, IL_META_CALLCONV_HASTHIS);
+		}
+	}
+	else
+	{
+		setSignature = 0;
+	}
+
+	/* Create the parameters for the property */
+	paramNum = 1;
+	ILNode_ListIter_Init(&iterator, property->params);
+	while((param = ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		/* Get the type of the parameter */
+		fparam = (ILNode_FormalParameter *)param;
+		value = ILNode_SemAnalysis(fparam->type, info, &(fparam->type));
+		if(value.kind != CS_SEMKIND_TYPE)
+		{
+			CSErrorOnLine(yygetfilename(fparam->type),
+						  yygetlinenum(fparam->type),
+						  "invalid parameter type for indexer");
+			tempType = ILType_Int32;
+		}
+		else
+		{
+			tempType = value.type;
+		}
+
+		/* Add the parameter type to the property signature */
+		if(!ILTypeAddParam(info->context, signature, tempType))
+		{
+			CSOutOfMemory();
+		}
+
+		/* Add the parameter type to the get method signature */
+		if(getSignature)
+		{
+			if(!ILTypeAddParam(info->context, getSignature, tempType))
+			{
+				CSOutOfMemory();
+			}
+			if(!ILParameterCreate(getMethodInfo, 0,
+								  ILQualIdentName(fparam->name, 0),
+								  0, paramNum))
+			{
+				CSOutOfMemory();
+			}
+		}
+
+		/* Add the parameter type to the set method signature */
+		if(setSignature)
+		{
+			if(!ILTypeAddParam(info->context, setSignature, tempType))
+			{
+				CSOutOfMemory();
+			}
+			if(!ILParameterCreate(setMethodInfo, 0,
+								  ILQualIdentName(fparam->name, 0),
+								  0, paramNum))
+			{
+				CSOutOfMemory();
+			}
+		}
+
+		/* Move on to the next parameter */
+		++paramNum;
+	}
+
+	/* Add the "value" parameter to the set method signature */
+	if(setSignature)
+	{
+		if(!ILTypeAddParam(info->context, setSignature, propType))
+		{
+			CSOutOfMemory();
+		}
+		if(!ILParameterCreate(setMethodInfo, 0, "value", 0, paramNum))
+		{
+			CSOutOfMemory();
+		}
+	}
+
+	/* Set the signatures for the get and set methods */
+	if(getMethodInfo)
+	{
+		ILMemberSetSignature((ILMember *)getMethodInfo, getSignature);
+	}
+	if(setMethodInfo)
+	{
+		ILMemberSetSignature((ILMember *)setMethodInfo, setSignature);
+	}
+
+	/* Create the property information block */
+	propertyInfo = ILPropertyCreate(classInfo, 0, name, 0, signature);
+	if(!propertyInfo)
+	{
+		CSOutOfMemory();
+	}
+	property->propertyInfo = propertyInfo;
+
+	/* Add the method semantics to the property */
+	if(getMethodInfo)
+	{
+		if(!ILMethodSemCreate((ILProgramItem *)propertyInfo, 0,
+							  IL_META_METHODSEM_GETTER, getMethodInfo))
+		{
+			CSOutOfMemory();
+		}
+	}
+	if(setMethodInfo)
+	{
+		if(!ILMethodSemCreate((ILProgramItem *)propertyInfo, 0,
+							  IL_META_METHODSEM_SETTER, setMethodInfo))
+		{
+			CSOutOfMemory();
+		}
+	}
+
+	/* Add the property to the current scope */
+	AddMemberToScope(info->currentScope, IL_SCOPE_PROPERTY,
+					 name, (ILMember *)propertyInfo, property->name);
+
+	/* Add the get method to the current scope */
+	if(getMethodInfo)
+	{
+		AddMemberToScope(info->currentScope, IL_SCOPE_METHOD,
+						 getName, (ILMember *)getMethodInfo,
+						 property->name);
+	}
+
+	/* Add the set method to the current scope */
+	if(setMethodInfo)
+	{
+		AddMemberToScope(info->currentScope, IL_SCOPE_METHOD,
+						 setName, (ILMember *)setMethodInfo,
+						 property->name);
+	}
 }
 
 /*

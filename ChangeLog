@@ -22,6 +22,9 @@ is scheduled to be rewritten.
 
 * cscc/cs_internal.h: declare CSResolveSimpleName and CSResolveMemberName.
 
+* cscc/cs_decls.tc: change "currentNamespace" as we move down through a
+class during semantic analysis.
+
 2001-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_coder.h, engine/ilverify.c: new coder operations.

@@ -25,10 +25,13 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 {
 	CSSemValue value;
 	ILNode *savedClass;
+	ILNode *savedNamespace;
 	if(node->body)
 	{
 		savedClass = info->currentClass;
+		savedNamespace = info->currentNamespace;
 		info->currentClass = (ILNode *)node;
+		info->currentNamespace = node->namespaceNode;
 		if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 		{
 			CSUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
@@ -39,6 +42,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 			CSUnsafeLeave(info);
 		}
 		info->currentClass = savedClass;
+		info->currentNamespace = savedNamespace;
 		return value;
 	}
 	else

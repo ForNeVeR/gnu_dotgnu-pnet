@@ -1804,6 +1804,15 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		return value1;
 	}
 
+	/* If the two types are IntPtr, then we take a shortcut, avoiding
+	   the call to the user-defined operators in "IntPtr" */
+	if(CSSemGetType(value1) == ILType_Int &&
+	   CSSemGetType(value2) == ILType_Int)
+	{
+		CSSemSetRValue(value1, ILType_Boolean);
+		return value1;
+	}
+
 	/* Look for a user-specified operator */
 	method = FindUserBinaryOperator(info, name, &(value1), node->expr1,
 									&(value2), node->expr2);

@@ -1,4 +1,10 @@
 
+2003-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_oper.tc: implement a short-cut in the "==" and "!="
+	operators for "IntPtr" arguments, to avoid a runtime call to the
+	user-defined operator methods.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/marshal.c (ILPInvokeGetMarshalType): fix a typo

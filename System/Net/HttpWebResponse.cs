@@ -35,7 +35,6 @@ public class HttpWebResponse : WebResponse
 	private Version version=null;
 	private HttpStatusCode code=0;
 	private String desc=null;
-	private long contentLength; /* FIXME: Remove when headers work */
 	internal HttpWebResponse(HttpWebRequest request,Stream dataStream)
 	{
 		req=request;
@@ -72,12 +71,7 @@ public class HttpWebResponse : WebResponse
 		/* sometimes servers tend to send plain "\n"s */
 		for(String s=ReadLine();s.Trim()!="";s=ReadLine())
 		{
-			// headers.Add(s); // FIXME: after arraylist is fixed
-			if(s.StartsWith("Content-Length: "))
-			{
-				this.contentLength=
-				Int64.Parse((s.Substring("Content-Length: ".Length)).Trim());
-			}
+			headers.Add(s); 
 		}
 	}
 	private String ReadLine()
@@ -174,8 +168,7 @@ public class HttpWebResponse : WebResponse
 	{ 
 		get
 		{
-			return contentLength;
-			//return Int64.Parse(headers["Content-Length"]); // FIXME
+			return Int64.Parse(headers["Content-Length"]);
 		}
 	}
 

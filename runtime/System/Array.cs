@@ -256,18 +256,21 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 
 		// Copy the array contents the hard way.
-		if(!Convert.CanConvert(arrayType1, arrayType2))
-		{
-			throw new ArrayTypeMismatchException
-				(_("Exception_ArrayTypeMismatch"));
-		}
 		int index;
 		for(index = 0; index < length; ++index)
 		{
-			destinationArray.SetRelative
-				(Convert.ConvertObject
-					(sourceArray.GetRelative(sourceIndex + index), arrayType2),
-				 destinationIndex + index);
+			try
+			{
+				destinationArray.SetRelative(
+					Convert.ConvertObject(
+						sourceArray.GetRelative(sourceIndex + index), 
+						arrayType2), destinationIndex + index);
+			}
+			catch(Exception)
+			{
+				throw new ArrayTypeMismatchException // error
+							(_("Exception_ArrayTypeMismatch")); 
+			}
 		}
 	}
 

@@ -66,12 +66,15 @@ public class HttpWebRequest : WebRequest
 	// so that it is accessible to the nested classes
 	private Stream outStream=null;
 	private WebResponse response=null;
+	private const String format="ddd, dd MMM yyyy HH*:mm:ss GMTzz";//HTTP
 
 	internal HttpWebRequest(Uri uri)
 	{
 		this.address=uri;
 		this.originalUri=uri;
 		this.method="GET";
+		this.headers.SetInternal ("Host", uri.Authority);
+		this.headers.SetInternal ("Date", DateTime.Now.ToUniversalTime().ToString(format));
 	}
 
 	[TODO]
@@ -175,6 +178,7 @@ public class HttpWebRequest : WebRequest
 			outStream=new HttpStream(this);
 			// which is the response stream as well 
 		}
+		outStream.Flush();
 		this.response=new HttpWebResponse(this,this.outStream);
 		this.haveResponse=true; // I hope this is correct
 		return this.response; 
@@ -374,7 +378,6 @@ public class HttpWebRequest : WebRequest
 		set
 		{
 			CheckHeadersSent();
-			String format="ddd, dd MMM yyyy HH*:mm:ss GMTzz";//convert to GMT
 			headers.SetInternal("IfModifiedSince", value.ToString(format));
 			this.ifModifiedSince=value;
 		}
@@ -636,8 +639,6 @@ public class HttpWebRequest : WebRequest
 					"."+request.protocolVersion.Minor+"\r\n";
 			writer.Write(requestString);
 			writer.Write(request.Headers.ToString());
-			/* FIXME: remove when headers work */
-			writer.Write("Host: localhost\r\n");
 			writer.Write("\r\n");// terminating CRLF
 			writer.Flush();
 		}

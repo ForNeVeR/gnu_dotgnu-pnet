@@ -224,7 +224,7 @@ static void ffi_closure_raw_SYSV ();
  */
 
 static void
-ffi_closure_SYSV ()
+ffi_closure_SYSV (int arg1)
 {
   // this is our return value storage
   long double    res;
@@ -242,7 +242,8 @@ ffi_closure_SYSV ()
   
   cif         = closure->cif;
   arg_area    = (void**) alloca (cif->nargs * sizeof (void*));  
-  asm ("leal 8(%%ebp),%0" : "=q" (args));  
+  /*asm ("leal 8(%%ebp),%0" : "=q" (args));  */
+  args        = (void *)&arg1;
 
   /* this call will initialize ARG_AREA, such that each
    * element in that array points to the corresponding 
@@ -364,7 +365,7 @@ ffi_prep_closure (ffi_closure* closure,
 #if !FFI_NO_RAW_API
 
 static void
-ffi_closure_raw_SYSV ()
+ffi_closure_raw_SYSV (int arg1)
 {
   // this is our return value storage
   long double    res;
@@ -381,7 +382,8 @@ ffi_closure_raw_SYSV ()
   asm ("movl %%ecx,%0" : "=r" (closure));
 
   /* take the argument pointer */
-  asm ("leal 8(%%ebp),%0" : "=q" (args));  
+  /*asm ("leal 8(%%ebp),%0" : "=q" (args));  */
+  args = (void *)&arg1;
 
   /* get the cif */
   cif = closure->cif;

@@ -413,6 +413,18 @@ void ILGenTypeToken(ILGenInfo *info, int opcode, ILType *type)
 	}
 }
 
+void ILGenArrayNew(ILGenInfo *info, ILType *type)
+{
+	/* Convert primitive element types into their class form */
+	if(ILType_IsPrimitive(type))
+	{
+		type = ILType_FromClass(ILTypeToClass(info, type));
+	}
+
+	/* Output the "newarr" instruction */
+	ILGenTypeToken(info, IL_OP_NEWARR, type);
+}
+
 void ILGenArrayCtor(ILGenInfo *info, ILType *type)
 {
 	if(info->asmOutput)

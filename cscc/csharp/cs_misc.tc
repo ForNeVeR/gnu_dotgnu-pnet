@@ -304,8 +304,107 @@ ILNode_SemAnalysis(ILNode_StackAlloc)
 
 ILNode_SemAnalysis(ILNode_NewExpression)
 {
-	/* TODO */
-	return CSSemValueDefault;
+	CSSemValue value;
+	ILNode_ListIter iter;
+	ILNode *child;
+	ILNode *expr;
+	ILNode **parentNode;
+	ILNode **parentOfExpr;
+
+	/* Determine if the array creation is normal or initializer-based */
+	if(!(node->arrayInitializer))
+	{
+		/* Build the full type node, by combining the element
+		   type, indexed dimensions, and the rank specifiers */
+		if(yyisa(node->type, ILNode_ArrayType))
+		{
+			/* Cannot use array types in this context */
+			CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+						  "invalid array element type");
+		}
+		node->type =
+			ILNode_ArrayType_create(node->type, CountArgList(node->indexes));
+		ILNode_ListIter_Init(&iter, node->rank);
+		while((child = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			node->type = ILNode_ArrayType_create
+				(node->type, ((ILNode_TypeSuffix *)child)->count);
+		}
+
+		/* Perform semantic analysis on the array type */
+		node->arrayType = CSSemType(node->type, info, &(node->type));
+
+		/* Perform semantic analysis on the array dimensions */
+		child = node->indexes;
+		parentOfExpr = &(node->indexes);
+		while(yyisa(child, ILNode_ArgList))
+		{
+			expr = ((ILNode_ArgList *)child)->expr2;
+			parentNode = &(((ILNode_ArgList *)child)->expr2);
+			if(CSSemExpectValue(expr, info, parentNode, &value))
+			{
+				if(!ILCoerce(info, *parentNode, parentNode,
+							 value.type, ILType_Int32) &&
+				   !ILCoerce(info, *parentNode, parentNode,
+							 value.type, ILType_UInt32) &&
+				   !ILCoerce(info, *parentNode, parentNode,
+							 value.type, ILType_Int64) &&
+				   !ILCoerce(info, *parentNode, parentNode,
+							 value.type, ILType_UInt64))
+				{
+					CCErrorOnLine
+						(yygetfilename(expr), yygetlinenum(expr),
+			  			 "incompatible types in dimension specifier: "
+						 	"no conversion from `%s' to `int', `uint', "
+							"`long', or `ulong'",
+					     CSTypeToName(value.type));
+				}
+			}
+			else
+			{
+				CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+							  "invalid dimension in array creation expression");
+			}
+			parentOfExpr = &(((ILNode_ArgList *)child)->expr1);
+			child = *parentOfExpr;
+		}
+		expr = child;
+		parentNode = parentOfExpr;
+		if(CSSemExpectValue(expr, info, parentNode, &value))
+		{
+			if(!ILCoerce(info, *parentNode, parentNode,
+						 value.type, ILType_Int32) &&
+			   !ILCoerce(info, *parentNode, parentNode,
+						 value.type, ILType_UInt32) &&
+			   !ILCoerce(info, *parentNode, parentNode,
+						 value.type, ILType_Int64) &&
+			   !ILCoerce(info, *parentNode, parentNode,
+						 value.type, ILType_UInt64))
+			{
+				CCErrorOnLine
+					(yygetfilename(expr), yygetlinenum(expr),
+		  			 "incompatible types in dimension specifier: "
+					 	"no conversion from `%s' to `int', `uint', "
+						"`long', or `ulong'",
+				     CSTypeToName(value.type));
+			}
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+						  "invalid dimension in array creation expression");
+		}
+
+		/* Done */
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = node->arrayType;
+		return value;
+	}
+	else
+	{
+		/* TODO: initializer-based array creation */
+		return CSSemValueDefault;
+	}
 }
 
 /*

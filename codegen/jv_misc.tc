@@ -1273,8 +1273,45 @@ JavaGenValue(ILNode_Unbox)
 
 JavaGenValue(ILNode_NewExpression)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	long saveStack;
+	int rank;
+	ILNode *temp;
+
+	/* Bail out if initializer-based (semantic analysis should
+	   have turned this node into "ILNode_ArrayInit") */
+	if(!(node->indexes))
+	{
+		return ILMachineType_ObjectRef;
+	}
+
+	/* Output the indexes */
+	saveStack = info->stackHeight;
+	OutputArrayDims(info, node->indexes);
+
+	/* Create the array */
+	if(!yyisa(node->indexes, ILNode_ArgList))
+	{
+		/* Single-dimensional array creation */
+		JavaGenNewArray(info, ILTypeGetElemType(node->arrayType));
+	}
+	else
+	{
+		/* Multi-dimensional array creation */
+		rank = 1;
+		temp = node->indexes;
+		while(yyisa(temp, ILNode_ArgList))
+		{
+			++rank;
+			temp = ((ILNode_ArgList *)temp)->expr1;
+		}
+		JavaGenNewMultiArray(info, node->arrayType, rank);
+	}
+
+	/* Set the final stack position */
+	info->stackHeight = saveStack + 1;
+
+	/* Arrays are always object references */
+	return ILMachineType_ObjectRef;
 }
 
 JavaGenValue(ILNode_ObjectCreationExpression)

@@ -1,4 +1,11 @@
 
+2002-04-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_ainit.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,
+	codegen/cg_output.c, codegen/cg_output.h, codegen/jv_misc.tc,
+	cscc/csharp/cs_grammar.y, cscc/csharp/cs_misc.tc: semantic
+	analysis and code generation for array "new" operator.
+
 2002-04-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_thread.h, support/no_defs.h, support/pt_defs.c,

@@ -528,7 +528,6 @@ ILNode_GenValue(ILNode_ArrayInit)
 {
 	ILType *type = node->arrayType;
 	ILType *elemType;
-	ILClass *classType;
 	int rank, dimension;
 	ILUInt32 *posn;
 
@@ -548,15 +547,7 @@ ILNode_GenValue(ILNode_ArrayInit)
 		/* Create a single-dimensional array */
 		ILGenUInt32(info, ILGetArrayInitLength(node->expr, 0));
 		ILGenAdjust(info, 1);
-		classType = ILTypeToClass(info, elemType);
-		if(classType)
-		{
-			ILGenTypeToken(info, IL_OP_NEWARR, ILType_FromClass(classType));
-		}
-		else
-		{
-			ILGenTypeToken(info, IL_OP_NEWARR, elemType);
-		}
+		ILGenArrayNew(info, elemType);
 	}
 	else
 	{

@@ -1334,10 +1334,10 @@ RankSpecifiers
 RankSpecifierList
 	: '[' DimensionSeparators ']'			{
 					$$ = ILNode_List_create();
-					ILNode_List_Add($$, $2);
+					ILNode_List_Add($$, ILNode_TypeSuffix_create($2));
 				}
 	| RankSpecifierList '[' DimensionSeparators ']'	{
-					ILNode_List_Add($1, $3);
+					ILNode_List_Add($1, ILNode_TypeSuffix_create($3));
 					$$ = $1;
 				}
 	;

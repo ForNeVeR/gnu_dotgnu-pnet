@@ -151,6 +151,12 @@ void ILGenClassName(ILGenInfo *info, int opcode, const char *className);
 void ILGenTypeToken(ILGenInfo *info, int opcode, ILType *type);
 
 /*
+ * Output an array creation expression for a single-dimensional
+ * array of a particular element type.
+ */
+void ILGenArrayNew(ILGenInfo *info, ILType *type);
+
+/*
  * Output a constructor call for a multi-dimensional array type.
  */
 void ILGenArrayCtor(ILGenInfo *info, ILType *type);

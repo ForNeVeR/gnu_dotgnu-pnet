@@ -115,8 +115,7 @@ ILNode_GetType(ILNode_UserConversion)
 
 ILNode_GetType(ILNode_NewExpression)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	return ILMachineType_ObjectRef;
 }
 
 /*
@@ -745,20 +744,11 @@ ILNode_GenValue(ILNode_ArgArray)
 {
 	ILMachineType machineType;
 	ILUInt32 posn;
-	ILClass *classType;
 	int popped;
 
 	/* Create a new array of the desired size */
 	ILGenUInt32(info, node->numElems);
-	classType = ILTypeToClass(info, node->elemType);
-	if(classType)
-	{
-		ILGenTypeToken(info, IL_OP_NEWARR, ILType_FromClass(classType));
-	}
-	else
-	{
-		ILGenTypeToken(info, IL_OP_NEWARR, node->elemType);
-	}
+	ILGenArrayNew(info, node->elemType);
 	ILGenAdjust(info, 1);
 
 	/* Populate the members of the array */
@@ -779,10 +769,80 @@ ILNode_GenValue(ILNode_ArgArray)
 	return ILMachineType_ObjectRef;
 }
 
+%{
+
+/*
+ * Output array dimensions for a "new" expression, and ensure
+ * that they are converted to 32-bit values.
+ */
+static void OutputArrayDims(ILGenInfo *info, ILNode *dims)
+{
+	ILMachineType type;
+
+	/* Recurse down to process the left sub-nodes first */
+	if(yyisa(dims, ILNode_ArgList))
+	{
+		OutputArrayDims(info, ((ILNode_ArgList *)dims)->expr1);
+		dims = ((ILNode_ArgList *)dims)->expr2;
+	}
+
+	/* Output code for this dimension */
+	if(info->outputIsJava)
+	{
+		type = JavaGenValue(dims, info);
+	}
+	else
+	{
+		type = ILNode_GenValue(dims, info);
+	}
+	if(type == ILMachineType_Int64 || type == ILMachineType_UInt64)
+	{
+		if(info->outputIsJava)
+		{
+			JavaGenCallIntrinsic(info, "l2ui_ovf", "(J)I");
+			JavaGenAdjust(info, -1);
+		}
+		else
+		{
+			ILGenSimple(info, IL_OP_CONV_OVF_U4_UN);
+		}
+	}
+}
+
+%}
+
 ILNode_GenValue(ILNode_NewExpression)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	long saveStack;
+
+	/* Bail out if initializer-based (semantic analysis should
+	   have turned this node into "ILNode_ArrayInit") */
+	if(!(node->indexes))
+	{
+		return ILMachineType_ObjectRef;
+	}
+
+	/* Output the indexes */
+	saveStack = info->stackHeight;
+	OutputArrayDims(info, node->indexes);
+
+	/* Create the array */
+	if(!yyisa(node->indexes, ILNode_ArgList))
+	{
+		/* Single-dimensional array creation */
+		ILGenArrayNew(info, ILTypeGetElemType(node->arrayType));
+	}
+	else
+	{
+		/* Multi-dimensional array creation */
+		ILGenArrayCtor(info, node->arrayType);
+	}
+
+	/* Set the final stack position */
+	info->stackHeight = saveStack + 1;
+
+	/* Arrays are always object references */
+	return ILMachineType_ObjectRef;
 }
 
 ILNode_GenValue(ILNode_ObjectCreationExpression)

@@ -411,6 +411,7 @@ struct _tagILSwitchValue
 	ILNode	   *indexes;
 	ILNode	   *rank;
 	ILNode	   *arrayInitializer;
+	%nocreate ILType *arrayType = {0};
 }
 %node ILNode_ObjectCreationExpression ILNode_Expression =
 {

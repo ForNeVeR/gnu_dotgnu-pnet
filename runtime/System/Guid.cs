@@ -422,11 +422,8 @@ public struct Guid : IFormattable, IComparable
 	// Get a hash code for this Guid object.
 	public override int GetHashCode()
 			{
-				return (a__ ^ ((int)b__) ^ (((int)(c__)) << 16) ^
-						((int)d__) ^ (((int)e__) << 8) ^
-						(((int)f__) << 16) ^ (((int)g__) << 24) ^
-						((int)h__) ^ (((int)i__) << 8) ^
-						(((int)j__) << 16) ^ (((int)k__) << 24));
+				return (a__ ^ ((((int)b__) << 16) | (int)(ushort)c__) ^
+						((((int)f__) << 24) | k__));
 			}
 
 	// Convert this Guid into a byte array.

@@ -28,6 +28,9 @@
 	runtime/System/Private/NumberFormat/ScientificFormatter.cs:
 	handle NaN, +Infinity, and -Infinity in the number formatters.
 
+	* runtime/System/Guid.cs: adjust "Guid.GetHashCode" so that it
+	is compatible with other CLI implementations.
+
 2003-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/System.build,

@@ -1,4 +1,11 @@
 
+0.1.0 (27 November 2001)
+
+	* Continue documentation of native methods.
+	* Implement "System.Diagnostics" and "System.Text".
+	* Handle exception stack traces.
+	* Timezone handling for dealing with UTC vs local time issues.
+
 0.0.8 (17 November 2001)
 
 	* New classes in "System.Resources", "System.Threading",

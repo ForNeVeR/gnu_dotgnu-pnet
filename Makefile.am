@@ -1,6 +1,6 @@
 SUBDIRS = . include support image dumpasm engine ilasm ildasm \
-		  ilalink ilsize ilnative ilfind ildiff codegen cscc resgen ildb \
-		  csdoc csant clrwrap samples doc tests
+		  ilalink ilsize ilnative ilfind ildiff ildd codegen cscc \
+		  resgen ildb csdoc csant clrwrap samples doc tests
 
 ## We don't include libffi and libgc in SUBDIRS because we don't
 ## want "make install" to install those packages.

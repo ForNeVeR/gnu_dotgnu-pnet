@@ -316,6 +316,7 @@ ilsize/Makefile
 ilnative/Makefile
 ilfind/Makefile
 ildiff/Makefile
+ildd/Makefile
 codegen/Makefile
 cscc/Makefile
 cscc/common/Makefile

@@ -28,6 +28,10 @@
 	codegen/jv_const.tc, cscc/csharp/cs_const.tc: implement code
 	generation and constant evaluation for casting pointer values.
 
+	* Makefile.am, configure.in, doc/pnettools.texi, ildd/.cvsignore,
+	ildd/Makefile.am, ildd/ildd.1, ildd/ildd.c: add the "ildd" program
+	to the stack, which prints assembly and PInvoke dependencies.
+
 2002-07-02  Gopal.V  <gopalv82@symonds.net>
 
 	* doc/Doxyfile: Add Doxygen configuration file (contributed

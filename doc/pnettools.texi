@@ -34,6 +34,7 @@ Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd
 * Size::                    Intermediate language size utility
 * Native::                  Intermediate language native utility
 * Find::                    Intermediate language name find utility
+* Dependencies::            Intermediate language dependency utility
 * Resources::               Resource generation and conversion
 * ECMA Extensions::         ECMA file format extensions
 * Load Errors::             Errors while loading IL binaries
@@ -77,6 +78,8 @@ The IL size utility.  @xref{Size}, for more information.
 The IL native utility.  @xref{Native}, for more information.
 @item ilfind
 The IL find utility.  @xref{Find}, for more information.
+@item ildd
+The IL dependency utility.  @xref{Dependencies}, for more information.
 @item resgen
 The resource generation utility.  @xref{Resources}, for more information.
 @end table
@@ -2678,7 +2681,7 @@ describing the match.
 
 @c -----------------------------------------------------------------------
 
-@node ilfind invocation, Resources, Find, Find
+@node ilfind invocation, Dependencies, Find, Find
 @section Invoking ilfind
 @cindex ilfind invocation
 
@@ -2776,7 +2779,56 @@ support POSIX regular expressions natively.
 
 @c -----------------------------------------------------------------------
 
-@node Resources, resgen invocation, ilfind invocation, Top
+@node Dependencies, ildd invocation, ilfind invocation, Top
+@chapter Intermediate language dependency utility
+@cindex Dependencies
+@cindex ildd
+
+Ildd lists the assemblies and PInvoke modules that are referenced by
+an IL object file (@code{.obj}), an IL executable (@code{.exe}),
+or an IL dynamic link library (@code{.dll}).
+
+@menu
+* ildd invocation::         Invoking ildd
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node ildd invocation, Resources, Dependencies, Dependencies
+@section Invoking ildd
+@cindex ildd invocation
+
+The general form of the ildd syntax is as follows:
+
+@example
+ildd [OPTIONS] PATTERN INPUT ...
+@end example
+
+@table @code
+@cindex --help option (ildd)
+@item --help
+Print a usage message for the ildd program.
+
+@cindex -v option (ildd)
+@cindex --version option (ildd)
+@item -v
+@itemx --version
+Print the version of the ildd program.
+
+@item --
+Marks the end of the command-line options.  The next argument is
+the pattern.  You may need to use this if your filename
+begins with @code{-}.  e.g. @code{ildd -- -input.exe}.  This is
+not needed if the input is stdin: @code{ildd -} is perfectly valid.
+@end table
+
+The exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.  @xref{Load Errors}, for a
+complete list of errors that may occur when loading an IL image file.
+
+@c -----------------------------------------------------------------------
+
+@node Resources, resgen invocation, ildd invocation, Top
 @chapter Resource generation and conversion
 @cindex Resources
 @cindex resgen

@@ -13,11 +13,9 @@
 				<includes name="**/*.cs"/>
 			</sources>
 
-		<!-- temporarily commented out until we can make cscc compile for real
 			<references>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
-		-->
 
 			<resources>
 				<file name="../resources/en_US/System/System.resources"/>
@@ -44,11 +42,9 @@
 				<includes name="**/*.cs"/>
 			</sources>
 
-		<!-- temporarily commented out until we can make cscc compile for real
 			<references>
 				<file name="../runtime/mscorlib_ecma.dll"/>
 			</references>
-		-->
 
 			<resources>
 				<file name="../resources/en_US/System/System.resources"/>

@@ -68,7 +68,7 @@ else
 fi
 
 # Add other flags to the command-line.
-OTHER_FLAGS="-fsyntax-check"
+OTHER_FLAGS="-fmetadata-only"
 
 # Execute the command line.
 exec "$CSCC" "$ILASM_FLAG" "$CSCC_CS_FLAG" "$ILALINK_FLAG" $OTHER_FLAGS $*

@@ -36,6 +36,9 @@ the entire array type instead of just the element type.
 * engine/cvm_dasm.c, engine/engine.h, engine/cvm.c, engine/Makefile.am:
 add a mini-disassembler for CVM to the engine to assist with debugging.
 
+* engine/lib_math.c, engine/Makefile.am, engine/internal.c: add "internalcall"
+methods for "System.Math", "System.Single", and "System.Double".
+
 2001-10-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/engine.h: remove the thread argument

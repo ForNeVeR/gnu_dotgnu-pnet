@@ -139,6 +139,7 @@ break;
 
 #ifdef MD_HAS_FP
 
+#ifndef CVM_PPC /* wrong order of native float vs R4 */
 case COP_LDC_R4:
 {
 	UNROLL_START();
@@ -156,6 +157,7 @@ case COP_LDC_R8:
 	MODIFY_UNROLL_PC(CVM_LEN_DOUBLE);
 }
 break;
+#endif
 
 #endif /* MD_HAS_FP */
 

@@ -198,7 +198,6 @@ extern int _ILCVMInsnCount[];
 #undef	IL_CVM_FLAVOUR
 #define	IL_CVM_FLAVOUR "Direct Unrolled (ARM)"
 #endif
-#if 0	/* remove this once PPC unroller is finished */
 #if defined(IL_CVM_DIRECT) && defined(CVM_PPC) && \
 	defined(__GNUC__) && !defined(IL_NO_ASM) && \
 	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
@@ -206,7 +205,6 @@ extern int _ILCVMInsnCount[];
 #define	IL_CVM_DIRECT_UNROLLED
 #undef	IL_CVM_FLAVOUR
 #define	IL_CVM_FLAVOUR "Direct Unrolled (PPC)"
-#endif
 #endif
 #if 0	/* remove this once ia64 unroller is finished */
 #if defined(IL_CVM_DIRECT) && defined(CVM_IA64) && \

@@ -1,5 +1,10 @@
 
-2004-01-21  Gopal V  <gopalv82@yahoo.com>
+2004-01-25  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/cvm_config.h, engine/unroll_const.c: Enable PPC
+	unroller by default and avoid LDC_R4/R8 code for PPC.
+
+2004-01-24  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/unroll.c: Add CVM_PPC as an unrolled platform.
 

@@ -482,12 +482,10 @@ typedef union
 
 	/* Pad this structure to the best alignment on the underlying platform.
 	   This is usually needed on 64-bit platforms to ensure that stack
-	   words are always aligned on the best boundary.  On 32-bit platforms,
-	   the size of this array will normally evaluate to zero.  We only do
-	   this for gcc because other compilers may not support zero-size arrays */
-#if defined(__GNUC__) && !defined(_WIN32)
-	char		padding[IL_BEST_ALIGNMENT -
-					    _IL_ALIGN_MAX(sizeof(ILInt32), sizeof(void *))];
+	   words are always aligned on the best boundary.  We don't do this for
+	   Win32 because IL_BEST_ALIGNMENT is 8 there, and we need it to be 4 */
+#if !defined(_WIN32)
+	char		padding[IL_BEST_ALIGNMENT];
 #endif
 
 } CVMWord;

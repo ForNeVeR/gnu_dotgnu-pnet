@@ -1,3 +1,14 @@
+2002-05-25  Peter Minten  <silvernerd@users.sf.net>
+        * System/Net/Sockets/Socket.cs: Replaced AND operators build up of only one & by &&.
+                Made Connect and SendTo set LocalEndPoint, fixed SendTo for IPv4 operation.
+                Added [TODO] marker for the whole Socket class, lot's of little things need fixing.
+                Improved Listen and ReceiveFrom.
+
+        * System/Net/Authorization.cs: Implemented class.
+
+        * System.Xml/XmlParserContext.cs: Fixed wrong property name
+                and added missing property.
+
 2002-05-25 Stephen Compall  <rushing@sigecom.net>
 
 	* runtime/System/IO/MemoryStream.cs: Added in Mr. Shivanan's

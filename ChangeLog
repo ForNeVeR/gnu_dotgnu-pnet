@@ -14,6 +14,9 @@ support/sha1.c: implement the SHA1 hash algorithm.
 
 * support/guid.c: re-distribute the entropy in the GUID buffer using SHA1.
 
+* include/il_crypt.h, support/Makefile.am, support/md5.c: implement
+the MD5 hash algorithm.
+
 2001-12-03  Bradley M. Kuhn  <bkuhn@ebb.org>
 
 * README, pnet.spec (Summary): Minor terminology changes.

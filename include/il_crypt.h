@@ -59,6 +59,38 @@ void ILSHAData(ILSHAContext *sha, const void *buffer, unsigned long len);
  */
 void ILSHAFinalize(ILSHAContext *sha, unsigned char hash[IL_SHA_HASH_SIZE]);
 
+/*
+ * The size of MD5 hash values.
+ */
+#define	IL_MD5_HASH_SIZE		16
+
+/*
+ * Context block for MD5.
+ */
+typedef struct _tagILMD5Context
+{
+	unsigned char	input[64];
+	ILUInt32		inputLen;
+	ILUInt32		A, B, C, D;
+	ILUInt64		totalLen;
+
+} ILMD5Context;
+
+/*
+ * Initialize a MD5 context block.
+ */
+void ILMD5Init(ILMD5Context *md5);
+
+/*
+ * Input more data into a MD5 context block.
+ */
+void ILMD5Data(ILMD5Context *md5, const void *buffer, unsigned long len);
+
+/*
+ * Finalize a MD5 context block and output the hash.
+ */
+void ILMD5Finalize(ILMD5Context *md5, unsigned char hash[IL_MD5_HASH_SIZE]);
+
 #ifdef	__cplusplus
 };
 #endif

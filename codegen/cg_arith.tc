@@ -1461,12 +1461,15 @@ ILShift_ApplyOp(ILNode_Shr, ILMachineType_UInt16),
 ILShift_ApplyOp(ILNode_Shr, ILMachineType_Char),
 ILShift_ApplyOp(ILNode_Shr, ILMachineType_Int32),
 ILShift_ApplyOp(ILNode_Shr, ILMachineType_Int64),
-ILShift_ApplyOp(ILNode_Shr, ILMachineType_NativeInt),
+ILShift_ApplyOp(ILNode_Shr, ILMachineType_NativeInt)
+{
+	ILGenSimple(info, IL_OP_SHR);
+}
 ILShift_ApplyOp(ILNode_Shr, ILMachineType_UInt32),
 ILShift_ApplyOp(ILNode_Shr, ILMachineType_UInt64),
 ILShift_ApplyOp(ILNode_Shr, ILMachineType_NativeUInt)
 {
-	ILGenSimple(info, IL_OP_SHR);
+	ILGenSimple(info, IL_OP_SHR_UN);
 }
 ILShift_ApplyOp(ILNode_Shr, ILMachineType_Float32),
 ILShift_ApplyOp(ILNode_Shr, ILMachineType_Float64),
@@ -3034,6 +3037,13 @@ ILNot_EvalOp(ILMachineType)
 ILMachineType ILCommonType(ILMachineType type1, ILMachineType type2,
 						   int intonly, int pedanticArith)
 {
+	if(type1 == ILMachineType_Decimal || type2 == ILMachineType_Decimal)
+	{
+		if(intonly)
+			return ILMachineType_Int32;
+		else
+			return ILMachineType_Decimal;
+	}
 	if(type1 == ILMachineType_NativeFloat || type2 == ILMachineType_NativeFloat)
 	{
 		if(intonly)

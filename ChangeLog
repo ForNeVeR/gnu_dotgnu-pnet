@@ -4,6 +4,9 @@
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions
 for the builtin unary and binary operators, to match the C# standard.
 
+* codegen/cg_arith.tc, codegen/jv_arith.tc: handle "decimal" properly
+in "ILCommonType"; implement unsigned right shifts properly for "ILNode_Shr".
+
 2001-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_types.h: mark array ranks explicitly with "ARRAY_CONTINUE",

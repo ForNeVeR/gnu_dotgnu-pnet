@@ -1234,17 +1234,25 @@ JavaShift_ApplyOp(ILNode_Shr, ILMachineType_Int16),
 JavaShift_ApplyOp(ILNode_Shr, ILMachineType_UInt16),
 JavaShift_ApplyOp(ILNode_Shr, ILMachineType_Char),
 JavaShift_ApplyOp(ILNode_Shr, ILMachineType_Int32),
-JavaShift_ApplyOp(ILNode_Shr, ILMachineType_NativeInt),
-JavaShift_ApplyOp(ILNode_Shr, ILMachineType_UInt32),
-JavaShift_ApplyOp(ILNode_Shr, ILMachineType_NativeUInt)
+JavaShift_ApplyOp(ILNode_Shr, ILMachineType_NativeInt)
 {
 	JavaGenSimple(info, JAVA_OP_ISHR);
 	JavaGenAdjust(info, -1);
 }
-JavaShift_ApplyOp(ILNode_Shr, ILMachineType_Int64),
-JavaShift_ApplyOp(ILNode_Shr, ILMachineType_UInt64)
+JavaShift_ApplyOp(ILNode_Shr, ILMachineType_UInt32),
+JavaShift_ApplyOp(ILNode_Shr, ILMachineType_NativeUInt)
+{
+	JavaGenSimple(info, JAVA_OP_IUSHR);
+	JavaGenAdjust(info, -1);
+}
+JavaShift_ApplyOp(ILNode_Shr, ILMachineType_Int64)
 {
 	JavaGenSimple(info, JAVA_OP_LSHR);
+	JavaGenAdjust(info, -1);
+}
+JavaShift_ApplyOp(ILNode_Shr, ILMachineType_UInt64)
+{
+	JavaGenSimple(info, JAVA_OP_LUSHR);
 	JavaGenAdjust(info, -1);
 }
 JavaShift_ApplyOp(ILNode_Shr, ILMachineType_Float32),

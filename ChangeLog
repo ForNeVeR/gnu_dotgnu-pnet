@@ -8,6 +8,8 @@
 	* engine/lib_dir.c, engine/int_table.c: Rename Platform.FileInfo to 
 	Platform.InternalFileInfo.
 
+	* engine/lib_dir.c: Fix an entry I missed the last time.
+
 2002-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, ildb/Makefile.am, ilnative/Makefile.am,

@@ -211,7 +211,8 @@ extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread,ILStrin
 	
 	
 	*files = (System_Array*) ILExecThreadNew(_thread,
-						"[vPlatform.FileInfo;","(Ti)V",(ILVaInt)(arraySize));
+						"[vPlatform.InternalFileInfo;",
+						"(Ti)V",(ILVaInt)(arraySize));
 	if(!(*files))
 	{
 		ILExecThreadThrowOutOfMemory(_thread);

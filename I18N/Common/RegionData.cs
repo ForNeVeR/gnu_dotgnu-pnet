@@ -1,7 +1,7 @@
 /*
  * RegionData.cs - Implementation of the "I18N.Common.RegionData" class.
  *
- * Copyright (c) 2002  Southern Storm Software, Pty Ltd
+ * Copyright (c) 2002, 2004  Southern Storm Software, Pty Ltd
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,6 +103,29 @@ internal class RegionData : RegionInfo
 					return regionName.twoLetterISOName;
 				}
 			}
+#if CONFIG_FRAMEWORK_2_0
+	public override String CurrencyEnglishName
+			{
+				get
+				{
+					return regionName.currencyEnglishName;
+				}
+			}
+	public override String CurrencyNativeName
+			{
+				get
+				{
+					return regionName.currencyNativeName;
+				}
+			}
+	public override int GeoId
+			{
+				get
+				{
+					return regionName.regionID;
+				}
+			}
+#endif
 
 	// Determine if two region information objects are equal.
 	public override bool Equals(Object obj)

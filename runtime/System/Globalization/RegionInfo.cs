@@ -1,7 +1,7 @@
 /*
  * RegionInfo.cs - Implementation of "System.Globalization.RegionInfo".
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,8 +32,10 @@ public class RegionInfo
 	// is allocated by the I18N routines.
 	private RegionInfo regionInfo;
 
-	// The current region.
-	private static RegionInfo currentRegion;
+	// The current region.  Other implementations make this global static,
+	// but technically that is incorrect if the culture is thread-specific.
+	// We want the current region to track the current culture at all times.
+	[ThreadStatic] internal static RegionInfo currentRegion;
 
 	// Constructors.
 	public RegionInfo(int culture)
@@ -69,15 +71,12 @@ public class RegionInfo
 			{
 				get
 				{
-					lock(typeof(RegionInfo))
+					if(currentRegion == null)
 					{
-						if(currentRegion == null)
-						{
-							currentRegion =
-								new RegionInfo(CultureInfo.CurrentCulture.LCID);
-						}
-						return currentRegion;
+						currentRegion =
+							new RegionInfo(CultureInfo.CurrentCulture.LCID);
 					}
+					return currentRegion;
 				}
 			}
 
@@ -145,6 +144,29 @@ public class RegionInfo
 					return regionInfo.TwoLetterISORegionName;
 				}
 			}
+#if CONFIG_FRAMEWORK_2_0
+	public virtual String CurrencyEnglishName
+			{
+				get
+				{
+					return regionInfo.CurrencyEnglishName;
+				}
+			}
+	public virtual String CurrencyNativeName
+			{
+				get
+				{
+					return regionInfo.CurrencyNativeName;
+				}
+			}
+	public virtual int GeoId
+			{
+				get
+				{
+					return regionInfo.GeoId;
+				}
+			}
+#endif
 
 	// Determine if two region information objects are equal.
 	public override bool Equals(Object obj)
@@ -174,6 +196,6 @@ public class RegionInfo
 
 }; // class RegionInfo
 
-#endif // CONFIG_REFLECTION
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Globalization

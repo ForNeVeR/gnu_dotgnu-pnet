@@ -490,6 +490,10 @@ public sealed class Thread
 				}
 				set
 				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
 					CultureInfo.SetCurrentCulture(value);
 				}
 			}
@@ -520,6 +524,10 @@ public sealed class Thread
 				}
 				set
 				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
 					CultureInfo.SetCurrentUICulture(value);
 				}
 			}

@@ -1,7 +1,7 @@
 /*
  * CultureInfo.cs - Implementation of "System.Globalization.CultureInfo".
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -241,11 +241,10 @@ public class CultureInfo : ICloneable, IFormatProvider
 	// Set the current culture.
 	internal static void SetCurrentCulture(CultureInfo value)
 			{
-				if(value == null)
-				{
-					throw new ArgumentNullException("value");
-				}
 				currentCulture = value;
+			#if !ECMA_COMPAT
+				RegionInfo.currentRegion = null;	// Recreate on next call.
+			#endif
 			}
 
 	// Get the current UI culture object for the running thread.
@@ -264,10 +263,6 @@ public class CultureInfo : ICloneable, IFormatProvider
 	// Set the current UI culture.
 	internal static void SetCurrentUICulture(CultureInfo value)
 			{
-				if(value == null)
-				{
-					throw new ArgumentNullException("value");
-				}
 				currentUICulture = value;
 			}
 
@@ -533,6 +528,23 @@ public class CultureInfo : ICloneable, IFormatProvider
 					return readOnly;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the keyboard layout identifier for this culture.
+	public virtual int KeyboardLayoutID
+			{
+				get
+				{
+					if(handler != null)
+					{
+						return handler.KeyboardLayoutID;
+					}
+					return 0x0C09;	// US 101 keyboard.
+				}
+			}
+
+#endif // CONFIG_FRAMEWORK_1_2
 
 	// Get or set the number formatting information for this culture.
 	public virtual NumberFormatInfo NumberFormat

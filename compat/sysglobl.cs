@@ -44,9 +44,9 @@ public sealed class CultureAndRegionInfoBuilder
 	private String cultureName;
 	private DateTimeFormatInfo dateTimeFormat;
 	private bool isNeutralCulture;
-	private int keyboardLayoutID;
 	private int lcid;
 #if CONFIG_FRAMEWORK_1_2
+	private int keyboardLayoutID;
 	private LineOrientation lineOrientation;
 #endif
 	private NumberFormatInfo numberFormat;
@@ -60,8 +60,11 @@ public sealed class CultureAndRegionInfoBuilder
 	private String twoLetterISOLanguageName;
 #endif
 #if !ECMA_COMPAT
-	private int geoId;
+	internal int geoId;
 	private bool isMetric;
+	private String currencyEnglishName;
+	private String currencyNativeName;
+	private String currencySymbol;
 	private String isoCurrencySymbol;
 	private String regionEnglishName;
 	private String regionName;
@@ -72,6 +75,7 @@ public sealed class CultureAndRegionInfoBuilder
 #endif
 
 	// Constructors.
+#if !ECMA_COMPAT
 	public CultureAndRegionInfoBuilder(CultureInfo templateCulture,
 									   RegionInfo templateRegion)
 			: this(templateCulture, templateRegion,
@@ -99,6 +103,35 @@ public sealed class CultureAndRegionInfoBuilder
 									   RegionInfo templateRegion,
 									   String language, String region,
 									   String suffix, CulturePrefix prefix)
+#else
+	public CultureAndRegionInfoBuilder(CultureInfo templateCulture,
+									   Object templateRegion)
+			: this(templateCulture, templateRegion,
+				   String.Empty, String.Empty, String.Empty,
+				   CulturePrefix.None) {}
+	public CultureAndRegionInfoBuilder(CultureInfo templateCulture,
+									   Object templateRegion,
+									   String language)
+			: this(templateCulture, templateRegion,
+				   language, String.Empty, String.Empty,
+				   CulturePrefix.None) {}
+	public CultureAndRegionInfoBuilder(CultureInfo templateCulture,
+									   Object templateRegion,
+									   String language, String region)
+			: this(templateCulture, templateRegion,
+				   language, region, String.Empty,
+				   CulturePrefix.None) {}
+	public CultureAndRegionInfoBuilder(CultureInfo templateCulture,
+									   Object templateRegion,
+									   String language, String region,
+									   String suffix)
+			: this(templateCulture, templateRegion,
+				   language, region, suffix, CulturePrefix.None) {}
+	public CultureAndRegionInfoBuilder(CultureInfo templateCulture,
+									   Object templateRegion,
+									   String language, String region,
+									   String suffix, CulturePrefix prefix)
+#endif
 			{
 				if(templateCulture == null)
 				{
@@ -115,16 +148,18 @@ public sealed class CultureAndRegionInfoBuilder
 				cultureName = templateCulture.Name;
 				dateTimeFormat = templateCulture.DateTimeFormat;
 				isNeutralCulture = templateCulture.IsNeutralCulture;
-				//keyboardLayoutID = templateCulture.KeyboardLayoutID; // TODO
 			#if CONFIG_REFLECTION
 				lcid = templateCulture.LCID;
 			#else
 				lcid = templateCulture.GetHashCode();
 			#endif
-				//lineOrientation = templateCulture.LineOrientation; // TODO
 				numberFormat = templateCulture.NumberFormat;
 				parent = templateCulture.Parent;
 				textInfo = templateCulture.TextInfo;
+			#if CONFIG_FRAMEWORK_1_2
+				keyboardLayoutID = templateCulture.KeyboardLayoutID;
+				//lineOrientation = templateCulture.LineOrientation; // TODO
+			#endif
 			#if CONFIG_REFLECTION
 				cultureEnglishName = templateCulture.EnglishName;
 				cultureNativeName = templateCulture.NativeName;
@@ -136,7 +171,16 @@ public sealed class CultureAndRegionInfoBuilder
 					templateCulture.TwoLetterISOLanguageName;
 			#endif
 			#if !ECMA_COMPAT
-				//geoId = templateCulture.GeoId; // TODO
+			#if CONFIG_FRAMEWORK_2_0
+				geoId = templateRegion.GeoId;
+			#else
+				geoId = templateRegion.GetHashCode();
+			#endif
+			#if CONFIG_FRAMEWORK_2_0
+				currencyEnglishName = templateRegion.CurrencyEnglishName;
+				currencyNativeName = templateRegion.CurrencyNativeName;
+			#endif
+				currencySymbol = templateRegion.CurrencySymbol;
 				isMetric = templateRegion.IsMetric;
 				isoCurrencySymbol = templateRegion.ISOCurrencySymbol;
 				regionEnglishName = templateRegion.EnglishName;
@@ -267,6 +311,14 @@ public sealed class CultureAndRegionInfoBuilder
 					return isNeutralCulture;
 				}
 			}
+	public int LCID
+			{
+				get
+				{
+					return lcid;
+				}
+			}
+#if CONFIG_FRAMEWORK_1_2
 	public int KeyboardLayoutID
 			{
 				get
@@ -278,14 +330,6 @@ public sealed class CultureAndRegionInfoBuilder
 					keyboardLayoutID = value;
 				}
 			}
-	public int LCID
-			{
-				get
-				{
-					return lcid;
-				}
-			}
-#if CONFIG_FRAMEWORK_1_2
 	public LineOrientation LineOrientation
 			{
 				get
@@ -370,15 +414,15 @@ public sealed class CultureAndRegionInfoBuilder
 #if !ECMA_COMPAT
 
 	// Get or set this object's region properties.
-	public int GeoId
+	public String CurrencySymbol
 			{
 				get
 				{
-					return geoId;
+					return currencySymbol;
 				}
 				set
 				{
-					geoId = value;
+					currencySymbol = value;
 				}
 			}
 	public bool IsMetric
@@ -465,6 +509,41 @@ public sealed class CultureAndRegionInfoBuilder
 					twoLetterISORegionName = value;
 				}
 			}
+#if CONFIG_FRAMEWORK_2_0
+	public int GeoId
+			{
+				get
+				{
+					return geoId;
+				}
+				set
+				{
+					geoId = value;
+				}
+			}
+	public String CurrencyEnglishName
+			{
+				get
+				{
+					return currencyEnglishName;
+				}
+				set
+				{
+					currencyEnglishName = value;
+				}
+			}
+	public String CurrencyNativeName
+			{
+				get
+				{
+					return currencyNativeName;
+				}
+				set
+				{
+					currencyNativeName = value;
+				}
+			}
+#endif
 
 #endif // !ECMA_COMPAT
 
@@ -495,7 +574,14 @@ public sealed class CultureAndRegionInfoBuilder
 	// Register the culture that is represented by this builder.
 	public void Register()
 			{
-				// TODO
+			#if !ECMA_COMPAT
+				_I18NRegistration.Register
+					(CreateCulture(), ConsoleFallbackUICulture,
+					 CreateRegion());
+			#else
+				_I18NRegistration.Register
+					(CreateCulture(), ConsoleFallbackUICulture);
+			#endif
 			}
 	public static void Register(CultureAndRegionInfoBuilder builder)
 			{
@@ -503,26 +589,20 @@ public sealed class CultureAndRegionInfoBuilder
 			}
 	public static void Register(String xmlFile)
 			{
-				// TODO
+				// For compatibility with .NET SDK 2.0!
+				throw new NotImplementedException();
 			}
 
 	// Save this culture to a stream.
 	public void Save(String filename)
 			{
-				FileStream stream = new FileStream
-					(filename, FileMode.Create, FileAccess.Write);
-				try
-				{
-					Save(stream);
-				}
-				finally
-				{
-					stream.Close();
-				}
+				// For compatibility with .NET SDK 2.0!
+				throw new NotImplementedException();
 			}
 	public void Save(Stream stream)
 			{
-				// TODO
+				// For compatibility with .NET SDK 2.0!
+				throw new NotImplementedException();
 			}
 
 	// Unregister a particular culture.
@@ -532,7 +612,7 @@ public sealed class CultureAndRegionInfoBuilder
 			}
 	public static void Unregister(String cultureName, bool force)
 			{
-				// TODO
+				_I18NRegistration.Unregister(cultureName);
 			}
 
 }; // class CultureAndRegionInfoBuilder
@@ -725,6 +805,19 @@ internal class UserDefinedCultureInfo : CultureInfo
 
 #endif // CONFIG_REFLECTION
 
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the keyboard layout identifier for this culture.
+	public override int KeyboardLayoutID
+			{
+				get
+				{
+					return builder.KeyboardLayoutID;
+				}
+			}
+
+#endif // CONFIG_FRAMEWORK_1_2
+
 	// Implementation of the ICloneable interface.
 	public override Object Clone()
 			{
@@ -762,11 +855,7 @@ internal class UserDefinedRegionInfo : RegionInfo
 
 	// Constructor.
 	public UserDefinedRegionInfo(CultureAndRegionInfoBuilder builder)
-#if CONFIG_REFLECTION
-			: base(builder.templateCulture.LCID)
-#else
-			: base(builder.templateCulture.GetHashCode())
-#endif
+			: base(-1)	// Don't try to recursively load an I18N handler.
 			{
 				this.builder = builder;
 			}
@@ -835,6 +924,29 @@ internal class UserDefinedRegionInfo : RegionInfo
 					return builder.TwoLetterISORegionName;
 				}
 			}
+#if CONFIG_FRAMEWORK_2_0
+	public override String CurrencyEnglishName
+			{
+				get
+				{
+					return builder.CurrencyEnglishName;
+				}
+			}
+	public override String CurrencyNativeName
+			{
+				get
+				{
+					return builder.CurrencyNativeName;
+				}
+			}
+	public override int GeoId
+			{
+				get
+				{
+					return builder.GeoId;
+				}
+			}
+#endif
 
 	// Determine if two region information objects are equal.
 	public override bool Equals(Object obj)
@@ -842,7 +954,7 @@ internal class UserDefinedRegionInfo : RegionInfo
 				UserDefinedRegionInfo other = (obj as UserDefinedRegionInfo);
 				if(other != null)
 				{
-					return (other.Name == Name);
+					return (other.builder.geoId == builder.geoId);
 				}
 				else
 				{
@@ -853,7 +965,7 @@ internal class UserDefinedRegionInfo : RegionInfo
 	// Get the hash code for this object.
 	public override int GetHashCode()
 			{
-				return Name.GetHashCode();
+				return builder.geoId;
 			}
 
 }; // class UserDefinedRegionInfo

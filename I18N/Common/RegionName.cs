@@ -1,7 +1,7 @@
 /*
  * RegionName.cs - Implementation of the "I18N.Common.RegionName" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,8 @@ internal sealed class RegionName
 	public String currencySymbol;
 	public String isoCurrencySymbol;
 	public int    currencyDigits;
+	public String currencyEnglishName;
+	public String currencyNativeName;
 
 	// Construct a "RegionName" instance.
 	public RegionName(int regionID,
@@ -51,6 +53,8 @@ internal sealed class RegionName
 				this.currencySymbol			= currencySymbol;
 				this.isoCurrencySymbol		= isoCurrencySymbol;
 				this.currencyDigits			= currencyDigits;
+				this.currencyEnglishName    = currencySymbol;	// TODO
+				this.currencyNativeName     = currencySymbol;	// TODO
 			}
 
 }; // class RegionName

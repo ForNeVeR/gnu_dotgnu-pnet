@@ -1,3 +1,7 @@
+2003-03-22  Stephen Compall  <s11@member.fsf.org>
+
+	* config.sub, config.guess: Updated from CVS, per Debian
+	recommendations.
 
 2003-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -544,6 +544,12 @@ int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 	ILType *argType;
 	ILType *returnType;
 	
+	if((kinds & IL_CONVERT_USER_DEFINED) == 0)
+	{
+		return 0;
+		/* this is only used when all others have failed */
+	}
+	
 	while(arg1Class != 0)
 	{
 		arg1Class= ILClassResolve(arg1Class);

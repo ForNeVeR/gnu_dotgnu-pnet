@@ -20,6 +20,8 @@
 	* codegen/cg_resolve.c, cscc/csharp/cs_oper.tc, cscc/csharp/cs_decls.tc:
 	Correct the remaining ILCoerce declarations as well.
 	
+	* codegen/cg_coerce.c: Allow indirect coercions only when we are checking
+	for user defined operators.
 	
 2002-11-15  Gopal.V  <gopalv82@symonds.net>
 

@@ -1,4 +1,10 @@
 
+2003-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/md_arm.h, engine/md_default.h, engine/md_x86.h,
+	engine/unroll.c, engine/unroll_var.c: check in some of the
+	generic unroller code (it isn't working yet).
+
 2003-05-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* configure.in, support/socket.c: Implement the ILSysIOSetSocketOption

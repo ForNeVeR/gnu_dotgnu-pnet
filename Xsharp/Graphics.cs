@@ -61,12 +61,15 @@ public sealed class Graphics : IDisposable
 	private Drawable drawable;
 	internal XDrawable drawableHandle;
 	internal IntPtr gc;
+	private float dpiX;
+	private float dpiY;
 	private Color foreground;
 	private Color background;
 	private Pixmap tile;
 	private Bitmap stipple;
 	private byte[] dashPattern;
 	internal Region exposeRegion;
+
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.Graphics"/> object and
@@ -201,6 +204,17 @@ public sealed class Graphics : IDisposable
 											  GCValueMask.GCArcMode),
 									   ref gcValues);
 					}
+
+					int sn = drawable.screen.ScreenNumber;
+					double px, mm;
+
+					px = (double)Xlib.XDisplayWidth(display, sn);
+					mm = (double)Xlib.XDisplayWidthMM(display, sn);
+					dpiX = (float)((px * 25.4) / mm);
+
+					px = (double)Xlib.XDisplayHeight(display, sn);
+					mm = (double)Xlib.XDisplayHeightMM(display, sn);
+					dpiY = (float)((px * 25.4) / mm);
 				}
 				finally
 				{
@@ -284,6 +298,30 @@ public sealed class Graphics : IDisposable
 				dpy.Unlock();
 			}
 
+
+	/// <summary>
+	/// <para>Get the dpi of the screen for the x axis.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The dpi of the screen for the x axis.</para>
+	/// </value>
+	public float DpiX
+			{
+				get { return dpiX; }
+			}
+
+	/// <summary>
+	/// <para>Get the dpi of the screen for the y axis.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The dpi of the screen for the y axis.</para>
+	/// </value>
+	public float DpiY
+			{
+				get { return dpiY; }
+			}
 
 	/// <summary>
 	/// <para>Get the X Drawable related to this graphics object.</para>

@@ -43,6 +43,20 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				this.gaveHdc = false;
 			}
 
+
+	// Get the dpi of the screen for the x axis.
+	public override float DpiX
+			{
+				get { return graphics.DpiX; }
+			}
+
+	// Get the dpi of the screen for the y axis.
+	public override float DpiY
+			{
+				get { return graphics.DpiY; }
+			}
+
+
 	// Dispose of this object.
 	protected override void Dispose(bool disposing)
 			{

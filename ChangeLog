@@ -1,3 +1,20 @@
+2004-08-25  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Drawing.Xsharp/DrawingFont.cs: remove the point size modifier
+	because the point size differences between X and windows appear to be
+	non-existent.
+
+	* System.Drawing/Font.cs: modify calculations involving dpi to use
+	System.Drawing.Graphics.DpiY.
+
+	* System.Drawing.Xsharp/DrawingGraphics.cs: add dpi getter overrides
+	so the values are gotten from xsharp.
+
+	* Xsharp/Graphics.cs: add dpi getters for the x and y axes.
+
+	* Xsharp/Xlib.cs.in: add XDisplayWidth, XDisplayWidthMM,
+	XDisplayHeight, and XDisplayHeightMM P/Invoke declarations.
+
 2004-08-25  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Threading/Thread.cs: Added principal initialization,

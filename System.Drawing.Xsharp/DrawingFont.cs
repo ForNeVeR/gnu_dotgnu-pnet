@@ -34,10 +34,6 @@ internal sealed class DrawingFont : IToolkitFont
 	private float dpi;
 	internal Xsharp.Font xfont;
 
-	// Fudge factor for converting a Windows-style point size
-	// into an X-style point size.  The Windows point size of
-	// 9 is roughly the same as 12 under X.
-	private const float PointSizeConversion = 1.4f;
 
 	// Constructor.
 	public DrawingFont(System.Drawing.Font properties, float dpi)
@@ -59,8 +55,7 @@ internal sealed class DrawingFont : IToolkitFont
 						{
 							xfont = Xsharp.Font.CreateFont
 								(properties.Name,
-								 (int)(properties.SizeInPoints *
-								 	   (10.0f * PointSizeConversion)),
+								 (int)(properties.SizeInPoints * 10.0f),
 								 (Xsharp.FontStyle)(properties.Style));
 						}
 						graphics.Font = this;

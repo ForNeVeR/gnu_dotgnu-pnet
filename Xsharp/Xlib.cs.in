@@ -82,6 +82,22 @@ internal sealed unsafe class Xlib
 	[DllImport("X11")]
 	extern public static IntPtr XSynchronize(IntPtr display, XBool onoff);
 
+	[DllImport("X11")]
+	extern public static @X_int@ XDisplayHeight
+			(IntPtr display, @X_int@ screen_number);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XDisplayHeightMM
+			(IntPtr display, @X_int@ screen_number);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XDisplayWidth
+			(IntPtr display, @X_int@ screen_number);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XDisplayWidthMM
+			(IntPtr display, @X_int@ screen_number);
+
 	// Declare screen-related external functions.
 
 	[DllImport("X11")]

@@ -239,7 +239,7 @@ public sealed class Font
 						case GraphicsUnit.Pixel:
 						default:
 						{
-							adjust = 72.0f / Graphics.DefaultScreenDpi;
+							adjust = 72.0f / toolkit.GetDefaultGraphics().DpiY;
 						}
 						break;
 
@@ -440,9 +440,11 @@ public sealed class Font
 					return (float)pixelHeight;
 				}
 
+				// Get the dpi of the screen for the y axis.
+				float dpiY = graphics.DpiY;
+
 				// Convert the pixel value back into points.
-				float points =
-					((float)pixelHeight) / (Graphics.DefaultScreenDpi / 72.0f);
+				float points = ((float)pixelHeight) / (dpiY / 72.0f);
 
 				// Convert the points into the graphics object's unit.
 				switch(graphics.PageUnit)
@@ -450,7 +452,7 @@ public sealed class Font
 					case GraphicsUnit.World:
 					case GraphicsUnit.Pixel:
 					{
-						points *= (Graphics.DefaultScreenDpi / 72.0f);
+						points *= (dpiY / 72.0f);
 					}
 					break;
 
@@ -500,7 +502,9 @@ public sealed class Font
 			{
 				if(toolkitFont == null)
 				{
-					GetFont(ToolkitManager.Toolkit, 72);
+					IToolkit toolkit = ToolkitManager.Toolkit;
+					float dpiY = toolkit.GetDefaultGraphics().DpiY;
+					GetFont(toolkit, dpiY);
 				}
 				return toolkitFont.GetHfont();
 			}
@@ -531,7 +535,9 @@ public sealed class Font
 						}
 						else
 						{
-							GetFont(ToolkitManager.Toolkit, 72);
+							IToolkit toolkit = ToolkitManager.Toolkit;
+							float dpiY = toolkit.GetDefaultGraphics().DpiY;
+							GetFont(toolkit, dpiY);
 						}
 					}
 					toolkitFont.ToLogFont(lf, g);

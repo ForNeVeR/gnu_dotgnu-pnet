@@ -13,6 +13,8 @@
 	* runtime/System/Text/cvt.sh: remove ISCII pages from the list of
 	unimplemented code pages.
 
+	* runtime/System/Text/README: document the newer classes.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/.cvsignore, runtime/System/Text/ByteEncoding.cs,

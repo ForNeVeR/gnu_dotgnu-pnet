@@ -45,6 +45,20 @@ tour of the main encoding classes:
 		Abstract base class that is used by many of the "CPnnnn" classes
 		to provide common encoding functionality.
 
+	ISCIIEncoding
+
+		Abstract base class that is used by the "CP570XX" classes to
+		provide common functionality for ISCII code pages.
+
+	CodeTable.cs
+
+		Loads large translation tables from the assembly's resource
+		section.  Used with CJK classes like "JISConvert".
+
+	JISConvert.cs
+
+		Manages tables for converting between JIS and Unicode.
+
 The method "DefaultEncoding.InternalCodePage()" is used to detect the
 default code page supported by the runtime engine.  This method may
 return 0 if there is no way for the engine to obtain a valid number.
@@ -87,9 +101,10 @@ generated from the "*.ucm" files in this directory using the "ucm2cp"
 program.  These files originally came from IBM's "ICU" project.
 
 To regenerate the code page handlers from the "*.ucm" files, use the
-"cvt.sh" script.
+"cvt.sh" script.  If you supply the "--include-rare" option to "cvt.sh",
+it will add a number of rare DOS and EBCDIC code pages to the system.
 
 Currently, "ucm2cp" can only handle single-byte character sets.  The
 double-byte character sets are too complex to be handled using the
 simple code conversion technique used by "ByteEncoding".  Support for
-double-byte character sets must be coded manually.
+double-byte character sets must be coded manually (e.g. "CP932.cs").

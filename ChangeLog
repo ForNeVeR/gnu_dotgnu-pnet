@@ -1,9 +1,14 @@
+
 2002-04-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/Makefile, runtime/System/IO/StreamReader.cs,
 	runtime/System/IO/TextReader.cs: implement the reading methods
 	in "StreamReader" properly; change ReadLine/ReadToEnd to use
 	StringBuilder.
+
+	* resources/en_US/runtime/Arg.txt, runtime/System/Array.cs:
+	re-implement the "Array.Copy" method, with only the simple cases
+	handled in the engine.
 
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 

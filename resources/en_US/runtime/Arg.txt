@@ -57,6 +57,7 @@ Arg_InvalidArrayRange=Array range is invalid
 Arg_MustBeType=Supplied value must be a valid runtime type
 Arg_MustHaveOneElement=Array must have at least 1 element
 Arg_MistBeSameSize=The two arrays must have the same size
+Arg_MistBeSameRank=The two arrays must have the same number of dimensions
 Arg_InvalidArrayIndex=Array index is invalid
 Arg_LowBoundsMustMatch=The lower bounds of the two arrays must match
 Arg_ShortItemsArray=The items array is shorter than the keys array

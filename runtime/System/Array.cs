@@ -1,7 +1,7 @@
 /*
  * Array.cs - Implementation of the "System.Array" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -189,11 +189,76 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			 length);
 	}
 
-	// Copy the contents of one array into another (general-purpose version).
+	// Internal array copy method for similarly-typed arrays.
+	// The engine can assume that the parameters have been validated,
+	// and indicate the relative indices into the arrays.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Copy(Array sourceArray, int sourceIndex,
-								   Array destinationArray,
-								   int destinationIndex, int length);
+	extern internal static void InternalCopy
+					(Array sourceArray, int sourceIndex,
+				     Array destinationArray,
+					 int destinationIndex, int length);
+
+	// Copy the contents of one array into another (general-purpose version).
+	public static void Copy(Array sourceArray, int sourceIndex,
+						    Array destinationArray,
+						    int destinationIndex, int length)
+	{
+		// Validate the parameters.
+		if(sourceArray == null)
+		{
+			throw new ArgumentNullException("sourceArray");
+		}
+		if(destinationArray == null)
+		{
+			throw new ArgumentNullException("destinationArray");
+		}
+		if(sourceArray.Rank != destinationArray.Rank)
+		{
+			throw new RankException(_("Arg_MustBeSameRank"));
+		}
+		int srcLower = sourceArray.GetLowerBound(0);
+		int srcLength = sourceArray.Length;
+		int dstLower = destinationArray.GetLowerBound(0);
+		int dstLength = destinationArray.Length;
+		if(sourceIndex < srcLower)
+		{
+			throw new ArgumentOutOfRangeException
+				("sourceIndex", _("ArgRange_Array"));
+		}
+		if(destinationIndex < dstLower)
+		{
+			throw new ArgumentOutOfRangeException
+				("destinationIndex", _("ArgRange_Array"));
+		}
+		if(length < 0)
+		{
+			throw new ArgumentOutOfRangeException
+				("length", _("ArgRange_NonNegative"));
+		}
+		if((sourceIndex - srcLower) >= srcLength ||
+		   (destinationIndex - dstLower) >= dstLength)
+		{
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
+		}
+
+		// Get the array element types.
+		Type arrayType1 = sourceArray.GetType().GetElementType();
+		Type arrayType2 = destinationArray.GetType().GetElementType();
+
+		// Is this a simple array copy of the same element type?
+		if(arrayType1 == arrayType2)
+		{
+			InternalCopy
+				(sourceArray, sourceIndex - srcLower,
+				 destinationArray, destinationIndex - dstLower,
+				 length);
+			return;
+		}
+
+		// Copy the array contents the hard way.
+		// TODO
+		throw new ArrayTypeMismatchException();
+	}
 
 	// Implement the ICollection interface.
 	public virtual void CopyTo(Array array, int index)
@@ -208,7 +273,8 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		}
 		else
 		{
-			Copy(this, 0, array, index, Length);
+			Copy(this, GetLowerBound(0), array,
+			     index + array.GetLowerBound(0), Length);
 		}
 	}
 	public int Count

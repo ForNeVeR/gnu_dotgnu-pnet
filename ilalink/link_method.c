@@ -19,6 +19,7 @@
  */
 
 #include "linker.h"
+#include "il_opcodes.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -50,6 +51,507 @@ static int IsStringArray(ILType *type)
 	return (namespace != 0 && !strcmp(namespace, "System"));
 }
 
+/*
+ * Convert a token that is embedded within a method.
+ * Returns 1 if a fixup must be recorded, zero if no
+ * fixup required, or -1 if out of memory or unresolved.
+ */
+static int ConvertToken(ILLinker *linker, ILMethod *method,
+						ILMethod *newMethod, ILToken *token)
+{
+	ILProgramItem *item;
+	ILClass *classInfo;
+	ILMember *member;
+	ILType *type;
+	ILStandAloneSig *sig;
+	ILTypeSpec *spec;
+
+	if(!(*token))
+	{
+		return 0;
+	}
+	item = ILProgramItem_FromToken(ILProgramItem_Image(method), *token);
+	if(!item)
+	{
+		/* Invalid token, so just zero it */
+		*token = 0;
+		return 0;
+	}
+	switch(*token & IL_META_TOKEN_MASK)
+	{
+		case IL_META_TOKEN_TYPE_DEF:
+		case IL_META_TOKEN_TYPE_REF:
+		{
+			/* Convert a class reference */
+			classInfo = _ILLinkerConvertClassRef(linker, (ILClass *)item);
+			if(!classInfo)
+			{
+				return -1;
+			}
+			*token = ILClass_Token(classInfo);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_META_TOKEN_FIELD_DEF:
+		case IL_META_TOKEN_METHOD_DEF:
+		case IL_META_TOKEN_MEMBER_REF:
+		{
+			/* Convert a member reference */
+			member = _ILLinkerConvertMemberRef(linker, (ILMember *)item);
+			if(!member)
+			{
+				return -1;
+			}
+			*token = ILMember_Token(member);
+			return 1;
+		}
+		break;
+
+		case IL_META_TOKEN_STAND_ALONE_SIG:
+		{
+			/* Convert a stand-alone signature token */
+			type = ILStandAloneSigGetType((ILStandAloneSig *)item);
+			type = _ILLinkerConvertType(linker, type);
+			if(!type)
+			{
+				return -1;
+			}
+			sig = ILStandAloneSigCreate(linker->image, 0, type);
+			if(!sig)
+			{
+				_ILLinkerOutOfMemory(linker);
+				return -1;
+			}
+			*token = ILStandAloneSig_Token(sig);
+			return 1;
+		}
+		break;
+
+		case IL_META_TOKEN_TYPE_SPEC:
+		{
+			/* Convert a type specification */
+			type = ILTypeSpecGetType((ILTypeSpec *)item);
+			spec = _ILLinkerConvertTypeSpec(linker, type);
+			if(!spec)
+			{
+				return -1;
+			}
+			*token = ILTypeSpec_Token(spec);
+			return 1;
+		}
+		break;
+
+		default:
+		{
+			/* This token type is illegal in method bodies, so just zero it */
+			*token = 0;
+		}
+		break;
+	}
+	return 0;
+}
+
+/*
+ * Convert the IL code that is associated with a method.
+ */
+static int ConvertCode(ILLinker *linker, ILMethod *method,
+					   ILMethod *newMethod, ILMethodCode *code,
+					   ILException *exceptions)
+{
+	ILWriter *writer = linker->writer;
+	unsigned char buffer[BUFSIZ];
+	int bufPosn;
+	unsigned long bufRVA;
+	unsigned char *pc;
+	ILUInt32 len;
+	const ILOpcodeInfo *insn;
+	ILUInt32 size;
+	int argOffset;
+	ILToken token;
+	int needsFixup;
+	const char *str;
+	unsigned long strLen;
+	ILType *localVars;
+	ILStandAloneSig *sig;
+	ILUInt32 numExceptions;
+	ILException *exception;
+	int fatExceptions;
+
+	/* Construct the method header */
+	if(code->headerSize == 1)
+	{
+		/* Encode a tiny format header */
+		buffer[0] = (unsigned char)(((code->codeLen) << 2) | 0x02);
+		ILWriterTextWrite(writer, buffer, 1);
+	}
+	else
+	{
+		/* Encode a fat format header */
+		buffer[0] = (unsigned char)(code->initLocals ? 0x13 : 0x03);
+		if(exceptions)
+		{
+			/* There will be more sections following the method code */
+			buffer[0] |= (unsigned char)0x08;
+		}
+		buffer[1] = (unsigned char)0x30;
+		buffer[2] = (unsigned char)(code->maxStack);
+		buffer[3] = (unsigned char)(code->maxStack >> 8);
+		buffer[4] = (unsigned char)(code->codeLen);
+		buffer[5] = (unsigned char)(code->codeLen >> 8);
+		buffer[6] = (unsigned char)(code->codeLen >> 16);
+		buffer[7] = (unsigned char)(code->codeLen >> 24);
+		if(code->localVarSig)
+		{
+			localVars = _ILLinkerConvertType
+					(linker, ILStandAloneSigGetType(code->localVarSig));
+			if(!localVars)
+			{
+				return 0;
+			}
+			sig = ILStandAloneSigCreate(linker->image, 0, localVars);
+			if(!sig)
+			{
+				_ILLinkerOutOfMemory(linker);
+				return 0;
+			}
+			token = ILProgramItem_Token(sig);
+			buffer[8]  = (unsigned char)token;
+			buffer[9]  = (unsigned char)(token >> 8);
+			buffer[10] = (unsigned char)(token >> 16);
+			buffer[11] = (unsigned char)(token >> 24);
+		}
+		else
+		{
+			buffer[8]  = (unsigned char)0x00;
+			buffer[9]  = (unsigned char)0x00;
+			buffer[10] = (unsigned char)0x00;
+			buffer[11] = (unsigned char)0x00;
+		}
+		ILWriterTextWrite(writer, buffer, 12);
+	}
+
+	/* Copy the code to the final image and convert any tokens that we find */
+	bufRVA = ILWriterGetTextRVA(writer);
+	bufPosn = 0;
+	pc = code->code;
+	len = code->codeLen;
+	while(len > 0)
+	{
+		/* Fetch the opcode information for the next instruction */
+		if(pc[0] != IL_OP_PREFIX)
+		{
+			/* Ordinary instruction */
+			insn = &(ILMainOpcodeTable[pc[0]]);
+			argOffset = 1;
+		}
+		else
+		{
+			/* Prefixed instruction */
+			insn = &(ILPrefixOpcodeTable[pc[1]]);
+			argOffset = 2;
+		}
+		size = (ILUInt32)(insn->size);
+
+		/* Determine how to process the instruction */
+		switch(insn->args)
+		{
+			case IL_OPCODE_ARGS_TOKEN:
+			case IL_OPCODE_ARGS_CALL:
+			case IL_OPCODE_ARGS_CALLI:
+			case IL_OPCODE_ARGS_CALLVIRT:
+			case IL_OPCODE_ARGS_NEW:
+			{
+				/* This instruction takes a token argument */
+				ILMemCpy(buffer + bufPosn, pc, argOffset);
+				bufPosn += argOffset;
+				token = IL_READ_UINT32(pc + argOffset);
+				needsFixup = ConvertToken(linker, method, newMethod, &token);
+				buffer[bufPosn++] = (unsigned char)token;
+				buffer[bufPosn++] = (unsigned char)(token >> 8);
+				buffer[bufPosn++] = (unsigned char)(token >> 16);
+				buffer[bufPosn++] = (unsigned char)(token >> 24);
+				if(needsFixup < 0)
+				{
+					return 0;
+				}
+				else if(needsFixup)
+				{
+					/* Record a fixup on the token for later */
+					ILWriterSetFixup(writer, bufRVA + bufPosn - 4,
+						 ILProgramItem_FromToken(linker->image, token));
+				}
+			}
+			break;
+
+			case IL_OPCODE_ARGS_STRING:
+			{
+				/* This instruction takes a string argument */
+				token = (IL_READ_UINT32(pc + 1) & ~IL_META_TOKEN_MASK);
+				str = ILImageGetUserString(ILProgramItem_Image(method),
+										   token, &strLen);
+				if(str)
+				{
+					/* Copy the string to the output image */
+					token = ILImageAddEncodedUserString
+								(linker->image, str, strLen);
+					if(!token)
+					{
+						_ILLinkerOutOfMemory(linker);
+						return 0;
+					}
+				}
+				else
+				{
+					/* Shouldn't happen, but do something sane anyway */
+					token = 0;
+				}
+				buffer[bufPosn++] = IL_OP_LDSTR;
+				buffer[bufPosn++] = (unsigned char)token;
+				buffer[bufPosn++] = (unsigned char)(token >> 8);
+				buffer[bufPosn++] = (unsigned char)(token >> 16);
+				buffer[bufPosn++] = (unsigned char)(token >> 24);
+			}
+			break;
+
+			case IL_OPCODE_ARGS_SWITCH:
+			{
+				/* Determine the total length of the switch */
+				size = 5 + IL_READ_UINT32(pc + 1) * 4;
+
+				/* Flush the current buffer contents */
+			flushLong:
+				if(bufPosn > 0)
+				{
+					ILWriterTextWrite(writer, buffer, bufPosn);
+					bufRVA += bufPosn;
+					bufPosn = 0;
+				}
+
+				/* Write the entire switch to the output image */
+				ILWriterTextWrite(writer, pc, size);
+				bufRVA += size;
+			}
+			break;
+
+			case IL_OPCODE_ARGS_ANN_DATA:
+			{
+				/* Determine the length of the data annotation */
+				if(pc[0] == IL_OP_ANN_DATA_S)
+				{
+					size = (((ILUInt32)(pc[1])) & 0xFF) + 2;
+				}
+				else
+				{
+					size = (IL_READ_UINT32(pc + 2) + 6);
+				}
+				goto flushLong;
+			}
+			/* Not reached */
+
+			case IL_OPCODE_ARGS_ANN_PHI:
+			{
+				/* Determine the length of the phi annotation */
+				size = ((ILUInt32)IL_READ_UINT16(pc + 1)) * 2 + 3;
+				goto flushLong;
+			}
+			/* Not reached */
+
+			default:
+			{
+				/* This instruction does not need any special handling */
+				ILMemCpy(buffer + bufPosn, pc, size);
+				bufPosn += size;
+			}
+			break;
+		}
+
+		/* Flush the buffer contents if it is over the high water mark */
+		if(bufPosn >= (BUFSIZ - 64))
+		{
+			ILWriterTextWrite(writer, buffer, bufPosn);
+			bufRVA += bufPosn;
+			bufPosn = 0;
+		}
+
+		/* Advance to the next instruction */
+		pc += size;
+		len -= size;
+	}
+
+	/* Flush the remainder of the buffer contents */
+	if(bufPosn > 0)
+	{
+		ILWriterTextWrite(writer, buffer, bufPosn);
+		bufRVA += bufPosn;
+	}
+
+	/* Convert and output the exception blocks */
+	if(exceptions)
+	{
+		/* Align the text section on a 4-byte boundary */
+		ILWriterTextAlign(writer);
+
+		/* Should we use the tiny or fat format for the exception blocks? */
+		fatExceptions = 0;
+		numExceptions = 0;
+		exception = exceptions;
+		while(exception != 0)
+		{
+			if(exception->tryOffset > (ILUInt32)0xFFFF ||
+			   exception->tryLength > (ILUInt32)0xFF ||
+			   exception->handlerOffset > (ILUInt32)0xFFFF ||
+			   exception->handlerLength > (ILUInt32)0xFF)
+			{
+				fatExceptions = 1;
+			}
+			++numExceptions;
+			exception = exception->next;
+		}
+		if(!fatExceptions && ((numExceptions * 12) + 4) > (ILUInt32)0xFF)
+		{
+			fatExceptions = 1;
+		}
+
+		/* What type of exception header should we use? */
+		if(fatExceptions)
+		{
+			/* Use the fat format for the exception information */
+			len = (numExceptions * 24) + 4;
+			buffer[0] = (unsigned char)0x41;
+			buffer[1] = (unsigned char)len;
+			buffer[2] = (unsigned char)(len >> 8);
+			buffer[3] = (unsigned char)(len >> 16);
+			ILWriterTextWrite(writer, buffer, 4);
+			bufRVA += 4;
+			exception = exceptions;
+			while(exception != 0)
+			{
+				buffer[0]  = (unsigned char)(exception->flags);
+				buffer[1]  = (unsigned char)(exception->flags >> 8);
+				buffer[2]  = (unsigned char)(exception->flags >> 16);
+				buffer[3]  = (unsigned char)(exception->flags >> 24);
+				buffer[4]  = (unsigned char)(exception->tryOffset);
+				buffer[5]  = (unsigned char)(exception->tryOffset >> 8);
+				buffer[6]  = (unsigned char)(exception->tryOffset >> 16);
+				buffer[7]  = (unsigned char)(exception->tryOffset >> 24);
+				buffer[8]  = (unsigned char)(exception->tryLength);
+				buffer[9]  = (unsigned char)(exception->tryLength >> 8);
+				buffer[10] = (unsigned char)(exception->tryLength >> 16);
+				buffer[11] = (unsigned char)(exception->tryLength >> 24);
+				buffer[12] = (unsigned char)(exception->handlerOffset);
+				buffer[13] = (unsigned char)(exception->handlerOffset >> 8);
+				buffer[14] = (unsigned char)(exception->handlerOffset >> 16);
+				buffer[15] = (unsigned char)(exception->handlerOffset >> 24);
+				buffer[16] = (unsigned char)(exception->handlerLength);
+				buffer[17] = (unsigned char)(exception->handlerLength >> 8);
+				buffer[18] = (unsigned char)(exception->handlerLength >> 16);
+				buffer[19] = (unsigned char)(exception->handlerLength >> 24);
+				if((exception->flags & IL_META_EXCEPTION_FILTER) != 0)
+				{
+					buffer[20] = (unsigned char)(exception->extraArg);
+					buffer[21] = (unsigned char)(exception->extraArg >> 8);
+					buffer[22] = (unsigned char)(exception->extraArg >> 16);
+					buffer[23] = (unsigned char)(exception->extraArg >> 24);
+				}
+				else if((exception->flags & 0x07) == IL_META_EXCEPTION_CATCH)
+				{
+					token = exception->extraArg;
+					needsFixup = ConvertToken(linker, method,
+											  newMethod, &token);
+					buffer[20] = (unsigned char)(token);
+					buffer[21] = (unsigned char)(token >> 8);
+					buffer[22] = (unsigned char)(token >> 16);
+					buffer[23] = (unsigned char)(token >> 24);
+					if(needsFixup < 0)
+					{
+						return 0;
+					}
+					else if(needsFixup)
+					{
+						/* Record a fixup for this class token */
+						ILWriterSetFixup(writer, bufRVA + 20,
+						 	ILProgramItem_FromToken(linker->image, token));
+					}
+				}
+				else
+				{
+					buffer[20] = (unsigned char)0x00;
+					buffer[21] = (unsigned char)0x00;
+					buffer[22] = (unsigned char)0x00;
+					buffer[23] = (unsigned char)0x00;
+				}
+				ILWriterTextWrite(writer, buffer, 24);
+				bufRVA += 24;
+				exception = exception->next;
+			}
+		}
+		else
+		{
+			/* Use the tiny format for the exception information */
+			len = (numExceptions * 12) + 4;
+			buffer[0] = (unsigned char)0x01;
+			buffer[1] = (unsigned char)len;
+			buffer[2] = (unsigned char)0x00;
+			buffer[3] = (unsigned char)0x00;
+			ILWriterTextWrite(writer, buffer, 4);
+			bufRVA += 4;
+			exception = exceptions;
+			while(exception != 0)
+			{
+				buffer[0] = (unsigned char)(exception->flags);
+				buffer[1] = (unsigned char)(exception->flags >> 8);
+				buffer[2] = (unsigned char)(exception->tryOffset);
+				buffer[3] = (unsigned char)(exception->tryOffset >> 8);
+				buffer[4] = (unsigned char)(exception->tryLength);
+				buffer[5] = (unsigned char)(exception->handlerOffset);
+				buffer[6] = (unsigned char)(exception->handlerOffset >> 8);
+				buffer[7] = (unsigned char)(exception->handlerLength);
+				if((exception->flags & IL_META_EXCEPTION_FILTER) != 0)
+				{
+					buffer[8]  = (unsigned char)(exception->extraArg);
+					buffer[9]  = (unsigned char)(exception->extraArg >> 8);
+					buffer[10] = (unsigned char)(exception->extraArg >> 16);
+					buffer[11] = (unsigned char)(exception->extraArg >> 24);
+				}
+				else if((exception->flags & 0x07) == IL_META_EXCEPTION_CATCH)
+				{
+					token = exception->extraArg;
+					needsFixup = ConvertToken(linker, method,
+											  newMethod, &token);
+					buffer[8]  = (unsigned char)(token);
+					buffer[9]  = (unsigned char)(token >> 8);
+					buffer[10] = (unsigned char)(token >> 16);
+					buffer[11] = (unsigned char)(token >> 24);
+					if(needsFixup < 0)
+					{
+						return 0;
+					}
+					else if(needsFixup)
+					{
+						/* Record a fixup for this class token */
+						ILWriterSetFixup(writer, bufRVA + 8,
+						 	ILProgramItem_FromToken(linker->image, token));
+					}
+				}
+				else
+				{
+					buffer[8]  = (unsigned char)0x00;
+					buffer[9]  = (unsigned char)0x00;
+					buffer[10] = (unsigned char)0x00;
+					buffer[11] = (unsigned char)0x00;
+				}
+				ILWriterTextWrite(writer, buffer, 12);
+				bufRVA += 12;
+				exception = exception->next;
+			}
+		}
+	}
+
+	/* Done */
+	return 1;
+}
+
 int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 						   ILClass *newClass)
 {
@@ -64,6 +566,7 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	ILOverride *over;
 	ILMethod *decl;
 	ILMethodCode code;
+	ILException *exceptions;
 
 	/* See if we already have a definition of this method in the class */
 	newMethod = 0;
@@ -238,6 +741,25 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	{
 		return 1;
 	}
+	if(!ILMethodGetExceptions(method, &code, &exceptions))
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+
+	/* Align the text section and record the RVA within the new method */
+	ILWriterTextAlign(linker->writer);
+	ILMethodSetRVA(newMethod, ILWriterGetTextRVA(linker->writer));
+
+	/* Convert the method code */
+	if(!ConvertCode(linker, method, newMethod, &code, exceptions))
+	{
+		ILMethodFreeExceptions(exceptions);
+		return 0;
+	}
+
+	/* Free the exception list, which we no longer require */
+	ILMethodFreeExceptions(exceptions);
 
 	/* Finished */
 	return 1;

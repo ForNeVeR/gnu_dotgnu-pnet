@@ -1,3 +1,11 @@
+
+2003-07-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm_inline.c: use ILExecThreadCallVirtualV instead
+	of ILExecThreadCallVirtual for the StringBuilder.Append
+	inline because the va_list packing code doesn't work on
+	PPC GNU/Linux.
+
 2003-07-08  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_thread.c: Monitor speed improvements.  Prevent

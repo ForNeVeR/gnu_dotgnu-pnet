@@ -441,12 +441,14 @@ VMCASE(COP_PREFIX_APPEND_CHAR):
 		else
 		{
 			/* We need to reallocate the builder, so call the C# library */
+			ILExecValue tempValue;
+			tempValue.int32Value = stacktop[-1].intValue;
 			COPY_STATE_TO_THREAD();
-			ILExecThreadCallVirtual(thread, CVMP_ARG_PTR(ILMethod *),
-									&(stacktop[-2].ptrValue),
-									stacktop[-2].ptrValue,
-									(ILVaInt)(stacktop[-1].intValue));
+			ILExecThreadCallVirtualV(thread, CVMP_ARG_PTR(ILMethod *),
+									 &tempValue, stacktop[-2].ptrValue,
+									 &tempValue);
 			RESTORE_STATE_FROM_THREAD();
+			stacktop[-2].ptrValue = tempValue.ptrValue;
 			MODIFY_PC_AND_STACK(CVMP_LEN_PTR, -1);
 		}
 	}

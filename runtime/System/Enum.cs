@@ -232,16 +232,23 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 					}
 				}
 
-				// Create and fill the name array.
+				// Create and fill the name and value arrays.
 				String[] names = new String [numLiterals];
+				Array values = Array.CreateInstance(enumType, numLiterals);
 				numLiterals = 0;
 				for(posn = 0; posn < fields.Length; ++posn)
 				{
 					if(fields[posn] != null)
 					{
-						names[numLiterals++] = fields[posn].Name;
+						names[numLiterals] = fields[posn].Name;
+						values.SetValue(fields[posn].GetValue(null),
+										numLiterals);
+						++numLiterals;
 					}
 				}
+
+				// Sort the arrays on value, and then return the names only.
+				Array.Sort(values, names);
 				return names;
 			}
 
@@ -328,6 +335,9 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 						++numLiterals;
 					}
 				}
+
+				// Sort the array on value and return it.
+				Array.Sort(values);
 				return values;
 			}
 

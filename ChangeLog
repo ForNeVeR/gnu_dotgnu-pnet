@@ -1,4 +1,11 @@
+
+2003-07-02  Cecilio Pardo  <cpardo@imayhem.com>
+	
+	* System.Windows.Forms/ListBox.cs: Stub out this class
+	(Patch #1691, Gopal)
+
 2003-07-05  Richard Baumann  <biochem333@nyc.rr.com>
+
 	* System.Windows.Forms/ToolBar.cs: Add support for drop down menus.
 
 2003-07-05  Rhys Weatherley  <rweather@southern-storm.com.au>

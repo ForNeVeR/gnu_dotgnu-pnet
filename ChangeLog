@@ -15,6 +15,9 @@
 	* cscc/csdoc.c: Fix csdoc to ignore return values while generating
 	documentation for constructors.
 
+	* csdoc/doc_stub.c: Cleanup the generation of stubs for properties &
+	output the code as per the pnetlib coding standards in HACKING.
+
 2003-01-04  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	*  configure.in, engine/int_proto.h, engine/int_table.c,

@@ -107,13 +107,16 @@ void ILDocPrintMember(FILE *fp,ILDocType *type,ILDocMember *foo)
 	}
 	else if(foo->memberType==ILDocMemberType_Property)
 	{
-		fprintf(fp,"\t\t");
+		fprintf(fp,"\t\t[TODO]\n\t\t");
 		while(*sig)
 		{
 			if(!strncmp(sig,"get;",4))
 			{
 				fprintf(fp,
-			"\n\t\tget { throw new NotImplementedException(\"%s\");}\n\t\t",
+					"\t\t\tget\n"
+					"\t\t\t{\n"
+					"\t\t\t\tthrow new NotImplementedException(\"%s\");\n"
+					"\t\t\t}\n",
 					foo->name
 				);
 				sig=sig+4;
@@ -121,19 +124,32 @@ void ILDocPrintMember(FILE *fp,ILDocType *type,ILDocMember *foo)
 			if(!strncmp(sig,"set;",4))
 			{
 				fprintf(fp,
-			"\n\t\tset { throw new NotImplementedException(\"%s\");}\n\t\t",
+					"\t\t\tset\n"
+					"\t\t\t{\n"
+					"\t\t\t\tthrow new NotImplementedException(\"%s\");\n"
+					"\t\t\t}\n",
 					foo->name
 				);
 				sig=sig+4;
 			}
 			else
 			{
-				fputc(*sig,fp);
+				if(*sig == '{')
+				{
+					fputs("\n\t\t{\n",fp);
+				}
+				else if(*sig == '}')
+				{
+					fputs("\t\t}\n",fp);
+				}
+				else
+				{
+					fputc(*sig,fp);
+				}
 				sig++;
 			}
 		}
-		fputc('\n',fp);
-			
+		fputc('\n',fp);	
 	}
 	else fprintf(fp,"\t\t%s;\n\n",sig);
 }

@@ -4,6 +4,9 @@
 	* Xsharp/Widget.cs: Fix detection of TopLevel window to
 	detect MDI TopLevelWindows as well. (patch #3076, Gopal)
 
+	* System.Windows.Forms/TextBox.cs: Fix NullRefException on
+	double click on empty textbox. (patch #3081, Gopal)
+
 2004-05-21  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/Schema/XmlSchema.cs: Change the default namespace to

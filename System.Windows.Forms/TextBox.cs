@@ -1685,7 +1685,7 @@ public class TextBox : TextBoxBase
 
 	private void SelectWord(int pos)
 	{
-		if (pos >= text.Length)
+		if (text == null || pos >= text.Length)
 		{
 			return;
 		}

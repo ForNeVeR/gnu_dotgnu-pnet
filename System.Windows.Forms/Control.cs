@@ -64,6 +64,9 @@ public class Control : IWin32Window
 	private ControlStyles styles;
 	private CreateParams createParams;
 	private static Font defaultFont;
+#if !CONFIG_COMPACT_FORMS
+	private AccessibleObject accessibilityObject;
+#endif
 
 	// Constructors.
 	public Control()
@@ -187,65 +190,59 @@ public class Control : IWin32Window
 
 	// Get or set the control's properties.
 #if !CONFIG_COMPACT_FORMS
-	[TODO]
 	public AccessibleObject AccessibilityObject
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(accessibilityObject == null)
+					{
+						accessibilityObject = CreateAccessibilityInstance();
+					}
+					return accessibilityObject;
 				}
 			}
-	[TODO]
 	public String AccessibleDefaultActionDescription
 			{
 				get
 				{
-					// TODO
-					return null;
+					return AccessibilityObject.defaultAction;
 				}
 				set
 				{
-					// TODO
+					AccessibilityObject.defaultAction = value;
 				}
 			}
-	[TODO]
 	public String AccessibleDescription
 			{
 				get
 				{
-					// TODO
-					return null;
+					return AccessibilityObject.description;
 				}
 				set
 				{
-					// TODO
+					AccessibilityObject.description = value;
 				}
 			}
-	[TODO]
 	public String AccessibleName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return AccessibilityObject.name;
 				}
 				set
 				{
-					// TODO
+					AccessibilityObject.name = value;
 				}
 			}
-	[TODO]
 	public AccessibleRole AccessibleRole
 			{
 				get
 				{
-					// TODO
-					return AccessibleRole.Default;
+					return AccessibilityObject.role;
 				}
 				set
 				{
-					// TODO
+					AccessibilityObject.role = value;
 				}
 			}
 #endif
@@ -780,17 +777,16 @@ public class Control : IWin32Window
 					}
 				}
 			}
-	[TODO]
 	public bool IsAccessible
 			{
 				get
 				{
-					// TODO
-					return false;
+					// By default, we assume that everything is accessible.
+					return true;
 				}
 				set
 				{
-					// TODO
+					// Not used in this implementation.
 				}
 			}
 	public bool IsDisposed
@@ -1237,19 +1233,16 @@ public class Control : IWin32Window
 #if !CONFIG_COMPACT_FORMS
 
 	// Notify client applications of accessibility events.
-	[TODO]
 	protected void AccessibilityNotifyClients
 				(AccessibleEvents accEvent, int childID)
 			{
-				// TODO
+				// Not used in this implementation.
 			}
 
 	// Create the accessibility object for this control.
-	[TODO]
 	protected virtual AccessibleObject CreateAccessibilityInstance()
 			{
-				// TODO
-				return null;
+				return new AccessibleObject(this);
 			}
 
 #endif
@@ -4117,6 +4110,75 @@ public class Control : IWin32Window
 				// TODO: background images
 				return new SolidBrush(BackColor);
 			}
+
+#if !CONFIG_COMPACT_FORMS
+
+	// Methods that support "AccessibleObject".
+
+	// Get the accessibility help information.
+	internal String GetAccessibilityHelp()
+			{
+				QueryAccessibilityHelpEventArgs e;
+				e = new QueryAccessibilityHelpEventArgs();
+				OnQueryAccessibilityHelp(e);
+				return e.HelpString;
+			}
+
+	// Get the number of children underneath this control.
+	internal int GetNumChildren()
+			{
+				return numChildren;
+			}
+
+	// Get a specific child by index.
+	internal Control GetChildByIndex(int index)
+			{
+				if(index >= 0 && index < numChildren)
+				{
+					return children[index];
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Get the focused child, or this control if it has focus.
+	[TODO]
+	internal Control GetFocusedChild()
+			{
+				// TODO
+				return null;
+			}
+
+	// Get the selected child, or this control if it is selected.
+	[TODO]
+	internal Control GetSelectedChild()
+			{
+				// TODO
+				return null;
+			}
+
+	// Get the keyboard shortcut.
+	internal virtual String GetKeyboardShortcut()
+			{
+				return null;
+			}
+
+	// Perform the default accessibility action for this control.
+	internal virtual void DoDefaultAction()
+			{
+				// Nothing to do here.
+			}
+
+	// Get the help topic for this accessible object.
+	internal virtual int GetHelpTopic(out String fileName)
+			{
+				fileName = null;
+				return -1;
+			}
+
+#endif // !CONFIG_COMPACT_FORMS
 
 }; // class Control
 

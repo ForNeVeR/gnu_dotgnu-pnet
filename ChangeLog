@@ -10,6 +10,11 @@
 	Xsharp/InputOnlyWidget.cs: fix some compilation issues for csc
 	(Neil Cawse <neilc@geotab.ca>).
 
+	* System.Windows.Forms/AccessibleObject.cs,
+	System.Windows.Forms/Button.cs, System.Windows.Forms/Control.cs,
+	System.Windows.Forms/Forms.build: provide a default accessibility
+	implementation for the "Control" class.
+
 2003-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs , 

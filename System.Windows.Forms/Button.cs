@@ -117,6 +117,12 @@ public class Button : ButtonBase, IButtonControl
 				}
 			}
 
+	// Perform the default accessibility action for this control.
+	internal override void DoDefaultAction()
+			{
+				PerformClick();
+			}
+
 }; // class Button
 
 }; // namespace System.Windows.Forms

@@ -1,3 +1,4 @@
+
 /*
  * WebRequest.cs - Implementation of the "System.Net.WebRequest" class.
  *
@@ -21,10 +22,266 @@
 namespace System.Net
 {
 
-[TODO]
+using System;
+
 public class WebRequest : MarshalByRefObject
 {
+	private String              ConnectionGroupName;
+	private Int64               ContentLength;
+	private String              ContentType;
+	private ICredentials        Credentials;
+	private WebHeaderCollection Headers;
+	private String              Method;
+	private Boolean             PreAuthenticate;
+	private IWebProxy           Proxy;
+	private Uri                 RequestUri;
+	private Int32               Timeout;
+	private static Hashtable    Prefixes;
 
+	protected WebRequest()
+	{
+		ConnectionGroupName = "";
+		ContentLength = 0;
+		ContentType = "";
+		Credentials = null;
+		Method = "";
+		PreAuthenticate = false;
+		Proxy = null;
+		RequestUri = "";
+		Timeout = 0;
+		Prefixes.Clear();
+	}
+
+	public virtual void Abort()
+	{
+		throw new NotSupportedException("Abort", _("Exception_NotSupported"));
+	}
+
+	public virtual IAsyncResult BeginGetRequestStream(AsyncCallback callback, object state)
+	{
+		throw new NotSupportedException("BeginGetRequestStream", _("Exception_NotSupported"));
+	}
+
+	public virtual IAsyncResult BeginGetRequestStream(AsyncCallback callback, object state)
+	{
+		throw new NotSupportedException("BeginGetRequestStream", _("Exception_NotSupported"));
+	}
+
+	public virtual IAsyncResult BeginGetResponse(AsyncCallback callback, object state)
+	{
+		throw new NotSupportedException("BeginGetResponse", _("Exception_NotSupported"));
+	}
+
+	[ TODO ]
+	public static WebRequest Create(string requestUriString)
+	{
+		if (requestUriString == null)
+		{
+			throw new ArgumentNullException("Create", _("Arg_NotNull"));
+		}
+
+		Uri requestUri = new Uri(requestUriString);		
+
+		return Create(requestUri);
+	}
+
+	[ TODO ]
+	public static WebRequest Create(Uri requestUri)
+	{
+		// TODO: Match Uri against complete Uri and scheme and find out
+		// if it is supported, otherwise throw up an error
+		// throw new NotSupportedException("Create", _("Exception_NotSupported"));
+
+		// TODO: the URI format is invalid
+		// throw new UriFormatException("requestUriString", _(""));
+
+		// TODO: this client does not have the permission to connect to the URI or
+		// the URI that the request is redirected to.
+		// throw new SecurityException("requestUriString", _(""));
+	}
+
+	[ TODO ]
+	public static WebRequest CreateDefault(Uri requestUri)
+	{
+		// TODO: Find out if just scheme is supported, otherwise throw up an error
+		// do not check for the complete Uri (in the case of longer Uri's passed).
+		// see spec
+		// throw new NotSupportedException("CreateDefault", _("Exception_NotSupported"));
+
+		// TODO: the URI format is invalid
+		// throw new UriFormatException("requestUriString", _(""));
+
+		// TODO: this client does not have the permission to connect to the URI or
+		// the URI that the request is redirected to.
+		// throw new SecurityException("requestUriString", _(""));
+	}
+
+	public virtual Stream EndGetRequestStream(IAsyncResult asyncResult)
+	{
+		throw new NotSupportedException("EndGetRequestStream", _("Exception_NotSupported"));
+	}
+
+	public virtual WebResponse EndGetResponse(IAsyncResult asyncResult)
+	{
+		throw new NotSupportedException("EndGetResponse", _("Exception_NotSupported"));
+	}
+
+	public virtual Stream GetRequestStream()	
+	{
+		throw new NotSupportedException("GetRequestStream", _("Exception_NotSupported"));
+	}
+
+	public virtual WebResponse GetResponse()
+	{
+		throw new NotSupportedException("GetResponse", _("Exception_NotSupported"));
+	}
+
+	[ TODO ]
+	public static bool RegisterPrefix(string prefix, IWebRequestCreate creator)
+	{
+		if (prefix== null)
+		{
+			throw new ArgumentNullException("prefix", _("Arg_NotNull"));
+		}
+
+		if (creator== null)
+		{
+			throw new ArgumentNullException("creator", _("Arg_NotNull"));
+		}
+
+		// TODO: further implementation...
+	}
+
+	public virtual string ConnectionGroupName 
+	{ 
+		get
+		{
+			throw new NotSupportedException("ConnectionGroupName ", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("ConnectionGroupName ", _("Exception_NotSupported"));
+		} 
+	}
+
+	public virtual long ContentLength
+	{
+		get
+		{
+			throw new NotSupportedException("ContentLength", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("ContentLength", _("Exception_NotSupported"));
+		}
+	}
+
+	public virtual string ContentType
+	{
+		get
+		{
+			throw new NotSupportedException("ContentType", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("ContentType", _("Exception_NotSupported"));
+		}
+	}
+
+	public virtual ICredentials Credentials
+	{
+		get
+		{
+			throw new NotSupportedException("Credentials", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("Credentials", _("Exception_NotSupported"));
+		}
+	}
+
+	public virtual WebHeaderCollection Headers
+	{
+		get
+		{
+			throw new NotSupportedException("Headers", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("Headers", _("Exception_NotSupported"));
+		}
+	}
+
+	public virtual string Method
+	{
+		get
+		{
+			throw new NotSupportedException("Method", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("Method", _("Exception_NotSupported"));
+		}
+	}
+
+	public virtual bool PreAuthenticate
+	{
+		get
+		{
+			throw new NotSupportedException("PreAuthenticate", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("PreAuthenticate", _("Exception_NotSupported"));
+		} 
+	}
+
+	public virtual IWebProxy Proxy
+	{
+		get
+		{
+			throw new NotSupportedException("Proxy", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("Proxy", _("Exception_NotSupported"));
+		}
+	}
+
+	public virtual Uri RequestUri
+	{
+		get
+		{
+			throw new NotSupportedException("RequestUri", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("RequestUri", _("Exception_NotSupported"));
+		}
+	}
+
+	public virtual int Timeout
+	{
+		get
+		{
+			throw new NotSupportedException("Timeout", _("Exception_NotSupported"));
+		}
+		
+		set
+		{
+			throw new NotSupportedException("Timeout", _("Exception_NotSupported"));
+		} 
+	}
+	
 }; // class WebRequest
 
 }; // namespace System.Net

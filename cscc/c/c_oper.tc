@@ -1970,8 +1970,9 @@ ILNode_CSemAnalysis(ILNode_Comma)
 	value1 = ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), stmtLevel);
 	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
 
-	/* Both must be r-value's */
-	if(!CSemIsRValue(value1) || !CSemIsRValue(value2))
+	/* Both must be r-value's or "void" */
+	if((!CSemIsRValue(value1) && !CSemIsVoid(value1)) ||
+	   (!CSemIsRValue(value2) && !CSemIsVoid(value2)))
 	{
 		if(!CSemIsError(value1) && !CSemIsError(value2))
 		{
@@ -2182,7 +2183,7 @@ ILNode_CSemAnalysis(ILNode_Conditional)
 
 	/* Perform semantic analysis on the "then" and "else" clauses */
 	value1 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
-	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr3), stmtLevel);
+	value2 = ILNode_CSemAnalysis(node->expr3, info, &(node->expr3), stmtLevel);
 	if((!CSemIsRValue(value1) && !CSemIsVoid(value1)) ||
 	   (!CSemIsRValue(value2) && !CSemIsVoid(value2)))
 	{

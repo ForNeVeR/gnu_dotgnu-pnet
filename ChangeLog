@@ -11,6 +11,9 @@
 	* cscc/c/c_lvalue.tc (ILNode_CDeref): remove the '*' dereference
 	layer if the argument is a function pointer, so that "(*f)()" works.
 
+	* cscc/c/c_oper.tc (ILNode_Conditional): error in semantic analysis
+	for the third sub-expression of "?:".
+
 2003-06-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/java/.cvsignore, cscc/bf/.cvsignore : add generated

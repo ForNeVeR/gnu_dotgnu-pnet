@@ -124,6 +124,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->currentClass = 0;
 	info->currentMethod = 0;
 	info->currentNamespace = 0;
+	info->arrayInit = 0;
 	if(nostdlib)
 	{
 		ILGenMakeLibrary(info);

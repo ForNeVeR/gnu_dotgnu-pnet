@@ -78,6 +78,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	ILImplements *impl;
 	ILClass *interface;
 	int first;
+	ILNode *prevClass;
 
 	/* Get the class information structure */
 	classInfo = node->classInfo;
@@ -85,6 +86,10 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	{
 		return;
 	}
+
+	/* Set the current class within the ILGenInfo object */
+	prevClass = info->currentClass;
+	info->currentClass = (ILNode *)node;
 
 	/* Output the class heading */
 	if(info->asmOutput)
@@ -169,6 +174,9 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 					ILClass_Namespace(classInfo));
 		}
 	}
+
+	/* Restore the previous class */
+	info->currentClass = prevClass;
 }
 
 /*
@@ -564,6 +572,12 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	fputs ("} // method ", outstream);
 	ILDumpIdentifier(outstream, ILMethod_Name(method), 0, 0);
 	putc('\n', outstream);
+
+	/* Flush the static array initialization classes used by the method */
+	if(!(info->outputIsJava))
+	{
+		ILArrayInitFlush(info);
+	}
 
 	/* Clear the stack heights */
 	info->stackHeight = 0;

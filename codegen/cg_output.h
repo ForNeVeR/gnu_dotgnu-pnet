@@ -95,6 +95,11 @@ void ILGenLabel(ILGenInfo *info, ILLabel *label);
 void ILGenLeaveLabel(ILGenInfo *info, ILLabel *label);
 
 /*
+ * Get a new label number.
+ */
+ILLabel ILGenNewLabel(ILGenInfo *info);
+
+/*
  * Output a call to a method given its named signature.
  */
 void ILGenCallByName(ILGenInfo *info, const char *name);

@@ -67,6 +67,17 @@ typedef struct _tagILLocalVar
 } ILLocalVar;
 
 /*
+ * Information about static array initialization classes.
+ */
+typedef struct _tagILArrayInit
+{
+	ILLabel			label;
+	ILUInt32		size;
+	struct _tagILArrayInit *next;
+
+} ILArrayInit;
+
+/*
  * Opaque definition of the Java generator routines.
  */
 typedef struct _tagILJavaGenInfo ILJavaGenInfo;
@@ -117,6 +128,7 @@ struct _tagILGenInfo
 	ILNode         *currentClass;		/* Current class being processed */
 	ILNode		   *currentMethod;		/* Current method being processed */
 	ILNode         *currentNamespace;	/* Current namespace being processed */
+	ILArrayInit    *arrayInit;			/* Array initialization information */
 
 };
 

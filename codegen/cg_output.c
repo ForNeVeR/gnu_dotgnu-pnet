@@ -262,6 +262,11 @@ void ILGenLeaveLabel(ILGenInfo *info, ILLabel *label)
 	}
 }
 
+ILLabel ILGenNewLabel(ILGenInfo *info)
+{
+	return (info->nextLabel)++;
+}
+
 void ILGenCallByName(ILGenInfo *info, const char *name)
 {
 	if(info->asmOutput)

@@ -27,12 +27,11 @@ namespace Generics
 
 using System;
 
-public sealed class ArrayQueue<T> : IQueue<T>, ICloneable
+public sealed class ArrayQueue<T> : IQueue<T>, ICapacity, ICloneable
 {
 	// Internal state.
 	private T[]   items;
 	private int   add, remove, size;
-	private float growFactor;
 
 	// The default capacity for queues.
 	private const int DefaultCapacity = 32;
@@ -44,7 +43,6 @@ public sealed class ArrayQueue<T> : IQueue<T>, ICloneable
 				add = 0;
 				remove = 0;
 				size = 0;
-				growFactor = 2.0f;
 			}
 	public ArrayQueue(int capacity)
 			{
@@ -57,25 +55,6 @@ public sealed class ArrayQueue<T> : IQueue<T>, ICloneable
 				add = 0;
 				remove = 0;
 				size = 0;
-				growFactor = 2.0f;
-			}
-	public ArrayQueue(int capacity, float growFactor)
-			{
-				if(capacity < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("capacity", S._("ArgRange_NonNegative"));
-				}
-				if(growFactor < 1.0f || growFactor > 10.0f)
-				{
-					throw new ArgumentOutOfRangeException
-						("growFactor", S._("ArgRange_QueueGrowFactor"));
-				}
-				items = new T [capacity];
-				add = 0;
-				remove = 0;
-				size = 0;
-				this.growFactor = growFactor;
 			}
 
 	// Implement the ICollection<T> interface.
@@ -142,6 +121,45 @@ public sealed class ArrayQueue<T> : IQueue<T>, ICloneable
 				get
 				{
 					return this;
+				}
+			}
+
+	// Implement the ICapacity interface.
+	public int Capacity
+			{
+				get
+				{
+					return items.Length;
+				}
+				set
+				{
+					if(value < 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", S._("ArgRange_NonNegative"));
+					}
+					if(value < size)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", S._("Arg_CannotReduceCapacity"));
+					}
+					if(value != size)
+					{
+						T[] newItems = new T [value];
+						if(remove < size)
+						{
+							Array.Copy(items, remove, newItems,
+									   0, size - remove);
+						}
+						if(remove > 0)
+						{
+							Array.Copy(items, 0, newItems,
+									   size - remove, remove);
+						}
+						items = newItems;
+						add = size;
+						remove = 0;
+					}
 				}
 			}
 
@@ -216,7 +234,7 @@ public sealed class ArrayQueue<T> : IQueue<T>, ICloneable
 				else
 				{
 					// We need to increase the size of the queue.
-					int newCapacity = (int)(items.Length * growFactor);
+					int newCapacity = (int)(items.Length * 2);
 					if(newCapacity <= items.Length)
 					{
 						newCapacity = items.Length + 1;

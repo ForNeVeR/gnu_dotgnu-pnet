@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public sealed class ArrayStack<T> : IStack<T>, ICloneable
+public sealed class ArrayStack<T> : IStack<T>, ICapacity, ICloneable
 {
 	// Internal state.
 	private T[] items;
@@ -35,9 +35,6 @@ public sealed class ArrayStack<T> : IStack<T>, ICloneable
 
 	// The default capacity for stacks.
 	private const int DefaultCapacity = 10;
-
-	// The amount to grow the stack by each time.
-	private const int GrowSize = 10;
 
 	// Constructors.
 	public ArrayStack()
@@ -127,6 +124,34 @@ public sealed class ArrayStack<T> : IStack<T>, ICloneable
 				return new StackIterator<T>(this);
 			}
 
+	// Implement the ICapacity interface.
+	public int Capacity
+			{
+				get
+				{
+					return items.Length;
+				}
+				set
+				{
+					if(value < 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", S._("ArgRange_NonNegative"));
+					}
+					if(value < size)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", S._("Arg_CannotReduceCapacity"));
+					}
+					if(value != size)
+					{
+						T[] newItems = new T [value];
+						Array.Copy(items, 0, newItems, 0, size);
+						items = newItems;
+					}
+				}
+			}
+
 	// Implement the IStack<T> interface.
 	public void Clear()
 			{
@@ -174,7 +199,11 @@ public sealed class ArrayStack<T> : IStack<T>, ICloneable
 				else
 				{
 					// We need to increase the size of the stack.
-					int newCapacity = items.Length + GrowSize;
+					int newCapacity = items.Length * 2;
+					if(newCapacity <= items.Length)
+					{
+						newCapacity = items.Length + 1;
+					}
 					T[] newItems = new T [newCapacity];
 					if(size > 0)
 					{

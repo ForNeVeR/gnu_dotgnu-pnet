@@ -22,12 +22,12 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 Arg_ABMustBeComparable=a or b must implement IComparable<T>
+Arg_CannotReduceCapacity=Cannot reduce the capacity of an array list below its current length
 Arg_InvalidArrayIndex=Array index is invalid
 Arg_InvalidArrayRange=Array range is invalid
 ArgRange_Array=Array position or length is out of range
 ArgRange_HashLoadFactor=Invalid hash table load factor
 ArgRange_NonNegative=Value must not be negative
-ArgRange_QueueGrowFactor=Invalid growth factor for queues
 Invalid_BadEnumeratorPosition=The enumerator is not positioned on an element
 Invalid_BadIteratorPosition=The iterator is not positioned on an element
 Invalid_CollectionModified=The collection has been modified

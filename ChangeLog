@@ -49,7 +49,12 @@
 	* Generics/Generics.html, Generics/README: check-in a more
 	detailed description of the design constraints underlying
 	the generics library.
-	
+
+	* Generics/ArrayList.cs, Generics/ArrayQueue.cs,
+	Generics/ArrayStack.cs, Generics/Generics.html, Generics/Generics.txt,
+	Generics/ICapacity.cs: remove utility routines from ArrayList;
+	add the ICapacity interface.
+
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlTextReader (ReadIdentifier): append the character

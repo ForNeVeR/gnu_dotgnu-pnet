@@ -27,6 +27,7 @@ namespace System.Windows.Forms
 
 using System.IO;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Runtime.Serialization;
 
 [Serializable]
@@ -83,8 +84,15 @@ public class ImageListStreamer : ISerializable
 											(i/rowStep) * height, 
 											width,
 											height);
+					PixelFormat format = imagelist.PixelFormat;
+					if((imagelist.PixelFormat & PixelFormat.Indexed) != 0)
+					{
+						// ImageCollection will reformat back to Indexed
+						// if needed
+						format = PixelFormat.Format24bppRgb;
+					}
 					images[i] = (imagelist as Bitmap).Clone(imageArea, 
-												imagelist.PixelFormat);
+															format);
 				}
 			}
 			else

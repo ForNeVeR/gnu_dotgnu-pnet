@@ -7,6 +7,10 @@
 
 	* System.Drawing/Bitmap.cs: Implement Bitmap.Clone() methods using
 	GetPixel/SetPixel to convert between pixel formats.
+	
+	* System.Windows.Forms/ImageListStreamer.cs: Use 24bpp pixel formats 
+	while cloning if the image is indexed and have ImageCollection 
+	reformat them back.
 
 2004-06-04  Gopal V  <gopalv82@yahoo.com>
 

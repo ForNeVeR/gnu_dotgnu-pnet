@@ -1047,6 +1047,33 @@ ILField *ILFieldCreate(ILClass *info, ILToken token,
 
 int ILFieldNewToken(ILField *field)
 {
+	/* Move the field to the end of the owner's member list.
+	   This ensures that fields stay in their correct definition
+	   order even when referenced from other classes first */
+	if(field->member.nextMember != 0)
+	{
+		ILMember *current, *prev;
+		current = field->member.owner->firstMember;
+		prev = 0;
+		while(current != &(field->member))
+		{
+			prev = current;
+			current = current->nextMember;
+		}
+		if(prev != 0)
+		{
+			prev->nextMember = current->nextMember;
+		}
+		else
+		{
+			field->member.owner->firstMember = current->nextMember;
+		}
+		field->member.owner->lastMember->nextMember = current;
+		field->member.owner->lastMember = current;
+		current->nextMember = 0;
+	}
+
+	/* Set the new token */
 	return _ILImageSetToken(field->member.programItem.image,
 						    &(field->member.programItem),
 						    0, IL_META_TOKEN_FIELD_DEF);

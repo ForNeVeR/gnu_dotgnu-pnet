@@ -23,6 +23,9 @@
 	FieldLayout, FieldMarshal, and ClassLayout tokens on-demand,
 	to reduce the initial memory hit of loading an image.
 
+	* cscc/common/cc_main.c: don't pre-validate library images,
+	to reduce the memory hit of loading libraries into the compiler.
+
 2003-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, coremul/.cvsignore, coremul/Makefile.am,

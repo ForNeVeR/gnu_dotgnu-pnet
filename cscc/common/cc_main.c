@@ -346,8 +346,7 @@ static int LoadLibraryFromPath(const char *path, int freePath)
 
 	/* Attempt to load the image */
 	loadError = ILImageLoadFromFile(path, CCCodeGen.context, &image,
-									IL_LOADFLAG_FORCE_32BIT |
-									IL_LOADFLAG_PRE_VALIDATE, 1);
+									IL_LOADFLAG_FORCE_32BIT, 1);
 	if(loadError == 0)
 	{
 		if(!ILAssemblyCreateImport(CCCodeGen.image, image))

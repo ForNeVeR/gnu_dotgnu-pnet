@@ -680,6 +680,21 @@ case COP_GET_STATIC:
 }
 break;
 
+case COP_NEW:
+{
+	/* Create a new object of the current method's class */
+	if(((ILUInt32)(stackmax - stacktop)) >= 1)
+	{
+		/* TODO */
+		MODIFY_PC_AND_STACK(1, 1);
+	}
+	else
+	{
+		STACK_OVERFLOW_EXCEPTION();
+	}
+}
+break;
+
 #elif defined(IL_CVM_WIDE)
 
 case COP_MREAD:

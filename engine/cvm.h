@@ -302,13 +302,15 @@ extern	"C" {
 #define	COP_JSR						0xD4
 #define	COP_RET_JSR					0xD5
 #define	COP_PUSH_THREAD				0xD6
+#define	COP_PUSHDOWN				0xD7
 
 /*
  * Class-related opcodes.
  */
-#define	COP_CASTCLASS				0xD7
-#define	COP_ISINST					0xD8
-#define	COP_GET_STATIC				0xD9
+#define	COP_CASTCLASS				0xD8
+#define	COP_ISINST					0xD9
+#define	COP_GET_STATIC				0xDA
+#define	COP_NEW						0xDB
 
 /*
  * Make the next instruction wider.

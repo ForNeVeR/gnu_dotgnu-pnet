@@ -238,6 +238,37 @@ case COP_RETURN_N:
 }
 /* Not reached */
 
+case COP_PUSH_THREAD:
+{
+	/* Push a pointer to the thread value onto the stack */
+	stacktop[0].ptrValue = (void *)&thread;
+	MODIFY_PC_AND_STACK(1, 1);
+}
+break;
+
+case COP_PUSHDOWN:
+{
+	/* Push a value on the stack top down and duplicate it twice */
+	if(((ILUInt32)(stackmax - stacktop)) >= 1)
+	{
+		tempptr = stacktop[-1].ptrValue;
+		tempNum = IL_READ_UINT32(pc + 1);
+		if(tempNum != 0)
+		{
+			IL_MEMMOVE(stacktop + 1 - tempNum, stacktop - 1 - tempNum,
+					   sizeof(CVMWord) * tempNum);
+		}
+		(stacktop - tempNum - 1)->ptrValue = tempptr;
+		(stacktop - tempNum)->ptrValue = tempptr;
+		MODIFY_PC_AND_STACK(5, 1);
+	}
+	else
+	{
+		STACK_OVERFLOW_EXCEPTION();
+	}
+}
+break;
+
 #elif defined(IL_CVM_PREFIX)
 
 case COP_PREFIX_TAIL:

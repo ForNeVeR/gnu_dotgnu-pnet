@@ -213,8 +213,14 @@ class XmlDocument : XmlNode
 	[TODO]
 	public override XmlNode CloneNode(bool deep)
 			{
-				// TODO
-				return null;
+				XmlDocument doc = Implementation.CreateDocument();
+				doc.baseURI = baseURI;
+				if(deep)
+				{
+					// Copy across the children.
+					// TODO
+				}
+				return doc;
 			}
 
 	// Create an attribute and associate it with this document.
@@ -223,7 +229,7 @@ class XmlDocument : XmlNode
 				int colon = name.LastIndexOf(':');
 				if(colon == -1)
 				{
-					return CreateAttribute(name, String.Empty, String.Empty);
+					return CreateAttribute(String.Empty, name, String.Empty);
 				}
 				else
 				{
@@ -231,11 +237,11 @@ class XmlDocument : XmlNode
 					String localName = name.Substring(colon + 1);
 					if(prefix == "xmlns")
 					{
-						return CreateAttribute(localName, prefix, xmlns);
+						return CreateAttribute(prefix, localName, xmlns);
 					}
 					else
 					{
-						return CreateAttribute(localName, prefix, String.Empty);
+						return CreateAttribute(prefix, localName, String.Empty);
 					}
 				}
 			}
@@ -246,17 +252,17 @@ class XmlDocument : XmlNode
 				if(colon == -1)
 				{
 					return CreateAttribute
-						(qualifiedName, String.Empty, namespaceURI);
+						(String.Empty, qualifiedName, namespaceURI);
 				}
 				else
 				{
 					String prefix = qualifiedName.Substring(0, colon);
 					String localName = qualifiedName.Substring(colon + 1);
-					return CreateAttribute(localName, prefix, namespaceURI);
+					return CreateAttribute(prefix, localName, namespaceURI);
 				}
 			}
 	public virtual XmlAttribute CreateAttribute
-				(String localName, String prefix, String namespaceURI)
+				(String prefix, String localName, String namespaceURI)
 			{
 				if(prefix == "xmlns" && namespaceURI != xmlns)
 				{
@@ -293,6 +299,257 @@ class XmlDocument : XmlNode
 			{
 				return new XmlDocumentType
 					(placeholder, name, publicId, systemId, internalSubset);
+			}
+
+	// Create an element that is attached to this node.
+	public virtual XmlElement CreateElement(String name)
+			{
+				int colon = name.LastIndexOf(':');
+				if(colon == -1)
+				{
+					return CreateElement(String.Empty, name, String.Empty);
+				}
+				else
+				{
+					String prefix = name.Substring(0, colon);
+					String localName = name.Substring(colon + 1);
+					if(prefix == "xmlns")
+					{
+						return CreateElement(prefix, localName, xmlns);
+					}
+					else
+					{
+						return CreateElement(prefix, localName, String.Empty);
+					}
+				}
+			}
+	public virtual XmlElement CreateElement(String qualifiedName,
+											String namespaceURI)
+			{
+				int colon = qualifiedName.LastIndexOf(':');
+				if(colon == -1)
+				{
+					return CreateElement
+						(String.Empty, qualifiedName, namespaceURI);
+				}
+				else
+				{
+					String prefix = qualifiedName.Substring(0, colon);
+					String localName = qualifiedName.Substring(colon + 1);
+					return CreateElement(prefix, localName, namespaceURI);
+				}
+			}
+	public virtual XmlElement CreateElement(String prefix,
+											String localName,
+											String namespaceURI)
+			{
+				if(prefix == "xmlns" && namespaceURI != xmlns)
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidNamespaceURI"), "namespaceURI");
+				}
+				NameCache.NameInfo info =
+					nameCache.Add(localName, prefix, namespaceURI);
+				return new XmlElement(placeholder, info);
+			}
+
+	// Create an entity reference and attach it to this node.
+	public virtual XmlEntityReference CreateEntityReference(String name)
+			{
+				return new XmlEntityReference(placeholder, name);
+			}
+
+	// Create a node of a given dynamic type.
+	public virtual XmlNode CreateNode(String nodeTypeString,
+									  String name,
+									  String namespaceURI)
+			{
+				XmlNodeType type;
+				switch(nodeTypeString)
+				{
+					case "attribute":
+					{
+						type = XmlNodeType.Attribute;
+					}
+					break;
+
+					case "cdatasection":
+					{
+						type = XmlNodeType.CDATA;
+					}
+					break;
+
+					case "comment":
+					{
+						type = XmlNodeType.Comment;
+					}
+					break;
+
+					case "document":
+					{
+						type = XmlNodeType.Document;
+					}
+					break;
+
+					case "documentfragment":
+					{
+						type = XmlNodeType.DocumentFragment;
+					}
+					break;
+
+					case "documenttype":
+					{
+						type = XmlNodeType.DocumentType;
+					}
+					break;
+
+					case "element":
+					{
+						type = XmlNodeType.Element;
+					}
+					break;
+
+					case "entityreference":
+					{
+						type = XmlNodeType.EntityReference;
+					}
+					break;
+
+					case "processinginstruction":
+					{
+						type = XmlNodeType.ProcessingInstruction;
+					}
+					break;
+
+					case "significantwhitespace":
+					{
+						type = XmlNodeType.SignificantWhitespace;
+					}
+					break;
+
+					case "text":
+					{
+						type = XmlNodeType.Text;
+					}
+					break;
+
+					case "whitespace":
+					{
+						type = XmlNodeType.Whitespace;
+					}
+					break;
+
+					default:
+					{
+						throw new ArgumentException
+							(S._("Xml_InvalidNodeType"), "nodeTypeString");
+					}
+					// Not reached
+				}
+				return CreateNode(type, name, namespaceURI);
+			}
+	public virtual XmlNode CreateNode(XmlNodeType type,
+									  String name,
+									  String namespaceURI)
+			{
+				return CreateNode(type, null, name, namespaceURI);
+			}
+	public virtual XmlNode CreateNode(XmlNodeType type,
+									  String prefix, String name,
+									  String namespaceURI)
+			{
+				switch(type)
+				{
+					case XmlNodeType.Element:
+					{
+						if(prefix == null)
+							return CreateElement(name, namespaceURI);
+						else
+							return CreateElement(prefix, name, namespaceURI);
+					}
+					// Not reached
+
+					case XmlNodeType.Attribute:
+					{
+						if(prefix == null)
+							return CreateAttribute(name, namespaceURI);
+						else
+							return CreateAttribute(prefix, name, namespaceURI);
+					}
+					// Not reached
+
+					case XmlNodeType.Text:
+					{
+						return CreateTextNode(String.Empty);
+					}
+					// Not reached
+
+					case XmlNodeType.CDATA:
+					{
+						return CreateCDataSection(String.Empty);
+					}
+					// Not reached
+
+					case XmlNodeType.EntityReference:
+					{
+						// TODO
+						return CreateEntityReference(name);
+					}
+					// Not reached
+
+					case XmlNodeType.ProcessingInstruction:
+					{
+						// TODO
+						return CreateProcessingInstruction(name, String.Empty);
+					}
+					// Not reached
+
+					case XmlNodeType.Comment:
+					{
+						return CreateComment(String.Empty);
+					}
+					// Not reached
+
+					case XmlNodeType.Document:
+					{
+						return new XmlDocument();
+					}
+					// Not reached
+
+					case XmlNodeType.DocumentType:
+					{
+						return CreateDocumentType(name, String.Empty,
+												  String.Empty, String.Empty);
+					}
+					// Not reached
+
+					case XmlNodeType.DocumentFragment:
+					{
+						return CreateDocumentFragment();
+					}
+					// Not reached
+
+					case XmlNodeType.Whitespace:
+					{
+						return CreateWhitespace(String.Empty);
+					}
+					// Not reached
+
+					case XmlNodeType.SignificantWhitespace:
+					{
+						return CreateSignificantWhitespace(String.Empty);
+					}
+					// Not reached
+				}
+				throw new ArgumentOutOfRangeException
+					("type", S._("Xml_InvalidNodeType"));
+			}
+
+	// Create a processing instruction node.
+	public virtual XmlProcessingInstruction CreateProcessingInstruction
+				(String target, String data)
+			{
+				return new XmlProcessingInstruction(placeholder, target, data);
 			}
 
 	// Create a significant whitespace node.

@@ -31,31 +31,15 @@ public
 class XmlElement : XmlLinkedNode
 {
 	// Internal state.
-	private String prefix;
-	private String localName;
-	private String ns;
-	private String name;
+	private NameCache.NameInfo name;
 	private XmlAttributeCollection attributes;
 	private bool isEmpty;
 
 	// Constructor.
-	internal XmlElement(XmlNode owner, String prefix,
-					    String localName, String ns)
-			: base(owner)
+	internal XmlElement(XmlNode parent, NameCache.NameInfo name)
+			: base(parent)
 			{
-				this.prefix = prefix;
-				this.localName =
-					((localName != null) ? localName : String.Empty);
-				this.ns = ((ns != null) ? ns : String.Empty);
-				if(prefix != null)
-				{
-					name = prefix + ":" + localName;
-				}
-				else
-				{
-					name = localName;
-					prefix = String.Empty;
-				}
+				this.name = name;
 				this.attributes = new XmlAttributeCollection(this);
 				this.isEmpty = true;
 			}
@@ -124,7 +108,7 @@ class XmlElement : XmlLinkedNode
 			{
 				get
 				{
-					return localName;
+					return name.localName;
 				}
 			}
 
@@ -133,7 +117,7 @@ class XmlElement : XmlLinkedNode
 			{
 				get
 				{
-					return name;
+					return name.name;
 				}
 			}
 
@@ -142,7 +126,7 @@ class XmlElement : XmlLinkedNode
 			{
 				get
 				{
-					return ns;
+					return name.ns;
 				}
 			}
 
@@ -195,7 +179,7 @@ class XmlElement : XmlLinkedNode
 			{
 				get
 				{
-					return prefix;
+					return name.prefix;
 				}
 			}
 

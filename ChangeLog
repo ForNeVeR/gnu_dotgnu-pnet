@@ -8,6 +8,8 @@
 	System.Xml/XmlNamedNodeMap.cs, System.Xml/XmlNode.cs,
 	System.Xml/XmlQualifiedName.cs, System.Xml/XmlSignificantWhitespace.cs,
 	System.Xml/XmlText.cs, System.Xml/XmlWhitespace.cs,
+	System.Xml/XmlEntityReference.cs,
+	System.Xml/XmlProcessingInstruction.cs,
 	resources/en_US/System.Xml/Xml.txt: implement many of the DOM
 	node types in the "System.Xml" namespace.
 

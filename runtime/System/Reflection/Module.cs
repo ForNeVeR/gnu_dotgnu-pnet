@@ -134,8 +134,14 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 			{
 				get
 				{
-					return GetAssembly();
+					return GetAssemblyCore();
 				}
+			}
+
+	// Workaround the fact that the Assembly property is non-virtual.
+	internal virtual System.Reflection.Assembly GetAssemblyCore()
+			{
+				return GetAssembly();
 			}
 #endif
 

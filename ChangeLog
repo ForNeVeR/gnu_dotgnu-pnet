@@ -1,3 +1,7 @@
+2003-07-26  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/Reflection/Module.cs,
+	runtime/System/Reflection/Emit/ModuleBuilder.cs: fix Module.Assembly.
 
 2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -69,6 +69,12 @@ public class ModuleBuilder : Module, IDetachItem
 				moduleType.needsDefaultConstructor = false;
 			}
 
+	// Workaround the fact that the Assembly property is non-virtual. 
+	internal override System.Reflection.Assembly GetAssemblyCore()
+			{
+				return assembly;
+			}
+
 	// Get the fully qualified name of this module.
 	public override String FullyQualifiedName
 			{

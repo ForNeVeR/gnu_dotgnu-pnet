@@ -19,6 +19,9 @@
 	and "Values" properties of "Hashtable" should return a live view
 	of the collection, not a copy.
 
+	* runtime/System/IO/StreamReader.cs (ReadChars): error in
+	buffer management when shifting unused down.
+
 2003-04-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Microsoft/Win32/IRegistryKeyProvider.cs,

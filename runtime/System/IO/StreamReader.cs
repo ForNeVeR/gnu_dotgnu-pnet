@@ -289,8 +289,8 @@ public class StreamReader : TextReader
 						{
 							throw new IOException(_("IO_StreamClosed"));
 						}
-						len = stream.Read(inBuffer, inBufferPosn,
-										  bufferSize - inBufferPosn);
+						len = stream.Read(inBuffer, inBufferLen,
+										  bufferSize - inBufferLen);
 						if(len <= 0)
 						{
 							sawEOF = true;

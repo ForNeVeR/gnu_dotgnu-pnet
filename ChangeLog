@@ -4,6 +4,8 @@
 	* compat/Makefile.am, compat/compat.build, Vsa.cs: implement the
 	minor "Microsoft.Vsa" assembly, for backwards-compatibility.
 
+	* compat/Vsa.cs: missing classes in "Microsoft.Vsa".
+
 2002-12-29  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Runtime/InteropServices/InterfaceTypeAttribute.cs: 

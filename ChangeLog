@@ -38,6 +38,9 @@
 	cscc/cs_oper.tc: implement semantic analysis and code generation
 	for increment and decrement operators.
 
+	* samples/fib.cs: modify the Fibonacci example to use the
+	increment and decrement operators, instead of "+" and "-".
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,

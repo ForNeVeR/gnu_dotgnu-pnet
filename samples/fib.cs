@@ -17,7 +17,7 @@ public class Fib
 			temp = a + b;
 			a = b;
 			b = temp;
-			n = n - (uint)1;
+			--n;
 		}
 		return b;
 	}
@@ -26,7 +26,7 @@ public class Fib
 	public static void Main()
 	{
 		uint n;
-		for(n = 1; n <= 10; n = n + (uint)1)
+		for(n = 1; n <= 10; ++n)
 		{
 			Console.Write(fib(n));
 			Console.Write(" ");

@@ -1,4 +1,10 @@
 
+2003-02-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csant/csant.c (defaultBuildFile): look for *.csant files
+	before looking for *.build, to allow both nant and csant
+	build files to exist side by side.
+
 2003-02-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/process.c (ILExecProcessSetCommandLine): return the

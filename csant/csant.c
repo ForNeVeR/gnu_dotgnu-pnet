@@ -357,6 +357,19 @@ static char *defaultBuildFile(const char *baseDir)
 	{
 		baseDir = ".";
 	}
+	dir = CSAntDirOpen(baseDir, "*.csant");
+	if(!dir)
+	{
+		return 0;
+	}
+	name = CSAntDirNext(dir);
+	if(name)
+	{
+		combined = CSAntDirCombine(baseDir, name);
+		CSAntDirClose(dir);
+		return combined;
+	}
+	CSAntDirClose(dir);
 	dir = CSAntDirOpen(baseDir, "*.build");
 	if(!dir)
 	{

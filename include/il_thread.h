@@ -53,13 +53,24 @@ typedef struct _tagILWaitHandle ILWaitHandle;
 /*
  * Type for a thread start function.
  */
-typedef void (*ILThreadStartFunc)(void *objectArg);
+typedef void (*ILThreadStartFunc)(void *startArg);
 
 /*
  *	Cleanup function for ILThread.
  */
 typedef void (*ILThreadCleanupFunc)(ILThread *thread);
 
+
+typedef void (*ILIllegalMemoryAccessHandler)(void *address);
+
+int ILThreadRegisterIllegalMemoryAccessHandler(ILThread *thread, ILIllegalMemoryAccessHandler handler);
+
+int ILThreadUnregisterIllegalMemoryAccessHandler(ILThread *thread, ILIllegalMemoryAccessHandler handler);
+
+/*
+ * Get the monitor for the thread.
+ */
+ILWaitHandle *ILThreadGetMonitor(ILThread *thread);
 
 /*
  * Clear (length) amount of bytes from the stack.
@@ -87,10 +98,10 @@ void ILThreadDeinit(void);
 /*
  * Create a new thread, initially in the "unstarted" state.
  * When the thread is started, it will call "startFunc" with
- * the supplied "objectArg".  Returns NULL if there are
+ * the supplied "startArg".  Returns NULL if there are
  * insufficient resources to start the thread.
  */
-ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg);
+ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *startArg);
 
 /*
  * Start a thread running.  Returns zero if not in the

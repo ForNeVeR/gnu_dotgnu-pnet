@@ -32,7 +32,6 @@ public class TestMonitor
 		: base(name)
 	{
 	}
-
 	protected override void Setup()
 	{
 	}
@@ -718,9 +717,25 @@ public class TestMonitor
 				this.result = "Got unexpected exception during Enter: " + e;
 				return;
 			}
-			lock (this)
+			try
 			{
-				Monitor.Pulse(this);
+				lock (this)
+				{
+					try 
+					{
+						Monitor.Pulse(this);
+					}
+					catch (System.Exception e)
+					{
+						this.result = "Pulse throw exception: " + e;
+						return;
+					}
+				}
+			}
+			catch (System.Exception e)
+			{
+				this.result = "lock throw exception: " + e;
+				return;
 			}
 			try
 			{
@@ -737,12 +752,14 @@ public class TestMonitor
 			}
 			try 
 			{
+				this.result = "Monitor.Enter threw an exception we couldn't catch!";
 				Monitor.Enter(this.o);
 				this.result = "Expected System.Threading.ThreadAbortException";
 				return;
 			}
 			catch (ThreadAbortException)
 			{
+				this.result = "Oops - something went wrong after catching ThreadAbortException";
 				if (!this.seen)
 				{
 					this.result = "Wait did not re-aquire lock after abort";
@@ -758,6 +775,11 @@ public class TestMonitor
 					this.result = "Got unexpected exception during Exit: " + e;
 					return;
 				}
+			}
+			catch (System.Exception e)
+			{
+				this.result = "Monitor.Enter threw wrong exception: " + e;
+				return;
 			}
 			this.result = "Abort was not automatically re-thrown in catch";
 		}
@@ -871,18 +893,37 @@ public class TestMonitor
 		void threadFunc()
 		{
 			Monitor.Enter(this.o);
-			lock (this)
+			try
 			{
-				Monitor.Pulse(this);
+				lock (this)
+				{
+					try
+					{
+						Monitor.Pulse(this);
+					}
+					catch (System.Exception e)
+					{
+						this.result = "Pulse threw exception: " + e;
+						return;
+					}
+
+				}
+			}
+			catch (System.Exception e)
+			{
+				this.result = "lock threw exception: " + e;
+				return;
 			}
 			try 
 			{
+				this.result = "Monitor.Wait threw an exception we couldn't catch!";
 				Monitor.Wait(this.o);
 				this.result = "Expected System.Threading.ThreadAbortException";
 				return;
 			}
 			catch (ThreadAbortException)
 			{
+				this.result = "Oops - something went wrong after catching ThreadAbortException";
 				if (!this.seen)
 				{
 					this.result = "Wait did not re-aquire lock after abort";
@@ -898,6 +939,11 @@ public class TestMonitor
 					this.result = "Got unexpected exception during Exit: " + e;
 					return;
 				}
+			}
+			catch (System.Exception e)
+			{
+				this.result = "Monitor.Wait threw wrong exception: " + e;
+				return;
 			}
 			this.result = "Abort was not automatically re-thrown in catch";
 		}
@@ -1022,18 +1068,36 @@ public class TestMonitor
 		void threadFunc()
 		{
 			Monitor.Enter(this.o);
-			lock (this)
+			try
 			{
-				Monitor.Pulse(this);
+				lock (this)
+				{
+					try
+					{
+						Monitor.Pulse(this);
+					}
+					catch (System.Exception e)
+					{
+						this.result = "Pulse threw an exception: " + e;
+						return;
+					}
+				}
+			}
+			catch (System.Exception e)
+			{
+				this.result = "lock threw an exception: " + e;
+				return;
 			}
 			try 
 			{
+				this.result = "Monitor.Wait threw an exception we couldn't catch!";
 				Monitor.Wait(this.o);
 				this.result = "Expected System.Threading.ThreadAbortException";
 				return;
 			}
 			catch (ThreadAbortException)
 			{
+				this.result = "Oops - something went wrong after catching ThreadAbortException";
 				if (!this.seen)
 				{
 					this.result = "Wait did not re-aquire lock after abort";
@@ -1049,6 +1113,11 @@ public class TestMonitor
 					this.result = "Got unexpected exception during Exit: " + e;
 					return;
 				}
+			}
+			catch (System.Exception e)
+			{
+				this.result = "Monitor.Wait threw wrong exception: " + e;
+				return;
 			}
 			this.result = "Abort was not automatically re-thrown in catch";
 		}

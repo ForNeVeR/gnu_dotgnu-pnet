@@ -10,6 +10,10 @@ hard-wired constant.
 * engine/cvm.h: remove "CVMCallFrame", which has been replaced with
 "ILCallFrame" in "engine.h".
 
+* engine/cvm.c: unload the thread state from "ILExecThread" on entry;
+rename "cvm_interpreter" to "_ILCVMInterpreter"; implement the macro
+"COPY_STATE_TO_THREAD"; implement "ReadPointer".
+
 2001-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify.c: mark the stack as empty on entry to a try region.

@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "engine.h"
+#include "engine_private.h"
 #include "cvm.h"
 #ifdef HAVE_MATH_H
 #include <math.h>
@@ -71,12 +71,10 @@ extern	"C" {
 	{
 		ILMemCpy(dst, src, len);
 	}
-	#if 0
 	static void LocalMemMove(void *dst, const void *src, unsigned len)
 	{
 		ILMemMove(dst, src, len);
 	}
-	#endif
 	static void LocalMemZero(void *dst, unsigned len)
 	{
 		ILMemZero(dst, len);
@@ -264,6 +262,27 @@ static IL_INLINE void WriteDouble(CVMWord *stack, ILDouble value)
 }
 
 /*
+ * Read a pointer value from a program position.
+ */
+static IL_INLINE void *ReadPointer(unsigned char *pc)
+{
+#ifdef CVM_X86
+	/* The x86 can read values from non-aligned addresses */
+	return *((void **)pc);
+#else
+	/* We need to be careful about alignment on other platforms */
+	if(sizeof(void *) == 4)
+	{
+		return (void *)(IL_READ_UINT32(pc));
+	}
+	else
+	{
+		return (void *)(IL_READ_UINT64(pc));
+	}
+#endif
+}
+
+/*
  * Create a system exception object of a particular class.
  */
 static void *SystemException(ILExecThread *thread, const char *className,
@@ -271,6 +290,18 @@ static void *SystemException(ILExecThread *thread, const char *className,
 {
 	return 0;
 }
+
+/*
+ * Copy the temporary state into the thread object.
+ */
+#define	COPY_STATE_TO_THREAD()	\
+			do { \
+				thread->pcstart = pcstart; \
+				thread->pc = (ILUInt32)(pc - pcstart); \
+				thread->frame = (ILUInt32)(frame - stackbottom); \
+				thread->stackTop = stacktop; \
+				thread->method = method; \
+			} while (0)
 
 /* Define global variables that are used by the instruction categories */
 #define IL_CVM_GLOBALS
@@ -286,16 +317,16 @@ static void *SystemException(ILExecThread *thread, const char *className,
 #include "cvm_compare.c"
 #undef IL_CVM_GLOBALS
 
-void cvm_interpreter(ILExecThread *thread)
+int _ILCVMInterpreter(ILExecThread *thread)
 {
-	REGISTER_ASM_PC(unsigned char *pc) = 0;
-	REGISTER_ASM_STACK(CVMWord *stacktop) = 0;
-	REGISTER_ASM_FRAME(CVMWord *frame) = 0;
+	REGISTER_ASM_PC(unsigned char *pc) = thread->pcstart + thread->pc;
+	REGISTER_ASM_STACK(CVMWord *stacktop) = thread->stackTop;
+	REGISTER_ASM_FRAME(CVMWord *frame) = thread->stackBase + thread->frame;
 	int divResult;
-	unsigned char *pcstart = pc;
-	CVMWord *stackmax = stacktop + 100;		/* TODO */
-	/*CVMWord *stackbottom = stacktop;*/		/* TODO */
-	/*ILMethod *method = 0;*/					/* TODO */
+	unsigned char *pcstart = thread->pcstart;
+	CVMWord *stackmax = thread->stackLimit;
+	CVMWord *stackbottom = thread->stackBase;
+	ILMethod *method = thread->method;
 
 	/* Define local variables that are used by the instruction categories */
 	#define IL_CVM_LOCALS
@@ -401,6 +432,9 @@ void cvm_interpreter(ILExecThread *thread)
 			break;
 		}
 	}
+
+	/* We should never get here, but keep the compiler happy */
+	return 0;
 }
 
 #ifdef	__cplusplus

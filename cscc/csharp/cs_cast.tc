@@ -37,7 +37,8 @@ ILNode_SemAnalysis(ILNode_UserCast)
 	ILEvalValue evalValue;
 
 	/* Perform semantic analysis on the type and value expressions */
-	type = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	type = ILNode_SemAnalysisType(node->expr1, info, &(node->expr1));
+	/* TODO: fix here when we refactor SemAnalysisType */
 	value = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* Validate the value */

@@ -5,6 +5,10 @@
 	so that regex routines get the correct definition of "uintptr_t"
 	(thanks to Miroslaw Dobrzanski-Neumann for identifying the issue).
 
+	* cscc/csharp/cs_misc.tc (ILNode_SizeOf): bug in the handling of
+	"sizeof" which caused it to always set the size of non-primitive
+	types to 1.
+
 2003-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_file.c:

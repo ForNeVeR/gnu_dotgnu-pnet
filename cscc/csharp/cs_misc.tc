@@ -249,10 +249,6 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 
 	/* Pre-compute the size if this is a primitive type */
 	node->size = GetPrimitiveTypeSize(node->type);
-	if(!(node->size))
-	{
-		node->size = 1;
-	}
 
 	/* Return the type information to the caller */
 	CSSemSetRValue(value, ILType_Int32);

@@ -1,8 +1,8 @@
 
 2003-03-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-	* ilasm/ilasm_grammar.y: ignore the ".language" directive if
-	it occurs in the input.
+	* ilasm/ilasm_grammar.y, ilasm/ilasm_scanner.l: ignore the
+	".language" directive if it occurs in the input.
 
 2003-03-10  Gopal.V  <gopalv82@symonds.net>
 	

@@ -27,6 +27,7 @@ Environment variables:
 	CSCC_LIB_PATH			Where to look for link libraries.
 	CSCC_PLUGINS_PATH		Where to look for language plug-ins.
 	CSCC_ILASM_PATH			Pathname of the "ilasm" program.
+	CSCC_ILALINK_PATH		Pathname of the "ilalink" program.
 
 */
 
@@ -99,7 +100,8 @@ extern	"C" {
 #endif
 
 /*
- * The default search path for "ilasm" if not found on the real PATH.
+ * The default search path for "ilasm" and "ilalink"
+ * if not found on the real PATH.
  */
 #ifdef CSCC_BIN_PREFIX
 #define	ILASM_PATH	\
@@ -129,6 +131,7 @@ extern	"C" {
  * Global variables.
  */
 static char *ilasm_program = 0;
+static char *ilalink_program = 0;
 static char *csharp_compiler = 0;
 static char **plugin_list;
 static int *file_proc_types;
@@ -143,6 +146,7 @@ static int IsSinglePlugin(const char *filename);
 static int ProcessWithAssembler(const char *filename, int jvmMode);
 static int ProcessWithPlugin(const char *filename, char *plugin,
 							 int filenum, int isMultiple);
+static int LinkExecutable(void);
 
 int main(int argc, char *argv[])
 {
@@ -290,7 +294,8 @@ int main(int argc, char *argv[])
 		{
 			case FILEPROC_TYPE_BINARY:
 			{
-				/* Nothing needs to be done for binaries */
+				/* Add the binary to the list of files to be linked */
+				CSAddLinkFile(filename, 0);
 			}
 			break;
 
@@ -342,6 +347,20 @@ int main(int argc, char *argv[])
 			break;
 
 			default:	break;
+		}
+	}
+
+	/* Link the final executable */
+	if(status == 0 && executable_flag)
+	{
+		status = LinkExecutable();
+		for(len = 0; len < num_files_to_link; ++len)
+		{
+			if(files_to_link_temp[len])
+			{
+				/* Delete this temporary object file */
+				ILDeleteFile(files_to_link[len]);
+			}
 		}
 	}
 
@@ -434,24 +453,28 @@ static void ParseCommandLine(int argc, char *argv[])
 		}
 	}
 
-	/* Determine the default entry point */
-	if(executable_flag && !shared_flag)
+	/* If we are not building an executable, then suppress the entry point */
+	if(!executable_flag || shared_flag)
 	{
-		if(!entry_point)
-		{
-			entry_point = "Main";
-		}
-	}
-	else
-	{
-		/* Not building an executable, so suppress the entry point */
 		entry_point = 0;
 	}
 
 	/* Determine the default output filename */
 	if(!output_filename)
 	{
-		if(compile_flag)
+		if(executable_flag)
+		{
+			/* The default output filename is "a.out.dll" or "a.out.exe" */
+			if(shared_flag)
+			{
+				output_filename = "a.out.dll";
+			}
+			else
+			{
+				output_filename = "a.out.exe";
+			}
+		}
+		else if(compile_flag)
 		{
 			/* Use the name of the source file with a ".obj" extension */
 			output_filename = ChangeExtension(input_files[0], "obj");
@@ -481,6 +504,15 @@ static void ParseCommandLine(int argc, char *argv[])
 			{
 				output_filename = "a.exe";
 			}
+		}
+	}
+	else if(executable_flag && !shared_flag)
+	{
+		/* Set the "shared" flag if the executable name ends in ".dll" */
+		int len = strlen(output_filename);
+		if(len >= 4 && !ILStrICmp(output_filename + len - 4, ".dll"))
+		{
+			shared_flag = 1;
 		}
 	}
 
@@ -806,6 +838,51 @@ static void FindILAsmProgram(void)
 }
 
 /*
+ * Find the "ilalink" program.
+ */
+static void FindILALinkProgram(void)
+{
+	char *path;
+
+	/* Check for a "-filalink-path" option on the command-line */
+	path = CSStringListGetValue(extension_flags, num_extension_flags,
+								"ilalink-path");
+	if(path)
+	{
+		ilalink_program = path;
+		return;
+	}
+
+	/* Use the CSCC_ILALINK_PATH environment variable if present */
+	path = getenv("CSCC_ILALINK_PATH");
+	if(path && *path != '\0' && (path = FilePresent(path)) != 0)
+	{
+		ilalink_program = path;
+		return;
+	}
+
+	/* Search the contents of PATH */
+	path = SearchPath(getenv("PATH"), "ilalink");
+	if(path)
+	{
+		ilalink_program = path;
+		return;
+	}
+
+	/* Search the contents of the default path */
+	path = SearchPath(ILASM_PATH, "ilalink");
+	if(path)
+	{
+		ilalink_program = path;
+		return;
+	}
+
+	/* Could not find "ilalink", so bail out of the compiler */
+	fprintf(stderr, "%s: could not locate the `ilalink' program\n", progname);
+	exit(1);
+}
+
+/*
  * Compare two file extensions for equality, while ignoring case.
  */
 static int CompareExtensions(const char *ext1, const char *ext2)
@@ -1046,6 +1123,11 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		AddArgument(&cmdline, &cmdline_size, "-M");
 		AddArgument(&cmdline, &cmdline_size, sys_link_dirs[posn]);
 	}
+	for(posn = 0; posn < num_libraries; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-l");
+		AddArgument(&cmdline, &cmdline_size, libraries[posn]);
+	}
 	if(all_warnings)
 	{
 		AddArgument(&cmdline, &cmdline_size, "-Wall");
@@ -1112,6 +1194,9 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		AddArgument(&cmdline, &cmdline_size, asm_output);
 	}
 
+	/* Output the "--" separator, in case some filenames start with "-" */
+	AddArgument(&cmdline, &cmdline_size, "--");
+
 	/* Add the name of the input file to the command-line */
 	AddArgument(&cmdline, &cmdline_size, (char *)filename);
 
@@ -1161,7 +1246,12 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	cmdline = 0;
 	cmdline_size = 0;
 	AddArgument(&cmdline, &cmdline_size, ilasm_program);
-	if(compile_flag)
+	if(executable_flag)
+	{
+		obj_output = ChangeExtension((char *)filename, "objtmp");
+		CSAddLinkFile(obj_output, 1);
+	}
+	else if(compile_flag)
 	{
 		obj_output = output_filename;
 	}
@@ -1185,6 +1275,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		AddArgument(&cmdline, &cmdline_size, "-m");
 		AddArgument(&cmdline, &cmdline_size, machine_flags[posn]);
 	}
+	AddArgument(&cmdline, &cmdline_size, "--");
 	AddArgument(&cmdline, &cmdline_size, asm_output);
 	AddArgument(&cmdline, &cmdline_size, 0);
 
@@ -1198,6 +1289,88 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		return status;
 	}
 	ILDeleteFile(asm_output);
+
+	/* Done */
+	return 0;
+}
+
+/*
+ * Link the final executable.
+ */
+static int LinkExecutable(void)
+{
+	char **cmdline;
+	int cmdline_size;
+	int posn, status;
+
+	/* Find the linker executable */
+	FindILALinkProgram();
+
+	/* Build the linker command-line */
+	cmdline = 0;
+	cmdline_size = 0;
+	AddArgument(&cmdline, &cmdline_size, ilalink_program);
+	AddArgument(&cmdline, &cmdline_size, "-o");
+	AddArgument(&cmdline, &cmdline_size, output_filename);
+	if(shared_flag)
+	{
+		AddArgument(&cmdline, &cmdline_size, "--format");
+		AddArgument(&cmdline, &cmdline_size, "dll");
+	}
+	else
+	{
+		AddArgument(&cmdline, &cmdline_size, "--format");
+		AddArgument(&cmdline, &cmdline_size, "exe");
+	}
+	if(entry_point)
+	{
+		AddArgument(&cmdline, &cmdline_size, "--entry-point");
+		AddArgument(&cmdline, &cmdline_size, entry_point);
+	}
+	if(nostdlib_flag)
+	{
+		AddArgument(&cmdline, &cmdline_size, "--no-stdlib");
+	}
+	for(posn = 0; posn < num_extension_flags; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-f");
+		AddArgument(&cmdline, &cmdline_size, extension_flags[posn]);
+	}
+	for(posn = 0; posn < num_machine_flags; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-m");
+		AddArgument(&cmdline, &cmdline_size, machine_flags[posn]);
+	}
+	for(posn = 0; posn < num_link_dirs; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-L");
+		AddArgument(&cmdline, &cmdline_size, link_dirs[posn]);
+	}
+	for(posn = 0; posn < num_sys_link_dirs; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-L");
+		AddArgument(&cmdline, &cmdline_size, sys_link_dirs[posn]);
+	}
+	for(posn = 0; posn < num_libraries; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-l");
+		AddArgument(&cmdline, &cmdline_size, libraries[posn]);
+	}
+	AddArgument(&cmdline, &cmdline_size, "--");
+	for(posn = 0; posn < num_files_to_link; ++posn)
+	{
+		AddArgument(&cmdline, &cmdline_size, files_to_link[posn]);
+	}
+	AddArgument(&cmdline, &cmdline_size, 0);
+
+	/* Execute the linker */
+	status = ExecChild(cmdline, 0);
+	ILFree(cmdline);
+	if(status != 0)
+	{
+		ILDeleteFile(output_filename);
+		return status;
+	}
 
 	/* Done */
 	return 0;

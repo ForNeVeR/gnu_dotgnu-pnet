@@ -87,6 +87,9 @@ int prog_language = PROG_LANG_DEFAULT;
 char *prog_language_name = 0;
 int dump_output_format = DUMP_OUTPUT_ONLY;
 int verbose_mode = VERBOSE_NONE;
+char **files_to_link = 0;
+int *files_to_link_temp = 0;
+int num_files_to_link = 0;
 
 /*
  * Add a string to a list of strings.
@@ -490,8 +493,33 @@ void CSParseCommandLine(int argc, char *argv[], int mode, char *versname)
 	}
 
 	/* Scan the command-line and process the options */
-	while(argc > 1 && argv[1][0] == '-' && argv[1][1] != '\0')
+	stdin_is_input = 0;
+	while(argc > 1)
 	{
+		if(argv[1][0] != '-' || argv[1][1] == '\0')
+		{
+			/* This is an input filename */
+			AddString(&input_files, &num_input_files, argv[1]);
+			if(!strcmp(argv[1], "-"))
+			{
+				stdin_is_input = 1;
+			}
+			++argv;
+			--argc;
+			continue;
+		}
+		else if(argv[1][1] == '-' && argv[1][2] == '\0')
+		{
+			/* This is "--", which is used as a separator in plugins,
+			   but is ignored in "cscc" itself */
+			++argv;
+			--argc;
+			if(mode != CMDLINE_PARSE_CSCC)
+			{
+				break;
+			}
+			continue;
+		}
 		if(mode != CMDLINE_PARSE_CSCC)
 		{
 			/* Process system include options that are specific to plugins */
@@ -610,8 +638,7 @@ void CSParseCommandLine(int argc, char *argv[], int mode, char *versname)
 		++argv;
 	}
 
-	/* Collect up the source input files */
-	stdin_is_input = 0;
+	/* Collect up the remaining source input files after "--" */
 	while(argc > 1)
 	{
 		AddString(&input_files, &num_input_files, argv[1]);
@@ -843,6 +870,20 @@ char *CSStringListGetValue(char **list, int num, const char *name)
 		--num;
 	}
 	return 0;
+}
+
+void CSAddLinkFile(char *filename, int isTemp)
+{
+	int *newlist;
+	AddString(&files_to_link, &num_files_to_link, filename);
+	newlist = (int *)ILRealloc(files_to_link_temp,
+							   sizeof(int) * num_files_to_link);
+	if(!newlist)
+	{
+		CSOutOfMemory();
+	}
+	files_to_link_temp = newlist;
+	files_to_link_temp[num_files_to_link] = isTemp;
 }
 
 #ifdef	__cplusplus

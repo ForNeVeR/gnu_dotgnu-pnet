@@ -103,6 +103,9 @@ extern int prog_language;
 extern char *prog_language_name;
 extern int dump_output_format;
 extern int verbose_mode;
+extern char **files_to_link;
+extern int *files_to_link_temp;
+extern int num_files_to_link;
 
 /*
  * Add a path to a list of strings.
@@ -143,6 +146,13 @@ int CSStringListContainsInv(char **list, int num, const char *value);
  * Returns NULL if the name is not present, or has no value associated with it.
  */
 char *CSStringListGetValue(char **list, int num, const char *name);
+
+/*
+ * Add a file to the "files_to_link" list.  If "isTemp"
+ * is non-zero, then it is a temporary file that should
+ * be deleted after the link has completed.
+ */
+void CSAddLinkFile(char *filename, int isTemp);
 
 #ifdef	__cplusplus
 };

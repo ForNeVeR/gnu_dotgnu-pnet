@@ -11,6 +11,8 @@
 	* Makefile.am, configure.in, Xsharp/*: add the Xsharp library
 	to pnetlib.
 
+	* samples/XHello.cs, samples/samples.build: add an Xsharp example.
+
 2003-05-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/EndPoint.cs, System/Net/IPAddress.cs,

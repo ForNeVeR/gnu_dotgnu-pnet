@@ -1,5 +1,5 @@
 
-SUBDIRS = common csharp c vb java bf
+SUBDIRS = common csharp c vb java bf cpp
 
 noinst_PROGRAMS = cscc-cs cscc-c-s cscc-vb cscc-java cscc csdoc cscc-bf
 man_MANS        = cscc.1 csdoc.1

@@ -15,6 +15,10 @@
 	"Type::Identifier" so that it can handle more than just static
 	methods; implement a better C# member resolution algorithm.
 
+	* configure.in, cscc/Makefile.am, cscc/cpp/*: check in a copy
+	of gcc's C pre-processor so that we can use it instead of the
+	system cpp, which is sometimes busted too much for us to use.
+
 2004-02-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_oper.tc (MulPtrSize): fix a bug where 1 * sizeof(type)

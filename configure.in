@@ -500,6 +500,7 @@ cscc/c/Makefile
 cscc/vb/Makefile
 cscc/java/Makefile
 cscc/bf/Makefile
+cscc/cpp/Makefile
 resgen/Makefile
 ilstrip/Makefile
 ilranlib/Makefile

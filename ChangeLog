@@ -21,6 +21,10 @@
 	* engine/lib_type.c (GetTypeName): build the correct name
 	for pointer, reference, and custom-modified types.
 
+	* include/il_system.h, engine/time.c: change the prototypes for
+	"ILCLIToUnixTime" and "ILUnixToCLITime" so that they don't
+	rely upon "time_t" for their definition.
+
 2002-11-05  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: Fix the indexername returned , using

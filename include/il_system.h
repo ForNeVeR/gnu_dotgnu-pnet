@@ -135,10 +135,10 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue);
 ILInt32 ILGetTimeZoneAdjust(void);
 
 /* Convert a DateTime time to a time_t time */
-time_t ILCLIToUnixTime(ILInt64 time);
+ILInt64 ILCLIToUnixTime(ILInt64 timeValue);
 
 /* Convert a time_t time to a DateTime time */
-ILInt64 ILUnixToCLITime(time_t time);
+ILInt64 ILUnixToCLITime(ILInt64 timeValue);
 
 /* Get platform directory pathname information */
 typedef struct

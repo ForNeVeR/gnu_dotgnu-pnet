@@ -1,4 +1,11 @@
 
+2003-06-01  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Uri.cs: Remove multiple static constructors in the code.
+
+	* System/ComponentModel/TypeConvertor.cs: Fix a small compatibilty
+	issue.
+
 2003-06-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/CJK/*, I18N/Common/CultureName.cs,

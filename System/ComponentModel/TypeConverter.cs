@@ -217,11 +217,11 @@ public class TypeConverter
 			}
 
 	// Return a collection of standard values for this data type.
-	public ICollection GetStandardValues()
+	public StandardValuesCollection GetStandardValues()
 			{
 				return GetStandardValues(null);
 			}
-	public virtual ICollection GetStandardValues
+	public virtual StandardValuesCollection GetStandardValues
 				(ITypeDescriptorContext context)
 			{
 				return null;

@@ -164,6 +164,15 @@ public class Uri : MarshalByRefObject
 			}
 			hasFastRegex = false;
 		}
+
+		schemes.Add(UriSchemeFile,	new UriScheme(-1,	"://"));
+		schemes.Add(UriSchemeFtp,		new UriScheme(23,	"://"));
+		schemes.Add(UriSchemeGopher,	new UriScheme(70,	"://"));
+		schemes.Add(UriSchemeHttp,	new UriScheme(80,	"://"));
+		schemes.Add(UriSchemeHttps,	new UriScheme(443,	"://"));
+		schemes.Add(UriSchemeNntp,	new UriScheme(119,	"://"));
+		schemes.Add(UriSchemeMailto,	new UriScheme(25,	":"));
+		schemes.Add(UriSchemeNews,	new UriScheme(-1,	":"));
 	}
 
 	public Uri(String uriString) : this(uriString, false)
@@ -975,18 +984,6 @@ public class Uri : MarshalByRefObject
 			this.port = port;
 			this.delim = delim;
 		}
-	}
-
-	static Uri()
-	{
-		schemes.Add(UriSchemeFile,	new UriScheme(-1,	"://"));
-		schemes.Add(UriSchemeFtp,		new UriScheme(23,	"://"));
-		schemes.Add(UriSchemeGopher,	new UriScheme(70,	"://"));
-		schemes.Add(UriSchemeHttp,	new UriScheme(80,	"://"));
-		schemes.Add(UriSchemeHttps,	new UriScheme(443,	"://"));
-		schemes.Add(UriSchemeNntp,	new UriScheme(119,	"://"));
-		schemes.Add(UriSchemeMailto,	new UriScheme(25,	":"));
-		schemes.Add(UriSchemeNews,	new UriScheme(-1,	":"));
 	}
 
 	internal static int DefaultPortForScheme(String name)

@@ -4487,6 +4487,8 @@ public class Control : IWin32Window
 				if (Enabled)
 					OnMouseDown(new MouseEventArgs
 						((MouseButtons)buttons, clicks, x, y, delta));
+				if (GetStyle(ControlStyles.StandardDoubleClick) && clicks == 2)
+					OnDoubleClick(EventArgs.Empty);
 			}
 
 	// Toolkit event that is emitted for a mouse up event.

@@ -88,6 +88,12 @@ const char *ILXMLTagNameWithNS(ILXMLReader *reader);
 
 /*
  * Determine if the current item is a start tag
+ * with a specific name.
+ */
+int ILXMLIsStartTag(ILXMLReader *reader, const char *name);
+
+/*
+ * Determine if the current item is a start tag
  * or singleton tag with a specific name.
  */
 int ILXMLIsTag(ILXMLReader *reader, const char *name);

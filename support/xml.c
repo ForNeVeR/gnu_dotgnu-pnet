@@ -595,6 +595,32 @@ const char *ILXMLTagNameWithNS(ILXMLReader *reader)
 	}
 }
 
+int ILXMLIsStartTag(ILXMLReader *reader, const char *name)
+{
+	if(reader->currentItem == ILXMLItem_StartTag)
+	{
+		/* Check the name directly */
+		if(!strcmp(reader->text, name))
+		{
+			return 1;
+		}
+
+		/* If the tag has a namespace, then strip it and retry */
+		if(reader->withoutNamespace)
+		{
+			return (strcmp(reader->text + reader->withoutNamespace, name) == 0);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 int ILXMLIsTag(ILXMLReader *reader, const char *name)
 {
 	if(reader->currentItem == ILXMLItem_StartTag ||

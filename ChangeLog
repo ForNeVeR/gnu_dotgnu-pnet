@@ -7,6 +7,8 @@ add support for XML resources.
 * resgen/resgen.1, doc/pnettools.texi: update documentation to reflect
 the new support for XML resources in resgen.
 
+* include/il_xml.h, support/xml.c (ILXMLIsStartTag): new function.
+
 2001-09-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_xml.h, include/Makefile.am, support/xml.c, support/Makefile.am:

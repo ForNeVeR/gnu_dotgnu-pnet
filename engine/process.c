@@ -334,17 +334,17 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	/* Reenable finalizers */
 	ILGCEnableFinalizers();	
 
-	/* Destroy the main thread if we aren't the main thread or the finalizer thread*/
+	/* Abort the main thread if we aren't the main thread or the finalizer thread*/
 	if (!mainIsFinalizer && ILThreadSelf() != mainSupportThread)
 	{
 		/* Abort the thread */
-		ILThreadAbort(mainSupportThread);
+		ILThreadAbort(mainSupportThread);		
+	}
 
-		/* Wait for the thread to be aborted */
-		ILThreadJoin(mainSupportThread, -1);
-
-		/* Destroy the thread object */
-		ILThreadDestroy(mainSupportThread);
+	/* Unregister the main thread since its engine thread is now gone */
+	if (ILThreadSelf() == mainSupportThread)
+	{
+		ILThreadUnregisterForManagedExecution(mainSupportThread);
 	}
 	
 	/* Destroy the finalizer thread */

@@ -1,4 +1,8 @@
+2003-07-23  Thong Nguyen  <tum@veridicus.com>
 
+	* engine/process.c:  Unregister the main thread when a process
+	is destroyed so the main thread can be reused.
+	
 2003-07-22  Gopal.V  <gopalv82@symonds.net>
 
 	* ilnative/ilinternal.c: Add nested type support for dumpLookupType.

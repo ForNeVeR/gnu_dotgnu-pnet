@@ -1,4 +1,8 @@
 
+2003-07-19  Gopal.V  <gopalv82@symonds.net>
+	
+	* configure.in: look for build/library.make as well
+
 2003-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: look for "mcs-sources" locally first, in case

@@ -989,7 +989,7 @@ public class JSParser
 			{
 				JNode expr, expr2;
 				expr = BitwiseOrExpression(noIn);
-				while(token == JSToken.LogicalOr)
+				while(token == JSToken.LogicalAnd)
 				{
 					NextToken();
 					expr2 = BitwiseOrExpression(noIn);
@@ -1639,7 +1639,7 @@ public class JSParser
 							}
 							catchName = scanner.GetIdentifierName();
 							NextToken();
-							Expect(JSToken.LeftParen, "`)' expected");
+							Expect(JSToken.RightParen, "`)' expected");
 							catchClause = Block();
 						}
 						else if(token != JSToken.Finally)

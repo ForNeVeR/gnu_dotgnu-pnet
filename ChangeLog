@@ -1,4 +1,9 @@
 
+2004-08-17  Gopal V  <gopalv82@yahoo.com>
+
+	* JScript/Parsers/JSParser.cs: Fix LogicalAnd operation and 
+	Try-Catch expression parsing.
+
 2004-08-16  Gopal V  <gopalv82@yahoo.com>
 
 	* JScript/Parser/JSParser.cs: Implement hex literal parsing and

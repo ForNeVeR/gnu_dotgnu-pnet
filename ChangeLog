@@ -1,4 +1,12 @@
 
+2004-09-20  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Security/Cryptography/X509Certificates/X509ContentType.cs,
+	runtime/System/Security/Cryptography/X509Certificates/X509KeyStorageFlags.cs
+:
+	add .Net 2.0 components to the System.Security.Cryptography.X509Certificates
+	Namespace.
+
 2004-09-18  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Convert.cs: Fix FromBase64String implementation to

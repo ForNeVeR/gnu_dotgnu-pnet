@@ -6,6 +6,8 @@ support/Makefile.am: add "ILNativeFloatIsNaN" and "ILNativeFloatIsFinite".
 
 * codegen/cg_cast.tc: check for overflow during constant casts.
 
+* support/value.c: remove obsolete file.
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

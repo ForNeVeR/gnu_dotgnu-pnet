@@ -511,8 +511,22 @@ public sealed class ConfigurationSettings
 					return null;
 				#endif
 				}
+				
+				/* This is a stupid API simulated to satisfy System.Web 
+				   implementation */
+				internal static String GetMachineConfigPath()
+				{
+					return CheckForMachineDefault(InfoMethods.GetGlobalConfigDir());
+				}
 
 	}; // class BuiltinConfigurationSystem
+
+	/* This is a stupid API simulated to satisfy System.Web implementation */
+	internal static IConfigurationSystem ChangeConfigurationSystem(IConfigurationSystem config)
+	{
+		return configSystem;
+	}
+
 
 }; // class ConfigurationSettings
 

@@ -37,6 +37,9 @@
 	runtime/System/Text/Encoding.cs: modifications to allow the library
 	to be built with the "RuntimeInfrastructure" subset turned off.
 
+	* configure.in, profiles/tiny: add the "tiny" profile, which turns
+	off "RuntimeInfrastructure" - only "BCL" is left.
+
 2003-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Convert.cs,

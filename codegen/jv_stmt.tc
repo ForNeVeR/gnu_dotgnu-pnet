@@ -710,3 +710,11 @@ JavaGenDiscard(ILNode_FinallyClause)
 {
 	/* Nothing to do here */
 }
+
+/*
+ * Generate discard code for local variable declarations.
+ */
+JavaGenDiscard(ILNode_LocalVarDeclaration)
+{
+	/* Nothing to do here: the declaration is done in the method header */
+}

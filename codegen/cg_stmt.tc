@@ -224,7 +224,10 @@ ILNode *ILNode_Compound_CreateFrom(ILNode *left, ILNode *right)
 {
 	if(left && yyisa(left, ILNode_Compound))
 	{
-		ILNode_List_Add(left, right);
+		if(right)
+		{
+			ILNode_List_Add(left, right);
+		}
 		return left;
 	}
 	else if(!left)
@@ -1023,4 +1026,12 @@ ILNode_GenDiscard(ILNode_CatchClause),
 ILNode_GenDiscard(ILNode_FinallyClause)
 {
 	/* Nothing to do here */
+}
+
+/*
+ * Generate discard code for local variable declarations.
+ */
+ILNode_GenDiscard(ILNode_LocalVarDeclaration)
+{
+	/* Nothing to do here: the declaration is done in the method header */
 }

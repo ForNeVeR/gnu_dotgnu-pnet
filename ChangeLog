@@ -9,6 +9,9 @@ scope items to assist with error-reporting, plus local variable declarations.
 * codegen/cg_gen.h, codegen/cg_gen.c: add "currentClass" and "currentMethod"
 to "ILGenInfo", convert local variables into temporary variables.
 
+* codegen/cg_stmt.tc, codegen/jv_stmt.tc: code generation for local
+variables, plus a minor bug in "ILNode_Compound_CreateFrom".
+
 2001-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc: add the

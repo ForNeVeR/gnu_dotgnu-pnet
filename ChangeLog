@@ -12,6 +12,8 @@ this will stop the newbies asking "why doesn't it compile?" all the time.
 * image/link.c: bug fix - don't search the parent assembly directory during
 dynamic linking if the filename is NULL.
 
+* image/marshal.c: the name of the attribute should end in "Attribute".
+
 2001-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c,

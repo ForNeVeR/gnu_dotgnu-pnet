@@ -317,14 +317,16 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 }
 
 /*
- * Dump marshalling information associated with a parameter.
+ * Dump marshalling and name information associated with a parameter.
  */
-static void DumpParamMarshal(FILE *stream, ILMethod *method, ILUInt32 num)
+static void DumpParamMarshal(FILE *stream, ILMethod *method,
+							 ILUInt32 num, int flags)
 {
 	ILParameter *param;
 	ILFieldMarshal *marshal;
 	const void *type;
 	unsigned long typeLen;
+	const char *name;
 
 	if(!method)
 	{
@@ -334,21 +336,33 @@ static void DumpParamMarshal(FILE *stream, ILMethod *method, ILUInt32 num)
 	param = 0;
 	while((param = ILMethodNextParam(method, param)) != 0)
 	{
-		if(ILParameterGetNum(param) == num &&
-		   (ILParameter_Attrs(param) & IL_META_PARAMDEF_HAS_FIELD_MARSHAL) != 0)
+		if(ILParameterGetNum(param) == num)
 		{
-			marshal = ILFieldMarshalGetFromOwner((ILProgramItem *)param);
-			if(marshal)
+		    if((ILParameter_Attrs(param) & IL_META_PARAMDEF_HAS_FIELD_MARSHAL)
+					!= 0)
 			{
-				type = ILFieldMarshalGetType(marshal, &typeLen);
-				if(type)
+				marshal = ILFieldMarshalGetFromOwner((ILProgramItem *)param);
+				if(marshal)
 				{
-					fputs(" marshal(", stream);
-					ILDumpNativeType(stream, type, typeLen);
-					putc(')', stream);
-					return;
+					type = ILFieldMarshalGetType(marshal, &typeLen);
+					if(type)
+					{
+						fputs(" marshal(", stream);
+						ILDumpNativeType(stream, type, typeLen);
+						putc(')', stream);
+					}
 				}
 			}
+			if(num != 0)
+			{
+				name = ILParameter_Name(param);
+				if(name)
+				{
+					putc(' ', stream);
+					ILDumpIdentifier(stream, name, 0, flags);
+				}
+			}
+			return;
 		}
 	}
 }
@@ -364,21 +378,21 @@ static void DumpParams(FILE *stream, ILImage *image, ILType *type,
 		return;
 	}
 	ILDumpType(stream, image, type->un.method.param[0], flags);
-	DumpParamMarshal(stream, methodInfo, 1);
+	DumpParamMarshal(stream, methodInfo, 1, flags);
 	if(type->num == 1)
 	{
 		return;
 	}
 	fputs(", ", stream);
 	ILDumpType(stream, image, type->un.method.param[1], flags);
-	DumpParamMarshal(stream, methodInfo, 2);
+	DumpParamMarshal(stream, methodInfo, 2, flags);
 	if(type->num == 2)
 	{
 		return;
 	}
 	fputs(", ", stream);
 	ILDumpType(stream, image, type->un.method.param[2], flags);
-	DumpParamMarshal(stream, methodInfo, 3);
+	DumpParamMarshal(stream, methodInfo, 3, flags);
 	temp = type->un.method.next;
 	num = type->num - 3;
 	pnum = 4;
@@ -386,16 +400,16 @@ static void DumpParams(FILE *stream, ILImage *image, ILType *type,
 	{
 		fputs(", ", stream);
 		ILDumpType(stream, image, temp->un.params.param[0], flags);
-		DumpParamMarshal(stream, methodInfo, pnum++);
+		DumpParamMarshal(stream, methodInfo, pnum++, flags);
 		fputs(", ", stream);
 		ILDumpType(stream, image, temp->un.params.param[1], flags);
-		DumpParamMarshal(stream, methodInfo, pnum++);
+		DumpParamMarshal(stream, methodInfo, pnum++, flags);
 		fputs(", ", stream);
 		ILDumpType(stream, image, temp->un.params.param[2], flags);
-		DumpParamMarshal(stream, methodInfo, pnum++);
+		DumpParamMarshal(stream, methodInfo, pnum++, flags);
 		fputs(", ", stream);
 		ILDumpType(stream, image, temp->un.params.param[3], flags);
-		DumpParamMarshal(stream, methodInfo, pnum++);
+		DumpParamMarshal(stream, methodInfo, pnum++, flags);
 		num -= 4;
 		temp = temp->un.params.next;
 	}
@@ -403,25 +417,25 @@ static void DumpParams(FILE *stream, ILImage *image, ILType *type,
 	{
 		fputs(", ", stream);
 		ILDumpType(stream, image, temp->un.params.param[0], flags);
-		DumpParamMarshal(stream, methodInfo, pnum++);
+		DumpParamMarshal(stream, methodInfo, pnum++, flags);
 	}
 	if(num > 1)
 	{
 		fputs(", ", stream);
 		ILDumpType(stream, image, temp->un.params.param[1], flags);
-		DumpParamMarshal(stream, methodInfo, pnum++);
+		DumpParamMarshal(stream, methodInfo, pnum++, flags);
 	}
 	if(num > 2)
 	{
 		fputs(", ", stream);
 		ILDumpType(stream, image, temp->un.params.param[2], flags);
-		DumpParamMarshal(stream, methodInfo, pnum++);
+		DumpParamMarshal(stream, methodInfo, pnum++, flags);
 	}
 	if(num > 3)
 	{
 		fputs(", ", stream);
 		ILDumpType(stream, image, temp->un.params.param[3], flags);
-		DumpParamMarshal(stream, methodInfo, pnum++);
+		DumpParamMarshal(stream, methodInfo, pnum++, flags);
 	}
 }
 
@@ -438,7 +452,7 @@ void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
 
 	/* Dump the return type */
 	ILDumpType(stream, image, type->un.method.retType, flags);
-	DumpParamMarshal(stream, methodInfo, 0);
+	DumpParamMarshal(stream, methodInfo, 0, flags);
 	putc(' ', stream);
 
 	/* Dump the class name and method name */

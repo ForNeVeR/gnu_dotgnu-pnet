@@ -582,7 +582,7 @@ internal sealed class NumberParser
 					return unchecked((int)result);
 				}
 				else if(result <= 4294967295 && 
-						(style | NumberStyles.AllowHexSpecifier) != 0)
+						(style & NumberStyles.AllowHexSpecifier) != 0)
 				{
 					// AllowHexSpecifier does not allow for sign specifiers
 					return unchecked((int)((long)result));
@@ -658,7 +658,7 @@ internal sealed class NumberParser
 					return unchecked((long)result);
 				}
 				else if(result <= 0xFFFFFFFFFFFFFFFF && 
-						(style | NumberStyles.AllowHexSpecifier) != 0)
+						(style & NumberStyles.AllowHexSpecifier) != 0)
 				{
 					// AllowHexSpecifier does not allow for sign specifiers
 					return unchecked(((long)result));

@@ -1,4 +1,9 @@
 
+2004-09-15  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Private/NumberParser.cs: fix not raised overflowexception
+	on positive Int32 and Int64 values.
+
 2004-09-15  Gopal V  <gopalv82@yahoo.com>
 
 	* samples/jscript/hello.js, samples/jscript/md5.js,

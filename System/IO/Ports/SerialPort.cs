@@ -44,6 +44,8 @@ public class SerialPort
 	private Stream baseStream;
 	private String newLine;
 	private byte[] newLineBuffer;
+	private SerialPinChangedEventHandler pinChanged;
+	private SerialReceivedEventHandler received;
 	private static readonly int[] validBaudRates =
 		{50, 75, 110, 134, 150, 200, 300, 600, 1200,
 		 1800, 2400, 4800, 9600, 19200, 38400, 57600,
@@ -925,10 +927,66 @@ public class SerialPort
 				}
 			}
 
-	// Events that may be emitted by the serial port.
+	// Event that is emitted when an error occurs (ignored in this version).
 	public event SerialErrorEventHandler ErrorEvent;
-	public event SerialPinChangedEventHandler PinChangedEvent;
-	public event SerialReceivedEventHandler ReceivedEvent;
+
+	// Event that is emitted when incoming serial pins change state.
+	[TODO]
+	public event SerialPinChangedEventHandler PinChangedEvent
+			{
+				add
+				{
+					lock(this)
+					{
+						bool empty = (pinChanged == null);
+						pinChanged = pinChanged + value;
+						if(empty && pinChanged != null)
+						{
+							// TODO: launch the pin notification thread.
+						}
+					}
+				}
+				remove
+				{
+					lock(this)
+					{
+						pinChanged = pinChanged - value;
+						if(pinChanged == null)
+						{
+							// TODO: shut down the pin notification thread.
+						}
+					}
+				}
+			}
+
+	// Event that is emitted when data is received.
+	[TODO]
+	public event SerialReceivedEventHandler ReceivedEvent
+			{
+				add
+				{
+					lock(this)
+					{
+						bool empty = (received == null);
+						received = received + value;
+						if(empty && received != null)
+						{
+							// TODO: launch the data received thread.
+						}
+					}
+				}
+				remove
+				{
+					lock(this)
+					{
+						received = received - value;
+						if(received == null)
+						{
+							// TODO: shut down the data received thread.
+						}
+					}
+				}
+			}
 
 	// Stream class that wraps up a serial port.
 	private sealed class PortStream : Stream

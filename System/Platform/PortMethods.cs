@@ -57,6 +57,7 @@ internal class PortMethods
 	public const int PIN_DSR			= (1<<3);
 	public const int PIN_DTR			= (1<<4);
 	public const int PIN_RTS			= (1<<5);
+	public const int PIN_RING			= (1<<6);
 
 	// Determine if a serial port type and name is valid.
 	[MethodImpl(MethodImplOptions.InternalCall)]

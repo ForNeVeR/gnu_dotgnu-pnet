@@ -540,46 +540,47 @@ public sealed class Display : IDisposable
 						return AppEvent.Quit;
 					}
 
+					// Process events that are already in the queue.
+					// It is important that this be done before processing
+					// short period timeouts or the events may never get
+					// processed at all.
+					if(Xlib.XEventsQueued
+							(dpy, 2 /* QueuedAfterFlush */) != 0)
+					{
+						// Read the next event and dispatch it.
+						Xlib.XNextEvent(dpy, out xevent);
+						Unlock();
+						try
+						{
+							DispatchEvent(ref xevent);
+							return AppEvent.Regular;
+						}
+						finally
+						{
+							dpy = Lock();
+						}
+					}
+
 					// Do we have pending expose events to process?
 					if(pendingExposes)
 					{
-						// If there are still events in the queue,
-						// then process them before the exposes.
-						if(Xlib.XEventsQueued
-								(dpy, 2 /* QueuedAfterFlush */) != 0)
+						// Process the pending expose events.
+						InputOutputWidget widget;
+						while(exposeList != null)
 						{
-							// Read the next event and dispatch it.
-							Xlib.XNextEvent(dpy, out xevent);
+							widget = exposeList;
+							exposeList = exposeList.nextExpose;
 							Unlock();
 							try
 							{
-								DispatchEvent(ref xevent);
+								widget.Expose();
 							}
 							finally
 							{
 								dpy = Lock();
 							}
 						}
-						else
-						{
-							// Process the pending expose events.
-							InputOutputWidget widget;
-							while(exposeList != null)
-							{
-								widget = exposeList;
-								exposeList = exposeList.nextExpose;
-								Unlock();
-								try
-								{
-									widget.Expose();
-								}
-								finally
-								{
-									dpy = Lock();
-								}
-							}
-							pendingExposes = false;
-						}
+						pendingExposes = false;
 						return AppEvent.Regular;
 					}
 					else
@@ -635,7 +636,6 @@ public sealed class Display : IDisposable
 					{
 						return AppEvent.Timer;
 					}
-	
 				}
 				finally
 				{

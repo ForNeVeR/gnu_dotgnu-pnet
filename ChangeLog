@@ -3,6 +3,12 @@
 
 	* Xsharp/Display.cs: process pending invalidates before the XFlush.
 
+	* Xsharp/Display.cs: use "XEventsQueued" to check for events before
+	processing timeouts, so that event processing has a slightly higher
+	priority than timeout handling.  This fixes some bugs where short
+	period timeouts cause events to be delayed because the event is in
+	the queue but is no longer visible to "select".
+
 2004-01-05  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/Panel.cs,

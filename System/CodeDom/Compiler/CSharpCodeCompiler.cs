@@ -95,6 +95,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 				String[] newArgs = new String [args.Length + 1];
 				Array.Copy(args, newArgs, args.Length);
 				newArgs[args.Length] = arg;
+				args = newArgs;
 			}
 
 	// Build a list of arguments from an option string.  The arguments
@@ -242,6 +243,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 						}
 					}
 				}
+
 				return JoinStringArray(args, " ");
 			}
 

@@ -140,7 +140,7 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 
 				// If the argument array is too long, then write the
 				// command-line to a temporary file and use "@file".
-				if(args.Length > 100)
+				if(args.Length > 8192) // string length > 8k
 				{
 					args = GetResponseFileCmdArgs(options, args);
 				}

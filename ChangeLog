@@ -4,6 +4,11 @@
 	* System/CodeDom/Compiler/CodeCompiler.cs: Disable ShellExecute
 	when Stderr is redirected.
 
+	* System/CodeDom/Compiler/CodeCompiler.cs ,
+	System/CodeDom/Compiler/CSharpCodeCompiler.cs: Fix minor bugs
+	in AddArgument and do not use response files unless total size of
+	arguments is greater than 8192 characters.
+
 2004-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Security/SecurityElement.cs: apply a small patch

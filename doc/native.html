@@ -1,0 +1,898 @@
+<html>
+<head>
+<title>Internalcall methods for pnetlib</title>
+</head>
+<body bgcolor="#ffffff">
+<h1>Internalcall methods for pnetlib</h1>
+
+Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
+Last Modified: $Date: 2001/11/17 01:21:27 $<p>
+
+Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
+Permission to distribute unmodified copies of this work is hereby granted.<p>
+
+<h2>1. Introduction</h2>
+
+This document describes the <code>internalcall</code> methods that
+pnetlib assumes are provided by any Common Language Runtime (CLR)
+implementation that uses it.
+<a href="http://www.southern-storm.com.au/portable_net.html">Portable.NET</a>
+is one such implementation.<p>
+
+We take a slightly different approach to native methods than Microsoft
+and <a href="http://www.go-mono.com/">Mono</a>.  Their base class libraries
+contain a lot of platform-specific PInvoke's and other assumptions.
+They both assume that a new version of the base class libraries must be
+compiled for each individual platform.<p>
+
+Intel's <a href="http://ocl.sourceforge.net/">OCL</a> library uses a
+different approach.  It abstracts the details of the engine into an
+interface called <code>IVirtualExecutionSystem</code>, and the details
+of the operating system into an interface called <code>IOperatingSystem</code>.
+All methods that need these services are diverted to instances of these
+interfaces which provide the underlying implementation.<p>
+
+There are two drawbacks to Intel's approach.  The first is that it still
+requires a different library for each platform.  The second is that these
+two interfaces will eventually contain hundreds of methods, all virtual.
+This will create a huge maintainence burden, and will impact overall
+performance.<p>
+
+We try to isolate things a bit better, while maintaining an acceptable
+level of performance.  The overriding design goal is: there is only one
+base class library.  The C# parts of our library are the same on every
+platform.  Platform-specific functionality is provided through native
+methods that the runtime engine provides in the form of
+<code>internalcall</code> methods.<p>
+
+The methods fall into two categories: <code>System</code> and
+<code>Platform</code>.  The methods in <code>System</code> provide
+facilities that are platform-independent but need to be implemented in
+the runtime engine.  e.g. reflection must be implemented in C because
+there are no IL bytecodes for implementing it.  The <code>Decimal</code>
+operators are implemented in C for speed, but they are otherwise
+platform-independent.<p>
+
+The methods in <code>Platform</code> are where the platform-specific
+bits are plugged in.  These methods may behave very differently on
+different platforms, and under different security policies.<p>
+
+All <code>System</code> methods should be implemented by all runtime engines.
+Some <code>Platform</code> natives may be stubbed out if the platform or
+security policy does not allow the operation to complete.<p>
+
+All classes defined in <code>Platform</code> must be declared
+"<code>internal</code>" so that programs can only get access through
+the public interfaces in System, and so that the <code>Platform</code>
+namespace does not pollute the global namespace of programs
+that use the library.<p>
+
+<h2>Cross reference</h2>
+
+<ul>
+<li><a href="#System_ArgIterator">System.ArgIterator</a></li>
+	<ul>
+		<li><a href="#System_ArgIterator_ctor">constructor</a></li>
+		<li><a href="#System_ArgIterator_GetNextArg">GetNextArg</a></li>
+		<li><a href="#System_ArgIterator_GetNextArgType">GetNextArgType</a></li>
+	</ul>
+<li><a href="#System_Decimal">System.Decimal</a></li>
+	<ul>
+		<li><a href="#System_Decimal_ctor">constructor</a></li>
+		<li><a href="#System_Decimal_ToSingle">ToSingle</a></li>
+		<li><a href="#System_Decimal_ToDouble">ToDouble</a></li>
+		<li><a href="#System_Decimal_Add">Add</a></li>
+		<li><a href="#System_Decimal_Compare">Compare</a></li>
+		<li><a href="#System_Decimal_Divide">Divide</a></li>
+		<li><a href="#System_Decimal_Floor">Floor</a></li>
+		<li><a href="#System_Decimal_Remainder">Remainder</a></li>
+		<li><a href="#System_Decimal_Multiply">Multiply</a></li>
+		<li><a href="#System_Decimal_Negate">Negate</a></li>
+		<li><a href="#System_Decimal_Round">Round</a></li>
+		<li><a href="#System_Decimal_Subtract">Subtract</a></li>
+		<li><a href="#System_Decimal_Truncate">Truncate</a></li>
+	</ul>
+<li><a href="#System_Double">System.Double</a></li>
+	<ul>
+		<li><a href="#System_Double_IsNaN">IsNaN</a></li>
+		<li><a href="#System_Double_IsInfinity">IsInfinity</a></li>
+	</ul>
+<li><a href="#System_GC">System.GC</a></li>
+	<ul>
+		<li><a href="#System_GC_KeepAlive">KeepAlive</a></li>
+		<li><a href="#System_GC_ReRegisterForFinalize">ReRegisterForFinalize</a></li>
+		<li><a href="#System_GC_SuppressFinalize">SuppressFinalize</a></li>
+		<li><a href="#System_GC_WaitForPendingFinalizers">WaitForPendingFinalizers</a></li>
+	</ul>
+<li><a href="#System_Math">System.Math</a></li>
+	<ul>
+		<li><a href="#System_Math_Acos">Acos</a></li>
+		<li><a href="#System_Math_Asin">Asin</a></li>
+		<li><a href="#System_Math_Atan">Atan</a></li>
+		<li><a href="#System_Math_Atan2">Atan2</a></li>
+		<li><a href="#System_Math_Cos">Cos</a></li>
+		<li><a href="#System_Math_Cosh">Cosh</a></li>
+		<li><a href="#System_Math_Sin">Sin</a></li>
+		<li><a href="#System_Math_Sinh">Sinh</a></li>
+		<li><a href="#System_Math_Tan">Tan</a></li>
+		<li><a href="#System_Math_Tanh">Tanh</a></li>
+		<li><a href="#System_Math_Ceiling">Ceiling</a></li>
+		<li><a href="#System_Math_Floor">Floor</a></li>
+		<li><a href="#System_Math_Exp">Exp</a></li>
+		<li><a href="#System_Math_Pow">Pow</a></li>
+		<li><a href="#System_Math_IEEERemainder">IEEERemainder</a></li>
+		<li><a href="#System_Math_Log">Log</a></li>
+		<li><a href="#System_Math_Log10">Log10</a></li>
+		<li><a href="#System_Math_Round">Round</a></li>
+		<li><a href="#System_Math_InternalRound">InternalRound</a></li>
+		<li><a href="#System_Math_Sqrt">Sqrt</a></li>
+	</ul>
+<li><a href="#System_Object">System.Object</a></li>
+	<ul>
+		<li><a href="#System_Object_GetType">GetType</a></li>
+		<li><a href="#System_Object_GetHashCode">GetHashCode</a></li>
+		<li><a href="#System_Object_Equals">Equals</a></li>
+		<li><a href="#System_Object_MemberwiseClone">MemberwiseClone</a></li>
+	</ul>
+<li><a href="#System_RuntimeFieldHandle">System.RuntimeFieldHandle</a></li>
+<li><a href="#System_RuntimeMethodHandle">System.RuntimeMethodHandle</a></li>
+	<ul>
+		<li><a href="#System_RuntimeMethodHandle_InternalGetFunctionPointer">InternalGetFunctionPointer</a></li>
+	</ul>
+<li><a href="#System_RuntimeTypeHandle">System.RuntimeTypeHandle</a></li>
+<li><a href="#System_Single">System.Single</a></li>
+	<ul>
+		<li><a href="#System_Single_IsNaN">IsNaN</a></li>
+		<li><a href="#System_Single_IsInfinity">IsInfinity</a></li>
+	</ul>
+<li><a href="#Platform_DirMethods">Platform.DirMethods</a></li>
+	<ul>
+		<li><a href="#Platform_DirMethods_GetPathInfo">GetPathInfo</a></li>
+		<li><a href="#Platform_DirMethods_GetSystemDirectory">GetSystemDirectory</a></li>
+	</ul>
+<li><a href="#Platform_PtrSizes">Platform.PtrSizes</a></li>
+	<ul>
+		<li><a href="#Platform_PtrSizes_GetPtrSize">GetPtrSize</a></li>
+	</ul>
+<li><a href="#Platform_Stdio">Platform.Stdio</a></li>
+	<ul>
+		<li><a href="#Platform_Stdio_StdClose">StdClose</a></li>
+		<li><a href="#Platform_Stdio_StdFlush">StdFlush</a></li>
+		<li><a href="#Platform_Stdio_StdWrite">StdWrite</a></li>
+		<li><a href="#Platform_Stdio_StdRead">StdRead</a></li>
+		<li><a href="#Platform_Stdio_StdPeek">StdPeek</a></li>
+	</ul>
+<li><a href="#Platform_SysCharInfo">Platform.SysCharInfo</a></li>
+	<ul>
+		<li><a href="#Platform_SysCharInfo_GetUnicodeCategory">GetUnicodeCategory</a></li>
+		<li><a href="#Platform_SysCharInfo_GetNumericValue">GetNumericValue</a></li>
+		<li><a href="#Platform_SysCharInfo_GetNewLine">GetNewLine</a></li>
+	</ul>
+<li><a href="#Platform_TaskMethods">Platform.TaskMethods</a></li>
+	<ul>
+		<li><a href="#Platform_TaskMethods_Exit">Exit</a></li>
+		<li><a href="#Platform_TaskMethods_SetExitCode">SetExitCode</a></li>
+		<li><a href="#Platform_TaskMethods_GetCommandLineArgs">GetCommandLineArgs</a></li>
+		<li><a href="#Platform_TaskMethods_GetEnvironmentVariable">GetEnvironmentVariable</a></li>
+		<li><a href="#Platform_TaskMethods_GetEnvironmentCount">GetEnvironmentCount</a></li>
+		<li><a href="#Platform_TaskMethods_GetEnvironmentKey">GetEnvironmentKey</a></li>
+		<li><a href="#Platform_TaskMethods_GetEnvironmentValue">GetEnvironmentValue</a></li>
+	</ul>
+<li><a href="#Platform_TimeMethods">Platform.TimeMethods</a></li>
+	<ul>
+		<li><a href="#Platform_TimeMethods_GetCurrentTime">GetCurrentTime</a></li>
+		<li><a href="#Platform_TimeMethods_GetUpTime">GetUpTime</a></li>
+	</ul>
+</ul>
+
+<h2>Internalcall methods in the System namespace</h2>
+
+<a name="System_ArgIterator"><h3>System.ArgIterator</h3>
+
+<a name="System_ArgIterator_ctor">
+<pre>public ArgIterator(RuntimeArgumentHandle);
+public ArgIterator(RuntimeArgumentHandle, void *);</pre>
+
+<blockquote>
+Construct a new argument iterator object.
+</blockquote>
+
+<a name="System_ArgIterator_GetNextArg">
+<pre>public TypedReference GetNextArg();
+public TypedReference GetNextArg(RuntimeTypeHandle type);</pre>
+
+<blockquote>
+Get the next argument from an argument iterator object, and advance
+the iterator.  If <code>type</code> is supplied, then it indicates to
+get the next argument with the specified type.
+</blockquote>
+
+<a name="System_ArgIterator_GetNextArgType">
+<pre>public RuntimeTypeHandle GetNextArgType();</pre>
+
+<blockquote>
+Get the type of the next argument, but do not advance the iterator.
+</blockquote>
+
+<a name="System_ArgIterator_GetRemainingCount">
+<pre>public int GetRemainingCount();</pre>
+
+<blockquote>
+Get the number of arguments that remain to be processed by the iterator.
+</blockquote>
+
+<a name="System_Decimal"><h3>System.Decimal</h3>
+
+The System.Decimal type is represented as four 32-bit integer fields,
+as follows:
+
+<blockquote><pre>private int flags, high, middle, low;</pre></blockquote>
+
+The high bit of <code>flags</code> is non-zero to indicate a negative
+number.  Bits 16-23 hold a scale factor, between 0 and 28 inclusive.
+The three words <code>high</code>, <code>middle</code>, and
+<code>low</code> form a 96-bit mantissa for the <code>Decimal</code>
+value, with the power of 10 specified by the scale factor.<p>
+
+The <code>Decimal</code> operators use the "round half even" rounding
+mode.  Values less than 0.5 round down.  Values greater than 0.5 round
+up.  Values equal to 0.5 round either up or down, depending upon which
+will give an even result.<p>
+
+Further information on the representation of <code>Decimal</code> may
+be found in the ECMA specifications for C# and in the pnetlib source code.<p>
+
+<a name="System_Decimal_ctor">
+<pre>public Decimal(float value);
+public Decimal(double value);</pre>
+
+<blockquote>
+Construct <code>Decimal</code> values from <code>float</code>
+and <code>double</code> values.  If <code>value</code> is out of range,
+NaN, or an infinity, then throw an <code>OverflowException</code>
+exception.<p>
+
+The CLR can call the <code>Decimal.ThrowOverflow()</code> method to
+throw the exception.  This will ensure that the exception message will
+be appropriately translated into foreign languages.  The same applies
+for all of the remaining <code>Decimal</code> methods that throw
+exceptions.
+</blockquote>
+
+<a name="System_Decimal_ToSingle">
+<a name="System_Decimal_ToDouble">
+<pre>public static float ToSingle(decimal value);
+public static float ToDouble(decimal value);</pre>
+
+<blockquote>
+Convert <code>Decimal</code> values into either <code>float</code>
+or <code>double</code>.  No exceptions are thrown.
+</blockquote>
+
+<a name="System_Decimal_Add">
+<pre>public static decimal Add(decimal x, decimal y);</pre>
+
+<blockquote>
+Add two <code>Decimal</code> values, throwing an exception on overflow.
+</blockquote>
+
+<a name="System_Decimal_Compare">
+<pre>public static int Compare(decimal x, decimal y);</pre>
+
+<blockquote>
+Compare two <code>Decimal</code> values.  Returns -1, 0, or 1, depending
+upon whether the comparison is less than, equal to, or greater than.
+</blockquote>
+
+<a name="System_Decimal_Divide">
+<pre>public static decimal Divide(decimal x, decimal y);</pre>
+
+<blockquote>
+Divide two <code>Decimal</code> values and return the quotient.
+Throws <code>OverflowException</code> if the result is too large to
+be represented as a <code>Decimal</code> value.  Throws
+<code>DivideByZeroException</code> if <code>y</code> is zero.<p>
+
+The CLR can call the <code>Decimal.ThrowDivZero()</code> method to
+throw the exception.  This will ensure that the exception message will
+be appropriately translated into foreign languages.  The same applies
+for the <code>Remainder</code> method.
+</blockquote>
+
+<a name="System_Decimal_Floor">
+<pre>public static decimal Floor(decimal x);</pre>
+
+<blockquote>
+Compute the next lower integer value below or equal to <code>x</code>.
+</blockquote>
+
+<a name="System_Decimal_Remainder">
+<pre>public static decimal Remainder(decimal x, decimal y);</pre>
+
+<blockquote>
+Divide two <code>Decimal</code> values and return the remainder.
+Throws <code>OverflowException</code> if the quotient is too large to
+be represented as a <code>Decimal</code> value.  Throws
+<code>DivideByZeroException</code> if <code>y</code> is zero.
+</blockquote>
+
+<a name="System_Decimal_Multiply">
+<pre>public static decimal Multiply(decimal x, decimal y);</pre>
+
+<blockquote>
+Multiply two <code>Decimal</code> values and return the product.
+Throws <code>OverflowException</code> if overflow occurs.
+</blockquote>
+
+<a name="System_Decimal_Negate">
+<pre>public static decimal Negate(decimal x);</pre>
+
+<blockquote>
+Negate a <code>Decimal</code> value.  No exceptions are thrown.
+</blockquote>
+
+<a name="System_Decimal_Round">
+<pre>public static decimal Round(decimal x, int decimals);</pre>
+
+<blockquote>
+Round a <code>Decimal</code> value to a specific number of decimal
+places.  The <code>decimals</code> value must be between 0 and 28
+inclusive, or an <code>ArgumentOutOfRangeException</code> is thrown.
+Overflow will cause an <code>OverflowException</code> to be thrown.<p>
+
+The CLR can call the <code>Decimal.ThrowDecimals()</code> method to
+throw the <code>ArgumentOutOfRangeException</code>.  This will ensure
+that the exception message will be appropriately translated into
+foreign languages.
+</blockquote>
+
+<a name="System_Decimal_Subtract">
+<pre>public static decimal Subtract(decimal x, decimal y);</pre>
+
+<blockquote>
+Subtract two <code>Decimal</code> values, throwing an exception on overflow.
+</blockquote>
+
+<a name="System_Decimal_Truncate">
+<pre>public static decimal Truncate(decimal x);</pre>
+
+<blockquote>
+Truncate a <code>Decimal</code> value to an integer, towards zero.
+</blockquote>
+
+<a name="System_Double"><h3>System.Double</h3>
+
+<a name="System_Double_IsNaN">
+<pre>public static bool IsNaN(double d);</pre>
+
+<blockquote>
+Returns <code>true</code> if <code>d</code> is not a number.
+</blockquote>
+
+<a name="System_Double_IsInfinity">
+<pre>public static bool IsInfinity(double d);</pre>
+
+<blockquote>
+Returns <code>true</code> if <code>d</code> is positive or negative
+infinity.
+</blockquote>
+
+<a name="System_GC"><h3>System.GC</h3>
+
+<a name="System_GC_KeepAlive">
+<pre>public static void KeepAlive(Object obj);</pre>
+
+<blockquote>
+Keep an object reference alive.
+</blockquote>
+
+<a name="System_GC_ReRegisterForFinalize">
+<pre>public static void ReRegisterForFinalize(Object obj);</pre>
+
+<blockquote>
+Re-register an object for finalization that had previously been
+de-registered by <code>SuppressFinalize</code>.  Use of this is
+security-sensitive, and the CLR may choose to ignore the call.
+</blockquote>
+
+<a name="System_GC_SuppressFinalize">
+<pre>public static void SuppressFinalize(Object obj);</pre>
+
+<blockquote>
+Suppress finalization for an object.  Use of this is security-sensitive,
+and the CLR may choose to ignore the call.
+</blockquote>
+
+<a name="System_GC_WaitForPendingFinalizers">
+<pre>public static void WaitForPendingFinalizers();</pre>
+
+<blockquote>
+Wait for all pending object finalizers to be run.
+</blockquote>
+
+<a name="System_Math"><h3>System.Math</h3>
+
+<a name="System_Math_Acos">
+<a name="System_Math_Asin">
+<a name="System_Math_Atan">
+<a name="System_Math_Atan2">
+<a name="System_Math_Cos">
+<a name="System_Math_Cosh">
+<a name="System_Math_Sin">
+<a name="System_Math_Sinh">
+<a name="System_Math_Tan">
+<a name="System_Math_Tanh">
+<pre>public static double Acos(double d);
+public static double Asin(double d);
+public static double Atan(double d);
+public static double Atan2(double y, double x);
+public static double Cos(double d);
+public static double Cosh(double d);
+public static double Sin(double d);
+public static double Sinh(double d);
+public static double Tan(double d);
+public static double Tanh(double d);</pre>
+
+<blockquote>
+Perform various trigonometric functions on <code>double</code> values.
+</blockquote>
+
+<a name="System_Math_Ceiling">
+<pre>public static double Ceiling(double d);</pre>
+
+<blockquote>
+Compute the ceiling of a <code>double</code> value.
+</blockquote>
+
+<a name="System_Math_Floor">
+<pre>public static double Floor(double d);</pre>
+
+<blockquote>
+Compute the floor of a <code>double</code> value.
+</blockquote>
+
+<a name="System_Math_Exp">
+<pre>public static double Exp(double d);</pre>
+
+<blockquote>
+Compute <i>e</i> raised to the power of a <code>double</code> value.
+</blockquote>
+
+<a name="System_Math_Pow">
+<pre>public static double Pow(double x, double y);</pre>
+
+<blockquote>
+Compute <code>x</code> raised to the power of <code>y</code>.
+</blockquote>
+
+<a name="System_Math_IEEERemainder">
+<pre>public static double IEEERemainder(double x, double y);</pre>
+
+<blockquote>
+Compute the IEEE remainder of dividing two <code>double</code> values.
+</blockquote>
+
+<a name="System_Math_Log">
+<pre>public static double Log(double d);</pre>
+
+<blockquote>
+Compute the logarithm, in base <i>e</i>, of a <code>double</code> value.
+</blockquote>
+
+<a name="System_Math_Log10">
+<pre>public static double Log10(double d);</pre>
+
+<blockquote>
+Compute the logarithm, in base 10, of a <code>double</code> value.
+</blockquote>
+
+<a name="System_Math_Round">
+<pre>public static double Round(double d);</pre>
+
+<blockquote>
+Round a <code>double</code> value to the nearest integer.
+</blockquote>
+
+<a name="System_Math_InternalRound">
+<pre>private static double InternalRound(double d, int digits);</pre>
+
+<blockquote>
+Round a <code>double</code> value to a certain number of decimal
+digits.  The CLR can assume that <code>digits</code> has already
+been validated by the caller.
+</blockquote>
+
+<a name="System_Math_Sqrt">
+<pre>public static double Sqrt(double d);</pre>
+
+<blockquote>
+Compute the square root of a <code>double</code> value.
+</blockquote>
+
+<a name="System_Object"><h3>System.Object</h3>
+
+<a name="System_Object_GetType">
+<pre>public Type GetType();</pre>
+
+<blockquote>
+Get the type associated with the object.  The same value must be
+returned for multiple calls on the same object, and for two objects
+with identical types.
+</blockquote>
+
+<a name="System_Object_GetHashCode">
+<pre>public virtual int GetHashCode();</pre>
+
+<blockquote>
+Get the default hash code associated with the object.  Normally this
+is just the object pointer, cast to <code>int</code>.  On platforms
+with 64-bit pointers, this may either truncate the pointer or attempt
+to combine the high and low words into the final hash value.
+</blockquote>
+
+<a name="System_Object_Equals">
+<pre>public virtual bool Equals(Object obj);</pre>
+
+<blockquote>
+Default implementation of "Equals".  Returns true only if <code>this</code>
+and <code>obj</code> refer to the same object.
+</blockquote>
+
+<a name="System_Object_MemberwiseClone">
+<pre>protected Object MemberwiseClone();</pre>
+
+<blockquote>
+Perform a memberwise clone on the object.
+</blockquote>
+
+<a name="System_RuntimeFieldHandle"><h3>System.RuntimeFieldHandle</h3>
+
+Runtime field handles are pushed onto the evaluation stack using
+the <code>ldtoken</code> instruction.  We assume that the data structure
+contains a single <code>IntPtr</code> value that points to CLR-specific
+data.  The class library does not attempt to interpret this value any
+further, but it will pass it to various <code>internalcall</code> API's
+that deal with field reflection.<p>
+
+<a name="System_RuntimeMethodHandle"><h3>System.RuntimeMethodHandle</h3>
+
+Runtime method handles are pushed onto the evaluation stack using
+the <code>ldtoken</code> instruction.  We assume that the data structure
+contains a single <code>IntPtr</code> value that points to CLR-specific
+data.  The class library does not attempt to interpret this value any
+further, but it will pass it to various <code>internalcall</code> API's
+that deal with method reflection.<p>
+
+<a name="System_RuntimeMethodHandle_InternalGetFunctionPointer">
+<pre>private static IntPtr InternalGetFunctionPointer(IntPtr method);</pre>
+
+<blockquote>
+Get the function pointer that corresponds to a method handle.  The
+returned value may be a native function pointer value, or it may simply
+be <code>method</code>.  The behaviour is CLR-specific.
+</blockquote>
+
+<a name="System_RuntimeTypeHandle"><h3>System.RuntimeTypeHandle</h3>
+
+Runtime type handles are pushed onto the evaluation stack using
+the <code>ldtoken</code> instruction.  We assume that the data structure
+contains a single <code>IntPtr</code> value that points to CLR-specific
+data.  The class library does not attempt to interpret this value any
+further, but it will pass it to various <code>internalcall</code> API's
+that deal with type reflection.<p>
+
+<a name="System_Single"><h3>System.Single</h3>
+
+<a name="System_Single_IsNaN">
+<pre>public static bool IsNaN(float f);</pre>
+
+<blockquote>
+Returns <code>true</code> if <code>f</code> is not a number.
+</blockquote>
+
+<a name="System_Single_IsInfinity">
+<pre>public static bool IsInfinity(float f);</pre>
+
+<blockquote>
+Returns <code>true</code> if <code>f</code> is positive or negative
+infinity.
+</blockquote>
+
+<h2>Internalcall methods in the Platform namespace</h2>
+
+<a name="Platform_DirMethods"><h3>Platform.DirMethods</h3>
+
+This class contains directory manipulation functions for the filesystem.<p>
+
+<a name="Platform_DirMethods_GetPathInfo">
+<pre>public static PathInfo GetPathInfo();</pre>
+
+<blockquote>
+Retrieves path character information from the runtime engine.
+i.e. the separators to be used for directories, PATH's, etc.
+The following is the definition of <code>Platform.PathInfo</code>:
+
+<pre>
+struct PathInfo
+{
+    public char   dirSeparator;
+    public char   altDirSeparator;
+    public char   volumeSeparator;
+    public char   pathSeparator;
+    public char[] invalidPathChars;
+}
+</pre>
+
+The fields have the following meaning:
+
+<dl>
+<dt><code>dirSeparator</code></dt>
+<dd>The primary directory separator to use on this platform.  Usually
+	<code>'/'</code> for Unix systems and <code>'\'</code> for Windows
+	systems.  This must be set to a non-zero value.</dd>
+
+<dt><code>altDirSeparator</code></dt>
+<dd>The alternative directory separator to use on this platform.
+	Usually <code>0</code> for Unix systems and <code>'/'</code>
+	for Windows systems.  The value <code>0</code> is used to indicate
+	that there is no alternative directory separator.</dd>
+
+<dt><code>volumeSeparator</code></dt>
+<dd>The separator to use for volume names.  Usually <code>0</code>
+    for Unix systems and <code>':'</code> for Windows systems.
+	The value <code>0</code> is used to indicate that there is no
+	volume separator.</dd>
+
+<dt><code>pathSeparator</code></dt>
+<dd>The separator to use for PATH values.  Usually <code>':'</code>
+    for Unix systems and <code>';'</code> for Windows systems.
+	This must be set to a non-zero value.</dd>
+
+<dt><code>invalidPathChars</code></dt>
+<dd>An array of characters that are invalid to use within pathnames on
+	this system.  An empty array or <code>null</code> indicates that
+	all characters are valid, with special meanings only for the
+	separator characters listed above.</dd>
+</dl>
+</blockquote>
+
+<a name="Platform_DirMethods_GetSystemDirectory">
+<pre>public static String GetSystemDirectory();</pre>
+
+<blockquote>
+Get the full pathname of the "System" directory on this machine.
+This is highly Windows-specific.  If the platform does not have
+such a directory, this method should return <code>null</code>.
+</blockquote>
+
+<a name="Platform_PtrSizes"><h3>Platform.PtrSizes</h3>
+
+<a name="Platform_PtrSizes_GetPtrSize">
+<pre>public static int GetPtrSize();</pre>
+
+<blockquote>
+Get the size in bytes of a pointer on the runtime platform.
+This will typically return either 4 or 8.
+</blockquote>
+
+<a name="Platform_Stdio"><h3>Platform.Stdio</h3>
+
+The <code>Stdio</code> class provides a number of primitive methods
+for manipulating <code>stdin</code>, <code>stdout</code>, and
+</code>stderr</code> from the <code>System.Console</code> class.
+It can only be used to access these three streams, and only for
+character-based data.  Files and binary streams are handled elsewhere.<p>
+
+Note: it is usually possible to access these standard streams as
+file descriptors 0, 1, and 2 through regular filesystem operations,
+but that usage is not portable between systems.<p>
+
+Some operating systems, particularly for embedded systems, may not
+have standard input and output streams in the same sense as desktop
+platforms.  They may not have a regular filesystem at all.  However,
+they may have functions that can be used to report messages to
+debuggers or logging facilities.  This class can be used to
+redirect <code>System.Console</code> to those functions.<p>
+
+CLR's on GUI systems may wish to disable <code>System.Console</code>
+or divert it to a logging facility, because it isn't normally
+visible in the GUI.  This class provides a convenient place where
+such diversion can be performed.<p>
+
+The methods below use the descriptors 0, 1, and 2 to mean standard
+input, standard output, and standard error, respectively.  The
+CLR is free to disable any of these.  For example, it may always
+indicate EOF when <code>StdRead</code> is called if reading from
+standard input is disallowed.<p>
+
+<a name="Platform_Stdio_StdClose">
+<pre>public static void StdClose(int fd);</pre>
+
+<blockquote>
+Close the specified stream.  The CLR may ignore this call if closing
+a standard stream has been disallowed for security reasons.
+</blockquote>
+
+<a name="Platform_Stdio_StdFlush">
+<pre>public static void StdFlush(int fd);</pre>
+
+<blockquote>
+Flush the contents of the specified stream.
+</blockquote>
+
+<a name="Platform_Stdio_StdWrite">
+<pre>public static void StdWrite(int fd, char value);
+public static void StdWrite(int fd, char[] value, int index, int count);
+public static void StdWrite(int fd, String value);</pre>
+
+<blockquote>
+Write values of various types to the specified output stream.  This
+may convert from Unicode into a local character set.
+</blockquote>
+
+<a name="Platform_Stdio_StdRead">
+<pre>public static int StdRead(int fd);</pre>
+
+<blockquote>
+Read a single character from the specified input stream.  Returns the
+<code>char</code> value, coerced to <code>int</code>, or -1 at EOF or
+on error.  This method may convert from a local character set into
+Unicode.
+</blockquote>
+
+<pre>public static int StdRead(int fd, char[] value, int index, int count);</pre>
+
+<blockquote>
+Read a buffer of characters from the specified input stream.  Returns the
+number of characters read, 0 at EOF, or -1 on error.  This method may
+convert from a local character set into Unicode.
+</blockquote>
+
+<a name="Platform_Stdio_StdPeek">
+<pre>public static int StdPeek(int fd);</pre>
+
+<blockquote>
+Peek at the next character from the specified input stream, but leave
+the current stream position unchanged.  Returns the <code>char</code>
+value, coerced to <code>int</code>, or -1 at EOF or on error.
+This method may convert from a local character set into Unicode.
+</blockquote>
+
+<a name="Platform_SysCharInfo"><h3>Platform.SysCharInfo</h3>
+
+<a name="Platform_SysCharInfo_GetUnicodeCategory">
+<pre>public static UnicodeCategory GetUnicodeCategory(char ch);</pre>
+
+<blockquote>
+Get the category that a specific Unicode character falls
+within (uppercase, lowercase, digit, space, currency, etc).<p>
+
+This is usually implemented with a large lookup table.  Some
+systems may have functions to perform this lookup already, and
+other CLR's may have to provide their own implementation.<p>
+
+CLR implementations on small memory footprint devices may want
+to use a smaller table that is tailored to a particular locale.<p>
+
+Making this <code>internalcall</code> gives the CLR maximum flexibility
+as to how this is implemented, and what trade-offs may apply.
+</blockquote>
+
+<a name="Platform_SysCharInfo_GetNumericValue">
+<pre>public static double GetNumericValue(char ch);</pre>
+
+<blockquote>
+Get the numeric value associated with a Unicode character.
+e.g. the "1/4" character ('\u00BC') returns "0.25".  This is also
+usually implemented with a lookup table.<p>
+
+This method returns -1.0 if there is no numeric value associated
+with the character.
+</blockquote>
+
+<a name="Platform_SysCharInfo_GetNewLine">
+<pre>public static String GetNewLine();</pre>
+
+<blockquote>
+Get the newline string to be used on this platform.  This
+will typically be either <code>"\n"</code> or <code>"\r\n"</code>.
+This value is cached by <code>Environment.NewLine</code>, which
+is the portable way to obtain the string.
+</blockquote>
+
+<a name="Platform_TaskMethods"><h3>Platform.TaskMethods</h3>
+
+Contains methods related to tasks, such as processes and threads.<p>
+
+<a name="Platform_TaskMethods_Exit">
+<pre>public static void Exit(int exitCode);</pre>
+
+<blockquote>
+Exit from the current process.  This will only be called if
+the program has the necessary security permissions, so it is
+safe to exit immediately.
+</blockquote>
+
+<a name="Platform_TaskMethods_SetExitCode">
+<pre>public static void SetExitCode(int exitCode);</pre>
+
+<blockquote>
+Set the exit code to use when the current process exits by
+returning from its <code>Main</code> method.  The default
+value should be zero.<p>
+
+This value is only used if the <code>Main</code> method is
+declared as returning <code>void</code>.
+</blockquote>
+
+<a name="Platform_TaskMethods_GetCommandLineArgs">
+<pre>public static String[] GetCommandLineArgs();</pre>
+
+<blockquote>
+Get the command-line arguments for the current process.
+Returns <code>null</code> if the platform does not support
+command-line arguments.  The first returned argument is the
+name of the executable.<p>
+
+This value is different from that passed to the <code>Main</code>
+method.  The argument to <code>Main</code> does not include
+the name of the executable.<p>
+</blockquote>
+
+<a name="Platform_TaskMethods_GetEnvironmentVariable">
+<pre>public static String GetEnvironmentVariable(String variable);</pre>
+
+<blockquote>
+Get the value of a named environment variable.  Returns <code>null</code>
+if the variable is not present.
+</blockquote>
+
+<a name="Platform_TaskMethods_GetEnvironmentCount">
+<pre>public static int GetEnvironmentCount();</pre>
+
+<blockquote>
+Get the number of environment variables that are associated
+with the current task.  Returns zero if the environment is empty,
+or not accessible to the program.
+</blockquote>
+
+<a name="Platform_TaskMethods_GetEnvironmentKey">
+<pre>public static String GetEnvironmentKey(int posn);</pre>
+
+<blockquote>
+Get the key (or variable name) associated with the environment
+variable at a specific index.  Returns <code>null</code>
+if the index is invalid.
+</blockquote>
+
+<a name="Platform_TaskMethods_GetEnvironmentValue">
+<pre>public static String GetEnvironmentValue(int posn);</pre>
+
+<blockquote>
+Get the value associated with the environment variable at a
+specific index.  Returns <code>null</code> if the index is invalid.
+</blockquote>
+
+<a name="Platform_TimeMethods"><h3>Platform.TimeMethods</h3>
+
+<a name="Platform_TimeMethods">
+<pre>public static long GetCurrentTime();</pre>
+
+<blockquote>
+Get the current time in tenths of a microsecond since
+12:00am 1 Jan 0001 as a 64-bit value.  It is the responsibility
+of the CLR to convert from the system's epoch into this one.
+The CLR should return the most accurate time value that it
+can obtain, even if it isn't accurate to a tenth of a microsecond.
+</blockquote>
+
+<a name="Platform_TimeMethods_GetUpTime">
+<pre>public static int GetUpTime();</pre>
+
+<blockquote>
+Get the number of milliseconds since the system was last rebooted.
+This is typically called <code>GetTickCount</code> under Windows.<p>
+
+Some systems have no way to discover the time since reboot.
+The CLR may return the time since the engine was started instead.
+</blockquote>

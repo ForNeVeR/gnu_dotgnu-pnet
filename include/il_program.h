@@ -665,6 +665,48 @@ int ILClassIsComplete(ILClass *info);
 void ILClassSortMembers(ILClass *info);
 
 /*
+ * Determine if a class information is a value type.
+ */
+int ILClassIsValueType(ILClass *info);
+
+/*
+ * Convert a class information block into a type, with
+ * the correct class or value type qualifiers.  If the
+ * class is one of the builtin value types, it will be
+ * converted into a primitive type.
+ */
+ILType *ILClassToType(ILClass *info);
+
+/*
+ * Convert a class information block into a type, but
+ * do not translate primitive types.
+ */
+ILType *ILClassToTypeDirect(ILClass *info);
+
+/*
+ * System type resolver for "ILClassFromType".
+ */
+typedef ILClass *(*ILSystemTypeResolver)(ILImage *image, void *data,
+									     const char *name,
+										 const char *namespace);
+
+/*
+ * Convert a type value into a class information block.
+ * Returns NULL if not possible.  The "func" parameter
+ * specifies a function to use to resolve types within
+ * the "System" namespace.  If "func" is NULL, then the
+ * default resolver is used.
+ */
+ILClass *ILClassFromType(ILImage *image, void *data, ILType *type,
+						 ILSystemTypeResolver func);
+
+/*
+ * Default system type resolver.
+ */
+ILClass *ILClassResolveSystem(ILImage *image, void *data, const char *name,
+							  const char *namespace);
+
+/*
  * Helper macros for querying information about a class.
  */
 #define	ILClass_FromToken(image,token)	\

@@ -1115,6 +1115,307 @@ void ILClassSortMembers(ILClass *info)
 	AssignMemberTokens(info, &lowestField, &lowestMethod, &lowestParam);
 }
 
+static int InheritsFromValueType(ILClass *info)
+{
+	const char *namespace;
+	while(info != 0)
+	{
+		info = ILClassResolve(info);
+		if(!strcmp(ILClass_Name(info), "ValueType"))
+		{
+			namespace = ILClass_Namespace(info);
+			if(!strcmp(namespace, "System") && !ILClass_NestedParent(info))
+			{
+				return 1;
+			}
+		}
+		info = ILClass_ParentRef(info);
+	}
+	return 0;
+}
+
+int ILClassIsValueType(ILClass *info)
+{
+	ILClass *newInfo = ILClassResolve(info);
+	if((newInfo->attributes & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK) ==
+				IL_META_TYPEDEF_VALUE_TYPE ||
+	   (newInfo->attributes & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK) ==
+				IL_META_TYPEDEF_UNMANAGED_VALUE_TYPE ||
+	   ((newInfo->attributes & IL_META_TYPEDEF_SEALED) != 0 &&
+	    InheritsFromValueType(newInfo)))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ILType *ILClassToType(ILClass *info)
+{
+	/* Check for system classes with primitive equivalents */
+	if(info->namespace && !strcmp(info->namespace, "System") &&
+	   ILClassGetNestedParent(info) == 0)
+	{
+		if(!strcmp(info->name, "Boolean"))
+		{
+			return ILType_Boolean;
+		}
+		else if(!strcmp(info->name, "SByte"))
+		{
+			return ILType_Int8;
+		}
+		else if(!strcmp(info->name, "Byte"))
+		{
+			return ILType_UInt8;
+		}
+		else if(!strcmp(info->name, "Int16"))
+		{
+			return ILType_Int16;
+		}
+		else if(!strcmp(info->name, "UInt16"))
+		{
+			return ILType_UInt16;
+		}
+		else if(!strcmp(info->name, "Char"))
+		{
+			return ILType_Char;
+		}
+		else if(!strcmp(info->name, "Int32"))
+		{
+			return ILType_Int32;
+		}
+		else if(!strcmp(info->name, "UInt32"))
+		{
+			return ILType_UInt32;
+		}
+		else if(!strcmp(info->name, "Int64"))
+		{
+			return ILType_Int64;
+		}
+		else if(!strcmp(info->name, "UInt64"))
+		{
+			return ILType_UInt64;
+		}
+		else if(!strcmp(info->name, "Single"))
+		{
+			return ILType_Float32;
+		}
+		else if(!strcmp(info->name, "Double"))
+		{
+			return ILType_Float64;
+		}
+		else if(!strcmp(info->name, "IntPtr"))
+		{
+			return ILType_Int;
+		}
+		else if(!strcmp(info->name, "UIntPtr"))
+		{
+			return ILType_UInt;
+		}
+		else if(!strcmp(info->name, "Void"))
+		{
+			return ILType_Void;
+		}
+		else if(!strcmp(info->name, "TypedReference"))
+		{
+			return ILType_TypedRef;
+		}
+	}
+
+	/* Convert into either a value type or a class type */
+	return ILClassToTypeDirect(info);
+}
+
+ILType *ILClassToTypeDirect(ILClass *info)
+{
+	if(ILClassIsValueType(info))
+	{
+		return ILType_FromValueType(info);
+	}
+	else
+	{
+		return ILType_FromClass(info);
+	}
+}
+
+ILClass *ILClassFromType(ILImage *image, void *data, ILType *type,
+						 ILSystemTypeResolver func)
+{
+	const char *systemName;
+	if(ILType_IsPrimitive(type))
+	{
+		systemName = 0;
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_VOID:
+			{
+				systemName = "Void";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_BOOLEAN:
+			{
+				systemName = "Boolean";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I1:
+			{
+				systemName = "SByte";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U1:
+			{
+				systemName = "Byte";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I2:
+			{
+				systemName = "Int16";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U2:
+			{
+				systemName = "UInt16";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_CHAR:
+			{
+				systemName = "Char";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I4:
+			{
+				systemName = "Int32";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U4:
+			{
+				systemName = "UInt32";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I8:
+			{
+				systemName = "Int64";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U8:
+			{
+				systemName = "UInt64";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R4:
+			{
+				systemName = "Single";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R8:
+			{
+				systemName = "Double";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I:
+			{
+				systemName = "IntPtr";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U:
+			{
+				systemName = "UIntPtr";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+			{
+				systemName = "TypedReference";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_STRING:
+			{
+				systemName = "String";
+			}
+			break;
+
+			case IL_META_ELEMTYPE_OBJECT:
+			{
+				systemName = "Object";
+			}
+			break;
+
+			default: break;
+		}
+		if(systemName)
+		{
+			if(func)
+			{
+				return (*func)(image, data, systemName, "System");
+			}
+			else
+			{
+				return ILClassResolveSystem(image, data, systemName, "System");
+			}
+		}
+	}
+	else if(ILType_IsValueType(type))
+	{
+		return ILType_ToValueType(type);
+	}
+	else if(ILType_IsClass(type))
+	{
+		return ILType_ToClass(type);
+	}
+	return 0;
+}
+
+ILClass *ILClassResolveSystem(ILImage *image, void *data, const char *name,
+							  const char *namespace)
+{
+	ILProgramItem *scope;
+	ILClass *classInfo;
+
+	/* Try looking in the image itself */
+	scope = ILClassGlobalScope(image);
+	if(scope)
+	{
+		classInfo = ILClassLookup(scope, name, namespace);
+		if(classInfo)
+		{
+			return classInfo;
+		}
+	}
+
+	/* Look in any image within the same context */
+	classInfo = ILClassLookupGlobal(image->context, name, namespace);
+	if(classInfo)
+	{
+		return classInfo;
+	}
+
+	/* Create a reference within the current image */
+	if(scope)
+	{
+		return ILClassCreateRef(scope, 0, name, namespace);
+	}
+
+	/* Could not resolve the system class */
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -28,6 +28,11 @@ of the GC heap; mark a class as done when layout is finished.
 
 * include/il_coder.h, engine/ilverify.c: switch and return coder API's.
 
+* include/il_program.h, image/class.c: add "ILClassToType", "ILClassFromType",
+"ILClassIsValueType", "ILClassResolveSystem", and "ILClassToTypeDirect",
+which centralises the value type recognition so that there is one place to
+fix if we get it wrong in the future.
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

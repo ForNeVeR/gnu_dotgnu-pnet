@@ -824,18 +824,6 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 		return CS_SEMKIND_TYPE;
 	}
 
-	/* Look in any image for the type */
-	type = ILClassLookupGlobal(genInfo->context, name, namespace);
-	if(type)
-	{
-		type = ILClassResolve(type);
-	}
-	if(type && ILClassAccessible(type, accessedFrom))
-	{
-		AddMember(results, (ILProgramItem *)type, 0, CS_MEMBERKIND_TYPE);
-		return CS_SEMKIND_TYPE;
-	}
-
 	/* Look in the global scope for a declared type */
 	data = ILScopeLookupInNamespace(CCGlobalScope, namespace, name);
 	if(data)
@@ -877,6 +865,18 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 				      0, CS_MEMBERKIND_TYPE_NODE);
 			return CS_SEMKIND_TYPE_NODE;
 		}
+	}
+
+	/* Look in any image for the type */
+	type = ILClassLookupGlobal(genInfo->context, name, namespace);
+	if(type)
+	{
+		type = ILClassResolve(type);
+	}
+	if(type && ILClassAccessible(type, accessedFrom))
+	{
+		AddMember(results, (ILProgramItem *)type, 0, CS_MEMBERKIND_TYPE);
+		return CS_SEMKIND_TYPE;
 	}
 
 	/* Could not find a type or namespace with the specified name */

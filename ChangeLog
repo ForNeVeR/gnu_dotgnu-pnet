@@ -3,6 +3,9 @@
 
 	* cscc/csharp/cs_gather.c: handle interface overrides for properties.
 
+	* cscc/csharp/cs_lookup.c (FindTypeInNamespace): look for declared
+	types in the program before checking libraries and builtins.
+
 2001-03-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: fix up line numbers on declarations

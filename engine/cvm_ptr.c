@@ -3357,7 +3357,7 @@ VMCASE(COP_PREFIX_SET2D):
 				(((unsigned char *)(array->data)) +
 				 (index1 * array->bounds[0].multiplier +
 				  index2 * array->bounds[1].multiplier) * array->elemSize);
-			ILMemMove(stacktop - tempNum - 2, stacktop - tempNum,
+			IL_MEMMOVE(stacktop - tempNum - 2, stacktop - tempNum,
 					  tempNum * sizeof(CVMWord));
 			MODIFY_PC_AND_STACK(CVMP_LEN_WORD, -2);
 		}

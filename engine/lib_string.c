@@ -1031,28 +1031,58 @@ ILInt32 _IL_String_FindInRange(ILExecThread *thread, System_String *_this,
 	if(step > 0)
 	{
 		/* Scan forwards for the string */
-		while(srcFirst <= srcLast)
+		if (dest->length == 1)
 		{
-			if(!ILMemCmp(buf1, buf2, size))
+			while(srcFirst <= srcLast)
 			{
-				return srcFirst;
+				if(*buf1 == *buf2)
+				{
+					return srcFirst;
+				}
+				++buf1;
+				++srcFirst;
 			}
-			++buf1;
-			++srcFirst;
+		}
+		else
+		{
+			while(srcFirst <= srcLast)
+			{
+				if((*buf1 == *buf2) && !ILMemCmp(buf1, buf2, size))
+				{
+					return srcFirst;
+				}
+				++buf1;
+				++srcFirst;
+			}
 		}
 		return -1;
 	}
 	else
 	{
 		/* Scan backwards for the string */
-		while(srcFirst >= srcLast)
+		if(dest->length == 1)
 		{
-			if(!ILMemCmp(buf1, buf2, size))
+			while(srcFirst >= srcLast)
 			{
-				return srcFirst;
+				if(*buf1 == *buf2)
+				{
+					return srcFirst;
+				}
+				--buf1;
+				--srcFirst;
 			}
-			--buf1;
-			--srcFirst;
+		}
+		else
+		{
+			while(srcFirst >= srcLast)
+			{
+				if((*buf1 == *buf2) && !ILMemCmp(buf1, buf2, size))
+				{
+					return srcFirst;
+				}
+				--buf1;
+				--srcFirst;
+			}
 		}
 		return -1;
 	}

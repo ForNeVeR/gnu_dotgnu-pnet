@@ -1,3 +1,10 @@
+2005-04-02  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm_ptr.c: Replace call to ILMemMove with IL_MEMMOVE to avoid
+	possible register misuse on x86 systems.
+
+	* engine/lib_string.c: optimize FindInRange for IndexOf and LastIndexOf.
+
 2005-03-25  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h: add macro IL_CONVERT_METHOD to avoid function calls if

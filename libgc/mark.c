@@ -19,6 +19,12 @@
 # include <stdio.h>
 # include "private/gc_pmark.h"
 
+/* Temporary hack to work around cygwin 1.3 compile issues */
+#if defined(__CYGWIN__)
+#define	__try
+#define	__except(x)	if(0)
+#endif
+
 /* We put this here to minimize the risk of inlining. */
 /*VARARGS*/
 #ifdef __WATCOMC__

@@ -4,3 +4,7 @@
 * pnet.spec: applied patch submitted by mdaniel to create RPM spec file.
 
 * ilfind/ilfind.1: removed mention of '-V', which isn't supported.
+
+* cscc/cscc.1: added a description of the "__JVM__" macro, moved
+plug-in section completely to the texinfo documentation, and added
+the "-mjvm" option.

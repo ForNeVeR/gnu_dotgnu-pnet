@@ -21,6 +21,20 @@
 	* runtime/System/Resources/ResourceManager.cs: implement
 	"GetNeutralResourcesLanguage" and "GetSatelliteContractVersion".
 
+	* resources/en_US/runtime/Makefile.am,
+	resources/en_US/runtime/Security.txt,
+	runtime/System/Security/Policy/AllMembershipCondition.cs,
+	runtime/System/Security/Policy/ApplicationDirectory.cs,
+	runtime/System/Security/Policy/ApplicationDirectoryMembershipCondition.cs,
+	runtime/System/Security/Policy/CodeGroup.cs,
+	runtime/System/Security/Policy/Evidence.cs,
+	runtime/System/Security/Policy/IIdentityPermissionFactory.cs,
+	runtime/System/Security/Policy/IMembershipCondition.cs,
+	runtime/System/Security/Policy/PolicyStatement.cs,
+	runtime/System/Security/Policy/PolicyStatementAttribute.cs:
+	implement some of the missing classes in "System.Security.Policy";
+	fill out the implementation of "Evidence".
+
 2003-04-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/RegexpMethods.cs, runtime/System/IO/Directory.cs,

@@ -530,10 +530,10 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 
 				/* Record the explicit size to be used later */
 				explicitSize = classLayout->classSize;
-
-				/* Field layout is permitted */
-				allowFieldLayout = 1;
 			}
+
+			/* Field layout is permitted */
+			allowFieldLayout = 1;
 		}
 	}
 

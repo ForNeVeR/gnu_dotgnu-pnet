@@ -23,6 +23,9 @@
 	samples/System.Xml.dll, samples/System.dll,
 	samples/mscorlib.dll: update all assemblies from pnetlib.
 
+	* engine/layout.c (LayoutClass): use explicit layout for fields
+	even if the class layout information was omitted.
+
 2002-09-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_attrs.c: implement named attribute arguments.

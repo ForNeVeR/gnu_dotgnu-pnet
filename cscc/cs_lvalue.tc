@@ -690,6 +690,142 @@ ILNode_SemAnalysis(ILNode_DerefField)
 	return value;
 }
 
+%{
+
+/*
+ * Wrap an array index expression in an overflow conversion to "int".
+ */
+static ILNode *ArrayIndexToInt(ILGenInfo *info, ILNode *node,
+							   ILNode **parent, ILType *currentType)
+{
+	ILNode *result;
+	if(info->overflowInsns)
+	{
+		/* We are already in overflow mode, so just wrap it */
+		result = ILNode_CastSimple_create(node, ILMachineType_Int32);
+	}
+	else
+	{
+		/* The index is not being computed in overflow mode,
+		   but we want an overflow conversion for the cast */
+		result = ILNode_Overflow_create
+					(ILNode_CastSimple_create
+						(ILNode_NoOverflow_create(node), ILMachineType_Int32));
+	}
+	*parent = result;
+	return result;
+}
+
+%}
+
+/*
+ * Perform semantic analysis for an array access operation.
+ */
+ILNode_SemAnalysis(ILNode_ArrayAccess)
+{
+	CSSemValue value;
+	CSEvalArg *args;
+	int numArgs, argNum;
+
+	/* Perform semantic analysis on the array expression */
+	if(!CSSemExpectValue(node->array, info, &(node->array), &value))
+	{
+		CSErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
+					  "array or indexed value expected");
+		value.kind = CS_SEMKIND_LVALUE;
+		value.type = ILType_Int32;
+		return value;
+	}
+
+	/* Perform semantic analysis on the index argument list */
+	numArgs = CSEvalArguments(info, node->indices, &(node->indices), &args);
+	if(numArgs < 0)
+	{
+		value.kind = CS_SEMKIND_LVALUE;
+		value.type = ILType_Int32;
+		return value;
+	}
+
+	/* Is this an array element or an indexer access? */
+	if(ILType_IsArray(value.type))
+	{
+		/* All arguments must be coercable to one of "int", "uint",
+		   "long", or "ulong", and are converted to "int" */
+		for(argNum = 0; argNum < numArgs; ++argNum)
+		{
+			if(ILCoerce(info, args[argNum].node, args[argNum].parent,
+			            args[argNum].type, ILType_Int32))
+			{
+				args[argNum].node = *(args[argNum].parent);
+			}
+			else if(ILCoerce(info, args[argNum].node, args[argNum].parent,
+			                 args[argNum].type, ILType_UInt32))
+			{
+				args[argNum].node =
+					ArrayIndexToInt(info, *(args[argNum].parent),
+									args[argNum].parent, ILType_UInt32);
+			}
+			else if(ILCoerce(info, args[argNum].node, args[argNum].parent,
+			                 args[argNum].type, ILType_Int64))
+			{
+				args[argNum].node =
+					ArrayIndexToInt(info, *(args[argNum].parent),
+									args[argNum].parent, ILType_Int64);
+			}
+			else if(ILCoerce(info, args[argNum].node, args[argNum].parent,
+			                 args[argNum].type, ILType_UInt64))
+			{
+				args[argNum].node =
+					ArrayIndexToInt(info, *(args[argNum].parent),
+									args[argNum].parent, ILType_UInt64);
+			}
+			else
+			{
+				CSErrorOnLine(yygetfilename(args[argNum].node),
+							  yygetlinenum(args[argNum].node),
+							  "no conversion from `%s' to `int'",
+							  CSTypeToName(args[argNum].type));
+			}
+		}
+
+		/* Check the array's rank */
+		if(numArgs != ILTypeGetRank(value.type))
+		{
+			CSErrorOnLine(yygetfilename(node->indices),
+						  yygetlinenum(node->indices),
+						  "incorrect number of indices for `%s'",
+						  CSTypeToName(value.type));
+		}
+
+		/* Store the type information in the node for the code generator */
+		node->arrayType = value.type;
+		node->elemType = ILTypeGetElemType(value.type);
+
+		/* Construct the semantic value for the element type */
+		value.kind = CS_SEMKIND_LVALUE;
+		value.type = node->elemType;
+	}
+	else if(ILType_IsClass(value.type) || ILType_IsValueType(value.type))
+	{
+		/* TODO */
+		CSErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
+					  "array or indexed value expected");
+		value.kind = CS_SEMKIND_LVALUE;
+		value.type = ILType_Int32;
+	}
+	else
+	{
+		CSErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
+					  "array or indexed value expected");
+		value.kind = CS_SEMKIND_LVALUE;
+		value.type = ILType_Int32;
+	}
+
+	/* Free the argument list and return the element type */
+	CSEvalFreeArguments(args);
+	return value;
+}
+
 /*
  * Perform semantic analysis for the synthesised node types used above.
  */

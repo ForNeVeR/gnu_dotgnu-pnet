@@ -340,6 +340,11 @@ static int EndsInReturn(ILNode *stmt)
 	{
 		return EndsInReturn(((ILNode_NewScope *)stmt)->stmt);
 	}
+	else if(yykind(stmt) == yykindof(ILNode_Overflow) ||
+	        yykind(stmt) == yykindof(ILNode_NoOverflow))
+	{
+		return EndsInReturn(((ILNode_Overflow *)stmt)->expr);
+	}
 	else if(yykind(stmt) == yykindof(ILNode_Empty))
 	{
 		return 2;

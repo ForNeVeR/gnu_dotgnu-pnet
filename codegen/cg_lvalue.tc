@@ -90,6 +90,14 @@ ILNode_GetType(ILNode_MemberProperty)
 }
 
 /*
+ * Get the type of an array access operation.
+ */
+ILNode_GetType(ILNode_ArrayAccess)
+{
+	return ILTypeToMachineType(node->elemType);
+}
+
+/*
  * Generate discard code for a local or argument variable.
  */
 ILNode_GenDiscard(ILNode_LocalVar),
@@ -131,6 +139,15 @@ ILNode_GenDiscard(ILNode_StaticField),
 ILNode_GenDiscard(ILNode_StaticProperty)
 {
 	/* Nothing to do here */
+}
+
+/*
+ * Generate discard code for an array access node.
+ */
+ILNode_GenDiscard(ILNode_ArrayAccess)
+{
+	ILNode_GenDiscard(node->array, info);
+	ILNode_GenDiscard(node->indices, info);
 }
 
 /*
@@ -235,6 +252,66 @@ ILNode_GenValue(ILNode_MemberProperty)
 	return ILTypeToMachineType(ILTypeGetReturn(signature));
 }
 
+%{
+
+/*
+ * Resolve and call a specific method for a multi-dimensional array.
+ */
+static void CallMArrayMethod(ILGenInfo *info, ILType *arrayType,
+							 const char *name)
+{
+	ILClass *classInfo;
+	ILMethod *method;
+
+	/* Get the class information block for the array */
+	classInfo = ILTypeToClass(info, arrayType);
+	if(!classInfo)
+	{
+		return;
+	}
+
+	/* Find the method called "name" */
+	method = 0;
+	while((method = (ILMethod *)ILClassNextMemberByKind
+		(classInfo, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		if(!strcmp(ILMethod_Name(method), name))
+		{
+			ILGenCallByMethod(info, method);
+			return;
+		}
+	}
+}
+
+%}
+
+/*
+ * Generate value code for an array access node.
+ */
+ILNode_GenValue(ILNode_ArrayAccess)
+{
+	ILMachineType machineType = ILTypeToMachineType(node->elemType);
+	long saveStack;
+	if(ILType_IsSimpleArray(node->arrayType))
+	{
+		/* We can use a simple "ldelem" instruction */
+		ILNode_GenValue(node->array, info);
+		ILNode_GenValue(node->indices, info);
+		ILGenLoadArray(info, machineType, node->elemType);
+		ILGenAdjust(info, -1);
+	}
+	else
+	{
+		/* We have to call a method to get the value */
+		saveStack = info->stackHeight;
+		ILNode_GenValue(node->array, info);
+		ILNode_GenValue(node->indices, info);
+		CallMArrayMethod(info, node->arrayType, "Get");
+		info->stackHeight = saveStack + 1;
+	}
+	return machineType;
+}
+
 /*
  * Prepare to store into a local or argument variable.
  */
@@ -320,6 +397,34 @@ ILNode_Prepare(ILNode_MemberProperty)
 	ILGenCast(info, ILNode_GenValue(node->expr, info),
 			  ILMachineType_ObjectRef);
 	return ILTypeToMachineType(ILTypeGetReturn(signature));
+}
+
+/*
+ * Prepare to store into an array access node.
+ */
+ILNode_Prepare(ILNode_ArrayAccess)
+{
+	ILMachineType machineType = ILTypeToMachineType(node->elemType);
+
+	/* Save the current stack position, so "Store" knows what to pop */
+	node->saveStack = info->stackHeight;
+
+	/* Push the object and indices onto the stack */
+	ILNode_GenValue(node->array, info);
+	ILNode_GenValue(node->indices, info);
+
+	/* If this is a simple array of managed values, then we need to
+	   compute the address of the element for use in the store */
+	if(ILType_IsSimpleArray(node->arrayType) &&
+	   (machineType == ILMachineType_Decimal ||
+	    machineType == ILMachineType_ManagedValue))
+	{
+		ILGenSimple(info, IL_OP_LDELEMA);
+		ILGenAdjust(info, -1);
+	}
+
+	/* Return the element's machine type to the caller */
+	return machineType;
 }
 
 /*
@@ -503,6 +608,195 @@ ILNode_GetAndPrepare(ILNode_MemberProperty)
 		node->tempVar = IL_MAX_UINT32;
 	}
 	return ILTypeToMachineType(propType);
+}
+
+/*
+ * Get and prepare to store into an array access node.
+ */
+ILNode_GetAndPrepare(ILNode_ArrayAccess)
+{
+	ILMachineType machineType = ILTypeToMachineType(node->elemType);
+	unsigned tempArrayVar;
+	unsigned tempIndexVar;
+	unsigned tempValueVar;
+	unsigned *tempIndexVars;
+	int rank, dim, posn;
+	ILNode *indexNode;
+	int isManagedValue;
+
+	/* Save the current stack position so "Store" knows what to pop */
+	node->saveStack = info->stackHeight;
+
+	/* Determine if the element type is a managed value */
+	isManagedValue = (machineType == ILMachineType_Decimal ||
+					  machineType == ILMachineType_ManagedValue);
+
+	/* Determine what kind of array we are dealing with */
+	if(ILType_IsSimpleArray(node->arrayType))
+	{
+		/* We need some temporary variables to assist with
+		   the duplication of the values */
+		tempArrayVar = ILGenTempTypedVar(info, node->arrayType);
+		tempIndexVar = ILGenTempTypedVar(info, ILType_Int32);
+
+		/* Get the array reference and save it */
+		ILNode_GenValue(node->array, info);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempArrayVar);
+		ILGenAdjust(info, -1);
+
+		/* Get the index value and save it */
+		ILNode_GenValue(node->indices, info);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempIndexVar);
+		ILGenAdjust(info, -1);
+
+		/* Do we need to leave the current value on the stack? */
+		if(leave)
+		{
+			/* Get the array element and save it */
+			tempValueVar = ILGenTempTypedVar(info, node->elemType);
+			ILGenLoadArray(info, machineType, node->elemType);
+			ILGenSimple(info, IL_OP_DUP);
+			ILGenStoreLocal(info, tempValueVar);
+			ILGenAdjust(info, -1);
+
+			/* Reload all saved values back onto the stack */
+			ILGenLoadLocal(info, tempArrayVar);
+			ILGenLoadLocal(info, tempIndexVar);
+			ILGenAdjust(info, 2);
+			if(isManagedValue)
+			{
+				/* When we do the store, we need an address on the stack */
+				ILGenSimple(info, IL_OP_LDELEMA);
+				ILGenAdjust(info, -1);
+			}
+			ILGenLoadLocal(info, tempValueVar);
+			ILGenAdjust(info, 1);
+
+			/* Account for the extra value that we will be leaving behind */
+			++(node->saveStack);
+
+			/* Release the extra temporary variable that we used */
+			ILGenReleaseTempVar(info, tempValueVar);
+		}
+		else
+		{
+			/* Managed value stores use an address, not an object/index pair */
+			if(isManagedValue)
+			{
+				ILGenSimple(info, IL_OP_LDELEMA);
+				ILGenAdjust(info, -1);
+			}
+
+			/* Reload the values onto the stack and get the array element */
+			ILGenLoadLocal(info, tempArrayVar);
+			ILGenLoadLocal(info, tempIndexVar);
+			ILGenAdjust(info, 2);
+			ILGenLoadArray(info, machineType, node->elemType);
+			ILGenAdjust(info, -1);
+		}
+
+		/* Release the temporary variables */
+		ILGenReleaseTempVar(info, tempArrayVar);
+		ILGenReleaseTempVar(info, tempIndexVar);
+	}
+	else
+	{
+		/* Get temporary variables for the array and the indices */
+		tempArrayVar = ILGenTempTypedVar(info, node->arrayType);
+		rank = ILTypeGetRank(node->arrayType);
+		tempIndexVars = (unsigned *)ILMalloc(sizeof(unsigned) * rank);
+		if(!tempIndexVars)
+		{
+			ILGenOutOfMemory(info);
+		}
+		for(dim = 0; dim < rank; ++dim)
+		{
+			tempIndexVars[dim] = ILGenTempTypedVar(info, ILType_Int32);
+		}
+
+		/* Get the array reference and save it */
+		ILNode_GenValue(node->array, info);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempArrayVar);
+		ILGenAdjust(info, -1);
+
+		/* Get the index values and save them */
+		for(dim = 0; dim < rank; ++dim)
+		{
+			posn = rank - dim;
+			indexNode = node->indices;
+			while(posn > 1)
+			{
+				indexNode = ((ILNode_ArgList *)indexNode)->expr1;
+				--posn;
+			}
+			if(yyisa(indexNode, ILNode_ArgList))
+			{
+				indexNode = ((ILNode_ArgList *)indexNode)->expr2;
+			}
+			ILNode_GenValue(indexNode, info);
+			ILGenSimple(info, IL_OP_DUP);
+			ILGenAdjust(info, 1);
+			ILGenStoreLocal(info, tempIndexVars[dim]);
+			ILGenAdjust(info, -1);
+		}
+
+		/* Do we need to leave the current value on the stack? */
+		if(leave)
+		{
+			/* Get the array element and save it */
+			tempValueVar = ILGenTempTypedVar(info, node->elemType);
+			CallMArrayMethod(info, node->arrayType, "Get");
+			ILGenAdjust(info, -rank);
+			ILGenSimple(info, IL_OP_DUP);
+			ILGenAdjust(info, 1);
+			ILGenStoreLocal(info, tempValueVar);
+			ILGenAdjust(info, -1);
+
+			/* Reload all saved values back onto the stack */
+			ILGenLoadLocal(info, tempArrayVar);
+			ILGenAdjust(info, 1);
+			for(dim = 0; dim < rank; ++dim)
+			{
+				ILGenLoadLocal(info, tempIndexVars[dim]);
+				ILGenAdjust(info, 1);
+			}
+			ILGenLoadLocal(info, tempValueVar);
+			ILGenAdjust(info, 1);
+
+			/* Account for the extra value that we will be leaving behind */
+			++(node->saveStack);
+
+			/* Release the extra temporary variable that we used */
+			ILGenReleaseTempVar(info, tempValueVar);
+		}
+		else
+		{
+			/* Reload the values onto the stack and get the array element */
+			ILGenLoadLocal(info, tempArrayVar);
+			ILGenAdjust(info, 1);
+			for(dim = 0; dim < rank; ++dim)
+			{
+				ILGenLoadLocal(info, tempIndexVars[dim]);
+				ILGenAdjust(info, 1);
+			}
+			CallMArrayMethod(info, node->arrayType, "Get");
+			ILGenAdjust(info, -rank);
+		}
+
+		/* Release the temporary variables */
+		ILGenReleaseTempVar(info, tempArrayVar);
+		for(dim = 0; dim < rank; ++dim)
+		{
+			ILGenReleaseTempVar(info, tempIndexVars[dim]);
+		}
+	}
+	return machineType;
 }
 
 /*
@@ -690,6 +984,52 @@ ILNode_Store(ILNode_MemberProperty)
 }
 
 /*
+ * Store into an array access node.
+ */
+ILNode_Store(ILNode_ArrayAccess)
+{
+	ILMachineType machineType = ILTypeToMachineType(node->elemType);
+	unsigned tempVar;
+
+	/* If we need to leave the value on the stack, then temporarily
+	   save it into a local variable */
+	if(leave)
+	{
+		tempVar = ILGenTempTypedVar(info, node->elemType);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenStoreLocal(info, tempVar);
+		ILGenExtend(info, 1);
+	}
+	else
+	{
+		tempVar = 0;
+	}
+
+	/* Store the value into the array */
+	if(ILType_IsSimpleArray(node->arrayType))
+	{
+		/* We can use a simple "stelem" instruction */
+		ILGenStoreArray(info, machineType, node->elemType);
+	}
+	else
+	{
+		/* We have to call a method to store the value */
+		CallMArrayMethod(info, node->arrayType, "Set");
+	}
+
+	/* Reset the stack to its original position */
+	info->stackHeight = node->saveStack;
+
+	/* Push the left value back onto the stack if necessary */
+	if(leave)
+	{
+		ILGenLoadLocal(info, tempVar);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, tempVar);
+	}
+}
+
+/*
  * Generate reference code for local variable nodes.
  */
 ILNode_GenRef(ILNode_LocalVar)
@@ -755,6 +1095,31 @@ ILNode_GenRef(ILNode_BaseElement)
 ILNode_GenRef(ILNode_DerefField)
 {
 	/* TODO */
+}
+
+/*
+ * Generate reference code for an array access node.
+ */
+ILNode_GenRef(ILNode_ArrayAccess)
+{
+	long saveStack;
+	if(ILType_IsSimpleArray(node->arrayType))
+	{
+		/* We can use the "ldelema" instruction */
+		ILNode_GenValue(node->array, info);
+		ILNode_GenValue(node->indices, info);
+		ILGenSimple(info, IL_OP_LDELEMA);
+		ILGenAdjust(info, -1);
+	}
+	else
+	{
+		/* We have to call a method to get the address */
+		saveStack = info->stackHeight;
+		ILNode_GenValue(node->array, info);
+		ILNode_GenValue(node->indices, info);
+		CallMArrayMethod(info, node->arrayType, "Address");
+		info->stackHeight = saveStack + 1;
+	}
 }
 
 /*

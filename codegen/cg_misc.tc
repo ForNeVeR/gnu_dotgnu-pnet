@@ -313,9 +313,10 @@ ILNode_GetType(ILNode_Unbox)
 }
 
 /*
- * Generate discard code for a comma expression.
+ * Generate discard code for a comma or argument list expression.
  */
-ILNode_GenDiscard(ILNode_Comma)
+ILNode_GenDiscard(ILNode_Comma),
+ILNode_GenDiscard(ILNode_ArgList)
 {
 	ILNode_GenDiscard(node->expr1, info);
 	ILNode_GenDiscard(node->expr2, info);

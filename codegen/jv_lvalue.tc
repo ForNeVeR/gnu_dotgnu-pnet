@@ -89,6 +89,16 @@ JavaGenDiscard(ILNode_MemberField)
 }
 
 /*
+ * Generate discard code for an array access node.
+ */
+JavaGenDiscard(ILNode_ArrayAccess)
+{
+	/* Evaluate the sub-expressions for their side-effects only */
+	JavaGenDiscard(node->array, info);
+	JavaGenDiscard(node->indices, info);
+}
+
+/*
  * Generate value code for a local variable.
  */
 JavaGenValue(ILNode_LocalVar)
@@ -144,6 +154,52 @@ JavaGenValue(ILNode_DerefField)
 	return node->machineType;
 }
 
+%output "cg_lvalue.c"
+%{
+
+/*
+ * Validate a value type instance from a field or array element.
+ *
+ * Because JVM does not really support value types, we have some
+ * issues when objects and arrays that contain value types are
+ * constructed.  To get around this, we must check for "null" and
+ * then replace "null" values with a newly initialized value.
+ */
+static void ValidateValueType(ILGenInfo *info, ILMachineType machineType,
+							  ILType *actualType)
+{
+	ILLabel label = ILLabel_Undefined;
+	char *className;
+
+	/* Bail out if the machine type does not indicate a managed value */
+	if(machineType != ILMachineType_Decimal &&
+	   machineType != ILMachineType_ManagedValue)
+	{
+		return;
+	}
+
+	/* Check the value on the stack top for "null" */
+	JavaGenSimple(info, JAVA_OP_DUP);
+	JavaGenAdjust(info, 1);
+	JavaGenJump(info, JAVA_OP_IFNONNULL, &label);
+	JavaGenAdjust(info, -1);
+
+	/* Pop the "null" value and create an instance of the value type */
+	JavaGenSimple(info, JAVA_OP_POP);
+	className = JavaGetClassName(info, ILTypeToClass(info, actualType));
+	JavaGenNewObj(info, className);
+	JavaGenSimple(info, JAVA_OP_DUP);
+	JavaGenAdjust(info, 1);
+	JavaGenCallCtor(info, className, "<init>", "()V");
+	JavaGenAdjust(info, -1);
+	ILFree(className);
+
+	/* Output the label that was used to skip the initialization */
+	JavaGenLabel(info, &label);
+}
+
+%}
+
 /*
  * Generate value code for a static field reference.
  */
@@ -152,6 +208,7 @@ JavaGenValue(ILNode_StaticField)
 	ILMachineType type = ILTypeToMachineType(ILField_Type(node->field));
 	JavaGenFieldRef(info, JAVA_OP_GETSTATIC, node->field);
 	JavaGenAdjust(info, JavaGenTypeSize(type));
+	ValidateValueType(info, type, ILField_Type(node->field));
 	return type;
 }
 
@@ -165,6 +222,7 @@ JavaGenValue(ILNode_MemberField)
 			    ILMachineType_ObjectRef);
 	JavaGenFieldRef(info, JAVA_OP_GETFIELD, node->field);
 	JavaGenAdjust(info, JavaGenTypeSize(type) - 1);
+	ValidateValueType(info, type, ILField_Type(node->field));
 	return type;
 }
 
@@ -195,6 +253,48 @@ JavaGenValue(ILNode_MemberProperty)
 	JavaGenCallMethod(info, getter, saveStack);
 	JavaGenAdjust(info, JavaGenTypeSize(type) - 1);
 	return type;
+}
+
+/*
+ * Generate value code for an array access node.
+ */
+JavaGenValue(ILNode_ArrayAccess)
+{
+	ILMachineType machineType = ILTypeToMachineType(node->elemType);
+	int rank, dim, posn;
+	ILNode *indexNode;
+
+	/* Multi-dimensional arrays are represented as a tree
+	   of single-dimensional arrays which we must index
+	   into one at a time */
+	JavaGenValue(node->array, info);
+	rank = ILTypeGetRank(node->arrayType);
+	for(dim = 0; dim < rank; ++dim)
+	{
+		posn = rank - dim;
+		indexNode = node->indices;
+		while(posn > 1)
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr1;
+			--posn;
+		}
+		if(yyisa(indexNode, ILNode_ArgList))
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr2;
+		}
+		JavaGenValue(indexNode, info);
+		if((dim + 1) < rank)
+		{
+			JavaGenSimple(info, JAVA_OP_AALOAD);
+			JavaGenAdjust(info, -1);
+		}
+	}
+
+	/* Index into the final array dimension to get the value */
+	JavaGenLoadArray(info, machineType);
+	JavaGenAdjust(info, -2 + JavaGenTypeSize(machineType));
+	ValidateValueType(info, machineType, node->elemType);
+	return machineType;
 }
 
 /*
@@ -284,6 +384,46 @@ JavaPrepare(ILNode_MemberProperty)
 }
 
 /*
+ * Prepare to store to an array access node.
+ */
+JavaPrepare(ILNode_ArrayAccess)
+{
+	ILMachineType machineType = ILTypeToMachineType(node->elemType);
+	int rank, dim, posn;
+	ILNode *indexNode;
+
+	/* Multi-dimensional arrays are represented as a tree
+	   of single-dimensional arrays which we must index
+	   into one at a time */
+	JavaGenValue(node->array, info);
+	rank = ILTypeGetRank(node->arrayType);
+	for(dim = 0; dim < rank; ++dim)
+	{
+		posn = rank - dim;
+		indexNode = node->indices;
+		while(posn > 1)
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr1;
+			--posn;
+		}
+		if(yyisa(indexNode, ILNode_ArgList))
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr2;
+		}
+		JavaGenValue(indexNode, info);
+		if((dim + 1) < rank)
+		{
+			JavaGenSimple(info, JAVA_OP_AALOAD);
+			JavaGenAdjust(info, -1);
+		}
+	}
+
+	/* The final array dimension is on the stack, together
+	   with the index into it */
+	return machineType;
+}
+
+/*
  * Get and prepare to store into a local variable.
  */
 JavaGetAndPrepare(ILNode_LocalVar)
@@ -357,6 +497,7 @@ JavaGetAndPrepare(ILNode_StaticField)
 	ILMachineType type = ILTypeToMachineType(ILField_Type(node->field));
 	JavaGenFieldRef(info, JAVA_OP_GETSTATIC, node->field);
 	JavaGenAdjust(info, JavaGenTypeSize(type));
+	ValidateValueType(info, type, ILField_Type(node->field));
 	if(leave)
 	{
 		JavaGenDup(info, type);
@@ -380,6 +521,7 @@ JavaGetAndPrepare(ILNode_MemberField)
 	JavaGenDup(info, type);
 	JavaGenFieldRef(info, JAVA_OP_GETFIELD, node->field);
 	JavaGenAdjust(info, size - 1);
+	ValidateValueType(info, type, ILField_Type(node->field));
 
 	/* If the value should be left on the stack, then duplicate it */
 	if(leave)
@@ -455,6 +597,76 @@ JavaGetAndPrepare(ILNode_MemberProperty)
 
 	/* Return the property's machine type to the caller */
 	return type;
+}
+
+/*
+ * Get and prepare to store to an array access node.
+ */
+JavaGetAndPrepare(ILNode_ArrayAccess)
+{
+	ILMachineType machineType = ILTypeToMachineType(node->elemType);
+	int size = JavaGenTypeSize(machineType);
+	int rank, dim, posn;
+	ILNode *indexNode;
+
+	/* Multi-dimensional arrays are represented as a tree
+	   of single-dimensional arrays which we must index
+	   into one at a time */
+	JavaGenValue(node->array, info);
+	rank = ILTypeGetRank(node->arrayType);
+	for(dim = 0; dim < rank; ++dim)
+	{
+		posn = rank - dim;
+		indexNode = node->indices;
+		while(posn > 1)
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr1;
+			--posn;
+		}
+		if(yyisa(indexNode, ILNode_ArgList))
+		{
+			indexNode = ((ILNode_ArgList *)indexNode)->expr2;
+		}
+		if((dim + 1) == rank)
+		{
+			/* Duplicate the values for the final array dimension */
+			JavaGenSimple(info, JAVA_OP_DUP);
+			JavaGenAdjust(info, 1);
+			JavaGenValue(indexNode, info);
+			JavaGenSimple(info, JAVA_OP_DUP_X1);
+			JavaGenAdjust(info, 1);
+		}
+		else
+		{
+			/* Index into the array for all other dimensions */
+			JavaGenValue(indexNode, info);
+			JavaGenSimple(info, JAVA_OP_AALOAD);
+			JavaGenAdjust(info, -1);
+		}
+	}
+
+	/* Get the value from the final array dimension */
+	JavaGenLoadArray(info, machineType);
+	JavaGenAdjust(info, -2 + size);
+	ValidateValueType(info, machineType, node->elemType);
+
+	/* Push it down the stack if it must be left after the store */
+	if(leave)
+	{
+		if(size == 1)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP_X2);
+			JavaGenAdjust(info, 1);
+		}
+		else if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP2_X2);
+			JavaGenAdjust(info, 2);
+		}
+	}
+
+	/* Finished */
+	return machineType;
 }
 
 /*
@@ -605,4 +817,14 @@ JavaStore(ILNode_MemberProperty)
 	/* Store the value into the property */
 	JavaGenCallMethod(info, setter, info->stackHeight - 1 - size);
 	JavaGenAdjust(info, -(size + 1));
+}
+
+/*
+ * Store into an array access node.
+ */
+JavaStore(ILNode_ArrayAccess)
+{
+	ILMachineType machineType = ILTypeToMachineType(node->elemType);
+	JavaGenStoreArray(info, machineType);
+	JavaGenAdjust(info, -2 - JavaGenTypeSize(machineType));
 }

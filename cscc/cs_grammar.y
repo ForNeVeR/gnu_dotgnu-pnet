@@ -1296,7 +1296,9 @@ PrimaryExpression
 	| PrimaryExpression '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
 	| BuiltinType '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
 	| InvocationExpression			{ $$ = $1; }
-	| PrimaryExpression '[' ExpressionList ']'	{ /* safe and unsafe */ }
+	| PrimaryExpression '[' ExpressionList ']'	{
+				MakeBinary(ArrayAccess, $1, $3);
+			}
 	| PrimaryExpression '[' ']'		{
 				/*
 				 * This is actually a type, but we have to recognise

@@ -488,6 +488,14 @@ struct _tagILSwitchValue
 	ILProperty *property;
 	%nocreate ILUInt32 tempVar = {0};
 }
+%node ILNode_ArrayAccess ILNode_LValue =
+{
+	ILNode *array;
+	ILNode *indices;
+	%nocreate ILType *arrayType = {0};
+	%nocreate ILType *elemType = {0};
+	%nocreate long saveStack = {0};
+}
 
 %output "cg_stmt.c"
 

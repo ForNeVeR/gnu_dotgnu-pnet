@@ -14,6 +14,9 @@
 	* I18N/*: remove the final dependencies on CultureNameTable
 	by moving the name information into the culture handlers.
 
+	* tests/runtime/System/TestString.cs: remove some currency and
+	number formatting tests because cultures make them unpredictable.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Uri.cs: Remove multiple static constructors in the code.

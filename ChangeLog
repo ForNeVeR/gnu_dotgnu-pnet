@@ -1,3 +1,9 @@
+
+2004-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Basic/Interaction.cs, Basic/S.cs, resources/en_US/Basic/Basic.txt:
+	implement the VB "InputBox" function.
+
 2004-07-19  Neil Cawse  <neilcawse@geotab.com>
 
         * DotGNU.Images/BmpReformatter.cs,

@@ -28,6 +28,7 @@ using System.Text;
 using System.Collections;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Drawing;
 using System.Windows.Forms;
 using System.Diagnostics;
 using Microsoft.VisualBasic.CompilerServices;
@@ -298,8 +299,177 @@ public sealed class Interaction
 				return (Expression ? TruePart : FalsePart);
 			}
 
+#if CONFIG_REFLECTION
+
+	// Form that represents an input box.
+	private class InputBoxForm : Form
+	{
+		// Internal state.
+		private Label promptLabel;
+		private Button okButton;
+		private Button cancelButton;
+		private TextBox textBox;
+
+		// Constructor.
+		public InputBoxForm(String prompt, String title,
+							String defaultResponse, int x, int y)
+				{
+					// Set the input box'es caption.
+					if(title != null)
+					{
+						Text = title;
+					}
+					else
+					{
+						Text = String.Empty;
+					}
+
+					// Make the borders suitable for a dialog box.
+					FormBorderStyle = FormBorderStyle.FixedDialog;
+					MinimizeBox = false;
+					MaximizeBox = false;
+					ShowInTaskbar = false;
+
+					// Create the prompt label.
+					promptLabel = new Label();
+					promptLabel.TextAlign = ContentAlignment.TopLeft;
+					promptLabel.TabStop = false;
+					if(prompt != null)
+					{
+						promptLabel.Text = prompt;
+					}
+					else
+					{
+						promptLabel.Text = String.Empty;
+					}
+					Controls.Add(promptLabel);
+
+					// Create the OK and Cancel buttons.
+					okButton = new Button();
+					okButton.Text = S._("VB_OK", "OK");
+					Controls.Add(okButton);
+					cancelButton = new Button();
+					cancelButton.Text = S._("VB_Cancel", "Cancel");
+					Controls.Add(cancelButton);
+					AcceptButton = okButton;
+					CancelButton = cancelButton;
+
+					// Create the text input area.
+					textBox = new TextBox();
+					if(defaultResponse != null)
+					{
+						textBox.Text = defaultResponse;
+					}
+					else
+					{
+						textBox.Text = String.Empty;
+					}
+					Controls.Add(textBox);
+
+					// Hook up interesting events.
+					okButton.Click += new EventHandler(OKClicked);
+					cancelButton.Click += new EventHandler(CancelClicked);
+					Closing += new CancelEventHandler(CloseRequested);
+
+					// Set the dialog's initial size and position.
+					Size clientSize = new Size(353, 120);
+					Size screenSize = Screen.PrimaryScreen.Bounds.Size;
+					ClientSize = clientSize;
+					if(x == -1 && y == -1)
+					{
+						StartPosition = FormStartPosition.CenterScreen;
+					}
+					else
+					{
+						if(x == -1)
+						{
+							x = (screenSize.Width - clientSize.Width) / 2;
+						}
+						if(y == -1)
+						{
+							y = (screenSize.Height - clientSize.Height) / 2;
+						}
+						DesktopLocation = new Point(x, y);
+					}
+				}
+
+		// Detect when the OK button is clicked.
+		private void OKClicked(Object sender, EventArgs args)
+				{
+					DialogResult = DialogResult.OK;
+				}
+
+		// Detect when the Cancel button is clicked.
+		private void CancelClicked(Object sender, EventArgs args)
+				{
+					DialogResult = DialogResult.Cancel;
+				}
+
+		// Handle the "Closing" event on the form.
+		private void CloseRequested(Object sender, CancelEventArgs args)
+				{
+					DialogResult = DialogResult.Cancel;
+				}
+
+		// Useful constants for layout positioning.
+		private const int Margin = 4;
+		private const int Spacing = 4;
+
+		// Perform layout on this dialog form.
+		protected override void OnLayout(LayoutEventArgs e)
+				{
+					// Get the initial layout rectangle, margin-adjusted.
+					Rectangle rect = ClientRectangle;
+					int x = rect.X + Margin;
+					int y = rect.Y + Margin;
+					int width = rect.Width - Margin * 2;
+					int height = rect.Height - Margin * 2;
+
+					// Place the text box at the bottom.
+					Size size = textBox.Size;
+					textBox.SetBounds(x, y + height - size.Height,
+									  width, size.Height);
+					height -= size.Height + Spacing;
+
+					// Place the OK and Cancel buttons on the right.
+					size = okButton.Size;
+					okButton.SetBounds(x + width - size.Width, y,
+									   size.Width, size.Height);
+					cancelButton.SetBounds(x + width - size.Width,
+										   y + size.Height + Spacing,
+									       size.Width, size.Height);
+					width -= size.Width + Spacing;
+
+					// Place the prompt label in the remaining area.
+					promptLabel.SetBounds(x, y, width, height);
+				}
+
+		// Handle a "focus enter" event.
+		protected override void OnEnter(EventArgs e)
+				{
+					// Set the focus to the text box immediately
+					// if the top-level form gets the focus.
+					textBox.Focus();
+				}
+
+		// Get the result string.
+		public String Result
+				{
+					get
+					{
+						return textBox.Text;
+					}
+				}
+
+		// Dispose of the dialog's widget tree.
+		public void DisposeDialog()
+				{
+					Dispose(true);
+				}
+
+	}; // class InputBoxForm
+
 	// Pop up an input box and ask the user a question.
-	[TODO]
 	public static String InputBox
 				(String Prompt,
 				 [Optional] [DefaultValue("")] String Title,
@@ -307,8 +477,35 @@ public sealed class Interaction
 				 [Optional] [DefaultValue(-1)] int XPos,
 				 [Optional] [DefaultValue(-1)] int YPos)
 			{
-				// TODO
-				return DefaultResponse;
+				// Consult the host to find the input box's parent window.
+				IVbHost host;
+				IWin32Window parent;
+				host = HostServices.VBHost;
+				if(host != null)
+				{
+					parent = host.GetParentWindow();
+				}
+				else
+				{
+					parent = null;
+				}
+
+				// Pop up the input box and wait for the response.
+				InputBoxForm form = new InputBoxForm
+					(Prompt, Title, DefaultResponse, XPos, YPos);
+				DialogResult result = form.ShowDialog(parent as Form);
+				String resultString = form.Result;
+				form.DisposeDialog();
+
+				// Return the result to the caller.
+				if(result == DialogResult.OK)
+				{
+					return resultString;
+				}
+				else
+				{
+					return String.Empty;
+				}
 			}
 
 	// Pop up a message box and ask the user for a response.
@@ -318,8 +515,6 @@ public sealed class Interaction
 				 		MsgBoxStyle Buttons,
 				 [Optional] [DefaultValue(null)] Object Title)
 			{
-			#if CONFIG_REFLECTION
-
 				// Consult the host to find the message box's parent window.
 				IVbHost host;
 				IWin32Window parent;
@@ -391,12 +586,36 @@ public sealed class Interaction
 					 StringType.FromObject(Title),
 					 buttons, icon, def, options);
 				return (MsgBoxResult)result;
-
-			#else
-				// If there is no reflection, then we don't have WinForms.
-				return MsgBoxResult.Cancel;
-			#endif
 			}
+
+#else // !CONFIG_REFLECTION
+
+	// We don't have sufficient profile support for System.Windows.Forms.
+
+	// Pop up an input box and ask the user a question.
+	public static String InputBox
+				(String Prompt,
+				 [Optional] [DefaultValue("")] String Title,
+				 [Optional] [DefaultValue("")] String DefaultResponse,
+				 [Optional] [DefaultValue(-1)] int XPos,
+				 [Optional] [DefaultValue(-1)] int YPos)
+			{
+				// Indicate that the input box was cancelled.
+				return String.Empty;
+			}
+
+	// Pop up a message box and ask the user for a response.
+	public static MsgBoxResult MsgBox
+				(Object Prompt,
+				 [Optional] [DefaultValue(MsgBoxStyle.OKOnly)]
+				 		MsgBoxStyle Buttons,
+				 [Optional] [DefaultValue(null)] Object Title)
+			{
+				// Indicate that the message box was cancelled.
+				return MsgBoxResult.Cancel;
+			}
+
+#endif // !CONFIG_REFLECTION
 
 	// Create a string that describes a partition.
 	[TODO]

@@ -91,6 +91,20 @@ internal sealed class S
 
 #endif // !CONFIG_RUNTIME_INFRA
 
+	// Fetch a string with a default value.
+	public static String _(String tag, String defaultValue)
+			{
+				String value = _(tag);
+				if(value == null || value == tag)
+				{
+					return defaultValue;
+				}
+				else
+				{
+					return value;
+				}
+			}
+
 }; // class S
 
 }; // namespace Microsoft.VisualBasic

@@ -38,6 +38,9 @@ public abstract class FileDialog : CommonDialog
 	private String[] fileNames;
 	private String filter;
 	private int filterIndex;
+	private bool filterIndexSet;
+	private String[] filterNames;
+	private String[] filterPatterns;
 	private String initialDirectory;
 	private bool restoreDirectory;
 	private bool showHelp;
@@ -97,7 +100,20 @@ public abstract class FileDialog : CommonDialog
 				}
 				set
 				{
+					if(value == null)
+					{
+						value = String.Empty;
+					}
 					defaultExt = value;
+					if(value.Length > 0 && value[0] == '.' &&
+					   filterNames.Length > 1 && !filterIndexSet)
+					{
+						SetDefaultFilterIndex();
+						if(form != null)
+						{
+							form.RefreshAll();
+						}
+					}
 				}
 			}
 	public bool DereferenceLinks
@@ -167,7 +183,6 @@ public abstract class FileDialog : CommonDialog
 					}
 				}
 			}
-	[TODO]
 	public String Filter
 			{
 				get
@@ -176,12 +191,18 @@ public abstract class FileDialog : CommonDialog
 				}
 				set
 				{
-					// TODO: validate the filter string.
-					// TODO: update the dialog box to match.
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					SplitFilter(value);
 					filter = value;
+					if(form != null)
+					{
+						form.RefreshAll();
+					}
 				}
 			}
-	[TODO]
 	public int FilterIndex
 			{
 				get
@@ -190,9 +211,17 @@ public abstract class FileDialog : CommonDialog
 				}
 				set
 				{
-					// TODO: validate the filter index.
-					// TODO: update the dialog box to match.
+					if(value < 1 || value > filterNames.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							(S._("SWF_FileDialog_FilterIndex"));
+					}
 					filterIndex = value;
+					filterIndexSet = true;
+					if(form != null)
+					{
+						form.RefreshAll();
+					}
 				}
 			}
 	public String InitialDirectory
@@ -331,6 +360,108 @@ public abstract class FileDialog : CommonDialog
 				return !(e.Cancel);
 			}
 
+	// Split a filter string into a list of names and extensions.
+	private void SplitFilter(String filter)
+			{
+				// Split the filter string into its components and
+				// then check that we have an even number of components.
+				String[] split = filter.Split('|');
+				if(split.Length == 0 || (split.Length % 2) != 0)
+				{
+					throw new ArgumentException
+						(S._("SWF_FileDialog_Filter"));
+				}
+
+				// Create the filter name and pattern arrays.
+				int len = split.Length / 2;
+				int posn;
+				String[] names = new String [len];
+				String[] patterns = new String [len];
+				for(posn = 0; posn < len; ++posn)
+				{
+					names[posn] = split[posn * 2];
+					patterns[posn] = split[posn * 2 + 1].ToLower();
+					if(patterns[posn] == String.Empty)
+					{
+						throw new ArgumentException
+							(S._("SWF_FileDialog_Filter"));
+					}
+				}
+				filterNames = names;
+				filterPatterns = patterns;
+				if(filterIndex > len)
+				{
+					filterIndex = 1;
+				}
+
+				// Set the default filter index if "DefaultExt" is non-empty.
+				if(defaultExt.Length > 0 && defaultExt[0] == '.' &&
+				   filterNames.Length > 1 && !filterIndexSet)
+				{
+					SetDefaultFilterIndex();
+				}
+			}
+
+	// Set the filter index based on the default extension.
+	private void SetDefaultFilterIndex()
+			{
+				int index = GetWildcardFilterIndex("*" + defaultExt);
+				if(index != 0)
+				{
+					filterIndex = index;
+				}
+			}
+
+	// Get the filter index corresponding to a particular wildcard pattern.
+	// Returns zero if there is no matching filter.
+	private int GetWildcardFilterIndex(String pattern)
+			{
+				// Convert Unix-style wildcards into DOS-style wildcards.
+				if(pattern == "*")
+				{
+					pattern = "*.*";
+				}
+				pattern = pattern.ToLower();
+
+				// Find the pattern that matches.
+				int index, posn;
+				String filter;
+				for(index = 0; index < filterPatterns.Length; ++index)
+				{
+					filter = filterPatterns[index];
+					posn = filter.IndexOf(pattern);
+					if(posn != -1)
+					{
+						if(posn == 0 || filter[posn - 1] == ';')
+						{
+							if((posn + pattern.Length) == filter.Length)
+							{
+								return index + 1;
+							}
+							else if((posn + pattern.Length) < filter.Length &&
+									filter[posn + pattern.Length] == ';')
+							{
+								return index + 1;
+							}
+						}
+					}
+				}
+				return 0;
+			}
+
+	// Get the current filter pattern.
+	private String GetFilterPattern()
+			{
+				if(filterIndex >= 1 && filterIndex <= filterPatterns.Length)
+				{
+					return filterPatterns[filterIndex - 1];
+				}
+				else
+				{
+					return "*.*";
+				}
+			}
+
 	// Internal version of "Reset".
 	internal virtual void ResetInternal()
 			{
@@ -341,8 +472,12 @@ public abstract class FileDialog : CommonDialog
 				defaultExt = String.Empty;
 				fileName = String.Empty;
 				fileNames = null;
-				filter = "All files (*.*)|*.*";
+				String all = S._("SWF_FileDialog_AllFiles", "All files (*.*)");
+				filter = all + "|*.*";
+				filterNames = new String [] {all};
+				filterPatterns = new String [] {"*.*"};
 				filterIndex = 1;
+				filterIndexSet = false;
 				initialDirectory = String.Empty;
 				restoreDirectory = false;
 				showHelp = false;
@@ -1477,13 +1612,15 @@ public abstract class FileDialog : CommonDialog
 					name.TextChanged += new EventHandler(NameTextChanged);
 					okButton.Click += new EventHandler(AcceptDialog);
 					cancelButton.Click += new EventHandler(CancelDialog);
+					type.SelectedIndexChanged +=
+						new EventHandler(TypeSelectionChanged);
 
 					// Match the requested settings from the dialog parent.
 					RefreshAll();
 
 					// Scan the initial directory.
 					String dir = fileDialogParent.InitialDirectory;
-					pattern = "*.*";
+					pattern = fileDialogParent.GetFilterPattern();
 					if(dir == null || dir.Length == 0)
 					{
 						dir = Directory.GetCurrentDirectory();
@@ -1653,6 +1790,21 @@ public abstract class FileDialog : CommonDialog
 					}
 				}
 
+		// Process a change of type selection in a combo box.
+		private void TypeSelectionChanged(Object sender, EventArgs e)
+				{
+					int index = type.SelectedIndex;
+					if(index >= 0 &&
+					   index < fileDialogParent.filterNames.Length &&
+					   pattern != fileDialogParent.filterPatterns[index] &&
+					   currentDirectory != null)
+					{
+						pattern = fileDialogParent.filterPatterns[index];
+						type.Text = fileDialogParent.filterNames[index];
+						Reload();
+					}
+				}
+
 		// Process a help request on the form.
 		protected override void OnHelpRequested(HelpEventArgs e)
 				{
@@ -1672,6 +1824,16 @@ public abstract class FileDialog : CommonDialog
 				{
 					Text = fileDialogParent.Title;
 					HelpButton = fileDialogParent.ShowHelp;
+					type.BeginUpdate();
+					ComboBox.ObjectCollection items = type.Items;
+					foreach(String name in fileDialogParent.filterNames)
+					{
+						items.Add(name);
+					}
+					type.EndUpdate();
+					type.Text = fileDialogParent.filterNames
+						[fileDialogParent.filterIndex - 1];
+					pattern = fileDialogParent.GetFilterPattern();
 					UpdateReadOnly();
 				}
 
@@ -1764,6 +1926,16 @@ public abstract class FileDialog : CommonDialog
 					{
 						// Contains a wildcard specification.
 						pattern = filename;
+						int index = fileDialogParent.GetWildcardFilterIndex
+							(pattern);
+						if(index != 0)
+						{
+							type.Text = fileDialogParent.filterNames[index - 1];
+						}
+						else
+						{
+							type.Text = pattern;
+						}
 						Reload();
 						name.Text = String.Empty;
 					}

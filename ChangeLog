@@ -37,6 +37,11 @@
 	pop up dialog boxes when files don't exist, overwriting existing
 	files, etc; move all translatable strings into the Forms resources.
 
+	* System.Windows.Forms/FileDialog.cs, runtime/System/Private/Regex.cs,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.txt:
+	implement the drop-down of file extension types and track changes
+	to the wildcard pattern.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

@@ -47,3 +47,6 @@ SWF_FileDialog_FilesOfType=Files of type:
 SWF_FileDialog_ReadOnly=Open as read-only
 SWF_FileDialog_Overwrite={0}\nThis file already exists.\nReplace existing file?
 SWF_FileDialog_Create={0}\nThis file does not exist.\nCreate new file?
+SWF_FileDialog_AllFiles=All files (*.*)
+SWF_FileDialog_Filter=Invalid file dialog filter string
+SWF_FileDialog_FilterIndex=Invalid file dialog filter index

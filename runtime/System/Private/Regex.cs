@@ -261,6 +261,13 @@ internal sealed class Regex : IDisposable
 						}
 						break;
 
+						case '|': case ';':
+						{
+							// Separate multiple patterns in a dialog regex.
+							builder.Append("$|^");
+						}
+						break;
+
 						case '.': case '^': case '$': case ']':
 						case '(': case ')':
 						{

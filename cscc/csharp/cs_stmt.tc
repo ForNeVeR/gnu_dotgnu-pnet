@@ -310,7 +310,9 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	}
 
 	/* Perform semantic analysis on the body of the "foreach" statement */
+	PushStmtContext(info, CS_STMT_LOOP);
 	StmtSem(node->stmt, info, &(node->stmt));
+	PopStmtContext(info);
 
 	/* Is this a simple array-based or collection-based "foreach" statement? */
 	node->elemType = ILTypeGetElemType(node->arrayType);

@@ -505,7 +505,7 @@ ILNode_EndsInReturnImpl(ILNode_AsmStmt)
 	   AsmCheckFor(code + start, end - start, "endfinally") ||
 	   AsmCheckFor(code + start, end - start, "endfilter"))
 	{
-		return 1;
+		return IL_ENDS_IN_RETURN;
 	}
 	return 0;
 }

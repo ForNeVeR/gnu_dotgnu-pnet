@@ -696,7 +696,7 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 						   &(((ILNode_SwitchSection *)section)->stmt));
 
 		/* The body must end in some kind of return or jump statement */
-		if(!ILNodeEndsInReturn(((ILNode_SwitchSection *)section)->stmt))
+		if(!ILNodeEndsInFlowChange(((ILNode_SwitchSection *)section)->stmt))
 		{
 			CCErrorOnLine(yygetfilename(section), yygetlinenum(section),
 						  "`switch' section falls through");

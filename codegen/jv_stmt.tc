@@ -90,7 +90,7 @@ JavaGenDiscard(ILNode_If)
 		/* Generate the full case of the "if" */
 		JavaGenElse(node->expr, info, &label1);
 		JavaGenDiscard(node->thenClause, info);
-		if(!ILNodeEndsInReturn(node->thenClause))
+		if(!ILNodeEndsInFlowChange(node->thenClause))
 		{
 			JavaGenJump(info, JAVA_OP_GOTO, &label2);
 		}
@@ -1465,7 +1465,7 @@ JavaGenDiscard(ILNode_Try)
 	JavaGenDiscard(node->stmt, info);
 
 	/* Jump to the end of the "try" statement */
-	if(!ILNodeEndsInReturn(node->stmt))
+	if(!ILNodeEndsInFlowChange(node->stmt))
 	{
 		if(node->finallyClause)
 		{
@@ -1489,7 +1489,7 @@ JavaGenDiscard(ILNode_Try)
 		while((clause = ILNode_ListIter_Next(&iter)) != 0)
 		{
 			JavaGenDiscard(clause, info);
-			if(!ILNodeEndsInReturn(clause))
+			if(!ILNodeEndsInFlowChange(clause))
 			{
 				if(node->finallyClause)
 				{
@@ -1621,7 +1621,7 @@ JavaGenDiscard(ILNode_FinallyClause)
 	JavaGenDiscard(node->stmt, info);
 
 	/* If the clause falls through, then output a "ret" instruction */
-	if(!ILNodeEndsInReturn(node->stmt))
+	if(!ILNodeEndsInFlowChange(node->stmt))
 	{
 		JavaGenRet(info, varNum);
 	}
@@ -1657,7 +1657,7 @@ JavaGenDiscard(ILNode_Lock)
 		fputs("\t.try {\n", info->asmOutput);
 	}
 	JavaGenDiscard(node->stmt, info);
-	if(!ILNodeEndsInReturn(node->stmt))
+	if(!ILNodeEndsInFlowChange(node->stmt))
 	{
 		/* We can short-cut the finally processing, by doing the exit here */
 		JavaGenLoadLocal(info, tempVar, ILMachineType_ObjectRef);

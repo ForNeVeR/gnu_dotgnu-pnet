@@ -618,17 +618,6 @@ public sealed class NumberFormatInfo : ICloneable, IFormatProvider
 				readOnly = false;
 			}
 
-	// Internal constructor that is used to load the contents
-	// of a culture-specific set of number formatting rules.
-	[TODO]
-	internal NumberFormatInfo(CultureInfo culture)
-			: this()
-			{
-				// We currently have the invariant defaults loaded.
-				// Call the runtime engine to get culture-specific data.
-				// TODO
-			}
-
 	// Implementation of the ICloneable interface.
 	public Object Clone()
 			{

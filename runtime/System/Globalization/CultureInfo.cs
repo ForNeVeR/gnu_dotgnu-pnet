@@ -23,21 +23,28 @@ namespace System.Globalization
 
 using System;
 using System.Private;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 public class CultureInfo : ICloneable, IFormatProvider
 {
 
 	// Cached culture objects.
 	private static CultureInfo invariantCulture;
+	private static CultureInfo currentCulture;
 
 	// Internal state.
 	private int         cultureID;
 	private CultureName cultureName;
 	private bool		readOnly;
 	private Calendar	calendar;
+	private Calendar[]	otherCalendars;
 	private NumberFormatInfo numberFormat;
+	private CompareInfo compareInfo;
 	private DateTimeFormatInfo dateTimeFormat;
-	private TextInfo	textInfo=null;
+	private TextInfo	textInfo;
+	private bool        userOverride;
+	private _I18NCultureHandler handler;
 
 	// Culture identifier for "es-ES" with traditional sort rules.
 	private const int TraditionalSpanish = 0x040A;
@@ -79,7 +86,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 					cultureID   = culture;
 					cultureName = CultureNameTable.GetNameInfoByID(culture);
 				}
-				InitCulture();
+				userOverride = useUserOverride;
+				handler = _I18NCultureHandler.GetCultureHandler(cultureID);
 			}
 	public CultureInfo(String name, bool useUserOverride)
 			{
@@ -89,52 +97,8 @@ public class CultureInfo : ICloneable, IFormatProvider
 				}
 				cultureName = CultureNameTable.GetNameInfoByName(name);
 				cultureID   = cultureName.cultureID;
-				InitCulture();
-			}
-
-	// Initialize the platform-specific culture routines.
-	private void InitCulture()
-			{
-			#if false
-				CultureName newName;
-
-				// Attempt to get an exact match.
-				handle = CultureMethods.GetCulture(cultureName.name,
-												   cultureID);
-				if(handle != IntPtr.Zero)
-				{
-					return;
-				}
-
-				// Attempt to get the neutral version of the culture.
-				if((cultureID & ~0x03FF) != 0)
-				{
-					newName = CultureNameTable.GetNameInfoByID
-						(cultureID & 0x03FF);
-					handle = CultureMethods.GetCulture
-						(newName.name, newName.cultureID);
-					if(handle != IntPtr.Zero)
-					{
-						return;
-					}
-				}
-
-				// Attempt to get the default country for the culture.
-				if((cultureID & ~0x03FF) != 0x0400 && cultureID != 0x0C0A)
-				{
-					newName = CultureNameTable.GetNameInfoByID
-						((cultureID & 0x03FF) | 0x0400);
-					handle = CultureMethods.GetCulture
-						(newName.name, newName.cultureID);
-					if(handle != IntPtr.Zero)
-					{
-						return;
-					}
-				}
-
-				// The system does not support the specified culture.
-				throw new ArgumentException(_("Arg_InvalidCulture"));
-			#endif
+				userOverride = useUserOverride;
+				handler = _I18NCultureHandler.GetCultureHandler(cultureID);
 			}
 
 	// Get the invariant culture object.
@@ -155,36 +119,56 @@ public class CultureInfo : ICloneable, IFormatProvider
 				}
 			}
 
+	// Get the current culture identifier from the runtime engine.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int InternalCultureID();
+
 	// Get the current culture object for the running thread.
-	[TODO]
 	public static CultureInfo CurrentCulture
 			{
 				get
 				{
-					// TODO.
-					return InvariantCulture;
+					lock(typeof(CultureInfo))
+					{
+						if(currentCulture != null)
+						{
+							return currentCulture;
+						}
+						int id = InternalCultureID();
+						if(id == 0 ||
+						   _I18NCultureHandler.GetCultureHandler(id) == null)
+						{
+							currentCulture = InvariantCulture;
+						}
+						else
+						{
+							currentCulture = new CultureInfo(id);
+							currentCulture.readOnly = true;
+						}
+						return currentCulture;
+					}
 				}
 			}
 
 	// Get the current UI culture object for the running thread.
-	[TODO]
 	public static CultureInfo CurrentUICulture
 			{
 				get
 				{
-					// TODO.
-					return null;
+					// Just use the current culture, since most platforms
+					// do not distinguish between UI and non-UI cultures.
+					return CurrentCulture;
 				}
 			}
 
 	// Get the installed UI culture object for the system.
-	[TODO]
 	public static CultureInfo InstalledUICulture
 			{
 				get
 				{
-					// TODO.
-					return null;
+					// Just use the current culture, since most platforms
+					// do not distinguish between UI and non-UI cultures.
+					return CurrentCulture;
 				}
 			}
 
@@ -196,11 +180,23 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the list of all cultures supported by this system.
-	[TODO]
 	public static CultureInfo[] GetCultures(CultureTypes types)
 			{
-				// TODO
-				return new CultureInfo [0];
+				Object obj = Encoding.InvokeI18N("GetCultures", types);
+				if(obj != null)
+				{
+					return (CultureInfo[])obj;
+				}
+				else if((types & CultureTypes.NeutralCultures) != 0)
+				{
+					CultureInfo[] cultures = new CultureInfo [1];
+					cultures[0] = InvariantCulture;
+					return cultures;
+				}
+				else
+				{
+					return new CultureInfo [0];
+				}
 			}
 
 	// Wrap a culture information object to make it read-only.
@@ -223,19 +219,27 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the default calendar that is used by the culture.
-	[TODO]
 	public virtual Calendar Calendar
 			{
 				get
 				{
 					lock(this)
 					{
-						if(calendar != null)
+						if(calendar == null)
 						{
-							return calendar;
+							if(handler != null)
+							{
+								calendar = handler.CultureCalendar;
+								if(calendar == null)
+								{
+									calendar = new GregorianCalendar();
+								}
+							}
+							else
+							{
+								calendar = new GregorianCalendar();
+							}
 						}
-						// TODO: handle non-Gregorian calendars.
-						calendar = new GregorianCalendar();
 						return calendar;
 					}
 				}
@@ -246,7 +250,26 @@ public class CultureInfo : ICloneable, IFormatProvider
 			{
 				get
 				{
-					return CompareInfo.GetCompareInfo(cultureID);
+					lock(this)
+					{
+						if(compareInfo == null)
+						{
+							if(handler != null)
+							{
+								compareInfo = handler.CultureCompareInfo;
+								if(compareInfo == null)
+								{
+									compareInfo =
+										CompareInfo.InvariantCompareInfo;
+								}
+							}
+							else
+							{
+								compareInfo = CompareInfo.InvariantCompareInfo;
+							}
+						}
+						return compareInfo;
+					}
 				}
 			}
 
@@ -263,10 +286,25 @@ public class CultureInfo : ICloneable, IFormatProvider
 							// return the invariant date time format info.
 							return DateTimeFormatInfo.InvariantInfo;
 						}
+						else if(handler != null)
+						{
+							dateTimeFormat = handler.CultureDateTimeFormatInfo;
+							if(dateTimeFormat == null)
+							{
+								dateTimeFormat = new DateTimeFormatInfo();
+							}
+						}
 						else
 						{
-							dateTimeFormat = new DateTimeFormatInfo(this);
+							dateTimeFormat = new DateTimeFormatInfo();
 						}
+					}
+					if(readOnly)
+					{
+						// Wrap up the date/time formatting information
+						// to make it read-only like the culture.
+						dateTimeFormat = DateTimeFormatInfo.ReadOnly
+							(dateTimeFormat);
 					}
 					return dateTimeFormat;
 				}
@@ -363,10 +401,25 @@ public class CultureInfo : ICloneable, IFormatProvider
 							// return the invariant number format info.
 							return NumberFormatInfo.InvariantInfo;
 						}
+						else if(handler != null)
+						{
+							numberFormat = handler.CultureNumberFormatInfo;
+							if(numberFormat == null)
+							{
+								numberFormat = new NumberFormatInfo();
+							}
+						}
 						else
 						{
-							numberFormat = new NumberFormatInfo(this);
+							numberFormat = new NumberFormatInfo();
 						}
+					}
+					if(readOnly)
+					{
+						// Wrap up the number formatting information
+						// to make it read-only like the culture.
+						numberFormat = NumberFormatInfo.ReadOnly
+							(numberFormat);
 					}
 					return numberFormat;
 				}
@@ -386,13 +439,25 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the optional calendars for this instance.
-	[TODO]
 	public virtual Calendar[] OptionalCalendars
 			{
 				get
 				{
-					// TODO
-					return new Calendar [0];
+					lock(this)
+					{
+						if(otherCalendars == null)
+						{
+							if(handler != null)
+							{
+								otherCalendars = handler.CultureOtherCalendars;
+							}
+							else
+							{
+								otherCalendars = new Calendar [0];
+							}
+						}
+						return otherCalendars;
+					}
 				}
 			}
 
@@ -413,61 +478,65 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Get the text writing system associated with this culture.
-	[TODO]
 	public virtual TextInfo TextInfo
 			{
 				get
 				{
-					if(this.textInfo==null)
+					lock(this)
 					{
-						this.textInfo=new TextInfo();
+						if(textInfo == null)
+						{
+							if(handler != null)
+							{
+								textInfo = handler.CultureTextInfo;
+								if(textInfo == null)
+								{
+									textInfo = new TextInfo();
+								}
+							}
+							else
+							{
+								textInfo = new TextInfo();
+							}
+						}
+						return textInfo;
 					}
-					// TODO
-					return this.textInfo;
 				}
 			}
 
 	// Get the 3-letter ISO language name for this culture.
-	[TODO]
 	public virtual String ThreeLetterISOLanguageName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return cultureName.threeLetterISOName;
 				}
 			}
 
 	// Get the 3-letter Windows language name for this culture.
-	[TODO]
 	public virtual String ThreeLetterWindowsLanguageName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return cultureName.threeLetterWindowsName;
 				}
 			}
 
 	// Get the 2-letter ISO language name for this culture.
-	[TODO]
 	public virtual String TwoLetterISOLanguageName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return cultureName.twoLetterISOName;
 				}
 			}
 
 	// Determine if this culture is configured for user overrides.
-	[TODO]
 	public virtual bool UseUserOverride
 			{
 				get
 				{
-					// TODO
-					return false;
+					return userOverride;
 				}
 			}
 
@@ -491,11 +560,11 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Map a culture name to an identifier.
-	[TODO]
 	internal static int MapNameToID(String name)
 			{
-				// TODO
-				return 0x007F;
+				CultureName cultureName =
+					CultureNameTable.GetNameInfoByName(name);
+				return cultureName.cultureID;
 			}
 
 }; // class CultureInfo

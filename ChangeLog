@@ -14,6 +14,14 @@
 	runtime/System/Text/Encoding.cs: add some of the I18N support
 	infrastructure for "System.Globalization.CompareInfo".
 
+	* runtime/System/Globalization/CompareInfo.cs,
+	runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Globalization/DateTimeFormatInfo.cs,
+	runtime/System/Globalization/NumberFormatInfo.cs,
+	runtime/System/Globalization/_I18NCultureHandler.cs: add some
+	more I18N support to defer the rest of the CultureInfo functionality
+	to the I18N plugin layer.
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs: Fix minor bug in ArrayEnumerator1

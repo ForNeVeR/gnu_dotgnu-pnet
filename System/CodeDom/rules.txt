@@ -100,7 +100,7 @@ CodePropertySetValueExpression
 CodeSnippetStatement: String<Value>
 CodeSnippetTypeMember-CodeTypeMember: String<Text>
 CodeStatementCollection: CodeStatement
-CodeStatement: $CodeLinePragma<LinePragma>
+CodeStatement-CodeObject: $CodeLinePragma<LinePragma>
 
 CodeThisReferenceExpression
 CodeThrowExceptionStatement: CodeExpression<ToThrow>
@@ -116,29 +116,29 @@ CodeTypeReferenceCollection: CodeTypeReference
 # The following classes must be defined manually, because they are
 # too complex or odd to subject to rule-based code generation:
 #
-#	CodeArrayCreateExpression
-#	CodeAttachEventStatement
-#	CodeCastExpression
-#	CodeCatchClause
-#	CodeCommentStatement
-#	CodeConditionStatement
-#	CodeMemberEvent
-#	CodeMemberField
-#	CodeMemberMethod
-#	CodeMethodInvokeExpression
-#	CodeNamespace
-#	CodeNamespaceImportCollection
-#	CodeNamespaceImport
-#	CodeObjectCreateExpression
-#	CodeObject
+#	- CodeArrayCreateExpression
+#	- CodeAttachEventStatement
+#	- CodeCastExpression
+#	- CodeCatchClause
+#	- CodeCommentStatement
+#	- CodeConditionStatement
+#	- CodeMemberEvent
+#	- CodeMemberField
+#	- CodeMemberMethod
+#	- CodeMethodInvokeExpression
+#	- CodeNamespace
+#	- CodeNamespaceImportCollection
+#	- CodeNamespaceImport
+#	- CodeObjectCreateExpression
+#	- CodeObject
 #	CodeParameterDeclarationExpression
 #	CodeRemoveEventStatement
 #	CodeSnippetCompileUnit
-#	CodeTypeDeclaration
+#	- CodeTypeDeclaration
 #	CodeTypeDelegate
-#	CodeTypeMember
+#	- CodeTypeMember
 #	CodeTypeOfExpression
-#	CodeTypeReference
+#	- CodeTypeReference
 #	CodeTypeReferenceExpression
 #	CodeVariableDeclarationStatement
 #

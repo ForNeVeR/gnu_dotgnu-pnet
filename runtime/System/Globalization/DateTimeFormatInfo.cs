@@ -97,16 +97,6 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 			#endif // !ECMA_COMPAT
 			}
 
-	// Internal constructor for getting information from a culture.
-	[TODO]
-	internal DateTimeFormatInfo(CultureInfo culture)
-			: this()
-			{
-				// We currently have the invariant defaults loaded.
-				// Call the runtime engine to get culture-specific data.
-				// TODO
-			}
-
 	// Get the invariant date time format information.
 	public static DateTimeFormatInfo InvariantInfo
 			{

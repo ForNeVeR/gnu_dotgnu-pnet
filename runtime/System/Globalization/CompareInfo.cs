@@ -23,7 +23,6 @@ namespace System.Globalization
 {
 
 using System.Reflection;
-using System.Text;
 using System.Runtime.Serialization;
 
 public class CompareInfo : IDeserializationCallback
@@ -44,30 +43,41 @@ public class CompareInfo : IDeserializationCallback
 				this.culture = culture;
 			}
 
+	// Get the invariant CompareInfo object.
+	internal static CompareInfo InvariantCompareInfo
+			{
+				get
+				{
+					lock(typeof(CompareInfo))
+					{
+						if(invariantCompare == null)
+						{
+							invariantCompare = new CompareInfo(0x007F);
+						}
+						return invariantCompare;
+					}
+				}
+			}
+
 	// Get the comparison information for a specific culture.
 	public static CompareInfo GetCompareInfo(int culture)
 			{
-				Object info;
-				info = Encoding.InvokeI18N("GetCompareInfo", culture);
-				if(info == null)
+				_I18NCultureHandler handler;
+				CompareInfo info;
+
+				// Find the culture-specific handler.
+				handler = _I18NCultureHandler.GetCultureHandler(culture);
+				if(handler != null)
 				{
-					// Try the neutral culture instead.
-					info = Encoding.InvokeI18N
-						("GetCompareInfo", culture & 0x00FF);
-					if(info == null)
+					info = handler.CultureCompareInfo;
+					if(info != null)
 					{
-						// Return the invariant culture information.
-						lock(typeof(CompareInfo))
-						{
-							if(invariantCompare == null)
-							{
-								invariantCompare = new CompareInfo(0x007F);
-							}
-							return invariantCompare;
-						}
+						return info;
 					}
 				}
-				return (CompareInfo)info;
+
+				// Return the invariant culture information.
+				return InvariantCompareInfo;
 			}
 	public static CompareInfo GetCompareInfo(String culture)
 			{

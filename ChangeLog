@@ -1,6 +1,11 @@
 
 2004-10-03  Klaus Treichel  <ktreichel@web.de>
 
+	* tests/Test.build: exclude directory System.IO.Compression from build of
+	System assembly test.
+
+2004-10-03  Klaus Treichel  <ktreichel@web.de>
+
 	* tests/Makefile.am, tests/Test.build: split test for corlib into tests per
 	Namespace.
 

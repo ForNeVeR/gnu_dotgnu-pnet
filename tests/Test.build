@@ -419,6 +419,7 @@
 			<sources basedir="${mono.sources}/class/System/Test">
 				<includes name="**/*.cs"/>
 				<excludes name="System.Net/WebRequestTest.cs"/>
+				<excludes name="System.IO.Compression/**"/>
 				<!-- exclude Regextests because they do not run -->
 				<excludes name="System.Text.RegularExpressions/**"/>
 			</sources>

@@ -1,4 +1,13 @@
+2005-02-02  Marc Haisenko <marc@darkdust.net>
 
+	* System.Windows.Forms/TextBox.cs: Fix three problems with TextBox.cs:
+	fix bug #11553 (TextBox doesn't correctly handle scrollbars), fix
+	relayouting on resize and fix the size calculation in LayoutFromText
+	(patch #3630)
+	
+	* System.Drawing/Graphics.cs: Fix wrapping in Graphics.DrawString
+	(patch #3684)
+	
 2005-02-02  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/IO/BufferedStream.cs: Improve buffer stream

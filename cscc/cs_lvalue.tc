@@ -34,7 +34,6 @@ ILNode_SemAnalysis(ILNode_This)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot use `this' in static methods");
-		return CSSemValueDefault;
 	}
 
 	/* Get the type from the method's class and return */
@@ -62,6 +61,23 @@ ILNode_SemAnalysis(ILNode_NewScope)
 	return value;
 }
 
+%{
+
+/*
+ * Report an accessibility error.
+ */
+static void AccessibilityError(ILNode *node, const char *name,
+							   ILClass *classInfo)
+{
+	const char *namespace = ILClass_Namespace(classInfo);
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "`%s%s%s.%s' is not accessible in the current scope",
+				  (namespace ? namespace : ""),
+				  (namespace ? "." : ""), ILClass_Name(classInfo), name);
+}
+
+%}
+
 /*
  * Perform semantic analysis for singleton identifiers.
  */
@@ -72,6 +88,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	ILClass *classInfo;
 	unsigned long index;
 	ILNode_MethodDeclaration *method;
+	ILField *field;
 
 	/* Look up the identifier in the current scope */
 	data = ILScopeLookup(info->currentScope, node->name, 1);
@@ -89,7 +106,8 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		if(ILScopeDataGetKind(data) != IL_SCOPE_METHOD)
 		{
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-						  "`%s' is ambiguous in the current scope");
+						  "`%s' is ambiguous in the current scope",
+						  node->name);
 			return CSSemValueDefault;
 		}
 	}
@@ -126,8 +144,48 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		}
 		break;
 
-		case IL_SCOPE_METHOD:
 		case IL_SCOPE_FIELD:
+		{
+			/* Reference to a class field */
+			if(!(info->currentMethod))
+			{
+				/* We are performing semantic analysis of declarations,
+				   which does not permit fields to be used as types */
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`%s' is not declared as a type in the current scope",
+					  node->name);
+				value.kind = CS_SEMKIND_TYPE;
+				value.type = ILType_Int32;
+				return value;
+			}
+
+			/* Find the field descriptor and check its access */
+			field = (ILField *)(ILScopeDataGetMember(data));
+			if(!ILMemberAccessible((ILMember *)field,
+					((ILNode_ClassDefn *)(info->currentClass))->classInfo))
+			{
+				AccessibilityError((ILNode *)node, node->name,
+								   ILField_Owner(field));
+			}
+
+			/* Create the final semantic type */
+			value.kind = CS_SEMKIND_LVALUE;
+			value.type = ILField_Type(field);
+
+			/* Replace this identifier with a field access node */
+			if(ILField_IsStatic(field))
+			{
+				*parent = ILNode_StaticField_create(field);
+			}
+			else
+			{
+				*parent = ILNode_MemberField_create
+							(ILNode_This_create(), field);
+			}
+		}
+		break;
+
+		case IL_SCOPE_METHOD:
 		case IL_SCOPE_PROPERTY:
 		case IL_SCOPE_EVENT:
 		{
@@ -250,4 +308,13 @@ ILNode_SemAnalysis(ILNode_DerefField)
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;
+}
+
+/*
+ * Perform semantic analysis for the synthesised node types used above.
+ */
+ILNode_SemAnalysis(ILNode_StaticField),
+ILNode_SemAnalysis(ILNode_MemberField)
+{
+	return CSSemValueDefault;
 }

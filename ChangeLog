@@ -1,4 +1,12 @@
 
+2001-01-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/constructor2.err,
+	csharp/class/constructor2.jerr, csharp/class/delegate1.cs,
+	csharp/class/delegate1.il, csharp/class/delegate1.jerr:
+	test cases for delegates, and modified output files for changes
+	in method error messages.
+
 2001-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/relop3.cs,

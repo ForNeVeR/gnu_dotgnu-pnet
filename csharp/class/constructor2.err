@@ -2,4 +2,4 @@
 ./constructor2.cs:40: no matching method for call
 ./constructor2.cs:49: no matching method for call
 ./constructor2.cs:65: no accessible base class constructors
-./constructor2.cs:68: called object is not a method
+./constructor2.cs:68: called object is not a method or delegate

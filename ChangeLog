@@ -16,6 +16,10 @@
 	resources/en_US/System.Windows.Forms/System.Windows.Forms.txt:
 	add the string resources for "System.Windows.Forms".
 
+	* System.Windows.Forms/S.cs: don't look for resources in
+	"mscorlib.dll", because our Forms implementation may be
+	running on a CLR that doesn't have our mscorlib.
+
 2003-10-12  Neil Cawse  <neilcawse@hotmail.com>
 
 	* System.Windows.Forms/TreeView.cs: fix paint crash when no nodes bug.

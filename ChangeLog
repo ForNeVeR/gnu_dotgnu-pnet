@@ -1,6 +1,12 @@
 
 2002-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
+	* include/il_thread.h, support/Makefile.am, support/no_thread.c,
+	support/pt_include.h, support/pt_mutex.c, support/pt_thread.c,
+	support/pt_wait.c: continue implementing threading primitives.
+
+2002-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
 	* engine/HACKING: describe more of the engine architecture.
 
 	* configure.in, include/Makefile.am, include/il_thread.h,

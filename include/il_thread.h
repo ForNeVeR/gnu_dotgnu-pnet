@@ -48,9 +48,12 @@ extern	"C" {
 typedef void (*ILThreadStartFunc)(void *objectArg);
 
 /*
- * Opaque thread descriptor.
+ * Opaque types for thread-related objects.
  */
-typedef struct _tagILThread ILThread;
+typedef struct _tagILThread     ILThread;
+typedef struct _tagILMutex      ILMutex;
+typedef struct _tagILRWLock     ILRWLock;
+typedef struct _tagILWaitHandle ILWaitHandle;
 
 /*
  * Initialize the thread support routines.  Only needs to be
@@ -65,6 +68,12 @@ void ILThreadInit(void);
  * insufficient resources to start the thread.
  */
 ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg);
+
+/*
+ * Start a thread running.  Returns zero if not in the
+ * correct state to start.
+ */
+int ILThreadStart(ILThread *thread);
 
 /*
  * Get the thread descriptor for the current thread.
@@ -133,6 +142,59 @@ void ILThreadAtomicEnd(void);
  * Process a memory barrier within the current thread.
  */
 void ILThreadMemoryBarrier(void);
+
+/*
+ * Create a mutex.  Note: this type of mutex will not
+ * necessarily update the thread's "wait/sleep/join"
+ * state, so it isn't directly suitable for emulating
+ * Windows-like wait handle mutexes.  It is useful for
+ * simple non-recursive mutual exclusion operations
+ * that won't otherwise affect the thread's state.
+ */
+ILMutex *ILMutexCreate(void);
+
+/*
+ * Destroy a mutex.
+ */
+void ILMutexDestroy(ILMutex *mutex);
+
+/*
+ * Lock a mutex.
+ */
+void ILMutexLock(ILMutex *mutex);
+
+/*
+ * Unlock a mutex.
+ */
+void ILMutexUnlock(ILMutex *mutex);
+
+/*
+ * Create a read-write lock.  If the system does not
+ * support read-write locks, this will act like a mutex.
+ * Note: read-write locks, like mutexes, do not necessarily
+ * update the thread's "wait/sleep/join" state.
+ */
+ILRWLock *ILRWLockCreate(void);
+
+/*
+ * Destroy a read-write lock.
+ */
+void ILRWLockDestroy(ILRWLock *rwlock);
+
+/*
+ * Lock a read-write lock for reading.
+ */
+void ILRWLockReadLock(ILRWLock *rwlock);
+
+/*
+ * Lock a read-write lock for writing.
+ */
+void ILRWLockWriteLock(ILRWLock *rwlock);
+
+/*
+ * Unlock a read-write lock.
+ */
+void ILRWLockUnlock(ILRWLock *rwlock);
 
 #ifdef	__cplusplus 
 };

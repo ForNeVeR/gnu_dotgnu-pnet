@@ -1,7 +1,7 @@
 /*
  * pt_thread.c - Thread management, based on pthreads.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,32 +20,15 @@
 
 #include "il_gc.h"
 #include "pt_include.h"
+
+#ifdef IL_USE_PTHREADS
+
 #include <private/gc_priv.h>	/* For SIG_SUSPEND */
 #include <signal.h>
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
-
-/*
- * Extra thread state flags and masks that are used internally.
- */
-#define	IL_TS_PUBLIC_FLAGS		0x01FF
-#define	IL_TS_INTERRUPTED		0x0200
-
-/*
- * Internal structure of a thread descriptor.
- */
-struct _tagILThread
-{
-	pthread_mutex_t				lock;
-	pthread_t					threadId;
-	unsigned short    volatile	state;
-	unsigned short    volatile	resumeRequested;
-	ILThreadStartFunc volatile	startFunc;
-	void *            volatile	objectArg;
-
-};
 
 /*
  * Signals that are used to bang threads on the head and notify
@@ -197,6 +180,9 @@ static void ThreadInit(void)
 		thread->resumeRequested = 0;
 		thread->startFunc       = 0;
 		thread->objectArg       = 0;
+		pthread_mutex_init(&(thread->wakeupMutex), (pthread_mutexattr_t *)0);
+		thread->wakeupType      = IL_WAKEUP_NONE;
+		sem_init(&(thread->wakeup), 0, 0);
 		++numThreads;
 	}
 
@@ -254,6 +240,7 @@ static void *ThreadStart(void *arg)
 
 	/* Wait until the thread is really started by a call to "ILThreadStart" */
 	SuspendUntilResumed(thread);
+	sem_post(&resumeAck);
 
 	/* If we still have a startup function, then execute it.
 	   The field may have been replaced with NULL if the thread
@@ -289,6 +276,9 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	thread->resumeRequested = 0;
 	thread->startFunc = startFunc;
 	thread->objectArg = objectArg;
+	pthread_mutex_init(&(thread->wakeupMutex), (pthread_mutexattr_t *)0);
+	thread->wakeupType = IL_WAKEUP_NONE;
+	sem_init(&(thread->wakeup), 0, 0);
 
 	/* Lock out the thread system */
 	pthread_mutex_lock(&threadLockAll);
@@ -312,6 +302,32 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	/* Unlock the thread system and return */
 	pthread_mutex_unlock(&threadLockAll);
 	return thread;
+}
+
+int ILThreadStart(ILThread *thread)
+{
+	int result;
+
+	/* Lock down the thread object */
+	pthread_mutex_lock(&(thread->lock));
+
+	/* Are we in the correct state to start? */
+	if((thread->state & IL_TS_UNSTARTED) != 0)
+	{
+		/* Resume the thread, which is suspended in "ThreadStart" */
+		thread->state &= ~IL_TS_UNSTARTED;
+		pthread_kill(thread->threadId, IL_SIG_RESUME);
+		sem_wait(&resumeAck);
+		result = 1;
+	}
+	else
+	{
+		result = 0;
+	}
+
+	/* Unlock the thread object and return */
+	pthread_mutex_unlock(&(thread->lock));
+	return result;
 }
 
 ILThread *ILThreadSelf(void)
@@ -543,3 +559,5 @@ void ILThreadMemoryBarrier(void)
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_USE_PTHREADS */

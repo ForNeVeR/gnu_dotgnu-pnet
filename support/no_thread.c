@@ -1,7 +1,7 @@
 /*
  * no_thread.c - Thread management stubs for single-threaded systems.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,8 +126,57 @@ void ILThreadMemoryBarrier(void)
 	/* Nothing to do here */
 }
 
+ILMutex *ILMutexCreate(void)
+{
+	/* We don't have mutexes, but we need to fool the caller
+	   into thinking that we do.  So allocate a dummy block */
+	return (ILMutex *)ILMalloc(sizeof(void *));
+}
+
+void ILMutexDestroy(ILMutex *mutex)
+{
+	ILFree(mutex);
+}
+
+void ILMutexLock(ILMutex *mutex)
+{
+	/* Nothing to do here */
+}
+
+void ILMutexUnlock(ILMutex *mutex)
+{
+	/* Nothing to do here */
+}
+
+ILRWLock *ILRWLockCreate(void)
+{
+	/* We don't have rwlocks, but we need to fool the caller
+	   into thinking that we do.  So allocate a dummy block */
+	return (ILRWLock *)ILMalloc(sizeof(void *));
+}
+
+void ILRWLockDestroy(ILRWLock *rwlock)
+{
+	ILFree(rwlock);
+}
+
+void ILRWLockReadLock(ILRWLock *rwlock)
+{
+	/* Nothing to do here */
+}
+
+void ILRWLockWriteLock(ILRWLock *rwlock)
+{
+	/* Nothing to do here */
+}
+
+void ILRWLockUnlock(ILRWLock *rwlock)
+{
+	/* Nothing to do here */
+}
+
 #ifdef	__cplusplus
 };
 #endif
 
-#endif /* !IL_USE_PTHREADS */
+#endif /* IL_NO_THREADS */

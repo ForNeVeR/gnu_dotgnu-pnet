@@ -23,7 +23,9 @@ libILSupport_a_SOURCES = alloc.c \
 						 memstack.c \
 						 mul_long.c \
 						 no_thread.c \
+						 pt_mutex.c \
 						 pt_thread.c \
+						 pt_wait.c \
 						 read_float.c \
 						 rem_float.c \
 						 sha1.c \

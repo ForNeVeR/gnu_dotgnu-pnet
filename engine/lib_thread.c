@@ -230,7 +230,7 @@ static void __PrivateThreadStart(void *objectArg)
 
 	/* Print out any uncaught exceptions */
 	if (ILExecThreadHasException(thread)
-		&& !_ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
+		&& !ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
 	{				
 		ILExecThreadPrintException(thread);
 	}

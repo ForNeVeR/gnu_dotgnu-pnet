@@ -175,12 +175,17 @@ typedef int (*ILExecDebugHookFunc)(void *userData,
 #define	IL_HOOK_CONTINUE			0
 #define	IL_HOOK_ABORT				1
 
+#define IL_EXEC_INIT_OK				(0)
+#define IL_EXEC_INIT_OUTOFMEMORY	(1)
+
 /*
  * Initialize the engine and set a default maximum heap size.
  * If the size is zero, then use all of memory for the heap.
  * This should be called only once per application.
+ *
+ * Returns 0 if the engine was successfully initialized.
  */
-void ILExecInit(unsigned long maxSize);
+int ILExecInit(unsigned long maxSize);
 
 /*
  *	Deinitialize the engine.
@@ -732,6 +737,11 @@ int ILExecThreadPromoteAndUnbox(ILExecThread *thread, ILType *type,
  * Print the current exception object to standard error.
  */
 void ILExecThreadPrintException(ILExecThread *thread);
+
+/*
+ * Checks if the given object is a ThreadAbortException.
+ */
+int ILExecThreadIsThreadAbortException(ILExecThread *thread, ILObject *object);
 
 #ifdef	__cplusplus
 };

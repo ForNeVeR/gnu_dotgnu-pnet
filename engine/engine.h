@@ -59,6 +59,11 @@ extern	"C" {
 	/*#define	IL_USE_IMTS	1*/
 #endif
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+/* Global lock for trace outputs */
+extern ILMutex *globalTraceMutex;
+#endif
+
 /*
  * Structure that keeps track of a loaded external module.
  */
@@ -723,11 +728,6 @@ int _ILExecThreadCurrentExceptionThreadIsAbortException(ILExecThread *thread);
  *	Aborts the current thread.
  */
 void _ILAbortThread(ILExecThread *thread);
-
-/*
- * Checks if the given object is a ThreadAbortException.
- */
-int _ILExecThreadIsThreadAbortException(ILExecThread *thread, ILObject *object);
 
 /*
  *	Handles thread aborts & interruption.

@@ -224,7 +224,7 @@ ILObject *_ILExecThreadNewThreadAbortException(ILExecThread *thread, ILObject *s
 	return object;
 }
 
-int _ILExecThreadIsThreadAbortException(ILExecThread *thread, ILObject *object)
+int ILExecThreadIsThreadAbortException(ILExecThread *thread, ILObject *object)
 {
 	return GetObjectClass(object) == thread->process->threadAbortClass;
 }

@@ -445,7 +445,7 @@ VMCASE(COP_PREFIX_START_CATCH):
 	if (thread->aborting)
 	{
 		if (thread->currentException
-			&& _ILExecThreadIsThreadAbortException(thread, thread->currentException)
+			&& ILExecThreadIsThreadAbortException(thread, thread->currentException)
 			&& !thread->threadAbortException)
 		{
 			/* Save info about the handler that noticed the abort */
@@ -489,7 +489,7 @@ VMCASE(COP_PREFIX_START_FINALLY):
 	if (thread->aborting)
 	{
 		if (thread->currentException
-			&& _ILExecThreadIsThreadAbortException(thread, thread->currentException)
+			&& ILExecThreadIsThreadAbortException(thread, thread->currentException)
 			&& !thread->threadAbortException)
 		{
 			/* Save info about the handler that noticed the abort */
@@ -532,7 +532,7 @@ VMCASE(COP_PREFIX_PROPAGATE_ABORT):
 			/* Verify that currentException isn't null (it shouldn't be) */
 			thread->currentException
 			/* Make sure exception is a ThreadAbortException */
-			&& _ILExecThreadIsThreadAbortException(thread, thread->currentException)
+			&& ILExecThreadIsThreadAbortException(thread, thread->currentException)
 			&& 
 			/* Make sure we've reached or gone below (call stack wise) the catch/finally
 			   clause that first noticed the ThreadAbortException */

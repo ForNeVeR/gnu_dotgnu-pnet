@@ -19,6 +19,7 @@
  */
 
 #include "il_dumpasm.h"
+#include "interlocked.h"
 
 #if defined(IL_CVM_GLOBALS)
 
@@ -1965,7 +1966,7 @@ VMBREAK(COP_PREFIX_PACK_VARARGS);
  */
 VMCASE(COP_PREFIX_PROFILE_COUNT):
 {
-	++(method->count);
+	ILInterlockedIncrement(&method->count);
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE,0);
 }
 VMBREAK(COP_PREFIX_PROFILE_COUNT);
@@ -2015,6 +2016,7 @@ VMBREAK(COP_PREFIX_WADDR_NATIVE_N);
 VMCASE(COP_PREFIX_TRACE_IN):
 {
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	ILMutexLock(globalTraceMutex);
 #ifdef INDENT_TRACE
 	int depth = thread->numFrames;
 	while(depth--) 
@@ -2029,6 +2031,7 @@ VMCASE(COP_PREFIX_TRACE_IN):
 					 ILMethod_Name(method), method);
 	putc('\n',stdout);
 	fflush(stdout);
+	ILMutexUnlock(globalTraceMutex);
 #endif
 	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, 0);
 }
@@ -2058,6 +2061,7 @@ VMCASE(COP_PREFIX_TRACE_OUT):
 	// NOTE: at some point of time use the Reason parameter to
 	// carry more information about this 
 	ILMethod * methodToReturn = ILExecThreadStackMethod(thread, 1);
+	ILMutexLock(globalTraceMutex);
 #ifdef INDENT_TRACE
 	int depth = thread->numFrames;
 	while(depth--) 
@@ -2079,6 +2083,7 @@ VMCASE(COP_PREFIX_TRACE_OUT):
 	}
 	putc('\n',stdout);
 	fflush(stdout);
+	ILMutexUnlock(globalTraceMutex);
 #endif
 	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, 0);
 }

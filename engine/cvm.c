@@ -117,6 +117,11 @@ extern	"C" {
 	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
 	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 #endif
+	
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+/* Global lock for trace outputs */
+ILMutex *globalTraceMutex;
+#endif
 
 /*
  * Modify the program counter and stack pointer.

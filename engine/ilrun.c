@@ -24,6 +24,7 @@
 #include "il_utils.h"
 #include "il_thread.h"
 #include "il_coder.h"
+
 #if defined(HAVE_UNISTD_H) && !defined(_MSC_VER)
 #include <unistd.h>
 #endif
@@ -332,7 +333,14 @@ int main(int argc, char *argv[])
 	}
 
 	/* Initialize the engine and set the maximum heap size */
-	ILExecInit(heapSize);
+	if (ILExecInit(heapSize) != IL_EXEC_INIT_OK)
+	{
+		#ifndef REDUCED_STDIO
+		fprintf(stderr, "%s: could not initialize engine\n", progname);
+		#endif
+
+		return 1;
+	}
 
 	/* Create a process to load the program into */
 	process = ILExecProcessCreate(stackSize, methodCachePageSize);
@@ -481,7 +489,7 @@ int main(int argc, char *argv[])
 
 	/* Print the top-level exception that occurred */
 	if(sawException && 
-		!_ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
+		!ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
 	{
 		ILExecThreadPrintException(thread);
 	}

@@ -1,3 +1,28 @@
+2004-05-28  Thong Nguyen <tum@veridicus.com>
+
+	* include/engine.h: Changed ILExecInit to return an error code
+	and defined some error codes.
+	Added ILExecThreadIsThreadAbortException as an exported engine
+	function for use by embedders when printing out exceptions.
+
+	* engine/engine.h: Removed definition of _ILExecThreadITAE.
+	Added extern declaration of globalTraceMutex.
+
+	* engine/cvm.c: Added definition of globalTraceMutex.
+		
+	* engine/cvm_call.c: Changed COP_PREFIX_PROFILE_COUNT to use
+	ILInterlockedIncrement to increment method count.
+	Put locks around COP_PREFIX_TRACE_IN and COP_PREFIX_TRACE_OUT.
+	
+	* engine/ilrun.c, lib_thread.c, throw.c, cvm_except.c: Updated 
+	_ILExecThreadIsThreadAbortException references because of name
+	change.
+	
+	* engine/ilrun.c: Added to check to make sure ILExecInit suceeded.
+	
+	* engine/process.c: Added globalTraceMutex initialization
+	to ILExecInit and deinitialization to ILExecDeinit.
+	
 2004-05-26  Thong Nguyen <tum@veridicus.com>
 
 	* support/dir.c: Fix for Win32 version of ILCloseDir (return

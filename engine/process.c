@@ -28,22 +28,33 @@
 extern	"C" {
 #endif
 
-void ILExecInit(unsigned long maxSize)
+int ILExecInit(unsigned long maxSize)
 {
+	/* Create the global trace mutex */
+	if ((globalTraceMutex = ILMutexCreate()) == 0)
+	{
+		return IL_EXEC_INIT_OUTOFMEMORY;
+	}
+
 	/* Initialize the thread routines */	
 	ILThreadInit();
 
 	/* Initialize the global garbage collector */	
-	ILGCInit(maxSize);	
+	ILGCInit(maxSize);
+
+	return IL_EXEC_INIT_OK;
 }
 
 void ILExecDeinit()
-{
+{	
 	/* Deinitialize the global garbage collector */	
 	ILGCDeinit();	
 
 	/* Deinitialize the thread routines */	
 	ILThreadDeinit();	
+
+	/* Destroy the global trace mutex */
+	ILMutexDestroy(globalTraceMutex);
 }
 
 ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)

@@ -20,7 +20,72 @@
 
 #if defined(IL_CVM_GLOBALS)
 
-/* No globals required */
+/*
+ * Compare two long values.
+ */
+static IL_INLINE ILInt32 LCmp(CVMWord *a, CVMWord *b)
+{
+	ILInt64 tempa = ReadLong(a);
+	ILInt64 tempb = ReadLong(b);
+	if(tempa < tempb)
+	{
+		return -1;
+	}
+	else if(tempa > tempb)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Compare two unsigned long values.
+ */
+static IL_INLINE ILInt32 LUCmp(CVMWord *a, CVMWord *b)
+{
+	ILUInt64 tempa = ReadULong(a);
+	ILUInt64 tempb = ReadULong(b);
+	if(tempa < tempb)
+	{
+		return -1;
+	}
+	else if(tempa > tempb)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Compare two native float values.
+ */
+static IL_INLINE ILInt32 FCmp(CVMWord *a, CVMWord *b, ILInt32 nanResult)
+{
+	ILNativeFloat tempa = ReadFloat(a);
+	ILNativeFloat tempb = ReadFloat(b);
+	if(isnan(tempa) || isnan(tempb))
+	{
+		return nanResult;
+	}
+	else if(tempa < tempb)
+	{
+		return -1;
+	}
+	else if(tempa > tempb)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
 #elif defined(IL_CVM_LOCALS)
 

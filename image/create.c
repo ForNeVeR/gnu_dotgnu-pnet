@@ -193,9 +193,9 @@ unsigned long ILImageAddString(ILImage *image, const char *str)
 	ILStringHash *entry;
 	unsigned long hash;
 
-	/* Bail out early if this is the empty string or if
+	/* Bail out early if this is the null string or if
 	   we are not in the process of building an image */
-	if(image->type != IL_IMAGETYPE_BUILDING || !str || *str == '\0')
+	if(image->type != IL_IMAGETYPE_BUILDING || !str)
 	{
 		return 0;
 	}

@@ -1127,7 +1127,7 @@ case IL_OP_CALLI:
 		   and the specified call site signature */
 		if(stack[stackSize - 1].typeInfo != 0)
 		{
-			if(!SameSignature(stack[stackSize - 1].typeInfo, methodSignature))
+			if((!unsafeAllowed) && (!SameSignature(stack[stackSize - 1].typeInfo, methodSignature)))
 			{
 				VERIFY_TYPE_ERROR();
 			}

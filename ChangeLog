@@ -1,3 +1,9 @@
+
+2004-05-04  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/verify_call.c: Ignore signature comparisons for
+	unsafe mode indirect calls
+
 2004-05-04  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Changed ILWaitMonitorFastClaim to

@@ -1,4 +1,11 @@
 
+2004-02-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/verify_obj.c: relax the M/T/I pointer restrictions in
+	"ldfld", "ldflda", and "stfld" instructions so that fields can
+	be properly handled in unmanaged C code even when the wrong
+	kind of pointer is supplied.
+
 2004-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, support/time.c: use the "tm_gmtoff" field within

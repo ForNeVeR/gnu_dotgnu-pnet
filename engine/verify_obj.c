@@ -365,8 +365,9 @@ case IL_OP_LDFLD:
 				VERIFY_TYPE_ERROR();
 			}
 		}
-		else if(STK_UNARY == ILEngineType_M ||
-				STK_UNARY == ILEngineType_T)
+		else if(!unsafeAllowed &&
+				(STK_UNARY == ILEngineType_M ||
+				 STK_UNARY == ILEngineType_T))
 		{
 			/* Accessing a field within a pointer to a managed value */
 			if(IsSubClass(stack[stackSize - 1].typeInfo,
@@ -415,7 +416,9 @@ case IL_OP_LDFLD:
 		}
 		else if(unsafeAllowed &&
 				(STK_UNARY == ILEngineType_I ||
-				 STK_UNARY == ILEngineType_I4))
+				 STK_UNARY == ILEngineType_I4 ||
+				 STK_UNARY == ILEngineType_M ||
+				 STK_UNARY == ILEngineType_T))
 		{
 			/* Accessing a field within an unmanaged pointer.
 			   We assume that the types are consistent */
@@ -496,6 +499,12 @@ case IL_OP_LDFLDA:
 					ILCoderLoadStaticFieldAddr(coder, fieldInfo, classType);
 				}
 			}
+			else if(unsafeAllowed)
+			{
+				/* Treat the access as unmanaged, because the program
+				   has changed pointer types on us */
+				goto unmanagedAddr;
+			}
 			else
 			{
 				VERIFY_TYPE_ERROR();
@@ -507,6 +516,7 @@ case IL_OP_LDFLDA:
 		{
 			/* Accessing a field within an unmanaged pointer.
 			   We assume that the types are consistent */
+		unmanagedAddr:
 			if(!ILField_IsStatic(fieldInfo))
 			{
 				ILCoderLoadFieldAddr(coder, STK_UNARY,
@@ -575,8 +585,9 @@ case IL_OP_STFLD:
 				VERIFY_TYPE_ERROR();
 			}
 		}
-		else if(STK_BINARY_1 == ILEngineType_M ||
-				STK_BINARY_1 == ILEngineType_T)
+		else if(!unsafeAllowed &&
+		        (STK_BINARY_1 == ILEngineType_M ||
+				 STK_BINARY_1 == ILEngineType_T))
 		{
 			/* Accessing a field within a pointer to a managed value */
 			if(IsSubClass(stack[stackSize - 2].typeInfo,
@@ -604,7 +615,9 @@ case IL_OP_STFLD:
 		}
 		else if(unsafeAllowed &&
 				(STK_BINARY_1 == ILEngineType_I ||
-				 STK_BINARY_1 == ILEngineType_I4))
+				 STK_BINARY_1 == ILEngineType_I4 ||
+				 STK_BINARY_1 == ILEngineType_M ||
+				 STK_BINARY_1 == ILEngineType_T))
 		{
 			/* Accessing a field within an unmanaged pointer.
 			   We assume that the types are consistent */

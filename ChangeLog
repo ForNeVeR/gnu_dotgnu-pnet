@@ -18,6 +18,9 @@ a class.
 * include/il_coder.h, engine/ilverify.c, engine/process.c: remove
 the thread from the call to "ILCoderCreate".
 
+* include/il_program.h, image/member.c, image/test_macros.c:
+add a new helper function called "ILMethodIsStaticConstructor".
+
 2001-10-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/internal.c, engine/lib_stdio.c, engine/Makefile.am: add

@@ -145,6 +145,8 @@ void TestMethodMacros(ILMethod *method)
 	IGNORE(ILMethod_RVA(method));
 	IGNORE(ILMethod_UserData1(method));
 	IGNORE(ILMethod_UserData2(method));
+	IGNORE(ILMethod_IsConstructor(method));
+	IGNORE(ILMethod_IsStaticConstructor(method));
 	IGNORE(ILMethod_IsCompilerControlled(method));
 	IGNORE(ILMethod_IsPrivate(method));
 	IGNORE(ILMethod_IsFamAndAssem(method));

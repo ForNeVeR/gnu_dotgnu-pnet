@@ -1028,6 +1028,12 @@ void *ILMethodGetUserData2(ILMethod *method);
 int ILMethodIsConstructor(ILMethod *method);
 
 /*
+ * Determine if a method has the correct signature for
+ * a static constructor.
+ */
+int ILMethodIsStaticConstructor(ILMethod *method);
+
+/*
  * Helper macros for querying information about a method.
  */
 #define	ILMethod_FromToken(image,token)	\
@@ -1043,6 +1049,8 @@ int ILMethodIsConstructor(ILMethod *method);
 #define	ILMethod_UserData1(method)		(ILMethodGetUserData1((method)))
 #define	ILMethod_UserData2(method)		(ILMethodGetUserData2((method)))
 #define	ILMethod_IsConstructor(method)	(ILMethodIsConstructor((method)))
+#define	ILMethod_IsStaticConstructor(method)	\
+			(ILMethodIsStaticConstructor((method)))
 #define	ILMethod_IsCompilerControlled(method)	\
 	((ILMemberGetAttrs((ILMember *)(method)) & \
 				IL_META_METHODDEF_MEMBER_ACCESS_MASK) \

@@ -694,6 +694,23 @@ int ILMethodIsConstructor(ILMethod *method)
 	}
 }
 
+int ILMethodIsStaticConstructor(ILMethod *method)
+{
+	if(!strcmp(method->member.name, ".cctor") &&
+	   (method->member.attributes & IL_META_METHODDEF_RT_SPECIAL_NAME) != 0 &&
+	   (method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0 &&
+	   !ILType_HasThis(method->member.signature) &&
+	   method->member.signature->un.method.retType == ILType_Void &&
+	   method->member.signature->num == 0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 ILParameter *ILParameterCreate(ILMethod *method, ILToken token,
 							   const char *name, ILUInt32 attributes,
 							   ILUInt32 paramNum)

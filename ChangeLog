@@ -1,4 +1,9 @@
 
+2003-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in: add "mingw" to the set of detected platforms
+	for Win32 threading support.
+
 2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,

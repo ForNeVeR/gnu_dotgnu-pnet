@@ -62,7 +62,8 @@ typedef uint16_t            __ipc_pid_t;
 typedef long                __key_t, key_t;
 typedef uint16_t            __mode_t, mode_t;
 typedef uint16_t            __nlink_t, nlink_t;
-typedef quad_t              __off_t, off_t, __off64_t, __loff_t, loff_t;
+typedef quad_t              __off_t, off_t, __off64_t, off64_t,
+                            __loff_t, loff_t;
 typedef int                 __pid_t, pid_t;
 typedef int                 register_t;
 typedef quad_t              __rlim_t, rlim_t, __rlim64_t;

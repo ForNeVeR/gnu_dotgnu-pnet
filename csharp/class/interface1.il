@@ -15,7 +15,7 @@
 .method public virtual hidebysig newslot abstract instance void 'Reset'() cil managed 
 {
 } // method Reset
-.method public virtual hidebysig newslot abstract instance class ['.library']'System'.'Object' 'get_Current'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Current'() cil managed 
 {
 } // method get_Current
 .property instance class ['.library']'System'.'Object' 'Current'()
@@ -81,21 +81,21 @@
 } // class DictionaryEntry
 .class public auto interface abstract ansi 'IDictionaryEnumerator' implements 'IEnumerator'
 {
-.method public virtual hidebysig newslot abstract instance valuetype 'DictionaryEntry' 'get_Entry'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance valuetype 'DictionaryEntry' 'get_Entry'() cil managed 
 {
 } // method get_Entry
 .property instance valuetype 'DictionaryEntry' 'Entry'()
 {
 	.get instance valuetype 'DictionaryEntry' 'get_Entry'()
 } // property Entry
-.method public virtual hidebysig newslot abstract instance class ['.library']'System'.'Object' 'get_Key'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Key'() cil managed 
 {
 } // method get_Key
 .property instance class ['.library']'System'.'Object' 'Key'()
 {
 	.get instance class ['.library']'System'.'Object' 'get_Key'()
 } // property Key
-.method public virtual hidebysig newslot abstract instance class ['.library']'System'.'Object' 'get_Value'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Value'() cil managed 
 {
 } // method get_Value
 .property instance class ['.library']'System'.'Object' 'Value'()
@@ -111,21 +111,21 @@
 } // class IEnumerable
 .class public auto interface abstract ansi 'ICollection' implements 'IEnumerable'
 {
-.method public virtual hidebysig newslot abstract instance int32 'get_Count'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance int32 'get_Count'() cil managed 
 {
 } // method get_Count
 .property instance int32 'Count'()
 {
 	.get instance int32 'get_Count'()
 } // property Count
-.method public virtual hidebysig newslot abstract instance bool 'get_IsSynchronized'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance bool 'get_IsSynchronized'() cil managed 
 {
 } // method get_IsSynchronized
 .property instance bool 'IsSynchronized'()
 {
 	.get instance bool 'get_IsSynchronized'()
 } // property IsSynchronized
-.method public virtual hidebysig newslot abstract instance class ['.library']'System'.'Object' 'get_SyncRoot'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_SyncRoot'() cil managed 
 {
 } // method get_SyncRoot
 .property instance class ['.library']'System'.'Object' 'SyncRoot'()
@@ -150,24 +150,24 @@
 .method public virtual hidebysig newslot abstract instance void 'Remove'(class ['.library']'System'.'Object' 'key') cil managed 
 {
 } // method Remove
-.method public virtual hidebysig newslot abstract instance bool 'get_IsFixedSize'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance bool 'get_IsFixedSize'() cil managed 
 {
 } // method get_IsFixedSize
 .property instance bool 'IsFixedSize'()
 {
 	.get instance bool 'get_IsFixedSize'()
 } // property IsFixedSize
-.method public virtual hidebysig newslot abstract instance bool 'get_IsReadOnly'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance bool 'get_IsReadOnly'() cil managed 
 {
 } // method get_IsReadOnly
 .property instance bool 'IsReadOnly'()
 {
 	.get instance bool 'get_IsReadOnly'()
 } // property IsReadOnly
-.method public virtual hidebysig newslot abstract instance class ['.library']'System'.'Object' 'get_Item'(class ['.library']'System'.'Object' 'key') cil managed 
+.method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Item'(class ['.library']'System'.'Object' 'key') cil managed 
 {
 } // method get_Item
-.method public virtual hidebysig newslot abstract instance void 'set_Item'(class ['.library']'System'.'Object' 'key', class ['.library']'System'.'Object' 'value') cil managed 
+.method public virtual hidebysig newslot abstract specialname instance void 'set_Item'(class ['.library']'System'.'Object' 'key', class ['.library']'System'.'Object' 'value') cil managed 
 {
 } // method set_Item
 .property instance class ['.library']'System'.'Object' 'Item'(class ['.library']'System'.'Object')
@@ -175,14 +175,14 @@
 	.get instance class ['.library']'System'.'Object' 'get_Item'(class ['.library']'System'.'Object')
 	.set instance void 'set_Item'(class ['.library']'System'.'Object', class ['.library']'System'.'Object')
 } // property Item
-.method public virtual hidebysig newslot abstract instance class 'ICollection' 'get_Keys'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance class 'ICollection' 'get_Keys'() cil managed 
 {
 } // method get_Keys
 .property instance class 'ICollection' 'Keys'()
 {
 	.get instance class 'ICollection' 'get_Keys'()
 } // property Keys
-.method public virtual hidebysig newslot abstract instance class 'ICollection' 'get_Values'() cil managed 
+.method public virtual hidebysig newslot abstract specialname instance class 'ICollection' 'get_Values'() cil managed 
 {
 } // method get_Values
 .property instance class 'ICollection' 'Values'()

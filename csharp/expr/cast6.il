@@ -9,27 +9,15 @@
 .module '<Module>'
 .class private auto interface abstract ansi 'I'
 {
-.method public virtual hidebysig newslot abstract instance void 'm1'() cil managed 
-{
-} // method m1
 } // class I
 .class private auto interface abstract ansi 'J' implements 'I'
 {
-.method public virtual hidebysig newslot abstract instance void 'm2'() cil managed 
-{
-} // method m2
 } // class J
 .class private auto interface abstract ansi 'K' implements 'J', 'I'
 {
-.method public virtual hidebysig newslot abstract instance void 'm3'() cil managed 
-{
-} // method m3
 } // class K
 .class private auto interface abstract ansi 'L'
 {
-.method public virtual hidebysig newslot abstract instance void 'm4'() cil managed 
-{
-} // method m4
 } // class L
 .class private sequential value sealed serializable ansi 'X' extends ['.library']'System'.'ValueType'
 {

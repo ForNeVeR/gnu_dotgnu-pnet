@@ -12,6 +12,7 @@ TESTS = ainit1.cs \
 		field2.cs \
 		field3.cs \
 		interface1.cs \
+		interface2.cs \
 		method1.cs \
 		method2.cs \
 		method3.cs \
@@ -23,7 +24,9 @@ TESTS = ainit1.cs \
 		nested1.cs \
 		property1.cs \
 		property2.cs \
-		property3.cs
+		property3.cs \
+		property4.cs \
+		property5.cs
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tools/run_test.sh
 

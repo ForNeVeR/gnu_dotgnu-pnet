@@ -20,22 +20,18 @@
 
 interface I
 {
-	void m1();
 }
 
 interface J : I
 {
-	void m2();
 }
 
 interface K : I, J
 {
-	void m3();
 }
 
 interface L
 {
-	void m4();
 }
 
 struct X

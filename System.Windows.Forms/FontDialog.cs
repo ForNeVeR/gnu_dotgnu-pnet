@@ -24,6 +24,7 @@ namespace System.Windows.Forms
 
 using System.IO;
 using System.Drawing;
+using System.Collections;
 using System.ComponentModel;
 
 public class FontDialog : CommonDialog
@@ -274,6 +275,10 @@ public class FontDialog : CommonDialog
 				try
 				{
 					result = form.ShowDialog(owner);
+					if(result != DialogResult.OK)
+					{
+						font = null;
+					}
 				}
 				finally
 				{
@@ -340,6 +345,7 @@ public class FontDialog : CommonDialog
 		private HBoxLayout hbox;		// Main layout for dialog.
 		private VBoxLayout vbox1;		// Left-hand side.
 		private VBoxLayout vbox2;		// Push buttons on right-hand side.
+		private VBoxLayout vbox3;		// Effects controls.
 		private GridLayout grid;		// Font name and size grid.
 		private HBoxLayout hbox2;		// Grid plus effects.
 		private Button okButton;
@@ -352,12 +358,88 @@ public class FontDialog : CommonDialog
 		private ListBox sizeList;
 		private Control sample;
 		private GroupBox effects;
+		private CheckBox bold;
+		private CheckBox italic;
+		private CheckBox underline;
+		private CheckBox strikeout;
+		private Hashtable fonts;
+
+		// Information about a font that we have cached.
+		private class FontInfo
+		{
+			// Accessible state.
+			public String family;
+			public float size;
+			public FontStyle style;
+			public Font font;
+			public bool disposable;
+
+			// Constructors.
+			public FontInfo(Font font, bool disposable)
+					{
+						if(font == null)
+						{
+							font = Control.DefaultFont;
+						}
+						this.family = font.Name;
+						this.size = font.Size;
+						this.style = font.Style;
+						this.font = font;
+						this.disposable = disposable;
+					}
+			public FontInfo(String family, float size, FontStyle style)
+					{
+						this.family = family;
+						this.size = size;
+						this.style = style;
+						this.font = null;
+						this.disposable = false;
+					}
+
+			// Dispose of this object if it isn't the selected font.
+			public void Dispose(Font notThis)
+					{
+						if(disposable && font != null && font != notThis)
+						{
+							font.Dispose();
+							font = null;
+						}
+					}
+
+			// Determine if two objects are equal.
+			public override bool Equals(Object obj)
+					{
+						FontInfo info = (obj as FontInfo);
+						if(info != null)
+						{
+							return (family == info.family &&
+									size == info.size &&
+									style == info.style);
+						}
+						else
+						{
+							return false;
+						}
+					}
+
+			// Get a hash code for this object.
+			public override int GetHashCode()
+					{
+						return family.GetHashCode() + (int)size + (int)style;
+					}
+
+		}; // class FontInfo
 
 		// Constructor.
 		public FontDialogForm(FontDialog dialog)
 				{
 					// Record the parent for later access.
 					this.dialog = dialog;
+
+					// Create the initial font cache.
+					fonts = new Hashtable();
+					FontInfo info = new FontInfo(dialog.Font, false);
+					fonts.Add(info, info);
 
 					// Set the title.
 					Text = S._("SWF_FontDialog_Title", "Font");
@@ -367,12 +449,13 @@ public class FontDialog : CommonDialog
 					hbox.Dock = DockStyle.Fill;
 					vbox1 = new VBoxLayout();
 					vbox2 = new VBoxLayout();
+					vbox3 = new VBoxLayout();
 					hbox2 = new HBoxLayout();
 					grid = new GridLayout(2, 3);
 					grid.StretchColumn = 0;
 					effects = new GroupBox();
 					effects.Text = S._("SWF_FontDialog_Effects", "Effects");
-					effects.Width = 60;
+					effects.Width = 80;
 					hbox.Controls.Add(vbox1);
 					hbox.Controls.Add(vbox2);
 					hbox.StretchControl = vbox1;
@@ -381,12 +464,15 @@ public class FontDialog : CommonDialog
 					hbox2.StretchControl = grid;
 					vbox1.Controls.Add(hbox2);
 					vbox1.StretchControl = hbox2;
+					effects.Controls.Add(vbox3);
+					vbox3.Dock = DockStyle.Fill;
 
 					// Create the main display area.
 					Label label;
 					label = new Label();
 					label.Text = S._("SWF_FontDialog_Name", "Font:");
 					name = new TextBox();
+					name.ReadOnly = true;
 					nameList = new ListBox();
 					grid.SetControl(0, 0, label);
 					grid.SetControl(0, 1, name);
@@ -395,6 +481,7 @@ public class FontDialog : CommonDialog
 					label.Text = S._("SWF_FontDialog_Size", "Size:");
 					size = new TextBox();
 					size.Width = 40;
+					size.ReadOnly = true;
 					sizeList = new ListBox();
 					sizeList.Width = 40;
 					grid.SetControl(1, 0, label);
@@ -418,7 +505,26 @@ public class FontDialog : CommonDialog
 					AcceptButton = okButton;
 					CancelButton = cancelButton;
 
-					// Create the effects and sample boxes.
+					// Create the effects controls.
+					bold = new CheckBox();
+					bold.Text = S._("SWF_FontDialog_Bold", "Bold");
+					italic = new CheckBox();
+					italic.Text = S._("SWF_FontDialog_Italic", "Italic");
+					underline = new CheckBox();
+					underline.Text =
+						S._("SWF_FontDialog_Underline", "Underline");
+					strikeout = new CheckBox();
+					strikeout.Text =
+						S._("SWF_FontDialog_Strikeout", "Strikeout");
+					Control spacing = new Control();
+					vbox3.Spacing = 0;
+					vbox3.Controls.Add(bold);
+					vbox3.Controls.Add(italic);
+					vbox3.Controls.Add(underline);
+					vbox3.Controls.Add(strikeout);
+					vbox3.Controls.Add(spacing);
+
+					// Create the sample box.
 					sample = new Control();
 					sample.ForeColor = SystemColors.WindowText;
 					sample.BackColor = SystemColors.Window;
@@ -465,6 +571,15 @@ public class FontDialog : CommonDialog
 						+= new EventHandler(NameIndexChanged);
 					sizeList.SelectedIndexChanged
 						+= new EventHandler(SizeIndexChanged);
+					bold.CheckedChanged
+						+= new EventHandler(FontStyleChanged);
+					italic.CheckedChanged
+						+= new EventHandler(FontStyleChanged);
+					underline.CheckedChanged
+						+= new EventHandler(FontStyleChanged);
+					strikeout.CheckedChanged
+						+= new EventHandler(FontStyleChanged);
+					sample.Paint += new PaintEventHandler(PaintSample);
 
 					// Match the requested settings from the dialog parent.
 					UpdateDialog();
@@ -473,7 +588,15 @@ public class FontDialog : CommonDialog
 		// Dispose of this dialog.
 		public void DisposeDialog()
 				{
+					// Dispose the widget details.
 					Dispose(true);
+
+					// Dispose the font cache.
+					IDictionaryEnumerator e = fonts.GetEnumerator();
+					while(e.MoveNext())
+					{
+						((FontInfo)(e.Value)).Dispose(dialog.Font);
+					}
 				}
 
 		// Update the dialog to match the "FontDialog" properties.
@@ -498,36 +621,12 @@ public class FontDialog : CommonDialog
 					{
 						name.Text = font.Name;
 					}
-				#if false
-					switch(font.Style & (FontStyle.Bold | FontStyle.Italic))
-					{
-						case FontStyle.Regular:
-						default:
-						{
-							index = 0;
-						}
-						break;
-
-						case FontStyle.Bold:
-						{
-							index = 1;
-						}
-						break;
-
-						case FontStyle.Italic:
-						{
-							index = 2;
-						}
-						break;
-
-						case FontStyle.Bold | FontStyle.Italic:
-						{
-							index = 3;
-						}
-						break;
-					}
-					styleList.SelectedIndex = index;
-				#endif
+					bold.Checked = ((font.Style & FontStyle.Bold) != 0);
+					italic.Checked = ((font.Style & FontStyle.Italic) != 0);
+					underline.Checked =
+						((font.Style & FontStyle.Underline) != 0);
+					strikeout.Checked =
+						((font.Style & FontStyle.Strikeout) != 0);
 					index = sizeList.Items.IndexOf((int)(font.Size));
 					if(index >= 0)
 					{
@@ -537,12 +636,93 @@ public class FontDialog : CommonDialog
 					{
 						size.Text = ((int)(font.Size)).ToString();
 					}
+					vbox3.SuspendLayout();
+					underline.Visible = dialog.ShowEffects;
+					strikeout.Visible = dialog.ShowEffects;
+					vbox3.ResumeLayout();
+					UpdateSample();
 				}
 
 		// Set the font in the return dialog object.
 		private void SetFont()
 				{
-					// TODO
+					FontStyle style = FontStyle.Regular;
+					if(bold.Checked)
+					{
+						style |= FontStyle.Bold;
+					}
+					if(italic.Checked)
+					{
+						style |= FontStyle.Italic;
+					}
+					if(underline.Checked)
+					{
+						style |= FontStyle.Underline;
+					}
+					if(strikeout.Checked)
+					{
+						style |= FontStyle.Strikeout;
+					}
+					String family = name.Text.Trim();
+					float fontSize;
+					try
+					{
+					#if CONFIG_EXTENDED_NUMERICS
+						fontSize = Single.Parse(size.Text);
+					#else
+						fontSize = Int32.Parse(size.Text);
+					#endif
+					}
+					catch
+					{
+						fontSize = 0.0f;
+					}
+
+					// Sanity-check the values a little.
+					if(family == null || family == String.Empty)
+					{
+						return;
+					}
+					if(fontSize <= 0.0f)
+					{
+						return;
+					}
+
+					// Look for a font that matches the requirements.
+					FontInfo info = new FontInfo(family, fontSize, style);
+					info = (FontInfo)(fonts[info]);
+					if(info == null)
+					{
+						Font font = new Font(family, fontSize, style);
+						info = new FontInfo(font, true);
+						fonts[info] = info;
+					}
+					dialog.Font = info.font;
+				}
+
+		// Update the sample region.
+		private void UpdateSample()
+				{
+					sample.Invalidate();
+				}
+
+		// The text to paint in the sample area.
+		private const String sampleText = "ABCDEF abcdef 012345";
+
+		// Paint the sample region.
+		private void PaintSample(Object sender, PaintEventArgs e)
+				{
+					Graphics g = e.Graphics;
+					Font font = dialog.Font;
+					if(font == null)
+					{
+						font = Control.DefaultFont;
+					}
+					SizeF size = g.MeasureString(sampleText, font);
+					Size clientSize = sample.ClientSize;
+					g.DrawString(sampleText, font, SystemBrushes.WindowText,
+								 (clientSize.Width - size.Width) / 2,
+								 (clientSize.Height - size.Height) / 2);
 				}
 
 		// Process a help request on the form.
@@ -568,7 +748,19 @@ public class FontDialog : CommonDialog
 		// Handle the "apply" button on this dialog.
 		private void ApplyButtonClicked(Object sender, EventArgs e)
 				{
+					// Copy the font details into the dialog object.
 					SetFont();
+
+					// Make sure that the font cannot be disposed just
+					// in case the surrounding application keeps a copy.
+					FontInfo info = new FontInfo(dialog.Font, false);
+					info = (FontInfo)(fonts[info]);
+					if(info != null)
+					{
+						info.disposable = false;
+					}
+
+					// Emit the "Apply" signal.
 					dialog.EmitApply(e);
 				}
 
@@ -576,6 +768,13 @@ public class FontDialog : CommonDialog
 		private void HelpButtonClicked(Object sender, EventArgs e)
 				{
 					dialog.EmitHelpRequest(e);
+				}
+
+		// Handle a change in style.
+		private void FontStyleChanged(Object sender, EventArgs e)
+				{
+					SetFont();
+					UpdateSample();
 				}
 
 		// Handle a "closing" event on this form.
@@ -598,6 +797,8 @@ public class FontDialog : CommonDialog
 					{
 						name.Text = String.Empty;
 					}
+					SetFont();
+					UpdateSample();
 				}
 
 		// Handle a change of index in the size list.
@@ -608,6 +809,8 @@ public class FontDialog : CommonDialog
 					{
 						size.Text = (sizeList.Items[index]).ToString();
 					}
+					SetFont();
+					UpdateSample();
 				}
 
 	}; // class FontDialogForm

@@ -4,6 +4,9 @@
 	* System.Drawing/Font.cs: Add the style to the output of
 	"Font.ToString".
 
+	* System.Windows.Forms/FontDialog.cs: make the font dialog
+	basically useful.
+
 2004-02-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Text/RegularExpressions/interpreter.cs: comment out

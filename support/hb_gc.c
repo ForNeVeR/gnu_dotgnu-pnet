@@ -29,12 +29,20 @@ extern	"C" {
 #endif
 
 /*
+ * Set to non-zero if finalization has been temporarily disabled.
+ */
+static int volatile FinalizersDisabled = 0;
+
+/*
  * Notify the finalization thread that there is work to do.
  */
 static void GCNotifyFinalize(void)
 {
-	/* TODO: do finalization in a separate thread */
-	GC_invoke_finalizers();
+	if(!FinalizersDisabled)
+	{
+		/* TODO: do finalization in a separate thread */
+		GC_invoke_finalizers();
+	}
 }
 
 void ILGCInit(unsigned long maxSize)
@@ -47,6 +55,7 @@ void ILGCInit(unsigned long maxSize)
 	GC_finalize_on_demand = 1;
 	GC_java_finalization = 1;
 	GC_finalizer_notifier = GCNotifyFinalize;
+	FinalizersDisabled = 0;
 }
 
 void *ILGCAlloc(unsigned long size)
@@ -101,6 +110,16 @@ void ILGCInvokeFinalizers(void)
 {
 	GCNotifyFinalize();
 	/* TODO: wait for the finalizer thread to complete its work */
+}
+
+void ILGCDisableFinalizers(void)
+{
+	FinalizersDisabled = 1;
+}
+
+void ILGCEnableFinalizers(void)
+{
+	FinalizersDisabled = 0;
 }
 
 long ILGCGetHeapSize(void)

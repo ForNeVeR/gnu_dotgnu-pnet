@@ -177,6 +177,16 @@ void ILGCInvokeFinalizers(void)
 	/* Nothing to do here because we don't do finalization */
 }
 
+void ILGCDisableFinalizers(void)
+{
+	/* Nothing to do here because we don't do finalization */
+}
+
+void ILGCEnableFinalizers(void)
+{
+	/* Nothing to do here because we don't do finalization */
+}
+
 long ILGCGetHeapSize(void)
 {
 	return (long)heapSize;

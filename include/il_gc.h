@@ -85,6 +85,16 @@ void ILGCCollect(void);
 void ILGCInvokeFinalizers(void);
 
 /*
+ * Temporarily disable finalizers that are called during allocation.
+ */
+void ILGCDisableFinalizers(void);
+
+/*
+ * Re-enable finalizers that are called during allocation.
+ */
+void ILGCEnableFinalizers(void);
+
+/*
  * Get the current size of the garbage collector's heap.
  */
 long ILGCGetHeapSize(void);

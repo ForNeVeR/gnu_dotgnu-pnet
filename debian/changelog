@@ -1,3 +1,15 @@
+pnet (0.4.0-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Andrew Mitchell <ajmitch@dunedin.lug.net.nz>  Sun, 30 Jun 2002 15:13:05 +1200
+
+pnet (0.3.8-1) unstable; urgency=low
+
+  * New upstream release, package has been split
+
+ -- Andrew Mitchell <ajmitch@dunedin.lug.net.nz>  Mon, 10 Jun 2002 22:53:41 +1200
+
 pnet (0.3.6-1) unstable; urgency=low
 
   * New upstream release

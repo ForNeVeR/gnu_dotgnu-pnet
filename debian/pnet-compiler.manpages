@@ -4,5 +4,4 @@ debian/csdocvalil.1
 debian/ilalink.1
 debian/ilcheck.1
 debian/ildb.1
-debian/ilrun.1
 debian/ilverify.1

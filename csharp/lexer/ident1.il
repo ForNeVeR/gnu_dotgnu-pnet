@@ -107,7 +107,7 @@
 	.maxstack 1
 } // method .ctor
 } // class f
-.class private auto ansi 'Ḁ' extends ['.library']'System'.'Object'
+.class private auto ansi '\341\270\200' extends ['.library']'System'.'Object'
 {
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {
@@ -117,7 +117,7 @@
 	.maxstack 1
 } // method .ctor
 } // class Ḁ
-.class private auto ansi 'Ḁ‿１' extends ['.library']'System'.'Object'
+.class private auto ansi '\341\270\200\342\200\277\357\274\221' extends ['.library']'System'.'Object'
 {
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {
@@ -147,7 +147,7 @@
 	.maxstack 1
 } // method .ctor
 } // class abcdef
-.class private auto ansi 'xḀy' extends ['.library']'System'.'Object'
+.class private auto ansi 'x\341\270\200y' extends ['.library']'System'.'Object'
 {
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {

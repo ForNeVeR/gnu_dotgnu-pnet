@@ -19,6 +19,9 @@
 	tests/runtime/System/Security/Cryptography/TestTripleDES.cs:
 	test the behaviour of some of the cryptographic algorithms.
 
+	* HACKING: update the "HACKING" file to reflect that "cscc"
+	can now build "pnetlib" cleanly.
+
 2002-11-22  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/Platform/RegexpMethods.cs, runtime/System/Private/Regexp.cs:

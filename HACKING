@@ -65,18 +65,12 @@ then you may need to configure as follows:
 
 where "../pnet" is the path to the "pnet" source tree on your system.
 
-Note: because Portable.NET's C# compiler is incomplete, the current build
-will only do a metadata compile and not a full compile.  This can make it
-difficult to debug and test the code.  This situation should be rectified
-soon.  In the meantime, if you have a Windows machine and Microsoft's
-.NET Framework SDK and Cygwin installed, you can configure as follows:
+Since version 0.4.8 of Portable.NET, its C# compiler is capable of
+building "pnetlib" cleanly.  But if you want to compile it with
+Microsoft's C# compiler, you can still do so if you have Cygwin
+installed:
 
     ./configure --with-mstools --with-pnet="../pnet"
-
-If you have a GNU/Linux or some other non-Windows machine, then you can
-still contribute.  Write your code as best you can, syntax check it with
-Portable.NET's C# compiler, and then send it to Rhys Weatherley to be
-built.
 
 Even if you have a Windows machine, it may be best not to use Microsoft's
 development tools.  Their SDK has a fairly restrictive EULA attached to it

@@ -146,4 +146,6 @@ class/Mono.Data.MySql/Makefile
 class/Mono.Directory.LDAP/Makefile
 class/Mono.GetOptions/Makefile
 class/Mono.Posix/Makefile
+tools/Makefile
+tools/SqlSharp/Makefile
 ])

@@ -1,4 +1,11 @@
 
+2003-05-31  Gopal.V  <gopalv82@symonds.net>
+
+	* configure.in, Makefile.am, tools/Makefile.am
+	tools/SqlSharp/Makefile.am, tools/SqlSharp/SqlSharp.build, 
+	tools/SqlSharp/sqlsharp-run.sh : Add a new tools/ section and 
+	add a build for the SqlSharp command line client.
+	
 2003-05-30  Gopal.V  <gopalv82@symonds.net>
 	
 	* configure.in, class/Makefile.am, class/System.Data/Makefile.am,

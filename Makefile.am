@@ -1,2 +1,2 @@
 
-SUBDIRS = class
+SUBDIRS = class tools

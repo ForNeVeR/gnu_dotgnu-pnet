@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<project name="SqlSharp" default="all">
+	<target name="all">
+		<compile target="executable"
+				 output="sqlsharp-pnet.exe"
+				 debug="${debug.flag}"
+				 unsafe="false">
+
+			<sources basedir="${mono.sources}/tools/SqlSharp/">
+				<includes name="SqlSharpCli.cs"/>
+			</sources>
+
+			<references>
+				<file name="System.dll"/>
+				<file name="System.Xml.dll"/>
+				<file name="../../class/System.Data/System.Data.dll"/>
+			</references>
+
+		</compile>
+	</target>
+</project>

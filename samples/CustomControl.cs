@@ -34,7 +34,7 @@ public class MainForm : Form
 	{
 		Form form = new MainForm();
 		form.Width = 400;
-		form.Height = 320;
+		form.Height = 350;
 		form.Text = "Graphs app";
 		GraphItem[] data=new GraphItem[] 
 							{
@@ -65,6 +65,7 @@ public class GraphPoint: Control
 	private Color InactiveColor=Color.FromArgb(0x91,0x91,0x91);
 	const int radius=5;
 	private static Size offset=new Size(radius, radius);
+	private Label label;
 
 	internal void Draw(Graphics graphics)
 	{
@@ -83,6 +84,7 @@ public class GraphPoint: Control
 	protected override void OnMouseEnter(EventArgs args)
 	{
 		active=true;
+		label.Visible=true;
 		using(Graphics graphics=CreateGraphics())
 		{
 			Draw(graphics);
@@ -92,6 +94,7 @@ public class GraphPoint: Control
 	protected override void OnMouseLeave(EventArgs args)
 	{
 		active=false;
+		label.Visible=false;
 		using(Graphics graphics=CreateGraphics())
 		{
 			Draw(graphics);
@@ -106,10 +109,16 @@ public class GraphPoint: Control
 		}
 	}
 
-	public GraphPoint(Point pt)
+	public GraphPoint(Point pt, GraphItem item)
 	{
 		Visible=true;
 		this.Location=pt-offset;
+		label=new Label();
+		label.Text=item.ToString();
+		label.Visible=false;
+		label.Width=50;
+		label.ForeColor=Color.Blue;
+		label.Location=this.Location+offset;
 	}
 
 	public Point Point
@@ -117,6 +126,14 @@ public class GraphPoint: Control
 		get
 		{
 			return (Location + offset);
+		}
+	}
+
+	public Label Label
+	{
+		get
+		{
+			return label;
 		}
 	}
 }
@@ -129,6 +146,7 @@ public class GraphControl: Control
 	private GraphPoint [] points =null;
 	const int edge=300;
 	Size offset;
+	private ProgressBar bar;
 	
 	internal void Draw(Graphics graphics)
 	{
@@ -180,16 +198,23 @@ public class GraphControl: Control
 	{
 		get
 		{
-			return new Size(edge+20,edge+20);
+			return new Size(edge+20,edge+50);
 		}
 	}
 
 	protected override void OnPaint(PaintEventArgs args)
 	{
 		Draw(args.Graphics);
-		foreach(Control ctrl in Controls)
-		{
-		}
+	}
+	
+	protected override void OnMouseMove(MouseEventArgs e)
+	{
+		this.bar.Value=e.X;
+	}
+
+	protected override void OnMouseLeave(EventArgs e)
+	{
+		this.bar.Value = this.bar.Minimum;
 	}
 
 	public GraphControl(GraphItem[] dataset,int left,int top,int right, int bottom) : base("GraphControl",left,top,right,bottom)
@@ -203,9 +228,18 @@ public class GraphControl: Control
 			point.X=(dataset[i].X * (edge/100));
 			point.Y=edge-(dataset[i].Y * (edge/100));
 			point=point+offset;
-			points[i]=new GraphPoint(point);
+			points[i]=new GraphPoint(point,dataset[i]);
 			this.Controls.Add(points[i]);
+			this.Controls.Add(points[i].Label);
 		}
+		
+		bar=new ProgressBar();
+		bar.Size=new Size(edge+4,16);
+		bar.Location=new Point(3,edge+5);
+		this.Controls.Add(bar);
+		this.bar.Maximum=this.Right;
+		this.bar.Minimum=this.Left;
+		this.bar.Step=(edge/10);
 	}
 }
 

@@ -588,7 +588,7 @@ public sealed class ControlPaint
 				blockWidth=width/steps;
 				blockHeight=height-ySpacing-1;
 						
-				x+=2*xSpacing;
+				x+=xSpacing;
 
 				for(int i=0;i<steps;i++)
 				{
@@ -597,7 +597,8 @@ public sealed class ControlPaint
 						ControlPaint.DrawBlock(graphics, x, y+ySpacing, 
 											blockWidth,
 											blockHeight,
-											SystemColors.Highlight);
+											enabled ? SystemColors.Highlight
+													: SystemColors.ControlDark);
 					}
 					x+=blockWidth+xSpacing;
 				}

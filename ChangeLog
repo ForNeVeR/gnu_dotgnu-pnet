@@ -12,6 +12,14 @@
 	"-flatin1-charset" parameter to speed up compilation of ASCII encoded
 	source files.
 
+	* System.Windows.Forms/ControlPaint.cs, 
+	System.Windows.Forms/ProgressBar.cs: Fix minor bug in ProgressBar 
+	rendering.
+
+	* samples/CustomControl.cs : Add a bit more eye candy into the example
+	using MouseMove detection.
+	
+
 2003-06-21  Neil Cawse  <neilc@geotab.ca>
 
 	* System.Drawing.Win32/DrawingBrush.cs,

@@ -50,11 +50,12 @@ namespace System.Windows.Forms
 				int width=clientSize.Width;
 				int height=clientSize.Height;
 				int steps=range/step;
-				
+
 				using(Brush brush=CreateBackgroundBrush())
 				{
 					graphics.FillRectangle(brush,x,y,width,height);
 				}
+				
 				ControlPaint.DrawProgressBar(graphics, x, y, 
 											clientSize.Width,
 											clientSize.Height, 
@@ -98,7 +99,7 @@ namespace System.Windows.Forms
 			{
  				get
 				{
-					return new Size(160,20);
+					return new Size(138,20);
 				}
  			}	
 

@@ -298,6 +298,12 @@ public class CP20261 : Encoding
 				return byteCount;
 			}
 
+	// Get a decoder that handles a rolling multi-byte state.
+	public override Decoder GetDecoder()
+			{
+				return new CP20261Decoder();
+			}
+
 #if !ECMA_COMPAT
 
 	// Get the mail body name for this encoding.
@@ -382,6 +388,146 @@ public class CP20261 : Encoding
 			}
 
 #endif // !ECMA_COMPAT
+
+	// Decoder that handles a rolling T.61 state.
+	private sealed class CP20261Decoder : Decoder
+	{
+		private int lastByte;
+
+		// Constructor.
+		public CP20261Decoder()
+				{
+					this.lastByte = 0;
+				}
+
+		// Override inherited methods.
+		public override int GetCharCount(byte[] bytes, int index, int count)
+				{
+					// Validate the parameters.
+					if(bytes == null)
+					{
+						throw new ArgumentNullException("bytes");
+					}
+					if(index < 0 || index > bytes.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("index", Strings.GetString("ArgRange_Array"));
+					}
+					if(count < 0 || count > (bytes.Length - index))
+					{
+						throw new ArgumentOutOfRangeException
+							("count", Strings.GetString("ArgRange_Array"));
+					}
+
+					// Determine the total length of the converted string.
+					int length = 0;
+					int byteval;
+					int last = lastByte;
+					while(count > 0)
+					{
+						byteval = bytes[index++];
+						--count;
+						if(last == 0)
+						{
+							if(byteval >= 0xC1 && byteval <= 0xCF)
+							{
+								// First byte in a double-byte sequence.
+								last = byteval;
+							}
+							else
+							{
+								++length;
+							}
+						}
+						else
+						{
+							// Second byte in a double-byte sequence.
+							last = 0;
+							++length;
+						}
+					}
+	
+					// Return the total length.
+					return length;
+				}
+		public override int GetChars(byte[] bytes, int byteIndex,
+									 int byteCount, char[] chars,
+									 int charIndex)
+				{
+					// Validate the parameters.
+					if(bytes == null)
+					{
+						throw new ArgumentNullException("bytes");
+					}
+					if(chars == null)
+					{
+						throw new ArgumentNullException("chars");
+					}
+					if(byteIndex < 0 || byteIndex > bytes.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("byteIndex", Strings.GetString("ArgRange_Array"));
+					}
+					if(byteCount < 0 || byteCount > (bytes.Length - byteIndex))
+					{
+						throw new ArgumentOutOfRangeException
+							("byteCount", Strings.GetString("ArgRange_Array"));
+					}
+					if(charIndex < 0 || charIndex > chars.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("charIndex", Strings.GetString("ArgRange_Array"));
+					}
+
+					// Decode the bytes in the buffer.
+					int posn = charIndex;
+					int charLength = chars.Length;
+					int byteval;
+					char value;
+					int last = lastByte;
+					while(byteCount > 0)
+					{
+						byteval = bytes[byteIndex++];
+						--byteCount;
+						if(last == 0)
+						{
+							if(byteval < 0xC1 || byteval > 0xCF)
+							{
+								if(posn >= charLength)
+								{
+									throw new ArgumentException
+										(Strings.GetString
+											("Arg_InsufficientSpace"), "chars");
+								}
+								chars[posn++] = t61ToUni[byteval];
+							}
+							else
+							{
+								// First byte in a double-byte sequence.
+								last = byteval;
+							}
+						}
+						else
+						{
+							// Second byte in a double-byte sequence.
+							value = t61ToUniC[last - 0xC1][byteval];
+							if(posn >= charLength)
+							{
+								throw new ArgumentException
+									(Strings.GetString
+										("Arg_InsufficientSpace"), "chars");
+							}
+							chars[posn++] = value;
+							last = 0;
+						}
+					}
+					lastByte = last;
+
+					// Return the final length to the caller.
+					return posn - charIndex;
+				}
+
+	} // class CP20261Decoder
 
 	// Conversion tables.
 	private static readonly ushort[] uniToT61A = { // \u0000 - \u01FF

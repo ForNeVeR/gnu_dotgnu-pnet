@@ -795,7 +795,6 @@ public class XmlTextReader : XmlReader
 							if(Char.IsWhiteSpace((char)ch) && count == 0)
 							{
 								nodeType = XmlNodeType.DocumentType;
-								Console.WriteLine(builder.ToString());
 								if(builder.ToString() != "DOCTYPE")
 								{
 									throw new XmlException

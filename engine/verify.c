@@ -350,7 +350,7 @@ static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 /*
  * Bailout routines for various kinds of verification failure.
  */
-#define	IL_VERIFY_DEBUG
+/*#define	IL_VERIFY_DEBUG*/
 #ifdef IL_VERIFY_DEBUG
 #define	VERIFY_REPORT()	\
 			do { \
@@ -629,6 +629,9 @@ restart:
 		MarkJumpTarget(jumpMask, exception->tryOffset + exception->tryLength);
 		MarkSpecialJumpTarget
 			(jumpMask, exception->tryOffset + exception->tryLength);
+
+		/* The stack must be empty on entry to the try region */
+		SET_TARGET_STACK_EMPTY(exception->tryOffset);
 
 		/* What else do we need to do? */
 		if((exception->flags & IL_META_EXCEPTION_FILTER) != 0)

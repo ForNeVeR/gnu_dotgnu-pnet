@@ -1,4 +1,8 @@
 
+2001-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/verify.c: mark the stack as empty on entry to a try region.
+
 2001-10-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_branch.c: verification for "switch" instructions; process

@@ -712,6 +712,10 @@ ILNode_GenDiscard(ILNode_Foreach)
 	ILGenLoadArray(info, elemType, node->elemType);
 	ILGenAdjust(info, -1);
 	ILGenCast(info, elemType, node->varType);
+	if(node->doCast)
+	{
+		ILGenCast(info, ILNode_GenValue(node->doCast, info), node->varType);
+	}
 	ILGenStoreLocal(info, node->varIndex);
 	ILGenAdjust(info, -1);
 

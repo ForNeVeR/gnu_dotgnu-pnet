@@ -629,6 +629,7 @@ struct _tagILSwitchValue
 	ILNode *varNameNode;
 	ILNode *expr;
 	ILNode *stmt;
+	%nocreate ILNode* doCast = {0};
 	%nocreate unsigned long varIndex = {0};
 	%nocreate ILMachineType varType = {ILMachineType_Void};
 	%nocreate ILType *arrayType = {0};

@@ -1,4 +1,9 @@
 
+2002-08-23  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_stmt.tc, codegen/cg_nodes.tc, codegen/cg_stmt.tc:
+	foreach loop with casted variables for simple array iteration.
+
 2002-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_array.c: reversed array bounds check (Gopal V).

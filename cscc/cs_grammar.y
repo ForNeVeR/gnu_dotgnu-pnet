@@ -103,12 +103,90 @@ static void ResetState(void)
 static void
 yyerror(char *msg)
 {
-	if(!strcmp(msg, "parse error"))
+	if(!strcmp(msg, "parse error") || !strcmp(msg, "syntax error"))
 	{
 		/* This error is pretty much useless at telling the user
 		   what is happening.  Try to print a better message
 		   based on the current input token */
 		CSError("parse error at or near `%s'", cs_text);
+	}
+	else if(!strncmp(msg, "parse error, expecting `", 24))
+	{
+		/* We have to quote the token names in the "%token" declarations
+		   below so that byacc doesn't mess up the output.  But the quoting
+		   causes Bison to output quote characters in error messages which
+		   look awful.  This code attempts to fix things up */
+		char *newmsg = ILDupString(msg);
+		int posn, outposn;
+		if(newmsg)
+		{
+			posn = 0;
+			outposn = 0;
+			while(newmsg[posn] != '\0')
+			{
+				if(newmsg[posn] == '`')
+				{
+					if(newmsg[posn + 1] == '"' && newmsg[posn + 2] == '`')
+					{
+						/* Convert <`"`> into <`> */
+						posn += 2;
+						newmsg[outposn++] = '`';
+					}
+					else if(newmsg[posn + 1] == '"')
+					{
+						/* Convert <`"> into <> */
+						++posn;
+					}
+					else if(newmsg[posn + 1] == '`' ||
+					        newmsg[posn + 1] == '\'')
+					{
+						/* Convert <``> or <`'> into <`> */
+						++posn;
+						newmsg[outposn++] = '`';
+					}
+					else
+					{
+						/* Ordinary <`> on its own */
+						newmsg[outposn++] = '`';
+					}
+				}
+				else if(newmsg[posn] == '\\')
+				{
+					/* Ignore backslashes in the input */
+				}
+				else if(newmsg[posn] == '"' && newmsg[posn + 1] == '\'')
+				{
+					/* Convert <"'> into <> */
+					++posn;
+				}
+				else if(newmsg[posn] == '\'' && newmsg[posn + 1] == '"' &&
+				        newmsg[posn + 2] == '\'')
+				{
+					/* Convert <'"'> into <'> */
+					posn += 2;
+					newmsg[outposn++] = '\'';
+				}
+				else if(newmsg[posn] == '\'' && newmsg[posn + 1] == '\'')
+				{
+					/* Convert <''> into <'> */
+					++posn;
+					newmsg[outposn++] = '\'';
+				}
+				else
+				{
+					/* Ordinary character */
+					newmsg[outposn++] = newmsg[posn];
+				}
+				++posn;
+			}
+			newmsg[outposn] = '\0';
+			CSError("%s", newmsg);
+			ILFree(newmsg);
+		}
+		else
+		{
+			CSError("%s", msg);
+		}
 	}
 	else
 	{
@@ -450,13 +528,13 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 /*
  * Primitive lexical tokens.
  */
-%token INTEGER_CONSTANT		"integer value"
-%token CHAR_CONSTANT		"character constant"
-%token IDENTIFIER			"identifier"
-%token STRING_LITERAL		"string literal"
-%token FLOAT_CONSTANT		"floating point value"
-%token DECIMAL_CONSTANT		"decimal value"
-%token DOC_COMMENT			"documentation comment"
+%token INTEGER_CONSTANT		"an integer value"
+%token CHAR_CONSTANT		"a character constant"
+%token IDENTIFIER			"an identifier"
+%token STRING_LITERAL		"a string literal"
+%token FLOAT_CONSTANT		"a floating point value"
+%token DECIMAL_CONSTANT		"a decimal value"
+%token DOC_COMMENT			"a documentation comment"
 
 /*
  * Keywords.
@@ -546,27 +624,27 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 /*
  * Operators.
  */
-%token INC_OP				"++"
-%token DEC_OP				"--"
-%token LEFT_OP				"<<"
-%token RIGHT_OP				">>"
-%token LE_OP				"<="
-%token GE_OP				">="
-%token EQ_OP				"=="
-%token NE_OP				"!="
-%token AND_OP				"&&"
-%token OR_OP				"||"
-%token MUL_ASSIGN_OP		"*="
-%token DIV_ASSIGN_OP		"/="
-%token MOD_ASSIGN_OP		"%="
-%token ADD_ASSIGN_OP		"+="
-%token SUB_ASSIGN_OP		"-="
-%token LEFT_ASSIGN_OP		"<<="
-%token RIGHT_ASSIGN_OP		">>="
-%token AND_ASSIGN_OP		"&="
-%token XOR_ASSIGN_OP		"^="
-%token OR_ASSIGN_OP			"|="
-%token PTR_OP				"->"
+%token INC_OP				"`++'"
+%token DEC_OP				"`--'"
+%token LEFT_OP				"`<<'"
+%token RIGHT_OP				"`>>'"
+%token LE_OP				"`<='"
+%token GE_OP				"`>='"
+%token EQ_OP				"`=='"
+%token NE_OP				"`!='"
+%token AND_OP				"`&&'"
+%token OR_OP				"`||'"
+%token MUL_ASSIGN_OP		"`*='"
+%token DIV_ASSIGN_OP		"`/='"
+%token MOD_ASSIGN_OP		"`%='"
+%token ADD_ASSIGN_OP		"`+='"
+%token SUB_ASSIGN_OP		"`-='"
+%token LEFT_ASSIGN_OP		"`<<='"
+%token RIGHT_ASSIGN_OP		"`>>='"
+%token AND_ASSIGN_OP		"`&='"
+%token XOR_ASSIGN_OP		"`^='"
+%token OR_ASSIGN_OP			"`|='"
+%token PTR_OP				"`->'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -663,7 +741,7 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 %type <indexer>		IndexerDeclarator
 
 %type <catchinfo>	CatchNameInfo
-%expect 24
+%expect 19
 
 %start CompilationUnit
 %%
@@ -688,8 +766,21 @@ CompilationUnit
 				}
 				ResetState();
 			}
+	| OuterDeclarations AttributeSections	{
+				/* A file that contains declarations and assembly attributes */
+				ResetState();
+			}
+	| AttributeSections	{
+				/* A file that contains only assembly attributes */
+				ResetState();
+			}
 	;
 
+/*
+ * Note: strictly speaking, declarations should be ordered so
+ * that using declarations always come before namespace members.
+ * We have relaxed this to make error recovery easier.
+ */
 OuterDeclarations
 	: OuterDeclaration
 	| OuterDeclarations OuterDeclaration
@@ -698,14 +789,44 @@ OuterDeclarations
 OuterDeclaration
 	: UsingDirective
 	| NamespaceMemberDeclaration
-	| ';'
 	| error			{
 				/*
 				 * This production recovers from errors at the outer level
-				 * by skipping invalid tokens.
+				 * by skipping invalid tokens until a namespace, using,
+				 * type declaration, or attribute, is encountered.
 				 */
+			#ifdef YYEOF
+				while(yychar != YYEOF)
+			#else
+				while(yychar >= 0)
+			#endif
+				{
+					if(yychar == NAMESPACE || yychar == USING ||
+					   yychar == PUBLIC || yychar == INTERNAL ||
+					   yychar == UNSAFE || yychar == SEALED ||
+					   yychar == ABSTRACT || yychar == CLASS ||
+					   yychar == STRUCT || yychar == DELEGATE ||
+					   yychar == ENUM || yychar == INTERFACE ||
+					   yychar == '[')
+					{
+						/* This token starts a new outer-level declaration */
+						break;
+					}
+					else if(yychar == '}' && CurrNamespace.len != 0)
+					{
+						/* Probably the end of the enclosing namespace */
+						break;
+					}
+					else if(yychar == ';')
+					{
+						/* Probably the end of an outer-level declaration,
+						   so restart the parser on the next token */
+						yychar = YYLEX;
+						break;
+					}
+					yychar = YYLEX;
+				}
 				yyerrok;
-				yyclearin;
 				NestingLevel = 0;
 			}
 	;
@@ -732,31 +853,40 @@ QualifiedIdentifier
  * Namespaces.
  */
 
+/*
+ * Note: strictly speaking, namespaces don't have attributes.
+ * The C# standard allows attributes that apply to the assembly
+ * to appear at the global level.  To avoid reduce/reduce conflicts
+ * in the grammar, we cannot make the attributes a separate rule
+ * at the outer level.  So, we parse assembly attributes as if
+ * they were attached to types or namesapces, and detach them
+ * during semantic analysis.
+ */
 NamespaceDeclaration
-	: NAMESPACE NamespaceIdentifier {
+	: OptAttributes NAMESPACE NamespaceIdentifier {
 				/* Push a new identifier onto the end of the namespace */
 				if(CurrNamespace.len != 0)
 				{
 					CurrNamespace = ILInternAppendedString
 						(CurrNamespace,
 						 ILInternAppendedString
-						 	(ILInternString(".", 1), $2));
+						 	(ILInternString(".", 1), $3));
 				}
 				else
 				{
-					CurrNamespace = $2;
+					CurrNamespace = $3;
 				}
 			}
 			NamespaceBody OptSemiColon	{
-				/* Pop the identifier from the end of the namespame */
-				if(CurrNamespace.len == $2.len)
+				/* Pop the identifier from the end of the namespace */
+				if(CurrNamespace.len == $3.len)
 				{
 					CurrNamespace = ILInternString("", 0);
 				}
 				else
 				{
 					CurrNamespace = ILInternString
-						(CurrNamespace.string, CurrNamespace.len - $2.len - 1);
+						(CurrNamespace.string, CurrNamespace.len - $3.len - 1);
 				}
 			}
 	;
@@ -777,24 +907,7 @@ OptSemiColon
 	;
 
 NamespaceBody
-	: '{' OptUsingDirectives OptNamespaceMemberDeclarations '}'
-	| '{' error '}'		{
-				/*
-				 * This production recovers from errors in namespace
-				 * declarations.
-				 */
-				NestingLevel = 0;
-			}
-	;
-
-OptUsingDirectives
-	: /* empty */
-	| UsingDirectives
-	;
-
-UsingDirectives
-	: UsingDirective
-	| UsingDirectives UsingDirective
+	: '{' OptNamespaceMemberDeclarations '}'
 	;
 
 UsingDirective
@@ -816,21 +929,11 @@ UsingDirective
 					CSError("`%s' is not a namespace", $2.string);
 				}
 			}
-	| USING error ';'	{
-				/*
-				 * This production recovers from errors in "using" directives.
-				 */
-			}
 	;
 
 OptNamespaceMemberDeclarations
 	: /* empty */
-	| NamespaceMemberDeclarations
-	;
-
-NamespaceMemberDeclarations
-	: NamespaceMemberDeclaration
-	| NamespaceMemberDeclarations NamespaceMemberDeclaration
+	| OuterDeclarations
 	;
 
 NamespaceMemberDeclaration
@@ -924,7 +1027,7 @@ DimensionSeparatorList
 
 /*
  * The C# standard does not have "void" here.  It handles void
- * type elsewhere in the grammar.  However, the grammar is a lot
+ * types elsewhere in the grammar.  However, the grammar is a lot
  * simpler if we make "void" a builtin type and then filter it
  * out later in semantic analysis.
  */
@@ -1345,6 +1448,7 @@ ParenExpression
 				 * that are used with "switch".  Return 0 as the value.
 				 */
 				MakeTernary(Int32, 0, 0, 1);
+				yyerrok;
 			}
 	;
 
@@ -1365,6 +1469,7 @@ ParenBooleanExpression
 				 * Default to "false" as the error condition's value.
 				 */
 				MakeSimple(False);
+				yyerrok;
 			}
 	;
 
@@ -1460,6 +1565,7 @@ InnerEmbeddedStatement
 				 * by seaching for the end of the current statement.
 				 */
 				MakeSimple(Empty);
+				yyerrok;
 			}
 	;
 
@@ -1548,6 +1654,7 @@ Block
 				 * a block, by closing off the block on error.
 				 */
 				MakeSimple(Empty);
+				yyerrok;
 			}
 	;
 
@@ -1624,6 +1731,7 @@ SwitchBlock
 				 * body of a switch statement.
 				 */
 				$$ = 0;
+				yyerrok;
 			}
 	;
 
@@ -1690,6 +1798,7 @@ ForInitializer
 				 * of a "for" statement.
 				 */
 				MakeSimple(Empty);
+				yyerrok;
 			}
 	;
 
@@ -1707,6 +1816,7 @@ ForCondition
 				 * of a "for" statement.
 				 */
 				MakeSimple(False);
+				yyerrok;
 			}
 	;
 
@@ -1719,6 +1829,7 @@ ForIterator
 				 * of a "for" statement.
 				 */
 				MakeSimple(Empty);
+				yyerrok;
 			}
 	;
 
@@ -1730,6 +1841,7 @@ ForeachExpression
 				 * used within a "foreach" statement.
 				 */
 				MakeSimple(Null);
+				yyerrok;
 			}
 	;
 
@@ -1815,6 +1927,7 @@ CatchNameInfo
 				 */
 				$$.type = ILNode_Error_create();
 				$$.id = 0;
+				yyerrok;
 			}
 	;
 
@@ -1852,6 +1965,7 @@ ResourceAcquisition
 				 * acquisition declarations.
 				 */
 				MakeSimple(Error);
+				yyerrok;
 			}
 	;
 
@@ -1921,15 +2035,22 @@ AttributeSections
 	;
 
 AttributeSection
-	: '[' AttributeList ']'		{ $$ = $2; }
-	| '[' AttributeList ',' ']'	{ $$ = $2; }
-	| DOC_COMMENT				{ $$ = 0; }
+	: '[' AttributeList OptComma ']'					{ $$ = $2; }
+	| '[' AttributeTarget AttributeList OptComma ']'	{ $$ = $3; }
+	| DOC_COMMENT										{ $$ = 0; }
 	| '[' error ']'		{
 				/*
 				 * This production recovers from errors in attributes.
 				 */
 				$$ = 0;
+				yyerrok;
 			}
+	;
+
+AttributeTarget
+	: QualifiedIdentifier ':'	{}
+	| EVENT ':'					{}
+	| RETURN ':'				{}
 	;
 
 AttributeList
@@ -2015,7 +2136,8 @@ Modifiers
 				if(($1 & $2) != 0)
 				{
 					/* A modifier was used more than once in the list */
-					CSModifiersUsedTwice($1 & $2);
+					CSModifiersUsedTwice(yycurrfilename(), yycurrlinenum(),
+										 ($1 & $2));
 				}
 				$$ = ($1 | $2);
 			}
@@ -2052,7 +2174,7 @@ ClassDeclaration
 			ClassBody OptSemiColon	{
 				/* Validate the modifiers */
 				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($2, (NestingLevel > 1));
+					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
 
 				/* Exit the current nesting level */
 				--NestingLevel;
@@ -2090,6 +2212,7 @@ ClassBody
 				/*
 				 * This production recovers from errors in class bodies.
 				 */
+				yyerrok;
 				$$ = 0;
 			}
 	;
@@ -2129,7 +2252,7 @@ ClassMemberDeclaration
 
 ConstantDeclaration
 	: OptAttributes OptModifiers CONST Type ConstantDeclarators ';' {
-				ILUInt32 attrs = CSModifiersToConstAttrs($2);
+				ILUInt32 attrs = CSModifiersToConstAttrs($4, $2);
 				$$ = ILNode_ConstDeclaration_create($1, attrs, $4, $5);
 			}
 	;
@@ -2157,7 +2280,7 @@ ConstantDeclarator
 
 FieldDeclaration
 	: OptAttributes OptModifiers Type FieldDeclarators ';'	{
-				ILUInt32 attrs = CSModifiersToFieldAttrs($2);
+				ILUInt32 attrs = CSModifiersToFieldAttrs($3, $2);
 				$$ = ILNode_FieldDeclaration_create($1, attrs, $3, $4);
 			}
 	;
@@ -2190,7 +2313,7 @@ FieldDeclarator
 MethodDeclaration
 	: OptAttributes OptModifiers Type QualifiedIdentifier
 			'(' OptFormalParameterList ')' MethodBody	{
-				ILUInt32 attrs = CSModifiersToMethodAttrs($2);
+				ILUInt32 attrs = CSModifiersToMethodAttrs($3, $2);
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3, $4, $6, $8);
 			}
@@ -2240,7 +2363,7 @@ PropertyDeclaration
 				ILUInt32 attrs;
 
 				/* Create the property declaration */
-				attrs = CSModifiersToPropertyAttrs($2);
+				attrs = CSModifiersToPropertyAttrs($3, $2);
 				$$ = ILNode_PropertyDeclaration_create($1,
 								   attrs, $3, $4, 0, $6.item1, $6.item2,
 								   (($6.item1 ? 1 : 0) |
@@ -2267,6 +2390,7 @@ AccessorBlock
 				CSGetSetKeywords = 0;
 				$$.item1 = 0;
 				$$.item2 = 0;
+				yyerrok;
 			}
 	;
 
@@ -2329,7 +2453,7 @@ EventDeclaration
 
 EventFieldDeclaration
 	: OptAttributes OptModifiers EVENT Type FieldDeclarators ';'	{
-				ILUInt32 attrs = CSModifiersToEventAttrs($2);
+				ILUInt32 attrs = CSModifiersToEventAttrs($4, $2);
 				$$ = ILNode_EventFieldDeclaration_create($1, attrs, $4, $5);
 			}
 	;
@@ -2337,7 +2461,7 @@ EventFieldDeclaration
 EventPropertyDeclaration
 	: OptAttributes OptModifiers EVENT Type QualifiedIdentifier
 			StartAccessorBlock EventAccessorBlock	{
-				ILUInt32 attrs = CSModifiersToEventAttrs($2);
+				ILUInt32 attrs = CSModifiersToEventAttrs($4, $2);
 				$$ = ILNode_EventPropertyDeclaration_create($1, 
 									attrs, $4, $5, $7.item1, $7.item2);
 			}
@@ -2355,6 +2479,7 @@ EventAccessorBlock
 				CSGetSetKeywords = 0;
 				$$.item1 = 0;
 				$$.item2 = 0;
+				yyerrok;
 			}
 	;
 
@@ -2398,7 +2523,7 @@ RemoveAccessorDeclaration
 IndexerDeclaration
 	: OptAttributes OptModifiers IndexerDeclarator
 			StartAccessorBlock AccessorBlock		{
-				ILUInt32 attrs = CSModifiersToPropertyAttrs($2);
+				ILUInt32 attrs = CSModifiersToPropertyAttrs($3.type, $2);
 				$$ = ILNode_PropertyDeclaration_create($1,
 								   attrs, $3.type, $3.ident, $3.params,
 								   $5.item1, $5.item2,
@@ -2433,6 +2558,7 @@ FormalIndexParameters
 				 * This production recovers from errors in indexer parameters.
 				 */
 				$$ = 0;
+				yyerrok;
 			}
 	;
 
@@ -2476,7 +2602,7 @@ NormalOperatorDeclaration
 				}
 
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($2);
+				attrs = CSModifiersToOperatorAttrs($3, $2);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -2502,7 +2628,7 @@ NormalOperatorDeclaration
 				}
 
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($2);
+				attrs = CSModifiersToOperatorAttrs($3, $2);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -2554,7 +2680,7 @@ ConversionOperatorDeclaration
 				ILNode *params;
 
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($2);
+				attrs = CSModifiersToOperatorAttrs($5, $2);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -2574,7 +2700,7 @@ ConversionOperatorDeclaration
 				ILNode *params;
 
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($2);
+				attrs = CSModifiersToOperatorAttrs($5, $2);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -2597,7 +2723,7 @@ ConversionOperatorDeclaration
 ConstructorDeclaration
 	: OptAttributes OptModifiers Identifier '(' OptFormalParameterList ')'
 			ConstructorInitializer MethodBody	{
-				ILUInt32 attrs = CSModifiersToConstructorAttrs($2);
+				ILUInt32 attrs = CSModifiersToConstructorAttrs($3, $2);
 				ILNode *cname;
 				ILNode *body;
 				if((attrs & IL_META_METHODDEF_STATIC) != 0)
@@ -2702,7 +2828,7 @@ StructDeclaration
 				ILUInt32 attrs;
 
 				/* Validate the modifiers */
-				attrs = CSModifiersToTypeAttrs($2, (NestingLevel > 1));
+				attrs = CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
 
 				/* Add extra attributes that structs need */
 				attrs |= IL_META_TYPEDEF_VALUE_TYPE |
@@ -2749,6 +2875,7 @@ StructBody
 				 * This production recovers from errors in struct declarations.
 				 */
 				$$ = 0;
+				yyerrok;
 			}
 	;
 
@@ -2766,7 +2893,8 @@ InterfaceDeclaration
 			}
 			InterfaceBody OptSemiColon	{
 				/* Validate the modifiers */
-				ILUInt32 attrs = CSModifiersToTypeAttrs($2, (NestingLevel > 1));
+				ILUInt32 attrs =
+					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
 
 				/* Add extra attributes that interfaces need */
 				attrs |= IL_META_TYPEDEF_INTERFACE;
@@ -2804,6 +2932,7 @@ InterfaceBody
 				 * declarations.
 				 */
 				$$ = 0;
+				yyerrok;
 			}
 	;
 
@@ -2856,7 +2985,7 @@ InterfacePropertyDeclaration
 								 IL_META_METHODDEF_ABSTRACT |
 								 IL_META_METHODDEF_HIDE_BY_SIG;
 				$$ = ILNode_PropertyDeclaration_create
-								($1, attrs, $3, 0, $4, 0, 0, $6);
+								($1, attrs, $3, $4, 0, 0, 0, $6);
 
 				/* Create the property method declarations */
 				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
@@ -2879,6 +3008,7 @@ InterfaceAccessorBody
 				 */
 				CSGetSetKeywords = 0;
 				$$ = 0;
+				yyerrok;
 			}
 	;
 
@@ -2926,7 +3056,7 @@ InterfaceIndexerDeclaration
 EnumDeclaration
 	: OptAttributes OptModifiers ENUM Identifier {
 				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($2, (NestingLevel > 0));
+					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 0));
 				$2 = attrs;
 			}
 			EnumBase EnumBody OptSemiColon	{
@@ -2950,6 +3080,7 @@ EnumBody
 				 * This production recovers from errors in enum declarations.
 				 */
 				$$ = 0;
+				yyerrok;
 			}
 	;
 
@@ -2986,7 +3117,7 @@ DelegateDeclaration
 	: OptAttributes OptModifiers DELEGATE Type Identifier
 				'(' OptFormalParameterList ')' ';'	{
 				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($2, (NestingLevel > 0));
+					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 0));
 
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;

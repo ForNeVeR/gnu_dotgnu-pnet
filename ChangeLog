@@ -10,6 +10,8 @@ none of the input files exist.
 * cscc/cs_internal.h, cscc/cs_modifiers: pass node information to
 the modifier convertors to assist with error reporting.
 
+* cscc/cs_grammar.y: improve error handling and recovery in the parser.
+
 2001-08-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_relop.tc, codegen/jv_relop.tc: implement string equality

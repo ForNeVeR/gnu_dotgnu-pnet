@@ -42,6 +42,7 @@ public enum ToolkitWindowFlags
 	Modal			= (1 << 11),
 	ShowInTaskbar	= (1 << 12),
 	ToolWindow		= (1 << 13),
+	Dialog			= (1 << 14),
 	Default			= (Close | Minimize | Maximize | Caption |
 					   Border | ResizeHandles | Menu | Resize |
 					   Move | ShowInTaskbar)

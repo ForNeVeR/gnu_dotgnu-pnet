@@ -1,5 +1,5 @@
 /*
- * MotifDecorations.cs - Motif window manager decoration flags.
+ * OtherHints.cs - Other window manager hint flags.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,27 +24,19 @@ namespace Xsharp
 using System;
 
 /// <summary>
-/// <para>The <see cref="T:Xsharp.MotifDecorations"/> enumeration specifies
-/// flags for the window manager, to indicate which window decorations
-/// are desired by the application.</para>
+/// <para>The <see cref="T:Xsharp.OtherHints"/> enumeration specifies
+/// hint flags for the window manager, to specify physical styles.</para>
 /// </summary>
-///
-/// <remarks>
-/// <para>If <c>All</c> is specified, then it indicates all decorations
-/// except those explicitly listed.  If <c>All</c> is not specified,
-/// then it indicates only those decorations that are explicitly listed.</para>
-/// </remarks>
 [Flags]
-public enum MotifDecorations
+public enum OtherHints
 {
-	All				= (1 << 0),
-	Border			= (1 << 1),
-	ResizeHandles	= (1 << 2),
-	Title			= (1 << 3),
-	Menu			= (1 << 4),
-	Minimize		= (1 << 5),
-	Maximize		= (1 << 6),
+	None				= 0,
+	ToolWindow			= (1 << 0),
+	HideFromTaskBar		= (1 << 1),
+	HelpButton			= (1 << 2),
+	Dialog				= (1 << 3),
+	TopMost				= (1 << 4),
 
-} // enum MotifDecorations
+} // enum OtherHints
 
 } // namespace Xsharp

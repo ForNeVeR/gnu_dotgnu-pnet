@@ -270,10 +270,11 @@ internal sealed class DrawingTopLevelWindow
 	// Change the set of supported window decorations and functions.
 	void IToolkitTopLevelWindow.SetWindowFlags(ToolkitWindowFlags flags)
 			{
-				// Set the default Motif decoration flags.
+				// Set the default hint flags.
 				MotifDecorations decorations = MotifDecorations.All;
 				MotifFunctions functions = MotifFunctions.All;
 				MotifInputType inputType = MotifInputType.Normal;
+				OtherHints otherHints = OtherHints.None;
 
 				// Alter decorations according to the window flags.
 				if((flags & ToolkitWindowFlags.Close) == 0)
@@ -316,6 +317,26 @@ internal sealed class DrawingTopLevelWindow
 				{
 					inputType = MotifInputType.ApplicationModal;
 				}
+				if((flags & ToolkitWindowFlags.ToolWindow) != 0)
+				{
+					otherHints |= OtherHints.ToolWindow;
+				}
+				else if((flags & ToolkitWindowFlags.Dialog) != 0)
+				{
+					otherHints |= OtherHints.Dialog;
+				}
+				if((flags & ToolkitWindowFlags.ShowInTaskbar) == 0)
+				{
+					otherHints |= OtherHints.HideFromTaskBar;
+				}
+				if((flags & ToolkitWindowFlags.Help) != 0)
+				{
+					otherHints |= OtherHints.HelpButton;
+				}
+				if((flags & ToolkitWindowFlags.TopMost) != 0)
+				{
+					otherHints |= OtherHints.TopMost;
+				}
 
 				// Remove the "transient for" hint if we are changing a
 				// modal form back into a regular form.
@@ -329,7 +350,7 @@ internal sealed class DrawingTopLevelWindow
 				Decorations = decorations;
 				Functions = functions;
 				InputType = inputType;
-				HasHelpButton = ((flags & ToolkitWindowFlags.Help) != 0);
+				OtherHints = otherHints;
 			}
 
 	// Override the button press event from Xsharp.

@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using System.Text;
 using System.Runtime.InteropServices;
 using Xsharp.Types;
 using Xsharp.Events;
@@ -44,6 +45,7 @@ public class TopLevelWindow : InputOutputWidget
 	private MotifDecorations decorations;
 	private MotifFunctions functions;
 	private MotifInputType inputType;
+	private OtherHints otherHints;
 	private TopLevelWindow transientFor;
 	private Timer resizeTimer;
 	private int expectedWidth, expectedHeight;
@@ -143,8 +145,7 @@ public class TopLevelWindow : InputOutputWidget
 					Xlib.Window handle = GetWidgetHandle();
 
 					// Set the title bar and icon names.
-					Xlib.XStoreName(display, handle, name);
-					Xlib.XSetIconName(display, handle, name);
+					SetWindowName(display, handle, this.name);
 
 					// Ask for "WM_DELETE_WINDOW" and "WM_TAKE_FOCUS".
 					SetProtocols(display, handle);
@@ -191,7 +192,7 @@ public class TopLevelWindow : InputOutputWidget
 	// Set the WM protocols for this window.
 	private void SetProtocols(IntPtr display, Xlib.Window handle)
 			{
-				if(hasHelpButton)
+				if((otherHints & OtherHints.HelpButton) != 0)
 				{
 					Xlib.Atom[] protocols = new Xlib.Atom [3];
 					protocols[0] = dpy.wmDeleteWindow;
@@ -206,6 +207,30 @@ public class TopLevelWindow : InputOutputWidget
 					protocols[1] = dpy.wmTakeFocus;
 					Xlib.XSetWMProtocols(display, handle, protocols, 2);
 				}
+			}
+
+	// Set the window name hints.
+	private void SetWindowName(IntPtr display, Xlib.Window handle, String name)
+			{
+				// Set the ICCCM name hints.
+				Xlib.XStoreName(display, handle, name);
+				Xlib.XSetIconName(display, handle, name);
+
+				// Set the new-style name hints, in UTF-8.  These are more
+				// likely to be rendered properly by newer window managers.
+				Xlib.Atom utf8String = Xlib.XInternAtom
+					(display, "UTF8_STRING", Xlib.Bool.False);
+				Xlib.Atom wmName = Xlib.XInternAtom
+					(display, "_NET_WM_NAME", Xlib.Bool.False);
+				Xlib.Atom wmIconName = Xlib.XInternAtom
+					(display, "_NET_WM_ICON_NAME", Xlib.Bool.False);
+				byte[] bytes = Encoding.UTF8.GetBytes(name);
+				Xlib.XChangeProperty
+					(display, handle, wmName, utf8String,
+					 8, 0 /* PropModeReplace */, bytes, bytes.Length);
+				Xlib.XChangeProperty
+					(display, handle, wmIconName, utf8String,
+					 8, 0 /* PropModeReplace */, bytes, bytes.Length);
 			}
 
 	// Construct the XSizeHints structure for this window.
@@ -542,8 +567,7 @@ public class TopLevelWindow : InputOutputWidget
 							Xlib.Window handle = GetWidgetHandle();
 
 							// Set the title bar and icon names.
-							Xlib.XStoreName(display, handle, name);
-							Xlib.XSetIconName(display, handle, name);
+							SetWindowName(display, handle, name);
 						}
 						finally
 						{
@@ -681,31 +705,121 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	/// <summary>
-	/// <para>Get or set the state of the "help" button in
-	/// the window's caption bar.</para>
+	/// <para>Get or set the other hints for the window.</para>
 	/// </summary>
 	///
 	/// <value>
-	/// <para>The value of this property is the help button state.  The window
-	/// manager might ignore this information if it does not support the
-	/// <c>_NET_WM_CONTEXT_HELP</c> protocol.</para>
+	/// <para>The value of this property is the hint flags.  The window
+	/// manager might ignore this information.</para>
 	/// </value>
-	public bool HasHelpButton
+	public OtherHints OtherHints
 			{
 				get
 				{
-					return hasHelpButton;
+					return otherHints;
 				}
 				set
 				{
-					if(hasHelpButton != value)
+					if(otherHints != value)
 					{
-						hasHelpButton = value;
+						OtherHints prev = otherHints;
+						otherHints = value;
 						try
 						{
 							IntPtr display = dpy.Lock();
 							Xlib.Window handle = GetWidgetHandle();
-							SetProtocols(display, handle);
+
+							// Change the state of the help button.
+							if((prev & OtherHints.HelpButton) !=
+									(value & OtherHints.HelpButton))
+							{
+								SetProtocols(display, handle);
+							}
+
+							// Set the window type.
+							Xlib.Atom type;
+							if((value & OtherHints.ToolWindow) != 0)
+							{
+								type = Xlib.XInternAtom
+									(display,
+									 "_NET_WM_WINDOW_TYPE_UTILITY",
+									 Xlib.Bool.False);
+							}
+							else if((value & OtherHints.Dialog) != 0)
+							{
+								type = Xlib.XInternAtom
+									(display,
+									 "_NET_WM_WINDOW_TYPE_DIALOG",
+									 Xlib.Bool.False);
+							}
+							else
+							{
+								type = Xlib.XInternAtom
+									(display,
+									 "_NET_WM_WINDOW_TYPE_NORMAL",
+									 Xlib.Bool.False);
+							}
+							Xlib.Atom wmType = Xlib.XInternAtom
+								(display, "_NET_WM_WINDOW_TYPE",
+								 Xlib.Bool.False);
+							Xlib.Atom wmAtom = Xlib.XInternAtom
+								(display, "ATOM", Xlib.Bool.False);
+							Xlib.Xlong[] data = new Xlib.Xlong [2];
+							data[0] = (Xlib.Xlong)type;
+							Xlib.XChangeProperty
+								(display, handle, wmType, wmAtom,
+								 32, 0 /* PropModeReplace */, data, 1);
+
+							// Set the window state, which we can only do
+							// before it is first mapped at present.
+							if(!firstMapDone)
+							{
+								data[0] = Xlib.Xlong.Zero;
+								data[1] = Xlib.Xlong.Zero;
+								if((value & OtherHints.HideFromTaskBar) != 0)
+								{
+									data[0] = (Xlib.Xlong)Xlib.XInternAtom
+										(display,
+										 "_NET_WM_STATE_SKIP_TASKBAR",
+										 Xlib.Bool.False);
+								}
+								if((value & OtherHints.TopMost) != 0)
+								{
+									type = Xlib.XInternAtom
+										(display,
+										 "_NET_WM_STATE_ABOVE",
+										 Xlib.Bool.False);
+									if(data[0] == Xlib.Xlong.Zero)
+									{
+										data[0] = (Xlib.Xlong)type;
+									}
+									else
+									{
+										data[1] = (Xlib.Xlong)type;
+									}
+								}
+								wmType = Xlib.XInternAtom
+									(display, "_NET_WM_STATE",
+									 Xlib.Bool.False);
+								if(data[0] != Xlib.Xlong.Zero &&
+								   data[1] != Xlib.Xlong.Zero)
+								{
+									Xlib.XChangeProperty
+										(display, handle, wmType, wmAtom,
+										 32, 0 /* PropModeReplace */, data, 2);
+								}
+								else if(data[0] != Xlib.Xlong.Zero)
+								{
+									Xlib.XChangeProperty
+										(display, handle, wmType, wmAtom,
+										 32, 0 /* PropModeReplace */, data, 1);
+								}
+								else
+								{
+									Xlib.XDeleteProperty
+										(display, handle, wmType);
+								}
+							}
 						}
 						finally
 						{

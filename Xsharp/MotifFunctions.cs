@@ -27,7 +27,6 @@ using System;
 /// <para>The <see cref="T:Xsharp.MotifFunctions"/> enumeration specifies
 /// flags for the window manager, to indicate which window functions
 /// are desired by the application.</para>
-/// </para>
 /// </summary>
 ///
 /// <remarks>
@@ -35,6 +34,7 @@ using System;
 /// except those explicitly listed.  If <c>All</c> is not specified,
 /// then it indicates only those functions that are explicitly listed.</para>
 /// </remarks>
+[Flags]
 public enum MotifFunctions
 {
 	All				= (1 << 0),

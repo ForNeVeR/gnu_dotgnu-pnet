@@ -681,12 +681,20 @@ public class Form : ContainerControl
 					break;
 
 					case FormBorderStyle.Fixed3D:
-					case FormBorderStyle.FixedDialog:
 					case FormBorderStyle.FixedSingle:
 					{
 						flags &= ~(ToolkitWindowFlags.Maximize |
 								   ToolkitWindowFlags.ResizeHandles |
 								   ToolkitWindowFlags.Resize);
+					}
+					break;
+
+					case FormBorderStyle.FixedDialog:
+					{
+						flags &= ~(ToolkitWindowFlags.Maximize |
+								   ToolkitWindowFlags.ResizeHandles |
+								   ToolkitWindowFlags.Resize);
+						flags |= ToolkitWindowFlags.Dialog;
 					}
 					break;
 
@@ -708,6 +716,10 @@ public class Form : ContainerControl
 						flags |= ToolkitWindowFlags.ToolWindow;
 					}
 					break;
+				}
+				if((flags & ToolkitWindowFlags.Modal) != 0)
+				{
+					flags |= ToolkitWindowFlags.Dialog;
 				}
 				return flags;
 			}

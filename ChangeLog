@@ -3,6 +3,9 @@
 
 	* libffi/*: update the libffi library from the gcc CVS tree.
 
+	* libgc/*: update the libgc library using gc6.2alpha3 from the
+	libgc ftp site.
+
 2003-02-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, Makefile.am: automatically add "-fno-inline-functions"

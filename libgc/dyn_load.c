@@ -355,10 +355,12 @@ void GC_register_dynamic_libraries()
 		/* Stack mapping; discard	*/
 		continue;
 	    }
-	    if (start <= datastart && end > datastart && maj_dev != 0) {
+#	    if 0
+	      if (start <= datastart && end > datastart && maj_dev != 0) {
 		/* Main data segment; discard	*/
 		continue;
-	    }
+	      }
+#	    endif
 #	    ifdef THREADS
 	      if (GC_segment_is_thread_stack(start, end)) continue;
 #	    endif
@@ -384,6 +386,13 @@ void GC_register_dynamic_libraries()
      }
 }
 
+/* We now take care of the main data segment ourselves: */
+GC_bool GC_register_main_static_data()
+{
+  return FALSE;
+}
+  
+# define HAVE_REGISTER_MAIN_STATIC_DATA
 //
 //  parse_map_entry parses an entry from /proc/self/maps so we can
 //  locate all writable data segments that belong to shared libraries.
@@ -393,21 +402,34 @@ void GC_register_dynamic_libraries()
 //  ^^^^^^^^ ^^^^^^^^ ^^^^          ^^
 //  start    end      prot          maj_dev
 //  0        9        18            32
+//  
+//  For 64 bit ABIs:
+//  0	     17	      34	    56
 //
 //  The parser is called with a pointer to the entry and the return value
 //  is either NULL or is advanced to the next entry(the byte after the
 //  trailing '\n'.)
 //
-#define OFFSET_MAP_START   0
-#define OFFSET_MAP_END     9
-#define OFFSET_MAP_PROT   18
-#define OFFSET_MAP_MAJDEV 32
+#if CPP_WORDSZ == 32
+# define OFFSET_MAP_START   0
+# define OFFSET_MAP_END     9
+# define OFFSET_MAP_PROT   18
+# define OFFSET_MAP_MAJDEV 32
+# define ADDR_WIDTH 	    8
+#endif
+
+#if CPP_WORDSZ == 64
+# define OFFSET_MAP_START   0
+# define OFFSET_MAP_END    17
+# define OFFSET_MAP_PROT   34
+# define OFFSET_MAP_MAJDEV 56
+# define ADDR_WIDTH 	   16
+#endif
 
 static char *parse_map_entry(char *buf_ptr, word *start, word *end,
                              char *prot_buf, unsigned int *maj_dev)
 {
     int i;
-    unsigned int val;
     char *tok;
 
     if (buf_ptr == NULL || *buf_ptr == '\0') {
@@ -420,11 +442,11 @@ static char *parse_map_entry(char *buf_ptr, word *start, word *end,
     if (prot_buf[1] == 'w') { // we can skip all of this if it's not writable
 
         tok = buf_ptr;
-        buf_ptr[OFFSET_MAP_START+8] = '\0';
+        buf_ptr[OFFSET_MAP_START+ADDR_WIDTH] = '\0';
         *start = strtoul(tok, NULL, 16);
 
         tok = buf_ptr+OFFSET_MAP_END;
-        buf_ptr[OFFSET_MAP_END+8] = '\0';
+        buf_ptr[OFFSET_MAP_END+ADDR_WIDTH] = '\0';
         *end = strtoul(tok, NULL, 16);
 
         buf_ptr += OFFSET_MAP_MAJDEV;
@@ -469,12 +491,14 @@ static int GC_register_dynlib_callback(info, size, ptr)
       + sizeof (info->dlpi_phnum))
     return -1;
 
+# if 0 /* We now register the main program data here. */
   /* Skip the first object - it is the main program.  */
   if (*(int *)ptr == 0)
     {
       *(int *)ptr = 1;
       return 0;
     }
+# endif
 
   p = info->dlpi_phdr;
   for( i = 0; i < (int)(info->dlpi_phnum); ((i++),(p++)) ) {
@@ -510,6 +534,14 @@ GC_bool GC_register_dynamic_libraries_dl_iterate_phdr()
   }
 }
 
+/* Do we need to separately register the main static data segment? */
+GC_bool GC_register_main_static_data()
+{
+  return (dl_iterate_phdr == 0);
+}
+
+#define HAVE_REGISTER_MAIN_STATIC_DATA
+
 # else /* !LINUX || version(glibc) < 2.2.4 */
 
 /* Dynamic loading code for Linux running ELF. Somewhat tested on
@@ -529,13 +561,14 @@ GC_bool GC_register_dynamic_libraries_dl_iterate_phdr()
 
 # endif
 
+#ifdef __GNUC__
+# pragma weak _DYNAMIC
+#endif
+extern ElfW(Dyn) _DYNAMIC[];
+
 static struct link_map *
 GC_FirstDLOpenedLinkMap()
 {
-#   ifdef __GNUC__
-#     pragma weak _DYNAMIC
-#   endif
-    extern ElfW(Dyn) _DYNAMIC[];
     ElfW(Dyn) *dp;
     struct r_debug *r;
     static struct link_map *cachedResult = 0;
@@ -775,10 +808,23 @@ void GC_register_dynamic_libraries()
     }
 # endif
 
-# ifndef MSWINCE
-  extern GC_bool GC_win32s;
-# endif
+# ifdef MSWINCE
+  /* Do we need to separately register the main static data segment? */
+  GC_bool GC_register_main_static_data()
+  {
+    return FALSE;
+  }
+# else /* win32 */
+  extern GC_bool GC_no_win32_dlls;
+
+  GC_bool GC_register_main_static_data()
+  {
+    return GC_no_win32_dlls;
+  }
+# endif /* win32 */
   
+# define HAVE_REGISTER_MAIN_STATIC_DATA
+
   void GC_register_dynamic_libraries()
   {
     MEMORY_BASIC_INFORMATION buf;
@@ -789,7 +835,7 @@ void GC_register_dynamic_libraries()
     char * limit, * new_limit;
 
 #   ifdef MSWIN32
-      if (GC_win32s) return;
+      if (GC_no_win32_dlls) return;
 #   endif
     base = limit = p = GC_sysinfo.lpMinimumApplicationAddress;
 #   if defined(MSWINCE) && !defined(_WIN32_WCE_EMULATION)
@@ -1079,4 +1125,15 @@ void GC_register_dynamic_libraries(){}
 int GC_no_dynamic_loading;
 
 #endif /* !PCR */
+
 #endif /* !DYNAMIC_LOADING */
+
+#ifndef HAVE_REGISTER_MAIN_STATIC_DATA
+
+/* Do we need to separately register the main static data segment? */
+GC_bool GC_register_main_static_data()
+{
+  return TRUE;
+}
+#endif /* HAVE_REGISTER_MAIN_STATIC_DATA */
+

@@ -180,7 +180,8 @@ word GC_adj_words_allocd()
     /* managed object should not alter result, assuming the client	*/
     /* is playing by the rules.						*/
     result = (signed_word)GC_words_allocd
-    	     - (signed_word)GC_mem_freed - expl_managed;
+    	     - (signed_word)GC_mem_freed 
+	     + (signed_word)GC_finalizer_mem_freed - expl_managed;
     if (result > (signed_word)GC_words_allocd) {
         result = GC_words_allocd;
     	/* probably client bug or unfortunate scheduling */
@@ -248,7 +249,6 @@ void GC_maybe_gc()
 
     if (GC_should_collect()) {
         if (!GC_incremental) {
-	    GC_notify_full_gc();
             GC_gcollect_inner();
             n_partial_gcs = 0;
             return;
@@ -300,10 +300,15 @@ void GC_maybe_gc()
 /*
  * Stop the world garbage collection.  Assumes lock held, signals disabled.
  * If stop_func is not GC_never_stop_func, then abort if stop_func returns TRUE.
+ * Return TRUE if we successfully completed the collection.
  */
 GC_bool GC_try_to_collect_inner(stop_func)
 GC_stop_func stop_func;
 {
+#   ifdef CONDPRINT
+        CLOCK_TYPE start_time, current_time;
+#   endif
+    if (GC_dont_gc) return FALSE;
     if (GC_incremental && GC_collection_in_progress()) {
 #   ifdef CONDPRINT
       if (GC_print_stats) {
@@ -317,8 +322,10 @@ GC_stop_func stop_func;
     	    GC_collect_a_little_inner(1);
     	}
     }
+    if (stop_func == GC_never_stop_func) GC_notify_full_gc();
 #   ifdef CONDPRINT
       if (GC_print_stats) {
+        if (GC_print_stats) GET_TIME(start_time);
 	GC_printf2(
 	   "Initiating full world-stop collection %lu after %ld allocd bytes\n",
 	   (unsigned long) GC_gc_no+1,
@@ -357,6 +364,13 @@ GC_stop_func stop_func;
       return(FALSE);
     }
     GC_finish_collection();
+#   if defined(CONDPRINT)
+      if (GC_print_stats) {
+        GET_TIME(current_time);
+        GC_printf1("Complete collection took %lu msecs\n",
+                   MS_TIME_DIFF(current_time,start_time));
+      }
+#   endif
     return(TRUE);
 }
 
@@ -384,6 +398,7 @@ int n;
 {
     register int i;
     
+    if (GC_dont_gc) return;
     if (GC_incremental && GC_collection_in_progress()) {
     	for (i = GC_deficit; i < GC_RATE*n; i++) {
     	    if (GC_mark_some((ptr_t)0)) {
@@ -426,6 +441,7 @@ int GC_collect_a_little GC_PROTO(())
     result = (int)GC_collection_in_progress();
     UNLOCK();
     ENABLE_SIGNALS();
+    if (!result && GC_debugging_started) GC_print_all_smashed();
     return(result);
 }
 
@@ -444,13 +460,16 @@ GC_stop_func stop_func;
 	CLOCK_TYPE start_time, current_time;
 #   endif
 	
-    STOP_WORLD();
 #   ifdef PRINTTIMES
 	GET_TIME(start_time);
 #   endif
 #   if defined(CONDPRINT) && !defined(PRINTTIMES)
 	if (GC_print_stats) GET_TIME(start_time);
 #   endif
+#   if defined(REGISTER_LIBRARIES_EARLY)
+        GC_cond_register_dynamic_libraries();
+#   endif
+    STOP_WORLD();
 #   ifdef CONDPRINT
       if (GC_print_stats) {
 	GC_printf1("--> Marking for collection %lu ",
@@ -514,6 +533,7 @@ GC_stop_func stop_func;
             (*GC_check_heap)();
         }
     
+    START_WORLD();
 #   ifdef PRINTTIMES
 	GET_TIME(current_time);
 	GC_printf1("World-stopped marking took %lu msecs\n",
@@ -527,7 +547,6 @@ GC_stop_func stop_func;
 	}
 #     endif
 #   endif
-    START_WORLD();
     return(TRUE);
 }
 
@@ -604,6 +623,7 @@ void GC_finish_collection()
 	  GC_print_address_map();
 	}
 #   endif
+    COND_DUMP;
     if (GC_find_leak) {
       /* Mark all objects on the free list.  All objects should be */
       /* marked when we're done.				   */
@@ -700,6 +720,7 @@ void GC_finish_collection()
       GC_words_allocd = 0;
       GC_words_wasted = 0;
       GC_mem_freed = 0;
+      GC_finalizer_mem_freed = 0;
       
 #   ifdef USE_MUNMAP
       GC_unmap_old();
@@ -723,6 +744,7 @@ void GC_finish_collection()
     int result;
     DCL_LOCK_STATE;
     
+    if (GC_debugging_started) GC_print_all_smashed();
     GC_INVOKE_FINALIZERS();
     DISABLE_SIGNALS();
     LOCK();
@@ -734,14 +756,17 @@ void GC_finish_collection()
     EXIT_GC();
     UNLOCK();
     ENABLE_SIGNALS();
-    if(result) GC_INVOKE_FINALIZERS();
+    if(result) {
+        if (GC_debugging_started) GC_print_all_smashed();
+        GC_INVOKE_FINALIZERS();
+    }
     return(result);
 }
 
 void GC_gcollect GC_PROTO(())
 {
-    GC_notify_full_gc();
     (void)GC_try_to_collect(GC_never_stop_func);
+    if (GC_have_errors) GC_print_all_errors();
 }
 
 word GC_n_heap_sects = 0;	/* Number of sections currently in heap. */
@@ -943,7 +968,6 @@ GC_bool ignore_off_page;
 {
     if (!GC_incremental && !GC_dont_gc &&
 	(GC_dont_expand && GC_words_allocd > 0 || GC_should_collect())) {
-      GC_notify_full_gc();
       GC_gcollect_inner();
     } else {
       word blocks_to_get = GC_heapsize/(HBLKSIZE*GC_free_space_divisor)
@@ -968,7 +992,6 @@ GC_bool ignore_off_page;
         && !GC_expand_hp_inner(needed_blocks)) {
       	if (GC_fail_count++ < GC_max_retries) {
       	    WARN("Out of Memory!  Trying to continue ...\n", 0);
-	    GC_notify_full_gc();
 	    GC_gcollect_inner();
 	} else {
 #	    if !defined(AMIGA) || !defined(GC_AMIGA_FASTALLOC)
@@ -1006,7 +1029,7 @@ int kind;
     while (*flh == 0) {
       ENTER_GC();
       /* Do our share of marking work */
-        if(TRUE_INCREMENTAL && !GC_dont_gc) GC_collect_a_little_inner(1);
+        if(TRUE_INCREMENTAL) GC_collect_a_little_inner(1);
       /* Sweep blocks for objects of this size */
         GC_continue_reclaim(sz, kind);
       EXIT_GC();

@@ -1,4 +1,4 @@
- # $Id: alpha_mach_dep.S,v 1.1 2002/04/08 23:36:49 rweather Exp $
+ # $Id: alpha_mach_dep.S,v 1.2 2003/02/06 01:35:45 rweather Exp $
 	.arch ev6
 
         .text

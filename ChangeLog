@@ -11,6 +11,9 @@
 	* System.Xml/XmlTextReader.cs: Accept "?" and "!" in text (ie non-struct)
 	conditions (fixes Bug #3528).
 
+	* System.Xml/XmlTextReader.cs: Refactor the previous patch into smaller
+	code size.
+
 2003-05-09  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/WebRequest.cs : Move the static initialization code

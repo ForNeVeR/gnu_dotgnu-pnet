@@ -784,9 +784,7 @@ public class XmlTextReader : XmlReader
 						{
 							// This will handle any '/' in Text
 							// Nodes.
-							builder.Append("/");
-							ch = ReadChar();
-							AnalyzeChar(ch, false);
+							goto default;
 						}
 						break;
 					case '?':
@@ -794,10 +792,7 @@ public class XmlTextReader : XmlReader
 						// <? PITarget 
 						if(structFlag != true)
 						{
-							builder.Append((char)ch);
-							ch = ReadChar();
-							AnalyzeChar(ch, false);
-							break;
+							goto default;
 						}
 
 						/* else */
@@ -838,10 +833,7 @@ public class XmlTextReader : XmlReader
 						// Check for correct structure 
 						if(structFlag != true)
 						{
-							builder.Append((char)ch);
-							ch = ReadChar();
-							AnalyzeChar(ch, false);
-							break;
+							goto default;
 						}
 
 						// Comment, CDATA, or document type information.
@@ -852,11 +844,7 @@ public class XmlTextReader : XmlReader
 						// Parse the "<!--" comment start sequence.
 						if(structFlag != true)
 						{
-							builder.Append((char)ch);
-							ch = ReadChar();
-							AnalyzeChar(ch, false);
-							break;
-
+							goto default;
 						}
 
 						ch = ReadChar();
@@ -908,10 +896,7 @@ public class XmlTextReader : XmlReader
 					case '[':
 						if(structFlag != true)
 						{
-							builder.Append((char)ch);
-							ch = ReadChar();
-							AnalyzeChar(ch, false);
-							break;
+							goto default;
 						}
 						builder = new StringBuilder();
 						while((ch = ReadChar()) != -1)
@@ -943,10 +928,7 @@ public class XmlTextReader : XmlReader
 					case 'D':
 						if(structFlag != true)
 						{
-							builder.Append((char)ch);
-							ch = ReadChar();
-							AnalyzeChar(ch, false);
-							break;
+							goto default;
 						}
 						ClearNodeInfo();	
 						// document type nodes
@@ -1304,9 +1286,7 @@ public class XmlTextReader : XmlReader
 								nodeType = XmlNodeType.Text;
 								ungetch = ch;
 								value = builder.ToString();
-							}
-
-							
+							}							
 						}
 						break;
 					

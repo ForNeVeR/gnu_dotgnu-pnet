@@ -1581,22 +1581,22 @@ static void marshal_pppb(void (*fn)(), void *rvalue, void **avalue)
 IL_METHOD_BEGIN(Assembly_Methods)
 	IL_METHOD("GetExecutingAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetExecutingAssembly, marshal_pp)
 	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;", _IL_Assembly_GetType, marshal_ppppbb)
+	IL_METHOD("GetEntryAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetEntryAssembly, marshal_pp)
 	IL_METHOD("GetCallingAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetCallingAssembly, marshal_pp)
 	IL_METHOD("LoadFromBytes", "([B&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromBytes, marshal_ppppp)
 	IL_METHOD("GetManifestResourceStream", "(ToSystem.String;)oSystem.IO.Stream;", _IL_Assembly_GetManifestResourceStream, marshal_pppp)
 	IL_METHOD("GetSatellitePath", "(ToSystem.String;)oSystem.String;", _IL_Assembly_GetSatellitePath, marshal_pppp)
 	IL_METHOD("LoadFromFile", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromFile, marshal_ppppp)
 	IL_METHOD("GetTypes", "(T)[oSystem.Type;", _IL_Assembly_GetTypes, marshal_ppp)
+	IL_METHOD("GetLocation", "(T)oSystem.String;", _IL_Assembly_GetLocation, marshal_ppp)
 	IL_METHOD("GetFullName", "(T)oSystem.String;", _IL_Assembly_GetFullName, marshal_ppp)
 	IL_METHOD("GetModuleInternal", "(ToSystem.String;)oSystem.Reflection.Module;", _IL_Assembly_GetModuleInternal, marshal_pppp)
-	IL_METHOD("GetEntryAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetEntryAssembly, marshal_pp)
 	IL_METHOD("GetExportedTypes", "(T)[oSystem.Type;", _IL_Assembly_GetExportedTypes, marshal_ppp)
 	IL_METHOD("GetFile", "(ToSystem.String;)oSystem.IO.FileStream;", _IL_Assembly_GetFile, marshal_pppp)
 	IL_METHOD("GetFiles", "(TZ)[oSystem.IO.FileStream;", _IL_Assembly_GetFiles, marshal_pppb)
 	IL_METHOD("GetManifestResourceInfo", "(ToSystem.String;)oSystem.Reflection.ManifestResourceInfo;", _IL_Assembly_GetManifestResourceInfo, marshal_pppp)
 	IL_METHOD("GetManifestResourceNames", "(T)[oSystem.String;", _IL_Assembly_GetManifestResourceNames, marshal_ppp)
 	IL_METHOD("LoadFromName", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromName, marshal_ppppp)
-	IL_METHOD("GetLocation", "(T)oSystem.String;", _IL_Assembly_GetLocation, marshal_ppp)
 	IL_METHOD("FillAssemblyName", "(ToSystem.Reflection.AssemblyName;)V", _IL_Assembly_FillAssemblyName, marshal_vppp)
 	IL_METHOD("GetEntryPoint", "(T)vSystem.RuntimeMethodHandle;", _IL_Assembly_GetEntryPoint, marshal_vppp)
 	IL_METHOD("GetImageRuntimeVersion", "(T)oSystem.String;", _IL_Assembly_GetImageRuntimeVersion, marshal_ppp)
@@ -2551,6 +2551,8 @@ IL_METHOD_BEGIN(FileMethods_Methods)
 	IL_METHOD("GetAttributes", "(oSystem.String;&i)vPlatform.Errno;", _IL_FileMethods_GetAttributes, marshal_ippp)
 	IL_METHOD("SetAttributes", "(oSystem.String;i)vPlatform.Errno;", _IL_FileMethods_SetAttributes, marshal_ippi)
 	IL_METHOD("GetLength", "(oSystem.String;&l)vPlatform.Errno;", _IL_FileMethods_GetLength, marshal_ippp)
+	IL_METHOD("ReadLink", "(oSystem.String;&oSystem.String;)vPlatform.Errno;", _IL_FileMethods_ReadLink, marshal_ippp)
+	IL_METHOD("CreateLink", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_FileMethods_CreateLink, marshal_ippp)
 	IL_METHOD("HasAsync", "()Z", _IL_FileMethods_HasAsync, marshal_bp)
 	IL_METHOD("CheckHandleAccess", "(jvSystem.IO.FileAccess;)Z", _IL_FileMethods_CheckHandleAccess, marshal_bpji)
 	IL_METHOD("Copy", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_FileMethods_Copy, marshal_ippp)
@@ -2572,36 +2574,6 @@ IL_METHOD_BEGIN(InfoMethods_Methods)
 	IL_METHOD("GetProcessorCount", "()i", _IL_InfoMethods_GetProcessorCount, marshal_ip)
 	IL_METHOD("GetPlatformName", "()oSystem.String;", _IL_InfoMethods_GetPlatformName, marshal_pp)
 	IL_METHOD("GetGlobalConfigDir", "()oSystem.String;", _IL_InfoMethods_GetGlobalConfigDir, marshal_pp)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ipjpi(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ppjpiip(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])));
-}
-
-#endif
-
-#ifndef _IL_RegexpMethods_suppressed
-
-IL_METHOD_BEGIN(RegexpMethods_Methods)
-	IL_METHOD("CompileWithSyntaxInternal", "(oSystem.String;i)j", _IL_RegexpMethods_CompileWithSyntaxInternal, marshal_jppi)
-	IL_METHOD("FreeInternal", "(j)V", _IL_RegexpMethods_FreeInternal, marshal_vpj)
-	IL_METHOD("ExecInternal", "(joSystem.String;i)i", _IL_RegexpMethods_ExecInternal, marshal_ipjpi)
-	IL_METHOD("MatchInternal", "(joSystem.String;iioSystem.Type;)oSystem.Array;", _IL_RegexpMethods_MatchInternal, marshal_ppjpiip)
-	IL_METHOD("CompileInternal", "(oSystem.String;i)j", _IL_RegexpMethods_CompileInternal, marshal_jppi)
 IL_METHOD_END
 
 #endif
@@ -2670,6 +2642,36 @@ IL_METHOD_BEGIN(CryptoMethods_Methods)
 	IL_METHOD("Decrypt", "(j[Bi[Bi)V", _IL_CryptoMethods_Decrypt, marshal_vpjpipi)
 	IL_METHOD("Encrypt", "(j[Bi[Bi)V", _IL_CryptoMethods_Encrypt, marshal_vpjpipi)
 	IL_METHOD("StoreKey", "(ioSystem.String;[B)V", _IL_CryptoMethods_StoreKey, marshal_vpipp)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ipjpi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILNativeUInt, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppjpiip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILNativeUInt, void *, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((void * *)(avalue[5])));
+}
+
+#endif
+
+#ifndef _IL_RegexpMethods_suppressed
+
+IL_METHOD_BEGIN(RegexpMethods_Methods)
+	IL_METHOD("CompileWithSyntaxInternal", "(oSystem.String;i)j", _IL_RegexpMethods_CompileWithSyntaxInternal, marshal_jppi)
+	IL_METHOD("FreeInternal", "(j)V", _IL_RegexpMethods_FreeInternal, marshal_vpj)
+	IL_METHOD("ExecInternal", "(joSystem.String;i)i", _IL_RegexpMethods_ExecInternal, marshal_ipjpi)
+	IL_METHOD("MatchInternal", "(joSystem.String;iioSystem.Type;)oSystem.Array;", _IL_RegexpMethods_MatchInternal, marshal_ppjpiip)
+	IL_METHOD("CompileInternal", "(oSystem.String;i)j", _IL_RegexpMethods_CompileInternal, marshal_jppi)
 IL_METHOD_END
 
 #endif

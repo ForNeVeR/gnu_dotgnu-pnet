@@ -25,6 +25,16 @@
 #include "lib_defs.h"
 #include "il_sysio.h"
 #include "il_errno.h"
+#if HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+#endif
+#if HAVE_SYS_STAT_H
+	#include <sys/stat.h>
+#endif
+#if HAVE_UNISTD_H
+	#include <unistd.h>
+#endif
+#include <errno.h>
 
 char *ILStringToPathname(ILExecThread *thread, ILString *str)
 {
@@ -328,4 +338,67 @@ ILInt32 _IL_FileMethods_GetLength(ILExecThread *_thread,
 {
 	/* TODO */
 	return IL_ERRNO_EPERM;
+}
+
+/*
+ * public static Errno ReadLink(String path, out String contents);
+ */
+ILInt32 _IL_FileMethods_ReadLink(ILExecThread *_thread, ILString *path,
+								 ILString **contents)
+{
+#ifdef HAVE_READLINK
+	char *pathAnsi = ILStringToPathname(_thread, path);
+	char buf[1024];
+	int len;
+	if(!pathAnsi)
+	{
+		return IL_ERRNO_ENOMEM;
+	}
+	len = readlink(pathAnsi, buf, sizeof(buf) - 1);
+	if(len >= 0)
+	{
+		buf[len] = '\0';
+		*contents = ILStringCreate(_thread, buf);
+		return IL_ERRNO_Success;
+	}
+	else if(errno == EINVAL)
+	{
+		*contents = 0;
+		return IL_ERRNO_Success;
+	}
+	else
+	{
+		*contents = 0;
+		return ILSysIOGetErrno();
+	}
+#else
+	*contents = 0;
+	return IL_ERRNO_Success;
+#endif
+}
+
+/*
+ * public static Errno CreateLink(String oldpath, String newpath);
+ */
+ILInt32 _IL_FileMethods_CreateLink(ILExecThread *_thread, ILString *oldpath,
+								   ILString *newpath)
+{
+#ifdef HAVE_SYMLINK
+	char *path1 = ILStringToPathname(_thread, oldpath);
+	char *path2 = ILStringToPathname(_thread, newpath);
+	if(!path1 || !path2)
+	{
+		return IL_ERRNO_ENOMEM;
+	}
+	if(symlink(path1, path2) >= 0)
+	{
+		return IL_ERRNO_Success;
+	}
+	else
+	{
+		return ILSysIOGetErrno();
+	}
+#else
+	return IL_ERRNO_EPERM;
+#endif
 }

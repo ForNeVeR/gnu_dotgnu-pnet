@@ -60,6 +60,8 @@ public class Control : IWin32Window, IDisposable
 	// Outside bounds of the control including windows decorations
 	// in the case of forms and non client areas
 	private int left, top, width, height;
+	// Previous control bounds
+	private int prevLeft, prevTop, prevWidth, prevHeight;
 	internal String text;
 	private String name;
 	private HookedEvent hookedEvents;
@@ -72,7 +74,6 @@ public class Control : IWin32Window, IDisposable
 	internal Color foreColor;
 	private Font font;
 	private Image backgroundImage;
-	private int prevParentWidth, prevParentHeight;
 	private byte anchorStyles;
 	private byte dockStyle;
 	private byte imeMode;
@@ -2457,18 +2458,8 @@ public class Control : IWin32Window, IDisposable
 			{
 				if(parent != null && Dock == DockStyle.None)
 				{
-					if(layoutSuspended <= 0)
-					{
-						// Record the current width and height of the parent
-						// control so that we can reposition during layout later.
-						Rectangle rect = parent.DisplayRectangle;
-						prevParentWidth = rect.Width;
-						prevParentHeight = rect.Height;
-					}
-					else
-					{
+					if(layoutSuspended > 0)
 						SetControlFlag(ControlFlags.LayoutInitSuspended, true);
-					}
 				}
 			}
 
@@ -2692,6 +2683,86 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 
+	private void PerformAnchorLayout (Control child)
+			{
+				AnchorStyles anchor;
+				int left, right, top, bottom;
+				Rectangle rect;
+
+				// If the anchor style is top-left, then bail out as
+				// there will be no change to the child's position.
+				anchor = child.Anchor;
+				if(anchor == (AnchorStyles.Top | AnchorStyles.Left))
+				{
+					return;
+				}
+
+				// Get the previous distance from all edges.
+				left = child.left - rect.X;
+				top = child.top - rect.Y;
+				right = prevWidth - (left + child.width);
+				bottom = prevHeight - (top + child.height);
+
+				rect = DisplayRectangle;
+
+				// Anchor the child to each specified side.
+				if((anchor & AnchorStyles.Top) != 0)
+				{
+					if((anchor & AnchorStyles.Bottom) == 0)
+					{
+						// Anchor to the top, but not the bottom.
+						bottom = rect.Height - (top + child.height);
+					}
+				}
+				else if((anchor & AnchorStyles.Bottom) != 0)
+				{
+					// Anchor to the bottom, but not the top.
+					top = rect.Height - (bottom + child.height);
+				}
+				else
+				{
+					// Center within the top and bottom edges.
+					top = (rect.Height - child.height) / 2;
+					bottom = rect.Height - (top + child.height);
+				}
+				if((anchor & AnchorStyles.Left) != 0)
+				{
+					if((anchor & AnchorStyles.Right) == 0)
+					{
+						// Anchor to the left, but not the right.
+						right = rect.Width - (left + child.width);
+					}
+				}
+				else if((anchor & AnchorStyles.Right) != 0)
+				{
+					// Anchor to the right, but not the left.
+					left = rect.Width - (right + child.width);
+				}
+				else
+				{
+					// Center within the left and right edges.
+					left = (rect.Width - child.width) / 2;
+					right = rect.Width - (left + child.width);
+				}
+
+				// Compute the final client rectangle and check it.
+				right = rect.Width - right;
+				bottom = rect.Height - bottom;
+				if(left > right)
+				{
+					right = left;
+				}
+				if(top > bottom)
+				{
+					bottom = top;
+				}
+
+				// Set the new bounds for the child.
+				child.SetBounds
+					(rect.X + left, rect.Y + top,
+					right - left, bottom - top);
+			}
+
 	// Perform actual layout on the control.  Called from "OnLayout".
 	private void PerformActualLayout()
 			{
@@ -2699,7 +2770,6 @@ public class Control : IWin32Window, IDisposable
 				int left, right, top, bottom;
 				int posn, temp;
 				Control child;
-				AnchorStyles anchor;
 
 				// If our height is less than the height of an empty control, then we have probably been minimized and we must not layout.
 				Size offset = ClientToBounds(Size.Empty);
@@ -2715,13 +2785,17 @@ public class Control : IWin32Window, IDisposable
 				top = rect.Top;
 				bottom = rect.Bottom;
 
-				// Lay out the docked controls, from first to last
+				// Lay out the controls, from first to last
 				for(posn = numChildren - 1; posn >= 0; --posn)
 				{
 					child = children[posn];
 					switch(child.Dock)
 					{
-						case DockStyle.None: break;
+						case DockStyle.None:
+						{
+							PerformAnchorLayout (child);
+						}
+						break;
 
 						case DockStyle.Top:
 						{
@@ -2763,97 +2837,6 @@ public class Control : IWin32Window, IDisposable
 								(left, top, right - left, bottom - top);
 						}
 						break;
-					}
-					if(child.Dock != DockStyle.None)
-					{
-						// Just in case we are switched to anchoring later.
-						child.prevParentWidth = rect.Width;
-						child.prevParentHeight = rect.Height;
-					}
-				}
-
-				// Lay out the anchored controls, from first to last.
-				for(posn = 0; posn < numChildren; ++posn)
-				{
-					child = children[posn];
-					if(child.Dock == DockStyle.None)
-					{
-						// If the anchor style is top-left, then bail out as
-						// there will be no change to the child's position.
-						anchor = child.Anchor;
-						if(anchor == (AnchorStyles.Top | AnchorStyles.Left))
-						{
-							child.prevParentWidth = rect.Width;
-							child.prevParentHeight = rect.Height;
-							continue;
-						}
-
-						// Get the previous distance from all edges.
-						left = child.left - rect.X;
-						top = child.top - rect.Y;
-						right = child.prevParentWidth - (left + child.width);
-						bottom = child.prevParentHeight - (top + child.height);
-
-						// Anchor the child to each specified side.
-						if((anchor & AnchorStyles.Top) != 0)
-						{
-							if((anchor & AnchorStyles.Bottom) == 0)
-							{
-								// Anchor to the top, but not the bottom.
-								bottom = rect.Height - (top + child.height);
-							}
-						}
-						else if((anchor & AnchorStyles.Bottom) != 0)
-						{
-							// Anchor to the bottom, but not the top.
-							top = rect.Height - (bottom + child.height);
-						}
-						else
-						{
-							// Center within the top and bottom edges.
-							top = (rect.Height - child.height) / 2;
-							bottom = rect.Height - (top + child.height);
-						}
-						if((anchor & AnchorStyles.Left) != 0)
-						{
-							if((anchor & AnchorStyles.Right) == 0)
-							{
-								// Anchor to the left, but not the right.
-								right = rect.Width - (left + child.width);
-							}
-						}
-						else if((anchor & AnchorStyles.Right) != 0)
-						{
-							// Anchor to the right, but not the left.
-							left = rect.Width - (right + child.width);
-						}
-						else
-						{
-							// Center within the left and right edges.
-							left = (rect.Width - child.width) / 2;
-							right = rect.Width - (left + child.width);
-						}
-
-						// Compute the final client rectangle and check it.
-						right = rect.Width - right;
-						bottom = rect.Height - bottom;
-						if(left > right)
-						{
-							right = left;
-						}
-						if(top > bottom)
-						{
-							bottom = top;
-						}
-
-						// Set the new bounds for the child.
-						child.SetBounds
-							(rect.X + left, rect.Y + top,
-							right - left, bottom - top);
-
-						// Update the parent information for the next layout.
-						child.prevParentWidth = rect.Width;
-						child.prevParentHeight = rect.Height;
 					}
 				}
 			}
@@ -3533,10 +3516,17 @@ public class Control : IWin32Window, IDisposable
 				bool resized;
 				moved = (x != this.left || y != this.top);
 				resized = (width != this.width || height != this.height);
+
+				prevLeft = this.left;
+				prevTop = this.top;
+				prevWidth = this.width;
+				prevHeight = this.height;
+
 				this.left = x;
 				this.top = y;
 				this.width = width;
 				this.height = height;
+
 				if(moved)
 				{
 					OnLocationChanged(EventArgs.Empty);

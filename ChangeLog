@@ -1,3 +1,9 @@
+2005-02-08  Marc Haisenko <marc@darkdust.net>
+	* System.Windows.Forms/Control.cs: Fix layouting bug in Control.cs
+	(child controls sometimes got a wrong size), save old size informations
+	in the parent instead of the childs, minor refactoring of
+	PerformActualLayout (patch #3714)
+
 2005-02-06  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Text/StringBuilder.cs: reimplement some functionality as

@@ -62,10 +62,24 @@ void ILMemberSetAttrs(ILMember *member, ILUInt32 mask, ILUInt32 attrs)
 int ILMemberAccessible(ILMember *member, ILClass *scope)
 {
 	ILClass *info = member->owner;
+	ILMethod *accessor;
 	scope = (ILClass *)(_ILProgramItemResolve(&(scope->programItem)));
 	if(!ILClassAccessible(info, scope))
 	{
 		return 0;
+	}
+	if(ILMember_IsProperty(member))
+	{
+		accessor = ILProperty_Getter((ILProperty *)member);
+		if(!accessor)
+		{
+			accessor = ILProperty_Setter((ILProperty *)member);
+		}
+		if(!accessor)
+		{
+			return 0;
+		}
+		member = (ILMember *)accessor;
 	}
 	if(ILMember_IsMethod(member) || ILMember_IsField(member))
 	{

@@ -13,6 +13,8 @@ implement ILNode_StaticProperty and ILNode_MemberProperty.
 * cscc/cs_lvalue.tc: semantic analysis for ILNode_MemberAccess; field
 access within objects that are not "this"; semantic analysis for properties.
 
+* image/member.c (ILMemberAccessible): support for properties.
+
 2001-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_lookup.c: new routines for looking up names in scopes, according

@@ -14,6 +14,8 @@
 	samples/mscorlib.dll: update all assemblies from the latest
 	version of pnetlib.
 
+	* NEWS, configure.in: update version for the "0.3.8" release.
+
 2002-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, codegen/jv_stmt.tc: make sure that the

@@ -1,4 +1,93 @@
 
+0.3.8 (10 June 2002)
+
+	Runtime engine:
+
+	* Use gcc's computed goto facility to speed up the interpreter.
+	* Implement a code unrolling facility to translate common CVM
+	  instruction sequences into x86 machine code.
+	* Combine "call" and "call_extern" into a single instruction.
+	* Convert "frame" and "exceptHeight" values in call frames into
+	  pointers, to reduce the overhead of method calls.
+	* Don't reset "exceptHeight" on entry to a method, because it will
+	  be overwritten anyway if it is needed, and ignored if not.
+	* Optimise loads and stores of bool/byte local varaibles.
+	* Profile variable usage.
+	* Modifications to allow internalcalls to work without libffi.
+	* Variable argument support.
+	* Throw "System.Security.VerificationException" when the verifier fails.
+	* Handle type expansion (e.g. char->int) in internalcalls and PInvokes.
+	* Code generation and interpreter problems with branches and switches.
+	* Abstract the details of generating and unpacking CVM instructions
+	  to make it easier to switch between threaded interpreter types.
+	* Fixes to subclass relationship testing in the verifier, when multiple
+	  execution paths are coalesced.
+	* Centralise CVM configuration into "engine/cvm_config.h".
+	* Convert the "tail/call" sequence into a separate "tail_call" instruction.
+	* Begin implementing indirect method calls (incomplete).
+	* Use the "raw" libffi mode if it is available, because it is faster.
+	* Short-cut the execution of method call instructions to avoid an
+	  unnecessary call to "_ILConvertMethod" if the method is already
+	  converted.
+	* New rules for PInvoke parameter and return type marshalling.
+	* Internalcall for "Assembly.GetTypes" (Gopal V).
+	* Add the "-P" debug option to ilrun, which dumps the method cache
+	  and GC heap sizes on program exit.
+	* Begin integrating thread support (incomplete).
+
+	C# Compiler:
+
+	* Local constant declarations (Gopal V).
+	* "-fsave-asm" will save the output even if the assembler fails.
+	* Semantic analysis and code generation for "base" expressions (Gopal V).
+	* Special-case "foreach" for string iteration.
+	* Rewrite "ILNodeEndsInReturn" so that it uses a treecc operation
+	  instead of hard-coded node testing.
+	* Fixes to code generation for "switch" statements.
+
+	Documentation and Samples:
+
+	* Add ilrun.1 to the build system.
+	* Document the "direct" format for CVM instructions.
+	* Document the new PInvoke marshal rules in "doc/pinvoke.html".
+	* HTTP server sample - httpsrv (Gopal V).
+
+	Assembler:
+
+	* Fixes to assembly of "switch" instructions.
+
+	Diassembler:
+
+	* Remove "// unsafe" reporting, as it was not strictly accurate.
+
+	Loader and Metadata:
+
+	* Fix the handling of "vararg" call sites throughout the stack.
+	* Use the "secure" bit in loaded images to determine if explicit
+	  class layout is allowed.
+
+	Platform Support:
+
+	* MacOSX portability problems in IL_WRITE_XXX macros in "il_values.h"
+	  (Glen Chambers).
+	* MacOSX patches to libffi (Glen Chambers).
+	* Removed bogus option from libgc that broke hpux (James Mc Parlane).
+	* Use "isfinite" on hpux (James Mc Parlane).
+	* Ported entire stack to MacOSX.
+	* Detect missing CODESET on NetBSD.
+	* Turn off -O2 in "tests" because it causes compiler lock-ups on
+	  platforms with insufficent memory.
+	* Implement true mmap-based page allocation for ILPageAlloc and friends.
+	* Begin implementing "wait handles" in the threading sub-system.
+
+	Other:
+
+	* Removed "ilrun_opt", because "ilrun" is now just as fast.
+	* Move some lesser used utility programs to "noinst" to prevent
+	  cluttering of install directories.
+	* Updates to the build system to be more friendly to automake 1.5.
+	* Added debian packaging support (Andrew Mitchell).
+
 0.3.6 (11 May 2002)
 
 	Runtime engine:

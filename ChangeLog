@@ -5,6 +5,8 @@
 engine/lib_type.c, engine/process.c: modify the runtime engine's reflection
 interface to match the changes to pnetlib.
 
+* samples/mscorlib.dll: new version with the changed reflection interface.
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * samples/mscorlib.dll: new version with many changes to exceptions, I/O,

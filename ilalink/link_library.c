@@ -562,6 +562,8 @@ static int WalkGlobals(ILLinker *linker, ILImage *image,
 	ILField *field;
 	ILMethod *method;
 	char *name;
+	char *aliasFor;
+	int flags;
 
 	/* Find all public static fields and methods in the type */
 	member = 0;
@@ -574,9 +576,16 @@ static int WalkGlobals(ILLinker *linker, ILImage *image,
 			{
 				name = (ILInternString
 					((char *)(ILField_Name(field)), -1)).string;
-				/* TODO: strong aliases */
+				flags = IL_LINKSYM_VARIABLE;
+				aliasFor = ILLinkerGetStringAttribute
+					(ILToProgramItem(field),
+					 "StrongAliasForAttribute", "OpenSystem.C");
+				if(aliasFor)
+				{
+					flags |= IL_LINKSYM_STRONG;
+				}
 				if(!AddGlobalSymbol(linker, library, name,
-									0, IL_LINKSYM_VARIABLE, member))
+									aliasFor, flags, member))
 				{
 					return 0;
 				}
@@ -589,9 +598,26 @@ static int WalkGlobals(ILLinker *linker, ILImage *image,
 			{
 				name = (ILInternString
 					((char *)(ILMethod_Name(method)), -1)).string;
-				/* TODO: weak and strong aliases */
+				flags = IL_LINKSYM_FUNCTION;
+				aliasFor = ILLinkerGetStringAttribute
+					(ILToProgramItem(method),
+					 "StrongAliasForAttribute", "OpenSystem.C");
+				if(aliasFor)
+				{
+					flags |= IL_LINKSYM_STRONG;
+				}
+				else
+				{
+					aliasFor = ILLinkerGetStringAttribute
+						(ILToProgramItem(method),
+						 "WeakAliasForAttribute", "OpenSystem.C");
+					if(aliasFor)
+					{
+						flags |= IL_LINKSYM_WEAK;
+					}
+				}
 				if(!AddGlobalSymbol(linker, library, name,
-									0, IL_LINKSYM_FUNCTION, member))
+									aliasFor, flags, member))
 				{
 					return 0;
 				}

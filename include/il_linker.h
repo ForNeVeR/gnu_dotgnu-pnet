@@ -150,6 +150,15 @@ ILAttribute *ILLinkerFindAttribute(ILProgramItem *item,
 ILSerializeReader *ILLinkerReadAttribute(ILAttribute *attr);
 
 /*
+ * Get the value of a string attribute on an item.  The return
+ * value is NULL if the attribute is not present, or should be
+ * free'd with ILFree otherwise.
+ */
+char *ILLinkerGetStringAttribute(ILProgramItem *item,
+								 const char *name,
+								 const char *namespace);
+
+/*
  * Determine if an image is a C object.
  */
 int ILLinkerIsCObject(ILImage *image);

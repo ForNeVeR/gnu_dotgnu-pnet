@@ -98,6 +98,55 @@ ILAttribute *ILLinkerFindAttribute(ILProgramItem *item,
 	return 0;
 }
 
+char *ILLinkerGetStringAttribute(ILProgramItem *item,
+								 const char *name,
+								 const char *namespace)
+{
+	ILAttribute *attr = 0;
+	ILMethod *ctor;
+	ILClass *attrClass;
+	ILType *signature;
+	while((attr = ILProgramItemNextAttribute(item, attr)) != 0)
+	{
+		ctor = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
+		if(ctor)
+		{
+			attrClass = ILMethod_Owner(ctor);
+			if(!strcmp(ILClass_Name(attrClass), name))
+			{
+				if(NamespaceMatch(ILClass_Namespace(attrClass), namespace))
+				{
+					signature = ILMethod_Signature(ctor);
+					if(ILTypeNumParams(signature) == 1 &&
+					   ILTypeIsStringClass(ILTypeGetParam(signature, 1)))
+					{
+						/* We have found the attribute we were looking for */
+						ILSerializeReader *reader;
+						int len;
+						const char *str;
+						char *result = 0;
+						reader = ILLinkerReadAttribute(attr);
+						if(reader &&
+						   ILSerializeReaderGetParamType(reader)
+						   		== IL_META_SERIALTYPE_STRING &&
+						   (len = ILSerializeReaderGetString(reader, &str))
+						   		>= 0)
+						{
+							result = ILDupNString(str, len);
+						}
+						if(reader)
+						{
+							ILSerializeReaderDestroy(reader);
+						}
+						return result;
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 void _ILLinkerCreateAttribute(ILLinker *linker, ILProgramItem *item,
 							  const char *name, const char *namespace,
 							  ILType *arg1Type, ILType *arg2Type,

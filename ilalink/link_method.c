@@ -920,6 +920,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	ILType *synType;
 	ILTypeSpec *spec;
 	const char *name;
+	const char *findName;
 	ILType *signature;
 	ILMethod *method;
 	ILField *field;
@@ -932,6 +933,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	/* Convert the member's owner reference */
 	owner = ILMember_Owner(member);
 	synType = ILClassGetSynType(owner);
+	findName = ILMember_Name(member);
 	if(synType)
 	{
 		/* Map the synthetic type reference into the new image */
@@ -966,6 +968,9 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 			   (ILType_Kind(ILMember_Signature(member)) &
 			   		IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
 			{
+				/* We must change the "find name", because the function
+				   may have been redirected via a strong alias */
+				findName = ILMember_Name(findMember);
 				owner = ILMember_Owner(findMember);
 			}
 			else
@@ -989,7 +994,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	}
 
 	/* Search for an existing member with the requested signature */
-	name = ILMember_Name(member);
+	name = findName;
 	if((ILMember_Attrs(member) & IL_META_METHODDEF_MEMBER_ACCESS_MASK)
 					== IL_META_METHODDEF_PRIVATE &&
 	   _ILLinkerIsModule(ILMember_Owner(member)))

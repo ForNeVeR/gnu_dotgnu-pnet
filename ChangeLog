@@ -1,4 +1,9 @@
 
+2003-01-19  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Reflection/MemberFilter.cs: Add this delegate for
+	.NET compatibility.
+
 2003-01-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Xml/XmlTextWriter.cs: Change LookupPrefix to conform to 

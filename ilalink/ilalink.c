@@ -501,15 +501,14 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* Add the libraries to the linker context, in reverse order
-	   so that resolved externals will be linked correctly */
+	/* Add the libraries to the linker context */
+	for(temp = 0; temp < numLibraries; ++temp)
+	{
+		errors |= addLibrary(linker, libraries[temp]);
+	}
 	if(useStdlib)
 	{
 		errors |= addLibrary(linker, stdLibrary);
-	}
-	for(temp = numLibraries - 1; temp >= 0; ++temp)
-	{
-		errors |= addLibrary(linker, libraries[temp]);
 	}
 
 	/* Add the resources to the linker context */

@@ -18,6 +18,9 @@ implement "ILLinkerAddLibraryDir", "ILLinkerAddSystemDirs", and
 * ilalink/Makefile.am: add "CSCC_LIB_PREFIX" to the command-line of
 the linker build.
 
+* ilalink/ilalink.c: flip the library add order back to forward.
+Reverse will lead to linking issues when searching for classes.
+
 2001-10-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/lib_array.c: bug fix - set the array length in a newly-allocated

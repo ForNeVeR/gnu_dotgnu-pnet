@@ -105,13 +105,7 @@ dnl "libgc/configure.in" file for Copyright and other information.
 
 AC_MSG_CHECKING([for threads package to use])
 AC_ARG_ENABLE(threads, [  --enable-threads=TYPE   choose threading package],
-  THREADS=$enableval,
-  [ AC_MSG_CHECKING([for thread model used by GCC])
-    THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
-    if test -z "$THREADS"; then
-      THREADS=no
-    fi
-    AC_MSG_RESULT([$THREADS])])
+  THREADS=$enableval, THREADS=no)
 
 dnl Force pthreads for GNU/Linux and win32 threads for Cygwin systems.
 if test "$THREADS" = "no"; then
@@ -122,12 +116,19 @@ if test "$THREADS" = "no"; then
      	*-*-linux*)
 			THREADS=posix
 			;;
-		*-*-mingw*|*-*-cygwin*)
+	*-*-mingw*|*-*-cygwin*)
 			THREADS=win32
 			;;
 	esac
 fi
 
+if test "$THREADS" = "no" ; then
+    AC_MSG_CHECKING([for thread model used by GCC])
+    THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+fi	
+
+AC_MSG_RESULT([$THREADS])
+	
 THREADLIBS=
 case "$THREADS" in
  no | none | single)

@@ -745,12 +745,12 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 				field->offset = layout->staticSize;
 				field->nativeOffset = layout->staticSize;
 				layout->staticSize += typeLayout.size;
-			}
 
-			/* Set the "managedStatic" flag if the type is managed */
-			if(typeLayout.managedInstance)
-			{
-				layout->managedStatic = 1;
+				/* Set the "managedStatic" flag if the type is managed */
+				if(typeLayout.managedInstance)
+				{
+					layout->managedStatic = 1;
+				}
 			}
 		}
 	}

@@ -1,4 +1,14 @@
 
+2003-06-29  Thong Nguyen  <tum@veridicus.com>
+
+	* configure.in: Made gcc threading model detected occur only if
+	the system isn't windows or linux (windows and linux have default
+	forced threading models).
+	
+	* engine/layout.c: Fixed bug so that classes that don't implement
+	interfaces nor have static fields are properly identified as
+	managed or unmanaged.  
+
 2003-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: add "mingw" to the set of detected platforms

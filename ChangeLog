@@ -14,6 +14,9 @@
 
 	* samples/mscorlib.dll: new version with the recent pnetlib changes.
 
+	* engine/lib_string.c: temporarily disable the default encoding
+	because it doesn't work yet.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/internal.c, engine/lib_reflect.c: continue implementing

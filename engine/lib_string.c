@@ -279,6 +279,9 @@ static System_String *System_String_ctor_6(ILExecThread *thread,
 	/* Find the default encoding object to use */
 	if(!encoding)
 	{
+		/* Encodings are temporarily disabled because the default
+		   encoding doesn't work yet */
+	#if 0
 		if(ILExecThreadCallNamed(thread, "System.Text.Encoding",
 								 "get_Default", "()oSystem.Text.Encoding;",
 								 &encoding))
@@ -286,6 +289,7 @@ static System_String *System_String_ctor_6(ILExecThread *thread,
 			/* Return to the caller with the pending exception */
 			return 0;
 		}
+	#endif
 		if(!encoding)
 		{
 			/* System.Text.Encoding.get_Default() returned "null",

@@ -1,4 +1,12 @@
 
+2003-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/I18N.build, JScript/JScript.build, System/System.build,
+	System.Xml/Xml.build, compat/compat.build, csunit/csunit.build,
+	csupport/csupport.build, runtime/runtime.build: add the
+	"-fminimize-parameters" option to the *.build files, to reduce
+	the sizes of the library assemblies.
+
 2003-02-11  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 	
 	* runtime/System/DateTime.cs, 

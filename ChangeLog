@@ -1,4 +1,9 @@
 
+2003-07-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, Xsharp/Makefile.am: remove "-lX11" from the link
+	line for "libXsharpSupport.so" if X is disabled or not present.
+
 2003-06-28  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Console.cs: Make default writers synchronized.

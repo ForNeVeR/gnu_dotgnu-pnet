@@ -5,7 +5,7 @@ xsupportdir = $(libdir)/cscc/lib
 xsupport_LTLIBRARIES = libXsharpSupport.la
 
 libXsharpSupport_la_SOURCES = XsharpSupport.c
-libXsharpSupport_la_LDFLAGS = $(X_LIBS) $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS)
+libXsharpSupport_la_LDFLAGS = $(X_LIBS) $(X_PRE_LIBS) $(X11_LIB) $(X_EXTRA_LIBS)
 
 AM_CFLAGS = $(X_CFLAGS)
 

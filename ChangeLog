@@ -20,6 +20,8 @@
 	* codegen/cg_resolve.c (ResolveMethod): all user-defined conversions
 	in the arguments when matching a user-defined binary or unary operator.
 
+	* codegen/cg_coerce.c: implement missing unsafe pointer coercions.
+
 2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

@@ -45,6 +45,9 @@ typedef struct
 	/* Builtin conversion */
 	const ILConversion *builtin;
 
+	/* Coerce "null" to a pointer type */
+	int			pointerNull;
+
 } ConvertRules;
 
 /*
@@ -325,48 +328,62 @@ static int GetBoxingConvertRules(ILGenInfo *info, ILType *fromType,
 }
 
 /*
+ * Determine if a type is pointer-based.
+ */
+#define	ILType_IsPointer(type)	\
+			((type) != 0 && ILType_IsComplex((type)) && \
+			 ILType_Kind((type)) == IL_TYPE_COMPLEX_PTR)
+
+/*
  * Get the rules to be used inside of an unsafe block.
  */
 static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 		ILType *toType, int explicit, int kinds, ConvertRules *rules)
 {
 	const ILConversion *conv;
-	/* TODO : Handle the rest of the cases */
-	/*  Numeric/pointer casts  */
-	if (explicit)
+
+	/* Handle pointer/pointer casts */
+	if(ILType_IsPointer(toType) && ILType_IsPointer(fromType))
 	{
-		/*  Numeric -> pointer conversion  */
-		if ( ILIsBuiltinNumeric(toType) && ILType_IsComplex(fromType) )
+		/* Can always cast between pointer types if explicit */
+		if(explicit)
 		{
-			if (ILType_Kind(fromType) == IL_TYPE_COMPLEX_PTR)
-			{
-				conv = ILFindConversion(fromType, toType, explicit,1);
-				if(conv)
-				{
-					rules->builtin = conv;
-					return 1;
-				}
-			}
+			return 1;
 		}
 
-		if ( ILType_IsComplex(toType) && ILIsBuiltinNumeric(fromType) )
+		/* Otherwise can only cast implicitly to "void *" */
+		return (ILType_Ref(toType) == ILType_Void);
+	}
+
+	/* Can cast implicitly from "null" to any pointer type */
+	if(ILType_IsPointer(toType) && fromType == ILType_Null)
+	{
+		rules->pointerNull = 1;
+		return 1;
+	}
+
+	/* Handle explicit numeric/pointer casts */
+	if(explicit)
+	{
+		/* Pointer to numeric conversion */
+		if(ILIsBuiltinNumeric(toType) && ILType_IsPointer(fromType))
 		{
-			if (ILType_Kind(toType) == IL_TYPE_COMPLEX_PTR)
+			conv = ILFindConversion(fromType, toType, explicit, 1);
+			if(conv)
 			{
+				rules->builtin = conv;
 				return 1;
 			}
 		}
 
-		if ( ILType_IsComplex(toType) && ILType_IsComplex(fromType) )
+		/* Numberic to pointer conversion */
+		if(ILType_IsPointer(toType) && ILIsBuiltinNumeric(fromType))
 		{
-			if (ILType_Kind(toType) == IL_TYPE_COMPLEX_PTR
-					&& ILType_Kind(fromType) == IL_TYPE_COMPLEX_PTR)
-			{
-				return 1;
-			}
+			return 1;
 		}
 	}
 
+	/* Could not find an appropriate conversion */
 	return 0;
 }
 
@@ -388,6 +405,7 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 	rules->method = 0;
 	rules->castType = 0;
 	rules->builtin = 0;
+	rules->pointerNull = 0;
 
 	/* Strip type prefixes before we start */
 	fromType = ILTypeStripPrefixes(fromType);
@@ -405,11 +423,16 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 		return 0;
 	}
 
-	/* If "fromType" is null, then "toType" must be a reference type */
+	/* If "fromType" is null, then "toType" must be a reference or pointer */
 	if(fromType == ILType_Null)
 	{
 		if((kinds & IL_CONVERT_REFERENCE) != 0)
 		{
+			if(ILType_IsPointer(toType) && info->unsafeLevel > 0)
+			{
+				rules->pointerNull = 1;
+				return 1;
+			}
 			return ILTypeIsReference(toType);
 		}
 		else
@@ -785,6 +808,14 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 	if(rules->castType)
 	{
 		*parent = ILNode_CastType_create(node, rules->castType);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+	}
+
+	/* Convert the object reference "null" into a pointer "null" */
+	if(rules->pointerNull)
+	{
+		*parent = ILNode_NullPtr_create();
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 	}

@@ -69,15 +69,10 @@ int ILLinkerAddLibraryDir(ILLinker *linker, const char *pathname);
 char *ILLinkerResolveLibrary(ILLinker *linker, const char *name);
 
 /*
- * Add an image to a linker context as a library.
+ * Add a named assembly to a linker context as a library.
  * Returns zero on error.
  */
-int ILLinkerAddLibrary(ILLinker *linker, ILImage *image, const char *filename);
-
-/*
- * Determine if a linker context already has a specific library assembly.
- */
-int ILLinkerHasLibrary(ILLinker *linker, const char *name);
+int ILLinkerAddLibrary(ILLinker *linker, const char *name);
 
 /*
  * Add an image to a linker context as one of the primary objects.

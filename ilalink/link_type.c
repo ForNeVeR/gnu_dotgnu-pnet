@@ -258,6 +258,7 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 			case IL_TYPE_COMPLEX_LOCALS:
 			{
 				newType->num__ = 0;
+				newType->un.locals__.next__ = 0;
 				numLocals = ILTypeNumLocals(type);
 				for(param = 0; param < numLocals; ++param)
 				{

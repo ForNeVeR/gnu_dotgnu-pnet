@@ -807,61 +807,7 @@ static int parseVersion(ILUInt16 *version, const char *str)
  */
 static int addLibrary(ILLinker *linker, const char *filename)
 {
-	FILE *file;
-	ILContext *context;
-	int loadError;
-	ILImage *image;
-	int errors = 0;
-	char *newFilename;
-
-	/* Resolve the library name */
-	newFilename = ILLinkerResolveLibrary(linker, filename);
-	if(!newFilename)
-	{
-		fprintf(stderr, "%s: library not found\n", filename);
-		return 1;
-	}
-
-	/* Open the library file */
-	if((file = fopen(newFilename, "rb")) == NULL)
-	{
-		/* Try again in case libc does not understand "rb" */
-		if((file = fopen(newFilename, "r")) == NULL)
-		{
-			perror(newFilename);
-			ILFree(newFilename);
-			return 1;
-		}
-	}
-
-	/* Load the library as an image */
-	context = ILContextCreate();
-	if(!context)
-	{
-		outOfMemory();
-	}
-	loadError = ILImageLoad(file, newFilename, context, &image,
-							IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE);
-	if(loadError)
-	{
-		fprintf(stderr, "%s: %s\n", newFilename, ILImageLoadError(loadError));
-		ILContextDestroy(context);
-		fclose(file);
-		ILFree(newFilename);
-		return 1;
-	}
-	fclose(file);
-
-	/* Add the library image to the linker context */
-	if(!ILLinkerAddLibrary(linker, image, newFilename))
-	{
-		errors = 1;
-	}
-
-	/* Clean up and exit */
-	ILContextDestroy(context);
-	ILFree(newFilename);
-	return errors;
+	return !ILLinkerAddLibrary(linker, filename);
 }
 
 /*
@@ -920,17 +866,10 @@ static int processImage(ILLinker *linker, const char *filename,
 		{
 			/* We must have the C# base class library, even if
 			   the user specified "--nostdlib" */
-			if(!ILLinkerHasLibrary(linker, stdLibrary))
-			{
-				errors |= addLibrary(linker, stdLibrary);
-			}
+			errors |= addLibrary(linker, stdLibrary);
 
 			/* Make sure that we have the "OpenSystem.C" assembly */
-			if(!ILLinkerHasLibrary(linker, "OpenSystem.C"))
-			{
-				/* Load "OpenSystem.C" */
-				errors |= addLibrary(linker, "OpenSystem.C");
-			}
+			errors |= addLibrary(linker, "OpenSystem.C");
 
 			/* Make sure that we have the "libc" library */
 			if(useStdlib)
@@ -940,10 +879,7 @@ static int processImage(ILLinker *linker, const char *filename,
 					sprintf(libcName, "libc%d", model);
 					stdCLibrary = libcName;
 				}
-				if(!ILLinkerHasLibrary(linker, stdCLibrary))
-				{
-					errors |= addLibrary(linker, stdCLibrary);
-				}
+				errors |= addLibrary(linker, stdCLibrary);
 			}
 		}
 

@@ -84,11 +84,14 @@ typedef struct _tagILLibrary ILLibrary;
 struct _tagILLibrary
 {
 	char		   *name;			/* Name of the library's assembly */
+	char           *filename;		/* Filename for the library's assembly */
 	ILUInt16		version[4];		/* Version of the library's assembly */
 	ILLibrary	   *altNames;		/* Alternative names for the library */
 	ILHashTable    *classHash;		/* Hash table for class name lookup */
 	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
 	ILMemPool		pool;			/* Memory pool for symbol allocation */
+	ILContext      *context;		/* Context containing the library image */
+	ILImage        *image;			/* Image that corresponds to the library */
 	ILLibrary	   *next;			/* Next library used by the linker */
 
 };

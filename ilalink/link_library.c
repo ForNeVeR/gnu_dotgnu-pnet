@@ -136,13 +136,20 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 static void LibraryDestroy(ILLibrary *library)
 {
 	ILLibrary *next;
+	int isFirst = 1;
 	while(library != 0)
 	{
 		next = library->altNames;
 		ILFree(library->name);
+		ILFree(library->filename);
 		ILHashDestroy(library->classHash);
 		ILHashDestroy(library->symbolHash);
 		ILMemPoolDestroy(&(library->pool));
+		if(isFirst)
+		{
+			ILContextDestroy(library->context);
+			isFirst = 0;
+		}
 		ILFree(library);
 		library = next;
 	}
@@ -233,8 +240,8 @@ static int SymbolHash_Match(const ILLibrarySymbol *libSymbol,
  * within a supplied library image.  Returns the list,
  * or NULL if an error occurred.
  */
-static ILLibrary *ScanAssemblies(ILLinker *linker, ILImage *image,
-								 const char *filename)
+static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
+								 ILImage *image, const char *filename)
 {
 	ILLibrary *library;
 	ILLibrary *lastLibrary;
@@ -263,6 +270,15 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILImage *image,
 			LibraryDestroy(library);
 			return 0;
 		}
+		nextLibrary->filename = ILDupString(filename);
+		if(!(nextLibrary->filename))
+		{
+			ILFree(nextLibrary->name);
+			ILFree(nextLibrary);
+			_ILLinkerOutOfMemory(linker);
+			LibraryDestroy(library);
+			return 0;
+		}
 		ILMemCpy(nextLibrary->version, ILAssemblyGetVersion(assem),
 				 4 * sizeof(ILUInt16));
 		nextLibrary->altNames = 0;
@@ -280,6 +296,7 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILImage *image,
 								(ILHashFreeFunc)0);
 			if(!(nextLibrary->classHash))
 			{
+				ILFree(nextLibrary->filename);
 				ILFree(nextLibrary->name);
 				ILFree(nextLibrary);
 				LibraryDestroy(library);
@@ -293,6 +310,7 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILImage *image,
 			if(!(nextLibrary->symbolHash))
 			{
 				ILHashDestroy(nextLibrary->classHash);
+				ILFree(nextLibrary->filename);
 				ILFree(nextLibrary->name);
 				ILFree(nextLibrary);
 				LibraryDestroy(library);
@@ -301,6 +319,8 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILImage *image,
 		}
 		ILMemPoolInitType(&(nextLibrary->pool), ILLibraryClassOrSymbol, 0);
 		nextLibrary->next = 0;
+		nextLibrary->context = context;
+		nextLibrary->image = image;
 		if(lastLibrary)
 		{
 			lastLibrary->altNames = nextLibrary;
@@ -505,22 +525,18 @@ static int WalkTypeDefs(ILLinker *linker, ILImage *image, ILLibrary *library)
 	return 1;
 }
 
-int ILLinkerAddLibrary(ILLinker *linker, ILImage *image, const char *filename)
+/*
+ * Add a library image to the linker context.
+ */
+static ILLibrary *AddLibrary(ILLinker *linker, ILContext *context,
+							 ILImage *image, const char *filename)
 {
 	ILLibrary *library;
 
 	/* Create ILLibrary records for the assembly definitions */
-	library = ScanAssemblies(linker, image, filename);
+	library = ScanAssemblies(linker, context, image, filename);
 	if(!library)
 	{
-		return 0;
-	}
-
-	/* Walk all of the TypeDef's in the library and build
-	   a list that can be used for later linking */
-	if(!WalkTypeDefs(linker, image, library))
-	{
-		LibraryDestroy(library);
 		return 0;
 	}
 
@@ -534,12 +550,130 @@ int ILLinkerAddLibrary(ILLinker *linker, ILImage *image, const char *filename)
 		linker->libraries = library;
 	}
 	linker->lastLibrary = library;
-	return 1;
+	return library;
 }
 
-int ILLinkerHasLibrary(ILLinker *linker, const char *name)
+/*
+ * Find a library by filename.
+ */
+static ILLibrary *FindLibraryByFilename(ILLinker *linker, const char *filename)
 {
-	return (_ILLinkerFindLibrary(linker, name) != 0);
+	ILLibrary *library;
+	library = linker->libraries;
+	while(library != 0)
+	{
+		if(!strcmp(library->filename, filename))
+		{
+			return library;
+		}
+		library = library->next;
+	}
+	return 0;
+}
+
+int ILLinkerAddLibrary(ILLinker *linker, const char *name)
+{
+	FILE *file;
+	ILContext *context;
+	int loadError;
+	ILImage *image;
+	int result = 1;
+	char *newFilename;
+	ILLibrary *library;
+	ILAssembly *assem;
+
+	/* Bail out if we already have a library with this assembly name */
+	if(_ILLinkerFindLibrary(linker, name) != 0)
+	{
+		return 1;
+	}
+
+	/* Resolve the library name */
+	newFilename = ILLinkerResolveLibrary(linker, name);
+	if(!newFilename)
+	{
+		fprintf(stderr, "%s: library not found\n", name);
+		linker->error = 1;
+		return 0;
+	}
+
+	/* Bail out if we already have a library with this filename */
+	if(FindLibraryByFilename(linker, newFilename) != 0)
+	{
+		ILFree(newFilename);
+		return 1;
+	}
+
+	/* Open the library file */
+	if((file = fopen(newFilename, "rb")) == NULL)
+	{
+		/* Try again in case libc does not understand "rb" */
+		if((file = fopen(newFilename, "r")) == NULL)
+		{
+			perror(newFilename);
+			ILFree(newFilename);
+			linker->error = 1;
+			return 0;
+		}
+	}
+
+	/* Load the library as an image */
+	context = ILContextCreate();
+	if(!context)
+	{
+		_ILLinkerOutOfMemory(linker);
+		ILFree(newFilename);
+		return 0;
+	}
+	loadError = ILImageLoad(file, newFilename, context, &image,
+							IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE);
+	if(loadError)
+	{
+		linker->error = 1;
+		fprintf(stderr, "%s: %s\n", newFilename, ILImageLoadError(loadError));
+		ILContextDestroy(context);
+		fclose(file);
+		ILFree(newFilename);
+		return 0;
+	}
+	fclose(file);
+
+	/* Add the library image to the linker context */
+	library = AddLibrary(linker, context, image, newFilename);
+	if(!library)
+	{
+		linker->error = 1;
+		result = 0;
+	}
+
+	/* Clean up temporary memory that we used */
+	ILFree(newFilename);
+
+	/* Add assemblies that were referenced by this library, because
+	   this library may contain TypeRef's in its public signatures
+	   to some other assembly, and we need to import them too */
+	if(result)
+	{
+		assem = 0;
+		while((assem = (ILAssembly *)ILImageNextToken
+					(image, IL_META_TOKEN_ASSEMBLY_REF, (void *)assem)) != 0)
+		{
+			if(!ILLinkerAddLibrary(linker, ILAssembly_Name(assem)))
+			{
+				result = 0;
+				break;
+			}
+		}
+	}
+
+	/* Walk the type definitions in the library to discover what is present */
+	if(result && !WalkTypeDefs(linker, image, library))
+	{
+		result = 0;
+	}
+
+	/* Return the final result to the caller */
+	return result;
 }
 
 void _ILLinkerDestroyLibraries(ILLinker *linker)
@@ -567,7 +701,7 @@ ILLibrary *_ILLinkerFindLibrary(ILLinker *linker, const char *name)
 		{
 			if(!ILStrICmp(altName->name, name))
 			{
-				return altName;
+				return library;
 			}
 			altName = altName->altNames;
 		}

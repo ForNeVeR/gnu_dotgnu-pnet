@@ -24,6 +24,9 @@ namespace System.Drawing.Toolkit
 
 public interface IToolkitPen : IToolkitSelectObject
 {
+	// Select a brush-based pen into a graphics object.
+	void Select(IToolkitGraphics graphics, IToolkitBrush brush);
+
 }; // interface IToolkitPen
 
 }; // namespace System.Drawing.Toolkit

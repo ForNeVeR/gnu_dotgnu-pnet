@@ -80,6 +80,13 @@ internal sealed class PostscriptPen : IToolkitPen
 				}
 			}
 
+	// Select a brush-based pen into a graphics object.
+	public void Select(IToolkitGraphics graphics, IToolkitBrush brush)
+			{
+				Select(graphics);
+				// TODO: select the brush information
+			}
+
 	// Dispose of this pen.
 	public void Dispose()
 			{

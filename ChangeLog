@@ -50,6 +50,13 @@
 
 	* System.Drawing/Pen.cs: get and set brush properties on pens.
 
+	* System.Drawing/Graphics.cs, System.Drawing/Pen.cs,
+	System.Drawing/Toolkit/IToolkitPen.cs,
+	System.Drawing.Postscript/PostscriptPen.cs,
+	System.Drawing.Win32/DrawingPen.cs,
+	System.Drawing.Xsharp/DrawingPen.cs: pass the brush properties
+	for a pen down to the toolkit layer; pen brush selection for Xsharp.
+
 2003-08-03  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ButtonBase.cs: some improvements for inheritors,

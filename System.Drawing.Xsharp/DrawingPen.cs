@@ -140,7 +140,18 @@ internal sealed class DrawingPen : IToolkitPen
 					g.JoinStyle = MapJoinStyle(properties.LineJoin);
 					g.Foreground = DrawingToolkit.DrawingToXColor
 						(properties.Color);
+					g.SetFillSolid();
 				}
+			}
+
+	// Select a brush-based pen into a graphics object.
+	public void Select(IToolkitGraphics graphics, IToolkitBrush brush)
+			{
+				// Set the basic line information first.
+				Select(graphics);
+
+				// Select the brush details into the graphics context.
+				brush.Select(graphics);
 			}
 
 	// Dispose of this pen.

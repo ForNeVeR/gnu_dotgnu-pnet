@@ -2933,7 +2933,15 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					throw new ObjectDisposedException("graphics");
 				}
 				IToolkitPen tpen = pen.GetPen(graphics.Toolkit);
-				tpen.Select(graphics);
+				if(pen.PenType == PenType.SolidColor)
+				{
+					tpen.Select(graphics);
+				}
+				else
+				{
+					IToolkitBrush tbrush = pen.Brush.GetBrush(graphics.Toolkit);
+					tpen.Select(graphics, tbrush);
+				}
 			}
 
 	// Select a brush into the toolkit graphics object.

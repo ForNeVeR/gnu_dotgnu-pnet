@@ -46,6 +46,13 @@ internal class DrawingPen : IToolkitPen, IDisposable
 				(graphics as DrawingGraphics).SelectPen = this;
 			}
 
+	// Select a brush-based pen into a graphics object.
+	public void Select(IToolkitGraphics graphics, IToolkitBrush brush)
+			{
+				// TODO: handle the brush properties
+				Select(graphics);
+			}
+
 	// Dispose of this object.
 	public void Dispose()
 	{

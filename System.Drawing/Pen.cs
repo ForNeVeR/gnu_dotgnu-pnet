@@ -384,6 +384,10 @@ public sealed class Pen : MarshalByRefObject, ICloneable, IDisposable
 						toolkitPen = null;
 					}
 					toolkit = null;
+					if(brush != null)
+					{
+						brush.Modified();
+					}
 				}
 			}
 

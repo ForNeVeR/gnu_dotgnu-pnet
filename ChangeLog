@@ -1,12 +1,34 @@
 
-2003-06-22  Simon Guindon  <simon@nureality.ca>
+2003-06-21  Simon Guindon  <simon@nureality.ca>
+
+	* Makefile.am, configure.in, System.Drawing.Win32/.cvsignore,
+	System.Drawing.Win32/DrawingBrush.cs,
+	System.Drawing.Win32/DrawingControlWindow.cs,
+	System.Drawing.Win32/DrawingFont.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingHatchBrush.cs,
+	System.Drawing.Win32/DrawingPen.cs,
+	System.Drawing.Win32/DrawingRootTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingSolidBrush.cs,
+	System.Drawing.Win32/DrawingTextureBrush.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Win32/Makefile.am,
+	System.Drawing.Win32/System.Drawing.Win32.build,
+	System.Drawing.Win32/Win32.cs: add the "System.Drawing.Win32"
+	assembly, which provides drawing functionality using the
+	raw Win32 API.
+
+Script done on Sat Jun 21 11:14:13 2003
+2003-06-21  Simon Guindon  <simon@nureality.ca>
 
 	* System.Windows.Forms/StatusBar.cs,
 	System.Windows.Forms/StatusBarPanel.cs,
 	System.Windows.Forms/StatusBarPanelCollection.cs:
 	begin the implementation of the StatusBar class.
 
-2003-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+2003-06-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing.Xsharp/DrawingPen.cs, Xsharp/Graphics.cs,
 	Xsharp/Xlib.cs.in: implement some of the support code for

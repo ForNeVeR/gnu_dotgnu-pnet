@@ -320,6 +320,7 @@ Xsharp/Makefile
 Xsharp/Xlib.cs
 System.Drawing/Makefile
 System.Drawing.Xsharp/Makefile
+System.Drawing.Win32/Makefile
 System.Windows.Forms/Makefile
 tests/Makefile
 tests/System/Makefile

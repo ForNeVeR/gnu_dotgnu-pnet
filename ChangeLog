@@ -11,6 +11,9 @@
 	coercion and method resolution API's; implement more implicit
 	coercions.
 
+	* codegen/cg_gen.c (ILTypeToMachineType): report that arrays have
+	the machine type "ILMachineType_ObjectRef".
+
 2001-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_nodes.tc, codegen/jv_decls.tc,

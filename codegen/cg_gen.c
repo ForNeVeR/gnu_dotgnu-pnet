@@ -339,6 +339,11 @@ ILMachineType ILTypeToMachineType(ILType *type)
 		/* Everything else is an object reference */
 		return ILMachineType_ObjectRef;
 	}
+	else if(ILType_IsArray(type))
+	{
+		/* Array types are always object references */
+		return ILMachineType_ObjectRef;
+	}
 	else if(type == ILType_Invalid)
 	{
 		/* Invalid types are treated as "void" */

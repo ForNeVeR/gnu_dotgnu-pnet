@@ -3,6 +3,9 @@
 
 	* engine/lib_emit.c: fix a warning.
 
+	* engine/unroll.c, engine/unroll_ptr.c, engine/unroll_var.c:
+	fix some ARM-related bugs in the generic unroller.
+
 2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeCreate

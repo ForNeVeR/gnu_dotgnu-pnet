@@ -596,7 +596,7 @@ case COP_PREAD_ELEM:
 	/* Read a native word from an array */
 	UNROLL_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
-						   MD_REG1_NATIVE | MD_REG2_NATIVE);
+						   MD_REG1_NATIVE | MD_REG2_32BIT);
 	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
 	md_load_memindex_word_native(unroll.out, reg, reg, reg2, MD_ARRAY_HEADER);
 	FreeTopRegister(&unroll, -1);

@@ -393,6 +393,7 @@ static int GetWordRegister(MDUnroll *unroll, int flags)
 	{
 		if(MD_IS_NATIVE_REG(reg))
 		{
+			reg &= ~MD_NATIVE_REG_MASK;
 			md_store_membase_word_native
 				(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
 		}
@@ -402,7 +403,6 @@ static int GetWordRegister(MDUnroll *unroll, int flags)
 				(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
 		}
 		unroll->stackHeight += sizeof(CVMWord);
-		reg &= ~MD_NATIVE_REG_MASK;
 		for(index = 1; index < unroll->pseudoStackSize; ++index)
 		{
 			unroll->pseudoStack[index - 1] = unroll->pseudoStack[index];
@@ -1502,7 +1502,7 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 
 #ifdef UNROLL_DEBUG
 	/* Dump the translated code */
-	DumpCode(method, posn.ptr, (int)(unroll.out - posn.ptr));
+	DumpCode(method, posn.ptr, (int)(((unsigned char *)unroll.out) - posn.ptr));
 #endif
 
 	/* Update the method cache to reflect the final position */

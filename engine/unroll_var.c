@@ -165,7 +165,7 @@ case COP_BLOAD:
 	/* Unroll an access to a byte frame variable */
 	unsigned temp = CVM_ARG_BYTE;
 	UNROLL_START();
-	reg = GetCachedWordRegister(&unroll, temp, MD_REG1_NATIVE);
+	reg = GetCachedWordRegister(&unroll, temp, MD_REG1_32BIT);
 	if(reg != -1)
 	{
 		md_load_membase_byte(unroll.out, reg,
@@ -396,7 +396,8 @@ case COP_DUP:
 	if(reg != -1)
 	{
 		/* The top is already in a register, so move it to a new register */
-		reg2 = GetWordRegister(&unroll, GetTopRegisterFlags(&unroll));
+		int flags = GetTopRegisterFlags(&unroll);
+		reg2 = GetWordRegister(&unroll, flags);
 		if(unroll.pseudoStackSize > 1)
 		{
 			md_mov_reg_reg(unroll.out, reg2, reg);
@@ -405,7 +406,7 @@ case COP_DUP:
 		{
 			/* "GetWordRegister" flushed all registers, so the value
 			   we want to duplicate is now on the CVM stack */
-			if(GetTopRegisterFlags(&unroll))
+			if((flags & MD_REGN_NATIVE) != 0)
 			{
 				md_load_membase_word_native
 						(unroll.out, reg2, MD_REG_STACK,
@@ -421,13 +422,6 @@ case COP_DUP:
 	}
 	else
 	{
-	#ifdef IL_NATIVE_INT32
-		/* The top is on the CVM stack */
-		reg = GetWordRegister(&unroll, MD_REG1_32BIT);
-		md_load_membase_word_32
-				(unroll.out, reg,
-				 MD_REG_STACK, unroll.stackHeight - sizeof(CVMWord));
-	#else
 		/* We don't know if the top is 32-bit or native, so copy
 		   the entire native word but leave it on the CVM stack.
 		   A later reload will determine the true size */
@@ -438,7 +432,6 @@ case COP_DUP:
 		md_store_membase_word_native
 				(unroll.out, MD_REG_0, MD_REG_STACK, unroll.stackHeight);
 		unroll.stackHeight += sizeof(CVMWord);
-	#endif
 	}
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }

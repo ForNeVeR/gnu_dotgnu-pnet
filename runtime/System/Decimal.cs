@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 
 public struct Decimal : IComparable, IFormattable, IConvertible
 {
-	private int low, middle, high, flags;
+	private int flags, high, middle, low;
 
 	public static readonly decimal Zero = 0.0m;
 	public static readonly decimal One = 1.0m;

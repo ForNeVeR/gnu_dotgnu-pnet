@@ -1,4 +1,8 @@
 
+2003-07-18  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/lib_type.c: Fix minor bug in Type.ToString() for arrays
+
 2003-07-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_array.c, engine/lookup.c, engine/verify_ptr.c,

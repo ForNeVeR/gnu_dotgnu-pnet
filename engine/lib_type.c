@@ -1158,7 +1158,7 @@ static ILInt32 NameOutputTypeSuffixes(ILUInt16 *buf, ILType *type)
 			{
 				++len;
 			}
-			while(rank > 0)
+			while(rank > 1)
 			{
 				if(buf != 0)
 				{

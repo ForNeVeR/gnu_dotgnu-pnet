@@ -42,16 +42,20 @@ static ILCmdLineOption const options[] = {
 		"-x",
 		"Set the output radix to hexadecimal (16)."},
 	{"-D", 'D', 0, 0, 0},
+	{"-c", 'c', 0, 0, 0},
 	{"-v", 'v', 0, 0, 0},
 	{"-V", 'v', 0, 0, 0},
 	{"--radix", 'r', 1,
 		"--radix num",
 		"Define the output radix.  The default is 10."},
 	{"--detailed", 'D', 0,
-		"--detailed or -D",
+		"--detailed    or -D",
+		"Use a more detailed form of output."},
+	{"--class-sizes", 'c', 0,
+		"--class-sizes or -c",
 		"Use a more detailed form of output."},
 	{"--version", 'v', 0,
-		"--version or -v or -V",
+		"--version     or -v or -V",
 		"Print the version of the program."},
 	{"--help", 'h', 0,
 		"--help",
@@ -63,12 +67,14 @@ static void usage(const char *progname);
 static void version(void);
 static int printSizes(const char *filename, ILContext *context, int radix);
 static int printDetailed(const char *filename, ILContext *context, int radix);
+static int printClassSizes(const char *filename, ILContext *context);
 
 int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
 	int radix = 10;
 	int detailed = 0;
+	int classSizes = 0;
 	int sawStdin;
 	int state, opt;
 	char *param;
@@ -118,6 +124,12 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'c':
+			{
+				classSizes = 1;
+			}
+			break;
+
 			case 'v':
 			{
 				version();
@@ -150,7 +162,11 @@ int main(int argc, char *argv[])
 	}
 
 	/* Print the headers */
-	if(!detailed)
+	if(classSizes)
+	{
+		printf("   meta  loaded    code      class\n");
+	}
+	else if(!detailed)
 	{
 		printf("   code    meta     res   other     %s     %s filename\n",
 			   (radix == 8 ? "oct" : (radix == 10 ? "dec" : "hex")),
@@ -171,6 +187,10 @@ int main(int argc, char *argv[])
 				{
 					errors |= printDetailed("-", context, radix);
 				}
+				else if(classSizes)
+				{
+					errors |= printClassSizes("-", context);
+				}
 				else
 				{
 					errors |= printSizes("-", context, radix);
@@ -184,6 +204,10 @@ int main(int argc, char *argv[])
 			if(detailed)
 			{
 				errors |= printDetailed(argv[1], context, radix);
+			}
+			else if(classSizes)
+			{
+				errors |= printClassSizes(argv[1], context);
 			}
 			else
 			{
@@ -417,6 +441,40 @@ static int printDetailed(const char *filename, ILContext *context, int radix)
 
 	/* Add some space between multiple files */
 	printf("\n\n");
+
+	/* Clean up and exit */
+	ILImageDestroy(image);
+	return 0;
+}
+
+/*
+ * Import a function from "ilsize_est.c".
+ */
+void _ILDumpClassSizes(ILImage *image);
+
+/*
+ * Load an IL image from an input stream and print class size information.
+ */
+static int printClassSizes(const char *filename, ILContext *context)
+{
+	ILImage *image;
+	unsigned long total;
+	unsigned long code;
+	unsigned long meta;
+	unsigned long res;
+	unsigned long other;
+
+	/* Attempt to load the image into memory */
+	image = loadImage(filename, context,
+					  IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE,
+					  &total, &code, &meta, &res, &other);
+	if(!image)
+	{
+		return 1;
+	}
+
+	/* Print the class size information */
+	_ILDumpClassSizes(image);
 
 	/* Clean up and exit */
 	ILImageDestroy(image);

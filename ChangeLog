@@ -8,6 +8,10 @@
 	include/il_program.h: add support for thread-static fields
 	to the runtime engine.
 
+	* ilsize/ilsize.c, ilsize/ilsize_est.c, ilsize/Makefile.am:
+	add a "class size estimation" feature to ilsize to help
+	identify how much memory may be needed when loading a class.
+
 2003-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilasm/ilasm_main.c: change the permissions to +x if writing

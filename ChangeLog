@@ -24,6 +24,9 @@
 	System/Text/RegularExpressions/syntax.cs: update the
 	System.Text.RegularExpressions code from the latest Mono snapshot.
 
+	* System/Text/RegularExpressions/interpreter.cs: modify a
+	"Debug.Assert" call that was incorrect.
+
 2004-01-19  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs,

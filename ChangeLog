@@ -1,3 +1,13 @@
+
+2005-02-24  Gopal V  <gopalv82@yahoo.com>
+
+	* System/Net/Configuration/ConnectionManagementHandler.cs,
+	System/Net/Configuration/DefaultProxyHandler.cs,
+	System/Net/Configuration/NetAuthenticationModuleHandler.cs,
+	System/Net/Configuration/NetConfigurationHandler.cs,
+	System/Net/Configuration/WebRequestModuleHandler.cs: Stub out
+	configuration handlers for System.Net
+
 2005-02-24  Marc Haisenko <marc@darkdust.net>
 
 	* System.Windows.Forms/Control.cs: Completely rewrote anchor layouting,

@@ -51,6 +51,25 @@ public class TestHashTable : TestCase
 				object[] array = new object [hashTable.Count];
 				hashTable.CopyTo (array, 0);
 			}
+			
+	public void TestHashTableAddRemove() {
+		Hashtable h = new Hashtable();
+
+		// these keys produces equal hashkeys
+		string [] keys = { "lcu.long_name_one", "lcu.long_name_two", "lcu.long_three" };
+		h.Add( keys[0], "Value Of 1" );
+		h.Add( keys[1], "Value Of 2" );
+		h.Add( keys[2], "Value Of 3" );
+
+		AssertEquals( "count", 3, h.Count );
+		
+		h.Remove( keys[0] );
+		h.Remove( keys[1] );
+		h.Remove( keys[2] );
+		
+		AssertEquals( "count", 0, h.Count );
+
+		}
 
 }; // class TestHashTable
 

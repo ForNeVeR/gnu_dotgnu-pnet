@@ -23,6 +23,7 @@ namespace System.Text
 
 using System;
 
+[Serializable]
 public class UTF8Encoding : Encoding
 {
 	// Magic number used by Windows for UTF-8.
@@ -468,10 +469,10 @@ public class UTF8Encoding : Encoding
 
 	// Internal version of "GetCharCount" which can handle a rolling
 	// state between multiple calls to this method.
-	public static int InternalGetCharCount(byte[] bytes, int index, int count,
-										   uint leftOverBits,
-										   uint leftOverCount,
-										   bool throwOnInvalid, bool flush)
+	private static int InternalGetCharCount(byte[] bytes, int index, int count,
+										    uint leftOverBits,
+										    uint leftOverCount,
+										    bool throwOnInvalid, bool flush)
 			{
 				// Validate the parameters.
 				if(bytes == null)
@@ -614,11 +615,11 @@ public class UTF8Encoding : Encoding
 			}
 
 	// Get the characters that result from decoding a byte buffer.
-	public static int InternalGetChars(byte[] bytes, int byteIndex,
-									   int byteCount, char[] chars,
-									   int charIndex, ref uint leftOverBits,
-									   ref uint leftOverCount,
-									   bool throwOnInvalid, bool flush)
+	private static int InternalGetChars(byte[] bytes, int byteIndex,
+									    int byteCount, char[] chars,
+									    int charIndex, ref uint leftOverBits,
+									    ref uint leftOverCount,
+									    bool throwOnInvalid, bool flush)
 			{
 				// Validate the parameters.
 				if(bytes == null)
@@ -961,6 +962,7 @@ public class UTF8Encoding : Encoding
 #endif // !ECMA_COMPAT
 
 	// UTF-8 decoder implementation.
+	[Serializable]
 	private sealed class UTF8Decoder : Decoder
 	{
 		private bool throwOnInvalid;
@@ -996,6 +998,7 @@ public class UTF8Encoding : Encoding
 	} // class UTF8Decoder
 
 	// UTF-8 encoder implementation.
+	[Serializable]
 	private sealed class UTF8Encoder : Encoder
 	{
 		private bool emitIdentifier;

@@ -48,6 +48,7 @@ ILClass *ILAsmClass;
 ILAssembly *ILAsmCurrAssemblyRef;
 int ILAsmDebugMode;
 char *ILAsmDebugLastFile = "";
+char *ILAsmLibraryName = "mscorlib";
 
 /*
  * Globals that are local to this module.

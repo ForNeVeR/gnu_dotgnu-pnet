@@ -85,6 +85,11 @@ extern int ILAsmDebugMode;
 extern char *ILAsmDebugLastFile;
 
 /*
+ * Name of the standard library.
+ */
+extern char *ILAsmLibraryName;
+
+/*
  * Initialize the building routines.
  */
 void ILAsmBuildInit(const char *outputFilename);

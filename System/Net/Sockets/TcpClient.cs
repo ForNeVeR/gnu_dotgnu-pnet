@@ -172,7 +172,7 @@ public class TcpClient : IDisposable
 				if(stream == null)
 				{
 					stream = new NetworkStream
-						(client, FileAccess.ReadWrite, false);
+						(client, FileAccess.ReadWrite, true);
 				}
 				return stream;
 			}

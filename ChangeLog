@@ -7,6 +7,9 @@
 	the InvokeOnEmpty() method to enable constructors to be
 	called after allocation.
 
+	* System/Net/Sockets/TcpClient.cs: When creating a stream 
+	from the socket, make sure the stream owns the socket.
+
 2004-05-15  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/runtime/System/TestDelegate.cs, tests/runtime/System/

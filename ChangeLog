@@ -1,4 +1,8 @@
 
+2002-04-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/UTF7Encoding.cs: implement the UTF-7 encoding.
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/*.cs: activate the rare code page handlers.

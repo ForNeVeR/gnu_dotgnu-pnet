@@ -26,11 +26,11 @@
 	stloc.2
 	ldloc.2
 	ldloc.0
-	call	class [.library]System.String [.library]System.String::Concat(class [.library]String.Delegate, class [.library]String.Delegate)
+	call	class [.library]System.String [.library]System.String::Concat(class [.library]System.String, class [.library]System.String)
 	stloc.2
 	ldloc.2
 	ldarg.1
-	call	class [.library]System.String [.library]System.String::Concat(class [.library]String.Object, class [.library]String.Object)
+	call	class [.library]System.String [.library]System.String::Concat(class [.library]System.Object, class [.library]System.Object)
 	stloc.2
 	ret
 	.maxstack 2

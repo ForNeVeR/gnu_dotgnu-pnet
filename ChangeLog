@@ -4,6 +4,8 @@
 	* configure.in, NEWS: update for the "0.5.0" release, bringing
 	the version numbers into sync with "pnet" in the process.
 
+	* configure.in: update working version to "0.5.1".
+
 2002-12-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, include/pthread.h, include/pwd.h, libc/Makefile.am,

@@ -126,7 +126,6 @@ struct _tagILImage
 	int				strRefBig : 1;	/* Non-zero if STRREF's are 32-bit */
 	int				blobRefBig : 1;	/* Non-zero if BLOBREF's are 32-bit */
 	int				guidRefBig : 1;	/* Non-zero if GUIDREF's are 32-bit */
-	int				oldMeta : 1;	/* Non-zero if Beta 1 or earlier metadata */
 	ILSectionMap   *map;			/* Maps virtual to real addresses */
 	char		   *data;			/* Data that makes up the IL image */
 	unsigned long	len;			/* Length of the IL image */
@@ -392,7 +391,7 @@ int _ILImageSetToken(ILImage *image, ILProgramItem *item,
  * Compute the size of all token types prior to writing
  * the metadata to an image.
  */
-void _ILImageComputeTokenSizes(ILImage *image, int useOldMetadata);
+void _ILImageComputeTokenSizes(ILImage *image);
 
 /*
  * Write all headers and section details to an output image.
@@ -472,14 +471,11 @@ void _ILWriteTokenFixups(ILWriter *writer, ILImage *image);
 #define	IL_OFFSET_TYPEREF_NAMESPACE			2
 
 #define	IL_OFFSET_TYPEDEF_ATTRS				0
-#define	IL_OFFSET_TYPEDEF_OBSOLETE_1		1
-#define	IL_OFFSET_TYPEDEF_OBSOLETE_2		2
-#define	IL_OFFSET_TYPEDEF_NAME				3
-#define	IL_OFFSET_TYPEDEF_NAMESPACE			4
-#define	IL_OFFSET_TYPEDEF_UNKNOWN			5
-#define	IL_OFFSET_TYPEDEF_PARENT			6
-#define	IL_OFFSET_TYPEDEF_FIRST_FIELD		7
-#define	IL_OFFSET_TYPEDEF_FIRST_METHOD		8
+#define	IL_OFFSET_TYPEDEF_NAME				1
+#define	IL_OFFSET_TYPEDEF_NAMESPACE			2
+#define	IL_OFFSET_TYPEDEF_PARENT			3
+#define	IL_OFFSET_TYPEDEF_FIRST_FIELD		4
+#define	IL_OFFSET_TYPEDEF_FIRST_METHOD		5
 
 #define	IL_OFFSET_FIELDPTR_REFERENCE		0
 
@@ -607,10 +603,6 @@ void _ILWriteTokenFixups(ILWriter *writer, ILImage *image);
 #define	IL_OFFSET_ASSEMBLY_KEY_LEN			8
 #define	IL_OFFSET_ASSEMBLY_NAME				9
 #define	IL_OFFSET_ASSEMBLY_LOCALE			10
-#define	IL_OFFSET_ASSEMBLY_CONFIG			11
-#define	IL_OFFSET_ASSEMBLY_TITLE			12
-#define	IL_OFFSET_ASSEMBLY_DESCRIPTION		13
-#define	IL_OFFSET_ASSEMBLY_ALT_NAME			14
 
 #define	IL_OFFSET_PROCESSORDEF_NUM			0
 
@@ -628,11 +620,9 @@ void _ILWriteTokenFixups(ILWriter *writer, ILImage *image);
 #define	IL_OFFSET_ASSEMBLYREF_KEY_LEN		7
 #define	IL_OFFSET_ASSEMBLYREF_NAME			8
 #define	IL_OFFSET_ASSEMBLYREF_LOCALE		9
-#define	IL_OFFSET_ASSEMBLYREF_CONFIG		10
-#define	IL_OFFSET_ASSEMBLYREF_HASH_RAW		11
-#define	IL_OFFSET_ASSEMBLYREF_HASH			12
-#define	IL_OFFSET_ASSEMBLYREF_HASH_LEN		13
-#define	IL_OFFSET_ASSEMBLYREF_UNKNOWN		14
+#define	IL_OFFSET_ASSEMBLYREF_HASH_RAW		10
+#define	IL_OFFSET_ASSEMBLYREF_HASH			11
+#define	IL_OFFSET_ASSEMBLYREF_HASH_LEN		12
 
 #define	IL_OFFSET_PROCESSORREF_NUM			0
 #define	IL_OFFSET_PROCESSORREF_ASSEMBLY		1
@@ -652,16 +642,12 @@ void _ILWriteTokenFixups(ILWriter *writer, ILImage *image);
 #define	IL_OFFSET_EXPTYPE_CLASS				1
 #define	IL_OFFSET_EXPTYPE_NAME				2
 #define	IL_OFFSET_EXPTYPE_NAMESPACE			3
-#define	IL_OFFSET_EXPTYPE_EXPORT_NAME		4
-#define	IL_OFFSET_EXPTYPE_FILE				5
+#define	IL_OFFSET_EXPTYPE_FILE				4
 
 #define	IL_OFFSET_MANIFESTRES_OFFSET		0
 #define	IL_OFFSET_MANIFESTRES_ATTRS			1
-#define	IL_OFFSET_MANIFESTRES_LOCALE		2
-#define	IL_OFFSET_MANIFESTRES_NAME			3
-#define	IL_OFFSET_MANIFESTRES_DESCRIPTION	4
-#define	IL_OFFSET_MANIFESTRES_IMPL			5
-#define	IL_OFFSET_MANIFESTRES_MIME			6
+#define	IL_OFFSET_MANIFESTRES_NAME			2
+#define	IL_OFFSET_MANIFESTRES_IMPL			3
 
 #define	IL_OFFSET_EXELOC_NAME_1				1
 #define	IL_OFFSET_EXELOC_NAME_2				2
@@ -683,8 +669,7 @@ int _ILImageRawTokenData(ILImage *image, ILToken token,
  * into a buffer prior to writing to an output image.
  */
 void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
-							ILToken token, ILUInt32 *values,
-							int useOldMetadata);
+							ILToken token, ILUInt32 *values);
 
 /*
  * Define this to 1 to enable debugging.

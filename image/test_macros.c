@@ -70,10 +70,6 @@ void TestAssemblyMacros(ILAssembly *assem)
 	IGNORE(ILAssembly_Name(assem));
 	IGNORE(ILAssembly_HashAlg(assem));
 	IGNORE(ILAssembly_Locale(assem));
-	IGNORE(ILAssembly_Config(assem));
-	IGNORE(ILAssembly_Title(assem));
-	IGNORE(ILAssembly_Description(assem));
-	IGNORE(ILAssembly_AltName(assem));
 	IGNORE(ILAssembly_Attrs(assem));
 	IGNORE(ILAssembly_HasPublicKey(assem));
 	IGNORE(ILAssembly_IsSideBySideCompatible(assem));
@@ -148,7 +144,7 @@ void TestMethodMacros(ILMethod *method)
 	IGNORE(ILMethod_CallConv(method));
 	IGNORE(ILMethod_RVA(method));
 	IGNORE(ILMethod_UserData(method));
-	IGNORE(ILMethod_IsPrivateScope(method));
+	IGNORE(ILMethod_IsCompilerControlled(method));
 	IGNORE(ILMethod_IsPrivate(method));
 	IGNORE(ILMethod_IsFamAndAssem(method));
 	IGNORE(ILMethod_IsFamily(method));
@@ -174,7 +170,7 @@ void TestMethodMacros(ILMethod *method)
 	IGNORE(ILMethod_HasNoInlining(method));
 	IGNORE(ILMethod_IsForwardRef(method));
 	IGNORE(ILMethod_IsSynchronized(method));
-	IGNORE(ILMethod_IsOLE(method));
+	IGNORE(ILMethod_IsPreserveSig(method));
 	IGNORE(ILMethod_IsInternalCall(method));
 	IGNORE(ILMethod_IsJavaFPStrict(method));
 	IGNORE(ILMethod_IsJava(method));
@@ -188,7 +184,6 @@ void TestParameterMacros(ILParameter *param)
 	IGNORE(ILParameter_Attrs(param));
 	IGNORE(ILParameter_IsIn(param));
 	IGNORE(ILParameter_IsOut(param));
-	IGNORE(ILParameter_IsLCID(param));
 	IGNORE(ILParameter_IsRetVal(param));
 	IGNORE(ILParameter_IsOptional(param));
 	IGNORE(ILParameter_HasDefault(param));
@@ -202,7 +197,7 @@ void TestFieldMacros(ILField *field)
 	IGNORE(ILField_Name(field));
 	IGNORE(ILField_Type(field));
 	IGNORE(ILField_Attrs(field));
-	IGNORE(ILField_IsPrivateScope(field));
+	IGNORE(ILField_IsCompilerControlled(field));
 	IGNORE(ILField_IsPrivate(field));
 	IGNORE(ILField_IsFamAndAssem(field));
 	IGNORE(ILField_IsAssembly(field));

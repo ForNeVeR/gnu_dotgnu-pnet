@@ -157,7 +157,6 @@ ILFlagInfo const ILParameterDefinitionFlags[] = {
 	{"out", IL_META_PARAMDEF_OUT, 0},
 	{"opt", IL_META_PARAMDEF_OPTIONAL, 0},
 	{"retval", IL_META_PARAMDEF_RETVAL, 0},
-	{"opt_old", IL_META_PARAMDEF_OPTIONAL_OLD, 0},
 	{0, 0, 0xFFFFFFE0},
 };
 
@@ -211,8 +210,7 @@ ILFlagInfo const ILMethodImplementationFlags[] = {
 	{"noinlining", IL_META_METHODIMPL_NO_INLINING, 0},
 	{"forwardref", IL_META_METHODIMPL_FORWARD_REF, 0},
 	{"synchronized", IL_META_METHODIMPL_SYNCHRONIZED, 0},
-	{"preserve_sig", IL_META_METHODIMPL_OLE, 0},
-	/*{"ole", IL_META_METHODIMPL_OLE, 0},*/
+	{"preserve_sig", IL_META_METHODIMPL_PRESERVE_SIG, 0},
 	{"internalcall", IL_META_METHODIMPL_INTERNAL_CALL, 0},
 	{"java_fp_strict", IL_META_METHODIMPL_JAVA_FP_STRICT, 0},
 	{"java", IL_META_METHODIMPL_JAVA, 0},
@@ -319,8 +317,6 @@ ILFlagInfo const ILPInvokeImplementationFlags[] = {
  */
 ILFlagInfo const ILAssemblyFlags[] = {
 	{"public_key", IL_META_ASSEM_PUBLIC_KEY, 0},
-	/*{"implicitcom", IL_META_ASSEM_IMPLICIT_COM_TYPES_OLD, 0},*/
-	{"implicitres", IL_META_ASSEM_IMPLICIT_RESOURCES_OLD, 0},
 	{"/side_by_side", IL_META_ASSEM_SIDE_BY_SIDE_COMPATIBLE,
 				IL_META_ASSEM_COMPATIBILITY_MASK},
 	{"noappdomain", IL_META_ASSEM_NON_SIDE_BY_SIDE_APP_DOMAIN,
@@ -331,7 +327,7 @@ ILFlagInfo const ILAssemblyFlags[] = {
 				IL_META_ASSEM_COMPATIBILITY_MASK},
 	{"enablejittracking", IL_META_ASSEM_ENABLE_JIT_TRACKING, 0},
 	{"disablejitoptimizer", IL_META_ASSEM_DISABLE_JIT_OPTIMIZER, 0},
-	{0, 0, 0xFFFF3F8C},
+	{0, 0, 0xFFFF3F8E},
 };
 
 /*

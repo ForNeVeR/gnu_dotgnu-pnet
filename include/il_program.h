@@ -407,50 +407,6 @@ int ILAssemblySetLocale(ILAssembly *assem, const char *locale);
 const char *ILAssemblyGetLocale(ILAssembly *assem);
 
 /*
- * Set the configuration string for an assembly.
- * Returns zero if out of memory.
- */
-int ILAssemblySetConfig(ILAssembly *assem, const char *config);
-
-/*
- * Get the configuration string for an assembly.
- */
-const char *ILAssemblyGetConfig(ILAssembly *assem);
-
-/*
- * Set the title string for an assembly.
- * Returns zero if out of memory.
- */
-int ILAssemblySetTitle(ILAssembly *assem, const char *title);
-
-/*
- * Get the title string for an assembly.
- */
-const char *ILAssemblyGetTitle(ILAssembly *assem);
-
-/*
- * Set the description string for an assembly.
- * Returns zero if out of memory.
- */
-int ILAssemblySetDescription(ILAssembly *assem, const char *description);
-
-/*
- * Get the description string for an assembly.
- */
-const char *ILAssemblyGetDescription(ILAssembly *assem);
-
-/*
- * Set the alternative name for an assembly.
- * Returns zero if out of memory.
- */
-int ILAssemblySetAltName(ILAssembly *assem, const char *altName);
-
-/*
- * Get the alternative name for an assembly.
- */
-const char *ILAssemblyGetAltName(ILAssembly *assem);
-
-/*
  * Set the value of an assembly's hash value to a specific value.
  * Returns zero if out of memory.
  */
@@ -470,10 +426,6 @@ const void *ILAssemblyGetHash(ILAssembly *assem, unsigned long *len);
 #define	ILAssembly_Name(assem)		(ILAssemblyGetName((assem)))
 #define	ILAssembly_HashAlg(assem)	(ILAssemblyGetHashAlgorithm((assem)))
 #define	ILAssembly_Locale(assem)	(ILAssemblyGetLocale((assem)))
-#define	ILAssembly_Config(assem)	(ILAssemblyGetConfig((assem)))
-#define	ILAssembly_Title(assem)		(ILAssemblyGetTitle((assem)))
-#define	ILAssembly_Description(assem) (ILAssemblyGetDescription((assem)))
-#define	ILAssembly_AltName(assem)	(ILAssemblyGetAltName((assem)))
 #define	ILAssembly_Attrs(assem)		(ILAssemblyGetAttrs((assem)))
 #define	ILAssembly_RefAttrs(assem)	(ILAssemblyGetRefAttrs((assem)))
 #define	ILAssembly_HasPublicKey(assem)	\
@@ -1006,10 +958,10 @@ void *ILMethodGetUserData(ILMethod *method);
 #define	ILMethod_CallConv(method)		(ILMethodGetCallConv((method)))
 #define	ILMethod_RVA(method)			(ILMethodGetRVA((method)))
 #define	ILMethod_UserData(method)		(ILMethodGetUserData((method)))
-#define	ILMethod_IsPrivateScope(method)	\
+#define	ILMethod_IsCompilerControlled(method)	\
 	((ILMemberGetAttrs((ILMember *)(method)) & \
 				IL_META_METHODDEF_MEMBER_ACCESS_MASK) \
-					== IL_META_METHODDEF_PRIVATE_SCOPE)
+					== IL_META_METHODDEF_COMPILER_CONTROLLED)
 #define	ILMethod_IsPrivate(method)	\
 	((ILMemberGetAttrs((ILMember *)(method)) & \
 				IL_META_METHODDEF_MEMBER_ACCESS_MASK) \
@@ -1087,8 +1039,8 @@ void *ILMethodGetUserData(ILMethod *method);
 	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_FORWARD_REF) != 0)
 #define	ILMethod_IsSynchronized(method)	\
 	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_SYNCHRONIZED) != 0)
-#define	ILMethod_IsOLE(method)	\
-	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_OLE) != 0)
+#define	ILMethod_IsPreserveSig(method)	\
+	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_PRESERVE_SIG) != 0)
 #define	ILMethod_IsInternalCall(method)	\
 	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_INTERNAL_CALL) != 0)
 #define	ILMethod_IsJavaFPStrict(method)	\
@@ -1137,8 +1089,6 @@ void ILParameterSetAttrs(ILParameter *param, ILUInt32 mask, ILUInt32 attrs);
 	((ILParameterGetAttrs((param)) & IL_META_PARAMDEF_IN) != 0)
 #define	ILParameter_IsOut(param)	\
 	((ILParameterGetAttrs((param)) & IL_META_PARAMDEF_OUT) != 0)
-#define	ILParameter_IsLCID(param)	\
-	((ILParameterGetAttrs((param)) & IL_META_PARAMDEF_LCID) != 0)
 #define	ILParameter_IsRetVal(param)	\
 	((ILParameterGetAttrs((param)) & IL_META_PARAMDEF_RETVAL) != 0)
 #define	ILParameter_IsOptional(param)	\
@@ -1172,10 +1122,10 @@ int ILFieldNewToken(ILField *field);
 #define	ILField_Name(field)			(ILMember_Name((field)))
 #define	ILField_Type(field)			(ILMember_Signature((field)))
 #define	ILField_Attrs(field)		(ILMember_Attrs((field)))
-#define	ILField_IsPrivateScope(field)	\
+#define	ILField_IsCompilerControlled(field)	\
 	((ILMemberGetAttrs((ILMember *)(field)) & \
 				IL_META_FIELDDEF_FIELD_ACCESS_MASK) \
-					== IL_META_FIELDDEF_PRIVATE_SCOPE)
+					== IL_META_FIELDDEF_COMPILER_CONTROLLED)
 #define	ILField_IsPrivate(field)	\
 	((ILMemberGetAttrs((ILMember *)(field)) & \
 				IL_META_FIELDDEF_FIELD_ACCESS_MASK) \

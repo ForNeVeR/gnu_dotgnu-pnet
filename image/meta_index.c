@@ -42,12 +42,6 @@ static ILUInt32 const ScopeRef_Desc[] =
 	 IL_META_TOKEN_TYPE_REF,
 	 END_DESC};
 
-static ILUInt32 const TypeDefOrRef_Desc[] =
-	{1,
-	 IL_META_TOKEN_TYPE_DEF,
-	 IL_META_TOKEN_TYPE_REF,
-	 END_DESC};
-
 static ILUInt32 const TypeDefRefOrSpec_Desc[] =
 	{2,
 	 IL_META_TOKEN_TYPE_DEF,
@@ -175,11 +169,8 @@ static ILUInt32 const ExportedType_Desc[] =
 #define	FIELD_FIELD			((ILUInt32 *)0x000B)
 #define	METHOD_FIELD		((ILUInt32 *)0x000D)
 #define	PARAM_FIELD			((ILUInt32 *)0x000F)
-#define	SKIP_FIELD			((ILUInt32 *)0x0011)
-#define	SKIPGUID_FIELD		((ILUInt32 *)0x0013)
 #define	END_FIELD			((ILUInt32 *)0)
 #define	TKREF_FIELD(name)	((ILUInt32 *)(IL_META_TOKEN_##name | 0x00001001))
-#define	SET_OFFSET(offset)	((ILUInt32 *)(((offset) << 1) | 0x00002001))
 
 /*
  * Field description tables.
@@ -188,51 +179,27 @@ static const ILUInt32 * const Fields_Module[] =
 	{UINT16_FIELD, STRREF_FIELD, GUIDREF_FIELD,
 	 GUIDREF_FIELD, GUIDREF_FIELD, END_FIELD};
 
-static const ILUInt32 * const Fields_Module_Old[] =
-	{SET_OFFSET(1), STRREF_FIELD, SET_OFFSET(0), UINT16_FIELD,
-	 SET_OFFSET(2), GUIDREF_FIELD, SKIPGUID_FIELD, SKIPGUID_FIELD,
-	 END_FIELD};
-
 static const ILUInt32 * const Fields_TypeRef[] =
 	{ScopeRef_Desc, STRREF_FIELD, STRREF_FIELD, END_FIELD};
 
 static const ILUInt32 * const Fields_TypeDef[] =
-	{UINT32_FIELD, SKIP_FIELD, SKIP_FIELD,
-	 STRREF_FIELD, STRREF_FIELD, SKIP_FIELD,
+	{UINT32_FIELD, STRREF_FIELD, STRREF_FIELD,
 	 TypeDefRefOrSpec_Desc, FIELD_FIELD, METHOD_FIELD,
 	 END_FIELD};
 
-static const ILUInt32 * const Fields_TypeDef_Old[] =
-	{UINT32_FIELD, UINT32_FIELD, UINT32_FIELD,
-	 STRREF_FIELD, STRREF_FIELD, UINT16_FIELD,
-	 TypeDefOrRef_Desc, FIELD_FIELD, METHOD_FIELD,
-	 END_FIELD};
-
-static const ILUInt32 * const Fields_FieldPtr[] =
-	{TKREF_FIELD(FIELD_DEF), END_FIELD};
-
 static const ILUInt32 * const Fields_FieldDef[] =
 	{UINT16_FIELD, STRREF_FIELD, BLOBREF_FIELD, END_FIELD};
-
-static const ILUInt32 * const Fields_MethodPtr[] =
-	{TKREF_FIELD(METHOD_DEF), END_FIELD};
 
 static const ILUInt32 * const Fields_MethodDef[] =
 	{UINT32_FIELD, UINT16_FIELD, UINT16_FIELD,
 	 STRREF_FIELD, BLOBREF_FIELD, PARAM_FIELD,
 	 END_FIELD};
 
-static const ILUInt32 * const Fields_ParamPtr[] =
-	{TKREF_FIELD(PARAM_DEF), END_FIELD};
-
 static const ILUInt32 * const Fields_ParamDef[] =
 	{UINT16_FIELD, UINT16_FIELD, STRREF_FIELD, END_FIELD};
 
 static const ILUInt32 * const Fields_InterfaceImpl[] =
 	{TKREF_FIELD(TYPE_DEF), TypeDefRefOrSpec_Desc, END_FIELD};
-
-static const ILUInt32 * const Fields_InterfaceImpl_Old[] =
-	{TKREF_FIELD(TYPE_DEF), TypeDefOrRef_Desc, END_FIELD};
 
 static const ILUInt32 * const Fields_MemberRef[] =
 	{MemberRefParent_Desc, STRREF_FIELD, BLOBREF_FIELD, END_FIELD};
@@ -250,12 +217,7 @@ static const ILUInt32 * const Fields_DeclSecurity[] =
 	{UINT16_FIELD, HasDeclSecurity_Desc, BLOBREF_FIELD, END_FIELD};
 
 static const ILUInt32 * const Fields_ClassLayout[] =
-	{UINT16_FIELD, UINT32_FIELD, TKREF_FIELD(TYPE_DEF),
-	 SKIP_FIELD, END_FIELD};
-
-static const ILUInt32 * const Fields_ClassLayout_Old[] =
-	{UINT16_FIELD, UINT32_FIELD, TKREF_FIELD(TYPE_DEF),
-	 UINT16_FIELD, END_FIELD};
+	{UINT16_FIELD, UINT32_FIELD, TKREF_FIELD(TYPE_DEF), END_FIELD};
 
 static const ILUInt32 * const Fields_FieldLayout[] =
 	{UINT32_FIELD, TKREF_FIELD(FIELD_DEF), END_FIELD};
@@ -266,28 +228,14 @@ static const ILUInt32 * const Fields_StandAloneSig[] =
 static const ILUInt32 * const Fields_EventMap[] =
 	{TKREF_FIELD(TYPE_DEF), TKREF_FIELD(EVENT), END_FIELD};
 
-static const ILUInt32 * const Fields_EventPtr[] =
-	{TKREF_FIELD(EVENT), END_FIELD};
-
 static const ILUInt32 * const Fields_Event[] =
 	{UINT16_FIELD, STRREF_FIELD, TypeDefRefOrSpec_Desc, END_FIELD};
-
-static const ILUInt32 * const Fields_Event_Old[] =
-	{UINT16_FIELD, STRREF_FIELD, TypeDefOrRef_Desc, END_FIELD};
 
 static const ILUInt32 * const Fields_PropertyMap[] =
 	{TKREF_FIELD(TYPE_DEF), TKREF_FIELD(PROPERTY), END_FIELD};
 
-static const ILUInt32 * const Fields_PropertyPtr[] =
-	{TKREF_FIELD(PROPERTY), END_FIELD};
-
 static const ILUInt32 * const Fields_Property[] =
-	{UINT16_FIELD, STRREF_FIELD, BLOBREF_FIELD,
-	 SKIP_FIELD, END_FIELD};
-
-static const ILUInt32 * const Fields_Property_Old[] =
-	{UINT16_FIELD, STRREF_FIELD, BLOBREF_FIELD,
-	 UINT16_FIELD, END_FIELD};
+	{UINT16_FIELD, STRREF_FIELD, BLOBREF_FIELD, END_FIELD};
 
 static const ILUInt32 * const Fields_MethodSemantics[] =
 	{UINT16_FIELD, TKREF_FIELD(METHOD_DEF),
@@ -311,25 +259,11 @@ static const ILUInt32 * const Fields_ImplMap[] =
 static const ILUInt32 * const Fields_FieldRVA[] =
 	{UINT32_FIELD, TKREF_FIELD(FIELD_DEF), END_FIELD};
 
-static const ILUInt32 * const Fields_EncLog[] =
-	{UINT32_FIELD, UINT32_FIELD, END_FIELD};
-
-static const ILUInt32 * const Fields_EncAssociation[] =
-	{UINT32_FIELD, END_FIELD};
-
 static const ILUInt32 * const Fields_Assembly[] =
 	{UINT32_FIELD, UINT16_FIELD, UINT16_FIELD,
 	 UINT16_FIELD, UINT16_FIELD, UINT32_FIELD,
 	 BLOBREF_FIELD, STRREF_FIELD, STRREF_FIELD,
-	 SKIP_FIELD, SKIP_FIELD, SKIP_FIELD,
-	 SKIP_FIELD, END_FIELD};
-
-static const ILUInt32 * const Fields_Assembly_Old[] =
-	{UINT32_FIELD, UINT16_FIELD, UINT16_FIELD,
-	 UINT16_FIELD, UINT16_FIELD, UINT32_FIELD,
-	 BLOBREF_FIELD, STRREF_FIELD, STRREF_FIELD,
-	 STRREF_FIELD, STRREF_FIELD, STRREF_FIELD,
-	 STRREF_FIELD, END_FIELD};
+	 END_FIELD};
 
 static const ILUInt32 * const Fields_ProcessorDef[] =
 	{UINT32_FIELD, END_FIELD};
@@ -340,14 +274,8 @@ static const ILUInt32 * const Fields_OSDef[] =
 static const ILUInt32 * const Fields_AssemblyRef[] =
 	{UINT16_FIELD, UINT16_FIELD, UINT16_FIELD,
 	 UINT16_FIELD, UINT32_FIELD, BLOBREF_FIELD,
-	 STRREF_FIELD, STRREF_FIELD, SKIP_FIELD,
-	 BLOBREF_FIELD, SKIP_FIELD, END_FIELD};
-
-static const ILUInt32 * const Fields_AssemblyRef_Old[] =
-	{UINT16_FIELD, UINT16_FIELD, UINT16_FIELD,
-	 UINT16_FIELD, UINT32_FIELD, BLOBREF_FIELD,
-	 STRREF_FIELD, STRREF_FIELD, STRREF_FIELD,
-	 BLOBREF_FIELD, UINT16_FIELD, END_FIELD};
+	 STRREF_FIELD, STRREF_FIELD, BLOBREF_FIELD,
+	 END_FIELD};
 
 static const ILUInt32 * const Fields_ProcessorRef[] =
 	{UINT32_FIELD, TKREF_FIELD(ASSEMBLY_REF), END_FIELD};
@@ -361,23 +289,11 @@ static const ILUInt32 * const Fields_File[] =
 
 static const ILUInt32 * const Fields_ExportedType[] =
 	{UINT32_FIELD, UINT32_FIELD, STRREF_FIELD,
-	 STRREF_FIELD, SKIP_FIELD, ExportedType_Desc,
-	 SKIP_FIELD, END_FIELD};
-
-static const ILUInt32 * const Fields_ExportedType_Old[] =
-	{UINT32_FIELD, UINT32_FIELD, STRREF_FIELD,
-	 STRREF_FIELD, STRREF_FIELD, ExportedType_Desc,
-	 UINT16_FIELD, END_FIELD};
+	 STRREF_FIELD, ExportedType_Desc, END_FIELD};
 
 static const ILUInt32 * const Fields_ManifestResource[] =
-	{UINT32_FIELD, UINT32_FIELD, SKIP_FIELD,
-	 STRREF_FIELD, SKIP_FIELD, ExportedType_Desc,
-	 SKIP_FIELD, END_FIELD};
-
-static const ILUInt32 * const Fields_ManifestResource_Old[] =
 	{UINT32_FIELD, UINT32_FIELD, STRREF_FIELD,
-	 STRREF_FIELD, STRREF_FIELD, ExportedType_Desc,
-	 STRREF_FIELD, END_FIELD};
+	 ExportedType_Desc, END_FIELD};
 
 static const ILUInt32 * const Fields_ExeLocation[] =
 	{UINT32_FIELD, STRREF_FIELD, STRREF_FIELD,
@@ -387,87 +303,17 @@ static const ILUInt32 * const Fields_NestedClass[] =
 	{TKREF_FIELD(TYPE_DEF), TKREF_FIELD(TYPE_DEF), END_FIELD};
 
 /*
- * Table of all field description types for Beta 1 or earlier releases.
- */
-static const ILUInt32 * const * const FieldDescriptionsOld[] = {
-	Fields_Module_Old,			/* 00 */
-	Fields_TypeRef,
-	Fields_TypeDef_Old,
-	Fields_FieldPtr,
-	Fields_FieldDef,
-	Fields_MethodPtr,
-	Fields_MethodDef,
-	Fields_ParamPtr,
-	Fields_ParamDef,			/* 08 */
-	Fields_InterfaceImpl_Old,
-	Fields_MemberRef,
-	Fields_Constant,
-	Fields_CustomAttr,
-	Fields_FieldMarshal,
-	Fields_DeclSecurity,
-	Fields_ClassLayout_Old,
-	Fields_FieldLayout,			/* 10 */
-	Fields_StandAloneSig,
-	Fields_EventMap,
-	Fields_EventPtr,
-	Fields_Event_Old,
-	Fields_PropertyMap,
-	Fields_PropertyPtr,
-	Fields_Property_Old,
-	Fields_MethodSemantics,		/* 18 */
-	Fields_MethodImpl,
-	Fields_ModuleRef,
-	Fields_TypeSpec,
-	Fields_ImplMap,
-	Fields_FieldRVA,
-	Fields_EncLog,
-	Fields_EncAssociation,
-	Fields_Assembly_Old,		/* 20 */
-	Fields_ProcessorDef,
-	Fields_OSDef,
-	Fields_AssemblyRef_Old,
-	Fields_ProcessorRef,
-	Fields_OSRef,
-	Fields_File,
-	Fields_ExportedType_Old,
-	Fields_ManifestResource_Old,/* 28 */
-	Fields_ExeLocation,
-	0,
-	0,
-	0,
-	0,
-	Fields_NestedClass,
-	0,
-	0,							/* 30 */
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,							/* 38 */
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-};
-
-/*
  * Table of all field description types.
  */
 static const ILUInt32 * const * const FieldDescriptions[] = {
 	Fields_Module,				/* 00 */
 	Fields_TypeRef,
 	Fields_TypeDef,
-	Fields_FieldPtr,
+	0,
 	Fields_FieldDef,
-	Fields_MethodPtr,
+	0,
 	Fields_MethodDef,
-	Fields_ParamPtr,
+	0,
 	Fields_ParamDef,			/* 08 */
 	Fields_InterfaceImpl,
 	Fields_MemberRef,
@@ -479,10 +325,10 @@ static const ILUInt32 * const * const FieldDescriptions[] = {
 	Fields_FieldLayout,			/* 10 */
 	Fields_StandAloneSig,
 	Fields_EventMap,
-	Fields_EventPtr,
+	0,
 	Fields_Event,
 	Fields_PropertyMap,
-	Fields_PropertyPtr,
+	0,
 	Fields_Property,
 	Fields_MethodSemantics,		/* 18 */
 	Fields_MethodImpl,
@@ -490,8 +336,8 @@ static const ILUInt32 * const * const FieldDescriptions[] = {
 	Fields_TypeSpec,
 	Fields_ImplMap,
 	Fields_FieldRVA,
-	Fields_EncLog,
-	Fields_EncAssociation,
+	0,
+	0,
 	Fields_Assembly,			/* 20 */
 	Fields_ProcessorDef,
 	Fields_OSDef,
@@ -535,11 +381,11 @@ static const char * const tokenNames[64] = {
 	"Module",					/* 00 */
 	"TypeRef",
 	"TypeDef",
-	"FieldPtr",
+	"Token_03",
 	"FieldDef",
-	"MethodPtr",
+	"Token_05",
 	"MethodDef",
-	"ParamPtr",
+	"Token_06",
 	"ParamDef",					/* 08 */
 	"InterfaceImpl",
 	"MemberRef",
@@ -551,10 +397,10 @@ static const char * const tokenNames[64] = {
 	"FieldLayout",				/* 10 */
 	"StandAloneSig",
 	"EventMap",
-	"EventPtr",
+	"Token_13",
 	"Event",
 	"PropertyAssociation",
-	"PropertyPtr",
+	"Token_16",
 	"Property",
 	"MethodSemantics",			/* 18 */
 	"MethodImpl",
@@ -562,8 +408,8 @@ static const char * const tokenNames[64] = {
 	"TypeSpec",
 	"ImplMap",
 	"FieldRVA",
-	"EncLog",
-	"EncAssociation",
+	"Token_1E",
+	"Token_1F",
 	"Assembly",					/* 20 */
 	"ProcessorDef",
 	"OSDef",
@@ -573,12 +419,12 @@ static const char * const tokenNames[64] = {
 	"File",
 	"ExportedType",
 	"ManifestResource,"			/* 28 */
-	"ExeLocation",
+	"NestedClass",
 	"Token_2A",
 	"Token_2B",
 	"Token_2C",
 	"Token_2D",
-	"NestedClass",
+	"Token_2E",
 	"Token_2F",
 	"Token_30",					/* 30 */
 	"Token_31",
@@ -695,27 +541,16 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 					}
 					break;
 
-					case (ILUInt32)SKIP_FIELD:
-					case (ILUInt32)SKIPGUID_FIELD:
-					{
-						/* Field that isn't relevant to this metadata version */
-					}
-					break;
-
 					default:
 					{
-						/* Ignore "SET_OFFSET(n)" commands */
-						if((((ILUInt32)type) & 0xFF000000) != 0)
+						if(image->tokenCount[((ILUInt32)type) >> 24]
+									> (unsigned long)0xFFFF)
 						{
-							if(image->tokenCount[((ILUInt32)type) >> 24]
-										> (unsigned long)0xFFFF)
-							{
-								size += 4;
-							}
-							else
-							{
-								size += 2;
-							}
+							size += 4;
+						}
+						else
+						{
+							size += 2;
 						}
 					}
 					break;
@@ -981,52 +816,30 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 					}
 					break;
 
-					case (ILUInt32)SKIP_FIELD:
-					{
-						/* Field that isn't relevant to this metadata version */
-						values[index++] = 0;
-					}
-					break;
-
-					case (ILUInt32)SKIPGUID_FIELD:
-					{
-						/* Field that isn't relevant to this metadata version */
-						values[index++] = IL_MAX_UINT32;
-					}
-					break;
-
 					default:
 					{
-						if((((ILUInt32)type) & 0xFF000000) == 0)
+						/* Read a normal token table index */
+						limit = image->tokenCount[((ILUInt32)type) >> 24];
+						if(limit <= (unsigned long)0xFFFF)
 						{
-							/* "SET_OFFSET(n)" command */
-							index = (int)((((ILUInt32)type) & 0xFFE) >> 1);
+							temp = IL_READ_UINT16(ptr);
+							ptr += 2;
 						}
 						else
 						{
-							/* Read a normal token table index */
-							limit = image->tokenCount[((ILUInt32)type) >> 24];
-							if(limit <= (unsigned long)0xFFFF)
-							{
-								temp = IL_READ_UINT16(ptr);
-								ptr += 2;
-							}
-							else
-							{
-								temp = IL_READ_UINT32(ptr);
-								ptr += 4;
-							}
-							if(temp > 0 && temp <= (ILUInt32)limit)
-							{
-								values[index++] =
-									((((ILUInt32)type) & 0xFF000000) | temp);
-							}
-							else
-							{
-								META_INDEX_ERROR
-									(tokenNames[((ILUInt32)type) >> 24]);
-								return IL_LOADERR_BAD_META;
-							}
+							temp = IL_READ_UINT32(ptr);
+							ptr += 4;
+						}
+						if(temp > 0 && temp <= (ILUInt32)limit)
+						{
+							values[index++] =
+								((((ILUInt32)type) & 0xFF000000) | temp);
+						}
+						else
+						{
+							META_INDEX_ERROR
+								(tokenNames[((ILUInt32)type) >> 24]);
+							return IL_LOADERR_BAD_META;
 						}
 					}
 					break;
@@ -1122,18 +935,12 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
 	unsigned long tokenBase;
 	unsigned long token;
-	const ILUInt32 * const * const *fieldDesc;
-	int isOldFormat;
-	int knownLimit;
-
-	/* Are we parsing the old Beta 1 or the new ECMA/Beta 2 format? */
-	image->oldMeta = isOldFormat = ILImageMetaIsOld(image);
 
 	/* Extract the "#~" blob from the metadata */
 	index = ILImageGetMetaEntry(image, "#~", &size);
 	if(!index)
 	{
-		META_ERROR("index is missing");
+		META_ERROR("index is missing or an obsolete version");
 		return IL_LOADERR_BAD_META;
 	}
 
@@ -1172,18 +979,6 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 		size -= 4;
 	}
 
-	/* Determine which field description table to use */
-	if(isOldFormat)
-	{
-		fieldDesc = FieldDescriptionsOld;
-		knownLimit = (IL_META_TOKEN_OLD_NESTED_CLASS >> 24);
-	}
-	else
-	{
-		fieldDesc = FieldDescriptions;
-		knownLimit = (IL_META_TOKEN_NESTED_CLASS >> 24);
-	}
-
 	/* Determine the size of each of the token structures */
 	if((sizeBits & IL_META_SIZE_FLAG_STRREF) != 0)
 	{
@@ -1215,10 +1010,10 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 		{
 			image->tokenSize[type] =
 					TokenSize(image, strRefSize, blobRefSize,
-						      guidRefSize, fieldDesc[type]);
+						      guidRefSize, FieldDescriptions[type]);
 		   	if(image->tokenSize[type] == 0)
 			{
-				if(type <= knownLimit)
+				if(type <= (IL_META_TOKEN_NESTED_CLASS >> 24))
 				{
 					/* This is a type that we probably need to know about,
 					   so we have no choice but to abort */
@@ -1227,7 +1022,7 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 					while(type < 64)
 					{
 						if((typesPresent & (((ILUInt64)1) << type)) != 0 &&
-						   fieldDesc[type] == 0)
+						   FieldDescriptions[type] == 0)
 						{
 							fprintf(stderr, "metadata error: uses %ld "
 											"instances of undocumented "
@@ -1248,12 +1043,12 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 					   care about at present.  We clear the token counts and
 					   sizes of anything else in the table.  This will
 					   hopefully make our implementation robust in the face
-					   of future additions by Microsoft */
+					   of future additions to the specification */
 					while(type < 64)
 					{
 					#if IL_DEBUG_META
 						if((typesPresent & (((ILUInt64)1) << type)) != 0 &&
-						   fieldDesc[type] == 0)
+						   FieldDescriptions[type] == 0)
 						{
 							fprintf(stderr, "metadata warning: uses %ld "
 											"instances of undocumented token "
@@ -1312,13 +1107,13 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 				{
 					/* We've already seen an error, so ignore the return */
 					ParseToken(image, strRefSize, blobRefSize, guidRefSize,
-							   fieldDesc[type], item, values,
+							   FieldDescriptions[type], item, values,
 							   tokenBase + token + 1);
 				}
 				else
 				{
 					error = ParseToken(image, strRefSize, blobRefSize,
-									   guidRefSize, fieldDesc[type],
+									   guidRefSize, FieldDescriptions[type],
 									   item, values, tokenBase + token + 1);
 				}
 			}
@@ -1399,26 +1194,13 @@ int _ILImageRawTokenData(ILImage *image, ILToken token,
 		ILToken tokenType = (token >> 24);
 		if(tokenId >= 1 && tokenId <= image->tokenCount[tokenType])
 		{
-			if(!(image->oldMeta))
-			{
-				return (ParseToken(image, (image->strRefBig ? 4 : 2),
-							   (image->blobRefBig ? 4 : 2),
-							   (image->guidRefBig ? 4 : 2),
-							   FieldDescriptions[tokenType],
-							   image->tokenStart[tokenType] + (tokenId - 1) *
-								 ((unsigned long)(image->tokenSize[tokenType])),
-							   values, token) == 0);
-			}
-			else
-			{
-				return (ParseToken(image, (image->strRefBig ? 4 : 2),
-							   (image->blobRefBig ? 4 : 2),
-							   (image->guidRefBig ? 4 : 2),
-							   FieldDescriptionsOld[tokenType],
-							   image->tokenStart[tokenType] + (tokenId - 1) *
-								 ((unsigned long)(image->tokenSize[tokenType])),
-							   values, token) == 0);
-			}
+			return (ParseToken(image, (image->strRefBig ? 4 : 2),
+						   (image->blobRefBig ? 4 : 2),
+						   (image->guidRefBig ? 4 : 2),
+						   FieldDescriptions[tokenType],
+						   image->tokenStart[tokenType] + (tokenId - 1) *
+							 ((unsigned long)(image->tokenSize[tokenType])),
+						   values, token) == 0);
 		}
 	}
 	return 0;
@@ -1603,7 +1385,7 @@ int _ILImageSetToken(ILImage *image, ILProgramItem *item,
 	return 0;
 }
 
-void _ILImageComputeTokenSizes(ILImage *image, int useOldMetadata)
+void _ILImageComputeTokenSizes(ILImage *image)
 {
 	int strRefSize, blobRefSize, guidRefSize;
 	ILModule *module;
@@ -1660,18 +1442,9 @@ void _ILImageComputeTokenSizes(ILImage *image, int useOldMetadata)
 	/* Compute the size of all of the token types */
 	for(type = 0; type < 64; ++type)
 	{
-		if(useOldMetadata)
-		{
-			image->tokenSize[type] =
-					TokenSize(image, strRefSize, blobRefSize,
-						      guidRefSize, FieldDescriptionsOld[type]);
-		}
-		else
-		{
-			image->tokenSize[type] =
-					TokenSize(image, strRefSize, blobRefSize,
-						      guidRefSize, FieldDescriptions[type]);
-		}
+		image->tokenSize[type] =
+				TokenSize(image, strRefSize, blobRefSize,
+					      guidRefSize, FieldDescriptions[type]);
 	}
 }
 
@@ -1696,8 +1469,7 @@ void _ILImageComputeTokenSizes(ILImage *image, int useOldMetadata)
 			} while (0)
 
 void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
-							ILToken token, ILUInt32 *values,
-							int useOldMetadata)
+							ILToken token, ILUInt32 *values)
 {
 	const ILUInt32 * const *desc;
 	int strRefBig = image->strRefBig;
@@ -1713,14 +1485,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 	int bigToken;
 
 	/* Get the descriptor to use to pack the data */
-	if(useOldMetadata)
-	{
-		desc = FieldDescriptionsOld[token >> 24];
-	}
-	else
-	{
-		desc = FieldDescriptions[token >> 24];
-	}
+	desc = FieldDescriptions[token >> 24];
 	if(!desc)
 	{
 	 	return;
@@ -1879,36 +1644,20 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 				}
 				break;
 
-				case (ILUInt32)SKIP_FIELD:
-				case (ILUInt32)SKIPGUID_FIELD:
-				{
-					/* Field that isn't relevant to this metadata version */
-					++index;
-				}
-				break;
-
 				default:
 				{
-					if((((ILUInt32)type) & 0xFF000000) == 0)
+					/* Write a normal token table index */
+					limit = image->tokenCount[((ILUInt32)type) >> 24];
+					val = values[index++];
+					if(limit <= (unsigned long)0xFFFF)
 					{
-						/* "SET_OFFSET(n)" command */
-						index = (int)((((ILUInt32)type) & 0xFFE) >> 1);
+						WRITE16(ptr, val);
+						ptr += 2;
 					}
 					else
 					{
-						/* Write a normal token table index */
-						limit = image->tokenCount[((ILUInt32)type) >> 24];
-						val = values[index++];
-						if(limit <= (unsigned long)0xFFFF)
-						{
-							WRITE16(ptr, val);
-							ptr += 2;
-						}
-						else
-						{
-							WRITE32(ptr, val);
-							ptr += 4;
-						}
+						WRITE32(ptr, val);
+						ptr += 4;
 					}
 				}
 				break;

@@ -648,38 +648,6 @@ static int Load_Assembly(ILImage *image, ILUInt32 *values,
 			return IL_LOADERR_MEMORY;
 		}
 	}
-	if(values[IL_OFFSET_ASSEMBLY_CONFIG])
-	{
-		name = ILImageGetString(image, values[IL_OFFSET_ASSEMBLY_CONFIG]);
-		if(!ILAssemblySetConfig(assem, name))
-		{
-			return IL_LOADERR_MEMORY;
-		}
-	}
-	if(values[IL_OFFSET_ASSEMBLY_TITLE])
-	{
-		name = ILImageGetString(image, values[IL_OFFSET_ASSEMBLY_TITLE]);
-		if(!ILAssemblySetTitle(assem, name))
-		{
-			return IL_LOADERR_MEMORY;
-		}
-	}
-	if(values[IL_OFFSET_ASSEMBLY_DESCRIPTION])
-	{
-		name = ILImageGetString(image, values[IL_OFFSET_ASSEMBLY_DESCRIPTION]);
-		if(!ILAssemblySetDescription(assem, name))
-		{
-			return IL_LOADERR_MEMORY;
-		}
-	}
-	if(values[IL_OFFSET_ASSEMBLY_ALT_NAME])
-	{
-		name = ILImageGetString(image, values[IL_OFFSET_ASSEMBLY_ALT_NAME]);
-		if(!ILAssemblySetAltName(assem, name))
-		{
-			return IL_LOADERR_MEMORY;
-		}
-	}
 
 	/* Done */
 	return 0;
@@ -715,14 +683,6 @@ static int Load_AssemblyRef(ILImage *image, ILUInt32 *values,
 	{
 		name = ILImageGetString(image, values[IL_OFFSET_ASSEMBLYREF_LOCALE]);
 		if(!ILAssemblySetLocale(assem, name))
-		{
-			return IL_LOADERR_MEMORY;
-		}
-	}
-	if(values[IL_OFFSET_ASSEMBLYREF_CONFIG])
-	{
-		name = ILImageGetString(image, values[IL_OFFSET_ASSEMBLYREF_CONFIG]);
-		if(!ILAssemblySetConfig(assem, name))
 		{
 			return IL_LOADERR_MEMORY;
 		}
@@ -856,27 +816,19 @@ static int LoadForwardTypeDef(ILImage *image, ILToken token)
  */
 static ILProgramItem *FindNestedParent(ILImage *image, ILToken child)
 {
-	ILToken tokenType;
 	ILToken left, right, middle;
 	ILToken count, parent;
 	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
 	ILProgramItem *item;
 
-	if(image->oldMeta)
-	{
-		tokenType = IL_META_TOKEN_OLD_NESTED_CLASS;
-	}
-	else
-	{
-		tokenType = IL_META_TOKEN_NESTED_CLASS;
-	}
-	count = (ILToken)(image->tokenCount[tokenType >> 24]);
+	count = (ILToken)(image->tokenCount[IL_META_TOKEN_NESTED_CLASS >> 24]);
 	if(!count)
 	{
 		return 0;
 	}
 	parent = 0;
-	if((image->sorted & (((ILUInt64)1) << (tokenType >> 24))) != 0)
+	if((image->sorted &
+			(((ILUInt64)1) << (IL_META_TOKEN_NESTED_CLASS >> 24))) != 0)
 	{
 		/* The NestedClass table is sorted, so use a binary search */
 		left = 0;
@@ -884,7 +836,8 @@ static ILProgramItem *FindNestedParent(ILImage *image, ILToken child)
 		while(left <= right)
 		{
 			middle = (left + right) / 2;
-			if(!_ILImageRawTokenData(image, tokenType + middle + 1, values))
+			if(!_ILImageRawTokenData(image, IL_META_TOKEN_NESTED_CLASS +
+											middle + 1, values))
 			{
 				break;
 			}
@@ -908,7 +861,8 @@ static ILProgramItem *FindNestedParent(ILImage *image, ILToken child)
 		/* The NestedClass table is not sorted, so use a linear search */
 		for(left = 0; left < count; ++left)
 		{
-			if(!_ILImageRawTokenData(image, tokenType + left + 1, values))
+			if(!_ILImageRawTokenData(image, IL_META_TOKEN_NESTED_CLASS +
+											left + 1, values))
 			{
 				break;
 			}

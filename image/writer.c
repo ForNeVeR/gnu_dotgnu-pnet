@@ -237,36 +237,19 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 	}
 
 	/* Build the header for the metadata section */
-	if((writer->flags & IL_WRITEFLAG_OLD_META) != 0)
-	{
-		/* Use the Beta1 and earlier format */
-		header[0]  = (unsigned char)'C';			/* Magic number */
-		header[1]  = (unsigned char)'O';
-		header[2]  = (unsigned char)'M';
-		header[3]  = (unsigned char)'+';
-		IL_WRITE_UINT16(header + 4, 1);				/* Major version */
-		IL_WRITE_UINT16(header + 6, 0);				/* Minor version */
-		IL_WRITE_UINT16(header + 8, 0);				/* Reserved */
-		IL_WRITE_UINT16(header + 10, numSections);
-		size = 12;
-	}
-	else
-	{
-		/* Use the ECMA/Beta2 and later format */
-		header[0]  = (unsigned char)'B';			/* Magic number */
-		header[1]  = (unsigned char)'S';
-		header[2]  = (unsigned char)'J';
-		header[3]  = (unsigned char)'B';
-		IL_WRITE_UINT16(header + 4, 1);				/* Major version */
-		IL_WRITE_UINT16(header + 6, 1);				/* Minor version */
-		IL_WRITE_UINT32(header + 8, 0);				/* Reserved */
-		IL_WRITE_UINT32(header + 12, VERSION_STRING_LEN);
-		ILMemCpy(header + 16, VERSION_STRING, VERSION_STRING_LEN);
-		size = 16 + VERSION_STRING_LEN;
-		IL_WRITE_UINT16(header + size, 0);			/* Flags */
-		IL_WRITE_UINT16(header + size + 2, numSections);
-		size += 4;
-	}
+	header[0]  = (unsigned char)'B';			/* Magic number */
+	header[1]  = (unsigned char)'S';
+	header[2]  = (unsigned char)'J';
+	header[3]  = (unsigned char)'B';
+	IL_WRITE_UINT16(header + 4, 1);				/* Major version */
+	IL_WRITE_UINT16(header + 6, 1);				/* Minor version */
+	IL_WRITE_UINT32(header + 8, 0);				/* Reserved */
+	IL_WRITE_UINT32(header + 12, VERSION_STRING_LEN);
+	ILMemCpy(header + 16, VERSION_STRING, VERSION_STRING_LEN);
+	size = 16 + VERSION_STRING_LEN;
+	IL_WRITE_UINT16(header + size, 0);			/* Flags */
+	IL_WRITE_UINT16(header + size + 2, numSections);
+	size += 4;
 
 	/* Output the metadata directory entries */
 	if(writer->indexBlob.firstBuffer)

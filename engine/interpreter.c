@@ -1421,7 +1421,6 @@ void _ILInterpreter(ILExecThread *thread)
 			break;
 
 			case IL_OP_BOX:
-			case IL_OP_BOX_OLD:
 			{
 				/* Convert a value type into an object reference */
 				/* TO DO */
@@ -1950,7 +1949,7 @@ void _ILInterpreter(ILExecThread *thread)
 			case IL_OP_ANN_LAB:
 			case IL_OP_ANN_DEF:
 			{
-				/* Annotations that aren't defined by Microsoft's spec!! */
+				/* Annotations that aren't defined by the ECMA spec */
 			}
 			break;
 

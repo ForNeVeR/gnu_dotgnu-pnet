@@ -160,7 +160,6 @@
 #define	IL_OP_CONV_R_UN						0x76
 #define	IL_OP_ANN_DATA_S					0x77
 
-#define	IL_OP_BOX_OLD						0x78	/* Beta 1 and earlier */
 #define	IL_OP_UNBOX							0x79
 
 #define	IL_OP_THROW							0x7A
@@ -184,7 +183,7 @@
 #define	IL_OP_CONV_OVF_I_UN					0x8A
 #define	IL_OP_CONV_OVF_U_UN					0x8B
 
-#define	IL_OP_BOX							0x8C	/* Beta 2 and later */
+#define	IL_OP_BOX							0x8C
 
 #define	IL_OP_NEWARR						0x8D
 #define	IL_OP_LDLEN							0x8E

@@ -160,7 +160,8 @@ ILOpcodeInfo const ILMainOpcodeTable[256] = {
 	{"conv.r.un",		1, 1, IL_OPCODE_ARGS_NONE, 1},
 	{"ann.data.s",		0, 0, IL_OPCODE_ARGS_ANN_DATA, 0},
 
-	{"box_old",			1, 1, IL_OPCODE_ARGS_TOKEN, 5},
+	{"unused_78",		0, 0, IL_OPCODE_ARGS_INVALID, 1},
+
 	{"unbox",			1, 1, IL_OPCODE_ARGS_TOKEN, 5},
 
 	{"throw",			1, 0, IL_OPCODE_ARGS_NONE, 1},

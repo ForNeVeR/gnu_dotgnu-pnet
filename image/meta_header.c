@@ -42,23 +42,12 @@ static unsigned long GetMetadata(ILImage *image, unsigned char **addr,
 
 	/* Is this really a metadata directory header? */
 	*addr = (unsigned char *)address;
-	if(*len >= 12 &&
-	   (*addr)[0] == (unsigned char)'C' &&
-	   (*addr)[1] == (unsigned char)'O' &&
-	   (*addr)[2] == (unsigned char)'M' &&
-	   (*addr)[3] == (unsigned char)'+')
+	if(*len >= 16 &&
+	   (*addr)[0] == (unsigned char)'B' &&
+	   (*addr)[1] == (unsigned char)'S' &&
+	   (*addr)[2] == (unsigned char)'J' &&
+	   (*addr)[3] == (unsigned char)'B')
 	{
-		/* This is a metadata header from Beta 1 or earlier */
-		*headerLen = 12;
-		return (unsigned long)(IL_READ_UINT16(*addr + 10));
-	}
-	else if(*len >= 16 &&
-	        (*addr)[0] == (unsigned char)'B' &&
-	        (*addr)[1] == (unsigned char)'S' &&
-	        (*addr)[2] == (unsigned char)'J' &&
-	        (*addr)[3] == (unsigned char)'B')
-	{
-		/* This is a metadata header from Beta 2 or later */
 		if(IL_READ_UINT32(*addr + 4) != 0x00010001)
 		{
 			/* Incorrect version */
@@ -311,23 +300,6 @@ unsigned long ILImageMetaHeaderSize(ILImage *image)
 
 	/* The offset is the header's size */
 	return offset;
-}
-
-int ILImageMetaIsOld(ILImage *image)
-{
-	unsigned char *addr;
-	unsigned long len;
-	unsigned long headerLen;
-
-	/* We can determine the metadata format from the size of the header */
-	if(GetMetadata(image, &addr, &len, &headerLen) != (unsigned long)0xFFFFFFFF)
-	{
-		return (headerLen == 12);
-	}
-	else
-	{
-		return 0;
-	}
 }
 
 #ifdef	__cplusplus

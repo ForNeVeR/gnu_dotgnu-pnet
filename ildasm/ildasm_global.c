@@ -129,11 +129,6 @@ static void Dump_Assembly(ILImage *image, FILE *outstream, int flags,
 	}
 	ILDumpFlags(outstream, ILAssembly_Attrs(assem), ILAssemblyFlags, 0);
 	ILDumpIdentifier(outstream, ILAssembly_Name(assem), 0, flags);
-	if(ILAssembly_AltName(assem) != 0)
-	{
-		fputs(" as ", outstream);
-		ILDumpString(outstream, ILAssembly_AltName(assem));
-	}
 	fputs("\n{\n", outstream);
 	ILDAsmDumpSecurity(image, outstream, (ILProgramItem *)assem, flags);
 	if(ILAssembly_HashAlg(assem) != 0)
@@ -156,32 +151,6 @@ static void Dump_Assembly(ILImage *image, FILE *outstream, int flags,
 		fputs("\t.locale ", outstream);
 		ILDumpString(outstream, ILAssembly_Locale(assem));
 		putc('\n', outstream);
-	}
-	if(ILAssembly_Config(assem))
-	{
-		fputs("\t.config ", outstream);
-		ILDumpString(outstream, ILAssembly_Config(assem));
-		putc('\n', outstream);
-	}
-	if(ILAssembly_Title(assem) && ILAssembly_Description(assem))
-	{
-		fputs("\t.title ", outstream);
-		ILDumpString(outstream, ILAssembly_Title(assem));
-		fputs(" (", outstream);
-		ILDumpString(outstream, ILAssembly_Description(assem));
-		fputs(")\n", outstream);
-	}
-	else if(ILAssembly_Title(assem))
-	{
-		fputs("\t.title ", outstream);
-		ILDumpString(outstream, ILAssembly_Title(assem));
-		putc('\n', outstream);
-	}
-	else if(ILAssembly_Description(assem))
-	{
-		fputs("\t.title \"\" (", outstream);
-		ILDumpString(outstream, ILAssembly_Description(assem));
-		fputs(")\n", outstream);
 	}
 	ILDAsmWalkTokens(image, outstream, flags,
 					 IL_META_TOKEN_OS_DEF,

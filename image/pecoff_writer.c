@@ -415,14 +415,7 @@ static void WritePECOFFHeader(ILWriter *writer)
 		IL_WRITE_UINT32(opthdr + 192, 0x00002000);	/* IAT RVA */
 		IL_WRITE_UINT32(opthdr + 196, 8);			/* IAT size */
 		IL_WRITE_UINT32(opthdr + 208, 0x00002008);	/* Runtime header RVA */
-		if((writer->flags & IL_WRITEFLAG_OLD_META) != 0)
-		{
-			IL_WRITE_UINT32(opthdr + 212, 136);		/* Runtime header size */
-		}
-		else
-		{
-			IL_WRITE_UINT32(opthdr + 212, 72);		/* Runtime header size */
-		}
+		IL_WRITE_UINT32(opthdr + 212, 72);			/* Runtime header size */
 
 		/* Write the optional header to the output image */
 		writer->optOffset = writer->offset;
@@ -443,8 +436,7 @@ static void WritePECOFFHeader(ILWriter *writer)
  */
 static void WriteRuntimeHeader(ILWriter *writer)
 {
-	char buffer[136];
-	ILUInt32 headerSize;
+	char buffer[72];
 
 	/* Clear the buffer before we start */
 	ILMemZero(buffer, sizeof(buffer));
@@ -456,18 +448,8 @@ static void WriteRuntimeHeader(ILWriter *writer)
 		WriteToImage(writer, buffer, 8);
 	}
 
-	/* Determine the header size to use */
-	if((writer->flags & IL_WRITEFLAG_OLD_META) != 0)
-	{
-		headerSize = 136;
-	}
-	else
-	{
-		headerSize = 72;
-	}
-
 	/* Build as much of the IL runtime header as we know about at present */
-	IL_WRITE_UINT32(buffer, headerSize);		/* Size of the header */
+	IL_WRITE_UINT32(buffer, sizeof(buffer));	/* Size of the header */
 	IL_WRITE_UINT16(buffer + 4, 2);				/* Major version */
 	IL_WRITE_UINT16(buffer + 6, 0);				/* Minor version */
 	if((writer->flags & IL_WRITEFLAG_32BIT_ONLY) != 0)
@@ -481,7 +463,7 @@ static void WriteRuntimeHeader(ILWriter *writer)
 
 	/* Write the header */
 	writer->runtimeOffset = writer->offset;
-	WriteToImage(writer, buffer, headerSize);
+	WriteToImage(writer, buffer, sizeof(buffer));
 }
 
 void _ILWriteHeaders(ILWriter *writer)

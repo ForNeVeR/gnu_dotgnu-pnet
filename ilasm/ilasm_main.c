@@ -78,9 +78,6 @@ static ILCmdLineOption const options[] = {
 	{"--gui-subsystem", 'G', 0,
 		"--gui-subsystem   or    -G",
 		"Compile for the GUI subsystem."},
-	{"--old-metadata", 'm', 0,
-		"--old-metadata    or    -m",
-		"Use the older (Beta 1 and earlier) metadata format."},
 	{"--res", 'r', 0,
 		"--res file        or    -r file",
 		"Link the specified resource file with the output."},
@@ -229,12 +226,6 @@ int main(int argc, char *argv[])
 			case 'G':
 			{
 				flags |= IL_WRITEFLAG_SUBSYS_GUI;
-			}
-			break;
-
-			case 'm':
-			{
-				flags |= IL_WRITEFLAG_OLD_META;
 			}
 			break;
 

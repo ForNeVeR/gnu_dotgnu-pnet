@@ -71,7 +71,7 @@ int ILMemberAccessible(ILMember *member, ILClass *scope)
 	{
 		switch(member->attributes & IL_META_METHODDEF_MEMBER_ACCESS_MASK)
 		{
-			case IL_META_METHODDEF_PRIVATE_SCOPE:
+			case IL_META_METHODDEF_COMPILER_CONTROLLED:
 			{
 				/* Accessible to the class and any of its nested classes */
 				if(info == scope || ILClassIsNested(info, scope))

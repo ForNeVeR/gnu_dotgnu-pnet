@@ -1182,14 +1182,6 @@ under Windows.  This is the default.
 Tag the output file so that it can run within the GUI subsystem
 under Windows.
 
-@cindex -m option (ilasm)
-@cindex --old-metadata option (ilasm)
-@item -m
-@itemx --old-metadata
-Output an older metadata format used by the Beta 1 and earlier releases
-of the Microsoft .NET Framework SDK.  This should only be used for
-debugging purposes.
-
 @cindex --help option (ilasm)
 @item --help
 Print a usage message for the ilasm program.

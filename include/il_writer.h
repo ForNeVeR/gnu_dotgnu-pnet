@@ -73,7 +73,6 @@ typedef struct _tagILWriter ILWriter;
 #define	IL_WRITEFLAG_32BIT_ONLY		1	/* Execute on 32-bit systems only */
 #define	IL_WRITEFLAG_SUBSYS_CUI		0	/* Command-line subsystem */
 #define	IL_WRITEFLAG_SUBSYS_GUI		2	/* GUI subsystem */
-#define	IL_WRITEFLAG_OLD_META		4	/* Use Beta 1 and earlier metadata */
 
 /*
  * Debug information types.

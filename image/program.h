@@ -140,10 +140,6 @@ struct _tagILAssembly
 	ILUInt32		originator;			/* Blob offset of the originator key */
 	const char     *name;				/* Name of the assembly */
 	const char     *locale;				/* Locale used by the assembly */
-	const char     *config;				/* Configuration name */
-	const char     *title;				/* Assembly title */
-	const char     *description;		/* Assembly description */
-	const char     *altName;			/* Alternative assembly name */
 	ILUInt32		hashValue;			/* Blob offset of the hash value */
 
 };

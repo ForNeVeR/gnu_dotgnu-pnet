@@ -1488,7 +1488,7 @@ FieldAttributeName
 	| K_ASSEMBLY			{ SET_FIELD(ASSEMBLY); }
 	| K_FAMANDASSEM			{ SET_FIELD(FAM_AND_ASSEM); }
 	| K_FAMORASSEM			{ SET_FIELD(FAM_OR_ASSEM); }
-	| K_PRIVATESCOPE		{ SET_FIELD(PRIVATE_SCOPE); /* Obsolete */ }
+	| K_PRIVATESCOPE		{ SET_FIELD(COMPILER_CONTROLLED); /* Old name */ }
 	| K_COMPILERCONTROLLED	{ SET_FIELD(COMPILER_CONTROLLED); }
 	| K_LITERAL				{ SET_FIELD(LITERAL); }
 	| K_NOTSERIALIZED		{ SET_FIELD(NOT_SERIALIZED); }
@@ -1772,7 +1772,7 @@ MethodAttributeName
 	| K_ASSEMBLY			{ SET_METHOD(ASSEM); }
 	| K_FAMANDASSEM			{ SET_METHOD(FAM_AND_ASSEM); }
 	| K_FAMORASSEM			{ SET_METHOD(FAM_OR_ASSEM); }
-	| K_PRIVATESCOPE		{ SET_METHOD(PRIVATE_SCOPE); /* Obsolete */ }
+	| K_PRIVATESCOPE		{ SET_METHOD(COMPILER_CONTROLLED); /* Old name */ }
 	| K_COMPILERCONTROLLED	{ SET_METHOD(COMPILER_CONTROLLED); }
 	| K_HIDEBYSIG			{ SET_METHOD(HIDE_BY_SIG); }
 	| K_NEWSLOT				{ SET_METHOD(NEW_SLOT); }
@@ -1842,7 +1842,7 @@ ImplementationAttributeName
 	| K_MANAGED				{ $$ = IL_META_METHODIMPL_MANAGED; }
 	| K_UNMANAGED			{ $$ = IL_META_METHODIMPL_UNMANAGED; }
 	| K_FORWARDREF			{ $$ = IL_META_METHODIMPL_FORWARD_REF; }
-	| K_OLE					{ $$ = IL_META_METHODIMPL_OLE; }
+	| K_OLE					{ $$ = IL_META_METHODIMPL_PRESERVE_SIG; /* Old */ }
 	| K_PRESERVESIG			{ $$ = IL_META_METHODIMPL_PRESERVE_SIG; }
 	| K_RUNTIME				{ $$ = IL_META_METHODIMPL_RUNTIME; }
 	| K_INTERNALCALL		{ $$ = IL_META_METHODIMPL_INTERNAL_CALL; }
@@ -2716,7 +2716,6 @@ ParameterAttributeName
 	: K_IN			{ $$ = IL_META_PARAMDEF_IN; }
 	| K_OUT			{ $$ = IL_META_PARAMDEF_OUT; }
 	| K_OPT			{ $$ = IL_META_PARAMDEF_OPTIONAL; }
-	| K_LCID		{ $$ = IL_META_PARAMDEF_LCID; }
 	| K_RETVAL		{ $$ = IL_META_PARAMDEF_RETVAL; }
 	| Integer32		{ $$ = $1; }
 	;
@@ -2807,20 +2806,7 @@ ExeLocationDeclaration
  */
 
 AssemblyHeading
-	: D_ASSEMBLY AssemblyAttributes QualifiedName K_AS ComposedString	{
-				ILAssemblySetAttrs(ILAsmAssembly, ~0, (ILUInt32)($2));
-				if(!ILAssemblySetName(ILAsmAssembly, $3.string))
-				{
-					ILAsmOutOfMemory();
-				}
-				if(!ILAssemblySetAltName(ILAsmAssembly, $5.string))
-				{
-					ILAsmOutOfMemory();
-				}
-				ILAsmBuildPushScope(ILAsmAssembly);
-				ILAsmCurrAssemblyRef = 0;
-			}
-	| D_ASSEMBLY AssemblyAttributes QualifiedName	{
+	: D_ASSEMBLY AssemblyAttributes QualifiedName AltName	{
 				ILAssemblySetAttrs(ILAsmAssembly, ~0, (ILUInt32)($2));
 				if(!ILAssemblySetName(ILAsmAssembly, $3.string))
 				{
@@ -2829,6 +2815,12 @@ AssemblyHeading
 				ILAsmBuildPushScope(ILAsmAssembly);
 				ILAsmCurrAssemblyRef = 0;
 			}
+	;
+
+/* Obsolete syntax */
+AltName
+	: /* empty */
+	| K_AS ComposedString
 	;
 
 AssemblyAttributes
@@ -2843,8 +2835,6 @@ AssemblyAttributeList
 
 AssemblyAttributeName
 	: K_PUBLICKEY			{ $$ = IL_META_ASSEM_PUBLIC_KEY; }
-	| K_IMPLICITCOM			{ $$ = IL_META_ASSEM_IMPLICIT_COM_TYPES_OLD; }
-	| K_IMPLICITRES			{ $$ = IL_META_ASSEM_IMPLICIT_RESOURCES_OLD; }
 	| K_NOAPPDOMAIN			{ $$ = IL_META_ASSEM_NON_SIDE_BY_SIDE_APP_DOMAIN; }
 	| K_NOPROCESS			{ $$ = IL_META_ASSEM_NON_SIDE_BY_SIDE_PROCESS; }
 	| K_NOMACHINE			{ $$ = IL_META_ASSEM_NON_SIDE_BY_SIDE_MACHINE; }
@@ -2863,22 +2853,8 @@ AssemblyDeclarationList
 	;
 
 AssemblyDeclaration
-	: D_TITLE ComposedString '(' ComposedString ')'	{
-				if(!ILAssemblySetTitle(ILAsmAssembly, $2.string))
-				{
-					ILAsmOutOfMemory();
-				}
-				if(!ILAssemblySetDescription(ILAsmAssembly, $4.string))
-				{
-					ILAsmOutOfMemory();
-				}
-			}
-	| D_TITLE ComposedString	{
-				if(!ILAssemblySetTitle(ILAsmAssembly, $2.string))
-				{
-					ILAsmOutOfMemory();
-				}
-			}
+	: D_TITLE ComposedString '(' ComposedString ')'	{ /* Obsolete */ }
+	| D_TITLE ComposedString						{ /* Obsolete */ }
 	| D_HASH K_ALGORITHM Integer32	{
 				ILAssemblySetHashAlgorithm(ILAsmAssembly, $3);
 			}
@@ -2984,40 +2960,8 @@ AsmOrRefDeclaration
 					}
 				}
 			}
-	| D_CONFIG ComposedString	{
-				/* Set the assembly configuration string */
-				if(ILAsmCurrAssemblyRef)
-				{
-					if(!ILAssemblySetConfig(ILAsmCurrAssemblyRef, $2.string))
-					{
-						ILAsmOutOfMemory();
-					}
-				}
-				else
-				{
-					if(!ILAssemblySetConfig(ILAsmAssembly, $2.string))
-					{
-						ILAsmOutOfMemory();
-					}
-				}
-			}
-	| D_CONFIG '=' Bytes	{
-				/* Set the assembly configuration string to a byte list */
-				if(ILAsmCurrAssemblyRef)
-				{
-					if(!ILAssemblySetConfig(ILAsmCurrAssemblyRef, $3.string))
-					{
-						ILAsmOutOfMemory();
-					}
-				}
-				else
-				{
-					if(!ILAssemblySetConfig(ILAsmAssembly, $3.string))
-					{
-						ILAsmOutOfMemory();
-					}
-				}
-			}
+	| D_CONFIG ComposedString	{ /* Obsolete */ }
+	| D_CONFIG '=' Bytes		{ /* Obsolete */ }
 	| CustomAttributeDeclaration
 	;
 

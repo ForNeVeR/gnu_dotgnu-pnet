@@ -366,15 +366,6 @@ Get the size in bytes of the directory header that is stored in
 the metadata section of an IL image.
 @end deftypefun
 
-@deftypefun int ILImageMetaIsOld (ILImage *image)
-@cindex ILImageMetaIsOld function
-Determine if the metadata is in the older Beta 1 or earlier format.
-Some of the token codes were different in the older format.
-
-Note: support for old metadata formats may be removed in a future
-version of the library.
-@end deftypefun
-
 @deftypefun {const char *} ILImageGetString (ILImage *image, unsigned long offset)
 @cindex ILImageGetString function
 Get a string from the string pool.  Returns @code{NULL} if @code{offset}
@@ -511,10 +502,6 @@ is listed with the program item type that results from calling
 @item @code{IL_META_TOKEN_NESTED_CLASS} @tab @code{ILNestedInfo}
 @cindex IL_META_TOKEN_NESTED_CLASS constant
 @end multitable
-
-If @code{ILImageMetaIsOld} returns a non-zero value, then
-@code{IL_META_TOKEN_OLD_NESTED_CLASS} must be used instead of
-@code{IL_META_TOKEN_NESTED_CLASS}.
 @end deftypefun
 
 @deftypefun {void *} ILImageTokenInfo (ILImage *image, ILToken token)

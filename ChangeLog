@@ -7,6 +7,17 @@
 
 * engine/engine.h: add new type "ILClassPrivate".
 
+* doc/pnetimg.texi, doc/pnettools.texi, dumpasm/dump_flags.c,
+dumpasm/dump_type.c, engine/interpreter.c, ilalink/ilalink.c,
+ilasm/ilasm.1, ilasm/ilasm_grammar.y, ilasm/ilasm_main.c,
+ilasm/ilasm_scanner.l, ildasm/ildasm_global.c, image/assembly.c,
+image/image.h, image/member.c, image/meta_build.c,
+image/meta_header.c, image/meta_index.c, image/meta_writer.c,
+image/opcodes.c, image/pecoff_writer.c, image/program.h,
+image/test_macros.c, image/writer.c, include/il_image.h,
+include/il_meta.h, include/il_opcodes.h, include/il_program.h,
+include/il_writer.h: remove obsolete code related to Beta 1 support.
+
 2001-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: add support for .jar files to the loader.

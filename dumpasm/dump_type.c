@@ -273,10 +273,6 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 				{
 					fputs("[out]", stream);
 				}
-				if(ILParameter_IsLCID(type->un.paramInfo.param))
-				{
-					fputs("[lcid]", stream);
-				}
 				if(ILParameter_IsRetVal(type->un.paramInfo.param))
 				{
 					fputs("[retval]", stream);

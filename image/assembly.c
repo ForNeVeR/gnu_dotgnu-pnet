@@ -111,13 +111,6 @@ ILAssembly *ILAssemblyCreateImport(ILImage *image, ILImage *fromImage)
 			return 0;
 		}
 	}
-	if(assem->config)
-	{
-		if(!ILAssemblySetConfig(newAssem, assem->config))
-		{
-			return 0;
-		}
-	}
 	newAssem->version[0] = assem->version[0];
 	newAssem->version[1] = assem->version[1];
 	newAssem->version[2] = assem->version[2];
@@ -285,51 +278,6 @@ int ILAssemblySetLocale(ILAssembly *assem, const char *locale)
 const char *ILAssemblyGetLocale(ILAssembly *assem)
 {
 	return assem->locale;
-}
-
-int ILAssemblySetConfig(ILAssembly *assem, const char *config)
-{
-	assem->config = _ILContextPersistString(assem->programItem.image, config);
-	return (assem->config != 0);
-}
-
-const char *ILAssemblyGetConfig(ILAssembly *assem)
-{
-	return assem->config;
-}
-
-int ILAssemblySetTitle(ILAssembly *assem, const char *title)
-{
-	assem->title = _ILContextPersistString(assem->programItem.image, title);
-	return (assem->title != 0);
-}
-
-const char *ILAssemblyGetTitle(ILAssembly *assem)
-{
-	return assem->title;
-}
-
-int ILAssemblySetDescription(ILAssembly *assem, const char *description)
-{
-	assem->description = _ILContextPersistString
-								(assem->programItem.image, description);
-	return (assem->description != 0);
-}
-
-const char *ILAssemblyGetDescription(ILAssembly *assem)
-{
-	return assem->description;
-}
-
-int ILAssemblySetAltName(ILAssembly *assem, const char *altName)
-{
-	assem->altName = _ILContextPersistString(assem->programItem.image, altName);
-	return (assem->altName != 0);
-}
-
-const char *ILAssemblyGetAltName(ILAssembly *assem)
-{
-	return assem->altName;
 }
 
 int ILAssemblySetHash(ILAssembly *assem, const void *hash, unsigned long len)

@@ -721,7 +721,6 @@ SIGN			[+-]
 "stsfld"				{ OPCODE_FIELD(STSFLD); }
 
 "box"					{ OPCODE_TYPE(BOX); }		/* Type opcodes */
-"box_old"				{ OPCODE_TYPE(BOX_OLD); }
 "castclass"				{ OPCODE_TYPE(CASTCLASS); }
 "cpobj"					{ OPCODE_TYPE(CPOBJ); }
 "initobj"				{ OPCODE_TYPE_P(INITOBJ); }

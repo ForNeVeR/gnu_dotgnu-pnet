@@ -155,12 +155,9 @@ static void Format_TypeDef(ILWriter *writer, ILImage *image,
 	/* Set the easy fields */
 	values[IL_OFFSET_TYPEDEF_ATTRS] =
 		(info->attributes & ~IL_META_TYPEDEF_SYSTEM_MASK);
-	values[IL_OFFSET_TYPEDEF_OBSOLETE_1] = 0;
-	values[IL_OFFSET_TYPEDEF_OBSOLETE_2] = 0;
 	values[IL_OFFSET_TYPEDEF_NAME] = GetPersistString(image, info->name);
 	values[IL_OFFSET_TYPEDEF_NAMESPACE] =
 			GetPersistString(image, info->namespace);
-	values[IL_OFFSET_TYPEDEF_UNKNOWN] = 0;
 	if(info->parent)
 	{
 		values[IL_OFFSET_TYPEDEF_PARENT] = info->parent->programItem.token;
@@ -531,12 +528,6 @@ static void Format_Assembly(ILWriter *writer, ILImage *image,
 	values[IL_OFFSET_ASSEMBLY_KEY_RAW] = assem->originator;
 	values[IL_OFFSET_ASSEMBLY_NAME] = GetPersistString(image, assem->name);
 	values[IL_OFFSET_ASSEMBLY_LOCALE] = GetPersistString(image, assem->locale);
-	values[IL_OFFSET_ASSEMBLY_CONFIG] = GetPersistString(image, assem->config);
-	values[IL_OFFSET_ASSEMBLY_TITLE] = GetPersistString(image, assem->title);
-	values[IL_OFFSET_ASSEMBLY_DESCRIPTION] =
-			GetPersistString(image, assem->description);
-	values[IL_OFFSET_ASSEMBLY_ALT_NAME] =
-			GetPersistString(image, assem->altName);
 }
 
 /*
@@ -574,10 +565,7 @@ static void Format_AssemblyRef(ILWriter *writer, ILImage *image,
 	values[IL_OFFSET_ASSEMBLYREF_NAME] = GetPersistString(image, assem->name);
 	values[IL_OFFSET_ASSEMBLYREF_LOCALE] =
 			GetPersistString(image, assem->locale);
-	values[IL_OFFSET_ASSEMBLYREF_CONFIG] =
-			GetPersistString(image, assem->config);
 	values[IL_OFFSET_ASSEMBLYREF_HASH_RAW] = assem->hashValue;
-	values[IL_OFFSET_ASSEMBLYREF_UNKNOWN] = 0;
 }
 
 /*
@@ -626,7 +614,6 @@ static void Format_ExportedType(ILWriter *writer, ILImage *image,
 	values[IL_OFFSET_EXPTYPE_NAME] = GetPersistString(image, type->name);
 	values[IL_OFFSET_EXPTYPE_NAMESPACE] =
 			GetPersistString(image, type->namespace);
-	values[IL_OFFSET_EXPTYPE_EXPORT_NAME] = values[IL_OFFSET_EXPTYPE_NAME];
 	values[IL_OFFSET_EXPTYPE_FILE] = type->scope->token;
 }
 
@@ -638,12 +625,9 @@ static void Format_ManifestResource(ILWriter *writer, ILImage *image,
 {
 	values[IL_OFFSET_MANIFESTRES_OFFSET] = res->offset;
 	values[IL_OFFSET_MANIFESTRES_ATTRS] = res->attributes;
-	values[IL_OFFSET_MANIFESTRES_LOCALE] = 0;
 	values[IL_OFFSET_MANIFESTRES_NAME] = GetPersistString(image, res->name);
-	values[IL_OFFSET_MANIFESTRES_DESCRIPTION] = 0;
 	values[IL_OFFSET_MANIFESTRES_IMPL] =
 			(res->owner ? res->owner->token : 0);
-	values[IL_OFFSET_MANIFESTRES_MIME] = 0;
 }
 
 /*
@@ -703,12 +687,12 @@ static ILFormatFunc const Formatters[64] = {
 	(ILFormatFunc)Format_File,
 	(ILFormatFunc)Format_ExportedType,
 	(ILFormatFunc)Format_ManifestResource,		/* 28 */
-	(ILFormatFunc)Format_NestedClass,			/* ECMA/Beta2 and higher */
+	(ILFormatFunc)Format_NestedClass,
 	0,
 	0,
 	0,
 	0,
-	(ILFormatFunc)Format_NestedClass,			/* Beta1 or earlier */
+	0,
 	0,
 	0,											/* 30 */
 	0,
@@ -1276,7 +1260,6 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 	ILToken token;
 	ILToken tokenKind;
 	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
-	int isOld = ((writer->flags & IL_WRITEFLAG_OLD_META) != 0);
 	ILFormatFunc func;
 	ILSigWriteFunc sigFunc;
 	ILSortFunc sortFunc;
@@ -1355,20 +1338,6 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 		}
 	}
 
-	/* Swap NESTED_CLASS and OLD_NESTED_CLASS if writing old metadata */
-	if(isOld)
-	{
-		image->tokenData[IL_META_TOKEN_OLD_NESTED_CLASS >> 24] =
-					image->tokenData[IL_META_TOKEN_NESTED_CLASS >> 24];
-		image->tokenCount[IL_META_TOKEN_OLD_NESTED_CLASS >> 24] =
-					image->tokenCount[IL_META_TOKEN_NESTED_CLASS >> 24];
-		image->tokenData[IL_META_TOKEN_NESTED_CLASS >> 24] = 0;
-		image->tokenCount[IL_META_TOKEN_NESTED_CLASS >> 24] = 0;
-		sortedFlags &= ~(((ILUInt64)1) << (IL_META_TOKEN_NESTED_CLASS >> 24));
-		sortedFlags |= (((ILUInt64)1) <<
-							(IL_META_TOKEN_OLD_NESTED_CLASS >> 24));
-	}
-
 	/* Determine the size flags for the header.  The GUIDREF
 	   size is guessed based on the number of modules.  Since
 	   most assemblies have only 1 module, the GUIDREF flag
@@ -1403,7 +1372,7 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 	}
 
 	/* Compute the sizes of all token types */
-	_ILImageComputeTokenSizes(image, isOld);
+	_ILImageComputeTokenSizes(image);
 
 	/* Collect flag bits for all of the token types that are in use */
 	tokenFlags = 0;
@@ -1417,25 +1386,10 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 
 	/* Write the metadata index header */
 	IL_WRITE_UINT32(buffer, 0);				/* Reserved */
-	if(isOld)
-	{
-		buffer[4] = 0x00;					/* Major version */
-		buffer[5] = 0x14;					/* Minor version */
-	}
-	else
-	{
-		buffer[4] = 0x01;					/* Major version */
-		buffer[5] = 0x00;					/* Minor version */
-	}
+	buffer[4] = 0x01;						/* Major version */
+	buffer[5] = 0x00;						/* Minor version */
 	buffer[6] = (unsigned char)sizeFlags;	/* Section size flags */
-	if(isOld)
-	{
-		buffer[7] = 0x10;					/* No idea */
-	}
-	else
-	{
-		buffer[7] = 0x00;					/* Reserved */
-	}
+	buffer[7] = 0x00;						/* Reserved */
 	IL_WRITE_UINT64(buffer + 8, tokenFlags);
 	IL_WRITE_UINT64(buffer + 16, sortedFlags);
 	if(!_ILWBufferListAdd(&(writer->indexBlob), buffer, 24))
@@ -1499,8 +1453,7 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 
 				/* Encode the "values" array into "buffer" */
 				_ILImageRawTokenEncode(image, buffer + posn,
-									   (tokenKind | (token + 1)),
-									   values, isOld);
+									   (tokenKind | (token + 1)), values);
 				posn += size;
 			}
 		}
@@ -1514,17 +1467,6 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 			writer->outOfMemory = 1;
 			return 1;
 		}
-	}
-
-	/* Swap NESTED_CLASS and OLD_NESTED_CLASS back if writing old metadata */
-	if(isOld)
-	{
-		image->tokenData[IL_META_TOKEN_NESTED_CLASS >> 24] =
-					image->tokenData[IL_META_TOKEN_OLD_NESTED_CLASS >> 24];
-		image->tokenCount[IL_META_TOKEN_NESTED_CLASS >> 24] =
-					image->tokenCount[IL_META_TOKEN_OLD_NESTED_CLASS >> 24];
-		image->tokenData[IL_META_TOKEN_OLD_NESTED_CLASS >> 24] = 0;
-		image->tokenCount[IL_META_TOKEN_OLD_NESTED_CLASS >> 24] = 0;
 	}
 
 	/* Successful */

@@ -234,12 +234,6 @@ void *ILImageMetaEntryInfo(ILImage *image, unsigned long entry,
 unsigned long ILImageMetaHeaderSize(ILImage *image);
 
 /*
- * Determine if the metadata is in the older Beta 1 or earlier format.
- * Some of the token codes were different in the older format.
- */
-int ILImageMetaIsOld(ILImage *image);
-
-/*
  * Get a string from the string pool.  Returns NULL if "offset" is invalid.
  * The return pointer is guaranteed to be fixed for the lifetime of the image.
  */

@@ -247,6 +247,21 @@ void _ILWakeupInterrupt(_ILWakeup *wakeup)
 	_ILCondMutexUnlock(&(wakeup->lock));
 }
 
+void _ILWakeupCancelInterrupt(_ILWakeup *wakeup)
+{
+	/* Lock down the wakeup object */
+	_ILCondMutexLock(&(wakeup->lock));
+	
+	if(wakeup->interrupted)
+	{
+		/* Mark the thread for interruption */
+		wakeup->interrupted = 0;
+	}
+
+	/* Unlock the wakeup object */
+	_ILCondMutexUnlock(&(wakeup->lock));
+}
+
 void _ILWakeupQueueCreate(_ILWakeupQueue *queue)
 {
 	queue->first = 0;

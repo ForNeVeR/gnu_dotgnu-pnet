@@ -165,6 +165,8 @@ typedef int (*ILWaitRegisterFunc)(ILWaitHandle *handle, _ILWakeup *wakeup);
 typedef void (*ILWaitUnregisterFunc)(ILWaitHandle *handle, _ILWakeup *wakeup,
 									 int release);
 
+typedef int (*ILWaitSignalFunc)(ILWaitHandle *handle);
+
 /*
  * Internal structure of a wait handle.
  */
@@ -175,7 +177,7 @@ struct _tagILWaitHandle
 	ILWaitCloseFunc		 volatile closeFunc;
 	ILWaitRegisterFunc	 volatile registerFunc;
 	ILWaitUnregisterFunc volatile unregisterFunc;
-
+    ILWaitSignalFunc		 volatile signalFunc;
 };
 
 /*
@@ -327,6 +329,16 @@ int _ILThreadCreateSystem(ILThread *thread);
 void _ILThreadSuspendRequest(ILThread *thread);
 
 /*
+ *	Sets the priority of the thread.
+ */
+void _ILThreadSetPriority(ILThread *thread, int priority);
+
+/*
+ *	Gets the thread priority.
+ */
+int _ILThreadGetPriority(ILThread *thread);
+
+/*
  * Create a thread wakeup object.
  */
 void _ILWakeupCreate(_ILWakeup *wakeup);
@@ -366,6 +378,8 @@ int _ILWakeupSignal(_ILWakeup *wakeup, void *object);
  * Interrupt a thread wakeup object.
  */
 void _ILWakeupInterrupt(_ILWakeup *wakeup);
+
+void _ILWakeupCancelInterrupt(_ILWakeup *wakeup);
 
 /*
  * Create a wakeup queue.

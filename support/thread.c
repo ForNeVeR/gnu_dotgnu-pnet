@@ -124,11 +124,10 @@ void _ILThreadRun(ILThread *thread)
 		(*(thread->startFunc))(thread->objectArg);
 	}
 
-	/* Mark the thread as stopped, and wakeup everyone waiting to join */
+	/* Mark the thread as stopped */
 	_ILMutexLock(&(thread->lock));
 	thread->state |= IL_TS_STOPPED;
-	isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
-	_ILWakeupQueueWakeAll(&(thread->joinQueue));
+	isbg = ((thread->state & IL_TS_BACKGROUND) != 0);	
 	_ILMutexUnlock(&(thread->lock));
 
 	/* Notify and remove the cleanup handlers */
@@ -146,6 +145,11 @@ void _ILThreadRun(ILThread *thread)
 
 		entry = next;
 	}
+
+	/* Wakeup everyone waiting to join */
+	_ILMutexLock(&(thread->lock));
+	_ILWakeupQueueWakeAll(&(thread->joinQueue));
+	_ILMutexUnlock(&(thread->lock));
 
 	/* Update the thread counts */
 	_ILMutexLock(&threadLockAll);
@@ -180,6 +184,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 	{
 		return 0;
 	}
+
 	_ILMutexCreate(&(thread->lock));
 	thread->state = IL_TS_UNSTARTED;
 	thread->resumeRequested = 0;
@@ -491,7 +496,7 @@ int ILThreadAbort(ILThread *thread)
 			/* Already aborted */
 			result = 0;
 		}
-			else if((thread->state & IL_TS_ABORT_REQUESTED) != 0)
+		else if((thread->state & IL_TS_ABORT_REQUESTED) != 0)
 		{
 			/* Abort was requested */
 			thread->state &= ~IL_TS_ABORT_REQUESTED;
@@ -560,6 +565,10 @@ int ILThreadAbortReset(void)
 	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
 	{
 		thread->state &= ~(IL_TS_ABORTED | IL_TS_ABORT_REQUESTED);
+		thread->state &= ~(IL_TS_INTERRUPTED);
+
+		_ILWakeupCancelInterrupt(&thread->wakeup);
+
 		result = 1;
 	}
 	else
@@ -976,6 +985,16 @@ int ILThreadUnregisterCleanup(ILThread *thread, ILThreadCleanupFunc func)
 	/* Not found */
 
 	return -1;
+}
+
+void ILThreadSetPriority(ILThread *thread, int priority)
+{
+	_ILThreadSetPriority(thread, priority);
+}
+
+int ILThreadGetPriority(ILThread *thread)
+{
+	_ILThreadGetPriority(thread);
 }
 
 void _ILThreadSuspendRequest(ILThread *thread)

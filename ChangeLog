@@ -9,6 +9,51 @@
 	duplicate handle to fix "Suspend Thread Failed" errors when
 	the engine closes thread handles.
 	
+	* image/image.h, image/context.c: Added support for attaching
+	user data to contexts.
+	
+	* include/il_engine.h: Added prototypes for ILExecDeinit,
+	ILThreadRegisterForManagedExcecution and
+	ILThreadUnregisterForManagedExecution.
+	
+	* include/il_image.h: Added prototypes for ILContextSetUserData
+	and ILContextGetUserData.
+		
+	* include/il_thread.h: Added prototypes for ILThreadSetPriority,
+	ILThreadGetPriority and ILSignalAndWait.
+	
+	* engine/engine.h, heap.c, ilrun.c, process.c, thread.c:
+	Added support for abandoning finalization when the owner process
+	of an (orphaned) object is destroyed.
+	
+	* engine/lib_thread.c: Add preliminary support for Thread.Abort
+	
+	* engine/process.c: Added support for aborting and waiting for
+	"background" threads before the process is destroyed.
+	Move GC & thread deinitialization into ILExecDeinit.
+	
+	* engine/monitor.c: Fixed memory leak in ILThreadCreate
+	that can occur if the system runs out of memory.
+	
+	* engine/throw.c: Added ILExecThreadThrowThreadAbortException.
+	
+	* support/hb_gc.c: Make ILGCDisableFinalizers block until
+	all finalizers have finished.
+	
+	* support/thr_defs.h, support/no_defs.c, support/w32_defs.c,
+	support/pt_defs.c, support/thread.c: Added support for thread
+	priorities.
+	
+	* support/thr_defs.h: Added signalFunc field to ILWaitHandle.
+	
+	* support/wait.c: Added implementation of ILSignalAndWait.
+	
+	* support/wait_event.c, support/wait_mutex.c: Added support for
+	WaitHandle signalFuncs (used by ILSignalAndWait) to Mutexes,
+	Monitors and Events.
+	
+	* support/wakeup.c: Added support for cancelling interrupts.
+	
 2003-07-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/marshal.c, image/member.c, image/meta_build.c,

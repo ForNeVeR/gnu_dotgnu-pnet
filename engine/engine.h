@@ -84,6 +84,20 @@ struct _tagILExecDebugWatch
 };
 
 /*
+ *	Passed to objects when they are finalized.  Objects being finalized should
+ * verify the information in the context valid before continuuing finalization
+ * because it is possible for objects to be finalized *long* after their owner
+ * process has been destroyed.
+ */
+typedef struct __tagILFinalizationContext ILFinalizationContext;
+struct __tagILFinalizationContext
+{
+	/* The process that created the object and registered the finalizer or 0
+	    if that process has been destroyed. */
+	ILExecProcess *volatile process;
+};
+
+/*
  * Execution control context for a process.
  */
 struct _tagILExecProcess
@@ -96,6 +110,9 @@ struct _tagILExecProcess
 
 	/* The "main" thread for the process */
 	ILExecThread   *mainThread;
+
+	/* The finalizer thread for the process */
+	ILExecThread   *finalizerThread;
 
 	/* Default stack size for new threads */
 	ILUInt32	  	stackSize;
@@ -118,6 +135,7 @@ struct _tagILExecProcess
 	ILClass        *stringClass;
 	ILClass        *exceptionClass;
 	ILClass        *clrTypeClass;
+	ILClass		 *threadAbortClass;
 
 	/* The object to throw when the system runs out of memory */
 	ILObject	   *outOfMemoryObject;
@@ -136,6 +154,9 @@ struct _tagILExecProcess
 	void			*monitorHash;
 	ILMutex		*monitorSystemLock;
 #endif
+
+	/* Finalization context used by this process */
+	ILFinalizationContext *finalizationContext;
 
 	/* Hash table that maps program items to reflection objects */
 	void		   *reflectionHash;
@@ -226,6 +247,9 @@ struct _tagILExecThread
 	
 	/* Last exception that was thrown */
 	ILObject       *thrownException;
+
+	/* Indicates if an abort is in progress */
+	int				aborting;
 
 	/* Security manager in use by this thread */
 	ILObject	   *securityManager;
@@ -651,6 +675,26 @@ ILObject *_ILCustomToObject(ILExecThread *thread, void *ptr,
  *	Gets the current managed thread object from an engine thread.
  */
 ILObject *_ILGetCurrentClrThread(ILExecThread *thread);
+
+/*
+ *	Makes the given support thread execute in the context of the given engine thread.
+ */
+void _ILThreadExecuteOn(ILThread *thread, ILExecThread *execThread);
+
+/*
+ *	Throws a thread abort exception on the given thread.
+ */
+void _ILExecThreadThrowThreadAbortException(ILExecThread *thread, ILObject *stateInfo);
+
+/*
+ *	Aborts the current thread.
+ */
+void _ILAbortThread(ILExecThread *thread);
+
+/*
+ *	Handles thread aborts & interruption.
+ */
+void _ILHandleWaitResult(ILExecThread *thread, int result);
 
 /*
  *	Creates a monitor used by the execution engine.

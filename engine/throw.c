@@ -190,12 +190,31 @@ void ILExecThreadThrowArgNull(ILExecThread *thread, const char *paramName)
 		ILExecThreadSetException(thread, object);
 	}
 }
-
 void ILExecThreadThrowOutOfMemory(ILExecThread *thread)
 {
 	if(!ILExecThreadHasException(thread))
 	{
 		ILExecThreadSetException(thread, thread->process->outOfMemoryObject);
+	}
+}
+
+void _ILExecThreadThrowThreadAbortException(ILExecThread *thread, ILObject *stateInfo)
+{
+	ILObject *object;
+
+	/* Bail out if there already is a pending exception */
+	if(ILExecThreadHasException(thread))
+	{
+		return;
+	}
+
+	object = ILExecThreadNew(thread, "System.Threading.ThreadAbortException",
+						"(ToSystem.Object;)V", stateInfo);
+	
+	_ILSetExceptionStackTrace(thread, object);
+	if(!ILExecThreadHasException(thread))
+	{
+		ILExecThreadSetException(thread, object);
 	}
 }
 
@@ -228,9 +247,18 @@ void ILExecThreadPrintException(ILExecThread *thread)
 		exception = thread->process->outOfMemoryObject;
 	}
 
+	/*
+	 *	Don't print out ThreadAbortExceptions.
+	 */
+
+	if (GetObjectClass(exception) == thread->process->threadAbortClass)
+	{
+		return;
+	}
+
 	/* Attempt to use "ToString" to format the exception, but not
 	   if we know that the exception is reporting out of memory */
-	if(exception != thread->process->outOfMemoryObject)
+	if(exception != thread->process->outOfMemoryObject)		
 	{
 		str = ILObjectToString(thread, exception);
 		if(str != 0 && (ansistr = ILStringToAnsi(thread, str)) != 0)

@@ -40,6 +40,8 @@ ILExecMonitor *ILExecMonitorCreate(void)
 	/* Allocate memory for the wait monitor */
 	if((monitor->supportMonitor = ILWaitMonitorCreate()) == 0)
 	{
+		ILFree(monitor);
+
 		return 0;
 	}
 

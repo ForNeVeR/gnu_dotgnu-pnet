@@ -21,6 +21,7 @@
  */
 
 #include "thr_defs.h"
+#include "stdio.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -97,6 +98,11 @@ static void EventUnregister(ILWaitEvent *event, _ILWakeup *wakeup, int release)
 	_ILMutexUnlock(&(event->parent.lock));
 }
 
+static int EventSignal(ILWaitHandle *waitHandle)
+{
+	ILWaitEventSet(waitHandle);
+}
+
 /*
  * Creates and returns a new wait event.
  *
@@ -123,6 +129,7 @@ ILWaitHandle *ILWaitEventCreate(int manualReset, int initialState)
 	event->parent.closeFunc = (ILWaitCloseFunc)EventClose;	
 	event->parent.registerFunc = (ILWaitRegisterFunc)EventRegister;
 	event->parent.unregisterFunc = (ILWaitUnregisterFunc)EventUnregister;
+	event->parent.signalFunc = (ILWaitSignalFunc)EventSignal;
 
 	_ILWakeupQueueCreate(&(event->queue));
 
@@ -161,18 +168,59 @@ int ILWaitEventSet(ILWaitHandle *handle)
 			/* Check if this event is manually reset */
 			if (event->data & (EVENT_MANUALRESET_MASK))
 			{
-				/* Manual reset events should be set to signalled here
-				 * Auto reset events shouldn't be set since a thread is
-				 * about to be released. */
-
 				event->data |= (EVENT_SET_MASK);
-			}
 
-			/* Wakeup the next thread */
-			_ILWakeupQueueWake(&event->queue);
+				_ILWakeupQueueWakeAll(&event->queue);
+			}
+			else
+			{
+				/* No need to set the event mask since a single thread is going to be released */
+				_ILWakeupQueueWake(&event->queue);
+			}
 		}
 	}
 	
+	/* Unlock the event and return */
+	_ILMutexUnlock(&(event->parent.lock));
+
+	return 1;
+}
+
+/*
+* Pulses the event.
+*
+* @param handle  The pointer to the wait event.
+* @returns 1 if successful.
+*/
+int ILWaitEventPulse(ILWaitHandle *handle)
+{
+	ILWaitEvent *event = (ILWaitEvent *)handle;
+
+	/* Lock down the event */
+	_ILMutexLock(&(event->parent.lock));
+
+	if (!(event->data & (EVENT_SET_MASK)))
+	{		
+		if (event->queue.first == 0)
+		{
+			/* No threads are waiting so just exit */
+		}
+		else
+		{
+			/* One or more threads must be waiting */
+
+			/* Check if this event is manually reset */
+			if (event->data & (EVENT_MANUALRESET_MASK))
+			{
+				_ILWakeupQueueWakeAll(&event->queue);
+			}
+			else
+			{				
+				_ILWakeupQueueWake(&event->queue);
+			}
+		}
+	}
+
 	/* Unlock the event and return */
 	_ILMutexUnlock(&(event->parent.lock));
 

@@ -460,6 +460,16 @@ ILImage *ILContextGetSystem(ILContext *context)
 	return context->systemImage;
 }
 
+void ILContextSetUserData(ILContext *context, void *userData)
+{
+	context->userData = userData;
+}
+
+void *ILContextGetUserData(ILContext *context)
+{
+	return context->userData;
+}
+
 void ILContextSetLibraryDirs(ILContext *context,
 							 char **libraryDirs,
 							 int numLibraryDirs)

@@ -25,17 +25,11 @@
 extern	"C" {
 #endif
 
-/* TODO: Design a better way to access the main executing process */
-static ILExecProcess *mainProcess;
-
 /*
  * Initialize a class.
  */
 static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 {
-	/* Cache the main process needed by finalizers */
-	mainProcess = thread->process;
-
 	/* Quick check to see if the class is already laid out,
 	   to avoid acquiring the metadata lock if possible */
 	if(_ILLayoutAlreadyDone(classInfo))
@@ -67,63 +61,62 @@ static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 	return 1;
 }
 
-/*
- *	Cleanup handler that is attached to the finalizer thread so that it unregisters
- * itself upon closing.
- */
-static void DeregisterFinalizerThreadForManagedExecution(ILThread *thread)
-{
-	ILThreadUnregisterForManagedExecution(thread);
-}
-
+/* This method assumes there is only one finalizer thread for the entire os process */
 void _ILFinalizeObject(void *block, void *data)
 {
 	ILObject *object;
 	ILClass *classInfo;
 	ILMethod *method;
 	ILType *signature;
+	ILThread *thread;
+	ILExecProcess *process;
 	ILExecThread *execThread;
+	ILFinalizationContext *finalizationContext;
 	
+	/* Get the finalization context */
+	finalizationContext = (ILFinalizationContext *)data;
+
 	/* Skip the object header within the block */
 	object = GetObjectFromGcBase(block);
+
+	/* Get the process that created the object */
+	process = finalizationContext->process;
+
+	/* Make sure the process is still alive */
+	if (process == 0)
+	{
+		/* Our owner process died.  We're orphaned and can't finalize */
+		return;
+	}
+
+	/* Get the engine thread to execute the finalizer on */
+	execThread = process->finalizerThread;
+
+	/* Get the finalizer thread instance */
+	thread = ILThreadSelf();
+
+	if (execThread == 0)
+	{				
+		/* Create a new engine thread for the finalizers of this process to run on */
+
+		execThread = _ILExecThreadCreate(process);
+
+		if (execThread == 0)
+		{
+			return;
+		}
+
+		execThread->supportThread = thread;
+		process->finalizerThread = execThread;
+	}
+
+	/* Make the finalizer thread execute in the context of the object's process's
+	    finalizer thread */
+	_ILThreadExecuteOn(thread, execThread);
 
 	/* Get the object's class and locate the "Finalize" method */
 	classInfo = GetObjectClass(object);
 
-	execThread = ILExecThreadCurrent();
-
-	if (execThread == 0)
-	{
-		ILThread *thread;
-
-		/* The thread the finalizer isn't registered for managed execution */
-		/* Register the thread to execute managed code */
-
-		thread = ILThreadSelf();
-
-		if (!mainProcess)
-		{
-			/* Impossible state */
-			/* Finalizer on an object called before an object was allocated */
-
-			return;
-		}
-
-		if ((execThread = ILThreadRegisterForManagedExecution(mainProcess, thread)) == 0)
-		{
-			/* Registering for managed execution failed */
-
-			return;
-		}
-
-		/* Register a cleanup handler that will deregister the thread from the engine
-		    when it finishes */
-		ILThreadRegisterCleanup(thread, DeregisterFinalizerThreadForManagedExecution);
-
-		/* Mark the thread as a finalizer thread */
-		execThread->isFinalizerThread = 1;
-	}
-	
 	while(classInfo != 0)
 	{
 		method = 0;
@@ -149,6 +142,11 @@ void _ILFinalizeObject(void *block, void *data)
 		}
 		classInfo = ILClassGetParent(classInfo);
 	}
+
+	execThread->supportThread = 0;
+
+	/* Make sure the finalizer thread can no longer execute managed code */
+	_ILThreadExecuteOn(thread, 0);	
 }
 
 ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
@@ -189,7 +187,7 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 	if(classInfo != 0 &&
 	   ((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
 	{
-		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, 0);
+		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, thread->process->finalizationContext);
 	}
 
 	/* Return a pointer to the object */
@@ -234,7 +232,7 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 	if(classInfo != 0 &&
 	   ((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
 	{
-		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, 0);
+		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, thread->process->finalizationContext);
 	}
 
 	/* Return a pointer to the object */

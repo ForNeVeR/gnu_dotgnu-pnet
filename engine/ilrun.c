@@ -441,9 +441,9 @@ int main(int argc, char *argv[])
 		ILExecThreadPrintException(thread);
 	}
 
-	/* Wait for all other foreground threads to finish */
+	/* Wait for all foreground threads to finish */
 	ILThreadWaitForForegroundThreads(-1);
-
+ 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	/* Print profile information if requested */
 	if(dumpInsnProfile)
@@ -488,6 +488,7 @@ int main(int argc, char *argv[])
 	/* Clean up the process and exit */
 	error = ILExecProcessGetStatus(process);
 	ILExecProcessDestroy(process);
+	ILExecDeinit();
 
 	return (int)retval;
 }

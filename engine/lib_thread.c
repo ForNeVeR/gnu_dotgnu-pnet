@@ -1,4 +1,3 @@
-
 /*
  * lib_thread.c - Internalcall methods for "System.Threading.*".
  *
@@ -39,22 +38,12 @@ extern	"C" {
 /*
  * Timeout value the managed WaitHandle uses.
  */
-#define WIN32_WAIT_TIMEOUT (258L)
+#define IL_CLR_WAIT_TIMEOUT (258L)
 
 /*
  * Maximum number of wait handles that can be processed at once.
  */
 #define	IL_MAX_WAIT_HANDLES		64
-
-/*
- * Cache of the System.Threading.ThreadStart.Invoke() method.
- */
-static ILMethod *c_ThreadStartInvokeMethod = NULL;
-
-/*
- *	Predeclartion of code that handles thread aborts & interruption.
- */
-static void HandleWaitResult(ILExecThread *thread, int result);
 
 /*
  * public static void Enter(Object obj);
@@ -79,7 +68,7 @@ static void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, volatile ILObje
 			IL_LW_UNMARK(lockword)) == IL_LW_UNMARK(lockword)))
 		{
 			break;
-		}
+		}		
 	}
 }
 
@@ -102,15 +91,21 @@ static void _IL_ObjectLockword_Unmark(ILExecThread *thread, volatile ILObject *o
  * This method is only safe to call if you have exclusive acess to the object's
  * lockword.
  */
-static int _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, ILExecMonitor *monitor, volatile ILObject *obj)
-{	
+static void _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, ILExecMonitor *monitor, volatile ILObject *obj)
+{
+	if (monitor == 0)
+	{
+		/* The monitor has already been claimed by another thread */
+		return;
+	}
+
 	if(monitor->waiters == 0 && ILWaitMonitorCanClose(monitor->supportMonitor))
 	{
 		ILLockWord current;
 
 		/* Remove the monitor from the object if the object hasn't been assigned
 		      a new monitor */
-		current = CompareAndExchangeObjectLockWord(thread, obj, 0, IL_LW_MARK(monitor));
+		current = CompareAndExchangeObjectLockWord(thread, obj, IL_LW_MARK(0), IL_LW_MARK(monitor));
 
 		if(current == IL_LW_MARK(monitor))
 		{
@@ -128,11 +123,7 @@ static int _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, ILE
 			/* The object's monitor has changed which means 'monitor'
 			   has already been claimed as as free by another thread */
 		}
-
-		return 1;
 	}
-
-	return 0;
 }
 
 /*
@@ -220,9 +211,9 @@ retry:
 				{
 					monitor->next = thread->freeMonitor;
 					thread->freeMonitor = monitor;
-				}				
+				}
 
-				HandleWaitResult(thread, result);
+				_ILHandleWaitResult(thread, result);
 
 				return 0;
 			}
@@ -233,7 +224,7 @@ retry:
 
 			/* Finally allow other threads to enter the monitor */
 			_IL_ObjectLockword_Unmark(thread, obj);
-
+			
 			return 1;
 		}
 		else
@@ -254,9 +245,13 @@ retry:
 	/* If the lockword is marked then it means that another thread is attempting
 	       disassociate the monitor with the object. */
 	if (IL_LW_MARKED(lockword))
-	{
+	{		
+		/* Yeld CPU time while spinning.  This appears to speed up monitors
+		    but may cause us to never enter the object's monitor, so threads releasing
+			the same monitor will sleep too */
+		ILThreadSleep(0);
+		
 		/* Spin */
-
 		goto retry;
 	}
 
@@ -284,6 +279,7 @@ retry:
 		/* Unmark the object's lockword */
 		_IL_ObjectLockword_Unmark(thread, obj);
 
+		/* Spin */
 		goto retry;
 	}
 
@@ -292,9 +288,7 @@ retry:
 
 	/* Try entering the monitor */	
 	result = ILWaitMonitorTryEnter(monitor->supportMonitor, timeout);
-
-	_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
-
+	
 	/* Failed or timed out somehow */
 	if (result != 0)
 	{
@@ -310,7 +304,11 @@ retry:
 		_IL_ObjectLockword_Unmark(thread, obj);
 
 		/* Handle ThreadAbort etc */	
-		HandleWaitResult(thread, result);
+		_ILHandleWaitResult(thread, result);
+	}
+	else
+	{
+		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
 	}
 
 	return result == 0;
@@ -321,6 +319,7 @@ retry:
  */
 void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 {
+	int result;
 	ILLockWord lockword;
 	ILExecMonitor *monitor;
 	volatile ILObject *obj;
@@ -334,7 +333,7 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 
 		return;
 	}
-		
+
 	/* Make sure noone is allowed to change the object's monitor */
 	_IL_ObjectLockword_WaitAndMark(thread, obj);
 
@@ -348,44 +347,49 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 	{
 		/* Hmm.  Can't call Monitor.Exit before Monitor.Enter */
 
+		_IL_ObjectLockword_Unmark(thread, obj);
+
 		ILExecThreadThrowSystem
 			(
-			thread,				
-			"System.Threading.SynchronizationLockException",	
-			"Exception_ThreadNeedsLock"
+				thread,
+				"System.Threading.SynchronizationLockException",	
+				"Exception_ThreadNeedsLock"
 			);
 
 		return;
 	}
 
-	if (ILWaitMonitorSpeculativeLeave(monitor->supportMonitor) == 1 
+	if ((result = ILWaitMonitorSpeculativeLeave(monitor->supportMonitor)) > 0
 		/* Note: No need to check for aborts on call to leave */)
-	{		
-		if (!_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj))
-		{
-			/* There are waiters.  Unmark the lockword */		
-			_IL_ObjectLockword_Unmark(thread, obj);
-		}
-		else
-		{	
-			/* The object's lockword has been cleared.  This implicitly unmarks it */
-		}
+	{
+		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
+				
+		/* There are waiters.  Unmark the lockword */		
+		_IL_ObjectLockword_Unmark(thread, obj);
+		
+		/* Notify waiting monitors */
+		ILWaitMonitorCompleteLeave(monitor->supportMonitor);		
 
-		ILWaitMonitorCompleteLeave(monitor->supportMonitor);
+		if (result != IL_WAIT_LEAVE_STILL_OWNS)
+		{
+			/* If we no longer own the monitor then give up some CPU time to prevent
+			    monitor hogging */
+
+			ILThreadSleep(0);
+		}
 	}
 	else
 	{
-		/* We don't own the monitor */
-				
+		/* Unmark the lockword */
+		_IL_ObjectLockword_Unmark(thread, obj);
+
+		/* We don't own the monitor */				
 		ILExecThreadThrowSystem
 			(
 				thread,					
 				"System.Threading.SynchronizationLockException",
 				"Exception_ThreadNeedsLock"
 			);
-
-		/* Unmark the lockword */
-		_IL_ObjectLockword_Unmark(thread, obj);
 	}	
 }
 
@@ -418,6 +422,7 @@ retry:
 		  disassociate the monitor with the object. */
 	if (IL_LW_MARKED(lockword))
 	{
+		
 		/* Spin */
 		goto retry;
 	}
@@ -520,6 +525,7 @@ retry:
 		/* Unmark the object's lockword */
 		_IL_ObjectLockword_Unmark(thread, obj);
 
+		/* Spin */
 		goto retry;
 	}
 
@@ -548,7 +554,16 @@ retry:
 
 		/* Thread doesn't currently own lock */
 
+		/* Mark the object's lockword */
+		_IL_ObjectLockword_WaitAndMark(thread, obj);
+
+		/* The current thread has exclusive access to the object's lockword */
+
 		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
+		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
+
+		/* Unmark the object's lockword */
+		_IL_ObjectLockword_Unmark(thread, obj);
 
 		ILExecThreadThrowSystem
 			(
@@ -563,7 +578,16 @@ retry:
 
 		/* Successfully waited */
 
+		/* Mark the object's lockword */
+		_IL_ObjectLockword_WaitAndMark(thread, obj);
+
+		/* The current thread has exclusive access to the object's lockword */
+
 		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
+		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
+
+		/* Unmark the object's lockword */
+		_IL_ObjectLockword_Unmark(thread, obj);
 
 		return 1;
 
@@ -572,8 +596,16 @@ retry:
 
 		/* Timed out */
 
+		/* Mark the object's lockword */
+		_IL_ObjectLockword_WaitAndMark(thread, obj);
+
+		/* The current thread has exclusive access to the object's lockword */
+
 		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
 		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
+
+		/* Unmark the object's lockword */
+		_IL_ObjectLockword_Unmark(thread, obj);
 
 		return 0;
 
@@ -581,9 +613,18 @@ retry:
 
 		/* Handle ThreadAbort etc */
 
-		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
+		/* Mark the object's lockword */
+		_IL_ObjectLockword_WaitAndMark(thread, obj);
 
-		HandleWaitResult(thread, result);
+		/* The current thread has exclusive access to the object's lockword */
+
+		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
+		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
+
+		/* Unmark the object's lockword */
+		_IL_ObjectLockword_Unmark(thread, obj);
+
+		_ILHandleWaitResult(thread, result);
 
 		return 0;
 	}
@@ -640,7 +681,7 @@ void _IL_Monitor_Pulse(ILExecThread *thread, ILObject *obj)
 
 			/* Handle ThreadAbort etc */
 
-			HandleWaitResult(thread, result);
+			_ILHandleWaitResult(thread, result);
 
 			return;
 		}
@@ -702,7 +743,7 @@ void _IL_Monitor_PulseAll(ILExecThread *thread, ILObject *obj)
 
 			/* Handle ThreadAbort etc */
 
-			HandleWaitResult(thread, result);
+			_ILHandleWaitResult(thread, result);
 
 			return;
 		}
@@ -881,18 +922,7 @@ static void __PrivateThreadStart(void *objectArg)
 	thread = (ILExecThread *)objectArg;
 
 	/* Get the ThreadStart.Invoke method */
-
-	if (c_ThreadStartInvokeMethod == NULL)
-	{
-		method = ILExecThreadLookupMethod(thread,
-			"System.Threading.ThreadStart", "Invoke", "(T)V");
-		
-		c_ThreadStartInvokeMethod = method;
-	}
-	else
-	{
-		method = c_ThreadStartInvokeMethod;
-	}
+	method = ILExecThreadLookupMethod(thread, "System.Threading.ThreadStart", "Invoke", "(T)V");
 
 	/* Invoke the ThreadStart delegate */
 	ILExecThreadCall(thread, method, &result, ((System_Thread *)thread->clrThread)->start);
@@ -902,8 +932,6 @@ static void __PrivateThreadStart(void *objectArg)
 	{
 		ILExecThreadPrintException(thread);
 	}
-	
-	ILThreadUnregisterForManagedExecution(thread->supportThread);
 }
 
 /*
@@ -969,7 +997,7 @@ void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
  * public void Abort();
  */
 void _IL_Thread_Abort(ILExecThread *thread, ILObject *_this)
-{	
+{
 	ILThreadAbort(((System_Thread *)_this)->privateData);
 }
 
@@ -1038,12 +1066,7 @@ ILBool _IL_Thread_InternalJoin(ILExecThread *thread, ILObject *_this,
 
 	case IL_JOIN_ABORTED:
 
-		ILExecThreadThrowSystem
-			(
-				thread,
-				"System.Threading.ThreadAbortException",
-				(const char *)0
-			);
+		_ILAbortThread(thread);
 
 		return 0;
 
@@ -1073,7 +1096,7 @@ void _IL_Thread_MemoryBarrier(ILExecThread *thread)
  */
 void _IL_Thread_ResetAbort(ILExecThread *thread)
 {
-	if ((ILThreadGetState(thread->supportThread) & IL_TS_ABORT_REQUESTED) != 0)
+	if (!thread->aborting)
 	{
 		/* No abort has been requested */
 
@@ -1083,7 +1106,7 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
 		return;
 	}
 
-	ILThreadAbortReset();
+	thread->aborting = 0;
 }
 
 /*
@@ -1151,12 +1174,11 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 	
 		if (ILThreadStart(supportThread) == 0)
 		{
-			/* Start unsuccessful.  Destroy the support & engine threads */
+			/* Start unsuccessful.  Destroy the engine thread */
+			/* The support thread will linger as long as the CLR thread does */
 
-			((System_Thread *)_this)->privateData = 0;		
 			ILThreadUnregisterForManagedExecution(supportThread);
-			ILThreadDestroy(supportThread);
-
+			
 			/* Throw an OutOfMemoryException */
 
 			ILExecThreadThrowOutOfMemory(thread);
@@ -1180,6 +1202,13 @@ ILObject *_IL_Thread_InternalCurrentThread(ILExecThread *thread)
 void _IL_Thread_InternalSetBackground(ILExecThread *thread,
 									  ILObject *_this, ILBool value)
 {
+	if (ILThreadGetState(((System_Thread *)_this)->privateData) == IL_TS_STOPPED)
+	{
+		ILExecThreadThrowSystem(thread, "System.Threading.ThreadStateException", (const char *)0);
+
+		return;
+	}
+
 	ILThreadSetBackground(((System_Thread *)_this)->privateData, value);
 }
 
@@ -1197,12 +1226,10 @@ ILInt32 _IL_Thread_InternalGetPriority(ILExecThread *thread, ILObject *_this)
 	{
 		ILExecThreadThrowSystem(thread, "System.Threading.ThreadStateException", (const char *)0);
 
-		return 1;
+		return 0;
 	}
-	
-	/* TODO */
 
-	return 2;	/* Normal */
+	return ILThreadGetPriority(supportThread);
 }
 
 /*
@@ -1222,6 +1249,8 @@ void _IL_Thread_InternalSetPriority(ILExecThread *thread, ILObject *_this,
 
 		return;
 	}
+
+	ILThreadSetPriority(supportThread, priority);
 }
 
 /*
@@ -1562,35 +1591,53 @@ void _IL_WaitHandle_InternalClose(ILExecThread *_thread,
 	}
 }
 
+void _ILAbortThread(ILExecThread *thread)
+{
+	/* Determine if we currently have an abort in progress,
+	or if we need to throw a new abort exception */
+	if(ILThreadIsAborting())
+	{
+		if(ILThreadAbort(ILThreadSelf()))
+		{
+			/* Allocate an instance of "ThreadAbortException" and throw */
+
+			ILThreadAbortReset();
+			thread->aborting = 1;
+			_ILExecThreadThrowThreadAbortException(thread, 0);			
+		}
+	}
+}
+
 /*
  * Handle the result from an "ILWait*" function call.
  */
-static void HandleWaitResult(ILExecThread *thread, int result)
+void _ILHandleWaitResult(ILExecThread *thread, int result)
 {
-	if(result == IL_WAIT_INTERRUPTED)
+	switch (result)
 	{
-		ILExecThreadThrowSystem
-			(thread, "System.Threading.ThreadInterruptedException",
-			 (const char *)0);
-	}
-	else if(result == IL_WAIT_ABORTED)
-	{
-		/* Determine if we currently have an abort in progress,
-		   or if we need to throw a new abort exception */
-		if(ILThreadIsAborting())
+		case IL_WAIT_INTERRUPTED:
 		{
-			if(ILThreadAbort(ILThreadSelf()))
-			{
-				/* Allocate an instance of "ThreadAbortException" and throw */
-				/* TODO */
-
-				ILExecThreadThrowSystem
-					(
-						thread,
-						"System.Threading.ThreadAbortException",
-						(const char *)0
-					);
-			}
+			ILExecThreadThrowSystem
+				(
+					thread,
+					"System.Threading.ThreadInterruptedException",
+					(const char *)0
+				);
+		}
+		break;
+		case IL_WAIT_ABORTED:
+		{
+			_ILAbortThread(thread);			
+		}
+		break;
+		case IL_WAIT_FAILED:
+		{
+			ILExecThreadThrowSystem
+				(
+					thread,
+					"System.Threading.SystemException",
+					(const char *)0
+				);
 		}
 	}
 }
@@ -1645,7 +1692,7 @@ ILBool _IL_WaitHandle_InternalWaitAll(ILExecThread *_thread,
 	/* Return immediately if there are no handles */
 	if(!(waitHandles->length))
 	{
-		return 1;
+		return 0;
 	}
 
 	/* Convert the WaitHandle objects into system wait handles */
@@ -1656,8 +1703,21 @@ ILBool _IL_WaitHandle_InternalWaitAll(ILExecThread *_thread,
 
 	/* Perform the wait */
 	result = ILWaitAll(handles, (ILUInt32)(waitHandles->length), timeout);
-	HandleWaitResult(_thread, result);
-	return (result == 0);
+
+	if (result == IL_WAIT_TIMEOUT)
+	{
+		return exitContext;
+	}
+	else if (result < 0)
+	{
+		_ILHandleWaitResult(_thread, result);
+
+		return 0;
+	}
+	else
+	{
+		return exitContext;
+	}
 }
 
 /*
@@ -1685,18 +1745,16 @@ ILInt32 _IL_WaitHandle_InternalWaitAny(ILExecThread *_thread,
 
 	/* Perform the wait */
 	result = ILWaitAny(handles, (ILUInt32)(waitHandles->length), timeout);
-	HandleWaitResult(_thread, result);
-	/*return (result == 0);*/
-	
-	/* Now returns index of the handle that was set and proper timeout value */
 
 	if (result == IL_WAIT_TIMEOUT)
 	{
-		result = WIN32_WAIT_TIMEOUT;
+		result = IL_CLR_WAIT_TIMEOUT;
 	}
 	else if (result < 0)
 	{
-		/* TODO: FIXME: Docs don't state how to report an error! */
+		_ILHandleWaitResult(_thread, result);
+
+		result = 0;
 	}
 
 	return result;
@@ -1712,7 +1770,7 @@ ILBool _IL_WaitHandle_InternalWaitOne(ILExecThread *_thread,
 	if(privateData)
 	{
 		int result = ILWaitOne((ILWaitHandle *)privateData, timeout);
-		HandleWaitResult(_thread, result);
+		_ILHandleWaitResult(_thread, result);
 		return (result == 0);
 	}
 	return 0;

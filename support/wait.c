@@ -64,13 +64,14 @@ static int EnterWait(ILThread *thread)
 static int LeaveWait(ILThread *thread, int result)
 {
 	_ILMutexLock(&(thread->lock));
-	if((thread->state & IL_TS_INTERRUPTED) != 0)
-	{
-		result = IL_WAIT_INTERRUPTED;
-	}
-	else if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	/* Abort has more priority over interrupt */
+	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
 	{
 		result = IL_WAIT_ABORTED;
+	}
+	else if((thread->state & IL_TS_INTERRUPTED) != 0)
+	{
+		result = IL_WAIT_INTERRUPTED;
 	}
 	thread->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
 	_ILMutexUnlock(&(thread->lock));
@@ -94,6 +95,71 @@ static int LeaveWaitHandle(ILThread *thread, ILWaitHandle *handle, int ok)
 	else
 	{
 		return ok;
+	}
+}
+
+int ILSignalAndWait(ILWaitHandle *signalHandle, ILWaitHandle *waitHandle, ILUInt32 timeout)
+{
+	ILThread *thread = ILThreadSelf();
+	_ILWakeup *wakeup = &(thread->wakeup);
+	int result;
+
+	/* Enter the "wait/sleep/join" state */
+	result = EnterWait(thread);
+	if(result != 0)
+	{
+		return result;
+	}
+
+	if (signalHandle->signalFunc == 0)
+	{
+		return IL_WAIT_FAILED;
+	}
+
+	/* Set the limit for the thread's wakeup object */
+	if(!_ILWakeupSetLimit(wakeup, 1))
+	{
+		return LeaveWait(thread, IL_WAIT_INTERRUPTED);
+	}
+
+	/* Register this thread with the handle */
+	result = (*(waitHandle->registerFunc))(waitHandle, wakeup);
+		
+	signalHandle->signalFunc(signalHandle);
+	
+	if(result == IL_WAITREG_ACQUIRED)
+	{
+		/* We were able to acquire the wait handle immediately */
+		_ILWakeupAdjustLimit(wakeup, 0);		
+		return LeaveWaitHandle(thread, waitHandle, 0);
+	}
+	else if(result == IL_WAITREG_FAILED)
+	{
+		/* Something serious happened which prevented registration */
+		_ILWakeupAdjustLimit(wakeup, 0);
+		return LeaveWait(thread, IL_WAIT_FAILED);
+	}
+
+	/* Wait until we are signalled, timed out, or interrupted */
+	result = _ILWakeupWait(wakeup, timeout, 0);
+
+	/* Unregister the thread from the wait handle */
+	(*(waitHandle->unregisterFunc))(waitHandle, wakeup, (result <= 0));
+
+	/* Tell the caller what happened */
+	if(result > 0)
+	{
+		/* We have to account for "LeaveWait" detecting interrupt
+		or abort after we already acquired the wait handle */
+		return LeaveWaitHandle(thread, waitHandle, 0);
+	}
+	else if(result == 0)
+	{
+		return LeaveWait(thread, IL_WAIT_TIMEOUT);
+	}
+	else
+	{
+		return LeaveWait(thread, IL_WAIT_INTERRUPTED);
 	}
 }
 
@@ -131,7 +197,6 @@ int ILWaitOne(ILWaitHandle *handle, ILUInt32 timeout)
 		_ILWakeupAdjustLimit(wakeup, 0);
 		return LeaveWait(thread, IL_WAIT_FAILED);
 	}
-
 
 	/* Wait until we are signalled, timed out, or interrupted */
 	result = _ILWakeupWait(wakeup, timeout, 0);
@@ -303,8 +368,7 @@ int ILWaitAll(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout)
 	
 	if (limit == 0)
 	{
-		/* No need to wait since we managed to aquire every handle immediately. */
-		
+		/* No need to wait since we managed to aquire every handle immediately. */		
 		result = 1;
 	}
 	else

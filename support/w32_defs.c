@@ -20,7 +20,7 @@
 
 #include "thr_defs.h"
 
-#ifdef	IL_USE_WIN32_THREADS
+#ifdef	 IL_USE_WIN32_THREADS
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -30,6 +30,60 @@ extern	"C" {
  * Thread-specific key that is used to store and retrieve the thread object.
  */
 DWORD _ILThreadObjectKey;
+
+/*
+ *	Sets the thread priority.
+ */
+void _ILThreadSetPriority(ILThread *thread, int priority)
+{
+	switch (priority)
+	{
+	case IL_TP_LOWEST:
+		SetThreadPriority(thread->handle, THREAD_PRIORITY_LOWEST);
+		break;
+	case IL_TP_BELOW_NORMAL:
+		SetThreadPriority(thread->handle, THREAD_PRIORITY_BELOW_NORMAL);
+		break;
+	case IL_TP_NORMAL:
+		SetThreadPriority(thread->handle, THREAD_PRIORITY_NORMAL);
+		break;
+	case IL_TP_ABOVE_NORMAL:
+		SetThreadPriority(thread->handle, THREAD_PRIORITY_ABOVE_NORMAL);
+		break;
+	case IL_TP_HIGHEST:
+		SetThreadPriority(thread->handle, THREAD_PRIORITY_HIGHEST);
+		break;
+	}	
+}
+
+/*
+ *	Gets the thread priority.
+ */
+int _ILThreadGetPriority(ILThread *thread)
+{
+	switch (GetThreadPriority(thread->handle))
+	{
+	case THREAD_PRIORITY_IDLE:
+	case THREAD_PRIORITY_LOWEST:		
+		return IL_TP_LOWEST;
+
+	case THREAD_PRIORITY_BELOW_NORMAL:		
+		return IL_TP_BELOW_NORMAL;
+
+	case THREAD_PRIORITY_NORMAL:		
+		return IL_TP_NORMAL;
+
+	case THREAD_PRIORITY_ABOVE_NORMAL:		
+		return IL_TP_ABOVE_NORMAL;
+
+	case THREAD_PRIORITY_HIGHEST:
+	case THREAD_PRIORITY_TIME_CRITICAL:
+		return IL_TP_HIGHEST;
+
+	default:
+		return IL_TP_NORMAL;
+	}
+}
 
 void _ILThreadInitSystem(ILThread *mainThread)
 {

@@ -165,6 +165,16 @@ void ILContextSetLibraryDirs(ILContext *context,
 							 int numLibraryDirs);
 
 /*
+ *	Used by the engine to attach user data to the context instance.
+ */
+void ILContextSetUserData(ILContext *context, void *userData);
+
+/*
+*	Used by the engine to get attached user data from the context instance.
+*/
+void *ILContextGetUserData(ILContext *context);
+
+/*
  * Create an IL image.  This is typically used by compilers
  * when building an image in-memory in preparation for writing
  * it to an object file or executable.  Loaders should use

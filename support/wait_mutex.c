@@ -194,6 +194,11 @@ static void MutexUnregister(ILWaitMutex *mutex, _ILWakeup *wakeup, int release)
 	_ILMutexUnlock(&(mutex->parent.lock));
 }
 
+static int MutexSignal(ILWaitHandle *waitHandle)
+{
+	return ILWaitMutexRelease(waitHandle) > 0;
+}
+
 ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
 {
 	ILWaitMutex *mutex;
@@ -210,6 +215,8 @@ ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
 	mutex->parent.closeFunc = (ILWaitCloseFunc)MutexClose;
 	mutex->parent.registerFunc = (ILWaitRegisterFunc)MutexRegister;
 	mutex->parent.unregisterFunc = (ILWaitUnregisterFunc)MutexUnregister;
+	mutex->parent.signalFunc = MutexSignal;
+
 	if(initiallyOwned)
 	{
 		mutex->owner = &((ILThreadSelf())->wakeup);
@@ -313,6 +320,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 	mutex->parent.parent.closeFunc = (ILWaitCloseFunc)MutexCloseNamed;
 	mutex->parent.parent.registerFunc = (ILWaitRegisterFunc)MutexRegister;
 	mutex->parent.parent.unregisterFunc = (ILWaitUnregisterFunc)MutexUnregister;
+	mutex->parent.parent.signalFunc = MutexSignal;
 	if(initiallyOwned)
 	{
 		mutex->parent.owner = &((ILThreadSelf())->wakeup);
@@ -401,7 +409,7 @@ int PrivateILWaitMutexRelease(ILWaitHandle *handle, int mode)
 	else
 	{
 		/* The current thread still owns the mutex */
-		result = 1;
+		result = IL_WAIT_LEAVE_STILL_OWNS;
 	}
 
 	/* Unlock the mutex and return */
@@ -453,6 +461,7 @@ ILWaitHandle *ILWaitMonitorCreate(void)
 	monitor->parent.parent.registerFunc = (ILWaitRegisterFunc)MutexRegister;
 	monitor->parent.parent.unregisterFunc =
 			(ILWaitUnregisterFunc)MutexUnregister;
+	monitor->parent.parent.signalFunc = MutexSignal;
 	monitor->parent.owner = 0;
 	monitor->parent.count = 0;
 	_ILWakeupQueueCreate(&(monitor->parent.queue));

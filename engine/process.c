@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
+ * Contributions by Thong Nguyen (tum@veridicus.com)
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -27,13 +29,20 @@ extern	"C" {
 
 void ILExecInit(unsigned long maxSize)
 {
-	/* Tum changed init order because the GC needs threading support */
-
 	/* Initialize the thread routines */	
 	ILThreadInit();
 
 	/* Initialize the global garbage collector */	
 	ILGCInit(maxSize);	
+}
+
+void ILExecDeinit()
+{
+	/* Deinitialize the global garbage collector */	
+	ILGCDeinit();	
+
+	/* Deinitialize the thread routines */	
+	ILThreadDeinit();	
 }
 
 ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)
@@ -50,6 +59,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->lock = 0;
 	process->firstThread = 0;
 	process->mainThread = 0;
+	process->finalizerThread = 0;
 #ifdef USE_HASHING_MONITORS
 	process->monitorHash = 0;
 #endif
@@ -64,8 +74,9 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->stringClass = 0;
 	process->exceptionClass = 0;
 	process->clrTypeClass = 0;
-	process->outOfMemoryObject = 0;
+	process->outOfMemoryObject = 0;	
 	process->commandLineObject = 0;
+	process->threadAbortClass = 0;
 	ILGetCurrTime(&(process->startTime));
 	process->internHash = 0;
 	process->reflectionHash = 0;
@@ -94,6 +105,9 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 		return 0;
 	}
 
+	/* Associate the process with the context */
+	ILContextSetUserData(process->context, process);
+
 	/* Initialize the CVM coder */
 	process->coder = ILCoderCreate(&_ILCVMCoderClass, 100000, cachePageSize);
 	if(!(process->coder))
@@ -120,6 +134,16 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	}
 #endif
 
+	/* Initialize the finalization context */
+	process->finalizationContext = (ILFinalizationContext *)ILGCAlloc(sizeof(ILFinalizationContext));
+	if (!process->finalizationContext)
+	{
+		ILExecProcessDestroy(process);
+		return 0;
+	}
+
+	process->finalizationContext->process = process;
+
 	/* Initialize the metadata lock */
 	process->metadataLock = ILRWLockCreate();
 	if(!(process->metadataLock))
@@ -136,6 +160,12 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 		ILExecProcessDestroy(process);
 		return 0;
 	}
+
+	/* If threading isn't supported, then the main thread is the finalizer thread */
+	if (!ILHasThreads())
+	{
+		process->finalizerThread = process->mainThread;
+	}
 	
 	/* Initialize the random seed pool lock */
 	process->randomLock = ILMutexCreate();
@@ -149,75 +179,196 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	return process;
 }
 
+typedef struct _tagThreadListEntry ThreadListEntry;
+struct _tagThreadListEntry
+{
+	ILThread *thread;
+	ThreadListEntry *next;
+};
+
 void ILExecProcessDestroy(ILExecProcess *process)
 {
-	ILExecThread *thread, *next;
-	ILExecThread *firstFinalizerThread;
+	int result;
+	int mainIsFinalizer = 0;
+	ILThread *mainSupportThread;
+	ILExecThread *thread, *nextThread;	
+	ThreadListEntry *firstEntry, *entry, *next;
 
-	/* Note: All non-finalizer threads have to be destroyed *before* GCDeinit
-	    is called so the GC can reclaim & finalize everything on those threads'
-		stacks - Tum */
-
-	/* Wait for all foreground threads to finish */
-	ILThreadWaitForForegroundThreads(-1);
-	
-	/* Delete all non-finalizer threads */
-
-	firstFinalizerThread = 0;
-	thread = process->firstThread;
-
-	while (thread)
+	if (process->mainThread)
 	{
-		next = thread->nextThread;
+		/* TODO: Stack still contains last frame */
+		ILMemZero(process->mainThread->stackBase, sizeof(int));
+	}
 
-		/* Add the thread to the finalizer threads list if it is a finalizer thread */
-		if (thread->isFinalizerThread)
+	/* Delete all managed threads so the objects they used can be finalizerd */
+	/* Keeps deleting managed threads until they're all gone just in case
+	    threads spawn new threads when they exit */
+	for (;;)
+	{				
+		firstEntry = 0;
+
+		/* Lock down the process */
+		ILMutexLock(process->lock);
+
+		/* Walk all the threads */
+		thread = process->firstThread;
+
+		while (thread)
 		{
-			if (firstFinalizerThread)
+			if (thread != process->finalizerThread && 
+				/* Make sure its a managed thread */
+				(thread->clrThread || thread == process->mainThread)
+				&& thread->supportThread != ILThreadSelf())
 			{
-				firstFinalizerThread->nextThread = thread;
+				/*
+				 * Instead of aborting and then waiting on each thread, we abort all
+				 * threads and then wait for them all at the bottom.  This prevents us from
+				 *	deadlocking on a thread that's waiting on another (not yet aborted) thread.
+				 */
+
+				nextThread = thread->nextThread;
+
+				entry = ILMalloc(sizeof(ThreadListEntry));
+
+				if (!entry)
+				{
+					ILExecThreadThrowOutOfMemory(ILExecThreadCurrent());
+
+					return;
+				}
+
+				entry->thread = thread->supportThread;
+								
+				if (!firstEntry)
+				{
+					entry->next = 0;
+					firstEntry = entry;
+				}
+				else
+				{
+					entry->next = firstEntry;
+					firstEntry = entry;
+				}
+
+				/* Abort the thread */			
+				ILThreadAbort(thread->supportThread);
+
+				thread = nextThread;
+
+				/* Note: The CLR thread (and thus the support thread) might still be used
+					by another thread so the support thread is left to be destroyed by the 
+					CLR thread's finalizer */
 			}
 			else
 			{
-				firstFinalizerThread = thread;
+				/* Move onto the next thread */
+				thread = thread->nextThread;
+			}
+		}
+
+		/* Unlock the process */
+		ILMutexUnlock(process->lock);
+
+		entry = firstEntry;
+
+		/*
+		 *	Wait for the threads that have been aborted.
+		 */
+
+		if (entry)
+		{
+			while (entry)
+			{
+				next = entry->next;
+
+				result = ILThreadJoin(entry->thread, -1);
+
+				ILFree(entry);
+
+				if (result != 0)
+				{
+					/* The thread might be aborted while trying to exit */
+
+					entry = next;
+
+					while (entry)
+					{
+						next = entry->next;
+						ILFree(entry);
+						entry = next;
+					}
+
+					_ILHandleWaitResult(ILExecThreadCurrent(), result);
+
+					return;
+				}
+
+				entry = next;
 			}
 		}
 		else
 		{
-			/* The thread isn't a finalizer thread so destroy it to free up its stack space
-			    so the finalizer can reclaim everything 
-				Note: This is threadsafe.  There's no way the finalizer could run on the
-				CLR thread while we still hold a reference to it */
-
-			if (thread->clrThread)
-			{
-				/* Null out the privateData field so the thread doesn't try to destroy
-				    the ILThread twice when it finalizes */
-
-				((System_Thread *)thread->clrThread)->privateData = 0;
-			}
-
-			/* Destroy the support thread */
-			ILThreadDestroy(thread->supportThread);
-
-			/* Destroy the engine thread */
-			_ILExecThreadDestroy(thread);
+			break;
 		}
+	}
+	
+	mainIsFinalizer = process->mainThread == process->finalizerThread;
+	mainSupportThread = process->mainThread->supportThread;
 
-		thread = next;
+	/* Destory the engine thread for the main thread if it isn't needed anymore.
+	    This isn't strictly necessary but may help remove stray pointers on the CVM stack */
+	/* If the main thread is the finalizer thread, then the engine thread will be automatically
+	    destroyed when main thread is destroyed */
+	if (!mainIsFinalizer)
+	{
+		ILThreadUnregisterForManagedExecution(process->mainThread->supportThread);
+	}
+	
+	/* Invoke the finalizers -- hopefully finalizes all objects left in the process being destroyed */
+	/* Any objects left lingering (because of a stray or fake pointer) are orphans */
+	ILGCCollect();
+	ILGCInvokeFinalizers();
+
+	/* We must ensure that objects created and then orphaned by this process won't 
+	    finalize themselves from this point on (because the process will no longer be valid).
+		Objects can be orphaned if we're using a conservative GC like the Boehm GC */
+
+	/* Disable finalizers to ensure no finalizers are running until we reenable them */
+	ILGCDisableFinalizers();
+
+	/* Mark the process as dead in the finalization context.  This prevents orphans from
+	    finalizing */
+	process->finalizationContext->process = 0;
+
+	/* Reenable finalizers */
+	ILGCEnableFinalizers();	
+
+	/* Destroy the main thread if we aren't the main thread or the finalizer thread*/
+	if (!mainIsFinalizer && ILThreadSelf() != mainSupportThread)
+	{
+		/* Abort the thread */
+		ILThreadAbort(mainSupportThread);
+
+		/* Wait for the thread to be aborted */
+		ILThreadJoin(mainSupportThread, -1);
+
+		/* Destroy the thread object */
+		ILThreadDestroy(mainSupportThread);
+	}
+	
+	/* Destroy the finalizer thread */
+	if (process->finalizerThread)
+	{
+		/* Only destroy the engine thread.  The support thread is shared by other
+		    engine processes and is destroyed when the engine is deinitialized */
+		_ILExecThreadDestroy(process->finalizerThread);
 	}
 
-	/* The only threads left in the process are finalizer threads */
-	process->firstThread = firstFinalizerThread;
-
-	/* Tell the GC we're history */	
-	/* This performs a final collect and finalizer run and also destroy any finalizer threads */
-	ILGCDeinit();
-
-	/* All threads should be destroyed now */
-
-	/* Destroy the CVM coder instance */
-	ILCoderDestroy(process->coder);
+	if (process->coder)
+	{
+		/* Destroy the CVM coder instance */
+		ILCoderDestroy(process->coder);
+	}
 
 	/* Destroy the metadata lock */
 	if(process->metadataLock)
@@ -231,13 +382,19 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		ILContextDestroy(process->context);
 	}
 
-	/* Destroy the main part of the intern'ed hash table.
-	   The rest will be cleaned up by the garbage collector */
-	ILGCFreePersistent(process->internHash);
+	if (process->internHash)
+	{
+		/* Destroy the main part of the intern'ed hash table.
+		The rest will be cleaned up by the garbage collector */
+		ILGCFreePersistent(process->internHash);
+	}
 
-	/* Destroy the main part of the reflection hash table.
-	   The rest will be cleaned up by the garbage collector */
-	ILGCFreePersistent(process->reflectionHash);
+	if (process->reflectionHash)
+	{
+		/* Destroy the main part of the reflection hash table.
+		The rest will be cleaned up by the garbage collector */
+		ILGCFreePersistent(process->reflectionHash);
+	}
 
 #ifdef IL_CONFIG_PINVOKE
 	/* Destroy the loaded module list */
@@ -281,23 +438,30 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	}
 #endif
 
-	/* Destroy the random seed pool */
-	ILMutexDestroy(process->randomLock);
-	ILMemZero(process->randomPool, sizeof(process->randomPool));
+	if (process->randomLock)
+	{
+		/* Destroy the random seed pool */
+		ILMutexDestroy(process->randomLock);
+	}
+
+	if (process->randomPool)
+	{
+		ILMemZero(process->randomPool, sizeof(process->randomPool));
+	}
 
 #ifdef USE_HASHING_MONITORS
 	/* Destroy the monitor system lock */
 	ILMutexDestroy(process->monitorSystemLock);
 #endif
 
-	/* Destroy the object lock */
-	ILMutexDestroy(process->lock);
+	if (process->lock)
+	{
+		/* Destroy the object lock */
+		ILMutexDestroy(process->lock);
+	}
 
 	/* Free the process block itself */
 	ILGCFreePersistent(process);
-
-	/* Cleanup the threading subsystem */
-	ILThreadDeinit();
 }
 
 void ILExecProcessSetLibraryDirs(ILExecProcess *process,
@@ -327,21 +491,21 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 	if(!(process->outOfMemoryObject))
 	{
 		/* If this image caused "OutOfMemoryException" to be
-		   loaded, then create an object based upon it.  We must
-		   allocate this object ahead of time because we won't be
-		   able to when the system actually runs out of memory */
+		loaded, then create an object based upon it.  We must
+		allocate this object ahead of time because we won't be
+		able to when the system actually runs out of memory */
 		classInfo = ILClassLookupGlobal(ILImageToContext(image),
-								        "OutOfMemoryException", "System");
+			"OutOfMemoryException", "System");
 		if(classInfo)
 		{
 			/* We don't call the "OutOfMemoryException" constructor,
-			   to avoid various circularity problems at this stage
-			   of the loading process */
+			to avoid various circularity problems at this stage
+			of the loading process */
 			process->outOfMemoryObject =
 				_ILEngineAllocObject(process->mainThread, classInfo);
 		}
 	}
-
+	
 	/* Look for "System.Object" */
 	if(!(process->objectClass))
 	{
@@ -368,6 +532,13 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 	{
 		process->clrTypeClass = ILClassLookupGlobal(ILImageToContext(image),
 								        "ClrType", "System.Reflection");
+	}
+
+	/* Look for "System.Threading.ThreadAbortException" */
+	if(!(process->threadAbortClass))
+	{
+		process->threadAbortClass = ILClassLookupGlobal(ILImageToContext(image),
+			"ThreadAbortException", "System.Threading");
 	}
 }
 

@@ -159,6 +159,15 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	mainThread->identifier = mainThread->handle;
 }
 
+void _ILThreadSetPriority(ILThread *thread, int priority)
+{
+}
+
+int _ILThreadGetPriority(ILThread *thread)
+{
+	return IL_TP_NORMAL;
+}
+
 /*
  * Entry point for a pthread.  This initializes the thread
  * and then calls "_ILThreadRun" to do the real work.

@@ -89,6 +89,8 @@ struct _tagILContext
 	/* Hash table to keeps track of valid namespaces */
 	ILHashTable	   *namespaceHash;
 
+	/* User data for the runtime engine */
+	void *userData;
 };
 
 /*

@@ -69,20 +69,48 @@ ILObject *_ILGetCurrentClrThread(ILExecThread *thread)
 }
 
 /*
+ *	Makes the given support thread execute in the context of the given engine thread.
+ */
+void _ILThreadExecuteOn(ILThread *thread, ILExecThread *execThread)
+{
+	ILThreadSetObject(thread, execThread);
+}
+
+/*
+ *	Cleanup handler for threads that have been registered for managed execution.
+ */
+static void ILExecThreadCleanup(ILThread *thread)
+{
+	ILThreadUnregisterForManagedExecution(thread);
+}
+
+/*
  *	Registers a thread for managed execution
  */
 ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread)
 {	
 	ILExecThread *execThread;
 
+	/* If the thread has already been registerered then return the existing engine thread */
+	if ((execThread = ILThreadGetObject(thread)) != 0)
+	{
+		return execThread;
+	}
+
 	/* Create a new engine-level thread */	
-	execThread = _ILExecThreadCreate(process);
+	if ((execThread = _ILExecThreadCreate(process)) == 0)
+	{
+		return 0;
+	}
 
 	/* Associate the new engine-level thread with the OS-level thread */
-	ILThreadSetObject(thread, execThread);
+	_ILThreadExecuteOn(thread, execThread);
 
 	/* Associate the OS-level thread with the new engine-level thread */
 	execThread->supportThread = thread;
+
+	/* Register a cleanup handler for the thread */
+	ILThreadRegisterCleanup(thread, ILExecThreadCleanup);
 
 	return execThread;
 }
@@ -94,8 +122,22 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread)
 {
 	ILExecThread *execThread;
 
+	/* Get the engine thread from the support thread */
 	execThread = ILThreadGetObject(thread);
 
+	if (execThread == 0)
+	{
+		/* Already unregistered */
+		return;
+	}
+
+	/* Unregister the cleanup handler */
+	ILThreadUnregisterCleanup(thread, ILExecThreadCleanup);
+
+	/* Disassociate the engine thread with the support thread */
+	_ILThreadExecuteOn(thread, 0);
+
+	/* Destroy the engine thread */
 	_ILExecThreadDestroy(execThread);
 }
 
@@ -133,6 +175,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 
 	/* Initialize the thread state */
 	thread->supportThread = 0;
+	thread->aborting = 0;
 	thread->clrThread = 0;	
 	thread->freeMonitor = 0;	
 	thread->pc = 0;
@@ -140,7 +183,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 	thread->frame = thread->stackBase;
 	thread->stackTop = thread->stackBase;
 	thread->method = 0;
-	thread->thrownException = 0;
+	thread->thrownException = 0;	
 	thread->securityManager = 0;
 	thread->threadStaticSlots = 0;
 	thread->threadStaticSlotsUsed = 0;
@@ -174,6 +217,11 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 	if(process->mainThread == thread)
 	{
 		process->mainThread = 0;
+	}
+
+	if (process->finalizerThread == thread)
+	{
+		process->finalizerThread = 0;
 	}
 
 	/* Delete the free monitors list */

@@ -22,7 +22,6 @@
 #define	_IL_THREAD_H
 
 #include "il_system.h"
-#include "il_engine.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -60,16 +59,6 @@ typedef void (*ILThreadStartFunc)(void *objectArg);
  *	Cleanup function for ILThread.
  */
 typedef void (*ILThreadCleanupFunc)(ILThread *thread);
-
-/*
- *	Registers an ILThread and allow it to execute managed code. 
- */
-ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread);
-
-/*
- *	Unregisters an ILThread that no longer needs to execute managed code.
- */
-void ILThreadUnregisterForManagedExecution(ILThread *thread);
 
 /*
  * Determine if the system has thread support.  This can
@@ -121,7 +110,7 @@ void *ILThreadGetObject(ILThread *thread);
 
 /*
  * Set the object reference that is associated with a thread.
- * This is typically only required for the "main" thread.
+ * This is used by the engine to store a pointer to an ILExecThread.
  */
 void ILThreadSetObject(ILThread *thread, void *objectArg);
 
@@ -180,6 +169,25 @@ int ILThreadIsAborting(void);
  * zero if an abort is not pending.
  */
 int ILThreadAbortReset(void);
+
+/*
+ *	Thread priorities.
+ */
+#define IL_TP_LOWEST					0x0
+#define IL_TP_BELOW_NORMAL		0x1
+#define IL_TP_NORMAL					0x2
+#define IL_TP_ABOVE_NORMAL		0x3
+#define IL_TP_HIGHEST					0x4
+
+/*
+ *	Sets the thread priority.
+ */
+void ILThreadSetPriority(ILThread *thread, int priority);
+
+/*
+ *	Gets the thread priority.
+ */
+int ILThreadGetPriority(ILThread *thread);
 
 /*
  * Join result codes.
@@ -343,6 +351,11 @@ int ILWaitHandleClose(ILWaitHandle *handle);
 int ILWaitOne(ILWaitHandle *handle, ILUInt32 timeout);
 
 /*
+ *	Signals and waits for a handle atomically.
+ */
+int ILSignalAndWait(ILWaitHandle *signalHandle, ILWaitHandle *waitHandle, ILUInt32 timeout);
+
+/*
  * Wait for any wait handle in a set to become available.
  * Returns the index of the handle that was acquired.
  */
@@ -401,6 +414,8 @@ int ILWaitMonitorPulseAll(ILWaitHandle *handle);
  */
 int ILWaitMonitorCanClose(ILWaitHandle *handle);
 
+#define IL_WAIT_LEAVE_STILL_OWNS		(2)
+
 /*
  *	Similar to ILWaitMonitorLeave except that waiting moniters aren't signalled.
  */
@@ -428,19 +443,28 @@ int ILWaitMonitorCompleteLeave(ILWaitHandle *handle);
  */
 
 /*
- * Create a wait event.
+ * Creates an event.
  */
 ILWaitHandle *ILWaitEventCreate(int manualReset, int initialState);
 
 /*
- * Set the event.
+ * Sets an event.
  */
 int ILWaitEventSet(ILWaitHandle *event);
 
 /*
- * Reset the event.
+ * Resets an event.
  */
 int ILWaitEventReset(ILWaitHandle *event);
+
+/*
+ *	Pulses an event.
+ *
+ * If the wait event is a manual reset event, all waiting threads are signalled.
+ * If the wait event is an auto reset event, a single waiting thread is signalled.
+ * On return, the wait event is unsignalled.
+ */
+int ILWaitEventPulse(ILWaitHandle *event);
 
 #ifdef	__cplusplus 
 };

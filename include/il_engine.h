@@ -22,6 +22,7 @@
 #define	_IL_ENGINE_H
 
 #include "il_program.h"
+#include "il_thread.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -180,6 +181,21 @@ typedef int (*ILExecDebugHookFunc)(void *userData,
  * This should be called only once per application.
  */
 void ILExecInit(unsigned long maxSize);
+
+/*
+ *	Deinitialize the engine.
+ */
+void ILExecDeinit();
+
+/*
+ *	Registers an ILThread and allow it to execute managed code. 
+ */
+ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread);
+
+/*
+ *	Unregisters an ILThread that no longer needs to execute managed code.
+ */
+void ILThreadUnregisterForManagedExecution(ILThread *thread);
 
 /*
  * Create a new process, including the "main" thread.

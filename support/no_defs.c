@@ -40,6 +40,15 @@ int _ILThreadCreateSystem(ILThread *thread)
 	return 0;
 }
 
+void _ILThreadSetPriority(ILThread *thread, int priority)
+{
+}
+
+int _ILThreadGetPriority(ILThread *thread)
+{
+	return IL_TP_NORMAL;
+}
+
 int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
 {
 	/* On a system without threads, we wait for the timeout

@@ -455,7 +455,7 @@ public sealed class TypeDescriptor
 					DefaultEventAttribute attr = (DefaultEventAttribute)
 						GetAttributeForType(componentType,
 											typeof(DefaultEventAttribute));
-					if(attr != null)
+					if(attr != null && attr.Name != null)
 					{
 						element.defaultEvent =
 							CreateEvent(componentType, attr.Name, null, null);
@@ -504,7 +504,7 @@ public sealed class TypeDescriptor
 					DefaultPropertyAttribute attr = (DefaultPropertyAttribute)
 						GetAttributeForType(componentType,
 											typeof(DefaultPropertyAttribute));
-					if(attr != null)
+					if(attr != null && attr.Name != null)
 					{
 						element.defaultProperty =
 							CreateProperty

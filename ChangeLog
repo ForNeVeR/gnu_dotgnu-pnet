@@ -4,6 +4,10 @@
 	* System/ComponentModel/TypeDescriptor.cs: fix a bug in
 	"GetConverter" related to handling "TypeConverter.Default".
 
+	* System/ComponentModel/TypeDescriptor.cs: fix similar bugs in
+	"GetDefaultEvent" and "GetDefaultProperty" related to handling
+	"Default" values.
+
 2003-11-16  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/PointConverter.cs,

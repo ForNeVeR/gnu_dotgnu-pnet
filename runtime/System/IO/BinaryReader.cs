@@ -76,6 +76,10 @@ public class BinaryReader : IDisposable
 	// Close this stream.
 	public virtual void Close()
 			{
+				if(!disposed)
+				{
+					input.Close();
+				}
 				Dispose(true);
 			}
 
@@ -88,19 +92,15 @@ public class BinaryReader : IDisposable
 	// Internal implementation of stream disposal.
 	protected virtual void Dispose(bool disposing)
 			{
-				if(!disposed)
+				if(input != null)
 				{
-					if(disposing)
-					{
-						input.Close();
-					}
-					encoding = null;
-					decoder = null;
-					smallBuffer = null;
-					smallCharBuffer = null;
 					input = null;
-					disposed = true;
 				}
+				encoding = null;
+				decoder = null;
+				smallBuffer = null;
+				smallCharBuffer = null;
+				disposed = true;
 			}
 
 	// Read a number of bytes into the small buffer.

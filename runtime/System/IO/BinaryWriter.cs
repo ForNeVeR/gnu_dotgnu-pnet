@@ -92,6 +92,7 @@ class BinaryWriter : IDisposable
 			{
 				if(!disposed)
 				{
+					OutStream.Close();
 					Dispose(true);
 				}
 				else
@@ -109,10 +110,6 @@ class BinaryWriter : IDisposable
 	// Internal implementation of stream disposal.
 	protected virtual void Dispose(bool disposing)
 			{
-				if(disposing)
-				{
-					OutStream.Close();
-				}
 				encoding = null;
 				encoder = null;
 				smallBuffer = null;

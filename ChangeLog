@@ -1,4 +1,9 @@
 
+2004-10-07  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/IO/BinaryReader.cs, runtime/System/IO/BinaryWriter.cs:
+	Close stream only on call of Close (revert some of my last changes).
+
 2004-10-07  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* JScript/Parser/JSParser.cs: Fixed floating point numeric literal being

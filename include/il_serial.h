@@ -44,6 +44,7 @@ extern	"C" {
 #define IL_PIN_DSR				(1<<3)
 #define IL_PIN_DTR				(1<<4)
 #define IL_PIN_RTS				(1<<5)
+#define IL_PIN_RING				(1<<6)
 
 /*
  * Parity values.

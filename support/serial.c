@@ -474,6 +474,12 @@ ILInt32 ILSerialReadPins(ILSerial *handle)
 		pins |= IL_PIN_RTS;
 	}
 #endif
+#ifdef TIOCM_RNG
+	if((value & TIOCM_RNG) != 0)
+	{
+		pins |= IL_PIN_RING;
+	}
+#endif
 #endif
 	return pins;
 }
@@ -585,6 +591,9 @@ int ILSerialWaitForPinChange(ILSerial *handle)
 #endif
 #ifdef TIOCM_RTS
 	waitFor |= TIOCM_RTS;
+#endif
+#ifdef TIOCM_RNG
+	waitFor |= TIOCM_RNG;
 #endif
 	if(ioctl(handle->fd, TIOCMIWAIT, &waitFor) == 0)
 	{

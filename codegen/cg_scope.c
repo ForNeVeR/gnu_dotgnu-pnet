@@ -230,6 +230,9 @@ static void ImportType(ILScope *scope, ILClass *info, const char *name)
 	ILClass *child;
 	const char *nestedName;
 	int len;
+	ILMember *member;
+	int kind;
+	const char *memberName;
 
 	/* Bail out if the type is already declared */
 	if(ILScopeLookup(scope, name, 0) != 0)
@@ -263,6 +266,41 @@ static void ImportType(ILScope *scope, ILClass *info, const char *name)
 		/* Import the nested type into a sub-scope */
 		ImportType(newScope, child, nestedName + len);
 	}
+
+	/* Add the fields, methods, properties, and events to the new scope.
+	   If there are duplicates in the imported image, we ignore them */
+	member = 0;
+	while((member = ILClassNextMember(info, member)) != 0)
+	{
+		kind = ILMemberGetKind(member);
+		memberName = ILMember_Name(member);
+		if(kind == IL_META_MEMBERKIND_FIELD)
+		{
+			if(!ILScopeLookup(newScope, memberName, 0))
+			{
+				AddToScope(newScope, memberName, IL_SCOPE_FIELD, 0, member);
+			}
+		}
+		else if(kind == IL_META_MEMBERKIND_METHOD)
+		{
+			/* Duplicates are OK for methods */
+			AddToScope(newScope, memberName, IL_SCOPE_METHOD, 0, member);
+		}
+		else if(kind == IL_META_MEMBERKIND_PROPERTY)
+		{
+			if(!ILScopeLookup(newScope, memberName, 0))
+			{
+				AddToScope(newScope, memberName, IL_SCOPE_PROPERTY, 0, member);
+			}
+		}
+		else if(kind == IL_META_MEMBERKIND_EVENT)
+		{
+			if(!ILScopeLookup(newScope, memberName, 0))
+			{
+				AddToScope(newScope, memberName, IL_SCOPE_EVENT, 0, member);
+			}
+		}
+	}
 }
 
 void ILScopeImport(ILScope *scope, ILImage *image)
@@ -273,6 +311,29 @@ void ILScopeImport(ILScope *scope, ILImage *image)
 	ILScope *namespaceScope = 0;
 	const char *namespaceName = 0;
 	const char *namespaceTest;
+	ILAssembly *assem;
+	ILImage *otherImage;
+	char dummyName[128];
+
+	/* Have we already imported this image? */
+	sprintf(dummyName, ".img.%lX", (long)image);
+	if(ILScopeLookup(scope, dummyName, 0))
+	{
+		return;
+	}
+	AddToScope(scope, dummyName, IL_SCOPE_DUMMY, 0, 0);
+
+	/* Process imported assemblies first */
+	assem = 0;
+	while((assem = (ILAssembly *)ILImageNextToken
+				(image, IL_META_TOKEN_ASSEMBLY_REF, (void *)assem)) != 0)
+	{
+		otherImage = ILAssemblyToImage(assem);
+		if(otherImage)
+		{
+			ILScopeImport(scope, otherImage);
+		}
+	}
 
 	/* Scan the entire TypeDef table for top-level types */
 	numTokens = ILImageNumTokens(image, IL_META_TOKEN_TYPE_DEF);

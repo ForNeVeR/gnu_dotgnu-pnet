@@ -42,6 +42,7 @@ typedef struct _tagILScopeData ILScopeData;
 #define	IL_SCOPE_PROPERTY		7	/* Item is a property */
 #define	IL_SCOPE_EVENT			8	/* Item is an event */
 #define	IL_SCOPE_LOCAL			9	/* Item is a local variable */
+#define	IL_SCOPE_DUMMY			10	/* Used internally */
 
 /*
  * Error codes for scope definitions.

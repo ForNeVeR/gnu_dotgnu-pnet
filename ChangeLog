@@ -7,6 +7,12 @@
 
 	* samples/dcop/.cvsignore: add to ignore build files.
 
+2004-05-24  Ilyak Kasnacheev <ilyak@online.ru>
+
+	* configure.in, samples/Makefile.am , samples/dcop/Makefile.am
+	samples/dcop/dcop.build, samples/dcop/DcopSample.cs: Simple DCOP
+	sample application (Gopal).
+
 2004-05-24  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/UpDownBase.cs: fix mouse problem on 
@@ -25,7 +31,7 @@
 	* System/Net/IPAddress.cs: Remove hex prefix (0x) during parsing 
 	of IPv6 address blocks.
 
-2004-04-23  Ilyak Kasnacheev <ilyak@online.ru>
+2004-05-23  Ilyak Kasnacheev <ilyak@online.ru>
 
 	* Xsharp/Dcop/DcopClient.cs, Xsharp/Dcop/DcopReply.cs, 
 	Xsharp/Dcop/IQDataStreamable.cs, Xsharp/Dcop/QDataStream.cs,

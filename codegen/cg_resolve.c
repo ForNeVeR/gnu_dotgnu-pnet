@@ -101,7 +101,7 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 					same = 0;
 				}
 			}
-			if(arg < numArgs)
+			if(arg <= numArgs)
 			{
 				continue;
 			}
@@ -109,7 +109,7 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 			/* Check the method's access level against the call scope */
 			if(!ILMemberAccessible(member, callScope))
 			{
-				return 0;
+				continue;
 			}
 
 			/* We've found a candidate method */

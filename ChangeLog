@@ -1,3 +1,9 @@
+
+2004-01-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/InputOutputWidget.cs: put "FlushInvalidates" back the
+	way that it was.
+
 2004-01-25  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpResizer.cs, DotGNU.Images/Frame.cs,

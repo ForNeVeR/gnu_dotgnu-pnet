@@ -469,7 +469,20 @@ public class InputOutputWidget : InputOnlyWidget
 	// Flush pending invalidates to the X server.
 	internal void FlushInvalidates()
 			{
-				Update(false);
+				Region region = invalidateRegion;
+				invalidateRegion = null;
+				nextInvalidate = null;
+				if(region != null)
+				{
+					// No point redrawing if we are unmapped.
+					if(mapped && AncestorsMapped)
+					{
+						ClearRegion(region, Xlib.Bool.True);
+					}
+
+					// Dispose the region that we no longer require.
+					region.Dispose();
+				}
 			}
 
 	/// <summary>

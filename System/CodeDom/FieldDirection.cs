@@ -1,8 +1,8 @@
 /*
- * SerializableAttribute.cs - Implementation of the
- *			"System.SerializableAttribute" class.
+ * FieldDirection.cs - Implementation of the
+ *		System.CodeDom.FieldDirection class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,23 +19,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.CodeDom
 {
 
-[AttributeUsage(AttributeTargets.Delegate |
-				AttributeTargets.Enum |
-				AttributeTargets.Struct |
-				AttributeTargets.Class, Inherited=false)]
-#if ECMA_COMPAT
-internal
-#else
-public
-#endif
-sealed class SerializableAttribute : Attribute
+#if !ECMA_COMPAT
+
+using System.Runtime.InteropServices;
+
+[Serializable]
+[ComVisible(true)]
+public enum FieldDirection
 {
+	In  = 0,
+	Out = 1,
+	Ref = 2
 
-	public SerializableAttribute() : base() {}
+}; // enum FieldDirection
 
-}; // class SerializableAttribute
+#endif // !ECMA_COMPAT
 
-}; // namespace System
+}; // namespace System.CodeDom

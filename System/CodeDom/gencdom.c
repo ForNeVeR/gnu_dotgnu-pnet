@@ -337,7 +337,7 @@ static void generateCollectionCode(FILE *stream)
 	fprintf(stream, "\t{\n");
 	fprintf(stream, "\t\tList.CopyTo(array, index);\n");
 	fprintf(stream, "\t}\n");
-	fprintf(stream, "\tpublic bool IndexOf(%s value)\n", member);
+	fprintf(stream, "\tpublic int IndexOf(%s value)\n", member);
 	fprintf(stream, "\t{\n");
 	fprintf(stream, "\t\treturn List.IndexOf(value);\n");
 	fprintf(stream, "\t}\n");

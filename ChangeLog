@@ -1,4 +1,43 @@
 
+2002-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/CodeDom/CodeArrayCreateExpression.cs,
+	System/CodeDom/CodeAttachEventStatement.cs,
+	System/CodeDom/CodeBinaryOperatorType.cs,
+	System/CodeDom/CodeCastExpression.cs,
+	System/CodeDom/CodeCatchClause.cs,
+	System/CodeDom/CodeCommentStatement.cs,
+	System/CodeDom/CodeConditionStatement.cs,
+	System/CodeDom/CodeMemberEvent.cs,
+	System/CodeDom/CodeMemberField.cs,
+	System/CodeDom/CodeMemberMethod.cs,
+	System/CodeDom/CodeMethodInvokeExpression.cs,
+	System/CodeDom/CodeNamespace.cs,
+	System/CodeDom/CodeNamespaceImport.cs,
+	System/CodeDom/CodeNamespaceImportCollection.cs,
+	System/CodeDom/CodeObject.cs,
+	System/CodeDom/CodeObjectCreateExpression.cs,
+	System/CodeDom/CodeParameterDeclarationExpression.cs,
+	System/CodeDom/CodeRemoveEventStatement.cs,
+	System/CodeDom/CodeSnippetCompileUnit.cs,
+	System/CodeDom/CodeTypeDeclaration.cs,
+	System/CodeDom/CodeTypeDelegate.cs,
+	System/CodeDom/CodeTypeMember.cs,
+	System/CodeDom/CodeTypeOfExpression.cs,
+	System/CodeDom/CodeTypeReference.cs,
+	System/CodeDom/CodeTypeReferenceExpression.cs,
+	System/CodeDom/CodeVariableDeclarationStatement.cs,
+	System/CodeDom/FieldDirection.cs,
+	System/CodeDom/Makefile,
+	System/CodeDom/MemberAttributes.cs,
+	System/CodeDom/README,
+	System/CodeDom/RuleOutput.cs,
+	System/CodeDom/gencdom.c,
+	System/CodeDom/rules.txt,
+	System/Collections/Specialized/ListDictionary.cs,
+	runtime/System/SerializableAttribute.cs: implement the
+	"System.CodeDom" namespace.
+
 2002-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/ClassInterfaceAttribute.cs

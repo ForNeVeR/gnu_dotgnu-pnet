@@ -97,6 +97,7 @@ CodePropertyReferenceExpression:
 	CodeExpression<TargetObject> String<PropertyName>
 CodePropertySetValueExpression
 
+CodeSnippetExpression: String<Value>
 CodeSnippetStatement: String<Value>
 CodeSnippetTypeMember-CodeTypeMember: String<Text>
 CodeStatementCollection: CodeStatement
@@ -111,6 +112,8 @@ CodeTypeConstructor-CodeMemberMethod
 CodeTypeDeclarationCollection: CodeTypeDeclaration
 CodeTypeMemberCollection: CodeTypeMember
 CodeTypeReferenceCollection: CodeTypeReference
+
+CodeVariableReferenceExpression: String<VariableName>
 
 #
 # The following classes must be defined manually, because they are
@@ -131,14 +134,14 @@ CodeTypeReferenceCollection: CodeTypeReference
 #	- CodeNamespaceImport
 #	- CodeObjectCreateExpression
 #	- CodeObject
-#	CodeParameterDeclarationExpression
-#	CodeRemoveEventStatement
-#	CodeSnippetCompileUnit
+#	- CodeParameterDeclarationExpression
+#	- CodeRemoveEventStatement
+#	- CodeSnippetCompileUnit
 #	- CodeTypeDeclaration
-#	CodeTypeDelegate
+#	- CodeTypeDelegate
 #	- CodeTypeMember
-#	CodeTypeOfExpression
+#	- CodeTypeOfExpression
 #	- CodeTypeReference
-#	CodeTypeReferenceExpression
-#	CodeVariableDeclarationStatement
+#	- CodeTypeReferenceExpression
+#	- CodeVariableDeclarationStatement
 #

@@ -1,4 +1,9 @@
 
+2004-10-29  Gopal V  <gopalv82@yahoo.com>
+
+	* support/serial.c: Fix further issues with building on
+	BeOS (redone patch #3479).
+
 2004-10-29  Simon Posnjak <simon.posnjak@siol.net>
 
 	* include/il_align.h: force alignment to 4-bytes for CRIS

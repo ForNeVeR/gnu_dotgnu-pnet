@@ -75,6 +75,22 @@
 	# endif /* CNEW_RTSCTS */
 #endif /* !CRTSCTS */
 
+#ifndef IMAXBEL
+	#define IMAXBEL 0
+#endif /* !IMAXBEL */
+
+#ifndef ECHOCTL
+	#define ECHOCTL 0
+#endif /* !ECHOCTL */
+
+#ifndef ECHOPRT
+	#define ECHOPRT 0
+#endif /* ECHOPRT */
+
+#ifndef ECHOKE
+	#define ECHOKE 0
+#endif /* ECHOKE */
+
 #endif
 
 #ifdef	__cplusplus

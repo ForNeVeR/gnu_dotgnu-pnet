@@ -115,7 +115,8 @@ ILNode_CSemAnalysis(ILNode_PreIncPtr),
 ILNode_CSemAnalysis(ILNode_PreDecPtr),
 ILNode_CSemAnalysis(ILNode_PostIncPtr),
 ILNode_CSemAnalysis(ILNode_PostDecPtr),
-ILNode_CSemAnalysis(ILNode_InvocationExpression)
+ILNode_CSemAnalysis(ILNode_InvocationExpression),
+ILNode_CSemAnalysis(ILNode_Deref)
 {
 	/* Nothing to do here */
 	return CSemValueError;

@@ -998,7 +998,7 @@ UnaryExpression
 			$$ = ILNode_LogicalNot_create(ILNode_ToBool_create($2));
 		}
 	| '&' CastExpression		{ $$ = ILNode_AddressOf_create($2); }
-	| '*' CastExpression		{ $$ = ILNode_Deref_create($2); }
+	| '*' CastExpression		{ $$ = ILNode_CDeref_create($2); }
 	| K_SIZEOF UnaryExpression	{ $$ = ILNode_SizeOfExpr_create($2); }
 	| K_SIZEOF '(' TypeName ')'	{ $$ = ILNode_SizeOfType_create($3); }
 	;

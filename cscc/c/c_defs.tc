@@ -348,6 +348,12 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 }
 %node ILNode_CDerefField ILNode_CFieldAccess
 %node ILNode_CMemberField ILNode_CFieldAccess
+%node ILNode_CDeref ILNode_LValue =
+{
+	ILNode *expr;
+	%nocreate ILType *type = {0};
+	%nocreate ILMachineType machineType = {ILMachineType_Void};
+}
 
 %output "c_semantics.c"
 

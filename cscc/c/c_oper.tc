@@ -1614,21 +1614,27 @@ JavaGenValue(ILNode_TwoConditional)
 }
 
 /*
- * Perform semantic analysis for the pointer dereference operator.
- */
-ILNode_CSemAnalysis(ILNode_Deref)
-{
-	/* TODO */
-	return CSemValueError;
-}
-
-/*
  * Perform semantic analysis for the "address of" operator.
  */
 ILNode_CSemAnalysis(ILNode_AddressOf)
 {
-	/* TODO */
-	return CSemValueError;
+	CSemValue value;
+
+	/* Perform semantic analysis on the argument */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsLValue(value))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid lvalue in unary `&'"));
+		}
+		return CSemValueError;
+	}
+
+	/* Build the final semantic value and return it */
+	CSemSetRValue(value, CTypeCreatePointer(info, CSemGetType(value)));
+	return value;
 }
 
 /*

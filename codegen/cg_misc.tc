@@ -336,8 +336,7 @@ ILNode_GetType(ILNode_Deref)
  */
 ILNode_GetType(ILNode_AddressOf)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	return ILMachineType_UnmanagedPtr;
 }
 
 /*
@@ -1408,8 +1407,12 @@ ILNode_GenValue(ILNode_Deref)
  */
 ILNode_GenValue(ILNode_AddressOf)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	if(yyisa(node->expr, ILNode_LValue) &&
+	   !yyisa(node->expr, ILNode_LValueNoRef))
+	{
+		ILNode_GenRef((ILNode_LValue *)(node->expr), info);
+	}
+	return ILMachineType_UnmanagedPtr;
 }
 
 /*

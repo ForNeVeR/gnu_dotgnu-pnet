@@ -1266,3 +1266,158 @@ ILNode_CSemAnalysis(ILNode_ArrayInit)
 	/* TODO */
 	return CSemValueError;
 }
+
+/*
+ * Perform semantic analysis for a pointer dereference node.
+ */
+ILNode_CSemAnalysis(ILNode_CDeref)
+{
+	CSemValue value;
+
+	/* Perform semantic analysis on the pointer value */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value) || !CTypeIsPointer(CSemGetType(value)))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("invalid argument to unary `*'"));
+		}
+		return CSemValueError;
+	}
+
+	/* Get the type of the pointed-to value */
+	node->type = CTypeGetPtrRef(CSemGetType(value));
+	node->machineType = ILTypeToMachineType(node->type);
+
+	/* Return an l-value that corresponds to the pointed-to value */
+	CSemSetLValue(value, node->type);
+	return value;
+}
+
+/*
+ * Get the type of a pointer dereference node.
+ */
+ILNode_GetType(ILNode_CDeref)
+{
+	return node->machineType;
+}
+
+/*
+ * Generate discard code for a pointer dereference node.
+ */
+ILNode_GenDiscard(ILNode_CDeref)
+{
+	ILNode_GenDiscard(node->expr, info);
+}
+
+/*
+ * Generate value code for a pointer dereference node.
+ */
+ILNode_GenValue(ILNode_CDeref)
+{
+	ILNode_GenValue(node->expr, info);
+	ILGenLoadManaged(info, node->machineType,
+					 ILTypeStripPrefixes(node->type));
+	return node->machineType;
+}
+JavaGenValue(ILNode_CDeref)
+{
+	/* Never called: nothing to do here */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store to a pointer dereference node.
+ */
+ILNode_Prepare(ILNode_CDeref)
+{
+	ILNode_GenValue(node->expr, info);
+	return node->machineType;
+}
+JavaPrepare(ILNode_CDeref)
+{
+	/* Never called: nothing to do here */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store to a pointer dereference node.
+ */
+ILNode_GetAndPrepare(ILNode_CDeref)
+{
+	ILNode_GenValue(node->expr, info);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	ILGenLoadManaged(info, node->machineType,
+					 ILTypeStripPrefixes(node->type));
+	if(leave)
+	{
+		/* Rearrange the stack to leave the value in the correct position */
+		unsigned tempVar1 = ILGenTempTypedVar(info, node->type);
+		unsigned tempVar2 = ILGenTempTypedVar(info, ILType_Int);
+		ILGenStoreLocal(info, tempVar1);
+		ILGenStoreLocal(info, tempVar2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenLoadLocal(info, tempVar2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, tempVar1);
+		ILGenReleaseTempVar(info, tempVar2);
+	}
+	return node->machineType;
+}
+JavaGetAndPrepare(ILNode_CDeref)
+{
+	/* Never called: nothing to do here */
+	return node->machineType;
+}
+
+/*
+ * Store to a pointer dereference node.
+ */
+ILNode_Store(ILNode_CDeref)
+{
+	if(leave)
+	{
+		unsigned tempVar1 = ILGenTempTypedVar(info, node->type);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempVar1);
+		ILGenStoreManaged(info, node->machineType,
+						  ILTypeStripPrefixes(node->type));
+		ILGenAdjust(info, -2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenReleaseTempVar(info, tempVar1);
+	}
+	else
+	{
+		ILGenStoreManaged(info, node->machineType,
+						  ILTypeStripPrefixes(node->type));
+		ILGenAdjust(info, -2);
+	}
+}
+JavaStore(ILNode_CDeref)
+{
+	/* Never called: nothing to do here */
+}
+
+/*
+ * Generate reference code for a pointer dereference node.
+ */
+ILNode_GenRef(ILNode_CDeref)
+{
+	CGenAddress(info, (ILNode *)node);
+}
+
+/*
+ * Generate an address for a pointer dereference node.
+ */
+ILNode_CGenAddress(ILNode_CDeref)
+{
+	CAddress addr;
+	ILNode_GenValue(node->expr, info);
+	addr.ptrOnStack = 1;
+	addr.offset = 0;
+	return addr;
+}

@@ -34,6 +34,9 @@
 	* include/il_program.h, image/item.c: implement the helper functions
 	ILProgramItemToGenericPar and ILProgramItemToMethodSpec.
 
+	* image/meta_writer.c: output TypeSpec tokens for type parents
+	and member reference owners where required.
+
 2003-02-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* support/dir.c : fix build breaking on Mingw32 

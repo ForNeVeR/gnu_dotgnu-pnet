@@ -142,6 +142,38 @@ static void Format_TypeRef(ILWriter *writer, ILImage *image,
 }
 
 /*
+ * Search the TypeSpec table for a particular type.
+ */
+static ILToken TypeToToken(ILImage *image, ILType *type)
+{
+	ILTypeSpec *spec = 0;
+	while((spec = (ILTypeSpec *)ILImageNextToken
+				(image, IL_META_TOKEN_TYPE_SPEC, spec)) != 0)
+	{
+		if(ILTypeIdentical(ILTypeSpec_Type(spec), type))
+		{
+			return ILTypeSpec_Token(spec);
+		}
+	}
+	return 0;
+}
+
+/*
+ * Convert an ILClass into a TypeRef, TypeDef, or TypeSpec token.
+ */
+static ILToken ClassToToken(ILImage *image, ILClass *info)
+{
+	if(!(info->synthetic))
+	{
+		return info->programItem.token;
+	}
+	else
+	{
+		return TypeToToken(image, info->synthetic);
+	}
+}
+
+/*
  * Format a TypeDef token.
  */
 static void Format_TypeDef(ILWriter *writer, ILImage *image,
@@ -160,7 +192,7 @@ static void Format_TypeDef(ILWriter *writer, ILImage *image,
 			GetPersistString(image, info->namespace);
 	if(info->parent)
 	{
-		values[IL_OFFSET_TYPEDEF_PARENT] = info->parent->programItem.token;
+		values[IL_OFFSET_TYPEDEF_PARENT] = ClassToToken(image, info->parent);
 	}
 	else
 	{
@@ -293,7 +325,8 @@ static void Format_InterfaceImpl(ILWriter *writer, ILImage *image,
 						 		 ILUInt32 *values, ILImplements *impl)
 {
 	values[IL_OFFSET_INTERFACE_TYPE] = impl->implement->programItem.token;
-	values[IL_OFFSET_INTERFACE_INTERFACE] = impl->interface->programItem.token;
+	values[IL_OFFSET_INTERFACE_INTERFACE] =
+			ClassToToken(image, impl->interface);
 }
 
 /*
@@ -309,12 +342,12 @@ static void Format_MemberRef(ILWriter *writer, ILImage *image,
 	{
 		ref = (ILMemberRef *)member;
 		values[IL_OFFSET_MEMBERREF_PARENT] =
-				ref->ref->owner->programItem.token;
+				ClassToToken(image, ref->ref->owner);
 	}
 	else
 	{
 		values[IL_OFFSET_MEMBERREF_PARENT] =
-				member->owner->programItem.token;
+				ClassToToken(image, member->owner);
 	}
 }
 
@@ -424,7 +457,8 @@ static void Format_Event(ILWriter *writer, ILImage *image,
 	}
 	else
 	{
-		values[IL_OFFSET_EVENT_TYPE] = 0;
+		values[IL_OFFSET_EVENT_TYPE] =
+				TypeToToken(image, event->member.signature);
 	}
 }
 

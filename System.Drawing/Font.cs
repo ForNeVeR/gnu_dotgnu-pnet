@@ -556,6 +556,11 @@ public sealed class Font
 				builder.Append(GdiCharSet);
 				builder.Append(" GdiVerticalFont=");
 				builder.Append(GdiVerticalFont);
+				if(Style != FontStyle.Regular)
+				{
+					builder.Append(" Style=");
+					builder.Append(Style);
+				}
 				builder.Append("]");
 				return builder.ToString();
 			}

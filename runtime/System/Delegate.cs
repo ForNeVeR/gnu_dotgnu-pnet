@@ -29,9 +29,9 @@ public abstract class Delegate : ICloneable
 	// Internal state.  These three fields must be present here
 	// and in this order so that the runtime engine can create
 	// delegates from function pointers correctly.
-	internal Object     target;
-	internal MethodInfo method;
-	internal IntPtr		closure;
+	internal Object     			target;
+	internal RuntimeMethodHandle	method;
+	internal IntPtr					closure;
 
 	// Constructors.
 	protected Delegate(Object target, String method)
@@ -45,16 +45,17 @@ public abstract class Delegate : ICloneable
 					throw new ArgumentNullException("method");
 				}
 				this.target = target;
-				this.method =
+				MethodInfo methodInfo =
 					(target.GetType()).GetMethod(method,
 												 BindingFlags.Public |
 												 BindingFlags.NonPublic |
 												 BindingFlags.Instance);
-				if(this.method == null)
+				if(methodInfo == null)
 				{
 					throw new MissingMethodException
 						(_("Arg_DelegateMethod"));
 				}
+				this.method = methodInfo.MethodHandle;
 			}
 	protected Delegate(Type target, String method)
 			{
@@ -67,15 +68,17 @@ public abstract class Delegate : ICloneable
 					throw new ArgumentNullException("method");
 				}
 				this.target = null;
-				this.method = target.GetMethod(method,
-											   BindingFlags.Public |
-											   BindingFlags.NonPublic |
-											   BindingFlags.Static);
-				if(this.method == null)
+				MethodInfo methodInfo =
+						target.GetMethod(method,
+									     BindingFlags.Public |
+									     BindingFlags.NonPublic |
+									     BindingFlags.Static);
+				if(methodInfo == null)
 				{
 					throw new MissingMethodException
 						(_("Arg_DelegateMethod"));
 				}
+				this.method = methodInfo.MethodHandle;
 			}
 
 	// Implement the ICloneable interface.
@@ -170,7 +173,8 @@ public abstract class Delegate : ICloneable
 
 				// Fill in the blanks and return the delegate.
 				d.target = target;
-				d.method = methodInfo;
+				d.method = methodInfo.MethodHandle;
+				d.closure = IntPtr.Zero;
 				return d;
 			}
 
@@ -217,7 +221,8 @@ public abstract class Delegate : ICloneable
 
 				// Fill in the blanks and return the delegate.
 				d.target = null;
-				d.method = methodInfo;
+				d.method = methodInfo.MethodHandle;
+				d.closure = IntPtr.Zero;
 				return d;
 			}
 
@@ -253,7 +258,8 @@ public abstract class Delegate : ICloneable
 
 				// Fill in the blanks and return the delegate.
 				d.target = null;
-				d.method = method;
+				d.method = method.MethodHandle;
+				d.closure = IntPtr.Zero;
 				return d;
 			}
 
@@ -269,7 +275,8 @@ public abstract class Delegate : ICloneable
 				Delegate d = (obj as Delegate);
 				if(d != null && GetType() == d.GetType())
 				{
-					return (target == d.target && method == d.method);
+					return (target == d.target &&
+							method.Value == d.method.Value);
 				}
 				else
 				{
@@ -354,10 +361,12 @@ public abstract class Delegate : ICloneable
 			{
 				get
 				{
-					ClrMethod clr = (method as ClrMethod);
-					if(clr != null && ClrHelpers.CanAccess(clr.ClrHandle))
+					ClrMethod methodInfo =
+						(MethodBase.GetMethodFromHandle(method) as ClrMethod);
+					if(methodInfo != null &&
+					   ClrHelpers.CanAccess(methodInfo.ClrHandle))
 					{
-						return method;
+						return methodInfo;
 					}
 					else
 					{
@@ -387,7 +396,7 @@ public abstract class Delegate : ICloneable
 	// the unicast case.  MulticastDelegate handles multicast.
 	protected virtual Object DynamicInvokeImpl(Object[] args)
 			{
-				return method.Invoke(target, args);
+				return Method.Invoke(target, args);
 			}
 
 	// Implementation of delegate removal.  The real work
@@ -395,7 +404,7 @@ public abstract class Delegate : ICloneable
 	// the unicast delegate case only.
 	protected virtual Delegate RemoveImpl(Delegate d)
 			{
-				if(target == d.target && method.Equals(d.method))
+				if(target == d.target && method.Value == d.method.Value)
 				{
 					return null;
 				}

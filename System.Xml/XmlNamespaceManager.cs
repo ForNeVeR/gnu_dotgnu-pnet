@@ -24,8 +24,7 @@ namespace System.Xml
 using System;
 using System.Collections;
 
-[TODO]
-public class XmlNamespaceManager : IEnumerable
+public class XmlNamespaceManager /* : IEnumerable */ //NO ENUMERATION FOR NOW
 {
 	//TODO: The scope stuff
 	
@@ -37,6 +36,7 @@ public class XmlNamespaceManager : IEnumerable
 					throw new ArgumentNullException("nameTable");
 				
 				nametable = nametable;
+				
 			}
 	
 	[TODO]
@@ -51,27 +51,76 @@ public class XmlNamespaceManager : IEnumerable
 				if (uri == 0)
 					throw new ArgumentNullException("uri");
 
-				String newentry = prefix + "/<!>/" + uri;
+				//<!> serves as seperator
+				String newentry = prefix + "<!>" + uri;
 			
 				//PROBLEM: This method should replace the
 				//entry in nametable that has the same value,
 				//if it already exists. But XmlNameTable 
 				//must leave existing entries unchanged 
-				//when a String with the same value applies	
-					
+				//when a String with the same value applies
+
+				//SOLUTION: This class will access the ArrayList in
+				//nametable directly to do the job								
+
+				foreach(String s in nametable.ArrayList)
+				{
+					if (s == newentry)
+					{
+						nametable.ArrayList.Remove(s);
+						nametable.ArrayList.Add(newentry);
+						return;
+					}
+				}
+				
+				return;									
 			}
 	
-	[TODO]
-	public virtual IEnumerator GetEnumerator() {}
+	public virtual IEnumerator GetEnumerator() 
+			{
+				return nametable.GetEnumerator();		
+			}
 
-	[TODO]
-	public virtual bool HasNamespace(string prefix) {}
+	public virtual bool HasNamespace(String prefix) 
+			{
+				foreach (String s in nametable)
+				{
+					if (s.Split("<!>")[0] == prefix)
+						return true;
+				}
+
+				return false;
+			}
 	
-	[TODO]
-	public virtual string LookupNamespace(string prefix) {}
+	public virtual String LookupNamespace(String prefix) 
+			{
+				//The default namespace is stored with prefix String.Empty
+				//so there isn't need for special searching functions
+				foreach (String s in nametable)
+				{
+					if (s.Split("<!>")[0] == prefix)
+						{
+							return s.Split("<!>")[1];
+						}
+				}
+				
+				return null;
+			}
 	
-	[TODO]
-	public virtual string LookupPrefix(string uri) {}
+	public virtual String LookupPrefix(String uri)
+			{
+				if (uri == null) return null;
+				
+				foreach (String s in nametable)
+				{
+					if (s.Split("<!>")[1] == uri)
+						{
+							return s.Split("<!>")[0];
+						}
+				}
+				
+				return String.Empty;
+			}	
 	
 	[TODO]
 	public virtual bool PopScope() {}
@@ -79,24 +128,38 @@ public class XmlNamespaceManager : IEnumerable
 	[TODO]
 	public virtual void PushScope() {}
 
-	[TODO]
-	public virtual void RemoveNamespace(string prefix, string uri) {}
+	public virtual void RemoveNamespace(String prefix, String uri)
+			{
+				if (prefix == 0)
+					throw new ArgumentNullException("prefix");
+					
+				if (uri == 0)
+					throw new ArgumentNullException("uri");				
+				
+				//Another ECMA mistake, nametable cannot remove an instance
+				//I'll go underground (internal) once more
+
+				//<!> serves as seperator
+				String newentry = prefix + "<!>" + uri;
+				
+				nametable.ArrayList.Remove(newentry);
+				
+				return;							
+			}
 	
-	[TODO]
-	public virtual string DefaultNamespace 
+	public virtual String DefaultNamespace 
 			{ 
 				get
 				{
-				
+					return LookupNamespace(String.Empty);
 				}
 			}
 	
-	[TODO]
 	public XmlNameTable NameTable
 			{
 				get
 				{
-				
+					return nametable;			
 				}
 			}
 

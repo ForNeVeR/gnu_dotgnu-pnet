@@ -8,6 +8,8 @@
 	* System/System.build: Use the new "if" conditional to exclude entire
 	namespaces for selective builds.
 
+	* System/Diagnostics/Trace.cs: More .NET compatibility classes.
+
 2003-01-04  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* runtime/System/Private/NumberParser.cs:  Fix a bug in thousands parsing

@@ -599,14 +599,14 @@ static void MulByWord(ILUInt32 *result, int base,
 	--base;
 
 	/* valuea->middle * valueb */
-	product = ((ILUInt64)(valuea->middle)) * ((ILUInt64)valueb);
+	product += ((ILUInt64)(valuea->middle)) * ((ILUInt64)valueb);
 	product += (ILUInt64)(result[base]);
 	result[base] = (ILUInt32)product;
 	product >>= 32;
 	--base;
 
 	/* valuea->high * valueb */
-	product = ((ILUInt64)(valuea->high)) * ((ILUInt64)valueb);
+	product += ((ILUInt64)(valuea->high)) * ((ILUInt64)valueb);
 	product += (ILUInt64)(result[base]);
 	result[base] = (ILUInt32)product;
 	product >>= 32;

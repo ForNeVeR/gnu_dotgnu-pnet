@@ -4,6 +4,9 @@
 	* engine/lib_reflect.c: implement the internalcall for
 	MethodInfo.GetBaseDefinition (bug #4577).
 
+	* support/decimal.c (MulByWord): correctly propagate carries
+	from one word to the next in decimal multiplications (Bug #3529).
+
 2003-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/md_ppc.h, engine/ppc_codegen.h: check in the early

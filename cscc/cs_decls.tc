@@ -208,7 +208,7 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 					constBuf[2] = (unsigned char)
 						(evalValue->un.decValue.flags >> 16);
 					constBuf[3] = (unsigned char)
-						((evalValue->un.decValue.flags >> 31) & 0x01);
+						(evalValue->un.decValue.flags >> 24);
 					IL_WRITE_UINT32(constBuf + 4, evalValue->un.decValue.high);
 					IL_WRITE_UINT32(constBuf + 8,
 								    evalValue->un.decValue.middle);

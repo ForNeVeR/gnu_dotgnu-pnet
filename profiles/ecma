@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<profile>
+<!-- ECMA profile, that enables only ECMA-compatbile -->
+
+<!-- Only use ECMA-compatible features -->
+<define name="ECMA_COMPAT" value="true"/>
+
+<!-- Use reflection facilities -->
+<define name="CONFIG_REFLECTION" value="true"/>
+
+<!-- Use runtime infrastructure facilities -->
+<define name="CONFIG_RUNTIME_INFRA" value="true"/>
+
+<!-- Use extended numerics -->
+<define name="CONFIG_EXTENDED_NUMERICS" value="true"/>
+
+<!-- Use extended culture support -->
+<define name="CONFIG_CULTURE" value="true"/>
+
+<!-- Use remoting facilities -->
+<define name="CONFIG_REMOTING" value="true"/>
+
+<!-- Use file and directory facilities -->
+<define name="CONFIG_FILESYSTEM" value="true"/>
+
+</profile>

@@ -9,6 +9,12 @@
 	runtime/System/Text/Encoding.cs: change "NotSupportedException"
 	into "NotImplementedException" to be ECMA-compatible.
 
+	* configure.in, I18N/Common/ByteEncoding.cs, I18N/Common/Manager.cs,
+	System/System.build, System.Xml/Xml.build, profiles/compact,
+	profiles/ecma, profiles/full, profiles/kernel, runtime/runtime.build,
+	runtime/System/Reflection/Assembly.cs: integrate profile support
+	into the pnetlib build process.
+
 2002-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Environment.cs: harden the static constructor

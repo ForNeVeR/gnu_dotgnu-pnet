@@ -51,6 +51,21 @@ AC_ARG_WITH(mstools,
 	MSTOOLS=no
 ])
 
+dnl The --with-profile=NAME option is used to change the build profile.
+AC_SUBST(PROFILE_NAME)
+AC_ARG_WITH(profile,
+[  --with-profile=NAME     use build profile NAME],
+[
+	if test -f "${srcdir}/profiles/${withval}" ; then
+		PROFILE_NAME="${withval}"
+	else
+		AC_MSG_ERROR(unknown build profile ${withval})
+	fi
+],
+[
+	PROFILE_NAME=full
+])
+
 dnl Find the Portable.NET "csant" program.
 AC_PATH_PROG(CSANT, csant,, $PNET_PATH/csant:$PATH)
 if test "$CSANT" = "" ; then
@@ -74,10 +89,10 @@ if test "$MSTOOLS" = "no"; then
 			echo '******************************************************'
 			exit 1
 		fi
-		CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)"'
+		CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
 		CSCC_EXE_LIBS=""
 	else
-		CSANT_FLAGS='--compiler cscc -Dcscc="${top_srcdir}/tools/csccwrap.sh"'
+		CSANT_FLAGS='--compiler cscc -Dcscc="${top_srcdir}/tools/csccwrap.sh" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
 		# Note: "-nostdlib" used temporarily until cscc is a real compiler.
 		CSCC_EXE_LIBS='-L$(top_srcdir)/runtime/System -nostdlib'
 	fi
@@ -89,7 +104,7 @@ else
 		echo '***************************************************'
 		exit 1
 	fi
-	CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)"'
+	CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
 	CSCC_EXE_LIBS=""
 fi
 

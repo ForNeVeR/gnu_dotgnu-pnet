@@ -72,8 +72,12 @@ public class Manager
 	// Normalize a name.
 	private static String Normalize(String name)
 			{
+			#if ECMA_COMPAT
+				return (name.ToLower()).Replace('-', '_');
+			#else
 				return (name.ToLower(CultureInfo.InvariantCulture))
 							.Replace('-', '_');
+			#endif
 			}
 
 	// Get an encoding object for a specific code page.

@@ -131,7 +131,9 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 
 #endif // ECMA_COMPAT
 
-#if !ECMA_COMPAT
+
+	// The following three methods are not strictly speaking
+	// ECMA-compatible, but they are useful in ECMA systems.
 
 	// Get the assembly that called the method that called this method.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -144,22 +146,6 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	// Get the assembly that contained the program entry point.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Assembly GetEntryAssembly();
-
-#else // ECMA_COMPAT
-
-	// Get the assembly that called the method that called this method.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static Assembly GetCallingAssembly();
-
-	// Get the assembly that called this method.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static Assembly GetExecutingAssembly();
-
-	// Get the assembly that contained the program entry point.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static Assembly GetEntryAssembly();
-
-#endif // ECMA_COMPAT
 
 #if !ECMA_COMPAT
 
@@ -212,9 +198,15 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 
 #else // ECMA_COMPAT
 
-	// Get a stream for a particular manifest resource.
+	// Get a file stream for a particular public manifest file.
+	// Not strictly speaking ECMA-compatible, but needed for I18N.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal virtual Stream GetManifestResourceStream(String name);
+	extern public virtual FileStream GetFile(String name);
+
+	// Get a stream for a particular manifest resource.
+	// Not strictly speaking ECMA-compatible, but needed for I18N.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual Stream GetManifestResourceStream(String name);
 
 #endif // ECMA_COMPAT
 

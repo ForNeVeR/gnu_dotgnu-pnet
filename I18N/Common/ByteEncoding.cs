@@ -307,6 +307,8 @@ public abstract class ByteEncoding : Encoding
 				return s.ToString();
 			}
 
+#if !ECMA_COMPAT
+
 	// Get the mail body name for this encoding.
 	public override String BodyName
 			{
@@ -387,6 +389,8 @@ public abstract class ByteEncoding : Encoding
 					return windowsCodePage;
 				}
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // class ByteEncoding
 

@@ -67,7 +67,7 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 			{
 				return GetMethodImpl(name, BindingFlags.Default,
 									 null, CallingConventions.Any,
-									 null, null);
+									 new Type [0], null);
 			}
 	public MethodInfo GetMethod(String name, Type[] types)
 			{

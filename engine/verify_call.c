@@ -728,10 +728,11 @@ case IL_OP_NEWOBJ:
 			   value on the stack, followed by a managed pointer to the
 			   value, and then the constructor arguments.  We assume
 			   that we have 2 "slop" positions, as above. */
+			classType = ILClassToType(classInfo);
 			InsertCtorArgs(stack, stackSize,
 						   stackSize - (ILUInt32)(methodSignature->num),
-						   ILEngineType_MV, ILType_FromValueType(classInfo),
-						   ILEngineType_M, ILType_FromValueType(classInfo));
+						   ILEngineType_MV, classType,
+						   ILEngineType_M, classType);
 			stackSize += 2;
 			ILCoderValueCtorArgs(coder, classInfo,
 						    stack + stackSize -

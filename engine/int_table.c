@@ -644,6 +644,24 @@ static void marshal_fpi(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppf(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILFloat))fn)(*((void * *)(avalue[0])), *((ILFloat *)(avalue[1])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppd(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
+}
+
+#endif
+
 #ifndef _IL_BitConverter_suppressed
 
 IL_METHOD_BEGIN(BitConverter_Methods)
@@ -652,6 +670,8 @@ IL_METHOD_BEGIN(BitConverter_Methods)
 	IL_METHOD("Int64BitsToDouble", "(l)d", _IL_BitConverter_Int64BitsToDouble, marshal_dpl)
 	IL_METHOD("FloatToInt32Bits", "(f)i", _IL_BitConverter_FloatToInt32Bits, marshal_ipf)
 	IL_METHOD("Int32BitsToFloat", "(i)f", _IL_BitConverter_Int32BitsToFloat, marshal_fpi)
+	IL_METHOD("GetLittleEndianBytes", "(f)[B", _IL_BitConverter_GetLittleEndianBytes_f, marshal_ppf)
+	IL_METHOD("GetLittleEndianBytes", "(d)[B", _IL_BitConverter_GetLittleEndianBytes_d, marshal_ppd)
 IL_METHOD_END
 
 #endif

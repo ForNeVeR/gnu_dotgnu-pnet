@@ -115,6 +115,8 @@ extern ILInt64 _IL_BitConverter_DoubleToInt64Bits(ILExecThread * _thread, ILDoub
 extern ILDouble _IL_BitConverter_Int64BitsToDouble(ILExecThread * _thread, ILInt64 _p1);
 extern ILInt32 _IL_BitConverter_FloatToInt32Bits(ILExecThread * _thread, ILFloat _p1);
 extern ILFloat _IL_BitConverter_Int32BitsToFloat(ILExecThread * _thread, ILInt32 _p1);
+extern System_Array * _IL_BitConverter_GetLittleEndianBytes_f(ILExecThread * _thread, ILFloat _p1);
+extern System_Array * _IL_BitConverter_GetLittleEndianBytes_d(ILExecThread * _thread, ILDouble _p1);
 
 extern ILDouble _IL_Math_Log(ILExecThread * _thread, ILDouble _p1);
 extern ILDouble _IL_Math_RoundDouble(ILExecThread * _thread, ILDouble _p1, ILInt32 _p2);

@@ -137,6 +137,36 @@ ILFloat _IL_BitConverter_Int32BitsToFloat(ILExecThread *thread,
 #endif
 }
 
+/*
+ * internal static byte[] GetLittleEndianBytes(float value);
+ */
+System_Array *_IL_BitConverter_GetLittleEndianBytes_f
+		(ILExecThread *_thread, ILFloat value)
+{
+	System_Array *array =
+		(System_Array *)ILExecThreadNew(_thread, "[B", "(Ti)V", (ILVaInt)4);
+	if(array)
+	{
+		IL_WRITE_FLOAT((unsigned char *)ArrayToBuffer(array), value);
+	}
+	return array;
+}
+
+/*
+ * internal static byte[] GetLittleEndianBytes(double value);
+ */
+System_Array *_IL_BitConverter_GetLittleEndianBytes_d
+		(ILExecThread *_thread, ILDouble value)
+{
+	System_Array *array =
+		(System_Array *)ILExecThreadNew(_thread, "[B", "(Ti)V", (ILVaInt)8);
+	if(array)
+	{
+		IL_WRITE_DOUBLE((unsigned char *)ArrayToBuffer(array), value);
+	}
+	return array;
+}
+
 #ifdef IL_CONFIG_VARARGS
 
 /*

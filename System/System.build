@@ -2,8 +2,12 @@
 <project name="pnetlib System" default="all">
 	<target name="all">
 
-		<!-- Build the primary System.dll library -->
-		<compile output="System.dll"
+		<!-- ****************************************************** -->
+		<!-- *** See Makefile.am for some important build notes *** -->
+		<!-- ****************************************************** -->
+
+		<!-- Build the System.dll library for the first time -->
+		<compile output="first/System.dll"
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
@@ -18,6 +22,47 @@
 			</sources>
 
 			<references>
+				<file name="../runtime/mscorlib.dll"/>
+			</references>
+
+			<resources>
+				<file name="../resources/en_US/System/System.resources"/>
+			</resources>
+
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="csc" value="/nowarn:626"/>
+			<arg compiler="csc" value="/nowarn:649"/>
+			<arg compiler="csc" value="/nowarn:168"/>
+			<arg compiler="csc" value="/nowarn:67"/>
+			<arg compiler="csc" value="/nowarn:169"/>
+		</compile>
+
+	</target>
+
+	<target name="phase-two">
+
+		<!-- Build the actual System.dll library -->
+		<compile output="System.dll"
+				 target="library"
+				 unsafe="true"
+				 nostdlib="true"
+				 optimize="true"
+				 debug="true">
+
+			<!-- temporarily removed until recursion works -->
+			<!-- <define name="SECOND_PASS" value="true"/> -->
+
+			<sources>
+				<includes name="**/*.cs"/>
+				<excludes if="${ECMA_COMPAT}" 
+							name="Text/RegularExpressions/*.cs"/>
+				<excludes if="${ECMA_COMPAT}" name="Diagnostics/*.cs"/>
+			</sources>
+
+			<references>
+				<!-- temporarily removed until recursion works -->
+				<!-- <file name="../System.Xml/System.Xml.dll"/> -->
+				<!-- <file name="first/System.dll"/> -->
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 

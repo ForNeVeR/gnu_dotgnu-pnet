@@ -23,6 +23,12 @@
 	System/Configuration/Makefile: implement some of the
 	System.Configuration classes.
 
+	* Makefile.am, System/.cvsignore, System/Makefile.am,
+	System/System.build, System/Configuration/ConfigXmlDocument.cs,
+	System/Configuration/ConfigurationException.cs,
+	System.Xml/Xml.build: implement a two-phase build process for
+	System.dll because of its circular dependency on System.Xml.
+
 2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/StreamWriter.cs: default UTF8 behaviour

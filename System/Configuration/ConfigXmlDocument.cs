@@ -63,6 +63,10 @@ public sealed class ConfigXmlDocument : XmlDocument, IConfigXmlNode
 							return reader.LineNumber;
 						}
 					}
+					else
+					{
+						return 0;
+					}
 				}
 			}
 
@@ -189,7 +193,7 @@ public sealed class ConfigXmlDocument : XmlDocument, IConfigXmlNode
 						return filename;
 					}
 				}
-		public String LineNumber
+		public int LineNumber
 				{
 					get
 					{
@@ -237,7 +241,7 @@ public sealed class ConfigXmlDocument : XmlDocument, IConfigXmlNode
 						return filename;
 					}
 				}
-		public String LineNumber
+		public int LineNumber
 				{
 					get
 					{
@@ -284,7 +288,7 @@ public sealed class ConfigXmlDocument : XmlDocument, IConfigXmlNode
 						return filename;
 					}
 				}
-		public String LineNumber
+		public int LineNumber
 				{
 					get
 					{
@@ -331,7 +335,7 @@ public sealed class ConfigXmlDocument : XmlDocument, IConfigXmlNode
 						return filename;
 					}
 				}
-		public String LineNumber
+		public int LineNumber
 				{
 					get
 					{
@@ -379,7 +383,7 @@ public sealed class ConfigXmlDocument : XmlDocument, IConfigXmlNode
 						return filename;
 					}
 				}
-		public String LineNumber
+		public int LineNumber
 				{
 					get
 					{
@@ -427,7 +431,7 @@ public sealed class ConfigXmlDocument : XmlDocument, IConfigXmlNode
 						return filename;
 					}
 				}
-		public String LineNumber
+		public int LineNumber
 				{
 					get
 					{
@@ -475,7 +479,7 @@ public sealed class ConfigXmlDocument : XmlDocument, IConfigXmlNode
 						return filename;
 					}
 				}
-		public String LineNumber
+		public int LineNumber
 				{
 					get
 					{

@@ -155,7 +155,7 @@ public class ConfigurationException : SystemException
 				IConfigXmlNode cnode = (node as IConfigXmlNode);
 				if(cnode != null)
 				{
-					return cnode.FileName;
+					return cnode.Filename;
 				}
 				else
 				{
@@ -164,7 +164,7 @@ public class ConfigurationException : SystemException
 			}
 
 	// Get the line number from an XmlNode object.
-	public static int GetXmlLineNumber(XmlNode node)
+	public static int GetXmlNodeLineNumber(XmlNode node)
 			{
 				IConfigXmlNode cnode = (node as IConfigXmlNode);
 				if(cnode != null)

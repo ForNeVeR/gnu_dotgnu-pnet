@@ -1,2 +1,8 @@
-SUBDIRS = tools resources runtime I18N System System.Xml \
+SUBDIRS = tools resources runtime I18N System System.Xml . \
 		  csunit csupport compat JScript tests samples
+
+## System.dll is built in two phases, because it depends recursively
+## on System.Xml.dll.  The following takes care of the second phase.
+
+all-local:
+	(cd System; $(MAKE) $(AM_MAKEFLAGS) phase-two)

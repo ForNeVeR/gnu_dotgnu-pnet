@@ -26,6 +26,9 @@
 #ifdef HAVE_UNISTD_H
 	#include <unistd.h>
 #endif
+#if defined(WIN32) || defined(HAVE_DIRECT_H)
+	#include "direct.h"
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {

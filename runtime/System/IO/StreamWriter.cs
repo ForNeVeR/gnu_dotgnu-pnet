@@ -215,9 +215,7 @@ public class StreamWriter : TextWriter
 	public override void Write(String value)
 			{
 				if(value == null)
-				{
-					throw new ArgumentNullException("value");
-				}
+					return;
 				int temp;
 				int index = 0;
 				int count = value.Length;

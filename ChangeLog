@@ -1,3 +1,7 @@
+2003-02-08  Marcus Urban  <mathpup@mylinuxisp.com>
+	
+	* runtime/System/IO/StreamWriter.cs: Console.WriteLine fails
+	when null string is passed. Fix (Bug #2499).
 
 2003-02-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 

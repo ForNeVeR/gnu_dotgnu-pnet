@@ -35,13 +35,13 @@ namespace System.Web.Util
 		// TODO :replace with internal calls to InfoMethods here
 		static public String GetMachineConfigPath()
 		{
-			return null;
+			return "";
 		}
 
 		// TODO :replace with internal calls to InfoMethods here
 		static public String GetMachineInstallDirectory()
 		{
-			return null;
+			return "";
 		}
 	}
 }

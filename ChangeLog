@@ -1,3 +1,12 @@
+
+2004-09-17  Gopal.V  <gopalv82@yahoo.com>
+
+	* class/System.Web/System.Web.build: remove the -flatin1-only and
+	the exclusion of Localize.cs.
+
+	* class/System.Web/ICalls.cs: return "" instead of null for the 
+	icall stub functions.
+
 2004-09-12  Klaus Treichel  <ktreichel@web.de>
 
 	* class/Makefile.am: exclude Mono.Security.Win32 from builid because of

@@ -15,7 +15,6 @@
 				<includes name="**/*.cs"/> 
 				<excludes name="Test/**"/>
 				<excludes name="System.Web.Util/ICalls.cs"/>
-				<excludes name="System.Web.UI.WebControls/Localize.cs"/>
 				<file basedir="." name="ICalls.cs"/>
 			</sources>
 
@@ -32,7 +31,6 @@
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
 			<arg compiler="cscc" value="-fassembly-key=neutral"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
-			<arg compiler="cscc" value="-flatin1-charset"/>
 
 		</compile>
 	</target>

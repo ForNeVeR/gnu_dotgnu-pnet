@@ -770,11 +770,6 @@ class XmlDocument : XmlNode
 							// Append Comments to parent Node
 							break;
 						case XmlNodeType.EndElement:
-							if(currentNode.Name != reader.Name)
-							{
-								throw new XmlException
-									(S._("XmlException_WrongParent"));
-							}
 							if(currentNode.ParentNode != null)
 								currentNode = currentNode.ParentNode;
 							break;

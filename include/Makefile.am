@@ -11,6 +11,7 @@ libILinclude_HEADERS = il_coder.h \
 					   il_jopcodes.h \
 					   il_meta.h \
 					   il_opcodes.h \
+					   il_profile.h \
 					   il_program.h \
 					   il_serialize.h \
 					   il_sysio.h \
@@ -21,3 +22,8 @@ libILinclude_HEADERS = il_coder.h \
 					   il_values.h \
 					   il_writer.h \
 					   il_xml.h
+
+il_profile.h: $(top_srcdir)/profiles/$(PROFILE_NAME)
+	$(SHELL) $(top_srcdir)/profiles/mkprofile.sh $< $@
+
+CLEANFILES = il_profile.h

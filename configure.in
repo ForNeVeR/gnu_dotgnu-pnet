@@ -42,6 +42,21 @@ AC_ARG_WITH(libffi,
 	esac
 ])
 
+dnl The --with-profile=NAME option is used to change the build profile.
+AC_SUBST(PROFILE_NAME)
+AC_ARG_WITH(profile,
+[  --with-profile=NAME     use build profile NAME],
+[
+	if test -f "${srcdir}/profiles/${withval}" ; then
+		PROFILE_NAME="${withval}"
+	else
+		AC_MSG_ERROR(unknown build profile ${withval})
+	fi
+],
+[
+	PROFILE_NAME=full
+])
+
 dnl This code was borrowed from "libgc" to test for the correct
 dnl thread package to use, and to notify the garbage collector's
 dnl "gc.h" file of the correct features to enable.  See the

@@ -25,6 +25,7 @@
 #define	IL_NATIVE_WIN32
 #endif
 #include "il_config.h"
+#include "il_profile.h"
 
 #ifdef	__cplusplus
 extern	"C" {

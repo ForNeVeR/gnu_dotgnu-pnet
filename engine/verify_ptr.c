@@ -71,32 +71,6 @@ static int PtrCompatible(ILType *stackType, ILType *insnType)
 }
 
 /*
- * Determine if a type is represented as an object reference.
- */
-static int IsObjectRef(ILType *type)
-{
-	if(type == 0)
-	{
-		/* This is the "null" type, which is always an object reference */
-		return 1;
-	}
-	else if(ILType_IsClass(type))
-	{
-		return 1;
-	}
-	else if(ILType_IsComplex(type) &&
-	        (type->kind == IL_TYPE_COMPLEX_ARRAY ||
-			 type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
  * Determine if a type is a zero-based, single-dimensional array, and
  * get its element type.  Returns NULL if not a suitable type, or
  * ILType_Void if the type is "null".  Note: the signature parser in

@@ -64,6 +64,8 @@ type for "unbox".
 * engine/verify_branch.c: record the stack information for exception
 block entry points.
 
+* engine/verify_ptr.c: move "IsObjectRef" to "verify.c".
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

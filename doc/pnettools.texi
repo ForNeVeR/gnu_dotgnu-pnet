@@ -27,6 +27,7 @@ Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd
 @menu
 * Overview::                The tools in brief
 * C# Compiler::             C# compiler
+* Documentation::           XML documentation tools
 * Assembler::               Intermediate language assembler
 * Disassembler::            Intermediate language disassembler
 * Size::                    Intermediate language size utility
@@ -949,7 +950,7 @@ to standard error.
 
 @c -----------------------------------------------------------------------
 
-@node Compiling to the JVM, Assembler, Language Plugins, C# Compiler
+@node Compiling to the JVM, Documentation, Language Plugins, C# Compiler
 @section Compiling to the JVM
 @cindex Compiling to the JVM
 
@@ -1075,7 +1076,440 @@ compiler or runtime engine.
 
 @c -----------------------------------------------------------------------
 
-@node Assembler, ilasm invocation, Compiling to the JVM, Top
+@node Documentation, Documentation Sections, Compiling to the JVM, Top
+@chapter Documentation tools
+@cindex Documentation
+
+The C# programming language supports embedded documentation in
+the form of XML elements.  Such documentation can be added to
+types, methods, fields, and other program items using the
+@code{///} commenting convention.  For example:
+
+@example
+/// <summary>
+/// Compute the n'th Fibonacci number.
+/// </summary>
+///
+/// <param name="n">
+/// The index of the Fibonacci number to return.
+/// </param>
+///
+/// <returns>
+/// The Fibonacci number which corresponds to
+/// <paramref name="n"/> in the sequence, where
+/// <c>fib(0) = 0</c> and <c>fib(1) = 1</c>.
+/// </returns>
+public static int fib(int n)
+@{
+    ...
+@}
+@end example
+
+To process documentation, the @code{csdoc} program is used to
+extract the program structure and documentation comments.  The
+output is an XML file.
+
+This XML file is then fed into another program to produce the
+desired output format.  One such program, @code{csdoc2texi},
+converts the XML file into texinfo, from which online or
+printed manuals can be derived.
+
+@menu
+* Documentation Sections::  XML tags used for documentation sections
+* Documentation Markup::    XML tags used for marking up text
+* Cross-References::        Specifying cross-references in XML tags
+* csdoc invocation::        Invoking csdoc
+* csdoc2texi invocation::   Invoking csdoc2texi
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Documentation Sections, Documentation Markup, Documentation, Documentation
+@section Documentation sections
+@cindex Documentation sections
+
+The following XML element tags are used to describe the major features
+of a program item in separate sections:
+
+@table @code
+@item <summary> ... </summary>
+Specify the summarised description for the current program item.
+
+@item <remarks> ... </remarks>
+Specify the detailed description for the current program item.
+
+@item <param name="NAME"> ... </param>
+Describe a particular method parameter.
+
+@item <returns> ... </returns>
+Describe the value that is returned from a method.
+
+@item <value> ... </value>
+Describe the value of a property.
+
+@item <exception cref="CREF"> ... </exception>
+The text describes an exception that is thrown during the processing
+of the current program item.  The name of the exception is specified
+by @code{CREF}.
+
+@item <seealso cref="CREF"/>
+@itemx <seealso topic="TOPIC"/>
+Specify an item or topic to be added to the "See Also" section of
+a program item's documentation.
+
+@item <example> ... </example>
+Specify the text of an example for the current program item.
+
+@item <overload> ... </overload>
+Provides a description to use when a method is overloaded.
+Some documentation systems group all of the variants of a method
+in the same section, with specific variant in sub-sections.
+The @code{<overload>} element provides the description to use in
+the main section, and will normally be identical for all variants.
+
+@item <devdoc> ... </devdoc>
+Provides supplemental documentation for developers.
+
+@item <altcompliant cref="CREF"/>
+Describes an alternative program item that should be used instead
+of the current item in CLS-compliant applications.  @code{CREF}
+is a cross-reference string that describes the alternative.
+
+@item <altmember cref="CREF"/>
+Specifies an alternative that can be used in place of this member.
+
+@item <internalonly/>
+Marks a program item that is intended for internal use by the
+assembly that contains the item, and is not normally intended
+to be used directly by other developers.
+
+This may be used on methods that override a virtual method from a parent
+class to indicate that the parent class method is the primary entry
+point for developers.
+
+@item <nodoc/>
+Indicate that this program item should be ignored when processed
+with conversion programs such as @code{csdoc2texi}.
+
+@item <permission cref="CREF"> ... </permission>
+Specifies a security permission that the program item must have to
+be executed.
+
+@item <platnote platform="PLATFORM"> ... </platnote>
+Specify a note that only applies to a specific platform.
+
+@item <threadsafe> ... </threadsafe>
+Specify text that describes the thread-safety (or otherwise) of the
+program item.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Documentation Markup, Cross-References, Documentation Sections, Documentation
+@section Documentation markup
+@cindex Documentation markup
+
+The following XML element tags are used within the body of the above
+elements to mark up the text:
+
+@table @code
+@item <b> ... </b>
+Format the text between @code{<b>} and @code{</b>} in a bold font.
+
+@item <block subset="SUBSET" type="TYPE"> ... </block>
+Normally used inside a @code{<para>} element to indicate a block of
+text that is distinguished from the other text as some for of note.
+Optionally, an implementation subset may be specified.
+
+Typical values for @code{SUBSET} are @code{none} and @code{ECMAOnly}.
+The typical value for @code{TYPE} is @code{note}.
+
+Note blocks are typically formatted as [Note: ...].  If the subset is
+something other than @code{none}, then it will also be shown.  For
+example, [Note (ECMAOnly): ...].
+
+@item <c> ... </c>
+Format the text between @code{<c>} and @code{</c>} in a fixed-width
+font that is suitable for displaying code or program output.  The
+normal formatting rules apply, in that paragraphs and line breaks
+must be explicitly marked.
+
+@item <code lang="LANG"> ... </code>
+Format the text between @code{<code>} and @code{</code>} in a fixed-width
+font that is suitable for displaying code or program output.  End of
+line sequences within the text are treated as hard line breaks.  The
+@code{LANG} value indicates that the text is an example in a specific
+programming language.  @code{LANG} is usually @code{C#}.
+
+@item <list type="LTYPE"> ... </list>
+Format a list of terms and descriptions according to @code{LTYPE}.
+Valid types are @code{bullet}, @code{number}, and @code{table}.
+
+@item <item> ... </item>
+Describe an item within a @code{<list>} element.
+
+@item <listheader> ... </listheader>
+An alternative to @code{<item>} that is used to describe the headers
+for a @code{table} list.
+
+@item <term> ... </term>
+Mark the text that indicates a term within an @code{<item>} element.
+This is only needed for definition lists.
+
+@item <description> ... </description>
+Mark the text that is describing a term within an @code{<item>} element.
+
+@item <i> ... </i>
+Format the text between @code{<i>} and @code{</i>} in an italicized font.
+
+@item <note type="TYPE"> ... <note>
+An alternative way to write @code{<block subset="none" type="TYPE"> ...
+</block>}.
+
+@item <para> ... </para>
+Mark the start and end of a paragraph within a documentation block.
+
+@item <paramref name="NAME"/>
+Refer to a parameter within a documentation block.  The name may
+be formatted in an alternative font.
+
+@item <see cref="CREF"/>
+Insert a link at the current point in the documentation to the
+program item referred to by @code{CREF}.  This is used inline
+within a documentation block.
+
+@item <sub> ... </sub>
+Format the text between @code{<sub>} and @code{</sub>} in a subscript font.
+
+@item <sup> ... </sup>
+Format the text between @code{<sup>} and @code{</sup>} in a superscript font.
+
+@item <subscript term="TERM"/>
+An alternative way of specifying @code{<sub>TERM</sub>}.
+
+@item <superscript term="TERM"/>
+An alternative way of specifying @code{<sup>TERM</sup>}.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Cross-References, csdoc invocation, Documentation Markup, Documentation
+@section Documentation cross-references
+@cindex Documentation cross-references
+
+Cross-reference prefixes:
+
+@table @code
+@item E:
+The prefix is followed by the fully-qualified name of an event.
+
+@item F:
+The prefix is followed by the fully-qualified name of a field.
+
+@item M:
+The prefix is followed by the fully-qualified name of a method.
+
+@item P:
+The prefix is followed by the fully-qualified name of a property.
+
+@item T:
+The prefix is followed by the fully-qualified name of a type.
+
+@item !:
+The prefix is followed by an error string, which resulted because
+the cross-reference could not be resolved.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node csdoc invocation, csdoc2texi invocation, Cross-References, Documentation
+@section Invoking csdoc
+@cindex csdoc invocation
+
+The general form of the csdoc syntax is as follows:
+
+@example
+csdoc [OPTIONS] INPUT.cs ...
+@end example
+
+Csdoc reads the supplied C# source files, and writes XML data to the
+file specified by the @code{-o} option, or to standard output if
+@code{-o} is not supplied.
+
+The supplied source files are parsed and processed using the
+first phases of semantic analysis.  Thus, the source should be
+valid C#, or a compilation error may occur.  Csdoc will not
+generate assembly or object code output.
+
+The csdoc command-line accepts all of the options that may be
+supplied to cscc.  @xref{Option Summary}, for more information
+on cscc options.  In addition, the following options have special
+significance to csdoc:
+
+@table @code
+@cindex -o option (csdoc)
+@item -o FILE
+Specify the name of the file to write the XML output to.  The
+default is standard output.  Specifying @code{-o -} will also
+write the XML to standard output.
+
+@cindex -fprivate option (csdoc)
+@item -fprivate
+By default, csdoc will only write public types and members to the
+XML output.  Specifying @code{-fprivate} will force csdoc to
+also include private types and members.
+
+@cindex -flibrary-name option (csdoc)
+@item -flibrary-name=NAME
+Specify the library name to use for the types in the XML output
+file.  By default, no library name is used.
+@end table
+
+The exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.
+
+When the input source is compiled, the symbol @code{__DOC__} will
+be defined.  The programmer can use this to determine if the program
+is being compiled by cscc, or converted into documentation using csdoc.
+
+@c -----------------------------------------------------------------------
+
+@node csdoc2texi invocation, Assembler, csdoc invocation, Documentation
+@section Invoking csdoc2texi
+@cindex csdoc2texi invocation
+
+The general form of the csdoc2texi syntax is as follows:
+
+@example
+csdoc2texi [OPTIONS] INPUT.xml ...
+@end example
+
+Csdoc2texi reads the supplied XML input files, and converts them into
+texinfo.
+
+Specifying multiple input files is exactly the same as specifying
+one input file which is the concatenation of all of the files.
+Only one output file is created.  Csdoc2texi must be invoked multiple
+times to convert multiple input files into multiple output files.
+
+@table @code
+@cindex -o option (csdoc2texi)
+@cindex --output option (csdoc2texi)
+@item -o FILE
+@itemx --output FILE
+Specify the name of the file to write the texinfo output to.  The
+default is @code{INPUT.texi}.  If there are multiple input files, then
+the name of the output file is based on the name of the first input file.
+If the first input file is @code{-}, then the output is written to
+standard output.  If @code{FILE} is @code{-}, then the output is
+written to standard output.
+
+@cindex -fstandalone option (csdoc2texi)
+@item -fstandalone
+Make a stand-alone texinfo document that includes headers,
+a title page, and an index.  This is the default.
+
+@cindex -fembedded option (csdoc2texi)
+@item -fembedded
+Make an embedded texinfo document.  Use this if you wish to
+incorporate the texinfo output into a larger document.
+
+@cindex -fparent option (csdoc2texi)
+@item -fparent=NAME
+Specify the name of the parent node for an embedded document.
+The default value is @code{Top}.  This option is ignored
+in stand-alone documents.
+
+@cindex -ffilename option (csdoc2texi)
+@item -ffilename=NAME
+Specify the value for @code{@@setfilename}.  The default is the same
+as the first input file with the extension changed to @code{.info}.
+If the first input file is standard input, then the default
+value is @code{stdout.info}.  This option is ignored in
+embedded documents.
+
+@cindex -ftitle option (csdoc2texi)
+@item -ftitle=TITLE
+Specify the title to use for the document.  The default is
+the same as @code{-ffilename}.  This option is ignored in
+embedded documents.
+
+@cindex -fdescription option (csdoc2texi)
+@item -fdescription=DESC
+Specify the description to use in the info header of the document.
+The default is the same as @code{-ftitle}.  This option is
+ignored in embedded documents.
+
+@cindex -fchapternewpage option (csdoc2texi)
+@item -fchapternewpage=VALUE
+Specify the value for @code{@@setchapternewpage}.  The default value is
+@code{on}.  Valid values are @code{on}, @code{off}, or @code{odd}.
+This option is ignored in embedded documents.
+
+@cindex -fcopyright option (csdoc2texi)
+@item -fcopyright=MSG
+Specify the Copyright message to use for the document.  The default
+is no Copyright message.  This option is ignored in embedded documents.
+
+@cindex -findex option (csdoc2texi)
+@item -findex
+Include an index chapter in the output.  This is the default
+in stand-alone documents.
+
+@cindex -fno-index option (csdoc2texi)
+@item -fno-index
+Do not include an index chapter in the output.  This is the
+default in embedded documents.
+
+@cindex -fnewpage option (csdoc2texi)
+@item -fnewpage
+Use a new page for each type member description.  This is the default.
+
+@cindex -fno-newpage option (csdoc2texi)
+@item -fno-newpage
+Do not use a new page for each type member description.
+
+@cindex --help option (csdoc2texi)
+@item --help
+Print a usage message for the csdoc2texi program.
+
+@cindex -v option (csdoc2texi)
+@cindex --version option (csdoc2texi)
+@item -v
+@itemx --version
+Print the version of the csdoc2texi program.
+
+@item --
+Marks the end of the command-line options, and the beginning of
+the input filenames.  You may need to use this if your filename
+begins with @code{-}.  e.g. @code{csdoc2texi -- -input.xml}.  This is
+not needed if the input is stdin: @code{csdoc2texi -} is perfectly valid.
+@end table
+
+The exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.
+
+The texinfo output is arranged so that each namespace is placed in
+its own chapter, with types in sections, and members in sub-sections.
+Types in the global namespace are placed in a chapter entitled
+@emph{Global Namespace}.
+
+This arrangement can be modified by creating an embedded document,
+including it into another document, and using @code{@@lowersections}
+to adjust the section nesting level.
+
+The following is an example of converting C# source code into
+online HTML documentation, by way of csdoc2texi:
+
+@example
+csdoc -o program.xml program.cs
+csdoc2texi program.xml
+texi2html -split_chapter program.texi
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Assembler, ilasm invocation, csdoc2texi invocation, Top
 @chapter Intermediate language assembler
 @cindex Assembler
 @cindex ilasm

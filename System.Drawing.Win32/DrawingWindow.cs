@@ -850,6 +850,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 			return;
 		DrawingWindow[] move = new DrawingWindow[16];
 		int nextMove = 0;
+		int toPosition = to;
 		// Move all children of "win" into the move array.
 		// Mark the children with null if they have been moved.
 		for (int i = from; i < toolkit.windowCount; i++)
@@ -865,8 +866,10 @@ internal abstract class DrawingWindow : IToolkitWindow
 				}
 				toolkit.windows[i] = null;
 				move[nextMove++] = current;
-				if (i <= to)
+				if (i <= toPosition)
+				{
 					to--;
+				}
 			}
 		}
 

@@ -9,6 +9,10 @@
 	cscc/c/c_types.c, cscc/c/c_types.h: add back some limited support
 	for native structs and unions, for use with PInvoke.
 
+	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_grammar.y,
+	cscc/c/c_scanner.l, cscc/c/c_types.c: use a cleaner syntax for
+	native integer types.
+
 2002-08-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_misc.tc, cscc/c/Makefile.am,

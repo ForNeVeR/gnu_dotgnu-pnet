@@ -161,7 +161,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 					switch((spec1.specifiers | spec2.specifiers)
 							& (C_SPEC_SIGNED | C_SPEC_UNSIGNED |
 							   C_SPEC_SHORT | C_SPEC_LONG |
-							   C_SPEC_LONG_LONG))
+							   C_SPEC_LONG_LONG | C_SPEC_NATIVE))
 					{
 						case C_SPEC_SIGNED:
 						{
@@ -174,6 +174,20 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						{
 							result.baseType = ILType_UInt32;
 							okSpecifiers = C_SPEC_UNSIGNED;
+						}
+						break;
+
+						case C_SPEC_SIGNED | C_SPEC_NATIVE:
+						{
+							result.baseType = ILType_Int;
+							okSpecifiers = C_SPEC_SIGNED | C_SPEC_NATIVE;
+						}
+						break;
+
+						case C_SPEC_UNSIGNED | C_SPEC_NATIVE:
+						{
+							result.baseType = ILType_UInt;
+							okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_NATIVE;
 						}
 						break;
 
@@ -249,12 +263,19 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 					/* Look for "short", "long", or "long long" */
 					switch((spec1.specifiers | spec2.specifiers)
 							& (C_SPEC_SHORT | C_SPEC_LONG |
-							   C_SPEC_LONG_LONG))
+							   C_SPEC_LONG_LONG | C_SPEC_NATIVE))
 					{
 						case C_SPEC_SHORT:
 						{
 							result.baseType = ILType_UInt16;
 							okSpecifiers = C_SPEC_SHORT;
+						}
+						break;
+
+						case C_SPEC_NATIVE:
+						{
+							result.baseType = ILType_UInt;
+							okSpecifiers = C_SPEC_NATIVE;
 						}
 						break;
 
@@ -416,11 +437,11 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 		result.dupSpecifiers |= C_SPEC_LONG_AND_SHORT;
 	}
 
-	/* Check for duplicate "signed", "unsigned", and "short",
+	/* Check for duplicate "signed", "unsigned", "short", and "__native__"
 	   but don't worry about "long" as we max out the sizes above */
 	result.dupSpecifiers |= ((spec1.specifiers | spec2.specifiers) &
 								(C_SPEC_SIGNED | C_SPEC_UNSIGNED |
-								 C_SPEC_SHORT));
+								 C_SPEC_SHORT | C_SPEC_NATIVE));
 
 	/* Done */
 	return result;
@@ -580,6 +601,7 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_SIGNED, "signed");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_UNSIGNED, "unsigned");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_SHORT, "short");
+	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_NATIVE, "__native__");
 
 	/* Print pending errors that were detected by "CDeclSpecCombine" */
 	if((spec.dupSpecifiers & C_SPEC_MULTIPLE_BASES) != 0)
@@ -647,6 +669,17 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			else
 			{
 				result.baseType = ILType_Int64;
+			}
+		}
+		else if((spec.specifiers & C_SPEC_NATIVE) != 0)
+		{
+			if((spec.specifiers & C_SPEC_UNSIGNED) != 0)
+			{
+				result.baseType = ILType_UInt;
+			}
+			else
+			{
+				result.baseType = ILType_Int;
 			}
 		}
 		else if((spec.specifiers & C_SPEC_UNSIGNED) != 0)

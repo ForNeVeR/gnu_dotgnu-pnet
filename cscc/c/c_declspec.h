@@ -39,12 +39,13 @@ extern	"C" {
 #define	C_SPEC_LONG_LONG		(1<<8)
 #define	C_SPEC_SIGNED			(1<<9)
 #define	C_SPEC_UNSIGNED			(1<<10)
-#define	C_SPEC_CONST			(1<<11)
-#define	C_SPEC_VOLATILE			(1<<12)
-#define	C_SPEC_MULTIPLE_BASES	(1<<13)
-#define	C_SPEC_LONG_AND_SHORT	(1<<14)
-#define	C_SPEC_SIGN_AND_UNSIGN	(1<<15)
-#define	C_SPEC_INVALID_COMBO	(1<<16)
+#define	C_SPEC_NATIVE			(1<<11)
+#define	C_SPEC_CONST			(1<<12)
+#define	C_SPEC_VOLATILE			(1<<13)
+#define	C_SPEC_MULTIPLE_BASES	(1<<14)
+#define	C_SPEC_LONG_AND_SHORT	(1<<15)
+#define	C_SPEC_SIGN_AND_UNSIGN	(1<<16)
+#define	C_SPEC_INVALID_COMBO	(1<<17)
 
 /*
  * Useful specifier combinations.
@@ -64,7 +65,8 @@ extern	"C" {
 			 C_SPEC_LONG | \
 			 C_SPEC_LONG_LONG | \
 			 C_SPEC_SIGNED | \
-			 C_SPEC_UNSIGNED)
+			 C_SPEC_UNSIGNED | \
+			 C_SPEC_NATIVE)
 
 /*
  * Kinds of declarations, for checking the applicability of specifiers.

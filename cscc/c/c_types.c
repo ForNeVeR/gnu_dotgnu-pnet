@@ -1366,8 +1366,9 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 			case IL_META_ELEMTYPE_CHAR:		cname = "__wchar__"; break;
 			case IL_META_ELEMTYPE_I4:		cname = "int"; break;
 			case IL_META_ELEMTYPE_U4:		cname = "unsigned int"; break;
-			case IL_META_ELEMTYPE_I:		cname = "__nint__"; break;
-			case IL_META_ELEMTYPE_U:		cname = "unsigned __nint__"; break;
+			case IL_META_ELEMTYPE_I:		cname = "__native__ int"; break;
+			case IL_META_ELEMTYPE_U:
+				cname = "unsigned __native__ int"; break;
 
 			case IL_META_ELEMTYPE_I8:
 			{

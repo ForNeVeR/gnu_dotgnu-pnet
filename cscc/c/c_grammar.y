@@ -178,7 +178,6 @@ static void CopyParamDecls(ILNode *dest, ILNode *src)
 %token K_ATTRIBUTE		"`__attribute__'"
 %token K_BOOL			"`__bool__'"
 %token K_WCHAR			"`__wchar__'"
-%token K_NINT			"`__nint__'"
 %token K_TRUE			"`__true__'"
 %token K_FALSE			"`__false__'"
 %token K_NATIVE			"`__native__'"
@@ -624,6 +623,7 @@ TypeSpecifier
 	| K_LONG			{ CDeclSpecSet($$, C_SPEC_LONG); }
 	| K_SIGNED			{ CDeclSpecSet($$, C_SPEC_SIGNED); }
 	| K_UNSIGNED		{ CDeclSpecSet($$, C_SPEC_UNSIGNED); }
+	| K_NATIVE			{ CDeclSpecSet($$, C_SPEC_NATIVE); }
 	| K_FLOAT			{ CDeclSpecSetType($$, ILType_Float32); }
 	| K_DOUBLE			{ CDeclSpecSetType($$, ILType_Float64); }
 	| K_CONST			{ CDeclSpecSet($$, C_SPEC_CONST); }
@@ -631,7 +631,6 @@ TypeSpecifier
 	| K_VOID			{ CDeclSpecSetType($$, ILType_Void); }
 	| K_BOOL			{ CDeclSpecSetType($$, ILType_Boolean); }
 	| K_WCHAR			{ CDeclSpecSetType($$, ILType_Char); }
-	| K_NINT			{ CDeclSpecSetType($$, ILType_Int); }
 	| K_VA_LIST			{ CDeclSpecSetType($$, CTypeCreateVaList(&CCCodeGen)); }
 	| StructOrUnionSpecifier		{ CDeclSpecSetType($$, $1); }
 	| EnumSpecifier					{ CDeclSpecSetType($$, $1); }

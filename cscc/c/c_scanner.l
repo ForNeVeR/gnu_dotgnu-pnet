@@ -159,7 +159,6 @@ WHITE			[ \t\v\r\f]
 
 "__bool__"				{ return K_BOOL; }
 "__wchar__"				{ return K_WCHAR; }
-"__nint__"				{ return K_NINT; }
 "__true__"				{ return K_TRUE; }
 "__false__"				{ return K_FALSE; }
 "__native__"			{ return K_NATIVE; }

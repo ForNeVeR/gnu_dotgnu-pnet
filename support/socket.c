@@ -421,31 +421,62 @@ int ILSysIOSocketGetName(ILSysIOHandle sockfd, ILSysIOSockAddr *addr)
 int ILSysIOSocketSetOption(ILSysIOHandle sockfd, ILInt32 level,
 						   ILInt32 name, ILInt32 value)
 {
-	/* TODO */
+#ifdef HAVE_SETSOCKOPT
+	return (setsockopt((int)(ILNativeInt)sockfd,level,name,&value,
+			sizeof(value))== 0);
+#else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
+#endif
 }
 
 int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
 						   ILInt32 name, ILInt32 *value)
 {
-	/* TODO */
+#ifdef HAVE_GETSOCKOPT
+	socklen_t len=sizeof(ILInt32);
+	return (getsockopt((int)(ILNativeInt)sockfd,level,name,value,&len) == 0);
+#else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
+#endif
 }
 
 int ILSysIOSocketSetLinger(ILSysIOHandle handle, int enabled, int seconds)
 {
-	/* TODO */
+#if defined(HAVE_SETSOCKOPT) && defined(SO_LINGER)
+	struct linger _linger;
+	_linger.l_onoff=enabled;
+	_linger.l_linger=seconds;
+	if(setsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,&(_linger),
+						sizeof(struct linger)) < 0)
+	{
+		return 0;
+	}
+	return 1;
+#else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
+#endif
 }
 
 int ILSysIOSocketGetLinger(ILSysIOHandle handle, int *enabled, int *seconds)
 {
-	/* TODO */
+#if defined(HAVE_SETSOCKOPT) && defined(SO_LINGER)
+	struct linger _linger;
+	socklen_t size=sizeof(struct linger);
+	if(getsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,&(_linger),
+						&size) < 0)
+	{
+		return 0;
+	}
+	*enabled=_linger.l_onoff;
+	*seconds=_linger.l_linger;
+	return 1;
+#else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
+#endif
 }
 
 int ILSysIOSocketSetMulticast(ILSysIOHandle handle, ILInt32 name,

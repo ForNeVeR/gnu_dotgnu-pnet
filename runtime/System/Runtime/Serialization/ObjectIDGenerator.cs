@@ -2,7 +2,7 @@
  * ObjectIDGenerator.cs - Implementation of the
  *			"System.Runtime.Serialization.ObjectIDGenerator" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ public class ObjectIDGenerator
 	// Constructor.
 	public ObjectIDGenerator()
 			{
-				table = new Hashtable();
+				table = new IdentityHashtable();
 				nextId = 1;
 			}
 
@@ -79,6 +79,31 @@ public class ObjectIDGenerator
 					return 0;
 				}
 			}
+
+	// Modified hash table class that uses object identity for the key.
+	// This way, it is possible for two objects that compare as "Equal"
+	// to be present in the hash table under separate identifiers.
+	private sealed class IdentityHashtable : Hashtable
+	{
+		// Constructor.
+		public IdentityHashtable() : base() {}
+
+		// Determine if an item is equal to a key value.
+		protected override bool KeyEquals(Object item, Object key)
+				{
+					if(item is String)
+					{
+						// Strings with the same value compare as equal.
+						return item.Equals(key);
+					}
+					else
+					{
+						// Everything else needs object identity.
+						return (item == key);
+					}
+				}
+
+	}; // class IdentityHashtable
 
 }; // class ObjectIDGenerator
 

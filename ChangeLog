@@ -18,6 +18,10 @@
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs:
 	minor fix - call the correct version of "Serialize".
 
+	* runtime/System/Runtime/Serialization/ObjectIDGenerator.cs:
+	use a modified hash table for the object ID generator that
+	compares keys using object identity, not "Equals".
+
 2003-06-03  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/BufferedStream.cs: Fix a number of potential

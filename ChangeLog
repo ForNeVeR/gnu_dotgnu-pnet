@@ -56,6 +56,10 @@
 	resources/en_US/System.Windows.Forms/System.Windows.Forms.txt:
 	implement the "New Folder" function in the file dialog.
 
+	* System.Windows.Forms/Application.cs, System.Windows.Forms/Control.cs,
+	runtime/System/Environment.cs: implement some application data
+	properties like "CompanyName", "CommonAppDataPath", etc.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

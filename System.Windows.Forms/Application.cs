@@ -25,6 +25,7 @@ namespace System.Windows.Forms
 using Microsoft.Win32;
 using System.Globalization;
 using System.Threading;
+using System.Reflection;
 using System.IO;
 using System.Drawing.Toolkit;
 
@@ -53,42 +54,126 @@ public sealed class Application
 				}
 			}
 
-	// Get the common data path for data shared between all users.
-	[TODO]
-	public static String CommonAppDataPath
-			{
-				get
-				{
-					// TODO
-					return null;
-				}
-			}
-
 #if CONFIG_WIN32_SPECIFICS
 
+	// Get a registry key for a data path.
+	private static RegistryKey GetAppDataRegistry(RegistryKey hive)
+			{
+				String key = "Software\\" + CompanyName + "\\" +
+							 ProductName + "\\" + ProductVersion;
+				return hive.CreateSubKey(key);
+			}
+
 	// Get the common registry key for data shared between all users.
-	[TODO]
 	public static RegistryKey CommonAppDataRegistry
 			{
 				get
 				{
-					// TODO
-					return null;
+					return GetAppDataRegistry(Registry.LocalMachine);
 				}
 			}
 
 #endif
 
+#if !ECMA_COMPAT
+
+	// Get a data path based on a special folder name.
+	private static String GetAppDataPath(Environment.SpecialFolder folder)
+			{
+				String path = Environment.GetFolderPath(folder);
+				path += Path.DirectorySeparatorChar.ToString() +
+						CompanyName +
+						Path.DirectorySeparatorChar.ToString() +
+						ProductName +
+						Path.DirectorySeparatorChar.ToString() +
+						ProductVersion;
+				if(!Directory.Exists(path))
+				{
+					Directory.CreateDirectory(path);
+				}
+				return path;
+			}
+
+	// Get the common data path for data shared between all users.
+	public static String CommonAppDataPath
+			{
+				get
+				{
+					return GetAppDataPath
+						(Environment.SpecialFolder.CommonApplicationData);
+				}
+			}
+
+	// Get the local user application data path.
+	public static String LocalUserAppDataPath
+			{
+				get
+				{
+					return GetAppDataPath
+						(Environment.SpecialFolder.LocalApplicationData);
+				}
+			}
+
+	// Get the user application data path.
+	public static String UserAppDataPath
+			{
+				get
+				{
+					return GetAppDataPath
+						(Environment.SpecialFolder.ApplicationData);
+				}
+			}
+
 	// Get the company name for this application
-	[TODO]
 	public static String CompanyName
 			{
 				get
 				{
-					// TODO
-					return null;
+					Assembly assembly = Assembly.GetEntryAssembly();
+					Object[] attrs = assembly.GetCustomAttributes
+						(typeof(AssemblyCompanyAttribute), false);
+					if(attrs != null && attrs.Length > 0)
+					{
+						return ((AssemblyCompanyAttribute)(attrs[0])).Company;
+					}
+					return assembly.GetName().Name;
 				}
 			}
+
+	// Get the product name associated with this application.
+	public static String ProductName
+			{
+				get
+				{
+					Assembly assembly = Assembly.GetEntryAssembly();
+					Object[] attrs = assembly.GetCustomAttributes
+						(typeof(AssemblyProductAttribute), false);
+					if(attrs != null && attrs.Length > 0)
+					{
+						return ((AssemblyProductAttribute)(attrs[0])).Product;
+					}
+					return assembly.GetName().Name;
+				}
+			}
+
+	// Get the product version associated with this application.
+	public static String ProductVersion
+			{
+				get
+				{
+					Assembly assembly = Assembly.GetEntryAssembly();
+					Object[] attrs = assembly.GetCustomAttributes
+						(typeof(AssemblyInformationalVersionAttribute), false);
+					if(attrs != null && attrs.Length > 0)
+					{
+						return ((AssemblyInformationalVersionAttribute)
+							(attrs[0])).InformationalVersion;
+					}
+					return assembly.GetName().Version.ToString();
+				}
+			}
+
+#endif // !ECMA_COMPAT
 
 	// Get or set the culture for the current thread.
 	public static CultureInfo CurrentCulture
@@ -127,45 +212,12 @@ public sealed class Application
 				}
 			}
 
-	// Get the local user application data path.
-	[TODO]
-	public static String LocalUserAppDataPath
-			{
-				get
-				{
-					// TODO
-					return null;
-				}
-			}
-
 	// Determine if a message loop exists on this thread.
 	public static bool MessageLoop
 			{
 				get
 				{
 					return true;
-				}
-			}
-
-	// Get the product name associated with this application.
-	[TODO]
-	public static String ProductName
-			{
-				get
-				{
-					// TODO
-					return null;
-				}
-			}
-
-	// Get the product version associated with this application.
-	[TODO]
-	public static String ProductVersion
-			{
-				get
-				{
-					// TODO
-					return null;
 				}
 			}
 
@@ -191,27 +243,14 @@ public sealed class Application
 				}
 			}
 
-	// Get the user application data path.
-	[TODO]
-	public static String UserAppDataPath
-			{
-				get
-				{
-					// TODO
-					return null;
-				}
-			}
-
 #if CONFIG_WIN32_SPECIFICS
 
 	// Get the registry key for user-specific data.
-	[TODO]
 	public static RegistryKey UserAppDataRegistry
 			{
 				get
 				{
-					// TODO
-					return null;
+					return GetAppDataRegistry(Registry.CurrentUser);
 				}
 			}
 

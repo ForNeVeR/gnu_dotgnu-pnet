@@ -378,14 +378,43 @@ public sealed class Environment
 					Marshal.FreeHGlobal(buffer);
 				}
 
-				// Special handling for the "SpecialFolder.System" case.
-				if(folder == SpecialFolder.System)
+				// Special handling for some of the cases.
+				String dir = null;
+				switch(folder)
 				{
-					String dir = DirMethods.GetSystemDirectory();
-					if(dir != null)
+					case SpecialFolder.System:
 					{
-						return dir;
+						dir = DirMethods.GetSystemDirectory();
 					}
+					break;
+
+					case SpecialFolder.ApplicationData:
+					{
+						dir = InfoMethods.GetUserStorageDir() +
+							  Path.DirectorySeparatorChar +
+							  "ApplicationData";
+					}
+					break;
+
+					case SpecialFolder.LocalApplicationData:
+					{
+						dir = InfoMethods.GetUserStorageDir() +
+							  Path.DirectorySeparatorChar +
+							  "LocalApplicationData";
+					}
+					break;
+
+					case SpecialFolder.CommonApplicationData:
+					{
+						dir = InfoMethods.GetUserStorageDir() +
+							  Path.DirectorySeparatorChar +
+							  "CommonApplicationData";
+					}
+					break;
+				}
+				if(dir != null && dir.Length > 0)
+				{
+					return dir;
 				}
 
 				// The empty string indicates that the value is not present.

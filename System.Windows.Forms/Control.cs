@@ -29,6 +29,7 @@ using System.Drawing.Toolkit;
 using System.Drawing.Text;
 using System.Collections;
 using System.Threading;
+using System.Reflection;
 
 #if CONFIG_COMPONENT_MODEL
 public class Control : Component, ISynchronizeInvoke, IWin32Window
@@ -462,15 +463,22 @@ public class Control : IWin32Window, IDisposable
 					SetClientSizeCore(value.Width, value.Height);
 				}
 			}
-	[TODO]
+#if !ECMA_COMPAT
 	public String CompanyName
 			{
 				get
 				{
-					// TODO
-					return null;
+					Assembly assembly = GetType().Module.Assembly;
+					Object[] attrs = assembly.GetCustomAttributes
+						(typeof(AssemblyCompanyAttribute), false);
+					if(attrs != null && attrs.Length > 0)
+					{
+						return ((AssemblyCompanyAttribute)(attrs[0])).Company;
+					}
+					return assembly.GetName().Name;
 				}
 			}
+#endif
 	public bool ContainsFocus
 			{
 				get
@@ -984,24 +992,37 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
-	[TODO]
+#if !ECMA_COMPAT
 	public String ProductName
 			{
 				get
 				{
-					// TODO
-					return null;
+					Assembly assembly = GetType().Module.Assembly;
+					Object[] attrs = assembly.GetCustomAttributes
+						(typeof(AssemblyProductAttribute), false);
+					if(attrs != null && attrs.Length > 0)
+					{
+						return ((AssemblyProductAttribute)(attrs[0])).Product;
+					}
+					return assembly.GetName().Name;
 				}
 			}
-	[TODO]
 	public String ProductVersion
 			{
 				get
 				{
-					// TODO
-					return null;
+					Assembly assembly = GetType().Module.Assembly;
+					Object[] attrs = assembly.GetCustomAttributes
+						(typeof(AssemblyInformationalVersionAttribute), false);
+					if(attrs != null && attrs.Length > 0)
+					{
+						return ((AssemblyInformationalVersionAttribute)
+							(attrs[0])).InformationalVersion;
+					}
+					return assembly.GetName().Version.ToString();
 				}
 			}
+#endif
 	public bool RecreatingHandle
 			{
 				get

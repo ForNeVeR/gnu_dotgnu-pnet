@@ -23,10 +23,6 @@
 #include "engine_private.h"
 #include "lib_defs.h"
 
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
-
 #ifdef	__cplusplus
 extern	"C" {
 #endif

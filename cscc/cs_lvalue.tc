@@ -35,7 +35,14 @@ ILNode_SemAnalysis(ILNode_This)
 ILNode_SemAnalysis(ILNode_NewScope)
 {
 	CSSemValue value;
+	ILScope *savedScope = info->currentScope;
+	if(!(node->scope))
+	{
+		node->scope = ILScopeCreate(info, savedScope);
+	}
+	info->currentScope = node->scope;
 	StmtSem(node->stmt, info, &(node->stmt));
+	info->currentScope = savedScope;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;

@@ -13,6 +13,10 @@ configuration.
 * csunit/Makefile.am, csunit/.cvsignore: split the "csunit" program into
 "cstest.dll" and "csunit.exe".
 
+* Makefile.am, configure.in, tests/.cvsignore, tests/Makefile.am,
+tests/System/.cvsignore, tests/System/Makefile.am, tests/System/TestBoolean.cs,
+tests/System/TestSystem.cs: check in some initial test suite code.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Invalid.txt,

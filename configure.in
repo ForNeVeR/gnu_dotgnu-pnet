@@ -118,4 +118,6 @@ resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile
 csunit/Makefile
+tests/Makefile
+tests/System/Makefile
 csunit/TestVersion.cs])

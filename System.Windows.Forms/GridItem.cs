@@ -2,7 +2,7 @@
  * GridItem.cs - Implementation of the
  *			"System.Windows.Forms.GridItem" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,68 @@
 namespace System.Windows.Forms
 {
 
-public class GridItem
+using System;
+#if CONFIG_COMPONENT_MODEL
+using System.ComponentModel;
+#endif
+
+public abstract class GridItem
 {
-	// TODO
+
+	public abstract GridItemCollection GridItems
+	{
+		get;
+	}
+
+	public abstract GridItemType GridItemType
+	{
+		get;
+	}
+
+	public abstract string Label
+	{
+		get;
+	}
+
+	public abstract GridItem Parent
+	{
+		get;
+	}
+
+#if CONFIG_COMPONENT_MODEL
+	public abstract PropertyDescriptor PropertyDescriptor
+	{
+		get;
+	}
+#endif
+
+	public abstract object Value
+	{
+		get;
+	}
+
+	public virtual bool Expandable
+	{
+		get
+		{
+			return false;
+		}
+	}
+
+	public virtual bool Expanded
+	{
+		get
+		{
+			return false;
+		}
+
+		set
+		{
+			throw new NotSupportedException();
+		}
+	}
+
+	public abstract bool Select();
 
 }; // class GridItem
 

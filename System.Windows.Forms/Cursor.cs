@@ -21,23 +21,51 @@
 
 namespace System.Windows.Forms
 {
+using System;
+using System.IO;
 	public class Cursor 
 	{
 		private CursorType type;
 		internal enum CursorType
 		{
+			AppStarting,
 			Arrow,
-			WaitCursor,
+			Cross,
+			Default,
+			IBeam,
+			No,
+			SizeAll,
 			SizeNS,
 			SizeWE,
 			SizeNWSE,
 			SizeNESW,
-			IBeam
+			UpArrow,
+			WaitCursor,
+			Help,
+			HSplit,
+			VSplit,
+			NoMove2D,
+			NoMoveHoriz,
+			NoMoveVert,
+			PanEast,
+			PanNE,
+			PanNorth,
+			PanNW,
+			PanSE,
+			PanSouth,
+			PanSW,
+			PanWest,
+			Hand
 		}
 		internal Cursor (CursorType type) 
 		{
 			this.type = type;
 		}
+
+		public Cursor(Stream stream)
+		{
+		}
+
 		public override bool Equals(object obj) 
 		{
 			if (obj == null || obj.GetType() != typeof(Cursor))

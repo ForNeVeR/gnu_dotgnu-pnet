@@ -75,38 +75,41 @@ static void CVMCoder_Label(ILCoder *_coder, ILUInt32 offset)
 	}
 
 	/* Set the label offset to the current code position */
-	label->offset = (ILUInt32)(coder->posn);
+	label->offset = (ILUInt32)(CVM_POSN() - coder->start);
 
 	/* Back-patch any references that are attached to the label */
 	ref = label->nextRef;
 	while(ref != 0)
 	{
-		dest = (ILInt32)(label->offset - ref->offset);
-		if(ref->address == ILCVM_LABEL_UNDEF)
+		if(!ILCacheIsFull(coder->cache, &(coder->codePosn)))
 		{
-			/* Ordinary branch instruction */
-			if(dest >= (ILInt32)(-128) && dest <= (ILInt32)(127))
+			dest = (ILInt32)(label->offset - ref->offset);
+			if(ref->address == ILCVM_LABEL_UNDEF)
 			{
-				/* Short jump */
-				coder->buffer[ref->offset + 1] = (unsigned char)dest;
+				/* Ordinary branch instruction */
+				if(dest >= (ILInt32)(-128) && dest <= (ILInt32)(127))
+				{
+					/* Short jump */
+					coder->start[ref->offset + 1] = (unsigned char)dest;
+				}
+				else
+				{
+					/* Long jump */
+					coder->start[ref->offset]     = COP_BR_LONG;
+					coder->start[ref->offset + 2] = (unsigned char)dest;
+					coder->start[ref->offset + 3] = (unsigned char)(dest >> 8);
+					coder->start[ref->offset + 4] = (unsigned char)(dest >> 16);
+					coder->start[ref->offset + 5] = (unsigned char)(dest >> 24);
+				}
 			}
 			else
 			{
-				/* Long jump */
-				coder->buffer[ref->offset]     = COP_BR_LONG;
-				coder->buffer[ref->offset + 2] = (unsigned char)dest;
-				coder->buffer[ref->offset + 3] = (unsigned char)(dest >> 8);
-				coder->buffer[ref->offset + 4] = (unsigned char)(dest >> 16);
-				coder->buffer[ref->offset + 5] = (unsigned char)(dest >> 24);
+				/* Switch table entry */
+				coder->start[ref->address]     = (unsigned char)dest;
+				coder->start[ref->address + 1] = (unsigned char)(dest >> 8);
+				coder->start[ref->address + 2] = (unsigned char)(dest >> 16);
+				coder->start[ref->address + 3] = (unsigned char)(dest >> 24);
 			}
-		}
-		else
-		{
-			/* Switch table entry */
-			coder->buffer[ref->address]     = (unsigned char)dest;
-			coder->buffer[ref->address + 1] = (unsigned char)(dest >> 8);
-			coder->buffer[ref->address + 2] = (unsigned char)(dest >> 16);
-			coder->buffer[ref->address + 3] = (unsigned char)(dest >> 24);
 		}
 		nextRef = ref->nextRef;
 		ILMemPoolFree(&(coder->labelPool), ref);
@@ -136,7 +139,7 @@ static void OutputBranch(ILCoder *_coder, int opcode, ILUInt32 dest)
 	if(label->offset != ILCVM_LABEL_UNDEF)
 	{
 		/* Yes we have, so output the final branch instruction */
-		relative = (ILInt32)(label->offset - coder->posn);
+		relative = (ILInt32)(label->offset - (CVM_POSN() - coder->start));
 		if(relative >= (ILInt32)(-128) && relative <= (ILInt32)(127))
 		{
 			CVM_BYTE(opcode);
@@ -157,7 +160,7 @@ static void OutputBranch(ILCoder *_coder, int opcode, ILUInt32 dest)
 		if(ref)
 		{
 			ref->address = ILCVM_LABEL_UNDEF;
-			ref->offset = coder->posn;
+			ref->offset = (ILUInt32)(CVM_POSN() - coder->start);
 			ref->next = 0;
 			ref->nextRef = label->nextRef;
 			label->nextRef = ref;
@@ -450,7 +453,8 @@ static void CVMCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 
 	/* Record the current position so that we know the
 	   relative starting point for switch entry values */
-	((ILCVMCoder *)coder)->switchStart = ((ILCVMCoder *)coder)->posn;
+	((ILCVMCoder *)coder)->switchStart =
+			(ILUInt32)(CVM_POSN() - ((ILCVMCoder *)coder)->start);
 
 	/* Output the head of the switch statement */
 	CVM_BYTE(COP_SWITCH);
@@ -491,7 +495,7 @@ static void CVMCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 		ref = ILMemPoolAlloc(&(coder->labelPool), ILCVMLabel);
 		if(ref)
 		{
-			ref->address = coder->posn;
+			ref->address = (ILUInt32)(CVM_POSN() - coder->start);
 			ref->offset = coder->switchStart;
 			ref->next = 0;
 			ref->nextRef = label->nextRef;

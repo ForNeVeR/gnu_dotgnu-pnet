@@ -411,6 +411,7 @@ void *_ILCacheStartMethod(ILCache *cache, ILCachePosn *posn,
 	}
 
 	/* Set up the initial cache position */
+	posn->cache = cache;
 	posn->ptr = cache->freeStart;
 	posn->limit = cache->freeEnd;
 
@@ -528,6 +529,32 @@ void *_ILCacheAlloc(ILCachePosn *posn, unsigned long size)
 
 	/* Allocate the block and return it */
 	posn->limit = ptr;
+	return (void *)ptr;
+}
+
+void *_ILCacheAllocNoMethod(ILCache *cache, unsigned long size)
+{
+	unsigned char *ptr;
+
+	/* Bail out if the request is too big to ever be satisfiable */
+	if(size > (unsigned long)(cache->freeEnd - cache->freeStart))
+	{
+		return 0;
+	}
+
+	/* Allocate memory from the top of the free region, so that it
+	   does not overlap with the method code being written at the
+	   bottom of the free region */
+	ptr = (unsigned char *)(((ILNativeUInt)(cache->freeEnd - size)) &
+		                    ~(((ILNativeUInt)IL_BEST_ALIGNMENT) - 1));
+	if(ptr < cache->freeStart)
+	{
+		/* When we aligned the block, it caused an overflow */
+		return 0;
+	}
+
+	/* Allocate the block and return it */
+	cache->freeEnd = ptr;
 	return (void *)ptr;
 }
 

@@ -95,6 +95,13 @@ struct _tagILCoder
 #define	IL_INLINEMETHOD_STRING_GET_CHAR		8
 
 /*
+ * Return values for "ILCoderFinish".
+ */
+#define	IL_CODER_END_OK			0		/* Method is OK */
+#define	IL_CODER_END_RESTART	1		/* Restart is required */
+#define	IL_CODER_END_TOO_BIG	2		/* Method is too big for the cache */
+
+/*
  * Coder class definition.
  */
 struct _tagILCoderClass
@@ -152,21 +159,10 @@ struct _tagILCoderClass
 	void (*destroy)(ILCoder *coder);
 
 	/*
-	 * Flush a coder instance and advance the generation count.
-	 */
-	void (*flush)(ILCoder *coder);
-
-	/*
-	 * Finish processing on the method.  Returns zero if
-	 * something went wrong during coding.
+	 * Finish processing on the method.  Returns a coder
+	 * "end" code.
 	 */
 	int (*finish)(ILCoder *coder);
-
-	/*
-	 * Determine if a restart is needed because the coder
-	 * ran out of cache space on the first pass.
-	 */
-	int (*restart)(ILCoder *coder);
 
 	/*
 	 * Output a label to the coder.  "offset" is the
@@ -626,12 +622,8 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->ctorOffset))((coder)))
 #define	ILCoderDestroy(coder) \
 			((*((coder)->classInfo->destroy))((coder)))
-#define	ILCoderFlush(coder) \
-			((*((coder)->classInfo->flush))((coder)))
 #define	ILCoderFinish(coder) \
 			((*((coder)->classInfo->finish))((coder)))
-#define	ILCoderRestart(coder) \
-			((*((coder)->classInfo->restart))((coder)))
 #define	ILCoderLabel(coder,offset) \
 			((*((coder)->classInfo->label))((coder), (offset)))
 #define	ILCoderStackRefresh(coder,stack,stackSize) \

@@ -67,7 +67,7 @@
 static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 						 ILMethod *method, ILStandAloneSig *localVarSig,
 						 ILType *returnType, int isConstructor,
-						 int isExtern, int suppressThis)
+						 int isExtern, int suppressThis, int newStart)
 {
 	ILUInt32 offset;
 	ILUInt32 maxArgOffset;
@@ -77,7 +77,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	ILUInt32 extraLocals;
 	ILType *signature;
 	ILType *type;
-	unsigned long pushDown;
+	unsigned char *pushDown;
 
 	/* Set the current method */
 	coder->currentMethod = method;
@@ -88,16 +88,18 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	coder->labelOutOfMemory = 0;
 
 	/* Determine where the new method will start output within the buffer */
-	if(coder->posn >= coder->len)
+	if(newStart)
 	{
-		/* Flush the current contents of the method buffer */
-		coder->posn = 0;
-		coder->start = 0;
-		++(coder->generation);
+		coder->start = ILCacheStartMethod(coder->cache, &(coder->codePosn),
+										  1, method);
+		if(!(coder->start))
+		{
+			return 0;
+		}
 	}
 	else
 	{
-		coder->start = coder->posn;
+		coder->start = CVM_POSN();
 	}
 
 	/* If this method is a constructor, then we need to output
@@ -106,9 +108,9 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	{
 		CVM_BYTE(COP_NEW);
 		CVM_BYTE(COP_PUSHDOWN);
-		pushDown = coder->posn;
+		pushDown = CVM_POSN();
 		CVM_WORD(0);
-		coder->start = coder->posn;
+		coder->start = CVM_POSN();
 	}
 	else
 	{
@@ -116,7 +118,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	}
 
 	/* Return the start of the method code to the caller */
-	*start = coder->buffer + coder->start;
+	*start = coder->start;
 
 	/* Allocate offsets for the arguments */
 	signature = ILMethod_Signature(method);
@@ -184,10 +186,10 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	if(isConstructor)
 	{
 		--offset;
-		coder->buffer[pushDown]     = (unsigned char)(offset);
-		coder->buffer[pushDown + 1] = (unsigned char)(offset >> 8);
-		coder->buffer[pushDown + 2] = (unsigned char)(offset >> 16);
-		coder->buffer[pushDown + 3] = (unsigned char)(offset >> 24);
+		if(CVM_VALID(pushDown, 4))
+		{
+			IL_WRITE_UINT32(pushDown, offset);
+		}
 		++offset;
 	}
 
@@ -286,7 +288,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 
 	/* Output the stack height check instruction, which is fixed
 	   up at the end of the method with the maximum height */
-	coder->stackCheck = coder->posn;
+	coder->stackCheck = CVM_POSN();
 	CVM_BYTE(COP_CKHEIGHT_N);
 	CVM_BYTE(0);
 	CVM_BYTE(0);
@@ -329,7 +331,7 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 {
 	return CVMEntryPoint((ILCVMCoder *)_coder, start, method,
 						 code->localVarSig, 0,
-						 ILMethod_IsConstructor(method), 0, 0);
+						 ILMethod_IsConstructor(method), 0, 0, 1);
 }
 
 /*
@@ -400,7 +402,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	if(returnType == ILType_Void)
 	{
 		if(!CVMEntryPoint(coder, start, method, 0, (ILType *)0,
-						  ILMethod_IsConstructor(method), 1, 0))
+						  ILMethod_IsConstructor(method), 1, 0, 1))
 		{
 			return 0;
 		}
@@ -408,7 +410,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	else
 	{
 		if(!CVMEntryPoint(coder, start, method, 0, returnType,
-						  ILMethod_IsConstructor(method), 1, 0))
+						  ILMethod_IsConstructor(method), 1, 0, 1))
 		{
 			return 0;
 		}
@@ -727,14 +729,14 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 
 	/* If the coder buffer is full, then don't go any further.
 	   The "Finish" code will cause a cache flush and restart */
-	if(coder->posn >= coder->len)
+	if(ILCacheIsFull(coder->cache, &(coder->codePosn)))
 	{
 		return 1;
 	}
 
 	/* Output the entry point code for the allocating constructor */
 	if(!CVMEntryPoint(coder, &start2, method, 0,
-					  ILType_FromClass(ILMethod_Owner(method)), 0, 1, 1))
+					  ILType_FromClass(ILMethod_Owner(method)), 0, 1, 1, 0))
 	{
 		return 0;
 	}
@@ -821,6 +823,10 @@ static int CVMCoder_CtorOffset(ILCoder *coder)
 static int CVMCoder_Finish(ILCoder *_coder)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	int result;
+
+	/* End method processing within the cache */
+	result = _ILCacheEndMethod(&(coder->codePosn));
 
 	/* Clear the label pool */
 	ILMemPoolClear(&(coder->labelPool));
@@ -828,34 +834,24 @@ static int CVMCoder_Finish(ILCoder *_coder)
 	if(coder->labelOutOfMemory)
 	{
 		/* We ran out of memory trying to allocate labels */
-		return 0;
+		return IL_CODER_END_TOO_BIG;
 	}
 
-	if(coder->posn < coder->len)
+	/* Back-patch the stack height check instruction */
+	if(CVM_VALID(coder->stackCheck, 5))
 	{
-		/* Back-patch the stack height check instruction */
 		if(coder->maxHeight <= 8)
 		{
-			coder->buffer[coder->stackCheck] = COP_CKHEIGHT;
+			*(coder->stackCheck) = COP_CKHEIGHT;
 		}
 		else
 		{
-			coder->buffer[coder->stackCheck + 1] =
-					(unsigned char)(coder->maxHeight);
-			coder->buffer[coder->stackCheck + 2] =
-					(unsigned char)(coder->maxHeight >> 8);
-			coder->buffer[coder->stackCheck + 3] =
-					(unsigned char)(coder->maxHeight >> 16);
-			coder->buffer[coder->stackCheck + 4] =
-					(unsigned char)(coder->maxHeight >> 24);
+			IL_WRITE_UINT32(coder->stackCheck + 1, coder->maxHeight);
 		}
-		return 1;
 	}
-	else
-	{
-		/* The buffer overflowed while outputting the code */
-		return 0;
-	}
+
+	/* Ready to go */
+	return result;
 }
 
 #endif	/* IL_CVMC_CODE */

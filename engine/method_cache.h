@@ -92,6 +92,12 @@ int _ILCacheEndMethod(ILCachePosn *posn);
 void *_ILCacheAlloc(ILCachePosn *posn, unsigned long size);
 
 /*
+ * Allocate "size" bytes of storage when we aren't currently
+ * translating a method.
+ */
+void *_ILCacheAllocNoMethod(ILCache *cache, unsigned long size);
+
+/*
  * Align the method code on a particular boundary if the
  * difference between the current position and the aligned
  * boundary is less than "diff".  The "nop" value is used
@@ -217,18 +223,19 @@ ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start, ILUInt32 offset);
 /*
  * Helper macros to make the API easier to use internally.
  */
-#define	ILCacheCreate		_ILCacheCreate
-#define	ILCacheDestroy		_ILCacheDestroy
-#define	ILCacheIsFull		_ILCacheIsFull
-#define	ILCacheStartMethod	_ILCacheStartMethod
-#define	ILCacheEndMethod	_ILCacheEndMethod
-#define	ILCacheAlloc		_ILCacheAlloc
-#define	ILCacheAlignMethod	_ILCacheAlignMethod
-#define	ILCacheMarkBytecode	_ILCacheMarkBytecode
-#define	ILCacheNewRegion	_ILCacheNewRegion
-#define	ILCacheGetMethod	_ILCacheGetMethod
-#define	ILCacheGetNative	_ILCacheGetNative
-#define	ILCacheGetBytecode	_ILCacheGetBytecode
+#define	ILCacheCreate			_ILCacheCreate
+#define	ILCacheDestroy			_ILCacheDestroy
+#define	ILCacheIsFull			_ILCacheIsFull
+#define	ILCacheStartMethod		_ILCacheStartMethod
+#define	ILCacheEndMethod		_ILCacheEndMethod
+#define	ILCacheAlloc			_ILCacheAlloc
+#define	ILCacheAllocNoMethod	_ILCacheAllocNoMethod
+#define	ILCacheAlignMethod		_ILCacheAlignMethod
+#define	ILCacheMarkBytecode		_ILCacheMarkBytecode
+#define	ILCacheNewRegion		_ILCacheNewRegion
+#define	ILCacheGetMethod		_ILCacheGetMethod
+#define	ILCacheGetNative		_ILCacheGetNative
+#define	ILCacheGetBytecode		_ILCacheGetBytecode
 
 #ifdef	__cplusplus
 };

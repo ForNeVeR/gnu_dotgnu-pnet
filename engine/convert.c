@@ -86,6 +86,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 	ILModule *module;
 	const char *name;
 	void *moduleHandle;
+	int result;
 
 	/* Is the method already converted and in the current generation? */
 	if(method->userData1 != 0 &&
@@ -206,6 +207,8 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
 			if(!cif)
 			{
+			#if 0
+				/* TODO */
 				/* The coder ran out of memory, so flush it and retry */
 				ILCoderFlush(coder);
 				thread->process->coderGeneration = ILCoderGeneration(coder);
@@ -214,6 +217,8 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					return 0;
 				}
+			#endif
+				return 0;
 			}
 		}
 		else
@@ -226,6 +231,8 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			ctorcif = _ILMakeCifForConstructor(coder, method, (pinv == 0));
 			if(!ctorcif)
 			{
+			#if 0
+				/* TODO */
 				/* The coder ran out of memory, so flush it and retry */
 				ILCoderFlush(coder);
 				thread->process->coderGeneration = ILCoderGeneration(coder);
@@ -238,6 +245,8 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				{
 					return 0;
 				}
+			#endif
+				return 0;
 			}
 		}
 		else
@@ -254,10 +263,10 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			{
 				return 0;
 			}
-			if(!ILCoderFinish(coder))
+			while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
 			{
 				/* Do we need a coder restart due to cache overflow? */
-				if(!ILCoderRestart(coder))
+				if(result != IL_CODER_END_RESTART)
 				{
 					return 0;
 				}
@@ -265,10 +274,6 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				cif = _ILMakeCifForMethod(coder, method, (pinv == 0));
 				if(!ILCoderSetupExtern(coder, &start, method,
 									   fn, cif, (pinv == 0)))
-				{
-					return 0;
-				}
-				if(!ILCoderFinish(coder))
 				{
 					return 0;
 				}
@@ -283,10 +288,10 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			{
 				return 0;
 			}
-			if(!ILCoderFinish(coder))
+			while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
 			{
 				/* Do we need a coder restart due to cache overflow? */
-				if(!ILCoderRestart(coder))
+				if(result != IL_CODER_END_RESTART)
 				{
 					return 0;
 				}
@@ -303,10 +308,6 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				if(!ILCoderSetupExternCtor(coder, &start, method,
 									       fn, cif, ctorfn, ctorcif,
 										   (pinv == 0)))
-				{
-					return 0;
-				}
-				if(!ILCoderFinish(coder))
 				{
 					return 0;
 				}

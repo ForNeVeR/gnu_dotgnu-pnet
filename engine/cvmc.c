@@ -24,6 +24,7 @@
 #include "il_utils.h"
 #include "cvm.h"
 #include "lib_defs.h"
+#include "method_cache.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -50,13 +51,12 @@ typedef struct _tagILCVMCoder ILCVMCoder;
 struct _tagILCVMCoder
 {
 	ILCoder			coder;
-	unsigned char  *buffer;
-	unsigned long	posn;
-	unsigned long	start;
-	unsigned long	len;
-	unsigned long	stackCheck;
-	unsigned long	enterTry;
-	unsigned long	tryHandler;
+	ILCache        *cache;
+	ILCachePosn		codePosn;
+	unsigned char  *start;
+	unsigned char  *stackCheck;
+	unsigned char  *enterTry;
+	unsigned char  *tryHandler;
 	ILUInt32		generation;
 	long			height;
 	long			minHeight;
@@ -74,16 +74,23 @@ struct _tagILCVMCoder
 };
 
 /*
+ * Get the current method position.
+ */
+#define	CVM_POSN()		(ILCacheGetPosn(&(((ILCVMCoder *)coder)->codePosn)))
+
+/*
+ * Determine if "n" bytes at "addr" are valid.
+ */
+#define	CVM_VALID(addr,n)	\
+			((((unsigned char *)(addr)) + (n)) <= \
+				((ILCVMCoder *)coder)->codePosn.limit)
+
+/*
  * Output a single byte to the CVM coder buffer.
  */
-#define	CVM_BYTE(byte)	\
+#define	CVM_BYTE(byte)		\
 			do { \
-				if(((ILCVMCoder *)coder)->posn < ((ILCVMCoder *)coder)->len) \
-				{ \
-					((ILCVMCoder *)coder)->buffer \
-						[(((ILCVMCoder *)coder)->posn)++] = \
-							(unsigned char)(byte); \
-				} \
+				ILCacheByte(&(((ILCVMCoder *)coder)->codePosn), (byte)); \
 			} while (0)
 
 /*
@@ -91,10 +98,7 @@ struct _tagILCVMCoder
  */
 #define	CVM_WORD(value)	\
 			do { \
-				CVM_BYTE((value)); \
-				CVM_BYTE((value) >> 8); \
-				CVM_BYTE((value) >> 16); \
-				CVM_BYTE((value) >> 24); \
+				ILCacheWord32(&(((ILCVMCoder *)coder)->codePosn), (value)); \
 			} while (0)
 
 /*
@@ -103,22 +107,12 @@ struct _tagILCVMCoder
 #ifdef IL_NATIVE_INT32
 #define	CVM_PTR(value)	\
 			do { \
-				CVM_BYTE(((ILUInt32)(value))); \
-				CVM_BYTE(((ILUInt32)(value)) >> 8); \
-				CVM_BYTE(((ILUInt32)(value)) >> 16); \
-				CVM_BYTE(((ILUInt32)(value)) >> 24); \
+				ILCacheWord32(&(((ILCVMCoder *)coder)->codePosn), (value)); \
 			} while (0)
 #else
 #define	CVM_PTR(value)	\
 			do { \
-				CVM_BYTE(((ILUInt64)(value))); \
-				CVM_BYTE(((ILUInt64)(value)) >> 8); \
-				CVM_BYTE(((ILUInt64)(value)) >> 16); \
-				CVM_BYTE(((ILUInt64)(value)) >> 24); \
-				CVM_BYTE(((ILUInt64)(value)) >> 32); \
-				CVM_BYTE(((ILUInt64)(value)) >> 40); \
-				CVM_BYTE(((ILUInt64)(value)) >> 48); \
-				CVM_BYTE(((ILUInt64)(value)) >> 56); \
+				ILCacheWord64(&(((ILCVMCoder *)coder)->codePosn), (value)); \
 			} while (0)
 #endif
 
@@ -231,15 +225,12 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 		return 0;
 	}
 	coder->coder.classInfo = &_ILCVMCoderClass;
-	coder->buffer = (unsigned char *)ILMalloc(size);
-	if(!(coder->buffer))
+	if((coder->cache = ILCacheCreate(0)) == 0)
 	{
 		ILFree(coder);
 		return 0;
 	}
-	coder->posn = 0;
 	coder->start = 0;
-	coder->len = size;
 	coder->stackCheck = 0;
 	coder->enterTry = 0;
 	coder->tryHandler = 0;
@@ -272,28 +263,7 @@ static ILUInt32 CVMCoder_Generation(ILCoder *coder)
 static void *CVMCoder_Alloc(ILCoder *_coder, ILUInt32 size)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	void *ptr;
-	if((coder->posn % sizeof(unsigned long)) != 0)
-	{
-		/* Align the buffer before we allocate from it */
-		coder->posn += sizeof(unsigned long) -
-					   (coder->posn % sizeof(unsigned long));
-		if(coder->posn > coder->len)
-		{
-			coder->posn = coder->len;
-			return 0;
-		}
-	}
-	if((coder->posn + size) <= coder->len)
-	{
-		ptr = coder->buffer + coder->posn;
-		coder->posn += size;
-		return ptr;
-	}
-	else
-	{
-		return 0;
-	}
+	return ILCacheAllocNoMethod(coder->cache, size);
 }
 
 /*
@@ -302,7 +272,7 @@ static void *CVMCoder_Alloc(ILCoder *_coder, ILUInt32 size)
 static void CVMCoder_Destroy(ILCoder *_coder)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	ILFree(coder->buffer);
+	ILCacheDestroy(coder->cache);
 	if(coder->argOffsets)
 	{
 		ILFree(coder->argOffsets);
@@ -313,36 +283,6 @@ static void CVMCoder_Destroy(ILCoder *_coder)
 	}
 	ILMemPoolDestroy(&(coder->labelPool));
 	ILFree(coder);
-}
-
-/*
- * Flush a CVM coder instance.
- */
-static void CVMCoder_Flush(ILCoder *_coder)
-{
-	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	coder->posn = 0;
-	coder->start = 0;
-	ILMemPoolClear(&(coder->labelPool));
-	coder->labelList = 0;
-	coder->labelOutOfMemory = 0;
-	++(coder->generation);
-}
-
-/*
- * Determine if a CVM coder restart is required.
- */
-static int CVMCoder_Restart(ILCoder *_coder)
-{
-	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	if(coder->posn >= coder->len && coder->start != 0 &&
-	   !(coder->labelOutOfMemory))
-	{
-		/* The buffer overflowed and there is more than one
-		   method in the buffer, so restart this method */
-		return 1;
-	}
-	return 0;
 }
 
 /*
@@ -376,9 +316,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_SetupExternCtor,
 	CVMCoder_CtorOffset,
 	CVMCoder_Destroy,
-	CVMCoder_Flush,
 	CVMCoder_Finish,
-	CVMCoder_Restart,
 	CVMCoder_Label,
 	CVMCoder_StackRefresh,
 	CVMCoder_Constant,

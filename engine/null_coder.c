@@ -64,16 +64,9 @@ static int Coder_CtorOffset(ILCoder *coder)
 static void Coder_Destroy(ILCoder *coder)
 {
 }
-static void Coder_Flush(ILCoder *coder)
-{
-}
 static int Coder_Finish(ILCoder *coder)
 {
-	return 1;
-}
-static int Coder_Restart(ILCoder *coder)
-{
-	return 0;
+	return IL_CODER_END_OK;
 }
 static void Coder_Label(ILCoder *coder, ILUInt32 offset)
 {
@@ -342,9 +335,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_SetupExternCtor,
 	Coder_CtorOffset,
 	Coder_Destroy,
-	Coder_Flush,
 	Coder_Finish,
-	Coder_Restart,
 	Coder_Label,
 	Coder_StackRefresh,
 	Coder_Constant,

@@ -68,7 +68,7 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 	}
 
 	/* Set up the method's frame to perform exception handling */
-	coder->enterTry = coder->posn;
+	coder->enterTry = CVM_POSN();
 	CVM_BYTE(COP_PREFIX);
 	CVM_BYTE(COP_PREFIX_ENTER_TRY);
 	CVM_WORD(0);
@@ -133,10 +133,9 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 	ILCVMLabel *label;
 
 	/* Back-patch the "enter_try" instruction */
-	if(coder->posn < coder->len && coder->enterTry != 0)
+	if(coder->enterTry != 0 && CVM_VALID(coder->enterTry, 6))
 	{
-		IL_WRITE_UINT32(coder->buffer + coder->enterTry + 2,
-						coder->posn - coder->enterTry);
+		IL_WRITE_UINT32(coder->enterTry + 2, CVM_POSN() - coder->enterTry);
 		coder->enterTry = 0;
 	}
 
@@ -157,17 +156,17 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 		{
 			return;
 		}
-		CVM_WORD(label->offset - coder->start);
+		CVM_WORD(label->offset - (CVM_POSN() - coder->start));
 		label = GetLabel(coder, end);
 		if(!label)
 		{
 			return;
 		}
-		CVM_WORD(label->offset - coder->start);
+		CVM_WORD(label->offset - (CVM_POSN() - coder->start));
 	}
 
 	/* Output a place-holder for the length value */
-	coder->tryHandler = coder->posn;
+	coder->tryHandler = CVM_POSN();
 	CVM_WORD(0);
 }
 
@@ -177,11 +176,11 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 static void CVMCoder_TryHandlerEnd(ILCoder *_coder)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	unsigned long length = coder->posn - coder->tryHandler + 8;
-	if(coder->posn < coder->len)
+	unsigned long length = CVM_POSN() - coder->tryHandler + 8;
+	if(!ILCacheIsFull(coder->cache, &(coder->codePosn)))
 	{
 		/* Back-patch the length value for the handler */
-		IL_WRITE_UINT32(coder->buffer + coder->tryHandler, length);
+		IL_WRITE_UINT32(coder->tryHandler, length);
 	}
 }
 
@@ -192,7 +191,7 @@ static void CVMCoder_Catch(ILCoder *_coder, ILException *exception,
 						   ILClass *classInfo, int hasRethrow)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	unsigned long temp;
+	unsigned char *temp;
 
 	/* Duplicate the exception object */
 	CVM_BYTE(COP_DUP);
@@ -203,7 +202,7 @@ static void CVMCoder_Catch(ILCoder *_coder, ILException *exception,
 	CVM_PTR(classInfo);
 
 	/* Branch to the next test if not an instance */
-	temp = coder->posn;
+	temp = CVM_POSN();
 	CVM_BYTE(COP_BRNULL);
 	CVM_BYTE(0);
 	CVM_WORD(0);
@@ -220,9 +219,9 @@ static void CVMCoder_Catch(ILCoder *_coder, ILException *exception,
 	OutputBranch(_coder, COP_BR, exception->handlerOffset);
 
 	/* Back-patch the "brnull" instruction */
-	if(coder->posn < coder->len)
+	if(CVM_VALID(temp, 2))
 	{
-		coder->buffer[temp + 1] = (unsigned char)(coder->posn - temp);
+		temp[1] = (unsigned char)(CVM_POSN() - temp);
 	}
 
 	/* Adjust the stack back to its original height */

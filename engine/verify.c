@@ -936,11 +936,12 @@ restart:
 	result = ILCoderFinish(coder);
 
 	/* Do we need to restart due to cache exhaustion in the coder? */
-	if(ILCoderRestart(coder))
+	if(result == IL_CODER_END_RESTART)
 	{
 		TempAllocatorDestroy(&allocator);
 		goto restart;
 	}
+	result = (result == IL_CODER_END_OK);
 
 	/* Clean up and exit */
 cleanup:

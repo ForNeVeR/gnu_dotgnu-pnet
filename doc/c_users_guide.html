@@ -1,0 +1,287 @@
+<html>
+<head>
+<title>Using Portable.NET's C Compiler</title>
+</head>
+<body bgcolor="#ffffff">
+<h1>Using Portable.NET's C Compiler</h1>
+
+Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
+Last Modified: $Date: 2002/08/10 06:03:26 $<p>
+
+Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
+Permission to distribute copies of this work under the terms of the
+GNU Free Documentation License is hereby granted.<p>
+
+<h2>1. Introduction</h2>
+
+This document provides an overview of using Portable.NET's compiler,
+"cscc", to build C applications and libraries to run within a
+Common Language Infrastructure (CLI) environment.<p>
+
+We assume that the user has already installed all of the Portable.NET
+components, including the compiler and C system library.<p>
+
+<blockquote>
+<b>Note: This is preliminary documentation.  Not all listed features
+may be implemented yet.  In particular, we do not yet have an
+implementation of "libc", so the "printf" examples will not work.</b>
+</blockquote>
+
+<h2>2. Hello World</h2>
+
+The traditional "Hello World" program is as follows:<p>
+
+<blockquote><pre>#include &lt;stdio.h&gt;
+
+int main(int argc, char *argv[])
+{
+    printf("Hello World!\n");
+    return 0;
+}</pre></blockquote>
+
+To compile and run this with Portable.NET, use the following commands:<p>
+
+<blockquote><pre>$ cscc -o hello.exe hello.c
+$ ilrun hello.exe
+Hello World!
+$ _</pre></blockquote>
+
+As can be seen, this is very similar to using a traditional C compiler.
+Just use the "<code>cscc</code>" command instead of "<code>gcc</code>"
+or "<code>cc</code>".<p>
+
+Now let's try something a little more complicated:<p>
+
+<blockquote><pre>#include &lt;stdio.h&gt;
+
+int main(int argc, char *argv[])
+{
+    printf("sizeof(int) = %u\n", sizeof(int));
+    printf("sizeof(void *) = %u\n", sizeof(void *));
+    return 0;
+}</pre></blockquote>
+
+Compiling and running this gives the following result:<p>
+
+<blockquote><pre>$ cscc -o sizes.exe sizes.c
+$ ilrun sizes.exe
+sizeof(int) = 4
+sizeof(void *) = 8
+$ _</pre></blockquote>
+
+If you were running this on a 32-bit operating system, this output
+might seem a little puzzling.  Normally, "<code>sizeof(void *)</code>"
+will be 8 bytes on a 64-bit operating system, not a 32-bit one.
+Why isn't the value 4 instead?<p>
+
+The output of the C compiler is designed to run on a Common
+Language Runtime (CLR) implementation, not on a native operating
+system.  When we compile the program, the compiler does not
+know what kind of CLR will be used to execute it.<p>
+
+The compiler builds the program as though it will be running on
+a 64-bit CLR.  If the program is subsequently executed on a 32-bit
+CLR, the program will function correctly, and pretend that it
+is operating in a 64-bit environment.  This way, the compiler does
+not need to know the actual characteristics of the CLR.<p>
+
+Sometimes you may want to force the compiler to output 32-bit
+code, or code that is tuned for the specifics of a particular
+platform.  If you do this, then the program will not execute
+on CLR's that have different characteristics.  i.e. it will no
+longer be portable.<p>
+
+The following two examples demonstrate how to build 32-bit programs,
+and programs that use the native type layout policy:<p>
+
+<blockquote><pre>$ cscc -m32bit-only -o sizes.exe sizes.c
+$ cscc -mnative-types -o sizes.exe sizes.c</pre></blockquote>
+
+If you want your program to be portable to many operating systems,
+you should not use these options when compiling.<p>
+
+<h2>3. Language features</h3>
+
+As much as possible, we try to present a standard ANSI C interface
+to the programmer.  This section describes some specific implementation
+decisions and extensions that programmers may need to be aware of.<p>
+
+<h3>3.1. Primitive types</h3>
+
+The following primitive types are provided by the C compiler:<p>
+
+<table border="1">
+<tr><td>Type</td><td>Size</td><td>Description</td></tr>
+<tr><td><code>void</code></td>
+	<td>1 <sup>1</sup></td>
+	<td>Void type</td></tr>
+<tr><td><code>__bool__</code></td>
+	<td>1</td>
+	<td>8-bit boolean value (C# "<code>bool</code>")</td></tr>
+<tr><td><code>char</code></td>
+	<td>1</td>
+	<td>Signed 8-bit integer</td></tr>
+<tr><td><code>unsigned char</code></td>
+	<td>1</td>
+	<td>Unsigned 8-bit integer</td></tr>
+<tr><td><code>short</code></td>
+	<td>2</td>
+	<td>Signed 16-bit integer</td></tr>
+<tr><td><code>unsigned short</code></td>
+	<td>2</td>
+	<td>Unsigned 16-bit</td></tr>
+<tr><td><code>__wchar__</code></td>
+	<td>2</td>
+	<td>16-bit wide character value (C# "<code>char</code>")</td></tr>
+<tr><td><code>int</code></td>
+	<td>4</td>
+	<td>Signed 32-bit integer</td></tr>
+<tr><td><code>unsigned int</code></td>
+	<td>4</td>
+	<td>Unsigned 32-bit integer</td></tr>
+<tr><td><code>long</code></td>
+	<td>4/8 <sup>2</sup></td>
+	<td>Signed 32-bit or 64-bit integer</td></tr>
+<tr><td><code>unsigned long</code></td>
+	<td>4/8 <sup>2</sup></td>
+	<td>Unsigned 32-bit or 64-bit integer</td></tr>
+<tr><td><code>long long</code></td>
+	<td>8</td>
+	<td>Signed 64-bit integer</td></tr>
+<tr><td><code>unsigned long long</code></td>
+	<td>8</td>
+	<td>Unsigned 64-bit integer</td></tr>
+<tr><td><code>__native__ int</code></td>
+	<td>? <sup>3</sup></td>
+	<td>Signed native integer</td></tr>
+<tr><td><code>unsigned __native__ int</code></td>
+	<td>? <sup>3</sup></td>
+	<td>Unsigned native integer</td></tr>
+<tr><td><code>float</code></td>
+	<td>4</td>
+	<td>32-bit IEEE 754 floating-point</td></tr>
+<tr><td><code>double</code></td>
+	<td>8</td>
+	<td>64-bit IEEE 754 floating-point</td></tr>
+<tr><td><code>long double</code></td>
+	<td>? <sup>3</sup></td>
+	<td>Native floating-point</td></tr>
+<tr><td><code>type *</code></td>
+	<td>4/8 <sup>2</sup></td>
+	<td>Pointer to "<code>type</code>"</td></tr>
+</table><p>
+
+<font size="-1">Note 1.  The size of "<code>void</code>" is 1, to be
+consistent with gcc.<br>
+Note 2.  These types are 4 bytes in size if "<code>-m32bit-only</code>"
+was specified at compile time, and 8 bytes in size otherwise.<br>
+Note 3.  The size of these types is determined at runtime, based on
+the corresponding types in the runtime engine.</font>
+
+<h3>3.2. Native structures</h3>
+
+By default, the compiler lays out "<code>struct</code>" and
+"<code>union</code>" types to simulate the behaviour of a 64-bit
+operating system.  The "<code>-m32bit-only</code>" option can be
+used to specific 32-bit layout instead.<p>
+
+However, sometimes you need to access features of the native operating
+system, even if writing a portable 64-bit application.  When you do,
+you need to guarantee that "<code>struct</code>" and "<code>union</code>"
+types exactly match what the operating system expects.<p>
+
+Native structures can be defined by adding the "<code>__native__</code>"
+keyword to their declaration:<p>
+
+<blockquote><pre>struct __native__ A
+{
+    int item;
+    struct A *next;
+};</pre></blockquote>
+
+In this structure, the "<code>next</code>" field is guaranteed to
+occupy only enough space for a native pointer, and to be aligned on
+an appropriate native word boundary.  If the "<code>__native__</code>"
+keyword was not present, the "<code>next</code>" field would always
+occupy a full 8 bytes, even if the CLR was only using 4-byte pointers
+behind the scenes.<p>
+
+If you use the "<code>-mnative-types</code>" command-line option, then
+all structures will be laid out using the native policy, and there is
+no need to use the "<code>__native__</code>" keyword.  But the resulting
+program will only work on the system for which it was compiled.
+It probably won't work on any other system.<p>
+
+Unions may also have the "<code>__native__</code>" keyword:<p>
+
+<blockquote><pre>union __native__ A
+{
+    int x;
+    void *y;
+};</pre></blockquote>
+
+<h3>3.3. Restrictions on <code>setjmp</code> and <code>alloca</code></h3>
+
+Because of the way the C compiler builds programs, the "<code>setjmp</code>"
+and "<code>alloca</code>" constructs must be used carefully.  In particular,
+they must be used at the "statement level" of an expression.<p>
+
+The following code is correct:<p>
+
+<blockquote><pre>jmp_buf env;
+
+if(setjmp(env) != 0)
+{
+    /* longjmp occurred */
+}</pre></blockquote>
+
+But the following code will give an error when compiled:
+
+<blockquote><pre>jmp_buf env;
+
+if((1 + setjmp(env)) != 1)
+{
+    /* longjmp occurred */
+}</pre></blockquote>
+
+This is because the "<code>setjmp</code>" does not occur at the outermost
+level of the expression (the value 1 is stored on the stack temporarily,
+pending the addition operation).  The "<code>alloca</code>" construct must be
+used in a similar manner.<p>
+
+If you get such an error, you can split your code up a little bit.  For
+example:
+
+<blockquote><pre>jmp_buf env;
+int result;
+
+result = setjmp(env);
+if((1 + result) != 1)
+{
+    /* longjmp occurred */
+}</pre></blockquote>
+
+The variable that you assign to will normally need to be a local
+variable, global variable, or parameter.  Other kinds of variables
+(e.g. array elements) will change the expression level and so cannot
+be used.<p>
+
+This restriction is imposed by the way that CLR's implement
+"<code>setjmp</code>" and "<code>alloca</code>".  Most C programmers
+already use these constructs at the statement level of an expression,
+so this restriction is not expected to affect much existing code.<p>
+
+<h3>3.4. Importing PInvoke functions</h3>
+
+TODO
+
+<h3>3.5. Calling C# code</h3>
+
+TODO
+
+<h3>3.6. Weak and strong aliases</h3>
+
+TODO
+
+</body>
+</html>

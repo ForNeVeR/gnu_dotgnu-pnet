@@ -24,6 +24,10 @@
 	* cscc/c/c_function.c, cscc/c/c_oper.tc: minor bug fixes in the
 	handling of "setjmp" and "va_arg".
 
+	* doc/c_users_guide.html, doc/c_language_abi.html: check in some
+	documentation for using the C compiler and the technical details
+	of the ABI.
+
 2002-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,

@@ -1,0 +1,1247 @@
+<html>
+<head>
+<title>Application Binary Interface for C within CLI</title>
+</head>
+<body bgcolor="#ffffff">
+<h1>Application Binary Interface for C within CLI</h1>
+
+Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
+Last Modified: $Date: 2002/08/10 06:03:26 $<p>
+
+Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
+Permission to distribute copies of this work under the terms of the
+GNU Free Documentation License is hereby granted.<p>
+
+<h2>1. Introduction</h2>
+
+This document describes an Application Binary Interface (ABI) for the
+C language within Common Language Infrastructure (CLI) environments
+that meets the following goals:<p>
+
+<ul>
+	<li><b>Uniform behaviour</b>: As much as possible, portable C code should
+		behave identically on all CLI platforms<sup>1</sup>.</li>
+	<li><b>Pure CIL compilation</b>: The compiled format of all object files
+		will be CIL bytecode.</li>
+	<li><b>Zero tolerance for native code</b>: The ABI should not rely upon
+		external native code libraries to implement language features.
+		External dependencies should always be in the form of C# classes
+		that use standard C# library features<sup>2</sup>.</li>
+	<li><b>Minimal name mangling</b>: The names of <code>struct</code>,
+	    <code>union</code>, and other special C types must be mangled to
+		conform with CLI conventions, but such mangling should still be
+		readable to a human debugging the compiler.</li>
+	<li><b>Vendor-neutral naming conventions</b>: The names of support
+		classes and libraries that are used to implement the ABI must not
+		suggest any particular vendor's product or trademark<sup>3</sup>.</li>
+</ul><p>
+
+<blockquote>
+<font size="-1">Note 1. Given the nature of C, it is always possible for a
+programmer to write code that depends upon platform-specific word sizes,
+endianness, and operating system facilities.  Our goal is that C code
+written to commonly used C coding standards should not be aware of such
+platform differences.<br>
+Note 2. This doesn't preclude the application programmer from using
+native code facilities such as PInvoke.  But the compiler itself will
+not use such features to implement the ABI.<br>
+Note 3. If the ABI avoids vendor-specific naming, it is more likely
+to be adopted by other vendors.<br>
+</font>
+</blockquote>
+
+Some things are deliberately outside the scope of this ABI definition.
+We do not describe the facilities that are provided by the "libc"
+implementation, or the contents of standard header files, for example.<p>
+
+In the sections below, we suggest extended syntax for the C language to
+enable access to CLI-specific features.  This syntax is only a suggestion.
+Two compilers that use different syntax for the same feature can still
+interoperate if they translate their syntax into the same ABI conventions.<p>
+
+All extension keywords begin and end in "<code>__</code>", following
+standard C practice.  We recommend that compiler vendors seriously consider
+adopting the proposed keywords to make it easier to port source code from
+one compiler to another.<p>
+
+<blockquote>
+<b>Note: Some of the features described in this document haven't been
+fully implemented by Portable.NET's C compiler yet.  This document
+is therefore subject to change.</b>
+</blockquote>
+
+<h2>2. Memory models</h2>
+
+This ABI defines two primary memory models for the CLI, which we will
+refer to as "Model 64" and "Model 32":  They may be briefly summarised
+as follows:
+
+<ul>
+	<li><b>Model 64</b>: <code>int</code>'s are 32 bits in size,
+		<code>long</code>'s and pointers are 64 bits in size.</li>
+	<li><b>Model 32</b>: <code>int</code>'s, <code>long</code>'s, and
+		pointers are all 32 bits in size.</li>
+</ul>
+
+We recommend that "Model 64" be the default for all compilers that adhere
+to this ABI specification.  Programs that use "Model 64" will work on
+all implementations of the CLI, be they 32-bit or 64-bit.  "Model 32"
+programs will be more memory-efficient on 32-bit platforms, but will
+not run at all on 64-bit implementations of the CLI.<p>
+
+<blockquote>
+<font size="-1">Note: A "Model 64" program will fail to work on a
+128-bit CLI implementation, for the same reason that "Model 32" programs
+fail on 64-bit CLI implementations.  When and if 128-bit CLI
+implementations become common-place, it will be easy to extend
+this ABI to include a "Model 128".</font>
+</blockquote>
+
+When the compiler builds an object file, application, or library, it
+MUST tag the corresponding module with the memory model.  For example,
+the following module is tagged as "Model 64":<p>
+
+<blockquote><pre>.module test.exe
+.custom instance void [OpenSystem.C]OpenSystem.C.MemoryModelAttribute::.ctor
+       (int32) = (01 00 40 00 00 00 00 00)</pre></blockquote>
+
+Linkers can use the presence of this attribute to detect that a C
+application is being linked, rather than a C# application, and then
+modify their behaviour accordingly.  For example, by adding additional
+libraries to the link that aren't normally required by C# applications.<p>
+
+The two primary memory models are designed to mirror existing 64-bit and
+32-bit CPU architectures.  But sometimes the programmer will want to
+exactly match the memory model to the underlying operating system,
+to improve interoperability with native code.  In the process, portability
+is sacrificed, so this must only be used when absolutely necessary.<p>
+
+To match an underlying operating system, the compiler chooses either
+"Model 64" or "Model 32", based on the size of the system's
+"<code>void *</code>" type.  The compiler then applies a number of
+"model modifiers" to alter type alignment values to match the
+system.  These modifiers are as follows:<p>
+
+<dl>
+<dt><code>0x00000001</code></dt>
+	<dd>16-bit <code>short</code> values are aligned on 1-byte boundaries,
+		rather than 2-byte boundaries.</dd>
+<dt><code>0x00000002</code></dt>
+	<dd>32-bit <code>int</code> values are aligned on 1-byte boundaries,
+		rather than 4-byte boundaries.</dd>
+<dt><code>0x00000004</code></dt>
+	<dd>32-bit <code>int</code> values are aligned on 2-byte boundaries,
+		rather than 4-byte boundaries.</dd>
+<dt><code>0x00000008</code></dt>
+	<dd>64-bit <code>long long</code> values are aligned on 1-byte boundaries,
+		rather than 8-byte boundaries.</dd>
+<dt><code>0x00000010</code></dt>
+	<dd>64-bit <code>long long</code> values are aligned on 2-byte boundaries,
+		rather than 8-byte boundaries.</dd>
+<dt><code>0x00000020</code></dt>
+	<dd>64-bit <code>long long</code> values are aligned on 4-byte boundaries,
+		rather than 8-byte boundaries.</dd>
+<dt><code>0x00000040</code></dt>
+	<dd>32-bit <code>float</code> values are aligned on 1-byte boundaries,
+		rather than 4-byte boundaries.</dd>
+<dt><code>0x00000080</code></dt>
+	<dd>32-bit <code>float</code> values are aligned on 2-byte boundaries,
+		rather than 4-byte boundaries.</dd>
+<dt><code>0x00000100</code></dt>
+	<dd>64-bit <code>double</code> values are aligned on 1-byte boundaries,
+		rather than 8-byte boundaries.</dd>
+<dt><code>0x00000200</code></dt>
+	<dd>64-bit <code>double</code> values are aligned on 2-byte boundaries,
+		rather than 8-byte boundaries.</dd>
+<dt><code>0x00000400</code></dt>
+	<dd>64-bit <code>double</code> values are aligned on 4-byte boundaries,
+		rather than 8-byte boundaries.</dd>
+<dt><code>0x00000800</code></dt>
+	<dd><code>long double</code> values are aligned on 1-byte boundaries.</dd>
+<dt><code>0x00001000</code></dt>
+	<dd><code>long double</code> values are aligned on 2-byte boundaries.</dd>
+<dt><code>0x00002000</code></dt>
+	<dd><code>long double</code> values are aligned on 4-byte boundaries.</dd>
+<dt><code>0x00004000</code></dt>
+	<dd><code>long double</code> values are aligned on 8-byte boundaries.</dd>
+<dt><code>0x00008000</code></dt>
+	<dd><code>long double</code> values are aligned on 16-byte boundaries.</dd>
+<dt><code>0x00010000</code></dt>
+	<dd>Pointer values are aligned on 1-byte boundaries.</dd>
+<dt><code>0x00020000</code></dt>
+	<dd>Pointer values are aligned on 2-byte boundaries.</dd>
+<dt><code>0x00040000</code></dt>
+	<dd>Pointer values are aligned on 4-byte boundaries and the primary
+		memory model is "Model 64".  This modifier should not be set if the
+		primary memory model is "Model 32".</dd>
+<dt><code>0x00080000</code></dt>
+	<dd>Bit fields are allocated in big-endian order rather than the
+		default of little-endian.</dd>
+</dl><p>
+
+These modifiers describe how the actual memory model differs from either
+"Model 32" or "Model 64".  Programs that are compiled with non-zero
+modifier values are unlikely to work on runtime engines that use a
+different combination of flags.  Programs with zero modifier values should
+work on all runtime engines that support the memory model.<p>
+
+When the object file is generated, the modifier flags are written into
+the "<code>MemoryModel</code>" attribute declaration, as an optional
+argument:<p>
+
+<blockquote><pre>.module test.exe
+.custom instance void [OpenSystem.C]OpenSystem.C.MemoryModelAttribute::.ctor
+       (int32, int32) = (01 00 20 00 00 00 20 04 00 00 00 00)</pre></blockquote>
+
+This indicates "Model 32 with 4-byte alignment of 64-bit integers
+and doubles".  If the second parameter is not present, the default
+modifier flag value is zero.<p>
+
+<h2>3. ABI support library</h2>
+
+The "<code>MemoryModelAttribute</code>" example in the previous section
+demonstrated the use of the "<code>OpenSystem.C</code>" assembly, which
+provides a number of classes for tagging C applications, and for implementing
+ABI support facilities.  The following summarises the important classes
+in the "<code>OpenSystem.C</code>" namespace:<p>
+
+<dl>
+<dt><code>IsConst</code></dt>
+	<dd>A modifier class for marking a type as "<code>const</code>".</dd>
+<dt><code>BitFieldAttribute</code></dt>
+	<dd>An attribute that describes the position and size of a bit
+		field within a larger integer field.</dd>
+<dt><code>WeakAliasForAttribute</code></dt>
+	<dd>An attribute that marks a method as defining a weak alias.</dd>
+<dt><code>StrongAliasForAttribute</code></dt>
+	<dd>An attribute that marks a field or method as defining a
+		strong alias.</dd>
+<dt><code>InitializerAttribute</code></dt>
+	<dd>An attribute that marks special methods that provide static
+		initialization logic to be executed at program startup.
+		These methods are different from CLI static constructors
+		(<code>.cctor</code> methods), in that initializers are
+		guaranteed to be executed before <code>main</code>.</dd>
+<dt><code>InitializerOrderAttribute</code><dt>
+	<dd>An attribute that defines the ordering of an initializer relative
+		to all others.  Initializers with a lower order value are called
+		before those with higher order values.  The default order value
+		is zero.</dd>
+<dt><code>FinalizerAttribute</code></dt>
+	<dd>An attribute that marks special methods that provide static
+		finalization logic to be executed at program shutdown.
+		These methods are not the same as the "<code>Finalize</code>"
+		methods in garbage-collected objects.  The order of garbage-collected
+		object finalization is indeterminate with respect to C finalizers.</dd>
+<dt><code>FinalizerOrderAttribute</code><dt>
+	<dd>An attribute that defines the ordering of a finalizer relative
+		to all others.  Finalizers with a lower order value are called
+		after those with higher order values.  The default order value
+		is zero.  Normally an initializer and its corresponding
+		finalizer will have identical order values.</dd>
+<dt><code>MemoryModelAttribute</code></dt>
+	<dd>An attribute that specifies the memory model for a C module.</dd>
+<dt><code>LongJmpException</code></dt>
+	<dd>An exception class that assists the ABI in implementing
+		<code>setjmp</code>/<code>longjmp</code> operations.</dd>
+<dt><code>Crt0</code></dt>
+	<dd>A class that provides utility methods to manage the startup and
+		shutdown of C applications.</dd>
+<dt><code>NativeFloat</code></dt>
+	<dd>A value type class that wraps up the runtime engine's
+		"<code>native float</code>" type.  The standard C# base
+		class library lacks a suitable class.  This class has
+		a constructor that takes a single "<code>native float</code>"
+		argument, and an "<code>Unpack</code>" method that returns
+		a "<code>native float</code>" when applied to an instance.</dd>
+</dl>
+
+The meaning of these classes will become clearer in later sections.
+Other classes may be provided to support "libc" implementations,
+but they are beyond the scope of this specification.<p>
+
+To simplify discussion, we will use an abbreviated syntax to describe
+attributes in CIL assembly code examples.  For example, the memory
+model designation in the previous section can also be written as:
+
+<blockquote><pre>.module test.exe
+.custom [OpenSystem.C.MemoryModel(64)]</pre></blockquote>
+
+This abbreviation is for exposition purposes only.  It isn't intended
+to suggest an alternative syntax for CIL assemblers.<p>
+
+<h2>4. Type representation</h2>
+
+<h3>4.1. Primitive types</h3>
+
+The size and alignment of the primitive types in "Model 64" and
+"Model 32" are defined as follows:<p>
+
+<table border="1">
+<tr><td>Type</td><td>Model 64<br>Size/Align<sup>1</sup></td>
+	<td>Model 32<br>Size/Align<sup>1</sup></code><td>Description</td></tr>
+<tr><td><code>void</code></td>
+	<td>1/1 <sup>2</sup></td>
+	<td>1/1</sup></td>
+	<td>Void type</td></tr>
+<tr><td><code>__bool__</code></td>
+	<td>1/1</td>
+	<td>1/1</td>
+	<td>8-bit boolean value (C# "<code>bool</code>")</td></tr>
+<tr><td><code>char</code></td>
+	<td>1/1</td>
+	<td>1/1</td>
+	<td>Signed 8-bit integer</td></tr>
+<tr><td><code>unsigned char</code></td>
+	<td>1/1</td>
+	<td>1/1</td>
+	<td>Unsigned 8-bit integer</td></tr>
+<tr><td><code>short</code></td>
+	<td>2/2</td>
+	<td>2/2</td>
+	<td>Signed 16-bit integer</td></tr>
+<tr><td><code>unsigned short</code></td>
+	<td>2/2</td>
+	<td>2/2</td>
+	<td>Unsigned 16-bit</td></tr>
+<tr><td><code>__wchar__</code></td>
+	<td>2/2</td>
+	<td>2/2</td>
+	<td>16-bit wide character value (C# "<code>char</code>")</td></tr>
+<tr><td><code>int</code></td>
+	<td>4/4</td>
+	<td>4/4</td>
+	<td>Signed 32-bit integer</td></tr>
+<tr><td><code>unsigned int</code></td>
+	<td>4/4</td>
+	<td>4/4</td>
+	<td>Unsigned 32-bit integer</td></tr>
+<tr><td><code>long</code></td>
+	<td>8/8</td>
+	<td>4/4</td>
+	<td>Signed 64-bit or 32-bit integer</td></tr>
+<tr><td><code>unsigned long</code></td>
+	<td>8/8</td>
+	<td>4/4</td>
+	<td>Unsigned 64-bit or 32-bit integer</td></tr>
+<tr><td><code>long long</code></td>
+	<td>8/8</td>
+	<td>8/8</td>
+	<td>Signed 64-bit integer</td></tr>
+<tr><td><code>unsigned long long</code></td>
+	<td>8/8</td>
+	<td>8/8</td>
+	<td>Unsigned 64-bit integer</td></tr>
+<tr><td><code>float</code></td>
+	<td>4/4</td>
+	<td>4/4</td>
+	<td>32-bit IEEE 754 floating-point</td></tr>
+<tr><td><code>double</code></td>
+	<td>8/8</td>
+	<td>8/8</td>
+	<td>64-bit IEEE 754 floating-point</td></tr>
+<tr><td><code>type *</code></td>
+	<td>8/8</td>
+	<td>4/4</td>
+	<td>Pointer to "<code>type</code>"</td></tr>
+</table><p>
+
+<font size="-1">Note 1. These size and alignment values refer to the
+primary memory model.  The values may be different if there are non-zero
+model modifier flags in effect.<br>
+Note 2. The size of "<code>void</code>" is 1, to be
+consistent with gcc.</font><p>
+
+In "Model 64", pointers are allocated 8 bytes of memory, and aligned
+on an 8-byte boundary, even on platforms that only support 32-bit pointers.
+The expression "<code>sizeof(void *)</code>" will always return 8.
+This behaviour is necessary to provide a consistent "<code>struct</code>"
+layout on all CLI implementations, as we will see in the following sections.<p>
+
+<h3>4.2. Type qualifiers</h3>
+
+The "<code>const</code>" and "<code>volatile</code>" qualifiers are
+represented using the "<code>OpenSystem.C.IsConst</code>" and
+"<code>System.Runtime.CompilerServices.IsVolatile</code>" modifiers.
+The following table provides some examples:<p>
+
+<table border="1">
+<tr><td>Declaration</td><td>Representation</td></tr>
+<tr><td><code>const int x;</code></td>
+    <td><code>int32 modopt(OpenSystem.C.IsConst) x</code></td></tr>
+<tr><td><code>void * volatile y;</code></td>
+    <td><code>void * modreq(System.Runtime.CompilerServices.IsVolatile) y</code></td></tr>
+<tr><td><code>const char *s;</code></td>
+    <td><code>int8 modopt(OpenSystem.C.IsConst) * s</code></td></tr>
+<tr><td><code>char * const s;</code></td>
+    <td><code>int8 * modopt(OpenSystem.C.IsConst) s</code></td></tr>
+</table><p>
+
+The placement of the type modifier is important.  A qualifier at the
+outer-most level of a type applies to the field or variable.  A qualifier
+at an inner level applies to a referenced type.  In the last example
+above, the variable "<code>s</code>" cannot be modified, but it points
+at a string that can be modified.  In the second last example, the
+variable can be modified, but not the string.<p>
+
+The "<code>IsVolatile</code>" modifier is required, to be consistent
+with other CLI-compatible languages.  The "<code>IsConst</code>" modifier
+is optional, because other CLI-compatible languages can safely ignore it
+(the programmer on the other hand probably shouldn't ignore it).<p>
+
+<h3>4.3. Type layout</h3>
+
+Types in the ABI may have three kinds of layout: "fixed", "dynamic",
+or "unknown".<p>
+
+Fixed types have a constant size and alignment.  The expression
+"<code>sizeof(T)</code>" can be evaluated to a constant at compile time.<p>
+
+Dynamic types have a constant size and alignment, but these values
+are not known until runtime.  Native types (described in a later
+section) are an example, as are C# value types.<p>
+
+Unknown types have no known size.  An example is "<code>char[]</code>",
+which cannot be used as the type of a structure field, as its storage
+size cannot be determined.<p>
+
+Traditional C compilers only have "fixed" and "unknown" types.  One of
+the goals of this ABI is to minimize the occurence of "dynamic" types
+so that "<code>struct</code>" layout can be computed efficiently.<p>
+
+<h3>4.4. Struct representation</h3>
+
+Structure types (e.g. "<code>struct A</code>") are converted into a value
+type called "<code>struct A</code>", with no namespace qualifier.  This
+value type is marked as having explicit layout, with pre-computed class
+packing and size values.  Each field within the structure has a
+pre-computed offset.  For example, on a "Model 64" system:
+
+<blockquote><pre>struct A
+{
+    int       item;
+    struct A *next;
+};
+
+.class public explicit sealed ansi 'struct A' extends System.ValueType
+{
+    .pack 8
+    .size 16
+    .field [0] public int32 item
+    .field [8] public 'struct A' * next
+}</pre></blockquote>
+
+On a "Model 32" system, the structure would be encoded as:<p>
+
+<blockquote><pre>.class public explicit sealed ansi 'struct A' extends System.ValueType
+{
+    .pack 4
+    .size 8
+    .field [0] public int32 item
+    .field [4] public 'struct A' * next
+}</pre></blockquote>
+
+Structures may only contain fields with "fixed" layout.  Native structures
+(described later) can contain fields with both "fixed" and "dynamic"
+layout, but their usage is restricted.<p>
+
+If a structure contains sub-structures, they are converted into companion
+structure types:<p>
+
+<blockquote><pre>struct A
+{
+    int x;
+    struct
+    {
+        int y;
+    } z;
+    struct B
+    {
+        int w;
+    } v;
+};
+
+.class public explicit sealed ansi 'struct A' extends System.ValueType
+{
+    .pack 4
+    .size 12
+    .field [0] public int32 x
+    .class public explicit sealed ansi 'struct (1)'
+                extends System.ValueType
+    {
+        .pack 4
+        .size 4
+        .field [0] public int32 y
+    }
+    .field [4] public valuetype 'struct A'/'struct (1)' z
+    .field [8] public valuetype 'struct B' v
+}
+.class public explicit sealed ansi 'struct B' extends System.ValueType
+{
+    .pack 4
+    .size 4
+    .field [0] public int32 w
+}</pre></blockquote>
+
+As can be seen, anonymous structures are assigned a unique numeric code,
+and are encoded as nested types.  The code is unique to the surrounding
+structure, so that the same code will be generated each time the program
+is compiled.<p>
+
+<blockquote><font size="-1">Note: It would be desirable to allow the
+runtime engine to perform structure layout dynamically, rather than
+fix types to specific sizes and fields to specific offsets.  Readers
+who think it may be possible to do so may like to ponder how to
+efficiently compile the following code so that it will work
+regardless of the runtime size of "<code>void *</code>" and the
+runtime alignment of "<code>y</code>":<p>
+
+<blockquote><pre>struct item
+{
+    char x[sizeof(void *)];
+    long long y;
+};
+
+long long get_y(struct item *i)
+{
+    return i->y;
+}</pre></blockquote>
+</font></blockquote>
+
+<h3>4.5. Union representation</h3>
+
+Unions (e.g. "<code>union A</code>") are represented as value types with
+the name "<code>union A</code>", and all fields explicitly laid out to
+start at offset 0.
+
+<blockquote><pre>
+union A
+{
+    int    x;
+    double y;
+}
+
+.class public explicit sealed ansi 'union A' extends System.ValueType
+{
+    .pack 8
+    .size 8
+    .field [0] public int32 x
+    .field [0] public float64 y
+}</pre></blockquote>
+
+Unions may only contain fields with "fixed" layout.<p>
+
+<h3>4.6. Representation of bit fields</h3>
+
+Bit fields are represented as regular fields, with an attribute to
+indicate the field's position and size.  Bits are counted from the
+least significant bit, unless the big-endian modifier was specified
+in the memory model (see section 2 for further details).<p>
+
+<blockquote><pre>struct A
+{
+    int x : 8;
+    int y : 1;
+    unsigned int z : 16;
+    int w;
+}
+
+.class public explicit sealed ansi 'struct A' extends System.ValueType
+{
+    .custom [OpenSystem.C.BitField("x", ".bitfield-1", 0, 8)]
+    .custom [OpenSystem.C.BitField("y", ".bitfield-1", 8, 1)]
+    .custom [OpenSystem.C.BitField("z", ".bitfield-2", 0, 16)]
+    .pack 4
+    .size 12
+    .field [0] public int32 '.bitfield-1'
+    .field [4] public unsigned int32 '.bitfield-2'
+    .field [8] public int32 w
+}</pre></blockquote>
+
+<h3>4.7. Array types</h3>
+
+Array types of the form "<code>A[]</code>" are mapped to a value
+type called "<code>array A[]</code>".  For example, "<code>int[]</code>"
+is encoded as follows:
+
+<blockquote><pre>.class public explicit sealed ansi 'array int[]'
+            extends System.ValueType
+{
+    .pack 4
+    .size 0
+    .field private static specialname int32 elem__
+}</pre></blockquote>
+
+The value type must have a field called "<code>elem__</code>", which
+defines the element type, and it must have the attributes
+"<code>private static specialname</code>".<p>
+
+<blockquote><font size="-1">Note.  It will be rare to find a type of
+the form "<code>A[]</code>" in a generated object file, because such
+types normally decay to pointer types when used as function arguments.
+The encoding is specified here because the compiler does need to
+distinguish "<code>A[]</code>" from "<code>A *</code>" in certain
+circumstances.</font></blockquote><p>
+
+If the array type includes a non-zero size value, then it is encoded
+as a value type with an explicit size defining the total size of the
+array.  For example, "<code>int[100]</code> is encoded as follows:
+
+<blockquote><pre>.class public explicit sealed ansi 'array int[100]'
+            extends System.ValueType
+{
+    .pack 4
+    .size 400
+    .field [0] public specialname int32 elem__
+}</pre></blockquote>
+
+The size of the array is determined by dividing "<code>.size</code>"
+by the size of the element type.  The "<code>elem__</code>" field in
+this case must be "<code>public specialname</code>".  Arrays with
+a zero size are encoded as follows:<p>
+
+<blockquote><pre>.class public explicit sealed ansi 'array int[0]'
+            extends System.ValueType
+{
+    .pack 4
+    .size 0
+    .field [0] public static specialname int32 elem__
+}</pre></blockquote>
+
+Here, the "<code>elem__</code>" field is "<code>static</code>".  This
+type can be distinguished from the encoding for "<code>int[]</code>"
+because the "<code>elem__</code>" field is "<code>public</code>"
+instead of "<code>private</code>".<p>
+
+Array element types must have "fixed" layout.  The programmer can
+allocate arrays of "dynamic" types using "<code>malloc</code>"
+or "<code>alloca</code>".<p>
+
+The following is an example of encoding the two-dimensional array type
+"<code>int [300][400]</code>":
+
+<blockquote><pre>.class public explicit sealed ansi 'array int[300][400]'
+            extends System.ValueType
+{
+    .pack 4
+    .size 480000  // == 300 * 400 * 4
+    .field [0] public specialname valuetype 'array int[400]' elem__
+}
+
+.class public explicit sealed ansi 'array int[400]'
+            extends System.ValueType
+{
+    .pack 4
+    .size 1600  // == 400 * 4
+    .field [0] public specialname int32 elem__
+}</pre></blockquote>
+
+<h3>4.8. Native types</h3>
+
+Sometimes it is necessary to access the native type representation of
+the underlying runtime engine, particularly when importing external
+library functions using PInvoke, or when accessing code written in other
+CLI-compliant languages.<p>
+
+All of the types that are described in this section have "dynamic"
+layout.  They cannot be used as array element types, or as the members
+of non-native structures and unions.<p>
+
+The use of these native types is highly discouraged, except where it is
+absolutely essential to interoperate with other system components:<p>
+
+<table border="1">
+<tr><td>Type</td><td>Description</td></tr>
+<tr><td><code>__native__ int</code></td>
+	<td>Signed native integer (C# "<code>IntPtr</code>")</td></tr>
+<tr><td><code>unsigned __native__ int</code></td>
+	<td>Unsigned native integer (C# "<code>UIntPtr</code>")</td></tr>
+<tr><td><code>long double</code></td>
+	<td>Native floating-point</td></tr>
+</table><p>
+
+The native integer types are "<code>__native__ int</code>" and
+"<code>unsigned __native__ int</code>".  They may be either 4 or 8 bytes in
+size, depending upon the underlying platform.  The expressions
+"<code>sizeof(__native__ int)</code>" and
+"<code>sizeof(unsigned __native__ int)</code>" are evaluated at run time.<p>
+
+The native floating point type is "<code>long double</code>", and
+is guaranteed to have precision greater than or equal to "<code>double</code>".
+The expression "<code>sizeof(long double)</code>" is computed at runtime.<p>
+
+Structures can be specified to have native layout at declaration time:<p>
+
+<blockquote><pre>struct __native__ A
+{
+    int item;
+    struct A *next;
+};</pre></blockquote><p>
+
+This is represented by a sequential type definition in the program's
+metadata:<p>
+
+<blockquote><pre>.class public sequential sealed ansi 'struct A' extends System.ValueType
+{
+    .field public int32 item
+    .field public 'struct A' * next
+}</pre></blockquote>
+
+The runtime engine will lay this out using platform-specific type sizes
+and alignment.  The expression "<code>sizeof(struct A)</code>" will be
+evaluated at runtime.<p>
+
+Unions can also be specified to have native layout at declaration time:<p>
+
+<blockquote><pre>
+union __native__ A
+{
+    int   x;
+    void *y;
+}
+
+.class public explicit sealed ansi 'union A' extends System.ValueType
+{
+    .field [0] public int32 x
+    .field [0] public void * y
+}</pre></blockquote>
+
+The type is declared explicit, so that all fields can be defined with
+an offset of zero, but the type does not have an overall size.<p>
+
+Types with "fixed" and "dynamic" layout may be used as the members
+of native structures and unions.<p>
+
+It is recommended that the compiler issue a warning when bit fields are
+used in native structures and unions, and the memory model does not have
+an appropriate memory model modifier set.  The compiler's bit order may not
+match the native platform's bit order, leading to problems with PInvoke'd
+functions.<p>
+
+<h3>4.9. Argument types</h3>
+
+When arguments are passed to a function, it is sometimes necessary
+to alter the type to conform with C conventions or to work around
+overly-strict CLI requirements.<p>
+
+An array argument to a function will be converted into its "decayed"
+pointer form.  For example:<p>
+
+<blockquote><pre>int main(int argc, char *argv[])
+{
+    ...
+}
+
+.method public static int32 main
+        (int32 argc, int8 * * argv) cil managed
+{
+    ...
+}</pre></blockquote><p>
+
+Functions that take a variable number of arguments must be declared
+with "<code>vararg</code>" calling conventions:<p>
+
+<blockquote><pre>int printf(const char *format, ...)
+{
+    ...
+}
+
+.method public static vararg int32 printf
+        (int8 modopt(IsConst) * format) cil managed
+{
+    ...
+}</pre></blockquote><p>
+
+When arguments are passed to a variable-argument function, they must be
+converted into their "natural passing type" first:<p>
+
+<table border="1">
+<tr><td>Type</td><td>Natural Passing Type</td></tr>
+<tr><td><code>__bool__</code></td>
+	<td><code>__bool__</code></td></tr>
+<tr><td><code>char</code></td>
+	<td><code>int</code></td></tr>
+<tr><td><code>unsigned char</code></td>
+	<td><code>int</code></td></tr>
+<tr><td><code>short</code></td>
+	<td><code>int</code></td></tr>
+<tr><td><code>unsigned short</code></td>
+	<td><code>int</code></td></tr>
+<tr><td><code>__wchar__</code></td>
+	<td><code>int</code></td></tr>
+<tr><td><code>int</code></td>
+	<td><code>int</code></td></tr>
+<tr><td><code>unsigned int</code></td>
+	<td><code>int</code></td></tr>
+<tr><td><code>__native__ int</code></td>
+	<td><code>long</code></td></tr>
+<tr><td><code>unsigned __native__ int</code></td>
+	<td><code>long</code></td></tr>
+<tr><td><code>long</code></td>
+	<td><code>long</code></td></tr>
+<tr><td><code>unsigned long</code></td>
+	<td><code>long</code></td></tr>
+<tr><td><code>long long</code></td>
+	<td><code>long long</code></td></tr>
+<tr><td><code>unsigned long long</code></td>
+	<td><code>long long</code></td></tr>
+<tr><td><code>float</code></td>
+	<td><code>double</code></td></tr>
+<tr><td><code>double</code></td>
+	<td><code>double</code></td></tr>
+<tr><td><code>long double</code></td>
+	<td><code>OpenSystem.C.NativeFloat</code></td></tr>
+<tr><td><code>type *</code></td>
+	<td><code>long</code></td></tr>
+<tr><td><code>struct</code> and <code>union</code></td>
+	<td>Same as input type</td></tr>
+</table><p>
+
+Natural passing types help to properly implement cases where a value is
+passed as unsigned, but unpacked as signed, or is passed using a smaller
+type than the unpacking type.<p>
+
+The compiler must convert all variable arguments to their natural passing
+types at the point of the call.  The "<code>va_arg</code>" operator is then
+responsible for casting the natural passing type back to the programmer's
+requested type.<p>
+
+The "<code>va_list</code>" type is implemented by the C#
+"<code>System.ArgIterator</code>" class, and has "dynamic" layout.
+The runtime engine will throw an exception if an attempt is made to
+unpack an argument using the wrong natural passing type.<p>
+
+<h2>5. Defining global fields and methods</h2>
+
+The Common Language Infrastructure (CLI) has support for global
+fields and methods in the specially-defined "<code>&lt;Module&gt;</code>"
+type.  However, there are some "undefined" issues that we now
+deal with.<p>
+
+<h3>5.1. Dangling references</h3>
+
+When a C source file is compiled to an object file, there will normally
+be "dangling" references to fields and methods in other object files
+and libraries.  We need to handle this in the assembler and linker.<p>
+
+When the assembler sees a dangling reference to something in the
+"<code>&lt;Module&gt;</code>" class, it will convert it into a member
+reference on the "<code>&lt;ModuleExtern&gt;</code>" class.  For example:<p>
+
+<blockquote><pre>.method public static void hello() cil managed
+{
+    call void hello2()
+}</pre></blockquote>
+
+If <code>hello2</code> remains undefined at the end of the assembly
+process, then the resulting object file will look like this:<p>
+
+<blockquote><pre>.method public static void hello() cil managed 
+{
+    call void '&lt;ModuleExtern&gt;'::hello2()
+}</pre></blockquote>
+
+When the linker loads this object file, it will resolve references to
+"<code>&lt;ModuleExtern&gt;</code>" by looking for a matching definition
+and changing the type reference appropriately.  The new reference
+may be to the linked executable's "<code>&lt;Module&gt;</code>" type,
+or to a foreign library's "<code>&lt;Module&gt;</code>" type.<p>
+
+The "<code>&lt;ModuleExtern&gt;</code>" type will itself be dangling.
+The exact means by which this is accomplished is compiler-dependent, as the
+ECMA specification does not define an object file format for the CLI.<p>
+
+<blockquote>
+<font size="-1">Portable.NET's assembler encodes dangling types as a
+TypeRef, scoped to the current module, but with no corresponding TypeDef.
+The object file format is based on the native PE/COFF object file format,
+with CIL metadata stored in the "<code>.text$il</code>" section.
+Portable.NET's linker fixes up dangling TypeRef's at link time.</font>
+</blockquote>
+
+<h3>5.2. Access permissions</h3>
+
+Variables or functions that are declared "<code>static</code>" are converted
+into "<code>private</code>" fields or methods within the
+"<code>&lt;Module&gt;</code>" object file's class.  All other variables
+or functions are converted into "<code>public</code>" definitions.<p>
+
+If the "<code>&lt;Module&gt;</code>" class has any "<code>public</code>"
+members, then the class will also be declared "<code>public</code>".
+This ensures that a library will export its definitions correctly to
+applications that link against the library.<p>
+
+<h3>5.3. Renaming conflicting definitions</h3>
+
+When two object files are linked together, it is possible that they
+both may have a "<code>private</code>" definition for the same function
+or variable.  Alternatively, one may be "<code>private</code>" and
+the other "<code>public</code>".<p>
+
+We resolve this situation by renaming one of the "<code>private</code>"
+definitions to something else, and then redirecting all references to
+the original to the renamed version.  From an external user's point of
+view, the "<code>public</code>" definition (if any) will become the
+visible definition.  For example:<p>
+
+<blockquote>File 1: <pre>.field public static int32 x</pre>
+File 2: <pre>.field private static float64 x
+.method public static float64 getx() cil managed
+{
+    ldsfld float64 x
+    ret
+}</pre>
+Result: <pre>.field public static int32 x
+.field private static float64 'x-1'
+.method public static float64 getx() cil managed
+{
+    ldsfld float64 'x-1'
+    ret
+}</pre></blockquote>
+
+If two or more object files have conflicting "<code>public</code>"
+definitions for a function or variable, then a linker error will occur.<p>
+
+Structure, union, and array types may also conflict when two
+object files are linked together.  In most cases, the two definitions
+will be the same, because the same type is being used in both object
+files (e.g. "<code>struct _IO_FILE</code>" in glibc's stdio implementation).<p>
+
+When two types have identical definitions, the linker will copy one
+into the output file and ignore the other.  When the two types have
+different definitions, the linker chooses one to become the primary
+copy, and the other is renamed.<p>
+
+If one of the types has the same definition as a type from a library,
+the linker should favour the library's definition, as it is the most
+likely candidate.  If neither definition duplicates a library definition,
+the linker can choose either one, and probably should also report
+a warning to the programmer.<p>
+
+<h3>5.4. Weak and strong aliases</h3>
+
+C libraries such as "glibc" make heavy use of weak aliases to allow
+programs to replace certain functions with their own implementation.
+For example, the following is used in "glibc" for the definition
+of the "<code>getuid</code>" function (paraphrased a little):
+
+<blockquote><pre>int __getuid(void)
+{
+    ...
+}
+
+weak_alias(__getuid, getuid)</pre></blockquote>
+
+This will be compiled as follows:
+
+<blockquote><pre>
+.method public static int32 __getuid() cil managed
+{
+    ...
+}
+
+.field public specialname static .method int32 * () 'getuid-alias'
+
+.method public static int32 getuid() cil managed
+{
+    .custom [OpenSystem.C.WeakAliasFor("__getuid")]
+    .maxstack 1
+    ldsfld .method int32 * () 'getuid-alias'
+    tail.
+    calli int32 ()
+    ret
+}
+
+.method private specialname static void '.init-1'() cil managed
+{
+    .custom [OpenSystem.C.Initializer]
+    .maxstack 1
+    ldftn void __getuid()
+    stsfld .method int32 * () 'getuid-alias'
+    ret
+}</pre></blockquote>
+
+When a program is linked against this definition, the
+"<code>WeakAliasFor</code>" attribute is used to redirect the
+reference to the actual definition if the system does not contain
+any other definitions for the function.<p>
+
+When a library that does not supply its own "<code>getuid</code>"
+is linked against this definition, the "<code>getuid</code>"
+method is called directly, which will then redirect control to
+the actual "<code>getuid</code>".<p>
+
+A program or library that defines its own "<code>getuid</code>"
+is compiled as normal:
+
+<blockquote><pre>.method public static int32 getuid() cil managed
+{
+    ...
+}</pre></blockquote>
+
+At link time, the linker will insert an initializer which updates the
+"<code>getuid-alias</code>" field with the new value:
+
+<blockquote><pre>
+.method private specialname static void '.init-1'() cil managed
+{
+    .custom [OpenSystem.C.Initializer]
+    .maxstack 1
+    ldftn void getuid()
+    stsfld .method int32 * () [library]'&lt;Module&gt;'::'getuid-alias'
+    ret
+}</pre></blockquote>
+
+where "<code>library</code>" is the name of the library that defines
+the "<code>getuid-alias</code>" variable.<p>
+
+Strong aliases for functions are defined in a similar manner:<p>
+
+<blockquote><pre>
+.method public static vararg int32 _IO_printf
+        (int8 modopt(OpenSystem.C.IsConst) *format) cil managed
+{
+    ...
+}
+
+.method public static vararg int32 printf
+        (int8 modopt(OpenSystem.C.IsConst) *format) cil managed
+{
+    .custom [OpenSystem.C.StrongAliasFor("_IO_printf")]
+}
+</pre></blockquote>
+
+In this case, whenever the linker sees a reference to "<code>printf</code>",
+it will redirect the caller to "<code>_IO_printf</code>".  The body of
+the alias function is empty, because it will never be called at runtime.<p>
+
+Global variables may also have strong aliases associated with them:<p>
+
+<blockquote><pre>char **__environ;
+strong_alias(__environ, environ);
+
+.field public static int8 * * __environ
+
+.field public static int8 * * environ
+.custom [OpenSystem.C.StrongAliasFor("__environ")]</pre></blockquote>
+
+When the linker sees a reference to "<code>environ</code>", it will
+substitute "<code>__environ</code>".<p>
+
+Weak aliases are not supported for global variables.  Weak aliases
+exist in libc libraries primarily for legacy reasons.  There are
+existing C programs that depend upon variables like "<code>environ</code>",
+"<code>timezone</code>", etc, being weak aliases, but they are rarer
+than programs that depend upon functions being weak aliases.<p>
+
+It is recommended that if the compiler sees a weak alias definition
+for a variable that it output a strong alias instead.<p>
+
+<h3>5.5. Initializers and finalizers</h3>
+
+Initializers are compiled into static methods that have the
+"<code>private</code>" and "<code>specialname</code>" flags,
+have no parameters or return values, and are marked with the
+"<code>Initializer</code>" attribute.<p>
+
+Finalizers are compiled into static methods that have the
+"<code>private</code>" and "<code>specialname</code>" flags,
+have no parameters or return values, and are marked with the
+"<code>Finalizer</code>" attribute.<p>
+
+The linker collects up all initializers and finalizers in a program
+or library and does the following:
+
+<ol>
+    <li>It creates two "<code>public</code> methods in the
+	    "<code>&lt;Module&gt;</code>" class: "<code>.init</code>"
+		and "<code>.fini</code>".</li>
+    <li>The "<code>.init</code>" method calls the "<code>.init</code>"
+		methods of all libraries that the program or library itself
+		depends upon.</li>
+    <li>The "<code>.init</code>" method then calls all of the
+		locally-defined initializers.</li>
+    <li>The "<code>.fini</code>" method calls all of the locally-defined
+		finalizers.</li>
+    <li>The "<code>.fini</code>" method then calls the "<code>.fini</code>"
+		methods of all libraries that the program or library itself
+		depends upon, in reverse order.</li>
+</ol>
+
+The order in which "<code>.init</code>" methods are called is usually
+indeterminable.  The compiler can alter the ordering using the
+"<code>InitializerOrder</code>" attribute:<p>
+
+<blockquote><pre>
+.method private specialname static void '.init-1'() cil managed
+{
+    .custom [OpenSystem.C.Initializer]
+    .custom [OpenSystem.C.InitializerOrder(-1)]
+    ...
+}</pre></blockquote>
+
+This initializer will be executed before all "normal" initializers, which
+have a default order value of zero.<p>
+
+The "<code>FinalizerOrder</code>" attribute can used to alter the
+ordering of finalizers.  A finalizer  with an order value of -1 will
+be executed after the normal finalizers.<p>
+
+When the linker generates the "<code>.init</code>" and "<code>.fini</code>"
+methods, it must also insert some reference counting code.  The body
+of the "<code>.init</code>" method will only be executed upon the first
+call, and the body of the "<code>.fini</code>" method will only be
+executed upon the last call.  Appendix A contains some sample code
+that demonstrates this.<p>
+
+Because the locally-defined initializers and finalizers are declared
+"<code>private</code>", the renaming logic described in a previous
+section will take care of resolving ambiguities in naming.<p>
+
+<h2>6. The crt0 code</h2>
+
+When a module containing a "<code>main</code>" function is compiled,
+a small amount of CIL code is added to define the application entry point.
+This code calls facilities in the "<code>OpenSystem.C.Crt0</code>" class
+to initialize the application, to invoke "<code>main</code>", and to
+handle shutdown tasks when "<code>main</code>" exits.  Using C# syntax,
+the startup code looks like this:
+
+<pre>public static void .start(String[] args)
+{
+    try
+    {
+        int argc;
+        IntPtr argv;
+        IntPtr envp;
+        argv = Crt0.GetArgV(args, sizeof(void *), out argc);
+        envp = Crt0.GetEnvironment();
+        Crt0.Startup("libcNN");
+        Crt0.Shutdown(main(argc, argv, envp));
+    }
+    catch(OutOfMemoryException)
+    {
+        throw;
+    }
+    catch(Object e)
+    {
+        throw Crt0.ShutdownWithException(e);
+    }
+}</pre></blockquote>
+
+where "<code>libcNN</code>" is the name of the "libc" implementation
+that the program was compiled against.  This will normally be
+"<code>libc64</code>" for "Model 64" and "<code>libc32</code>" for
+"Model 32".  The compiler will only pass those parameters to
+"<code>main</code>" that the programmer specified in their source code.<p>
+
+The startup code in the application is kept deliberately simple,
+with most of the real work being done in the "<code>OpenSystem.C.Crt0</code>"
+class.  This allows the crt0 code to be modified to accomodate new "libc"
+requirements in the future, without needing all existing applications
+to be recompiled.<p>
+
+<h2>Appendix A.  Sample initialization and finalization code</h2>
+
+<pre>
+.class private sealed '.init-count' extends System.Object
+{
+    .field private static int32 count
+}
+
+.method public specialname static void '.init'() cil managed
+{
+    .maxstack 2
+    .locals (class System.Type)
+
+    // Lock down '.init-count' to synchronize access.
+    ldtoken '.init-count'
+    call class System.Type System.Type::GetTypeFromHandle
+                 (valuetype System.RuntimeTypeHandle)
+    dup
+    stloc 0
+    call void System.Threading.Monitor::Enter(class System.Object)
+    .try
+    {
+        // Increase the reference count, and check for the first call.
+        ldsfld '.init-count'::count
+        dup
+        ldc.i4.1
+        add
+        stsfld '.init-count'::count
+        brtrue L1 
+        leave runinit
+    L1:
+        leave exit
+    }
+    finally
+    {
+        ldloc 0
+        call void System.Threading.Monitor::Exit(class System.Object)
+        endfinally
+    }
+
+runinit:
+    // Run the initializers for the libraries.
+    call void [libc64]'&lt;Module&gt;'::'.init'()
+
+    // Run the local initializers.
+    call void '&lt;Module&gt;'::'.init-1'()
+    call void '&lt;Module&gt;'::'.init-2'()
+    ...
+    call void '&lt;Module&gt;'::'.init-N'()
+
+exit:
+    // Initialization has finished.
+    ret
+}
+
+.method public specialname static void '.fini'() cil managed
+{
+    .maxstack 2
+    .locals (class System.Type)
+
+    // Lock down '.init-count' to synchronize access.
+    ldtoken '.init-count'
+    call class System.Type System.Type::GetTypeFromHandle
+                 (valuetype System.RuntimeTypeHandle)
+    dup
+    stloc 0
+    call void System.Threading.Monitor::Enter(class System.Object)
+    .try
+    {
+        // Decrease the reference count, and check for the last call.
+        ldsfld '.init-count'::count
+        ldc.i4.1
+        sub
+        dup
+        stsfld '.init-count'::count
+        brtrue L1 
+        leave runfini
+    L1:
+        leave exit
+    }
+    finally
+    {
+        ldloc 0
+        call void System.Threading.Monitor::Exit(class System.Object)
+        endfinally
+    }
+
+runfini:
+    // Run the local finalizers.
+    call void '&lt;Module&gt;'::'.fini-1'()
+    call void '&lt;Module&gt;'::'.fini-2'()
+    ...
+    call void '&lt;Module&gt;'::'.fini-N'()
+
+    // Run the finalizers for the libraries.
+    call void [libc64]'&lt;Module&gt;'::'.fini'()
+
+exit:
+    // Finalization has finished.
+    ret
+}</pre>
+
+</body>
+</html>

@@ -21,6 +21,8 @@
 	* support/regexp.c: make sure that <sys/types.h> is included
 	before <regex.h>, as BSD systems require it to be present.
 
+	* csunit/Makefile.in: remove a file that shouldn't be in CVS.
+
 2002-11-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_arith.tc, cscc/csharp/cs_oper.tc: Move the reduction in

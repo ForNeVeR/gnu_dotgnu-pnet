@@ -1141,7 +1141,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			}
 
 	// List of whitespace characters in Unicode.
-	private readonly char[] WhitespaceChars =
+	private static readonly char[] WhitespaceChars =
 		{'\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u0020',
 		 '\u00A0', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005',
 		 '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u200B',

@@ -30,6 +30,8 @@ invoke.
 * runtime/System/Reflection/ClrType.cs: don't traverse ancestor classes
 when looking for a constructor.
 
+* runtime/System/String.cs: WhitespaceChars should be static.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Invalid.txt,

@@ -42,6 +42,10 @@
 	primitive, for drawing simple xbm-based glyphs for minimize,
 	close, scroll arrows, etc.
 
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/Glyphs.cs, Xsharp/Bitmap.cs:
+	implement "DefaultThemePainter.DrawMenuGlyph".
+
 2003-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:

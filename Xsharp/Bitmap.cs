@@ -167,7 +167,8 @@ public sealed class Bitmap : Drawable
 				{
 					throw new ArgumentNullException("bits");
 				}
-				if(((((width + 15) & ~15) * height) / 8) > bits.Length)
+				int unit = (width <= 8 ? 7 : 15);
+				if(((((width + unit) & ~unit) * height) / 8) > bits.Length)
 				{
 					throw new XException(S._("X_InvalidBitmapBits"));
 				}

@@ -25,6 +25,7 @@ namespace System.Windows.Forms.Themes
 
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Toolkit;
 using System.Windows.Forms;
 
 // This class implements the default theme functionality for the
@@ -39,6 +40,17 @@ internal class DefaultThemePainter : IThemePainter
 	protected bool gridDark = true;
 	protected Size gridSpacing = Size.Empty;
 	protected Brush gridBrush = null;
+
+	// Draw a simple bitmap-based glyph within a rectangle.
+	private static void DrawGlyph
+				(Graphics graphics, int x, int y, int width, int height,
+				 byte[] bits, int bitsWidth, int bitsHeight, Color color)
+			{
+				x += (width - bitsWidth) / 2;
+				y += (height - bitsHeight) / 2;
+				ToolkitManager.DrawGlyph
+					(graphics, x, y, bits, bitsWidth, bitsHeight, color);
+			}
 
 	// Get the width of the specified border type
 	public virtual int GetBorderWidth(BorderStyle border)
@@ -1319,12 +1331,42 @@ internal class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a menu glyph.
-	[TODO]
 	public virtual void DrawMenuGlyph
 				(Graphics graphics, int x, int y, int width,
 				 int height, MenuGlyph glyph)
 			{
-				// TODO
+				switch(glyph)
+				{
+					case MenuGlyph.Arrow:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.menu_arrow_bits,
+								  Glyphs.menu_arrow_width,
+								  Glyphs.menu_arrow_height,
+								  SystemColors.MenuText);
+					}
+					break;
+
+					case MenuGlyph.Checkmark:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.menu_checkmark_bits,
+								  Glyphs.menu_checkmark_width,
+								  Glyphs.menu_checkmark_height,
+								  SystemColors.MenuText);
+					}
+					break;
+
+					case MenuGlyph.Bullet:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.menu_bullet_bits,
+								  Glyphs.menu_bullet_width,
+								  Glyphs.menu_bullet_height,
+								  SystemColors.MenuText);
+					}
+					break;
+				}
 			}
 
 	// Draw a three-state check box control.

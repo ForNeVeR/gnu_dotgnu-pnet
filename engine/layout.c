@@ -318,10 +318,21 @@ static int ComputeInterfaceTable(ILClass *info, ILImplements *implements,
 		}
 
 		/* Look for an override for the interface method */
-		over = ILOverrideFromMethod(method);
-		if(over)
+		over = 0;
+		while((over = (ILOverride *)ILClassNextMemberByKind
+					(info, (ILMember *)over, IL_META_MEMBERKIND_OVERRIDE)) != 0)
 		{
-			table[slot] = (ILOverrideGetBody(over))->index;
+			if(ILMemberResolve((ILMember *)(ILOverrideGetDecl(over)))
+					== (ILMember *)method)
+			{
+				table[slot] = (ILOverrideGetBody(over))->index;
+				break;
+			}
+		}
+		if(table[slot] == (ILUInt16)0xFFFF)
+		{
+			/* There is no implementation of this method, which is an error */
+			return 0;
 		}
 	}
 

@@ -481,6 +481,249 @@ ILType *ILTypeInstantiate(ILContext *context, ILType *type,
 	return type;
 }
 
+/*
+ * Expand a class reference.
+ */
+static ILClass *ExpandClass(ILImage *image, ILClass *classInfo,
+							ILType *classParams)
+{
+	ILType *type = ILClassToType(classInfo);
+	return ILClassInstantiate(image, type, classParams);
+}
+
+/*
+ * Expand the instantiations in a class.  Returns zero if out of memory.
+ */
+static int ExpandInstantiations(ILImage *image, ILClass *classInfo,
+								ILType *classType, ILType *classParams)
+{
+	ILClass *origClass;
+	ILMember *member;
+	ILMethod *newMethod;
+	ILField *newField;
+	ILType *signature;
+	ILImplements *impl;
+	ILClass *tempInfo;
+
+	/* Mark this class as being expanded, to deal with circularities */
+	classInfo->attributes |= IL_META_TYPEDEF_CLASS_EXPANDED;
+
+	/* Bail out if not a "with" type, since the instantiation would
+	   have already been taken care of by "ILClassFromType" */
+	if(!ILType_IsWith(classType))
+	{
+		return 1;
+	}
+
+	/* Find the original class underlying the type */
+	origClass = ILClassFromType(image, 0, ILTypeGetWithMain(classType), 0);
+	if(!origClass)
+	{
+		return 0;
+	}
+	origClass = ILClassResolve(origClass);
+
+	/* Remember the original class so we can find it again later */
+	classInfo->ext = (ILClassExt *)origClass;
+
+	/* Copy across the class attributes */
+	ILClassSetAttrs(classInfo, ~((ILUInt32)0), ILClass_Attrs(origClass));
+
+	/* Expand the parent class and interfaces */
+	if(origClass->parent)
+	{
+		classInfo->parent = ExpandClass
+			(image, ILClass_Parent(origClass), classParams);
+		if(!(classInfo->parent))
+		{
+			return 0;
+		}
+	}
+	impl = 0;
+	while((impl = ILClassNextImplements(origClass, impl)) != 0)
+	{
+		tempInfo = ILImplementsGetInterface(impl);
+		tempInfo = ExpandClass(image, tempInfo, classParams);
+		if(!tempInfo)
+		{
+			return 0;
+		}
+		if(!ILClassAddImplements(classInfo, tempInfo, 0))
+		{
+			return 0;
+		}
+	}
+
+	/* Expand the methods and fields */
+	member = 0;
+	while((member = ILClassNextMember(origClass, member)) != 0)
+	{
+		switch(ILMemberGetKind(member))
+		{
+			case IL_META_MEMBERKIND_METHOD:
+			{
+				/* Skip static methods, which are shared */
+				if(ILMethod_IsStatic((ILMethod *)member))
+				{
+					break;
+				}
+
+				/* Create a new method */
+				newMethod = ILMethodCreate(classInfo, 0,
+										   ILMember_Name(member),
+										   ILMember_Attrs(member));
+				if(!newMethod)
+				{
+					return 0;
+				}
+
+				/* Copy the original method's properties */
+				signature = ILTypeInstantiate
+					(image->context, ILMember_Signature(member),
+					 classParams, 0);
+				if(!signature)
+				{
+					return 0;
+				}
+				ILMethodSetImplAttrs
+					(newMethod, ~((ILUInt32)0),
+					 ILMethod_ImplAttrs((ILMethod *)member));
+				ILMethodSetCallConv
+					(newMethod, ILMethod_CallConv((ILMethod *)member));
+				ILMethodSetRVA(newMethod, ILMethod_RVA((ILMethod *)member));
+
+				/* Remember the mapping, so we can resolve method references */
+				newMethod->userData = (void *)member;
+
+				/* Copy the original method's parameter blocks */
+				/* TODO */
+			}
+			break;
+
+			case IL_META_MEMBERKIND_FIELD:
+			{
+				/* Skip static fields, which are shared */
+				if(ILField_IsStatic((ILField *)member))
+				{
+					break;
+				}
+
+				/* Create a new field */
+				newField = ILFieldCreate(classInfo, 0,
+										 ILMember_Name(member),
+										 ILMember_Attrs(member));
+				if(!newField)
+				{
+					return 0;
+				}
+
+				/* Copy the original field's properties */
+				signature = ILTypeInstantiate
+					(image->context, ILMember_Signature(member),
+					 classParams, 0);
+				if(!signature)
+				{
+					return 0;
+				}
+			}
+			break;
+		}
+	}
+
+	/* Expand the properties, events, overrides, and pinvokes */
+	member = 0;
+	while((member = ILClassNextMember(origClass, member)) != 0)
+	{
+		switch(ILMemberGetKind(member))
+		{
+			case IL_META_MEMBERKIND_PROPERTY:
+			{
+				/* TODO */
+			}
+			break;
+
+			case IL_META_MEMBERKIND_EVENT:
+			{
+				/* TODO */
+			}
+			break;
+
+			case IL_META_MEMBERKIND_OVERRIDE:
+			{
+				/* TODO */
+			}
+			break;
+
+			case IL_META_MEMBERKIND_PINVOKE:
+			{
+				/* TODO */
+			}
+			break;
+		}
+	}
+
+	/* Clear the "userData" fields on the new methods, because
+	   we don't need them any more */
+	member = 0;
+	while((member = ILClassNextMemberByKind
+				(classInfo, member, IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		((ILMethod *)member)->userData = 0;
+	}
+
+	/* Done */
+	return 1;
+}
+
+ILClass *ILClassInstantiate(ILImage *image, ILType *classType,
+							ILType *classParams)
+{
+	ILClass *classInfo;
+	ILType *type;
+
+	/* Bail out early if the type does not need instantiation */
+	if(!ILTypeNeedsInstantiation(classType))
+	{
+		return ILClassFromType(image, 0, classType, 0);
+	}
+
+	/* Search for a synthetic type that matches the expanded
+	   form of the class type, in case we already instantiated
+	   this class previously.  We do this in such a way that we
+	   won't need to call "ILTypeInstantiate" unless necessary */
+	classInfo = _ILTypeToSyntheticInstantiation(image, classType, classParams);
+	if(classInfo)
+	{
+		if((classInfo->attributes & IL_META_TYPEDEF_CLASS_EXPANDED) == 0)
+		{
+			if(!ExpandInstantiations(image, classInfo, classType, classParams))
+			{
+				return 0;
+			}
+		}
+		return classInfo;
+	}
+
+	/* Instantiate the class type */
+	type = ILTypeInstantiate(image->context, classType, classParams, 0);
+	if(!type)
+	{
+		return 0;
+	}
+
+	/* Create a synthetic type for the expanded form */
+	classInfo = ILClassFromType(image, 0, type, 0);
+	if(!classInfo)
+	{
+		return 0;
+	}
+	if(!ExpandInstantiations(image, classInfo, type, classParams))
+	{
+		return 0;
+	}
+	return classInfo;
+}
+
 #ifdef	__cplusplus
 };
 #endif

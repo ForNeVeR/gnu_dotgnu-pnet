@@ -790,6 +790,14 @@ void ILClassDetachMember(ILMember *member);
 void ILClassAttachMember(ILClass *info, ILMember *member);
 
 /*
+ * Instantiate a class type that involves generic parameters.
+ * Returns a synthetic class for the instantiation, or NULL
+ * if insufficient memory to perform the instantiation.
+ */
+ILClass *ILClassInstantiate(ILImage *image, ILType *classType,
+							ILType *classParams);
+
+/*
  * Helper macros for querying information about a class.
  */
 #define	ILClass_FromToken(image,token)	\

@@ -1,4 +1,11 @@
 
+2003-02-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/generic.c, image/image.h, image/program.h,
+	image/synthetic.c, include/il_program.h: implement the basic
+	parts of "ILClassInstantiate", to turn a generic class
+	declaration into a particular instance.
+
 2003-02-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/engine.h, engine/pinvoke.c: use the

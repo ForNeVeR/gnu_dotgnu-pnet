@@ -246,7 +246,8 @@ struct _tagILClass
 #define	IL_META_TYPEDEF_COMPLETE		0x40000000	/* Definition is complete */
 #define	IL_META_TYPEDEF_CCTOR_ONCE		0x20000000	/* .cctor already done */
 #define	IL_META_TYPEDEF_GENERIC_PARS	0x10000000	/* Has generic parameters */
-#define	IL_META_TYPEDEF_SYSTEM_MASK		0xF0000000	/* System flags */
+#define	IL_META_TYPEDEF_CLASS_EXPANDED	0x08000000	/* Generics expanded */
+#define	IL_META_TYPEDEF_SYSTEM_MASK		0xF8000000	/* System flags */
 
 /*
  * Information about an "implements" clause for a class.

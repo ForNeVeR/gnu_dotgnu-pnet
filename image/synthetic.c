@@ -539,6 +539,18 @@ ILClass *_ILTypeToSyntheticOther(ILImage *image, ILType *type)
 	return info;
 }
 
+ILClass *_ILTypeToSyntheticInstantiation
+		(ILImage *image, ILType *type, ILType *classParams)
+{
+	/* TODO: do this without calling ILTypeInstantiate */
+	type = ILTypeInstantiate(image->context, type, classParams, 0);
+	if(!type)
+	{
+		return 0;
+	}
+	return ILHashFindType(image->context->syntheticHash, type, ILClass);
+}
+
 #ifdef	__cplusplus
 };
 #endif

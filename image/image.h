@@ -502,6 +502,13 @@ ILClass *_ILTypeToSyntheticArray(ILImage *image, ILType *type, int singleDim);
 ILClass *_ILTypeToSyntheticOther(ILImage *image, ILType *type);
 
 /*
+ * Look up a synthetic class for an instantiated type.
+ * Returns NULL if not possible, or out of memory.
+ */
+ILClass *_ILTypeToSyntheticInstantiation
+		(ILImage *image, ILType *type, ILType *classParams);
+
+/*
  * Compact all type and member references in an image to
  * remove tokens that have been replaced with definitions.
  */

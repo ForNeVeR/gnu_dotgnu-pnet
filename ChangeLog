@@ -1,4 +1,10 @@
 
+2002-07-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/common/cc_options.c: add the "-gtk" and "-gnome" options
+	to the compiler, to make it easier for programmers to add the
+	necessary libraries to the command-line.
+
 2002-07-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_invoke.tc, engine/engine.h, engine/lib_delegate.c,

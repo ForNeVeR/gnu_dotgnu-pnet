@@ -240,6 +240,30 @@ static void lOption(char *arg)
 }
 
 /*
+ * Process a -gtk option.
+ */
+static void gtkOption(char *arg)
+{
+	lOption("gtk-sharp");
+	lOption("gdk-sharp");
+	lOption("gdk-imaging-sharp");
+	lOption("atk-sharp");
+	lOption("pango-sharp");
+	lOption("glib-sharp");
+	lOption("System.Drawing");
+	lOption("System");
+}
+
+/*
+ * Process a -gnome option.
+ */
+static void gnomeOption(char *arg)
+{
+	lOption("gnome-sharp");
+	gtkOption(arg);
+}
+
+/*
  * Process a -f option.
  */
 static void fOption(char *arg)
@@ -376,6 +400,10 @@ static CmdLineOpt const options[] = {
 			N_("-L<dir>"), N_("Add <dir> to the library link path")},
 	{"-l",			2,	0,						0,	lOption,
 			N_("-l<lib>"), N_("Link against the library <lib>")},
+	{"-gtk",		0,	0,						0,	gtkOption,
+			N_("-gtk"), N_("Link against the Gtk# libraries")},
+	{"-gnome",		0,	0,						0,	gnomeOption,
+			N_("-gnome"), N_("Link against the Gnome# libraries")},
 	{"-f",			2,	0,						0,	fOption, 0, 0},
 	{"-m",			2,	0,						0,	mOption, 0, 0},
 	{"-Wl,",		4,	0,						0,	0,	0, 0},

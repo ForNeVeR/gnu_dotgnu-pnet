@@ -982,7 +982,10 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 		{
 			strcpy(fullName, baseName);
 		}
-		strcat(fullName, suffix);
+		if(suffix)
+		{
+			strcat(fullName, suffix);
+		}
 		ILFree(baseName);
 		return fullName;
 	}

@@ -1,4 +1,8 @@
 
+2003-01-15  Gopal.V  <gopalv82@symonds.net>
+	
+	* image/link.c: fix minor bug when the PInvoke shared objects are missing.
+	
 2003-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilasm/ilasm_grammar.y: remove duplicate definition of I_IMETHOD.

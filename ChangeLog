@@ -7,6 +7,8 @@
 ilfind/ilfind.c, ilnative/ilnative.c, ilsize/ilsize.c, image/link.c:
 modify to use the simpler "ILImageLoadFromFile" API.
 
+* doc/pnet_faq.html: update the FAQ.
+
 2001-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * tests/Makefile.am, tests/ilunit.c, tests/test_varith.c,

@@ -6,12 +6,42 @@
 <h1>DotGNU Portable.Net FAQ</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/08/14 02:04:24 $<p>
+Last Modified: $Date: 2001/11/26 02:22:46 $<p>
 
 Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
 
-<h2>1. What is DotGNU Portable.NET?</h2>
+<h2>Index</h2>
+
+1. <a href="#q1">What is DotGNU Portable.NET?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.1. <a href="#q1_1">What is pnet?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.2. <a href="#q1_2">What is pnetlib?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.3. <a href="#q1_3">What is treecc?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.4. <a href="#q1_4">What is PNetMark?</a><br>
+2. <a href="#q2">C# compiler questions</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.1. <a href="#q2_1">Why not write the compiler tools in C#?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.2. <a href="#q2_2">If the compiler was written in C#, wouldn't reuse be easier?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.3. <a href="#q2_3">I've heard that you can compile C# to the JVM.  Is that correct?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.4. <a href="#q2_4">Why don't you use gcc as the basis for your C# compiler?</a><br>
+3. <a href="#q4">Copyright issues</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.1. <a href="#q4_1">Why isn't the C# library LGPL?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.2. <a href="#q4_2">Who owns the Copyright on patches?</a><br>
+4. <a href="#q4">How can I help?</a><br>
+5. <a href="#q5">CVS, versions, patches, etc</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;5.1. <a href="#q5_1">How do I access the source via CVS?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;5.2. <a href="#q5_2">What is with the version numbers?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;5.3. <a href="#q5_3">I have a patch.  What should I do now?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;5.4. <a href="#q5_4">Coding conventions</a><br>
+6. <a href="#q6">Standards</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;6.1. <a href="#q6_1">Where are the ECMA standards?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;6.2. <a href="#q6_2">Why do you have more classes than ECMA specifies?</a><br>
+7. <a href="#q7">Other .NET Efforts</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;7.1. <a href="#q7_1">Mono</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;7.2. <a href="#q7_2">Why not co-operate with Mono?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;7.3. <a href="#q7_1">OCL</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;7.4. <a href="#q7_3">What other free software and open source .NET efforts are there?</a><br>
+
+<a name="q1"><h2>1. What is DotGNU Portable.NET?</h2>
 
 DotGNU Portable.NET is a project under the
 <a href="http://www.dotgnu.org">DotGNU</a> meta-project.  Its goal is
@@ -28,7 +58,75 @@ specifications for CLI.  There are other projects under the DotGNU
 meta-project to build other necessary pieces of infrastructure, and
 to explore non-CLI approaches to virtual machine implementation.<p>
 
-<h2>2. Why not write the compiler tools in C#?</h2>
+<a name="q1_1"><h3>1.2. What is pnet?</h3>
+
+The bulk of DotGNU Portable.NET is made up of the runtime engine,
+the C# compiler, and a host of useful development tools.  This
+package is generally referred to as "pnet".<p>
+
+<a name="q1_2"><h3>1.2. What is pnetlib?</h3>
+
+The C# system library was split off from the main source distribution
+during the early phases of development.  The main reason for this was
+to enable other free software .NET efforts to reuse the code.<p>
+
+Note: It isn't possible to compiler pnetlib with DotGNU Portable.NET's
+C# compiler yet.  The compiler can perform a syntax check, but not
+a full compile.  A pre-compiled version of the library is distributed
+with "pnet" as "<code>samples/mscorlib.dll</code>".  If you wish to
+modify the library, you will need to use Microsoft's C# compiler.<p>
+
+<a name="q1_3"><h3>1.3. What is treecc?</h3>
+
+Treecc is a tool that we wrote to assist in the development of cscc.
+It complements flex and bison by providing support for abstract syntax
+tree creation and manipulation.<p>
+
+Treecc performs most of the housekeeping within the core of the compiler,
+allowing the programmer to concentrate on the specifics of language
+implementation.  A fuller account of how treecc works can be found
+at its Web site, <a href="http://www.southern-storm.com.au/treecc.html">http://www.southern-storm.com.au/treecc.html</a>.<p>
+
+Other tools, such as Antlr, do have similar functionality, but we
+found it more convenient to write our own tool.  We needed something
+that worked with C and which could perform a large amount of error-checking
+on the abstract syntax tree definitions.  No other tool provided the right
+combination.<p>
+
+<a name="q1_4"><h3>1.4. What is PNetMark?</h3>
+
+PNetMark is a benchmarking tool for Common Language Runtime (CLR)
+environments.  It is loosely based on the techniques used by the
+CaffeineMark to benchmark Java.<p>
+
+The purpose of this tool is not to compare DotGNU Portable.NET with
+other systems.  Rather, it is intended to identify areas of DotGNU
+Portable.NET that may need further attention.<p>
+
+The <code>README</code> file within the PNetMark distribution contains
+additional information on running the benchmark.  It also contains
+a description as to why you should never believe what benchmarks
+tell you, especially when comparing different systems.<p>
+
+You may be tempted to run PNetMark against the Microsoft CLR.  If you
+do, you cannot tell the author of the benchmark, or anyone else for
+that matter, what the results are.  The following is an excerpt from
+Microsoft's End User License Agreement (EULA) for their .NET Framework SDK:<p>
+
+<blockquote>
+6.	Performance or Benchmark Testing. You may not disclose the
+results of any benchmark test of either the Server Software or
+Client Software to any third party without Microsoft's prior
+written approval.
+</blockquote>
+
+Thus, you can run the benchmark if you like, but you must keep the
+results to yourself.  If you don't like this, then you will have to
+take it up with Microsoft's lawyers.<p>
+
+<a name="q2"><h2>2. C# compiler questions</h2>
+
+<a name="q2_1"><h3>2.1. Why not write the compiler tools in C#?</h3>
 
 The main reason is the "chicken and egg" problem.  We wouldn't be
 able to run the compiler until the runtime engine and the
@@ -54,7 +152,7 @@ you must trust that the bootstrapped binary version of the compiler
 does not have any back doors.  Inspecting the source code is not
 sufficient to perform a full security audit.<p>
 
-<h2>3. If the compiler was written in C#, wouldn't reuse be easier?</h2>
+<a name="q2_2"><h3>2.2. If the compiler was written in C#, wouldn't reuse be easier?</h3>
 
 Theoretically, yes.  Reuse is the stated reason for why the
 <a href="http://www.go-mono.com/">Mono</a> project is writing all of
@@ -73,23 +171,12 @@ which cscc processes to produce the final executable.  Plug-ins
 can either do this conversion their own way, or reuse the "codegen"
 facilities to do most of the hard work for them.<p>
 
-<h2>4. I've heard that you can compile C# to the JVM.  Is that correct?</h2>
+<a name="q2_3"><h3>2.3. I've heard that you can compile C# to the JVM.  Is that correct?</h3>
 
 Yes.  The cscc compiler is architected so that it can compile to either
 IL or JVM bytecode.  Adding other bytecode formats would be quite easy.<p>
 
-<h2>5. What is treecc?</h2>
-
-Treecc is a tool that we wrote to assist in the development of cscc.
-It complements flex and bison by providing support for abstract syntax
-tree creation and manipulation.<p>
-
-Treecc performs most of the housekeeping within the core of the compiler,
-allowing the programmer to concentrate on the specifics of language
-implementation.  A fuller account of how treecc works can be found
-at its Web site, <a href="http://www.southern-storm.com.au/treecc.html">http://www.southern-storm.com.au/treecc.html</a>.<p>
-
-<h2>6. Using gcc as a compiler</h2>
+<a name="q2_4"><h3>2.4. Why don't you use gcc as the basis for your C# compiler?</h3>
 
 A common question that arises is why we aren't using gcc to compile
 C# code to IL.  Strategically, we would like to be able to reuse all
@@ -97,10 +184,12 @@ of the good work that has gone into gcc.  The DotGNU Project currently
 has an open request for someone to volunteer to modify gcc to generate
 IL bytecode.<p>
 
-However it isn't quite as easy as it looks.  The following sections
-provide a blow by blow account of why this is so hard.<p>
+However it isn't quite as easy as it looks.  The following script of
+a hypothetical discussion provides a blow by blow account of why this
+is so hard.  This script is based in part on e-mails we have exchanged
+with users in the past.<p>
 
-<h3>6.1. Why don't you add C# to the list of languages gcc supports?</h3>
+<i>Why don't you add C# to the list of languages gcc supports?</i><p>
 
 Because it won't solve the problem that we need to solve.<p>
 
@@ -111,8 +200,8 @@ generate native code as well, but that is optional.<p>
 Putting a C# parser on the front of gcc would give us a native
 compiler, but it won't give us an IL bytecode compiler.<p>
 
-<h3>6.2. So what?  Add an IL bytecode backend to gcc, and you'll solve your
-problem, and also be able to compile C, C++, Fortran, etc, to .NET.</h3>
+<i>So what?  Add an IL bytecode backend to gcc, and you'll solve your
+problem, and also be able to compile C, C++, Fortran, etc, to .NET.</i><p>
 
 This is not as easy as it looks.  Gcc is divided into a number of
 phases: parsing, semantic analysis, tree-to-RTL conversion, RTL
@@ -130,8 +219,8 @@ reference is mostly lost.  Information about the class structure
 of the code is lost.  This information is critical for correct
 compilation of C# to IL.<p>
 
-<h3>6.3. But hang on a second!  Gcj, the Java back-end for gcc, does stack
-machines!  Why not do something like that?</h3>
+<i>But hang on a second!  Gcj, the Java back-end for gcc, does stack
+machines!  Why not do something like that?</i><p>
 
 Err ... no it doesn't.  The Java bytecode stuff in gcj is not
 organised as an RTL back-end.<p>
@@ -150,8 +239,8 @@ Because gcj does NOT implement a bytecode RTL back-end for gcc, it
 cannot compile C, C++, etc down to bytecode.  Java bytecode is a
 special case that only works for the Java front-end.<p>
 
-<h3>6.4. But what about egcs-jvm?  Doesn't it compile C to
-Java bytecode?</h3>
+<i>But what about egcs-jvm?  Doesn't it compile C to
+Java bytecode?</i><p>
 
 It's a hack.  The code that it generates is horrible, and does not
 conform to the usual conventions that the JVM requires.  If one
@@ -165,7 +254,7 @@ The result wasn't pretty.  He has said that it would be easier to
 throw the JVM away and invent a register-based abstract machine
 than try to make gcc generate efficient stack machine code.<p>
 
-<h3>6.5. Isn't there a gcc port to the Transputer, which is stack-based?</h3>
+<i>Isn't there a gcc port to the Transputer, which is stack-based?</i><p>
 
 Yes there is, for an older version of gcc (2.7.2).  The source can
 be found <a href="http://wotug.ukc.ac.uk/parallel/transputer/software/compilers/gcc/pereslavl">here</a>.<p>
@@ -191,8 +280,8 @@ for memory.  RTL assumes that main memory is a flat, untyped, address space,
 where any kind of value can be stored in any word.  Partitioning main memory
 into separate types may not be possible without a rewrite of RTL.<p>
 
-<h3>6.6. OK, so do something similar to gcj for C#.  Use two code generators.
-That would work right?</h3>
+<i>OK, so do something similar to gcj for C#.  Use two code generators.
+That would work right?</i><p>
 
 Yes it would, except for one small catch.<p>
 
@@ -218,157 +307,15 @@ that passes all languages through a separate code generator that
 knows about stack machines.  Then we can write STL back-ends for
 IL and JVM bytecode.  Both gcj and DotGNU would benefit from this.<p>
 
-<h3>6.7. We're not buying it.  It's not as hard as you think.</h3>
+<i>We're not buying it.  It's not as hard as you think.</i><p>
 
 Fine.  Prove us wrong.  Download the gcc sources and have at it.
 The Transputer port may be a good place to start to get ideas,
 or it may not.<p>
 
-<h2>7. Other .NET Efforts</h2>
+<a name="q3"><h2>3. Copyright issues</h2>
 
-<h3>7.1. Mono</h3>
-
-The <a href="http://www.go-mono.com">Mono</a> project that is
-run by <a href="http://www.ximian.com">Ximian</a> has many of
-the same goals as DotGNU Portable.NET.  See their Web site
-for further details.<p>
-
-<h3>7.2. Why not co-operate with Mono?</h3>
-
-We have suggested dividing up the work to prevent duplication,
-but Mono seems determined to do things their own way.<p>
-
-Therefore, we will treat Mono like any other GPL-using project:
-if they have something useful that we can use, we will use it.
-Otherwise we will continue developing DotGNU Portable.NET
-as we see fit.<p>
-
-We are interested in co-operating with anyone interested in
-co-operating with us.<p>
-
-<h3>7.3. What other free software and open source .NET efforts are there?</h3>
-
-We are not aware of any other projects that are tackling the
-entire .NET platform at present, but there are some that are tackling
-tools such as decompilers, IDE's, etc.  Mono's FAQ contains an up
-to date list.<p>
-
-<h2>8. How can I help?</h2>
-
-The biggest area that needs to be tackled is the C# library,
-<a href="http://www.southern-storm.com.au/portable_net_lib.html">pnetlib</a>.
-Pick a class, any class, implement it, and send us the changes.<p>
-
-We could also use some assistance with documentation of the API's
-within the current code base.  Mostly this involves converting
-the contents of the ".h" files in the "include" directory into
-Texinfo-compatible documentation and examples.<p>
-
-Other than that, if you find an interesting problem to work on
-in the DotGNU Portable.NET codebase, then work on it for a bit, and
-send us the patches.  If it is the kind of code we're looking for,
-we'll discuss further collaboration.<p>
-
-<h2>9. CVS, versions, patches, etc</h2>
-
-<h3>9.1. How do I access the source via CVS?</h3>
-
-All of the DotGNU Portable.NET code is available via CVS from
-Savannah, <a href="http://savannah.gnu.org/">http://savannah.gnu.org/</a>.
-See that site for details on accessing the repository
-via anonymous CVS, or via the Web interface.<p>
-
-The repository name for DotGNU Portable.NET is "<code>dotgnu-pnet</code>",
-and it contains three modules: "<code>pnet</code>", "<code>pnetlib</code>",
-and "<code>treecc</code>".<p>
-
-<h3>9.2. What is with the version numbers?</h3>
-
-Versions 0.1.2 and prior used a version numbering scheme that Rhys
-Weatherley concocted out of thin air.  After the move to the Savannah
-CVS repository, the following conventions were adopted:<p>
-
-The working CVS version will always end in an odd number, and the
-released version will always end in an even number.  For example,
-"0.1.3" is the working version that will lead up to the "0.1.4"
-release version.<p>
-
-When a major component is judged to be complete, the version numbers
-will advance at the next-higher level.  For example, the numbers
-jumped from "0.0.6" to "0.1.0" when the disassembler was completed.
-The primary maintainer, Rhys Weatherley, decides when a major
-version jump is to occur.<p>
-
-This convention will be adopted across all DotGNU Portable.NET components:
-"<code>pnet</code>", "<code>pnetlib</code>", and "<code>treecc</code>".<p>
-
-Starting from version "0.1.4" of DotGNU Portable.NET, tags will be added
-to the CVS tree whenever a release version is cut.  The tag for version
-"0.1.4" will be "r_0_1_4".  Working versions will never have a tag.<p>
-
-<h3>9.3. I have a patch.  What should I do now?</h3>
-
-The best way to submit the patch is through the patch manager on
-Savannah.  That will allows us to track it.<p>
-
-Please include comments with your patch that explain what it is
-for.  Also include your full e-mail address, and any information
-related to Copyright assignment (see below).<p>
-
-The maintainers will decide on a case by case basis whether to
-accept a patch.  Submitting it does not guarantee inclusion.<p>
-
-<h3>9.4. Who owns the Copyright on patches?</h3>
-
-The <a href="http://www.dotgnu.org/">DotGNU Project</a> is working
-on guidelines for explicit Copyright assignment.  When they have
-been finalised, they will replace the guidelines below.<p>
-
-For small patches, Copyright will automatically revert to the primary
-maintainer for the files or directories being patched.  If you don't
-want this to happen, then don't submit the patch.<p>
-
-For larger patches, you should explicitly assign the Copyright
-to the primary maintainer, or to FreeDevelopers.  We prefer that
-you assign the Copyright to the maintainer of the files you are
-patching, to prevent dilution of the Copyright on those files.
-Should problems arise in the future, it is easier to replace
-an entire file than edit the contents of a single file.<p>
-
-To assign the Copyright, include a notice in the patch comments as to
-how you want the Copyright assigned.  If you don't include such a
-comment, we will need to contact you via e-mail to get your
-permission.<p>
-
-The <a href="http://www.gnu.org/">GNU Project</a> has strict
-guidelines about Copyright assignment.  The goal is to have
-a predictable Copyright on each GNU package, should legal action
-ever need to be taken to defend the GPL.  If you don't agree
-to these guidelines, then don't submit the patch.<p>
-
-<h3>9.5. Coding conventions</h3>
-
-The DotGNU Portable.NET code currently using the following
-coding conventions:
-
-<ul>
-	<li>TAB's are set at 4, not 8.</li>
-	<li>The opening brace for a block is on the next line:
-<blockquote><code>if(condition)<br>
-{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;...<br>
-}<br></code></blockquote></li>
-	<li>Comments that describe a function are in the .h file, not the
-		.c file.  Do not put an extra copy in the .c file, because then
-		the two copies will get out of sync in the future.</li>
-</ul>
-
-If you are submitting patches to an existing file, then use the
-same conventions as currently exist in that file.  If you are
-writing a completely new source file, then you may use your own
-coding conventions, but we would prefer consistency with the above.<p>
-
-<h2>10. Why isn't the C# library LGPL?</h2>
+<a name="q3_1"><h3>3.1. Why isn't the C# library LGPL?</h3>
 
 The license on the C# library, "<code>pnetlib</code>", is distributed
 under a modified GPL license:
@@ -416,6 +363,215 @@ described above.<p>
 [Aside: by "native method" we mean any method that is implemented in
 something other than IL bytecode.  This includes PInvoke functions and
 "internalcall" methods, among others.]<p>
+
+<a name="q3_2"><h3>3.2. Who owns the Copyright on patches?</h3>
+
+The <a href="http://www.dotgnu.org/">DotGNU Project</a> is working
+on guidelines for explicit Copyright assignment.  When they have
+been finalised, they will replace the guidelines below.<p>
+
+For small patches, Copyright will automatically revert to the primary
+maintainer for the files or directories being patched.  If you don't
+want this to happen, then don't submit the patch.<p>
+
+For larger patches, you should explicitly assign the Copyright
+to the primary maintainer, or to FreeDevelopers.  We prefer that
+you assign the Copyright to the maintainer of the files you are
+patching, to prevent dilution of the Copyright on those files.
+Should problems arise in the future, it is easier to replace
+an entire file than edit the contents of a single file.<p>
+
+To assign the Copyright, include a notice in the patch comments as to
+how you want the Copyright assigned.  If you don't include such a
+comment, we will need to contact you via e-mail to get your
+permission.<p>
+
+The <a href="http://www.gnu.org/">GNU Project</a> has strict
+guidelines about Copyright assignment.  The goal is to have
+a predictable Copyright on each GNU package, should legal action
+ever need to be taken to defend the GPL.  If you don't agree
+to these guidelines, then don't submit the patch.<p>
+
+<a name="q4"><h2>4. How can I help?</h2>
+
+The biggest area that needs to be tackled is the C# library,
+<a href="http://www.southern-storm.com.au/portable_net_lib.html">pnetlib</a>.
+Pick a class, any class, implement it, and send us the changes.
+See the question on "Standards" for information on obtaining
+the ECMA class library documentation.<p>
+
+We could also use some assistance with documentation of the API's
+within the current code base.  Mostly this involves converting
+the contents of the ".h" files in the "include" directory into
+Texinfo-compatible documentation and examples.<p>
+
+Other than that, if you find an interesting problem to work on
+in the DotGNU Portable.NET codebase, then work on it for a bit, and
+send us the patches.  If it is the kind of code we're looking for,
+we'll discuss further collaboration.<p>
+
+<a name="q5"><h2>5. CVS, versions, patches, etc</h2>
+
+<a name="q5_1"><h3>5.1. How do I access the source via CVS?</h3>
+
+All of the DotGNU Portable.NET code is available via CVS from
+Savannah, <a href="http://savannah.gnu.org/">http://savannah.gnu.org/</a>.
+The main project Web page is at
+<a href="http://savannah.gnu.org/projects/dotgnu-pnet/">http://savannah.gnu.org/projects/dotgnu-pnet/</a>, and the CVS instructions are at
+<a href="http://savannah.gnu.org/cvs/?group_id=353">http://savannah.gnu.org/cvs/?group_id=353</a>.<p>
+
+The repository name for DotGNU Portable.NET is "<code>dotgnu-pnet</code>",
+and it contains three modules: "<code>pnet</code>", "<code>pnetlib</code>",
+and "<code>treecc</code>".<p>
+
+<a name="q5_2"><h3>5.2. What is with the version numbers?</h3>
+
+Versions 0.1.2 and prior used a version numbering scheme that Rhys
+Weatherley concocted out of thin air.  After the move to the Savannah
+CVS repository, the following conventions were adopted:<p>
+
+The working CVS version will always end in an odd number, and the
+released version will always end in an even number.  For example,
+"0.1.3" is the working version that will lead up to the "0.1.4"
+release version.<p>
+
+When a major component is judged to be complete, the version numbers
+will advance at the next-higher level.  For example, the numbers
+jumped from "0.0.6" to "0.1.0" when the disassembler was completed.
+The primary maintainer, Rhys Weatherley, decides when a major
+version jump is to occur.<p>
+
+This convention will be adopted across all DotGNU Portable.NET components:
+"<code>pnet</code>", "<code>pnetlib</code>", and "<code>treecc</code>".<p>
+
+Starting from version "0.1.4" of DotGNU Portable.NET, tags will be added
+to the CVS tree whenever a release version is cut.  The tag for version
+"0.1.4" will be "r_0_1_4".  Working versions will never have a tag.<p>
+
+<a name="q5_3"><h3>5.3. I have a patch.  What should I do now?</h3>
+
+The best way to submit the patch is through the patch manager on
+Savannah.  That will allow us to track it.<p>
+
+Please include comments with your patch that explain what it is
+for.  Also include your full e-mail address, and any information
+related to Copyright assignment (see "Who owns the Copyright on patches?").<p>
+
+The maintainers will decide on a case by case basis whether to
+accept a patch.  Submitting it does not guarantee inclusion.<p>
+
+<a name="q5_4"><h3>5.4. Coding conventions</h3>
+
+The DotGNU Portable.NET code currently using the following
+coding conventions:
+
+<ul>
+	<li>TAB's are set at 4, not 8.</li>
+	<li>The opening brace for a block is on the next line:
+<blockquote><code>if(condition)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+}<br></code></blockquote></li>
+	<li>Comments that describe a function are in the .h file, not the
+		.c file.  Do not put an extra copy in the .c file, because then
+		the two copies will get out of sync in the future.</li>
+</ul>
+
+If you are submitting patches to an existing file, then use the
+same conventions as currently exist in that file.  If you are
+writing a completely new source file, then you may use your own
+coding conventions, but we would prefer consistency with the above.<p>
+
+<a name="q6"><h2>6. Standards</h2>
+
+<a name="q6_1"><h3>6.1. Where are the ECMA standards?</h3>
+
+The latest versions of the ECMA standards for the Common Language
+Infrastructure (CLI) and the C# languages can be found at Microsoft's
+MSDN Web site:<p>
+
+<blockquote>
+<a href="http://msdn.microsoft.com/net/ecma/">http://msdn.microsoft.com/net/ecma/</a>
+</blockquote>
+
+If you wish to contribute to the C# library, you will need the
+following file:<p>
+
+<blockquote>
+<a href="http://msdn.microsoft.com/net/ecma/All.xml">http://msdn.microsoft.com/net/ecma/All.xml</a>
+</blockquote>
+
+Use the "<code>csdoc2html</code>" program to convert this XML file into HTML,
+so that you can view its contents more easily.<p>
+
+<a name="q6_2"><h3>6.2. Why do you have more classes than ECMA specifies?</h3>
+
+ECMA specifies the bare minimum necessary to get a Common Language
+Runtime (CLR) to work.  However, this bare minimum is not very useful
+for realistic C# applications.<p>
+
+Microsoft's .NET Framework SDK contains a lot more classes in its
+base class libraries.  Because we wish to be (more or less) compatible
+with Microsoft's .NET offerings, we have to implement more than ECMA
+specifies.<p>
+
+We generally follow the ECMA specifications to the letter, and only
+deviate from them where they are missing information, or the information
+conflicts with Microsoft's actual implementation.<p>
+
+<a name="q7"><h2>7. Other .NET Efforts</h2>
+
+<a name="q7_1"><h3>7.1. Mono</h3>
+
+The <a href="http://www.go-mono.com">Mono</a> project that is
+run by <a href="http://www.ximian.com">Ximian</a> has many of
+the same goals as DotGNU Portable.NET.  See their Web site
+for further details.<p>
+
+<a name="q7_2"><h3>7.2. Why not co-operate with Mono?</h3>
+
+We have suggested dividing up the work to prevent duplication,
+but Mono seems determined to do things their own way.<p>
+
+More recently, we have been discussing common standards and design
+methodologies with Mono to ensure that our two systems successfully
+interoperate.  This is more at the design level than at the code
+level, but it is still useful.<p>
+
+We may be able to use some of Mono's upper-level C# libraries,
+and hence co-operate more on that basis.  For various technical
+reasons, Mono's lower-level C# library "corlib" will not work
+with DotGNU Portable.NET's runtime engine, and so we still need
+"pnetlib".<p>
+
+But generally, we will treat Mono like any other GPL-using project:
+if they have something useful that we can use, we will use it.
+Otherwise we will continue developing DotGNU Portable.NET
+as we see fit.<p>
+
+<a name="q7_3"><h3>7.3. OCL</h3>
+
+Intel have written a C# class library, which they call the Open CLI
+Library (OCL).  A unique feature of this library is that its interfaces
+have been automatically generated from the ECMA specifications, whereas
+DotGNU Portable.NET and Mono have copied the interfaces by hand.
+The library can be obtained at the following site:<p>
+
+<blockquote>
+<a href="http://ocl.sourceforge.net/">http://ocl.sourceforge.net/</a>
+</blockquote>
+
+<a name="q7_4"><h3>7.4. What other free software and open source .NET efforts are there?</h3>
+
+We are not aware of any other projects that are tackling the
+entire .NET platform at present, but there are some that are tackling
+tools such as decompilers, IDE's, etc.  Mono's FAQ contains an up
+to date list.<p>
+
+<hr>
+
+Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
+Permission to distribute unmodified copies of this work is hereby granted.
 
 </body>
 </html>

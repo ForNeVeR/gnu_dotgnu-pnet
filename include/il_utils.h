@@ -138,6 +138,7 @@ typedef struct _tagILMemStack
 	void		   *blocks;			/* List of blocks in the stack */
 	unsigned long	currSize;		/* Current size of the stack */
 	unsigned long	maxSize;		/* Maximum size of the stack */
+	void           *extras;			/* List of extra malloc'ed blocks */
 
 } ILMemStack;
 

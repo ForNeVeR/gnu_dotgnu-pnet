@@ -30,7 +30,10 @@ extern	"C" {
  * Tuning parameters.
  */
 #ifndef	IL_MEMSTACK_BLOCK_SIZE
-#define	IL_MEMSTACK_BLOCK_SIZE	16384
+#define	IL_MEMSTACK_BLOCK_SIZE			16384
+#endif
+#ifndef	IL_MEMSTACK_MAX_OBJECT_SIZE
+#define	IL_MEMSTACK_MAX_OBJECT_SIZE		1024
 #endif
 
 void ILMemStackInit(ILMemStack *stack, unsigned long maxSize)
@@ -40,6 +43,7 @@ void ILMemStackInit(ILMemStack *stack, unsigned long maxSize)
 	stack->blocks = 0;
 	stack->currSize = 0;
 	stack->maxSize = maxSize;
+	stack->extras = 0;
 }
 
 void ILMemStackDestroy(ILMemStack *stack)
@@ -52,9 +56,17 @@ void ILMemStackDestroy(ILMemStack *stack)
 		ILPageFree(block, stack->size);
 		block = next;
 	}
+	block = stack->extras;
+	while(block != 0)
+	{
+		next = *((void **)block);
+		ILFree(block);
+		block = next;
+	}
 	stack->posn = stack->size;
 	stack->blocks = 0;
 	stack->currSize = 0;
+	stack->extras = 0;
 }
 
 void *ILMemStackAllocItem(ILMemStack *stack, unsigned size)
@@ -63,6 +75,27 @@ void *ILMemStackAllocItem(ILMemStack *stack, unsigned size)
 
 	/* Round up the size to the nearest alignment boundary */
 	size = (size + IL_BEST_ALIGNMENT - 1) & ~(IL_BEST_ALIGNMENT - 1);
+
+	/* If the size is greater than the maximum object size,
+	   then put the data into a separate malloc'ed block */
+	if(size > IL_MEMSTACK_MAX_OBJECT_SIZE)
+	{
+		if(stack->maxSize && (stack->currSize + size + 64) > stack->maxSize)
+		{
+			/* We've reached the built-in limit for the stack */
+			return 0;
+		}
+		ptr = ILMalloc(size + IL_BEST_ALIGNMENT);
+		if(!ptr)
+		{
+			/* The system itself is out of memory */
+			return 0;
+		}
+		stack->currSize += size + 64;
+		*((void **)ptr) = stack->extras;
+		stack->extras = ptr;
+		return (void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);
+	}
 
 	/* Do we need to allocate a new block? */
 	if((stack->posn + size) > stack->size)

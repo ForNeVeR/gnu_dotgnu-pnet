@@ -10,6 +10,10 @@
 	in field and method signatures; implement "ILMethodGetCode"
 	for Java methods.
 
+	* include/il_utils.h, support/memstack.c: allocate objects
+	greater than 1k in a separate list, to allow for the allocation
+	of arbitrarily-sized objects on a memory stack.
+
 2001-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: add a "Standards" section with links to the ECMA

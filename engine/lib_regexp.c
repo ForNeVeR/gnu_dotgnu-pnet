@@ -91,7 +91,7 @@ ILNativeInt _IL_RegexpMethods_CompileWithSyntaxInternal(ILExecThread *_thread,
 	else
 	{
 		re_set_syntax((reg_syntax_t)syntax);
-		error=(IL_re_compile_pattern(pat,strlen(pat),result) == 0);
+		error=(IL_re_compile_pattern(pat,strlen(pat),result) != NULL);
 	}
 	if(error != 0)
 	{

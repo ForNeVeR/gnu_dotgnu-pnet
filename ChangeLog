@@ -1,4 +1,9 @@
 
+2003-05-23  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/lib_regexp.c: Minor fix to CompileWithSyntaxInternal ,
+	IL_re_compile_pattern returns NULL on success.
+
 2003-05-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/ser_parse.c (ILSerializeGetType): assume that an

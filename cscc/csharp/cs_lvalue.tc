@@ -1345,8 +1345,8 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 		/* Check the array's rank */
 		if(numArgs != ILTypeGetRank(CSSemGetType(value)))
 		{
-			CCErrorOnLine(yygetfilename(node->indices),
-						  yygetlinenum(node->indices),
+			CCErrorOnLine(yygetfilename(node->array),
+						  yygetlinenum(node->array),
 						  "incorrect number of indices for `%s'",
 						  CSTypeToName(CSSemGetType(value)));
 		}
@@ -1366,8 +1366,8 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 		objectType = CSSemGetType(value);
 		if(numArgs != 1)
 		{
-			CCErrorOnLine(yygetfilename(node->indices),
-						  yygetlinenum(node->indices),
+			CCErrorOnLine(yygetfilename(node->array),
+						  yygetlinenum(node->array),
 						  "incorrect number of indices for `%s'",
 						  CSTypeToName(objectType));
 		}

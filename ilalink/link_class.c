@@ -42,6 +42,7 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 	ILImplements *newImplements;
 	ILNestedInfo *nested;
 	ILMember *member;
+	ILLibraryFind find;
 
 	/* Convert the parent class reference */
 	parent = ILClass_ParentRef(classInfo);
@@ -131,6 +132,15 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 				return 1;
 			}
 		}
+	}
+	else if(_ILLinkerLibraryReplacement(linker, &find, classInfo))
+	{
+		/* The class is identical to one in a C library, so use that instead */
+		if(newName)
+		{
+			ILFree(newName);
+		}
+		return 1;
 	}
 	else
 	{
@@ -338,6 +348,22 @@ char *_ILLinkerNewMemberName(ILLinker *linker, ILMember *member)
 	strcpy(newName, name);
 	strcat(newName, buf);
 	return newName;
+}
+
+int _ILLinkerLibraryReplacement(ILLinker *linker, ILLibraryFind *find,
+								ILClass *classInfo)
+{
+	_ILLinkerFindInit(find, linker, 0);
+	if(ILClass_NestedParent(classInfo) == 0 &&
+	   _ILLinkerFindClass(find, ILClass_Name(classInfo),
+						  ILClass_Namespace(classInfo)))
+	{
+		if(linker->memoryModel != 0)
+		{
+			return 1;
+		}
+	}
+	return 0;
 }
 
 #ifdef	__cplusplus

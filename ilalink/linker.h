@@ -333,6 +333,14 @@ char *_ILLinkerNewClassName(ILLinker *linker, ILClass *classInfo);
  */
 char *_ILLinkerNewMemberName(ILLinker *linker, ILMember *member);
 
+/*
+ * Find a library class that is identical to a specified local class.
+ * This allows us to favour the library forms of types like FILE instead
+ * of picking up the redefined version in the compiled program.
+ */
+int _ILLinkerLibraryReplacement(ILLinker *linker, ILLibraryFind *find,
+								ILClass *classInfo);
+
 #ifdef	__cplusplus
 };
 #endif

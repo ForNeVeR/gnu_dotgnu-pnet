@@ -117,6 +117,11 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 			return CONVERT_REF_LIBRARY;
 		}
 	}
+	else if(_ILLinkerLibraryReplacement(linker, find, classInfo))
+	{
+		/* A local class has been replaced with a C library class */
+		return CONVERT_REF_LIBRARY;
+	}
 
 	/* If we get here, then we assume that the global class will be
 	   in the final image, and so we create a reference to it.  When
@@ -128,7 +133,8 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 	{
 		name = _ILLinkerModuleName(linker);
 	}
-	else if(ILClass_IsPrivate(classInfo) && linker->memoryModel != 0)
+	else if(ILClass_IsPrivate(classInfo) &&
+	        linker->memoryModel != 0 && !ILClassIsRef(classInfo))
 	{
 		/* Rename the private class to prevent name clashes
 		   with definitions in other C object files */

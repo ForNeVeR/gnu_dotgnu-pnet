@@ -5,6 +5,10 @@
 	cscc/c/c_oper.tc: improvements to C# method invocation in the
 	C compiler; implement implicit C to C# string conversion.
 
+	* ilalink/link_class.c, ilalink/link_type.c, ilalink/linker.h:
+	modify the linker to favour the struct definition in a C library
+	rather than the redefined version in the program (e.g. FILE, passwd).
+
 2002-12-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_class.c: allow a class to be defined multiple times

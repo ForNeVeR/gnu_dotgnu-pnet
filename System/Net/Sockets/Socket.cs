@@ -73,7 +73,7 @@ public class Socket : IDisposable
 				mysockettype = socketType;	
 				
 				if (!(SocketMethods.Create(addressFamily, protocolType, socketType, myhandle)))
-					throw new SocketException();
+					throw new SocketException(SocketMethods.GetErrno(), "Socket");
 
 			}
 			
@@ -103,8 +103,10 @@ public class Socket : IDisposable
 
 				//TODO: Set the remote endpoint of the new socket	
 
-				if (!(SocketMethods.Accept(newsock.myhandle)))
-					throw new SocketException();
+				newsock.Handle = SocketMethods.Accept(newsock.myhandle);
+				
+				if (newsock.Handle == -1)
+					throw new SocketException(SocketMethods.GetErrno(), "Bind");
 				
 			}
 			
@@ -146,6 +148,14 @@ public class Socket : IDisposable
 	
 	public void Bind(EndPoint localEP)
 			{
+				IPEndPoint ipend;
+				
+				//Remove when SocketMethods supports more than IPv4
+				if (typeof(localEP) != System.Net.IPEndPoint)
+					throw new NotSupportedException("localEP", "Something else than IPv4 is not yet supported");				
+
+				ipend = (IPEndPoint) localEP;		
+
 				if (disposed == 0)
 					throw new ObjectDisposedException(_("Exception_Disposed"));
 				
@@ -154,22 +164,32 @@ public class Socket : IDisposable
 			
 				if (!Security.CanUseFilemyhandle(myhandle))
 					throw new SecurityException("myhandle", _("Exception_SecurityNotGranted"));			
-			
-				if (!(SocketMethods.Bind(myhandle, localEP)))
-					throw new SocketException();
+
+				//Change when SocketMethods supports more than IPv4			
+				if (!(SocketMethods.Bind(myhandle, ipend.AddressFamily, ipend.Address, ipend.Port)))
+					throw new SocketException(SocketMethods.GetErrno(), "Bind");			
 
 				mylocalendpoint = localEP;				
 			}
 	
-	[TODO]
+	[TODO] 
 	public void Close()
 			{
 				SocketMethods.Close(myhandle);
 				Dispose(true);
+				//Do other things that are needed, if needed
 			}	
 			
 	public void Connect(EndPoint remoteEP)
 			{		
+				IPEndPoint ipend;
+				
+				//Remove when SocketMethods supports more than IPv4
+				if (typeof(remoteEP) != System.Net.IPEndPoint)
+					throw new NotSupportedException("remoteEP", "Something else than IPv4 is not yet supported");				
+
+				ipend = (IPEndPoint) remoteEP;		
+
 				if (disposed == 0)
 					throw new ObjectDisposedException(_("Exception_Disposed"));
 				
@@ -181,11 +201,12 @@ public class Socket : IDisposable
 						
 				if (!Security.CanUseFilemyhandle(myhandle))
 					throw new SecurityException("myhandle", _("Exception_SecurityNotGranted"));			
-				
-				if (!(SocketMethods.Connect(myhandle, remoteEP)))
-					throw new SocketException();		
+
+				//Change when SocketMethods supports more than IPv4					
+				if (!(SocketMethods.Connect(myhandle, ipend.AddressFamily, ipend.Address, ipend.Port)))
+					throw new SocketException(SocketMethods.GetErrno(), "Connect");		
 														
-					myremoteendpoint = remoteEP;				
+				myremoteendpoint = remoteEP;				
 			}
 	
 	[TODO] 
@@ -275,14 +296,8 @@ public class Socket : IDisposable
 				if (connected)
 					throw new SocketException();
 				
-				try
-				{
-					//TODO: Put socket in listen mode
-				}
-				catch(Exception e)
-				{
-					throw new SocketException();
-				}			
+				if(SocketMethods.Listen(backlog) == -1)
+					throw new SocketException(SocketMethods.GetErrno(), "Listen");
 											
 			}
 	
@@ -355,13 +370,13 @@ public class Socket : IDisposable
 					throw new SecurityException("myhandle", _("Exception_SecurityNotGranted"));					
 
 				if ((sizevalue = SocketMethods.Receive(myhandle, buffer, offset, size, flags)) == -1)
-					throw new SocketException("Receive", _("IO_SocketRead"));
+					throw new SocketException(SocketMethods.GetErrno(), "Receive");
 				
 				return sizevalue;	
 
 			}
 			
-	[TODO]
+	[TODO] //TODO: Change intercall call
 	public int ReceiveFrom(byte[] buffer, int offset, int size, SocketFlags socketFlags, ref EndPoint remoteEP)
 			{
 				int sizevalue;
@@ -402,8 +417,9 @@ public class Socket : IDisposable
 				if (!Security.CanUseFilemyhandle(myhandle))
 					throw new SecurityException("myhandle", _("Exception_SecurityNotGranted"));					
 
-				if ((sizevalue = SocketMethods.ReceiveFrom(myhandle, buffer, offset, size, flags, remoteEP)) == -1)
-					throw new SocketException("ReceiveFrom", _("IO_SocketRead"));
+//				Change when SocketMethods intercall def is changed
+//				if ((sizevalue = SocketMethods.ReceiveFrom(myhandle, buffer, offset, size, flags, remoteEP)) == -1)
+//					throw new SocketException(SocketMethods.GetErrno(), "ReceiveFrom"));
 				
 				return sizevalue;																						
 			}
@@ -483,7 +499,7 @@ public class Socket : IDisposable
 					throw new SocketException();
 
 				if ((sizevalue = SocketMethods.Send(mthandle, buffer, offset, size, flags)) == -1)
-					throw new SocketException("Receive", _("IO_SocketWrite"));
+					throw new SocketException(SocketMethods.GetErrno(), "Send");
 				
 				return sizevalue;							
 				
@@ -515,8 +531,9 @@ public class Socket : IDisposable
 				if ( !(SocketMethods.SendTo(buffer, offset, size, socketFlags, remoteEP)))
 					throw new SocketException();
 
-				if ((sizevalue = SocketMethods.SendTo(myhandle, buffer, offset, size, flags, remoteEP)) == -1)
-					throw new SocketException("SendTo", _("IO_SocketWrite"));
+//				Change when SocketMethods intercall def is changed
+//				if ((sizevalue = SocketMethods.SendTo(myhandle, buffer, offset, size, flags, remoteEP)) == -1)
+//					throw new SocketException(SocketMethods.GetErrno(), "SendTo");
 				
 				return sizevalue;		
 
@@ -566,11 +583,12 @@ public class Socket : IDisposable
 					throw new SocketException();
 
 			}
-	[TODO]
+/*  //The compiler seems to have trouble with this inheritance, ignore it for now
+	[TODO] 
 	void IDisposable.Dispose()
 			{
 			
-			}
+			} */
 	
 	public AddressFamily AddressFamily
 			{

@@ -4,6 +4,8 @@
 	* configure.in, jay/Makefile.am: add jay as no-inst binary to 
 	enable it to build System.Data.
 	
+	* Makefile.am: place jay before all other tools.
+	
 2004-04-30  Klaus Treichel  <ktreichel@web.de>
 
 	* class/Makefile.am: Reorder directories to reflect dependencies

@@ -1,2 +1,2 @@
 
-SUBDIRS = class tools
+SUBDIRS = jay class tools

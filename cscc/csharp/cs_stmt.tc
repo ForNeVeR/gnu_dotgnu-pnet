@@ -28,13 +28,24 @@
 /*
  * determine if a type1 implements type2
  */
-#define ILTypeImplements(type1,type2) (type2 && (ILClassImplements(\
-					ILType_ToClass(type1),\
-					ILType_ToClass(type2))))
+static int ILTypeImplements(ILGenInfo *info, ILType *type1, ILType *type2)
+{
+	ILClass *classInfo1 = ILTypeToClass(info, type1);
+	ILClass *classInfo2 = ILTypeToClass(info, type2);
+	if(classInfo1 && classInfo2)
+	{
+		return ILClassImplements(classInfo1, classInfo2);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 /*
  * Obtain the default scope of the class
  */
- #define GetDefaultScope(info)	(((ILNode_ClassDefn*)(info->currentClass))->classInfo)
+#define GetDefaultScope(info)	(((ILNode_ClassDefn*)(info->currentClass))->classInfo)
 
 /*
  * Perform semantic analysis on a sub-statement.
@@ -240,6 +251,7 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	ILType *retType;
 	ILType *enumerator;
 	ILNode *castNode;
+	ILClass *arrayClass;
 
 	/* Locate the scope and method for the iteration variable */
 	scope = info->currentScope;
@@ -330,21 +342,27 @@ ILNode_SemAnalysis(ILNode_Foreach)
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  "Cannot find System.Collections.IEnumerable");	
 	}
-	else if(ILTypeImplements(node->arrayType,
-	ILFindNonSystemType(info,"IEnumerable","System.Collections")))
+	else if(ILTypeImplements(info, node->arrayType,
+				ILFindNonSystemType(info,"IEnumerable","System.Collections")))
 	{
-		getEnumerator=ILResolveInstanceMethod(info,
-		ILType_ToClass(node->arrayType),
-		GetDefaultScope(info),
-		"GetEnumerator",
-		(ILType**)args,
-		0);
+		arrayClass = ILTypeToClass(info, node->arrayType);
+		if(arrayClass)
+		{
+			getEnumerator = ILResolveInstanceMethod(info, arrayClass,
+													GetDefaultScope(info),
+													"GetEnumerator",
+													(ILType**)args, 0);
+		}
+		else
+		{
+			getEnumerator = 0;
+		}
 		if(!getEnumerator)
 		{
 			//should I check IEnumerable.GetEnumerator ?
-		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-			  "'%s' does not have a 'GetEnumerator' available",
-			  CSTypeToName(node->arrayType));
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  			  "'%s' does not have a 'GetEnumerator' available",
+			  			  CSTypeToName(node->arrayType));
 		}
 		else
 		{

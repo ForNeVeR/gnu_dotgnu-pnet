@@ -2630,6 +2630,7 @@ public sealed class Convert
 					--size;
 					while(numBits >= 6)
 					{
+						numBits -= 6;
 						builder.Append(base64[bits >> numBits]);
 						bits &= ((1 << numBits) - 1);
 					}

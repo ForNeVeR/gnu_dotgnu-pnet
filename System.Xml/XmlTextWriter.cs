@@ -338,13 +338,68 @@ public class XmlTextWriter : XmlWriter
 	// Encode an array as base64 and write it out as text.
 	public override void WriteBase64(byte[] buffer, int index, int count)
 			{
-				// TODO
+			
+				// Validate the parameters.
+				if(buffer == null)
+				{
+					throw new ArgumentNullException("buffer");
+				}
+				else if(index < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("index", S._("ArgRange_Array"));
+				}
+				else if(count < 0 || (buffer.Length - index) < count)
+				{
+					throw new ArgumentOutOfRangeException
+						("count", S._("ArgRange_Array"));
+				}
+				else if(writeState == WriteState.Closed)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_InvalidWriteState"));
+				}
+		
+				WriteRaw(Convert.ToBase64String(buffer));
 			}
-
+	
 	// Encode an array as BinHex and write it out as text.
 	public override void WriteBinHex(byte[] buffer, int index, int count)
 			{
-				// TODO
+				// Validate the parameters.
+				if(buffer == null)
+				{
+					throw new ArgumentNullException("buffer");
+				}
+				else if(index < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("index", S._("ArgRange_Array"));
+				}
+				else if(count < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("count", S._("ArgRange_Array"));
+				}
+				else if(buffer.Length - index < count)
+				{
+					throw new ArgumentException
+						("index", S._("ArgRange_Array"));
+				}
+				else if(writeState == WriteState.Closed)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_InvalidWriteState"));
+				}	
+				char[] hexCode = new char[] {'0','1','2','3','4','5','6','7'
+				,'8','9','A','B','C','D','E','F'};
+				byte currentByte;
+				for(int a = 0; a < count; a++)
+				{
+					currentByte = buffer[index+a];
+					WriteRaw(Convert.ToString(hexCode[currentByte >> 4]));
+					WriteRaw(Convert.ToString(hexCode[currentByte & 0xF]));
+				}
 			}
 
 	// Write out a CDATA block.
@@ -915,13 +970,45 @@ public class XmlTextWriter : XmlWriter
 	// Write raw string data.
 	public override void WriteRaw(String data)
 			{
-				// TODO
+				if(writeState == System.Xml.WriteState.Closed)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_WriteStateClosed"));
+				}
+				else
+				{
+					char[] buffer = data.ToCharArray();
+					WriteChars(buffer, 0 , buffer.Length);
+				}
 			}
 
 	// Write raw data from an array.
 	public override void WriteRaw(char[] buffer, int index, int count)
 			{
-				// TODO
+				// Validate the parameters.
+				if(buffer == null)
+				{
+					throw new ArgumentNullException("buffer");
+				}
+				else if(index < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("index", S._("ArgRange_Array"));
+				}
+				else if(count < 0 || (buffer.Length - index) < count)
+				{
+					throw new ArgumentOutOfRangeException
+						("count", S._("ArgRange_Array"));
+				}
+				else if(writeState == System.Xml.WriteState.Closed)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_InvalidWriteState"));
+				}
+				else 
+				{
+					WriteChars(buffer, index, count);
+				}
 			}
 
 	// Write the start of an attribute with a full name.

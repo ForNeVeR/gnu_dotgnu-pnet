@@ -1,4 +1,10 @@
 
+2002-01-02  Adam Ballai  <minddog@cannibutter.com>
+	
+	* runtime/System/Convert.cs, System.Xml/XmlTextWriter.cs: Implement
+	the WriterBase64,WriteRaw and WriteBinHex for XmlTextWriter .
+	(Patch #907,Gopal)
+	
 2003-01-01  Jeff Post  <j_post@pacbell.net>
 
 	* System/ComponentModel/EnumConverter.cs: Add code for

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<project name="pnetlib Xsharp" default="all">
+	<target name="all">
+
+		<!-- Build the Xsharp.dll library -->
+		<compile output="Xsharp.dll"
+				 target="library"
+				 unsafe="true"
+				 optimize="true"
+				 debug="${CONFIG_DEBUG_LINES}"
+				 sanewarnings="true">
+
+			<!-- We add Xlib.cs to the list carefully because it may
+			     live in the build directory instead of the source -->
+			<sources>
+				<includes name="**/*.cs"/>
+				<excludes name="Xlib.cs"/>
+				<file name="Xlib.cs" basedir="${csant.build.dir}"/>
+			</sources>
+
+			<references>
+				<file name="../runtime/mscorlib.dll"/>
+			</references>
+
+<!--
+			<resources>
+				<file name="../resources/${pnet.language}/Xsharp/Xsharp.resources"/>
+			</resources>
+-->
+
+		</compile>
+
+	</target>
+</project>

@@ -19,6 +19,7 @@ AC_SUBST(PNET_PATH)
 
 dnl Checks for programs.
 AC_PROG_AWK
+AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -29,6 +30,10 @@ if test -z "$TREECC" ; then
     echo "http://www.southern-storm.com.au/treecc.html"
     exit 1
 fi
+
+dnl Check for file extensions.
+AC_EXEEXT
+AC_OBJEXT
 
 dnl The --with-pnet option can be used to specify the location of
 dnl Portable.NET, so that we know where to get the C# compiler, etc.
@@ -185,6 +190,109 @@ dnl are some things that we can't build or test without reflection.
 REF_FLAG=`grep 'CONFIG_REFLECTION" value="true"' "${srcdir}/profiles/${PROFILE_NAME}"`
 AM_CONDITIONAL(HAS_REFLECTION, test "x$REF_FLAG" != "x")
 
+dnl The --with-types option can be used to specify the sizes of
+dnl the native int and long types for Xsharp.  Set to one of:
+dnl
+dnl		--with-types=il32
+dnl			int and long are both 32-bit.
+dnl		--with-types=il64
+dnl			int and long are both 64-bit.
+dnl		--with-types=i32l64
+dnl			int is 32-bit, long is 64-bit.
+dnl		--with-types=i64l32
+dnl			int is 64-bit, long is 32-bit.
+dnl
+dnl If none of these are supplied, configure will auto-detect.
+AC_ARG_WITH(types,
+[  --with-types=SPEC       specify the location of Portable.NET],
+[
+	if test -n "$withval"; then
+		case "$withval" in
+		  il32|il64|i32l64|i64l32) TYPE_SPEC="${withval}" ;;
+		  *) AC_MSG_ERROR([invalid type size specification ${withval}]) ;;
+		esac
+	else
+		TYPE_SPEC=no
+	fi
+],
+[
+	TYPE_SPEC=no
+])
+
+dnl A macro that helps detect the size of types in a cross-compile environment.
+AC_DEFUN([AC_COMPILE_CHECK_SIZEOF],
+[changequote(<<, >>)dnl
+dnl The name to #define.
+define(<<AC_TYPE_NAME>>, translit(sizeof_$1, [a-z *], [A-Z_P]))dnl
+dnl The cache variable name.
+define(<<AC_CV_NAME>>, translit(ac_cv_sizeof_$1, [ *], [_p]))dnl
+changequote([, ])dnl
+AC_MSG_CHECKING(size of $1)
+AC_CACHE_VAL(AC_CV_NAME,
+[for ac_size in 4 8 1 2 12 16 $2 ; do # List sizes in rough order of prevalence.
+  AC_TRY_COMPILE([#include "confdefs.h"
+#include <sys/types.h>
+], [switch (0) case 0: case (sizeof ($1) == $ac_size):;], AC_CV_NAME=$ac_size)
+  if test x$AC_CV_NAME != x ; then break; fi
+done
+])
+if test x$AC_CV_NAME = x ; then
+  AC_CV_NAME=0
+fi
+AC_MSG_RESULT($AC_CV_NAME)
+AC_DEFINE_UNQUOTED(AC_TYPE_NAME, $AC_CV_NAME, [The number of bytes in type $1])
+undefine([AC_TYPE_NAME])dnl
+undefine([AC_CV_NAME])dnl
+])
+
+dnl Determine the definitions of int, uint, long, and ulong on this platform.
+AC_SUBST(X_int)
+AC_SUBST(X_uint)
+AC_SUBST(X_long)
+AC_SUBST(X_ulong)
+case "$TYPE_SPEC" in
+	il32)	X_int=int
+		  	X_uint=uint
+		  	X_long=int
+		  	X_ulong=uint ;;
+	il64)	X_int=long
+		  	X_uint=ulong
+		  	X_long=long
+		  	X_ulong=ulong ;;
+	i32l64) X_int=int
+			X_uint=uint
+			X_long=long
+			X_ulong=ulong ;;
+	i64l32)	X_int=long
+			X_uint=ulong
+			X_long=int
+			X_ulong=uint ;;
+	*)	AC_COMPILE_CHECK_SIZEOF(int, 4)
+		AC_COMPILE_CHECK_SIZEOF(long, 4)
+		if test "$ac_cv_sizeof_int" = 4 ; then
+			X_int=int
+			X_uint=uint
+		elif test "$ac_cv_sizeof_int" = 8 ; then
+			X_int=long
+			X_uint=ulong
+		else
+			AC_MSG_ERROR(int is neither 32-bits nor 64-bits on this platform)
+		fi
+		if test "$ac_cv_sizeof_long" = 4 ; then
+			X_long=int
+			X_ulong=uint
+		elif test "$ac_cv_sizeof_long" = 8 ; then
+			X_long=long
+			X_ulong=ulong
+		else
+			AC_MSG_ERROR(long is neither 32-bits nor 64-bits on this platform)
+		fi ;;
+esac
+AC_MSG_CHECKING(for the correct int mapping)
+AC_MSG_RESULT($X_int)
+AC_MSG_CHECKING(for the correct long mapping)
+AC_MSG_RESULT($X_long)
+
 AC_OUTPUT([
 Makefile
 tools/Makefile
@@ -200,6 +308,8 @@ csupport/Makefile
 compat/Makefile
 JScript/Makefile
 Basic/Makefile
+Xsharp/Makefile
+Xsharp/Xlib.cs
 tests/Makefile
 tests/System/Makefile
 tests/System.Xml/Makefile

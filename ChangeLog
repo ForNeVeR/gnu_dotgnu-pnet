@@ -8,6 +8,9 @@
 	* System/Net/Sockets/Socket.cs: keep ProtocolType.Unspecified if
 	creating an IrDA socket.
 
+	* Makefile.am, configure.in, Xsharp/*: add the Xsharp library
+	to pnetlib.
+
 2003-05-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/EndPoint.cs, System/Net/IPAddress.cs,

@@ -30,6 +30,8 @@ default "checked" state to "off".
 
 * cscc/cscc.c: JL support; pass "-m" options to plugins as "-m", not "-f".
 
+* cscc/cscc.1: document that the default "checked" state is now "off".
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions

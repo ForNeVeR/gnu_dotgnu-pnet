@@ -219,7 +219,8 @@ public class Socket : IDisposable
 				//Let's set it to the 'any' setting
 				mylocalendpoint = new IPEndPoint(IPAddress.Any, 0);				
 																					
-				myremoteendpoint = remoteEP;				
+				myremoteendpoint = remoteEP;
+				connected=true;
 			}
 	
 	[TODO] 

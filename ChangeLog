@@ -1,4 +1,9 @@
 
+2002-11-18  Gopal.V  <gopalv82@symonds.net>
+
+	* System/Net/Sockets/Socket.cs: Fix Connect() method to set
+	this.connected on successful connect.
+
 2002-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Collections/Specialized/NameObjectCollectionBase.cs,

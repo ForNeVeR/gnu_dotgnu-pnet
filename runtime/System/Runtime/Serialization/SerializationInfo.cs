@@ -162,6 +162,10 @@ public sealed class SerializationInfo
 			{
 				AddValue(name, (Object)value, typeof(String));
 			}
+	public void AddValue(String name, Object value)
+			{
+				AddValue(name, (Object)value, value.GetType());
+			}
 	public void AddValue(String name, Object value, Type type)
 			{
 				if(name == null)

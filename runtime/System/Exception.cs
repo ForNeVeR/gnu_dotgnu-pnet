@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Diagnostics;
 
 /*
@@ -274,6 +275,12 @@ public class Exception
 				return null;
 			}
 		}
+	
+	[TODO]
+	public virtual void GetObjectData (SerializationInfo info, 
+										StreamingContext context)
+	{
+	}
 
 }; // class Exception
 

@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+using System.Runtime.Serialization;
+
 namespace System
 {
 
@@ -31,6 +33,12 @@ public class SystemException : Exception
 		: base(msg) {}
 	public SystemException(String msg, Exception inner)
 		: base(msg, inner) {}
+	
+	[TODO]
+	public SystemException (SerializationInfo info, 
+							StreamingContext ctxt)
+		{
+		}
 
 	// Internal constructor that is called by classes that
 	// do not want a stack trace to be allocated.

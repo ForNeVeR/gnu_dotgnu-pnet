@@ -1,4 +1,10 @@
 
+2002-12-17  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/Exception.cs, runtime/System/SystemException.cs,
+	runtime/System/Runtime/Serialization/SerializationInfo.cs: Add some
+	stub methods to allow the loading of external assemblies.
+
 2002-12-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Collections/ArrayList.cs,

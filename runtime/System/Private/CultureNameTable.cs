@@ -259,7 +259,7 @@ internal sealed class CultureNameTable
 			("en-US", 0x0409, "en", "eng", "ENU", "English (United States)",
 			 "English (United States)"));
 		Add(new CultureName
-			("en-ZW", 0x0409, "en", "eng", "ENW", "English (Zimbabwe)",
+			("en-ZW", 0x3009, "en", "eng", "ENW", "English (Zimbabwe)",
 			 "English (Zimbabwe)"));
 		Add(new CultureName
 			("et",    0x0025, "et", "est", "ETI", "Estonian",

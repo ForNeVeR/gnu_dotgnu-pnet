@@ -16,6 +16,10 @@
 	resources/de_DE/runtime/Makefile.am: build the German resources
 	into satellite assemblies.
 
+	* runtime/System/Private/CultureNameTable.cs: fix the culture
+	identifier for "English (Zimbabwe)" so that it doesn't conflict
+	with "English (United States)".
+
 2002-12-11  Gopal.V  <gopalv82@symonds.net>
 
 	* resources/de_DE/I18N/Makefile.am, de_DE/runtime/Makefile.am, 

@@ -78,6 +78,15 @@ Get an image from a context that has a particular assembly name.
 Returns @code{NULL} if no such image.
 @end deftypefun
 
+@deftypefun {ILImage *} ILContextNextImage (ILContext *context, ILImage *image)
+@cindex ILContextNextImage
+Iterate through the images that are associated with a context.
+On the first call, @code{image} should be set to @code{NULL}.
+On subsequent calls, @code{image} should be set to the previous
+return value.  The function will return @code{NULL} at the
+end of the list.
+@end deftypefun
+
 The following functions are used to load and manipulate images.
 
 @deftypefun int ILImageLoad (FILE *file, const char *filename, ILContext *context, ILImage **image, int flags)

@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design
 {
 
-#if CONFIG_COMPONENT_MODEL_DESIGN
+#if CONFIG_COMPONENT_MODEL
 
 public interface IReferenceService
 {
@@ -43,6 +43,6 @@ public interface IReferenceService
 
 }; // interface IReferenceService
 
-#endif // CONFIG_COMPONENT_MODEL_DESIGN
+#endif // CONFIG_COMPONENT_MODEL
 
 }; // namespace System.ComponentModel.Design

@@ -1,6 +1,6 @@
 /*
- * BaseNumberConverter.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.BaseNumberConverter" class.
+ * CharConverter.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.CharConverter" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -28,10 +28,10 @@ using System;
 using System.Collections;
 using System.Globalization;
 
-public abstract class BaseNumberConverter : TypeConverter
+public class CharConverter : TypeConverter
 {
 	// Constructor.
-	protected BaseNumberConverter()
+	public CharConverter()
 			{
 				// Nothing to do here.
 			}
@@ -50,59 +50,25 @@ public abstract class BaseNumberConverter : TypeConverter
 				}
 			}
 
-	// Determine if we can convert from this type to a specific type.
-	public override bool CanConvertTo
-				(ITypeDescriptorContext context, Type destinationType)
-			{
-				if(destinationType.IsPrimitive)
-				{
-					return true;
-				}
-				else
-				{
-					return base.CanConvertTo(context, destinationType);
-				}
-			}
-
-	// Internal conversion from a string.
-	internal abstract Object DoConvertFrom(String value, NumberFormatInfo nfi);
-	internal virtual Object DoConvertFromHex(String value)
-			{
-				throw new FormatException();
-			}
-
 	// Convert from another type to the one represented by this class.
 	public override Object ConvertFrom(ITypeDescriptorContext context,
 									   CultureInfo culture,
 									   Object value)
 			{
-				String val = (value as String);
-				if(val != null)
+				if(value is String)
 				{
-					val = val.Trim();
-					if(val.StartsWith("0x") || val.StartsWith("0X") ||
-					   val.StartsWith("&h") || val.StartsWith("&H"))
+					String val = (String)value;
+					if(val.Length == 0)
 					{
-						return DoConvertFromHex(val.Substring(2));
+						return '\0';
 					}
-					else if(val.StartsWith("#"))
+					else if(val.Length == 1)
 					{
-						return DoConvertFromHex(val.Substring(1));
-					}
-					else
-					{
-						return DoConvertFrom
-							(val, NumberFormatInfo.GetInstance(culture));
+						return val[0];
 					}
 				}
-				else
-				{
-					return base.ConvertFrom(context, culture, value);
-				}
+				return base.ConvertFrom(context, culture, value);
 			}
-
-	// Internal convert to a string.
-	internal abstract String DoConvertTo(Object value, NumberFormatInfo nfi);
 
 	// Convert this object into another type.
 	public override Object ConvertTo(ITypeDescriptorContext context,
@@ -115,19 +81,15 @@ public abstract class BaseNumberConverter : TypeConverter
 				}
 				if(destinationType == typeof(String))
 				{
-					if(value != null)
+					char ch = (char)value;
+					if(ch != '\0')
 					{
-						return DoConvertTo
-							(value, NumberFormatInfo.GetInstance(culture));
+						return new String(ch, 1);
 					}
 					else
 					{
 						return String.Empty;
 					}
-				}
-				else if(destinationType.IsPrimitive)
-				{
-					return Convert.ChangeType(value, destinationType);
 				}
 				else
 				{
@@ -136,7 +98,7 @@ public abstract class BaseNumberConverter : TypeConverter
 				}
 			}
 
-}; // class BaseNumberConverter
+}; // class CharConverter
 
 #endif // CONFIG_COMPONENT_MODEL
 

@@ -1,6 +1,6 @@
 /*
- * BaseNumberConverter.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.BaseNumberConverter" class.
+ * DateTimeConverter.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.DateTimeConverter" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,11 +27,12 @@ namespace System.ComponentModel
 using System;
 using System.Collections;
 using System.Globalization;
+using System.ComponentModel.Design.Serialization;
 
-public abstract class BaseNumberConverter : TypeConverter
+public class DateTimeConverter : TypeConverter
 {
 	// Constructor.
-	protected BaseNumberConverter()
+	public DateTimeConverter()
 			{
 				// Nothing to do here.
 			}
@@ -54,21 +55,13 @@ public abstract class BaseNumberConverter : TypeConverter
 	public override bool CanConvertTo
 				(ITypeDescriptorContext context, Type destinationType)
 			{
-				if(destinationType.IsPrimitive)
+			#if CONFIG_COMPONENT_MODEL_DESIGN
+				if(destinationType == typeof(InstanceDescriptor))
 				{
 					return true;
 				}
-				else
-				{
-					return base.CanConvertTo(context, destinationType);
-				}
-			}
-
-	// Internal conversion from a string.
-	internal abstract Object DoConvertFrom(String value, NumberFormatInfo nfi);
-	internal virtual Object DoConvertFromHex(String value)
-			{
-				throw new FormatException();
+			#endif
+				return base.CanConvertTo(context, destinationType);
 			}
 
 	// Convert from another type to the one represented by this class.
@@ -76,35 +69,24 @@ public abstract class BaseNumberConverter : TypeConverter
 									   CultureInfo culture,
 									   Object value)
 			{
-				String val = (value as String);
-				if(val != null)
+				if(value is String)
 				{
-					val = val.Trim();
-					if(val.StartsWith("0x") || val.StartsWith("0X") ||
-					   val.StartsWith("&h") || val.StartsWith("&H"))
+					String val = ((String)value).Trim();
+					if(val.Length == 0)
 					{
-						return DoConvertFromHex(val.Substring(2));
-					}
-					else if(val.StartsWith("#"))
-					{
-						return DoConvertFromHex(val.Substring(1));
+						return DateTime.MinValue;
 					}
 					else
 					{
-						return DoConvertFrom
-							(val, NumberFormatInfo.GetInstance(culture));
+						return DateTime.Parse
+							(val, DateTimeFormatInfo.GetInstance(culture));
 					}
 				}
-				else
-				{
-					return base.ConvertFrom(context, culture, value);
-				}
+				return base.ConvertFrom(context, culture, value);
 			}
 
-	// Internal convert to a string.
-	internal abstract String DoConvertTo(Object value, NumberFormatInfo nfi);
-
 	// Convert this object into another type.
+	[TODO]
 	public override Object ConvertTo(ITypeDescriptorContext context,
 									 CultureInfo culture,
 									 Object value, Type destinationType)
@@ -115,28 +97,43 @@ public abstract class BaseNumberConverter : TypeConverter
 				}
 				if(destinationType == typeof(String))
 				{
-					if(value != null)
-					{
-						return DoConvertTo
-							(value, NumberFormatInfo.GetInstance(culture));
-					}
-					else
+					DateTime val = (DateTime)value;
+					if(val == DateTime.MinValue)
 					{
 						return String.Empty;
 					}
+					else
+					{
+						DateTimeFormatInfo dfi;
+						String pattern;
+						dfi = DateTimeFormatInfo.GetInstance(culture);
+						if(val.TimeOfDay.Ticks == 0)
+						{
+							pattern = dfi.ShortDatePattern;
+						}
+						else
+						{
+							pattern = dfi.ShortDatePattern + " " +
+									  dfi.ShortTimePattern;
+						}
+						return val.ToString(pattern, dfi);
+					}
 				}
-				else if(destinationType.IsPrimitive)
+			#if CONFIG_COMPONENT_MODEL_DESIGN
+				else if(destinationType == typeof(InstanceDescriptor))
 				{
-					return Convert.ChangeType(value, destinationType);
+					// TODO
+					return null;
 				}
+			#endif
 				else
 				{
-					return base.ConvertTo(context, culture, value,
-										  destinationType);
+					return base.ConvertTo
+						(context, culture, value, destinationType);
 				}
 			}
 
-}; // class BaseNumberConverter
+}; // class DateTimeConverter
 
 #endif // CONFIG_COMPONENT_MODEL
 

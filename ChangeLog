@@ -1,3 +1,21 @@
+
+2003-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/ComponentModel/BaseNumberConverter.cs,
+	System/ComponentModel/CharConverter.cs,
+	System/ComponentModel/CollectionConverter.cs,
+	System/ComponentModel/CultureInfoConverter.cs,
+	System/ComponentModel/DateTimeConverter.cs,
+	System/ComponentModel/EnumConverter.cs,
+	System/ComponentModel/GuidConverter.cs,
+	System/ComponentModel/ReferenceConverter.cs,
+	System/ComponentModel/SyntaxCheck.cs,
+	System/ComponentModel/TimeSpanConverter.cs,
+	System/ComponentModel/TypeConverter.cs,
+	System/ComponentModel/TypeListConverter.cs,
+	System/ComponentModel/Design/IReferenceService.cs: more
+	converter classes for System.ComponentModel.
+
 2003-08-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/Serialization/*.cs: stub out the xml serialization classes.

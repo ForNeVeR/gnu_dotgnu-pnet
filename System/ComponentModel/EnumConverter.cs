@@ -1,8 +1,8 @@
 /*
- * EnumConverter.cs - Implementation of "System.ComponentModel.EnumConverter" 
+ * EnumConverter.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.EnumConverter" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,74 +18,171 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
-using System;
-using System.Globalization;
-using System.Collections;
 
 namespace System.ComponentModel
 {
+
 #if CONFIG_COMPONENT_MODEL
-	public class EnumConverter: TypeConverter
-	{
-		private Type type;
 
-		public EnumConverter(Type type)
-		{
-			this.type = type;
-		}
+using System;
+using System.Collections;
+using System.Globalization;
+using System.ComponentModel.Design.Serialization;
 
-		public override bool CanConvertFrom(ITypeDescriptorContext context, 
-											Type sourceType)
-		{
-			if (sourceType == typeof(string))
-				return true;
-			/* TODO: Find a better way ? */
-			return base.CanConvertFrom(context, sourceType);
-		}
+public class EnumConverter : TypeConverter
+{
+	// Internal state.
+	private Type type;
+	private StandardValuesCollection standardValues;
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, 
-										Type destinationType)
-		{
-			/* TODO: Find a better way ? */
-			return base.CanConvertTo(context, destinationType);
-		}
-
-		[TODO]
-		public override Object ConvertFrom(ITypeDescriptorContext context, 
-											CultureInfo culture, Object value)
-		{
-			/* TODO: Find a better way ? */
-			string val = value as string;
-			if (val == null)
-				return base.ConvertFrom(context, culture, value);
-			string[] values = val.Split(new char[] {','});
-			object temp;
-
-			foreach (string s in values)
+	// Constructor.
+	public EnumConverter(Type type)
 			{
-				temp = Enum.Parse(type, s, true);
-				if (temp != null)
-					return temp;
+				this.type = type;
 			}
-			return null;
-		}
 
-		public override Object ConvertTo(ITypeDescriptorContext context, 
-				CultureInfo culture, Object value, Type destinationType)
-		{
-			/* TODO: Find a better way ? */
-			if (destinationType == typeof(string))
-				return value.ToString();
-			return base.ConvertTo(context, culture, value, destinationType);
-		}
+	// Get a comparer to use to check the values.
+	protected virtual IComparer Comparer
+			{
+				get
+				{
+					return Comparer.DefaultInvariant;
+				}
+			}
 
-		public override bool IsValid(ITypeDescriptorContext context, 
-									Object value)
-		{
-			return Enum.IsDefined(type, value);
-		}
+	// Get the enumerated type underlying this converter.
+	protected Type EnumType
+			{
+				get
+				{
+					return type;
+				}
+			}
 
-	}
-#endif	
-}//namespace
+	// Get or set the standard value list.
+	protected StandardValuesCollection Values
+			{
+				get
+				{
+					return standardValues;
+				}
+				set
+				{
+					standardValues = value;
+				}
+			}
+
+	// Determine if we can convert from a specific type to this one.
+	public override bool CanConvertFrom
+				(ITypeDescriptorContext context, Type sourceType)
+			{
+				if(sourceType == typeof(String))
+				{
+					return true;
+				}
+				else
+				{
+					return base.CanConvertFrom(context, sourceType);
+				}
+			}
+
+	// Determine if we can convert from this type to a specific type.
+	public override bool CanConvertTo
+				(ITypeDescriptorContext context, Type destinationType)
+			{
+			#if CONFIG_COMPONENT_MODEL_DESIGN
+				if(destinationType == typeof(InstanceDescriptor))
+				{
+					return true;
+				}
+			#endif
+				return base.CanConvertTo(context, destinationType);
+			}
+
+	// Convert from another type to the one represented by this class.
+	public override Object ConvertFrom(ITypeDescriptorContext context,
+									   CultureInfo culture,
+									   Object value)
+			{
+				if(value is String)
+				{
+					return Enum.Parse(type, (String)value, true);
+				}
+				else
+				{
+					return base.ConvertFrom(context, culture, value);
+				}
+			}
+
+	// Convert this object into another type.
+	[TODO]
+	public override Object ConvertTo(ITypeDescriptorContext context,
+									 CultureInfo culture,
+									 Object value, Type destinationType)
+			{
+				if(destinationType == null)
+				{
+					throw new ArgumentNullException("destinationType");
+				}
+				if(destinationType == typeof(String))
+				{
+					return value.ToString();
+				}
+			#if CONFIG_COMPONENT_MODEL_DESIGN
+				else if(destinationType == typeof(InstanceDescriptor))
+				{
+					// TODO
+					return null;
+				}
+			#endif
+				else
+				{
+					return base.ConvertTo
+						(context, culture, value, destinationType);
+				}
+			}
+
+	// Return a collection of standard values for this data type.
+	public override StandardValuesCollection GetStandardValues
+				(ITypeDescriptorContext context)
+			{
+				if(standardValues != null)
+				{
+					return standardValues;
+				}
+				Array array = Enum.GetValues(type);
+				IComparer comparer = Comparer;
+				if(comparer != null)
+				{
+					Array.Sort(array, 0, array.Length, comparer);
+				}
+				standardValues = new StandardValuesCollection(array);
+				return standardValues;
+			}
+
+	// Determine if the list of standard values is an exclusive list.
+	public override bool GetStandardValuesExclusive
+				(ITypeDescriptorContext context)
+			{
+				// The list is exclusive if it does not contain flags.
+				return !(type.IsDefined(typeof(FlagsAttribute), false));
+			}
+
+	// Determine if "GetStandardValues" is supported.
+	public override bool GetStandardValuesSupported
+				(ITypeDescriptorContext context)
+			{
+				return true;
+			}
+
+	// Determine if an object is valid for this type.
+	public override bool IsValid(ITypeDescriptorContext context, Object value)
+			{
+				return Enum.IsDefined(type, value);
+			}
+
+}; // class EnumConverter
+
+#endif // CONFIG_COMPONENT_MODEL
+
+}; // namespace System.ComponentModel

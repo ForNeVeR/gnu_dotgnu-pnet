@@ -1,6 +1,6 @@
 /*
- * BaseNumberConverter.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.BaseNumberConverter" class.
+ * TypeListConverter.cs - Implementation of the
+ *		"System.ComponentModel.ComponentModel.TypeListConverter" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,13 +27,17 @@ namespace System.ComponentModel
 using System;
 using System.Collections;
 using System.Globalization;
+using System.ComponentModel.Design.Serialization;
 
-public abstract class BaseNumberConverter : TypeConverter
+public class TypeListConverter : TypeConverter
 {
+	// Internal state.
+	private Type[] types;
+
 	// Constructor.
-	protected BaseNumberConverter()
+	public TypeListConverter(Type[] types)
 			{
-				// Nothing to do here.
+				this.types = types;
 			}
 
 	// Determine if we can convert from a specific type to this one.
@@ -54,21 +58,13 @@ public abstract class BaseNumberConverter : TypeConverter
 	public override bool CanConvertTo
 				(ITypeDescriptorContext context, Type destinationType)
 			{
-				if(destinationType.IsPrimitive)
+			#if CONFIG_COMPONENT_MODEL_DESIGN
+				if(destinationType == typeof(InstanceDescriptor))
 				{
 					return true;
 				}
-				else
-				{
-					return base.CanConvertTo(context, destinationType);
-				}
-			}
-
-	// Internal conversion from a string.
-	internal abstract Object DoConvertFrom(String value, NumberFormatInfo nfi);
-	internal virtual Object DoConvertFromHex(String value)
-			{
-				throw new FormatException();
+			#endif
+				return base.CanConvertTo(context, destinationType);
 			}
 
 	// Convert from another type to the one represented by this class.
@@ -76,35 +72,29 @@ public abstract class BaseNumberConverter : TypeConverter
 									   CultureInfo culture,
 									   Object value)
 			{
-				String val = (value as String);
-				if(val != null)
+				if(value is String)
 				{
-					val = val.Trim();
-					if(val.StartsWith("0x") || val.StartsWith("0X") ||
-					   val.StartsWith("&h") || val.StartsWith("&H"))
+					String val = (String)value;
+					if(val == "(none)")
 					{
-						return DoConvertFromHex(val.Substring(2));
+						return null;
 					}
-					else if(val.StartsWith("#"))
+					if(types != null)
 					{
-						return DoConvertFromHex(val.Substring(1));
-					}
-					else
-					{
-						return DoConvertFrom
-							(val, NumberFormatInfo.GetInstance(culture));
+						foreach(Type t in types)
+						{
+							if(t.FullName == val)
+							{
+								return t;
+							}
+						}
 					}
 				}
-				else
-				{
-					return base.ConvertFrom(context, culture, value);
-				}
+				return base.ConvertFrom(context, culture, value);
 			}
 
-	// Internal convert to a string.
-	internal abstract String DoConvertTo(Object value, NumberFormatInfo nfi);
-
 	// Convert this object into another type.
+	[TODO]
 	public override Object ConvertTo(ITypeDescriptorContext context,
 									 CultureInfo culture,
 									 Object value, Type destinationType)
@@ -117,26 +107,57 @@ public abstract class BaseNumberConverter : TypeConverter
 				{
 					if(value != null)
 					{
-						return DoConvertTo
-							(value, NumberFormatInfo.GetInstance(culture));
+						return ((Type)value).FullName;
 					}
 					else
 					{
-						return String.Empty;
+						return "(none)";
 					}
 				}
-				else if(destinationType.IsPrimitive)
+			#if CONFIG_COMPONENT_MODEL_DESIGN
+				else if(destinationType == typeof(InstanceDescriptor))
 				{
-					return Convert.ChangeType(value, destinationType);
+					// TODO
+					return null;
 				}
+			#endif
 				else
 				{
-					return base.ConvertTo(context, culture, value,
-										  destinationType);
+					return base.ConvertTo
+						(context, culture, value, destinationType);
 				}
 			}
 
-}; // class BaseNumberConverter
+	// Return a collection of standard values for this data type.
+	public override StandardValuesCollection GetStandardValues
+				(ITypeDescriptorContext context)
+			{
+				if(types != null)
+				{
+					return new StandardValuesCollection
+						((Type[])(types.Clone()));
+				}
+				else
+				{
+					return new StandardValuesCollection(null);
+				}
+			}
+
+	// Determine if the list of standard values is an exclusive list.
+	public override bool GetStandardValuesExclusive
+				(ITypeDescriptorContext context)
+			{
+				return true;
+			}
+
+	// Determine if "GetStandardValues" is supported.
+	public override bool GetStandardValuesSupported
+				(ITypeDescriptorContext context)
+			{
+				return true;
+			}
+
+}; // class TypeListConverter
 
 #endif // CONFIG_COMPONENT_MODEL
 

@@ -288,7 +288,14 @@ public class TypeConverter
 		
 		public StandardValuesCollection (ICollection values)
 		{
-			this.values = values;
+			if(values != null)
+			{
+				this.values = values;
+			}
+			else
+			{
+				this.values = new Object [0];
+			}
 		}
 
 		public void CopyTo (Array array, int index)

@@ -1,4 +1,10 @@
 
+2003-06-01  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_decls.tc, cscc/csharp/cs_grammar.y : Throw errors
+	when encountering multiple static constructors and static ctors with
+	parameters.
+
 2003-06-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/socket.c: remove references to socklen_t, which isn't a

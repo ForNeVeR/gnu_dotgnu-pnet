@@ -115,6 +115,8 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	ILNode *savedMethod;
 	ILNode *staticCtorList=NULL;
 	ILNode *savedTypeFormals;
+	ILNode_ListIter iter;
+	ILNode *staticCtor;
 	int hadStaticCtorsBefore;
 	int target;
 
@@ -198,6 +200,18 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		/*  save the explicit static constructors before gathering  */
 		if (node->staticCtors)
 		{
+			if(ILNode_List_Length(node->staticCtors)>1)
+			{
+				ILNode_ListIter_Init(&iter, node->staticCtors);
+				ILNode_ListIter_Next(&iter); /* skip the first */
+				while((staticCtor=ILNode_ListIter_Next(&iter))!=NULL)
+				{
+					CCErrorOnLine(yygetfilename(staticCtor),
+									yygetlinenum(staticCtor), 
+									"Cannot have more than one static "
+									"constructor");
+				}
+			}
 			staticCtorList=node->staticCtors;
 		}
 

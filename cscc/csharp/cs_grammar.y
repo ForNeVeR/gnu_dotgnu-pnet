@@ -3411,6 +3411,11 @@ ConstructorDeclaration
 				}
 				if((attrs & IL_META_METHODDEF_STATIC) != 0)
 				{
+					if(!yyisa($5,ILNode_Empty))
+					{
+						CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+								"Static constructors cannot have parameters");
+					}
 					$$.body = 0;
 					$$.staticCtors = body;
 				}

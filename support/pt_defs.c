@@ -66,7 +66,9 @@ void _ILThreadSuspendUntilResumed(ILThread *thread)
 	/* Set up the signal mask to allow through only selected signals */
 	sigfillset(&mask);
 	sigdelset(&mask, IL_SIG_RESUME);
+#ifdef SIG_SUSPEND
 	sigdelset(&mask, SIG_SUSPEND);
+#endif
 	sigdelset(&mask, PTHREAD_SIG_CANCEL);
 	sigdelset(&mask, SIGINT);
 	sigdelset(&mask, SIGQUIT);

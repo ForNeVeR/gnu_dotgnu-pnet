@@ -42,6 +42,16 @@ AC_ARG_WITH(libffi,
 	esac
 ])
 
+dnl The --without-libgc option can be used to disable libgc.
+AC_ARG_WITH(libgc,
+[  --without-libgc         disable libgc support],
+[
+	withgc=no
+],
+[
+	withgc=yes
+])
+
 dnl The --with-profile=NAME option is used to change the build profile.
 AC_SUBST(PROFILE_NAME)
 AC_ARG_WITH(profile,
@@ -280,6 +290,16 @@ else
 fi
 AM_CONDITIONAL(USING_LIBFFI, test x$withffi = xyes)
 
+dnl Set up libgc-related variables.
+AC_SUBST(GCLIBS)
+if test x$withgc = xyes ; then
+	GCLIBS='$(top_builddir)/libgc/.libs/libgc.a'
+	AC_DEFINE(HAVE_LIBGC)
+else
+	GCLIBS=""
+fi
+AM_CONDITIONAL(USING_LIBGC, test x$withgc = xyes)
+
 AC_OUTPUT([
 Makefile
 include/Makefile
@@ -317,5 +337,7 @@ if test "x$no_recursion" != "xyes"; then
 	else
 		cd "${srcdir}/libgc"
 	fi
-	./configure --enable-threads=$THREADS
+	if test x$withgc = xyes ; then
+		./configure --enable-threads=$THREADS
+	fi
 fi

@@ -19,6 +19,9 @@
  */
 
 #include "il_gc.h"
+
+#ifdef HAVE_LIBGC
+
 #include "../libgc/include/gc.h"
 
 #ifdef	__cplusplus
@@ -107,3 +110,5 @@ long ILGCGetHeapSize(void)
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* HAVE_LIBGC */

@@ -63,6 +63,9 @@
 /* Define if you have libffi */
 #undef HAVE_LIBFFI
 
+/* Define if you have libgc */
+#undef HAVE_LIBGC
+
 /* The number of bytes in a double.  */
 #undef SIZEOF_DOUBLE
 

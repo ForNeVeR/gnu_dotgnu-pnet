@@ -14,5 +14,5 @@ ildb_SOURCES = ildb_cmd.c \
 			   ildb_show.c \
 			   ildb_system.c
 ildb_LDADD   = ../engine/libILEngine.a ../image/libILImage.a \
-			   ../support/libILSupport.a $(FFILIBS) \
-			   ../libgc/.libs/libgc.a $(READLINELIBS)
+			   ../support/libILSupport.a $(FFILIBS) $(GCLIBS) \
+			   $(READLINELIBS)

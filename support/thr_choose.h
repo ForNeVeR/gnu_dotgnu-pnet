@@ -64,10 +64,24 @@
 
 #ifndef IL_NO_THREADS
 
+#ifdef HAVE_LIBGC
+
 /* We need to include system threading headers via the garbage
    collector, because it redirects some of the routines elsewhere
    to ensure that the GC is notified of thread creation */
 #include <gc.h>
+
+#else	/* !HAVE_LIBGC */
+
+/* We don't have libgc, so include the system headers directly */
+#if defined(IL_USE_PTHREADS)
+#include <pthread.h>
+#include <signal.h>
+#elif defined(IL_USE_WIN32_THREADS)
+#include <windows.h>
+#endif
+
+#endif	/* !HAVE_LIBGC */
 
 #endif	/* !IL_NO_THREADS */
 

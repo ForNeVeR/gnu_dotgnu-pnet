@@ -23,7 +23,9 @@
 
 #include <semaphore.h>
 #include <signal.h>
+#ifdef HAVE_LIBGC
 #include <private/gc_priv.h>	/* For SIG_SUSPEND */
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {

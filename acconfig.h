@@ -23,3 +23,6 @@
 
 /* Define if you have libffi */
 #undef HAVE_LIBFFI
+
+/* Define if you have libgc */
+#undef HAVE_LIBGC

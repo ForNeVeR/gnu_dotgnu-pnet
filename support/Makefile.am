@@ -6,6 +6,7 @@ libILSupport_a_SOURCES = allocate.c \
 						 cmdline.c \
 						 cvt_float.c \
 						 decimal.c \
+						 def_gc.c \
 						 dynlib.c \
 						 errno_map.c \
 						 expand.c \

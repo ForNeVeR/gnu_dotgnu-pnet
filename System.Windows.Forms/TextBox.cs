@@ -226,15 +226,6 @@ public class TextBox : TextBoxBase
 		}
 	}
 
-	// TODO
-	public override bool CanUndo
-	{
-		get
-		{
-			return false;
-		}
-	}
-
 	public override String[] Lines
 	{
 		get

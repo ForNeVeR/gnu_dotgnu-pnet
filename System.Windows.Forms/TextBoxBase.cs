@@ -108,8 +108,16 @@ public abstract class TextBoxBase : Control
 
 	protected abstract void SetBorderStyle(BorderStyle borderStyle);
 
-	abstract public bool CanUndo
-			{ get; }
+	[TODO]
+	public bool CanUndo
+			{ 
+				get
+				{
+					// TODO: Check whether
+					// Anything exists in the stack
+					return false;
+				}
+			}
 
 	protected override Size DefaultSize
 			{

@@ -248,6 +248,10 @@ static void Coder_ArrayAccess(ILCoder *coder, int opcode,
 static void Coder_PtrAccess(ILCoder *coder, int opcode)
 {
 }
+static void Coder_PtrAccessManaged(ILCoder *coder, int opcode,
+								   ILClass *classInfo)
+{
+}
 static void Coder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				   		 ILEngineType type1, ILEngineType type2)
 {
@@ -256,7 +260,31 @@ static void Coder_BranchPtr(ILCoder *coder, int opcode, ILUInt32 dest,
 				   		    ILEngineType type1, ILEngineType type2)
 {
 }
+static void Coder_Compare(ILCoder *coder, int opcode,
+				   		  ILEngineType type1, ILEngineType type2)
+{
+}
+static void Coder_ComparePtr(ILCoder *coder, int opcode,
+				   		     ILEngineType type1, ILEngineType type2)
+{
+}
 static void Coder_Conv(ILCoder *coder, int opcode, ILEngineType type)
+{
+}
+static void Coder_ToPointer(ILCoder *coder, ILEngineType type)
+{
+}
+static void Coder_PtrPrefix(ILCoder *coder, int alignment)
+{
+}
+static void Coder_ArrayLength(ILCoder *coder)
+{
+}
+static void Coder_NewArray(ILCoder *coder, ILType *elemType,
+						   ILEngineType lengthType)
+{
+}
+static void Coder_LocalAlloc(ILCoder *coder, ILEngineType sizeType)
 {
 }
 
@@ -286,9 +314,17 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_Pop,
 	Coder_ArrayAccess,
 	Coder_PtrAccess,
+	Coder_PtrAccessManaged,
 	Coder_Branch,
 	Coder_BranchPtr,
+	Coder_Compare,
+	Coder_ComparePtr,
 	Coder_Conv,
+	Coder_ToPointer,
+	Coder_PtrPrefix,
+	Coder_ArrayLength,
+	Coder_NewArray,
+	Coder_LocalAlloc,
 };
 static ILCoder DefaultCoder = {&DefaultCoderClass};
 

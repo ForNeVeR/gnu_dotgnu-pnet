@@ -13,6 +13,8 @@ new files to round out the bytecode verifier's instruction coverage.
 
 * include/il_coder.h: new coder API's that are used by the verifier.
 
+* engine/ilverify.c: new coder stubs in the stand-alone verifier.
+
 2001-10-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc: add "ILNode_ForeachCollection" and add extra

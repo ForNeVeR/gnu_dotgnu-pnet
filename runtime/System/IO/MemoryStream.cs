@@ -5,6 +5,7 @@
  *
  * Contributed by Stephen Compall <rushing@sigecom.net>.
  * Contributions by Haran Shivanan <ch99057@che.iitm.ac.in>
+ * Contributions by Thong Nguyen <tum@veridicus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +44,7 @@ namespace System.IO
 {
 
 using System;
+using System.IO;
 
 public class MemoryStream : Stream
 {
@@ -64,7 +66,8 @@ public class MemoryStream : Stream
 	// a capacity variable is unnecessary
 
 	// from StringBuilder
-	private const int defaultCapacity = 16;
+	// Thong says:  Made default to 0 to match MS & Mono.
+	private const int defaultCapacity = 0;
 
 	// constructors.
 	// ECMA doesn't specify what the starting position should be, so I
@@ -478,9 +481,9 @@ public class MemoryStream : Stream
 	{
 		if (minNewLength > impl_buffer.Length)
 		{
-			long realNewLength = Length;
-			while (minNewLength > realNewLength) // x1.5 until ready
-				realNewLength += ((int)realNewLength) >> 1;
+			int realNewLength = Math.Max(impl_buffer.Length, 1024);
+			while (minNewLength > realNewLength)
+				realNewLength = realNewLength * 2; // double the buffer size.
 			byte[] new_buffer = new byte[(int)realNewLength];
 			Array.Copy(impl_buffer, new_buffer, topLimit);
 			impl_buffer = new_buffer;

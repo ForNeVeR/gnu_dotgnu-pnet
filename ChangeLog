@@ -1,4 +1,11 @@
 
+2003-05-12  Thong Nguyen  <tum@veridicus.com>
+
+	* runtime/System/IO/MemoryStream.cs:  Fixed bug that prevented
+	streams from growing larger than the default capacity of 16.
+	Changed the default capacity to 0 to remain compatible. The 
+	capacity jumps to 1024 on first write.
+
 2003-05-12  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/Dns.cs: Faked asynchronous operations for DNS class.

@@ -1,4 +1,9 @@
 
+2003-05-19  Gopal.V  <gopalv82@symonds.net>
+
+	* configure.in, jay/Makefile.am: add jay as no-inst binary to 
+	enable it to build System.Data.
+	
 2004-04-30  Klaus Treichel  <ktreichel@web.de>
 
 	* class/Makefile.am: Reorder directories to reflect dependencies

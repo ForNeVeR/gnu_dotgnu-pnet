@@ -1,5 +1,10 @@
 
-2004-08-18  Andre Seidelt <pnet-devel01@foobarquarium.de>
+2004-09-18  Gopal V  <gopalv82@yahoo.com>
+
+	* DotGNU.Images/BmpReformatter.cs: Change alpha value to 255 for 
+	24bppRgb to 32bppArgb conversion.
+
+2004-09-18  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
 	Improve bulk array serialization for primitive types.

@@ -304,11 +304,18 @@ using System;
 
 		private static void Reformat24bppTo32bpp(Frame oldFrame, Frame newFrame)
 				{
+					byte alphafiller = 0;
 					int ptrOld = 0;
 					byte[] oldData = oldFrame.Data;
 								
 					int ptrNew = 0;
 					byte[] newData = newFrame.Data;
+
+					if(newFrame.PixelFormat == PixelFormat.Format32bppArgb)
+					{
+						alphafiller = 255; // full opacity
+					}
+					
 					for(int y = 0; y < oldFrame.height; y++)
 					{
 						ptrOld = y * oldFrame.stride;
@@ -318,9 +325,9 @@ using System;
 						{
 							newData[ptrNew++] = oldData[ptrOld++];
 							newData[ptrNew++] = oldData[ptrOld++];
-							newData[ptrNew] = oldData[ptrOld++];
-							// alpha component is zero.
-							ptrNew += 2;
+							newData[ptrNew++] = oldData[ptrOld++];
+							// alpha component is 0xff for 32bppArgb
+							newData[ptrNew++] = alphafiller;
 						}
 					}
 				}

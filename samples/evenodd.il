@@ -74,13 +74,13 @@ NonZero:
   	ldarg		N
 	call		void [mscorlib]System.Console::Write(int32)
 	ldstr		" is "
-	call		void [mscorlib]System.Console::Write(class System.String)
+	call		void [mscorlib]System.Console::Write(class [mscorlib]System.String)
 	ldarg		N
 	call		bool EvenOdd::IsEven(int32)
 	brfalse		LoadOdd
 	ldstr		"even"
 Print:
-	call		void [mscorlib]System.Console::WriteLine(class System.String)
+	call		void [mscorlib]System.Console::WriteLine(class [mscorlib]System.String)
 	ret
 LoadOdd:
 	ldstr		"odd"

@@ -14,7 +14,7 @@
   		.maxstack 1
 		.entrypoint
 		ldstr	"Hello World!"
-		call	void [mscorlib]System.Console::WriteLine(class System.String)
+		call	void [mscorlib]System.Console::WriteLine(class [mscorlib]System.String)
 		ret
 	}
 }

@@ -8,6 +8,8 @@ HTML, and continue the documentation of the library's "internalcall" methods.
 
 * configure.in: change the working version to "0.0.9".
 
+* doc/native.html: continue documentation of the native methods in pnetlib.
+
 2001-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Runtime/CompilerServices/*.cs,

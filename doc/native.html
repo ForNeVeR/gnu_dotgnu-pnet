@@ -6,7 +6,7 @@
 <h1>Internalcall methods for pnetlib</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/11/17 01:21:27 $<p>
+Last Modified: $Date: 2001/11/17 05:43:13 $<p>
 
 Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -76,6 +76,23 @@ that use the library.<p>
 		<li><a href="#System_ArgIterator_GetNextArg">GetNextArg</a></li>
 		<li><a href="#System_ArgIterator_GetNextArgType">GetNextArgType</a></li>
 	</ul>
+<li><a href="#System_Array">System.Array</a></li>
+	<ul>
+		<li><a href="#System_Array_InternalClear">InternalClear</a></li>
+		<li><a href="#System_Array_Initialize">Initialize</a></li>
+		<li><a href="#System_Array_Copy">Copy</a></li>
+		<li><a href="#System_Array_InternalCreate">InternalCreate</a></li>
+		<li><a href="#System_Array_InternalCreateEx">InternalCreateEx</a></li>
+		<li><a href="#System_Array_GetLength">GetLength</a></li>
+		<li><a href="#System_Array_GetLowerBound">GetLowerBound</a></li>
+		<li><a href="#System_Array_GetUpperBound">GetUpperBound</a></li>
+		<li><a href="#System_Array_InternalGetValue">InternalGetValue</a></li>
+		<li><a href="#System_Array_InternalGetValueEx">InternalGetValueEx</a></li>
+		<li><a href="#System_Array_InternalSetValue">InternalSetValue</a></li>
+		<li><a href="#System_Array_InternalSetValueEx">InternalSetValueEx</a></li>
+		<li><a href="#System_Array_GetLengthNative">GetLengthNative</a></li>
+		<li><a href="#System_Array_GetRankNative">GetRankNative</a></li>
+	</ul>
 <li><a href="#System_Decimal">System.Decimal</a></li>
 	<ul>
 		<li><a href="#System_Decimal_ctor">constructor</a></li>
@@ -144,6 +161,33 @@ that use the library.<p>
 	<ul>
 		<li><a href="#System_Single_IsNaN">IsNaN</a></li>
 		<li><a href="#System_Single_IsInfinity">IsInfinity</a></li>
+	</ul>
+<li><a href="#System_String">System.String</a></li>
+	<ul>
+		<li><a href="#System_String_ctor">constructor</a></li>
+		<li><a href="#System_String_Compare">Compare</a></li>
+		<li><a href="#System_String_InternalCompare">InternalCompare</a></li>
+		<li><a href="#System_String_InternalOrdinal">InternalOrdinal</a></li>
+		<li><a href="#System_String_FastAllocateString">FastAllocateString</a></li>
+		<li><a href="#System_String_FastAllocateBuilder">FastAllocateBuilder</a></li>
+		<li><a href="#System_String_FillString">FillString</a></li>
+		<li><a href="#System_String_FillSubstring">FillSubstring</a></li>
+		<li><a href="#System_String_FinalizeBuilder">FillSubstring</a></li>
+		<li><a href="#System_String_Concat">Concat</a></li>
+		<li><a href="#System_String_InternalCopyTo">InternalCopyTo</a></li>
+		<li><a href="#System_String_Equals">Equals</a></li>
+		<li><a href="#System_String_EqualRange">EqualRange</a></li>
+		<li><a href="#System_String_GetHashCode">GetHashCode</a></li>
+		<li><a href="#System_String_IndexOf">IndexOf</a></li>
+		<li><a href="#System_String_IndexOfAny">IndexOfAny</a></li>
+		<li><a href="#System_String_LastIndexOf">LastIndexOf</a></li>
+		<li><a href="#System_String_LastIndexOfAny">LastIndexOfAny</a></li>
+		<li><a href="#System_String_Intern">Intern</a></li>
+		<li><a href="#System_String_IsInterned">IsInterned</a></li>
+		<li><a href="#System_String_FillChar">FillChar</a></li>
+		<li><a href="#System_String_Replace">Replace</a></li>
+		<li><a href="#System_String_TrimHelper">TrimHelper</a></li>
+		<li><a href="#System_String_InternalGetChar">InternalGetChar</a></li>
 	</ul>
 <li><a href="#Platform_DirMethods">Platform.DirMethods</a></li>
 	<ul>
@@ -219,6 +263,133 @@ Get the type of the next argument, but do not advance the iterator.
 
 <blockquote>
 Get the number of arguments that remain to be processed by the iterator.
+</blockquote>
+
+<a name="System_Array"><h3>System.Array</h3>
+
+<a name="System_Array_InternalClear">
+<pre>private static void InternalClear(Array array, int index, int length);</pre>
+
+<blockquote>
+Clear the contents of an array sub-range to all-zeroes, or all-nulls,
+depending upon the element type.  The CLR can assume that all arguments
+have been validated, and that no exceptions need to be thrown.
+</blockquote>
+
+<a name="System_Array_Initialize">
+<pre>public void Initialize();</pre>
+
+<blockquote>
+Call the default value type constructor for all elements within the
+array.  If the array does not contain value types, or the types do
+not have a default constructor, then this method does nothing.
+</blockquote>
+
+<a name="System_Array_Copy">
+<pre>public static void Copy(Array sourceArray, int sourceIndex,
+                        Array destArray, int destIndex,
+                        int length);</pre>
+
+<blockquote>
+Copy the contents of a source array to a destination array.  This may
+involve converting the elements into the destination array's element
+type.  See the ECMA specifications for further information on the behaviour
+of this method, and the exceptions that it may throw.
+</blockquote>
+
+<a name="System_Array_InternalCreate">
+<pre>private static Array InternalCreate(RuntimeType elementType,
+                                    int rank, int length1,
+                                    int length2, int length3);</pre>
+
+<blockquote>
+Create an array of elements.  This may be called for single, two,
+or three-dimensional arrays that have no lower bounds.  The number
+of <code>length</code> arguments to use is specified by <code>rank</code>.
+The CLR can assume that all arguments have been validated.
+</blockquote>
+
+<a name="System_Array_InternalCreateEx">
+<pre>private static Array InternalCreateEx(RuntimeType elementType,
+                                      int[] lengths, int lowerBounds[]);</pre>
+
+<blockquote>
+Create an array of elements.  This is called for creating arbitrarily-sized
+arrays.  The CLR can assume that all arguments have been validated.
+</blockquote>
+
+<a name="System_Array_GetLength">
+<pre>public int GetLength(int dimension);</pre>
+
+<blockquote>
+Get the length of a specific array dimension.
+</blockquote>
+
+<a name="System_Array_GetLowerBound">
+<pre>public int GetLowerBound(int dimension);</pre>
+
+<blockquote>
+Get the lower bound of a specific array dimension.
+</blockquote>
+
+<a name="System_Array_GetUpperBound">
+<pre>public int GetUpperBound(int dimension);</pre>
+
+<blockquote>
+Get the upper bound of a specific array dimension.
+</blockquote>
+
+<a name="System_Array_InternalGetValue">
+<pre>private Object InternalGetValue(int index1, int index2, int index3);</pre>
+
+<blockquote>
+Get the value at a specific position within the array.  Throws
+<code>IndexOutOfRangeException</code> if any of the indices are
+out of range.
+</blockquote>
+
+<a name="System_Array_InternalGetValueEx">
+<pre>private Object InternalGetValueEx(int[] indices);</pre>
+
+<blockquote>
+Get the value at a specific position within the array.  Throws
+<code>IndexOutOfRangeException</code> if any of the indices are
+out of range.
+</blockquote>
+
+<a name="System_Array_InternalSetValue">
+<pre>private void InternalSetValue(Object value, int index1, int index2, int index3);</pre>
+
+<blockquote>
+Set the value at a specific position within the array.  Throws
+<code>IndexOutOfRangeException</code> if any of the indices are
+out of range.
+</blockquote>
+
+<a name="System_Array_InternalSetValueEx">
+<pre>private void InternalSetValueEx(Object value, int[] indices);</pre>
+
+<blockquote>
+Set the value at a specific position within the array.  Throws
+<code>IndexOutOfRangeException</code> if any of the indices are
+out of range.
+</blockquote>
+
+<a name="System_Array_InternalSetValueEx">
+<pre>private int GetLengthNative();</pre>
+
+<blockquote>
+Get the length of the array.  If the array is single-dimensional,
+this will be the same as calling <code>GetLength(0)</code>.  If
+the array is multi-dimensional, it is the product of the length
+of all dimensions.
+</blockquote>
+
+<a name="System_Array_GetRankNative">
+<pre>private int GetRankNative();</pre>
+
+<blockquote>
+Get the rank of the array.
 </blockquote>
 
 <a name="System_Decimal"><h3>System.Decimal</h3>
@@ -596,6 +767,281 @@ Returns <code>true</code> if <code>f</code> is not a number.
 <blockquote>
 Returns <code>true</code> if <code>f</code> is positive or negative
 infinity.
+</blockquote>
+
+<a name="System_String"><h3>System.String</h3>
+
+The class library assumes that strings are represented in a particular
+manner by the runtime engine.  The definition of the fields within
+the class library is as follows:
+
+<blockquote><pre>class String
+{
+	private int arrayLength;
+	private int length;
+	private char firstChar;
+
+}</pre></blockquote>
+
+The length of the string is <code>length</code>, and the first character
+starts at the address of <code>firstChar</code> in memory.  The
+<code>arrayLength</code> field will typically be equal to or greater
+than <code>length</code>, and indicates how many characters of space
+are available in the string.  This is used by the <code>StringBuilder</code>
+class to insert additional characters into a string while it is being
+built.<p>
+
+String objects begin with the above header and are variable in length.
+The length is determined by the constructor.  The entire string is stored
+in a single heap memory block.  Other implementations, particularly Java,
+store the string header and character array separately.<p>
+
+<a name="System_String_ctor">
+<pre>public String(char[] value, int startIndex, int length);
+public String(char[] value);
+public String(char c, int count);
+public String(char *value, int startIndex, int length);
+public String(char *value);
+public String(sbyte *value, int startIndex, int length, Encoding enc);
+public String(sbyte *value, int startIndex, int length);
+public String(sbyte *value);</pre>
+
+<blockquote>
+Construct a new string object with the specified contents.
+</blockquote>
+
+<a name="System_String_Compare">
+<pre>public static int Compare(String strA, String strB);</pre>
+
+<blockquote>
+Compare two strings using the prevailing locale settings.  The comparison
+is case-sensitive.
+</blockquote>
+
+<a name="System_String_InternalCompare">
+<pre>private static int InternalCompare(String strA, int indexA, int lengthA,
+                                   String strB, int indexB, int lengthB,
+                                   bool ignoreCase, CultureInfo culture);</pre>
+
+<blockquote>
+Compare two sub-strings using the specified culture settings.  If
+<code>culture</code> is <code>null</code>, then use the prevailing
+locale settings.  The comparison is case-insensitive if
+<code>ignoreCase</code> is <code>false</code>.<p>
+
+It is possible for <code>lengthA</code> and <code>lengthB</code> to
+be different: e.g., if <code>lengthA</code> is less than <code>lengthB</code>
+and the first <code>lengthA</code> characters of <code>strA</code> are
+identical to the first <code>lengthA</code> characters of <code>strB</code>,
+then <code>strA</code> is less than <code>strB</code>.
+</blockquote>
+
+<a name="System_String_InternalOrdinal">
+<pre>private static int InternalOrdinal(String strA, int indexA, int lengthA,
+                                   String strB, int indexB, int lengthB);</pre>
+
+<blockquote>
+Compare two sub-strings using ordinal character comparisons.  Locale
+and culture information is not used.  It is possible for
+<code>lengthA</code> and <code>lengthB</code> to be different:
+e.g., if <code>lengthA</code> is less than <code>lengthB</code>
+and the first <code>lengthA</code> characters of <code>strA</code> are
+identical to the first <code>lengthA</code> characters of <code>strB</code>,
+then <code>strA</code> is less than <code>strB</code>.
+</blockquote>
+
+<a name="System_String_FastAllocateString">
+<pre>internal static String FastAllocateString(int length);</pre>
+
+<blockquote>
+Allocate a string of the specified <code>length</code>, and populate
+it with zeroes.  This is used by methods such as <code>Concat</code>
+and <code>Insert</code> to build blank strings ready to be filled
+with new characters.  The CLR can assume that the <code>length</code>
+argument is valid.
+</blockquote>
+
+<a name="System_String_FastAllocateBuilder">
+<pre>internal static String FastAllocateBuilder(int capacity);</pre>
+
+<blockquote>
+Allocate a string object with <code>arrayLength</code> initialized
+to <code>capacity</code>, and its <code>length</code> initialized
+to zero.  This is used by the <code>StringBuilder</code> class
+to assist in the process of building strings.
+</blockquote>
+
+<a name="System_String_FillString">
+<pre>internal static void FillString(String dest, int destPos, String src);</pre>
+
+<blockquote>
+Fill the contents of <code>dest</code>, starting at <code>destPos</code>,
+with the entire contents of the string <code>src</code>.  The CLR can
+assume that all arguments are valid.<p>
+
+It is possible for <code>destPos</code> to be greater than or equal to
+the length of <code>dest</code> if the string object is being constructed
+by a <code>StringBuilder</code>.  The CLR should not range-check this value.
+</blockquote>
+
+<a name="System_String_FillSubstring">
+<pre>internal static void FillSubstring(String dest, int destPos,
+                                   String src, int srcPos, int length);</pre>
+
+<blockquote>
+Fill the contents of <code>dest</code>, starting at <code>destPost</code>,
+with <code>length</code> characters from the contents of the string
+<code>src</code>, starting at <code>srcPos</code>.  The CLR can assume
+that all arguments are valid.<p>
+
+It is possible for <code>destPos</code> to be greater than or equal to
+the length of <code>dest</code> if the string object is being constructed
+by a <code>StringBuilder</code>.  The CLR should not range-check this value.
+</blockquote>
+
+<a name="System_String_FinalizeBuilder">
+<pre>internal void FinalizeBuilder(int length);</pre>
+
+<blockquote>
+Set the length of this string to <code>length</code>.  This is used
+by the <code>StringBuilder</code> class to finalize a string object
+after it has been filled with new characters.
+</blockquote>
+
+<a name="System_String_Concat">
+<pre>public static String Concat(String str1, String str2);
+public static String Concat(String str1, String str2, String str3);</pre>
+
+<blockquote>
+Concatenate two (or three) strings together.  These are specified as
+<code>internalcall</code> methods because the runtime engine may have
+an efficient mechanism to concatenate strings.
+</blockquote>
+
+<a name="System_String_InternalCopyTo">
+<pre>private void InternalCopyTo(int sourceIndex, char[] dest,
+                            int destIndex, int count);</pre>
+
+<blockquote>
+Copy the contents of a string into a destination array.  The CLR can
+assume that the arguments are valid.
+</blockquote>
+
+<a name="System_String_Equals">
+<pre>public static bool Equals(String a, String b);</pre>
+
+<blockquote>
+Compare two strings for ordinal equality.
+</blockquote>
+
+<a name="System_String_EqualRange">
+<pre>private bool EqualRange(int srcIndex, int count,
+                        String dest, int destIndex);</pre>
+
+<blockquote>
+Compare sub-ranges of two strings for ordinal equality.  The CLR
+can assume that the arguments are valid.
+</blockquote>
+
+<a name="System_String_GetHashCode">
+<pre>public override int GetHashCode();</pre>
+
+<blockquote>
+Get a hash value for the string.
+</blockquote>
+
+<a name="System_String_IndexOf">
+<pre>public int IndexOf(char value, int startIndex, int count);</pre>
+
+<blockquote>
+Get the index of a specific character within the string.  See the ECMA
+specification for information on the exceptions that this method may throw.
+</blockquote>
+
+<a name="System_String_IndexOfAny">
+<pre>public int IndexOfAny(char[] anyOf, int startIndex, int count);</pre>
+
+<blockquote>
+Get the index of a character within the string that appears in the
+<code>anyOf</code> array.  See the ECMA specification for information on
+the exceptions that this method may throw.
+</blockquote>
+
+<a name="System_String_LastIndexOf">
+<pre>public int LastIndexOf(char value, int startIndex, int count);</pre>
+
+<blockquote>
+Get the last index of a specific character within the string.  See the ECMA
+specification for information on the exceptions that this method may throw.
+</blockquote>
+
+<a name="System_String_LastIndexOfAny">
+<pre>public int LastIndexOfAny(char[] anyOf, int startIndex, int count);</pre>
+
+<blockquote>
+Get the last index of a character within the string that appears in the
+<code>anyOf</code> array.  See the ECMA specification for information on
+the exceptions that this method may throw.
+</blockquote>
+
+<a name="System_String_Intern">
+<pre>public static String Intern(String str);</pre>
+
+<blockquote>
+Intern a string and return the new value.  If <code>str</code> is already
+intern'ed or <code>null</code>, this method will return <code>str</code>.
+</blockquote>
+
+<a name="System_String_IsInterned">
+<pre>public static String IsInterned(String str);</pre>
+
+<blockquote>
+Determine if <code>str</code> is intern'ed.  If it is, then return
+<code>str</code>.  Otherwise return <code>null</code>.
+</blockquote>
+
+<a name="System_String_FillChar">
+<pre>private static void FillChar(String str, int start, int count, char ch);</pre>
+
+<blockquote>
+Fill a sub-range within a string with a specified character.  The CLR
+can assume that the arguments are valid.
+</blockquote>
+
+<a name="System_String_Replace">
+<pre>public String Replace(char oldChar, char newChar);</pre>
+
+<blockquote>
+Replace all occurrences of <code>oldChar</code> in the string with
+<code>newChar</code>, and return a newly allocated string with the
+replacements.
+</blockquote>
+
+<pre>public String Replace(String oldValue, String newValue);</pre>
+
+<blockquote>
+Replace all occurrences of <code>oldValue</code> in the string with
+<code>newValue</code>, and return a newly allocated string with the
+replacements.
+</blockquote>
+
+<a name="System_String_TrimHelper">
+<pre>private String TrimHelper(char[] trimChars, int trimType);</pre>
+
+<blockquote>
+Trim any characters that are contained in the specified array from
+the string.  The <code>trimType</code> argument specifies where the
+characters should be trimmed from: 0 for the front of the string,
+1 for the end of the string, and 2 for both.
+</blockquote>
+
+<a name="System_String_InternalGetChar">
+<pre>private char InternalGetChar(int posn);</pre>
+
+<blockquote>
+Gets the character at <code>posn</code> within the string.  Throws
+an <code>IndexOutOfRangeException</code> if <code>posn</code> is
+invalid.
 </blockquote>
 
 <h2>Internalcall methods in the Platform namespace</h2>

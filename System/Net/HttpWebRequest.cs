@@ -36,80 +36,44 @@ using System.Net.Sockets;
 
 public class HttpWebRequest : WebRequest
 {
+	private String accept="*/*";
+	private Uri address=null;
+	private Uri originalUri=null;
+	private bool allowAutoRedirect=true;
+	private bool allowWriteStreamBuffering=true;
+	private String connectionGroupName=null;
+	private long contentLength=-1;
+	private HttpContinueDelegate continueDelegate=null;
+	private ICredentials credentials=null;
+	private bool haveResponse=false;
+	private WebHeaderCollection headers=new WebHeaderCollection();
+	private DateTime ifModifiedSince=DateTime.Now;
+	private bool keepAlive=true;
+	private int maximumAutomaticRedirections=5;
+	private string method="GET";
+	private bool pipelined=true;
+	private bool preAuthenticate=false;
+	private Version protocolVersion=System.Net.HttpVersion.Version11;
+	private IWebProxy proxy;
+	private Uri requestUri;
+	private bool sendChunked=false;
+//	private ServicePoint servicePoint=null;
+	private int timeout;
+	private string mediaType=null;
 
-	// Write a UTF-8 string to a stream.  This needs to be
-	// made a lot more efficient using real buffering.
-	private static void Write(Stream stream, String str)
+// other useful variables
+	protected bool headerSent=false; 
+	// so that it is accessible to the nested classes
+	private Stream outStream=null;
+	private WebResponse response=null;
+
+	internal HttpWebRequest(Uri uri)
 	{
-		byte[] bytes = Encoding.UTF8.GetBytes(str);
-		stream.Write(bytes, 0, bytes.Length);
+		this.address=uri;
+		this.originalUri=uri;
+		this.method="GET";
 	}
 
-	//Call some sort of constructor from 
-	//System.Net.WebRequest.CreateDefault()
-	private void Connect(Uri address)
-	{
-		this.address=address;
-		
-		IPAddress ip=Dns.Resolve(Address.Host).AddressList[0];
-		IPEndPoint ep = new IPEndPoint(ip,Address.Port);
-		server=new Socket(AddressFamily.InterNetwork,SocketType.Stream,
-							ProtocolType.Tcp);
-		server.Connect(ep);
-		outStream=this.GetRequestStream();
-		HttpWebResponse retval=new HttpWebResponse();
-		Write(outStream, this.Method+" "+this.Address.PathAndQuery+" HTTP/"+
-					this.protocolVersion.Major+"."+this.protocolVersion.Minor+"\r\n");
-		
-		/* Accept */
-		if(this.Accept!=null)
-			Write(outStream, "Accept: "+this.Accept+"\r\n");
-		else
-			Write(outStream, "Accept: */*\r\n");
-	
-		/* Connection */
-		if(this.Connection!=null && this.KeepAlive)
-			Write(outStream, "Connection: "+this.Connection + " Keep-alive \r\n");
-		else if (this.KeepAlive)
-			Write(outStream, "Connection: Keep-alive\r\n");
-		else
-			Write(outStream, "Connection: Close\r\n");
-	
-		/* Content-Length */	
-		if(this.ContentLength!=-1)
-			Write(outStream, "Content-Length: "+this.ContentLength+"\r\n");
-			
-		/* Content-Type */
-		if(this.ContentType!=null)
-			Write(outStream, "Content-Type: "+this.ContentType+"\r\n");
-
-		if(this.Expect!=null)
-			Write(outStream, "Expect: "+this.Expect+"\r\n");
-
-		if(this.IfModifiedSince!=DateTime.MinValue)
-		{
-			String format="ddd, dd MMM yyyy HH*:mm:ss GMTzz";//convert to GMT
-			Write(outStream, "If-Modified-Since: "+this.IfModifiedSince.ToString
-			(format)+"\r\n");			
-		}
-		
-		/* Implement User-Auth here */
-		/* use PreAuthenticate & ICredentials to do the job */
-		
-		if(this.Referer!=null)
-			Write(outStream, "Referer: "+this.Referer+"\r\n");
-
-		if(this.TransferEncoding!=null)
-			Write(outStream, "Transfer-Encoding: "+this.TransferEncoding+"\r\n");
-
-		/* User Agent */
-		if(this.UserAgent!=null)
-			Write(outStream, "User-Agent: "+this.UserAgent+"\r\n");
-
-		headerSent=true;
-		outStream.Flush();
-	}
-	
 	[TODO]
 	public override void Abort()
 	{
@@ -125,7 +89,6 @@ public class HttpWebRequest : WebRequest
 		AddRange("bytes",range);
 	}
 
-	[TODO] 
 	//need internationalisation
 	public void AddRange(string rangeSpecifier,int from,int to)
 	{
@@ -190,14 +153,16 @@ public class HttpWebRequest : WebRequest
 		return 0;//just to make it compiling
 	}
 	
-	[TODO]
 	// put in exception handling 
 	// and proxy support 
 	public override Stream GetRequestStream()
 	{
-		if(outStream==null)throw new WebException("not connected");
 		if(!canGetRequestStream())
 			throw new WebException(" not allowed for " + this.Method);
+		if(outStream==null)
+		{
+			outStream=new HttpStream(this);
+		}
 		return outStream;
 	}
 	
@@ -206,7 +171,14 @@ public class HttpWebRequest : WebRequest
 	//really need some doubts cleared
 	public override WebResponse GetResponse()
 	{
-		return null;
+		if(response!=null) return response;
+		if(outStream==null)
+		{
+			outStream=new HttpStream(this);
+			/* which is the response stream as well */
+		}
+		this.response=new HttpWebResponse(this,this.outStream);
+		return this.response; 
 	}
 /*
  * Implement the Checks for Setting values
@@ -215,12 +187,12 @@ public class HttpWebRequest : WebRequest
 	{
 		get
 		{
-			return accept;
+			return headers["Accept"];
 		}
 		set
 		{
-			if(value !=null)
-				this.accept=value;
+			CheckHeadersSent();
+			headers.SetInternal("Accept",value);
 		}
 	}
 	
@@ -261,15 +233,23 @@ public class HttpWebRequest : WebRequest
 	{
 		get
 		{
-			return this.connection;
+			return headers["Connection"];
 		}
 		set
 		{
-			if(value=="Keep-alive" || value=="Close")
+			CheckHeadersSent();
+			String str;
+			if(value!=null)str=value.ToLower().Trim();
+			if(str==null || str.Length==0)
 			{
-				this.connection=value;
+				headers.RemoveInternal("Connection");
+				return;
 			}
-			else throw new ArgumentException("Value NOT keep alive or close");
+			if(str=="keep-alive" || str=="close")
+			{
+				headers.SetInternal("Connecton",str);
+			}
+			else throw new ArgumentException("Value NOT keep-alive or close");
 		}
 	}
 
@@ -295,9 +275,9 @@ public class HttpWebRequest : WebRequest
 		{
 			if(value<0) 
 				throw new ArgumentOutOfRangeException("Content-Length < 0");
-			if(headerSent)
-				throw new InvalidOperationException(" header already sent");
+			CheckHeadersSent();
 			this.contentLength=value;
+			this.headers.SetInternal("Content-Length",value.ToString());
 		}
 	}
 
@@ -305,11 +285,12 @@ public class HttpWebRequest : WebRequest
 	{
 		get
 		{
-			return this.contentType;
+			return headers["Content-Type"];
 		}
 		set
 		{
-			this.contentType=value;
+			CheckHeadersSent();
+			this.headers.SetInternal("Content-Type",value);
 			// I should really check for <type>/<subtype> in it ;)
 		}
 	}
@@ -342,13 +323,14 @@ public class HttpWebRequest : WebRequest
 	{
 		get
 		{
-			return this.expect;
+			return headers["Expect"];
 		} 
 		set
 		{
+			CheckHeadersSent();
 			if(value.ToLower()=="100-continue") 
-				throw new ArgumentException("cannot set "+value);
-			this.expect=value;
+				throw new ArgumentException("cannot set 100-continue");
+			headers.SetInternal("Expect",value);
 		}
 	}
 
@@ -359,27 +341,32 @@ public class HttpWebRequest : WebRequest
 			return this.haveResponse;
 		}
 	}
-/*
+
 	public override WebHeaderCollection Headers 
 	{
 		get
 		{
-			return this.
+			return this.headers;
 		} 
 		set
 		{
-			this.=value;
+			CheckHeadersSent();
+			this.headers=value;
 		}
-	}*/
+	}
 
 	public DateTime IfModifiedSince 
 	{
+		/* avoid the thunk of Headers */
 		get
 		{
 			return this.ifModifiedSince;
 		} 
 		set
 		{
+			CheckHeadersSent();
+			String format="ddd, dd MMM yyyy HH*:mm:ss GMTzz";//convert to GMT
+			headers.SetInternal("IfModifiedSince", value.ToString(format));
 			this.ifModifiedSince=value;
 		}
 	}
@@ -392,6 +379,7 @@ public class HttpWebRequest : WebRequest
 		} 
 		set
 		{
+			CheckHeadersSent();
 			this.keepAlive=value;
 		}
 	}
@@ -418,6 +406,7 @@ public class HttpWebRequest : WebRequest
 		} 
 		set
 		{
+			CheckHeadersSent();
 			this.mediaType=value;
 		}
 	}
@@ -430,6 +419,7 @@ public class HttpWebRequest : WebRequest
 		} 
 		set
 		{
+			CheckHeadersSent();
 			if(isHTTPMethod(value))
 				this.method=value;
 			else 
@@ -445,6 +435,7 @@ public class HttpWebRequest : WebRequest
 		} 
 		set
 		{
+			CheckHeadersSent();
 			this.pipelined=value;
 		}
 	}
@@ -469,6 +460,7 @@ public class HttpWebRequest : WebRequest
 		} 
 		set
 		{
+			CheckHeadersSent();
 			if(value.Major==1 && (value.Minor==0 || value.Minor==1))
 			{
 				this.protocolVersion=value;
@@ -488,7 +480,7 @@ public class HttpWebRequest : WebRequest
 		set
 		{
 			if(value==null)throw new ArgumentNullException("Proxy null");
-			if(headerSent)throw new InvalidOperationException("Header sent");
+			CheckHeadersSent();
 			//TODO: implement SecurityException
 			this.proxy=value;
 		}
@@ -498,11 +490,12 @@ public class HttpWebRequest : WebRequest
 	{
 		get
 		{
-			return this.referer;
+			return headers["Referer"];
 		} 
 		set
 		{
-			this.referer=value;
+			CheckHeadersSent();
+			headers.SetInternal("Referer",value);
 		}
 	}
 
@@ -522,7 +515,7 @@ public class HttpWebRequest : WebRequest
 		} 
 		set
 		{
-			if(headerSent)throw new InvalidOperationException("data sent");
+			CheckHeadersSent();
 			this.sendChunked=value;
 		}
 	}
@@ -555,15 +548,16 @@ public class HttpWebRequest : WebRequest
 	{
 		get
 		{
-			return this.transferEncoding;
+			return headers["Transfer-Encoding"];
 		} 
 		set
 		{
+			CheckHeadersSent();
 			if(!this.sendChunked)throw new 
 				InvalidOperationException(" send chunked set");
 			if(String.Compare("Chunked",value,true) == 0)
 				throw new ArgumentException(" cannot chunk it");
-			this.transferEncoding=value;
+			headers.SetInternal("Transfer-Encoding",value);
 		}
 	}
 
@@ -571,54 +565,22 @@ public class HttpWebRequest : WebRequest
 	{
 		get
 		{
-			return this.userAgent;
+			return headers["User-Agent"];
 		} 
 		set
 		{
-			this.userAgent=value;
+			headers.SetInternal("User-Agent",value);
 		}
 	}
 	
-// my private vars
-// I'm storing all my properties in fields and using properties
-// like I did with my javabean get , set methods
 
-	private String accept="*/*";
-	private Uri address=null;
-	private bool allowAutoRedirect=true;
-	private bool allowWriteStreamBuffering=true;
-	private String connection=null;
-	private String connectionGroupName=null;
-	private long contentLength=-1;
-	private string contentType=null;
-	private HttpContinueDelegate continueDelegate=null;
-	private ICredentials credentials=null;
-	private string expect=null;
-	private bool haveResponse=false;
-/*look manual*/	private WebHeaderCollection headers;
-/*look manual*/	private DateTime ifModifiedSince;
-	private bool keepAlive=true;
-/*look manual*/	private int maximumAutomaticRedirections;
-	private string method="GET";
-	private bool pipelined=true;
-	private bool preAuthenticate=false;
-	private Version protocolVersion=System.Net.HttpVersion.Version11;
-/*look manual*/	private IWebProxy proxy;
-	private string referer=null;
-/*look manual*/	private Uri requestUri;
-	private bool sendChunked=false;
-//	private ServicePoint servicePoint=null;
-/*look manual*/	private int timeout;
-	private string transferEncoding=null;
-	private string userAgent=null;
-	private string mediaType=null;
-
-// my special vars & methods
-	private bool headerSent=false;
-	private Stream outStream=null;
-	private Stream inStream=null;
-	private Socket server;
-	
+	private void CheckHeadersSent()
+	{
+		if(headerSent)
+		{
+			throw new InvalidOperationException("Headers already sent");
+		}
+	}
 	private bool canGetRequestStream()
 	{
 		if((this.method.Equals("PUT")) || (this.method.Equals("POST")))
@@ -635,7 +597,41 @@ public class HttpWebRequest : WebRequest
 			}
 		return false;
 	}
-
+	private class HttpStream : NetworkStream
+	{	
+		private HttpWebRequest request;
+		public HttpStream(HttpWebRequest req) :
+			base(HttpStream.OpenSocket(req),true)
+		{
+			this.request=req;
+			SendHeaders();
+		}
+		private static Socket OpenSocket(HttpWebRequest req)
+		{
+			IPAddress ip=Dns.Resolve(req.Address.Host).AddressList[0];
+			IPEndPoint ep = new IPEndPoint(ip,req.Address.Port);
+			Socket server=new 
+					Socket(AddressFamily.InterNetwork,SocketType.Stream,
+							ProtocolType.Tcp);
+			server.Connect(ep);
+			return server;
+		}
+		private void SendHeaders()
+		{
+			StreamWriter writer=new StreamWriter(this);
+			request.headerSent=true; 
+			/* fake it before sending to allow for atomicity */
+			String requestString= request.Method+" "+
+			//		request.Address.PathAndQuery+
+					"/"+
+					" HTTP/"+request.protocolVersion.Major+
+					"."+request.protocolVersion.Minor+"\r\n";
+			writer.Write(requestString);
+			writer.Write(request.Headers.ToString());
+			writer.Write("\r\n");// terminating CRLF
+			writer.Flush();
+		}
+	} //internal class
 }//class
 
 }//namespace

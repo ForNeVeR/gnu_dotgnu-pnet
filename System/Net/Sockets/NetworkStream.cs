@@ -148,7 +148,8 @@ public class NetworkStream : Stream
 
 				try
 				{
-					return mysocket.Receive(buffer, size, offset, SocketFlags.None);
+					return mysocket.Receive(buffer, offset, size, 
+								SocketFlags.None);
 				}					
 				catch(Exception e)
 				{

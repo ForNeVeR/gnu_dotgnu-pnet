@@ -22,33 +22,177 @@ namespace System.Net
 {
 
 using System;
+using System.Text;
+using System.Collections;
 using System.Collections.Specialized;
 
 public class WebHeaderCollection : NameValueCollection
 {
-	[TODO]
-	public WebHeaderCollection() {}
+	private static int[] restrictedHeaders=
+	{
+		"accept".GetHashCode(),
+		"connection".GetHashCode(),
+		"content-length".GetHashCode(),
+		"content-type".GetHashCode(),
+		"date".GetHashCode(),
+		"expect".GetHashCode(),
+		"host".GetHashCode(),
+		"range".GetHashCode(),
+		"referrer".GetHashCode(),
+		"transfer-encoding".GetHashCode(),
+		"user-agent".GetHashCode()
+	};
+	private static char[] tspecials= new char [] 
+						{'(', ')', '<', '>', '@',
+					     ',', ';', ':', '\\', '"',
+					     '/', '[', ']', '?', '=',
+					     '{', '}', ' ', '\t'};
 	
-	[TODO]
-	public override void Add(string name, string value) {}
+	public WebHeaderCollection() 
+	{	
+		/* nothing here ? */	
+	}
 	
-	[TODO]
-	public void Add(string header) {}
-	
-	[TODO]
-	protected void AddWithoutValidate(string headerName, string headerValue) {}
-	
-	[TODO]
-	public override String[] GetValues(string header) { return null; }
-	
-	[TODO]
-	public static bool IsRestricted(string headerName){ return false; }
+	public void Add(string header) 
+	{
+		if(header==null)
+		{
+			throw new ArgumentNullException("header");
+		}
+		int col=header.IndexOf(":");
+		if(col==-1)
+		{
+			throw new ArgumentException("missing ':' in header"); /*TODO:I18n*/
+		}
+		Add(header.Substring(0,col),header.Substring(col+1));
+	}
 
-	[TODO]
-	public override void Remove(string name) {}	
+	public override void Add(string name, string value) 
+	{
+		if(name==null)
+		{
+			throw new ArgumentNullException("name");
+		}
+		if(IsRestricted(name))
+		{
+			throw new ArgumentException("restricted header");/* TODO: I18n */
+		}
+		AddWithoutValidate(name,value);
+	}
 	
-	[TODO]
-	public override void Set(string name, string value) {}
+	
+	protected void AddWithoutValidate(string headerName, string headerValue) 
+	{
+		headerName=headerName.Trim();
+		if(!IsValidHeaderName(headerName))
+		{
+			throw new ArgumentException("invalid header name");/*TODO: I18n*/
+		}
+		if(headerValue==null)headerValue="";
+		else headerValue=headerValue.Trim(); /* remove excess LWS */
+		base.Add(headerName,headerValue); /* add to NameValueCollection */
+	}
+
+	
+	public override String[] GetValues(string header) 
+	{ 
+		if(header==null)
+		{
+			throw new ArgumentNullException("header");
+		}
+		return base.GetValues(header);
+	}
+	
+	public static bool IsRestricted(string headerName)
+	{ 
+		int hash=headerName.ToLower().GetHashCode(); /* case insensitive ? */
+		for(int i=0;i<restrictedHeaders.Length;i++)
+		{
+			if(restrictedHeaders[i]==hash)return true;
+		}
+		return false;
+	}
+
+	public override void Remove(string name) 
+	{
+		if(name==null)
+		{
+			throw new ArgumentNullException("name");
+		}
+		if(!IsValidHeaderName(name))
+		{
+			throw new ArgumentException("invalid header"); /* TODO: I18n */
+		}
+		if(IsRestricted(name))
+		{
+			throw new ArgumentException("restricted header");/* TODO:I18N */
+		}
+		RemoveInternal(name);
+	}	
+
+	internal void RemoveInternal(String name)
+	{
+		base.Remove(name);
+	}
+	
+	public override void Set(string name, string value) 
+	{
+		if(name==null)
+		{
+			throw new ArgumentNullException("name");
+		}
+		if(!IsValidHeaderName(name))
+		{
+			throw new ArgumentException("invalid header name");/*TODO: I18n*/
+		}
+		if(IsRestricted(name))
+		{
+			throw new ArgumentException("restricted header");/* TODO: I18n */
+		}
+		SetInternal(name,value);
+	}
+
+	internal void SetInternal(String name,String value)
+	{
+		if(value==null)value="";
+		else value=value.Trim(); // LWS 
+		base.Set(name,value);
+	}
+
+	public override String ToString()
+	{
+		StringBuilder builder=new StringBuilder(40*this.Count); 
+		/* an assumption :-) */
+		foreach(String key in this)
+		{
+			builder.Append(key+": "+this[key]+"\r\n");
+		}
+		return builder.ToString();
+	}
+
+	// private methods
+	private static bool IsValidHeaderName(String name)
+	{
+
+        /*  token          = 1*<any CHAR except CTLs or tspecials> 
+
+          tspecials      = "(" | ")" | "<" | ">" | "@"
+                         | "," | ";" | ":" | "\" | <">
+                         | "/" | "[" | "]" | "?" | "="
+                         | "{" | "}" | SP | HT
+		*/
+		if(name == null || name.Length == 0) return false;
+		char[] chars=name.ToCharArray(); 
+		int len=chars.Length;
+		for(int i=0;i< len; i++)
+		{
+			if(chars[i]< 0x20 || chars[i]>=0x7f) /* no Unicode here */
+			{
+				return false;
+			}
+		}
+		return name.IndexOfAny(tspecials) == -1; 
+	}
 		
 }; //class WebHeaderCollection
 

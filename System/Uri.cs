@@ -725,6 +725,7 @@ public class Uri : MarshalByRefObject
 			}
 			else // ok, it's a real scheme
 			{
+				this.scheme=AbsoluteUri.Substring(0,curpos);
 				// some Uris don't use the // after scheme:
 				if (String.Compare(AbsoluteUri, curpos,
 						   SchemeDelimiter, 0, 3) == 0)

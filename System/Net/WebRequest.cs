@@ -37,7 +37,7 @@ public class WebRequest : MarshalByRefObject
 	private IWebProxy           proxy;
 	private Uri                 requestUri;
 	private Int32               timeout;
-	private static Hashtable    prefixes;
+	private static Hashtable    prefixes=new Hashtable();
 
 	protected WebRequest()
 	{
@@ -114,8 +114,11 @@ public class WebRequest : MarshalByRefObject
 		// TODO: this client does not have the permission to connect to the URI or
 		// the URI that the request is redirected to.
 		// throw new SecurityException("requestUriString");
-
-		return null;
+		if(requestUri.Scheme=="http")
+		{
+			return new HttpWebRequest(requestUri);
+		}
+		throw new NotSupportedException("CreateDefault");
 	}
 
 	public virtual Stream EndGetRequestStream(IAsyncResult asyncResult)

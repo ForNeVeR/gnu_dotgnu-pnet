@@ -13,6 +13,8 @@ passed to native methods by pointer correctly.
 * engine/process.c: make sure that "LoadStandard" is called, no matter
 how the program is loaded.
 
+* engine/cvm_ptr.c: bug fix - convert "sizeof(void)" into "sizeof(void *)".
+
 2001-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm_dasm.c, engine/cvmc_obj.c, engine/cvm_ptr.c,

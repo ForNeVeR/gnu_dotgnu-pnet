@@ -807,7 +807,7 @@ case COP_CASTCLASS:
 	if(!stacktop[-1].ptrValue ||
 	   ILClassInheritsFrom(GetObjectClass(stacktop[-1].ptrValue), classInfo))
 	{
-		MODIFY_PC_AND_STACK(1 + sizeof(void), 0);
+		MODIFY_PC_AND_STACK(1 + sizeof(void *), 0);
 	}
 	else
 	{
@@ -837,7 +837,7 @@ case COP_CASTINTERFACE:
 	if(!stacktop[-1].ptrValue ||
 	   ILClassImplements(GetObjectClass(stacktop[-1].ptrValue), classInfo))
 	{
-		MODIFY_PC_AND_STACK(1 + sizeof(void), 0);
+		MODIFY_PC_AND_STACK(1 + sizeof(void *), 0);
 	}
 	else
 	{
@@ -868,7 +868,7 @@ case COP_GET_STATIC:
 	{
 		stacktop[0].ptrValue =
 			((ILClassPrivate *)(classInfo->userData))->staticData;
-		MODIFY_PC_AND_STACK(1 + sizeof(void), 1);
+		MODIFY_PC_AND_STACK(1 + sizeof(void *), 1);
 		break;
 	}
 	COPY_STATE_TO_THREAD();
@@ -878,7 +878,7 @@ case COP_GET_STATIC:
 	RESTORE_STATE_FROM_THREAD();
 	stacktop[0].ptrValue =
 		((ILClassPrivate *)(classInfo->userData))->staticData;
-	MODIFY_PC_AND_STACK(1 + sizeof(void), 1);
+	MODIFY_PC_AND_STACK(1 + sizeof(void *), 1);
 }
 break;
 

@@ -586,6 +586,37 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					#include "cvm_inline.c"
 					#undef IL_CVM_PREFIX
 
+					/**
+					 * <opcode name="unroll_method"
+					 *         group="Miscellaneous instructions">
+					 *   <operation>Mark a method for unrolling</operation>
+					 *
+					 *   <dformat>{unroll_method}</dformat>
+					 *
+					 *   <form name="unroll_method"
+					 *         code="COP_PREFIX_UNROLL_METHOD"/>
+					 *
+					 *   <description>The <i>unroll_method</i> instruction is
+					 *   used in direct code to trigger native code unrolling.
+					 *   <p/>
+					 *
+					 *   Unrolling converts fragments of the method into
+					 *   native code for the underlying CPU, to speed up
+					 *   execution.</description>
+					 *
+					 *   <notes>There is no bytecode format for this
+					 *   instruction, because unrolling is not possible
+					 *   with the bytecode encoding.<p/>
+					 *
+					 *   In a method that can support unrolling, the
+					 *   <i>nop</i> instruction is used to mark
+					 *   a label, so that the unroller can process labels
+					 *   in a single translation pass.  The <i>prefix</i>
+					 *   instruction is used to mark the end of the method's
+					 *   code, so that the unroller knows where to stop.
+					 *   </notes>
+					 * </opcode>
+					 */
 					VMCASE(COP_PREFIX_UNROLL_METHOD):
 					{
 						/* Unroll the current method to native code */

@@ -714,6 +714,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			{
 				MemberInfo member;
 				MemberTypes types;
+				MemberTypes otherTypes = (MemberTypes)0;
 				Type[] argTypes;
 
 				// Validate the parameters against the invocation type.
@@ -764,10 +765,17 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				}
 				else if((invokeAttr & BindingFlags.GetField) != 0)
 				{
-					if((invokeAttr & BindingFlags.SetField) != 0)
+					if((invokeAttr & (BindingFlags.SetField |
+									  BindingFlags.SetProperty)) != 0)
 					{
 						throw new ArgumentException
 							(_("Reflection_InvokeAttr"));
+					}
+					if((invokeAttr & BindingFlags.GetProperty) != 0)
+					{
+						// It is possible for callers to ask for
+						// "either a field or a property with this name".
+						otherTypes = MemberTypes.Property;
 					}
 					types = MemberTypes.Field;
 					if(args != null && args.Length != 0)
@@ -779,10 +787,17 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				}
 				else if((invokeAttr & BindingFlags.SetField) != 0)
 				{
-					if((invokeAttr & BindingFlags.GetField) != 0)
+					if((invokeAttr & (BindingFlags.GetField |
+									  BindingFlags.GetProperty)) != 0)
 					{
 						throw new ArgumentException
 							(_("Reflection_InvokeAttr"));
+					}
+					if((invokeAttr & BindingFlags.SetProperty) != 0)
+					{
+						// It is possible for callers to ask for
+						// "either a field or a property with this name".
+						otherTypes = MemberTypes.Property;
 					}
 					types = MemberTypes.Field;
 					if(args == null || args.Length != 1)
@@ -833,6 +848,13 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				member = GetMemberImpl(name, types, invokeAttr, binder,
 									   CallingConventions.Any,
 									   argTypes, modifiers);
+				if(member == null && otherTypes != (MemberTypes)0)
+				{
+					types = otherTypes;
+					member = GetMemberImpl(name, types, invokeAttr, binder,
+										   CallingConventions.Any,
+										   argTypes, modifiers);
+				}
 				if(member == null)
 				{
 					if(types == MemberTypes.Field)

@@ -7,6 +7,10 @@
 	update the version numbers in the profiles to 2.0 and add new
 	profiles to build the older 1.2 system.
 
+	* runtime/System/Reflection/ClrType.cs: allow both GetField and
+	GetProperty to used together with InvokeMember (similarly for
+	SetField and SetProperty).
+
 2004-07-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Resources/ResourceManager.cs: fix ResourceManager

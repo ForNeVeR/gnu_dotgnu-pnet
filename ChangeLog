@@ -31,6 +31,13 @@
 	* runtime/System/Text/Encoding.cs, runtime/System/Text/UTF32Encoding.cs:
 	add the "UTF32Encoding" class for 1.2 compatibility.
 
+	* JScript/JScript.build, System.Net.IrDA/IrDA.build,
+	System.Configuration.Install/System.Configuration.Install.build,
+	compat/compat.build, samples/samples.build,
+	tests/JScript/TestJScript.build, tests/System/TestSystem.build:
+	fix some of the build files to point at "System/first/System.dll"
+	so that pnetlib can be built on a clean system.
+
 2003-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/GlobalProxySelection.cs, System/Net/HttpWebRequest.cs:

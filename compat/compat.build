@@ -42,7 +42,7 @@
 			</sources>
 
 			<references>
-				<file name="../System/System.dll"/>
+				<file name="../System/first/System.dll"/>
 				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
@@ -71,7 +71,7 @@
 			</sources>
 
 			<references>
-				<file name="../System/System.dll"/>
+				<file name="../System/first/System.dll"/>
 				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>

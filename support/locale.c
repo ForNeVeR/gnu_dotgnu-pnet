@@ -277,10 +277,10 @@ char *ILGetCultureName(void)
 	{
 		return 0;
 	}
-	name[3] = '-';
-	name[4] = ToUpper(env[3]);
-	name[5] = ToUpper(env[4]);
-	name[6] = '\0';
+	name[2] = '-';
+	name[3] = ToUpper(env[3]);
+	name[4] = ToUpper(env[4]);
+	name[5] = '\0';
 	return ILDupString(name);
 }
 

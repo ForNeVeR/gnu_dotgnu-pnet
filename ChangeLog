@@ -4,6 +4,9 @@
 	* cscc/cscc.c, cscc/common/cc_options.c, cscc/common/cc_options.h:
 	handle the case of a resource-only link for sattelite assemblies.
 
+	* support/locale.c (ILGetCultureName): formatting error when
+	getting the name of the current culture from "LANG".
+
 2002-12-11  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_oper.tc: Implement AddressOf operator to generate

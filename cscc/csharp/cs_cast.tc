@@ -34,6 +34,7 @@ ILNode_SemAnalysis(ILNode_UserCast)
 {
 	CSSemValue type;
 	CSSemValue value;
+	ILEvalValue evalValue;
 
 	/* Perform semantic analysis on the type and value expressions */
 	type = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -78,7 +79,15 @@ ILNode_SemAnalysis(ILNode_UserCast)
 	}
 
 	/* Return an rvalue of the final type to the caller */
-	CSSemSetRValue(value, CSSemGetType(type));
+	if(ILNode_EvalConst(*parent, info, &evalValue))
+	{
+		CSSemSetConstant(value, CSSemGetType(type), evalValue);
+		CSSemReplaceWithConstant(parent, value);
+	}
+	else
+	{
+		CSSemSetRValue(value, CSSemGetType(type));
+	}
 	return value;
 }
 

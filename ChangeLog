@@ -5,6 +5,8 @@
 	cscc/csharp/cs_oper.tc, cscc/csharp/cs_semvalue.h: improve
 	constant evaluation for operators.
 
+	* cscc/csharp/cs_cast.tc: constant evaluation for cast operators.
+
 2002-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, ilheader/.cvsignore, ilheader/Makefile.am,

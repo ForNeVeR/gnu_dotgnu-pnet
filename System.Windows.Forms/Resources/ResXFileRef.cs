@@ -27,6 +27,8 @@ namespace System.Resources
 using System;
 using System.Globalization;
 using System.ComponentModel;
+using System.IO;
+using System.Reflection;
 
 [Serializable]
 #if CONFIG_COMPONENT_MODEL
@@ -74,13 +76,26 @@ public class ResXFileRef
 				}
 	
 		// Convert from another type to the one represented by this class.
-		[TODO]
 		public override Object ConvertFrom(ITypeDescriptorContext context,
 										   CultureInfo culture,
 										   Object value)
 				{
-					// TODO
-					return null;
+					string s = value as String;
+					if (s == null)
+						return base.ConvertFrom(context, culture, value);
+					else
+					{
+						string[] split = s.Split(';');
+						string fileName = split[0];
+						byte[] bytes;
+						using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+						{
+							bytes = new byte[fileStream.Length];
+							fileStream.Read(bytes, 0, (int)fileStream.Length);
+						}
+						Type type = Type.GetType(split[1]);
+						return Activator.CreateInstance(type, BindingFlags.CreateInstance | BindingFlags.Public | BindingFlags.Instance, null, new object[]{new MemoryStream(bytes)}, null);
+					}
 				}
 	
 		// Convert this object into another type.

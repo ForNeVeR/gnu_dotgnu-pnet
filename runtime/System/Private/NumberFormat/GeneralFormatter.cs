@@ -53,7 +53,7 @@ internal class GeneralFormatter : Formatter
 		if (o is Int16 || o is UInt16) return 5;
 		if (o is Int32 || o is UInt32) return 10;
 		if (o is Int64 || o is UInt64) return 19;
-		if (o is Byte) return 3;
+		if (o is Byte || o is SByte) return 3;
 		if (o is Single) return 7;
 		if (o is Double) return 15;
 		if (o is Decimal) return 29;

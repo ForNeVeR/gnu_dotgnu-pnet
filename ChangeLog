@@ -1,4 +1,9 @@
 
+2003-03-03  David Hoke  <d_hoke@hotmail.com>
+	
+	* runtime/System/Private/NumberFormat/GeneralFormatter.cs: Apply
+	one liner patch to fix formatting of SByte . (Gopal)
+
 2003-04-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/Sockets/NetworkStream.cs, System/Net/Sockets/Socket.cs,

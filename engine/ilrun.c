@@ -30,8 +30,12 @@ extern	"C" {
  * Table of command-line options.
  */
 static ILCmdLineOption const options[] = {
+	{"-H", 'H', 1, 0, 0},
+	{"--heap-size", 'H', 1,
+		"--heap-size value  or -H value",
+		"Set the maximum size of the heap to `value' kilobytes."},
 	{"--version", 'v', 0,
-		"--version or -v",
+		"--version          or -v",
 		"Print the version of the program"},
 	{"--help", 'h', 0,
 		"--help",
@@ -45,6 +49,7 @@ static void version(void);
 int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
+	unsigned long heapSize = 0;
 	int state, opt;
 	char *param;
 	ILExecProcess *process;
@@ -59,6 +64,18 @@ int main(int argc, char *argv[])
 	{
 		switch(opt)
 		{
+			case 'H':
+			{
+				heapSize = 0;
+				while(*param >= '0' && *param <= '9')
+				{
+					heapSize = heapSize * 10 + (unsigned long)(*param - '0');
+					++param;
+				}
+				heapSize *= 1024;
+			}
+			break;
+
 			case 'v':
 			{
 				version();
@@ -81,6 +98,9 @@ int main(int argc, char *argv[])
 		usage(progname);
 		return 1;
 	}
+
+	/* Initialize the engine and set the maximum heap size */
+	ILExecInit(heapSize);
 
 	/* Create a process to load the program into */
 	process = ILExecProcessCreate();

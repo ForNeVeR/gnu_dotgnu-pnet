@@ -28,6 +28,9 @@ implement the garbage collection API in terms of the Hans-Boehm collector.
 engine/process.c, engine/Makefile.am: modify the engine to use the garbage
 collector instead of the dummy heap implementation.
 
+* engine/ilrun.c: add the `-H' (heap size) option to the engine, and
+initialize the engine using "ILExecInit".
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

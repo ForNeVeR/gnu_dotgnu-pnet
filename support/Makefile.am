@@ -19,6 +19,7 @@ libILSupport_a_SOURCES = alloc.c \
 						 rem_float.c \
 						 spawn.c \
 						 strings.c \
+						 test_float.c \
 						 time.c \
 						 unicode.c \
 						 utf8.c \

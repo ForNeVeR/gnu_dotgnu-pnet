@@ -273,6 +273,12 @@ int ILUInt64MulOvf(ILUInt64 *product, ILUInt64 value1, ILUInt64 value2);
 ILNativeFloat ILNativeFloatRem(ILNativeFloat value1, ILNativeFloat value2);
 
 /*
+ * Value testing for floating-point values.
+ */
+int ILNativeFloatIsNaN(ILNativeFloat value);
+int ILNativeFloatIsFinite(ILNativeFloat value);
+
+/*
  * Perform difficult numeric conversions.
  */
 ILNativeFloat ILUInt64ToFloat(ILUInt64 value);

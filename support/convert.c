@@ -19,31 +19,9 @@
  */
 
 #include "il_values.h"
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-#ifdef IL_NATIVE_WIN32
-#include <float.h>
-#define isnan(value)	_isnan((value))
-#define HAVE_ISNAN 1
-#endif
 
 #ifdef	__cplusplus
 extern	"C" {
-#endif
-
-/*
- * Check to see if a floating point number is finite.
- */
-#ifdef HAVE_FINITE
-	#define	FLOAT_IS_FINITE(value)	(finite((value)))
-#else
-	#if defined(HAVE_ISNAN) && defined(HAVE_ISINF)
-		#define	FLOAT_IS_FINITE(value)	(!isnan((value)) && \
-										  isinf((value)) == 0)
-	#else
-		#error "Don't know how to determine if floating point numbers are finite"
-	#endif
 #endif
 
 /*
@@ -73,7 +51,7 @@ ILNativeFloat ILUInt64ToFloat(ILUInt64 value)
  */
 ILUInt64 ILFloatToUInt64(ILNativeFloat value)
 {
-	if(FLOAT_IS_FINITE(value))
+	if(ILNativeFloatIsFinite(value))
 	{
 		if(value >= (ILNativeFloat)0.0)
 		{
@@ -96,11 +74,7 @@ ILUInt64 ILFloatToUInt64(ILNativeFloat value)
 			return 0;
 		}
 	}
-#ifdef HAVE_ISNAN
-	else if(isnan(value))
-#else
-	else if(value != value)
-#endif
+	else if(ILNativeFloatIsNaN(value))
 	{
 		return 0;
 	}
@@ -119,7 +93,7 @@ ILUInt64 ILFloatToUInt64(ILNativeFloat value)
  */
 int ILFloatToInt64Ovf(ILInt64 *result, ILNativeFloat value)
 {
-	if(FLOAT_IS_FINITE(value))
+	if(ILNativeFloatIsFinite(value))
 	{
 		if(value >= (ILNativeFloat)-9223372036854775808.0 &&
 		   value < (ILNativeFloat)9223372036854775808.0)
@@ -148,7 +122,7 @@ int ILFloatToInt64Ovf(ILInt64 *result, ILNativeFloat value)
  */
 int ILFloatToUInt64Ovf(ILUInt64 *result, ILNativeFloat value)
 {
-	if(FLOAT_IS_FINITE(value))
+	if(ILNativeFloatIsFinite(value))
 	{
 		if(value >= (ILNativeFloat)0.0)
 		{

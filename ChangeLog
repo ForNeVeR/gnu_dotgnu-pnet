@@ -1,4 +1,9 @@
 
+2001-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* include/il_values.h, support/test_float.c, support/convert.c,
+support/Makefile.am: add "ILNativeFloatIsNaN" and "ILNativeFloatIsFinite".
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

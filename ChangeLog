@@ -1,5 +1,9 @@
 2004-07-07  Richard Baumann  <biochem333@nyc.rr.com>
 
+	* runtime/System/Resources/ResourceManager.cs: fix ResourceManager
+	so that it uses CultureInfo.CurrentUICulture instead of
+	CultureInfo.CurrentCulture (bug #9359).
+
 	* System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
 	System.Windows.Forms/Form.cs: enable borderless windows.
 

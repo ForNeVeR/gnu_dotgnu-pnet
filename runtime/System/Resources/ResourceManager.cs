@@ -219,7 +219,7 @@ class ResourceManager
 				}
 				if(culture == null)
 				{
-					culture = CultureInfo.CurrentCulture;
+					culture = CultureInfo.CurrentUICulture;
 				}
 				lock(this)
 				{
@@ -269,7 +269,7 @@ class ResourceManager
 				}
 				if(culture == null)
 				{
-					culture = CultureInfo.CurrentCulture;
+					culture = CultureInfo.CurrentUICulture;
 				}
 				lock(this)
 				{

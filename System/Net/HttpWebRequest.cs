@@ -738,10 +738,14 @@ public class HttpWebRequest : WebRequest
 			Socket sock=OpenSocket(req);
 			if(req.isSecured)
 			{
+#if CONFIG_SSL
 				SecureConnection secured=new SecureConnection();
 				Stream retval=secured.OpenStream(sock);
 				secured.Dispose();
 				return retval;
+#else
+				throw new NotSupportedException(S._("NotSupp_SSL"));
+#endif
 			}
 			else
 			{
@@ -765,14 +769,15 @@ public class HttpWebRequest : WebRequest
 		}
 	} //internal class
 
+#if CONFIG_SSL
 	private class SecureConnection: IDisposable
 	{
-		static ISecureSessionProvider 
-				provider=SessionProviderFactory.GetProvider();
-		ISecureSession session=null;
+		ISecureSession session;
+		ISecureSessionProvider provider;
 
 		public SecureConnection()
 		{
+			provider = SessionProviderFactory.GetProvider();
 			session = provider.CreateClientSession(Protocol.AutoDetect);
 		}
 		
@@ -794,6 +799,7 @@ public class HttpWebRequest : WebRequest
 			Dispose();
 		}
 	}
+#endif
 }//class
 
 }//namespace

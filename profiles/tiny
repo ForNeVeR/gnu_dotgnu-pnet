@@ -62,4 +62,7 @@
 <!-- Use the small version of System.Console -->
 <define name="CONFIG_SMALL_CONSOLE" value="true"/>
 
+<!-- Use SSL Support using DotGNU.SSL -->
+<define name="CONFIG_SSL" value="false"/>
+
 </profile>

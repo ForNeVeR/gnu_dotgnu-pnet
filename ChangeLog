@@ -10,6 +10,11 @@
 	* System/Net/HttpWebRequest.cs: Re-adjust SSL negotiation procedures 
 	to dispose a session immediately after connection.
 
+	* System/Net/HttpWebRequest.cs, profiles/compact, profiles/compact-fp, 
+	profiles/ecma, profiles/full, profiles/kernel, profiles/kernel-fp, 
+	profiles/mscompact, profiles/tiny, profiles/tiny-fp,: Make SSL support 
+	conditional to the CONFIG_SSL profile option.
+
 2003-05-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Common/Manager.cs, I18N/Common/RegionData.cs,

@@ -1,3 +1,9 @@
+
+2003-07-07  Gopal.V  <gopalv82@symonds.net>
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: Clear up the
+	drawing code for ScrollButtons with an integers only version.
+
 2003-07-08  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ButtonBase.cs,

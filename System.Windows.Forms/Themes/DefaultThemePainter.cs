@@ -1239,126 +1239,102 @@ internal class DefaultThemePainter : IThemePainter
 					y += 1;
 				}
 
-				// setup the glyph shape
-				PointF[] glyph = null;
-				float gBounds = width < height ?
-				                width : height;
-				gBounds *= 0.8f;
-				float gX = x+((width-gBounds)/2.0f);
-				float gY = y+((height-gBounds)/2.0f);
-				float gWidth = 0;//back_compat
-				float gHeight = 0;//back_compat
+				Point center=new Point(x+width/2,y+height/2);
+				Size [] offsets;
+				Point [] vertices=new Point[4];
+				int arrowWidth, arrowHeight;
+				arrowWidth=width/2;
+				arrowHeight=height/2;
+				if(width>=20 && height>=20)
+				{
+					// arrowHeight and arrowWidth form the bounding
+					// rectangle rather than the arrow parameters
+					arrowWidth-=3;
+					arrowHeight-=3;
+				}
+				if(width>=10 && height>=10)
+				{
+					// arrowHeight and arrowWidth form the bounding
+					// rectangle rather than the arrow parameters
+					arrowWidth-=1;
+					arrowHeight-=1;
+				}
+				// 8 offsets pre-calculated in clockwise direction
+				// from the center
+				//   7-------------0-------------1
+				//   |             |             |
+				//   |             |             |
+				//   6-------------+-------------2
+				//   |             |             |
+				//   |             |             |
+				//   5-------------4-------------3
+				//
+				offsets=new Size[]{
+								new Size(0,-arrowHeight),
+								new Size(arrowWidth,-arrowHeight),
+								new Size(arrowWidth,0),
+								new Size(arrowWidth, arrowHeight),
+								new Size(0,arrowHeight),
+								new Size(-arrowWidth,arrowHeight),
+								new Size(-arrowWidth,0),
+								new Size(-arrowWidth,-arrowHeight),
+								};
 				switch (button)
 				{
 					case ScrollButton.Up:
 					{
-						float scale = gBounds/7.0f;
-						float pX = gX;
-						float pY = gY+((gBounds-4)/2.0f);
-						float scale3 = (3*scale);
-						float scale6 = (6*scale);
-						glyph = new PointF[4];
-						glyph[0] = new PointF(gX+scale3,
-						                      gY);
-						glyph[1] = new PointF(gX+scale6,
-						                      gY+scale3);
-						glyph[2] = new PointF(gX,
-						                      gY+scale3);
-						glyph[3] = glyph[0];
+						// due to a quirk of fate, this is faster
+						// than 2 center.X and Y get/add/set :)
+						vertices[0]=center+offsets[0];
+						vertices[1]=center+offsets[3];
+						vertices[2]=center+offsets[5];
+						vertices[3]=center+offsets[0];
 					}
 					break;
 
 					case ScrollButton.Down:
 					{
-					#if false
-						// this is the XP style arrow...
-						// the shape is wider than it is
-						// tall so scale it based on the
-						// width and then offset the y
-						float scale = gBounds/9.0f;
-						float pX = gX;
-						float pY = gY+((gBounds-6)/2.0f);
-						glyph = new PointF[7];
-						glyph[0] = new PointF(gX,
-						                      gY+(scale));
-						glyph[1] = new PointF(gX+(scale),
-						                      gY);
-						glyph[2] = new PointF(gX+(4*scale),
-						                      gY+(3*scale));
-						glyph[3] = new PointF(gX+(7*scale),
-						                      gY);
-						glyph[4] = new PointF(gX+(8*scale),
-						                      gY+(1*scale));
-						glyph[5] = new PointF(gX+(4*scale),
-						                      gY+(5*scale));
-						glyph[6] = glyph[0];
-					#endif
-						float scale = gBounds/7.0f;
-						float pX = gX;
-						float pY = gY+((gBounds-4)/2.0f);
-						float scale3 = (3*scale);
-						float scale6 = (6*scale);
-						glyph = new PointF[4];
-						glyph[0] = new PointF(gX,
-						                      gY);
-						glyph[1] = new PointF(gX+scale6,
-						                      gY);
-						glyph[2] = new PointF(gX+scale3,
-						                      gY+scale3);
-						glyph[3] = glyph[0];
+						vertices[0]=center+offsets[1];
+						vertices[1]=center+offsets[4];
+						vertices[2]=center+offsets[7];
+						vertices[3]=center+offsets[1];
 					}
 					break;
 
 					case ScrollButton.Left:
 					{
-						float scale = gBounds/7.0f;
-						float pX = gX+((gBounds-4)/2.0f);
-						float pY = gY;
-						float scale3 = (3*scale);
-						float scale6 = (6*scale);
-						glyph = new PointF[4];
-						glyph[0] = new PointF(gX,
-						                      gY+scale3);
-						glyph[1] = new PointF(gX+scale3,
-						                      gY);
-						glyph[2] = new PointF(gX+scale3,
-						                      gY+scale6);
-						glyph[3] = glyph[0];
+						vertices[0]=center+offsets[3];
+						vertices[1]=center+offsets[6];
+						vertices[2]=center+offsets[1];
+						vertices[3]=center+offsets[3];
 					}
 					break;
 
-					default: // ScrollButton.Right
+					case ScrollButton.Right:
 					{
-						float scale = gBounds/7.0f;
-						float pX = gX+((gBounds-4)/2.0f);
-						float pY = gY;
-						float scale3 = (3*scale);
-						float scale6 = (6*scale);
-						glyph = new PointF[4];
-						glyph[0] = new PointF(gX,
-						                      gY+scale3);
-						glyph[1] = new PointF(gX+scale3,
-						                      gY);
-						glyph[2] = new PointF(gX+scale3,
-						                      gY+scale6);
-						glyph[3] = glyph[0];
+						vertices[0]=center+offsets[2];
+						vertices[1]=center+offsets[5];
+						vertices[2]=center+offsets[7];
+						vertices[3]=center+offsets[2];
+					}
+					break;
+
+					default:
+					{
+						throw new ArgumentException("button");
 					}
 					break;
 				}
-
-				// draw the glyph
+				
+				// draw the arrow
 				Color color = foreColor;
 				if ((state & ButtonState.Inactive) != 0)
 				{
 					color = ControlPaint.Light(foreColor);
 				}
-				using (Brush brush = new SolidBrush(Color.Blue))
+				using (Brush brush = new SolidBrush(color))
 				{
-					graphics.FillPolygon(brush,glyph);
-				}
-				using (Pen pen = new Pen(Color.Green))
-				{
-					graphics.DrawPolygon(pen,glyph);
+					graphics.FillPolygon(brush,vertices);
 				}
 			}
 

@@ -36,6 +36,20 @@ extern	"C" {
 #endif
 
 /*
+ * List of mutex names that are in use.
+ */
+typedef struct _tagILMutexName ILMutexName;
+struct _tagILMutexName
+{
+	ILMutexName	   *next;
+	ILWaitHandle   *handle;
+	char			name[1];
+
+};
+static ILMutexName *nameList;
+static _ILMutex nameListLock;
+
+/*
  * Close a regular mutex.
  */
 static int MutexClose(ILWaitMutex *mutex)
@@ -60,12 +74,18 @@ static int MutexClose(ILWaitMutex *mutex)
  */
 static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 {
+	ILMutexName *temp, *prev;
+
+	/* We need the name list lock */
+	_ILMutexLock(&nameListLock);
+
 	/* Lock down the mutex and determine if it is currently owned */
 	_ILMutexLock(&(mutex->parent.parent.lock));
 	if(mutex->parent.owner != 0 ||
 	   !_ILWakeupQueueIsEmpty(&(mutex->parent.queue)))
 	{
 		_ILMutexUnlock(&(mutex->parent.parent.lock));
+		_ILMutexUnlock(&nameListLock);
 		return IL_WAITCLOSE_OWNED;
 	}
 
@@ -73,6 +93,7 @@ static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 	if(--(mutex->numUsers) != 0)
 	{
 		_ILMutexUnlock(&(mutex->parent.parent.lock));
+		_ILMutexUnlock(&nameListLock);
 		return IL_WAITCLOSE_DONT_FREE;
 	}
 
@@ -81,7 +102,29 @@ static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 	_ILWakeupQueueDestroy(&(mutex->parent.queue));
 	_ILMutexDestroy(&(mutex->parent.parent.lock));
 
-	/* TODO: remove the mutex from the name list */
+	/* Remove the mutex from the name list */
+	prev = 0;
+	temp = nameList;
+	while(temp != 0 && temp->handle != (ILWaitHandle *)mutex)
+	{
+		prev = temp;
+		temp = temp->next;
+	}
+	if(temp != 0)
+	{
+		if(prev)
+		{
+			prev->next = temp->next;
+		}
+		else
+		{
+			nameList = temp->next;
+		}
+		ILFree(temp);
+	}
+	_ILMutexUnlock(&nameListLock);
+
+	/* The wait handle object is now completely free */
 	return IL_WAITCLOSE_FREE;
 }
 
@@ -183,16 +226,84 @@ ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
 	return &(mutex->parent);
 }
 
+/*
+ * Initialize the mutex name list.
+ */
+static void MutexNameListInit(void)
+{
+	_ILMutexCreate(&nameListLock);
+	nameList = 0;
+}
+
 ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 									 int *gotOwnership)
 {
+	ILWaitHandle *handle;
 	ILWaitMutexNamed *mutex;
+	ILMutexName *temp;
+	int owned;
 
-	/* TODO: search for a mutex with the same name */
+	/* If we don't have a name, then create a regular mutex */
+	if(!name)
+	{
+		handle = ILWaitMutexCreate(initiallyOwned);
+		if(gotOwnership)
+		{
+			*gotOwnership = initiallyOwned;
+		}
+		return handle;
+	}
+
+	/* Search for a mutex with the same name */
+	_ILCallOnce(MutexNameListInit);
+	_ILMutexLock(&nameListLock);
+	temp = nameList;
+	while(temp != 0)
+	{
+		if(!strcmp(temp->name, name))
+		{
+			/* Increase the usage count on the mutex */
+			mutex = (ILWaitMutexNamed *)(temp->handle);
+			_ILMutexLock(&(mutex->parent.parent.lock));
+			++(mutex->numUsers);
+			_ILMutexUnlock(&(mutex->parent.parent.lock));
+
+			/* Unlock the name list */
+			_ILMutexUnlock(&nameListLock);
+
+			/* Attempt to acquire ownership of the mutex if requested */
+			if(initiallyOwned)
+			{
+				owned = (ILWaitOne(&(mutex->parent.parent), 0) == 0);
+			}
+			else
+			{
+				owned = 0;
+			}
+			if(gotOwnership)
+			{
+				*gotOwnership = owned;
+			}
+
+			/* Return the mutex to the caller */
+			return &(mutex->parent.parent);
+		}
+		temp = temp->next;
+	}
 
 	/* Allocate memory for the mutex */
 	if((mutex = (ILWaitMutexNamed *)ILMalloc(sizeof(ILWaitMutexNamed))) == 0)
 	{
+		_ILMutexUnlock(&nameListLock);
+		return 0;
+	}
+
+	/* Allocate space for a name entry */
+	temp = (ILMutexName *)ILMalloc(sizeof(ILMutexName) + strlen(name));
+	if(!temp)
+	{
+		_ILMutexUnlock(&nameListLock);
+		ILFree(mutex);
 		return 0;
 	}
 
@@ -219,7 +330,12 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 		*gotOwnership = initiallyOwned;
 	}
 
-	/* TODO: add the mutex to the name list */
+	/* Add the mutex to the name list */
+	temp->next = nameList;
+	temp->handle = &(mutex->parent.parent);
+	strcpy(temp->name, name);
+	nameList = temp;
+	_ILMutexUnlock(&nameListLock);
 
 	/* Ready to go */
 	return &(mutex->parent.parent);

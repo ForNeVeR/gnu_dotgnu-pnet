@@ -680,6 +680,155 @@ static ILIntString ParseString(char *text)
 }
 
 /*
+ * Parse an identifier value, converting it into UTF-8.
+ */
+static ILIntString ParseIdentifier(char *text)
+{
+	char buffer[128];
+	ILUInt32 ch;
+	int posn;
+	ILIntString intern;
+	ILIntString append;
+	int first;
+	ILUnicodeCategory category;
+	int invalid;
+
+	/* Initialize the value to be returned */
+	intern.string = 0;
+	intern.len = 0;
+	posn = 0;
+	first = 1;
+	invalid = 0;
+
+	/* Read characters from the string and encode them in UTF-8 */
+	while(*text != '\0')
+	{
+		/* Get the next character */
+		text += ParseWChar(text, &ch);
+
+		/* Validate it */
+		category = ILGetUnicodeCategory((unsigned)ch);
+		if(first)
+		{
+			if(ch != '_' &&
+			   category != ILUnicode_UppercaseLetter &&
+			   category != ILUnicode_LowercaseLetter &&
+			   category != ILUnicode_TitlecaseLetter &&
+			   category != ILUnicode_ModifierLetter &&
+			   category != ILUnicode_OtherLetter &&
+			   category != ILUnicode_LetterNumber)
+			{
+				invalid = 1;
+			}
+			first = 0;
+		}
+		else
+		{
+			if(category != ILUnicode_UppercaseLetter &&
+			   category != ILUnicode_LowercaseLetter &&
+			   category != ILUnicode_TitlecaseLetter &&
+			   category != ILUnicode_ModifierLetter &&
+			   category != ILUnicode_OtherLetter &&
+			   category != ILUnicode_LetterNumber &&
+			   category != ILUnicode_DecimalDigitNumber &&
+			   category != ILUnicode_NonSpacingMark &&
+			   category != ILUnicode_SpaceCombiningMark &&
+			   category != ILUnicode_ConnectorPunctuation &&
+			   category != ILUnicode_Format)
+			{
+				invalid = 1;
+			}
+		}
+
+		/* Encode it in UTF-8 */
+		if(!ch)
+		{
+			/* Encode embedded NUL's using 2 bytes to protect
+			   them from higher-level code that may try to use
+			   the string as a normal C string */
+			buffer[posn++] = (char)0xC0;
+			buffer[posn++] = (char)0x80;
+		}
+		else if(ch < 0x80)
+		{
+			buffer[posn++] = (char)ch;
+		}
+		else if(ch < (1 << 11))
+		{
+			buffer[posn++] = (char)((ch >> 6) | 0xC0);
+			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
+		}
+		else if(ch < (1 << 16))
+		{
+			buffer[posn++] = (char)((ch >> 12) | 0xE0);
+			buffer[posn++] = (char)(((ch >> 6) & 0x3F) | 0x80);
+			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
+		}
+		else if(ch < (1 << 21))
+		{
+			buffer[posn++] = (char)((ch >> 18) | 0xF0);
+			buffer[posn++] = (char)(((ch >> 12) & 0x3F) | 0x80);
+			buffer[posn++] = (char)(((ch >> 6) & 0x3F) | 0x80);
+			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
+		}
+		else if(ch < (1 << 26))
+		{
+			buffer[posn++] = (char)((ch >> 24) | 0xF8);
+			buffer[posn++] = (char)(((ch >> 18) & 0x3F) | 0x80);
+			buffer[posn++] = (char)(((ch >> 12) & 0x3F) | 0x80);
+			buffer[posn++] = (char)(((ch >> 6) & 0x3F) | 0x80);
+			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
+		}
+		else
+		{
+			buffer[posn++] = (char)((ch >> 30) | 0xFC);
+			buffer[posn++] = (char)(((ch >> 24) & 0x3F) | 0x80);
+			buffer[posn++] = (char)(((ch >> 18) & 0x3F) | 0x80);
+			buffer[posn++] = (char)(((ch >> 12) & 0x3F) | 0x80);
+			buffer[posn++] = (char)(((ch >> 6) & 0x3F) | 0x80);
+			buffer[posn++] = (char)((ch & 0x3F) | 0x80);
+		}
+
+		/* Flush the buffer into "intern" if it is nearly full */
+		if(posn >= 120)
+		{
+			if(intern.len)
+			{
+				append.string = buffer;
+				append.len = posn;
+				intern = ILInternAppendedString(intern, append);
+			}
+			else
+			{
+				intern = ILInternString(buffer, posn);
+			}
+			posn = 0;
+		}
+	}
+
+	/* Flush the remainder of the buffer into "intern" */
+	if(intern.len)
+	{
+		append.string = buffer;
+		append.len = posn;
+		intern = ILInternAppendedString(intern, append);
+	}
+	else
+	{
+		intern = ILInternString(buffer, posn);
+	}
+
+	/* Report an error if there was an invalid character in the identifier */
+	if(invalid)
+	{
+		CSError("invalid character in identifier");
+	}
+
+	/* Return the final string to the caller */
+	return intern;
+}
+
+/*
  * Parse a literal string value, converting it into UTF-8.
  */
 static ILIntString ParseLitString(char *text)
@@ -916,7 +1065,7 @@ WHITE			[ \t\r\f\v\032]
 {IDALPHA}({DIGIT}|{IDALPHA})*		{
 			if(!CSGetSetKeywords)
 			{
-				yylval.name = (ParseString(yytext)).string;
+				yylval.name = (ParseIdentifier(yytext)).string;
 				RETURNTOK(IDENTIFIER);
 			}
 			else if(!strcmp(yytext, "get"))
@@ -937,12 +1086,12 @@ WHITE			[ \t\r\f\v\032]
 			}
 			else
 			{
-				yylval.name = (ParseString(yytext)).string;
+				yylval.name = (ParseIdentifier(yytext)).string;
 				RETURNTOK(IDENTIFIER);
 			}
 		}
 "@"{IDALPHA}({DIGIT}|{IDALPHA})*	{
-			yylval.name = (ParseString(yytext + 1)).string;
+			yylval.name = (ParseIdentifier(yytext + 1)).string;
 			RETURNTOK(IDENTIFIER);
 		}
 

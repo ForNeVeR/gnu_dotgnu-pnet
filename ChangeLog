@@ -13,6 +13,9 @@
 	* cscc/cs_scanner.l: remove the '@' from the front of a quoted
 	keyword that is being used as an identifier.
 
+	* cscc/cs_scanner.l: recognise Unicode character categories in
+	identifiers when '\uHHHH' escapes are used.
+
 2001-01-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for "0.2.8" release.

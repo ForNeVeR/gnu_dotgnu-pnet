@@ -1,4 +1,8 @@
 
+2002-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ildb/ildb.1, ildb/Makefile.am: add the manpage for ildb.
+
 2002-12-12 Gopal.V  <gopalv82@symonds.net>
 
 	* support/numformat.c, support/Makefile.am, engine/lib_format.c,

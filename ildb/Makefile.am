@@ -1,6 +1,6 @@
 bin_PROGRAMS = ildb
-#man_MANS     = ildb.1
-#EXTRA_DIST   = $(man_MANS)
+man_MANS     = ildb.1
+EXTRA_DIST   = $(man_MANS)
 ildb_SOURCES = ildb_cmd.c \
 			   ildb_context.c \
 			   ildb_display.c \

@@ -132,6 +132,12 @@ extern ILOperator const ILOp_Xor[];
 extern ILOperator const ILOp_Not[];
 extern ILOperator const ILOp_Shl[];
 extern ILOperator const ILOp_Shr[];
+extern ILOperator const ILOp_Eq[];
+extern ILOperator const ILOp_Ne[];
+extern ILOperator const ILOp_Lt[];
+extern ILOperator const ILOp_Le[];
+extern ILOperator const ILOp_Gt[];
+extern ILOperator const ILOp_Ge[];
 
 #ifdef	__cplusplus
 };

@@ -4,6 +4,8 @@
 * codegen/cg_relop.tc, codegen/jv_relop.tc: implement string equality
 properly in the ILNode_Eq and ILNode_Ne node types.
 
+* codegen/cg_coerce.h: declare relational operator tables.
+
 2001-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_const.tc, codegen/jv_const.tc: bug in GenThen/GenElse for

@@ -14,6 +14,9 @@
 	resources/en_US/System.Windows.Forms/System.Windows.Forms.txt:
 	implement the "Splitter" control.
 
+	* System.Windows.Forms/Splitter.cs: fix a bug where the length
+	of the XOR line extended beyond the size of the spliter.
+
 2004-01-02  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs: minor fixes, pre-authenticate POST

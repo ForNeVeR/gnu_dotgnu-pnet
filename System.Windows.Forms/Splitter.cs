@@ -386,7 +386,7 @@ public class Splitter : Control, IMessageFilter
 						case DockStyle.Right:
 						{
 							drawnRect = new Rectangle
-								(moveX, 0, thickness, Parent.ClientSize.Height);
+								(moveX, Top, thickness, Height);
 						}
 						break;
 
@@ -394,7 +394,7 @@ public class Splitter : Control, IMessageFilter
 						case DockStyle.Bottom:
 						{
 							drawnRect = new Rectangle
-								(0, moveY, Parent.ClientSize.Width, thickness);
+								(Left, moveY, Width, thickness);
 						}
 						break;
 					}

@@ -70,6 +70,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	}
 	/* Initialize the fields */
 	process->lock = 0;
+	process->state = 0;
 	process->firstThread = 0;
 	process->mainThread = 0;
 	process->finalizerThread = 0;
@@ -226,13 +227,20 @@ void ILExecProcessUnload(ILExecProcess *process)
 void ILExecProcessDestroy(ILExecProcess *process)
 {
 	int count;
-	ILObject *target;
+	ILThread *target;
 	int mainIsFinalizer;
 	ILExecThread *thread;	
 	ILQueueEntry *abortQueue1, *abortQueue2;
 	
 	abortQueue1 = ILQueueCreate();
 	abortQueue2 = ILQueueCreate();
+
+	/* Lock down the process */
+	ILMutexLock(process->lock);
+
+	process->state = _IL_PROCESS_STATE_UNLOADING;
+
+	/* From this point on, no threads can be created inside or enter the AppDomain */
 
 	/* Clear 4K of stack space in case it contains some stray pointers 
 	   that may still be picked up by not so accurate collectors */
@@ -260,77 +268,66 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		}
 	}
 
-	/* Delete all managed threads so the objects they used can be finalized.
-	   We keep trying to kill more threads over and over because threads may
-	   start new threads in response to being killed */
-	for (;;)
+	count = 0;
+
+	/* Walk all the threads, collecting CLR thread pointers since they are GC
+	managed and stable */
+
+	thread = process->firstThread;
+
+	while (thread)
 	{
-		count = 0;
-
-		/* Lock down the process */
-		ILMutexLock(process->lock);
-
-		/* Walk all the threads, collecting CLR thread pointers since they are GC
-		   managed and stable */
-
-		thread = process->firstThread;
-		
-		while (thread)
+		if (thread != process->finalizerThread
+			/* Make sure its a managed thread */
+			&& (thread->clrThread || thread == process->mainThread)
+			&& thread->supportThread != ILThreadSelf())
 		{
-			if (thread != process->finalizerThread
-				/* Make sure its a managed thread */
-				&& (thread->clrThread || thread == process->mainThread)
-				&& thread->supportThread != ILThreadSelf())
-			{
-				ILQueueAdd(&abortQueue1, thread->clrThread);
-				ILQueueAdd(&abortQueue2, thread->clrThread);
-				
-				thread = thread->nextThread;
+			ILQueueAdd(&abortQueue1, thread->supportThread);
+			ILQueueAdd(&abortQueue2, thread->supportThread);
 
-				count++;
-			}
-			else
-			{
-				/* Move onto the next thread */
-				thread = thread->nextThread;
-			}
+			thread = thread->nextThread;
+
+			count++;
 		}
-
-		/* Unlock the process */
-		ILMutexUnlock(process->lock);
-
-		if (!abortQueue1)
+		else
 		{
-			if (count != 0)
-			{
-				/* Probably ran out of memory trying to build the abortQueues */
-				return;
-			}
-
-			/* No more threads to wait on */
-			break;
+			/* Move onto the next thread */
+			thread = thread->nextThread;
 		}
+	}
 
-		/* Abort all threads */
-		while (abortQueue1)
+	/* Unlock the process */
+	ILMutexUnlock(process->lock);
+
+	if (!abortQueue1 || !abortQueue2)
+	{
+		if (count != 0)
 		{
-			target = (ILObject *)ILQueueRemove(&abortQueue1);
-
-			_ILExecThreadAbort(ILExecThreadCurrent(), target);
+			/* Probably ran out of memory trying to build the abortQueues */
+			return;
 		}
+	}
 
-		/* Wait for all threads */
-		while (abortQueue2)
-		{
-			target = (ILObject *)ILQueueRemove(&abortQueue2);
+	/* Abort all threads */
+	while (abortQueue1)
+	{
+		target = (ILThread *)ILQueueRemove(&abortQueue1);
 
-			ILThreadJoin(((System_Thread *)target)->privateData, -1);
-		}
+		_ILExecThreadAbortThread(ILExecThreadCurrent(), target);
+	}
+
+	/* Wait for all threads */
+	while (abortQueue2)
+	{
+		target = (ILThread *)ILQueueRemove(&abortQueue2);
+
+		ILThreadJoin(target, -1);
 	}
 	
 	/* Unregister (and destroy) the current thread if it isn't needed
-	   for finalization and if it belongs to this domain. */
+	for finalization and if it belongs to this domain. */
 	if (!mainIsFinalizer 
+		&& ILExecThreadCurrent()
 		&& ILExecThreadCurrent() != process->finalizerThread
 		&& ILExecThreadCurrent()->process == process)
 	{
@@ -370,6 +367,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	/* Unregister (and destroy) the current thread if it 
 	   wasn't destroyed above and if it belongs to this domain */
 	if (mainIsFinalizer
+		&& ILExecThreadCurrent()
 		&& ILExecThreadCurrent() != process->finalizerThread
 		&& ILExecThreadCurrent()->process == process)
 	{

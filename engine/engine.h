@@ -27,11 +27,25 @@
 #include "il_coder.h"
 #include "il_align.h"
 #include "il_gc.h"
+#include "il_utils.h"
 #include "cvm.h"
+#include "interrupt.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
+
+/* IL_SETJMP return value for null pointer interrupts */
+#define _IL_INTERRUPT_NULL_POINTER	(-1)
+
+/* Flags that represents various tasks that need to be performed
+   at safe points */
+#define _IL_MANAGED_SAFEPOINT_THREAD_ABORT		(1)
+#define _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND	(2)
+
+/* State of an ILExecProcess/AppDomain */
+#define _IL_PROCESS_STATE_UNLOADING (1)
+#define _IL_PROCESS_STATE_UNLOADED  (2)
 
 /*
  * Determine if this compiler supports inline functions.
@@ -135,6 +149,9 @@ struct _tagILExecProcess
 	/* The coder in use by this process */
 	ILCoder		   *coder;
 
+	/* State of the process */
+	int				state;
+
 	/* Useful builtin classes */
 	ILClass        *objectClass;
 	ILClass        *stringClass;
@@ -204,7 +221,6 @@ struct _tagILExecProcess
 	ILUInt32			imtBase;
 
 #endif
-
 };
 
 /*
@@ -255,8 +271,10 @@ struct _tagILExecThread
 
 	/* Flag that indicates whether a thread is aborting */
 	volatile int	aborting;
-	/* Flag that indicates whether an abort has been requested */
-	volatile int	abortRequested;
+
+	/* Flag of tasks that need to be performed at safe points in 
+	   managed code */	   
+	volatile int	managedSafePointFlags;
 
 	/* System.Threading.Thread object */
 	ILObject *clrThread;
@@ -295,6 +313,11 @@ struct _tagILExecThread
 
 	/* The frame where the ThreadAbortException was first noticed */
 	ILUInt32		abortHandlerFrame;
+
+#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+	/* Stores state information for interrupt based exception handling */
+	IL_JMP_BUFFER	exceptionJumpPoint;
+#endif
 };
 
 /*
@@ -427,17 +450,6 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
  * a regular return, or non-zero if an exception was thrown.
  */
 int _ILCVMInterpreter(ILExecThread *thread);
-
-/*
- * Inner version of "ILExecThreadCreate".  The caller is
- * responsible for creating the OS-level thread.
- */
-ILExecThread *_ILExecThreadCreate(ILExecProcess *process);
-
-/*
- *	Destroy an engine level thread.
- */
-void _ILExecThreadDestroy(ILExecThread *thread);
 
 /*
  * Lay out a class's fields, virtual methods, and interfaces.
@@ -699,6 +711,12 @@ ILObject *_ILCustomToObject(ILExecThread *thread, void *ptr,
  */
 ILObject *ILExecThreadGetClrThread(ILExecThread *thread);
 
+/* Create an ILExecThread */
+ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState);
+
+/* Destroy an ILExecThread */
+void _ILExecThreadDestroy(ILExecThread *thread);
+
 /*
  * Associates a support thread with an engine thread and the engine
  * thread with the support thread.
@@ -725,15 +743,19 @@ ILObject *_ILExecThreadNewThreadAbortException(ILExecThread *thread, ILObject *s
 int _ILExecThreadCurrentExceptionThreadIsAbortException(ILExecThread *thread);
 
 /*
-* Aborts the current thread.
-* Returns 1 if the thread has successfully self aborted.
-*/
-void _ILExecThreadAbort(ILExecThread *thread, ILObject *target);
+ * Suspend the given thread.
+ */
+void _ILExecThreadSuspend(ILExecThread *thread, ILThread *supportThread);
 
 /*
-* Called by the current thread when it was to begin its abort sequence.
-* Returns 1 if the thread has successfully self aborted.
-*/
+ * Abort the given thread.
+ */
+void _ILExecThreadAbort(ILExecThread *thread, ILThread *supportThread);
+
+/*
+ * Called by the current thread when it was to begin its abort sequence.
+ * Returns 0 if the thread has successfully self aborted.
+ */
 int _ILExecThreadSelfAborting(ILExecThread *thread);
 
 /*

@@ -136,7 +136,7 @@ void _ILFinalizeObject(void *block, void *data)
 	{
 		/* Create a new engine thread for the finalizers of this process to run on */
 
-		execThread = _ILExecThreadCreate(process);
+		execThread = _ILExecThreadCreate(process, 1);
 
 		if (execThread == 0)
 		{

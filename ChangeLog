@@ -1,7 +1,60 @@
 2004-06-14  Thong Nguyen  <tum@veridicus.com>
 
+	* configure.in: Added checks for setjmp.h, setjmp,
+	longjmp, signal, sigaction, abort, exit and _exit.
+
+	* include/il_thread.h: Added prototypes for new interrupt
+	functions.  Changed ILThread's objectArg to startArg.
+	Added a general purpose monitor to ILThread.
+	
+	* include/il_engine.h: Removed ILExecThreadFromThread
+	and ILExecThreadGetClrThread because they are unsafe.
+	Added ILExecThreadCurrentClrThread.
+		
+	* support/Makefile.am: Added interrupt.c, interrupt_posix.c
+	and interrupt_win32.c.
+	
+	* support/interrupt.c, support/interrupt.h, interrupt_posix.c,
+	support/interrupt_win32.c: First check-in of interrupt/signal
+	support.
+	
+	* support/thr_defs.h: Added ownedMutexes list to _ILWakeup.
+	Added objectArg/startArg fields to ILThread.  Changed
+	IL_WAIT_EVENT value from 0x1004 to 0x800 (non mutex).
+	Added prototypes for interrupt subsystem init/deinit.
+	
+	* support/thread.c: Added interrupt subsystem init/deinit
+	calls.  Changed startArg/objectArg naming.  Added
+	ILThreadGetMonitor.
+	
+	* support/wait_mutex.c: Added support for storing/maintaining
+	owned mutex lists for each wakeup/thread.
+	
+	* support/wakeup.c: Made wakeups release all mutexes they
+	still own before they destroy themselves.
+	
+	* engine/cvm_call.c: Changed CHECK_ABORT to CHECK_MANAGED_BARRIER
+	and added support for thread suspends.
+	
+	* engine/engine.h, engine/thread.c: Added support for interrupts
+	and thread suspends.  Added new safe point aware implementation 
+	of  _ILExecThreadAbort and _ILExecThreadSuspend.  Added support
+	for abandoning thread creation if the target process is unloading.
+	
+	* engine/heap.c: Changed call to ILExecThreadCreate to account
+	for new arguments.
+	
+	* engine/lib_thread.c: Updated calls to ILExecThreadAbort to use
+	new arguments.  Added new implementation _IL_Thread_Suspend.
+	
+	* engine/process.c: Simplified thread abort code in ILExecProcess
+	destroy by preventing new threads from being created when an 
+	ILExecProcess is unloading using the new process state flag.
+	
+2004-06-14  Thong Nguyen  <tum@veridicus.com>
+
 	* support/wakeup.c: Changed ILWakeupSignal so that it indicates
-	if the target wakeup was signalled or just had a llimit count
+	if the target wakeup was signalled or just had a limit count
 	change.  This prevents a thread waiting inside WaitAll for handles
 	a && b from blocking threads waiting inside WaitOne for handle
 	a || b.

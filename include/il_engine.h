@@ -356,14 +356,9 @@ int ILExecProcessAddInternalCallTable(ILExecProcess* process,
 ILExecThread *ILExecThreadCurrent(void);
 
 /*
- * Get an ILExecThread from the given thread.
+ *	Gets the current managed thread object.
  */
-ILExecThread *ILExecThreadFromThread(ILThread *thread);
-
-/*
- *	Gets the managed thread object from an engine thread.
- */
-ILObject *ILExecThreadGetClrThread(ILExecThread *thread);
+ILObject *ILExecThreadCurrentClrThread();
 
 /*
  * Get the process that corresponds to a thread.

@@ -158,26 +158,34 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				} \
 			} while (0)
 
-#define CHECK_ABORT()	\
-	if (thread->abortRequested && ILThreadIsAbortRequested())	\
+#define CHECK_MANAGED_BARRIER()	\
+	if (thread->managedSafePointFlags)	\
 	{	\
-		/* Lock/Unlock the process lock because all abort flags \
-		   need to set atomically (see ILExecThreadAbort) */ \
-		ILMutexLock(thread->process->lock); \
-		ILMutexUnlock(thread->process->lock); \
-		if (_ILExecThreadSelfAborting(thread)) \
+		if  ((thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_ABORT) && ILThreadIsAbortRequested()) \
 		{ \
-			thread->abortRequested = 0;	\
-			stacktop[0].ptrValue = _ILExecThreadNewThreadAbortException(thread, 0); \
-			stacktop += 1; \
-			if (!ILCoderPCToHandler(thread->process->coder, pc, 0)) \
+			if (_ILExecThreadSelfAborting(thread) == 0) \
 			{ \
-				goto throwException; \
+				ILThreadAtomicStart(); \
+				thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT; \
+				ILThreadAtomicEnd(); \
+				stacktop[0].ptrValue = thread->thrownException; \
+				stacktop += 1; \
+				if (!ILCoderPCToHandler(thread->process->coder, pc, 0)) \
+				{ \
+					goto throwException; \
+				} \
+				else \
+				{ \
+					goto prefixThrowException; \
+				} \
 			} \
-			else \
-			{ \
-				goto prefixThrowException; \
-			} \
+		} \
+		else if (thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND) \
+		{ \
+			ILThreadAtomicStart(); \
+			thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND; \
+			ILThreadAtomicEnd(); \
+			_ILExecThreadSuspendThread(thread, thread->clrThread); \
 		} \
 	}
 
@@ -185,7 +193,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 	thread->runningManagedCode = 0;
 
 #define END_NATIVE_CALL() \
-	CHECK_ABORT(); \
+	CHECK_MANAGED_BARRIER(); \
 	thread->runningManagedCode = 1;
 
 /*
@@ -1152,7 +1160,7 @@ VMCASE(COP_RETURN):
 	stacktop = frame;
 popFrame:
 
-	CHECK_ABORT();
+	CHECK_MANAGED_BARRIER();
 
 	callFrame = &(thread->frameStack[--(thread->numFrames)]);
 	methodToCall = callFrame->method;

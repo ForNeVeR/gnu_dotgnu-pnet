@@ -214,7 +214,7 @@ static void __PrivateThreadStart(void *objectArg)
 	ILExecValue result;
 	ILExecThread *thread;
 
-	thread = (ILExecThread *)objectArg;
+	thread = ILExecThreadCurrent();
 
 	/* Get the ThreadStart.Invoke method */
 	method = ILExecThreadLookupMethod(thread, "System.Threading.ThreadStart", "Invoke", "(T)V");
@@ -302,7 +302,7 @@ void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
  */
 void _IL_Thread_Abort(ILExecThread *thread, ILObject *_this)
 {
-	_ILExecThreadAbort(thread, _this);
+	_ILExecThreadAbortThread(thread, ((System_Thread *)_this)->privateData);
 }
 
 /*
@@ -320,16 +320,8 @@ void _IL_Thread_Interrupt(ILExecThread *thread, ILObject *_this)
  * public void Suspend();
  */
 void _IL_Thread_Suspend(ILExecThread *thread, ILObject *_this)
-{	
-	if (ILThreadSuspend(((System_Thread *)_this)->privateData) == 0)
-	{
-		ILExecThreadThrowSystem
-			(
-				thread,
-				"System.Threading.ThreadStateException",
-				(const char *)0
-			);
-	}
+{
+	_ILExecThreadSuspendThread(thread, ((System_Thread *)_this)->privateData);
 }
 
 /*
@@ -449,8 +441,11 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
 
 	if (ILThreadAbortReset())
 	{
+		ILThreadAtomicStart();
+		thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT;
+		ILThreadAtomicEnd();
+
 		thread->aborting = 0;
-		thread->abortRequested = 0;
 		thread->abortHandlerEndPC = 0;
 		thread->abortHandlerFrame = 0;
 		thread->threadAbortException = 0;
@@ -476,22 +471,25 @@ void _IL_Thread_InternalSleep(ILExecThread *thread, ILInt32 timeout)
  */
 void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 {
+	ILWaitHandle *monitor;
 	ILThread *supportThread;
 	ILExecThread *execThread;
-
-	_IL_Monitor_Enter(thread, _this);
 
 	/* Get the support thread stored inside the first field of the 
 	CLR thread by _IL_Thread_InitializeThread */
 
 	supportThread = ((System_Thread *)_this)->privateData;
+
+	monitor = ILThreadGetMonitor(supportThread);
+
+	ILWaitMonitorEnter(monitor);
 	
 	if (supportThread == 0
 		|| (ILThreadGetState(supportThread) & IL_TS_UNSTARTED) == 0)
 	{
 		/* Thread has already been started or has ended. */
 
-		_IL_Monitor_Exit(thread, _this);
+		ILWaitMonitorLeave(monitor);
 
 		ILExecThreadThrowSystem(thread, "System.Threading.ThreadStateException", 
 			"Exception_ThreadAlreadyStarted");
@@ -503,12 +501,12 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 
 	if ((execThread = ILThreadRegisterForManagedExecution(thread->process, supportThread)) == 0)
 	{
-		/* Runtime isn't fully initialized.  This should never happen */
+		ILWaitMonitorLeave(monitor);
 
-		_IL_Monitor_Exit(thread, _this);
-
-		ILExecThreadThrowSystem(thread, "System.ExecutionEngineException",
-			"Exception_UnexpectedEngineState");
+		if ((thread->process->state & (_IL_PROCESS_STATE_UNLOADED | _IL_PROCESS_STATE_UNLOADING)) == 0)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+		}
 		
 		return;
 	}
@@ -540,7 +538,7 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 		}
 	}
 	
-	_IL_Monitor_Exit(thread, _this);
+	ILWaitMonitorLeave(monitor);
 }
 
 /*
@@ -548,7 +546,7 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
  */
 ILObject *_IL_Thread_InternalCurrentThread(ILExecThread *thread)
 {
-	return ILExecThreadGetClrThread(thread);
+	return ILExecThreadCurrentClrThread();
 }
 
 /*

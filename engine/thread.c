@@ -22,34 +22,41 @@
 
 #include "engine_private.h"
 #include "lib_defs.h"
+#include "interrupt.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
 /*
- * Gets the currently ILExecThread.
+ * Get an ILExecThread from the given support thread.
  */
-ILExecThread *ILExecThreadCurrent(void)
-{
-	return ILExecThreadFromThread(ILThreadSelf());
-}
-
-/*
- * Get an ILExecThread from the given thread.
- */
-ILExecThread *ILExecThreadFromThread(ILThread *thread)
+static ILExecThread *_ILExecThreadFromThread(ILThread *thread)
 {
 	return (ILExecThread *)(ILThreadGetObject(thread));
 }
 
 /*
+ * Gets the currently ILExecThread.
+ */
+ILExecThread *ILExecThreadCurrent()
+{
+	return _ILExecThreadFromThread(ILThreadSelf());
+}
+
+/*
  * Gets the managed thread object from an engine thread.
  */
-ILObject *ILExecThreadGetClrThread(ILExecThread *thread)
+ILObject *ILExecThreadCurrentClrThread()
 {
 	ILClass *classInfo;
 	System_Thread *clrThread;
+	ILExecThread *thread = ILExecThreadCurrent();
+
+	if (thread == 0)
+	{
+		return 0;
+	}
 
 	if (thread->clrThread == 0)
 	{
@@ -110,12 +117,38 @@ static void ILExecThreadCleanup(ILThread *thread)
 	ILThreadUnregisterForManagedExecution(thread);
 }
 
+#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+
+static void _ILIllegalMemoryAccessHandler(void *address)
+{
+	ILExecThread *execThread;
+
+	execThread = ILExecThreadCurrent();
+
+	if (execThread == 0)
+	{
+		return;
+	}
+
+	if (execThread->runningManagedCode)
+	{
+		/* TODO */
+	}
+}
+
+#endif
+
 /*
- *	Registers a thread for managed execution
+ * Registers a thread for managed execution
  */
 ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread)
 {	
 	ILExecThread *execThread;
+
+	if (process->state & (_IL_PROCESS_STATE_UNLOADED | _IL_PROCESS_STATE_UNLOADING))
+	{
+		return 0;
+	}
 
 	/* If the thread has already been registerered then return the existing engine thread */
 	if ((execThread = ILThreadGetObject(thread)) != 0)
@@ -124,10 +157,14 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 	}
 
 	/* Create a new engine-level thread */	
-	if ((execThread = _ILExecThreadCreate(process)) == 0)
+	if ((execThread = _ILExecThreadCreate(process, 0)) == 0)
 	{
 		return 0;
 	}
+
+#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+	ILThreadRegisterIllegalMemoryAccessHandler(thread, _ILIllegalMemoryAccessHandler);
+#endif
 
 	/* TODO: Notify the GC that we possibly have a new thread to be scanned */
 
@@ -145,6 +182,7 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
  */
 void ILThreadUnregisterForManagedExecution(ILThread *thread)
 {
+	ILWaitHandle *monitor;
 	ILExecThread *execThread;
 
 	/* Get the engine thread from the support thread */
@@ -156,19 +194,32 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread)
 		return;
 	}
 
+#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+	/* Unregister the illegal memory access handler */
+	ILThreadUnregisterIllegalMemoryAccessHandler(thread, _ILIllegalMemoryAccessHandler);
+#endif
+
 	/* Unregister the cleanup handler */
 	ILThreadUnregisterCleanup(thread, ILExecThreadCleanup);
 
-	/* Disassociate the engine thread with the support thread */
-	_ILThreadUnexecuteOn(thread, execThread);
+	monitor = ILThreadGetMonitor(thread);
 
-	/* Destroy the engine thread */
-	_ILExecThreadDestroy(execThread);
+	ILWaitMonitorEnter(monitor);
+	{
+		/* Disassociate the engine thread with the support thread */
+		_ILThreadUnexecuteOn(thread, execThread);
+
+		/* Destroy the engine thread */
+		_ILExecThreadDestroy(execThread);
+
+		ILWaitMonitorPulseAll(monitor);
+	}
+	ILWaitMonitorLeave(monitor);
 }
 
 /*
  * Called by the current thread when it was to begin its abort sequence.
- * Returns 1 if the thread has successfully self aborted.
+ * Returns 0 if the thread has successfully self aborted.
  */
 int _ILExecThreadSelfAborting(ILExecThread *thread)
 {
@@ -183,43 +234,144 @@ int _ILExecThreadSelfAborting(ILExecThread *thread)
 			/* Allocate an instance of "ThreadAbortException" and throw */
 			
 			exception = _ILExecThreadNewThreadAbortException(thread, 0);
+			
+			ILThreadAtomicStart();
+			thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT;
+			ILThreadAtomicEnd();
+
 			thread->aborting = 1;
-			thread->abortRequested = 0;
 			thread->abortHandlerEndPC = 0;
 			thread->threadAbortException = 0;
 			thread->abortHandlerFrame = 0;
 
 			ILExecThreadSetException(thread, exception);
 
-			return 1;
+			return 0;
 		}
 	}
 
-	return 0;
+	return -1;
 }
 
 /*
- * Abort the given thread.  The caller of this function should 
- * hold the process lock to prevent the thread from destroying itself.
+ * Suspend the given thread.
  */
-void _ILExecThreadAbort(ILExecThread *thread, ILObject *target)
-{
-	ILThread *supportThread;
+void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
+{	
+	ILWaitHandle *monitor;
 	ILExecThread *execThread;
+	int result, runningManagedCode;
 
-	supportThread = ((System_Thread *)target)->privateData;
+	monitor = ILThreadGetMonitor(supportThread);
 
-	/* Lock the process to prevent the ILExecThread from destroying
-	   itself while we are accessing it. */
+	/* If the thread being suspended is the current thread then suspend now */
+	if (thread->supportThread == supportThread)
+	{
+		result = ILThreadSuspend(supportThread);
 
-	ILMutexLock(thread->process->lock);
+		ILWaitMonitorEnter(monitor);
+		ILWaitMonitorPulseAll(monitor);
+		ILWaitMonitorLeave(monitor);
 
-	execThread = ILExecThreadFromThread(supportThread);
+		if (result == 0)
+		{
+			ILExecThreadThrowSystem
+				(
+					thread,
+					"System.Threading.ThreadStateException",
+					(const char *)0
+				);
+
+			return;
+		}
+		else if (result < 0)
+		{
+			if (_ILExecThreadHandleWaitResult(thread, result) != 0)
+			{
+				return;
+			}
+		}
+
+		return;
+	}
+
+	/* Suspend the thread.  It isn't safe to do this for long but we verify
+	   that later on... */
+	result = ILThreadSuspend(supportThread);
+
+	if (result == 0)
+	{
+		ILExecThreadThrowSystem
+			(
+				thread,
+				"System.Threading.ThreadStateException",
+				(const char *)0
+			);
+
+		return;
+	}
+	else if (result < 0)
+	{
+		if (_ILExecThreadHandleWaitResult(thread, result) != 0)
+		{
+			return;
+		}
+	}
+
+	/* Entering the monitor keeps the execThread from being destroyed */
+	ILWaitMonitorEnter(monitor);
+
+	execThread = _ILExecThreadFromThread(supportThread);
 
 	if (execThread == 0)
 	{	
 		/* The thread has already finished */
-		ILMutexUnlock(thread->process->lock);
+		ILWaitMonitorLeave(monitor);
+	}
+	else
+	{
+		if (!execThread->runningManagedCode)
+		{
+			/* The thread isn't running managed code so it is unsafe to
+			   keep the thread suspended like this cause we might hold
+			   a CRT or some other important OS lock */
+
+			/* Set the flag so the thread will abort itself at the next safe point */
+			ILThreadAtomicStart();			
+			execThread->managedSafePointFlags |= _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND;
+			ILThreadAtomicEnd();
+
+			/* Resume the thread */
+			ILThreadResume(supportThread);
+
+			/* Wait until the thread aborts itself */
+			ILWaitMonitorWait(monitor, -1);
+		}		
+
+		ILWaitMonitorLeave(monitor);
+	}
+}
+
+/*
+ * Abort the given thread.
+ */
+void _ILExecThreadAbortThread(ILExecThread *thread, ILThread *supportThread)
+{
+	ILWaitHandle *monitor;
+	ILExecThread *execThread;
+
+	monitor = ILThreadGetMonitor(supportThread);
+
+	/* Prevent the ILExecThread from being destroyed while
+	   we are accessing it */
+	ILWaitMonitorEnter(monitor);
+
+	execThread = _ILExecThreadFromThread(supportThread);
+
+	if (execThread == 0)
+	{	
+		/* The thread has already finished */
+		ILWaitMonitorLeave(monitor);
 
 		return;
 	}
@@ -227,20 +379,20 @@ void _ILExecThreadAbort(ILExecThread *thread, ILObject *target)
 	{
 		/* Mark the flag so the thread self aborts when it next returns
 		   to managed code */
-		execThread->abortRequested = 1;
+		ILThreadAtomicStart();
+		execThread->managedSafePointFlags |= _IL_MANAGED_SAFEPOINT_THREAD_ABORT;
+		ILThreadAtomicEnd();
 	}
+
+	ILWaitMonitorLeave(monitor);
 
 	/* Abort the thread if its in or when it next enters a wait/sleep/join
 	   state */
 	ILThreadAbort(supportThread);
 
-	ILMutexUnlock(thread->process->lock);
-
 	/* If the current thread is aborting itself then abort immediately */
 	if (supportThread == thread->supportThread)
 	{
-		/* Since the caller is the target thread then execThread should be stable
-		   so no need to lock process->lock */
 		_ILExecThreadSelfAborting(execThread);		
 	}
 }
@@ -280,7 +432,8 @@ int _ILExecThreadHandleWaitResult(ILExecThread *thread, int result)
 
 	return result;
 }
-ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
+
+ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState)
 {
 	ILExecThread *thread;
 
@@ -309,6 +462,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 		ILGCFreePersistent(thread);
 		return 0;
 	}
+
 	thread->numFrames = 0;
 	thread->maxFrames = process->frameStackSize;
 
@@ -327,14 +481,22 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 	thread->threadStaticSlots = 0;
 	thread->threadStaticSlotsUsed = 0;
 	thread->currentException = 0;
-	thread->abortRequested = 0;	
+	thread->managedSafePointFlags = 0;
 	thread->runningManagedCode = 0;	
 	thread->abortHandlerEndPC = 0;
 	thread->threadAbortException = 0;
 	thread->abortHandlerFrame = 0;
-	
 	/* Attach the thread to the process */
 	ILMutexLock(process->lock);
+	if (!ignoreProcessState
+		&& process->state & (_IL_PROCESS_STATE_UNLOADED | _IL_PROCESS_STATE_UNLOADING))
+	{
+		ILGCFreePersistent(thread->stackBase);
+		ILGCFreePersistent(thread->frameStack);
+		ILGCFreePersistent(thread);
+
+		return 0;
+	}
 	thread->process = process;
 	thread->nextThread = process->firstThread;
 	thread->prevThread = 0;
@@ -400,6 +562,7 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 
 	/* Unlock the process */
 	ILMutexUnlock(process->lock);
+	
 }
 
 ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread)

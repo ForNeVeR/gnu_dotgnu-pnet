@@ -446,6 +446,13 @@ static int LoadLibrary(const char *name, int nostdlib_flag)
 		return LoadLibraryFromPath(path, 1);
 	}
 
+	/* If this is the C compiler, then ignore the missing library,
+	   since libraries are normally fixed up at link time */
+	if(CCPluginUsesPreproc == CC_PREPROC_C)
+	{
+		return 1;
+	}
+
 	/* Could not locate the library */
 	fprintf(stderr, _("%s: No such library\n"), name);
 	return 0;

@@ -4,6 +4,10 @@
 	* cscc/c/c_types.c (MD5HashType): bug in the value used for
 	hashing primitive element types (bug #4528).
 
+	* cscc/common/cc_main.c (LoadLibraryFromPath): ignore missing
+	libraries when compiling C source, as C libraries are normally
+	fixed up at link time, not compile time.
+
 2003-08-10  CH Gowri Kumar  <gkumar@csa.iisc.ernet.in>
 
 	* engine/Makefile.am, engine/cvm.c, engine/cvm_config.h,

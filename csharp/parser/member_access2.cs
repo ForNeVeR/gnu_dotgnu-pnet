@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+public delegate void Del();
+
 public abstract class Test
 {
 	// Access modifiers.
@@ -61,8 +63,8 @@ public abstract class Test
 	public virtual sealed void m13() {}
 
 	// Event modifiers.
-	public extern event int e1;
-	public volatile event int e2;
+	public extern event Del e1;
+	public volatile event Del e2;
 
 	// Property modifiers.
 	public extern int p1 { get { return 0; } set {} }

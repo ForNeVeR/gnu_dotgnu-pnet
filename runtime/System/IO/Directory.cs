@@ -45,18 +45,21 @@ namespace System.IO
 			Delete(path,false);	
 		}
 		
-		[TODO]
 		public static void Delete(string path, bool recursive)
 		{
 			if(path==null)
 			{
 				throw new ArgumentNullException();
 			}
-			if(path.Length==0 || (path.Trim()).Length==0 || path.IndexOfAny(pathinfo.invalidPathChars)!= -1)
+			if(path.Length==0 || (path.Trim()).Length==0 || 
+							path.IndexOfAny(Path.InvalidPathChars)!= -1)
 			{
 				throw new ArgumentException();
 			}
 
+			// remove any trailing directory sep characters
+			if(path.GetChar(path.Length-1) == Path.DirectorySeparatorChar)
+				path = path.Substring(0, path.Length - 1);
 			Errno errno = DirMethods.Delete(path);
 
 			switch(errno)
@@ -71,7 +74,21 @@ namespace System.IO
 					}
 					else
 					{
-						// TODO
+						foreach(string subFile in GetFiles(path))
+						{
+							File.Delete(path + 
+							Path.DirectorySeparatorChar.ToString() + subFile);
+						}
+
+						foreach(string subDir in GetDirectories(path))
+						{
+							if(subDir == "." || subDir == "..")
+								continue;
+							Delete(path +Path.DirectorySeparatorChar.ToString() 
+									+ subDir, recursive);
+						}
+						// now delete this dir
+						Delete(path);
 					}
 					break;
 
@@ -84,6 +101,9 @@ namespace System.IO
 				// Needs to be confirmed.
 				case Errno.ENAMETOOLONG:					
 					throw new PathTooLongException();
+
+				case Errno.Success:
+					return;
 				// TODO
 				// Throw some appropriate exception.
 				default:
@@ -93,7 +113,8 @@ namespace System.IO
 
 		public static bool Exists(string path)
 		{
-			if(path.Length==0 || (path.Trim()).Length==0 || path.IndexOfAny(pathinfo.invalidPathChars)!= -1)
+			if(path.Length==0 || (path.Trim()).Length==0 || 
+						path.IndexOfAny(pathinfo.invalidPathChars)!= -1)
 			{	
 				throw new ArgumentException();
 			}
@@ -128,8 +149,7 @@ namespace System.IO
 
 		private static void VerifyDirectoryAccess(String path)
 		{
-			if(path.Length==0 || (path.Trim()).Length==0)
-		//FIXME:			||	path.IndexOfAny(pathinfo.invalidPathChars)!= -1)
+			if(path.Length==0 || (path.Trim()).Length==0 || (path.IndexOfAny(pathinfo.invalidPathChars)!= -1))
 			{	
 				throw new ArgumentException();
 			}

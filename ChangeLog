@@ -9,6 +9,12 @@
 	add a "GetRectangles()" method to "Xsharp.Region" to allow callers
 	to query the list of rectangles that make up the region.
 
+	* runtime/Microsoft/Win32/FileKeyProvider.cs,
+	runtime/Microsoft/Win32/Registry.cs,
+	runtime/System/Security/SecurityElement.cs: implement a file-based
+	registry provider for non-Win32 systems; the data is stored under
+	the "$HOME/.cli/registry" directory.
+
 2003-07-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Reflection/Emit/ILGenerator.cs: Fix minor array size

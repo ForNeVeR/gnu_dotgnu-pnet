@@ -442,6 +442,51 @@ public sealed class SecurityElement
 				attributes.Add(new AttrNameValue(name, value));
 			}
 
+	// Set an attribute within this element.
+	internal void SetAttribute(String name, String value)
+			{
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				if(!IsValidAttributeName(name))
+				{
+					throw new ArgumentException
+						(_("Arg_InvalidXMLAttrName"));
+				}
+				if(!IsValidAttributeValue(value))
+				{
+					throw new ArgumentException
+						(_("Arg_InvalidXMLAttrValue"));
+				}
+
+				// Search for an attribute with the same name.
+				if(attributes != null)
+				{
+					int posn;
+					for(posn = 0; posn < attributes.Count; ++posn)
+					{
+						if(((AttrNameValue)(attributes[posn])).name == name)
+						{
+							((AttrNameValue)(attributes[posn])).value = value;
+							return;
+						}
+					}
+				}
+				else
+				{
+					attributes = new ArrayList();
+				}
+
+				// Add the new attribute.
+				attributes.Add(new AttrNameValue(name, value));
+			}
+
 	// Add a child to this element.
 	public void AddChild(SecurityElement child)
 			{
@@ -615,7 +660,7 @@ public sealed class SecurityElement
 				   (children == null || children.Count == 0))
 				{
 					// The element has no contents, so use the short-cut syntax.
-					result += "/>";
+					result += "/>" + Environment.NewLine;
 				}
 				else
 				{
@@ -625,6 +670,10 @@ public sealed class SecurityElement
 					{
 						result += Escape(text);
 					}
+					else
+					{
+						result += Environment.NewLine;
+					}
 					if(children != null)
 					{
 						for(posn = 0; posn < children.Count; ++posn)
@@ -633,7 +682,7 @@ public sealed class SecurityElement
 								((SecurityElement)(children[posn])).ToString();
 						}
 					}
-					result += "</" + tag + ">";
+					result += "</" + tag + ">" + Environment.NewLine;
 				}
 				return result;
 			}

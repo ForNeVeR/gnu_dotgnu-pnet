@@ -91,6 +91,17 @@ public sealed class Registry
 						return providers[index];
 					}
 
+					// Try to create a file-based provider for the hive.
+					try
+					{
+						providers[index] = new FileKeyProvider(hKey, name);
+						return providers[index];
+					}
+					catch(NotSupportedException)
+					{
+						// Could not create the hive directory - fall through.
+					}
+
 					// Create a memory-based provider on all other systems.
 					providers[index] = new MemoryKeyProvider
 						(null, name, name);

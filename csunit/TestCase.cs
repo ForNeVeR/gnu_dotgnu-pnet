@@ -1,7 +1,7 @@
 /*
  * TestCase.cs - Implementation of the "CSUnit.TestCase" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -213,6 +213,11 @@ public abstract class TestCase : Test
 			{
 				AssertEquals(null, expected, actual, delta);
 			}
+	public static void AssertEquals(float expected, float actual,
+								    float delta)
+			{
+				AssertEquals(null, expected, actual, delta);
+			}
 	public static void AssertEquals(String expected, String actual)
 			{
 				if(expected != actual)
@@ -222,7 +227,15 @@ public abstract class TestCase : Test
 			}
 	public static void AssertEquals(Object expected, Object actual)
 			{
-				if(!expected.Equals(actual))
+				if(expected == null && actual == null)
+				{
+					return;
+				}
+				else if(expected != null && expected.Equals(actual))
+				{
+					return;
+				}
+				else
 				{
 					EqFail(null, expected, actual);
 				}
@@ -251,6 +264,14 @@ public abstract class TestCase : Test
 					EqFail(msg, expected, actual);
 				}
 			}
+	public static void AssertEquals(String msg, float expected,
+									float actual, float delta)
+			{
+				if(Math.Abs(expected - actual) > delta)
+				{
+					EqFail(msg, expected, actual);
+				}
+			}
 	public static void AssertEquals(String msg, String expected, String actual)
 			{
 				if(expected != actual)
@@ -260,7 +281,15 @@ public abstract class TestCase : Test
 			}
 	public static void AssertEquals(String msg, Object expected, Object actual)
 			{
-				if(!expected.Equals(actual))
+				if(expected == null && actual == null)
+				{
+					return;
+				}
+				else if(expected != null && expected.Equals(actual))
+				{
+					return;
+				}
+				else
 				{
 					EqFail(msg, expected, actual);
 				}

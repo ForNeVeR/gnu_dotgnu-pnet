@@ -10,7 +10,8 @@ cstest_CSSRC = $(srcdir)/Test.cs \
 		       $(srcdir)/TestResult.cs \
 		       $(srcdir)/TestStop.cs \
 		       $(srcdir)/TestSuite.cs \
-		       $(srcdir)/TestWriterResult.cs
+		       $(srcdir)/TestWriterResult.cs \
+		       $(srcdir)/NUnitEmulation.cs
 
 csunit_CSSRC = $(srcdir)/TestMain.cs \
 			   TestVersion.cs

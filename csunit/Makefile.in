@@ -85,7 +85,7 @@ YACC = @YACC@
 
 noinst_DATA = cstest.dll csunit.exe
 
-cstest_CSSRC = $(srcdir)/Test.cs 		       $(srcdir)/TestArray.cs 		       $(srcdir)/TestAssertFailed.cs 		       $(srcdir)/TestCase.cs 		       $(srcdir)/TestException.cs 		       $(srcdir)/TestFailure.cs 		       $(srcdir)/TestResult.cs 		       $(srcdir)/TestStop.cs 		       $(srcdir)/TestSuite.cs 		       $(srcdir)/TestWriterResult.cs
+cstest_CSSRC = $(srcdir)/Test.cs 		       $(srcdir)/TestArray.cs 		       $(srcdir)/TestAssertFailed.cs 		       $(srcdir)/TestCase.cs 		       $(srcdir)/TestException.cs 		       $(srcdir)/TestFailure.cs 		       $(srcdir)/TestResult.cs 		       $(srcdir)/TestStop.cs 		       $(srcdir)/TestSuite.cs 		       $(srcdir)/TestWriterResult.cs 		       $(srcdir)/NUnitEmulation.cs
 
 
 csunit_CSSRC = $(srcdir)/TestMain.cs 			   TestVersion.cs

@@ -12,6 +12,10 @@
 
 	* codegen/cg_arith.tc: use "rem.un" to modulus unsigned integer types.
 
+	* csunit/Makefile.am, csunit/Makefile.in, csunit/NUnitEmulation.cs,
+	csunit/TestCase.cs: emulate some of the NUnit test API within csunit
+	so that is is easier to integrate foreign NUnit tests into pnetlib.
+
 2002-11-19  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_oper.tc: Add a number of linenum & filename copies

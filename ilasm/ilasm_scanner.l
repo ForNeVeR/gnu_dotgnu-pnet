@@ -294,6 +294,7 @@ SIGN			[+-]
 <INITIAL,JAVAMODE>".hash"				{ return D_HASH; }
 <INITIAL,JAVAMODE>".imagebase"			{ return D_IMAGEBASE; }
 <INITIAL,JAVAMODE>".implicitcom"		{ return D_IMPLICITCOM; }
+<INITIAL,JAVAMODE>".language"			{ return D_LANGUAGE; }
 <INITIAL,JAVAMODE>".library"			{ return D_LIBRARY; }
 <INITIAL,JAVAMODE>".line"				{ return D_LINE; }
 <INITIAL,JAVAMODE>"#line"				{ return D_LINE; }

@@ -680,6 +680,7 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 %token D_HASH				"`.hash'"
 %token D_IMAGEBASE			"`.imagebase'"
 %token D_IMPLICITCOM		"`.implicitcom'"
+%token D_LANGUAGE			"`.language'"
 %token D_LIBRARY			"`.library'"
 %token D_LINE				"`.line'"
 %token D_LOCALE				"`.locale'"
@@ -1026,6 +1027,12 @@ CommentDeclaration
 	| D_CORFLAGS INTEGER_CONSTANT
 	| D_IMAGEBASE INTEGER_CONSTANT
 	| D_FILE K_ALIGNMENT INTEGER_CONSTANT
+	;
+
+LanguageDeclaration
+	: D_LANGUAGE SQUOTE_STRING
+	| D_LANGUAGE SQUOTE_STRING ',' SQUOTE_STRING
+	| D_LANGUAGE SQUOTE_STRING ',' SQUOTE_STRING ',' SQUOTE_STRING
 	;
 
 /*
@@ -3837,6 +3844,9 @@ CustomAttributeDeclaration
 			}
 	| D_CUSTOM '(' CustomOwner ')' CustomType {
 				ILAsmAttributeCreateFor($3, $5, 0);
+			}
+	| LanguageDeclaration	{
+				/* Nothing to do here: ".language" is ignored */
 			}
 	;
 

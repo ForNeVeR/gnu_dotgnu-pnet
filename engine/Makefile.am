@@ -1,11 +1,12 @@
 bin_PROGRAMS = ilrun ilverify
 lib_LIBRARIES = libILEngine.a
 
-libILEngine_a_SOURCES = cvm.c \
+libILEngine_a_SOURCES = call.c \
+						cvm.c \
 						cvmc.c \
 						heap.c \
-						interpreter.c \
 						layout.c \
+						lookup.c \
 						process.c \
 						thread.c \
 						verify.c

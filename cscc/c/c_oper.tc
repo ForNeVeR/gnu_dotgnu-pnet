@@ -788,7 +788,8 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	if(finalType == ILType_Invalid)
 	{
 		/* Simple numeric calculation */
-		CSemSetRValue(value1, ILValueTypeToType(info, common1));
+		finalType = ILValueTypeToType(info, common1);
+		CSemSetRValue(value1, finalType);
 	}
 	else
 	{

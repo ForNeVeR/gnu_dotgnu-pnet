@@ -239,6 +239,112 @@ public class TestArray : TestCase
 				AssertEquals("Clear (8e)", 6, array[4]);
 			}
 
+	// Determine if two arrays have the same contents.
+	private static bool SameContents(Array a, Array b)
+			{
+				int index = a.Length;
+				while(index > 0)
+				{
+					--index;
+					if(!a.GetValue(index).Equals(b.GetValue(index)))
+					{
+						return false;
+					}
+				}
+				return true;
+			}
+
+	// Test copying arrays.
+	public void TestArrayCopy()
+			{
+				int[] a = new int [10];
+				int[] b = new int [10];
+				int[,] c = new int [3, 3];
+				byte[] d = new byte [10];
+
+				// Parameter validity checks.
+				try
+				{
+					Array.Copy(null, b, 10);
+					Fail("Copy (1)");
+				}
+				catch(ArgumentNullException)
+				{
+					// Test succeeded.
+				}
+				try
+				{
+					Array.Copy(a, null, 10);
+					Fail("Copy (2)");
+				}
+				catch(ArgumentNullException)
+				{
+					// Test succeeded.
+				}
+				try
+				{
+					Array.Copy(a, b, -1);
+					Fail("Copy (3)");
+				}
+				catch(ArgumentOutOfRangeException)
+				{
+					// Test succeeded.
+				}
+				try
+				{
+					Array.Copy(a, b, 11);
+					Fail("Copy (4)");
+				}
+				catch(ArgumentException)
+				{
+					// Test succeeded.
+				}
+				try
+				{
+					Array.Copy(a, c, 3);
+					Fail("Copy (5)");
+				}
+				catch(RankException)
+				{
+					// Test succeeded.
+				}
+				try
+				{
+					Array.Copy(a, d, 3);
+					Fail("Copy (6)");
+				}
+				catch(ArrayTypeMismatchException)
+				{
+					// Test succeeded.
+				}
+
+				// Test copies within the same array.
+				a = new int [] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+				Array.Copy(a, a, 10);
+				Assert("Copy (7)", SameContents
+					(a, new int [] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+				Array.Copy(a, 8, a, 0, 2);
+				Assert("Copy (8)", SameContents
+					(a, new int [] {9, 10, 3, 4, 5, 6, 7, 8, 9, 10}));
+				Array.Copy(a, 1, a, 2, 2);
+				Assert("Copy (9)", SameContents
+					(a, new int [] {9, 10, 10, 3, 5, 6, 7, 8, 9, 10}));
+
+				// Test copies between arrays.
+				a = new int [] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+				b = new int [] {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+				Array.Copy(a, 3, b, 7, 3);
+				Assert("Copy (10)", SameContents
+					(a, new int [] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+				Assert("Copy (11)", SameContents
+					(b, new int [] {10, 9, 8, 7, 6, 5, 4, 4, 5, 6}));
+
+				// Test copies with cast conversions.
+				Array.Copy(d, a, 10);
+				ValueType[] e = new ValueType [10];
+				Array.Copy(a, e, 10);
+			}
+
 	// Test sorting an array.
 	public void TestArraySort()
 			{

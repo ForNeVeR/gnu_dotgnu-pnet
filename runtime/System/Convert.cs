@@ -1,7 +1,7 @@
 /*
  * Convert.cs - Implementation of the "System.Convert" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,7 +96,79 @@ public sealed class Convert
 			{
 				return Boolean.Parse(value);
 			}
-#endif
+#else // ECMA_COMPAT
+	internal static bool ToBoolean(Object value)
+			{
+				if(value == null)
+				{
+					return false;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToBoolean((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToBoolean((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToBoolean((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToBoolean((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToBoolean((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToBoolean((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToBoolean((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToBoolean((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToBoolean((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToBoolean((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToBoolean((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToBoolean((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToBoolean((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return (bool)value;
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(bool).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into Byte.
 	public static byte ToByte(bool value) { return (byte)(value ? 1 : 0); }
@@ -249,7 +321,79 @@ public sealed class Convert
 					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static byte ToByte(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return (byte)value;
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToByte((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToByte((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToByte((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToByte((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToByte((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToByte((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToByte((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToByte((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToByte((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToByte((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToByte((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToByte((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToByte((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(byte).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into SByte.
 	[CLSCompliant(false)]
@@ -416,7 +560,79 @@ public sealed class Convert
 					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static sbyte ToSByte(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToSByte((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return (sbyte)value;
+				}
+				else if(type == typeof(short))
+				{
+					return ToSByte((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToSByte((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToSByte((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToSByte((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToSByte((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToSByte((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToSByte((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToSByte((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToSByte((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToSByte((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToSByte((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToSByte((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(sbyte).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into Int16.
 	public static short ToInt16(bool value) { return (short)(value ? 1 : 0); }
@@ -555,7 +771,79 @@ public sealed class Convert
 					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static short ToInt16(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToInt16((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToInt16((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return (short)value;
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToInt16((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToInt16((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToInt16((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToInt16((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToInt16((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToInt16((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToInt16((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToInt16((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToInt16((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToInt16((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToInt16((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(short).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into UInt16.
 	[CLSCompliant(false)]
@@ -711,7 +999,79 @@ public sealed class Convert
 					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static ushort ToUInt16(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToUInt16((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToUInt16((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToUInt16((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return (ushort)value;
+				}
+				else if(type == typeof(char))
+				{
+					return ToUInt16((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToUInt16((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToUInt16((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToUInt16((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToUInt16((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToUInt16((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToUInt16((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToUInt16((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToUInt16((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToUInt16((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(ushort).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into Int32.
 	public static int ToInt32(bool value) { return (value ? 1 : 0); }
@@ -839,7 +1199,79 @@ public sealed class Convert
 					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static int ToInt32(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToInt32((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToInt32((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToInt32((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToInt32((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToInt32((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return (int)value;
+				}
+				else if(type == typeof(uint))
+				{
+					return ToInt32((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToInt32((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToInt32((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToInt32((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToInt32((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToInt32((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToInt32((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToInt32((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(int).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into UInt32.
 	[CLSCompliant(false)]
@@ -995,7 +1427,79 @@ public sealed class Convert
 					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static uint ToUInt32(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToUInt32((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToUInt32((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToUInt32((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToUInt32((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToUInt32((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToUInt32((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return (uint)value;
+				}
+				else if(type == typeof(long))
+				{
+					return ToUInt32((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToUInt32((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToUInt32((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToUInt32((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToUInt32((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToUInt32((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToUInt32((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(uint).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into Int64.
 	public static long ToInt64(bool value) { return (value ? 1 : 0); }
@@ -1109,7 +1613,79 @@ public sealed class Convert
 					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static long ToInt64(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToInt64((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToInt64((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToInt64((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToInt64((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToInt64((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToInt64((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToInt64((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return (long)value;
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToInt64((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToInt64((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToInt64((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToInt64((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToInt64((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToInt64((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(long).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into UInt64.
 	[CLSCompliant(false)]
@@ -1258,7 +1834,79 @@ public sealed class Convert
 					throw new ArgumentException(_("Arg_InvalidBase"));
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static ulong ToUInt64(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToUInt64((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToUInt64((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToUInt64((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToUInt64((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToUInt64((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToUInt64((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToUInt64((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToUInt64((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return (ulong)value;
+				}
+				else if(type == typeof(float))
+				{
+					return ToUInt64((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToUInt64((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToUInt64((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToUInt64((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToUInt64((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(ulong).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into Char.
 	public static char ToChar(byte value)
@@ -1397,7 +2045,79 @@ public sealed class Convert
 			{
 				return ToChar(value);
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static char ToChar(Object value)
+			{
+				if(value == null)
+				{
+					return '\u0000';
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToChar((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToChar((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToChar((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToChar((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return (char)value;
+				}
+				else if(type == typeof(int))
+				{
+					return ToChar((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToChar((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToChar((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToChar((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToChar((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToChar((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToChar((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToChar((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToChar((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(char).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into Single.
 	public static float ToSingle(bool value) { return (value ? 1.0f : 0.0f); }
@@ -1481,7 +2201,79 @@ public sealed class Convert
 					return 0;
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static float ToSingle(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToSingle((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToSingle((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToSingle((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToSingle((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToSingle((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToSingle((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToSingle((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToSingle((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToSingle((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return (float)value;
+				}
+				else if(type == typeof(double))
+				{
+					return (float)(double)value;
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToSingle((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToSingle((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToSingle((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(float).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into Double.
 	public static double ToDouble(bool value) { return (value ? 1.0d : 0.0d); }
@@ -1565,7 +2357,79 @@ public sealed class Convert
 					return 0;
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static double ToDouble(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToDouble((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToDouble((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToDouble((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToDouble((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToDouble((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToDouble((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToDouble((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToDouble((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToDouble((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return (double)(float)value;
+				}
+				else if(type == typeof(double))
+				{
+					return (double)value;
+				}
+				else if(type == typeof(Decimal))
+				{
+					return ToDouble((Decimal)value);
+				}
+				else if(type == typeof(String))
+				{
+					return ToDouble((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToDouble((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(double).FullName));
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into String.
 	public static String ToString(bool value)
@@ -1856,7 +2720,19 @@ public sealed class Convert
 					return String.Empty;
 				}
 			}
-#endif // !ECMA_COMPAT
+#else // ECMA_COMPAT
+	internal static String ToString(Object value)
+			{
+				if(value != null)
+				{
+					return value.ToString();
+				}
+				else
+				{
+					return String.Empty;
+				}
+			}
+#endif // ECMA_COMPAT
 
 	// Convert various types into DateTime.
 	public static DateTime ToDateTime(DateTime value) { return value; }
@@ -1954,6 +2830,78 @@ public sealed class Convert
 				else
 				{
 					return new Decimal(0);
+				}
+			}
+#else // ECMA_COMPAT
+	internal static Decimal ToDecimal(Object value)
+			{
+				if(value == null)
+				{
+					return 0;
+				}
+				Type type = value.GetType();
+				if(type == typeof(byte))
+				{
+					return ToDecimal((byte)value);
+				}
+				else if(type == typeof(sbyte))
+				{
+					return ToDecimal((sbyte)value);
+				}
+				else if(type == typeof(short))
+				{
+					return ToDecimal((short)value);
+				}
+				else if(type == typeof(ushort))
+				{
+					return ToDecimal((ushort)value);
+				}
+				else if(type == typeof(char))
+				{
+					return ToDecimal((char)value);
+				}
+				else if(type == typeof(int))
+				{
+					return ToDecimal((int)value);
+				}
+				else if(type == typeof(uint))
+				{
+					return ToDecimal((uint)value);
+				}
+				else if(type == typeof(long))
+				{
+					return ToDecimal((long)value);
+				}
+				else if(type == typeof(ulong))
+				{
+					return ToDecimal((ulong)value);
+				}
+				else if(type == typeof(float))
+				{
+					return ToDecimal((float)value);
+				}
+				else if(type == typeof(double))
+				{
+					return ToDecimal((double)value);
+				}
+				else if(type == typeof(Decimal))
+				{
+					return (Decimal)value;
+				}
+				else if(type == typeof(String))
+				{
+					return ToDecimal((String)value);
+				}
+				else if(type == typeof(bool))
+				{
+					return ToDecimal((bool)value);
+				}
+				else
+				{
+					throw new InvalidCastException
+						(String.Format
+							(_("InvalidCast_FromTo"),
+ 						     type.FullName, typeof(Decimal).FullName));
 				}
 			}
 #endif // !ECMA_COMPAT
@@ -2654,34 +3602,29 @@ public sealed class Convert
 
 #endif // !ECMA_COMPAT
 
-	// Determine if we can convert from one type to another.
-	internal static bool CanConvert(Type fromType, Type toType)
-			{
-				// We can convert if the types are directly assignable.
-				if(toType.IsAssignableFrom(fromType))
-				{
-					return true;
-				}
-
-			#if ECMA_COMPAT
-				// We don't have IConvertible in the ECMA library.
-				return false;
-			#else
-				// If both types implement or inherit from IConvertible, then
-				// we assume that the conversion is theoretically possible.
-				// It may throw an exception later in ConvertObject.
-				Type iconv = typeof(IConvertible);
-				return (iconv.IsAssignableFrom(fromType) &&
-				        iconv.IsAssignableFrom(toType));
-			#endif
-			}
-
 	// Convert an object to a new type.
 	internal static Object ConvertObject(Object obj, Type toType)
 			{
-				// If the types are directly assignable, then
-				// return the original object as-is.
-				if(toType.IsAssignableFrom(obj.GetType()))
+				// Handle the "null" case.
+				if(obj == null && !toType.IsValueType)
+				{
+					if(!toType.IsValueType)
+					{
+						return null;
+					}
+					else
+					{
+						throw new InvalidCastException
+							(String.Format
+								(_("InvalidCast_FromTo"),
+ 							     "null", toType.FullName));
+					}
+				}
+
+				// If the types are directly assignable,
+				// then return the original object as-is.
+				Type objType = obj.GetType();
+				if(toType.IsAssignableFrom(objType))
 				{
 					return obj;
 				}
@@ -2694,13 +3637,171 @@ public sealed class Convert
 					return DefaultToType
 						(iconv, toType, CultureInfo.CurrentCulture, false);
 				}
-			#endif
+			#else // ECMA_COMPAT
+				// Perform primitive type conversions the hard way
+				// because we don't have support for IConvertible.
+				if(objType != typeof(String) && objType != typeof(Decimal))
+				{
+					try
+					{
+						if(toType == typeof(bool))
+						{
+							return ToBoolean(obj);
+						}
+						else if(toType == typeof(byte))
+						{
+							return ToByte(obj);
+						}
+						else if(toType == typeof(sbyte))
+						{
+							return ToSByte(obj);
+						}
+						else if(toType == typeof(short))
+						{
+							return ToInt16(obj);
+						}
+						else if(toType == typeof(ushort))
+						{
+							return ToUInt16(obj);
+						}
+						else if(toType == typeof(int))
+						{
+							return ToInt32(obj);
+						}
+						else if(toType == typeof(uint))
+						{
+							return ToUInt32(obj);
+						}
+						else if(toType == typeof(long))
+						{
+							return ToInt64(obj);
+						}
+						else if(toType == typeof(ulong))
+						{
+							return ToUInt64(obj);
+						}
+						else if(toType == typeof(float))
+						{
+							return ToSingle(obj);
+						}
+						else if(toType == typeof(double))
+						{
+							return ToDouble(obj);
+						}
+						else if(toType == typeof(Decimal))
+						{
+							return ToDecimal(obj);
+						}
+					}
+					catch(OverflowException)
+					{
+						// Turn OverflowException's into InvalidCastException's.
+					}
+				}
+			#endif // ECMA_COMPAT
 
 				// The conversion is impossible.
 				throw new InvalidCastException
 					(String.Format
 						(_("InvalidCast_FromTo"),
- 					     obj.GetType().FullName, toType.FullName));
+ 					     objType.FullName, toType.FullName));
+			}
+
+	// Determine if there is a widening conversion between two
+	// primitive types.
+	internal static bool HasWideningConversion(Type from, Type to)
+			{
+				if(from == typeof(bool))
+				{
+					return (to == typeof(bool) ||
+							to == typeof(byte) ||
+							to == typeof(short) ||
+					        to == typeof(ushort) ||
+					        to == typeof(char) ||
+							to == typeof(int) ||
+							to == typeof(uint) ||
+							to == typeof(long) ||
+							to == typeof(ulong) ||
+							to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(byte))
+				{
+					return (to == typeof(byte) ||
+							to == typeof(short) ||
+					        to == typeof(ushort) ||
+					        to == typeof(char) ||
+							to == typeof(int) ||
+							to == typeof(uint) ||
+							to == typeof(long) ||
+							to == typeof(ulong) ||
+							to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(sbyte))
+				{
+					return (to == typeof(sbyte) ||
+							to == typeof(short) ||
+							to == typeof(int) ||
+							to == typeof(long) ||
+							to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(short))
+				{
+					return (to == typeof(short) ||
+							to == typeof(int) ||
+							to == typeof(long) ||
+							to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(ushort) || from == typeof(char))
+				{
+					return (to == typeof(ushort) ||
+					        to == typeof(char) ||
+							to == typeof(int) ||
+							to == typeof(uint) ||
+							to == typeof(long) ||
+							to == typeof(ulong) ||
+							to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(int))
+				{
+					return (to == typeof(int) ||
+							to == typeof(long) ||
+							to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(uint))
+				{
+					return (to == typeof(uint) ||
+							to == typeof(ulong) ||
+							to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(long))
+				{
+					return (to == typeof(long) ||
+							to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(ulong))
+				{
+					return (to == typeof(ulong) ||
+							to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(float))
+				{
+					return (to == typeof(float) ||
+							to == typeof(double));
+				}
+				else if(from == typeof(double))
+				{
+					return (to == typeof(double));
+				}
+				return false;
 			}
 
 }; // class Convert

@@ -204,6 +204,37 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 				     Array destinationArray,
 					 int destinationIndex, int length);
 
+	// Determine if it is possible to cast between two types,
+	// without using a narrowing conversion.
+	private static bool ArrayTypeCompatible(Type src, Type dest)
+			{
+				if(dest.IsAssignableFrom(src))
+				{
+					// Direct assignment with or without boxing conversion.
+					return true;
+				}
+				else if(dest.IsValueType && src.IsAssignableFrom(dest))
+				{
+					// Unboxing conversion.
+					return true;
+				}
+				else if(src.IsPrimitive && dest.IsPrimitive)
+				{
+					// Primitive numeric cast.
+					return Convert.HasWideningConversion(src, dest);
+				}
+				else if(!src.IsValueType && !dest.IsValueType)
+				{
+					// Try using an explicit cast up the tree.
+					return src.IsAssignableFrom(dest);
+				}
+				else
+				{
+					// No conversion possible.
+					return false;
+				}
+			}
+
 	// Copy the contents of one array into another (general-purpose version).
 	public static void Copy(Array sourceArray, int sourceIndex,
 						    Array destinationArray,
@@ -262,22 +293,24 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			return;
 		}
 
-		// Copy the array contents the hard way.
+		// Check that casting between the types is possible,
+		// without using a narrowing conversion.
+		if(!ArrayTypeCompatible(arrayType1, arrayType2))
+		{
+			throw new ArrayTypeMismatchException
+				(_("Exception_ArrayTypeMismatch")); 
+		}
+
+		// Copy the array contents the hard way.  We don't have to
+		// worry about overlapping ranges because there is no way
+		// to get here if the source and destination are the same.
 		int index;
 		for(index = 0; index < length; ++index)
 		{
-			try
-			{
-				destinationArray.SetRelative(
-					Convert.ConvertObject(
-						sourceArray.GetRelative(sourceIndex + index), 
-						arrayType2), destinationIndex + index);
-			}
-			catch(Exception)
-			{
-				throw new ArrayTypeMismatchException // error
-							(_("Exception_ArrayTypeMismatch")); 
-			}
+			destinationArray.SetRelative(
+				Convert.ConvertObject(
+					sourceArray.GetRelative(sourceIndex + index - srcLower), 
+					arrayType2), destinationIndex + index - dstLower);
 		}
 	}
 

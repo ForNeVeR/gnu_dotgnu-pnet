@@ -1,4 +1,11 @@
 
+2003-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Array.cs, runtime/System/Convert.cs,
+	tests/runtime/System/TestArray.cs: test cases and bug fixes
+	for "Array.Copy"; implement primitive type conversions in
+	ECMA_COMPAT mode.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ArgIterator.cs: make "ArgIterator.GetHashCode"

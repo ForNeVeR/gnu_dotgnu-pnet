@@ -1,4 +1,12 @@
 
+2004-05-14  Russell Stuart  <russell-savannah@stuart.id.au>
+	* runtime/System/Threading/Timer.cs:
+	Re-Wrote - number of bugs fixed.  [patch #2912]
+
+	* tests/runtime/System/Threading/TestTimer.cs,
+	tests/runtime/System/Threading/SuitThreading.cs:
+	Added Timer Test Cases.
+
 2004-05-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/TextBox.cs: Process application
@@ -129,7 +137,7 @@
 	System.Windows.Forms/UpDownEventHandler.cs: Stub out the
 	UpDown controls and their dependencies.
 
-2004-05-05  Russell Stuart  <russell@stuart.id.au>
+2004-05-05  Russell Stuart  <russell-savannah@stuart.id.au>
 	* tests/runtime/System/Threading/TestMonitor.cs: Added
 	tests for Thread.Interrupt.
 	(patch #3006 modified & commited by Thong)
@@ -246,7 +254,7 @@
 	* System.Xml/Xsl/XslTransform.cs: This patch is needed to add 
 	System.Web to ml-pnet (patch #2953, Gopal)
 
-2004-04-21  Russell Stuart  <russell@stuart.id.au>
+2004-04-21  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* runtime/System/Collections/Hashtable.cs: Use a local object instead
 	of null for removed entries in Hashtable (patch #2882)
@@ -275,14 +283,14 @@
 2004-04-18  Gopal V <gopalv82@yahoo.com>
 
 	* runtime/System/Type.cs: Allow all interfaces to be assignable to
-	System.Object <russell@stuart.id.au> (patch #2889)
+	System.Object <russell-savannah@stuart.id.au> (patch #2889)
 
 2004-04-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* "Button.PerformClick" should only work when the control
 	is visible and enabled <kuehner75@web.de> (patch #2848).
 
-2004-04-05  Russell Stuart  <russell@stuart.id.au>
+2004-04-05  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* System.Windows.Forms/TabControl.cs: Add "TabPageCollection.Contains"
 	(patch #2831).
@@ -301,7 +309,7 @@
 	* System.Xml/XmlDocument.cs, tests/System.Xml/TestXmlDocument.cs: fix
 	bug #8415 and add a unit test for it.
 
-2004-04-01  Russell Stuart  <russell@stuart.id.au>
+2004-04-01  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* System/Net/IPAddress.cs, System/Net/IPEndPoint.cs:
 	fix a sign-extension bug in IPv4 addresses (patch #2826).
@@ -356,7 +364,7 @@
 	fix a bug in WriteQuotedString which was breaking ReadOuterXml, and add
 	a unit test for it.
 
-2004-03-12  Russell Stuart  <russell@stuart.id.au>
+2004-03-12  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* configure.in, pnetlib.spec.in: autodetect the treecc version
 	for "pnetlib.spec.in".
@@ -369,7 +377,7 @@
 2004-03-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* pnetlib.spec.in: clean up the spec file (thanks to
-	Russell Stuart <russell@stuart.id.au>).
+	Russell Stuart <russell-savannah@stuart.id.au>).
 
 2004-03-11  Miroslaw Dobrzanski-Neumann  <mne@mosaic-ag.com>
 

@@ -33,6 +33,7 @@ public class SuiteThreading
 		suite.AddTests(typeof(TestWaitHandle));
 		suite.AddTests(typeof(TestManualResetEvent));
 		suite.AddTests(typeof(TestAutoResetEvent));
+		suite.AddTests(typeof(TestTimer));
 	#endif
 	
 		suite.AddTests(typeof(TestThread));

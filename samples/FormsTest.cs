@@ -207,6 +207,7 @@ namespace FormsTest
 		private ComboBox comboBox1, comboBox2;
 
 		private TreeView treeView1;
+		//private Label tv
 
 		private ListBox listBox1, listBox2;
 
@@ -2223,6 +2224,7 @@ namespace FormsTest
 			c.Controls.Add(listBox2);
 			listBox1.MultiColumn = true;
 			listBox1.SelectionMode = SelectionMode.MultiExtended;
+			listBox1.ScrollAlwaysVisible = true;
 			listBox1.BeginUpdate();
 			for (int x = 1; x <= 50; x++)
 			{

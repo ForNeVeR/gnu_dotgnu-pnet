@@ -1,4 +1,16 @@
 
+0.0.6 (3 November 2001)
+
+	* Remove "System.Radix", which is no longer ECMA-compliant.
+	* Re-implement "Math" and "Random".
+	* Round out the "System" namespace.  Most ECMA classes are present,
+	  even if only in stub form.
+	* Implement a number of reflection-related classes.
+	* Change some "internalcall" methods to C# in "System.String".
+	* Remove a temporary hack in "System.Console" that caused it to
+	  bypass the stream subsystem.  Virtual methods work in "pnet" now,
+	  so we can use streams.
+
 0.0.4 (20 October 2001)
 
 	* Rewrote the "System.Collections" classes.

@@ -1,3 +1,7 @@
+2004-09-09  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Drawing/Graphics.cs: fix vertical alignment problems for text
+	drawing with xft fonts.
 
 2004-09-09  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 	

@@ -1614,11 +1614,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						// perform line alignment adjustments, if needed
 						if(alignment == StringAlignment.Center)
 						{
-							y += ((rect[2].Y - y - (int)size.Height - 1) / 2);
+							y += ((rect[2].Y - y - (int)font.Height - 1) / 2);
 						}
 						else if(alignment == StringAlignment.Far)
 						{
-							y = rect[2].Y - (int)size.Height - 1;
+							y = rect[2].Y - (int)font.Height - 1;
 						}
 
 						// draw the text based on hotkey prefix showing
@@ -2471,20 +2471,25 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 		private int HotKeyIdx;
 
 		// Details for each word
-		private  struct SplitWord
-				{
-					public int start;
-					public int length;
-					public Size size;
-					public int line;
-					public SplitWord(int start, int length)
+		private struct SplitWord
+		{
+			// Publicly-accessible state.
+			public int start;
+			public int length;
+			public int width;
+			public int line;
+
+			// Constructor.
+			public SplitWord(int start, int length)
 					{
 						this.start = start;
 						this.length = length;
-						this.size = Size.Empty;
-						line = -1;
+						this.width = 0;
+						this.line = -1;
 					}
-				}
+
+		}; // struct SplitWord
+
 
 		public StringDrawPositionCalculator(String text, Graphics graphics, Font font, RectangleF layout, StringFormat format)
 				{
@@ -2652,7 +2657,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						return Size.Empty;
 					}
 					bool noPartialLines = (format.FormatFlags & StringFormatFlags.LineLimit) != 0;
-					int h = words[0].size.Height;
+					int h = font.Height;
 					// Find number of lines filled.
 					for (int i = 0; i < linePositions.Length; i++)
 					{
@@ -2680,7 +2685,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						charactersFitted += word.length;
 						if(word.line == currentLine)
 						{
-							currentWidth += word.size.Width;
+							currentWidth += word.width;
 						}
 						else
 						{
@@ -2688,7 +2693,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							{
 								maxWidth = currentWidth;
 							}
-							currentWidth = word.size.Width;
+							currentWidth = word.width;
 							currentLine++;
 						}
 					}
@@ -2703,7 +2708,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 		private void  MeasureStrings() 
 				{
 					graphics.SelectFont(font);
-					Size spaceSize = new Size(-1,-1);
+					int spaceWidth = -1;
 					Point[] rect = new Point[0];
 					int charactersFitted;
 					int linesFilled;
@@ -2715,16 +2720,16 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						{
 							if (char.IsWhiteSpace(c))
 							{
-								if (spaceSize.Width == -1)
+								if(spaceWidth == -1)
 								{
-									spaceSize = graphics.ToolkitGraphics.MeasureString(" ", rect, null, out charactersFitted, out linesFilled, false);
+									spaceWidth = graphics.ToolkitGraphics.MeasureString(" ", rect, null, out charactersFitted, out linesFilled, false).Width;
 								}
-								word.size = spaceSize;
+								word.width = spaceWidth;
 								words[i] = word;
 							}
 							else
 							{
-								word.size = graphics.ToolkitGraphics.MeasureString(text.Substring(word.start, word.length), rect, null, out charactersFitted, out linesFilled, false);
+								word.width = graphics.ToolkitGraphics.MeasureString(text.Substring(word.start, word.length), rect, null, out charactersFitted, out linesFilled, false).Width;
 								words[i] = word;
 							}
 						}
@@ -2758,9 +2763,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								if (c1 != '\r' && c1 != '\n')
 								{
 									// If we have space for the next word in the line then set the lines.
-									if (currSize + word.size.Width + nextWord.size.Width <= lineSize) 
+									if (currSize + word.width + nextWord.width <= lineSize) 
 									{
-										currSize += word.size.Width + nextWord.size.Width;
+										currSize += word.width + nextWord.width;
 										word.line = nextWord.line = currLine;
 										words[i] = word;
 										words[i+1] = nextWord;
@@ -2778,11 +2783,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						else  
 						{
 							// we have no whitespace in line -> append / wrap line
-							if (currSize + word.size.Width < lineSize || currLine == 0)
+							if (currSize + word.width < lineSize || currLine == 0)
 							{
 								word.line = currLine;
 								words[i] = word;
-								currSize += word.size.Width;
+								currSize += word.width;
 							} 
 							else
 							{
@@ -2790,7 +2795,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								words[i] = word;
 								currSize=0;
 							}
-						}			
+						}
 					}
 				}
 		// Calculate the Position of the wrapped lines
@@ -2808,7 +2813,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					}
 					Point[] linePositions = new Point[numLines];
 
-					int h = words[0].size.Height;
+					int h = font.Height;
 
 					int yOffset=0;
 					// Set the offset based on the  LineAlignment.
@@ -2831,7 +2836,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								SplitWord word = words[i];
 								if(word.line == line)
 								{
-									xOffset += word.size.Width;
+									xOffset += word.width;
 								}
 								if(word.line > line)
 								{

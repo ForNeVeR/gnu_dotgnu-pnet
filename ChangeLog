@@ -1,4 +1,12 @@
 
+2003-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_internal.h,
+	cscc/csharp/cs_scanner.l: handle special C# keywords like
+	"get", "set", "add", "remove", and "where" in a slightly
+	different way, to reduce the need for hacky flags and
+	scanner states.
+
 2003-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.0" release.

@@ -76,12 +76,6 @@ extern	"C" {
 #define	CS_NUMTYPE_FLOAT64			5
 
 /*
- * A flag that is set to 1 when "get" and "set" keywords
- * should be recognized by the lexical analyser.
- */
-extern int CSGetSetKeywords;
-
-/*
  * A flag that is set to 1 for metadata-only compiles.
  */
 extern int CSMetadataOnly;

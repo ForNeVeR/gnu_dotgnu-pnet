@@ -31,7 +31,6 @@ extern YYSTYPE yylval;
 extern YYLTYPE yylloc;
 #endif
 
-int       CSGetSetKeywords = 0;
 int		  CSNoGenerics = 0;
 int       CSLatin1Charset = 0;
 
@@ -997,6 +996,7 @@ GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
 "->"					{ RETURNTOK(PTR_OP); }
 
 "abstract"				{ RETURNTOK(ABSTRACT); }
+"add"					{ RETURNTOK(ADD); }
 "__arglist"				{ RETURNTOK(ARGLIST); }
 "as"					{ RETURNTOK(AS); }
 "base"					{ RETURNTOK(BASE); }
@@ -1027,6 +1027,7 @@ GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
 "float"					{ RETURNTOK(FLOAT); }
 "for"					{ RETURNTOK(FOR); }
 "foreach"				{ RETURNTOK(FOREACH); }
+"get"					{ RETURNTOK(GET); }
 "goto"					{ RETURNTOK(GOTO); }
 "if"					{ RETURNTOK(IF); }
 "implicit"				{ RETURNTOK(IMPLICIT); }
@@ -1055,9 +1056,11 @@ GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
 "ref"					{ RETURNTOK(REF); }
 "__reftype"				{ RETURNTOK(REFTYPE); }
 "__refvalue"			{ RETURNTOK(REFVALUE); }
+"remove"				{ RETURNTOK(REMOVE); }
 "return"				{ RETURNTOK(RETURN); }
 "sbyte"					{ RETURNTOK(SBYTE); }
 "sealed"				{ RETURNTOK(SEALED); }
+"set"					{ RETURNTOK(SET); }
 "short"					{ RETURNTOK(SHORT); }
 "sizeof"				{ RETURNTOK(SIZEOF); }
 "stackalloc"			{ RETURNTOK(STACKALLOC); }
@@ -1079,50 +1082,16 @@ GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
 "virtual"				{ RETURNTOK(VIRTUAL); }
 "void"					{ RETURNTOK(VOID); }
 "volatile"				{ RETURNTOK(VOLATILE); }
-"where"					{ 
-							if(CSNoGenerics)
-							{
-								yylval.name = (ParseIdentifier(yytext)).string;
-								RETURNTOK(IDENTIFIER);
-							}
-							else
-							{
-								RETURNTOK(WHERE); 
-							}
-						}
+"where"					{ RETURNTOK(WHERE); }
 "while"					{ RETURNTOK(WHILE); }
 
 {IDALPHA}({DIGIT}|{IDALPHA})*		{
-			if(!CSGetSetKeywords)
-			{
-				yylval.name = (ParseIdentifier(yytext)).string;
-				RETURNTOK(IDENTIFIER);
-			}
-			else if(!strcmp(yytext, "get"))
-			{
-				RETURNTOK(GET);
-			}
-			else if(!strcmp(yytext, "set"))
-			{
-				RETURNTOK(SET);
-			}
-			else if(!strcmp(yytext, "add"))
-			{
-				RETURNTOK(ADD);
-			}
-			else if(!strcmp(yytext, "remove"))
-			{
-				RETURNTOK(REMOVE);
-			}
-			else
-			{
-				yylval.name = (ParseIdentifier(yytext)).string;
-				RETURNTOK(IDENTIFIER);
-			}
+			yylval.name = (ParseIdentifier(yytext)).string;
+			RETURNTOK(IDENTIFIER_LEXICAL);
 		}
 "@"{IDALPHA}({DIGIT}|{IDALPHA})*	{
 			yylval.name = (ParseIdentifier(yytext + 1)).string;
-			RETURNTOK(IDENTIFIER);
+			RETURNTOK(IDENTIFIER_LEXICAL);
 		}
 
 {DIGIT}+{EXPONENT}{FTYPE}?					{ RETURNTOK(ParseFloat(yytext)); }

@@ -740,7 +740,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
  */
 %token INTEGER_CONSTANT		"an integer value"
 %token CHAR_CONSTANT		"a character constant"
-%token IDENTIFIER			"an identifier"
+%token IDENTIFIER_LEXICAL	"an identifier"
 %token STRING_LITERAL		"a string literal"
 %token FLOAT_CONSTANT		"a floating point value"
 %token DECIMAL_CONSTANT		"a decimal value"
@@ -868,7 +868,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 /*
  * Define the yylval types of the various non-terminals.
  */
-%type <name>		IDENTIFIER
+%type <name>		IDENTIFIER IDENTIFIER_LEXICAL
 %type <integer>		INTEGER_CONSTANT
 %type <charValue>	CHAR_CONSTANT
 %type <real>		FLOAT_CONSTANT
@@ -964,7 +964,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 26
+%expect 31
 
 %start CompilationUnit
 %%
@@ -1096,6 +1096,15 @@ Identifier
 				   We leave that up to the semantic analysis phase */
 				$$ = ILQualIdentSimple($1);
 			}
+	;
+
+IDENTIFIER
+	: IDENTIFIER_LEXICAL	{ $$ = $1; }
+	| GET					{ $$ = ILInternString("get", 3).string; }
+	| SET					{ $$ = ILInternString("set", 3).string; }
+	| ADD					{ $$ = ILInternString("add", 3).string; }
+	| REMOVE				{ $$ = ILInternString("remove", 6).string; }
+	| WHERE					{ $$ = ILInternString("where", 5).string; }
 	;
 
 QualifiedIdentifier
@@ -1413,7 +1422,6 @@ BuiltinType
 PrimaryExpression
 	: LiteralExpression				{ $$ = $1; }
 	| Identifier					{ $$ = $1; }
-	| WHERE							{ $$ = ILQualIdentSimple("where"); }
 	| '(' Expression ')'			{ $$ = $2; }
 	| PrimaryExpression '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
 	| BuiltinType '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
@@ -2981,19 +2989,17 @@ PropertyDeclaration
 	;
 
 StartAccessorBlock
-	: '{'	{ CSGetSetKeywords = 1; }
+	: '{'
 	;
 
 AccessorBlock
 	: AccessorDeclarations '}'	{
-				CSGetSetKeywords = 0;
 				$$ = $1;
 			}
 	| error '}'		{
 				/*
 				 * This production recovers from errors in accessor blocks.
 				 */
-				CSGetSetKeywords = 0;
 				$$.item1 = 0;
 				$$.item2 = 0;
 				yyerrok;
@@ -3017,9 +3023,9 @@ OptGetAccessorDeclaration
 	;
 
 GetAccessorDeclaration
-	: OptAttributes GET TurnOffGetSet AccessorBody TurnOnGetSet		{
+	: OptAttributes GET AccessorBody {
 				$$ = ILNode_MethodDeclaration_create
-						($1, 0, 0, 0, 0, $4);
+						($1, 0, 0, 0, 0, $3);
 			#ifdef YYBISON
 				yysetlinenum($$, @2.first_line);
 			#endif
@@ -3032,9 +3038,9 @@ OptSetAccessorDeclaration
 	;
 
 SetAccessorDeclaration
-	: OptAttributes SET TurnOffGetSet AccessorBody TurnOnGetSet		{
+	: OptAttributes SET AccessorBody {
 				$$ = ILNode_MethodDeclaration_create
-						($1, 0, 0, 0, 0, $4);
+						($1, 0, 0, 0, 0, $3);
 			#ifdef YYBISON
 				yysetlinenum($$, @2.first_line);
 			#endif
@@ -3044,14 +3050,6 @@ SetAccessorDeclaration
 AccessorBody
 	: Block				{ $$ = $1; }
 	| ';'				{ $$ = 0; }
-	;
-
-TurnOffGetSet
-	: /* empty */		{ CSGetSetKeywords = 0; }
-	;
-
-TurnOnGetSet
-	: /* empty */		{ CSGetSetKeywords = 1; }
 	;
 
 /*
@@ -3110,14 +3108,12 @@ EventPropertyDeclaration
 
 EventAccessorBlock
 	: EventAccessorDeclarations '}'	{
-				CSGetSetKeywords = 0;
 				$$ = $1;
 			}
 	| error '}'		{
 				/*
 				 * This production recovers from errors in accessor blocks.
 				 */
-				CSGetSetKeywords = 0;
 				$$.item1 = 0;
 				$$.item2 = 0;
 				yyerrok;
@@ -3136,9 +3132,9 @@ EventAccessorDeclarations
 	;
 
 AddAccessorDeclaration
-	: OptAttributes ADD TurnOffGetSet AccessorBody TurnOnGetSet		{
+	: OptAttributes ADD AccessorBody {
 				$$ = ILNode_MethodDeclaration_create
-						($1, 0, 0, 0, 0, $4);
+						($1, 0, 0, 0, 0, $3);
 			#ifdef YYBISION
 				yysetlinenum($$, @2.first_line);
 			#endif
@@ -3146,9 +3142,9 @@ AddAccessorDeclaration
 	;
 
 RemoveAccessorDeclaration
-	: OptAttributes REMOVE TurnOffGetSet AccessorBody TurnOnGetSet	{
+	: OptAttributes REMOVE AccessorBody {
 				$$ = ILNode_MethodDeclaration_create
-						($1, 0, 0, 0, 0, $4);
+						($1, 0, 0, 0, 0, $3);
 			#ifdef YYBISION
 				yysetlinenum($$, @2.first_line);
 			#endif
@@ -3716,12 +3712,11 @@ InterfacePropertyDeclaration
 	;
 
 StartInterfaceAccessorBody
-	: '{'		{ CSGetSetKeywords = 1; }
+	: '{'
 	;
 
 InterfaceAccessorBody
 	: InterfaceAccessors '}'	{
-				CSGetSetKeywords = 0;
 				$$ = $1;
 			}
 	| error '}'		{
@@ -3729,7 +3724,6 @@ InterfaceAccessorBody
 				 * This production recovers from errors in interface
 				 * accessor declarations.
 				 */
-				CSGetSetKeywords = 0;
 				$$ = 0;
 				yyerrok;
 			}

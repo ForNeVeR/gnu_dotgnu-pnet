@@ -248,11 +248,15 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 	}
 	info->currentScope = CGlobalScope;
 
-	/* Bail out if we don't have an assembly stream */
-	if(!stream)
+	/* Bail out if we don't have an assembly stream or we had errors */
+	if(!stream || CCHaveErrors)
 	{
 		return;
 	}
+
+	/* Mark the function's signature to be output at the end of
+	   the compilation process */
+	CTypeMarkForOutput(info, signature);
 
 	/* Output the function header */
 	fputs(".method ", stream);

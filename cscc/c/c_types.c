@@ -686,6 +686,7 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	{
 		ILGenOutOfMemory(info);
 	}
+	ILMemberSetSignature((ILMember *)field, fieldType);
 
 	/* Bail out early if this is a native struct or union */
 	if(!layout)
@@ -722,7 +723,7 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	offset += size;
 	if(offset > classSize)
 	{
-		ILClassLayoutSetClassSize(layout, classSize);
+		ILClassLayoutSetClassSize(layout, offset);
 	}
 	if(align > ILClassLayoutGetPackingSize(layout))
 	{

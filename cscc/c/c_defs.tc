@@ -252,6 +252,10 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 {
 	CDeclarator decl;
 }
+%node ILNode_CBitFieldDeclarator ILNode_CDeclarator =
+{
+	ILUInt32 bitFieldSize;
+}
 %node ILNode_VaStart ILNode_Expression =
 {
 	ILNode *vaList;

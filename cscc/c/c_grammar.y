@@ -71,6 +71,156 @@ static void CopyParamDecls(ILNode *dest, ILNode *src)
 	}
 }
 
+/*
+ * Process a "struct" or "union" field.
+ */
+static void ProcessField(CDeclSpec spec, CDeclarator decl)
+{
+	ILType *type;
+
+	/* Get the final type for the declarator */
+	type = CDeclFinalize(&CCCodeGen, spec, decl, 0, 0);
+
+	/* Define the field within the current "struct" or "union" */
+	if(!CTypeDefineField(&CCCodeGen, currentStruct, decl.name, type))
+	{
+		CCErrorOnLine(yygetfilename(decl.node), yygetlinenum(decl.node),
+					  _("storage size of `%s' is not known"), decl.name);
+	}
+}
+
+/*
+ * Report an invalid bit field type error.
+ */
+static void BitFieldInvalidType(char *name, ILNode *node)
+{
+	if(name)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("bit-field `%s' has invalid type"), name);
+	}
+	else
+	{
+		CCError(_("bit-field has invalid type"));
+	}
+}
+
+/*
+ * Report a zero-width bit field error.
+ */
+static void BitFieldZeroWidth(char *name, ILNode *node)
+{
+	if(name)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("zero width for bit-field `%s'"), name);
+	}
+	else
+	{
+		CCError(_("zero width for bit-field"));
+	}
+}
+
+/*
+ * Report bit field size warning.
+ */
+static void BitFieldMaxSize(char *name, ILNode *node)
+{
+	if(name)
+	{
+		CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+					    _("width of `%s' exceeds its type"), name);
+	}
+	else
+	{
+		CCWarning(_("width of bit-field exceeds its type"));
+	}
+}
+
+/*
+ * Process a "struct" or "union" bit field.
+ */
+static void ProcessBitField(CDeclSpec spec, CDeclarator decl, ILUInt32 size)
+{
+	ILType *type;
+	ILType *baseType;
+	ILUInt32 maxSize;
+	int typeInvalid;
+
+	/* Get the final type for the declarator */
+	type = CDeclFinalize(&CCCodeGen, spec, decl, 0, 0);
+
+	/* Make sure that the type is integer and that the size is in range */
+	baseType = ILTypeStripPrefixes(type);
+	typeInvalid = 0;
+	if(ILType_IsPrimitive(baseType))
+	{
+		switch(ILType_ToElement(baseType))
+		{
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:
+			{
+				maxSize = 8;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:
+			case IL_META_ELEMTYPE_CHAR:
+			{
+				maxSize = 16;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+			{
+				maxSize = 32;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+			{
+				maxSize = 64;
+			}
+			break;
+
+			default:
+			{
+				BitFieldInvalidType(decl.name, decl.node);
+				type = ILType_UInt64;
+				maxSize = 64;
+				typeInvalid = 1;
+			}
+			break;
+		}
+	}
+	else
+	{
+		BitFieldInvalidType(decl.name, decl.node);
+		type = ILType_UInt64;
+		maxSize = 64;
+		typeInvalid = 1;
+	}
+	if(!size)
+	{
+		BitFieldZeroWidth(decl.name, decl.node);
+		size = 1;
+	}
+	else if(size > maxSize)
+	{
+		if(!typeInvalid)
+		{
+			BitFieldMaxSize(decl.name, decl.node);
+		}
+		size = maxSize;
+	}
+
+	/* Define the bit field within the current "struct" or "union" */
+	CTypeDefineBitField(&CCCodeGen, currentStruct, decl.name, type, size);
+}
+
 %}
 
 /*
@@ -214,12 +364,14 @@ static void CopyParamDecls(ILNode *dest, ILNode *src)
 %type <node>		OptParamDeclarationList ParamDeclarationList
 %type <node>		ParamDeclaratorList ParamDeclaration
 
+%type <node>		StructDeclaratorList StructDeclarator
+
 %type <node>		FunctionBody
 
 %type <type>		TypeName StructOrUnionSpecifier EnumSpecifier
 
 %type <declSpec>	StorageClassSpecifier TypeSpecifier DeclarationSpecifiers
-%type <declSpec>	TypeSpecifierList TypeSpecifierList2
+%type <declSpec>	TypeSpecifierList
 
 %type <decl>		Declarator Declarator2 Pointer AbstractDeclarator
 %type <decl>		AbstractDeclarator2 ParamDeclarator ParamDeclarator
@@ -304,7 +456,14 @@ PrimaryExpression
 			}
 	| FLOAT_CONSTANT		{
 				/* Convert the floating-point value into a node */
-				/* TODO */
+				if($1.type == ILMachineType_Float32)
+				{
+					$$ = ILNode_Float32_create($1.value);
+				}
+				else
+				{
+					$$ = ILNode_Float64_create($1.value);
+				}
 			}
 	| K_TRUE				{ $$ = ILNode_True_create(); }
 	| K_FALSE				{ $$ = ILNode_False_create(); }
@@ -593,8 +752,8 @@ InitDeclaratorList
 	;
 
 InitDeclarator
-	: Declarator					{}
-	| Declarator '=' Initializer	{}
+	: Declarator					{ /* TODO */}
+	| Declarator '=' Initializer	{ /* TODO */}
 	;
 
 StorageClassSpecifier
@@ -738,18 +897,85 @@ StructDeclarationList2
 	;
 
 StructDeclaration
-	: TypeSpecifierList StructDeclaratorList ';'	{}
+	: TypeSpecifierList StructDeclaratorList ';'	{
+				/* Process each of the declarators in the list */
+				ILNode_ListIter iter;
+				ILNode_CDeclarator *decl;
+				CDeclSpec spec;
+				if(yyisa($2, ILNode_List))
+				{
+					/* There are two or more declarators in the list */
+					spec = CDeclSpecFinalize($1, 0, 0, 0);
+					ILNode_ListIter_Init(&iter, $2);
+					while((decl = (ILNode_CDeclarator *)
+							ILNode_ListIter_Next(&iter)) != 0)
+					{
+						if(yyisa(decl, ILNode_CBitFieldDeclarator))
+						{
+							ProcessBitField
+								(spec, ((ILNode_CBitFieldDeclarator *)decl)
+											->decl,
+								 ((ILNode_CBitFieldDeclarator *)decl)
+								 			->bitFieldSize);
+						}
+						else
+						{
+							ProcessField(spec, decl->decl);
+						}
+					}
+				}
+				else if(yyisa($2, ILNode_CBitFieldDeclarator))
+				{
+					/* There is a single bit field in the list */
+					spec = CDeclSpecFinalize
+						($1, ((ILNode_CBitFieldDeclarator *)($2))->decl.node,
+						 ((ILNode_CBitFieldDeclarator *)($2))->decl.name, 0);
+					ProcessBitField
+						(spec, ((ILNode_CBitFieldDeclarator *)($2))->decl,
+						 ((ILNode_CBitFieldDeclarator *)($2))->bitFieldSize);
+				}
+				else
+				{
+					/* There is a single ordinary field in the list */
+					spec = CDeclSpecFinalize
+						($1, ((ILNode_CDeclarator *)($2))->decl.node,
+						 ((ILNode_CDeclarator *)($2))->decl.name, 0);
+					ProcessField(spec, ((ILNode_CDeclarator *)($2))->decl);
+				}
+			}
 	;
 
 StructDeclaratorList
 	: StructDeclarator
-	| StructDeclaratorList ',' StructDeclarator
+	| StructDeclaratorList ',' StructDeclarator		{
+				if(yyisa($1, ILNode_List))
+				{
+					ILNode_List_Add($1, $3);
+					$$ = $1;
+				}
+				else
+				{
+					$$ = ILNode_List_create();
+					ILNode_List_Add($$, $1);
+					ILNode_List_Add($$, $3);
+				}
+			}
 	;
 
 StructDeclarator
-	: Declarator							{}
-	| ':' ConstantExpression				{}
-	| Declarator ':' ConstantExpression		{}
+	: Declarator				{ $$ = ILNode_CDeclarator_create($1); }
+	| ':' ConstantExpression	{
+				/* TODO: evaluate the constant expression */
+				ILUInt32 size = 1;
+				CDeclarator decl;
+				CDeclSetName(decl, 0, 0);
+				$$ = ILNode_CBitFieldDeclarator_create(decl, size);
+			}
+	| Declarator ':' ConstantExpression		{
+				/* TODO: evaluate the constant expression */
+				ILUInt32 size = 1;
+				$$ = ILNode_CBitFieldDeclarator_create($1, size);
+			}
 	;
 
 EnumSpecifier
@@ -934,12 +1160,8 @@ TypeQualifierList
 	;
 
 TypeSpecifierList
-	: TypeSpecifierList2
-	;
-
-TypeSpecifierList2
 	: TypeSpecifier
-	| TypeSpecifierList2 TypeSpecifier	{ $$ = CDeclSpecCombine($1, $2); }
+	| TypeSpecifierList TypeSpecifier	{ $$ = CDeclSpecCombine($1, $2); }
 	;
 
 ParameterIdentifierList
@@ -1054,14 +1276,34 @@ AbstractDeclarator2
 				/* Create the array */
 				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
 			}
-	| '(' ')'	{ /* TODO */ }
-	| '(' ')' FuncAttributes	{ /* TODO */ }
-	| '(' ParameterTypeList ')'	{ /* TODO */ }
-	| '(' ParameterTypeList ')' FuncAttributes	{ /* TODO */ }
-	| AbstractDeclarator2 '(' ')'	{ /* TODO */ }
-	| AbstractDeclarator2 '(' ')' FuncAttributes	{ /* TODO */ }
-	| AbstractDeclarator2 '(' ParameterTypeList ')'	{ /* TODO */ }
-	| AbstractDeclarator2 '(' ParameterTypeList ')' FuncAttributes	{ /* TODO */ }
+	| '(' ')'		{
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreatePrototype(&CCCodeGen, $$, 0, 0);
+			}
+	| '(' ')' FuncAttributes	{
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreatePrototype(&CCCodeGen, $$, 0, 0);/*TODO*/
+			}
+	| '(' ParameterTypeList ')'	{
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreatePrototype(&CCCodeGen, $$, $2, 0);
+			}
+	| '(' ParameterTypeList ')' FuncAttributes	{
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreatePrototype(&CCCodeGen, $$, $2, 0);/*TODO*/
+			}
+	| AbstractDeclarator2 '(' ')'	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0);
+			}
+	| AbstractDeclarator2 '(' ')' FuncAttributes	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0);/*TODO*/
+			}
+	| AbstractDeclarator2 '(' ParameterTypeList ')'	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0);
+			}
+	| AbstractDeclarator2 '(' ParameterTypeList ')' FuncAttributes	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0);/*TODO*/
+			}
 	;
 
 Initializer

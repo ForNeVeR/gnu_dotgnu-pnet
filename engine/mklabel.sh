@@ -228,6 +228,15 @@ grep '^#define[ 	]*COP_PREFIX_' "$2" | \
 echo '};'
 echo ''
 
+# Define a null assembly statement.  This is a trick to stop gcc doing
+# tail-end combination on the cases within the switch statements.
+echo '#if defined(__GNUC__)'
+echo '#define VMNULLASM()         __asm__("")'
+echo '#else'
+echo '#define VMNULLASM()'
+echo '#endif'
+echo ''
+
 # Output the helper macros (non-PIC).
 echo '#ifdef IL_CVM_DIRECT'
 echo '#define VMSWITCH(val)       goto **((void **)pc);'
@@ -258,9 +267,7 @@ echo '#define VMOUTERBREAK'
 echo '#endif /* !IL_CVM_DIRECT */'
 echo ''
 
-# Output the non-goto case of the helper macros.  The __asm__("")
-# block is a trick to stop gcc doing tail-end combination on the
-# cases within the switch statements.
+# Output the non-goto case of the helper macros.
 echo '#else /* IL_CVM_SWITCH */'
 echo ''
 echo '#define VMSWITCH(val)       switch((val))'
@@ -268,13 +275,8 @@ echo '#define VMPREFIXSWITCH(val) switch((val))'
 echo '#define VMCASE(val)         case (val)'
 echo '#define VMDEFAULT           default'
 echo '#define VMPREFIXDEFAULT     default'
-echo '#if defined(__GNUC__)'
-echo '#define VMBREAK(val)        __asm__(""); break'
-echo '#define VMBREAKNOEND        __asm__(""); break'
-echo '#else'
-echo '#define VMBREAK(val)        break'
-echo '#define VMBREAKNOEND        break'
-echo '#endif'
+echo '#define VMBREAK(val)        VMNULLASM(); break'
+echo '#define VMBREAKNOEND        VMNULLASM(); break'
 echo '#define VMOUTERBREAK        break'
 echo ''
 echo '#endif /* IL_CVM_SWITCH */'

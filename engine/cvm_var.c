@@ -715,6 +715,7 @@ VMCASE(COP_MK_LOCAL_1):
 #endif
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 1);
 }
+VMNULLASM();	/* Prevent tail-end combination with ldc_i4_0 */
 VMBREAK(COP_MK_LOCAL_1);
 
 /**

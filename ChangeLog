@@ -1,4 +1,11 @@
 
+2002-12-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm_var.c, engine/mklabel.sh: introduce a __asm__ hack
+	to prevent "COP_LDC_I4_0" from being tail-combined with
+	"COP_MK_LOCAL_1".  Such tail combination confuses the x86 unroller
+	on some platforms.
+
 2002-12-20  Gopal.V  <gopalv82@symonds.net>
 	
 	* support/dir.c: Similar changes for ILDeleteDir()

@@ -301,7 +301,7 @@ ILNode_CSemAnalysis(ILNode_CInvocationExpression)
 		node->name = 0;
 		value = ILNode_CSemAnalysis(node->expr1, info,
 									&(node->expr1), stmtLevel);
-		if(CSemIsRValue(value) || !ILType_IsMethod(CSemGetType(value)))
+		if(!CSemIsRValue(value) || !CTypeIsFunctionPtr(CSemGetType(value)))
 		{
 			if(!CSemIsError(value))
 			{
@@ -312,7 +312,7 @@ ILNode_CSemAnalysis(ILNode_CInvocationExpression)
 		}
 		else
 		{
-			signature = CSemGetType(value);
+			signature = ILTypeStripPrefixes(CSemGetType(value));
 		}
 	}
 

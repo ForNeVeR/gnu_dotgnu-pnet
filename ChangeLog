@@ -7,6 +7,9 @@
 	samples/System.Xml.dll, samples/System.dll,
 	samples/mscorlib.dll: update all of the assemblies from pnetlib.
 
+	* cscc/c/c_invoke.tc: problem with the detection of function
+	pointers during function invocation.
+
 2002-09-15  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): set the rvalues 

@@ -399,100 +399,90 @@ JavaGenValue(ILNode_Argument)
 JavaGenValue(ILNode_ArgArray)
 {
 	ILMachineType machineType;
+	ILUInt32 posn;
 
-	if(!(node->numElems))
+	/* Create a new array of the desired size */
+	JavaGenUInt32(info, node->numElems);
+	JavaGenNewArray(info, node->elemType);
+	JavaGenAdjust(info, 1);
+
+	/* Populate the members of the array */
+	machineType = ILTypeToMachineType(node->elemType);
+	for(posn = 0; posn < node->numElems; ++posn)
 	{
-		/* Push "null" if the element array is empty */
-		JavaGenSimple(info, JAVA_OP_ACONST_NULL);
-		JavaGenAdjust(info, 1);
-	}
-	else
-	{
-		ILUInt32 posn;
-
-		/* Create a new array of the desired size */
-		JavaGenUInt32(info, node->numElems);
-		JavaGenNewArray(info, node->elemType);
-		JavaGenAdjust(info, 1);
-
-		/* Populate the members of the array */
-		machineType = ILTypeToMachineType(node->elemType);
-		for(posn = 0; posn < node->numElems; ++posn)
+		JavaGenSimple(info, JAVA_OP_DUP);
+		JavaGenUInt32(info, posn);
+		JavaGenAdjust(info, 2);
+		JavaGenCast(info, JavaGenValue
+			(GetArgArrayElem(node->args, posn, node->numElems), info),
+			machineType);
+		switch(machineType)
 		{
-			JavaGenSimple(info, JAVA_OP_DUP);
-			JavaGenUInt32(info, posn);
-			JavaGenAdjust(info, 2);
-			JavaGenCast(info, JavaGenValue
-				(GetArgArrayElem(node->args, posn, node->numElems), info),
-				machineType);
-			switch(machineType)
+			case ILMachineType_Void: break;
+
+			case ILMachineType_Boolean:
+			case ILMachineType_Int8:
+			case ILMachineType_UInt8:
 			{
-				case ILMachineType_Void: break;
-
-				case ILMachineType_Boolean:
-				case ILMachineType_Int8:
-				case ILMachineType_UInt8:
-				{
-					JavaGenSimple(info, JAVA_OP_BASTORE);
-				}
-				break;
-
-				case ILMachineType_Int16:
-				case ILMachineType_UInt16:
-				case ILMachineType_Char:
-				{
-					JavaGenSimple(info, JAVA_OP_CASTORE);
-				}
-				break;
-
-				case ILMachineType_Int32:
-				case ILMachineType_UInt32:
-				{
-					JavaGenSimple(info, JAVA_OP_IASTORE);
-				}
-				break;
-
-				case ILMachineType_Int64:
-				case ILMachineType_UInt64:
-				{
-					JavaGenSimple(info, JAVA_OP_LASTORE);
-				}
-				break;
-
-				case ILMachineType_NativeInt:
-				case ILMachineType_NativeUInt:
-				{
-					JavaGenSimple(info, JAVA_OP_IASTORE);
-				}
-				break;
-
-				case ILMachineType_Float32:
-				{
-					JavaGenSimple(info, JAVA_OP_FASTORE);
-				}
-				break;
-
-				case ILMachineType_Float64:
-				case ILMachineType_NativeFloat:
-				{
-					JavaGenSimple(info, JAVA_OP_DASTORE);
-				}
-				break;
-
-				case ILMachineType_Decimal:
-				case ILMachineType_ManagedValue:
-				case ILMachineType_String:
-				case ILMachineType_ObjectRef:
-				case ILMachineType_UnmanagedPtr:
-				case ILMachineType_ManagedPtr:
-				case ILMachineType_TransientPtr:
-				{
-					JavaGenSimple(info, JAVA_OP_AASTORE);
-				}
-				break;
+				JavaGenSimple(info, JAVA_OP_BASTORE);
 			}
-			JavaGenAdjust(info, -3);
+			break;
+
+			case ILMachineType_Int16:
+			case ILMachineType_UInt16:
+			case ILMachineType_Char:
+			{
+				JavaGenSimple(info, JAVA_OP_CASTORE);
+			}
+			break;
+
+			case ILMachineType_Int32:
+			case ILMachineType_UInt32:
+			{
+				JavaGenSimple(info, JAVA_OP_IASTORE);
+			}
+			break;
+
+			case ILMachineType_Int64:
+			case ILMachineType_UInt64:
+			{
+				JavaGenSimple(info, JAVA_OP_LASTORE);
+			}
+			break;
+
+			case ILMachineType_NativeInt:
+			case ILMachineType_NativeUInt:
+			{
+				JavaGenSimple(info, JAVA_OP_IASTORE);
+			}
+			break;
+
+			case ILMachineType_Float32:
+			{
+				JavaGenSimple(info, JAVA_OP_FASTORE);
+			}
+			break;
+
+			case ILMachineType_Float64:
+			case ILMachineType_NativeFloat:
+			{
+				JavaGenSimple(info, JAVA_OP_DASTORE);
+			}
+			break;
+
+			case ILMachineType_Decimal:
+			case ILMachineType_ManagedValue:
+			case ILMachineType_String:
+			case ILMachineType_ObjectRef:
+			case ILMachineType_UnmanagedPtr:
+			case ILMachineType_ManagedPtr:
+			case ILMachineType_TransientPtr:
+			{
+				JavaGenSimple(info, JAVA_OP_AASTORE);
+			}
+			break;
 		}
+		JavaGenAdjust(info, -3);
 	}
 	return ILMachineType_ObjectRef;
 }

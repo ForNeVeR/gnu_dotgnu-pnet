@@ -75,6 +75,9 @@ static ILCmdLineOption const options[] = {
 	{"-A", 'A', 1,
 		"-fassembly-version=version  or -A version",
 		"Specify the assembly version to embed in the output."},
+	{"-M", 'M', 1,
+		"-fmodule-name=name          or -M name",
+		"Specify the name of the module to embed in the output."},
 	{"-E", 'E', 1, 0, 0},
 	{"--entry-point", 'E', 1,
 		"--entry-point name          or -E name",
@@ -133,6 +136,7 @@ int main(int argc, char *argv[])
 	int resourcesOnly = 1;
 	char *assemblyName = NULL;
 	ILUInt16 assemblyVersion[4] = {0, 0, 0, 0};
+	char *moduleName = NULL;
 	char *entryPoint = NULL;
 	int hashAlgorithm = IL_META_HASHALG_SHA1;
 	int len;
@@ -146,7 +150,7 @@ int main(int argc, char *argv[])
 	int jvmMode = 0;
 	int useStdlib = 1;
 	int isStatic = 0;
-	int temp;
+	int temp, temp2;
 	ILLinker *linker;
 
 	/* Allocate an array to hold the libraries to link against */
@@ -259,6 +263,12 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'M':
+			{
+				moduleName = param;
+			}
+			break;
+
 			case 'E':
 			{
 				entryPoint = param;
@@ -337,6 +347,10 @@ int main(int argc, char *argv[])
 								progname, param);
 						return 1;
 					}
+				}
+				else if(!strncmp(param, "module-name=", 12))
+				{
+					moduleName = param + 12;
 				}
 				else if(!strncmp(param, "resources=", 10))
 				{
@@ -468,6 +482,31 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/* Determine the default module and assembly names */
+	temp = strlen(outputFile);
+	temp2 = -1;
+	while(temp > 0 && outputFile[temp - 1] != '/' &&
+		  outputFile[temp - 1] != '\\')
+	{
+		--temp;
+		if(outputFile[temp] == '.' && temp2 == -1)
+		{
+			temp2 = temp;
+		}
+	}
+	if(!moduleName)
+	{
+		moduleName = ILDupString(outputFile + temp);
+	}
+	if(!assemblyName)
+	{
+		assemblyName = ILDupString(outputFile + temp);
+		if(temp2 != -1)
+		{
+			assemblyName[temp2 - temp] = '\0';
+		}
+	}
+
 	/* Open the output file */
 	if((outfile = fopen(outputFile, "wb")) == NULL)
 	{
@@ -483,6 +522,17 @@ int main(int argc, char *argv[])
 	linker = ILLinkerCreate(outfile, 1, format, flags);
 	if(!linker)
 	{
+		fclose(outfile);
+		ILDeleteFile(outputFile);
+		outOfMemory();
+	}
+
+	/* Create the global module and assembly */
+	if(!ILLinkerCreateModuleAndAssembly(linker, moduleName,
+										assemblyName, assemblyVersion,
+										hashAlgorithm))
+	{
+		ILLinkerDestroy(linker);
 		fclose(outfile);
 		ILDeleteFile(outputFile);
 		outOfMemory();

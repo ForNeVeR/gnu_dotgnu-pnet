@@ -36,6 +36,9 @@ assembly for the final image; report unresolved types and members.
 * ilalink/link_type.c: add an extra space to an error message, to be
 consistent with the errors in "link_create.c".
 
+* ilalink/ilalink.c: add the "-fmodule-name" option; cause the
+linker to create the global module and assembly.
+
 2001-10-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/lib_array.c: bug fix - set the array length in a newly-allocated

@@ -1,4 +1,10 @@
 
+2001-10-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/verify_stack.c, engine/verify_call.c, engine/verify_ptr.c,
+engine/verify_obj.c, engine/verify_except.c, engine/verify_ann.c:
+new files to round out the bytecode verfier's instruction coverage.
+
 2001-10-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc: add "ILNode_ForeachCollection" and add extra

@@ -212,7 +212,7 @@ ILProgramItem *item;
 
 #define	IsCPPointer(type,typeInfo,classInfo)	\
 			((((type) == ILEngineType_M || (type) == ILEngineType_T) && \
-			  ILTypeIdentical(typeInfo, ILType_FromValueType(classInfo))) || \
+			  ILTypeIdentical(typeInfo, ILClassToType(classInfo))) || \
 			 (unsafeAllowed && \
 			  ((type) == ILEngineType_I || (type) == ILEngineType_I4)))
 

@@ -4,6 +4,9 @@
 	* ildasm/ildasm_internal.h, ildasm/ildasm_main.c, ildasm/ildasm.1: 
 	Add new "--resolve-all" option to resolve types when disassembling.
 
+	* engine/verify_obj.c: Allow primitive conversions for the InitObj
+	instructions. (fix Bug #4535)
+
 2003-07-28  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_type.c: change the GetMemberImpl internal call to check for an

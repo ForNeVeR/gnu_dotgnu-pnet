@@ -108,7 +108,7 @@ static void CVMCoder_Label(ILCoder *_coder, ILUInt32 offset)
 			coder->buffer[ref->address + 2] = (unsigned char)(dest >> 16);
 			coder->buffer[ref->address + 3] = (unsigned char)(dest >> 24);
 		}
-		nextRef = ref->next;
+		nextRef = ref->nextRef;
 		ILMemPoolFree(&(coder->labelPool), ref);
 		ref = nextRef;
 	}

@@ -23,6 +23,12 @@
 #include <stdio.h>
 
 /*
+ * Turn off "HAVE_CONFIG_H", because it confuses the
+ * readline headers on some systems.
+ */
+#undef HAVE_CONFIG_H
+
+/*
  * Determine if we have the readline and history libraries.
  */
 #if defined(HAVE_LIBREADLINE) && defined(HAVE_READLINE_READLINE_H)

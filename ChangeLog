@@ -17,6 +17,9 @@ support/sha1.c: implement the SHA1 hash algorithm.
 * include/il_crypt.h, support/Makefile.am, support/md5.c: implement
 the MD5 hash algorithm.
 
+* ildb/ildb_input.c: turn off HAVE_CONFIG_H prior to including the
+readline headers, because it confuses them on some systems.
+
 2001-12-03  Bradley M. Kuhn  <bkuhn@ebb.org>
 
 * README, pnet.spec (Summary): Minor terminology changes.

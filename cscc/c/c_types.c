@@ -1353,7 +1353,8 @@ static void CloneStruct(ILGenInfo *info, ILClass *dest, ILClass *src)
 		{
 			ILGenOutOfMemory(info);
 		}
-		ILMemberSetSignature((ILMember *)newField, ILField_Type(field));
+		ILMemberSetSignature
+			((ILMember *)newField, ILFieldGetTypeWithPrefixes(field));
 		flayout = ILFieldLayoutGetFromOwner(field);
 		if(flayout)
 		{

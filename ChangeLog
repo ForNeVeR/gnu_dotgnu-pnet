@@ -19,6 +19,10 @@
 	than creating an ILMethodSem block, because it reduces the
 	amount of memory needed at load time.
 
+	* image/meta_build.c: load StandAloneSig, Constant, FieldRVA,
+	FieldLayout, FieldMarshal, and ClassLayout tokens on-demand,
+	to reduce the initial memory hit of loading an image.
+
 2003-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, coremul/.cvsignore, coremul/Makefile.am,

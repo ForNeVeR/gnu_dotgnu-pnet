@@ -2372,29 +2372,33 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CUSTOM_ATTRIBUTE,
 							 Load_CustomAttr, 0));
 
-	/* Load the stand-alone signatures */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_STAND_ALONE_SIG,
-							 Load_StandAloneSig, 0));
+	/* Only do the following if we are pre-validating */
+	if((loadFlags & IL_LOADFLAG_PRE_VALIDATE) != 0)
+	{
+		/* Load the stand-alone signatures */
+		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_STAND_ALONE_SIG,
+								 Load_StandAloneSig, 0));
 
-	/* Load constants */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CONSTANT,
-							 Load_Constant, 0));
+		/* Load constants */
+		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CONSTANT,
+								 Load_Constant, 0));
 
-	/* Load field RVA declarations */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FIELD_RVA,
-							 Load_FieldRVA, 0));
+		/* Load field RVA declarations */
+		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FIELD_RVA,
+								 Load_FieldRVA, 0));
 
-	/* Load field layout declarations */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FIELD_LAYOUT,
-							 Load_FieldLayout, 0));
+		/* Load field layout declarations */
+		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FIELD_LAYOUT,
+								 Load_FieldLayout, 0));
 
-	/* Load field marshal declarations */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FIELD_MARSHAL,
-							 Load_FieldMarshal, 0));
+		/* Load field marshal declarations */
+		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FIELD_MARSHAL,
+								 Load_FieldMarshal, 0));
 
-	/* Load class layout declarations */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CLASS_LAYOUT,
-							 Load_ClassLayout, 0));
+		/* Load class layout declarations */
+		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CLASS_LAYOUT,
+								 Load_ClassLayout, 0));
+	}
 
 	/* Load security declarations */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_DECL_SECURITY,
@@ -2416,54 +2420,53 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	return 0;
 }
 
-#if 0
-
 /*
- * Table of all token loading functions.
+ * Table of token loading functions that can be used
+ * for on-demand loading of token blocks.
  */
 static TokenLoadFunc const TokenLoadFunctions[] = {
-	Load_Module,				/* 00 */
-	0, /*Load_TypeRef,*/
-	Load_TypeDef,
+	0,							/* 00 */
 	0,
-	Load_FieldDef,
 	0,
-	Load_MethodDef,
 	0,
-	Load_ParamDef,				/* 08 */
-	Load_InterfaceImpl,
-	Load_MemberRef,
+	0,
+	0,
+	0,
+	0,
+	0,							/* 08 */
+	0,
+	0,
 	Load_Constant,
-	Load_CustomAttr,
+	0,
 	Load_FieldMarshal,
-	Load_DeclSecurity,
+	0,
 	Load_ClassLayout,
 	Load_FieldLayout,			/* 10 */
 	Load_StandAloneSig,
-	0, /*Load_EventMap,*/
 	0,
-	Load_Event,
-	0, /*Load_PropertyMap,*/
 	0,
-	Load_Property,
-	0, /*Load_MethodSemantics,*/		/* 18 */
-	0, /*Load_MethodImpl,*/
-	Load_ModuleRef,
-	Load_TypeSpec,
-	0, /*Load_ImplMap,*/
+	0,
+	0,
+	0,
+	0,
+	0, 							/* 18 */
+	0,
+	0,
+	0,
+	0,
 	Load_FieldRVA,
 	0,
 	0,
-	Load_Assembly,				/* 20 */
-	Load_ProcessorDef,
-	Load_OSDef,
-	Load_AssemblyRef,
-	Load_ProcessorRef,
-	Load_OSRef,
-	Load_File,
-	Load_ExportedType,
-	0, /*Load_ManifestResource,*/		/* 28 */
-	0, /*Load_NestedClass,*/
+	0,							/* 20 */
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0, 							/* 28 */
+	0,
 	0,
 	0,
 	0,
@@ -2539,15 +2542,6 @@ void *_ILImageLoadOnDemand(ILImage *image, ILToken token)
 	}
 	return 0;
 }
-
-#else
-
-void *_ILImageLoadOnDemand(ILImage *image, ILToken token)
-{
-	return 0;
-}
-
-#endif
 
 #ifdef	__cplusplus
 };

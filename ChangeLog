@@ -11,6 +11,8 @@
 	<reslink> tags to csant; add --install and --uninstall options
 	to csant.
 
+	* ilgac/ilgac.1, ilgac/Makefile.am: add the manpage for "ilgac".
+
 2003-11-10  Stephen Compall  <s11@member.fsf.org>
 
 	* support/file.c (ILSysIOLock, ILSysIOUnlock): Exclusive file

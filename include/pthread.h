@@ -142,14 +142,12 @@ typedef struct
     void *__m_monitor;
   } pthread_mutex_t;
 #define PTHREAD_MUTEX_INITIALIZER	{0}
-#ifdef __USE_GNU
-# define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP	\
+#define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP	\
   PTHREAD_MUTEX_INITIALIZER
-# define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \
+#define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \
   PTHREAD_MUTEX_INITIALIZER
-# define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \
+#define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \
   PTHREAD_MUTEX_INITIALIZER
-#endif
 
 /*
  * Mutex attributes.
@@ -190,6 +188,26 @@ typedef struct
   } pthread_condattr_t;
 
 /*
+ * Read-write locks.
+ */
+typedef struct
+  {
+    pthread_mutex_t __lock;
+  } pthread_rwlock_t;
+#define PTHREAD_RWLOCK_INITIALIZER \
+  {PTHREAD_MUTEX_INITIALIZER}
+#define PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP \
+  {PTHREAD_MUTEX_INITIALIZER}
+
+/*
+ * Read-write lock attributes.
+ */
+typedef struct
+  {
+    pthread_mutexattr_t __attr;
+  } pthread_rwlockattr_t;
+
+/*
  * Cleanup buffers.
  */
 struct _pthread_cleanup_buffer
@@ -204,6 +222,25 @@ struct _pthread_cleanup_buffer
  * Thread-specific storage key.
  */
 typedef long long pthread_key_t;
+
+/*
+ * Barrier type.
+ */
+typedef struct
+  {
+    pthread_mutex_t __lock;
+    pthread_cond_t __condition;
+    unsigned int __desired_count;
+    unsigned int __current_count;
+  } pthread_barrier_t;
+
+/*
+ * Barrer attribute type.
+ */
+typedef struct
+  {
+    int __pshared;
+  } pthread_barrierattr_t;
 
 /*
  * Thread functions.
@@ -333,6 +370,40 @@ extern int pthread_condattr_setclock (pthread_condattr_t *__attr,
 				      clockid_t __clock_id);
 
 /*
+ * Read-write lock functions.
+ */
+extern int pthread_rwlock_init (pthread_rwlock_t *__restrict __rwlock,
+			        __const pthread_rwlockattr_t *
+				__restrict __attr);
+extern int pthread_rwlock_destroy (pthread_rwlock_t *__rwlock);
+extern int pthread_rwlock_rdlock (pthread_rwlock_t *__rwlock);
+extern int pthread_rwlock_tryrdlock (pthread_rwlock_t *__rwlock);
+extern int pthread_rwlock_timedrdlock (pthread_rwlock_t *__restrict __rwlock,
+				       __const struct timespec *__restrict
+				       __abstime);
+extern int pthread_rwlock_wrlock (pthread_rwlock_t *__rwlock);
+extern int pthread_rwlock_trywrlock (pthread_rwlock_t *__rwlock);
+extern int pthread_rwlock_timedwrlock (pthread_rwlock_t *__restrict __rwlock,
+				       __const struct timespec *__restrict
+				       __abstime);
+extern int pthread_rwlock_unlock (pthread_rwlock_t *__rwlock);
+
+/*
+ * Read-write lock attribute functions.
+ */
+extern int pthread_rwlockattr_init (pthread_rwlockattr_t *__attr);
+extern int pthread_rwlockattr_destroy (pthread_rwlockattr_t *__attr);
+extern int pthread_rwlockattr_getpshared (__const pthread_rwlockattr_t *
+					  __restrict __attr,
+					  int *__restrict __pshared);
+extern int pthread_rwlockattr_setpshared (pthread_rwlockattr_t *__attr,
+					  int __pshared);
+extern int pthread_rwlockattr_getkind_np (__const pthread_rwlockattr_t *__attr,
+					  int *__pref);
+extern int pthread_rwlockattr_setkind_np (pthread_rwlockattr_t *__attr,
+					  int __pref);
+
+/*
  * Spin lock functions.
  */
 extern int pthread_spin_init (pthread_spinlock_t *__lock, int __pshared);
@@ -378,6 +449,26 @@ int pthread_key_create (pthread_key_t *__key,
 int pthread_key_delete (pthread_key_t __key);
 int pthread_setspecific (pthread_key_t __key, __const void *__pointer);
 void *pthread_getspecific (pthread_key_t __key);
+
+/*
+ * Barrier functions.
+ */
+extern int pthread_barrier_init (pthread_barrier_t *__restrict __barrier,
+				 __const pthread_barrierattr_t *__restrict
+				 __attr, unsigned int __count);
+extern int pthread_barrier_destroy (pthread_barrier_t *__barrier);
+extern int pthread_barrier_wait (pthread_barrier_t *__barrier);
+
+/*
+ * Barrier attribute functions.
+ */
+extern int pthread_barrierattr_init (pthread_barrierattr_t *__attr);
+extern int pthread_barrierattr_destroy (pthread_barrierattr_t *__attr);
+extern int pthread_barrierattr_getpshared (__const pthread_barrierattr_t *
+					   __restrict __attr,
+					   int *__restrict __pshared);
+extern int pthread_barrierattr_setpshared (pthread_barrierattr_t *__attr,
+					   int __pshared);
 
 /*
  * Other functions.

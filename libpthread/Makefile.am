@@ -7,6 +7,7 @@ SUFFIXES = .cs
 noinst_LIBRARIES = libPthread.a
 
 libPthread_a_SOURCES = \
+			pthread_barrier.c \
 			pthread_cond.c \
 			pthread_glue.cs \
 			pthread_key.c \
@@ -14,6 +15,7 @@ libPthread_a_SOURCES = \
 			pthread_mutex.c \
 			pthread_once.c \
 			pthread_other.c \
+			pthread_rwlock.c \
 			pthread_thread.c
 
 AM_CFLAGS = -I$(top_srcdir)/include \

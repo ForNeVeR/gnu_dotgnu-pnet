@@ -36,20 +36,24 @@ public class ObjRef : IObjectReference, ISerializable
 	private String uri;
 
 	// Constructors.
+	[TODO]
 	public ObjRef()
 			{
 				// TODO
 			}
+	[TODO]
 	public ObjRef(MarshalByRefObject o, Type requestedType)
 			{
 				// TODO
 			}
+	[TODO]
 	protected ObjRef(SerializationInfo info, StreamingContext context)
 			{
 				// TODO
 			}
 
 	// Implement the IObjectReference interface.
+	[TODO]
 	public virtual Object GetRealObject(StreamingContext context)
 			{
 				// TODO
@@ -57,6 +61,7 @@ public class ObjRef : IObjectReference, ISerializable
 			}
 
 	// Implement the ISerializable interface.
+	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,
 									  StreamingContext context)
 			{
@@ -64,6 +69,7 @@ public class ObjRef : IObjectReference, ISerializable
 			}
 
 	// Determine if the object reference is from this process.
+	[TODO]
 	public bool IsFromThisProcess()
 			{
 				// TODO
@@ -71,6 +77,7 @@ public class ObjRef : IObjectReference, ISerializable
 			}
 
 	// Determine if the object reference is from this application domain.
+	[TODO]
 	public bool IsFromThisAppDomain()
 			{
 				// TODO

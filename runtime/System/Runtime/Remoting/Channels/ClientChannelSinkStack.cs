@@ -30,52 +30,96 @@ using System.Runtime.Remoting.Messaging;
 public class ClientChannelSinkStack
 	: IClientChannelSinkStack, IClientResponseChannelSinkStack
 {
+	// Internal state.
+	private IMessageSink replySink;
+	private SinkStackEntry top;
+
+	// Structure of a sink state entry.
+	private sealed class SinkStackEntry
+	{
+		// Internal state.
+		public IClientChannelSink sink;
+		public Object state;
+		public SinkStackEntry below;
+
+		// Constructor.
+		public SinkStackEntry(IClientChannelSink sink, Object state,
+							  SinkStackEntry below)
+				{
+					this.sink = sink;
+					this.state = state;
+					this.below = below;
+				}
+
+	}; // class SinkStackEntry
+
 	// Constructors.
-	[TODO]
-	public ClientChannelSinkStack()
-			{
-				// TODO
-			}
-	[TODO]
+	public ClientChannelSinkStack() {}
 	public ClientChannelSinkStack(IMessageSink replySink)
 			{
-				// TODO
+				this.replySink = replySink;
 			}
 
 	// Pop an item from the stack.
-	[TODO]
 	public Object Pop(IClientChannelSink sink)
 			{
-				// TODO
-				return null;
+				while(top != null)
+				{
+					if(top.sink == sink)
+					{
+						break;
+					}
+					top = top.below;
+				}
+				if(top == null)
+				{
+					throw new RemotingException
+						(_("Remoting_SinkNotFoundOnStack"));
+				}
+				Object state = top.state;
+				top = top.below;
+				return state;
 			}
 
 	// Push an item onto the stack.
-	[TODO]
 	public void Push(IClientChannelSink sink, Object state)
 			{
-				// TODO
+				top = new SinkStackEntry(sink, state, top);
 			}
 
 	// Request asynchronous processing of a response.
-	[TODO]
 	public void AsyncProcessResponse(ITransportHeaders headers, Stream stream)
 			{
-				// TODO
+				if(replySink != null)
+				{
+					if(top == null)
+					{
+						throw new RemotingException
+							(_("Remoting_SinkStackEmpty"));
+					}
+					SinkStackEntry entry = top;
+					top = top.below;
+					entry.sink.AsyncProcessResponse
+						(this, entry.state, headers, stream);
+				}
 			}
 
 	// Dispatch an exception on the reply sink.
-	[TODO]
 	public void DispatchException(Exception e)
 			{
-				// TODO
+				if(replySink != null)
+				{
+					replySink.SyncProcessMessage(new ReturnMessage(e, null));
+				}
 			}
 
 	// Dispatch a reply message on the reply sink.
-	[TODO]
 	public void DispatchReplyMessage(IMessage msg)
 			{
-				// TODO
+				if(replySink != null)
+				{
+					replySink.SyncProcessMessage(msg);
+				}
 			}
 
 }; // class ClientChannelSinkStack

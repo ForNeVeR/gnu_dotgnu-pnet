@@ -47,11 +47,9 @@ public class ObjectHandle : MarshalByRefObject, IObjectHandle
 			}
 
 	// Initialize the lifetime service value for this object.
-	[TODO]
 	public override Object InitializeLifetimeService()
 			{
-				// TODO
-				return null;
+				return base.InitializeLifetimeService();
 			}
 
 }; // class ObjectHandle

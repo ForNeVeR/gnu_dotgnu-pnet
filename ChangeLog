@@ -49,6 +49,15 @@
 	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapYearMonth.cs:
 	outstanding TODO's with the SOAP-related routines in runtime.
 
+	* runtime/System/Runtime/Remoting/ObjRef.cs,
+	runtime/System/Runtime/Remoting/ObjectHandle.cs,
+	runtime/System/Runtime/Remoting/Channels/BaseChannelWithProperties.cs,
+	runtime/System/Runtime/Remoting/Channels/ChannelServices.cs,
+	runtime/System/Runtime/Remoting/Channels/ClientChannelSinkStack.cs,
+	runtime/System/Runtime/Remoting/Channels/CombinedDictionary.cs,
+	runtime/System/Runtime/Remoting/Channels/ServerChannelSinkStack.cs:
+	outstanding TODO's in remoting functionality.
+
 2003-08-05  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/Path.cs: fix to GetFullPath for handling ".".

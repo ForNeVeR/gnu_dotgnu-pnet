@@ -36,13 +36,32 @@ public abstract class BaseChannelWithProperties
 	protected BaseChannelWithProperties() {}
 
 	// Get the properties associated with this object.
-	[TODO]
 	public override IDictionary Properties
 			{
 				get
 				{
-					// TODO
-					return null;
+					// Collect up all dictionaries from the attached sinks.
+					ArrayList members = new ArrayList();
+					IChannelSinkBase sink;
+					IDictionary dict;
+					sink = SinksWithProperties;
+					while(sink != null)
+					{
+						dict = sink.Properties;
+						if(dict != null)
+						{
+							members.Add(dict);
+						}
+						if(sink is IServerChannelSink)
+						{
+							sink = ((IServerChannelSink)sink).NextChannelSink;
+						}
+						else
+						{
+							sink = ((IClientChannelSink)sink).NextChannelSink;
+						}
+					}
+					return new CombinedDictionary(members);
 				}
 			}
 

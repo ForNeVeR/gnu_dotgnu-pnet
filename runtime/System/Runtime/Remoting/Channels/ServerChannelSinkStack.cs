@@ -30,63 +30,161 @@ using System.Runtime.Remoting.Messaging;
 public class ServerChannelSinkStack
 	: IServerChannelSinkStack, IServerResponseChannelSinkStack
 {
+	// Internal state.
+	private SinkStackEntry top;
+	private SinkStackEntry storeTop;
+
+	// Structure of a sink state entry.
+	private sealed class SinkStackEntry
+	{
+		// Internal state.
+		public IServerChannelSink sink;
+		public Object state;
+		public SinkStackEntry below;
+
+		// Constructor.
+		public SinkStackEntry(IServerChannelSink sink, Object state,
+							  SinkStackEntry below)
+				{
+					this.sink = sink;
+					this.state = state;
+					this.below = below;
+				}
+
+	}; // class SinkStackEntry
+
 	// Constructors.
-	[TODO]
-	public ServerChannelSinkStack()
-			{
-				// TODO
-			}
+	public ServerChannelSinkStack() {}
 
 	// Process a response asynchronously.
-	[TODO]
 	public void AsyncProcessResponse
 		(IMessage msg, ITransportHeaders headers, Stream stream)
 			{
-				// TODO
+				if(top == null)
+				{
+					throw new RemotingException
+						(_("Remoting_SinkStackEmpty"));
+				}
+				SinkStackEntry entry = top;
+				top = top.below;
+				entry.sink.AsyncProcessResponse
+					(this, entry.state, msg, headers, stream);
 			}
 
 	// Get the response stream.
-	[TODO]
 	public Stream GetResponseStream(IMessage msg, ITransportHeaders headers)
 			{
-				// TODO
-				return null;
+				if(top == null)
+				{
+					throw new RemotingException
+						(_("Remoting_SinkStackEmpty"));
+				}
+
+				// Remove the sink from the stack temporarily.
+				SinkStackEntry entry = top;
+				top = top.below;
+
+				// Get the stream.
+				Stream stream = entry.sink.GetResponseStream
+					(this, entry.state, msg, headers);
+
+				// Push the sink back onto the stack.
+				entry.below = top;
+				top = entry;
+				return stream;
 			}
 
 	// Pop an item from the stack.
-	[TODO]
 	public Object Pop(IServerChannelSink sink)
 			{
-				// TODO
-				return null;
+				while(top != null)
+				{
+					if(top.sink == sink)
+					{
+						break;
+					}
+					top = top.below;
+				}
+				if(top == null)
+				{
+					throw new RemotingException
+						(_("Remoting_SinkNotFoundOnStack"));
+				}
+				Object state = top.state;
+				top = top.below;
+				return state;
 			}
 
 	// Push an item onto the stack.
-	[TODO]
 	public void Push(IServerChannelSink sink, Object state)
 			{
-				// TODO
+				top = new SinkStackEntry(sink, state, top);
 			}
 
 	// Handle a server callback.
-	[TODO]
 	public void ServerCallback(IAsyncResult ar)
 			{
-				// TODO
+				// Not used in this implementation.
 			}
 
 	// Store into this sink stack.
-	[TODO]
 	public void Store(IServerChannelSink sink, Object state)
 			{
-				// TODO
+				// Find the entry on the stack.
+				while(top != null)
+				{
+					if(top.sink == sink)
+					{
+						break;
+					}
+					top = top.below;
+				}
+				if(top == null)
+				{
+					throw new RemotingException
+						(_("Remoting_SinkNotFoundOnStack"));
+				}
+
+				// Remove the entry from the main stack.
+				SinkStackEntry entry = top;
+				top = top.below;
+
+				// Push the entry onto the store stack.
+				entry.below = storeTop;
+				entry.state = state;
+				storeTop = entry;
 			}
 
-	// Store into this sink stack and then dispatch.
+	// Store into this sink stack and then dispatch async messages.
 	[TODO]
 	public void StoreAndDispatch(IServerChannelSink sink, Object state)
 			{
-				// TODO
+				// Find the entry on the stack.
+				while(top != null)
+				{
+					if(top.sink == sink)
+					{
+						break;
+					}
+					top = top.below;
+				}
+				if(top == null)
+				{
+					throw new RemotingException
+						(_("Remoting_SinkNotFoundOnStack"));
+				}
+
+				// This entry must be the only one on the stack.
+				if(top.below != null)
+				{
+					throw new RemotingException
+						(_("Remoting_SinkStackNonEmpty"));
+				}
+
+				// Update the entry with the new state information.
+				top.state = state;
+
+				// TODO: dispatch async messages
 			}
 
 }; // class ServerChannelSinkStack

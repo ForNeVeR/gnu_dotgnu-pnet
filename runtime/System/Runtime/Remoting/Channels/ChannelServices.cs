@@ -29,17 +29,27 @@ using System.Runtime.Remoting.Messaging;
 
 public sealed class ChannelServices
 {
+	// Internal state.
+	private static ArrayList channels;
+
 	// This class cannot be instantiated.
 	private ChannelServices() {}
 
 	// Get the registered channels.
-	[TODO]
 	public static IChannel[] RegisteredChannels
 			{
 				get
 				{
-					// TODO
-					return null;
+					lock(typeof(ChannelServices))
+					{
+						if(channels == null)
+						{
+							return new IChannel [0];
+						}
+						IChannel[] array = new IChannel [channels.Count];
+						channels.CopyTo(array, 0);
+						return array;
+					}
 				}
 			}
 
@@ -81,11 +91,23 @@ public sealed class ChannelServices
 			}
 
 	// Get a registered channel.
-	[TODO]
 	public static IChannel GetChannel(String name)
 			{
-				// TODO
-				return null;
+				lock(typeof(ChannelServices))
+				{
+					if(channels == null)
+					{
+						return null;
+					}
+					foreach(IChannel channel in channels)
+					{
+						if(channel.ChannelName == name)
+						{
+							return channel;
+						}
+					}
+					return null;
+				}
 			}
 
 	// Get the sink properties for a channel.
@@ -105,14 +127,50 @@ public sealed class ChannelServices
 			}
 
 	// Register a channel.
-	[TODO]
 	public static void RegisterChannel(IChannel chnl)
 			{
 				if(chnl == null)
 				{
 					throw new ArgumentNullException("chnl");
 				}
-				// TODO
+				String name = chnl.ChannelName;
+				lock(typeof(ChannelServices))
+				{
+					if(channels == null)
+					{
+						// This is the first channel.
+						channels = new ArrayList();
+						channels.Add(chnl);
+					}
+					else if(name == null || name == String.Empty ||
+					        channels.IndexOf(name) == -1)
+					{
+						// Insert the channel in priority order.
+						int index = 0;
+						while(index < channels.Count)
+						{
+							if((channels[index] as IChannel).ChannelPriority
+									< chnl.ChannelPriority)
+							{
+								break;
+							}
+						}
+						if(index < channels.Count)
+						{
+							channels.Insert(index, chnl);
+						}
+						else
+						{
+							channels.Add(chnl);
+						}
+					}
+					else
+					{
+						// The channel is already registered.
+						throw new RemotingException
+							(_("Remoting_ChannelAlreadyRegistered"));
+					}
+				}
 			}
 
 	// Synchronously dispatch a message.
@@ -128,14 +186,22 @@ public sealed class ChannelServices
 			}
 
 	// Unregister a channel.
-	[TODO]
 	public static void UnregisterChannel(IChannel chnl)
 			{
-				if(chnl == null)
+				if(chnl != null)
 				{
-					throw new ArgumentNullException("chnl");
+					lock(typeof(ChannelServices))
+					{
+						if(channels != null)
+						{
+							int index = channels.IndexOf(chnl);
+							if(index != -1)
+							{
+								channels.RemoveAt(index);
+							}
+						}
+					}
 				}
-				// TODO
 			}
 
 }; // class ChannelServices

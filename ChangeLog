@@ -10,6 +10,8 @@
 	* System.Windows.Forms/HACKING: new section on traps to look
 	out for when stubbing classes.
 
+	* configure.in, NEWS: update version and news for the 0.5.8 release.
+
 2003-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/FormsHello.cs: use the client rectangle to paint,

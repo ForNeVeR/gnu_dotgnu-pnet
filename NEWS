@@ -1,4 +1,45 @@
 
+0.5.8 (17 June 2003)
+
+	* Add the "Xsharp" library.
+	* Add the "System.Drawing" and "System.Drawing.Xsharp" libraries.
+	* Add the "System.Windows.Forms" library, wrapped around Xsharp.
+	* Allow "DllImportAttribute" to also be used on fields.
+	* Fixes to number formatting (David Corking).
+	* Fixes to "Web*" and "Http*" (Gopal V).
+	* Don't close the underlying stream in classes like BinaryReader,
+	  StreamWriter, etc, unless constructed locally (Gopal V).
+	* Accept '?' and '!' in XML text (Gopal V).
+	* Fake out asynchronous DNS lookups (Gopal V).
+	* Capacity management for "MemoryStream" (Thong Nguyen).
+	* Commit the Visual Basic support library under "Basic".
+	* Match extensions in wildcards correctly (Gopal V).
+	* Signature-compatibility improvements in the "System" assembly.
+	* Rewrite "Uri" to use regex parsing instead (Gopal V).
+	* "System.ComponentModel.Design", "System.IO", "System.Timers",
+	  "System.Web", "System.Win32", and "System.Configuration"
+	  namespaces in "System" assembly.
+	* IPv6 address support (Gopal V, Rhys Weatherley).
+	* IrDA support routines.
+	* New profile options for Serialization, Reflection.Emit, ComInterop,
+	  X509Certificates, Crypto, Permissions, PolicyObjects, Diagnostics,
+	  ComponentModel, ComponentModelDesign, IsolatedStorage, SmallConsole.
+	* SSL implementation, wrapped around "OpenSSL".
+	* Integrate SSL into "System.Net" (Gopal V).
+	* Move the culture and region name tables out of "mscorlib" into "I18N".
+	* Culture handling for date/time and number format information.
+	* Re-write the DateTime formatter and parser to use culture handling.
+	* Guid conversions in "XmlConvert" (Dennis Hayes).
+	* Test cases for "InteropServices" and "CompilerServices".
+	* Fix "Char.GetNumericValue" to return the correct value.
+	* Stub out XML stylesheet code (Gopal V).
+	* Bezier curves (Gopal V).
+	* Control, ButtonBase, Button, Label, and Form widgets.
+	* ProgressBar widget (Gopal V).
+	* Add the MS version numbers and public key values to that apps
+	  compiled against pnetlib will run on MS'es runtime engine without
+	  raising silly policy exceptions.
+
 0.5.6 (3 May 2003)
 
 	* Full signature-compatibility with .NET Framework SDK 1.1.

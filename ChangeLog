@@ -44,6 +44,9 @@ of ILScopeResolveType.
 * cscc/cs_lvalue.tc: modify semantic analysis for identifiers to use
 CSResolveSimpleName and CSResolveMemberName.
 
+* cscc/cs_main.c, cscc/csdoc.c: set the "typeGather" flag during type
+gathering.
+
 2001-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_coder.h, engine/ilverify.c: new coder operations.

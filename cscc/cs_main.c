@@ -109,9 +109,11 @@ int main(int argc, char *argv[])
 
 	/* Inform the code generator that we are doing semantic analysis */
 	CSCodeGen.semAnalysis = 1;
+	CSCodeGen.typeGather = 1;
 
 	/* Perform type gathering */
 	CSParseTree = CSTypeGather(&CSCodeGen, CSGlobalScope, CSParseTree);
+	CSCodeGen.typeGather = 0;
 
 	/* Perform semantic analysis */
 	ILNode_SemAnalysis(CSParseTree, &CSCodeGen, &CSParseTree);

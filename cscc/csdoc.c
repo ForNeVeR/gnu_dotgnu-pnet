@@ -112,6 +112,7 @@ int main(int argc, char *argv[])
 
 	/* Inform the code generator that we are doing semantic analysis */
 	CSCodeGen.semAnalysis = 1;
+	CSCodeGen.typeGather = 1;
 
 	/* Perform type gathering to get the IL form of all definitions */
 	CSParseTree = CSTypeGather(&CSCodeGen, CSGlobalScope, CSParseTree);

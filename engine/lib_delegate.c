@@ -96,6 +96,16 @@ ILObject *_IL_Delegate_CreateBlankDelegate(ILExecThread *_thread,
 }
 
 /*
+ * private static void SetOutParams(Delegate del, Object[] args,
+ *									Object[] outParams);
+ */
+void _IL_AsyncResult_SetOutParams(ILExecThread *_thread, ILObject *del,
+								  System_Array *args, System_Array *outParams)
+{
+	/* TODO */
+}
+
+/*
  * public Delegate(Object target, IntPtr method);
  */
 static ILObject *Delegate_ctor(ILExecThread *thread,

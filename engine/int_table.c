@@ -1274,6 +1274,14 @@ IL_METHOD_END
 
 #endif
 
+#ifndef _IL_AsyncResult_suppressed
+
+IL_METHOD_BEGIN(AsyncResult_Methods)
+	IL_METHOD("SetOutParams", "(oSystem.Delegate;[oSystem.Object;[oSystem.Object;)V", _IL_AsyncResult_SetOutParams, marshal_vpppp)
+IL_METHOD_END
+
+#endif
+
 #if !defined(HAVE_LIBFFI)
 
 static void marshal_vpip(void (*fn)(), void *rvalue, void **avalue)
@@ -2883,6 +2891,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_AssemblyName_suppressed
 	{"AssemblyName", "System.Reflection", AssemblyName_Methods},
+#endif
+#ifndef _IL_AsyncResult_suppressed
+	{"AsyncResult", "System.Runtime.Remoting.Messaging", AsyncResult_Methods},
 #endif
 #ifndef _IL_BitConverter_suppressed
 	{"BitConverter", "System", BitConverter_Methods},

@@ -7,6 +7,10 @@ and remove parameter information which is obsolete.
 * include/il_program.h: shift forward declaration of "ILParameter" from
 "il_types.h" to "il_program.h".
 
+* dumpasm/dump_type.c: convert "DumpParamMarshal" into "DumpParamType",
+so that parameter attributes can be placed properly; dump array types
+properly.
+
 2001-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c: fix a bug that caused GetBuiltinType to treat

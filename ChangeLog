@@ -5,6 +5,10 @@
 	tools/SqlSharp/Makefile.am, tools/SqlSharp/SqlSharp.build, 
 	tools/SqlSharp/sqlsharp-run.sh : Add a new tools/ section and 
 	add a build for the SqlSharp command line client.
+
+	* configure.in, class/Makefile.am, class/ByteFX.Data/Makefile.am,
+	class/ByteFX.Data/ByteFX.Data.build: Add the managed Mysql provider
+	to the build.
 	
 2003-05-30  Gopal.V  <gopalv82@symonds.net>
 	

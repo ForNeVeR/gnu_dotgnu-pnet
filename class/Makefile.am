@@ -12,6 +12,7 @@ SUBDIRS = Custommarshalers \
 		  System.Data \
 		  Mono.Data.PostgreSqlClient \
 		  Mono.Data.MySql \
+		  ByteFX.Data \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix

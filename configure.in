@@ -143,6 +143,7 @@ class/Mono.Data.Tds/Makefile
 class/System.Data/Makefile
 class/Mono.Data.PostgreSqlClient/Makefile
 class/Mono.Data.MySql/Makefile
+class/ByteFX.Data/Makefile
 class/Mono.Directory.LDAP/Makefile
 class/Mono.GetOptions/Makefile
 class/Mono.Posix/Makefile

@@ -122,7 +122,8 @@ public sealed class SignatureHelper : IDetachItem
 						(context,
 						 CSToILType(mod, context, type.GetElementType()));
 				}
-				else if(type.IsGenericType)
+				else if(type.HasGenericArguments ||
+						type.HasGenericParameters)
 				{
 					throw new NotSupportedException
 						(_("Emit_GenericsNotSupported"));

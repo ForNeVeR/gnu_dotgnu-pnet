@@ -44,6 +44,12 @@
 	System/ComponentModel/TypeListConverter.cs: improve signature
 	compatibility of the System.ComponentModel classes.
 
+	* runtime/System/Type.cs, runtime/System/Reflection/ClrType.cs,
+	runtime/System/Reflection/TypeDelegator.cs,
+	runtime/System/Reflection/Emit/SignatureHelper.cs,
+	runtime/System/Reflection/Emit/TypeBuilder.cs: update the
+	internalcalls for type generics to match Gyro 1.0.
+
 2003-08-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/Serialization/*.cs: stub out the xml serialization classes.

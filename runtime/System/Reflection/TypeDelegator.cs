@@ -329,25 +329,25 @@ public class TypeDelegator : Type
 
 	// Internal methods that support generic types.
 
-	protected override bool IsGenericTypeImpl()
+	protected override bool HasGenericArgumentsImpl()
 			{
-				return typeImpl.IsGenericType;
+				return typeImpl.HasGenericArgumentsImpl();
 			}
-	protected override int ArityImpl()
+	protected override bool HasGenericParametersImpl()
 			{
-				return typeImpl.Arity;
+				return typeImpl.HasGenericParametersImpl();
 			}
-	public override Type[] GetInstantiation()
+	public override Type[] GetGenericArguments()
 			{
-				return typeImpl.GetInstantiation();
+				return typeImpl.GetGenericArguments();
 			}
-	public override Type Instantiate(Type[] inst)
+	public override Type BindGenericParameters(Type[] inst)
 			{
-				return typeImpl.Instantiate(inst);
+				return typeImpl.BindGenericParameters(inst);
 			}
-	public override Type GetGenericType()
+	public override Type GetGenericTypeDefinition()
 			{
-				return typeImpl.GetGenericType();
+				return typeImpl.GetGenericTypeDefinition();
 			}
 
 }; // class TypeDelegator

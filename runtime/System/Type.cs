@@ -1424,62 +1424,49 @@ public abstract class Type
 	// Support for generic types follows.  Not strictly speaking
 	// ECMA-compatible, but will probably be ECMA eventually.
 
-	// Determine if this is a generic type.
-	protected virtual bool IsGenericTypeImpl()
+	// Determine if this type has generic arguments.
+	protected virtual bool HasGenericArgumentsImpl()
 			{
-				throw new NotSupportedException(_("NotSupp_NotGenericType"));
+				return false;
 			}
 
-	// Get the arity of a generic type.
-	protected virtual int ArityImpl()
+	// Determine if this type has generic parameters.
+	protected virtual bool HasGenericParametersImpl()
 			{
-				throw new NotSupportedException(_("NotSupp_NotGenericType"));
-			}
-
-	// Determine if this is a generic type that has been instantiated.
-	public bool IsInstantiatedTypeImpl()
-			{
-				return (GetInstantiation() != null);
+				return false;
 			}
 
 	// Get the type parameters that were used to instantiate this type.
-	public virtual Type[] GetInstantiation()
+	public virtual Type[] GetGenericArguments()
 			{
 				throw new NotSupportedException(_("NotSupp_NotGenericType"));
 			}
 
 	// Instantiate this generic type with a group of parameters.
-	public virtual Type Instantiate(Type[] inst)
+	public virtual Type BindGenericParameters(Type[] inst)
 			{
 				throw new NotSupportedException(_("NotSupp_NotGenericType"));
 			}
 
 	// Get the generic type that underlies this instantiated type.
-	public virtual Type GetGenericType()
+	public virtual Type GetGenericTypeDefinition()
 			{
 				throw new NotSupportedException(_("NotSupp_NotGenericType"));
 			}
 
 	// Properties that wrap up the above.
-	public bool IsGenericType
+	public bool HasGenericArguments
 			{
 				get
 				{
-					return IsGenericTypeImpl();
+					return HasGenericArgumentsImpl();
 				}
 			}
-	public int Arity
+	public bool HasGenericParameters
 			{
 				get
 				{
-					return ArityImpl();
-				}
-			}
-	public bool IsInstantiatedType
-			{
-				get
-				{
-					return IsInstantiatedTypeImpl();
+					return HasGenericParametersImpl();
 				}
 			}
 

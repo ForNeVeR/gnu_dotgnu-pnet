@@ -607,7 +607,7 @@ void ILUnitAsmMethod(const char *signature, int maxStack)
 	}
 	fputs(".method ", asmStream);
 	fputs(signature, asmStream);
-	fputs(" il managed\n", asmStream);
+	fputs(" cil managed\n", asmStream);
 	fputs("{\n", asmStream);
 	fprintf(asmStream, "\t.maxstack %d\n", maxStack);
 }

@@ -363,7 +363,7 @@ static void testIllegal(void *arg)
 	ILUnitAsmCreate();
 	while(*insns != -1)
 	{
-		ILUnitAsmPrintF(".method public static void test%02x() il managed\n",
+		ILUnitAsmPrintF(".method public static void test%02x() cil managed\n",
 						*insns);
 		ILUnitAsmWrite("{\n\t.maxstack 8\n");
 		if(usePrefix)
@@ -419,6 +419,7 @@ void ILUnitRegisterTests(void)
 	registerCompareTests();
 	registerBranchTests();
 	registerConstantTests();
+	registerVarTests();
 
 	/*
 	 * Illegal instruction tests.

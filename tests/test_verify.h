@@ -73,6 +73,7 @@ void registerConvTests(void);
 void registerCompareTests(void);
 void registerBranchTests(void);
 void registerConstantTests(void);
+void registerVarTests(void);
 
 /*
  * Register a simple test.

@@ -109,6 +109,9 @@ class XmlElement : XmlLinkedNode
 					// remove the children from this element
 					RemoveContents();
 
+					// bail out now if there's nothing to parse
+					if(value == null || value.Length == 0) { return; }
+
 					// get the owner document
 					XmlDocument doc = FindOwnerQuick();
 
@@ -144,18 +147,18 @@ class XmlElement : XmlLinkedNode
 						// read the next child node
 						XmlNode child = doc.ReadNodeInternal(r);
 
-						// return if there are no more children
-						if(child == null)
-						{
-							if(!r.Read()) { return; }
-						}
-						else
+						// append the child or try to read another
+						if(child != null)
 						{
 							// append the new child node
 							AppendChild(child);
 						}
+						else
+						{
+							r.Read();
+						}
 					}
-					while(true);
+					while(r.ReadState == ReadState.Interactive);
 				}
 			}
 

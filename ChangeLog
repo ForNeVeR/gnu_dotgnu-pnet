@@ -5,6 +5,9 @@
 	ilalink/link_module.c, include/il_linker.h: fix strong alias
 	linking for vararg methods.
 
+	* cscc/common/cc_preproc.c: fix a problem with Russian characters
+	in single-line comments (bug #6190).
+
 2004-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c_main.c, cscc/c/Makefile.am, cscc/c/c_internal.h,

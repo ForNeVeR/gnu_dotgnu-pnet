@@ -317,7 +317,7 @@ static int GetLines(CCPreProc *preproc)
 			ch = getc(stream);
 			if(ch == EOF)
 			{
-				if(!comment)
+				if(!comment && !scomment)
 				{
 					ADD_CH(0xE2);
 				}
@@ -329,7 +329,7 @@ static int GetLines(CCPreProc *preproc)
 				ch = getc(stream);
 				if(ch == EOF)
 				{
-					if(!comment)
+					if(!comment && !scomment)
 					{
 						ADD_CH(0xE2);
 						ADD_CH(0x80);
@@ -342,7 +342,7 @@ static int GetLines(CCPreProc *preproc)
 					goto endLine;
 				}
 				ungetc(ch, stream);
-				if(!comment)
+				if(!comment && !scomment)
 				{
 					ADD_CH(0xE2);
 					ADD_CH(0x80);
@@ -351,7 +351,7 @@ static int GetLines(CCPreProc *preproc)
 			else
 			{
 				ungetc(ch, stream);
-				if(!comment)
+				if(!comment && !scomment)
 				{
 					ADD_CH(0xE2);
 				}
@@ -367,7 +367,7 @@ static int GetLines(CCPreProc *preproc)
 			ch = getc(stream);
 			if(ch == EOF)
 			{
-				if(!comment)
+				if(!comment && !scomment)
 				{
 					ADD_CH(0xEF);
 				}
@@ -379,7 +379,7 @@ static int GetLines(CCPreProc *preproc)
 				ch = getc(stream);
 				if(ch == EOF)
 				{
-					if(!comment)
+					if(!comment && !scomment)
 					{
 						ADD_CH(0xEF);
 						ADD_CH(0xBB);
@@ -392,7 +392,7 @@ static int GetLines(CCPreProc *preproc)
 					continue;
 				}
 				ungetc(ch, stream);
-				if(!comment)
+				if(!comment && !scomment)
 				{
 					ADD_CH(0xEF);
 					ADD_CH(0xBB);
@@ -401,7 +401,7 @@ static int GetLines(CCPreProc *preproc)
 			else
 			{
 				ungetc(ch, stream);
-				if(!comment)
+				if(!comment && !scomment)
 				{
 					ADD_CH(0xEF);
 				}

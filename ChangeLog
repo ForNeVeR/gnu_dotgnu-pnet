@@ -1,3 +1,10 @@
+2007-7-03   Thong Nguyen  <tum@veridicus.com>
+
+	* support/hb_gc.c: ILGCDeinit now performs a garbage collection
+	before calling the finalizers one last time.
+	
+	* engine/process.c: ILProcessDestroy now relies on ILGCDeinit
+	to run final GC and finalization run.
 
 2003-07-01  Gopal.V  <gopalv82@symonds.net>
 	

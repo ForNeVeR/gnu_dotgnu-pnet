@@ -93,7 +93,7 @@ static void FinalizerThreadFunc(void *data)
 /*
  * Notify the finalization thread that there is work to do.
  */
-static int PrivateGCNotifyFinalize(void)
+static int PrivateGCNotifyFinalize(int timeout)
 {
 	ILExecThread *thread;
 
@@ -145,7 +145,7 @@ static int PrivateGCNotifyFinalize(void)
 	GC_TRACE("ILGCInvokeFinalizers: Invoked finalizers and waiting [thread: %d]\n", (int)ILThreadSelf());
 		
 	/* Wait until finalizers have finished */
-	ILWaitOne(g_FinalizerResponse, -1);
+	ILWaitOne(g_FinalizerResponse, timeout);
 	
 	GC_TRACE("ILGCInvokeFinalizers: Finalizers finished[thread: %d]\n", (int)ILThreadSelf());
 
@@ -154,7 +154,7 @@ static int PrivateGCNotifyFinalize(void)
 
 static void GCNotifyFinalize(void)
 {
-	PrivateGCNotifyFinalize();
+	PrivateGCNotifyFinalize(-1);
 }
 
 void ILGCInit(unsigned long maxSize)
@@ -186,16 +186,11 @@ void ILGCDeinit()
 {
 	g_Deinit = 1;
 
-	if (g_FinalizerThread)
-	{
-		ILGCCollect();
-		
-		/* Notify the finalizer thread */
-		ILWaitEventSet(g_FinalizerSignal);
+	ILGCCollect();
 
-		/* Wait 10(!?) seconds for the finalizers to finish */
-		ILWaitOne(g_FinalizerResponse, 10000);
-	}
+	/* Wait up to 10 seconds for the finalizers to run */
+		
+	PrivateGCNotifyFinalize(10000);
 }
 
 void *ILGCAlloc(unsigned long size)
@@ -250,7 +245,7 @@ void ILGCInvokeFinalizers(void)
 {
 	if (GC_should_invoke_finalizers())
 	{
-		PrivateGCNotifyFinalize();
+		PrivateGCNotifyFinalize(-1);
 	}
 }
 

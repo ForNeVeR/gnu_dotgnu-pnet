@@ -101,6 +101,7 @@ struct _tagILGenInfo
 	int				clsCompliant : 1;	/* Use strict CLS library only */
 	int				semAnalysis : 1;	/* Non-zero during semantic analysis */
 	int				typeGather : 1;		/* Non-zero during type gathering */
+	int				inSemType : 1;		/* Semantic analysis on a type */
 	int				useJavaLib : 1;		/* Use Java and not C# library */
 	int				outputIsJava : 1;	/* Output Java bytecode */
 	int             decimalRoundMode;	/* Rounding mode for ILDecimal */

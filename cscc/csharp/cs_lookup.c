@@ -292,8 +292,8 @@ static ILNode *FindNestedClass(ILClass *info, ILNode_ClassDefn *defn,
  * Process a class and add all members called "name" to a set
  * of member lookup results.
  */
-static void FindMembers(ILClass *info, const char *name,
-					    ILClass *accessedFrom,
+static void FindMembers(ILGenInfo *genInfo, ILClass *info,
+						const char *name, ILClass *accessedFrom,
 					    CSMemberLookupInfo *results,
 						int lookInParents)
 {
@@ -312,36 +312,39 @@ static void FindMembers(ILClass *info, const char *name,
 		info = ILClassResolve(info);
 
 		/* Look for all accessible members with the given name */
-		member = 0;
-		while((member = ILClassNextMember(info, member)) != 0)
+		if(!(genInfo->inSemType))
 		{
-			if(!strcmp(ILMember_Name(member), name) &&
-			   ILMemberAccessible(member, accessedFrom))
+			member = 0;
+			while((member = ILClassNextMember(info, member)) != 0)
 			{
-				kind = ILMemberGetKind(member);
-				if(kind != IL_META_MEMBERKIND_METHOD &&
-				   kind != IL_META_MEMBERKIND_FIELD &&
-				   kind != IL_META_MEMBERKIND_PROPERTY &&
-				   kind != IL_META_MEMBERKIND_EVENT)
+				if(!strcmp(ILMember_Name(member), name) &&
+				   ILMemberAccessible(member, accessedFrom))
 				{
-					/* This is PInvoke or override, which we don't need */
-					continue;
+					kind = ILMemberGetKind(member);
+					if(kind != IL_META_MEMBERKIND_METHOD &&
+					   kind != IL_META_MEMBERKIND_FIELD &&
+					   kind != IL_META_MEMBERKIND_PROPERTY &&
+					   kind != IL_META_MEMBERKIND_EVENT)
+					{
+						/* This is PInvoke or override, which we don't need */
+						continue;
+					}
+					underlying = GetUnderlyingMethod(member);
+					if(underlying &&
+					   ILMethod_IsVirtual(underlying) &&
+					   !ILMethod_IsNewSlot(underlying))
+					{
+						/* This is a virtual override, so skip it */
+						continue;
+					}
+					if(kind == IL_META_MEMBERKIND_PROPERTY &&
+					   ILTypeNumParams(ILMember_Signature(member)) != 0)
+					{
+						/* This is an indexer, which we do not want here */
+						continue;
+					}
+					AddMember(results, (ILProgramItem *)member, info, kind);
 				}
-				underlying = GetUnderlyingMethod(member);
-				if(underlying &&
-				   ILMethod_IsVirtual(underlying) &&
-				   !ILMethod_IsNewSlot(underlying))
-				{
-					/* This is a virtual override, so skip it */
-					continue;
-				}
-				if(kind == IL_META_MEMBERKIND_PROPERTY &&
-				   ILTypeNumParams(ILMember_Signature(member)) != 0)
-				{
-					/* This is an indexer, which we do not want here */
-					continue;
-				}
-				AddMember(results, (ILProgramItem *)member, info, kind);
 			}
 		}
 
@@ -373,7 +376,7 @@ static void FindMembers(ILClass *info, const char *name,
 			impl = 0;
 			while((impl = ILClassNextImplements(info, impl)) != 0)
 			{
-				FindMembers(ILImplementsGetInterface(impl),
+				FindMembers(genInfo, ILImplementsGetInterface(impl),
 						    name, accessedFrom, results, lookInParents);
 			}
 		}
@@ -600,7 +603,7 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 	/* Collect up all members with the specified name */
 	if(info)
 	{
-		FindMembers(info, name, accessedFrom, results, lookInParents);
+		FindMembers(genInfo, info, name, accessedFrom, results, lookInParents);
 	}
 
 	/* Trim the list and determine the kind for the result */

@@ -106,9 +106,13 @@ ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent)
 ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
 {
 	CSSemValue value;
+	int save;
 	if(type)
 	{
+		save = info->inSemType;
+		info->inSemType = 1;
 		value = ILNode_SemAnalysis(type, info, parent);
+		info->inSemType = save;
 		if(value.kind != CS_SEMKIND_TYPE)
 		{
 			CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
@@ -130,7 +134,11 @@ ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
 int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
 				  ILNode **baseNode, ILClass **baseClass)
 {
-	CSSemValue value = ILNode_SemAnalysis(type, info, parent);
+	CSSemValue value;
+	int save = info->inSemType;
+	info->inSemType = 1;
+	value = ILNode_SemAnalysis(type, info, parent);
+	info->inSemType = save;
 	if(value.kind == CS_SEMKIND_TYPE)
 	{
 		*baseNode = 0;

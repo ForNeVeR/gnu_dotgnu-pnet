@@ -3,6 +3,12 @@
 
 	* cscc/csharp/cs_grammar.y: set the "override" flag on finalizers.
 
+	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/csharp/cs_lookup.c,
+	cscc/csharp/cs_semantics.tc: modify name resolution so that it
+	knows when it is looking for a type, so that declarations of the
+	form "x x" will treat the first as a type and the second as
+	an identifier.
+
 2001-03-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/Makefile.am, codegen/cg_gen.h, codegen/cg_interface.c,

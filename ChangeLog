@@ -5,6 +5,9 @@
 	extra value is popped from the stack when generating "switch"
 	statements using "if" tests rather than table lookups.
 
+	* ilasm/ilasm_output.c (ILAsmOutSwitchEnd): compute the correct
+	value for the number of switch entries.
+
 2002-06-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/test_thread.c: simple tests for creating wait mutexes.

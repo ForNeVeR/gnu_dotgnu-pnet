@@ -936,7 +936,7 @@ void ILAsmOutSwitchRef(char *label)
 
 void ILAsmOutSwitchEnd(void)
 {
-	ILUInt32 count = (offset - switchCountOffset) / 4;
+	ILUInt32 count = ((offset - switchCountOffset) / 4) - 1;
 	buffer[switchCountOffset] = (unsigned char)count;
 	buffer[switchCountOffset + 1] = (unsigned char)(count >> 8);
 	buffer[switchCountOffset + 2] = (unsigned char)(count >> 16);

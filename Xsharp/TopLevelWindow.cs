@@ -23,6 +23,7 @@ namespace Xsharp
 
 using System;
 using System.Text;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Xsharp.Types;
 using Xsharp.Events;
@@ -143,6 +144,25 @@ public class TopLevelWindow : InputOutputWidget
 					IntPtr display = dpy.Lock();
 					Xlib.Window handle = GetWidgetHandle();
 
+					// Make this the group leader if we don't have one yet.
+					bool isFirst = false;
+					if(dpy.groupLeader == Xlib.Window.Zero)
+					{
+						dpy.groupLeader = handle;
+						isFirst = true;
+					}
+
+					// Set the WM_CLASS hint.
+					Application app = Application.Primary;
+					if(app != null)
+					{
+						XClassHint classHint = new XClassHint();
+						classHint.res_name = app.ResourceName;
+						classHint.res_class = app.ResourceClass;
+						Xlib.XSetClassHint(display, handle, ref classHint);
+						classHint.Free();
+					}
+
 					// Set the title bar and icon names.
 					SetWindowName(display, handle, this.name);
 
@@ -150,7 +170,46 @@ public class TopLevelWindow : InputOutputWidget
 					SetProtocols(display, handle);
 
 					// Set the window hints.
+					if(isFirst && app != null && app.StartIconic)
+					{
+						// The user supplied "-iconic" on the command-line.
+						iconic = true;
+					}
 					SetWMHints(display, handle);
+
+					// Set some other string properties.
+					String name = CultureInfo.CurrentCulture.Name;
+					if(name == null || name == String.Empty)
+					{
+						name = "en_US";
+					}
+					else
+					{
+						name = name.Replace("-", "_");
+					}
+					SetTextProperty(display, handle, "WM_LOCALE_NAME", name);
+					name = Application.Hostname;
+					if(name != null)
+					{
+						SetTextProperty(display, handle,
+										"WM_CLIENT_MACHINE", name);
+					}
+					if(isFirst)
+					{
+						String[] args = Environment.GetCommandLineArgs();
+						if(args != null && args.Length > 0)
+						{
+							// We put "ilrun" at the start of the command,
+							// because the command needs to be in a form
+							// that can be directly executed by fork/exec,
+							// and IL binaries normally aren't in this form.
+							String[] newArgs = new String [args.Length + 1];
+							newArgs[0] = "ilrun";
+							Array.Copy(args, 0, newArgs, 1, args.Length);
+							SetTextProperty(display, handle,
+											"WM_COMMAND", newArgs);
+						}
+					}
 
 					// Top-level widgets receive all key and focus events.
 					SelectInput(EventMask.KeyPressMask |
@@ -239,8 +298,13 @@ public class TopLevelWindow : InputOutputWidget
 	private void SetWMHints(IntPtr display, Xlib.Window handle)
 			{
 				XWMHints hints = new XWMHints();
-				hints.flags = WMHintsMask.InputHint;
+				hints.flags = WMHintsMask.InputHint |
+							  WMHintsMask.StateHint |
+							  WMHintsMask.WindowGroupHint;
 				hints.input = true;
+				hints.initial_state = (iconic ? WindowState.IconicState
+											  : WindowState.NormalState);
+				hints.window_group = (Xlib.XID)(dpy.groupLeader);
 				if(icon != null)
 				{
 					Pixmap pixmap = icon.Pixmap;
@@ -259,6 +323,32 @@ public class TopLevelWindow : InputOutputWidget
 					}
 				}
 				Xlib.XSetWMHints(display, handle, ref hints);
+			}
+
+	// Set a text property hint on this window.
+	private void SetTextProperty(IntPtr display, Xlib.Window handle,
+								 String property, String value)
+			{
+				XTextProperty textprop = new XTextProperty();
+				if(textprop.SetText(value))
+				{
+					Xlib.XSetTextProperty
+						(display, handle, ref textprop,
+						 Xlib.XInternAtom(display, property, Xlib.Bool.False));
+					textprop.Free();
+				}
+			}
+	private void SetTextProperty(IntPtr display, Xlib.Window handle,
+								 String property, String[] value)
+			{
+				XTextProperty textprop = new XTextProperty();
+				if(textprop.SetText(value))
+				{
+					Xlib.XSetTextProperty
+						(display, handle, ref textprop,
+						 Xlib.XInternAtom(display, property, Xlib.Bool.False));
+					textprop.Free();
+				}
 			}
 
 	// Construct the XSizeHints structure for this window.
@@ -468,12 +558,24 @@ public class TopLevelWindow : InputOutputWidget
 					IntPtr display = dpy.Lock();
 					if(!iconic)
 					{
-						// Send an "iconify" message to the window manager,
-						// which will take care of iconifying the window.
-						Xlib.XIconifyWindow
-							(display, GetWidgetHandle(), screen.ScreenNumber);
-						iconic = true;
-						OnIconicStateChanged(true);
+						if(firstMapDone)
+						{
+							// Send an "iconify" message to the window manager,
+							// which will take care of iconifying the window.
+							Xlib.XIconifyWindow
+								(display, GetWidgetHandle(),
+								 screen.ScreenNumber);
+							iconic = true;
+							OnIconicStateChanged(true);
+						}
+						else
+						{
+							// We haven't been mapped for the first time yet,
+							// so merely update the WM_HINTS structure.
+							iconic = true;
+							SetWMHints(display, GetWidgetHandle());
+							OnIconicStateChanged(true);
+						}
 					}
 				}
 				finally
@@ -494,8 +596,13 @@ public class TopLevelWindow : InputOutputWidget
 					{
 						// Use "XMapRaised" to notify the window manager
 						// that we want to be de-iconified.
-						Xlib.XMapRaised(display, GetWidgetHandle());
 						iconic = false;
+						if(!firstMapDone)
+						{
+							// Switch the WM_HINTS back to say "NormalState".
+							SetWMHints(display, GetWidgetHandle());
+						}
+						Xlib.XMapRaised(display, GetWidgetHandle());
 						OnIconicStateChanged(false);
 						if(!mapped)
 						{

@@ -1,4 +1,14 @@
 
+2003-12-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Application.cs, Xsharp/Display.cs, Xsharp/TopLevelWindow.cs,
+	Xsharp/Xlib.cs.in, Xsharp/Types/XClassHint.cs,
+	Xsharp/Types/XTextProperty.cs: add some more ICCCM hints like
+	WM_LOCALE, WM_CLIENT_MACHINE, WM_COMMAND, WM_CLASS, etc; fix the
+	behaviour of the "IconicState" hint; add the window group hint;
+	make the "-iconic", "-name", and "-synchronous" Xt command-line
+	options work correctly.
+
 2003-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/Platform/FileMethods.cs,

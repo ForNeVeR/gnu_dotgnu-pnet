@@ -95,6 +95,9 @@ internal sealed unsafe class Xlib
 	[DllImport("X11")]
 	extern public static @X_long@ XMaxRequestSize(IntPtr display);
 
+	[DllImport("X11")]
+	extern public static IntPtr XSynchronize(IntPtr display, Xlib.Bool onoff);
+
 	// Declare screen-related external functions.
 
 	[DllImport("X11")]
@@ -481,6 +484,10 @@ internal sealed unsafe class Xlib
 			(IntPtr display, Window w, ref XWMHints hints);
 
 	[DllImport("X11")]
+	extern public static void XSetClassHint
+			(IntPtr display, Window w, ref XClassHint class_hints);
+
+	[DllImport("X11")]
 	extern public static @X_int@ XKillClient(IntPtr display, XID resource);
 
 	// Declare color-related external functions.
@@ -527,6 +534,27 @@ internal sealed unsafe class Xlib
 	[DllImport("X11")]
 	extern public static @X_int@ XDeleteProperty
 			(IntPtr display, Window w, Atom property);
+
+	// Text property and string functions.
+
+	[DllImport("X11")]
+	extern public static @X_int@ XFree(IntPtr ptr);
+
+	[DllImport("X11")]
+	extern public static Status XStringListToTextProperty
+			(ref IntPtr argv, @X_int@ argc, ref XTextProperty textprop);
+
+	[DllImport("X11")]
+	extern public static Status XStringListToTextProperty
+			(IntPtr[] argv, @X_int@ argc, ref XTextProperty textprop);
+
+	[DllImport("X11")]
+	extern public static void XSetTextProperty
+			(IntPtr display, Window w, ref XTextProperty textProp,
+			 Atom property);
+
+	[DllImport("X11")]
+	extern public static @X_int@ _XGetHostname(IntPtr buf, @X_int@ maxlen);
 
 	// Helper functions from "libXsharpSupport.so".
 

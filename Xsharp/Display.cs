@@ -60,6 +60,7 @@ public sealed class Display : IDisposable
 	internal BuiltinBitmaps bitmaps;
 	internal Timer timerQueue;
 	internal IntPtr imlibData;
+	internal Xlib.Window groupLeader;
 
 	// Constructor.
 	private Display(IntPtr dpy, String displayName, Application app)
@@ -147,7 +148,8 @@ public sealed class Display : IDisposable
 
 	// Internal version of "Open()" that is called once the
 	// type lock has been acquired.
-	private static Display OpenInternal(String displayName, Application app)
+	private static Display OpenInternal
+				(String displayName, Application app, bool sync)
 			{
 				try
 				{
@@ -186,6 +188,10 @@ public sealed class Display : IDisposable
 					if(dpy != IntPtr.Zero)
 					{
 						// We have opened the display successfully.
+						if(sync)
+						{
+							Xlib.XSynchronize(dpy, Xlib.Bool.True);
+						}
 						return new Display(dpy, displayName, app);
 					}
 					else
@@ -225,11 +231,11 @@ public sealed class Display : IDisposable
 			}
 
 	// Open a connection to a specific X display server.
-	internal static Display Open(String displayName, Application app)
+	internal static Display Open(String displayName, Application app, bool sync)
 			{
 				lock(typeof(Display))
 				{
-					return OpenInternal(displayName, app);
+					return OpenInternal(displayName, app, sync);
 				}
 			}
 

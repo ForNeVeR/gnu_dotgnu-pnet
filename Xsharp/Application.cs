@@ -23,6 +23,8 @@ namespace Xsharp
 
 using System;
 using System.Collections;
+using System.Net;
+using System.Runtime.InteropServices;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Application"/> class manages
@@ -66,6 +68,7 @@ public sealed class Application : IDisposable
 				String[] envCmdLine;
 				int firstArg = 0;
 				String fontName;
+				bool synchronous = false;
 
 				// Set this as the primary application object if necessary.
 				lock(typeof(Application))
@@ -104,11 +107,19 @@ public sealed class Application : IDisposable
 					}
 					if(index != -1)
 					{
-						name = programName.Substring(index);
+						name = programName.Substring(index + 1);
 					}
 					else
 					{
 						name = programName;
+					}
+					int len = name.Length;
+					if(len > 4 && name[len - 4] == '.' &&
+					   (name[len - 3] == 'e' || name[len - 3] == 'E') &&
+					   (name[len - 2] == 'x' || name[len - 2] == 'X') &&
+					   (name[len - 1] == 'e' || name[len - 1] == 'E'))
+					{
+						name = name.Substring(0, len - 4);
 					}
 				}
 				if(args == null)
@@ -175,28 +186,6 @@ public sealed class Application : IDisposable
 						}
 						break;
 
-						case "-bg":
-						case "-background":
-						{
-							++firstArg;
-							if(firstArg < args.Length)
-							{
-								// TODO: set the application's background color.
-							}
-						}
-						break;
-
-						case "-fg":
-						case "-foreground":
-						{
-							++firstArg;
-							if(firstArg < args.Length)
-							{
-								// TODO: set the application's foreground color.
-							}
-						}
-						break;
-
 						case "-fn":
 						case "-font":
 						{
@@ -213,8 +202,16 @@ public sealed class Application : IDisposable
 							++firstArg;
 							if(firstArg < args.Length)
 							{
-								title = args[firstArg];
+								geometry = args[firstArg];
 							}
+						}
+						break;
+
+						case "+synchronous":
+						case "-synchronous":
+						{
+							// Turn on synchronous processing to the X server.
+							synchronous = true;
 						}
 						break;
 
@@ -223,13 +220,15 @@ public sealed class Application : IDisposable
 						case "-reverse":
 						case "-rv":
 						case "+rv":
-						case "+synchronous":
-						case "-synchronous":
 							break;
+						case "-bg":
+						case "-background":
 						case "-bw":
 						case "-borderwidth":
 						case "-bd":
 						case "-bordercolor":
+						case "-fg":
+						case "-foreground":
 						case "-selectionTimeout":
 						case "-xnllanguage":
 						case "-xrm":
@@ -249,7 +248,7 @@ public sealed class Application : IDisposable
 				cmdLineArgs = (String[])(newArgs.ToArray(typeof(String)));
 
 				// Connect to the display.
-				display = Xsharp.Display.Open(displayName, this);
+				display = Xsharp.Display.Open(displayName, this, synchronous);
 
 				// Create the default font.
 				defaultFont = Font.CreateFromXLFD(fontName);
@@ -521,6 +520,53 @@ public sealed class Application : IDisposable
 				get
 				{
 					return primary;
+				}
+			}
+
+	/// <summary>
+	/// <para>Get the name of the host that this program is running on.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The host name.</para>
+	/// </value>
+	public static String Hostname
+			{
+				get
+				{
+					// Get the hostname via "_XGetHostname" in "Xlib".
+					IntPtr buf = Marshal.AllocHGlobal(1024);
+					if(buf == IntPtr.Zero)
+					{
+						return null;
+					}
+					Xlib._XGetHostname(buf, 1024);
+					String host = Marshal.PtrToStringAnsi(buf);
+					Marshal.FreeHGlobal(buf);
+					if(host == null || host == String.Empty)
+					{
+						return null;
+					}
+
+				#if false
+					// TODO: DNS routines are a little flaky at present.
+
+					// Fully-qualify the name, if possible.
+					if(host.IndexOf('.') != -1)
+					{
+						return null;
+					}
+					IPHostEntry entry = Dns.Resolve(host);
+					if(entry == null)
+					{
+						return host;
+					}
+					else
+					{
+						return entry.HostName;
+					}
+				#endif
+					return host;
 				}
 			}
 

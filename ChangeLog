@@ -1,4 +1,9 @@
 
+2004-05-06  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/IO/StreamReader.cs: Fix exception when the file
+	size exceeds buffer provided.
+
 2004-05-06  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* JScript/Builtins/ArrayObject.cs, JScript/Nodes/JExpr.tc:

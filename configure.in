@@ -353,13 +353,14 @@ AC_COMPILE_CHECK_SIZEOF(long double, 12)
 AC_COMPILE_CHECK_SIZEOF(void *, 4)
 
 dnl BeOS is one unicode enabled system which doesn't define mbstate_t
-AC_CHECK_TYPE([mbstate_t], [AC_DEFINE([HAVE_MBSTATE_T], 1 , 
-			  		[Defines to 'HAVE_MBSTATE_T' if mbstate_t is missing])], ,
-[
+AC_MSG_CHECKING(for mbstate_t usability)
+AC_TRY_COMPILE([#include "confdefs.h"
 #ifdef HAVE_WCHAR_H
 #include <wchar.h>
 #endif
-])
+], [mbstate_t exists; ] , AC_DEFINE([HAVE_MBSTATE_T], 1 , 
+			  		[Define if mbstate_t is present 'HAVE_MBSTATE_T' ]) mbstate_present=yes, mbstate_present=no)
+AC_MSG_RESULT($mbstate_present)
 dnl Check for computed goto support in the compiler.
 AC_MSG_CHECKING(for computed goto support)
 AC_TRY_COMPILE([], [

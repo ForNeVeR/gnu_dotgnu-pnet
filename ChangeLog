@@ -4,6 +4,9 @@
 	* cscc/csharp/cs_grammar.y: Fix segfault due to missing yyisa check.
 	(bug #10753).
 
+	* configure.in: replace AC_CHECK_TYPE with AC_TRY_COMPILE for 
+	compatibility with older autoconf systems.
+
 2004-10-27  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* support/socket.c: BeOS has incomplete socket support (thanks to Tomas

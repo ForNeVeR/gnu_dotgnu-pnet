@@ -21,6 +21,9 @@
 				<file name="System.Xml.dll"/>
 				<file name="System.EnterpriseServices.dll"/>
 				<file name="../System.Web/System.Web.dll"/>
+				<file name="../System.Data/System.Data.dll"/>
+				<file name="../Mono.Data.Tds/Mono.Data.Tds.dll"/>
+				<file name="../Mono.Security/Mono.Security.dll"/>
 			</references>
 
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>

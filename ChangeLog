@@ -1,4 +1,9 @@
 
+2003-05-21  Gopal.V  <gopalv82@yahoo.com>
+
+	* class/System.Web.Services/System.Web.Services.build: Add references
+	to System.Data and its dependencies to support a clean build.
+
 2003-05-20  Gopal.V  <gopalv82@yahoo.com>
 
 	* configure.in, class/Makefile.am, 

@@ -54,8 +54,9 @@ The Portable.NET development tools assist with building
 and manipulating images in the portable executable format.
 development.
 
+@noindent
 Copyright @copyright{} 2001, 2002 Southern Storm Software, Pty Ltd
-Copyright @copyright{} 2003  Free Software Foundation, Inc.
+@*Copyright @copyright{} 2003  Free Software Foundation, Inc.
 @end ifinfo
 
 @titlepage

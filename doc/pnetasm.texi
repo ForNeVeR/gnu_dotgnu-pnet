@@ -201,8 +201,6 @@ Integer64      => INT      /* 64-bit integer */
 Float64        => FLOAT
                 | @strong{float32} '(' Integer32 ')'
                 | @strong{float64} '(' Integer64 ')'
-                | @strong{float32} '[' Integer32 ']'
-                | @strong{float64} '[' Integer64 ']'
                 | @strong{nan}
                 | @strong{inf}
                 | '-' @strong{inf}
@@ -212,14 +210,11 @@ QualifiedName  => Identifier
                 | QualifiedName '.' Identifier
 @end example
 
-The second and third forms of the Float64 non-terminal can be used to coerce
-integer values into floating-point values.
-
-The fourth and fifth forms of the Float64 non-terminal can be used to
+The second and third forms of the Float64 non-terminal can be used to
 convert the raw bit representation of a floating-point number into
-a floating-point value.  The fourth form converts the big-endian, 32-bit,
+a floating-point value.  The second form converts the big-endian, 32-bit,
 IEEE integer representation of a single-precision value into a 32-bit float.
-For example 0x3F800000 represents the value 1.0.  The fifth form does
+For example 0x3F800000 represents the value 1.0.  The third form does
 the same for 64-bit IEEE integer representations of double-precision values.
 
 The raw bit forms are mainly of use to compilers that wish to output

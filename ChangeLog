@@ -1,3 +1,9 @@
+2001-01-14 Stephen Compall <rushing@earthling.net>
+
+	* runtime/System/IO/StringWriter.cs: added implementation.
+
+	* runtime/System/Text/StringBuilder.cs: changed some of the logic
+	in Append(String, int, int) and Append(char[], int, int)
 
 2001-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 

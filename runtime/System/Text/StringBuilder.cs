@@ -329,7 +329,7 @@ public sealed class StringBuilder
 						throw new ArgumentOutOfRangeException
 							("startIndex", _("ArgRange_Array"));
 					}
-					else if((value.Length - startIndex) > length)
+					else if(length < 0 || (value.Length - startIndex) < length)
 					{
 						throw new ArgumentOutOfRangeException
 							("length", _("ArgRange_Array"));
@@ -369,7 +369,7 @@ public sealed class StringBuilder
 						throw new ArgumentOutOfRangeException
 							("startIndex", _("ArgRange_Array"));
 					}
-					else if((value.Length - startIndex) > length)
+					else if(length < 0 || (value.Length - startIndex) < length)
 					{
 						throw new ArgumentOutOfRangeException
 							("length", _("ArgRange_Array"));

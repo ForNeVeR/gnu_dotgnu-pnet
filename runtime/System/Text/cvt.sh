@@ -20,6 +20,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+if test "x$1" = "x--include-rare" ; then
+	RARE=""
+else
+	RARE="--rare"
+fi
+
 if gcc -o ucm2cp ucm2cp.c ; then
 	:
 else
@@ -44,11 +50,42 @@ fi
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save ibm-500.ucm >CP500.cs
 
+./ucm2cp $RARE --page 708 --wpage 1256 --name 'Arabic (ASMO 708)' \
+	--webname asmo-708 --bodyname iso-8859-6 \
+	--headername asmo-708 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1089.ucm >CP708.cs
+
 ./ucm2cp --page 850 --wpage 1252 --name 'Western European (DOS)' \
 	--webname ibm850 --bodyname ibm850 \
 	--headername ibm850 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save ibm-850.ucm >CP850.cs
+
+./ucm2cp $RARE --page 852 --wpage 1250 --name 'Central European (DOS)' \
+	--webname ibm852 --bodyname ibm852 \
+	--headername ibm852 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-852.ucm >CP852.cs
+
+./ucm2cp $RARE --page 855 --wpage 1251 --name 'Cyrillic (DOS)' \
+	--webname ibm855 --bodyname ibm855 \
+	--headername ibm855 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-855.ucm >CP855.cs
+
+./ucm2cp $RARE --page 857 --wpage 1254 --name 'Turkish (DOS)' \
+	--webname ibm857 --bodyname ibm857 \
+	--headername ibm857 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-857.ucm >CP857.cs
+
+./ucm2cp $RARE --page 858 --wpage 1252 \
+	--name 'Western European (DOS with Euro)' \
+	--webname IBM00858 --bodyname IBM00858 \
+	--headername IBM00858 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-858.ucm >CP858.cs
 
 ./ucm2cp --page 860 --wpage 1252 --name 'Portuguese (DOS)' \
 	--webname ibm860 --bodyname ibm860 \
@@ -62,11 +99,23 @@ fi
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save ibm-861.ucm >CP861.cs
 
+./ucm2cp $RARE --page 862 --wpage 1255 --name 'Hebrew (DOS)' \
+	--webname ibm862 --bodyname ibm862 \
+	--headername ibm861 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-862.ucm >CP862.cs
+
 ./ucm2cp --page 863 --wpage 1252 --name 'French Canadian (DOS)' \
 	--webname IBM863 --bodyname IBM863 \
 	--headername IBM863 --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save ibm-863.ucm >CP863.cs
+
+./ucm2cp $RARE --page 864 --wpage 1256 --name 'Arabic (DOS)' \
+	--webname ibm864 --bodyname ibm864 \
+	--headername ibm864 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-864.ucm >CP864.cs
 
 ./ucm2cp --page 865 --wpage 1252 --name 'Nordic (DOS)' \
 	--webname IBM865 --bodyname IBM863 \
@@ -74,9 +123,116 @@ fi
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save ibm-865.ucm >CP865.cs
 
+./ucm2cp $RARE --page 866 --wpage 1251 --name 'Russian (DOS)' \
+	--webname ibm866 --bodyname ibm866 \
+	--headername ibm866 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-866.ucm >CP866.cs
+
+./ucm2cp $RARE --page 869 --wpage 1253 --name 'Greek (DOS)' \
+	--webname ibm869 --bodyname ibm869 \
+	--headername ibm869 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-869.ucm >CP869.cs
+
+./ucm2cp $RARE --page 870 --wpage 1250 --name 'IBM EBCDIC (Latin 2)' \
+	--webname ibm870 --bodyname ibm870 \
+	--headername ibm870 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-870.ucm >CP870.cs
+
 ./ucm2cp --page 874 --wpage 874 --name 'Thai (Windows)' \
 	--webname windows-874 --bodyname windows-874 \
 	--headername windows-874 ibm-874.ucm >CP874.cs
+
+./ucm2cp $RARE --page 875 --wpage 1253 --name 'IBM EBCDIC (Greek)' \
+	--webname ibm875 --bodyname ibm875 \
+	--headername ibm875 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-875.ucm >CP875.cs
+
+./ucm2cp $RARE --page 1026 --wpage 1254 --name 'IBM EBCDIC (Turkish)' \
+	--webname ibm1026 --bodyname ibm1026 \
+	--headername ibm1026 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1026.ucm >CP1026.cs
+
+./ucm2cp $RARE --page 1047 --wpage 1252 \
+	--name 'IBM EBCDIC (Open Systems Latin 1)' \
+	--webname ibm1047 --bodyname ibm1047 \
+	--headername ibm1047 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1047.ucm >CP1047.cs
+
+./ucm2cp $RARE --page 1140 --wpage 1252 \
+	--name 'IBM EBCDIC (US-Canada with Euro)' \
+	--webname IBM01140 --bodyname IBM01140 \
+	--headername IBM01140 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1140.ucm >CP1140.cs
+
+./ucm2cp $RARE --page 1141 --wpage 1252 \
+	--name 'IBM EBCDIC (Germany with Euro)' \
+	--webname IBM01141 --bodyname IBM01141 \
+	--headername IBM01141 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1141.ucm >CP1141.cs
+
+./ucm2cp $RARE --page 1142 --wpage 1252 \
+	--name 'IBM EBCDIC (Denmark/Norway with Euro)' \
+	--webname IBM01142 --bodyname IBM01142 \
+	--headername IBM01142 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1142.ucm >CP1142.cs
+
+./ucm2cp $RARE --page 1143 --wpage 1252 \
+	--name 'IBM EBCDIC (Finland/Sweden with Euro)' \
+	--webname IBM01143 --bodyname IBM01143 \
+	--headername IBM01143 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1143.ucm >CP1143.cs
+
+./ucm2cp $RARE --page 1144 --wpage 1252 \
+	--name 'IBM EBCDIC (Italy with Euro)' \
+	--webname ibm1144 --bodyname ibm1144 \
+	--headername ibm1144 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1144.ucm >CP1144.cs
+
+./ucm2cp $RARE --page 1145 --wpage 1252 \
+	--name 'IBM EBCDIC (Latin America/Spain with Euro)' \
+	--webname ibm1145 --bodyname ibm1145 \
+	--headername ibm1145 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1145.ucm >CP1145.cs
+
+./ucm2cp $RARE --page 1146 --wpage 1252 \
+	--name 'IBM EBCDIC (United Kingdom with Euro)' \
+	--webname ibm1146 --bodyname ibm1146 \
+	--headername ibm1146 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1146.ucm >CP1146.cs
+
+./ucm2cp $RARE --page 1147 --wpage 1252 \
+	--name 'IBM EBCDIC (France with Euro)' \
+	--webname ibm1147 --bodyname ibm1147 \
+	--headername ibm1147 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1147.ucm >CP1147.cs
+
+./ucm2cp $RARE --page 1148 --wpage 1252 \
+	--name 'IBM EBCDIC (International with Euro)' \
+	--webname ibm1148 --bodyname ibm1148 \
+	--headername ibm1148 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1148.ucm >CP1148.cs
+
+./ucm2cp $RARE --page 1149 --wpage 1252 \
+	--name 'IBM EBCDIC (Icelandic with Euro)' \
+	--webname ibm1149 --bodyname ibm1149 \
+	--headername ibm1149 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1149.ucm >CP1149.cs
 
 ./ucm2cp --page 1250 --wpage 1250 --name 'Central European (Windows)' \
 	--webname windows-1250 --bodyname iso-8859-2 \
@@ -126,18 +282,135 @@ fi
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save mac-is.ucm >CP10079.cs
 
+./ucm2cp $RARE --page 20273 --wpage 1252 \
+	--name 'IBM EBCDIC (Germany)' \
+	--webname IBM273 --bodyname IBM273 \
+	--headername IBM273 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-273.ucm >CP20273.cs
+
+./ucm2cp $RARE --page 20277 --wpage 1252 \
+	--name 'IBM EBCDIC (Denmark/Norway)' \
+	--webname IBM277 --bodyname IBM277 \
+	--headername IBM277 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-277.ucm >CP20277.cs
+
+./ucm2cp $RARE --page 20278 --wpage 1252 \
+	--name 'IBM EBCDIC (Finland/Sweden)' \
+	--webname IBM278 --bodyname IBM278 \
+	--headername IBM278 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-278.ucm >CP20278.cs
+
+./ucm2cp $RARE --page 20280 --wpage 1252 \
+	--name 'IBM EBCDIC (Italy)' \
+	--webname IBM280 --bodyname IBM280 \
+	--headername IBM280 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-280.ucm >CP20280.cs
+
+./ucm2cp $RARE --page 20284 --wpage 1252 \
+	--name 'IBM EBCDIC (Latin America/Spain)' \
+	--webname IBM284 --bodyname IBM284 \
+	--headername IBM284 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-284.ucm >CP20284.cs
+
+./ucm2cp $RARE --page 20285 --wpage 1252 \
+	--name 'IBM EBCDIC (United Kingdom)' \
+	--webname IBM285 --bodyname IBM285 \
+	--headername IBM285 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-285.ucm >CP20285.cs
+
+./ucm2cp $RARE --page 20290 --wpage 932 \
+	--name 'IBM EBCDIC (Japanese Katakana Extended)' \
+	--webname IBM290 --bodyname IBM290 \
+	--headername IBM290 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-290.ucm >CP20290.cs
+
+./ucm2cp $RARE --page 20297 --wpage 1252 \
+	--name 'IBM EBCDIC (France)' \
+	--webname IBM297 --bodyname IBM297 \
+	--headername IBM297 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-297.ucm >CP20297.cs
+
+./ucm2cp $RARE --page 20420 --wpage 1256 \
+	--name 'IBM EBCDIC (Arabic)' \
+	--webname IBM420 --bodyname IBM420 \
+	--headername IBM420 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-420.ucm >CP20420.cs
+
+./ucm2cp $RARE --page 20424 --wpage 1255 \
+	--name 'IBM EBCDIC (Hebrew)' \
+	--webname IBM424 --bodyname IBM424 \
+	--headername IBM424 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-424.ucm >CP20424.cs
+
 ./ucm2cp --page 20866 --wpage 1251 --name 'Cyrillic (KOI8-R)' \
 	--webname koi8-r --bodyname koi8-r \
 	--headername koi8-r ibm-878.ucm >CP20866.cs
+
+./ucm2cp $RARE --page 20871 --wpage 1252 \
+	--name 'IBM EBCDIC (Icelandic)' \
+	--webname IBM871 --bodyname IBM871 \
+	--headername IBM871 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-871.ucm >CP20871.cs
+
+./ucm2cp $RARE --page 21025 --wpage 1257 \
+	--name 'IBM EBCDIC (Cyrillic - Serbian, Bulgarian)' \
+	--webname IBM1025 --bodyname IBM1025 \
+	--headername IBM1025 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save ibm-1025.ucm >CP21025.cs
 
 ./ucm2cp --page 28592 --wpage 1250 --name 'Central European (ISO)' \
 	--webname iso-8859-2 --bodyname iso-8859-2 \
 	--headername iso-8859-2 ibm-912.ucm >CP28592.cs
 
+./ucm2cp --page 28593 --wpage 28593 --name 'Latin 3 (ISO)' \
+	--webname iso-8859-3 --bodyname iso-8859-3 \
+	--headername iso-8859-3 ibm-912.ucm >CP28593.cs
+
+./ucm2cp --page 28594 --wpage 1257 --name 'Baltic (ISO)' \
+	--webname iso-8859-4 --bodyname iso-8859-4 \
+	--headername iso-8859-4 ibm-912.ucm >CP28594.cs
+
+./ucm2cp --page 28595 --wpage 1251 --name 'Cyrillic (ISO)' \
+	--webname iso-8859-5 --bodyname iso-8859-5 \
+	--headername iso-8859-5 ibm-912.ucm >CP28595.cs
+
+./ucm2cp --page 28596 --wpage 1256 --name 'Arabic (ISO)' \
+	--webname iso-8859-6 --bodyname iso-8859-6 \
+	--headername iso-8859-6 ibm-1089.ucm >CP28596.cs
+
+./ucm2cp --page 28597 --wpage 1253 --name 'Greek (ISO)' \
+	--webname iso-8859-7 --bodyname iso-8859-7 \
+	--headername iso-8859-7 ibm-4909.ucm >CP28597.cs
+
+./ucm2cp --page 28598 --wpage 1255 --name 'Hebrew (ISO)' \
+	--webname iso-8859-8 --bodyname iso-8859-8 \
+	--headername iso-8859-8 ibm-916.ucm >CP28598.cs
+
+./ucm2cp --page 28599 --wpage 1254 --name 'Latin 5 (ISO)' \
+	--webname iso-8859-9 --bodyname iso-8859-9 \
+	--headername iso-8859-9 ibm-920.ucm >CP28599.cs
+
 ./ucm2cp --page 28605 --wpage 1252 --name 'Latin 9 (ISO)' \
 	--webname iso-8859-15 --bodyname iso-8859-15 \
 	--headername iso-8859-15 --no-browser-display \
 	ibm-923.ucm >CP28605.cs
+
+./ucm2cp $RARE --page 38598 --wpage 1255 \
+	--name 'Hebrew (ISO Alternative)' \
+	--webname windows-38598 --bodyname iso-8859-8 \
+	--headername windows-38598 ibm-916.ucm >CP38598.cs
 
 exit 0
 
@@ -152,19 +425,72 @@ exit 0
 #
 # Other Windows code pages that aren't done yet:
 #
+#  709   Arabic - ASMO 449+, BCON V4
+#  710   Arabic - Transparent Arabic
+#  720   Arabic - Transparent ASMO
+#  737   OEM - Greek (formerly 437G)
+#  775   OEM - Baltic
 #  932   Japanese (Shift-JIS)
 #  936   Chinese Simplified (GB2312)
-#  947   Korean
+#  949   Korean
 #  950   Chinese Traditional (Big5)
+#  1361  Korean (Johab)
+#  10001 MAC - Japanese
+#  10002 MAC - Traditional Chinese (Big5)
+#  10003 MAC - Korean
+#  10004 MAC - Arabic
+#  10005 MAC - Hebrew
+#  10006 MAC - Greek I
+#  10007 MAC - Cyrillic
+#  10008 MAC - Simplified Chinese (GB 2312)
+#  10010 MAC - Romania
+#  10017 MAC - Ukraine
+#  10021 MAC - Thai
+#  10029 MAC - Latin II
+#  10081 MAC - Turkish
+#  10082 MAC - Croatia
+#  12000 Unicode UCS-4 Little-Endian
+#  12001 Unicode UCS-4 Big-Endian
+#  20000 CNS - Taiwan
+#  20001 TCA - Taiwan
+#  20002 Eten - Taiwan
+#  20003 IBM5550 - Taiwan
+#  20004 TeleText - Taiwan
+#  20005 Wang - Taiwan
+#  20105 IA5 IRV International Alphabet No. 5 (7-bit)
+#  20106 IA5 German (7-bit)
+#  20107 IA5 Swedish (7-bit)
+#  20108 IA5 Norwegian (7-bit)
 #  20261 T.61
+#  20269 ISO 6937 Non-Spacing Accent
+#  20423 IBM EBCDIC - Greek
+#  20833 IBM EBCDIC - Korean Extended
+#  20838 IBM EBCDIC - Thai
+#  20880 IBM EBCDIC - Cyrillic (Russian)
+#  20905 IBM EBCDIC - Turkish
+#  20924 IBM EBCDIC - Latin-1/Open System (1047 + Euro symbol)
+#  20932 JIX X 0208-1990 & 0212-1990
+#  20936 Simplified Chinese (GB2312)
+#  21027 Extended Alpha Lowercase
+#  21866 Ukrainian (KOI8-U)
+#  29001 Europa 3
 #  50220 Japanese (JIS)
 #  50221 Japanese (JIS-Allow 1 byte Kana)
 #  50222 Japanese (JIS-Allow 1 byte Kana - SO/SI)
 #  50225 Korean (ISO)
 #  50227 ISO-2022 Simplified Chinese
 #  50229 ISO-2022 Traditional Chinese
+#  50930 Japanese (Katakana) Extended
+#  50931 US/Canada and Japanese
+#  50933 Korean Extended and Korean
+#  50935 Simplified Chinese Extended and Simplified Chinese
+#  50936 Simplified Chinese
+#  50937 US/Canada and Traditional Chinese
+#  50939 Japanese (Latin) Extended and Japanese
 #  51932 Japanese (EUC)
 #  51936 Chinese Simplified (EUC)
+#  51949 Korean (EUC)
+#  51950 Traditional Chinese (EUC)
 #  52936 Chinese Simplified (HZ)
 #  54936 GB 18030-2000 Simplified Chinese
 #  57002 ISCII Devanagari

@@ -32,6 +32,7 @@ Usage: ucm2cp [options] file
 	--no-browser-save		Set browser save value to false (optional)
 	--no-mailnews-display	Set mail/news display value to false (optional)
 	--no-mailnews-save		Set mail/news save value to false (optional)
+	--rare					This is a rare code page (optional)
 
 */
 
@@ -52,6 +53,7 @@ static int isBrowserDisplay = 1;
 static int isBrowserSave = 1;
 static int isMailNewsDisplay = 1;
 static int isMailNewsSave = 1;
+static int rare = 0;
 static const char *filename = 0;
 
 /*
@@ -124,6 +126,10 @@ int main(int argc, char *argv[])
 		else if(!strcmp(argv[1], "--no-mailnews-save"))
 		{
 			isMailNewsSave = 0;
+		}
+		else if(!strcmp(argv[1], "--rare"))
+		{
+			rare = 1;
 		}
 		++argv;
 		--argc;
@@ -345,6 +351,10 @@ static void printHeader(void)
 	printf("/*\n * CP%d.cs - %s code page.\n", codePage, name);
 	fputs(COPYRIGHT_MSG, stdout);
 	printf("// Generated from \"%s\".\n\n", filename);
+	if(rare)
+	{
+		printf("#if RARE_CODE_PAGES\n\n");
+	}
 	printf("namespace System.Text\n{\n\n");
 	printf("using System;\n\n");
 	printf("internal class CP%d : ByteEncoding\n{\n", codePage);
@@ -399,6 +409,10 @@ static void printFooter(void)
 	printf("}; // class ENC");
 	printEncodingName(webName);
 	printf("\n\n}; // namespace System.Text\n");
+	if(rare)
+	{
+		printf("\n#endif // RARE_CODE_PAGES\n");
+	}
 }
 
 /*

@@ -34,6 +34,51 @@
 	runtime/System/Text/mac-is.ucm: add code page support for the
 	"Icelandic (Mac)" code page, 10079.
 
+	* runtime/System/Text/CP1026.cs, runtime/System/Text/CP1047.cs,
+	runtime/System/Text/CP1140.cs, runtime/System/Text/CP1141.cs,
+	runtime/System/Text/CP1142.cs, runtime/System/Text/CP1143.cs,
+	runtime/System/Text/CP1144.cs, runtime/System/Text/CP1145.cs,
+	runtime/System/Text/CP1146.cs, runtime/System/Text/CP1147.cs,
+	runtime/System/Text/CP1148.cs, runtime/System/Text/CP1149.cs,
+	runtime/System/Text/CP20273.cs, runtime/System/Text/CP20277.cs,
+	runtime/System/Text/CP20278.cs, runtime/System/Text/CP20280.cs,
+	runtime/System/Text/CP20284.cs, runtime/System/Text/CP20285.cs,
+	runtime/System/Text/CP20290.cs, runtime/System/Text/CP20297.cs,
+	runtime/System/Text/CP20420.cs, runtime/System/Text/CP20424.cs,
+	runtime/System/Text/CP20871.cs, runtime/System/Text/CP21025.cs,
+	runtime/System/Text/CP28593.cs, runtime/System/Text/CP28594.cs,
+	runtime/System/Text/CP28595.cs, runtime/System/Text/CP28596.cs,
+	runtime/System/Text/CP28597.cs, runtime/System/Text/CP28598.cs,
+	runtime/System/Text/CP28599.cs, runtime/System/Text/CP38598.cs,
+	runtime/System/Text/CP708.cs, runtime/System/Text/CP852.cs,
+	runtime/System/Text/CP855.cs, runtime/System/Text/CP857.cs,
+	runtime/System/Text/CP858.cs, runtime/System/Text/CP862.cs,
+	runtime/System/Text/CP864.cs, runtime/System/Text/CP866.cs,
+	runtime/System/Text/CP869.cs, runtime/System/Text/CP870.cs,
+	runtime/System/Text/CP875.cs, runtime/System/Text/cvt.sh,
+	runtime/System/Text/ibm-1025.ucm, runtime/System/Text/ibm-1026.ucm,
+	runtime/System/Text/ibm-1047.ucm, runtime/System/Text/ibm-1089.ucm,
+	runtime/System/Text/ibm-1140.ucm, runtime/System/Text/ibm-1141.ucm,
+	runtime/System/Text/ibm-1142.ucm, runtime/System/Text/ibm-1143.ucm,
+	runtime/System/Text/ibm-1144.ucm, runtime/System/Text/ibm-1145.ucm,
+	runtime/System/Text/ibm-1146.ucm, runtime/System/Text/ibm-1147.ucm,
+	runtime/System/Text/ibm-1148.ucm, runtime/System/Text/ibm-1149.ucm,
+	runtime/System/Text/ibm-273.ucm, runtime/System/Text/ibm-277.ucm,
+	runtime/System/Text/ibm-278.ucm, runtime/System/Text/ibm-280.ucm,
+	runtime/System/Text/ibm-284.ucm, runtime/System/Text/ibm-285.ucm,
+	runtime/System/Text/ibm-290.ucm, runtime/System/Text/ibm-297.ucm,
+	runtime/System/Text/ibm-420.ucm, runtime/System/Text/ibm-424.ucm,
+	runtime/System/Text/ibm-4909.ucm, runtime/System/Text/ibm-852.ucm,
+	runtime/System/Text/ibm-855.ucm, runtime/System/Text/ibm-857.ucm,
+	runtime/System/Text/ibm-858.ucm, runtime/System/Text/ibm-862.ucm,
+	runtime/System/Text/ibm-864.ucm, runtime/System/Text/ibm-866.ucm,
+	runtime/System/Text/ibm-869.ucm, runtime/System/Text/ibm-870.ucm,
+	runtime/System/Text/ibm-871.ucm, runtime/System/Text/ibm-875.ucm,
+	runtime/System/Text/ibm-913.ucm, runtime/System/Text/ibm-914.ucm,
+	runtime/System/Text/ibm-915.ucm, runtime/System/Text/ibm-916.ucm,
+	runtime/System/Text/ibm-920.ucm, runtime/System/Text/ucm2cp.c:
+	continue adding support for 8-bit code pages.
+
 2002-04-14  Stephen Compall  <rushing@sigecom.net>
 
 	* tests/System/TestUri.cs, tests/System/TestSystem.cs: added a

@@ -728,7 +728,17 @@ static void printHeader(void)
 		}
 
 		/* Declare the "Country" property for a culture */
-		if(strlen(name) > 2)
+		if(!strcmp(name, "kok-IN"))
+		{
+			printf("\tpublic override String Country\n");
+			printf("\t{\n");
+			printf("\t\tget\n");
+			printf("\t\t{\n");
+			printf("\t\t\treturn \"IN\";\n");
+			printf("\t\t}\n");
+			printf("\t}\n");
+		}
+		else if(strlen(name) > 2 && strcmp(name, "kok") != 0)
 		{
 			printf("\tpublic override String Country\n");
 			printf("\t{\n");

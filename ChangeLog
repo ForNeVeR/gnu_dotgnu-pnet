@@ -9,6 +9,9 @@
 	add the "SharpZipLib" directory to pnetlib, which is a port of
 	SharpDevelop's compression handling library.
 
+	* I18N/Other/CID0057.cs, I18N/Other/CID0457.cs, I18N/tools/loc2cul.c:
+	fix the country name for the "kok" and "kok-IN" cultures.
+
 2003-10-07  Neil Cawse  <neilcawse@geotab.com>
 
 	* M System.Drawing.Win32/DrawingGraphics.cs

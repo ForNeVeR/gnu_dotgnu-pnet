@@ -177,7 +177,7 @@ static void Dump_FieldDef(ILImage *image, FILE *outstream, int flags,
 		ILFieldRVA *rva = ILFieldRVAGetFromOwner(field);
 		if(rva)
 		{
-			fprintf(outstream, " at 0x%08lX",
+			fprintf(outstream, " at D_0x%08lX",
 					(unsigned long)(ILFieldRVA_RVA(rva)));
 		}
 	}

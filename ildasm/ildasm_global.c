@@ -390,6 +390,9 @@ void ILDAsmDumpGlobal(ILImage *image, FILE *outstream, int flags)
 	ILDAsmWalkTokens(image, outstream, flags,
 					 IL_META_TOKEN_EXPORTED_TYPE,
 					 (ILDAsmWalkFunc)Dump_ExportedType, 0);
+
+	/* Dump the ".data" and ".tls" sections */
+	ILDAsmDumpDataSections(outstream, image);
 }
 
 #ifdef	__cplusplus

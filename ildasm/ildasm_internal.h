@@ -92,6 +92,11 @@ void ILDAsmDumpClasses(ILImage *image, FILE *outstream, int flags);
 void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,
 						ILProgramItem *item, int flags);
 
+/*
+ * Dump the ".data" and ".tls" sections.
+ */
+void ILDAsmDumpDataSections(FILE *outstream, ILImage *image);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -4,6 +4,10 @@
 	* dumpasm/dump_flags.c, ilasm/ilasm_grammar.y, ildasm/ildasm_global.c:
 	fix the processing of public keys in ilasm and ildasm.
 
+	* ildasm/Makefile.am, ildasm/ildasm_class.c, ildasm/ildasm_data.c,
+	ildasm/ildasm_global.c, ildasm/ildasm_internal.h: dump the contents
+	of the ".data" and ".tls" sections.
+
 2003-01-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/rc2.c: work around problems with unsigned short

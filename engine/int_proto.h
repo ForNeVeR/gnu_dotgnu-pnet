@@ -298,6 +298,7 @@ extern ILObject * _IL_Assembly_LoadFromBytes(ILExecThread * _thread, System_Arra
 extern ILObject * _IL_Assembly_GetManifestResourceStream(ILExecThread * _thread, ILObject * _this, ILString * _p1);
 extern ILString * _IL_Assembly_GetSatellitePath(ILExecThread * _thread, ILObject * _this, ILString * _p1);
 extern ILObject * _IL_Assembly_LoadFromFile(ILExecThread * _thread, ILString * _p1, ILInt32 * error, ILObject * _p3);
+extern System_Array * _IL_Assembly_GetTypes(ILExecThread * _thread, ILObject * _this);
 extern ILString * _IL_Assembly_GetFullName(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Assembly_GetModuleInternal(ILExecThread * _thread, ILObject * _this, ILString * _p1);
 extern ILObject * _IL_Assembly_GetEntryAssembly(ILExecThread * _thread);
@@ -306,7 +307,6 @@ extern ILObject * _IL_Assembly_GetFile(ILExecThread * _thread, ILObject * _this,
 extern System_Array * _IL_Assembly_GetFiles(ILExecThread * _thread, ILObject * _this, ILBool _p1);
 extern ILObject * _IL_Assembly_GetManifestResourceInfo(ILExecThread * _thread, ILObject * _this, ILString * _p1);
 extern System_Array * _IL_Assembly_GetManifestResourceNames(ILExecThread * _thread, ILObject * _this);
-extern System_Array * _IL_Assembly_GetTypes(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Assembly_LoadFromName(ILExecThread * _thread, ILString * _p1, ILInt32 * error, ILObject * _p3);
 extern ILString * _IL_Assembly_GetLocation(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Assembly_FillAssemblyName(ILExecThread * _thread, ILObject * _this, ILObject * _p1);
@@ -556,6 +556,7 @@ extern ILString * _IL_InfoMethods_GetUserDomainName(ILExecThread * _thread);
 extern ILBool _IL_InfoMethods_IsUserInteractive(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetUserName(ILExecThread * _thread);
 extern ILInt64 _IL_InfoMethods_GetWorkingSet(ILExecThread * _thread);
+extern ILString * _IL_InfoMethods_GetPlatformName(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetGlobalConfigDir(ILExecThread * _thread);
 
 extern ILNativeInt _IL_RegexpMethods_CompileWithSyntaxInternal(ILExecThread * _thread, ILString * _p1, ILInt32 _p2);

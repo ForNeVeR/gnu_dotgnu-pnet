@@ -384,6 +384,15 @@ char *ILSearchPath(const char *path, const char *name, int isExe)
 #endif
 }
 
+const char *ILGetPlatformName(void)
+{
+#ifdef CSCC_HOST_TRIPLET
+	return CSCC_HOST_TRIPLET;
+#else
+	return 0;
+#endif
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -69,6 +69,14 @@ ILInt32 _IL_InfoMethods_GetPlatformID(ILExecThread *thread)
 }
 
 /*
+ * public static String GetPlatformName();
+ */
+ILString *_IL_InfoMethods_GetPlatformName(ILExecThread *thread)
+{
+	return ILStringCreate(thread, ILGetPlatformName());
+}
+
+/*
  * public static String GetUserDomainName();
  */
 ILString *_IL_InfoMethods_GetUserDomainName(ILExecThread *thread)

@@ -205,6 +205,11 @@ char *ILGetStandardProgramPath(void);
  */
 char *ILSearchPath(const char *path, const char *name, int isExe);
 
+/*
+ * Get the platform name as an autoconf-compatible host string.
+ */
+const char *ILGetPlatformName(void);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -42,6 +42,11 @@ public class TestMonitor
 
 	public void TestMonitorSingleThreaded()
 	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
 		object o = new object();
 		
 		Monitor.Enter(o);
@@ -52,6 +57,11 @@ public class TestMonitor
 
 	public void TestMonitorExitNoEnter()
 	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+		
 		object o = new object();
 		
 		try
@@ -67,8 +77,13 @@ public class TestMonitor
 
 	public void TestMonitorEnterExitMismatch()
 	{
-		object o = new object();
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
 		
+		object o = new object();
+
 		try
 		{
 			Monitor.Enter(o);
@@ -84,6 +99,11 @@ public class TestMonitor
 
 	public void TestMonitorEnterExitMultiple()
 	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+	
 		object o1 = new object();
 		object o2 = new object();
 		

@@ -1,3 +1,7 @@
+2003-07-08  Thong Nguyen  <tum@veridicus.com>
+
+	* tests/runtime/System/Threading/TestMonitor.cs: Fix some tests
+	not checking for threading support.
 
 2003-07-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 

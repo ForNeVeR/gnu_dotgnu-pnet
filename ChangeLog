@@ -1,4 +1,14 @@
 
+2005-02-21  Doru Budai  <doru.budai@gmail.com>
+
+	* System/Net/Sockets/Sockets.cs: Enable broadcast option. (patch
+	#3757, applied by drobosson)
+		
+2005-02-21  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/Label.cs: Remove tabs from label text. Fixes
+	bug #12037.
+
 2005-02-18  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/TreeNodeCollection.cs: Apply submitted bug fix

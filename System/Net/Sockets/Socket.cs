@@ -1470,7 +1470,8 @@ public class Socket : IDisposable
 					if(optionName == SocketOptionName.KeepAlive ||
 					   optionName == SocketOptionName.ReceiveBuffer ||
 					   optionName == SocketOptionName.SendBuffer ||
-					   optionName == SocketOptionName.ReuseAddress)
+					   optionName == SocketOptionName.ReuseAddress ||
+					   optionName == SocketOptionName.Broadcast)
 					{
 						SetSocketOptionRaw(optionLevel, optionName,
 										   optionValue);

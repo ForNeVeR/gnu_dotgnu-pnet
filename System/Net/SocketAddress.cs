@@ -58,10 +58,15 @@ public class SocketAddress
 
 	}
 
-	[TODO]
 	public override int GetHashCode()
 	{
-			return 123;
+		int hash = 0;
+		int posn;
+		for(posn = 0; posn < myarray.Length; ++posn)
+		{
+			hash = (hash << 5) + hash + myarray[posn];
+		}
+		return hash;
 	}
 		
 	public override string ToString()

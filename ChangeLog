@@ -26,6 +26,11 @@
 	remove "TODO" from the "SetCreationTime" methods because they
 	are actually implemented.
 
+	* System/Net/SocketAddress.cs, System/Net/SocketPermission.cs,
+	System/Net/SocketPermissionAttribute.cs,
+	resources/en_US/System/Arg.txt: implement socket permission
+	classes; add "SocketAddress.GetHashCode()".
+
 2003-03-31  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs,

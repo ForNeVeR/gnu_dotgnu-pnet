@@ -38,6 +38,7 @@ public class Socket : IDisposable
 	private bool connected;
 	private EndPoint localEP;
 	private EndPoint remoteEP;
+	private Object readLock;
 
 	// Invalid socket handle.
 	private static readonly IntPtr InvalidHandle =
@@ -101,6 +102,7 @@ public class Socket : IDisposable
 				this.connected = false;
 				this.localEP = null;
 				this.remoteEP = null;
+				this.readLock = new Object();
 
 				// Attempt to create the socket.  This may bail out for
 				// some address families, even if "AddressFamilySupported"
@@ -127,6 +129,7 @@ public class Socket : IDisposable
 				this.connected = true;
 				this.localEP = null;
 				this.remoteEP = remoteEP;
+				this.readLock = new Object();
 			}
 
 	// Destructor.
@@ -1006,7 +1009,7 @@ public class Socket : IDisposable
 				ValidateBuffer(buffer, offset, size);
 
 				// Perform the receive operation.
-				lock(this)
+				lock(readLock)
 				{
 					if(handle == InvalidHandle)
 					{
@@ -1069,7 +1072,7 @@ public class Socket : IDisposable
 				Array.Clear(addrReturn, 0, addrReturn.Length);
 
 				// Perform the receive operation.
-				lock(this)
+				lock(readLock)
 				{
 					if(handle == InvalidHandle)
 					{
@@ -1664,7 +1667,7 @@ public class Socket : IDisposable
 			{
 				get
 				{
-					lock(this)
+					lock(readLock)
 					{
 						if(handle == InvalidHandle)
 						{

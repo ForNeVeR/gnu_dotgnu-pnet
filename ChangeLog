@@ -1,4 +1,10 @@
 
+2004-02-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/Sockets.cs: use separate locks for reading and
+	writing on a socket so that one thread can be blocking for a
+	read while another thread writes.
+
 2004-02-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: automatically detect the size of a large number

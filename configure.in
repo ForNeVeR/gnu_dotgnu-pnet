@@ -41,6 +41,7 @@ AC_PATH_XTRA
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_CHECK_HEADERS(time.h sys/time.h sys/types.h sys/select.h unistd.h)
+AC_CHECK_FUNCS(select)
 
 dnl The --with-pnet option can be used to specify the location of
 dnl Portable.NET, so that we know where to get the C# compiler, etc.

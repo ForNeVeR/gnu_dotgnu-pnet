@@ -382,7 +382,7 @@ ILInt32 ILCopyFile(const char *src, const char *dest)
 		return ILSysIOConvertErrno(errno);
 	}
 
-	while ( ( bytes_read = ILSysIORead(src_result, buf, 4000) ) != 0 && errno == 0)
+	while ( ( bytes_read = ILSysIORead(src_result, buf, 4000) ) > 0 )
 	{
 		ILSysIOWrite(dest_result, buf, bytes_read);
 	}

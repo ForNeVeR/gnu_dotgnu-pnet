@@ -68,7 +68,7 @@ public class TestUri : TestCase
 				}
 				catch (Exception)
 				{
-					Fail("{0} threw an exception it shouldn't have!", lasturi)
+					Fail("{0} threw an exception it shouldn't have!", lasturi);
 				}
 			}
 		}
@@ -117,7 +117,7 @@ public class TestUri : TestCase
 		AssertEquals("::F0F0:0 allows fake zerocompress at beginning",
 			     Uri.CheckHostName("::F0F0:0"),
 			     UriHostNameType.IPv6);
-		AssertEquals("0:1:2:3:4:5:6:127.0.0.1 has too many elements"
+		AssertEquals("0:1:2:3:4:5:6:127.0.0.1 has too many elements",
 			     Uri.CheckHostName("0:1:2:3:4:5:6:127.0.0.1"),
 			     UriHostNameType.Unknown);
 		AssertEquals("0:1:2:3:4:5:127.0.0.1 has the right number of elements",

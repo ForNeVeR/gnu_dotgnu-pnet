@@ -6,6 +6,8 @@
 	* System/Net/IPHostEntry.cs (Constructor): Change constructor
 	visibility.
 
+	* tests/System/TestUri.cs : fix a couple of compile errors 
+
 2002-09-15  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs (StripMetaDirectories): Handling of the last

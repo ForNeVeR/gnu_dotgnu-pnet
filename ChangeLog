@@ -6,6 +6,8 @@
 * README: modify the README file to document new directories, and to point
 contributors at the HACKING file instead of "contrib.txt".
 
+* doc/contrib.txt: remove obsolete file.
+
 2001-12-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/TODOAttribute.cs: add the internal "TODO" attribute class

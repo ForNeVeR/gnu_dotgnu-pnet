@@ -1,4 +1,9 @@
 
+2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/marshal.c (ILPInvokeGetMarshalType): fix a typo
+	(thanks to Miroslaw Dobrzanski-Neumann).
+
 2003-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/console.c, support/serial.c: work around missing termios

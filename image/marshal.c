@@ -149,7 +149,7 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 		ExtractCustomString(customName, customNameLen);	/* Unused native name */
 		ExtractCustomString(customName, customNameLen);
 		ExtractCustomString(customCookie, customCookieLen);
-		if(customNameLen > 0)
+		if(*customNameLen > 0)
 		{
 			return IL_META_MARSHAL_CUSTOM;
 		}

@@ -20,6 +20,7 @@ libinclude_HEADERS = \
 	pthread.h \
 	pwd.h \
 	setjmp.h \
+	signal.h \
 	stdarg.h \
 	stdbool.h \
 	stddef.h \

@@ -15,6 +15,15 @@
 	add the "__thread_specific__" modifier to variables like "errno"
 	that need to be thread-specific.
 
+	* configure.in, include/Makefile.am, include/pthread.h,
+	include/signal.h, include/unistd.h, libc/Makefile.am,
+	libc/pthread/Makefile.am, libc/pthread/self.c, libc/signal/.cvsignore,
+	libc/signal/Makefile.am, libc/signal/kill.c, libc/signal/sigaction.c,
+	libc/signal/sighold.c, libc/signal/sigignore.c,
+	libc/signal/signal-glue.cs, libc/signal/signal.c,
+	libc/signal/sigpause.c, libc/signal/sigrelse.c, libc/signal/sigset.c,
+	libc/unistd/pid-stub.c: add signal functions to the library.
+
 2004-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.2" release.

@@ -103,6 +103,7 @@ extern int getlogin_r(char *__name, size_t __name_len);
 extern int getopt(int argc, char * const argv[], const char *optstring);
 extern pid_t getpgid(pid_t __pid);
 extern pid_t getpid(void);
+extern pid_t getpgrp(void);
 extern pid_t getppid(void);
 extern pid_t getsid(pid_t __pid);
 extern uid_t getuid(void);

@@ -7,6 +7,7 @@ SUBDIRS = ctype \
 		  misc \
 		  pthread \
 		  pwd \
+		  signal \
 		  stdio \
 		  stdlib \
 		  string \
@@ -21,6 +22,7 @@ LIBC_COMPONENTS = ctype/libCType.a \
 				  misc/libCMisc.a \
 				  pthread/libCPthread.a \
 				  pwd/libCPwd.a \
+				  signal/libCSignal.a \
 				  stdio/libCStdio.a \
 				  stdlib/libCStdlib.a \
 				  string/libCString.a \

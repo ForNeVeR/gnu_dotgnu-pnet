@@ -93,6 +93,12 @@ __setsid(void)
 extern int __isatty(int fd);
 
 pid_t
+__getpgrp(void)
+{
+  return FAKE_PID;
+}
+
+pid_t
 __tcgetpgrp(int fd)
 {
   if (fd < 0)
@@ -133,6 +139,7 @@ __tcsetpgrp(int fd, pid_t pgrpid)
 
 weak_alias(__getpgid, getpgid)
 weak_alias(__getpid, getpid)
+weak_alias(__getpgrp, getpgrp)
 weak_alias(__getppid, getppid)
 weak_alias(__getsid, getsid)
 weak_alias(__setpgid, setpgid)

@@ -229,6 +229,7 @@ libc/malloc/Makefile
 libc/misc/Makefile
 libc/pthread/Makefile
 libc/pwd/Makefile
+libc/signal/Makefile
 libc/stdio/Makefile
 libc/stdlib/Makefile
 libc/string/Makefile

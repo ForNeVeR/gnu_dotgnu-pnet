@@ -96,6 +96,10 @@ typedef struct
 
 } pthread_mutexattr_t;
 
+/* Thread functions */
+
+extern pthread_t pthread_self (void);
+
 /* Functions for mutex handling.  */
 
 /* Initialize MUTEX using attributes in *MUTEX_ATTR, or use the

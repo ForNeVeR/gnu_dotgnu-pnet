@@ -1,3 +1,18 @@
+2004-05-12  Thong Nguyen  <tum@veridicus.com>
+
+	* engine/thread.c: Change ILThreadExecuteOn so that it
+	associates ILExecThreads with ILThreads both ways.
+	Added ILThreadUnexecuteOn function as the opposing
+	complement of ILThreadExecteOn.
+	
+	* engine/engine.h: Added prototype for ILThreadUnexecteOn.
+	
+	* engine/heap.c: Moved Finalize method lookup code
+	from _ILFinalizeObject into a new method (FindFinalizMethod).
+	Fixed _ILFinalizeObject so that it properly associates
+	the finalizer thread with the engine thread that the finalizer
+	thread uses for its execution context.
+	
 2004-05-10  Thong Nguyen  <tum@veridicus.com>
 
 	* support/interlocked_x86.h:  Make ILInterlockedDecrement
@@ -15,8 +30,8 @@
 	* tests/test_thread.c: Changed background thread count check
 	to allow 0 (not just 1) because GC thread is created only when
 	needed.  Changed thread_sleep_interrupt to check for
-	return value of IL_WAIT_INTERRUPTED instead of 0.	
-
+	return value of IL_WAIT_INTERRUPTED instead of 0.
+	
 2004-05-10  Gopal V  <gopalv82@yahoo.com>
 
 	* support/interlocked.h : Remove CRLFs from file.

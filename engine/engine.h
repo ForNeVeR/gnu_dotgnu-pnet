@@ -676,10 +676,22 @@ ILObject *_ILCustomToObject(ILExecThread *thread, void *ptr,
  */
 ILObject *_ILGetCurrentClrThread(ILExecThread *thread);
 
+
 /*
- *	Makes the given support thread execute in the context of the given engine thread.
+ * Associates a support thread with an engine thread and the engine
+ * thread with the support thread.
  */
 void _ILThreadExecuteOn(ILThread *thread, ILExecThread *execThread);
+
+/*
+ * Disassociates a support thread with an engine thread and the
+ * engine thread with the support thread.
+ * The support thread will no longer be able to execute managed
+ * code and the engine thread will no longer be able to be used
+ * to execute anything until it is reassociated using ILThreadExecuteOn.
+ */
+void _ILThreadUnexecuteOn(ILThread *thread, ILExecThread *execThread);
+
 
 /*
  *	Throws a thread abort exception on the given thread.
@@ -717,6 +729,15 @@ int _ILExecMonitorProcessCreate(ILExecProcess *process);
  * Cleans up the monitor system for the given process.
  */
 int _ILExecMonitorProcessDestroy(ILExecProcess *process);
+
+/*
+ * Pack a set of arguments into a vararg "Object[]" array.
+ * Returns the number of stack words to pop from the function,
+ * and the new array in "*array".
+ */
+ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
+							ILUInt32 firstParam, ILUInt32 numArgs,
+							ILType *callSiteSig, void **array);
 
 #ifdef	__cplusplus
 };

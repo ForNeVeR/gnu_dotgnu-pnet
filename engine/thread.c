@@ -69,11 +69,31 @@ ILObject *_ILGetCurrentClrThread(ILExecThread *thread)
 }
 
 /*
- *	Makes the given support thread execute in the context of the given engine thread.
+ * Associates a support thread with an engine thread and the engine
+ * thread with the support thread.
  */
 void _ILThreadExecuteOn(ILThread *thread, ILExecThread *execThread)
 {
 	ILThreadSetObject(thread, execThread);
+	execThread->supportThread = thread;
+}
+
+/*
+ * Disassociates a support thread with an engine thread and the
+ * engine thread with the support thread.
+ * The support thread will no longer be able to execute managed
+ * code and the engine thread will no longer be able to be used
+ * to execute anything until it is reassociated using ILThreadExecuteOn.
+ */
+void _ILThreadUnexecuteOn(ILThread *thread, ILExecThread *execThread)
+{
+	if (ILThreadGetObject(thread) != execThread)
+	{
+		return;
+	}
+
+	ILThreadSetObject(thread, 0);
+	execThread->supportThread = 0;
 }
 
 /*
@@ -105,11 +125,8 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 
 	/* TODO: Notify the GC that we possibly have a new thread to be scanned */
 
-	/* Associate the new engine-level thread with the OS-level thread */
+	/* Associate the new engine-level thread with the OS-level thread (and vice-versa) */
 	_ILThreadExecuteOn(thread, execThread);
-
-	/* Associate the OS-level thread with the new engine-level thread */
-	execThread->supportThread = thread;
 
 	/* Register a cleanup handler for the thread */
 	ILThreadRegisterCleanup(thread, ILExecThreadCleanup);
@@ -137,7 +154,7 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread)
 	ILThreadUnregisterCleanup(thread, ILExecThreadCleanup);
 
 	/* Disassociate the engine thread with the support thread */
-	_ILThreadExecuteOn(thread, 0);
+	_ILThreadUnexecuteOn(thread, execThread);
 
 	/* Destroy the engine thread */
 	_ILExecThreadDestroy(execThread);
@@ -237,6 +254,13 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 	else
 	{
 		process->firstThread = thread->nextThread;
+	}
+
+	/* Remove associations between ILExecThread and ILThread if they
+	   haven't already been removed */
+	if (thread->supportThread)
+	{		
+		_ILThreadUnexecuteOn(thread->supportThread, thread);
 	}
 
 	/* Destroy the operand stack */

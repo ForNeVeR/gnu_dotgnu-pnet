@@ -1,4 +1,9 @@
 
+2002-04-21  Gopal.V  <gopalv82@symonds.net>
+
+	* csdoc/doc_test.c : Test stubber for ECMA classes , added
+	csdoc2test to create stub test classes.
+
 2002-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/spawn.c (ILSpawnProcess): pass the first few options

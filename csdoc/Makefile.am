@@ -1,4 +1,4 @@
-bin_PROGRAMS       = csdoc2texi csdoc2html csdocvalil csdoc2stub
+bin_PROGRAMS       = csdoc2texi csdoc2html csdocvalil csdoc2stub csdoc2test
 noinst_PROGRAMS    = src2xml
 man_MANS           = csdoc2texi.1 csdoc2html.1
 EXTRA_DIST         = $(man_MANS)
@@ -22,6 +22,9 @@ csdocvalil_LDADD   = $(CSDOC_LIBS)
 
 csdoc2stub_SOURCES = doc_stub.c $(CSDOC_COMMON)
 csdoc2stub_LDADD   = $(CSDOC_LIBS)
+
+csdoc2test_SOURCES = doc_test.c $(CSDOC_COMMON)
+csdoc2test_LDADD   = $(CSDOC_LIBS)
 
 src2xml_SOURCES    = src2xml.c
 

@@ -18,6 +18,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+namespace System
+{
+	public interface IAsyncResult
+	{
+	}
+
+	public delegate void AsyncCallback(IAsyncResult result);
+}
+
 public delegate string D1(int x);
 
 public class Test

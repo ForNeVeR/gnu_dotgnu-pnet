@@ -1,4 +1,14 @@
 
+2003-02-21  Gopal.V <gopalv82@symonds.net>
+	
+	* csharp/class/delegate1.cs, csharp/class/delegate1.il,
+	csharp/class/delegate1.jerr, csharp/class/event1.cs,
+	csharp/class/event1.il, csharp/class/event1.jerr,
+	csharp/expr/delegate1.cs, csharp/expr/delegate1.il,
+	csharp/expr/delegate1.jerr, csharp/expr/delegate3.cs,
+	csharp/expr/delegate3.il, csharp/expr/delegate3.jerr: update
+	code and error messages according to the changes in the compiler.
+	
 2003-02-14  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/class/constructor3.cs, csharp/class/constructor3.il,

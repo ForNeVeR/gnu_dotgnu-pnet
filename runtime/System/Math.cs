@@ -193,7 +193,7 @@ public sealed class Math
 			}
 	public static Decimal Max(Decimal val1, Decimal val2)
 			{
-				return Decimal.Min(val1, val2);
+				return Decimal.Max(val1, val2);
 			}
 
 	// Get the minimum of two values.

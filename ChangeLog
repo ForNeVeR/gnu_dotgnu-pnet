@@ -1,4 +1,9 @@
 
+2002-11-02  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/Math.cs: changed Math.Max(Decimal,Decimal) to call
+	Decimal.Max instead of Decimal.Min.
+
 2002-10-30  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/Path.cs: Change the code so that SMB

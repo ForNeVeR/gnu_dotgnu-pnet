@@ -4,6 +4,9 @@
 	* runtime/System/Threading/Thread.cs: Internal calls and Support for 
 	threading in Pnetlib.(Patch #1654, Gopal)
 
+	* resources/en_US/runtime/Exception.txt: String resources for 
+	Threading functions. (Patch #1660, Gopal)
+
 2003-06-25  Neil Cawse  <neilc@geotab.ca>
 
 	* System.Drawing.Win32/Win32.cs, System.Drawing.Win32/DrawingWindow.cs,

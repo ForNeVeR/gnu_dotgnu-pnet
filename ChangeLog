@@ -14,6 +14,9 @@
 	* engine/process.c: don't call "ILDynLibraryClose" if PInvoke
 	is disabled, as it will never be required.
 
+	* doc/embedded.html: document how the runtime engine can be
+	stripped down to run in embedded environments.
+
 2002-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_engine.h, engine/thread.c: add "ILExecThreadCurrent",

@@ -1,3 +1,17 @@
+2003-11-21  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/CheckBox.cs: small csc compile fix.
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: fix DrawGrid.
+
+	* Xsharp/EmbeddedApplication.cs: small csc compile fix.
+
+	* System.Windows.Forms/TextBox.cs: setup scroll bars in a different
+	place.
+
+	* System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingImage.cs: finish off DrawGlyph. Fix
+	boundary cases when creating bmp's with masks.
 
 2003-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

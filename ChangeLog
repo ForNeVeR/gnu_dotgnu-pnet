@@ -1,4 +1,12 @@
+2003-10-07  Neil Cawse  <neilcawse@geotab.com>
 
+	* M System.Drawing.Win32/DrawingGraphics.cs
+	System.Drawing.Win32/DrawingImage.cs
+	System.Drawing.Win32/DrawingToolkit.cs
+	System.Drawing.Win32/DrawingTopLevelWindow.cs
+	System.Drawing.Win32/Win32.cs : Correct signatures. Win32 now works
+	under pnet. Images implemented.
+	
 2003-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/MessageBox.cs, System.Windows.Forms/S.cs:

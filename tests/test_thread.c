@@ -43,6 +43,65 @@ static void sleepFor(int steps)
 }
 
 /*
+ * Test that the descriptor for the main thread is not NULL.
+ */
+static void thread_main_nonnull(void *arg)
+{
+	if(!ILThreadSelf())
+	{
+		ILUnitFailed("main thread is null");
+	}
+}
+
+/*
+ * Test setting and getting the object on the main thread.
+ */
+static void thread_main_object(void *arg)
+{
+	ILThread *thread = ILThreadSelf();
+
+	/* The value should be NULL initially */
+	if(ILThreadGetObject(thread))
+	{
+		ILUnitFailed("object for main thread not initially NULL");
+	}
+
+	/* Change the value to something else and then check it */
+	ILThreadSetObject(thread, (void *)0xBADBEEF);
+	if(ILThreadGetObject(thread) != (void *)0xBADBEEF)
+	{
+		ILUnitFailed("object for main thread could not be changed");
+	}
+}
+
+/*
+ * Test that the "main" thread is initially in the running state.
+ */
+static void thread_main_running(void *arg)
+{
+	if(ILThreadGetState(ILThreadSelf()) != IL_TS_RUNNING)
+	{
+		ILUnitFailed("main thread is not running");
+	}
+}
+
+/*
+ * Test that the "main" thread is initially a foreground thread.
+ */
+static void thread_main_foreground(void *arg)
+{
+	if(ILThreadGetBackground(ILThreadSelf()))
+	{
+		ILUnitFailed("main thread is not a foreground thread");
+	}
+	if((ILThreadGetState(ILThreadSelf()) & IL_TS_BACKGROUND) != 0)
+	{
+		ILUnitFailed("main thread state is not consistent "
+					 "with background flag");
+	}
+}
+
+/*
  * Global flag that may be modified by started threads.
  */
 static int volatile globalFlag;
@@ -226,6 +285,40 @@ static void thread_create_destroy(void *arg)
 
 	/* Destroy the thread */
 	ILThreadDestroy(thread);
+}
+
+/*
+ * Test that new threads are created as "foreground" threads.
+ */
+static void thread_create_foreground(void *arg)
+{
+	ILThread *thread;
+	int isbg;
+	int state;
+
+	/* Create the thread */
+	thread = ILThreadCreate(sleepThread, (void *)4);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Check the background flag and the state for the thread */
+	isbg = ILThreadGetBackground(thread);
+	state = ILThreadGetState(thread);
+
+	/* Destroy the thread */
+	ILThreadDestroy(thread);
+
+	/* Check for errors */
+	if(isbg)
+	{
+		ILUnitFailed("new thread was not created as `foreground'");
+	}
+	if((state & IL_TS_BACKGROUND) != 0)
+	{
+		ILUnitFailed("new thread state is not consistent with background flag");
+	}
 }
 
 /*
@@ -510,46 +603,144 @@ static void thread_suspend_rwlock(void *arg)
 	}
 }
 
+static int volatile mainWasSuspended;
+
 /*
- * Test that the descriptor for the main thread is not NULL.
+ * Thread start function that suspends the main thread.
  */
-static void thread_main_nonnull(void *arg)
+static void suspendMainThread(void *arg)
 {
-	if(!ILThreadSelf())
+	ILThread *thread = (ILThread *)arg;
+
+	/* Wait 1 time step and then suspend the main thread */
+	sleepFor(1);
+	ILThreadSuspend(thread);
+
+	/* Wait 4 more time steps - the main thread will continue if
+	   it was not properly suspended */
+	sleepFor(4);
+
+	/* Determine if the main thread was suspended */
+	mainWasSuspended = (ILThreadGetState(thread) == IL_TS_SUSPENDED);
+
+	/* Resume the main thread to allow it to continue normally */
+	ILThreadResume(thread);
+}
+
+/*
+ * Test that the main thread can be suspended by another thread.
+ */
+static void thread_suspend_main(void *arg)
+{
+	ILThread *thread;
+	int flag;
+	int state;
+
+	/* Create the thread that will attempt to suspend us */
+	thread = ILThreadCreate(suspendMainThread, ILThreadSelf());
+	if(!thread)
 	{
-		ILUnitFailed("main thread is null");
+		ILUnitOutOfMemory();
+	}
+
+	/* Clear the "mainWasSuspended" flag */
+	mainWasSuspended = 0;
+
+	/* Start the thread */
+	ILThreadStart(thread);
+
+	/* Wait 2 time steps - main should be suspended during this time */
+	sleepFor(2);
+
+	/* Save the value of "mainWasSuspended".  This will be zero if
+	   the main thread was not properly suspended */
+	flag = mainWasSuspended;
+
+	/* Wait 5 extra time steps for the system to settle */
+	sleepFor(5);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* The main thread should now be in the "running" state */
+	state = ILThreadGetState(ILThreadSelf());
+
+	/* Check for errors */
+	if(!flag)
+	{
+		ILUnitFailed("the main thread was not suspended");
+	}
+	if(state != IL_TS_RUNNING)
+	{
+		ILUnitFailed("the main thread did not return to the `running' state");
 	}
 }
 
 /*
- * Test setting and getting the object on the main thread.
+ * Thread start function that resumes the main thread.
  */
-static void thread_main_object(void *arg)
+static void resumeMainThread(void *arg)
 {
-	ILThread *thread = ILThreadSelf();
+	ILThread *thread = (ILThread *)arg;
 
-	/* The value should be NULL initially */
-	if(ILThreadGetObject(thread))
-	{
-		ILUnitFailed("object for main thread not initially NULL");
-	}
+	/* Wait 4 time steps - if the suspend is ignored, the
+	   main thread will continue running */
+	sleepFor(4);
 
-	/* Change the value to something else and then check it */
-	ILThreadSetObject(thread, (void *)0xBADBEEF);
-	if(ILThreadGetObject(thread) != (void *)0xBADBEEF)
-	{
-		ILUnitFailed("object for main thread could not be changed");
-	}
+	/* Determine if the main thread is suspended */
+	mainWasSuspended = (ILThreadGetState(thread) == IL_TS_SUSPENDED);
+
+	/* Resume the main thread to allow it to continue execution */
+	ILThreadResume(thread);
 }
 
 /*
- * Test that the "main" thread is initially in the running state.
+ * Test that we can resume the main thread after it has suspended itself.
  */
-static void thread_main_running(void *arg)
+static void thread_suspend_main_self(void *arg)
 {
-	if(ILThreadGetState(ILThreadSelf()) != IL_TS_RUNNING)
+	ILThread *thread;
+	int flag;
+	int state;
+
+	/* Create the thread */
+	thread = ILThreadCreate(resumeMainThread, ILThreadSelf());
+	if(!thread)
 	{
-		ILUnitFailed("main thread is not running");
+		ILUnitOutOfMemory();
+	}
+
+	/* Clear the "mainWasSuspended" flag */
+	mainWasSuspended = 0;
+
+	/* Start the thread */
+	ILThreadStart(thread);
+
+	/* Suspend the main thread and sleep for 2 time steps */
+	ILThreadSuspend(ILThreadSelf());
+	sleepFor(2);
+
+	/* Save the "mainWasSuspended" flag, which will be zero if
+	   the main thread didn't really suspend */
+	flag = mainWasSuspended;
+
+	/* Wait 3 extra time steps for the resumption thread to exit */
+	sleepFor(3);
+
+	/* Get the main thread's current state (which should be "running") */
+	state = ILThreadGetState(ILThreadSelf());
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors */
+	if(!flag)
+	{
+		ILUnitFailed("the main thread did not suspend itself");
+	}
+	if(state != IL_TS_RUNNING)
+	{
+		ILUnitFailed("the main thread did not return to the `running' state");
 	}
 }
 
@@ -690,6 +881,15 @@ void ILUnitRegisterTests(void)
 	ILThreadInit();
 
 	/*
+	 * Test the properties of the "main" thread.
+	 */
+	ILUnitRegisterSuite("Main Thread Properties");
+	RegisterSimple(thread_main_nonnull);
+	RegisterSimple(thread_main_object);
+	RegisterSimple(thread_main_running);
+	RegisterSimple(thread_main_foreground);
+
+	/*
 	 * Test thread creation behaviours.
 	 */
 	ILUnitRegisterSuite("Thread Creation");
@@ -697,6 +897,7 @@ void ILUnitRegisterTests(void)
 	RegisterSimple(thread_create_suspended);
 	RegisterSimple(thread_create_state);
 	RegisterSimple(thread_create_destroy);
+	RegisterSimple(thread_create_foreground);
 
 	/*
 	 * Test thread suspend behaviours.
@@ -708,14 +909,8 @@ void ILUnitRegisterTests(void)
 	RegisterSimple(thread_suspend_mutex);
 	ILUnitRegister("thread_suspend_rdlock", thread_suspend_rwlock, (void *)1);
 	ILUnitRegister("thread_suspend_wrlock", thread_suspend_rwlock, (void *)0);
-
-	/*
-	 * Test the properties of the "main" thread.
-	 */
-	ILUnitRegisterSuite("Main Thread Properties");
-	RegisterSimple(thread_main_nonnull);
-	RegisterSimple(thread_main_object);
-	RegisterSimple(thread_main_running);
+	RegisterSimple(thread_suspend_main);
+	RegisterSimple(thread_suspend_main_self);
 
 	/*
 	 * Test miscellaneous thread behaviours.

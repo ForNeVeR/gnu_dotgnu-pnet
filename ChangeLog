@@ -8,6 +8,8 @@
 	* support/pt_thread.c: clean up the mutexes and semaphores that
 	are owned by a thread when it is destroyed.
 
+	* tests/test_thread.c: more thread-related test cases.
+
 2002-04-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/pt_thread.c: fix problems with "resumeRequested" flag.

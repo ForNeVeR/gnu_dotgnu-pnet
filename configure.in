@@ -72,4 +72,5 @@ ilfind/Makefile
 codegen/Makefile
 cscc/Makefile
 resgen/Makefile
-samples/Makefile])
+samples/Makefile
+doc/Makefile])

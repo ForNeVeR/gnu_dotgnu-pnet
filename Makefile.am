@@ -1,2 +1,3 @@
 SUBDIRS = libffi include support image dumpasm engine ilasm ildasm \
-		  ilalink ilsize ilnative ilfind codegen cscc resgen samples
+		  ilalink ilsize ilnative ilfind codegen cscc resgen samples \
+		  doc

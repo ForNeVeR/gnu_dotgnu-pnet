@@ -1,4 +1,11 @@
 
+2002-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_internal.h, cscc/csharp/cs_invoke.tc,
+	cscc/csharp/cs_lookup.c: when a candidate method is found in a child
+	class, ignore all candidates in the parent, even if the parent
+	candidates are "better".
+
 2002-11-08  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_stmt.tc: Allow 'foreach' even if they do not implement

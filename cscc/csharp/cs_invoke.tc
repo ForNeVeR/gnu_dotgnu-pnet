@@ -315,6 +315,79 @@ static ILType *MakeCallSiteSig(ILGenInfo *info, ILType *methodSig,
 	return signature;
 }
 
+/*
+ * Reduce a method group to a set of candidates.
+ */
+static void ReduceMethodGroup(ILGenInfo *info, CSEvalArg *args,
+							  int numArgs, CSSemValue *method)
+{
+	unsigned long itemNum;
+	int candidateForm;
+	ILProgramItem *itemInfo;
+	ILMember *member;
+	ILClass *lowestOwner = 0;
+	ILClass *owner;
+
+	/* Remove methods that aren't candidates */
+	itemNum = 0;
+	while((itemInfo = CSGetGroupMember(CSSemGetGroup(*method), itemNum)) != 0)
+	{
+		candidateForm = CSItemIsCandidate(info, itemInfo, args, numArgs);
+		if(candidateForm)
+		{
+			CSSetGroupMemberForm(CSSemGetGroup(*method), itemNum,
+								 candidateForm);
+			++itemNum;
+			member = ILProgramItemToMember(itemInfo);
+			if(member)
+			{
+				owner = ILClassResolve(ILMember_Owner(member));
+				if(!lowestOwner)
+				{
+					lowestOwner = owner;
+				}
+				else if(CSIsBaseTypeFor(lowestOwner, owner))
+				{
+					lowestOwner = owner;
+				}
+			}
+		}
+		else
+		{
+			CSSemModifyGroup(*method, CSRemoveGroupMember
+								(CSSemGetGroup(*method), itemNum));
+		}
+	}
+
+	/* Remove candidates in base classes */
+	if(lowestOwner)
+	{
+		itemNum = 0;
+		while((itemInfo = CSGetGroupMember(CSSemGetGroup(*method), itemNum))
+					!= 0)
+		{
+			member = ILProgramItemToMember(itemInfo);
+			if(member)
+			{
+				owner = ILClassResolve(ILMember_Owner(member));
+				if(owner != lowestOwner)
+				{
+					CSSemModifyGroup(*method, CSRemoveGroupMember
+										(CSSemGetGroup(*method), itemNum));
+				}
+				else
+				{
+					++itemNum;
+				}
+			}
+			else
+			{
+				++itemNum;
+			}
+		}
+	}
+}
+
 %}
 
 /*
@@ -331,7 +404,6 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	int numArgs;
 	unsigned long itemNum;
 	char *itemName;
-	int candidateForm;
 	ILNode_MethodDeclaration *caller;
 
 	/* Get the method name for later error reporting */
@@ -388,22 +460,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	}
 
 	/* Find the set of candidate methods */
-	itemNum = 0;
-	while((itemInfo = CSGetGroupMember(CSSemGetGroup(method), itemNum)) != 0)
-	{
-		candidateForm = CSItemIsCandidate(info, itemInfo, args, numArgs);
-		if(candidateForm)
-		{
-			CSSetGroupMemberForm(CSSemGetGroup(method), itemNum,
-								 candidateForm);
-			++itemNum;
-		}
-		else
-		{
-			CSSemModifyGroup(method, CSRemoveGroupMember
-								(CSSemGetGroup(method), itemNum));
-		}
-	}
+	ReduceMethodGroup(info, args, numArgs, &method);
 
 	/* If there are no candidates left, then bail out */
 	itemNum = 0;

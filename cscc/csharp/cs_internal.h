@@ -135,6 +135,11 @@ void CSValidateDocs(ILNode *docList);
 int CSSignatureIdentical(ILType *sig1, ILType *sig2);
 
 /*
+ * Determine if "info1" is a base type for "info2".
+ */
+int CSIsBaseTypeFor(ILClass *info1, ILClass *info2);
+
+/*
  * Get the scope to use for access checks in the current context.
  */
 ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule);

@@ -404,10 +404,7 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 	}
 }
 
-/*
- * Determine if "info1" is a base type for "info2".
- */
-static int IsBaseTypeFor(ILClass *info1, ILClass *info2)
+int CSIsBaseTypeFor(ILClass *info1, ILClass *info2)
 {
 	if(ILClassResolve(info1) == ILClassResolve(info2))
 	{
@@ -494,7 +491,7 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 			prevMember = member;
 			while(testMember != 0)
 			{
-				if(IsBaseTypeFor(testMember->owner, member->owner))
+				if(CSIsBaseTypeFor(testMember->owner, member->owner))
 				{
 					/* "testMember" is in a base type of "member"'s type */
 					if(CSSignatureIdentical
@@ -510,7 +507,7 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 						continue;
 					}
 				}
-				else if(IsBaseTypeFor(member->owner, testMember->owner))
+				else if(CSIsBaseTypeFor(member->owner, testMember->owner))
 				{
 					/* "member" is in a base type of "testMember"'s type */
 					if(CSSignatureIdentical

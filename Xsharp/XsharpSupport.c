@@ -20,10 +20,17 @@
 
 #if !defined(X_DISPLAY_MISSING) && HAVE_SELECT
 
+/* XFT support doesn't work yet */
+/*#define	USE_XFT_EXTENSION	1*/
+
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #ifdef WIN32
 	#include <X11/Xwinsock.h>
+#endif
+#ifdef USE_XFT_EXTENSION
+	#include <X11/Xft/Xft.h>
 #endif
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>
@@ -89,6 +96,8 @@ int XNextEventWithTimeout(Display *dpy, XEvent *event, int timeout)
 #define	FontStyle_Italic		2
 #define	FontStyle_Underline		4
 #define	FontStyle_StrikeOut		8
+
+#ifndef USE_XFT_EXTENSION
 
 /*
  * Try to create a font with specific parameters.
@@ -159,12 +168,71 @@ static XFontSet TryCreateFont(Display *dpy, const char *family,
 	return 0;
 }
 
+#endif /* USE_XFT_EXTENSION */
+
 /*
  * Create a font from a description.
  */
-XFontSet XSharpCreateFont(Display *dpy, const char *family,
-						  int pointSize, int style)
+void *XSharpCreateFont(Display *dpy, const char *family,
+					   int pointSize, int style)
 {
+#ifdef USE_XFT_EXTENSION
+
+	XftPattern *pattern;
+	XftPattern *matched;
+	XftFont *font;
+	XftResult result;
+
+	/* Create the font pattern to be used */
+	pattern = XftPatternCreate();
+	if(!pattern)
+	{
+		return 0;
+	}
+	if(!XftPatternAddString(pattern, XFT_FAMILY, family))
+	{
+		XftPatternDestroy(pattern);
+		return 0;
+	}
+	if(!XftPatternAddDouble(pattern, XFT_SIZE, ((double)pointSize) / 10.0))
+	{
+		XftPatternDestroy(pattern);
+		return 0;
+	}
+	if((style & FontStyle_Bold) != 0)
+	{
+		if(!XftPatternAddInteger(pattern, XFT_WEIGHT, XFT_WEIGHT_BOLD))
+		{
+			XftPatternDestroy(pattern);
+			return 0;
+		}
+	}
+	if((style & FontStyle_Italic) != 0)
+	{
+		if(!XftPatternAddInteger(pattern, XFT_SLANT, XFT_SLANT_ITALIC))
+		{
+			XftPatternDestroy(pattern);
+			return 0;
+		}
+	}
+
+	/* Perform font matching to find the closest possible font */
+	matched = XftFontMatch(dpy, DefaultScreen(dpy), pattern, &result);
+	XftPatternDestroy(pattern);
+	if(!matched)
+	{
+		return 0;
+	}
+
+	/* Create an Xft font based on the matched pattern */
+	font = XftFontOpenPattern(dpy, matched);
+	XftPatternDestroy(matched);
+
+	/* Return the font to the caller */
+	return font;
+
+#else /* !USE_XFT_EXTENSION */
+
 	XFontSet fontSet;
 
 	/* Try with the actual parameters first */
@@ -197,23 +265,82 @@ XFontSet XSharpCreateFont(Display *dpy, const char *family,
 
 	/* Remove everything - this will succeed unless X has no fonts at all! */
 	return TryCreateFont(dpy, 0, -1, FontStyle_Normal);
+
+#endif
 }
+
+/*
+ * Free a font set.
+ */
+void XSharpFreeFont(Display *dpy, void *fontSet)
+{
+#ifdef USE_XFT_EXTENSION
+	XftFontClose(dpy, (XftFont *)fontSet);
+#else
+	XFreeFontSet(dpy, (XFontSet)fontSet);
+#endif
+}
+
+/*
+ * Forward declaration.
+ */
+void XSharpTextExtents(Display *dpy, void *fontSet, const char *str,
+					   XRectangle *overall_ink_return,
+					   XRectangle *overall_logical_return);
 
 /*
  * Draw a string using a font set.
  */
 void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
-					  XFontSet fontSet, int x, int y,
-					  const char *str, int style)
+					  void *fontSet, int x, int y,
+					  const char *str, int style, Region clipRegion,
+					  unsigned long colorValue)
 {
 	XRectangle overall_ink_return;
 	XRectangle overall_logical_return;
+#ifdef USE_XFT_EXTENSION
+	XftDraw *draw;
+	XftColor color;
+	XGCValues values;
+#else
 	XFontSetExtents *extents;
+#endif
 	int line1, line2;
 
-	/* Draw the string itself */
-	XmbDrawString(dpy, drawable, fontSet, gc, x, y,
+#ifdef USE_XFT_EXTENSION
+
+	/* TODO: 16-bit fonts */
+
+	/* Set up the Xft color value to draw with */
+	XGetGCValues(dpy, gc, GCForeground, &values);
+	color.pixel = values.foreground;
+	color.color.red = (unsigned short)(((colorValue >> 16) & 0xFF) << 8);
+	color.color.green = (unsigned short)(((colorValue >> 8) & 0xFF) << 8);
+	color.color.blue = (unsigned short)((colorValue & 0xFF) << 8);
+	color.color.alpha = (unsigned short)0xFFFF;
+
+	/* Draw the string */
+	draw = XftDrawCreate(dpy, drawable,
+						 DefaultVisual(dpy, DefaultScreen(dpy)),
+						 DefaultColormap(dpy, DefaultScreen(dpy)));
+	if(draw)
+	{
+		if(clipRegion)
+		{
+			XftDrawSetClip(draw, clipRegion);
+		}
+		XftDrawString8(draw, &color, (XftFont *)fontSet,
+					   x, y, (XftChar8 *)str, strlen(str));
+		XftDrawDestroy(draw);
+	}
+
+#else
+
+	/* Draw the string using the core API */
+	XmbDrawString(dpy, drawable, (XFontSet)fontSet, gc, x, y,
 				  str, strlen(str));
+
+#endif
 
 	/* Calculate the positions of the underline and strike-out */
 	if((style & FontStyle_Underline) != 0)
@@ -226,6 +353,9 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 	}
 	if((style & FontStyle_StrikeOut) != 0)
 	{
+	#ifdef USE_XFT_EXTENSION
+		line2 = y + (((XftFont *)fontSet)->height / 2);
+	#else
 		extents = XExtentsOfFontSet(fontSet);
 		if(extents)
 		{
@@ -235,6 +365,7 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 		{
 			line2 = y;
 		}
+	#endif
 	}
 	else
 	{
@@ -244,8 +375,8 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 	/* Draw the underline and strike-out */
 	if(line1 != y || line2 != y)
 	{
-		XmbTextExtents(fontSet, str, strlen(str),
-				 	   &overall_ink_return, &overall_logical_return);
+		XSharpTextExtents(dpy, fontSet, str,
+				 	      &overall_ink_return, &overall_logical_return);
 		XSetLineAttributes(dpy, gc, 1, LineSolid, CapNotLast, JoinMiter);
 		if(line1 != y)
 		{
@@ -263,28 +394,61 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 /*
  * Calculate the extent information for a string.
  */
-void XSharpTextExtents(XFontSet fontSet, const char *str,
+void XSharpTextExtents(Display *dpy, void *fontSet, const char *str,
 					   XRectangle *overall_ink_return,
 					   XRectangle *overall_logical_return)
 {
-	XmbTextExtents(fontSet, str, strlen(str),
+#ifdef USE_XFT_EXTENSION
+
+	/* TODO: 16-bit fonts */
+
+	XGlyphInfo extents;
+	XftTextExtents8(dpy, fontSet, (XftChar8 *)str, strlen(str), &extents);
+
+	overall_ink_return->x = -(extents.x);
+	overall_ink_return->y = -(extents.y);
+	overall_ink_return->width = extents.width;
+	overall_ink_return->height = extents.height;
+
+	overall_logical_return->x = -(extents.x);
+	overall_logical_return->y = -(extents.y);
+	overall_logical_return->width = extents.x + extents.xOff;
+	overall_logical_return->height = extents.y + extents.yOff;
+
+#else
+	XmbTextExtents((XFontSet)fontSet, str, strlen(str),
 			 	   overall_ink_return, overall_logical_return);
+#endif
 }
 
 /*
  * Calculate the extent information for a font.
  */
-void XSharpFontExtents(XFontSet fontSet,
+void XSharpFontExtents(void *fontSet,
 					   XRectangle *max_ink_return,
 					   XRectangle *max_logical_return)
 {
+#ifdef USE_XFT_EXTENSION
+
+	/* Synthesize enough information to keep "Xsharp.FontExtents" happy */
+	max_logical_return->x = 0;
+	max_logical_return->y = -(((XftFont *)fontSet)->ascent);
+	max_logical_return->width = ((XftFont *)fontSet)->max_advance_width;
+	max_logical_return->height = ((XftFont *)fontSet)->ascent +
+								 ((XftFont *)fontSet)->descent;
+	*max_ink_return = *max_logical_return;
+
+#else
+
 	XFontSetExtents *extents;
-	extents = XExtentsOfFontSet(fontSet);
+	extents = XExtentsOfFontSet((XFontSet)fontSet);
 	if(extents)
 	{
 		*max_ink_return = extents->max_ink_extent;
 		*max_logical_return = extents->max_logical_extent;
 	}
+
+#endif
 }
 
 /*
@@ -350,14 +514,20 @@ void *XSharpCreateFont(void *dpy, const char *family, int pointSize, int style)
 	return 0;
 }
 
-void XSharpDrawString(void *dpy, unsigned long drawable, void *gc,
-					  void *fontSet, int x, int y,
-					  const char *str, int style)
+void XSharpFreeFont(void *dpy, void *fontSet)
 {
 	/* Nothing to do here */
 }
 
-void XSharpTextExtents(void *fontSet, const char *str,
+void XSharpDrawString(void *dpy, unsigned long drawable, void *gc,
+					  void *fontSet, int x, int y,
+					  const char *str, int style, void *clipRegion,
+					  unsigned long colorValue)
+{
+	/* Nothing to do here */
+}
+
+void XSharpTextExtents(void *dpy, void *fontSet, const char *str,
 					   void *overall_ink_return,
 					   void *overall_logical_return)
 {

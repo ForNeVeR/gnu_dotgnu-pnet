@@ -491,11 +491,6 @@ internal sealed class Xlib
 	extern public static Atom XInternAtom
 			(IntPtr display, String name, Bool only_if_exists);
 
-	// Declare font-related external functions.
-
-	[DllImport("X11")]
-	extern public static void XFreeFontSet(IntPtr display, IntPtr fontSet);
-
 	// Declare property-related external functions.
 
 	[DllImport("X11")]
@@ -525,14 +520,18 @@ internal sealed class Xlib
 			(IntPtr display, String family, @X_int@ pointSize, @X_int@ style);
 
 	[DllImport("XsharpSupport")]
+	extern public static void XSharpFreeFont(IntPtr display, IntPtr fontSet);
+
+	[DllImport("XsharpSupport")]
 	extern public static void XSharpDrawString
 			(IntPtr display, Drawable drawable, IntPtr gc,
 			 IntPtr fontSet, @X_int@ x, @X_int@ y,
-			 String str, @X_int@ style);
+			 String str, @X_int@ style, IntPtr clipRegion,
+			 @X_ulong@ colorValue);
 
 	[DllImport("XsharpSupport")]
 	extern public static void XSharpTextExtents
-			(IntPtr fontSet, String str,
+			(IntPtr display, IntPtr fontSet, String str,
 			 out XRectangle overall_ink_return,
 			 out XRectangle overall_logical_return);
 

@@ -2215,7 +2215,8 @@ public sealed class Graphics : IDisposable
 					IntPtr display = dpy.Lock();
 					Xlib.XSharpDrawString
 							(display, drawableHandle, gc,
-							 fontSet, x, y, str, (int)(font.Style));
+							 fontSet, x, y, str, (int)(font.Style),
+							 IntPtr.Zero, foreground.value);
 				}
 				finally
 				{
@@ -2310,8 +2311,17 @@ public sealed class Graphics : IDisposable
 				// Get the text extents and decode them into useful values.
 				XRectangle overall_ink;
 				XRectangle overall_logical;
-				Xlib.XSharpTextExtents
-					(fontSet, str, out overall_ink, out overall_logical);
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.XSharpTextExtents
+						(display, fontSet, str,
+						 out overall_ink, out overall_logical);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
 				width = overall_logical.width;
 				ascent = -(overall_logical.y);
 				descent = overall_logical.height + overall_logical.y;

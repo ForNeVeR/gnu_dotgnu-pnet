@@ -1,4 +1,11 @@
 
+2003-07-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Color.cs, Xsharp/Font.cs, Xsharp/Graphics.cs,
+	Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c: add preliminary support
+	for the Xft extension - currently commented out because it doesn't
+	work yet.
+
 2003-07-07  Gopal.V  <gopalv82@symonds.net>
  	
 	* System/Text/RegularExpressions/category.cs,

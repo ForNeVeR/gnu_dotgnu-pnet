@@ -358,7 +358,7 @@ public sealed class Font
 						{
 							infoList = info.next;
 						}
-						Xlib.XFreeFontSet(dpy.dpy, info.fontSet);
+						Xlib.XSharpFreeFont(dpy.dpy, info.fontSet);
 					}
 				}
 			}

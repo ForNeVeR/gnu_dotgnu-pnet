@@ -42,7 +42,7 @@ using System;
 public struct Color
 {
 	// Internal state.
-	private uint value;
+	internal uint value;
 
 	/// <summary>
 	/// <para>A <see cref="T:Xsharp.Color"/> value representing

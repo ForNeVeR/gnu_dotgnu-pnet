@@ -19,6 +19,10 @@
 	finalization, rather than sending a full X destroy request,
 	to avoid deadlocks between the main thread and the finalizer thread.
 
+	* Xsharp/TopLevelWindow.cs: wait until idle time on top-level
+	widgets before calling "OnResize", to prevent event queue backups
+	on window managers that use opaque resizes.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

@@ -45,6 +45,7 @@ public class TopLevelWindow : InputOutputWidget
 	private MotifFunctions functions;
 	private MotifInputType inputType;
 	private TopLevelWindow transientFor;
+	private Timer resizeTimer;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.TopLevelWindow"/>
@@ -835,6 +836,18 @@ public class TopLevelWindow : InputOutputWidget
 				return (hasPrimaryFocus && focusWidget == widget);
 			}
 
+	// Perform an actual resize operation.  This will be called at the
+	// next convenient idle period, to avoid overflowing the event queue.
+	private void PerformResize(Object state)
+			{
+				if(resizeTimer != null)
+				{
+					resizeTimer.Stop();
+					resizeTimer = null;
+				}
+				OnResize(width, height);
+			}
+
 	// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
@@ -977,7 +990,12 @@ public class TopLevelWindow : InputOutputWidget
 							// The size has been changed by the window manager.
 							width = xevent.xconfigure.width;
 							height = xevent.xconfigure.height;
-							OnResize(width, height);
+							if(resizeTimer == null)
+							{
+								resizeTimer = new Timer
+									(new TimerCallback(PerformResize), null,
+									 0, -1);
+							}
 						}
 						if(xevent.send_event || !reparented)
 						{

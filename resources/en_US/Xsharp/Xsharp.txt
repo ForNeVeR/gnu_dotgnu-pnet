@@ -35,6 +35,7 @@ X_InvalidPosition=Invalid widget position specified
 X_InvalidSize=Invalid widget size specified
 X_FillRule=Invalid fill rule value: {0}
 X_Function=Invalid function value: {0}
+X_LineWidth=Invalid line width value: {0}
 X_LineStyle=Invalid line style value: {0}
 X_CapStyle=Invalid line capping style value: {0}
 X_JoinStyle=Invalid line join style value: {0}

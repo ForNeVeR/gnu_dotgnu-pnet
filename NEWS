@@ -1,4 +1,72 @@
 
+0.2.4 (17 November 2001)
+
+	Runtime engine:
+
+	* Verifiable method pointers.
+	* Add the Hans-Boehm garbage collector to the code, and link
+	  it into the engine as the new object memory allocator.
+	* Support for interface method layout and calling in the engine.
+	* Alternative call API that passes arguments in structures rather
+	  than in vararg parameters.
+	* Internalcall methods for "System.Threading".
+	* Fix branch and label code in the CVM coder.
+	* Type lookup routines, to complement class and method lookups.
+	* Pass command-line parameters down to the "Main" method.
+	* Lay out static fields after the main class has been laid out,
+	  to resolve layout circularity problems.
+	* Internalcall methods for "System.CompilerServices".
+	* Handle "this" parameters for value type methods properly.
+	* Dump method entry and exit when CVM "dump mode" is enabled.
+	* Dump the stack contents when CVM "dump mode" is enabled.
+	* Minor fixes to "box", "switch", "dup", and "pop" instructions.
+	* Move the engine string API's into "lib_string.c" so that they
+	  can be implemented more efficiently.
+	* Implement string intern'ing.
+	* More internalcall methods for "System.String".
+	* Experiment with increasing the speed of the engine by
+	  post-processing gcc's output to optimise it better.
+
+	C# Compiler:
+
+	* Overflow testing for constant casts.
+	* Load library images so that external definitions can be resolved.
+	* Improve method overloading to handle multiple candidates better.
+	* Make sure that the "System" namespace is always included by default.
+	* Disable the builtin library if the external "mscorlib" was loaded.
+	* Proper handling of "params" and non-"params" parameter expansion.
+	* Modify method and type output code so that definitions are
+	  properly qualified with their assembly.
+	* Invoke the linker to link the final executable.
+
+	Disassembler:
+
+	* Dump a readable version of attribute values in the disassembler.
+	* Dump the text version of the XML within security blobs.
+	* Try to print the assembly name rather than the module name
+	  when dumping class names, because the assembly name is a
+	  truer representation of where the class came from.
+
+	Other:
+
+	* Clean up the code to remove all references to the obsolete
+	  "ILValue" and "ILValueType" types.
+	* Add some more functions to "support" to improve engine portability.
+	* Better detection of the default alignment on the system.
+	* Make "ILNativeInt" and "ILNativeUInt" the same size as native
+	  pointers, to be consistent with ECMA requirements.
+	* Implement the "csant" build utility program.
+	* Fix the parsing and writing of array shapes in "image".
+	* Don't report "runtime" methods as native in "ilnative", because
+	  they are normally used for delegates which aren't strictly native
+	  in the same sense as PInvoke and internalcall methods are.
+	* Modify the Fibonacci example program so that it is compiled all
+	  the way down to an executable with the C# compiler.
+	* Fix the handling of "vararg" call site signatures.
+	* Add "ILCmdLineExpand", which can expand references to response
+	  files in the specified command-line.  This allows the compiler
+	  tools to process very large command-lines.
+
 0.2.2 (3 November 2001)
 
 	* Synthetic class structures for array types.

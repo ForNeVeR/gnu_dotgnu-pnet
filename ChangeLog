@@ -1,4 +1,8 @@
 
+2001-11-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* configure.in, NEWS: update for "0.2.4" release.
+
 2001-11-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_invoke.tc, cscc/cs_internal.h, cscc/cs_lookup.c: add code to

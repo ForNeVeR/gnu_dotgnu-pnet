@@ -27,6 +27,12 @@
 	image/writer.c, include/il_image.h, include/il_program.h:
 	port the "image" library to m68k-palmos.
 
+	* engine/cvm_conv.c, engine/cvm_except.c, engine/engine.h,
+	engine/lib_array.c, image/image.h, include/il_engine.h:
+	port some parts of the "engine" directory to m68k-palmos
+	(can't go much further because the CVM interpreter is too
+	big to fit into a 32k code section at the moment).
+
 2003-05-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csdoc.c: avoid semantic analysis of method bodies with

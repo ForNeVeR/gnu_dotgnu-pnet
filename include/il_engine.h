@@ -212,11 +212,15 @@ ILContext *ILExecProcessGetContext(ILExecProcess *process);
  */
 ILExecThread *ILExecProcessGetMain(ILExecProcess *process);
 
+#ifndef REDUCED_STDIO
+
 /*
  * Load an image into a process.  Returns 0 if OK, or
  * an image load error code otherwise (see "il_image.h").
  */
 int ILExecProcessLoadImage(ILExecProcess *process, FILE *file);
+
+#endif
 
 /*
  * Load the contents of a file as an image into a process.

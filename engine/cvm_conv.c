@@ -190,6 +190,8 @@ static IL_INLINE int F2LUOvf(CVMWord *posn)
 
 #endif /* IL_CONFIG_FP_SUPPORTED */
 
+#ifdef IL_CONFIG_PINVOKE
+
 /*
  * Convert a reference to a string array into a pointer to a C array.
  */
@@ -257,6 +259,8 @@ static void *RefArrayToC(ILExecThread *thread, void *ref,
 		return (void *)(((void **)result) + 1);
 	}
 }
+
+#endif /* IL_CONFIG_PINVOKE */
 
 #elif defined(IL_CVM_LOCALS)
 

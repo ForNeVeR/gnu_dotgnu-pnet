@@ -104,10 +104,12 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
 	ILClass *classInfo = ILExecThreadLookupClass(thread, className);
 	if(!classInfo)
 	{
+	#ifndef REDUCED_STDIO
 		/* Huh?  The required class doesn't exist.  This shouldn't happen */
 		fprintf(stderr, "Fatal error: %s is missing from the system library\n",
 				className);
 		exit(1);
+	#endif
 	}
 	object = _ILEngineAllocObject(thread, classInfo);
 	if(object)

@@ -3350,7 +3350,7 @@ void _IL_Array_SetRelative(ILExecThread *thread, ILObject *_this,
 void _IL_Buffer_Copy(ILExecThread *thread,
 					 ILObject *_src, ILInt32 srcOffset,
 					 ILObject *_dst, ILInt32 dstOffset,
-					 int count)
+					 ILInt32 count)
 {
 	System_Array *src = (System_Array *)_src;
 	System_Array *dst = (System_Array *)_dst;

@@ -109,6 +109,12 @@ public interface IToolkitEventSink
 	// The "child" parameter is null if a window has been deactivated.
 	void ToolkitMdiActivate(IToolkitWindow child);
 
+	// Event that is emitted when a custom messages comes in. This
+	// custom message is sent by another thread, telling the controlling
+	// thread to Invoke a delegate (which is eventually pointed to by this
+	// IntPtr)
+	void ToolkitBeginInvoke(IntPtr i_gch);
+
 }; // interface IToolkitEventSink
 
 }; // namespace System.Drawing.Toolkit

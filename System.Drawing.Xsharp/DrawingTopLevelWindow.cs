@@ -408,6 +408,12 @@ internal sealed class DrawingTopLevelWindow
 				OtherHints = otherHints;
 			}
 
+	protected override void OnBeginInvokeMessage(IntPtr i_gch)
+			{
+				if( sink != null )
+					sink.ToolkitBeginInvoke(i_gch);
+			}
+
 	// Override the button press event from Xsharp.
 	protected override void OnButtonPress(int x, int y, ButtonName button,
 									      ModifierMask modifiers)
@@ -646,6 +652,11 @@ internal sealed class DrawingTopLevelWindow
 	protected override void OnMaximizedStateChanged(bool value)
 			{
 				WindowStateChanged();
+			}
+
+			private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+			{
+				base.SendBeginInvoke(i_gch);
 			}
 
 }; // class DrawingTopLevelWindow

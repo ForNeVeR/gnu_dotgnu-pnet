@@ -1578,6 +1578,29 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				return new Point(x, y);
 			}
 
+	protected void SendBeginInvoke(IntPtr i_gch)
+		{
+			XEvent xevent = new XEvent();
+			xevent.xany.type = (int)(EventType.ClientMessage);
+			xevent.xany.window = GetWidgetHandle();
+			xevent.xclient.format = 32;
+			xevent.xclient.setl(0,(int)i_gch);
+
+			try
+			{
+				IntPtr display = dpy.Lock();
+				xevent.xclient.message_type = Xlib.XInternAtom
+						(display, "INTERNAL_BEGIN_INVOKE", XBool.False);
+				Xlib.XSendEvent (display, GetWidgetHandle(),
+						XBool.False, (int)(EventMask.NoEventMask), ref xevent);
+				Xlib.XFlush(display);
+			}
+			finally
+			{
+				dpy.Unlock();
+			}
+	}
+
 } // class Widget
 
 } // namespace Xsharp

@@ -324,6 +324,12 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitTopLevelWindow
 		sink.ToolkitExternalResize( dimensions.Width, dimensions.Height );
 		//Console.WriteLine( "DrawingTopLevelWindow.CreateWindow, "+sink+", [" + dimensions.Size + "]" );
 	}
+
+	private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+	{
+		StaticSendBeginInvoke(hwnd,i_gch);
+	}
+
 }; // class DrawingTopLevelWindow
 
 }; // namespace System.Drawing.Toolkit

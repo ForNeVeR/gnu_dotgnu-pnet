@@ -24,6 +24,7 @@ namespace System.Drawing.Toolkit
 using System;
 using System.Globalization;
 using System.Collections;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;

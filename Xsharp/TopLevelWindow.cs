@@ -1489,6 +1489,16 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	/// <summary>
+	/// <para>Method that is called when a custom "BeginInvoke" message comes in
+	/// changes.</para>
+	/// </summary>
+	protected virtual void OnBeginInvokeMessage(IntPtr i_gch)
+			{
+				// Nothing to do in this base class.
+			}
+
+
+	/// <summary>
 	/// <para>Method that is called when the window's iconic state
 	/// changes.</para>
 	/// </summary>
@@ -1802,20 +1812,17 @@ public class TopLevelWindow : InputOutputWidget
 						// Handle messages from the window manager.
 						if(xevent.xclient.message_type == dpy.wmProtocols)
 						{
-							if(xevent.xclient.l(0) ==
-									(int)(dpy.wmDeleteWindow))
+							if(xevent.xclient.l(0) == (int)(dpy.wmDeleteWindow))
 							{
 								// User wants the window to close.
 								Close();
 							}
-							else if(xevent.xclient.l(0) ==
-										(int)(dpy.wmTakeFocus))
+							else if(xevent.xclient.l(0) == (int)(dpy.wmTakeFocus))
 							{
 								// We were given the primary input focus.
 								PrimaryFocusIn();
 							}
-							else if(xevent.xclient.l(0) ==
-										(int)(dpy.wmContextHelp))
+							else if(xevent.xclient.l(0) == (int)(dpy.wmContextHelp))
 							{
 								// The user pressed the "help" button.
 								OnHelp();
@@ -1828,8 +1835,7 @@ public class TopLevelWindow : InputOutputWidget
 								try
 								{
 									IntPtr display = dpy.Lock();
-									xevent.xany.window =
-										screen.RootWindow.GetWidgetHandle();
+									xevent.xany.window = screen.RootWindow.GetWidgetHandle();
 									Xlib.XSendEvent
 										(display, xevent.xany.window,
 										 XBool.False,
@@ -1841,6 +1847,10 @@ public class TopLevelWindow : InputOutputWidget
 									dpy.Unlock();
 								}
 							}
+						}
+						else if(xevent.xclient.message_type == dpy.internalBeginInvoke)
+						{
+							OnBeginInvokeMessage((IntPtr)xevent.xclient.l(0));
 						}
 					}
 					break;
@@ -1919,6 +1929,10 @@ public class TopLevelWindow : InputOutputWidget
 									OnMaximizedStateChanged(false);
 								}
 							}
+						}
+						else if(xevent.xclient.message_type == dpy.internalBeginInvoke)
+						{
+							OnBeginInvokeMessage((IntPtr)xevent.xclient.l(0));
 						}
 					}
 					break;

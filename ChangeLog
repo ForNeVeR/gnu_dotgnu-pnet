@@ -1,3 +1,28 @@
+
+2004-05-31  David Logan  <djlogan2@comcast.net>
+
+	* System.Drawing/Toolkit/IToolkitEventSink.cs,
+	System.Drawing/Toolkit/IToolkitWindow.cs: Add the SendBeginInvoke 
+	and ToolkitBeginInvoke methods .
+
+	* System.Drawing.Win32/DrawingControlWindow.cs,
+	System.Drawing.Win32/DrawingPopupWindow.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Win32/Win32.cs,
+	System.Drawing.Xsharp/DrawingMdiClient.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	Xsharp/Display.cs, Xsharp/TopLevelWindow.cs, Xsharp/Widget.cs:
+	Implement IToolkitWindow.SendBeginInvoke and
+	IToolkitEventSink.ToolkitBeginInvoke for X11 and Win32 toolkits.
+
+	* System.Windows.Forms/Control.cs: Use SendBeginInvoke for Control 
+	invokes and respond to ToolkitBeginInvoke. (patch #3106, Gopal)
+
 2004-05-31  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/AnchorStyles.cs,

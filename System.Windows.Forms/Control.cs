@@ -23,16 +23,18 @@
 namespace System.Windows.Forms
 {
 
-using System.ComponentModel;
-using System.ComponentModel.Design.Serialization;
+using System;
 using System.Drawing;
-using System.Drawing.Toolkit;
-using System.Drawing.Text;
-using System.Collections;
 using System.Threading;
 using System.Reflection;
+using System.Collections;
+using System.Diagnostics;
+using System.Drawing.Text;
+using System.ComponentModel;
+using System.Drawing.Toolkit;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
+using System.ComponentModel.Design.Serialization;
 
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 [Designer("System.Windows.Forms.Design.ContolDesigner, System.Design")]
@@ -100,6 +102,91 @@ public class Control : IWin32Window, IDisposable
 	private bool notifyDoubleClick = false;
 	private bool validationCancelled = false;
 	private IToolkitWindowBuffer buffer;
+
+	//
+	// Implentation of classes and variables for Invoke/BeginInvoke/EndInvoke
+	//
+	//
+	// This is the IAsyncResult class associated with a BeginInvoke
+	//
+	internal class InvokeAsyncResult: IAsyncResult
+	{
+		private bool bComplete;
+		private bool bWaiting;
+		private Mutex waitHandle;			// The waithandle for EndInvoke
+		public Object retObject;
+
+		public InvokeAsyncResult()
+		{
+			bComplete = false;						// This event hasn't completed
+			bWaiting = false;							// Nobody waiting for this to complete
+			waitHandle = new Mutex(true);	// Initially locked (i.e. not complete!)
+		}
+
+		public void WaitToComplete()
+		{
+			lock(this)										// Lock ourselve for thread safety
+			{
+				if( bComplete )						// If we have already completed
+					return;										// just blow out of here
+				bWaiting = true;						// Else tell thread 2 we are waiting
+			}
+			waitHandle.WaitOne();					// and do so
+		}
+
+		public void SetComplete()
+		{
+			lock(this)										// Lock ourselves for thread safety
+			{
+				bComplete = true;						// Mark event as complete
+				if( !bWaiting )							// If nobody is waiting
+					return;										// no point in signalling
+			}
+			waitHandle.ReleaseMutex();		// else wake up sleeper waiting for us
+		}
+
+		public Object AsyncState
+		{
+			get
+			{
+				return null;
+			}
+		}
+		public WaitHandle AsyncWaitHandle
+		{
+			get
+			{
+				return waitHandle;
+			}
+		}
+		public bool CompletedSynchronously
+		{
+			get
+			{
+				return false;
+			}
+		}
+		public bool IsCompleted
+		{
+			get
+			{
+				lock( this )
+					return bComplete;
+			}
+		}
+	}
+
+	//
+	// This is the class that keeps the delegate, the parameters,
+	// and a weak reference to the IAsyncResult (InvokeAsyncResult)
+	// InvokeAsyncresult ar = wr.Target
+	//
+	internal class InvokeParameters
+	{
+		public Delegate method;
+		public Object[] args;
+		public WeakReference wr;	// to the InvokeAsyncResult
+	}
 
 	// Constructors.
 	public Control()
@@ -200,30 +287,61 @@ public class Control : IWin32Window, IDisposable
 #if CONFIG_COMPONENT_MODEL
 
 	// Implement the ISynchronizeInvoke interface.
+	private void ProcessInvokeEvent(IntPtr i_gch)	
+	{
+		GCHandle gch = (GCHandle)i_gch;
+		InvokeParameters iParm = (InvokeParameters)gch.Target;
+
+		Delegate dg = iParm.method;
+		Object ro = dg.DynamicInvoke(iParm.args);
+
+		InvokeAsyncResult ar = (InvokeAsyncResult)iParm.wr.Target;
+		if( ar != null )
+		{
+			ar.retObject = ro;
+			ar.SetComplete();
+		}
+		gch.Free();
+	}
+
 	[TODO]
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public IAsyncResult BeginInvoke(Delegate method, Object[] args)
 			{
-				// TODO
-				return null;
+				InvokeParameters iParm = new InvokeParameters();
+				InvokeAsyncResult ar = new InvokeAsyncResult();
+				GCHandle gch = GCHandle.Alloc(iParm);
+				IntPtr i_gch = (IntPtr)gch;
+
+				iParm.method = method;
+				iParm.args   = args;
+				iParm.wr = new WeakReference(ar);
+
+				lock(this)	// this may not be necessary
+					toolkitWindow.SendBeginInvoke(i_gch);
+
+				return ar;
 			}
+
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public IAsyncResult BeginInvoke(Delegate method)
 			{
 				return BeginInvoke(method, null);
 			}
+
 	[TODO]
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public Object EndInvoke(IAsyncResult result)
 			{
-				// TODO
-				return null;
+				InvokeAsyncResult ar = (result as InvokeAsyncResult);
+				ar.WaitToComplete();
+				return ar.retObject;
 			}
-	[TODO]
+
 	public Object Invoke(Delegate method, Object[] args)
 			{
-				// TODO
-				return null;
+				IAsyncResult ar = this.BeginInvoke(method,args);
+				return this.EndInvoke(ar);
 			}
 #if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
@@ -5647,6 +5765,14 @@ public class Control : IWin32Window, IDisposable
 						}
 						break;
 				}
+			}
+
+	// Toolkit event that is emitted when a "BeginInvoke" generated message is
+	// send to this window
+	// i_gch is a pointer to an InvokeParms class defined elsewhere in here
+	void IToolkitEventSink.ToolkitBeginInvoke(IntPtr i_gch)
+			{
+				ProcessInvokeEvent(i_gch);
 			}
 
 	// Toolkit event that is emitted when the mouse enters this window.

@@ -31,6 +31,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 	protected internal IntPtr hwnd;
 	protected internal IntPtr hdc;
 	protected internal DrawingWindow parent;
+	
+	private static Win32.Api.WindowsMessages registeredBeginInvokeMessage = 0;
+
 	// The window at the top of the hierarchy
 	protected internal DrawingWindow topOfhierarchy;
 	private Color background;
@@ -59,6 +62,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 	protected DrawingWindow( DrawingToolkit toolkit )
 	{
 		this.toolkit = toolkit;
+		if( registeredBeginInvokeMessage == 0 )
+			registeredBeginInvokeMessage =
+				Win32.Api.RegisterWindowMessageA("DOTNET_BEGIN_INVOKE_MESSAGE");
 	}
 
 	// Move this window underneath the last window with the same parent.
@@ -599,10 +605,16 @@ internal abstract class DrawingWindow : IToolkitWindow
 		return FindDeepestChild(lParam, out x, out y, out actual);
 	}
 
-	internal bool KeyDown( int wParam, int lParam)
+  	internal bool KeyDown( int wParam, int lParam)
 	{
 		//Console.WriteLine("DrawingWindow.KeyDown " + sink +", " + (MapKeyToToolkitKeys( wParam)).ToString() + " " + wParam);
 		return sink.ToolkitKeyDown(MapKeyToToolkitKeys( wParam));
+	}
+
+	internal bool SendBeginInvoke( int wParam )
+	{
+		sink.ToolkitBeginInvoke( (IntPtr)wParam );
+		return true;
 	}
 
 	internal bool Char( int wParam, int lParam)
@@ -907,6 +919,18 @@ internal abstract class DrawingWindow : IToolkitWindow
 			if (w == this)
 				return true;
 		return false;
+	}
+
+	private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+	{
+		StaticSendBeginInvoke(hwnd,i_gch);
+	}
+
+	public static void StaticSendBeginInvoke(IntPtr hwnd_rcv, IntPtr i_gch)
+	{
+		Win32.Api.PostMessageA(hwnd_rcv,
+			registeredBeginInvokeMessage,
+			(int)i_gch,(int)0);
 	}
 
 }

@@ -100,6 +100,8 @@ public interface IToolkitWindow : IDisposable
 	// the cursor to be the same as the parent window's.
 	void SetCursor(ToolkitCursorType cursorType, Frame frame);
 
+	void SendBeginInvoke(IntPtr i_gch);
+
 }; // interface IToolkitWindow
 
 }; // namespace System.Drawing.Toolkit

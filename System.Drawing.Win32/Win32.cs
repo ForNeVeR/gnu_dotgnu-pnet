@@ -819,8 +819,11 @@ internal class Api
 	[DllImport("user32")] //ANSI
 	public static extern bool PostMessageA(IntPtr hwnd, WindowsMessages Msg, int wParam, int lParam);
 
-	[DllImport("user32")] //ANSI
+  	[DllImport("user32")] //ANSI
 	public static extern int SendMessageA( IntPtr hWnd, WindowsMessages Msg, int wParam, IntPtr lParam);
+
+	[DllImport("user32")]
+	public static extern WindowsMessages RegisterWindowMessageA (string msgName);
 
 	[DllImport("user32")]
 	public static extern int GetSystemMetrics (SystemMetricsType nIndex);

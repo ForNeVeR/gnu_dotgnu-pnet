@@ -34,6 +34,7 @@ public class DrawingToolkit : IToolkit
 	private static ArrayList timers = new ArrayList();
 	internal DrawingWindow[] windows = new DrawingWindow[64];
 	internal int windowCount = 0;
+	internal Win32.Api.WindowsMessages registeredBeginInvokeMessage;
 	// The child window or control that has captured or null for none
 	internal DrawingWindow capturedWindow;
 	// The top level window that has the capture.
@@ -50,6 +51,7 @@ public class DrawingToolkit : IToolkit
 		hiddenWindow = new DrawingHiddenWindow(this, "DrawingHiddenWindow",0,0,null);
 		AddWindow(hiddenWindow, null);
 		hiddenWindow.CreateWindow();
+		registeredBeginInvokeMessage = Win32.Api.RegisterWindowMessageA("DOTNET_BEGIN_INVOKE_MESSAGE");
 	}
 
 	// Process events in the event queue.  If "waitForEvent" is true,
@@ -699,6 +701,11 @@ WindowText				= 26,*/
 				return DrawingWindow(hwnd).MouseActivate(DrawingWindow(new IntPtr(wParam)));
 
 			default:
+				if((Win32.Api.WindowsMessages)msg == registeredBeginInvokeMessage)
+				{
+					DrawingWindow(hwnd).SendBeginInvoke(wParam);
+					return 0;
+				}
 				retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
 				break;
 		}

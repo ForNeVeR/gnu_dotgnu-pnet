@@ -35,7 +35,8 @@ ILExecProcess *ILExecProcessCreate(void)
 	ILExecProcess *process;
 
 	/* Create the process record */
-	if((process = (ILExecProcess *)ILMalloc(sizeof(ILExecProcess))) == 0)
+	if((process = (ILExecProcess *)ILGCAllocPersistent
+						(sizeof(ILExecProcess))) == 0)
 	{
 		return 0;
 	}
@@ -98,7 +99,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	}
 
 	/* Free the process block itself */
-	ILFree(process);
+	ILGCFreePersistent(process);
 }
 
 ILExecThread *ILExecProcessGetMain(ILExecProcess *process)

@@ -34,7 +34,7 @@ ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 ilverify_SOURCES = ilverify.c
 ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			     ../image/libILImage.a ../support/libILSupport.a \
-			     ../libffi/libffi.a
+			     ../libffi/libffi.a ../libgc/.libs/libgc.a
 
 if USINGGCC
 INCLUDES = -Wall -I../libffi/include

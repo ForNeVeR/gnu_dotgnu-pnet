@@ -29,27 +29,28 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 	ILExecThread *thread;
 
 	/* Create a new thread block */
-	if((thread = (ILExecThread *)ILMalloc(sizeof(ILExecThread))) == 0)
+	if((thread = (ILExecThread *)ILGCAllocPersistent
+									(sizeof(ILExecThread))) == 0)
 	{
 		return 0;
 	}
 
 	/* Allocate space for the thread-specific value stack */
-	if((thread->stackBase = (CVMWord *)ILMalloc(sizeof(CVMWord) *
-												process->stackSize)) == 0)
+	if((thread->stackBase = (CVMWord *)ILGCAllocPersistent
+					(sizeof(CVMWord) * process->stackSize)) == 0)
 	{
-		ILFree(thread);
+		ILGCFreePersistent(thread);
 		return 0;
 	}
 	thread->stackLimit = thread->stackBase + process->stackSize;
 
 	/* Allocate space for the initial frame stack */
-	if((thread->frameStack = (ILCallFrame *)ILMalloc(sizeof(ILCallFrame) *
-													 process->frameStackSize))
+	if((thread->frameStack = (ILCallFrame *)ILGCAllocPersistent
+					(sizeof(ILCallFrame) * process->frameStackSize))
 			== 0)
 	{
-		ILFree(thread->stackBase);
-		ILFree(thread);
+		ILGCFreePersistent(thread->stackBase);
+		ILGCFreePersistent(thread);
 		return 0;
 	}
 	thread->numFrames = 0;
@@ -100,13 +101,13 @@ void ILExecThreadDestroy(ILExecThread *thread)
 	}
 
 	/* Destroy the operand stack */
-	ILFree(thread->stackBase);
+	ILGCFreePersistent(thread->stackBase);
 
 	/* Destroy the call frame stack */
-	ILFree(thread->frameStack);
+	ILGCFreePersistent(thread->frameStack);
 
 	/* Destroy the thread block */
-	ILFree(thread);
+	ILGCFreePersistent(thread);
 }
 
 ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread)

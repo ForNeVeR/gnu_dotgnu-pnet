@@ -251,10 +251,12 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	}
 	else
 	{
-		/* Create a new layout record and attach it to the class */
+		/* Create a new layout record and attach it to the class.
+		   We must allocate this in memory accessible by the
+		   garbage collector so that the object pointers that
+		   it contains will be visible to the collector */
 		classPrivate = (ILClassPrivate *)
-			(ILMemStackAlloc(&(info->programItem.image->memStack),
-							 ILClassPrivate));
+				(ILGCAllocPersistent(sizeof(ILClassPrivate)));
 		if(!classPrivate)
 		{
 			return 0;

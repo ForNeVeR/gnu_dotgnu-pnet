@@ -96,6 +96,9 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	/* Initialize the engine, to ensure that the garbage collector is OK */
+	ILExecInit(0);
+
 	/* Create a context to use for image loading */
 	context = ILContextCreate();
 	if(!context)

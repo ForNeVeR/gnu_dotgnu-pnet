@@ -240,3 +240,19 @@ ILInt32 _IL_FileMethods_SetLastAccessTime(ILExecThread *thread, ILString *path, 
 
 	return ILSysIOSetAccessTime(path_ansi, ticks);
 }
+
+/*
+ * public static Errno SetCreationTime(String path, long ticks);
+ */
+ILInt32 _IL_FileMethods_SetCreationTime(ILExecThread *thread, ILString *path, ILInt64 ticks)
+{
+	char *path_ansi = ILStringToAnsi(thread, path);
+	
+	if(!path_ansi)
+	{
+		ILSysIOSetErrno(IL_ERRNO_ENOMEM);
+		return 0;
+	}
+
+	return ILSysIOSetCreationTime(path_ansi, ticks);
+}

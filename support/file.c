@@ -540,6 +540,11 @@ int ILSysIOSetAccessTime(const char *path, ILInt64 time)
 #endif
 }
 
+int ILSysIOSetCreationTime(const char *path, ILInt64 time)
+{
+	return IL_ERRNO_ENOSYS;
+}
+
 #ifdef	__cplusplus
 };
 #endif

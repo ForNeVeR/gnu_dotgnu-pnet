@@ -1,4 +1,10 @@
 
+2003-01-09  Aditya P. Bansod <abansod@fullenergy.com>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_file.c,
+	include/il_sysio.h, support/file.c: internalcalls for file
+	create time methods.
+
 2003-01-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc: work around erroneous enum definitions

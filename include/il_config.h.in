@@ -58,6 +58,9 @@
 /* The number of bytes in a long long.  */
 #undef SIZEOF_LONG_LONG
 
+/* The number of bytes in a void *.  */
+#undef SIZEOF_VOID_P
+
 /* Define if you have the acos function.  */
 #undef HAVE_ACOS
 

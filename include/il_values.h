@@ -85,10 +85,10 @@ typedef ILInt8 						ILBool;
 #endif
 
 /*
- * Determine the best native integer format.
+ * Native integers are the same size as native pointers.
  */
-#ifdef SIZEOF_LONG
-	#if SIZEOF_LONG == 8
+#ifdef SIZEOF_VOID_P
+	#if SIZEOF_VOID_P == 8
 		typedef ILInt64				ILNativeInt;
 		typedef ILUInt64			ILNativeUInt;
 		#define	IL_NATIVE_INT64

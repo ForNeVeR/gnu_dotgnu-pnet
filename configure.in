@@ -51,6 +51,7 @@ AC_CHECK_SIZEOF(long long, 8)
 AC_CHECK_SIZEOF(float, 4)
 AC_CHECK_SIZEOF(double, 8)
 AC_CHECK_SIZEOF(long double, 12)
+AC_CHECK_SIZEOF(void *, 4)
 
 dnl Check to see if we are using gcc or not.
 AM_CONDITIONAL(USINGGCC, test x$GCC = xyes)

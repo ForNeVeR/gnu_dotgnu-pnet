@@ -8,6 +8,10 @@ support/Makefile.am: add "ILNativeFloatIsNaN" and "ILNativeFloatIsFinite".
 
 * support/value.c: remove obsolete file.
 
+* configure.in, include/il_config.h.in, include/il_values.h: make native
+integers the same size as native pointers, to be consistent with the ECMA
+requirements.
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

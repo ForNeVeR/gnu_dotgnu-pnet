@@ -20,6 +20,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Private;
+
 namespace Platform
 {
 internal sealed class RegexpMethods 
@@ -28,8 +30,17 @@ internal sealed class RegexpMethods
 	extern internal static IntPtr CompileInternal(String pattern,int flags);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static int ExecInternal(IntPtr compiled, 
-												String input,int flags);
+	extern internal static IntPtr CompileWithSyntaxInternal
+			(String pattern, int syntax);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int ExecInternal
+			(IntPtr compiled, String input,int flags);
+	
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static Array MatchInternal
+			(IntPtr compiled, String input,
+			 int maxMatches, int flags, Type elemType);
 	
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static void FreeInternal(IntPtr compiled);

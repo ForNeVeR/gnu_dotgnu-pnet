@@ -1,4 +1,13 @@
 
+2003-04-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/RegexpMethods.cs, runtime/System/IO/Directory.cs,
+	runtime/System/Private/Regex.cs, runtime/System/Private/RegexMatch.cs,
+	runtime/System/Private/RegexMatchOptions.cs,
+	runtime/System/Private/RegexSyntax.cs,
+	runtime/System/Private/Regexp.cs: implement a better regular
+	expression library.
+
 2003-04-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Microsoft/Win32/RegistryKey.cs,

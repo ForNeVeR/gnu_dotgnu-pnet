@@ -357,67 +357,18 @@ namespace System.IO
 			File.SetLastWriteTime(path, lastWriteTime);
 		}
 		
-		/* internal class to convert Glob expression to Regexp */
+		/* internal class to convert Glob expression to Regex */
 		private class GlobMatch : IDisposable
 		{
-			Regexp expr;
+			Regex expr;
 			String pattern;
-			String translated;
 			bool disposed=false;
 			
 			internal GlobMatch(String glob) 
 			{
 				StringBuilder builder=new StringBuilder();
 				pattern=glob;
-				char[] arr=glob.ToCharArray();
-				for(int i=0;i<arr.Length;i++)
-				{
-					switch(arr[i])
-					{
-						case '.':
-						{
-							if(i < arr.Length-1)
-							{
-								if(arr[i+1]=='?')
-								{
-									builder.Append("\\.{0,1}");
-									i=i+1;
-								}
-								else if(arr[i+1]=='*')
-								{
-									builder.Append(".*");
-									i=i+1;
-								}
-								else
-								{
-									builder.Append("\\.");
-								}
-							}
-							else
-							{
-								builder.Append("\\.");
-							}
-						}
-						break;
-					case '*':
-						builder.Append(".*");
-						break;
-					case '?':
-						builder.Append(".");
-						break;
-					case '[':
-					case ']':
-					case '^':
-					case '\\':
-						builder.Append("\\"+arr[i]);
-						break;
-					default:
-						builder.Append(arr[i]);
-						break;
-					}
-				}
-				translated="^"+builder.ToString()+"$"; //perfect match
-				expr=new Regexp(translated);
+				expr=new Regex(glob, RegexSyntax.Wildcard);
 			}
 
 			public bool Match(String input)

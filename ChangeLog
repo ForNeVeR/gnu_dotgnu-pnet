@@ -10,6 +10,9 @@
 	formals to the ILNode_ClassDefn node; print an error if type
 	formals are used on a constructor or destructor.
 
+	* codegen/cg_library.c: add IAsyncResult and AsyncCallback
+	to the builtin library.
+
 2003-02-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_gather.c: Generate compiler controlled asynchronous 

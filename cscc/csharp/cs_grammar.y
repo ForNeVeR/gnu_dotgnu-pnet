@@ -2647,6 +2647,23 @@ TypeFormalList
 				ILNode_List_Add($$, $1);
 			}
 	| TypeFormalList ',' Identifier	{
+				/* Check for duplicates in the list */
+				ILNode_ListIter iter;
+				ILNode *node;
+				ILNode_ListIter_Init(&iter, $1);
+				while((node = ILNode_ListIter_Next(&iter)) != 0)
+				{
+					if(!strcmp(ILQualIdentName(node, 0),
+							   ILQualIdentName($3, 0)))
+					{
+						CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+						  "`%s' declared multiple times in generic parameters",
+						  ILQualIdentName($3, 0));
+						break;
+					}
+				}
+
+				/* Add the identifier to the list */
 				ILNode_List_Add($1, $3);
 				$$ = $1;
 			}

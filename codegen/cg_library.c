@@ -278,11 +278,13 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *decimalConstantClass;
 	ILClass *exceptionClass;
 	ILClass *disposableInterface;
+	ILClass *asyncResultInterface;
 	ILClass *collectionInterface;
 	ILClass *enumeratorInterface;
 	ILClass *isVolatileClass;
 	ILClass *delegateClass;
 	ILClass *multicastDelegateClass;
+	ILClass *asyncCallbackClass;
 	int constructorOK;
 	ILMethod *method;
 	ILProperty *property;
@@ -503,6 +505,14 @@ void ILGenMakeLibrary(ILGenInfo *info)
 				    IL_META_TYPEDEF_INTERFACE |
 					IL_META_TYPEDEF_ABSTRACT);
 
+	/* Create the "System.IAsyncResult" interface */
+	ABORT_IF(asyncResultInterface,
+			 ILClassCreate(scope, 0, "IAsyncResult", "System", 0));
+	ILClassSetAttrs(asyncResultInterface, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_INTERFACE |
+					IL_META_TYPEDEF_ABSTRACT);
+
 	/* Create the "System.Collections.ICollection" interface */
 	ABORT_IF(collectionInterface,
 			 ILClassCreate(scope, 0, "ICollection", "System.Collections", 0));
@@ -603,6 +613,16 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	{
 		ILGenOutOfMemory(info);
 	}
+
+	/* Create the "AsyncCallback" delegate class */
+	ABORT_IF(asyncCallbackClass,
+			 ILClassCreate(scope, 0, "AsyncCallback", "System",
+			 			   multicastDelegateClass));
+	ILClassSetAttrs(asyncCallbackClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_ABSTRACT);
 }
 
 #ifdef	__cplusplus

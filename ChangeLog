@@ -1,4 +1,11 @@
 
+2003-04-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/ASCIIEncoding.cs,
+	runtime/System/Text/Latin1Encoding.cs: return "String.Empty" for a
+	zero-length array range in "GetString"; use '?' for high characters
+	in "ASCIIEncoding.GetChars".
+
 2003-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/BestFitMappingAttribute.cs,

@@ -271,6 +271,10 @@ internal class Latin1Encoding : Encoding
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_Array"));
 				}
+				if(count == 0)
+				{
+					return String.Empty;
+				}
 				String s = String.NewString(count);
 				int posn = 0;
 				while(count-- > 0)
@@ -284,6 +288,10 @@ internal class Latin1Encoding : Encoding
 				if(bytes == null)
 				{
 					throw new ArgumentNullException("bytes");
+				}
+				if(bytes.Length == 0)
+				{
+					return String.Empty;
 				}
 				int count = bytes.Length;
 				int posn = 0;

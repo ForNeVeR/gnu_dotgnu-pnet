@@ -211,9 +211,18 @@ public class ASCIIEncoding : Encoding
 					throw new ArgumentException(_("Arg_InsufficientSpace"));
 				}
 				int count = byteCount;
+				byte ch;
 				while(count-- > 0)
 				{
-					chars[charIndex++] = (char)(bytes[byteIndex++]);
+					ch = bytes[byteIndex++];
+					if(ch < 0x80)
+					{
+						chars[charIndex++] = (char)ch;
+					}
+					else
+					{
+						chars[charIndex++] = '?';
+					}
 				}
 				return byteCount;
 			}
@@ -259,6 +268,10 @@ public class ASCIIEncoding : Encoding
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_Array"));
 				}
+				if(count == 0)
+				{
+					return String.Empty;
+				}
 				String s = String.NewString(count);
 				int posn = 0;
 				while(count-- > 0)
@@ -272,6 +285,10 @@ public class ASCIIEncoding : Encoding
 				if(bytes == null)
 				{
 					throw new ArgumentNullException("bytes");
+				}
+				if(bytes.Length == 0)
+				{
+					return String.Empty;
 				}
 				int count = bytes.Length;
 				int posn = 0;

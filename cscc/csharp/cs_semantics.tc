@@ -32,9 +32,22 @@
 									     ILNode **parent) = {CSSemValueDefault}
 
 /*
+ * A subspecies of semantic analysis intended to give preference to
+ * returning Type information.  Used in local variable declarations,
+ * object creation, and some obscure cases of Method Access.
+ */
+%operation CSSemValue ILNode_SemAnalysisType([ILNode *node], ILGenInfo *info,
+									     ILNode **parent) = {CSSemValueDefault}
+
+/*
  * Stub for dummy semantic analysis routines.
  */
 ILNode_SemAnalysis(ILNode_DummySem)
+{
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysisType(ILNode_DummySem)
 {
 	return CSSemValueDefault;
 }
@@ -102,9 +115,8 @@ void CSSemProgramItem(ILGenInfo *info, ILProgramItem *item);
 
 %end %{
 
-ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent)
+static ILType *CSSemFilterVoid(ILType *resultType, ILNode *type)
 {
-	ILType *resultType = CSSemTypeVoid(type, info, parent);
 	if(resultType == ILType_Void)
 	{
 		CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
@@ -114,48 +126,57 @@ ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent)
 	return resultType;
 }
 
+static ILType *CSSemValidate(ILNode *type, CSSemValue value)
+{
+	if(!CSSemIsType(value))
+	{
+		if(!CSSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
+						  "invalid type specification");
+		}
+		return ILType_Int32;
+	}
+	else
+	{
+		return CSSemGetType(value);
+	}
+}
+
+ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent)
+{
+	return CSSemFilterVoid(CSSemTypeVoid(type, info, parent), type);
+}
+
 ILType *CSSemTypeLiteral(ILNode *type, ILGenInfo *info, ILNode **parent)
 {
+	CSSemValue value;
 	int save;
-	ILType *returnType;
 
-	save = info->literalType;
-	info->literalType = 1;
-	returnType = CSSemType(type, info, parent);
-	info->literalType = save;
-	return returnType;
-}
+	/* NULL is used in some places in the grammar to indicate "void" */
+	if(!type) return CSSemFilterVoid(ILType_Void, type);
 	
+	save = info->inSemType;
+	info->inSemType = info->typeGather;
+	value = ILNode_SemAnalysisType(type, info, parent);
+	info->inSemType = save;
+	return CSSemFilterVoid(CSSemValidate(type, value),type);
+}
+
 ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
 {
 	CSSemValue value;
 	int save;
-	if(type)
- 	{
-		save = info->inSemType;
-		info->inSemType = info->typeGather;
-		value = ILNode_SemAnalysis(type, info, parent);
-		info->inSemType = save;
 
-		if(!CSSemIsType(value))
-		{
-			if(!CSSemIsError(value))
-			{
-				CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
-							  "invalid type specification");
-			}
-			return ILType_Int32;
-		}
-		else
-		{
-			return CSSemGetType(value);
-		}
-	}
-	else
-	{
-		/* NULL is used in some places in the grammar to indicate "void" */
-		return ILType_Void;
-	}
+	/* NULL is used in some places in the grammar to indicate "void" */
+	if(!type) return ILType_Void;
+ 	
+	save = info->inSemType;
+	info->inSemType = info->typeGather;
+	value = ILNode_SemAnalysis(type, info, parent);
+	info->inSemType = save;
+
+	return CSSemValidate(type, value);
 }
 
 int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,

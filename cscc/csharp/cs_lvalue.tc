@@ -764,7 +764,6 @@ ILNode_SemAnalysis(ILNode_Identifier)
   	ILNode_SemGuard *constVar;
 	ILType *type;
 
-	if (!info->literalType) {
 	/* Look for local variables in the current scope */
 	data = ILScopeLookup(info->currentScope, node->name, 1);
 	if(data && ILScopeDataGetKind(data) == IL_SCOPE_LOCAL)
@@ -841,13 +840,26 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		CSSemSetRValue(value, CSSemGetType(constVar->value));
 		return value;
 	}
-	}
 
 	/* Resolve the simple name */
-	value = CSResolveSimpleName(info, (ILNode *)node, node->name,
-									info->literalType);
+	value = CSResolveSimpleName(info, (ILNode *)node, node->name, 0);
 
-	if (info->literalType && CSSemGetKind(value) != CS_SEMKIND_TYPE)
+	/* Convert the result into an l-value or r-value and return it */
+	return SemToLRValue((ILNode *)node, info, parent, 
+							value, node->name, 0, 0);
+}
+
+/*
+ *  Perform semantic analysis with a bias to returning Type objects.
+ */
+ILNode_SemAnalysisType(ILNode_Identifier)
+{
+	CSSemValue value;
+
+	/* Resolve the simple name */
+	value = CSResolveSimpleName(info, (ILNode *)node, node->name, 1);
+
+	if (CSSemGetKind(value) != CS_SEMKIND_TYPE)
 	{
 		return CSSemValueDefault;
 	}
@@ -873,10 +885,30 @@ ILNode_SemAnalysis(ILNode_QualIdent)
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->right, 0);
-	value2 = CSResolveMemberName(info, (ILNode *)node, value, name,
-								info->literalType);
+	value2 = CSResolveMemberName(info, (ILNode *)node, value, name, 0);
 
-	if (info->literalType && CSSemGetKind(value2) != CS_SEMKIND_TYPE)
+	/* Convert the result into an l-value or r-value and return it */
+	return SemToLRValue((ILNode *)node, info, parent, value2,
+						name, node->left, &value);
+}
+
+/*
+ *  Perform semantic analysis with a bias to returning Type objects.
+ */
+ILNode_SemAnalysisType(ILNode_QualIdent)
+{
+	CSSemValue value;
+	CSSemValue value2;
+	char *name;
+	
+	/* Get the semantic value for the left part of the identifier */
+	value = ILNode_SemAnalysis(node->left, info, &(node->left));
+
+	/* Resolve the member */
+	name = ILQualIdentName(node->right, 0);
+	value2 = CSResolveMemberName(info, (ILNode *)node, value, name, 1);
+
+	if (CSSemGetKind(value2) != CS_SEMKIND_TYPE)
 	{
 		return CSSemValueDefault;
 	}
@@ -910,6 +942,8 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 	char *name;
 	ILEvalValue evalue;
 
+	ILNode *save1 = node->expr1;
+
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
 
@@ -926,7 +960,28 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->expr2, 0);
-	value2 = CSResolveMemberName(info, (ILNode *)node, value, name, 0);
+	value2 = CSResolveMemberNameQuiet(info, (ILNode *)node, value, name, 0);
+
+	if (CSSemGetKind(value2) == CS_SEMKIND_VOID)
+	{
+		/*  We couldn't find a method in a resolved variable, so we'll
+		 *  try a type instead  */
+		ILNode *save2 = node->expr1;
+		node->expr1 = save1;
+
+		/* Get the semantic value for the left part of the identifier */
+		value = ILNode_SemAnalysisType(node->expr1, info, &(node->expr1));
+
+		/* Resolve the member */
+		name = ILQualIdentName(node->expr2, 0);
+		value2 = CSResolveMemberNameQuiet(info, (ILNode *)node, value, name, 1);
+
+		if (CSSemGetKind(value2) == CS_SEMKIND_VOID)
+		{
+			node->expr1 = save2;
+			CSResolveMemberName(info, (ILNode *)node, value, name, 1);
+		}
+	}
 
 	/* Convert the result into an l-value or r-value and return it */
 	return SemToLRValue((ILNode *)node, info, parent, value2,
@@ -1258,4 +1313,24 @@ ILNode_SemAnalysis(ILNode_MemberProperty),
 ILNode_SemAnalysis(ILNode_IndexerAccess)
 {
 	return CSSemValueDefault;
+}
+
+
+ILNode_SemAnalysisType(ILNode_This),
+ILNode_SemAnalysisType(ILNode_NewScope),
+ILNode_SemAnalysisType(ILNode_LocalVar),
+ILNode_SemAnalysisType(ILNode_ArgumentVar),
+ILNode_SemAnalysisType(ILNode_RefArgumentVar),
+ILNode_SemAnalysisType(ILNode_MemberAccess),
+ILNode_SemAnalysisType(ILNode_BaseAccess),
+ILNode_SemAnalysisType(ILNode_BaseElement),
+ILNode_SemAnalysisType(ILNode_DerefField),
+ILNode_SemAnalysisType(ILNode_ArrayAccess),
+ILNode_SemAnalysisType(ILNode_StaticField),
+ILNode_SemAnalysisType(ILNode_MemberField),
+ILNode_SemAnalysisType(ILNode_StaticProperty),
+ILNode_SemAnalysisType(ILNode_MemberProperty),
+ILNode_SemAnalysisType(ILNode_IndexerAccess)
+{
+	return ILNode_SemAnalysis((ILNode *)node, info, parent);
 }

@@ -1585,7 +1585,7 @@ ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
 	method = (ILNode_MethodDeclaration *)(info->currentMethod);
 
 	/* Perform semantic analysis on the local variable type */
-	type = CSSemTypeLiteral(node->type, info, &(node->type));
+	type = CSSemType(node->type, info, &(node->type));
 
 	/* Scan through the variable names and declare them in the current scope */
 	ILNode_ListIter_Init(&iter, node->varNames);
@@ -1757,4 +1757,52 @@ ILNode_SemAnalysis(ILNode_EventAddOrRemove)
 	/* Nothing to do here: this node is generated during semantic
 	   analysis of the "+=" and "-=" operators */
 	return CSSemValueDefault;
+}
+
+
+ILNode_SemAnalysisType(ILNode_Empty) ,
+ILNode_SemAnalysisType(ILNode_Compound),
+ILNode_SemAnalysisType(ILNode_List) ,
+ILNode_SemAnalysisType(ILNode_If) ,
+ILNode_SemAnalysisType(ILNode_While) ,
+ILNode_SemAnalysisType(ILNode_Do) ,
+ILNode_SemAnalysisType(ILNode_For) ,
+ILNode_SemAnalysisType(ILNode_Foreach) ,
+ILNode_SemAnalysisType(ILNode_EmptyExpr),
+ILNode_SemAnalysisType(ILNode_ForeachString),
+ILNode_SemAnalysisType(ILNode_ForeachCollection) ,
+ILNode_SemAnalysisType(ILNode_Switch) ,
+ILNode_SemAnalysisType(ILNode_SwitchSectList),
+ILNode_SemAnalysisType(ILNode_SwitchSection),
+ILNode_SemAnalysisType(ILNode_CaseList),
+ILNode_SemAnalysisType(ILNode_CaseLabel),
+ILNode_SemAnalysisType(ILNode_DefaultLabel) ,
+ILNode_SemAnalysisType(ILNode_Goto) ,
+ILNode_SemAnalysisType(ILNode_GotoLabel) ,
+ILNode_SemAnalysisType(ILNode_GotoCase) ,
+ILNode_SemAnalysisType(ILNode_GotoDefault) ,
+ILNode_SemAnalysisType(ILNode_Break),
+ILNode_SemAnalysisType(ILNode_LabelledBreak),
+ILNode_SemAnalysisType(ILNode_Continue),
+ILNode_SemAnalysisType(ILNode_LabelledContinue),
+ILNode_SemAnalysisType(ILNode_Return) ,
+ILNode_SemAnalysisType(ILNode_ReturnExpr) ,
+ILNode_SemAnalysisType(ILNode_Throw) ,
+ILNode_SemAnalysisType(ILNode_ThrowExpr) ,
+ILNode_SemAnalysisType(ILNode_Try) ,
+ILNode_SemAnalysisType(ILNode_CatchClause) ,
+ILNode_SemAnalysisType(ILNode_FinallyClause) ,
+ILNode_SemAnalysisType(ILNode_Lock) ,
+ILNode_SemAnalysisType(ILNode_Using) ,
+ILNode_SemAnalysisType(ILNode_Unsafe) ,
+ILNode_SemAnalysisType(ILNode_Fixed) ,
+ILNode_SemAnalysisType(ILNode_FixedDeclList) ,
+ILNode_SemAnalysisType(ILNode_FixAddress) ,
+ILNode_SemAnalysisType(ILNode_FixExpr) ,
+ILNode_SemAnalysisType(ILNode_LocalVarDeclaration) ,
+ILNode_SemAnalysisType(ILNode_LocalConstDeclaration) ,
+ILNode_SemAnalysisType(ILNode_LineInfo) ,
+ILNode_SemAnalysisType(ILNode_EventAddOrRemove) 
+{
+	return ILNode_SemAnalysis((ILNode *)node, info, parent);
 }

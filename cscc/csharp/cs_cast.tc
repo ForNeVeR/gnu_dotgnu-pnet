@@ -269,3 +269,9 @@ const char *CSTypeToName(ILType *type)
 }
 
 %}
+
+
+ILNode_SemAnalysisType(ILNode_UserCast)
+{
+	return ILNode_SemAnalysis((ILNode *)node, info, parent);
+}

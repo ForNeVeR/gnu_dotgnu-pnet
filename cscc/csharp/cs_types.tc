@@ -246,7 +246,7 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 	ILType *type;
 
 	/* Perform semantic analysis on the element type */
-	type = CSSemTypeVoid(node->type, info, &(node->type));
+	type = CSSemTypeLiteral(node->type, info, &(node->type));
 
 	/* If the element type is "void", then the first suffix
 	   must indicate a pointer type */
@@ -321,4 +321,17 @@ ILNode_SemAnalysis(ILNode_TypeSuffix)
 {
 	/* This is never actually called, so do nothing */
 	return CSSemValueDefault;
+}
+
+
+ILNode_SemAnalysisType(ILNode_ArrayType) ,
+ILNode_SemAnalysisType(ILNode_PtrType) ,
+ILNode_SemAnalysisType(ILNode_PrimitiveType) ,
+ILNode_SemAnalysisType(ILNode_ObjectType) ,
+ILNode_SemAnalysisType(ILNode_StringType) ,
+ILNode_SemAnalysisType(ILNode_DecimalType) ,
+ILNode_SemAnalysisType(ILNode_LocalVariableType) ,
+ILNode_SemAnalysisType(ILNode_TypeSuffix) 
+{
+	return ILNode_SemAnalysis((ILNode *)node, info, parent);
 }

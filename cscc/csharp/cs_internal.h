@@ -151,6 +151,9 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 							   CSSemValue value, const char *name,
 							   int literalType);
+CSSemValue CSResolveMemberNameQuiet(ILGenInfo *genInfo, ILNode *node,
+							   CSSemValue value, const char *name,
+							   int literalType);
 
 /*
  * Resolve an instance constructor reference to a semantic value.

@@ -1163,3 +1163,25 @@ ILNode_SemAnalysis(ILNode_DocComment)
 	/* Nothing to do here */
 	return CSSemValueDefault;
 }
+
+
+ILNode_SemAnalysisType(ILNode_ClassDefn) ,
+ILNode_SemAnalysisType(ILNode_ScopeChange) ,
+ILNode_SemAnalysisType(ILNode_FieldDeclaration) ,
+ILNode_SemAnalysisType(ILNode_FieldDeclarator) ,
+ILNode_SemAnalysisType(ILNode_EventDeclaration) ,
+ILNode_SemAnalysisType(ILNode_EventDeclarator) ,
+ILNode_SemAnalysisType(ILNode_MethodDeclaration) ,
+ILNode_SemAnalysisType(ILNode_PropertyDeclaration) ,
+ILNode_SemAnalysisType(ILNode_EnumMemberDeclaration) ,
+ILNode_SemAnalysisType(ILNode_DelegateMemberDeclaration) ,
+ILNode_SemAnalysisType(ILNode_FormalParameter) ,
+ILNode_SemAnalysisType(ILNode_AttributeTree) ,
+ILNode_SemAnalysisType(ILNode_AttributeSection) ,
+ILNode_SemAnalysisType(ILNode_Attribute) ,
+ILNode_SemAnalysisType(ILNode_AttrArgs) ,
+ILNode_SemAnalysisType(ILNode_NamedArg) ,
+ILNode_SemAnalysisType(ILNode_DocComment) 
+{
+	return ILNode_SemAnalysis((ILNode *)node, info, parent);
+}

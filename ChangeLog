@@ -1,4 +1,16 @@
 
+2002-10-27  Jonathan Springer  <jonathan.springer@verizon.net>
+	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/csharp/cs_cast.tc,
+	cscc/csharp/cs_const.tc, cscc/csharp/cs_decls.tc, 
+	cscc/csharp/cs_internal.h, cscc/csharp/cs_invoke.tc
+	cscc/csharp/cs_lookup.c, cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_misc.tc,
+	cscc/csharp/cs_oper.tc, cscc/csharp/cs_semantics.tc,
+	cscc/csharp/cs_stmt.tc, cscc/csharp/cs_types.tc:
+	Fixed Gopal's infamous 'class Foo {...} ... int Foo; Foo.Bar()' bug.
+	Also removed the state introduced a few corrections back in favor of
+	a new method 'ILNode_SemAnalysisType'.  Most of the files modified are
+	to add default implementations of 'ILNode_SemAnalysisType'.
+
 2002-10-27  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_lookup.c: Add members of 'Object' to all

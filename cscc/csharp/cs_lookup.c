@@ -1266,60 +1266,117 @@ static int FilterNonStatic(CSMemberLookupInfo *results, int kind)
 	return kind;
 }
 
+/*
+ * Look for a type or sub-namespace with a given name within the 
+ * namespace.
+ */
+static CSSemValue CSResolveNamespaceMemberName(ILGenInfo *genInfo,
+		ILNode *node, CSSemValue value, const char *name)
+{
+	CSMemberLookupInfo results;
+	int result;
+
+	InitMembers(&results);
+	result = FindTypeInNamespace(genInfo, name,
+			CSSemGetNamespace(value), 
+			ILClassResolve(CSGetAccessScope(genInfo, 1)),
+			&results);
+			
+	return result == CS_SEMKIND_VOID ?
+		CSSemValueDefault : LookupToSem(node, name, &results, result);
+}
+
+/*
+ * Look for a member to a given type
+ */
+static CSSemValue CSResolveTypeMemberName(ILGenInfo *genInfo,
+		ILNode *node, CSSemValue value, const char *name, int literalType)
+{
+	CSMemberLookupInfo results;
+	int result;
+
+	/* Convert the type into a class and perform a lookup */
+	result = MemberLookup(genInfo, ILTypeToClass(genInfo, CSSemGetType(value)),
+						  name, ILClassResolve(CSGetAccessScope(genInfo, 1)), 
+						  &results, 1, CSSemIsBase(value), literalType);
+
+	if(result != CS_SEMKIND_VOID)
+	{
+		/* Filter the result to only include static definitions */
+		result = FilterStatic(&results, result);
+	}
+
+	return result == CS_SEMKIND_VOID ?
+		CSSemValueDefault : LookupToSem(node, name, &results, result);
+}
+		
+static CSSemValue CSResolveValueMemberName(ILGenInfo *genInfo,
+		ILNode *node, CSSemValue value, const char *name, int literalType)
+{
+	CSMemberLookupInfo results;
+	int result;
+	
+	/* Perform a member lookup based on the expression's type */
+	result = MemberLookup(genInfo, ILTypeToClass(genInfo, CSSemGetType(value)),
+						  name, ILClassResolve(CSGetAccessScope(genInfo, 1)),
+						  &results, 1, CSSemIsBase(value), literalType);
+
+	if(result != CS_SEMKIND_VOID)
+	{
+		/* Check for instance accesses to enumerated types.
+		   Sometimes there can be a property with the same
+		   name as an enumerated type, and we pick up the
+		   property when we are really looking for a constant */
+		if(!ILTypeIsEnum(CSSemGetType(value)) || !strcmp(name, "value__"))
+		{
+			/* Filter the result to remove static definitions */
+			result = FilterNonStatic(&results, result);
+		}
+	}
+
+	return result == CS_SEMKIND_VOID ?
+		CSSemValueDefault : LookupToSem(node, name, &results, result);
+}
+
 CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 							   CSSemValue value, const char *name,
 							   int literalType)
 {
-	char *fullName;
-	CSMemberLookupInfo results;
-	ILClass *accessedFrom;
-	int result;
-
-	/* Find the accessor scope */
-	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
+	CSSemValue retSem;
 
 	/* Determine how to resolve the member from its semantic kind */
 	switch(CSSemGetKind(value) & ~CS_SEMKIND_BASE)
 	{
 		case CS_SEMKIND_NAMESPACE:
 		{
-			/* Look for a type or sub-namespace with the given name
-			   within the namespace */
-			fullName = CSSemGetNamespace(value);
-			InitMembers(&results);
-			result = FindTypeInNamespace(genInfo, name, fullName,
-										 accessedFrom, &results);
-			if(result != CS_SEMKIND_VOID)
-			{
-				return LookupToSem(node, name, &results, result);
-			}
+		    retSem = CSResolveNamespaceMemberName(genInfo, node, value, name);
 
-			/* Could not find the member within the namespace */
-			if (!literalType) {
+			if (CSSemGetKind(retSem) != CS_SEMKIND_VOID)
+			{
+				return retSem;
+			}
+			
+			/*  Fall through to not-found processing  */
+			if (!literalType)
+			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not a member of the namespace `%s'",
-						  name, fullName);
+						  name, CSSemGetNamespace(value));
 			}
 		}
 		break;
 
 		case CS_SEMKIND_TYPE:
 		{
-			/* Convert the type into a class and perform a lookup */
-			result = MemberLookup(genInfo, ILTypeToClass
-										(genInfo, CSSemGetType(value)),
-								  name, accessedFrom, &results, 1,
-								  CSSemIsBase(value), literalType);
-			if(result != CS_SEMKIND_VOID)
-			{
-				/* Filter the result to only include static definitions */
-				result = FilterStatic(&results, result);
-			}
-			if(result != CS_SEMKIND_VOID)
-			{
-				return LookupToSem(node, name, &results, result);
-			}
+			retSem = CSResolveTypeMemberName(genInfo, node, value, name, 
+											literalType);
 
+			if (CSSemGetKind(retSem) != CS_SEMKIND_VOID)
+			{
+				return retSem;
+			}
+			
+			/*  Fall through to not-found processing  */
 			if (!literalType) {
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not a member of the type `%s'",
@@ -1331,28 +1388,15 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 		case CS_SEMKIND_LVALUE:
 		case CS_SEMKIND_RVALUE:
 		{
-			/* Perform a member lookup based on the expression's type */
-			result = MemberLookup(genInfo, 
-								ILTypeToClass(genInfo, CSSemGetType(value)),
-								name, accessedFrom, &results, 1,
-								CSSemIsBase(value), literalType);
-			if(result != CS_SEMKIND_VOID)
+			retSem = CSResolveValueMemberName(genInfo, node, value, name,
+											literalType);
+
+			if (CSSemGetKind(retSem) != CS_SEMKIND_VOID)
 			{
-				/* Check for instance accesses to enumerated types.
-				   Sometimes there can be a property with the same
-				   name as an enumerated type, and we pick up the
-				   property when we are really looking for a constant */
-				if(!ILTypeIsEnum(CSSemGetType(value)) ||
-				   !strcmp(name, "value__"))
-				{
-					/* Filter the result to remove static definitions */
-					result = FilterNonStatic(&results, result);
-				}
+				return retSem;
 			}
-			if(result != CS_SEMKIND_VOID)
-			{
-				return LookupToSem(node, name, &results, result);
-			}
+			
+			/*  Fall through to not-found processing  */
 			if (!literalType) {
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not an instance member of the type `%s'",
@@ -1377,6 +1421,71 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 		 * only happens in error cases 
 		 * The errors will be printed this second time around  */
 		return CSResolveMemberName(genInfo, node, value, name, 0);
+	}
+	else
+	{
+		/* If we get here, then something went wrong */
+		return CSSemValueDefault;
+	}
+}
+
+CSSemValue CSResolveMemberNameQuiet(ILGenInfo *genInfo, ILNode *node,
+							   CSSemValue value, const char *name,
+							   int literalType)
+{
+	CSSemValue retSem;
+
+	/* Determine how to resolve the member from its semantic kind */
+	switch(CSSemGetKind(value) & ~CS_SEMKIND_BASE)
+	{
+		case CS_SEMKIND_NAMESPACE:
+		{
+		    retSem = CSResolveNamespaceMemberName(genInfo, node, value, name);
+
+			if (CSSemGetKind(retSem) != CS_SEMKIND_VOID)
+			{
+				return retSem;
+			}
+			
+			/*  Fall through to not-found processing  */
+		}
+		break;
+
+		case CS_SEMKIND_TYPE:
+		{
+			retSem = CSResolveTypeMemberName(genInfo, node, value, name, 
+											literalType);
+
+			if (CSSemGetKind(retSem) != CS_SEMKIND_VOID)
+			{
+				return retSem;
+			}
+			
+			/*  Fall through to not-found processing  */
+		}
+		break;
+
+		case CS_SEMKIND_LVALUE:
+		case CS_SEMKIND_RVALUE:
+		{
+			retSem = CSResolveValueMemberName(genInfo, node, value, name,
+											literalType);
+
+			if (CSSemGetKind(retSem) != CS_SEMKIND_VOID)
+			{
+				return retSem;
+			}
+			
+			/*  Fall through to not-found processing  */
+		}
+		break;
+	}
+
+	if (literalType) {
+		/* Try again without the type restrictions - inefficient, but 
+		 * only happens in error cases 
+		 * The errors will be printed this second time around  */
+		return CSResolveMemberNameQuiet(genInfo, node, value, name, 0);
 	}
 	else
 	{

@@ -612,3 +612,17 @@ ILNode_SemAnalysis(ILNode_RefValue)
 	CSSemSetRValue(value, node->type);
 	return value;
 }
+
+
+ILNode_SemAnalysisType(ILNode_TypeOf) ,
+ILNode_SemAnalysisType(ILNode_SizeOf) ,
+ILNode_SemAnalysisType(ILNode_StackAlloc) ,
+ILNode_SemAnalysisType(ILNode_NewExpression) ,
+ILNode_SemAnalysisType(ILNode_SemGuard) ,
+ILNode_SemAnalysisType(ILNode_ArrayInit) ,
+ILNode_SemAnalysisType(ILNode_MakeRefAny) ,
+ILNode_SemAnalysisType(ILNode_RefType) ,
+ILNode_SemAnalysisType(ILNode_RefValue) 
+{
+	return ILNode_SemAnalysis((ILNode *)node, info, parent);
+}

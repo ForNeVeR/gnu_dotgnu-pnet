@@ -25,6 +25,9 @@
 	* cscc/c/c_grammar.y (ProcessBitField): remove enum wrappers
 	from a bit field type (Bug #2777).
 
+	* cscc/c/c_oper.tc: constant evaluation for the "sizeof"
+	operator (Bug #2776).
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_misc.c: rewrite "GetNextArg(RuntimeTypeHandle)"

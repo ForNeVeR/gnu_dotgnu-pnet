@@ -2395,6 +2395,31 @@ ILNode_CSemAnalysis(ILNode_SizeOfExpr)
 }
 
 /*
+ * Evaluate the constant value of the "sizeof expression" operator.
+ */
+ILNode_EvalConst(ILNode_SizeOfExpr)
+{
+	ILUInt32 size;
+	if(!(node->type))
+	{
+		return 0;
+	}
+	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
+	if(size != CTYPE_DYNAMIC)
+	{
+		/* The type's size can be evaluated to a compile-time constant */
+		value->valueType = ILMachineType_UInt32;
+		value->un.i4Value = (ILInt32)size;
+		return 1;
+	}
+	else
+	{
+		/* We must compute this constant value dynamically at runtime */
+		return 0;
+	}
+}
+
+/*
  * Perform semantic analysis for the "sizeof type" operator.
  */
 ILNode_CSemAnalysis(ILNode_SizeOfType)
@@ -2417,6 +2442,27 @@ ILNode_CSemAnalysis(ILNode_SizeOfType)
 		CSemSetDynConstant(value, ILType_UInt32);
 	}
 	return value;
+}
+
+/*
+ * Evaluate the constant value of a "sizeof type" operator.
+ */
+ILNode_EvalConst(ILNode_SizeOfType)
+{
+	ILUInt32 size;
+	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
+	if(size != CTYPE_DYNAMIC)
+	{
+		/* The type's size can be evaluated to a compile-time constant */
+		value->valueType = ILMachineType_UInt32;
+		value->un.i4Value = (ILInt32)size;
+		return 1;
+	}
+	else
+	{
+		/* We must compute this constant value dynamically at runtime */
+		return 0;
+	}
 }
 
 /*

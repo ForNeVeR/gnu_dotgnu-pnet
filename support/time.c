@@ -215,12 +215,27 @@ ILInt32 ILGetTimeZoneAdjust(void)
 #endif
 	if(!initialized)
 	{
+#ifdef IL_WIN32_PLATFORM
+		TIME_ZONE_INFORMATION temp;
+		DWORD tmz = GetTimeZoneInformation(&temp);
+		isdst = (tmz == TIME_ZONE_ID_DAYLIGHT) ? 1 : 0;
+		/* we expect the adjustment to be in seconds, not minutes */
+		if(isdst)
+		{
+			timezone = (temp.Bias + temp.DaylightBias) * 60;
+		}
+		else
+		{
+			timezone = temp.Bias * 60;
+		}
+#else
 		/* Call "localtime", which will set the global "timezone" for us */
 		time_t temp = time(0);
 		struct tm *tms = localtime(&temp);
 		isdst = tms->tm_isdst;
 #ifdef HAVE_TM_GMTOFF
 		timezone = -(tms->tm_gmtoff);
+#endif
 #endif
 		initialized = 1;
 	}

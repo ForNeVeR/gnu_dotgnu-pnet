@@ -1,4 +1,9 @@
 
+2004-10-08  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* support/time.c: Fixed UTC offset for DST (Win32). Please review
+	<http://dotgnu.org/pipermail/pnet-developers/2004-October/001745.html>.
+	
 2004-10-01  Gopal V  <gopalv82@yahoo.com>
 
 	* configure.in,  support/serial.c: Include <sys/modem.h> for 

@@ -11,6 +11,18 @@
 	* missing: update the "missing" script so that it is no longer
 	"too old or missing".
 
+	* configure.in, copy-mcs.sh, class/Makefile.am,
+	class/Mono.Cairo/.cvsignore, class/Mono.Cairo/Makefile.am,
+	class/Mono.Cairo/Mono.Cairo.build, class/System.Data/System.Data.build,
+	class/System.Data.ObjectSpaces/.cvsignore,
+	class/System.Data.ObjectSpaces/Makefile.am,
+	class/System.Data.ObjectSpaces/System.Data.ObjectSpaces.build,
+	class/System.Data.SqlXml/.cvsignore,
+	class/System.Data.SqlXml/Makefile.am,
+	class/System.Data.SqlXml/System.Data.SqlXml.build: add build
+	scripts for "Mono.Cairo", "System.Data.SqlXml", and
+	"System.Data.ObjectSpaces".
+
 2003-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.0" release.

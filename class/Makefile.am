@@ -13,6 +13,9 @@ SUBDIRS = Custommarshalers \
 		  System.Data.OracleClient \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
-		  Mono.Posix
+		  Mono.Posix \
+		  Mono.Cairo \
+		  System.Data.SqlXml \
+		  System.Data.ObjectSpaces
 
 ##		  Npgsql

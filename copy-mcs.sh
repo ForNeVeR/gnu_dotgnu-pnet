@@ -60,9 +60,12 @@ for dir in Custommarshalers \
 		  Npgsql \
 		  Mono.Data.DB2Client \
 		  System.Data.OracleClient \
+		  System.Data.SqlXml \
+		  System.Data.ObjectSpaces \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
-		  Mono.Posix ; do
+		  Mono.Posix \
+		  Mono.Cairo ; do
 
 	cp -pr "$MCS_SOURCES/class/$dir" "mcs-sources/class/$dir"
 

@@ -269,6 +269,9 @@ class/Mono.Data.DB2Client/Makefile
 class/Mono.Directory.LDAP/Makefile
 class/Mono.GetOptions/Makefile
 class/Mono.Posix/Makefile
+class/Mono.Cairo/Makefile
+class/System.Data.SqlXml/Makefile
+class/System.Data.ObjectSpaces/Makefile
 tools/Makefile
 tools/SqlSharp/Makefile
 ])

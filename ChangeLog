@@ -15,6 +15,9 @@
 	I18N/West/oem-775.ucm, I18N/tools/cvt.sh: add code pages for
 	OEM Greek and OEM Baltic.
 
+	* samples/codepage.cs: make the codepage sample a little more
+	robust against odd exception conditions.
+
 2003-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/CJK/CP51932.cs, I18N/CJK/CP932.cs: changes to the

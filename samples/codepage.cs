@@ -84,6 +84,10 @@ class CodePage
 			{
 				enc = null;
 			}
+			catch(ArgumentException)
+			{
+				enc = null;
+			}
 			if(enc != null)
 			{
 				PrintEncoding(enc, verbose, (page == defaultPage));
@@ -201,6 +205,10 @@ class CodePage
 			{
 				numBytes = 0;
 			}
+			catch(NotSupportedException)
+			{
+				numBytes = 0;
+			}
 			if(numBytes > 0 &&
 			   (numBytes != 1 || buf[0] != (byte)'?' || value == (int)'?'))
 			{
@@ -228,6 +236,10 @@ class CodePage
 		{
 			enc = null;
 		}
+		catch(ArgumentException)
+		{
+			enc = null;
+		}
 		if(enc != null)
 		{
 			PrintEncoding(enc, true, false);
@@ -249,6 +261,10 @@ class CodePage
 			enc = Encoding.GetEncoding(name);
 		}
 		catch(NotSupportedException)
+		{
+			enc = null;
+		}
+		catch(ArgumentException)
 		{
 			enc = null;
 		}
@@ -276,6 +292,10 @@ class CodePage
 		{
 			enc = null;
 		}
+		catch(ArgumentException)
+		{
+			enc = null;
+		}
 		if(enc != null)
 		{
 			DumpEncoding(enc);
@@ -296,6 +316,10 @@ class CodePage
 			enc = Encoding.GetEncoding(name);
 		}
 		catch(NotSupportedException)
+		{
+			enc = null;
+		}
+		catch(ArgumentException)
 		{
 			enc = null;
 		}

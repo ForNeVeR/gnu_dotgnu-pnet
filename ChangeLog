@@ -1,4 +1,11 @@
 
+2002-03-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/Makefile.am, csharp/expr/enum1.cs,
+	csharp/expr/enum1.il, csharp/expr/enum1.jl,
+	csharp/expr/enum2.cs, csharp/expr/enum2.err,
+	csharp/expr/enum2.jerr: test operators on enumerated types.
+
 2002-03-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/method10.cs,

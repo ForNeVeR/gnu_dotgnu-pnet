@@ -93,7 +93,8 @@ JavaGenDiscard(ILNode_MemberField)
  */
 JavaGenValue(ILNode_LocalVar)
 {
-	/* TODO */
+	JavaGenLoadLocal(info, node->index, node->machineType);
+	JavaGenAdjust(info, JavaGenTypeSize(node->machineType));
 	return node->machineType;
 }
 
@@ -102,7 +103,8 @@ JavaGenValue(ILNode_LocalVar)
  */
 JavaGenValue(ILNode_ArgumentVar)
 {
-	/* TODO */
+	JavaGenLoadArg(info, node->index, node->machineType);
+	JavaGenAdjust(info, JavaGenTypeSize(node->machineType));
 	return node->machineType;
 }
 
@@ -163,18 +165,10 @@ JavaGenValue(ILNode_MemberField)
 /*
  * Prepare to store into a local variable.
  */
-JavaPrepare(ILNode_LocalVar)
-{
-	/* TODO */
-	return node->machineType;
-}
-
-/*
- * Prepare to store into an argument variable.
- */
+JavaPrepare(ILNode_LocalVar),
 JavaPrepare(ILNode_ArgumentVar)
 {
-	/* TODO */
+	/* No preparation is needed for locals or arguments */
 	return node->machineType;
 }
 
@@ -237,7 +231,21 @@ JavaPrepare(ILNode_MemberField)
  */
 JavaGetAndPrepare(ILNode_LocalVar)
 {
-	/* TODO */
+	int size = JavaGenTypeSize(node->machineType);
+	JavaGenLoadLocal(info, node->index, node->machineType);
+	JavaGenAdjust(info, size);
+	if(leave)
+	{
+		if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP2);
+		}
+		else
+		{
+			JavaGenSimple(info, JAVA_OP_DUP);
+		}
+		JavaGenAdjust(info, size);
+	}
 	return node->machineType;
 }
 
@@ -246,7 +254,21 @@ JavaGetAndPrepare(ILNode_LocalVar)
  */
 JavaGetAndPrepare(ILNode_ArgumentVar)
 {
-	/* TODO */
+	int size = JavaGenTypeSize(node->machineType);
+	JavaGenLoadArg(info, node->index, node->machineType);
+	JavaGenAdjust(info, size);
+	if(leave)
+	{
+		if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP2);
+		}
+		else
+		{
+			JavaGenSimple(info, JAVA_OP_DUP);
+		}
+		JavaGenAdjust(info, size);
+	}
 	return node->machineType;
 }
 
@@ -309,7 +331,21 @@ JavaGetAndPrepare(ILNode_MemberField)
  */
 JavaStore(ILNode_LocalVar)
 {
-	/* TODO */
+	int size = JavaGenTypeSize(node->machineType);
+	if(leave)
+	{
+		if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP2);
+		}
+		else
+		{
+			JavaGenSimple(info, JAVA_OP_DUP);
+		}
+		JavaGenAdjust(info, size);
+	}
+	JavaGenStoreLocal(info, node->index, node->machineType);
+	JavaGenAdjust(info, -size);
 }
 
 /*
@@ -317,7 +353,21 @@ JavaStore(ILNode_LocalVar)
  */
 JavaStore(ILNode_ArgumentVar)
 {
-	/* TODO */
+	int size = JavaGenTypeSize(node->machineType);
+	if(leave)
+	{
+		if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP2);
+		}
+		else
+		{
+			JavaGenSimple(info, JAVA_OP_DUP);
+		}
+		JavaGenAdjust(info, size);
+	}
+	JavaGenStoreArg(info, node->index, node->machineType);
+	JavaGenAdjust(info, -size);
 }
 
 /*

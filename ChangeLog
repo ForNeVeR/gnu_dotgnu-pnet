@@ -21,6 +21,8 @@ JavaGenValue.
 * codegen/cg_gen.c (ILGenTempTypedVar): allocate a frame slot if the
 output is JVM.
 
+* codegen/jv_lvalue.tc: code generation for local and argument variables.
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions
